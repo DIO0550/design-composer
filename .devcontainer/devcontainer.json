@@ -1,0 +1,39 @@
+{
+  "name": "Tauri Dev Container",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "rust-lang.rust-analyzer",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+      }
+    }
+  },
+  "containerEnv": {
+    "WEBKIT_DISABLE_DMABUF_RENDERER": "1",
+    "WEBKIT_DISABLE_COMPOSITING_MODE": "1",
+    "DISPLAY": ":1"
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/desktop-lite:1": {
+      "password": "vscode",
+      "webPort": "16080",
+      "vncPort": "15901"
+    }
+  },
+  "mounts": [
+    "source=${localEnv:HOME}/.gitconfig-shared,target=/home/vscode/.gitconfig,type=bind,consistency=cached",
+    "source=${localEnv:HOME}/.config/gh,target=/home/vscode/.config/gh,type=bind,readonly"
+  ],
+  "initializeCommand": "bash -lc 'if [ ! -f \"$HOME/.gitconfig-shared\" ]; then if [ -f \"$HOME/.gitconfig\" ]; then cp \"$HOME/.gitconfig\" \"$HOME/.gitconfig-shared\"; else touch \"$HOME/.gitconfig-shared\"; fi; fi; curl -fsSL https://gist.githubusercontent.com/DIO0550/9030208a4e92984e9a1369f61ca8605e/raw/initialize-command.sh | bash'",
+  "postCreateCommand": "curl -fsSL https://gist.githubusercontent.com/DIO0550/b08fa721f2b2e63f3cf708015390d5af/raw/post-create.sh | bash && curl -fsSL https://gist.githubusercontent.com/DIO0550/ff46c91b2f4a9211d998cdb3e8fe6e78/raw/install-playwright-skills.sh | bash",
+  "forwardPorts": [14000, 14001, 6006, 16080, 15901],
+  "remoteUser": "vscode"
+}
