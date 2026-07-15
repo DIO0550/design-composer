@@ -1,0 +1,51 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/block-npx.sh\""
+          },
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/pre-push-typecheck.sh\""
+          },
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/pre-push-lint.sh\""
+          },
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/pre-push-test-rules.sh\""
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/block-lint-suppress.sh\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/post-edit-lint.sh\""
+          },
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/check-test-rules.sh\""
+          }
+        ]
+      }
+    ]
+  }
+}
