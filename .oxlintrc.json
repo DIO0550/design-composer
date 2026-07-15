@@ -1,6 +1,7 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "rules": {
-    "curly": ["error", "all"]
+    "curly": ["error", "all"],
+    "max-depth": ["error", { "max": 3 }]
   }
 }
