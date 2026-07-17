@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { Node } from "../node";
+import { Node } from "../index";
 
 test("type を持つノードは primitive ノードとして判定される", () => {
   const node = { name: "box-1", type: "Box" };

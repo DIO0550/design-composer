@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { TokenSet } from "../token";
+import { TokenSet } from "../index";
 
 test.each([
   "#fff",

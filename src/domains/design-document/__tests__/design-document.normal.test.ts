@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { FormatVersion } from "@/domains/format-version";
 import { TokenSet } from "@/domains/token";
-import { DesignDocument } from "../design-document";
+import { DesignDocument } from "../index";
 
 test("パラメータを省略して DesignDocument を作成すると現在の formatVersion が設定される", () => {
   expect(DesignDocument.create({}).formatVersion).toEqual(

@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { Component, ComponentSet } from "../component";
+import { Component, ComponentSet } from "../index";
 
 test("publicProps に宣言された名前は公開propとして判定される", () => {
   const component = {

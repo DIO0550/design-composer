@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { TokenSet } from "../token";
+import { TokenSet } from "../index";
 
 test("空の TokenSet を作成すると全種別が空オブジェクトになる", () => {
   expect(TokenSet.empty()).toEqual({

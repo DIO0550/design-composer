@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { DesignDocument } from "../design-document";
+import { DesignDocument } from "../index";
 
 test("ファイルの formatVersion がアプリと同じとき compatible と判定される", () => {
   const document = DesignDocument.create({

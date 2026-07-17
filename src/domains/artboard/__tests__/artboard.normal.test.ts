@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { Artboard } from "../artboard";
+import { Artboard } from "../index";
 
 test("Artboard を作成すると指定した幅と高さを持つ", () => {
   const artboard = Artboard.create({

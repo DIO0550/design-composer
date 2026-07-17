@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { FormatVersion } from "../format-version";
+import { FormatVersion } from "../index";
 
 test.each([
   "1",
