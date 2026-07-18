@@ -15,7 +15,7 @@
 ## 規約一覧
 
 - @rules/architecture.md — フォルダ構造・依存方向・配置の判断基準
-- @rules/coding.md — コンパニオンオブジェクトパターン・イミュータブル・禁止事項
+- @rules/coding.md — コンパニオンオブジェクトパターン・イミュータブル・型による状態表現・禁止事項
 - @rules/testing.md — テスト配置・テストの書き方(ネスト禁止)
 - @rules/hooks.md — useEffect / useState / useReducer / カスタムフックの使い方
 - @rules/components.md — コンポーネント設計(Composition パターン)
