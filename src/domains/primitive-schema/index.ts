@@ -75,7 +75,7 @@ export type PrimitiveSchema = Readonly<{
   props: PropDefinitionRecord;
 }>;
 
-export const BOX_SCHEMA: PrimitiveSchema = {
+export const BOX_SCHEMA = {
   allowsChildren: true,
   props: {
     direction: {
@@ -132,10 +132,10 @@ export const BOX_SCHEMA: PrimitiveSchema = {
       default: "visible",
       group: "appearance",
     },
-  } satisfies PropDefinitionRecord,
-};
+  },
+} as const satisfies PrimitiveSchema;
 
-export const TEXT_SCHEMA: PrimitiveSchema = {
+export const TEXT_SCHEMA = {
   allowsChildren: false,
   props: {
     content: {
@@ -162,18 +162,16 @@ export const TEXT_SCHEMA: PrimitiveSchema = {
       default: "left",
       group: "appearance",
     },
-  } satisfies PropDefinitionRecord,
-};
+  },
+} as const satisfies PrimitiveSchema;
 
-export const PRIMITIVE_SCHEMAS: Readonly<
-  Record<PrimitiveType, PrimitiveSchema>
-> = {
+export const PRIMITIVE_SCHEMAS = {
   Box: BOX_SCHEMA,
   Text: TEXT_SCHEMA,
-};
+} as const satisfies Readonly<Record<PrimitiveType, PrimitiveSchema>>;
 
 export const PrimitiveSchema = {
-  forType(type: PrimitiveType): PrimitiveSchema {
+  forType<T extends PrimitiveType>(type: T): (typeof PRIMITIVE_SCHEMAS)[T] {
     return PRIMITIVE_SCHEMAS[type];
   },
 } as const;
