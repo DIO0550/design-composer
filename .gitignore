@@ -142,6 +142,10 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
 
+# tsc -b (tsconfig.node.json) build output for vite.config.ts
+/vite.config.js
+/vite.config.d.ts
+
 # Build output
 dist/
 dist-ssr/
