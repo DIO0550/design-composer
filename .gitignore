@@ -152,3 +152,6 @@ storybook-static/
 # Tauri (Rust) build artifacts
 src-tauri/target/
 src-tauri/gen/
+
+# vitest json レポーター出力(CI 計測用)
+vitest-report.json

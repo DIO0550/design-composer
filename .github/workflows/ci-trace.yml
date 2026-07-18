@@ -1,0 +1,228 @@
+# CI トレース: 対象ワークフローの完了後にジョブ/ステップの実測タイミングを
+# GitHub API から取得し、OTel のトレースのように「どこがボトルネックか」を可視化する。
+#
+# - この run の Summary にウォーターフォール(mermaid gantt)とボトルネック表を描画
+# - OTLP/JSON 形式のトレース(otlp-trace.json)をアーティファクトとして出力
+#   (OTLP バックエンド(Jaeger / Tempo / Honeycomb 等)を導入したら、
+#    curl -X POST $OTLP_ENDPOINT/v1/traces -H 'Content-Type: application/json' \
+#      -d @otlp-trace.json でそのまま取り込める)
+name: CI Trace
+
+on:
+  workflow_run:
+    workflows:
+      - frontend
+      - Deploy Storybook (main)
+      - Storybook PR Preview
+    types: [completed]
+
+permissions:
+  actions: read
+
+concurrency:
+  group: ci-trace-${{ github.event.workflow_run.id }}
+  cancel-in-progress: false
+
+jobs:
+  trace:
+    name: build trace
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Fetch job timings
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          gh api --paginate \
+            "repos/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}/jobs?per_page=100" \
+            --jq '.jobs[]' | jq -s '.' > jobs.json
+          jq 'length' jobs.json
+
+      - name: Build trace summary & OTLP export
+        env:
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          RUN_NUMBER: ${{ github.event.workflow_run.run_number }}
+          RUN_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
+          WORKFLOW_NAME: ${{ github.event.workflow_run.name }}
+          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          RUN_STARTED_AT: ${{ github.event.workflow_run.run_started_at }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          node - <<'EOF'
+          const fs = require("node:fs");
+
+          const jobs = JSON.parse(fs.readFileSync("jobs.json", "utf8"))
+            // run_attempt の再実行で残る古い attempt のジョブを除外
+            .filter((j) => j.started_at && j.completed_at);
+
+          const env = process.env;
+          const runStart = Date.parse(env.RUN_STARTED_AT);
+          const runEnd = Math.max(
+            runStart,
+            ...jobs.map((j) => Date.parse(j.completed_at)),
+          );
+
+          const sec = (ms) => Math.round(ms / 1000);
+          const fmt = (ms) => {
+            const s = Math.max(0, Math.round(ms / 1000));
+            return s >= 60 ? `${Math.floor(s / 60)}m${s % 60}s` : `${s}s`;
+          };
+          // mermaid の構文文字をタスク名から除去する
+          const clean = (s) => s.replace(/[:;#,]/g, " ").trim().slice(0, 60);
+
+          // ---- スパン(ジョブ/ステップ)を平坦化 --------------------------------
+          const steps = [];
+          for (const job of jobs) {
+            for (const st of job.steps ?? []) {
+              if (!st.started_at || !st.completed_at) continue;
+              const start = Date.parse(st.started_at);
+              const end = Date.parse(st.completed_at);
+              if (end <= start) continue;
+              steps.push({
+                job: job.name,
+                name: st.name,
+                start,
+                end,
+                dur: end - start,
+                conclusion: st.conclusion,
+              });
+            }
+          }
+          const ranked = [...steps].sort((a, b) => b.dur - a.dur);
+          const wall = Math.max(1, runEnd - runStart);
+          const bottleneck = ranked[0];
+
+          // ---- Summary: ウォーターフォール + ボトルネック表 --------------------
+          const icon = { success: "✅", failure: "❌", cancelled: "⛔" }[env.CONCLUSION] ?? "⚪";
+          const lines = [];
+          lines.push(`## ${icon} CI Trace: ${env.WORKFLOW_NAME} #${env.RUN_NUMBER}`);
+          lines.push("");
+          lines.push(
+            `[元の run](${env.RUN_URL}) — \`${env.HEAD_BRANCH}\` @ \`${env.HEAD_SHA.slice(0, 7)}\`` +
+              ` / attempt ${env.RUN_ATTEMPT} / wall clock **${fmt(wall)}**`,
+          );
+          if (bottleneck) {
+            lines.push("");
+            lines.push(
+              `🔥 **最大のボトルネック**: \`${bottleneck.job} › ${bottleneck.name}\`` +
+                ` — ${fmt(bottleneck.dur)} (wall clock の ${Math.round((bottleneck.dur / wall) * 100)}%)`,
+            );
+          }
+
+          const shown = steps.filter((s) => s.dur >= 1000);
+          if (shown.length > 0) {
+            lines.push("");
+            lines.push("```mermaid");
+            lines.push("gantt");
+            lines.push(`  title ${clean(env.WORKFLOW_NAME)} 実行タイムライン (0s = run 開始)`);
+            lines.push("  dateFormat X");
+            lines.push("  axisFormat %M:%S");
+            lines.push("  todayMarker off");
+            for (const job of jobs) {
+              const jobSteps = shown.filter((s) => s.job === job.name);
+              if (jobSteps.length === 0) continue;
+              lines.push(`  section ${clean(job.name)}`);
+              for (const s of jobSteps) {
+                const tag = s === bottleneck ? "crit, " : s.conclusion === "failure" ? "active, " : "";
+                const from = sec(s.start - runStart);
+                const to = Math.max(from + 1, sec(s.end - runStart));
+                lines.push(`    ${clean(s.name)} (${fmt(s.dur)}) :${tag}${from}, ${to}`);
+              }
+            }
+            lines.push("```");
+            const omitted = steps.length - shown.length;
+            if (omitted > 0) lines.push(`※ 1 秒未満のステップ ${omitted} 件は図から省略`);
+          }
+
+          lines.push("");
+          lines.push("### ステップ別ボトルネック (上位 10 件)");
+          lines.push("");
+          lines.push("| # | Job | Step | Duration | Wall clock 比 |");
+          lines.push("| ---: | --- | --- | ---: | ---: |");
+          ranked.slice(0, 10).forEach((s, i) => {
+            const bar = "█".repeat(Math.max(1, Math.round((s.dur / wall) * 20)));
+            lines.push(
+              `| ${i + 1} | ${s.job} | ${s.name} | ${fmt(s.dur)} | ${bar} ${Math.round((s.dur / wall) * 100)}% |`,
+            );
+          });
+          fs.appendFileSync(env.GITHUB_STEP_SUMMARY, lines.join("\n") + "\n");
+
+          // ---- OTLP/JSON エクスポート ----------------------------------------
+          const traceId = BigInt(env.RUN_ID).toString(16).padStart(32, "0").slice(-32);
+          let seq = 0;
+          const spanId = () => (++seq).toString(16).padStart(16, "0");
+          const ns = (ms) => String(BigInt(ms) * 1000000n);
+          const attr = (key, value) => ({ key, value: { stringValue: String(value) } });
+
+          const rootId = spanId();
+          const spans = [
+            {
+              traceId,
+              spanId: rootId,
+              name: `${env.WORKFLOW_NAME} #${env.RUN_NUMBER}`,
+              kind: 1,
+              startTimeUnixNano: ns(runStart),
+              endTimeUnixNano: ns(runEnd),
+              attributes: [
+                attr("ci.run_id", env.RUN_ID),
+                attr("ci.conclusion", env.CONCLUSION),
+                attr("ci.branch", env.HEAD_BRANCH),
+                attr("ci.sha", env.HEAD_SHA),
+                attr("ci.url", env.RUN_URL),
+              ],
+              status: { code: env.CONCLUSION === "success" ? 1 : 2 },
+            },
+          ];
+          for (const job of jobs) {
+            const jobId = spanId();
+            spans.push({
+              traceId,
+              spanId: jobId,
+              parentSpanId: rootId,
+              name: job.name,
+              kind: 1,
+              startTimeUnixNano: ns(Date.parse(job.started_at)),
+              endTimeUnixNano: ns(Date.parse(job.completed_at)),
+              attributes: [attr("ci.job_id", job.id), attr("ci.runner", job.runner_name ?? "")],
+              status: { code: job.conclusion === "success" ? 1 : 2 },
+            });
+            for (const s of steps.filter((x) => x.job === job.name)) {
+              spans.push({
+                traceId,
+                spanId: spanId(),
+                parentSpanId: jobId,
+                name: s.name,
+                kind: 1,
+                startTimeUnixNano: ns(s.start),
+                endTimeUnixNano: ns(s.end),
+                attributes: [],
+                status: { code: s.conclusion === "success" ? 1 : 2 },
+              });
+            }
+          }
+          const otlp = {
+            resourceSpans: [
+              {
+                resource: {
+                  attributes: [
+                    attr("service.name", "github-actions"),
+                    attr("service.namespace", process.env.GITHUB_REPOSITORY ?? ""),
+                  ],
+                },
+                scopeSpans: [{ scope: { name: "ci-trace" }, spans }],
+              },
+            ],
+          };
+          fs.writeFileSync("otlp-trace.json", JSON.stringify(otlp, null, 2));
+          console.log(`spans: ${spans.length}, wall: ${fmt(wall)}`);
+          EOF
+
+      - name: Upload OTLP trace artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: otlp-trace-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}
+          path: otlp-trace.json
+          retention-days: 7
