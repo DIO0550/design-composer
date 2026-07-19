@@ -7,6 +7,8 @@ import {
 import { Node } from "@/domains/node";
 import { PrimitiveSchema } from "@/domains/primitive-schema";
 import { TokenSet } from "@/domains/token";
+import { ArrayEx } from "@/utils/ArrayEx";
+import { NumberEx } from "@/utils/NumberEx";
 
 export type DesignDocument = Readonly<{
   formatVersion: FormatVersion;
@@ -20,7 +22,10 @@ function insertAt<T>(
   index: number,
   item: T,
 ): readonly T[] {
-  if (index < 0 || index > items.length) {
+  if (
+    !NumberEx.isNatural(index) ||
+    !ArrayEx.isInsertionIndexInRange(items, index)
+  ) {
     throw new Error(
       `index ${index} is out of bounds for length ${items.length}`,
     );
@@ -33,12 +38,15 @@ function moveWithin<T>(
   fromIndex: number,
   toIndex: number,
 ): readonly T[] {
-  if (fromIndex < 0 || fromIndex >= items.length) {
+  if (
+    !NumberEx.isNatural(fromIndex) ||
+    !ArrayEx.isIndexInRange(items, fromIndex)
+  ) {
     throw new Error(
       `fromIndex ${fromIndex} is out of bounds for length ${items.length}`,
     );
   }
-  if (toIndex < 0 || toIndex >= items.length) {
+  if (!NumberEx.isNatural(toIndex) || !ArrayEx.isIndexInRange(items, toIndex)) {
     throw new Error(
       `toIndex ${toIndex} is out of bounds for length ${items.length}`,
     );
