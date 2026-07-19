@@ -12,7 +12,7 @@ export type ExpandedNode = Readonly<{
   children?: readonly ExpandedNode[];
 }>;
 
-function findAndUpdateNode(
+function updateNodeByName(
   nodes: readonly Node[],
   name: string,
   update: (node: Node) => Node,
@@ -26,7 +26,7 @@ function findAndUpdateNode(
     }
     return {
       ...node,
-      children: findAndUpdateNode(node.children, name, update),
+      children: updateNodeByName(node.children, name, update),
     };
   });
 }
@@ -52,7 +52,7 @@ function applyOverrides(
       if (binding === undefined) {
         return currentChildren;
       }
-      return findAndUpdateNode(currentChildren, binding.node, (target) =>
+      return updateNodeByName(currentChildren, binding.node, (target) =>
         applyBindingValue(target, binding.prop, value),
       );
     },
