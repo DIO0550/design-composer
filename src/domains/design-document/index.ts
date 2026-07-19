@@ -8,6 +8,7 @@ import { Node } from "@/domains/node";
 import { PrimitiveSchema } from "@/domains/primitive-schema";
 import { TokenSet } from "@/domains/token";
 import { ArrayEx } from "@/utils/ArrayEx";
+import { Option } from "@/utils/Option";
 
 export type DesignDocument = Readonly<{
   formatVersion: FormatVersion;
@@ -104,30 +105,30 @@ function updateSiblingsOfNode(
   return { updated, found };
 }
 
-function findNode(nodes: readonly Node[], name: string): Node | undefined {
+function findNode(nodes: readonly Node[], name: string): Option<Node> {
   for (const node of nodes) {
     if (node.name === name) {
-      return node;
+      return Option.some(node);
     }
     const found = findNode(Node.children(node), name);
-    if (found) {
+    if (found.some) {
       return found;
     }
   }
-  return undefined;
+  return Option.none;
 }
 
 function findNodeInArtboards(
   artboards: readonly Artboard[],
   name: string,
-): Node | undefined {
+): Option<Node> {
   for (const artboard of artboards) {
     const found = findNode(artboard.children, name);
-    if (found) {
+    if (found.some) {
       return found;
     }
   }
-  return undefined;
+  return Option.none;
 }
 
 function collectSubtreeNames(node: Node): readonly string[] {
@@ -225,10 +226,11 @@ export const DesignDocument = {
     newParentName: string,
     index: number,
   ): DesignDocument {
-    const node = findNodeInArtboards(document.artboards, name);
-    if (!node) {
+    const found = findNodeInArtboards(document.artboards, name);
+    if (!found.some) {
       throw new Error(`node "${name}" not found`);
     }
+    const node = found.value;
     if (collectSubtreeNames(node).includes(newParentName)) {
       throw new Error(
         `cannot move node "${name}" into itself or its own descendant`,
