@@ -248,9 +248,8 @@ export const DesignDocument = {
     return { ...document, artboards: result.artboards };
   },
 
-  findNode(document: DesignDocument, name: string): Node | undefined {
-    const found = findNodeInArtboards(document.artboards, name);
-    return found.some ? found.value : undefined;
+  findNode(document: DesignDocument, name: string): Option<Node> {
+    return findNodeInArtboards(document.artboards, name);
   },
 
   replaceNode(

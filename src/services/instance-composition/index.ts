@@ -120,10 +120,11 @@ export const InstanceComposition = {
   },
 
   detach(document: DesignDocument, name: string): DesignDocument {
-    const node = DesignDocument.findNode(document, name);
-    if (node === undefined) {
+    const found = DesignDocument.findNode(document, name);
+    if (!found.some) {
       throw new Error(`node "${name}" not found`);
     }
+    const node = found.value;
     if (!Node.isRef(node)) {
       throw new Error(`node "${name}" is not a ref node`);
     }
