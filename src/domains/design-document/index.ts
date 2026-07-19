@@ -1,10 +1,10 @@
 import type { Artboard } from "@/domains/artboard";
-import { ComponentSet } from "@/domains/component";
+import { type Component, ComponentSet } from "@/domains/component";
 import {
   FormatVersion,
   type FormatVersionCompatibility,
 } from "@/domains/format-version";
-import { Node } from "@/domains/node";
+import { Node, type RefNode } from "@/domains/node";
 import { PrimitiveSchema } from "@/domains/primitive-schema";
 import { TokenSet } from "@/domains/token";
 import { ArrayEx } from "@/utils/ArrayEx";
@@ -151,6 +151,17 @@ function updateSiblingsOfArtboards(
   return { artboards: updated, found };
 }
 
+function toComponent(node: Node): Component {
+  if (!Node.isPrimitive(node)) {
+    throw new Error(`cannot create a component from ref node "${node.name}"`);
+  }
+  return {
+    type: node.type,
+    ...(node.props !== undefined ? { props: node.props } : {}),
+    ...(node.children !== undefined ? { children: node.children } : {}),
+  };
+}
+
 function collectAllNames(document: DesignDocument): readonly string[] {
   const componentNames = ComponentSet.names(document.components);
   const artboardNames = document.artboards.map((artboard) => artboard.name);
@@ -271,6 +282,33 @@ export const DesignDocument = {
     }
     const withoutNode = DesignDocument.removeNode(document, name);
     return DesignDocument.insertNode(withoutNode, newParentName, index, node);
+  },
+
+  createComponent(
+    document: DesignDocument,
+    name: string,
+    componentName: string,
+  ): DesignDocument {
+    const found = findNodeInArtboards(document.artboards, name);
+    if (!found.some) {
+      throw new Error(`node "${name}" not found`);
+    }
+    if (DesignDocument.usedNames(document).has(componentName)) {
+      throw new Error(`component name "${componentName}" is already used`);
+    }
+    const component = toComponent(found.value);
+    const refNode: RefNode = { name, ref: componentName };
+    const result = updateSiblingsOfArtboards(
+      document.artboards,
+      name,
+      (siblings) =>
+        siblings.map((sibling) => (sibling.name === name ? refNode : sibling)),
+    );
+    return {
+      ...document,
+      components: { ...document.components, [componentName]: component },
+      artboards: result.artboards,
+    };
   },
 
   insertArtboard(
