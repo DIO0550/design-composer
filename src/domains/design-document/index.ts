@@ -247,6 +247,28 @@ export const DesignDocument = {
     return { ...document, artboards: result.artboards };
   },
 
+  findNode(document: DesignDocument, name: string): Node | undefined {
+    const found = findNodeInArtboards(document.artboards, name);
+    return found.some ? found.value : undefined;
+  },
+
+  replaceNode(
+    document: DesignDocument,
+    name: string,
+    node: Node,
+  ): DesignDocument {
+    const result = updateSiblingsOfArtboards(
+      document.artboards,
+      name,
+      (siblings) =>
+        siblings.map((sibling) => (sibling.name === name ? node : sibling)),
+    );
+    if (!result.found) {
+      throw new Error(`node "${name}" not found`);
+    }
+    return { ...document, artboards: result.artboards };
+  },
+
   reorderNode(
     document: DesignDocument,
     parentName: string,

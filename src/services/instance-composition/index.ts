@@ -1,4 +1,5 @@
 import { ComponentSet, type PublicProps } from "@/domains/component";
+import { DesignDocument } from "@/domains/design-document";
 import { Node, type Props, type PropValue } from "@/domains/node";
 
 /**
@@ -116,5 +117,28 @@ export const InstanceComposition = {
     components: ComponentSet,
   ): readonly ExpandedNode[] {
     return expandNodes(nodes, components, new Set());
+  },
+
+  detach(document: DesignDocument, name: string): DesignDocument {
+    const node = DesignDocument.findNode(document, name);
+    if (node === undefined) {
+      throw new Error(`node "${name}" not found`);
+    }
+    if (!Node.isRef(node)) {
+      throw new Error(`node "${name}" is not a ref node`);
+    }
+    const expanded = expandNode(node, document.components, new Set());
+    const usedNames = DesignDocument.usedNames(document);
+    const children =
+      expanded.children === undefined
+        ? undefined
+        : DesignDocument.renameSubtree(expanded.children, usedNames).nodes;
+    const replacement: Node = {
+      name: expanded.name,
+      type: expanded.type,
+      ...(expanded.props !== undefined ? { props: expanded.props } : {}),
+      ...(children !== undefined ? { children } : {}),
+    };
+    return DesignDocument.replaceNode(document, name, replacement);
   },
 } as const;
