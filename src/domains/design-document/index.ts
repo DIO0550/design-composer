@@ -1,5 +1,5 @@
 import type { Artboard } from "@/domains/artboard";
-import type { ComponentSet } from "@/domains/component";
+import { ComponentSet } from "@/domains/component";
 import {
   FormatVersion,
   type FormatVersionCompatibility,
@@ -131,10 +131,6 @@ function findNodeInArtboards(
   return Option.none;
 }
 
-function collectSubtreeNames(node: Node): readonly string[] {
-  return [node.name, ...Node.children(node).flatMap(collectSubtreeNames)];
-}
-
 function updateSiblingsOfArtboards(
   artboards: readonly Artboard[],
   name: string,
@@ -153,6 +149,43 @@ function updateSiblingsOfArtboards(
     return artboard;
   });
   return { artboards: updated, found };
+}
+
+function collectAllNames(document: DesignDocument): readonly string[] {
+  const componentNames = ComponentSet.names(document.components);
+  const artboardNames = document.artboards.map((artboard) => artboard.name);
+  const nodeNames = document.artboards.flatMap((artboard) =>
+    artboard.children.flatMap(Node.collectNames),
+  );
+  return [...componentNames, ...artboardNames, ...nodeNames];
+}
+
+function nextAvailableName(
+  baseName: string,
+  usedNames: ReadonlySet<string>,
+): string {
+  if (!usedNames.has(baseName)) {
+    return baseName;
+  }
+  let suffix = 2;
+  while (usedNames.has(`${baseName}-${suffix}`)) {
+    suffix += 1;
+  }
+  return `${baseName}-${suffix}`;
+}
+
+function generateRenameMap(
+  names: readonly string[],
+  usedNames: ReadonlySet<string>,
+): Readonly<Record<string, string>> {
+  const taken = new Set(usedNames);
+  const renameMap: Record<string, string> = {};
+  for (const name of names) {
+    const newName = nextAvailableName(name, taken);
+    renameMap[name] = newName;
+    taken.add(newName);
+  }
+  return renameMap;
 }
 
 export const DesignDocument = {
@@ -231,7 +264,7 @@ export const DesignDocument = {
       throw new Error(`node "${name}" not found`);
     }
     const node = found.value;
-    if (collectSubtreeNames(node).includes(newParentName)) {
+    if (Node.collectNames(node).includes(newParentName)) {
       throw new Error(
         `cannot move node "${name}" into itself or its own descendant`,
       );
@@ -275,6 +308,28 @@ export const DesignDocument = {
     return {
       ...document,
       artboards: ArrayEx.moveWithin(document.artboards, fromIndex, toIndex),
+    };
+  },
+
+  usedNames(document: DesignDocument): ReadonlySet<string> {
+    return new Set(collectAllNames(document));
+  },
+
+  uniqueName(baseName: string, usedNames: ReadonlySet<string>): string {
+    return nextAvailableName(baseName, usedNames);
+  },
+
+  renameSubtree(
+    nodes: readonly Node[],
+    usedNames: ReadonlySet<string>,
+  ): { nodes: readonly Node[]; renameMap: Readonly<Record<string, string>> } {
+    const renameMap = generateRenameMap(
+      nodes.flatMap(Node.collectNames),
+      usedNames,
+    );
+    return {
+      nodes: nodes.map((node) => Node.rename(node, renameMap)),
+      renameMap,
     };
   },
 } as const;

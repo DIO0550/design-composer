@@ -28,4 +28,20 @@ export const Node = {
   children(node: Node): readonly Node[] {
     return Node.isPrimitive(node) ? (node.children ?? []) : [];
   },
+
+  collectNames(node: Node): readonly string[] {
+    return [node.name, ...Node.children(node).flatMap(Node.collectNames)];
+  },
+
+  rename(node: Node, renameMap: Readonly<Record<string, string>>): Node {
+    const newName = renameMap[node.name] ?? node.name;
+    if (Node.isRef(node) || node.children === undefined) {
+      return newName === node.name ? node : { ...node, name: newName };
+    }
+    return {
+      ...node,
+      name: newName,
+      children: node.children.map((child) => Node.rename(child, renameMap)),
+    };
+  },
 } as const;
