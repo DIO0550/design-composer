@@ -7,7 +7,9 @@ const components: ComponentSet = {
   "text-field": {
     type: "Box",
     props: { direction: "column" },
-    children: [{ name: "text-field-value", type: "Text", props: { content: "" } }],
+    children: [
+      { name: "text-field-value", type: "Text", props: { content: "" } },
+    ],
     publicProps: {
       value: { node: "text-field-value", prop: "content" },
     },
@@ -34,7 +36,9 @@ test("部品内の ref (ネストした部品) も再帰的に展開される", 
     name: "card-field",
     type: "Box",
     props: { direction: "column" },
-    children: [{ name: "text-field-value", type: "Text", props: { content: "" } }],
+    children: [
+      { name: "text-field-value", type: "Text", props: { content: "" } },
+    ],
   });
 });
 
