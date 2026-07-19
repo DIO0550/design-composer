@@ -8,7 +8,6 @@ import { Node } from "@/domains/node";
 import { PrimitiveSchema } from "@/domains/primitive-schema";
 import { TokenSet } from "@/domains/token";
 import { ArrayEx } from "@/utils/ArrayEx";
-import { NumberEx } from "@/utils/NumberEx";
 
 export type DesignDocument = Readonly<{
   formatVersion: FormatVersion;
@@ -16,45 +15,6 @@ export type DesignDocument = Readonly<{
   components: ComponentSet;
   artboards: readonly Artboard[];
 }>;
-
-function insertAt<T>(
-  items: readonly T[],
-  index: number,
-  item: T,
-): readonly T[] {
-  if (
-    !NumberEx.isNatural(index) ||
-    !ArrayEx.isInsertionIndexInRange(items, index)
-  ) {
-    throw new Error(
-      `index ${index} is out of bounds for length ${items.length}`,
-    );
-  }
-  return [...items.slice(0, index), item, ...items.slice(index)];
-}
-
-function moveWithin<T>(
-  items: readonly T[],
-  fromIndex: number,
-  toIndex: number,
-): readonly T[] {
-  if (
-    !NumberEx.isNatural(fromIndex) ||
-    !ArrayEx.isIndexInRange(items, fromIndex)
-  ) {
-    throw new Error(
-      `fromIndex ${fromIndex} is out of bounds for length ${items.length}`,
-    );
-  }
-  if (!NumberEx.isNatural(toIndex) || !ArrayEx.isIndexInRange(items, toIndex)) {
-    throw new Error(
-      `toIndex ${toIndex} is out of bounds for length ${items.length}`,
-    );
-  }
-  const item = items[fromIndex];
-  const without = [...items.slice(0, fromIndex), ...items.slice(fromIndex + 1)];
-  return [...without.slice(0, toIndex), item, ...without.slice(toIndex)];
-}
 
 function canNodeHaveChildren(node: Node): boolean {
   return Node.isPrimitive(node) && PrimitiveSchema.allowsChildren(node.type);
@@ -192,7 +152,7 @@ export const DesignDocument = {
     const result = updateChildrenOfParent(
       document.artboards,
       parentName,
-      (children) => insertAt(children, index, node),
+      (children) => ArrayEx.insertAt(children, index, node),
     );
     if (!result.found) {
       throw new Error(`parent "${parentName}" not found`);
@@ -221,7 +181,7 @@ export const DesignDocument = {
     const result = updateChildrenOfParent(
       document.artboards,
       parentName,
-      (children) => moveWithin(children, fromIndex, toIndex),
+      (children) => ArrayEx.moveWithin(children, fromIndex, toIndex),
     );
     if (!result.found) {
       throw new Error(`parent "${parentName}" not found`);
@@ -236,7 +196,7 @@ export const DesignDocument = {
   ): DesignDocument {
     return {
       ...document,
-      artboards: insertAt(document.artboards, index, artboard),
+      artboards: ArrayEx.insertAt(document.artboards, index, artboard),
     };
   },
 
@@ -263,7 +223,7 @@ export const DesignDocument = {
   ): DesignDocument {
     return {
       ...document,
-      artboards: moveWithin(document.artboards, fromIndex, toIndex),
+      artboards: ArrayEx.moveWithin(document.artboards, fromIndex, toIndex),
     };
   },
 } as const;
