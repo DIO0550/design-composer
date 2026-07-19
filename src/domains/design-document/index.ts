@@ -8,6 +8,7 @@ import { Node } from "@/domains/node";
 import { PrimitiveSchema } from "@/domains/primitive-schema";
 import { TokenSet } from "@/domains/token";
 import { ArrayEx } from "@/utils/ArrayEx";
+import { Option } from "@/utils/Option";
 
 export type DesignDocument = Readonly<{
   formatVersion: FormatVersion;
@@ -104,6 +105,36 @@ function updateSiblingsOfNode(
   return { updated, found };
 }
 
+function findNode(nodes: readonly Node[], name: string): Option<Node> {
+  for (const node of nodes) {
+    if (node.name === name) {
+      return Option.some(node);
+    }
+    const found = findNode(Node.children(node), name);
+    if (found.some) {
+      return found;
+    }
+  }
+  return Option.none;
+}
+
+function findNodeInArtboards(
+  artboards: readonly Artboard[],
+  name: string,
+): Option<Node> {
+  for (const artboard of artboards) {
+    const found = findNode(artboard.children, name);
+    if (found.some) {
+      return found;
+    }
+  }
+  return Option.none;
+}
+
+function collectSubtreeNames(node: Node): readonly string[] {
+  return [node.name, ...Node.children(node).flatMap(collectSubtreeNames)];
+}
+
 function updateSiblingsOfArtboards(
   artboards: readonly Artboard[],
   name: string,
@@ -187,6 +218,26 @@ export const DesignDocument = {
       throw new Error(`parent "${parentName}" not found`);
     }
     return { ...document, artboards: result.artboards };
+  },
+
+  moveNode(
+    document: DesignDocument,
+    name: string,
+    newParentName: string,
+    index: number,
+  ): DesignDocument {
+    const found = findNodeInArtboards(document.artboards, name);
+    if (!found.some) {
+      throw new Error(`node "${name}" not found`);
+    }
+    const node = found.value;
+    if (collectSubtreeNames(node).includes(newParentName)) {
+      throw new Error(
+        `cannot move node "${name}" into itself or its own descendant`,
+      );
+    }
+    const withoutNode = DesignDocument.removeNode(document, name);
+    return DesignDocument.insertNode(withoutNode, newParentName, index, node);
   },
 
   insertArtboard(
