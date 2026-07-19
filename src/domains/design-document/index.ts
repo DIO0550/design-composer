@@ -104,6 +104,36 @@ function updateSiblingsOfNode(
   return { updated, found };
 }
 
+function findNode(nodes: readonly Node[], name: string): Node | undefined {
+  for (const node of nodes) {
+    if (node.name === name) {
+      return node;
+    }
+    const found = findNode(Node.children(node), name);
+    if (found) {
+      return found;
+    }
+  }
+  return undefined;
+}
+
+function findNodeInArtboards(
+  artboards: readonly Artboard[],
+  name: string,
+): Node | undefined {
+  for (const artboard of artboards) {
+    const found = findNode(artboard.children, name);
+    if (found) {
+      return found;
+    }
+  }
+  return undefined;
+}
+
+function collectSubtreeNames(node: Node): readonly string[] {
+  return [node.name, ...Node.children(node).flatMap(collectSubtreeNames)];
+}
+
 function updateSiblingsOfArtboards(
   artboards: readonly Artboard[],
   name: string,
@@ -187,6 +217,25 @@ export const DesignDocument = {
       throw new Error(`parent "${parentName}" not found`);
     }
     return { ...document, artboards: result.artboards };
+  },
+
+  moveNode(
+    document: DesignDocument,
+    name: string,
+    newParentName: string,
+    index: number,
+  ): DesignDocument {
+    const node = findNodeInArtboards(document.artboards, name);
+    if (!node) {
+      throw new Error(`node "${name}" not found`);
+    }
+    if (collectSubtreeNames(node).includes(newParentName)) {
+      throw new Error(
+        `cannot move node "${name}" into itself or its own descendant`,
+      );
+    }
+    const withoutNode = DesignDocument.removeNode(document, name);
+    return DesignDocument.insertNode(withoutNode, newParentName, index, node);
   },
 
   insertArtboard(
