@@ -20,6 +20,21 @@ export const Component = {
   isPublicProp(component: Component, name: string): boolean {
     return component.publicProps !== undefined && name in component.publicProps;
   },
+
+  renameBindings(
+    publicProps: PublicProps,
+    renameMap: Readonly<Record<string, string>>,
+  ): PublicProps {
+    return Object.fromEntries(
+      Object.entries(publicProps).map(([propName, binding]) => {
+        const newNode = renameMap[binding.node];
+        return [
+          propName,
+          newNode === undefined ? binding : { ...binding, node: newNode },
+        ];
+      }),
+    );
+  },
 } as const;
 
 export const ComponentSet = {
