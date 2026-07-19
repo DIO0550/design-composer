@@ -174,4 +174,15 @@ export const PrimitiveSchema = {
   forType<T extends PrimitiveType>(type: T): (typeof PRIMITIVE_SCHEMAS)[T] {
     return PRIMITIVE_SCHEMAS[type];
   },
+
+  isPrimitiveType(type: string): type is PrimitiveType {
+    return (PRIMITIVE_TYPES as readonly string[]).includes(type);
+  },
+
+  allowsChildren(type: string): boolean {
+    return (
+      PrimitiveSchema.isPrimitiveType(type) &&
+      PRIMITIVE_SCHEMAS[type].allowsChildren
+    );
+  },
 } as const;
