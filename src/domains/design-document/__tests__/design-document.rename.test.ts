@@ -31,9 +31,7 @@ test("使用中の名前を収集すると部品名が含まれる", () => {
 
 test("未使用の名前を渡すとそのままの名前が返る", () => {
   const usedNames = new Set(["screen"]);
-  expect(DesignDocument.uniqueName("login-form", usedNames)).toBe(
-    "login-form",
-  );
+  expect(DesignDocument.uniqueName("login-form", usedNames)).toBe("login-form");
 });
 
 test("使用中の名前を渡すと連番を付与した名前が返る", () => {
