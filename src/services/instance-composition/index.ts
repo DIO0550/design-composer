@@ -139,6 +139,10 @@ export const InstanceComposition = {
       ...(expanded.props !== undefined ? { props: expanded.props } : {}),
       ...(children !== undefined ? { children } : {}),
     };
-    return DesignDocument.replaceNode(document, name, replacement);
+    const replaced = DesignDocument.replaceNode(document, name, replacement);
+    if (!replaced.ok) {
+      throw replaced.error;
+    }
+    return replaced.value;
   },
 } as const;

@@ -9,6 +9,7 @@ import { PrimitiveSchema } from "@/domains/primitive-schema";
 import { TokenSet } from "@/domains/token";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
+import { Result } from "@/utils/Result";
 
 export type DesignDocument = Readonly<{
   formatVersion: FormatVersion;
@@ -256,7 +257,7 @@ export const DesignDocument = {
     document: DesignDocument,
     name: string,
     node: Node,
-  ): DesignDocument {
+  ): Result<DesignDocument, Error> {
     const result = updateSiblingsOfArtboards(
       document.artboards,
       name,
@@ -264,9 +265,9 @@ export const DesignDocument = {
         siblings.map((sibling) => (sibling.name === name ? node : sibling)),
     );
     if (!result.found) {
-      throw new Error(`node "${name}" not found`);
+      return Result.err(new Error(`node "${name}" not found`));
     }
-    return { ...document, artboards: result.artboards };
+    return Result.ok({ ...document, artboards: result.artboards });
   },
 
   reorderNode(
