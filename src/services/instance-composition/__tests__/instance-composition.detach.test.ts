@@ -1,7 +1,13 @@
 import { expect, test } from "vitest";
 import type { ComponentSet } from "@/domains/component";
 import { DesignDocument } from "@/domains/design-document";
+import type { Result } from "@/utils/Result";
 import { InstanceComposition } from "../index";
+
+function unwrap<T>(result: Result<T, Error>): T {
+  expect(result.ok).toBe(true);
+  return (result as { ok: true; value: T }).value;
+}
 
 const components: ComponentSet = {
   "primary-button": {
@@ -33,7 +39,7 @@ test("ref ノードを解除すると部品定義の type / props / children を
     ],
   });
 
-  const result = InstanceComposition.detach(document, "save-button");
+  const result = unwrap(InstanceComposition.detach(document, "save-button"));
 
   expect(result.artboards[0].children).toEqual([
     {
@@ -70,7 +76,7 @@ test("overrides を持つ ref ノードを解除すると overrides が焼き込
     ],
   });
 
-  const result = InstanceComposition.detach(document, "save-button");
+  const result = unwrap(InstanceComposition.detach(document, "save-button"));
 
   expect(result.artboards[0].children[0]).toMatchObject({
     children: [{ name: "primary-button-label", props: { content: "保存" } }],
@@ -93,7 +99,7 @@ test("解除した実ノードの直下の name は既存のノード名と衝�
     ],
   });
 
-  const result = InstanceComposition.detach(document, "save-button");
+  const result = unwrap(InstanceComposition.detach(document, "save-button"));
 
   const detached = result.artboards[0].children[1];
   expect(detached).toMatchObject({ name: "save-button" });
@@ -115,7 +121,7 @@ test("解除した実ノード自身の name は変わらない", () => {
     ],
   });
 
-  const result = InstanceComposition.detach(document, "save-button");
+  const result = unwrap(InstanceComposition.detach(document, "save-button"));
 
   expect(result.artboards[0].children[0].name).toBe("save-button");
 });
