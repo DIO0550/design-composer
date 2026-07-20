@@ -1,3 +1,5 @@
+import { StringEx } from "@/utils/StringEx";
+
 export type JsonScanErrorKind = "syntax-error" | "duplicate-key";
 
 export type JsonScanError = Readonly<{
@@ -6,10 +8,9 @@ export type JsonScanError = Readonly<{
   position: number;
 }>;
 
-type ScanSuccess<T> = Readonly<{
+type ScanSuccess = Readonly<{
   ok: true;
   position: number;
-  value: T;
   errors: readonly JsonScanError[];
 }>;
 
@@ -19,7 +20,16 @@ type ScanFailure = Readonly<{
   errors: readonly JsonScanError[];
 }>;
 
-type ScanOutcome<T> = ScanSuccess<T> | ScanFailure;
+type ScanOutcome = ScanSuccess | ScanFailure;
+
+type StringScanSuccess = Readonly<{
+  ok: true;
+  position: number;
+  value: string;
+  errors: readonly JsonScanError[];
+}>;
+
+type StringScanOutcome = StringScanSuccess | ScanFailure;
 
 const ESCAPE_MAP: Readonly<Record<string, string>> = {
   '"': '"',
@@ -35,11 +45,18 @@ const ESCAPE_MAP: Readonly<Record<string, string>> = {
 const NUMBER_PATTERN = /^-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?/;
 const LITERALS = ["true", "false", "null"] as const;
 
-function ok<T>(
+function ok(
   position: number,
-  value: T,
   errors: readonly JsonScanError[] = [],
-): ScanOutcome<T> {
+): ScanOutcome {
+  return { ok: true, position, errors };
+}
+
+function okString(
+  position: number,
+  value: string,
+  errors: readonly JsonScanError[] = [],
+): StringScanOutcome {
   return { ok: true, position, value, errors };
 }
 
@@ -47,17 +64,9 @@ function fail(position: number, errors: readonly JsonScanError[]): ScanFailure {
   return { ok: false, position, errors };
 }
 
-function isWhitespace(ch: string): boolean {
-  return ch === " " || ch === "\t" || ch === "\n" || ch === "\r";
-}
-
-function isDigit(ch: string): boolean {
-  return ch >= "0" && ch <= "9";
-}
-
 function skipWhitespace(text: string, position: number): number {
   let pos = position;
-  while (pos < text.length && isWhitespace(text[pos])) {
+  while (pos < text.length && StringEx.isWhitespace(text[pos])) {
     pos += 1;
   }
   return pos;
@@ -67,7 +76,7 @@ function scanUnicodeEscape(
   text: string,
   uCharPos: number,
   escapePos: number,
-): ScanOutcome<string> {
+): StringScanOutcome {
   const hex = text.slice(uCharPos + 1, uCharPos + 5);
   if (!/^[0-9a-fA-F]{4}$/.test(hex)) {
     return fail(uCharPos, [
@@ -78,13 +87,10 @@ function scanUnicodeEscape(
       },
     ]);
   }
-  return ok(uCharPos + 5, String.fromCharCode(Number.parseInt(hex, 16)));
+  return okString(uCharPos + 5, String.fromCharCode(Number.parseInt(hex, 16)));
 }
 
-function scanEscapeSequence(
-  text: string,
-  position: number,
-): ScanOutcome<string> {
+function scanEscapeSequence(text: string, position: number): StringScanOutcome {
   const escapePos = position;
   const escCharPos = position + 1;
   const esc = text[escCharPos];
@@ -101,10 +107,10 @@ function scanEscapeSequence(
       },
     ]);
   }
-  return ok(escCharPos + 1, mapped);
+  return okString(escCharPos + 1, mapped);
 }
 
-function scanString(text: string, position: number): ScanOutcome<string> {
+function scanString(text: string, position: number): StringScanOutcome {
   const start = position;
   let pos = position + 1;
   let value = "";
@@ -123,7 +129,7 @@ function scanString(text: string, position: number): ScanOutcome<string> {
     }
     const ch = text[pos];
     if (ch === '"') {
-      return ok(pos + 1, value, errors);
+      return okString(pos + 1, value, errors);
     }
     if (ch === "\\") {
       const escapeResult = scanEscapeSequence(text, pos);
@@ -150,14 +156,14 @@ function scanString(text: string, position: number): ScanOutcome<string> {
   }
 }
 
-function scanNumber(text: string, position: number): ScanOutcome<undefined> {
+function scanNumber(text: string, position: number): ScanOutcome {
   const match = NUMBER_PATTERN.exec(text.slice(position));
   if (match === null || match[0].length === 0) {
     return fail(position, [
       { kind: "syntax-error", message: "invalid number", position },
     ]);
   }
-  return ok(position + match[0].length, undefined);
+  return ok(position + match[0].length);
 }
 
 function scanLiteral(text: string, position: number): number | null {
@@ -169,10 +175,10 @@ function scanLiteral(text: string, position: number): number | null {
   return null;
 }
 
-function scanObject(text: string, position: number): ScanOutcome<undefined> {
+function scanObject(text: string, position: number): ScanOutcome {
   let pos = skipWhitespace(text, position + 1);
   if (text[pos] === "}") {
-    return ok(pos + 1, undefined);
+    return ok(pos + 1);
   }
 
   const seenKeys = new Set<string>();
@@ -235,7 +241,7 @@ function scanObject(text: string, position: number): ScanOutcome<undefined> {
       continue;
     }
     if (ch === "}") {
-      return ok(pos + 1, undefined, errors);
+      return ok(pos + 1, errors);
     }
     return fail(pos, [
       ...errors,
@@ -244,10 +250,10 @@ function scanObject(text: string, position: number): ScanOutcome<undefined> {
   }
 }
 
-function scanArray(text: string, position: number): ScanOutcome<undefined> {
+function scanArray(text: string, position: number): ScanOutcome {
   let pos = skipWhitespace(text, position + 1);
   if (text[pos] === "]") {
-    return ok(pos + 1, undefined);
+    return ok(pos + 1);
   }
 
   let errors: readonly JsonScanError[] = [];
@@ -266,7 +272,7 @@ function scanArray(text: string, position: number): ScanOutcome<undefined> {
       continue;
     }
     if (ch === "]") {
-      return ok(pos + 1, undefined, errors);
+      return ok(pos + 1, errors);
     }
     return fail(pos, [
       ...errors,
@@ -275,7 +281,7 @@ function scanArray(text: string, position: number): ScanOutcome<undefined> {
   }
 }
 
-function scanValue(text: string, position: number): ScanOutcome<undefined> {
+function scanValue(text: string, position: number): ScanOutcome {
   const pos = skipWhitespace(text, position);
   if (pos >= text.length) {
     return fail(pos, [
@@ -297,16 +303,16 @@ function scanValue(text: string, position: number): ScanOutcome<undefined> {
   if (ch === '"') {
     const result = scanString(text, pos);
     return result.ok
-      ? ok(result.position, undefined, result.errors)
+      ? ok(result.position, result.errors)
       : fail(result.position, result.errors);
   }
-  if (ch === "-" || isDigit(ch)) {
+  if (ch === "-" || StringEx.isDigit(ch)) {
     return scanNumber(text, pos);
   }
 
   const literalEnd = scanLiteral(text, pos);
   if (literalEnd !== null) {
-    return ok(literalEnd, undefined);
+    return ok(literalEnd);
   }
 
   return fail(pos, [
