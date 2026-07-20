@@ -6,7 +6,20 @@ export type JsonScanError = Readonly<{
   position: number;
 }>;
 
-type Cursor = { pos: number };
+type ScanSuccess<T> = Readonly<{
+  ok: true;
+  position: number;
+  value: T;
+  errors: readonly JsonScanError[];
+}>;
+
+type ScanFailure = Readonly<{
+  ok: false;
+  position: number;
+  errors: readonly JsonScanError[];
+}>;
+
+type ScanOutcome<T> = ScanSuccess<T> | ScanFailure;
 
 const ESCAPE_MAP: Readonly<Record<string, string>> = {
   '"': '"',
@@ -20,6 +33,19 @@ const ESCAPE_MAP: Readonly<Record<string, string>> = {
 };
 
 const NUMBER_PATTERN = /^-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?/;
+const LITERALS = ["true", "false", "null"] as const;
+
+function ok<T>(
+  position: number,
+  value: T,
+  errors: readonly JsonScanError[] = [],
+): ScanOutcome<T> {
+  return { ok: true, position, value, errors };
+}
+
+function fail(position: number, errors: readonly JsonScanError[]): ScanFailure {
+  return { ok: false, position, errors };
+}
 
 function isWhitespace(ch: string): boolean {
   return ch === " " || ch === "\t" || ch === "\n" || ch === "\r";
@@ -29,294 +55,283 @@ function isDigit(ch: string): boolean {
   return ch >= "0" && ch <= "9";
 }
 
-function skipWhitespace(text: string, cursor: Cursor): void {
-  while (cursor.pos < text.length && isWhitespace(text[cursor.pos])) {
-    cursor.pos += 1;
+function skipWhitespace(text: string, position: number): number {
+  let pos = position;
+  while (pos < text.length && isWhitespace(text[pos])) {
+    pos += 1;
   }
+  return pos;
 }
 
 function scanUnicodeEscape(
   text: string,
-  cursor: Cursor,
+  uCharPos: number,
   escapePos: number,
-  errors: JsonScanError[],
-): string | null {
-  const hex = text.slice(cursor.pos + 1, cursor.pos + 5);
+): ScanOutcome<string> {
+  const hex = text.slice(uCharPos + 1, uCharPos + 5);
   if (!/^[0-9a-fA-F]{4}$/.test(hex)) {
-    errors.push({
-      kind: "syntax-error",
-      message: "invalid unicode escape",
-      position: escapePos,
-    });
-    return null;
+    return fail(uCharPos, [
+      {
+        kind: "syntax-error",
+        message: "invalid unicode escape",
+        position: escapePos,
+      },
+    ]);
   }
-  cursor.pos += 5;
-  return String.fromCharCode(Number.parseInt(hex, 16));
+  return ok(uCharPos + 5, String.fromCharCode(Number.parseInt(hex, 16)));
 }
 
 function scanEscapeSequence(
   text: string,
-  cursor: Cursor,
-  errors: JsonScanError[],
-): string | null {
-  const escapePos = cursor.pos;
-  cursor.pos += 1;
-  const esc = text[cursor.pos];
+  position: number,
+): ScanOutcome<string> {
+  const escapePos = position;
+  const escCharPos = position + 1;
+  const esc = text[escCharPos];
   if (esc === "u") {
-    return scanUnicodeEscape(text, cursor, escapePos, errors);
+    return scanUnicodeEscape(text, escCharPos, escapePos);
   }
   const mapped = esc === undefined ? undefined : ESCAPE_MAP[esc];
   if (mapped === undefined) {
-    errors.push({
-      kind: "syntax-error",
-      message: `invalid escape character "\\${esc ?? ""}"`,
-      position: escapePos,
-    });
-    return null;
+    return fail(escCharPos, [
+      {
+        kind: "syntax-error",
+        message: `invalid escape character "\\${esc ?? ""}"`,
+        position: escapePos,
+      },
+    ]);
   }
-  cursor.pos += 1;
-  return mapped;
+  return ok(escCharPos + 1, mapped);
 }
 
-function scanString(
-  text: string,
-  cursor: Cursor,
-  errors: JsonScanError[],
-): string | null {
-  const start = cursor.pos;
-  cursor.pos += 1;
+function scanString(text: string, position: number): ScanOutcome<string> {
+  const start = position;
+  let pos = position + 1;
   let value = "";
+  let errors: readonly JsonScanError[] = [];
+
   while (true) {
-    if (cursor.pos >= text.length) {
-      errors.push({
-        kind: "syntax-error",
-        message: "unterminated string",
-        position: start,
-      });
-      return null;
+    if (pos >= text.length) {
+      return fail(pos, [
+        ...errors,
+        {
+          kind: "syntax-error",
+          message: "unterminated string",
+          position: start,
+        },
+      ]);
     }
-    const ch = text[cursor.pos];
+    const ch = text[pos];
     if (ch === '"') {
-      cursor.pos += 1;
-      return value;
+      return ok(pos + 1, value, errors);
     }
     if (ch === "\\") {
-      const escaped = scanEscapeSequence(text, cursor, errors);
-      if (escaped === null) {
-        return null;
+      const escapeResult = scanEscapeSequence(text, pos);
+      errors = [...errors, ...escapeResult.errors];
+      if (!escapeResult.ok) {
+        return fail(escapeResult.position, errors);
       }
-      value += escaped;
+      value += escapeResult.value;
+      pos = escapeResult.position;
       continue;
     }
     if (ch.charCodeAt(0) < 0x20) {
-      errors.push({
-        kind: "syntax-error",
-        message: "unescaped control character in string",
-        position: cursor.pos,
-      });
-      return null;
+      return fail(pos, [
+        ...errors,
+        {
+          kind: "syntax-error",
+          message: "unescaped control character in string",
+          position: pos,
+        },
+      ]);
     }
     value += ch;
-    cursor.pos += 1;
+    pos += 1;
   }
 }
 
-function scanNumber(
-  text: string,
-  cursor: Cursor,
-  errors: JsonScanError[],
-): boolean {
-  const match = NUMBER_PATTERN.exec(text.slice(cursor.pos));
+function scanNumber(text: string, position: number): ScanOutcome<undefined> {
+  const match = NUMBER_PATTERN.exec(text.slice(position));
   if (match === null || match[0].length === 0) {
-    errors.push({
-      kind: "syntax-error",
-      message: "invalid number",
-      position: cursor.pos,
-    });
-    return false;
+    return fail(position, [
+      { kind: "syntax-error", message: "invalid number", position },
+    ]);
   }
-  cursor.pos += match[0].length;
-  return true;
+  return ok(position + match[0].length, undefined);
 }
 
-function scanLiteral(text: string, cursor: Cursor, literal: string): boolean {
-  if (text.startsWith(literal, cursor.pos)) {
-    cursor.pos += literal.length;
-    return true;
+function scanLiteral(text: string, position: number): number | null {
+  for (const literal of LITERALS) {
+    if (text.startsWith(literal, position)) {
+      return position + literal.length;
+    }
   }
-  return false;
+  return null;
 }
 
-function scanObject(
-  text: string,
-  cursor: Cursor,
-  errors: JsonScanError[],
-): boolean {
-  cursor.pos += 1;
-  skipWhitespace(text, cursor);
-  if (text[cursor.pos] === "}") {
-    cursor.pos += 1;
-    return true;
+function scanObject(text: string, position: number): ScanOutcome<undefined> {
+  let pos = skipWhitespace(text, position + 1);
+  if (text[pos] === "}") {
+    return ok(pos + 1, undefined);
   }
 
   const seenKeys = new Set<string>();
+  let errors: readonly JsonScanError[] = [];
+
   while (true) {
-    skipWhitespace(text, cursor);
-    if (text[cursor.pos] !== '"') {
-      errors.push({
-        kind: "syntax-error",
-        message: "expected string key",
-        position: cursor.pos,
-      });
-      return false;
+    pos = skipWhitespace(text, pos);
+    if (text[pos] !== '"') {
+      return fail(pos, [
+        ...errors,
+        { kind: "syntax-error", message: "expected string key", position: pos },
+      ]);
     }
-    const keyStart = cursor.pos;
-    const key = scanString(text, cursor, errors);
-    if (key === null) {
-      return false;
+
+    const keyStart = pos;
+    const keyResult = scanString(text, pos);
+    errors = [...errors, ...keyResult.errors];
+    if (!keyResult.ok) {
+      return fail(keyResult.position, errors);
     }
-    if (seenKeys.has(key)) {
-      errors.push({
-        kind: "duplicate-key",
-        message: `duplicate key "${key}"`,
-        position: keyStart,
-      });
+    pos = keyResult.position;
+
+    if (seenKeys.has(keyResult.value)) {
+      errors = [
+        ...errors,
+        {
+          kind: "duplicate-key",
+          message: `duplicate key "${keyResult.value}"`,
+          position: keyStart,
+        },
+      ];
     } else {
-      seenKeys.add(key);
+      seenKeys.add(keyResult.value);
     }
 
-    skipWhitespace(text, cursor);
-    if (text[cursor.pos] !== ":") {
-      errors.push({
-        kind: "syntax-error",
-        message: "expected ':' after key",
-        position: cursor.pos,
-      });
-      return false;
+    pos = skipWhitespace(text, pos);
+    if (text[pos] !== ":") {
+      return fail(pos, [
+        ...errors,
+        {
+          kind: "syntax-error",
+          message: "expected ':' after key",
+          position: pos,
+        },
+      ]);
     }
-    cursor.pos += 1;
+    pos += 1;
 
-    if (!scanValue(text, cursor, errors)) {
-      return false;
+    const valueResult = scanValue(text, pos);
+    errors = [...errors, ...valueResult.errors];
+    if (!valueResult.ok) {
+      return fail(valueResult.position, errors);
     }
+    pos = valueResult.position;
 
-    skipWhitespace(text, cursor);
-    const ch = text[cursor.pos];
+    pos = skipWhitespace(text, pos);
+    const ch = text[pos];
     if (ch === ",") {
-      cursor.pos += 1;
+      pos += 1;
       continue;
     }
     if (ch === "}") {
-      cursor.pos += 1;
-      return true;
+      return ok(pos + 1, undefined, errors);
     }
-    errors.push({
-      kind: "syntax-error",
-      message: "expected ',' or '}'",
-      position: cursor.pos,
-    });
-    return false;
+    return fail(pos, [
+      ...errors,
+      { kind: "syntax-error", message: "expected ',' or '}'", position: pos },
+    ]);
   }
 }
 
-function scanArray(
-  text: string,
-  cursor: Cursor,
-  errors: JsonScanError[],
-): boolean {
-  cursor.pos += 1;
-  skipWhitespace(text, cursor);
-  if (text[cursor.pos] === "]") {
-    cursor.pos += 1;
-    return true;
+function scanArray(text: string, position: number): ScanOutcome<undefined> {
+  let pos = skipWhitespace(text, position + 1);
+  if (text[pos] === "]") {
+    return ok(pos + 1, undefined);
   }
 
+  let errors: readonly JsonScanError[] = [];
   while (true) {
-    if (!scanValue(text, cursor, errors)) {
-      return false;
+    const valueResult = scanValue(text, pos);
+    errors = [...errors, ...valueResult.errors];
+    if (!valueResult.ok) {
+      return fail(valueResult.position, errors);
     }
-    skipWhitespace(text, cursor);
-    const ch = text[cursor.pos];
+    pos = valueResult.position;
+
+    pos = skipWhitespace(text, pos);
+    const ch = text[pos];
     if (ch === ",") {
-      cursor.pos += 1;
+      pos += 1;
       continue;
     }
     if (ch === "]") {
-      cursor.pos += 1;
-      return true;
+      return ok(pos + 1, undefined, errors);
     }
-    errors.push({
-      kind: "syntax-error",
-      message: "expected ',' or ']'",
-      position: cursor.pos,
-    });
-    return false;
+    return fail(pos, [
+      ...errors,
+      { kind: "syntax-error", message: "expected ',' or ']'", position: pos },
+    ]);
   }
 }
 
-function scanValue(
-  text: string,
-  cursor: Cursor,
-  errors: JsonScanError[],
-): boolean {
-  skipWhitespace(text, cursor);
-  if (cursor.pos >= text.length) {
-    errors.push({
-      kind: "syntax-error",
-      message: "unexpected end of input",
-      position: cursor.pos,
-    });
-    return false;
+function scanValue(text: string, position: number): ScanOutcome<undefined> {
+  const pos = skipWhitespace(text, position);
+  if (pos >= text.length) {
+    return fail(pos, [
+      {
+        kind: "syntax-error",
+        message: "unexpected end of input",
+        position: pos,
+      },
+    ]);
   }
 
-  const ch = text[cursor.pos];
+  const ch = text[pos];
   if (ch === "{") {
-    return scanObject(text, cursor, errors);
+    return scanObject(text, pos);
   }
   if (ch === "[") {
-    return scanArray(text, cursor, errors);
+    return scanArray(text, pos);
   }
   if (ch === '"') {
-    return scanString(text, cursor, errors) !== null;
+    const result = scanString(text, pos);
+    return result.ok
+      ? ok(result.position, undefined, result.errors)
+      : fail(result.position, result.errors);
   }
   if (ch === "-" || isDigit(ch)) {
-    return scanNumber(text, cursor, errors);
-  }
-  if (scanLiteral(text, cursor, "true")) {
-    return true;
-  }
-  if (scanLiteral(text, cursor, "false")) {
-    return true;
-  }
-  if (scanLiteral(text, cursor, "null")) {
-    return true;
+    return scanNumber(text, pos);
   }
 
-  errors.push({
-    kind: "syntax-error",
-    message: "unexpected token",
-    position: cursor.pos,
-  });
-  return false;
+  const literalEnd = scanLiteral(text, pos);
+  if (literalEnd !== null) {
+    return ok(literalEnd, undefined);
+  }
+
+  return fail(pos, [
+    { kind: "syntax-error", message: "unexpected token", position: pos },
+  ]);
 }
 
 export const JsonLexicalScanner = {
   scan(text: string): readonly JsonScanError[] {
-    const cursor: Cursor = { pos: 0 };
-    const errors: JsonScanError[] = [];
-
-    if (!scanValue(text, cursor, errors)) {
-      return errors;
+    const result = scanValue(text, 0);
+    if (!result.ok) {
+      return result.errors;
     }
 
-    skipWhitespace(text, cursor);
-    if (cursor.pos < text.length) {
-      errors.push({
-        kind: "syntax-error",
-        message: "unexpected trailing content",
-        position: cursor.pos,
-      });
+    const pos = skipWhitespace(text, result.position);
+    if (pos < text.length) {
+      return [
+        ...result.errors,
+        {
+          kind: "syntax-error",
+          message: "unexpected trailing content",
+          position: pos,
+        },
+      ];
     }
-    return errors;
+    return result.errors;
   },
 } as const;
