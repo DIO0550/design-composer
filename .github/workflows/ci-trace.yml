@@ -14,6 +14,7 @@ on:
       - frontend
       - Deploy Storybook (main)
       - Storybook PR Preview
+      - Storybook Visual Regression
     types: [completed]
 
 permissions:
