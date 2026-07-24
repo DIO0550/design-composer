@@ -1,21 +1,18 @@
 import { ComponentSet } from "@/domains/component";
 import type { DesignDocument } from "@/domains/design-document";
-import type { Props, PropValue } from "@/domains/node";
+import type { Props } from "@/domains/node";
 import { Node } from "@/domains/node";
-import type { PropDefinitionRecord } from "@/domains/primitive-schema";
+import type { PropValidationError } from "@/domains/primitive-schema";
 import {
   BOX_SCHEMA,
   PrimitiveSchema,
-  PropDefinition,
+  PropDefinitionRecord,
 } from "@/domains/primitive-schema";
-import { TokenSet } from "@/domains/token";
+import type { TokenSet } from "@/domains/token";
 
 export type SchemaValidationErrorKind =
-  | "unknown-type"
-  | "unknown-prop"
-  | "enum-violation"
-  | "literal-type-mismatch"
-  | "dangling-token";
+  | PropValidationError["kind"]
+  | "unknown-type";
 
 export type SchemaValidationError = Readonly<{
   kind: SchemaValidationErrorKind;
@@ -24,77 +21,11 @@ export type SchemaValidationError = Readonly<{
   message: string;
 }>;
 
-function validatePropValue(
+function toSchemaValidationErrors(
   nodeName: string,
-  propName: string,
-  definition: PropDefinition,
-  value: PropValue,
-  tokens: TokenSet,
+  errors: readonly PropValidationError[],
 ): readonly SchemaValidationError[] {
-  if (PropDefinition.isEnum(definition)) {
-    if (typeof value === "string" && definition.values.includes(value)) {
-      return [];
-    }
-    return [
-      {
-        kind: "enum-violation",
-        nodeName,
-        prop: propName,
-        message: `prop "${propName}" must be one of ${definition.values.join(", ")}`,
-      },
-    ];
-  }
-
-  if (PropDefinition.isLiteral(definition)) {
-    if (typeof value === definition.literalType) {
-      return [];
-    }
-    return [
-      {
-        kind: "literal-type-mismatch",
-        nodeName,
-        prop: propName,
-        message: `prop "${propName}" must be of type ${definition.literalType}`,
-      },
-    ];
-  }
-
-  if (
-    typeof value === "string" &&
-    TokenSet.has(tokens, definition.tokenKind, value)
-  ) {
-    return [];
-  }
-  return [
-    {
-      kind: "dangling-token",
-      nodeName,
-      prop: propName,
-      message: `prop "${propName}" references unknown ${definition.tokenKind} token "${String(value)}"`,
-    },
-  ];
-}
-
-function validatePropsAgainstSchema(
-  nodeName: string,
-  schemaProps: PropDefinitionRecord,
-  props: Props,
-  tokens: TokenSet,
-): readonly SchemaValidationError[] {
-  return Object.entries(props).flatMap(([propName, value]) => {
-    const definition = schemaProps[propName];
-    if (definition === undefined) {
-      return [
-        {
-          kind: "unknown-prop" as const,
-          nodeName,
-          prop: propName,
-          message: `unknown prop "${propName}"`,
-        },
-      ];
-    }
-    return validatePropValue(nodeName, propName, definition, value, tokens);
-  });
+  return errors.map((error) => ({ ...error, nodeName }));
 }
 
 function validateTypedProps(
@@ -113,11 +44,9 @@ function validateTypedProps(
     ];
   }
   const schema = PrimitiveSchema.forType(type);
-  return validatePropsAgainstSchema(
+  return toSchemaValidationErrors(
     nodeName,
-    schema.props,
-    props ?? {},
-    tokens,
+    PropDefinitionRecord.validate(schema.props, props ?? {}, tokens),
   );
 }
 
@@ -157,11 +86,13 @@ export const SchemaValidator = {
     );
 
     const artboardErrors = document.artboards.flatMap((artboard) => [
-      ...validatePropsAgainstSchema(
+      ...toSchemaValidationErrors(
         artboard.name,
-        BOX_SCHEMA.props,
-        artboard.props ?? {},
-        document.tokens,
+        PropDefinitionRecord.validate(
+          BOX_SCHEMA.props,
+          artboard.props ?? {},
+          document.tokens,
+        ),
       ),
       ...artboard.children.flatMap((child) =>
         validateNode(child, document.tokens),
