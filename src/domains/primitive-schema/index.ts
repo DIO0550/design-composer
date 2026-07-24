@@ -1,5 +1,6 @@
-import type { PropValue } from "@/domains/node";
+import type { Props, PropValue } from "@/domains/node";
 import type { TokenKind } from "@/domains/token";
+import { TokenSet } from "@/domains/token";
 
 export const PRIMITIVE_TYPES = ["Box", "Text"] as const;
 export type PrimitiveType = (typeof PRIMITIVE_TYPES)[number];
@@ -40,6 +41,18 @@ export type PropDefinition =
 
 export type PropDefinitionRecord = Readonly<Record<string, PropDefinition>>;
 
+export type PropValidationErrorKind =
+  | "unknown-prop"
+  | "enum-violation"
+  | "literal-type-mismatch"
+  | "dangling-token";
+
+export type PropValidationError = Readonly<{
+  kind: PropValidationErrorKind;
+  prop: string;
+  message: string;
+}>;
+
 export const PropDefinition = {
   isEnum(definition: PropDefinition): definition is EnumPropDefinition {
     return definition.domain === "enum";
@@ -62,11 +75,78 @@ export const PropDefinition = {
     }
     return props[definition.enabledWhen.prop] === definition.enabledWhen.equals;
   },
+
+  validate(
+    definition: PropDefinition,
+    propName: string,
+    value: PropValue,
+    tokens: TokenSet,
+  ): readonly PropValidationError[] {
+    if (PropDefinition.isEnum(definition)) {
+      if (typeof value === "string" && definition.values.includes(value)) {
+        return [];
+      }
+      return [
+        {
+          kind: "enum-violation",
+          prop: propName,
+          message: `prop "${propName}" must be one of ${definition.values.join(", ")}`,
+        },
+      ];
+    }
+
+    if (PropDefinition.isLiteral(definition)) {
+      if (typeof value === definition.literalType) {
+        return [];
+      }
+      return [
+        {
+          kind: "literal-type-mismatch",
+          prop: propName,
+          message: `prop "${propName}" must be of type ${definition.literalType}`,
+        },
+      ];
+    }
+
+    if (
+      typeof value === "string" &&
+      TokenSet.has(tokens, definition.tokenKind, value)
+    ) {
+      return [];
+    }
+    return [
+      {
+        kind: "dangling-token",
+        prop: propName,
+        message: `prop "${propName}" references unknown ${definition.tokenKind} token "${String(value)}"`,
+      },
+    ];
+  },
 } as const;
 
 export const PropDefinitionRecord = {
   propNames(schema: PropDefinitionRecord): readonly string[] {
     return Object.keys(schema);
+  },
+
+  validate(
+    schema: PropDefinitionRecord,
+    props: Props,
+    tokens: TokenSet,
+  ): readonly PropValidationError[] {
+    return Object.entries(props).flatMap(([propName, value]) => {
+      const definition = schema[propName];
+      if (definition === undefined) {
+        return [
+          {
+            kind: "unknown-prop" as const,
+            prop: propName,
+            message: `unknown prop "${propName}"`,
+          },
+        ];
+      }
+      return PropDefinition.validate(definition, propName, value, tokens);
+    });
   },
 } as const;
 
