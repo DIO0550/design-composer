@@ -80,9 +80,9 @@ test("ネストした部品参照を持つ ref ノードを解除すると子孫
     type: "Box",
     children: [
       {
-        name: "card-field",
+        name: "card-field-2",
         type: "Box",
-        children: [{ name: "text-field-value", type: "Text" }],
+        children: [{ name: "text-field-value-2", type: "Text" }],
       },
     ],
   });
