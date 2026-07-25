@@ -40,26 +40,42 @@ function applyBindingValue(node: Node, prop: string, value: PropValue): Node {
   return { ...node, props: { ...node.props, [prop]: value } };
 }
 
+type ComponentBody = Readonly<{
+  props?: Props;
+  children: readonly Node[];
+}>;
+
+/**
+ * overrides を publicProps の binding に従って部品の中身へ適用する。
+ * binding 先は部品のルート（`rootName`）と内部ノードの両方を取り得る。
+ */
 function applyOverrides(
-  children: readonly Node[],
+  rootName: string,
+  body: ComponentBody,
   overrides: Props,
   publicProps: PublicProps | undefined,
-): readonly Node[] {
+): ComponentBody {
   if (publicProps === undefined) {
-    return children;
+    return body;
   }
-  return Object.entries(overrides).reduce(
-    (currentChildren, [propName, value]) => {
-      const binding = publicProps[propName];
-      if (binding === undefined) {
-        return currentChildren;
-      }
-      return updateNodeByName(currentChildren, binding.node, (target) =>
+  return Object.entries(overrides).reduce((current, [propName, value]) => {
+    const binding = publicProps[propName];
+    if (binding === undefined) {
+      return current;
+    }
+    if (binding.node === rootName) {
+      return {
+        props: { ...current.props, [binding.prop]: value },
+        children: current.children,
+      };
+    }
+    return {
+      props: current.props,
+      children: updateNodeByName(current.children, binding.node, (target) =>
         applyBindingValue(target, binding.prop, value),
-      );
-    },
-    children,
-  );
+      ),
+    };
+  }, body);
 }
 
 function expandNode(
@@ -92,17 +108,18 @@ function expandNode(
     return Result.err(new Error(`component "${node.ref}" not found`));
   }
   const overridden = applyOverrides(
-    component.children ?? [],
+    node.ref,
+    { props: component.props, children: component.children ?? [] },
     node.overrides ?? {},
     component.publicProps,
   );
   const nextExpanding = new Set(expanding).add(node.ref);
   return Result.map(
-    expandNodes(overridden, components, nextExpanding),
+    expandNodes(overridden.children, components, nextExpanding),
     (children) => ({
       name: node.name,
       type: component.type,
-      props: component.props,
+      props: overridden.props,
       children,
     }),
   );

@@ -1,3 +1,5 @@
+import { Option } from "@/utils/Option";
+
 export type PropValue = string | number | boolean;
 export type Props = Readonly<Record<string, PropValue>>;
 
@@ -31,6 +33,26 @@ export const Node = {
 
   collectNames(node: Node): readonly string[] {
     return [node.name, ...Node.children(node).flatMap(Node.collectNames)];
+  },
+
+  collectRefs(node: Node): readonly string[] {
+    if (Node.isRef(node)) {
+      return [node.ref];
+    }
+    return Node.children(node).flatMap(Node.collectRefs);
+  },
+
+  find(node: Node, name: string): Option<Node> {
+    if (node.name === name) {
+      return Option.some(node);
+    }
+    for (const child of Node.children(node)) {
+      const found = Node.find(child, name);
+      if (found.some) {
+        return found;
+      }
+    }
+    return Option.none;
   },
 
   rename(node: Node, renameMap: Readonly<Record<string, string>>): Node {

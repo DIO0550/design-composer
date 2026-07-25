@@ -1,14 +1,19 @@
 import type { Artboard } from "@/domains/artboard";
-import { type Component, ComponentSet } from "@/domains/component";
+import {
+  Component,
+  ComponentSet,
+  type PublicPropBinding,
+} from "@/domains/component";
 import {
   FormatVersion,
   type FormatVersionCompatibility,
 } from "@/domains/format-version";
-import { Node, type Props, type RefNode } from "@/domains/node";
+import { Node, type Props, type PropValue, type RefNode } from "@/domains/node";
 import type { PropValidationError } from "@/domains/primitive-schema";
 import {
   BOX_SCHEMA,
   PrimitiveSchema,
+  PropDefinition,
   PropDefinitionRecord,
 } from "@/domains/primitive-schema";
 import { TokenSet } from "@/domains/token";
@@ -25,7 +30,12 @@ export type DesignDocument = Readonly<{
 
 export type DesignDocumentValidationErrorKind =
   | PropValidationError["kind"]
-  | "unknown-type";
+  | "unknown-type"
+  | "dangling-ref"
+  | "circular-ref"
+  | "undeclared-override"
+  | "dangling-binding-node"
+  | "dangling-binding-prop";
 
 export type DesignDocumentValidationError = Readonly<{
   kind: DesignDocumentValidationErrorKind;
@@ -208,6 +218,202 @@ function validateNode(
     ...validateTypedProps(node.name, node.type, node.props, tokens),
     ...Node.children(node).flatMap((child) => validateNode(child, tokens)),
   ];
+}
+
+/**
+ * binding が最終的に指すプリミティブ prop の定義を解決する。
+ * binding 先が ref ノードの場合は参照先部品の publicProps を辿る（インターフェースの連鎖）。
+ * 解決できない場合は binding 自体が不整合であり、binding 検証側で報告される。
+ */
+function resolvePropDefinition(
+  components: ComponentSet,
+  componentName: string,
+  binding: PublicPropBinding,
+  visited: ReadonlySet<string>,
+): Option<PropDefinition> {
+  const component = ComponentSet.get(components, componentName);
+  if (component === undefined) {
+    return Option.none;
+  }
+  const found = Component.findNode(component, componentName, binding.node);
+  if (!found.some) {
+    return Option.none;
+  }
+  const target = found.value;
+  if (Node.isPrimitive(target)) {
+    if (!PrimitiveSchema.isPrimitiveType(target.type)) {
+      return Option.none;
+    }
+    const schema: PrimitiveSchema = PrimitiveSchema.forType(target.type);
+    return Option.fromNullable(schema.props[binding.prop]);
+  }
+  if (visited.has(target.ref)) {
+    return Option.none;
+  }
+  const nested = ComponentSet.get(components, target.ref);
+  if (nested === undefined) {
+    return Option.none;
+  }
+  const nestedBinding = Component.binding(nested, binding.prop);
+  if (!nestedBinding.some) {
+    return Option.none;
+  }
+  return resolvePropDefinition(
+    components,
+    target.ref,
+    nestedBinding.value,
+    new Set(visited).add(target.ref),
+  );
+}
+
+function validateOverride(
+  refNode: RefNode,
+  component: Component,
+  components: ComponentSet,
+  propName: string,
+  value: PropValue,
+  tokens: TokenSet,
+): readonly DesignDocumentValidationError[] {
+  const binding = Component.binding(component, propName);
+  if (!binding.some) {
+    return [
+      {
+        kind: "undeclared-override",
+        nodeName: refNode.name,
+        prop: propName,
+        message: `component "${refNode.ref}" does not declare public prop "${propName}"`,
+      },
+    ];
+  }
+  const definition = resolvePropDefinition(
+    components,
+    refNode.ref,
+    binding.value,
+    new Set([refNode.ref]),
+  );
+  if (!definition.some) {
+    return [];
+  }
+  return toValidationErrors(
+    refNode.name,
+    PropDefinition.validate(definition.value, propName, value, tokens),
+  );
+}
+
+function validateRefNode(
+  refNode: RefNode,
+  components: ComponentSet,
+  tokens: TokenSet,
+): readonly DesignDocumentValidationError[] {
+  const component = ComponentSet.get(components, refNode.ref);
+  if (component === undefined) {
+    return [
+      {
+        kind: "dangling-ref",
+        nodeName: refNode.name,
+        message: `unknown component "${refNode.ref}"`,
+      },
+    ];
+  }
+  return Object.entries(refNode.overrides ?? {}).flatMap(([propName, value]) =>
+    validateOverride(refNode, component, components, propName, value, tokens),
+  );
+}
+
+function validateNodeRefs(
+  node: Node,
+  components: ComponentSet,
+  tokens: TokenSet,
+): readonly DesignDocumentValidationError[] {
+  if (Node.isRef(node)) {
+    return validateRefNode(node, components, tokens);
+  }
+  return Node.children(node).flatMap((child) =>
+    validateNodeRefs(child, components, tokens),
+  );
+}
+
+function validateBindingTarget(
+  componentName: string,
+  publicPropName: string,
+  binding: PublicPropBinding,
+  target: Node,
+  components: ComponentSet,
+): readonly DesignDocumentValidationError[] {
+  if (Node.isRef(target)) {
+    const nested = ComponentSet.get(components, target.ref);
+    if (nested === undefined || Component.isPublicProp(nested, binding.prop)) {
+      return [];
+    }
+    return [
+      {
+        kind: "dangling-binding-prop",
+        nodeName: componentName,
+        prop: publicPropName,
+        message: `public prop "${publicPropName}" binds to "${binding.prop}", which component "${target.ref}" does not declare as a public prop`,
+      },
+    ];
+  }
+  if (!PrimitiveSchema.isPrimitiveType(target.type)) {
+    return [];
+  }
+  const schema: PrimitiveSchema = PrimitiveSchema.forType(target.type);
+  if (binding.prop in schema.props) {
+    return [];
+  }
+  return [
+    {
+      kind: "dangling-binding-prop",
+      nodeName: componentName,
+      prop: publicPropName,
+      message: `public prop "${publicPropName}" binds to unknown prop "${binding.prop}" of node "${binding.node}"`,
+    },
+  ];
+}
+
+function validateBindings(
+  componentName: string,
+  component: Component,
+  components: ComponentSet,
+): readonly DesignDocumentValidationError[] {
+  return Component.publicPropNames(component).flatMap((publicPropName) => {
+    const binding = Component.binding(component, publicPropName);
+    if (!binding.some) {
+      return [];
+    }
+    const found = Component.findNode(
+      component,
+      componentName,
+      binding.value.node,
+    );
+    if (!found.some) {
+      return [
+        {
+          kind: "dangling-binding-node" as const,
+          nodeName: componentName,
+          prop: publicPropName,
+          message: `public prop "${publicPropName}" binds to unknown node "${binding.value.node}"`,
+        },
+      ];
+    }
+    return validateBindingTarget(
+      componentName,
+      publicPropName,
+      binding.value,
+      found.value,
+      components,
+    );
+  });
+}
+
+function validateCircularRefs(
+  components: ComponentSet,
+): readonly DesignDocumentValidationError[] {
+  return ComponentSet.circularNames(components).map((name) => ({
+    kind: "circular-ref" as const,
+    nodeName: name,
+    message: `component "${name}" is part of a circular reference`,
+  }));
 }
 
 function toComponent(node: Node): Component {
@@ -468,6 +674,10 @@ export const DesignDocument = {
           ...(component.children ?? []).flatMap((child) =>
             validateNode(child, document.tokens),
           ),
+          ...validateBindings(name, component, document.components),
+          ...(component.children ?? []).flatMap((child) =>
+            validateNodeRefs(child, document.components, document.tokens),
+          ),
         ];
       },
     );
@@ -484,8 +694,15 @@ export const DesignDocument = {
       ...artboard.children.flatMap((child) =>
         validateNode(child, document.tokens),
       ),
+      ...artboard.children.flatMap((child) =>
+        validateNodeRefs(child, document.components, document.tokens),
+      ),
     ]);
 
-    return [...componentErrors, ...artboardErrors];
+    return [
+      ...componentErrors,
+      ...artboardErrors,
+      ...validateCircularRefs(document.components),
+    ];
   },
 } as const;
