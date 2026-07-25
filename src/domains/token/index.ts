@@ -17,6 +17,26 @@ export type TypographyToken = Readonly<{
   fontFamily?: string;
 }>;
 
+/**
+ * フィールドの走査に使う実行時のリスト。`TypographyField` はここから導出し、
+ * フィールドを二重管理しない。`satisfies` で TypographyToken に無いフィールドが
+ * 混ざらないことを、網羅は `__tests__/token.type.test.ts` の型テストで担保する。
+ */
+const TYPOGRAPHY_FIELDS = [
+  "fontSize",
+  "lineHeight",
+  "fontWeight",
+  "fontFamily",
+] as const satisfies readonly (keyof Required<TypographyToken>)[];
+
+export type TypographyField = (typeof TYPOGRAPHY_FIELDS)[number];
+
+export const TypographyToken = {
+  fields(): readonly TypographyField[] {
+    return TYPOGRAPHY_FIELDS;
+  },
+} as const;
+
 export type TokenSet = Readonly<{
   colors: Readonly<Record<string, ColorToken>>;
   spacing: Readonly<Record<string, SpacingToken>>;

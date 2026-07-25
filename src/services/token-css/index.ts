@@ -2,7 +2,8 @@ import {
   type ShadowToken,
   type TokenKind,
   TokenSet,
-  type TypographyToken,
+  type TypographyField,
+  TypographyToken,
 } from "@/domains/token";
 
 /**
@@ -12,32 +13,30 @@ import {
 export type CssVariables = Readonly<Record<string, string>>;
 
 /**
- * 1トークンが1つの CSS 値に対応する種別。
- * typography だけは複数の CSS プロパティへ展開されるため単一の変数名を持てず、
+ * 1トークンが1つのカスタムプロパティで表せる種別。
+ * shadows はドメイン上は複合トークンだが `box-shadow` の1値へ合成できるため含む。
+ * typography だけは別々の CSS プロパティへ展開されるため単一の変数名を持てず、
  * この型から除外することで `variableName` の誤用を型で防ぐ。
+ * (ドメインの scalar / 複合の区別ではなく CSS への出力単位による区別なので、
+ *  token ドメインではなくこのモジュールが持つ)
  */
-export type SingleValueTokenKind = Exclude<TokenKind, "typography">;
+export type SingleVariableTokenKind = Exclude<TokenKind, "typography">;
 
 /**
- * typography トークンのフィールドと展開先 CSS プロパティ名の対応。
- * `satisfies` で TypographyToken に無いフィールドが混ざらないことを、
- * フィールドの網羅は `__tests__/token-css.type.test.ts` の型テストで担保する。
+ * typography トークンのフィールドを、展開先の CSS プロパティ名へ対応付ける。
+ * フィールドの列挙自体は token ドメイン(`TypographyField`)が持ち、ここは
+ * 「どの CSS プロパティになるか」だけを持つ。`satisfies` により、
+ * ドメインにフィールドが増えたらこの対応表もコンパイルエラーで漏れが分かる。
  */
-const TYPOGRAPHY_CSS_PROPERTIES = [
-  { field: "fontSize", property: "font-size" },
-  { field: "lineHeight", property: "line-height" },
-  { field: "fontWeight", property: "font-weight" },
-  { field: "fontFamily", property: "font-family" },
-] as const satisfies readonly {
-  readonly field: keyof Required<TypographyToken>;
-  readonly property: string;
-}[];
-
-export type TypographyCssField =
-  (typeof TYPOGRAPHY_CSS_PROPERTIES)[number]["field"];
+const TYPOGRAPHY_CSS_PROPERTIES = {
+  fontSize: "font-size",
+  lineHeight: "line-height",
+  fontWeight: "font-weight",
+  fontFamily: "font-family",
+} as const satisfies Readonly<Record<TypographyField, string>>;
 
 export type TypographyCssProperty =
-  (typeof TYPOGRAPHY_CSS_PROPERTIES)[number]["property"];
+  (typeof TYPOGRAPHY_CSS_PROPERTIES)[TypographyField];
 
 /**
  * fontFamily 省略時に用いるシステムフォントスタック(docs/04-tokens.md)。
@@ -62,7 +61,7 @@ function shadowValue(shadow: ShadowToken): string {
 
 function typographyValue(
   token: TypographyToken,
-  field: TypographyCssField,
+  field: TypographyField,
 ): string {
   switch (field) {
     case "fontSize":
@@ -101,9 +100,12 @@ function entriesOfKind(
       ]);
     case "typography":
       return Object.entries(tokens.typography).flatMap(([name, token]) =>
-        TYPOGRAPHY_CSS_PROPERTIES.map(
-          ({ field, property }): CssVariableEntry => [
-            TokenCss.typographyVariableName(name, property),
+        TypographyToken.fields().map(
+          (field): CssVariableEntry => [
+            TokenCss.typographyVariableName(
+              name,
+              TYPOGRAPHY_CSS_PROPERTIES[field],
+            ),
             typographyValue(token, field),
           ],
         ),
@@ -112,11 +114,11 @@ function entriesOfKind(
 }
 
 export const TokenCss = {
-  variableName(kind: SingleValueTokenKind, name: string): string {
+  variableName(kind: SingleVariableTokenKind, name: string): string {
     return `--${kind}-${name}`;
   },
 
-  ref(kind: SingleValueTokenKind, name: string): string {
+  ref(kind: SingleVariableTokenKind, name: string): string {
     return `var(${TokenCss.variableName(kind, name)})`;
   },
 

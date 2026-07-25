@@ -1,19 +1,13 @@
 import { expectTypeOf, test } from "vitest";
-import type { TokenKind, TypographyToken } from "@/domains/token";
+import type { TokenKind, TypographyField } from "@/domains/token";
 import type {
-  SingleValueTokenKind,
+  SingleVariableTokenKind,
   TokenCss,
-  TypographyCssField,
+  TypographyCssProperty,
 } from "../index";
 
-test("CSS プロパティへ展開する typography のフィールドは TypographyToken の全フィールドを網羅する", () => {
-  expectTypeOf<TypographyCssField>().toEqualTypeOf<
-    keyof Required<TypographyToken>
-  >();
-});
-
-test("単一の CSS 値を持つ種別は typography 以外の全種別になる", () => {
-  expectTypeOf<SingleValueTokenKind>().toEqualTypeOf<
+test("単一のカスタムプロパティで表せる種別は typography 以外の全種別になる", () => {
+  expectTypeOf<SingleVariableTokenKind>().toEqualTypeOf<
     Exclude<TokenKind, "typography">
   >();
 });
@@ -23,4 +17,13 @@ test("複数の宣言へ展開される typography は単一の変数名を要�
 
   expectTypeOf<"typography">().not.toExtend<VariableNameKind>();
   expectTypeOf<"colors">().toExtend<VariableNameKind>();
+});
+
+test("typography のフィールドはすべて CSS プロパティ名へ対応付けられる", () => {
+  expectTypeOf<TypographyCssProperty>().toEqualTypeOf<
+    "font-size" | "line-height" | "font-weight" | "font-family"
+  >();
+  expectTypeOf<TypographyField>().toEqualTypeOf<
+    "fontSize" | "lineHeight" | "fontWeight" | "fontFamily"
+  >();
 });
