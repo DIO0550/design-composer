@@ -1,5 +1,9 @@
 import type { Artboard } from "@/domains/artboard";
-import { type Component, ComponentSet } from "@/domains/component";
+import {
+  Component,
+  ComponentSet,
+  type PublicPropBinding,
+} from "@/domains/component";
 import {
   FormatVersion,
   type FormatVersionCompatibility,
@@ -9,6 +13,7 @@ import type { PropValidationError } from "@/domains/primitive-schema";
 import {
   BOX_SCHEMA,
   PrimitiveSchema,
+  PropDefinition,
   PropDefinitionRecord,
 } from "@/domains/primitive-schema";
 import { TokenSet } from "@/domains/token";
@@ -25,7 +30,12 @@ export type DesignDocument = Readonly<{
 
 export type DesignDocumentValidationErrorKind =
   | PropValidationError["kind"]
-  | "unknown-type";
+  | "unknown-type"
+  | "dangling-ref"
+  | "circular-ref"
+  | "undeclared-override"
+  | "dangling-binding-node"
+  | "dangling-binding-prop";
 
 export type DesignDocumentValidationError = Readonly<{
   kind: DesignDocumentValidationErrorKind;
@@ -168,46 +178,301 @@ function updateSiblingsOfArtboards(
   return { artboards: updated, found };
 }
 
-function toValidationErrors(
-  nodeName: string,
-  errors: readonly PropValidationError[],
+/**
+ * 発生位置（nodeName / prop）を持たないエラー。
+ * 位置は検出側ではなく、その位置を知っている呼び出し側で付与する。
+ */
+type UnlocatedError = Readonly<{
+  kind: DesignDocumentValidationErrorKind;
+  prop?: string;
+  message: string;
+}>;
+
+/** エラーの発生位置。 */
+type ErrorLocation = Readonly<{
+  nodeName: string;
+  prop?: string;
+}>;
+
+/** 位置を持たないエラーに発生位置を付与し、報告用のエラーに変換する。 */
+function withLocation(
+  location: ErrorLocation,
+  errors: readonly UnlocatedError[],
 ): readonly DesignDocumentValidationError[] {
-  return errors.map((error) => ({ ...error, nodeName }));
+  return errors.map((error) => {
+    const prop = error.prop ?? location.prop;
+    return {
+      kind: error.kind,
+      nodeName: location.nodeName,
+      ...(prop !== undefined ? { prop } : {}),
+      message: error.message,
+    };
+  });
 }
 
-function validateTypedProps(
-  nodeName: string,
+function collectTypedPropErrors(
   type: string,
   props: Props | undefined,
   tokens: TokenSet,
-): readonly DesignDocumentValidationError[] {
+): readonly UnlocatedError[] {
   if (!PrimitiveSchema.isPrimitiveType(type)) {
-    return [
-      {
-        kind: "unknown-type",
-        nodeName,
-        message: `unknown type "${type}"`,
-      },
-    ];
+    return [{ kind: "unknown-type", message: `unknown type "${type}"` }];
   }
   const schema = PrimitiveSchema.forType(type);
-  return toValidationErrors(
-    nodeName,
-    PropDefinitionRecord.validate(schema.props, props ?? {}, tokens),
-  );
+  return PropDefinitionRecord.collectErrors(schema.props, props ?? {}, tokens);
 }
 
-function validateNode(
+function collectNodeErrors(
   node: Node,
   tokens: TokenSet,
 ): readonly DesignDocumentValidationError[] {
   if (Node.isRef(node)) {
     return [];
   }
+  const ownErrors = withLocation(
+    { nodeName: node.name },
+    collectTypedPropErrors(node.type, node.props, tokens),
+  );
+  const childErrors = Node.children(node).flatMap((child) =>
+    collectNodeErrors(child, tokens),
+  );
+  return [...ownErrors, ...childErrors];
+}
+
+/** 参照検証が横断的に必要とする、ドキュメント全体の文脈。 */
+type ReferenceContext = Readonly<{
+  components: ComponentSet;
+  tokens: TokenSet;
+}>;
+
+/**
+ * binding が最終的に指すプリミティブ prop の定義を解決する。
+ * binding 先が ref ノードの場合は参照先部品の publicProps を辿る（インターフェースの連鎖）。
+ * 解決できない場合は binding 自体が不整合であり、binding 検証側で報告される。
+ */
+function resolvePropDefinition(
+  context: ReferenceContext,
+  componentName: string,
+  binding: PublicPropBinding,
+  visited: ReadonlySet<string>,
+): Option<PropDefinition> {
+  const component = ComponentSet.get(context.components, componentName);
+  if (component === undefined) {
+    return Option.none;
+  }
+  const found = Component.findNode(component, componentName, binding.node);
+  if (!found.some) {
+    return Option.none;
+  }
+  const target = found.value;
+  if (Node.isPrimitive(target)) {
+    if (!PrimitiveSchema.isPrimitiveType(target.type)) {
+      return Option.none;
+    }
+    const schema: PrimitiveSchema = PrimitiveSchema.forType(target.type);
+    return Option.fromNullable(schema.props[binding.prop]);
+  }
+  if (visited.has(target.ref)) {
+    return Option.none;
+  }
+  const nested = ComponentSet.get(context.components, target.ref);
+  if (nested === undefined) {
+    return Option.none;
+  }
+  const nestedBinding = Component.binding(nested, binding.prop);
+  if (!nestedBinding.some) {
+    return Option.none;
+  }
+  return resolvePropDefinition(
+    context,
+    target.ref,
+    nestedBinding.value,
+    new Set(visited).add(target.ref),
+  );
+}
+
+function collectOverrideErrors(
+  context: ReferenceContext,
+  refNode: RefNode,
+  component: Component,
+): readonly UnlocatedError[] {
+  return Object.entries(refNode.overrides ?? {}).flatMap(
+    ([propName, value]): readonly UnlocatedError[] => {
+      const binding = Component.binding(component, propName);
+      if (!binding.some) {
+        return [
+          {
+            kind: "undeclared-override" as const,
+            prop: propName,
+            message: `component "${refNode.ref}" does not declare public prop "${propName}"`,
+          },
+        ];
+      }
+      const definition = resolvePropDefinition(
+        context,
+        refNode.ref,
+        binding.value,
+        new Set([refNode.ref]),
+      );
+      if (!definition.some) {
+        return [];
+      }
+      return PropDefinition.collectErrors(
+        definition.value,
+        propName,
+        value,
+        context.tokens,
+      );
+    },
+  );
+}
+
+function collectRefNodeErrors(
+  context: ReferenceContext,
+  refNode: RefNode,
+): readonly UnlocatedError[] {
+  const component = ComponentSet.get(context.components, refNode.ref);
+  if (component === undefined) {
+    return [
+      {
+        kind: "dangling-ref",
+        message: `unknown component "${refNode.ref}"`,
+      },
+    ];
+  }
+  return collectOverrideErrors(context, refNode, component);
+}
+
+function collectNodeRefErrors(
+  context: ReferenceContext,
+  node: Node,
+): readonly DesignDocumentValidationError[] {
+  if (Node.isRef(node)) {
+    return withLocation(
+      { nodeName: node.name },
+      collectRefNodeErrors(context, node),
+    );
+  }
+  return Node.children(node).flatMap((child) =>
+    collectNodeRefErrors(context, child),
+  );
+}
+
+function collectBindingTargetErrors(
+  context: ReferenceContext,
+  binding: PublicPropBinding,
+  target: Node,
+): readonly UnlocatedError[] {
+  if (Node.isRef(target)) {
+    const nested = ComponentSet.get(context.components, target.ref);
+    if (nested === undefined || Component.isPublicProp(nested, binding.prop)) {
+      return [];
+    }
+    return [
+      {
+        kind: "dangling-binding-prop",
+        message: `"${binding.prop}" is not a public prop of component "${target.ref}"`,
+      },
+    ];
+  }
+  if (!PrimitiveSchema.isPrimitiveType(target.type)) {
+    return [];
+  }
+  const schema: PrimitiveSchema = PrimitiveSchema.forType(target.type);
+  if (binding.prop in schema.props) {
+    return [];
+  }
   return [
-    ...validateTypedProps(node.name, node.type, node.props, tokens),
-    ...Node.children(node).flatMap((child) => validateNode(child, tokens)),
+    {
+      kind: "dangling-binding-prop",
+      message: `node "${binding.node}" has no prop "${binding.prop}"`,
+    },
   ];
+}
+
+function collectBindingErrors(
+  context: ReferenceContext,
+  componentName: string,
+  component: Component,
+): readonly DesignDocumentValidationError[] {
+  return Component.publicPropNames(component).flatMap((publicPropName) => {
+    const binding = Component.binding(component, publicPropName);
+    if (!binding.some) {
+      return [];
+    }
+    const location: ErrorLocation = {
+      nodeName: componentName,
+      prop: publicPropName,
+    };
+    const found = Component.findNode(
+      component,
+      componentName,
+      binding.value.node,
+    );
+    if (!found.some) {
+      return withLocation(location, [
+        {
+          kind: "dangling-binding-node",
+          message: `unknown node "${binding.value.node}"`,
+        },
+      ]);
+    }
+    return withLocation(
+      location,
+      collectBindingTargetErrors(context, binding.value, found.value),
+    );
+  });
+}
+
+function collectCircularRefErrors(
+  components: ComponentSet,
+): readonly DesignDocumentValidationError[] {
+  return ComponentSet.circularNames(components).map((name) => ({
+    kind: "circular-ref" as const,
+    nodeName: name,
+    message: `component "${name}" is part of a circular reference`,
+  }));
+}
+
+function collectComponentErrors(
+  context: ReferenceContext,
+  name: string,
+  component: Component,
+): readonly DesignDocumentValidationError[] {
+  const children = component.children ?? [];
+  const propErrors = withLocation(
+    { nodeName: name },
+    collectTypedPropErrors(component.type, component.props, context.tokens),
+  );
+  const childErrors = children.flatMap((child) =>
+    collectNodeErrors(child, context.tokens),
+  );
+  const bindingErrors = collectBindingErrors(context, name, component);
+  const refErrors = children.flatMap((child) =>
+    collectNodeRefErrors(context, child),
+  );
+  return [...propErrors, ...childErrors, ...bindingErrors, ...refErrors];
+}
+
+function collectArtboardErrors(
+  context: ReferenceContext,
+  artboard: Artboard,
+): readonly DesignDocumentValidationError[] {
+  const propErrors = withLocation(
+    { nodeName: artboard.name },
+    PropDefinitionRecord.collectErrors(
+      BOX_SCHEMA.props,
+      artboard.props ?? {},
+      context.tokens,
+    ),
+  );
+  const childErrors = artboard.children.flatMap((child) =>
+    collectNodeErrors(child, context.tokens),
+  );
+  const refErrors = artboard.children.flatMap((child) =>
+    collectNodeRefErrors(context, child),
+  );
+  return [...propErrors, ...childErrors, ...refErrors];
 }
 
 function toComponent(node: Node): Component {
@@ -451,41 +716,28 @@ export const DesignDocument = {
     };
   },
 
-  validate(document: DesignDocument): readonly DesignDocumentValidationError[] {
+  collectErrors(
+    document: DesignDocument,
+  ): readonly DesignDocumentValidationError[] {
+    const context: ReferenceContext = {
+      components: document.components,
+      tokens: document.tokens,
+    };
+
     const componentErrors = ComponentSet.names(document.components).flatMap(
       (name) => {
         const component = ComponentSet.get(document.components, name);
         if (component === undefined) {
           return [];
         }
-        return [
-          ...validateTypedProps(
-            name,
-            component.type,
-            component.props,
-            document.tokens,
-          ),
-          ...(component.children ?? []).flatMap((child) =>
-            validateNode(child, document.tokens),
-          ),
-        ];
+        return collectComponentErrors(context, name, component);
       },
     );
+    const artboardErrors = document.artboards.flatMap((artboard) =>
+      collectArtboardErrors(context, artboard),
+    );
+    const circularErrors = collectCircularRefErrors(document.components);
 
-    const artboardErrors = document.artboards.flatMap((artboard) => [
-      ...toValidationErrors(
-        artboard.name,
-        PropDefinitionRecord.validate(
-          BOX_SCHEMA.props,
-          artboard.props ?? {},
-          document.tokens,
-        ),
-      ),
-      ...artboard.children.flatMap((child) =>
-        validateNode(child, document.tokens),
-      ),
-    ]);
-
-    return [...componentErrors, ...artboardErrors];
+    return [...componentErrors, ...artboardErrors, ...circularErrors];
   },
 } as const;

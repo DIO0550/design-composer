@@ -35,7 +35,7 @@ test("すべての props がスキーマに適合するドキュメントはエ�
     ],
   });
 
-  expect(DesignDocument.validate(document)).toEqual([]);
+  expect(DesignDocument.collectErrors(document)).toEqual([]);
 });
 
 test("props を指定しないノードはデフォルト値が省略されているだけなのでエラーにならない", () => {
@@ -50,10 +50,10 @@ test("props を指定しないノードはデフォルト値が省略されて�
     ],
   });
 
-  expect(DesignDocument.validate(document)).toEqual([]);
+  expect(DesignDocument.collectErrors(document)).toEqual([]);
 });
 
-test("ref ノードはスキーマ検証の対象外になる", () => {
+test("ref ノードはプリミティブとしてのスキーマ検証を受けない", () => {
   const document = DesignDocument.create({
     components: { button: { type: "Box" } },
     artboards: [
@@ -61,14 +61,12 @@ test("ref ノードはスキーマ検証の対象外になる", () => {
         name: "screen",
         width: 375,
         height: 812,
-        children: [
-          { name: "instance", ref: "button", overrides: { anything: "goes" } },
-        ],
+        children: [{ name: "instance", ref: "button" }],
       },
     ],
   });
 
-  expect(DesignDocument.validate(document)).toEqual([]);
+  expect(DesignDocument.collectErrors(document)).toEqual([]);
 });
 
 test("複数の違反がある場合、最初の1件で止まらず全件報告される", () => {
@@ -86,7 +84,7 @@ test("複数の違反がある場合、最初の1件で止まらず全件報告�
     ],
   });
 
-  const errors = DesignDocument.validate(document);
+  const errors = DesignDocument.collectErrors(document);
 
   expect(errors).toHaveLength(2);
   expect(errors.map((error) => error.nodeName)).toEqual(["box-1", "label-1"]);

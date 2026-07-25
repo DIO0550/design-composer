@@ -33,4 +33,12 @@ export const Result = {
   unwrapOr<T, E>(result: Result<T, E>, defaultValue: T): T {
     return result.ok ? result.value : defaultValue;
   },
+
+  /** Ok の値を取り出す。Err の場合は例外を投げる。 */
+  unwrap<T, E>(result: Result<T, E>): T {
+    if (!result.ok) {
+      throw new Error(`cannot unwrap an Err result: ${String(result.error)}`);
+    }
+    return result.value;
+  },
 } as const;

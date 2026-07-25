@@ -1,6 +1,6 @@
-import { ComponentSet, type PublicProps } from "@/domains/component";
+import { Component, ComponentSet } from "@/domains/component";
 import { DesignDocument } from "@/domains/design-document";
-import { Node, type Props, type PropValue } from "@/domains/node";
+import { Node, type Props } from "@/domains/node";
 import { Result } from "@/utils/Result";
 
 /**
@@ -13,54 +13,6 @@ export type ExpandedNode = Readonly<{
   props?: Props;
   children?: readonly ExpandedNode[];
 }>;
-
-function updateNodeByName(
-  nodes: readonly Node[],
-  name: string,
-  update: (node: Node) => Node,
-): readonly Node[] {
-  return nodes.map((node) => {
-    if (node.name === name) {
-      return update(node);
-    }
-    if (!Node.isPrimitive(node) || node.children === undefined) {
-      return node;
-    }
-    return {
-      ...node,
-      children: updateNodeByName(node.children, name, update),
-    };
-  });
-}
-
-function applyBindingValue(node: Node, prop: string, value: PropValue): Node {
-  if (Node.isRef(node)) {
-    return { ...node, overrides: { ...node.overrides, [prop]: value } };
-  }
-  return { ...node, props: { ...node.props, [prop]: value } };
-}
-
-function applyOverrides(
-  children: readonly Node[],
-  overrides: Props,
-  publicProps: PublicProps | undefined,
-): readonly Node[] {
-  if (publicProps === undefined) {
-    return children;
-  }
-  return Object.entries(overrides).reduce(
-    (currentChildren, [propName, value]) => {
-      const binding = publicProps[propName];
-      if (binding === undefined) {
-        return currentChildren;
-      }
-      return updateNodeByName(currentChildren, binding.node, (target) =>
-        applyBindingValue(target, binding.prop, value),
-      );
-    },
-    children,
-  );
-}
 
 function expandNode(
   node: Node,
@@ -91,18 +43,18 @@ function expandNode(
   if (component === undefined) {
     return Result.err(new Error(`component "${node.ref}" not found`));
   }
-  const overridden = applyOverrides(
-    component.children ?? [],
+  const overridden = Component.applyOverrides(
+    component,
+    node.ref,
     node.overrides ?? {},
-    component.publicProps,
   );
   const nextExpanding = new Set(expanding).add(node.ref);
   return Result.map(
-    expandNodes(overridden, components, nextExpanding),
+    expandNodes(overridden.children ?? [], components, nextExpanding),
     (children) => ({
       name: node.name,
-      type: component.type,
-      props: component.props,
+      type: overridden.type,
+      props: overridden.props,
       children,
     }),
   );

@@ -13,6 +13,10 @@ test("unwrapOr は falsy な成功値 0 をデフォルト値で上書きしな�
   expect(Result.unwrapOr(Result.ok(0), 1)).toBe(0);
 });
 
+test("unwrap は falsy な成功値 0 をそのまま取り出す", () => {
+  expect(Result.unwrap(Result.ok(0))).toBe(0);
+});
+
 test("map は失敗に対して変換関数を実行しない", () => {
   const failure: Result<number, string> = Result.err("fail");
   const result = Result.map(failure, () => {

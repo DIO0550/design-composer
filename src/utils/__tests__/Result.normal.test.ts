@@ -59,3 +59,11 @@ test("unwrapOr は成功から値を取り出す", () => {
 test("unwrapOr は失敗に対してデフォルト値を返す", () => {
   expect(Result.unwrapOr(Result.err("fail"), 0)).toBe(0);
 });
+
+test("unwrap は成功から値を取り出す", () => {
+  expect(Result.unwrap(Result.ok(42))).toBe(42);
+});
+
+test("unwrap は失敗に対して例外を投げる", () => {
+  expect(() => Result.unwrap(Result.err("fail"))).toThrow("fail");
+});
