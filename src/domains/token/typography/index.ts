@@ -1,4 +1,4 @@
-import { Css } from "@/utils/Css";
+import { Px } from "@/domains/px";
 import { Font } from "@/utils/Font";
 
 export type TypographyToken = Readonly<{
@@ -61,7 +61,7 @@ export const TypographyToken = {
   cssValue({ token, field }: TypographyFieldRef): string {
     switch (field) {
       case "fontSize":
-        return Css.px(token.fontSize);
+        return Px.create(token.fontSize);
       case "lineHeight":
         return String(token.lineHeight);
       case "fontWeight":

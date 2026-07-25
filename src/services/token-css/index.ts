@@ -1,3 +1,4 @@
+import { Px } from "@/domains/px";
 import {
   ShadowToken,
   type TokenKind,
@@ -5,7 +6,6 @@ import {
   type TypographyCssProperty,
   TypographyToken,
 } from "@/domains/token";
-import { Css } from "@/utils/Css";
 
 /** CSS カスタムプロパティ名。 */
 export type CssVariableName = `--${string}`;
@@ -45,7 +45,7 @@ function entriesOfKind(
     case "radius":
       return Object.entries(tokens[kind]).map(([name, value]) => [
         TokenCss.variableName(kind, name),
-        Css.px(value),
+        Px.create(value),
       ]);
     case "shadows":
       return Object.entries(tokens.shadows).map(([name, shadow]) => [

@@ -1,4 +1,4 @@
-import { Css, type Px } from "@/utils/Css";
+import { Px } from "@/domains/px";
 
 export type ShadowToken = Readonly<{
   x: number;
@@ -18,7 +18,7 @@ export const ShadowToken = {
   },
 
   cssValue(shadow: ShadowToken): BoxShadowValue {
-    return `${Css.px(shadow.x)} ${Css.px(shadow.y)} ${Css.px(shadow.blur)} ${Css.px(
+    return `${Px.create(shadow.x)} ${Px.create(shadow.y)} ${Px.create(shadow.blur)} ${Px.create(
       ShadowToken.spreadOf(shadow),
     )} ${shadow.color}`;
   },
