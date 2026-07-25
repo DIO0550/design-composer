@@ -185,7 +185,7 @@ function toValidationErrors(
   return errors.map((error) => ({ ...error, nodeName }));
 }
 
-function validateTypedProps(
+function collectTypedPropErrors(
   nodeName: string,
   type: string,
   props: Props | undefined,
@@ -207,7 +207,7 @@ function validateTypedProps(
   );
 }
 
-function validateNode(
+function collectNodeErrors(
   node: Node,
   tokens: TokenSet,
 ): readonly DesignDocumentValidationError[] {
@@ -215,8 +215,8 @@ function validateNode(
     return [];
   }
   return [
-    ...validateTypedProps(node.name, node.type, node.props, tokens),
-    ...Node.children(node).flatMap((child) => validateNode(child, tokens)),
+    ...collectTypedPropErrors(node.name, node.type, node.props, tokens),
+    ...Node.children(node).flatMap((child) => collectNodeErrors(child, tokens)),
   ];
 }
 
@@ -278,7 +278,7 @@ function resolvePropDefinition(
   );
 }
 
-function validateOverrides(
+function collectOverrideErrors(
   context: ReferenceContext,
   refNode: RefNode,
   component: Component,
@@ -318,7 +318,7 @@ function validateOverrides(
   );
 }
 
-function validateRefNode(
+function collectRefNodeErrors(
   context: ReferenceContext,
   refNode: RefNode,
 ): readonly DesignDocumentValidationError[] {
@@ -332,22 +332,22 @@ function validateRefNode(
       },
     ];
   }
-  return validateOverrides(context, refNode, component);
+  return collectOverrideErrors(context, refNode, component);
 }
 
-function validateNodeRefs(
+function collectNodeRefErrors(
   context: ReferenceContext,
   node: Node,
 ): readonly DesignDocumentValidationError[] {
   if (Node.isRef(node)) {
-    return validateRefNode(context, node);
+    return collectRefNodeErrors(context, node);
   }
   return Node.children(node).flatMap((child) =>
-    validateNodeRefs(context, child),
+    collectNodeRefErrors(context, child),
   );
 }
 
-function validateBindingTarget(
+function collectBindingTargetErrors(
   context: ReferenceContext,
   location: BindingLocation,
   binding: PublicPropBinding,
@@ -384,7 +384,7 @@ function validateBindingTarget(
   ];
 }
 
-function validateBindings(
+function collectBindingErrors(
   context: ReferenceContext,
   componentName: string,
   component: Component,
@@ -410,11 +410,16 @@ function validateBindings(
         },
       ];
     }
-    return validateBindingTarget(context, location, binding.value, found.value);
+    return collectBindingTargetErrors(
+      context,
+      location,
+      binding.value,
+      found.value,
+    );
   });
 }
 
-function validateCircularRefs(
+function collectCircularRefErrors(
   components: ComponentSet,
 ): readonly DesignDocumentValidationError[] {
   return ComponentSet.circularNames(components).map((name) => ({
@@ -678,18 +683,18 @@ export const DesignDocument = {
           return [];
         }
         return [
-          ...validateTypedProps(
+          ...collectTypedPropErrors(
             name,
             component.type,
             component.props,
             document.tokens,
           ),
           ...(component.children ?? []).flatMap((child) =>
-            validateNode(child, document.tokens),
+            collectNodeErrors(child, document.tokens),
           ),
-          ...validateBindings(context, name, component),
+          ...collectBindingErrors(context, name, component),
           ...(component.children ?? []).flatMap((child) =>
-            validateNodeRefs(context, child),
+            collectNodeRefErrors(context, child),
           ),
         ];
       },
@@ -705,15 +710,17 @@ export const DesignDocument = {
         ),
       ),
       ...artboard.children.flatMap((child) =>
-        validateNode(child, document.tokens),
+        collectNodeErrors(child, document.tokens),
       ),
-      ...artboard.children.flatMap((child) => validateNodeRefs(context, child)),
+      ...artboard.children.flatMap((child) =>
+        collectNodeRefErrors(context, child),
+      ),
     ]);
 
     return [
       ...componentErrors,
       ...artboardErrors,
-      ...validateCircularRefs(document.components),
+      ...collectCircularRefErrors(document.components),
     ];
   },
 } as const;
