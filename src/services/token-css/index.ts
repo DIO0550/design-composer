@@ -1,16 +1,23 @@
 import {
-  type ShadowToken,
+  ShadowToken,
   type TokenKind,
   TokenSet,
-  type TypographyField,
+  type TypographyCssProperty,
   TypographyToken,
 } from "@/domains/token";
+import { Css } from "@/utils/Css";
+
+/** CSS カスタムプロパティ名。 */
+export type CssVariableName = `--${string}`;
+
+/** `var()` によるカスタムプロパティ参照。 */
+export type CssVariableReference = `var(${CssVariableName})`;
 
 /**
  * CSS カスタムプロパティ名 → 値の対応。
  * ルート要素の style へそのまま展開できる形で持つ。
  */
-export type CssVariables = Readonly<Record<string, string>>;
+export type CssVariables = Readonly<Record<CssVariableName, string>>;
 
 /**
  * 1トークンが1つのカスタムプロパティで表せる種別。
@@ -22,60 +29,7 @@ export type CssVariables = Readonly<Record<string, string>>;
  */
 export type SingleVariableTokenKind = Exclude<TokenKind, "typography">;
 
-/**
- * typography トークンのフィールドを、展開先の CSS プロパティ名へ対応付ける。
- * フィールドの列挙自体は token ドメイン(`TypographyField`)が持ち、ここは
- * 「どの CSS プロパティになるか」だけを持つ。`satisfies` により、
- * ドメインにフィールドが増えたらこの対応表もコンパイルエラーで漏れが分かる。
- */
-const TYPOGRAPHY_CSS_PROPERTIES = {
-  fontSize: "font-size",
-  lineHeight: "line-height",
-  fontWeight: "font-weight",
-  fontFamily: "font-family",
-} as const satisfies Readonly<Record<TypographyField, string>>;
-
-export type TypographyCssProperty =
-  (typeof TYPOGRAPHY_CSS_PROPERTIES)[TypographyField];
-
-/**
- * fontFamily 省略時に用いるシステムフォントスタック(docs/04-tokens.md)。
- * 省略時も変数を必ず出力することで、参照側が `var()` のフォールバックを持たずに済む。
- */
-const SYSTEM_FONT_STACK =
-  'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
-
-function px(value: number): string {
-  return `${value}px`;
-}
-
-function shadowValue(shadow: ShadowToken): string {
-  return [
-    px(shadow.x),
-    px(shadow.y),
-    px(shadow.blur),
-    px(shadow.spread ?? 0),
-    shadow.color,
-  ].join(" ");
-}
-
-function typographyValue(
-  token: TypographyToken,
-  field: TypographyField,
-): string {
-  switch (field) {
-    case "fontSize":
-      return px(token.fontSize);
-    case "lineHeight":
-      return String(token.lineHeight);
-    case "fontWeight":
-      return String(token.fontWeight);
-    case "fontFamily":
-      return token.fontFamily ?? SYSTEM_FONT_STACK;
-  }
-}
-
-type CssVariableEntry = readonly [string, string];
+type CssVariableEntry = readonly [CssVariableName, string];
 
 function entriesOfKind(
   tokens: TokenSet,
@@ -91,12 +45,12 @@ function entriesOfKind(
     case "radius":
       return Object.entries(tokens[kind]).map(([name, value]) => [
         TokenCss.variableName(kind, name),
-        px(value),
+        Css.px(value),
       ]);
     case "shadows":
       return Object.entries(tokens.shadows).map(([name, shadow]) => [
         TokenCss.variableName(kind, name),
-        shadowValue(shadow),
+        ShadowToken.cssValue(shadow),
       ]);
     case "typography":
       return Object.entries(tokens.typography).flatMap(([name, token]) =>
@@ -104,9 +58,9 @@ function entriesOfKind(
           (field): CssVariableEntry => [
             TokenCss.typographyVariableName(
               name,
-              TYPOGRAPHY_CSS_PROPERTIES[field],
+              TypographyToken.cssProperty(field),
             ),
-            typographyValue(token, field),
+            TypographyToken.cssValue({ token, field }),
           ],
         ),
       );
@@ -114,22 +68,25 @@ function entriesOfKind(
 }
 
 export const TokenCss = {
-  variableName(kind: SingleVariableTokenKind, name: string): string {
+  variableName(kind: SingleVariableTokenKind, name: string): CssVariableName {
     return `--${kind}-${name}`;
   },
 
-  ref(kind: SingleVariableTokenKind, name: string): string {
+  ref(kind: SingleVariableTokenKind, name: string): CssVariableReference {
     return `var(${TokenCss.variableName(kind, name)})`;
   },
 
   typographyVariableName(
     name: string,
     property: TypographyCssProperty,
-  ): string {
+  ): CssVariableName {
     return `--typography-${name}-${property}`;
   },
 
-  typographyRef(name: string, property: TypographyCssProperty): string {
+  typographyRef(
+    name: string,
+    property: TypographyCssProperty,
+  ): CssVariableReference {
     return `var(${TokenCss.typographyVariableName(name, property)})`;
   },
 

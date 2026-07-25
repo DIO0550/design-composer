@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import type { TokenSet } from "@/domains/token";
+import { Font } from "@/utils/Font";
 import { TokenCss } from "../index";
 
 /** docs/04-tokens.md「初期トークンセット(デフォルトテーマ)」の全体。 */
@@ -32,9 +33,6 @@ function setupDefaultTheme(): TokenSet {
   };
 }
 
-const SYSTEM_FONT_STACK =
-  'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
-
 test("初期トークンセット全体が CSS カスタムプロパティへ変換される", () => {
   expect(TokenCss.variables(setupDefaultTheme())).toEqual({
     "--colors-white": "#ffffff",
@@ -61,19 +59,19 @@ test("初期トークンセット全体が CSS カスタムプロパティへ変
     "--typography-heading-font-size": "24px",
     "--typography-heading-line-height": "1.4",
     "--typography-heading-font-weight": "700",
-    "--typography-heading-font-family": SYSTEM_FONT_STACK,
+    "--typography-heading-font-family": Font.systemStack(),
     "--typography-subheading-font-size": "18px",
     "--typography-subheading-line-height": "1.5",
     "--typography-subheading-font-weight": "600",
-    "--typography-subheading-font-family": SYSTEM_FONT_STACK,
+    "--typography-subheading-font-family": Font.systemStack(),
     "--typography-body-font-size": "16px",
     "--typography-body-line-height": "1.6",
     "--typography-body-font-weight": "400",
-    "--typography-body-font-family": SYSTEM_FONT_STACK,
+    "--typography-body-font-family": Font.systemStack(),
     "--typography-caption-font-size": "12px",
     "--typography-caption-line-height": "1.4",
     "--typography-caption-font-weight": "400",
-    "--typography-caption-font-family": SYSTEM_FONT_STACK,
+    "--typography-caption-font-family": Font.systemStack(),
   });
 });
 

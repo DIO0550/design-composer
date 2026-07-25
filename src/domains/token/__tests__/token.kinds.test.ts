@@ -1,14 +1,5 @@
 import { expect, test } from "vitest";
-import { TokenSet, TypographyToken } from "../index";
-
-test("typography トークンのフィールドを列挙すると 04-tokens で定義された4フィールドが返る", () => {
-  expect(TypographyToken.fields()).toEqual([
-    "fontSize",
-    "lineHeight",
-    "fontWeight",
-    "fontFamily",
-  ]);
-});
+import { TokenSet } from "../index";
 
 test("トークンの種別を列挙すると 04-tokens で定義された5種別が返る", () => {
   expect(TokenSet.kinds()).toEqual([

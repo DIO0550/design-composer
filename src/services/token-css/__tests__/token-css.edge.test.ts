@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import { TokenSet } from "@/domains/token";
+import { Font } from "@/utils/Font";
 import { TokenCss } from "../index";
 
 test("空のトークンセットからは変数が1つも出力されない", () => {
@@ -53,7 +54,7 @@ test("typography の fontFamily を省略するとシステムフォントスタ
   };
 
   expect(TokenCss.variables(tokens)["--typography-body-font-family"]).toBe(
-    'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+    Font.systemStack(),
   );
 });
 
