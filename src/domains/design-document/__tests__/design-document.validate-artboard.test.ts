@@ -1,6 +1,5 @@
 import { expect, test } from "vitest";
-import { DesignDocument } from "@/domains/design-document";
-import { SchemaValidator } from "../index";
+import { DesignDocument } from "../index";
 
 test("artboard の props も Box スキーマで検証され、enum 外の値はエラーになる", () => {
   const document = DesignDocument.create({
@@ -15,7 +14,7 @@ test("artboard の props も Box スキーマで検証され、enum 外の値は
     ],
   });
 
-  const errors = SchemaValidator.validate(document);
+  const errors = DesignDocument.validate(document);
 
   expect(errors).toEqual([
     expect.objectContaining({ kind: "enum-violation", nodeName: "screen" }),
@@ -35,7 +34,7 @@ test("artboard の props が Box スキーマに適合する場合はエラー�
     ],
   });
 
-  expect(SchemaValidator.validate(document)).toEqual([]);
+  expect(DesignDocument.validate(document)).toEqual([]);
 });
 
 test("artboard に未知の prop を指定すると unknown-prop エラーになる", () => {
@@ -51,7 +50,7 @@ test("artboard に未知の prop を指定すると unknown-prop エラーにな
     ],
   });
 
-  const errors = SchemaValidator.validate(document);
+  const errors = DesignDocument.validate(document);
 
   expect(errors).toEqual([
     expect.objectContaining({ kind: "unknown-prop", nodeName: "screen" }),

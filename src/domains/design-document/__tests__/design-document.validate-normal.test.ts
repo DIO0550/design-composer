@@ -1,6 +1,5 @@
 import { expect, test } from "vitest";
-import { DesignDocument } from "@/domains/design-document";
-import { SchemaValidator } from "../index";
+import { DesignDocument } from "../index";
 
 test("すべての props がスキーマに適合するドキュメントはエラーを返さない", () => {
   const document = DesignDocument.create({
@@ -36,7 +35,7 @@ test("すべての props がスキーマに適合するドキュメントはエ�
     ],
   });
 
-  expect(SchemaValidator.validate(document)).toEqual([]);
+  expect(DesignDocument.validate(document)).toEqual([]);
 });
 
 test("props を指定しないノードはデフォルト値が省略されているだけなのでエラーにならない", () => {
@@ -51,7 +50,7 @@ test("props を指定しないノードはデフォルト値が省略されて�
     ],
   });
 
-  expect(SchemaValidator.validate(document)).toEqual([]);
+  expect(DesignDocument.validate(document)).toEqual([]);
 });
 
 test("ref ノードはスキーマ検証の対象外になる", () => {
@@ -69,7 +68,7 @@ test("ref ノードはスキーマ検証の対象外になる", () => {
     ],
   });
 
-  expect(SchemaValidator.validate(document)).toEqual([]);
+  expect(DesignDocument.validate(document)).toEqual([]);
 });
 
 test("複数の違反がある場合、最初の1件で止まらず全件報告される", () => {
@@ -87,7 +86,7 @@ test("複数の違反がある場合、最初の1件で止まらず全件報告�
     ],
   });
 
-  const errors = SchemaValidator.validate(document);
+  const errors = DesignDocument.validate(document);
 
   expect(errors).toHaveLength(2);
   expect(errors.map((error) => error.nodeName)).toEqual(["box-1", "label-1"]);

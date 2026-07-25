@@ -1,6 +1,5 @@
 import { expect, test } from "vitest";
-import { DesignDocument } from "@/domains/design-document";
-import { SchemaValidator } from "../index";
+import { DesignDocument } from "../index";
 
 test("未知の type を持つノードは unknown-type エラーになる", () => {
   const document = DesignDocument.create({
@@ -14,7 +13,7 @@ test("未知の type を持つノードは unknown-type エラーになる", () 
     ],
   });
 
-  const errors = SchemaValidator.validate(document);
+  const errors = DesignDocument.validate(document);
 
   expect(errors).toEqual([
     expect.objectContaining({ kind: "unknown-type", nodeName: "widget" }),
@@ -33,7 +32,7 @@ test("未知の prop を指定したノードは unknown-prop エラーになる
     ],
   });
 
-  const errors = SchemaValidator.validate(document);
+  const errors = DesignDocument.validate(document);
 
   expect(errors).toEqual([
     expect.objectContaining({
@@ -62,7 +61,7 @@ test("未知の type でも子ノードは独立して検証される", () => {
     ],
   });
 
-  const errors = SchemaValidator.validate(document);
+  const errors = DesignDocument.validate(document);
 
   expect(errors.map((error) => error.nodeName)).toEqual(["widget", "label"]);
 });

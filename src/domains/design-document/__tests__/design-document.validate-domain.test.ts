@@ -1,6 +1,5 @@
 import { expect, test } from "vitest";
-import { DesignDocument } from "@/domains/design-document";
-import { SchemaValidator } from "../index";
+import { DesignDocument } from "../index";
 
 test("enum 外の値を指定すると enum-violation エラーになる", () => {
   const document = DesignDocument.create({
@@ -16,7 +15,7 @@ test("enum 外の値を指定すると enum-violation エラーになる", () =>
     ],
   });
 
-  const errors = SchemaValidator.validate(document);
+  const errors = DesignDocument.validate(document);
 
   expect(errors).toEqual([
     expect.objectContaining({
@@ -45,7 +44,7 @@ test("literalType と異なる型の値を指定すると literal-type-mismatch 
     ],
   });
 
-  const errors = SchemaValidator.validate(document);
+  const errors = DesignDocument.validate(document);
 
   expect(errors).toEqual([
     expect.objectContaining({
@@ -74,7 +73,7 @@ test("存在しないトークン名を参照すると dangling-token エラー�
     ],
   });
 
-  const errors = SchemaValidator.validate(document);
+  const errors = DesignDocument.validate(document);
 
   expect(errors).toEqual([
     expect.objectContaining({
@@ -92,7 +91,7 @@ test("components 内のノードもスキーマ検証の対象になる", () => 
     },
   });
 
-  const errors = SchemaValidator.validate(document);
+  const errors = DesignDocument.validate(document);
 
   expect(errors).toEqual([
     expect.objectContaining({ kind: "enum-violation", nodeName: "card" }),
