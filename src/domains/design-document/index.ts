@@ -497,23 +497,23 @@ function toComponent(node: Node): Component {
 const IDENTIFIER_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 /**
- * 単一名前空間に属する名前の1件。
+ * 単一名前空間における名前の出現1件。
  * `name` が欠落している場合は自身の名前で位置を示せないため、
  * その名前を含む入れ物（`ownerName`）と入れ物内での位置（`position`）を併せ持つ。
  */
-type NameEntry = Readonly<{
+type NameOccurrence = Readonly<{
   name: string;
   ownerName: string;
   position: string;
 }>;
 
-function collectNodeNameEntries(
+function collectNodeNameOccurrences(
   nodes: readonly Node[],
   ownerName: string,
-): readonly NameEntry[] {
+): readonly NameOccurrence[] {
   return nodes.flatMap((node, index) => [
     { name: node.name, ownerName, position: `child ${index}` },
-    ...collectNodeNameEntries(Node.children(node), node.name || ownerName),
+    ...collectNodeNameOccurrences(Node.children(node), node.name || ownerName),
   ]);
 }
 
@@ -522,51 +522,53 @@ function collectNodeNameEntries(
  * 対象は components のキー・artboard 名・全ノードの `name`（部品内部を含む）。
  * トークン名は種別内で一意なだけなので、この名前空間には含めない。
  */
-function collectNameEntries(document: DesignDocument): readonly NameEntry[] {
-  const componentEntries = ComponentSet.names(document.components).flatMap(
-    (name): readonly NameEntry[] => {
+function collectNameOccurrences(
+  document: DesignDocument,
+): readonly NameOccurrence[] {
+  const componentOccurrences = ComponentSet.names(document.components).flatMap(
+    (name): readonly NameOccurrence[] => {
       const component = ComponentSet.get(document.components, name);
       return [
         { name, ownerName: "components", position: `key "${name}"` },
-        ...collectNodeNameEntries(component?.children ?? [], name),
+        ...collectNodeNameOccurrences(component?.children ?? [], name),
       ];
     },
   );
-  const artboardEntries = document.artboards.flatMap(
-    (artboard, index): readonly NameEntry[] => [
+  const artboardOccurrences = document.artboards.flatMap(
+    (artboard, index): readonly NameOccurrence[] => [
       {
         name: artboard.name,
         ownerName: "artboards",
         position: `artboard ${index}`,
       },
-      ...collectNodeNameEntries(artboard.children, artboard.name),
+      ...collectNodeNameOccurrences(artboard.children, artboard.name),
     ],
   );
-  return [...componentEntries, ...artboardEntries];
+  return [...componentOccurrences, ...artboardOccurrences];
 }
 
 function collectAllNames(document: DesignDocument): readonly string[] {
-  return collectNameEntries(document).map((entry) => entry.name);
+  return collectNameOccurrences(document).map((occurrence) => occurrence.name);
 }
 
-function collectNameEntryErrors(
-  entry: NameEntry,
+function collectNameOccurrenceErrors(
+  occurrence: NameOccurrence,
 ): readonly DesignDocumentValidationError[] {
-  if (!entry.name) {
+  if (!occurrence.name) {
     return [
       {
         kind: "missing-name",
-        nodeName: entry.ownerName,
-        message: `${entry.position} of "${entry.ownerName}" has no name`,
+        nodeName: occurrence.ownerName,
+        message: `${occurrence.position} of "${occurrence.ownerName}" has no name`,
       },
     ];
   }
-  if (!IDENTIFIER_PATTERN.test(entry.name)) {
+  if (!IDENTIFIER_PATTERN.test(occurrence.name)) {
     return [
       {
         kind: "invalid-identifier",
-        nodeName: entry.name,
-        message: `name "${entry.name}" is not a valid identifier`,
+        nodeName: occurrence.name,
+        message: `name "${occurrence.name}" is not a valid identifier`,
       },
     ];
   }
@@ -603,10 +605,10 @@ function collectTokenNameErrors(
 function collectNameErrors(
   document: DesignDocument,
 ): readonly DesignDocumentValidationError[] {
-  const entries = collectNameEntries(document);
-  const entryErrors = entries.flatMap(collectNameEntryErrors);
+  const occurrences = collectNameOccurrences(document);
+  const occurrenceErrors = occurrences.flatMap(collectNameOccurrenceErrors);
   const duplicateErrors = duplicatedNames(
-    entries.map((entry) => entry.name),
+    occurrences.map((occurrence) => occurrence.name),
   ).map(
     (name): DesignDocumentValidationError => ({
       kind: "duplicate-name",
@@ -615,7 +617,7 @@ function collectNameErrors(
     }),
   );
   return [
-    ...entryErrors,
+    ...occurrenceErrors,
     ...duplicateErrors,
     ...collectTokenNameErrors(document.tokens),
   ];
