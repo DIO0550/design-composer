@@ -497,82 +497,24 @@ function toComponent(node: Node): Component {
 const IDENTIFIER_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 /**
- * 単一名前空間における名前の出現1件。
- * `name` が欠落している場合は自身の名前で位置を示せないため、
- * その名前を含む入れ物（`ownerName`）と入れ物内での位置（`position`）を併せ持つ。
- */
-type NameOccurrence = Readonly<{
-  name: string;
-  ownerName: string;
-  position: string;
-}>;
-
-function collectNodeNameOccurrences(
-  nodes: readonly Node[],
-  ownerName: string,
-): readonly NameOccurrence[] {
-  return nodes.flatMap((node, index) => [
-    { name: node.name, ownerName, position: `child ${index}` },
-    ...collectNodeNameOccurrences(Node.children(node), node.name || ownerName),
-  ]);
-}
-
-/**
  * ドキュメント全体の単一名前空間に属する名前を集める。
  * 対象は components のキー・artboard 名・全ノードの `name`（部品内部を含む）。
  * トークン名は種別内で一意なだけなので、この名前空間には含めない。
  */
-function collectNameOccurrences(
-  document: DesignDocument,
-): readonly NameOccurrence[] {
-  const componentOccurrences = ComponentSet.names(document.components).flatMap(
-    (name): readonly NameOccurrence[] => {
+function collectAllNames(document: DesignDocument): readonly string[] {
+  const componentNames = ComponentSet.names(document.components).flatMap(
+    (name): readonly string[] => {
       const component = ComponentSet.get(document.components, name);
-      return [
-        { name, ownerName: "components", position: `key "${name}"` },
-        ...collectNodeNameOccurrences(component?.children ?? [], name),
-      ];
+      return [name, ...(component?.children ?? []).flatMap(Node.collectNames)];
     },
   );
-  const artboardOccurrences = document.artboards.flatMap(
-    (artboard, index): readonly NameOccurrence[] => [
-      {
-        name: artboard.name,
-        ownerName: "artboards",
-        position: `artboard ${index}`,
-      },
-      ...collectNodeNameOccurrences(artboard.children, artboard.name),
+  const artboardNames = document.artboards.flatMap(
+    (artboard): readonly string[] => [
+      artboard.name,
+      ...artboard.children.flatMap(Node.collectNames),
     ],
   );
-  return [...componentOccurrences, ...artboardOccurrences];
-}
-
-function collectAllNames(document: DesignDocument): readonly string[] {
-  return collectNameOccurrences(document).map((occurrence) => occurrence.name);
-}
-
-function collectNameOccurrenceErrors(
-  occurrence: NameOccurrence,
-): readonly DesignDocumentValidationError[] {
-  if (!occurrence.name) {
-    return [
-      {
-        kind: "missing-name",
-        nodeName: occurrence.ownerName,
-        message: `${occurrence.position} of "${occurrence.ownerName}" has no name`,
-      },
-    ];
-  }
-  if (!IDENTIFIER_PATTERN.test(occurrence.name)) {
-    return [
-      {
-        kind: "invalid-identifier",
-        nodeName: occurrence.name,
-        message: `name "${occurrence.name}" is not a valid identifier`,
-      },
-    ];
-  }
-  return [];
+  return [...componentNames, ...artboardNames];
 }
 
 /** 2回以上現れる名前を、最初に現れた順で1つずつ返す。 */
@@ -581,6 +523,59 @@ function duplicatedNames(names: readonly string[]): readonly string[] {
     (name, index) =>
       names.indexOf(name) === index && names.lastIndexOf(name) !== index,
   );
+}
+
+function collectDuplicateNameErrors(
+  document: DesignDocument,
+): readonly DesignDocumentValidationError[] {
+  return duplicatedNames(collectAllNames(document)).map(
+    (name): DesignDocumentValidationError => ({
+      kind: "duplicate-name",
+      nodeName: name,
+      message: `name "${name}" is not unique in the document`,
+    }),
+  );
+}
+
+/**
+ * 名前1つを検証する。
+ * 名前が欠落している場合は自身の名前で位置を示せないため、
+ * その名前を含む入れ物（`ownerName`）と入れ物内での位置（`position`）を引数で受け取る。
+ */
+function collectNameErrors(
+  name: string,
+  ownerName: string,
+  position: string,
+): readonly DesignDocumentValidationError[] {
+  if (!name) {
+    return [
+      {
+        kind: "missing-name",
+        nodeName: ownerName,
+        message: `${position} of "${ownerName}" has no name`,
+      },
+    ];
+  }
+  if (!IDENTIFIER_PATTERN.test(name)) {
+    return [
+      {
+        kind: "invalid-identifier",
+        nodeName: name,
+        message: `name "${name}" is not a valid identifier`,
+      },
+    ];
+  }
+  return [];
+}
+
+function collectNodeNameErrors(
+  nodes: readonly Node[],
+  ownerName: string,
+): readonly DesignDocumentValidationError[] {
+  return nodes.flatMap((node, index) => [
+    ...collectNameErrors(node.name, ownerName, `child ${index}`),
+    ...collectNodeNameErrors(Node.children(node), node.name || ownerName),
+  ]);
 }
 
 function collectTokenNameErrors(
@@ -602,23 +597,28 @@ function collectTokenNameErrors(
   );
 }
 
-function collectNameErrors(
+function collectDocumentNameErrors(
   document: DesignDocument,
 ): readonly DesignDocumentValidationError[] {
-  const occurrences = collectNameOccurrences(document);
-  const occurrenceErrors = occurrences.flatMap(collectNameOccurrenceErrors);
-  const duplicateErrors = duplicatedNames(
-    occurrences.map((occurrence) => occurrence.name),
-  ).map(
-    (name): DesignDocumentValidationError => ({
-      kind: "duplicate-name",
-      nodeName: name,
-      message: `name "${name}" is not unique in the document`,
-    }),
+  const componentErrors = ComponentSet.names(document.components).flatMap(
+    (name): readonly DesignDocumentValidationError[] => {
+      const component = ComponentSet.get(document.components, name);
+      return [
+        ...collectNameErrors(name, "components", `key "${name}"`),
+        ...collectNodeNameErrors(component?.children ?? [], name),
+      ];
+    },
+  );
+  const artboardErrors = document.artboards.flatMap(
+    (artboard, index): readonly DesignDocumentValidationError[] => [
+      ...collectNameErrors(artboard.name, "artboards", `artboard ${index}`),
+      ...collectNodeNameErrors(artboard.children, artboard.name),
+    ],
   );
   return [
-    ...occurrenceErrors,
-    ...duplicateErrors,
+    ...componentErrors,
+    ...artboardErrors,
+    ...collectDuplicateNameErrors(document),
     ...collectTokenNameErrors(document.tokens),
   ];
 }
@@ -869,7 +869,7 @@ export const DesignDocument = {
       collectArtboardErrors(context, artboard),
     );
     const circularErrors = collectCircularRefErrors(document.components);
-    const nameErrors = collectNameErrors(document);
+    const nameErrors = collectDocumentNameErrors(document);
 
     return [
       ...componentErrors,
