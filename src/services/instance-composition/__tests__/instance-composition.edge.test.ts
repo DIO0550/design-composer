@@ -1,13 +1,8 @@
 import { expect, test } from "vitest";
 import type { ComponentSet } from "@/domains/component";
 import type { RefNode } from "@/domains/node";
-import type { Result } from "@/utils/Result";
+import { Result } from "@/utils/Result";
 import { InstanceComposition } from "../index";
-
-function unwrap<T>(result: Result<T, Error>): T {
-  expect(result.ok).toBe(true);
-  return (result as { ok: true; value: T }).value;
-}
 
 test("自分自身を参照する部品を展開すると無限再帰にならずエラーになる", () => {
   const components: ComponentSet = {
@@ -53,7 +48,9 @@ test("同じ部品を兄弟として複数回インスタンス化しても循�
     { name: "button-2", ref: "primary-button" },
   ];
 
-  const expanded = unwrap(InstanceComposition.expandAll(nodes, components));
+  const expanded = Result.unwrap(
+    InstanceComposition.expandAll(nodes, components),
+  );
 
   expect(expanded.map((node) => node.name)).toEqual(["button-1", "button-2"]);
   expect(expanded[0].children?.[0]).toEqual(expanded[1].children?.[0]);
@@ -84,7 +81,9 @@ test("publicProps 宣言に無いキーへの overrides は無視され定義値
     overrides: { unknownKey: "無視されるべき値" },
   };
 
-  const expanded = unwrap(InstanceComposition.expand(instance, components));
+  const expanded = Result.unwrap(
+    InstanceComposition.expand(instance, components),
+  );
 
   expect(expanded.children?.[0]).toEqual({
     name: "label",
@@ -106,7 +105,9 @@ test("publicProps 宣言を持たない部品に overrides を渡しても定義
     overrides: { label: "無視されるべき値" },
   };
 
-  const expanded = unwrap(InstanceComposition.expand(instance, components));
+  const expanded = Result.unwrap(
+    InstanceComposition.expand(instance, components),
+  );
 
   expect(expanded.children?.[0]).toEqual({
     name: "label",

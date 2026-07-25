@@ -1,6 +1,6 @@
-import { ComponentSet, type PublicProps } from "@/domains/component";
+import { Component, ComponentSet } from "@/domains/component";
 import { DesignDocument } from "@/domains/design-document";
-import { Node, type Props, type PropValue } from "@/domains/node";
+import { Node, type Props } from "@/domains/node";
 import { Result } from "@/utils/Result";
 
 /**
@@ -13,70 +13,6 @@ export type ExpandedNode = Readonly<{
   props?: Props;
   children?: readonly ExpandedNode[];
 }>;
-
-function updateNodeByName(
-  nodes: readonly Node[],
-  name: string,
-  update: (node: Node) => Node,
-): readonly Node[] {
-  return nodes.map((node) => {
-    if (node.name === name) {
-      return update(node);
-    }
-    if (!Node.isPrimitive(node) || node.children === undefined) {
-      return node;
-    }
-    return {
-      ...node,
-      children: updateNodeByName(node.children, name, update),
-    };
-  });
-}
-
-function applyBindingValue(node: Node, prop: string, value: PropValue): Node {
-  if (Node.isRef(node)) {
-    return { ...node, overrides: { ...node.overrides, [prop]: value } };
-  }
-  return { ...node, props: { ...node.props, [prop]: value } };
-}
-
-type ComponentBody = Readonly<{
-  props?: Props;
-  children: readonly Node[];
-}>;
-
-/**
- * overrides を publicProps の binding に従って部品の中身へ適用する。
- * binding 先は部品のルート（`rootName`）と内部ノードの両方を取り得る。
- */
-function applyOverrides(
-  rootName: string,
-  body: ComponentBody,
-  overrides: Props,
-  publicProps: PublicProps | undefined,
-): ComponentBody {
-  if (publicProps === undefined) {
-    return body;
-  }
-  return Object.entries(overrides).reduce((current, [propName, value]) => {
-    const binding = publicProps[propName];
-    if (binding === undefined) {
-      return current;
-    }
-    if (binding.node === rootName) {
-      return {
-        props: { ...current.props, [binding.prop]: value },
-        children: current.children,
-      };
-    }
-    return {
-      props: current.props,
-      children: updateNodeByName(current.children, binding.node, (target) =>
-        applyBindingValue(target, binding.prop, value),
-      ),
-    };
-  }, body);
-}
 
 function expandNode(
   node: Node,
@@ -107,18 +43,17 @@ function expandNode(
   if (component === undefined) {
     return Result.err(new Error(`component "${node.ref}" not found`));
   }
-  const overridden = applyOverrides(
+  const overridden = Component.applyOverrides(
+    component,
     node.ref,
-    { props: component.props, children: component.children ?? [] },
     node.overrides ?? {},
-    component.publicProps,
   );
   const nextExpanding = new Set(expanding).add(node.ref);
   return Result.map(
-    expandNodes(overridden.children, components, nextExpanding),
+    expandNodes(overridden.children ?? [], components, nextExpanding),
     (children) => ({
       name: node.name,
-      type: component.type,
+      type: overridden.type,
       props: overridden.props,
       children,
     }),

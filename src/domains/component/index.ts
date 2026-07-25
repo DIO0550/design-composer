@@ -1,4 +1,4 @@
-import { Node, type Props } from "@/domains/node";
+import { Node, type Props, type PropValue } from "@/domains/node";
 import { Option } from "@/utils/Option";
 
 export type PublicPropBinding = Readonly<{
@@ -16,6 +16,42 @@ export type Component = Readonly<{
 }>;
 
 export type ComponentSet = Readonly<Record<string, Component>>;
+
+function updateNodeByName(
+  nodes: readonly Node[],
+  name: string,
+  update: (node: Node) => Node,
+): readonly Node[] {
+  return nodes.map((node) => {
+    if (node.name === name) {
+      return update(node);
+    }
+    const children = Node.children(node);
+    if (children.length === 0) {
+      return node;
+    }
+    return { ...node, children: updateNodeByName(children, name, update) };
+  });
+}
+
+function applyBindingValue(node: Node, prop: string, value: PropValue): Node {
+  if (Node.isRef(node)) {
+    return { ...node, overrides: { ...node.overrides, [prop]: value } };
+  }
+  return { ...node, props: { ...node.props, [prop]: value } };
+}
+
+type ResolvedOverride = readonly [PublicPropBinding, PropValue];
+
+function resolveOverrides(
+  publicProps: PublicProps,
+  overrides: Props,
+): readonly ResolvedOverride[] {
+  return Object.entries(overrides).flatMap(([propName, value]) => {
+    const binding = publicProps[propName];
+    return binding === undefined ? [] : [[binding, value] as ResolvedOverride];
+  });
+}
 
 export const Component = {
   isPublicProp(component: Component, name: string): boolean {
@@ -52,6 +88,46 @@ export const Component = {
     nodeName: string,
   ): Option<Node> {
     return Node.find(Component.toNode(component, componentName), nodeName);
+  },
+
+  /**
+   * publicProps の binding に従って overrides を部品へ適用する。
+   * binding 先は部品のルート（`name`）と内部ノードの両方を取り得る。
+   * 宣言されていない overrides のキーは無視する（検証側で報告される）。
+   */
+  applyOverrides(
+    component: Component,
+    name: string,
+    overrides: Props,
+  ): Component {
+    if (component.publicProps === undefined) {
+      return component;
+    }
+    const resolved = resolveOverrides(component.publicProps, overrides);
+    const toRoot = resolved.filter(([binding]) => binding.node === name);
+    const toChildren = resolved.filter(([binding]) => binding.node !== name);
+    return {
+      ...component,
+      props:
+        toRoot.length === 0
+          ? component.props
+          : {
+              ...component.props,
+              ...Object.fromEntries(
+                toRoot.map(([binding, value]) => [binding.prop, value]),
+              ),
+            },
+      children:
+        toChildren.length === 0
+          ? component.children
+          : toChildren.reduce(
+              (children, [binding, value]) =>
+                updateNodeByName(children, binding.node, (target) =>
+                  applyBindingValue(target, binding.prop, value),
+                ),
+              component.children ?? [],
+            ),
+    };
   },
 
   renameBindings(

@@ -1,13 +1,8 @@
 import { expect, test } from "vitest";
 import type { ComponentSet } from "@/domains/component";
 import { DesignDocument } from "@/domains/design-document";
-import type { Result } from "@/utils/Result";
+import { Result } from "@/utils/Result";
 import { InstanceComposition } from "../index";
-
-function unwrap<T>(result: Result<T, Error>): T {
-  expect(result.ok).toBe(true);
-  return (result as { ok: true; value: T }).value;
-}
 
 test("存在しないノード名を指定して解除しようとすると Err が返る", () => {
   const document = DesignDocument.create({
@@ -76,7 +71,9 @@ test("ネストした部品参照を持つ ref ノードを解除すると子孫
     ],
   });
 
-  const result = unwrap(InstanceComposition.detach(document, "profile-card"));
+  const result = Result.unwrap(
+    InstanceComposition.detach(document, "profile-card"),
+  );
 
   expect(result.artboards[0].children[0]).toEqual({
     name: "profile-card",
