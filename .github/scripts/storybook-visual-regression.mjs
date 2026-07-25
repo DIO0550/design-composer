@@ -1,8 +1,32 @@
 #!/usr/bin/env node
 import { createServer } from "node:http";
 import { spawn, spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { basename, extname, join } from "node:path";
+
+/**
+ * Chrome の DevTools エンドポイントが開くまでの待ち時間。
+ * 負荷の高い CI runner では数秒で開かないことがあるため余裕を持たせる
+ * (ローカルでは 1 秒未満で開く)。
+ */
+const CHROME_STARTUP_TIMEOUT_MS = 30_000;
+const CHROME_POLL_INTERVAL_MS = 100;
+const CHROME_EXIT_TIMEOUT_MS = 5_000;
+const CHROME_STDERR_KEEP_CHARS = 8_000;
+
+/** 子プロセスの終了を待つ。時間内に終わらなければそのまま進む。 */
+const waitForExit = (child, timeoutMs) => new Promise((resolve) => {
+  if (child.exitCode !== null || child.signalCode !== null) {
+    resolve();
+    return;
+  }
+  const timer = setTimeout(resolve, timeoutMs);
+  child.once("exit", () => {
+    clearTimeout(timer);
+    resolve();
+  });
+});
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -116,19 +140,30 @@ const capture = async (options) => {
   mkdirSync(out, { recursive: true });
 
   const { server, origin } = await serveStatic(process.cwd() + `/${storybookDir}`);
-  const chrome = spawn(findChrome(), ["--headless=new", "--disable-gpu", "--no-sandbox", "--remote-debugging-port=9222", "about:blank"], { stdio: "ignore" });
+  // プロファイルを毎回使い捨てにする。既存プロファイルが残っていると
+  // 起動が既存インスタンスへ委譲され、デバッグポートが開かないことがある。
+  const userDataDir = mkdtempSync(join(tmpdir(), "storybook-vrt-"));
+  const chrome = spawn(findChrome(), ["--headless=new", "--disable-gpu", "--no-sandbox", "--no-first-run", `--user-data-dir=${userDataDir}`, "--remote-debugging-port=9222", "about:blank"], { stdio: ["ignore", "ignore", "pipe"] });
+  // 起動に失敗したとき原因が分かるように Chrome の出力を保持する。
+  // 全ストーリー分を溜め込まないよう末尾だけ残す（Chrome は大量に出力する）。
+  let chromeStderr = "";
+  chrome.stderr.on("data", (chunk) => {
+    chromeStderr = `${chromeStderr}${chunk.toString()}`.slice(-CHROME_STDERR_KEEP_CHARS);
+  });
   try {
     let version;
-    for (let attempt = 0; attempt < 50; attempt += 1) {
+    const attempts = Math.ceil(CHROME_STARTUP_TIMEOUT_MS / CHROME_POLL_INTERVAL_MS);
+    for (let attempt = 0; attempt < attempts; attempt += 1) {
       try {
         version = await requestJson("http://127.0.0.1:9222/json/version");
         break;
       } catch {
-        await sleep(100);
+        await sleep(CHROME_POLL_INTERVAL_MS);
       }
     }
     if (!version) {
-      throw new Error("Chrome DevTools endpoint did not start");
+      const detail = chromeStderr.trim().split("\n").slice(-10).join("\n");
+      throw new Error(`Chrome DevTools endpoint did not start within ${CHROME_STARTUP_TIMEOUT_MS}ms${detail ? `\nchrome output:\n${detail}` : ""}`);
     }
     const index = await requestJson(`${origin}/index.json`);
     const stories = Object.values(index.entries ?? {}).filter((entry) => entry.type === "story").sort((a, b) => a.id.localeCompare(b.id));
@@ -148,6 +183,13 @@ const capture = async (options) => {
   } finally {
     chrome.kill("SIGTERM");
     server.close();
+    // Chrome の終了を待たずに削除するとプロファイルへの書き込みと競合する。
+    await waitForExit(chrome, CHROME_EXIT_TIMEOUT_MS);
+    try {
+      rmSync(userDataDir, { recursive: true, force: true });
+    } catch {
+      // 一時プロファイルの削除失敗はキャプチャ結果に影響しないため無視する
+    }
   }
 };
 

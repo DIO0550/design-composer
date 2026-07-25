@@ -35,7 +35,10 @@ export type DesignDocumentValidationErrorKind =
   | "circular-ref"
   | "undeclared-override"
   | "dangling-binding-node"
-  | "dangling-binding-prop";
+  | "dangling-binding-prop"
+  | "missing-name"
+  | "invalid-identifier"
+  | "duplicate-name";
 
 export type DesignDocumentValidationError = Readonly<{
   kind: DesignDocumentValidationErrorKind;
@@ -486,13 +489,138 @@ function toComponent(node: Node): Component {
   };
 }
 
+/**
+ * 識別子の規則: kebab-case（使用可能文字は `[a-z0-9-]`）。
+ * 先頭・末尾のハイフンと連続ハイフンは許さない。
+ * 将来のパス修飾のために予約された `/` `#` `.` はこのパターンで弾かれる。
+ */
+const IDENTIFIER_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+/**
+ * ドキュメント全体の単一名前空間に属する名前を集める。
+ * 対象は components のキー・artboard 名・全ノードの `name`（部品内部を含む）。
+ * トークン名は種別内で一意なだけなので、この名前空間には含めない。
+ */
 function collectAllNames(document: DesignDocument): readonly string[] {
-  const componentNames = ComponentSet.names(document.components);
-  const artboardNames = document.artboards.map((artboard) => artboard.name);
-  const nodeNames = document.artboards.flatMap((artboard) =>
-    artboard.children.flatMap(Node.collectNames),
+  const componentNames = ComponentSet.names(document.components).flatMap(
+    (name): readonly string[] => {
+      const component = ComponentSet.get(document.components, name);
+      return [name, ...(component?.children ?? []).flatMap(Node.collectNames)];
+    },
   );
-  return [...componentNames, ...artboardNames, ...nodeNames];
+  const artboardNames = document.artboards.flatMap(
+    (artboard): readonly string[] => [
+      artboard.name,
+      ...artboard.children.flatMap(Node.collectNames),
+    ],
+  );
+  return [...componentNames, ...artboardNames];
+}
+
+/** 2回以上現れる名前を、最初に現れた順で1つずつ返す。 */
+function duplicatedNames(names: readonly string[]): readonly string[] {
+  return names.filter(
+    (name, index) =>
+      names.indexOf(name) === index && names.lastIndexOf(name) !== index,
+  );
+}
+
+function collectDuplicateNameErrors(
+  document: DesignDocument,
+): readonly DesignDocumentValidationError[] {
+  return duplicatedNames(collectAllNames(document)).map(
+    (name): DesignDocumentValidationError => ({
+      kind: "duplicate-name",
+      nodeName: name,
+      message: `name "${name}" is not unique in the document`,
+    }),
+  );
+}
+
+/**
+ * 名前1つを検証する。
+ * 名前が欠落している場合は自身の名前で位置を示せないため、
+ * その名前を含む入れ物（`ownerName`）と入れ物内での位置（`position`）を引数で受け取る。
+ */
+function collectNameErrors(
+  name: string,
+  ownerName: string,
+  position: string,
+): readonly DesignDocumentValidationError[] {
+  if (!name) {
+    return [
+      {
+        kind: "missing-name",
+        nodeName: ownerName,
+        message: `${position} of "${ownerName}" has no name`,
+      },
+    ];
+  }
+  if (!IDENTIFIER_PATTERN.test(name)) {
+    return [
+      {
+        kind: "invalid-identifier",
+        nodeName: name,
+        message: `name "${name}" is not a valid identifier`,
+      },
+    ];
+  }
+  return [];
+}
+
+function collectNodeNameErrors(
+  nodes: readonly Node[],
+  ownerName: string,
+): readonly DesignDocumentValidationError[] {
+  return nodes.flatMap((node, index) => [
+    ...collectNameErrors(node.name, ownerName, `child ${index}`),
+    ...collectNodeNameErrors(Node.children(node), node.name || ownerName),
+  ]);
+}
+
+function collectTokenNameErrors(
+  tokens: TokenSet,
+): readonly DesignDocumentValidationError[] {
+  return TokenSet.kinds().flatMap((kind) =>
+    TokenSet.names(tokens, kind).flatMap(
+      (name): readonly DesignDocumentValidationError[] =>
+        IDENTIFIER_PATTERN.test(name)
+          ? []
+          : [
+              {
+                kind: "invalid-identifier",
+                nodeName: name,
+                message: `token name "${name}" in ${kind} is not a valid identifier`,
+              },
+            ],
+    ),
+  );
+}
+
+function collectDocumentNameErrors(
+  document: DesignDocument,
+): readonly DesignDocumentValidationError[] {
+  const componentErrors = ComponentSet.names(document.components).flatMap(
+    (name): readonly DesignDocumentValidationError[] => {
+      const component = ComponentSet.get(document.components, name);
+      return [
+        ...collectNameErrors(name, "components", `key "${name}"`),
+        ...collectNodeNameErrors(component?.children ?? [], name),
+      ];
+    },
+  );
+  const artboardErrors = document.artboards.flatMap(
+    (artboard, index): readonly DesignDocumentValidationError[] => [
+      ...collectNameErrors(artboard.name, "artboards", `artboard ${index}`),
+      ...collectNodeNameErrors(artboard.children, artboard.name),
+    ],
+  );
+  return [
+    ...componentErrors,
+    ...artboardErrors,
+    ...collectDuplicateNameErrors(document),
+    ...collectTokenNameErrors(document.tokens),
+  ];
 }
 
 function nextAvailableName(
@@ -698,6 +826,10 @@ export const DesignDocument = {
     return new Set(collectAllNames(document));
   },
 
+  isValidIdentifier(name: string): boolean {
+    return IDENTIFIER_PATTERN.test(name);
+  },
+
   uniqueName(baseName: string, usedNames: ReadonlySet<string>): string {
     return nextAvailableName(baseName, usedNames);
   },
@@ -737,7 +869,13 @@ export const DesignDocument = {
       collectArtboardErrors(context, artboard),
     );
     const circularErrors = collectCircularRefErrors(document.components);
+    const nameErrors = collectDocumentNameErrors(document);
 
-    return [...componentErrors, ...artboardErrors, ...circularErrors];
+    return [
+      ...componentErrors,
+      ...artboardErrors,
+      ...circularErrors,
+      ...nameErrors,
+    ];
   },
 } as const;

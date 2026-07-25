@@ -45,7 +45,7 @@ test("ref ノードを解除すると部品定義の type / props / children を
       props: { background: "primary" },
       children: [
         {
-          name: "primary-button-label",
+          name: "primary-button-label-2",
           type: "Text",
           props: { content: "Button" },
         },
@@ -78,7 +78,7 @@ test("overrides を持つ ref ノードを解除すると overrides が焼き込
   );
 
   expect(result.artboards[0].children[0]).toMatchObject({
-    children: [{ name: "primary-button-label", props: { content: "保存" } }],
+    children: [{ name: "primary-button-label-2", props: { content: "保存" } }],
   });
 });
 
@@ -127,6 +127,28 @@ test("解除した実ノード自身の name は変わらない", () => {
   );
 
   expect(result.artboards[0].children[0].name).toBe("save-button");
+});
+
+test("解除したドキュメントは部品定義の内部ノード名と重複しない", () => {
+  const document = DesignDocument.create({
+    components: {
+      card: { type: "Box", children: [{ name: "card-label", type: "Text" }] },
+    },
+    artboards: [
+      {
+        name: "screen",
+        width: 375,
+        height: 812,
+        children: [{ name: "profile-card", ref: "card" }],
+      },
+    ],
+  });
+
+  const result = Result.unwrap(
+    InstanceComposition.detach(document, "profile-card"),
+  );
+
+  expect(DesignDocument.collectErrors(result)).toEqual([]);
 });
 
 test("detach は元のドキュメントを変更しない", () => {
