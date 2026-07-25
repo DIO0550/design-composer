@@ -8,7 +8,7 @@ import {
   FormatVersion,
   type FormatVersionCompatibility,
 } from "@/domains/format-version";
-import { Node, type Props, type PropValue, type RefNode } from "@/domains/node";
+import { Node, type Props, type RefNode } from "@/domains/node";
 import type { PropValidationError } from "@/domains/primitive-schema";
 import {
   BOX_SCHEMA,
@@ -220,18 +220,30 @@ function validateNode(
   ];
 }
 
+/** 参照検証が横断的に必要とする、ドキュメント全体の文脈。 */
+type ReferenceContext = Readonly<{
+  components: ComponentSet;
+  tokens: TokenSet;
+}>;
+
+/** binding 不整合エラーの発生位置。 */
+type BindingLocation = Readonly<{
+  componentName: string;
+  publicPropName: string;
+}>;
+
 /**
  * binding が最終的に指すプリミティブ prop の定義を解決する。
  * binding 先が ref ノードの場合は参照先部品の publicProps を辿る（インターフェースの連鎖）。
  * 解決できない場合は binding 自体が不整合であり、binding 検証側で報告される。
  */
 function resolvePropDefinition(
-  components: ComponentSet,
+  context: ReferenceContext,
   componentName: string,
   binding: PublicPropBinding,
   visited: ReadonlySet<string>,
 ): Option<PropDefinition> {
-  const component = ComponentSet.get(components, componentName);
+  const component = ComponentSet.get(context.components, componentName);
   if (component === undefined) {
     return Option.none;
   }
@@ -250,7 +262,7 @@ function resolvePropDefinition(
   if (visited.has(target.ref)) {
     return Option.none;
   }
-  const nested = ComponentSet.get(components, target.ref);
+  const nested = ComponentSet.get(context.components, target.ref);
   if (nested === undefined) {
     return Option.none;
   }
@@ -259,53 +271,58 @@ function resolvePropDefinition(
     return Option.none;
   }
   return resolvePropDefinition(
-    components,
+    context,
     target.ref,
     nestedBinding.value,
     new Set(visited).add(target.ref),
   );
 }
 
-function validateOverride(
+function validateOverrides(
+  context: ReferenceContext,
   refNode: RefNode,
   component: Component,
-  components: ComponentSet,
-  propName: string,
-  value: PropValue,
-  tokens: TokenSet,
 ): readonly DesignDocumentValidationError[] {
-  const binding = Component.binding(component, propName);
-  if (!binding.some) {
-    return [
-      {
-        kind: "undeclared-override",
-        nodeName: refNode.name,
-        prop: propName,
-        message: `component "${refNode.ref}" does not declare public prop "${propName}"`,
-      },
-    ];
-  }
-  const definition = resolvePropDefinition(
-    components,
-    refNode.ref,
-    binding.value,
-    new Set([refNode.ref]),
-  );
-  if (!definition.some) {
-    return [];
-  }
-  return toValidationErrors(
-    refNode.name,
-    PropDefinition.validate(definition.value, propName, value, tokens),
+  return Object.entries(refNode.overrides ?? {}).flatMap(
+    ([propName, value]) => {
+      const binding = Component.binding(component, propName);
+      if (!binding.some) {
+        return [
+          {
+            kind: "undeclared-override" as const,
+            nodeName: refNode.name,
+            prop: propName,
+            message: `component "${refNode.ref}" does not declare public prop "${propName}"`,
+          },
+        ];
+      }
+      const definition = resolvePropDefinition(
+        context,
+        refNode.ref,
+        binding.value,
+        new Set([refNode.ref]),
+      );
+      if (!definition.some) {
+        return [];
+      }
+      return toValidationErrors(
+        refNode.name,
+        PropDefinition.validate(
+          definition.value,
+          propName,
+          value,
+          context.tokens,
+        ),
+      );
+    },
   );
 }
 
 function validateRefNode(
+  context: ReferenceContext,
   refNode: RefNode,
-  components: ComponentSet,
-  tokens: TokenSet,
 ): readonly DesignDocumentValidationError[] {
-  const component = ComponentSet.get(components, refNode.ref);
+  const component = ComponentSet.get(context.components, refNode.ref);
   if (component === undefined) {
     return [
       {
@@ -315,42 +332,38 @@ function validateRefNode(
       },
     ];
   }
-  return Object.entries(refNode.overrides ?? {}).flatMap(([propName, value]) =>
-    validateOverride(refNode, component, components, propName, value, tokens),
-  );
+  return validateOverrides(context, refNode, component);
 }
 
 function validateNodeRefs(
+  context: ReferenceContext,
   node: Node,
-  components: ComponentSet,
-  tokens: TokenSet,
 ): readonly DesignDocumentValidationError[] {
   if (Node.isRef(node)) {
-    return validateRefNode(node, components, tokens);
+    return validateRefNode(context, node);
   }
   return Node.children(node).flatMap((child) =>
-    validateNodeRefs(child, components, tokens),
+    validateNodeRefs(context, child),
   );
 }
 
 function validateBindingTarget(
-  componentName: string,
-  publicPropName: string,
+  context: ReferenceContext,
+  location: BindingLocation,
   binding: PublicPropBinding,
   target: Node,
-  components: ComponentSet,
 ): readonly DesignDocumentValidationError[] {
   if (Node.isRef(target)) {
-    const nested = ComponentSet.get(components, target.ref);
+    const nested = ComponentSet.get(context.components, target.ref);
     if (nested === undefined || Component.isPublicProp(nested, binding.prop)) {
       return [];
     }
     return [
       {
         kind: "dangling-binding-prop",
-        nodeName: componentName,
-        prop: publicPropName,
-        message: `public prop "${publicPropName}" binds to "${binding.prop}", which component "${target.ref}" does not declare as a public prop`,
+        nodeName: location.componentName,
+        prop: location.publicPropName,
+        message: `public prop "${location.publicPropName}" binds to "${binding.prop}", which component "${target.ref}" does not declare as a public prop`,
       },
     ];
   }
@@ -364,23 +377,24 @@ function validateBindingTarget(
   return [
     {
       kind: "dangling-binding-prop",
-      nodeName: componentName,
-      prop: publicPropName,
-      message: `public prop "${publicPropName}" binds to unknown prop "${binding.prop}" of node "${binding.node}"`,
+      nodeName: location.componentName,
+      prop: location.publicPropName,
+      message: `public prop "${location.publicPropName}" binds to unknown prop "${binding.prop}" of node "${binding.node}"`,
     },
   ];
 }
 
 function validateBindings(
+  context: ReferenceContext,
   componentName: string,
   component: Component,
-  components: ComponentSet,
 ): readonly DesignDocumentValidationError[] {
   return Component.publicPropNames(component).flatMap((publicPropName) => {
     const binding = Component.binding(component, publicPropName);
     if (!binding.some) {
       return [];
     }
+    const location: BindingLocation = { componentName, publicPropName };
     const found = Component.findNode(
       component,
       componentName,
@@ -396,13 +410,7 @@ function validateBindings(
         },
       ];
     }
-    return validateBindingTarget(
-      componentName,
-      publicPropName,
-      binding.value,
-      found.value,
-      components,
-    );
+    return validateBindingTarget(context, location, binding.value, found.value);
   });
 }
 
@@ -658,6 +666,11 @@ export const DesignDocument = {
   },
 
   validate(document: DesignDocument): readonly DesignDocumentValidationError[] {
+    const context: ReferenceContext = {
+      components: document.components,
+      tokens: document.tokens,
+    };
+
     const componentErrors = ComponentSet.names(document.components).flatMap(
       (name) => {
         const component = ComponentSet.get(document.components, name);
@@ -674,9 +687,9 @@ export const DesignDocument = {
           ...(component.children ?? []).flatMap((child) =>
             validateNode(child, document.tokens),
           ),
-          ...validateBindings(name, component, document.components),
+          ...validateBindings(context, name, component),
           ...(component.children ?? []).flatMap((child) =>
-            validateNodeRefs(child, document.components, document.tokens),
+            validateNodeRefs(context, child),
           ),
         ];
       },
@@ -694,9 +707,7 @@ export const DesignDocument = {
       ...artboard.children.flatMap((child) =>
         validateNode(child, document.tokens),
       ),
-      ...artboard.children.flatMap((child) =>
-        validateNodeRefs(child, document.components, document.tokens),
-      ),
+      ...artboard.children.flatMap((child) => validateNodeRefs(context, child)),
     ]);
 
     return [
