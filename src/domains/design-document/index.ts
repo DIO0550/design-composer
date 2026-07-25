@@ -4,8 +4,13 @@ import {
   FormatVersion,
   type FormatVersionCompatibility,
 } from "@/domains/format-version";
-import { Node, type RefNode } from "@/domains/node";
-import { PrimitiveSchema } from "@/domains/primitive-schema";
+import { Node, type Props, type RefNode } from "@/domains/node";
+import type { PropValidationError } from "@/domains/primitive-schema";
+import {
+  BOX_SCHEMA,
+  PrimitiveSchema,
+  PropDefinitionRecord,
+} from "@/domains/primitive-schema";
 import { TokenSet } from "@/domains/token";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
@@ -16,6 +21,17 @@ export type DesignDocument = Readonly<{
   tokens: TokenSet;
   components: ComponentSet;
   artboards: readonly Artboard[];
+}>;
+
+export type DesignDocumentValidationErrorKind =
+  | PropValidationError["kind"]
+  | "unknown-type";
+
+export type DesignDocumentValidationError = Readonly<{
+  kind: DesignDocumentValidationErrorKind;
+  nodeName: string;
+  prop?: string;
+  message: string;
 }>;
 
 function canNodeHaveChildren(node: Node): boolean {
@@ -150,6 +166,48 @@ function updateSiblingsOfArtboards(
     return artboard;
   });
   return { artboards: updated, found };
+}
+
+function toValidationErrors(
+  nodeName: string,
+  errors: readonly PropValidationError[],
+): readonly DesignDocumentValidationError[] {
+  return errors.map((error) => ({ ...error, nodeName }));
+}
+
+function validateTypedProps(
+  nodeName: string,
+  type: string,
+  props: Props | undefined,
+  tokens: TokenSet,
+): readonly DesignDocumentValidationError[] {
+  if (!PrimitiveSchema.isPrimitiveType(type)) {
+    return [
+      {
+        kind: "unknown-type",
+        nodeName,
+        message: `unknown type "${type}"`,
+      },
+    ];
+  }
+  const schema = PrimitiveSchema.forType(type);
+  return toValidationErrors(
+    nodeName,
+    PropDefinitionRecord.validate(schema.props, props ?? {}, tokens),
+  );
+}
+
+function validateNode(
+  node: Node,
+  tokens: TokenSet,
+): readonly DesignDocumentValidationError[] {
+  if (Node.isRef(node)) {
+    return [];
+  }
+  return [
+    ...validateTypedProps(node.name, node.type, node.props, tokens),
+    ...Node.children(node).flatMap((child) => validateNode(child, tokens)),
+  ];
 }
 
 function toComponent(node: Node): Component {
@@ -391,5 +449,43 @@ export const DesignDocument = {
       nodes: nodes.map((node) => Node.rename(node, renameMap)),
       renameMap,
     };
+  },
+
+  validate(document: DesignDocument): readonly DesignDocumentValidationError[] {
+    const componentErrors = ComponentSet.names(document.components).flatMap(
+      (name) => {
+        const component = ComponentSet.get(document.components, name);
+        if (component === undefined) {
+          return [];
+        }
+        return [
+          ...validateTypedProps(
+            name,
+            component.type,
+            component.props,
+            document.tokens,
+          ),
+          ...(component.children ?? []).flatMap((child) =>
+            validateNode(child, document.tokens),
+          ),
+        ];
+      },
+    );
+
+    const artboardErrors = document.artboards.flatMap((artboard) => [
+      ...toValidationErrors(
+        artboard.name,
+        PropDefinitionRecord.validate(
+          BOX_SCHEMA.props,
+          artboard.props ?? {},
+          document.tokens,
+        ),
+      ),
+      ...artboard.children.flatMap((child) =>
+        validateNode(child, document.tokens),
+      ),
+    ]);
+
+    return [...componentErrors, ...artboardErrors];
   },
 } as const;
