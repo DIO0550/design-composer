@@ -13,7 +13,7 @@ test("存在しない部品名を参照すると dangling-ref エラーになる
     ],
   });
 
-  const errors = DesignDocument.validate(document);
+  const errors = DesignDocument.collectErrors(document);
 
   expect(errors).toEqual([
     expect.objectContaining({ kind: "dangling-ref", nodeName: "instance" }),
@@ -30,7 +30,7 @@ test("部品の内部にある ref も dangling-ref の検出対象になる", (
     },
   });
 
-  const errors = DesignDocument.validate(document);
+  const errors = DesignDocument.collectErrors(document);
 
   expect(errors).toEqual([
     expect.objectContaining({ kind: "dangling-ref", nodeName: "card-slot" }),
@@ -56,7 +56,7 @@ test("複数の dangling ref があるとすべて報告される", () => {
     ],
   });
 
-  const errors = DesignDocument.validate(document);
+  const errors = DesignDocument.collectErrors(document);
 
   expect(errors).toEqual([
     expect.objectContaining({ kind: "dangling-ref", nodeName: "instance-1" }),
@@ -74,7 +74,7 @@ test("自分自身を参照する部品は circular-ref エラーになる", () 
     },
   });
 
-  const errors = DesignDocument.validate(document);
+  const errors = DesignDocument.collectErrors(document);
 
   expect(errors).toEqual([
     expect.objectContaining({ kind: "circular-ref", nodeName: "card" }),
@@ -89,7 +89,7 @@ test("互いを参照し合う2つの部品は両方が circular-ref エラー�
     },
   });
 
-  const errors = DesignDocument.validate(document);
+  const errors = DesignDocument.collectErrors(document);
 
   expect(errors).toEqual([
     expect.objectContaining({ kind: "circular-ref", nodeName: "a" }),
@@ -106,7 +106,7 @@ test("3つの部品を経由する循環参照も検出される", () => {
     },
   });
 
-  const errors = DesignDocument.validate(document);
+  const errors = DesignDocument.collectErrors(document);
 
   expect(errors).toEqual([
     expect.objectContaining({ kind: "circular-ref", nodeName: "a" }),
@@ -134,5 +134,5 @@ test("循環していない入れ子の部品参照はエラーにならない",
     ],
   });
 
-  expect(DesignDocument.validate(document)).toEqual([]);
+  expect(DesignDocument.collectErrors(document)).toEqual([]);
 });

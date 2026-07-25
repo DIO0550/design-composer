@@ -76,7 +76,7 @@ export const PropDefinition = {
     return props[definition.enabledWhen.prop] === definition.enabledWhen.equals;
   },
 
-  validate(
+  collectErrors(
     definition: PropDefinition,
     propName: string,
     value: PropValue,
@@ -129,7 +129,7 @@ export const PropDefinitionRecord = {
     return Object.keys(schema);
   },
 
-  validate(
+  collectErrors(
     schema: PropDefinitionRecord,
     props: Props,
     tokens: TokenSet,
@@ -145,7 +145,7 @@ export const PropDefinitionRecord = {
           },
         ];
       }
-      return PropDefinition.validate(definition, propName, value, tokens);
+      return PropDefinition.collectErrors(definition, propName, value, tokens);
     });
   },
 } as const;

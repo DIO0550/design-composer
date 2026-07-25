@@ -35,7 +35,7 @@ test("すべての props がスキーマに適合するドキュメントはエ�
     ],
   });
 
-  expect(DesignDocument.validate(document)).toEqual([]);
+  expect(DesignDocument.collectErrors(document)).toEqual([]);
 });
 
 test("props を指定しないノードはデフォルト値が省略されているだけなのでエラーにならない", () => {
@@ -50,7 +50,7 @@ test("props を指定しないノードはデフォルト値が省略されて�
     ],
   });
 
-  expect(DesignDocument.validate(document)).toEqual([]);
+  expect(DesignDocument.collectErrors(document)).toEqual([]);
 });
 
 test("ref ノードはプリミティブとしてのスキーマ検証を受けない", () => {
@@ -66,7 +66,7 @@ test("ref ノードはプリミティブとしてのスキーマ検証を受け�
     ],
   });
 
-  expect(DesignDocument.validate(document)).toEqual([]);
+  expect(DesignDocument.collectErrors(document)).toEqual([]);
 });
 
 test("複数の違反がある場合、最初の1件で止まらず全件報告される", () => {
@@ -84,7 +84,7 @@ test("複数の違反がある場合、最初の1件で止まらず全件報告�
     ],
   });
 
-  const errors = DesignDocument.validate(document);
+  const errors = DesignDocument.collectErrors(document);
 
   expect(errors).toHaveLength(2);
   expect(errors.map((error) => error.nodeName)).toEqual(["box-1", "label-1"]);

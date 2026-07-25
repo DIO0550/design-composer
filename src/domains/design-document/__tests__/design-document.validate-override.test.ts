@@ -22,7 +22,7 @@ test("publicProps に宣言の無いキーを上書きすると undeclared-overr
     ],
   });
 
-  const errors = DesignDocument.validate(document);
+  const errors = DesignDocument.collectErrors(document);
 
   expect(errors).toEqual([
     expect.objectContaining({
@@ -48,7 +48,7 @@ test("publicProps を持たない部品への上書きは undeclared-override �
     ],
   });
 
-  const errors = DesignDocument.validate(document);
+  const errors = DesignDocument.collectErrors(document);
 
   expect(errors).toEqual([
     expect.objectContaining({
@@ -80,7 +80,7 @@ test("宣言済みの publicProps を上書きしてもエラーにならない"
     ],
   });
 
-  expect(DesignDocument.validate(document)).toEqual([]);
+  expect(DesignDocument.collectErrors(document)).toEqual([]);
 });
 
 test("上書き値が binding 先 prop の enum に無い値だと enum-violation エラーになる", () => {
@@ -108,7 +108,7 @@ test("上書き値が binding 先 prop の enum に無い値だと enum-violatio
     ],
   });
 
-  const errors = DesignDocument.validate(document);
+  const errors = DesignDocument.collectErrors(document);
 
   expect(errors).toEqual([
     expect.objectContaining({
@@ -140,7 +140,7 @@ test("上書き値が binding 先 prop の literalType と異なると literal-t
     ],
   });
 
-  const errors = DesignDocument.validate(document);
+  const errors = DesignDocument.collectErrors(document);
 
   expect(errors).toEqual([
     expect.objectContaining({
@@ -172,7 +172,7 @@ test("上書き値が存在しないトークン名を指すと dangling-token �
     ],
   });
 
-  const errors = DesignDocument.validate(document);
+  const errors = DesignDocument.collectErrors(document);
 
   expect(errors).toEqual([
     expect.objectContaining({
@@ -208,7 +208,7 @@ test("ネストした部品の publicProps 経由でも上書き値のドメイ�
     ],
   });
 
-  const errors = DesignDocument.validate(document);
+  const errors = DesignDocument.collectErrors(document);
 
   expect(errors).toEqual([
     expect.objectContaining({
@@ -247,7 +247,7 @@ test("複数の overrides の違反がすべて報告される", () => {
     ],
   });
 
-  const errors = DesignDocument.validate(document);
+  const errors = DesignDocument.collectErrors(document);
 
   expect(errors).toEqual([
     expect.objectContaining({ kind: "literal-type-mismatch", prop: "label" }),

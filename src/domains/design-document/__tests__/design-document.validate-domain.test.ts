@@ -15,7 +15,7 @@ test("enum 外の値を指定すると enum-violation エラーになる", () =>
     ],
   });
 
-  const errors = DesignDocument.validate(document);
+  const errors = DesignDocument.collectErrors(document);
 
   expect(errors).toEqual([
     expect.objectContaining({
@@ -44,7 +44,7 @@ test("literalType と異なる型の値を指定すると literal-type-mismatch 
     ],
   });
 
-  const errors = DesignDocument.validate(document);
+  const errors = DesignDocument.collectErrors(document);
 
   expect(errors).toEqual([
     expect.objectContaining({
@@ -73,7 +73,7 @@ test("存在しないトークン名を参照すると dangling-token エラー�
     ],
   });
 
-  const errors = DesignDocument.validate(document);
+  const errors = DesignDocument.collectErrors(document);
 
   expect(errors).toEqual([
     expect.objectContaining({
@@ -91,7 +91,7 @@ test("components 内のノードもスキーマ検証の対象になる", () => 
     },
   });
 
-  const errors = DesignDocument.validate(document);
+  const errors = DesignDocument.collectErrors(document);
 
   expect(errors).toEqual([
     expect.objectContaining({ kind: "enum-violation", nodeName: "card" }),

@@ -25,7 +25,7 @@ test("循環参照する部品への上書きがあっても検証が終了し�
     ],
   });
 
-  const errors = DesignDocument.validate(document);
+  const errors = DesignDocument.collectErrors(document);
 
   expect(errors).toEqual([
     expect.objectContaining({ kind: "circular-ref", nodeName: "a" }),
@@ -44,7 +44,7 @@ test("dangling ref なノードへ binding していても dangling-ref だけ�
     },
   });
 
-  const errors = DesignDocument.validate(document);
+  const errors = DesignDocument.collectErrors(document);
 
   expect(errors).toEqual([
     expect.objectContaining({
@@ -65,7 +65,7 @@ test("未知の type のノードへ binding していても unknown-type だけ
     },
   });
 
-  const errors = DesignDocument.validate(document);
+  const errors = DesignDocument.collectErrors(document);
 
   expect(errors).toEqual([
     expect.objectContaining({
@@ -94,5 +94,5 @@ test("overrides を持たない ref ノードはエラーにならない", () =>
     ],
   });
 
-  expect(DesignDocument.validate(document)).toEqual([]);
+  expect(DesignDocument.collectErrors(document)).toEqual([]);
 });

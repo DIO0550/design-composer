@@ -10,7 +10,12 @@ test("enum の値が values に含まれる場合、validate はエラーを返�
   } as const;
 
   expect(
-    PropDefinition.validate(definition, "direction", "row", TokenSet.empty()),
+    PropDefinition.collectErrors(
+      definition,
+      "direction",
+      "row",
+      TokenSet.empty(),
+    ),
   ).toEqual([]);
 });
 
@@ -22,7 +27,7 @@ test("enum の値が values に含まれない場合、validate は enum-violati
   } as const;
 
   expect(
-    PropDefinition.validate(
+    PropDefinition.collectErrors(
       definition,
       "direction",
       "diagonal",
@@ -41,7 +46,7 @@ test("literalType と一致する値の場合、validate はエラーを返さ�
   } as const;
 
   expect(
-    PropDefinition.validate(definition, "width", 100, TokenSet.empty()),
+    PropDefinition.collectErrors(definition, "width", 100, TokenSet.empty()),
   ).toEqual([]);
 });
 
@@ -53,7 +58,7 @@ test("literalType と異なる値の場合、validate は literal-type-mismatch 
   } as const;
 
   expect(
-    PropDefinition.validate(definition, "width", "100", TokenSet.empty()),
+    PropDefinition.collectErrors(definition, "width", "100", TokenSet.empty()),
   ).toEqual([
     expect.objectContaining({ kind: "literal-type-mismatch", prop: "width" }),
   ]);
@@ -68,7 +73,7 @@ test("トークンセットに存在する名前の場合、validate はエラ�
   const tokens = { ...TokenSet.empty(), colors: { "gray-900": "#111111" } };
 
   expect(
-    PropDefinition.validate(definition, "background", "gray-900", tokens),
+    PropDefinition.collectErrors(definition, "background", "gray-900", tokens),
   ).toEqual([]);
 });
 
@@ -80,7 +85,7 @@ test("トークンセットに存在しない名前の場合、validate は dang
   } as const;
 
   expect(
-    PropDefinition.validate(
+    PropDefinition.collectErrors(
       definition,
       "background",
       "no-such-color",
@@ -91,13 +96,13 @@ test("トークンセットに存在しない名前の場合、validate は dang
   ]);
 });
 
-test("スキーマに存在しない prop を渡すと、PropDefinitionRecord.validate は unknown-prop を返す", () => {
+test("スキーマに存在しない prop を渡すと、PropDefinitionRecord.collectErrors は unknown-prop を返す", () => {
   const schema = {
     direction: { domain: "enum", values: ["row", "column"], group: "layout" },
-  } satisfies Parameters<typeof PropDefinitionRecord.validate>[0];
+  } satisfies Parameters<typeof PropDefinitionRecord.collectErrors>[0];
 
   expect(
-    PropDefinitionRecord.validate(
+    PropDefinitionRecord.collectErrors(
       schema,
       { unknownProp: "x" },
       TokenSet.empty(),
@@ -107,13 +112,13 @@ test("スキーマに存在しない prop を渡すと、PropDefinitionRecord.va
   ]);
 });
 
-test("複数の props に違反がある場合、PropDefinitionRecord.validate は最初の1件で止まらず全件返す", () => {
+test("複数の props に違反がある場合、PropDefinitionRecord.collectErrors は最初の1件で止まらず全件返す", () => {
   const schema = {
     direction: { domain: "enum", values: ["row", "column"], group: "layout" },
     width: { domain: "literal", literalType: "number", group: "size" },
-  } satisfies Parameters<typeof PropDefinitionRecord.validate>[0];
+  } satisfies Parameters<typeof PropDefinitionRecord.collectErrors>[0];
 
-  const errors = PropDefinitionRecord.validate(
+  const errors = PropDefinitionRecord.collectErrors(
     schema,
     { direction: "diagonal", width: "100" },
     TokenSet.empty(),

@@ -12,7 +12,7 @@ test("存在しない内部ノード名への binding は dangling-binding-node 
     },
   });
 
-  const errors = DesignDocument.validate(document);
+  const errors = DesignDocument.collectErrors(document);
 
   expect(errors).toEqual([
     expect.objectContaining({
@@ -34,7 +34,7 @@ test("存在しない prop への binding は dangling-binding-prop エラーに
     },
   });
 
-  const errors = DesignDocument.validate(document);
+  const errors = DesignDocument.collectErrors(document);
 
   expect(errors).toEqual([
     expect.objectContaining({
@@ -56,7 +56,7 @@ test("binding 先ノードが持たない型の prop への binding は dangling
     },
   });
 
-  const errors = DesignDocument.validate(document);
+  const errors = DesignDocument.collectErrors(document);
 
   expect(errors).toEqual([
     expect.objectContaining({
@@ -77,7 +77,7 @@ test("部品のルートノードへの binding は有効になる", () => {
     },
   });
 
-  expect(DesignDocument.validate(document)).toEqual([]);
+  expect(DesignDocument.collectErrors(document)).toEqual([]);
 });
 
 test("内部ノードへの binding は有効になる", () => {
@@ -91,7 +91,7 @@ test("内部ノードへの binding は有効になる", () => {
     },
   });
 
-  expect(DesignDocument.validate(document)).toEqual([]);
+  expect(DesignDocument.collectErrors(document)).toEqual([]);
 });
 
 test("ネストした部品が公開する publicProps への binding は有効になる", () => {
@@ -109,7 +109,7 @@ test("ネストした部品が公開する publicProps への binding は有効�
     },
   });
 
-  expect(DesignDocument.validate(document)).toEqual([]);
+  expect(DesignDocument.collectErrors(document)).toEqual([]);
 });
 
 test("ネストした部品が公開していない prop への binding は dangling-binding-prop エラーになる", () => {
@@ -127,7 +127,7 @@ test("ネストした部品が公開していない prop への binding は dang
     },
   });
 
-  const errors = DesignDocument.validate(document);
+  const errors = DesignDocument.collectErrors(document);
 
   expect(errors).toEqual([
     expect.objectContaining({
@@ -153,7 +153,7 @@ test("ネストした部品の内部ノードへ直接 binding すると danglin
     },
   });
 
-  const errors = DesignDocument.validate(document);
+  const errors = DesignDocument.collectErrors(document);
 
   expect(errors).toEqual([
     expect.objectContaining({
@@ -178,7 +178,7 @@ test("複数の binding の不整合がすべて報告される", () => {
     },
   });
 
-  const errors = DesignDocument.validate(document);
+  const errors = DesignDocument.collectErrors(document);
 
   expect(errors).toEqual([
     expect.objectContaining({

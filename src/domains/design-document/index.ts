@@ -218,7 +218,7 @@ function collectTypedPropErrors(
     return [{ kind: "unknown-type", message: `unknown type "${type}"` }];
   }
   const schema = PrimitiveSchema.forType(type);
-  return PropDefinitionRecord.validate(schema.props, props ?? {}, tokens);
+  return PropDefinitionRecord.collectErrors(schema.props, props ?? {}, tokens);
 }
 
 function collectNodeErrors(
@@ -316,7 +316,7 @@ function collectOverrideErrors(
       if (!definition.some) {
         return [];
       }
-      return PropDefinition.validate(
+      return PropDefinition.collectErrors(
         definition.value,
         propName,
         value,
@@ -456,7 +456,7 @@ function collectArtboardErrors(
 ): readonly DesignDocumentValidationError[] {
   const propErrors = locate(
     { nodeName: artboard.name },
-    PropDefinitionRecord.validate(
+    PropDefinitionRecord.collectErrors(
       BOX_SCHEMA.props,
       artboard.props ?? {},
       context.tokens,
@@ -712,7 +712,9 @@ export const DesignDocument = {
     };
   },
 
-  validate(document: DesignDocument): readonly DesignDocumentValidationError[] {
+  collectErrors(
+    document: DesignDocument,
+  ): readonly DesignDocumentValidationError[] {
     const context: ReferenceContext = {
       components: document.components,
       tokens: document.tokens,
