@@ -194,7 +194,8 @@ type ErrorLocation = Readonly<{
   prop?: string;
 }>;
 
-function locate(
+/** 位置を持たないエラーに発生位置を付与し、報告用のエラーに変換する。 */
+function withLocation(
   location: ErrorLocation,
   errors: readonly UnlocatedError[],
 ): readonly DesignDocumentValidationError[] {
@@ -228,7 +229,7 @@ function collectNodeErrors(
   if (Node.isRef(node)) {
     return [];
   }
-  const ownErrors = locate(
+  const ownErrors = withLocation(
     { nodeName: node.name },
     collectTypedPropErrors(node.type, node.props, tokens),
   );
@@ -347,7 +348,10 @@ function collectNodeRefErrors(
   node: Node,
 ): readonly DesignDocumentValidationError[] {
   if (Node.isRef(node)) {
-    return locate({ nodeName: node.name }, collectRefNodeErrors(context, node));
+    return withLocation(
+      { nodeName: node.name },
+      collectRefNodeErrors(context, node),
+    );
   }
   return Node.children(node).flatMap((child) =>
     collectNodeRefErrors(context, child),
@@ -406,14 +410,14 @@ function collectBindingErrors(
       binding.value.node,
     );
     if (!found.some) {
-      return locate(location, [
+      return withLocation(location, [
         {
           kind: "dangling-binding-node",
           message: `unknown node "${binding.value.node}"`,
         },
       ]);
     }
-    return locate(
+    return withLocation(
       location,
       collectBindingTargetErrors(context, binding.value, found.value),
     );
@@ -436,7 +440,7 @@ function collectComponentErrors(
   component: Component,
 ): readonly DesignDocumentValidationError[] {
   const children = component.children ?? [];
-  const propErrors = locate(
+  const propErrors = withLocation(
     { nodeName: name },
     collectTypedPropErrors(component.type, component.props, context.tokens),
   );
@@ -454,7 +458,7 @@ function collectArtboardErrors(
   context: ReferenceContext,
   artboard: Artboard,
 ): readonly DesignDocumentValidationError[] {
-  const propErrors = locate(
+  const propErrors = withLocation(
     { nodeName: artboard.name },
     PropDefinitionRecord.collectErrors(
       BOX_SCHEMA.props,
