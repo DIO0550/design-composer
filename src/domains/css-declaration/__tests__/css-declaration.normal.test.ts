@@ -43,11 +43,19 @@ test("宣言を持たない style は空文字になる", () => {
   expect(CssDeclarations.toStyleText(CssDeclarations.from([]))).toBe("");
 });
 
-test("まとめた宣言は元の並び順のまま取り出せる", () => {
-  const source = [
+test("カスタムプロパティの定義も宣言として扱える", () => {
+  const declarations = CssDeclarations.from([
+    CssDeclaration.create("--spacing-md", "16px"),
+  ]);
+
+  expect(CssDeclarations.toStyleText(declarations)).toBe("--spacing-md:16px");
+});
+
+test("まとめた宣言は元の並び順を保つ", () => {
+  const declarations = CssDeclarations.from([
     CssDeclaration.create("display", "flex"),
     CssDeclaration.create("gap", "var(--spacing-md)"),
-  ];
+  ]);
 
-  expect(CssDeclarations.entries(CssDeclarations.from(source))).toEqual(source);
+  expect(Object.keys(declarations)).toEqual(["display", "gap"]);
 });

@@ -3,13 +3,13 @@ import {
   type CompiledElement,
   TextElement,
 } from "@/domains/compiled-element";
+import type { CssProperty } from "@/domains/css-declaration";
 import { CssDeclaration, CssDeclarations } from "@/domains/css-declaration";
-import type { Axis } from "@/domains/css-direction";
 import { CssDirection } from "@/domains/css-direction";
 import type { Props, PropValue } from "@/domains/node";
 import { Padding } from "@/domains/padding";
 import { PrimitiveSchema } from "@/domains/primitive-schema";
-import { Px } from "@/domains/px";
+import { Size } from "@/domains/size";
 import { TypographyField, TypographyToken } from "@/domains/token";
 import type { ExpandedNode } from "@/services/instance-composition";
 import { ResolvedProps } from "@/services/resolved-props";
@@ -31,7 +31,7 @@ export type ParentContext = Readonly<{ direction: CssDirection }>;
  * (トークンの値は参照しないため、トークン編集は再コンパイルなしに CSS 経由で波及する)。
  */
 function tokenDeclarations(
-  property: string,
+  property: CssProperty,
   kind: SingleVariableTokenKind,
   value: PropValue | undefined,
 ): readonly CssDeclaration[] {
@@ -41,50 +41,9 @@ function tokenDeclarations(
   return [CssDeclaration.create(property, TokenCss.ref(kind, String(value)))];
 }
 
-/** 2軸のパディングを宣言へ合成する。合成の規則は Padding が持つ。 */
-function paddingDeclarations(
-  paddingY: PropValue | undefined,
-  paddingX: PropValue | undefined,
-): readonly CssDeclaration[] {
-  return Padding.declarations(Padding.create(paddingY, paddingX), (token) =>
-    TokenCss.ref("spacing", token),
-  );
-}
-
-/**
- * 主軸 / 交差軸の出し分けは CssDirection が持つ。
- * 親を持たない位置では flex アイテムではないため、どちらの宣言も意味を持たず出力しない。
- */
-function fillDeclarations(
-  axis: Axis,
-  parent: ParentContext | undefined,
-): readonly CssDeclaration[] {
-  if (parent === undefined) {
-    return [];
-  }
-  return [CssDirection.fillDeclaration(parent.direction, axis)];
-}
-
-/**
- * サイズはモード(enum)と値(number)の 2 prop で決まる。
- * `fixed` 以外では値 prop は `enabledWhen` により無効なので読まない。
- */
-function sizeDeclarations(
-  axis: Axis,
-  mode: PropValue | undefined,
-  value: PropValue | undefined,
-  parent: ParentContext | undefined,
-): readonly CssDeclaration[] {
-  if (mode === "hug") {
-    return [CssDeclaration.create(axis, "fit-content")];
-  }
-  if (mode === "fill") {
-    return fillDeclarations(axis, parent);
-  }
-  if (mode === "fixed" && typeof value === "number") {
-    return [CssDeclaration.create(axis, Px.create(value))];
-  }
-  return [];
+/** spacing トークン名を `var()` 参照に変換する。 */
+function spacingRef(token: string): string {
+  return TokenCss.ref("spacing", token);
 }
 
 /** 初期値と同じ `visible` は宣言を出力しない (docs/03 の表は clip のみを規定)。 */
@@ -104,11 +63,22 @@ function boxDeclarations(
     CssDeclaration.create("display", "flex"),
     CssDeclaration.create("flex-direction", String(props.direction)),
     ...tokenDeclarations("gap", "spacing", props.gap),
-    ...paddingDeclarations(props.paddingY, props.paddingX),
+    ...Padding.declarations(
+      Padding.create(props.paddingY, props.paddingX),
+      spacingRef,
+    ),
     CssDeclaration.create("align-items", String(props.align)),
     CssDeclaration.create("justify-content", String(props.justify)),
-    ...sizeDeclarations("width", props.widthMode, props.width, parent),
-    ...sizeDeclarations("height", props.heightMode, props.height, parent),
+    ...Size.declarations(
+      Size.create(props.widthMode, props.width),
+      "width",
+      parent?.direction,
+    ),
+    ...Size.declarations(
+      Size.create(props.heightMode, props.height),
+      "height",
+      parent?.direction,
+    ),
     ...tokenDeclarations("background", "colors", props.background),
     ...tokenDeclarations("border-radius", "radius", props.radius),
     ...tokenDeclarations("box-shadow", "shadows", props.shadow),

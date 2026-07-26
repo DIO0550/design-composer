@@ -1,17 +1,54 @@
+import type { TypographyCssProperty } from "@/domains/token";
+
+/**
+ * 出力し得る CSS プロパティ名。
+ * プリミティブの語彙が閉じている (docs/03) ため、そこから出力されるプロパティも
+ * 閉じた集合として型で表し、任意の文字列を宣言にできないようにする。
+ * typography 由来のプロパティはトークン側の対応表から取り込み二重管理しない。
+ */
+export type CssProperty =
+  | "display"
+  | "flex-direction"
+  | "flex-grow"
+  | "align-self"
+  | "align-items"
+  | "justify-content"
+  | "gap"
+  | "padding"
+  | "width"
+  | "height"
+  | "background"
+  | "border-radius"
+  | "box-shadow"
+  | "overflow"
+  | "color"
+  | "text-align"
+  | TypographyCssProperty;
+
+/** CSS カスタムプロパティ名。 */
+export type CssVariableName = `--${string}`;
+
+/** 宣言の左辺に書けるもの。プロパティか、カスタムプロパティの定義。 */
+export type CssDeclarationName = CssProperty | CssVariableName;
+
 /** CSS の1宣言。プロパティ名と値は対で意味を持つため1つの型にまとめる。 */
 export type CssDeclaration = Readonly<{
-  property: string;
+  property: CssDeclarationName;
   value: string;
 }>;
 
+function declarationText(property: string, value: string): string {
+  return `${property}:${value}`;
+}
+
 export const CssDeclaration = {
-  create(property: string, value: string): CssDeclaration {
+  create(property: CssDeclarationName, value: string): CssDeclaration {
     return { property, value };
   },
 
   /** style 属性へ載せる形の1宣言。 */
   text(declaration: CssDeclaration): string {
-    return `${declaration.property}:${declaration.value}`;
+    return declarationText(declaration.property, declaration.value);
   },
 } as const;
 
@@ -32,16 +69,10 @@ export const CssDeclarations = {
     );
   },
 
-  entries(declarations: CssDeclarations): readonly CssDeclaration[] {
-    return Object.entries(declarations).map(([property, value]) =>
-      CssDeclaration.create(property, value),
-    );
-  },
-
   /** style 属性へ載せられる宣言の並びに直列化する。 */
   toStyleText(declarations: CssDeclarations): string {
-    return CssDeclarations.entries(declarations)
-      .map(CssDeclaration.text)
+    return Object.entries(declarations)
+      .map(([property, value]) => declarationText(property, value))
       .join(";");
   },
 } as const;

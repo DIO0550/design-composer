@@ -1,3 +1,4 @@
+import type { CssVariableName } from "@/domains/css-declaration";
 import { CssDeclarations } from "@/domains/css-declaration";
 import { Px } from "@/domains/px";
 import {
@@ -9,8 +10,7 @@ import {
   TypographyToken,
 } from "@/domains/token";
 
-/** CSS カスタムプロパティ名。 */
-export type CssVariableName = `--${string}`;
+export type { CssVariableName };
 
 /** `var()` によるカスタムプロパティ参照。 */
 export type CssVariableReference = `var(${CssVariableName})`;
