@@ -1,21 +1,17 @@
+import type { ShadowToken } from "./shadow";
+import type { TypographyToken } from "./typography";
+
+export { type BoxShadowValue, ShadowToken } from "./shadow";
+export {
+  type TypographyCssProperty,
+  type TypographyField,
+  TypographyFieldRef,
+  TypographyToken,
+} from "./typography";
+
 export type ColorToken = string;
 export type SpacingToken = number;
 export type RadiusToken = number;
-
-export type ShadowToken = Readonly<{
-  x: number;
-  y: number;
-  blur: number;
-  spread?: number;
-  color: string;
-}>;
-
-export type TypographyToken = Readonly<{
-  fontSize: number;
-  lineHeight: number;
-  fontWeight: number;
-  fontFamily?: string;
-}>;
 
 export type TokenSet = Readonly<{
   colors: Readonly<Record<string, ColorToken>>;
