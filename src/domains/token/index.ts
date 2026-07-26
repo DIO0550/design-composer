@@ -4,7 +4,7 @@ import type { TypographyToken } from "./typography";
 export { type BoxShadowValue, ShadowToken } from "./shadow";
 export {
   type TypographyCssProperty,
-  type TypographyField,
+  TypographyField,
   TypographyFieldRef,
   TypographyToken,
 } from "./typography";
