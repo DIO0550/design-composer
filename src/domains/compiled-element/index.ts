@@ -1,3 +1,4 @@
+import type { CssDeclaration } from "@/domains/css-declaration";
 import { CssDeclarations } from "@/domains/css-declaration";
 
 /**
@@ -23,18 +24,34 @@ export type TextElement = Readonly<{
 export type CompiledElement = BoxElement | TextElement;
 
 export const BoxElement = {
+  /** 宣言の並びをそのまま受け取り、style へのまとめ上げはここで行う。 */
   create(
     name: string,
-    style: CssDeclarations,
+    declarations: readonly CssDeclaration[],
     children: readonly CompiledElement[],
   ): BoxElement {
-    return { kind: "box", name, style, children };
+    return {
+      kind: "box",
+      name,
+      style: CssDeclarations.from(declarations),
+      children,
+    };
   },
 } as const;
 
 export const TextElement = {
-  create(name: string, style: CssDeclarations, content: string): TextElement {
-    return { kind: "text", name, style, content };
+  /** 宣言の並びをそのまま受け取り、style へのまとめ上げはここで行う。 */
+  create(
+    name: string,
+    declarations: readonly CssDeclaration[],
+    content: string,
+  ): TextElement {
+    return {
+      kind: "text",
+      name,
+      style: CssDeclarations.from(declarations),
+      content,
+    };
   },
 } as const;
 

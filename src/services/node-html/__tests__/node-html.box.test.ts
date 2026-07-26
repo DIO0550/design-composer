@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { CompiledElement } from "@/domains/compiled-element";
 import type { ExpandedNode } from "@/services/instance-composition";
 import { Result } from "@/utils/Result";
 import { NodeHtml } from "../index";
@@ -124,7 +125,7 @@ test("style は style 属性へ載せられる宣言の並びに直列化でき�
     }),
   );
 
-  expect(NodeHtml.toStyleText(compiled.style)).toBe(
+  expect(CompiledElement.styleText(compiled)).toBe(
     "display:flex;flex-direction:row;gap:var(--spacing-md);align-items:stretch;justify-content:start;width:fit-content;height:fit-content",
   );
 });

@@ -3,8 +3,8 @@ import {
   type CompiledElement,
   TextElement,
 } from "@/domains/compiled-element";
-import type { CssProperty } from "@/domains/css-declaration";
-import { CssDeclaration, CssDeclarations } from "@/domains/css-declaration";
+import type { CssDeclarations, CssProperty } from "@/domains/css-declaration";
+import { CssDeclaration } from "@/domains/css-declaration";
 import { CssDirection } from "@/domains/css-direction";
 import type { Props, PropValue } from "@/domains/node";
 import { Padding } from "@/domains/padding";
@@ -120,7 +120,7 @@ function compileText(name: string, props: Props): CompiledElement {
   const resolved = ResolvedProps.resolve("Text", props);
   return TextElement.create(
     name,
-    CssDeclarations.from(textDeclarations(resolved)),
+    textDeclarations(resolved),
     String(resolved.content),
   );
 }
@@ -136,11 +136,7 @@ function compileBox(
   return Result.map(
     compileNodes(node.children ?? [], childParent),
     (children): CompiledElement =>
-      BoxElement.create(
-        node.name,
-        CssDeclarations.from(boxDeclarations(resolved, parent)),
-        children,
-      ),
+      BoxElement.create(node.name, boxDeclarations(resolved, parent), children),
   );
 }
 
@@ -193,10 +189,5 @@ export const NodeHtml = {
     parent?: ParentContext,
   ): Result<readonly CompiledElement[], Error> {
     return compileNodes(nodes, parent);
-  },
-
-  /** style 属性へ載せられる宣言の並びに直列化する。 */
-  toStyleText(style: CssDeclarations): string {
-    return CssDeclarations.toStyleText(style);
   },
 } as const;

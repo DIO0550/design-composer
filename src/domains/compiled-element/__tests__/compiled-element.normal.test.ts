@@ -1,10 +1,16 @@
 import { expect, test } from "vitest";
-import type { CssDeclarationName } from "@/domains/css-declaration";
-import { CssDeclaration, CssDeclarations } from "@/domains/css-declaration";
+import type {
+  CssDeclaration,
+  CssDeclarationName,
+} from "@/domains/css-declaration";
+import { CssDeclaration as Declaration } from "@/domains/css-declaration";
 import { BoxElement, CompiledElement, TextElement } from "../index";
 
-function style(property: CssDeclarationName, value: string): CssDeclarations {
-  return CssDeclarations.from([CssDeclaration.create(property, value)]);
+function style(
+  property: CssDeclarationName,
+  value: string,
+): readonly CssDeclaration[] {
+  return [Declaration.create(property, value)];
 }
 
 test("Box の要素は子を持つ", () => {
