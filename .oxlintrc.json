@@ -1,5 +1,8 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "ignorePatterns": [
+    ".github/scripts/storybook-visual-regression.mjs"
+  ],
   "rules": {
     "curly": ["error", "all"],
     "max-depth": ["error", { "max": 3 }]
