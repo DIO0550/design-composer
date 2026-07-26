@@ -1,7 +1,13 @@
+import {
+  BoxElement,
+  type CompiledElement,
+  TextElement,
+} from "@/domains/compiled-element";
 import { CssDeclaration, CssDeclarations } from "@/domains/css-declaration";
+import type { Axis } from "@/domains/css-direction";
+import { CssDirection } from "@/domains/css-direction";
 import type { Props, PropValue } from "@/domains/node";
 import { Padding } from "@/domains/padding";
-import type { BOX_SCHEMA } from "@/domains/primitive-schema";
 import { PrimitiveSchema } from "@/domains/primitive-schema";
 import { Px } from "@/domains/px";
 import { TypographyField, TypographyToken } from "@/domains/token";
@@ -11,39 +17,14 @@ import type { SingleVariableTokenKind } from "@/services/token-css";
 import { TokenCss } from "@/services/token-css";
 import { Result } from "@/utils/Result";
 
-export type { CssDeclarations };
-
-/** Box の `direction` が取り得る値。スキーマ定数から導出し二重管理しない。 */
-export type Direction =
-  (typeof BOX_SCHEMA)["props"]["direction"]["values"][number];
+export type { CompiledElement, CssDeclarations };
 
 /**
  * `widthMode` / `heightMode` の `fill` の出し分けにだけ必要な親の情報
  * (docs/03「`widthMode: fill` の出し分けが唯一親コンテキストに依存するコンパイル」)。
  * 親を持たない位置では `undefined` を渡す。
  */
-export type ParentContext = Readonly<{ direction: Direction }>;
-
-/**
- * コンパイル結果の要素。出力はすべて `div` + インライン style であり
- * (docs/03「ノードはすべて div ＋インライン style」)、タグの区別は持たない。
- * Box は子を、Text は文字列を持ち、両方を持つ状態は構造上作れない。
- */
-export type CompiledElement =
-  | Readonly<{
-      kind: "box";
-      name: string;
-      style: CssDeclarations;
-      children: readonly CompiledElement[];
-    }>
-  | Readonly<{
-      kind: "text";
-      name: string;
-      style: CssDeclarations;
-      content: string;
-    }>;
-
-type Axis = "width" | "height";
+export type ParentContext = Readonly<{ direction: CssDirection }>;
 
 /**
  * トークン参照 prop を `var()` 参照の宣言にする。未指定の prop は宣言を出力しない
@@ -60,27 +41,18 @@ function tokenDeclarations(
   return [CssDeclaration.create(property, TokenCss.ref(kind, String(value)))];
 }
 
-/** 2軸のパディングを `padding` 1宣言へ合成する。合成の規則は Padding が持つ。 */
+/** 2軸のパディングを宣言へ合成する。合成の規則は Padding が持つ。 */
 function paddingDeclarations(
   paddingY: PropValue | undefined,
   paddingX: PropValue | undefined,
 ): readonly CssDeclaration[] {
-  const padding = Padding.create(paddingY, paddingX);
-  if (Padding.isEmpty(padding)) {
-    return [];
-  }
-  const value = Padding.cssValue(padding, (token) =>
+  return Padding.declarations(Padding.create(paddingY, paddingX), (token) =>
     TokenCss.ref("spacing", token),
   );
-  return [CssDeclaration.create("padding", value)];
-}
-
-function isMainAxis(axis: Axis, direction: Direction): boolean {
-  return direction === "row" ? axis === "width" : axis === "height";
 }
 
 /**
- * 親の主軸方向なら `flex-grow`、交差軸方向なら `align-self: stretch`。
+ * 主軸 / 交差軸の出し分けは CssDirection が持つ。
  * 親を持たない位置では flex アイテムではないため、どちらの宣言も意味を持たず出力しない。
  */
 function fillDeclarations(
@@ -90,10 +62,7 @@ function fillDeclarations(
   if (parent === undefined) {
     return [];
   }
-  if (isMainAxis(axis, parent.direction)) {
-    return [CssDeclaration.create("flex-grow", "1")];
-  }
-  return [CssDeclaration.create("align-self", "stretch")];
+  return [CssDirection.fillDeclaration(parent.direction, axis)];
 }
 
 /**
@@ -177,18 +146,13 @@ function textDeclarations(
   ];
 }
 
-function directionOf(props: ResolvedProps<"Box">): Direction {
-  return props.direction === "row" ? "row" : "column";
-}
-
 function compileText(name: string, props: Props): CompiledElement {
   const resolved = ResolvedProps.resolve("Text", props);
-  return {
-    kind: "text",
+  return TextElement.create(
     name,
-    style: CssDeclarations.from(textDeclarations(resolved)),
-    content: String(resolved.content),
-  };
+    CssDeclarations.from(textDeclarations(resolved)),
+    String(resolved.content),
+  );
 }
 
 function compileBox(
@@ -196,15 +160,17 @@ function compileBox(
   parent: ParentContext | undefined,
 ): Result<CompiledElement, Error> {
   const resolved = ResolvedProps.resolve("Box", node.props ?? {});
-  const childParent: ParentContext = { direction: directionOf(resolved) };
+  const childParent: ParentContext = {
+    direction: CssDirection.from(resolved.direction),
+  };
   return Result.map(
     compileNodes(node.children ?? [], childParent),
-    (children): CompiledElement => ({
-      kind: "box",
-      name: node.name,
-      style: CssDeclarations.from(boxDeclarations(resolved, parent)),
-      children,
-    }),
+    (children): CompiledElement =>
+      BoxElement.create(
+        node.name,
+        CssDeclarations.from(boxDeclarations(resolved, parent)),
+        children,
+      ),
   );
 }
 

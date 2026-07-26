@@ -1,9 +1,5 @@
 import { expectTypeOf, test } from "vitest";
-import type { CompiledElement, Direction } from "../index";
-
-test("Direction は Box スキーマの direction が取り得る値と一致する", () => {
-  expectTypeOf<Direction>().toEqualTypeOf<"row" | "column">();
-});
+import type { CompiledElement } from "../index";
 
 test("Box の要素は子を持ちテキストを持たない", () => {
   type BoxElement = Extract<CompiledElement, { kind: "box" }>;

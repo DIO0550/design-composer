@@ -1,3 +1,4 @@
+import { CssDeclaration } from "@/domains/css-declaration";
 import type { PropValue } from "@/domains/node";
 
 /** 未指定の軸が取る長さ。 */
@@ -35,5 +36,18 @@ export const Padding = {
     const y = padding.y === undefined ? NONE : resolveToken(padding.y);
     const x = padding.x === undefined ? NONE : resolveToken(padding.x);
     return `${y} ${x}`;
+  },
+
+  /** パディングを持たないときは宣言を出力しない。 */
+  declarations(
+    padding: Padding,
+    resolveToken: (token: string) => string,
+  ): readonly CssDeclaration[] {
+    if (Padding.isEmpty(padding)) {
+      return [];
+    }
+    return [
+      CssDeclaration.create("padding", Padding.cssValue(padding, resolveToken)),
+    ];
   },
 } as const;
