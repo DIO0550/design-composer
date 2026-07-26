@@ -1,3 +1,4 @@
+import { CssDeclarations } from "@/domains/css-declaration";
 import { Px } from "@/domains/px";
 import {
   ShadowToken,
@@ -105,8 +106,6 @@ export const TokenCss = {
 
   /** `variables` を style 属性へ載せられる宣言の並びに直列化する。 */
   toStyleText(tokens: TokenSet): string {
-    return Object.entries(TokenCss.variables(tokens))
-      .map(([name, value]) => `${name}:${value}`)
-      .join(";");
+    return CssDeclarations.toStyleText(TokenCss.variables(tokens));
   },
 } as const;

@@ -1,4 +1,6 @@
+import { CssDeclaration, CssDeclarations } from "@/domains/css-declaration";
 import type { Props, PropValue } from "@/domains/node";
+import { Padding } from "@/domains/padding";
 import type { BOX_SCHEMA } from "@/domains/primitive-schema";
 import { PrimitiveSchema } from "@/domains/primitive-schema";
 import { Px } from "@/domains/px";
@@ -9,8 +11,7 @@ import type { SingleVariableTokenKind } from "@/services/token-css";
 import { TokenCss } from "@/services/token-css";
 import { Result } from "@/utils/Result";
 
-/** CSS プロパティ名 → 値。style 属性へそのまま展開できる形で持つ。 */
-export type CssDeclarations = Readonly<Record<string, string>>;
+export type { CssDeclarations };
 
 /** Box の `direction` が取り得る値。スキーマ定数から導出し二重管理しない。 */
 export type Direction =
@@ -42,8 +43,6 @@ export type CompiledElement =
       content: string;
     }>;
 
-type Declaration = readonly [string, string];
-
 type Axis = "width" | "height";
 
 /**
@@ -54,26 +53,26 @@ function tokenDeclarations(
   property: string,
   kind: SingleVariableTokenKind,
   value: PropValue | undefined,
-): readonly Declaration[] {
+): readonly CssDeclaration[] {
   if (value === undefined) {
     return [];
   }
-  return [[property, TokenCss.ref(kind, String(value))]];
+  return [CssDeclaration.create(property, TokenCss.ref(kind, String(value)))];
 }
 
-/** paddingY / paddingX を `padding` 1宣言へ Y X の順で合成する。 */
+/** 2軸のパディングを `padding` 1宣言へ合成する。合成の規則は Padding が持つ。 */
 function paddingDeclarations(
   paddingY: PropValue | undefined,
   paddingX: PropValue | undefined,
-): readonly Declaration[] {
-  if (paddingY === undefined && paddingX === undefined) {
+): readonly CssDeclaration[] {
+  const padding = Padding.create(paddingY, paddingX);
+  if (Padding.isEmpty(padding)) {
     return [];
   }
-  const y =
-    paddingY === undefined ? "0" : TokenCss.ref("spacing", String(paddingY));
-  const x =
-    paddingX === undefined ? "0" : TokenCss.ref("spacing", String(paddingX));
-  return [["padding", `${y} ${x}`]];
+  const value = Padding.cssValue(padding, (token) =>
+    TokenCss.ref("spacing", token),
+  );
+  return [CssDeclaration.create("padding", value)];
 }
 
 function isMainAxis(axis: Axis, direction: Direction): boolean {
@@ -87,14 +86,14 @@ function isMainAxis(axis: Axis, direction: Direction): boolean {
 function fillDeclarations(
   axis: Axis,
   parent: ParentContext | undefined,
-): readonly Declaration[] {
+): readonly CssDeclaration[] {
   if (parent === undefined) {
     return [];
   }
   if (isMainAxis(axis, parent.direction)) {
-    return [["flex-grow", "1"]];
+    return [CssDeclaration.create("flex-grow", "1")];
   }
-  return [["align-self", "stretch"]];
+  return [CssDeclaration.create("align-self", "stretch")];
 }
 
 /**
@@ -106,15 +105,15 @@ function sizeDeclarations(
   mode: PropValue | undefined,
   value: PropValue | undefined,
   parent: ParentContext | undefined,
-): readonly Declaration[] {
+): readonly CssDeclaration[] {
   if (mode === "hug") {
-    return [[axis, "fit-content"]];
+    return [CssDeclaration.create(axis, "fit-content")];
   }
   if (mode === "fill") {
     return fillDeclarations(axis, parent);
   }
   if (mode === "fixed" && typeof value === "number") {
-    return [[axis, Px.create(value)]];
+    return [CssDeclaration.create(axis, Px.create(value))];
   }
   return [];
 }
@@ -122,21 +121,23 @@ function sizeDeclarations(
 /** 初期値と同じ `visible` は宣言を出力しない (docs/03 の表は clip のみを規定)。 */
 function overflowDeclarations(
   overflow: PropValue | undefined,
-): readonly Declaration[] {
-  return overflow === "clip" ? [["overflow", "hidden"]] : [];
+): readonly CssDeclaration[] {
+  return overflow === "clip"
+    ? [CssDeclaration.create("overflow", "hidden")]
+    : [];
 }
 
 function boxDeclarations(
   props: ResolvedProps<"Box">,
   parent: ParentContext | undefined,
-): readonly Declaration[] {
+): readonly CssDeclaration[] {
   return [
-    ["display", "flex"],
-    ["flex-direction", String(props.direction)],
+    CssDeclaration.create("display", "flex"),
+    CssDeclaration.create("flex-direction", String(props.direction)),
     ...tokenDeclarations("gap", "spacing", props.gap),
     ...paddingDeclarations(props.paddingY, props.paddingX),
-    ["align-items", String(props.align)],
-    ["justify-content", String(props.justify)],
+    CssDeclaration.create("align-items", String(props.align)),
+    CssDeclaration.create("justify-content", String(props.justify)),
     ...sizeDeclarations("width", props.widthMode, props.width, parent),
     ...sizeDeclarations("height", props.heightMode, props.height, parent),
     ...tokenDeclarations("background", "colors", props.background),
@@ -152,32 +153,28 @@ function boxDeclarations(
  */
 function typographyDeclarations(
   typography: PropValue | undefined,
-): readonly Declaration[] {
+): readonly CssDeclaration[] {
   if (typography === undefined) {
     return [];
   }
   const name = String(typography);
-  return TypographyToken.fields().map((field): Declaration => {
+  return TypographyToken.fields().map((field): CssDeclaration => {
     const property = TypographyField.cssProperty(field);
-    return [property, TokenCss.typographyRef(name, property)];
+    return CssDeclaration.create(
+      property,
+      TokenCss.typographyRef(name, property),
+    );
   });
 }
 
 function textDeclarations(
   props: ResolvedProps<"Text">,
-): readonly Declaration[] {
+): readonly CssDeclaration[] {
   return [
     ...typographyDeclarations(props.typography),
     ...tokenDeclarations("color", "colors", props.color),
-    ["text-align", String(props.align)],
+    CssDeclaration.create("text-align", String(props.align)),
   ];
-}
-
-/** 宣言の並び順が入力から一意に決まるため、同じ入力からは常に同じ style になる。 */
-function toCssDeclarations(
-  declarations: readonly Declaration[],
-): CssDeclarations {
-  return Object.fromEntries(declarations);
 }
 
 function directionOf(props: ResolvedProps<"Box">): Direction {
@@ -189,7 +186,7 @@ function compileText(name: string, props: Props): CompiledElement {
   return {
     kind: "text",
     name,
-    style: toCssDeclarations(textDeclarations(resolved)),
+    style: CssDeclarations.from(textDeclarations(resolved)),
     content: String(resolved.content),
   };
 }
@@ -205,7 +202,7 @@ function compileBox(
     (children): CompiledElement => ({
       kind: "box",
       name: node.name,
-      style: toCssDeclarations(boxDeclarations(resolved, parent)),
+      style: CssDeclarations.from(boxDeclarations(resolved, parent)),
       children,
     }),
   );
@@ -264,8 +261,6 @@ export const NodeHtml = {
 
   /** style 属性へ載せられる宣言の並びに直列化する。 */
   toStyleText(style: CssDeclarations): string {
-    return Object.entries(style)
-      .map(([property, value]) => `${property}:${value}`)
-      .join(";");
+    return CssDeclarations.toStyleText(style);
   },
 } as const;
