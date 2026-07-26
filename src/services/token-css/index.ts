@@ -4,6 +4,7 @@ import {
   type TokenKind,
   TokenSet,
   type TypographyCssProperty,
+  TypographyFieldRef,
   TypographyToken,
 } from "@/domains/token";
 
@@ -54,15 +55,16 @@ function entriesOfKind(
       ]);
     case "typography":
       return Object.entries(tokens.typography).flatMap(([name, token]) =>
-        TypographyToken.fields().map(
-          (field): CssVariableEntry => [
+        TypographyToken.fields().map((field): CssVariableEntry => {
+          const ref = TypographyFieldRef.create(token, field);
+          return [
             TokenCss.typographyVariableName(
               name,
-              TypographyToken.cssProperty(field),
+              TypographyFieldRef.cssProperty(ref),
             ),
-            TypographyToken.cssValue({ token, field }),
-          ],
-        ),
+            TypographyFieldRef.cssValue(ref),
+          ];
+        }),
       );
   }
 }

@@ -35,39 +35,46 @@ const CSS_PROPERTIES = {
 
 export type TypographyCssProperty = (typeof CSS_PROPERTIES)[TypographyField];
 
-/**
- * typography トークンの1フィールドを指す。
- * 「どのトークンの」「どのフィールドか」は常に対で意味を持つため1つの型にまとめる。
- */
-export type TypographyFieldRef = Readonly<{
-  token: TypographyToken;
-  field: TypographyField;
-}>;
-
 export const TypographyToken = {
   fields(): readonly TypographyField[] {
     return TYPOGRAPHY_FIELDS;
-  },
-
-  cssProperty(field: TypographyField): TypographyCssProperty {
-    return CSS_PROPERTIES[field];
   },
 
   /** フォントファミリ省略時はシステムフォントスタックを既定値とする(docs/04-tokens.md)。 */
   fontFamilyOf(token: TypographyToken): string {
     return token.fontFamily ?? Font.systemStack();
   },
+} as const;
 
-  cssValue({ token, field }: TypographyFieldRef): string {
-    switch (field) {
+/**
+ * typography トークンの1フィールドを指す。
+ * 「どのトークンの」「どのフィールドか」は常に対で意味を持つため1つの型にまとめる。
+ * どの CSS プロパティになるか・どんな値になるかは、この対が決まって初めて定まる。
+ */
+export type TypographyFieldRef = Readonly<{
+  token: TypographyToken;
+  field: TypographyField;
+}>;
+
+export const TypographyFieldRef = {
+  create(token: TypographyToken, field: TypographyField): TypographyFieldRef {
+    return { token, field };
+  },
+
+  cssProperty(ref: TypographyFieldRef): TypographyCssProperty {
+    return CSS_PROPERTIES[ref.field];
+  },
+
+  cssValue(ref: TypographyFieldRef): string {
+    switch (ref.field) {
       case "fontSize":
-        return Px.create(token.fontSize);
+        return Px.create(ref.token.fontSize);
       case "lineHeight":
-        return String(token.lineHeight);
+        return String(ref.token.lineHeight);
       case "fontWeight":
-        return String(token.fontWeight);
+        return String(ref.token.fontWeight);
       case "fontFamily":
-        return TypographyToken.fontFamilyOf(token);
+        return TypographyToken.fontFamilyOf(ref.token);
     }
   },
 } as const;

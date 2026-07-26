@@ -5,7 +5,7 @@ export { type BoxShadowValue, ShadowToken } from "./shadow";
 export {
   type TypographyCssProperty,
   type TypographyField,
-  type TypographyFieldRef,
+  TypographyFieldRef,
   TypographyToken,
 } from "./typography";
 
