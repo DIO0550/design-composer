@@ -1,6 +1,7 @@
 import type {
   CssVariableName,
   SingleVariableTokenKind,
+  TokenRefs,
 } from "@/domains/css-declaration";
 import { CssDeclarations } from "@/domains/css-declaration";
 import { Px } from "@/domains/px";
@@ -101,4 +102,15 @@ export const TokenCss = {
   toStyleText(tokens: TokenSet): string {
     return CssDeclarations.toStyleText(TokenCss.variables(tokens));
   },
+
+  /**
+   * ドメインへ渡すトークン参照の綴り方。
+   * カスタムプロパティ名の規則はこの層の知識なので、参照を作る側はこれを通す。
+   */
+  refs: {
+    ref: (kind: SingleVariableTokenKind, name: string): string =>
+      TokenCss.ref(kind, name),
+    typographyRef: (name: string, property: TypographyCssProperty): string =>
+      TokenCss.typographyRef(name, property),
+  } satisfies TokenRefs,
 } as const;

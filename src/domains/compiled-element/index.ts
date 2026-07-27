@@ -11,6 +11,7 @@ import { Padding } from "@/domains/padding";
 import type { ResolvedProps } from "@/domains/resolved-props";
 import { Size } from "@/domains/size";
 import { TypographyField, TypographyToken } from "@/domains/token";
+import { Html } from "@/utils/Html";
 
 /**
  * トークン参照 prop を `var()` 参照の宣言にする。未指定の prop は宣言を出力しない
@@ -178,6 +179,19 @@ export const CompiledElement = {
   /** style 属性へ載せられる宣言の並びに直列化する。 */
   styleText(element: CompiledElement): string {
     return CssDeclarations.toStyleText(element.style);
+  },
+
+  /**
+   * `div` + インライン style の HTML へ直列化する (docs/03)。
+   * ノードの `name` は `data-name` として残す
+   * (出力だけを見てどのノードかを追えるようにするため)。
+   */
+  html(element: CompiledElement): string {
+    const attributes = `data-name="${Html.escapeAttribute(element.name)}" style="${Html.escapeAttribute(CompiledElement.styleText(element))}"`;
+    const content = CompiledElement.isText(element)
+      ? Html.escapeText(element.content)
+      : element.children.map(CompiledElement.html).join("");
+    return `<div ${attributes}>${content}</div>`;
   },
 
   /** 自身と子孫を行きがけ順に辿る。 */
