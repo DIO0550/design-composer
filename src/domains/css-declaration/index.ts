@@ -1,4 +1,4 @@
-import type { TypographyCssProperty } from "@/domains/token";
+import type { TokenKind, TypographyCssProperty } from "@/domains/token";
 
 /**
  * 出力し得る CSS プロパティ名。
@@ -30,6 +30,23 @@ export type CssVariableName = `--${string}`;
 
 /** 宣言の左辺に書けるもの。プロパティか、カスタムプロパティの定義。 */
 export type CssDeclarationName = CssProperty | CssVariableName;
+
+/**
+ * 1トークンが1つのカスタムプロパティで表せる種別。
+ * typography だけは複数の CSS プロパティへ展開されるため単一の参照を持てず、除外する。
+ * (ドメイン上の scalar / 複合の区別ではなく CSS への出力単位による区別)
+ */
+export type SingleVariableTokenKind = Exclude<TokenKind, "typography">;
+
+/**
+ * トークン参照を CSS の値へ変換する手段。
+ * カスタムプロパティ名の綴り方は CSS 出力層 (services) の知識なので、
+ * ドメインはこの形で受け取り、規則そのものは持たない。
+ */
+export type TokenRefs = Readonly<{
+  ref(kind: SingleVariableTokenKind, name: string): string;
+  typographyRef(name: string, property: TypographyCssProperty): string;
+}>;
 
 /** CSS の1宣言。プロパティ名と値は対で意味を持つため1つの型にまとめる。 */
 export type CssDeclaration = Readonly<{

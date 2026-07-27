@@ -3,17 +3,12 @@ import {
   type CompiledElement,
   TextElement,
 } from "@/domains/compiled-element";
-import type { CssDeclarations, CssProperty } from "@/domains/css-declaration";
-import { CssDeclaration } from "@/domains/css-declaration";
-import { CssDirection } from "@/domains/css-direction";
-import type { Props, PropValue } from "@/domains/node";
-import { Padding } from "@/domains/padding";
+import type { CssDeclarations, TokenRefs } from "@/domains/css-declaration";
+import type { CssDirection } from "@/domains/css-direction";
+import type { Props } from "@/domains/node";
 import { PrimitiveSchema } from "@/domains/primitive-schema";
-import { Size } from "@/domains/size";
-import { TypographyField, TypographyToken } from "@/domains/token";
+import { ResolvedProps } from "@/domains/resolved-props";
 import type { ExpandedNode } from "@/services/instance-composition";
-import { ResolvedProps } from "@/services/resolved-props";
-import type { SingleVariableTokenKind } from "@/services/token-css";
 import { TokenCss } from "@/services/token-css";
 import { Result } from "@/utils/Result";
 
@@ -27,100 +22,19 @@ export type { CompiledElement, CssDeclarations };
 export type ParentContext = Readonly<{ direction: CssDirection }>;
 
 /**
- * トークン参照 prop を `var()` 参照の宣言にする。未指定の prop は宣言を出力しない
- * (トークンの値は参照しないため、トークン編集は再コンパイルなしに CSS 経由で波及する)。
+ * トークン参照の綴り方。カスタムプロパティ名の規則は CSS 出力層が持ち、
+ * ドメインへは変換手段として渡す。
  */
-function tokenDeclarations(
-  property: CssProperty,
-  kind: SingleVariableTokenKind,
-  value: PropValue | undefined,
-): readonly CssDeclaration[] {
-  if (value === undefined) {
-    return [];
-  }
-  return [CssDeclaration.create(property, TokenCss.ref(kind, String(value)))];
-}
-
-/** spacing トークン名を `var()` 参照に変換する。 */
-function spacingRef(token: string): string {
-  return TokenCss.ref("spacing", token);
-}
-
-/** 初期値と同じ `visible` は宣言を出力しない (docs/03 の表は clip のみを規定)。 */
-function overflowDeclarations(
-  overflow: PropValue | undefined,
-): readonly CssDeclaration[] {
-  return overflow === "clip"
-    ? [CssDeclaration.create("overflow", "hidden")]
-    : [];
-}
-
-function boxDeclarations(
-  props: ResolvedProps<"Box">,
-  parent: ParentContext | undefined,
-): readonly CssDeclaration[] {
-  return [
-    CssDeclaration.create("display", "flex"),
-    CssDeclaration.create("flex-direction", String(props.direction)),
-    ...tokenDeclarations("gap", "spacing", props.gap),
-    ...Padding.declarations(
-      Padding.create(props.paddingY, props.paddingX),
-      spacingRef,
-    ),
-    CssDeclaration.create("align-items", String(props.align)),
-    CssDeclaration.create("justify-content", String(props.justify)),
-    ...Size.declarations(
-      Size.create(props.widthMode, props.width),
-      "width",
-      parent?.direction,
-    ),
-    ...Size.declarations(
-      Size.create(props.heightMode, props.height),
-      "height",
-      parent?.direction,
-    ),
-    ...tokenDeclarations("background", "colors", props.background),
-    ...tokenDeclarations("border-radius", "radius", props.radius),
-    ...tokenDeclarations("box-shadow", "shadows", props.shadow),
-    ...overflowDeclarations(props.overflow),
-  ];
-}
-
-/**
- * typography は複合トークンなので、フィールドごとの CSS プロパティへ展開する。
- * 走査対象は `TypographyToken.fields()` に従うため、トークンのフィールドが増えても追従漏れが出ない。
- */
-function typographyDeclarations(
-  typography: PropValue | undefined,
-): readonly CssDeclaration[] {
-  if (typography === undefined) {
-    return [];
-  }
-  const name = String(typography);
-  return TypographyToken.fields().map((field): CssDeclaration => {
-    const property = TypographyField.cssProperty(field);
-    return CssDeclaration.create(
-      property,
-      TokenCss.typographyRef(name, property),
-    );
-  });
-}
-
-function textDeclarations(
-  props: ResolvedProps<"Text">,
-): readonly CssDeclaration[] {
-  return [
-    ...typographyDeclarations(props.typography),
-    ...tokenDeclarations("color", "colors", props.color),
-    CssDeclaration.create("text-align", String(props.align)),
-  ];
-}
+const TOKEN_REFS: TokenRefs = {
+  ref: TokenCss.ref,
+  typographyRef: TokenCss.typographyRef,
+};
 
 function compileText(name: string, props: Props): CompiledElement {
   const resolved = ResolvedProps.resolve("Text", props);
   return TextElement.create(
     name,
-    textDeclarations(resolved),
+    TextElement.declarations(resolved, TOKEN_REFS),
     String(resolved.content),
   );
 }
@@ -131,12 +45,16 @@ function compileBox(
 ): Result<CompiledElement, Error> {
   const resolved = ResolvedProps.resolve("Box", node.props ?? {});
   const childParent: ParentContext = {
-    direction: CssDirection.from(resolved.direction),
+    direction: BoxElement.childDirection(resolved),
   };
   return Result.map(
     compileNodes(node.children ?? [], childParent),
     (children): CompiledElement =>
-      BoxElement.create(node.name, boxDeclarations(resolved, parent), children),
+      BoxElement.create(
+        node.name,
+        BoxElement.declarations(resolved, parent?.direction, TOKEN_REFS),
+        children,
+      ),
   );
 }
 
