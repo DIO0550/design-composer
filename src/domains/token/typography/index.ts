@@ -35,6 +35,16 @@ const CSS_PROPERTIES = {
 
 export type TypographyCssProperty = (typeof CSS_PROPERTIES)[TypographyField];
 
+export const TypographyField = {
+  /**
+   * 展開先の CSS プロパティ名。トークンの値には依存しないため、
+   * 参照だけを組み立てる用途(`var()` 参照の生成)ではトークンを持たずに引ける。
+   */
+  cssProperty(field: TypographyField): TypographyCssProperty {
+    return CSS_PROPERTIES[field];
+  },
+} as const;
+
 export const TypographyToken = {
   fields(): readonly TypographyField[] {
     return TYPOGRAPHY_FIELDS;
@@ -62,7 +72,7 @@ export const TypographyFieldRef = {
   },
 
   cssProperty(ref: TypographyFieldRef): TypographyCssProperty {
-    return CSS_PROPERTIES[ref.field];
+    return TypographyField.cssProperty(ref.field);
   },
 
   cssValue(ref: TypographyFieldRef): string {

@@ -1,3 +1,8 @@
+import type {
+  CssVariableName,
+  SingleVariableTokenKind,
+} from "@/domains/css-declaration";
+import { CssDeclarations } from "@/domains/css-declaration";
 import { Px } from "@/domains/px";
 import {
   ShadowToken,
@@ -8,8 +13,7 @@ import {
   TypographyToken,
 } from "@/domains/token";
 
-/** CSS カスタムプロパティ名。 */
-export type CssVariableName = `--${string}`;
+export type { CssVariableName, SingleVariableTokenKind };
 
 /** `var()` によるカスタムプロパティ参照。 */
 export type CssVariableReference = `var(${CssVariableName})`;
@@ -19,16 +23,6 @@ export type CssVariableReference = `var(${CssVariableName})`;
  * ルート要素の style へそのまま展開できる形で持つ。
  */
 export type CssVariables = Readonly<Record<CssVariableName, string>>;
-
-/**
- * 1トークンが1つのカスタムプロパティで表せる種別。
- * shadows はドメイン上は複合トークンだが `box-shadow` の1値へ合成できるため含む。
- * typography だけは別々の CSS プロパティへ展開されるため単一の変数名を持てず、
- * この型から除外することで `variableName` の誤用を型で防ぐ。
- * (ドメインの scalar / 複合の区別ではなく CSS への出力単位による区別なので、
- *  token ドメインではなくこのモジュールが持つ)
- */
-export type SingleVariableTokenKind = Exclude<TokenKind, "typography">;
 
 type CssVariableEntry = readonly [CssVariableName, string];
 
@@ -105,8 +99,6 @@ export const TokenCss = {
 
   /** `variables` を style 属性へ載せられる宣言の並びに直列化する。 */
   toStyleText(tokens: TokenSet): string {
-    return Object.entries(TokenCss.variables(tokens))
-      .map(([name, value]) => `${name}:${value}`)
-      .join(";");
+    return CssDeclarations.toStyleText(TokenCss.variables(tokens));
   },
 } as const;
