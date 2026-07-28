@@ -5,6 +5,13 @@ test("major.minor 形式の文字列をパースするとその値を持つ Form
   expect(FormatVersion.parse("1.2")).toEqual({ major: 1, minor: 2 });
 });
 
+test("major.minor 形式の文字列は tryParse で値として取り出せる", () => {
+  expect(FormatVersion.tryParse("1.2")).toEqual({
+    some: true,
+    value: { major: 1, minor: 2 },
+  });
+});
+
 test("FormatVersion を文字列にフォーマットすると major.minor 形式になる", () => {
   expect(FormatVersion.format({ major: 1, minor: 2 })).toBe("1.2");
 });
