@@ -76,3 +76,13 @@ test("moveWithin は元の配列を変更しない", () => {
   ArrayEx.moveWithin(array, 0, 2);
   expect(array).toEqual(["a", "b", "c"]);
 });
+
+test("replaceAt で指定位置の要素を差し替えられる", () => {
+  expect(ArrayEx.replaceAt(["a", "b", "c"], 1, "x")).toEqual(["a", "x", "c"]);
+});
+
+test("replaceAt は元の配列を変更しない", () => {
+  const array = ["a", "b", "c"];
+  ArrayEx.replaceAt(array, 1, "x");
+  expect(array).toEqual(["a", "b", "c"]);
+});

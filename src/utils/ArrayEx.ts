@@ -18,6 +18,15 @@ export const ArrayEx = {
     return [...array.slice(0, index), item, ...array.slice(index)];
   },
 
+  replaceAt<T>(array: readonly T[], index: number, item: T): readonly T[] {
+    if (!ArrayEx.isIndexInRange(array, index)) {
+      throw new Error(
+        `index ${index} is out of bounds for length ${array.length}`,
+      );
+    }
+    return [...array.slice(0, index), item, ...array.slice(index + 1)];
+  },
+
   moveWithin<T>(
     array: readonly T[],
     fromIndex: number,

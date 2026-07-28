@@ -1,5 +1,8 @@
 import { Component, ComponentSet } from "@/domains/component";
-import { DesignDocument } from "@/domains/design-document";
+import {
+  DesignDocument,
+  DesignDocumentEditError,
+} from "@/domains/design-document";
 import { Node, type Props } from "@/domains/node";
 import { Result } from "@/utils/Result";
 
@@ -116,6 +119,9 @@ export const InstanceComposition = {
       ...(expanded.props !== undefined ? { props: expanded.props } : {}),
       ...(children !== undefined ? { children } : {}),
     };
-    return DesignDocument.replaceNode(document, name, replacement);
+    return Result.mapErr(
+      DesignDocument.replaceNode(document, name, replacement),
+      (error) => new Error(DesignDocumentEditError.message(error)),
+    );
   },
 } as const;

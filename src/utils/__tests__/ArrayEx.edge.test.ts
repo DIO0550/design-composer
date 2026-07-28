@@ -16,3 +16,11 @@ test("範囲外の fromIndex を指定して moveWithin を呼ぶとエラーに
 test("範囲外の toIndex を指定して moveWithin を呼ぶとエラーになる", () => {
   expect(() => ArrayEx.moveWithin(["a", "b"], 0, 5)).toThrow();
 });
+
+test("範囲外の index を指定して replaceAt を呼ぶとエラーになる", () => {
+  expect(() => ArrayEx.replaceAt(["a", "b"], 2, "c")).toThrow();
+});
+
+test("負の index を指定して replaceAt を呼ぶとエラーになる", () => {
+  expect(() => ArrayEx.replaceAt(["a", "b"], -1, "c")).toThrow();
+});

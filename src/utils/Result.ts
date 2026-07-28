@@ -30,6 +30,10 @@ export const Result = {
     return result.ok ? fn(result.value) : result;
   },
 
+  mapErr<T, E, F>(result: Result<T, E>, fn: (error: E) => F): Result<T, F> {
+    return result.ok ? result : Result.err(fn(result.error));
+  },
+
   unwrapOr<T, E>(result: Result<T, E>, defaultValue: T): T {
     return result.ok ? result.value : defaultValue;
   },

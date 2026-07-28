@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { Result } from "@/utils/Result";
 import { DesignDocument } from "../index";
 
 test("トップレベルのノードを部品化すると components に追加される", () => {
@@ -7,7 +8,9 @@ test("トップレベルのノードを部品化すると components に追加�
     artboards: [{ name: "screen", width: 375, height: 812, children: [box] }],
   });
 
-  const result = DesignDocument.createComponent(document, "box-1", "card");
+  const result = Result.unwrap(
+    DesignDocument.createComponent(document, "box-1", "card"),
+  );
 
   expect(result.components.card).toEqual({
     type: "Box",
@@ -21,7 +24,9 @@ test("部品化すると元の位置に参照ノード { name, ref } が置か�
     artboards: [{ name: "screen", width: 375, height: 812, children: [box] }],
   });
 
-  const result = DesignDocument.createComponent(document, "box-1", "card");
+  const result = Result.unwrap(
+    DesignDocument.createComponent(document, "box-1", "card"),
+  );
 
   expect(result.artboards[0].children).toEqual([
     { name: "box-1", ref: "card" },
@@ -35,7 +40,9 @@ test("子を持つノードを部品化すると children ごと components へ�
     artboards: [{ name: "screen", width: 375, height: 812, children: [box] }],
   });
 
-  const result = DesignDocument.createComponent(document, "box-1", "card");
+  const result = Result.unwrap(
+    DesignDocument.createComponent(document, "box-1", "card"),
+  );
 
   expect(result.components.card).toEqual({
     type: "Box",
@@ -56,7 +63,9 @@ test("ネストしたノードを部品化すると親ノードの children 内�
     ],
   });
 
-  const result = DesignDocument.createComponent(document, "label", "badge");
+  const result = Result.unwrap(
+    DesignDocument.createComponent(document, "label", "badge"),
+  );
 
   expect(result.artboards[0].children).toEqual([
     { name: "box-1", type: "Box", children: [{ name: "label", ref: "badge" }] },
