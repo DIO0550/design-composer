@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import { ArrayEx } from "../ArrayEx";
+import { Result } from "../Result";
 
 test("配列の範囲内の index は isIndexInRange で true になる", () => {
   expect(ArrayEx.isIndexInRange(["a", "b", "c"], 1)).toBe(true);
@@ -50,11 +51,19 @@ test("小数の index は isInsertionIndexInRange で false になる", () => {
 });
 
 test("insertAt で指定位置に要素を挿入できる", () => {
-  expect(ArrayEx.insertAt(["a", "c"], 1, "b")).toEqual(["a", "b", "c"]);
+  expect(Result.unwrap(ArrayEx.insertAt(["a", "c"], 1, "b"))).toEqual([
+    "a",
+    "b",
+    "c",
+  ]);
 });
 
 test("insertAt で配列末尾に要素を追加できる", () => {
-  expect(ArrayEx.insertAt(["a", "b"], 2, "c")).toEqual(["a", "b", "c"]);
+  expect(Result.unwrap(ArrayEx.insertAt(["a", "b"], 2, "c"))).toEqual([
+    "a",
+    "b",
+    "c",
+  ]);
 });
 
 test("insertAt は元の配列を変更しない", () => {
@@ -64,11 +73,19 @@ test("insertAt は元の配列を変更しない", () => {
 });
 
 test("moveWithin で要素を後方へ移動できる", () => {
-  expect(ArrayEx.moveWithin(["a", "b", "c"], 0, 2)).toEqual(["b", "c", "a"]);
+  expect(Result.unwrap(ArrayEx.moveWithin(["a", "b", "c"], 0, 2))).toEqual([
+    "b",
+    "c",
+    "a",
+  ]);
 });
 
 test("moveWithin で要素を前方へ移動できる", () => {
-  expect(ArrayEx.moveWithin(["a", "b", "c"], 2, 0)).toEqual(["c", "a", "b"]);
+  expect(Result.unwrap(ArrayEx.moveWithin(["a", "b", "c"], 2, 0))).toEqual([
+    "c",
+    "a",
+    "b",
+  ]);
 });
 
 test("moveWithin は元の配列を変更しない", () => {
@@ -78,7 +95,11 @@ test("moveWithin は元の配列を変更しない", () => {
 });
 
 test("replaceAt で指定位置の要素を差し替えられる", () => {
-  expect(ArrayEx.replaceAt(["a", "b", "c"], 1, "x")).toEqual(["a", "x", "c"]);
+  expect(Result.unwrap(ArrayEx.replaceAt(["a", "b", "c"], 1, "x"))).toEqual([
+    "a",
+    "x",
+    "c",
+  ]);
 });
 
 test("replaceAt は元の配列を変更しない", () => {
