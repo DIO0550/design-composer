@@ -1,5 +1,12 @@
-import type { Node, Props } from "@/domains/node";
+import { Node, Props } from "@/domains/node";
 import { ResolvedProps } from "@/domains/resolved-props";
+import {
+  Json,
+  type JsonCursor,
+  type JsonDecoded,
+  type JsonObject,
+} from "@/utils/Json";
+import { Result } from "@/utils/Result";
 
 export type Artboard = Readonly<{
   name: string;
@@ -8,6 +15,15 @@ export type Artboard = Readonly<{
   props?: Props;
   children: readonly Node[];
 }>;
+
+/** artboard が JSON 上で持ちうるフィールド(docs/01-file-format.md「artboards」)。 */
+const ARTBOARD_FIELDS = [
+  "name",
+  "width",
+  "height",
+  "props",
+  "children",
+] as const;
 
 /**
  * artboard を Box として解決した props。
@@ -57,6 +73,43 @@ export const Artboard = {
       width: artboard.width,
       heightMode: "fixed",
       height: artboard.height,
+    };
+  },
+
+  fromJson(cursor: JsonCursor): JsonDecoded<Artboard> {
+    return Result.flatMap(Json.record(cursor), (record) =>
+      Json.knownFields(
+        Json.combine5(
+          Json.required(record, "name", Json.string),
+          Json.required(record, "width", Json.number),
+          Json.required(record, "height", Json.number),
+          Json.optional(record, "props", Props.fromJson),
+          Json.required(record, "children", Node.fromJsonArray),
+          (name, width, height, props, children) => ({
+            name,
+            width,
+            height,
+            ...(props !== undefined ? { props } : {}),
+            children,
+          }),
+        ),
+        record,
+        ARTBOARD_FIELDS,
+      ),
+    );
+  },
+
+  /** `children` は必須フィールドなので空でも書き出す(docs/01-file-format.md)。 */
+  toJson(artboard: Artboard): JsonObject {
+    return {
+      name: artboard.name,
+      width: artboard.width,
+      height: artboard.height,
+      ...Json.nonEmptyField(
+        "props",
+        artboard.props === undefined ? undefined : Props.toJson(artboard.props),
+      ),
+      children: artboard.children.map(Node.toJson),
     };
   },
 } as const;

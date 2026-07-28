@@ -1,0 +1,92 @@
+import { DesignDocument } from "@/domains/design-document";
+import {
+  JsonLexicalScanner,
+  type JsonScanError,
+} from "@/services/json-lexical-scanner";
+import { Json, type JsonDecodeError, type JsonValue } from "@/utils/Json";
+import { Result } from "@/utils/Result";
+
+/**
+ * `syntax-error` / `duplicate-key` はテキストの検証（字句スキャン）由来、
+ * それ以外は形の検証（デコード）由来。
+ * スキーマ検証（未知 type・未知 prop・dangling ref・識別子規則・名前一意性）は
+ * `DesignDocument.collectErrors` の担当なのでここには現れない。
+ */
+export type DocumentJsonErrorKind =
+  | JsonScanError["kind"]
+  | JsonDecodeError["kind"];
+
+export type DocumentJsonError = Readonly<{
+  kind: DocumentJsonErrorKind;
+  message: string;
+  /** ドキュメント内の位置（例: `artboards[0].children[1].name`）。形の検証で付く。 */
+  path?: string;
+  /** テキスト内の位置。字句スキャン由来のエラーで付く。 */
+  position?: number;
+}>;
+
+type Parsed = Result<DesignDocument, readonly DocumentJsonError[]>;
+
+function toDocumentJsonError(error: JsonScanError): DocumentJsonError {
+  return {
+    kind: error.kind,
+    message: error.message,
+    position: error.position,
+  };
+}
+
+/**
+ * 字句スキャンを通っていれば `JSON.parse` は成功するが、
+ * 「例外を散らさない」ために失敗も値として扱う。
+ */
+function parseJson(
+  text: string,
+): Result<unknown, readonly DocumentJsonError[]> {
+  try {
+    const value: unknown = JSON.parse(text);
+    return Result.ok(value);
+  } catch (error) {
+    return Result.err([
+      {
+        kind: "syntax-error",
+        message: error instanceof Error ? error.message : String(error),
+        position: 0,
+      },
+    ]);
+  }
+}
+
+const INDENT_WIDTH = 2;
+
+/**
+ * ドキュメントと JSON テキストの相互変換。
+ *
+ * この層が持つのは「テキスト ⇄ JSON のデータモデル」だけで、
+ * 「データモデル ⇄ ドメインオブジェクト」は各ドメインオブジェクトの
+ * `fromJson` / `toJson` が持つ（表現の規則はその値自身の知識のため）。
+ * フォーマットを差し替えるときに変わるのはこのファイルに閉じる。
+ */
+export const DocumentJson = {
+  /**
+   * JSON テキストをドキュメントへ読み込む。
+   * 不正入力はエラーの一覧として返し、例外は投げない。
+   */
+  parse(text: string): Parsed {
+    const scanErrors = JsonLexicalScanner.scan(text);
+    if (scanErrors.length > 0) {
+      return Result.err(scanErrors.map(toDocumentJsonError));
+    }
+    return Result.flatMap(parseJson(text), (value) =>
+      DesignDocument.fromJson(Json.create(value)),
+    );
+  },
+
+  /**
+   * ドキュメントを JSON テキストへ書き出す。
+   * 末尾に改行を1つ入れ、Git diff の `\ No newline at end of file` を避ける。
+   */
+  serialize(document: DesignDocument): string {
+    const value: JsonValue = DesignDocument.toJson(document);
+    return `${JSON.stringify(value, null, INDENT_WIDTH)}\n`;
+  },
+} as const;

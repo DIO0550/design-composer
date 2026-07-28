@@ -7,8 +7,8 @@ test.each([
   "abc",
   "",
   "1.2.3",
-])("major.minor 形式でない文字列 %s をパースするとエラーになる", (value) => {
-  expect(() => FormatVersion.parse(value)).toThrow();
+])("major.minor 形式でない文字列 %s をパースすると値を持たない", (value) => {
+  expect(FormatVersion.parse(value)).toEqual({ some: false });
 });
 
 test("ファイルの major がアプリより大きいとき unsupported になる", () => {

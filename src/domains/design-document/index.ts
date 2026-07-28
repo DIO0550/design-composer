@@ -1,4 +1,4 @@
-import type { Artboard } from "@/domains/artboard";
+import { Artboard } from "@/domains/artboard";
 import {
   Component,
   ComponentSet,
@@ -18,6 +18,12 @@ import {
 } from "@/domains/primitive-schema";
 import { TokenSet } from "@/domains/token";
 import { ArrayEx } from "@/utils/ArrayEx";
+import {
+  Json,
+  type JsonCursor,
+  type JsonDecoded,
+  type JsonObject,
+} from "@/utils/Json";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
@@ -27,6 +33,14 @@ export type DesignDocument = Readonly<{
   components: ComponentSet;
   artboards: readonly Artboard[];
 }>;
+
+/** ドキュメントが JSON 上で持つトップレベルフィールド(docs/01-file-format.md)。 */
+const DOCUMENT_FIELDS = [
+  "formatVersion",
+  "tokens",
+  "components",
+  "artboards",
+] as const;
 
 export type DesignDocumentValidationErrorKind =
   | PropValidationError["kind"]
@@ -668,6 +682,49 @@ export const DesignDocument = {
 
   compatibility(document: DesignDocument): FormatVersionCompatibility {
     return FormatVersion.compatibility(document.formatVersion);
+  },
+
+  /**
+   * JSON のデータモデルからドキュメントを組み立てる。
+   * 検証するのは形（必須フィールド・型・未知フィールド）だけで、
+   * スキーマ検証は `DesignDocument.collectErrors`、
+   * formatVersion の互換性判定は `DesignDocument.compatibility` の担当。
+   */
+  fromJson(cursor: JsonCursor): JsonDecoded<DesignDocument> {
+    return Result.flatMap(Json.record(cursor), (record) =>
+      Json.knownFields(
+        Json.combine4(
+          Json.required(record, "formatVersion", FormatVersion.fromJson),
+          Json.required(record, "tokens", TokenSet.fromJson),
+          Json.required(record, "components", ComponentSet.fromJson),
+          Json.required(record, "artboards", (artboards) =>
+            Json.arrayOf(artboards, Artboard.fromJson),
+          ),
+          (formatVersion, tokens, components, artboards) => ({
+            formatVersion,
+            tokens,
+            components,
+            artboards,
+          }),
+        ),
+        record,
+        DOCUMENT_FIELDS,
+      ),
+    );
+  },
+
+  /**
+   * ドキュメントを JSON のデータモデルへ落とす。
+   * 明示的に設定された値だけを書き、スキーマのデフォルト値は書かない
+   * （ドキュメントはそもそも明示的な props しか保持しない）。
+   */
+  toJson(document: DesignDocument): JsonObject {
+    return {
+      formatVersion: FormatVersion.format(document.formatVersion),
+      tokens: TokenSet.toJson(document.tokens),
+      components: ComponentSet.toJson(document.components),
+      artboards: document.artboards.map(Artboard.toJson),
+    };
   },
 
   insertNode(

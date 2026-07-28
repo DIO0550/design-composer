@@ -1,10 +1,42 @@
-import { Node, type Props, type PropValue } from "@/domains/node";
+import { Node, Props, type PropValue } from "@/domains/node";
+import {
+  Json,
+  type JsonCursor,
+  type JsonDecoded,
+  type JsonObject,
+} from "@/utils/Json";
 import { Option } from "@/utils/Option";
+import { Result } from "@/utils/Result";
 
 export type PublicPropBinding = Readonly<{
   node: string;
   prop: string;
 }>;
+
+const BINDING_FIELDS = ["node", "prop"] as const;
+
+/** 部品が JSON 上で持ちうるフィールド(docs/04-tokens.md「初期部品セット」の並び)。 */
+const COMPONENT_FIELDS = ["publicProps", "type", "props", "children"] as const;
+
+export const PublicPropBinding = {
+  fromJson(cursor: JsonCursor): JsonDecoded<PublicPropBinding> {
+    return Result.flatMap(Json.record(cursor), (record) =>
+      Json.knownFields(
+        Json.combine2(
+          Json.required(record, "node", Json.string),
+          Json.required(record, "prop", Json.string),
+          (node, prop) => ({ node, prop }),
+        ),
+        record,
+        BINDING_FIELDS,
+      ),
+    );
+  },
+
+  toJson(binding: PublicPropBinding): JsonObject {
+    return { node: binding.node, prop: binding.prop };
+  },
+} as const;
 
 export type PublicProps = Readonly<Record<string, PublicPropBinding>>;
 
@@ -130,6 +162,50 @@ export const Component = {
     };
   },
 
+  /** ルートの `name` は辞書キーが兼ねるため、値側は `name` を持たない(docs/01-file-format.md)。 */
+  fromJson(cursor: JsonCursor): JsonDecoded<Component> {
+    return Result.flatMap(Json.record(cursor), (record) =>
+      Json.knownFields(
+        Json.combine4(
+          Json.optional(record, "publicProps", (publicProps) =>
+            Json.mapOf(publicProps, PublicPropBinding.fromJson),
+          ),
+          Json.required(record, "type", Json.string),
+          Json.optional(record, "props", Props.fromJson),
+          Json.optional(record, "children", Node.fromJsonArray),
+          (publicProps, type, props, children) => ({
+            type,
+            ...(props !== undefined ? { props } : {}),
+            ...(children !== undefined ? { children } : {}),
+            ...(publicProps !== undefined ? { publicProps } : {}),
+          }),
+        ),
+        record,
+        COMPONENT_FIELDS,
+      ),
+    );
+  },
+
+  /** 公開インターフェース(publicProps)を先に書く(docs/04-tokens.md の並び)。 */
+  toJson(component: Component): JsonObject {
+    return {
+      ...Json.nonEmptyField(
+        "publicProps",
+        component.publicProps === undefined
+          ? undefined
+          : Json.sortedMap(component.publicProps, PublicPropBinding.toJson),
+      ),
+      type: component.type,
+      ...Json.nonEmptyField(
+        "props",
+        component.props === undefined
+          ? undefined
+          : Props.toJson(component.props),
+      ),
+      ...Json.nonEmptyField("children", component.children?.map(Node.toJson)),
+    };
+  },
+
   renameBindings(
     publicProps: PublicProps,
     renameMap: Readonly<Record<string, string>>,
@@ -190,5 +266,14 @@ export const ComponentSet = {
     return ComponentSet.names(components).filter((name) =>
       reachableRefs(components, name).has(name),
     );
+  },
+
+  /** 部品名をキー、ノードを値とする辞書(docs/01-file-format.md「components」)。 */
+  fromJson(cursor: JsonCursor): JsonDecoded<ComponentSet> {
+    return Json.mapOf(cursor, Component.fromJson);
+  },
+
+  toJson(components: ComponentSet): JsonObject {
+    return Json.sortedMap(components, Component.toJson);
   },
 } as const;

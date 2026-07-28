@@ -1,6 +1,15 @@
-import type { ShadowToken } from "./shadow";
-import type { TypographyToken } from "./typography";
+import {
+  Json,
+  type JsonCursor,
+  type JsonDecoded,
+  type JsonObject,
+} from "@/utils/Json";
+import { Result } from "@/utils/Result";
+import { ColorToken } from "./color";
+import { ShadowToken } from "./shadow";
+import { TypographyToken } from "./typography";
 
+export { ColorToken } from "./color";
 export { type BoxShadowValue, ShadowToken } from "./shadow";
 export {
   type TypographyCssProperty,
@@ -9,7 +18,6 @@ export {
   TypographyToken,
 } from "./typography";
 
-export type ColorToken = string;
 export type SpacingToken = number;
 export type RadiusToken = number;
 
@@ -36,15 +44,28 @@ const TOKEN_KINDS = [
 
 export type TokenKind = (typeof TOKEN_KINDS)[number];
 
-const HEX_COLOR_PATTERN = /^#[0-9a-f]{6}([0-9a-f]{2})?$/;
+/**
+ * 種別ごとに値の書き出し方が違うので種別で分岐する。
+ * 種別が増えたら、この分岐の漏れがコンパイルエラーになる。
+ */
+function tokenKindToJson(tokens: TokenSet, kind: TokenKind): JsonObject {
+  switch (kind) {
+    case "colors":
+      return Json.sortedMap(tokens.colors, ColorToken.toJson);
+    case "spacing":
+      return Json.sortedMap(tokens.spacing, (value) => value);
+    case "radius":
+      return Json.sortedMap(tokens.radius, (value) => value);
+    case "shadows":
+      return Json.sortedMap(tokens.shadows, ShadowToken.toJson);
+    case "typography":
+      return Json.sortedMap(tokens.typography, TypographyToken.toJson);
+  }
+}
 
 export const TokenSet = {
   empty(): TokenSet {
     return { colors: {}, spacing: {}, radius: {}, shadows: {}, typography: {} };
-  },
-
-  isValidColor(value: string): boolean {
-    return HEX_COLOR_PATTERN.test(value);
   },
 
   has(tokens: TokenSet, kind: TokenKind, name: string): boolean {
@@ -57,5 +78,41 @@ export const TokenSet = {
 
   names(tokens: TokenSet, kind: TokenKind): readonly string[] {
     return Object.keys(tokens[kind]);
+  },
+
+  /**
+   * 種別ごとの値の形式は docs/04-tokens.md「値の形式」に従う。
+   * 書かれていない種別は空として読む(トークンを1つも持たない種別は書かれないため)。
+   */
+  fromJson(cursor: JsonCursor): JsonDecoded<TokenSet> {
+    return Result.flatMap(Json.record(cursor), (record) =>
+      Json.knownFields(
+        Json.combine5(
+          Json.optionalMap(record, "colors", ColorToken.fromJson),
+          Json.optionalMap(record, "spacing", Json.number),
+          Json.optionalMap(record, "radius", Json.number),
+          Json.optionalMap(record, "shadows", ShadowToken.fromJson),
+          Json.optionalMap(record, "typography", TypographyToken.fromJson),
+          (colors, spacing, radius, shadows, typography) => ({
+            colors,
+            spacing,
+            radius,
+            shadows,
+            typography,
+          }),
+        ),
+        record,
+        TOKEN_KINDS,
+      ),
+    );
+  },
+
+  /** トークンを1つも持たない種別は書き出さない(空の種別を残さない)。 */
+  toJson(tokens: TokenSet): JsonObject {
+    return Object.fromEntries(
+      TOKEN_KINDS.filter((kind) => Object.keys(tokens[kind]).length > 0).map(
+        (kind) => [kind, tokenKindToJson(tokens, kind)],
+      ),
+    );
   },
 } as const;
