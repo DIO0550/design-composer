@@ -1,5 +1,7 @@
 import { Px } from "@/domains/px";
 import { Font } from "@/utils/Font";
+import { Json, type JsonDecoded, type JsonObject } from "@/utils/Json";
+import { Result } from "@/utils/Result";
 
 export type TypographyToken = Readonly<{
   fontSize: number;
@@ -53,6 +55,38 @@ export const TypographyToken = {
   /** フォントファミリ省略時はシステムフォントスタックを既定値とする(docs/04-tokens.md)。 */
   fontFamilyOf(token: TypographyToken): string {
     return token.fontFamily ?? Font.systemStack();
+  },
+
+  fromJson(value: unknown, path: string): JsonDecoded<TypographyToken> {
+    return Result.flatMap(Json.record(value, path), (record) =>
+      Json.knownFields(
+        Json.combine4(
+          Json.required(record, path, "fontSize", Json.number),
+          Json.required(record, path, "lineHeight", Json.number),
+          Json.required(record, path, "fontWeight", Json.number),
+          Json.optional(record, path, "fontFamily", Json.string),
+          (fontSize, lineHeight, fontWeight, fontFamily) => ({
+            fontSize,
+            lineHeight,
+            fontWeight,
+            ...(fontFamily !== undefined ? { fontFamily } : {}),
+          }),
+        ),
+        record,
+        path,
+        TYPOGRAPHY_FIELDS,
+      ),
+    );
+  },
+
+  /** 省略された fontFamily は書き戻さない(既定値の書き出しを避ける)。 */
+  toJson(token: TypographyToken): JsonObject {
+    return {
+      fontSize: token.fontSize,
+      lineHeight: token.lineHeight,
+      fontWeight: token.fontWeight,
+      ...Json.definedField("fontFamily", token.fontFamily),
+    };
   },
 } as const;
 

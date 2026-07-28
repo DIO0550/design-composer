@@ -1,5 +1,7 @@
-import type { Node, Props } from "@/domains/node";
+import { Node, Props } from "@/domains/node";
 import { ResolvedProps } from "@/domains/resolved-props";
+import { Json, type JsonDecoded, type JsonObject } from "@/utils/Json";
+import { Result } from "@/utils/Result";
 
 export type Artboard = Readonly<{
   name: string;
@@ -8,6 +10,15 @@ export type Artboard = Readonly<{
   props?: Props;
   children: readonly Node[];
 }>;
+
+/** artboard が JSON 上で持ちうるフィールド(docs/01-file-format.md「artboards」)。 */
+const ARTBOARD_FIELDS = [
+  "name",
+  "width",
+  "height",
+  "props",
+  "children",
+] as const;
 
 /**
  * artboard を Box として解決した props。
@@ -57,6 +68,44 @@ export const Artboard = {
       width: artboard.width,
       heightMode: "fixed",
       height: artboard.height,
+    };
+  },
+
+  fromJson(value: unknown, path: string): JsonDecoded<Artboard> {
+    return Result.flatMap(Json.record(value, path), (record) =>
+      Json.knownFields(
+        Json.combine5(
+          Json.required(record, path, "name", Json.string),
+          Json.required(record, path, "width", Json.number),
+          Json.required(record, path, "height", Json.number),
+          Json.optional(record, path, "props", Props.fromJson),
+          Json.required(record, path, "children", Node.fromJsonArray),
+          (name, width, height, props, children) => ({
+            name,
+            width,
+            height,
+            ...(props !== undefined ? { props } : {}),
+            children,
+          }),
+        ),
+        record,
+        path,
+        ARTBOARD_FIELDS,
+      ),
+    );
+  },
+
+  /** `children` は必須フィールドなので空でも書き出す(docs/01-file-format.md)。 */
+  toJson(artboard: Artboard): JsonObject {
+    return {
+      name: artboard.name,
+      width: artboard.width,
+      height: artboard.height,
+      ...Json.nonEmptyField(
+        "props",
+        artboard.props === undefined ? undefined : Props.toJson(artboard.props),
+      ),
+      children: artboard.children.map(Node.toJson),
     };
   },
 } as const;

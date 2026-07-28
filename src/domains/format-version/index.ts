@@ -1,4 +1,6 @@
+import { Json, type JsonDecoded } from "@/utils/Json";
 import { Option } from "@/utils/Option";
+import { Result } from "@/utils/Result";
 
 export type FormatVersion = Readonly<{
   major: number;
@@ -36,6 +38,21 @@ export const FormatVersion = {
       throw new Error(`invalid formatVersion: "${value}"`);
     }
     return parsed.value;
+  },
+
+  /** JSON 上の表現は `"major.minor"` の文字列(docs/01-file-format.md)。 */
+  fromJson(value: unknown, path: string): JsonDecoded<FormatVersion> {
+    return Result.flatMap(Json.string(value, path), (text) => {
+      const parsed = FormatVersion.tryParse(text);
+      if (!parsed.some) {
+        return Json.error(
+          "invalid-type",
+          path,
+          `expected "major.minor" but got "${text}"`,
+        );
+      }
+      return Result.ok(parsed.value);
+    });
   },
 
   format(version: FormatVersion): string {
