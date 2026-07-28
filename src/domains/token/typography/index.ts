@@ -1,6 +1,11 @@
 import { Px } from "@/domains/px";
 import { Font } from "@/utils/Font";
-import { Json, type JsonDecoded, type JsonObject } from "@/utils/Json";
+import {
+  Json,
+  type JsonCursor,
+  type JsonDecoded,
+  type JsonObject,
+} from "@/utils/Json";
 import { Result } from "@/utils/Result";
 
 export type TypographyToken = Readonly<{
@@ -57,14 +62,14 @@ export const TypographyToken = {
     return token.fontFamily ?? Font.systemStack();
   },
 
-  fromJson(value: unknown, path: string): JsonDecoded<TypographyToken> {
-    return Result.flatMap(Json.record(value, path), (record) =>
+  fromJson(cursor: JsonCursor): JsonDecoded<TypographyToken> {
+    return Result.flatMap(Json.record(cursor), (record) =>
       Json.knownFields(
         Json.combine4(
-          Json.required(record, path, "fontSize", Json.number),
-          Json.required(record, path, "lineHeight", Json.number),
-          Json.required(record, path, "fontWeight", Json.number),
-          Json.optional(record, path, "fontFamily", Json.string),
+          Json.required(record, "fontSize", Json.number),
+          Json.required(record, "lineHeight", Json.number),
+          Json.required(record, "fontWeight", Json.number),
+          Json.optional(record, "fontFamily", Json.string),
           (fontSize, lineHeight, fontWeight, fontFamily) => ({
             fontSize,
             lineHeight,
@@ -73,7 +78,6 @@ export const TypographyToken = {
           }),
         ),
         record,
-        path,
         TYPOGRAPHY_FIELDS,
       ),
     );

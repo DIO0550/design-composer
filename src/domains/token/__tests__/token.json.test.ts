@@ -1,10 +1,11 @@
 import { expect, test } from "vitest";
+import { Json } from "@/utils/Json";
 import { Result } from "@/utils/Result";
 import { TokenSet } from "../index";
 
 test("書かれていない種別は空として読み込まれる", () => {
   const tokens = Result.unwrap(
-    TokenSet.fromJson({ spacing: { md: 16 } }, "tokens"),
+    TokenSet.fromJson(Json.create({ spacing: { md: 16 } }, "tokens")),
   );
 
   expect(tokens).toEqual({
@@ -18,25 +19,26 @@ test("書かれていない種別は空として読み込まれる", () => {
 
 test("色は読み込んだ時点で小文字の hex に正規化される", () => {
   const tokens = Result.unwrap(
-    TokenSet.fromJson({ colors: { primary: "#3B82F6" } }, "tokens"),
+    TokenSet.fromJson(
+      Json.create({ colors: { primary: "#3B82F6" } }, "tokens"),
+    ),
   );
 
   expect(tokens.colors.primary).toBe("#3b82f6");
 });
 
 test("影の色も読み込んだ時点で小文字の hex に正規化される", () => {
+  const shadows = { sm: { x: 0, y: 1, blur: 3, color: "#0000001A" } };
+
   const tokens = Result.unwrap(
-    TokenSet.fromJson(
-      { shadows: { sm: { x: 0, y: 1, blur: 3, color: "#0000001A" } } },
-      "tokens",
-    ),
+    TokenSet.fromJson(Json.create({ shadows }, "tokens")),
   );
 
   expect(tokens.shadows.sm.color).toBe("#0000001a");
 });
 
 test("知らない種別は読み込めない", () => {
-  const result = TokenSet.fromJson({ gradients: {} }, "tokens");
+  const result = TokenSet.fromJson(Json.create({ gradients: {} }, "tokens"));
 
   expect(result.ok).toBe(false);
 });

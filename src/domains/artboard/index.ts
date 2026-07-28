@@ -1,6 +1,11 @@
 import { Node, Props } from "@/domains/node";
 import { ResolvedProps } from "@/domains/resolved-props";
-import { Json, type JsonDecoded, type JsonObject } from "@/utils/Json";
+import {
+  Json,
+  type JsonCursor,
+  type JsonDecoded,
+  type JsonObject,
+} from "@/utils/Json";
 import { Result } from "@/utils/Result";
 
 export type Artboard = Readonly<{
@@ -71,15 +76,15 @@ export const Artboard = {
     };
   },
 
-  fromJson(value: unknown, path: string): JsonDecoded<Artboard> {
-    return Result.flatMap(Json.record(value, path), (record) =>
+  fromJson(cursor: JsonCursor): JsonDecoded<Artboard> {
+    return Result.flatMap(Json.record(cursor), (record) =>
       Json.knownFields(
         Json.combine5(
-          Json.required(record, path, "name", Json.string),
-          Json.required(record, path, "width", Json.number),
-          Json.required(record, path, "height", Json.number),
-          Json.optional(record, path, "props", Props.fromJson),
-          Json.required(record, path, "children", Node.fromJsonArray),
+          Json.required(record, "name", Json.string),
+          Json.required(record, "width", Json.number),
+          Json.required(record, "height", Json.number),
+          Json.optional(record, "props", Props.fromJson),
+          Json.required(record, "children", Node.fromJsonArray),
           (name, width, height, props, children) => ({
             name,
             width,
@@ -89,7 +94,6 @@ export const Artboard = {
           }),
         ),
         record,
-        path,
         ARTBOARD_FIELDS,
       ),
     );

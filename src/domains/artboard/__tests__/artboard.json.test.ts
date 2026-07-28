@@ -1,12 +1,15 @@
 import { expect, test } from "vitest";
+import { Json } from "@/utils/Json";
 import { Result } from "@/utils/Result";
 import { Artboard } from "../index";
 
 test("artboard は name・サイズ・children から読み込まれる", () => {
   const artboard = Result.unwrap(
     Artboard.fromJson(
-      { name: "screen", width: 375, height: 812, children: [] },
-      "artboards[0]",
+      Json.create(
+        { name: "screen", width: 375, height: 812, children: [] },
+        "artboards[0]",
+      ),
     ),
   );
 
@@ -20,8 +23,7 @@ test("artboard は name・サイズ・children から読み込まれる", () => 
 
 test("children が欠けている artboard は読み込めない", () => {
   const result = Artboard.fromJson(
-    { name: "screen", width: 375, height: 812 },
-    "artboards[0]",
+    Json.create({ name: "screen", width: 375, height: 812 }, "artboards[0]"),
   );
 
   expect(result.ok).toBe(false);

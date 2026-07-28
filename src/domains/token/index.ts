@@ -1,4 +1,9 @@
-import { Json, type JsonDecoded, type JsonObject } from "@/utils/Json";
+import {
+  Json,
+  type JsonCursor,
+  type JsonDecoded,
+  type JsonObject,
+} from "@/utils/Json";
 import { Result } from "@/utils/Result";
 import { ColorToken } from "./color";
 import { ShadowToken } from "./shadow";
@@ -79,20 +84,15 @@ export const TokenSet = {
    * 種別ごとの値の形式は docs/04-tokens.md「値の形式」に従う。
    * 書かれていない種別は空として読む(トークンを1つも持たない種別は書かれないため)。
    */
-  fromJson(value: unknown, path: string): JsonDecoded<TokenSet> {
-    return Result.flatMap(Json.record(value, path), (record) =>
+  fromJson(cursor: JsonCursor): JsonDecoded<TokenSet> {
+    return Result.flatMap(Json.record(cursor), (record) =>
       Json.knownFields(
         Json.combine5(
-          Json.optionalMap(record, path, "colors", ColorToken.fromJson),
-          Json.optionalMap(record, path, "spacing", Json.number),
-          Json.optionalMap(record, path, "radius", Json.number),
-          Json.optionalMap(record, path, "shadows", ShadowToken.fromJson),
-          Json.optionalMap(
-            record,
-            path,
-            "typography",
-            TypographyToken.fromJson,
-          ),
+          Json.optionalMap(record, "colors", ColorToken.fromJson),
+          Json.optionalMap(record, "spacing", Json.number),
+          Json.optionalMap(record, "radius", Json.number),
+          Json.optionalMap(record, "shadows", ShadowToken.fromJson),
+          Json.optionalMap(record, "typography", TypographyToken.fromJson),
           (colors, spacing, radius, shadows, typography) => ({
             colors,
             spacing,
@@ -102,7 +102,6 @@ export const TokenSet = {
           }),
         ),
         record,
-        path,
         TOKEN_KINDS,
       ),
     );

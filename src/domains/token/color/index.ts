@@ -1,4 +1,4 @@
-import { Json, type JsonDecoded } from "@/utils/Json";
+import { Json, type JsonCursor, type JsonDecoded } from "@/utils/Json";
 import { Result } from "@/utils/Result";
 
 /** 色の値。`#rrggbb` または alpha 込みの `#rrggbbaa`(docs/04-tokens.md)。 */
@@ -29,8 +29,8 @@ export const ColorToken = {
   },
 
   /** JSON 上の表現は hex 文字列。読み込んだ時点で正規形へ倒す。 */
-  fromJson(value: unknown, path: string): JsonDecoded<ColorToken> {
-    return Result.map(Json.string(value, path), ColorToken.normalize);
+  fromJson(cursor: JsonCursor): JsonDecoded<ColorToken> {
+    return Result.map(Json.string(cursor), ColorToken.normalize);
   },
 
   toJson(color: ColorToken): string {

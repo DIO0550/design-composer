@@ -1,13 +1,25 @@
 import { expect, test } from "vitest";
-import { Json, type JsonDecoded, type JsonDecodeError } from "@/utils/Json";
+import {
+  Json,
+  type JsonDecoded,
+  type JsonDecodeError,
+  type JsonRecordCursor,
+} from "@/utils/Json";
 import { Result } from "@/utils/Result";
 
 function errorsOf(result: JsonDecoded<unknown>): readonly JsonDecodeError[] {
   return result.ok ? [] : result.error;
 }
 
+function setupRecord(
+  record: Readonly<Record<string, unknown>>,
+  path = "",
+): JsonRecordCursor {
+  return Result.unwrap(Json.record(Json.create(record, path)));
+}
+
 test("期待と違う型の値は位置つきで報告される", () => {
-  expect(errorsOf(Json.string(16, "artboards[0].name"))).toEqual([
+  expect(errorsOf(Json.string(Json.create(16, "artboards[0].name")))).toEqual([
     {
       kind: "invalid-type",
       path: "artboards[0].name",
@@ -17,7 +29,7 @@ test("期待と違う型の値は位置つきで報告される", () => {
 });
 
 test("null は型が違う値として報告される", () => {
-  expect(errorsOf(Json.number(null, "width"))).toEqual([
+  expect(errorsOf(Json.number(Json.create(null, "width")))).toEqual([
     {
       kind: "invalid-type",
       path: "width",
@@ -27,7 +39,7 @@ test("null は型が違う値として報告される", () => {
 });
 
 test("配列をオブジェクトとして読もうとすると型が違う値として報告される", () => {
-  expect(errorsOf(Json.record([], "tokens"))).toEqual([
+  expect(errorsOf(Json.record(Json.create([], "tokens")))).toEqual([
     {
       kind: "invalid-type",
       path: "tokens",
@@ -37,9 +49,9 @@ test("配列をオブジェクトとして読もうとすると型が違う値�
 });
 
 test("必須フィールドが無いと欠落として報告される", () => {
-  expect(
-    errorsOf(Json.required({}, "artboards[0]", "name", Json.string)),
-  ).toEqual([
+  const record = setupRecord({}, "artboards[0]");
+
+  expect(errorsOf(Json.required(record, "name", Json.string))).toEqual([
     {
       kind: "missing-field",
       path: "artboards[0].name",
@@ -49,17 +61,17 @@ test("必須フィールドが無いと欠落として報告される", () => {
 });
 
 test("知らないフィールドは未知のフィールドとして報告される", () => {
-  const record = { name: "screen", zoom: 1.5 };
+  const record = setupRecord({ name: "screen", zoom: 1.5 });
 
-  expect(
-    errorsOf(Json.knownFields(Result.ok("ok"), record, "", ["name"])),
-  ).toEqual([
-    { kind: "unknown-field", path: "zoom", message: 'unknown field "zoom"' },
-  ]);
+  expect(errorsOf(Json.knownFields(Result.ok("ok"), record, ["name"]))).toEqual(
+    [{ kind: "unknown-field", path: "zoom", message: 'unknown field "zoom"' }],
+  );
 });
 
 test("プロトタイプ由来のキーはフィールドとして存在しない扱いになる", () => {
-  expect(errorsOf(Json.required({}, "", "toString", Json.string))).toEqual([
+  const record = setupRecord({});
+
+  expect(errorsOf(Json.required(record, "toString", Json.string))).toEqual([
     {
       kind: "missing-field",
       path: "toString",
@@ -70,8 +82,8 @@ test("プロトタイプ由来のキーはフィールドとして存在しな�
 
 test("複数の値をまとめるとき失敗した分のエラーがすべて集まる", () => {
   const combined = Json.combine2(
-    Json.string(1, "a"),
-    Json.string(2, "b"),
+    Json.string(Json.create(1, "a")),
+    Json.string(Json.create(2, "b")),
     (a, b) => `${a}${b}`,
   );
 
@@ -79,7 +91,10 @@ test("複数の値をまとめるとき失敗した分のエラーがすべて�
 });
 
 test("辞書の中の複数の不正はまとめて報告される", () => {
-  const decoded = Json.mapOf({ sm: "8", md: "16" }, "spacing", Json.number);
+  const decoded = Json.mapOf(
+    Json.create({ sm: "8", md: "16" }, "spacing"),
+    Json.number,
+  );
 
   expect(errorsOf(decoded).map((error) => error.path)).toEqual([
     "spacing.sm",
@@ -88,7 +103,7 @@ test("辞書の中の複数の不正はまとめて報告される", () => {
 });
 
 test("配列の中の複数の不正は位置つきでまとめて報告される", () => {
-  const decoded = Json.arrayOf([1, 2], "names", Json.string);
+  const decoded = Json.arrayOf(Json.create([1, 2], "names"), Json.string);
 
   expect(errorsOf(decoded).map((error) => error.path)).toEqual([
     "names[0]",
@@ -98,9 +113,8 @@ test("配列の中の複数の不正は位置つきでまとめて報告され�
 
 test("値の位置は入れ子をたどった形で示される", () => {
   const decoded = Json.mapOf(
-    { card: { title: 1 } },
-    "components",
-    (value, path) => Json.mapOf(value, path, Json.string),
+    Json.create({ card: { title: 1 } }, "components"),
+    (cursor) => Json.mapOf(cursor, Json.string),
   );
 
   expect(errorsOf(decoded).map((error) => error.path)).toEqual([

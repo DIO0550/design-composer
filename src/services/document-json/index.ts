@@ -3,7 +3,7 @@ import {
   JsonLexicalScanner,
   type JsonScanError,
 } from "@/services/json-lexical-scanner";
-import type { JsonDecodeError, JsonValue } from "@/utils/Json";
+import { Json, type JsonDecodeError, type JsonValue } from "@/utils/Json";
 import { Result } from "@/utils/Result";
 
 /**
@@ -77,7 +77,7 @@ export const DocumentJson = {
       return Result.err(scanErrors.map(toDocumentJsonError));
     }
     return Result.flatMap(parseJson(text), (value) =>
-      DesignDocument.fromJson(value, ""),
+      DesignDocument.fromJson(Json.create(value)),
     );
   },
 

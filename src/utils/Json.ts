@@ -10,8 +10,27 @@ export type JsonValue =
 
 export type JsonObject = Readonly<{ [key: string]: JsonValue }>;
 
-/** デコードの入力。値の型はまだ何も分かっていない。 */
+/** 読み込んだ直後のオブジェクト。値の型はまだ何も分かっていない。 */
 export type JsonRecord = Readonly<Record<string, unknown>>;
+
+/**
+ * デコード中の値と、それがドキュメント内のどこにあるか。
+ * 値と位置は常に対で意味を持つ(位置が分からない値はエラーを報告できない)。
+ */
+export type JsonCursor = Readonly<{
+  value: unknown;
+  path: string;
+}>;
+
+/**
+ * 値がオブジェクトであることを確かめたあとのカーソル。
+ * 「オブジェクトだと分かっている」ことが型に出るので、
+ * フィールドを引くたびに型を確かめ直さずに済む。
+ */
+export type JsonRecordCursor = Readonly<{
+  record: JsonRecord;
+  path: string;
+}>;
 
 export type JsonDecodeErrorKind =
   | "missing-field"
@@ -20,7 +39,7 @@ export type JsonDecodeErrorKind =
 
 export type JsonDecodeError = Readonly<{
   kind: JsonDecodeErrorKind;
-  /** 値の位置（例: `artboards[0].children[1].name`）。 */
+  /** 値の位置(例: `artboards[0].children[1].name`)。 */
   path: string;
   message: string;
 }>;
@@ -31,7 +50,7 @@ export type JsonDecodeError = Readonly<{
  */
 export type JsonDecoded<T> = Result<T, readonly JsonDecodeError[]>;
 
-export type JsonDecoder<T> = (value: unknown, path: string) => JsonDecoded<T>;
+export type JsonDecoder<T> = (cursor: JsonCursor) => JsonDecoded<T>;
 
 /** エラーメッセージ用の型名。JSON の値として区別できる粒度で示す。 */
 function typeNameOf(value: unknown): string {
@@ -50,6 +69,13 @@ function hasField(record: JsonRecord, key: string): boolean {
   return Object.keys(record).includes(key);
 }
 
+function fieldCursor(cursor: JsonRecordCursor, key: string): JsonCursor {
+  return {
+    value: cursor.record[key],
+    path: cursor.path === "" ? key : `${cursor.path}.${key}`,
+  };
+}
+
 function isEmpty(value: JsonValue): boolean {
   if (Array.isArray(value)) {
     return value.length === 0;
@@ -58,12 +84,9 @@ function isEmpty(value: JsonValue): boolean {
 }
 
 export const Json = {
-  childPath(path: string, key: string): string {
-    return path === "" ? key : `${path}.${key}`;
-  },
-
-  indexPath(path: string, index: number): string {
-    return `${path}[${index}]`;
+  /** テキストから読み込んだ値を、位置つきのカーソルにする。 */
+  create(value: unknown, path = ""): JsonCursor {
+    return { value, path };
   },
 
   error(
@@ -78,98 +101,95 @@ export const Json = {
     return result.ok ? [] : result.error;
   },
 
-  string(value: unknown, path: string): JsonDecoded<string> {
-    if (typeof value === "string") {
-      return Result.ok(value);
+  string(cursor: JsonCursor): JsonDecoded<string> {
+    if (typeof cursor.value === "string") {
+      return Result.ok(cursor.value);
     }
     return Json.error(
       "invalid-type",
-      path,
-      `expected string but got ${typeNameOf(value)}`,
+      cursor.path,
+      `expected string but got ${typeNameOf(cursor.value)}`,
     );
   },
 
-  number(value: unknown, path: string): JsonDecoded<number> {
-    if (typeof value === "number") {
-      return Result.ok(value);
+  number(cursor: JsonCursor): JsonDecoded<number> {
+    if (typeof cursor.value === "number") {
+      return Result.ok(cursor.value);
     }
     return Json.error(
       "invalid-type",
-      path,
-      `expected number but got ${typeNameOf(value)}`,
+      cursor.path,
+      `expected number but got ${typeNameOf(cursor.value)}`,
     );
   },
 
-  record(value: unknown, path: string): JsonDecoded<JsonRecord> {
-    if (isJsonRecord(value)) {
-      return Result.ok(value);
+  /** オブジェクトであることを確かめ、フィールドを引けるカーソルにする。 */
+  record(cursor: JsonCursor): JsonDecoded<JsonRecordCursor> {
+    if (isJsonRecord(cursor.value)) {
+      return Result.ok({ record: cursor.value, path: cursor.path });
     }
     return Json.error(
       "invalid-type",
-      path,
-      `expected object but got ${typeNameOf(value)}`,
+      cursor.path,
+      `expected object but got ${typeNameOf(cursor.value)}`,
     );
   },
 
-  array(value: unknown, path: string): JsonDecoded<readonly unknown[]> {
-    if (Array.isArray(value)) {
-      return Result.ok(value);
+  array(cursor: JsonCursor): JsonDecoded<readonly unknown[]> {
+    if (Array.isArray(cursor.value)) {
+      return Result.ok(cursor.value);
     }
     return Json.error(
       "invalid-type",
-      path,
-      `expected array but got ${typeNameOf(value)}`,
+      cursor.path,
+      `expected array but got ${typeNameOf(cursor.value)}`,
     );
   },
 
   required<T>(
-    record: JsonRecord,
-    path: string,
+    cursor: JsonRecordCursor,
     key: string,
     decode: JsonDecoder<T>,
   ): JsonDecoded<T> {
-    const fieldPath = Json.childPath(path, key);
-    if (!hasField(record, key)) {
-      return Json.error("missing-field", fieldPath, `"${key}" is required`);
+    const field = fieldCursor(cursor, key);
+    if (!hasField(cursor.record, key)) {
+      return Json.error("missing-field", field.path, `"${key}" is required`);
     }
-    return decode(record[key], fieldPath);
+    return decode(field);
   },
 
   optional<T>(
-    record: JsonRecord,
-    path: string,
+    cursor: JsonRecordCursor,
     key: string,
     decode: JsonDecoder<T>,
   ): JsonDecoded<T | undefined> {
-    if (!hasField(record, key)) {
+    if (!hasField(cursor.record, key)) {
       return Result.ok(undefined);
     }
-    return decode(record[key], Json.childPath(path, key));
+    return decode(fieldCursor(cursor, key));
   },
 
   /** 省略されたときに空として扱うフィールド。 */
   optionalMap<T>(
-    record: JsonRecord,
-    path: string,
+    cursor: JsonRecordCursor,
     key: string,
     decodeValue: JsonDecoder<T>,
   ): JsonDecoded<Readonly<Record<string, T>>> {
-    if (!hasField(record, key)) {
+    if (!hasField(cursor.record, key)) {
       return Result.ok({});
     }
-    return Json.mapOf(record[key], Json.childPath(path, key), decodeValue);
+    return Json.mapOf(fieldCursor(cursor, key), decodeValue);
   },
 
   /** 名前をキーとする辞書をデコードする。 */
   mapOf<T>(
-    value: unknown,
-    path: string,
+    cursor: JsonCursor,
     decodeValue: JsonDecoder<T>,
   ): JsonDecoded<Readonly<Record<string, T>>> {
-    return Result.flatMap(Json.record(value, path), (record) => {
-      const entries = Object.keys(record).map((key) =>
+    return Result.flatMap(Json.record(cursor), (recordCursor) => {
+      const entries = Object.keys(recordCursor.record).map((key) =>
         Result.map(
-          decodeValue(record[key], Json.childPath(path, key)),
+          decodeValue(fieldCursor(recordCursor, key)),
           (decoded) => [key, decoded] as const,
         ),
       );
@@ -180,14 +200,13 @@ export const Json = {
   },
 
   arrayOf<T>(
-    value: unknown,
-    path: string,
+    cursor: JsonCursor,
     decodeItem: JsonDecoder<T>,
   ): JsonDecoded<readonly T[]> {
-    return Result.flatMap(Json.array(value, path), (items) =>
+    return Result.flatMap(Json.array(cursor), (items) =>
       Json.collect(
         items.map((item, index) =>
-          decodeItem(item, Json.indexPath(path, index)),
+          decodeItem({ value: item, path: `${cursor.path}[${index}]` }),
         ),
       ),
     );
@@ -199,16 +218,15 @@ export const Json = {
    */
   knownFields<T>(
     result: JsonDecoded<T>,
-    record: JsonRecord,
-    path: string,
+    cursor: JsonRecordCursor,
     knownFields: readonly string[],
   ): JsonDecoded<T> {
-    const errors = Object.keys(record)
+    const errors = Object.keys(cursor.record)
       .filter((key) => !knownFields.includes(key))
       .map(
         (key): JsonDecodeError => ({
           kind: "unknown-field",
-          path: Json.childPath(path, key),
+          path: fieldCursor(cursor, key).path,
           message: `unknown field "${key}"`,
         }),
       );
@@ -231,6 +249,11 @@ export const Json = {
   /**
    * 複数のデコード結果をまとめる。
    * 最初のエラーで打ち切らず、すべてのエラーを集めてから失敗させる。
+   *
+   * 引数の数は「まとめる結果の数」そのものなので、
+   * 引数を3つまでに抑える規約(`rules/coding.md`)の例外として個数ごとに用意する。
+   * 各引数は型が異なるため1つの型にまとめられず、可変長にすると
+   * タプル型を通すために `as` が必要になる(こちらも規約違反になる)。
    */
   combine2<A, B, R>(
     a: JsonDecoded<A>,

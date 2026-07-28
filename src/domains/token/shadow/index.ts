@@ -1,5 +1,10 @@
 import { Px } from "@/domains/px";
-import { Json, type JsonDecoded, type JsonObject } from "@/utils/Json";
+import {
+  Json,
+  type JsonCursor,
+  type JsonDecoded,
+  type JsonObject,
+} from "@/utils/Json";
 import { Result } from "@/utils/Result";
 import { ColorToken } from "../color";
 
@@ -29,15 +34,15 @@ export const ShadowToken = {
     )} ${shadow.color}`;
   },
 
-  fromJson(value: unknown, path: string): JsonDecoded<ShadowToken> {
-    return Result.flatMap(Json.record(value, path), (record) =>
+  fromJson(cursor: JsonCursor): JsonDecoded<ShadowToken> {
+    return Result.flatMap(Json.record(cursor), (record) =>
       Json.knownFields(
         Json.combine5(
-          Json.required(record, path, "x", Json.number),
-          Json.required(record, path, "y", Json.number),
-          Json.required(record, path, "blur", Json.number),
-          Json.optional(record, path, "spread", Json.number),
-          Json.required(record, path, "color", ColorToken.fromJson),
+          Json.required(record, "x", Json.number),
+          Json.required(record, "y", Json.number),
+          Json.required(record, "blur", Json.number),
+          Json.optional(record, "spread", Json.number),
+          Json.required(record, "color", ColorToken.fromJson),
           (x, y, blur, spread, color) => ({
             x,
             y,
@@ -47,7 +52,6 @@ export const ShadowToken = {
           }),
         ),
         record,
-        path,
         SHADOW_TOKEN_FIELDS,
       ),
     );

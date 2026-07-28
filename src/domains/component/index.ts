@@ -1,5 +1,10 @@
 import { Node, Props, type PropValue } from "@/domains/node";
-import { Json, type JsonDecoded, type JsonObject } from "@/utils/Json";
+import {
+  Json,
+  type JsonCursor,
+  type JsonDecoded,
+  type JsonObject,
+} from "@/utils/Json";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
@@ -14,16 +19,15 @@ const BINDING_FIELDS = ["node", "prop"] as const;
 const COMPONENT_FIELDS = ["publicProps", "type", "props", "children"] as const;
 
 export const PublicPropBinding = {
-  fromJson(value: unknown, path: string): JsonDecoded<PublicPropBinding> {
-    return Result.flatMap(Json.record(value, path), (record) =>
+  fromJson(cursor: JsonCursor): JsonDecoded<PublicPropBinding> {
+    return Result.flatMap(Json.record(cursor), (record) =>
       Json.knownFields(
         Json.combine2(
-          Json.required(record, path, "node", Json.string),
-          Json.required(record, path, "prop", Json.string),
+          Json.required(record, "node", Json.string),
+          Json.required(record, "prop", Json.string),
           (node, prop) => ({ node, prop }),
         ),
         record,
-        path,
         BINDING_FIELDS,
       ),
     );
@@ -159,16 +163,16 @@ export const Component = {
   },
 
   /** ルートの `name` は辞書キーが兼ねるため、値側は `name` を持たない(docs/01-file-format.md)。 */
-  fromJson(value: unknown, path: string): JsonDecoded<Component> {
-    return Result.flatMap(Json.record(value, path), (record) =>
+  fromJson(cursor: JsonCursor): JsonDecoded<Component> {
+    return Result.flatMap(Json.record(cursor), (record) =>
       Json.knownFields(
         Json.combine4(
-          Json.optional(record, path, "publicProps", (publicProps, propsPath) =>
-            Json.mapOf(publicProps, propsPath, PublicPropBinding.fromJson),
+          Json.optional(record, "publicProps", (publicProps) =>
+            Json.mapOf(publicProps, PublicPropBinding.fromJson),
           ),
-          Json.required(record, path, "type", Json.string),
-          Json.optional(record, path, "props", Props.fromJson),
-          Json.optional(record, path, "children", Node.fromJsonArray),
+          Json.required(record, "type", Json.string),
+          Json.optional(record, "props", Props.fromJson),
+          Json.optional(record, "children", Node.fromJsonArray),
           (publicProps, type, props, children) => ({
             type,
             ...(props !== undefined ? { props } : {}),
@@ -177,7 +181,6 @@ export const Component = {
           }),
         ),
         record,
-        path,
         COMPONENT_FIELDS,
       ),
     );
@@ -266,8 +269,8 @@ export const ComponentSet = {
   },
 
   /** 部品名をキー、ノードを値とする辞書(docs/01-file-format.md「components」)。 */
-  fromJson(value: unknown, path: string): JsonDecoded<ComponentSet> {
-    return Json.mapOf(value, path, Component.fromJson);
+  fromJson(cursor: JsonCursor): JsonDecoded<ComponentSet> {
+    return Json.mapOf(cursor, Component.fromJson);
   },
 
   toJson(components: ComponentSet): JsonObject {

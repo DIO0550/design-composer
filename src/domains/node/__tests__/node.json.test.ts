@@ -1,10 +1,11 @@
 import { expect, test } from "vitest";
+import { Json } from "@/utils/Json";
 import { Result } from "@/utils/Result";
 import { Node } from "../index";
 
 test("type を持つノードはプリミティブノードとして読み込まれる", () => {
   const node = Result.unwrap(
-    Node.fromJson({ name: "box", type: "Box" }, "node"),
+    Node.fromJson(Json.create({ name: "box", type: "Box" }, "node")),
   );
 
   expect(node).toEqual({ name: "box", type: "Box" });
@@ -12,14 +13,16 @@ test("type を持つノードはプリミティブノードとして読み込ま
 
 test("ref を持つノードは参照ノードとして読み込まれる", () => {
   const node = Result.unwrap(
-    Node.fromJson({ name: "submit", ref: "primary-button" }, "node"),
+    Node.fromJson(
+      Json.create({ name: "submit", ref: "primary-button" }, "node"),
+    ),
   );
 
   expect(node).toEqual({ name: "submit", ref: "primary-button" });
 });
 
 test("type も ref も持たないノードは読み込めない", () => {
-  const result = Node.fromJson({ name: "orphan" }, "node");
+  const result = Node.fromJson(Json.create({ name: "orphan" }, "node"));
 
   expect(result.ok).toBe(false);
 });
@@ -27,12 +30,14 @@ test("type も ref も持たないノードは読み込めない", () => {
 test("子ノードは階層のまま読み込まれる", () => {
   const node = Result.unwrap(
     Node.fromJson(
-      {
-        name: "outer",
-        type: "Box",
-        children: [{ name: "inner", type: "Text" }],
-      },
-      "node",
+      Json.create(
+        {
+          name: "outer",
+          type: "Box",
+          children: [{ name: "inner", type: "Text" }],
+        },
+        "node",
+      ),
     ),
   );
 

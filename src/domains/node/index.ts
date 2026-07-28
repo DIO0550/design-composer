@@ -1,4 +1,10 @@
-import { Json, type JsonDecoded, type JsonObject } from "@/utils/Json";
+import {
+  Json,
+  type JsonCursor,
+  type JsonDecoded,
+  type JsonObject,
+  type JsonRecordCursor,
+} from "@/utils/Json";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
@@ -7,7 +13,8 @@ export type Props = Readonly<Record<string, PropValue>>;
 
 export const PropValue = {
   /** prop の値になれるのはスカラーだけ(構造を持つ値は prop にしない)。 */
-  fromJson(value: unknown, path: string): JsonDecoded<PropValue> {
+  fromJson(cursor: JsonCursor): JsonDecoded<PropValue> {
+    const value = cursor.value;
     if (
       typeof value === "string" ||
       typeof value === "number" ||
@@ -18,15 +25,15 @@ export const PropValue = {
     const actual = value === null ? "null" : typeof value;
     return Json.error(
       "invalid-type",
-      path,
+      cursor.path,
       `expected string, number or boolean but got ${Array.isArray(value) ? "array" : actual}`,
     );
   },
 } as const;
 
 export const Props = {
-  fromJson(value: unknown, path: string): JsonDecoded<Props> {
-    return Json.mapOf(value, path, PropValue.fromJson);
+  fromJson(cursor: JsonCursor): JsonDecoded<Props> {
+    return Json.mapOf(cursor, PropValue.fromJson);
   },
 
   /** prop 名の昇順で書き出す(編集した順に依存させない)。 */
@@ -104,24 +111,25 @@ export const Node = {
   },
 
   /** `ref` を持てば参照ノード、`type` を持てばプリミティブノード(docs/01-file-format.md)。 */
-  fromJson(value: unknown, path: string): JsonDecoded<Node> {
-    return Result.flatMap(Json.record(value, path), (record) => {
-      if (Object.keys(record).includes("ref")) {
-        return refNodeFromJson(record, path);
+  fromJson(cursor: JsonCursor): JsonDecoded<Node> {
+    return Result.flatMap(Json.record(cursor), (record) => {
+      const keys = Object.keys(record.record);
+      if (keys.includes("ref")) {
+        return refNodeFromJson(record);
       }
-      if (Object.keys(record).includes("type")) {
-        return primitiveNodeFromJson(record, path);
+      if (keys.includes("type")) {
+        return primitiveNodeFromJson(record);
       }
       return Json.error(
         "missing-field",
-        path,
+        cursor.path,
         'node must have either "type" or "ref"',
       );
     });
   },
 
-  fromJsonArray(value: unknown, path: string): JsonDecoded<readonly Node[]> {
-    return Json.arrayOf(value, path, Node.fromJson);
+  fromJsonArray(cursor: JsonCursor): JsonDecoded<readonly Node[]> {
+    return Json.arrayOf(cursor, Node.fromJson);
   },
 
   /** 設定されていない props / children は書き出さない。 */
@@ -150,16 +158,13 @@ export const Node = {
   },
 } as const;
 
-function primitiveNodeFromJson(
-  record: Readonly<Record<string, unknown>>,
-  path: string,
-): JsonDecoded<Node> {
+function primitiveNodeFromJson(record: JsonRecordCursor): JsonDecoded<Node> {
   return Json.knownFields(
     Json.combine4(
-      Json.required(record, path, "name", Json.string),
-      Json.required(record, path, "type", Json.string),
-      Json.optional(record, path, "props", Props.fromJson),
-      Json.optional(record, path, "children", Node.fromJsonArray),
+      Json.required(record, "name", Json.string),
+      Json.required(record, "type", Json.string),
+      Json.optional(record, "props", Props.fromJson),
+      Json.optional(record, "children", Node.fromJsonArray),
       (name, type, props, children) => ({
         name,
         type,
@@ -168,20 +173,16 @@ function primitiveNodeFromJson(
       }),
     ),
     record,
-    path,
     PRIMITIVE_NODE_FIELDS,
   );
 }
 
-function refNodeFromJson(
-  record: Readonly<Record<string, unknown>>,
-  path: string,
-): JsonDecoded<Node> {
+function refNodeFromJson(record: JsonRecordCursor): JsonDecoded<Node> {
   return Json.knownFields(
     Json.combine3(
-      Json.required(record, path, "name", Json.string),
-      Json.required(record, path, "ref", Json.string),
-      Json.optional(record, path, "overrides", Props.fromJson),
+      Json.required(record, "name", Json.string),
+      Json.required(record, "ref", Json.string),
+      Json.optional(record, "overrides", Props.fromJson),
       (name, ref, overrides) => ({
         name,
         ref,
@@ -189,7 +190,6 @@ function refNodeFromJson(
       }),
     ),
     record,
-    path,
     REF_NODE_FIELDS,
   );
 }

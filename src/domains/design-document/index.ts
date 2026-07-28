@@ -18,7 +18,12 @@ import {
 } from "@/domains/primitive-schema";
 import { TokenSet } from "@/domains/token";
 import { ArrayEx } from "@/utils/ArrayEx";
-import { Json, type JsonDecoded, type JsonObject } from "@/utils/Json";
+import {
+  Json,
+  type JsonCursor,
+  type JsonDecoded,
+  type JsonObject,
+} from "@/utils/Json";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
@@ -685,15 +690,15 @@ export const DesignDocument = {
    * スキーマ検証は `DesignDocument.collectErrors`、
    * formatVersion の互換性判定は `DesignDocument.compatibility` の担当。
    */
-  fromJson(value: unknown, path: string): JsonDecoded<DesignDocument> {
-    return Result.flatMap(Json.record(value, path), (record) =>
+  fromJson(cursor: JsonCursor): JsonDecoded<DesignDocument> {
+    return Result.flatMap(Json.record(cursor), (record) =>
       Json.knownFields(
         Json.combine4(
-          Json.required(record, path, "formatVersion", FormatVersion.fromJson),
-          Json.required(record, path, "tokens", TokenSet.fromJson),
-          Json.required(record, path, "components", ComponentSet.fromJson),
-          Json.required(record, path, "artboards", (artboards, artboardsPath) =>
-            Json.arrayOf(artboards, artboardsPath, Artboard.fromJson),
+          Json.required(record, "formatVersion", FormatVersion.fromJson),
+          Json.required(record, "tokens", TokenSet.fromJson),
+          Json.required(record, "components", ComponentSet.fromJson),
+          Json.required(record, "artboards", (artboards) =>
+            Json.arrayOf(artboards, Artboard.fromJson),
           ),
           (formatVersion, tokens, components, artboards) => ({
             formatVersion,
@@ -703,7 +708,6 @@ export const DesignDocument = {
           }),
         ),
         record,
-        path,
         DOCUMENT_FIELDS,
       ),
     );

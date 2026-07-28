@@ -1,15 +1,18 @@
 import { expect, test } from "vitest";
+import { Json } from "@/utils/Json";
 import { Result } from "@/utils/Result";
 import { Component, ComponentSet } from "../index";
 
 test("部品は type と publicProps から読み込まれる", () => {
   const component = Result.unwrap(
     Component.fromJson(
-      {
-        type: "Box",
-        publicProps: { label: { node: "card-title", prop: "content" } },
-      },
-      "components.card",
+      Json.create(
+        {
+          type: "Box",
+          publicProps: { label: { node: "card-title", prop: "content" } },
+        },
+        "components.card",
+      ),
     ),
   );
 
@@ -21,8 +24,7 @@ test("部品は type と publicProps から読み込まれる", () => {
 
 test("部品のルートは name を持たない", () => {
   const result = Component.fromJson(
-    { name: "card", type: "Box" },
-    "components.card",
+    Json.create({ name: "card", type: "Box" }, "components.card"),
   );
 
   expect(result.ok).toBe(false);
@@ -30,8 +32,10 @@ test("部品のルートは name を持たない", () => {
 
 test("binding に node と prop が揃っていない部品は読み込めない", () => {
   const result = Component.fromJson(
-    { type: "Box", publicProps: { label: { node: "card-title" } } },
-    "components.card",
+    Json.create(
+      { type: "Box", publicProps: { label: { node: "card-title" } } },
+      "components.card",
+    ),
   );
 
   expect(result.ok).toBe(false);
