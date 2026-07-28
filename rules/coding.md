@@ -21,9 +21,9 @@ export const Money = {
 
 ## イミュータブル
 
-`domains/` 内のファイルは可能な限り不変に保つ。
+**引数で受け取った値を変更しないことは全レイヤー共通の規約。** そのうえで `domains/` 内のファイルは可能な限り不変に保つ。
 
-- 引数で受け取った配列・オブジェクトを破壊的に変更しない(`push` / `splice` / `sort` / プロパティへの再代入など)
+- 引数で受け取った配列・オブジェクトを破壊的に変更しない(`push` / `splice` / `sort` / プロパティへの再代入など)。走査中のカーソルやエラー蓄積用の配列も同様で、「内部で使う可変オブジェクト」を引数で引き回さない
 - 更新が必要な場合はコピーを作って新しい値を返す(スプレッド構文、`map` / `filter` / `toSorted` など)
 - `let` による再代入も可能な限り避ける
 
@@ -39,6 +39,56 @@ function addItem(list: readonly Item[], item: Item): readonly Item[] {
   return [...list, item];
 }
 ```
+
+## エラーと不在の表現(Result / Option)
+
+**例外を投げない。** 失敗しうる処理は `Result<T, E>` を、値が無いことがありうる処理は `Option<T>` を返す(`src/utils/Result.ts` / `src/utils/Option.ts`)。
+
+- `throw` / `try-catch` は使わない。「見つからない」「不正な入力」「循環参照」などはすべて `Result.err` / `Option.none` で表現する
+- 戻り値の `T | undefined` / `T | null` を不在の表現に使わない。不在は `Option` で表す
+- 失敗を握りつぶして既定値へフォールバックしない。呼び出し側が分岐できるよう、そのまま伝播させる(`Result.map` / `Result.flatMap` で連鎖する)
+- **同じモジュール内で throw ベースと Result ベースを混在させない。** 公開APIの一部だけを `Result` 化して残りを throw のままにしない
+- 例外に変換してよいのは、外部ライブラリの境界(`libs/`)と、失敗したらテストを落としたいテストコード(`Result.unwrap`)だけ
+
+```typescript
+// NG: 例外で失敗を伝える / undefined で不在を伝える
+function findNode(document: DesignDocument, name: string): Node | undefined { /* ... */ }
+function moveNode(document: DesignDocument, name: string): DesignDocument {
+  throw new Error(`node "${name}" not found`);
+}
+
+// OK: 不在は Option、失敗は Result
+function findNode(document: DesignDocument, name: string): Option<Node> { /* ... */ }
+function moveNode(
+  document: DesignDocument,
+  name: string,
+): Result<DesignDocument, Error> { /* ... */ }
+```
+
+## 関数のシグネチャ
+
+- **引数は最大3つまで。** 4つ以上になったら、常に一緒に渡る値をまとめた型を作って名前を付ける(`ReferenceContext` / `BindingLocation` など)
+- 引数が増える原因が「1件ずつ受け取って呼び出し側でループしている」ことなら、**反復を関数の内側へ移す**(1エントリではなく、まとまり全体を受け取る)
+- 同じ型の位置引数が2つ以上並び、取り違えても型エラーにならない場合はオブジェクト引数にする
+- **意味のないジェネリクスを付けない。** 型引数は、実際に2種類以上の具体型で使われるときだけ導入する。呼び出しが実質1種類なら具体型で書き、用途が2つあるなら型を2つに分ける
+
+## 値の語彙を型で閉じる
+
+**取りうる値が仕様上決まっているものを `string` / `number` のままにしない。** union 型・テンプレートリテラル型で語彙を閉じ、タイポや単位違いをコンパイルエラーにする。
+
+```typescript
+// NG: 任意の文字列が通る
+function create(property: string, value: string): CssDeclaration { /* ... */ }
+const length = `${value}px`;
+
+// OK: 語彙と単位が型に出る
+export type CssProperty = "display" | "flex-direction" | "gap" | "padding" /* ... */;
+export type Px = `${number}px`; // "16" / "16rem" は代入不可
+```
+
+- 仕様(`docs/`)が列挙している語彙はそのまま union にする。定数から導出できる場合は `as const satisfies` で導出し、二重管理しない
+- 単位付きの値は単位を型に含める。合成順が決まっている値は並びを型に出す(`` `${Px} ${Px} ${Px} ${Px} ${string}` ``)
+- ただし、プロパティごとに値域が違うなど**対で縛るコストが釣り合わない場合は無理に縛らない**。縛らなかった理由をコメントに残す
 
 ## 状態を型で表現する(型による境界)
 
@@ -78,6 +128,24 @@ function compile(props: ResolvedProps<"Box">): Style { /* ... */ }
 - features 層の責務は「services / domains のオーケストレーションとUI」のみ
 - class は使用しない(type + companion object で統一)
 - ブロックのネストは**3段まで**(lint の `max-depth` で強制)。早期リターン・関数分割でフラットに保つ
+- **同じ処理が2箇所に現れたら共通化する**(実装・テストとも)。汎用操作なら `utils/`、ドメインの規則ならコンパニオンオブジェクトへ
+- 長い配列の結合をインラインのスプレッドで書かない。**中身に名前を付けた変数へ入れてから結合**し、何をどこから集めているかを名前で示す
+- コメントは実装と一致させる。挙動を曖昧にまとめず対象を列挙する(「タグの開始だけを潰す」ではなく「`&` `<` `>` を実体参照へ変換する」)。実装を変えたらコメントも同時に直す
+
+```typescript
+// NG: 何をどこから集めているか名前が無い
+return [
+  ...withLocation({ nodeName: artboard.name }, PropDefinitionRecord.collectErrors(/* ... */)),
+  ...artboard.children.flatMap((child) => collectNodeErrors(child, context.tokens)),
+  ...artboard.children.flatMap((child) => collectNodeRefErrors(context, child)),
+];
+
+// OK: 一旦名前を付けてから結合する
+const propErrors = withLocation(/* ... */);
+const childErrors = artboard.children.flatMap(/* ... */);
+const refErrors = artboard.children.flatMap(/* ... */);
+return [...propErrors, ...childErrors, ...refErrors];
+```
 
 ## 禁止事項
 
