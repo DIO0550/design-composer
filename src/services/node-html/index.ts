@@ -3,7 +3,7 @@ import {
   type CompiledElement,
   TextElement,
 } from "@/domains/compiled-element";
-import type { CssDeclarations, TokenRefs } from "@/domains/css-declaration";
+import type { CssDeclarations } from "@/domains/css-declaration";
 import type { CssDirection } from "@/domains/css-direction";
 import type { Props } from "@/domains/node";
 import { PrimitiveSchema } from "@/domains/primitive-schema";
@@ -21,20 +21,11 @@ export type { CompiledElement, CssDeclarations };
  */
 export type ParentContext = Readonly<{ direction: CssDirection }>;
 
-/**
- * トークン参照の綴り方。カスタムプロパティ名の規則は CSS 出力層が持ち、
- * ドメインへは変換手段として渡す。
- */
-const TOKEN_REFS: TokenRefs = {
-  ref: TokenCss.ref,
-  typographyRef: TokenCss.typographyRef,
-};
-
 function compileText(name: string, props: Props): CompiledElement {
   const resolved = ResolvedProps.resolve("Text", props);
   return TextElement.create(
     name,
-    TextElement.declarations(resolved, TOKEN_REFS),
+    TextElement.declarations(resolved, TokenCss.refs),
     String(resolved.content),
   );
 }
@@ -52,7 +43,7 @@ function compileBox(
     (children): CompiledElement =>
       BoxElement.create(
         node.name,
-        BoxElement.declarations(resolved, parent?.direction, TOKEN_REFS),
+        BoxElement.declarations(resolved, parent?.direction, TokenCss.refs),
         children,
       ),
   );
