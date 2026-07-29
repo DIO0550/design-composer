@@ -18,7 +18,7 @@
 | `document` | ノード・部品・トークンの型、ツリー操作（挿入 / 移動 / 部品化 / detach / 自動リネーム） | schema |
 | `validator` | 03 の全エラー検出（重複キーの字句スキャンを含む） | schema, document |
 | `compiler` | ドキュメント → HTML/CSS（カスタムプロパティ＋インライン style）。ref / overrides の合成 | schema, document |
-| `serializer` | JSON ⇔ ドキュメントの正規化入出力。フォーマット差し替えの閉じ込め先 | document |
+| `serializer` | JSON ⇔ ドキュメントの正規化入出力。フォーマット差し替えの閉じ込め先。外部フォーマットの解釈なので実体は `src/libs/`（`document-json` / `json-lexical-scanner`） | document |
 
 - UI 層はこれらを呼ぶだけのクライアントとする
 

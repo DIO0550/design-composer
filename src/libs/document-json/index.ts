@@ -2,7 +2,7 @@ import { DesignDocument } from "@/domains/design-document";
 import {
   JsonLexicalScanner,
   type JsonScanError,
-} from "@/services/json-lexical-scanner";
+} from "@/libs/json-lexical-scanner";
 import { Json, type JsonDecodeError, type JsonValue } from "@/utils/Json";
 import { Result } from "@/utils/Result";
 

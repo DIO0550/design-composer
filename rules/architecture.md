@@ -12,7 +12,7 @@ src/
   services/    # ドメインサービス層: 複数ドメインを組み合わせるロジック(置く前に帰属先のドメインを探す)
   components/  # 汎用UIコンポーネント(ドメイン知識を持たない)
   hooks/       # 汎用カスタムフック(ドメイン知識を持たない)
-  libs/        # 外部世界との境界: 外部ライブラリのラップ、Tauri API・localStorage 等のI/O をここに閉じ込める
+  libs/        # 外部世界との境界: 外部ライブラリのラップ、Tauri API・localStorage 等のI/O、外部フォーマット(JSON等)の解釈をここに閉じ込める
   utils/       # 汎用純粋関数(ドメイン知識を持たない)
   types/       # ロジックを持たない純粋な型定義のみ(コンパニオンオブジェクトを置いたら違反)
 ```
@@ -103,5 +103,5 @@ app → features → services → domains
 - `features/<x>/domains/` は `src/domains/` を import してよいが、他 feature の domains への直接 import は不可(2つ以上の feature が必要とするドメインオブジェクトは `src/domains/` へ昇格させる)
 - `app/` はロジックを持たない。`features/` の呼び出しとルーティング・Provider の組み立てのみ
 - `components/` `hooks/` `utils/` `types/` は domains / services / features を import してはならない(ドメイン知識の流入禁止)
-- `libs/` は外部ライブラリ(`@tauri-apps/*` 等)と `src/types/` のみ import 可
+- `libs/` は外部ライブラリ(`@tauri-apps/*` 等)・`src/types/`・`src/utils/`・`src/domains/` を import 可。`services/` `features/` `components/` `hooks/` への依存は禁止(外部世界とドメインの間の変換に閉じる)。オーケストレーション(複数ドメインを組み合わせる手順)は `libs/` に置かない — それは `services/` の責務
 - 循環依存は全面禁止
