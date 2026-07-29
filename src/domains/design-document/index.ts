@@ -786,10 +786,20 @@ export const DesignDocument = {
   },
 
   /**
+   * 現在の形式を名乗るドキュメントにする。
+   * 書き出しは常に現在の形式で行う（旧形式へのダウングレード書き出しは持たない・
+   * マイグレーションは一方向）ため、書き出す値はこれを通したものになる。
+   */
+  withCurrentFormatVersion(document: DesignDocument): DesignDocument {
+    return { ...document, formatVersion: FormatVersion.CURRENT };
+  },
+
+  /**
    * JSON のデータモデルからドキュメントを組み立てる。
    * 検証するのは形（必須フィールド・型・未知フィールド）だけで、
-   * スキーマ検証は `DesignDocument.collectErrors`、
-   * formatVersion の互換性判定は `DesignDocument.compatibility` の担当。
+   * スキーマ検証は `DesignDocument.collectErrors` の担当。
+   * formatVersion の互換性判定とマイグレーションは、このデコードより前
+   * （JSON のデータモデルの段階）で `libs/document-migration` が済ませている。
    */
   fromJson(cursor: JsonCursor): JsonDecoded<DesignDocument> {
     return Result.flatMap(Json.record(cursor), (record) =>
