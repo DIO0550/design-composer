@@ -91,7 +91,7 @@ export const DesignDocumentEditError = {
       case "children-not-allowed":
         return `node "${error.name}" cannot have children`;
       case "move-into-descendant":
-        return `cannot move node "${error.name}" into itself or its own descendant`;
+        return `cannot move node "${error.name}" into "${error.parentName}" because it is the node itself or its descendant`;
       case "ref-node-not-supported":
         return `cannot create a component from ref node "${error.name}"`;
       case "duplicate-name":

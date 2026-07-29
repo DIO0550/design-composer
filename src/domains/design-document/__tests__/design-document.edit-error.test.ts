@@ -26,7 +26,9 @@ test("move-into-descendant は移動元と移動先の両方を含むメッセ�
       name: "box-1",
       parentName: "box-2",
     }),
-  ).toBe('cannot move node "box-1" into itself or its own descendant');
+  ).toBe(
+    'cannot move node "box-1" into "box-2" because it is the node itself or its descendant',
+  );
 });
 
 test("index-out-of-range は指定された index と配列長を含むメッセージになる", () => {
