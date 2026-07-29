@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 import { TokenSet } from "@/domains/token";
 import { PropDefinition, PropDefinitionRecord } from "../index";
 
-test("enum の値が values に含まれる場合、validate はエラーを返さない", () => {
+test("enum の prop に values に含まれる値を設定するとエラーにならない", () => {
   const definition = {
     domain: "enum",
     values: ["row", "column"],
@@ -12,14 +12,13 @@ test("enum の値が values に含まれる場合、validate はエラーを返�
   expect(
     PropDefinition.collectErrors(
       definition,
-      "direction",
-      "row",
+      { name: "direction", value: "row" },
       TokenSet.empty(),
     ),
   ).toEqual([]);
 });
 
-test("enum の値が values に含まれない場合、validate は enum-violation を返す", () => {
+test("enum の prop に values に含まれない値を設定すると enum-violation になる", () => {
   const definition = {
     domain: "enum",
     values: ["row", "column"],
@@ -29,8 +28,7 @@ test("enum の値が values に含まれない場合、validate は enum-violati
   expect(
     PropDefinition.collectErrors(
       definition,
-      "direction",
-      "diagonal",
+      { name: "direction", value: "diagonal" },
       TokenSet.empty(),
     ),
   ).toEqual([
@@ -38,7 +36,7 @@ test("enum の値が values に含まれない場合、validate は enum-violati
   ]);
 });
 
-test("literalType と一致する値の場合、validate はエラーを返さない", () => {
+test("生リテラルの prop に literalType と一致する型の値を設定するとエラーにならない", () => {
   const definition = {
     domain: "literal",
     literalType: "number",
@@ -46,11 +44,15 @@ test("literalType と一致する値の場合、validate はエラーを返さ�
   } as const;
 
   expect(
-    PropDefinition.collectErrors(definition, "width", 100, TokenSet.empty()),
+    PropDefinition.collectErrors(
+      definition,
+      { name: "width", value: 100 },
+      TokenSet.empty(),
+    ),
   ).toEqual([]);
 });
 
-test("literalType と異なる値の場合、validate は literal-type-mismatch を返す", () => {
+test("生リテラルの prop に literalType と異なる型の値を設定すると literal-type-mismatch になる", () => {
   const definition = {
     domain: "literal",
     literalType: "number",
@@ -58,13 +60,17 @@ test("literalType と異なる値の場合、validate は literal-type-mismatch 
   } as const;
 
   expect(
-    PropDefinition.collectErrors(definition, "width", "100", TokenSet.empty()),
+    PropDefinition.collectErrors(
+      definition,
+      { name: "width", value: "100" },
+      TokenSet.empty(),
+    ),
   ).toEqual([
     expect.objectContaining({ kind: "literal-type-mismatch", prop: "width" }),
   ]);
 });
 
-test("トークンセットに存在する名前の場合、validate はエラーを返さない", () => {
+test("トークン参照の prop にトークンセットに存在する名前を設定するとエラーにならない", () => {
   const definition = {
     domain: "token",
     tokenKind: "colors",
@@ -73,11 +79,15 @@ test("トークンセットに存在する名前の場合、validate はエラ�
   const tokens = { ...TokenSet.empty(), colors: { "gray-900": "#111111" } };
 
   expect(
-    PropDefinition.collectErrors(definition, "background", "gray-900", tokens),
+    PropDefinition.collectErrors(
+      definition,
+      { name: "background", value: "gray-900" },
+      tokens,
+    ),
   ).toEqual([]);
 });
 
-test("トークンセットに存在しない名前の場合、validate は dangling-token を返す", () => {
+test("トークン参照の prop にトークンセットに存在しない名前を設定すると dangling-token になる", () => {
   const definition = {
     domain: "token",
     tokenKind: "colors",
@@ -87,8 +97,7 @@ test("トークンセットに存在しない名前の場合、validate は dang
   expect(
     PropDefinition.collectErrors(
       definition,
-      "background",
-      "no-such-color",
+      { name: "background", value: "no-such-color" },
       TokenSet.empty(),
     ),
   ).toEqual([
@@ -96,7 +105,7 @@ test("トークンセットに存在しない名前の場合、validate は dang
   ]);
 });
 
-test("スキーマに存在しない prop を渡すと、PropDefinitionRecord.collectErrors は unknown-prop を返す", () => {
+test("スキーマに存在しない prop を設定すると unknown-prop になる", () => {
   const schema = {
     direction: { domain: "enum", values: ["row", "column"], group: "layout" },
   } satisfies Parameters<typeof PropDefinitionRecord.collectErrors>[0];
@@ -112,7 +121,7 @@ test("スキーマに存在しない prop を渡すと、PropDefinitionRecord.co
   ]);
 });
 
-test("複数の props に違反がある場合、PropDefinitionRecord.collectErrors は最初の1件で止まらず全件返す", () => {
+test("複数の props に違反があると最初の1件で止まらず全件返る", () => {
   const schema = {
     direction: { domain: "enum", values: ["row", "column"], group: "layout" },
     width: { domain: "literal", literalType: "number", group: "size" },

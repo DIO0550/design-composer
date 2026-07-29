@@ -1,10 +1,12 @@
 import type {
   CssDeclaration as CssDeclarationType,
-  CssProperty,
-  SingleVariableTokenKind,
   TokenRefs,
 } from "@/domains/css-declaration";
-import { CssDeclaration, CssDeclarations } from "@/domains/css-declaration";
+import {
+  CssDeclaration,
+  CssDeclarations,
+  TokenBackedProperty,
+} from "@/domains/css-declaration";
 import { CssDirection } from "@/domains/css-direction";
 import type { PropValue } from "@/domains/node";
 import { Padding } from "@/domains/padding";
@@ -12,22 +14,6 @@ import type { ResolvedProps } from "@/domains/resolved-props";
 import { Size } from "@/domains/size";
 import { TypographyField, TypographyToken } from "@/domains/token";
 import { Html } from "@/utils/Html";
-
-/**
- * トークン参照 prop を `var()` 参照の宣言にする。未指定の prop は宣言を出力しない
- * (トークンの値は参照しないため、トークン編集は再コンパイルなしに CSS 経由で波及する)。
- */
-function tokenDeclarations(
-  property: CssProperty,
-  kind: SingleVariableTokenKind,
-  value: PropValue | undefined,
-  tokens: TokenRefs,
-): readonly CssDeclarationType[] {
-  if (value === undefined) {
-    return [];
-  }
-  return [CssDeclaration.create(property, tokens.ref(kind, String(value)))];
-}
 
 /** 初期値と同じ `visible` は宣言を出力しない (docs/03 の表は clip のみを規定)。 */
 function overflowDeclarations(
@@ -109,7 +95,11 @@ export const BoxElement = {
     return [
       CssDeclaration.create("display", "flex"),
       CssDeclaration.create("flex-direction", String(props.direction)),
-      ...tokenDeclarations("gap", "spacing", props.gap, tokens),
+      ...TokenBackedProperty.declarations(
+        { name: "gap", tokenKind: "spacing" },
+        props.gap,
+        tokens,
+      ),
       ...Padding.declarations(
         Padding.create(props.paddingY, props.paddingX),
         (token) => tokens.ref("spacing", token),
@@ -126,9 +116,21 @@ export const BoxElement = {
         "height",
         parentDirection,
       ),
-      ...tokenDeclarations("background", "colors", props.background, tokens),
-      ...tokenDeclarations("border-radius", "radius", props.radius, tokens),
-      ...tokenDeclarations("box-shadow", "shadows", props.shadow, tokens),
+      ...TokenBackedProperty.declarations(
+        { name: "background", tokenKind: "colors" },
+        props.background,
+        tokens,
+      ),
+      ...TokenBackedProperty.declarations(
+        { name: "border-radius", tokenKind: "radius" },
+        props.radius,
+        tokens,
+      ),
+      ...TokenBackedProperty.declarations(
+        { name: "box-shadow", tokenKind: "shadows" },
+        props.shadow,
+        tokens,
+      ),
       ...overflowDeclarations(props.overflow),
     ];
   },
@@ -161,7 +163,11 @@ export const TextElement = {
   ): readonly CssDeclarationType[] {
     return [
       ...typographyDeclarations(props.typography, tokens),
-      ...tokenDeclarations("color", "colors", props.color, tokens),
+      ...TokenBackedProperty.declarations(
+        { name: "color", tokenKind: "colors" },
+        props.color,
+        tokens,
+      ),
       CssDeclaration.create("text-align", String(props.align)),
     ];
   },

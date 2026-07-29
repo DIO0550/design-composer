@@ -1,3 +1,4 @@
+import type { PropValue } from "@/domains/node";
 import type { TokenKind, TypographyCssProperty } from "@/domains/token";
 
 /**
@@ -48,6 +49,15 @@ export type TokenRefs = Readonly<{
   typographyRef(name: string, property: TypographyCssProperty): string;
 }>;
 
+/**
+ * 値がトークン参照で決まる CSS プロパティと、値を引くトークン種別の対応。
+ * どちらか一方だけでは参照先が決まらないため1つの型にまとめる。
+ */
+export type TokenBackedProperty = Readonly<{
+  name: CssProperty;
+  tokenKind: SingleVariableTokenKind;
+}>;
+
 /** CSS の1宣言。プロパティ名と値は対で意味を持つため1つの型にまとめる。 */
 export type CssDeclaration = Readonly<{
   property: CssDeclarationName;
@@ -66,6 +76,28 @@ export const CssDeclaration = {
   /** style 属性へ載せる形の1宣言。 */
   text(declaration: CssDeclaration): string {
     return declarationText(declaration.property, declaration.value);
+  },
+} as const;
+
+export const TokenBackedProperty = {
+  /**
+   * トークン参照 prop を `var()` 参照の宣言にする。未指定の prop は宣言を出力しない
+   * (トークンの値は参照しないため、トークン編集は再コンパイルなしに CSS 経由で波及する)。
+   */
+  declarations(
+    property: TokenBackedProperty,
+    value: PropValue | undefined,
+    tokens: TokenRefs,
+  ): readonly CssDeclaration[] {
+    if (value === undefined) {
+      return [];
+    }
+    return [
+      CssDeclaration.create(
+        property.name,
+        tokens.ref(property.tokenKind, String(value)),
+      ),
+    ];
   },
 } as const;
 

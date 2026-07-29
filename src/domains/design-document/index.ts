@@ -8,7 +8,7 @@ import {
   FormatVersion,
   type FormatVersionCompatibility,
 } from "@/domains/format-version";
-import { Node, type Props, type RefNode } from "@/domains/node";
+import { Node, Props, type RefNode } from "@/domains/node";
 import type { PropValidationError } from "@/domains/primitive-schema";
 import {
   BOX_SCHEMA,
@@ -74,6 +74,15 @@ export type DesignDocumentEditError =
   | Readonly<{ kind: "ref-node-not-supported"; name: string }>
   | Readonly<{ kind: "duplicate-name"; name: string }>
   | Readonly<{ kind: "index-out-of-range"; index: number; length: number }>;
+
+/**
+ * ツリー上の「どの親の何番目の子か」という位置。
+ * 親の名前と index は片方だけでは位置が決まらないため1つの型にまとめる。
+ */
+export type ChildPosition = Readonly<{
+  parentName: string;
+  index: number;
+}>;
 
 export const DesignDocumentEditError = {
   /**
@@ -367,46 +376,59 @@ type ReferenceContext = Readonly<{
  * binding が最終的に指すプリミティブ prop の定義を解決する。
  * binding 先が ref ノードの場合は参照先部品の publicProps を辿る（インターフェースの連鎖）。
  * 解決できない場合は binding 自体が不整合であり、binding 検証側で報告される。
+ *
+ * 辿った部品名（循環検出用）は再帰の内部状態なので公開シグネチャには出さず、
+ * `context` を捕捉した内側の再帰関数だけが持つ。
  */
 function resolvePropDefinition(
   context: ReferenceContext,
   componentName: string,
   binding: PublicPropBinding,
-  visited: ReadonlySet<string>,
 ): Option<PropDefinition> {
-  const component = ComponentSet.get(context.components, componentName);
-  if (component === undefined) {
-    return Option.none;
-  }
-  const found = Component.findNode(component, componentName, binding.node);
-  if (!found.some) {
-    return Option.none;
-  }
-  const target = found.value;
-  if (Node.isPrimitive(target)) {
-    if (!PrimitiveSchema.isPrimitiveType(target.type)) {
+  const resolve = (
+    currentName: string,
+    currentBinding: PublicPropBinding,
+    visited: ReadonlySet<string>,
+  ): Option<PropDefinition> => {
+    const component = ComponentSet.get(context.components, currentName);
+    if (component === undefined) {
       return Option.none;
     }
-    const schema: PrimitiveSchema = PrimitiveSchema.forType(target.type);
-    return Option.fromNullable(schema.props[binding.prop]);
-  }
-  if (visited.has(target.ref)) {
-    return Option.none;
-  }
-  const nested = ComponentSet.get(context.components, target.ref);
-  if (nested === undefined) {
-    return Option.none;
-  }
-  const nestedBinding = Component.binding(nested, binding.prop);
-  if (!nestedBinding.some) {
-    return Option.none;
-  }
-  return resolvePropDefinition(
-    context,
-    target.ref,
-    nestedBinding.value,
-    new Set(visited).add(target.ref),
-  );
+    const found = Component.findNode(
+      component,
+      currentName,
+      currentBinding.node,
+    );
+    if (!found.some) {
+      return Option.none;
+    }
+    const target = found.value;
+    if (Node.isPrimitive(target)) {
+      if (!PrimitiveSchema.isPrimitiveType(target.type)) {
+        return Option.none;
+      }
+      const schema: PrimitiveSchema = PrimitiveSchema.forType(target.type);
+      return Option.fromNullable(schema.props[currentBinding.prop]);
+    }
+    if (visited.has(target.ref)) {
+      return Option.none;
+    }
+    const nested = ComponentSet.get(context.components, target.ref);
+    if (nested === undefined) {
+      return Option.none;
+    }
+    const nestedBinding = Component.binding(nested, currentBinding.prop);
+    if (!nestedBinding.some) {
+      return Option.none;
+    }
+    return resolve(
+      target.ref,
+      nestedBinding.value,
+      new Set(visited).add(target.ref),
+    );
+  };
+
+  return resolve(componentName, binding, new Set([componentName]));
 }
 
 function collectOverrideErrors(
@@ -414,15 +436,15 @@ function collectOverrideErrors(
   refNode: RefNode,
   component: Component,
 ): readonly UnlocatedError[] {
-  return Object.entries(refNode.overrides ?? {}).flatMap(
-    ([propName, value]): readonly UnlocatedError[] => {
-      const binding = Component.binding(component, propName);
+  return Props.toAssignments(refNode.overrides ?? {}).flatMap(
+    (assignment): readonly UnlocatedError[] => {
+      const binding = Component.binding(component, assignment.name);
       if (!binding.some) {
         return [
           {
             kind: "undeclared-override" as const,
-            prop: propName,
-            message: `component "${refNode.ref}" does not declare public prop "${propName}"`,
+            prop: assignment.name,
+            message: `component "${refNode.ref}" does not declare public prop "${assignment.name}"`,
           },
         ];
       }
@@ -430,15 +452,13 @@ function collectOverrideErrors(
         context,
         refNode.ref,
         binding.value,
-        new Set([refNode.ref]),
       );
       if (!definition.some) {
         return [];
       }
       return PropDefinition.collectErrors(
         definition.value,
-        propName,
-        value,
+        assignment,
         context.tokens,
       );
     },
@@ -830,18 +850,17 @@ export const DesignDocument = {
 
   insertNode(
     document: DesignDocument,
-    parentName: string,
-    index: number,
+    at: ChildPosition,
     node: Node,
   ): Result<DesignDocument, DesignDocumentEditError> {
     return Result.flatMap(
-      updateChildrenOfParent(document.artboards, parentName, (children) =>
-        toEditResult(ArrayEx.insertAt(children, index, node)),
+      updateChildrenOfParent(document.artboards, at.parentName, (children) =>
+        toEditResult(ArrayEx.insertAt(children, at.index, node)),
       ),
       (result) =>
         result.found
           ? Result.ok({ ...document, artboards: result.artboards })
-          : Result.err({ kind: "parent-not-found", name: parentName }),
+          : Result.err({ kind: "parent-not-found", name: at.parentName }),
     );
   },
 
@@ -881,45 +900,46 @@ export const DesignDocument = {
     return Result.ok({ ...document, artboards: result.artboards });
   },
 
+  /**
+   * 同一の親の中で子を動かす。移動元は「どの親の何番目か」で指す位置なので
+   * 移動先は同じ親の中の index だけで決まる（親をまたぐ移動は `moveNode`）。
+   */
   reorderNode(
     document: DesignDocument,
-    parentName: string,
-    fromIndex: number,
+    from: ChildPosition,
     toIndex: number,
   ): Result<DesignDocument, DesignDocumentEditError> {
     return Result.flatMap(
-      updateChildrenOfParent(document.artboards, parentName, (children) =>
-        toEditResult(ArrayEx.moveWithin(children, fromIndex, toIndex)),
+      updateChildrenOfParent(document.artboards, from.parentName, (children) =>
+        toEditResult(ArrayEx.moveWithin(children, from.index, toIndex)),
       ),
       (result) =>
         result.found
           ? Result.ok({ ...document, artboards: result.artboards })
-          : Result.err({ kind: "parent-not-found", name: parentName }),
+          : Result.err({ kind: "parent-not-found", name: from.parentName }),
     );
   },
 
   moveNode(
     document: DesignDocument,
     name: string,
-    newParentName: string,
-    index: number,
+    to: ChildPosition,
   ): Result<DesignDocument, DesignDocumentEditError> {
     const found = findNodeInArtboards(document.artboards, name);
     if (!found.some) {
       return Result.err({ kind: "node-not-found", name });
     }
     const node = found.value;
-    if (Node.collectNames(node).includes(newParentName)) {
+    if (Node.collectNames(node).includes(to.parentName)) {
       return Result.err({
         kind: "move-into-descendant",
         name,
-        parentName: newParentName,
+        parentName: to.parentName,
       });
     }
     return Result.flatMap(
       DesignDocument.removeNode(document, name),
-      (without) =>
-        DesignDocument.insertNode(without, newParentName, index, node),
+      (without) => DesignDocument.insertNode(without, to, node),
     );
   },
 

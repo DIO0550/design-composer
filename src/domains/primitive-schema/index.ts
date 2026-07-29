@@ -1,4 +1,4 @@
-import type { Props, PropValue } from "@/domains/node";
+import { type PropAssignment, Props, type PropValue } from "@/domains/node";
 import type { TokenKind } from "@/domains/token";
 import { TokenSet } from "@/domains/token";
 
@@ -78,10 +78,11 @@ export const PropDefinition = {
 
   collectErrors(
     definition: PropDefinition,
-    propName: string,
-    value: PropValue,
+    assignment: PropAssignment,
     tokens: TokenSet,
   ): readonly PropValidationError[] {
+    const { name, value } = assignment;
+
     if (PropDefinition.isEnum(definition)) {
       if (typeof value === "string" && definition.values.includes(value)) {
         return [];
@@ -89,8 +90,8 @@ export const PropDefinition = {
       return [
         {
           kind: "enum-violation",
-          prop: propName,
-          message: `prop "${propName}" must be one of ${definition.values.join(", ")}`,
+          prop: name,
+          message: `prop "${name}" must be one of ${definition.values.join(", ")}`,
         },
       ];
     }
@@ -102,8 +103,8 @@ export const PropDefinition = {
       return [
         {
           kind: "literal-type-mismatch",
-          prop: propName,
-          message: `prop "${propName}" must be of type ${definition.literalType}`,
+          prop: name,
+          message: `prop "${name}" must be of type ${definition.literalType}`,
         },
       ];
     }
@@ -117,8 +118,8 @@ export const PropDefinition = {
     return [
       {
         kind: "dangling-token",
-        prop: propName,
-        message: `prop "${propName}" references unknown ${definition.tokenKind} token "${String(value)}"`,
+        prop: name,
+        message: `prop "${name}" references unknown ${definition.tokenKind} token "${String(value)}"`,
       },
     ];
   },
@@ -134,18 +135,18 @@ export const PropDefinitionRecord = {
     props: Props,
     tokens: TokenSet,
   ): readonly PropValidationError[] {
-    return Object.entries(props).flatMap(([propName, value]) => {
-      const definition = schema[propName];
+    return Props.toAssignments(props).flatMap((assignment) => {
+      const definition = schema[assignment.name];
       if (definition === undefined) {
         return [
           {
             kind: "unknown-prop" as const,
-            prop: propName,
-            message: `unknown prop "${propName}"`,
+            prop: assignment.name,
+            message: `unknown prop "${assignment.name}"`,
           },
         ];
       }
-      return PropDefinition.collectErrors(definition, propName, value, tokens);
+      return PropDefinition.collectErrors(definition, assignment, tokens);
     });
   },
 } as const;
