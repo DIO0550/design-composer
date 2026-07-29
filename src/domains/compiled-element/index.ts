@@ -95,11 +95,7 @@ export const BoxElement = {
     return [
       CssDeclaration.create("display", "flex"),
       CssDeclaration.create("flex-direction", String(props.direction)),
-      ...TokenBackedProperty.declarations(
-        { name: "gap", tokenKind: "spacing" },
-        props.gap,
-        tokens,
-      ),
+      ...TokenBackedProperty.declarations("gap", props.gap, tokens),
       ...Padding.declarations(
         Padding.create(props.paddingY, props.paddingX),
         (token) => tokens.ref("spacing", token),
@@ -117,20 +113,16 @@ export const BoxElement = {
         parentDirection,
       ),
       ...TokenBackedProperty.declarations(
-        { name: "background", tokenKind: "colors" },
+        "background",
         props.background,
         tokens,
       ),
       ...TokenBackedProperty.declarations(
-        { name: "border-radius", tokenKind: "radius" },
+        "border-radius",
         props.radius,
         tokens,
       ),
-      ...TokenBackedProperty.declarations(
-        { name: "box-shadow", tokenKind: "shadows" },
-        props.shadow,
-        tokens,
-      ),
+      ...TokenBackedProperty.declarations("box-shadow", props.shadow, tokens),
       ...overflowDeclarations(props.overflow),
     ];
   },
@@ -163,11 +155,7 @@ export const TextElement = {
   ): readonly CssDeclarationType[] {
     return [
       ...typographyDeclarations(props.typography, tokens),
-      ...TokenBackedProperty.declarations(
-        { name: "color", tokenKind: "colors" },
-        props.color,
-        tokens,
-      ),
+      ...TokenBackedProperty.declarations("color", props.color, tokens),
       CssDeclaration.create("text-align", String(props.align)),
     ];
   },

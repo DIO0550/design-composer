@@ -50,13 +50,24 @@ export type TokenRefs = Readonly<{
 }>;
 
 /**
- * 値がトークン参照で決まる CSS プロパティと、値を引くトークン種別の対応。
- * どちらか一方だけでは参照先が決まらないため1つの型にまとめる。
+ * 値がトークン参照で決まる CSS プロパティと、値を引くトークン種別の対応
+ * (docs/03「HTML/CSS へのコンパイル規則」の表)。
+ * どちらの種別から引くかは仕様で決まっているので、呼び出し側には渡させずここだけで持つ
+ * (`gap` を colors から引くような組み合わせを作れないようにするため)。
+ * `padding` は2軸を1つの値へ合成するため `Padding` が担当し、この表には含めない。
  */
-export type TokenBackedProperty = Readonly<{
-  name: CssProperty;
-  tokenKind: SingleVariableTokenKind;
-}>;
+const TOKEN_BACKED_PROPERTIES = {
+  gap: "spacing",
+  background: "colors",
+  "border-radius": "radius",
+  "box-shadow": "shadows",
+  color: "colors",
+} as const satisfies Readonly<
+  Partial<Record<CssProperty, SingleVariableTokenKind>>
+>;
+
+/** 値がトークン参照で決まる CSS プロパティ。語彙は上の表で閉じている。 */
+export type TokenBackedProperty = keyof typeof TOKEN_BACKED_PROPERTIES;
 
 /** CSS の1宣言。プロパティ名と値は対で意味を持つため1つの型にまとめる。 */
 export type CssDeclaration = Readonly<{
@@ -92,12 +103,8 @@ export const TokenBackedProperty = {
     if (value === undefined) {
       return [];
     }
-    return [
-      CssDeclaration.create(
-        property.name,
-        tokens.ref(property.tokenKind, String(value)),
-      ),
-    ];
+    const kind = TOKEN_BACKED_PROPERTIES[property];
+    return [CssDeclaration.create(property, tokens.ref(kind, String(value)))];
   },
 } as const;
 

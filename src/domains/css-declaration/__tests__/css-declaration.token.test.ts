@@ -9,31 +9,19 @@ const tokenRefs = {
 } satisfies TokenRefs;
 
 test("トークン参照 prop はトークンの値ではなく var() 参照の宣言になる", () => {
-  expect(
-    TokenBackedProperty.declarations(
-      { name: "gap", tokenKind: "spacing" },
-      "md",
-      tokenRefs,
-    ),
-  ).toEqual([{ property: "gap", value: "var(--spacing-md)" }]);
+  expect(TokenBackedProperty.declarations("gap", "md", tokenRefs)).toEqual([
+    { property: "gap", value: "var(--spacing-md)" },
+  ]);
 });
 
 test("未指定のトークン参照 prop は宣言を出力しない", () => {
   expect(
-    TokenBackedProperty.declarations(
-      { name: "background", tokenKind: "colors" },
-      undefined,
-      tokenRefs,
-    ),
+    TokenBackedProperty.declarations("background", undefined, tokenRefs),
   ).toEqual([]);
 });
 
-test("トークン参照 prop の値は指定されたトークン種別から引かれる", () => {
+test("トークン参照 prop の値は仕様で定めたトークン種別から引かれる", () => {
   expect(
-    TokenBackedProperty.declarations(
-      { name: "border-radius", tokenKind: "radius" },
-      "lg",
-      tokenRefs,
-    ),
+    TokenBackedProperty.declarations("border-radius", "lg", tokenRefs),
   ).toEqual([{ property: "border-radius", value: "var(--radius-lg)" }]);
 });
