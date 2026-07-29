@@ -67,3 +67,19 @@ test("unwrap は成功から値を取り出す", () => {
 test("unwrap は失敗に対して例外を投げる", () => {
   expect(() => Result.unwrap(Result.err("fail"))).toThrow("fail");
 });
+
+test("mapErr は失敗のエラーだけを変換する", () => {
+  const result: Result<number, string> = Result.err("fail");
+  expect(Result.mapErr(result, (error) => error.length)).toEqual({
+    ok: false,
+    error: 4,
+  });
+});
+
+test("mapErr は成功の結果をそのまま返す", () => {
+  const result: Result<number, string> = Result.ok(42);
+  expect(Result.mapErr(result, (error: string) => error.length)).toEqual({
+    ok: true,
+    value: 42,
+  });
+});

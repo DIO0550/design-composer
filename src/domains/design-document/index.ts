@@ -17,7 +17,7 @@ import {
   PropDefinitionRecord,
 } from "@/domains/primitive-schema";
 import { TokenSet } from "@/domains/token";
-import { ArrayEx } from "@/utils/ArrayEx";
+import { ArrayEx, type IndexOutOfRange } from "@/utils/ArrayEx";
 import {
   Json,
   type JsonCursor,
@@ -61,71 +61,172 @@ export type DesignDocumentValidationError = Readonly<{
   message: string;
 }>;
 
+/**
+ * ツリー編集操作（挿入・削除・並べ替え・移動・部品化）が失敗する理由。
+ * 呼び出し側が種類で分岐できるよう、メッセージ文字列ではなく直和で列挙する。
+ */
+export type DesignDocumentEditError =
+  | Readonly<{ kind: "node-not-found"; name: string }>
+  | Readonly<{ kind: "parent-not-found"; name: string }>
+  | Readonly<{ kind: "artboard-not-found"; name: string }>
+  | Readonly<{ kind: "children-not-allowed"; name: string }>
+  | Readonly<{ kind: "move-into-descendant"; name: string; parentName: string }>
+  | Readonly<{ kind: "ref-node-not-supported"; name: string }>
+  | Readonly<{ kind: "duplicate-name"; name: string }>
+  | Readonly<{ kind: "index-out-of-range"; index: number; length: number }>;
+
+export const DesignDocumentEditError = {
+  /**
+   * 診断用の英語メッセージ。
+   * 利用者向けの文言は `kind` で分岐して表示層が組み立てる。
+   */
+  message(error: DesignDocumentEditError): string {
+    switch (error.kind) {
+      case "node-not-found":
+        return `node "${error.name}" not found`;
+      case "parent-not-found":
+        return `parent "${error.name}" not found`;
+      case "artboard-not-found":
+        return `artboard "${error.name}" not found`;
+      case "children-not-allowed":
+        return `node "${error.name}" cannot have children`;
+      case "move-into-descendant":
+        return `cannot move node "${error.name}" into "${error.parentName}" because it is the node itself or its descendant`;
+      case "ref-node-not-supported":
+        return `cannot create a component from ref node "${error.name}"`;
+      case "duplicate-name":
+        return `name "${error.name}" is already used`;
+      case "index-out-of-range":
+        return `index ${error.index} is out of bounds for length ${error.length}`;
+    }
+  },
+} as const;
+
 function canNodeHaveChildren(node: Node): boolean {
   return Node.isPrimitive(node) && PrimitiveSchema.allowsChildren(node.type);
 }
 
-type ArrayUpdate = (children: readonly Node[]) => readonly Node[];
+/**
+ * 配列操作の結果を、ドキュメント編集の結果として意味づける。
+ * 範囲外がどの操作の失敗にあたるかは `ArrayEx` 側では決められない
+ * （ドメイン知識を持たないため）ので、その解釈だけをここで与える。
+ */
+function toEditResult<T>(
+  result: Result<readonly T[], IndexOutOfRange>,
+): Result<readonly T[], DesignDocumentEditError> {
+  return Result.mapErr(result, (range) => ({
+    kind: "index-out-of-range",
+    ...range,
+  }));
+}
+
+/** 兄弟の並びの差し替え。失敗しない（対象が見つかったかどうかは呼び出し側が判断する）。 */
+type SiblingsUpdate = (siblings: readonly Node[]) => readonly Node[];
+
+/** 親の children の差し替え。範囲外 index などで失敗しうる。 */
+type ChildrenUpdate = (
+  children: readonly Node[],
+) => Result<readonly Node[], DesignDocumentEditError>;
+
+type NodesUpdate = Readonly<{ updated: readonly Node[]; found: boolean }>;
+
+type ArtboardsUpdate = Readonly<{
+  artboards: readonly Artboard[];
+  found: boolean;
+}>;
 
 function updateChildrenOfNode(
   nodes: readonly Node[],
   parentName: string,
-  update: ArrayUpdate,
-): { updated: readonly Node[]; found: boolean } {
-  let found = false;
-  const updated = nodes.map((node) => {
-    if (found) {
-      return node;
+  update: ChildrenUpdate,
+): Result<NodesUpdate, DesignDocumentEditError> {
+  const parentIndex = nodes.findIndex((node) => node.name === parentName);
+  if (parentIndex !== -1) {
+    const parent = nodes[parentIndex];
+    if (!canNodeHaveChildren(parent)) {
+      return Result.err({ kind: "children-not-allowed", name: parentName });
     }
-    if (node.name === parentName) {
-      if (!canNodeHaveChildren(node)) {
-        throw new Error(`node "${parentName}" cannot have children`);
-      }
-      found = true;
-      return { ...node, children: update(Node.children(node)) };
-    }
-    const children = Node.children(node);
-    if (children.length === 0) {
-      return node;
-    }
-    const result = updateChildrenOfNode(children, parentName, update);
-    if (result.found) {
-      found = true;
-      return { ...node, children: result.updated };
-    }
-    return node;
-  });
-  return { updated, found };
+    return Result.flatMap(update(Node.children(parent)), (children) =>
+      Result.map(
+        toEditResult(
+          ArrayEx.replaceAt(nodes, parentIndex, { ...parent, children }),
+        ),
+        (updated) => ({ updated, found: true }),
+      ),
+    );
+  }
+
+  const hostIndex = nodes.findIndex(
+    (node) => findNode(Node.children(node), parentName).some,
+  );
+  if (hostIndex === -1) {
+    return Result.ok({ updated: nodes, found: false });
+  }
+  const host = nodes[hostIndex];
+  return Result.flatMap(
+    updateChildrenOfNode(Node.children(host), parentName, update),
+    (result) =>
+      Result.map(
+        toEditResult(
+          ArrayEx.replaceAt(nodes, hostIndex, {
+            ...host,
+            children: result.updated,
+          }),
+        ),
+        (updated) => ({ updated, found: true }),
+      ),
+  );
 }
 
 function updateChildrenOfParent(
   artboards: readonly Artboard[],
   parentName: string,
-  update: ArrayUpdate,
-): { artboards: readonly Artboard[]; found: boolean } {
-  let found = false;
-  const updated = artboards.map((artboard) => {
-    if (found) {
-      return artboard;
-    }
-    if (artboard.name === parentName) {
-      found = true;
-      return { ...artboard, children: update(artboard.children) };
-    }
-    const result = updateChildrenOfNode(artboard.children, parentName, update);
-    if (result.found) {
-      found = true;
-      return { ...artboard, children: result.updated };
-    }
-    return artboard;
-  });
-  return { artboards: updated, found };
+  update: ChildrenUpdate,
+): Result<ArtboardsUpdate, DesignDocumentEditError> {
+  const artboardIndex = artboards.findIndex(
+    (artboard) => artboard.name === parentName,
+  );
+  if (artboardIndex !== -1) {
+    const artboard = artboards[artboardIndex];
+    return Result.flatMap(update(artboard.children), (children) =>
+      Result.map(
+        toEditResult(
+          ArrayEx.replaceAt(artboards, artboardIndex, {
+            ...artboard,
+            children,
+          }),
+        ),
+        (updated) => ({ artboards: updated, found: true }),
+      ),
+    );
+  }
+
+  const hostIndex = artboards.findIndex(
+    (artboard) => findNode(artboard.children, parentName).some,
+  );
+  if (hostIndex === -1) {
+    return Result.ok({ artboards, found: false });
+  }
+  const host = artboards[hostIndex];
+  return Result.flatMap(
+    updateChildrenOfNode(host.children, parentName, update),
+    (result) =>
+      Result.map(
+        toEditResult(
+          ArrayEx.replaceAt(artboards, hostIndex, {
+            ...host,
+            children: result.updated,
+          }),
+        ),
+        (updated) => ({ artboards: updated, found: true }),
+      ),
+  );
 }
 
 function updateSiblingsOfNode(
   nodes: readonly Node[],
   name: string,
-  update: ArrayUpdate,
+  update: SiblingsUpdate,
 ): { updated: readonly Node[]; found: boolean } {
   if (nodes.some((node) => node.name === name)) {
     return { updated: update(nodes), found: true };
@@ -178,7 +279,7 @@ function findNodeInArtboards(
 function updateSiblingsOfArtboards(
   artboards: readonly Artboard[],
   name: string,
-  update: ArrayUpdate,
+  update: SiblingsUpdate,
 ): { artboards: readonly Artboard[]; found: boolean } {
   let found = false;
   const updated = artboards.map((artboard) => {
@@ -492,15 +593,15 @@ function collectArtboardErrors(
   return [...propErrors, ...childErrors, ...refErrors];
 }
 
-function toComponent(node: Node): Component {
+function toComponent(node: Node): Result<Component, DesignDocumentEditError> {
   if (!Node.isPrimitive(node)) {
-    throw new Error(`cannot create a component from ref node "${node.name}"`);
+    return Result.err({ kind: "ref-node-not-supported", name: node.name });
   }
-  return {
+  return Result.ok({
     type: node.type,
     ...(node.props !== undefined ? { props: node.props } : {}),
     ...(node.children !== undefined ? { children: node.children } : {}),
-  };
+  });
 }
 
 /**
@@ -732,28 +833,31 @@ export const DesignDocument = {
     parentName: string,
     index: number,
     node: Node,
-  ): DesignDocument {
-    const result = updateChildrenOfParent(
-      document.artboards,
-      parentName,
-      (children) => ArrayEx.insertAt(children, index, node),
+  ): Result<DesignDocument, DesignDocumentEditError> {
+    return Result.flatMap(
+      updateChildrenOfParent(document.artboards, parentName, (children) =>
+        toEditResult(ArrayEx.insertAt(children, index, node)),
+      ),
+      (result) =>
+        result.found
+          ? Result.ok({ ...document, artboards: result.artboards })
+          : Result.err({ kind: "parent-not-found", name: parentName }),
     );
-    if (!result.found) {
-      throw new Error(`parent "${parentName}" not found`);
-    }
-    return { ...document, artboards: result.artboards };
   },
 
-  removeNode(document: DesignDocument, name: string): DesignDocument {
+  removeNode(
+    document: DesignDocument,
+    name: string,
+  ): Result<DesignDocument, DesignDocumentEditError> {
     const result = updateSiblingsOfArtboards(
       document.artboards,
       name,
       (siblings) => siblings.filter((sibling) => sibling.name !== name),
     );
     if (!result.found) {
-      throw new Error(`node "${name}" not found`);
+      return Result.err({ kind: "node-not-found", name });
     }
-    return { ...document, artboards: result.artboards };
+    return Result.ok({ ...document, artboards: result.artboards });
   },
 
   findNode(document: DesignDocument, name: string): Option<Node> {
@@ -764,7 +868,7 @@ export const DesignDocument = {
     document: DesignDocument,
     name: string,
     node: Node,
-  ): Result<DesignDocument, Error> {
+  ): Result<DesignDocument, DesignDocumentEditError> {
     const result = updateSiblingsOfArtboards(
       document.artboards,
       name,
@@ -772,7 +876,7 @@ export const DesignDocument = {
         siblings.map((sibling) => (sibling.name === name ? node : sibling)),
     );
     if (!result.found) {
-      return Result.err(new Error(`node "${name}" not found`));
+      return Result.err({ kind: "node-not-found", name });
     }
     return Result.ok({ ...document, artboards: result.artboards });
   },
@@ -782,16 +886,16 @@ export const DesignDocument = {
     parentName: string,
     fromIndex: number,
     toIndex: number,
-  ): DesignDocument {
-    const result = updateChildrenOfParent(
-      document.artboards,
-      parentName,
-      (children) => ArrayEx.moveWithin(children, fromIndex, toIndex),
+  ): Result<DesignDocument, DesignDocumentEditError> {
+    return Result.flatMap(
+      updateChildrenOfParent(document.artboards, parentName, (children) =>
+        toEditResult(ArrayEx.moveWithin(children, fromIndex, toIndex)),
+      ),
+      (result) =>
+        result.found
+          ? Result.ok({ ...document, artboards: result.artboards })
+          : Result.err({ kind: "parent-not-found", name: parentName }),
     );
-    if (!result.found) {
-      throw new Error(`parent "${parentName}" not found`);
-    }
-    return { ...document, artboards: result.artboards };
   },
 
   moveNode(
@@ -799,84 +903,95 @@ export const DesignDocument = {
     name: string,
     newParentName: string,
     index: number,
-  ): DesignDocument {
+  ): Result<DesignDocument, DesignDocumentEditError> {
     const found = findNodeInArtboards(document.artboards, name);
     if (!found.some) {
-      throw new Error(`node "${name}" not found`);
+      return Result.err({ kind: "node-not-found", name });
     }
     const node = found.value;
     if (Node.collectNames(node).includes(newParentName)) {
-      throw new Error(
-        `cannot move node "${name}" into itself or its own descendant`,
-      );
+      return Result.err({
+        kind: "move-into-descendant",
+        name,
+        parentName: newParentName,
+      });
     }
-    const withoutNode = DesignDocument.removeNode(document, name);
-    return DesignDocument.insertNode(withoutNode, newParentName, index, node);
+    return Result.flatMap(
+      DesignDocument.removeNode(document, name),
+      (without) =>
+        DesignDocument.insertNode(without, newParentName, index, node),
+    );
   },
 
   createComponent(
     document: DesignDocument,
     name: string,
     componentName: string,
-  ): DesignDocument {
+  ): Result<DesignDocument, DesignDocumentEditError> {
     const found = findNodeInArtboards(document.artboards, name);
     if (!found.some) {
-      throw new Error(`node "${name}" not found`);
+      return Result.err({ kind: "node-not-found", name });
     }
     if (DesignDocument.usedNames(document).has(componentName)) {
-      throw new Error(`component name "${componentName}" is already used`);
+      return Result.err({ kind: "duplicate-name", name: componentName });
     }
-    const component = toComponent(found.value);
-    const refNode: RefNode = { name, ref: componentName };
-    const result = updateSiblingsOfArtboards(
-      document.artboards,
-      name,
-      (siblings) =>
-        siblings.map((sibling) => (sibling.name === name ? refNode : sibling)),
-    );
-    return {
-      ...document,
-      components: { ...document.components, [componentName]: component },
-      artboards: result.artboards,
-    };
+    return Result.map(toComponent(found.value), (component) => {
+      const refNode: RefNode = { name, ref: componentName };
+      const result = updateSiblingsOfArtboards(
+        document.artboards,
+        name,
+        (siblings) =>
+          siblings.map((sibling) =>
+            sibling.name === name ? refNode : sibling,
+          ),
+      );
+      return {
+        ...document,
+        components: { ...document.components, [componentName]: component },
+        artboards: result.artboards,
+      };
+    });
   },
 
   insertArtboard(
     document: DesignDocument,
     index: number,
     artboard: Artboard,
-  ): DesignDocument {
-    return {
-      ...document,
-      artboards: ArrayEx.insertAt(document.artboards, index, artboard),
-    };
+  ): Result<DesignDocument, DesignDocumentEditError> {
+    return Result.map(
+      toEditResult(ArrayEx.insertAt(document.artboards, index, artboard)),
+      (artboards) => ({ ...document, artboards }),
+    );
   },
 
-  removeArtboard(document: DesignDocument, name: string): DesignDocument {
+  removeArtboard(
+    document: DesignDocument,
+    name: string,
+  ): Result<DesignDocument, DesignDocumentEditError> {
     const index = document.artboards.findIndex(
       (artboard) => artboard.name === name,
     );
     if (index === -1) {
-      throw new Error(`artboard "${name}" not found`);
+      return Result.err({ kind: "artboard-not-found", name });
     }
-    return {
+    return Result.ok({
       ...document,
       artboards: [
         ...document.artboards.slice(0, index),
         ...document.artboards.slice(index + 1),
       ],
-    };
+    });
   },
 
   reorderArtboard(
     document: DesignDocument,
     fromIndex: number,
     toIndex: number,
-  ): DesignDocument {
-    return {
-      ...document,
-      artboards: ArrayEx.moveWithin(document.artboards, fromIndex, toIndex),
-    };
+  ): Result<DesignDocument, DesignDocumentEditError> {
+    return Result.map(
+      toEditResult(ArrayEx.moveWithin(document.artboards, fromIndex, toIndex)),
+      (artboards) => ({ ...document, artboards }),
+    );
   },
 
   usedNames(document: DesignDocument): ReadonlySet<string> {

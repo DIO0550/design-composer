@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { Result } from "@/utils/Result";
 import { DesignDocument } from "../index";
 
 test("artboard 直下にノードを挿入すると children の指定位置に追加される", () => {
@@ -7,7 +8,9 @@ test("artboard 直下にノードを挿入すると children の指定位置に�
   });
   const label = { name: "label", type: "Text" };
 
-  const result = DesignDocument.insertNode(document, "screen", 0, label);
+  const result = Result.unwrap(
+    DesignDocument.insertNode(document, "screen", 0, label),
+  );
 
   expect(result.artboards[0].children).toEqual([label]);
 });
@@ -25,7 +28,9 @@ test("ネストしたノードの子として挿入すると親ノードの chil
     ],
   });
 
-  const result = DesignDocument.insertNode(document, "box-1", 0, label);
+  const result = Result.unwrap(
+    DesignDocument.insertNode(document, "box-1", 0, label),
+  );
 
   expect(result.artboards[0].children).toEqual([
     { name: "box-1", type: "Box", children: [label] },
@@ -51,7 +56,7 @@ test("トップレベルのノードを削除すると artboard の children か
     artboards: [{ name: "screen", width: 375, height: 812, children: [label] }],
   });
 
-  const result = DesignDocument.removeNode(document, "label");
+  const result = Result.unwrap(DesignDocument.removeNode(document, "label"));
 
   expect(result.artboards[0].children).toEqual([]);
 });
@@ -69,7 +74,7 @@ test("ネストしたノードを削除すると親の children から取り除�
     ],
   });
 
-  const result = DesignDocument.removeNode(document, "label");
+  const result = Result.unwrap(DesignDocument.removeNode(document, "label"));
 
   expect(result.artboards[0].children).toEqual([
     { name: "box-1", type: "Box", children: [] },
@@ -90,7 +95,9 @@ test("同一親内でノードを並べ替えると children の順序が入れ�
     ],
   });
 
-  const result = DesignDocument.reorderNode(document, "screen", 0, 1);
+  const result = Result.unwrap(
+    DesignDocument.reorderNode(document, "screen", 0, 1),
+  );
 
   expect(result.artboards[0].children).toEqual([second, first]);
 });
@@ -111,7 +118,9 @@ test("親をまたいでノードを移動すると移動先の children に追�
     ],
   });
 
-  const result = DesignDocument.moveNode(document, "label", "box-2", 0);
+  const result = Result.unwrap(
+    DesignDocument.moveNode(document, "label", "box-2", 0),
+  );
 
   expect(result.artboards[0].children).toEqual([
     { name: "box-1", type: "Box", children: [] },
@@ -128,7 +137,9 @@ test("artboard をまたいでノードを移動すると移動先の artboard �
     ],
   });
 
-  const result = DesignDocument.moveNode(document, "label", "screen-2", 0);
+  const result = Result.unwrap(
+    DesignDocument.moveNode(document, "label", "screen-2", 0),
+  );
 
   expect(result.artboards[0].children).toEqual([]);
   expect(result.artboards[1].children).toEqual([label]);
@@ -163,7 +174,9 @@ test("artboard を指定位置に挿入すると配列に追加される", () =>
   const document = DesignDocument.create({ artboards: [existing] });
   const added = { name: "screen-2", width: 375, height: 812, children: [] };
 
-  const result = DesignDocument.insertArtboard(document, 0, added);
+  const result = Result.unwrap(
+    DesignDocument.insertArtboard(document, 0, added),
+  );
 
   expect(result.artboards).toEqual([added, existing]);
 });
@@ -172,7 +185,9 @@ test("artboard を削除すると配列から取り除かれる", () => {
   const artboard = { name: "screen", width: 375, height: 812, children: [] };
   const document = DesignDocument.create({ artboards: [artboard] });
 
-  const result = DesignDocument.removeArtboard(document, "screen");
+  const result = Result.unwrap(
+    DesignDocument.removeArtboard(document, "screen"),
+  );
 
   expect(result.artboards).toEqual([]);
 });
@@ -182,7 +197,7 @@ test("artboard を並べ替えると配列の順序が入れ替わる", () => {
   const second = { name: "screen-2", width: 375, height: 812, children: [] };
   const document = DesignDocument.create({ artboards: [first, second] });
 
-  const result = DesignDocument.reorderArtboard(document, 0, 1);
+  const result = Result.unwrap(DesignDocument.reorderArtboard(document, 0, 1));
 
   expect(result.artboards).toEqual([second, first]);
 });
