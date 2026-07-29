@@ -106,36 +106,18 @@ function canNodeHaveChildren(node: Node): boolean {
   return Node.isPrimitive(node) && PrimitiveSchema.allowsChildren(node.type);
 }
 
-/** 配列操作の範囲外エラーを、ドキュメント編集の失敗として意味づける。 */
-function toEditError(range: IndexOutOfRange): DesignDocumentEditError {
-  return { kind: "index-out-of-range", ...range };
-}
-
-function insertedAt<T>(
-  items: readonly T[],
-  index: number,
-  item: T,
+/**
+ * 配列操作の結果を、ドキュメント編集の結果として意味づける。
+ * 範囲外がどの操作の失敗にあたるかは `ArrayEx` 側では決められない
+ * （ドメイン知識を持たないため）ので、その解釈だけをここで与える。
+ */
+function toEditResult<T>(
+  result: Result<readonly T[], IndexOutOfRange>,
 ): Result<readonly T[], DesignDocumentEditError> {
-  return Result.mapErr(ArrayEx.insertAt(items, index, item), toEditError);
-}
-
-function replacedAt<T>(
-  items: readonly T[],
-  index: number,
-  item: T,
-): Result<readonly T[], DesignDocumentEditError> {
-  return Result.mapErr(ArrayEx.replaceAt(items, index, item), toEditError);
-}
-
-function movedWithin<T>(
-  items: readonly T[],
-  fromIndex: number,
-  toIndex: number,
-): Result<readonly T[], DesignDocumentEditError> {
-  return Result.mapErr(
-    ArrayEx.moveWithin(items, fromIndex, toIndex),
-    toEditError,
-  );
+  return Result.mapErr(result, (range) => ({
+    kind: "index-out-of-range",
+    ...range,
+  }));
 }
 
 /** 兄弟の並びの差し替え。失敗しない（対象が見つかったかどうかは呼び出し側が判断する）。 */
@@ -166,7 +148,9 @@ function updateChildrenOfNode(
     }
     return Result.flatMap(update(Node.children(parent)), (children) =>
       Result.map(
-        replacedAt(nodes, parentIndex, { ...parent, children }),
+        toEditResult(
+          ArrayEx.replaceAt(nodes, parentIndex, { ...parent, children }),
+        ),
         (updated) => ({ updated, found: true }),
       ),
     );
@@ -183,7 +167,12 @@ function updateChildrenOfNode(
     updateChildrenOfNode(Node.children(host), parentName, update),
     (result) =>
       Result.map(
-        replacedAt(nodes, hostIndex, { ...host, children: result.updated }),
+        toEditResult(
+          ArrayEx.replaceAt(nodes, hostIndex, {
+            ...host,
+            children: result.updated,
+          }),
+        ),
         (updated) => ({ updated, found: true }),
       ),
   );
@@ -201,7 +190,12 @@ function updateChildrenOfParent(
     const artboard = artboards[artboardIndex];
     return Result.flatMap(update(artboard.children), (children) =>
       Result.map(
-        replacedAt(artboards, artboardIndex, { ...artboard, children }),
+        toEditResult(
+          ArrayEx.replaceAt(artboards, artboardIndex, {
+            ...artboard,
+            children,
+          }),
+        ),
         (updated) => ({ artboards: updated, found: true }),
       ),
     );
@@ -218,7 +212,12 @@ function updateChildrenOfParent(
     updateChildrenOfNode(host.children, parentName, update),
     (result) =>
       Result.map(
-        replacedAt(artboards, hostIndex, { ...host, children: result.updated }),
+        toEditResult(
+          ArrayEx.replaceAt(artboards, hostIndex, {
+            ...host,
+            children: result.updated,
+          }),
+        ),
         (updated) => ({ artboards: updated, found: true }),
       ),
   );
@@ -837,7 +836,7 @@ export const DesignDocument = {
   ): Result<DesignDocument, DesignDocumentEditError> {
     return Result.flatMap(
       updateChildrenOfParent(document.artboards, parentName, (children) =>
-        insertedAt(children, index, node),
+        toEditResult(ArrayEx.insertAt(children, index, node)),
       ),
       (result) =>
         result.found
@@ -890,7 +889,7 @@ export const DesignDocument = {
   ): Result<DesignDocument, DesignDocumentEditError> {
     return Result.flatMap(
       updateChildrenOfParent(document.artboards, parentName, (children) =>
-        movedWithin(children, fromIndex, toIndex),
+        toEditResult(ArrayEx.moveWithin(children, fromIndex, toIndex)),
       ),
       (result) =>
         result.found
@@ -960,7 +959,7 @@ export const DesignDocument = {
     artboard: Artboard,
   ): Result<DesignDocument, DesignDocumentEditError> {
     return Result.map(
-      insertedAt(document.artboards, index, artboard),
+      toEditResult(ArrayEx.insertAt(document.artboards, index, artboard)),
       (artboards) => ({ ...document, artboards }),
     );
   },
@@ -990,7 +989,7 @@ export const DesignDocument = {
     toIndex: number,
   ): Result<DesignDocument, DesignDocumentEditError> {
     return Result.map(
-      movedWithin(document.artboards, fromIndex, toIndex),
+      toEditResult(ArrayEx.moveWithin(document.artboards, fromIndex, toIndex)),
       (artboards) => ({ ...document, artboards }),
     );
   },
