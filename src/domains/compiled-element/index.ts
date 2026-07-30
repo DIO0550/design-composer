@@ -1,12 +1,10 @@
 import type {
   CssDeclaration as CssDeclarationType,
+  CssProperty,
+  SingleVariableTokenKind,
   TokenRefs,
 } from "@/domains/css-declaration";
-import {
-  CssDeclaration,
-  CssDeclarations,
-  TokenBackedProperty,
-} from "@/domains/css-declaration";
+import { CssDeclaration, CssDeclarations } from "@/domains/css-declaration";
 import { CssDirection } from "@/domains/css-direction";
 import type { PropValue } from "@/domains/node";
 import { Padding } from "@/domains/padding";
@@ -14,6 +12,42 @@ import type { ResolvedProps } from "@/domains/resolved-props";
 import { Size } from "@/domains/size";
 import { TypographyField, TypographyToken } from "@/domains/token";
 import { Html } from "@/utils/Html";
+
+/**
+ * 値がトークン参照で決まる CSS プロパティと、値を引くトークン種別の対応
+ * (docs/03「HTML/CSS へのコンパイル規則」の表)。
+ * どちらの種別から引くかは仕様で決まっているので呼び出し側には渡させず、
+ * プロパティ名から引く (`gap` を colors から引くような組み合わせを作れないようにするため)。
+ * `padding` は2軸を1つの値へ合成するため `Padding` が担当し、この表には含めない。
+ */
+const TOKEN_BACKED_PROPERTIES = {
+  gap: "spacing",
+  background: "colors",
+  "border-radius": "radius",
+  "box-shadow": "shadows",
+  color: "colors",
+} as const satisfies Readonly<
+  Partial<Record<CssProperty, SingleVariableTokenKind>>
+>;
+
+/** 値がトークン参照で決まる CSS プロパティ。語彙は上の表で閉じている。 */
+type TokenBackedProperty = keyof typeof TOKEN_BACKED_PROPERTIES;
+
+/**
+ * トークン参照 prop を `var()` 参照の宣言にする。未指定の prop は宣言を出力しない
+ * (トークンの値は参照しないため、トークン編集は再コンパイルなしに CSS 経由で波及する)。
+ */
+function tokenDeclarations(
+  property: TokenBackedProperty,
+  value: PropValue | undefined,
+  tokens: TokenRefs,
+): readonly CssDeclarationType[] {
+  if (value === undefined) {
+    return [];
+  }
+  const kind = TOKEN_BACKED_PROPERTIES[property];
+  return [CssDeclaration.create(property, tokens.ref(kind, String(value)))];
+}
 
 /** 初期値と同じ `visible` は宣言を出力しない (docs/03 の表は clip のみを規定)。 */
 function overflowDeclarations(
@@ -95,7 +129,7 @@ export const BoxElement = {
     return [
       CssDeclaration.create("display", "flex"),
       CssDeclaration.create("flex-direction", String(props.direction)),
-      ...TokenBackedProperty.declarations("gap", props.gap, tokens),
+      ...tokenDeclarations("gap", props.gap, tokens),
       ...Padding.declarations(
         Padding.create(props.paddingY, props.paddingX),
         (token) => tokens.ref("spacing", token),
@@ -112,17 +146,9 @@ export const BoxElement = {
         "height",
         parentDirection,
       ),
-      ...TokenBackedProperty.declarations(
-        "background",
-        props.background,
-        tokens,
-      ),
-      ...TokenBackedProperty.declarations(
-        "border-radius",
-        props.radius,
-        tokens,
-      ),
-      ...TokenBackedProperty.declarations("box-shadow", props.shadow, tokens),
+      ...tokenDeclarations("background", props.background, tokens),
+      ...tokenDeclarations("border-radius", props.radius, tokens),
+      ...tokenDeclarations("box-shadow", props.shadow, tokens),
       ...overflowDeclarations(props.overflow),
     ];
   },
@@ -155,7 +181,7 @@ export const TextElement = {
   ): readonly CssDeclarationType[] {
     return [
       ...typographyDeclarations(props.typography, tokens),
-      ...TokenBackedProperty.declarations("color", props.color, tokens),
+      ...tokenDeclarations("color", props.color, tokens),
       CssDeclaration.create("text-align", String(props.align)),
     ];
   },

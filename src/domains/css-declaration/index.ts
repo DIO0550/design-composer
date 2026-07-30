@@ -1,4 +1,3 @@
-import type { PropValue } from "@/domains/node";
 import type { TokenKind, TypographyCssProperty } from "@/domains/token";
 
 /**
@@ -49,26 +48,6 @@ export type TokenRefs = Readonly<{
   typographyRef(name: string, property: TypographyCssProperty): string;
 }>;
 
-/**
- * 値がトークン参照で決まる CSS プロパティと、値を引くトークン種別の対応
- * (docs/03「HTML/CSS へのコンパイル規則」の表)。
- * どちらの種別から引くかは仕様で決まっているので、呼び出し側には渡させずここだけで持つ
- * (`gap` を colors から引くような組み合わせを作れないようにするため)。
- * `padding` は2軸を1つの値へ合成するため `Padding` が担当し、この表には含めない。
- */
-const TOKEN_BACKED_PROPERTIES = {
-  gap: "spacing",
-  background: "colors",
-  "border-radius": "radius",
-  "box-shadow": "shadows",
-  color: "colors",
-} as const satisfies Readonly<
-  Partial<Record<CssProperty, SingleVariableTokenKind>>
->;
-
-/** 値がトークン参照で決まる CSS プロパティ。語彙は上の表で閉じている。 */
-export type TokenBackedProperty = keyof typeof TOKEN_BACKED_PROPERTIES;
-
 /** CSS の1宣言。プロパティ名と値は対で意味を持つため1つの型にまとめる。 */
 export type CssDeclaration = Readonly<{
   property: CssDeclarationName;
@@ -87,24 +66,6 @@ export const CssDeclaration = {
   /** style 属性へ載せる形の1宣言。 */
   text(declaration: CssDeclaration): string {
     return declarationText(declaration.property, declaration.value);
-  },
-} as const;
-
-export const TokenBackedProperty = {
-  /**
-   * トークン参照 prop を `var()` 参照の宣言にする。未指定の prop は宣言を出力しない
-   * (トークンの値は参照しないため、トークン編集は再コンパイルなしに CSS 経由で波及する)。
-   */
-  declarations(
-    property: TokenBackedProperty,
-    value: PropValue | undefined,
-    tokens: TokenRefs,
-  ): readonly CssDeclaration[] {
-    if (value === undefined) {
-      return [];
-    }
-    const kind = TOKEN_BACKED_PROPERTIES[property];
-    return [CssDeclaration.create(property, tokens.ref(kind, String(value)))];
   },
 } as const;
 
