@@ -1,51 +1,54 @@
 import type {
   CssDeclaration as CssDeclarationType,
   CssProperty,
-  SingleVariableTokenKind,
   TokenRefs,
 } from "@/domains/css-declaration";
 import { CssDeclaration, CssDeclarations } from "@/domains/css-declaration";
 import { CssDirection } from "@/domains/css-direction";
 import type { PropValue } from "@/domains/node";
 import { Padding } from "@/domains/padding";
+import {
+  PrimitiveSchema,
+  type TokenPropName,
+} from "@/domains/primitive-schema";
 import type { ResolvedProps } from "@/domains/resolved-props";
 import { Size } from "@/domains/size";
 import { TypographyField, TypographyToken } from "@/domains/token";
 import { Html } from "@/utils/Html";
 
 /**
- * 値がトークン参照で決まる CSS プロパティと、値を引くトークン種別の対応
- * (docs/03「HTML/CSS へのコンパイル規則」の表)。
- * どちらの種別から引くかは仕様で決まっているので呼び出し側には渡させず、
- * プロパティ名から引く (`gap` を colors から引くような組み合わせを作れないようにするため)。
- * `padding` は2軸を1つの値へ合成するため `Padding` が担当し、この表には含めない。
+ * トークン参照 prop → その prop が決める CSS プロパティ
+ * (docs/03「HTML/CSS へのコンパイル規則」の表。仕様と同じく prop 名で引く)。
+ * 引くトークン種別はスキーマの `tokenKind` だけが宣言するため、ここには書かず
+ * `PrimitiveSchema.tokenKind` から引く (`gap` を colors から引く組み合わせを書けない)。
+ * `paddingX` / `paddingY` は2軸を1つの `padding` へ合成するため `Padding` が、
+ * `typography` は複数プロパティへ展開されるため下の関数が担当し、この表には含めない。
  */
-const TOKEN_BACKED_PROPERTIES = {
-  gap: "spacing",
-  background: "colors",
-  "border-radius": "radius",
-  "box-shadow": "shadows",
-  color: "colors",
-} as const satisfies Readonly<
-  Partial<Record<CssProperty, SingleVariableTokenKind>>
->;
+const TOKEN_PROP_PROPERTIES = {
+  gap: "gap",
+  background: "background",
+  radius: "border-radius",
+  shadow: "box-shadow",
+  color: "color",
+} as const satisfies Readonly<Partial<Record<TokenPropName, CssProperty>>>;
 
-/** 値がトークン参照で決まる CSS プロパティ。語彙は上の表で閉じている。 */
-type TokenBackedProperty = keyof typeof TOKEN_BACKED_PROPERTIES;
+/** 単一の CSS プロパティへ写るトークン参照 prop。語彙は上の表で閉じている。 */
+type TokenBackedProp = keyof typeof TOKEN_PROP_PROPERTIES;
 
 /**
  * トークン参照 prop を `var()` 参照の宣言にする。未指定の prop は宣言を出力しない
  * (トークンの値は参照しないため、トークン編集は再コンパイルなしに CSS 経由で波及する)。
  */
 function tokenDeclarations(
-  property: TokenBackedProperty,
+  prop: TokenBackedProp,
   value: PropValue | undefined,
   tokens: TokenRefs,
 ): readonly CssDeclarationType[] {
   if (value === undefined) {
     return [];
   }
-  const kind = TOKEN_BACKED_PROPERTIES[property];
+  const property = TOKEN_PROP_PROPERTIES[prop];
+  const kind = PrimitiveSchema.tokenKind(prop);
   return [CssDeclaration.create(property, tokens.ref(kind, String(value)))];
 }
 
@@ -147,8 +150,8 @@ export const BoxElement = {
         parentDirection,
       ),
       ...tokenDeclarations("background", props.background, tokens),
-      ...tokenDeclarations("border-radius", props.radius, tokens),
-      ...tokenDeclarations("box-shadow", props.shadow, tokens),
+      ...tokenDeclarations("radius", props.radius, tokens),
+      ...tokenDeclarations("shadow", props.shadow, tokens),
       ...overflowDeclarations(props.overflow),
     ];
   },

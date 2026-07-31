@@ -251,6 +251,47 @@ export const PRIMITIVE_SCHEMAS = {
   Text: TEXT_SCHEMA,
 } as const satisfies Readonly<Record<PrimitiveType, PrimitiveSchema>>;
 
+type SchemaPropsOf<T extends PrimitiveType> =
+  (typeof PRIMITIVE_SCHEMAS)[T]["props"];
+
+type TokenPropNameOf<T extends PrimitiveType> = {
+  [K in keyof SchemaPropsOf<T>]: SchemaPropsOf<T>[K] extends { domain: "token" }
+    ? K
+    : never;
+}[keyof SchemaPropsOf<T>];
+
+/**
+ * スキーマが `domain: "token"` と宣言した prop の名前。
+ * 名前は primitive をまたいで重複しないため、型を問わず名前だけで引ける。
+ */
+export type TokenPropName = {
+  [T in PrimitiveType]: TokenPropNameOf<T>;
+}[PrimitiveType];
+
+type TokenKindOfProp<P extends TokenPropName> = Extract<
+  SchemaPropsOf<PrimitiveType>,
+  Readonly<Record<P, TokenPropDefinition>>
+>[P]["tokenKind"];
+
+/**
+ * トークン参照 prop → 引くトークン種別。スキーマの `tokenKind` から導出するので、
+ * 種別の宣言はスキーマだけが持つ（対応表を別に書き写して二重管理しない）。
+ */
+export type TokenPropKinds = {
+  readonly [P in TokenPropName]: TokenKindOfProp<P>;
+};
+
+// スキーマの宣言をそのまま集めているため、狭い型への表明はここで成立している
+const TOKEN_PROP_KINDS = Object.fromEntries(
+  Object.values(PRIMITIVE_SCHEMAS).flatMap((schema: PrimitiveSchema) =>
+    Object.entries(schema.props).flatMap(([name, definition]) =>
+      PropDefinition.isToken(definition)
+        ? [[name, definition.tokenKind] as const]
+        : [],
+    ),
+  ),
+) as TokenPropKinds;
+
 export const PrimitiveSchema = {
   forType<T extends PrimitiveType>(type: T): (typeof PRIMITIVE_SCHEMAS)[T] {
     return PRIMITIVE_SCHEMAS[type];
@@ -265,5 +306,13 @@ export const PrimitiveSchema = {
       PrimitiveSchema.isPrimitiveType(type) &&
       PRIMITIVE_SCHEMAS[type].allowsChildren
     );
+  },
+
+  /**
+   * トークン参照 prop が引くトークン種別。
+   * 出力側が「どの種別から引くか」を書き写さずに済むよう、スキーマの宣言を引かせる。
+   */
+  tokenKind<P extends TokenPropName>(prop: P): TokenPropKinds[P] {
+    return TOKEN_PROP_KINDS[prop];
   },
 } as const;
