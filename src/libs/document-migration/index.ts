@@ -4,16 +4,21 @@ import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
 /**
- * major ひとつ分の変換。`fromMajor` のファイルを `fromMajor + 1` の形へ写す。
+ * major ひとつ分の変換。1つの major を次の major の形へ写す（v1 → v2 の変換1つ分）。
  *
  * 受け取るのは JSON のデータモデルそのもの。旧 major のファイルは今のドメインの型では
  * 表せない（表せなくなる変更が major の定義）ため、デコード前の形で扱う。
  * 失敗しうる変換は理由を返す(docs/01-file-format.md「formatVersion」)。
  */
-export type MigrationStep = Readonly<{
-  fromMajor: number;
-  migrate: (document: JsonRecord) => Result<JsonRecord, string>;
-}>;
+export type MigrationStep = (
+  document: JsonRecord,
+) => Result<JsonRecord, string>;
+
+/**
+ * 変換元の major から、その1つ分の変換を引く表。
+ * major をキーにするので、同じ major の変換を2つ登録することはできない。
+ */
+export type MigrationSteps = Readonly<Partial<Record<number, MigrationStep>>>;
 
 /** マイグレーションが進めない理由。呼び出し側が種類で分岐できるよう直和で列挙する。 */
 export type DocumentMigrationError =
@@ -48,9 +53,10 @@ export const DocumentMigrationError = {
 
 /**
  * 登録済みの変換ステップ。破壊的変更がまだ無いため空。
- * major を上げるときはここへ1つ足す(適用順は `fromMajor` から導かれるので並び順に依存しない)。
+ * major を上げるときは変換元の major をキーにして1つ足す
+ * (`1: migrateV1ToV2` のように、1つの major 分の変換を1つの塊として持つ)。
  */
-const MIGRATION_STEPS: readonly MigrationStep[] = [];
+const MIGRATION_STEPS: MigrationSteps = {};
 
 /**
  * JSON のデータモデルから formatVersion を読む。
@@ -89,7 +95,7 @@ function asRecord(value: unknown): Option<JsonRecord> {
 function migrateUpTo(
   document: JsonRecord,
   appVersion: FormatVersion,
-  steps: readonly MigrationStep[],
+  steps: MigrationSteps,
 ): Result<JsonRecord, DocumentMigrationError> {
   const fileVersion = readFormatVersion(document);
   if (!fileVersion.some || fileVersion.value.major >= appVersion.major) {
@@ -97,13 +103,13 @@ function migrateUpTo(
   }
 
   const fromMajor = fileVersion.value.major;
-  const step = steps.find((candidate) => candidate.fromMajor === fromMajor);
+  const step = steps[fromMajor];
   if (step === undefined) {
     return Result.err({ kind: "missing-migration-step", fromMajor });
   }
 
   const migrated = Result.mapErr(
-    step.migrate(document),
+    step(document),
     (reason): DocumentMigrationError => ({
       kind: "migration-step-failed",
       fromMajor,
@@ -136,7 +142,7 @@ function migrateUpTo(
 export const DocumentMigration = {
   toCurrent(
     value: unknown,
-    steps: readonly MigrationStep[] = MIGRATION_STEPS,
+    steps: MigrationSteps = MIGRATION_STEPS,
     appVersion: FormatVersion = FormatVersion.CURRENT,
   ): Result<unknown, DocumentMigrationError> {
     const document = asRecord(value);

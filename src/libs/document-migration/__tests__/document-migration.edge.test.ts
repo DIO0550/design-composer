@@ -4,14 +4,11 @@ import { Result } from "@/utils/Result";
 import {
   DocumentMigration,
   DocumentMigrationError,
-  type MigrationStep,
+  type MigrationSteps,
 } from "../index";
 
-function setupFailingStep(): MigrationStep {
-  return {
-    fromMajor: 0,
-    migrate: () => Result.err("tokens が読めない形になっている"),
-  };
+function setupFailingSteps(): MigrationSteps {
+  return { 0: () => Result.err("tokens が読めない形になっている") };
 }
 
 test("major がアプリより大きいファイルは unsupported-format-version になる", () => {
@@ -60,7 +57,7 @@ test("変換すべき major のステップが無いと missing-migration-step �
 test("ステップが失敗すると理由を持つ migration-step-failed になる", () => {
   const document: JsonRecord = { formatVersion: "0.9" };
 
-  expect(DocumentMigration.toCurrent(document, [setupFailingStep()])).toEqual({
+  expect(DocumentMigration.toCurrent(document, setupFailingSteps())).toEqual({
     ok: false,
     error: {
       kind: "migration-step-failed",
