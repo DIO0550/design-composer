@@ -291,7 +291,9 @@ function collectDuplicateNameErrors(
   document: DesignDocument,
 ): readonly DesignDocumentValidationError[] {
   return NameSpace.duplicatedNames(
-    NameSpace.of(document.components, document.artboards),
+    NameSpace.create(
+      NameSpace.collectNames(document.components, document.artboards),
+    ),
   ).map(
     (name): DesignDocumentValidationError => ({
       kind: "duplicate-name",

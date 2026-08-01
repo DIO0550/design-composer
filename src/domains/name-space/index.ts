@@ -39,10 +39,14 @@ export const NameSpace = {
   },
 
   /**
-   * ドキュメントの構成要素から名前空間を組み立てる。
+   * ドキュメントの構成要素から、名前空間に属する名前を集める。
    * 何が名前空間に属するかはこの名前空間自身の性質なので、集める規則もここが持つ。
+   * 生成は `create` に一本化しているため、ここは名前を集めるところまでを担う。
    */
-  of(components: ComponentSet, artboards: readonly Artboard[]): NameSpace {
+  collectNames(
+    components: ComponentSet,
+    artboards: readonly Artboard[],
+  ): readonly string[] {
     const componentNames = ComponentSet.names(components).flatMap(
       (name): readonly string[] => {
         const component = ComponentSet.get(components, name);
@@ -56,7 +60,7 @@ export const NameSpace = {
       artboard.name,
       ...artboard.children.flatMap(Node.collectNames),
     ]);
-    return NameSpace.create([...componentNames, ...artboardNames]);
+    return [...componentNames, ...artboardNames];
   },
 
   /** 名前の集合。同じ名前が複数回現れても1つに畳まれる。 */

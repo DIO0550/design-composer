@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { DesignDocument } from "../../index";
+import { DesignDocument } from "../index";
 
 test("大文字を含むノード名は invalid-identifier エラーになる", () => {
   const document = DesignDocument.create({

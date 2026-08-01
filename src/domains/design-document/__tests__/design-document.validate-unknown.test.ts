@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { DesignDocument } from "../../index";
+import { DesignDocument } from "../index";
 
 test("未知の type を持つノードは unknown-type エラーになる", () => {
   const document = DesignDocument.create({

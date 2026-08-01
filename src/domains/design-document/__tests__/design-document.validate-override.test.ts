@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { DesignDocument } from "../../index";
+import { DesignDocument } from "../index";
 
 test("publicProps に宣言の無いキーを上書きすると undeclared-override エラーになる", () => {
   const document = DesignDocument.create({

@@ -27,25 +27,25 @@ function setupComponents(): ComponentSet {
 }
 
 test("artboard 名は名前空間に含まれる", () => {
-  const space = NameSpace.of({}, setupArtboards());
+  const space = NameSpace.create(NameSpace.collectNames({}, setupArtboards()));
 
   expect(NameSpace.has(space, "screen")).toBe(true);
 });
 
 test("artboard 配下のノード名は名前空間に含まれる", () => {
-  const space = NameSpace.of({}, setupArtboards());
+  const space = NameSpace.create(NameSpace.collectNames({}, setupArtboards()));
 
   expect(NameSpace.has(space, "title")).toBe(true);
 });
 
 test("部品名は名前空間に含まれる", () => {
-  const space = NameSpace.of(setupComponents(), []);
+  const space = NameSpace.create(NameSpace.collectNames(setupComponents(), []));
 
   expect(NameSpace.has(space, "button")).toBe(true);
 });
 
 test("部品内部のノード名も名前空間に含まれる", () => {
-  const space = NameSpace.of(setupComponents(), []);
+  const space = NameSpace.create(NameSpace.collectNames(setupComponents(), []));
 
   expect(NameSpace.has(space, "label")).toBe(true);
 });

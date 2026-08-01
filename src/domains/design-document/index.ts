@@ -154,7 +154,9 @@ function updateChildrenOfParent(
 
 /** ドキュメントに現れる名前の集まり。 */
 function nameSpaceOf(document: DesignDocument): NameSpace {
-  return NameSpace.of(document.components, document.artboards);
+  return NameSpace.create(
+    NameSpace.collectNames(document.components, document.artboards),
+  );
 }
 
 /**

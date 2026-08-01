@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { Result } from "@/utils/Result";
-import { DesignDocument } from "../../index";
+import { DesignDocument } from "../index";
 
 test("同じ artboard 内に同名のノードが2つあると duplicate-name エラーになる", () => {
   const document = DesignDocument.create({

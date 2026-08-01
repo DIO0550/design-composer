@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { DesignDocument } from "../../index";
+import { DesignDocument } from "../index";
 
 test("すべての props がスキーマに適合するドキュメントはエラーを返さない", () => {
   const document = DesignDocument.create({
