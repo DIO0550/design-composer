@@ -84,6 +84,10 @@ function resolveThroughRefs(
 }
 
 export const ComponentBinding = {
+  /**
+   * binding を、それが属する部品の名前と組にする。
+   * `binding` 単体では解決先が決まらないので、解決に渡す値はこの形で作る。
+   */
   create(componentName: string, binding: PublicPropBinding): ComponentBinding {
     return { componentName, binding };
   },

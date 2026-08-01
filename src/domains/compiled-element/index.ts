@@ -191,10 +191,12 @@ export const TextElement = {
 } as const;
 
 export const CompiledElement = {
+  /** 子を持つ側の要素か。 */
   isBox(element: CompiledElement): element is BoxElement {
     return element.kind === "box";
   },
 
+  /** テキストを持つ側の要素か。 */
   isText(element: CompiledElement): element is TextElement {
     return element.kind === "text";
   },

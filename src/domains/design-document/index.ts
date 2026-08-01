@@ -789,6 +789,11 @@ export const DesignDocument = {
     };
   },
 
+  /**
+   * ツリー上の位置へノードを挿入する。
+   * 位置は「どの親の何番目か」で指すので、親が子を持てない・親が居ない・
+   * index が範囲外、のいずれでも失敗しうる。
+   */
   insertNode(
     document: DesignDocument,
     at: ChildPosition,
@@ -861,6 +866,11 @@ export const DesignDocument = {
     );
   },
 
+  /**
+   * ノードを別の親の下へ移す（同一の親の中での並べ替えは `reorderNode`）。
+   * 自分自身や自分の子孫を移動先に指定するとツリーが壊れるため、
+   * `move-into-descendant` として失敗させる。
+   */
   moveNode(
     document: DesignDocument,
     name: string,
