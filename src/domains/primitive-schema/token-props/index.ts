@@ -86,10 +86,12 @@ const TOKEN_PROP_KINDS = Object.fromEntries(
   ),
 ) as TokenPropKinds;
 
-/**
- * トークン参照 prop が引くトークン種別。
- * 出力側が「どの種別から引くか」を書き写さずに済むよう、スキーマの宣言を引かせる。
- */
-export function tokenKind<P extends TokenPropName>(prop: P): TokenPropKinds[P] {
-  return TOKEN_PROP_KINDS[prop];
-}
+export const TokenPropKinds = {
+  /**
+   * トークン参照 prop が引くトークン種別。
+   * 出力側が「どの種別から引くか」を書き写さずに済むよう、スキーマの宣言を引かせる。
+   */
+  kindOf<P extends TokenPropName>(prop: P): TokenPropKinds[P] {
+    return TOKEN_PROP_KINDS[prop];
+  },
+} as const;

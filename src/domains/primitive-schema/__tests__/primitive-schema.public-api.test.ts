@@ -1,9 +1,14 @@
 import { expect, test } from "vitest";
-import { BOX_SCHEMA, PrimitiveSchema, TEXT_SCHEMA } from "../index";
+import {
+  BOX_SCHEMA,
+  PrimitiveSchema,
+  TEXT_SCHEMA,
+  TokenPropKinds,
+} from "../index";
 
 /*
- * PrimitiveSchema コンパニオンはサブフォルダに分かれた実装を index.ts で
- * 組み立てている。分割で公開APIが欠けないことをここで確かめる。
+ * このモジュールの公開APIはサブフォルダの再export で組み立てている。
+ * 分割で公開APIが欠けないことをここで確かめる。
  */
 
 test("primitive の型を指定するとその仕様が得られる", () => {
@@ -22,6 +27,6 @@ test("子を持てるかは仕様の宣言どおりに答える", () => {
 });
 
 test("トークン参照 prop は仕様で宣言されたトークン種別を答える", () => {
-  expect(PrimitiveSchema.tokenKind("gap")).toBe("spacing");
-  expect(PrimitiveSchema.tokenKind("typography")).toBe("typography");
+  expect(TokenPropKinds.kindOf("gap")).toBe("spacing");
+  expect(TokenPropKinds.kindOf("typography")).toBe("typography");
 });

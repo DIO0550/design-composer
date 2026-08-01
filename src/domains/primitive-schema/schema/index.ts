@@ -114,26 +114,29 @@ export const PRIMITIVE_SCHEMAS = {
   Text: TEXT_SCHEMA,
 } as const satisfies Readonly<Record<PrimitiveType, PrimitiveSchema>>;
 
-/**
- * その primitive のスキーマ。
- * 戻り値を `PrimitiveSchema` へ広げず型引数で受けるのは、
- * 呼び出し側が prop 名やデフォルト値をリテラル型のまま扱えるようにするため。
- */
-export function forType<T extends PrimitiveType>(
-  type: T,
-): (typeof PRIMITIVE_SCHEMAS)[T] {
-  return PRIMITIVE_SCHEMAS[type];
-}
+export const PrimitiveSchema = {
+  /**
+   * その primitive のスキーマ。
+   * 戻り値を `PrimitiveSchema` へ広げず型引数で受けるのは、
+   * 呼び出し側が prop 名やデフォルト値をリテラル型のまま扱えるようにするため。
+   */
+  forType<T extends PrimitiveType>(type: T): (typeof PRIMITIVE_SCHEMAS)[T] {
+    return PRIMITIVE_SCHEMAS[type];
+  },
 
-/** その名前が primitive の型か（ファイル由来の未知の type を弾く境界）。 */
-export function isPrimitiveType(type: string): type is PrimitiveType {
-  return (PRIMITIVE_TYPES as readonly string[]).includes(type);
-}
+  /** その名前が primitive の型か（ファイル由来の未知の type を弾く境界）。 */
+  isPrimitiveType(type: string): type is PrimitiveType {
+    return (PRIMITIVE_TYPES as readonly string[]).includes(type);
+  },
 
-/**
- * その type のノードが子を持てるか。
- * primitive でない type は子を持てない扱いにする（未知の type に子を挿せない）。
- */
-export function allowsChildren(type: string): boolean {
-  return isPrimitiveType(type) && PRIMITIVE_SCHEMAS[type].allowsChildren;
-}
+  /**
+   * その type のノードが子を持てるか。
+   * primitive でない type は子を持てない扱いにする（未知の type に子を挿せない）。
+   */
+  allowsChildren(type: string): boolean {
+    return (
+      PrimitiveSchema.isPrimitiveType(type) &&
+      PRIMITIVE_SCHEMAS[type].allowsChildren
+    );
+  },
+} as const;
