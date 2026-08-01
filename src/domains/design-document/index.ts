@@ -373,62 +373,74 @@ type ReferenceContext = Readonly<{
 }>;
 
 /**
+ * どの部品のどの binding かを指す組。
+ * binding は所属する部品と対でしか意味を持たない（同じ prop 名でも部品が違えば
+ * 指す先が違う）ため、常に一緒に動く2つを1つの型にまとめる。
+ */
+type ComponentBinding = Readonly<{
+  componentName: string;
+  binding: PublicPropBinding;
+}>;
+
+/**
+ * ref ノードの連鎖（インターフェースの連鎖）を辿って prop 定義に行き着く。
+ * `visited` は辿った部品名で、循環参照に入ったときに打ち切るために持ち回る。
+ */
+function resolveThroughRefs(
+  context: ReferenceContext,
+  source: ComponentBinding,
+  visited: ReadonlySet<string>,
+): Option<PropDefinition> {
+  const component = ComponentSet.get(context.components, source.componentName);
+  if (component === undefined) {
+    return Option.none;
+  }
+  const found = Component.findNode(
+    component,
+    source.componentName,
+    source.binding.node,
+  );
+  if (!found.some) {
+    return Option.none;
+  }
+  const target = found.value;
+  if (Node.isPrimitive(target)) {
+    if (!PrimitiveSchema.isPrimitiveType(target.type)) {
+      return Option.none;
+    }
+    const schema: PrimitiveSchema = PrimitiveSchema.forType(target.type);
+    return Option.fromNullable(schema.props[source.binding.prop]);
+  }
+  if (visited.has(target.ref)) {
+    return Option.none;
+  }
+  const nested = ComponentSet.get(context.components, target.ref);
+  if (nested === undefined) {
+    return Option.none;
+  }
+  const nestedBinding = Component.binding(nested, source.binding.prop);
+  if (!nestedBinding.some) {
+    return Option.none;
+  }
+  return resolveThroughRefs(
+    context,
+    { componentName: target.ref, binding: nestedBinding.value },
+    new Set(visited).add(target.ref),
+  );
+}
+
+/**
  * binding が最終的に指すプリミティブ prop の定義を解決する。
  * binding 先が ref ノードの場合は参照先部品の publicProps を辿る（インターフェースの連鎖）。
  * 解決できない場合は binding 自体が不整合であり、binding 検証側で報告される。
  *
- * 辿った部品名（循環検出用）は再帰の内部状態なので公開シグネチャには出さず、
- * `context` を捕捉した内側の再帰関数だけが持つ。
+ * 連鎖の起点なので、循環検出の初期状態（起点の部品名）をここで作る。
  */
 function resolvePropDefinition(
   context: ReferenceContext,
-  componentName: string,
-  binding: PublicPropBinding,
+  source: ComponentBinding,
 ): Option<PropDefinition> {
-  const resolve = (
-    currentName: string,
-    currentBinding: PublicPropBinding,
-    visited: ReadonlySet<string>,
-  ): Option<PropDefinition> => {
-    const component = ComponentSet.get(context.components, currentName);
-    if (component === undefined) {
-      return Option.none;
-    }
-    const found = Component.findNode(
-      component,
-      currentName,
-      currentBinding.node,
-    );
-    if (!found.some) {
-      return Option.none;
-    }
-    const target = found.value;
-    if (Node.isPrimitive(target)) {
-      if (!PrimitiveSchema.isPrimitiveType(target.type)) {
-        return Option.none;
-      }
-      const schema: PrimitiveSchema = PrimitiveSchema.forType(target.type);
-      return Option.fromNullable(schema.props[currentBinding.prop]);
-    }
-    if (visited.has(target.ref)) {
-      return Option.none;
-    }
-    const nested = ComponentSet.get(context.components, target.ref);
-    if (nested === undefined) {
-      return Option.none;
-    }
-    const nestedBinding = Component.binding(nested, currentBinding.prop);
-    if (!nestedBinding.some) {
-      return Option.none;
-    }
-    return resolve(
-      target.ref,
-      nestedBinding.value,
-      new Set(visited).add(target.ref),
-    );
-  };
-
-  return resolve(componentName, binding, new Set([componentName]));
+  return resolveThroughRefs(context, source, new Set([source.componentName]));
 }
 
 function collectOverrideErrors(
@@ -448,11 +460,10 @@ function collectOverrideErrors(
           },
         ];
       }
-      const definition = resolvePropDefinition(
-        context,
-        refNode.ref,
-        binding.value,
-      );
+      const definition = resolvePropDefinition(context, {
+        componentName: refNode.ref,
+        binding: binding.value,
+      });
       if (!definition.some) {
         return [];
       }
