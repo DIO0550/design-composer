@@ -3,7 +3,7 @@ import { Component, ComponentSet } from "@/domains/component";
 import { DocumentTemplate } from "../index";
 
 test("初期部品セットは仕様の4部品を持つ", () => {
-  expect(ComponentSet.names(DocumentTemplate.default().components)).toEqual([
+  expect(ComponentSet.names(DocumentTemplate.DEFAULT.components)).toEqual([
     "primary-button",
     "secondary-button",
     "text-input",
@@ -12,7 +12,7 @@ test("初期部品セットは仕様の4部品を持つ", () => {
 });
 
 test("初期部品はすべて publicProps を宣言している", () => {
-  const { components } = DocumentTemplate.default();
+  const { components } = DocumentTemplate.DEFAULT;
 
   const withoutPublicProps = Object.entries(components)
     .filter(
@@ -24,7 +24,7 @@ test("初期部品はすべて publicProps を宣言している", () => {
 });
 
 test("primary-button の label は内部のラベルノードの content につながっている", () => {
-  const { components } = DocumentTemplate.default();
+  const { components } = DocumentTemplate.DEFAULT;
 
   expect(ComponentSet.get(components, "primary-button")?.publicProps).toEqual({
     label: { node: "primary-button-label", prop: "content" },
@@ -32,7 +32,7 @@ test("primary-button の label は内部のラベルノードの content につ�
 });
 
 test("card は title と body の2つの prop を公開する", () => {
-  const { components } = DocumentTemplate.default();
+  const { components } = DocumentTemplate.DEFAULT;
 
   expect(
     Object.keys(ComponentSet.get(components, "card")?.publicProps ?? {}),
@@ -40,7 +40,7 @@ test("card は title と body の2つの prop を公開する", () => {
 });
 
 test("secondary-button のラベルは色を指定せず Text のスキーマデフォルトに従う", () => {
-  const { components } = DocumentTemplate.default();
+  const { components } = DocumentTemplate.DEFAULT;
 
   expect(ComponentSet.get(components, "secondary-button")?.children).toEqual([
     {
@@ -52,7 +52,7 @@ test("secondary-button のラベルは色を指定せず Text のスキーマデ
 });
 
 test("text-input は横幅を親いっぱいに広げる", () => {
-  const { components } = DocumentTemplate.default();
+  const { components } = DocumentTemplate.DEFAULT;
 
   expect(ComponentSet.get(components, "text-input")?.props?.widthMode).toBe(
     "fill",
@@ -60,7 +60,7 @@ test("text-input は横幅を親いっぱいに広げる", () => {
 });
 
 test("card は初期部品の中で唯一 shadow を持つ", () => {
-  const { components } = DocumentTemplate.default();
+  const { components } = DocumentTemplate.DEFAULT;
 
   const withShadow = Object.entries(components)
     .filter(([, component]) => component.props?.shadow !== undefined)

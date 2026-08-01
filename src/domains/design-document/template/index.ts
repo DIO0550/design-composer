@@ -144,17 +144,27 @@ const INITIAL_COMPONENTS: ComponentSet = {
  *
  * デフォルトテーマと初期部品セットは片方だけでは成立しない
  * （部品の見た目の prop はテーマのトークンを参照する）ため1つの型にまとめる。
- * スキーマの prop デフォルトが指すトークン名（Text の `typography` / `color`）を
- * 保証するのもテンプレートの責務。
+ *
+ * 部品が参照するトークンが揃っているか（スキーマの prop デフォルトが指す
+ * Text の `typography` / `color` を含む）は型では縛らない。
+ * 参照の整合はドキュメント全体の規則なので `DesignDocument.collectErrors` が
+ * dangling-token として報告する担当で、docs/04-tokens.md も
+ * 「通常のバリデーションエラーとして検出される（特別扱いしない）」としている。
  */
 export type DocumentTemplate = Readonly<{
   tokens: TokenSet;
   components: ComponentSet;
 }>;
 
+/**
+ * 仕様が定める既定の雛形。取りうる雛形は今のところこれ1つなので、
+ * 生成の手続きではなく定数として公開する（`FormatVersion.CURRENT` と同じ形）。
+ */
+const DEFAULT: DocumentTemplate = {
+  tokens: DEFAULT_THEME,
+  components: INITIAL_COMPONENTS,
+};
+
 export const DocumentTemplate = {
-  /** 仕様が定める既定の雛形。 */
-  default(): DocumentTemplate {
-    return { tokens: DEFAULT_THEME, components: INITIAL_COMPONENTS };
-  },
+  DEFAULT,
 } as const;
