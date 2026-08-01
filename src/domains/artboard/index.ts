@@ -58,14 +58,6 @@ export const Artboard = {
   },
 
   /**
-   * artboard の props を Box の props として解決する
-   * (docs/01「artboard は…ルートノード(Box)を兼ねる」/ docs/03「Box スキーマを流用する」)。
-   *
-   * Box スキーマと違う点は2つで、それぞれ効き方が異なる:
-   * - `overflow` の既定が `clip`。**デフォルト**なので artboard 側の指定が勝つ
-   * - サイズは `fixed` **固定**で、長さは artboard の `width` / `height`。props では変えられない
-   */
-  /**
    * 子の並びをツリーの一階層として見る。
    * 並びの探索・編集の規則は `NodeTree` が持つので、artboard は自分の並びを渡すだけ。
    */
@@ -83,6 +75,14 @@ export const Artboard = {
     return NodeTree.find(Artboard.tree(artboard), name);
   },
 
+  /**
+   * artboard の props を Box の props として解決する
+   * (docs/01「artboard は…ルートノード(Box)を兼ねる」/ docs/03「Box スキーマを流用する」)。
+   *
+   * Box スキーマと違う点は2つで、それぞれ効き方が異なる:
+   * - `overflow` の既定が `clip`。**デフォルト**なので artboard 側の指定が勝つ
+   * - サイズは `fixed` **固定**で、長さは artboard の `width` / `height`。props では変えられない
+   */
   boxProps(artboard: Artboard): ArtboardBoxProps {
     return {
       ...ResolvedProps.resolve("Box", {

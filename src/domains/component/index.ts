@@ -102,6 +102,17 @@ export const Component = {
    * 部品のルートをノードとして表現する。
    * ルートの `name` は components の辞書キーが兼ねるため、外から名前を受け取る。
    */
+  toNode(component: Component, name: string): Node {
+    return {
+      name,
+      type: component.type,
+      ...(component.props !== undefined ? { props: component.props } : {}),
+      ...(component.children !== undefined
+        ? { children: component.children }
+        : {}),
+    };
+  },
+
   /**
    * ノードを部品の中身にする（`toNode` の逆向き）。
    * 参照ノードは自身の実体を持たない（既に他の部品を指している）ので部品にできず `none`。
@@ -115,17 +126,6 @@ export const Component = {
       ...(node.props !== undefined ? { props: node.props } : {}),
       ...(node.children !== undefined ? { children: node.children } : {}),
     });
-  },
-
-  toNode(component: Component, name: string): Node {
-    return {
-      name,
-      type: component.type,
-      ...(component.props !== undefined ? { props: component.props } : {}),
-      ...(component.children !== undefined
-        ? { children: component.children }
-        : {}),
-    };
   },
 
   /** ルートを含む部品内部のノードを名前で探す。 */
