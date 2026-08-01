@@ -13,10 +13,11 @@ test("Text ノードへ挿入しようとすると children-not-allowed エラ�
     ],
   });
 
-  const result = DesignDocument.insertNode(document, "label", 0, {
-    name: "inner",
-    type: "Text",
-  });
+  const result = DesignDocument.insertNode(
+    document,
+    { parentName: "label", index: 0 },
+    { name: "inner", type: "Text" },
+  );
 
   expect(result).toEqual({
     ok: false,
@@ -36,10 +37,11 @@ test("ref ノードへ挿入しようとすると children-not-allowed エラー
     ],
   });
 
-  const result = DesignDocument.insertNode(document, "button", 0, {
-    name: "inner",
-    type: "Text",
-  });
+  const result = DesignDocument.insertNode(
+    document,
+    { parentName: "button", index: 0 },
+    { name: "inner", type: "Text" },
+  );
 
   expect(result).toEqual({
     ok: false,
@@ -52,10 +54,11 @@ test("存在しない親名を指定してノードを挿入すると parent-not
     artboards: [{ name: "screen", width: 375, height: 812, children: [] }],
   });
 
-  const result = DesignDocument.insertNode(document, "missing-parent", 0, {
-    name: "label",
-    type: "Text",
-  });
+  const result = DesignDocument.insertNode(
+    document,
+    { parentName: "missing-parent", index: 0 },
+    { name: "label", type: "Text" },
+  );
 
   expect(result).toEqual({
     ok: false,
@@ -68,10 +71,11 @@ test("範囲外の index を指定してノードを挿入すると index-out-of
     artboards: [{ name: "screen", width: 375, height: 812, children: [] }],
   });
 
-  const result = DesignDocument.insertNode(document, "screen", 1, {
-    name: "label",
-    type: "Text",
-  });
+  const result = DesignDocument.insertNode(
+    document,
+    { parentName: "screen", index: 1 },
+    { name: "label", type: "Text" },
+  );
 
   expect(result).toEqual({
     ok: false,
@@ -104,7 +108,11 @@ test("範囲外の fromIndex を指定してノードを並べ替えると index
     ],
   });
 
-  const result = DesignDocument.reorderNode(document, "screen", 5, 0);
+  const result = DesignDocument.reorderNode(
+    document,
+    { parentName: "screen", index: 5 },
+    0,
+  );
 
   expect(result).toEqual({
     ok: false,
@@ -124,7 +132,10 @@ test("自分自身を移動先に指定して移動しようとすると move-in
     ],
   });
 
-  const result = DesignDocument.moveNode(document, "box-1", "box-1", 0);
+  const result = DesignDocument.moveNode(document, "box-1", {
+    parentName: "box-1",
+    index: 0,
+  });
 
   expect(result).toEqual({
     ok: false,
@@ -154,7 +165,10 @@ test("自分の子孫を移動先に指定して移動しようとすると move
     ],
   });
 
-  const result = DesignDocument.moveNode(document, "box-1", "box-2", 0);
+  const result = DesignDocument.moveNode(document, "box-1", {
+    parentName: "box-2",
+    index: 0,
+  });
 
   expect(result).toEqual({
     ok: false,
@@ -171,7 +185,10 @@ test("存在しないノード名を指定して移動しようとすると node
     artboards: [{ name: "screen", width: 375, height: 812, children: [] }],
   });
 
-  const result = DesignDocument.moveNode(document, "missing", "screen", 0);
+  const result = DesignDocument.moveNode(document, "missing", {
+    parentName: "screen",
+    index: 0,
+  });
 
   expect(result).toEqual({
     ok: false,
@@ -191,12 +208,10 @@ test("存在しない移動先の親名を指定して移動しようとする�
     ],
   });
 
-  const result = DesignDocument.moveNode(
-    document,
-    "label",
-    "missing-parent",
-    0,
-  );
+  const result = DesignDocument.moveNode(document, "label", {
+    parentName: "missing-parent",
+    index: 0,
+  });
 
   expect(result).toEqual({
     ok: false,
@@ -219,7 +234,10 @@ test("子を持てないノードへ移動しようとすると children-not-all
     ],
   });
 
-  const result = DesignDocument.moveNode(document, "label", "target", 0);
+  const result = DesignDocument.moveNode(document, "label", {
+    parentName: "target",
+    index: 0,
+  });
 
   expect(result).toEqual({
     ok: false,
@@ -236,7 +254,10 @@ test("移動に失敗しても元のドキュメントは変更されない", ()
     ],
   });
 
-  DesignDocument.moveNode(document, "label", "target", 0);
+  DesignDocument.moveNode(document, "label", {
+    parentName: "target",
+    index: 0,
+  });
 
   expect(document.artboards[0].children).toEqual([label, target]);
 });

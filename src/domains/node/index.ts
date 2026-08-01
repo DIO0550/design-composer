@@ -11,6 +11,15 @@ import { Result } from "@/utils/Result";
 export type PropValue = string | number | boolean;
 export type Props = Readonly<Record<string, PropValue>>;
 
+/**
+ * props の1件分の設定。prop 名と値は片方だけでは意味を持たない
+ * （値が妥当かは prop 名で決まり、報告にも prop 名が要る）ため1つの型にまとめる。
+ */
+export type PropAssignment = Readonly<{
+  name: string;
+  value: PropValue;
+}>;
+
 export const PropValue = {
   /** prop の値になれるのはスカラーだけ(構造を持つ値は prop にしない)。 */
   fromJson(cursor: JsonCursor): JsonDecoded<PropValue> {
@@ -39,6 +48,11 @@ export const Props = {
   /** prop 名の昇順で書き出す(編集した順に依存させない)。 */
   toJson(props: Props): JsonObject {
     return Json.sortedMap(props, (value) => value);
+  },
+
+  /** 1件ずつ扱う消費側のために、設定されている prop を並びへ展開する。 */
+  toAssignments(props: Props): readonly PropAssignment[] {
+    return Object.entries(props).map(([name, value]) => ({ name, value }));
   },
 } as const;
 
