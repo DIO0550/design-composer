@@ -98,7 +98,7 @@ function collectNodeErrors(
 }
 
 /** 参照検証が横断的に必要とする、ドキュメント全体の文脈。 */
-type ReferenceContext = Readonly<{
+export type ReferenceContext = Readonly<{
   components: ComponentSet;
   tokens: TokenSet;
 }>;
@@ -234,7 +234,7 @@ function collectBindingErrors(
 }
 
 /** 部品どうしの参照が輪になっているものを報告する。 */
-function collectCircularRefErrors(
+export function collectCircularRefErrors(
   components: ComponentSet,
 ): readonly DesignDocumentValidationError[] {
   return ComponentSet.circularNames(components).map((name) => ({
@@ -245,7 +245,7 @@ function collectCircularRefErrors(
 }
 
 /** 部品1件の props・子ノード・binding・参照のエラーを集める。 */
-function collectComponentErrors(
+export function collectComponentErrors(
   context: ReferenceContext,
   name: string,
   component: Component,
@@ -266,7 +266,7 @@ function collectComponentErrors(
 }
 
 /** artboard 1件の props・子ノード・参照のエラーを集める。 */
-function collectArtboardErrors(
+export function collectArtboardErrors(
   context: ReferenceContext,
   artboard: Artboard,
 ): readonly DesignDocumentValidationError[] {
@@ -362,7 +362,7 @@ function collectTokenNameErrors(
 }
 
 /** ドキュメント全体の名前（部品・artboard・ノード・トークン）のエラーを集める。 */
-function collectDocumentNameErrors(
+export function collectDocumentNameErrors(
   document: DesignDocument,
 ): readonly DesignDocumentValidationError[] {
   const componentErrors = ComponentSet.names(document.components).flatMap(
@@ -385,40 +385,5 @@ function collectDocumentNameErrors(
     ...artboardErrors,
     ...collectDuplicateNameErrors(document),
     ...collectTokenNameErrors(document.tokens),
-  ];
-}
-
-/**
- * ドキュメントが仕様に適合しない箇所をすべて集める。
- * 最初の1件で止めないのは、不正なファイルのエラー一覧を出せるようにするため。
- */
-export function collectErrors(
-  document: DesignDocument,
-): readonly DesignDocumentValidationError[] {
-  const context: ReferenceContext = {
-    components: document.components,
-    tokens: document.tokens,
-  };
-
-  const componentErrors = ComponentSet.names(document.components).flatMap(
-    (name) => {
-      const component = ComponentSet.get(document.components, name);
-      if (component === undefined) {
-        return [];
-      }
-      return collectComponentErrors(context, name, component);
-    },
-  );
-  const artboardErrors = document.artboards.flatMap((artboard) =>
-    collectArtboardErrors(context, artboard),
-  );
-  const circularErrors = collectCircularRefErrors(document.components);
-  const nameErrors = collectDocumentNameErrors(document);
-
-  return [
-    ...componentErrors,
-    ...artboardErrors,
-    ...circularErrors,
-    ...nameErrors,
   ];
 }

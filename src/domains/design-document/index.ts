@@ -1,5 +1,5 @@
 import { Artboard } from "@/domains/artboard";
-import { Component, type ComponentSet } from "@/domains/component";
+import { Component, ComponentSet } from "@/domains/component";
 import {
   FormatVersion,
   type FormatVersionCompatibility,
@@ -15,7 +15,14 @@ import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 import type { DesignDocumentEditError } from "./edit-error";
 import { DesignDocumentV1 } from "./v1";
-import { collectErrors } from "./validation";
+import {
+  collectArtboardErrors,
+  collectCircularRefErrors,
+  collectComponentErrors,
+  collectDocumentNameErrors,
+  type DesignDocumentValidationError,
+  type ReferenceContext,
+} from "./validation";
 
 export { DesignDocumentEditError } from "./edit-error";
 export type { DesignDocumentV1 } from "./v1";
@@ -411,5 +418,40 @@ export const DesignDocument = {
     };
   },
 
-  collectErrors,
+  /**
+   * ドキュメントが仕様に適合しない箇所をすべて集める。
+   * 最初の1件で止めないのは、不正なファイルのエラー一覧を出せるようにするため。
+   * 適合の規則そのものは `validation/` が関心ごとに持ち、
+   * ここは「どの部品・どの artboard を検証対象にするか」の取りまとめを行う。
+   */
+  collectErrors(
+    document: DesignDocument,
+  ): readonly DesignDocumentValidationError[] {
+    const context: ReferenceContext = {
+      components: document.components,
+      tokens: document.tokens,
+    };
+
+    const componentErrors = ComponentSet.names(document.components).flatMap(
+      (name) => {
+        const component = ComponentSet.get(document.components, name);
+        if (component === undefined) {
+          return [];
+        }
+        return collectComponentErrors(context, name, component);
+      },
+    );
+    const artboardErrors = document.artboards.flatMap((artboard) =>
+      collectArtboardErrors(context, artboard),
+    );
+    const circularErrors = collectCircularRefErrors(document.components);
+    const nameErrors = collectDocumentNameErrors(document);
+
+    return [
+      ...componentErrors,
+      ...artboardErrors,
+      ...circularErrors,
+      ...nameErrors,
+    ];
+  },
 } as const;
