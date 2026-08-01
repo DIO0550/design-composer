@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { DesignDocument } from "../index";
+import { DesignDocument } from "../../index";
 
 test("name が欠落したノードは missing-name エラーになる", () => {
   const document = DesignDocument.create({

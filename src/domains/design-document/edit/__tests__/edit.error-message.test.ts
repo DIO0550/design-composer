@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { DesignDocumentEditError } from "../index";
+import { DesignDocumentEditError } from "../../index";
 
 test("node-not-found は見つからなかったノード名を含むメッセージになる", () => {
   expect(

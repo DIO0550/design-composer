@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { DesignDocument } from "../index";
+import { DesignDocument } from "../../index";
 
 test("循環参照する部品への上書きがあっても検証が終了し循環だけが報告される", () => {
   const document = DesignDocument.create({

@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { DesignDocument } from "../index";
+import { DesignDocument } from "../../index";
 
 test("artboard の props も Box スキーマで検証され、enum 外の値はエラーになる", () => {
   const document = DesignDocument.create({

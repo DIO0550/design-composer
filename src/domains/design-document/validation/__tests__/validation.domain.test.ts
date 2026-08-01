@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { DesignDocument } from "../index";
+import { DesignDocument } from "../../index";
 
 test("enum 外の値を指定すると enum-violation エラーになる", () => {
   const document = DesignDocument.create({

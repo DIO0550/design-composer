@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { DesignDocument } from "../index";
+import { DesignDocument } from "../../index";
 
 test("存在しないノード名を指定して部品化しようとすると node-not-found エラーになる", () => {
   const document = DesignDocument.create({

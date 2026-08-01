@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { Result } from "@/utils/Result";
-import { DesignDocument } from "../index";
+import { DesignDocument } from "../../index";
 
 test("トップレベルのノードを部品化すると components に追加される", () => {
   const box = { name: "box-1", type: "Box", props: { padding: 8 } };

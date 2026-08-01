@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { DesignDocument } from "../index";
+import { DesignDocument } from "../../index";
 
 test("存在しない部品名を参照すると dangling-ref エラーになる", () => {
   const document = DesignDocument.create({

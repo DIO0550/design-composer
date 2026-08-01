@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { DesignDocument } from "../index";
+import { DesignDocument } from "../../index";
 
 test("存在しない内部ノード名への binding は dangling-binding-node エラーになる", () => {
   const document = DesignDocument.create({

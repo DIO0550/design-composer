@@ -1,5 +1,5 @@
 import { expect, expectTypeOf, test } from "vitest";
-import { tokenKind, type TokenPropName } from "../index";
+import { type TokenPropName, tokenKind } from "../index";
 
 test("トークン参照 prop はスキーマで宣言されたトークン種別を答える", () => {
   expect(tokenKind("gap")).toBe("spacing");
@@ -22,7 +22,5 @@ test("トークン参照 prop の名前はスキーマの宣言だけで決ま�
 
 test("トークン種別は prop ごとにスキーマの宣言どおりの型で返る", () => {
   expectTypeOf(tokenKind("gap")).toEqualTypeOf<"spacing">();
-  expectTypeOf(
-    tokenKind("background"),
-  ).toEqualTypeOf<"colors">();
+  expectTypeOf(tokenKind("background")).toEqualTypeOf<"colors">();
 });
