@@ -14,6 +14,7 @@ import type { JsonCursor, JsonDecoded, JsonObject } from "@/utils/Json";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 import type { DesignDocumentEditError } from "./edit-error";
+import type { DocumentTemplate } from "./template";
 import { DesignDocumentV1 } from "./v1";
 import {
   collectArtboardErrors,
@@ -25,6 +26,7 @@ import {
 } from "./validation";
 
 export { DesignDocumentEditError } from "./edit-error";
+export { DocumentTemplate } from "./template";
 export type { DesignDocumentV1 } from "./v1";
 export type {
   DesignDocumentValidationError,
@@ -178,6 +180,18 @@ export const DesignDocument = {
       components: params.components ?? {},
       artboards: params.artboards ?? [],
     };
+  },
+
+  /**
+   * 雛形から新規ドキュメントを作る（docs/04-tokens.md「新規ドキュメントテンプレート」）。
+   * artboards は空で始まる（描く対象はユーザーが足す）。
+   * 雛形を引数で受け取るのは、既定を隠さず呼び出し側に選ばせるため。
+   */
+  createFromTemplate(template: DocumentTemplate): DesignDocument {
+    return DesignDocument.create({
+      tokens: template.tokens,
+      components: template.components,
+    });
   },
 
   compatibility(document: DesignDocument): FormatVersionCompatibility {
