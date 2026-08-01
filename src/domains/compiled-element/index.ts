@@ -1,31 +1,54 @@
 import type {
   CssDeclaration as CssDeclarationType,
   CssProperty,
-  SingleVariableTokenKind,
   TokenRefs,
 } from "@/domains/css-declaration";
 import { CssDeclaration, CssDeclarations } from "@/domains/css-declaration";
 import { CssDirection } from "@/domains/css-direction";
 import type { PropValue } from "@/domains/node";
 import { Padding } from "@/domains/padding";
+import {
+  PrimitiveSchema,
+  type TokenPropName,
+} from "@/domains/primitive-schema";
 import type { ResolvedProps } from "@/domains/resolved-props";
 import { Size } from "@/domains/size";
 import { TypographyField, TypographyToken } from "@/domains/token";
 import { Html } from "@/utils/Html";
 
 /**
+ * トークン参照 prop → その prop が決める CSS プロパティ
+ * (docs/03「HTML/CSS へのコンパイル規則」の表。仕様と同じく prop 名で引く)。
+ * 引くトークン種別はスキーマの `tokenKind` だけが宣言するため、ここには書かず
+ * `PrimitiveSchema.tokenKind` から引く (`gap` を colors から引く組み合わせを書けない)。
+ * `paddingX` / `paddingY` は2軸を1つの `padding` へ合成するため `Padding` が、
+ * `typography` は複数プロパティへ展開されるため下の関数が担当し、この表には含めない。
+ */
+const TOKEN_PROP_PROPERTIES = {
+  gap: "gap",
+  background: "background",
+  radius: "border-radius",
+  shadow: "box-shadow",
+  color: "color",
+} as const satisfies Readonly<Partial<Record<TokenPropName, CssProperty>>>;
+
+/** 単一の CSS プロパティへ写るトークン参照 prop。語彙は上の表で閉じている。 */
+type TokenBackedProp = keyof typeof TOKEN_PROP_PROPERTIES;
+
+/**
  * トークン参照 prop を `var()` 参照の宣言にする。未指定の prop は宣言を出力しない
  * (トークンの値は参照しないため、トークン編集は再コンパイルなしに CSS 経由で波及する)。
  */
 function tokenDeclarations(
-  property: CssProperty,
-  kind: SingleVariableTokenKind,
+  prop: TokenBackedProp,
   value: PropValue | undefined,
   tokens: TokenRefs,
 ): readonly CssDeclarationType[] {
   if (value === undefined) {
     return [];
   }
+  const property = TOKEN_PROP_PROPERTIES[prop];
+  const kind = PrimitiveSchema.tokenKind(prop);
   return [CssDeclaration.create(property, tokens.ref(kind, String(value)))];
 }
 
@@ -109,7 +132,7 @@ export const BoxElement = {
     return [
       CssDeclaration.create("display", "flex"),
       CssDeclaration.create("flex-direction", String(props.direction)),
-      ...tokenDeclarations("gap", "spacing", props.gap, tokens),
+      ...tokenDeclarations("gap", props.gap, tokens),
       ...Padding.declarations(
         Padding.create(props.paddingY, props.paddingX),
         (token) => tokens.ref("spacing", token),
@@ -126,9 +149,9 @@ export const BoxElement = {
         "height",
         parentDirection,
       ),
-      ...tokenDeclarations("background", "colors", props.background, tokens),
-      ...tokenDeclarations("border-radius", "radius", props.radius, tokens),
-      ...tokenDeclarations("box-shadow", "shadows", props.shadow, tokens),
+      ...tokenDeclarations("background", props.background, tokens),
+      ...tokenDeclarations("radius", props.radius, tokens),
+      ...tokenDeclarations("shadow", props.shadow, tokens),
       ...overflowDeclarations(props.overflow),
     ];
   },
@@ -161,17 +184,19 @@ export const TextElement = {
   ): readonly CssDeclarationType[] {
     return [
       ...typographyDeclarations(props.typography, tokens),
-      ...tokenDeclarations("color", "colors", props.color, tokens),
+      ...tokenDeclarations("color", props.color, tokens),
       CssDeclaration.create("text-align", String(props.align)),
     ];
   },
 } as const;
 
 export const CompiledElement = {
+  /** 子を持つ側の要素か。 */
   isBox(element: CompiledElement): element is BoxElement {
     return element.kind === "box";
   },
 
+  /** テキストを持つ側の要素か。 */
   isText(element: CompiledElement): element is TextElement {
     return element.kind === "text";
   },

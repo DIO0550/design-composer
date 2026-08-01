@@ -9,7 +9,11 @@ test("artboard 直下にノードを挿入すると children の指定位置に�
   const label = { name: "label", type: "Text" };
 
   const result = Result.unwrap(
-    DesignDocument.insertNode(document, "screen", 0, label),
+    DesignDocument.insertNode(
+      document,
+      { parentName: "screen", index: 0 },
+      label,
+    ),
   );
 
   expect(result.artboards[0].children).toEqual([label]);
@@ -29,7 +33,11 @@ test("ネストしたノードの子として挿入すると親ノードの chil
   });
 
   const result = Result.unwrap(
-    DesignDocument.insertNode(document, "box-1", 0, label),
+    DesignDocument.insertNode(
+      document,
+      { parentName: "box-1", index: 0 },
+      label,
+    ),
   );
 
   expect(result.artboards[0].children).toEqual([
@@ -42,10 +50,11 @@ test("insertNode は元のドキュメントを変更しない", () => {
     artboards: [{ name: "screen", width: 375, height: 812, children: [] }],
   });
 
-  DesignDocument.insertNode(document, "screen", 0, {
-    name: "label",
-    type: "Text",
-  });
+  DesignDocument.insertNode(
+    document,
+    { parentName: "screen", index: 0 },
+    { name: "label", type: "Text" },
+  );
 
   expect(document.artboards[0].children).toEqual([]);
 });
@@ -96,7 +105,7 @@ test("同一親内でノードを並べ替えると children の順序が入れ�
   });
 
   const result = Result.unwrap(
-    DesignDocument.reorderNode(document, "screen", 0, 1),
+    DesignDocument.reorderNode(document, { parentName: "screen", index: 0 }, 1),
   );
 
   expect(result.artboards[0].children).toEqual([second, first]);
@@ -119,7 +128,10 @@ test("親をまたいでノードを移動すると移動先の children に追�
   });
 
   const result = Result.unwrap(
-    DesignDocument.moveNode(document, "label", "box-2", 0),
+    DesignDocument.moveNode(document, "label", {
+      parentName: "box-2",
+      index: 0,
+    }),
   );
 
   expect(result.artboards[0].children).toEqual([
@@ -138,7 +150,10 @@ test("artboard をまたいでノードを移動すると移動先の artboard �
   });
 
   const result = Result.unwrap(
-    DesignDocument.moveNode(document, "label", "screen-2", 0),
+    DesignDocument.moveNode(document, "label", {
+      parentName: "screen-2",
+      index: 0,
+    }),
   );
 
   expect(result.artboards[0].children).toEqual([]);
@@ -161,7 +176,7 @@ test("moveNode は元のドキュメントを変更しない", () => {
     ],
   });
 
-  DesignDocument.moveNode(document, "label", "box-2", 0);
+  DesignDocument.moveNode(document, "label", { parentName: "box-2", index: 0 });
 
   expect(document.artboards[0].children).toEqual([
     { name: "box-1", type: "Box", children: [label] },
