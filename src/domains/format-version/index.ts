@@ -2,17 +2,36 @@ import { Json, type JsonCursor, type JsonDecoded } from "@/utils/Json";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
-export type FormatVersion = Readonly<{
-  major: number;
+/**
+ * major を特定の版に固定した形式版。
+ * 「この値はこの major の仕様で書かれている」を型に出すために使う
+ * （版ごとに型を持つドキュメントが、自分の版以外を名乗れないようにするため）。
+ * minor は後方互換な追加なので、同じ major の中で幅を持つ。
+ */
+export type FormatVersionOf<Major extends number> = Readonly<{
+  major: Major;
   minor: number;
 }>;
 
+/**
+ * major を問わない形式版。
+ * ファイルから読んだ直後など、まだどの版か絞れていない段階で使う。
+ */
+export type FormatVersion = FormatVersionOf<number>;
+
+/** ファイルの版がアプリにとってどういう関係にあるか(docs/01-file-format.md の表)。 */
 export type FormatVersionCompatibility =
   | "compatible"
   | "needs-migration"
   | "unsupported";
 
-const CURRENT: FormatVersion = { major: 1, minor: 0 };
+/** アプリが読み書きする仕様の major。ドメインの型はこの major に固定される。 */
+const CURRENT_MAJOR = 1;
+
+const CURRENT: FormatVersionOf<typeof CURRENT_MAJOR> = {
+  major: CURRENT_MAJOR,
+  minor: 0,
+};
 
 const FORMAT_VERSION_PATTERN = /^(\d+)\.(\d+)$/;
 
@@ -40,6 +59,27 @@ export const FormatVersion = {
         );
       }
       return Result.ok(parsed.value);
+    });
+  },
+
+  /**
+   * 指定した major の版として読む。違う major を名乗る値は読み込みエラーにする。
+   * 版ごとに型を持つドキュメントのデコード境界で使い、
+   * 「その型の値は必ずその major を名乗る」を成立させる。
+   */
+  fromJsonOf<Major extends number>(
+    cursor: JsonCursor,
+    major: Major,
+  ): JsonDecoded<FormatVersionOf<Major>> {
+    return Result.flatMap(FormatVersion.fromJson(cursor), (version) => {
+      if (version.major !== major) {
+        return Json.error(
+          "invalid-type",
+          cursor.path,
+          `expected format version major ${major} but got ${version.major}`,
+        );
+      }
+      return Result.ok({ ...version, major });
     });
   },
 

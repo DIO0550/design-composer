@@ -1,4 +1,4 @@
-import { Artboard } from "@/domains/artboard";
+import type { Artboard } from "@/domains/artboard";
 import {
   Component,
   ComponentSet,
@@ -8,6 +8,7 @@ import { ComponentBinding } from "@/domains/component-binding";
 import {
   FormatVersion,
   type FormatVersionCompatibility,
+  type FormatVersionOf,
 } from "@/domains/format-version";
 import { Node, Props, type RefNode } from "@/domains/node";
 import type { PropValidationError } from "@/domains/primitive-schema";
@@ -19,29 +20,24 @@ import {
 } from "@/domains/primitive-schema";
 import { TokenSet } from "@/domains/token";
 import { ArrayEx, type IndexOutOfRange } from "@/utils/ArrayEx";
-import {
-  Json,
-  type JsonCursor,
-  type JsonDecoded,
-  type JsonObject,
-} from "@/utils/Json";
+import type { JsonCursor, JsonDecoded, JsonObject } from "@/utils/Json";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
+import { DesignDocumentV1 } from "./v1";
 
-export type DesignDocument = Readonly<{
-  formatVersion: FormatVersion;
-  tokens: TokenSet;
-  components: ComponentSet;
-  artboards: readonly Artboard[];
-}>;
+export type { DesignDocumentV1 } from "./v1";
 
-/** ドキュメントが JSON 上で持つトップレベルフィールド(docs/01-file-format.md)。 */
-const DOCUMENT_FIELDS = [
-  "formatVersion",
-  "tokens",
-  "components",
-  "artboards",
-] as const;
+/**
+ * アプリが読み書きするドキュメント。今は major 1 のみ。
+ *
+ * 版ごとの型と JSON 表現は版のフォルダ（`v1/`）が持つ。
+ * major を上げるときは隣に `v2/` を作ってここを差し替え、旧版のフォルダは残す。
+ * 旧版の型が残ることで、マイグレーション（`libs/document-migration`）が
+ * 「どの形から どの形へ」を型で書ける。
+ * アプリ本体が旧版の形を扱うことはないので、ここを版の直和にはしない
+ * （消費側に版の分岐を強いないため）。
+ */
+export type DesignDocument = DesignDocumentV1;
 
 export type DesignDocumentValidationErrorKind =
   | PropValidationError["kind"]
@@ -729,7 +725,7 @@ function generateRenameMap(
 
 export const DesignDocument = {
   create(params: {
-    formatVersion?: FormatVersion;
+    formatVersion?: FormatVersionOf<1>;
     tokens?: TokenSet;
     components?: ComponentSet;
     artboards?: readonly Artboard[];
@@ -747,46 +743,25 @@ export const DesignDocument = {
   },
 
   /**
-   * JSON のデータモデルからドキュメントを組み立てる。
-   * 検証するのは形（必須フィールド・型・未知フィールド）だけで、
-   * スキーマ検証は `DesignDocument.collectErrors`、
-   * formatVersion の互換性判定は `DesignDocument.compatibility` の担当。
+   * 現在の形式を名乗るドキュメントにする。
+   * 書き出しは常に現在の形式で行う（旧形式へのダウングレード書き出しは持たない・
+   * マイグレーションは一方向）ため、書き出す値はこれを通したものになる。
    */
-  fromJson(cursor: JsonCursor): JsonDecoded<DesignDocument> {
-    return Result.flatMap(Json.record(cursor), (record) =>
-      Json.knownFields(
-        Json.combine4(
-          Json.required(record, "formatVersion", FormatVersion.fromJson),
-          Json.required(record, "tokens", TokenSet.fromJson),
-          Json.required(record, "components", ComponentSet.fromJson),
-          Json.required(record, "artboards", (artboards) =>
-            Json.arrayOf(artboards, Artboard.fromJson),
-          ),
-          (formatVersion, tokens, components, artboards) => ({
-            formatVersion,
-            tokens,
-            components,
-            artboards,
-          }),
-        ),
-        record,
-        DOCUMENT_FIELDS,
-      ),
-    );
+  withCurrentFormatVersion(document: DesignDocument): DesignDocument {
+    return { ...document, formatVersion: FormatVersion.CURRENT };
   },
 
   /**
-   * ドキュメントを JSON のデータモデルへ落とす。
-   * 明示的に設定された値だけを書き、スキーマのデフォルト値は書かない
-   * （ドキュメントはそもそも明示的な props しか保持しない）。
+   * JSON のデータモデルからドキュメントを組み立てる。
+   * どのフィールドをどう読むかは版ごとの知識なので、現在の版のモジュールが持つ。
    */
+  fromJson(cursor: JsonCursor): JsonDecoded<DesignDocument> {
+    return DesignDocumentV1.fromJson(cursor);
+  },
+
+  /** ドキュメントを JSON のデータモデルへ落とす。表現は現在の版のモジュールが持つ。 */
   toJson(document: DesignDocument): JsonObject {
-    return {
-      formatVersion: FormatVersion.format(document.formatVersion),
-      tokens: TokenSet.toJson(document.tokens),
-      components: ComponentSet.toJson(document.components),
-      artboards: document.artboards.map(Artboard.toJson),
-    };
+    return DesignDocumentV1.toJson(document);
   },
 
   /**

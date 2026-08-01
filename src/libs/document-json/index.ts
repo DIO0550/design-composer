@@ -1,5 +1,9 @@
 import { DesignDocument } from "@/domains/design-document";
 import {
+  DocumentMigration,
+  DocumentMigrationError,
+} from "@/libs/document-migration";
+import {
   JsonLexicalScanner,
   type JsonScanError,
 } from "@/libs/json-lexical-scanner";
@@ -8,12 +12,14 @@ import { Result } from "@/utils/Result";
 
 /**
  * `syntax-error` / `duplicate-key` はテキストの検証（字句スキャン）由来、
+ * `unsupported-format-version` などは版の解決（マイグレーション）由来、
  * それ以外は形の検証（デコード）由来。
  * スキーマ検証（未知 type・未知 prop・dangling ref・識別子規則・名前一意性）は
  * `DesignDocument.collectErrors` の担当なのでここには現れない。
  */
 export type DocumentJsonErrorKind =
   | JsonScanError["kind"]
+  | DocumentMigrationError["kind"]
   | JsonDecodeError["kind"];
 
 export type DocumentJsonError = Readonly<{
@@ -33,6 +39,13 @@ function toDocumentJsonError(error: JsonScanError): DocumentJsonError {
     message: error.message,
     position: error.position,
   };
+}
+
+/** 版の解決の失敗はテキスト内の位置もドキュメント内の位置も持たない。 */
+function toMigrationError(
+  error: DocumentMigrationError,
+): readonly DocumentJsonError[] {
+  return [{ kind: error.kind, message: DocumentMigrationError.message(error) }];
 }
 
 /**
@@ -70,6 +83,10 @@ export const DocumentJson = {
   /**
    * JSON テキストをドキュメントへ読み込む。
    * 不正入力はエラーの一覧として返し、例外は投げない。
+   *
+   * 読み込みは「テキストの検証 → 版の解決 → 形の検証」の順で進む。
+   * 版の解決をデコードより前に置くのは、旧 major のファイルが今のデコーダでは
+   * 読めない形になっている（それが major の定義）ため。
    */
   parse(text: string): Parsed {
     const scanErrors = JsonLexicalScanner.scan(text);
@@ -77,16 +94,22 @@ export const DocumentJson = {
       return Result.err(scanErrors.map(toDocumentJsonError));
     }
     return Result.flatMap(parseJson(text), (value) =>
-      DesignDocument.fromJson(Json.create(value)),
+      Result.flatMap(
+        Result.mapErr(DocumentMigration.toCurrent(value), toMigrationError),
+        (migrated) => DesignDocument.fromJson(Json.create(migrated)),
+      ),
     );
   },
 
   /**
    * ドキュメントを JSON テキストへ書き出す。
+   * 書き出すのは常に現在の形式（旧形式へのダウングレード書き出しは持たない）。
    * 末尾に改行を1つ入れ、Git diff の `\ No newline at end of file` を避ける。
    */
   serialize(document: DesignDocument): string {
-    const value: JsonValue = DesignDocument.toJson(document);
+    const value: JsonValue = DesignDocument.toJson(
+      DesignDocument.withCurrentFormatVersion(document),
+    );
     return `${JSON.stringify(value, null, INDENT_WIDTH)}\n`;
   },
 } as const;

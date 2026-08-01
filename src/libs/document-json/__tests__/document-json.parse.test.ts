@@ -90,12 +90,12 @@ test("読み込んだドキュメントはそのままバリデーションを�
   expect(DesignDocument.collectErrors(document)).toEqual([]);
 });
 
-test("formatVersion の文字列は major と minor に解釈される", () => {
-  const text = `{ "formatVersion": "2.13", "tokens": {}, "components": {}, "artboards": [] }`;
+test("アプリと同じ形式のファイルはそのまま読み込める", () => {
+  const text = `{ "formatVersion": "1.0", "tokens": {}, "components": {}, "artboards": [] }`;
 
   const document = Result.unwrap(DocumentJson.parse(text));
 
-  expect(document.formatVersion).toEqual({ major: 2, minor: 13 });
+  expect(document.formatVersion).toEqual({ major: 1, minor: 0 });
 });
 
 test("大文字で書かれた色は小文字の hex に正規化される", () => {
