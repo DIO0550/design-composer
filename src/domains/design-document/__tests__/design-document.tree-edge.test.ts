@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { DesignDocument } from "../../index";
+import { DesignDocument } from "../index";
 
 test("Text ノードへ挿入しようとすると children-not-allowed エラーになる", () => {
   const document = DesignDocument.create({

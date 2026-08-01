@@ -5,6 +5,7 @@ import {
   type PublicPropBinding,
 } from "@/domains/component";
 import { ComponentBinding } from "@/domains/component-binding";
+import { NameSpace } from "@/domains/name-space";
 import { Node, Props, type RefNode } from "@/domains/node";
 import type { PropValidationError } from "@/domains/primitive-schema";
 import {
@@ -14,7 +15,6 @@ import {
   PropDefinitionRecord,
 } from "@/domains/primitive-schema";
 import { TokenSet } from "@/domains/token";
-import { collectAllNames, isValidIdentifier } from "../naming";
 import type { DesignDocumentV1 as DesignDocument } from "../v1";
 
 export type DesignDocumentValidationErrorKind =
@@ -287,18 +287,12 @@ function collectArtboardErrors(
   return [...propErrors, ...childErrors, ...refErrors];
 }
 
-/** 2回以上現れる名前を、最初に現れた順で1つずつ返す。 */
-function duplicatedNames(names: readonly string[]): readonly string[] {
-  return names.filter(
-    (name, index) =>
-      names.indexOf(name) === index && names.lastIndexOf(name) !== index,
-  );
-}
-
 function collectDuplicateNameErrors(
   document: DesignDocument,
 ): readonly DesignDocumentValidationError[] {
-  return duplicatedNames(collectAllNames(document)).map(
+  return NameSpace.duplicatedNames(
+    NameSpace.of(document.components, document.artboards),
+  ).map(
     (name): DesignDocumentValidationError => ({
       kind: "duplicate-name",
       nodeName: name,
@@ -326,7 +320,7 @@ function collectNameErrors(
       },
     ];
   }
-  if (!isValidIdentifier(name)) {
+  if (!NameSpace.isValidIdentifier(name)) {
     return [
       {
         kind: "invalid-identifier",
@@ -354,7 +348,7 @@ function collectTokenNameErrors(
   return TokenSet.kinds().flatMap((kind) =>
     TokenSet.names(tokens, kind).flatMap(
       (name): readonly DesignDocumentValidationError[] =>
-        isValidIdentifier(name)
+        NameSpace.isValidIdentifier(name)
           ? []
           : [
               {

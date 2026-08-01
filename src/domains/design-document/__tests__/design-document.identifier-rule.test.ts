@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { DesignDocument } from "../../index";
+import { DesignDocument } from "../index";
 
 test("先頭がハイフンの名前は識別子として不正", () => {
   expect(DesignDocument.isValidIdentifier("-label")).toBe(false);

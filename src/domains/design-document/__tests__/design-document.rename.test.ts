@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { DesignDocument } from "../../index";
+import { DesignDocument } from "../index";
 
 test("使用中の名前を収集すると artboard 名が含まれる", () => {
   const document = DesignDocument.create({

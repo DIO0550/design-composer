@@ -102,6 +102,21 @@ export const Component = {
    * 部品のルートをノードとして表現する。
    * ルートの `name` は components の辞書キーが兼ねるため、外から名前を受け取る。
    */
+  /**
+   * ノードを部品の中身にする（`toNode` の逆向き）。
+   * 参照ノードは自身の実体を持たない（既に他の部品を指している）ので部品にできず `none`。
+   */
+  fromNode(node: Node): Option<Component> {
+    if (!Node.isPrimitive(node)) {
+      return Option.none;
+    }
+    return Option.some({
+      type: node.type,
+      ...(node.props !== undefined ? { props: node.props } : {}),
+      ...(node.children !== undefined ? { children: node.children } : {}),
+    });
+  },
+
   toNode(component: Component, name: string): Node {
     return {
       name,

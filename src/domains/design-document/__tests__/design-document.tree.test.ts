@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { Result } from "@/utils/Result";
-import { DesignDocument } from "../../index";
+import { DesignDocument } from "../index";
 
 test("artboard 直下にノードを挿入すると children の指定位置に追加される", () => {
   const document = DesignDocument.create({

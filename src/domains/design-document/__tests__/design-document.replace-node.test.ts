@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { DesignDocument } from "../../index";
+import { DesignDocument } from "../index";
 
 test("存在するノード名を指定して置き換えると新しいノードで置き換わった DesignDocument が Ok で返る", () => {
   const box = { name: "box-1", type: "Box" };
