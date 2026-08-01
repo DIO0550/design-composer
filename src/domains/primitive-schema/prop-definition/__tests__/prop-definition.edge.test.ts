@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { PRIMITIVE_TYPES, PrimitiveSchema, PropDefinition } from "../index";
+import { PropDefinition } from "../index";
 
 test("domain が enum の prop 定義は isToken で false と判定される", () => {
   const definition = {
@@ -48,20 +48,4 @@ test("enabledWhen が参照する prop が props に存在しない場合 isEnab
     enabledWhen: { prop: "widthMode", equals: "fixed" },
   } as const;
   expect(PropDefinition.isEnabled(definition, {})).toBe(false);
-});
-
-test("プリミティブ語彙は Box と Text の2種類に閉じている", () => {
-  expect(PRIMITIVE_TYPES).toEqual(["Box", "Text"]);
-});
-
-test("Box は子要素を持てる", () => {
-  expect(PrimitiveSchema.allowsChildren("Box")).toBe(true);
-});
-
-test("Text は子要素を持てない", () => {
-  expect(PrimitiveSchema.allowsChildren("Text")).toBe(false);
-});
-
-test("未知の type は子要素を持てないと判定される", () => {
-  expect(PrimitiveSchema.allowsChildren("Unknown")).toBe(false);
 });

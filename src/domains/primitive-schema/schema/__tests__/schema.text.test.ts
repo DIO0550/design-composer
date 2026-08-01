@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
-import { PrimitiveSchema, PropDefinition, TEXT_SCHEMA } from "../index";
+import { PropDefinition } from "../../prop-definition";
+import { forType, TEXT_SCHEMA } from "../index";
 
 test("Text は子を持てないスキーマとして定義されている", () => {
   expect(TEXT_SCHEMA.allowsChildren).toBe(false);
@@ -43,6 +44,6 @@ test("Text の align は left / center / right の enum でデフォルトが le
   });
 });
 
-test("PrimitiveSchema.forType に Text を渡すと TEXT_SCHEMA が得られる", () => {
-  expect(PrimitiveSchema.forType("Text")).toBe(TEXT_SCHEMA);
+test("Text を指定するとその仕様が得られる", () => {
+  expect(forType("Text")).toBe(TEXT_SCHEMA);
 });

@@ -1,15 +1,15 @@
 import { expect, expectTypeOf, test } from "vitest";
-import { PrimitiveSchema, type TokenPropName } from "../index";
+import { tokenKind, type TokenPropName } from "../index";
 
 test("トークン参照 prop はスキーマで宣言されたトークン種別を答える", () => {
-  expect(PrimitiveSchema.tokenKind("gap")).toBe("spacing");
-  expect(PrimitiveSchema.tokenKind("radius")).toBe("radius");
-  expect(PrimitiveSchema.tokenKind("shadow")).toBe("shadows");
+  expect(tokenKind("gap")).toBe("spacing");
+  expect(tokenKind("radius")).toBe("radius");
+  expect(tokenKind("shadow")).toBe("shadows");
 });
 
 test("primitive が違っても prop 名だけでトークン種別を引ける", () => {
-  expect(PrimitiveSchema.tokenKind("background")).toBe("colors");
-  expect(PrimitiveSchema.tokenKind("color")).toBe("colors");
+  expect(tokenKind("background")).toBe("colors");
+  expect(tokenKind("color")).toBe("colors");
 });
 
 test("トークン参照 prop の名前はスキーマの宣言だけで決まる", () => {
@@ -21,8 +21,8 @@ test("トークン参照 prop の名前はスキーマの宣言だけで決ま�
 });
 
 test("トークン種別は prop ごとにスキーマの宣言どおりの型で返る", () => {
-  expectTypeOf(PrimitiveSchema.tokenKind("gap")).toEqualTypeOf<"spacing">();
+  expectTypeOf(tokenKind("gap")).toEqualTypeOf<"spacing">();
   expectTypeOf(
-    PrimitiveSchema.tokenKind("background"),
+    tokenKind("background"),
   ).toEqualTypeOf<"colors">();
 });
