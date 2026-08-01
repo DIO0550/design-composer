@@ -1,31 +1,35 @@
-import type { Artboard } from "@/domains/artboard";
-import {
-  Component,
-  ComponentSet,
-  type PublicPropBinding,
-} from "@/domains/component";
-import { ComponentBinding } from "@/domains/component-binding";
+import { Artboard } from "@/domains/artboard";
+import { Component, ComponentSet } from "@/domains/component";
 import {
   FormatVersion,
   type FormatVersionCompatibility,
   type FormatVersionOf,
 } from "@/domains/format-version";
-import { Node, Props, type RefNode } from "@/domains/node";
-import type { PropValidationError } from "@/domains/primitive-schema";
-import {
-  BOX_SCHEMA,
-  PrimitiveSchema,
-  PropDefinition,
-  PropDefinitionRecord,
-} from "@/domains/primitive-schema";
+import { NameSpace } from "@/domains/name-space";
+import { Node, type RefNode } from "@/domains/node";
+import { NodeTree, type NodeTreeUpdate } from "@/domains/node-tree";
 import { TokenSet } from "@/domains/token";
-import { ArrayEx, type IndexOutOfRange } from "@/utils/ArrayEx";
+import { ArrayEx } from "@/utils/ArrayEx";
 import type { JsonCursor, JsonDecoded, JsonObject } from "@/utils/Json";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
+import type { DesignDocumentEditError } from "./edit-error";
 import { DesignDocumentV1 } from "./v1";
+import {
+  collectArtboardErrors,
+  collectCircularRefErrors,
+  collectComponentErrors,
+  collectDocumentNameErrors,
+  type DesignDocumentValidationError,
+  type ReferenceContext,
+} from "./validation";
 
+export { DesignDocumentEditError } from "./edit-error";
 export type { DesignDocumentV1 } from "./v1";
+export type {
+  DesignDocumentValidationError,
+  DesignDocumentValidationErrorKind,
+} from "./validation";
 
 /**
  * アプリが読み書きするドキュメント。今は major 1 のみ。
@@ -39,39 +43,6 @@ export type { DesignDocumentV1 } from "./v1";
  */
 export type DesignDocument = DesignDocumentV1;
 
-export type DesignDocumentValidationErrorKind =
-  | PropValidationError["kind"]
-  | "unknown-type"
-  | "dangling-ref"
-  | "circular-ref"
-  | "undeclared-override"
-  | "dangling-binding-node"
-  | "dangling-binding-prop"
-  | "missing-name"
-  | "invalid-identifier"
-  | "duplicate-name";
-
-export type DesignDocumentValidationError = Readonly<{
-  kind: DesignDocumentValidationErrorKind;
-  nodeName: string;
-  prop?: string;
-  message: string;
-}>;
-
-/**
- * ツリー編集操作（挿入・削除・並べ替え・移動・部品化）が失敗する理由。
- * 呼び出し側が種類で分岐できるよう、メッセージ文字列ではなく直和で列挙する。
- */
-export type DesignDocumentEditError =
-  | Readonly<{ kind: "node-not-found"; name: string }>
-  | Readonly<{ kind: "parent-not-found"; name: string }>
-  | Readonly<{ kind: "artboard-not-found"; name: string }>
-  | Readonly<{ kind: "children-not-allowed"; name: string }>
-  | Readonly<{ kind: "move-into-descendant"; name: string; parentName: string }>
-  | Readonly<{ kind: "ref-node-not-supported"; name: string }>
-  | Readonly<{ kind: "duplicate-name"; name: string }>
-  | Readonly<{ kind: "index-out-of-range"; index: number; length: number }>;
-
 /**
  * ツリー上の「どの親の何番目の子か」という位置。
  * 親の名前と index は片方だけでは位置が決まらないため1つの型にまとめる。
@@ -81,648 +52,119 @@ export type ChildPosition = Readonly<{
   index: number;
 }>;
 
-export const DesignDocumentEditError = {
-  /**
-   * 診断用の英語メッセージ。
-   * 利用者向けの文言は `kind` で分岐して表示層が組み立てる。
-   */
-  message(error: DesignDocumentEditError): string {
-    switch (error.kind) {
-      case "node-not-found":
-        return `node "${error.name}" not found`;
-      case "parent-not-found":
-        return `parent "${error.name}" not found`;
-      case "artboard-not-found":
-        return `artboard "${error.name}" not found`;
-      case "children-not-allowed":
-        return `node "${error.name}" cannot have children`;
-      case "move-into-descendant":
-        return `cannot move node "${error.name}" into "${error.parentName}" because it is the node itself or its descendant`;
-      case "ref-node-not-supported":
-        return `cannot create a component from ref node "${error.name}"`;
-      case "duplicate-name":
-        return `name "${error.name}" is already used`;
-      case "index-out-of-range":
-        return `index ${error.index} is out of bounds for length ${error.length}`;
-    }
-  },
-} as const;
+/*
+ * 以下の関数は「どの artboard を相手にするか」を選ぶためのもの。
+ * 並びの探索・編集そのものは `NodeTree` が、名前の規則は `NameSpace` が持っており、
+ * ドキュメントに残るのは「複数の artboard のどれに対して行うか」という調停だけ。
+ */
 
-function canNodeHaveChildren(node: Node): boolean {
-  return Node.isPrimitive(node) && PrimitiveSchema.allowsChildren(node.type);
+/** 名前で指したノードを持つ artboard を、その位置とともに返す。 */
+function artboardIndexOfNode(
+  document: DesignDocument,
+  name: string,
+): Option<number> {
+  const index = document.artboards.findIndex(
+    (artboard) => Artboard.findNode(artboard, name).some,
+  );
+  return index === -1 ? Option.none : Option.some(index);
+}
+
+/** index 番目の artboard のツリーを差し替えたドキュメント。 */
+function withArtboardTree(
+  document: DesignDocument,
+  index: number,
+  tree: NodeTree,
+): DesignDocument {
+  return {
+    ...document,
+    artboards: document.artboards.map((artboard, current) =>
+      current === index ? Artboard.withTree(artboard, tree) : artboard,
+    ),
+  };
 }
 
 /**
- * 配列操作の結果を、ドキュメント編集の結果として意味づける。
- * 範囲外がどの操作の失敗にあたるかは `ArrayEx` 側では決められない
- * （ドメイン知識を持たないため）ので、その解釈だけをここで与える。
+ * 名前で指したノードを含む並びを差し替える。
+ * 対象がどの artboard に居るかを選ぶところだけがここの責務。
  */
-function toEditResult<T>(
-  result: Result<readonly T[], IndexOutOfRange>,
-): Result<readonly T[], DesignDocumentEditError> {
-  return Result.mapErr(result, (range) => ({
-    kind: "index-out-of-range",
-    ...range,
-  }));
+function updateSiblingsOfNode(
+  document: DesignDocument,
+  name: string,
+  update: (siblings: NodeTree) => NodeTree,
+): Result<DesignDocument, DesignDocumentEditError> {
+  const found = artboardIndexOfNode(document, name);
+  if (!found.some) {
+    return Result.err({ kind: "node-not-found", name });
+  }
+  const updated = NodeTree.updateSiblingsOf(
+    Artboard.tree(document.artboards[found.value]),
+    name,
+    update,
+  );
+  if (!updated.some) {
+    return Result.err({ kind: "node-not-found", name });
+  }
+  return Result.ok(withArtboardTree(document, found.value, updated.value));
 }
 
-/** 兄弟の並びの差し替え。失敗しない（対象が見つかったかどうかは呼び出し側が判断する）。 */
-type SiblingsUpdate = (siblings: readonly Node[]) => readonly Node[];
-
-/** 親の children の差し替え。範囲外 index などで失敗しうる。 */
-type ChildrenUpdate = (
-  children: readonly Node[],
-) => Result<readonly Node[], DesignDocumentEditError>;
-
-type NodesUpdate = Readonly<{ updated: readonly Node[]; found: boolean }>;
-
-type ArtboardsUpdate = Readonly<{
-  artboards: readonly Artboard[];
-  found: boolean;
-}>;
-
-function updateChildrenOfNode(
-  nodes: readonly Node[],
-  parentName: string,
-  update: ChildrenUpdate,
-): Result<NodesUpdate, DesignDocumentEditError> {
-  const parentIndex = nodes.findIndex((node) => node.name === parentName);
-  if (parentIndex !== -1) {
-    const parent = nodes[parentIndex];
-    if (!canNodeHaveChildren(parent)) {
-      return Result.err({ kind: "children-not-allowed", name: parentName });
-    }
-    return Result.flatMap(update(Node.children(parent)), (children) =>
-      Result.map(
-        toEditResult(
-          ArrayEx.replaceAt(nodes, parentIndex, { ...parent, children }),
-        ),
-        (updated) => ({ updated, found: true }),
-      ),
-    );
-  }
-
-  const hostIndex = nodes.findIndex(
-    (node) => findNode(Node.children(node), parentName).some,
-  );
-  if (hostIndex === -1) {
-    return Result.ok({ updated: nodes, found: false });
-  }
-  const host = nodes[hostIndex];
-  return Result.flatMap(
-    updateChildrenOfNode(Node.children(host), parentName, update),
-    (result) =>
-      Result.map(
-        toEditResult(
-          ArrayEx.replaceAt(nodes, hostIndex, {
-            ...host,
-            children: result.updated,
-          }),
-        ),
-        (updated) => ({ updated, found: true }),
-      ),
-  );
-}
-
+/**
+ * 名前で指した親の子の並びを差し替える。
+ * 親は artboard 自身のこともあるため、artboard 名で当ててから
+ * ノードの中を探す、の順で調停する。
+ */
 function updateChildrenOfParent(
-  artboards: readonly Artboard[],
+  document: DesignDocument,
   parentName: string,
-  update: ChildrenUpdate,
-): Result<ArtboardsUpdate, DesignDocumentEditError> {
-  const artboardIndex = artboards.findIndex(
+  update: NodeTreeUpdate,
+): Result<DesignDocument, DesignDocumentEditError> {
+  const artboardIndex = document.artboards.findIndex(
     (artboard) => artboard.name === parentName,
   );
   if (artboardIndex !== -1) {
-    const artboard = artboards[artboardIndex];
-    return Result.flatMap(update(artboard.children), (children) =>
-      Result.map(
-        toEditResult(
-          ArrayEx.replaceAt(artboards, artboardIndex, {
-            ...artboard,
-            children,
-          }),
-        ),
-        (updated) => ({ artboards: updated, found: true }),
-      ),
+    return Result.map(
+      update(Artboard.tree(document.artboards[artboardIndex])),
+      (tree) => withArtboardTree(document, artboardIndex, tree),
     );
   }
 
-  const hostIndex = artboards.findIndex(
-    (artboard) => findNode(artboard.children, parentName).some,
+  const hostIndex = document.artboards.findIndex(
+    (artboard) => Artboard.findNode(artboard, parentName).some,
   );
   if (hostIndex === -1) {
-    return Result.ok({ artboards, found: false });
+    return Result.err({ kind: "parent-not-found", name: parentName });
   }
-  const host = artboards[hostIndex];
-  return Result.flatMap(
-    updateChildrenOfNode(host.children, parentName, update),
-    (result) =>
-      Result.map(
-        toEditResult(
-          ArrayEx.replaceAt(artboards, hostIndex, {
-            ...host,
-            children: result.updated,
-          }),
-        ),
-        (updated) => ({ artboards: updated, found: true }),
-      ),
+  /*
+   * ツリーの失敗はドキュメントの失敗でもあるので、
+   * ここで語彙を広げてから「親が見つからない」を足す。
+   */
+  const updated: Result<
+    Option<NodeTree>,
+    DesignDocumentEditError
+  > = NodeTree.updateChildrenOf(
+    Artboard.tree(document.artboards[hostIndex]),
+    parentName,
+    update,
+  );
+  return Result.flatMap(updated, (tree) =>
+    tree.some
+      ? Result.ok(withArtboardTree(document, hostIndex, tree.value))
+      : Result.err({ kind: "parent-not-found", name: parentName }),
   );
 }
 
-function updateSiblingsOfNode(
-  nodes: readonly Node[],
-  name: string,
-  update: SiblingsUpdate,
-): { updated: readonly Node[]; found: boolean } {
-  if (nodes.some((node) => node.name === name)) {
-    return { updated: update(nodes), found: true };
-  }
-  let found = false;
-  const updated = nodes.map((node) => {
-    if (found) {
-      return node;
-    }
-    const children = Node.children(node);
-    if (children.length === 0) {
-      return node;
-    }
-    const result = updateSiblingsOfNode(children, name, update);
-    if (result.found) {
-      found = true;
-      return { ...node, children: result.updated };
-    }
-    return node;
-  });
-  return { updated, found };
-}
-
-function findNode(nodes: readonly Node[], name: string): Option<Node> {
-  for (const node of nodes) {
-    if (node.name === name) {
-      return Option.some(node);
-    }
-    const found = findNode(Node.children(node), name);
-    if (found.some) {
-      return found;
-    }
-  }
-  return Option.none;
-}
-
-function findNodeInArtboards(
-  artboards: readonly Artboard[],
-  name: string,
-): Option<Node> {
-  for (const artboard of artboards) {
-    const found = findNode(artboard.children, name);
-    if (found.some) {
-      return found;
-    }
-  }
-  return Option.none;
-}
-
-function updateSiblingsOfArtboards(
-  artboards: readonly Artboard[],
-  name: string,
-  update: SiblingsUpdate,
-): { artboards: readonly Artboard[]; found: boolean } {
-  let found = false;
-  const updated = artboards.map((artboard) => {
-    if (found) {
-      return artboard;
-    }
-    const result = updateSiblingsOfNode(artboard.children, name, update);
-    if (result.found) {
-      found = true;
-      return { ...artboard, children: result.updated };
-    }
-    return artboard;
-  });
-  return { artboards: updated, found };
-}
-
-/**
- * 発生位置（nodeName / prop）を持たないエラー。
- * 位置は検出側ではなく、その位置を知っている呼び出し側で付与する。
- */
-type UnlocatedError = Readonly<{
-  kind: DesignDocumentValidationErrorKind;
-  prop?: string;
-  message: string;
-}>;
-
-/** エラーの発生位置。 */
-type ErrorLocation = Readonly<{
-  nodeName: string;
-  prop?: string;
-}>;
-
-/** 位置を持たないエラーに発生位置を付与し、報告用のエラーに変換する。 */
-function withLocation(
-  location: ErrorLocation,
-  errors: readonly UnlocatedError[],
-): readonly DesignDocumentValidationError[] {
-  return errors.map((error) => {
-    const prop = error.prop ?? location.prop;
-    return {
-      kind: error.kind,
-      nodeName: location.nodeName,
-      ...(prop !== undefined ? { prop } : {}),
-      message: error.message,
-    };
-  });
-}
-
-function collectTypedPropErrors(
-  type: string,
-  props: Props | undefined,
-  tokens: TokenSet,
-): readonly UnlocatedError[] {
-  if (!PrimitiveSchema.isPrimitiveType(type)) {
-    return [{ kind: "unknown-type", message: `unknown type "${type}"` }];
-  }
-  const schema = PrimitiveSchema.forType(type);
-  return PropDefinitionRecord.collectErrors(schema.props, props ?? {}, tokens);
-}
-
-function collectNodeErrors(
-  node: Node,
-  tokens: TokenSet,
-): readonly DesignDocumentValidationError[] {
-  if (Node.isRef(node)) {
-    return [];
-  }
-  const ownErrors = withLocation(
-    { nodeName: node.name },
-    collectTypedPropErrors(node.type, node.props, tokens),
-  );
-  const childErrors = Node.children(node).flatMap((child) =>
-    collectNodeErrors(child, tokens),
-  );
-  return [...ownErrors, ...childErrors];
-}
-
-/** 参照検証が横断的に必要とする、ドキュメント全体の文脈。 */
-type ReferenceContext = Readonly<{
-  components: ComponentSet;
-  tokens: TokenSet;
-}>;
-
-function collectOverrideErrors(
-  context: ReferenceContext,
-  refNode: RefNode,
-  component: Component,
-): readonly UnlocatedError[] {
-  return Props.toAssignments(refNode.overrides ?? {}).flatMap(
-    (assignment): readonly UnlocatedError[] => {
-      const binding = Component.binding(component, assignment.name);
-      if (!binding.some) {
-        return [
-          {
-            kind: "undeclared-override" as const,
-            prop: assignment.name,
-            message: `component "${refNode.ref}" does not declare public prop "${assignment.name}"`,
-          },
-        ];
-      }
-      const definition = ComponentBinding.resolvePropDefinition(
-        context.components,
-        ComponentBinding.create(refNode.ref, binding.value),
-      );
-      if (!definition.some) {
-        return [];
-      }
-      return PropDefinition.collectErrors(
-        definition.value,
-        assignment,
-        context.tokens,
-      );
-    },
-  );
-}
-
-function collectRefNodeErrors(
-  context: ReferenceContext,
-  refNode: RefNode,
-): readonly UnlocatedError[] {
-  const component = ComponentSet.get(context.components, refNode.ref);
-  if (component === undefined) {
-    return [
-      {
-        kind: "dangling-ref",
-        message: `unknown component "${refNode.ref}"`,
-      },
-    ];
-  }
-  return collectOverrideErrors(context, refNode, component);
-}
-
-function collectNodeRefErrors(
-  context: ReferenceContext,
-  node: Node,
-): readonly DesignDocumentValidationError[] {
-  if (Node.isRef(node)) {
-    return withLocation(
-      { nodeName: node.name },
-      collectRefNodeErrors(context, node),
-    );
-  }
-  return Node.children(node).flatMap((child) =>
-    collectNodeRefErrors(context, child),
-  );
-}
-
-function collectBindingTargetErrors(
-  context: ReferenceContext,
-  binding: PublicPropBinding,
-  target: Node,
-): readonly UnlocatedError[] {
-  if (Node.isRef(target)) {
-    const nested = ComponentSet.get(context.components, target.ref);
-    if (nested === undefined || Component.isPublicProp(nested, binding.prop)) {
-      return [];
-    }
-    return [
-      {
-        kind: "dangling-binding-prop",
-        message: `"${binding.prop}" is not a public prop of component "${target.ref}"`,
-      },
-    ];
-  }
-  if (!PrimitiveSchema.isPrimitiveType(target.type)) {
-    return [];
-  }
-  const schema: PrimitiveSchema = PrimitiveSchema.forType(target.type);
-  if (binding.prop in schema.props) {
-    return [];
-  }
-  return [
-    {
-      kind: "dangling-binding-prop",
-      message: `node "${binding.node}" has no prop "${binding.prop}"`,
-    },
-  ];
-}
-
-function collectBindingErrors(
-  context: ReferenceContext,
-  componentName: string,
-  component: Component,
-): readonly DesignDocumentValidationError[] {
-  return Component.publicPropNames(component).flatMap((publicPropName) => {
-    const binding = Component.binding(component, publicPropName);
-    if (!binding.some) {
-      return [];
-    }
-    const location: ErrorLocation = {
-      nodeName: componentName,
-      prop: publicPropName,
-    };
-    const found = Component.findNode(
-      component,
-      componentName,
-      binding.value.node,
-    );
-    if (!found.some) {
-      return withLocation(location, [
-        {
-          kind: "dangling-binding-node",
-          message: `unknown node "${binding.value.node}"`,
-        },
-      ]);
-    }
-    return withLocation(
-      location,
-      collectBindingTargetErrors(context, binding.value, found.value),
-    );
-  });
-}
-
-function collectCircularRefErrors(
-  components: ComponentSet,
-): readonly DesignDocumentValidationError[] {
-  return ComponentSet.circularNames(components).map((name) => ({
-    kind: "circular-ref" as const,
-    nodeName: name,
-    message: `component "${name}" is part of a circular reference`,
-  }));
-}
-
-function collectComponentErrors(
-  context: ReferenceContext,
-  name: string,
-  component: Component,
-): readonly DesignDocumentValidationError[] {
-  const children = component.children ?? [];
-  const propErrors = withLocation(
-    { nodeName: name },
-    collectTypedPropErrors(component.type, component.props, context.tokens),
-  );
-  const childErrors = children.flatMap((child) =>
-    collectNodeErrors(child, context.tokens),
-  );
-  const bindingErrors = collectBindingErrors(context, name, component);
-  const refErrors = children.flatMap((child) =>
-    collectNodeRefErrors(context, child),
-  );
-  return [...propErrors, ...childErrors, ...bindingErrors, ...refErrors];
-}
-
-function collectArtboardErrors(
-  context: ReferenceContext,
-  artboard: Artboard,
-): readonly DesignDocumentValidationError[] {
-  const propErrors = withLocation(
-    { nodeName: artboard.name },
-    PropDefinitionRecord.collectErrors(
-      BOX_SCHEMA.props,
-      artboard.props ?? {},
-      context.tokens,
-    ),
-  );
-  const childErrors = artboard.children.flatMap((child) =>
-    collectNodeErrors(child, context.tokens),
-  );
-  const refErrors = artboard.children.flatMap((child) =>
-    collectNodeRefErrors(context, child),
-  );
-  return [...propErrors, ...childErrors, ...refErrors];
-}
-
-function toComponent(node: Node): Result<Component, DesignDocumentEditError> {
-  if (!Node.isPrimitive(node)) {
-    return Result.err({ kind: "ref-node-not-supported", name: node.name });
-  }
-  return Result.ok({
-    type: node.type,
-    ...(node.props !== undefined ? { props: node.props } : {}),
-    ...(node.children !== undefined ? { children: node.children } : {}),
-  });
-}
-
-/**
- * 識別子の規則: kebab-case（使用可能文字は `[a-z0-9-]`）。
- * 先頭・末尾のハイフンと連続ハイフンは許さない。
- * 将来のパス修飾のために予約された `/` `#` `.` はこのパターンで弾かれる。
- */
-const IDENTIFIER_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-
-/**
- * ドキュメント全体の単一名前空間に属する名前を集める。
- * 対象は components のキー・artboard 名・全ノードの `name`（部品内部を含む）。
- * トークン名は種別内で一意なだけなので、この名前空間には含めない。
- */
-function collectAllNames(document: DesignDocument): readonly string[] {
-  const componentNames = ComponentSet.names(document.components).flatMap(
-    (name): readonly string[] => {
-      const component = ComponentSet.get(document.components, name);
-      return [name, ...(component?.children ?? []).flatMap(Node.collectNames)];
-    },
-  );
-  const artboardNames = document.artboards.flatMap(
-    (artboard): readonly string[] => [
-      artboard.name,
-      ...artboard.children.flatMap(Node.collectNames),
-    ],
-  );
-  return [...componentNames, ...artboardNames];
-}
-
-/** 2回以上現れる名前を、最初に現れた順で1つずつ返す。 */
-function duplicatedNames(names: readonly string[]): readonly string[] {
-  return names.filter(
-    (name, index) =>
-      names.indexOf(name) === index && names.lastIndexOf(name) !== index,
-  );
-}
-
-function collectDuplicateNameErrors(
-  document: DesignDocument,
-): readonly DesignDocumentValidationError[] {
-  return duplicatedNames(collectAllNames(document)).map(
-    (name): DesignDocumentValidationError => ({
-      kind: "duplicate-name",
-      nodeName: name,
-      message: `name "${name}" is not unique in the document`,
-    }),
+/** ドキュメントに現れる名前の集まり。 */
+function nameSpaceOf(document: DesignDocument): NameSpace {
+  return NameSpace.create(
+    NameSpace.collectNames(document.components, document.artboards),
   );
 }
 
 /**
- * 名前1つを検証する。
- * 名前が欠落している場合は自身の名前で位置を示せないため、
- * その名前を含む入れ物（`ownerName`）と入れ物内での位置（`position`）を引数で受け取る。
+ * ドキュメントのコンパニオンオブジェクト。
+ * ツリーの探索・編集は `NodeTree`、名前の規則は `NameSpace`、
+ * 部品への変換は `Component`、検証は `validation/`、版ごとの JSON 表現は `v1/` が持ち、
+ * ここは「どの artboard・どの部品を相手にするか」の調停に徹する。
  */
-function collectNameErrors(
-  name: string,
-  ownerName: string,
-  position: string,
-): readonly DesignDocumentValidationError[] {
-  if (!name) {
-    return [
-      {
-        kind: "missing-name",
-        nodeName: ownerName,
-        message: `${position} of "${ownerName}" has no name`,
-      },
-    ];
-  }
-  if (!IDENTIFIER_PATTERN.test(name)) {
-    return [
-      {
-        kind: "invalid-identifier",
-        nodeName: name,
-        message: `name "${name}" is not a valid identifier`,
-      },
-    ];
-  }
-  return [];
-}
-
-function collectNodeNameErrors(
-  nodes: readonly Node[],
-  ownerName: string,
-): readonly DesignDocumentValidationError[] {
-  return nodes.flatMap((node, index) => [
-    ...collectNameErrors(node.name, ownerName, `child ${index}`),
-    ...collectNodeNameErrors(Node.children(node), node.name || ownerName),
-  ]);
-}
-
-function collectTokenNameErrors(
-  tokens: TokenSet,
-): readonly DesignDocumentValidationError[] {
-  return TokenSet.kinds().flatMap((kind) =>
-    TokenSet.names(tokens, kind).flatMap(
-      (name): readonly DesignDocumentValidationError[] =>
-        IDENTIFIER_PATTERN.test(name)
-          ? []
-          : [
-              {
-                kind: "invalid-identifier",
-                nodeName: name,
-                message: `token name "${name}" in ${kind} is not a valid identifier`,
-              },
-            ],
-    ),
-  );
-}
-
-function collectDocumentNameErrors(
-  document: DesignDocument,
-): readonly DesignDocumentValidationError[] {
-  const componentErrors = ComponentSet.names(document.components).flatMap(
-    (name): readonly DesignDocumentValidationError[] => {
-      const component = ComponentSet.get(document.components, name);
-      return [
-        ...collectNameErrors(name, "components", `key "${name}"`),
-        ...collectNodeNameErrors(component?.children ?? [], name),
-      ];
-    },
-  );
-  const artboardErrors = document.artboards.flatMap(
-    (artboard, index): readonly DesignDocumentValidationError[] => [
-      ...collectNameErrors(artboard.name, "artboards", `artboard ${index}`),
-      ...collectNodeNameErrors(artboard.children, artboard.name),
-    ],
-  );
-  return [
-    ...componentErrors,
-    ...artboardErrors,
-    ...collectDuplicateNameErrors(document),
-    ...collectTokenNameErrors(document.tokens),
-  ];
-}
-
-function nextAvailableName(
-  baseName: string,
-  usedNames: ReadonlySet<string>,
-): string {
-  if (!usedNames.has(baseName)) {
-    return baseName;
-  }
-  let suffix = 2;
-  while (usedNames.has(`${baseName}-${suffix}`)) {
-    suffix += 1;
-  }
-  return `${baseName}-${suffix}`;
-}
-
-function generateRenameMap(
-  names: readonly string[],
-  usedNames: ReadonlySet<string>,
-): Readonly<Record<string, string>> {
-  const taken = new Set(usedNames);
-  const renameMap: Record<string, string> = {};
-  for (const name of names) {
-    const newName = nextAvailableName(name, taken);
-    renameMap[name] = newName;
-    taken.add(newName);
-  }
-  return renameMap;
-}
-
 export const DesignDocument = {
   create(params: {
     formatVersion?: FormatVersionOf<1>;
@@ -774,51 +216,47 @@ export const DesignDocument = {
     at: ChildPosition,
     node: Node,
   ): Result<DesignDocument, DesignDocumentEditError> {
-    return Result.flatMap(
-      updateChildrenOfParent(document.artboards, at.parentName, (children) =>
-        toEditResult(ArrayEx.insertAt(children, at.index, node)),
-      ),
-      (result) =>
-        result.found
-          ? Result.ok({ ...document, artboards: result.artboards })
-          : Result.err({ kind: "parent-not-found", name: at.parentName }),
+    return updateChildrenOfParent(document, at.parentName, (children) =>
+      NodeTree.insertAt(children, at.index, node),
     );
   },
 
+  /** 名前で指したノードをツリーから取り除く。 */
   removeNode(
     document: DesignDocument,
     name: string,
   ): Result<DesignDocument, DesignDocumentEditError> {
-    const result = updateSiblingsOfArtboards(
-      document.artboards,
-      name,
-      (siblings) => siblings.filter((sibling) => sibling.name !== name),
+    return updateSiblingsOfNode(document, name, (siblings) =>
+      NodeTree.create(
+        NodeTree.nodes(siblings).filter((sibling) => sibling.name !== name),
+      ),
     );
-    if (!result.found) {
-      return Result.err({ kind: "node-not-found", name });
-    }
-    return Result.ok({ ...document, artboards: result.artboards });
   },
 
+  /** 名前でノードを引く。artboard 直下だけでなく子孫も辿る。 */
   findNode(document: DesignDocument, name: string): Option<Node> {
-    return findNodeInArtboards(document.artboards, name);
+    for (const artboard of document.artboards) {
+      const found = Artboard.findNode(artboard, name);
+      if (found.some) {
+        return found;
+      }
+    }
+    return Option.none;
   },
 
+  /** 名前で指したノードを別のノードに差し替える。 */
   replaceNode(
     document: DesignDocument,
     name: string,
     node: Node,
   ): Result<DesignDocument, DesignDocumentEditError> {
-    const result = updateSiblingsOfArtboards(
-      document.artboards,
-      name,
-      (siblings) =>
-        siblings.map((sibling) => (sibling.name === name ? node : sibling)),
+    return updateSiblingsOfNode(document, name, (siblings) =>
+      NodeTree.create(
+        NodeTree.nodes(siblings).map((sibling) =>
+          sibling.name === name ? node : sibling,
+        ),
+      ),
     );
-    if (!result.found) {
-      return Result.err({ kind: "node-not-found", name });
-    }
-    return Result.ok({ ...document, artboards: result.artboards });
   },
 
   /**
@@ -830,14 +268,8 @@ export const DesignDocument = {
     from: ChildPosition,
     toIndex: number,
   ): Result<DesignDocument, DesignDocumentEditError> {
-    return Result.flatMap(
-      updateChildrenOfParent(document.artboards, from.parentName, (children) =>
-        toEditResult(ArrayEx.moveWithin(children, from.index, toIndex)),
-      ),
-      (result) =>
-        result.found
-          ? Result.ok({ ...document, artboards: result.artboards })
-          : Result.err({ kind: "parent-not-found", name: from.parentName }),
+    return updateChildrenOfParent(document, from.parentName, (children) =>
+      NodeTree.moveWithin(children, from.index, toIndex),
     );
   },
 
@@ -851,7 +283,7 @@ export const DesignDocument = {
     name: string,
     to: ChildPosition,
   ): Result<DesignDocument, DesignDocumentEditError> {
-    const found = findNodeInArtboards(document.artboards, name);
+    const found = DesignDocument.findNode(document, name);
     if (!found.some) {
       return Result.err({ kind: "node-not-found", name });
     }
@@ -869,47 +301,58 @@ export const DesignDocument = {
     );
   },
 
+  /**
+   * ノードを部品として切り出し、元の位置をその部品への参照に置き換える。
+   * 部品名はドキュメントの単一名前空間に加わるため、既存の名前と衝突したら失敗させる。
+   */
   createComponent(
     document: DesignDocument,
     name: string,
     componentName: string,
   ): Result<DesignDocument, DesignDocumentEditError> {
-    const found = findNodeInArtboards(document.artboards, name);
+    const found = DesignDocument.findNode(document, name);
     if (!found.some) {
       return Result.err({ kind: "node-not-found", name });
     }
-    if (DesignDocument.usedNames(document).has(componentName)) {
+    if (NameSpace.has(nameSpaceOf(document), componentName)) {
       return Result.err({ kind: "duplicate-name", name: componentName });
     }
-    return Result.map(toComponent(found.value), (component) => {
-      const refNode: RefNode = { name, ref: componentName };
-      const result = updateSiblingsOfArtboards(
-        document.artboards,
-        name,
-        (siblings) =>
-          siblings.map((sibling) =>
-            sibling.name === name ? refNode : sibling,
-          ),
-      );
-      return {
-        ...document,
-        components: { ...document.components, [componentName]: component },
-        artboards: result.artboards,
-      };
-    });
+    const component = Component.fromNode(found.value);
+    if (!component.some) {
+      return Result.err({ kind: "ref-node-not-supported", name });
+    }
+    const refNode: RefNode = { name, ref: componentName };
+    return Result.map(
+      DesignDocument.replaceNode(document, name, refNode),
+      (replaced) => ({
+        ...replaced,
+        components: {
+          ...replaced.components,
+          [componentName]: component.value,
+        },
+      }),
+    );
   },
 
+  /** artboard をドキュメントの指定位置へ挿入する。 */
   insertArtboard(
     document: DesignDocument,
     index: number,
     artboard: Artboard,
   ): Result<DesignDocument, DesignDocumentEditError> {
     return Result.map(
-      toEditResult(ArrayEx.insertAt(document.artboards, index, artboard)),
+      Result.mapErr(
+        ArrayEx.insertAt(document.artboards, index, artboard),
+        (range): DesignDocumentEditError => ({
+          kind: "index-out-of-range",
+          ...range,
+        }),
+      ),
       (artboards) => ({ ...document, artboards }),
     );
   },
 
+  /** 名前で指した artboard をドキュメントから取り除く。 */
   removeArtboard(
     document: DesignDocument,
     name: string,
@@ -929,36 +372,47 @@ export const DesignDocument = {
     });
   },
 
+  /** artboard の並び順を入れ替える。 */
   reorderArtboard(
     document: DesignDocument,
     fromIndex: number,
     toIndex: number,
   ): Result<DesignDocument, DesignDocumentEditError> {
     return Result.map(
-      toEditResult(ArrayEx.moveWithin(document.artboards, fromIndex, toIndex)),
+      Result.mapErr(
+        ArrayEx.moveWithin(document.artboards, fromIndex, toIndex),
+        (range): DesignDocumentEditError => ({
+          kind: "index-out-of-range",
+          ...range,
+        }),
+      ),
       (artboards) => ({ ...document, artboards }),
     );
   },
 
+  /** ドキュメントの単一名前空間で使われている名前。 */
   usedNames(document: DesignDocument): ReadonlySet<string> {
-    return new Set(collectAllNames(document));
+    return NameSpace.toSet(nameSpaceOf(document));
   },
 
+  /** その名前が識別子の規則（kebab-case）を満たすか。 */
   isValidIdentifier(name: string): boolean {
-    return IDENTIFIER_PATTERN.test(name);
+    return NameSpace.isValidIdentifier(name);
   },
 
+  /** 使用済みの名前と衝突しない名前。衝突する場合は連番を付ける。 */
   uniqueName(baseName: string, usedNames: ReadonlySet<string>): string {
-    return nextAvailableName(baseName, usedNames);
+    return NameSpace.uniqueName(NameSpace.create([...usedNames]), baseName);
   },
 
+  /** 部分木のノード名を、使用済みの名前と衝突しないよう付け替える。 */
   renameSubtree(
     nodes: readonly Node[],
     usedNames: ReadonlySet<string>,
   ): { nodes: readonly Node[]; renameMap: Readonly<Record<string, string>> } {
-    const renameMap = generateRenameMap(
+    const renameMap = NameSpace.renameMap(
+      NameSpace.create([...usedNames]),
       nodes.flatMap(Node.collectNames),
-      usedNames,
     );
     return {
       nodes: nodes.map((node) => Node.rename(node, renameMap)),
@@ -966,6 +420,12 @@ export const DesignDocument = {
     };
   },
 
+  /**
+   * ドキュメントが仕様に適合しない箇所をすべて集める。
+   * 最初の1件で止めないのは、不正なファイルのエラー一覧を出せるようにするため。
+   * 適合の規則そのものは `validation/` が関心ごとに持ち、
+   * ここは「どの部品・どの artboard を検証対象にするか」の取りまとめを行う。
+   */
   collectErrors(
     document: DesignDocument,
   ): readonly DesignDocumentValidationError[] {

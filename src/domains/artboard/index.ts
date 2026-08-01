@@ -1,4 +1,5 @@
 import { Node, Props } from "@/domains/node";
+import { NodeTree } from "@/domains/node-tree";
 import { ResolvedProps } from "@/domains/resolved-props";
 import {
   Json,
@@ -6,6 +7,7 @@ import {
   type JsonDecoded,
   type JsonObject,
 } from "@/utils/Json";
+import type { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
 export type Artboard = Readonly<{
@@ -53,6 +55,24 @@ export const Artboard = {
       props: params.props,
       children: params.children ?? [],
     };
+  },
+
+  /**
+   * 子の並びをツリーの一階層として見る。
+   * 並びの探索・編集の規則は `NodeTree` が持つので、artboard は自分の並びを渡すだけ。
+   */
+  tree(artboard: Artboard): NodeTree {
+    return NodeTree.create(artboard.children);
+  },
+
+  /** 子の並びを差し替えた artboard。 */
+  withTree(artboard: Artboard, tree: NodeTree): Artboard {
+    return { ...artboard, children: NodeTree.nodes(tree) };
+  },
+
+  /** 配下のノードを名前で探す。直下だけでなく子孫も辿る。 */
+  findNode(artboard: Artboard, name: string): Option<Node> {
+    return NodeTree.find(Artboard.tree(artboard), name);
   },
 
   /**

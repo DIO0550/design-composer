@@ -113,6 +113,21 @@ export const Component = {
     };
   },
 
+  /**
+   * ノードを部品の中身にする（`toNode` の逆向き）。
+   * 参照ノードは自身の実体を持たない（既に他の部品を指している）ので部品にできず `none`。
+   */
+  fromNode(node: Node): Option<Component> {
+    if (!Node.isPrimitive(node)) {
+      return Option.none;
+    }
+    return Option.some({
+      type: node.type,
+      ...(node.props !== undefined ? { props: node.props } : {}),
+      ...(node.children !== undefined ? { children: node.children } : {}),
+    });
+  },
+
   /** ルートを含む部品内部のノードを名前で探す。 */
   findNode(
     component: Component,

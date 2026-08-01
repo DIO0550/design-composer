@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
-import { BOX_SCHEMA, PrimitiveSchema, PropDefinition } from "../index";
+import { PropDefinition } from "../../prop-definition";
+import { BOX_SCHEMA, PrimitiveSchema } from "../index";
 
 test("Box は子を持てるスキーマとして定義されている", () => {
   expect(BOX_SCHEMA.allowsChildren).toBe(true);
@@ -52,6 +53,6 @@ test("Box の overflow は visible / clip の enum でデフォルトが visible
   });
 });
 
-test("PrimitiveSchema.forType に Box を渡すと BOX_SCHEMA が得られる", () => {
+test("Box を指定するとその仕様が得られる", () => {
   expect(PrimitiveSchema.forType("Box")).toBe(BOX_SCHEMA);
 });

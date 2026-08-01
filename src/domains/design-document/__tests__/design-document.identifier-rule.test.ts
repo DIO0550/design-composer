@@ -28,27 +28,3 @@ test("自動リネームが生成する連番付きの名前は識別子とし�
 test("ハイフンを含まない単語1つの名前は識別子として正しい", () => {
   expect(DesignDocument.isValidIdentifier("label")).toBe(true);
 });
-
-test("識別子規則に違反する名前が重複していると規則違反と重複の両方が報告される", () => {
-  const document = DesignDocument.create({
-    artboards: [
-      {
-        name: "screen",
-        width: 375,
-        height: 812,
-        children: [
-          { name: "Label", type: "Text" },
-          { name: "Label", type: "Text" },
-        ],
-      },
-    ],
-  });
-
-  const errors = DesignDocument.collectErrors(document);
-
-  expect(errors.map((error) => error.kind)).toEqual([
-    "invalid-identifier",
-    "invalid-identifier",
-    "duplicate-name",
-  ]);
-});

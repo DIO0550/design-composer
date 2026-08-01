@@ -7,10 +7,7 @@ import { CssDeclaration, CssDeclarations } from "@/domains/css-declaration";
 import { CssDirection } from "@/domains/css-direction";
 import type { PropValue } from "@/domains/node";
 import { Padding } from "@/domains/padding";
-import {
-  PrimitiveSchema,
-  type TokenPropName,
-} from "@/domains/primitive-schema";
+import { TokenPropKinds, type TokenPropName } from "@/domains/primitive-schema";
 import type { ResolvedProps } from "@/domains/resolved-props";
 import { Size } from "@/domains/size";
 import { TypographyField, TypographyToken } from "@/domains/token";
@@ -20,7 +17,7 @@ import { Html } from "@/utils/Html";
  * トークン参照 prop → その prop が決める CSS プロパティ
  * (docs/03「HTML/CSS へのコンパイル規則」の表。仕様と同じく prop 名で引く)。
  * 引くトークン種別はスキーマの `tokenKind` だけが宣言するため、ここには書かず
- * `PrimitiveSchema.tokenKind` から引く (`gap` を colors から引く組み合わせを書けない)。
+ * `TokenPropKinds.kindOf` から引く (`gap` を colors から引く組み合わせを書けない)。
  * `paddingX` / `paddingY` は2軸を1つの `padding` へ合成するため `Padding` が、
  * `typography` は複数プロパティへ展開されるため下の関数が担当し、この表には含めない。
  */
@@ -48,7 +45,7 @@ function tokenDeclarations(
     return [];
   }
   const property = TOKEN_PROP_PROPERTIES[prop];
-  const kind = PrimitiveSchema.tokenKind(prop);
+  const kind = TokenPropKinds.kindOf(prop);
   return [CssDeclaration.create(property, tokens.ref(kind, String(value)))];
 }
 

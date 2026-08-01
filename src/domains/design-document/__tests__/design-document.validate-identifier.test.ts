@@ -205,3 +205,27 @@ test("kebab-case の名前とトークン名だけのドキュメントはエラ
 
   expect(DesignDocument.collectErrors(document)).toEqual([]);
 });
+
+test("識別子規則に違反する名前が重複していると規則違反と重複の両方が報告される", () => {
+  const document = DesignDocument.create({
+    artboards: [
+      {
+        name: "screen",
+        width: 375,
+        height: 812,
+        children: [
+          { name: "Label", type: "Text" },
+          { name: "Label", type: "Text" },
+        ],
+      },
+    ],
+  });
+
+  const errors = DesignDocument.collectErrors(document);
+
+  expect(errors.map((error) => error.kind)).toEqual([
+    "invalid-identifier",
+    "invalid-identifier",
+    "duplicate-name",
+  ]);
+});

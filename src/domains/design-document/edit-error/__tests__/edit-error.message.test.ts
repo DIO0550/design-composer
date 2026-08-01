@@ -31,6 +31,42 @@ test("move-into-descendant は移動元と移動先の両方を含むメッセ�
   );
 });
 
+test("parent-not-found は見つからなかった親の名前を含むメッセージになる", () => {
+  expect(
+    DesignDocumentEditError.message({
+      kind: "parent-not-found",
+      name: "missing-box",
+    }),
+  ).toBe('parent "missing-box" not found');
+});
+
+test("artboard-not-found は見つからなかった artboard 名を含むメッセージになる", () => {
+  expect(
+    DesignDocumentEditError.message({
+      kind: "artboard-not-found",
+      name: "missing-screen",
+    }),
+  ).toBe('artboard "missing-screen" not found');
+});
+
+test("ref-node-not-supported は部品化できなかったノード名を含むメッセージになる", () => {
+  expect(
+    DesignDocumentEditError.message({
+      kind: "ref-node-not-supported",
+      name: "instance",
+    }),
+  ).toBe('cannot create a component from ref node "instance"');
+});
+
+test("duplicate-name は既に使われている名前を含むメッセージになる", () => {
+  expect(
+    DesignDocumentEditError.message({
+      kind: "duplicate-name",
+      name: "button",
+    }),
+  ).toBe('name "button" is already used');
+});
+
 test("index-out-of-range は指定された index と配列長を含むメッセージになる", () => {
   expect(
     DesignDocumentEditError.message({

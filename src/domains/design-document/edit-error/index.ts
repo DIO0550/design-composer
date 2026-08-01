@@ -1,0 +1,45 @@
+import type { NodeTreeEditError } from "@/domains/node-tree";
+
+/**
+ * ドキュメントの編集操作（挿入・削除・並べ替え・移動・部品化）が失敗する理由。
+ * 呼び出し側が種類で分岐できるよう、メッセージ文字列ではなく直和で列挙する。
+ *
+ * `NodeTreeEditError`（ツリー1階層の編集失敗）をそのまま含む。
+ * ツリーの失敗はドキュメントの失敗でもあるので、部分型として受け取れるよう
+ * 同じ形のメンバを並べている（変換を挟まずに伝播できる）。
+ */
+export type DesignDocumentEditError =
+  | NodeTreeEditError
+  | Readonly<{ kind: "node-not-found"; name: string }>
+  | Readonly<{ kind: "parent-not-found"; name: string }>
+  | Readonly<{ kind: "artboard-not-found"; name: string }>
+  | Readonly<{ kind: "move-into-descendant"; name: string; parentName: string }>
+  | Readonly<{ kind: "ref-node-not-supported"; name: string }>
+  | Readonly<{ kind: "duplicate-name"; name: string }>;
+
+export const DesignDocumentEditError = {
+  /**
+   * 診断用の英語メッセージ。
+   * 利用者向けの文言は `kind` で分岐して表示層が組み立てる。
+   */
+  message(error: DesignDocumentEditError): string {
+    switch (error.kind) {
+      case "node-not-found":
+        return `node "${error.name}" not found`;
+      case "parent-not-found":
+        return `parent "${error.name}" not found`;
+      case "artboard-not-found":
+        return `artboard "${error.name}" not found`;
+      case "children-not-allowed":
+        return `node "${error.name}" cannot have children`;
+      case "move-into-descendant":
+        return `cannot move node "${error.name}" into "${error.parentName}" because it is the node itself or its descendant`;
+      case "ref-node-not-supported":
+        return `cannot create a component from ref node "${error.name}"`;
+      case "duplicate-name":
+        return `name "${error.name}" is already used`;
+      case "index-out-of-range":
+        return `index ${error.index} is out of bounds for length ${error.length}`;
+    }
+  },
+} as const;
