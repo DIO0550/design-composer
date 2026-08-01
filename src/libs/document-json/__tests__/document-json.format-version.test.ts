@@ -48,7 +48,7 @@ test("formatVersion が欠けているファイルは版のエラーではなく
 
 test("書き出しは常に現在の形式を名乗る", () => {
   const document = DesignDocument.create({
-    formatVersion: { major: 0, minor: 3 },
+    formatVersion: { major: 1, minor: 9 },
   });
 
   const text = DocumentJson.serialize(document);
@@ -56,9 +56,9 @@ test("書き出しは常に現在の形式を名乗る", () => {
   expect(text).toContain(`"formatVersion": "1.0"`);
 });
 
-test("書き出したテキストは読み直せる（古い版のドキュメントを書き出しても読める）", () => {
+test("違う minor を名乗るドキュメントを書き出しても読み直せる", () => {
   const document = DesignDocument.create({
-    formatVersion: { major: 0, minor: 3 },
+    formatVersion: { major: 1, minor: 9 },
   });
 
   const reloaded = Result.unwrap(

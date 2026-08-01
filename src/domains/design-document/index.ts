@@ -8,6 +8,7 @@ import { ComponentBinding } from "@/domains/component-binding";
 import {
   FormatVersion,
   type FormatVersionCompatibility,
+  type FormatVersionOf,
 } from "@/domains/format-version";
 import { Node, Props, type RefNode } from "@/domains/node";
 import type { PropValidationError } from "@/domains/primitive-schema";
@@ -28,12 +29,28 @@ import {
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
-export type DesignDocument = Readonly<{
-  formatVersion: FormatVersion;
+/**
+ * major 1 の仕様で書かれたドキュメント(docs/01-file-format.md)。
+ * `formatVersion` の major が型に固定されているので、この型の値は
+ * 1 以外の major を名乗れない（中身の形と名乗る版が食い違う状態を作れない）。
+ * minor は後方互換な追加なので幅を持つ。
+ */
+export type DesignDocumentV1 = Readonly<{
+  formatVersion: FormatVersionOf<1>;
   tokens: TokenSet;
   components: ComponentSet;
   artboards: readonly Artboard[];
 }>;
+
+/**
+ * アプリが読み書きするドキュメント。今は major 1 のみ。
+ *
+ * major を上げるときは `DesignDocumentV2` を新たに定義してここを差し替える。
+ * 旧版の型は消さずに残し、マイグレーション（`libs/document-migration`）の
+ * 入力の型として使う。アプリ本体が旧版の形を扱うことはないので、
+ * ここを版の直和にはしない（消費側に版の分岐を強いないため）。
+ */
+export type DesignDocument = DesignDocumentV1;
 
 /** ドキュメントが JSON 上で持つトップレベルフィールド(docs/01-file-format.md)。 */
 const DOCUMENT_FIELDS = [
@@ -729,7 +746,7 @@ function generateRenameMap(
 
 export const DesignDocument = {
   create(params: {
-    formatVersion?: FormatVersion;
+    formatVersion?: FormatVersionOf<1>;
     tokens?: TokenSet;
     components?: ComponentSet;
     artboards?: readonly Artboard[];
@@ -766,7 +783,9 @@ export const DesignDocument = {
     return Result.flatMap(Json.record(cursor), (record) =>
       Json.knownFields(
         Json.combine4(
-          Json.required(record, "formatVersion", FormatVersion.fromJson),
+          Json.required(record, "formatVersion", (version) =>
+            FormatVersion.fromJsonOf(version, 1),
+          ),
           Json.required(record, "tokens", TokenSet.fromJson),
           Json.required(record, "components", ComponentSet.fromJson),
           Json.required(record, "artboards", (artboards) =>
