@@ -1,10 +1,57 @@
-#![allow(dead_code)]
-
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::mpsc::{self, Receiver, RecvTimeoutError};
+use std::sync::Arc;
+use std::time::Duration;
+
+use super::known_content::KnownContentRegistry;
+use super::watch::{self, DocumentWatchers};
 
 static SEQUENCE: AtomicU64 = AtomicU64::new(0);
+
+/// ファイルシステムのイベントが届くまでの上限。
+///
+/// 通常は数ミリ秒で届く。負荷の高い CI で偶発的に落ちないよう余裕を持たせている。
+const CHANGE_TIMEOUT: Duration = Duration::from_secs(10);
+
+/// 「通知されないこと」を確かめるときの待ち時間。
+///
+/// 待って何も来ないことしか確かめられないため、テストが遅くなりすぎない範囲に留める。
+const NO_CHANGE_TIMEOUT: Duration = Duration::from_secs(2);
+
+/// 変更の通知をチャネルへ流す形で監視を開始する。
+///
+/// 実装が Tauri へイベントを発火する箇所だけをチャネルへの送信に差し替えることで、
+/// アプリを起動せずに「いつ・何が通知されるか」を実物の watcher で検証できる。
+pub fn watch_changes(
+    watchers: &DocumentWatchers,
+    known: &Arc<KnownContentRegistry>,
+    path: &Path,
+) -> Receiver<String> {
+    let (sender, receiver) = mpsc::channel();
+    watch::start(watchers, Arc::clone(known), path, move |content| {
+        let _ = sender.send(content);
+    })
+    .expect("監視を開始できる");
+    receiver
+}
+
+/// 次に通知された内容を待って返す。
+pub fn next_change(receiver: &Receiver<String>) -> String {
+    receiver
+        .recv_timeout(CHANGE_TIMEOUT)
+        .expect("変更が通知される")
+}
+
+/// 通知が来ないことを確かめる。
+pub fn assert_no_change(receiver: &Receiver<String>) {
+    match receiver.recv_timeout(NO_CHANGE_TIMEOUT) {
+        // 監視が止まると送信側が破棄されるので、切断も「通知が来ない」に含める。
+        Err(RecvTimeoutError::Timeout | RecvTimeoutError::Disconnected) => {}
+        Ok(content) => panic!("通知されないはずが通知された: {content}"),
+    }
+}
 
 /// テスト用の一時ディレクトリ。Drop で中身ごと削除する。
 pub struct TempDir {

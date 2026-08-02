@@ -41,6 +41,13 @@ impl DocumentIoError {
         }
     }
 
+    /// 種別を切り分けられない失敗を、対象パスを添えて表す。
+    pub(crate) fn io(path: &Path, reason: &str) -> Self {
+        Self::Io {
+            message: format!("{}: {}", path.display(), reason),
+        }
+    }
+
     pub(crate) fn invalid_utf8(path: &Path) -> Self {
         Self::InvalidUtf8 {
             message: format!("{}: UTF-8 として解釈できない", path.display()),

@@ -1,6 +1,9 @@
-pub mod document_io;
+pub mod document;
 
-use document_io::SelfWriteRegistry;
+use std::sync::Arc;
+
+use document::known_content::KnownContentRegistry;
+use document::watch::DocumentWatchers;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -14,11 +17,15 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         // ファイルを開く / 保存するダイアログは Tauri 標準プラグインを使う
         .plugin(tauri_plugin_dialog::init())
-        .manage(SelfWriteRegistry::new())
+        // watch のコールバックからも参照するため Arc で共有する
+        .manage(Arc::new(KnownContentRegistry::new()))
+        .manage(DocumentWatchers::new())
         .invoke_handler(tauri::generate_handler![
             greet,
-            document_io::load_document,
-            document_io::save_document
+            document::io::load_document,
+            document::io::save_document,
+            document::watch::watch_document,
+            document::watch::unwatch_document
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
