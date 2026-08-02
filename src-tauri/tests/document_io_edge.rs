@@ -6,7 +6,8 @@ mod common;
 
 use std::fs;
 
-use app_lib::document_io::{self, DocumentIoError, SelfWriteRegistry};
+use app_lib::document_io::{self, DocumentIoError};
+use app_lib::known_content::KnownContentRegistry;
 
 use common::TempDir;
 
@@ -22,9 +23,9 @@ fn 存在しないファイルの読み込みは見つからないことを返�
 #[test]
 fn 存在しないディレクトリ配下への保存は失敗する() {
     let dir = TempDir::new("edge");
-    let registry = SelfWriteRegistry::new();
+    let known = KnownContentRegistry::new();
 
-    let error = document_io::save(&registry, &dir.join("missing/document.dcmp"), r#"{"a":1}"#)
+    let error = document_io::save(&known, &dir.join("missing/document.dcmp"), r#"{"a":1}"#)
         .expect_err("保存に失敗する");
 
     assert!(matches!(error, DocumentIoError::NotFound { .. }));
@@ -33,13 +34,13 @@ fn 存在しないディレクトリ配下への保存は失敗する() {
 #[test]
 fn 保存に失敗したとき一時ファイルが残らない() {
     let dir = TempDir::new("edge");
-    let registry = SelfWriteRegistry::new();
+    let known = KnownContentRegistry::new();
 
     // 書き込み先をディレクトリにすることで、一時ファイルの作成後に rename を失敗させる
     let path = dir.join("document.dcmp");
     fs::create_dir(&path).expect("ディレクトリを作成できる");
 
-    document_io::save(&registry, &path, r#"{"a":1}"#).expect_err("保存に失敗する");
+    document_io::save(&known, &path, r#"{"a":1}"#).expect_err("保存に失敗する");
 
     assert_eq!(dir.file_names(), vec!["document.dcmp".to_string()]);
 }
@@ -81,11 +82,11 @@ fn 失敗したときのエラーは対象のパスを含む() {
 #[test]
 fn 保存の失敗は自書き込みとして記録されない() {
     let dir = TempDir::new("edge");
-    let registry = SelfWriteRegistry::new();
+    let known = KnownContentRegistry::new();
     let path = dir.join("missing/document.dcmp");
     let content = r#"{"a":1}"#;
 
-    document_io::save(&registry, &path, content).expect_err("保存に失敗する");
+    document_io::save(&known, &path, content).expect_err("保存に失敗する");
 
-    assert!(!registry.is_self_write(&path, content));
+    assert!(!known.is_known(&path, content));
 }

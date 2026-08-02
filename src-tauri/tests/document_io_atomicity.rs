@@ -10,7 +10,8 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::thread;
 
-use app_lib::document_io::{self, SelfWriteRegistry};
+use app_lib::document_io;
+use app_lib::known_content::KnownContentRegistry;
 
 use common::{document, TempDir};
 
@@ -18,13 +19,13 @@ use common::{document, TempDir};
 fn 書き込みを繰り返している最中に読み続けても常に完全なJSONが読める() {
     let dir = TempDir::new("atomicity");
     let path = dir.join("document.dcmp");
-    let registry = SelfWriteRegistry::new();
+    let known = KnownContentRegistry::new();
 
     // アトミックでない書き込みなら途中状態が観測できる程度の大きさにする
     let before = document("before", 4000);
     let after = document("after", 4000);
 
-    document_io::save(&registry, &path, &before).expect("初回の保存に成功する");
+    document_io::save(&known, &path, &before).expect("初回の保存に成功する");
 
     let stop = Arc::new(AtomicBool::new(false));
     let reader_stop = Arc::clone(&stop);
@@ -54,7 +55,7 @@ fn 書き込みを繰り返している最中に読み続けても常に完全�
 
     for round in 0..50 {
         let content = if round % 2 == 0 { &after } else { &before };
-        document_io::save(&registry, &path, content).expect("保存に成功する");
+        document_io::save(&known, &path, content).expect("保存に成功する");
     }
 
     stop.store(true, Ordering::Relaxed);
@@ -69,10 +70,10 @@ fn 書き込みを繰り返している最中に読み続けても常に完全�
 fn 書き込みを繰り返しても一時ファイルが残らない() {
     let dir = TempDir::new("atomicity");
     let path = dir.join("document.dcmp");
-    let registry = SelfWriteRegistry::new();
+    let known = KnownContentRegistry::new();
 
     for version in 0..20 {
-        document_io::save(&registry, &path, &document(&format!("v{version}"), 100))
+        document_io::save(&known, &path, &document(&format!("v{version}"), 100))
             .expect("保存に成功する");
     }
 
@@ -88,7 +89,7 @@ fn 複数のスレッドから同じファイルへ書き込んでも読み手�
         .map(|writer| document(&format!("writer-{writer}"), 2000))
         .collect();
 
-    document_io::save(&SelfWriteRegistry::new(), &path, &writable[0])
+    document_io::save(&KnownContentRegistry::new(), &path, &writable[0])
         .expect("初回の保存に成功する");
 
     let stop = Arc::new(AtomicBool::new(false));
@@ -112,9 +113,9 @@ fn 複数のスレッドから同じファイルへ書き込んでも読み手�
         .map(|content| {
             let writer_path = path.clone();
             thread::spawn(move || {
-                let registry = SelfWriteRegistry::new();
+                let known = KnownContentRegistry::new();
                 for _ in 0..20 {
-                    document_io::save(&registry, &writer_path, &content).expect("保存に成功する");
+                    document_io::save(&known, &writer_path, &content).expect("保存に成功する");
                 }
             })
         })
