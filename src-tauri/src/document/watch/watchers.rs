@@ -6,7 +6,7 @@ use std::time::Duration;
 use notify::{ErrorKind, RecommendedWatcher, RecursiveMode};
 use notify_debouncer_mini::{new_debouncer, DebounceEventResult, Debouncer};
 
-use crate::document_io::DocumentIoError;
+use crate::document::io::DocumentIoError;
 
 /// 変更が落ち着くのを待つ時間。
 ///

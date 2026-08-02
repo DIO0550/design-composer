@@ -1,7 +1,4 @@
-//! ドキュメントの永続化 I/O。
-//!
-//! `docs/05-architecture.md`「Tauri IPC」の通り、Rust は .dcmp の構造を一切知らない。
-//! ここを渡るのは常に生の JSON 文字列で、パース・検証・マイグレーションは TS 側が行う。
+//! ドキュメントの永続化 I/O(読み込みとアトミックな書き込み)。
 
 mod atomic_write;
 mod error;
@@ -12,7 +9,7 @@ use std::sync::Arc;
 
 use tauri::State;
 
-use crate::known_content::KnownContentRegistry;
+use super::known_content::KnownContentRegistry;
 
 pub use error::DocumentIoError;
 

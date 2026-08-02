@@ -10,8 +10,8 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::thread;
 
-use app_lib::document_io;
-use app_lib::known_content::KnownContentRegistry;
+use app_lib::document::io;
+use app_lib::document::known_content::KnownContentRegistry;
 
 use common::{document, TempDir};
 
@@ -25,7 +25,7 @@ fn 書き込みを繰り返している最中に読み続けても常に完全�
     let before = document("before", 4000);
     let after = document("after", 4000);
 
-    document_io::save(&known, &path, &before).expect("初回の保存に成功する");
+    io::save(&known, &path, &before).expect("初回の保存に成功する");
 
     let stop = Arc::new(AtomicBool::new(false));
     let reader_stop = Arc::clone(&stop);
@@ -35,7 +35,7 @@ fn 書き込みを繰り返している最中に読み続けても常に完全�
     let reader = thread::spawn(move || {
         let mut read_count = 0usize;
         while !reader_stop.load(Ordering::Relaxed) {
-            let content = document_io::load(&reader_path).expect("読み込みに成功する");
+            let content = io::load(&reader_path).expect("読み込みに成功する");
 
             assert!(
                 serde_json::from_str::<serde_json::Value>(&content).is_ok(),
@@ -55,7 +55,7 @@ fn 書き込みを繰り返している最中に読み続けても常に完全�
 
     for round in 0..50 {
         let content = if round % 2 == 0 { &after } else { &before };
-        document_io::save(&known, &path, content).expect("保存に成功する");
+        io::save(&known, &path, content).expect("保存に成功する");
     }
 
     stop.store(true, Ordering::Relaxed);
@@ -73,8 +73,7 @@ fn 書き込みを繰り返しても一時ファイルが残らない() {
     let known = KnownContentRegistry::new();
 
     for version in 0..20 {
-        document_io::save(&known, &path, &document(&format!("v{version}"), 100))
-            .expect("保存に成功する");
+        io::save(&known, &path, &document(&format!("v{version}"), 100)).expect("保存に成功する");
     }
 
     assert_eq!(dir.file_names(), vec!["document.dcmp".to_string()]);
@@ -89,8 +88,7 @@ fn 複数のスレッドから同じファイルへ書き込んでも読み手�
         .map(|writer| document(&format!("writer-{writer}"), 2000))
         .collect();
 
-    document_io::save(&KnownContentRegistry::new(), &path, &writable[0])
-        .expect("初回の保存に成功する");
+    io::save(&KnownContentRegistry::new(), &path, &writable[0]).expect("初回の保存に成功する");
 
     let stop = Arc::new(AtomicBool::new(false));
     let reader_stop = Arc::clone(&stop);
@@ -99,7 +97,7 @@ fn 複数のスレッドから同じファイルへ書き込んでも読み手�
 
     let reader = thread::spawn(move || {
         while !reader_stop.load(Ordering::Relaxed) {
-            let content = document_io::load(&reader_path).expect("読み込みに成功する");
+            let content = io::load(&reader_path).expect("読み込みに成功する");
             assert!(
                 readable.contains(&content),
                 "どの書き手のものでもない内容が読めた ({} バイト)",
@@ -115,7 +113,7 @@ fn 複数のスレッドから同じファイルへ書き込んでも読み手�
             thread::spawn(move || {
                 let known = KnownContentRegistry::new();
                 for _ in 0..20 {
-                    document_io::save(&known, &writer_path, &content).expect("保存に成功する");
+                    io::save(&known, &writer_path, &content).expect("保存に成功する");
                 }
             })
         })

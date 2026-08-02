@@ -1,8 +1,7 @@
 //! 外部(AI・エディタ・git 操作等)によるファイル変更の検知。
 //!
 //! `docs/05-architecture.md`「外部編集の検知」の通り、変更を検知したら
-//! `document-changed` イベントで JS 側へ通知する。`document_io` と同じく
-//! .dcmp の構造は解釈せず、読み込んだ生の JSON 文字列をそのまま渡す。
+//! `document-changed` イベントで JS 側へ通知する。
 
 mod watchers;
 
@@ -12,8 +11,8 @@ use std::sync::Arc;
 use serde::Serialize;
 use tauri::{AppHandle, Emitter, State};
 
-use crate::document_io::{self, DocumentIoError};
-use crate::known_content::KnownContentRegistry;
+use super::io::{self, DocumentIoError};
+use super::known_content::KnownContentRegistry;
 
 pub use watchers::DocumentWatchers;
 
@@ -43,7 +42,7 @@ pub fn start(
 ) -> Result<(), DocumentIoError> {
     // 監視を始める前に現在の内容を把握しておく。これが無いと、監視開始直後に届く
     // 内容を変えないイベント(メタデータの更新など)を外部変更として通知してしまう。
-    let content = document_io::load(path)?;
+    let content = io::load(path)?;
     known.record(path, &content);
 
     let watched = path.to_path_buf();
@@ -64,7 +63,7 @@ pub fn changed_content(known: &KnownContentRegistry, path: &Path) -> Option<Stri
     // `docs/05-architecture.md`「外部編集の検知」は不正なファイルについて
     // 「最後に正常だった状態のレンダリングを保持する」としており、通知しないことが
     // その状態に一致する。削除そのものの扱いは仕様が定義していないため #27 の範囲外。
-    let content = document_io::load(path).ok()?;
+    let content = io::load(path).ok()?;
     if known.is_known(path, &content) {
         return None;
     }

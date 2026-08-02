@@ -5,9 +5,9 @@ mod common;
 use std::fs;
 use std::sync::Arc;
 
-use app_lib::document_io;
-use app_lib::document_watch::DocumentWatchers;
-use app_lib::known_content::KnownContentRegistry;
+use app_lib::document::io;
+use app_lib::document::known_content::KnownContentRegistry;
+use app_lib::document::watch::DocumentWatchers;
 
 use common::{assert_no_change, next_change, watch_changes, TempDir};
 
@@ -34,7 +34,7 @@ fn アプリ自身の保存では変更が通知されない() {
     let watchers = DocumentWatchers::new();
 
     let changes = watch_changes(&watchers, &known, &path);
-    document_io::save(&known, &path, r#"{"version":2}"#).expect("保存に成功する");
+    io::save(&known, &path, r#"{"version":2}"#).expect("保存に成功する");
     fs::write(&path, r#"{"version":3}"#).expect("外部からの書き込みができる");
 
     // 自アプリの保存が通知されていれば、最初に届くのは version 2 になる

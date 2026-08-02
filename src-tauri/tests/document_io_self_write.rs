@@ -4,8 +4,8 @@ mod common;
 
 use std::fs;
 
-use app_lib::document_io;
-use app_lib::known_content::KnownContentRegistry;
+use app_lib::document::io;
+use app_lib::document::known_content::KnownContentRegistry;
 
 use common::TempDir;
 
@@ -16,7 +16,7 @@ fn 保存した内容は自書き込みと判定される() {
     let known = KnownContentRegistry::new();
     let content = r#"{"version":1}"#;
 
-    document_io::save(&known, &path, content).expect("保存に成功する");
+    io::save(&known, &path, content).expect("保存に成功する");
 
     assert!(known.is_known(&path, content));
 }
@@ -27,10 +27,10 @@ fn 外部が書き換えた内容は自書き込みと判定されない() {
     let path = dir.join("document.dcmp");
     let known = KnownContentRegistry::new();
 
-    document_io::save(&known, &path, r#"{"version":1}"#).expect("保存に成功する");
+    io::save(&known, &path, r#"{"version":1}"#).expect("保存に成功する");
     fs::write(&path, r#"{"version":2}"#).expect("外部からの書き込みができる");
 
-    let external = document_io::load(&path).expect("読み込みに成功する");
+    let external = io::load(&path).expect("読み込みに成功する");
     assert!(!known.is_known(&path, &external));
 }
 
@@ -51,7 +51,7 @@ fn 同じ内容を何度問い合わせても自書き込みと判定され続�
     let known = KnownContentRegistry::new();
     let content = r#"{"version":1}"#;
 
-    document_io::save(&known, &path, content).expect("保存に成功する");
+    io::save(&known, &path, content).expect("保存に成功する");
 
     // OS は 1 回の書き込みに対して複数の変更イベントを出すことがあるため、
     // 2 回目以降の問い合わせでも判定が変わってはならない
@@ -66,8 +66,8 @@ fn 上書き保存すると新しい内容だけが自書き込みと判定さ�
     let path = dir.join("document.dcmp");
     let known = KnownContentRegistry::new();
 
-    document_io::save(&known, &path, r#"{"version":1}"#).expect("初回の保存に成功する");
-    document_io::save(&known, &path, r#"{"version":2}"#).expect("上書きの保存に成功する");
+    io::save(&known, &path, r#"{"version":1}"#).expect("初回の保存に成功する");
+    io::save(&known, &path, r#"{"version":2}"#).expect("上書きの保存に成功する");
 
     assert!(known.is_known(&path, r#"{"version":2}"#));
     assert!(!known.is_known(&path, r#"{"version":1}"#));
@@ -80,8 +80,8 @@ fn 別のパスの記録は互いに影響しない() {
     let first = dir.join("first.dcmp");
     let second = dir.join("second.dcmp");
 
-    document_io::save(&known, &first, r#"{"name":"first"}"#).expect("1 つ目の保存に成功する");
-    document_io::save(&known, &second, r#"{"name":"second"}"#).expect("2 つ目の保存に成功する");
+    io::save(&known, &first, r#"{"name":"first"}"#).expect("1 つ目の保存に成功する");
+    io::save(&known, &second, r#"{"name":"second"}"#).expect("2 つ目の保存に成功する");
 
     assert!(known.is_known(&first, r#"{"name":"first"}"#));
     assert!(!known.is_known(&first, r#"{"name":"second"}"#));
@@ -96,7 +96,7 @@ fn 同じファイルを指す異なる表記のパスでも自書き込みと�
     let known = KnownContentRegistry::new();
     let content = r#"{"version":1}"#;
 
-    document_io::save(&known, &path, content).expect("保存に成功する");
+    io::save(&known, &path, content).expect("保存に成功する");
 
     // file watch は同じファイルを別の表記で報告することがある
     let detoured = dir.join("sub").join("..").join("document.dcmp");
@@ -110,7 +110,7 @@ fn 記録を破棄すると自書き込みと判定されなくなる() {
     let known = KnownContentRegistry::new();
     let content = r#"{"version":1}"#;
 
-    document_io::save(&known, &path, content).expect("保存に成功する");
+    io::save(&known, &path, content).expect("保存に成功する");
     known.forget(&path);
 
     assert!(!known.is_known(&path, content));

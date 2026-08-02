@@ -7,8 +7,8 @@ use std::sync::mpsc::{self, Receiver, RecvTimeoutError};
 use std::sync::Arc;
 use std::time::Duration;
 
-use app_lib::document_watch::{self, DocumentWatchers};
-use app_lib::known_content::KnownContentRegistry;
+use app_lib::document::known_content::KnownContentRegistry;
+use app_lib::document::watch::{self, DocumentWatchers};
 
 static SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
@@ -32,7 +32,7 @@ pub fn watch_changes(
     path: &Path,
 ) -> Receiver<String> {
     let (sender, receiver) = mpsc::channel();
-    document_watch::start(watchers, Arc::clone(known), path, move |content| {
+    watch::start(watchers, Arc::clone(known), path, move |content| {
         let _ = sender.send(content);
     })
     .expect("監視を開始できる");

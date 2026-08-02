@@ -1,11 +1,9 @@
-pub mod document_io;
-pub mod document_watch;
-pub mod known_content;
+pub mod document;
 
 use std::sync::Arc;
 
-use document_watch::DocumentWatchers;
-use known_content::KnownContentRegistry;
+use document::known_content::KnownContentRegistry;
+use document::watch::DocumentWatchers;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -24,10 +22,10 @@ pub fn run() {
         .manage(DocumentWatchers::new())
         .invoke_handler(tauri::generate_handler![
             greet,
-            document_io::load_document,
-            document_io::save_document,
-            document_watch::watch_document,
-            document_watch::unwatch_document
+            document::io::load_document,
+            document::io::save_document,
+            document::watch::watch_document,
+            document::watch::unwatch_document
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

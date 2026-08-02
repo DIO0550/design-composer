@@ -5,9 +5,9 @@ mod common;
 use std::fs;
 use std::sync::Arc;
 
-use app_lib::document_io::DocumentIoError;
-use app_lib::document_watch::{self, DocumentWatchers};
-use app_lib::known_content::KnownContentRegistry;
+use app_lib::document::io::DocumentIoError;
+use app_lib::document::known_content::KnownContentRegistry;
+use app_lib::document::watch::{self, DocumentWatchers};
 
 use common::{assert_no_change, next_change, watch_changes, TempDir};
 
@@ -17,7 +17,7 @@ fn 存在しないファイルの監視は開始できない() {
     let known = Arc::new(KnownContentRegistry::new());
     let watchers = DocumentWatchers::new();
 
-    let result = document_watch::start(&watchers, known, &dir.join("missing.dcmp"), |_| {});
+    let result = watch::start(&watchers, known, &dir.join("missing.dcmp"), |_| {});
 
     assert!(matches!(result, Err(DocumentIoError::NotFound { .. })));
 }
