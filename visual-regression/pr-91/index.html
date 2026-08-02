@@ -100,7 +100,60 @@
 </head>
 <body>
   <div class="layout" data-layout>
-  
+  <aside class="story-nav" id="story-navigation" aria-label="Story result navigation">
+    <header class="story-nav__header">
+      <div class="story-nav__title"><h2>Story files</h2><span>12</span></div>
+      <button class="story-nav__close" type="button" data-nav-toggle aria-label="Hide story files" aria-controls="story-navigation" aria-expanded="true">‹</button>
+      <label class="story-nav__filter"><span class="tree-icon tree-icon--search" aria-hidden="true"></span><input type="search" placeholder="Filter stories..." data-story-filter aria-label="Filter stories"></label>
+    </header>
+    <div class="story-nav__scroll" data-story-tree>
+      <details class="story-nav__group story-nav__group--added" open data-status-group>
+        <summary><span>Added</span><span class="story-nav__count">12</span></summary>
+        <ul class="story-nav__tree"><li data-tree-node>
+    <details open>
+      <summary><span class="tree-icon tree-icon--folder" aria-hidden="true"></span><span>features</span></summary>
+      <ul><li data-tree-node>
+    <details open>
+      <summary><span class="tree-icon tree-icon--folder" aria-hidden="true"></span><span>editor</span></summary>
+      <ul><li data-tree-node>
+    <details open>
+      <summary><span class="tree-icon tree-icon--folder" aria-hidden="true"></span><span>ArtboardCanvas</span></summary>
+      <ul><li class="story-nav__story" data-tree-leaf data-search-text="features/editor/artboardcanvas 選択なし features-editor-artboardcanvas--default"><a href="#features-editor-artboardcanvas--default" title="features-editor-artboardcanvas--default"><span class="tree-icon tree-icon--file" aria-hidden="true"></span><span>選択なし</span></a></li><li class="story-nav__story" data-tree-leaf data-search-text="features/editor/artboardcanvas artboard がない features-editor-artboardcanvas--empty"><a href="#features-editor-artboardcanvas--empty" title="features-editor-artboardcanvas--empty"><span class="tree-icon tree-icon--file" aria-hidden="true"></span><span>artboard がない</span></a></li><li class="story-nav__story" data-tree-leaf data-search-text="features/editor/artboardcanvas artboard を選択中 features-editor-artboardcanvas--selected"><a href="#features-editor-artboardcanvas--selected" title="features-editor-artboardcanvas--selected"><span class="tree-icon tree-icon--file" aria-hidden="true"></span><span>artboard を選択中</span></a></li></ul>
+    </details>
+  </li><li data-tree-node>
+    <details open>
+      <summary><span class="tree-icon tree-icon--folder" aria-hidden="true"></span><span>ComponentList</span></summary>
+      <ul><li class="story-nav__story" data-tree-leaf data-search-text="features/editor/componentlist 雛形の初期部品セット features-editor-componentlist--default"><a href="#features-editor-componentlist--default" title="features-editor-componentlist--default"><span class="tree-icon tree-icon--file" aria-hidden="true"></span><span>雛形の初期部品セット</span></a></li><li class="story-nav__story" data-tree-leaf data-search-text="features/editor/componentlist 部品がない features-editor-componentlist--empty"><a href="#features-editor-componentlist--empty" title="features-editor-componentlist--empty"><span class="tree-icon tree-icon--file" aria-hidden="true"></span><span>部品がない</span></a></li></ul>
+    </details>
+  </li><li data-tree-node>
+    <details open>
+      <summary><span class="tree-icon tree-icon--folder" aria-hidden="true"></span><span>DocumentTree</span></summary>
+      <ul><li class="story-nav__story" data-tree-leaf data-search-text="features/editor/documenttree 選択なし features-editor-documenttree--default"><a href="#features-editor-documenttree--default" title="features-editor-documenttree--default"><span class="tree-icon tree-icon--file" aria-hidden="true"></span><span>選択なし</span></a></li><li class="story-nav__story" data-tree-leaf data-search-text="features/editor/documenttree artboard がない features-editor-documenttree--empty"><a href="#features-editor-documenttree--empty" title="features-editor-documenttree--empty"><span class="tree-icon tree-icon--file" aria-hidden="true"></span><span>artboard がない</span></a></li><li class="story-nav__story" data-tree-leaf data-search-text="features/editor/documenttree artboard を選択中 features-editor-documenttree--selected"><a href="#features-editor-documenttree--selected" title="features-editor-documenttree--selected"><span class="tree-icon tree-icon--file" aria-hidden="true"></span><span>artboard を選択中</span></a></li></ul>
+    </details>
+  </li><li data-tree-node>
+    <details open>
+      <summary><span class="tree-icon tree-icon--folder" aria-hidden="true"></span><span>EditorLayout</span></summary>
+      <ul><li class="story-nav__story" data-tree-leaf data-search-text="features/editor/editorlayout 3ペインに中身を差し込む features-editor-editorlayout--default"><a href="#features-editor-editorlayout--default" title="features-editor-editorlayout--default"><span class="tree-icon tree-icon--file" aria-hidden="true"></span><span>3ペインに中身を差し込む</span></a></li></ul>
+    </details>
+  </li><li data-tree-node>
+    <details open>
+      <summary><span class="tree-icon tree-icon--folder" aria-hidden="true"></span><span>EditorScreen</span></summary>
+      <ul><li class="story-nav__story" data-tree-leaf data-search-text="features/editor/editorscreen エディタ画面 features-editor-editorscreen--default"><a href="#features-editor-editorscreen--default" title="features-editor-editorscreen--default"><span class="tree-icon tree-icon--file" aria-hidden="true"></span><span>エディタ画面</span></a></li></ul>
+    </details>
+  </li><li data-tree-node>
+    <details open>
+      <summary><span class="tree-icon tree-icon--folder" aria-hidden="true"></span><span>PropertyPanel</span></summary>
+      <ul><li class="story-nav__story" data-tree-leaf data-search-text="features/editor/propertypanel 選択されていない features-editor-propertypanel--default"><a href="#features-editor-propertypanel--default" title="features-editor-propertypanel--default"><span class="tree-icon tree-icon--file" aria-hidden="true"></span><span>選択されていない</span></a></li><li class="story-nav__story" data-tree-leaf data-search-text="features/editor/propertypanel artboard を選択中 features-editor-propertypanel--selected"><a href="#features-editor-propertypanel--selected" title="features-editor-propertypanel--selected"><span class="tree-icon tree-icon--file" aria-hidden="true"></span><span>artboard を選択中</span></a></li></ul>
+    </details>
+  </li></ul>
+    </details>
+  </li></ul>
+    </details>
+  </li></ul>
+      </details>
+      <p class="story-nav__empty" data-filter-empty hidden>No matching stories</p>
+    </div>
+  </aside>
   <button class="nav-reveal" type="button" data-nav-toggle aria-label="Show story files" aria-controls="story-navigation" aria-expanded="false">›</button>
   <main>
     <section class="hero">
@@ -119,9 +172,333 @@
     <button type="button" role="tab" data-global-view-mode="split" aria-selected="false">Split + Diff</button>
     <button type="button" role="tab" data-global-view-mode="slider" aria-selected="false">Slider</button>
   </div>
-  <span class="inspector-tabs__hint">Visual report UI v7 · 7bbbe75</span>
+  <span class="inspector-tabs__hint">Visual report UI v7 · afe53e2</span>
 </nav>
-    
+    <article class="story story--added" id="features-editor-artboardcanvas--default">
+    <header class="story__header">
+      <div>
+        <p class="status">added</p>
+        <h2><a href="features-editor-artboardcanvas--default/" data-story-link="features-editor-artboardcanvas--default">features-editor-artboardcanvas--default</a></h2>
+      </div>
+      <dl class="metrics">
+        <div><dt>Diff pixels</dt><dd>0</dd></div>
+        <div><dt>Diff ratio</dt><dd>0.0000%</dd></div>
+      </dl>
+    </header>
+    <div class="comparison" data-comparison>
+    <div class="comparison__view" data-view="overlay">
+      <div class="comparison__unavailable">Overlay is unavailable because this story only has one snapshot.</div>
+    </div>
+    <div class="comparison__view" data-view="split" hidden>
+      <div class="comparison__split">
+        <div class="comparison__pane comparison__pane--empty"><strong>Baseline</strong><span>Not available</span></div>
+        <figure class="comparison__pane"><figcaption>Current</figcaption><img class="comparison__image" src="actual/features-editor-artboardcanvas--default.png" alt="Current features-editor-artboardcanvas--default"></figure>
+        <div class="comparison__pane comparison__pane--empty"><strong>Overlay</strong><span>Not available</span></div>
+        <div class="comparison__pane comparison__pane--empty"><strong>Diff</strong><span>Not available</span></div>
+      </div>
+    </div>
+    <div class="comparison__view" data-view="slider" hidden>
+      <div class="comparison__unavailable">Slider is unavailable for this story.</div>
+    </div>
+  </div>
+  </article><article class="story story--added" id="features-editor-artboardcanvas--empty">
+    <header class="story__header">
+      <div>
+        <p class="status">added</p>
+        <h2><a href="features-editor-artboardcanvas--empty/" data-story-link="features-editor-artboardcanvas--empty">features-editor-artboardcanvas--empty</a></h2>
+      </div>
+      <dl class="metrics">
+        <div><dt>Diff pixels</dt><dd>0</dd></div>
+        <div><dt>Diff ratio</dt><dd>0.0000%</dd></div>
+      </dl>
+    </header>
+    <div class="comparison" data-comparison>
+    <div class="comparison__view" data-view="overlay">
+      <div class="comparison__unavailable">Overlay is unavailable because this story only has one snapshot.</div>
+    </div>
+    <div class="comparison__view" data-view="split" hidden>
+      <div class="comparison__split">
+        <div class="comparison__pane comparison__pane--empty"><strong>Baseline</strong><span>Not available</span></div>
+        <figure class="comparison__pane"><figcaption>Current</figcaption><img class="comparison__image" src="actual/features-editor-artboardcanvas--empty.png" alt="Current features-editor-artboardcanvas--empty"></figure>
+        <div class="comparison__pane comparison__pane--empty"><strong>Overlay</strong><span>Not available</span></div>
+        <div class="comparison__pane comparison__pane--empty"><strong>Diff</strong><span>Not available</span></div>
+      </div>
+    </div>
+    <div class="comparison__view" data-view="slider" hidden>
+      <div class="comparison__unavailable">Slider is unavailable for this story.</div>
+    </div>
+  </div>
+  </article><article class="story story--added" id="features-editor-artboardcanvas--selected">
+    <header class="story__header">
+      <div>
+        <p class="status">added</p>
+        <h2><a href="features-editor-artboardcanvas--selected/" data-story-link="features-editor-artboardcanvas--selected">features-editor-artboardcanvas--selected</a></h2>
+      </div>
+      <dl class="metrics">
+        <div><dt>Diff pixels</dt><dd>0</dd></div>
+        <div><dt>Diff ratio</dt><dd>0.0000%</dd></div>
+      </dl>
+    </header>
+    <div class="comparison" data-comparison>
+    <div class="comparison__view" data-view="overlay">
+      <div class="comparison__unavailable">Overlay is unavailable because this story only has one snapshot.</div>
+    </div>
+    <div class="comparison__view" data-view="split" hidden>
+      <div class="comparison__split">
+        <div class="comparison__pane comparison__pane--empty"><strong>Baseline</strong><span>Not available</span></div>
+        <figure class="comparison__pane"><figcaption>Current</figcaption><img class="comparison__image" src="actual/features-editor-artboardcanvas--selected.png" alt="Current features-editor-artboardcanvas--selected"></figure>
+        <div class="comparison__pane comparison__pane--empty"><strong>Overlay</strong><span>Not available</span></div>
+        <div class="comparison__pane comparison__pane--empty"><strong>Diff</strong><span>Not available</span></div>
+      </div>
+    </div>
+    <div class="comparison__view" data-view="slider" hidden>
+      <div class="comparison__unavailable">Slider is unavailable for this story.</div>
+    </div>
+  </div>
+  </article><article class="story story--added" id="features-editor-componentlist--default">
+    <header class="story__header">
+      <div>
+        <p class="status">added</p>
+        <h2><a href="features-editor-componentlist--default/" data-story-link="features-editor-componentlist--default">features-editor-componentlist--default</a></h2>
+      </div>
+      <dl class="metrics">
+        <div><dt>Diff pixels</dt><dd>0</dd></div>
+        <div><dt>Diff ratio</dt><dd>0.0000%</dd></div>
+      </dl>
+    </header>
+    <div class="comparison" data-comparison>
+    <div class="comparison__view" data-view="overlay">
+      <div class="comparison__unavailable">Overlay is unavailable because this story only has one snapshot.</div>
+    </div>
+    <div class="comparison__view" data-view="split" hidden>
+      <div class="comparison__split">
+        <div class="comparison__pane comparison__pane--empty"><strong>Baseline</strong><span>Not available</span></div>
+        <figure class="comparison__pane"><figcaption>Current</figcaption><img class="comparison__image" src="actual/features-editor-componentlist--default.png" alt="Current features-editor-componentlist--default"></figure>
+        <div class="comparison__pane comparison__pane--empty"><strong>Overlay</strong><span>Not available</span></div>
+        <div class="comparison__pane comparison__pane--empty"><strong>Diff</strong><span>Not available</span></div>
+      </div>
+    </div>
+    <div class="comparison__view" data-view="slider" hidden>
+      <div class="comparison__unavailable">Slider is unavailable for this story.</div>
+    </div>
+  </div>
+  </article><article class="story story--added" id="features-editor-componentlist--empty">
+    <header class="story__header">
+      <div>
+        <p class="status">added</p>
+        <h2><a href="features-editor-componentlist--empty/" data-story-link="features-editor-componentlist--empty">features-editor-componentlist--empty</a></h2>
+      </div>
+      <dl class="metrics">
+        <div><dt>Diff pixels</dt><dd>0</dd></div>
+        <div><dt>Diff ratio</dt><dd>0.0000%</dd></div>
+      </dl>
+    </header>
+    <div class="comparison" data-comparison>
+    <div class="comparison__view" data-view="overlay">
+      <div class="comparison__unavailable">Overlay is unavailable because this story only has one snapshot.</div>
+    </div>
+    <div class="comparison__view" data-view="split" hidden>
+      <div class="comparison__split">
+        <div class="comparison__pane comparison__pane--empty"><strong>Baseline</strong><span>Not available</span></div>
+        <figure class="comparison__pane"><figcaption>Current</figcaption><img class="comparison__image" src="actual/features-editor-componentlist--empty.png" alt="Current features-editor-componentlist--empty"></figure>
+        <div class="comparison__pane comparison__pane--empty"><strong>Overlay</strong><span>Not available</span></div>
+        <div class="comparison__pane comparison__pane--empty"><strong>Diff</strong><span>Not available</span></div>
+      </div>
+    </div>
+    <div class="comparison__view" data-view="slider" hidden>
+      <div class="comparison__unavailable">Slider is unavailable for this story.</div>
+    </div>
+  </div>
+  </article><article class="story story--added" id="features-editor-documenttree--default">
+    <header class="story__header">
+      <div>
+        <p class="status">added</p>
+        <h2><a href="features-editor-documenttree--default/" data-story-link="features-editor-documenttree--default">features-editor-documenttree--default</a></h2>
+      </div>
+      <dl class="metrics">
+        <div><dt>Diff pixels</dt><dd>0</dd></div>
+        <div><dt>Diff ratio</dt><dd>0.0000%</dd></div>
+      </dl>
+    </header>
+    <div class="comparison" data-comparison>
+    <div class="comparison__view" data-view="overlay">
+      <div class="comparison__unavailable">Overlay is unavailable because this story only has one snapshot.</div>
+    </div>
+    <div class="comparison__view" data-view="split" hidden>
+      <div class="comparison__split">
+        <div class="comparison__pane comparison__pane--empty"><strong>Baseline</strong><span>Not available</span></div>
+        <figure class="comparison__pane"><figcaption>Current</figcaption><img class="comparison__image" src="actual/features-editor-documenttree--default.png" alt="Current features-editor-documenttree--default"></figure>
+        <div class="comparison__pane comparison__pane--empty"><strong>Overlay</strong><span>Not available</span></div>
+        <div class="comparison__pane comparison__pane--empty"><strong>Diff</strong><span>Not available</span></div>
+      </div>
+    </div>
+    <div class="comparison__view" data-view="slider" hidden>
+      <div class="comparison__unavailable">Slider is unavailable for this story.</div>
+    </div>
+  </div>
+  </article><article class="story story--added" id="features-editor-documenttree--empty">
+    <header class="story__header">
+      <div>
+        <p class="status">added</p>
+        <h2><a href="features-editor-documenttree--empty/" data-story-link="features-editor-documenttree--empty">features-editor-documenttree--empty</a></h2>
+      </div>
+      <dl class="metrics">
+        <div><dt>Diff pixels</dt><dd>0</dd></div>
+        <div><dt>Diff ratio</dt><dd>0.0000%</dd></div>
+      </dl>
+    </header>
+    <div class="comparison" data-comparison>
+    <div class="comparison__view" data-view="overlay">
+      <div class="comparison__unavailable">Overlay is unavailable because this story only has one snapshot.</div>
+    </div>
+    <div class="comparison__view" data-view="split" hidden>
+      <div class="comparison__split">
+        <div class="comparison__pane comparison__pane--empty"><strong>Baseline</strong><span>Not available</span></div>
+        <figure class="comparison__pane"><figcaption>Current</figcaption><img class="comparison__image" src="actual/features-editor-documenttree--empty.png" alt="Current features-editor-documenttree--empty"></figure>
+        <div class="comparison__pane comparison__pane--empty"><strong>Overlay</strong><span>Not available</span></div>
+        <div class="comparison__pane comparison__pane--empty"><strong>Diff</strong><span>Not available</span></div>
+      </div>
+    </div>
+    <div class="comparison__view" data-view="slider" hidden>
+      <div class="comparison__unavailable">Slider is unavailable for this story.</div>
+    </div>
+  </div>
+  </article><article class="story story--added" id="features-editor-documenttree--selected">
+    <header class="story__header">
+      <div>
+        <p class="status">added</p>
+        <h2><a href="features-editor-documenttree--selected/" data-story-link="features-editor-documenttree--selected">features-editor-documenttree--selected</a></h2>
+      </div>
+      <dl class="metrics">
+        <div><dt>Diff pixels</dt><dd>0</dd></div>
+        <div><dt>Diff ratio</dt><dd>0.0000%</dd></div>
+      </dl>
+    </header>
+    <div class="comparison" data-comparison>
+    <div class="comparison__view" data-view="overlay">
+      <div class="comparison__unavailable">Overlay is unavailable because this story only has one snapshot.</div>
+    </div>
+    <div class="comparison__view" data-view="split" hidden>
+      <div class="comparison__split">
+        <div class="comparison__pane comparison__pane--empty"><strong>Baseline</strong><span>Not available</span></div>
+        <figure class="comparison__pane"><figcaption>Current</figcaption><img class="comparison__image" src="actual/features-editor-documenttree--selected.png" alt="Current features-editor-documenttree--selected"></figure>
+        <div class="comparison__pane comparison__pane--empty"><strong>Overlay</strong><span>Not available</span></div>
+        <div class="comparison__pane comparison__pane--empty"><strong>Diff</strong><span>Not available</span></div>
+      </div>
+    </div>
+    <div class="comparison__view" data-view="slider" hidden>
+      <div class="comparison__unavailable">Slider is unavailable for this story.</div>
+    </div>
+  </div>
+  </article><article class="story story--added" id="features-editor-editorlayout--default">
+    <header class="story__header">
+      <div>
+        <p class="status">added</p>
+        <h2><a href="features-editor-editorlayout--default/" data-story-link="features-editor-editorlayout--default">features-editor-editorlayout--default</a></h2>
+      </div>
+      <dl class="metrics">
+        <div><dt>Diff pixels</dt><dd>0</dd></div>
+        <div><dt>Diff ratio</dt><dd>0.0000%</dd></div>
+      </dl>
+    </header>
+    <div class="comparison" data-comparison>
+    <div class="comparison__view" data-view="overlay">
+      <div class="comparison__unavailable">Overlay is unavailable because this story only has one snapshot.</div>
+    </div>
+    <div class="comparison__view" data-view="split" hidden>
+      <div class="comparison__split">
+        <div class="comparison__pane comparison__pane--empty"><strong>Baseline</strong><span>Not available</span></div>
+        <figure class="comparison__pane"><figcaption>Current</figcaption><img class="comparison__image" src="actual/features-editor-editorlayout--default.png" alt="Current features-editor-editorlayout--default"></figure>
+        <div class="comparison__pane comparison__pane--empty"><strong>Overlay</strong><span>Not available</span></div>
+        <div class="comparison__pane comparison__pane--empty"><strong>Diff</strong><span>Not available</span></div>
+      </div>
+    </div>
+    <div class="comparison__view" data-view="slider" hidden>
+      <div class="comparison__unavailable">Slider is unavailable for this story.</div>
+    </div>
+  </div>
+  </article><article class="story story--added" id="features-editor-editorscreen--default">
+    <header class="story__header">
+      <div>
+        <p class="status">added</p>
+        <h2><a href="features-editor-editorscreen--default/" data-story-link="features-editor-editorscreen--default">features-editor-editorscreen--default</a></h2>
+      </div>
+      <dl class="metrics">
+        <div><dt>Diff pixels</dt><dd>0</dd></div>
+        <div><dt>Diff ratio</dt><dd>0.0000%</dd></div>
+      </dl>
+    </header>
+    <div class="comparison" data-comparison>
+    <div class="comparison__view" data-view="overlay">
+      <div class="comparison__unavailable">Overlay is unavailable because this story only has one snapshot.</div>
+    </div>
+    <div class="comparison__view" data-view="split" hidden>
+      <div class="comparison__split">
+        <div class="comparison__pane comparison__pane--empty"><strong>Baseline</strong><span>Not available</span></div>
+        <figure class="comparison__pane"><figcaption>Current</figcaption><img class="comparison__image" src="actual/features-editor-editorscreen--default.png" alt="Current features-editor-editorscreen--default"></figure>
+        <div class="comparison__pane comparison__pane--empty"><strong>Overlay</strong><span>Not available</span></div>
+        <div class="comparison__pane comparison__pane--empty"><strong>Diff</strong><span>Not available</span></div>
+      </div>
+    </div>
+    <div class="comparison__view" data-view="slider" hidden>
+      <div class="comparison__unavailable">Slider is unavailable for this story.</div>
+    </div>
+  </div>
+  </article><article class="story story--added" id="features-editor-propertypanel--default">
+    <header class="story__header">
+      <div>
+        <p class="status">added</p>
+        <h2><a href="features-editor-propertypanel--default/" data-story-link="features-editor-propertypanel--default">features-editor-propertypanel--default</a></h2>
+      </div>
+      <dl class="metrics">
+        <div><dt>Diff pixels</dt><dd>0</dd></div>
+        <div><dt>Diff ratio</dt><dd>0.0000%</dd></div>
+      </dl>
+    </header>
+    <div class="comparison" data-comparison>
+    <div class="comparison__view" data-view="overlay">
+      <div class="comparison__unavailable">Overlay is unavailable because this story only has one snapshot.</div>
+    </div>
+    <div class="comparison__view" data-view="split" hidden>
+      <div class="comparison__split">
+        <div class="comparison__pane comparison__pane--empty"><strong>Baseline</strong><span>Not available</span></div>
+        <figure class="comparison__pane"><figcaption>Current</figcaption><img class="comparison__image" src="actual/features-editor-propertypanel--default.png" alt="Current features-editor-propertypanel--default"></figure>
+        <div class="comparison__pane comparison__pane--empty"><strong>Overlay</strong><span>Not available</span></div>
+        <div class="comparison__pane comparison__pane--empty"><strong>Diff</strong><span>Not available</span></div>
+      </div>
+    </div>
+    <div class="comparison__view" data-view="slider" hidden>
+      <div class="comparison__unavailable">Slider is unavailable for this story.</div>
+    </div>
+  </div>
+  </article><article class="story story--added" id="features-editor-propertypanel--selected">
+    <header class="story__header">
+      <div>
+        <p class="status">added</p>
+        <h2><a href="features-editor-propertypanel--selected/" data-story-link="features-editor-propertypanel--selected">features-editor-propertypanel--selected</a></h2>
+      </div>
+      <dl class="metrics">
+        <div><dt>Diff pixels</dt><dd>0</dd></div>
+        <div><dt>Diff ratio</dt><dd>0.0000%</dd></div>
+      </dl>
+    </header>
+    <div class="comparison" data-comparison>
+    <div class="comparison__view" data-view="overlay">
+      <div class="comparison__unavailable">Overlay is unavailable because this story only has one snapshot.</div>
+    </div>
+    <div class="comparison__view" data-view="split" hidden>
+      <div class="comparison__split">
+        <div class="comparison__pane comparison__pane--empty"><strong>Baseline</strong><span>Not available</span></div>
+        <figure class="comparison__pane"><figcaption>Current</figcaption><img class="comparison__image" src="actual/features-editor-propertypanel--selected.png" alt="Current features-editor-propertypanel--selected"></figure>
+        <div class="comparison__pane comparison__pane--empty"><strong>Overlay</strong><span>Not available</span></div>
+        <div class="comparison__pane comparison__pane--empty"><strong>Diff</strong><span>Not available</span></div>
+      </div>
+    </div>
+    <div class="comparison__view" data-view="slider" hidden>
+      <div class="comparison__unavailable">Slider is unavailable for this story.</div>
+    </div>
+  </div>
+  </article>
   </main>
   </div>
   <script>
