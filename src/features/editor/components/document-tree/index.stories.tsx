@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
+import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import {
   EMPTY_EDITOR_STATE,
   SAMPLE_EDITOR_STATE,
@@ -18,7 +19,7 @@ const meta = {
       </div>
     ),
   ],
-  args: { onSelect: fn() },
+  args: { onSelect: fn(), onReorder: fn() },
 } satisfies Meta<typeof DocumentTree>;
 
 export default meta;
@@ -35,7 +36,58 @@ export const Selected: Story = {
   args: { state: EditorState.select(SAMPLE_EDITOR_STATE, "home") },
 };
 
+export const NodeSelected: Story = {
+  name: "artboard 配下のノードを選択中",
+  args: { state: EditorState.select(SAMPLE_EDITOR_STATE, "home-title") },
+};
+
 export const Empty: Story = {
   name: "artboard がない",
   args: { state: EMPTY_EDITOR_STATE },
+};
+
+/**
+ * 入れ子の深さと並べ替えボタンの出方（先頭には「上へ」、末尾には「下へ」が出ない）を
+ * 1 枚で見るための状態。共有のサンプル状態はキャンバスのストーリーも使うため、
+ * ツリー都合の構造はここに閉じる。
+ */
+const NESTED_EDITOR_STATE = EditorState.create(
+  DesignDocument.create({
+    tokens: DocumentTemplate.DEFAULT.tokens,
+    components: DocumentTemplate.DEFAULT.components,
+    artboards: [
+      {
+        name: "nested",
+        width: 360,
+        height: 240,
+        props: { direction: "column", gap: "md", paddingX: "lg" },
+        children: [
+          {
+            name: "header",
+            type: "Text",
+            props: { content: "見出し", typography: "heading" },
+          },
+          {
+            name: "body",
+            type: "Box",
+            props: { direction: "column", gap: "sm" },
+            children: [
+              { name: "body-text", type: "Text", props: { content: "本文" } },
+              {
+                name: "body-action",
+                ref: "primary-button",
+                overrides: { label: "送信" },
+              },
+            ],
+          },
+          { name: "footer", type: "Text", props: { content: "脚注" } },
+        ],
+      },
+    ],
+  }),
+);
+
+export const Nested: Story = {
+  name: "入れ子のノードと並べ替え",
+  args: { state: NESTED_EDITOR_STATE },
 };
