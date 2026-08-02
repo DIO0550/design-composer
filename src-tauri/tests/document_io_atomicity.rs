@@ -1,5 +1,9 @@
 //! 完了条件「書き込み途中のファイルを外部から読んでも不完全な JSON にならない」の検証。
 
+// テスト名は rules/testing.md に従い仕様の文として日本語で書く。
+// JSON のようなラテン文字を含むと snake case ではなくなるため、この lint は無効にする。
+#![allow(non_snake_case)]
+
 mod common;
 
 use std::sync::atomic::{AtomicBool, Ordering};
