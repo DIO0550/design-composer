@@ -54,7 +54,9 @@ fn 書き込みを繰り返している最中に読み続けても常に完全�
     }
 
     stop.store(true, Ordering::Relaxed);
-    let read_count = reader.join().expect("読み込み側が不完全な内容を観測していない");
+    let read_count = reader
+        .join()
+        .expect("読み込み側が不完全な内容を観測していない");
 
     assert!(read_count > 0, "読み込みが 1 度も行われていない");
 }
@@ -82,7 +84,8 @@ fn 複数のスレッドから同じファイルへ書き込んでも読み手�
         .map(|writer| document(&format!("writer-{writer}"), 2000))
         .collect();
 
-    document_io::save(&SelfWriteRegistry::new(), &path, &writable[0]).expect("初回の保存に成功する");
+    document_io::save(&SelfWriteRegistry::new(), &path, &writable[0])
+        .expect("初回の保存に成功する");
 
     let stop = Arc::new(AtomicBool::new(false));
     let reader_stop = Arc::clone(&stop);
@@ -118,7 +121,9 @@ fn 複数のスレッドから同じファイルへ書き込んでも読み手�
     }
 
     stop.store(true, Ordering::Relaxed);
-    reader.join().expect("読み込み側が不完全な内容を観測していない");
+    reader
+        .join()
+        .expect("読み込み側が不完全な内容を観測していない");
 
     assert_eq!(dir.file_names(), vec!["document.dcmp".to_string()]);
 }

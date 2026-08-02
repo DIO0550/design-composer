@@ -13,7 +13,10 @@ fn 保存した内容がそのまま読み込める() {
 
     document_io::save(&registry, &path, content).expect("保存に成功する");
 
-    assert_eq!(document_io::load(&path).expect("読み込みに成功する"), content);
+    assert_eq!(
+        document_io::load(&path).expect("読み込みに成功する"),
+        content
+    );
 }
 
 #[test]
@@ -51,7 +54,10 @@ fn マルチバイト文字を含む内容が壊れずに読み込める() {
 
     document_io::save(&registry, &path, content).expect("保存に成功する");
 
-    assert_eq!(document_io::load(&path).expect("読み込みに成功する"), content);
+    assert_eq!(
+        document_io::load(&path).expect("読み込みに成功する"),
+        content
+    );
 }
 
 #[test]

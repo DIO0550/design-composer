@@ -47,7 +47,9 @@ impl SelfWriteRegistry {
     /// 余分なリロードが起きる以外の実害が無い。ここで panic させる価値は無いので、
     /// poisoning は無視して中身を取り出す。
     fn written(&self) -> std::sync::MutexGuard<'_, HashMap<PathBuf, u64>> {
-        self.written.lock().unwrap_or_else(|error| error.into_inner())
+        self.written
+            .lock()
+            .unwrap_or_else(|error| error.into_inner())
     }
 }
 
