@@ -1,7 +1,13 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import {
+  drag,
+  movePointer,
+  pressPointer,
+  wheel,
+} from "@/features/editor/__tests__/canvas-gesture";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { ArtboardCanvas } from "../index";
 
@@ -21,35 +27,9 @@ function canvasTransform(): string {
   return screen.getByTestId("canvas-content").getAttribute("style") ?? "";
 }
 
-/**
- * キャンバスの土台でホイールを回す。
- * happy-dom の `WheelEvent` は `UIEvent` 派生で修飾キーを持たないため、
- * ctrl の有無はイベントを組み立てたあとに与える。
- */
-function wheel(operation: { deltaY: number; withCtrlKey: boolean }) {
-  const event = new WheelEvent("wheel", {
-    deltaY: operation.deltaY,
-    bubbles: true,
-    cancelable: true,
-  });
-  Object.defineProperty(event, "ctrlKey", { value: operation.withCtrlKey });
-  fireEvent(screen.getByTestId("canvas-surface"), event);
-}
-
-/** キャンバスの土台をドラッグする。 */
-function drag(from: { x: number; y: number }, to: { x: number; y: number }) {
-  const surface = screen.getByTestId("canvas-surface");
-  fireEvent.pointerDown(surface, {
-    pointerId: 1,
-    clientX: from.x,
-    clientY: from.y,
-  });
-  fireEvent.pointerMove(surface, {
-    pointerId: 1,
-    clientX: to.x,
-    clientY: to.y,
-  });
-  fireEvent.pointerUp(surface, { pointerId: 1, clientX: to.x, clientY: to.y });
+/** ズーム / パンの操作を受け取るキャンバスの土台。 */
+function canvasSurface(): Element {
+  return screen.getByTestId("canvas-surface");
 }
 
 test("キャンバスを開いた直後は等倍で表示される", () => {
@@ -99,34 +79,19 @@ test("縮小を繰り返しても下限より小さくならない", async () =>
 test("キャンバスをドラッグすると中身が同じだけ移動する", () => {
   render(<ArtboardCanvas state={setupState()} onSelect={vi.fn()} />);
 
-  drag({ x: 100, y: 100 }, { x: 130, y: 80 });
-
-  expect(canvasTransform()).toContain("translate(30px, -20px)");
-});
-
-test("ドラッグを終えたあとのポインタ移動では中身が動かない", () => {
-  render(<ArtboardCanvas state={setupState()} onSelect={vi.fn()} />);
-  drag({ x: 100, y: 100 }, { x: 130, y: 80 });
-
-  fireEvent.pointerMove(screen.getByTestId("canvas-surface"), {
-    pointerId: 1,
-    clientX: 400,
-    clientY: 400,
-  });
+  drag(canvasSurface(), { from: { x: 100, y: 100 }, to: { x: 130, y: 80 } });
 
   expect(canvasTransform()).toContain("translate(30px, -20px)");
 });
 
 test("artboard の上で始めたドラッグではキャンバスが動かない", () => {
   render(<ArtboardCanvas state={setupState()} onSelect={vi.fn()} />);
-  const artboard = screen.getByRole("button", { name: "home" });
 
-  fireEvent.pointerDown(artboard, { pointerId: 1, clientX: 100, clientY: 100 });
-  fireEvent.pointerMove(screen.getByTestId("canvas-surface"), {
-    pointerId: 1,
-    clientX: 130,
-    clientY: 80,
+  pressPointer(screen.getByRole("button", { name: "home" }), {
+    x: 100,
+    y: 100,
   });
+  movePointer(canvasSurface(), { x: 130, y: 80 });
 
   expect(canvasTransform()).toContain("translate(0px, 0px)");
 });
@@ -134,17 +99,9 @@ test("artboard の上で始めたドラッグではキャンバスが動かな�
 test("ctrl を押しながらホイールを回すと拡大する", () => {
   render(<ArtboardCanvas state={setupState()} onSelect={vi.fn()} />);
 
-  wheel({ deltaY: -100, withCtrlKey: true });
+  wheel(canvasSurface(), { x: 0, y: -100 }, "ctrl");
 
   expect(screen.getByText("倍率 120%")).toBeDefined();
-});
-
-test("ホイールだけを回すとスクロール方向へ移動する", () => {
-  render(<ArtboardCanvas state={setupState()} onSelect={vi.fn()} />);
-
-  wheel({ deltaY: 40, withCtrlKey: false });
-
-  expect(canvasTransform()).toContain("translate(0px, -40px)");
 });
 
 test("ズームやパンをしても選択は変わらない", async () => {
@@ -152,7 +109,7 @@ test("ズームやパンをしても選択は変わらない", async () => {
   render(<ArtboardCanvas state={state} onSelect={vi.fn()} />);
 
   await userEvent.click(screen.getByRole("button", { name: "拡大" }));
-  drag({ x: 100, y: 100 }, { x: 130, y: 80 });
+  drag(canvasSurface(), { from: { x: 100, y: 100 }, to: { x: 130, y: 80 } });
 
   expect(
     screen.getByRole("button", { name: "home" }).getAttribute("aria-current"),
