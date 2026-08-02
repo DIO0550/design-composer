@@ -1,0 +1,93 @@
+import { render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { expect, test } from "vitest";
+import { EditorScreen } from "../index";
+
+test("エディタを開くと3つのペインが表示される", () => {
+  render(<EditorScreen />);
+
+  const panes = [
+    screen.getByRole("complementary", { name: "ツリービュー・部品一覧" }),
+    screen.getByRole("main", { name: "キャンバス" }),
+    screen.getByRole("complementary", { name: "プロパティパネル" }),
+  ];
+
+  expect(panes).toHaveLength(3);
+});
+
+test("ドキュメントの artboard がツリービューとキャンバスの両方に表示される", () => {
+  render(<EditorScreen />);
+
+  const tree = screen.getByRole("complementary", {
+    name: "ツリービュー・部品一覧",
+  });
+  const canvas = screen.getByRole("main", { name: "キャンバス" });
+
+  expect(within(tree).getByRole("button", { name: "home" })).toBeDefined();
+  expect(within(canvas).getByRole("button", { name: /home/ })).toBeDefined();
+});
+
+test("ドキュメントの部品が部品一覧に表示される", () => {
+  render(<EditorScreen />);
+
+  const tree = screen.getByRole("complementary", {
+    name: "ツリービュー・部品一覧",
+  });
+
+  expect(within(tree).getByText("primary-button")).toBeDefined();
+});
+
+test("エディタを開いた直後はプロパティパネルに何も選択されていないと表示される", () => {
+  render(<EditorScreen />);
+
+  const propertyPanel = screen.getByRole("complementary", {
+    name: "プロパティパネル",
+  });
+
+  expect(within(propertyPanel).getByText("選択されていません")).toBeDefined();
+});
+
+test("ツリービューで artboard を選ぶとプロパティパネルにその名前が表示される", async () => {
+  render(<EditorScreen />);
+  const tree = screen.getByRole("complementary", {
+    name: "ツリービュー・部品一覧",
+  });
+
+  await userEvent.click(within(tree).getByRole("button", { name: "home" }));
+
+  const propertyPanel = screen.getByRole("complementary", {
+    name: "プロパティパネル",
+  });
+  expect(within(propertyPanel).getByText("home")).toBeDefined();
+});
+
+test("キャンバスで artboard を選ぶとツリービューの表示も選択中に変わる", async () => {
+  render(<EditorScreen />);
+  const canvas = screen.getByRole("main", { name: "キャンバス" });
+
+  await userEvent.click(within(canvas).getByRole("button", { name: /home/ }));
+
+  const tree = screen.getByRole("complementary", {
+    name: "ツリービュー・部品一覧",
+  });
+  expect(
+    within(tree)
+      .getByRole("button", { name: "home" })
+      .getAttribute("aria-current"),
+  ).toBe("true");
+});
+
+test("選択を解除するとプロパティパネルが未選択の表示に戻る", async () => {
+  render(<EditorScreen />);
+  const tree = screen.getByRole("complementary", {
+    name: "ツリービュー・部品一覧",
+  });
+  await userEvent.click(within(tree).getByRole("button", { name: "home" }));
+
+  await userEvent.click(screen.getByRole("button", { name: "選択を解除" }));
+
+  const propertyPanel = screen.getByRole("complementary", {
+    name: "プロパティパネル",
+  });
+  expect(within(propertyPanel).getByText("選択されていません")).toBeDefined();
+});

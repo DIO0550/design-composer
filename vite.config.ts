@@ -35,6 +35,7 @@ export default defineConfig(() => ({
   },
   test: {
     environment: "happy-dom",
+    setupFiles: ["./src/test-setup.ts"],
     coverage: {
       provider: "v8" as const,
       reporter: ["text", "json-summary", "json"],
@@ -44,7 +45,8 @@ export default defineConfig(() => ({
         "src/**/*.test.{ts,tsx}",
         "src/**/*.stories.{ts,tsx}",
         "src/**/*.d.ts",
-        "src/main.tsx",
+        "src/app/main.tsx",
+        "src/test-setup.ts",
       ],
     },
   },

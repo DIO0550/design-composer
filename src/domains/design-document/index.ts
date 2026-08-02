@@ -247,6 +247,13 @@ export const DesignDocument = {
     );
   },
 
+  /** 名前で artboard を引く。名前は単一名前空間なので artboard 名も一意に決まる。 */
+  findArtboard(document: DesignDocument, name: string): Option<Artboard> {
+    return Option.fromNullable(
+      document.artboards.find((artboard) => artboard.name === name),
+    );
+  },
+
   /** 名前でノードを引く。artboard 直下だけでなく子孫も辿る。 */
   findNode(document: DesignDocument, name: string): Option<Node> {
     for (const artboard of document.artboards) {
