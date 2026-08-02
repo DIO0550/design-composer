@@ -10,7 +10,15 @@ import { ArtboardCanvas } from "./index";
 const meta = {
   title: "features/editor/ArtboardCanvas",
   component: ArtboardCanvas,
-  parameters: { layout: "padded" },
+  // キャンバスは中央ペインの高さいっぱいに広がるので、ペインと同じ高さの器に入れる
+  parameters: { layout: "fullscreen" },
+  decorators: [
+    (Story) => (
+      <div className="h-screen bg-gray-100">
+        <Story />
+      </div>
+    ),
+  ],
   args: { onSelect: fn() },
 } satisfies Meta<typeof ArtboardCanvas>;
 

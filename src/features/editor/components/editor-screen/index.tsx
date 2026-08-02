@@ -13,15 +13,56 @@ import { PropertyPanel } from "@/features/editor/components/property-panel";
 /**
  * 起動時のドキュメント。ファイルを開く導線（Tauri の load_document と
  * libs/document-json）を繋ぐまでの仮の初期状態（#31）。
- * 3 ペインが同じ状態を共有していることを画面で確認できるよう、
- * 雛形のトークン・部品へ artboard を 2 枚足している。
+ * 3 ペインが同じ状態を共有していること、キャンバスがコンパイル結果を
+ * 描いていること（#32）を画面で確認できる中身にしている。
  */
 const INITIAL_DOCUMENT = DesignDocument.create({
   tokens: DocumentTemplate.DEFAULT.tokens,
   components: DocumentTemplate.DEFAULT.components,
   artboards: [
-    Artboard.create({ name: "home", width: 360, height: 240 }),
-    Artboard.create({ name: "settings", width: 360, height: 240 }),
+    Artboard.create({
+      name: "home",
+      width: 360,
+      height: 240,
+      props: {
+        direction: "column",
+        gap: "md",
+        paddingX: "lg",
+        paddingY: "lg",
+        background: "white",
+      },
+      children: [
+        {
+          name: "home-title",
+          type: "Text",
+          props: { content: "ホーム", typography: "heading" },
+        },
+        {
+          name: "home-login",
+          ref: "primary-button",
+          overrides: { label: "ログイン" },
+        },
+      ],
+    }),
+    Artboard.create({
+      name: "settings",
+      width: 360,
+      height: 240,
+      props: {
+        direction: "column",
+        gap: "md",
+        paddingX: "lg",
+        paddingY: "lg",
+        background: "gray-100",
+      },
+      children: [
+        {
+          name: "settings-card",
+          ref: "card",
+          overrides: { title: "設定", body: "通知とテーマを変更できます" },
+        },
+      ],
+    }),
   ],
 });
 
