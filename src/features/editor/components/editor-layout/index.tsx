@@ -28,7 +28,9 @@ function LeftPane({ children }: PaneProps) {
 
 function CenterPane({ children }: PaneProps) {
   return (
-    <main aria-label="キャンバス" className="overflow-auto bg-gray-100 p-6">
+    // キャンバスは自前でズーム / パンを持つため、ペイン側でスクロールさせない
+    // （二重にスクロールすると、掴んで動かした位置と表示がずれる）
+    <main aria-label="キャンバス" className="overflow-hidden bg-gray-100">
       {children}
     </main>
   );
