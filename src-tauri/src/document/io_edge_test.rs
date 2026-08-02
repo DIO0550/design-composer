@@ -2,14 +2,12 @@
 // UTF8 のようなラテン文字を含むと snake case ではなくなるため、この lint は無効にする。
 #![allow(non_snake_case)]
 
-mod common;
-
 use std::fs;
 
-use app_lib::document::io::{self, DocumentIoError};
-use app_lib::document::known_content::KnownContentRegistry;
+use super::io::{self, DocumentIoError};
+use super::known_content::KnownContentRegistry;
 
-use common::TempDir;
+use super::test_support::TempDir;
 
 #[test]
 fn 存在しないファイルの読み込みは見つからないことを返す() {

@@ -1,15 +1,13 @@
 //! 外部変更の検知(docs/05-architecture.md「外部編集の検知」)。
 
-mod common;
-
 use std::fs;
 use std::sync::Arc;
 
-use app_lib::document::io;
-use app_lib::document::known_content::KnownContentRegistry;
-use app_lib::document::watch::DocumentWatchers;
+use super::io;
+use super::known_content::KnownContentRegistry;
+use super::watch::DocumentWatchers;
 
-use common::{assert_no_change, next_change, watch_changes, TempDir};
+use super::test_support::{assert_no_change, next_change, watch_changes, TempDir};
 
 #[test]
 fn 外部がファイルを書き換えると変更が通知される() {

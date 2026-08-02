@@ -1,9 +1,7 @@
-mod common;
+use super::io;
+use super::known_content::KnownContentRegistry;
 
-use app_lib::document::io;
-use app_lib::document::known_content::KnownContentRegistry;
-
-use common::TempDir;
+use super::test_support::TempDir;
 
 #[test]
 fn 保存した内容がそのまま読み込める() {

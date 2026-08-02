@@ -1,15 +1,13 @@
 //! 外部変更の検知の境界・異常系。
 
-mod common;
-
 use std::fs;
 use std::sync::Arc;
 
-use app_lib::document::io::DocumentIoError;
-use app_lib::document::known_content::KnownContentRegistry;
-use app_lib::document::watch::{self, DocumentWatchers};
+use super::io::DocumentIoError;
+use super::known_content::KnownContentRegistry;
+use super::watch::{self, DocumentWatchers};
 
-use common::{assert_no_change, next_change, watch_changes, TempDir};
+use super::test_support::{assert_no_change, next_change, watch_changes, TempDir};
 
 #[test]
 fn 存在しないファイルの監視は開始できない() {

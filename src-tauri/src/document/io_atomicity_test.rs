@@ -4,16 +4,14 @@
 // JSON のようなラテン文字を含むと snake case ではなくなるため、この lint は無効にする。
 #![allow(non_snake_case)]
 
-mod common;
-
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::thread;
 
-use app_lib::document::io;
-use app_lib::document::known_content::KnownContentRegistry;
+use super::io;
+use super::known_content::KnownContentRegistry;
 
-use common::{document, TempDir};
+use super::test_support::{document, TempDir};
 
 #[test]
 fn 書き込みを繰り返している最中に読み続けても常に完全なJSONが読める() {

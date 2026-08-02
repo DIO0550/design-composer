@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -7,8 +5,8 @@ use std::sync::mpsc::{self, Receiver, RecvTimeoutError};
 use std::sync::Arc;
 use std::time::Duration;
 
-use app_lib::document::known_content::KnownContentRegistry;
-use app_lib::document::watch::{self, DocumentWatchers};
+use super::known_content::KnownContentRegistry;
+use super::watch::{self, DocumentWatchers};
 
 static SEQUENCE: AtomicU64 = AtomicU64::new(0);
 

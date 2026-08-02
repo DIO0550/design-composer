@@ -7,3 +7,21 @@
 pub mod io;
 pub mod known_content;
 pub mod watch;
+
+// テストは対象と同じ階層に `{対象のファイル名}_{カテゴリ}_test.rs` で置く。
+// カテゴリはテストの観点を表すラベル(rules/testing.md)。
+#[cfg(test)]
+mod test_support;
+
+#[cfg(test)]
+mod io_atomicity_test;
+#[cfg(test)]
+mod io_edge_test;
+#[cfg(test)]
+mod io_normal_test;
+#[cfg(test)]
+mod known_content_self_write_test;
+#[cfg(test)]
+mod watch_edge_test;
+#[cfg(test)]
+mod watch_normal_test;
