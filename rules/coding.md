@@ -50,6 +50,25 @@ function addItem(list: readonly Item[], item: Item): readonly Item[] {
 - **同じモジュール内で throw ベースと Result ベースを混在させない。** 公開APIの一部だけを `Result` 化して残りを throw のままにしない
 - 例外に変換してよいのは、外部ライブラリの境界(`libs/`)と、失敗したらテストを落としたいテストコード(`Result.unwrap`)だけ
 
+### 例外: Context のアクセサフック
+
+`useContext` を包むアクセサフックが **Provider の外で呼ばれた場合の `throw` は使ってよい**。
+
+- これは実行時に起こりうる失敗ではなく、コンポーネントの配置ミス(プログラミングエラー)であり、呼び出し側が分岐して回復するものではない
+- `Option` を返すと、Provider の内側にいることが分かっている消費側すべてに不在の分岐が増える
+- 既定値を返して埋めるのは禁止(Provider の付け忘れが画面に出ないまま残るため)。**隠さずに落とす**
+
+```typescript
+// OK: Provider の外は配置ミスなので落とす
+export function useEditor(): Editor {
+  const editor = useContext(EditorContext);
+  if (!editor.some) {
+    throw new Error("useEditor は EditorProvider の内側でのみ使える");
+  }
+  return editor.value;
+}
+```
+
 ```typescript
 // NG: 例外で失敗を伝える / undefined で不在を伝える
 function findNode(document: DesignDocument, name: string): Node | undefined { /* ... */ }

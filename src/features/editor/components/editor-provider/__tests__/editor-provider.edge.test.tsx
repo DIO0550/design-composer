@@ -1,0 +1,23 @@
+import { render } from "@testing-library/react";
+import { expect, test } from "vitest";
+import { DesignDocument } from "@/domains/design-document";
+import { EditorProvider, useEditor } from "../index";
+
+function SelectedNameView() {
+  const { state } = useEditor();
+  return <p>{state.selectedName.some ? state.selectedName.value : "未選択"}</p>;
+}
+
+test("Provider の内側ならエディタの状態を読める", () => {
+  const { container } = render(
+    <EditorProvider initialDocument={DesignDocument.create({ artboards: [] })}>
+      <SelectedNameView />
+    </EditorProvider>,
+  );
+
+  expect(container.textContent).toBe("未選択");
+});
+
+test("Provider の外でエディタの状態を読もうとするとエラーになる", () => {
+  expect(() => render(<SelectedNameView />)).toThrow();
+});
