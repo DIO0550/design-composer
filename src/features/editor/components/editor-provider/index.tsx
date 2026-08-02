@@ -39,10 +39,15 @@ export function EditorProvider({
 }
 
 /**
- * Provider の外では none を返す。
- * 既定のエディタ状態を作って返すと Provider の付け忘れを画面が隠してしまうため、
- * 「無い」をそのまま呼び出し側へ渡す。
+ * Provider の外で呼ばれたら例外にする。
+ * これは実行時に起こりうる失敗ではなくコンポーネントの配置ミスであり、
+ * 既定のエディタ状態を返して隠すと付け忘れが画面に出ないまま残るため
+ * （rules/coding.md「エラーと不在の表現」の例外）。
  */
-export function useEditor(): Option<Editor> {
-  return useContext(EditorContext);
+export function useEditor(): Editor {
+  const editor = useContext(EditorContext);
+  if (!editor.some) {
+    throw new Error("useEditor は EditorProvider の内側でのみ使える");
+  }
+  return editor.value;
 }

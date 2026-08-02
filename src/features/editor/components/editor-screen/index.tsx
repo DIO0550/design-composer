@@ -31,15 +31,7 @@ const INITIAL_DOCUMENT = DesignDocument.create({
  * （個別に単体描画・テストできる）。
  */
 function EditorPanes() {
-  const editor = useEditor();
-
-  // EditorScreen が必ず Provider の内側へ置くため none にはならない。
-  // 既定のエディタ状態を作って描くと Provider の付け忘れを画面が隠すので、何も描かない。
-  if (!editor.some) {
-    return null;
-  }
-
-  const { state, dispatch } = editor.value;
+  const { state, dispatch } = useEditor();
   const selectNode = (name: string) => dispatch({ type: "select", name });
 
   return (
