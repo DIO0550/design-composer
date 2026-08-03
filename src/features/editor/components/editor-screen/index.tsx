@@ -6,6 +6,7 @@ import {
 } from "@/domains/design-document";
 import { ArtboardCanvas } from "@/features/editor/components/artboard-canvas";
 import { ComponentList } from "@/features/editor/components/component-list";
+import { DocumentErrorList } from "@/features/editor/components/document-error-list";
 import { DocumentTree } from "@/features/editor/components/document-tree";
 import { EditorLayout } from "@/features/editor/components/editor-layout";
 import {
@@ -93,6 +94,7 @@ function EditorPanes() {
       </EditorLayout.LeftPane>
       <EditorLayout.CenterPane>
         <ArtboardCanvas state={state} onSelect={selectNode} />
+        <DocumentErrorList errors={state.errors} />
       </EditorLayout.CenterPane>
       <EditorLayout.RightPane>
         <PropertyPanel

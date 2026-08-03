@@ -1,6 +1,7 @@
 import { type ActionDispatch, useReducer } from "react";
 import type { ChildPosition, DesignDocument } from "@/domains/design-document";
 import type { PropEdit } from "@/domains/node";
+import type { DocumentReload } from "@/features/editor/domains/document-reload";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
 
@@ -8,7 +9,7 @@ import { Option } from "@/utils/Option";
 export type EditorAction =
   | Readonly<{ type: "select"; name: string }>
   | Readonly<{ type: "clear_selection" }>
-  | Readonly<{ type: "load_document"; document: DesignDocument }>
+  | Readonly<{ type: "reload_document"; reload: DocumentReload }>
   | Readonly<{
       type: "reorder_node";
       from: ChildPosition;
@@ -23,8 +24,8 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
       return EditorState.select(state, action.name);
     case "clear_selection":
       return EditorState.clearSelection(state);
-    case "load_document":
-      return EditorState.loadDocument(state, action.document);
+    case "reload_document":
+      return EditorState.applyReload(state, action.reload);
     case "reorder_node":
       // 移動が存在しなければ並びは変わらない（EditorState.reorderNode の `none`）。
       return Option.unwrapOr(
