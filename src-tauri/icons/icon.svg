@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="frame" gradientUnits="userSpaceOnUse" x1="112" y1="112" x2="912" y2="912">
+      <stop offset="0%" stop-color="#38B6E8"/>
+      <stop offset="35%" stop-color="#6B7BE8"/>
+      <stop offset="70%" stop-color="#B45BD6"/>
+      <stop offset="100%" stop-color="#D65CA8"/>
+    </linearGradient>
+    <linearGradient id="frameTop" gradientUnits="userSpaceOnUse" x1="112" y1="112" x2="912" y2="112">
+      <stop offset="0%" stop-color="#38B6E8"/>
+      <stop offset="55%" stop-color="#B7A8A0"/>
+      <stop offset="100%" stop-color="#F09A4E"/>
+    </linearGradient>
+    <linearGradient id="frameFade" gradientUnits="userSpaceOnUse" x1="400" y1="112" x2="912" y2="762">
+      <stop offset="0%" stop-color="#F09A4E" stop-opacity="0"/>
+      <stop offset="30%" stop-color="#F09A4E" stop-opacity="1"/>
+      <stop offset="70%" stop-color="#E86FA0"/>
+      <stop offset="100%" stop-color="#C05CCB"/>
+    </linearGradient>
+    <linearGradient id="frameRight" gradientUnits="userSpaceOnUse" x1="912" y1="112" x2="912" y2="912">
+      <stop offset="0%" stop-color="#F09A4E"/>
+      <stop offset="60%" stop-color="#E86FA0"/>
+      <stop offset="100%" stop-color="#B45BD6"/>
+    </linearGradient>
+    <linearGradient id="innerFill" gradientUnits="userSpaceOnUse" x1="112" y1="112" x2="700" y2="912">
+      <stop offset="0%" stop-color="#EDF6FC"/>
+      <stop offset="60%" stop-color="#F2EFF8"/>
+      <stop offset="100%" stop-color="#F9EFF3"/>
+    </linearGradient>
+    <linearGradient id="nib" gradientUnits="userSpaceOnUse" x1="420" y1="330" x2="640" y2="700">
+      <stop offset="0%" stop-color="#4A90E2"/>
+      <stop offset="45%" stop-color="#7B68D9"/>
+      <stop offset="75%" stop-color="#B45BD6"/>
+      <stop offset="100%" stop-color="#E8638F"/>
+    </linearGradient>
+    <linearGradient id="nibBase" gradientUnits="userSpaceOnUse" x1="414" y1="756" x2="610" y2="756">
+      <stop offset="0%" stop-color="#7B68D9"/>
+      <stop offset="55%" stop-color="#D65CA8"/>
+      <stop offset="100%" stop-color="#F09A4E"/>
+    </linearGradient>
+    <linearGradient id="bezierLeft" gradientUnits="userSpaceOnUse" x1="328" y1="240" x2="512" y2="440">
+      <stop offset="0%" stop-color="#38B6E8"/>
+      <stop offset="100%" stop-color="#5B7BE8"/>
+    </linearGradient>
+    <linearGradient id="bezierRight" gradientUnits="userSpaceOnUse" x1="512" y1="240" x2="696" y2="440">
+      <stop offset="0%" stop-color="#C98A7A"/>
+      <stop offset="100%" stop-color="#F09A4E"/>
+    </linearGradient>
+    <linearGradient id="bracketL1" gradientUnits="userSpaceOnUse" x1="230" y1="440" x2="330" y2="580">
+      <stop offset="0%" stop-color="#4A9FE8"/>
+      <stop offset="100%" stop-color="#6B7BE8"/>
+    </linearGradient>
+    <linearGradient id="bracketL2" gradientUnits="userSpaceOnUse" x1="220" y1="560" x2="320" y2="660">
+      <stop offset="0%" stop-color="#5B7BE8"/>
+      <stop offset="100%" stop-color="#8B68D9"/>
+    </linearGradient>
+    <linearGradient id="tile" gradientUnits="userSpaceOnUse" x1="640" y1="620" x2="830" y2="820">
+      <stop offset="0%" stop-color="#8BB8E8"/>
+      <stop offset="45%" stop-color="#F0D8C8"/>
+      <stop offset="100%" stop-color="#F0A45E"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 背景 -->
+  <rect width="1024" height="1024" fill="#FBF3EC"/>
+
+  <!-- 角丸スクエアの枠 -->
+  <rect x="112" y="112" width="800" height="800" rx="150" fill="url(#innerFill)"/>
+  <rect x="112" y="112" width="800" height="800" rx="150" fill="none" stroke="url(#frame)" stroke-width="16"/>
+  <!-- 右上〜右辺をオレンジ系で上塗りして左右非対称のグラデーションを再現(左端は透明で溶け込ませる) -->
+  <path d="M 400 112 H 762 A 150 150 0 0 1 912 262 V 762" fill="none" stroke="url(#frameFade)" stroke-width="16"/>
+
+  <!-- ベジェ曲線とハンドル -->
+  <g fill="none" stroke-width="14">
+    <path d="M 328 424 V 372 A 176 148 0 0 1 504 236" stroke="url(#bezierLeft)"/>
+    <path d="M 520 236 A 176 148 0 0 1 696 372 V 424" stroke="url(#bezierRight)"/>
+    <path d="M 336 244 H 486" stroke="#4AA8E8"/>
+    <path d="M 538 244 H 688" stroke="#D89070"/>
+  </g>
+  <circle cx="316" cy="244" r="42" fill="#3FB2E4"/>
+  <circle cx="708" cy="244" r="42" fill="#E08A64"/>
+  <rect x="480" y="212" width="64" height="64" fill="#8C98B8"/>
+  <rect x="298" y="418" width="60" height="60" fill="#5B8BE8"/>
+  <rect x="666" y="418" width="60" height="60" fill="#F09A4E"/>
+
+  <!-- ペン先(ニブ): 上に尖り、肩で最大幅、下すぼまりの角張った形 -->
+  <path d="M 512 296
+           L 418 442
+           L 396 560
+           L 428 664
+           L 470 692
+           H 554
+           L 596 664
+           L 628 560
+           L 606 442
+           Z" fill="url(#nib)"/>
+  <circle cx="512" cy="546" r="38" fill="#F5EEF4"/>
+  <rect x="505" y="330" width="14" height="180" fill="#F5EEF4"/>
+  <!-- ニブの台座 -->
+  <path d="M 430 716 H 594 L 608 796 H 416 Z" fill="url(#nibBase)"/>
+
+  <!-- 左側のコードブラケット(大きい < と小さい < と2本のスラッシュ) -->
+  <g fill="none" stroke-linejoin="miter" stroke-linecap="square">
+    <path d="M 330 466 L 232 528 L 330 590" stroke="url(#bracketL1)" stroke-width="26"/>
+    <path d="M 310 608 L 244 650 L 310 692" stroke="url(#bracketL2)" stroke-width="22"/>
+    <path d="M 356 700 L 250 740" stroke="#7B68D9" stroke-width="20"/>
+    <path d="M 368 752 L 262 792" stroke="#8B68D9" stroke-width="20"/>
+  </g>
+
+  <!-- 右側のコードブラケット( > 大小) -->
+  <g fill="none" stroke-linejoin="miter" stroke-linecap="square">
+    <path d="M 694 466 L 792 528 L 694 590" stroke="#F0A44E" stroke-width="26"/>
+    <path d="M 712 606 L 778 648 L 712 690" stroke="#E8845E" stroke-width="22"/>
+  </g>
+
+  <!-- タイポグラフィのタイル(T) -->
+  <rect x="636" y="624" width="192" height="192" rx="16" fill="url(#tile)"/>
+  <path d="M 666 662 H 798 V 702 H 752 V 788 H 712 V 702 H 666 Z" fill="#EDF2F8" opacity="0.92"/>
+  <path d="M 650 742 L 704 710 L 704 732 L 650 774 Z" fill="#8B68D9" opacity="0.85"/>
+</svg>
