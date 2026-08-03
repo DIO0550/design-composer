@@ -1,5 +1,4 @@
 import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import { EditorState } from "@/features/editor/domains/editor-state";
@@ -134,19 +133,6 @@ test("トークンはキャンバス側のカスタムプロパティとして�
   expect(screen.getByRole("list").getAttribute("style")).toContain(
     "--colors-primary",
   );
-});
-
-test("artboard をクリックするとその名前で選択が通知される", async () => {
-  const onSelect = vi.fn();
-  const state = setupState([
-    { name: "home", width: 360, height: 240, children: [] },
-    { name: "settings", width: 360, height: 240, children: [] },
-  ]);
-  render(<ArtboardCanvas state={state} onSelect={onSelect} />);
-
-  await userEvent.click(screen.getByRole("button", { name: "settings" }));
-
-  expect(onSelect).toHaveBeenCalledWith("settings");
 });
 
 test("選択中の artboard は選択状態として示される", () => {

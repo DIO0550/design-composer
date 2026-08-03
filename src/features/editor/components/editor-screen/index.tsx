@@ -79,6 +79,12 @@ const INITIAL_DOCUMENT = DesignDocument.create({
 function EditorPanes() {
   const { state, dispatch } = useEditor();
   const selectNode = (name: string) => dispatch({ type: "select", name });
+  /**
+   * キャンバスは押された位置から外へ辿った名前を渡す。どれを選ぶかは状態側の判断
+   * （選択できる最も内側のもの / EditorState.selectInnermost）。
+   */
+  const selectNodeAt = (names: readonly string[]) =>
+    dispatch({ type: "select_innermost", names });
   const reorderNode = (from: ChildPosition, toIndex: number) =>
     dispatch({ type: "reorder_node", from, toIndex });
 
@@ -93,7 +99,7 @@ function EditorPanes() {
         <ComponentList components={state.document.components} />
       </EditorLayout.LeftPane>
       <EditorLayout.CenterPane>
-        <ArtboardCanvas state={state} onSelect={selectNode} />
+        <ArtboardCanvas state={state} onSelect={selectNodeAt} />
         <DocumentErrorList errors={state.errors} />
       </EditorLayout.CenterPane>
       <EditorLayout.RightPane>
