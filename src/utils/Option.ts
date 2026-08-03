@@ -33,4 +33,16 @@ export const Option = {
   unwrapOr<T>(option: Option<T>, defaultValue: T): T {
     return option.some ? option.value : defaultValue;
   },
+
+  /**
+   * Some の値を取り出す。None の場合は例外を投げる。
+   * 分岐せず値を前提にしてよいのは、失敗をそのままテストの失敗にしたいテストコードだけ
+   * （`Result.unwrap` と同じ位置づけ / rules/coding.md）。
+   */
+  unwrap<T>(option: Option<T>): T {
+    if (!option.some) {
+      throw new Error("cannot unwrap a None option");
+    }
+    return option.value;
+  },
 } as const;

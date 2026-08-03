@@ -55,3 +55,11 @@ test("none は凍結されていて変更できない", () => {
 test("none は常に同一のインスタンスである", () => {
   expect(Option.fromNullable(null)).toBe(Option.fromNullable(undefined));
 });
+
+test("unwrap は none に対して例外を投げる", () => {
+  expect(() => Option.unwrap(Option.none)).toThrow();
+});
+
+test("unwrap は falsy な値 0 もそのまま取り出す", () => {
+  expect(Option.unwrap(Option.some(0))).toBe(0);
+});
