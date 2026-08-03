@@ -1,117 +1,46 @@
-import { Artboard } from "@/domains/artboard";
-import {
-  type ChildPosition,
-  DesignDocument,
-  DocumentTemplate,
-} from "@/domains/design-document";
-import { ArtboardCanvas } from "@/features/editor/components/artboard-canvas";
-import { ComponentList } from "@/features/editor/components/component-list";
-import { DocumentErrorList } from "@/features/editor/components/document-error-list";
-import { DocumentTree } from "@/features/editor/components/document-tree";
-import { EditorLayout } from "@/features/editor/components/editor-layout";
-import {
-  EditorProvider,
-  useEditor,
-} from "@/features/editor/components/editor-provider";
-import { PropertyPanel } from "@/features/editor/components/property-panel";
+import { DocumentStart } from "@/features/editor/components/document-start";
+import { DocumentToolbar } from "@/features/editor/components/document-toolbar";
+import { OpenedDocumentEditor } from "@/features/editor/components/opened-document-editor";
+import { useDocumentSession } from "@/features/editor/hooks/use-document-session";
+import type { DocumentDialog } from "@/libs/document-dialog";
+import type { DocumentIpc } from "@/libs/document-ipc";
 
 /**
- * 起動時のドキュメント。ファイルを開く導線（Tauri の load_document と
- * libs/document-json）を繋ぐまでの仮の初期状態（#31）。
- * 3 ペインが同じ状態を共有していること、キャンバスがコンパイル結果を
- * 描いていること（#32）を画面で確認できる中身にしている。
+ * アプリの画面。開いているドキュメントが決まるまでは開始画面を、決まったら編集画面を出す
+ * （docs/05-architecture.md「Tauri IPC」/ docs/06-ui.md「画面構成」）。
+ *
+ * ファイルへの口を props で受け取るのは、テストで代役に差し替えるため。
+ * 実物の組み立ては `app/` が持つ（rules/architecture.md）。
  */
-const INITIAL_DOCUMENT = DesignDocument.create({
-  tokens: DocumentTemplate.DEFAULT.tokens,
-  components: DocumentTemplate.DEFAULT.components,
-  artboards: [
-    Artboard.create({
-      name: "home",
-      width: 360,
-      height: 240,
-      props: {
-        direction: "column",
-        gap: "md",
-        paddingX: "lg",
-        paddingY: "lg",
-        background: "white",
-      },
-      children: [
-        {
-          name: "home-title",
-          type: "Text",
-          props: { content: "ホーム", typography: "heading" },
-        },
-        {
-          name: "home-login",
-          ref: "primary-button",
-          overrides: { label: "ログイン" },
-        },
-      ],
-    }),
-    Artboard.create({
-      name: "settings",
-      width: 360,
-      height: 240,
-      props: {
-        direction: "column",
-        gap: "md",
-        paddingX: "lg",
-        paddingY: "lg",
-        background: "gray-100",
-      },
-      children: [
-        {
-          name: "settings-card",
-          ref: "card",
-          overrides: { title: "設定", body: "通知とテーマを変更できます" },
-        },
-      ],
-    }),
-  ],
-});
-
-/**
- * Provider から状態を読んで各ペインへ配る。
- * 読み出しをここ 1 箇所に集めることで、ペインは props だけで描ける
- * （個別に単体描画・テストできる）。
- */
-function EditorPanes() {
-  const { state, dispatch } = useEditor();
-  const selectNode = (name: string) => dispatch({ type: "select", name });
-  const reorderNode = (from: ChildPosition, toIndex: number) =>
-    dispatch({ type: "reorder_node", from, toIndex });
+export function EditorScreen({
+  ipc,
+  dialog,
+}: Readonly<{ ipc: DocumentIpc; dialog: DocumentDialog }>) {
+  const { session, openDocument, createDocument } = useDocumentSession({
+    ipc,
+    dialog,
+  });
 
   return (
-    <EditorLayout>
-      <EditorLayout.LeftPane>
-        <DocumentTree
-          state={state}
-          onSelect={selectNode}
-          onReorder={reorderNode}
-        />
-        <ComponentList components={state.document.components} />
-      </EditorLayout.LeftPane>
-      <EditorLayout.CenterPane>
-        <ArtboardCanvas state={state} onSelect={selectNode} />
-        <DocumentErrorList errors={state.errors} />
-      </EditorLayout.CenterPane>
-      <EditorLayout.RightPane>
-        <PropertyPanel
-          state={state}
-          onEditProp={(edit) => dispatch({ type: "apply_prop_edit", edit })}
-          onClearSelection={() => dispatch({ type: "clear_selection" })}
-        />
-      </EditorLayout.RightPane>
-    </EditorLayout>
-  );
-}
-
-/** エディタ画面。状態の器（Provider）と 3 ペインの組み立てだけを持つ。 */
-export function EditorScreen() {
-  return (
-    <EditorProvider initialDocument={INITIAL_DOCUMENT}>
-      <EditorPanes />
-    </EditorProvider>
+    <div className="flex h-screen w-screen flex-col overflow-hidden">
+      <DocumentToolbar
+        session={session}
+        onOpen={openDocument}
+        onCreate={createDocument}
+      />
+      <div className="min-h-0 flex-1">
+        {session.kind === "opened" ? (
+          // 別のファイルを開いたら編集状態（選択・エラー）を作り直す。
+          // key の差し替えで捨てるのは、Effect で state をリセットしないため（rules/hooks.md）。
+          <OpenedDocumentEditor
+            key={session.opened.path}
+            ipc={ipc}
+            opened={session.opened}
+          />
+        ) : (
+          <DocumentStart session={session} />
+        )}
+      </div>
+    </div>
   );
 }
