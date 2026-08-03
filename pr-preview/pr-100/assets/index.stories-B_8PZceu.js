@@ -1,4 +1,0 @@
-import{n as e}from"./chunk-BneVvdWh.js";import{n as t,r as n}from"./sample-editor-state-tSiBZA-u.js";import{a as r,c as i,n as a,o,s,t as c}from"./opened-document-editor-DMnihVNb.js";var l,u,d,f;e((()=>{n(),i(),o(),a(),l=`/work/sample.dcmp`,u={title:`features/editor/OpenedDocumentEditor`,component:c,parameters:{layout:`fullscreen`},args:{ipc:s.create({[l]:r.serialize(t.document)}).ipc,opened:{path:l,document:t.document}}},d={name:`編集画面`},d.parameters={...d.parameters,docs:{...d.parameters?.docs,source:{originalSource:`{
-  name: "編集画面"
-}`,...d.parameters?.docs?.source},description:{story:`3 ペインを組み立てた編集画面。EditorProvider を内側に持つため、
-ツリービューとキャンバスの選択が連動する様子をここで操作して確認できる。`,...d.parameters?.docs?.description}}},f=[`Default`]}))();export{d as Default,f as __namedExportsOrder,u as default};
