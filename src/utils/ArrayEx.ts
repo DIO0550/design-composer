@@ -26,6 +26,11 @@ export const ArrayEx = {
     return NumberEx.isNatural(index) && index <= array.length;
   },
 
+  /** 重複を取り除いた並び。残るのは各値が最初に現れた位置。 */
+  distinct<T>(array: readonly T[]): readonly T[] {
+    return array.filter((item, index) => array.indexOf(item) === index);
+  },
+
   insertAt<T>(
     array: readonly T[],
     index: number,

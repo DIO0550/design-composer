@@ -6,7 +6,7 @@ import {
   type FormatVersionOf,
 } from "@/domains/format-version";
 import { NameSpace } from "@/domains/name-space";
-import { Node, type RefNode } from "@/domains/node";
+import { Node, type PropEdit, type RefNode } from "@/domains/node";
 import { NodeTree, type NodeTreeUpdate } from "@/domains/node-tree";
 import { TokenSet } from "@/domains/token";
 import { ArrayEx } from "@/utils/ArrayEx";
@@ -263,6 +263,40 @@ export const DesignDocument = {
       }
     }
     return Option.none;
+  },
+
+  /**
+   * 名前で指した artboard またはノードの prop を書き換える
+   * （docs/06-ui.md「編集操作の一覧」の props 編集）。
+   * 名前は単一名前空間なので、artboard とノードのどちらを相手にするかは名前で決まる。
+   */
+  applyPropEdit(
+    document: DesignDocument,
+    name: string,
+    edit: PropEdit,
+  ): Result<DesignDocument, DesignDocumentEditError> {
+    const artboardIndex = document.artboards.findIndex(
+      (artboard) => artboard.name === name,
+    );
+    if (artboardIndex !== -1) {
+      return Result.ok({
+        ...document,
+        artboards: document.artboards.map((artboard, current) =>
+          current === artboardIndex
+            ? Artboard.applyPropEdit(artboard, edit)
+            : artboard,
+        ),
+      });
+    }
+    const found = DesignDocument.findNode(document, name);
+    if (!found.some) {
+      return Result.err({ kind: "node-not-found", name });
+    }
+    return DesignDocument.replaceNode(
+      document,
+      name,
+      Node.applyPropEdit(found.value, edit),
+    );
   },
 
   /** 名前で指したノードを別のノードに差し替える。 */

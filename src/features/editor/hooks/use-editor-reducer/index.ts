@@ -1,5 +1,6 @@
 import { type ActionDispatch, useReducer } from "react";
 import type { ChildPosition, DesignDocument } from "@/domains/design-document";
+import type { PropEdit } from "@/domains/node";
 import type { DocumentReload } from "@/features/editor/domains/document-reload";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
@@ -13,7 +14,8 @@ export type EditorAction =
       type: "reorder_node";
       from: ChildPosition;
       toIndex: number;
-    }>;
+    }>
+  | Readonly<{ type: "apply_prop_edit"; edit: PropEdit }>;
 
 /** アクションの解釈だけを行い、状態の組み立ては EditorState に委ねる。 */
 function editorReducer(state: EditorState, action: EditorAction): EditorState {
@@ -28,6 +30,12 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
       // 移動が存在しなければ並びは変わらない（EditorState.reorderNode の `none`）。
       return Option.unwrapOr(
         EditorState.reorderNode(state, action.from, action.toIndex),
+        state,
+      );
+    case "apply_prop_edit":
+      // 選択が無ければ編集は存在しない（EditorState.applyPropEdit の `none`）。
+      return Option.unwrapOr(
+        EditorState.applyPropEdit(state, action.edit),
         state,
       );
   }
