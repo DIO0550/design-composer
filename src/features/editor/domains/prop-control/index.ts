@@ -1,7 +1,13 @@
 import { Artboard } from "@/domains/artboard";
 import { Component, ComponentSet } from "@/domains/component";
 import { DesignDocument } from "@/domains/design-document";
-import { Node, type Props, type PropValue, type RefNode } from "@/domains/node";
+import {
+  Node,
+  PropEdit,
+  type Props,
+  type PropValue,
+  type RefNode,
+} from "@/domains/node";
 import {
   PrimitiveSchema,
   PropDefinition,
@@ -201,6 +207,26 @@ function nodeSections(
     document.tokens,
   );
 }
+
+export const PropControl = {
+  /**
+   * 入力欄に入った文字列を、その prop への編集にする。
+   *
+   * 空欄を「未設定へ戻す」と読むのは入力欄の約束事なので、`PropEdit` ではなく
+   * コントロールを知っているここで解釈する（文字列 prop にとって `""` は
+   * それ自体が正当な値になりうるため、ドメイン側に持たせると意味が固定される）。
+   * 値の作り方は入力欄の種類だけで決まるので、prop 名では分岐しない。
+   */
+  editFrom(control: PropControl, raw: string): PropEdit {
+    if (raw === "") {
+      return PropEdit.clear(control.prop);
+    }
+    return PropEdit.set(
+      control.prop,
+      control.input.kind === "number" ? Number(raw) : raw,
+    );
+  },
+} as const;
 
 export const PropControlSection = {
   /**

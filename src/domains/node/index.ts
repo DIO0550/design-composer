@@ -29,6 +29,22 @@ export type PropEdit = Readonly<{
   value: Option<PropValue>;
 }>;
 
+export const PropEdit = {
+  /** その prop に値を設定する編集。 */
+  set(name: string, value: PropValue): PropEdit {
+    return { name, value: Option.some(value) };
+  },
+
+  /**
+   * その prop を未設定へ戻す編集。
+   * 「未設定」は値が無いことではなくデフォルトが効く状態なので、
+   * 空文字や 0 を入れて表さない(`Props.apply` がキーごと落とす)。
+   */
+  clear(name: string): PropEdit {
+    return { name, value: Option.none };
+  },
+} as const;
+
 export const PropValue = {
   /** prop の値になれるのはスカラーだけ(構造を持つ値は prop にしない)。 */
   fromJson(cursor: JsonCursor): JsonDecoded<PropValue> {

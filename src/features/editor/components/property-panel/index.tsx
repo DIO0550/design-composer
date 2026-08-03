@@ -1,8 +1,8 @@
 import { useId } from "react";
-import type { PropEdit, PropValue } from "@/domains/node";
+import type { PropEdit } from "@/domains/node";
 import type { EditorState } from "@/features/editor/domains/editor-state";
 import {
-  type PropControl,
+  PropControl,
   PropControlSection,
 } from "@/features/editor/domains/prop-control";
 import { CaseStyle } from "@/utils/CaseStyle";
@@ -18,18 +18,6 @@ function unsetLabel(control: PropControl): string {
   return control.defaultValue.some
     ? `未指定（既定: ${control.defaultValue.value}）`
     : "未指定";
-}
-
-/** 入力された文字列を prop の値に戻す。空文字は「未設定に戻す」。 */
-function toPropEdit(
-  control: PropControl,
-  raw: string,
-  toValue: (raw: string) => PropValue,
-): PropEdit {
-  return {
-    name: control.prop,
-    value: raw === "" ? Option.none : Option.some(toValue(raw)),
-  };
 }
 
 /** ラベルと入力欄を結び付ける識別子と、その prop のコントロール。 */
@@ -65,7 +53,7 @@ function ChoiceInput({
       className={FIELD_CLASS}
       value={Option.unwrapOr(value, "")}
       onChange={(event) =>
-        onEdit(toPropEdit(control, event.target.value, (raw) => raw))
+        onEdit(PropControl.editFrom(control, event.target.value))
       }
     >
       <option value="">{unsetLabel(control)}</option>
@@ -96,11 +84,7 @@ function LiteralInput({
       value={Option.unwrapOr(Option.map(control.value, String), "")}
       placeholder={unsetLabel(control)}
       onChange={(event) =>
-        onEdit(
-          toPropEdit(control, event.target.value, (raw) =>
-            inputType === "number" ? Number(raw) : raw,
-          ),
-        )
+        onEdit(PropControl.editFrom(control, event.target.value))
       }
     />
   );
