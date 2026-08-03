@@ -32,3 +32,18 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   name: "編集画面",
 };
+
+/**
+ * ファイルとの同期に失敗している状態。実体の無いパスは監視を張れない（#30）ので、
+ * 失敗の帯が編集画面の上に出る。表示そのものは保たれることをここで確認できる。
+ */
+export const SyncFailed: Story = {
+  name: "同期に失敗した編集画面",
+  args: {
+    ipc: DocumentIpcFake.create({}).ipc,
+    opened: {
+      path: "/work/missing.dcmp",
+      document: SAMPLE_EDITOR_STATE.document,
+    },
+  },
+};
