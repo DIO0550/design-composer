@@ -94,6 +94,12 @@ test("未指定の prop は既定値付きの未指定が選ばれ、明示設�
   ).toHaveProperty("selected", true);
 });
 
+test("prop 名は camelCase の切れ目で語に分けた表示名になる", () => {
+  renderPanel(EditorState.select(setupState(), "home"));
+
+  expect(screen.getByRole("combobox", { name: "Padding X" })).toBeDefined();
+});
+
 test("group ごとのセクションが見出しとして出る", () => {
   renderPanel(EditorState.select(setupState(), "home-title"));
 

@@ -6,9 +6,19 @@ import {
   PropControlSection,
 } from "@/features/editor/domains/prop-control";
 import { Option } from "@/utils/Option";
-import { StringEx } from "@/utils/StringEx";
 
 const FIELD_CLASS = "w-full rounded border border-gray-300 px-2 py-1";
+
+/**
+ * prop 名・group 名を表示名にする。
+ * スキーマは表示名フィールドを持たず、整形はパネルの担当と決まっている
+ * （docs/03-schema.md「prop 名をパネル側で機械的に整形して表示する」）。
+ * camelCase の切れ目で語に分け、先頭を大文字にする（`paddingX` → `Padding X`）。
+ */
+function displayLabel(identifier: string): string {
+  const words = identifier.replace(/([A-Z])/g, " $1");
+  return words.charAt(0).toUpperCase() + words.slice(1);
+}
 
 /**
  * 未指定のときに何が効くかを出す（#34「未指定 prop はデフォルト値を
@@ -136,7 +146,7 @@ function PropRow({
   return (
     <div className="flex flex-col gap-1">
       <label htmlFor={id} className="text-gray-600 text-xs">
-        {StringEx.toLabel(control.prop)}
+        {displayLabel(control.prop)}
       </label>
       <PropField field={{ id, control }} onEdit={onEdit} />
     </div>
@@ -153,7 +163,7 @@ function GroupSection({
   return (
     <div className="flex flex-col gap-2">
       <h3 className="font-semibold text-gray-400 text-xs uppercase">
-        {StringEx.toLabel(section.group)}
+        {displayLabel(section.group)}
       </h3>
       {section.controls.map((control) => (
         <PropRow key={control.prop} control={control} onEdit={onEdit} />
