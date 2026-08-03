@@ -99,6 +99,7 @@ function EditorPanes() {
       <EditorLayout.RightPane>
         <PropertyPanel
           state={state}
+          onEditProp={(edit) => dispatch({ type: "apply_prop_edit", edit })}
           onClearSelection={() => dispatch({ type: "clear_selection" })}
         />
       </EditorLayout.RightPane>

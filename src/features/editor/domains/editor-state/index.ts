@@ -1,4 +1,5 @@
 import { type ChildPosition, DesignDocument } from "@/domains/design-document";
+import type { PropEdit } from "@/domains/node";
 import type { DocumentError } from "@/features/editor/domains/document-error";
 import type { DocumentReload } from "@/features/editor/domains/document-reload";
 import { Option } from "@/utils/Option";
@@ -93,6 +94,23 @@ export const EditorState = {
     return reordered.ok
       ? Option.some({ ...state, document: reordered.value })
       : Option.none;
+  },
+
+  /**
+   * 選択中の artboard / ノードの prop を書き換える（docs/06-ui.md「編集操作の一覧」）。
+   *
+   * 対象を引数で受け取らず選択から決めるのは、props 編集の導線がプロパティパネル、
+   * つまり選択中のものを編集する画面しか無いため。名前を受け取れる形にすると
+   * 「選択していないものを編集する」状態を呼び出し側が作れてしまう。
+   * 選択が無い・書き換えられない指定は「その編集が存在しない」ことなので `none`。
+   */
+  applyPropEdit(state: EditorState, edit: PropEdit): Option<EditorState> {
+    return Option.flatMap(state.selectedName, (name) => {
+      const edited = DesignDocument.applyPropEdit(state.document, name, edit);
+      return edited.ok
+        ? Option.some({ ...state, document: edited.value })
+        : Option.none;
+    });
   },
 
   isSelected(state: EditorState, name: string): boolean {

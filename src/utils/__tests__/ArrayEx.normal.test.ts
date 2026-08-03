@@ -107,3 +107,17 @@ test("replaceAt は元の配列を変更しない", () => {
   ArrayEx.replaceAt(array, 1, "x");
   expect(array).toEqual(["a", "b", "c"]);
 });
+
+test("distinct は重複を取り除く", () => {
+  expect(ArrayEx.distinct(["a", "b", "a", "c", "b"])).toEqual(["a", "b", "c"]);
+});
+
+test("distinct は各値が最初に現れた順序を保つ", () => {
+  expect(ArrayEx.distinct(["c", "a", "c"])).toEqual(["c", "a"]);
+});
+
+test("distinct は元の配列を変更しない", () => {
+  const array = ["a", "a"];
+  ArrayEx.distinct(array);
+  expect(array).toEqual(["a", "a"]);
+});

@@ -15,7 +15,7 @@ const meta = {
       </div>
     ),
   ],
-  args: { onClearSelection: fn() },
+  args: { onClearSelection: fn(), onEditProp: fn() },
 } satisfies Meta<typeof PropertyPanel>;
 
 export default meta;
@@ -30,4 +30,14 @@ export const Default: Story = {
 export const Selected: Story = {
   name: "artboard を選択中",
   args: { state: EditorState.select(SAMPLE_EDITOR_STATE, "home") },
+};
+
+export const TextSelected: Story = {
+  name: "Text ノードを選択中",
+  args: { state: EditorState.select(SAMPLE_EDITOR_STATE, "home-title") },
+};
+
+export const InstanceSelected: Story = {
+  name: "インスタンスを選択中（publicProps から生成）",
+  args: { state: EditorState.select(SAMPLE_EDITOR_STATE, "home-login") },
 };
