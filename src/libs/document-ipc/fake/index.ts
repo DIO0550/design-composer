@@ -20,6 +20,11 @@ export type DocumentIpcFake = Readonly<{
   changeExternally(path: string, content: string): void;
   /** 現在のファイルの中身。 */
   contentOf(path: string): Option<string>;
+  /**
+   * そのパスを監視しているか。
+   * 監視の開始 / 停止は Rust 側に残る状態なので、代役の側から見えるようにしておく。
+   */
+  isWatching(path: string): boolean;
 }>;
 
 /** Tauri 自身が失敗したときと同じく、文字列で reject する。 */
@@ -119,6 +124,10 @@ export const DocumentIpcFake = {
 
       contentOf(path) {
         return Option.fromNullable(contents.get(path));
+      },
+
+      isWatching(path) {
+        return watchedPaths.has(path);
       },
     };
   },

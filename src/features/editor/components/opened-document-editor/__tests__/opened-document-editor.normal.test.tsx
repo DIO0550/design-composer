@@ -1,10 +1,10 @@
-import { render, screen, within } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
-import { EditorScreen } from "../index";
+import { renderOpenedDocument } from "./setup";
 
-test("エディタを開くと3つのペインが表示される", () => {
-  render(<EditorScreen />);
+test("ドキュメントを開くと3つのペインが表示される", async () => {
+  await renderOpenedDocument();
 
   const panes = [
     screen.getByRole("complementary", { name: "ツリービュー・部品一覧" }),
@@ -15,8 +15,8 @@ test("エディタを開くと3つのペインが表示される", () => {
   expect(panes).toHaveLength(3);
 });
 
-test("ドキュメントの artboard がツリービューとキャンバスの両方に表示される", () => {
-  render(<EditorScreen />);
+test("ドキュメントの artboard がツリービューとキャンバスの両方に表示される", async () => {
+  await renderOpenedDocument();
 
   const tree = screen.getByRole("complementary", {
     name: "ツリービュー・部品一覧",
@@ -27,8 +27,8 @@ test("ドキュメントの artboard がツリービューとキャンバスの�
   expect(within(canvas).getByRole("button", { name: /home/ })).toBeDefined();
 });
 
-test("ドキュメントの部品が部品一覧に表示される", () => {
-  render(<EditorScreen />);
+test("ドキュメントの部品が部品一覧に表示される", async () => {
+  await renderOpenedDocument();
 
   const tree = screen.getByRole("complementary", {
     name: "ツリービュー・部品一覧",
@@ -37,8 +37,8 @@ test("ドキュメントの部品が部品一覧に表示される", () => {
   expect(within(tree).getByText("primary-button")).toBeDefined();
 });
 
-test("エディタを開いた直後はプロパティパネルに何も選択されていないと表示される", () => {
-  render(<EditorScreen />);
+test("ドキュメントを開いた直後はプロパティパネルに何も選択されていないと表示される", async () => {
+  await renderOpenedDocument();
 
   const propertyPanel = screen.getByRole("complementary", {
     name: "プロパティパネル",
@@ -48,7 +48,7 @@ test("エディタを開いた直後はプロパティパネルに何も選択�
 });
 
 test("ツリービューで artboard を選ぶとプロパティパネルにその名前が表示される", async () => {
-  render(<EditorScreen />);
+  await renderOpenedDocument();
   const tree = screen.getByRole("complementary", {
     name: "ツリービュー・部品一覧",
   });
@@ -62,7 +62,7 @@ test("ツリービューで artboard を選ぶとプロパティパネルにそ�
 });
 
 test("キャンバスで artboard を選ぶとツリービューの表示も選択中に変わる", async () => {
-  render(<EditorScreen />);
+  await renderOpenedDocument();
   const canvas = screen.getByRole("main", { name: "キャンバス" });
 
   await userEvent.click(within(canvas).getByRole("button", { name: /home/ }));
@@ -78,7 +78,7 @@ test("キャンバスで artboard を選ぶとツリービューの表示も選�
 });
 
 test("選択を解除するとプロパティパネルが未選択の表示に戻る", async () => {
-  render(<EditorScreen />);
+  await renderOpenedDocument();
   const tree = screen.getByRole("complementary", {
     name: "ツリービュー・部品一覧",
   });

@@ -1,13 +1,9 @@
 import { expect, test } from "vitest";
 import { Artboard } from "@/domains/artboard";
 import { DesignDocument } from "@/domains/design-document";
+import { artboardContent } from "@/features/editor/__tests__/sample-document";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
-import {
-  artboardContent,
-  changeExternally,
-  PATH,
-  renderDocumentReload,
-} from "./setup";
+import { changeExternally, PATH, renderDocumentReload } from "./setup";
 
 test("外部エディタがファイルを書き換えると、その内容が取り込まれる", async () => {
   const fake = DocumentIpcFake.create({ [PATH]: artboardContent("home") });
