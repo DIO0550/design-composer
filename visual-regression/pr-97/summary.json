@@ -1,5 +1,5 @@
 {
-  "reportVersion": "1bfc6c466bd3d18b4184df5c6bb0bc6a52476ff4",
+  "reportVersion": "5dd946e577c3f9a6b4b16bd1ca087a0bb00f9390",
   "maxDiffRatio": 0.002,
   "changed": 0,
   "new": 17,
@@ -73,9 +73,9 @@
       "hasDiff": false
     },
     {
-      "story": "features-editor-documenterroroverlay--broken-json",
-      "id": "features-editor-documenterroroverlay--broken-json",
-      "title": "features/editor/DocumentErrorOverlay",
+      "story": "features-editor-documenterrorlist--broken-json",
+      "id": "features-editor-documenterrorlist--broken-json",
+      "title": "features/editor/DocumentErrorList",
       "name": "JSON が壊れている",
       "status": "new",
       "reason": "no-baseline",
@@ -86,9 +86,9 @@
       "hasDiff": false
     },
     {
-      "story": "features-editor-documenterroroverlay--no-errors",
-      "id": "features-editor-documenterroroverlay--no-errors",
-      "title": "features/editor/DocumentErrorOverlay",
+      "story": "features-editor-documenterrorlist--no-errors",
+      "id": "features-editor-documenterrorlist--no-errors",
+      "title": "features/editor/DocumentErrorList",
       "name": "エラーがない",
       "status": "new",
       "reason": "no-baseline",
@@ -99,9 +99,9 @@
       "hasDiff": false
     },
     {
-      "story": "features-editor-documenterroroverlay--schema-errors",
-      "id": "features-editor-documenterroroverlay--schema-errors",
-      "title": "features/editor/DocumentErrorOverlay",
+      "story": "features-editor-documenterrorlist--schema-errors",
+      "id": "features-editor-documenterrorlist--schema-errors",
+      "title": "features/editor/DocumentErrorList",
       "name": "スキーマ違反が複数",
       "status": "new",
       "reason": "no-baseline",
