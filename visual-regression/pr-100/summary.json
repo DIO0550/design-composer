@@ -1,8 +1,8 @@
 {
-  "reportVersion": "4d0311346c66512ce572180189b9b3d4bb50c0bd",
+  "reportVersion": "e37ababffb87ad14ae42ec71e4b24c77e6d12952",
   "maxDiffRatio": 0.002,
   "changed": 0,
-  "new": 19,
+  "new": 21,
   "deleted": 0,
   "passed": 0,
   "failed": 0,
@@ -242,10 +242,36 @@
       "hasDiff": false
     },
     {
+      "story": "features-editor-propertypanel--instance-selected",
+      "id": "features-editor-propertypanel--instance-selected",
+      "title": "features/editor/PropertyPanel",
+      "name": "インスタンスを選択中（publicProps から生成）",
+      "status": "new",
+      "reason": "no-baseline",
+      "diffPixels": 0,
+      "diffRatio": 0,
+      "hasExpected": false,
+      "hasActual": true,
+      "hasDiff": false
+    },
+    {
       "story": "features-editor-propertypanel--selected",
       "id": "features-editor-propertypanel--selected",
       "title": "features/editor/PropertyPanel",
       "name": "artboard を選択中",
+      "status": "new",
+      "reason": "no-baseline",
+      "diffPixels": 0,
+      "diffRatio": 0,
+      "hasExpected": false,
+      "hasActual": true,
+      "hasDiff": false
+    },
+    {
+      "story": "features-editor-propertypanel--text-selected",
+      "id": "features-editor-propertypanel--text-selected",
+      "title": "features/editor/PropertyPanel",
+      "name": "Text ノードを選択中",
       "status": "new",
       "reason": "no-baseline",
       "diffPixels": 0,
