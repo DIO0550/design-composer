@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { DocumentErrorOverlay } from "./index";
+import { DocumentErrorList } from "./index";
 
 const meta = {
-  title: "features/editor/DocumentErrorOverlay",
-  component: DocumentErrorOverlay,
+  title: "features/editor/DocumentErrorList",
+  component: DocumentErrorList,
   parameters: { layout: "fullscreen" },
   decorators: [
     (Story) => (
@@ -14,7 +14,7 @@ const meta = {
       </div>
     ),
   ],
-} satisfies Meta<typeof DocumentErrorOverlay>;
+} satisfies Meta<typeof DocumentErrorList>;
 
 export default meta;
 

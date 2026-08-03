@@ -1,7 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import { expect, test } from "vitest";
 import type { DocumentError } from "@/features/editor/domains/document-error";
-import { DocumentErrorOverlay } from "../index";
+import { DocumentErrorList } from "../index";
 
 /** 外部エディタが不正なファイルを保存したときに届くエラー。 */
 const SYNTAX_ERROR: DocumentError = {
@@ -11,14 +11,14 @@ const SYNTAX_ERROR: DocumentError = {
 };
 
 test("エラーが無いときは何も重ねない", () => {
-  render(<DocumentErrorOverlay errors={[]} />);
+  render(<DocumentErrorList errors={[]} />);
 
   expect(screen.queryByRole("alert")).toBeNull();
 });
 
 test("エラーが複数あると、件数とそれぞれの内容が一覧で出る", () => {
   render(
-    <DocumentErrorOverlay
+    <DocumentErrorList
       errors={[
         SYNTAX_ERROR,
         {
@@ -40,14 +40,14 @@ test("エラーが複数あると、件数とそれぞれの内容が一覧で�
 });
 
 test("テキストの位置が分かるエラーには何文字目かが出る", () => {
-  render(<DocumentErrorOverlay errors={[SYNTAX_ERROR]} />);
+  render(<DocumentErrorList errors={[SYNTAX_ERROR]} />);
 
   expect(screen.getByText("42 文字目")).toBeDefined();
 });
 
 test("ノードの prop で起きたエラーにはノード名と prop 名が出る", () => {
   render(
-    <DocumentErrorOverlay
+    <DocumentErrorList
       errors={[
         {
           kind: "unknown-prop",
@@ -63,7 +63,7 @@ test("ノードの prop で起きたエラーにはノード名と prop 名が�
 
 test("prop に紐づかないノードのエラーにはノード名だけが出る", () => {
   render(
-    <DocumentErrorOverlay
+    <DocumentErrorList
       errors={[
         {
           kind: "dangling-ref",
@@ -79,7 +79,7 @@ test("prop に紐づかないノードのエラーにはノード名だけが出
 
 test("位置を持たないエラーはファイル全体の問題として出る", () => {
   render(
-    <DocumentErrorOverlay
+    <DocumentErrorList
       errors={[
         {
           kind: "unsupported-format-version",
@@ -95,7 +95,7 @@ test("位置を持たないエラーはファイル全体の問題として出�
 
 test("ドキュメント内のパスが分かるエラーにはそのパスが出る", () => {
   render(
-    <DocumentErrorOverlay
+    <DocumentErrorList
       errors={[
         {
           kind: "invalid-type",

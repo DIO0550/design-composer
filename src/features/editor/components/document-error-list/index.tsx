@@ -26,7 +26,7 @@ function locationLabel(location: DocumentErrorLocation): string {
  * キャンバスを覆い切らないのは、エラーの原因になった編集の周辺を見ながら
  * 外部エディタで直せるようにするため。
  */
-export function DocumentErrorOverlay({
+export function DocumentErrorList({
   errors,
 }: Readonly<{ errors: readonly DocumentError[] }>) {
   if (errors.length === 0) {
