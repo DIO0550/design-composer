@@ -1,4 +1,4 @@
-import { DesignDocument } from "@/domains/design-document";
+import { type ChildPosition, DesignDocument } from "@/domains/design-document";
 import type { DocumentError } from "@/features/editor/domains/document-error";
 import type { DocumentReload } from "@/features/editor/domains/document-reload";
 import { Option } from "@/utils/Option";
@@ -74,6 +74,25 @@ export const EditorState = {
       case "rejected":
         return { ...state, errors: reload.errors };
     }
+  },
+
+  /**
+   * 同じ親の中で子の順序を入れ替える（docs/06-ui.md「編集操作の一覧」の並べ替え）。
+   *
+   * 動かせない指定（親が無い・移動先が並びの外）は「その移動が存在しない」ことと同じなので
+   * `none` にする。ツリービューは隣がいない向きの移動ボタンを出さないため、
+   * 画面の操作からこの `none` には到達しない。
+   * 選択はノードの name で持っており並べ替えでは変わらないため、そのまま引き継ぐ。
+   */
+  reorderNode(
+    state: EditorState,
+    from: ChildPosition,
+    toIndex: number,
+  ): Option<EditorState> {
+    const reordered = DesignDocument.reorderNode(state.document, from, toIndex);
+    return reordered.ok
+      ? Option.some({ ...state, document: reordered.value })
+      : Option.none;
   },
 
   isSelected(state: EditorState, name: string): boolean {

@@ -1,5 +1,9 @@
 import { Artboard } from "@/domains/artboard";
-import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import {
+  type ChildPosition,
+  DesignDocument,
+  DocumentTemplate,
+} from "@/domains/design-document";
 import { ArtboardCanvas } from "@/features/editor/components/artboard-canvas";
 import { ComponentList } from "@/features/editor/components/component-list";
 import { DocumentErrorOverlay } from "@/features/editor/components/document-error-overlay";
@@ -75,11 +79,17 @@ const INITIAL_DOCUMENT = DesignDocument.create({
 function EditorPanes() {
   const { state, dispatch } = useEditor();
   const selectNode = (name: string) => dispatch({ type: "select", name });
+  const reorderNode = (from: ChildPosition, toIndex: number) =>
+    dispatch({ type: "reorder_node", from, toIndex });
 
   return (
     <EditorLayout>
       <EditorLayout.LeftPane>
-        <DocumentTree state={state} onSelect={selectNode} />
+        <DocumentTree
+          state={state}
+          onSelect={selectNode}
+          onReorder={reorderNode}
+        />
         <ComponentList components={state.document.components} />
       </EditorLayout.LeftPane>
       <EditorLayout.CenterPane>
