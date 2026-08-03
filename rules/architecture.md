@@ -83,6 +83,14 @@ declarations(padding: Padding, resolveToken: (token: string) => string): readonl
 - 組み込み型に対する汎用操作は `<型名>Ex` に集約する。配列の範囲判定・挿入・移動、数値の性質判定、文字種の判定などを、ドメインやサービスのローカル関数として書かない
 - 汎用ユーティリティ同士も重複させない(`ArrayEx` の範囲チェックは `NumberEx.isNatural` を使う)
 - ドメイン概念になった時点で `utils/` から `domains/` へ移す。判断軸は「その値に生成・判定・変換の規則が付いてくるか」(規則を持つ `Px` は `domains/px/`、文字列定数だけの `Font` は `utils/`)
+- **用途ではなく操作で名付ける。** 名前が呼び出し側での用途を指していると、処理自体は汎用でも UI やドメインの語彙が `utils/` に入り込む。操作そのもので名付けられるなら `utils/` に置いてよく、用途を外すと名前が付けられないなら、それは呼び出し側の関心事なので呼び出し側へ置く
+
+| NG | OK | 理由 |
+|---|---|---|
+| `StringEx.toLabel(prop)` | `CaseStyle.toCapitalCase(prop)` | 「ラベル」は表示という**用途**。「camelCase を Capital Case にする」は用途に依らない**操作** |
+
+- 汎用の操作が1つだけでも、`<型名>Ex` に押し込めず**まとまりを表すモジュール**を立てる(綴りの流儀の変換なら `CaseStyle`)。ただし呼び出しの無い操作を「揃っているから」と先回りで足さない(過度な抽象化)
+- 型で閉じた対応表(`as const satisfies` でリテラル型を保つもの)を汎用変換に置き換えない。戻り値が `string` へ広がり、対応表から導出している型と網羅性の保証が失われる(`TypographyField.cssProperty` を `toKebabCase()` にしない)
 
 ## モジュールの公開API
 
