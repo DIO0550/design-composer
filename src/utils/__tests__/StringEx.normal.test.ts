@@ -23,3 +23,15 @@ test("0から9の数字は数字として true になる", () => {
 test("数字ではない文字は数字として false になる", () => {
   expect(StringEx.isDigit("a")).toBe(false);
 });
+
+test("camelCase の識別子は語の切れ目で分かれ、先頭が大文字のラベルになる", () => {
+  expect(StringEx.toLabel("widthMode")).toBe("Width Mode");
+});
+
+test("大文字1文字の語も独立した語として分かれる", () => {
+  expect(StringEx.toLabel("paddingX")).toBe("Padding X");
+});
+
+test("切れ目の無い識別子は先頭が大文字になるだけ", () => {
+  expect(StringEx.toLabel("content")).toBe("Content");
+});

@@ -1,4 +1,14 @@
-import { Node, Props, type PropValue } from "@/domains/node";
+import {
+  Node,
+  type PrimitiveNode,
+  Props,
+  type PropValue,
+  type RefNode,
+} from "@/domains/node";
+import {
+  PrimitiveSchema,
+  type PropDefinition,
+} from "@/domains/primitive-schema";
 import {
   Json,
   type JsonCursor,
@@ -40,6 +50,24 @@ export const PublicPropBinding = {
 
 export type PublicProps = Readonly<Record<string, PublicPropBinding>>;
 
+/**
+ * 公開 prop 1つを指す参照。部品名だけでも prop 名だけでも binding は引けないため対で持つ。
+ */
+export type PublicPropRef = Readonly<{
+  component: string;
+  prop: string;
+}>;
+
+/**
+ * binding をたどった先にある prop。
+ * `declared` は部品定義がそこに設定している値で、インスタンスが何も上書きしなければ
+ * これが効く(スキーマのデフォルトではなく、この値が既定として見える)。
+ */
+export type PublicPropTarget = Readonly<{
+  definition: PropDefinition;
+  declared: Option<PropValue>;
+}>;
+
 export type Component = Readonly<{
   type: string;
   props?: Props;
@@ -64,13 +92,6 @@ function updateNodeByName(
     }
     return { ...node, children: updateNodeByName(children, name, update) };
   });
-}
-
-function applyBindingValue(node: Node, prop: string, value: PropValue): Node {
-  if (Node.isRef(node)) {
-    return { ...node, overrides: { ...node.overrides, [prop]: value } };
-  }
-  return { ...node, props: { ...node.props, [prop]: value } };
 }
 
 type ResolvedOverride = readonly [PublicPropBinding, PropValue];
@@ -170,7 +191,10 @@ export const Component = {
           : toChildren.reduce(
               (children, [binding, value]) =>
                 updateNodeByName(children, binding.node, (target) =>
-                  applyBindingValue(target, binding.prop, value),
+                  Node.applyPropEdit(target, {
+                    name: binding.prop,
+                    value: Option.some(value),
+                  }),
                 ),
               component.children ?? [],
             ),
@@ -261,6 +285,80 @@ function reachableRefs(
   return reached;
 }
 
+/** プリミティブノードが持つ prop の定義と、そのノードに設定されている値。 */
+function targetInPrimitive(
+  node: PrimitiveNode,
+  prop: string,
+): Option<PublicPropTarget> {
+  if (!PrimitiveSchema.isPrimitiveType(node.type)) {
+    return Option.none;
+  }
+  const schema: PrimitiveSchema = PrimitiveSchema.forType(node.type);
+  const definition = schema.props[prop];
+  if (definition === undefined) {
+    return Option.none;
+  }
+  return Option.some({
+    definition,
+    declared: Option.fromNullable(node.props?.[prop]),
+  });
+}
+
+/**
+ * binding 先が参照ノードのとき、相手の部品の公開 prop としてたどり直す。
+ * 途中の参照ノードが値を上書きしていれば、そちらが既定として見える。
+ */
+function targetThroughRef(
+  components: ComponentSet,
+  node: RefNode,
+  prop: string,
+  remainingHops: number,
+): Option<PublicPropTarget> {
+  const inner = publicPropTargetWithin(
+    components,
+    { component: node.ref, prop },
+    remainingHops,
+  );
+  return Option.map(inner, (target) => {
+    const override = Option.fromNullable(node.overrides?.[prop]);
+    return override.some ? { ...target, declared: override } : target;
+  });
+}
+
+function publicPropTargetWithin(
+  components: ComponentSet,
+  ref: PublicPropRef,
+  remainingHops: number,
+): Option<PublicPropTarget> {
+  if (remainingHops <= 0) {
+    return Option.none;
+  }
+  const component = components[ref.component];
+  if (component === undefined) {
+    return Option.none;
+  }
+  const binding = Component.binding(component, ref.prop);
+  if (!binding.some) {
+    return Option.none;
+  }
+  const target = Component.findNode(
+    component,
+    ref.component,
+    binding.value.node,
+  );
+  if (!target.some) {
+    return Option.none;
+  }
+  return Node.isRef(target.value)
+    ? targetThroughRef(
+        components,
+        target.value,
+        binding.value.prop,
+        remainingHops - 1,
+      )
+    : targetInPrimitive(target.value, binding.value.prop);
+}
+
 export const ComponentSet = {
   names(components: ComponentSet): readonly string[] {
     return Object.keys(components);
@@ -272,6 +370,26 @@ export const ComponentSet = {
 
   has(components: ComponentSet, name: string): boolean {
     return name in components;
+  },
+
+  /**
+   * 公開 prop が binding でどの prop に繋がっているかを解く。
+   * 公開 prop の名前だけからは値の語彙が決まらない（enum なのかトークン参照なのかは
+   * binding 先の宣言が持つ）ため、prop 定義まで辿って返す。
+   *
+   * binding 先が参照ノードなら相手の部品へ辿り直す。循環参照は検証エラーとして
+   * 検出されるが、不正なドキュメントも画面には残る（docs/03「不正ファイル時の挙動」）
+   * ため、部品数をホップ上限にして必ず停止させる。
+   */
+  publicPropTarget(
+    components: ComponentSet,
+    ref: PublicPropRef,
+  ): Option<PublicPropTarget> {
+    return publicPropTargetWithin(
+      components,
+      ref,
+      ComponentSet.names(components).length,
+    );
   },
 
   /**

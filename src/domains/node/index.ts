@@ -20,6 +20,15 @@ export type PropAssignment = Readonly<{
   value: PropValue;
 }>;
 
+/**
+ * props への編集1件。値を消す編集(`none`)も同じ操作なので、
+ * 設定と消去で別の型に分けない(どちらも「その prop を今どうするか」を表す)。
+ */
+export type PropEdit = Readonly<{
+  name: string;
+  value: Option<PropValue>;
+}>;
+
 export const PropValue = {
   /** prop の値になれるのはスカラーだけ(構造を持つ値は prop にしない)。 */
   fromJson(cursor: JsonCursor): JsonDecoded<PropValue> {
@@ -53,6 +62,19 @@ export const Props = {
   /** 1件ずつ扱う消費側のために、設定されている prop を並びへ展開する。 */
   toAssignments(props: Props): readonly PropAssignment[] {
     return Object.entries(props).map(([name, value]) => ({ name, value }));
+  },
+
+  /**
+   * 編集を適用した props。値の消去は「未設定に戻す」ことなのでキーごと落とす
+   * (デフォルト解決は未設定かどうかを見るため、`undefined` を値として残せない)。
+   */
+  apply(props: Props, edit: PropEdit): Props {
+    if (edit.value.some) {
+      return { ...props, [edit.name]: edit.value.value };
+    }
+    return Object.fromEntries(
+      Object.entries(props).filter(([name]) => name !== edit.name),
+    );
   },
 } as const;
 
@@ -110,6 +132,17 @@ export const Node = {
       }
     }
     return Option.none;
+  },
+
+  /**
+   * ノードの prop を書き換える。参照ノードが持つのは自分の props ではなく
+   * 部品への上書き(`overrides`)なので、同じ編集でも書き込み先が変わる。
+   */
+  applyPropEdit(node: Node, edit: PropEdit): Node {
+    if (Node.isRef(node)) {
+      return { ...node, overrides: Props.apply(node.overrides ?? {}, edit) };
+    }
+    return { ...node, props: Props.apply(node.props ?? {}, edit) };
   },
 
   rename(node: Node, renameMap: Readonly<Record<string, string>>): Node {

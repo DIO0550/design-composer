@@ -1,5 +1,10 @@
-import { Node, Props } from "@/domains/node";
+import { Node, type PropEdit, Props } from "@/domains/node";
 import { NodeTree } from "@/domains/node-tree";
+import {
+  BOX_SCHEMA,
+  type PropDefinition,
+  type PropDefinitionRecord,
+} from "@/domains/primitive-schema";
 import { ResolvedProps } from "@/domains/resolved-props";
 import {
   Json,
@@ -26,6 +31,36 @@ const ARTBOARD_FIELDS = [
   "props",
   "children",
 ] as const;
+
+/**
+ * Box スキーマのデフォルトのうち、artboard では違う値になるもの
+ * (docs/03「artboard は…`overflow` のデフォルトは `clip`」)。
+ * デフォルトなので artboard 側の指定が勝つ。
+ */
+const ARTBOARD_PROP_DEFAULTS: Props = { overflow: "clip" };
+
+/**
+ * artboard の props では変えられない prop
+ * (docs/03「`widthMode` / `heightMode` は `fixed` に固定され、`width` / `height` が必須」)。
+ * 長さは artboard 自身の `width` / `height` が持ち、`boxProps` がそれを固定値として与える。
+ */
+const ARTBOARD_FIXED_SIZE_PROPS: readonly string[] = [
+  "widthMode",
+  "width",
+  "heightMode",
+  "height",
+];
+
+/** Box の prop 定義を artboard 用のデフォルトで上書きしたもの。 */
+function withArtboardDefault(
+  name: string,
+  definition: PropDefinition,
+): PropDefinition {
+  const artboardDefault = ARTBOARD_PROP_DEFAULTS[name];
+  return artboardDefault === undefined
+    ? definition
+    : { ...definition, default: artboardDefault };
+}
 
 /**
  * artboard を Box として解決した props。
@@ -86,7 +121,7 @@ export const Artboard = {
   boxProps(artboard: Artboard): ArtboardBoxProps {
     return {
       ...ResolvedProps.resolve("Box", {
-        overflow: "clip",
+        ...ARTBOARD_PROP_DEFAULTS,
         ...artboard.props,
       }),
       widthMode: "fixed",
@@ -94,6 +129,28 @@ export const Artboard = {
       heightMode: "fixed",
       height: artboard.height,
     };
+  },
+
+  /**
+   * artboard が props として受け付ける prop の定義（docs/03「Box スキーマを流用する」）。
+   * サイズ系を落とすのは、`boxProps` が `fixed` と artboard の `width` / `height` を
+   * 固定で与えるため、props に書いても効かないから。
+   */
+  propDefinitions(): PropDefinitionRecord {
+    const editable = Object.entries(BOX_SCHEMA.props).filter(
+      ([name]) => !ARTBOARD_FIXED_SIZE_PROPS.includes(name),
+    );
+    return Object.fromEntries(
+      editable.map(([name, definition]) => [
+        name,
+        withArtboardDefault(name, definition),
+      ]),
+    );
+  },
+
+  /** artboard の prop を書き換える。 */
+  applyPropEdit(artboard: Artboard, edit: PropEdit): Artboard {
+    return { ...artboard, props: Props.apply(artboard.props ?? {}, edit) };
   },
 
   fromJson(cursor: JsonCursor): JsonDecoded<Artboard> {
