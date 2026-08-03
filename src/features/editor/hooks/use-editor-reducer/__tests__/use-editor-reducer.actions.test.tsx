@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
+import type { DocumentError } from "@/features/editor/domains/document-error";
 import type { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
 import { useEditorReducer } from "../index";
@@ -21,6 +22,13 @@ function setupDocument(): DesignDocument {
     ],
   });
 }
+
+/** 外部エディタが不正なファイルを保存したときに届くエラー。 */
+const SYNTAX_ERROR: DocumentError = {
+  kind: "syntax-error",
+  message: "expected ',' or '}'",
+  location: { kind: "text-position", position: 42 },
+};
 
 /** 読み直し後のドキュメント。`title` が無くなり、`lead` が増えている。 */
 function setupReloadedDocument(): DesignDocument {
@@ -72,12 +80,23 @@ function EditorReducerHarness() {
         type="button"
         onClick={() =>
           dispatch({
-            type: "load_document",
-            document: setupReloadedDocument(),
+            type: "reload_document",
+            reload: { kind: "reloaded", document: setupReloadedDocument() },
           })
         }
       >
         読み直す
+      </button>
+      <button
+        type="button"
+        onClick={() =>
+          dispatch({
+            type: "reload_document",
+            reload: { kind: "rejected", errors: [SYNTAX_ERROR] },
+          })
+        }
+      >
+        不正なファイルを取り込む
       </button>
       <button
         type="button"
@@ -153,6 +172,16 @@ test("読み直したドキュメントに選択中のノードが無ければ�
   await userEvent.click(screen.getByRole("button", { name: "読み直す" }));
 
   expect(selected()).toBe("選択なし");
+});
+
+test("不正なファイルを取り込むアクションを送ってもドキュメントは差し替わらない", async () => {
+  render(<EditorReducerHarness />);
+
+  await userEvent.click(
+    screen.getByRole("button", { name: "不正なファイルを取り込む" }),
+  );
+
+  expect(children()).toBe("title,footer");
 });
 
 test("並べ替えのアクションを送ると子の並びがその順序に変わる", async () => {
