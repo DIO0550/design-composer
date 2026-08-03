@@ -2,7 +2,7 @@ import type { ChildPosition } from "@/domains/design-document";
 import { ArtboardCanvas } from "@/features/editor/components/artboard-canvas";
 import { ComponentList } from "@/features/editor/components/component-list";
 import { DocumentErrorList } from "@/features/editor/components/document-error-list";
-import { DocumentSyncStatus } from "@/features/editor/components/document-sync-status";
+import { DocumentSyncFailureList } from "@/features/editor/components/document-sync-failure-list";
 import { DocumentTree } from "@/features/editor/components/document-tree";
 import { EditorLayout } from "@/features/editor/components/editor-layout";
 import {
@@ -11,6 +11,8 @@ import {
 } from "@/features/editor/components/editor-provider";
 import { PropertyPanel } from "@/features/editor/components/property-panel";
 import type { OpenedDocument } from "@/features/editor/domains/opened-document";
+import { useAutoSave } from "@/features/editor/hooks/use-auto-save";
+import { useDocumentReload } from "@/features/editor/hooks/use-document-reload";
 import type { DocumentIpc } from "@/libs/document-ipc";
 
 /**
@@ -49,9 +51,41 @@ function EditorPanes() {
 }
 
 /**
+ * 開いているファイルとの同期（自動保存と外部変更の取り込み）を張り、3 ペインと
+ * その失敗の表示を組み立てる（docs/05-architecture.md「保存モデル: 自動保存」
+ * 「外部編集の検知」）。
+ *
+ * 器（Provider）の中に置くのは、同期の相手が「今表示しているドキュメント」であり、
+ * それを読めるのが Provider の内側だけだから。
+ */
+function EditorBody({
+  ipc,
+  path,
+}: Readonly<{ ipc: DocumentIpc; path: string }>) {
+  const { state, dispatch } = useEditor();
+
+  const autoSaveFailure = useAutoSave({ ipc, path, document: state.document });
+  const watchFailure = useDocumentReload({
+    ipc,
+    path,
+    onReload: (reload) => dispatch({ type: "reload_document", reload }),
+  });
+
+  return (
+    <div className="flex h-full min-h-0 flex-col">
+      <DocumentSyncFailureList
+        autoSave={autoSaveFailure}
+        watch={watchFailure}
+      />
+      <EditorPanes />
+    </div>
+  );
+}
+
+/**
  * 開いているドキュメントの編集画面（docs/06-ui.md「画面構成」）。
  *
- * 状態の器（Provider）と 3 ペイン、そして開いているファイルとの同期の組み立てだけを持つ。
+ * 状態の器（Provider）と中身の組み立てだけを持つ。
  */
 export function OpenedDocumentEditor({
   ipc,
@@ -59,10 +93,7 @@ export function OpenedDocumentEditor({
 }: Readonly<{ ipc: DocumentIpc; opened: OpenedDocument }>) {
   return (
     <EditorProvider initialDocument={opened.document}>
-      <div className="flex h-full min-h-0 flex-col">
-        <DocumentSyncStatus ipc={ipc} path={opened.path} />
-        <EditorPanes />
-      </div>
+      <EditorBody ipc={ipc} path={opened.path} />
     </EditorProvider>
   );
 }
