@@ -1,12 +1,8 @@
 import { expect, test } from "vitest";
+import { artboardContent } from "@/features/editor/__tests__/sample-document";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { Option } from "@/utils/Option";
-import {
-  artboardContent,
-  changeExternally,
-  PATH,
-  renderDocumentReload,
-} from "./setup";
+import { changeExternally, PATH, renderDocumentReload } from "./setup";
 
 test("外部エディタが不正な JSON を保存すると、エラー一覧として届く", async () => {
   const fake = DocumentIpcFake.create({ [PATH]: artboardContent("home") });

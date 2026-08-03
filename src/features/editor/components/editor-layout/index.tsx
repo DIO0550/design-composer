@@ -6,10 +6,13 @@ type PaneProps = Readonly<{ children: ReactNode }>;
  * 3 ペインの器（docs/06-ui.md「画面構成」）。
  * 中身は children で受け取り、どのペインに何を出すかは呼び出し側が決める
  * （真偽値 props による出し分けを作らない / rules/components.md）。
+ *
+ * 高さは画面ではなく親に合わせる。ファイル操作のツールバーと同期の失敗表示が
+ * 上に並ぶため、画面の高さを取ると 3 ペインがその分はみ出す。
  */
 function EditorLayoutRoot({ children }: PaneProps) {
   return (
-    <div className="grid h-screen w-screen grid-cols-[16rem_1fr_18rem] overflow-hidden bg-gray-100 text-gray-900">
+    <div className="grid h-full min-h-0 w-full grid-cols-[16rem_1fr_18rem] overflow-hidden bg-gray-100 text-gray-900">
       {children}
     </div>
   );

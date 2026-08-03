@@ -1,9 +1,10 @@
 import { afterEach, expect, test, vi } from "vitest";
+import { artboardDocument } from "@/features/editor/__tests__/sample-document";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
 import { Option } from "@/utils/Option";
 import { AUTO_SAVE_DEBOUNCE_MS } from "../index";
-import { artboardDocument, PATH, renderAutoSave, waitDebounce } from "./setup";
+import { PATH, renderAutoSave, waitDebounce } from "./setup";
 
 afterEach(() => {
   vi.useRealTimers();
