@@ -1,5 +1,7 @@
 import { expect, test } from "vitest";
-import { type CanvasBounds, type DropParent, DropZone } from "../index";
+import type { CanvasBounds } from "../../canvas-bounds";
+import type { DropParent } from "../../drop-parent";
+import { DropZone } from "../index";
 
 /** 高さ 100 の子が縦に3つ並ぶ、高さ 300 の親。 */
 function setupColumnZone(): DropZone {
