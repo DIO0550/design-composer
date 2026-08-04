@@ -4,12 +4,12 @@ import {
   type MouseEvent,
   useMemo,
 } from "react";
+import type { ChildPosition } from "@/domains/child-position";
 import type { BoxElement } from "@/domains/compiled-element";
 import {
   CompiledElement,
   ELEMENT_NAME_ATTRIBUTE,
 } from "@/domains/compiled-element";
-import type { ChildPosition } from "@/domains/design-document";
 import { CanvasView } from "@/features/editor/domains/canvas-view";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { NodeDrag } from "@/features/editor/domains/node-drag";

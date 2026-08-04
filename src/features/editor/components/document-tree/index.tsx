@@ -1,4 +1,4 @@
-import type { ChildPosition } from "@/domains/design-document";
+import type { ChildPosition } from "@/domains/child-position";
 import { Node } from "@/domains/node";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { ArrayEx } from "@/utils/ArrayEx";

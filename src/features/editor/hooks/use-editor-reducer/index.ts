@@ -1,5 +1,6 @@
 import { type ActionDispatch, useReducer } from "react";
-import type { ChildPosition, DesignDocument } from "@/domains/design-document";
+import type { ChildPosition } from "@/domains/child-position";
+import type { DesignDocument } from "@/domains/design-document";
 import type { PropEdit } from "@/domains/node";
 import type { DocumentReload } from "@/features/editor/domains/document-reload";
 import { EditorState } from "@/features/editor/domains/editor-state";

@@ -1,4 +1,5 @@
-import { type ChildPosition, DesignDocument } from "@/domains/design-document";
+import { ChildPosition } from "@/domains/child-position";
+import { DesignDocument } from "@/domains/design-document";
 import type { PropEdit } from "@/domains/node";
 import type { DocumentError } from "@/features/editor/domains/document-error";
 import type { DocumentReload } from "@/features/editor/domains/document-reload";
@@ -31,26 +32,6 @@ function selectableName(
     DesignDocument.findArtboard(document, name).some ||
     DesignDocument.findNode(document, name).some;
   return isSelectable ? Option.some(name) : Option.none;
-}
-
-/**
- * 取り除いたあとの並びで見た挿入位置。
- *
- * ドロップ先は**移動前の並び**（画面に描かれている状態）を見て決まるのに対し、
- * `DesignDocument.moveNode` は取り除いてから挿す。同じ親の中で今より後ろへ動かす
- * ときだけ、自分が抜けたぶんだけ挿入位置が 1 つ手前になる。
- */
-function insertionAfterRemoval(
-  document: DesignDocument,
-  name: string,
-  to: ChildPosition,
-): ChildPosition {
-  const current = DesignDocument.findChildPosition(document, name);
-  const shifts =
-    current.some &&
-    current.value.parentName === to.parentName &&
-    current.value.index < to.index;
-  return shifts ? { ...to, index: to.index - 1 } : to;
 }
 
 export const EditorState = {
@@ -135,11 +116,12 @@ export const EditorState = {
    * ノードを別の位置へ移す（docs/06-ui.md「キャンバス直接操作」の移動）。
    *
    * `to` はキャンバスが提示したドロップ先、つまり**移動前の並びを見て決めた**
-   * 「どの Box の何番目の子として置くか」で、実際に挿す位置への読み替えは
-   * `insertionAfterRemoval` が行う。
+   * 「どの Box の何番目の子として置くか」。実際に挿す位置への読み替えは
+   * `ChildPosition.afterRemoving` が持つ。
    *
    * 動かせない指定（自分の子孫の下・親が居ない・範囲外）は「その移動が存在しない」
-   * ことなので `none`。キャンバスは受け入れられない先をハイライトしないため、
+   * ことなので `none`。今いる位置を持たないもの（ドキュメントに無い名前・artboard 自身）
+   * も同じく動かせない。キャンバスは受け入れられない先をハイライトしないため、
    * 画面の操作からこの `none` には到達しない。
    * 選択はノードの name で持っており移動では変わらないため、そのまま引き継ぐ。
    */
@@ -148,10 +130,14 @@ export const EditorState = {
     name: string,
     to: ChildPosition,
   ): Option<EditorState> {
+    const current = DesignDocument.findChildPosition(state.document, name);
+    if (!current.some) {
+      return Option.none;
+    }
     const moved = DesignDocument.moveNode(
       state.document,
       name,
-      insertionAfterRemoval(state.document, name, to),
+      ChildPosition.afterRemoving(to, current.value),
     );
     return moved.ok
       ? Option.some({ ...state, document: moved.value })

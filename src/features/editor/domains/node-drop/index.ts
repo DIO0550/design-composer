@@ -1,7 +1,8 @@
 import { Artboard } from "@/domains/artboard";
+import type { ChildPosition } from "@/domains/child-position";
 import { BoxElement } from "@/domains/compiled-element";
 import type { CssDirection } from "@/domains/css-direction";
-import { type ChildPosition, DesignDocument } from "@/domains/design-document";
+import { DesignDocument } from "@/domains/design-document";
 import { Node } from "@/domains/node";
 import { NodeTree } from "@/domains/node-tree";
 import { ResolvedProps } from "@/domains/resolved-props";

@@ -1,4 +1,5 @@
 import { Artboard } from "@/domains/artboard";
+import type { ChildPosition } from "@/domains/child-position";
 import { Component, ComponentSet } from "@/domains/component";
 import {
   FormatVersion,
@@ -44,15 +45,6 @@ export type {
  * （消費側に版の分岐を強いないため）。
  */
 export type DesignDocument = DesignDocumentV1;
-
-/**
- * ツリー上の「どの親の何番目の子か」という位置。
- * 親の名前と index は片方だけでは位置が決まらないため1つの型にまとめる。
- */
-export type ChildPosition = Readonly<{
-  parentName: string;
-  index: number;
-}>;
 
 /*
  * 以下の関数は「どの artboard を相手にするか」を選ぶためのもの。
@@ -152,35 +144,6 @@ function updateChildrenOfParent(
       ? Result.ok(withArtboardTree(document, hostIndex, tree.value))
       : Result.err({ kind: "parent-not-found", name: parentName }),
   );
-}
-
-/**
- * 並びの中で名前が現れる位置を「どの親の何番目か」で返す。
- *
- * 走査そのものは `NodeTree` の仕事だが、`ChildPosition` はこのファイルの型で、
- * `NodeTree` から import すると循環になるためここに置く。
- */
-function childPositionInTree(
-  tree: NodeTree,
-  parentName: string,
-  name: string,
-): Option<ChildPosition> {
-  const nodes = NodeTree.nodes(tree);
-  const index = nodes.findIndex((node) => node.name === name);
-  if (index !== -1) {
-    return Option.some({ parentName, index });
-  }
-  for (const node of nodes) {
-    const found = childPositionInTree(
-      NodeTree.create(Node.children(node)),
-      node.name,
-      name,
-    );
-    if (found.some) {
-      return found;
-    }
-  }
-  return Option.none;
 }
 
 /** ドキュメントに現れる名前の集まり。 */
@@ -292,7 +255,7 @@ export const DesignDocument = {
     name: string,
   ): Option<ChildPosition> {
     for (const artboard of document.artboards) {
-      const found = childPositionInTree(
+      const found = NodeTree.childPositionOf(
         Artboard.tree(artboard),
         artboard.name,
         name,

@@ -1,3 +1,4 @@
+import type { ChildPosition } from "@/domains/child-position";
 import { Node } from "@/domains/node";
 import { PrimitiveSchema } from "@/domains/primitive-schema";
 import { ArrayEx, type IndexOutOfRange } from "@/utils/ArrayEx";
@@ -63,6 +64,33 @@ export const NodeTree = {
   /** 並びを配列として取り出す。入れ物（artboard / ノード）へ書き戻すときに使う。 */
   nodes(tree: NodeTree): readonly Node[] {
     return tree.nodes;
+  },
+
+  /**
+   * 名前でノードを探し、それが「どの親の何番目か」を返す。並びの子孫も辿る。
+   * 並び自体の入れ物（artboard / ノード）の名前は外から与える。
+   * `NodeTree` は自分が誰の子の並びなのかを知らないため。
+   */
+  childPositionOf(
+    tree: NodeTree,
+    parentName: string,
+    name: string,
+  ): Option<ChildPosition> {
+    const index = tree.nodes.findIndex((node) => node.name === name);
+    if (index !== -1) {
+      return Option.some({ parentName, index });
+    }
+    for (const node of tree.nodes) {
+      const found = NodeTree.childPositionOf(
+        NodeTree.create(Node.children(node)),
+        node.name,
+        name,
+      );
+      if (found.some) {
+        return found;
+      }
+    }
+    return Option.none;
   },
 
   /** 名前でノードを探す。並びの直下だけでなく子孫も辿る。 */
