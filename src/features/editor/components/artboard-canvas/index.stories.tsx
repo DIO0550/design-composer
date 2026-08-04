@@ -19,7 +19,12 @@ const meta = {
       </div>
     ),
   ],
-  args: { onSelect: fn(), onMoveNode: fn(), onResize: fn() },
+  args: {
+    onSelect: fn(),
+    onMoveNode: fn(),
+    onResize: fn(),
+    onEditProp: fn(),
+  },
 } satisfies Meta<typeof ArtboardCanvas>;
 
 export default meta;

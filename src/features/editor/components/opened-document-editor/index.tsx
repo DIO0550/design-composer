@@ -1,5 +1,6 @@
 import type { AxisLength } from "@/domains/axis-length";
 import type { ChildPosition } from "@/domains/child-position";
+import type { PropEdit } from "@/domains/node";
 import { ArtboardCanvas } from "@/features/editor/components/artboard-canvas";
 import { ComponentList } from "@/features/editor/components/component-list";
 import { DocumentErrorList } from "@/features/editor/components/document-error-list";
@@ -37,6 +38,12 @@ function EditorPanes() {
     dispatch({ type: "move_node", name, to });
   /** リサイズハンドルのドラッグは選択中のものの大きさの変更（docs/06-ui.md）。 */
   const resize = (size: AxisLength) => dispatch({ type: "resize", size });
+  /**
+   * prop の編集はプロパティパネルとキャンバスのインライン編集の両方から届く
+   * （どちらも選択中のものへの編集なので同じアクションで受ける）。
+   */
+  const editProp = (edit: PropEdit) =>
+    dispatch({ type: "apply_prop_edit", edit });
 
   return (
     <EditorLayout>
@@ -54,13 +61,14 @@ function EditorPanes() {
           onSelect={selectNodeAt}
           onMoveNode={moveNode}
           onResize={resize}
+          onEditProp={editProp}
         />
         <DocumentErrorList errors={state.errors} />
       </EditorLayout.CenterPane>
       <EditorLayout.RightPane>
         <PropertyPanel
           state={state}
-          onEditProp={(edit) => dispatch({ type: "apply_prop_edit", edit })}
+          onEditProp={editProp}
           onClearSelection={() => dispatch({ type: "clear_selection" })}
         />
       </EditorLayout.RightPane>

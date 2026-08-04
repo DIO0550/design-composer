@@ -1,0 +1,106 @@
+import { DesignDocument } from "@/domains/design-document";
+import { Node, type PrimitiveNode, PropEdit } from "@/domains/node";
+import type { PrimitiveType, TEXT_SCHEMA } from "@/domains/primitive-schema";
+import { ResolvedProps } from "@/domains/resolved-props";
+import type { EditorState } from "@/features/editor/domains/editor-state";
+import type { CanvasBounds } from "@/features/editor/domains/node-drop";
+import { Option } from "@/utils/Option";
+
+/** その場で編集できる文言を持つのは Text だけ（docs/02-data-model.md の表）。 */
+const TEXT_TYPE = "Text" satisfies PrimitiveType;
+
+/** 書き換える prop。Text のスキーマが宣言している名前に限る。 */
+const CONTENT_PROP = "content" satisfies keyof typeof TEXT_SCHEMA.props;
+
+/**
+ * キャンバス上でその場で編集できる文言（docs/06-ui.md「キャンバス直接操作」の
+ * 「Text のインライン編集」）。
+ *
+ * 名前と文言を対で持つのは、片方だけでは編集を始められないため
+ * （入力欄を重ねる位置は名前で引いた要素から、下書きの初期値は文言から決まる）。
+ */
+export type EditableText = Readonly<{
+  name: string;
+  content: string;
+}>;
+
+/**
+ * 設定されていない `content` にはスキーマの既定値が効いているため、
+ * 既定を解決した後の文言を編集の初期値にする（空欄から書き始めることにならない）。
+ */
+function contentOf(node: PrimitiveNode): string {
+  return String(ResolvedProps.resolve(TEXT_TYPE, node.props ?? {}).content);
+}
+
+/** 選択中のものがインライン編集できる Text なら、その名前と今の文言。 */
+function forSelection(state: EditorState): Option<EditableText> {
+  return Option.flatMap(state.selectedName, (name) => {
+    const found = DesignDocument.findNode(state.document, name);
+    if (!found.some) {
+      return Option.none;
+    }
+    const node = found.value;
+    if (!Node.isPrimitive(node) || node.type !== TEXT_TYPE) {
+      return Option.none;
+    }
+    return Option.some({ name, content: contentOf(node) });
+  });
+}
+
+export const EditableText = {
+  /**
+   * ダブルクリックされた位置にある、インライン編集できる Text。
+   * `names` は押された位置から外へ辿ったノード名（キャンバスの選択と同じ読み方）。
+   *
+   * 対象を選択から決めるのは、確定した文言の書き込み先が選択中のもの
+   * （`EditorState.applyPropEdit`）だからで、ダブルクリックは `click` 2 回の後に
+   * 届くため、その時点で押されたものは既に選択されている。
+   * 押された位置も見るのは、選択中の Text から離れたところをダブルクリックしたときに
+   * 編集が始まらないようにするため。
+   *
+   * artboard と部品インスタンスは対象にならない（文言を持つのは Text だけで、
+   * インスタンスが持つのは部品への上書き）。部品インスタンスの中身に見えている
+   * Text も、ドキュメントの木には無いため選択されず対象にならない。
+   */
+  at(state: EditorState, names: readonly string[]): Option<EditableText> {
+    return Option.flatMap(forSelection(state), (text) =>
+      names.includes(text.name) ? Option.some(text) : Option.none,
+    );
+  },
+} as const;
+
+/**
+ * 編集中の Text（docs/06-ui.md「Text のインライン編集」）。
+ *
+ * 下書きは確定するまでドキュメントへ書かない。書きながら反映すると、
+ * 取り消し（Escape）で戻すために編集前の文言を別に覚えておくことになる。
+ */
+export type TextInlineEdit = Readonly<{
+  draft: string;
+  /** 入力欄を重ねる矩形。描かれている位置はブラウザの実測でしか分からない。 */
+  bounds: CanvasBounds;
+}>;
+
+export const TextInlineEdit = {
+  /** 今の文言を下書きの初期値にして編集を始める。 */
+  create(text: EditableText, bounds: CanvasBounds): TextInlineEdit {
+    return { draft: text.content, bounds };
+  },
+
+  /** 入力された文言で下書きを差し替える。重ねる位置は編集の間変わらない。 */
+  withDraft(edit: TextInlineEdit, draft: string): TextInlineEdit {
+    return { ...edit, draft };
+  },
+
+  /**
+   * 下書きを `content` への編集にする。
+   *
+   * 空の下書きを「未設定へ戻す」とは読まない（プロパティパネルの入力欄は
+   * `PropControl.editFrom` でそう読む）。パネルは既定値を別に見せる欄なので
+   * 空欄に「未設定」の意味を持たせられるが、キャンバスに映っているものは
+   * そのまま `content` であり、空にする操作は「文言を空にした」としか読めない。
+   */
+  toPropEdit(edit: TextInlineEdit): PropEdit {
+    return PropEdit.set(CONTENT_PROP, edit.draft);
+  },
+} as const;
