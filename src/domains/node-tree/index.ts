@@ -47,12 +47,15 @@ function toTreeResult(
   );
 }
 
-/** そのノードが子を持てるか（プリミティブで、かつスキーマが子を認めているか）。 */
-function canHaveChildren(node: Node): boolean {
-  return Node.isPrimitive(node) && PrimitiveSchema.allowsChildren(node.type);
-}
-
 export const NodeTree = {
+  /**
+   * そのノードが子を持てるか（プリミティブで、かつスキーマが子を認めているか）。
+   * `Node` ではなくここに置く理由は、このファイル冒頭のコメント（循環）と同じ。
+   */
+  allowsChildren(node: Node): boolean {
+    return Node.isPrimitive(node) && PrimitiveSchema.allowsChildren(node.type);
+  },
+
   create(nodes: readonly Node[]): NodeTree {
     return { nodes };
   },
@@ -143,7 +146,7 @@ export const NodeTree = {
     );
     if (parentIndex !== -1) {
       const parent = tree.nodes[parentIndex];
-      if (!canHaveChildren(parent)) {
+      if (!NodeTree.allowsChildren(parent)) {
         return Result.err({ kind: "children-not-allowed", name: parentName });
       }
       return Result.map(

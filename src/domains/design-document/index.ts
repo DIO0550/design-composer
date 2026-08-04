@@ -154,6 +154,35 @@ function updateChildrenOfParent(
   );
 }
 
+/**
+ * 並びの中で名前が現れる位置を「どの親の何番目か」で返す。
+ *
+ * 走査そのものは `NodeTree` の仕事だが、`ChildPosition` はこのファイルの型で、
+ * `NodeTree` から import すると循環になるためここに置く。
+ */
+function childPositionInTree(
+  tree: NodeTree,
+  parentName: string,
+  name: string,
+): Option<ChildPosition> {
+  const nodes = NodeTree.nodes(tree);
+  const index = nodes.findIndex((node) => node.name === name);
+  if (index !== -1) {
+    return Option.some({ parentName, index });
+  }
+  for (const node of nodes) {
+    const found = childPositionInTree(
+      NodeTree.create(Node.children(node)),
+      node.name,
+      name,
+    );
+    if (found.some) {
+      return found;
+    }
+  }
+  return Option.none;
+}
+
 /** ドキュメントに現れる名前の集まり。 */
 function nameSpaceOf(document: DesignDocument): NameSpace {
   return NameSpace.create(
@@ -252,6 +281,27 @@ export const DesignDocument = {
     return Option.fromNullable(
       document.artboards.find((artboard) => artboard.name === name),
     );
+  },
+
+  /**
+   * 名前で指したノードが今いる位置を「どの親の何番目か」で引く。
+   * artboard 自身は誰の子でもないため位置を持たない（`none`）。
+   */
+  findChildPosition(
+    document: DesignDocument,
+    name: string,
+  ): Option<ChildPosition> {
+    for (const artboard of document.artboards) {
+      const found = childPositionInTree(
+        Artboard.tree(artboard),
+        artboard.name,
+        name,
+      );
+      if (found.some) {
+        return found;
+      }
+    }
+    return Option.none;
   },
 
   /** 名前でノードを引く。artboard 直下だけでなく子孫も辿る。 */

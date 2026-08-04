@@ -31,6 +31,9 @@ function EditorPanes() {
     dispatch({ type: "select_innermost", names });
   const reorderNode = (from: ChildPosition, toIndex: number) =>
     dispatch({ type: "reorder_node", from, toIndex });
+  /** キャンバスのドラッグはツリー内の移動（docs/06-ui.md「キャンバス直接操作」）。 */
+  const moveNode = (name: string, to: ChildPosition) =>
+    dispatch({ type: "move_node", name, to });
 
   return (
     <EditorLayout>
@@ -43,7 +46,11 @@ function EditorPanes() {
         <ComponentList components={state.document.components} />
       </EditorLayout.LeftPane>
       <EditorLayout.CenterPane>
-        <ArtboardCanvas state={state} onSelect={selectNodeAt} />
+        <ArtboardCanvas
+          state={state}
+          onSelect={selectNodeAt}
+          onMoveNode={moveNode}
+        />
         <DocumentErrorList errors={state.errors} />
       </EditorLayout.CenterPane>
       <EditorLayout.RightPane>

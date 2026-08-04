@@ -18,6 +18,12 @@ export const CanvasOffset = {
   delta(from: CanvasOffset, to: CanvasOffset): CanvasOffset {
     return { x: to.x - from.x, y: to.y - from.y };
   },
+
+  /** 2点の直線距離。「どれだけ動いたか」を向きに依らず1つの値で見るために使う。 */
+  distance(from: CanvasOffset, to: CanvasOffset): number {
+    const delta = CanvasOffset.delta(from, to);
+    return Math.hypot(delta.x, delta.y);
+  },
 } as const;
 
 /**

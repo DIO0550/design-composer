@@ -33,6 +33,26 @@ function selectableName(
   return isSelectable ? Option.some(name) : Option.none;
 }
 
+/**
+ * 取り除いたあとの並びで見た挿入位置。
+ *
+ * ドロップ先は**移動前の並び**（画面に描かれている状態）を見て決まるのに対し、
+ * `DesignDocument.moveNode` は取り除いてから挿す。同じ親の中で今より後ろへ動かす
+ * ときだけ、自分が抜けたぶんだけ挿入位置が 1 つ手前になる。
+ */
+function insertionAfterRemoval(
+  document: DesignDocument,
+  name: string,
+  to: ChildPosition,
+): ChildPosition {
+  const current = DesignDocument.findChildPosition(document, name);
+  const shifts =
+    current.some &&
+    current.value.parentName === to.parentName &&
+    current.value.index < to.index;
+  return shifts ? { ...to, index: to.index - 1 } : to;
+}
+
 export const EditorState = {
   /** 選択なしの状態から始める（選択は非永続なので開いた直後は何も選ばれていない）。 */
   create(document: DesignDocument): EditorState {
@@ -108,6 +128,33 @@ export const EditorState = {
     const reordered = DesignDocument.reorderNode(state.document, from, toIndex);
     return reordered.ok
       ? Option.some({ ...state, document: reordered.value })
+      : Option.none;
+  },
+
+  /**
+   * ノードを別の位置へ移す（docs/06-ui.md「キャンバス直接操作」の移動）。
+   *
+   * `to` はキャンバスが提示したドロップ先、つまり**移動前の並びを見て決めた**
+   * 「どの Box の何番目の子として置くか」で、実際に挿す位置への読み替えは
+   * `insertionAfterRemoval` が行う。
+   *
+   * 動かせない指定（自分の子孫の下・親が居ない・範囲外）は「その移動が存在しない」
+   * ことなので `none`。キャンバスは受け入れられない先をハイライトしないため、
+   * 画面の操作からこの `none` には到達しない。
+   * 選択はノードの name で持っており移動では変わらないため、そのまま引き継ぐ。
+   */
+  moveNode(
+    state: EditorState,
+    name: string,
+    to: ChildPosition,
+  ): Option<EditorState> {
+    const moved = DesignDocument.moveNode(
+      state.document,
+      name,
+      insertionAfterRemoval(state.document, name, to),
+    );
+    return moved.ok
+      ? Option.some({ ...state, document: moved.value })
       : Option.none;
   },
 

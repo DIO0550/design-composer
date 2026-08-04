@@ -9,9 +9,16 @@ import {
   CompiledElement,
   ELEMENT_NAME_ATTRIBUTE,
 } from "@/domains/compiled-element";
+import type { ChildPosition } from "@/domains/design-document";
 import { CanvasView } from "@/features/editor/domains/canvas-view";
 import { EditorState } from "@/features/editor/domains/editor-state";
+import { NodeDrag } from "@/features/editor/domains/node-drag";
+import type { CanvasBounds } from "@/features/editor/domains/node-drop";
 import { useCanvasView } from "@/features/editor/hooks/use-canvas-view";
+import {
+  type NodeDragControl,
+  useNodeDrag,
+} from "@/features/editor/hooks/use-node-drag";
 import { type CompiledDocument, DocumentHtml } from "@/services/document-html";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Css } from "@/utils/Css";
@@ -33,16 +40,49 @@ const ACTIVATION_KEYS = ["Enter", " "];
 const SELECTION_OUTLINE = "outline:2px solid #3b82f6;outline-offset:1px";
 
 /**
- * 選択中の要素をキャンバス上で示す規則（docs/06-ui.md「選択」）。
+ * ドロップ先の Box に描く枠。選択の枠と同時に出るので、色（Tailwind の
+ * `emerald-500`）と破線で選択と見分けられるようにする。
+ */
+const DROP_PARENT_OUTLINE = "outline:2px dashed #10b981;outline-offset:1px";
+
+/**
+ * 名前で指した要素だけに効く規則をキャンバスへ差し込む。
  *
  * キャンバスの中身は文字列の HTML を流し込んでおり React の管理下に無いため、
- * 選択中の要素へ class を足せない。出力に残っているノード名の属性を選択子にして、
+ * 特定の要素へ class を足せない。出力に残っているノード名の属性を選択子にして、
  * 規則を 1 本だけ差し込む。名前はドキュメント全体で一意なので、
- * この 1 本が指すのは選択中の artboard / ノードだけになる。
+ * この 1 本が指すのは狙った artboard / ノードだけになる。
  */
-function SelectionHighlight({ name }: Readonly<{ name: string }>) {
+function NameStyleRule({
+  name,
+  declarations,
+}: Readonly<{ name: string; declarations: string }>) {
   return (
-    <style>{`[${ELEMENT_NAME_ATTRIBUTE}="${Css.escapeQuotedString(name)}"]{${SELECTION_OUTLINE}}`}</style>
+    <style>{`[${ELEMENT_NAME_ATTRIBUTE}="${Css.escapeQuotedString(name)}"]{${declarations}}`}</style>
+  );
+}
+
+/**
+ * ドロップ先を示す線（docs/06-ui.md「ドロップ先は『どの Box の何番目の子になるか』を
+ * ハイライトで提示する」）。
+ *
+ * ズーム / パンの変形の**外側**に置き、実測した client 座標をそのまま `position: fixed`
+ * で使う。変形の内側に置くと、倍率と平行移動を打ち消す座標変換が要るうえ、
+ * 中身は React の管理外なので線を差し込む場所も無い。
+ */
+function DropMarker({ bounds }: Readonly<{ bounds: CanvasBounds }>) {
+  return (
+    <div
+      data-testid="drop-marker"
+      aria-hidden
+      className="pointer-events-none fixed z-10 bg-emerald-500"
+      style={{
+        left: `${bounds.left}px`,
+        top: `${bounds.top}px`,
+        width: `${bounds.width}px`,
+        height: `${bounds.height}px`,
+      }}
+    />
   );
 }
 
@@ -98,10 +138,12 @@ function ArtboardFrame({
   element,
   isSelected,
   onSelect,
+  nodeDrag,
 }: Readonly<{
   element: BoxElement;
   isSelected: boolean;
   onSelect: (names: readonly string[]) => void;
+  nodeDrag: NodeDragControl;
 }>) {
   /**
    * 押された位置から外へ辿った名前。最後に artboard 自身を置くのは、
@@ -143,13 +185,21 @@ function ArtboardFrame({
         tabIndex={0}
         aria-label={element.name}
         aria-current={isSelected}
-        onClick={(event: MouseEvent<HTMLElement>) =>
-          onSelect(namesAt(event.target))
-        }
+        onClick={(event: MouseEvent<HTMLElement>) => {
+          // ドラッグの直後に届く click は運んだ先を指しており、選択には使えない
+          if (nodeDrag.consumeClick()) {
+            return;
+          }
+          onSelect(namesAt(event.target));
+        }}
         onKeyDown={activate}
-        // artboard の上で始めたドラッグはパンにしない（掴んだものが動かないと操作が読めなくなる）
-        onPointerDown={(event) => event.stopPropagation()}
-        className="w-fit bg-white shadow-sm outline outline-gray-300 aria-[current=true]:outline-2 aria-[current=true]:outline-blue-500"
+        onPointerDown={(event) => {
+          // artboard の上で始めたドラッグはパンにしない（掴んだものが動かないと操作が読めなくなる）
+          event.stopPropagation();
+          nodeDrag.grabHandlers.onPointerDown(event);
+        }}
+        // 中身のテキストは選択させない（ノードを運ぶドラッグが範囲選択になってしまうため）
+        className="w-fit select-none bg-white shadow-sm outline outline-gray-300 aria-[current=true]:outline-2 aria-[current=true]:outline-blue-500"
         // biome-ignore lint/security/noDangerouslySetInnerHtml: コンパイル結果の HTML をそのまま描くのがキャンバスの仕様。埋め込む値のエスケープはコンパイラ側に閉じている（上のコメント参照）
         dangerouslySetInnerHTML={innerHtml}
       />
@@ -169,19 +219,37 @@ function ArtboardList({
   compiled,
   state,
   onSelect,
+  nodeDrag,
 }: Readonly<{
   compiled: CompiledDocument;
   state: EditorState;
   onSelect: (names: readonly string[]) => void;
+  nodeDrag: NodeDragControl;
 }>) {
+  const dropTarget = NodeDrag.dropTarget(nodeDrag.drag);
+
   return (
     <>
       {state.selectedName.some ? (
-        <SelectionHighlight name={state.selectedName.value} />
+        <NameStyleRule
+          name={state.selectedName.value}
+          declarations={SELECTION_OUTLINE}
+        />
       ) : null}
+      {dropTarget.some ? (
+        <NameStyleRule
+          name={dropTarget.value.position.parentName}
+          declarations={DROP_PARENT_OUTLINE}
+        />
+      ) : null}
+      {/*
+        運んでいる間のポインタは並び全体で受ける。artboard の枠ごとに受けると、
+        artboard をまたぐ移動が枠を出た時点で切れてしまう。
+      */}
       <ul
         style={compiled.variables}
         className="flex flex-wrap items-start gap-8 p-8"
+        {...nodeDrag.dragHandlers}
       >
         {compiled.artboards.map((element) => (
           <ArtboardFrame
@@ -189,6 +257,7 @@ function ArtboardList({
             element={element}
             isSelected={EditorState.isSelected(state, element.name)}
             onSelect={onSelect}
+            nodeDrag={nodeDrag}
           />
         ))}
       </ul>
@@ -204,10 +273,12 @@ function CanvasBody({
   compiled,
   state,
   onSelect,
+  nodeDrag,
 }: Readonly<{
   compiled: Result<CompiledDocument, Error>;
   state: EditorState;
   onSelect: (names: readonly string[]) => void;
+  nodeDrag: NodeDragControl;
 }>) {
   if (!compiled.ok) {
     return (
@@ -220,7 +291,12 @@ function CanvasBody({
     return <p className="p-8 text-gray-500 text-sm">artboard がありません</p>;
   }
   return (
-    <ArtboardList compiled={compiled.value} state={state} onSelect={onSelect} />
+    <ArtboardList
+      compiled={compiled.value}
+      state={state}
+      onSelect={onSelect}
+      nodeDrag={nodeDrag}
+    />
   );
 }
 
@@ -235,16 +311,23 @@ const CONTENT_TRANSFORM_ORIGIN: CSSProperties["transformOrigin"] = "0 0";
 export function ArtboardCanvas({
   state,
   onSelect,
+  onMoveNode,
 }: Readonly<{
   state: EditorState;
   onSelect: (names: readonly string[]) => void;
+  onMoveNode: (name: string, to: ChildPosition) => void;
 }>) {
   const { view, surfaceRef, panHandlers, zoomIn, zoomOut, reset } =
     useCanvasView();
+  const nodeDrag = useNodeDrag({
+    document: state.document,
+    onMove: onMoveNode,
+  });
   const compiled = useMemo(
     () => DocumentHtml.compile(state.document),
     [state.document],
   );
+  const dropTarget = NodeDrag.dropTarget(nodeDrag.drag);
 
   return (
     <div className="flex h-full flex-col">
@@ -269,9 +352,15 @@ export function ArtboardCanvas({
             transformOrigin: CONTENT_TRANSFORM_ORIGIN,
           }}
         >
-          <CanvasBody compiled={compiled} state={state} onSelect={onSelect} />
+          <CanvasBody
+            compiled={compiled}
+            state={state}
+            onSelect={onSelect}
+            nodeDrag={nodeDrag}
+          />
         </div>
       </div>
+      {dropTarget.some ? <DropMarker bounds={dropTarget.value.marker} /> : null}
     </div>
   );
 }
