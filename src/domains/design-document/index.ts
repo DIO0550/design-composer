@@ -1,4 +1,5 @@
 import { Artboard } from "@/domains/artboard";
+import type { AxisLength } from "@/domains/axis-length";
 import type { ChildPosition } from "@/domains/child-position";
 import { Component, ComponentSet } from "@/domains/component";
 import {
@@ -7,7 +8,7 @@ import {
   type FormatVersionOf,
 } from "@/domains/format-version";
 import { NameSpace } from "@/domains/name-space";
-import { Node, type PropEdit, type RefNode } from "@/domains/node";
+import { Node, PropEdit, type RefNode } from "@/domains/node";
 import { NodeTree, type NodeTreeUpdate } from "@/domains/node-tree";
 import { TokenSet } from "@/domains/token";
 import { ArrayEx } from "@/utils/ArrayEx";
@@ -61,6 +62,26 @@ function artboardIndexOfNode(
     (artboard) => Artboard.findNode(artboard, name).some,
   );
   return index === -1 ? Option.none : Option.some(index);
+}
+
+/**
+ * 名前で指した artboard を作り直したドキュメント。
+ * その名前の artboard が無ければ `none`（呼び出し側がノードとして相手をする）。
+ */
+function updateArtboardNamed(
+  document: DesignDocument,
+  name: string,
+  update: (artboard: Artboard) => Artboard,
+): Option<DesignDocument> {
+  if (!DesignDocument.findArtboard(document, name).some) {
+    return Option.none;
+  }
+  return Option.some({
+    ...document,
+    artboards: document.artboards.map((artboard) =>
+      artboard.name === name ? update(artboard) : artboard,
+    ),
+  });
 }
 
 /** index 番目の artboard のツリーを差し替えたドキュメント。 */
@@ -288,18 +309,11 @@ export const DesignDocument = {
     name: string,
     edit: PropEdit,
   ): Result<DesignDocument, DesignDocumentEditError> {
-    const artboardIndex = document.artboards.findIndex(
-      (artboard) => artboard.name === name,
+    const editedArtboard = updateArtboardNamed(document, name, (artboard) =>
+      Artboard.applyPropEdit(artboard, edit),
     );
-    if (artboardIndex !== -1) {
-      return Result.ok({
-        ...document,
-        artboards: document.artboards.map((artboard, current) =>
-          current === artboardIndex
-            ? Artboard.applyPropEdit(artboard, edit)
-            : artboard,
-        ),
-      });
+    if (editedArtboard.some) {
+      return Result.ok(editedArtboard.value);
     }
     const found = DesignDocument.findNode(document, name);
     if (!found.some) {
@@ -309,6 +323,33 @@ export const DesignDocument = {
       document,
       name,
       Node.applyPropEdit(found.value, edit),
+    );
+  },
+
+  /**
+   * 名前で指した artboard またはノードの大きさを変える
+   * （docs/06-ui.md「キャンバス直接操作」のリサイズハンドル）。
+   *
+   * 長さの持ち主が artboard とノードで違う（artboard は自身のフィールド、
+   * ノードは `width` / `height` prop）ため、名前で相手を決めてから書き込み先を分ける。
+   * ノード側でモードが `fixed` かどうかは見ない。ハンドルを出す軸を決めるのは
+   * キャンバス側の役目で、ここは指定された長さを書くところ。
+   */
+  resize(
+    document: DesignDocument,
+    name: string,
+    size: AxisLength,
+  ): Result<DesignDocument, DesignDocumentEditError> {
+    const resizedArtboard = updateArtboardNamed(document, name, (artboard) =>
+      Artboard.resize(artboard, size),
+    );
+    if (resizedArtboard.some) {
+      return Result.ok(resizedArtboard.value);
+    }
+    return DesignDocument.applyPropEdit(
+      document,
+      name,
+      PropEdit.set(size.axis, size.length),
     );
   },
 

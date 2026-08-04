@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
+import { AxisLength } from "@/domains/axis-length";
 import { DesignDocument } from "@/domains/design-document";
 import type { DocumentError } from "@/features/editor/domains/document-error";
 import type { EditorState } from "@/features/editor/domains/editor-state";
@@ -44,6 +45,11 @@ function setupReloadedDocument(): DesignDocument {
   });
 }
 
+function artboardWidth(state: EditorState): number {
+  return Option.unwrap(DesignDocument.findArtboard(state.document, "home"))
+    .width;
+}
+
 function childNames(state: EditorState): readonly string[] {
   const artboard = Option.unwrap(
     DesignDocument.findArtboard(state.document, "home"),
@@ -64,11 +70,18 @@ function EditorReducerHarness() {
         {Option.unwrapOr(state.selectedName, "選択なし")}
       </p>
       <p data-testid="children">{childNames(state).join(",")}</p>
+      <p data-testid="artboard-width">{artboardWidth(state)}</p>
       <button
         type="button"
         onClick={() => dispatch({ type: "select", name: "title" })}
       >
         title を選ぶ
+      </button>
+      <button
+        type="button"
+        onClick={() => dispatch({ type: "select", name: "home" })}
+      >
+        home を選ぶ
       </button>
       <button
         type="button"
@@ -146,6 +159,14 @@ function EditorReducerHarness() {
       >
         title を Text の下へ運ぶ
       </button>
+      <button
+        type="button"
+        onClick={() =>
+          dispatch({ type: "resize", size: AxisLength.create("width", 500) })
+        }
+      >
+        幅を 500 にする
+      </button>
     </>
   );
 }
@@ -156,6 +177,10 @@ function selected(): string {
 
 function children(): string {
   return screen.getByTestId("children").textContent ?? "";
+}
+
+function artboardWidthText(): string {
+  return screen.getByTestId("artboard-width").textContent ?? "";
 }
 
 test("開いた直後は何も選択されていない", () => {
@@ -251,4 +276,25 @@ test("子を持てないノードの下を移動先にすると子の並びが�
   );
 
   expect(children()).toBe("title,footer");
+});
+
+test("選択中の artboard にリサイズのアクションを送るとその大きさになる", async () => {
+  render(<EditorReducerHarness />);
+  await userEvent.click(screen.getByRole("button", { name: "home を選ぶ" }));
+
+  await userEvent.click(
+    screen.getByRole("button", { name: "幅を 500 にする" }),
+  );
+
+  expect(artboardWidthText()).toBe("500");
+});
+
+test("何も選んでいないままリサイズのアクションを送っても大きさは変わらない", async () => {
+  render(<EditorReducerHarness />);
+
+  await userEvent.click(
+    screen.getByRole("button", { name: "幅を 500 にする" }),
+  );
+
+  expect(artboardWidthText()).toBe("375");
 });

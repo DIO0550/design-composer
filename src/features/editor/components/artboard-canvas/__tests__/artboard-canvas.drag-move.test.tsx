@@ -73,6 +73,7 @@ test("ノードを Box の上へ運んで離すとその Box の子になる", (
       state={setupState()}
       onSelect={vi.fn()}
       onMoveNode={onMoveNode}
+      onResize={vi.fn()}
     />,
   );
 
@@ -91,6 +92,7 @@ test("ノードを別の artboard の上へ運んで離すとその artboard の
       state={setupState()}
       onSelect={vi.fn()}
       onMoveNode={onMoveNode}
+      onResize={vi.fn()}
     />,
   );
 
@@ -109,6 +111,7 @@ test("子を持てない Text の上で離すと、外側の Box の子になる
       state={setupState()}
       onSelect={vi.fn()}
       onMoveNode={onMoveNode}
+      onResize={vi.fn()}
     />,
   );
 
@@ -132,6 +135,7 @@ test("押しただけで運んでいなければ移動は起きない", () => {
       state={setupState()}
       onSelect={vi.fn()}
       onMoveNode={onMoveNode}
+      onResize={vi.fn()}
     />,
   );
 
@@ -147,6 +151,7 @@ test("受け入れ先の上ではドロップ先が線で示される", () => {
       state={setupState()}
       onSelect={vi.fn()}
       onMoveNode={vi.fn()}
+      onResize={vi.fn()}
     />,
   );
 
@@ -162,6 +167,7 @@ test("受け入れ先の上では、その Box が枠で示される", () => {
       state={setupState()}
       onSelect={vi.fn()}
       onMoveNode={vi.fn()}
+      onResize={vi.fn()}
     />,
   );
 
@@ -177,6 +183,7 @@ test("受け入れ先が無い場所ではハイライトが出ない", () => {
       state={setupState()}
       onSelect={vi.fn()}
       onMoveNode={vi.fn()}
+      onResize={vi.fn()}
     />,
   );
 
@@ -193,6 +200,7 @@ test("受け入れ先が無い場所で離しても移動は起きない", () =>
       state={setupState()}
       onSelect={vi.fn()}
       onMoveNode={onMoveNode}
+      onResize={vi.fn()}
     />,
   );
 
@@ -208,6 +216,7 @@ test("運んだ直後のクリックでは選択が変わらない", () => {
       state={setupState()}
       onSelect={onSelect}
       onMoveNode={vi.fn()}
+      onResize={vi.fn()}
     />,
   );
 
@@ -224,6 +233,7 @@ test("ドラッグの外で押したクリックはそのまま選択に使わ�
       state={setupState()}
       onSelect={onSelect}
       onMoveNode={vi.fn()}
+      onResize={vi.fn()}
     />,
   );
 

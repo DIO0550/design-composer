@@ -10,6 +10,7 @@ import {
   type CanvasOffset,
   CanvasView,
 } from "@/features/editor/domains/canvas-view";
+import { CanvasPointer } from "@/features/editor/utils/CanvasPointer";
 
 /** キャンバスの見え方に対する操作（docs/06-ui.md「ズーム / パンは非永続の view state」）。 */
 export type CanvasViewAction =
@@ -42,10 +43,6 @@ function canvasViewReducer(
     case "drag_end":
       return CanvasView.endDrag(view);
   }
-}
-
-function pointerOf(event: ReactPointerEvent<HTMLElement>): CanvasOffset {
-  return { x: event.clientX, y: event.clientY };
 }
 
 /**
@@ -121,10 +118,13 @@ export function useCanvasView(): CanvasViewControl {
       onPointerDown: (event) => {
         // ポインタが土台の外へ出てもドラッグが続くようにする（キャンバスは画面の端に接する）
         event.currentTarget.setPointerCapture(event.pointerId);
-        dispatch({ type: "drag_start", pointer: pointerOf(event) });
+        dispatch({
+          type: "drag_start",
+          pointer: CanvasPointer.offsetOf(event),
+        });
       },
       onPointerMove: (event) =>
-        dispatch({ type: "drag_move", pointer: pointerOf(event) }),
+        dispatch({ type: "drag_move", pointer: CanvasPointer.offsetOf(event) }),
       onPointerUp: (event) => {
         event.currentTarget.releasePointerCapture(event.pointerId);
         dispatch({ type: "drag_end" });

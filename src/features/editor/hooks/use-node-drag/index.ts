@@ -5,12 +5,13 @@ import type { DesignDocument } from "@/domains/design-document";
 import type { CanvasOffset } from "@/features/editor/domains/canvas-view";
 import { NodeDrag } from "@/features/editor/domains/node-drag";
 import {
-  type CanvasBounds,
+  CanvasBounds,
   DropParent,
   type DropTarget,
   DropZone,
 } from "@/features/editor/domains/node-drop";
-import { Css } from "@/utils/Css";
+import { CanvasPointer } from "@/features/editor/utils/CanvasPointer";
+import { CanvasDom } from "@/libs/canvas-dom";
 import { ElementEx } from "@/utils/ElementEx";
 import { Option } from "@/utils/Option";
 
@@ -43,45 +44,19 @@ function namesToRoot(target: EventTarget): readonly string[] {
   return ElementEx.attributeValuesToRoot(target, ELEMENT_NAME_ATTRIBUTE);
 }
 
-function pointerOf(event: ReactPointerEvent<HTMLElement>): CanvasOffset {
-  return { x: event.clientX, y: event.clientY };
-}
-
-/**
- * 名前で描かれている要素。名前はドキュメント全体で一意なので 1 つに決まる
- * （部品インスタンスの中身も展開時に自動リネームされる / docs/06-ui.md「解除」）。
- */
-function elementOf(name: string): Option<Element> {
-  return Option.fromNullable(
-    globalThis.document.querySelector(
-      `[${ELEMENT_NAME_ATTRIBUTE}="${Css.escapeQuotedString(name)}"]`,
-    ),
-  );
-}
-
-function boundsOf(element: Element): CanvasBounds {
-  const rect = element.getBoundingClientRect();
-  return {
-    left: rect.left,
-    top: rect.top,
-    width: rect.width,
-    height: rect.height,
-  };
-}
-
 /**
  * 親と、その直下に並ぶ子の矩形を実測する。
  * 子は名前を持つ直下の要素だけを拾う（コンパイル結果は子ノードを直下の `div` として
  * 並び順のまま出すので、DOM の順序がそのままドキュメント上の順序になる）。
  */
 function measureZone(parent: DropParent): Option<DropZone> {
-  return Option.map(elementOf(parent.name), (element) =>
+  return Option.map(CanvasDom.elementOf(parent.name), (element) =>
     DropZone.create(
       parent,
-      boundsOf(element),
+      CanvasBounds.ofElement(element),
       Array.from(element.children)
         .filter((child) => child.hasAttribute(ELEMENT_NAME_ATTRIBUTE))
-        .map(boundsOf),
+        .map(CanvasBounds.ofElement),
     ),
   );
 }
@@ -98,7 +73,7 @@ function dropTargetAt(
     namesToRoot(event.target),
   );
   return Option.map(Option.flatMap(parent, measureZone), (zone) =>
-    DropZone.targetAt(zone, pointerOf(event)),
+    DropZone.targetAt(zone, CanvasPointer.offsetOf(event)),
   );
 }
 
@@ -153,7 +128,11 @@ export function useNodeDrag(
     if (!name.some) {
       return;
     }
-    dispatch({ type: "grab", name: name.value, origin: pointerOf(event) });
+    dispatch({
+      type: "grab",
+      name: name.value,
+      origin: CanvasPointer.offsetOf(event),
+    });
   };
 
   const trackPointer = (event: ReactPointerEvent<HTMLElement>) => {
@@ -163,7 +142,7 @@ export function useNodeDrag(
     }
     dispatch({
       type: "move",
-      pointer: pointerOf(event),
+      pointer: CanvasPointer.offsetOf(event),
       drop: dropTargetAt(params.document, held.value, event),
     });
   };

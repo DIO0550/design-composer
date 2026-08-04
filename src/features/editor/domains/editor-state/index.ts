@@ -1,3 +1,4 @@
+import type { AxisLength } from "@/domains/axis-length";
 import { ChildPosition } from "@/domains/child-position";
 import { DesignDocument } from "@/domains/design-document";
 import type { PropEdit } from "@/domains/node";
@@ -157,6 +158,24 @@ export const EditorState = {
       const edited = DesignDocument.applyPropEdit(state.document, name, edit);
       return edited.ok
         ? Option.some({ ...state, document: edited.value })
+        : Option.none;
+    });
+  },
+
+  /**
+   * 選択中の artboard / ノードの大きさを変える
+   * （docs/06-ui.md「キャンバス直接操作」のリサイズハンドル）。
+   *
+   * 対象を引数で受け取らず選択から決めるのは `applyPropEdit` と同じ理由で、
+   * ハンドルが出るのが選択中のものだけだから。
+   * 選択が無い・大きさを持たない指定は「そのリサイズが存在しない」ことなので `none`。
+   * 選択は name で持っておりリサイズでは変わらないため、そのまま引き継ぐ。
+   */
+  resize(state: EditorState, size: AxisLength): Option<EditorState> {
+    return Option.flatMap(state.selectedName, (name) => {
+      const resized = DesignDocument.resize(state.document, name, size);
+      return resized.ok
+        ? Option.some({ ...state, document: resized.value })
         : Option.none;
     });
   },

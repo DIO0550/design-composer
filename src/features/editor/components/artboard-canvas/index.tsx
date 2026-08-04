@@ -2,23 +2,35 @@ import {
   type CSSProperties,
   type KeyboardEvent,
   type MouseEvent,
+  type PointerEvent,
   useMemo,
 } from "react";
+import type { AxisLength } from "@/domains/axis-length";
 import type { ChildPosition } from "@/domains/child-position";
 import type { BoxElement } from "@/domains/compiled-element";
 import {
   CompiledElement,
   ELEMENT_NAME_ATTRIBUTE,
 } from "@/domains/compiled-element";
+import type { Axis } from "@/domains/css-direction";
+import { Px } from "@/domains/px";
 import { CanvasView } from "@/features/editor/domains/canvas-view";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { NodeDrag } from "@/features/editor/domains/node-drag";
 import type { CanvasBounds } from "@/features/editor/domains/node-drop";
+import {
+  NodeResize,
+  RESIZE_HANDLE_THICKNESS_PX,
+} from "@/features/editor/domains/node-resize";
 import { useCanvasView } from "@/features/editor/hooks/use-canvas-view";
 import {
   type NodeDragControl,
   useNodeDrag,
 } from "@/features/editor/hooks/use-node-drag";
+import {
+  type NodeResizeControl,
+  useNodeResize,
+} from "@/features/editor/hooks/use-node-resize";
 import { type CompiledDocument, DocumentHtml } from "@/services/document-html";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Css } from "@/utils/Css";
@@ -53,12 +65,84 @@ const DROP_PARENT_OUTLINE = "outline:2px dashed #10b981;outline-offset:1px";
  * 規則を 1 本だけ差し込む。名前はドキュメント全体で一意なので、
  * この 1 本が指すのは狙った artboard / ノードだけになる。
  */
+function nameSelector(name: string): string {
+  return `[${ELEMENT_NAME_ATTRIBUTE}="${Css.escapeQuotedString(name)}"]`;
+}
+
 function NameStyleRule({
   name,
   declarations,
 }: Readonly<{ name: string; declarations: string }>) {
+  return <style>{`${nameSelector(name)}{${declarations}}`}</style>;
+}
+
+/**
+ * 軸ごとの、掴める帯の描き方。幅は右辺、高さは下辺に貼り付ける
+ * （終端側だけを掴む / `NodeResize.handleAt`）。
+ * 2 本を別々の擬似要素へ割り当てるのは、1 要素が持てる擬似要素が 2 つだからで、
+ * 3 本目（角）を足すなら描き方から見直すことになる。
+ */
+const HANDLE_FACES = {
+  width: {
+    pseudo: "::after",
+    edge: "top:0;right:0;height:100%",
+    extent: "width",
+    cursor: "ew-resize",
+  },
+  height: {
+    pseudo: "::before",
+    edge: "left:0;bottom:0;width:100%",
+    extent: "height",
+    cursor: "ns-resize",
+  },
+} as const satisfies Readonly<
+  Record<
+    Axis,
+    Readonly<{
+      pseudo: string;
+      edge: string;
+      extent: string;
+      cursor: string;
+    }>
+  >
+>;
+
+/** ハンドルの色。選択枠と同じ青（Tailwind の `blue-500`）を、中身が透けるよう薄くして使う。 */
+const HANDLE_COLOR = "rgb(59 130 246 / 0.6)";
+
+function handleRule(name: string, handle: AxisLength, scale: number): string {
+  const face = HANDLE_FACES[handle.axis];
+  /*
+   * 太さを倍率で割るのは、掴める帯（当たり判定は client 座標 = 画面上の px）と
+   * 見た目の帯を一致させるため。中身は倍率をかけて描かれている。
+   */
+  const thickness = Px.create(RESIZE_HANDLE_THICKNESS_PX / scale);
+  return `${nameSelector(name)}${face.pseudo}{content:"";position:absolute;${face.edge};${face.extent}:${thickness};cursor:${face.cursor};background:${HANDLE_COLOR}}`;
+}
+
+/**
+ * 選択中の要素に出すリサイズハンドル（docs/06-ui.md「リサイズハンドル」）。
+ *
+ * 子要素ではなく擬似要素で描くのは、キャンバスの中身が React の管理外にあり
+ * ハンドルを差し込む場所が無いため。位置決めを CSS に任せることで、ズーム / パンや
+ * リサイズ中の描き直しでハンドルがずれない（実測した座標で置くと測り直しが要る）。
+ */
+function ResizeHandleStyle({
+  name,
+  handles,
+  scale,
+}: Readonly<{
+  name: string;
+  handles: readonly AxisLength[];
+  scale: number;
+}>) {
+  if (handles.length === 0) {
+    return null;
+  }
+  const faces = handles.map((handle) => handleRule(name, handle, scale));
+  // 擬似要素を辺へ貼り付ける基準にするため、選択中の要素自身を位置指定済みにする
   return (
-    <style>{`[${ELEMENT_NAME_ATTRIBUTE}="${Css.escapeQuotedString(name)}"]{${declarations}}`}</style>
+    <style>{`${nameSelector(name)}{position:relative}${faces.join("")}`}</style>
   );
 }
 
@@ -139,11 +223,13 @@ function ArtboardFrame({
   isSelected,
   onSelect,
   nodeDrag,
+  nodeResize,
 }: Readonly<{
   element: BoxElement;
   isSelected: boolean;
   onSelect: (names: readonly string[]) => void;
   nodeDrag: NodeDragControl;
+  nodeResize: NodeResizeControl;
 }>) {
   /**
    * 押された位置から外へ辿った名前。最後に artboard 自身を置くのは、
@@ -186,8 +272,13 @@ function ArtboardFrame({
         aria-label={element.name}
         aria-current={isSelected}
         onClick={(event: MouseEvent<HTMLElement>) => {
-          // ドラッグの直後に届く click は運んだ先を指しており、選択には使えない
-          if (nodeDrag.consumeClick()) {
+          /*
+           * 直前の操作の結果として届く click は選択に使えない（運んだ先 / 掴んだハンドルを
+           * 指している）。どちらの操作だったかで扱いは変わらないので両方に尋ねる。
+           */
+          const afterDrag = nodeDrag.consumeClick();
+          const afterResize = nodeResize.consumeClick();
+          if (afterDrag || afterResize) {
             return;
           }
           onSelect(namesAt(event.target));
@@ -196,6 +287,10 @@ function ArtboardFrame({
         onPointerDown={(event) => {
           // artboard の上で始めたドラッグはパンにしない（掴んだものが動かないと操作が読めなくなる）
           event.stopPropagation();
+          // ハンドルを掴んだならツリー内の移動ではなく大きさの変更（両方は起こらない）
+          if (nodeResize.grabHandle(event)) {
+            return;
+          }
           nodeDrag.grabHandlers.onPointerDown(event);
         }}
         // 中身のテキストは選択させない（ノードを運ぶドラッグが範囲選択になってしまうため）
@@ -220,13 +315,34 @@ function ArtboardList({
   state,
   onSelect,
   nodeDrag,
+  nodeResize,
 }: Readonly<{
   compiled: CompiledDocument;
   state: EditorState;
   onSelect: (names: readonly string[]) => void;
   nodeDrag: NodeDragControl;
+  nodeResize: NodeResizeControl;
 }>) {
   const dropTarget = NodeDrag.dropTarget(nodeDrag.drag);
+  /*
+   * 動かしている間のポインタは移動とリサイズの両方へ配る。押した時点でどちらか
+   * 一方しか始まっておらず（`grabHandle` を先に試す）、始まっていない側は
+   * 何も起こさないため、配る順序を気にする必要が無い。
+   */
+  const dragHandlers = {
+    onPointerMove: (event: PointerEvent<HTMLElement>) => {
+      nodeDrag.dragHandlers.onPointerMove(event);
+      nodeResize.dragHandlers.onPointerMove(event);
+    },
+    onPointerUp: () => {
+      nodeDrag.dragHandlers.onPointerUp();
+      nodeResize.dragHandlers.onPointerUp();
+    },
+    onPointerLeave: () => {
+      nodeDrag.dragHandlers.onPointerLeave();
+      nodeResize.dragHandlers.onPointerLeave();
+    },
+  };
 
   return (
     <>
@@ -249,7 +365,7 @@ function ArtboardList({
       <ul
         style={compiled.variables}
         className="flex flex-wrap items-start gap-8 p-8"
-        {...nodeDrag.dragHandlers}
+        {...dragHandlers}
       >
         {compiled.artboards.map((element) => (
           <ArtboardFrame
@@ -258,6 +374,7 @@ function ArtboardList({
             isSelected={EditorState.isSelected(state, element.name)}
             onSelect={onSelect}
             nodeDrag={nodeDrag}
+            nodeResize={nodeResize}
           />
         ))}
       </ul>
@@ -274,11 +391,13 @@ function CanvasBody({
   state,
   onSelect,
   nodeDrag,
+  nodeResize,
 }: Readonly<{
   compiled: Result<CompiledDocument, Error>;
   state: EditorState;
   onSelect: (names: readonly string[]) => void;
   nodeDrag: NodeDragControl;
+  nodeResize: NodeResizeControl;
 }>) {
   if (!compiled.ok) {
     return (
@@ -296,6 +415,7 @@ function CanvasBody({
       state={state}
       onSelect={onSelect}
       nodeDrag={nodeDrag}
+      nodeResize={nodeResize}
     />
   );
 }
@@ -312,10 +432,12 @@ export function ArtboardCanvas({
   state,
   onSelect,
   onMoveNode,
+  onResize,
 }: Readonly<{
   state: EditorState;
   onSelect: (names: readonly string[]) => void;
   onMoveNode: (name: string, to: ChildPosition) => void;
+  onResize: (size: AxisLength) => void;
 }>) {
   const { view, surfaceRef, panHandlers, zoomIn, zoomOut, reset } =
     useCanvasView();
@@ -323,6 +445,8 @@ export function ArtboardCanvas({
     document: state.document,
     onMove: onMoveNode,
   });
+  const nodeResize = useNodeResize({ state, view, onResize });
+  const resizeHandles = NodeResize.handles(state);
   const compiled = useMemo(
     () => DocumentHtml.compile(state.document),
     [state.document],
@@ -357,9 +481,17 @@ export function ArtboardCanvas({
             state={state}
             onSelect={onSelect}
             nodeDrag={nodeDrag}
+            nodeResize={nodeResize}
           />
         </div>
       </div>
+      {state.selectedName.some ? (
+        <ResizeHandleStyle
+          name={state.selectedName.value}
+          handles={resizeHandles}
+          scale={view.scale}
+        />
+      ) : null}
       {dropTarget.some ? <DropMarker bounds={dropTarget.value.marker} /> : null}
     </div>
   );

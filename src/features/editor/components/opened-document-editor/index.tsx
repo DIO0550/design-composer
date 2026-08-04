@@ -1,3 +1,4 @@
+import type { AxisLength } from "@/domains/axis-length";
 import type { ChildPosition } from "@/domains/child-position";
 import { ArtboardCanvas } from "@/features/editor/components/artboard-canvas";
 import { ComponentList } from "@/features/editor/components/component-list";
@@ -34,6 +35,8 @@ function EditorPanes() {
   /** キャンバスのドラッグはツリー内の移動（docs/06-ui.md「キャンバス直接操作」）。 */
   const moveNode = (name: string, to: ChildPosition) =>
     dispatch({ type: "move_node", name, to });
+  /** リサイズハンドルのドラッグは選択中のものの大きさの変更（docs/06-ui.md）。 */
+  const resize = (size: AxisLength) => dispatch({ type: "resize", size });
 
   return (
     <EditorLayout>
@@ -50,6 +53,7 @@ function EditorPanes() {
           state={state}
           onSelect={selectNodeAt}
           onMoveNode={moveNode}
+          onResize={resize}
         />
         <DocumentErrorList errors={state.errors} />
       </EditorLayout.CenterPane>

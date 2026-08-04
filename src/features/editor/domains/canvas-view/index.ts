@@ -1,3 +1,4 @@
+import type { Axis } from "@/domains/css-direction";
 import { Px } from "@/domains/px";
 import { Option } from "@/utils/Option";
 
@@ -17,6 +18,11 @@ export const CanvasOffset = {
   /** `from` から `to` への移動量。 */
   delta(from: CanvasOffset, to: CanvasOffset): CanvasOffset {
     return { x: to.x - from.x, y: to.y - from.y };
+  },
+
+  /** 軸に沿った成分。1 軸だけを見る操作（リサイズ）が使う。 */
+  along(offset: CanvasOffset, axis: Axis): number {
+    return axis === "width" ? offset.x : offset.y;
   },
 
   /** 2点の直線距離。「どれだけ動いたか」を向きに依らず1つの値で見るために使う。 */
@@ -117,6 +123,15 @@ export const CanvasView = {
 
   isDragging(view: CanvasView): boolean {
     return view.dragFrom.some;
+  },
+
+  /**
+   * 画面上の長さをドキュメント上の長さへ直す。
+   * 中身は倍率をかけて描かれているので、画面で測った差はその分だけ割り戻す
+   * （ドラッグでのリサイズ量は、倍率を変えても掴んだ点に追従する）。
+   */
+  toDocumentLength(view: CanvasView, screenLength: number): number {
+    return screenLength / view.scale;
   },
 
   /** 表示用の倍率（%）。小数の倍率をそのまま出さないよう整数へ丸める。 */
