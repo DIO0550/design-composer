@@ -19,7 +19,7 @@ const meta = {
       </div>
     ),
   ],
-  args: { onSelect: fn(), onMoveNode: fn() },
+  args: { onSelect: fn(), onMoveNode: fn(), onResize: fn() },
 } satisfies Meta<typeof ArtboardCanvas>;
 
 export default meta;
@@ -31,6 +31,7 @@ export const Default: Story = {
   args: { state: SAMPLE_EDITOR_STATE },
 };
 
+/** artboard は 2 軸とも fixed なので、選択するとリサイズハンドルも出る（docs/06-ui.md）。 */
 export const Selected: Story = {
   name: "artboard を選択中",
   args: { state: EditorState.select(SAMPLE_EDITOR_STATE, "settings") },

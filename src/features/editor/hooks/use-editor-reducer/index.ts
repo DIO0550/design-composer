@@ -1,4 +1,5 @@
 import { type ActionDispatch, useReducer } from "react";
+import type { AxisLength } from "@/domains/axis-length";
 import type { ChildPosition } from "@/domains/child-position";
 import type { DesignDocument } from "@/domains/design-document";
 import type { PropEdit } from "@/domains/node";
@@ -18,7 +19,8 @@ export type EditorAction =
       toIndex: number;
     }>
   | Readonly<{ type: "move_node"; name: string; to: ChildPosition }>
-  | Readonly<{ type: "apply_prop_edit"; edit: PropEdit }>;
+  | Readonly<{ type: "apply_prop_edit"; edit: PropEdit }>
+  | Readonly<{ type: "resize"; size: AxisLength }>;
 
 /** アクションの解釈だけを行い、状態の組み立ては EditorState に委ねる。 */
 function editorReducer(state: EditorState, action: EditorAction): EditorState {
@@ -49,6 +51,9 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
         EditorState.applyPropEdit(state, action.edit),
         state,
       );
+    case "resize":
+      // 選択が無ければリサイズは存在しない（EditorState.resize の `none`）。
+      return Option.unwrapOr(EditorState.resize(state, action.size), state);
   }
 }
 

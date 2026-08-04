@@ -1,4 +1,5 @@
 import { ELEMENT_NAME_ATTRIBUTE } from "@/domains/compiled-element";
+import { ArrayEx } from "@/utils/ArrayEx";
 
 /**
  * キャンバスに描かれたものを読む。
@@ -22,10 +23,16 @@ export function renderedElement(canvas: HTMLElement, name: string): Element {
   return element;
 }
 
+/**
+ * 1 つの名前に対して差し込まれる規則は 1 本とは限らない（リサイズハンドルは
+ * 基準の位置指定と辺ごとの規則を出す）ため、名前で重複を落として答える。
+ */
 export function highlightedNames(canvas: HTMLElement): readonly string[] {
-  return [...canvas.querySelectorAll("style")].flatMap((style) =>
-    [...(style.textContent ?? "").matchAll(HIGHLIGHTED_NAME_PATTERN)].map(
-      (match) => match[1],
+  return ArrayEx.distinct(
+    [...canvas.querySelectorAll("style")].flatMap((style) =>
+      [...(style.textContent ?? "").matchAll(HIGHLIGHTED_NAME_PATTERN)].map(
+        (match) => match[1],
+      ),
     ),
   );
 }

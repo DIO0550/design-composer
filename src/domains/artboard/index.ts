@@ -1,3 +1,4 @@
+import type { AxisLength } from "@/domains/axis-length";
 import { Node, type PropEdit, Props } from "@/domains/node";
 import { NodeTree } from "@/domains/node-tree";
 import {
@@ -146,6 +147,18 @@ export const Artboard = {
         withArtboardDefault(name, definition),
       ]),
     );
+  },
+
+  /**
+   * 軸方向の長さを変えた artboard。
+   *
+   * 書き込み先が props ではなく artboard 自身のフィールドなのは、artboard の
+   * サイズが `fixed` 固定で長さを `width` / `height` が持つため
+   * (docs/03「`widthMode` / `heightMode` は `fixed` に固定され、`width` / `height` が必須」)。
+   * props へ書いても `boxProps` が固定値で上書きするので効かない。
+   */
+  resize(artboard: Artboard, size: AxisLength): Artboard {
+    return { ...artboard, [size.axis]: size.length };
   },
 
   /** artboard の prop を書き換える。 */

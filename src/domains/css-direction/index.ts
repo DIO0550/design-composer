@@ -1,6 +1,7 @@
 import { CssDeclaration } from "@/domains/css-declaration";
 import type { PropValue } from "@/domains/node";
 import { BOX_SCHEMA } from "@/domains/primitive-schema";
+import type { ValueOf } from "@/types/ValueOf";
 
 /**
  * flex コンテナが子を並べる方向。
@@ -9,8 +10,13 @@ import { BOX_SCHEMA } from "@/domains/primitive-schema";
 export type CssDirection =
   (typeof BOX_SCHEMA)["props"]["direction"]["values"][number];
 
-/** サイズを指定する軸。 */
-export type Axis = "width" | "height";
+/** サイズを指定する軸。走査するときは `Object.values(AXES)` で並びにする。 */
+export const AXES = {
+  width: "width",
+  height: "height",
+} as const;
+
+export type Axis = ValueOf<typeof AXES>;
 
 export const CssDirection = {
   /** `direction` prop の値から向きを決める。スキーマのデフォルトを既定とする。 */
@@ -22,9 +28,14 @@ export const CssDirection = {
     );
   },
 
+  /** 子が並ぶ方向にあたる軸。 */
+  mainAxis(direction: CssDirection): Axis {
+    return direction === "row" ? "width" : "height";
+  },
+
   /** その軸が主軸(子が並ぶ方向)かどうか。 */
   isMainAxis(direction: CssDirection, axis: Axis): boolean {
-    return direction === "row" ? axis === "width" : axis === "height";
+    return CssDirection.mainAxis(direction) === axis;
   },
 
   /**

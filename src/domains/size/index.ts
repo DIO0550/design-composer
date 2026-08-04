@@ -2,6 +2,7 @@ import { CssDeclaration } from "@/domains/css-declaration";
 import { type Axis, CssDirection } from "@/domains/css-direction";
 import type { PropValue } from "@/domains/node";
 import { Px } from "@/domains/px";
+import { Option } from "@/utils/Option";
 
 /**
  * 軸ごとのサイズ指定
@@ -32,6 +33,20 @@ export const Size = {
       return { mode: "fixed", length: value };
     }
     return undefined;
+  },
+
+  /**
+   * その軸のモードを持つ prop 名
+   * (docs/03「モード(enum)と値(number)の2 prop に分離」)。
+   * 長さ側の prop 名は軸の名前そのもの (`width` / `height`)。
+   */
+  modeProp(axis: Axis): "widthMode" | "heightMode" {
+    return axis === "width" ? "widthMode" : "heightMode";
+  },
+
+  /** 固定された長さ。`hug` / `fill` と、長さの決まらないサイズは持たない。 */
+  fixedLength(size: Size | undefined): Option<number> {
+    return size?.mode === "fixed" ? Option.some(size.length) : Option.none;
   },
 
   /**
