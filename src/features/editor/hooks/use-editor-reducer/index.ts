@@ -1,5 +1,6 @@
 import { type ActionDispatch, useReducer } from "react";
-import type { ChildPosition, DesignDocument } from "@/domains/design-document";
+import type { ChildPosition } from "@/domains/child-position";
+import type { DesignDocument } from "@/domains/design-document";
 import type { PropEdit } from "@/domains/node";
 import type { DocumentReload } from "@/features/editor/domains/document-reload";
 import { EditorState } from "@/features/editor/domains/editor-state";
@@ -16,6 +17,7 @@ export type EditorAction =
       from: ChildPosition;
       toIndex: number;
     }>
+  | Readonly<{ type: "move_node"; name: string; to: ChildPosition }>
   | Readonly<{ type: "apply_prop_edit"; edit: PropEdit }>;
 
 /** アクションの解釈だけを行い、状態の組み立ては EditorState に委ねる。 */
@@ -33,6 +35,12 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
       // 移動が存在しなければ並びは変わらない（EditorState.reorderNode の `none`）。
       return Option.unwrapOr(
         EditorState.reorderNode(state, action.from, action.toIndex),
+        state,
+      );
+    case "move_node":
+      // 動かせない先なら木は変わらない（EditorState.moveNode の `none`）。
+      return Option.unwrapOr(
+        EditorState.moveNode(state, action.name, action.to),
         state,
       );
     case "apply_prop_edit":

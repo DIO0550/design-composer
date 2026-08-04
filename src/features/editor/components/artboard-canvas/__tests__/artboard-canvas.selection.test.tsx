@@ -48,7 +48,13 @@ function setupHomeArtboard(): EditorState {
 
 test("artboard の中のノードを押すと、そのノードを内側とする候補が通知される", async () => {
   const onSelect = vi.fn();
-  render(<ArtboardCanvas state={setupHomeArtboard()} onSelect={onSelect} />);
+  render(
+    <ArtboardCanvas
+      state={setupHomeArtboard()}
+      onSelect={onSelect}
+      onMoveNode={vi.fn()}
+    />,
+  );
 
   await userEvent.click(renderedElement(canvasContent(), "home-title"));
 
@@ -57,7 +63,13 @@ test("artboard の中のノードを押すと、そのノードを内側とす�
 
 test("部品インスタンスの中身を押すと、内側の部品定義のノードより外にインスタンスが並ぶ", async () => {
   const onSelect = vi.fn();
-  render(<ArtboardCanvas state={setupHomeArtboard()} onSelect={onSelect} />);
+  render(
+    <ArtboardCanvas
+      state={setupHomeArtboard()}
+      onSelect={onSelect}
+      onMoveNode={vi.fn()}
+    />,
+  );
 
   await userEvent.click(screen.getByText("ログイン"));
 
@@ -74,7 +86,9 @@ test("artboard の枠を押すとその artboard だけが候補になる", asyn
     { name: "home", width: 360, height: 240, children: [] },
     { name: "settings", width: 360, height: 240, children: [] },
   ]);
-  render(<ArtboardCanvas state={state} onSelect={onSelect} />);
+  render(
+    <ArtboardCanvas state={state} onSelect={onSelect} onMoveNode={vi.fn()} />,
+  );
 
   await userEvent.click(screen.getByRole("button", { name: "settings" }));
 
@@ -86,7 +100,9 @@ test("キーボードで artboard を活性化するとその artboard だけが
   const state = setupState([
     { name: "home", width: 360, height: 240, children: [] },
   ]);
-  render(<ArtboardCanvas state={state} onSelect={onSelect} />);
+  render(
+    <ArtboardCanvas state={state} onSelect={onSelect} onMoveNode={vi.fn()} />,
+  );
 
   screen.getByRole("button", { name: "home" }).focus();
   await userEvent.keyboard("{Enter}");
@@ -97,7 +113,9 @@ test("キーボードで artboard を活性化するとその artboard だけが
 test("選択中のノードはキャンバス上で強調される", () => {
   const state = EditorState.select(setupHomeArtboard(), "home-title");
 
-  render(<ArtboardCanvas state={state} onSelect={vi.fn()} />);
+  render(
+    <ArtboardCanvas state={state} onSelect={vi.fn()} onMoveNode={vi.fn()} />,
+  );
 
   expect(highlightedNames(canvasContent())).toEqual(["home-title"]);
 });
@@ -105,13 +123,21 @@ test("選択中のノードはキャンバス上で強調される", () => {
 test("選択中の artboard はキャンバス上で強調される", () => {
   const state = EditorState.select(setupHomeArtboard(), "home");
 
-  render(<ArtboardCanvas state={state} onSelect={vi.fn()} />);
+  render(
+    <ArtboardCanvas state={state} onSelect={vi.fn()} onMoveNode={vi.fn()} />,
+  );
 
   expect(highlightedNames(canvasContent())).toEqual(["home"]);
 });
 
 test("何も選択していなければ強調されるものは無い", () => {
-  render(<ArtboardCanvas state={setupHomeArtboard()} onSelect={vi.fn()} />);
+  render(
+    <ArtboardCanvas
+      state={setupHomeArtboard()}
+      onSelect={vi.fn()}
+      onMoveNode={vi.fn()}
+    />,
+  );
 
   expect(highlightedNames(canvasContent())).toEqual([]);
 });
@@ -128,7 +154,9 @@ test("名前に二重引用符が含まれていても選択子の中に収ま�
     quotedName,
   );
 
-  render(<ArtboardCanvas state={state} onSelect={vi.fn()} />);
+  render(
+    <ArtboardCanvas state={state} onSelect={vi.fn()} onMoveNode={vi.fn()} />,
+  );
 
   const styleText = canvasContent().querySelector("style")?.textContent ?? "";
   expect(styleText).toContain(

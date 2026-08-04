@@ -122,6 +122,30 @@ function EditorReducerHarness() {
       >
         並びの外へ
       </button>
+      <button
+        type="button"
+        onClick={() =>
+          dispatch({
+            type: "move_node",
+            name: "title",
+            to: { parentName: "home", index: 2 },
+          })
+        }
+      >
+        title を末尾へ運ぶ
+      </button>
+      <button
+        type="button"
+        onClick={() =>
+          dispatch({
+            type: "move_node",
+            name: "title",
+            to: { parentName: "footer", index: 0 },
+          })
+        }
+      >
+        title を Text の下へ運ぶ
+      </button>
     </>
   );
 }
@@ -205,6 +229,26 @@ test("並びの外を移動先にした並べ替えでは子の並びが変わ�
   render(<EditorReducerHarness />);
 
   await userEvent.click(screen.getByRole("button", { name: "並びの外へ" }));
+
+  expect(children()).toBe("title,footer");
+});
+
+test("移動のアクションを送ると、離した位置に応じて子の並びが変わる", async () => {
+  render(<EditorReducerHarness />);
+
+  await userEvent.click(
+    screen.getByRole("button", { name: "title を末尾へ運ぶ" }),
+  );
+
+  expect(children()).toBe("footer,title");
+});
+
+test("子を持てないノードの下を移動先にすると子の並びが変わらない", async () => {
+  render(<EditorReducerHarness />);
+
+  await userEvent.click(
+    screen.getByRole("button", { name: "title を Text の下へ運ぶ" }),
+  );
 
   expect(children()).toBe("title,footer");
 });

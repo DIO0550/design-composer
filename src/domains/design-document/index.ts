@@ -1,4 +1,5 @@
 import { Artboard } from "@/domains/artboard";
+import type { ChildPosition } from "@/domains/child-position";
 import { Component, ComponentSet } from "@/domains/component";
 import {
   FormatVersion,
@@ -44,15 +45,6 @@ export type {
  * （消費側に版の分岐を強いないため）。
  */
 export type DesignDocument = DesignDocumentV1;
-
-/**
- * ツリー上の「どの親の何番目の子か」という位置。
- * 親の名前と index は片方だけでは位置が決まらないため1つの型にまとめる。
- */
-export type ChildPosition = Readonly<{
-  parentName: string;
-  index: number;
-}>;
 
 /*
  * 以下の関数は「どの artboard を相手にするか」を選ぶためのもの。
@@ -252,6 +244,27 @@ export const DesignDocument = {
     return Option.fromNullable(
       document.artboards.find((artboard) => artboard.name === name),
     );
+  },
+
+  /**
+   * 名前で指したノードが今いる位置を「どの親の何番目か」で引く。
+   * artboard 自身は誰の子でもないため位置を持たない（`none`）。
+   */
+  findChildPosition(
+    document: DesignDocument,
+    name: string,
+  ): Option<ChildPosition> {
+    for (const artboard of document.artboards) {
+      const found = NodeTree.childPositionOf(
+        Artboard.tree(artboard),
+        artboard.name,
+        name,
+      );
+      if (found.some) {
+        return found;
+      }
+    }
+    return Option.none;
   },
 
   /** 名前でノードを引く。artboard 直下だけでなく子孫も辿る。 */
