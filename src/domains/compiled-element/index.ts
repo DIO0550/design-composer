@@ -80,6 +80,13 @@ function typographyDeclarations(
 }
 
 /**
+ * ノードの `name` を出力へ残す属性。
+ * 出力だけを見てどのノードかを追えるようにするためのもので、
+ * 描いた結果から名前を引く側 (キャンバスの選択) も同じ綴りを使う。
+ */
+export const ELEMENT_NAME_ATTRIBUTE = "data-name";
+
+/**
  * コンパイル済みの Box。子を持ち、テキストは持たない。
  * 出力は `div` + インライン style であり (docs/03)、タグの区別は持たない。
  */
@@ -205,11 +212,10 @@ export const CompiledElement = {
 
   /**
    * `div` + インライン style の HTML へ直列化する (docs/03)。
-   * ノードの `name` は `data-name` として残す
-   * (出力だけを見てどのノードかを追えるようにするため)。
+   * ノードの `name` は `ELEMENT_NAME_ATTRIBUTE` として残す。
    */
   html(element: CompiledElement): string {
-    const attributes = `data-name="${Html.escapeAttribute(element.name)}" style="${Html.escapeAttribute(CompiledElement.styleText(element))}"`;
+    const attributes = `${ELEMENT_NAME_ATTRIBUTE}="${Html.escapeAttribute(element.name)}" style="${Html.escapeAttribute(CompiledElement.styleText(element))}"`;
     const content = CompiledElement.isText(element)
       ? Html.escapeText(element.content)
       : element.children.map(CompiledElement.html).join("");

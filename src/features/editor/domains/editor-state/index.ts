@@ -47,6 +47,21 @@ export const EditorState = {
     return { ...state, selectedName: selectableName(state.document, name) };
   },
 
+  /**
+   * 内側から外へ並べた候補のうち、選択できる最も内側のものを選ぶ。
+   *
+   * キャンバスは部品インスタンスの中身まで描くが、そこに出るのは部品定義側のノード名で、
+   * ドキュメントの木（artboard の配下）には無いため選択の対象にならない。
+   * 内側から順に見ることで、インスタンスの中を押したときはインスタンス自身が選ばれる。
+   * どれも選択できなければ選択は外れる（`select` と同じ）。
+   */
+  selectInnermost(state: EditorState, names: readonly string[]): EditorState {
+    const innermost = names.find(
+      (name) => selectableName(state.document, name).some,
+    );
+    return { ...state, selectedName: Option.fromNullable(innermost) };
+  },
+
   clearSelection(state: EditorState): EditorState {
     return { ...state, selectedName: Option.none };
   },

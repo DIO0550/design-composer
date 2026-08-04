@@ -8,6 +8,7 @@ import { Option } from "@/utils/Option";
 /** エディタ画面で起きる状態遷移（docs/06-ui.md「選択」「編集操作の一覧」）。 */
 export type EditorAction =
   | Readonly<{ type: "select"; name: string }>
+  | Readonly<{ type: "select_innermost"; names: readonly string[] }>
   | Readonly<{ type: "clear_selection" }>
   | Readonly<{ type: "reload_document"; reload: DocumentReload }>
   | Readonly<{
@@ -22,6 +23,8 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
   switch (action.type) {
     case "select":
       return EditorState.select(state, action.name);
+    case "select_innermost":
+      return EditorState.selectInnermost(state, action.names);
     case "clear_selection":
       return EditorState.clearSelection(state);
     case "reload_document":

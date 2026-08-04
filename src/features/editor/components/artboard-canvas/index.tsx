@@ -1,14 +1,50 @@
-import { type CSSProperties, type KeyboardEvent, useMemo } from "react";
+import {
+  type CSSProperties,
+  type KeyboardEvent,
+  type MouseEvent,
+  useMemo,
+} from "react";
 import type { BoxElement } from "@/domains/compiled-element";
-import { CompiledElement } from "@/domains/compiled-element";
+import {
+  CompiledElement,
+  ELEMENT_NAME_ATTRIBUTE,
+} from "@/domains/compiled-element";
 import { CanvasView } from "@/features/editor/domains/canvas-view";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { useCanvasView } from "@/features/editor/hooks/use-canvas-view";
 import { type CompiledDocument, DocumentHtml } from "@/services/document-html";
+import { ArrayEx } from "@/utils/ArrayEx";
+import { Css } from "@/utils/Css";
+import { ElementEx } from "@/utils/ElementEx";
 import type { Result } from "@/utils/Result";
 
 /** キーボードでも artboard を選べるようにする（role="button" は既定の活性化を持たない）。 */
 const ACTIVATION_KEYS = ["Enter", " "];
+
+/**
+ * 選択中の要素に描く枠。Tailwind の `outline-blue-500` と同じ色を綴り直している
+ * （選択子を組み立てて流し込む規則なので、クラスでは書けない）。
+ *
+ * 要素の外側に描くのは、雛形の `primary` が同じ青（`#3b82f6`）で、内側に描くと
+ * その色を背景に持つ要素（ボタンなど）の上で枠が見えなくなるため。
+ * 枠に使えるのは `outline` だけで、`box-shadow` はノードの `shadow` prop が
+ * インライン style で使う（docs/03 の対応表）ため奪えない。
+ */
+const SELECTION_OUTLINE = "outline:2px solid #3b82f6;outline-offset:1px";
+
+/**
+ * 選択中の要素をキャンバス上で示す規則（docs/06-ui.md「選択」）。
+ *
+ * キャンバスの中身は文字列の HTML を流し込んでおり React の管理下に無いため、
+ * 選択中の要素へ class を足せない。出力に残っているノード名の属性を選択子にして、
+ * 規則を 1 本だけ差し込む。名前はドキュメント全体で一意なので、
+ * この 1 本が指すのは選択中の artboard / ノードだけになる。
+ */
+function SelectionHighlight({ name }: Readonly<{ name: string }>) {
+  return (
+    <style>{`[${ELEMENT_NAME_ATTRIBUTE}="${Css.escapeQuotedString(name)}"]{${SELECTION_OUTLINE}}`}</style>
+  );
+}
 
 function CanvasToolbar({
   view,
@@ -65,15 +101,38 @@ function ArtboardFrame({
 }: Readonly<{
   element: BoxElement;
   isSelected: boolean;
-  onSelect: () => void;
+  onSelect: (names: readonly string[]) => void;
 }>) {
+  /**
+   * 押された位置から外へ辿った名前。最後に artboard 自身を置くのは、
+   * 中身の外側（枠の上）を押したときにも artboard が選ばれるようにするため
+   * （中身を押したときは辿った先に同じ名前が既にあるので、重複を落とす）。
+   */
+  const namesAt = (target: EventTarget): readonly string[] =>
+    ArrayEx.distinct([
+      ...ElementEx.attributeValuesToRoot(target, ELEMENT_NAME_ATTRIBUTE),
+      element.name,
+    ]);
+
   const activate = (event: KeyboardEvent<HTMLElement>) => {
     if (!ACTIVATION_KEYS.includes(event.key)) {
       return;
     }
     event.preventDefault();
-    onSelect();
+    // キーボードで選べるのは枠にフォーカスしている artboard 自身（中身は指せない）。
+    onSelect([element.name]);
   };
+
+  /*
+   * `dangerouslySetInnerHTML` に毎回オブジェクトリテラルを渡すと、React は中身が
+   * 同じでも別の値とみなして innerHTML を入れ直す。入れ直すと中の要素が作り直され、
+   * ポインタを離した時点（ズーム / パンの状態更新）で押していた要素が木から外れて
+   * クリックが枠まで上がらなくなる = 中のノードを選べなくなる。
+   */
+  const innerHtml = useMemo(
+    () => ({ __html: CompiledElement.html(element) }),
+    [element],
+  );
 
   return (
     <li className="flex flex-col gap-1">
@@ -84,13 +143,15 @@ function ArtboardFrame({
         tabIndex={0}
         aria-label={element.name}
         aria-current={isSelected}
-        onClick={onSelect}
+        onClick={(event: MouseEvent<HTMLElement>) =>
+          onSelect(namesAt(event.target))
+        }
         onKeyDown={activate}
         // artboard の上で始めたドラッグはパンにしない（掴んだものが動かないと操作が読めなくなる）
         onPointerDown={(event) => event.stopPropagation()}
         className="w-fit bg-white shadow-sm outline outline-gray-300 aria-[current=true]:outline-2 aria-[current=true]:outline-blue-500"
         // biome-ignore lint/security/noDangerouslySetInnerHtml: コンパイル結果の HTML をそのまま描くのがキャンバスの仕様。埋め込む値のエスケープはコンパイラ側に閉じている（上のコメント参照）
-        dangerouslySetInnerHTML={{ __html: CompiledElement.html(element) }}
+        dangerouslySetInnerHTML={innerHtml}
       />
     </li>
   );
@@ -111,22 +172,27 @@ function ArtboardList({
 }: Readonly<{
   compiled: CompiledDocument;
   state: EditorState;
-  onSelect: (name: string) => void;
+  onSelect: (names: readonly string[]) => void;
 }>) {
   return (
-    <ul
-      style={compiled.variables}
-      className="flex flex-wrap items-start gap-8 p-8"
-    >
-      {compiled.artboards.map((element) => (
-        <ArtboardFrame
-          key={element.name}
-          element={element}
-          isSelected={EditorState.isSelected(state, element.name)}
-          onSelect={() => onSelect(element.name)}
-        />
-      ))}
-    </ul>
+    <>
+      {state.selectedName.some ? (
+        <SelectionHighlight name={state.selectedName.value} />
+      ) : null}
+      <ul
+        style={compiled.variables}
+        className="flex flex-wrap items-start gap-8 p-8"
+      >
+        {compiled.artboards.map((element) => (
+          <ArtboardFrame
+            key={element.name}
+            element={element}
+            isSelected={EditorState.isSelected(state, element.name)}
+            onSelect={onSelect}
+          />
+        ))}
+      </ul>
+    </>
   );
 }
 
@@ -141,7 +207,7 @@ function CanvasBody({
 }: Readonly<{
   compiled: Result<CompiledDocument, Error>;
   state: EditorState;
-  onSelect: (name: string) => void;
+  onSelect: (names: readonly string[]) => void;
 }>) {
   if (!compiled.ok) {
     return (
@@ -171,7 +237,7 @@ export function ArtboardCanvas({
   onSelect,
 }: Readonly<{
   state: EditorState;
-  onSelect: (name: string) => void;
+  onSelect: (names: readonly string[]) => void;
 }>) {
   const { view, surfaceRef, panHandlers, zoomIn, zoomOut, reset } =
     useCanvasView();
