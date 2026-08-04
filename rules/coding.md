@@ -109,6 +109,22 @@ export type Px = `${number}px`; // "16" / "16rem" は代入不可
 - 単位付きの値は単位を型に含める。合成順が決まっている値は並びを型に出す(`` `${Px} ${Px} ${Px} ${Px} ${string}` ``)
 - ただし、プロパティごとに値域が違うなど**対で縛るコストが釣り合わない場合は無理に縛らない**。縛らなかった理由をコメントに残す
 
+### 値の集合から union を導出する
+
+自前で値の集合を定義してそこから union を作る場合は、**定数のオブジェクト + `ValueOf`**(`src/types/ValueOf.ts`)で書く。値を名前で指せる(`AXES.width`)ため、消費側が綴りを直接書かずに済む。走査が必要なときは `Object.values()` で並びにする。
+
+```typescript
+// OK: 集合と union を二重管理しない
+export const AXES = { width: "width", height: "height" } as const;
+export type Axis = ValueOf<typeof AXES>;
+
+// 走査は値の並びにしてから
+Object.values(AXES).flatMap((axis) => /* ... */);
+```
+
+- スキーマなど**既にある定数から導出する**場合はこの限りではない(`CssDirection` が `BOX_SCHEMA.props.direction.values` から引くように、出どころの形に従う)
+- 既存の `TOKEN_KINDS` / `TYPOGRAPHY_FIELDS` / `PRIMITIVE_TYPES` は配列 + `(typeof X)[number]` のままになっている(#105 で寄せる)
+
 ## 不正な状態を型で表現できなくする(型による境界)
 
 **バグは直すのではなく、表現できなくする。** 型はコンパイラの装飾ではなく、不正な状態をコードの世界に存在させないための境界(防壁)として設計する。実行時チェックやテストで「見つける」前に、そもそも書けなくすることを考える。

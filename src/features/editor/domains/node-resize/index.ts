@@ -48,7 +48,7 @@ function artboardHandles(artboard: Artboard): readonly AxisLength[] {
  * ドラッグの基準が決まらないため（長さはプロパティパネルから入れる）。
  */
 function propsHandles(props: Props): readonly AxisLength[] {
-  return AXES.flatMap((axis) => {
+  return Object.values(AXES).flatMap((axis) => {
     const length = Size.fixedLength(
       Size.create(props[Size.modeProp(axis)], props[axis]),
     );
