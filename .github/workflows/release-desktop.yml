@@ -1,0 +1,183 @@
+name: release-desktop
+
+on:
+  push:
+    tags:
+      - "*"
+  release:
+    types:
+      - published
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: Release tag to create or update
+        required: true
+        type: string
+
+concurrency:
+  group: release-desktop-${{ github.event.release.tag_name || inputs.tag_name || github.ref_name }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  create-release:
+    name: create GitHub Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag_name || github.ref_name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.release.tag_name || inputs.tag_name || github.ref }}
+
+      - name: Create GitHub Release if missing
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          RELEASE_TARGET="$(git rev-parse HEAD)"
+
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            echo "Release $RELEASE_TAG already exists."
+          else
+            gh release create "$RELEASE_TAG" --title "$RELEASE_TAG" --generate-notes --target "$RELEASE_TARGET"
+          fi
+
+  build-macos:
+    name: build unsigned Apple Silicon .app
+    needs: create-release
+    runs-on: macos-latest
+    timeout-minutes: 45
+    env:
+      RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag_name || github.ref_name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.release.tag_name || inputs.tag_name || github.ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: 24
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.33.0 --activate
+
+      - name: Install Apple Silicon Rust target with rustup
+        run: |
+          rustup toolchain install stable --profile minimal --target aarch64-apple-darwin
+          rustup default stable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build unsigned .app (no installer)
+        run: pnpm tauri build --target aarch64-apple-darwin --bundles app --ci --no-sign
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p release-assets
+
+          APP_BUNDLES=(src-tauri/target/aarch64-apple-darwin/release/bundle/macos/*.app)
+          APP_PATH="${APP_BUNDLES[0]}"
+
+          if [ ! -d "$APP_PATH" ]; then
+            echo "No .app bundle found under src-tauri/target/aarch64-apple-darwin/release/bundle/macos"
+            exit 1
+          fi
+
+          APP_NAME="$(basename "$APP_PATH" .app)"
+          ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "release-assets/${APP_NAME}-unsigned-aarch64-apple-darwin.app.zip"
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: macos-aarch64-release-assets
+          path: release-assets/*
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload to GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$RELEASE_TAG" release-assets/* --clobber
+
+  build-windows:
+    name: build unsigned Windows .exe
+    needs: create-release
+    runs-on: windows-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: bash
+    env:
+      RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag_name || github.ref_name }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.release.tag_name || inputs.tag_name || github.ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: 24
+
+      - name: Enable pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@10.33.0 --activate
+
+      - name: Install stable Rust toolchain with rustup
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build unsigned .exe (no installer)
+        run: pnpm tauri build --ci --no-bundle
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p release-assets
+
+          APP_NAME="$(node -p "require('./src-tauri/tauri.conf.json').productName")"
+          EXE_PATH="src-tauri/target/release/${APP_NAME}.exe"
+
+          if [ ! -f "$EXE_PATH" ]; then
+            EXE_PATH="src-tauri/target/release/app.exe"
+          fi
+
+          if [ ! -f "$EXE_PATH" ]; then
+            echo "No .exe found under src-tauri/target/release"
+            exit 1
+          fi
+
+          (
+            cd "$(dirname "$EXE_PATH")"
+            7z a "${GITHUB_WORKSPACE}/release-assets/${APP_NAME}-unsigned-x86_64-pc-windows-msvc.exe.zip" "$(basename "$EXE_PATH")"
+          )
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: windows-x86_64-release-assets
+          path: release-assets/*
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload to GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$RELEASE_TAG" release-assets/* --clobber
