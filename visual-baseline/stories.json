@@ -1,1 +1,107 @@
-[]
+[
+  {
+    "id": "features-editor-artboardcanvas--default",
+    "title": "features/editor/ArtboardCanvas",
+    "name": "選択なし"
+  },
+  {
+    "id": "features-editor-artboardcanvas--empty",
+    "title": "features/editor/ArtboardCanvas",
+    "name": "artboard がない"
+  },
+  {
+    "id": "features-editor-artboardcanvas--selected",
+    "title": "features/editor/ArtboardCanvas",
+    "name": "artboard を選択中"
+  },
+  {
+    "id": "features-editor-componentlist--default",
+    "title": "features/editor/ComponentList",
+    "name": "雛形の初期部品セット"
+  },
+  {
+    "id": "features-editor-componentlist--empty",
+    "title": "features/editor/ComponentList",
+    "name": "部品がない"
+  },
+  {
+    "id": "features-editor-documenterrorlist--broken-json",
+    "title": "features/editor/DocumentErrorList",
+    "name": "JSON が壊れている"
+  },
+  {
+    "id": "features-editor-documenterrorlist--no-errors",
+    "title": "features/editor/DocumentErrorList",
+    "name": "エラーがない"
+  },
+  {
+    "id": "features-editor-documenterrorlist--schema-errors",
+    "title": "features/editor/DocumentErrorList",
+    "name": "スキーマ違反が複数"
+  },
+  {
+    "id": "features-editor-documenttree--default",
+    "title": "features/editor/DocumentTree",
+    "name": "選択なし"
+  },
+  {
+    "id": "features-editor-documenttree--empty",
+    "title": "features/editor/DocumentTree",
+    "name": "artboard がない"
+  },
+  {
+    "id": "features-editor-documenttree--nested",
+    "title": "features/editor/DocumentTree",
+    "name": "入れ子のノードと並べ替え"
+  },
+  {
+    "id": "features-editor-documenttree--node-selected",
+    "title": "features/editor/DocumentTree",
+    "name": "artboard 配下のノードを選択中"
+  },
+  {
+    "id": "features-editor-documenttree--selected",
+    "title": "features/editor/DocumentTree",
+    "name": "artboard を選択中"
+  },
+  {
+    "id": "features-editor-editorlayout--default",
+    "title": "features/editor/EditorLayout",
+    "name": "3ペインに中身を差し込む"
+  },
+  {
+    "id": "features-editor-editorscreen--default",
+    "title": "features/editor/EditorScreen",
+    "name": "開始画面"
+  },
+  {
+    "id": "features-editor-openeddocumenteditor--default",
+    "title": "features/editor/OpenedDocumentEditor",
+    "name": "編集画面"
+  },
+  {
+    "id": "features-editor-openeddocumenteditor--sync-failed",
+    "title": "features/editor/OpenedDocumentEditor",
+    "name": "同期に失敗した編集画面"
+  },
+  {
+    "id": "features-editor-propertypanel--default",
+    "title": "features/editor/PropertyPanel",
+    "name": "選択されていない"
+  },
+  {
+    "id": "features-editor-propertypanel--instance-selected",
+    "title": "features/editor/PropertyPanel",
+    "name": "インスタンスを選択中（publicProps から生成）"
+  },
+  {
+    "id": "features-editor-propertypanel--selected",
+    "title": "features/editor/PropertyPanel",
+    "name": "artboard を選択中"
+  },
+  {
+    "id": "features-editor-propertypanel--text-selected",
+    "title": "features/editor/PropertyPanel",
+    "name": "Text ノードを選択中"
+  }
+]
