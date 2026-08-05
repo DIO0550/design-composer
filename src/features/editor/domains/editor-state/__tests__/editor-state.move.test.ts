@@ -29,13 +29,11 @@ function setupState(): EditorState {
 /** 名前で指した親の子の並び。artboard もノードも「子を持つもの」として同じに見る。 */
 function childNames(state: EditorState, parentName: string): readonly string[] {
   const artboard = DesignDocument.findArtboard(state.document, parentName);
-  if (artboard.some) {
-    return artboard.value.children.map((child) => child.name);
-  }
-  const node = Option.unwrap(
-    DesignDocument.findNode(state.document, parentName),
-  );
-  return Node.children(node).map((child) => child.name);
+  return artboard.some
+    ? artboard.value.children.map((child) => child.name)
+    : Node.children(
+        Option.unwrap(DesignDocument.findNode(state.document, parentName)),
+      ).map((child) => child.name);
 }
 
 test("別の親の下へ移すとその親の指定した位置の子になる", () => {

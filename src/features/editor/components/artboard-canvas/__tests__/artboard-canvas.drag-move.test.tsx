@@ -7,6 +7,7 @@ import {
   releasePointer,
 } from "@/features/editor/__tests__/canvas-gesture";
 import { EditorState } from "@/features/editor/domains/editor-state";
+import { Option } from "@/utils/Option";
 import { ArtboardCanvas } from "../index";
 
 /**
@@ -36,20 +37,14 @@ function setupState(): EditorState {
 
 /** キャンバスに描かれている、名前で指した要素。 */
 function drawn(name: string): Element {
-  const element = document.querySelector(`[data-name="${name}"]`);
-  if (element === null) {
-    throw new Error(`"${name}" がキャンバスに描かれていない`);
-  }
-  return element;
+  return Option.unwrap(
+    Option.fromNullable(document.querySelector(`[data-name="${name}"]`)),
+  );
 }
 
 /** artboard の並び。キャンバスの中で、名前を持たない場所として使う。 */
 function artboardList(): Element {
-  const list = document.querySelector("ul");
-  if (list === null) {
-    throw new Error("artboard の並びが描かれていない");
-  }
-  return list;
+  return Option.unwrap(Option.fromNullable(document.querySelector("ul")));
 }
 
 /** キャンバスへ差し込まれている規則をすべて連結したもの。 */
