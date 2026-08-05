@@ -8,6 +8,7 @@ import {
 } from "@/features/editor/__tests__/canvas-gesture";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import type { CanvasBounds } from "@/features/editor/domains/node-drop";
+import { Option } from "@/utils/Option";
 import { ArtboardCanvas } from "../index";
 
 /**
@@ -49,11 +50,9 @@ function setupState(selectedName?: string): EditorState {
 
 /** キャンバスに描かれている、名前で指した要素。 */
 function drawn(name: string): Element {
-  const element = document.querySelector(`[data-name="${name}"]`);
-  if (element === null) {
-    throw new Error(`"${name}" がキャンバスに描かれていない`);
-  }
-  return element;
+  return Option.unwrap(
+    Option.fromNullable(document.querySelector(`[data-name="${name}"]`)),
+  );
 }
 
 /** キャンバスへ差し込まれている規則をすべて連結したもの。 */

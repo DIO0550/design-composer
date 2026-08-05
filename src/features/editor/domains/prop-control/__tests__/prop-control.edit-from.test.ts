@@ -18,13 +18,13 @@ function setupControl(node: Node, prop: string): PropControl {
     ),
     node.name,
   );
-  const control = PropControlSection.forSelection(state)
-    .flatMap((section) => section.controls)
-    .find((candidate) => candidate.prop === prop);
-  if (control === undefined) {
-    throw new Error(`control for "${prop}" is not generated`);
-  }
-  return control;
+  return Option.unwrap(
+    Option.fromNullable(
+      PropControlSection.forSelection(state)
+        .flatMap((section) => section.controls)
+        .find((candidate) => candidate.prop === prop),
+    ),
+  );
 }
 
 test("選択式に値を選ぶとその値を設定する編集になる", () => {

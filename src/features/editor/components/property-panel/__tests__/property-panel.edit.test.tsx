@@ -36,22 +36,19 @@ function EditablePanel({ selected }: Readonly<{ selected: string }>) {
   const editProp = (edit: PropEdit) =>
     dispatch({ type: "apply_prop_edit", edit });
 
-  if (!EditorState.isSelected(state, selected)) {
-    return (
-      <button
-        type="button"
-        onClick={() => dispatch({ type: "select", name: selected })}
-      >
-        選択する
-      </button>
-    );
-  }
-  return (
+  return EditorState.isSelected(state, selected) ? (
     <PropertyPanel
       state={state}
       onEditProp={editProp}
       onClearSelection={() => dispatch({ type: "clear_selection" })}
     />
+  ) : (
+    <button
+      type="button"
+      onClick={() => dispatch({ type: "select", name: selected })}
+    >
+      選択する
+    </button>
   );
 }
 
