@@ -3,10 +3,7 @@ import { DesignDocument } from "@/domains/design-document";
 import { PropEdit } from "@/domains/node";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import type { CanvasBounds } from "@/features/editor/domains/node-drop";
-import {
-  EditableText,
-  TextInlineEdit,
-} from "@/features/editor/domains/text-inline-edit";
+import { EditableText, TextEdit } from "@/features/editor/domains/text-edit";
 import { Option } from "@/utils/Option";
 
 /**
@@ -58,7 +55,7 @@ test("文言を設定していない Text では既定の文言が編集の初�
 });
 
 test("編集を始めると今の文言が下書きの初期値になる", () => {
-  const edit = TextInlineEdit.create(
+  const edit = TextEdit.create(
     { name: "title", content: "ホーム" },
     TITLE_BOUNDS,
   );
@@ -67,32 +64,30 @@ test("編集を始めると今の文言が下書きの初期値になる", () =>
 });
 
 test("入力された文言で下書きが差し替わる", () => {
-  const started = TextInlineEdit.create(
+  const started = TextEdit.create(
     { name: "title", content: "ホーム" },
     TITLE_BOUNDS,
   );
 
-  expect(TextInlineEdit.withDraft(started, "トップ").draft).toBe("トップ");
+  expect(TextEdit.withDraft(started, "トップ").draft).toBe("トップ");
 });
 
 test("下書きを差し替えても入力欄を重ねる位置は変わらない", () => {
-  const started = TextInlineEdit.create(
+  const started = TextEdit.create(
     { name: "title", content: "ホーム" },
     TITLE_BOUNDS,
   );
 
-  expect(TextInlineEdit.withDraft(started, "トップ").bounds).toEqual(
-    TITLE_BOUNDS,
-  );
+  expect(TextEdit.withDraft(started, "トップ").bounds).toEqual(TITLE_BOUNDS);
 });
 
 test("下書きは content への編集になる", () => {
-  const started = TextInlineEdit.create(
+  const started = TextEdit.create(
     { name: "title", content: "ホーム" },
     TITLE_BOUNDS,
   );
 
-  expect(
-    TextInlineEdit.toPropEdit(TextInlineEdit.withDraft(started, "トップ")),
-  ).toEqual(PropEdit.set("content", "トップ"));
+  expect(TextEdit.toPropEdit(TextEdit.withDraft(started, "トップ"))).toEqual(
+    PropEdit.set("content", "トップ"),
+  );
 });

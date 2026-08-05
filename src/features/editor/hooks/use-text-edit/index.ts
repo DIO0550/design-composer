@@ -2,30 +2,27 @@ import { useReducer } from "react";
 import type { PropEdit } from "@/domains/node";
 import type { EditorState } from "@/features/editor/domains/editor-state";
 import { CanvasBounds } from "@/features/editor/domains/node-drop";
-import {
-  EditableText,
-  TextInlineEdit,
-} from "@/features/editor/domains/text-inline-edit";
+import { EditableText, TextEdit } from "@/features/editor/domains/text-edit";
 import { CanvasDom } from "@/libs/canvas-dom";
 import { Option } from "@/utils/Option";
 
-/** インライン編集の進み方（docs/06-ui.md「Text のインライン編集」）。 */
-type TextInlineEditAction =
+/** 文言の編集の進み方（docs/06-ui.md「Text のインライン編集」）。 */
+type TextEditAction =
   | Readonly<{ type: "start"; text: EditableText; bounds: CanvasBounds }>
   | Readonly<{ type: "change"; draft: string }>
   | Readonly<{ type: "end" }>;
 
-/** アクションの解釈だけを行い、状態の組み立ては TextInlineEdit に委ねる。 */
-function textInlineEditReducer(
-  edit: Option<TextInlineEdit>,
-  action: TextInlineEditAction,
-): Option<TextInlineEdit> {
+/** アクションの解釈だけを行い、状態の組み立ては TextEdit に委ねる。 */
+function textEditReducer(
+  edit: Option<TextEdit>,
+  action: TextEditAction,
+): Option<TextEdit> {
   switch (action.type) {
     case "start":
-      return Option.some(TextInlineEdit.create(action.text, action.bounds));
+      return Option.some(TextEdit.create(action.text, action.bounds));
     case "change":
       return Option.map(edit, (current) =>
-        TextInlineEdit.withDraft(current, action.draft),
+        TextEdit.withDraft(current, action.draft),
       );
     case "end":
       // 確定でも取り消しでも、編集そのものは同じように終わる（下書きは残さない）。
@@ -33,9 +30,9 @@ function textInlineEditReducer(
   }
 }
 
-export type TextInlineEditControl = Readonly<{
+export type TextEditControl = Readonly<{
   /** 編集中なら下書きと入力欄を重ねる位置。編集していなければ `none`。 */
-  edit: Option<TextInlineEdit>;
+  edit: Option<TextEdit>;
   /**
    * ダブルクリックされた位置の Text の編集を始める。
    * `names` は押された位置から外へ辿ったノード名。編集できるものが無ければ何も起きない。
@@ -53,18 +50,18 @@ export type TextInlineEditControl = Readonly<{
  * （docs/06-ui.md「キャンバス直接操作」）。
  *
  * このフックが持つのは DOM の実測とイベントの仲介だけで、
- * 「どれを編集できるか」「下書きがどんな編集になるか」の判定は `text-inline-edit` にある。
+ * 「どれを編集できるか」「下書きがどんな編集になるか」の判定は `text-edit` にある。
  *
  * 確定した文言を `PropEdit` として渡すのは、プロパティパネルからの `content` の編集と
  * 同じ経路（`apply_prop_edit`）に載せるため。自動保存もその経路に乗る。
  */
-export function useTextInlineEdit(
+export function useTextEdit(
   params: Readonly<{
     state: EditorState;
     onEditProp: (edit: PropEdit) => void;
   }>,
-): TextInlineEditControl {
-  const [edit, dispatch] = useReducer(textInlineEditReducer, Option.none);
+): TextEditControl {
+  const [edit, dispatch] = useReducer(textEditReducer, Option.none);
 
   const start = (names: readonly string[]) => {
     const text = EditableText.at(params.state, names);
@@ -91,7 +88,7 @@ export function useTextInlineEdit(
     if (!edit.some) {
       return;
     }
-    params.onEditProp(TextInlineEdit.toPropEdit(edit.value));
+    params.onEditProp(TextEdit.toPropEdit(edit.value));
     dispatch({ type: "end" });
   };
 

@@ -23,7 +23,7 @@ import {
   NodeResize,
   RESIZE_HANDLE_THICKNESS_PX,
 } from "@/features/editor/domains/node-resize";
-import type { TextInlineEdit } from "@/features/editor/domains/text-inline-edit";
+import type { TextEdit } from "@/features/editor/domains/text-edit";
 import { useCanvasView } from "@/features/editor/hooks/use-canvas-view";
 import {
   type NodeDragControl,
@@ -34,9 +34,9 @@ import {
   useNodeResize,
 } from "@/features/editor/hooks/use-node-resize";
 import {
-  type TextInlineEditControl,
-  useTextInlineEdit,
-} from "@/features/editor/hooks/use-text-inline-edit";
+  type TextEditControl,
+  useTextEdit,
+} from "@/features/editor/hooks/use-text-edit";
 import { type CompiledDocument, DocumentHtml } from "@/services/document-html";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Css } from "@/utils/Css";
@@ -170,7 +170,7 @@ function TextInlineEditor({
   onCommit,
   onCancel,
 }: Readonly<{
-  edit: TextInlineEdit;
+  edit: TextEdit;
   onChange: (draft: string) => void;
   onCommit: () => void;
   onCancel: () => void;
@@ -285,14 +285,14 @@ function ArtboardFrame({
   onSelect,
   nodeDrag,
   nodeResize,
-  textInlineEdit,
+  textEdit,
 }: Readonly<{
   element: BoxElement;
   isSelected: boolean;
   onSelect: (names: readonly string[]) => void;
   nodeDrag: NodeDragControl;
   nodeResize: NodeResizeControl;
-  textInlineEdit: TextInlineEditControl;
+  textEdit: TextEditControl;
 }>) {
   /**
    * 押された位置から外へ辿った名前。最後に artboard 自身を置くのは、
@@ -352,7 +352,7 @@ function ArtboardFrame({
          * 押された位置と選択で決まる（`EditableText.at`）。
          */
         onDoubleClick={(event: MouseEvent<HTMLElement>) =>
-          textInlineEdit.start(namesAt(event.target))
+          textEdit.start(namesAt(event.target))
         }
         onKeyDown={activate}
         onPointerDown={(event) => {
@@ -387,14 +387,14 @@ function ArtboardList({
   onSelect,
   nodeDrag,
   nodeResize,
-  textInlineEdit,
+  textEdit,
 }: Readonly<{
   compiled: CompiledDocument;
   state: EditorState;
   onSelect: (names: readonly string[]) => void;
   nodeDrag: NodeDragControl;
   nodeResize: NodeResizeControl;
-  textInlineEdit: TextInlineEditControl;
+  textEdit: TextEditControl;
 }>) {
   const dropTarget = NodeDrag.dropTarget(nodeDrag.drag);
   /*
@@ -448,7 +448,7 @@ function ArtboardList({
             onSelect={onSelect}
             nodeDrag={nodeDrag}
             nodeResize={nodeResize}
-            textInlineEdit={textInlineEdit}
+            textEdit={textEdit}
           />
         ))}
       </ul>
@@ -466,14 +466,14 @@ function CanvasBody({
   onSelect,
   nodeDrag,
   nodeResize,
-  textInlineEdit,
+  textEdit,
 }: Readonly<{
   compiled: Result<CompiledDocument, Error>;
   state: EditorState;
   onSelect: (names: readonly string[]) => void;
   nodeDrag: NodeDragControl;
   nodeResize: NodeResizeControl;
-  textInlineEdit: TextInlineEditControl;
+  textEdit: TextEditControl;
 }>) {
   if (!compiled.ok) {
     return (
@@ -492,7 +492,7 @@ function CanvasBody({
       onSelect={onSelect}
       nodeDrag={nodeDrag}
       nodeResize={nodeResize}
-      textInlineEdit={textInlineEdit}
+      textEdit={textEdit}
     />
   );
 }
@@ -525,7 +525,7 @@ export function ArtboardCanvas({
     onMove: onMoveNode,
   });
   const nodeResize = useNodeResize({ state, view, onResize });
-  const textInlineEdit = useTextInlineEdit({ state, onEditProp });
+  const textEdit = useTextEdit({ state, onEditProp });
   const resizeHandles = NodeResize.handles(state);
   const compiled = useMemo(
     () => DocumentHtml.compile(state.document),
@@ -562,7 +562,7 @@ export function ArtboardCanvas({
             onSelect={onSelect}
             nodeDrag={nodeDrag}
             nodeResize={nodeResize}
-            textInlineEdit={textInlineEdit}
+            textEdit={textEdit}
           />
         </div>
       </div>
@@ -574,12 +574,12 @@ export function ArtboardCanvas({
         />
       ) : null}
       {dropTarget.some ? <DropMarker bounds={dropTarget.value.marker} /> : null}
-      {textInlineEdit.edit.some ? (
+      {textEdit.edit.some ? (
         <TextInlineEditor
-          edit={textInlineEdit.edit.value}
-          onChange={textInlineEdit.change}
-          onCommit={textInlineEdit.commit}
-          onCancel={textInlineEdit.cancel}
+          edit={textEdit.edit.value}
+          onChange={textEdit.change}
+          onCommit={textEdit.commit}
+          onCancel={textEdit.cancel}
         />
       ) : null}
     </div>

@@ -70,25 +70,29 @@ export const EditableText = {
 } as const;
 
 /**
- * 編集中の Text（docs/06-ui.md「Text のインライン編集」）。
+ * 編集中の Text（docs/06-ui.md「キャンバス直接操作」の「Text のインライン編集」）。
  *
  * 下書きは確定するまでドキュメントへ書かない。書きながら反映すると、
  * 取り消し（Escape）で戻すために編集前の文言を別に覚えておくことになる。
+ *
+ * 「どう見せるか」（入力欄なのか吹き出しなのか）は持たない。矩形を持つのは、
+ * どこを編集しているかがブラウザの実測でしか決まらないためで、`NodeResize` が
+ * 掴んだ位置を、`NodeDrop` が実測した矩形を持つのと同じ扱いにしている。
  */
-export type TextInlineEdit = Readonly<{
+export type TextEdit = Readonly<{
   draft: string;
-  /** 入力欄を重ねる矩形。描かれている位置はブラウザの実測でしか分からない。 */
+  /** 編集している文言が描かれている矩形。 */
   bounds: CanvasBounds;
 }>;
 
-export const TextInlineEdit = {
+export const TextEdit = {
   /** 今の文言を下書きの初期値にして編集を始める。 */
-  create(text: EditableText, bounds: CanvasBounds): TextInlineEdit {
+  create(text: EditableText, bounds: CanvasBounds): TextEdit {
     return { draft: text.content, bounds };
   },
 
-  /** 入力された文言で下書きを差し替える。重ねる位置は編集の間変わらない。 */
-  withDraft(edit: TextInlineEdit, draft: string): TextInlineEdit {
+  /** 入力された文言で下書きを差し替える。矩形は編集の間変わらない。 */
+  withDraft(edit: TextEdit, draft: string): TextEdit {
     return { ...edit, draft };
   },
 
@@ -100,7 +104,7 @@ export const TextInlineEdit = {
    * 空欄に「未設定」の意味を持たせられるが、キャンバスに映っているものは
    * そのまま `content` であり、空にする操作は「文言を空にした」としか読めない。
    */
-  toPropEdit(edit: TextInlineEdit): PropEdit {
+  toPropEdit(edit: TextEdit): PropEdit {
     return PropEdit.set(CONTENT_PROP, edit.draft);
   },
 } as const;

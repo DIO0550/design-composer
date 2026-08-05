@@ -3,10 +3,7 @@ import { DesignDocument } from "@/domains/design-document";
 import { PropEdit } from "@/domains/node";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import type { CanvasBounds } from "@/features/editor/domains/node-drop";
-import {
-  EditableText,
-  TextInlineEdit,
-} from "@/features/editor/domains/text-inline-edit";
+import { EditableText, TextEdit } from "@/features/editor/domains/text-edit";
 import { Option } from "@/utils/Option";
 
 /**
@@ -83,12 +80,12 @@ test("部品の中身の Text を指しても編集できない", () => {
 });
 
 test("空の下書きは content を空にする編集になる（未設定へは戻さない）", () => {
-  const started = TextInlineEdit.create(
+  const started = TextEdit.create(
     { name: "title", content: "ホーム" },
     TITLE_BOUNDS,
   );
 
-  expect(
-    TextInlineEdit.toPropEdit(TextInlineEdit.withDraft(started, "")),
-  ).toEqual(PropEdit.set("content", ""));
+  expect(TextEdit.toPropEdit(TextEdit.withDraft(started, ""))).toEqual(
+    PropEdit.set("content", ""),
+  );
 });
