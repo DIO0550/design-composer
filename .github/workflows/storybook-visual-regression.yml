@@ -8,7 +8,6 @@ permissions:
   contents: write
   pull-requests: write
   issues: write
-  pages: write
 
 concurrency:
   group: storybook-visual-regression-${{ github.event.pull_request.number }}
@@ -140,7 +139,6 @@ jobs:
         id: publish-report
         if: github.event.action == 'closed' || steps.verify-report.outcome == 'success'
         env:
-          GH_TOKEN: ${{ github.token }}
           PR: ${{ github.event.pull_request.number }}
           CLOSED: ${{ github.event.action == 'closed' }}
           VISUAL_REPORT_DIR: visual-report
@@ -152,7 +150,6 @@ jobs:
           if [ "$CLOSED" = "true" ]; then ACTION=removed; else ACTION=updated; fi
 
           success=false
-          pushed=false
           for attempt in 1 2 3 4 5; do
             git worktree remove --force /tmp/gh-pages 2>/dev/null || true
             git branch -D gh-pages 2>/dev/null || true
@@ -184,7 +181,6 @@ jobs:
 
             if git push origin HEAD:gh-pages; then
               success=true
-              pushed=true
               break
             fi
             echo "push failed (attempt $attempt), retrying..."
@@ -193,40 +189,29 @@ jobs:
           done
           [ "$success" = "true" ]
 
-          if [ "$pushed" = "true" ]; then
-            build_ok=false
-            for attempt in 1 2 3; do
-              if out=$(gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds" 2>&1); then
-                build_ok=true
+          # gh-pages への push だけで Pages のビルドは走る。ここで
+          # `POST /pages/builds` を足すと 1 コミットにつきデプロイが 2 本になり、
+          # 同時に 1 つしか走れない Pages でキューが詰まって、片方が
+          # `deployment_queued` のまま 10 分でタイムアウトする(#109)。
+          #
+          # 公開の確認は push の有無で分岐させない。再実行などで push すべき差分が
+          # 無かったときも、レポートが実際に配信されていることを確かめる
+          # (見えていないのに緑になる状態を作らない)。
+          if [ "$CLOSED" != "true" ]; then
+            OWNER="${GITHUB_REPOSITORY%%/*}"
+            REPO_NAME="${GITHUB_REPOSITORY#*/}"
+            PUBLIC_SUMMARY="https://${OWNER}.github.io/${REPO_NAME}/visual-regression/pr-${PR}/summary.json?revision=${REPORT_VERSION}"
+            published=false
+            for attempt in $(seq 1 60); do
+              if curl --fail --silent --show-error "$PUBLIC_SUMMARY" -o /tmp/published-visual-summary.json \
+                && node -e 'const summary = require("/tmp/published-visual-summary.json"); if (summary.reportVersion !== process.env.REPORT_VERSION) process.exit(1)'; then
+                published=true
                 break
               fi
-              echo "$out"
-              if echo "$out" | grep -Eq "HTTP (404|409)"; then
-                echo "Pages build request is unavailable or already in progress; waiting for the public revision instead"
-                build_ok=true
-                break
-              fi
-              echo "Pages build request failed (attempt $attempt), retrying..."
-              sleep $((attempt * 2))
+              echo "Waiting for Pages report revision $REPORT_VERSION (attempt $attempt)..."
+              sleep 5
             done
-            [ "$build_ok" = "true" ]
-
-            if [ "$CLOSED" != "true" ]; then
-              OWNER="${GITHUB_REPOSITORY%%/*}"
-              REPO_NAME="${GITHUB_REPOSITORY#*/}"
-              PUBLIC_SUMMARY="https://${OWNER}.github.io/${REPO_NAME}/visual-regression/pr-${PR}/summary.json?revision=${REPORT_VERSION}"
-              published=false
-              for attempt in $(seq 1 60); do
-                if curl --fail --silent --show-error "$PUBLIC_SUMMARY" -o /tmp/published-visual-summary.json \
-                  && node -e 'const summary = require("/tmp/published-visual-summary.json"); if (summary.reportVersion !== process.env.REPORT_VERSION) process.exit(1)'; then
-                  published=true
-                  break
-                fi
-                echo "Waiting for Pages report revision $REPORT_VERSION (attempt $attempt)..."
-                sleep 5
-              done
-              [ "$published" = "true" ]
-            fi
+            [ "$published" = "true" ]
           fi
 
       - name: Comment visual report
