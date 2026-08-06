@@ -8,6 +8,8 @@ permissions:
   contents: write
   pull-requests: write
   issues: write
+  # 取り残されたリビジョンの再デプロイ要求にだけ使う(#109)
+  pages: write
 
 concurrency:
   group: storybook-visual-regression-${{ github.event.pull_request.number }}
@@ -16,7 +18,7 @@ concurrency:
 jobs:
   visual-regression:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 35
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -139,6 +141,7 @@ jobs:
         id: publish-report
         if: github.event.action == 'closed' || steps.verify-report.outcome == 'success'
         env:
+          GH_TOKEN: ${{ github.token }}
           PR: ${{ github.event.pull_request.number }}
           CLOSED: ${{ github.event.action == 'closed' }}
           VISUAL_REPORT_DIR: visual-report
@@ -197,21 +200,40 @@ jobs:
           # 公開の確認は push の有無で分岐させない。再実行などで push すべき差分が
           # 無かったときも、レポートが実際に配信されていることを確かめる
           # (見えていないのに緑になる状態を作らない)。
-          if [ "$CLOSED" != "true" ]; then
-            OWNER="${GITHUB_REPOSITORY%%/*}"
-            REPO_NAME="${GITHUB_REPOSITORY#*/}"
-            PUBLIC_SUMMARY="https://${OWNER}.github.io/${REPO_NAME}/visual-regression/pr-${PR}/summary.json?revision=${REPORT_VERSION}"
-            published=false
-            for attempt in $(seq 1 60); do
+          #
+          # 待ち時間を 10 分取るのは、キューに入ったデプロイが実測で 10 分 42 秒
+          # かかったため。5 分では配信されているのに失敗と判定してしまう(#109)。
+          wait_for_publication() {
+            for attempt in $(seq 1 120); do
               if curl --fail --silent --show-error "$PUBLIC_SUMMARY" -o /tmp/published-visual-summary.json \
                 && node -e 'const summary = require("/tmp/published-visual-summary.json"); if (summary.reportVersion !== process.env.REPORT_VERSION) process.exit(1)'; then
-                published=true
-                break
+                return 0
               fi
               echo "Waiting for Pages report revision $REPORT_VERSION (attempt $attempt)..."
               sleep 5
             done
-            [ "$published" = "true" ]
+            return 1
+          }
+
+          if [ "$CLOSED" != "true" ]; then
+            OWNER="${GITHUB_REPOSITORY%%/*}"
+            REPO_NAME="${GITHUB_REPOSITORY#*/}"
+            PUBLIC_SUMMARY="https://${OWNER}.github.io/${REPO_NAME}/visual-regression/pr-${PR}/summary.json?revision=${REPORT_VERSION}"
+
+            # 通常は push が起こしたビルドで配信される。
+            # ただし短い間隔で 2 回 push すると、後の push のツリーが
+            # デプロイされないまま終わることがある(#110 で実際に発生。
+            # プレビューの push と VRT の push が 1 分差で並び、
+            # デプロイはプレビュー側のツリーだけを配信して完了した)。
+            # その取り残しからは自力で復帰できないので、配信されていないときに
+            # 限りビルドを 1 本だけ要求する。push 済みの分と二重にはならない。
+            if ! wait_for_publication; then
+              echo "revision is still not published; requesting a Pages build"
+              # 既にビルド中(409)なら要求は通らないが、待つこと自体は正しいので続ける
+              gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds" \
+                || echo "build request was rejected; waiting for the running build instead"
+              wait_for_publication
+            fi
           fi
 
       - name: Comment visual report
