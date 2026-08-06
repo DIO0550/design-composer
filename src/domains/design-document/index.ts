@@ -268,6 +268,33 @@ export const DesignDocument = {
   },
 
   /**
+   * その名前のものの子として足すときの位置（並びの末尾）。
+   *
+   * artboard は常に子を持てるので必ず位置を持つ。子を持てないノード（Text・参照ノード）と
+   * ドキュメントに無い名前は「足せる位置が無い」ので `none`。
+   * 挿入の可否は木の形で決まるためここが答え、UI が `allowsChildren` を見に行かない（#39）。
+   */
+  appendPositionOf(
+    document: DesignDocument,
+    parentName: string,
+  ): Option<ChildPosition> {
+    const artboard = DesignDocument.findArtboard(document, parentName);
+    if (artboard.some) {
+      return Option.some({
+        parentName,
+        index: artboard.value.children.length,
+      });
+    }
+    return Option.flatMap(
+      DesignDocument.findNode(document, parentName),
+      (node) =>
+        NodeTree.allowsChildren(node)
+          ? Option.some({ parentName, index: Node.children(node).length })
+          : Option.none,
+    );
+  },
+
+  /**
    * 名前で指したノードが今いる位置を「どの親の何番目か」で引く。
    * artboard 自身は誰の子でもないため位置を持たない（`none`）。
    */

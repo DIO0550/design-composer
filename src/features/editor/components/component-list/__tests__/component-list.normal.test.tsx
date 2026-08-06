@@ -15,31 +15,55 @@ function setupComponents(): ComponentSet {
 }
 
 test("ドキュメントの部品が一覧に並ぶ", () => {
-  render(<ComponentList components={setupComponents()} />);
+  render(
+    <ComponentList
+      components={setupComponents()}
+      isInsertEnabled
+      onInsert={() => {}}
+    />,
+  );
 
   expect(screen.getByText("primary-button")).toBeDefined();
 });
 
 test("部品のルートの型が一覧に出る", () => {
-  render(<ComponentList components={{ divider: { type: "Box" } }} />);
+  render(
+    <ComponentList
+      components={{ divider: { type: "Box" } }}
+      isInsertEnabled
+      onInsert={() => {}}
+    />,
+  );
 
   expect(screen.getByText("Box")).toBeDefined();
 });
 
 test("公開 prop を持つ部品はその prop 名が一覧に出る", () => {
-  render(<ComponentList components={setupComponents()} />);
+  render(
+    <ComponentList
+      components={setupComponents()}
+      isInsertEnabled
+      onInsert={() => {}}
+    />,
+  );
 
   expect(screen.getByText("公開 prop: label")).toBeDefined();
 });
 
 test("公開 prop を持たない部品には公開 prop の表示が出ない", () => {
-  render(<ComponentList components={{ divider: { type: "Box" } }} />);
+  render(
+    <ComponentList
+      components={{ divider: { type: "Box" } }}
+      isInsertEnabled
+      onInsert={() => {}}
+    />,
+  );
 
   expect(screen.queryByText(/公開 prop:/)).toBeNull();
 });
 
 test("部品が1つも無いときはその旨が表示される", () => {
-  render(<ComponentList components={{}} />);
+  render(<ComponentList components={{}} isInsertEnabled onInsert={() => {}} />);
 
   expect(screen.getByText("部品がありません")).toBeDefined();
 });

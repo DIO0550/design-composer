@@ -229,7 +229,11 @@ export function DocumentTree({
   const handlers: TreeHandlers = { state, onSelect, onReorder };
 
   return (
-    <section className="text-sm">
+    /*
+     * 左ペインには編集操作のボタンや部品一覧のボタンも並ぶため、
+     * ツリーの行だけを指せるよう領域として名前を持たせる（#39）。
+     */
+    <section aria-label="ツリー" className="text-sm">
       <h2 className="mb-2 font-semibold text-gray-500 text-xs uppercase">
         ツリー
       </h2>

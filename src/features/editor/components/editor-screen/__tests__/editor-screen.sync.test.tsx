@@ -18,8 +18,8 @@ import {
   renderEditorScreen,
 } from "./setup";
 
-function leftPane(): HTMLElement {
-  return screen.getByRole("complementary", { name: "ツリービュー・部品一覧" });
+function tree(): HTMLElement {
+  return screen.getByRole("region", { name: "ツリー" });
 }
 
 test("編集した内容が自動保存され、開き直すとその状態が読み戻る", async () => {
@@ -44,7 +44,7 @@ test("編集した内容が自動保存され、開き直すとその状態が�
   await clickCreate();
   await clickOpen();
 
-  expect(treeRowNames(leftPane()).slice(1, 3)).toEqual([
+  expect(treeRowNames(tree()).slice(1, 3)).toEqual([
     "home-login（primary-button のインスタンス）",
     "home-title",
   ]);
@@ -59,9 +59,7 @@ test("開いているファイルが外部から書き換わると、その内�
 
   await changeExternally(files, PATH, artboardContent("profile"));
 
-  expect(
-    within(leftPane()).getByRole("button", { name: "profile" }),
-  ).toBeDefined();
+  expect(within(tree()).getByRole("button", { name: "profile" })).toBeDefined();
 });
 
 test("別のファイルを開くと、前に開いていたファイルの監視が止まる", async () => {

@@ -5,6 +5,7 @@ import type { DesignDocument } from "@/domains/design-document";
 import type { PropEdit } from "@/domains/node";
 import type { DocumentReload } from "@/features/editor/domains/document-reload";
 import { EditorState } from "@/features/editor/domains/editor-state";
+import type { NodeTemplate } from "@/features/editor/domains/node-template";
 import { Option } from "@/utils/Option";
 
 /** エディタ画面で起きる状態遷移（docs/06-ui.md「選択」「編集操作の一覧」）。 */
@@ -19,6 +20,8 @@ export type EditorAction =
       toIndex: number;
     }>
   | Readonly<{ type: "move_node"; name: string; to: ChildPosition }>
+  | Readonly<{ type: "insert_node"; template: NodeTemplate }>
+  | Readonly<{ type: "remove_node" }>
   | Readonly<{ type: "apply_prop_edit"; edit: PropEdit }>
   | Readonly<{ type: "resize"; size: AxisLength }>;
 
@@ -45,6 +48,19 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
         EditorState.moveNode(state, action.name, action.to),
         state,
       );
+    case "insert_node":
+      // 挿せる位置が無ければ木は変わらない（EditorState.insertNode の `none`）。
+      return Option.unwrapOr(
+        EditorState.insertNode(state, action.template),
+        state,
+      );
+    case "remove_node":
+      /*
+       * 消せる対象が無ければ木は変わらない（EditorState.removeNode の `none`）。
+       * ボタンは選択が無いと押せないが、Delete キーはいつでも押せるため
+       * この `none` には画面の操作から到達する。
+       */
+      return Option.unwrapOr(EditorState.removeNode(state), state);
     case "apply_prop_edit":
       // 選択が無ければ編集は存在しない（EditorState.applyPropEdit の `none`）。
       return Option.unwrapOr(
