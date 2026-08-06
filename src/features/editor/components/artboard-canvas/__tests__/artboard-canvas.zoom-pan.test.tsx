@@ -39,6 +39,7 @@ test("キャンバスを開いた直後は等倍で表示される", () => {
       onSelect={vi.fn()}
       onMoveNode={vi.fn()}
       onResize={vi.fn()}
+      onEditProp={vi.fn()}
     />,
   );
 
@@ -53,6 +54,7 @@ test("拡大すると表示倍率が上がる", async () => {
       onSelect={vi.fn()}
       onMoveNode={vi.fn()}
       onResize={vi.fn()}
+      onEditProp={vi.fn()}
     />,
   );
 
@@ -69,6 +71,7 @@ test("縮小すると表示倍率が下がる", async () => {
       onSelect={vi.fn()}
       onMoveNode={vi.fn()}
       onResize={vi.fn()}
+      onEditProp={vi.fn()}
     />,
   );
 
@@ -84,6 +87,7 @@ test("等倍に戻すと 100% に戻る", async () => {
       onSelect={vi.fn()}
       onMoveNode={vi.fn()}
       onResize={vi.fn()}
+      onEditProp={vi.fn()}
     />,
   );
   await userEvent.click(screen.getByRole("button", { name: "拡大" }));
@@ -100,6 +104,7 @@ test("縮小を繰り返しても下限より小さくならない", async () =>
       onSelect={vi.fn()}
       onMoveNode={vi.fn()}
       onResize={vi.fn()}
+      onEditProp={vi.fn()}
     />,
   );
   const zoomOut = screen.getByRole("button", { name: "縮小" });
@@ -118,6 +123,7 @@ test("キャンバスをドラッグすると中身が同じだけ移動する",
       onSelect={vi.fn()}
       onMoveNode={vi.fn()}
       onResize={vi.fn()}
+      onEditProp={vi.fn()}
     />,
   );
 
@@ -133,6 +139,7 @@ test("artboard の上で始めたドラッグではキャンバスが動かな�
       onSelect={vi.fn()}
       onMoveNode={vi.fn()}
       onResize={vi.fn()}
+      onEditProp={vi.fn()}
     />,
   );
 
@@ -152,6 +159,7 @@ test("ctrl を押しながらホイールを回すと拡大する", () => {
       onSelect={vi.fn()}
       onMoveNode={vi.fn()}
       onResize={vi.fn()}
+      onEditProp={vi.fn()}
     />,
   );
 
@@ -168,6 +176,7 @@ test("ズームやパンをしても選択は変わらない", async () => {
       onSelect={vi.fn()}
       onMoveNode={vi.fn()}
       onResize={vi.fn()}
+      onEditProp={vi.fn()}
     />,
   );
 

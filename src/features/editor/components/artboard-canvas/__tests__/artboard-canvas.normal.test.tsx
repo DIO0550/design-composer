@@ -43,6 +43,7 @@ test("artboard の中身がキャンバスに描画される", () => {
       onSelect={vi.fn()}
       onMoveNode={vi.fn()}
       onResize={vi.fn()}
+      onEditProp={vi.fn()}
     />,
   );
 
@@ -71,6 +72,7 @@ test("部品インスタンスは overrides を適用した中身で描画され
       onSelect={vi.fn()}
       onMoveNode={vi.fn()}
       onResize={vi.fn()}
+      onEditProp={vi.fn()}
     />,
   );
 
@@ -90,6 +92,7 @@ test("artboard は artboards 配列の順に並ぶ", () => {
       onSelect={vi.fn()}
       onMoveNode={vi.fn()}
       onResize={vi.fn()}
+      onEditProp={vi.fn()}
     />,
   );
 
@@ -107,6 +110,7 @@ test("artboard は自身の幅と高さで描画される", () => {
       onSelect={vi.fn()}
       onMoveNode={vi.fn()}
       onResize={vi.fn()}
+      onEditProp={vi.fn()}
     />,
   );
 
@@ -143,6 +147,7 @@ test("artboard からはみ出した中身はデフォルトで clip される",
       onSelect={vi.fn()}
       onMoveNode={vi.fn()}
       onResize={vi.fn()}
+      onEditProp={vi.fn()}
     />,
   );
 
@@ -167,6 +172,7 @@ test("トークンはキャンバス側のカスタムプロパティとして�
       onSelect={vi.fn()}
       onMoveNode={vi.fn()}
       onResize={vi.fn()}
+      onEditProp={vi.fn()}
     />,
   );
 
@@ -192,6 +198,7 @@ test("選択中の artboard は選択状態として示される", () => {
       onSelect={vi.fn()}
       onMoveNode={vi.fn()}
       onResize={vi.fn()}
+      onEditProp={vi.fn()}
     />,
   );
 
@@ -214,6 +221,7 @@ test("artboard が無いときはその旨が表示される", () => {
       onSelect={vi.fn()}
       onMoveNode={vi.fn()}
       onResize={vi.fn()}
+      onEditProp={vi.fn()}
     />,
   );
 
@@ -236,6 +244,7 @@ test("コンパイルに失敗したときは失敗した旨が表示される",
       onSelect={vi.fn()}
       onMoveNode={vi.fn()}
       onResize={vi.fn()}
+      onEditProp={vi.fn()}
     />,
   );
 

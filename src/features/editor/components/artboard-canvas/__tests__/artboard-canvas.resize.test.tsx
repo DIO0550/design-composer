@@ -99,6 +99,7 @@ function renderCanvas(
       onSelect={handlers.onSelect ?? vi.fn()}
       onMoveNode={handlers.onMoveNode ?? vi.fn()}
       onResize={handlers.onResize ?? vi.fn()}
+      onEditProp={vi.fn()}
     />,
   );
 }

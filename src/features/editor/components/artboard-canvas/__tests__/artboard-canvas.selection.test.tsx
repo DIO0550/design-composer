@@ -54,6 +54,7 @@ test("artboard の中のノードを押すと、そのノードを内側とす�
       onSelect={onSelect}
       onMoveNode={vi.fn()}
       onResize={vi.fn()}
+      onEditProp={vi.fn()}
     />,
   );
 
@@ -70,6 +71,7 @@ test("部品インスタンスの中身を押すと、内側の部品定義の�
       onSelect={onSelect}
       onMoveNode={vi.fn()}
       onResize={vi.fn()}
+      onEditProp={vi.fn()}
     />,
   );
 
@@ -94,6 +96,7 @@ test("artboard の枠を押すとその artboard だけが候補になる", asyn
       onSelect={onSelect}
       onMoveNode={vi.fn()}
       onResize={vi.fn()}
+      onEditProp={vi.fn()}
     />,
   );
 
@@ -113,6 +116,7 @@ test("キーボードで artboard を活性化するとその artboard だけが
       onSelect={onSelect}
       onMoveNode={vi.fn()}
       onResize={vi.fn()}
+      onEditProp={vi.fn()}
     />,
   );
 
@@ -131,6 +135,7 @@ test("選択中のノードはキャンバス上で強調される", () => {
       onSelect={vi.fn()}
       onMoveNode={vi.fn()}
       onResize={vi.fn()}
+      onEditProp={vi.fn()}
     />,
   );
 
@@ -146,6 +151,7 @@ test("選択中の artboard はキャンバス上で強調される", () => {
       onSelect={vi.fn()}
       onMoveNode={vi.fn()}
       onResize={vi.fn()}
+      onEditProp={vi.fn()}
     />,
   );
 
@@ -159,6 +165,7 @@ test("何も選択していなければ強調されるものは無い", () => {
       onSelect={vi.fn()}
       onMoveNode={vi.fn()}
       onResize={vi.fn()}
+      onEditProp={vi.fn()}
     />,
   );
 
@@ -183,6 +190,7 @@ test("名前に二重引用符が含まれていても選択子の中に収ま�
       onSelect={vi.fn()}
       onMoveNode={vi.fn()}
       onResize={vi.fn()}
+      onEditProp={vi.fn()}
     />,
   );
 
