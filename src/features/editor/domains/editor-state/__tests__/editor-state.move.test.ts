@@ -28,11 +28,16 @@ function setupState(): EditorState {
 
 /** 名前で指した親の子の並び。artboard もノードも「子を持つもの」として同じに見る。 */
 function childNames(state: EditorState, parentName: string): readonly string[] {
-  const artboard = DesignDocument.findArtboard(state.document, parentName);
+  const artboard = DesignDocument.findArtboard(
+    EditorState.document(state),
+    parentName,
+  );
   return artboard.some
     ? artboard.value.children.map((child) => child.name)
     : Node.children(
-        Option.unwrap(DesignDocument.findNode(state.document, parentName)),
+        Option.unwrap(
+          DesignDocument.findNode(EditorState.document(state), parentName),
+        ),
       ).map((child) => child.name);
 }
 

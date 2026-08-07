@@ -1,7 +1,11 @@
 import { type KeyShortcut, useKeyShortcut } from "@/hooks/use-key-shortcut";
 
 /** ペーストに割り当てる組み合わせ（Windows は Ctrl+V / macOS は Cmd+V）。 */
-const PASTE_SHORTCUT: KeyShortcut = { keys: ["v"], withCommandKey: true };
+const PASTE_SHORTCUT: KeyShortcut = {
+  keys: ["v"],
+  withCommandKey: true,
+  withShiftKey: false,
+};
 
 /**
  * クリップボードの中身のペーストをキーボードから行えるようにする

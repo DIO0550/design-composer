@@ -14,7 +14,7 @@ import {
   type PropDefinitionRecord,
 } from "@/domains/primitive-schema";
 import { TokenSet } from "@/domains/token";
-import type { EditorState } from "@/features/editor/domains/editor-state";
+import { EditorState } from "@/features/editor/domains/editor-state";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 
@@ -238,15 +238,20 @@ export const PropControlSection = {
       return [];
     }
     const name = state.selectedName.value;
-    const artboard = DesignDocument.findArtboard(state.document, name);
+    const artboard = DesignDocument.findArtboard(
+      EditorState.document(state),
+      name,
+    );
     if (artboard.some) {
       return sectionsOf(
         declaredEditableProps(Artboard.propDefinitions()),
         artboard.value.props ?? {},
-        state.document.tokens,
+        EditorState.document(state).tokens,
       );
     }
-    const node = DesignDocument.findNode(state.document, name);
-    return node.some ? nodeSections(state.document, node.value) : [];
+    const node = DesignDocument.findNode(EditorState.document(state), name);
+    return node.some
+      ? nodeSections(EditorState.document(state), node.value)
+      : [];
   },
 } as const;

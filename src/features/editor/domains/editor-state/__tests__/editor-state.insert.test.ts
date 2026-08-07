@@ -24,12 +24,17 @@ function setupState(): EditorState {
 }
 
 function childNames(state: EditorState, parentName: string): readonly string[] {
-  const artboard = DesignDocument.findArtboard(state.document, parentName);
+  const artboard = DesignDocument.findArtboard(
+    EditorState.document(state),
+    parentName,
+  );
   if (artboard.some) {
     return artboard.value.children.map((child) => child.name);
   }
   return Node.children(
-    Option.unwrap(DesignDocument.findNode(state.document, parentName)),
+    Option.unwrap(
+      DesignDocument.findNode(EditorState.document(state), parentName),
+    ),
   ).map((child) => child.name);
 }
 
@@ -68,7 +73,10 @@ test("部品を挿すとその部品を指す参照ノードが選択位置の�
   });
 
   const node = Option.unwrap(
-    DesignDocument.findNode(Option.unwrap(inserted).document, "card-2"),
+    DesignDocument.findNode(
+      EditorState.document(Option.unwrap(inserted)),
+      "card-2",
+    ),
   );
   expect(Node.isRef(node) && node.ref).toBe("card");
 });

@@ -8,7 +8,7 @@ import {
   CanvasOffset,
   CanvasView,
 } from "@/features/editor/domains/canvas-view";
-import type { EditorState } from "@/features/editor/domains/editor-state";
+import { EditorState } from "@/features/editor/domains/editor-state";
 import { CanvasBounds } from "@/features/editor/domains/node-drop";
 import { Option } from "@/utils/Option";
 
@@ -84,11 +84,14 @@ export const NodeResize = {
       return [];
     }
     const name = state.selectedName.value;
-    const artboard = DesignDocument.findArtboard(state.document, name);
+    const artboard = DesignDocument.findArtboard(
+      EditorState.document(state),
+      name,
+    );
     if (artboard.some) {
       return artboardHandles(artboard.value);
     }
-    const node = DesignDocument.findNode(state.document, name);
+    const node = DesignDocument.findNode(EditorState.document(state), name);
     return node.some ? nodeHandles(node.value) : [];
   },
 

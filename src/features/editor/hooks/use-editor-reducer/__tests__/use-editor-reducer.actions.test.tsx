@@ -4,7 +4,7 @@ import { expect, test } from "vitest";
 import { AxisLength } from "@/domains/axis-length";
 import { DesignDocument } from "@/domains/design-document";
 import type { DocumentError } from "@/features/editor/domains/document-error";
-import type { EditorState } from "@/features/editor/domains/editor-state";
+import { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
 import { useEditorReducer } from "../index";
 
@@ -46,13 +46,14 @@ function setupReloadedDocument(): DesignDocument {
 }
 
 function artboardWidth(state: EditorState): number {
-  return Option.unwrap(DesignDocument.findArtboard(state.document, "home"))
-    .width;
+  return Option.unwrap(
+    DesignDocument.findArtboard(EditorState.document(state), "home"),
+  ).width;
 }
 
 function childNames(state: EditorState): readonly string[] {
   const artboard = Option.unwrap(
-    DesignDocument.findArtboard(state.document, "home"),
+    DesignDocument.findArtboard(EditorState.document(state), "home"),
   );
   return artboard.children.map((child) => child.name);
 }

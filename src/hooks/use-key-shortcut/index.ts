@@ -8,6 +8,8 @@ import { ElementEx } from "@/utils/ElementEx";
  * （削除の Delete / Backspace）。
  * `withCommandKey` は Windows の Ctrl と macOS の Command の両方を指す。
  * どちらの流儀でも同じ操作ができるよう、2 つを同じ修飾として扱う。
+ * `withShiftKey` は Shift の有無で別の操作になる割り当て（undo と redo）を
+ * 区別するために要る。
  *
  * 割り当てるキーとフックを分けているのは、押されたかの判定に React が要らないため
  * （フック側はページ全体で受けることと購読の解除だけを持つ）。
@@ -15,6 +17,7 @@ import { ElementEx } from "@/utils/ElementEx";
 export type KeyShortcut = Readonly<{
   keys: readonly string[];
   withCommandKey: boolean;
+  withShiftKey: boolean;
 }>;
 
 export const KeyShortcut = {
@@ -23,11 +26,18 @@ export const KeyShortcut = {
    *
    * 修飾キーの有無まで一致を要求する。緩めると Cmd+C が
    * 「修飾なしの c」に割り当てたショートカットまで叩いてしまうため。
+   *
+   * キーは大小を無視して比べる。Shift を押している間 `event.key` は打たれる文字、
+   * つまり `"z"` ではなく `"Z"` になるため、そのまま比べると Cmd+Shift+Z が
+   * どの割り当てにも当たらない。
    */
   matches(shortcut: KeyShortcut, event: KeyboardEvent): boolean {
     return (
-      shortcut.keys.includes(event.key) &&
-      (event.ctrlKey || event.metaKey) === shortcut.withCommandKey
+      shortcut.keys.some(
+        (key) => key.toLowerCase() === event.key.toLowerCase(),
+      ) &&
+      (event.ctrlKey || event.metaKey) === shortcut.withCommandKey &&
+      event.shiftKey === shortcut.withShiftKey
     );
   },
 } as const;

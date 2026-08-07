@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { SAMPLE_EDITOR_STATE } from "@/features/editor/__stories__/sample-editor-state";
+import { EditorState } from "@/features/editor/domains/editor-state";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
 import { OpenedDocumentEditor } from "./index";
@@ -8,7 +9,9 @@ const SAMPLE_PATH = "/work/sample.dcmp";
 
 /** Storybook には Tauri が無いので、自動保存と監視の相手はインメモリの代役にする。 */
 const files = DocumentIpcFake.create({
-  [SAMPLE_PATH]: DocumentJson.serialize(SAMPLE_EDITOR_STATE.document),
+  [SAMPLE_PATH]: DocumentJson.serialize(
+    EditorState.document(SAMPLE_EDITOR_STATE),
+  ),
 });
 
 const meta = {
@@ -17,7 +20,10 @@ const meta = {
   parameters: { layout: "fullscreen" },
   args: {
     ipc: files.ipc,
-    opened: { path: SAMPLE_PATH, document: SAMPLE_EDITOR_STATE.document },
+    opened: {
+      path: SAMPLE_PATH,
+      document: EditorState.document(SAMPLE_EDITOR_STATE),
+    },
   },
 } satisfies Meta<typeof OpenedDocumentEditor>;
 
@@ -43,7 +49,7 @@ export const SyncFailed: Story = {
     ipc: DocumentIpcFake.create({}).ipc,
     opened: {
       path: "/work/missing.dcmp",
-      document: SAMPLE_EDITOR_STATE.document,
+      document: EditorState.document(SAMPLE_EDITOR_STATE),
     },
   },
 };

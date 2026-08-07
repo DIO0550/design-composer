@@ -21,6 +21,8 @@ import { useCopyShortcut } from "@/features/editor/hooks/use-copy-shortcut";
 import { useDeleteShortcut } from "@/features/editor/hooks/use-delete-shortcut";
 import { useDocumentReload } from "@/features/editor/hooks/use-document-reload";
 import { usePasteShortcut } from "@/features/editor/hooks/use-paste-shortcut";
+import { useRedoShortcut } from "@/features/editor/hooks/use-redo-shortcut";
+import { useUndoShortcut } from "@/features/editor/hooks/use-undo-shortcut";
 import type { DocumentIpc } from "@/libs/document-ipc";
 
 /**
@@ -67,6 +69,13 @@ function EditorPanes() {
    */
   const copyNode = () => dispatch({ type: "copy_node" });
   const pasteNode = () => dispatch({ type: "paste_node" });
+  /**
+   * undo / redo もキーボードだけの操作（docs/06-ui.md「編集操作の一覧」/ #41）。
+   * UI 案（docs/Design Composer.html）が undo / redo の UI を描いていないため、
+   * コピー & ペーストと同じ扱いにしている。
+   */
+  const undo = () => dispatch({ type: "undo" });
+  const redo = () => dispatch({ type: "redo" });
   const isInsertEnabled = EditorState.insertPosition(state).some;
   const isRemoveEnabled = EditorState.removableName(state).some;
 
@@ -74,6 +83,8 @@ function EditorPanes() {
   useDeleteShortcut(removeNode);
   useCopyShortcut(copyNode);
   usePasteShortcut(pasteNode);
+  useUndoShortcut(undo);
+  useRedoShortcut(redo);
 
   return (
     <EditorLayout>
@@ -90,7 +101,7 @@ function EditorPanes() {
           onReorder={reorderNode}
         />
         <ComponentList
-          components={state.document.components}
+          components={EditorState.document(state).components}
           isInsertEnabled={isInsertEnabled}
           onInsert={(componentName) =>
             insertNode({ kind: "instance", componentName })
@@ -132,7 +143,11 @@ function EditorBody({
 }: Readonly<{ ipc: DocumentIpc; path: string }>) {
   const { state, dispatch } = useEditor();
 
-  const autoSaveFailure = useAutoSave({ ipc, path, document: state.document });
+  const autoSaveFailure = useAutoSave({
+    ipc,
+    path,
+    document: EditorState.document(state),
+  });
   const watchFailure = useDocumentReload({
     ipc,
     path,

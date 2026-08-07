@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
-import type { EditorState } from "@/features/editor/domains/editor-state";
+import { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
 import { useEditorReducer } from "../index";
 
@@ -22,7 +22,7 @@ function setupDocument(): DesignDocument {
 
 function childNames(state: EditorState): readonly string[] {
   const artboard = Option.unwrap(
-    DesignDocument.findArtboard(state.document, "home"),
+    DesignDocument.findArtboard(EditorState.document(state), "home"),
   );
   return artboard.children.map((child) => child.name);
 }
