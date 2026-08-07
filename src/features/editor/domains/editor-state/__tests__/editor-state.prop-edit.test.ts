@@ -29,7 +29,7 @@ test("選択中のノードの prop を書き換えられる", () => {
   );
 
   const node = Option.unwrap(
-    DesignDocument.findNode(edited.document, "home-title"),
+    DesignDocument.findNode(EditorState.document(edited), "home-title"),
   );
   expect(node).toEqual({
     name: "home-title",

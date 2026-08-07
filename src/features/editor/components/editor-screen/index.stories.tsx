@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { SAMPLE_EDITOR_STATE } from "@/features/editor/__stories__/sample-editor-state";
+import { EditorState } from "@/features/editor/domains/editor-state";
 import { DialogChoice, DocumentDialogFake } from "@/libs/document-dialog/fake";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
@@ -12,7 +13,9 @@ const SAMPLE_PATH = "/work/sample.dcmp";
  * 実物の口では「開く」を押した先が動かないため。
  */
 const files = DocumentIpcFake.create({
-  [SAMPLE_PATH]: DocumentJson.serialize(SAMPLE_EDITOR_STATE.document),
+  [SAMPLE_PATH]: DocumentJson.serialize(
+    EditorState.document(SAMPLE_EDITOR_STATE),
+  ),
 });
 
 const dialog = DocumentDialogFake.create({

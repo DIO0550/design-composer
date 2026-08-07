@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import { ArrayEx } from "../ArrayEx";
+import { Option } from "../Option";
 
 test("範囲外の index を指定して insertAt を呼ぶと範囲外として Err が返る", () => {
   expect(ArrayEx.insertAt(["a", "b"], 3, "c")).toEqual({
@@ -41,4 +42,24 @@ test("負の index を指定して replaceAt を呼ぶと範囲外として Err 
     ok: false,
     error: { index: -1, length: 2 },
   });
+});
+
+test("空の並びには先頭が無い", () => {
+  expect(ArrayEx.first([])).toEqual(Option.none);
+});
+
+test("空の並びには末尾が無い", () => {
+  expect(ArrayEx.last([])).toEqual(Option.none);
+});
+
+test("空の並びから先頭を除いても空のまま", () => {
+  expect(ArrayEx.dropFirst([])).toEqual([]);
+});
+
+test("空の並びから末尾を除いても空のまま", () => {
+  expect(ArrayEx.dropLast([])).toEqual([]);
+});
+
+test("要素が 1 つの並びから末尾を除くと空になる", () => {
+  expect(ArrayEx.dropLast(["a"])).toEqual([]);
 });

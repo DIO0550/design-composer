@@ -225,7 +225,7 @@ export function DocumentTree({
   onSelect: (name: string) => void;
   onReorder: (from: ChildPosition, toIndex: number) => void;
 }>) {
-  const artboards = state.document.artboards;
+  const artboards = EditorState.document(state).artboards;
   const handlers: TreeHandlers = { state, onSelect, onReorder };
 
   return (

@@ -24,7 +24,7 @@ function setupState(): EditorState {
 
 function childNames(state: EditorState): readonly string[] {
   const artboard = Option.unwrap(
-    DesignDocument.findArtboard(state.document, "home"),
+    DesignDocument.findArtboard(EditorState.document(state), "home"),
   );
   return artboard.children.map((child) => child.name);
 }

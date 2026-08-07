@@ -32,7 +32,7 @@ test("取り込めた外部変更のドキュメントが表示対象になる",
     document: reloaded,
   });
 
-  expect(state.document).toEqual(reloaded);
+  expect(EditorState.document(state)).toEqual(reloaded);
 });
 
 test("取り込んだドキュメントにも同じ名前があれば選択は引き継がれる", () => {
@@ -71,7 +71,7 @@ test("外部変更を拒んだときは表示中のドキュメントがその�
     errors: [SYNTAX_ERROR],
   });
 
-  expect(state.document).toEqual(opened.document);
+  expect(EditorState.document(state)).toEqual(EditorState.document(opened));
 });
 
 test("外部変更を拒んでも選択は外れない", () => {

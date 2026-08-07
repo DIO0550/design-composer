@@ -1,4 +1,5 @@
 import { NumberEx } from "@/utils/NumberEx";
+import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
 /**
@@ -24,6 +25,26 @@ export const ArrayEx = {
 
   isInsertionIndexInRange<T>(array: readonly T[], index: number): boolean {
     return NumberEx.isNatural(index) && index <= array.length;
+  },
+
+  /** 先頭の要素。空の並びには先頭が無いので `none`。 */
+  first<T>(array: readonly T[]): Option<NonNullable<T>> {
+    return Option.fromNullable(array[0]);
+  },
+
+  /** 末尾の要素。空の並びには末尾が無いので `none`。 */
+  last<T>(array: readonly T[]): Option<NonNullable<T>> {
+    return Option.fromNullable(array[array.length - 1]);
+  },
+
+  /** 先頭を除いた並び。空の並びは空のまま。 */
+  dropFirst<T>(array: readonly T[]): readonly T[] {
+    return array.slice(1);
+  },
+
+  /** 末尾を除いた並び。空の並びは空のまま。 */
+  dropLast<T>(array: readonly T[]): readonly T[] {
+    return array.slice(0, -1);
   },
 
   /** 重複を取り除いた並び。残るのは各値が最初に現れた位置。 */

@@ -1,7 +1,11 @@
 import { type KeyShortcut, useKeyShortcut } from "@/hooks/use-key-shortcut";
 
 /** コピーに割り当てる組み合わせ（Windows は Ctrl+C / macOS は Cmd+C）。 */
-const COPY_SHORTCUT: KeyShortcut = { keys: ["c"], withCommandKey: true };
+const COPY_SHORTCUT: KeyShortcut = {
+  keys: ["c"],
+  withCommandKey: true,
+  withShiftKey: false,
+};
 
 /**
  * 選択中のノードのコピーをキーボードから行えるようにする
