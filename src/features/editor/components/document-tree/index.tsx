@@ -371,6 +371,11 @@ function TreeBranch({
   const hasChildren = item.children.length > 0;
   const isExpanded = !control.collapsedNames.has(item.name);
   const isSelected = EditorState.isSelected(control.state, item.name);
+  /*
+   * 子の並びを出す条件。子がいない行は畳めないので常に「開いている」側に倒れるが、
+   * 出すものが無いので空の <ul> を作らないよう子の有無も見る。
+   */
+  const showsChildren = hasChildren && isExpanded;
 
   return (
     <>
@@ -405,7 +410,7 @@ function TreeBranch({
         />
         {trailing}
       </div>
-      {hasChildren && isExpanded ? (
+      {showsChildren ? (
         <NodeList
           nodes={item.children}
           parentName={item.name}
