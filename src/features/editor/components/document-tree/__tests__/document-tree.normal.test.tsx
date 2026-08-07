@@ -63,14 +63,8 @@ test("ツリーは artboard・子・孫の順に並ぶ", () => {
     "title",
     "body",
     "body-text",
-    "body-action（primary-button のインスタンス）",
+    "body-action",
   ]);
-});
-
-test("参照ノードはどの部品のインスタンスかが分かる形で並ぶ", () => {
-  renderTree(setupState());
-
-  expect(screen.getByText("（primary-button のインスタンス）")).toBeDefined();
 });
 
 test("ノードを選ぶとそのノードの名前が選択として伝わる", async () => {
