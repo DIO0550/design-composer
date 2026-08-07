@@ -287,12 +287,13 @@ export const DesignDocument = {
 
   /**
    * 部品ごとの被参照回数。数える規則は `ComponentSet` が持ち、ここは
-   * ドキュメントのどこを見せるかの調停だけを行う（`nameSpaceOf` と同じ形）。
+   * 「部品の外側にある木はどれか」を渡す調停だけを行う（`nameSpaceOf` と同じ形）。
    */
-  componentRefCounts(
-    document: DesignDocument,
-  ): readonly ComponentRefCount[] {
-    return ComponentSet.refCounts(document.components, document.artboards);
+  componentRefCounts(document: DesignDocument): readonly ComponentRefCount[] {
+    return ComponentSet.refCounts(
+      document.components,
+      document.artboards.flatMap((artboard) => artboard.children),
+    );
   },
 
   /** 名前で artboard を引く。名前は単一名前空間なので artboard 名も一意に決まる。 */

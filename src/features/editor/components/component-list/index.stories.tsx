@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { Artboard } from "@/domains/artboard";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import { ComponentList } from "./index";
 
@@ -27,7 +28,7 @@ type Story = StoryObj<typeof meta>;
 const USED_COMPONENTS_DOCUMENT = DesignDocument.create({
   components: DocumentTemplate.DEFAULT.components,
   artboards: [
-    {
+    Artboard.create({
       name: "home",
       width: 360,
       height: 240,
@@ -36,7 +37,7 @@ const USED_COMPONENTS_DOCUMENT = DesignDocument.create({
         { name: "home-cancel", ref: "primary-button" },
         { name: "home-card", ref: "card" },
       ],
-    },
+    }),
   ],
 });
 

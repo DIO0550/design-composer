@@ -62,6 +62,8 @@ test("部品は渡された並びのとおりに出る", () => {
   );
 
   expect(
-    screen.getAllByRole("listitem").map((row) => row.textContent),
-  ).toEqual(["◆card×0挿入", "◆button×0挿入", "◆badge×0挿入"]);
+    screen
+      .getAllByRole("button", { name: /を挿入$/ })
+      .map((button) => button.getAttribute("aria-label")),
+  ).toEqual(["card を挿入", "button を挿入", "badge を挿入"]);
 });

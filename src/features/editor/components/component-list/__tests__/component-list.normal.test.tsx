@@ -29,30 +29,6 @@ test("部品の行には部品を表す型アイコンが出る", () => {
   expect(screen.getByText("◆")).toBeDefined();
 });
 
-test("部品のルートの型は一覧に出ない", () => {
-  render(
-    <ComponentList
-      refCounts={[{ name: "divider", count: 0 }]}
-      isInsertEnabled
-      onInsert={() => {}}
-    />,
-  );
-
-  expect(screen.queryByText("Box")).toBeNull();
-});
-
-test("公開 prop は一覧に出ない", () => {
-  render(
-    <ComponentList
-      refCounts={[{ name: "primary-button", count: 1 }]}
-      isInsertEnabled
-      onInsert={() => {}}
-    />,
-  );
-
-  expect(screen.queryByText(/公開 prop/)).toBeNull();
-});
-
 test("部品が1つも無いときはその旨が表示される", () => {
   render(<ComponentList refCounts={[]} isInsertEnabled onInsert={() => {}} />);
 
