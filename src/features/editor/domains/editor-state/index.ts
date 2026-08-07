@@ -1,7 +1,7 @@
 import type { AxisLength } from "@/domains/axis-length";
 import { ChildPosition } from "@/domains/child-position";
 import { DesignDocument } from "@/domains/design-document";
-import type { PropEdit } from "@/domains/node";
+import type { Node, PropEdit } from "@/domains/node";
 import type { DocumentError } from "@/features/editor/domains/document-error";
 import type { DocumentReload } from "@/features/editor/domains/document-reload";
 import { NodeTemplate } from "@/features/editor/domains/node-template";
@@ -11,6 +11,8 @@ import { Option } from "@/utils/Option";
  * エディタ画面が保持する状態（docs/06-ui.md「画面構成」「選択」）。
  * 選択はファイルへ保存しない実行時のみの状態だが、
  * 「どのドキュメントの中の名前か」でしか意味を持たないためドキュメントと同じ器に持つ。
+ * `copiedNode` はアプリ内クリップボード（docs/06-ui.md「編集操作の一覧」の
+ * コピー & ペースト）で、選択と同じく非永続・ドキュメント基準なのでここに置く。
  *
  * `document` は常に「最後に正常だったドキュメント」で、外部変更を拒んでも差し替えない。
  * `errors` が空でない間は、画面に映っているものがファイルの現在の中身と違う
@@ -19,6 +21,7 @@ import { Option } from "@/utils/Option";
 export type EditorState = Readonly<{
   document: DesignDocument;
   selectedName: Option<string>;
+  copiedNode: Option<Node>;
   errors: readonly DocumentError[];
 }>;
 
@@ -36,10 +39,28 @@ function selectableName(
   return isSelectable ? Option.some(name) : Option.none;
 }
 
+/**
+ * 選択中のノード。
+ * 選択できるものには artboard も含まれるが、artboard はノードではないので `none`。
+ */
+function selectedNode(state: EditorState): Option<Node> {
+  return Option.flatMap(state.selectedName, (name) =>
+    DesignDocument.findNode(state.document, name),
+  );
+}
+
 export const EditorState = {
-  /** 選択なしの状態から始める（選択は非永続なので開いた直後は何も選ばれていない）。 */
+  /**
+   * 選択なしの状態から始める（選択は非永続なので開いた直後は何も選ばれていない）。
+   * クリップボードも同じく実行時のみの状態なので空で始まる。
+   */
   create(document: DesignDocument): EditorState {
-    return { document, selectedName: Option.none, errors: [] };
+    return {
+      document,
+      selectedName: Option.none,
+      copiedNode: Option.none,
+      errors: [],
+    };
   },
 
   /**
@@ -75,6 +96,8 @@ export const EditorState = {
    * 取り込めたときは無条件にドキュメントを差し替える（自動保存により
    * GUI 側に未保存の変更は無い）。選択は name によるベストエフォートで引き継ぎ、
    * 読み直したドキュメントに無くなっていれば外す（docs/06-ui.md「選択」）。
+   * クリップボードは引き継ぐ。切り離された複製であり、貼るときに必ず採番し直すので、
+   * ドキュメントが差し替わっても貼れる状態が壊れないため。
    *
    * 拒んだときはドキュメントも選択もそのままにし、エラー一覧だけを載せ替える。
    * 正常 / 不正の 2 つの遷移を 1 つのメソッドで受けるのは、呼び出し側が
@@ -88,6 +111,7 @@ export const EditorState = {
           selectedName: Option.flatMap(state.selectedName, (name) =>
             selectableName(reload.document, name),
           ),
+          copiedNode: state.copiedNode,
           errors: [],
         };
       case "rejected":
@@ -167,10 +191,62 @@ export const EditorState = {
    * 担当なので、ここで消せるのは配下のノードだけ。
    */
   removableName(state: EditorState): Option<string> {
-    return Option.flatMap(state.selectedName, (name) =>
-      DesignDocument.findNode(state.document, name).some
-        ? Option.some(name)
-        : Option.none,
+    return Option.map(selectedNode(state), (node) => node.name);
+  },
+
+  /**
+   * クリップボードへ入れられる対象（docs/06-ui.md「編集操作の一覧」の
+   * コピー & ペースト）。
+   *
+   * コピーはサブツリー単位なので、対象はノードそのもの。artboard も選択できるが、
+   * artboard はノードとして貼れない（artboard の複製は artboard 操作（#43）の担当）
+   * ため対象にしない。
+   */
+  copyableNode(state: EditorState): Option<Node> {
+    return selectedNode(state);
+  },
+
+  /**
+   * 選択中のノードをサブツリーごとクリップボードへ入れる。
+   *
+   * ドキュメントは変わらない。入れるのは切り離された複製なので、
+   * この後に元のノードを消しても貼れる。
+   */
+  copyNode(state: EditorState): Option<EditorState> {
+    return Option.map(EditorState.copyableNode(state), (node) => ({
+      ...state,
+      copiedNode: Option.some(node),
+    }));
+  },
+
+  /**
+   * ペーストで挿す位置。
+   *
+   * ペーストも挿入と同じ「選択位置の子として追加」なので、位置の決め方は
+   * `insertPosition` と同じ。クリップボードが空なら挿すものが無いので `none`。
+   */
+  pastePosition(state: EditorState): Option<ChildPosition> {
+    return state.copiedNode.some
+      ? EditorState.insertPosition(state)
+      : Option.none;
+  },
+
+  /**
+   * クリップボードの中身を選択位置の子として貼る（docs/06-ui.md「編集操作の一覧」）。
+   *
+   * 名前の付け替えは `DesignDocument.insertNodeCopy` が挿入と一体で行うため、
+   * ここでは順序を組み立てない。
+   * 選択は動かさない。挿入と同じ導線なので、続けて貼ったときの結果が
+   * 挿入と食い違わないようにするため（`insertNode` と同じ理由）。
+   */
+  pasteNode(state: EditorState): Option<EditorState> {
+    return Option.flatMap(state.copiedNode, (node) =>
+      Option.flatMap(EditorState.insertPosition(state), (at) => {
+        const pasted = DesignDocument.insertNodeCopy(state.document, at, node);
+        return pasted.ok
+          ? Option.some({ ...state, document: pasted.value })
+          : Option.none;
+      }),
     );
   },
 

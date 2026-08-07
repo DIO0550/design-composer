@@ -17,8 +17,10 @@ import { EditorState } from "@/features/editor/domains/editor-state";
 import type { NodeTemplate } from "@/features/editor/domains/node-template";
 import type { OpenedDocument } from "@/features/editor/domains/opened-document";
 import { useAutoSave } from "@/features/editor/hooks/use-auto-save";
+import { useCopyShortcut } from "@/features/editor/hooks/use-copy-shortcut";
 import { useDeleteShortcut } from "@/features/editor/hooks/use-delete-shortcut";
 import { useDocumentReload } from "@/features/editor/hooks/use-document-reload";
+import { usePasteShortcut } from "@/features/editor/hooks/use-paste-shortcut";
 import type { DocumentIpc } from "@/libs/document-ipc";
 
 /**
@@ -55,21 +57,40 @@ function EditorPanes() {
   const insertNode = (template: NodeTemplate) =>
     dispatch({ type: "insert_node", template });
   const removeNode = () => dispatch({ type: "remove_node" });
+  /**
+   * コピー & ペーストも選択中のものを起点にする（docs/06-ui.md「編集操作の一覧」）。
+   * 貼れるかはクリップボードの中身と選択位置の両方で決まるため、状態側に尋ねる。
+   */
+  const copyNode = () => dispatch({ type: "copy_node" });
+  const pasteNode = () => dispatch({ type: "paste_node" });
   const isInsertEnabled = EditorState.insertPosition(state).some;
   const isRemoveEnabled = EditorState.removableName(state).some;
+  const isCopyEnabled = EditorState.copyableNode(state).some;
+  const isPasteEnabled = EditorState.pastePosition(state).some;
 
-  /** 削除はボタンとキーボードの両方から届く（どちらも選択中のものを消す）。 */
+  /** 削除・コピー・ペーストはボタンとキーボードの両方から届く（対象の決め方は同じ）。 */
   useDeleteShortcut(removeNode);
+  useCopyShortcut(copyNode);
+  usePasteShortcut(pasteNode);
 
   return (
     <EditorLayout>
       <EditorLayout.LeftPane>
-        <NodeEditToolbar
-          isInsertEnabled={isInsertEnabled}
-          isRemoveEnabled={isRemoveEnabled}
-          onInsert={insertNode}
-          onRemove={removeNode}
-        />
+        <NodeEditToolbar>
+          <NodeEditToolbar.Insert
+            isEnabled={isInsertEnabled}
+            onInsert={insertNode}
+          />
+          <NodeEditToolbar.Copy isEnabled={isCopyEnabled} onCopy={copyNode} />
+          <NodeEditToolbar.Paste
+            isEnabled={isPasteEnabled}
+            onPaste={pasteNode}
+          />
+          <NodeEditToolbar.Remove
+            isEnabled={isRemoveEnabled}
+            onRemove={removeNode}
+          />
+        </NodeEditToolbar>
         <DocumentTree
           state={state}
           onSelect={selectNode}

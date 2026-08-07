@@ -28,7 +28,7 @@ function childNames(state: EditorState): readonly string[] {
 }
 
 /**
- * 挿入と削除のアクションを 1 つずつ送る器。
+ * 挿入・削除・コピー & ペーストのアクションを 1 つずつ送る器。
  * 選択の切り替えも同じ器から行い、選択に応じた結果を見る。
  */
 function TreeEditHarness() {
@@ -76,6 +76,12 @@ function TreeEditHarness() {
       </button>
       <button type="button" onClick={() => dispatch({ type: "remove_node" })}>
         削除する
+      </button>
+      <button type="button" onClick={() => dispatch({ type: "copy_node" })}>
+        コピーする
+      </button>
+      <button type="button" onClick={() => dispatch({ type: "paste_node" })}>
+        貼り付ける
       </button>
     </>
   );
@@ -126,6 +132,49 @@ test("何も選んでいないときに削除しても子の並びは変わら�
   render(<TreeEditHarness />);
 
   await user.click(screen.getByRole("button", { name: "削除する" }));
+
+  expect(screen.getByTestId("children").textContent).toBe("title");
+});
+
+test("ノードをコピーして artboard へ貼ると連番の名前で子の並びに加わる", async () => {
+  const user = userEvent.setup();
+  render(<TreeEditHarness />);
+
+  await user.click(screen.getByRole("button", { name: "title を選ぶ" }));
+  await user.click(screen.getByRole("button", { name: "コピーする" }));
+  await user.click(screen.getByRole("button", { name: "home を選ぶ" }));
+  await user.click(screen.getByRole("button", { name: "貼り付ける" }));
+
+  expect(screen.getByTestId("children").textContent).toBe("title,title-2");
+});
+
+test("コピーしただけでは子の並びは変わらない", async () => {
+  const user = userEvent.setup();
+  render(<TreeEditHarness />);
+
+  await user.click(screen.getByRole("button", { name: "title を選ぶ" }));
+  await user.click(screen.getByRole("button", { name: "コピーする" }));
+
+  expect(screen.getByTestId("children").textContent).toBe("title");
+});
+
+test("何もコピーしていないときに貼り付けても子の並びは変わらない", async () => {
+  const user = userEvent.setup();
+  render(<TreeEditHarness />);
+
+  await user.click(screen.getByRole("button", { name: "home を選ぶ" }));
+  await user.click(screen.getByRole("button", { name: "貼り付ける" }));
+
+  expect(screen.getByTestId("children").textContent).toBe("title");
+});
+
+test("何も選んでいないときにコピーしても貼り付けるものは増えない", async () => {
+  const user = userEvent.setup();
+  render(<TreeEditHarness />);
+
+  await user.click(screen.getByRole("button", { name: "コピーする" }));
+  await user.click(screen.getByRole("button", { name: "home を選ぶ" }));
+  await user.click(screen.getByRole("button", { name: "貼り付ける" }));
 
   expect(screen.getByTestId("children").textContent).toBe("title");
 });
