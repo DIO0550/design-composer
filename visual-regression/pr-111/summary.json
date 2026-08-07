@@ -1,11 +1,11 @@
 {
-  "reportVersion": "68d2b99783c4168ba9cd91ea5682b29747dc81dc",
+  "reportVersion": "5c911f81d71c3b644e8714a28c5cb3ad67e27faa",
   "maxDiffRatio": 0.002,
-  "changed": 2,
-  "new": 1,
+  "changed": 0,
+  "new": 0,
   "deleted": 0,
-  "passed": 22,
-  "failed": 2,
+  "passed": 24,
+  "failed": 0,
   "results": [
     {
       "story": "features-editor-artboardcanvas--default",
@@ -208,12 +208,12 @@
       "title": "features/editor/NodeEditToolbar",
       "name": "artboard を選んでいる",
       "status": "passed",
-      "reason": "within-threshold",
-      "diffPixels": 954,
-      "diffRatio": 0.001,
+      "reason": "match",
+      "diffPixels": 0,
+      "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": true
+      "hasDiff": false
     },
     {
       "story": "features-editor-nodeedittoolbar--no-selection",
@@ -221,23 +221,10 @@
       "title": "features/editor/NodeEditToolbar",
       "name": "何も選んでいない",
       "status": "passed",
-      "reason": "within-threshold",
-      "diffPixels": 954,
-      "diffRatio": 0.001,
-      "hasExpected": true,
-      "hasActual": true,
-      "hasDiff": true
-    },
-    {
-      "story": "features-editor-nodeedittoolbar--node-copied",
-      "id": "features-editor-nodeedittoolbar--node-copied",
-      "title": "features/editor/NodeEditToolbar",
-      "name": "コピー済みのノードがある",
-      "status": "new",
-      "reason": "no-baseline",
+      "reason": "match",
       "diffPixels": 0,
       "diffRatio": 0,
-      "hasExpected": false,
+      "hasExpected": true,
       "hasActual": true,
       "hasDiff": false
     },
@@ -247,38 +234,38 @@
       "title": "features/editor/NodeEditToolbar",
       "name": "子を持てるノードを選んでいる",
       "status": "passed",
-      "reason": "within-threshold",
-      "diffPixels": 1161,
-      "diffRatio": 0.0013,
+      "reason": "match",
+      "diffPixels": 0,
+      "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": true
+      "hasDiff": false
     },
     {
       "story": "features-editor-openeddocumenteditor--default",
       "id": "features-editor-openeddocumenteditor--default",
       "title": "features/editor/OpenedDocumentEditor",
       "name": "編集画面",
-      "status": "changed",
-      "reason": "pixel-diff",
-      "diffPixels": 11246,
-      "diffRatio": 0.012199999999999999,
+      "status": "passed",
+      "reason": "match",
+      "diffPixels": 0,
+      "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": true
+      "hasDiff": false
     },
     {
       "story": "features-editor-openeddocumenteditor--sync-failed",
       "id": "features-editor-openeddocumenteditor--sync-failed",
       "title": "features/editor/OpenedDocumentEditor",
       "name": "同期に失敗した編集画面",
-      "status": "changed",
-      "reason": "pixel-diff",
-      "diffPixels": 11246,
-      "diffRatio": 0.012199999999999999,
+      "status": "passed",
+      "reason": "match",
+      "diffPixels": 0,
+      "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": true
+      "hasDiff": false
     },
     {
       "story": "features-editor-propertypanel--default",
