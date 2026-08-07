@@ -5,6 +5,7 @@ import {
   highlightedNames,
   renderedElement,
 } from "@/features/editor/__tests__/canvas-elements";
+import { selectedTreeRowNames } from "@/features/editor/__tests__/tree-rows";
 import { renderOpenedDocument } from "./setup";
 
 /**
@@ -21,14 +22,6 @@ function canvasPane(): HTMLElement {
 
 function propertyPane(): HTMLElement {
   return screen.getByRole("complementary", { name: "プロパティパネル" });
-}
-
-/** ツリービューで選択状態になっている行の名前。 */
-function selectedTreeRowNames(tree: HTMLElement): readonly string[] {
-  return within(tree)
-    .getAllByRole("button")
-    .filter((row) => row.getAttribute("aria-current") === "true")
-    .map((row) => row.textContent ?? "");
 }
 
 test("キャンバスでノードを押すとツリービューの同じノードが選択状態になる", async () => {
@@ -52,9 +45,7 @@ test("キャンバスで部品インスタンスの中身を押すとインス�
 
   await userEvent.click(within(canvasPane()).getByText("ログイン"));
 
-  expect(selectedTreeRowNames(leftPane())).toEqual([
-    "home-login（primary-button のインスタンス）",
-  ]);
+  expect(selectedTreeRowNames(leftPane())).toEqual(["home-login"]);
 });
 
 test("ツリービューでノードを選ぶとキャンバスのそのノードが強調される", async () => {

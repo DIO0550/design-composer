@@ -9,16 +9,10 @@ function tree(): HTMLElement {
 }
 
 /** 並べ替え前の home の子の並び。 */
-const ORIGINAL_CHILDREN = [
-  "home-title",
-  "home-login（primary-button のインスタンス）",
-];
+const ORIGINAL_CHILDREN = ["home-title", "home-login"];
 
 /** 並べ替え後の home の子の並び。 */
-const REORDERED_CHILDREN = [
-  "home-login（primary-button のインスタンス）",
-  "home-title",
-];
+const REORDERED_CHILDREN = ["home-login", "home-title"];
 
 test("並べ替えたあとに Ctrl+Z を押すと並びが元に戻る", async () => {
   await renderOpenedDocument();
