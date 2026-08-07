@@ -7,6 +7,7 @@ import {
   TokenSection,
 } from "@/features/editor/domains/token-control";
 import type { TokenTemplate } from "@/features/editor/domains/token-template";
+import { SetEx } from "@/utils/SetEx";
 
 /** 見本の枠。値を持たない種別でも同じ幅を空けて、名前の左端を揃える。 */
 const PREVIEW_WIDTH_PX = 20;
@@ -16,14 +17,6 @@ const PREVIEW_WIDTH_PX = 20;
  * どの枝を畳んでいるかは編集ではなく見え方なので、ドキュメントの状態には持たない。
  */
 type OpenKinds = ReadonlySet<TokenKind>;
-
-function toggled(openKinds: OpenKinds, kind: TokenKind): OpenKinds {
-  const next = new Set(openKinds);
-  if (!next.delete(kind)) {
-    next.add(kind);
-  }
-  return next;
-}
 
 /** 値の見本。値そのものは行の文字として出ているので、飾りとして読み上げから外す。 */
 function PreviewSlot({ preview }: Readonly<{ preview: TokenPreview }>) {
@@ -185,7 +178,7 @@ export function TokenList({
               section={section}
               isOpen={isOpen}
               onToggle={() =>
-                setOpenKinds((current) => toggled(current, section.kind))
+                setOpenKinds((current) => SetEx.toggle(current, section.kind))
               }
               onAdd={onAddToken}
             />

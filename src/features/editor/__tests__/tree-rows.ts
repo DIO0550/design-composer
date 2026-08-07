@@ -9,15 +9,20 @@ import { within } from "@testing-library/react";
  * 読み上げ名（`aria-label`）から読む。
  */
 
-/** 並べ替えボタンのラベル。名前の行と区別するために使う。 */
-const REORDER_LABEL = /を(上|下)へ$/;
-
+/**
+ * 行かどうかは `aria-current` を持つかで見る。ツリーの中には行以外のボタン
+ * （並べ替え・開閉）も並ぶが、選択の対象になるのは行だけなので、ボタンが増えても
+ * この判定は変わらない（React は `aria-*` の真偽値を `"false"` としても書き出すため、
+ * 選択されていない行にも属性が出る）。
+ *
+ * 危ないのは逆で、**行ではないのに選択の対象になるボタン**をツリーの中へ足すと、
+ * ここが黙ってそれを行として拾う（テストは落ちず、期待値を書き換えて通してしまう）。
+ * そうなったら、行そのものに役割を宣言して引く形へ変えること。
+ */
 function rows(tree: HTMLElement): readonly HTMLElement[] {
   return within(tree)
     .getAllByRole("button")
-    .filter(
-      (button) => !REORDER_LABEL.test(button.getAttribute("aria-label") ?? ""),
-    );
+    .filter((button) => button.hasAttribute("aria-current"));
 }
 
 function nameOf(row: HTMLElement): string {
