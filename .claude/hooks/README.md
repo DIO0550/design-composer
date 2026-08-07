@@ -15,6 +15,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `pre-push-typecheck.sh`  | `PreToolUse` (Bash)       | **push 前の型チェック**。`pnpm run typecheck`(tsc -b)でエラーがあれば push をブロック    |
 | `pre-push-lint.sh`       | `PreToolUse` (Bash)       | **push 前の全体 lint**。oxlint / Biome のエラーがあれば push をブロック                   |
 | `pre-push-test-rules.sh` | `PreToolUse` (Bash)       | **push 前の全体テスト規約検査**。全 `*.test.ts(x)` を検査し違反があれば push をブロック   |
+| `post-merge-review.sh`   | `PostToolUse` (Bash/MCP)  | **マージ後の振り返りの提示**。PR のマージを検知し、Issue への追記と評価の記録を促す       |
 
 ## 移植元から見送ったもの
 
@@ -36,6 +37,8 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
   - ファイル単位: `// @test-rules-disable [no-describe|no-conditional|file-naming ...]`(引数なしで全ルール無効化)
   - プロジェクト単位: 最寄りの `.test-rules.yml` に `<ルール名>: false` を記載
 - `pre-push-typecheck.sh` / `pre-push-lint.sh` は node_modules 未インストール時(ツールが実行不能な場合)は黙ってスキップする
+- `post-merge-review.sh` はマージを**ブロックしない**(`additionalContext` を返すだけ)。マージは人の判断で行われるので、記録が無いことを理由に止めても記録の質は上がらないため
+  - 検知対象は `mcp__github__merge_pull_request` と `gh pr merge` のみ。素の `git merge` は見ない(ベースブランチの取り込みで日常的に走るため、拾うと誤発火のほうが多くなる)
 
 ## 動作確認
 
@@ -46,3 +49,22 @@ echo '{"tool_input":{"command":"npx create-vite"}}' | bash .claude/hooks/block-n
 # 許可されること(出力なし・exit 0)
 echo '{"tool_input":{"command":"pnpm run lint"}}' | bash .claude/hooks/block-npx.sh
 ```
+
+```bash
+# 振り返りが提示されること(additionalContext が出力される)
+echo '{"tool_name":"mcp__github__merge_pull_request","tool_input":{"pullNumber":115},"tool_response":{}}' \
+  | bash .claude/hooks/post-merge-review.sh
+
+# 提示されないこと(出力なし・exit 0)
+echo '{"tool_name":"Bash","tool_input":{"command":"git merge origin/main"},"tool_response":{}}' \
+  | bash .claude/hooks/post-merge-review.sh
+```
+
+## 関連するスキル
+
+| スキル                                | 内容                                                                   |
+| ------------------------------------- | ---------------------------------------------------------------------- |
+| `.claude/skills/implementation-flow/` | 実装の手順(計画・サブエージェントによる検証・Issue への記録・マージ後の追記) |
+| `.claude/skills/harness-growth/`      | マージ後の評価記録と、規約 / フックの改善(`.claude/harness/records/`)   |
+
+`post-merge-review.sh` はこの2つのスキルへの入口として働く。
