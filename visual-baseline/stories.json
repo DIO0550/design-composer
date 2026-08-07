@@ -118,5 +118,30 @@
     "id": "features-editor-propertypanel--text-selected",
     "title": "features/editor/PropertyPanel",
     "name": "Text ノードを選択中"
+  },
+  {
+    "id": "features-editor-tokeneditor--color-selected",
+    "title": "features/editor/TokenEditor",
+    "name": "色トークンを選択中"
+  },
+  {
+    "id": "features-editor-tokeneditor--default",
+    "title": "features/editor/TokenEditor",
+    "name": "選択されていない"
+  },
+  {
+    "id": "features-editor-tokeneditor--spacing-selected",
+    "title": "features/editor/TokenEditor",
+    "name": "間隔トークンを選択中"
+  },
+  {
+    "id": "features-editor-tokenlist--color-selected",
+    "title": "features/editor/TokenList",
+    "name": "色トークンを選択中"
+  },
+  {
+    "id": "features-editor-tokenlist--default",
+    "title": "features/editor/TokenList",
+    "name": "colors だけが開いている"
   }
 ]
