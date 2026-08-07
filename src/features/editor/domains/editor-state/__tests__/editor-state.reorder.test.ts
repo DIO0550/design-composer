@@ -23,10 +23,9 @@ function setupState(): EditorState {
 }
 
 function childNames(state: EditorState): readonly string[] {
-  const artboard = Option.unwrap(
-    DesignDocument.findArtboard(EditorState.document(state), "home"),
-  );
-  return artboard.children.map((child) => child.name);
+  return Option.unwrap(
+    DesignDocument.findChildren(EditorState.document(state), "home"),
+  ).map((child) => child.name);
 }
 
 test("子を1つ前の位置へ動かすと兄弟の並びがその順序に変わる", () => {

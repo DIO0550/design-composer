@@ -289,29 +289,40 @@ export const DesignDocument = {
   },
 
   /**
+   * 名前で指したもの（artboard またはノード）の子の並び。
+   *
+   * artboard は常に子を持てるので必ず並びを持つ。子を持てないノード（Text・参照ノード）と
+   * ドキュメントに無い名前は「子の並びが無い」ので `none`。
+   * 「子を持てない」（`none`）と「子が 0 件」（`some([])`）は別のことなので区別する。
+   */
+  findChildren(
+    document: DesignDocument,
+    name: string,
+  ): Option<readonly Node[]> {
+    const artboard = DesignDocument.findArtboard(document, name);
+    if (artboard.some) {
+      return Option.some(artboard.value.children);
+    }
+    return Option.flatMap(DesignDocument.findNode(document, name), (node) =>
+      NodeTree.allowsChildren(node)
+        ? Option.some(Node.children(node))
+        : Option.none,
+    );
+  },
+
+  /**
    * その名前のものの子として足すときの位置（並びの末尾）。
    *
-   * artboard は常に子を持てるので必ず位置を持つ。子を持てないノード（Text・参照ノード）と
-   * ドキュメントに無い名前は「足せる位置が無い」ので `none`。
+   * 足せるかどうかは子の並びを持つかどうかと同じなので `findChildren` に乗せる。
    * 挿入の可否は木の形で決まるためここが答え、UI が `allowsChildren` を見に行かない（#39）。
    */
   appendPositionOf(
     document: DesignDocument,
     parentName: string,
   ): Option<ChildPosition> {
-    const artboard = DesignDocument.findArtboard(document, parentName);
-    if (artboard.some) {
-      return Option.some({
-        parentName,
-        index: artboard.value.children.length,
-      });
-    }
-    return Option.flatMap(
-      DesignDocument.findNode(document, parentName),
-      (node) =>
-        NodeTree.allowsChildren(node)
-          ? Option.some({ parentName, index: Node.children(node).length })
-          : Option.none,
+    return Option.map(
+      DesignDocument.findChildren(document, parentName),
+      (children) => ({ parentName, index: children.length }),
     );
   },
 

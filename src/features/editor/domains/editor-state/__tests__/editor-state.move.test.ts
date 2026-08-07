@@ -1,6 +1,5 @@
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
-import { Node } from "@/domains/node";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 
@@ -28,17 +27,9 @@ function setupState(): EditorState {
 
 /** 名前で指した親の子の並び。artboard もノードも「子を持つもの」として同じに見る。 */
 function childNames(state: EditorState, parentName: string): readonly string[] {
-  const artboard = DesignDocument.findArtboard(
-    EditorState.document(state),
-    parentName,
-  );
-  return artboard.some
-    ? artboard.value.children.map((child) => child.name)
-    : Node.children(
-        Option.unwrap(
-          DesignDocument.findNode(EditorState.document(state), parentName),
-        ),
-      ).map((child) => child.name);
+  return Option.unwrap(
+    DesignDocument.findChildren(EditorState.document(state), parentName),
+  ).map((child) => child.name);
 }
 
 test("別の親の下へ移すとその親の指定した位置の子になる", () => {

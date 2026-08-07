@@ -1,3 +1,4 @@
+import { screen } from "@testing-library/react";
 import { ELEMENT_NAME_ATTRIBUTE } from "@/domains/compiled-element";
 import { ArrayEx } from "@/utils/ArrayEx";
 
@@ -14,6 +15,11 @@ const HIGHLIGHTED_NAME_PATTERN = new RegExp(
   `\\[${ELEMENT_NAME_ATTRIBUTE}="(.*?)"\\]`,
   "g",
 );
+
+/** キャンバスの中身（コンパイル結果を流し込む器）。 */
+export function canvasContent(): HTMLElement {
+  return screen.getByTestId("canvas-content");
+}
 
 export function renderedElement(canvas: HTMLElement, name: string): Element {
   const element = canvas.querySelector(`[${ELEMENT_NAME_ATTRIBUTE}="${name}"]`);

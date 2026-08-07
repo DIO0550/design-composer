@@ -4,6 +4,7 @@ import { expect, test, vi } from "vitest";
 import { ELEMENT_NAME_ATTRIBUTE } from "@/domains/compiled-element";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import {
+  canvasContent,
   highlightedNames,
   renderedElement,
 } from "@/features/editor/__tests__/canvas-elements";
@@ -24,10 +25,6 @@ function setupState(
 }
 
 /** キャンバスの中身が載る領域（強調の規則も描かれた要素もこの中に出る）。 */
-function canvasContent(): HTMLElement {
-  return screen.getByTestId("canvas-content");
-}
-
 function setupHomeArtboard(): EditorState {
   return setupState([
     {

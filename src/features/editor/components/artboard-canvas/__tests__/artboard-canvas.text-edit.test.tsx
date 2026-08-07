@@ -2,6 +2,10 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
 import { PropEdit } from "@/domains/node";
+import {
+  canvasContent,
+  renderedElement,
+} from "@/features/editor/__tests__/canvas-elements";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import type { CanvasBounds } from "@/features/editor/domains/node-drop";
 import { ArtboardCanvas } from "../index";
@@ -34,11 +38,7 @@ function setupState(selectedName?: string): EditorState {
 
 /** キャンバスに描かれている、名前で指した要素。 */
 function drawn(name: string): Element {
-  const element = document.querySelector(`[data-name="${name}"]`);
-  if (element === null) {
-    throw new Error(`"${name}" がキャンバスに描かれていない`);
-  }
-  return element;
+  return renderedElement(canvasContent(), name);
 }
 
 /**
