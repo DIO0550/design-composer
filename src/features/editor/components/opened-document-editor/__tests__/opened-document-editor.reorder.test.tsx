@@ -16,7 +16,7 @@ test("ツリービューで子を下へ動かすと兄弟の並びがその順�
   );
 
   expect(treeRowNames(tree()).slice(1, 3)).toEqual([
-    "home-login（primary-button のインスタンス）",
+    "home-login",
     "home-title",
   ]);
 });

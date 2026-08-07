@@ -45,7 +45,7 @@ test("編集した内容が自動保存され、開き直すとその状態が�
   await clickOpen();
 
   expect(treeRowNames(tree()).slice(1, 3)).toEqual([
-    "home-login（primary-button のインスタンス）",
+    "home-login",
     "home-title",
   ]);
 });

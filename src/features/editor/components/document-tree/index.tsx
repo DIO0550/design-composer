@@ -1,5 +1,11 @@
+import type { Artboard } from "@/domains/artboard";
 import type { ChildPosition } from "@/domains/child-position";
-import { Node } from "@/domains/node";
+import { Node, type PrimitiveNode } from "@/domains/node";
+import {
+  PrimitiveSchema,
+  type PrimitiveType,
+  type TEXT_SCHEMA,
+} from "@/domains/primitive-schema";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
@@ -7,6 +13,99 @@ import { Option } from "@/utils/Option";
 /** 1 段ぶんの字下げ幅と、行の左端の余白（px）。 */
 const INDENT_WIDTH_PX = 12;
 const ROW_PADDING_PX = 8;
+
+/** 文言を読む prop。Text のスキーマが宣言している名前に限る。 */
+const CONTENT_PROP = "content" satisfies keyof typeof TEXT_SCHEMA.props;
+
+/**
+ * 行が表す対象の種別。UI 案（docs/Design Composer.html）は artboard・プリミティブ・
+ * 部品インスタンスをそれぞれ別のアイコンで描き分ける。
+ *
+ * プリミティブの綴りを直接並べず `PrimitiveType` から導出するのは、primitive が
+ * 増えたときにアイコンの取りこぼしをコンパイルエラーにするため。
+ */
+type TreeItemKind = "artboard" | PrimitiveType | "instance";
+
+/** 名前の左に出す型アイコン。字面と色の対で 1 つの種別を表す。 */
+type TypeGlyph = Readonly<{ symbol: string; className: string }>;
+
+/**
+ * 種別ごとの型アイコン。字面・色はいずれも UI 案の default 状態から採った値で、
+ * Tailwind の色名に対応するものが無いため実際の色をそのまま書いている。
+ */
+const TYPE_GLYPHS = {
+  artboard: { symbol: "▢", className: "text-[#0d99ff]" },
+  Box: { symbol: "□", className: "text-[#00a0a0]" },
+  Text: { symbol: "T", className: "font-bold text-[#c67c00]" },
+  instance: { symbol: "◆", className: "text-[#8b5cf6]" },
+} as const satisfies Readonly<Record<TreeItemKind, TypeGlyph>>;
+
+/**
+ * 名前の右に出す補助情報。何を出すかは種別ごとに違い、出どころも違う
+ * （大きさは artboard 自身が、文言は props が持つ）ので、種別と値を対で持つ。
+ */
+type TreeItemNote =
+  | Readonly<{ kind: "size"; width: number; height: number }>
+  | Readonly<{ kind: "content"; text: string }>
+  | Readonly<{ kind: "instance" }>;
+
+/**
+ * 行が名前の左右に出すもの。アイコンと補助情報はどちらも同じ種別から決まるため、
+ * 種別の判定を 2 度行わずに済むよう 1 つにまとめて求める。
+ */
+type TreeItemMarks = Readonly<{
+  glyph: Option<TypeGlyph>;
+  note: Option<TreeItemNote>;
+}>;
+
+/**
+ * Text の行に出す文言。空の文言では引用符だけが残るので出さない
+ * （UI 案でも文言を持たない Text の行には補助情報が無い）。
+ *
+ * 既定値の解決を挟まないのは、`content` の既定が空文字で、解決しても
+ * 出るものが変わらないため。
+ */
+function contentNote(node: PrimitiveNode): Option<TreeItemNote> {
+  const content = node.props?.[CONTENT_PROP];
+  if (content === undefined || content === "") {
+    return Option.none;
+  }
+  return Option.some({ kind: "content", text: String(content) });
+}
+
+/** プリミティブが出すもの。文言を持つのは Text だけで、Box には補助情報が無い。 */
+function primitiveMarks(node: PrimitiveNode): TreeItemMarks {
+  if (!PrimitiveSchema.isPrimitiveType(node.type)) {
+    // UI 案に無い type にはアイコンを当てず、種別が分からないことをそのまま出す
+    return { glyph: Option.none, note: Option.none };
+  }
+  return {
+    glyph: Option.some(TYPE_GLYPHS[node.type]),
+    note: node.type === "Text" ? contentNote(node) : Option.none,
+  };
+}
+
+function nodeMarks(node: Node): TreeItemMarks {
+  if (Node.isRef(node)) {
+    return {
+      glyph: Option.some(TYPE_GLYPHS.instance),
+      note: Option.some({ kind: "instance" }),
+    };
+  }
+  return primitiveMarks(node);
+}
+
+/** artboard は自分が持つ幅・高さを出す（UI 案の `720×900`）。 */
+function artboardMarks(artboard: Artboard): TreeItemMarks {
+  return {
+    glyph: Option.some(TYPE_GLYPHS.artboard),
+    note: Option.some({
+      kind: "size",
+      width: artboard.width,
+      height: artboard.height,
+    }),
+  };
+}
 
 /**
  * ツリーのどの行でも同じ値。行ごとに props を積み増さないため 1 つにまとめる
@@ -38,46 +137,80 @@ function moveTargetIndex(
     : Option.none;
 }
 
-/** 参照ノードは部品のインスタンス（docs/06-ui.md）。どの部品の実体かを行に出す。 */
-function instanceBadge(node: Node): Option<string> {
-  return Node.isRef(node)
-    ? Option.some(`（${node.ref} のインスタンス）`)
-    : Option.none;
+function NoteText({ note }: Readonly<{ note: TreeItemNote }>) {
+  /*
+   * 補助情報は行の右端に出る（UI 案では名前と離れた位置に出る）。
+   * 幅を半分までに抑えて自身も省略するのは、長い文言が名前を押し出さないため
+   * （行が何のものかは名前で読むので、削るならまず補助情報を削る）。
+   */
+  const className = "min-w-0 max-w-1/2 truncate text-gray-400 text-xs";
+
+  switch (note.kind) {
+    case "size":
+      return (
+        <span aria-hidden="true" className={className}>
+          {note.width}×{note.height}
+        </span>
+      );
+    case "content":
+      return (
+        <span aria-hidden="true" className={`${className} italic`}>
+          "{note.text}"
+        </span>
+      );
+    case "instance":
+      return (
+        <span aria-hidden="true" className={className}>
+          inst
+        </span>
+      );
+  }
 }
 
 /**
  * 名前で選ぶ行。artboard もノードも「名前で選ぶ」点は同じなので 1 つで描く。
  * 字下げ幅は深さで決まる値でクラス名に固定できないため、インラインスタイルで与える。
+ *
+ * 型アイコンと補助情報を `aria-hidden` にしたうえで `aria-label` に名前を置くのは、
+ * 選ぶ対象がノードの名前だからで、こうしないと読み上げ名が「▢ home 360×240」のように
+ * 装飾を含んだ文字列になる。
  */
 function SelectableRow({
   name,
-  badge,
+  marks,
   depth,
   handlers,
 }: Readonly<{
   name: string;
-  badge: Option<string>;
+  marks: TreeItemMarks;
   depth: number;
   handlers: TreeHandlers;
 }>) {
   return (
     <button
       type="button"
+      aria-label={name}
       aria-current={EditorState.isSelected(handlers.state, name)}
       onClick={() => handlers.onSelect(name)}
       style={{
         paddingInlineStart: `${ROW_PADDING_PX + depth * INDENT_WIDTH_PX}px`,
       }}
-      className="flex min-w-0 flex-1 flex-col items-start rounded py-1 pr-2 text-left hover:bg-gray-100 aria-[current=true]:bg-blue-100 aria-[current=true]:text-blue-900"
+      className="flex min-w-0 flex-1 items-center gap-1.5 rounded py-1 pr-2 text-left hover:bg-gray-100 aria-[current=true]:bg-blue-100 aria-[current=true]:text-blue-900"
     >
-      <span className="max-w-full truncate">{name}</span>
-      {/*
-        参照先は名前の下に置き、折り返して全部出す。横に並べると幅の狭いペインで
-        名前が先に削られ、省略するとどの部品の実体かが読めなくなる。
-      */}
-      {badge.some ? (
-        <span className="max-w-full text-gray-500 text-xs">{badge.value}</span>
+      {marks.glyph.some ? (
+        <span
+          aria-hidden="true"
+          className={`shrink-0 ${marks.glyph.value.className}`}
+        >
+          {marks.glyph.value.symbol}
+        </span>
       ) : null}
+      {/*
+        名前が余りを占め、補助情報はその右に出る。flex の子は既定で内容幅より
+        縮まないため、省略には min-w-0 が要る。
+      */}
+      <span className="min-w-0 flex-1 truncate">{name}</span>
+      {marks.note.some ? <NoteText note={marks.note.value} /> : null}
     </button>
   );
 }
@@ -154,7 +287,7 @@ function NodeRow({
     <div className="flex items-center gap-1 pr-1">
       <SelectableRow
         name={node.name}
-        badge={instanceBadge(node)}
+        marks={nodeMarks(node)}
         depth={depth}
         handlers={handlers}
       />
@@ -246,7 +379,7 @@ export function DocumentTree({
               <div className="flex items-center gap-1 pr-1">
                 <SelectableRow
                   name={artboard.name}
-                  badge={Option.none}
+                  marks={artboardMarks(artboard)}
                   depth={0}
                   handlers={handlers}
                 />
