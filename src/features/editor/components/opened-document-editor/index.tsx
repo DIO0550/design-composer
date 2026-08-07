@@ -1,6 +1,8 @@
+import { useState } from "react";
 import type { AxisLength } from "@/domains/axis-length";
 import type { ChildPosition } from "@/domains/child-position";
 import type { PropEdit } from "@/domains/node";
+import type { TokenRef, TokenValue } from "@/domains/token";
 import { ArtboardCanvas } from "@/features/editor/components/artboard-canvas";
 import { ComponentList } from "@/features/editor/components/component-list";
 import { DocumentErrorList } from "@/features/editor/components/document-error-list";
@@ -11,11 +13,19 @@ import {
   EditorProvider,
   useEditor,
 } from "@/features/editor/components/editor-provider";
+import {
+  LEFT_PANE_TABS,
+  type LeftPaneTab,
+  LeftPaneTabs,
+} from "@/features/editor/components/left-pane-tabs";
 import { NodeEditToolbar } from "@/features/editor/components/node-edit-toolbar";
 import { PropertyPanel } from "@/features/editor/components/property-panel";
+import { TokenEditor } from "@/features/editor/components/token-editor";
+import { TokenList } from "@/features/editor/components/token-list";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import type { NodeTemplate } from "@/features/editor/domains/node-template";
 import type { OpenedDocument } from "@/features/editor/domains/opened-document";
+import type { TokenTemplate } from "@/features/editor/domains/token-template";
 import { useAutoSave } from "@/features/editor/hooks/use-auto-save";
 import { useCopyShortcut } from "@/features/editor/hooks/use-copy-shortcut";
 import { useDeleteShortcut } from "@/features/editor/hooks/use-delete-shortcut";
@@ -78,6 +88,29 @@ function EditorPanes() {
   const redo = () => dispatch({ type: "redo" });
   const isInsertEnabled = EditorState.insertPosition(state).some;
   const isRemoveEnabled = EditorState.removableName(state).some;
+  /**
+   * トークンの編集（docs/06-ui.md「編集操作の一覧」の tokens 編集 / #42）。
+   * 対象は選択中のトークンなので、値・名前・削除はどれも対象を受け取らない。
+   */
+  const selectToken = (ref: TokenRef) =>
+    dispatch({ type: "select_token", ref });
+  const addToken = (template: TokenTemplate) =>
+    dispatch({ type: "add_token", template });
+  const setTokenValue = (value: TokenValue) =>
+    dispatch({ type: "set_token_value", value });
+  const renameToken = (name: string) =>
+    dispatch({ type: "rename_token", name });
+  const removeToken = () => dispatch({ type: "remove_token" });
+
+  /**
+   * 左ペインが何を映しているか（UI 案 docs/Design Composer.html のタブ）。
+   * 右ペインに出すのもこれで決まる（Layers ならプロパティ、Tokens ならトークン編集）。
+   * 編集とは連動しない表示だけの状態なので `EditorState` には持たせない。
+   */
+  const [leftPaneTab, setLeftPaneTab] = useState<LeftPaneTab>(
+    LEFT_PANE_TABS.layers,
+  );
+  const isTokensTab = leftPaneTab === LEFT_PANE_TABS.tokens;
 
   /** 削除はボタンとキーボードの両方から届く（どちらも選択中のものを消す）。 */
   useDeleteShortcut(removeNode);
@@ -89,24 +122,35 @@ function EditorPanes() {
   return (
     <EditorLayout>
       <EditorLayout.LeftPane>
-        <NodeEditToolbar
-          isInsertEnabled={isInsertEnabled}
-          isRemoveEnabled={isRemoveEnabled}
-          onInsert={insertNode}
-          onRemove={removeNode}
-        />
-        <DocumentTree
-          state={state}
-          onSelect={selectNode}
-          onReorder={reorderNode}
-        />
-        <ComponentList
-          components={EditorState.document(state).components}
-          isInsertEnabled={isInsertEnabled}
-          onInsert={(componentName) =>
-            insertNode({ kind: "instance", componentName })
-          }
-        />
+        <LeftPaneTabs current={leftPaneTab} onSelect={setLeftPaneTab} />
+        {isTokensTab ? (
+          <TokenList
+            state={state}
+            onSelectToken={selectToken}
+            onAddToken={addToken}
+          />
+        ) : (
+          <>
+            <NodeEditToolbar
+              isInsertEnabled={isInsertEnabled}
+              isRemoveEnabled={isRemoveEnabled}
+              onInsert={insertNode}
+              onRemove={removeNode}
+            />
+            <DocumentTree
+              state={state}
+              onSelect={selectNode}
+              onReorder={reorderNode}
+            />
+            <ComponentList
+              components={EditorState.document(state).components}
+              isInsertEnabled={isInsertEnabled}
+              onInsert={(componentName) =>
+                insertNode({ kind: "instance", componentName })
+              }
+            />
+          </>
+        )}
       </EditorLayout.LeftPane>
       <EditorLayout.CenterPane>
         <ArtboardCanvas
@@ -119,11 +163,20 @@ function EditorPanes() {
         <DocumentErrorList errors={state.errors} />
       </EditorLayout.CenterPane>
       <EditorLayout.RightPane>
-        <PropertyPanel
-          state={state}
-          onEditProp={editProp}
-          onClearSelection={() => dispatch({ type: "clear_selection" })}
-        />
+        {isTokensTab ? (
+          <TokenEditor
+            state={state}
+            onSetTokenValue={setTokenValue}
+            onRenameToken={renameToken}
+            onRemoveToken={removeToken}
+          />
+        ) : (
+          <PropertyPanel
+            state={state}
+            onEditProp={editProp}
+            onClearSelection={() => dispatch({ type: "clear_selection" })}
+          />
+        )}
       </EditorLayout.RightPane>
     </EditorLayout>
   );

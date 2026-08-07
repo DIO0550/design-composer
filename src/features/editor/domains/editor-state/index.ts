@@ -2,10 +2,12 @@ import type { AxisLength } from "@/domains/axis-length";
 import { ChildPosition } from "@/domains/child-position";
 import { DesignDocument } from "@/domains/design-document";
 import type { Node, PropEdit } from "@/domains/node";
+import { Token, type TokenRef, TokenSet, TokenValue } from "@/domains/token";
 import type { DocumentError } from "@/features/editor/domains/document-error";
 import type { DocumentReload } from "@/features/editor/domains/document-reload";
 import { EditHistory } from "@/features/editor/domains/edit-history";
 import { NodeTemplate } from "@/features/editor/domains/node-template";
+import { TokenTemplate } from "@/features/editor/domains/token-template";
 import { Option } from "@/utils/Option";
 
 /**
@@ -26,9 +28,23 @@ import { Option } from "@/utils/Option";
 export type EditorState = Readonly<{
   history: EditHistory;
   selectedName: Option<string>;
+  selectedToken: Option<TokenRef>;
   copiedNode: Option<Node>;
   errors: readonly DocumentError[];
 }>;
+
+/**
+ * 選択中のトークン。ドキュメントから消えていれば選択は無い。
+ * `selectedName` と同時に立っていてよい。左ペインのタブ（Layers / Tokens）が
+ * どちらを右ペインに映すかを決めるので、2 つは「それぞれのタブの中の選択」であって
+ * 矛盾しないため（UI 案 docs/Design Composer.html の tokens 状態）。
+ */
+function selectableToken(
+  document: DesignDocument,
+  ref: TokenRef,
+): Option<TokenRef> {
+  return Option.map(TokenSet.find(document.tokens, ref), Token.ref);
+}
 
 /**
  * 選択できるのはキャンバスに描かれるもの、つまり artboard とその配下のノードに限る。
@@ -70,6 +86,9 @@ function withHistory(state: EditorState, history: EditHistory): EditorState {
     selectedName: Option.flatMap(state.selectedName, (name) =>
       selectableName(history.present, name),
     ),
+    selectedToken: Option.flatMap(state.selectedToken, (ref) =>
+      selectableToken(history.present, ref),
+    ),
   };
 }
 
@@ -87,6 +106,7 @@ export const EditorState = {
     return {
       history: EditHistory.create(document),
       selectedName: Option.none,
+      selectedToken: Option.none,
       copiedNode: Option.none,
       errors: [],
     };
@@ -380,5 +400,124 @@ export const EditorState = {
 
   isSelected(state: EditorState, name: string): boolean {
     return state.selectedName.some && state.selectedName.value === name;
+  },
+
+  /** そのトークンが選択中か。名前は種別の中でしか一意でないので種別も見る。 */
+  isTokenSelected(state: EditorState, ref: TokenRef): boolean {
+    const selected = state.selectedToken;
+    return (
+      selected.some &&
+      selected.value.kind === ref.kind &&
+      selected.value.name === ref.name
+    );
+  },
+
+  /**
+   * 編集するトークンを選ぶ（docs/06-ui.md「編集操作の一覧」の tokens 編集）。
+   * ドキュメントに無いトークンは選択状態にしない（`select` と同じ理由で、
+   * 「存在しないものが選択されている」状態を作らない）。
+   */
+  selectToken(state: EditorState, ref: TokenRef): EditorState {
+    return {
+      ...state,
+      selectedToken: selectableToken(EditorState.document(state), ref),
+    };
+  },
+
+  /** 選択中のトークン。ドキュメントから引き直すので、値は常に現在のもの。 */
+  selectedToken(state: EditorState): Option<Token> {
+    return Option.flatMap(state.selectedToken, (ref) =>
+      TokenSet.find(EditorState.document(state).tokens, ref),
+    );
+  },
+
+  /**
+   * トークンを追加し、そのまま編集できるよう選択する。
+   *
+   * 名前は呼び出し側が決めず、種別の中で衝突しない名前をここで採る。
+   * 追加のボタンが渡せるのは「どの種別に足すか」だけで、名前の一意性は
+   * ドキュメントを見ないと決まらないため（挿入時の採番と同じ扱い）。
+   * 追加できない指定（規則を満たさない基底名）は「その追加が存在しない」ことなので `none`。
+   */
+  addToken(state: EditorState, template: TokenTemplate): Option<EditorState> {
+    const document = EditorState.document(state);
+    const token = TokenTemplate.toToken(
+      template,
+      new Set(TokenSet.names(document.tokens, template.kind)),
+    );
+    const added = DesignDocument.addToken(document, token);
+    return added.ok
+      ? Option.some(
+          EditorState.selectToken(
+            withEdit(state, added.value),
+            Token.ref(token),
+          ),
+        )
+      : Option.none;
+  },
+
+  /**
+   * 選択中のトークンの値を差し替える。
+   *
+   * 対象を引数で受け取らず選択から決めるのは `applyPropEdit` と同じ理由で、
+   * トークンの編集欄が出るのが選択中のトークンだけだから。
+   * 値だけを受け取り名前は選択から取るので、「選択していないトークンを編集する」
+   * 状態を呼び出し側が作れない。
+   */
+  setTokenValue(state: EditorState, value: TokenValue): Option<EditorState> {
+    return Option.flatMap(EditorState.selectedToken(state), (token) => {
+      const replaced = DesignDocument.replaceToken(
+        EditorState.document(state),
+        TokenValue.toToken(value, token.name),
+      );
+      return replaced.ok
+        ? Option.some(withEdit(state, replaced.value))
+        : Option.none;
+    });
+  },
+
+  /**
+   * 選択中のトークンの名前を変える。
+   *
+   * 選択は新しい名前へ移す。`withEdit` は消えた名前の選択を落とすので、
+   * そのままだと改名のたびに編集欄が閉じてしまうため。
+   * 名前が規則を満たさない・種別の中で重複するときは `none`（画面は前の名前のまま）。
+   */
+  renameToken(state: EditorState, newName: string): Option<EditorState> {
+    return Option.flatMap(state.selectedToken, (ref) => {
+      const renamed = DesignDocument.renameToken(
+        EditorState.document(state),
+        ref,
+        newName,
+      );
+      if (!renamed.ok) {
+        return Option.none;
+      }
+      return Option.some(
+        EditorState.selectToken(withEdit(state, renamed.value), {
+          kind: ref.kind,
+          name: newName,
+        }),
+      );
+    });
+  },
+
+  /**
+   * 選択中のトークンを削除する（docs/06-ui.md「編集操作の一覧」の tokens 編集）。
+   *
+   * 使用中でも消せる。残った参照は dangling 参照として通常のバリデーションエラーに
+   * なるので、削除の側で特別扱いしない（docs/04-tokens.md「スキーマデフォルトとの関係」）。
+   * 消したトークンは新しいドキュメントに無いので、選択は `withHistory` で外れる。
+   */
+  removeToken(state: EditorState): Option<EditorState> {
+    return Option.flatMap(state.selectedToken, (ref) => {
+      const removed = DesignDocument.removeToken(
+        EditorState.document(state),
+        ref,
+      );
+      return removed.ok
+        ? Option.some(withEdit(state, removed.value))
+        : Option.none;
+    });
   },
 } as const;

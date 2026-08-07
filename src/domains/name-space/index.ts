@@ -1,6 +1,7 @@
 import type { Artboard } from "@/domains/artboard";
 import { ComponentSet } from "@/domains/component";
 import { Node } from "@/domains/node";
+import { CaseStyle } from "@/utils/CaseStyle";
 
 /**
  * ドキュメント全体で一意でなければならない名前の集まり（単一名前空間）。
@@ -10,13 +11,6 @@ import { Node } from "@/domains/node";
  * 重複の検出には出現の重なりが要るため、集合ではなく出現順の並びで持つ。
  */
 export type NameSpace = Readonly<{ names: readonly string[] }>;
-
-/**
- * 名前として使える識別子の規則: kebab-case（使用可能文字は `[a-z0-9-]`）。
- * 先頭・末尾のハイフンと連続ハイフンは許さない。
- * 将来のパス修飾のために予約された `/` `#` `.` はこのパターンで弾かれる。
- */
-const IDENTIFIER_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 /** 使用済みの名前と衝突しない名前を作る。衝突するなら連番を付ける。 */
 function nextAvailableName(
@@ -82,9 +76,15 @@ export const NameSpace = {
     );
   },
 
-  /** その名前が識別子の規則（kebab-case）を満たすか。 */
+  /**
+   * その名前が識別子の規則を満たすか。
+   * 規則は kebab-case そのもので、将来のパス修飾のために予約された `/` `#` `.` は
+   * この綴りで弾かれる（docs/01-file-format.md「ノードの識別（name）」）。
+   * トークン名も同じ規則に従う（docs/04-tokens.md「命名規則」）ため、
+   * 綴りの判定自体は `CaseStyle` に置いて両者で共有する。
+   */
   isValidIdentifier(name: string): boolean {
-    return IDENTIFIER_PATTERN.test(name);
+    return CaseStyle.isKebabCase(name);
   },
 
   /** この名前空間と衝突しない名前。衝突する場合は連番を付ける。 */

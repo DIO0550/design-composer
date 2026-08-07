@@ -6,7 +6,24 @@
  * 語を空白で区切って各語の先頭を大文字にしたものは Capital Case であり、
  * 語を繋げる PascalCase(`PaddingX`)とは別の流儀なので名前を取り違えない。
  */
+/**
+ * kebab-case の綴り。使用可能文字は `[a-z0-9-]` で、
+ * 先頭・末尾のハイフンと連続ハイフンは許さない。
+ */
+const KEBAB_CASE_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
 export const CaseStyle = {
+  /**
+   * kebab-case として綴られているか。
+   *
+   * ドキュメント内の名前（部品名・artboard 名・ノード名・トークン名）はすべて
+   * この流儀に従うが、「どの名前がこの規則に縛られるか」は綴りの流儀ではなく
+   * 名前の側の知識なので、判定だけをここに置いて意味づけは呼び出し側で与える。
+   */
+  isKebabCase(value: string): boolean {
+    return KEBAB_CASE_PATTERN.test(value);
+  },
+
   /**
    * camelCase を Capital Case にする(`paddingX` → `Padding X`)。
    * camelCase では大文字が語の始まりなので、そこへ空白を入れて先頭を大文字にする

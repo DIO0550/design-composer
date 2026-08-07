@@ -10,7 +10,7 @@ import {
 import { NameSpace } from "@/domains/name-space";
 import { Node, PropEdit, type RefNode } from "@/domains/node";
 import { NodeTree, type NodeTreeUpdate } from "@/domains/node-tree";
-import { TokenSet } from "@/domains/token";
+import { type Token, type TokenRef, TokenSet } from "@/domains/token";
 import { ArrayEx } from "@/utils/ArrayEx";
 import type { JsonCursor, JsonDecoded, JsonObject } from "@/utils/Json";
 import { Option } from "@/utils/Option";
@@ -545,6 +545,55 @@ export const DesignDocument = {
       ),
       (artboards) => ({ ...document, artboards }),
     );
+  },
+
+  /**
+   * トークンを追加する（docs/06-ui.md「編集操作の一覧」の tokens 編集）。
+   * 名前の規則と種別内の一意性は `TokenSet` が見るので、ここは
+   * 「ドキュメントのどこを差し替えるか」だけを担う。
+   */
+  addToken(
+    document: DesignDocument,
+    token: Token,
+  ): Result<DesignDocument, DesignDocumentEditError> {
+    return Result.map(TokenSet.add(document.tokens, token), (tokens) => ({
+      ...document,
+      tokens,
+    }));
+  },
+
+  /** トークンの値を差し替える。 */
+  replaceToken(
+    document: DesignDocument,
+    token: Token,
+  ): Result<DesignDocument, DesignDocumentEditError> {
+    return Result.map(TokenSet.replace(document.tokens, token), (tokens) => ({
+      ...document,
+      tokens,
+    }));
+  },
+
+  /** トークンの名前を変える。 */
+  renameToken(
+    document: DesignDocument,
+    ref: TokenRef,
+    newName: string,
+  ): Result<DesignDocument, DesignDocumentEditError> {
+    return Result.map(
+      TokenSet.rename(document.tokens, ref, newName),
+      (tokens) => ({ ...document, tokens }),
+    );
+  },
+
+  /** トークンを削除する。 */
+  removeToken(
+    document: DesignDocument,
+    ref: TokenRef,
+  ): Result<DesignDocument, DesignDocumentEditError> {
+    return Result.map(TokenSet.remove(document.tokens, ref), (tokens) => ({
+      ...document,
+      tokens,
+    }));
   },
 
   /** ドキュメントの単一名前空間で使われている名前。 */
