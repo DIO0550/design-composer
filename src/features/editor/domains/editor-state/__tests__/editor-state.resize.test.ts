@@ -35,7 +35,7 @@ test("選択中のノードの大きさを変えられる", () => {
   );
 
   const node = Option.unwrap(
-    DesignDocument.findNode(resized.document, "panel"),
+    DesignDocument.findNode(EditorState.document(resized), "panel"),
   );
   expect(Node.isPrimitive(node) && node.props).toEqual({
     widthMode: "fixed",
@@ -51,7 +51,7 @@ test("選択中の artboard の大きさを変えられる", () => {
   );
 
   const artboard = Option.unwrap(
-    DesignDocument.findArtboard(resized.document, "home"),
+    DesignDocument.findArtboard(EditorState.document(resized), "home"),
   );
   expect(artboard.height).toBe(480);
 });

@@ -1,4 +1,5 @@
 import { NumberEx } from "@/utils/NumberEx";
+import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
 /**
@@ -29,6 +30,24 @@ export const ArrayEx = {
   /** 重複を取り除いた並び。残るのは各値が最初に現れた位置。 */
   distinct<T>(array: readonly T[]): readonly T[] {
     return array.filter((item, index) => array.indexOf(item) === index);
+  },
+
+  first<T>(array: readonly T[]): Option<NonNullable<T>> {
+    return Option.fromNullable(array[0]);
+  },
+
+  last<T>(array: readonly T[]): Option<NonNullable<T>> {
+    return Option.fromNullable(array[array.length - 1]);
+  },
+
+  /** 先頭を除いた並び。空の並びは先頭が無いのでそのまま空。 */
+  dropFirst<T>(array: readonly T[]): readonly T[] {
+    return array.slice(1);
+  },
+
+  /** 末尾を除いた並び。空の並びは末尾が無いのでそのまま空。 */
+  dropLast<T>(array: readonly T[]): readonly T[] {
+    return array.slice(0, -1);
   },
 
   insertAt<T>(

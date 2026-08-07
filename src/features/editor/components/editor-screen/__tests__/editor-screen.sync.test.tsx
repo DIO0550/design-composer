@@ -50,6 +50,41 @@ test("編集した内容が自動保存され、開き直すとその状態が�
   ]);
 });
 
+test("戻した内容も自動保存され、開き直すと戻したあとの状態が読み戻る", async () => {
+  const opened = DocumentJson.serialize(SAMPLE_DOCUMENT);
+  const files = renderEditorScreen(
+    { [PATH]: opened },
+    { open: DialogChoice.chosen(PATH), save: DialogChoice.chosen(OTHER_PATH) },
+  );
+  await clickOpen();
+  await userEvent.click(
+    screen.getByRole("button", { name: "home-title を下へ" }),
+  );
+  // 並べ替えがファイルへ載るまで待つ。載る前に戻すと中身が変わらないため、
+  // 「戻した内容が保存された」ことを見たことにならない。
+  await waitFor(
+    () => {
+      expect(files.contentOf(PATH)).not.toStrictEqual(Option.some(opened));
+    },
+    { timeout: 3000 },
+  );
+
+  await userEvent.keyboard("{Control>}z{/Control}");
+  await waitFor(
+    () => {
+      expect(files.contentOf(PATH)).toStrictEqual(Option.some(opened));
+    },
+    { timeout: 3000 },
+  );
+  await clickCreate();
+  await clickOpen();
+
+  expect(treeRowNames(tree()).slice(1, 3)).toEqual([
+    "home-title",
+    "home-login（primary-button のインスタンス）",
+  ]);
+});
+
 test("開いているファイルが外部から書き換わると、その内容が画面に反映される", async () => {
   const files = renderEditorScreen(
     { [PATH]: artboardContent("home") },

@@ -2,7 +2,7 @@ import { DesignDocument } from "@/domains/design-document";
 import { Node, type PrimitiveNode, PropEdit } from "@/domains/node";
 import type { PrimitiveType, TEXT_SCHEMA } from "@/domains/primitive-schema";
 import { ResolvedProps } from "@/domains/resolved-props";
-import type { EditorState } from "@/features/editor/domains/editor-state";
+import { EditorState } from "@/features/editor/domains/editor-state";
 import type { CanvasBounds } from "@/features/editor/domains/node-drop";
 import { Option } from "@/utils/Option";
 
@@ -35,7 +35,7 @@ function contentOf(node: PrimitiveNode): string {
 /** 選択中のものがインライン編集できる Text なら、その名前と今の文言。 */
 function forSelection(state: EditorState): Option<EditableText> {
   return Option.flatMap(state.selectedName, (name) => {
-    const found = DesignDocument.findNode(state.document, name);
+    const found = DesignDocument.findNode(EditorState.document(state), name);
     if (!found.some) {
       return Option.none;
     }

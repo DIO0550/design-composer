@@ -55,7 +55,7 @@ test("コピーしてもドキュメントは変わらない", () => {
 
   const copied = Option.unwrap(EditorState.copyNode(state));
 
-  expect(copied.document).toEqual(state.document);
+  expect(EditorState.document(copied)).toEqual(EditorState.document(state));
 });
 
 test("artboard を選んでいるときはコピーできない", () => {
@@ -75,7 +75,7 @@ test("コピーしたノードを artboard へ貼ると子の末尾に連番の�
 
   expect(
     Option.unwrap(
-      DesignDocument.findArtboard(pasted.document, "home"),
+      DesignDocument.findArtboard(EditorState.document(pasted), "home"),
     ).children.map((child) => child.name),
   ).toEqual(["title", "body", "title-2"]);
 });
@@ -86,8 +86,9 @@ test("子孫を持つノードを貼ると子孫の名前も付け替わる", ()
   const pasted = Option.unwrap(copyThenPaste(state, "home"));
 
   expect(
-    Option.unwrap(DesignDocument.findArtboard(pasted.document, "home"))
-      .children[2],
+    Option.unwrap(
+      DesignDocument.findArtboard(EditorState.document(pasted), "home"),
+    ).children[2],
   ).toEqual({
     name: "body-2",
     type: "Box",
@@ -100,7 +101,9 @@ test("貼った後もドキュメントは名前の一意性を満たす", () =>
 
   const pasted = Option.unwrap(copyThenPaste(state, "home"));
 
-  expect(DesignDocument.collectErrors(pasted.document)).toEqual([]);
+  expect(DesignDocument.collectErrors(EditorState.document(pasted))).toEqual(
+    [],
+  );
 });
 
 test("同じものを続けて貼ると別々の名前で並ぶ", () => {
@@ -111,7 +114,7 @@ test("同じものを続けて貼ると別々の名前で並ぶ", () => {
 
   expect(
     Option.unwrap(
-      DesignDocument.findArtboard(twice.document, "home"),
+      DesignDocument.findArtboard(EditorState.document(twice), "home"),
     ).children.map((child) => child.name),
   ).toEqual(["title", "body", "title-2", "title-3"]);
 });
@@ -127,7 +130,7 @@ test("コピー元を消してから貼ると元の名前のまま入る", () =>
 
   expect(
     Option.unwrap(
-      DesignDocument.findArtboard(pasted.document, "home"),
+      DesignDocument.findArtboard(EditorState.document(pasted), "home"),
     ).children.map((child) => child.name),
   ).toEqual(["body", "title"]);
 });

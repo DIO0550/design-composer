@@ -15,6 +15,7 @@ import { ElementEx } from "@/utils/ElementEx";
 export type KeyShortcut = Readonly<{
   keys: readonly string[];
   withCommandKey: boolean;
+  withShiftKey: boolean;
 }>;
 
 export const KeyShortcut = {
@@ -23,11 +24,18 @@ export const KeyShortcut = {
    *
    * 修飾キーの有無まで一致を要求する。緩めると Cmd+C が
    * 「修飾なしの c」に割り当てたショートカットまで叩いてしまうため。
+   * Shift も同じ理由で見る。undo（Cmd+Z）と redo（Cmd+Shift+Z）のように
+   * Shift だけが違う組み合わせがあり、見ないと両方に当たる（#41）。
+   *
+   * キーの一致は大小を無視する。Shift を押すと `event.key` は "z" ではなく "Z" になるため。
    */
   matches(shortcut: KeyShortcut, event: KeyboardEvent): boolean {
     return (
-      shortcut.keys.includes(event.key) &&
-      (event.ctrlKey || event.metaKey) === shortcut.withCommandKey
+      shortcut.keys.some(
+        (key) => key.toLowerCase() === event.key.toLowerCase(),
+      ) &&
+      (event.ctrlKey || event.metaKey) === shortcut.withCommandKey &&
+      event.shiftKey === shortcut.withShiftKey
     );
   },
 } as const;

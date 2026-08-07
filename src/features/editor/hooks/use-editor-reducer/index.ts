@@ -25,7 +25,9 @@ export type EditorAction =
   | Readonly<{ type: "copy_node" }>
   | Readonly<{ type: "paste_node" }>
   | Readonly<{ type: "apply_prop_edit"; edit: PropEdit }>
-  | Readonly<{ type: "resize"; size: AxisLength }>;
+  | Readonly<{ type: "resize"; size: AxisLength }>
+  | Readonly<{ type: "undo" }>
+  | Readonly<{ type: "redo" }>;
 
 /** アクションの解釈だけを行い、状態の組み立ては EditorState に委ねる。 */
 function editorReducer(state: EditorState, action: EditorAction): EditorState {
@@ -85,6 +87,15 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
     case "resize":
       // 選択が無ければリサイズは存在しない（EditorState.resize の `none`）。
       return Option.unwrapOr(EditorState.resize(state, action.size), state);
+    case "undo":
+      /*
+       * 戻る先が無ければ状態は変わらない（EditorState.undo の `none`）。
+       * ショートカットはいつでも押せるため、開いた直後に押すとここへ到達する。
+       */
+      return Option.unwrapOr(EditorState.undo(state), state);
+    case "redo":
+      // やり直す先が無ければ状態は変わらない（到達しうる理由は undo と同じ）。
+      return Option.unwrapOr(EditorState.redo(state), state);
   }
 }
 

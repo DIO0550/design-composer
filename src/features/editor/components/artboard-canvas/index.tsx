@@ -520,17 +520,12 @@ export function ArtboardCanvas({
 }>) {
   const { view, surfaceRef, panHandlers, zoomIn, zoomOut, reset } =
     useCanvasView();
-  const nodeDrag = useNodeDrag({
-    document: state.document,
-    onMove: onMoveNode,
-  });
+  const document = EditorState.document(state);
+  const nodeDrag = useNodeDrag({ document, onMove: onMoveNode });
   const nodeResize = useNodeResize({ state, view, onResize });
   const textEdit = useTextEdit({ state, onEditProp });
   const resizeHandles = NodeResize.handles(state);
-  const compiled = useMemo(
-    () => DocumentHtml.compile(state.document),
-    [state.document],
-  );
+  const compiled = useMemo(() => DocumentHtml.compile(document), [document]);
   const dropTarget = NodeDrag.dropTarget(nodeDrag.drag);
 
   return (

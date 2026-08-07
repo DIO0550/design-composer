@@ -4,6 +4,7 @@ import { DesignDocument } from "@/domains/design-document";
 import type { Node, PropEdit } from "@/domains/node";
 import type { DocumentError } from "@/features/editor/domains/document-error";
 import type { DocumentReload } from "@/features/editor/domains/document-reload";
+import { EditHistory } from "@/features/editor/domains/edit-history";
 import { NodeTemplate } from "@/features/editor/domains/node-template";
 import { Option } from "@/utils/Option";
 
@@ -14,12 +15,16 @@ import { Option } from "@/utils/Option";
  * `copiedNode` はアプリ内クリップボード（docs/06-ui.md「編集操作の一覧」の
  * コピー & ペースト）で、選択と同じく非永続・ドキュメント基準なのでここに置く。
  *
- * `document` は常に「最後に正常だったドキュメント」で、外部変更を拒んでも差し替えない。
+ * ドキュメントは `history` の中の `present` として持ち、読むときは `EditorState.document`
+ * を通す。素の `document` フィールドを併置しないのは、`{ ...state, document: x }` と
+ * 書けてしまうと undo の履歴を積み忘れたまま中身だけ差し替わるため（#41）。
+ *
+ * ドキュメントは常に「最後に正常だったドキュメント」で、外部変更を拒んでも差し替えない。
  * `errors` が空でない間は、画面に映っているものがファイルの現在の中身と違う
  * （docs/03-schema.md「不正ファイル時の挙動」）。
  */
 export type EditorState = Readonly<{
-  document: DesignDocument;
+  history: EditHistory;
   selectedName: Option<string>;
   copiedNode: Option<Node>;
   errors: readonly DocumentError[];
@@ -45,8 +50,36 @@ function selectableName(
  */
 function selectedNode(state: EditorState): Option<Node> {
   return Option.flatMap(state.selectedName, (name) =>
-    DesignDocument.findNode(state.document, name),
+    DesignDocument.findNode(EditorState.document(state), name),
   );
+}
+
+/**
+ * 差し替えたドキュメントを 1 つの編集として履歴へ積む。
+ * ドキュメントを差し替える経路をここへ集めることで、編集操作が増えても積み忘れが起きない。
+ */
+function recording(state: EditorState, document: DesignDocument): EditorState {
+  return { ...state, history: EditHistory.record(state.history, document) };
+}
+
+/**
+ * 履歴の移動に選択を追従させる。
+ *
+ * 戻した先・読み直した先に選択中の名前が無いこと（消したノードへの undo をさらに戻す、
+ * 外部編集でノードが消えている等）があるため、`select` と同じく
+ * 「存在しないものが選択されている」状態にはせず選択を外す。
+ */
+function withSelectionIn(
+  state: EditorState,
+  history: EditHistory,
+): EditorState {
+  return {
+    ...state,
+    history,
+    selectedName: Option.flatMap(state.selectedName, (name) =>
+      selectableName(history.present, name),
+    ),
+  };
 }
 
 export const EditorState = {
@@ -56,11 +89,16 @@ export const EditorState = {
    */
   create(document: DesignDocument): EditorState {
     return {
-      document,
+      history: EditHistory.create(document),
       selectedName: Option.none,
       copiedNode: Option.none,
       errors: [],
     };
+  },
+
+  /** 画面に映っているドキュメント（履歴上の現在地）。 */
+  document(state: EditorState): DesignDocument {
+    return state.history.present;
   },
 
   /**
@@ -68,7 +106,10 @@ export const EditorState = {
    * （「存在しないものが選択されている」状態を作らないため、選択が外れる）。
    */
   select(state: EditorState, name: string): EditorState {
-    return { ...state, selectedName: selectableName(state.document, name) };
+    return {
+      ...state,
+      selectedName: selectableName(EditorState.document(state), name),
+    };
   },
 
   /**
@@ -81,7 +122,7 @@ export const EditorState = {
    */
   selectInnermost(state: EditorState, names: readonly string[]): EditorState {
     const innermost = names.find(
-      (name) => selectableName(state.document, name).some,
+      (name) => selectableName(EditorState.document(state), name).some,
     );
     return { ...state, selectedName: Option.fromNullable(innermost) };
   },
@@ -107,11 +148,10 @@ export const EditorState = {
     switch (reload.kind) {
       case "reloaded":
         return {
-          document: reload.document,
-          selectedName: Option.flatMap(state.selectedName, (name) =>
-            selectableName(reload.document, name),
+          ...withSelectionIn(
+            state,
+            EditHistory.record(state.history, reload.document),
           ),
-          copiedNode: state.copiedNode,
           errors: [],
         };
       case "rejected":
@@ -132,9 +172,13 @@ export const EditorState = {
     from: ChildPosition,
     toIndex: number,
   ): Option<EditorState> {
-    const reordered = DesignDocument.reorderNode(state.document, from, toIndex);
+    const reordered = DesignDocument.reorderNode(
+      EditorState.document(state),
+      from,
+      toIndex,
+    );
     return reordered.ok
-      ? Option.some({ ...state, document: reordered.value })
+      ? Option.some(recording(state, reordered.value))
       : Option.none;
   },
 
@@ -156,18 +200,19 @@ export const EditorState = {
     name: string,
     to: ChildPosition,
   ): Option<EditorState> {
-    const current = DesignDocument.findChildPosition(state.document, name);
+    const current = DesignDocument.findChildPosition(
+      EditorState.document(state),
+      name,
+    );
     if (!current.some) {
       return Option.none;
     }
     const moved = DesignDocument.moveNode(
-      state.document,
+      EditorState.document(state),
       name,
       ChildPosition.afterRemoving(to, current.value),
     );
-    return moved.ok
-      ? Option.some({ ...state, document: moved.value })
-      : Option.none;
+    return moved.ok ? Option.some(recording(state, moved.value)) : Option.none;
   },
 
   /**
@@ -180,7 +225,7 @@ export const EditorState = {
    */
   insertPosition(state: EditorState): Option<ChildPosition> {
     return Option.flatMap(state.selectedName, (name) =>
-      DesignDocument.appendPositionOf(state.document, name),
+      DesignDocument.appendPositionOf(EditorState.document(state), name),
     );
   },
 
@@ -222,9 +267,13 @@ export const EditorState = {
   pasteNode(state: EditorState): Option<EditorState> {
     return Option.flatMap(state.copiedNode, (node) =>
       Option.flatMap(EditorState.insertPosition(state), (at) => {
-        const pasted = DesignDocument.insertNodeCopy(state.document, at, node);
+        const pasted = DesignDocument.insertNodeCopy(
+          EditorState.document(state),
+          at,
+          node,
+        );
         return pasted.ok
-          ? Option.some({ ...state, document: pasted.value })
+          ? Option.some(recording(state, pasted.value))
           : Option.none;
       }),
     );
@@ -242,11 +291,15 @@ export const EditorState = {
     return Option.flatMap(EditorState.insertPosition(state), (at) => {
       const node = NodeTemplate.toNode(
         template,
-        DesignDocument.usedNames(state.document),
+        DesignDocument.usedNames(EditorState.document(state)),
       );
-      const inserted = DesignDocument.insertNode(state.document, at, node);
+      const inserted = DesignDocument.insertNode(
+        EditorState.document(state),
+        at,
+        node,
+      );
       return inserted.ok
-        ? Option.some({ ...state, document: inserted.value })
+        ? Option.some(recording(state, inserted.value))
         : Option.none;
     });
   },
@@ -260,10 +313,13 @@ export const EditorState = {
    */
   removeNode(state: EditorState): Option<EditorState> {
     return Option.flatMap(EditorState.removableName(state), (name) => {
-      const removed = DesignDocument.removeNode(state.document, name);
+      const removed = DesignDocument.removeNode(
+        EditorState.document(state),
+        name,
+      );
       return removed.ok
         ? Option.some(
-            EditorState.clearSelection({ ...state, document: removed.value }),
+            EditorState.clearSelection(recording(state, removed.value)),
           )
         : Option.none;
     });
@@ -279,9 +335,13 @@ export const EditorState = {
    */
   applyPropEdit(state: EditorState, edit: PropEdit): Option<EditorState> {
     return Option.flatMap(state.selectedName, (name) => {
-      const edited = DesignDocument.applyPropEdit(state.document, name, edit);
+      const edited = DesignDocument.applyPropEdit(
+        EditorState.document(state),
+        name,
+        edit,
+      );
       return edited.ok
-        ? Option.some({ ...state, document: edited.value })
+        ? Option.some(recording(state, edited.value))
         : Option.none;
     });
   },
@@ -297,11 +357,35 @@ export const EditorState = {
    */
   resize(state: EditorState, size: AxisLength): Option<EditorState> {
     return Option.flatMap(state.selectedName, (name) => {
-      const resized = DesignDocument.resize(state.document, name, size);
+      const resized = DesignDocument.resize(
+        EditorState.document(state),
+        name,
+        size,
+      );
       return resized.ok
-        ? Option.some({ ...state, document: resized.value })
+        ? Option.some(recording(state, resized.value))
         : Option.none;
     });
+  },
+
+  /**
+   * 直前の編集を取り消す（docs/06-ui.md「編集操作の一覧」の undo）。
+   *
+   * 戻る先が無ければ「その取り消しが存在しない」ことなので `none`。
+   * ショートカットはいつでも押せるため、画面の操作からこの `none` には到達する。
+   * クリップボードは引き継ぐ。コピーは切り離された複製で、履歴を戻しても貼れるため。
+   */
+  undo(state: EditorState): Option<EditorState> {
+    return Option.map(EditHistory.undo(state.history), (history) =>
+      withSelectionIn(state, history),
+    );
+  },
+
+  /** 取り消した編集をやり直す（docs/06-ui.md「編集操作の一覧」の redo）。 */
+  redo(state: EditorState): Option<EditorState> {
+    return Option.map(EditHistory.redo(state.history), (history) =>
+      withSelectionIn(state, history),
+    );
   },
 
   isSelected(state: EditorState, name: string): boolean {

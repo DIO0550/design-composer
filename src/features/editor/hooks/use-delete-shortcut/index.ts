@@ -4,6 +4,7 @@ import { type KeyShortcut, useKeyShortcut } from "@/hooks/use-key-shortcut";
 const DELETE_SHORTCUT: KeyShortcut = {
   keys: ["Delete", "Backspace"],
   withCommandKey: false,
+  withShiftKey: false,
 };
 
 /**

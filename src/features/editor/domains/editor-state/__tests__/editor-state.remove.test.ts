@@ -30,9 +30,9 @@ test("選択中のノードを削除するとツリーから消える", () => {
 
   const removed = Option.unwrap(EditorState.removeNode(state));
 
-  expect(DesignDocument.findNode(removed.document, "title")).toEqual(
-    Option.none,
-  );
+  expect(
+    DesignDocument.findNode(EditorState.document(removed), "title"),
+  ).toEqual(Option.none);
 });
 
 test("削除は選択したノードのサブツリーごと消す", () => {
@@ -40,9 +40,9 @@ test("削除は選択したノードのサブツリーごと消す", () => {
 
   const removed = Option.unwrap(EditorState.removeNode(state));
 
-  expect(DesignDocument.findNode(removed.document, "body-text")).toEqual(
-    Option.none,
-  );
+  expect(
+    DesignDocument.findNode(EditorState.document(removed), "body-text"),
+  ).toEqual(Option.none);
 });
 
 test("削除すると選択が外れる", () => {
@@ -58,7 +58,9 @@ test("削除しても兄弟は残る", () => {
 
   const removed = Option.unwrap(EditorState.removeNode(state));
 
-  expect(DesignDocument.findNode(removed.document, "body").some).toBe(true);
+  expect(
+    DesignDocument.findNode(EditorState.document(removed), "body").some,
+  ).toBe(true);
 });
 
 test("削除した名前は使われていない名前に戻る", () => {
@@ -66,5 +68,7 @@ test("削除した名前は使われていない名前に戻る", () => {
 
   const removed = Option.unwrap(EditorState.removeNode(state));
 
-  expect(DesignDocument.usedNames(removed.document).has("title")).toBe(false);
+  expect(
+    DesignDocument.usedNames(EditorState.document(removed)).has("title"),
+  ).toBe(false);
 });

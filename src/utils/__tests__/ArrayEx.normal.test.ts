@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import { ArrayEx } from "../ArrayEx";
+import { Option } from "../Option";
 import { Result } from "../Result";
 
 test("配列の範囲内の index は isIndexInRange で true になる", () => {
@@ -120,4 +121,20 @@ test("distinct は元の配列を変更しない", () => {
   const array = ["a", "a"];
   ArrayEx.distinct(array);
   expect(array).toEqual(["a", "a"]);
+});
+
+test("先頭の要素は first で取り出せる", () => {
+  expect(ArrayEx.first(["a", "b", "c"])).toEqual(Option.some("a"));
+});
+
+test("末尾の要素は last で取り出せる", () => {
+  expect(ArrayEx.last(["a", "b", "c"])).toEqual(Option.some("c"));
+});
+
+test("dropFirst は先頭を除いた並びを返す", () => {
+  expect(ArrayEx.dropFirst(["a", "b", "c"])).toEqual(["b", "c"]);
+});
+
+test("dropLast は末尾を除いた並びを返す", () => {
+  expect(ArrayEx.dropLast(["a", "b", "c"])).toEqual(["a", "b"]);
 });
