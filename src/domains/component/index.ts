@@ -1,3 +1,4 @@
+import type { Artboard } from "@/domains/artboard";
 import {
   Node,
   type PrimitiveNode,
@@ -76,6 +77,15 @@ export type Component = Readonly<{
 }>;
 
 export type ComponentSet = Readonly<Record<string, Component>>;
+
+/**
+ * 部品 1 件と、その部品がドキュメント内で参照されている回数。
+ * 名前だけでも回数だけでも「どの部品がどれだけ使われているか」は答えられないため対で持つ。
+ */
+export type ComponentRefCount = Readonly<{
+  name: string;
+  count: number;
+}>;
 
 function updateNodeByName(
   nodes: readonly Node[],
@@ -390,6 +400,36 @@ export const ComponentSet = {
       ref,
       ComponentSet.names(components).length,
     );
+  },
+
+  /**
+   * 部品ごとの被参照回数。並びは部品の定義順で、使われていない部品も 0 として必ず含む。
+   *
+   * 数えるのは artboard の木にある参照ノードと、**部品定義の中にある参照ノードの両方**。
+   * 部品 A が部品 B を含んでいれば B は使われているので、artboard だけを見ると
+   * 「どこからも使われていない」と読める部品が出てしまう。
+   *
+   * `Node.collectRefs` は参照ノードで止まり参照先を展開しないため、部品同士が
+   * 循環していても各定義を 1 回ずつ見るだけで終わる（ホップ上限は要らない）。
+   *
+   * 定義の無い名前への参照（dangling）はどの部品の数にも入らない。
+   */
+  refCounts(
+    components: ComponentSet,
+    artboards: readonly Artboard[],
+  ): readonly ComponentRefCount[] {
+    const refsInComponents = ComponentSet.names(components).flatMap((name) =>
+      directRefs(components, name),
+    );
+    const refsInArtboards = artboards.flatMap((artboard) =>
+      artboard.children.flatMap(Node.collectRefs),
+    );
+    const refs = [...refsInComponents, ...refsInArtboards];
+
+    return ComponentSet.names(components).map((name) => ({
+      name,
+      count: refs.filter((ref) => ref === name).length,
+    }));
   },
 
   /**

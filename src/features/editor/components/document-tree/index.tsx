@@ -2,11 +2,11 @@ import { type ReactNode, useState } from "react";
 import type { Artboard } from "@/domains/artboard";
 import type { ChildPosition } from "@/domains/child-position";
 import { Node, type PrimitiveNode } from "@/domains/node";
+import { PrimitiveSchema, type TEXT_SCHEMA } from "@/domains/primitive-schema";
 import {
-  PrimitiveSchema,
-  type PrimitiveType,
-  type TEXT_SCHEMA,
-} from "@/domains/primitive-schema";
+  TypeGlyph,
+  type TypeGlyphKind,
+} from "@/features/editor/components/type-glyph";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
@@ -27,29 +27,6 @@ const BRANCH_TOGGLE_SLOT_STYLE = { width: "10px" };
 const CONTENT_PROP = "content" satisfies keyof typeof TEXT_SCHEMA.props;
 
 /**
- * 行が表す対象の種別。UI 案（docs/Design Composer.html）は artboard・プリミティブ・
- * 部品インスタンスをそれぞれ別のアイコンで描き分ける。
- *
- * プリミティブの綴りを直接並べず `PrimitiveType` から導出するのは、primitive が
- * 増えたときにアイコンの取りこぼしをコンパイルエラーにするため。
- */
-type TreeItemKind = "artboard" | PrimitiveType | "instance";
-
-/** 名前の左に出す型アイコン。字面と色の対で 1 つの種別を表す。 */
-type TypeGlyph = Readonly<{ symbol: string; className: string }>;
-
-/**
- * 種別ごとの型アイコン。字面・色はいずれも UI 案の default 状態から採った値で、
- * Tailwind の色名に対応するものが無いため実際の色をそのまま書いている。
- */
-const TYPE_GLYPHS = {
-  artboard: { symbol: "▢", className: "text-[#0d99ff]" },
-  Box: { symbol: "□", className: "text-[#00a0a0]" },
-  Text: { symbol: "T", className: "font-bold text-[#c67c00]" },
-  instance: { symbol: "◆", className: "text-[#8b5cf6]" },
-} as const satisfies Readonly<Record<TreeItemKind, TypeGlyph>>;
-
-/**
  * 名前の右に出す補助情報。何を出すかは種別ごとに違い、出どころも違う
  * （大きさは artboard 自身が、文言は props が持つ）ので、種別と値を対で持つ。
  */
@@ -63,7 +40,7 @@ type TreeItemNote =
  * 種別の判定を 2 度行わずに済むよう 1 つにまとめて求める。
  */
 type TreeItemMarks = Readonly<{
-  glyph: Option<TypeGlyph>;
+  glyph: Option<TypeGlyphKind>;
   note: Option<TreeItemNote>;
 }>;
 
@@ -89,7 +66,7 @@ function primitiveMarks(node: PrimitiveNode): TreeItemMarks {
     return { glyph: Option.none, note: Option.none };
   }
   return {
-    glyph: Option.some(TYPE_GLYPHS[node.type]),
+    glyph: Option.some(node.type),
     note: node.type === "Text" ? contentNote(node) : Option.none,
   };
 }
@@ -97,7 +74,7 @@ function primitiveMarks(node: PrimitiveNode): TreeItemMarks {
 function nodeMarks(node: Node): TreeItemMarks {
   if (Node.isRef(node)) {
     return {
-      glyph: Option.some(TYPE_GLYPHS.instance),
+      glyph: Option.some("component"),
       note: Option.some({ kind: "instance" }),
     };
   }
@@ -107,7 +84,7 @@ function nodeMarks(node: Node): TreeItemMarks {
 /** artboard は自分が持つ幅・高さを出す（UI 案の `720×900`）。 */
 function artboardMarks(artboard: Artboard): TreeItemMarks {
   return {
-    glyph: Option.some(TYPE_GLYPHS.artboard),
+    glyph: Option.some("artboard"),
     note: Option.some({
       kind: "size",
       width: artboard.width,
@@ -239,14 +216,7 @@ function SelectableName({
       onClick={() => onSelect(name)}
       className="flex min-w-0 flex-1 items-center gap-1.5 pr-2 text-left"
     >
-      {marks.glyph.some ? (
-        <span
-          aria-hidden="true"
-          className={`shrink-0 ${marks.glyph.value.className}`}
-        >
-          {marks.glyph.value.symbol}
-        </span>
-      ) : null}
+      {marks.glyph.some ? <TypeGlyph kind={marks.glyph.value} /> : null}
       {/*
         名前が余りを占め、補助情報はその右に出る。flex の子は既定で内容幅より
         縮まないため、省略には min-w-0 が要る。

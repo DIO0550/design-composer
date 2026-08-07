@@ -1,7 +1,11 @@
 import { Artboard } from "@/domains/artboard";
 import type { AxisLength } from "@/domains/axis-length";
 import type { ChildPosition } from "@/domains/child-position";
-import { Component, ComponentSet } from "@/domains/component";
+import {
+  Component,
+  type ComponentRefCount,
+  ComponentSet,
+} from "@/domains/component";
 import {
   FormatVersion,
   type FormatVersionCompatibility,
@@ -279,6 +283,16 @@ export const DesignDocument = {
         NodeTree.nodes(siblings).filter((sibling) => sibling.name !== name),
       ),
     );
+  },
+
+  /**
+   * 部品ごとの被参照回数。数える規則は `ComponentSet` が持ち、ここは
+   * ドキュメントのどこを見せるかの調停だけを行う（`nameSpaceOf` と同じ形）。
+   */
+  componentRefCounts(
+    document: DesignDocument,
+  ): readonly ComponentRefCount[] {
+    return ComponentSet.refCounts(document.components, document.artboards);
   },
 
   /** 名前で artboard を引く。名前は単一名前空間なので artboard 名も一意に決まる。 */
