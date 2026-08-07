@@ -21,10 +21,14 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   name: "雛形の初期部品セット",
-  args: { components: DocumentTemplate.DEFAULT.components },
+  args: {
+    components: DocumentTemplate.DEFAULT.components,
+    isInsertEnabled: true,
+    onInsert: () => {},
+  },
 };
 
 export const Empty: Story = {
   name: "部品がない",
-  args: { components: {} },
+  args: { components: {}, isInsertEnabled: true, onInsert: () => {} },
 };

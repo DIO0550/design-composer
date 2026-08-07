@@ -6,6 +6,22 @@ function selfAndAncestors(element: Element): readonly Element[] {
 
 export const ElementEx = {
   /**
+   * その要素が文字を打ち込める場所か（入力欄・複数行入力欄・編集可能な要素）。
+   *
+   * 受け取るのが `EventTarget` なのは `attributeValuesToRoot` と同じ理由で、
+   * イベントの発火元が要素とは限らないため。要素でなければ打ち込めないので偽になる。
+   */
+  isTextEditable(target: EventTarget | null): boolean {
+    if (target instanceof HTMLInputElement) {
+      return true;
+    }
+    if (target instanceof HTMLTextAreaElement) {
+      return true;
+    }
+    return target instanceof HTMLElement && target.isContentEditable;
+  },
+
+  /**
    * 自身から根へ向かって辿り、その属性を持つ要素の値を通り道の順に並べる。
    *
    * 受け取るのが `EventTarget` なのは、イベントの発火元が要素とは限らないため

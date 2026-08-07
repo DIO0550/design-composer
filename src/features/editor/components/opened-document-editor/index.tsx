@@ -11,9 +11,13 @@ import {
   EditorProvider,
   useEditor,
 } from "@/features/editor/components/editor-provider";
+import { NodeEditToolbar } from "@/features/editor/components/node-edit-toolbar";
 import { PropertyPanel } from "@/features/editor/components/property-panel";
+import { EditorState } from "@/features/editor/domains/editor-state";
+import type { NodeTemplate } from "@/features/editor/domains/node-template";
 import type { OpenedDocument } from "@/features/editor/domains/opened-document";
 import { useAutoSave } from "@/features/editor/hooks/use-auto-save";
+import { useDeleteShortcut } from "@/features/editor/hooks/use-delete-shortcut";
 import { useDocumentReload } from "@/features/editor/hooks/use-document-reload";
 import type { DocumentIpc } from "@/libs/document-ipc";
 
@@ -44,16 +48,40 @@ function EditorPanes() {
    */
   const editProp = (edit: PropEdit) =>
     dispatch({ type: "apply_prop_edit", edit });
+  /**
+   * 挿入と削除は選択中のものを起点にするため、押せるかどうかも選択から決まる
+   * （docs/06-ui.md「編集操作の一覧」）。
+   */
+  const insertNode = (template: NodeTemplate) =>
+    dispatch({ type: "insert_node", template });
+  const removeNode = () => dispatch({ type: "remove_node" });
+  const isInsertEnabled = EditorState.insertPosition(state).some;
+  const isRemoveEnabled = EditorState.removableName(state).some;
+
+  /** 削除はボタンとキーボードの両方から届く（どちらも選択中のものを消す）。 */
+  useDeleteShortcut(removeNode);
 
   return (
     <EditorLayout>
       <EditorLayout.LeftPane>
+        <NodeEditToolbar
+          isInsertEnabled={isInsertEnabled}
+          isRemoveEnabled={isRemoveEnabled}
+          onInsert={insertNode}
+          onRemove={removeNode}
+        />
         <DocumentTree
           state={state}
           onSelect={selectNode}
           onReorder={reorderNode}
         />
-        <ComponentList components={state.document.components} />
+        <ComponentList
+          components={state.document.components}
+          isInsertEnabled={isInsertEnabled}
+          onInsert={(componentName) =>
+            insertNode({ kind: "instance", componentName })
+          }
+        />
       </EditorLayout.LeftPane>
       <EditorLayout.CenterPane>
         <ArtboardCanvas

@@ -4,6 +4,7 @@ import { DesignDocument } from "@/domains/design-document";
 import type { PropEdit } from "@/domains/node";
 import type { DocumentError } from "@/features/editor/domains/document-error";
 import type { DocumentReload } from "@/features/editor/domains/document-reload";
+import { NodeTemplate } from "@/features/editor/domains/node-template";
 import { Option } from "@/utils/Option";
 
 /**
@@ -143,6 +144,73 @@ export const EditorState = {
     return moved.ok
       ? Option.some({ ...state, document: moved.value })
       : Option.none;
+  },
+
+  /**
+   * 選択位置へノードを挿すときの位置（docs/06-ui.md「編集操作の一覧」の挿入は
+   * 「選択位置の子として追加」）。
+   *
+   * 選択が無いとき・選択が子を持てないノード（Text / インスタンス）のときは
+   * 挿せる位置が無いので `none`。挿入のボタンはこれが `none` の間は出さないため、
+   * 画面の操作から `insertNode` の `none` には到達しない。
+   */
+  insertPosition(state: EditorState): Option<ChildPosition> {
+    return Option.flatMap(state.selectedName, (name) =>
+      DesignDocument.appendPositionOf(state.document, name),
+    );
+  },
+
+  /**
+   * 削除できる対象の名前。
+   *
+   * 選択できるものには artboard も含まれるが、artboard の削除は artboard 操作（#43）の
+   * 担当なので、ここで消せるのは配下のノードだけ。
+   */
+  removableName(state: EditorState): Option<string> {
+    return Option.flatMap(state.selectedName, (name) =>
+      DesignDocument.findNode(state.document, name).some
+        ? Option.some(name)
+        : Option.none,
+    );
+  },
+
+  /**
+   * 選択位置の子としてノードを挿す（docs/06-ui.md「編集操作の一覧」の挿入）。
+   *
+   * 名前の採番に要るのはドキュメント全体の名前なので、ノードの組み立ては挿入先が
+   * 決まってから行う（`NodeTemplate` は名前を持たない）。
+   * 選択は動かさない。続けて挿したときに兄弟が並ぶのが「選択位置の子として追加」の素直な
+   * 繰り返しで、挿すたびに選択が内側へ移ると Box を足しただけで入れ子が深くなるため。
+   */
+  insertNode(state: EditorState, template: NodeTemplate): Option<EditorState> {
+    return Option.flatMap(EditorState.insertPosition(state), (at) => {
+      const node = NodeTemplate.toNode(
+        template,
+        DesignDocument.usedNames(state.document),
+      );
+      const inserted = DesignDocument.insertNode(state.document, at, node);
+      return inserted.ok
+        ? Option.some({ ...state, document: inserted.value })
+        : Option.none;
+    });
+  },
+
+  /**
+   * 選択中のノードをサブツリーごと削除する（docs/06-ui.md「編集操作の一覧」）。
+   *
+   * 対象を引数で受け取らず選択から決めるのは `applyPropEdit` と同じ理由で、
+   * 削除の導線が「選択中のものを消す」しか無いため。
+   * 消したものは選択できなくなるので、選択は外す。
+   */
+  removeNode(state: EditorState): Option<EditorState> {
+    return Option.flatMap(EditorState.removableName(state), (name) => {
+      const removed = DesignDocument.removeNode(state.document, name);
+      return removed.ok
+        ? Option.some(
+            EditorState.clearSelection({ ...state, document: removed.value }),
+          )
+        : Option.none;
+    });
   },
 
   /**

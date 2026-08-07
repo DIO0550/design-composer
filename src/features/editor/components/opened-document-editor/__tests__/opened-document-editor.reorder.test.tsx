@@ -4,8 +4,8 @@ import { expect, test } from "vitest";
 import { treeRowNames } from "@/features/editor/__tests__/tree-rows";
 import { renderOpenedDocument } from "./setup";
 
-function leftPane(): HTMLElement {
-  return screen.getByRole("complementary", { name: "ツリービュー・部品一覧" });
+function tree(): HTMLElement {
+  return screen.getByRole("region", { name: "ツリー" });
 }
 
 test("ツリービューで子を下へ動かすと兄弟の並びがその順序に変わる", async () => {
@@ -15,7 +15,7 @@ test("ツリービューで子を下へ動かすと兄弟の並びがその順�
     screen.getByRole("button", { name: "home-title を下へ" }),
   );
 
-  expect(treeRowNames(leftPane()).slice(1, 3)).toEqual([
+  expect(treeRowNames(tree()).slice(1, 3)).toEqual([
     "home-login（primary-button のインスタンス）",
     "home-title",
   ]);
