@@ -2,7 +2,13 @@ name: Storybook Visual Regression
 
 on:
   pull_request:
-    types: [opened, reopened, synchronize, closed]
+    # labeled / unlabeled も受けるのは、意図した差分の承認をラベルで行うため。
+    # ラベルの付け外しでチェックを green / red へ切り替えられるようにする。
+    types: [opened, reopened, synchronize, closed, labeled, unlabeled]
+
+env:
+  # このラベルが付いている間、差分があってもチェックを通す(下の「意図した差分の承認」参照)。
+  VISUAL_APPROVAL_LABEL: visual-approved
 
 permissions:
   contents: write
@@ -17,6 +23,15 @@ concurrency:
 
 jobs:
   visual-regression:
+    # ラベルの付け外しは承認ラベルのときだけ走らせる。全ラベルで再実行すると、
+    # 無関係なラベルを付けるたびに撮影からやり直して数分待たされるため。
+    #
+    # ここだけ `env.VISUAL_APPROVAL_LABEL` ではなく綴りを直接書いている。
+    # job レベルの `if` は env コンテキストを読めず、参照すると常に空文字と
+    # 比較されて承認ラベルでの再実行が起きなくなるため(GitHub の式の制約)。
+    if: >-
+      (github.event.action != 'labeled' && github.event.action != 'unlabeled')
+      || github.event.label.name == 'visual-approved'
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     steps:
@@ -236,6 +251,18 @@ jobs:
             fi
           fi
 
+      # 承認ラベルはリポジトリに実在しないと PR へ付けられない。差分が出て初めて
+      # 要るものなので、案内を出す直前にこの場で用意する(既にあれば何もしない)。
+      - name: Ensure visual approval label exists
+        if: always() && github.event.action != 'closed' && steps.compare.outcome != 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh label create "$VISUAL_APPROVAL_LABEL" \
+            --description "Storybook の視覚差分をレビュー済みとして承認する" \
+            --color BFD4F2 \
+            || echo "ラベルは既にあるので作らない"
+
       - name: Comment visual report
         if: always() && github.event.action != 'closed'
         env:
@@ -257,8 +284,16 @@ jobs:
           if [ "$PUBLISH_OUTCOME" = "success" ] && [ -f "$SUMMARY" ]; then
             COUNTS=$(node -e 'const s = require("./visual-report/summary.json"); console.log(s.changed, s.new, s.deleted, s.passed)')
             set -- $COUNTS
+            # 差分がある間はチェックが赤になる。赤を見た人が次に何をすればよいか
+            # (レポートを見て、意図した変更ならラベルを付ける)をここに書いておく。
+            # 見出しだけだと「壊したのか意図した変更なのか」を読み取れないため。
             if [ "$1" -gt 0 ]; then
-              HEADLINE="差分が見つかりました。"
+              if gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/labels" --jq '.[].name' \
+                | grep -Fxq "$VISUAL_APPROVAL_LABEL"; then
+                HEADLINE="差分がありますが、\`${VISUAL_APPROVAL_LABEL}\` ラベルで承認済みのためチェックは通しています。"
+              else
+                HEADLINE="差分が見つかりました。レポートで確認し、意図した変更なら \`${VISUAL_APPROVAL_LABEL}\` ラベルを付けてください（付けるとチェックが通ります）。意図しない変更ならコードを直してください。"
+              fi
             else
               HEADLINE="差分はありませんでした。"
             fi
@@ -304,6 +339,22 @@ jobs:
             gh api -X POST "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" --field body=@"$BODY_FILE"
           fi
 
+      # 差分は「壊した」と「意図して変えた」の区別が付かないので、既定では落として
+      # レビューを止める。意図した変更だと確認できたら承認ラベルで通す。
+      #
+      # ラベルを見るのに event の payload(`github.event.pull_request.labels`)ではなく
+      # API を引くのは、実行中にラベルが付いたときも今の状態で判定するため。
+      # payload は実行開始時点のスナップショットなので、撮影中に承認しても古いままになる。
       - name: Fail on visual differences
         if: github.event.action != 'closed' && steps.compare.outcome != 'success'
-        run: exit 1
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          if gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/labels" --jq '.[].name' \
+            | grep -Fxq "$VISUAL_APPROVAL_LABEL"; then
+            echo "差分は ${VISUAL_APPROVAL_LABEL} ラベルで承認済みのため、チェックは通す。"
+            exit 0
+          fi
+          echo "差分が見つかった。意図した変更なら ${VISUAL_APPROVAL_LABEL} ラベルを付けると通る。"
+          exit 1
