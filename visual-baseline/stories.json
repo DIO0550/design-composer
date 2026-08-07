@@ -75,6 +75,21 @@
     "name": "開始画面"
   },
   {
+    "id": "features-editor-nodeedittoolbar--artboard-selected",
+    "title": "features/editor/NodeEditToolbar",
+    "name": "artboard を選んでいる"
+  },
+  {
+    "id": "features-editor-nodeedittoolbar--no-selection",
+    "title": "features/editor/NodeEditToolbar",
+    "name": "何も選んでいない"
+  },
+  {
+    "id": "features-editor-nodeedittoolbar--node-selected",
+    "title": "features/editor/NodeEditToolbar",
+    "name": "子を持てるノードを選んでいる"
+  },
+  {
     "id": "features-editor-openeddocumenteditor--default",
     "title": "features/editor/OpenedDocumentEditor",
     "name": "編集画面"
