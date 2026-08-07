@@ -6,13 +6,17 @@
 #
 # 検証ルール:
 #   - no-describe:      describe/context/suite 禁止（フラット構造。rules/testing.md「ネスト禁止」）
-#   - no-conditional:   テストコード内の if/else/switch 禁止（test.each を使用）
+#   - no-conditional:   test() / it() のブロック内の if/else/switch 禁止（test.each を使用）
+#                       ヘルパー関数内の分岐は対象外（lib/test-conditionals.awk）
 #   - file-naming:      {テスト対象}.{カテゴリ}.test.ts|tsx 形式
 #
 # 無効化:
 #   - プロジェクト: 最寄りの .test-rules.yml（rules: 配下に <ルール名>: false）
 #   - ファイル:     // @test-rules-disable [ルール名...]（引数なしで全ルール無効化）
 set -euo pipefail
+
+hook_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+conditionals_awk="$hook_dir/lib/test-conditionals.awk"
 
 # --- stdin から編集されたファイルパスを取得 ---
 input="$(cat)"
@@ -94,9 +98,9 @@ fi
 
 # --- テストコード内の条件分岐チェック ---
 if [ "$rule_no_conditional" = "true" ]; then
-  if grep -nE '^\s*(if\s*\(|else\s*\{|else\s+if\s*\(|switch\s*\()' "$file" | head -5 | grep -q .; then
-    matches="$(grep -nE '^\s*(if\s*\(|else\s*\{|else\s+if\s*\(|switch\s*\()' "$file" | head -5)"
-    violations="${violations}[条件分岐禁止] テストコード内で if/else/switch は禁止です。test.each またはテストケースの分割で対応してください。
+  matches="$(awk -f "$conditionals_awk" "$file" | head -5)"
+  if [ -n "$matches" ]; then
+    violations="${violations}[条件分岐禁止] テストケース内で if/else/switch は禁止です。test.each またはテストケースの分割で対応してください。
 該当箇所:
 ${matches}
 
@@ -120,7 +124,7 @@ if [ -n "$violations" ]; then
   jq -Rn --arg msg "$violations" '{
     hookSpecificOutput: {
       hookEventName: "PostToolUse",
-      additionalContext: ("テストルール違反を検出しました。以下を修正してください:\n\n" + $msg + "\nルール: フラット構造（describeなし）、条件分岐禁止（test.eachを使用）、ファイル名は {対象名}.{カテゴリ}.test.ts|tsx")
+      additionalContext: ("テストルール違反を検出しました。以下を修正してください:\n\n" + $msg + "\nルール: フラット構造（describeなし）、テストケース内の条件分岐禁止（test.eachを使用）、ファイル名は {対象名}.{カテゴリ}.test.ts|tsx")
     }
   }'
 fi

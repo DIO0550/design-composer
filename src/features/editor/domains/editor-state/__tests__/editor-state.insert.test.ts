@@ -24,17 +24,8 @@ function setupState(): EditorState {
 }
 
 function childNames(state: EditorState, parentName: string): readonly string[] {
-  const artboard = DesignDocument.findArtboard(
-    EditorState.document(state),
-    parentName,
-  );
-  if (artboard.some) {
-    return artboard.value.children.map((child) => child.name);
-  }
-  return Node.children(
-    Option.unwrap(
-      DesignDocument.findNode(EditorState.document(state), parentName),
-    ),
+  return Option.unwrap(
+    DesignDocument.findChildren(EditorState.document(state), parentName),
   ).map((child) => child.name);
 }
 

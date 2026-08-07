@@ -21,10 +21,9 @@ function setupDocument(): DesignDocument {
 }
 
 function childNames(state: EditorState): readonly string[] {
-  const artboard = Option.unwrap(
-    DesignDocument.findArtboard(EditorState.document(state), "home"),
-  );
-  return artboard.children.map((child) => child.name);
+  return Option.unwrap(
+    DesignDocument.findChildren(EditorState.document(state), "home"),
+  ).map((child) => child.name);
 }
 
 /**

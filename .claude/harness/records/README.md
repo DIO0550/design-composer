@@ -1,0 +1,28 @@
+# .claude/harness/records — マージ後の評価記録
+
+マージされた PR 1 本につき `pr-<番号>.md` を 1 ファイル置く。
+書くのは `harness-growth` スキル(`.claude/skills/harness-growth/`)。
+
+## 何のためにあるか
+
+`AGENTS.md`「規約の更新」は「ルールに書かれていない指摘が **2 回以上**出たら
+規約の抜けとして扱う」と定めている。ここはその**回数を数えるための材料**。
+指摘がレビューコメントに散っている限り横断して数えられないので、
+分類タグを付けた形でマージのたびに 1 ファイル残す。
+
+## 数え方
+
+```bash
+grep -rho '^- 分類: `[^`]*`' .claude/harness/records/ | sort | uniq -c | sort -rn
+```
+
+2 回以上の分類は `rules/` / `.claude/skills/` / `.claude/hooks/` の抜けとして扱う。
+判断の手順は `.claude/skills/harness-growth/SKILL.md`「Step 4」。
+
+## 書き方
+
+形式と分類の語彙は `.claude/skills/harness-growth/templates/record.md`。
+
+- 指摘 1 件 = 1 ブロック(まとめない)
+- 指摘 0 件の回も記録を残す(「順調だった」もデータ)
+- **過去の記録は書き換えない。** 判断が変わったら新しい記録に書く

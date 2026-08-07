@@ -7,6 +7,9 @@
 # 検証ルール・無効化の方法は check-test-rules.sh（PostToolUse 版）と同一。
 set -euo pipefail
 
+hook_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+conditionals_awk="$hook_dir/lib/test-conditionals.awk"
+
 # --- stdin から Bash コマンドを取得 ---
 input="$(cat)"
 command="$(jq -r '.tool_input.command // empty' <<< "$input")"
@@ -84,9 +87,9 @@ ${matches}
   # テストコード内の条件分岐チェック
   if [ "$rule_no_conditional" = "true" ]; then
     local matches
-    matches="$(grep -nE '^\s*(if\s*\(|else\s*\{|else\s+if\s*\(|switch\s*\()' "$file" | head -5 || true)"
+    matches="$(awk -f "$conditionals_awk" "$file" | head -5 || true)"
     if [ -n "$matches" ]; then
-      file_violations="${file_violations}[条件分岐禁止] ${file}: テストコード内で if/else/switch は禁止です。test.each またはテストケースの分割で対応してください。
+      file_violations="${file_violations}[条件分岐禁止] ${file}: テストケース内で if/else/switch は禁止です。test.each またはテストケースの分割で対応してください。
 該当箇所:
 ${matches}
 
@@ -125,7 +128,7 @@ if [ -n "$violations" ]; then
     hookSpecificOutput: {
       hookEventName: "PreToolUse",
       permissionDecision: "deny",
-      permissionDecisionReason: ("push 前の全体テストルール検査で違反が検出されたため push をブロックしました。以下の違反をすべて修正してから再度 push してください。\n\n" + $msg + "\nルール: フラット構造（describeなし）、条件分岐禁止（test.eachを使用）、ファイル名は {対象名}.{カテゴリ}.test.ts|tsx")
+      permissionDecisionReason: ("push 前の全体テストルール検査で違反が検出されたため push をブロックしました。以下の違反をすべて修正してから再度 push してください。\n\n" + $msg + "\nルール: フラット構造（describeなし）、テストケース内の条件分岐禁止（test.eachを使用）、ファイル名は {対象名}.{カテゴリ}.test.ts|tsx")
     }
   }'
 fi
