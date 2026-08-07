@@ -7,6 +7,7 @@ import {
   useEditor,
 } from "@/features/editor/components/editor-provider";
 import { TokenList } from "@/features/editor/components/token-list";
+import { useTokenActions } from "@/features/editor/hooks/use-token-actions";
 import { TokenEditor } from "../index";
 
 const DOCUMENT = DesignDocument.create({
@@ -32,24 +33,26 @@ const DOCUMENT = DesignDocument.create({
 /**
  * 一覧と編集欄を、reducer と domains の実物を通して繋いだもの。
  * トークンの選択は一覧からしか作れないので、両方を並べて操作する。
+ *
+ * 配線は本番と同じ `useTokenActions` を通す。ここで dispatch を手で書くと、
+ * 画面が実際に使っている配線を通らないテストになる。
  */
 function TokenPanes() {
-  const { state, dispatch } = useEditor();
+  const { state } = useEditor();
+  const token = useTokenActions();
 
   return (
     <>
       <TokenList
         state={state}
-        onSelectToken={(ref) => dispatch({ type: "select_token", ref })}
-        onAddToken={(template) => dispatch({ type: "add_token", template })}
+        onSelectToken={token.select}
+        onAddToken={token.add}
       />
       <TokenEditor
         state={state}
-        onSetTokenValue={(value) =>
-          dispatch({ type: "set_token_value", value })
-        }
-        onRenameToken={(name) => dispatch({ type: "rename_token", name })}
-        onRemoveToken={() => dispatch({ type: "remove_token" })}
+        onSetTokenValue={token.setValue}
+        onRenameToken={token.rename}
+        onRemoveToken={token.remove}
       />
     </>
   );
