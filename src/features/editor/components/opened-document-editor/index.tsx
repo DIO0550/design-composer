@@ -58,17 +58,19 @@ function EditorPanes() {
     dispatch({ type: "insert_node", template });
   const removeNode = () => dispatch({ type: "remove_node" });
   /**
-   * コピー & ペーストも選択中のものを起点にする（docs/06-ui.md「編集操作の一覧」）。
-   * 貼れるかはクリップボードの中身と選択位置の両方で決まるため、状態側に尋ねる。
+   * コピー & ペーストはキーボードだけの操作（docs/06-ui.md「編集操作の一覧」/ #40）。
+   *
+   * ボタンを置かないのは、UI 案（docs/Design Composer.html）の左ペインが
+   * Artboards の `+` しか持たず、編集操作をボタン列で並べていないため。
+   * 対象が無いときは状態側が「その操作は存在しない」と答えるので、
+   * 押せるかどうかをここで判定する必要も無い。
    */
   const copyNode = () => dispatch({ type: "copy_node" });
   const pasteNode = () => dispatch({ type: "paste_node" });
   const isInsertEnabled = EditorState.insertPosition(state).some;
   const isRemoveEnabled = EditorState.removableName(state).some;
-  const isCopyEnabled = EditorState.copyableNode(state).some;
-  const isPasteEnabled = EditorState.pastePosition(state).some;
 
-  /** 削除・コピー・ペーストはボタンとキーボードの両方から届く（対象の決め方は同じ）。 */
+  /** 削除はボタンとキーボードの両方から届く（どちらも選択中のものを消す）。 */
   useDeleteShortcut(removeNode);
   useCopyShortcut(copyNode);
   usePasteShortcut(pasteNode);
@@ -76,21 +78,12 @@ function EditorPanes() {
   return (
     <EditorLayout>
       <EditorLayout.LeftPane>
-        <NodeEditToolbar>
-          <NodeEditToolbar.Insert
-            isEnabled={isInsertEnabled}
-            onInsert={insertNode}
-          />
-          <NodeEditToolbar.Copy isEnabled={isCopyEnabled} onCopy={copyNode} />
-          <NodeEditToolbar.Paste
-            isEnabled={isPasteEnabled}
-            onPaste={pasteNode}
-          />
-          <NodeEditToolbar.Remove
-            isEnabled={isRemoveEnabled}
-            onRemove={removeNode}
-          />
-        </NodeEditToolbar>
+        <NodeEditToolbar
+          isInsertEnabled={isInsertEnabled}
+          isRemoveEnabled={isRemoveEnabled}
+          onInsert={insertNode}
+          onRemove={removeNode}
+        />
         <DocumentTree
           state={state}
           onSelect={selectNode}

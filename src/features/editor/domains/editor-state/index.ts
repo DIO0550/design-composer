@@ -195,40 +195,20 @@ export const EditorState = {
   },
 
   /**
-   * クリップボードへ入れられる対象（docs/06-ui.md「編集操作の一覧」の
-   * コピー & ペースト）。
+   * 選択中のノードをサブツリーごとクリップボードへ入れる
+   * （docs/06-ui.md「編集操作の一覧」のコピー & ペースト）。
    *
-   * コピーはサブツリー単位なので、対象はノードそのもの。artboard も選択できるが、
+   * コピーはサブツリー単位なので対象はノードそのもの。artboard も選択できるが、
    * artboard はノードとして貼れない（artboard の複製は artboard 操作（#43）の担当）
-   * ため対象にしない。
-   */
-  copyableNode(state: EditorState): Option<Node> {
-    return selectedNode(state);
-  },
-
-  /**
-   * 選択中のノードをサブツリーごとクリップボードへ入れる。
-   *
+   * ため `none` にする。
    * ドキュメントは変わらない。入れるのは切り離された複製なので、
    * この後に元のノードを消しても貼れる。
    */
   copyNode(state: EditorState): Option<EditorState> {
-    return Option.map(EditorState.copyableNode(state), (node) => ({
+    return Option.map(selectedNode(state), (node) => ({
       ...state,
       copiedNode: Option.some(node),
     }));
-  },
-
-  /**
-   * ペーストで挿す位置。
-   *
-   * ペーストも挿入と同じ「選択位置の子として追加」なので、位置の決め方は
-   * `insertPosition` と同じ。クリップボードが空なら挿すものが無いので `none`。
-   */
-  pastePosition(state: EditorState): Option<ChildPosition> {
-    return state.copiedNode.some
-      ? EditorState.insertPosition(state)
-      : Option.none;
   },
 
   /**
