@@ -1,0 +1,207 @@
+import { useState } from "react";
+import { Token, type TokenKind, type TokenRef } from "@/domains/token";
+import { EditorState } from "@/features/editor/domains/editor-state";
+import {
+  type TokenPreview,
+  TokenRow,
+  TokenSection,
+} from "@/features/editor/domains/token-control";
+import type { TokenTemplate } from "@/features/editor/domains/token-template";
+
+/** 見本の枠。値を持たない種別でも同じ幅を空けて、名前の左端を揃える。 */
+const PREVIEW_WIDTH_PX = 20;
+
+/**
+ * 一覧のどの種別を開いているか。
+ * どの枝を畳んでいるかは編集ではなく見え方なので、ドキュメントの状態には持たない。
+ */
+type OpenKinds = ReadonlySet<TokenKind>;
+
+function toggled(openKinds: OpenKinds, kind: TokenKind): OpenKinds {
+  const next = new Set(openKinds);
+  if (!next.delete(kind)) {
+    next.add(kind);
+  }
+  return next;
+}
+
+/** 値の見本。値そのものは行の文字として出ているので、飾りとして読み上げから外す。 */
+function PreviewSlot({ preview }: Readonly<{ preview: TokenPreview }>) {
+  if (preview.kind === "swatch") {
+    return (
+      <span
+        aria-hidden="true"
+        // 色は値そのものなのでクラス名に固定できない。白でも見えるよう枠を付ける。
+        style={{ backgroundColor: preview.color }}
+        className="inline-block size-3 shrink-0 border border-gray-300"
+      />
+    );
+  }
+  if (preview.kind === "bar") {
+    return (
+      <span
+        aria-hidden="true"
+        style={{ width: `${PREVIEW_WIDTH_PX}px` }}
+        className="inline-flex h-3 shrink-0 items-center"
+      >
+        <span
+          style={{ width: `${preview.widthPx}px` }}
+          className="inline-block h-2.5 bg-gray-300"
+        />
+      </span>
+    );
+  }
+  return (
+    <span
+      aria-hidden="true"
+      style={{ width: `${PREVIEW_WIDTH_PX}px` }}
+      className="inline-block shrink-0"
+    />
+  );
+}
+
+function TokenRowItem({
+  row,
+  state,
+  onSelect,
+}: Readonly<{
+  row: TokenRow;
+  state: EditorState;
+  onSelect: (ref: TokenRef) => void;
+}>) {
+  const content = (
+    <>
+      <PreviewSlot preview={row.preview} />
+      <span className="min-w-0 flex-1 truncate text-left">
+        {row.token.name}
+      </span>
+      <span className="shrink-0 text-[10px] text-gray-400">
+        {row.valueText}
+      </span>
+    </>
+  );
+
+  /*
+   * 直せない種別（shadows / typography）の行はボタンにしない。押しても編集欄が
+   * 出ないものを押せる形にすると、反応の無い操作が画面に残る（#42 の単位 2 で直す）。
+   */
+  if (!TokenRow.isEditable(row)) {
+    return (
+      <div className="flex items-center gap-2 py-1 pr-3 pl-6 text-xs text-gray-500">
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      aria-current={EditorState.isTokenSelected(state, Token.ref(row.token))}
+      onClick={() => onSelect(Token.ref(row.token))}
+      className="flex w-full items-center gap-2 rounded py-1 pr-3 pl-6 text-xs hover:bg-gray-100 aria-[current=true]:bg-blue-100 aria-[current=true]:text-blue-900"
+    >
+      {content}
+    </button>
+  );
+}
+
+function SectionHeading({
+  section,
+  isOpen,
+  onToggle,
+  onAdd,
+}: Readonly<{
+  section: TokenSection;
+  isOpen: boolean;
+  onToggle: () => void;
+  onAdd: (template: TokenTemplate) => void;
+}>) {
+  const kind = section.kind;
+  // 足せる種別かどうかは指定が取れるかで決まる（TokenSection.addTemplate）。
+  const addTemplate = TokenSection.addTemplate(section);
+
+  return (
+    <div className="flex items-center justify-between px-3 pt-2 pb-1">
+      <button
+        type="button"
+        aria-expanded={isOpen}
+        onClick={onToggle}
+        className="flex items-center gap-1.5 font-semibold text-gray-900 text-xs"
+      >
+        {/* 開閉の向きは aria-expanded が伝えるので、三角は飾りとして読み上げから外す。 */}
+        <span aria-hidden="true" className="text-[9px] text-gray-400">
+          {isOpen ? "▾" : "▸"}
+        </span>
+        <span>{kind}</span>
+        <span className="font-normal text-[10px] text-gray-400">
+          {section.rows.length}
+        </span>
+      </button>
+      {addTemplate.some && isOpen ? (
+        <button
+          type="button"
+          aria-label={`${kind} にトークンを追加`}
+          onClick={() => onAdd(addTemplate.value)}
+          className="px-1 text-gray-500 text-sm hover:text-gray-900"
+        >
+          +
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
+/**
+ * トークン一覧（docs/06-ui.md「編集操作の一覧」の tokens 編集 / UI 案の Tokens タブ）。
+ *
+ * 出す中身は種別の走査だけで決まる（`TokenSection.forDocument`）ため、
+ * ここには種別名で分岐するコードを置かない。
+ */
+export function TokenList({
+  state,
+  onSelectToken,
+  onAddToken,
+}: Readonly<{
+  state: EditorState;
+  onSelectToken: (ref: TokenRef) => void;
+  onAddToken: (template: TokenTemplate) => void;
+}>) {
+  const sections = TokenSection.forDocument(state);
+  /*
+   * 開いた直後は最初の種別だけを開く（UI 案 docs/Design Composer.html の
+   * tokens 状態が colors だけ開いた形）。
+   */
+  const [openKinds, setOpenKinds] = useState<OpenKinds>(
+    () => new Set([sections[0].kind]),
+  );
+
+  return (
+    <section aria-label="トークン一覧" className="flex flex-col">
+      {sections.map((section) => {
+        const isOpen = openKinds.has(section.kind);
+        return (
+          <div key={section.kind}>
+            <SectionHeading
+              section={section}
+              isOpen={isOpen}
+              onToggle={() =>
+                setOpenKinds((current) => toggled(current, section.kind))
+              }
+              onAdd={onAddToken}
+            />
+            {isOpen
+              ? section.rows.map((row) => (
+                  <TokenRowItem
+                    key={row.token.name}
+                    row={row}
+                    state={state}
+                    onSelect={onSelectToken}
+                  />
+                ))
+              : null}
+          </div>
+        );
+      })}
+    </section>
+  );
+}
