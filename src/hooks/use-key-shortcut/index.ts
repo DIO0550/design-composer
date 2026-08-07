@@ -26,19 +26,19 @@ export const KeyShortcut = {
    *
    * 修飾キーの有無まで一致を要求する。緩めると Cmd+C が
    * 「修飾なしの c」に割り当てたショートカットまで叩いてしまうため。
-   *
-   * キーは大小を無視して比べる。Shift を押している間 `event.key` は打たれる文字、
-   * つまり `"z"` ではなく `"Z"` になるため、そのまま比べると Cmd+Shift+Z が
-   * どの割り当てにも当たらない。
    */
   matches(shortcut: KeyShortcut, event: KeyboardEvent): boolean {
-    return (
-      shortcut.keys.some(
-        (key) => key.toLowerCase() === event.key.toLowerCase(),
-      ) &&
-      (event.ctrlKey || event.metaKey) === shortcut.withCommandKey &&
-      event.shiftKey === shortcut.withShiftKey
+    // 大小を無視して比べる。Shift を押している間 `event.key` は打たれる文字、
+    // つまり "z" ではなく "Z" になるため、そのまま比べると
+    // Cmd+Shift+Z がどの割り当てにも当たらない。
+    const matchesKey = shortcut.keys.some(
+      (key) => key.toLowerCase() === event.key.toLowerCase(),
     );
+    const matchesCommandKey =
+      (event.ctrlKey || event.metaKey) === shortcut.withCommandKey;
+    const matchesShiftKey = event.shiftKey === shortcut.withShiftKey;
+
+    return matchesKey && matchesCommandKey && matchesShiftKey;
   },
 } as const;
 
