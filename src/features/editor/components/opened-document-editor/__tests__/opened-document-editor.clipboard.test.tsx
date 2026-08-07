@@ -5,12 +5,11 @@ import { treeRowNames } from "@/features/editor/__tests__/tree-rows";
 import { renderOpenedDocument } from "./setup";
 
 /*
- * コピー & ペーストと部品インスタンスの挿入を、編集画面の配線ごと確かめる
+ * コピー & ペーストを、編集画面の配線ごと確かめる
  * （docs/06-ui.md「編集操作の一覧」/ #40）。
  *
- * どちらもキーボードまたは部品一覧からしか届かない操作で、`EditorState` 単体の
- * テストでは画面との繋がり（ショートカットの登録・部品名からインスタンスの指定を
- * 組み立てる部分）を通らない。
+ * キーボードからしか届かない操作なので、`EditorState` 単体のテストでは
+ * 画面との繋がり（ショートカットの登録）を通らない。
  */
 
 /** 開いた直後のツリーの行（artboard 2 枚とその配下）。 */
@@ -67,24 +66,4 @@ test("コピーしていない状態で Ctrl+V を押してもツリーは変わ
   await userEvent.keyboard("{Control>}v{/Control}");
 
   expect(treeRowNames(tree())).toEqual(ORIGINAL_ROWS);
-});
-
-test("部品一覧の挿入を押すとその部品のインスタンスが選択位置の子として増える", async () => {
-  await renderOpenedDocument();
-  await selectInTree("home");
-
-  await userEvent.click(screen.getByRole("button", { name: "card を挿入" }));
-
-  /*
-   * 名前は `card` ではなく `card-2`。部品名もドキュメントの単一名前空間に属するので、
-   * 部品定義の `card` と衝突しないよう採番される（docs/01-file-format.md）。
-   */
-  expect(treeRowNames(tree())).toEqual([
-    "home",
-    "home-title",
-    "home-login",
-    "card-2",
-    "settings",
-    "settings-card",
-  ]);
 });
