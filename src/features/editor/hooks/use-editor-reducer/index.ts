@@ -22,6 +22,8 @@ export type EditorAction =
   | Readonly<{ type: "move_node"; name: string; to: ChildPosition }>
   | Readonly<{ type: "insert_node"; template: NodeTemplate }>
   | Readonly<{ type: "remove_node" }>
+  | Readonly<{ type: "copy_node" }>
+  | Readonly<{ type: "paste_node" }>
   | Readonly<{ type: "apply_prop_edit"; edit: PropEdit }>
   | Readonly<{ type: "resize"; size: AxisLength }>;
 
@@ -61,6 +63,19 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
        * この `none` には画面の操作から到達する。
        */
       return Option.unwrapOr(EditorState.removeNode(state), state);
+    case "copy_node":
+      /*
+       * コピーできる対象が無ければクリップボードは変わらない
+       * （EditorState.copyNode の `none`）。ボタンは選択が無いと押せないが、
+       * ショートカットはいつでも押せるためこの `none` には画面の操作から到達する。
+       */
+      return Option.unwrapOr(EditorState.copyNode(state), state);
+    case "paste_node":
+      /*
+       * クリップボードが空・挿せる位置が無ければ木は変わらない
+       * （EditorState.pasteNode の `none`）。到達しうる理由は copy_node と同じ。
+       */
+      return Option.unwrapOr(EditorState.pasteNode(state), state);
     case "apply_prop_edit":
       // 選択が無ければ編集は存在しない（EditorState.applyPropEdit の `none`）。
       return Option.unwrapOr(

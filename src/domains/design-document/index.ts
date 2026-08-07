@@ -248,6 +248,27 @@ export const DesignDocument = {
     );
   },
 
+  /**
+   * ノードの複製をツリー上の位置へ挿入する（docs/06-ui.md「編集操作の一覧」の
+   * コピー & ペースト）。
+   *
+   * 名前はドキュメント全体で一意でなければならない（docs/01-file-format.md
+   * 「ノードの識別（name）」）ので、挿す前に部分木の名前をまとめて付け替える。
+   * 付け替えと挿入を呼び出し側に順番で守らせず 1 つの操作にするのは、
+   * 付け替え忘れが「重複した名前を持つドキュメント」として通ってしまうため。
+   */
+  insertNodeCopy(
+    document: DesignDocument,
+    at: ChildPosition,
+    node: Node,
+  ): Result<DesignDocument, DesignDocumentEditError> {
+    const [renamed] = DesignDocument.renameSubtree(
+      [node],
+      DesignDocument.usedNames(document),
+    ).nodes;
+    return DesignDocument.insertNode(document, at, renamed);
+  },
+
   /** 名前で指したノードをツリーから取り除く。 */
   removeNode(
     document: DesignDocument,
