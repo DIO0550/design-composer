@@ -304,6 +304,26 @@ export const DesignDocument = {
   },
 
   /**
+   * その名前のものが載っている artboard。artboard 自身の名前ならその artboard、
+   * ノードの名前ならそれを含む artboard（子孫まで辿る）。どちらでもなければ `none`。
+   *
+   * 名前 1 つから artboard へ辿る道をここに置くのは、「今どの artboard を見ているか」を
+   * 選択から決める側（左ペイン）が、artboard とノードのどちらを選んでいるかで
+   * 場合分けせずに済むようにするため。名前は単一名前空間なので答えは一意に決まる。
+   */
+  findOwningArtboard(document: DesignDocument, name: string): Option<Artboard> {
+    const named = DesignDocument.findArtboard(document, name);
+    if (named.some) {
+      return named;
+    }
+    // 走査そのものは `artboardIndexOfNode` が持つ（同じ探索を 2 つ書かない）
+    return Option.map(
+      artboardIndexOfNode(document, name),
+      (index) => document.artboards[index],
+    );
+  },
+
+  /**
    * 名前で指したもの（artboard またはノード）の子の並び。
    *
    * artboard は常に子を持てるので必ず並びを持つ。子を持てないノード（Text・参照ノード）と

@@ -1,13 +1,13 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
-import { treeRowNames } from "@/features/editor/__tests__/tree-rows";
+import { rowNames } from "@/features/editor/__tests__/row-names";
 import {
   LEFT_PANE_VIEW_LABELS,
   LEFT_PANE_VIEWS,
   type LeftPaneView,
 } from "@/features/editor/components/left-pane-rail";
-import { renderOpenedDocument } from "./setup";
+import { renderOpenedDocument, selectArtboard, selectInTree } from "./setup";
 
 /*
  * 左ペインの行き先の切り替えを、編集画面の配線ごと確かめる
@@ -31,15 +31,6 @@ async function goTo(view: LeftPaneView): Promise<void> {
     within(
       screen.getByRole("navigation", { name: "左ペインの表示" }),
     ).getByRole("button", { name: LEFT_PANE_VIEW_LABELS[view] }),
-  );
-}
-
-/** ツリーの行を名前で押して選ぶ。同じ名前はキャンバスにも出るのでツリーに絞る。 */
-async function selectInTree(name: string): Promise<void> {
-  await userEvent.click(
-    within(screen.getByRole("region", { name: "ツリー" })).getByRole("button", {
-      name,
-    }),
   );
 }
 
@@ -76,19 +67,16 @@ test("Assets から Layers に戻すとツリーが出る", async () => {
 
 test("Assets の部品を挿すと選択位置の子としてインスタンスが増える", async () => {
   await renderOpenedDocument();
-  await selectInTree("home");
+  await selectArtboard("home");
   await goTo(LEFT_PANE_VIEWS.assets);
 
   await userEvent.click(screen.getByRole("button", { name: "card を挿入" }));
 
   await goTo(LEFT_PANE_VIEWS.layers);
-  expect(treeRowNames(screen.getByRole("region", { name: "ツリー" }))).toEqual([
-    "home",
+  expect(rowNames(screen.getByRole("region", { name: "ツリー" }))).toEqual([
     "home-title",
     "home-login",
     "card-2",
-    "settings",
-    "settings-card",
   ]);
 });
 

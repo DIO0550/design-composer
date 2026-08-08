@@ -18,9 +18,14 @@ type Glyph = Readonly<{ symbol: string; className: string }>;
  *
  * `component` はツリーの参照ノード（インスタンス）にも使う。指しているものが
  * 部品である点は同じで、UI 案もどちらの行にも `◆` を置いている。
+ *
+ * `artboard` の色は 1 色のままにする。UI 案は `Artboards` の一覧で、今見ている 1 枚の
+ * `#` を青、それ以外を灰に描き分けているが、アイコンが表すのは種別で、どれが今の 1 枚かは
+ * 行の背景色と `aria-current` が伝える。同じ 1 つのことを 2 つの見た目で二重に持つと、
+ * 片方だけ直したときに食い違う。
  */
 const GLYPHS = {
-  artboard: { symbol: "▢", className: "text-[#0d99ff]" },
+  artboard: { symbol: "#", className: "text-[#0d99ff]" },
   Box: { symbol: "□", className: "text-[#00a0a0]" },
   Text: { symbol: "T", className: "font-bold text-[#c67c00]" },
   component: { symbol: "◆", className: "text-[#8b5cf6]" },

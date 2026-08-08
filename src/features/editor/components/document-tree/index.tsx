@@ -1,5 +1,4 @@
-import { type ReactNode, useState } from "react";
-import type { Artboard } from "@/domains/artboard";
+import { useState } from "react";
 import type { ChildPosition } from "@/domains/child-position";
 import { Node, type PrimitiveNode } from "@/domains/node";
 import { PrimitiveSchema, type TEXT_SCHEMA } from "@/domains/primitive-schema";
@@ -27,11 +26,9 @@ const BRANCH_TOGGLE_SLOT_STYLE = { width: "10px" };
 const CONTENT_PROP = "content" satisfies keyof typeof TEXT_SCHEMA.props;
 
 /**
- * 名前の右に出す補助情報。何を出すかは種別ごとに違い、出どころも違う
- * （大きさは artboard 自身が、文言は props が持つ）ので、種別と値を対で持つ。
+ * 名前の右に出す補助情報。何を出すかは種別ごとに違うので、種別と値を対で持つ。
  */
 type TreeItemNote =
-  | Readonly<{ kind: "size"; width: number; height: number }>
   | Readonly<{ kind: "content"; text: string }>
   | Readonly<{ kind: "instance" }>;
 
@@ -81,44 +78,6 @@ function nodeMarks(node: Node): TreeItemMarks {
   return primitiveMarks(node);
 }
 
-/** artboard は自分が持つ幅・高さを出す（UI 案の `720×900`）。 */
-function artboardMarks(artboard: Artboard): TreeItemMarks {
-  return {
-    glyph: Option.some("artboard"),
-    note: Option.some({
-      kind: "size",
-      width: artboard.width,
-      height: artboard.height,
-    }),
-  };
-}
-
-/**
- * ツリーに 1 行として並ぶもの。artboard とノードは出どころが違うだけで、
- * 行としては「名前・左右に出すもの・下にぶら下がる子」の 3 つで同じ形になる。
- */
-type TreeItem = Readonly<{
-  name: string;
-  marks: TreeItemMarks;
-  children: readonly Node[];
-}>;
-
-function artboardItem(artboard: Artboard): TreeItem {
-  return {
-    name: artboard.name,
-    marks: artboardMarks(artboard),
-    children: artboard.children,
-  };
-}
-
-function nodeItem(node: Node): TreeItem {
-  return {
-    name: node.name,
-    marks: nodeMarks(node),
-    children: Node.children(node),
-  };
-}
-
 /**
  * ツリーのどの行でも同じ値（今の見え方と、行から起こせる操作）。
  * 行ごとに props を積み増さないため 1 つにまとめる
@@ -165,12 +124,6 @@ function NoteText({ note }: Readonly<{ note: TreeItemNote }>) {
   const className = "min-w-0 max-w-1/2 truncate text-gray-400 text-xs";
 
   switch (note.kind) {
-    case "size":
-      return (
-        <span aria-hidden="true" className={className}>
-          {note.width}×{note.height}
-        </span>
-      );
     case "content":
       return (
         <span aria-hidden="true" className={`${className} italic`}>
@@ -187,11 +140,10 @@ function NoteText({ note }: Readonly<{ note: TreeItemNote }>) {
 }
 
 /**
- * 名前を出して、押すとその名前を選ぶボタン。artboard もノードも
- * 「名前で選ぶ」点は同じなので 1 つで描く。
+ * 名前を出して、押すとその名前を選ぶボタン。
  *
  * 型アイコンと補助情報を `aria-hidden` にしたうえで `aria-label` に名前を置くのは、
- * 選ぶ対象がノードの名前だからで、こうしないと読み上げ名が「▢ home 360×240」のように
+ * 選ぶ対象がノードの名前だからで、こうしないと読み上げ名が「T title Sign in」のように
  * 装飾を含んだ文字列になる。
  *
  * 選択の色は行の器（`TreeBranch`）が持つ。三角と字下げまで含めた行全体に色が付く形が
@@ -322,25 +274,25 @@ function BranchToggle({
 
 /**
  * ツリーの枝（1 行と、開いていればその下にぶら下がる子の並び）。
- * artboard の行とノードの行は右に並べ替えを置くかどうかだけが違うので、
- * 枝の組み立て（字下げ・開閉の列・選択の色）はここ 1 箇所に集める。
+ * 字下げ・開閉の列・選択の色といった行の組み立てをここ 1 箇所に集める。
  *
  * 字下げ幅は深さで決まる値でクラス名に固定できないため、インラインスタイルで与える。
  */
 function TreeBranch({
-  item,
+  node,
+  placement,
   depth,
   control,
-  trailing,
 }: Readonly<{
-  item: TreeItem;
+  node: Node;
+  placement: SiblingPlacement;
   depth: number;
   control: TreeControl;
-  trailing?: ReactNode;
 }>) {
-  const hasChildren = item.children.length > 0;
-  const isExpanded = !control.collapsedNames.has(item.name);
-  const isSelected = EditorState.isSelected(control.state, item.name);
+  const children = Node.children(node);
+  const hasChildren = children.length > 0;
+  const isExpanded = !control.collapsedNames.has(node.name);
+  const isSelected = EditorState.isSelected(control.state, node.name);
   /*
    * 子の並びを出す条件。子がいない行は畳めないので常に「開いている」側に倒れるが、
    * 出すものが無いので空の <ul> を作らないよう子の有無も見る。
@@ -360,9 +312,9 @@ function TreeBranch({
       >
         {hasChildren ? (
           <BranchToggle
-            name={item.name}
+            name={node.name}
             isExpanded={isExpanded}
-            onToggle={() => control.onToggleBranch(item.name)}
+            onToggle={() => control.onToggleBranch(node.name)}
           />
         ) : (
           // 子を持たない行にも同じ幅を空け、型アイコンの左端を兄弟と揃える
@@ -373,17 +325,21 @@ function TreeBranch({
           />
         )}
         <SelectableName
-          name={item.name}
-          marks={item.marks}
+          name={node.name}
+          marks={nodeMarks(node)}
           isSelected={isSelected}
           onSelect={control.onSelect}
         />
-        {trailing}
+        <ReorderButtons
+          name={node.name}
+          placement={placement}
+          onReorder={control.onReorder}
+        />
       </div>
       {showsChildren ? (
         <NodeList
-          nodes={item.children}
-          parentName={item.name}
+          nodes={children}
+          parentName={node.name}
           depth={depth + 1}
           control={control}
         />
@@ -415,19 +371,10 @@ function NodeList({
       {nodes.map((node, index) => (
         <li key={node.name}>
           <TreeBranch
-            item={nodeItem(node)}
+            node={node}
+            placement={{ position: { parentName, index }, siblings: nodes }}
             depth={depth}
             control={control}
-            trailing={
-              <ReorderButtons
-                name={node.name}
-                placement={{
-                  position: { parentName, index },
-                  siblings: nodes,
-                }}
-                onReorder={control.onReorder}
-              />
-            }
           />
         </li>
       ))}
@@ -436,16 +383,18 @@ function NodeList({
 }
 
 /**
- * ツリービュー（docs/06-ui.md「画面構成」）。
+ * 今見ている artboard の中身を出すツリービュー（docs/06-ui.md「画面構成」。
+ * UI 案 docs/Design Composer.html の `Layers` パネル下段）。
+ *
+ * artboard 自身は行として出さない。UI 案は artboard を上段の `Artboards`
+ * （`ArtboardList`）に並べ、ツリーはそのうちの 1 枚の中身だけを映す。どの 1 枚かは
+ * 選択から決まる（`EditorState.currentArtboard`）ので、ここは持たない。
  *
  * どの枝を畳んでいるかは編集ではなく見え方なので、ドキュメントの状態
  * （`EditorState`）には持たずここに閉じる。畳んだ側の名前を持つので、開いた直後は
  * 全部が開いた状態になり、後から増えたノードが畳まれた状態で現れることもない。
  * ただし畳んだ名前は消えたノードのぶんも残るので、同じ名前でノードを作り直すと
  * 畳んだ状態で現れる（名前は使い回される。三角で状態は読めるので許容している）。
- *
- * artboard 自身には並べ替えボタンを出さない。artboard の追加・削除・並べ替えは
- * 別の操作（#43）で、ここが担うのは同じ親の中の子順序だけ（#33）。
  */
 export function DocumentTree({
   state,
@@ -456,10 +405,20 @@ export function DocumentTree({
   onSelect: (name: string) => void;
   onReorder: (from: ChildPosition, toIndex: number) => void;
 }>) {
-  const artboards = EditorState.document(state).artboards;
+  const current = EditorState.currentArtboard(state);
   const [collapsedNames, setCollapsedNames] = useState<ReadonlySet<string>>(
     () => new Set(),
   );
+
+  /*
+   * 映す artboard が無いのは artboard が 1 枚も無いときだけで、それは
+   * `ArtboardList` が伝える。ここで見出しだけを出すと、同じ「無い」を 2 箇所で言う。
+   */
+  if (!current.some) {
+    return null;
+  }
+
+  const artboard = current.value;
   const control: TreeControl = {
     state,
     collapsedNames,
@@ -471,29 +430,28 @@ export function DocumentTree({
 
   return (
     /*
-     * 左ペインには編集操作のボタンや部品一覧のボタンも並ぶため、
-     * ツリーの行だけを指せるよう領域として名前を持たせる（#39）。
+     * 左ペインには artboard の一覧や編集操作のボタンも並ぶため、ツリーの行だけを
+     * 指せるよう領域として名前を持たせる（#39）。見出しの綴りは UI 案に合わせて
+     * `Layers` だが、読み上げ名は他の領域と同じく日本語のまま置く
+     * （パネルの見出しも `Layers` なので、そのまま名前にすると 2 つが同じ名前になる）。
      */
     <section aria-label="ツリー" className="text-sm">
-      {/*
-       * 見出しは置かない。パネル側が `Layers` の見出しを持つようになり（#129）、
-       * UI 案の `Layers` パネルにもツリーに相当する 2 つ目の見出しが無い。
-       * この領域が何かは上の `aria-label` が伝える（読み上げでも二重にならない）。
-       */}
-      {artboards.length === 0 ? (
-        <p className="text-gray-500">artboard がありません</p>
-      ) : (
-        <ul>
-          {artboards.map((artboard) => (
-            <li key={artboard.name}>
-              <TreeBranch
-                item={artboardItem(artboard)}
-                depth={0}
-                control={control}
-              />
-            </li>
-          ))}
-        </ul>
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <h3 className="font-semibold text-gray-500 text-xs uppercase">
+          Layers
+        </h3>
+        {/* どの artboard の中身を映しているかを右端に出す（UI 案の `login`） */}
+        <span className="min-w-0 truncate text-gray-400 text-xs">
+          {artboard.name}
+        </span>
+      </div>
+      {artboard.children.length === 0 ? null : (
+        <NodeList
+          nodes={artboard.children}
+          parentName={artboard.name}
+          depth={0}
+          control={control}
+        />
       )}
     </section>
   );

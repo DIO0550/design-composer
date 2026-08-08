@@ -1,3 +1,4 @@
+import type { Artboard } from "@/domains/artboard";
 import type { AxisLength } from "@/domains/axis-length";
 import { ChildPosition } from "@/domains/child-position";
 import { DesignDocument } from "@/domains/design-document";
@@ -8,6 +9,7 @@ import type { DocumentReload } from "@/features/editor/domains/document-reload";
 import { EditHistory } from "@/features/editor/domains/edit-history";
 import { NodeTemplate } from "@/features/editor/domains/node-template";
 import { TokenTemplate } from "@/features/editor/domains/token-template";
+import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 
 /**
@@ -400,6 +402,35 @@ export const EditorState = {
 
   isSelected(state: EditorState, name: string): boolean {
     return state.selectedName.some && state.selectedName.value === name;
+  },
+
+  /**
+   * 今ツリーが中身を映している artboard（UI 案 docs/Design Composer.html の
+   * `Layers` 見出しの右に出る名前）。
+   *
+   * 選んでいるのが artboard ならそれ自身、ノードならそれを載せている artboard、
+   * 何も選んでいなければ先頭の 1 枚。artboard が 1 枚も無ければ `none`。
+   *
+   * どれを見ているかを状態として持たずここで導出するのは、持つと
+   * 「今見ている artboard の外にあるノードが選択されている」という食い違った状態が
+   * 表現できてしまうため。選択から導けば「選択は常に今見ている artboard の中にある」が
+   * 構造的に成り立つ（rules/coding.md「不正な状態を型で表現できなくする」）。
+   */
+  currentArtboard(state: EditorState): Option<Artboard> {
+    const document = EditorState.document(state);
+    const owning = Option.flatMap(state.selectedName, (name) =>
+      DesignDocument.findOwningArtboard(document, name),
+    );
+    if (owning.some) {
+      return owning;
+    }
+    return ArrayEx.first(document.artboards);
+  },
+
+  /** その名前の artboard が今見ている 1 枚か。 */
+  isCurrentArtboard(state: EditorState, name: string): boolean {
+    const current = EditorState.currentArtboard(state);
+    return current.some && current.value.name === name;
   },
 
   /** そのトークンが選択中か。名前は種別の中でしか一意でないので種別も見る。 */

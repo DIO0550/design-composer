@@ -1,7 +1,7 @@
-import { screen, within } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
-import { renderOpenedDocument } from "./setup";
+import { renderOpenedDocument, selectArtboard, selectInTree } from "./setup";
 
 /*
  * プロパティパネルからの props 編集を、編集画面の配線ごと確かめる
@@ -10,15 +10,6 @@ import { renderOpenedDocument } from "./setup";
  * パネル単体のテスト（property-panel）は編集が渡ることまでしか見ないので、
  * 渡した編集がドキュメントへ入りキャンバスへ出るところはここでしか通らない。
  */
-
-function tree(): HTMLElement {
-  return screen.getByRole("region", { name: "ツリー" });
-}
-
-/** ツリーの行を名前で押して選ぶ。同じ名前はキャンバスにも出るのでツリーに絞る。 */
-async function selectInTree(name: string): Promise<void> {
-  await userEvent.click(within(tree()).getByRole("button", { name }));
-}
 
 test("プロパティパネルで文言を変えるとキャンバスの表示が変わる", async () => {
   await renderOpenedDocument();
@@ -35,7 +26,7 @@ test("プロパティパネルで文言を変えるとキャンバスの表示�
 
 test("トークン参照の prop を選び直すとその値がパネルに残る", async () => {
   await renderOpenedDocument();
-  await selectInTree("home");
+  await selectArtboard("home");
 
   await userEvent.selectOptions(
     screen.getByRole("combobox", { name: "Background" }),

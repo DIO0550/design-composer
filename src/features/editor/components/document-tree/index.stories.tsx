@@ -1,10 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
-import {
-  EMPTY_EDITOR_STATE,
-  SAMPLE_EDITOR_STATE,
-} from "@/features/editor/__stories__/sample-editor-state";
+import { SAMPLE_EDITOR_STATE } from "@/features/editor/__stories__/sample-editor-state";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { DocumentTree } from "./index";
 
@@ -31,19 +28,14 @@ export const Default: Story = {
   args: { state: SAMPLE_EDITOR_STATE },
 };
 
-export const Selected: Story = {
-  name: "artboard を選択中",
-  args: { state: EditorState.select(SAMPLE_EDITOR_STATE, "home") },
+export const OtherArtboard: Story = {
+  name: "別の artboard を選択中",
+  args: { state: EditorState.select(SAMPLE_EDITOR_STATE, "settings") },
 };
 
 export const NodeSelected: Story = {
   name: "artboard 配下のノードを選択中",
   args: { state: EditorState.select(SAMPLE_EDITOR_STATE, "home-title") },
-};
-
-export const Empty: Story = {
-  name: "artboard がない",
-  args: { state: EMPTY_EDITOR_STATE },
 };
 
 /**

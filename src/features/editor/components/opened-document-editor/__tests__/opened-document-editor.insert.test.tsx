@@ -1,8 +1,8 @@
-import { screen, within } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
-import { treeRowNames } from "@/features/editor/__tests__/tree-rows";
-import { renderOpenedDocument } from "./setup";
+import { rowNames } from "@/features/editor/__tests__/row-names";
+import { renderOpenedDocument, selectArtboard, tree } from "./setup";
 
 /*
  * プリミティブの挿入を、編集画面の配線ごと確かめる
@@ -15,43 +15,20 @@ import { renderOpenedDocument } from "./setup";
  * が見る（#129）。
  */
 
-function tree(): HTMLElement {
-  return screen.getByRole("region", { name: "ツリー" });
-}
-
-/** ツリーの行を名前で押して選ぶ。同じ名前はキャンバスにも出るのでツリーに絞る。 */
-async function selectInTree(name: string): Promise<void> {
-  await userEvent.click(within(tree()).getByRole("button", { name }));
-}
-
 test("Box を追加すると選択位置の子として増える", async () => {
   await renderOpenedDocument();
-  await selectInTree("home");
+  await selectArtboard("home");
 
   await userEvent.click(screen.getByRole("button", { name: "Box を追加" }));
 
-  expect(treeRowNames(tree())).toEqual([
-    "home",
-    "home-title",
-    "home-login",
-    "box",
-    "settings",
-    "settings-card",
-  ]);
+  expect(rowNames(tree())).toEqual(["home-title", "home-login", "box"]);
 });
 
 test("Text を追加すると選択位置の子として増える", async () => {
   await renderOpenedDocument();
-  await selectInTree("home");
+  await selectArtboard("home");
 
   await userEvent.click(screen.getByRole("button", { name: "Text を追加" }));
 
-  expect(treeRowNames(tree())).toEqual([
-    "home",
-    "home-title",
-    "home-login",
-    "text",
-    "settings",
-    "settings-card",
-  ]);
+  expect(rowNames(tree())).toEqual(["home-title", "home-login", "text"]);
 });

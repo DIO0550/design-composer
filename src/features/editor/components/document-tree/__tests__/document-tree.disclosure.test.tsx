@@ -2,14 +2,13 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
-import { treeRowNames } from "@/features/editor/__tests__/tree-rows";
+import { rowNames } from "@/features/editor/__tests__/row-names";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { DocumentTree } from "../index";
 
 /**
  * 開閉の場合分けを 1 つの木で見られるようにする。
- * `body` は孫まで持つ枝、`aside` はその兄弟の枝、`title` は子を持たない行、
- * `empty-board` は子を持たない artboard。
+ * `body` は孫まで持つ枝、`aside` はその兄弟の枝、`title` は子を持たない行。
  */
 function setupState(): EditorState {
   return EditorState.create(
@@ -40,7 +39,6 @@ function setupState(): EditorState {
             },
           ],
         },
-        { name: "empty-board", width: 375, height: 812, children: [] },
       ],
     }),
   );
@@ -64,8 +62,7 @@ function renderTree(): {
 test("開いた直後はすべての枝が開いている", () => {
   const { tree } = renderTree();
 
-  expect(treeRowNames(tree)).toEqual([
-    "home",
+  expect(rowNames(tree)).toEqual([
     "title",
     "body",
     "body-text",
@@ -73,7 +70,6 @@ test("開いた直後はすべての枝が開いている", () => {
     "deep-text",
     "aside",
     "aside-text",
-    "empty-board",
   ]);
 });
 
@@ -87,20 +83,6 @@ test("子を持たないノードの行には開閉の操作が出ない", () =>
   renderTree();
 
   expect(screen.queryByRole("button", { name: "title の開閉" })).toBeNull();
-});
-
-test("子を持つ artboard の行には開閉の操作が出る", () => {
-  renderTree();
-
-  expect(screen.getByRole("button", { name: "home の開閉" })).toBeDefined();
-});
-
-test("子を持たない artboard の行には開閉の操作が出ない", () => {
-  renderTree();
-
-  expect(
-    screen.queryByRole("button", { name: "empty-board の開閉" }),
-  ).toBeNull();
 });
 
 test("開いている枝の開閉の操作は開いた状態として示される", () => {
@@ -168,14 +150,7 @@ test("枝を畳んでもその枝自身の行は並びに残る", async () => {
 
   await userEvent.click(screen.getByRole("button", { name: "body の開閉" }));
 
-  expect(treeRowNames(tree)).toEqual([
-    "home",
-    "title",
-    "body",
-    "aside",
-    "aside-text",
-    "empty-board",
-  ]);
+  expect(rowNames(tree)).toEqual(["title", "body", "aside", "aside-text"]);
 });
 
 test("枝を畳んでも兄弟の枝の子は並んだままになる", async () => {
@@ -210,12 +185,4 @@ test("畳んだ枝の行を押すとその枝が選択として伝わる", async
   await userEvent.click(screen.getByRole("button", { name: "body" }));
 
   expect(onSelect).toHaveBeenCalledWith("body");
-});
-
-test("artboard を畳むとその中身が並びから消える", async () => {
-  const { tree } = renderTree();
-
-  await userEvent.click(screen.getByRole("button", { name: "home の開閉" }));
-
-  expect(treeRowNames(tree)).toEqual(["home", "empty-board"]);
 });
