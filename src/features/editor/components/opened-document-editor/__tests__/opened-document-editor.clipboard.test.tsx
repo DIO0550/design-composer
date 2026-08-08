@@ -1,8 +1,12 @@
-import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { rowNames } from "@/features/editor/__tests__/row-names";
-import { renderOpenedDocument } from "./setup";
+import {
+  renderOpenedDocument,
+  selectArtboard,
+  selectInTree,
+  tree,
+} from "./setup";
 
 /*
  * コピー & ペーストを、編集画面の配線ごと確かめる
@@ -14,25 +18,6 @@ import { renderOpenedDocument } from "./setup";
 
 /** 開いた直後のツリーの行（今見ている artboard = home の配下）。 */
 const ORIGINAL_ROWS = ["home-title", "home-login"];
-
-function tree(): HTMLElement {
-  return screen.getByRole("region", { name: "ツリー" });
-}
-
-/** ツリーの行を名前で押して選ぶ。同じ名前はキャンバスにも出るのでツリーに絞る。 */
-async function selectInTree(name: string): Promise<void> {
-  await userEvent.click(within(tree()).getByRole("button", { name }));
-}
-
-/** artboard の一覧から選ぶ。artboard はツリーの行ではないのでこちらから押す。 */
-async function selectArtboard(name: string): Promise<void> {
-  await userEvent.click(
-    within(screen.getByRole("region", { name: "artboard 一覧" })).getByRole(
-      "button",
-      { name },
-    ),
-  );
-}
 
 test("配下のノードをコピーして貼ると自動で採番された複製が増える", async () => {
   await renderOpenedDocument();
@@ -47,6 +32,18 @@ test("配下のノードをコピーして貼ると自動で採番された複�
     "home-login",
     "home-title-2",
   ]);
+});
+
+test("貼り付けたノードは選んでいない artboard には増えない", async () => {
+  await renderOpenedDocument();
+  await selectInTree("home-title");
+  await userEvent.keyboard("{Control>}c{/Control}");
+  await selectArtboard("home");
+  await userEvent.keyboard("{Control>}v{/Control}");
+
+  await selectArtboard("settings");
+
+  expect(rowNames(tree())).toEqual(["settings-card"]);
 });
 
 test("artboard を選んでコピーしても貼れるものは増えない", async () => {

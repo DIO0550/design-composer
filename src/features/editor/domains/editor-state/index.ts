@@ -9,6 +9,7 @@ import type { DocumentReload } from "@/features/editor/domains/document-reload";
 import { EditHistory } from "@/features/editor/domains/edit-history";
 import { NodeTemplate } from "@/features/editor/domains/node-template";
 import { TokenTemplate } from "@/features/editor/domains/token-template";
+import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 
 /**
@@ -423,7 +424,7 @@ export const EditorState = {
     if (owning.some) {
       return owning;
     }
-    return Option.fromNullable(document.artboards[0]);
+    return ArrayEx.first(document.artboards);
   },
 
   /** その名前の artboard が今見ている 1 枚か。 */

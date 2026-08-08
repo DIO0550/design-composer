@@ -1,8 +1,8 @@
-import { screen, within } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { rowNames } from "@/features/editor/__tests__/row-names";
-import { renderOpenedDocument } from "./setup";
+import { renderOpenedDocument, selectArtboard, tree } from "./setup";
 
 /*
  * プリミティブの挿入を、編集画面の配線ごと確かめる
@@ -14,20 +14,6 @@ import { renderOpenedDocument } from "./setup";
  * インスタンスの挿入は Assets パネルへ移ったので `opened-document-editor.left-pane`
  * が見る（#129）。
  */
-
-function tree(): HTMLElement {
-  return screen.getByRole("region", { name: "ツリー" });
-}
-
-/** artboard の一覧から選ぶ。artboard はツリーの行ではないのでこちらから押す。 */
-async function selectArtboard(name: string): Promise<void> {
-  await userEvent.click(
-    within(screen.getByRole("region", { name: "artboard 一覧" })).getByRole(
-      "button",
-      { name },
-    ),
-  );
-}
 
 test("Box を追加すると選択位置の子として増える", async () => {
   await renderOpenedDocument();

@@ -1,4 +1,5 @@
-import { act, render } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { SAMPLE_DOCUMENT } from "@/features/editor/__tests__/sample-document";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
@@ -25,4 +26,31 @@ export async function renderOpenedDocument(): Promise<void> {
     />,
   );
   await act(async () => {});
+}
+
+/**
+ * ツリーの領域。行を読む相手はここに絞る。左ペインにはレールの行き先ボタンも並び、
+ * そちらも `aria-current` を持つため、ペイン全体を渡すと行き先が行として混ざる
+ * （`row-names` の注意書きのとおり）。
+ */
+export function tree(): HTMLElement {
+  return screen.getByRole("region", { name: "ツリー" });
+}
+
+/**
+ * artboard の一覧の領域。artboard はツリーの行ではなく上段の一覧に並ぶので（#112）、
+ * 選ぶのも今どれを見ているかを読むのもこちらから行う。
+ */
+export function artboardList(): HTMLElement {
+  return screen.getByRole("region", { name: "artboard 一覧" });
+}
+
+/** ツリーの行を名前で押して選ぶ。同じ名前はキャンバスにも出るのでツリーに絞る。 */
+export async function selectInTree(name: string): Promise<void> {
+  await userEvent.click(within(tree()).getByRole("button", { name }));
+}
+
+/** artboard の一覧から選ぶ。artboard はツリーの行ではないのでこちらから押す。 */
+export async function selectArtboard(name: string): Promise<void> {
+  await userEvent.click(within(artboardList()).getByRole("button", { name }));
 }

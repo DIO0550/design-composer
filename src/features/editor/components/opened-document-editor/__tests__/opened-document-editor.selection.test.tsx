@@ -6,29 +6,12 @@ import {
   renderedElement,
 } from "@/features/editor/__tests__/canvas-elements";
 import { currentRowNames } from "@/features/editor/__tests__/row-names";
-import { renderOpenedDocument } from "./setup";
+import { artboardList, renderOpenedDocument, tree } from "./setup";
 
 /**
  * 3 ペインを実物のまま組み立て、キャンバスとツリービューの選択が
  * 双方向に連動することを確かめる（docs/06-ui.md「選択」）。
  */
-/*
- * 選択の行を読む相手はツリーの領域に絞る。左ペインにはレールの行き先ボタンも並び、
- * そちらも `aria-current` を持つため、ペイン全体を渡すと行き先が行として混ざる
- * （`row-names` の注意書きのとおり）。
- */
-function tree(): HTMLElement {
-  return screen.getByRole("region", { name: "ツリー" });
-}
-
-/*
- * artboard はツリーの行ではなく上段の一覧に並ぶ（#112）。選ぶのも今どれを見ているかを
- * 読むのもこちらの領域から行う。
- */
-function artboardList(): HTMLElement {
-  return screen.getByRole("region", { name: "artboard 一覧" });
-}
-
 function canvasPane(): HTMLElement {
   return screen.getByRole("main", { name: "キャンバス" });
 }
@@ -69,6 +52,16 @@ test("ツリービューでノードを選ぶとキャンバスのそのノー�
   );
 
   expect(highlightedNames(canvasPane())).toEqual(["home-title"]);
+});
+
+test("artboard の一覧で artboard を選ぶとキャンバスのその artboard が強調される", async () => {
+  await renderOpenedDocument();
+
+  await userEvent.click(
+    within(artboardList()).getByRole("button", { name: "settings" }),
+  );
+
+  expect(highlightedNames(canvasPane())).toEqual(["settings"]);
 });
 
 test("キャンバスで選んだノードはキャンバス上でも強調される", async () => {

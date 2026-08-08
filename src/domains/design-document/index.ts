@@ -316,10 +316,10 @@ export const DesignDocument = {
     if (named.some) {
       return named;
     }
-    return Option.fromNullable(
-      document.artboards.find(
-        (artboard) => Artboard.findNode(artboard, name).some,
-      ),
+    // 走査そのものは `artboardIndexOfNode` が持つ（同じ探索を 2 つ書かない）
+    return Option.map(
+      artboardIndexOfNode(document, name),
+      (index) => document.artboards[index],
     );
   },
 

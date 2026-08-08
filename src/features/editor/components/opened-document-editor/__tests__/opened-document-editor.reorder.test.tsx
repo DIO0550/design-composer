@@ -2,11 +2,7 @@ import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { rowNames } from "@/features/editor/__tests__/row-names";
-import { renderOpenedDocument } from "./setup";
-
-function tree(): HTMLElement {
-  return screen.getByRole("region", { name: "ツリー" });
-}
+import { renderOpenedDocument, tree } from "./setup";
 
 test("ツリービューで子を下へ動かすと兄弟の並びがその順序に変わる", async () => {
   await renderOpenedDocument();

@@ -9,18 +9,22 @@ import {
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { ArtboardList } from "../index";
 
-/** artboard 2 枚。片方の配下にノードを置いて、ノードを選んだときの見え方も見られるようにする。 */
+/**
+ * artboard 2 枚。ノードは 2 枚目（`settings`）だけに置く。先頭の `home` に置くと、
+ * 「ノードから artboard を辿る」規則を壊しても「選択なしは先頭」の既定で同じ答えになり、
+ * ノードを選んだときのテストが落ちなくなるため。
+ */
 function setupState(): EditorState {
   return EditorState.create(
     DesignDocument.create({
       artboards: [
+        { name: "home", width: 360, height: 240, children: [] },
         {
-          name: "home",
-          width: 360,
-          height: 240,
-          children: [{ name: "home-title", type: "Text" }],
+          name: "settings",
+          width: 375,
+          height: 812,
+          children: [{ name: "settings-title", type: "Text" }],
         },
-        { name: "settings", width: 375, height: 812, children: [] },
       ],
     }),
   );
@@ -64,9 +68,11 @@ test("artboard を選ぶとその artboard が今見ている1枚として示さ
 });
 
 test("配下のノードを選んでいるときはそれを載せている artboard が今見ている1枚として示される", () => {
-  const { list } = renderList(EditorState.select(setupState(), "home-title"));
+  const { list } = renderList(
+    EditorState.select(setupState(), "settings-title"),
+  );
 
-  expect(currentRowNames(list)).toEqual(["home"]);
+  expect(currentRowNames(list)).toEqual(["settings"]);
 });
 
 test("artboard が1枚も無いときはその旨が表示される", () => {

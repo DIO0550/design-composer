@@ -2,11 +2,7 @@ import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { rowNames } from "@/features/editor/__tests__/row-names";
-import { renderOpenedDocument } from "./setup";
-
-function tree(): HTMLElement {
-  return screen.getByRole("region", { name: "ツリー" });
-}
+import { renderOpenedDocument, tree } from "./setup";
 
 /** 並べ替え前の home の子の並び。 */
 const ORIGINAL_CHILDREN = ["home-title", "home-login"];

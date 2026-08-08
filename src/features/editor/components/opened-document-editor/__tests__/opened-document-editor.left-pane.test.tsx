@@ -7,7 +7,7 @@ import {
   LEFT_PANE_VIEWS,
   type LeftPaneView,
 } from "@/features/editor/components/left-pane-rail";
-import { renderOpenedDocument } from "./setup";
+import { renderOpenedDocument, selectArtboard, selectInTree } from "./setup";
 
 /*
  * 左ペインの行き先の切り替えを、編集画面の配線ごと確かめる
@@ -31,25 +31,6 @@ async function goTo(view: LeftPaneView): Promise<void> {
     within(
       screen.getByRole("navigation", { name: "左ペインの表示" }),
     ).getByRole("button", { name: LEFT_PANE_VIEW_LABELS[view] }),
-  );
-}
-
-/** ツリーの行を名前で押して選ぶ。同じ名前はキャンバスにも出るのでツリーに絞る。 */
-async function selectInTree(name: string): Promise<void> {
-  await userEvent.click(
-    within(screen.getByRole("region", { name: "ツリー" })).getByRole("button", {
-      name,
-    }),
-  );
-}
-
-/** artboard の一覧から選ぶ。artboard はツリーの行ではないのでこちらから押す。 */
-async function selectArtboard(name: string): Promise<void> {
-  await userEvent.click(
-    within(screen.getByRole("region", { name: "artboard 一覧" })).getByRole(
-      "button",
-      { name },
-    ),
   );
 }
 

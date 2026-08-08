@@ -5,28 +5,27 @@ import { EditorState } from "../index";
 
 /**
  * 今見ている artboard は選択から導かれる（docs/06-ui.md「選択」/ #112）。
- * 2 枚の artboard と、その一方の孫まで持つ木で場合分けを見る。
+ *
+ * ノードはすべて 2 枚目（`settings`）にぶら下げる。先頭の `home` に置くと、
+ * 「ノードから artboard を辿る」規則を壊しても「選択なしは先頭」の既定で
+ * 同じ答えになり、テストが落ちなくなるため。
  */
 function setupDocument(): DesignDocument {
   return DesignDocument.create({
     artboards: [
+      { name: "home", width: 375, height: 812, children: [] },
       {
-        name: "home",
+        name: "settings",
         width: 375,
         height: 812,
         children: [
+          { name: "settings-title", type: "Text" },
           {
             name: "body",
             type: "Box",
             children: [{ name: "body-text", type: "Text" }],
           },
         ],
-      },
-      {
-        name: "settings",
-        width: 375,
-        height: 812,
-        children: [{ name: "settings-title", type: "Text" }],
       },
     ],
   });
@@ -67,7 +66,7 @@ test("孫ノードを選んでもそれを載せている artboard を見てい�
     "body-text",
   );
 
-  expect(currentName(state)).toBe("home");
+  expect(currentName(state)).toBe("settings");
 });
 
 test("ドキュメントに無い名前を選んでも選択は成立しないので先頭の artboard を見ている", () => {
