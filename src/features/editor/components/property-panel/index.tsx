@@ -1,10 +1,16 @@
 import { useId } from "react";
 import type { PropEdit } from "@/domains/node";
-import type { EditorState } from "@/features/editor/domains/editor-state";
+import { EditorLayout } from "@/features/editor/components/editor-layout";
+import { TypeGlyph } from "@/features/editor/components/type-glyph";
+import { EditorState } from "@/features/editor/domains/editor-state";
 import {
   PropControl,
   PropControlSection,
 } from "@/features/editor/domains/prop-control";
+import type {
+  Selection,
+  SelectionKind,
+} from "@/features/editor/domains/selection";
 import { CaseStyle } from "@/utils/CaseStyle";
 import { Option } from "@/utils/Option";
 
@@ -147,7 +153,53 @@ function GroupSection({
 }
 
 /**
- * プロパティパネル（docs/06-ui.md「画面構成」）。
+ * 帯の右端に出す種別の綴り（UI 案 docs/Design Composer.html の `Box` / `Instance`）。
+ *
+ * ドメインには置かない。ドメインが答えるのは「参照ノードか」「どの primitive か」で、
+ * `Instance` はそれをこの画面でどう呼ぶかという表示の語彙。実際、同じ参照ノードを
+ * ツリーは `inst`、ここは `Instance` と綴っている（`rules/architecture.md`
+ * 「ドメインが出力形式を必要とする場合」と同じ線引き）。
+ *
+ * 種別を足して綴りを足し忘れると、ここがコンパイルエラーになる。
+ */
+const KIND_LABELS = {
+  artboard: "Artboard",
+  Box: "Box",
+  Text: "Text",
+  component: "Instance",
+} as const satisfies Readonly<Record<SelectionKind, string>>;
+
+/**
+ * 選んでいるものを出す見出しの中身（型アイコン + 名前 + 右端に種別）。
+ *
+ * 種別が `none`（スキーマに無い `type`）のときはアイコンも綴りも出さず名前だけにする。
+ * 分からない種別を既定へ寄せると、不正なドキュメントであることが画面から消える
+ * （ツリーの行と同じ扱い）。
+ */
+function SelectionTitle({ selection }: Readonly<{ selection: Selection }>) {
+  return (
+    <>
+      {selection.kind.some ? <TypeGlyph kind={selection.kind.value} /> : null}
+      {/* 名前が余りを占める。flex の子は既定で内容幅より縮まないため省略には min-w-0 が要る */}
+      <h2 className="min-w-0 flex-1 truncate font-semibold text-gray-900 text-sm">
+        {selection.name}
+      </h2>
+      {selection.kind.some ? (
+        <span className="shrink-0 text-gray-400 text-xs">
+          {KIND_LABELS[selection.kind.value]}
+        </span>
+      ) : null}
+    </>
+  );
+}
+
+/**
+ * プロパティパネル（docs/06-ui.md「画面構成」。
+ * UI 案 docs/Design Composer.html のインスペクタ）。
+ *
+ * 見出しの帯には選んでいるものを出す。何も選んでいないときも**帯は残す**
+ * （消すと選択のたびに本文の位置が帯のぶん動く）。
+ *
  * 入力欄はスキーマ定数の走査だけで決まる（`PropControlSection.forSelection`）ため、
  * ここには prop 名で分岐するコードを置かない。
  */
@@ -160,50 +212,42 @@ export function PropertyPanel({
   onEditProp: (edit: PropEdit) => void;
   onClearSelection: () => void;
 }>) {
-  const selectedName = state.selectedName;
+  const selection = EditorState.selection(state);
   const sections = PropControlSection.forSelection(state);
 
-  if (!selectedName.some) {
-    return (
-      <section className="text-sm">
-        <h2 className="mb-2 font-semibold text-gray-500 text-xs uppercase">
-          プロパティ
-        </h2>
-        <p className="text-gray-500">選択されていません</p>
-      </section>
-    );
-  }
-
   return (
-    <section className="text-sm">
-      <h2 className="mb-2 font-semibold text-gray-500 text-xs uppercase">
-        プロパティ
-      </h2>
-      <div className="flex flex-col items-start gap-3">
-        <p>
-          選択中: <span className="font-medium">{selectedName.value}</span>
-        </p>
-        {sections.length === 0 ? (
-          <p className="text-gray-500">編集できる prop がありません</p>
-        ) : (
-          <div className="flex w-full flex-col gap-4">
-            {sections.map((section) => (
-              <GroupSection
-                key={section.group}
-                section={section}
-                onEdit={onEditProp}
-              />
-            ))}
+    <>
+      <EditorLayout.RightPane.Heading>
+        {selection.some ? <SelectionTitle selection={selection.value} /> : null}
+      </EditorLayout.RightPane.Heading>
+      <EditorLayout.RightPane.Body>
+        {selection.some ? (
+          <div className="flex flex-col items-start gap-3 text-sm">
+            {sections.length === 0 ? (
+              <p className="text-gray-500">編集できる prop がありません</p>
+            ) : (
+              <div className="flex w-full flex-col gap-4">
+                {sections.map((section) => (
+                  <GroupSection
+                    key={section.group}
+                    section={section}
+                    onEdit={onEditProp}
+                  />
+                ))}
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={onClearSelection}
+              className="rounded border border-gray-300 px-2 py-1 text-sm hover:bg-gray-100"
+            >
+              選択を解除
+            </button>
           </div>
+        ) : (
+          <p className="text-gray-500 text-sm">選択されていません</p>
         )}
-        <button
-          type="button"
-          onClick={onClearSelection}
-          className="rounded border border-gray-300 px-2 py-1 hover:bg-gray-100"
-        >
-          選択を解除
-        </button>
-      </div>
-    </section>
+      </EditorLayout.RightPane.Body>
+    </>
   );
 }

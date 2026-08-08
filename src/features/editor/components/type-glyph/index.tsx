@@ -1,20 +1,25 @@
-import type { PrimitiveType } from "@/domains/primitive-schema";
+import type { SelectionKind } from "@/features/editor/domains/selection";
 
 /**
  * アイコンが表す対象の種別。UI 案（docs/Design Composer.html）は artboard・
  * プリミティブ・部品をそれぞれ別のアイコンで描き分ける。
  *
- * プリミティブの綴りを直接並べず `PrimitiveType` から導出するのは、primitive が
- * 増えたときにアイコンの取りこぼしをコンパイルエラーにするため。
+ * 種別の並びは `SelectionKind`（選択の対象になりうるものの種別）をそのまま使う。
+ * パレットの部品定義にも `component` を渡すが、これは UI 案が定義とインスタンスの
+ * どちらの行にも `◆` を置いているため（字面が同じなら並びも 1 つでよい）。
  */
-export type TypeGlyphKind = "artboard" | PrimitiveType | "component";
+export type TypeGlyphKind = SelectionKind;
 
 /** 字面と色の対で 1 つの種別を表す。 */
 type Glyph = Readonly<{ symbol: string; className: string }>;
 
 /**
- * 種別ごとのアイコン。字面・色はいずれも UI 案の default 状態から採った値で、
- * Tailwind の色名に対応するものが無いため実際の色をそのまま書いている。
+ * 種別ごとのアイコン。字面は UI 案から採った値で、Tailwind の色名に対応するものが
+ * 無いため色は実際の値をそのまま書いている。
+ *
+ * 色のうち UI 案と一致しているのは `artboard` と `component` だけ。UI 案は `□` / `T` を
+ * **選択状態**で塗り分けており（選択中は青、それ以外は灰）、種別の色を持っていない。
+ * ここは種別ごとに 1 色のままにしてある（#112 の別の単位で扱う）。
  *
  * `component` はツリーの参照ノード（インスタンス）にも使う。指しているものが
  * 部品である点は同じで、UI 案もどちらの行にも `◆` を置いている。
@@ -28,7 +33,7 @@ const GLYPHS = {
   artboard: { symbol: "#", className: "text-[#0d99ff]" },
   Box: { symbol: "□", className: "text-[#00a0a0]" },
   Text: { symbol: "T", className: "font-bold text-[#c67c00]" },
-  component: { symbol: "◆", className: "text-[#8b5cf6]" },
+  component: { symbol: "◆", className: "text-[#9747ff]" },
 } as const satisfies Readonly<Record<TypeGlyphKind, Glyph>>;
 
 /**
