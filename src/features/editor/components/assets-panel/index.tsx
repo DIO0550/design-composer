@@ -58,6 +58,12 @@ export function AssetsPanel({
         onChange={(event) => setQuery(event.target.value)}
         className="rounded border border-gray-300 px-2 py-1 text-sm placeholder:text-gray-400"
       />
+      {/*
+       * どちらにも残らなかったときは、節ごと知らせに置き換える。空の `Primitives` と
+       * `Components 0` を残したうえで知らせも出すと、同じ「無い」を 3 箇所で言うことに
+       * なるため。片方にでも残っていれば、残らなかった側は見出しと `0` をそのまま出す
+       * （そちらは「この節には無い」という情報になる）。
+       */}
       {hasNoMatch ? (
         <p className="text-gray-500 text-sm">{NO_MATCH_MESSAGE}</p>
       ) : (

@@ -91,3 +91,25 @@ test("どれにも一致しない語では行が1つも出ない", async () => {
 
   expect(screen.queryAllByRole("listitem")).toEqual([]);
 });
+
+/*
+ * どちらにも残らなかったときだけ、節ごと知らせに置き換える。空の節を残したうえで
+ * 知らせも出すと、同じ「無い」を 3 箇所で言うことになる。
+ */
+test("どれにも一致しない語では節の見出しも出ない", async () => {
+  setup();
+
+  await search("zzz");
+
+  expect(screen.queryByText("Primitives")).toBeNull();
+  expect(screen.queryByText("Components")).toBeNull();
+});
+
+test("片方にだけ残ったときは残らなかった側の見出しは出たままになる", async () => {
+  setup();
+
+  await search("box");
+
+  expect(screen.getByText("Primitives")).toBeDefined();
+  expect(screen.getByText("Components")).toBeDefined();
+});
