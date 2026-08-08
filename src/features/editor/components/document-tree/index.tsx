@@ -475,9 +475,11 @@ export function DocumentTree({
      * ツリーの行だけを指せるよう領域として名前を持たせる（#39）。
      */
     <section aria-label="ツリー" className="text-sm">
-      <h2 className="mb-2 font-semibold text-gray-500 text-xs uppercase">
-        ツリー
-      </h2>
+      {/*
+       * 見出しは置かない。パネル側が `Layers` の見出しを持つようになり（#129）、
+       * UI 案の `Layers` パネルにもツリーに相当する 2 つ目の見出しが無い。
+       * この領域が何かは上の `aria-label` が伝える（読み上げでも二重にならない）。
+       */}
       {artboards.length === 0 ? (
         <p className="text-gray-500">artboard がありません</p>
       ) : (

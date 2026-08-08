@@ -12,12 +12,10 @@ function setupLayout() {
   );
 }
 
-test("左ペインに渡した中身がツリービュー・部品一覧の領域に表示される", () => {
+test("左ペインに渡した中身が左ペインの領域に表示される", () => {
   setupLayout();
 
-  const leftPane = screen.getByRole("complementary", {
-    name: "ツリービュー・部品一覧",
-  });
+  const leftPane = screen.getByRole("complementary", { name: "左ペイン" });
 
   expect(within(leftPane).getByText("左の中身")).toBeDefined();
 });

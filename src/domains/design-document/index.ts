@@ -3,7 +3,7 @@ import type { AxisLength } from "@/domains/axis-length";
 import type { ChildPosition } from "@/domains/child-position";
 import {
   Component,
-  type ComponentRefCount,
+  type ComponentAsset,
   ComponentSet,
 } from "@/domains/component";
 import {
@@ -286,11 +286,11 @@ export const DesignDocument = {
   },
 
   /**
-   * 部品ごとの被参照回数。数える規則は `ComponentSet` が持ち、ここは
+   * パレットに並べる部品の一覧。組み立ての規則は `ComponentSet` が持ち、ここは
    * 「部品の外側にある木はどれか」を渡す調停だけを行う（`nameSpaceOf` と同じ形）。
    */
-  componentRefCounts(document: DesignDocument): readonly ComponentRefCount[] {
-    return ComponentSet.refCounts(
+  componentAssets(document: DesignDocument): readonly ComponentAsset[] {
+    return ComponentSet.assets(
       document.components,
       document.artboards.flatMap((artboard) => artboard.children),
     );

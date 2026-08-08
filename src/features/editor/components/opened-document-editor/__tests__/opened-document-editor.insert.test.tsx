@@ -5,10 +5,14 @@ import { treeRowNames } from "@/features/editor/__tests__/tree-rows";
 import { renderOpenedDocument } from "./setup";
 
 /*
- * 挿入を、編集画面の配線ごと確かめる（docs/06-ui.md「編集操作の一覧」の挿入 / #39）。
+ * プリミティブの挿入を、編集画面の配線ごと確かめる
+ * （docs/06-ui.md「編集操作の一覧」の挿入 / #39）。
  *
- * プリミティブは編集操作のボタン、インスタンスは部品一覧からしか届かないので、
- * `EditorState` 単体のテストでは画面との繋がり（雛形の指定を組み立てる部分）を通らない。
+ * 挿入は編集操作のボタンからしか届かないので、`EditorState` 単体のテストでは
+ * 画面との繋がり（雛形の指定を組み立てる部分）を通らない。
+ *
+ * インスタンスの挿入は Assets パネルへ移ったので `opened-document-editor.left-pane`
+ * が見る（#129）。
  */
 
 function tree(): HTMLElement {
@@ -47,26 +51,6 @@ test("Text を追加すると選択位置の子として増える", async () => 
     "home-title",
     "home-login",
     "text",
-    "settings",
-    "settings-card",
-  ]);
-});
-
-test("部品一覧の挿入を押すとその部品のインスタンスが選択位置の子として増える", async () => {
-  await renderOpenedDocument();
-  await selectInTree("home");
-
-  await userEvent.click(screen.getByRole("button", { name: "card を挿入" }));
-
-  /*
-   * 名前は `card` ではなく `card-2`。部品名もドキュメントの単一名前空間に属するので、
-   * 部品定義の `card` と衝突しないよう採番される（docs/01-file-format.md）。
-   */
-  expect(treeRowNames(tree())).toEqual([
-    "home",
-    "home-title",
-    "home-login",
-    "card-2",
     "settings",
     "settings-card",
   ]);
