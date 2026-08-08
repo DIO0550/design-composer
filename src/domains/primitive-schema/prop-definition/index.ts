@@ -1,5 +1,5 @@
 import { type PropAssignment, Props, type PropValue } from "@/domains/node";
-import type { TokenKind } from "@/domains/token";
+import type { TokenKind, TokenRef } from "@/domains/token";
 import { TokenSet } from "@/domains/token";
 
 /**
@@ -86,6 +86,26 @@ export const PropDefinition = {
   },
 
   /**
+   * その prop 設定が、指したトークンを参照しているか。
+   *
+   * 種別まで見るのは、トークン名の一意性が種別の中だけで保証されるため
+   * （docs/04-tokens.md「命名規則」）。`colors` と `spacing` に同名があってもよく、
+   * 名前だけで一致を見ると別の種別の同名トークンを参照しているものまで拾う。
+   *
+   * トークンが実在するかは見ない（`collectErrors` の担当）。この判定が答えるのは
+   * 「この設定はその参照を指しているか」だけなので、宙に浮いた参照にも同じ答えを返す。
+   */
+  isRefTo(
+    definition: PropDefinition,
+    assignment: PropAssignment,
+    ref: TokenRef,
+  ): boolean {
+    const isSameKind =
+      PropDefinition.isToken(definition) && definition.tokenKind === ref.kind;
+    return isSameKind && assignment.value === ref.name;
+  },
+
+  /**
    * その prop が今の props の下で編集可能か（`enabledWhen` の条件を満たすか）。
    * 条件を持たない prop は常に編集可能。
    */
@@ -158,6 +178,33 @@ export const PropDefinitionRecord = {
   /** スキーマが宣言している prop の名前。宣言順で返る。 */
   propNames(schema: PropDefinitionRecord): readonly string[] {
     return Object.keys(schema);
+  },
+
+  /**
+   * 設定されている props のうち、指したトークンを参照しているものの prop 名。
+   *
+   * 見るのは設定されている props だけで、スキーマのデフォルトで解決される値は含まない。
+   * 「どの prop がそのトークンを指しているか」に答えるものなので、指せる実体
+   * （設定された prop）が無いものは答えに入らない（`collectErrors` が設定済み props
+   * しか検証しないのと同じ範囲）。
+   *
+   * スキーマに宣言の無い prop も含まない（値の意味が決まらない。
+   * `unknown-prop` として `collectErrors` が報告する）。
+   */
+  collectRefPropNames(
+    schema: PropDefinitionRecord,
+    props: Props,
+    ref: TokenRef,
+  ): readonly string[] {
+    return Props.toAssignments(props).flatMap((assignment) => {
+      const definition = schema[assignment.name];
+      if (definition === undefined) {
+        return [];
+      }
+      return PropDefinition.isRefTo(definition, assignment, ref)
+        ? [assignment.name]
+        : [];
+    });
   },
 
   /**
