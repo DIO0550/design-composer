@@ -1,9 +1,11 @@
 /**
- * 左ペインが何を映しているか（UI 案 docs/Design Composer.html の `Layers` / `Tokens`）。
+ * 左ペインが何を映しているか。
  *
- * UI 案には `Assets` もあるが、アセットという概念が仕様（docs/）にもデータモデルにも
- * 無いため出さない。中身を作れないタブを枠だけ置くと、押しても何も起きない操作が
- * 画面に残る（#112 の表 1 の残りとして issue に残す）。
+ * UI 案（docs/Design Composer.html）は `Layers` / `Assets` / `Tokens` を左端のアイコン
+ * レールで切り替えており、このタブとは形が違う（#112 の表 1）。
+ *
+ * `Assets` はまだ出していない。中身は Primitives（Box / Text）と Components の一覧で、
+ * Components は component-list として実装済み（今は Layers 側に置いている）。
  */
 export const LEFT_PANE_TABS = {
   layers: "layers",
