@@ -141,12 +141,12 @@
       </div>
       <div class="sidebar__body">
         <p class="sidebar__label">Summary</p>
-        <details class="group group--changed" open>
+        <details class="group group--passed" open>
         <summary>
           <span class="group__caret" aria-hidden="true"></span>
-          <span class="group__name">Changed</span>
+          <span class="group__name">Passed</span>
           <span class="group__count">1 items</span>
-          <span class="ball ball--changed" aria-hidden="true"></span>
+          <span class="ball ball--passed" aria-hidden="true"></span>
         </summary>
         <ul class="group__list">
           <li data-nav-item data-search="features/editor/tokeneditor 書体トークンを選択中 features-editor-tokeneditor--typography-selected"><a href="./" data-open="features-editor-tokeneditor--typography-selected" title="features-editor-tokeneditor--typography-selected">features/editor/TokenEditor / 書体トークンを選択中</a></li>
@@ -156,25 +156,25 @@
       </div>
       <footer class="sidebar__footer">
         <p class="sidebar__brand">Storybook Visual Regression</p>
-        <p class="sidebar__version">Visual report UI v8 · 62db467</p>
+        <p class="sidebar__version">Visual report UI v8 · 63c8b75</p>
       </footer>
     </aside>
     <main>
       <a class="backlink" href="../">← All items</a>
       <h1>features-editor-tokeneditor--typography-selected</h1>
       <p class="lede">Open an item to compare it with Diff, Slide, 2up, Blend and Toggle. Threshold: 0.002 diff ratio.</p>
-      <div class="totals"><span class="total"><span class="ball ball--changed" aria-hidden="true"></span><span>Changed</span><span>4</span></span><span class="total"><span class="ball ball--new" aria-hidden="true"></span><span>New</span><span>3</span></span><span class="total"><span class="ball ball--deleted" aria-hidden="true"></span><span>Deleted</span><span>0</span></span><span class="total"><span class="ball ball--passed" aria-hidden="true"></span><span>Passed</span><span>42</span></span></div>
-      <section class="section" data-section="changed" data-count="1">
-      <h2 class="section__title">Changed items <span class="section__count">1</span></h2>
+      <div class="totals"><span class="total"><span class="ball ball--changed" aria-hidden="true"></span><span>Changed</span><span>3</span></span><span class="total"><span class="ball ball--new" aria-hidden="true"></span><span>New</span><span>3</span></span><span class="total"><span class="ball ball--deleted" aria-hidden="true"></span><span>Deleted</span><span>0</span></span><span class="total"><span class="ball ball--passed" aria-hidden="true"></span><span>Passed</span><span>46</span></span></div>
+      <section class="section" data-section="passed" data-count="1">
+      <h2 class="section__title">Passed items <span class="section__count">1</span></h2>
       <ul class="cards">
-        <li class="card card--changed">
+        <li class="card card--passed">
           <a class="card__open" href="./" data-open="features-editor-tokeneditor--typography-selected" aria-label="Open features-editor-tokeneditor--typography-selected">
             <span class="card__thumb checker"><img loading="lazy" src="../diff/features-editor-tokeneditor--typography-selected.png" alt="features-editor-tokeneditor--typography-selected"></span>
-            <span class="card__badge"><span class="ball ball--changed" aria-hidden="true"></span></span>
+            <span class="card__badge"><span class="ball ball--passed" aria-hidden="true"></span></span>
           </a>
           <div class="card__meta">
             <p class="card__name" title="features-editor-tokeneditor--typography-selected">features/editor/TokenEditor / 書体トークンを選択中</p>
-            <p class="card__sub">0.260% · 2403 px</p>
+            <p class="card__sub">Within threshold</p>
           </div>
         </li>
       </ul>
@@ -196,7 +196,7 @@
       <button type="button" role="tab" data-view-mode="diff" aria-selected="false">Diff</button><button type="button" role="tab" data-view-mode="slide" aria-selected="false">Slide</button><button type="button" role="tab" data-view-mode="2up" aria-selected="false">2up</button><button type="button" role="tab" data-view-mode="blend" aria-selected="false">Blend</button><button type="button" role="tab" data-view-mode="toggle" aria-selected="false">Toggle</button>
     </nav>
   </div>
-  <script type="application/json" id="report-data">{"pathPrefix":"../","initialStory":"features-editor-tokeneditor--typography-selected","items":[{"story":"features-editor-tokeneditor--typography-selected","label":"features/editor/TokenEditor / 書体トークンを選択中","status":"changed","reason":"pixel-diff","diffPixels":2403,"diffRatio":0.0026,"hasExpected":true,"hasActual":true,"hasDiff":true}]}</script>
+  <script type="application/json" id="report-data">{"pathPrefix":"../","initialStory":"features-editor-tokeneditor--typography-selected","items":[{"story":"features-editor-tokeneditor--typography-selected","label":"features/editor/TokenEditor / 書体トークンを選択中","status":"passed","reason":"within-threshold","diffPixels":1825,"diffRatio":0.002,"hasExpected":true,"hasActual":true,"hasDiff":true}]}</script>
   <script>
     const data = JSON.parse(document.getElementById("report-data").textContent);
     const prefix = data.pathPrefix;
