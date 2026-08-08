@@ -11,7 +11,7 @@ import { ColorToken } from "./color";
 import { ShadowToken } from "./shadow";
 import { TypographyToken } from "./typography";
 
-export { ColorToken } from "./color";
+export { ColorToken, Rgb } from "./color";
 export {
   type BoxShadowValue,
   type ShadowField,

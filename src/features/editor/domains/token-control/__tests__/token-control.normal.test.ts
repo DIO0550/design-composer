@@ -11,7 +11,7 @@ function setupState(): EditorState {
   return EditorState.create(
     DesignDocument.create({
       tokens: {
-        colors: { primary: "#3b82f6" },
+        colors: { primary: "#3b82f6", veil: "#3b82f680" },
         spacing: { lg: 24 },
         radius: { md: 8 },
         shadows: { sm: { x: 0, y: 1, blur: 3, color: "#0000001a" } },
@@ -265,11 +265,20 @@ test("書体のフォントを空欄にすると指定が外れる", () => {
   );
 });
 
-test("色のトークンはピッカーが返した hex がそのまま値になる", () => {
+test("色のトークンはピッカーで選び直すと alpha が落ちる", () => {
+  const field = fieldOf("colors", "veil", "値");
+
+  expect(TokenControl.valueFrom(field.target, "#00ff00")).toEqual(
+    Option.some({ kind: "colors", value: "#00ff00" }),
+  );
+});
+
+test("6桁の hex として読めない入力では色を変えない", () => {
   const field = fieldOf("colors", "primary", "値");
 
+  expect(TokenControl.valueFrom(field.target, "3b82f6")).toEqual(Option.none);
   expect(TokenControl.valueFrom(field.target, "#00ff0080")).toEqual(
-    Option.some({ kind: "colors", value: "#00ff0080" }),
+    Option.none,
   );
 });
 

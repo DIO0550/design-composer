@@ -2,6 +2,7 @@ import { Px } from "@/domains/px";
 import {
   type BoxShadowValue,
   ColorToken,
+  Rgb,
   type ShadowField,
   ShadowToken,
   type Token,
@@ -282,14 +283,17 @@ function shadowValueFrom(
      * 影の色だけは、ピッカーが返した6桁に元の alpha を戻す。影の色は半透明が
      * 常用される（docs/04-tokens.md「影の色は実務上ほぼ半透明の黒」）ので、
      * 引き継がないと色を選び直すだけで影が不透明になる。
+     *
+     * 6桁として読めない入力で値を変えないのは数値の欄と同じ扱い（`Rgb.create`
+     * の `none`）。ピッカーは常に6桁を返すので、通常の操作では通らない枝。
      */
-    return Option.some({
+    return Option.map(Rgb.create(raw), (rgb) => ({
       kind: "shadows",
       value: ShadowToken.withField(shadow, {
         field,
-        value: ColorToken.withRgb(shadow.color, raw),
+        value: ColorToken.withRgb(shadow.color, rgb),
       }),
-    });
+    }));
   }
   return Option.map(numberFromRaw(raw), (value) => ({
     kind: "shadows",
@@ -348,7 +352,10 @@ export const TokenControl = {
        * どちらの種別も alpha を直接編集する欄は UI 案に無い（#142）。
        */
       case "colors":
-        return Option.some({ kind: "colors", value: raw });
+        return Option.map(Rgb.create(raw), (rgb) => ({
+          kind: "colors",
+          value: rgb,
+        }));
       case "spacing":
         return Option.map(numberFromRaw(raw), (value) => ({
           kind: "spacing",

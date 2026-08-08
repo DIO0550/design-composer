@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
-import { ColorToken } from "../index";
+import { Option } from "@/utils/Option";
+import { ColorToken, Rgb } from "../index";
 
 test("大文字で書かれた hex カラーは小文字に正規化される", () => {
   expect(ColorToken.normalize("#3B82F6")).toBe("#3b82f6");
@@ -30,14 +31,19 @@ test.each([
   expect(ColorToken.isValid(value)).toBe(true);
 });
 
+/** テストから RGB を書くための取り出し。読めない綴りはテストを落とす。 */
+function rgb(value: string): Rgb {
+  return Option.unwrap(Rgb.create(value));
+}
+
 test("色の RGB を差し替えても alpha は引き継がれる", () => {
-  expect(ColorToken.withRgb("#00000026", "#ff0000")).toBe("#ff000026");
+  expect(ColorToken.withRgb("#00000026", rgb("#ff0000"))).toBe("#ff000026");
 });
 
 test("alpha を持たない色の RGB を差し替えると alpha は付かない", () => {
-  expect(ColorToken.withRgb("#3b82f6", "#00ff00")).toBe("#00ff00");
+  expect(ColorToken.withRgb("#3b82f6", rgb("#00ff00"))).toBe("#00ff00");
 });
 
-test("差し替えた RGB は小文字へ正規化される", () => {
-  expect(ColorToken.withRgb("#0000001a", "#AABBCC")).toBe("#aabbcc1a");
+test("大文字で書かれていた alpha も小文字で引き継がれる", () => {
+  expect(ColorToken.withRgb("#0000001A", rgb("#AABBCC"))).toBe("#aabbcc1a");
 });
