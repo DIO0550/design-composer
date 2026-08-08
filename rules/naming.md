@@ -50,5 +50,7 @@
 
 コンパニオンオブジェクトのメソッド名は、既にあるドメインオブジェクトの語彙に合わせる。同じ意味の操作に別の名前を与えない。
 
-- 生成は `create`(`from` / `of` を混ぜない)
+- **値を組み立てるのは `create`。** 引数から新しい値を作る入口はこれに揃える(`Artboard.create` / `NodeTree.create` / `EditorState.create`)
+- **別の表現から作り直すのは `from*`。** 変換元を名前に出す(`Component.fromNode` / `DocumentReload.fromContent` / `Selection.fromArtboard`)。`create` と使い分ける基準は「引数がその値の材料か(`create`)、別の形で同じものを表しているか(`from*`)」
+- **`of*` は使わない。** `create` / `from*` のどちらかに寄せる
 - 判定は `is*` / `has*`、変換は `to*` / `*Value`、収集は `collect*`
