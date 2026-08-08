@@ -75,7 +75,7 @@ function nameField(): HTMLInputElement {
 test("トークンを選ぶまで編集欄は出ない", () => {
   renderPanes();
 
-  expect(screen.getByText("選択されていません")).toBeDefined();
+  expect(screen.getByText("トークンが選択されていません")).toBeDefined();
 });
 
 test("色の行を選ぶとカラーピッカーと名前が出る", async () => {
@@ -173,7 +173,7 @@ test("削除すると一覧から消えて編集欄も閉じる", async () => {
   await user.click(screen.getByRole("button", { name: "Delete token" }));
 
   expect(screen.getByRole("button", { name: /^colors 1$/ })).toBeDefined();
-  expect(screen.getByText("選択されていません")).toBeDefined();
+  expect(screen.getByText("トークンが選択されていません")).toBeDefined();
 });
 
 test("使用中のトークンでも削除できる", async () => {
@@ -259,7 +259,7 @@ test("影を削除すると一覧から消えて編集欄も閉じる", async ()
   await user.click(screen.getByRole("button", { name: "Delete token" }));
 
   expect(screen.getByRole("button", { name: /^shadows 0$/ })).toBeDefined();
-  expect(screen.getByText("選択されていません")).toBeDefined();
+  expect(screen.getByText("トークンが選択されていません")).toBeDefined();
 });
 
 test("影の色をピッカーで選び直しても一覧の値に alpha が残る", async () => {

@@ -1,12 +1,13 @@
 import { useState } from "react";
 import type { ChildPosition } from "@/domains/child-position";
 import { Node, type PrimitiveNode } from "@/domains/node";
-import { PrimitiveSchema, type TEXT_SCHEMA } from "@/domains/primitive-schema";
-import {
-  TypeGlyph,
-  type TypeGlyphKind,
-} from "@/features/editor/components/type-glyph";
+import type { TEXT_SCHEMA } from "@/domains/primitive-schema";
+import { TypeGlyph } from "@/features/editor/components/type-glyph";
 import { EditorState } from "@/features/editor/domains/editor-state";
+import {
+  Selection,
+  type SelectionKind,
+} from "@/features/editor/domains/selection";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 import { SetEx } from "@/utils/SetEx";
@@ -32,12 +33,9 @@ type TreeItemNote =
   | Readonly<{ kind: "content"; text: string }>
   | Readonly<{ kind: "instance" }>;
 
-/**
- * 行が名前の左右に出すもの。アイコンと補助情報はどちらも同じ種別から決まるため、
- * 種別の判定を 2 度行わずに済むよう 1 つにまとめて求める。
- */
+/** 行が名前の左右に出すもの（左に型アイコン、右に補助情報）。 */
 type TreeItemMarks = Readonly<{
-  glyph: Option<TypeGlyphKind>;
+  glyph: Option<SelectionKind>;
   note: Option<TreeItemNote>;
 }>;
 
@@ -56,26 +54,26 @@ function contentNote(node: PrimitiveNode): Option<TreeItemNote> {
   return Option.some({ kind: "content", text: String(content) });
 }
 
-/** プリミティブが出すもの。文言を持つのは Text だけで、Box には補助情報が無い。 */
-function primitiveMarks(node: PrimitiveNode): TreeItemMarks {
-  if (!PrimitiveSchema.isPrimitiveType(node.type)) {
-    // UI 案に無い type にはアイコンを当てず、種別が分からないことをそのまま出す
-    return { glyph: Option.none, note: Option.none };
+/**
+ * 名前の右に出す補助情報。文言を持つのは Text だけで、Box には補助情報が無い。
+ * 参照ノードはインスタンスであること自体を出す。
+ */
+function noteOf(node: Node): Option<TreeItemNote> {
+  if (Node.isRef(node)) {
+    return Option.some({ kind: "instance" });
   }
-  return {
-    glyph: Option.some(node.type),
-    note: node.type === "Text" ? contentNote(node) : Option.none,
-  };
+  return node.type === "Text" ? contentNote(node) : Option.none;
 }
 
+/**
+ * 行が名前の左右に出すもの。
+ *
+ * 種別は `Selection` から引く。「そのノードが何であるか」は行が選ばれているかに
+ * よらない性質で、インスペクタの見出しと同じ判定になるため（同じ分岐を 2 箇所に
+ * 置かない / rules/coding.md「同じ処理が2箇所に現れたら共通化する」）。
+ */
 function nodeMarks(node: Node): TreeItemMarks {
-  if (Node.isRef(node)) {
-    return {
-      glyph: Option.some("component"),
-      note: Option.some({ kind: "instance" }),
-    };
-  }
-  return primitiveMarks(node);
+  return { glyph: Selection.fromNode(node).kind, note: noteOf(node) };
 }
 
 /**

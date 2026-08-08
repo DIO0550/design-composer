@@ -81,3 +81,23 @@ test("選択を解除するとプロパティパネルが未選択の表示に�
   });
   expect(within(propertyPanel).getByText("選択されていません")).toBeDefined();
 });
+
+test("選択を解除すると見出しから選んでいたものが消える", async () => {
+  await renderOpenedDocument();
+  const tree = screen.getByRole("complementary", {
+    name: "左ペイン",
+  });
+  await userEvent.click(within(tree).getByRole("button", { name: "home" }));
+
+  await userEvent.click(screen.getByRole("button", { name: "選択を解除" }));
+
+  /*
+   * 押す前は帯に `home` と `Artboard` が出ている状態から始めているので、
+   * 帯を消し忘れる実装ではここが落ちる（選択が無いのに出ないことを見るのではなく、
+   * 出ていたものが消えることを見る / rules/testing.md「その assert は落ちうるか」）。
+   */
+  const propertyPanel = screen.getByRole("complementary", {
+    name: "プロパティパネル",
+  });
+  expect(within(propertyPanel).queryByText("Artboard")).toBeNull();
+});
