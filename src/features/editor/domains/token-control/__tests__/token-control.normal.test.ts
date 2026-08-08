@@ -2,15 +2,16 @@ import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
 import type { TokenSet } from "@/domains/token";
 import { EditorState } from "@/features/editor/domains/editor-state";
+import { Font } from "@/utils/Font";
 import { Option } from "@/utils/Option";
-import { TokenControl, TokenRow, TokenSection } from "../index";
+import { TokenControl, type TokenControlField, TokenSection } from "../index";
 
 /** 5 種別すべてに 1 件ずつ持つドキュメントの編集状態。 */
 function setupState(): EditorState {
   return EditorState.create(
     DesignDocument.create({
       tokens: {
-        colors: { primary: "#3b82f6" },
+        colors: { primary: "#3b82f6", veil: "#3b82f680" },
         spacing: { lg: 24 },
         radius: { md: 8 },
         shadows: { sm: { x: 0, y: 1, blur: 3, color: "#0000001a" } },
@@ -29,6 +30,28 @@ function sectionOf(
   return Option.unwrap(
     Option.fromNullable(
       TokenSection.forDocument(state).find((section) => section.kind === kind),
+    ),
+  );
+}
+
+/** 選択したトークンの編集欄の並び。 */
+function fieldsOf(
+  kind: Parameters<typeof TokenSet.names>[1],
+  name: string,
+): readonly TokenControlField[] {
+  const state = EditorState.selectToken(setupState(), { kind, name });
+  return Option.unwrap(TokenControl.forSelection(state)).fields;
+}
+
+/** 見出しで編集欄の1行を引く。 */
+function fieldOf(
+  kind: Parameters<typeof TokenSet.names>[1],
+  name: string,
+  label: string,
+): TokenControlField {
+  return Option.unwrap(
+    Option.fromNullable(
+      fieldsOf(kind, name).find((field) => field.label === label),
     ),
   );
 }
@@ -71,10 +94,13 @@ test("上限より長い長さの見本は同じ幅で頭打ちになる", () =>
   expect(row.preview).toEqual({ kind: "bar", widthPx: 20 });
 });
 
-test("影の行には box-shadow に渡せる値が出る", () => {
+test("影の行には影を当てた見本と box-shadow に渡せる値が出る", () => {
   const [row] = sectionOf(setupState(), "shadows").rows;
 
-  expect(row.preview).toEqual({ kind: "none" });
+  expect(row.preview).toEqual({
+    kind: "shadow",
+    value: "0px 1px 3px 0px #0000001a",
+  });
   expect(row.valueText).toBe("0px 1px 3px 0px #0000001a");
 });
 
@@ -84,98 +110,185 @@ test("書体の行にはサイズ・行間・太さが出る", () => {
   expect(row.valueText).toBe("16px / 1.6 / 400");
 });
 
-test("値が1つの値で表せる種別の行は選んで直せる", () => {
-  const state = setupState();
+test("書体の行の見本は太さと解決済みのフォントを持つ", () => {
+  const [row] = sectionOf(setupState(), "typography").rows;
 
-  expect(TokenRow.isEditable(sectionOf(state, "colors").rows[0])).toBe(true);
-  expect(TokenRow.isEditable(sectionOf(state, "spacing").rows[0])).toBe(true);
-});
-
-test("複合オブジェクトの種別の行は直せない", () => {
-  const state = setupState();
-
-  expect(TokenRow.isEditable(sectionOf(state, "shadows").rows[0])).toBe(false);
-  expect(TokenRow.isEditable(sectionOf(state, "typography").rows[0])).toBe(
-    false,
-  );
-});
-
-test("値が1つの値で表せる種別にはトークンを足せる", () => {
-  expect(TokenSection.addTemplate(sectionOf(setupState(), "colors"))).toEqual(
-    Option.some({ kind: "colors" }),
-  );
-});
-
-test("複合オブジェクトの種別にはトークンを足せない", () => {
-  expect(TokenSection.addTemplate(sectionOf(setupState(), "shadows"))).toEqual(
-    Option.none,
-  );
-});
-
-test("色を選ぶとカラーピッカーの入力欄になる", () => {
-  const state = EditorState.selectToken(setupState(), {
-    kind: "colors",
-    name: "primary",
-  });
-
-  expect(Option.unwrap(TokenControl.forSelection(state)).input).toEqual({
-    kind: "color",
-    value: "#3b82f6",
+  expect(row.preview).toEqual({
+    kind: "letters",
+    fontWeight: 400,
+    fontFamily: Font.systemStack(),
   });
 });
 
-test("長さを選ぶと数値の入力欄になる", () => {
-  const state = EditorState.selectToken(setupState(), {
-    kind: "radius",
-    name: "md",
-  });
+test("色を選ぶとカラーピッカーの入力欄が1つ出る", () => {
+  expect(fieldsOf("colors", "primary")).toEqual([
+    {
+      name: "value",
+      label: "値",
+      input: { kind: "color", value: "#3b82f6" },
+      target: { kind: "colors" },
+    },
+  ]);
+});
 
-  expect(Option.unwrap(TokenControl.forSelection(state)).input).toEqual({
-    kind: "length",
-    value: 8,
+test("長さを選ぶと数値の入力欄が1つ出る", () => {
+  expect(fieldsOf("radius", "md")).toEqual([
+    {
+      name: "value",
+      label: "値",
+      input: { kind: "number", value: 8 },
+      target: { kind: "radius" },
+    },
+  ]);
+});
+
+test("影を選ぶとフィールドごとの入力欄が仕様の順で並ぶ", () => {
+  expect(fieldsOf("shadows", "sm").map((field) => field.label)).toEqual([
+    "横のずれ",
+    "縦のずれ",
+    "ぼかし",
+    "広がり",
+    "色",
+  ]);
+});
+
+test("影の色だけがカラーピッカーの入力欄になる", () => {
+  const colorInputs = fieldsOf("shadows", "sm")
+    .filter((field) => field.input.kind === "color")
+    .map((field) => field.label);
+
+  expect(colorInputs).toEqual(["色"]);
+});
+
+test("省略された影の広がりの欄には 0 が出る", () => {
+  expect(fieldOf("shadows", "sm", "広がり").input).toEqual({
+    kind: "number",
+    value: 0,
   });
 });
 
-test("複合オブジェクトの種別を選んでも編集欄は出ない", () => {
-  const state = EditorState.selectToken(setupState(), {
-    kind: "shadows",
-    name: "sm",
-  });
+test("書体を選ぶとフィールドごとの入力欄が仕様の順で並ぶ", () => {
+  expect(fieldsOf("typography", "body").map((field) => field.label)).toEqual([
+    "サイズ",
+    "行間",
+    "太さ",
+    "フォント",
+  ]);
+});
 
-  expect(TokenControl.forSelection(state)).toEqual(Option.none);
+test("省略された書体のフォントの欄は空欄になる", () => {
+  expect(fieldOf("typography", "body", "フォント").input).toEqual({
+    kind: "text",
+    value: "",
+  });
+});
+
+test("選択が無いときは編集欄が出ない", () => {
+  expect(TokenControl.forSelection(setupState())).toEqual(Option.none);
 });
 
 test("長さの入力欄に打った文字列は編集中のトークンの種別の値になる", () => {
-  const state = EditorState.selectToken(setupState(), {
-    kind: "radius",
-    name: "md",
-  });
-  const control = Option.unwrap(TokenControl.forSelection(state));
+  const field = fieldOf("radius", "md", "値");
 
-  expect(TokenControl.valueFrom(control, "12")).toEqual(
+  expect(TokenControl.valueFrom(field.target, "12")).toEqual(
     Option.some({ kind: "radius", value: 12 }),
   );
 });
 
 test("数値として読めない入力では値を変えない", () => {
-  const state = EditorState.selectToken(setupState(), {
-    kind: "spacing",
-    name: "lg",
-  });
-  const control = Option.unwrap(TokenControl.forSelection(state));
+  const field = fieldOf("spacing", "lg", "値");
 
-  expect(TokenControl.valueFrom(control, "")).toEqual(Option.none);
-  expect(TokenControl.valueFrom(control, "-")).toEqual(Option.none);
+  expect(TokenControl.valueFrom(field.target, "")).toEqual(Option.none);
+  expect(TokenControl.valueFrom(field.target, "-")).toEqual(Option.none);
 });
 
 test("カラーピッカーが返した hex はそのまま色の値になる", () => {
-  const state = EditorState.selectToken(setupState(), {
-    kind: "colors",
-    name: "primary",
-  });
-  const control = Option.unwrap(TokenControl.forSelection(state));
+  const field = fieldOf("colors", "primary", "値");
 
-  expect(TokenControl.valueFrom(control, "#00ff00")).toEqual(
+  expect(TokenControl.valueFrom(field.target, "#00ff00")).toEqual(
     Option.some({ kind: "colors", value: "#00ff00" }),
+  );
+});
+
+test("影のぼかしに打った文字列はぼかしだけを変えた影の値になる", () => {
+  const field = fieldOf("shadows", "sm", "ぼかし");
+
+  expect(TokenControl.valueFrom(field.target, "8")).toEqual(
+    Option.some({
+      kind: "shadows",
+      value: { x: 0, y: 1, blur: 8, color: "#0000001a" },
+    }),
+  );
+});
+
+test("影の数値の欄に数値として読めない入力が来ても値を変えない", () => {
+  const field = fieldOf("shadows", "sm", "横のずれ");
+
+  expect(TokenControl.valueFrom(field.target, "")).toEqual(Option.none);
+});
+
+test("書体のサイズに打った文字列はサイズだけを変えた書体の値になる", () => {
+  const field = fieldOf("typography", "body", "サイズ");
+
+  expect(TokenControl.valueFrom(field.target, "24")).toEqual(
+    Option.some({
+      kind: "typography",
+      value: { fontSize: 24, lineHeight: 1.6, fontWeight: 400 },
+    }),
+  );
+});
+
+test("書体のフォントに打った文字列は書体の値になる", () => {
+  const field = fieldOf("typography", "body", "フォント");
+
+  expect(TokenControl.valueFrom(field.target, "Inter")).toEqual(
+    Option.some({
+      kind: "typography",
+      value: {
+        fontSize: 16,
+        lineHeight: 1.6,
+        fontWeight: 400,
+        fontFamily: "Inter",
+      },
+    }),
+  );
+});
+
+test("書体のフォントを空欄にすると指定が外れる", () => {
+  const field = fieldOf("typography", "body", "フォント");
+
+  expect(TokenControl.valueFrom(field.target, "")).toEqual(
+    Option.some({
+      kind: "typography",
+      value: { fontSize: 16, lineHeight: 1.6, fontWeight: 400 },
+    }),
+  );
+});
+
+test("色のトークンはピッカーで選び直すと alpha が落ちる", () => {
+  const field = fieldOf("colors", "veil", "値");
+
+  expect(TokenControl.valueFrom(field.target, "#00ff00")).toEqual(
+    Option.some({ kind: "colors", value: "#00ff00" }),
+  );
+});
+
+test("6桁の hex として読めない入力では色を変えない", () => {
+  const field = fieldOf("colors", "primary", "値");
+
+  expect(TokenControl.valueFrom(field.target, "3b82f6")).toEqual(Option.none);
+  expect(TokenControl.valueFrom(field.target, "#00ff0080")).toEqual(
+    Option.none,
+  );
+});
+
+test("影の色をピッカーで選び直しても元の alpha は残る", () => {
+  const field = fieldOf("shadows", "sm", "色");
+
+  expect(TokenControl.valueFrom(field.target, "#ff0000")).toEqual(
+    Option.some({
+      kind: "shadows",
+      value: { x: 0, y: 1, blur: 3, color: "#ff00001a" },
+    }),
   );
 });

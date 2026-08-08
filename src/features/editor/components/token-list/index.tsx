@@ -1,15 +1,15 @@
-import { useState } from "react";
+import { type ReactElement, useState } from "react";
 import { Token, type TokenKind, type TokenRef } from "@/domains/token";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import {
   type TokenPreview,
-  TokenRow,
+  type TokenRow,
   TokenSection,
 } from "@/features/editor/domains/token-control";
 import type { TokenTemplate } from "@/features/editor/domains/token-template";
 import { SetEx } from "@/utils/SetEx";
 
-/** 見本の枠。値を持たない種別でも同じ幅を空けて、名前の左端を揃える。 */
+/** 見本の枠。どの種別でも同じ幅を空けて、名前の左端を揃える。 */
 const PREVIEW_WIDTH_PX = 20;
 
 /**
@@ -19,38 +19,61 @@ const PREVIEW_WIDTH_PX = 20;
 type OpenKinds = ReadonlySet<TokenKind>;
 
 /** 値の見本。値そのものは行の文字として出ているので、飾りとして読み上げから外す。 */
-function PreviewSlot({ preview }: Readonly<{ preview: TokenPreview }>) {
-  if (preview.kind === "swatch") {
-    return (
-      <span
-        aria-hidden="true"
-        // 色は値そのものなのでクラス名に固定できない。白でも見えるよう枠を付ける。
-        style={{ backgroundColor: preview.color }}
-        className="inline-block size-3 shrink-0 border border-gray-300"
-      />
-    );
-  }
-  if (preview.kind === "bar") {
-    return (
-      <span
-        aria-hidden="true"
-        style={{ width: `${PREVIEW_WIDTH_PX}px` }}
-        className="inline-flex h-3 shrink-0 items-center"
-      >
+function PreviewSlot({
+  preview,
+}: Readonly<{ preview: TokenPreview }>): ReactElement {
+  switch (preview.kind) {
+    case "swatch":
+      return (
         <span
-          style={{ width: `${preview.widthPx}px` }}
-          className="inline-block h-2.5 bg-gray-300"
+          aria-hidden="true"
+          // 色は値そのものなのでクラス名に固定できない。白でも見えるよう枠を付ける。
+          style={{ backgroundColor: preview.color }}
+          className="inline-block size-3 shrink-0 border border-gray-300"
         />
-      </span>
-    );
+      );
+    case "bar":
+      return (
+        <span
+          aria-hidden="true"
+          style={{ width: `${PREVIEW_WIDTH_PX}px` }}
+          className="inline-flex h-3 shrink-0 items-center"
+        >
+          <span
+            style={{ width: `${preview.widthPx}px` }}
+            className="inline-block h-2.5 bg-gray-300"
+          />
+        </span>
+      );
+    case "shadow":
+      return (
+        <span
+          aria-hidden="true"
+          style={{ width: `${PREVIEW_WIDTH_PX}px` }}
+          className="inline-flex h-3 shrink-0 items-center justify-center"
+        >
+          {/* 影は白地に落として見せる。影そのものが値なのでクラス名に固定できない。 */}
+          <span
+            style={{ boxShadow: preview.value }}
+            className="inline-block size-2.5 rounded-[2px] bg-white"
+          />
+        </span>
+      );
+    case "letters":
+      return (
+        <span
+          aria-hidden="true"
+          style={{
+            width: `${PREVIEW_WIDTH_PX}px`,
+            fontWeight: preview.fontWeight,
+            fontFamily: preview.fontFamily,
+          }}
+          className="inline-block shrink-0 text-[10px] text-gray-700 leading-3"
+        >
+          Aa
+        </span>
+      );
   }
-  return (
-    <span
-      aria-hidden="true"
-      style={{ width: `${PREVIEW_WIDTH_PX}px` }}
-      className="inline-block shrink-0"
-    />
-  );
 }
 
 function TokenRowItem({
@@ -61,31 +84,7 @@ function TokenRowItem({
   row: TokenRow;
   state: EditorState;
   onSelect: (ref: TokenRef) => void;
-}>) {
-  const content = (
-    <>
-      <PreviewSlot preview={row.preview} />
-      <span className="min-w-0 flex-1 truncate text-left">
-        {row.token.name}
-      </span>
-      <span className="shrink-0 text-[10px] text-gray-400">
-        {row.valueText}
-      </span>
-    </>
-  );
-
-  /*
-   * 直せない種別（shadows / typography）の行はボタンにしない。押しても編集欄が
-   * 出ないものを押せる形にすると、反応の無い操作が画面に残る（#42 の単位 2 で直す）。
-   */
-  if (!TokenRow.isEditable(row)) {
-    return (
-      <div className="flex items-center gap-2 py-1 pr-3 pl-6 text-xs text-gray-500">
-        {content}
-      </div>
-    );
-  }
-
+}>): ReactElement {
   return (
     <button
       type="button"
@@ -93,7 +92,13 @@ function TokenRowItem({
       onClick={() => onSelect(Token.ref(row.token))}
       className="flex w-full items-center gap-2 rounded py-1 pr-3 pl-6 text-xs hover:bg-gray-100 aria-[current=true]:bg-blue-100 aria-[current=true]:text-blue-900"
     >
-      {content}
+      <PreviewSlot preview={row.preview} />
+      <span className="min-w-0 flex-1 truncate text-left">
+        {row.token.name}
+      </span>
+      <span className="shrink-0 text-[10px] text-gray-400">
+        {row.valueText}
+      </span>
     </button>
   );
 }
@@ -108,10 +113,8 @@ function SectionHeading({
   isOpen: boolean;
   onToggle: () => void;
   onAdd: (template: TokenTemplate) => void;
-}>) {
+}>): ReactElement {
   const kind = section.kind;
-  // 足せる種別かどうかは指定が取れるかで決まる（TokenSection.addTemplate）。
-  const addTemplate = TokenSection.addTemplate(section);
 
   return (
     <div className="flex items-center justify-between px-3 pt-2 pb-1">
@@ -130,11 +133,12 @@ function SectionHeading({
           {section.rows.length}
         </span>
       </button>
-      {addTemplate.some && isOpen ? (
+      {/* 畳んだ節に足しても増えた行が見えないので、開いている節にだけ出す。 */}
+      {isOpen ? (
         <button
           type="button"
           aria-label={`${kind} にトークンを追加`}
-          onClick={() => onAdd(addTemplate.value)}
+          onClick={() => onAdd(TokenSection.addTemplate(section))}
           className="px-1 text-gray-500 text-sm hover:text-gray-900"
         >
           +
@@ -158,7 +162,7 @@ export function TokenList({
   state: EditorState;
   onSelectToken: (ref: TokenRef) => void;
   onAddToken: (template: TokenTemplate) => void;
-}>) {
+}>): ReactElement {
   const sections = TokenSection.forDocument(state);
   /*
    * 開いた直後は最初の種別だけを開く（UI 案 docs/Design Composer.html の

@@ -203,10 +203,14 @@ test("種別のトークンを持っている定義順で引ける", () => {
   ]);
 });
 
-test("値が1つの値で表せる種別と複合オブジェクトの種別を区別できる", () => {
-  expect(TokenSet.isScalarKind("colors")).toBe(true);
-  expect(TokenSet.isScalarKind("spacing")).toBe(true);
-  expect(TokenSet.isScalarKind("radius")).toBe(true);
-  expect(TokenSet.isScalarKind("shadows")).toBe(false);
-  expect(TokenSet.isScalarKind("typography")).toBe(false);
+test("影を足すと中の色は小文字の hex で保持される", () => {
+  const added = Result.unwrap(
+    TokenSet.add(TokenSet.empty(), {
+      kind: "shadows",
+      name: "sm",
+      value: { x: 0, y: 1, blur: 3, color: "#0000001A" },
+    }),
+  );
+
+  expect(added.shadows.sm.color).toBe("#0000001a");
 });

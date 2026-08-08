@@ -6,6 +6,7 @@ import {
   type JsonDecoded,
   type JsonObject,
 } from "@/utils/Json";
+import type { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
 export type TypographyToken = Readonly<{
@@ -30,6 +31,19 @@ const TYPOGRAPHY_FIELDS = [
 export type TypographyField = (typeof TYPOGRAPHY_FIELDS)[number];
 
 /**
+ * 書体の1フィールドの書き換え。
+ * フィールドごとに値の型が違うので直和にして、「fontSize に文字列」を
+ * 型で表現できなくする。`fontFamily` の不在は `Option` で受ける
+ * (空文字を不在と読むのは入力欄の約束事なので、ドメインには持たせない)。
+ */
+export type TypographyFieldEdit =
+  | Readonly<{
+      field: "fontSize" | "lineHeight" | "fontWeight";
+      value: number;
+    }>
+  | Readonly<{ field: "fontFamily"; value: Option<string> }>;
+
+/**
  * フィールドと、展開先の CSS プロパティ名の対応。
  * `satisfies` により、フィールドを増やしたらこの対応表の漏れがコンパイルエラーになる。
  */
@@ -52,6 +66,23 @@ export const TypographyField = {
   },
 } as const;
 
+/**
+ * 不在のフォントファミリはキーごと落とす。
+ * 既定値(システムフォントスタック)を書き込むと、指定していない値が
+ * ファイルに残る(docs/04-tokens.md「省略時はシステムフォントスタック」)。
+ */
+function withFontFamily(
+  token: TypographyToken,
+  fontFamily: Option<string>,
+): TypographyToken {
+  return {
+    fontSize: token.fontSize,
+    lineHeight: token.lineHeight,
+    fontWeight: token.fontWeight,
+    ...(fontFamily.some ? { fontFamily: fontFamily.value } : {}),
+  };
+}
+
 export const TypographyToken = {
   fields(): readonly TypographyField[] {
     return TYPOGRAPHY_FIELDS;
@@ -60,6 +91,29 @@ export const TypographyToken = {
   /** フォントファミリ省略時はシステムフォントスタックを既定値とする(docs/04-tokens.md)。 */
   fontFamilyOf(token: TypographyToken): string {
     return token.fontFamily ?? Font.systemStack();
+  },
+
+  /**
+   * 1フィールドだけ差し替えた書体を返す。
+   *
+   * 値域(fontWeight は仕様上 100–900、fontSize / lineHeight は正の数)はここで
+   * 縛っていない。不正な値をどう見せるかが UI 案にも #126 にも無く、
+   * 表示の形と対でしか決められないため(縛るのは #143)。
+   */
+  withField(
+    token: TypographyToken,
+    edit: TypographyFieldEdit,
+  ): TypographyToken {
+    switch (edit.field) {
+      case "fontSize":
+        return { ...token, fontSize: edit.value };
+      case "lineHeight":
+        return { ...token, lineHeight: edit.value };
+      case "fontWeight":
+        return { ...token, fontWeight: edit.value };
+      case "fontFamily":
+        return withFontFamily(token, edit.value);
+    }
   },
 
   fromJson(cursor: JsonCursor): JsonDecoded<TypographyToken> {

@@ -1,4 +1,4 @@
-import { useId, useState } from "react";
+import { type ReactElement, useId, useState } from "react";
 import type { TokenValue } from "@/domains/token";
 import type { EditorState } from "@/features/editor/domains/editor-state";
 import {
@@ -25,8 +25,13 @@ const HEADINGS = {
  * 途中の文字列が弾かれて打ち続けられない（`primary-` が弾かれると `-` の次を打てない）。
  * 確定は入力欄を離れたときと Enter。
  *
- * 外の値が変わったときの取り直しは `key` で行う（呼び出し側が現在値を key にする /
+ * 外の値が変わったときの取り直しは `key` で行う（呼び出し側が現在値を key に混ぜる /
  * rules/hooks.md「state リセット目的の Effect 禁止」）。
+ *
+ * 確定が通らなかった入力（数値として読めない値・規則を満たさない名前）では外の値が
+ * 変わらないので key も変わらず、下書きが残ってそのまま打ち続けられる。ただし
+ * `type="number"` の欄は下書きが数値として読めない間ブラウザが表示を空にするので、
+ * 画面に文字列として残るのは `type="text"` の欄だけ。
  */
 function DraftField({
   id,
@@ -66,45 +71,51 @@ function ValueField({
   id: string;
   input: TokenControlInput;
   onEdit: (raw: string) => void;
-}>) {
-  if (input.kind === "length") {
-    return (
-      <DraftField
-        id={id}
-        type="number"
-        value={String(input.value)}
-        onCommit={onEdit}
-      />
-    );
+}>): ReactElement {
+  switch (input.kind) {
+    case "number":
+      return (
+        <DraftField
+          id={id}
+          type="number"
+          value={String(input.value)}
+          onCommit={onEdit}
+        />
+      );
+    case "text":
+      return (
+        <DraftField id={id} type="text" value={input.value} onCommit={onEdit} />
+      );
+    case "color":
+      return (
+        <div className="flex items-center gap-2">
+          {/*
+            色はカラーピッカーだけで編集する（#42「colors はカラーピッカーで編集し、
+            保存時に hex（小文字）へ正規化する」）。ピッカーが返すのは常に完成した hex なので
+            下書きを挟まずそのまま渡す。並べている hex は読み取り専用。
+            自由入力にすると「途中まで打った不正な hex」を画面に置くことになり、
+            仕様に無い中間状態のエラー表示を発明することになるため。
+          */}
+          <input
+            id={id}
+            type="color"
+            value={input.value}
+            onChange={(event) => onEdit(event.target.value)}
+            className="h-8 w-16 rounded border border-gray-300"
+          />
+          <span className="font-mono text-gray-600 text-xs">{input.value}</span>
+        </div>
+      );
   }
-
-  return (
-    <div className="flex items-center gap-2">
-      {/*
-        色はカラーピッカーだけで編集する（#42「colors はカラーピッカーで編集し、
-        保存時に hex（小文字）へ正規化する」）。ピッカーが返すのは常に完成した hex なので
-        下書きを挟まずそのまま渡す。並べている hex は読み取り専用。
-        自由入力にすると「途中まで打った不正な hex」を画面に置くことになり、
-        仕様に無い中間状態のエラー表示を発明することになるため。
-      */}
-      <input
-        id={id}
-        type="color"
-        value={input.value}
-        onChange={(event) => onEdit(event.target.value)}
-        className="h-8 w-16 rounded border border-gray-300"
-      />
-      <span className="font-mono text-gray-600 text-xs">{input.value}</span>
-    </div>
-  );
 }
 
 /**
  * 選択中のトークンの編集欄（docs/06-ui.md「編集操作の一覧」の tokens 編集 /
  * UI 案 docs/Design Composer.html の右ペイン）。
  *
- * 何の入力欄を出すかは種別の対応表だけで決まる（`TokenControl.forSelection`）ため、
- * ここには種別名で分岐するコードを置かない。
+ * 何の入力欄を何行出すかは `TokenControl.forSelection` が決めるため、
+ * ここには種別名で分岐するコードを置かない。複合オブジェクトの種別
+ * （shadows / typography）はフィールドの数だけ行が並ぶ（#126）。
  */
 export function TokenEditor({
   state,
@@ -116,7 +127,7 @@ export function TokenEditor({
   onSetTokenValue: (value: TokenValue) => void;
   onRenameToken: (name: string) => void;
   onRemoveToken: () => void;
-}>) {
+}>): ReactElement {
   const nameId = useId();
   const valueId = useId();
   const control = TokenControl.forSelection(state);
@@ -132,8 +143,8 @@ export function TokenEditor({
     );
   }
 
-  const { token, input } = control.value;
-  /** 下書きの取り直しの単位。名前は種別の中でしか一意でないので種別も混ぜる。 */
+  const { token, fields } = control.value;
+  /** どのトークンを編集しているか。名前は種別の中でしか一意でないので種別も混ぜる。 */
   const tokenKey = `${token.kind}/${token.name}`;
 
   return (
@@ -141,22 +152,41 @@ export function TokenEditor({
       <h2 className="font-semibold text-gray-500 text-xs uppercase">
         {HEADINGS[token.kind]}
       </h2>
-      <div className="flex flex-col gap-1">
-        <label htmlFor={valueId} className="text-gray-600 text-xs">
-          値
-        </label>
-        <ValueField
-          key={`${tokenKey}/value`}
-          id={valueId}
-          input={input}
-          onEdit={(raw) =>
-            Option.map(
-              TokenControl.valueFrom(control.value, raw),
-              onSetTokenValue,
-            )
-          }
-        />
-      </div>
+      {fields.map((field) => (
+        /*
+         * 下書きの取り直しの単位。行は `name` で一意に指す。
+         *
+         * その行自身の値を混ぜるのは、外から値が変わったとき（undo / redo、
+         * 打った値の正規化）に入力欄が古いままにならないため。トークン全体では
+         * なく行ごとの値なので、ある行を確定しても他の行の下書きは残る。
+         */
+        <div
+          key={`${tokenKey}/${field.name}/${field.input.value}`}
+          className="flex flex-col gap-1"
+        >
+          <label
+            htmlFor={`${valueId}-${field.name}`}
+            className="text-gray-600 text-xs"
+          >
+            {field.label}
+          </label>
+          {/*
+            数値として読めない入力では値を変えない（`TokenControl.valueFrom` の
+            `none`）。名前欄と同じで、通らなかったことは画面に出さず打ち直しに
+            任せる。仕様に無い中間状態のエラー表示を発明しないため。
+          */}
+          <ValueField
+            id={`${valueId}-${field.name}`}
+            input={field.input}
+            onEdit={(raw) =>
+              Option.map(
+                TokenControl.valueFrom(field.target, raw),
+                onSetTokenValue,
+              )
+            }
+          />
+        </div>
+      ))}
       <div className="flex flex-col gap-1">
         <label htmlFor={nameId} className="text-gray-600 text-xs">
           名前
