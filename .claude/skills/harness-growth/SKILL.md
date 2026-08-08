@@ -1,6 +1,6 @@
 ---
 name: harness-growth
-description: "マージ済み PR を振り返り、その回のレビュー指摘・CI 失敗・手戻りを分類タグ付きで .claude/harness/records/ に PR ごとの記録として残し、同じ分類が 2 回以上出ていれば改善もあわせた PR を出す。改善先はフック(.claude/hooks/)・新しいスキル(.claude/skills/)・既存スキルの観点・rules/ の順に強制力の強いものから検討する。PR がマージされた直後に使用する。「振り返り」「評価を残す」「規約を見直す」「ハーネスを育てる」「ルールの抜けを探す」といった依頼でも使用する。記録が溜まって初めて AGENTS.md の「指摘が 2 回以上出たら規約の抜けとして扱う」を数えられるようになるため、マージ後は積極的に使用すること。"
+description: "マージ済み PR を振り返り、その回のレビュー指摘・CI 失敗・手戻りを分類タグ付きで harness/records/ に PR ごとの記録として残し、同じ分類が 2 回以上出ていれば改善もあわせた PR を出す。改善先はフック(.claude/hooks/)・新しいスキル(.claude/skills/)・既存スキルの観点・rules/ の順に強制力の強いものから検討する。PR がマージされた直後に使用する。「振り返り」「評価を残す」「規約を見直す」「ハーネスを育てる」「ルールの抜けを探す」といった依頼でも使用する。記録が溜まって初めて AGENTS.md の「指摘が 2 回以上出たら規約の抜けとして扱う」を数えられるようになるため、マージ後は積極的に使用すること。"
 ---
 
 # ハーネスの育て方
@@ -32,8 +32,10 @@ Issue と PR に残っている記録から復元し、復元できない分は�
 
 ## Step 2: 記録を書く
 
-`.claude/harness/records/pr-<番号>.md` に
+`harness/records/pr-<番号>.md` に
 [templates/record.md](templates/record.md) の形式で書く。
+**`.claude/` の下には置かない**(書き込みのたびに承認が要るため /
+[`harness/records/README.md`](../../../harness/records/README.md))。
 
 - **指摘 1 件 = 1 ブロック。** まとめて 1 件にしない(分類が混ざって数えられなくなる)
 - `分類` は [templates/record.md](templates/record.md)「分類の語彙」から選ぶ。**語彙を勝手に増やさない**
@@ -46,7 +48,7 @@ Issue と PR に残っている記録から復元し、復元できない分は�
 書いた記録の各分類について、過去の記録に同じ分類が何回出ているかを数える。
 
 ```bash
-grep -rho '^- 分類: `[^`]*`' .claude/harness/records/ | sort | uniq -c | sort -rn
+grep -rho '^- 分類: `[^`]*`' harness/records/ | sort | uniq -c | sort -rn
 ```
 
 `分類: なし` の中身は数えられないので、目視で似た話が過去に無いかを確認する。

@@ -63,7 +63,7 @@ Issue は判断の履歴、という分担にする。採用した案だけを�
 
 レビューで新しい判断基準が示されたら、その場の修正で終わらせず **`rules/` 配下へ反映**する。ルールに書かれていない指摘が2回以上出たら、規約の抜けとして扱う。
 
-回数を数える材料は `.claude/harness/records/` に溜まる(マージのたびに `harness-growth`
+回数を数える材料は `harness/records/` に溜まる(マージのたびに `harness-growth`
 スキルが記録を1ファイル追加する)。数え方は `.claude/skills/harness-growth/SKILL.md`「Step 3」。
 
 ## 設計判断の確認
