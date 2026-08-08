@@ -35,6 +35,9 @@ const KIND_LABELS = {
  *
  * 先頭の見本を出すのは色だけ。UI 案が描いているのも色の 14×14 のチップだけで、
  * 他の種別の絵は無い。無い絵を思いつきで足さない（rules/ui-verification.md）。
+ *
+ * UI 案に無い枠線を足しているのは、白や薄い色のトークンが白い帯に溶けて
+ * 見本が消えるため（UI 案の見本は `#111827` の 1 例だけで、この場合が出ていない）。
  */
 function TokenTitle({ token }: Readonly<{ token: Token }>) {
   return (
@@ -175,7 +178,7 @@ export function TokenEditor({
     return (
       <>
         {/* 選んでいなくても帯は残す。消すと選択のたびに本文の位置が帯のぶん動く */}
-        <EditorLayout.RightPane.Heading />
+        <EditorLayout.RightPane.Heading>{null}</EditorLayout.RightPane.Heading>
         <EditorLayout.RightPane.Body>
           <p className="text-gray-500 text-sm">{NO_SELECTION_MESSAGE}</p>
         </EditorLayout.RightPane.Body>

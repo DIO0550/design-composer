@@ -73,12 +73,21 @@ function RightPane({ children }: PaneProps) {
  * 右ペインの見出しの帯（UI 案は 44px。左ペインのパネルの帯と同じ高さ）。
  * 中身は選んでいるものによって変わるので children で受ける。
  *
- * 中身を省けるのは、何も選んでいないときも**帯だけは残す**ため
- * （消すと選択のたびに本文の位置が帯のぶん動く）。
+ * 何も選んでいないときは `null` を渡す。帯ごと消さないのは、消すと選択のたびに
+ * 本文の位置が帯のぶん動くため。**中身を省略可能にはしない** — 渡し忘れと
+ * 「意図して空にした」が書き分けられなくなる。
  */
-function RightPaneHeading({ children }: Readonly<{ children?: ReactNode }>) {
+function RightPaneHeading({ children }: PaneProps) {
   return (
-    <div className="flex h-11 shrink-0 items-center gap-2 border-gray-300 border-b px-3">
+    /*
+     * 何も選んでいないときは中身が空になるが、帯そのものは残る。
+     * 空のときは読み上げ名も見出しも無く要素として指せないので、
+     * 「帯が残っている」ことをテストから確かめられるよう目印を持たせる。
+     */
+    <div
+      data-testid="right-pane-heading"
+      className="flex h-11 shrink-0 items-center gap-2 border-gray-300 border-b px-3"
+    >
       {children}
     </div>
   );

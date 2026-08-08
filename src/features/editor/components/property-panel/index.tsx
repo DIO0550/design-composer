@@ -153,7 +153,11 @@ function GroupSection({
 }
 
 /**
- * 帯の右端に出す種別の綴り（UI 案 docs/Design Composer.html の `Box` / `Instance`）。
+ * 帯の右端に出す種別の綴り。
+ *
+ * UI 案（docs/Design Composer.html）に実在するのは `Box` と `Instance` だけ。
+ * artboard を選んだ帯と Text を選んだ帯は UI 案に画面が無いので、`Artboard` /
+ * `Text` はここで決めた（型の綴りをそのまま出す形に揃えている）。
  *
  * ドメインには置かない。ドメインが答えるのは「参照ノードか」「どの primitive か」で、
  * `Instance` はそれをこの画面でどう呼ぶかという表示の語彙。実際、同じ参照ノードを
@@ -177,16 +181,18 @@ const KIND_LABELS = {
  * （ツリーの行と同じ扱い）。
  */
 function SelectionTitle({ selection }: Readonly<{ selection: Selection }>) {
+  const kind = selection.kind;
+
   return (
     <>
-      {selection.kind.some ? <TypeGlyph kind={selection.kind.value} /> : null}
+      {kind.some ? <TypeGlyph kind={kind.value} /> : null}
       {/* 名前が余りを占める。flex の子は既定で内容幅より縮まないため省略には min-w-0 が要る */}
       <h2 className="min-w-0 flex-1 truncate font-semibold text-gray-900 text-sm">
         {selection.name}
       </h2>
-      {selection.kind.some ? (
+      {kind.some ? (
         <span className="shrink-0 text-gray-400 text-xs">
-          {KIND_LABELS[selection.kind.value]}
+          {KIND_LABELS[kind.value]}
         </span>
       ) : null}
     </>

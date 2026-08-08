@@ -417,11 +417,11 @@ export const EditorState = {
       const document = EditorState.document(state);
       const artboard = DesignDocument.findArtboard(document, name);
       if (artboard.some) {
-        return Option.some(Selection.ofArtboard(artboard.value));
+        return Option.some(Selection.fromArtboard(artboard.value));
       }
       return Option.map(
         DesignDocument.findNode(document, name),
-        Selection.ofNode,
+        Selection.fromNode,
       );
     });
   },

@@ -1,6 +1,10 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
+import {
+  headingOfName,
+  rightPaneHeading,
+} from "@/features/editor/__tests__/inspector-heading";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { TokenEditor } from "../index";
 
@@ -37,17 +41,12 @@ function renderEditor(state: EditorState) {
   );
 }
 
-/** 帯に出ている名前。見出しは帯にしかないので階層で指せる。 */
-function headingName(): string {
-  return screen.getByRole("heading", { level: 2 }).textContent ?? "";
-}
-
 test("編集中のトークンの名前が見出しに出る", () => {
   renderEditor(
     EditorState.selectToken(setupState(), { kind: "colors", name: "primary" }),
   );
 
-  expect(headingName()).toBe("primary");
+  expect(headingOfName().textContent).toBe("primary");
 });
 
 test("色トークンの種別は Color と出る", () => {
@@ -97,5 +96,13 @@ test("トークンを選んでいないときは見出しに名前が出ない",
    * 帯は残すが中身は出さない。名前の枠だけを残す実装（空の見出し）にすると
    * ここが落ちる。名前が出る側は上のテストが見ている。
    */
-  expect(screen.queryByRole("heading", { level: 2 })).toBeNull();
+  expect(
+    within(rightPaneHeading()).queryByRole("heading", { level: 2 }),
+  ).toBeNull();
+});
+
+test("トークンを選んでいなくても見出しの帯は残る", () => {
+  renderEditor(setupState());
+
+  expect(rightPaneHeading()).toBeDefined();
 });

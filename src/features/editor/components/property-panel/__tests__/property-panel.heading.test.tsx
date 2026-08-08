@@ -1,6 +1,10 @@
 import { render, screen } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import {
+  headingOfName,
+  rightPaneHeading,
+} from "@/features/editor/__tests__/inspector-heading";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { PropertyPanel } from "../index";
 
@@ -43,15 +47,10 @@ function renderPanel(state: EditorState) {
   );
 }
 
-/** 帯に出ている名前。見出しは帯にしかないので階層で指せる。 */
-function headingName(): string {
-  return screen.getByRole("heading", { level: 2 }).textContent ?? "";
-}
-
 test("選んでいるものの名前が見出しに出る", () => {
   renderPanel(EditorState.select(setupState(), "home-body"));
 
-  expect(headingName()).toBe("home-body");
+  expect(headingOfName().textContent).toBe("home-body");
 });
 
 test("Box を選ぶと種別として Box が出る", () => {
@@ -81,7 +80,7 @@ test("artboard を選ぶと種別として Artboard が出る", () => {
 test("スキーマに無い type のノードを選んでも名前は見出しに出る", () => {
   renderPanel(EditorState.select(setupState(), "mystery"));
 
-  expect(headingName()).toBe("mystery");
+  expect(headingOfName().textContent).toBe("mystery");
 });
 
 test("スキーマに無い type のノードを選ぶと種別は出ない", () => {
@@ -93,4 +92,20 @@ test("スキーマに無い type のノードを選ぶと種別は出ない", ()
    * 綴り自体は実装しだいで出うる）。
    */
   expect(screen.queryByText("Box")).toBeNull();
+});
+
+test("何も選んでいなくても見出しの帯は残る", () => {
+  renderPanel(setupState());
+
+  /*
+   * 帯ごと消す実装にすると落ちる。中身が空でも帯を残すのがこの単位の判断で、
+   * 消すと選択のたびに本文の位置が帯のぶん動く。
+   */
+  expect(rightPaneHeading()).toBeDefined();
+});
+
+test("部品インスタンスを選ぶと部品を表す型アイコンが出る", () => {
+  renderPanel(EditorState.select(setupState(), "home-action"));
+
+  expect(screen.getByText("◆")).toBeDefined();
 });
