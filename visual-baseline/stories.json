@@ -190,9 +190,19 @@
     "name": "選択されていない"
   },
   {
+    "id": "features-editor-tokeneditor--shadow-selected",
+    "title": "features/editor/TokenEditor",
+    "name": "影トークンを選択中"
+  },
+  {
     "id": "features-editor-tokeneditor--spacing-selected",
     "title": "features/editor/TokenEditor",
     "name": "間隔トークンを選択中"
+  },
+  {
+    "id": "features-editor-tokeneditor--typography-selected",
+    "title": "features/editor/TokenEditor",
+    "name": "書体トークンを選択中"
   },
   {
     "id": "features-editor-tokenlist--color-selected",
