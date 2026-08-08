@@ -175,6 +175,11 @@
     "name": "同期に失敗した編集画面"
   },
   {
+    "id": "features-editor-propertypanel--box-selected",
+    "title": "features/editor/PropertyPanel",
+    "name": "Box ノードを選択中"
+  },
+  {
     "id": "features-editor-propertypanel--default",
     "title": "features/editor/PropertyPanel",
     "name": "選択されていない"
@@ -183,6 +188,11 @@
     "id": "features-editor-propertypanel--instance-selected",
     "title": "features/editor/PropertyPanel",
     "name": "インスタンスを選択中（publicProps から生成）"
+  },
+  {
+    "id": "features-editor-propertypanel--long-name",
+    "title": "features/editor/PropertyPanel",
+    "name": "名前が長いノードを選択中"
   },
   {
     "id": "features-editor-propertypanel--selected",
@@ -203,6 +213,11 @@
     "id": "features-editor-tokeneditor--default",
     "title": "features/editor/TokenEditor",
     "name": "選択されていない"
+  },
+  {
+    "id": "features-editor-tokeneditor--radius-selected",
+    "title": "features/editor/TokenEditor",
+    "name": "角丸トークンを選択中"
   },
   {
     "id": "features-editor-tokeneditor--shadow-selected",
