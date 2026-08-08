@@ -1,7 +1,12 @@
-# .claude/harness/records — マージ後の評価記録
+# harness/records — マージ後の評価記録
 
 マージされた PR 1 本につき `pr-<番号>.md` を 1 ファイル置く。
 書くのは `harness-growth` スキル(`.claude/skills/harness-growth/`)。
+
+**`.claude/` の下には置かない。** 記録はマージのたびに必ず 1 ファイル増えるが、
+`.claude/` 配下への書き込みは編集のたびに承認を求められる。記録を残すこと自体が
+目的なのに、毎回そこで人の手を止めるのは割に合わない。読み書きの頻度が高い
+成果物はリポジトリの通常のフォルダに置く。
 
 ## 何のためにあるか
 
@@ -13,7 +18,7 @@
 ## 数え方
 
 ```bash
-grep -rho '^- 分類: `[^`]*`' .claude/harness/records/ | sort | uniq -c | sort -rn
+grep -rho '^- 分類: `[^`]*`' harness/records/ | sort | uniq -c | sort -rn
 ```
 
 2 回以上の分類は `rules/` / `.claude/skills/` / `.claude/hooks/` の抜けとして扱う。

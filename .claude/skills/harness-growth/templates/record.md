@@ -1,6 +1,6 @@
 # 記録のテンプレート
 
-`.claude/harness/records/pr-<番号>.md` へコピーして使う。
+`harness/records/pr-<番号>.md` へコピーして使う。
 
 ## Contents
 

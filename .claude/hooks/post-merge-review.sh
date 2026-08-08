@@ -47,10 +47,10 @@ esac
 
 if [ -n "$pr_number" ]; then
   target="PR #${pr_number}"
-  record_path=".claude/harness/records/pr-${pr_number}.md"
+  record_path="harness/records/pr-${pr_number}.md"
 else
   target="PR"
-  record_path=".claude/harness/records/pr-<番号>.md"
+  record_path="harness/records/pr-<番号>.md"
 fi
 
 message="${target} がマージされました。マージ後の 2 つを行ってください。
