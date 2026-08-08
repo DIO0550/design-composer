@@ -12,10 +12,16 @@ import { ShadowToken } from "./shadow";
 import { TypographyToken } from "./typography";
 
 export { ColorToken } from "./color";
-export { type BoxShadowValue, ShadowToken } from "./shadow";
+export {
+  type BoxShadowValue,
+  type ShadowField,
+  type ShadowFieldEdit,
+  ShadowToken,
+} from "./shadow";
 export {
   type TypographyCssProperty,
   TypographyField,
+  type TypographyFieldEdit,
   TypographyFieldRef,
   TypographyToken,
 } from "./typography";
@@ -45,22 +51,6 @@ const TOKEN_KINDS = [
 ] as const satisfies readonly (keyof TokenSet)[];
 
 export type TokenKind = (typeof TOKEN_KINDS)[number];
-
-/**
- * 値が1つの値で表せる種別(docs/04-tokens.md「値の形式」)。
- * 残る `shadows` / `typography` は複合オブジェクトで、編集も表示も
- * フィールドごとに分かれる。
- *
- * `css-declaration` の `SingleVariableTokenKind` とは別物なので寄せない。
- * あちらは「CSS の1カスタムプロパティで表せるか」で、複合である `shadows` を含む。
- */
-const SCALAR_TOKEN_KINDS = [
-  "colors",
-  "spacing",
-  "radius",
-] as const satisfies readonly TokenKind[];
-
-export type ScalarTokenKind = (typeof SCALAR_TOKEN_KINDS)[number];
 
 /**
  * 種別ごとの値の形式(docs/04-tokens.md「値の形式」)。
@@ -127,14 +117,23 @@ export const Token = {
   },
 
   /**
-   * 値を正規形へ倒す。色だけが正規形(小文字の hex)を持つ
-   * (docs/04-tokens.md「値の形式」)。
+   * 値を正規形へ倒す(docs/04-tokens.md「値の形式」)。
    * 保存形式の規則なので、入力 UI ではなく値を受け取る側で通す。
+   *
+   * 影も通すのは、影が中に生 hex を持つため(docs/04-tokens.md「shadows」)。
+   * 色の種別だけを通すと、影の中の hex が大文字のまま保存される。
    */
   normalized(token: Token): Token {
-    return token.kind === "colors"
-      ? { ...token, value: ColorToken.normalize(token.value) }
-      : token;
+    switch (token.kind) {
+      case "colors":
+        return { ...token, value: ColorToken.normalize(token.value) };
+      case "shadows":
+        return { ...token, value: ShadowToken.normalized(token.value) };
+      case "spacing":
+      case "radius":
+      case "typography":
+        return token;
+    }
   },
 } as const;
 
@@ -327,11 +326,6 @@ export const TokenSet = {
 
   kinds(): readonly TokenKind[] {
     return TOKEN_KINDS;
-  },
-
-  /** 値が1つの値で表せる種別か(docs/04-tokens.md「値の形式」)。 */
-  isScalarKind(kind: TokenKind): kind is ScalarTokenKind {
-    return (SCALAR_TOKEN_KINDS as readonly TokenKind[]).includes(kind);
   },
 
   names(tokens: TokenSet, kind: TokenKind): readonly string[] {

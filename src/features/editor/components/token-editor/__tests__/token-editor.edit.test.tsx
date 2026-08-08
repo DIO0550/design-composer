@@ -15,8 +15,8 @@ const DOCUMENT = DesignDocument.create({
     colors: { primary: "#3b82f6", danger: "#ef4444" },
     spacing: { lg: 24 },
     radius: {},
-    shadows: {},
-    typography: {},
+    shadows: { sm: { x: 0, y: 1, blur: 3, color: "#0000001a" } },
+    typography: { body: { fontSize: 16, lineHeight: 1.6, fontWeight: 400 } },
   },
   artboards: [
     {
@@ -183,4 +183,93 @@ test("使用中のトークンでも削除できる", async () => {
   await user.click(screen.getByRole("button", { name: "Delete token" }));
 
   expect(screen.queryByText("primary")).toBeNull();
+});
+
+/** 一覧で種別の節を開いてから、その中のトークンを選ぶ。 */
+async function selectToken(
+  user: ReturnType<typeof renderPanes>,
+  kind: string,
+  name: string,
+) {
+  await user.click(
+    screen.getByRole("button", { name: new RegExp(`^${kind}`) }),
+  );
+  await user.click(screen.getByRole("button", { name: new RegExp(name) }));
+}
+
+test("影のぼかしを打って確定すると一覧の値が変わる", async () => {
+  const user = renderPanes();
+  await selectToken(user, "shadows", "sm");
+
+  await user.clear(screen.getByLabelText("ぼかし"));
+  await user.type(screen.getByLabelText("ぼかし"), "8");
+  await user.tab();
+
+  expect(screen.getByText("0px 1px 8px 0px #0000001a")).toBeDefined();
+});
+
+test("影の広がりだけを打っても他のフィールドの表示は変わらない", async () => {
+  const user = renderPanes();
+  await selectToken(user, "shadows", "sm");
+
+  await user.clear(screen.getByLabelText("広がり"));
+  await user.type(screen.getByLabelText("広がり"), "2");
+  await user.tab();
+
+  expect(screen.getByLabelText("ぼかし")).toHaveProperty("value", "3");
+});
+
+test("書体のサイズを打って確定すると一覧の値が変わる", async () => {
+  const user = renderPanes();
+  await selectToken(user, "typography", "body");
+
+  await user.clear(screen.getByLabelText("サイズ"));
+  await user.type(screen.getByLabelText("サイズ"), "24");
+  await user.tab();
+
+  expect(screen.getByText("24px / 1.6 / 400")).toBeDefined();
+});
+
+test("書体のフォントを打って確定すると入力欄に残る", async () => {
+  const user = renderPanes();
+  await selectToken(user, "typography", "body");
+
+  await user.type(screen.getByLabelText("フォント"), "Inter");
+  await user.tab();
+
+  expect(screen.getByLabelText("フォント")).toHaveProperty("value", "Inter");
+});
+
+test("影の追加ボタンを押すと影が増えてそのまま編集できる", async () => {
+  const user = renderPanes();
+  await user.click(screen.getByRole("button", { name: /^shadows 1$/ }));
+
+  await user.click(
+    screen.getByRole("button", { name: "shadows にトークンを追加" }),
+  );
+
+  expect(screen.getByRole("button", { name: /^shadows 2$/ })).toBeDefined();
+  expect(nameField()).toHaveProperty("value", "shadow");
+});
+
+test("影を削除すると一覧から消えて編集欄も閉じる", async () => {
+  const user = renderPanes();
+  await selectToken(user, "shadows", "sm");
+
+  await user.click(screen.getByRole("button", { name: "Delete token" }));
+
+  expect(screen.getByRole("button", { name: /^shadows 0$/ })).toBeDefined();
+  expect(screen.getByText("選択されていません")).toBeDefined();
+});
+
+test("影の色をピッカーで選び直しても一覧の値に alpha が残る", async () => {
+  const user = renderPanes();
+  await selectToken(user, "shadows", "sm");
+
+  /* ピッカーは打鍵ではなく色の確定で値が届くので、変更イベントを直接起こす。 */
+  fireEvent.change(screen.getByLabelText("色"), {
+    target: { value: "#ff0000" },
+  });
+
+  expect(screen.getByText("0px 1px 3px 0px #ff00001a")).toBeDefined();
 });

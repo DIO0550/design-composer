@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
+import type { TokenRef } from "@/domains/token";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { TokenList } from "../index";
 
@@ -60,7 +61,7 @@ test("色の行には hex が出る", () => {
   expect(screen.getByText("#3b82f6")).toBeDefined();
 });
 
-test("値が1つの値で表せる種別には追加ボタンが出る", () => {
+test("開いている種別には追加ボタンが出る", () => {
   renderList();
 
   expect(
@@ -68,25 +69,52 @@ test("値が1つの値で表せる種別には追加ボタンが出る", () => {
   ).toBeDefined();
 });
 
-test("複合オブジェクトの種別には追加ボタンを出さない", async () => {
+test("複合オブジェクトの種別にも追加ボタンが出る", async () => {
   const user = userEvent.setup();
   renderList();
 
   await user.click(screen.getByRole("button", { name: /^shadows 1$/ }));
 
   expect(
-    screen.queryByRole("button", { name: "shadows にトークンを追加" }),
+    screen.getByRole("button", { name: "shadows にトークンを追加" }),
+  ).toBeDefined();
+});
+
+test("畳んでいる種別には追加ボタンを出さない", () => {
+  renderList();
+
+  expect(
+    screen.queryByRole("button", { name: "spacing にトークンを追加" }),
   ).toBeNull();
 });
 
-test("複合オブジェクトの種別の行は押せる形にしない", async () => {
+test("複合オブジェクトの種別の行も押して選べる", async () => {
+  const user = userEvent.setup();
+  const selected: TokenRef[] = [];
+  render(
+    <TokenList
+      state={setupState()}
+      onSelectToken={(ref) => selected.push(ref)}
+      onAddToken={NOOP}
+    />,
+  );
+
+  await user.click(screen.getByRole("button", { name: /^typography 1$/ }));
+  await user.click(screen.getByRole("button", { name: /body/ }));
+
+  expect(selected).toEqual([{ kind: "typography", name: "body" }]);
+});
+
+test("影の行の見本にはその影が当たる", async () => {
   const user = userEvent.setup();
   renderList();
 
-  await user.click(screen.getByRole("button", { name: /^typography 1$/ }));
+  await user.click(screen.getByRole("button", { name: /^shadows 1$/ }));
 
-  expect(screen.getByText("body")).toBeDefined();
-  expect(screen.queryByRole("button", { name: /body/ })).toBeNull();
+  const preview = screen
+    .getByRole("button", { name: /sm/ })
+    .querySelector<HTMLElement>("[style*='box-shadow']");
+  expect(preview?.style.boxShadow).toBe("0px 1px 3px 0px #0000001a");
 });
 
 test("選択中のトークンの行が選択済みとして示される", () => {

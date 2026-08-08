@@ -50,3 +50,23 @@ export const SpacingSelected: Story = {
     }),
   },
 };
+
+export const ShadowSelected: Story = {
+  name: "影トークンを選択中",
+  args: {
+    state: EditorState.selectToken(SAMPLE_EDITOR_STATE, {
+      kind: "shadows",
+      name: "md",
+    }),
+  },
+};
+
+export const TypographySelected: Story = {
+  name: "書体トークンを選択中",
+  args: {
+    state: EditorState.selectToken(SAMPLE_EDITOR_STATE, {
+      kind: "typography",
+      name: "body",
+    }),
+  },
+};

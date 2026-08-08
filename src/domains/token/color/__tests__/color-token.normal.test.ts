@@ -29,3 +29,15 @@ test.each([
 ])("hex カラー %s は有効な色として判定される", (value) => {
   expect(ColorToken.isValid(value)).toBe(true);
 });
+
+test("色の RGB を差し替えても alpha は引き継がれる", () => {
+  expect(ColorToken.withRgb("#00000026", "#ff0000")).toBe("#ff000026");
+});
+
+test("alpha を持たない色の RGB を差し替えると alpha は付かない", () => {
+  expect(ColorToken.withRgb("#3b82f6", "#00ff00")).toBe("#00ff00");
+});
+
+test("差し替えた RGB は小文字へ正規化される", () => {
+  expect(ColorToken.withRgb("#0000001a", "#AABBCC")).toBe("#aabbcc1a");
+});
