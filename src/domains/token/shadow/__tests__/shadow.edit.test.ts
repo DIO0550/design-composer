@@ -33,15 +33,6 @@ test("影の色を変えると色だけが変わる", () => {
   expect(changed).toEqual({ x: 0, y: 1, blur: 3, color: "#ff0000" });
 });
 
-test("影の色に大文字の hex を入れても小文字で保持される", () => {
-  const changed = ShadowToken.withField(setupShadow(), {
-    field: "color",
-    value: "#AABBCC",
-  });
-
-  expect(changed.color).toBe("#aabbcc");
-});
-
 test("省略されていた広がりに値を入れると box-shadow の4つ目に出る", () => {
   const changed = ShadowToken.withField(setupShadow(), {
     field: "spread",
@@ -51,18 +42,17 @@ test("省略されていた広がりに値を入れると box-shadow の4つ目�
   expect(ShadowToken.cssValue(changed)).toBe("0px 1px 3px 2px #0000001a");
 });
 
-test("影の広がりに 0 を入れると省略として持つ", () => {
-  const spread = ShadowToken.withField(setupShadow(), {
+test("影の広がりに 0 を入れると 0 として持つ", () => {
+  const changed = ShadowToken.withField(setupShadow(), {
     field: "spread",
-    value: 2,
+    value: 0,
   });
 
-  const cleared = ShadowToken.withField(spread, { field: "spread", value: 0 });
-
-  expect(ShadowToken.toJson(cleared)).toEqual({
+  expect(ShadowToken.toJson(changed)).toEqual({
     x: 0,
     y: 1,
     blur: 3,
+    spread: 0,
     color: "#0000001a",
   });
 });

@@ -98,7 +98,7 @@ export const TypographyToken = {
    *
    * 値域(fontWeight は仕様上 100–900、fontSize / lineHeight は正の数)はここで
    * 縛っていない。不正な値をどう見せるかが UI 案にも #126 にも無く、
-   * 表示の形と対でしか決められないため(縛るのは別 issue)。
+   * 表示の形と対でしか決められないため(縛るのは #143)。
    */
   withField(
     token: TypographyToken,

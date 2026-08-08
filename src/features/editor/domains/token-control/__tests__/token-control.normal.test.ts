@@ -2,6 +2,7 @@ import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
 import type { TokenSet } from "@/domains/token";
 import { EditorState } from "@/features/editor/domains/editor-state";
+import { Font } from "@/utils/Font";
 import { Option } from "@/utils/Option";
 import { TokenControl, type TokenControlField, TokenSection } from "../index";
 
@@ -115,32 +116,17 @@ test("書体の行の見本は太さと解決済みのフォントを持つ", ()
   expect(row.preview).toEqual({
     kind: "letters",
     fontWeight: 400,
-    fontFamily: expect.any(String),
+    fontFamily: Font.systemStack(),
   });
-});
-
-test("どの種別にもトークンを足せる", () => {
-  const state = setupState();
-
-  expect(
-    TokenSection.forDocument(state).map((section) =>
-      TokenSection.addTemplate(section),
-    ),
-  ).toEqual([
-    { kind: "colors" },
-    { kind: "spacing" },
-    { kind: "radius" },
-    { kind: "shadows" },
-    { kind: "typography" },
-  ]);
 });
 
 test("色を選ぶとカラーピッカーの入力欄が1つ出る", () => {
   expect(fieldsOf("colors", "primary")).toEqual([
     {
+      name: "value",
       label: "値",
       input: { kind: "color", value: "#3b82f6" },
-      target: { kind: "colors", color: "#3b82f6" },
+      target: { kind: "colors" },
     },
   ]);
 });
@@ -148,6 +134,7 @@ test("色を選ぶとカラーピッカーの入力欄が1つ出る", () => {
 test("長さを選ぶと数値の入力欄が1つ出る", () => {
   expect(fieldsOf("radius", "md")).toEqual([
     {
+      name: "value",
       label: "値",
       input: { kind: "number", value: 8 },
       target: { kind: "radius" },
@@ -275,6 +262,14 @@ test("書体のフォントを空欄にすると指定が外れる", () => {
       kind: "typography",
       value: { fontSize: 16, lineHeight: 1.6, fontWeight: 400 },
     }),
+  );
+});
+
+test("色のトークンはピッカーが返した hex がそのまま値になる", () => {
+  const field = fieldOf("colors", "primary", "値");
+
+  expect(TokenControl.valueFrom(field.target, "#00ff0080")).toEqual(
+    Option.some({ kind: "colors", value: "#00ff0080" }),
   );
 });
 

@@ -249,7 +249,7 @@ test("影の追加ボタンを押すと影が増えてそのまま編集でき�
   );
 
   expect(screen.getByRole("button", { name: /^shadows 2$/ })).toBeDefined();
-  expect(nameField()).toHaveProperty("value", "shadow");
+  expect(screen.getByLabelText("ぼかし")).toHaveProperty("value", "3");
 });
 
 test("影を削除すると一覧から消えて編集欄も閉じる", async () => {
@@ -272,4 +272,26 @@ test("影の色をピッカーで選び直しても一覧の値に alpha が残�
   });
 
   expect(screen.getByText("0px 1px 3px 0px #ff00001a")).toBeDefined();
+});
+
+test("確定した値が正規化されると入力欄の表示も追随する", async () => {
+  const user = renderPanes();
+  await selectToken(user, "shadows", "sm");
+
+  await user.clear(screen.getByLabelText("ぼかし"));
+  await user.type(screen.getByLabelText("ぼかし"), "007");
+  await user.tab();
+
+  expect(screen.getByLabelText("ぼかし")).toHaveProperty("value", "7");
+});
+
+test("数値として読めない入力を確定してもトークンの値は変わらない", async () => {
+  const user = renderPanes();
+  await selectToken(user, "shadows", "sm");
+
+  await user.clear(screen.getByLabelText("ぼかし"));
+  await user.type(screen.getByLabelText("ぼかし"), "-");
+  await user.tab();
+
+  expect(screen.getByText("0px 1px 3px 0px #0000001a")).toBeDefined();
 });

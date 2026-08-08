@@ -23,7 +23,7 @@ test("spread は省略できる", () => {
   expect(ShadowToken.spreadOf(shadow)).toBe(0);
 });
 
-test("0 と書かれた spread は省略として読み込まれ、書き出しにも出ない", () => {
+test("0 と書かれた spread は書き出しでもそのまま残る", () => {
   const shadow = Result.unwrap(
     ShadowToken.fromJson(
       Json.create({ x: 0, y: 1, blur: 3, spread: 0, color: "#000000" }, "sm"),
@@ -34,6 +34,7 @@ test("0 と書かれた spread は省略として読み込まれ、書き出し�
     "x",
     "y",
     "blur",
+    "spread",
     "color",
   ]);
 });

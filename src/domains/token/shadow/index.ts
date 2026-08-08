@@ -55,43 +55,43 @@ export const ShadowToken = {
   },
 
   /**
-   * 値を正規形へ倒す。色は小文字の hex、0 の spread は省略にする。
+   * 値を正規形へ倒す。影が正規形を持つのは中の生 hex だけ
+   * (docs/04-tokens.md「shadows」の `color`)。
    *
-   * spread を倒すのは、docs/04-tokens.md が「省略時 0」と定めていて 0 と省略が
-   * 同義だから。片方の経路だけで倒すと同値異表記が併存し、書き出しが
-   * 「どう編集したか」に依存する(colors が「正規形を1つに保つ」として
-   * 避けているのと同じ状態)。読み込みと書き換えの両方をここへ通す。
+   * `spread` の 0 は省略へ倒さない。docs が定めているのは「省略時 0」という
+   * 既定値の解決規則で、「0 を省略で書く」という表記の規則ではない。倒しても
+   * `cssValue` も一覧の表示も変わらず、書き出しからキーが1つ消えるだけなので、
+   * 仕様が求めていない書き換えになる(colors の正規化は「同値異表記の併存を
+   * 防ぐ」と docs が明文で決めているので事情が違う)。
+   *
+   * 保存形式の規則なので、書き込みの境界(`Token.normalized`)からだけ通す。
    */
   normalized(shadow: ShadowToken): ShadowToken {
-    const spread = ShadowToken.spreadOf(shadow);
-    return {
-      x: shadow.x,
-      y: shadow.y,
-      blur: shadow.blur,
-      ...(spread === 0 ? {} : { spread }),
-      color: ColorToken.normalize(shadow.color),
-    };
+    return { ...shadow, color: ColorToken.normalize(shadow.color) };
   },
 
   /**
    * 1フィールドだけ差し替えた影を返す。
    *
-   * 値域(blur は CSS 上マイナス不可、x / y / spread は可)はここで縛っていない。
+   * 正規化はここでは通さない。保存形式の規則は書き込みの境界が持つ
+   * (`Token.normalized`)ので、ここで通すと同じ正規化が経路上で二重に走る。
+   *
+   * 値域(blur は CSS 上マイナス不可、x / y / spread は可)も縛っていない。
    * 不正な値をどう見せるかが UI 案にも #126 にも無く、表示の形と対でしか
-   * 決められないため(縛るのは別 issue)。
+   * 決められないため(縛るのは #143)。
    */
   withField(shadow: ShadowToken, edit: ShadowFieldEdit): ShadowToken {
     switch (edit.field) {
       case "x":
-        return ShadowToken.normalized({ ...shadow, x: edit.value });
+        return { ...shadow, x: edit.value };
       case "y":
-        return ShadowToken.normalized({ ...shadow, y: edit.value });
+        return { ...shadow, y: edit.value };
       case "blur":
-        return ShadowToken.normalized({ ...shadow, blur: edit.value });
+        return { ...shadow, blur: edit.value };
       case "spread":
-        return ShadowToken.normalized({ ...shadow, spread: edit.value });
+        return { ...shadow, spread: edit.value };
       case "color":
-        return ShadowToken.normalized({ ...shadow, color: edit.value });
+        return { ...shadow, color: edit.value };
     }
   },
 
@@ -110,14 +110,19 @@ export const ShadowToken = {
           Json.required(record, "blur", Json.number),
           Json.optional(record, "spread", Json.number),
           Json.required(record, "color", ColorToken.fromJson),
-          (x, y, blur, spread, color) =>
-            ShadowToken.normalized({
-              x,
-              y,
-              blur,
-              ...(spread !== undefined ? { spread } : {}),
-              color,
-            }),
+          /*
+           * 読み込みでは書かれている表現をそのまま保つ（`"spread": 0` を
+           * 省略へ倒さない）。倒すと、開いて別のトークンを直しただけで
+           * 触っていない影の書き出しが変わる。色は `ColorToken.fromJson` が
+           * 読んだ時点で小文字へ倒している。
+           */
+          (x, y, blur, spread, color) => ({
+            x,
+            y,
+            blur,
+            ...(spread !== undefined ? { spread } : {}),
+            color,
+          }),
         ),
         record,
         SHADOW_TOKEN_FIELDS,

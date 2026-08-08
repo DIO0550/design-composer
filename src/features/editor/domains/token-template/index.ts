@@ -18,8 +18,10 @@ export type TokenTemplate = Readonly<{ kind: TokenKind }>;
  *
  * 影と書体だけは 0 や空から始めない。影を 0/0/0 にすると一覧の見本にも
  * キャンバスにも何も出ず、色を白にしたときと同じ「足したのに見えない」になる。
- * どちらも docs/04-tokens.md「初期トークンセット」が持つ値（`shadows.sm` /
- * `typography.body`）をそのまま使い、初期テーマと綴りを二重管理しない。
+ * どちらも docs/04-tokens.md「初期トークンセット」が挙げている値（`shadows.sm` /
+ * `typography.body`）を選んだ。デフォルトテーマ（`domains/design-document/template`）
+ * とは値が一致するだけで、参照はしていない。追加直後の見え方を決めるのはこちらの
+ * 関心事で、テーマを直したときに連動して変わってよいものではないため。
  */
 const INITIAL_VALUES = {
   colors: { kind: "colors", value: "#000000" },

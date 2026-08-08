@@ -25,8 +25,13 @@ const HEADINGS = {
  * 途中の文字列が弾かれて打ち続けられない（`primary-` が弾かれると `-` の次を打てない）。
  * 確定は入力欄を離れたときと Enter。
  *
- * 外の値が変わったときの取り直しは `key` で行う（呼び出し側が現在値を key にする /
+ * 外の値が変わったときの取り直しは `key` で行う（呼び出し側が現在値を key に混ぜる /
  * rules/hooks.md「state リセット目的の Effect 禁止」）。
+ *
+ * 確定が通らなかった入力（数値として読めない値・規則を満たさない名前）では外の値が
+ * 変わらないので key も変わらず、下書きが残ってそのまま打ち続けられる。ただし
+ * `type="number"` の欄は下書きが数値として読めない間ブラウザが表示を空にするので、
+ * 画面に文字列として残るのは `type="text"` の欄だけ。
  */
 function DraftField({
   id,
@@ -139,11 +144,7 @@ export function TokenEditor({
   }
 
   const { token, fields } = control.value;
-  /**
-   * 下書きの取り直しの単位。名前は種別の中でしか一意でないので種別も混ぜる。
-   * 値を混ぜないのは、あるフィールドを確定したときに別のフィールドの
-   * 入力途中の下書きまで捨てないため（複合の種別では行が同時に並ぶ）。
-   */
+  /** どのトークンを編集しているか。名前は種別の中でしか一意でないので種別も混ぜる。 */
   const tokenKey = `${token.kind}/${token.name}`;
 
   return (
@@ -151,17 +152,31 @@ export function TokenEditor({
       <h2 className="font-semibold text-gray-500 text-xs uppercase">
         {HEADINGS[token.kind]}
       </h2>
-      {fields.map((field, index) => (
-        // 見出しは1つのトークンの中で一意なので、下書きの取り直しの単位に使える。
-        <div key={`${tokenKey}/${field.label}`} className="flex flex-col gap-1">
+      {fields.map((field) => (
+        /*
+         * 下書きの取り直しの単位。行は `name` で一意に指す。
+         *
+         * その行自身の値を混ぜるのは、外から値が変わったとき（undo / redo、
+         * 打った値の正規化）に入力欄が古いままにならないため。トークン全体では
+         * なく行ごとの値なので、ある行を確定しても他の行の下書きは残る。
+         */
+        <div
+          key={`${tokenKey}/${field.name}/${field.input.value}`}
+          className="flex flex-col gap-1"
+        >
           <label
-            htmlFor={`${valueId}-${index}`}
+            htmlFor={`${valueId}-${field.name}`}
             className="text-gray-600 text-xs"
           >
             {field.label}
           </label>
+          {/*
+            数値として読めない入力では値を変えない（`TokenControl.valueFrom` の
+            `none`）。名前欄と同じで、通らなかったことは画面に出さず打ち直しに
+            任せる。仕様に無い中間状態のエラー表示を発明しないため。
+          */}
           <ValueField
-            id={`${valueId}-${index}`}
+            id={`${valueId}-${field.name}`}
             input={field.input}
             onEdit={(raw) =>
               Option.map(

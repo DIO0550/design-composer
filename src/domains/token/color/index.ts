@@ -9,12 +9,13 @@ const HEX_COLOR_PATTERN = /^#[0-9a-f]{6}([0-9a-f]{2})?$/;
 /** 大文字の hex も受ける版。正規化の対象かどうかの判定にだけ使う。 */
 const ANY_CASE_HEX_COLOR_PATTERN = /^#[0-9a-f]{6}([0-9a-f]{2})?$/i;
 
-/** alpha 込みの hex。alpha を持っているかの判定にだけ使う。 */
-const HEX_COLOR_WITH_ALPHA_PATTERN = /^#[0-9a-f]{8}$/i;
-
-/** alpha の2桁。持っていなければ空文字（不透明を表す桁を足さない）。 */
+/**
+ * alpha の2桁。持っていなければ空文字（不透明を表す桁を足さない）。
+ * hex の綴りを別の正規表現で書き直すと、片方だけ直したときに気づけないので
+ * 既存のパターンの任意キャプチャから引く。
+ */
 function alphaOf(color: ColorToken): string {
-  return HEX_COLOR_WITH_ALPHA_PATTERN.test(color) ? color.slice(7) : "";
+  return ANY_CASE_HEX_COLOR_PATTERN.exec(color)?.[1] ?? "";
 }
 
 export const ColorToken = {
@@ -38,10 +39,15 @@ export const ColorToken = {
 
   /**
    * RGB の6桁だけを差し替え、alpha は元の値から引き継ぐ。
+   * `rgb` は6桁の hex であることを呼び出し側が保証する(`input[type=color]` の
+   * 戻り値。それ以外を渡すと hex として読めない値がそのまま通る)。
    *
    * `#rrggbbaa` は正規形として認められている(docs/04-tokens.md「colors」)が、
    * `input[type=color]` は6桁しか扱えず alpha を表せない。引き継がないと、
    * 半透明が常用される影の色(同「shadows」)をピッカーで触るだけで不透明になる。
+   *
+   * 引き継ぐ側の代償として、alpha を外す手段が画面に無い。alpha の入力欄は
+   * UI 案(docs/Design Composer.html)に無いため #142 で別に決める。
    */
   withRgb(color: ColorToken, rgb: string): ColorToken {
     return ColorToken.normalize(`${rgb}${alphaOf(color)}`);

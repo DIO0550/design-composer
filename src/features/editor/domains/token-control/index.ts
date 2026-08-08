@@ -62,7 +62,7 @@ export type TokenControlInput =
  * shadows のトークンに fontSize を指す組み合わせが型で作れてしまうため。
  */
 export type TokenFieldTarget =
-  | Readonly<{ kind: "colors"; color: ColorToken }>
+  | Readonly<{ kind: "colors" }>
   | Readonly<{ kind: "spacing" }>
   | Readonly<{ kind: "radius" }>
   | Readonly<{ kind: "shadows"; shadow: ShadowToken; field: ShadowField }>
@@ -72,8 +72,15 @@ export type TokenFieldTarget =
       field: TypographyField;
     }>;
 
-/** 編集欄の1行。値が1つの種別は1行、複合の種別はフィールドの数だけ並ぶ。 */
+/**
+ * 編集欄の1行。値が1つの種別は1行、複合の種別はフィールドの数だけ並ぶ。
+ *
+ * `name` は行の識別子で、1つのトークンの中で一意（複合の種別はフィールド名、
+ * 値が1つの種別は行が1本しかない）。見出しの文字列とは別に持つのは、
+ * 表示の文言が偶然衝突しても行の同一性が壊れないようにするため。
+ */
 export type TokenControlField = Readonly<{
+  name: string;
   label: string;
   input: TokenControlInput;
   target: TokenFieldTarget;
@@ -90,7 +97,8 @@ export type TokenControl = Readonly<{
  */
 const PREVIEW_MAX_WIDTH_PX = 20;
 
-/** 値が1つの種別の行の見出し。何のフィールドかを言い分ける必要がない。 */
+/** 値が1つの種別の行。1本しかないので、何のフィールドかを言い分ける必要がない。 */
+const SCALAR_FIELD_NAME = "value";
 const SCALAR_LABEL = "値";
 
 /** 影のフィールドの見出し。既存の編集欄に合わせて日本語で書く。 */
@@ -219,15 +227,17 @@ function fieldsOf(token: Token): readonly TokenControlField[] {
     case "colors":
       return [
         {
+          name: SCALAR_FIELD_NAME,
           label: SCALAR_LABEL,
           input: { kind: "color", value: token.value },
-          target: { kind: "colors", color: token.value },
+          target: { kind: "colors" },
         },
       ];
     case "spacing":
     case "radius":
       return [
         {
+          name: SCALAR_FIELD_NAME,
           label: SCALAR_LABEL,
           input: { kind: "number", value: token.value },
           target: { kind: token.kind },
@@ -235,12 +245,14 @@ function fieldsOf(token: Token): readonly TokenControlField[] {
       ];
     case "shadows":
       return ShadowToken.fields().map((field) => ({
+        name: field,
         label: SHADOW_LABELS[field],
         input: shadowInput(token.value, field),
         target: { kind: "shadows", shadow: token.value, field },
       }));
     case "typography":
       return TypographyToken.fields().map((field) => ({
+        name: field,
         label: TYPOGRAPHY_LABELS[field],
         input: typographyInput(token.value, field),
         target: { kind: "typography", typography: token.value, field },
@@ -266,6 +278,11 @@ function shadowValueFrom(
 ): Option<TokenValue> {
   const { shadow, field } = target;
   if (field === "color") {
+    /*
+     * 影の色だけは、ピッカーが返した6桁に元の alpha を戻す。影の色は半透明が
+     * 常用される（docs/04-tokens.md「影の色は実務上ほぼ半透明の黒」）ので、
+     * 引き継がないと色を選び直すだけで影が不透明になる。
+     */
     return Option.some({
       kind: "shadows",
       value: ShadowToken.withField(shadow, {
@@ -325,14 +342,13 @@ export const TokenControl = {
   valueFrom(target: TokenFieldTarget, raw: string): Option<TokenValue> {
     switch (target.kind) {
       /*
-       * ピッカーが返すのは6桁の hex なので、元の値が持っていた alpha を引き継ぐ
-       * （`ColorToken.withRgb`）。ピッカーの制約は入力欄の事情なのでここで扱う。
+       * 色の種別ではピッカーが返した hex をそのまま値にする。影の色（下記）と
+       * 違って alpha を引き継がないのは、パレットの色は不透明が既定で、
+       * 引き継ぐと alpha 付きの色を不透明へ戻す手段が画面から無くなるため。
+       * どちらの種別も alpha を直接編集する欄は UI 案に無い（#142）。
        */
       case "colors":
-        return Option.some({
-          kind: "colors",
-          value: ColorToken.withRgb(target.color, raw),
-        });
+        return Option.some({ kind: "colors", value: raw });
       case "spacing":
         return Option.map(numberFromRaw(raw), (value) => ({
           kind: "spacing",
