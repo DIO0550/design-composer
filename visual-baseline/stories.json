@@ -15,6 +15,26 @@
     "name": "artboard を選択中"
   },
   {
+    "id": "features-editor-artboardlist--default",
+    "title": "features/editor/ArtboardList",
+    "name": "選択なし（先頭が今の 1 枚）"
+  },
+  {
+    "id": "features-editor-artboardlist--empty",
+    "title": "features/editor/ArtboardList",
+    "name": "artboard がない"
+  },
+  {
+    "id": "features-editor-artboardlist--node-selected",
+    "title": "features/editor/ArtboardList",
+    "name": "artboard 配下のノードを選択中"
+  },
+  {
+    "id": "features-editor-artboardlist--selected",
+    "title": "features/editor/ArtboardList",
+    "name": "別の artboard を選択中"
+  },
+  {
     "id": "features-editor-assetspanel--default",
     "title": "features/editor/AssetsPanel",
     "name": "パレット"
@@ -65,11 +85,6 @@
     "name": "選択なし"
   },
   {
-    "id": "features-editor-documenttree--empty",
-    "title": "features/editor/DocumentTree",
-    "name": "artboard がない"
-  },
-  {
     "id": "features-editor-documenttree--nested",
     "title": "features/editor/DocumentTree",
     "name": "入れ子のノードと並べ替え"
@@ -80,9 +95,9 @@
     "name": "artboard 配下のノードを選択中"
   },
   {
-    "id": "features-editor-documenttree--selected",
+    "id": "features-editor-documenttree--other-artboard",
     "title": "features/editor/DocumentTree",
-    "name": "artboard を選択中"
+    "name": "別の artboard を選択中"
   },
   {
     "id": "features-editor-editorlayout--default",
