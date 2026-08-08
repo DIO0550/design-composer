@@ -243,5 +243,20 @@
     "id": "features-editor-tokenlist--default",
     "title": "features/editor/TokenList",
     "name": "colors だけが開いている"
+  },
+  {
+    "id": "features-editor-tokenusedby--over-limit",
+    "title": "features/editor/TokenUsedBy",
+    "name": "上限を超える件数"
+  },
+  {
+    "id": "features-editor-tokenusedby--unused",
+    "title": "features/editor/TokenUsedBy",
+    "name": "参照されていない"
+  },
+  {
+    "id": "features-editor-tokenusedby--within-limit",
+    "title": "features/editor/TokenUsedBy",
+    "name": "上限内の件数"
   }
 ]
