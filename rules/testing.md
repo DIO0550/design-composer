@@ -59,6 +59,19 @@ expect(screen.getByText("◆")).toBeDefined();
 
 判断の仕方: **その assert を通すために実装をどう壊せるかを考える。** 壊し方が思いつかないなら、そのテストは何も守っていない。
 
+**既定値・フォールバックがある処理では、既定値と違う答えになる入力を選ぶ。** 「規則で決まる答え」と「既定値」が同じ入力を使うと、規則を丸ごと壊しても既定値のほうで通ってしまう。
+
+```typescript
+// NG: 「ノードから artboard を辿る」規則を確かめたいのに、選んだのが先頭の artboard 配下。
+// 辿る側が常に none を返すよう壊しても「選択なしは先頭」の既定で同じ答えになる
+EditorState.select(state, "home-title"); // home は 1 枚目
+expect(currentName(state)).toBe("home");
+
+// OK: 既定値（先頭 = home）と違う答えになる 2 枚目の配下を選ぶ
+EditorState.select(state, "settings-title");
+expect(currentName(state)).toBe("settings");
+```
+
 **2. 1つの assert が複数の仕様を固定していないか。** 表示全体を文字列として比べると、テスト名が指していない仕様まで巻き込む。関係のない変更で落ちるため、リファクタリング耐性が下がる。
 
 | NG | OK |
