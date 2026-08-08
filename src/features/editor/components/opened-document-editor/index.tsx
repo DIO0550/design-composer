@@ -1,26 +1,19 @@
 import { type ReactNode, useState } from "react";
-import { DesignDocument } from "@/domains/design-document";
 import { ArtboardCanvas } from "@/features/editor/components/artboard-canvas";
-import { AssetsPanel } from "@/features/editor/components/assets-panel";
 import { DocumentErrorList } from "@/features/editor/components/document-error-list";
 import { DocumentSyncFailureList } from "@/features/editor/components/document-sync-failure-list";
-import { DocumentTree } from "@/features/editor/components/document-tree";
 import { EditorLayout } from "@/features/editor/components/editor-layout";
 import {
   EditorProvider,
   useEditor,
 } from "@/features/editor/components/editor-provider";
-import { LeftPanePanel } from "@/features/editor/components/left-pane-panel";
+import { LeftPane } from "@/features/editor/components/left-pane";
 import {
-  LEFT_PANE_VIEW_LABELS,
   LEFT_PANE_VIEWS,
-  LeftPaneRail,
   type LeftPaneView,
 } from "@/features/editor/components/left-pane-rail";
-import { NodeEditToolbar } from "@/features/editor/components/node-edit-toolbar";
 import { PropertyPanel } from "@/features/editor/components/property-panel";
 import { TokenEditor } from "@/features/editor/components/token-editor";
-import { TokenList } from "@/features/editor/components/token-list";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import type { OpenedDocument } from "@/features/editor/domains/opened-document";
 import { useAutoSave } from "@/features/editor/hooks/use-auto-save";
@@ -51,46 +44,6 @@ function EditorPanes() {
   useEditShortcuts();
 
   /*
-   * 行き先ごとの中身。対応表にしているのは、行き先を足したときに中身を足し忘れると
-   * コンパイルエラーになるようにするため（`if` の連なりだと、足し忘れた行き先が
-   * 黙って最後の枝＝ツリーに落ちる）。
-   *
-   * 値を関数にしているのは、`Assets` の一覧の組み立て（ドキュメント全体の走査）を
-   * その行き先を見ているときだけ行うため。
-   */
-  const leftPaneContents = {
-    layers: () => (
-      <>
-        <NodeEditToolbar
-          isInsertEnabled={node.isInsertEnabled}
-          isRemoveEnabled={node.isRemoveEnabled}
-          onInsert={node.insert}
-          onRemove={node.remove}
-        />
-        <DocumentTree
-          state={state}
-          onSelect={node.select}
-          onReorder={node.reorder}
-        />
-      </>
-    ),
-    assets: () => (
-      <AssetsPanel
-        assets={DesignDocument.componentAssets(EditorState.document(state))}
-        isInsertEnabled={node.isInsertEnabled}
-        onInsert={node.insertInstance}
-      />
-    ),
-    tokens: () => (
-      <TokenList
-        state={state}
-        onSelectToken={token.select}
-        onAddToken={token.add}
-      />
-    ),
-  } as const satisfies Readonly<Record<LeftPaneView, () => ReactNode>>;
-
-  /*
    * 右ペインも同じ行き先で決まる。`Assets` がプロパティパネルのままなのは、
    * パレットは見るだけの場所で選択に触れないため
    * （UI 案「Assets is browse-only — the inspector keeps the previous selection」）。
@@ -118,10 +71,13 @@ function EditorPanes() {
   return (
     <EditorLayout>
       <EditorLayout.LeftPane>
-        <LeftPaneRail current={leftPaneView} onSelect={setLeftPaneView} />
-        <LeftPanePanel title={LEFT_PANE_VIEW_LABELS[leftPaneView]}>
-          {leftPaneContents[leftPaneView]()}
-        </LeftPanePanel>
+        <LeftPane
+          view={leftPaneView}
+          onSelectView={setLeftPaneView}
+          state={state}
+          node={node}
+          token={token}
+        />
       </EditorLayout.LeftPane>
       <EditorLayout.CenterPane>
         <ArtboardCanvas
