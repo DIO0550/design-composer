@@ -38,20 +38,6 @@ export type TokenReferrer =
   | Readonly<{ target: "instance"; name: string; prop: string }>
   | Readonly<{ target: "component"; name: string; prop: string }>;
 
-export const TokenReferrer = {
-  /**
-   * `title.color` の形の表記（UI 案の `Used by` の行）。
-   * 参照箇所を1つの文字列で指せる形なので、対の側が持つ。
-   *
-   * 同じ綴りを `document-error-list` の `locationLabel` も作っているが、あちらが受けるのは
-   * エラーの発生位置（`DocumentErrorLocation`。prop を持たない位置や文字位置も含む直和）で、
-   * 型も分岐も違うため共通化しない。
-   */
-  toText(referrer: TokenReferrer): string {
-    return `${referrer.name}.${referrer.prop}`;
-  },
-} as const;
-
 /** スキーマが宣言する props のうち、そのトークンを指しているものの prop 名。 */
 function collectSchemaRefProps(
   type: PrimitiveType,
@@ -153,53 +139,68 @@ function collectNodeReferrers(
   return [...ownReferrers, ...childReferrers];
 }
 
-/**
- * artboard 1枚の中で、そのトークンを参照している箇所を集める。
- *
- * artboard 自身の props も対象。受け付ける prop の定義は `Artboard.propDefinitions()`
- * （Box スキーマからサイズ系を落として `overflow` の既定を差し替えたもの）が持つので、
- * Box スキーマを直に見ない。artboard が受け付ける prop の唯一の答えがそちらだから。
- *
- * 部品集合を受け取るのは、インスタンスの上書きの prop 定義を解決するために要るため。
- */
-export function collectArtboardTokenReferrers(
-  components: ComponentSet,
-  artboard: Artboard,
-  ref: TokenRef,
-): readonly TokenReferrer[] {
-  const ownReferrers: readonly TokenReferrer[] =
-    PropDefinitionRecord.collectRefPropNames(
-      Artboard.propDefinitions(),
-      artboard.props ?? {},
-      ref,
-    ).map((prop) => ({ target: "artboard", name: artboard.name, prop }));
-  const childReferrers = artboard.children.flatMap((child) =>
-    collectNodeReferrers(components, child, ref),
-  );
-  return [...ownReferrers, ...childReferrers];
-}
+export const TokenReferrer = {
+  /**
+   * `title.color` の形の表記（UI 案の `Used by` の行）。
+   * 参照箇所を1つの文字列で指せる形なので、対の側が持つ。
+   *
+   * 同じ綴りを `document-error-list` の `locationLabel` も作っているが、あちらが受けるのは
+   * エラーの発生位置（`DocumentErrorLocation`。prop を持たない位置や文字位置も含む直和）で、
+   * 型も分岐も違うため共通化しない。
+   */
+  toText(referrer: TokenReferrer): string {
+    return `${referrer.name}.${referrer.prop}`;
+  },
 
-/**
- * 部品定義の中で、そのトークンを参照している箇所を集める。
- *
- * 部品定義の中の参照も数えるのは、初期部品セットの見た目の prop がすべてデフォルトテーマの
- * トークンを参照しており（docs/04-tokens.md「初期部品セット」）、外側だけを見ると
- * 新規ドキュメントのトークンがほとんど「どこからも使われていない」と読めてしまうため。
- * 部品の使用数を数える `ComponentSet.assets` が定義の中の参照を足しているのと同じ理由。
- *
- * 反復を内側に持つのは、名前で部品を引き直す形にすると「引けなかったとき」の分岐が
- * 生まれるが、辿る名前がすべて自分の持ち物なので引きが失敗しようがないため
- * （`ComponentSet.assets` が `Object.entries` の1本で組んでいるのと同じ理由）。
- */
-export function collectComponentSetTokenReferrers(
-  components: ComponentSet,
-  ref: TokenRef,
-): readonly TokenReferrer[] {
-  return Object.entries(components).flatMap(([name, component]) => {
-    const ownReferrers = collectComponentRootReferrers(name, component, ref);
-    const childReferrers = (component.children ?? []).flatMap((child) =>
+  /**
+   * artboard 1枚の中で、そのトークンを参照している箇所を集める。
+   *
+   * artboard 自身の props も対象。受け付ける prop の定義は `Artboard.propDefinitions()`
+   * （Box スキーマからサイズ系を落として `overflow` の既定を差し替えたもの）が持つので、
+   * Box スキーマを直に見ない。artboard が受け付ける prop の唯一の答えがそちらだから。
+   *
+   * 部品集合を受け取るのは、インスタンスの上書きの prop 定義を解決するために要るため。
+   */
+  collectInArtboard(
+    components: ComponentSet,
+    artboard: Artboard,
+    ref: TokenRef,
+  ): readonly TokenReferrer[] {
+    const ownReferrers: readonly TokenReferrer[] =
+      PropDefinitionRecord.collectRefPropNames(
+        Artboard.propDefinitions(),
+        artboard.props ?? {},
+        ref,
+      ).map((prop) => ({ target: "artboard", name: artboard.name, prop }));
+    const childReferrers = artboard.children.flatMap((child) =>
       collectNodeReferrers(components, child, ref),
     );
     return [...ownReferrers, ...childReferrers];
-  });
-}
+  },
+
+  /**
+   * 部品定義の中で、そのトークンを参照している箇所を集める。
+   *
+   * 部品定義の中の参照も数えるのは、初期部品セットの見た目の prop がすべてデフォルトテーマの
+   * トークンを参照しており（docs/04-tokens.md「初期部品セット」）、外側だけを見ると
+   * 新規ドキュメントのトークンがほとんど「どこからも使われていない」と読めてしまうため。
+   * 部品の使用数を数える `ComponentSet.assets` が定義の中の参照を足しているのと同じ理由。
+   *
+   * 1件ずつではなく部品集合をまとめて受け取るのは、名前で部品を引き直す形にすると
+   * 「引けなかったとき」の分岐が生まれるが、辿る名前がすべて自分の持ち物なので
+   * 引きが失敗しようがないため（`ComponentSet.assets` が `Object.entries` の1本で
+   * 組んでいるのと同じ理由）。
+   */
+  collectInComponents(
+    components: ComponentSet,
+    ref: TokenRef,
+  ): readonly TokenReferrer[] {
+    return Object.entries(components).flatMap(([name, component]) => {
+      const ownReferrers = collectComponentRootReferrers(name, component, ref);
+      const childReferrers = (component.children ?? []).flatMap((child) =>
+        collectNodeReferrers(components, child, ref),
+      );
+      return [...ownReferrers, ...childReferrers];
+    });
+  },
+} as const;

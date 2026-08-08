@@ -21,11 +21,7 @@ import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 import type { DesignDocumentEditError } from "./edit-error";
 import type { DocumentTemplate } from "./template";
-import {
-  collectArtboardTokenReferrers,
-  collectComponentSetTokenReferrers,
-  type TokenReferrer,
-} from "./token-referrer";
+import { TokenReferrer } from "./token-referrer";
 import { DesignDocumentV1 } from "./v1";
 import {
   collectArtboardErrors,
@@ -668,9 +664,9 @@ export const DesignDocument = {
     ref: TokenRef,
   ): readonly TokenReferrer[] {
     const artboardReferrers = document.artboards.flatMap((artboard) =>
-      collectArtboardTokenReferrers(document.components, artboard, ref),
+      TokenReferrer.collectInArtboard(document.components, artboard, ref),
     );
-    const componentReferrers = collectComponentSetTokenReferrers(
+    const componentReferrers = TokenReferrer.collectInComponents(
       document.components,
       ref,
     );
