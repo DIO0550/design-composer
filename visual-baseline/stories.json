@@ -17,12 +17,17 @@
   {
     "id": "features-editor-componentlist--default",
     "title": "features/editor/ComponentList",
-    "name": "雛形の初期部品セット"
+    "name": "使用数のある部品"
   },
   {
     "id": "features-editor-componentlist--empty",
     "title": "features/editor/ComponentList",
     "name": "部品がない"
+  },
+  {
+    "id": "features-editor-componentlist--insert-disabled",
+    "title": "features/editor/ComponentList",
+    "name": "挿せる位置が無い"
   },
   {
     "id": "features-editor-documenterrorlist--broken-json",
