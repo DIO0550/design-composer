@@ -20,6 +20,16 @@ async function selectInTree(name: string): Promise<void> {
   await userEvent.click(within(tree()).getByRole("button", { name }));
 }
 
+/** artboard の一覧から選ぶ。artboard はツリーの行ではないのでこちらから押す。 */
+async function selectArtboard(name: string): Promise<void> {
+  await userEvent.click(
+    within(screen.getByRole("region", { name: "artboard 一覧" })).getByRole(
+      "button",
+      { name },
+    ),
+  );
+}
+
 test("プロパティパネルで文言を変えるとキャンバスの表示が変わる", async () => {
   await renderOpenedDocument();
   await selectInTree("home-title");
@@ -35,7 +45,7 @@ test("プロパティパネルで文言を変えるとキャンバスの表示�
 
 test("トークン参照の prop を選び直すとその値がパネルに残る", async () => {
   await renderOpenedDocument();
-  await selectInTree("home");
+  await selectArtboard("home");
 
   await userEvent.selectOptions(
     screen.getByRole("combobox", { name: "Background" }),

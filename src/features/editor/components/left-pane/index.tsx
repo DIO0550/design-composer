@@ -1,5 +1,6 @@
 import type { ReactElement } from "react";
 import { DesignDocument } from "@/domains/design-document";
+import { ArtboardList } from "@/features/editor/components/artboard-list";
 import { AssetsPanel } from "@/features/editor/components/assets-panel";
 import { DocumentTree } from "@/features/editor/components/document-tree";
 import { LeftPanePanel } from "@/features/editor/components/left-pane-panel";
@@ -38,6 +39,12 @@ function LeftPaneContent({
     case LEFT_PANE_VIEWS.layers:
       return (
         <>
+          {/*
+            UI 案（docs/Design Composer.html）の `Layers` パネルは、artboard の一覧を
+            上段に、選んだ 1 枚の中身を下段に置く。編集操作のボタンは UI 案に無い
+            こちらの都合の入口なので、対象であるツリーの直前に置く。
+          */}
+          <ArtboardList state={state} onSelect={node.select} />
           <NodeEditToolbar
             isInsertEnabled={node.isInsertEnabled}
             isRemoveEnabled={node.isRemoveEnabled}

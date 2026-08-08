@@ -1,7 +1,7 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
-import { treeRowNames } from "@/features/editor/__tests__/tree-rows";
+import { rowNames } from "@/features/editor/__tests__/row-names";
 import { renderOpenedDocument } from "./setup";
 
 function tree(): HTMLElement {
@@ -22,7 +22,7 @@ test("並べ替えたあとに Ctrl+Z を押すと並びが元に戻る", async 
 
   await userEvent.keyboard("{Control>}z{/Control}");
 
-  expect(treeRowNames(tree()).slice(1, 3)).toEqual(ORIGINAL_CHILDREN);
+  expect(rowNames(tree())).toEqual(ORIGINAL_CHILDREN);
 });
 
 test("戻したあとに Ctrl+Shift+Z を押すと並べ替えが再び反映される", async () => {
@@ -34,7 +34,7 @@ test("戻したあとに Ctrl+Shift+Z を押すと並べ替えが再び反映さ
 
   await userEvent.keyboard("{Control>}{Shift>}z{/Shift}{/Control}");
 
-  expect(treeRowNames(tree()).slice(1, 3)).toEqual(REORDERED_CHILDREN);
+  expect(rowNames(tree())).toEqual(REORDERED_CHILDREN);
 });
 
 test("何も編集していないときに Ctrl+Z を押しても画面は変わらない", async () => {
@@ -42,7 +42,7 @@ test("何も編集していないときに Ctrl+Z を押しても画面は変わ
 
   await userEvent.keyboard("{Control>}z{/Control}");
 
-  expect(treeRowNames(tree()).slice(1, 3)).toEqual(ORIGINAL_CHILDREN);
+  expect(rowNames(tree())).toEqual(ORIGINAL_CHILDREN);
 });
 
 test("削除を戻すと消したノードがツリーに返ってくる", async () => {
@@ -52,5 +52,5 @@ test("削除を戻すと消したノードがツリーに返ってくる", async
 
   await userEvent.keyboard("{Control>}z{/Control}");
 
-  expect(treeRowNames(tree()).slice(1, 3)).toEqual(ORIGINAL_CHILDREN);
+  expect(rowNames(tree())).toEqual(ORIGINAL_CHILDREN);
 });

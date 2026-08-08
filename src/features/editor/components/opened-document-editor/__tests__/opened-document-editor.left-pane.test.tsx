@@ -1,7 +1,7 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
-import { treeRowNames } from "@/features/editor/__tests__/tree-rows";
+import { rowNames } from "@/features/editor/__tests__/row-names";
 import {
   LEFT_PANE_VIEW_LABELS,
   LEFT_PANE_VIEWS,
@@ -43,6 +43,16 @@ async function selectInTree(name: string): Promise<void> {
   );
 }
 
+/** artboard の一覧から選ぶ。artboard はツリーの行ではないのでこちらから押す。 */
+async function selectArtboard(name: string): Promise<void> {
+  await userEvent.click(
+    within(screen.getByRole("region", { name: "artboard 一覧" })).getByRole(
+      "button",
+      { name },
+    ),
+  );
+}
+
 test("開いた直後の左ペインにはツリーが出る", async () => {
   await renderOpenedDocument();
 
@@ -76,19 +86,16 @@ test("Assets から Layers に戻すとツリーが出る", async () => {
 
 test("Assets の部品を挿すと選択位置の子としてインスタンスが増える", async () => {
   await renderOpenedDocument();
-  await selectInTree("home");
+  await selectArtboard("home");
   await goTo(LEFT_PANE_VIEWS.assets);
 
   await userEvent.click(screen.getByRole("button", { name: "card を挿入" }));
 
   await goTo(LEFT_PANE_VIEWS.layers);
-  expect(treeRowNames(screen.getByRole("region", { name: "ツリー" }))).toEqual([
-    "home",
+  expect(rowNames(screen.getByRole("region", { name: "ツリー" }))).toEqual([
     "home-title",
     "home-login",
     "card-2",
-    "settings",
-    "settings-card",
   ]);
 });
 

@@ -23,14 +23,13 @@ function setupState(): EditorState {
                 { name: "body-action", type: "Text" },
               ],
             },
+            {
+              name: "aside",
+              type: "Box",
+              children: [{ name: "aside-only", type: "Text" }],
+            },
             { name: "footer", type: "Text" },
           ],
-        },
-        {
-          name: "settings",
-          width: 375,
-          height: 812,
-          children: [{ name: "settings-title", type: "Text" }],
         },
       ],
     }),
@@ -90,13 +89,5 @@ test("並びの末尾の子には下へ動かすボタンが出ない", () => {
 test("子が1つだけの親では並べ替えボタンが出ない", () => {
   renderTree();
 
-  expect(
-    screen.queryByRole("button", { name: /^settings-title を/ }),
-  ).toBeNull();
-});
-
-test("artboard には並べ替えボタンが出ない", () => {
-  renderTree();
-
-  expect(screen.queryByRole("button", { name: /^home を/ })).toBeNull();
+  expect(screen.queryByRole("button", { name: /^aside-only を/ })).toBeNull();
 });

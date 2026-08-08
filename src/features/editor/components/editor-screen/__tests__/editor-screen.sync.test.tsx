@@ -1,11 +1,11 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
+import { rowNames } from "@/features/editor/__tests__/row-names";
 import {
   artboardContent,
   SAMPLE_DOCUMENT,
 } from "@/features/editor/__tests__/sample-document";
-import { treeRowNames } from "@/features/editor/__tests__/tree-rows";
 import { DialogChoice } from "@/libs/document-dialog/fake";
 import { DocumentJson } from "@/libs/document-json";
 import { Option } from "@/utils/Option";
@@ -20,6 +20,10 @@ import {
 
 function tree(): HTMLElement {
   return screen.getByRole("region", { name: "ツリー" });
+}
+
+function artboardList(): HTMLElement {
+  return screen.getByRole("region", { name: "artboard 一覧" });
 }
 
 test("編集した内容が自動保存され、開き直すとその状態が読み戻る", async () => {
@@ -44,10 +48,7 @@ test("編集した内容が自動保存され、開き直すとその状態が�
   await clickCreate();
   await clickOpen();
 
-  expect(treeRowNames(tree()).slice(1, 3)).toEqual([
-    "home-login",
-    "home-title",
-  ]);
+  expect(rowNames(tree())).toEqual(["home-login", "home-title"]);
 });
 
 test("開いているファイルが外部から書き換わると、その内容が画面に反映される", async () => {
@@ -59,7 +60,9 @@ test("開いているファイルが外部から書き換わると、その内�
 
   await changeExternally(files, PATH, artboardContent("profile"));
 
-  expect(within(tree()).getByRole("button", { name: "profile" })).toBeDefined();
+  expect(
+    within(artboardList()).getByRole("button", { name: "profile" }),
+  ).toBeDefined();
 });
 
 test("別のファイルを開くと、前に開いていたファイルの監視が止まる", async () => {

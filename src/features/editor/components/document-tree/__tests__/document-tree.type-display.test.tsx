@@ -36,18 +36,6 @@ function renderTree(state: EditorState): void {
   render(<DocumentTree state={state} onSelect={vi.fn()} onReorder={vi.fn()} />);
 }
 
-test("artboard の行には artboard を表す型アイコンが出る", () => {
-  renderTree(setupState());
-
-  expect(screen.getByText("▢")).toBeDefined();
-});
-
-test("artboard の行には artboard の幅と高さが出る", () => {
-  renderTree(setupState());
-
-  expect(screen.getByText("360×240")).toBeDefined();
-});
-
 test("Box の行には Box を表す型アイコンが出る", () => {
   renderTree(setupState());
 
@@ -108,5 +96,6 @@ test("スキーマに無い type のノードの行には型アイコンが出�
 test("行を指す名前には型アイコンや補助情報が混ざらない", () => {
   renderTree(setupState());
 
-  expect(screen.getByRole("button", { name: "home" })).toBeDefined();
+  // title は左に型アイコン、右に文言を出す行。名前だけで指せることを確かめる
+  expect(screen.getByRole("button", { name: "title" })).toBeDefined();
 });

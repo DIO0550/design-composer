@@ -2,10 +2,14 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
-import { treeRowNames } from "@/features/editor/__tests__/tree-rows";
+import { rowNames } from "@/features/editor/__tests__/row-names";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { DocumentTree } from "../index";
 
+/**
+ * artboard を 2 枚持たせて、ツリーが「今見ている 1 枚」の中身だけを映すことを
+ * 見られるようにする。`empty-board` は子を持たない artboard。
+ */
 function setupState(): EditorState {
   return EditorState.create(
     DesignDocument.create({
@@ -27,6 +31,13 @@ function setupState(): EditorState {
             },
           ],
         },
+        {
+          name: "settings",
+          width: 375,
+          height: 812,
+          children: [{ name: "settings-title", type: "Text" }],
+        },
+        { name: "empty-board", width: 375, height: 812, children: [] },
       ],
     }),
   );
@@ -43,7 +54,7 @@ function renderTree(state: EditorState): {
   return { tree: container, onSelect };
 }
 
-test("artboard の直下のノードがツリーに並ぶ", () => {
+test("今見ている artboard の直下のノードがツリーに並ぶ", () => {
   renderTree(setupState());
 
   expect(screen.getByRole("button", { name: "title" })).toBeDefined();
@@ -55,16 +66,42 @@ test("入れ子になった孫ノードもツリーに並ぶ", () => {
   expect(screen.getByRole("button", { name: "body-text" })).toBeDefined();
 });
 
-test("ツリーは artboard・子・孫の順に並ぶ", () => {
+test("ツリーは子・孫の順に並ぶ", () => {
   const { tree } = renderTree(setupState());
 
-  expect(treeRowNames(tree)).toEqual([
-    "home",
-    "title",
-    "body",
-    "body-text",
-    "body-action",
-  ]);
+  expect(rowNames(tree)).toEqual(["title", "body", "body-text", "body-action"]);
+});
+
+test("artboard 自身はツリーの行に出ない", () => {
+  renderTree(setupState());
+
+  expect(screen.queryByRole("button", { name: "home" })).toBeNull();
+});
+
+test("別の artboard を選ぶとツリーの中身がその artboard のものに入れ替わる", () => {
+  const { tree } = renderTree(EditorState.select(setupState(), "settings"));
+
+  expect(rowNames(tree)).toEqual(["settings-title"]);
+});
+
+test("別の artboard の配下のノードを選んでもその artboard の中身が出たままになる", () => {
+  const { tree } = renderTree(
+    EditorState.select(setupState(), "settings-title"),
+  );
+
+  expect(rowNames(tree)).toEqual(["settings-title"]);
+});
+
+test("子を持たない artboard を見ているときは行が1つも出ない", () => {
+  const { tree } = renderTree(EditorState.select(setupState(), "empty-board"));
+
+  expect(rowNames(tree)).toEqual([]);
+});
+
+test("ツリーは今見ている artboard の名前を示す", () => {
+  renderTree(EditorState.select(setupState(), "settings"));
+
+  expect(screen.getByText("settings")).toBeDefined();
 });
 
 test("ノードを選ぶとそのノードの名前が選択として伝わる", async () => {
@@ -83,8 +120,8 @@ test("選択中のノードは選択状態として示される", () => {
   ).toBe("true");
 });
 
-test("artboard が1枚も無いときはその旨が表示される", () => {
+test("artboard が1枚も無いときはツリーが出ない", () => {
   renderTree(EditorState.create(DesignDocument.create({ artboards: [] })));
 
-  expect(screen.getByText("artboard がありません")).toBeDefined();
+  expect(screen.queryByRole("region", { name: "ツリー" })).toBeNull();
 });
