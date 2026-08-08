@@ -15,6 +15,21 @@
     "name": "artboard を選択中"
   },
   {
+    "id": "features-editor-assetspanel--default",
+    "title": "features/editor/AssetsPanel",
+    "name": "パレット"
+  },
+  {
+    "id": "features-editor-assetspanel--insert-disabled",
+    "title": "features/editor/AssetsPanel",
+    "name": "挿せる位置が無い"
+  },
+  {
+    "id": "features-editor-assetspanel--no-components",
+    "title": "features/editor/AssetsPanel",
+    "name": "部品がない"
+  },
+  {
     "id": "features-editor-componentlist--default",
     "title": "features/editor/ComponentList",
     "name": "使用数のある部品"
@@ -78,6 +93,46 @@
     "id": "features-editor-editorscreen--default",
     "title": "features/editor/EditorScreen",
     "name": "開始画面"
+  },
+  {
+    "id": "features-editor-leftpane--assets",
+    "title": "features/editor/LeftPane",
+    "name": "Assets（部品のパレット）"
+  },
+  {
+    "id": "features-editor-leftpane--assets-insert-disabled",
+    "title": "features/editor/LeftPane",
+    "name": "Assets（挿せる位置が無い）"
+  },
+  {
+    "id": "features-editor-leftpane--layers",
+    "title": "features/editor/LeftPane",
+    "name": "Layers（ツリー）"
+  },
+  {
+    "id": "features-editor-leftpane--layers-selected",
+    "title": "features/editor/LeftPane",
+    "name": "Layers（ノードを選択中）"
+  },
+  {
+    "id": "features-editor-leftpane--tokens",
+    "title": "features/editor/LeftPane",
+    "name": "Tokens（トークン一覧）"
+  },
+  {
+    "id": "features-editor-leftpanerail--assets",
+    "title": "features/editor/LeftPaneRail",
+    "name": "Assets を見ている"
+  },
+  {
+    "id": "features-editor-leftpanerail--layers",
+    "title": "features/editor/LeftPaneRail",
+    "name": "Layers を見ている"
+  },
+  {
+    "id": "features-editor-leftpanerail--tokens",
+    "title": "features/editor/LeftPaneRail",
+    "name": "Tokens を見ている"
   },
   {
     "id": "features-editor-nodeedittoolbar--artboard-selected",
