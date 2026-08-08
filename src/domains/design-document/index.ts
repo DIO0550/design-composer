@@ -21,6 +21,11 @@ import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 import type { DesignDocumentEditError } from "./edit-error";
 import type { DocumentTemplate } from "./template";
+import {
+  collectArtboardTokenReferrers,
+  collectComponentTokenReferrers,
+  type TokenReferrer,
+} from "./token-referrer";
 import { DesignDocumentV1 } from "./v1";
 import {
   collectArtboardErrors,
@@ -33,6 +38,7 @@ import {
 
 export { DesignDocumentEditError } from "./edit-error";
 export { DocumentTemplate } from "./template";
+export { TokenReferrer } from "./token-referrer";
 export type { DesignDocumentV1 } from "./v1";
 export type {
   DesignDocumentValidationError,
@@ -640,6 +646,30 @@ export const DesignDocument = {
       ...document,
       tokens,
     }));
+  },
+
+  /**
+   * そのトークンを参照している箇所をすべて集める
+   * （UI 案 docs/Design Composer.html の `Used by` / #127）。
+   *
+   * artboard の中（キャンバス上のもの）を先に、部品定義の中を後に並べる。
+   * 一覧は先頭の数件しか出さないので、選択やキャンバスから指し示せるものを先に見せる
+   * （`collectErrors` は部品を先に並べるが、あちらは全件を読む一覧なので順序の意味が違う）。
+   *
+   * トークンが実在するかは見ない。「その参照を指している prop はどれか」に答えるので、
+   * 宙に浮いた参照（dangling）も同じ関数で数えられる（存在の確認は `TokenSet.has` の担当）。
+   */
+  collectTokenReferrers(
+    document: DesignDocument,
+    ref: TokenRef,
+  ): readonly TokenReferrer[] {
+    const artboardReferrers = document.artboards.flatMap((artboard) =>
+      collectArtboardTokenReferrers(document.components, artboard, ref),
+    );
+    const componentReferrers = ComponentSet.names(document.components).flatMap(
+      (name) => collectComponentTokenReferrers(document.components, name, ref),
+    );
+    return [...artboardReferrers, ...componentReferrers];
   },
 
   /** ドキュメントの単一名前空間で使われている名前。 */

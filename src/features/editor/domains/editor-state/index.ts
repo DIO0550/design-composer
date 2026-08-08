@@ -1,7 +1,7 @@
 import type { Artboard } from "@/domains/artboard";
 import type { AxisLength } from "@/domains/axis-length";
 import { ChildPosition } from "@/domains/child-position";
-import { DesignDocument } from "@/domains/design-document";
+import { DesignDocument, type TokenReferrer } from "@/domains/design-document";
 import type { Node, PropEdit } from "@/domains/node";
 import { Token, type TokenRef, TokenSet, TokenValue } from "@/domains/token";
 import type { DocumentError } from "@/features/editor/domains/document-error";
@@ -459,6 +459,23 @@ export const EditorState = {
   selectedToken(state: EditorState): Option<Token> {
     return Option.flatMap(state.selectedToken, (ref) =>
       TokenSet.find(EditorState.document(state).tokens, ref),
+    );
+  },
+
+  /**
+   * 選択中のトークンを参照している箇所（UI 案 docs/Design Composer.html の `Used by` / #127）。
+   *
+   * 選択が無ければ参照元も無いので空。「無い」を `Option.none` にすると、
+   * 参照が 0 件であること（使われていないトークン）と区別が付かなくなる。
+   * ドキュメントから引き直すので、編集・undo のあとも現在の中身を映す（`selectedToken` と同じ）。
+   */
+  tokenReferrers(state: EditorState): readonly TokenReferrer[] {
+    if (!state.selectedToken.some) {
+      return [];
+    }
+    return DesignDocument.collectTokenReferrers(
+      EditorState.document(state),
+      state.selectedToken.value,
     );
   },
 
