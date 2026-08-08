@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from "react";
+import { type ReactElement, useState } from "react";
 import { ArtboardCanvas } from "@/features/editor/components/artboard-canvas";
 import { DocumentErrorList } from "@/features/editor/components/document-error-list";
 import { DocumentSyncFailureList } from "@/features/editor/components/document-sync-failure-list";
@@ -19,9 +19,56 @@ import type { OpenedDocument } from "@/features/editor/domains/opened-document";
 import { useAutoSave } from "@/features/editor/hooks/use-auto-save";
 import { useDocumentReload } from "@/features/editor/hooks/use-document-reload";
 import { useEditShortcuts } from "@/features/editor/hooks/use-edit-shortcuts";
-import { useNodeActions } from "@/features/editor/hooks/use-node-actions";
-import { useTokenActions } from "@/features/editor/hooks/use-token-actions";
+import {
+  type NodeActions,
+  useNodeActions,
+} from "@/features/editor/hooks/use-node-actions";
+import {
+  type TokenActions,
+  useTokenActions,
+} from "@/features/editor/hooks/use-token-actions";
 import type { DocumentIpc } from "@/libs/document-ipc";
+
+/**
+ * 行き先ごとの右ペインの中身。`Assets` がプロパティパネルのままなのは、パレットは
+ * 見るだけの場所で選択に触れないため
+ * （UI 案「Assets is browse-only — the inspector keeps the previous selection」）。
+ *
+ * 戻り値を `ReactElement` と書いている理由は `LeftPaneContent` と同じ
+ * （`case` の足し忘れをコンパイルエラーにする）。
+ */
+function RightPaneContent({
+  view,
+  state,
+  node,
+  token,
+}: Readonly<{
+  view: LeftPaneView;
+  state: EditorState;
+  node: NodeActions;
+  token: TokenActions;
+}>): ReactElement {
+  switch (view) {
+    case LEFT_PANE_VIEWS.tokens:
+      return (
+        <TokenEditor
+          state={state}
+          onSetTokenValue={token.setValue}
+          onRenameToken={token.rename}
+          onRemoveToken={token.remove}
+        />
+      );
+    case LEFT_PANE_VIEWS.layers:
+    case LEFT_PANE_VIEWS.assets:
+      return (
+        <PropertyPanel
+          state={state}
+          onEditProp={node.editProp}
+          onClearSelection={node.clearSelection}
+        />
+      );
+  }
+}
 
 /**
  * Provider から状態を読んで各ペインへ配る。
@@ -42,31 +89,6 @@ function EditorPanes() {
     LEFT_PANE_VIEWS.layers,
   );
   useEditShortcuts();
-
-  /*
-   * 右ペインも同じ行き先で決まる。`Assets` がプロパティパネルのままなのは、
-   * パレットは見るだけの場所で選択に触れないため
-   * （UI 案「Assets is browse-only — the inspector keeps the previous selection」）。
-   */
-  const propertyPanel = () => (
-    <PropertyPanel
-      state={state}
-      onEditProp={node.editProp}
-      onClearSelection={node.clearSelection}
-    />
-  );
-  const rightPaneContents = {
-    layers: propertyPanel,
-    assets: propertyPanel,
-    tokens: () => (
-      <TokenEditor
-        state={state}
-        onSetTokenValue={token.setValue}
-        onRenameToken={token.rename}
-        onRemoveToken={token.remove}
-      />
-    ),
-  } as const satisfies Readonly<Record<LeftPaneView, () => ReactNode>>;
 
   return (
     <EditorLayout>
@@ -90,7 +112,12 @@ function EditorPanes() {
         <DocumentErrorList errors={state.errors} />
       </EditorLayout.CenterPane>
       <EditorLayout.RightPane>
-        {rightPaneContents[leftPaneView]()}
+        <RightPaneContent
+          view={leftPaneView}
+          state={state}
+          node={node}
+          token={token}
+        />
       </EditorLayout.RightPane>
     </EditorLayout>
   );
