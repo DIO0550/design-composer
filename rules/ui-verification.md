@@ -2,7 +2,7 @@
 
 ## UIの拠り所は `docs/Design Composer.html`
 
-画面の見た目・構成は **`docs/Design Composer.html`(UI案。default / tokens / error の3状態)に従う**。仕様書(`docs/06-ui.md`)が文章で規定するのは何ができるかで、それをどう見せるかはこのプロトタイプが持つ。
+画面の見た目・構成は **`docs/Design Composer.html`(UI案。Default / Assets / Assets · Instance / Tokens / Error の5画面)に従う**。仕様書(`docs/06-ui.md`)が文章で規定するのは何ができるかで、それをどう見せるかはこのプロトタイプが持つ。
 
 - **UIを実装・変更する前に必ずこのファイルを開いて該当箇所を見る。** JS で描画されるので、ブラウザか playwright-cli で開くこと(ソースを読むだけでは分からない)
 - プロトタイプに無い操作を、思いつきでボタンとして足さない。プロトタイプが描いていない操作(コピー & ペースト等)は、キーボードショートカットなど既存の流儀に寄せる
