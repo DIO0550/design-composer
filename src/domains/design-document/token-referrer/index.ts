@@ -1,18 +1,12 @@
 import { Artboard } from "@/domains/artboard";
-import { Component, ComponentSet } from "@/domains/component";
-import { ComponentBinding } from "@/domains/component-binding";
-import {
-  Node,
-  type PrimitiveNode,
-  type PropAssignment,
-  Props,
-  type RefNode,
-} from "@/domains/node";
+import type { Component } from "@/domains/component";
+import { ComponentSet } from "@/domains/component";
+import { Node, type PrimitiveNode, Props, type RefNode } from "@/domains/node";
 import {
   PrimitiveSchema,
   type PrimitiveType,
   PropDefinition,
-  type PropDefinitionRecord,
+  PropDefinitionRecord,
 } from "@/domains/primitive-schema";
 import type { TokenRef } from "@/domains/token";
 import { Option } from "@/utils/Option";
@@ -58,100 +52,47 @@ export const TokenReferrer = {
   },
 } as const;
 
-/**
- * その prop 設定がそのトークンを指しているか。
- *
- * 種別まで見るのは、トークン名の一意性が種別の中だけで保証されるため
- * （docs/04-tokens.md「命名規則」）。`colors` と `spacing` に同名があってもよく、
- * 名前だけで一致を見ると別の種別の同名トークンを参照元に数えてしまう。
- */
-function referencesToken(
-  definition: PropDefinition,
-  assignment: PropAssignment,
-  ref: TokenRef,
-): boolean {
-  const isSameKind =
-    PropDefinition.isToken(definition) && definition.tokenKind === ref.kind;
-  return isSameKind && assignment.value === ref.name;
-}
-
-/**
- * 設定されている props のうち、そのトークンを指しているものの prop 名。
- *
- * 見るのは設定されている props だけで、スキーマのデフォルトで解決される値は数えない。
- * 行が指すのは編集できる prop であり、デフォルトで解決される値には
- * `<名前>.<prop名>` として指せる実体が無いため。今の dangling 検証
- * （`PropDefinitionRecord.collectErrors`）も設定済み props しか見ないので答えが揃う。
- *
- * 宣言に無い prop は定義が引けないので数えない（`unknown-prop` として検証側が報告する）。
- */
-function collectReferringProps(
-  schema: PropDefinitionRecord,
-  props: Props | undefined,
-  ref: TokenRef,
-): readonly string[] {
-  return Props.toAssignments(props ?? {}).flatMap((assignment) => {
-    const definition = schema[assignment.name];
-    if (definition === undefined) {
-      return [];
-    }
-    return referencesToken(definition, assignment, ref)
-      ? [assignment.name]
-      : [];
-  });
-}
-
-/**
- * 上書き1件が最終的に指す prop 定義。
- *
- * 参照ノードが持つのは自分の props ではなく部品への上書きなので、その値が何の prop なのかは
- * 部品の publicProps を辿って初めて決まる（`validation` の上書き検証と同じ道）。
- * 参照先の部品が無い・公開 prop に無い・連鎖が途切れているときは定義が決まらないので `none`
- * （それぞれ `dangling-ref` / `undeclared-override` / binding の不整合として検証側が報告する）。
- */
-function overridePropDefinition(
-  components: ComponentSet,
-  refNode: RefNode,
-  propName: string,
-): Option<PropDefinition> {
-  const component = ComponentSet.get(components, refNode.ref);
-  if (component === undefined) {
-    return Option.none;
-  }
-  return Option.flatMap(Component.binding(component, propName), (binding) =>
-    ComponentBinding.resolvePropDefinition(
-      components,
-      ComponentBinding.create(refNode.ref, binding),
-    ),
-  );
-}
-
-/** インスタンスの上書きのうち、そのトークンを指しているものの公開 prop 名。 */
-function collectReferringOverrides(
-  components: ComponentSet,
-  refNode: RefNode,
-  ref: TokenRef,
-): readonly string[] {
-  return Props.toAssignments(refNode.overrides ?? {}).flatMap((assignment) => {
-    const definition = overridePropDefinition(
-      components,
-      refNode,
-      assignment.name,
-    );
-    const references =
-      definition.some && referencesToken(definition.value, assignment, ref);
-    return references ? [assignment.name] : [];
-  });
-}
-
 /** スキーマが宣言する props のうち、そのトークンを指しているものの prop 名。 */
-function collectReferringSchemaProps(
+function collectSchemaRefProps(
   type: PrimitiveType,
   props: Props | undefined,
   ref: TokenRef,
 ): readonly string[] {
   const schema: PrimitiveSchema = PrimitiveSchema.forType(type);
-  return collectReferringProps(schema.props, props, ref);
+  return PropDefinitionRecord.collectRefPropNames(
+    schema.props,
+    props ?? {},
+    ref,
+  );
+}
+
+/**
+ * インスタンスの上書きのうち、そのトークンを指しているものの公開 prop 名。
+ *
+ * 参照ノードが持つのは自分の props ではなく部品への上書きなので、その値が何の prop なのかは
+ * 公開 prop の binding を辿って初めて決まる。辿るのは `ComponentSet.publicPropTarget` の担当。
+ * 参照先の部品が無い・公開 prop に無い・連鎖が途切れているときは prop 定義が決まらないので
+ * 数えない（それぞれ `dangling-ref` / `undeclared-override` / binding の不整合として
+ * 検証側が報告する）。
+ */
+function collectRefNodeRefProps(
+  components: ComponentSet,
+  refNode: RefNode,
+  ref: TokenRef,
+): readonly string[] {
+  return Props.toAssignments(refNode.overrides ?? {}).flatMap((assignment) => {
+    const definition = Option.map(
+      ComponentSet.publicPropTarget(components, {
+        component: refNode.ref,
+        prop: assignment.name,
+      }),
+      (target) => target.definition,
+    );
+    const isRefTo =
+      definition.some &&
+      PropDefinition.isRefTo(definition.value, assignment, ref);
+    return isRefTo ? [assignment.name] : [];
+  });
 }
 
 /**
@@ -168,7 +109,7 @@ function collectPrimitiveReferrers(
     return [];
   }
   const type = node.type;
-  return collectReferringSchemaProps(type, node.props, ref).map((prop) => ({
+  return collectSchemaRefProps(type, node.props, ref).map((prop) => ({
     target: "primitive",
     name: node.name,
     type,
@@ -188,7 +129,7 @@ function collectComponentRootReferrers(
   if (!PrimitiveSchema.isPrimitiveType(component.type)) {
     return [];
   }
-  return collectReferringSchemaProps(component.type, component.props, ref).map(
+  return collectSchemaRefProps(component.type, component.props, ref).map(
     (prop) => ({ target: "component", name, prop }),
   );
 }
@@ -200,7 +141,7 @@ function collectNodeReferrers(
   ref: TokenRef,
 ): readonly TokenReferrer[] {
   const ownReferrers: readonly TokenReferrer[] = Node.isRef(node)
-    ? collectReferringOverrides(components, node, ref).map((prop) => ({
+    ? collectRefNodeRefProps(components, node, ref).map((prop) => ({
         target: "instance",
         name: node.name,
         prop,
@@ -226,11 +167,12 @@ export function collectArtboardTokenReferrers(
   artboard: Artboard,
   ref: TokenRef,
 ): readonly TokenReferrer[] {
-  const ownReferrers: readonly TokenReferrer[] = collectReferringProps(
-    Artboard.propDefinitions(),
-    artboard.props,
-    ref,
-  ).map((prop) => ({ target: "artboard", name: artboard.name, prop }));
+  const ownReferrers: readonly TokenReferrer[] =
+    PropDefinitionRecord.collectRefPropNames(
+      Artboard.propDefinitions(),
+      artboard.props ?? {},
+      ref,
+    ).map((prop) => ({ target: "artboard", name: artboard.name, prop }));
   const childReferrers = artboard.children.flatMap((child) =>
     collectNodeReferrers(components, child, ref),
   );
@@ -238,28 +180,26 @@ export function collectArtboardTokenReferrers(
 }
 
 /**
- * 部品定義1件の中で、そのトークンを参照している箇所を集める。
+ * 部品定義の中で、そのトークンを参照している箇所を集める。
  *
  * 部品定義の中の参照も数えるのは、初期部品セットの見た目の prop がすべてデフォルトテーマの
  * トークンを参照しており（docs/04-tokens.md「初期部品セット」）、外側だけを見ると
  * 新規ドキュメントのトークンがほとんど「どこからも使われていない」と読めてしまうため。
  * 部品の使用数を数える `ComponentSet.assets` が定義の中の参照を足しているのと同じ理由。
  *
- * 名前で部品を引くのは、定義そのものを引数で受け取ると引数が4つになるため。
- * 定義が無い名前は空を返す（`collectErrors` が同じ形で分岐しているのに揃える）。
+ * 反復を内側に持つのは、名前で部品を引き直す形にすると「引けなかったとき」の分岐が
+ * 生まれるが、辿る名前がすべて自分の持ち物なので引きが失敗しようがないため
+ * （`ComponentSet.assets` が `Object.entries` の1本で組んでいるのと同じ理由）。
  */
-export function collectComponentTokenReferrers(
+export function collectComponentSetTokenReferrers(
   components: ComponentSet,
-  name: string,
   ref: TokenRef,
 ): readonly TokenReferrer[] {
-  const component: Component | undefined = ComponentSet.get(components, name);
-  if (component === undefined) {
-    return [];
-  }
-  const ownReferrers = collectComponentRootReferrers(name, component, ref);
-  const childReferrers = (component.children ?? []).flatMap((child) =>
-    collectNodeReferrers(components, child, ref),
-  );
-  return [...ownReferrers, ...childReferrers];
+  return Object.entries(components).flatMap(([name, component]) => {
+    const ownReferrers = collectComponentRootReferrers(name, component, ref);
+    const childReferrers = (component.children ?? []).flatMap((child) =>
+      collectNodeReferrers(components, child, ref),
+    );
+    return [...ownReferrers, ...childReferrers];
+  });
 }

@@ -1,9 +1,8 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
 import { type TokenRef, TokenSet } from "@/domains/token";
-import { EditorState } from "@/features/editor/domains/editor-state";
-import { TokenUsedBy } from "../index";
+import { renderUsedBy } from "./render";
 
 /**
  * 参照元の件数が上限（3 件）の前後にまたがるドキュメント。
@@ -55,52 +54,50 @@ const DOCUMENT = DesignDocument.create({
   ],
 });
 
-function renderUsedBy(ref: TokenRef): void {
-  render(
-    <TokenUsedBy
-      state={EditorState.selectToken(EditorState.create(DOCUMENT), ref)}
-    />,
-  );
+function renderFor(ref: TokenRef): void {
+  renderUsedBy(DOCUMENT, ref);
 }
 
 test("参照元が上限を超えても行は上限の件数までしか出ない", () => {
-  renderUsedBy({ kind: "colors", name: "gray-900" });
+  renderFor({ kind: "colors", name: "gray-900" });
 
   expect(screen.queryAllByRole("listitem")).toHaveLength(3);
 });
 
 test("上限より後ろの参照元は行に出ない", () => {
-  renderUsedBy({ kind: "colors", name: "gray-900" });
+  renderFor({ kind: "colors", name: "gray-900" });
 
   expect(screen.queryByText("note.color")).toBeNull();
 });
 
 test("参照元が上限を超えると残りの件数が「+ N more」として出る", () => {
-  renderUsedBy({ kind: "colors", name: "gray-900" });
+  renderFor({ kind: "colors", name: "gray-900" });
 
   expect(screen.getByText("+ 2 more")).toBeDefined();
 });
 
 test("参照元が上限を超えても件数は総数のまま出る", () => {
-  renderUsedBy({ kind: "colors", name: "gray-900" });
+  renderFor({ kind: "colors", name: "gray-900" });
 
   expect(screen.getByTestId("used-by-count").textContent).toBe("5");
 });
 
 test("参照元が上限とちょうど同じ件数のときは「+ N more」を出さない", () => {
-  renderUsedBy({ kind: "colors", name: "primary" });
+  renderFor({ kind: "colors", name: "primary" });
 
   expect(screen.queryByText(/more/)).toBeNull();
 });
 
 test("参照されていないトークンでは件数が 0 になる", () => {
-  renderUsedBy({ kind: "colors", name: "danger" });
+  renderFor({ kind: "colors", name: "danger" });
 
   expect(screen.getByTestId("used-by-count").textContent).toBe("0");
 });
 
-test("参照されていないトークンでは行が出ない", () => {
-  renderUsedBy({ kind: "colors", name: "danger" });
+test("参照されていないトークンでは行の枠を出さない", () => {
+  renderFor({ kind: "colors", name: "danger" });
 
-  expect(screen.queryAllByRole("listitem")).toEqual([]);
+  /* 行が無いことではなく枠が無いことを見る（行が無いのは入力から自明で、
+     枠を出しっぱなしにする実装でも「行が無い」は通ってしまう）。 */
+  expect(screen.queryByRole("list")).toBeNull();
 });

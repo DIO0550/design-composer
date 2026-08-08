@@ -1,9 +1,8 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
 import { type TokenRef, TokenSet } from "@/domains/token";
-import { EditorState } from "@/features/editor/domains/editor-state";
-import { TokenUsedBy } from "../index";
+import { renderUsedBy } from "./render";
 
 /**
  * 参照元の出どころが 3 通りあるドキュメント。
@@ -42,34 +41,30 @@ const DOCUMENT = DesignDocument.create({
   ],
 });
 
-function renderUsedBy(ref: TokenRef): void {
-  render(
-    <TokenUsedBy
-      state={EditorState.selectToken(EditorState.create(DOCUMENT), ref)}
-    />,
-  );
+function renderFor(ref: TokenRef): void {
+  renderUsedBy(DOCUMENT, ref);
 }
 
 test("参照元の行に「名前.prop 名」が出る", () => {
-  renderUsedBy({ kind: "colors", name: "white" });
+  renderFor({ kind: "colors", name: "white" });
 
   expect(screen.getByText("surface.background")).toBeDefined();
 });
 
 test("参照元の件数が出る", () => {
-  renderUsedBy({ kind: "colors", name: "white" });
+  renderFor({ kind: "colors", name: "white" });
 
   expect(screen.getByTestId("used-by-count").textContent).toBe("2");
 });
 
 test("artboard の props からの参照元には artboard のアイコンが出る", () => {
-  renderUsedBy({ kind: "colors", name: "white" });
+  renderFor({ kind: "colors", name: "white" });
 
   expect(screen.getByText("#")).toBeDefined();
 });
 
 test("インスタンスの上書きからの参照元には部品のアイコンが出る", () => {
-  renderUsedBy({ kind: "colors", name: "accent" });
+  renderFor({ kind: "colors", name: "accent" });
 
   expect(screen.getByText("◆")).toBeDefined();
 });

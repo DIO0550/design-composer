@@ -465,8 +465,11 @@ export const EditorState = {
   /**
    * 選択中のトークンを参照している箇所（UI 案 docs/Design Composer.html の `Used by` / #127）。
    *
-   * 選択が無ければ参照元も無いので空。「無い」を `Option.none` にすると、
-   * 参照が 0 件であること（使われていないトークン）と区別が付かなくなる。
+   * 選択が無いときも空を返し、参照が 0 件であることと区別しない。消費側の見え方が
+   * どちらでも同じ（`Used by` の枠も #147 の破線も出ない）ため、`Option` で区別しても
+   * 分岐が増えるだけになる。区別が要る消費側が現れたら、選択を引数で受け取る形
+   * （未選択の状態を渡せない形）にする。
+   *
    * ドキュメントから引き直すので、編集・undo のあとも現在の中身を映す（`selectedToken` と同じ）。
    */
   tokenReferrers(state: EditorState): readonly TokenReferrer[] {

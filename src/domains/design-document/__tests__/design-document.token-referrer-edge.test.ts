@@ -183,8 +183,8 @@ test("デフォルトで解決されるトークンは参照元にならない",
         width: 375,
         height: 812,
         children: [
-          { name: "title", type: "Text" },
-          { name: "caption", type: "Text", props: { color: "gray-500" } },
+          { name: "plain", type: "Text" },
+          { name: "title", type: "Text", props: { color: "gray-900" } },
         ],
       },
     ],
@@ -192,31 +192,22 @@ test("デフォルトで解決されるトークンは参照元にならない",
 
   const referrers = DesignDocument.collectTokenReferrers(document, GRAY_900);
 
-  expect(referrers).toEqual([]);
+  expect(referrers.map(TokenReferrer.toText)).toEqual(["title.color"]);
 });
 
-test("設定されている prop はデフォルトを持つ prop でも参照元になる", () => {
+test("スキーマに無い type の部品定義の props は参照元にならない", () => {
   const document = DesignDocument.create({
     tokens: twoColors(),
-    artboards: [
-      {
-        name: "login",
-        width: 375,
-        height: 812,
-        children: [
-          { name: "title", type: "Text" },
-          { name: "caption", type: "Text", props: { color: "gray-500" } },
-        ],
-      },
-    ],
+    components: {
+      mystery: { type: "Widget", props: { background: "gray-900" } },
+      panel: { type: "Box", props: { background: "gray-900" } },
+    },
+    artboards: [],
   });
 
-  const referrers = DesignDocument.collectTokenReferrers(document, {
-    kind: "colors",
-    name: "gray-500",
-  });
+  const referrers = DesignDocument.collectTokenReferrers(document, GRAY_900);
 
-  expect(referrers.map(TokenReferrer.toText)).toEqual(["caption.color"]);
+  expect(referrers.map(TokenReferrer.toText)).toEqual(["panel.background"]);
 });
 
 test("公開 prop が生の値の prop へ binding されているとき、上書きの値がトークン名と同じでも参照元にならない", () => {

@@ -23,7 +23,7 @@ import type { DesignDocumentEditError } from "./edit-error";
 import type { DocumentTemplate } from "./template";
 import {
   collectArtboardTokenReferrers,
-  collectComponentTokenReferrers,
+  collectComponentSetTokenReferrers,
   type TokenReferrer,
 } from "./token-referrer";
 import { DesignDocumentV1 } from "./v1";
@@ -656,6 +656,10 @@ export const DesignDocument = {
    * 一覧は先頭の数件しか出さないので、選択やキャンバスから指し示せるものを先に見せる
    * （`collectErrors` は部品を先に並べるが、あちらは全件を読む一覧なので順序の意味が違う）。
    *
+   * UI 案（docs/Design Composer.html）の `Used by` はキャンバスの行と部品定義の行を
+   * 交互に並べているが、それを再現できる大域順序が無いため規則で決めている
+   * （先頭3件しか出ないので、どちらを先にするかは見える差になる）。
+   *
    * トークンが実在するかは見ない。「その参照を指している prop はどれか」に答えるので、
    * 宙に浮いた参照（dangling）も同じ関数で数えられる（存在の確認は `TokenSet.has` の担当）。
    */
@@ -666,8 +670,9 @@ export const DesignDocument = {
     const artboardReferrers = document.artboards.flatMap((artboard) =>
       collectArtboardTokenReferrers(document.components, artboard, ref),
     );
-    const componentReferrers = ComponentSet.names(document.components).flatMap(
-      (name) => collectComponentTokenReferrers(document.components, name, ref),
+    const componentReferrers = collectComponentSetTokenReferrers(
+      document.components,
+      ref,
     );
     return [...artboardReferrers, ...componentReferrers];
   },

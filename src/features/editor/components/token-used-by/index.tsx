@@ -83,8 +83,13 @@ export function TokenUsedBy({
         <div className="overflow-hidden rounded border border-gray-200">
           <ul>
             {visibleReferrers.map((referrer) => (
+              /*
+               * 名前は単一名前空間なので正しいドキュメントでは表記だけで一意になるが、
+               * 名前が重複した不正ファイルも画面に残る（docs/03「不正ファイル時の挙動」）
+               * ため、行の種類も混ぜて衝突を避ける。
+               */
               <UsedByRow
-                key={TokenReferrer.toText(referrer)}
+                key={`${referrer.target}/${TokenReferrer.toText(referrer)}`}
                 referrer={referrer}
               />
             ))}
