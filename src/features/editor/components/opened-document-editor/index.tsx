@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { DesignDocument } from "@/domains/design-document";
 import { ArtboardCanvas } from "@/features/editor/components/artboard-canvas";
 import { ComponentList } from "@/features/editor/components/component-list";
 import { DocumentErrorList } from "@/features/editor/components/document-error-list";
@@ -73,7 +74,9 @@ function EditorPanes() {
               onReorder={node.reorder}
             />
             <ComponentList
-              components={EditorState.document(state).components}
+              refCounts={DesignDocument.componentRefCounts(
+                EditorState.document(state),
+              )}
               isInsertEnabled={node.isInsertEnabled}
               onInsert={node.insertInstance}
             />
