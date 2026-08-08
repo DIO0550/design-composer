@@ -83,6 +83,8 @@ pnpm run test             # Vitest（watch モード）
 pnpm run test:run         # Vitest 全テスト実行（CI 向け）
 pnpm run lint             # oxlint 実行
 pnpm run lint:fix         # oxlint 自動修正
+pnpm exec biome check     # Biome の lint / format 検査（CI と同じ。oxlint とは別のステップ）
+pnpm exec biome check --write  # Biome の自動修正（整形はこれで通す）
 pnpm run storybook        # Storybook 起動（ポート 6006）
 pnpm run tauri dev        # Tauri アプリ起動
 ```
