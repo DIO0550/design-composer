@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { DesignDocument } from "@/domains/design-document";
 import { ArtboardCanvas } from "@/features/editor/components/artboard-canvas";
 import { AssetsPanel } from "@/features/editor/components/assets-panel";
@@ -26,69 +26,9 @@ import type { OpenedDocument } from "@/features/editor/domains/opened-document";
 import { useAutoSave } from "@/features/editor/hooks/use-auto-save";
 import { useDocumentReload } from "@/features/editor/hooks/use-document-reload";
 import { useEditShortcuts } from "@/features/editor/hooks/use-edit-shortcuts";
-import {
-  type NodeActions,
-  useNodeActions,
-} from "@/features/editor/hooks/use-node-actions";
-import {
-  type TokenActions,
-  useTokenActions,
-} from "@/features/editor/hooks/use-token-actions";
+import { useNodeActions } from "@/features/editor/hooks/use-node-actions";
+import { useTokenActions } from "@/features/editor/hooks/use-token-actions";
 import type { DocumentIpc } from "@/libs/document-ipc";
-
-/**
- * レールで選んだ行き先の中身（UI 案 docs/Design Composer.html の
- * `Layers` / `Assets` / `Tokens` の各パネル）。
- *
- * `Assets` はパレットを見るだけの場所で、選択には触れない
- * （UI 案「Assets is browse-only — the inspector keeps the previous selection」）。
- * そのため右ペインは `Layers` のときと同じプロパティパネルのまま変わらない。
- */
-function LeftPaneContent({
-  view,
-  state,
-  node,
-  token,
-}: Readonly<{
-  view: LeftPaneView;
-  state: EditorState;
-  node: NodeActions;
-  token: TokenActions;
-}>) {
-  if (view === LEFT_PANE_VIEWS.tokens) {
-    return (
-      <TokenList
-        state={state}
-        onSelectToken={token.select}
-        onAddToken={token.add}
-      />
-    );
-  }
-  if (view === LEFT_PANE_VIEWS.assets) {
-    return (
-      <AssetsPanel
-        assets={DesignDocument.componentAssets(EditorState.document(state))}
-        isInsertEnabled={node.isInsertEnabled}
-        onInsert={node.insertInstance}
-      />
-    );
-  }
-  return (
-    <>
-      <NodeEditToolbar
-        isInsertEnabled={node.isInsertEnabled}
-        isRemoveEnabled={node.isRemoveEnabled}
-        onInsert={node.insert}
-        onRemove={node.remove}
-      />
-      <DocumentTree
-        state={state}
-        onSelect={node.select}
-        onReorder={node.reorder}
-      />
-    </>
-  );
-}
 
 /**
  * Provider から状態を読んで各ペインへ配る。
@@ -108,21 +48,79 @@ function EditorPanes() {
   const [leftPaneView, setLeftPaneView] = useState<LeftPaneView>(
     LEFT_PANE_VIEWS.layers,
   );
-  const isTokensView = leftPaneView === LEFT_PANE_VIEWS.tokens;
-
   useEditShortcuts();
+
+  /*
+   * 行き先ごとの中身。対応表にしているのは、行き先を足したときに中身を足し忘れると
+   * コンパイルエラーになるようにするため（`if` の連なりだと、足し忘れた行き先が
+   * 黙って最後の枝＝ツリーに落ちる）。
+   *
+   * 値を関数にしているのは、`Assets` の一覧の組み立て（ドキュメント全体の走査）を
+   * その行き先を見ているときだけ行うため。
+   */
+  const leftPaneContents = {
+    layers: () => (
+      <>
+        <NodeEditToolbar
+          isInsertEnabled={node.isInsertEnabled}
+          isRemoveEnabled={node.isRemoveEnabled}
+          onInsert={node.insert}
+          onRemove={node.remove}
+        />
+        <DocumentTree
+          state={state}
+          onSelect={node.select}
+          onReorder={node.reorder}
+        />
+      </>
+    ),
+    assets: () => (
+      <AssetsPanel
+        assets={DesignDocument.componentAssets(EditorState.document(state))}
+        isInsertEnabled={node.isInsertEnabled}
+        onInsert={node.insertInstance}
+      />
+    ),
+    tokens: () => (
+      <TokenList
+        state={state}
+        onSelectToken={token.select}
+        onAddToken={token.add}
+      />
+    ),
+  } as const satisfies Readonly<Record<LeftPaneView, () => ReactNode>>;
+
+  /*
+   * 右ペインも同じ行き先で決まる。`Assets` がプロパティパネルのままなのは、
+   * パレットは見るだけの場所で選択に触れないため
+   * （UI 案「Assets is browse-only — the inspector keeps the previous selection」）。
+   */
+  const propertyPanel = () => (
+    <PropertyPanel
+      state={state}
+      onEditProp={node.editProp}
+      onClearSelection={node.clearSelection}
+    />
+  );
+  const rightPaneContents = {
+    layers: propertyPanel,
+    assets: propertyPanel,
+    tokens: () => (
+      <TokenEditor
+        state={state}
+        onSetTokenValue={token.setValue}
+        onRenameToken={token.rename}
+        onRemoveToken={token.remove}
+      />
+    ),
+  } as const satisfies Readonly<Record<LeftPaneView, () => ReactNode>>;
 
   return (
     <EditorLayout>
       <EditorLayout.LeftPane>
         <LeftPaneRail current={leftPaneView} onSelect={setLeftPaneView} />
         <LeftPanePanel title={LEFT_PANE_VIEW_LABELS[leftPaneView]}>
-          <LeftPaneContent
-            view={leftPaneView}
-            node={node}
-            token={token}
-            state={state}
-          />
+          {leftPaneContents[leftPaneView]()}
         </LeftPanePanel>
       </EditorLayout.LeftPane>
       <EditorLayout.CenterPane>
@@ -136,20 +134,7 @@ function EditorPanes() {
         <DocumentErrorList errors={state.errors} />
       </EditorLayout.CenterPane>
       <EditorLayout.RightPane>
-        {isTokensView ? (
-          <TokenEditor
-            state={state}
-            onSetTokenValue={token.setValue}
-            onRenameToken={token.rename}
-            onRemoveToken={token.remove}
-          />
-        ) : (
-          <PropertyPanel
-            state={state}
-            onEditProp={node.editProp}
-            onClearSelection={node.clearSelection}
-          />
-        )}
+        {rightPaneContents[leftPaneView]()}
       </EditorLayout.RightPane>
     </EditorLayout>
   );

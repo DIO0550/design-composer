@@ -64,18 +64,30 @@ test("検索した語を消すと全件に戻る", async () => {
   expect(screen.getByText("card")).toBeDefined();
 });
 
-test("どれにも一致しない語ではプリミティブの行が出なくなる", async () => {
+test("どれにも一致しない語では一致するものが無い旨が出る", async () => {
   setup();
 
   await search("zzz");
 
-  expect(screen.queryByText("Primitives")).toBeNull();
+  expect(screen.getByText("一致するものがありません")).toBeDefined();
 });
 
-test("どれにも一致しない語では部品が無い旨が出る", async () => {
+/*
+ * 「部品がありません」と言わせない。ドキュメントには部品があり、絞り込みで
+ * 残らなかっただけなので、無いのは「一致するもの」であって部品ではない。
+ */
+test("どれにも一致しない語でも部品が無いとは言わない", async () => {
   setup();
 
   await search("zzz");
 
-  expect(screen.getByText("部品がありません")).toBeDefined();
+  expect(screen.queryByText("部品がありません")).toBeNull();
+});
+
+test("どれにも一致しない語では行が1つも出ない", async () => {
+  setup();
+
+  await search("zzz");
+
+  expect(screen.queryAllByRole("listitem")).toEqual([]);
 });

@@ -29,8 +29,8 @@ test("部品の行には部品を表す型アイコンが出る", () => {
   expect(screen.getByText("◆")).toBeDefined();
 });
 
-test("部品が1つも無いときはその旨が表示される", () => {
+test("部品が1つも無いときは行が出ない", () => {
   render(<ComponentList assets={[]} isInsertEnabled onInsert={() => {}} />);
 
-  expect(screen.getByText("部品がありません")).toBeDefined();
+  expect(screen.queryAllByRole("listitem")).toEqual([]);
 });

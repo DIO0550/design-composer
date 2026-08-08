@@ -67,7 +67,9 @@ function ComponentRow({
  * 見出しと件数は UI 案に合わせて左右に離して置く。
  *
  * 絞り込みはここでは行わない。何を出すかは検索欄を持つ `AssetsPanel` が決め、
- * ここは渡された並びを描くだけ。
+ * ここは渡された並びを描くだけ。1 件も無いときに「部品がありません」と言わないのは、
+ * 絞り込みで 0 件になっただけかもしれないから。件数は見出しの `0` が伝え、
+ * 検索の結果として 0 件になったことは、検索語を持つ `AssetsPanel` が伝える。
  *
  * 部品は選択の対象にしない。選択できるのはキャンバスに描かれるもの、つまり
  * artboard とその配下のノードだけ（`EditorState` と同じ線引き）。
@@ -89,20 +91,16 @@ export function ComponentList({
         </h3>
         <span className="text-gray-400 text-xs">{assets.length}</span>
       </div>
-      {assets.length === 0 ? (
-        <p className="text-gray-500">部品がありません</p>
-      ) : (
-        <ul>
-          {assets.map((asset) => (
-            <ComponentRow
-              key={asset.name}
-              asset={asset}
-              isInsertEnabled={isInsertEnabled}
-              onInsert={onInsert}
-            />
-          ))}
-        </ul>
-      )}
+      <ul>
+        {assets.map((asset) => (
+          <ComponentRow
+            key={asset.name}
+            asset={asset}
+            isInsertEnabled={isInsertEnabled}
+            onInsert={onInsert}
+          />
+        ))}
+      </ul>
     </section>
   );
 }

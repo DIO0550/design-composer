@@ -1,22 +1,9 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
-import { LEFT_PANE_VIEW_LABELS, LEFT_PANE_VIEWS, LeftPaneRail } from "../index";
+import { LEFT_PANE_VIEWS, LeftPaneRail } from "../index";
 
-/*
- * レールに並べる順は `LEFT_PANE_VIEWS` の走査ではなく明示した並びで持っている
- * （理由は実装のコメント）。載せ忘れるとその行き先へ辿り着けなくなるので、
- * 「すべての行き先が並ぶ」ことをここで押さえる。
- */
-test("行き先はひとつ残らずレールに並ぶ", () => {
-  render(<LeftPaneRail current={LEFT_PANE_VIEWS.layers} onSelect={() => {}} />);
-
-  expect(
-    screen.getAllByRole("button").map((button) => button.textContent),
-  ).toEqual(Object.values(LEFT_PANE_VIEW_LABELS));
-});
-
-test("レールに3つの行き先が並ぶ", () => {
+test("レールに3つの行き先がUI案の順で並ぶ", () => {
   render(<LeftPaneRail current={LEFT_PANE_VIEWS.layers} onSelect={() => {}} />);
 
   expect(

@@ -9,15 +9,12 @@ import { TypeGlyph } from "@/features/editor/components/type-glyph";
  *
  * 絞り込みはここでは行わない。何を出すかは検索欄を持つ `AssetsPanel` が決め、
  * ここは渡された並びを描くだけ（同じ絞り込みが 2 箇所に現れないようにする）。
+ * 1 件も無いときも節は残す。`Components` 側と出方を揃えるためで、
+ * 「一致するものが無い」は検索語を持つ `AssetsPanel` が 1 箇所で伝える。
  */
 export function PrimitiveList({
   types,
 }: Readonly<{ types: readonly PrimitiveType[] }>) {
-  // 一件も残らなかったときは見出しごと出さない（空の節を残すと絞り込んだ結果が読めない）
-  if (types.length === 0) {
-    return null;
-  }
-
   return (
     <section className="text-sm">
       <h3 className="mb-2 font-semibold text-gray-500 text-xs uppercase">

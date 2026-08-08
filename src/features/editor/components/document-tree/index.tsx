@@ -476,10 +476,10 @@ export function DocumentTree({
      */
     <section aria-label="ツリー" className="text-sm">
       {/*
-       * 見出しは読み上げにだけ残す。パネル側が `Layers` の見出しを持つようになり
-       * （#129）、UI 案の `Layers` パネルにはツリーに相当する 2 つ目の見出しが無い。
+       * 見出しは置かない。パネル側が `Layers` の見出しを持つようになり（#129）、
+       * UI 案の `Layers` パネルにもツリーに相当する 2 つ目の見出しが無い。
+       * この領域が何かは上の `aria-label` が伝える（読み上げでも二重にならない）。
        */}
-      <h3 className="sr-only">ツリー</h3>
       {artboards.length === 0 ? (
         <p className="text-gray-500">artboard がありません</p>
       ) : (

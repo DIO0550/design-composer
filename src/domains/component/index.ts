@@ -140,6 +140,14 @@ export const Component = {
   },
 
   /**
+   * 定義の中に直接置かれている参照ノードの参照先。
+   * `Node.collectRefs` は参照ノードで止まるため、参照先の定義までは辿らない。
+   */
+  collectRefs(component: Component): readonly string[] {
+    return (component.children ?? []).flatMap(Node.collectRefs);
+  },
+
+  /**
    * 部品のルートをノードとして表現する。
    * ルートの `name` は components の辞書キーが兼ねるため、外から名前を受け取る。
    */
@@ -281,12 +289,14 @@ export const Component = {
   },
 } as const;
 
+/**
+ * 名前で引いた部品が直接持っている参照先。
+ * 定義の無い名前（dangling）を辿ることがあるので、ここは不在がありうる
+ * （不正な参照は検証エラーとして別に出る / docs/03「不正ファイル時の挙動」）。
+ */
 function directRefs(components: ComponentSet, name: string): readonly string[] {
   const component = components[name];
-  if (component === undefined) {
-    return [];
-  }
-  return (component.children ?? []).flatMap(Node.collectRefs);
+  return component === undefined ? [] : Component.collectRefs(component);
 }
 
 function reachableRefs(
@@ -426,21 +436,22 @@ export const ComponentSet = {
    * 定義の無い名前への参照（dangling）はどの部品の数にも入らない
    * （不正な参照は検証エラーとして別に出る）。
    *
-   * 名前で部品を引き直さず `Object.entries` から組むのは、必ず成立する引きに
-   * 「見つからなかったとき」の分岐を生やさないため。
+   * 名前で部品を引き直さず `Object.entries` の 1 本で組むのは、ここで辿る名前が
+   * すべて自分の持ち物で、引きが失敗しようがないため（`directRefs` が持つ
+   * 「定義が無かったとき」の分岐は、dangling を辿りうる `reachableRefs` の都合）。
    */
   assets(
     components: ComponentSet,
     outsideNodes: readonly Node[],
   ): readonly ComponentAsset[] {
-    const names = ComponentSet.names(components);
-    const refsInComponents = names.flatMap((name) =>
-      directRefs(components, name),
+    const entries = Object.entries(components);
+    const refsInComponents = entries.flatMap(([, component]) =>
+      Component.collectRefs(component),
     );
     const refsOutside = outsideNodes.flatMap(Node.collectRefs);
     const refs = [...refsInComponents, ...refsOutside];
 
-    return Object.entries(components).map(([name, component]) => ({
+    return entries.map(([name, component]) => ({
       name,
       publicPropNames: Component.publicPropNames(component),
       refCount: refs.filter((ref) => ref === name).length,

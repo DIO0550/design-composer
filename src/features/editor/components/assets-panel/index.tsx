@@ -9,6 +9,15 @@ import { StringEx } from "@/utils/StringEx";
 const SEARCH_PLACEHOLDER = "Search assets";
 
 /**
+ * 検索して何も残らなかったときの知らせ。
+ *
+ * 各リストに言わせない。リストは絞り込みを知らないので、そこで「ありません」と書くと
+ * ドキュメントに部品があるのに無いと言うことになる（絞り込みで 0 件になっただけ）。
+ * 検索語を持っているのはここだけなので、ここで 1 度だけ伝える。
+ */
+const NO_MATCH_MESSAGE = "一致するものがありません";
+
+/**
  * 挿せる部品のパレット（UI 案 docs/Design Composer.html の `Assets` パネル）。
  *
  * 絞り込みを担うのはここだけ。プリミティブと部品のどちらも同じ語で絞るので、
@@ -35,6 +44,9 @@ export function AssetsPanel({
   const matchedAssets = assets.filter((asset) =>
     StringEx.includesIgnoreCase(asset.name, query),
   );
+  // 検索語が空のときの 0 件は「まだ何も無い」なので、絞り込みの結果とは分けて扱う
+  const hasNoMatch =
+    query !== "" && matchedTypes.length === 0 && matchedAssets.length === 0;
 
   return (
     <>
@@ -46,12 +58,18 @@ export function AssetsPanel({
         onChange={(event) => setQuery(event.target.value)}
         className="rounded border border-gray-300 px-2 py-1 text-sm placeholder:text-gray-400"
       />
-      <PrimitiveList types={matchedTypes} />
-      <ComponentList
-        assets={matchedAssets}
-        isInsertEnabled={isInsertEnabled}
-        onInsert={onInsert}
-      />
+      {hasNoMatch ? (
+        <p className="text-gray-500 text-sm">{NO_MATCH_MESSAGE}</p>
+      ) : (
+        <>
+          <PrimitiveList types={matchedTypes} />
+          <ComponentList
+            assets={matchedAssets}
+            isInsertEnabled={isInsertEnabled}
+            onInsert={onInsert}
+          />
+        </>
+      )}
     </>
   );
 }

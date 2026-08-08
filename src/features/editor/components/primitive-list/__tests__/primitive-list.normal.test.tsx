@@ -22,8 +22,10 @@ test("渡されたプリミティブが1つも無いときは行が出ない", (
   expect(screen.queryAllByRole("listitem")).toEqual([]);
 });
 
-test("渡されたプリミティブが1つも無いときは見出しも出ない", () => {
+test("渡されたプリミティブが1つも無くても節は残る", () => {
   render(<PrimitiveList types={[]} />);
 
-  expect(screen.queryByText("Primitives")).toBeNull();
+  // 節ごと消すと `Components` 側と出方が食い違う。0 件であることは
+  // 検索語を持つ `AssetsPanel` が伝える。
+  expect(screen.getByText("Primitives")).toBeDefined();
 });
