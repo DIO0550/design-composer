@@ -1,10 +1,8 @@
 import type { ReactElement } from "react";
 import { TokenReferrer } from "@/domains/design-document";
-import {
-  TypeGlyph,
-  type TypeGlyphKind,
-} from "@/features/editor/components/type-glyph";
+import { TypeGlyph } from "@/features/editor/components/type-glyph";
 import { EditorState } from "@/features/editor/domains/editor-state";
+import type { SelectionKind } from "@/features/editor/domains/selection";
 
 /**
  * 枠の中に出す行数の上限。
@@ -16,11 +14,15 @@ const VISIBLE_ROW_LIMIT = 3;
 /**
  * 参照元に当たる型アイコン。
  *
- * `switch` に `default` を置かず戻り値を `TypeGlyphKind`（`undefined` を含まない）に
+ * 種別の語彙は `Selection` が持つものに合わせる（`TypeGlyph` が受けるのがそれで、
+ * ツリーの行も同じ語彙でアイコンを描く）。部品定義は選択の対象ではないが、
+ * 指しているものが部品である点はインスタンスと同じなので同じアイコンになる。
+ *
+ * `switch` に `default` を置かず戻り値を `SelectionKind`（`undefined` を含まない）に
  * しているので、参照元の種類を足してここを足し忘れるとコンパイルエラーになる
  * （rules/coding.md「列挙した状態の網羅を型で強制する」）。
  */
-function glyphKindOf(referrer: TokenReferrer): TypeGlyphKind {
+function glyphKindOf(referrer: TokenReferrer): SelectionKind {
   switch (referrer.target) {
     case "artboard":
       return "artboard";

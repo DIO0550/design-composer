@@ -1,5 +1,6 @@
 import { type ReactElement, useId, useState } from "react";
-import type { TokenValue } from "@/domains/token";
+import type { Token, TokenKind, TokenValue } from "@/domains/token";
+import { EditorLayout } from "@/features/editor/components/editor-layout";
 import { TokenUsedBy } from "@/features/editor/components/token-used-by";
 import type { EditorState } from "@/features/editor/domains/editor-state";
 import {
@@ -10,14 +11,55 @@ import { Option } from "@/utils/Option";
 
 const FIELD_CLASS = "w-full rounded border border-gray-300 px-2 py-1";
 
-/** 種別ごとの見出し（UI 案 docs/Design Composer.html の `COLOR TOKEN`）。 */
-const HEADINGS = {
-  colors: "COLOR TOKEN",
-  spacing: "SPACING TOKEN",
-  radius: "RADIUS TOKEN",
-  shadows: "SHADOW TOKEN",
-  typography: "TYPOGRAPHY TOKEN",
-} as const;
+/** トークンが選ばれていないときに本文へ出す知らせ。 */
+const NO_SELECTION_MESSAGE = "トークンが選択されていません";
+
+/**
+ * 帯の右端に出す種別の綴り。
+ *
+ * UI 案（docs/Design Composer.html）に実在するのは `Color` だけで、残る 4 つは
+ * ここで決めた。単数形に揃えているのは、帯が指すのが**その 1 件**だから
+ * （一覧側の見出しが複数形なのは集合を指すため）。
+ *
+ * 種別を足して綴りを足し忘れると、ここがコンパイルエラーになる。
+ */
+const KIND_LABELS = {
+  colors: "Color",
+  spacing: "Spacing",
+  radius: "Radius",
+  shadows: "Shadow",
+  typography: "Typography",
+} as const satisfies Readonly<Record<TokenKind, string>>;
+
+/**
+ * 編集しているトークンを出す見出しの中身（先頭の色見本 + 名前 + 右端に種別）。
+ *
+ * 先頭の見本を出すのは色だけ。UI 案が描いているのも色の 14×14 のチップだけで、
+ * 他の種別の絵は無い。無い絵を思いつきで足さない（rules/ui-verification.md）。
+ *
+ * UI 案に無い枠線を足しているのは、白や薄い色のトークンが白い帯に溶けて
+ * 見本が消えるため（UI 案の見本は `#111827` の 1 例だけで、この場合が出ていない）。
+ */
+function TokenTitle({ token }: Readonly<{ token: Token }>) {
+  return (
+    <>
+      {token.kind === "colors" ? (
+        <span
+          aria-hidden="true"
+          style={{ background: String(token.value) }}
+          className="size-3.5 shrink-0 rounded-sm border border-gray-300"
+        />
+      ) : null}
+      {/* 名前が余りを占める。flex の子は既定で内容幅より縮まないため省略には min-w-0 が要る */}
+      <h2 className="min-w-0 flex-1 truncate font-semibold text-gray-900 text-sm">
+        {token.name}
+      </h2>
+      <span className="shrink-0 text-gray-400 text-xs">
+        {KIND_LABELS[token.kind]}
+      </span>
+    </>
+  );
+}
 
 /**
  * 打っている途中の文字列を持ち、確定したときだけ外へ渡す入力欄。
@@ -135,12 +177,13 @@ export function TokenEditor({
 
   if (!control.some) {
     return (
-      <section className="text-sm">
-        <h2 className="mb-2 font-semibold text-gray-500 text-xs uppercase">
-          トークン
-        </h2>
-        <p className="text-gray-500">選択されていません</p>
-      </section>
+      <>
+        {/* 選んでいなくても帯は残す。消すと選択のたびに本文の位置が帯のぶん動く */}
+        <EditorLayout.RightPane.Heading>{null}</EditorLayout.RightPane.Heading>
+        <EditorLayout.RightPane.Body>
+          <p className="text-gray-500 text-sm">{NO_SELECTION_MESSAGE}</p>
+        </EditorLayout.RightPane.Body>
+      </>
     );
   }
 
@@ -149,71 +192,78 @@ export function TokenEditor({
   const tokenKey = `${token.kind}/${token.name}`;
 
   return (
-    <section aria-label="トークン編集" className="flex flex-col gap-3 text-sm">
-      <h2 className="font-semibold text-gray-500 text-xs uppercase">
-        {HEADINGS[token.kind]}
-      </h2>
-      {fields.map((field) => (
-        /*
-         * 下書きの取り直しの単位。行は `name` で一意に指す。
-         *
-         * その行自身の値を混ぜるのは、外から値が変わったとき（undo / redo、
-         * 打った値の正規化）に入力欄が古いままにならないため。トークン全体では
-         * なく行ごとの値なので、ある行を確定しても他の行の下書きは残る。
-         */
-        <div
-          key={`${tokenKey}/${field.name}/${field.input.value}`}
-          className="flex flex-col gap-1"
+    <>
+      <EditorLayout.RightPane.Heading>
+        <TokenTitle token={token} />
+      </EditorLayout.RightPane.Heading>
+      <EditorLayout.RightPane.Body>
+        <section
+          aria-label="トークン編集"
+          className="flex flex-col gap-3 text-sm"
         >
-          <label
-            htmlFor={`${valueId}-${field.name}`}
-            className="text-gray-600 text-xs"
-          >
-            {field.label}
-          </label>
-          {/*
+          {fields.map((field) => (
+            /*
+             * 下書きの取り直しの単位。行は `name` で一意に指す。
+             *
+             * その行自身の値を混ぜるのは、外から値が変わったとき（undo / redo、
+             * 打った値の正規化）に入力欄が古いままにならないため。トークン全体では
+             * なく行ごとの値なので、ある行を確定しても他の行の下書きは残る。
+             */
+            <div
+              key={`${tokenKey}/${field.name}/${field.input.value}`}
+              className="flex flex-col gap-1"
+            >
+              <label
+                htmlFor={`${valueId}-${field.name}`}
+                className="text-gray-600 text-xs"
+              >
+                {field.label}
+              </label>
+              {/*
             数値として読めない入力では値を変えない（`TokenControl.valueFrom` の
             `none`）。名前欄と同じで、通らなかったことは画面に出さず打ち直しに
             任せる。仕様に無い中間状態のエラー表示を発明しないため。
           */}
-          <ValueField
-            id={`${valueId}-${field.name}`}
-            input={field.input}
-            onEdit={(raw) =>
-              Option.map(
-                TokenControl.valueFrom(field.target, raw),
-                onSetTokenValue,
-              )
-            }
-          />
-        </div>
-      ))}
-      <div className="flex flex-col gap-1">
-        <label htmlFor={nameId} className="text-gray-600 text-xs">
-          名前
-        </label>
-        {/*
+              <ValueField
+                id={`${valueId}-${field.name}`}
+                input={field.input}
+                onEdit={(raw) =>
+                  Option.map(
+                    TokenControl.valueFrom(field.target, raw),
+                    onSetTokenValue,
+                  )
+                }
+              />
+            </div>
+          ))}
+          <div className="flex flex-col gap-1">
+            <label htmlFor={nameId} className="text-gray-600 text-xs">
+              名前
+            </label>
+            {/*
           規則を満たさない名前・種別の中で重複する名前では改名しない
           （EditorState.renameToken の `none`）。通らなかったときは打った文字列が
           入力欄に残るので、そのまま直せる。
         */}
-        <DraftField
-          key={`${tokenKey}/name`}
-          id={nameId}
-          type="text"
-          value={token.name}
-          onCommit={onRenameToken}
-        />
-      </div>
-      {/* 並びは UI 案（docs/Design Composer.html）どおり、名前欄の下・削除の上 */}
-      <TokenUsedBy state={state} />
-      <button
-        type="button"
-        onClick={onRemoveToken}
-        className="rounded border border-gray-300 px-2 py-1 text-red-600 hover:bg-gray-100"
-      >
-        Delete token
-      </button>
-    </section>
+            <DraftField
+              key={`${tokenKey}/name`}
+              id={nameId}
+              type="text"
+              value={token.name}
+              onCommit={onRenameToken}
+            />
+          </div>
+          {/* 並びは UI 案（docs/Design Composer.html）どおり、名前欄の下・削除の上 */}
+          <TokenUsedBy state={state} />
+          <button
+            type="button"
+            onClick={onRemoveToken}
+            className="rounded border border-gray-300 px-2 py-1 text-red-600 hover:bg-gray-100"
+          >
+            Delete token
+          </button>
+        </section>
+      </EditorLayout.RightPane.Body>
+    </>
   );
 }

@@ -99,7 +99,10 @@ test("Tokens に切り替えると右ペインがトークンの編集になる"
 
   await goTo(LEFT_PANE_VIEWS.tokens);
 
-  expect(within(propertyPane()).getByText("トークン")).toBeDefined();
+  // トークン未選択なので帯には何も出ない。本文の知らせが「トークンの編集になった」印
+  expect(
+    within(propertyPane()).getByText("トークンが選択されていません"),
+  ).toBeDefined();
 });
 
 test("パネルの見出しは今いる行き先の名前になる", async () => {

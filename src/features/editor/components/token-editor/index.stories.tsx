@@ -8,9 +8,13 @@ const meta = {
   title: "features/editor/TokenEditor",
   component: TokenEditor,
   parameters: { layout: "padded" },
+  /*
+   * 実際の右ペインと同じ器で見る。帯は器の両端まで届くので、
+   * 余白は器ではなく帯と本文がそれぞれ内側に持つ（`EditorLayout.RightPane` と同じ形）。
+   */
   decorators: [
     (Story) => (
-      <div className="w-72 border border-gray-300 bg-white p-3">
+      <div className="flex h-[32rem] w-72 flex-col border border-gray-300 bg-white">
         <Story />
       </div>
     ),
@@ -67,6 +71,16 @@ export const TypographySelected: Story = {
     state: EditorState.selectToken(SAMPLE_EDITOR_STATE, {
       kind: "typography",
       name: "body",
+    }),
+  },
+};
+
+export const RadiusSelected: Story = {
+  name: "角丸トークンを選択中",
+  args: {
+    state: EditorState.selectToken(SAMPLE_EDITOR_STATE, {
+      kind: "radius",
+      name: "md",
     }),
   },
 };

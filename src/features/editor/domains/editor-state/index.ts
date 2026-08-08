@@ -8,6 +8,7 @@ import type { DocumentError } from "@/features/editor/domains/document-error";
 import type { DocumentReload } from "@/features/editor/domains/document-reload";
 import { EditHistory } from "@/features/editor/domains/edit-history";
 import { NodeTemplate } from "@/features/editor/domains/node-template";
+import { Selection } from "@/features/editor/domains/selection";
 import { TokenTemplate } from "@/features/editor/domains/token-template";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
@@ -402,6 +403,27 @@ export const EditorState = {
 
   isSelected(state: EditorState, name: string): boolean {
     return state.selectedName.some && state.selectedName.value === name;
+  },
+
+  /**
+   * 今選ばれているものの正体（名前と種別）。何も選んでいなければ `none`。
+   *
+   * 名前だけを返さないのは、消費側（インスペクタの見出し）が名前と種別の両方を
+   * 出すため。名前を渡して種別を引き直させると、artboard かノードかの場合分けが
+   * features 層へ出る（`rules/coding.md`「features 層にドメイン知識を書かない」）。
+   */
+  selection(state: EditorState): Option<Selection> {
+    return Option.flatMap(state.selectedName, (name) => {
+      const document = EditorState.document(state);
+      const artboard = DesignDocument.findArtboard(document, name);
+      if (artboard.some) {
+        return Option.some(Selection.fromArtboard(artboard.value));
+      }
+      return Option.map(
+        DesignDocument.findNode(document, name),
+        Selection.fromNode,
+      );
+    });
   },
 
   /**
