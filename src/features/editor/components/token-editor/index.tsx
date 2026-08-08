@@ -1,6 +1,7 @@
 import { type ReactElement, useId, useState } from "react";
 import type { Token, TokenKind, TokenValue } from "@/domains/token";
 import { EditorLayout } from "@/features/editor/components/editor-layout";
+import { TokenUsedBy } from "@/features/editor/components/token-used-by";
 import type { EditorState } from "@/features/editor/domains/editor-state";
 import {
   TokenControl,
@@ -252,6 +253,8 @@ export function TokenEditor({
               onCommit={onRenameToken}
             />
           </div>
+          {/* 並びは UI 案（docs/Design Composer.html）どおり、名前欄の下・削除の上 */}
+          <TokenUsedBy state={state} />
           <button
             type="button"
             onClick={onRemoveToken}
