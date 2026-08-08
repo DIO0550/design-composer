@@ -12,8 +12,13 @@ import { renderOpenedDocument } from "./setup";
  * 3 ペインを実物のまま組み立て、キャンバスとツリービューの選択が
  * 双方向に連動することを確かめる（docs/06-ui.md「選択」）。
  */
-function leftPane(): HTMLElement {
-  return screen.getByRole("complementary", { name: "ツリービュー・部品一覧" });
+/*
+ * 選択の行を読む相手はツリーの領域に絞る。左ペインにはレールの行き先ボタンも並び、
+ * そちらも `aria-current` を持つため、ペイン全体を渡すと行き先が行として混ざる
+ * （`tree-rows` の注意書きのとおり）。
+ */
+function tree(): HTMLElement {
+  return screen.getByRole("region", { name: "ツリー" });
 }
 
 function canvasPane(): HTMLElement {
@@ -29,7 +34,7 @@ test("キャンバスでノードを押すとツリービューの同じノー�
 
   await userEvent.click(renderedElement(canvasPane(), "home-title"));
 
-  expect(selectedTreeRowNames(leftPane())).toEqual(["home-title"]);
+  expect(selectedTreeRowNames(tree())).toEqual(["home-title"]);
 });
 
 test("キャンバスでノードを押すとプロパティパネルがそのノードに切り替わる", async () => {
@@ -45,14 +50,14 @@ test("キャンバスで部品インスタンスの中身を押すとインス�
 
   await userEvent.click(within(canvasPane()).getByText("ログイン"));
 
-  expect(selectedTreeRowNames(leftPane())).toEqual(["home-login"]);
+  expect(selectedTreeRowNames(tree())).toEqual(["home-login"]);
 });
 
 test("ツリービューでノードを選ぶとキャンバスのそのノードが強調される", async () => {
   await renderOpenedDocument();
 
   await userEvent.click(
-    within(leftPane()).getByRole("button", { name: "settings" }),
+    within(tree()).getByRole("button", { name: "settings" }),
   );
 
   expect(highlightedNames(canvasPane())).toEqual(["settings"]);
@@ -71,8 +76,8 @@ test("別の artboard を選び直すと前の選択は解除される", async (
   await userEvent.click(renderedElement(canvasPane(), "home-title"));
 
   await userEvent.click(
-    within(leftPane()).getByRole("button", { name: "settings" }),
+    within(tree()).getByRole("button", { name: "settings" }),
   );
 
-  expect(selectedTreeRowNames(leftPane())).toEqual(["settings"]);
+  expect(selectedTreeRowNames(tree())).toEqual(["settings"]);
 });

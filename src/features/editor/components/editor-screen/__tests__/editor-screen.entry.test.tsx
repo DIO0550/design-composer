@@ -1,4 +1,5 @@
 import { screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import {
   artboardContent,
@@ -66,10 +67,11 @@ test("新規作成すると、雛形の部品を持つドキュメントが開�
 
   await clickCreate();
 
-  const tree = screen.getByRole("complementary", {
-    name: "ツリービュー・部品一覧",
-  });
-  expect(within(tree).getByText("primary-button")).toBeDefined();
+  // 雛形の部品はパレットに出るので、左ペインを Assets へ切り替えてから見る（#129）。
+  await userEvent.click(screen.getByRole("button", { name: "Assets" }));
+
+  const leftPane = screen.getByRole("complementary", { name: "左ペイン" });
+  expect(within(leftPane).getByText("primary-button")).toBeDefined();
 });
 
 test("新規作成すると、選んだ保存先にファイルが作られる", async () => {

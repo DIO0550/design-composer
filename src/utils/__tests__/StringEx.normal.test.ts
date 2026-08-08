@@ -23,3 +23,15 @@ test("0から9の数字は数字として true になる", () => {
 test("数字ではない文字は数字として false になる", () => {
   expect(StringEx.isDigit("a")).toBe(false);
 });
+
+test("大文字小文字が違っていても部分一致する", () => {
+  expect(StringEx.includesIgnoreCase("primary-button", "BUTTON")).toBe(true);
+});
+
+test("含まれていない語では部分一致しない", () => {
+  expect(StringEx.includesIgnoreCase("primary-button", "card")).toBe(false);
+});
+
+test("空の語はどの文字列にも部分一致する", () => {
+  expect(StringEx.includesIgnoreCase("primary-button", "")).toBe(true);
+});

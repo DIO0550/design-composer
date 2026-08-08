@@ -12,17 +12,24 @@ type PaneProps = Readonly<{ children: ReactNode }>;
  */
 function EditorLayoutRoot({ children }: PaneProps) {
   return (
-    <div className="grid h-full min-h-0 w-full grid-cols-[16rem_1fr_18rem] overflow-hidden bg-gray-100 text-gray-900">
+    <div className="grid h-full min-h-0 w-full grid-cols-[19rem_1fr_18rem] overflow-hidden bg-gray-100 text-gray-900">
       {children}
     </div>
   );
 }
 
+/**
+ * 左ペイン（UI 案 docs/Design Composer.html は 56px のレールと 248px のパネルを
+ * 横に並べる。あわせて 19rem / #129）。
+ *
+ * 器はスクロールを持たず、中身（パネル）が自分でスクロールする。ここで受けると
+ * 常に見えている必要のあるレールまで一緒に流れる。
+ */
 function LeftPane({ children }: PaneProps) {
   return (
     <aside
-      aria-label="ツリービュー・部品一覧"
-      className="flex flex-col gap-4 overflow-auto border-r border-gray-300 bg-white p-3"
+      aria-label="左ペイン"
+      className="flex overflow-hidden border-r border-gray-300 bg-white"
     >
       {children}
     </aside>

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { DesignDocument } from "@/domains/design-document";
 import { ArtboardCanvas } from "@/features/editor/components/artboard-canvas";
-import { ComponentList } from "@/features/editor/components/component-list";
+import { AssetsPanel } from "@/features/editor/components/assets-panel";
 import { DocumentErrorList } from "@/features/editor/components/document-error-list";
 import { DocumentSyncFailureList } from "@/features/editor/components/document-sync-failure-list";
 import { DocumentTree } from "@/features/editor/components/document-tree";
@@ -10,11 +10,13 @@ import {
   EditorProvider,
   useEditor,
 } from "@/features/editor/components/editor-provider";
+import { LeftPanePanel } from "@/features/editor/components/left-pane-panel";
 import {
-  LEFT_PANE_TABS,
-  type LeftPaneTab,
-  LeftPaneTabs,
-} from "@/features/editor/components/left-pane-tabs";
+  LEFT_PANE_VIEW_LABELS,
+  LEFT_PANE_VIEWS,
+  LeftPaneRail,
+  type LeftPaneView,
+} from "@/features/editor/components/left-pane-rail";
 import { NodeEditToolbar } from "@/features/editor/components/node-edit-toolbar";
 import { PropertyPanel } from "@/features/editor/components/property-panel";
 import { TokenEditor } from "@/features/editor/components/token-editor";
@@ -24,9 +26,69 @@ import type { OpenedDocument } from "@/features/editor/domains/opened-document";
 import { useAutoSave } from "@/features/editor/hooks/use-auto-save";
 import { useDocumentReload } from "@/features/editor/hooks/use-document-reload";
 import { useEditShortcuts } from "@/features/editor/hooks/use-edit-shortcuts";
-import { useNodeActions } from "@/features/editor/hooks/use-node-actions";
-import { useTokenActions } from "@/features/editor/hooks/use-token-actions";
+import {
+  type NodeActions,
+  useNodeActions,
+} from "@/features/editor/hooks/use-node-actions";
+import {
+  type TokenActions,
+  useTokenActions,
+} from "@/features/editor/hooks/use-token-actions";
 import type { DocumentIpc } from "@/libs/document-ipc";
+
+/**
+ * レールで選んだ行き先の中身（UI 案 docs/Design Composer.html の
+ * `Layers` / `Assets` / `Tokens` の各パネル）。
+ *
+ * `Assets` はパレットを見るだけの場所で、選択には触れない
+ * （UI 案「Assets is browse-only — the inspector keeps the previous selection」）。
+ * そのため右ペインは `Layers` のときと同じプロパティパネルのまま変わらない。
+ */
+function LeftPaneContent({
+  view,
+  state,
+  node,
+  token,
+}: Readonly<{
+  view: LeftPaneView;
+  state: EditorState;
+  node: NodeActions;
+  token: TokenActions;
+}>) {
+  if (view === LEFT_PANE_VIEWS.tokens) {
+    return (
+      <TokenList
+        state={state}
+        onSelectToken={token.select}
+        onAddToken={token.add}
+      />
+    );
+  }
+  if (view === LEFT_PANE_VIEWS.assets) {
+    return (
+      <AssetsPanel
+        assets={DesignDocument.componentAssets(EditorState.document(state))}
+        isInsertEnabled={node.isInsertEnabled}
+        onInsert={node.insertInstance}
+      />
+    );
+  }
+  return (
+    <>
+      <NodeEditToolbar
+        isInsertEnabled={node.isInsertEnabled}
+        isRemoveEnabled={node.isRemoveEnabled}
+        onInsert={node.insert}
+        onRemove={node.remove}
+      />
+      <DocumentTree
+        state={state}
+        onSelect={node.select}
+        onReorder={node.reorder}
+      />
+    </>
+  );
+}
 
 /**
  * Provider から状態を読んで各ペインへ配る。
@@ -38,50 +100,30 @@ function EditorPanes() {
   const node = useNodeActions();
   const token = useTokenActions();
   /**
-   * 左ペインが何を映しているか（UI 案 docs/Design Composer.html のタブ）。
-   * 右ペインに出すのもこれで決まる（Layers ならプロパティ、Tokens ならトークン編集）。
+   * 左ペインが何を映しているか（UI 案 docs/Design Composer.html のアイコンレール）。
+   * 右ペインに出すのもこれで決まる（Tokens ならトークン編集、それ以外はプロパティ）。
    * 編集とは連動しない表示だけの状態なので `EditorState` には持たせず、
    * 両ペインを組むここに置く。
    */
-  const [leftPaneTab, setLeftPaneTab] = useState<LeftPaneTab>(
-    LEFT_PANE_TABS.layers,
+  const [leftPaneView, setLeftPaneView] = useState<LeftPaneView>(
+    LEFT_PANE_VIEWS.layers,
   );
-  const isTokensTab = leftPaneTab === LEFT_PANE_TABS.tokens;
+  const isTokensView = leftPaneView === LEFT_PANE_VIEWS.tokens;
 
   useEditShortcuts();
 
   return (
     <EditorLayout>
       <EditorLayout.LeftPane>
-        <LeftPaneTabs current={leftPaneTab} onSelect={setLeftPaneTab} />
-        {isTokensTab ? (
-          <TokenList
+        <LeftPaneRail current={leftPaneView} onSelect={setLeftPaneView} />
+        <LeftPanePanel title={LEFT_PANE_VIEW_LABELS[leftPaneView]}>
+          <LeftPaneContent
+            view={leftPaneView}
+            node={node}
+            token={token}
             state={state}
-            onSelectToken={token.select}
-            onAddToken={token.add}
           />
-        ) : (
-          <>
-            <NodeEditToolbar
-              isInsertEnabled={node.isInsertEnabled}
-              isRemoveEnabled={node.isRemoveEnabled}
-              onInsert={node.insert}
-              onRemove={node.remove}
-            />
-            <DocumentTree
-              state={state}
-              onSelect={node.select}
-              onReorder={node.reorder}
-            />
-            <ComponentList
-              refCounts={DesignDocument.componentRefCounts(
-                EditorState.document(state),
-              )}
-              isInsertEnabled={node.isInsertEnabled}
-              onInsert={node.insertInstance}
-            />
-          </>
-        )}
+        </LeftPanePanel>
       </EditorLayout.LeftPane>
       <EditorLayout.CenterPane>
         <ArtboardCanvas
@@ -94,7 +136,7 @@ function EditorPanes() {
         <DocumentErrorList errors={state.errors} />
       </EditorLayout.CenterPane>
       <EditorLayout.RightPane>
-        {isTokensTab ? (
+        {isTokensView ? (
           <TokenEditor
             state={state}
             onSetTokenValue={token.setValue}

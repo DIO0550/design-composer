@@ -78,13 +78,24 @@ export type Component = Readonly<{
 export type ComponentSet = Readonly<Record<string, Component>>;
 
 /**
- * 部品 1 件と、その部品がドキュメント内で参照されている回数。
- * 名前だけでも回数だけでも「どの部品がどれだけ使われているか」は答えられないため対で持つ。
+ * パレットに 1 件として並ぶ部品（UI 案 docs/Design Composer.html の `Assets`。
+ * ここでの `Assets` はバイナリ資産ではなく**部品のパレット**を指す / #129）。
+ *
+ * 1 件が答えるのは「どの部品を・何を差し替えられて・どれだけ使われているか」。
+ * 名前だけでも、公開 prop だけでも、回数だけでも答えにならないため 3 つで 1 つの値にする。
  */
-export type ComponentRefCount = Readonly<{
+export type ComponentAsset = Readonly<{
   name: string;
-  count: number;
+  publicPropNames: readonly string[];
+  refCount: number;
 }>;
+
+export const ComponentAsset = {
+  /** どこからも参照されていない部品か。 */
+  isUnused(asset: ComponentAsset): boolean {
+    return asset.refCount === 0;
+  },
+} as const;
 
 function updateNodeByName(
   nodes: readonly Node[],
@@ -402,7 +413,7 @@ export const ComponentSet = {
   },
 
   /**
-   * 部品ごとの被参照回数。並びは部品の定義順で、使われていない部品も 0 として必ず含む。
+   * パレットに並べる部品の一覧。並びは部品の定義順で、使われていない部品も必ず含む。
    *
    * `outsideNodes` は部品の外側にある木（artboard の子など）。数えるのはそこにある
    * 参照ノードと、**部品定義の中にある参照ノードの両方**。部品 A が部品 B を含んで
@@ -414,11 +425,14 @@ export const ComponentSet = {
    *
    * 定義の無い名前への参照（dangling）はどの部品の数にも入らない
    * （不正な参照は検証エラーとして別に出る）。
+   *
+   * 名前で部品を引き直さず `Object.entries` から組むのは、必ず成立する引きに
+   * 「見つからなかったとき」の分岐を生やさないため。
    */
-  refCounts(
+  assets(
     components: ComponentSet,
     outsideNodes: readonly Node[],
-  ): readonly ComponentRefCount[] {
+  ): readonly ComponentAsset[] {
     const names = ComponentSet.names(components);
     const refsInComponents = names.flatMap((name) =>
       directRefs(components, name),
@@ -426,9 +440,10 @@ export const ComponentSet = {
     const refsOutside = outsideNodes.flatMap(Node.collectRefs);
     const refs = [...refsInComponents, ...refsOutside];
 
-    return names.map((name) => ({
+    return Object.entries(components).map(([name, component]) => ({
       name,
-      count: refs.filter((ref) => ref === name).length,
+      publicPropNames: Component.publicPropNames(component),
+      refCount: refs.filter((ref) => ref === name).length,
     }));
   },
 

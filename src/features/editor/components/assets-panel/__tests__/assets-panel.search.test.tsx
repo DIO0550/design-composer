@@ -1,0 +1,81 @@
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { expect, test } from "vitest";
+import type { ComponentAsset } from "@/domains/component";
+import { AssetsPanel } from "../index";
+
+/*
+ * 検索欄はプリミティブと部品の両方を絞る（UI 案 docs/Design Composer.html の
+ * `Search assets` / #129）。絞り込みを担うのはこのパネルだけなので、
+ * 絞り込みの振る舞いはここでまとめて見る。
+ */
+
+const ASSETS: readonly ComponentAsset[] = [
+  { name: "primary-button", publicPropNames: ["label"], refCount: 4 },
+  { name: "card", publicPropNames: ["title", "body"], refCount: 2 },
+];
+
+async function search(word: string): Promise<void> {
+  await userEvent.type(
+    screen.getByRole("searchbox", { name: "Search assets" }),
+    word,
+  );
+}
+
+function setup() {
+  render(<AssetsPanel assets={ASSETS} isInsertEnabled onInsert={() => {}} />);
+}
+
+test("検索した語を名前に含む部品だけが残る", async () => {
+  setup();
+
+  await search("button");
+
+  expect(screen.getByText("primary-button")).toBeDefined();
+  expect(screen.queryByText("card")).toBeNull();
+});
+
+test("検索はプリミティブにも効く", async () => {
+  setup();
+
+  await search("box");
+
+  expect(screen.getByText("Box")).toBeDefined();
+  expect(screen.queryByText("Text")).toBeNull();
+});
+
+test("大文字小文字が違っていても絞り込める", async () => {
+  setup();
+
+  await search("BUTTON");
+
+  expect(screen.getByText("primary-button")).toBeDefined();
+});
+
+test("検索した語を消すと全件に戻る", async () => {
+  setup();
+  await search("box");
+
+  await userEvent.clear(
+    screen.getByRole("searchbox", { name: "Search assets" }),
+  );
+
+  expect(screen.getByText("Text")).toBeDefined();
+  expect(screen.getByText("card")).toBeDefined();
+});
+
+test("どれにも一致しない語ではプリミティブの行が出なくなる", async () => {
+  setup();
+
+  await search("zzz");
+
+  expect(screen.queryByText("Primitives")).toBeNull();
+});
+
+test("どれにも一致しない語では部品が無い旨が出る", async () => {
+  setup();
+
+  await search("zzz");
+
+  expect(screen.getByText("部品がありません")).toBeDefined();
+});

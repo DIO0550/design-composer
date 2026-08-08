@@ -1,0 +1,57 @@
+import { useState } from "react";
+import type { ComponentAsset } from "@/domains/component";
+import { PRIMITIVE_TYPES } from "@/domains/primitive-schema";
+import { ComponentList } from "@/features/editor/components/component-list";
+import { PrimitiveList } from "@/features/editor/components/primitive-list";
+import { StringEx } from "@/utils/StringEx";
+
+/** 検索欄に出す案内（UI 案 docs/Design Composer.html の綴り）。 */
+const SEARCH_PLACEHOLDER = "Search assets";
+
+/**
+ * 挿せる部品のパレット（UI 案 docs/Design Composer.html の `Assets` パネル）。
+ *
+ * 絞り込みを担うのはここだけ。プリミティブと部品のどちらも同じ語で絞るので、
+ * それぞれのリストに検索語を配ると同じ判定が 2 箇所に出る（rules/coding.md）。
+ * リストには絞り込み済みの並びだけを渡す。
+ *
+ * 検索語は 1 つの独立した値で、1 回の入力が他の状態を動かさないので `useState`
+ * （rules/hooks.md「useState / useReducer の使い分け」）。
+ */
+export function AssetsPanel({
+  assets,
+  isInsertEnabled,
+  onInsert,
+}: Readonly<{
+  assets: readonly ComponentAsset[];
+  isInsertEnabled: boolean;
+  onInsert: (name: string) => void;
+}>) {
+  const [query, setQuery] = useState("");
+
+  const matchedTypes = PRIMITIVE_TYPES.filter((type) =>
+    StringEx.includesIgnoreCase(type, query),
+  );
+  const matchedAssets = assets.filter((asset) =>
+    StringEx.includesIgnoreCase(asset.name, query),
+  );
+
+  return (
+    <>
+      <input
+        type="search"
+        aria-label={SEARCH_PLACEHOLDER}
+        placeholder={SEARCH_PLACEHOLDER}
+        value={query}
+        onChange={(event) => setQuery(event.target.value)}
+        className="rounded border border-gray-300 px-2 py-1 text-sm placeholder:text-gray-400"
+      />
+      <PrimitiveList types={matchedTypes} />
+      <ComponentList
+        assets={matchedAssets}
+        isInsertEnabled={isInsertEnabled}
+        onInsert={onInsert}
+      />
+    </>
+  );
+}

@@ -8,7 +8,7 @@ test("部品の行から挿入するとその部品名が伝わる", async () =>
   const inserted: string[] = [];
   render(
     <ComponentList
-      refCounts={[{ name: "card", count: 0 }]}
+      assets={[{ name: "card", publicPropNames: [], refCount: 0 }]}
       isInsertEnabled
       onInsert={(name) => inserted.push(name)}
     />,
@@ -22,7 +22,7 @@ test("部品の行から挿入するとその部品名が伝わる", async () =>
 test("挿せる位置が無いときは挿入ボタンを押せない", () => {
   render(
     <ComponentList
-      refCounts={[{ name: "card", count: 0 }]}
+      assets={[{ name: "card", publicPropNames: [], refCount: 0 }]}
       isInsertEnabled={false}
       onInsert={() => {}}
     />,

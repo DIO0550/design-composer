@@ -1,28 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Artboard } from "@/domains/artboard";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
-import { ComponentList } from "./index";
-
-const meta = {
-  title: "features/editor/ComponentList",
-  component: ComponentList,
-  parameters: { layout: "padded" },
-  decorators: [
-    (Story) => (
-      <div className="w-64 border border-gray-300 bg-white p-3">
-        <Story />
-      </div>
-    ),
-  ],
-} satisfies Meta<typeof ComponentList>;
-
-export default meta;
-
-type Story = StoryObj<typeof meta>;
+import { LeftPanePanel } from "@/features/editor/components/left-pane-panel";
+import { AssetsPanel } from "./index";
 
 /**
  * 使われている部品と使われていない部品を 1 枚で見るための状態。
- * 雛形の初期部品セットは参照を 1 つも持たないため、そのまま使うと全行が `×0` になり
+ * 雛形の初期部品セットは参照を 1 つも持たないため、そのまま使うと全行が `unused` になり
  * 使用数の出方が分からない。
  */
 const USED_COMPONENTS_DOCUMENT = DesignDocument.create({
@@ -41,25 +25,41 @@ const USED_COMPONENTS_DOCUMENT = DesignDocument.create({
   ],
 });
 
-export const Default: Story = {
-  name: "使用数のある部品",
+const meta = {
+  title: "features/editor/AssetsPanel",
+  component: AssetsPanel,
+  parameters: { layout: "padded" },
   args: {
     assets: DesignDocument.componentAssets(USED_COMPONENTS_DOCUMENT),
     isInsertEnabled: true,
     onInsert: () => {},
   },
+  // 実際の幅（248px のパネル）で見ないと、名前と使用数の詰まり方が分からない。
+  decorators: [
+    (Story) => (
+      <div className="flex h-96 w-62 border border-gray-300">
+        <LeftPanePanel title="Assets">
+          <Story />
+        </LeftPanePanel>
+      </div>
+    ),
+  ],
+} satisfies Meta<typeof AssetsPanel>;
+
+export default meta;
+
+type Story = StoryObj<typeof meta>;
+
+export const Default: Story = {
+  name: "パレット",
 };
 
 export const InsertDisabled: Story = {
   name: "挿せる位置が無い",
-  args: {
-    assets: DesignDocument.componentAssets(USED_COMPONENTS_DOCUMENT),
-    isInsertEnabled: false,
-    onInsert: () => {},
-  },
+  args: { isInsertEnabled: false },
 };
 
-export const Empty: Story = {
+export const NoComponents: Story = {
   name: "部品がない",
-  args: { assets: [], isInsertEnabled: true, onInsert: () => {} },
+  args: { assets: [] },
 };

@@ -16,7 +16,7 @@ export const Default: Story = {
   args: {
     children: (
       <>
-        <EditorLayout.LeftPane>ツリービュー・部品一覧</EditorLayout.LeftPane>
+        <EditorLayout.LeftPane>レール・パネル</EditorLayout.LeftPane>
         <EditorLayout.CenterPane>キャンバス</EditorLayout.CenterPane>
         <EditorLayout.RightPane>プロパティパネル</EditorLayout.RightPane>
       </>

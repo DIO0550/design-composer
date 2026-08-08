@@ -5,9 +5,9 @@ import { ComponentList } from "../index";
 test("ドキュメントの部品が一覧に並ぶ", () => {
   render(
     <ComponentList
-      refCounts={[
-        { name: "primary-button", count: 1 },
-        { name: "divider", count: 0 },
+      assets={[
+        { name: "primary-button", publicPropNames: ["label"], refCount: 1 },
+        { name: "divider", publicPropNames: [], refCount: 0 },
       ]}
       isInsertEnabled
       onInsert={() => {}}
@@ -20,7 +20,7 @@ test("ドキュメントの部品が一覧に並ぶ", () => {
 test("部品の行には部品を表す型アイコンが出る", () => {
   render(
     <ComponentList
-      refCounts={[{ name: "divider", count: 0 }]}
+      assets={[{ name: "divider", publicPropNames: [], refCount: 0 }]}
       isInsertEnabled
       onInsert={() => {}}
     />,
@@ -30,7 +30,7 @@ test("部品の行には部品を表す型アイコンが出る", () => {
 });
 
 test("部品が1つも無いときはその旨が表示される", () => {
-  render(<ComponentList refCounts={[]} isInsertEnabled onInsert={() => {}} />);
+  render(<ComponentList assets={[]} isInsertEnabled onInsert={() => {}} />);
 
   expect(screen.getByText("部品がありません")).toBeDefined();
 });

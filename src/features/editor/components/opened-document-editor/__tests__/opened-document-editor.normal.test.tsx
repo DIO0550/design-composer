@@ -7,7 +7,7 @@ test("ドキュメントを開くと3つのペインが表示される", async (
   await renderOpenedDocument();
 
   const panes = [
-    screen.getByRole("complementary", { name: "ツリービュー・部品一覧" }),
+    screen.getByRole("complementary", { name: "左ペイン" }),
     screen.getByRole("main", { name: "キャンバス" }),
     screen.getByRole("complementary", { name: "プロパティパネル" }),
   ];
@@ -19,22 +19,12 @@ test("ドキュメントの artboard がツリービューとキャンバスの�
   await renderOpenedDocument();
 
   const tree = screen.getByRole("complementary", {
-    name: "ツリービュー・部品一覧",
+    name: "左ペイン",
   });
   const canvas = screen.getByRole("main", { name: "キャンバス" });
 
   expect(within(tree).getByRole("button", { name: "home" })).toBeDefined();
   expect(within(canvas).getByRole("button", { name: /home/ })).toBeDefined();
-});
-
-test("ドキュメントの部品が部品一覧に表示される", async () => {
-  await renderOpenedDocument();
-
-  const tree = screen.getByRole("complementary", {
-    name: "ツリービュー・部品一覧",
-  });
-
-  expect(within(tree).getByText("primary-button")).toBeDefined();
 });
 
 test("ドキュメントを開いた直後はプロパティパネルに何も選択されていないと表示される", async () => {
@@ -50,7 +40,7 @@ test("ドキュメントを開いた直後はプロパティパネルに何も�
 test("ツリービューで artboard を選ぶとプロパティパネルにその名前が表示される", async () => {
   await renderOpenedDocument();
   const tree = screen.getByRole("complementary", {
-    name: "ツリービュー・部品一覧",
+    name: "左ペイン",
   });
 
   await userEvent.click(within(tree).getByRole("button", { name: "home" }));
@@ -68,7 +58,7 @@ test("キャンバスで artboard を選ぶとツリービューの表示も選�
   await userEvent.click(within(canvas).getByRole("button", { name: /home/ }));
 
   const tree = screen.getByRole("complementary", {
-    name: "ツリービュー・部品一覧",
+    name: "左ペイン",
   });
   expect(
     within(tree)
@@ -80,7 +70,7 @@ test("キャンバスで artboard を選ぶとツリービューの表示も選�
 test("選択を解除するとプロパティパネルが未選択の表示に戻る", async () => {
   await renderOpenedDocument();
   const tree = screen.getByRole("complementary", {
-    name: "ツリービュー・部品一覧",
+    name: "左ペイン",
   });
   await userEvent.click(within(tree).getByRole("button", { name: "home" }));
 
