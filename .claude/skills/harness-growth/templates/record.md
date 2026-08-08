@@ -64,6 +64,7 @@
 | `immutability` | rules/coding.md「イミュータブル」 |
 | `result-option` | rules/coding.md「エラーと不在の表現(Result / Option)」 |
 | `signature` | rules/coding.md「関数のシグネチャ」 |
+| `duplication` | rules/coding.md「同じ処理が2箇所に現れたら共通化する」 |
 | `type-vocabulary` | rules/coding.md「値の語彙を型で閉じる」 |
 | `illegal-state` | rules/coding.md「不正な状態を型で表現できなくする(型による境界)」 |
 | `naming` | rules/naming.md |

@@ -144,6 +144,32 @@ export type Size =
   | Readonly<{ mode: "fixed"; length: number }>;
 ```
 
+### 列挙した状態の網羅を型で強制する
+
+直和で列挙しても、**出し分けの側が網羅していなければ意味がない**。`if` の連なりで書くと最後の枝がラベルの無い受け皿になり、状態を1つ足したときに黙ってそこへ落ちる。
+
+`switch` に `default` を置かずに書き、**戻り値の型を `undefined` を含まないものにする**。case が抜けると「返さない経路がある」(TS2366)としてコンパイルエラーになる。
+
+```tsx
+// NG: layers が「それ以外」になる。行き先を足すと黙ってツリーが出る
+if (view === "tokens") return <TokenList />;
+if (view === "assets") return <AssetsPanel />;
+return <DocumentTree />;
+
+// OK: 戻り値が ReactElement なので、case を足し忘れるとコンパイルエラーになる
+function LeftPaneContent({ view }: Props): ReactElement {
+  switch (view) {
+    case "layers": return <DocumentTree />;
+    case "assets": return <AssetsPanel />;
+    case "tokens": return <TokenList />;
+  }
+}
+```
+
+- **コンポーネントの戻り値は `ReactNode` ではなく `ReactElement` と書く。** `ReactNode` は `undefined` を含むため、case が抜けても通ってしまう
+- 文字列や数値を返す関数は、戻り値を素の `string` / `number` にしておけば同じ効果が得られる(`DocumentErrorLocation` を受ける `locationLabel` がこの形)
+- `default` の追加・`never` への代入・状態をキーにした対応表は要らない。**対応表は、値が props 一式を受け取る関数になると呼び出しが読めなくなる**(使わない値まで渡すことになる)ので、網羅のためだけに選ばない
+
 ### 生成時に検証し、不正な値を存在させない
 
 制約を持つ値は、コンパニオンオブジェクトの `create` が**検証込みで生成**する(Smart Constructor)。検証に失敗しうるなら `Result` / `Option` を返し、「生成された = 制約を満たしている」を成立させる。生成後に呼び出し側が検証する設計にしない(検証を通っていない値が型上は同じ顔で流通してしまう)。
