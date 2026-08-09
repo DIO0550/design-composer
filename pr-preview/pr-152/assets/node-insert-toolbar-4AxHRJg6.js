@@ -13,5 +13,7 @@ artboard の追加は未実装（#43）で、\`◆\` は Assets のドラッグ�
 浮かせる位置指定をここが持つのは、浮いていること自体がこの部品の形だから
 （UI 案の器が \`position:absolute; bottom:16px; left:50%\` を持っている）。
 位置指定された祖先の中に置く必要があり、置き場は \`EditorLayout.CenterPane\`。
+**この位置指定を落としたことはテストでは落ちない**（happy-dom は Tailwind を
+解決しない）。気づく手段は Storybook の視覚差分だけなので、触るときは VRT を見ること。
 
 影は Tailwind の階調に無い値なので UI 案の実測値をそのまま書いている。`,displayName:`NodeInsertToolbar`,filePath:`/home/runner/work/design-composer/design-composer/src/features/editor/components/node-insert-toolbar/index.tsx`,methods:[],props:{isInsertEnabled:{defaultValue:null,declarations:[{fileName:`design-composer/src/features/editor/components/node-insert-toolbar/index.tsx`,name:`TypeLiteral`}],description:``,name:`isInsertEnabled`,required:!0,tags:{},type:{name:`boolean`}},onInsert:{defaultValue:null,declarations:[{fileName:`design-composer/src/features/editor/components/node-insert-toolbar/index.tsx`,name:`TypeLiteral`}],description:``,name:`onInsert`,required:!0,tags:{},type:{name:`(template: NodeTemplate) => void`}}},tags:{}}}catch{}}));export{u as n,s as t};
