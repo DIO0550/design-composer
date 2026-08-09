@@ -7,7 +7,13 @@ import {
   LEFT_PANE_VIEWS,
   type LeftPaneView,
 } from "@/features/editor/components/left-pane-rail";
-import { renderOpenedDocument, selectArtboard, selectInTree } from "./setup";
+import {
+  leftPane,
+  propertyPane,
+  renderOpenedDocument,
+  selectArtboard,
+  selectInTree,
+} from "./setup";
 
 /*
  * 左ペインの行き先の切り替えを、編集画面の配線ごと確かめる
@@ -16,14 +22,6 @@ import { renderOpenedDocument, selectArtboard, selectInTree } from "./setup";
  * レール単体のテストは「押した行き先が伝わる」ところまでしか見ないので、
  * 行き先ごとに左ペインと右ペインへ何が出るかはここでしか通らない。
  */
-
-function leftPane(): HTMLElement {
-  return screen.getByRole("complementary", { name: "左ペイン" });
-}
-
-function propertyPane(): HTMLElement {
-  return screen.getByRole("complementary", { name: "プロパティパネル" });
-}
 
 /** レールで行き先を選ぶ。綴りではなく行き先で指す（取り違えを型で弾く）。 */
 async function goTo(view: LeftPaneView): Promise<void> {

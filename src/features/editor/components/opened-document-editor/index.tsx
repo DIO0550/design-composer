@@ -12,6 +12,7 @@ import {
   LEFT_PANE_VIEWS,
   type LeftPaneView,
 } from "@/features/editor/components/left-pane-rail";
+import { NodeInsertToolbar } from "@/features/editor/components/node-insert-toolbar";
 import { PropertyPanel } from "@/features/editor/components/property-panel";
 import { TokenEditor } from "@/features/editor/components/token-editor";
 import { EditorState } from "@/features/editor/domains/editor-state";
@@ -88,6 +89,7 @@ function EditorPanes() {
   const [leftPaneView, setLeftPaneView] = useState<LeftPaneView>(
     LEFT_PANE_VIEWS.layers,
   );
+  const hasErrors = state.errors.length > 0;
   useEditShortcuts();
 
   return (
@@ -109,7 +111,19 @@ function EditorPanes() {
           onResize={node.resize}
           onEditProp={node.editProp}
         />
-        <DocumentErrorList errors={state.errors} />
+        {/*
+          下端を占めるのはどちらか一方。UI 案も、浮かぶツールバーを持つ 4 画面と
+          エラー一覧をドッキングする Error 画面とに分かれている（Design notes の文章は
+          ツールバーが「凍結」と読めるが、マークアップに無いのでそちらに従った）。
+        */}
+        {hasErrors ? (
+          <DocumentErrorList errors={state.errors} />
+        ) : (
+          <NodeInsertToolbar
+            isInsertEnabled={node.isInsertEnabled}
+            onInsert={node.insert}
+          />
+        )}
       </EditorLayout.CenterPane>
       <EditorLayout.RightPane>
         <RightPaneContent

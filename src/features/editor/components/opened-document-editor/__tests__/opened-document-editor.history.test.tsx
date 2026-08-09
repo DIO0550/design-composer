@@ -2,7 +2,7 @@ import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { rowNames } from "@/features/editor/__tests__/row-names";
-import { renderOpenedDocument, tree } from "./setup";
+import { renderOpenedDocument, selectInTree, tree } from "./setup";
 
 /** 並べ替え前の home の子の並び。 */
 const ORIGINAL_CHILDREN = ["home-title", "home-login"];
@@ -43,8 +43,10 @@ test("何も編集していないときに Ctrl+Z を押しても画面は変わ
 
 test("削除を戻すと消したノードがツリーに返ってくる", async () => {
   await renderOpenedDocument();
-  await userEvent.click(screen.getByRole("button", { name: "home-title" }));
-  await userEvent.click(screen.getByRole("button", { name: "削除" }));
+  await selectInTree("home-title");
+  await userEvent.keyboard("{Delete}");
+  // 消えたことを先に見る。消えていないと Ctrl+Z が no-op でも最後の assert が通る。
+  expect(rowNames(tree())).toEqual(["home-login"]);
 
   await userEvent.keyboard("{Control>}z{/Control}");
 

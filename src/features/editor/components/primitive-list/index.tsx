@@ -5,7 +5,8 @@ import { TypeGlyph } from "@/features/editor/components/type-glyph";
  * パレットのプリミティブ（UI 案 docs/Design Composer.html の `Assets` > `Primitives`）。
  *
  * 行に操作は付けない。UI 案でのプリミティブの挿入はドラッグだけで、ドラッグは #129 の
- * スコープ外。ボタンを足すと挿入の入口が `NodeEditToolbar`（`Layers`）と二重になる。
+ * スコープ外。ボタンを足すと挿入の入口が、キャンバスに浮かぶ `NodeInsertToolbar` と
+ * 二重になる。
  *
  * 絞り込みはここでは行わない。何を出すかは検索欄を持つ `AssetsPanel` が決め、
  * ここは渡された並びを描くだけ（同じ絞り込みが 2 箇所に現れないようにする）。

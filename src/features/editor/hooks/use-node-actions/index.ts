@@ -9,8 +9,8 @@ import type { NodeTemplate } from "@/features/editor/domains/node-template";
  * ツリー・キャンバス・プロパティパネルから届くノード編集の操作
  * （docs/06-ui.md「編集操作の一覧」「キャンバス直接操作」）。
  *
- * 押せるかどうか（`isInsertEnabled` / `isRemoveEnabled`）まで一緒に返すのは、
- * 出す / 出さないの判断が同じ選択から決まるため。判断そのものは `EditorState` が持ち、
+ * 押せるかどうか（`isInsertEnabled`）まで一緒に返すのは、出す / 出さないの判断が
+ * 同じ選択から決まるため。判断そのものは `EditorState` が持ち、
  * ここは読み出して渡すだけ（rules/hooks.md「hooks はドメインロジックを持たない」）。
  */
 export type NodeActions = Readonly<{
@@ -23,17 +23,15 @@ export type NodeActions = Readonly<{
   editProp: (edit: PropEdit) => void;
   insert: (template: NodeTemplate) => void;
   insertInstance: (componentName: string) => void;
-  remove: () => void;
   isInsertEnabled: boolean;
-  isRemoveEnabled: boolean;
 }>;
 
 /**
  * ノード編集の操作をエディタの状態へ仲介する。
  *
- * キーボードだけの操作（コピー & ペースト・undo / redo）はここに含めない。
+ * キーボードだけの操作（削除・コピー & ペースト・undo / redo）はここに含めない。
  * 画面の部品から呼ぶ相手がおらず、`useEditShortcuts` が張るためだけに
- * 戻り値へ並べることになるため。
+ * 戻り値へ並べることになるため（削除は #112 でボタンを失ってこちら側になった）。
  */
 export function useNodeActions(): NodeActions {
   const { state, dispatch } = useEditor();
@@ -64,12 +62,10 @@ export function useNodeActions(): NodeActions {
         type: "insert_node",
         template: { kind: "instance", componentName },
       }),
-    remove: () => dispatch({ type: "remove_node" }),
     /**
-     * 挿入と削除は選択中のものを起点にするため、押せるかどうかも選択から決まる
+     * 挿入は選択中のものを起点にするため、押せるかどうかも選択から決まる
      * （docs/06-ui.md「編集操作の一覧」）。
      */
     isInsertEnabled: EditorState.insertPosition(state).some,
-    isRemoveEnabled: EditorState.removableName(state).some,
   };
 }

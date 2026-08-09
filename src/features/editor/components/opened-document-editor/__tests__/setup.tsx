@@ -1,5 +1,6 @@
 import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { changeFileExternally } from "@/features/editor/__tests__/document-change";
 import { SAMPLE_DOCUMENT } from "@/features/editor/__tests__/sample-document";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
@@ -13,8 +14,10 @@ export const PATH = "/work/sample.dcmp";
  *
  * 監視と購読は非同期に成立するので、操作を始める前にここで待ち合わせる
  * （待たずに操作すると、成立したときの状態更新が act の外で起きる）。
+ *
+ * 代役を返すのは、外部変更を起こすテストが同じものを必要とするため。
  */
-export async function renderOpenedDocument(): Promise<void> {
+export async function renderOpenedDocument(): Promise<DocumentIpcFake> {
   const fake = DocumentIpcFake.create({
     [PATH]: DocumentJson.serialize(SAMPLE_DOCUMENT),
   });
@@ -26,6 +29,35 @@ export async function renderOpenedDocument(): Promise<void> {
     />,
   );
   await act(async () => {});
+  return fake;
+}
+
+/**
+ * 外部がファイルを壊したことにする。取り込みは拒まれ、画面はエラーを抱えたまま
+ * 最後に正常だった表示を保つ（docs/03-schema.md「不正ファイル時の挙動」）。
+ */
+export async function breakFileExternally(
+  fake: DocumentIpcFake,
+): Promise<void> {
+  await changeFileExternally({ fake, path: PATH, content: "{ 壊れた" });
+}
+
+/**
+ * キャンバス。同じ名前がツリーにも出るので絞るのに使う。挿入のツールバーもこの中に
+ * あり、絞らないと左ペインへ置き戻す実装でも通ってしまう（#112）。
+ */
+export function canvasPane(): HTMLElement {
+  return screen.getByRole("main", { name: "キャンバス" });
+}
+
+/** 左ペイン。 */
+export function leftPane(): HTMLElement {
+  return screen.getByRole("complementary", { name: "左ペイン" });
+}
+
+/** 右ペイン。 */
+export function propertyPane(): HTMLElement {
+  return screen.getByRole("complementary", { name: "プロパティパネル" });
 }
 
 /**

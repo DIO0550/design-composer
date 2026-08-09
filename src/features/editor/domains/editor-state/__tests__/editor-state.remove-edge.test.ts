@@ -18,16 +18,6 @@ function setupState(): EditorState {
   );
 }
 
-test("何も選んでいなければ削除できる対象が無い", () => {
-  expect(EditorState.removableName(setupState())).toEqual(Option.none);
-});
-
-test("artboard を選んでいる間は削除できる対象が無い", () => {
-  const state = EditorState.select(setupState(), "home");
-
-  expect(EditorState.removableName(state)).toEqual(Option.none);
-});
-
 test("artboard を選んだままの削除はドキュメントを変えない", () => {
   const state = EditorState.select(setupState(), "home");
 

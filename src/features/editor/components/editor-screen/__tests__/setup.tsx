@@ -1,5 +1,6 @@
 import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { changeFileExternally } from "@/features/editor/__tests__/document-change";
 import {
   type DialogChoices,
   DocumentDialogFake,
@@ -48,7 +49,5 @@ export async function changeExternally(
   path: string,
   content: string,
 ): Promise<void> {
-  await act(async () => {
-    files.changeExternally(path, content);
-  });
+  await changeFileExternally({ fake: files, path, content });
 }

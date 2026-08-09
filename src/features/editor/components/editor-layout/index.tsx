@@ -40,7 +40,8 @@ function CenterPane({ children }: PaneProps) {
   return (
     // キャンバスは自前でズーム / パンを持つため、ペイン側でスクロールさせない
     // （二重にスクロールすると、掴んで動かした位置と表示がずれる）。
-    // relative はエラー一覧を重ねる基準（docs/03-schema.md「不正ファイル時の挙動」）。
+    // relative は下端へ重ねるものの基準（エラー一覧と挿入のツールバー）。外すと
+    // 両方が遠い祖先に対して浮くが、テストでは落ちない（Storybook の視覚差分だけが気づく）。
     <main
       aria-label="キャンバス"
       className="relative overflow-hidden bg-gray-100"
