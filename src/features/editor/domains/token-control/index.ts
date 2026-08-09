@@ -120,7 +120,12 @@ const TYPOGRAPHY_LABELS = {
   fontFamily: "フォント",
 } as const satisfies Readonly<Record<TypographyField, string>>;
 
-/** 一覧の行に出す見本。種別によって色見本・大きさ・書体と形が変わる。 */
+/**
+ * 一覧の行に出す見本。種別によって色見本・大きさ・書体と形が変わる。
+ *
+ * @param token 見本を出したいトークン
+ * @returns 種別に応じた見本（色見本 / 長さの帯 / 影 / 書体の見本）
+ */
 function previewOf(token: Token): TokenPreview {
   switch (token.kind) {
     case "colors":
@@ -147,7 +152,12 @@ function previewOf(token: Token): TokenPreview {
   }
 }
 
-/** 行の右端に出す値。種別ごとに、その値を1行で読める形にする。 */
+/**
+ * 行の右端に出す値。種別ごとに、その値を1行で読める形にする。
+ *
+ * @param token 値を読みたいトークン
+ * @returns 1行で読める値の文字列
+ */
 function valueTextOf(token: Token): string {
   switch (token.kind) {
     case "colors":
@@ -186,7 +196,13 @@ export const TokenSection = {
   },
 } as const;
 
-/** 影の 1 フィールドを、対応する入力欄の形にする。 */
+/**
+ * 影の 1 フィールドを、対応する入力欄の形にする。
+ *
+ * @param shadow 編集対象の影
+ * @param field 入力欄にするフィールド
+ * @returns 色は色欄、それ以外は数値欄
+ */
 function shadowInput(
   shadow: ShadowToken,
   field: ShadowField,
@@ -205,7 +221,13 @@ function shadowInput(
   }
 }
 
-/** 書体の 1 フィールドを、対応する入力欄の形にする。 */
+/**
+ * 書体の 1 フィールドを、対応する入力欄の形にする。
+ *
+ * @param token 編集対象の書体トークン
+ * @param field 入力欄にするフィールド
+ * @returns fontFamily はテキスト欄、それ以外は数値欄
+ */
 function typographyInput(
   token: TypographyToken,
   field: TypographyField,
@@ -226,7 +248,12 @@ function typographyInput(
   }
 }
 
-/** その種別の編集欄の並び。複合の種別はフィールドの定義順を保つ。 */
+/**
+ * その種別の編集欄の並び。複合の種別はフィールドの定義順を保つ。
+ *
+ * @param token 編集したいトークン
+ * @returns 上から並べる編集欄。単一値の種別は 1 件
+ */
 function fieldsOf(token: Token): readonly TokenControlField[] {
   switch (token.kind) {
     case "colors":
@@ -269,6 +296,9 @@ function fieldsOf(token: Token): readonly TokenControlField[] {
  * 数値の入力欄に入った文字列を数値として読む。
  * 数値として読めない入力（空欄・途中まで打った符号）では値を変えない。
  * 読めない値を書き込むとその種別の値の形式が壊れるため（docs/04-tokens.md）。
+ *
+ * @param raw 入力欄に入っている文字列
+ * @returns 有限の数値として読めた場合のみ `some`
  */
 function numberFromRaw(raw: string): Option<number> {
   const value = Number(raw);
@@ -277,7 +307,13 @@ function numberFromRaw(raw: string): Option<number> {
     : Option.none;
 }
 
-/** 影の入力欄へ打たれた文字列を、書き換え後のトークンの値にする。読めなければ `none`。 */
+/**
+ * 影の入力欄へ打たれた文字列を、書き換え後のトークンの値にする。
+ *
+ * @param target 書き換える影と、そのどのフィールドか
+ * @param raw 入力欄に入っている文字列
+ * @returns 書き換え後のトークンの値。数値 / 6桁の色として読めなければ `none`
+ */
 function shadowValueFrom(
   target: Extract<TokenFieldTarget, { kind: "shadows" }>,
   raw: string,
@@ -306,7 +342,13 @@ function shadowValueFrom(
   }));
 }
 
-/** 書体の入力欄へ打たれた文字列を、書き換え後のトークンの値にする。読めなければ `none`。 */
+/**
+ * 書体の入力欄へ打たれた文字列を、書き換え後のトークンの値にする。
+ *
+ * @param target 書き換える書体トークンと、そのどのフィールドか
+ * @param raw 入力欄に入っている文字列
+ * @returns 書き換え後のトークンの値。数値として読めなければ `none`
+ */
 function typographyValueFrom(
   target: Extract<TokenFieldTarget, { kind: "typography" }>,
   raw: string,

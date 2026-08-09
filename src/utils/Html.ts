@@ -2,6 +2,9 @@
  * HTML テキストとして安全に埋め込める形にする。
  * `&` `<` `>` を実体参照へ変換し、引用符は変換しない
  * (テキストの位置では引用符は意味を持たず、内容が読みにくくなるため)。
+ *
+ * @param value 埋め込みたい生のテキスト
+ * @returns `&` `<` `>` を実体参照へ置き換えたテキスト
  */
 function escapeText(value: string): string {
   return value

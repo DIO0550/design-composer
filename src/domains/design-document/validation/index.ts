@@ -54,7 +54,13 @@ type ErrorLocation = Readonly<{
   prop?: string;
 }>;
 
-/** 位置を持たないエラーに発生位置を付与し、報告用のエラーに変換する。 */
+/**
+ * 位置を持たないエラーに発生位置を付与し、報告用のエラーに変換する。
+ *
+ * @param location 付与する発生位置。`prop` はエラー自身が持つものを優先する
+ * @param errors 位置を持たないエラーの並び
+ * @returns 位置の付いた報告用のエラーの並び
+ */
 function withLocation(
   location: ErrorLocation,
   errors: readonly UnlocatedError[],
@@ -70,7 +76,14 @@ function withLocation(
   });
 }
 
-/** 型に対応するスキーマで props を照らす。未知の型はその場でエラーにする。 */
+/**
+ * 型に対応するスキーマで props を照らす。未知の型はその場でエラーにする。
+ *
+ * @param type ノードの型名
+ * @param props 照らす対象の props（未設定なら空として扱う）
+ * @param tokens トークン参照の解決に使うトークン一式
+ * @returns 未知の型・宣言違反・値域違反のエラーの並び
+ */
 function collectTypedPropErrors(
   type: string,
   props: Props | undefined,
@@ -83,7 +96,13 @@ function collectTypedPropErrors(
   return PropDefinitionRecord.collectErrors(schema.props, props ?? {}, tokens);
 }
 
-/** ノードとその子孫の props をスキーマで照らす。部品インスタンスは対象外。 */
+/**
+ * ノードとその子孫の props をスキーマで照らす。部品インスタンスは対象外。
+ *
+ * @param node 起点のノード
+ * @param tokens トークン参照の解決に使うトークン一式
+ * @returns 自身と子孫の props のエラーの並び（部品インスタンスは空）
+ */
 function collectNodeErrors(
   node: Node,
   tokens: TokenSet,
@@ -107,7 +126,14 @@ export type ReferenceContext = Readonly<{
   tokens: TokenSet;
 }>;
 
-/** インスタンスの overrides が、参照先の公開 prop の宣言と値域に収まっているか。 */
+/**
+ * インスタンスの overrides が、参照先の公開 prop の宣言と値域に収まっているか。
+ *
+ * @param context 部品とトークンの一式
+ * @param refNode overrides を持つインスタンスのノード
+ * @param component 参照先の部品
+ * @returns 未宣言の override・値域違反のエラーの並び
+ */
 function collectOverrideErrors(
   context: ReferenceContext,
   refNode: RefNode,
@@ -141,7 +167,13 @@ function collectOverrideErrors(
   );
 }
 
-/** インスタンスの参照先が存在するか、展開が自分自身へ戻らないか。 */
+/**
+ * インスタンスの参照先が存在するか、展開が自分自身へ戻らないか。
+ *
+ * @param context 部品とトークンの一式
+ * @param refNode 検証するインスタンスのノード
+ * @returns 参照先が無い場合の dangling-ref と、overrides のエラーの並び
+ */
 function collectRefNodeErrors(
   context: ReferenceContext,
   refNode: RefNode,
@@ -158,7 +190,13 @@ function collectRefNodeErrors(
   return collectOverrideErrors(context, refNode, component);
 }
 
-/** ノードとその子孫に含まれる部品参照を、位置を付けて集める。 */
+/**
+ * ノードとその子孫に含まれる部品参照を、位置を付けて集める。
+ *
+ * @param context 部品とトークンの一式
+ * @param node 起点のノード
+ * @returns 自身と子孫のインスタンスについて、位置の付いたエラーの並び
+ */
 function collectNodeRefErrors(
   context: ReferenceContext,
   node: Node,
@@ -174,7 +212,14 @@ function collectNodeRefErrors(
   );
 }
 
-/** binding が指す内部ノードと prop が実在し、値域に収まっているか。 */
+/**
+ * binding が指す内部ノードと prop が実在し、値域に収まっているか。
+ *
+ * @param context 部品とトークンの一式
+ * @param binding 検証する公開 prop の binding
+ * @param target binding が指している内部ノード
+ * @returns 指し先の prop が無い場合・値域違反のエラーの並び
+ */
 function collectBindingTargetErrors(
   context: ReferenceContext,
   binding: PublicPropBinding,
@@ -207,7 +252,14 @@ function collectBindingTargetErrors(
   ];
 }
 
-/** 部品の publicProps が宣言している binding をすべて照らす。 */
+/**
+ * 部品の publicProps が宣言している binding をすべて照らす。
+ *
+ * @param context 部品とトークンの一式
+ * @param componentName エラーの位置に使う部品名
+ * @param component 検証する部品
+ * @returns 指し先のノードが無い場合を含む、位置の付いたエラーの並び
+ */
 function collectBindingErrors(
   context: ReferenceContext,
   componentName: string,
@@ -242,7 +294,12 @@ function collectBindingErrors(
   });
 }
 
-/** 部品どうしの参照が輪になっているものを報告する。 */
+/**
+ * 部品どうしの参照が輪になっているものを報告する。
+ *
+ * @param components 検証する部品の一式
+ * @returns 輪に含まれる部品ごとの circular-ref エラーの並び
+ */
 export function collectCircularRefErrors(
   components: ComponentSet,
 ): readonly DesignDocumentValidationError[] {
@@ -253,7 +310,14 @@ export function collectCircularRefErrors(
   }));
 }
 
-/** 部品1件の props・子ノード・binding・参照のエラーを集める。 */
+/**
+ * 部品1件の props・子ノード・binding・参照のエラーを集める。
+ *
+ * @param context 部品とトークンの一式
+ * @param name エラーの位置に使う部品名
+ * @param component 検証する部品
+ * @returns 位置の付いたエラーの並び
+ */
 export function collectComponentErrors(
   context: ReferenceContext,
   name: string,

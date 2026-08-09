@@ -44,6 +44,10 @@ export type EditorState = Readonly<{
  * `selectedName` と同時に立っていてよい。左ペインのタブ（Layers / Tokens）が
  * どちらを右ペインに映すかを決めるので、2 つは「それぞれのタブの中の選択」であって
  * 矛盾しないため（UI 案 docs/Design Composer.html の tokens 状態）。
+ *
+ * @param document 選択先を引くドキュメント
+ * @param ref 選択されているトークンの種別と名前
+ * @returns そのトークンが残っていれば `some`、消えていれば `none`
  */
 function selectableToken(
   document: DesignDocument,
@@ -55,6 +59,10 @@ function selectableToken(
 /**
  * 選択できるのはキャンバスに描かれるもの、つまり artboard とその配下のノードに限る。
  * 部品定義（components）は名前空間こそ共有するが、キャンバス上の実体ではないため対象にしない。
+ *
+ * @param document 選択先を引くドキュメント
+ * @param name 選択されている名前
+ * @returns artboard か配下のノードとして残っていれば `some`、無ければ `none`
  */
 function selectableName(
   document: DesignDocument,
@@ -69,6 +77,9 @@ function selectableName(
 /**
  * 選択中のノード。
  * 選択できるものには artboard も含まれるが、artboard はノードではないので `none`。
+ *
+ * @param state 選択の出どころになるエディタの状態
+ * @returns 選択中のノード。未選択と、選択が artboard のときは `none`
  */
 function selectedNode(state: EditorState): Option<Node> {
   return Option.flatMap(state.selectedName, (name) =>
@@ -84,6 +95,10 @@ function selectedNode(state: EditorState): Option<Node> {
  * 「存在しないものが選択されている」状態をここ 1 箇所で潰す（docs/06-ui.md「選択」）。
  * クリップボードは引き継ぐ。切り離された複製であり、貼るときに必ず採番し直すので、
  * ドキュメントが差し替わっても貼れる状態が壊れないため。
+ *
+ * @param state 反映元のエディタの状態
+ * @param history 新しい現在地を持つ履歴
+ * @returns 履歴が差し替わり、消えた選択が外れたエディタの状態
  */
 function withHistory(state: EditorState, history: EditHistory): EditorState {
   return {
@@ -98,7 +113,13 @@ function withHistory(state: EditorState, history: EditHistory): EditorState {
   };
 }
 
-/** 編集の結果を履歴へ積んで現在地にする。 */
+/**
+ * 編集の結果を履歴へ積んで現在地にする。
+ *
+ * @param state 積む先のエディタの状態
+ * @param document 編集後のドキュメント
+ * @returns 履歴に 1 件積まれ、それを現在地にしたエディタの状態
+ */
 function withEdit(state: EditorState, document: DesignDocument): EditorState {
   return withHistory(state, EditHistory.record(state.history, document));
 }
@@ -110,6 +131,9 @@ function withEdit(state: EditorState, document: DesignDocument): EditorState {
  * 担当なので、ここで消せるのは配下のノードだけ。
  *
  * 公開しないのは、消費者が `removeNode` だけになったため（#112）。
+ *
+ * @param state 選択の出どころになるエディタの状態
+ * @returns 削除できるノードの名前。未選択と、選択が artboard のときは `none`
  */
 function removableName(state: EditorState): Option<string> {
   return Option.map(selectedNode(state), (node) => node.name);

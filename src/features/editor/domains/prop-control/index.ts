@@ -66,6 +66,10 @@ type EditableProp = Readonly<{
 /**
  * enum とトークン参照はどちらも選択式で、選択肢の出どころだけが違う
  * （`values` を読むか tokens 定義から引くか）ため 1 つの種類に畳む。
+ *
+ * @param definition 入力の形を決める prop の宣言
+ * @param tokens トークン参照の選択肢の出どころ
+ * @returns 選択式なら選択肢つきの `choice`、それ以外は `number` / `text`
  */
 function inputOf(
   definition: PropDefinition,
@@ -85,7 +89,12 @@ function inputOf(
     : { kind: "text" };
 }
 
-/** スキーマが宣言している prop。既定はスキーマの `default`。 */
+/**
+ * スキーマが宣言している prop。既定はスキーマの `default`。
+ *
+ * @param schema 読み出し元のスキーマ
+ * @returns 宣言順に並べた、編集できる prop の並び
+ */
 function declaredEditableProps(
   schema: PropDefinitionRecord,
 ): readonly EditableProp[] {
@@ -100,6 +109,10 @@ function declaredEditableProps(
  * 部品が公開している prop（docs/06-ui.md「インスタンス」）。
  * binding 先が設定している値を既定にし、無ければスキーマの `default` に落とす。
  * 宣言が解決できない prop（部品が壊れている）はコントロールを出さない。
+ *
+ * @param components 参照先の部品を引くための部品一式
+ * @param node 公開 prop を知りたいインスタンスのノード
+ * @returns 編集できる公開 prop の並び。参照先や宣言が解決できなければ空
  */
 function publicEditableProps(
   components: ComponentSet,
@@ -134,6 +147,10 @@ function publicEditableProps(
  * `enabledWhen` の判定に使う props。
  * 設定されていない prop も既定値では効いているため、既定を敷いた上で判定する
  * （`widthMode` を書いていない Box でも既定の `hug` として扱われ、`width` は出ない）。
+ *
+ * @param editables 既定値の出どころになる、編集できる prop の並び
+ * @param props 実際に設定されている props
+ * @returns 既定値の上に設定値を重ねた props
  */
 function effectiveProps(
   editables: readonly EditableProp[],
@@ -147,7 +164,14 @@ function effectiveProps(
   return { ...Object.fromEntries(defaults), ...props };
 }
 
-/** 1 つの prop の編集欄。今の値と、値域から決まる入力の形を持つ。 */
+/**
+ * 1 つの prop の編集欄。今の値と、値域から決まる入力の形を持つ。
+ *
+ * @param editable 編集欄にする prop
+ * @param props 今の値の出どころ（未設定なら `none`）
+ * @param tokens トークン参照の選択肢の出どころ
+ * @returns 入力の形・今の値・既定値を持つ 1 件の編集欄
+ */
 function controlOf(
   editable: EditableProp,
   props: Props,
@@ -165,6 +189,11 @@ function controlOf(
  * 条件を満たさない prop はコントロール自体を作らない
  * （docs/06-ui.md「`enabledWhen` により表示を出し分ける」）。
  * セクションの並びは `group` の初出順、セクション内は宣言順（docs/03「order フィールドは持たない」）。
+ *
+ * @param editables 編集できる prop の並び
+ * @param props 今の値と `enabledWhen` の判定に使う props
+ * @param tokens トークン参照の選択肢の出どころ
+ * @returns `group` ごとにまとめた編集欄の並び
  */
 function sectionsOf(
   editables: readonly EditableProp[],
@@ -186,7 +215,13 @@ function sectionsOf(
   }));
 }
 
-/** ノードが編集できる prop。参照ノードは公開 prop、プリミティブはスキーマから引く。 */
+/**
+ * ノードが編集できる prop。参照ノードは公開 prop、プリミティブはスキーマから引く。
+ *
+ * @param document 部品とトークンの出どころ
+ * @param node 編集欄を出したいノード
+ * @returns `group` ごとにまとめた編集欄の並び
+ */
 function nodeSections(
   document: DesignDocument,
   node: Node,

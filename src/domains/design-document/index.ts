@@ -59,7 +59,13 @@ export type DesignDocument = DesignDocumentV1;
  * ドキュメントに残るのは「複数の artboard のどれに対して行うか」という調停だけ。
  */
 
-/** 名前で指したノードを持つ artboard を、その位置とともに返す。 */
+/**
+ * 名前で指したノードを持つ artboard を、その位置とともに返す。
+ *
+ * @param document 探す対象のドキュメント
+ * @param name 探すノードの名前
+ * @returns そのノードを含む artboard の位置。どの artboard にも無ければ `none`
+ */
 function artboardIndexOfNode(
   document: DesignDocument,
   name: string,
@@ -73,6 +79,11 @@ function artboardIndexOfNode(
 /**
  * 名前で指した artboard を作り直したドキュメント。
  * その名前の artboard が無ければ `none`（呼び出し側がノードとして相手をする）。
+ *
+ * @param document 作り直す元のドキュメント
+ * @param name 作り直す artboard の名前
+ * @param update その artboard を作り直す手続き
+ * @returns 差し替え後のドキュメント。その名前の artboard が無ければ `none`
  */
 function updateArtboardNamed(
   document: DesignDocument,
@@ -90,7 +101,14 @@ function updateArtboardNamed(
   });
 }
 
-/** index 番目の artboard のツリーを差し替えたドキュメント。 */
+/**
+ * index 番目の artboard のツリーを差し替えたドキュメント。
+ *
+ * @param document 差し替える元のドキュメント
+ * @param index 差し替える artboard の位置
+ * @param tree 差し替え後のツリー
+ * @returns その artboard だけツリーが入れ替わったドキュメント
+ */
 function withArtboardTree(
   document: DesignDocument,
   index: number,
@@ -107,6 +125,11 @@ function withArtboardTree(
 /**
  * 名前で指したノードを含む並びを差し替える。
  * 対象がどの artboard に居るかを選ぶところだけがここの責務。
+ *
+ * @param document 差し替える元のドキュメント
+ * @param name 並びを差し替えたいノードの名前
+ * @param update そのノードを含む並びを差し替える手続き
+ * @returns 差し替え後のドキュメント。その名前のノードが無ければ `node-not-found`
  */
 function updateSiblingsOfNode(
   document: DesignDocument,
@@ -132,6 +155,12 @@ function updateSiblingsOfNode(
  * 名前で指した親の子の並びを差し替える。
  * 親は artboard 自身のこともあるため、artboard 名で当ててから
  * ノードの中を探す、の順で調停する。
+ *
+ * @param document 差し替える元のドキュメント
+ * @param parentName 子の並びを差し替えたい親の名前（artboard 名でもよい）
+ * @param update 子の並びを差し替える手続き
+ * @returns 差し替え後のドキュメント。その名前の親が無ければ `parent-not-found`、
+ *   手続き自身が失敗すればその失敗
  */
 function updateChildrenOfParent(
   document: DesignDocument,
@@ -173,7 +202,12 @@ function updateChildrenOfParent(
   );
 }
 
-/** ドキュメントに現れる名前の集まり。 */
+/**
+ * ドキュメントに現れる名前の集まり。
+ *
+ * @param document 名前を集める対象のドキュメント
+ * @returns 部品・artboard・配下のノードの名前を集めた名前空間
+ */
 function nameSpaceOf(document: DesignDocument): NameSpace {
   return NameSpace.create(
     NameSpace.collectNames(document.components, document.artboards),

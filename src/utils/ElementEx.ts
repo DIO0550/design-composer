@@ -1,4 +1,9 @@
-/** 要素自身から根へ向かう並び。 */
+/**
+ * 要素自身から根へ向かう並び。
+ *
+ * @param element 起点の要素
+ * @returns 先頭が `element`、末尾が根の要素になる並び
+ */
 function selfAndAncestors(element: Element): readonly Element[] {
   const parent = element.parentElement;
   return parent === null ? [element] : [element, ...selfAndAncestors(parent)];

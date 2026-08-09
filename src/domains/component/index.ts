@@ -102,7 +102,14 @@ export const ComponentAsset = {
   },
 } as const;
 
-/** 名前の一致する 1 ノードだけを差し替えた木を返す。見つからなければそのまま。 */
+/**
+ * 名前の一致する 1 ノードだけを差し替えた木を返す。見つからなければそのまま。
+ *
+ * @param nodes 走査する木の根の並び
+ * @param name 差し替える対象のノード名
+ * @param update 見つかったノードを差し替える手続き
+ * @returns 対象だけが差し替わった新しい木。見つからなければ元と同じ内容
+ */
 function updateNodeByName(
   nodes: readonly Node[],
   name: string,
@@ -122,7 +129,13 @@ function updateNodeByName(
 
 type ResolvedOverride = readonly [PublicPropBinding, PropValue];
 
-/** 上書きを binding と値の対に読み替える。公開されていない prop の上書きは捨てる。 */
+/**
+ * 上書きを binding と値の対に読み替える。公開されていない prop の上書きは捨てる。
+ *
+ * @param publicProps 参照先の部品が公開している prop の宣言
+ * @param overrides インスタンスが設定している上書き
+ * @returns 公開されている prop の分だけの、binding と値の対の並び
+ */
 function resolveOverrides(
   publicProps: PublicProps,
   overrides: Props,
@@ -301,13 +314,23 @@ export const Component = {
  * 名前で引いた部品が直接持っている参照先。
  * 定義の無い名前（dangling）を辿ることがあるので、ここは不在がありうる
  * （不正な参照は検証エラーとして別に出る / docs/03「不正ファイル時の挙動」）。
+ *
+ * @param components 引き先の部品一式
+ * @param name 参照先を知りたい部品名
+ * @returns その部品が直接参照している部品名の並び。定義が無ければ空
  */
 function directRefs(components: ComponentSet, name: string): readonly string[] {
   const component = components[name];
   return component === undefined ? [] : Component.collectRefs(component);
 }
 
-/** その部品から参照をたどって到達できる部品名すべて（循環参照の判定に使う）。 */
+/**
+ * その部品から参照をたどって到達できる部品名すべて（循環参照の判定に使う）。
+ *
+ * @param components 引き先の部品一式
+ * @param start たどり始める部品名
+ * @returns 到達できる部品名の集合（`start` 自身は輪になっているときだけ含む）
+ */
 function reachableRefs(
   components: ComponentSet,
   start: string,
@@ -324,7 +347,13 @@ function reachableRefs(
   return reached;
 }
 
-/** プリミティブノードが持つ prop の定義と、そのノードに設定されている値。 */
+/**
+ * プリミティブノードが持つ prop の定義と、そのノードに設定されている値。
+ *
+ * @param node 引き先のプリミティブノード
+ * @param prop 知りたい prop 名
+ * @returns 宣言と設定値の対。型が未知、またはスキーマに無い prop なら `none`
+ */
 function targetInPrimitive(
   node: PrimitiveNode,
   prop: string,
@@ -346,6 +375,12 @@ function targetInPrimitive(
 /**
  * binding 先が参照ノードのとき、相手の部品の公開 prop としてたどり直す。
  * 途中の参照ノードが値を上書きしていれば、そちらが既定として見える。
+ *
+ * @param components 引き先の部品一式
+ * @param node binding 先になっている参照ノード
+ * @param prop 知りたい prop 名
+ * @param remainingHops あと何段たどれるか
+ * @returns 宣言と設定値の対。たどり切れなければ `none`
  */
 function targetThroughRef(
   components: ComponentSet,
@@ -367,6 +402,12 @@ function targetThroughRef(
 /**
  * 公開 prop の繋ぎ先を、入れ子の部品を越えてたどる。
  * `remainingHops` が尽きたら `none`。循環参照でも止まらなくなるのを防ぐため。
+ *
+ * @param components 引き先の部品一式
+ * @param ref たどり始める部品名と公開 prop 名
+ * @param remainingHops あと何段たどれるか
+ * @returns 宣言と設定値の対。部品・binding・指し先が無い場合と、
+ *   段数が尽きた場合は `none`
  */
 function publicPropTargetWithin(
   components: ComponentSet,
