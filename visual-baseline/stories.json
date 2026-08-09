@@ -150,19 +150,14 @@
     "name": "Tokens を見ている"
   },
   {
-    "id": "features-editor-nodeedittoolbar--artboard-selected",
-    "title": "features/editor/NodeEditToolbar",
-    "name": "artboard を選んでいる"
+    "id": "features-editor-nodeinserttoolbar--insert-enabled",
+    "title": "features/editor/NodeInsertToolbar",
+    "name": "挿せる位置がある"
   },
   {
-    "id": "features-editor-nodeedittoolbar--no-selection",
-    "title": "features/editor/NodeEditToolbar",
+    "id": "features-editor-nodeinserttoolbar--no-selection",
+    "title": "features/editor/NodeInsertToolbar",
     "name": "何も選んでいない"
-  },
-  {
-    "id": "features-editor-nodeedittoolbar--node-selected",
-    "title": "features/editor/NodeEditToolbar",
-    "name": "子を持てるノードを選んでいる"
   },
   {
     "id": "features-editor-openeddocumenteditor--default",
