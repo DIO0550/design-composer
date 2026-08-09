@@ -1,11 +1,11 @@
 {
-  "reportVersion": "2351b81c25f84022f64d73ccf23bec2bbce59f58",
+  "reportVersion": "1011208585ef509c4d0d3d67c776842a188231e0",
   "maxDiffRatio": 0.002,
-  "changed": 2,
+  "changed": 0,
   "new": 2,
   "deleted": 0,
-  "passed": 49,
-  "failed": 2,
+  "passed": 51,
+  "failed": 0,
   "results": [
     {
       "story": "features-editor-artboardcanvas--default",
@@ -415,26 +415,26 @@
       "id": "features-editor-nodeinserttoolbar--insert-enabled",
       "title": "features/editor/NodeInsertToolbar",
       "name": "挿せる位置がある",
-      "status": "changed",
-      "reason": "pixel-diff",
-      "diffPixels": 4011,
-      "diffRatio": 0.0044,
+      "status": "passed",
+      "reason": "match",
+      "diffPixels": 0,
+      "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": true
+      "hasDiff": false
     },
     {
       "story": "features-editor-nodeinserttoolbar--no-selection",
       "id": "features-editor-nodeinserttoolbar--no-selection",
       "title": "features/editor/NodeInsertToolbar",
       "name": "何も選んでいない",
-      "status": "changed",
-      "reason": "pixel-diff",
-      "diffPixels": 3959,
-      "diffRatio": 0.0043,
+      "status": "passed",
+      "reason": "match",
+      "diffPixels": 0,
+      "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": true
+      "hasDiff": false
     },
     {
       "story": "features-editor-openeddocumenteditor--default",
