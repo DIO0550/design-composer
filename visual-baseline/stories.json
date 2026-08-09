@@ -70,6 +70,26 @@
     "name": "選択中のインスタンスの元になっている部品がある"
   },
   {
+    "id": "features-editor-createcomponent--artboard-selected",
+    "title": "features/editor/CreateComponent",
+    "name": "artboard を選んでいる"
+  },
+  {
+    "id": "features-editor-createcomponent--instance-selected",
+    "title": "features/editor/CreateComponent",
+    "name": "インスタンスを選んでいる"
+  },
+  {
+    "id": "features-editor-createcomponent--ready",
+    "title": "features/editor/CreateComponent",
+    "name": "ノードを選んでいる"
+  },
+  {
+    "id": "features-editor-createcomponent--unselected",
+    "title": "features/editor/CreateComponent",
+    "name": "何も選んでいない"
+  },
+  {
     "id": "features-editor-documenterrorlist--broken-json",
     "title": "features/editor/DocumentErrorList",
     "name": "JSON が壊れている"
