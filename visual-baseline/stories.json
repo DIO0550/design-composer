@@ -65,6 +65,11 @@
     "name": "挿せる位置が無い"
   },
   {
+    "id": "features-editor-componentlist--source-of-selection",
+    "title": "features/editor/ComponentList",
+    "name": "選択中のインスタンスの元になっている部品がある"
+  },
+  {
     "id": "features-editor-documenterrorlist--broken-json",
     "title": "features/editor/DocumentErrorList",
     "name": "JSON が壊れている"
