@@ -72,6 +72,25 @@ EditorState.select(state, "settings-title");
 expect(currentName(state)).toBe("settings");
 ```
 
+**「空になる」を確かめるテストには、同じ入力の中に集まる側を1件置く。** 何も集まらない入力で「空」を確かめても、実装が何をしても通る。**対照を1件置き、期待値を「その1件だけの並び」にする**と、集める側を壊しても集めすぎる側を壊しても落ちる。
+
+```typescript
+// NG: gray-900 を指すものが 1 つも無いので、常に空を返す実装でも通る
+const document = setupDocument({ title: { color: "gray-500" } });
+expect(collect(document, GRAY_900)).toEqual([]);
+
+// OK: 同じドキュメントに gray-900 を指すノードを 1 件置く
+const document = setupDocument({
+  plain: {},                      // color 未設定（既定で gray-900 に解決される）
+  title: { color: "gray-900" },   // 対照
+});
+expect(collect(document, GRAY_900).map(toText)).toEqual(["title.color"]);
+```
+
+**「出さない」を確かめるときは、入力から自明にならない側を見る。** 0 件のときに行が無いのは入力から決まるので、行の数を見ても実装を守れない。守りたいのが「0 件なら枠を出さない」なら、枠そのものを見る（`queryAllByRole("listitem")` が空 → `queryByRole("list")` が `null`）。
+
+**落ちるか迷ったら、その1件だけ実装を壊して走らせる。** 全体のミューテーションテストは重いが、疑わしい assert 1 つのために分岐を消して 1 ファイル回すだけなら数秒で済む。頭で判断せず確かめる。
+
 **2. 1つの assert が複数の仕様を固定していないか。** 表示全体を文字列として比べると、テスト名が指していない仕様まで巻き込む。関係のない変更で落ちるため、リファクタリング耐性が下がる。
 
 | NG | OK |
