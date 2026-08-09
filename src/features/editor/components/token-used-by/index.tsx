@@ -38,6 +38,7 @@ function glyphKindOf(referrer: TokenReferrer): SelectionKind {
   }
 }
 
+/** そのトークンを参照している箇所 1 件の行。 */
 function UsedByRow({
   referrer,
 }: Readonly<{ referrer: TokenReferrer }>): ReactElement {

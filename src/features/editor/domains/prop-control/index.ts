@@ -147,6 +147,7 @@ function effectiveProps(
   return { ...Object.fromEntries(defaults), ...props };
 }
 
+/** 1 つの prop の編集欄。今の値と、値域から決まる入力の形を持つ。 */
 function controlOf(
   editable: EditableProp,
   props: Props,

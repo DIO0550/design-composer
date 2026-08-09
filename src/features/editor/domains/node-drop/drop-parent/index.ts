@@ -39,6 +39,7 @@ function dropParentOfArtboard(artboard: Artboard): DropParent {
   };
 }
 
+/** その名前が指す artboard / ノードを、子を受け入れる親として読む。 */
 function dropParentOf(
   document: DesignDocument,
   name: string,

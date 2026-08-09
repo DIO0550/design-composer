@@ -21,6 +21,7 @@ export type DocumentErrorLocation =
   | Readonly<{ kind: "node"; nodeName: string; prop?: string }>
   | Readonly<{ kind: "whole-document" }>;
 
+/** 画面に出すエラーの種別。テキストの解釈由来とスキーマ検証由来の両方を含む。 */
 export type DocumentErrorKind =
   | DocumentJsonErrorKind
   | DesignDocumentValidationErrorKind;

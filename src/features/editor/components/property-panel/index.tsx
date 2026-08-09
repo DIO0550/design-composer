@@ -32,6 +32,7 @@ type FieldBinding = Readonly<{
   control: PropControl;
 }>;
 
+/** 値域が列挙で決まっている prop の入力欄。 */
 function ChoiceInput({
   field,
   options,
@@ -72,6 +73,7 @@ function ChoiceInput({
   );
 }
 
+/** 値域が数値・文字列で決まっている prop の入力欄。 */
 function LiteralInput({
   field,
   inputType,
@@ -96,6 +98,7 @@ function LiteralInput({
   );
 }
 
+/** prop 1 件の行。入力の形は値域から決まる。 */
 function PropField({
   field,
   onEdit,
@@ -133,6 +136,7 @@ function PropRow({
   );
 }
 
+/** 見出しでまとめた prop の並び（Layout / Size / Appearance）。 */
 function GroupSection({
   section,
   onEdit,

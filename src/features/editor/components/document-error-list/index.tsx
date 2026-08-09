@@ -17,6 +17,7 @@ export const DOCUMENT_ERROR_ORIGINS = {
   document: "document",
 } as const;
 
+/** エラーの由来。 */
 export type DocumentErrorOrigin = ValueOf<typeof DOCUMENT_ERROR_ORIGINS>;
 
 /** エラーが指す場所の表示。位置の持ち方が由来ごとに違うので、ここで読める形にする。 */

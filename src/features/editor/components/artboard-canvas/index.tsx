@@ -75,6 +75,7 @@ function nameSelector(name: string): string {
   return `[${ELEMENT_NAME_ATTRIBUTE}="${Css.escapeQuotedString(name)}"]`;
 }
 
+/** 1 ノード分の宣言を、名前で引く選択子の規則としてキャンバスへ差し込む。 */
 function NameStyleRule({
   name,
   declarations,
@@ -116,6 +117,7 @@ const HANDLE_FACES = {
 /** ハンドルの色。選択枠と同じ青（Tailwind の `blue-500`）を、中身が透けるよう薄くして使う。 */
 const HANDLE_COLOR = "rgb(59 130 246 / 0.6)";
 
+/** リサイズハンドル 1 本を描く規則。掴める帯と見た目の帯を倍率にかかわらず一致させる。 */
 function handleRule(name: string, handle: AxisLength, scale: number): string {
   const face = HANDLE_FACES[handle.axis];
   /*
@@ -231,6 +233,7 @@ function DropMarker({ bounds }: Readonly<{ bounds: CanvasBounds }>) {
   );
 }
 
+/** 倍率の操作（拡大・縮小・等倍に戻す）。 */
 function CanvasToolbar({
   view,
   onZoomIn,

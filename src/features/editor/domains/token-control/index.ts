@@ -87,6 +87,7 @@ export type TokenControlField = Readonly<{
   target: TokenFieldTarget;
 }>;
 
+/** 1 つのトークンを編集する画面の中身。並べる欄は種別で決まる。 */
 export type TokenControl = Readonly<{
   token: Token;
   fields: readonly TokenControlField[];
@@ -119,6 +120,7 @@ const TYPOGRAPHY_LABELS = {
   fontFamily: "フォント",
 } as const satisfies Readonly<Record<TypographyField, string>>;
 
+/** 一覧の行に出す見本。種別によって色見本・大きさ・書体と形が変わる。 */
 function previewOf(token: Token): TokenPreview {
   switch (token.kind) {
     case "colors":
@@ -184,6 +186,7 @@ export const TokenSection = {
   },
 } as const;
 
+/** 影の 1 フィールドを、対応する入力欄の形にする。 */
 function shadowInput(
   shadow: ShadowToken,
   field: ShadowField,
@@ -202,6 +205,7 @@ function shadowInput(
   }
 }
 
+/** 書体の 1 フィールドを、対応する入力欄の形にする。 */
 function typographyInput(
   token: TypographyToken,
   field: TypographyField,
@@ -273,6 +277,7 @@ function numberFromRaw(raw: string): Option<number> {
     : Option.none;
 }
 
+/** 影の入力欄へ打たれた文字列を、書き換え後のトークンの値にする。読めなければ `none`。 */
 function shadowValueFrom(
   target: Extract<TokenFieldTarget, { kind: "shadows" }>,
   raw: string,
@@ -301,6 +306,7 @@ function shadowValueFrom(
   }));
 }
 
+/** 書体の入力欄へ打たれた文字列を、書き換え後のトークンの値にする。読めなければ `none`。 */
 function typographyValueFrom(
   target: Extract<TokenFieldTarget, { kind: "typography" }>,
   raw: string,
@@ -325,6 +331,7 @@ function typographyValueFrom(
   }));
 }
 
+/** 選択中のトークンから編集欄を組み立て、打たれた値をトークンの値へ読み替える。 */
 export const TokenControl = {
   /**
    * 選択中のトークンの編集欄（docs/06-ui.md「編集操作の一覧」の tokens 編集）。

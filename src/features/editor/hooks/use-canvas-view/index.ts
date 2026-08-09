@@ -88,6 +88,7 @@ export type PanHandlers = Readonly<{
   onPointerUp: (event: ReactPointerEvent<HTMLElement>) => void;
 }>;
 
+/** キャンバスの表示（倍率・位置）と、それを動かすハンドラ。 */
 export type CanvasViewControl = Readonly<{
   view: CanvasView;
   /** ホイールの登録先。ズーム / パンの対象になる土台の要素へ渡す。 */

@@ -61,10 +61,12 @@ const MAX_SCALE = 4;
 /** 1 操作あたりの拡大率。倍率は等比で動かす（等差だと拡大側ほど変化が鈍る）。 */
 const ZOOM_FACTOR = 1.2;
 
+/** 倍率を上下限の内側へ収める。 */
 function clampScale(scale: number): number {
   return Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale));
 }
 
+/** 今の倍率へ係数を掛けた表示。上下限は超えない。 */
 function scaleBy(view: CanvasView, factor: number): CanvasView {
   return { ...view, scale: clampScale(view.scale * factor) };
 }

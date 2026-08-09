@@ -89,6 +89,7 @@ export type NodeDragHandlers = Readonly<{
   onPointerLeave: () => void;
 }>;
 
+/** ドラッグ中の状態と、キャンバスの要素へ渡すハンドラ。 */
 export type NodeDragControl = Readonly<{
   drag: NodeDrag;
   grabHandlers: NodeGrabHandlers;

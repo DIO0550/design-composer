@@ -14,13 +14,8 @@
   （型とコンパニオンオブジェクトが doc を共有する、このリポジトリの形を弾かないため）
 
 使い方:
-    missing-doc-comments.py <検査するファイル>            # そのファイルの分だけ
-    missing-doc-comments.py --lines <行番号,...> <ファイル>  # その行に載る宣言だけ
-    missing-doc-comments.py --all [ルート]                 # 全体（既定のルートは src）
-
-`--lines` は push 前の検査で使う。ブランチで**追加した行**の番号を渡すことで、
-「今回書いたものに doc があるか」だけを見る（触っていない既存の抜けで push を
-止めない / `.claude/hooks/README.md`「例外(エスケープハッチ)」）。
+    missing-doc-comments.py <検査するファイル>   # そのファイルの分だけ
+    missing-doc-comments.py --all [ルート]        # 全体（既定のルートは src）
 
 見つかれば標準出力へ報告して終了コード 1、無ければ何も出さず 0。
 """
@@ -91,17 +86,6 @@ def report(path: Path, found: list[tuple[int, str]]) -> str:
     return body
 
 
-def check_lines(path: Path, lines: set[int]) -> int:
-    """指定した行に載る宣言だけを見る。push 前の検査で、今回書いた分に絞るために使う。"""
-    if not is_target(path):
-        return 0
-    found = [(line_no, name) for line_no, name in undocumented(path) if line_no in lines]
-    if not found:
-        return 0
-    print(report(path, found))
-    return 1
-
-
 def check_one(path: Path) -> int:
     if not is_target(path):
         return 0
@@ -137,12 +121,6 @@ def main() -> int:
         return 2
     if args[0] == "--all":
         return check_all(Path(args[1]) if len(args) > 1 else Path("src"))
-    if args[0] == "--lines":
-        if len(args) < 3:
-            print(__doc__)
-            return 2
-        numbers = {int(n) for n in args[1].split(",") if n.strip()}
-        return check_lines(Path(args[2]), numbers)
     return check_one(Path(args[0]))
 
 

@@ -12,6 +12,7 @@ import { TauriIpc } from "@/libs/tauri-ipc";
 const documentIpc = DocumentIpc.create(TauriIpc.create());
 const documentDialog = DocumentDialog.create(TauriDialog.create());
 
+/** アプリの入口。Tauri の口を包んだ実体を編集画面へ渡すだけに徹する。 */
 export function App() {
   return <EditorScreen ipc={documentIpc} dialog={documentDialog} />;
 }

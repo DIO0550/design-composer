@@ -76,6 +76,7 @@ function PreviewSlot({
   }
 }
 
+/** 一覧の 1 行。見本・名前・値を並べ、押すと編集対象になる。 */
 function TokenRowItem({
   row,
   state,
@@ -103,6 +104,7 @@ function TokenRowItem({
   );
 }
 
+/** 種別ごとの見出し。開閉と、その種別への追加を担う。 */
 function SectionHeading({
   section,
   isOpen,

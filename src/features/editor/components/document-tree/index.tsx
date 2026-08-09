@@ -113,6 +113,7 @@ function moveTargetIndex(
     : Option.none;
 }
 
+/** 行の右端に出る補助情報（大きさ・文言・インスタンスの印）。 */
 function NoteText({ note }: Readonly<{ note: TreeItemNote }>) {
   /*
    * 補助情報は行の右端に出る（UI 案では名前と離れた位置に出る）。
@@ -177,6 +178,7 @@ function SelectableName({
   );
 }
 
+/** 同じ親の中で 1 つ分だけ順序を動かすボタン。 */
 function ReorderButton({
   label,
   symbol,

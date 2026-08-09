@@ -30,6 +30,7 @@ function textEditReducer(
   }
 }
 
+/** キャンバス上での文言の書き換え中の状態と、そのハンドラ。 */
 export type TextEditControl = Readonly<{
   /** 編集中なら下書きと入力欄を重ねる位置。編集していなければ `none`。 */
   edit: Option<TextEdit>;

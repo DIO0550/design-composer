@@ -50,6 +50,7 @@ export type NodeResizeHandlers = Readonly<{
   onPointerLeave: () => void;
 }>;
 
+/** リサイズ中の状態と、ハンドルへ渡すハンドラ。 */
 export type NodeResizeControl = Readonly<{
   /** 押された位置がハンドルなら掴む。掴んだ（＝移動のドラッグに渡さない）なら `true`。 */
   grabHandle: (event: ReactPointerEvent<HTMLElement>) => boolean;

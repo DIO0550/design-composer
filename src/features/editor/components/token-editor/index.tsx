@@ -106,6 +106,7 @@ function DraftField({
   );
 }
 
+/** トークンの 1 フィールドの入力欄。形は値の種別で決まる。 */
 function ValueField({
   id,
   input,
