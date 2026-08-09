@@ -40,7 +40,7 @@ const meta = {
   decorators: [
     (Story) => (
       <div className="flex h-96 w-62 border border-gray-300">
-        <LeftPanePanel title="Assets">
+        <LeftPanePanel title="Assets" footer={Option.none}>
           <Story />
         </LeftPanePanel>
       </div>

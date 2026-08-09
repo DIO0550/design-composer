@@ -427,6 +427,42 @@ export const EditorState = {
   },
 
   /**
+   * 選択中のノードを部品として切り出し、元の位置をその部品のインスタンスにする
+   * （docs/06-ui.md「部品化・解除」/ UI 案 docs/Design Composer.html の `Create component`）。
+   *
+   * 切り出しと差し替えは `DesignDocument.createComponent` が持つ。ここは対象を選択から
+   * 決めて履歴へ積むだけ（`rules/coding.md`「features 層にドメイン知識を書かない」）。
+   *
+   * 対象を引数で受け取らないのは `detachInstance` と同じ理由で、部品化の導線が
+   * 「選択中のものを部品にする」しか無いため。部品名だけを受け取る。
+   *
+   * 公開 prop は宣言しない。宣言の追加は AI / JSON 編集の担当で、部品化時には
+   * ゼロで作る（docs/06-ui.md「部品化（Create Component）」）。これは
+   * `DesignDocument.createComponent` が `Component.fromNode` で作る形そのもの。
+   *
+   * @param state 部品化元のエディタの状態
+   * @param componentName 新しく作る部品に付ける名前
+   * @returns 部品化後のエディタの状態。何も選んでいないとき、artboard や
+   *   インスタンスを選んでいるとき、名前が識別子の規則を満たさない・既に
+   *   使われているときは `none`
+   */
+  createComponent(
+    state: EditorState,
+    componentName: string,
+  ): Option<EditorState> {
+    return Option.flatMap(state.selectedName, (name) => {
+      const created = DesignDocument.createComponent(
+        EditorState.document(state),
+        name,
+        componentName,
+      );
+      return created.ok
+        ? Option.some(withEdit(state, created.value))
+        : Option.none;
+    });
+  },
+
+  /**
    * 選択中の artboard / ノードの prop を書き換える（docs/06-ui.md「編集操作の一覧」）。
    *
    * 対象を引数で受け取らず選択から決めるのは、props 編集の導線がプロパティパネル、

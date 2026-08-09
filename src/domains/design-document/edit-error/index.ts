@@ -18,7 +18,8 @@ export type DesignDocumentEditError =
   | Readonly<{ kind: "artboard-not-found"; name: string }>
   | Readonly<{ kind: "move-into-descendant"; name: string; parentName: string }>
   | Readonly<{ kind: "ref-node-not-supported"; name: string }>
-  | Readonly<{ kind: "duplicate-name"; name: string }>;
+  | Readonly<{ kind: "duplicate-name"; name: string }>
+  | Readonly<{ kind: "invalid-name"; name: string }>;
 
 export const DesignDocumentEditError = {
   /**
@@ -41,6 +42,8 @@ export const DesignDocumentEditError = {
         return `cannot create a component from ref node "${error.name}"`;
       case "duplicate-name":
         return `name "${error.name}" is already used`;
+      case "invalid-name":
+        return `name "${error.name}" is not a valid identifier`;
       case "index-out-of-range":
         return `index ${error.index} is out of bounds for length ${error.length}`;
       case "invalid-token-name":
