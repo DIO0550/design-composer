@@ -16,8 +16,8 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `pre-push-lint.sh`       | `PreToolUse` (Bash)       | **push 前の全体 lint**。oxlint / Biome のエラーがあれば push をブロック                   |
 | `pre-push-test-rules.sh` | `PreToolUse` (Bash)       | **push 前の全体テスト規約検査**。全 `*.test.ts(x)` を検査し違反があれば push をブロック   |
 | `check-test-helper-duplication.sh` | `PostToolUse` (Edit/Write) | **テストヘルパーの重複検出**(rules/testing.md「テスト用ヘルパーの置き場所」)。同じ `__tests__/` に本体が一字一句同じヘルパーが 2 つ以上あれば知らせる |
-| `check-doc-comments.sh`  | `PostToolUse` (Edit/Write) | **doc コメントの検証**(rules/coding.md「コメントは doc と Why / Why not に絞る」)。`src/` の実装ファイルで、doc の無いファイル直下の宣言があれば知らせる |
-| `pre-push-doc-comments.sh` | `PreToolUse` (Bash)     | **push 前の doc コメント検査**。`src/` に doc の無い宣言が 1 つでもあれば push をブロック |
+| `check-doc-comments.sh`  | `PostToolUse` (Edit/Write) | **doc コメントの検証**(rules/coding.md「コメントは doc と Why / Why not に絞る」)。doc の無い宣言と、`@param` / `@returns` / `@throws` が欠けた doc を知らせる |
+| `pre-push-doc-comments.sh` | `PreToolUse` (Bash)     | **push 前の doc コメント検査**。`src/` に doc の無い宣言が 1 つでもあれば push をブロック(項目の検査は既存 190 件を埋めるまで保留) |
 | `post-merge-review.sh`   | `PostToolUse` (Bash/MCP)  | **マージ後の振り返りの提示**。PR のマージを検知し、Issue への追記と評価の記録を促す       |
 
 ## 移植元から見送ったもの
@@ -65,6 +65,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
   - ファイル単位で無効化: `// @doc-comments-ok`
 - `pre-push-doc-comments.sh` は **push をブロックする**。見るのは `src/` 全体
   - 導入時点では既存の抜けが 149 件あったため「このブランチで追加した行」だけに絞っていたが、#159 でその 149 件を埋めて 0 件にしたので絞る理由が無くなった(触っていない分で止まることがなく、「止まる理由が自分の変更ではない」状態にならない)
+  - **見るのは doc の有無だけ**(`--missing-only`)。項目(`@param` / `@returns` / `@throws`)は既存の doc 190 件が満たしておらず、今止めると触っていない分で毎回止まる。埋め終わったら引数を外して項目まで止める
   - ファイル単位で無効化: `// @doc-comments-ok`(PostToolUse 版と共通)
 - `pre-push-typecheck.sh` / `pre-push-lint.sh` は node_modules 未インストール時(ツールが実行不能な場合)は黙ってスキップする
 - `post-merge-review.sh` はマージを**ブロックしない**(`additionalContext` を返すだけ)。マージは人の判断で行われるので、記録が無いことを理由に止めても記録の質は上がらないため

@@ -14,6 +14,10 @@
 # （触っていない分で止まることがないため、README.md「例外(エスケープハッチ)」が
 # 記録している「止まる理由が自分の変更でない」状態にならない）。
 #
+# 見るのは **doc の有無だけ**（`--missing-only`）。項目（`@param` / `@returns` / `@throws`）は
+# 既存の doc 190 件が満たしておらず、今止めると触っていない分で毎回止まる。
+# 埋め終わったらこの引数を外して項目まで止める。
+#
 # 無効化: 対象ファイルに `// @doc-comments-ok` を記載する
 set -euo pipefail
 
@@ -37,7 +41,7 @@ violations=""
 while IFS= read -r file; do
   [ -f "$file" ] || continue
   grep -q '@doc-comments-ok' "$file" && continue
-  result="$(python3 "$detector" "$file" || true)"
+  result="$(python3 "$detector" --missing-only "$file" || true)"
   [ -n "$result" ] || continue
   violations="${violations}${result}
 "
