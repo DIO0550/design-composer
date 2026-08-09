@@ -45,6 +45,9 @@ type TreeItemMarks = Readonly<{
  *
  * 既定値の解決を挟まないのは、`content` の既定が空文字で、解決しても
  * 出るものが変わらないため。
+ *
+ * @param node 文言を読む対象の Text ノード
+ * @returns 文言を持つなら `some`。未設定と空文字なら `none`
  */
 function contentNote(node: PrimitiveNode): Option<TreeItemNote> {
   const content = node.props?.[CONTENT_PROP];
@@ -57,6 +60,9 @@ function contentNote(node: PrimitiveNode): Option<TreeItemNote> {
 /**
  * 名前の右に出す補助情報。文言を持つのは Text だけで、Box には補助情報が無い。
  * 参照ノードはインスタンスであること自体を出す。
+ *
+ * @param node 補助情報を出したいノード
+ * @returns 参照ノードはインスタンスの印、Text は文言。それ以外は `none`
  */
 function noteOf(node: Node): Option<TreeItemNote> {
   if (Node.isRef(node)) {
@@ -71,6 +77,9 @@ function noteOf(node: Node): Option<TreeItemNote> {
  * 種別は `Selection` から引く。「そのノードが何であるか」は行が選ばれているかに
  * よらない性質で、インスペクタの見出しと同じ判定になるため（同じ分岐を 2 箇所に
  * 置かない / rules/coding.md「同じ処理が2箇所に現れたら共通化する」）。
+ *
+ * @param node 行に出したいノード
+ * @returns 名前の左に出す種別の印と、右に出す補助情報
  */
 function nodeMarks(node: Node): TreeItemMarks {
   return { glyph: Selection.fromNode(node).kind, note: noteOf(node) };
@@ -102,7 +111,13 @@ type SiblingPlacement = Readonly<{
   siblings: readonly Node[];
 }>;
 
-/** 並びの中に収まる移動先だけを返す（端では隣がいないので `none`）。 */
+/**
+ * 並びの中に収まる移動先だけを返す（端では隣がいないので `none`）。
+ *
+ * @param placement 行の位置と、その兄弟の並び
+ * @param step 動かす向きと段数（上へ 1 つなら -1）
+ * @returns 並びに収まる移動先の位置。端で収まらなければ `none`
+ */
 function moveTargetIndex(
   placement: SiblingPlacement,
   step: number,

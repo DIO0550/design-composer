@@ -33,7 +33,12 @@ export type NodeResize =
   | Readonly<{ kind: "resizing"; handle: AxisLength; origin: CanvasOffset }>
   | Readonly<{ kind: "resized" }>;
 
-/** artboard は 2 軸とも `fixed` 固定なので、常にどちらの辺も掴める（docs/03）。 */
+/**
+ * artboard は 2 軸とも `fixed` 固定なので、常にどちらの辺も掴める（docs/03）。
+ *
+ * @param artboard ハンドルを出したい artboard
+ * @returns 幅と高さの 2 件のハンドル
+ */
 function artboardHandles(artboard: Artboard): readonly AxisLength[] {
   return [
     AxisLength.create("width", artboard.width),
@@ -46,6 +51,9 @@ function artboardHandles(artboard: Artboard): readonly AxisLength[] {
  *
  * モードが `fixed` でも長さが未設定なら出さない。掴んだ時点の長さが無いと
  * ドラッグの基準が決まらないため（長さはプロパティパネルから入れる）。
+ *
+ * @param props ハンドルの出し分けに使う props
+ * @returns `fixed` で長さも設定されている軸のハンドルだけの並び
  */
 function propsHandles(props: Props): readonly AxisLength[] {
   return Object.values(AXES).flatMap((axis) => {
@@ -60,6 +68,9 @@ function propsHandles(props: Props): readonly AxisLength[] {
  * 参照ノードにはハンドルを出さない。インスタンスが上書きできるのは publicProps に
  * 宣言のある prop だけで、宣言の追加は AI / JSON 編集の担当（docs/06-ui.md「部品化」）。
  * 出すと「掴めるのに何も起きない」操作になる。
+ *
+ * @param node ハンドルを出したいノード
+ * @returns 掴める軸のハンドルの並び。参照ノードなら空
  */
 function nodeHandles(node: Node): readonly AxisLength[] {
   return Node.isRef(node) ? [] : propsHandles(node.props ?? {});

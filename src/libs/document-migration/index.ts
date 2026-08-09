@@ -62,6 +62,9 @@ const MIGRATION_STEPS: MigrationSteps = {};
  * JSON のデータモデルから formatVersion を読む。
  * デコード前なので、フィールドの欠落・型違いはここでは報告せず「読めない」として扱う
  * (形の検証は `DesignDocument.fromJson` の担当。同じ不備を別の語彙で二重に報告しない)。
+ *
+ * @param document 読み出し元の JSON のデータモデル
+ * @returns 読めた版。フィールドが無い・文字列でない・形式が違うなら `none`
  */
 function readFormatVersion(document: JsonRecord): Option<FormatVersion> {
   const raw = document.formatVersion;
@@ -71,7 +74,13 @@ function readFormatVersion(document: JsonRecord): Option<FormatVersion> {
   return FormatVersion.parse(raw);
 }
 
-/** 変換後の形が名乗る版を差し替える。版のスタンプはステップではなくパイプラインが行う。 */
+/**
+ * 変換後の形が名乗る版を差し替える。版のスタンプはステップではなくパイプラインが行う。
+ *
+ * @param document 差し替える元の JSON のデータモデル
+ * @param version 名乗らせる版
+ * @returns formatVersion だけが入れ替わった JSON のデータモデル
+ */
 function withFormatVersion(
   document: JsonRecord,
   version: FormatVersion,
@@ -79,7 +88,12 @@ function withFormatVersion(
   return { ...document, formatVersion: FormatVersion.format(version) };
 }
 
-/** 読み込んだ値をオブジェクトとして読む。配列と `null` は含めない。 */
+/**
+ * 読み込んだ値をオブジェクトとして読む。配列と `null` は含めない。
+ *
+ * @param value 読み込んだ値
+ * @returns オブジェクトとして読めれば `some`、配列・`null`・それ以外なら `none`
+ */
 function asRecord(value: unknown): Option<JsonRecord> {
   if (typeof value !== "object" || value === null || Array.isArray(value)) {
     return Option.none;
@@ -92,6 +106,12 @@ function asRecord(value: unknown): Option<JsonRecord> {
  *
  * 次に適用すべきステップは引数で持ち回さず、変換後のドキュメント自身が名乗る
  * formatVersion から読み直す(版のスタンプと適用位置が食い違わないため)。
+ *
+ * @param document 変換元の JSON のデータモデル
+ * @param appVersion アプリが扱える版（ここまで引き上げる）
+ * @param steps major ひとつ分の変換の一覧
+ * @returns 変換後の JSON のデータモデル。版が読めない場合とアプリの版以上の場合は
+ *   そのまま返す。途中の major に対応するステップが無ければ `missing-migration-step`
  */
 function migrateUpTo(
   document: JsonRecord,

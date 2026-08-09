@@ -18,7 +18,11 @@ const PREVIEW_WIDTH_PX = 20;
  */
 type OpenKinds = ReadonlySet<TokenKind>;
 
-/** 値の見本。値そのものは行の文字として出ているので、飾りとして読み上げから外す。 */
+/**
+ * 値の見本。値そのものは行の文字として出ているので、飾りとして読み上げから外す。
+ *
+ * @returns 種別に応じた見本（色見本 / 長さの帯 / 影 / 書体の見本）
+ */
 function PreviewSlot({
   preview,
 }: Readonly<{ preview: TokenPreview }>): ReactElement {
@@ -76,7 +80,11 @@ function PreviewSlot({
   }
 }
 
-/** 一覧の 1 行。見本・名前・値を並べ、押すと編集対象になる。 */
+/**
+ * 一覧の 1 行。見本・名前・値を並べ、押すと編集対象になる。
+ *
+ * @returns 見本・名前・値を並べたボタン
+ */
 function TokenRowItem({
   row,
   state,
@@ -104,7 +112,11 @@ function TokenRowItem({
   );
 }
 
-/** 種別ごとの見出し。開閉と、その種別への追加を担う。 */
+/**
+ * 種別ごとの見出し。開閉と、その種別への追加を担う。
+ *
+ * @returns 開閉のボタンと、その種別への追加ボタンを並べた見出し
+ */
 function SectionHeading({
   section,
   isOpen,
@@ -155,6 +167,8 @@ function SectionHeading({
  *
  * 出す中身は種別の走査だけで決まる（`TokenSection.forDocument`）ため、
  * ここには種別名で分岐するコードを置かない。
+ *
+ * @returns 種別ごとの見出しと、開いている種別の行を並べた一覧
  */
 export function TokenList({
   state,

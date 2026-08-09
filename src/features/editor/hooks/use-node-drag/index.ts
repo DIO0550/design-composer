@@ -23,7 +23,13 @@ type NodeDragAction =
   | Readonly<{ type: "cancel" }>
   | Readonly<{ type: "consume_click" }>;
 
-/** アクションの解釈だけを行い、状態の組み立ては NodeDrag に委ねる。 */
+/**
+ * アクションの解釈だけを行い、状態の組み立ては NodeDrag に委ねる。
+ *
+ * @param drag 今のドラッグの状態
+ * @param action 解釈するアクション
+ * @returns 遷移後のドラッグの状態
+ */
 function nodeDragReducer(drag: NodeDrag, action: NodeDragAction): NodeDrag {
   switch (action.type) {
     case "grab":
@@ -39,7 +45,12 @@ function nodeDragReducer(drag: NodeDrag, action: NodeDragAction): NodeDrag {
   }
 }
 
-/** 押された位置から外へ辿ったノード名（キャンバスは名前を属性として残している）。 */
+/**
+ * 押された位置から外へ辿ったノード名（キャンバスは名前を属性として残している）。
+ *
+ * @param target イベントが起きた要素
+ * @returns 内側から根へ向かう順のノード名の並び
+ */
 function namesToRoot(target: EventTarget): readonly string[] {
   return ElementEx.attributeValuesToRoot(target, ELEMENT_NAME_ATTRIBUTE);
 }
@@ -48,6 +59,9 @@ function namesToRoot(target: EventTarget): readonly string[] {
  * 親と、その直下に並ぶ子の矩形を実測する。
  * 子は名前を持つ直下の要素だけを拾う（コンパイル結果は子ノードを直下の `div` として
  * 並び順のまま出すので、DOM の順序がそのままドキュメント上の順序になる）。
+ *
+ * @param parent 実測する落とし先の親
+ * @returns 親と子の矩形を持つ落とし先の帯。親の要素が画面に無ければ `none`
  */
 function measureZone(parent: DropParent): Option<DropZone> {
   return Option.map(CanvasDom.elementOf(parent.name), (element) =>
@@ -61,7 +75,14 @@ function measureZone(parent: DropParent): Option<DropZone> {
   );
 }
 
-/** ポインタの下にある、掴んでいるノードを受け入れられる位置。 */
+/**
+ * ポインタの下にある、掴んでいるノードを受け入れられる位置。
+ *
+ * @param document 落とし先を決めるためのドキュメント
+ * @param heldName 掴んでいるノードの名前
+ * @param event 今のポインタの位置を持つイベント
+ * @returns 落とせる親と、その中での挿入位置。受け入れられる親が無ければ `none`
+ */
 function dropTargetAt(
   document: DesignDocument,
   heldName: string,
@@ -108,6 +129,9 @@ export type NodeDragControl = Readonly<{
  * ポインタキャプチャを使わないのは、捕捉すると以後のイベントの `target` が捕捉した要素に
  * 固定され、「今どのノードの上にいるか」を読めなくなるため。代わりに掴んだあとの
  * ポインタは artboard の並び全体で受け、そこから出たらドラッグを取り消す。
+ *
+ * @param params 落とし先を決める `document` と、移動が確定したときに呼ぶ `onMove`
+ * @returns 今のドラッグの状態と、キャンバスの要素へ渡すハンドラ
  */
 export function useNodeDrag(
   params: Readonly<{

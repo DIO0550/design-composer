@@ -18,7 +18,12 @@ export type DropParent = Readonly<{
   direction: CssDirection;
 }>;
 
-/** 子を持てるプリミティブは Box だけで、並ぶ向きはその `direction` prop で決まる（docs/03-schema.md）。 */
+/**
+ * 子を持てるプリミティブは Box だけで、並ぶ向きはその `direction` prop で決まる（docs/03-schema.md）。
+ *
+ * @param node 親として読みたいノード
+ * @returns 親の名前と子が並ぶ向き。子を持てないノードなら `none`
+ */
 function dropParentOfNode(node: Node): Option<DropParent> {
   if (!Node.isPrimitive(node) || !NodeTree.allowsChildren(node)) {
     return Option.none;
@@ -31,7 +36,12 @@ function dropParentOfNode(node: Node): Option<DropParent> {
   });
 }
 
-/** artboard は常に子を持てる。並ぶ向きは Box として解決した props が持つ。 */
+/**
+ * artboard は常に子を持てる。並ぶ向きは Box として解決した props が持つ。
+ *
+ * @param artboard 親として読みたい artboard
+ * @returns 親の名前と子が並ぶ向き
+ */
 function dropParentOfArtboard(artboard: Artboard): DropParent {
   return {
     name: artboard.name,
@@ -39,7 +49,13 @@ function dropParentOfArtboard(artboard: Artboard): DropParent {
   };
 }
 
-/** その名前が指す artboard / ノードを、子を受け入れる親として読む。 */
+/**
+ * その名前が指す artboard / ノードを、子を受け入れる親として読む。
+ *
+ * @param document 名前の引き先になるドキュメント
+ * @param name 親として読みたい artboard / ノードの名前
+ * @returns 親の名前と子が並ぶ向き。名前が無い場合と、子を持てないノードなら `none`
+ */
 function dropParentOf(
   document: DesignDocument,
   name: string,

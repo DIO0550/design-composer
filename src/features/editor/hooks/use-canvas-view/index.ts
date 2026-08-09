@@ -22,7 +22,13 @@ export type CanvasViewAction =
   | Readonly<{ type: "drag_move"; pointer: CanvasOffset }>
   | Readonly<{ type: "drag_end" }>;
 
-/** アクションの解釈だけを行い、倍率と位置の規則は CanvasView に委ねる。 */
+/**
+ * アクションの解釈だけを行い、倍率と位置の規則は CanvasView に委ねる。
+ *
+ * @param view 今の表示（倍率・位置・ドラッグ状態）
+ * @param action 解釈するアクション
+ * @returns 遷移後の表示
+ */
 function canvasViewReducer(
   view: CanvasView,
   action: CanvasViewAction,
@@ -49,6 +55,9 @@ function canvasViewReducer(
  * ホイール操作を view の操作へ読み替える。
  * ctrl / ⌘ を押していればズーム、押していなければスクロール方向へのパン
  * （ホイールを下へ回すと中身が上へ動く = 見ている位置が下へ進む）。
+ *
+ * @param event 読み替える対象のホイールイベント
+ * @returns ctrl / ⌘ が押されていればズーム、押されていなければパン
  */
 function wheelAction(event: WheelEvent): CanvasViewAction {
   if (event.ctrlKey || event.metaKey) {
@@ -62,6 +71,9 @@ function wheelAction(event: WheelEvent): CanvasViewAction {
  * React の `onWheel` は passive で登録されるため `preventDefault()` が効かず、
  * ctrl + ホイールがブラウザ側のページズームも同時に起こしてしまう。
  * 要素の props で受けられないのはこの 1 点のためで、対象は `surface` 自身に限る。
+ *
+ * @param surface ホイールの登録先になるキャンバスの土台
+ * @param dispatch 読み替えたアクションの送り先
  */
 function useWheelControl(
   surface: RefObject<HTMLElement | null>,
@@ -103,6 +115,8 @@ export type CanvasViewControl = Readonly<{
  * キャンバスのズーム / パンを預かる。
  * 1 回のドラッグで位置とドラッグ状態が同時に変わるため、useState を並べず
  * reducer へ統合する（rules/hooks.md）。
+ *
+ * @returns 今の表示と、ホイールの登録先・パンのハンドラ・ズーム / 初期化の操作
  */
 export function useCanvasView(): CanvasViewControl {
   const [view, dispatch] = useReducer(canvasViewReducer, undefined, () =>

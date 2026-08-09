@@ -21,7 +21,13 @@ export type { CompiledElement, CssDeclarations };
  */
 export type ParentContext = Readonly<{ direction: CssDirection }>;
 
-/** Text をコンパイルする。デフォルトを解決してから宣言と本文を組み立てる。 */
+/**
+ * Text をコンパイルする。デフォルトを解決してから宣言と本文を組み立てる。
+ *
+ * @param name 出力する要素に残すノード名
+ * @param props コンパイル対象の props（未設定の分は既定値で埋まる）
+ * @returns 宣言と本文を持つコンパイル済み要素
+ */
 function compileText(name: string, props: Props): CompiledElement {
   const resolved = ResolvedProps.resolve("Text", props);
   return TextElement.create(
@@ -31,7 +37,13 @@ function compileText(name: string, props: Props): CompiledElement {
   );
 }
 
-/** Box をコンパイルする。子は自分の向きを親の文脈として受け取る。 */
+/**
+ * Box をコンパイルする。子は自分の向きを親の文脈として受け取る。
+ *
+ * @param node コンパイル対象の Box ノード
+ * @param parent 親の並びの向き。親を持たない位置では `undefined`
+ * @returns 子を含むコンパイル済み要素。子のどれかが失敗すればその失敗
+ */
 function compileBox(
   node: ExpandedNode,
   parent: ParentContext | undefined,
@@ -51,7 +63,13 @@ function compileBox(
   );
 }
 
-/** 型で Text / Box へ振り分ける。未知の型は失敗にする。 */
+/**
+ * 型で Text / Box へ振り分ける。未知の型は失敗にする。
+ *
+ * @param node コンパイル対象のノード
+ * @param parent 親の並びの向き。親を持たない位置では `undefined`
+ * @returns コンパイル済み要素。未知の型なら失敗
+ */
 function compileNode(
   node: ExpandedNode,
   parent: ParentContext | undefined,
@@ -68,7 +86,13 @@ function compileNode(
   return compileBox(node, parent);
 }
 
-/** 並びをまとめてコンパイルする。1 つでも失敗したら全体を失敗にする。 */
+/**
+ * 並びをまとめてコンパイルする。1 つでも失敗したら全体を失敗にする。
+ *
+ * @param nodes コンパイル対象のノードの並び
+ * @param parent 親の並びの向き。親を持たない位置では `undefined`
+ * @returns 並び順を保ったコンパイル済み要素。1 つでも失敗すればその失敗
+ */
 function compileNodes(
   nodes: readonly ExpandedNode[],
   parent: ParentContext | undefined,

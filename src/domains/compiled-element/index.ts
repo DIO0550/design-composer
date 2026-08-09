@@ -35,6 +35,11 @@ type TokenBackedProp = keyof typeof TOKEN_PROP_PROPERTIES;
 /**
  * トークン参照 prop を `var()` 参照の宣言にする。未指定の prop は宣言を出力しない
  * (トークンの値は参照しないため、トークン編集は再コンパイルなしに CSS 経由で波及する)。
+ *
+ * @param prop 宣言にする prop 名
+ * @param value その prop に設定されている値。未設定なら宣言を出さない
+ * @param tokens カスタムプロパティ名の綴り方
+ * @returns `var()` 参照の宣言 1 件。未設定なら空
  */
 function tokenDeclarations(
   prop: TokenBackedProp,
@@ -49,7 +54,12 @@ function tokenDeclarations(
   return [CssDeclaration.create(property, tokens.ref(kind, String(value)))];
 }
 
-/** 初期値と同じ `visible` は宣言を出力しない (docs/03 の表は clip のみを規定)。 */
+/**
+ * 初期値と同じ `visible` は宣言を出力しない (docs/03 の表は clip のみを規定)。
+ *
+ * @param overflow `overflow` prop に設定されている値
+ * @returns `clip` のときだけ `overflow: hidden` の宣言 1 件。それ以外は空
+ */
 function overflowDeclarations(
   overflow: PropValue | undefined,
 ): readonly CssDeclarationType[] {
@@ -61,6 +71,10 @@ function overflowDeclarations(
 /**
  * typography は複合トークンなので、フィールドごとの CSS プロパティへ展開する。
  * 走査対象は `TypographyToken.fields()` に従うため、トークンのフィールドが増えても追従漏れが出ない。
+ *
+ * @param typography `typography` prop に設定されているトークン名。未設定なら宣言を出さない
+ * @param tokens カスタムプロパティ名の綴り方
+ * @returns フィールドごとの `var()` 参照の宣言。未設定なら空
  */
 function typographyDeclarations(
   typography: PropValue | undefined,

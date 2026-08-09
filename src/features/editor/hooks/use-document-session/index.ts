@@ -22,6 +22,8 @@ export type DocumentSessionPorts = Readonly<{
  *
  * @param canceled 選ばずに閉じたときに戻す状態。開く操作が無かったことにするため、
  *   既に開いているドキュメントを閉じてしまわない。
+ * @returns 開けたら開いている状態。ダイアログ / 読み込み / 解釈のどれかが失敗すれば
+ *   その理由を持つ失敗の状態。選ばずに閉じたら `canceled`
  */
 async function openWithDialog(
   { ipc, dialog }: DocumentSessionPorts,
@@ -55,6 +57,8 @@ async function openWithDialog(
  * 基準に差分を見るので、最初の 1 回はここで載せておく。
  *
  * @param canceled 選ばずに閉じたときに戻す状態。
+ * @returns 作れたら開いている状態。ダイアログ / 書き出しが失敗すればその理由を持つ
+ *   失敗の状態。選ばずに閉じたら `canceled`
  */
 async function createWithDialog(
   { ipc, dialog }: DocumentSessionPorts,
@@ -86,6 +90,9 @@ async function createWithDialog(
  * （`DocumentSession`）にまとまっているので `useReducer` にはしない（rules/hooks.md）。
  * 処理中は `DocumentSession.isOpening` が真になり、呼び出し側はそれをボタンの
  * `disabled` に流して二重の開始を防ぐ。
+ *
+ * @param ports ダイアログと I/O の相手
+ * @returns 今のセッションと、開く / 新規作成を始める手続き
  */
 export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
   session: DocumentSession;
