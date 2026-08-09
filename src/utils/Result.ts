@@ -1,15 +1,22 @@
+/** 成功した結果。処理が返した値を持つ。 */
 export type Ok<T> = Readonly<{
   ok: true;
   value: T;
 }>;
 
+/** 失敗した結果。失敗の理由を持つ。 */
 export type Err<E> = Readonly<{
   ok: false;
   error: E;
 }>;
 
+/**
+ * 失敗しうる処理の戻り値（rules/coding.md「エラーと不在の表現」）。
+ * `ok` で分岐すると、成功なら `value`、失敗なら `error` だけが読める。
+ */
 export type Result<T, E> = Ok<T> | Err<E>;
 
+/** `Result` の生成と連鎖。 */
 export const Result = {
   ok<T>(value: T): Ok<T> {
     return Object.freeze({ ok: true as const, value });

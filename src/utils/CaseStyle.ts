@@ -12,6 +12,7 @@
  */
 const KEBAB_CASE_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
+/** 綴りの流儀どうしの変換と判定。 */
 export const CaseStyle = {
   /**
    * kebab-case として綴られているか。

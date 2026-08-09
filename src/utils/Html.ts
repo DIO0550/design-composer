@@ -10,6 +10,7 @@ function escapeText(value: string): string {
     .replace(/>/g, "&gt;");
 }
 
+/** HTML のテキスト・属性値として安全に埋め込む形へ変換する。 */
 export const Html = {
   escapeText,
 

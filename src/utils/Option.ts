@@ -1,16 +1,24 @@
+/** 値がある状態。 */
 export type Some<T> = Readonly<{
   some: true;
   value: T;
 }>;
 
+/** 値が無い状態。 */
 export type None = Readonly<{
   some: false;
 }>;
 
+/**
+ * 値が無いことがありうる処理の戻り値（rules/coding.md「エラーと不在の表現」）。
+ * `some` で分岐すると、ある場合だけ `value` が読める。
+ */
 export type Option<T> = Some<T> | None;
 
+/** 不在は状態を持たないので、生成せず 1 つを共有する。 */
 const none: None = Object.freeze({ some: false as const });
 
+/** `Option` の生成と連鎖。 */
 export const Option = {
   none,
 

@@ -11,6 +11,7 @@ export type IndexOutOfRange = Readonly<{
   length: number;
 }>;
 
+/** 範囲外の指定を、範囲と指定値を添えた失敗にする。 */
 function outOfRange<T>(
   array: readonly T[],
   index: number,
@@ -18,6 +19,7 @@ function outOfRange<T>(
   return Result.err({ index, length: array.length });
 }
 
+/** 配列に対する汎用操作。 */
 export const ArrayEx = {
   isIndexInRange<T>(array: readonly T[], index: number): boolean {
     return NumberEx.isNatural(index) && index < array.length;

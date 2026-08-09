@@ -17,6 +17,7 @@ import {
 import { TokenSet } from "@/domains/token";
 import type { DesignDocumentV1 as DesignDocument } from "../v1";
 
+/** ドキュメントが不正になる理由（docs/03-schema.md「バリデーション仕様」）。 */
 export type DesignDocumentValidationErrorKind =
   | PropValidationError["kind"]
   | "unknown-type"
@@ -29,6 +30,7 @@ export type DesignDocumentValidationErrorKind =
   | "invalid-identifier"
   | "duplicate-name";
 
+/** 不正 1 件。どのノードのどの prop かと、診断用のメッセージを持つ。 */
 export type DesignDocumentValidationError = Readonly<{
   kind: DesignDocumentValidationErrorKind;
   nodeName: string;
@@ -68,6 +70,7 @@ function withLocation(
   });
 }
 
+/** 型に対応するスキーマで props を照らす。未知の型はその場でエラーにする。 */
 function collectTypedPropErrors(
   type: string,
   props: Props | undefined,
@@ -80,6 +83,7 @@ function collectTypedPropErrors(
   return PropDefinitionRecord.collectErrors(schema.props, props ?? {}, tokens);
 }
 
+/** ノードとその子孫の props をスキーマで照らす。部品インスタンスは対象外。 */
 function collectNodeErrors(
   node: Node,
   tokens: TokenSet,
@@ -103,6 +107,7 @@ export type ReferenceContext = Readonly<{
   tokens: TokenSet;
 }>;
 
+/** インスタンスの overrides が、参照先の公開 prop の宣言と値域に収まっているか。 */
 function collectOverrideErrors(
   context: ReferenceContext,
   refNode: RefNode,
@@ -136,6 +141,7 @@ function collectOverrideErrors(
   );
 }
 
+/** インスタンスの参照先が存在するか、展開が自分自身へ戻らないか。 */
 function collectRefNodeErrors(
   context: ReferenceContext,
   refNode: RefNode,
@@ -152,6 +158,7 @@ function collectRefNodeErrors(
   return collectOverrideErrors(context, refNode, component);
 }
 
+/** ノードとその子孫に含まれる部品参照を、位置を付けて集める。 */
 function collectNodeRefErrors(
   context: ReferenceContext,
   node: Node,
@@ -167,6 +174,7 @@ function collectNodeRefErrors(
   );
 }
 
+/** binding が指す内部ノードと prop が実在し、値域に収まっているか。 */
 function collectBindingTargetErrors(
   context: ReferenceContext,
   binding: PublicPropBinding,
@@ -199,6 +207,7 @@ function collectBindingTargetErrors(
   ];
 }
 
+/** 部品の publicProps が宣言している binding をすべて照らす。 */
 function collectBindingErrors(
   context: ReferenceContext,
   componentName: string,
@@ -287,6 +296,7 @@ export function collectArtboardErrors(
   return [...propErrors, ...childErrors, ...refErrors];
 }
 
+/** 単一の名前空間の中で重複している名前（docs/02-data-model.md「名前の一意性」）。 */
 function collectDuplicateNameErrors(
   document: DesignDocument,
 ): readonly DesignDocumentValidationError[] {

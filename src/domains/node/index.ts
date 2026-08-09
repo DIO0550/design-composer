@@ -8,7 +8,9 @@ import {
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
+/** prop が取りうる値。構造を持つ値は prop にしない（docs/01-file-format.md）。 */
 export type PropValue = string | number | boolean;
+/** 1 つのノードに設定された props。未設定の prop はキーごと持たない。 */
 export type Props = Readonly<Record<string, PropValue>>;
 
 /**
@@ -45,6 +47,7 @@ export const PropEdit = {
   },
 } as const;
 
+/** prop の値の JSON 表現との相互変換。 */
 export const PropValue = {
   /** prop の値になれるのはスカラーだけ(構造を持つ値は prop にしない)。 */
   fromJson(cursor: JsonCursor): JsonDecoded<PropValue> {
@@ -65,6 +68,7 @@ export const PropValue = {
   },
 } as const;
 
+/** props の JSON 表現との相互変換と、1 件分の編集の適用。 */
 export const Props = {
   fromJson(cursor: JsonCursor): JsonDecoded<Props> {
     return Json.mapOf(cursor, PropValue.fromJson);
@@ -94,6 +98,7 @@ export const Props = {
   },
 } as const;
 
+/** プリミティブ（Box / Text）のノード。型と props を持ち、子を持てる。 */
 export type PrimitiveNode = Readonly<{
   name: string;
   type: string;
@@ -101,18 +106,21 @@ export type PrimitiveNode = Readonly<{
   children?: readonly Node[];
 }>;
 
+/** 部品のインスタンス。参照先の名前と、公開 prop への上書きを持つ。 */
 export type RefNode = Readonly<{
   name: string;
   ref: string;
   overrides?: Props;
 }>;
 
+/** ツリーに並ぶノード。プリミティブか部品インスタンスのどちらか。 */
 export type Node = PrimitiveNode | RefNode;
 
 /** ノードが JSON 上で持ちうるフィールド(docs/01-file-format.md)。 */
 const PRIMITIVE_NODE_FIELDS = ["name", "type", "props", "children"] as const;
 const REF_NODE_FIELDS = ["name", "ref", "overrides"] as const;
 
+/** ノードの判定・子の取り出し・JSON 表現との相互変換。 */
 export const Node = {
   isRef(node: Node): node is RefNode {
     return "ref" in node;
@@ -221,6 +229,7 @@ export const Node = {
   },
 } as const;
 
+/** プリミティブのノードとして読む。未知のフィールドはエラーにする。 */
 function primitiveNodeFromJson(record: JsonRecordCursor): JsonDecoded<Node> {
   return Json.knownFields(
     Json.combine4(
@@ -240,6 +249,7 @@ function primitiveNodeFromJson(record: JsonRecordCursor): JsonDecoded<Node> {
   );
 }
 
+/** 部品インスタンスとして読む。未知のフィールドはエラーにする。 */
 function refNodeFromJson(record: JsonRecordCursor): JsonDecoded<Node> {
   return Json.knownFields(
     Json.combine3(

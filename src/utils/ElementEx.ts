@@ -4,6 +4,7 @@ function selfAndAncestors(element: Element): readonly Element[] {
   return parent === null ? [element] : [element, ...selfAndAncestors(parent)];
 }
 
+/** DOM 要素の性質を答える汎用操作。 */
 export const ElementEx = {
   /**
    * その要素が文字を打ち込める場所か（入力欄・複数行入力欄・編集可能な要素）。

@@ -8,6 +8,7 @@ export type JsonValue =
   | readonly JsonValue[]
   | JsonObject;
 
+/** JSON のオブジェクト。値はすべて JSON のデータモデルで表せる。 */
 export type JsonObject = Readonly<{ [key: string]: JsonValue }>;
 
 /** 読み込んだ直後のオブジェクト。値の型はまだ何も分かっていない。 */
@@ -32,11 +33,13 @@ export type JsonRecordCursor = Readonly<{
   path: string;
 }>;
 
+/** デコードが失敗する理由。呼び出し側が種類で分岐できるよう直和で列挙する。 */
 export type JsonDecodeErrorKind =
   | "missing-field"
   | "invalid-type"
   | "unknown-field";
 
+/** デコードの失敗 1 件。どこで何が起きたかを持つ。 */
 export type JsonDecodeError = Readonly<{
   kind: JsonDecodeErrorKind;
   /** 値の位置(例: `artboards[0].children[1].name`)。 */
@@ -50,6 +53,7 @@ export type JsonDecodeError = Readonly<{
  */
 export type JsonDecoded<T> = Result<T, readonly JsonDecodeError[]>;
 
+/** カーソルの位置の値を `T` として読む手続き。 */
 export type JsonDecoder<T> = (cursor: JsonCursor) => JsonDecoded<T>;
 
 /** エラーメッセージ用の型名。JSON の値として区別できる粒度で示す。 */
@@ -60,6 +64,7 @@ function typeNameOf(value: unknown): string {
   return Array.isArray(value) ? "array" : typeof value;
 }
 
+/** その値がオブジェクトか（配列と `null` は含めない）。 */
 function isJsonRecord(value: unknown): value is JsonRecord {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -69,6 +74,7 @@ function hasField(record: JsonRecord, key: string): boolean {
   return Object.keys(record).includes(key);
 }
 
+/** オブジェクトの 1 フィールドを、位置を継ぎ足したカーソルとして取り出す。 */
 function fieldCursor(cursor: JsonRecordCursor, key: string): JsonCursor {
   return {
     value: cursor.record[key],
@@ -76,6 +82,7 @@ function fieldCursor(cursor: JsonRecordCursor, key: string): JsonCursor {
   };
 }
 
+/** 中身を持たない配列・オブジェクトか。数値や文字列は対象にしない。 */
 function isEmpty(value: JsonValue): boolean {
   if (Array.isArray(value)) {
     return value.length === 0;
@@ -83,6 +90,7 @@ function isEmpty(value: JsonValue): boolean {
   return typeof value === "object" && Object.keys(value).length === 0;
 }
 
+/** JSON の値を位置つきで読み進めるためのカーソル操作。 */
 export const Json = {
   /** テキストから読み込んだ値を、位置つきのカーソルにする。 */
   create(value: unknown, path = ""): JsonCursor {

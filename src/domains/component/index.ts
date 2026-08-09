@@ -18,6 +18,7 @@ import {
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
+/** 公開 prop が、部品の内側のどのノードのどの prop に繋がっているか。 */
 export type PublicPropBinding = Readonly<{
   node: string;
   prop: string;
@@ -28,6 +29,7 @@ const BINDING_FIELDS = ["node", "prop"] as const;
 /** 部品が JSON 上で持ちうるフィールド(docs/04-tokens.md「初期部品セット」の並び)。 */
 const COMPONENT_FIELDS = ["publicProps", "type", "props", "children"] as const;
 
+/** binding の JSON 表現との相互変換。 */
 export const PublicPropBinding = {
   fromJson(cursor: JsonCursor): JsonDecoded<PublicPropBinding> {
     return Result.flatMap(Json.record(cursor), (record) =>
@@ -48,6 +50,7 @@ export const PublicPropBinding = {
   },
 } as const;
 
+/** 部品が外へ公開する prop 名と、その繋ぎ先。 */
 export type PublicProps = Readonly<Record<string, PublicPropBinding>>;
 
 /**
@@ -68,6 +71,7 @@ export type PublicPropTarget = Readonly<{
   declared: Option<PropValue>;
 }>;
 
+/** 部品定義。インスタンスから参照され、展開されてキャンバスに描かれる。 */
 export type Component = Readonly<{
   type: string;
   props?: Props;
@@ -75,6 +79,7 @@ export type Component = Readonly<{
   publicProps?: PublicProps;
 }>;
 
+/** ドキュメントが持つ部品定義の一覧。キーが部品名。 */
 export type ComponentSet = Readonly<Record<string, Component>>;
 
 /**
@@ -97,6 +102,7 @@ export const ComponentAsset = {
   },
 } as const;
 
+/** 名前の一致する 1 ノードだけを差し替えた木を返す。見つからなければそのまま。 */
 function updateNodeByName(
   nodes: readonly Node[],
   name: string,
@@ -116,6 +122,7 @@ function updateNodeByName(
 
 type ResolvedOverride = readonly [PublicPropBinding, PropValue];
 
+/** 上書きを binding と値の対に読み替える。公開されていない prop の上書きは捨てる。 */
 function resolveOverrides(
   publicProps: PublicProps,
   overrides: Props,
@@ -126,6 +133,7 @@ function resolveOverrides(
   });
 }
 
+/** 部品定義の判定・展開・binding の解決と、JSON 表現との相互変換。 */
 export const Component = {
   isPublicProp(component: Component, name: string): boolean {
     return component.publicProps !== undefined && name in component.publicProps;
@@ -299,6 +307,7 @@ function directRefs(components: ComponentSet, name: string): readonly string[] {
   return component === undefined ? [] : Component.collectRefs(component);
 }
 
+/** その部品から参照をたどって到達できる部品名すべて（循環参照の判定に使う）。 */
 function reachableRefs(
   components: ComponentSet,
   start: string,
@@ -355,6 +364,10 @@ function targetThroughRef(
   });
 }
 
+/**
+ * 公開 prop の繋ぎ先を、入れ子の部品を越えてたどる。
+ * `remainingHops` が尽きたら `none`。循環参照でも止まらなくなるのを防ぐため。
+ */
 function publicPropTargetWithin(
   components: ComponentSet,
   ref: PublicPropRef,

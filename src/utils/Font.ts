@@ -5,6 +5,7 @@
 const SYSTEM_STACK =
   'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 
+/** フォントファミリの指定に使う文字列。 */
 export const Font = {
   systemStack(): string {
     return SYSTEM_STACK;
