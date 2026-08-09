@@ -1,5 +1,5 @@
-import {
-  type DocumentError,
+import type {
+  DocumentError,
   DocumentErrorLocation,
 } from "@/features/editor/domains/document-error";
 import type { ValueOf } from "@/types/ValueOf";
@@ -18,6 +18,22 @@ export const DOCUMENT_ERROR_ORIGINS = {
 } as const;
 
 export type DocumentErrorOrigin = ValueOf<typeof DOCUMENT_ERROR_ORIGINS>;
+
+/** エラーが指す場所の表示。位置の持ち方が由来ごとに違うので、ここで読める形にする。 */
+function locationLabel(location: DocumentErrorLocation): string {
+  switch (location.kind) {
+    case "text-position":
+      return `${location.position} 文字目`;
+    case "document-path":
+      return location.path;
+    case "node":
+      return location.prop === undefined
+        ? location.nodeName
+        : `${location.nodeName}.${location.prop}`;
+    case "whole-document":
+      return "ファイル全体";
+  }
+}
 
 /**
  * 由来ごとの見え方。読み上げ名・見出しの相手・置かれ方は常に対で決まるので、
@@ -82,7 +98,7 @@ export function DocumentErrorList({
       </h2>
       <ul className="flex flex-col gap-1">
         {errors.map((error) => {
-          const location = DocumentErrorLocation.toText(error.location);
+          const location = locationLabel(error.location);
           return (
             // 一覧は読み込みのたびに丸ごと入れ替わるので、並びの位置ではなく中身で識別する。
             <li

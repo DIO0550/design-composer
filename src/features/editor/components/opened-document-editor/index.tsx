@@ -75,17 +75,18 @@ function RightPaneContent({
   }
 }
 
+/** キャンバス下端に出すもの。ファイルが不正な状態と、編集を続けられる状態の 2 つ（#128）。 */
+type CanvasDock =
+  | Readonly<{ kind: "file-invalid"; errors: readonly DocumentError[] }>
+  | Readonly<{ kind: "editable"; errors: readonly DocumentError[] }>;
+
 /**
- * キャンバス下端に出すもの（#128）。
+ * 今どちらの状態かと、そこで出すエラーを決める。
  *
  * ファイルが不正な間は表示自体がファイルと食い違っているので、そちらの一覧だけを出す。
  * Why not: 2 つの一覧を並べると、外部エディタでしか直せないファイルの一覧が、
  * アプリ内で直せるドキュメントの一覧の場所を奪う。
  */
-type CanvasDock =
-  | Readonly<{ kind: "file-invalid"; errors: readonly DocumentError[] }>
-  | Readonly<{ kind: "editable"; errors: readonly DocumentError[] }>;
-
 function canvasDock(state: EditorState): CanvasDock {
   const fileErrors = state.fileErrors;
   if (fileErrors.length > 0) {

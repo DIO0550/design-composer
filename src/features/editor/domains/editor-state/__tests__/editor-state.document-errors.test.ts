@@ -2,10 +2,7 @@ import { expect, test } from "vitest";
 import { Artboard } from "@/domains/artboard";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import { SYNTAX_ERROR } from "@/features/editor/__tests__/document-errors";
-import {
-  type DocumentError,
-  DocumentErrorLocation,
-} from "@/features/editor/domains/document-error";
+import type { DocumentErrorLocation } from "@/features/editor/domains/document-error";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 
@@ -42,10 +39,12 @@ function openedState(): EditorState {
   );
 }
 
-/** エラーが指している場所。並びの比較に使う。 */
-function locations(errors: readonly DocumentError[]): readonly string[] {
-  return errors.map((error) => DocumentErrorLocation.toText(error.location));
-}
+/** dangling 参照が出る位置。表示の綴りは UI の担当なので、構造のまま比べる。 */
+const HOME_TITLE_TYPOGRAPHY: DocumentErrorLocation = {
+  kind: "node",
+  nodeName: "home-title",
+  prop: "typography",
+};
 
 /** 選択中のトークンを消した状態。消せない指定はテストを落としたいので `unwrap` する。 */
 function removeToken(state: EditorState, name: string): EditorState {
@@ -59,9 +58,9 @@ function removeToken(state: EditorState, name: string): EditorState {
 test("使用中のトークンを削除すると、そのトークンを参照しているノードのエラーが出る", () => {
   const removed = removeToken(openedState(), "heading");
 
-  expect(locations(EditorState.documentErrors(removed))).toStrictEqual([
-    "home-title.typography",
-  ]);
+  expect(
+    EditorState.documentErrors(removed).map((error) => error.location),
+  ).toStrictEqual([HOME_TITLE_TYPOGRAPHY]);
 });
 
 test("編集で不正が生まれていないうちはドキュメントのエラーは出ない", () => {
@@ -93,9 +92,9 @@ test("外部変更を拒んでいる間に編集で作った不正は、ファ�
 
   const removed = removeToken(rejected, "heading");
 
-  expect(locations(EditorState.documentErrors(removed))).toStrictEqual([
-    "home-title.typography",
-  ]);
+  expect(
+    EditorState.documentErrors(removed).map((error) => error.location),
+  ).toStrictEqual([HOME_TITLE_TYPOGRAPHY]);
 });
 
 test("編集で不正を作ってもファイルのエラー一覧は変わらない", () => {

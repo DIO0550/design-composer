@@ -21,29 +21,6 @@ export type DocumentErrorLocation =
   | Readonly<{ kind: "node"; nodeName: string; prop?: string }>
   | Readonly<{ kind: "whole-document" }>;
 
-export const DocumentErrorLocation = {
-  /**
-   * 位置を人が読める 1 行にする。
-   *
-   * 戻り値を素の `string` にしているのは、由来を足したときに
-   * 「返さない経路がある」でコンパイルエラーになるため。
-   */
-  toText(location: DocumentErrorLocation): string {
-    switch (location.kind) {
-      case "text-position":
-        return `${location.position} 文字目`;
-      case "document-path":
-        return location.path;
-      case "node":
-        return location.prop === undefined
-          ? location.nodeName
-          : `${location.nodeName}.${location.prop}`;
-      case "whole-document":
-        return "ファイル全体";
-    }
-  },
-} as const;
-
 export type DocumentErrorKind =
   | DocumentJsonErrorKind
   | DesignDocumentValidationErrorKind;
