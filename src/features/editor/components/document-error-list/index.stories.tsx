@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { DocumentErrorList } from "./index";
+import { DOCUMENT_ERROR_ORIGINS, DocumentErrorList } from "./index";
 
 const meta = {
   title: "features/editor/DocumentErrorList",
@@ -23,6 +23,7 @@ type Story = StoryObj<typeof meta>;
 export const BrokenJson: Story = {
   name: "JSON が壊れている",
   args: {
+    origin: DOCUMENT_ERROR_ORIGINS.file,
     errors: [
       {
         kind: "syntax-error",
@@ -36,6 +37,7 @@ export const BrokenJson: Story = {
 export const SchemaErrors: Story = {
   name: "スキーマ違反が複数",
   args: {
+    origin: DOCUMENT_ERROR_ORIGINS.file,
     errors: [
       {
         kind: "unknown-prop",
@@ -64,5 +66,24 @@ export const SchemaErrors: Story = {
 
 export const NoErrors: Story = {
   name: "エラーがない",
-  args: { errors: [] },
+  args: { origin: DOCUMENT_ERROR_ORIGINS.file, errors: [] },
+};
+
+/**
+ * アプリ内の編集で作った不正（#128）。ファイル由来と見出し・読み上げ名が分かれ、
+ * 下端へ密着せず、挿入のツールバーと積み重なる形で出る。
+ */
+export const DocumentOrigin: Story = {
+  name: "編集で作った不正",
+  args: {
+    origin: DOCUMENT_ERROR_ORIGINS.document,
+    errors: [
+      {
+        kind: "dangling-token",
+        message:
+          'prop "typography" references unknown typography token "heading"',
+        location: { kind: "node", nodeName: "home-title", prop: "typography" },
+      },
+    ],
+  },
 };

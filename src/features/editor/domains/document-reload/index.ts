@@ -1,4 +1,4 @@
-import { DesignDocument } from "@/domains/design-document";
+import type { DesignDocument } from "@/domains/design-document";
 import { DocumentError } from "@/features/editor/domains/document-error";
 import { DocumentJson } from "@/libs/document-json";
 
@@ -36,9 +36,7 @@ export const DocumentReload = {
       };
     }
 
-    const validationErrors = DocumentError.fromValidationErrors(
-      DesignDocument.collectErrors(parsed.value),
-    );
+    const validationErrors = DocumentError.fromDocument(parsed.value);
     if (validationErrors.length > 0) {
       return { kind: "rejected", errors: validationErrors };
     }

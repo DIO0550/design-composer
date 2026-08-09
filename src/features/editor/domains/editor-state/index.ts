@@ -4,7 +4,7 @@ import { ChildPosition } from "@/domains/child-position";
 import { DesignDocument, type TokenReferrer } from "@/domains/design-document";
 import type { Node, PropEdit } from "@/domains/node";
 import { Token, type TokenRef, TokenSet, TokenValue } from "@/domains/token";
-import type { DocumentError } from "@/features/editor/domains/document-error";
+import { DocumentError } from "@/features/editor/domains/document-error";
 import type { DocumentReload } from "@/features/editor/domains/document-reload";
 import { EditHistory } from "@/features/editor/domains/edit-history";
 import { NodeTemplate } from "@/features/editor/domains/node-template";
@@ -25,15 +25,18 @@ import { Option } from "@/utils/Option";
  * 表示に使うドキュメントは `EditorState.document`。
  *
  * 現在地は常に「最後に正常だったドキュメント」で、外部変更を拒んでも差し替えない。
- * `errors` が空でない間は、画面に映っているものがファイルの現在の中身と違う
+ * `fileErrors` が空でない間は、画面に映っているものがファイルの現在の中身と違う
  * （docs/03-schema.md「不正ファイル時の挙動」）。
+ *
+ * ドキュメント自身の不正（アプリ内の編集で作ったもの）はここに持たず
+ * `EditorState.documentErrors` で導出する（#128）。
  */
 export type EditorState = Readonly<{
   history: EditHistory;
   selectedName: Option<string>;
   selectedToken: Option<TokenRef>;
   copiedNode: Option<Node>;
-  errors: readonly DocumentError[];
+  fileErrors: readonly DocumentError[];
 }>;
 
 /**
@@ -123,13 +126,31 @@ export const EditorState = {
       selectedName: Option.none,
       selectedToken: Option.none,
       copiedNode: Option.none,
-      errors: [],
+      fileErrors: [],
     };
   },
 
   /** 画面に映っているドキュメント（履歴の現在地）。 */
   document(state: EditorState): DesignDocument {
     return state.history.present;
+  },
+
+  /**
+   * 画面に映っているドキュメント自身の不正（#128）。使用中トークンの削除のように、
+   * アプリ内の編集で作った dangling 参照がここに出る。
+   *
+   * 状態として持たず毎回導出するのは、ドキュメントと食い違ったエラー一覧を
+   * 表現できなくするため（rules/hooks.md「導出可能な値の state 化禁止」）。
+   * 持つと編集・undo・redo・取り込みのすべてで載せ替えが要り、1 つ忘れると
+   * 古い一覧が画面に残る。
+   *
+   * `fileErrors` と別なのは、あちらが「表示に使っていないファイルの中身」の不正で、
+   * 表示中のドキュメントからは導出できないため。自動保存の書き込みは
+   * 外部変更として戻ってこない（`libs/document-ipc` が自書き込みを弾く）ので、
+   * ここの不正が `fileErrors` へ回り込むこともない。
+   */
+  documentErrors(state: EditorState): readonly DocumentError[] {
+    return DocumentError.fromDocument(EditorState.document(state));
   },
 
   /**
@@ -173,16 +194,16 @@ export const EditorState = {
    * undo バッファから復元できる」の中身だから（docs/05-architecture.md「競合の解決」）。
    * 読み直した内容を新たな起点にして履歴を捨てると、この復元経路が無くなる。
    *
-   * 拒んだときはドキュメントも選択もそのままにし、エラー一覧だけを載せ替える。
+   * 拒んだときはドキュメントも選択もそのままにし、ファイルのエラー一覧だけを載せ替える。
    * 正常 / 不正の 2 つの遷移を 1 つのメソッドで受けるのは、呼び出し側が
    * 「ドキュメントを差し替えたのにエラーが残っている」ような組み合わせを作れないようにするため。
    */
   applyReload(state: EditorState, reload: DocumentReload): EditorState {
     switch (reload.kind) {
       case "reloaded":
-        return withEdit({ ...state, errors: [] }, reload.document);
+        return withEdit({ ...state, fileErrors: [] }, reload.document);
       case "rejected":
-        return { ...state, errors: reload.errors };
+        return { ...state, fileErrors: reload.errors };
     }
   },
 

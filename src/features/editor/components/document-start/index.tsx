@@ -1,4 +1,7 @@
-import { DocumentErrorList } from "@/features/editor/components/document-error-list";
+import {
+  DOCUMENT_ERROR_ORIGINS,
+  DocumentErrorList,
+} from "@/features/editor/components/document-error-list";
 import type {
   DocumentOpenFailure,
   UnopenedSession,
@@ -35,7 +38,10 @@ function OpenFailure({ failure }: Readonly<{ failure: DocumentOpenFailure }>) {
         <p role="alert" className="text-red-700">
           ファイルの内容が正しくないため開けませんでした
         </p>
-        <DocumentErrorList errors={failure.errors} />
+        <DocumentErrorList
+          errors={failure.errors}
+          origin={DOCUMENT_ERROR_ORIGINS.file}
+        />
       </>
     );
   }

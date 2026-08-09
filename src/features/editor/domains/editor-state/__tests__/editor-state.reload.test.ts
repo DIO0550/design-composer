@@ -85,16 +85,16 @@ test("外部変更を拒んでも選択は外れない", () => {
   expect(EditorState.isSelected(state, "home")).toBe(true);
 });
 
-test("外部変更を拒むと、その理由がエラー一覧として画面に載る", () => {
+test("外部変更を拒むと、その理由がファイルのエラー一覧として画面に載る", () => {
   const state = EditorState.applyReload(openedState("home"), {
     kind: "rejected",
     errors: [SYNTAX_ERROR],
   });
 
-  expect(state.errors).toStrictEqual([SYNTAX_ERROR]);
+  expect(state.fileErrors).toStrictEqual([SYNTAX_ERROR]);
 });
 
-test("ファイルが直って取り込めるようになるとエラー一覧は消える", () => {
+test("ファイルが直って取り込めるようになるとファイルのエラー一覧は消える", () => {
   const rejected = EditorState.applyReload(openedState("home"), {
     kind: "rejected",
     errors: [SYNTAX_ERROR],
@@ -108,5 +108,5 @@ test("ファイルが直って取り込めるようになるとエラー一覧�
     document: fixed,
   });
 
-  expect(state.errors).toStrictEqual([]);
+  expect(state.fileErrors).toStrictEqual([]);
 });

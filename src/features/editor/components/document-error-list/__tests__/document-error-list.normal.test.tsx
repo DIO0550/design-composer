@@ -1,7 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import { expect, test } from "vitest";
 import type { DocumentError } from "@/features/editor/domains/document-error";
-import { DocumentErrorList } from "../index";
+import { DOCUMENT_ERROR_ORIGINS, DocumentErrorList } from "../index";
 
 /** 外部エディタが不正なファイルを保存したときに届くエラー。 */
 const SYNTAX_ERROR: DocumentError = {
@@ -11,7 +11,9 @@ const SYNTAX_ERROR: DocumentError = {
 };
 
 test("エラーが無いときは何も重ねない", () => {
-  render(<DocumentErrorList errors={[]} />);
+  render(
+    <DocumentErrorList errors={[]} origin={DOCUMENT_ERROR_ORIGINS.file} />,
+  );
 
   expect(screen.queryByRole("alert")).toBeNull();
 });
@@ -19,6 +21,7 @@ test("エラーが無いときは何も重ねない", () => {
 test("エラーが複数あると、件数とそれぞれの内容が一覧で出る", () => {
   render(
     <DocumentErrorList
+      origin={DOCUMENT_ERROR_ORIGINS.file}
       errors={[
         SYNTAX_ERROR,
         {
@@ -32,7 +35,7 @@ test("エラーが複数あると、件数とそれぞれの内容が一覧で�
 
   const errorList = screen.getByRole("alert", { name: "エラー一覧" });
 
-  expect(within(errorList).getByText("2 件のエラー")).toBeDefined();
+  expect(within(errorList).getByText("ファイルに 2 件のエラー")).toBeDefined();
   expect(within(errorList).getByText("expected ',' or '}'")).toBeDefined();
   expect(
     within(errorList).getByText('unknown component "missing-button"'),
@@ -40,7 +43,12 @@ test("エラーが複数あると、件数とそれぞれの内容が一覧で�
 });
 
 test("テキストの位置が分かるエラーには何文字目かが出る", () => {
-  render(<DocumentErrorList errors={[SYNTAX_ERROR]} />);
+  render(
+    <DocumentErrorList
+      errors={[SYNTAX_ERROR]}
+      origin={DOCUMENT_ERROR_ORIGINS.file}
+    />,
+  );
 
   expect(screen.getByText("42 文字目")).toBeDefined();
 });
@@ -48,6 +56,7 @@ test("テキストの位置が分かるエラーには何文字目かが出る",
 test("ノードの prop で起きたエラーにはノード名と prop 名が出る", () => {
   render(
     <DocumentErrorList
+      origin={DOCUMENT_ERROR_ORIGINS.file}
       errors={[
         {
           kind: "unknown-prop",
@@ -64,6 +73,7 @@ test("ノードの prop で起きたエラーにはノード名と prop 名が�
 test("prop に紐づかないノードのエラーにはノード名だけが出る", () => {
   render(
     <DocumentErrorList
+      origin={DOCUMENT_ERROR_ORIGINS.file}
       errors={[
         {
           kind: "dangling-ref",
@@ -80,6 +90,7 @@ test("prop に紐づかないノードのエラーにはノード名だけが出
 test("位置を持たないエラーはファイル全体の問題として出る", () => {
   render(
     <DocumentErrorList
+      origin={DOCUMENT_ERROR_ORIGINS.file}
       errors={[
         {
           kind: "unsupported-format-version",
@@ -96,6 +107,7 @@ test("位置を持たないエラーはファイル全体の問題として出�
 test("ドキュメント内のパスが分かるエラーにはそのパスが出る", () => {
   render(
     <DocumentErrorList
+      origin={DOCUMENT_ERROR_ORIGINS.file}
       errors={[
         {
           kind: "invalid-type",
