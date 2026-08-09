@@ -42,7 +42,13 @@ export type DialogChoices = Readonly<{
  */
 export type DocumentDialogFake = Readonly<{ dialog: DocumentDialog }>;
 
-/** Tauri のプラグインが失敗したときと同じく、例外で失敗を伝える。 */
+/**
+ * Tauri のプラグインが失敗したときと同じく、例外で失敗を伝える。
+ *
+ * @param choice テストが仕込んだ、ダイアログの返し方
+ * @returns 選ばれたパス。閉じたなら `none`
+ * @throws 失敗を仕込んだとき（本物のプラグインと同じく例外で伝える）
+ */
 function chosenPath(choice: DialogChoice): Promise<Option<string>> {
   switch (choice.kind) {
     case "chosen":

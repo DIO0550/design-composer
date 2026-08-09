@@ -13,6 +13,8 @@ const UNDO_SHORTCUT: KeyShortcut = {
  *
  * このフックが持つのは「undo に割り当てる組み合わせはどれか」だけで、
  * ページ全体で受けることと入力中は無視することは `useKeyShortcut` に任せる。
+ *
+ * @param onUndo 組み合わせが押されたときに呼ぶ手続き
  */
 export function useUndoShortcut(onUndo: () => void): void {
   useKeyShortcut(UNDO_SHORTCUT, onUndo);

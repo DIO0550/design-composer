@@ -326,7 +326,14 @@ function scanObject(text: string, position: number): ScanOutcome {
   }
 }
 
-/** 配列を読む。 */
+/**
+ * 配列を読む。
+ *
+ * @param text 読んでいる全文
+ * @param position `[` の位置
+ * @returns `]` の次の位置と、集めたエラー。
+ *   構文として読み進められなくなった場合は失敗
+ */
 function scanArray(text: string, position: number): ScanOutcome {
   let pos = skipWhitespace(text, position + 1);
   if (text[pos] === "]") {
@@ -358,7 +365,14 @@ function scanArray(text: string, position: number): ScanOutcome {
   }
 }
 
-/** 位置にある値を種類で振り分けて読む。 */
+/**
+ * 位置にある値を種類で振り分けて読む。
+ *
+ * @param text 読んでいる全文
+ * @param position 値の先頭の位置（前置の空白は読み飛ばす）
+ * @returns 値の次の位置と、集めたエラー。
+ *   入力が尽きた場合とどの種類でもない場合は失敗
+ */
 function scanValue(text: string, position: number): ScanOutcome {
   const pos = skipWhitespace(text, position);
   if (pos >= text.length) {

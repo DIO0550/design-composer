@@ -32,6 +32,9 @@ export type NodeTreeUpdate = (
  * 配列操作の結果を、ツリー編集の結果として意味づける。
  * 範囲外がどの操作の失敗にあたるかは `ArrayEx` 側では決められない
  * （ドメイン知識を持たないため）ので、その解釈だけをここで与える。
+ *
+ * @param result 配列操作の結果
+ * @returns ツリー。範囲外の失敗は `index-out-of-range` として意味づける
  */
 function toTreeResult(
   result: Result<readonly Node[], IndexOutOfRange>,

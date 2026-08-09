@@ -37,6 +37,9 @@ export type DocumentDialog = Readonly<{
  *
  * ここが例外と `Result` の境界。`libs/` の外へ例外を出さないため、
  * このモジュールの公開 API はすべて `Result` を返す。
+ *
+ * @param chooser 実際にダイアログを出す手続き
+ * @returns 選ばれたパス（閉じたなら `none`）。手続きが投げたら失敗として返す
  */
 async function choose(
   chooser: () => Promise<Option<string>>,

@@ -42,6 +42,9 @@ export type DocumentError = Readonly<{
 /**
  * 字句スキャン由来なら `position`、形の検証由来なら `path` が付き、
  * 版の解決の失敗はどちらも持たない（`libs/document-json` の 3 系統に対応する）。
+ *
+ * @param error 場所を読みたい読み込みの失敗
+ * @returns 文字位置 / ドキュメント内のパス / ファイル全体のいずれか
  */
 function locationOf(error: DocumentJsonError): DocumentErrorLocation {
   if (error.position !== undefined) {

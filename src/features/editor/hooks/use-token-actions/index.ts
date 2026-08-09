@@ -17,7 +17,11 @@ export type TokenActions = Readonly<{
   remove: () => void;
 }>;
 
-/** トークン編集の操作をエディタの状態へ仲介する。 */
+/**
+ * トークン編集の操作をエディタの状態へ仲介する。
+ *
+ * @returns 選択・追加・値の書き換え・改名・削除の操作
+ */
 export function useTokenActions(): TokenActions {
   const { dispatch } = useEditor();
 

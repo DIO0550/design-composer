@@ -20,6 +20,11 @@ export type ExpandedNode = Readonly<{
 /**
  * 部品インスタンスを定義の中身へ展開する。
  * `expanding` は展開中の部品名で、自分自身へ戻ったら循環参照として失敗にする。
+ *
+ * @param node 展開対象のノード
+ * @param components 参照先の引き先になる部品一式
+ * @param expanding ここまでに展開中の部品名（再訪したら循環参照）
+ * @returns 展開後のノード。参照先が無い場合と循環参照は失敗
  */
 function expandNode(
   node: Node,
@@ -67,7 +72,14 @@ function expandNode(
   );
 }
 
-/** 並びをまとめて展開する。1 つでも失敗したら全体を失敗にする。 */
+/**
+ * 並びをまとめて展開する。1 つでも失敗したら全体を失敗にする。
+ *
+ * @param nodes 展開対象のノードの並び
+ * @param components 参照先の引き先になる部品一式
+ * @param expanding ここまでに展開中の部品名（再訪したら循環参照）
+ * @returns 並び順を保った展開後のノード。1 つでも失敗すればその失敗
+ */
 function expandNodes(
   nodes: readonly Node[],
   components: ComponentSet,

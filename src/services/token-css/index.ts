@@ -27,7 +27,13 @@ export type CssVariables = Readonly<Record<CssVariableName, string>>;
 
 type CssVariableEntry = readonly [CssVariableName, string];
 
-/** その種別のトークンを、カスタムプロパティ名と値の対の並びにする。 */
+/**
+ * その種別のトークンを、カスタムプロパティ名と値の対の並びにする。
+ *
+ * @param tokens 書き出し元のトークン一式
+ * @param kind 書き出す種別
+ * @returns カスタムプロパティ名と値の対の並び
+ */
 function entriesOfKind(
   tokens: TokenSet,
   kind: TokenKind,

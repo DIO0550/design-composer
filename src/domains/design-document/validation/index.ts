@@ -338,7 +338,13 @@ export function collectComponentErrors(
   return [...propErrors, ...childErrors, ...bindingErrors, ...refErrors];
 }
 
-/** artboard 1件の props・子ノード・参照のエラーを集める。 */
+/**
+ * artboard 1件の props・子ノード・参照のエラーを集める。
+ *
+ * @param context 部品とトークンの一式
+ * @param artboard 検証する artboard
+ * @returns 位置の付いたエラーの並び
+ */
 export function collectArtboardErrors(
   context: ReferenceContext,
   artboard: Artboard,
@@ -360,7 +366,12 @@ export function collectArtboardErrors(
   return [...propErrors, ...childErrors, ...refErrors];
 }
 
-/** 単一の名前空間の中で重複している名前（docs/02-data-model.md「名前の一意性」）。 */
+/**
+ * 単一の名前空間の中で重複している名前（docs/02-data-model.md「名前の一意性」）。
+ *
+ * @param document 名前を集める対象のドキュメント
+ * @returns 重複している名前ごとの duplicate-name エラーの並び
+ */
 function collectDuplicateNameErrors(
   document: DesignDocument,
 ): readonly DesignDocumentValidationError[] {
@@ -381,6 +392,12 @@ function collectDuplicateNameErrors(
  * 名前1つを検証する。
  * 名前が欠落している場合は自身の名前で位置を示せないため、
  * その名前を含む入れ物（`ownerName`）と入れ物内での位置（`position`）を引数で受け取る。
+ *
+ * @param name 検証する名前
+ * @param ownerName その名前を含む入れ物の名前
+ * @param position 入れ物内での位置（`child 0` / `key "x"` など）
+ * @returns 空なら missing-name、識別子の規則を満たさなければ invalid-identifier。
+ *   問題なければ空
  */
 function collectNameErrors(
   name: string,
@@ -408,7 +425,13 @@ function collectNameErrors(
   return [];
 }
 
-/** ノードとその子孫の name が、欠落せず識別子の規則を満たしているか。 */
+/**
+ * ノードとその子孫の name が、欠落せず識別子の規則を満たしているか。
+ *
+ * @param nodes 検証するノードの並び
+ * @param ownerName 名前が欠落しているときに位置として出す入れ物の名前
+ * @returns 自身と子孫の名前のエラーの並び
+ */
 function collectNodeNameErrors(
   nodes: readonly Node[],
   ownerName: string,
@@ -419,7 +442,12 @@ function collectNodeNameErrors(
   ]);
 }
 
-/** すべての種別のトークン名が識別子の規則を満たしているか。 */
+/**
+ * すべての種別のトークン名が識別子の規則を満たしているか。
+ *
+ * @param tokens 検証するトークン一式
+ * @returns 規則を満たさない名前ごとの invalid-identifier エラーの並び
+ */
 function collectTokenNameErrors(
   tokens: TokenSet,
 ): readonly DesignDocumentValidationError[] {
@@ -439,7 +467,12 @@ function collectTokenNameErrors(
   );
 }
 
-/** ドキュメント全体の名前（部品・artboard・ノード・トークン）のエラーを集める。 */
+/**
+ * ドキュメント全体の名前（部品・artboard・ノード・トークン）のエラーを集める。
+ *
+ * @param document 検証するドキュメント
+ * @returns 欠落・識別子違反・重複を含む、名前のエラーの並び
+ */
 export function collectDocumentNameErrors(
   document: DesignDocument,
 ): readonly DesignDocumentValidationError[] {

@@ -19,6 +19,9 @@ const FIELD_CLASS = "w-full rounded border border-gray-300 px-2 py-1";
 /**
  * 未指定のときに何が効くかを出す（#34「未指定 prop はデフォルト値を
  * プレースホルダ等で表示し、明示設定と区別する」）。
+ *
+ * @param control 未指定のときの見え方を出したいコントロール
+ * @returns 既定値を持つなら既定値を添えた「未指定」、持たなければ「未指定」
  */
 function unsetLabel(control: PropControl): string {
   return control.defaultValue.some

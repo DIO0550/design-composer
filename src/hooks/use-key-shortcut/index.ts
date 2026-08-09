@@ -52,6 +52,9 @@ export const KeyShortcut = {
  * 文字を打ち込んでいる最中のキーは無視する。Backspace のような編集キーを
  * ショートカットに割り当てたとき、入力欄の文字が消せなくなるため。
  * この扱いはどのショートカットにも共通なので、割り当てるキーの側ではなくここが持つ。
+ *
+ * @param shortcut 待ち受けるキーの組み合わせ
+ * @param onPress その組み合わせが押されたときに呼ぶ手続き
  */
 export function useKeyShortcut(
   shortcut: KeyShortcut,

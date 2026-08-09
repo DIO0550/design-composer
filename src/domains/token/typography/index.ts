@@ -74,6 +74,10 @@ export const TypographyField = {
  * 不在のフォントファミリはキーごと落とす。
  * 既定値(システムフォントスタック)を書き込むと、指定していない値が
  * ファイルに残る(docs/04-tokens.md「省略時はシステムフォントスタック」)。
+ *
+ * @param token 書き換える元の書体トークン
+ * @param fontFamily 設定するフォントファミリ。`none` ならキーごと落とす
+ * @returns フォントファミリだけが入れ替わった書体トークン
  */
 function withFontFamily(
   token: TypographyToken,

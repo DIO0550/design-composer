@@ -13,6 +13,8 @@ const COPY_SHORTCUT: KeyShortcut = {
  *
  * このフックが持つのは「コピーに割り当てる組み合わせはどれか」だけで、
  * ページ全体で受けることと入力中は無視することは `useKeyShortcut` に任せる。
+ *
+ * @param onCopy 組み合わせが押されたときに呼ぶ手続き
  */
 export function useCopyShortcut(onCopy: () => void): void {
   useKeyShortcut(COPY_SHORTCUT, onCopy);

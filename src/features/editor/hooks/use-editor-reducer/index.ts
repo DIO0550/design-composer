@@ -36,7 +36,13 @@ export type EditorAction =
   | Readonly<{ type: "rename_token"; name: string }>
   | Readonly<{ type: "remove_token" }>;
 
-/** アクションの解釈だけを行い、状態の組み立ては EditorState に委ねる。 */
+/**
+ * アクションの解釈だけを行い、状態の組み立ては EditorState に委ねる。
+ *
+ * @param state 今のエディタの状態
+ * @param action 解釈するアクション
+ * @returns 遷移後のエディタの状態
+ */
 function editorReducer(state: EditorState, action: EditorAction): EditorState {
   switch (action.type) {
     case "select":
@@ -139,6 +145,9 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
 /**
  * ドキュメントと選択は 1 つの操作で同時に変わる（読み直しで選択が外れる）ため、
  * useState を 2 つ並べずに reducer へ統合する（rules/hooks.md）。
+ *
+ * @param initialDocument 開いた直後のドキュメント
+ * @returns 今のエディタの状態と、アクションの送り先
  */
 export function useEditorReducer(
   initialDocument: DesignDocument,

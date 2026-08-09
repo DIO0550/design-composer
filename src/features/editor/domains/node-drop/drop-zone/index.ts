@@ -27,6 +27,10 @@ const MARKER_THICKNESS_PX = 2;
 /**
  * 挿入位置（線を引く座標）を、子が並ぶ向きの軸上で求める。
  * 端では隣の子がいないので親の内側の端へ寄せ、間では隣り合う子の隙間の中央へ置く。
+ *
+ * @param zone 親と子の矩形を持つ落とし先の帯
+ * @param index 挿入したい位置（0 なら先頭、子の数と同じなら末尾）
+ * @returns 子が並ぶ向きの軸上の座標
  */
 function insertionCoordinate(zone: DropZone, index: number): number {
   const direction = zone.parent.direction;
@@ -45,7 +49,13 @@ function insertionCoordinate(zone: DropZone, index: number): number {
   );
 }
 
-/** 挿入位置を示す線。子が並ぶ向きと直交し、親の端から端まで伸びる。 */
+/**
+ * 挿入位置を示す線。子が並ぶ向きと直交し、親の端から端まで伸びる。
+ *
+ * @param zone 親と子の矩形を持つ落とし先の帯
+ * @param coordinate 線を引く軸上の座標
+ * @returns 線として描く矩形
+ */
 function markerBounds(zone: DropZone, coordinate: number): CanvasBounds {
   const half = MARKER_THICKNESS_PX / 2;
   return zone.parent.direction === "row"

@@ -8,7 +8,12 @@ import type {
 } from "@/features/editor/domains/document-session";
 import type { DocumentIpcError } from "@/libs/document-ipc";
 
-/** I/O の失敗を利用者向けの言い方にする。診断用の原文は後ろに添える。 */
+/**
+ * I/O の失敗を利用者向けの言い方にする。診断用の原文は後ろに添える。
+ *
+ * @param error 画面に出したい I/O の失敗
+ * @returns 利用者向けの 1 行
+ */
 function ioFailureLabel(error: DocumentIpcError): string {
   switch (error.kind) {
     case "notFound":

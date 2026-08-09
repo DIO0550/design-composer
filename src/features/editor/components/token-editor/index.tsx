@@ -106,7 +106,11 @@ function DraftField({
   );
 }
 
-/** トークンの 1 フィールドの入力欄。形は値の種別で決まる。 */
+/**
+ * トークンの 1 フィールドの入力欄。形は値の種別で決まる。
+ *
+ * @returns 色ならカラーピッカー、数値なら数値欄、それ以外はテキスト欄
+ */
 function ValueField({
   id,
   input,
@@ -160,6 +164,8 @@ function ValueField({
  * 何の入力欄を何行出すかは `TokenControl.forSelection` が決めるため、
  * ここには種別名で分岐するコードを置かない。複合オブジェクトの種別
  * （shadows / typography）はフィールドの数だけ行が並ぶ（#126）。
+ *
+ * @returns 名前の欄・値の入力欄・削除のボタンと、参照元の一覧
  */
 export function TokenEditor({
   state,

@@ -229,7 +229,13 @@ export const Node = {
   },
 } as const;
 
-/** プリミティブのノードとして読む。未知のフィールドはエラーにする。 */
+/**
+ * プリミティブのノードとして読む。未知のフィールドはエラーにする。
+ *
+ * @param record 読み出し元のオブジェクトを指しているカーソル
+ * @returns 読めたノード。必須フィールドの欠落・型違い・未知のフィールドは
+ *   位置つきのエラーの並び
+ */
 function primitiveNodeFromJson(record: JsonRecordCursor): JsonDecoded<Node> {
   return Json.knownFields(
     Json.combine4(
@@ -249,7 +255,13 @@ function primitiveNodeFromJson(record: JsonRecordCursor): JsonDecoded<Node> {
   );
 }
 
-/** 部品インスタンスとして読む。未知のフィールドはエラーにする。 */
+/**
+ * 部品インスタンスとして読む。未知のフィールドはエラーにする。
+ *
+ * @param record 読み出し元のオブジェクトを指しているカーソル
+ * @returns 読めたノード。必須フィールドの欠落・型違い・未知のフィールドは
+ *   位置つきのエラーの並び
+ */
 function refNodeFromJson(record: JsonRecordCursor): JsonDecoded<Node> {
   return Json.knownFields(
     Json.combine3(

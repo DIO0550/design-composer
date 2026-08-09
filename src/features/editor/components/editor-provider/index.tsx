@@ -24,6 +24,8 @@ const EditorContext = createContext<Option<Editor>>(Option.none);
 /**
  * 3 つのペインが同じ状態を読むための Provider（rules/components.md）。
  * 状態の生存期間を Provider に閉じるため、reducer もここで持つ。
+ *
+ * @returns 状態と dispatch を配る Provider
  */
 export function EditorProvider({
   initialDocument,
@@ -43,6 +45,9 @@ export function EditorProvider({
  * これは実行時に起こりうる失敗ではなくコンポーネントの配置ミスであり、
  * 既定のエディタ状態を返して隠すと付け忘れが画面に出ないまま残るため
  * （rules/coding.md「エラーと不在の表現」の例外）。
+ *
+ * @returns Provider が配っている状態と dispatch
+ * @throws EditorProvider の外で呼ばれたとき
  */
 export function useEditor(): Editor {
   const editor = useContext(EditorContext);

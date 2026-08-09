@@ -53,7 +53,13 @@ const ARTBOARD_FIXED_SIZE_PROPS: readonly string[] = [
   "height",
 ];
 
-/** Box の prop 定義を artboard 用のデフォルトで上書きしたもの。 */
+/**
+ * Box の prop 定義を artboard 用のデフォルトで上書きしたもの。
+ *
+ * @param name 上書きするかどうかを引く prop 名
+ * @param definition 元になる Box の prop 定義
+ * @returns artboard 用の既定を持つ prop 定義。上書きが無ければ元のまま
+ */
 function withArtboardDefault(
   name: string,
   definition: PropDefinition,

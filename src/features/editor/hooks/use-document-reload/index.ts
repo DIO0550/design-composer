@@ -24,6 +24,8 @@ export type DocumentReloadTarget = Readonly<{
  *
  * 「取り込めたか / 拒んだか」の判断は `DocumentReload` が持ち、ここは
  * 外部システム（file watch）との同期と受け渡しだけを行う（rules/hooks.md）。
+ *
+ * @returns 直近の監視 / 読み込みの失敗。1 度も失敗していなければ `none`
  */
 export function useDocumentReload({
   ipc,

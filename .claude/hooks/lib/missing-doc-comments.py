@@ -25,9 +25,9 @@ doc がある関数については、`rules/coding.md`「doc に書く項目」�
     missing-doc-comments.py --missing-only <検査するファイル>  # doc の有無だけ
     missing-doc-comments.py --all [ルート]                   # 全体（既定のルートは src）
 
-`--missing-only` は push 前の検査で使う。項目（`@param` / `@returns` / `@throws`）の
-検査は既存の doc 190 件に及ぶため、埋め終わるまで push を止めない
-（`.claude/hooks/README.md`「例外(エスケープハッチ)」）。
+`--missing-only` は doc の有無だけを見たいときに使う。#159 で項目の抜けを 0 件に
+したので、push 前の検査は項目まで見ている（`.claude/hooks/README.md`
+「例外(エスケープハッチ)」）。
 
 見つかれば標準出力へ報告して終了コード 1、無ければ何も出さず 0。
 """
@@ -140,10 +140,31 @@ def missing_doc_items(lines: list[str], index: int, doc: str) -> list[str]:
     returns_value = re.search(r":\s*(?!void\b|Promise<void>)\S", returns)
     if returns_value and "@returns" not in doc:
         missing.append("@returns")
-    body = "\n".join(lines[index : index + 80])
-    if re.search(r"\bthrow\s", body) and "@throws" not in doc:
+    if re.search(r"\bthrow\s", body_of(lines, index)) and "@throws" not in doc:
         missing.append("@throws")
     return missing
+
+
+def body_of(lines: list[str], index: int) -> str:
+    """宣言の本体（`{` から対応する `}` まで）。
+
+    行数で切らずに波括弧の対応で切るのは、`useEditor` の `throw` を
+    その上にある `EditorProvider` の本体として数えてしまわないため。
+
+    @param lines ファイル全体の行
+    @param index 宣言の始まりの行番号（0 始まり）
+    @returns 本体の中身。`{` が見つからなければ空文字
+    """
+    depth = 0
+    started = False
+    collected: list[str] = []
+    for line in lines[index:]:
+        depth += line.count("{") - line.count("}")
+        started = started or "{" in line
+        collected.append(line)
+        if started and depth <= 0:
+            break
+    return "\n".join(collected)
 
 
 def incomplete(path: Path) -> list[tuple[int, str]]:

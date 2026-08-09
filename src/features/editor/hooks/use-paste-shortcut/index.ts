@@ -13,6 +13,8 @@ const PASTE_SHORTCUT: KeyShortcut = {
  *
  * このフックが持つのは「ペーストに割り当てる組み合わせはどれか」だけで、
  * ページ全体で受けることと入力中は無視することは `useKeyShortcut` に任せる。
+ *
+ * @param onPaste 組み合わせが押されたときに呼ぶ手続き
  */
 export function usePasteShortcut(onPaste: () => void): void {
   useKeyShortcut(PASTE_SHORTCUT, onPaste);
