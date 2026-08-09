@@ -28,7 +28,12 @@ export type TauriDialog = Readonly<{
   ): Promise<Option<string>>;
 }>;
 
-/** プラグインは可変の配列を要求するので、渡す直前にコピーする。 */
+/**
+ * プラグインは可変の配列を要求するので、渡す直前にコピーする。
+ *
+ * @param filter 渡したい拡張子の絞り込み
+ * @returns プラグインが受け取れる形（拡張子は新しい配列）
+ */
 function toPluginFilter(filter: FileFilter): {
   name: string;
   extensions: string[];

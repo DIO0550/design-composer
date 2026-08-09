@@ -44,6 +44,9 @@ export const Rgb = {
  * （不透明を表す桁を足さない）。
  * hex の綴りを別の正規表現で書き直すと、片方だけ直したときに気づけないので
  * 既存のパターンの任意キャプチャから引く。
+ *
+ * @param color alpha を読む対象の色
+ * @returns 小文字の 2 桁。alpha を持たなければ空文字
  */
 function alphaOf(color: ColorToken): string {
   return ANY_CASE_HEX_COLOR_PATTERN.exec(color)?.[1]?.toLowerCase() ?? "";

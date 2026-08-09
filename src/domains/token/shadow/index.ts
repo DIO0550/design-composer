@@ -8,6 +8,7 @@ import {
 import { Result } from "@/utils/Result";
 import { ColorToken } from "../color";
 
+/** 影のトークン（docs/04-tokens.md「shadows」）。`spread` だけ省略できる。 */
 export type ShadowToken = Readonly<{
   x: number;
   y: number;
@@ -30,6 +31,7 @@ const SHADOW_TOKEN_FIELDS = [
   "color",
 ] as const satisfies readonly (keyof Required<ShadowToken>)[];
 
+/** 影が持つフィールドの名前。 */
 export type ShadowField = (typeof SHADOW_TOKEN_FIELDS)[number];
 
 /**
@@ -44,6 +46,7 @@ export type ShadowFieldEdit =
 /** `box-shadow` に渡せる値。`x y blur spread color` の順に並ぶ。 */
 export type BoxShadowValue = `${Px} ${Px} ${Px} ${Px} ${string}`;
 
+/** 影の値の読み書き・`box-shadow` への展開と、JSON 表現との相互変換。 */
 export const ShadowToken = {
   fields(): readonly ShadowField[] {
     return SHADOW_TOKEN_FIELDS;

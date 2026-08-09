@@ -54,6 +54,13 @@ export type CssDeclaration = Readonly<{
   value: string;
 }>;
 
+/**
+ * 1 宣言を `プロパティ:値` の 1 行にする。
+ *
+ * @param property CSS のプロパティ名
+ * @param value そのプロパティに与える値
+ * @returns `プロパティ:値` の 1 行
+ */
 function declarationText(property: string, value: string): string {
   return `${property}:${value}`;
 }

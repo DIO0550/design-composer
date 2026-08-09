@@ -23,7 +23,13 @@ export type CompiledDocument = Readonly<{
   artboards: readonly BoxElement[];
 }>;
 
-/** artboard を Box としてコンパイルする。子は ref 展開を通してから並べる。 */
+/**
+ * artboard を Box としてコンパイルする。子は ref 展開を通してから並べる。
+ *
+ * @param artboard コンパイル対象の artboard
+ * @param document 部品の引き先になるドキュメント
+ * @returns コンパイル済みの Box。ref の展開か子のコンパイルが失敗すればその失敗
+ */
 function compileArtboard(
   artboard: Artboard,
   document: DesignDocument,
@@ -46,6 +52,12 @@ function compileArtboard(
   );
 }
 
+/**
+ * すべての artboard をコンパイルする。1 枚でも失敗したら全体を失敗にする。
+ *
+ * @param document コンパイル対象のドキュメント
+ * @returns 並び順を保ったコンパイル済みの Box。1 枚でも失敗すればその失敗
+ */
 function compileArtboards(
   document: DesignDocument,
 ): Result<readonly BoxElement[], Error> {
@@ -60,6 +72,7 @@ function compileArtboards(
   return Result.ok(compiled);
 }
 
+/** ドキュメント全体を、トークンの値に依存しない描画可能な形へコンパイルする。 */
 export const DocumentHtml = {
   /**
    * ドキュメントをレンダリング可能な形へコンパイルする。

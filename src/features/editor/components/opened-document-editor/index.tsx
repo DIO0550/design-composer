@@ -41,6 +41,8 @@ import type { DocumentIpc } from "@/libs/document-ipc";
  *
  * 戻り値を `ReactElement` と書いている理由は `LeftPaneContent` と同じ
  * （`case` の足し忘れをコンパイルエラーにする）。
+ *
+ * @returns Tokens ならトークンの編集欄、Layers / Assets ならプロパティパネル
  */
 function RightPaneContent({
   view,
@@ -86,6 +88,9 @@ type CanvasDock =
  * ファイルが不正な間は表示自体がファイルと食い違っているので、そちらの一覧だけを出す。
  * Why not: 2 つの一覧を並べると、外部エディタでしか直せないファイルの一覧が、
  * アプリ内で直せるドキュメントの一覧の場所を奪う。
+ *
+ * @param state エラーの出どころになるエディタの状態
+ * @returns ファイルが不正ならそのエラー、そうでなければ編集で作ったエラー
  */
 function canvasDock(state: EditorState): CanvasDock {
   const fileErrors = state.fileErrors;
@@ -101,6 +106,8 @@ function canvasDock(state: EditorState): CanvasDock {
  *
  * **この位置指定を落としてもテストは落ちない** — happy-dom はレイアウトを解決しない。
  * 気づく手段は `OpenedDocumentEditor / 編集で作った不正がある編集画面` の視覚差分だけ。
+ *
+ * @returns 子を縦に積み、キャンバスの下端に寄せる器
  */
 function CanvasDockStack({ children }: Readonly<{ children: ReactNode }>) {
   return (
@@ -115,6 +122,8 @@ function CanvasDockStack({ children }: Readonly<{ children: ReactNode }>) {
  *
  * ドキュメント由来のときにツールバーを消さないのは、表示がファイルと一致していて
  * 古くないから。編集を続けたまま直せる（#128）。一覧は 0 件なら何も出さない。
+ *
+ * @returns ファイルが不正ならエラー一覧だけ、そうでなければエラー一覧と挿入のツールバー
  */
 function CanvasDockContent({
   dock,

@@ -17,9 +17,15 @@ export const DOCUMENT_ERROR_ORIGINS = {
   document: "document",
 } as const;
 
+/** エラーの由来。 */
 export type DocumentErrorOrigin = ValueOf<typeof DOCUMENT_ERROR_ORIGINS>;
 
-/** エラーが指す場所の表示。位置の持ち方が由来ごとに違うので、ここで読める形にする。 */
+/**
+ * エラーが指す場所の表示。位置の持ち方が由来ごとに違うので、ここで読める形にする。
+ *
+ * @param location エラーが指している場所
+ * @returns 行に出す 1 行の綴り
+ */
 function locationLabel(location: DocumentErrorLocation): string {
   switch (location.kind) {
     case "text-position":
@@ -44,6 +50,9 @@ function locationLabel(location: DocumentErrorLocation): string {
  * Why not: ドキュメント由来にも `absolute` を持たせ、挿入ツールバーの高さぶん上へ
  * ずらす案は採らない。ツールバーの寸法をここへ写すことになり、ずれても
  * happy-dom は Tailwind を解決しないのでテストでは気づけない（#128）。
+ *
+ * @param origin エラーの由来
+ * @returns 一覧の読み上げ名・見出しの相手・置かれ方
  */
 function originPresentation(origin: DocumentErrorOrigin): Readonly<{
   listLabel: string;

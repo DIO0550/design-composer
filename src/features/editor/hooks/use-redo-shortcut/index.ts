@@ -18,6 +18,8 @@ const REDO_SHORTCUT: KeyShortcut = {
  *
  * このフックが持つのは「redo に割り当てる組み合わせはどれか」だけで、
  * ページ全体で受けることと入力中は無視することは `useKeyShortcut` に任せる。
+ *
+ * @param onRedo 組み合わせが押されたときに呼ぶ手続き
  */
 export function useRedoShortcut(onRedo: () => void): void {
   useKeyShortcut(REDO_SHORTCUT, onRedo);

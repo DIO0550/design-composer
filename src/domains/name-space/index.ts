@@ -12,7 +12,13 @@ import { CaseStyle } from "@/utils/CaseStyle";
  */
 export type NameSpace = Readonly<{ names: readonly string[] }>;
 
-/** 使用済みの名前と衝突しない名前を作る。衝突するなら連番を付ける。 */
+/**
+ * 使用済みの名前と衝突しない名前を作る。衝突するなら連番を付ける。
+ *
+ * @param baseName 付けたい名前
+ * @param taken 既に使われている名前
+ * @returns 衝突しなければ `baseName` そのまま、衝突すれば `baseName-2` から順に空いた名前
+ */
 function nextAvailableName(
   baseName: string,
   taken: ReadonlySet<string>,

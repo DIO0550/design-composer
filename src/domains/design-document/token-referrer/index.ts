@@ -38,7 +38,14 @@ export type TokenReferrer =
   | Readonly<{ target: "instance"; name: string; prop: string }>
   | Readonly<{ target: "component"; name: string; prop: string }>;
 
-/** スキーマが宣言する props のうち、そのトークンを指しているものの prop 名。 */
+/**
+ * スキーマが宣言する props のうち、そのトークンを指しているものの prop 名。
+ *
+ * @param type 宣言の出どころになるノードの型
+ * @param props 実際に設定されている props（未設定なら空として扱う）
+ * @param ref 参照されているかを知りたいトークン
+ * @returns そのトークンを指している prop 名の並び
+ */
 function collectSchemaRefProps(
   type: PrimitiveType,
   props: Props | undefined,
@@ -60,6 +67,11 @@ function collectSchemaRefProps(
  * 参照先の部品が無い・公開 prop に無い・連鎖が途切れているときは prop 定義が決まらないので
  * 数えない（それぞれ `dangling-ref` / `undeclared-override` / binding の不整合として
  * 検証側が報告する）。
+ *
+ * @param components 公開 prop の binding を辿るための部品一式
+ * @param refNode 上書きを持つインスタンスのノード
+ * @param ref 参照されているかを知りたいトークン
+ * @returns そのトークンを指している公開 prop 名の並び
  */
 function collectRefNodeRefProps(
   components: ComponentSet,
@@ -86,6 +98,10 @@ function collectRefNodeRefProps(
  *
  * 未知の type はスキーマを持たず、どの prop がトークンを指すのかが決まらないので空
  * （type 自体の不正は `unknown-type` として検証側が報告する）。
+ *
+ * @param node 参照元になりうるプリミティブノード
+ * @param ref 参照されているかを知りたいトークン
+ * @returns 参照元の並び。未知の type なら空
  */
 function collectPrimitiveReferrers(
   node: PrimitiveNode,
@@ -106,6 +122,11 @@ function collectPrimitiveReferrers(
 /**
  * 部品定義自身（ルートノードを兼ねる）の参照元。
  * 未知の type を空にする理由は `collectPrimitiveReferrers` と同じ。
+ *
+ * @param name 参照元として出す部品名
+ * @param component 参照元になりうる部品
+ * @param ref 参照されているかを知りたいトークン
+ * @returns 参照元の並び。未知の type なら空
  */
 function collectComponentRootReferrers(
   name: string,
@@ -120,7 +141,14 @@ function collectComponentRootReferrers(
   );
 }
 
-/** ノード1つとその子孫の参照元。並びは自身 → 子（木の深さ優先）。 */
+/**
+ * ノード1つとその子孫の参照元。並びは自身 → 子（木の深さ優先）。
+ *
+ * @param components インスタンスの上書きを辿るための部品一式
+ * @param node 起点のノード
+ * @param ref 参照されているかを知りたいトークン
+ * @returns 自身 → 子の順に並べた参照元の並び
+ */
 function collectNodeReferrers(
   components: ComponentSet,
   node: Node,

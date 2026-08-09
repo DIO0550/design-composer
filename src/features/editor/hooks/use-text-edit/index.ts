@@ -12,7 +12,13 @@ type TextEditAction =
   | Readonly<{ type: "change"; draft: string }>
   | Readonly<{ type: "end" }>;
 
-/** アクションの解釈だけを行い、状態の組み立ては TextEdit に委ねる。 */
+/**
+ * アクションの解釈だけを行い、状態の組み立ては TextEdit に委ねる。
+ *
+ * @param edit 今の編集中の状態（編集していなければ `none`）
+ * @param action 解釈するアクション
+ * @returns 遷移後の編集中の状態
+ */
 function textEditReducer(
   edit: Option<TextEdit>,
   action: TextEditAction,
@@ -30,6 +36,7 @@ function textEditReducer(
   }
 }
 
+/** キャンバス上での文言の書き換え中の状態と、そのハンドラ。 */
 export type TextEditControl = Readonly<{
   /** 編集中なら下書きと入力欄を重ねる位置。編集していなければ `none`。 */
   edit: Option<TextEdit>;
@@ -54,6 +61,9 @@ export type TextEditControl = Readonly<{
  *
  * 確定した文言を `PropEdit` として渡すのは、プロパティパネルからの `content` の編集と
  * 同じ経路（`apply_prop_edit`）に載せるため。自動保存もその経路に乗る。
+ *
+ * @param params 編集できる Text を引く `state` と、確定した文言を渡す `onEditProp`
+ * @returns 今の編集中の状態と、開始 / 下書きの更新 / 確定の手続き
  */
 export function useTextEdit(
   params: Readonly<{

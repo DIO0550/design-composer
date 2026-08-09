@@ -16,6 +16,7 @@ import {
 import type { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
+/** キャンバスに置かれる 1 枚の画面。大きさを必ず持ち、配下にノードを並べる。 */
 export type Artboard = Readonly<{
   name: string;
   width: number;
@@ -52,7 +53,13 @@ const ARTBOARD_FIXED_SIZE_PROPS: readonly string[] = [
   "height",
 ];
 
-/** Box の prop 定義を artboard 用のデフォルトで上書きしたもの。 */
+/**
+ * Box の prop 定義を artboard 用のデフォルトで上書きしたもの。
+ *
+ * @param name 上書きするかどうかを引く prop 名
+ * @param definition 元になる Box の prop 定義
+ * @returns artboard 用の既定を持つ prop 定義。上書きが無ければ元のまま
+ */
 function withArtboardDefault(
   name: string,
   definition: PropDefinition,
@@ -76,6 +83,7 @@ export type ArtboardBoxProps = ResolvedProps<"Box"> &
     height: number;
   }>;
 
+/** artboard の生成・大きさの読み出しと、JSON 表現との相互変換。 */
 export const Artboard = {
   create(params: {
     name: string;

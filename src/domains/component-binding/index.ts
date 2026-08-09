@@ -23,6 +23,11 @@ export type ComponentBinding = Readonly<{
 /**
  * ref ノードの連鎖（インターフェースの連鎖）を1段辿った先の binding。
  * 辿れない場合は連鎖がそこで途切れている。
+ *
+ * @param components 引き先の部品一式
+ * @param ref 辿る先の部品名
+ * @param prop 辿る公開 prop 名
+ * @returns 1 段先の binding。部品が無い・その prop が公開されていなければ `none`
  */
 function next(
   components: ComponentSet,
@@ -43,6 +48,11 @@ function next(
 /**
  * ref ノードの連鎖を辿って prop 定義に行き着く。
  * `visited` は辿った部品名で、循環参照に入ったときに打ち切るために持ち回る。
+ *
+ * @param components 引き先の部品一式
+ * @param source 辿り始める部品名と binding
+ * @param visited ここまでに辿った部品名（再訪したら打ち切る）
+ * @returns 行き着いた prop 定義。連鎖が途切れた場合と循環に入った場合は `none`
  */
 function resolveThroughRefs(
   components: ComponentSet,

@@ -1,9 +1,15 @@
-/** 要素自身から根へ向かう並び。 */
+/**
+ * 要素自身から根へ向かう並び。
+ *
+ * @param element 起点の要素
+ * @returns 先頭が `element`、末尾が根の要素になる並び
+ */
 function selfAndAncestors(element: Element): readonly Element[] {
   const parent = element.parentElement;
   return parent === null ? [element] : [element, ...selfAndAncestors(parent)];
 }
 
+/** DOM 要素の性質を答える汎用操作。 */
 export const ElementEx = {
   /**
    * その要素が文字を打ち込める場所か（入力欄・複数行入力欄・編集可能な要素）。

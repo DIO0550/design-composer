@@ -15,6 +15,7 @@ import type { ReactNode } from "react";
  */
 const LEFT_PANE_VIEW_ORDER = ["layers", "assets", "tokens"] as const;
 
+/** 左ペインが映せる行き先。 */
 export type LeftPaneView = (typeof LEFT_PANE_VIEW_ORDER)[number];
 
 /**

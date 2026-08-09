@@ -27,11 +27,24 @@ export type DocumentIpcFake = Readonly<{
   isWatching(path: string): boolean;
 }>;
 
-/** Tauri 自身が失敗したときと同じく、文字列で reject する。 */
+/**
+ * Tauri 自身が失敗したときと同じく、文字列で reject する。
+ *
+ * @param message 失敗として伝える文言
+ * @returns 決して解決しない Promise
+ * @throws 必ず。文字列で reject する
+ */
 function ipcFailure(message: string): Promise<never> {
   return Promise.reject(message);
 }
 
+/**
+ * 本物と同じ形（種別つき）でファイルの不在を返す。
+ *
+ * @param path 見つからなかったパス
+ * @returns 決して解決しない Promise
+ * @throws 必ず。`notFound` の種別を持つ失敗で reject する
+ */
 function notFound(path: string): Promise<never> {
   return Promise.reject({
     kind: "notFound",

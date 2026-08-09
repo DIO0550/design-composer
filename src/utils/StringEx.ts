@@ -1,3 +1,4 @@
+/** 文字列・文字に対する汎用操作。 */
 export const StringEx = {
   isWhitespace(ch: string): boolean {
     return ch === " " || ch === "\t" || ch === "\n" || ch === "\r";

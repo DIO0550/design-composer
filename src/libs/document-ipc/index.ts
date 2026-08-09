@@ -18,6 +18,7 @@ export type DocumentIpcErrorKind =
   | "io"
   | "ipcFailed";
 
+/** ファイルの読み書きが失敗した理由と、診断用の原文。 */
 export type DocumentIpcError = Readonly<{
   kind: DocumentIpcErrorKind;
   message: string;
@@ -70,6 +71,12 @@ const IO_ERROR_KINDS: readonly DocumentIpcErrorKind[] = [
   "io",
 ];
 
+/**
+ * Rust 側が返した拒否理由が、種別を持つ I/O の失敗として読めるか。
+ *
+ * @param reason reject された値
+ * @returns 種別とメッセージを持つ I/O の失敗として読めれば true
+ */
 function isDocumentIoError(reason: unknown): reason is DocumentIpcError {
   if (typeof reason !== "object" || reason === null) {
     return false;
@@ -86,6 +93,9 @@ function isDocumentIoError(reason: unknown): reason is DocumentIpcError {
  *
  * Rust の `Err` はそのまま `DocumentIoError` の形で届くが、コマンドに届く前に
  * Tauri 自身が失敗した場合は文字列で reject される。形で見分けて後者を `ipcFailed` に寄せる。
+ *
+ * @param reason reject された値
+ * @returns Rust 由来ならその失敗、それ以外は `ipcFailed`
  */
 function toDocumentIpcError(reason: unknown): DocumentIpcError {
   if (isDocumentIoError(reason)) {
@@ -94,6 +104,12 @@ function toDocumentIpcError(reason: unknown): DocumentIpcError {
   return { kind: "ipcFailed", message: String(reason) };
 }
 
+/**
+ * 監視から届いた値を、パスと中身を持つ通知として読む。
+ *
+ * @param payload 監視イベントで届いた値
+ * @returns パスと中身の対。どちらかが文字列でなければ `none`
+ */
 function toDocumentChanged(payload: unknown): Option<DocumentChanged> {
   if (typeof payload !== "object" || payload === null) {
     return Option.none;
@@ -110,6 +126,11 @@ function toDocumentChanged(payload: unknown): Option<DocumentChanged> {
  *
  * ここが例外と `Result` の境界。`libs/` の外へ例外を出さないため、
  * このモジュールの公開 API はすべて `Result` を返す。
+ *
+ * @param tauriIpc 呼び出しに使う IPC
+ * @param command 呼ぶコマンド名
+ * @param args コマンドへ渡す引数
+ * @returns コマンドの戻り値。reject されたら失敗として返す（例外にはしない）
  */
 async function call(
   tauriIpc: TauriIpc,
@@ -123,7 +144,12 @@ async function call(
   }
 }
 
-/** 戻り値を持たないコマンドの結果。 */
+/**
+ * 戻り値を持たないコマンドの結果。
+ *
+ * @param result コマンドの呼び出し結果
+ * @returns 成功なら中身を捨てた `Result.ok`、失敗はそのまま
+ */
 function toCompletion(
   result: Result<unknown, DocumentIpcError>,
 ): Result<void, DocumentIpcError> {
@@ -135,6 +161,9 @@ function toCompletion(
  *
  * IPC を渡ってくる値に型は無いので、`as` で通さず形を確かめてから返す。
  * 文字列以外が来るのは Rust 側と TS 側の版がずれたときで、`load` の結果としては扱えない。
+ *
+ * @param value `load_document` が返した値
+ * @returns 読み込んだ内容。文字列でなければ `ipcFailed`
  */
 function toContent(value: unknown): Result<string, DocumentIpcError> {
   if (typeof value !== "string") {

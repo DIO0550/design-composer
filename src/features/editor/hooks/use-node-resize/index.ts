@@ -18,7 +18,13 @@ type NodeResizeAction =
   | Readonly<{ type: "cancel" }>
   | Readonly<{ type: "consume_click" }>;
 
-/** アクションの解釈だけを行い、状態の組み立ては NodeResize に委ねる。 */
+/**
+ * アクションの解釈だけを行い、状態の組み立ては NodeResize に委ねる。
+ *
+ * @param resize 今のリサイズの状態
+ * @param action 解釈するアクション
+ * @returns 遷移後のリサイズの状態
+ */
 function nodeResizeReducer(
   resize: NodeResize,
   action: NodeResizeAction,
@@ -35,7 +41,12 @@ function nodeResizeReducer(
   }
 }
 
-/** 選択中のものが今どこにどれだけの大きさで描かれているか。 */
+/**
+ * 選択中のものが今どこにどれだけの大きさで描かれているか。
+ *
+ * @param state 選択の出どころになるエディタの状態
+ * @returns 描かれている矩形。未選択と、まだ画面に出ていないときは `none`
+ */
 function selectionBounds(state: EditorState): Option<CanvasBounds> {
   return Option.map(
     Option.flatMap(state.selectedName, CanvasDom.elementOf),
@@ -50,6 +61,7 @@ export type NodeResizeHandlers = Readonly<{
   onPointerLeave: () => void;
 }>;
 
+/** リサイズ中の状態と、ハンドルへ渡すハンドラ。 */
 export type NodeResizeControl = Readonly<{
   /** 押された位置がハンドルなら掴む。掴んだ（＝移動のドラッグに渡さない）なら `true`。 */
   grabHandle: (event: ReactPointerEvent<HTMLElement>) => boolean;
@@ -67,6 +79,10 @@ export type NodeResizeControl = Readonly<{
  *
  * ドラッグ（移動）と同じ状態機械にしないのは、移動と大きさの変更が別の編集であり、
  * 同時に起きないことは押した時点の順序（先にハンドルを試す）で決まるため。
+ *
+ * @param params ハンドルの位置を決める `state` と `view`、
+ *   大きさが確定したときに呼ぶ `onResize`
+ * @returns ハンドルを掴む手続きと、ポインタを追うハンドラ・`click` を飲み込む手続き
  */
 export function useNodeResize(
   params: Readonly<{

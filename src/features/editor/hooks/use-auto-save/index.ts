@@ -28,6 +28,8 @@ export type AutoSaveTarget = Readonly<{
  *
  * 保存は last-write-wins で、書き込み前に現在のファイル内容を読み直したり
  * マージしたりはしない（docs/05-architecture.md「競合の解決」）。
+ *
+ * @returns 直近の書き込みの失敗。1 度も失敗していなければ `none`
  */
 export function useAutoSave({
   ipc,

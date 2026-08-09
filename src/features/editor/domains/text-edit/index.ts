@@ -27,12 +27,20 @@ export type EditableText = Readonly<{
 /**
  * 設定されていない `content` にはスキーマの既定値が効いているため、
  * 既定を解決した後の文言を編集の初期値にする（空欄から書き始めることにならない）。
+ *
+ * @param node 文言を読む対象の Text ノード
+ * @returns 既定を解決した後の文言
  */
 function contentOf(node: PrimitiveNode): string {
   return String(ResolvedProps.resolve(TEXT_TYPE, node.props ?? {}).content);
 }
 
-/** 選択中のものがインライン編集できる Text なら、その名前と今の文言。 */
+/**
+ * 選択中のものがインライン編集できる Text なら、その名前と今の文言。
+ *
+ * @param state 選択の出どころになるエディタの状態
+ * @returns 名前と今の文言。未選択と、選択が Text でないときは `none`
+ */
 function forSelection(state: EditorState): Option<EditableText> {
   return Option.flatMap(state.selectedName, (name) => {
     const found = DesignDocument.findNode(EditorState.document(state), name);

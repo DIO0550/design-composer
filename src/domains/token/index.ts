@@ -26,9 +26,12 @@ export {
   TypographyToken,
 } from "./typography";
 
+/** 余白の大きさ。単位は px（docs/04-tokens.md「値の形式」）。 */
 export type SpacingToken = number;
+/** 角丸の半径。単位は px。 */
 export type RadiusToken = number;
 
+/** ドキュメントが持つトークン一式。種別ごとに名前で引ける。 */
 export type TokenSet = Readonly<{
   colors: Readonly<Record<string, ColorToken>>;
   spacing: Readonly<Record<string, SpacingToken>>;
@@ -50,6 +53,7 @@ const TOKEN_KINDS = [
   "typography",
 ] as const satisfies readonly (keyof TokenSet)[];
 
+/** トークンの種別。 */
 export type TokenKind = (typeof TOKEN_KINDS)[number];
 
 /**
@@ -137,7 +141,13 @@ export const Token = {
   },
 } as const;
 
-/** 種別ごとに値の型が違うので、書き込み先の種別で分岐する。 */
+/**
+ * 種別ごとに値の型が違うので、書き込み先の種別で分岐する。
+ *
+ * @param tokens 書き込み先のトークン一式
+ * @param token 書き込むトークン（同名があれば上書きになる）
+ * @returns そのトークンを含む新しいトークン一式
+ */
 function withToken(tokens: TokenSet, token: Token): TokenSet {
   switch (token.kind) {
     case "colors":
@@ -168,6 +178,13 @@ function withToken(tokens: TokenSet, token: Token): TokenSet {
   }
 }
 
+/**
+ * そのキーだけを取り除いた新しい入れ物。
+ *
+ * @param record 取り除く元の入れ物
+ * @param name 取り除くキー
+ * @returns そのキーを持たない新しい入れ物
+ */
 function withoutName<T>(
   record: Readonly<Record<string, T>>,
   name: string,
@@ -177,7 +194,14 @@ function withoutName<T>(
   );
 }
 
-/** 位置を保ったままキーを付け替える(改名で並びが動くと一覧の行が飛ぶ)。 */
+/**
+ * 位置を保ったままキーを付け替える(改名で並びが動くと一覧の行が飛ぶ)。
+ *
+ * @param record 付け替える元の入れ物
+ * @param from 付け替え前のキー
+ * @param to 付け替え後のキー
+ * @returns キーだけが入れ替わり、並びは元のままの新しい入れ物
+ */
 function withRenamedKey<T>(
   record: Readonly<Record<string, T>>,
   from: string,
@@ -190,6 +214,13 @@ function withRenamedKey<T>(
   );
 }
 
+/**
+ * 指す 1 つを取り除いたトークン一式。種別ごとの入れ物へ振り分ける。
+ *
+ * @param tokens 取り除く元のトークン一式
+ * @param ref 取り除くトークンの種別と名前
+ * @returns そのトークンを持たない新しいトークン一式
+ */
 function withoutToken(tokens: TokenSet, ref: TokenRef): TokenSet {
   switch (ref.kind) {
     case "colors":
@@ -208,6 +239,14 @@ function withoutToken(tokens: TokenSet, ref: TokenRef): TokenSet {
   }
 }
 
+/**
+ * 指す 1 つの名前を付け替えたトークン一式。並びは保たれる。
+ *
+ * @param tokens 付け替える元のトークン一式
+ * @param ref 付け替えるトークンの種別と、付け替え前の名前
+ * @param newName 付け替え後の名前
+ * @returns 名前だけが入れ替わった新しいトークン一式
+ */
 function withRenamedToken(
   tokens: TokenSet,
   ref: TokenRef,
@@ -242,7 +281,13 @@ function withRenamedToken(
   }
 }
 
-/** 種別ごとに値の型が違うので、読み出し元の種別で分岐する。 */
+/**
+ * 種別ごとに値の型が違うので、読み出し元の種別で分岐する。
+ *
+ * @param tokens 読み出し元のトークン一式
+ * @param kind 読み出す種別
+ * @returns その種別のトークンを、入れ物の並び順で並べたもの
+ */
 function tokensOfKind(tokens: TokenSet, kind: TokenKind): readonly Token[] {
   switch (kind) {
     case "colors":
@@ -282,6 +327,11 @@ function tokensOfKind(tokens: TokenSet, kind: TokenKind): readonly Token[] {
  * 書き込み先の名前が使えるかを確かめる。
  * 名前の規則は識別子と同じで、一意性は種別の中だけで見る
  * (docs/04-tokens.md「命名規則」)。
+ *
+ * @param tokens 一意性を見る対象のトークン一式
+ * @param ref 書き込み先の種別と名前
+ * @returns 使えるならその `ref`。ケバブケースでなければ `invalid-token-name`、
+ *   同じ種別に同名があれば `duplicate-token-name`
  */
 function checkWritableName(
   tokens: TokenSet,
@@ -299,6 +349,10 @@ function checkWritableName(
 /**
  * 種別ごとに値の書き出し方が違うので種別で分岐する。
  * 種別が増えたら、この分岐の漏れがコンパイルエラーになる。
+ *
+ * @param tokens 書き出し元のトークン一式
+ * @param kind 書き出す種別
+ * @returns その種別のトークンを名前順に並べた JSON オブジェクト
  */
 function tokenKindToJson(tokens: TokenSet, kind: TokenKind): JsonObject {
   switch (kind) {
@@ -315,6 +369,7 @@ function tokenKindToJson(tokens: TokenSet, kind: TokenKind): JsonObject {
   }
 }
 
+/** トークン一式の生成・検索・編集（追加・改名・削除）と JSON 表現との相互変換。 */
 export const TokenSet = {
   empty(): TokenSet {
     return { colors: {}, spacing: {}, radius: {}, shadows: {}, typography: {} };

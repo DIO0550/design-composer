@@ -36,6 +36,7 @@ function LeftPane({ children }: PaneProps) {
   );
 }
 
+/** 中央ペイン。キャンバスと、その下端へ重ねるものを載せる。 */
 function CenterPane({ children }: PaneProps) {
   return (
     // キャンバスは自前でズーム / パンを持つため、ペイン側でスクロールさせない
@@ -99,6 +100,7 @@ function RightPaneBody({ children }: PaneProps) {
   return <div className="min-h-0 flex-1 overflow-auto p-3">{children}</div>;
 }
 
+/** 3 ペインの器。中身は呼び出し側が children で組む。 */
 export const EditorLayout = Object.assign(EditorLayoutRoot, {
   LeftPane,
   CenterPane,

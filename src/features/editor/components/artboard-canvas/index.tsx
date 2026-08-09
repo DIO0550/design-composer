@@ -70,11 +70,15 @@ const DROP_PARENT_OUTLINE = "outline:2px dashed #10b981;outline-offset:1px";
  * 特定の要素へ class を足せない。出力に残っているノード名の属性を選択子にして、
  * 規則を 1 本だけ差し込む。名前はドキュメント全体で一意なので、
  * この 1 本が指すのは狙った artboard / ノードだけになる。
+ *
+ * @param name 指したい artboard / ノードの名前
+ * @returns その名前の属性に当たる属性選択子
  */
 function nameSelector(name: string): string {
   return `[${ELEMENT_NAME_ATTRIBUTE}="${Css.escapeQuotedString(name)}"]`;
 }
 
+/** 1 ノード分の宣言を、名前で引く選択子の規則としてキャンバスへ差し込む。 */
 function NameStyleRule({
   name,
   declarations,
@@ -116,6 +120,14 @@ const HANDLE_FACES = {
 /** ハンドルの色。選択枠と同じ青（Tailwind の `blue-500`）を、中身が透けるよう薄くして使う。 */
 const HANDLE_COLOR = "rgb(59 130 246 / 0.6)";
 
+/**
+ * リサイズハンドル 1 本を描く規則。掴める帯と見た目の帯を倍率にかかわらず一致させる。
+ *
+ * @param name ハンドルを出す artboard / ノードの名前
+ * @param handle どの軸のハンドルか
+ * @param scale 今のキャンバスの倍率（帯の太さを割り戻すのに使う）
+ * @returns その辺に帯を描く CSS 規則 1 本
+ */
 function handleRule(name: string, handle: AxisLength, scale: number): string {
   const face = HANDLE_FACES[handle.axis];
   /*
@@ -231,6 +243,7 @@ function DropMarker({ bounds }: Readonly<{ bounds: CanvasBounds }>) {
   );
 }
 
+/** 倍率の操作（拡大・縮小・等倍に戻す）。 */
 function CanvasToolbar({
   view,
   onZoomIn,

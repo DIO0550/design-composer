@@ -21,6 +21,9 @@ const VISIBLE_ROW_LIMIT = 3;
  * `switch` に `default` を置かず戻り値を `SelectionKind`（`undefined` を含まない）に
  * しているので、参照元の種類を足してここを足し忘れるとコンパイルエラーになる
  * （rules/coding.md「列挙した状態の網羅を型で強制する」）。
+ *
+ * @param referrer アイコンを出したい参照元
+ * @returns その行に描くアイコンの種類
  */
 function glyphKindOf(referrer: TokenReferrer): SelectionKind {
   switch (referrer.target) {
@@ -38,6 +41,11 @@ function glyphKindOf(referrer: TokenReferrer): SelectionKind {
   }
 }
 
+/**
+ * そのトークンを参照している箇所 1 件の行。
+ *
+ * @returns アイコンと参照元の位置を並べた 1 行
+ */
 function UsedByRow({
   referrer,
 }: Readonly<{ referrer: TokenReferrer }>): ReactElement {
@@ -62,6 +70,8 @@ function UsedByRow({
  * `+ N more` は押せる形にしていない。UI 案はこれを灰色の文字として描いており
  * `cursor:pointer` を持たせていない（同じ画面で持っているのは `reveal in tree` だけ）。
  * 全参照元をどこで見せるかは、キャンバスとの連動（#147）が持つ。
+ *
+ * @returns 見出しと件数、参照元の行（0 件なら枠を出さない）
  */
 export function TokenUsedBy({
   state,

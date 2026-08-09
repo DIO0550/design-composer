@@ -22,6 +22,10 @@ export type DocumentJsonErrorKind =
   | DocumentMigrationError["kind"]
   | JsonDecodeError["kind"];
 
+/**
+ * テキストの解釈が失敗した 1 件。
+ * 由来によって分かる位置の粒度が違うので、`path` と `position` はどちらも省略できる。
+ */
 export type DocumentJsonError = Readonly<{
   kind: DocumentJsonErrorKind;
   message: string;
@@ -33,6 +37,12 @@ export type DocumentJsonError = Readonly<{
 
 type Parsed = Result<DesignDocument, readonly DocumentJsonError[]>;
 
+/**
+ * 字句スキャンの失敗を、文字位置つきの形へ揃える。
+ *
+ * @param error 字句スキャンが報告した失敗
+ * @returns 種別・メッセージ・文字位置を持つ読み込みの失敗
+ */
 function toDocumentJsonError(error: JsonScanError): DocumentJsonError {
   return {
     kind: error.kind,
@@ -41,7 +51,12 @@ function toDocumentJsonError(error: JsonScanError): DocumentJsonError {
   };
 }
 
-/** 版の解決の失敗はテキスト内の位置もドキュメント内の位置も持たない。 */
+/**
+ * 版の解決の失敗はテキスト内の位置もドキュメント内の位置も持たない。
+ *
+ * @param error 版の解決が報告した失敗
+ * @returns 位置を持たない読み込みの失敗 1 件の並び
+ */
 function toMigrationError(
   error: DocumentMigrationError,
 ): readonly DocumentJsonError[] {
@@ -51,6 +66,9 @@ function toMigrationError(
 /**
  * 字句スキャンを通っていれば `JSON.parse` は成功するが、
  * 「例外を散らさない」ために失敗も値として扱う。
+ *
+ * @param text 読み込む JSON のテキスト
+ * @returns 読み込んだ値。`JSON.parse` が投げたら `syntax-error` の失敗
  */
 function parseJson(
   text: string,

@@ -13,6 +13,8 @@ const DELETE_SHORTCUT: KeyShortcut = {
  *
  * このフックが持つのは「削除に割り当てる組み合わせはどれか」だけで、
  * ページ全体で受けることと入力中は無視することは `useKeyShortcut` に任せる。
+ *
+ * @param onDelete 組み合わせが押されたときに呼ぶ手続き
  */
 export function useDeleteShortcut(onDelete: () => void): void {
   useKeyShortcut(DELETE_SHORTCUT, onDelete);

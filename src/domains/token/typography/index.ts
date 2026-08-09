@@ -9,6 +9,7 @@ import {
 import type { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
+/** 書体のトークン（docs/04-tokens.md「typography」）。`fontFamily` だけ省略できる。 */
 export type TypographyToken = Readonly<{
   fontSize: number;
   lineHeight: number;
@@ -28,6 +29,7 @@ const TYPOGRAPHY_FIELDS = [
   "fontFamily",
 ] as const satisfies readonly (keyof Required<TypographyToken>)[];
 
+/** 書体が持つフィールドの名前。 */
 export type TypographyField = (typeof TYPOGRAPHY_FIELDS)[number];
 
 /**
@@ -54,8 +56,10 @@ const CSS_PROPERTIES = {
   fontFamily: "font-family",
 } as const satisfies Readonly<Record<TypographyField, string>>;
 
+/** 書体のフィールドが展開される CSS プロパティ名。 */
 export type TypographyCssProperty = (typeof CSS_PROPERTIES)[TypographyField];
 
+/** フィールドと CSS プロパティ名の対応。 */
 export const TypographyField = {
   /**
    * 展開先の CSS プロパティ名。トークンの値には依存しないため、
@@ -70,6 +74,10 @@ export const TypographyField = {
  * 不在のフォントファミリはキーごと落とす。
  * 既定値(システムフォントスタック)を書き込むと、指定していない値が
  * ファイルに残る(docs/04-tokens.md「省略時はシステムフォントスタック」)。
+ *
+ * @param token 書き換える元の書体トークン
+ * @param fontFamily 設定するフォントファミリ。`none` ならキーごと落とす
+ * @returns フォントファミリだけが入れ替わった書体トークン
  */
 function withFontFamily(
   token: TypographyToken,
@@ -83,6 +91,7 @@ function withFontFamily(
   };
 }
 
+/** 書体の値の読み書き・CSS 宣言への展開と、JSON 表現との相互変換。 */
 export const TypographyToken = {
   fields(): readonly TypographyField[] {
     return TYPOGRAPHY_FIELDS;

@@ -22,6 +22,8 @@ import type { TokenActions } from "@/features/editor/hooks/use-token-actions";
  * `case` を足し忘れたときに「返さない経路がある」としてコンパイルエラーにするため。
  * `ReactNode` は `undefined` を含むので、抜けても通ってしまい、足し忘れた行き先が
  * 黙って空のパネルになる。
+ *
+ * @returns Layers ならツリー、Assets ならパレット、Tokens ならトークン一覧
  */
 function LeftPaneContent({
   view,
