@@ -25,6 +25,7 @@ export type EditorAction =
   | Readonly<{ type: "insert_node"; template: NodeTemplate }>
   | Readonly<{ type: "remove_node" }>
   | Readonly<{ type: "detach_instance" }>
+  | Readonly<{ type: "create_component"; componentName: string }>
   | Readonly<{ type: "copy_node" }>
   | Readonly<{ type: "paste_node" }>
   | Readonly<{ type: "apply_prop_edit"; edit: PropEdit }>
@@ -87,6 +88,17 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
        * 参照先の部品が壊れている（無い・循環している）ときだけ。
        */
       return Option.unwrapOr(EditorState.detachInstance(state), state);
+    case "create_component":
+      /*
+       * 部品にできない選択・使えない名前では木は変わらない
+       * （EditorState.createComponent の `none`）。部品化のボタンは
+       * `EditorState.createComponent(state, 下書き).some` が偽の間は押せないため、
+       * 画面の操作からこの `none` には到達しない。
+       */
+      return Option.unwrapOr(
+        EditorState.createComponent(state, action.componentName),
+        state,
+      );
     case "copy_node":
       /*
        * コピーできる対象が無ければクリップボードは変わらない

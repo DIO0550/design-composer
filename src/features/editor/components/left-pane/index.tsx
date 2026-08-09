@@ -2,6 +2,7 @@ import type { ReactElement } from "react";
 import { DesignDocument } from "@/domains/design-document";
 import { ArtboardList } from "@/features/editor/components/artboard-list";
 import { AssetsPanel } from "@/features/editor/components/assets-panel";
+import { CreateComponent } from "@/features/editor/components/create-component";
 import { DocumentTree } from "@/features/editor/components/document-tree";
 import { LeftPanePanel } from "@/features/editor/components/left-pane-panel";
 import {
@@ -79,6 +80,39 @@ function LeftPaneContent({
 }
 
 /**
+ * 行き先ごとに、パネル下端へ固定するもの。
+ *
+ * 本体（`LeftPaneContent`）と分けているのは、UI 案が `Create component` を
+ * スクロールしない帯として置いているため。中身と同じ `switch` に混ぜると
+ * 一覧と一緒に流れる。
+ *
+ * 不在を `undefined` ではなく `Option` にしているのは、行き先を足して `case` を
+ * 足し忘れたときにコンパイルエラーにするため（`ReactElement | undefined` だと
+ * 抜けても通ってしまう）。
+ *
+ * @param view 今の行き先
+ * @param state 部品化の可否を決める選択の出どころ
+ * @param node 部品化を送る先
+ * @returns Assets なら部品化のフッター、他の行き先では不在
+ */
+function leftPaneFooter(
+  view: LeftPaneView,
+  state: EditorState,
+  node: NodeActions,
+): Option<ReactElement> {
+  switch (view) {
+    case LEFT_PANE_VIEWS.layers:
+      return Option.none;
+    case LEFT_PANE_VIEWS.assets:
+      return Option.some(
+        <CreateComponent state={state} onCreate={node.createComponent} />,
+      );
+    case LEFT_PANE_VIEWS.tokens:
+      return Option.none;
+  }
+}
+
+/**
  * 左ペイン（UI 案 docs/Design Composer.html は 56px のレールと 248px の見出し付き
  * パネルを横に並べる / #129）。レールで選んだ行き先の中身をパネルへ出す。
  *
@@ -102,7 +136,10 @@ export function LeftPane({
   return (
     <>
       <LeftPaneRail current={view} onSelect={onSelectView} />
-      <LeftPanePanel title={LEFT_PANE_VIEW_LABELS[view]}>
+      <LeftPanePanel
+        title={LEFT_PANE_VIEW_LABELS[view]}
+        footer={leftPaneFooter(view, state, node)}
+      >
         <LeftPaneContent view={view} state={state} node={node} token={token} />
       </LeftPanePanel>
     </>

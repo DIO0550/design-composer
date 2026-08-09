@@ -67,6 +67,15 @@ test("duplicate-name は既に使われている名前を含むメッセージ�
   ).toBe('name "button" is already used');
 });
 
+test("invalid-name は規則を満たさなかった名前を含むメッセージになる", () => {
+  expect(
+    DesignDocumentEditError.message({
+      kind: "invalid-name",
+      name: "Card",
+    }),
+  ).toBe('name "Card" is not a valid identifier');
+});
+
 test("index-out-of-range は指定された index と配列長を含むメッセージになる", () => {
   expect(
     DesignDocumentEditError.message({

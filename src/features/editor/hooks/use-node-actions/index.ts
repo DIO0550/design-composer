@@ -24,6 +24,7 @@ export type NodeActions = Readonly<{
   insert: (template: NodeTemplate) => void;
   insertInstance: (componentName: string) => void;
   detachInstance: () => void;
+  createComponent: (componentName: string) => void;
   isInsertEnabled: boolean;
 }>;
 
@@ -70,6 +71,12 @@ export function useNodeActions(): NodeActions {
      * （UI 案 docs/Design Composer.html の `Detach instance`）。
      */
     detachInstance: () => dispatch({ type: "detach_instance" }),
+    /**
+     * 部品化も選択中のものへの操作なので、渡すのは新しい部品に付ける名前だけ
+     * （docs/06-ui.md「部品化（Create Component）」の「操作時に部品名のみを入力させる」）。
+     */
+    createComponent: (componentName) =>
+      dispatch({ type: "create_component", componentName }),
     /**
      * 挿入は選択中のものを起点にするため、押せるかどうかも選択から決まる
      * （docs/06-ui.md「編集操作の一覧」）。

@@ -22,6 +22,7 @@ const NODE_ACTIONS: NodeActions = {
   insert: fn(),
   insertInstance: fn(),
   detachInstance: fn(),
+  createComponent: fn(),
   isInsertEnabled: true,
 };
 

@@ -14,6 +14,20 @@ test("存在しないノード名を指定して部品化しようとすると n
   });
 });
 
+test("識別子の規則を満たさない名前を指定して部品化しようとすると invalid-name エラーになる", () => {
+  const box = { name: "box-1", type: "Box" };
+  const document = DesignDocument.create({
+    artboards: [{ name: "screen", width: 375, height: 812, children: [box] }],
+  });
+
+  const result = DesignDocument.createComponent(document, "box-1", "Card");
+
+  expect(result).toEqual({
+    ok: false,
+    error: { kind: "invalid-name", name: "Card" },
+  });
+});
+
 test("既存の部品名と衝突する名前を指定して部品化しようとすると duplicate-name エラーになる", () => {
   const box = { name: "box-1", type: "Box" };
   const document = DesignDocument.create({

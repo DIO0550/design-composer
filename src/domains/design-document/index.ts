@@ -542,7 +542,14 @@ export const DesignDocument = {
 
   /**
    * ノードを部品として切り出し、元の位置をその部品への参照に置き換える。
-   * 部品名はドキュメントの単一名前空間に加わるため、既存の名前と衝突したら失敗させる。
+   * 部品名はドキュメントの単一名前空間に加わるため、規則と衝突の両方をここで見る。
+   *
+   * @param document 切り出し元のドキュメント
+   * @param name 部品にするノードの名前
+   * @param componentName 新しく作る部品に付ける名前
+   * @returns 部品が増え、元の位置が参照ノードに変わったドキュメント。
+   *   ノードが無い・部品名が識別子の規則を満たさない・部品名が既に使われている・
+   *   参照ノードを指しているときは失敗
    */
   createComponent(
     document: DesignDocument,
@@ -552,6 +559,9 @@ export const DesignDocument = {
     const found = DesignDocument.findNode(document, name);
     if (!found.some) {
       return Result.err({ kind: "node-not-found", name });
+    }
+    if (!NameSpace.isValidIdentifier(componentName)) {
+      return Result.err({ kind: "invalid-name", name: componentName });
     }
     if (NameSpace.has(nameSpaceOf(document), componentName)) {
       return Result.err({ kind: "duplicate-name", name: componentName });
