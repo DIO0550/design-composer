@@ -27,6 +27,11 @@ export function LeftPanePanel({
       <div className="flex h-11 shrink-0 items-center border-gray-300 border-b px-3">
         <h2 className="font-semibold text-gray-900 text-sm">{title}</h2>
       </div>
+      {/*
+        `min-h-0 flex-1` を外すと本体が中身の高さのままになり、フッターが下端から
+        浮く（一覧が長いときは押し出される）。happy-dom は Tailwind を解決しないため
+        テストでは落ちず、気づく手段は Storybook の視覚差分だけ。
+      */}
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-auto p-3">
         {children}
       </div>

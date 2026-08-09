@@ -18,6 +18,16 @@ const LABELS = {
   namePlaceholder: "component-name",
 } as const;
 
+/**
+ * 打った名前では作れないときに、ボタンの `title` へ出す理由（挿入・解除のボタンと同じ扱い）。
+ *
+ * 規則違反と重複を書き分けないのは、`EditorState.createComponent` が
+ * 「その部品化は存在しない」を `Option` で返すだけで理由を持たないため。
+ * 書き分けるには失敗の種別を UI まで運ぶことになり、押せるかを部品化そのものに
+ * 答えさせている形（`isCreatable`）を崩す。
+ */
+const UNUSABLE_NAME_REASON = "使える部品名を入れると作成できます";
+
 /** 部品にできないときの 1 行（UI 案の淡い灰色）。 */
 const UNAVAILABLE_CAPTION_CLASS = "text-center text-[#c4c4c4] text-xs";
 
@@ -78,13 +88,15 @@ function Caption({
  */
 function CreateButton({
   isEnabled,
+  reason,
   onClick,
-}: Readonly<{ isEnabled: boolean; onClick?: () => void }>) {
+}: Readonly<{ isEnabled: boolean; reason?: string; onClick?: () => void }>) {
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={!isEnabled}
+      title={reason}
       className="flex h-8 w-full items-center justify-center gap-2 rounded-md bg-[#1e1e1e] font-medium text-white text-xs disabled:border disabled:border-[#ebebeb] disabled:bg-[#fafafa] disabled:font-normal disabled:text-[#c4c4c4]"
     >
       <span aria-hidden="true" className={isEnabled ? "text-[#c9a6ff]" : ""}>
@@ -149,6 +161,7 @@ function ReadyBody({
       />
       <CreateButton
         isEnabled={isCreatable}
+        reason={isCreatable ? undefined : UNUSABLE_NAME_REASON}
         onClick={() => onCreate(componentName)}
       />
     </>
@@ -173,6 +186,8 @@ export function CreateComponent({
   const componentization = Componentization.forSelection(state);
 
   return (
+    // `shrink-0` を外すと一覧が長いときにフッターが潰れるが、happy-dom は Tailwind を
+    // 解決しないためテストでは落ちない。気づく手段は Storybook の視覚差分だけ。
     <div className="flex shrink-0 flex-col gap-2 border-[#f0f0f0] border-t p-3">
       {componentization.kind === "ready" ? (
         <ReadyBody

@@ -19,8 +19,11 @@ import {
  *
  * 部品化の入口は `Assets` の下端にしか無く、名前を打つ欄も押せるかどうかも
  * そこにしか無いので、`EditorState` 単体のテストでは画面との繋がりを通らない。
- * 打ちかけの名前を捨てる仕組み（選択が変わったときの再マウント）も、`key` を
- * 持つのが呼び出し側なのでここでしか確かめられない。
+ *
+ * ここで見る打ちかけの名前の消え方は、**部品にできないものを選んだとき**の
+ * アンマウントによるもの。部品にできる別のノードへ移したときの取り直し（`key`）は
+ * `create-component` のテストが持つ（このドキュメントには部品にできるノードが
+ * `home-title` しか無いため、ここでは `key` を通れない）。
  */
 
 /** レールで `Assets` へ切り替える。部品化の入口はこの行き先にしか無い。 */
@@ -48,6 +51,37 @@ async function createComponentNamed(componentName: string): Promise<void> {
   );
   await userEvent.click(createButton());
 }
+
+test("Layers を見ている間は部品化の入口が出ない", async () => {
+  await renderOpenedDocument();
+  await selectInTree("home-title");
+
+  /*
+   * UI 案（docs/Design Composer.html）が `Create component` を置いているのは
+   * `Assets` パネルの下端だけ。同じ選択のまま `Assets` へ切り替えれば押せる状態で
+   * 出る（次のテスト）ので、ここで出ないことは入力から自明ではない。
+   */
+  expect(
+    within(leftPane()).queryByRole("button", { name: /Create component/ }),
+  ).toBeNull();
+});
+
+test("Tokens を見ている間は部品化の入口が出ない", async () => {
+  await renderOpenedDocument();
+  await selectInTree("home-title");
+
+  await userEvent.click(
+    within(
+      screen.getByRole("navigation", { name: "左ペインの表示" }),
+    ).getByRole("button", {
+      name: LEFT_PANE_VIEW_LABELS[LEFT_PANE_VIEWS.tokens],
+    }),
+  );
+
+  expect(
+    within(leftPane()).queryByRole("button", { name: /Create component/ }),
+  ).toBeNull();
+});
 
 test("選択中のノードを部品にするとパレットにその部品が並ぶ", async () => {
   await renderOpenedDocument();

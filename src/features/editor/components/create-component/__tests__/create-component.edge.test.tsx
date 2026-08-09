@@ -1,46 +1,9 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { expect, test } from "vitest";
-import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
-import { EditorState } from "@/features/editor/domains/editor-state";
+import { expect, test, vi } from "vitest";
 import { Option } from "@/utils/Option";
 import { CreateComponent } from "../index";
-
-/** artboard・インスタンス・部品にできるノードが揃ったドキュメント。 */
-function setupDocument(): DesignDocument {
-  return DesignDocument.create({
-    tokens: DocumentTemplate.DEFAULT.tokens,
-    components: DocumentTemplate.DEFAULT.components,
-    artboards: [
-      {
-        name: "home",
-        width: 360,
-        height: 240,
-        children: [
-          {
-            name: "home-panel",
-            type: "Box",
-            children: [{ name: "home-title", type: "Text" }],
-          },
-          { name: "home-login", ref: "primary-button" },
-        ],
-      },
-    ],
-  });
-}
-
-/**
- * 名前を選んだ状態。名前を渡さなければ何も選んでいない状態。
- *
- * @param selectedName 選んでおく名前。不在なら未選択のまま
- * @returns その選択を持つエディタの状態
- */
-function setupState(selectedName: Option<string>): EditorState {
-  const state = EditorState.create(setupDocument());
-  return selectedName.some
-    ? EditorState.select(state, selectedName.value)
-    : state;
-}
+import { setupState } from "./setup";
 
 /** 部品化のボタンが押せない状態か。 */
 function isCreateDisabled(): boolean {
@@ -139,6 +102,47 @@ test("識別子の規則を満たさない部品名では部品化のボタン�
   );
 
   expect(isCreateDisabled()).toBe(true);
+});
+
+test("使えない部品名では Enter を押しても部品化が要求されない", async () => {
+  const user = userEvent.setup();
+  const onCreate = vi.fn();
+  render(
+    <CreateComponent
+      state={setupState(Option.some("home-panel"))}
+      onCreate={onCreate}
+    />,
+  );
+
+  await user.click(screen.getByRole("button", { name: /Create component/ }));
+  await user.type(
+    screen.getByRole("textbox", { name: "部品名" }),
+    "Info Panel{Enter}",
+  );
+
+  expect(onCreate).not.toHaveBeenCalled();
+});
+
+test("使えない部品名のときはボタンにその旨が添えられる", async () => {
+  const user = userEvent.setup();
+  render(
+    <CreateComponent
+      state={setupState(Option.some("home-panel"))}
+      onCreate={() => {}}
+    />,
+  );
+
+  await user.click(screen.getByRole("button", { name: /Create component/ }));
+  await user.type(
+    screen.getByRole("textbox", { name: "部品名" }),
+    "Info Panel",
+  );
+
+  expect(
+    screen
+      .getByRole("button", { name: /Create component/ })
+      .getAttribute("title"),
+  ).toBe("使える部品名を入れると作成できます");
 });
 
 test("部品にできる別のノードを選び直すと打ちかけの部品名が消える", async () => {
