@@ -17,6 +17,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `pre-push-test-rules.sh` | `PreToolUse` (Bash)       | **push 前の全体テスト規約検査**。全 `*.test.ts(x)` を検査し違反があれば push をブロック   |
 | `check-test-helper-duplication.sh` | `PostToolUse` (Edit/Write) | **テストヘルパーの重複検出**(rules/testing.md「テスト用ヘルパーの置き場所」)。同じ `__tests__/` に本体が一字一句同じヘルパーが 2 つ以上あれば知らせる |
 | `check-doc-comments.sh`  | `PostToolUse` (Edit/Write) | **doc コメントの検証**(rules/coding.md「コメントは doc と Why / Why not に絞る」)。`src/` の実装ファイルで、doc の無いファイル直下の宣言があれば知らせる |
+| `pre-push-doc-comments.sh` | `PreToolUse` (Bash)     | **push 前の doc コメント検査**。**このブランチで追加した行**に載る宣言に doc が無ければ push をブロック |
 | `post-merge-review.sh`   | `PostToolUse` (Bash/MCP)  | **マージ後の振り返りの提示**。PR のマージを検知し、Issue への追記と評価の記録を促す       |
 
 ## 移植元から見送ったもの
@@ -39,7 +40,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | --- | --- | --- |
 | `lib/test-conditionals.awk` | `check-test-rules.sh` / `pre-push-test-rules.sh` | `test()` / `it()` ブロック内の `if` / `else` / `switch` を行番号付きで出力する |
 | `lib/duplicate-test-helpers.py` | `check-test-helper-duplication.sh` | `__tests__/` の中で本体が完全に一致するヘルパーを探す。`--all` で全体を検査できる |
-| `lib/missing-doc-comments.py` | `check-doc-comments.sh` | `src/` のファイル直下の宣言のうち doc コメントの無いものを探す。`--all` で全体を検査できる |
+| `lib/missing-doc-comments.py` | `check-doc-comments.sh` / `pre-push-doc-comments.sh` | `src/` のファイル直下の宣言のうち doc コメントの無いものを探す。`--lines` で行を絞れる(追加した行だけ)、`--all` で全体を検査できる |
 
 ## 例外(エスケープハッチ)
 
@@ -61,8 +62,12 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
   - 対象は `src/` の実装ファイルのみ(`__tests__/` / `*.stories.*` / `__stories__/` は見ない)
   - 見るのは**ファイル直下の宣言**だけ(入れ子の関数・オブジェクトのメソッドは対象外)
   - **同じファイルに同名の宣言があってそちらに doc があれば対象外**。型とコンパニオンオブジェクトが doc を共有する形(`export type Size` の下に `export const Size = {`)を偽陽性にしないため
-  - push ブロックにしなかったのは、導入時点で既存の違反が 73 件(ファイル直下の `function`)/ 77 件(`export` された宣言)あったため。触っていない分まで止めると、直す気の無い違反を避けるためのエスケープハッチが増える
   - ファイル単位で無効化: `// @doc-comments-ok`
+- `pre-push-doc-comments.sh` は **push をブロックする**。ただし見るのは**このブランチで追加した行**に載る宣言だけ(`git merge-base origin/main HEAD` との差分)
+  - 全体を見ないのは、導入時点で既存の抜けが 73 件(ファイル直下の `function`)/ 77 件(`export` された宣言)あったため。触っていない分で毎回止まると、**止まる理由が自分の変更ではない**状態になり、エスケープハッチを足す運用を招いてフック全体が信用されなくなる
+  - 既存の抜けがあるファイルの本文だけを触っても止まらない(宣言行が追加行に含まれないため)。既存分の解消は別途
+  - `origin/main` が引けない環境(クローン直後・detached)では黙ってスキップする
+  - ファイル単位で無効化: `// @doc-comments-ok`(PostToolUse 版と共通)
 - `pre-push-typecheck.sh` / `pre-push-lint.sh` は node_modules 未インストール時(ツールが実行不能な場合)は黙ってスキップする
 - `post-merge-review.sh` はマージを**ブロックしない**(`additionalContext` を返すだけ)。マージは人の判断で行われるので、記録が無いことを理由に止めても記録の質は上がらないため
   - 検知対象は `mcp__github__merge_pull_request` と `gh pr merge` のみ。素の `git merge` は見ない(ベースブランチの取り込みで日常的に走るため、拾うと誤発火のほうが多くなる)
@@ -93,6 +98,10 @@ echo '{"tool_input":{"file_path":"src/domains/token/index.ts"}}' \
 
 # 全体の doc 抜けを数える
 python3 .claude/hooks/lib/missing-doc-comments.py --all src
+
+# push がブロックされること(deny が出力される。追加した行に doc 無しの宣言があるとき)
+echo '{"tool_input":{"command":"git push"}}' \
+  | bash .claude/hooks/pre-push-doc-comments.sh
 ```
 
 ```bash
