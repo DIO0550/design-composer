@@ -15,6 +15,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `pre-push-typecheck.sh`  | `PreToolUse` (Bash)       | **push 前の型チェック**。`pnpm run typecheck`(tsc -b)でエラーがあれば push をブロック    |
 | `pre-push-lint.sh`       | `PreToolUse` (Bash)       | **push 前の全体 lint**。oxlint / Biome のエラーがあれば push をブロック                   |
 | `pre-push-test-rules.sh` | `PreToolUse` (Bash)       | **push 前の全体テスト規約検査**。全 `*.test.ts(x)` を検査し違反があれば push をブロック   |
+| `check-test-helper-duplication.sh` | `PostToolUse` (Edit/Write) | **テストヘルパーの重複検出**(rules/testing.md「テスト用ヘルパーの置き場所」)。同じ `__tests__/` に本体が一字一句同じヘルパーが 2 つ以上あれば知らせる |
 | `post-merge-review.sh`   | `PostToolUse` (Bash/MCP)  | **マージ後の振り返りの提示**。PR のマージを検知し、Issue への追記と評価の記録を促す       |
 
 ## 移植元から見送ったもの
@@ -32,6 +33,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | ファイル | 使う側 | 内容 |
 | --- | --- | --- |
 | `lib/test-conditionals.awk` | `check-test-rules.sh` / `pre-push-test-rules.sh` | `test()` / `it()` ブロック内の `if` / `else` / `switch` を行番号付きで出力する |
+| `lib/duplicate-test-helpers.py` | `check-test-helper-duplication.sh` | `__tests__/` の中で本体が完全に一致するヘルパーを探す。`--all` で全体を検査できる |
 
 ## 例外(エスケープハッチ)
 
@@ -45,6 +47,10 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 - テスト規約チェック(`check-test-rules.sh` / `pre-push-test-rules.sh`)は以下で個別に無効化できる:
   - ファイル単位: `// @test-rules-disable [no-describe|no-conditional|file-naming ...]`(引数なしで全ルール無効化)
   - プロジェクト単位: 最寄りの `.test-rules.yml` に `<ルール名>: false` を記載
+- `check-test-helper-duplication.sh` は**ブロックしない**(`additionalContext` を返すだけ)。また、見るのは**編集したファイルが絡む重複だけ**
+  - 判定は「本体が一字一句同じ」に限る。似ているだけのものは見ない(偽陽性で止めない)
+  - push ブロックにしなかったのは、導入時点でリポジトリに既存の重複が 13 組あったため。触っていない分まで止めると、直す気の無い違反を避けるためのエスケープハッチが増える(既存分の解消は #153)
+  - ファイル単位で無効化: `// @duplicate-helpers-ok`
 - `pre-push-typecheck.sh` / `pre-push-lint.sh` は node_modules 未インストール時(ツールが実行不能な場合)は黙ってスキップする
 - `post-merge-review.sh` はマージを**ブロックしない**(`additionalContext` を返すだけ)。マージは人の判断で行われるので、記録が無いことを理由に止めても記録の質は上がらないため
   - 検知対象は `mcp__github__merge_pull_request` と `gh pr merge` のみ。素の `git merge` は見ない(ベースブランチの取り込みで日常的に走るため、拾うと誤発火のほうが多くなる)
@@ -57,6 +63,15 @@ echo '{"tool_input":{"command":"npx create-vite"}}' | bash .claude/hooks/block-n
 
 # 許可されること(出力なし・exit 0)
 echo '{"tool_input":{"command":"pnpm run lint"}}' | bash .claude/hooks/block-npx.sh
+```
+
+```bash
+# 重複が報告されること(additionalContext が出力される)
+echo '{"tool_input":{"file_path":"src/features/editor/components/property-panel/__tests__/property-panel.heading.test.tsx"}}' \
+  | bash .claude/hooks/check-test-helper-duplication.sh
+
+# 全体の重複を数える
+python3 .claude/hooks/lib/duplicate-test-helpers.py --all src
 ```
 
 ```bash
