@@ -4,10 +4,7 @@ import { expect, test } from "vitest";
 import type { NodeTemplate } from "@/features/editor/domains/node-template";
 import { NodeInsertToolbar } from "../index";
 
-/**
- * ツールバーの器。ここを起点に探すことで、器が読み上げ名を失った実装
- * （`aria-label` の消し忘れ）でも落ちるようにする。
- */
+/** 器を起点に探す。ボタンを直接引くと、器が読み上げ名を失っても気づけない。 */
 function toolbar() {
   return within(screen.getByRole("region", { name: "挿入" }));
 }
@@ -22,11 +19,7 @@ test("プリミティブごとの追加ボタンが並ぶ", () => {
 test("追加ボタンはそれぞれの型アイコンを出す", () => {
   render(<NodeInsertToolbar isInsertEnabled onInsert={() => {}} />);
 
-  /*
-   * アイコンだけのボタンなので、絵が無いと空の四角が 2 つ並ぶ。読み上げ名は
-   * `aria-label` から出るため、アイコンを消してもボタンを名前で探すテストは
-   * すべて通ってしまう（実際にアイコンを消して 703 件すべて通ることを確かめた）。
-   */
+  // 読み上げ名は `aria-label` から出るので、名前で探すテストはアイコンを消しても通る。
   expect(
     within(screen.getByRole("button", { name: "Box を追加" })).getByText("□"),
   ).toBeDefined();
@@ -62,9 +55,6 @@ test("Text を追加すると Text の挿入が伝わる", async () => {
 
   await user.click(screen.getByRole("button", { name: "Text を追加" }));
 
-  /*
-   * Box と別に見るのは、`PRIMITIVE_TYPES` の走査を「先頭 1 件だけ」に壊しても
-   * Box 側のテストは通ってしまうため。
-   */
+  // Box と別に見るのは、走査を先頭 1 件に壊しても Box 側は通ってしまうため。
   expect(inserted).toEqual([{ kind: "primitive", type: "Text" }]);
 });

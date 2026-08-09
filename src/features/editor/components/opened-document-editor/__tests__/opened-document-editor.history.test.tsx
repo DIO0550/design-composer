@@ -45,8 +45,7 @@ test("削除を戻すと消したノードがツリーに返ってくる", async
   await renderOpenedDocument();
   await selectInTree("home-title");
   await userEvent.keyboard("{Delete}");
-  // 消えたことを先に見る。消えていないと、この後の Ctrl+Z が何もしなくても
-  // 最後の assert が通ってしまう（削除の入口はキーだけになった / #112）。
+  // 消えたことを先に見る。消えていないと Ctrl+Z が no-op でも最後の assert が通る。
   expect(rowNames(tree())).toEqual(["home-login"]);
 
   await userEvent.keyboard("{Control>}z{/Control}");

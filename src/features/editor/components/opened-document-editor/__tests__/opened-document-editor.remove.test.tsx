@@ -4,12 +4,9 @@ import { rowNames } from "@/features/editor/__tests__/row-names";
 import { renderOpenedDocument, selectInTree, tree } from "./setup";
 
 /*
- * 削除を、編集画面の配線ごと確かめる（docs/06-ui.md「編集操作の一覧」の削除 / #39）。
- *
- * 削除の入口はキーボードだけになった（UI 案 docs/Design Composer.html がボタンを
- * 持たないため / #112）ので、ここを通さないと「キーを押すと実際に消える」が
- * どこでも守られない。`use-delete-shortcut` 側のテストが見ているのは、
- * キーの組み合わせが受け口へ届くところまで。
+ * 削除を編集画面の配線ごと確かめる（docs/06-ui.md「編集操作の一覧」/ #39）。
+ * 入口がキーボードだけになった（#112）ので、ここを通さないと「押すと実際に消える」を
+ * 守るテストが無くなる（`use-delete-shortcut` 側は受け口へ届くところまでしか見ない）。
  */
 
 test("選択して Delete を押すとツリーからそのノードが消える", async () => {

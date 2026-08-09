@@ -15,8 +15,7 @@ export const PATH = "/work/sample.dcmp";
  * 監視と購読は非同期に成立するので、操作を始める前にここで待ち合わせる
  * （待たずに操作すると、成立したときの状態更新が act の外で起きる）。
  *
- * 代役を返すのは、外部変更を起こすテスト（`breakFileExternally`）が同じものを
- * 必要とするため。使わないテストは戻り値を無視してよい。
+ * 代役を返すのは、外部変更を起こすテストが同じものを必要とするため。
  */
 export async function renderOpenedDocument(): Promise<DocumentIpcFake> {
   const fake = DocumentIpcFake.create({
@@ -34,8 +33,7 @@ export async function renderOpenedDocument(): Promise<DocumentIpcFake> {
 }
 
 /**
- * 外部（AI・エディタ・git 操作等）がファイルを壊したことにする。
- * 解釈できない中身なので取り込みは拒まれ、画面はエラーを抱えたまま
+ * 外部がファイルを壊したことにする。取り込みは拒まれ、画面はエラーを抱えたまま
  * 最後に正常だった表示を保つ（docs/03-schema.md「不正ファイル時の挙動」）。
  */
 export async function breakFileExternally(
@@ -45,20 +43,19 @@ export async function breakFileExternally(
 }
 
 /**
- * キャンバス。同じ名前がツリーにもキャンバスにも出るので、探す相手を絞るのに使う。
- * 挿入のツールバーもこの中にあるため、「入口がキャンバスへ移った」ことを見るには
- * ここで絞る必要がある（絞らないと左ペインへ置き戻す実装でも通ってしまう / #112）。
+ * キャンバス。同じ名前がツリーにも出るので絞るのに使う。挿入のツールバーもこの中に
+ * あり、絞らないと左ペインへ置き戻す実装でも通ってしまう（#112）。
  */
 export function canvasPane(): HTMLElement {
   return screen.getByRole("main", { name: "キャンバス" });
 }
 
-/** 左ペイン。レール・artboard の一覧・ツリーをまとめて指す。 */
+/** 左ペイン。 */
 export function leftPane(): HTMLElement {
   return screen.getByRole("complementary", { name: "左ペイン" });
 }
 
-/** 右ペイン。プロパティパネルとトークン編集の置き場。 */
+/** 右ペイン。 */
 export function propertyPane(): HTMLElement {
   return screen.getByRole("complementary", { name: "プロパティパネル" });
 }

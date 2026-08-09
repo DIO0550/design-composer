@@ -5,15 +5,10 @@ import {
 import { TypeGlyph } from "@/features/editor/components/type-glyph";
 import type { NodeTemplate } from "@/features/editor/domains/node-template";
 
-/** 選択の状態から決まる、押せない理由。ボタンの `title` に出して操作の見当を付けさせる。 */
+/** 押せないときに `title` へ出す理由。押せない状態を見せるだけだと打つ手が分からない。 */
 const INSERT_DISABLED_REASON = "子を持てるものを選ぶと追加できます";
 
-/**
- * ピル 1 つ分のボタン（UI 案 docs/Design Composer.html の `36×32` / `border-radius:6px`）。
- *
- * アイコンだけのボタンなので、読み上げ名は `aria-label` で与える
- * （`TypeGlyph` は `aria-hidden` で、名前を持たない）。
- */
+/** アイコンだけのボタン。`TypeGlyph` は `aria-hidden` なので、名前は `aria-label` で与える。 */
 function InsertButton({
   type,
   isEnabled,
@@ -38,25 +33,16 @@ function InsertButton({
 }
 
 /**
- * キャンバスに浮かぶツールバー（UI 案 docs/Design Composer.html。Design notes の
- * 「the canvas carries a floating toolbar instead of a status bar」/ #112）。
+ * キャンバスに浮かぶツールバー（UI 案 docs/Design Composer.html / #112）。
  *
- * 出すのはプリミティブの挿入だけ。UI 案はこの帯にポインタ（選択ツール）・`#`（artboard）・
- * `◆`（部品インスタンス）も並べているが、置いていない。ツールモードの概念が無く、
- * artboard の追加は未実装（#43）で、`◆` は Assets のドラッグ中に背景が付く状態表示で
- * ボタンですらないため。押しても何も起きないボタンを先に置くと、できない操作が画面に
- * ある状態になる（`ArtboardList` が UI 案の `+` を出していないのと同じ判断）。
+ * UI 案が並べるポインタ・`#`（artboard）・`◆`（インスタンス）は置かない。順に
+ * ツールモードの概念が無い / artboard の追加が未実装（#43）/ `◆` はドラッグ中の
+ * 状態表示でボタンではない、が理由（`ArtboardList` が UI 案の `+` を出していないのと
+ * 同じ判断）。並びを `PRIMITIVE_TYPES` から作るのは、スキーマと二重管理しないため。
  *
- * ボタンの並びは `PRIMITIVE_TYPES` から作る。プリミティブが増えたときに画面側の一覧が
- * 取り残されないようにするため（スキーマと二重管理しない）。
- *
- * 浮かせる位置指定をここが持つのは、浮いていること自体がこの部品の形だから
- * （UI 案の器が `position:absolute; bottom:16px; left:50%` を持っている）。
- * 位置指定された祖先の中に置く必要があり、置き場は `EditorLayout.CenterPane`。
- * **この位置指定を落としたことはテストでは落ちない**（happy-dom は Tailwind を
- * 解決しない）。気づく手段は Storybook の視覚差分だけなので、触るときは VRT を見ること。
- *
- * 影は Tailwind の階調に無い値なので UI 案の実測値をそのまま書いている。
+ * 位置指定と影はこの部品が持つ（浮いていること自体がこの部品の形）。ただし
+ * **位置指定を落としてもテストは落ちない** — happy-dom は Tailwind を解決せず、
+ * class 名の assert は実装詳細のテストになる。気づく手段は Storybook の視覚差分だけ。
  */
 export function NodeInsertToolbar({
   isInsertEnabled,

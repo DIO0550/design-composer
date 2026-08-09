@@ -47,10 +47,7 @@ test("Text を追加すると選択位置の子として増える", async () => 
 test("何も選んでいないときは追加のボタンを押せない", async () => {
   await renderOpenedDocument();
 
-  /*
-   * 「挿せる位置があるか」を状態から読んでボタンへ渡す配線を見る。上の 2 件は
-   * 必ず選んでから押すので、押せるかどうかを `true` に固定する実装でも通る。
-   */
+  // 上の 2 件は必ず選んでから押すので、押せるかどうかを `true` に固定しても通る。
   expect(
     within(canvasPane())
       .getByRole("button", { name: "Box を追加" })
@@ -73,10 +70,6 @@ test("外部の編集でファイルが壊れている間は追加のボタン�
 
   await breakFileExternally(fake);
 
-  /*
-   * エラー一覧がキャンバスの下端を占めるので、同じ下端に浮かぶツールバーを
-   * 出すと重なる。UI 案の Error 画面もツールバーを持たない（#112）。
-   */
   expect(screen.getByRole("alert", { name: "エラー一覧" })).toBeDefined();
   expect(
     within(canvasPane()).queryByRole("button", { name: "Box を追加" }),

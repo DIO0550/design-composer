@@ -31,8 +31,7 @@ export type NodeActions = Readonly<{
  *
  * キーボードだけの操作（削除・コピー & ペースト・undo / redo）はここに含めない。
  * 画面の部品から呼ぶ相手がおらず、`useEditShortcuts` が張るためだけに
- * 戻り値へ並べることになるため。削除は UI 案（docs/Design Composer.html）が
- * ボタンを持たないので、この一覧から外れた（#112）。
+ * 戻り値へ並べることになるため（削除は #112 でボタンを失ってこちら側になった）。
  */
 export function useNodeActions(): NodeActions {
   const { state, dispatch } = useEditor();

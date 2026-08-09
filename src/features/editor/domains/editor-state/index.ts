@@ -106,9 +106,7 @@ function withEdit(state: EditorState, document: DesignDocument): EditorState {
  * 選択できるものには artboard も含まれるが、artboard の削除は artboard 操作（#43）の
  * 担当なので、ここで消せるのは配下のノードだけ。
  *
- * 公開しないのは、消費者が `removeNode` だけになったため（挿入と違って、押せるか
- * どうかを画面へ配る必要が無い。削除の入口はキーボードだけで、対象が無いときは
- * `removeNode` が `none` を返す / #112）。
+ * 公開しないのは、消費者が `removeNode` だけになったため（#112）。
  */
 function removableName(state: EditorState): Option<string> {
   return Option.map(selectedNode(state), (node) => node.name);

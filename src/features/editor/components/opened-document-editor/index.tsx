@@ -112,11 +112,9 @@ function EditorPanes() {
           onEditProp={node.editProp}
         />
         {/*
-          キャンバスの下端を占めるのはどちらか一方。重ねると片方が読めなくなる。
-          UI 案（docs/Design Composer.html）でも、浮かぶツールバーを持つ 4 画面と、
-          そこにエラー一覧をドッキングする Error 画面とに分かれている
-          （Design notes の文章はツールバーが「凍結」と読めるが、マークアップには
-          存在しない。実測できるマークアップに従った）。
+          下端を占めるのはどちらか一方。UI 案も、浮かぶツールバーを持つ 4 画面と
+          エラー一覧をドッキングする Error 画面とに分かれている（Design notes の文章は
+          ツールバーが「凍結」と読めるが、マークアップに無いのでそちらに従った）。
         */}
         {hasErrors ? (
           <DocumentErrorList errors={state.errors} />

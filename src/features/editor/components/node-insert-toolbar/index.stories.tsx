@@ -7,7 +7,7 @@ const meta = {
   parameters: { layout: "fullscreen" },
   args: { onInsert: () => {} },
   decorators: [
-    // 自分で浮くので、置き場はキャンバス相当（位置指定された灰色の面）にする。
+    // 自分で浮くので、位置指定された面の中へ置く。
     (Story) => (
       <div className="relative h-64 w-full bg-gray-100">
         <Story />
