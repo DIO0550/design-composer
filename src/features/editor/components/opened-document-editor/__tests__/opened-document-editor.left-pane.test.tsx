@@ -112,3 +112,56 @@ test("パネルの見出しは今いる行き先の名前になる", async () =>
     within(leftPane()).getByRole("heading", { level: 2 }).textContent,
   ).toBe("Assets");
 });
+
+/*
+ * インスタンスを選んだときの「元の部品へ移動」（UI 案 docs/Design Composer.html の
+ * `Assets · Instance`）。行き先の切り替え・出どころの受け渡し・パレットの強調が
+ * 繋がって初めて成立するので、単体のテストでは通らない。
+ */
+test("インスタンスを選んで元の部品へ移動すると左ペインが Assets になる", async () => {
+  await renderOpenedDocument();
+  await selectInTree("home-login");
+
+  await userEvent.click(
+    within(propertyPane()).getByRole("button", {
+      name: "Go to source component",
+    }),
+  );
+
+  expect(
+    within(leftPane()).getByRole("heading", { level: 2 }).textContent,
+  ).toBe("Assets");
+});
+
+test("インスタンスを選ぶとパレットの元になっている部品の行が出どころとして出る", async () => {
+  await renderOpenedDocument();
+  await selectInTree("home-login");
+
+  await goTo(LEFT_PANE_VIEWS.assets);
+
+  const sourceRow = within(leftPane())
+    .getByText("source of selection")
+    .closest("li");
+  expect(sourceRow?.textContent).toContain("primary-button");
+});
+
+test("インスタンス以外を選んでいるとパレットのどの行も出どころにならない", async () => {
+  await renderOpenedDocument();
+  await selectInTree("home-title");
+
+  await goTo(LEFT_PANE_VIEWS.assets);
+
+  expect(within(leftPane()).queryByText("source of selection")).toBeNull();
+});
+
+test("インスタンスを解除するとツリーの行が参照ではなくなる", async () => {
+  await renderOpenedDocument();
+  await selectInTree("home-login");
+
+  await userEvent.click(
+    within(propertyPane()).getByRole("button", { name: "Detach instance" }),
+  );
+
+  // 帯の種別は参照ノードなら `Instance`。解除で実体になれば `Box` に変わる
+  expect(within(propertyPane()).getByText("Box")).toBeDefined();
+});

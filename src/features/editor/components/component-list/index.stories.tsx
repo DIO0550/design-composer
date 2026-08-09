@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Artboard } from "@/domains/artboard";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import { Option } from "@/utils/Option";
 import { ComponentList } from "./index";
 
 const meta = {
@@ -14,6 +15,7 @@ const meta = {
       </div>
     ),
   ],
+  args: { sourceName: Option.none },
 } satisfies Meta<typeof ComponentList>;
 
 export default meta;
@@ -62,4 +64,15 @@ export const InsertDisabled: Story = {
 export const Empty: Story = {
   name: "部品がない",
   args: { assets: [], isInsertEnabled: true, onInsert: () => {} },
+};
+
+/** インスタンスを選んでいる状態。元になっている部品の行だけが出どころとして光る。 */
+export const SourceOfSelection: Story = {
+  name: "選択中のインスタンスの元になっている部品がある",
+  args: {
+    assets: DesignDocument.componentAssets(USED_COMPONENTS_DOCUMENT),
+    sourceName: Option.some("primary-button"),
+    isInsertEnabled: true,
+    onInsert: () => {},
+  },
 };

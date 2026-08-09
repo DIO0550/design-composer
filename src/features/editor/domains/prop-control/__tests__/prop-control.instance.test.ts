@@ -4,7 +4,8 @@ import { DesignDocument } from "@/domains/design-document";
 import type { Node } from "@/domains/node";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
-import { PropControlSection } from "../index";
+import { SelectionControls } from "../index";
+import { controlNamed, instanceOf, sectionsOf } from "./setup";
 
 const COMPONENTS: ComponentSet = {
   "primary-button": {
@@ -13,6 +14,16 @@ const COMPONENTS: ComponentSet = {
     children: [
       { name: "button-label", type: "Text", props: { content: "Button" } },
     ],
+  },
+  /** 公開 prop の並びと、条件つきの公開 prop を見るための部品。 */
+  "sized-card": {
+    publicProps: {
+      title: { node: "sized-card-title", prop: "content" },
+      widthMode: { node: "sized-card", prop: "widthMode" },
+      width: { node: "sized-card", prop: "width" },
+    },
+    type: "Box",
+    children: [{ name: "sized-card-title", type: "Text" }],
   },
 };
 
@@ -30,34 +41,42 @@ function setupInstanceState(node: Node): EditorState {
   );
 }
 
-function controlOf(state: EditorState, prop: string) {
-  return PropControlSection.forSelection(state)
-    .flatMap((section) => section.controls)
-    .find((control) => control.prop === prop);
+function publicPropNames(state: EditorState): readonly string[] {
+  return instanceOf(state).publicProps.map((control) => control.prop);
 }
 
 test("インスタンスを選ぶと部品が公開している prop のコントロールが出る", () => {
   const state = setupInstanceState({ name: "action", ref: "primary-button" });
 
-  expect(
-    PropControlSection.forSelection(state).flatMap((section) =>
-      section.controls.map((control) => control.prop),
-    ),
-  ).toEqual(["label"]);
+  expect(publicPropNames(state)).toEqual(["label"]);
+});
+
+test("インスタンスを選ぶと元になっている部品の名前が出る", () => {
+  const state = setupInstanceState({ name: "action", ref: "primary-button" });
+
+  expect(instanceOf(state).source).toBe("primary-button");
+});
+
+test("インスタンス以外を選ぶと group ごとのセクションになる", () => {
+  const state = setupInstanceState({ name: "action", type: "Box" });
+
+  expect(sectionsOf(state).length).toBeGreaterThan(0);
 });
 
 test("公開 prop のコントロールは binding 先の prop の入力形式になる", () => {
   const state = setupInstanceState({ name: "action", ref: "primary-button" });
 
-  expect(controlOf(state, "label")?.input).toEqual({ kind: "text" });
+  expect(controlNamed(instanceOf(state).publicProps, "label").input).toEqual({
+    kind: "text",
+  });
 });
 
 test("上書きしていない公開 prop は部品が設定している値が既定として出る", () => {
   const state = setupInstanceState({ name: "action", ref: "primary-button" });
-  const control = controlOf(state, "label");
+  const control = controlNamed(instanceOf(state).publicProps, "label");
 
-  expect(control?.value.some).toBe(false);
-  expect(control?.defaultValue).toEqual(Option.some("Button"));
+  expect(control.value.some).toBe(false);
+  expect(control.defaultValue).toEqual(Option.some("Button"));
 });
 
 test("上書きしている公開 prop はその値がコントロールに乗る", () => {
@@ -67,17 +86,69 @@ test("上書きしている公開 prop はその値がコントロールに乗�
     overrides: { label: "ログイン" },
   });
 
-  expect(controlOf(state, "label")?.value).toEqual(Option.some("ログイン"));
+  expect(controlNamed(instanceOf(state).publicProps, "label").value).toEqual(
+    Option.some("ログイン"),
+  );
 });
 
-test("存在しない部品を指すインスタンスにはコントロールが出ない", () => {
+test("公開 prop は部品が宣言した順に並ぶ", () => {
+  const state = setupInstanceState({
+    name: "card",
+    ref: "sized-card",
+    overrides: { widthMode: "fixed" },
+  });
+
+  expect(publicPropNames(state)).toEqual(["title", "widthMode", "width"]);
+});
+
+test("条件を満たさない公開 prop はコントロールが出ない", () => {
+  const state = setupInstanceState({
+    name: "card",
+    ref: "sized-card",
+    overrides: { widthMode: "hug" },
+  });
+
+  expect(publicPropNames(state)).toEqual(["title", "widthMode"]);
+});
+
+test("存在しない部品を指すインスタンスには公開 prop のコントロールが出ない", () => {
   const state = setupInstanceState({ name: "action", ref: "missing" });
 
-  expect(PropControlSection.forSelection(state)).toEqual([]);
+  expect(instanceOf(state).publicProps).toEqual([]);
+});
+
+test("存在しない部品を指すインスタンスは解除できない", () => {
+  const state = setupInstanceState({ name: "action", ref: "missing" });
+
+  expect(instanceOf(state).isDetachEnabled).toBe(false);
+});
+
+test("部品が引けるインスタンスは解除できる", () => {
+  const state = setupInstanceState({ name: "action", ref: "primary-button" });
+
+  expect(instanceOf(state).isDetachEnabled).toBe(true);
 });
 
 test("スキーマの分からない type のノードにはコントロールが出ない", () => {
   const state = setupInstanceState({ name: "action", type: "Unknown" });
 
-  expect(PropControlSection.forSelection(state)).toEqual([]);
+  expect(sectionsOf(state)).toEqual([]);
+});
+
+test("インスタンスを選ぶと元の部品の名前が Assets 側へも渡る", () => {
+  const state = setupInstanceState({ name: "action", ref: "primary-button" });
+
+  expect(SelectionControls.sourceName(instanceOf(state))).toEqual(
+    Option.some("primary-button"),
+  );
+});
+
+test("インスタンス以外を選んでいるときは元の部品が無い", () => {
+  const state = setupInstanceState({ name: "action", type: "Box" });
+
+  expect(
+    SelectionControls.sourceName(
+      Option.unwrap(SelectionControls.forSelection(state)),
+    ),
+  ).toEqual(Option.none);
 });

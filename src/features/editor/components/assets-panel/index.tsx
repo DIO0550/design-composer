@@ -3,6 +3,7 @@ import type { ComponentAsset } from "@/domains/component";
 import { PRIMITIVE_TYPES } from "@/domains/primitive-schema";
 import { ComponentList } from "@/features/editor/components/component-list";
 import { PrimitiveList } from "@/features/editor/components/primitive-list";
+import type { Option } from "@/utils/Option";
 import { StringEx } from "@/utils/StringEx";
 
 /** 検索欄に出す案内（UI 案 docs/Design Composer.html の綴り）。 */
@@ -29,10 +30,12 @@ const NO_MATCH_MESSAGE = "一致するものがありません";
  */
 export function AssetsPanel({
   assets,
+  sourceName,
   isInsertEnabled,
   onInsert,
 }: Readonly<{
   assets: readonly ComponentAsset[];
+  sourceName: Option<string>;
   isInsertEnabled: boolean;
   onInsert: (name: string) => void;
 }>) {
@@ -71,6 +74,7 @@ export function AssetsPanel({
           <PrimitiveList types={matchedTypes} />
           <ComponentList
             assets={matchedAssets}
+            sourceName={sourceName}
             isInsertEnabled={isInsertEnabled}
             onInsert={onInsert}
           />

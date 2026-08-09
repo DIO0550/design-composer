@@ -1,11 +1,12 @@
-import { useId } from "react";
+import { type ReactElement, useId } from "react";
 import type { PropEdit } from "@/domains/node";
 import { EditorLayout } from "@/features/editor/components/editor-layout";
 import { TypeGlyph } from "@/features/editor/components/type-glyph";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import {
   PropControl,
-  PropControlSection,
+  type PropControlSection,
+  SelectionControls,
 } from "@/features/editor/domains/prop-control";
 import type {
   Selection,
@@ -159,6 +160,194 @@ function GroupSection({
   );
 }
 
+/*
+ * インスタンスの節の綴りは UI 案 docs/Design Composer.html の `Assets · Instance`
+ * 画面から採る。日本語にしないのは、同じ画面の `Public props` / `Assets` /
+ * `Components` が既に UI 案の綴りのままで、片方だけ訳すと節の名前が混ざるため。
+ */
+const INSTANCE_LABELS = {
+  from: "from",
+  publicProps: "Public props",
+  instance: "Instance",
+  goToSource: "Go to source component",
+  detach: "Detach instance",
+  detachNote:
+    "Detach bakes overrides into a real tree and auto-renames inner nodes.",
+  overridden: "overridden",
+  footnote:
+    "Only declared publicProps are editable. New declarations come from AI or JSON editing.",
+} as const;
+
+/** 解除できないときに、ボタンの `title` へ出す理由（挿入ボタンと同じ扱い）。 */
+const DETACH_DISABLED_REASON = "参照先の部品が見つからないため解除できません";
+
+/** インスタンスの節から呼ぶ操作。常に対で要るので 1 つにまとめて受け取る。 */
+export type InstanceActions = Readonly<{
+  goToSource: () => void;
+  detach: () => void;
+}>;
+
+/**
+ * 上書きしている公開 prop に添える、既定値の知らせ
+ * （UI 案の `overridden · default "Button"`）。
+ *
+ * 既定を持たない公開 prop もありうる（binding 先の prop にスキーマの `default` が
+ * 無く、部品側も値を設定していない場合）ので、そのときは `overridden` だけを出す。
+ */
+function OverriddenNote({ control }: Readonly<{ control: PropControl }>) {
+  const defaultValue = control.defaultValue;
+
+  return (
+    <p className="text-gray-400 text-xs">
+      {INSTANCE_LABELS.overridden}
+      {defaultValue.some ? (
+        <>
+          {" · default "}
+          {/* 値そのものと地の文を見分けられるよう、UI 案と同じく等幅で出す */}
+          <span className="font-mono text-gray-600">
+            "{String(defaultValue.value)}"
+          </span>
+        </>
+      ) : null}
+    </p>
+  );
+}
+
+/** 公開 prop 1 件の行。上書きしているときだけ既定値の知らせが下に付く。 */
+function PublicPropRow({
+  control,
+  onEdit,
+}: Readonly<{ control: PropControl; onEdit: (edit: PropEdit) => void }>) {
+  return (
+    <div className="flex flex-col gap-1">
+      <PropRow control={control} onEdit={onEdit} />
+      {PropControl.hasValue(control) ? (
+        <OverriddenNote control={control} />
+      ) : null}
+    </div>
+  );
+}
+
+/**
+ * インスタンスを選んだときの本文（UI 案 docs/Design Composer.html の
+ * `Assets · Instance` の右ペイン）。
+ *
+ * `group` の見出しを出さないのは、公開 prop の `group` が binding 先の
+ * プリミティブのものだから（出すと部品の内部構造が漏れる）。
+ *
+ * Why not: `Select all N instances` は置かない。同じ部品を指すインスタンスを
+ * まとめて選ぶには選択を複数持てる必要があり、押しても何も起きないボタンに
+ * なるため（#161 で選択の持ち方と一緒に入れる）。
+ */
+function InstanceBody({
+  controls,
+  onEdit,
+  actions,
+}: Readonly<{
+  controls: Extract<SelectionControls, { kind: "instance" }>;
+  onEdit: (edit: PropEdit) => void;
+  actions: InstanceActions;
+}>) {
+  const { source, publicProps } = controls;
+
+  return (
+    <div className="flex w-full flex-col gap-4">
+      <p className="flex items-center gap-1.5 text-gray-400 text-xs">
+        {INSTANCE_LABELS.from}
+        <span className="flex items-center gap-1 rounded bg-purple-50 px-2 py-0.5 font-medium text-[#7a34d6]">
+          <TypeGlyph kind="component" />
+          {source}
+        </span>
+      </p>
+
+      <section className="flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold text-gray-400 text-xs uppercase">
+            {INSTANCE_LABELS.publicProps}
+          </h3>
+          <span className="text-gray-400 text-xs">{publicProps.length}</span>
+        </div>
+        {publicProps.map((control) => (
+          <PublicPropRow key={control.prop} control={control} onEdit={onEdit} />
+        ))}
+      </section>
+
+      <section className="flex flex-col gap-2 border-gray-200 border-t pt-3">
+        <h3 className="font-semibold text-gray-400 text-xs uppercase">
+          {INSTANCE_LABELS.instance}
+        </h3>
+        <button
+          type="button"
+          onClick={actions.goToSource}
+          className="rounded border border-gray-300 px-2 py-1 text-left text-sm hover:bg-gray-100"
+        >
+          {INSTANCE_LABELS.goToSource}
+        </button>
+        <button
+          type="button"
+          onClick={actions.detach}
+          disabled={!controls.isDetachEnabled}
+          title={controls.isDetachEnabled ? undefined : DETACH_DISABLED_REASON}
+          className="rounded border border-gray-300 px-2 py-1 text-left text-sm hover:bg-gray-100 disabled:opacity-50"
+        >
+          {INSTANCE_LABELS.detach}
+        </button>
+        <p className="text-gray-400 text-xs">{INSTANCE_LABELS.detachNote}</p>
+      </section>
+
+      <p className="border-gray-200 border-t pt-3 text-gray-400 text-xs">
+        {INSTANCE_LABELS.footnote}
+      </p>
+    </div>
+  );
+}
+
+/** 見出しでまとめた prop の並び。編集できる prop が無ければその旨を出す。 */
+function GroupsBody({
+  sections,
+  onEdit,
+}: Readonly<{
+  sections: readonly PropControlSection[];
+  onEdit: (edit: PropEdit) => void;
+}>) {
+  if (sections.length === 0) {
+    return <p className="text-gray-500">編集できる prop がありません</p>;
+  }
+  return (
+    <div className="flex w-full flex-col gap-4">
+      {sections.map((section) => (
+        <GroupSection key={section.group} section={section} onEdit={onEdit} />
+      ))}
+    </div>
+  );
+}
+
+/**
+ * 選択の種類ごとの本文。
+ *
+ * 戻り値を `ReactElement`（`ReactNode` ではない）と書いているのは、種類を足して
+ * `case` を足し忘れたときにコンパイルエラーにするため（`rules/coding.md`
+ * 「列挙した状態の網羅を型で強制する」）。
+ */
+function SelectionBody({
+  controls,
+  onEdit,
+  instance,
+}: Readonly<{
+  controls: SelectionControls;
+  onEdit: (edit: PropEdit) => void;
+  instance: InstanceActions;
+}>): ReactElement {
+  switch (controls.kind) {
+    case "instance":
+      return (
+        <InstanceBody controls={controls} onEdit={onEdit} actions={instance} />
+      );
+    case "groups":
+      return <GroupsBody sections={controls.sections} onEdit={onEdit} />;
+  }
+}
+
 /**
  * 帯の右端に出す種別の綴り。
  *
@@ -213,20 +402,26 @@ function SelectionTitle({ selection }: Readonly<{ selection: Selection }>) {
  * 見出しの帯には選んでいるものを出す。何も選んでいないときも**帯は残す**
  * （消すと選択のたびに本文の位置が帯のぶん動く）。
  *
- * 入力欄はスキーマ定数の走査だけで決まる（`PropControlSection.forSelection`）ため、
+ * 入力欄はスキーマ定数の走査だけで決まる（`SelectionControls.forSelection`）ため、
  * ここには prop 名で分岐するコードを置かない。
+ *
+ * Why not: インスタンスの行だけを UI 案どおりの横並び（ラベル左・入力右）にはしない。
+ * パネルの他の行はすべて縦積みで、ここだけ変えると同じパネルに行の形が 2 つ並ぶ。
+ * 乖離の解消は個別の issue で行う（`rules/ui-verification.md`）。
  */
 export function PropertyPanel({
   state,
   onEditProp,
   onClearSelection,
+  instance,
 }: Readonly<{
   state: EditorState;
   onEditProp: (edit: PropEdit) => void;
   onClearSelection: () => void;
+  instance: InstanceActions;
 }>) {
   const selection = EditorState.selection(state);
-  const sections = PropControlSection.forSelection(state);
+  const controls = SelectionControls.forSelection(state);
 
   return (
     <>
@@ -234,21 +429,13 @@ export function PropertyPanel({
         {selection.some ? <SelectionTitle selection={selection.value} /> : null}
       </EditorLayout.RightPane.Heading>
       <EditorLayout.RightPane.Body>
-        {selection.some ? (
+        {controls.some ? (
           <div className="flex flex-col items-start gap-3 text-sm">
-            {sections.length === 0 ? (
-              <p className="text-gray-500">編集できる prop がありません</p>
-            ) : (
-              <div className="flex w-full flex-col gap-4">
-                {sections.map((section) => (
-                  <GroupSection
-                    key={section.group}
-                    section={section}
-                    onEdit={onEditProp}
-                  />
-                ))}
-              </div>
-            )}
+            <SelectionBody
+              controls={controls.value}
+              onEdit={onEditProp}
+              instance={instance}
+            />
             <button
               type="button"
               onClick={onClearSelection}

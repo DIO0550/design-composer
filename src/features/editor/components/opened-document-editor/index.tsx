@@ -49,11 +49,13 @@ function RightPaneContent({
   state,
   node,
   token,
+  onGoToSource,
 }: Readonly<{
   view: LeftPaneView;
   state: EditorState;
   node: NodeActions;
   token: TokenActions;
+  onGoToSource: () => void;
 }>): ReactElement {
   switch (view) {
     case LEFT_PANE_VIEWS.tokens:
@@ -72,6 +74,10 @@ function RightPaneContent({
           state={state}
           onEditProp={node.editProp}
           onClearSelection={node.clearSelection}
+          instance={{
+            goToSource: onGoToSource,
+            detach: node.detachInstance,
+          }}
         />
       );
   }
@@ -200,6 +206,13 @@ function EditorPanes() {
           state={state}
           node={node}
           token={token}
+          /*
+           * `Go to source component` の行き先は `Assets` パネル。部品定義は
+           * キャンバスに描かれず選択もできない（`ComponentList` の線引き）ので、
+           * 「元の部品を示す」= パレットのその行を見せることになる。行の強調は
+           * インスタンスを選んだ時点で出ているため、ここは行き先を変えるだけ。
+           */
+          onGoToSource={() => setLeftPaneView(LEFT_PANE_VIEWS.assets)}
         />
       </EditorLayout.RightPane>
     </EditorLayout>

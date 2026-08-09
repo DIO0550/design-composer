@@ -36,7 +36,11 @@ const meta = {
       </div>
     ),
   ],
-  args: { onClearSelection: fn(), onEditProp: fn() },
+  args: {
+    onClearSelection: fn(),
+    onEditProp: fn(),
+    instance: { goToSource: fn(), detach: fn() },
+  },
 } satisfies Meta<typeof PropertyPanel>;
 
 export default meta;

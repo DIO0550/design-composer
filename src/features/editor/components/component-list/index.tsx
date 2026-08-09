@@ -1,11 +1,15 @@
 import { ComponentAsset } from "@/domains/component";
 import { TypeGlyph } from "@/features/editor/components/type-glyph";
+import type { Option } from "@/utils/Option";
 
 /** 選択の状態から決まる、押せない理由。ボタンの `title` に出して操作の見当を付けさせる。 */
 const INSERT_DISABLED_REASON = "子を持てるものを選ぶと挿入できます";
 
 /** 使われていない部品の右端に出す語（UI 案は `×0` ではなくこの語を出す）。 */
 const UNUSED_LABEL = "unused";
+
+/** 選択中のインスタンスの元になっている行に添える語（UI 案の綴り）。 */
+const SOURCE_OF_SELECTION_LABEL = "source of selection";
 
 /**
  * 部品 1 件の行。名前の左に部品を表すアイコン、名前の下にその部品が公開している prop の
@@ -21,24 +25,41 @@ const UNUSED_LABEL = "unused";
  */
 function ComponentRow({
   asset,
+  isSourceOfSelection,
   isInsertEnabled,
   onInsert,
 }: Readonly<{
   asset: ComponentAsset;
+  isSourceOfSelection: boolean;
   isInsertEnabled: boolean;
   onInsert: (name: string) => void;
 }>) {
-  const hasPublicProps = asset.publicPropNames.length > 0;
+  /*
+   * 出どころの行では、公開 prop の名前を `source of selection` に譲る。
+   * 両方を出すと 1 行に 2 段の補足が並び、UI 案が 1 段しか置いていない位置に
+   * 収まらなくなる（公開 prop は右ペインの `Public props` が出している）。
+   */
+  const showsPublicProps =
+    !isSourceOfSelection && asset.publicPropNames.length > 0;
 
   return (
-    <li className="flex items-center gap-1.5 rounded px-2 py-1 hover:bg-gray-100">
+    <li
+      className={`flex items-center gap-1.5 rounded px-2 py-1 hover:bg-gray-100 ${
+        isSourceOfSelection ? "bg-purple-50 shadow-[inset_2px_0_0_#9747ff]" : ""
+      }`}
+    >
       <TypeGlyph kind="component" />
       {/* 名前が余りを占める。flex の子は既定で内容幅より縮まないため省略には min-w-0 が要る */}
       <span className="min-w-0 flex-1">
         <span className="block truncate">{asset.name}</span>
-        {hasPublicProps ? (
+        {showsPublicProps ? (
           <span className="block truncate text-gray-400 text-xs">
             {asset.publicPropNames.join(", ")}
+          </span>
+        ) : null}
+        {isSourceOfSelection ? (
+          <span className="block truncate text-[#9747ff] text-xs">
+            {SOURCE_OF_SELECTION_LABEL}
           </span>
         ) : null}
       </span>
@@ -72,14 +93,18 @@ function ComponentRow({
  * 検索の結果として 0 件になったことは、検索語を持つ `AssetsPanel` が伝える。
  *
  * 部品は選択の対象にしない。選択できるのはキャンバスに描かれるもの、つまり
- * artboard とその配下のノードだけ（`EditorState` と同じ線引き）。
+ * artboard とその配下のノードだけ（`EditorState` と同じ線引き）。選択中の
+ * インスタンスの元になっている行は、選択ではなく**出どころ**として強調する
+ * （UI 案 docs/Design Composer.html の `source of selection`）。
  */
 export function ComponentList({
   assets,
+  sourceName,
   isInsertEnabled,
   onInsert,
 }: Readonly<{
   assets: readonly ComponentAsset[];
+  sourceName: Option<string>;
   isInsertEnabled: boolean;
   onInsert: (name: string) => void;
 }>) {
@@ -96,6 +121,9 @@ export function ComponentList({
           <ComponentRow
             key={asset.name}
             asset={asset}
+            isSourceOfSelection={
+              sourceName.some && sourceName.value === asset.name
+            }
             isInsertEnabled={isInsertEnabled}
             onInsert={onInsert}
           />

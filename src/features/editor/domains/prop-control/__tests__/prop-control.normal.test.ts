@@ -3,7 +3,8 @@ import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import type { Node } from "@/domains/node";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
-import { PropControlSection } from "../index";
+import { SelectionControls } from "../index";
+import { sectionsOf } from "./setup";
 
 function setupState(children: readonly Node[], selected: string): EditorState {
   return EditorState.select(
@@ -21,7 +22,7 @@ function setupState(children: readonly Node[], selected: string): EditorState {
 }
 
 function controlOf(state: EditorState, prop: string) {
-  return PropControlSection.forSelection(state)
+  return sectionsOf(state)
     .flatMap((section) => section.controls)
     .find((control) => control.prop === prop);
 }
@@ -29,7 +30,7 @@ function controlOf(state: EditorState, prop: string) {
 test("選択されていないときはコントロールが生成されない", () => {
   const state = EditorState.create(DesignDocument.create({}));
 
-  expect(PropControlSection.forSelection(state)).toEqual([]);
+  expect(SelectionControls.forSelection(state)).toEqual(Option.none);
 });
 
 test("enum の prop は宣言された値から選ぶコントロールになる", () => {
@@ -85,7 +86,7 @@ test("設定されていない prop は値を持たず、スキーマの既定�
 test("コントロールは group ごとのセクションに分かれる", () => {
   const state = setupState([{ name: "label", type: "Text" }], "label");
 
-  expect(PropControlSection.forSelection(state).map((s) => s.group)).toEqual([
+  expect(sectionsOf(state).map((s) => s.group)).toEqual([
     "content",
     "appearance",
   ]);
@@ -93,7 +94,7 @@ test("コントロールは group ごとのセクションに分かれる", () =
 
 test("セクション内のコントロールはスキーマの宣言順に並ぶ", () => {
   const state = setupState([{ name: "label", type: "Text" }], "label");
-  const appearance = PropControlSection.forSelection(state).find(
+  const appearance = sectionsOf(state).find(
     (section) => section.group === "appearance",
   );
 

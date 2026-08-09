@@ -54,6 +54,32 @@ export type PropControlSection = Readonly<{
 }>;
 
 /**
+ * 選択中のものに対して右ペインが出す編集欄。
+ *
+ * インスタンスだけ形が違う（UI 案 docs/Design Composer.html の `Assets · Instance` は
+ * `group` ごとのセクションではなく `Public props` の 1 節と出どころの部品を出す）。
+ * 直和にするのは、同じ型で表すと「インスタンスなのに出どころが無い」
+ * 「プリミティブなのに出どころがある」が作れてしまうため
+ * （`rules/coding.md`「正しい状態だけを列挙する」）。
+ *
+ * 公開 prop に `group` を持たせないのは、その `group` が binding 先のプリミティブの
+ * ものだから。出すと部品の内部構造が見出しに漏れる。
+ *
+ * `isDetachEnabled` を持つのは、参照先の部品が無い・循環している間は解除できず
+ * （`InstanceComposition.detach` が失敗する）、押しても何も起きないボタンになるため。
+ * 不正なドキュメントも画面には残る（docs/03-schema.md「不正ファイル時の挙動」）ので、
+ * この状態は実際に出る。
+ */
+export type SelectionControls =
+  | Readonly<{ kind: "groups"; sections: readonly PropControlSection[] }>
+  | Readonly<{
+      kind: "instance";
+      source: string;
+      publicProps: readonly PropControl[];
+      isDetachEnabled: boolean;
+    }>;
+
+/**
  * パネルに出す prop 1件の素材。定義と既定値を別々に持つのは、参照ノードでは
  * 既定がスキーマではなく部品定義側にあるため（`PublicPropTarget.declared`）。
  */
@@ -188,7 +214,43 @@ function controlOf(
 /**
  * 条件を満たさない prop はコントロール自体を作らない
  * （docs/06-ui.md「`enabledWhen` により表示を出し分ける」）。
- * セクションの並びは `group` の初出順、セクション内は宣言順（docs/03「order フィールドは持たない」）。
+ *
+ * @param editables 編集できる prop の並び
+ * @param props `enabledWhen` の判定に使う props
+ * @returns 条件を満たす prop だけを、渡された並び順のまま返す
+ */
+function enabledEditableProps(
+  editables: readonly EditableProp[],
+  props: Props,
+): readonly EditableProp[] {
+  const effective = effectiveProps(editables, props);
+  return editables.filter((editable) =>
+    PropDefinition.isEnabled(editable.definition, effective),
+  );
+}
+
+/**
+ * 見出しで分けない編集欄の並び（インスタンスの `Public props`）。
+ * 並びは宣言順（docs/03「order フィールドは持たない」）。
+ *
+ * @param editables 編集できる prop の並び
+ * @param props 今の値と `enabledWhen` の判定に使う props
+ * @param tokens トークン参照の選択肢の出どころ
+ * @returns 条件を満たす prop の編集欄の並び
+ */
+function controlsOf(
+  editables: readonly EditableProp[],
+  props: Props,
+  tokens: TokenSet,
+): readonly PropControl[] {
+  return enabledEditableProps(editables, props).map((editable) =>
+    controlOf(editable, props, tokens),
+  );
+}
+
+/**
+ * セクションの並びは `group` の初出順、セクション内は宣言順
+ * （docs/03「order フィールドは持たない」）。
  *
  * @param editables 編集できる prop の並び
  * @param props 今の値と `enabledWhen` の判定に使う props
@@ -200,10 +262,7 @@ function sectionsOf(
   props: Props,
   tokens: TokenSet,
 ): readonly PropControlSection[] {
-  const effective = effectiveProps(editables, props);
-  const enabled = editables.filter((editable) =>
-    PropDefinition.isEnabled(editable.definition, effective),
-  );
+  const enabled = enabledEditableProps(editables, props);
   const groups = ArrayEx.distinct(
     enabled.map((editable) => editable.definition.group),
   );
@@ -218,33 +277,60 @@ function sectionsOf(
 /**
  * ノードが編集できる prop。参照ノードは公開 prop、プリミティブはスキーマから引く。
  *
- * @param document 部品とトークンの出どころ
+ * @param state 解除できるかの判定に使うエディタの状態
  * @param node 編集欄を出したいノード
- * @returns `group` ごとにまとめた編集欄の並び
+ * @returns 参照ノードなら出どころの部品つきの公開 prop、
+ *   プリミティブなら `group` ごとにまとめた編集欄。
+ *   スキーマの分からない `type` ではセクションが空になる
  */
-function nodeSections(
-  document: DesignDocument,
-  node: Node,
-): readonly PropControlSection[] {
+function nodeControls(state: EditorState, node: Node): SelectionControls {
+  const document = EditorState.document(state);
   if (Node.isRef(node)) {
-    return sectionsOf(
-      publicEditableProps(document.components, node),
-      node.overrides ?? {},
-      document.tokens,
-    );
+    return {
+      kind: "instance",
+      source: node.ref,
+      publicProps: controlsOf(
+        publicEditableProps(document.components, node),
+        node.overrides ?? {},
+        document.tokens,
+      ),
+      /*
+       * 解除できるかは、解除そのものに答えさせる。失敗の条件（参照先が無い・
+       * 循環している）を書き写すと `InstanceComposition.detach` と二重管理になり、
+       * 片方だけ変わったときにボタンの出方と結果が食い違う。
+       */
+      isDetachEnabled: EditorState.detachInstance(state).some,
+    };
   }
   if (!PrimitiveSchema.isPrimitiveType(node.type)) {
-    return [];
+    return { kind: "groups", sections: [] };
   }
   const schema: PrimitiveSchema = PrimitiveSchema.forType(node.type);
-  return sectionsOf(
-    declaredEditableProps(schema.props),
-    node.props ?? {},
-    document.tokens,
-  );
+  return {
+    kind: "groups",
+    sections: sectionsOf(
+      declaredEditableProps(schema.props),
+      node.props ?? {},
+      document.tokens,
+    ),
+  };
 }
 
 export const PropControl = {
+  /**
+   * その prop に値が明示的に設定されているか（既定のままではないか）。
+   *
+   * インスタンスの公開 prop ではこれが「上書き済み」に当たるが、`overridden` とは
+   * 名付けない。artboard やプリミティブのコントロールにも同じ判定が要り、
+   * そちらには上書きの相手がいないため（`rules/naming.md`「名前と実体を一致させる」）。
+   *
+   * @param control 見たい編集欄
+   * @returns 明示的に値が設定されていれば `true`、既定のままなら `false`
+   */
+  hasValue(control: PropControl): boolean {
+    return control.value.some;
+  },
+
   /**
    * 入力欄に入った文字列を、その prop への編集にする。
    *
@@ -264,30 +350,53 @@ export const PropControl = {
   },
 } as const;
 
-export const PropControlSection = {
+export const SelectionControls = {
   /**
-   * 選択中のものを編集するセクションの並び（docs/06-ui.md「画面構成」）。
-   * 選択が無い・スキーマの分からない type・解決できない部品では空になる。
+   * 選択中のものを編集する欄（docs/06-ui.md「画面構成」）。
+   * 未選択を `none` で表すのは、同じ位置づけの `TokenControl.forSelection` に揃えるため。
+   *
+   * @param state 選択とドキュメントの出どころ
+   * @returns インスタンスを選んでいるなら出どころの部品つきの公開 prop、
+   *   それ以外は `group` ごとのセクション。何も選んでいないときは `none`。
+   *   スキーマの分からない `type`・解決できない部品では、選択はあるので `some` だが
+   *   セクションが空になる
    */
-  forSelection(state: EditorState): readonly PropControlSection[] {
+  forSelection(state: EditorState): Option<SelectionControls> {
     if (!state.selectedName.some) {
-      return [];
+      return Option.none;
     }
+    const document = EditorState.document(state);
     const name = state.selectedName.value;
-    const artboard = DesignDocument.findArtboard(
-      EditorState.document(state),
-      name,
-    );
+    const artboard = DesignDocument.findArtboard(document, name);
     if (artboard.some) {
-      return sectionsOf(
-        declaredEditableProps(Artboard.propDefinitions()),
-        artboard.value.props ?? {},
-        EditorState.document(state).tokens,
-      );
+      return Option.some({
+        kind: "groups",
+        sections: sectionsOf(
+          declaredEditableProps(Artboard.propDefinitions()),
+          artboard.value.props ?? {},
+          document.tokens,
+        ),
+      });
     }
-    const node = DesignDocument.findNode(EditorState.document(state), name);
-    return node.some
-      ? nodeSections(EditorState.document(state), node.value)
-      : [];
+    return Option.map(DesignDocument.findNode(document, name), (node) =>
+      nodeControls(state, node),
+    );
+  },
+
+  /**
+   * 選んでいるものがインスタンスなら、その元になっている部品の名前
+   * （UI 案 docs/Design Composer.html の `from ◆ primary-button` と
+   * `Assets` の `source of selection`）。
+   *
+   * 右ペインと `Assets` パネルが同じ答えを要るので、参照先を引く経路をここ 1 つにする。
+   * 別々に導出すると「パネルはインスタンスなのに `Assets` はどこも光らない」が作れる。
+   *
+   * @param controls 選択中のものの編集欄
+   * @returns インスタンスなら元の部品名。それ以外は `none`
+   */
+  sourceName(controls: SelectionControls): Option<string> {
+    return controls.kind === "instance"
+      ? Option.some(controls.source)
+      : Option.none;
   },
 } as const;

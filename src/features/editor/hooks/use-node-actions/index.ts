@@ -23,6 +23,7 @@ export type NodeActions = Readonly<{
   editProp: (edit: PropEdit) => void;
   insert: (template: NodeTemplate) => void;
   insertInstance: (componentName: string) => void;
+  detachInstance: () => void;
   isInsertEnabled: boolean;
 }>;
 
@@ -64,6 +65,11 @@ export function useNodeActions(): NodeActions {
         type: "insert_node",
         template: { kind: "instance", componentName },
       }),
+    /**
+     * インスタンスの解除は選択中のものへの操作なので、対象を渡さない
+     * （UI 案 docs/Design Composer.html の `Detach instance`）。
+     */
+    detachInstance: () => dispatch({ type: "detach_instance" }),
     /**
      * 挿入は選択中のものを起点にするため、押せるかどうかも選択から決まる
      * （docs/06-ui.md「編集操作の一覧」）。
