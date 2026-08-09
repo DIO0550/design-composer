@@ -12,6 +12,7 @@ import {
   LEFT_PANE_VIEWS,
   type LeftPaneView,
 } from "@/features/editor/components/left-pane-rail";
+import { NodeInsertToolbar } from "@/features/editor/components/node-insert-toolbar";
 import { PropertyPanel } from "@/features/editor/components/property-panel";
 import { TokenEditor } from "@/features/editor/components/token-editor";
 import { EditorState } from "@/features/editor/domains/editor-state";
@@ -88,6 +89,7 @@ function EditorPanes() {
   const [leftPaneView, setLeftPaneView] = useState<LeftPaneView>(
     LEFT_PANE_VIEWS.layers,
   );
+  const hasErrors = state.errors.length > 0;
   useEditShortcuts();
 
   return (
@@ -109,6 +111,18 @@ function EditorPanes() {
           onResize={node.resize}
           onEditProp={node.editProp}
         />
+        {/*
+          エラーが出ている間はツールバーを出さない。エラー一覧がキャンバスの下端を
+          占めるので、同じ下端に浮かべると重なって片方が読めなくなる。UI 案
+          （docs/Design Composer.html）の Error 画面も、他の 4 画面が持つ
+          浮かぶツールバーだけを持たず、そこにエラー一覧をドッキングしている。
+        */}
+        {hasErrors ? null : (
+          <NodeInsertToolbar
+            isInsertEnabled={node.isInsertEnabled}
+            onInsert={node.insert}
+          />
+        )}
         <DocumentErrorList errors={state.errors} />
       </EditorLayout.CenterPane>
       <EditorLayout.RightPane>

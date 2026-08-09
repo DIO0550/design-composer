@@ -21,9 +21,7 @@ const NODE_ACTIONS: NodeActions = {
   editProp: fn(),
   insert: fn(),
   insertInstance: fn(),
-  remove: fn(),
   isInsertEnabled: true,
-  isRemoveEnabled: true,
 };
 
 const TOKEN_ACTIONS: TokenActions = {

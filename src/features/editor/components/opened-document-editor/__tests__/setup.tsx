@@ -13,8 +13,11 @@ export const PATH = "/work/sample.dcmp";
  *
  * 監視と購読は非同期に成立するので、操作を始める前にここで待ち合わせる
  * （待たずに操作すると、成立したときの状態更新が act の外で起きる）。
+ *
+ * 代役を返すのは、外部変更を起こすテスト（`breakFileExternally`）が同じものを
+ * 必要とするため。使わないテストは戻り値を無視してよい。
  */
-export async function renderOpenedDocument(): Promise<void> {
+export async function renderOpenedDocument(): Promise<DocumentIpcFake> {
   const fake = DocumentIpcFake.create({
     [PATH]: DocumentJson.serialize(SAMPLE_DOCUMENT),
   });
@@ -26,6 +29,20 @@ export async function renderOpenedDocument(): Promise<void> {
     />,
   );
   await act(async () => {});
+  return fake;
+}
+
+/**
+ * 外部（AI・エディタ・git 操作等）がファイルを壊したことにする。
+ * 解釈できない中身なので取り込みは拒まれ、画面はエラーを抱えたまま
+ * 最後に正常だった表示を保つ（docs/03-schema.md「不正ファイル時の挙動」）。
+ */
+export async function breakFileExternally(
+  fake: DocumentIpcFake,
+): Promise<void> {
+  await act(async () => {
+    fake.changeExternally(PATH, "{ 壊れた");
+  });
 }
 
 /**

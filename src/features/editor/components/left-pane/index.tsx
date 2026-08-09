@@ -10,7 +10,6 @@ import {
   LeftPaneRail,
   type LeftPaneView,
 } from "@/features/editor/components/left-pane-rail";
-import { NodeEditToolbar } from "@/features/editor/components/node-edit-toolbar";
 import { TokenList } from "@/features/editor/components/token-list";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import type { NodeActions } from "@/features/editor/hooks/use-node-actions";
@@ -41,16 +40,10 @@ function LeftPaneContent({
         <>
           {/*
             UI 案（docs/Design Composer.html）の `Layers` パネルは、artboard の一覧を
-            上段に、選んだ 1 枚の中身を下段に置く。編集操作のボタンは UI 案に無い
-            こちらの都合の入口なので、対象であるツリーの直前に置く。
+            上段に、選んだ 1 枚の中身を下段に置く。挿入の入口はキャンバスに浮かぶ
+            ツールバーへ移した（#112）ので、ここには並べない。
           */}
           <ArtboardList state={state} onSelect={node.select} />
-          <NodeEditToolbar
-            isInsertEnabled={node.isInsertEnabled}
-            isRemoveEnabled={node.isRemoveEnabled}
-            onInsert={node.insert}
-            onRemove={node.remove}
-          />
           <DocumentTree
             state={state}
             onSelect={node.select}
