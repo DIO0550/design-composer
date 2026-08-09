@@ -100,6 +100,20 @@ function withEdit(state: EditorState, document: DesignDocument): EditorState {
   return withHistory(state, EditHistory.record(state.history, document));
 }
 
+/**
+ * 削除できる対象の名前。
+ *
+ * 選択できるものには artboard も含まれるが、artboard の削除は artboard 操作（#43）の
+ * 担当なので、ここで消せるのは配下のノードだけ。
+ *
+ * 公開しないのは、消費者が `removeNode` だけになったため（挿入と違って、押せるか
+ * どうかを画面へ配る必要が無い。削除の入口はキーボードだけで、対象が無いときは
+ * `removeNode` が `none` を返す / #112）。
+ */
+function removableName(state: EditorState): Option<string> {
+  return Option.map(selectedNode(state), (node) => node.name);
+}
+
 export const EditorState = {
   /**
    * 選択なしの状態から始める（選択は非永続なので開いた直後は何も選ばれていない）。
@@ -258,23 +272,13 @@ export const EditorState = {
    * 「選択位置の子として追加」）。
    *
    * 選択が無いとき・選択が子を持てないノード（Text / インスタンス）のときは
-   * 挿せる位置が無いので `none`。挿入のボタンはこれが `none` の間は出さないため、
+   * 挿せる位置が無いので `none`。挿入のボタンはこれが `none` の間は押せなくしているため、
    * 画面の操作から `insertNode` の `none` には到達しない。
    */
   insertPosition(state: EditorState): Option<ChildPosition> {
     return Option.flatMap(state.selectedName, (name) =>
       DesignDocument.appendPositionOf(EditorState.document(state), name),
     );
-  },
-
-  /**
-   * 削除できる対象の名前。
-   *
-   * 選択できるものには artboard も含まれるが、artboard の削除は artboard 操作（#43）の
-   * 担当なので、ここで消せるのは配下のノードだけ。
-   */
-  removableName(state: EditorState): Option<string> {
-    return Option.map(selectedNode(state), (node) => node.name);
   },
 
   /**
@@ -347,7 +351,7 @@ export const EditorState = {
    * 消したものは新しいドキュメントに無いので、選択は `withHistory` で外れる。
    */
   removeNode(state: EditorState): Option<EditorState> {
-    return Option.flatMap(EditorState.removableName(state), (name) => {
+    return Option.flatMap(removableName(state), (name) => {
       const removed = DesignDocument.removeNode(
         EditorState.document(state),
         name,

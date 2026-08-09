@@ -1,5 +1,6 @@
 import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { changeFileExternally } from "@/features/editor/__tests__/document-change";
 import { SAMPLE_DOCUMENT } from "@/features/editor/__tests__/sample-document";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
@@ -40,9 +41,26 @@ export async function renderOpenedDocument(): Promise<DocumentIpcFake> {
 export async function breakFileExternally(
   fake: DocumentIpcFake,
 ): Promise<void> {
-  await act(async () => {
-    fake.changeExternally(PATH, "{ 壊れた");
-  });
+  await changeFileExternally({ fake, path: PATH, content: "{ 壊れた" });
+}
+
+/**
+ * キャンバス。同じ名前がツリーにもキャンバスにも出るので、探す相手を絞るのに使う。
+ * 挿入のツールバーもこの中にあるため、「入口がキャンバスへ移った」ことを見るには
+ * ここで絞る必要がある（絞らないと左ペインへ置き戻す実装でも通ってしまう / #112）。
+ */
+export function canvasPane(): HTMLElement {
+  return screen.getByRole("main", { name: "キャンバス" });
+}
+
+/** 左ペイン。レール・artboard の一覧・ツリーをまとめて指す。 */
+export function leftPane(): HTMLElement {
+  return screen.getByRole("complementary", { name: "左ペイン" });
+}
+
+/** 右ペイン。プロパティパネルとトークン編集の置き場。 */
+export function propertyPane(): HTMLElement {
+  return screen.getByRole("complementary", { name: "プロパティパネル" });
 }
 
 /**

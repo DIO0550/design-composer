@@ -112,18 +112,20 @@ function EditorPanes() {
           onEditProp={node.editProp}
         />
         {/*
-          エラーが出ている間はツールバーを出さない。エラー一覧がキャンバスの下端を
-          占めるので、同じ下端に浮かべると重なって片方が読めなくなる。UI 案
-          （docs/Design Composer.html）の Error 画面も、他の 4 画面が持つ
-          浮かぶツールバーだけを持たず、そこにエラー一覧をドッキングしている。
+          キャンバスの下端を占めるのはどちらか一方。重ねると片方が読めなくなる。
+          UI 案（docs/Design Composer.html）でも、浮かぶツールバーを持つ 4 画面と、
+          そこにエラー一覧をドッキングする Error 画面とに分かれている
+          （Design notes の文章はツールバーが「凍結」と読めるが、マークアップには
+          存在しない。実測できるマークアップに従った）。
         */}
-        {hasErrors ? null : (
+        {hasErrors ? (
+          <DocumentErrorList errors={state.errors} />
+        ) : (
           <NodeInsertToolbar
             isInsertEnabled={node.isInsertEnabled}
             onInsert={node.insert}
           />
         )}
-        <DocumentErrorList errors={state.errors} />
       </EditorLayout.CenterPane>
       <EditorLayout.RightPane>
         <RightPaneContent

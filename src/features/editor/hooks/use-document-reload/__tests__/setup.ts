@@ -1,4 +1,5 @@
 import { act, renderHook } from "@testing-library/react";
+import { changeFileExternally } from "@/features/editor/__tests__/document-change";
 import type { DocumentReload } from "@/features/editor/domains/document-reload";
 import type { DocumentIpc, DocumentIpcError } from "@/libs/document-ipc";
 import type { DocumentIpcFake } from "@/libs/document-ipc/fake";
@@ -45,7 +46,5 @@ export async function changeExternally(
   content: string,
   path: string = PATH,
 ): Promise<void> {
-  await act(async () => {
-    fake.changeExternally(path, content);
-  });
+  await changeFileExternally({ fake, path, content });
 }

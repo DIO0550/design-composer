@@ -1,4 +1,4 @@
-import { screen, within } from "@testing-library/react";
+import { within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import {
@@ -6,20 +6,18 @@ import {
   renderedElement,
 } from "@/features/editor/__tests__/canvas-elements";
 import { currentRowNames } from "@/features/editor/__tests__/row-names";
-import { artboardList, renderOpenedDocument, tree } from "./setup";
+import {
+  artboardList,
+  canvasPane,
+  propertyPane,
+  renderOpenedDocument,
+  tree,
+} from "./setup";
 
 /**
  * 3 ペインを実物のまま組み立て、キャンバスとツリービューの選択が
  * 双方向に連動することを確かめる（docs/06-ui.md「選択」）。
  */
-function canvasPane(): HTMLElement {
-  return screen.getByRole("main", { name: "キャンバス" });
-}
-
-function propertyPane(): HTMLElement {
-  return screen.getByRole("complementary", { name: "プロパティパネル" });
-}
-
 test("キャンバスでノードを押すとツリービューの同じノードが選択状態になる", async () => {
   await renderOpenedDocument();
 

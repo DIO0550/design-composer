@@ -22,8 +22,10 @@ test("押せないときはどの追加ボタンからも理由が読める", ()
   render(<NodeInsertToolbar isInsertEnabled={false} onInsert={() => {}} />);
 
   /*
-   * 文言は `component-list` の「子を持てるものを選ぶと挿入できます」と揺れているが、
-   * 揃えるのは別の単位。ここでは今の綴りを承知で固定する。
+   * `component-list` は同じ条件に「子を持てるものを選ぶと挿入できます」を出す。
+   * どちらも自分のボタンの動詞（追加 / 挿入）に合わせた綴りで、揺れているのは
+   * ボタンの動詞のほう。揃えるなら両方の入口の語彙を決め直す別の単位になるので、
+   * ここでは今の綴りを承知で固定する（#112）。
    */
   expect(insertButtons().map((button) => button.getAttribute("title"))).toEqual(
     [

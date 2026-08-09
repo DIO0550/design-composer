@@ -1,4 +1,7 @@
-import { PRIMITIVE_TYPES } from "@/domains/primitive-schema";
+import {
+  PRIMITIVE_TYPES,
+  type PrimitiveType,
+} from "@/domains/primitive-schema";
 import { TypeGlyph } from "@/features/editor/components/type-glyph";
 import type { NodeTemplate } from "@/features/editor/domains/node-template";
 
@@ -16,7 +19,7 @@ function InsertButton({
   isEnabled,
   onClick,
 }: Readonly<{
-  type: (typeof PRIMITIVE_TYPES)[number];
+  type: PrimitiveType;
   isEnabled: boolean;
   onClick: () => void;
 }>) {
@@ -50,6 +53,8 @@ function InsertButton({
  * 浮かせる位置指定をここが持つのは、浮いていること自体がこの部品の形だから
  * （UI 案の器が `position:absolute; bottom:16px; left:50%` を持っている）。
  * 位置指定された祖先の中に置く必要があり、置き場は `EditorLayout.CenterPane`。
+ * **この位置指定を落としたことはテストでは落ちない**（happy-dom は Tailwind を
+ * 解決しない）。気づく手段は Storybook の視覚差分だけなので、触るときは VRT を見ること。
  *
  * 影は Tailwind の階調に無い値なので UI 案の実測値をそのまま書いている。
  */

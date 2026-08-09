@@ -4,11 +4,19 @@ import { expect, test } from "vitest";
 import type { NodeTemplate } from "@/features/editor/domains/node-template";
 import { NodeInsertToolbar } from "../index";
 
+/**
+ * ツールバーの器。ここを起点に探すことで、器が読み上げ名を失った実装
+ * （`aria-label` の消し忘れ）でも落ちるようにする。
+ */
+function toolbar() {
+  return within(screen.getByRole("region", { name: "挿入" }));
+}
+
 test("プリミティブごとの追加ボタンが並ぶ", () => {
   render(<NodeInsertToolbar isInsertEnabled onInsert={() => {}} />);
 
-  expect(screen.getByRole("button", { name: "Box を追加" })).toBeDefined();
-  expect(screen.getByRole("button", { name: "Text を追加" })).toBeDefined();
+  expect(toolbar().getByRole("button", { name: "Box を追加" })).toBeDefined();
+  expect(toolbar().getByRole("button", { name: "Text を追加" })).toBeDefined();
 });
 
 test("追加ボタンはそれぞれの型アイコンを出す", () => {
