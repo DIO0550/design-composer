@@ -1,14 +1,7 @@
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
-import type { DocumentError } from "@/features/editor/domains/document-error";
+import { SYNTAX_ERROR } from "@/features/editor/__tests__/document-errors";
 import { EditorState } from "../index";
-
-/** 外部エディタが不正なファイルを保存したときに届くエラー。 */
-const SYNTAX_ERROR: DocumentError = {
-  kind: "syntax-error",
-  message: "expected ',' or '}'",
-  location: { kind: "text-position", position: 42 },
-};
 
 /** artboard を 1 枚だけ持つドキュメントを開いた直後の状態。 */
 function openedState(artboardName: string): EditorState {

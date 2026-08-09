@@ -55,14 +55,14 @@ export const SyncFailed: Story = {
   },
 };
 
-/**
- * アプリ内の編集で使用中トークンを消したあとの状態（#128）。
- * `home-title` が指す typography の `heading` だけを外し、`subheading` は残す。
- *
- * このストーリーだけが、ドキュメント由来の一覧と挿入ツールバーが**重ならずに積まれる**
- * ことを映す（部品単体のストーリーにはツールバーが居ないため、重なりが誰にも見えない）。
- */
 const SAMPLE = EditorState.document(SAMPLE_EDITOR_STATE);
+
+/*
+ * 使用中トークンを消したあとのドキュメント。`home-title` が指す typography の
+ * `heading` だけを外し、`subheading` は残す。
+ * Why not: `DesignDocument.removeToken` は通さない。ストーリーには `Result` の失敗を
+ * 伝える先が無く、既定値へ落として握りつぶすことになるため（rules/coding.md）。
+ */
 const DOCUMENT_WITH_DANGLING_TOKEN = DesignDocument.create({
   components: SAMPLE.components,
   artboards: SAMPLE.artboards,
@@ -76,6 +76,12 @@ const DOCUMENT_WITH_DANGLING_TOKEN = DesignDocument.create({
   },
 });
 
+/**
+ * アプリ内の編集で使用中トークンを消したあとの状態（#128）。
+ *
+ * このストーリーだけが、ドキュメント由来の一覧と挿入ツールバーが**重ならずに積まれる**
+ * ことを映す（部品単体のストーリーにはツールバーが居ないため、重なりが誰にも見えない）。
+ */
 export const DocumentErrors: Story = {
   name: "編集で作った不正がある編集画面",
   args: {

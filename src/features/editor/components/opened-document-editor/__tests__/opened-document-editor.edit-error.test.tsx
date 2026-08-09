@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { rowNames } from "@/features/editor/__tests__/row-names";
 import {
+  breakFileExternally,
   canvasPane,
   leftPane,
   propertyPane,
@@ -59,6 +60,26 @@ test("編集で作った不正は、外部変更で壊れたときの一覧に�
   await removeHeadingToken();
 
   expect(screen.queryByRole("alert", { name: "エラー一覧" })).toBeNull();
+});
+
+test("編集で不正を作ったあとにファイルも壊れると、ファイルのエラー一覧が出る", async () => {
+  const fake = await renderOpenedDocument();
+  await removeHeadingToken();
+
+  await breakFileExternally(fake);
+
+  expect(screen.getByRole("alert", { name: "エラー一覧" })).toBeDefined();
+});
+
+test("編集で不正を作ったあとにファイルも壊れると、ドキュメントのエラー一覧は引っ込む", async () => {
+  const fake = await renderOpenedDocument();
+  await removeHeadingToken();
+
+  await breakFileExternally(fake);
+
+  expect(
+    screen.queryByRole("alert", { name: "ドキュメントのエラー一覧" }),
+  ).toBeNull();
 });
 
 test("編集で作った不正が出ていてもキャンバスは凍らず、ノードを追加できる", async () => {

@@ -139,18 +139,11 @@ export const EditorState = {
    * 画面に映っているドキュメント自身の不正（#128）。使用中トークンの削除のように、
    * アプリ内の編集で作った dangling 参照がここに出る。
    *
-   * 状態として持たず毎回導出するのは、ドキュメントと食い違ったエラー一覧を
-   * 表現できなくするため（rules/hooks.md「導出可能な値の state 化禁止」）。
-   * 持つと編集・undo・redo・取り込みのすべてで載せ替えが要り、1 つ忘れると
-   * 古い一覧が画面に残る。
-   *
-   * `fileErrors` と別なのは、あちらが「表示に使っていないファイルの中身」の不正で、
-   * 表示中のドキュメントからは導出できないため。自動保存の書き込みは
-   * 外部変更として戻ってこない（`libs/document-ipc` が自書き込みを弾く）ので、
-   * ここの不正が `fileErrors` へ回り込むこともない。
+   * 状態として持たないのは、ドキュメントと食い違ったエラー一覧を表現できなく
+   * するため（rules/hooks.md「導出可能な値の state 化禁止」）。
    */
   documentErrors(state: EditorState): readonly DocumentError[] {
-    return DocumentError.fromDocument(EditorState.document(state));
+    return DocumentError.collectFrom(EditorState.document(state));
   },
 
   /**

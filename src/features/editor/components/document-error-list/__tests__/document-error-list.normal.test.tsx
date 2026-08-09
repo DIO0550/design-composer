@@ -1,14 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import { expect, test } from "vitest";
-import type { DocumentError } from "@/features/editor/domains/document-error";
+import { SYNTAX_ERROR } from "@/features/editor/__tests__/document-errors";
 import { DOCUMENT_ERROR_ORIGINS, DocumentErrorList } from "../index";
-
-/** 外部エディタが不正なファイルを保存したときに届くエラー。 */
-const SYNTAX_ERROR: DocumentError = {
-  kind: "syntax-error",
-  message: "expected ',' or '}'",
-  location: { kind: "text-position", position: 42 },
-};
 
 test("エラーが無いときは何も重ねない", () => {
   render(

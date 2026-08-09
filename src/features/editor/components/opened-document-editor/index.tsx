@@ -97,6 +97,9 @@ function canvasDock(state: EditorState): CanvasDock {
 /**
  * 下端に積む器。エラー一覧と挿入のツールバーが同じ場所を取り合うため、
  * 順序と間隔はここが持つ（各部品が浮くと重なる）。
+ *
+ * **この位置指定を落としてもテストは落ちない** — happy-dom はレイアウトを解決しない。
+ * 気づく手段は `OpenedDocumentEditor / 編集で作った不正がある編集画面` の視覚差分だけ。
  */
 function CanvasDockStack({ children }: Readonly<{ children: ReactNode }>) {
   return (
@@ -107,9 +110,7 @@ function CanvasDockStack({ children }: Readonly<{ children: ReactNode }>) {
 }
 
 /**
- * 下端の出し分け。`if` の連なりにすると最後の枝がラベルの無い受け皿になり、
- * 状態を足したときに黙ってそこへ落ちるので、直和を `switch` で網羅する
- * （戻り値を `ReactElement` にしているのは case の足し忘れをコンパイルエラーにするため）。
+ * 下端の出し分け。戻り値を `ReactElement` と書いている理由は `RightPaneContent` と同じ。
  *
  * ドキュメント由来のときにツールバーを消さないのは、表示がファイルと一致していて
  * 古くないから。編集を続けたまま直せる（#128）。一覧は 0 件なら何も出さない。

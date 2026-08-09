@@ -36,7 +36,7 @@ export const DocumentReload = {
       };
     }
 
-    const validationErrors = DocumentError.fromDocument(parsed.value);
+    const validationErrors = DocumentError.collectFrom(parsed.value);
     if (validationErrors.length > 0) {
       return { kind: "rejected", errors: validationErrors };
     }

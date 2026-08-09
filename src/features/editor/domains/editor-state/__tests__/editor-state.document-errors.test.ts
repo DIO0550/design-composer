@@ -1,16 +1,13 @@
 import { expect, test } from "vitest";
 import { Artboard } from "@/domains/artboard";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
-import type { DocumentError } from "@/features/editor/domains/document-error";
+import { SYNTAX_ERROR } from "@/features/editor/__tests__/document-errors";
+import {
+  type DocumentError,
+  DocumentErrorLocation,
+} from "@/features/editor/domains/document-error";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
-
-/** 外部エディタが不正なファイルを保存したときに届くエラー。 */
-const SYNTAX_ERROR: DocumentError = {
-  kind: "syntax-error",
-  message: "expected ',' or '}'",
-  location: { kind: "text-position", position: 42 },
-};
 
 /**
  * typography の `heading` を指す Text と `subheading` を指す Text を 1 つずつ持つ状態。
@@ -47,11 +44,7 @@ function openedState(): EditorState {
 
 /** エラーが指している場所。並びの比較に使う。 */
 function locations(errors: readonly DocumentError[]): readonly string[] {
-  return errors.map((error) =>
-    error.location.kind === "node"
-      ? `${error.location.nodeName}.${error.location.prop}`
-      : error.location.kind,
-  );
+  return errors.map((error) => DocumentErrorLocation.toText(error.location));
 }
 
 /** 選択中のトークンを消した状態。消せない指定はテストを落としたいので `unwrap` する。 */
