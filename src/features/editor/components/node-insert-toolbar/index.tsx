@@ -40,8 +40,10 @@ function InsertButton({
  * 状態表示でボタンではない、が理由（`ArtboardList` が UI 案の `+` を出していないのと
  * 同じ判断）。並びを `PRIMITIVE_TYPES` から作るのは、スキーマと二重管理しないため。
  *
- * 位置指定と影はこの部品が持つ（浮いていること自体がこの部品の形）。ただし
- * **位置指定を落としてもテストは落ちない** — happy-dom は Tailwind を解決せず、
+ * 影と丸みはこの部品が持つが、**位置は持たない**。キャンバス下端にはエラー一覧も
+ * 並ぶため、順序は両方を積む器（`CanvasDockStack`）が決める（#128）。ここで浮かせると
+ * 一覧の上に重なり、ツールバーが一覧を隠す。
+ * **形を落としてもテストは落ちない** — happy-dom は Tailwind を解決せず、
  * class 名の assert は実装詳細のテストになる。気づく手段は Storybook の視覚差分だけ。
  */
 export function NodeInsertToolbar({
@@ -54,7 +56,7 @@ export function NodeInsertToolbar({
   return (
     <section
       aria-label="挿入"
-      className="-translate-x-1/2 absolute bottom-4 left-1/2 flex h-11 items-center gap-0.5 rounded-[13px] bg-white px-1.5 shadow-[0_5px_18px_rgba(0,0,0,0.18),0_0_0_0.5px_rgba(0,0,0,0.06)]"
+      className="flex h-11 items-center gap-0.5 rounded-[13px] bg-white px-1.5 shadow-[0_5px_18px_rgba(0,0,0,0.18),0_0_0_0.5px_rgba(0,0,0,0.06)]"
     >
       {PRIMITIVE_TYPES.map((type) => (
         <InsertButton

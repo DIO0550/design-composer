@@ -1,14 +1,7 @@
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
-import type { DocumentError } from "@/features/editor/domains/document-error";
+import { SYNTAX_ERROR } from "@/features/editor/__tests__/document-errors";
 import { EditorState } from "../index";
-
-/** 外部エディタが不正なファイルを保存したときに届くエラー。 */
-const SYNTAX_ERROR: DocumentError = {
-  kind: "syntax-error",
-  message: "expected ',' or '}'",
-  location: { kind: "text-position", position: 42 },
-};
 
 /** artboard を 1 枚だけ持つドキュメントを開いた直後の状態。 */
 function openedState(artboardName: string): EditorState {
@@ -85,16 +78,16 @@ test("外部変更を拒んでも選択は外れない", () => {
   expect(EditorState.isSelected(state, "home")).toBe(true);
 });
 
-test("外部変更を拒むと、その理由がエラー一覧として画面に載る", () => {
+test("外部変更を拒むと、その理由がファイルのエラー一覧として画面に載る", () => {
   const state = EditorState.applyReload(openedState("home"), {
     kind: "rejected",
     errors: [SYNTAX_ERROR],
   });
 
-  expect(state.errors).toStrictEqual([SYNTAX_ERROR]);
+  expect(state.fileErrors).toStrictEqual([SYNTAX_ERROR]);
 });
 
-test("ファイルが直って取り込めるようになるとエラー一覧は消える", () => {
+test("ファイルが直って取り込めるようになるとファイルのエラー一覧は消える", () => {
   const rejected = EditorState.applyReload(openedState("home"), {
     kind: "rejected",
     errors: [SYNTAX_ERROR],
@@ -108,5 +101,5 @@ test("ファイルが直って取り込めるようになるとエラー一覧�
     document: fixed,
   });
 
-  expect(state.errors).toStrictEqual([]);
+  expect(state.fileErrors).toStrictEqual([]);
 });

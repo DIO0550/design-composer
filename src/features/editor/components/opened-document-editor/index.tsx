@@ -1,6 +1,9 @@
-import { type ReactElement, useState } from "react";
+import { type ReactElement, type ReactNode, useState } from "react";
 import { ArtboardCanvas } from "@/features/editor/components/artboard-canvas";
-import { DocumentErrorList } from "@/features/editor/components/document-error-list";
+import {
+  DOCUMENT_ERROR_ORIGINS,
+  DocumentErrorList,
+} from "@/features/editor/components/document-error-list";
 import { DocumentSyncFailureList } from "@/features/editor/components/document-sync-failure-list";
 import { EditorLayout } from "@/features/editor/components/editor-layout";
 import {
@@ -15,6 +18,7 @@ import {
 import { NodeInsertToolbar } from "@/features/editor/components/node-insert-toolbar";
 import { PropertyPanel } from "@/features/editor/components/property-panel";
 import { TokenEditor } from "@/features/editor/components/token-editor";
+import type { DocumentError } from "@/features/editor/domains/document-error";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import type { OpenedDocument } from "@/features/editor/domains/opened-document";
 import { useAutoSave } from "@/features/editor/hooks/use-auto-save";
@@ -71,6 +75,75 @@ function RightPaneContent({
   }
 }
 
+/** キャンバス下端に出すもの。ファイルが不正な状態と、編集を続けられる状態の 2 つ（#128）。 */
+type CanvasDock =
+  | Readonly<{ kind: "file-invalid"; errors: readonly DocumentError[] }>
+  | Readonly<{ kind: "editable"; errors: readonly DocumentError[] }>;
+
+/**
+ * 今どちらの状態かと、そこで出すエラーを決める。
+ *
+ * ファイルが不正な間は表示自体がファイルと食い違っているので、そちらの一覧だけを出す。
+ * Why not: 2 つの一覧を並べると、外部エディタでしか直せないファイルの一覧が、
+ * アプリ内で直せるドキュメントの一覧の場所を奪う。
+ */
+function canvasDock(state: EditorState): CanvasDock {
+  const fileErrors = state.fileErrors;
+  if (fileErrors.length > 0) {
+    return { kind: "file-invalid", errors: fileErrors };
+  }
+  return { kind: "editable", errors: EditorState.documentErrors(state) };
+}
+
+/**
+ * 下端に積む器。エラー一覧と挿入のツールバーが同じ場所を取り合うため、
+ * 順序と間隔はここが持つ（各部品が浮くと重なる）。
+ *
+ * **この位置指定を落としてもテストは落ちない** — happy-dom はレイアウトを解決しない。
+ * 気づく手段は `OpenedDocumentEditor / 編集で作った不正がある編集画面` の視覚差分だけ。
+ */
+function CanvasDockStack({ children }: Readonly<{ children: ReactNode }>) {
+  return (
+    <div className="absolute inset-x-0 bottom-4 flex flex-col items-center gap-3 px-4">
+      {children}
+    </div>
+  );
+}
+
+/**
+ * 下端の出し分け。戻り値を `ReactElement` と書いている理由は `RightPaneContent` と同じ。
+ *
+ * ドキュメント由来のときにツールバーを消さないのは、表示がファイルと一致していて
+ * 古くないから。編集を続けたまま直せる（#128）。一覧は 0 件なら何も出さない。
+ */
+function CanvasDockContent({
+  dock,
+  node,
+}: Readonly<{ dock: CanvasDock; node: NodeActions }>): ReactElement {
+  switch (dock.kind) {
+    case "file-invalid":
+      return (
+        <DocumentErrorList
+          errors={dock.errors}
+          origin={DOCUMENT_ERROR_ORIGINS.file}
+        />
+      );
+    case "editable":
+      return (
+        <CanvasDockStack>
+          <DocumentErrorList
+            errors={dock.errors}
+            origin={DOCUMENT_ERROR_ORIGINS.document}
+          />
+          <NodeInsertToolbar
+            isInsertEnabled={node.isInsertEnabled}
+            onInsert={node.insert}
+          />
+        </CanvasDockStack>
+      );
+  }
+}
+
 /**
  * Provider から状態を読んで各ペインへ配る。
  * 読み出しをここ 1 箇所に集めることで、ペインは props だけで描ける
@@ -89,7 +162,6 @@ function EditorPanes() {
   const [leftPaneView, setLeftPaneView] = useState<LeftPaneView>(
     LEFT_PANE_VIEWS.layers,
   );
-  const hasErrors = state.errors.length > 0;
   useEditShortcuts();
 
   return (
@@ -111,19 +183,7 @@ function EditorPanes() {
           onResize={node.resize}
           onEditProp={node.editProp}
         />
-        {/*
-          下端を占めるのはどちらか一方。UI 案も、浮かぶツールバーを持つ 4 画面と
-          エラー一覧をドッキングする Error 画面とに分かれている（Design notes の文章は
-          ツールバーが「凍結」と読めるが、マークアップに無いのでそちらに従った）。
-        */}
-        {hasErrors ? (
-          <DocumentErrorList errors={state.errors} />
-        ) : (
-          <NodeInsertToolbar
-            isInsertEnabled={node.isInsertEnabled}
-            onInsert={node.insert}
-          />
-        )}
+        <CanvasDockContent dock={canvasDock(state)} node={node} />
       </EditorLayout.CenterPane>
       <EditorLayout.RightPane>
         <RightPaneContent

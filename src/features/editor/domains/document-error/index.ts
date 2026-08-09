@@ -1,6 +1,7 @@
-import type {
-  DesignDocumentValidationError,
-  DesignDocumentValidationErrorKind,
+import {
+  DesignDocument,
+  type DesignDocumentValidationError,
+  type DesignDocumentValidationErrorKind,
 } from "@/domains/design-document";
 import type {
   DocumentJsonError,
@@ -79,5 +80,18 @@ export const DocumentError = {
         ...(error.prop !== undefined ? { prop: error.prop } : {}),
       },
     }));
+  },
+
+  /**
+   * 組み立て済みのドキュメント自身の不正を集める。
+   *
+   * テキストの解釈を挟まないので、ファイルから読んだ内容にも、アプリ内の編集で
+   * 作ったドキュメントにも同じように使える（#128）。
+   * `from*` ではなく `collect*` なのは、変換ではなく走査して集めるため。
+   */
+  collectFrom(document: DesignDocument): readonly DocumentError[] {
+    return DocumentError.fromValidationErrors(
+      DesignDocument.collectErrors(document),
+    );
   },
 } as const;

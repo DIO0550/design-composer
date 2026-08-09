@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { AxisLength } from "@/domains/axis-length";
 import { DesignDocument } from "@/domains/design-document";
-import type { DocumentError } from "@/features/editor/domains/document-error";
+import { SYNTAX_ERROR } from "@/features/editor/__tests__/document-errors";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
 import { useEditorReducer } from "../index";
@@ -23,13 +23,6 @@ function setupDocument(): DesignDocument {
     ],
   });
 }
-
-/** 外部エディタが不正なファイルを保存したときに届くエラー。 */
-const SYNTAX_ERROR: DocumentError = {
-  kind: "syntax-error",
-  message: "expected ',' or '}'",
-  location: { kind: "text-position", position: 42 },
-};
 
 /** 読み直し後のドキュメント。`title` が無くなり、`lead` が増えている。 */
 function setupReloadedDocument(): DesignDocument {

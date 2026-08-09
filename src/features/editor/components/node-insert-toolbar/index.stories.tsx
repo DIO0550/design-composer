@@ -7,10 +7,13 @@ const meta = {
   parameters: { layout: "fullscreen" },
   args: { onInsert: () => {} },
   decorators: [
-    // 自分で浮くので、位置指定された面の中へ置く。
+    // 位置は下端に積む器（`CanvasDockStack`）が持つので、ここでも実画面と同じ
+    // 下端中央へ置く。器を与えないと左上に貼り付き、実画面と違う姿で記録される。
     (Story) => (
       <div className="relative h-64 w-full bg-gray-100">
-        <Story />
+        <div className="absolute inset-x-0 bottom-4 flex justify-center">
+          <Story />
+        </div>
       </div>
     ),
   ],
