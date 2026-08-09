@@ -32,6 +32,7 @@ function ipcFailure(message: string): Promise<never> {
   return Promise.reject(message);
 }
 
+/** 本物と同じ形（種別つき）でファイルの不在を返す。 */
 function notFound(path: string): Promise<never> {
   return Promise.reject({
     kind: "notFound",

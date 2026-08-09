@@ -17,6 +17,10 @@ export type ExpandedNode = Readonly<{
   children?: readonly ExpandedNode[];
 }>;
 
+/**
+ * 部品インスタンスを定義の中身へ展開する。
+ * `expanding` は展開中の部品名で、自分自身へ戻ったら循環参照として失敗にする。
+ */
 function expandNode(
   node: Node,
   components: ComponentSet,
@@ -63,6 +67,7 @@ function expandNode(
   );
 }
 
+/** 並びをまとめて展開する。1 つでも失敗したら全体を失敗にする。 */
 function expandNodes(
   nodes: readonly Node[],
   components: ComponentSet,
@@ -79,6 +84,7 @@ function expandNodes(
   return Result.ok(expanded);
 }
 
+/** 部品インスタンスを定義の中身へ展開する（docs/02-data-model.md「部品」）。 */
 export const InstanceComposition = {
   expand(node: Node, components: ComponentSet): Result<ExpandedNode, Error> {
     return expandNode(node, components, new Set());

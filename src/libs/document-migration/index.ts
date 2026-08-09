@@ -79,6 +79,7 @@ function withFormatVersion(
   return { ...document, formatVersion: FormatVersion.format(version) };
 }
 
+/** 読み込んだ値をオブジェクトとして読む。配列と `null` は含めない。 */
 function asRecord(value: unknown): Option<JsonRecord> {
   if (typeof value !== "object" || value === null || Array.isArray(value)) {
     return Option.none;

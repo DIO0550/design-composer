@@ -16,6 +16,7 @@ export const AXES = {
   height: "height",
 } as const;
 
+/** 大きさを測る向き。 */
 export type Axis = ValueOf<typeof AXES>;
 
 export const CssDirection = {

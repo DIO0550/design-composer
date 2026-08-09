@@ -22,6 +22,10 @@ export type DocumentJsonErrorKind =
   | DocumentMigrationError["kind"]
   | JsonDecodeError["kind"];
 
+/**
+ * テキストの解釈が失敗した 1 件。
+ * 由来によって分かる位置の粒度が違うので、`path` と `position` はどちらも省略できる。
+ */
 export type DocumentJsonError = Readonly<{
   kind: DocumentJsonErrorKind;
   message: string;
@@ -33,6 +37,7 @@ export type DocumentJsonError = Readonly<{
 
 type Parsed = Result<DesignDocument, readonly DocumentJsonError[]>;
 
+/** 字句スキャンの失敗を、文字位置つきの形へ揃える。 */
 function toDocumentJsonError(error: JsonScanError): DocumentJsonError {
   return {
     kind: error.kind,

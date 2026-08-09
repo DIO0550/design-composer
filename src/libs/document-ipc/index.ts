@@ -18,6 +18,7 @@ export type DocumentIpcErrorKind =
   | "io"
   | "ipcFailed";
 
+/** ファイルの読み書きが失敗した理由と、診断用の原文。 */
 export type DocumentIpcError = Readonly<{
   kind: DocumentIpcErrorKind;
   message: string;
@@ -70,6 +71,7 @@ const IO_ERROR_KINDS: readonly DocumentIpcErrorKind[] = [
   "io",
 ];
 
+/** Rust 側が返した拒否理由が、種別を持つ I/O の失敗として読めるか。 */
 function isDocumentIoError(reason: unknown): reason is DocumentIpcError {
   if (typeof reason !== "object" || reason === null) {
     return false;
@@ -94,6 +96,7 @@ function toDocumentIpcError(reason: unknown): DocumentIpcError {
   return { kind: "ipcFailed", message: String(reason) };
 }
 
+/** 監視から届いた値を、パスと中身を持つ通知として読む。読めなければ `none`。 */
 function toDocumentChanged(payload: unknown): Option<DocumentChanged> {
   if (typeof payload !== "object" || payload === null) {
     return Option.none;

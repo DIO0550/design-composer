@@ -46,6 +46,7 @@ function compileArtboard(
   );
 }
 
+/** すべての artboard をコンパイルする。1 枚でも失敗したら全体を失敗にする。 */
 function compileArtboards(
   document: DesignDocument,
 ): Result<readonly BoxElement[], Error> {
@@ -60,6 +61,7 @@ function compileArtboards(
   return Result.ok(compiled);
 }
 
+/** ドキュメント全体を、トークンの値に依存しない描画可能な形へコンパイルする。 */
 export const DocumentHtml = {
   /**
    * ドキュメントをレンダリング可能な形へコンパイルする。

@@ -344,6 +344,7 @@ function collectNameErrors(
   return [];
 }
 
+/** ノードとその子孫の name が、欠落せず識別子の規則を満たしているか。 */
 function collectNodeNameErrors(
   nodes: readonly Node[],
   ownerName: string,
@@ -354,6 +355,7 @@ function collectNodeNameErrors(
   ]);
 }
 
+/** すべての種別のトークン名が識別子の規則を満たしているか。 */
 function collectTokenNameErrors(
   tokens: TokenSet,
 ): readonly DesignDocumentValidationError[] {

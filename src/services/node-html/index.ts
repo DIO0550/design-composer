@@ -21,6 +21,7 @@ export type { CompiledElement, CssDeclarations };
  */
 export type ParentContext = Readonly<{ direction: CssDirection }>;
 
+/** Text をコンパイルする。デフォルトを解決してから宣言と本文を組み立てる。 */
 function compileText(name: string, props: Props): CompiledElement {
   const resolved = ResolvedProps.resolve("Text", props);
   return TextElement.create(
@@ -30,6 +31,7 @@ function compileText(name: string, props: Props): CompiledElement {
   );
 }
 
+/** Box をコンパイルする。子は自分の向きを親の文脈として受け取る。 */
 function compileBox(
   node: ExpandedNode,
   parent: ParentContext | undefined,
@@ -49,6 +51,7 @@ function compileBox(
   );
 }
 
+/** 型で Text / Box へ振り分ける。未知の型は失敗にする。 */
 function compileNode(
   node: ExpandedNode,
   parent: ParentContext | undefined,
@@ -65,6 +68,7 @@ function compileNode(
   return compileBox(node, parent);
 }
 
+/** 並びをまとめてコンパイルする。1 つでも失敗したら全体を失敗にする。 */
 function compileNodes(
   nodes: readonly ExpandedNode[],
   parent: ParentContext | undefined,
@@ -80,6 +84,7 @@ function compileNodes(
   return Result.ok(compiled);
 }
 
+/** 展開済みノードを描画できる要素へコンパイルする。 */
 export const NodeHtml = {
   /**
    * ノードを `div` + インライン style の要素へコンパイルする。

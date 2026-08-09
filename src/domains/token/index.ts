@@ -26,9 +26,12 @@ export {
   TypographyToken,
 } from "./typography";
 
+/** 余白の大きさ。単位は px（docs/04-tokens.md「値の形式」）。 */
 export type SpacingToken = number;
+/** 角丸の半径。単位は px。 */
 export type RadiusToken = number;
 
+/** ドキュメントが持つトークン一式。種別ごとに名前で引ける。 */
 export type TokenSet = Readonly<{
   colors: Readonly<Record<string, ColorToken>>;
   spacing: Readonly<Record<string, SpacingToken>>;
@@ -50,6 +53,7 @@ const TOKEN_KINDS = [
   "typography",
 ] as const satisfies readonly (keyof TokenSet)[];
 
+/** トークンの種別。 */
 export type TokenKind = (typeof TOKEN_KINDS)[number];
 
 /**
@@ -168,6 +172,7 @@ function withToken(tokens: TokenSet, token: Token): TokenSet {
   }
 }
 
+/** そのキーだけを取り除いた新しい入れ物。 */
 function withoutName<T>(
   record: Readonly<Record<string, T>>,
   name: string,
@@ -190,6 +195,7 @@ function withRenamedKey<T>(
   );
 }
 
+/** 指す 1 つを取り除いたトークン一式。種別ごとの入れ物へ振り分ける。 */
 function withoutToken(tokens: TokenSet, ref: TokenRef): TokenSet {
   switch (ref.kind) {
     case "colors":
@@ -208,6 +214,7 @@ function withoutToken(tokens: TokenSet, ref: TokenRef): TokenSet {
   }
 }
 
+/** 指す 1 つの名前を付け替えたトークン一式。並びは保たれる。 */
 function withRenamedToken(
   tokens: TokenSet,
   ref: TokenRef,
@@ -315,6 +322,7 @@ function tokenKindToJson(tokens: TokenSet, kind: TokenKind): JsonObject {
   }
 }
 
+/** トークン一式の生成・検索・編集（追加・改名・削除）と JSON 表現との相互変換。 */
 export const TokenSet = {
   empty(): TokenSet {
     return { colors: {}, spacing: {}, radius: {}, shadows: {}, typography: {} };

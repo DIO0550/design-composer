@@ -27,6 +27,7 @@ export type CssVariables = Readonly<Record<CssVariableName, string>>;
 
 type CssVariableEntry = readonly [CssVariableName, string];
 
+/** その種別のトークンを、カスタムプロパティ名と値の対の並びにする。 */
 function entriesOfKind(
   tokens: TokenSet,
   kind: TokenKind,
@@ -64,6 +65,7 @@ function entriesOfKind(
   }
 }
 
+/** トークンを CSS カスタムプロパティの名前・宣言・`var()` 参照へ変換する。 */
 export const TokenCss = {
   variableName(kind: SingleVariableTokenKind, name: string): CssVariableName {
     return `--${kind}-${name}`;

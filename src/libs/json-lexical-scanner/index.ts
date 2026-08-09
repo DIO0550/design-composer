@@ -1,7 +1,9 @@
 import { StringEx } from "@/utils/StringEx";
 
+/** 字句スキャンで見つかる不正。JSON.parse では分からないキーの重複を含む。 */
 export type JsonScanErrorKind = "syntax-error" | "duplicate-key";
 
+/** 不正 1 件。テキストの何文字目かを持つ（画面はここを指す）。 */
 export type JsonScanError = Readonly<{
   kind: JsonScanErrorKind;
   message: string;
@@ -45,6 +47,7 @@ const ESCAPE_MAP: Readonly<Record<string, string>> = {
 const NUMBER_PATTERN = /^-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?/;
 const LITERALS = ["true", "false", "null"] as const;
 
+/** そこまで読めたことを表す結果。集めたエラーは読み進めたまま持ち回る。 */
 function ok(
   position: number,
   errors: readonly JsonScanError[] = [],
@@ -52,6 +55,7 @@ function ok(
   return { ok: true, position, errors };
 }
 
+/** 文字列を読めたことを表す結果。復元した中身をキーの重複判定に使う。 */
 function okString(
   position: number,
   value: string,
@@ -60,10 +64,12 @@ function okString(
   return { ok: true, position, value, errors };
 }
 
+/** そこで読み進められなくなったことを表す結果。 */
 function fail(position: number, errors: readonly JsonScanError[]): ScanFailure {
   return { ok: false, position, errors };
 }
 
+/** 空白を読み飛ばした次の位置。 */
 function skipWhitespace(text: string, position: number): number {
   let pos = position;
   while (pos < text.length && StringEx.isWhitespace(text[pos])) {
@@ -72,6 +78,7 @@ function skipWhitespace(text: string, position: number): number {
   return pos;
 }
 
+/** `\uXXXX` を読み、表す 1 文字を返す。桁が足りなければ失敗。 */
 function scanUnicodeEscape(
   text: string,
   uCharPos: number,
@@ -90,6 +97,7 @@ function scanUnicodeEscape(
   return okString(uCharPos + 5, String.fromCharCode(Number.parseInt(hex, 16)));
 }
 
+/** `\` から始まる 1 つのエスケープを読む。 */
 function scanEscapeSequence(text: string, position: number): StringScanOutcome {
   const escapePos = position;
   const escCharPos = position + 1;
@@ -110,6 +118,7 @@ function scanEscapeSequence(text: string, position: number): StringScanOutcome {
   return okString(escCharPos + 1, mapped);
 }
 
+/** 二重引用符で囲まれた文字列を読み、エスケープを解いた中身を返す。 */
 function scanString(text: string, position: number): StringScanOutcome {
   const start = position;
   let pos = position + 1;
@@ -156,6 +165,7 @@ function scanString(text: string, position: number): StringScanOutcome {
   }
 }
 
+/** JSON の数値を読む。前置の `+` や先頭の `0` の連なりは受け付けない。 */
 function scanNumber(text: string, position: number): ScanOutcome {
   const match = NUMBER_PATTERN.exec(text.slice(position));
   if (match === null || match[0].length === 0) {
@@ -166,6 +176,7 @@ function scanNumber(text: string, position: number): ScanOutcome {
   return ok(position + match[0].length);
 }
 
+/** `true` / `false` / `null` を読む。どれでもなければ `null`。 */
 function scanLiteral(text: string, position: number): number | null {
   for (const literal of LITERALS) {
     if (text.startsWith(literal, position)) {
@@ -175,6 +186,7 @@ function scanLiteral(text: string, position: number): number | null {
   return null;
 }
 
+/** オブジェクトを読む。同じキーが 2 度出たらエラーに足して読み進める。 */
 function scanObject(text: string, position: number): ScanOutcome {
   let pos = skipWhitespace(text, position + 1);
   if (text[pos] === "}") {
@@ -250,6 +262,7 @@ function scanObject(text: string, position: number): ScanOutcome {
   }
 }
 
+/** 配列を読む。 */
 function scanArray(text: string, position: number): ScanOutcome {
   let pos = skipWhitespace(text, position + 1);
   if (text[pos] === "]") {
@@ -281,6 +294,7 @@ function scanArray(text: string, position: number): ScanOutcome {
   }
 }
 
+/** 位置にある値を種類で振り分けて読む。 */
 function scanValue(text: string, position: number): ScanOutcome {
   const pos = skipWhitespace(text, position);
   if (pos >= text.length) {
@@ -320,6 +334,10 @@ function scanValue(text: string, position: number): ScanOutcome {
   ]);
 }
 
+/**
+ * JSON のテキストを字句として走査する（docs/01-file-format.md）。
+ * `JSON.parse` が捨ててしまうキーの重複と、失敗した文字位置を取り出すために使う。
+ */
 export const JsonLexicalScanner = {
   scan(text: string): readonly JsonScanError[] {
     const result = scanValue(text, 0);

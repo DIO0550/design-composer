@@ -1,5 +1,6 @@
 import type { PropDefinitionRecord } from "../prop-definition";
 
+/** 走査に使う実行時のリスト。`PrimitiveType` はここから導出し、二重管理しない。 */
 export const PRIMITIVE_TYPES = ["Box", "Text"] as const;
 
 /** 組み込みで用意されているノードの型（docs/02「プリミティブ」）。 */

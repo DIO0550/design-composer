@@ -16,6 +16,7 @@ import {
 import type { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
+/** キャンバスに置かれる 1 枚の画面。大きさを必ず持ち、配下にノードを並べる。 */
 export type Artboard = Readonly<{
   name: string;
   width: number;
@@ -76,6 +77,7 @@ export type ArtboardBoxProps = ResolvedProps<"Box"> &
     height: number;
   }>;
 
+/** artboard の生成・大きさの読み出しと、JSON 表現との相互変換。 */
 export const Artboard = {
   create(params: {
     name: string;
