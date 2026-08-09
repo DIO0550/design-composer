@@ -70,6 +70,11 @@
     "name": "JSON が壊れている"
   },
   {
+    "id": "features-editor-documenterrorlist--document-origin",
+    "title": "features/editor/DocumentErrorList",
+    "name": "編集で作った不正"
+  },
+  {
     "id": "features-editor-documenterrorlist--no-errors",
     "title": "features/editor/DocumentErrorList",
     "name": "エラーがない"
@@ -163,6 +168,11 @@
     "id": "features-editor-openeddocumenteditor--default",
     "title": "features/editor/OpenedDocumentEditor",
     "name": "編集画面"
+  },
+  {
+    "id": "features-editor-openeddocumenteditor--document-errors",
+    "title": "features/editor/OpenedDocumentEditor",
+    "name": "編集で作った不正がある編集画面"
   },
   {
     "id": "features-editor-openeddocumenteditor--sync-failed",
