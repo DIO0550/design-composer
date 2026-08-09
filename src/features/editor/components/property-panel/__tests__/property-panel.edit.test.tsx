@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { expect, test } from "vitest";
+import { expect, test, vi } from "vitest";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import type { PropEdit } from "@/domains/node";
 import {
@@ -38,6 +38,7 @@ function EditablePanel({ selected }: Readonly<{ selected: string }>) {
 
   return EditorState.isSelected(state, selected) ? (
     <PropertyPanel
+      instance={{ goToSource: vi.fn(), detach: vi.fn() }}
       state={state}
       onEditProp={editProp}
       onClearSelection={() => dispatch({ type: "clear_selection" })}

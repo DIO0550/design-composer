@@ -21,6 +21,7 @@ const NODE_ACTIONS: NodeActions = {
   editProp: fn(),
   insert: fn(),
   insertInstance: fn(),
+  detachInstance: fn(),
   isInsertEnabled: true,
 };
 

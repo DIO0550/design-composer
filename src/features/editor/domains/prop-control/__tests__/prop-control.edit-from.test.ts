@@ -3,7 +3,8 @@ import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import type { Node } from "@/domains/node";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
-import { PropControl, PropControlSection } from "../index";
+import { PropControl } from "../index";
+import { controlNamed, sectionsOf } from "./setup";
 
 /** 実物のスキーマから引いたコントロールを使う（入力欄の種類を手で組み立てない）。 */
 function setupControl(node: Node, prop: string): PropControl {
@@ -18,12 +19,9 @@ function setupControl(node: Node, prop: string): PropControl {
     ),
     node.name,
   );
-  return Option.unwrap(
-    Option.fromNullable(
-      PropControlSection.forSelection(state)
-        .flatMap((section) => section.controls)
-        .find((candidate) => candidate.prop === prop),
-    ),
+  return controlNamed(
+    sectionsOf(state).flatMap((section) => section.controls),
+    prop,
   );
 }
 

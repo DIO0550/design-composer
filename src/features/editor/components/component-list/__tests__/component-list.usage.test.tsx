@@ -1,10 +1,12 @@
 import { render, screen } from "@testing-library/react";
 import { expect, test } from "vitest";
+import { Option } from "@/utils/Option";
 import { ComponentList } from "../index";
 
 test("見出しの並びに部品の数が出る", () => {
   render(
     <ComponentList
+      sourceName={Option.none}
       assets={[
         { name: "card", publicPropNames: [], refCount: 4 },
         { name: "button", publicPropNames: [], refCount: 2 },
@@ -19,7 +21,14 @@ test("見出しの並びに部品の数が出る", () => {
 });
 
 test("部品が無いときは見出しの数が0になる", () => {
-  render(<ComponentList assets={[]} isInsertEnabled onInsert={() => {}} />);
+  render(
+    <ComponentList
+      sourceName={Option.none}
+      assets={[]}
+      isInsertEnabled
+      onInsert={() => {}}
+    />,
+  );
 
   expect(screen.getByText("0")).toBeDefined();
 });
@@ -27,6 +36,7 @@ test("部品が無いときは見出しの数が0になる", () => {
 test("部品の行にその部品の使用数が出る", () => {
   render(
     <ComponentList
+      sourceName={Option.none}
       assets={[{ name: "card", publicPropNames: [], refCount: 4 }]}
       isInsertEnabled
       onInsert={() => {}}
@@ -39,6 +49,7 @@ test("部品の行にその部品の使用数が出る", () => {
 test("どこからも使われていない部品の行には使われていない旨が出る", () => {
   render(
     <ComponentList
+      sourceName={Option.none}
       assets={[{ name: "card", publicPropNames: [], refCount: 0 }]}
       isInsertEnabled
       onInsert={() => {}}
@@ -51,6 +62,7 @@ test("どこからも使われていない部品の行には使われていな�
 test("どこからも使われていない部品の行には ×0 を出さない", () => {
   render(
     <ComponentList
+      sourceName={Option.none}
       assets={[{ name: "card", publicPropNames: [], refCount: 0 }]}
       isInsertEnabled
       onInsert={() => {}}
@@ -63,6 +75,7 @@ test("どこからも使われていない部品の行には ×0 を出さない
 test("部品の行にその部品が公開している prop の名前が出る", () => {
   render(
     <ComponentList
+      sourceName={Option.none}
       assets={[
         { name: "primary-button", publicPropNames: ["label"], refCount: 1 },
       ]}
@@ -77,6 +90,7 @@ test("部品の行にその部品が公開している prop の名前が出る",
 test("公開している prop が複数あるときは読点で連ねて出る", () => {
   render(
     <ComponentList
+      sourceName={Option.none}
       assets={[
         { name: "card", publicPropNames: ["title", "body"], refCount: 2 },
       ]}
@@ -91,6 +105,7 @@ test("公開している prop が複数あるときは読点で連ねて出る",
 test("公開している prop が無い部品の行には prop 名の行が出ない", () => {
   render(
     <ComponentList
+      sourceName={Option.none}
       assets={[{ name: "divider", publicPropNames: [], refCount: 0 }]}
       isInsertEnabled
       onInsert={() => {}}
@@ -105,6 +120,7 @@ test("公開している prop が無い部品の行には prop 名の行が出�
 test("部品は渡された並びのとおりに出る", () => {
   render(
     <ComponentList
+      sourceName={Option.none}
       assets={[
         { name: "card", publicPropNames: [], refCount: 0 },
         { name: "button", publicPropNames: [], refCount: 0 },

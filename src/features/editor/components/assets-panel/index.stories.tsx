@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Artboard } from "@/domains/artboard";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import { LeftPanePanel } from "@/features/editor/components/left-pane-panel";
+import { Option } from "@/utils/Option";
 import { AssetsPanel } from "./index";
 
 /**
@@ -31,6 +32,7 @@ const meta = {
   parameters: { layout: "padded" },
   args: {
     assets: DesignDocument.componentAssets(USED_COMPONENTS_DOCUMENT),
+    sourceName: Option.none,
     isInsertEnabled: true,
     onInsert: () => {},
   },

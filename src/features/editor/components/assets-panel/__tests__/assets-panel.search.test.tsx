@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import type { ComponentAsset } from "@/domains/component";
+import { Option } from "@/utils/Option";
 import { AssetsPanel } from "../index";
 
 /*
@@ -23,7 +24,14 @@ async function search(word: string): Promise<void> {
 }
 
 function setup() {
-  render(<AssetsPanel assets={ASSETS} isInsertEnabled onInsert={() => {}} />);
+  render(
+    <AssetsPanel
+      sourceName={Option.none}
+      assets={ASSETS}
+      isInsertEnabled
+      onInsert={() => {}}
+    />,
+  );
 }
 
 test("検索した語を名前に含む部品だけが残る", async () => {

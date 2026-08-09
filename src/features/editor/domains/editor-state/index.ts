@@ -10,6 +10,7 @@ import { EditHistory } from "@/features/editor/domains/edit-history";
 import { NodeTemplate } from "@/features/editor/domains/node-template";
 import { Selection } from "@/features/editor/domains/selection";
 import { TokenTemplate } from "@/features/editor/domains/token-template";
+import { InstanceComposition } from "@/services/instance-composition";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 
@@ -394,6 +395,33 @@ export const EditorState = {
       );
       return removed.ok
         ? Option.some(withEdit(state, removed.value))
+        : Option.none;
+    });
+  },
+
+  /**
+   * 選択中のインスタンスを実体の木へ置き換える
+   * （UI 案 docs/Design Composer.html の `Detach instance`）。
+   *
+   * 展開・overrides の焼き込み・内側のノードの改名は `InstanceComposition.detach`
+   * が持つ。ここは対象を選択から決めて履歴へ積むだけ（`rules/coding.md`
+   * 「features 層にドメイン知識を書かない」）。
+   *
+   * 対象を引数で受け取らないのは `removeNode` と同じ理由で、解除の導線が
+   * 「選択中のインスタンスを解除する」しか無いため。
+   *
+   * @param state 解除元のエディタの状態
+   * @returns 解除後のエディタの状態。インスタンスを選んでいないときと、
+   *   参照先が無い・循環している部品を指しているときは `none`
+   */
+  detachInstance(state: EditorState): Option<EditorState> {
+    return Option.flatMap(state.selectedName, (name) => {
+      const detached = InstanceComposition.detach(
+        EditorState.document(state),
+        name,
+      );
+      return detached.ok
+        ? Option.some(withEdit(state, detached.value))
         : Option.none;
     });
   },

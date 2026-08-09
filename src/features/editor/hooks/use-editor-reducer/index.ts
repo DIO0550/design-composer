@@ -24,6 +24,7 @@ export type EditorAction =
   | Readonly<{ type: "move_node"; name: string; to: ChildPosition }>
   | Readonly<{ type: "insert_node"; template: NodeTemplate }>
   | Readonly<{ type: "remove_node" }>
+  | Readonly<{ type: "detach_instance" }>
   | Readonly<{ type: "copy_node" }>
   | Readonly<{ type: "paste_node" }>
   | Readonly<{ type: "apply_prop_edit"; edit: PropEdit }>
@@ -78,6 +79,14 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
        * この `none` には画面の操作から到達する。
        */
       return Option.unwrapOr(EditorState.removeNode(state), state);
+    case "detach_instance":
+      /*
+       * インスタンスを選んでいなければ木は変わらない
+       * （EditorState.detachInstance の `none`）。解除のボタンはインスタンスを
+       * 選んでいるときにしか出ないため、画面の操作からこの `none` に到達するのは
+       * 参照先の部品が壊れている（無い・循環している）ときだけ。
+       */
+      return Option.unwrapOr(EditorState.detachInstance(state), state);
     case "copy_node":
       /*
        * コピーできる対象が無ければクリップボードは変わらない
