@@ -42,6 +42,18 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `lib/duplicate-test-helpers.py` | `check-test-helper-duplication.sh` | `__tests__/` の中で本体が完全に一致するヘルパーを探す。`--all` で全体を検査できる |
 | `lib/missing-doc-comments.py` | `check-doc-comments.sh` / `pre-push-doc-comments.sh` | `src/` のファイル直下の宣言のうち doc コメントの無いものを探す。`--all` で全体を検査できる |
 
+## フックが発火しない実行環境がある
+
+PR #168 では、biome の format 差分を含む状態で `git push` が通り、CI で落ちた。
+**`pre-push-lint.sh` 単体は正しく動く**(一時ファイルを置いてフックへ直接 JSON を流し、
+`&&` で連結した `git push` にマッチすること・format 差分を検出して deny を返すことを実測)。
+それでも push は通り、同じセッションでは `post-edit-lint.sh` による編集後の自動整形も
+一度も働いていなかった。
+
+**リモート実行環境(Claude Code on the web など)では `.claude/settings.json` の配線が
+読み込まれない可能性がある**(確証は取れていない)。フックは**最後の網であって唯一の網ではない**
+前提で、push 前の検査は手順としても踏む(`implementation-flow` フェーズ 7)。
+
 ## 例外(エスケープハッチ)
 
 - `block-lint-suppress.sh` は以下を許可する:
