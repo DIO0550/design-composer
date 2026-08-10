@@ -9,9 +9,9 @@ import { PropertyPanel } from "./index";
 const LONG_NODE_NAME = "very-long-node-name-that-does-not-fit-in-the-heading";
 
 /**
- * どの prop も設定されておらず、色のトークン参照だけが実在しない名前を指す Box。
- * 既存のストーリーが持っていない状態（既定の注記が出る行・見本の出ない色の行）を
- * 視覚差分に載せる。
+ * 既存のストーリーが持っていない状態を視覚差分に載せるための Box。
+ * 大半の prop が未指定（既定の注記が出る行）で、`background` だけが
+ * 実在しないトークンを指す（見本の出ない色の行）。
  */
 const UNSET_EDITOR_STATE = EditorState.create(
   DesignDocument.create({
@@ -92,7 +92,6 @@ export const BoxSelected: Story = {
   args: { state: EditorState.select(SAMPLE_EDITOR_STATE, "overflow-wide") },
 };
 
-/** どの prop も未指定で、色の参照だけが宙に浮いている状態。 */
 export const Unset: Story = {
   name: "未指定の prop だけの Box を選択中",
   args: { state: EditorState.select(UNSET_EDITOR_STATE, "unset-box") },

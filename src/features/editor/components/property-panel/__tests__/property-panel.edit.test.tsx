@@ -1,8 +1,12 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import type { PropEdit } from "@/domains/node";
+import {
+  pressedSegmentsOf,
+  segmentOf,
+} from "@/features/editor/__tests__/segmented-controls";
 import {
   EditorProvider,
   useEditor,
@@ -64,55 +68,36 @@ async function setupPanel(selected: string) {
   return user;
 }
 
-/**
- * 名前で引いたセグメントコントロールの中の 1 セグメント。
- * 同じ選択肢を持つグループが同じ画面に並ぶので、必ずグループで絞ってから引く。
- *
- * @param group コントロールの読み上げ名
- * @param option 押したいセグメントの綴り
- * @returns そのセグメントのボタン
- */
-function segment(group: string, option: string): HTMLElement {
-  return within(screen.getByRole("group", { name: group })).getByRole(
-    "button",
-    {
-      name: option,
-    },
-  );
-}
-
 test("セグメントを押すとその値が選ばれた状態になる", async () => {
   const user = await setupPanel("home-title");
 
-  await user.click(segment("Align", "center"));
+  await user.click(segmentOf("Align", "center"));
 
-  expect(
-    within(screen.getByRole("group", { name: "Align" })).getByRole("button", {
-      pressed: true,
-    }).textContent,
-  ).toBe("center");
+  expect(pressedSegmentsOf("Align")).toEqual(["center"]);
 });
 
 test("選ばれているセグメントをもう一度押すと未指定へ戻り既定が効く表示になる", async () => {
   const user = await setupPanel("home-title");
-  await user.click(segment("Align", "center"));
+  await user.click(segmentOf("Align", "center"));
 
-  await user.click(segment("Align", "center"));
+  await user.click(segmentOf("Align", "center"));
 
   expect(screen.getByText("未指定（既定: left）")).toBeDefined();
 });
 
 test("同じ選択肢を持つ 2 つの enum は取り違えずに別々に編集できる", async () => {
+  /*
+   * Box の `align` と `justify` はどちらも start / center / end を持つ。
+   * 取り違えると押した側が空になり、押していない側が `center` になって落ちる。
+   */
   const user = await setupPanel("home-body");
 
-  await user.click(segment("Align", "center"));
+  await user.click(segmentOf("Justify", "center"));
 
-  expect(
-    within(screen.getByRole("group", { name: "Justify" })).queryAllByRole(
-      "button",
-      { pressed: true },
-    ).length,
-  ).toBe(0);
+  expect([pressedSegmentsOf("Align"), pressedSegmentsOf("Justify")]).toEqual([
+    [],
+    ["center"],
+  ]);
 });
 
 test("文字入力の prop を書き換えるとその値が入力欄に反映される", async () => {
@@ -155,23 +140,23 @@ test("サイズのモードを fixed にすると長さの入力欄が現れる"
   const user = await setupPanel("home-body");
   expect(screen.queryByRole("spinbutton", { name: "Width" })).toBeNull();
 
-  await user.click(segment("Width Mode", "fixed"));
+  await user.click(segmentOf("Width Mode", "fixed"));
 
   expect(screen.getByRole("spinbutton", { name: "Width" })).toBeDefined();
 });
 
 test("サイズのモードを fixed から戻すと長さの入力欄が消える", async () => {
   const user = await setupPanel("home-body");
-  await user.click(segment("Width Mode", "fixed"));
+  await user.click(segmentOf("Width Mode", "fixed"));
 
-  await user.click(segment("Width Mode", "hug"));
+  await user.click(segmentOf("Width Mode", "hug"));
 
   expect(screen.queryByRole("spinbutton", { name: "Width" })).toBeNull();
 });
 
 test("数値入力の prop を書き換えるとその値が入力欄に反映される", async () => {
   const user = await setupPanel("home-body");
-  await user.click(segment("Width Mode", "fixed"));
+  await user.click(segmentOf("Width Mode", "fixed"));
 
   await user.type(screen.getByRole("spinbutton", { name: "Width" }), "240");
 

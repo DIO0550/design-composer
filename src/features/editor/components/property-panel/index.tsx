@@ -20,7 +20,10 @@ import { Option } from "@/utils/Option";
 const FIELD_CLASS =
   "h-7 w-full rounded-md border border-gray-300 px-2 text-[11px]";
 
-/** ラベル欄の幅。UI 案の 52px では `Width Mode` / `Padding X` が収まらない。 */
+/**
+ * ラベル欄の幅。UI 案の 52px では `Width Mode` / `Padding X` が収まらない。
+ * 変えたら `CONTROL_OFFSET_CLASS` も一緒に動かす（片方だけ変えると字下げがずれる）。
+ */
 const LABEL_CLASS = "w-[4.25rem] shrink-0 truncate text-[11px] text-gray-500";
 
 /**
@@ -140,13 +143,16 @@ function PropField({
           labelledBy={field.labelledBy}
           options={input.values}
           value={Option.map(control.value, String)}
-          onChange={(next) =>
-            onEdit(PropControl.editFrom(control, Option.unwrapOr(next, "")))
-          }
+          onChange={(next) => onEdit(PropControl.edit(control, next))}
         />
       );
     case "token":
       return <TokenSelect field={field} names={input.names} onEdit={onEdit} />;
+    /*
+     * Why not: 見本を欄の内側に置かない（UI 案 docs/Design Composer.html は内側）。
+     * ネイティブの `<select>` の中には要素を描けず、内側に置くには一覧そのものを
+     * 自作することになる（キーボード操作と読み上げを自前で持つ）。
+     */
     case "colorToken":
       return (
         <div className="flex items-center gap-2">
@@ -168,11 +174,16 @@ function PropField({
  * 条件付きの prop はラベルを出さず字下げする（UI 案は `width` の数値欄をモードの行の
  * 下へぶら下げている）。条件を出している行の**直下**に来るのはスキーマの宣言順に
  * 依っており（`BOX_SCHEMA` は `widthMode` の直後に `width` を宣言する）、順が変われば
- * 離れた位置に字下げだけが残る。
+ * 離れた位置に字下げだけが残る。**この出し分けは class の違いにしかならないので、
+ * 崩れに気づける手段は Storybook の視覚差分だけ**（happy-dom は Tailwind を解決しない）。
  *
  * セグメントには `<select>` の「未指定（既定: …）」に当たる選択肢が無いので、
  * 未指定のときだけ同じ綴りを行の下に出す。`title` では出さない（ホバーでしか読めず、
  * キーボード・タッチから届かない）。
+ *
+ * ラベルを `<label htmlFor>` にしないのは、`role="group"` を持つセグメントの器を
+ * `<label>` で指せないため。行ごとに結び方が 2 通りに割れるより、全行を
+ * `aria-labelledby` に揃える（代償として、ラベルを押しても入力欄へフォーカスが移らない）。
  *
  * @returns ラベルと入力欄を並べた 1 行
  */
@@ -205,7 +216,7 @@ function PropRow({
         </div>
       </div>
       {showsUnsetNote ? (
-        <p className={`text-[10px] text-gray-400 ${CONTROL_OFFSET_CLASS}`}>
+        <p className={`text-gray-400 text-xs ${CONTROL_OFFSET_CLASS}`}>
           {unsetLabel(control)}
         </p>
       ) : null}
@@ -214,7 +225,7 @@ function PropRow({
 }
 
 /**
- * 節の見出し（UI 案はセクションごとに罫線で区切る）。
+ * 節の見出し。
  *
  * @returns 見出しと、右端に添えるものを並べた帯
  */
@@ -230,7 +241,7 @@ function SectionHeading({
   );
 }
 
-/** 見出しでまとめた prop の並び（Layout / Size / Appearance）。 */
+/** 見出しでまとめた prop の並び（Layout / Size / Appearance）。UI 案は罫線で区切る。 */
 function GroupSection({
   section,
   onEdit,

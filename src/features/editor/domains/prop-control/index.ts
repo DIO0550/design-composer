@@ -125,11 +125,9 @@ function withCurrentValue(
   options: readonly string[],
   value: Option<PropValue>,
 ): readonly string[] {
-  if (!value.some) {
-    return options;
-  }
-  const current = String(value.value);
-  return options.includes(current) ? options : [current, ...options];
+  return value.some
+    ? ArrayEx.withPrepended(options, String(value.value))
+    : options;
 }
 
 /**
@@ -146,13 +144,9 @@ function colorOf(
   value: Option<PropValue>,
   tokens: TokenSet,
 ): Option<ColorToken> {
-  const effective = value.some ? value : editable.defaultValue;
+  const effective = Option.or(value, editable.defaultValue);
   return Option.flatMap(effective, (name) =>
-    Option.flatMap(
-      TokenSet.find(tokens, { kind: "colors", name: String(name) }),
-      (token) =>
-        token.kind === "colors" ? Option.some(token.value) : Option.none,
-    ),
+    TokenSet.findColor(tokens, String(name)),
   );
 }
 
@@ -236,9 +230,10 @@ function publicEditableProps(
       {
         name,
         definition,
-        defaultValue: declared.some
-          ? declared
-          : Option.fromNullable(definition.default),
+        defaultValue: Option.or(
+          declared,
+          Option.fromNullable(definition.default),
+        ),
       },
     ];
   });
@@ -409,20 +404,38 @@ export const PropControl = {
   },
 
   /**
-   * 入力欄に入った文字列を、その prop への編集にする。
-   *
-   * 空欄を「未設定へ戻す」と読むのは入力欄の約束事なので、`PropEdit` ではなく
-   * コントロールを知っているここで解釈する（文字列 prop にとって `""` は
-   * それ自体が正当な値になりうるため、ドメイン側に持たせると意味が固定される）。
+   * 解釈済みの値を、その prop への編集にする。
    * 値の作り方は入力欄の種類だけで決まるので、prop 名では分岐しない。
+   *
+   * @param control 編集したい prop の編集欄
+   * @param value 入れたい値。不在は「未設定へ戻す」
+   * @returns 値があれば設定、無ければ未設定へ戻す編集
    */
-  editFrom(control: PropControl, raw: string): PropEdit {
-    if (raw === "") {
+  edit(control: PropControl, value: Option<string>): PropEdit {
+    if (!value.some) {
       return PropEdit.clear(control.prop);
     }
     return PropEdit.set(
       control.prop,
-      control.input.kind === "number" ? Number(raw) : raw,
+      control.input.kind === "number" ? Number(value.value) : value.value,
+    );
+  },
+
+  /**
+   * 入力欄に入った文字列を、その prop への編集にする。
+   *
+   * 空欄を「未設定へ戻す」と読むのは `<select>` / `<input>` の約束事なので、
+   * `PropEdit` ではなくコントロールを知っているここで解釈する（文字列 prop にとって
+   * `""` はそれ自体が正当な値になりうるため、ドメイン側に持たせると意味が固定される）。
+   *
+   * @param control 編集したい prop の編集欄
+   * @param raw 入力欄が持っている生の文字列
+   * @returns 空欄なら未設定へ戻す編集、それ以外は設定する編集
+   */
+  editFrom(control: PropControl, raw: string): PropEdit {
+    return PropControl.edit(
+      control,
+      raw === "" ? Option.none : Option.some(raw),
     );
   },
 } as const;

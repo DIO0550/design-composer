@@ -1,31 +1,14 @@
-import { screen, within } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
-import { ELEMENT_NAME_ATTRIBUTE } from "@/domains/compiled-element";
-import { Option } from "@/utils/Option";
+import { renderedElement } from "@/features/editor/__tests__/canvas-elements";
+import { segmentOf } from "@/features/editor/__tests__/segmented-controls";
 import {
   canvasPane,
   renderOpenedDocument,
   selectArtboard,
   selectInTree,
 } from "./setup";
-
-/**
- * キャンバスに描かれている要素。ノードの style はインライン style に出る
- * （`CompiledElement.html`）ので、そこから読む。
- *
- * @param name 描かれている artboard / ノードの名前
- * @returns その名前の要素。無ければテストを落とす
- */
-function canvasElement(name: string): HTMLElement {
-  return Option.unwrap(
-    Option.fromNullable(
-      canvasPane().querySelector<HTMLElement>(
-        `[${ELEMENT_NAME_ATTRIBUTE}="${name}"]`,
-      ),
-    ),
-  );
-}
 
 /*
  * プロパティパネルからの props 編集を、編集画面の配線ごと確かめる
@@ -67,12 +50,7 @@ test("セグメントコントロールで並びを変えるとキャンバス�
   await renderOpenedDocument();
   await selectArtboard("home");
 
-  await userEvent.click(
-    within(screen.getByRole("group", { name: "Direction" })).getByRole(
-      "button",
-      { name: "row" },
-    ),
-  );
+  await userEvent.click(segmentOf("Direction", "row"));
 
-  expect(canvasElement("home").style.flexDirection).toBe("row");
+  expect(renderedElement(canvasPane(), "home").style.flexDirection).toBe("row");
 });
