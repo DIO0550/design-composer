@@ -235,6 +235,11 @@
     "name": "Text ノードを選択中"
   },
   {
+    "id": "features-editor-propertypanel--unset",
+    "title": "features/editor/PropertyPanel",
+    "name": "未指定の prop だけの Box を選択中"
+  },
+  {
     "id": "features-editor-tokeneditor--color-selected",
     "title": "features/editor/TokenEditor",
     "name": "色トークンを選択中"
