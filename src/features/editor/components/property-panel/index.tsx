@@ -56,6 +56,7 @@ type FieldBinding = Readonly<{
  * トークン名から選ぶ入力欄。
  *
  * @param names 選択肢に出すトークン名（ファイル由来の不正な参照を含む）
+ * @param describedBy 欄に添えた説明の識別子。省略すると説明を繋がない
  * @returns トークン名の選択欄
  */
 function TokenSelect({
@@ -102,7 +103,10 @@ function TokenSelect({
  * Why not: 数値を欄の内側に置かない。理由は色の見本と同じで、ネイティブの
  * `<select>` の中には要素を描けない。
  *
- * @returns トークン名の選択欄と、その右に添えた解決値
+ * 欄と数値を横に並べているのは class の違いにしかならないので、**崩れに気づける
+ * 手段は Storybook の視覚差分だけ**（happy-dom は Tailwind を解決しない）。
+ *
+ * @returns 解決できたトークンならその値を右に添えた選択欄、解決できなければ選択欄だけ
  */
 function NumericTokenField({
   field,
@@ -116,20 +120,20 @@ function NumericTokenField({
   const describedBy = useId();
   const resolvedValue = input.resolvedValue;
 
+  if (!resolvedValue.some) {
+    return <TokenSelect field={field} names={input.names} onEdit={onEdit} />;
+  }
   return (
     <div className="flex items-center gap-2">
       <TokenSelect
         field={field}
         names={input.names}
-        describedBy={resolvedValue.some ? describedBy : undefined}
+        describedBy={describedBy}
         onEdit={onEdit}
       />
-      {resolvedValue.some ? (
-        /* 桁数の多いトークン（`radius: full` の 9999）でも欄を押し潰さない */
-        <span id={describedBy} className="shrink-0 text-[10px] text-gray-400">
-          {resolvedValue.value}
-        </span>
-      ) : null}
+      <span id={describedBy} className="text-[10px] text-gray-400">
+        {resolvedValue.value}
+      </span>
     </div>
   );
 }

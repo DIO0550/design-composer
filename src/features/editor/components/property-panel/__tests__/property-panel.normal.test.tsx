@@ -192,13 +192,16 @@ test("実在しないトークンを指す数値の prop には解決値が出�
 
 test("数値にならないトークン参照には解決値が出ない", () => {
   /*
-   * 雛形は `spacing.sm` と `shadows.sm` が同名。種別を無視して引く実装にすると
-   * `Shadow` にも spacing の 8 が出て落ちる。
+   * `home-odd` の `shadow` には実在する `sm` を入れてある（解決できる値を持たせないと、
+   * 併記が無いのが種別のせいなのか値が無いせいなのか分からない）。
+   * 欄そのものは残っていることまで見るのは、欄ごと消えても通る形にしないため。
    */
   renderPanel(EditorState.select(setupState(), "home-odd"));
 
   expect(
-    screen.queryByRole("combobox", { name: "Shadow", description: "8" }),
+    screen
+      .getByRole("combobox", { name: "Shadow" })
+      .getAttribute("aria-describedby"),
   ).toBeNull();
 });
 
