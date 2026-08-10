@@ -36,7 +36,14 @@ function setupState(): EditorState {
             {
               name: "home-odd",
               type: "Box",
-              props: { direction: "diagonal", background: "missing" },
+              props: {
+                direction: "diagonal",
+                background: "missing",
+                /* 解決値が出ない側（dangling）と、同じ画面に出る側の対照。 */
+                gap: "nope",
+                paddingX: "sm",
+                shadow: "sm",
+              },
             },
           ],
         },
@@ -156,6 +163,46 @@ test("色のトークン参照には今効いている色の見本が出る", ()
     screen.getByRole("combobox", { name: "Background" }),
   );
   expect(swatch?.style.backgroundColor).toBe(TOKENS.colors.white);
+});
+
+test("数値のトークン参照には解決後の値が欄の説明として添えて出る", () => {
+  renderPanel(EditorState.select(setupState(), "home"));
+
+  expect(
+    screen.getByRole("combobox", { name: "Gap", description: "16" }),
+  ).toBeDefined();
+});
+
+test("実在しないトークンを指す数値の prop には解決値が出ない", () => {
+  /*
+   * 同じ画面の `Padding X` が対照（`sm` → 8）。何も出ない入力で確かめると、
+   * 併記を丸ごと消しても通ってしまう。
+   */
+  renderPanel(EditorState.select(setupState(), "home-odd"));
+
+  expect(
+    screen.getByRole("combobox", { name: "Padding X", description: "8" }),
+  ).toBeDefined();
+  expect(
+    screen
+      .getByRole("combobox", { name: "Gap" })
+      .getAttribute("aria-describedby"),
+  ).toBeNull();
+});
+
+test("数値にならないトークン参照には解決値が出ない", () => {
+  /*
+   * `home-odd` の `shadow` には実在する `sm` を入れてある（解決できる値を持たせないと、
+   * 併記が無いのが種別のせいなのか値が無いせいなのか分からない）。
+   * 欄そのものは残っていることまで見るのは、欄ごと消えても通る形にしないため。
+   */
+  renderPanel(EditorState.select(setupState(), "home-odd"));
+
+  expect(
+    screen
+      .getByRole("combobox", { name: "Shadow" })
+      .getAttribute("aria-describedby"),
+  ).toBeNull();
 });
 
 test("色以外のトークン参照には色の見本が出ない", () => {

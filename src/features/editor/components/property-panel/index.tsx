@@ -7,6 +7,7 @@ import { TypeGlyph } from "@/features/editor/components/type-glyph";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import {
   PropControl,
+  type PropControlInput,
   type PropControlSection,
   SelectionControls,
 } from "@/features/editor/domains/prop-control";
@@ -55,15 +56,18 @@ type FieldBinding = Readonly<{
  * トークン名から選ぶ入力欄。
  *
  * @param names 選択肢に出すトークン名（ファイル由来の不正な参照を含む）
+ * @param describedBy 欄に添えた説明の識別子。省略すると説明を繋がない
  * @returns トークン名の選択欄
  */
 function TokenSelect({
   field,
   names,
+  describedBy,
   onEdit,
 }: Readonly<{
   field: FieldBinding;
   names: readonly string[];
+  describedBy?: string;
   onEdit: (edit: PropEdit) => void;
 }>): ReactElement {
   const control = field.control;
@@ -71,6 +75,7 @@ function TokenSelect({
   return (
     <select
       aria-labelledby={field.labelledBy}
+      aria-describedby={describedBy}
       className={FIELD_CLASS}
       value={Option.unwrapOr(Option.map(control.value, String), "")}
       onChange={(event) =>
@@ -84,6 +89,52 @@ function TokenSelect({
         </option>
       ))}
     </select>
+  );
+}
+
+/**
+ * 数値のトークンを選ぶ入力欄。解決後の値を右に添える（UI 案 docs/Design Composer.html
+ * の `gap` は `lg` の右端に `20`、`radius` は `md` の右端に `8` を出す）。
+ *
+ * 読み上げへ繋ぐのは、この数値が `<select>` の読み上げ（トークン名だけ）からは
+ * 得られない情報だから。色の見本が `aria-hidden` なのは、何の色かを隣のトークン名が
+ * 既に伝えているからで、こちらは事情が違う。
+ *
+ * Why not: 数値を欄の内側に置かない。理由は色の見本と同じで、ネイティブの
+ * `<select>` の中には要素を描けない。
+ *
+ * 欄と数値を横に並べているのは class の違いにしかならないので、**崩れに気づける
+ * 手段は Storybook の視覚差分だけ**（happy-dom は Tailwind を解決しない）。
+ *
+ * @returns 解決できたトークンならその値を右に添えた選択欄、解決できなければ選択欄だけ
+ */
+function NumericTokenField({
+  field,
+  input,
+  onEdit,
+}: Readonly<{
+  field: FieldBinding;
+  input: Extract<PropControlInput, { kind: "numericToken" }>;
+  onEdit: (edit: PropEdit) => void;
+}>): ReactElement {
+  const describedBy = useId();
+  const resolvedValue = input.resolvedValue;
+
+  if (!resolvedValue.some) {
+    return <TokenSelect field={field} names={input.names} onEdit={onEdit} />;
+  }
+  return (
+    <div className="flex items-center gap-2">
+      <TokenSelect
+        field={field}
+        names={input.names}
+        describedBy={describedBy}
+        onEdit={onEdit}
+      />
+      <span id={describedBy} className="text-[10px] text-gray-400">
+        {resolvedValue.value}
+      </span>
+    </div>
   );
 }
 
@@ -148,6 +199,8 @@ function PropField({
       );
     case "token":
       return <TokenSelect field={field} names={input.names} onEdit={onEdit} />;
+    case "numericToken":
+      return <NumericTokenField field={field} input={input} onEdit={onEdit} />;
     /*
      * Why not: 見本を欄の内側に置かない（UI 案 docs/Design Composer.html は内側）。
      * ネイティブの `<select>` の中には要素を描けず、内側に置くには一覧そのものを

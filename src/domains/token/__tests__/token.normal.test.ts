@@ -30,3 +30,23 @@ test("色に無い名前を findColor で引くと不在になる", () => {
 
   expect(TokenSet.findColor(tokens, "md")).toEqual(Option.none);
 });
+
+test("数値のトークンは findNumber で種別と名前から引ける", () => {
+  /*
+   * spacing と radius に同じ名前を置いてある。種別を無視して引く実装にすると
+   * 先に見つかったほうが返って落ちる（同名が無いと、壊しても同じ答えになる）。
+   */
+  const tokens = {
+    ...TokenSet.empty(),
+    spacing: { md: 16 },
+    radius: { md: 8 },
+  };
+
+  expect(TokenSet.findNumber(tokens, "radius", "md")).toEqual(Option.some(8));
+});
+
+test("その種別に無い名前を findNumber で引くと不在になる", () => {
+  const tokens = { ...TokenSet.empty(), spacing: { md: 16 } };
+
+  expect(TokenSet.findNumber(tokens, "radius", "md")).toEqual(Option.none);
+});

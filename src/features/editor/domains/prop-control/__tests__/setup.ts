@@ -90,3 +90,18 @@ export function colorOfControl(
   }
   return control.input.color;
 }
+
+/**
+ * 数値のトークン参照の編集欄が持つ解決値。
+ *
+ * @param control 解決値を見たい編集欄
+ * @returns 今効いているトークンの数値。数値のトークン参照でなければテストを落とす
+ */
+export function resolvedValueOfControl(
+  control: PropControl | undefined,
+): Option<number> {
+  if (control?.input.kind !== "numericToken") {
+    throw new Error("数値のトークン参照の編集欄ではない");
+  }
+  return control.input.resolvedValue;
+}

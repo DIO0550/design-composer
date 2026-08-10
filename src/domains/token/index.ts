@@ -63,6 +63,14 @@ export type TokenKind = (typeof TOKEN_KINDS)[number];
 type TokenValueOf = { [K in TokenKind]: TokenSet[K][string] };
 
 /**
+ * 値がそのまま数値になる種別(docs/04-tokens.md「値の形式」の spacing / radius)。
+ * 種別を書き並べず値の形から導出するのは、種別と値の対応を二重管理しないため。
+ */
+export type NumericTokenKind = {
+  [K in TokenKind]: TokenValueOf[K] extends number ? K : never;
+}[TokenKind];
+
+/**
  * トークンの値(docs/04-tokens.md「値の形式」)。
  * 種別で判別する直和にして「spacing に hex 文字列」のような
  * 種別と値の食い違いを表現できなくする。
@@ -405,6 +413,25 @@ export const TokenSet = {
    */
   findColor(tokens: TokenSet, name: string): Option<ColorToken> {
     return Option.fromNullable(tokens.colors[name]);
+  },
+
+  /**
+   * 名前で数値のトークンを引く。
+   *
+   * `findColor` と同じ理由で `find` と分けている。引く種別が決まっている呼び出しに、
+   * `Token` の直和を絞り直す分岐を書かせない。
+   *
+   * @param tokens 引き先のトークン一式
+   * @param kind 引きたい種別
+   * @param name 引きたいトークンの名前
+   * @returns そのトークンの数値。その種別にその名前が無ければ `none`
+   */
+  findNumber(
+    tokens: TokenSet,
+    kind: NumericTokenKind,
+    name: string,
+  ): Option<number> {
+    return Option.fromNullable(tokens[kind][name]);
   },
 
   /** 参照でトークンを引く。その種別にその名前が無ければ `none`。 */

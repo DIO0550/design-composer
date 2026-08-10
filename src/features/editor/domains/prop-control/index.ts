@@ -13,7 +13,11 @@ import {
   PropDefinition,
   type PropDefinitionRecord,
 } from "@/domains/primitive-schema";
-import { type ColorToken, TokenSet } from "@/domains/token";
+import {
+  type ColorToken,
+  type NumericTokenKind,
+  TokenSet,
+} from "@/domains/token";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
@@ -38,11 +42,17 @@ import { Option } from "@/utils/Option";
  * 判別できなくなる。
  *
  * 色のトークンだけ別の枝にするのは、`gap`（spacing）が色を持つ状態を型で作れなく
- * するため（`rules/coding.md`「正しい状態だけを列挙する」）。
+ * するため（`rules/coding.md`「正しい状態だけを列挙する」）。数値のトークンを
+ * さらに分けるのも同じ理由で、`shadow` が解決値を持つ状態を作れなくする。
  */
 export type PropControlInput =
   | Readonly<{ kind: "enum"; values: readonly string[] }>
   | Readonly<{ kind: "token"; names: readonly string[] }>
+  | Readonly<{
+      kind: "numericToken";
+      names: readonly string[];
+      resolvedValue: Option<number>;
+    }>
   | Readonly<{
       kind: "colorToken";
       names: readonly string[];
@@ -131,31 +141,51 @@ function withCurrentValue(
 }
 
 /**
- * 今その prop に効いている色。明示値が無ければ既定値で引く。
+ * 効いているトークン名が指す色。
  *
- * @param editable 既定値の出どころになる prop
- * @param value 今その prop に設定されている値
+ * @param effective 今その prop に効いているトークン名
  * @param tokens 色を引くトークン一式
- * @returns 効いている名前のトークンが実在すればその色。値も既定も無いとき、
- *   および実在しないトークンを指しているときは `none`
+ * @returns その名前の色。効いている名前が無いとき、および実在しない
+ *   トークンを指しているときは `none`
  */
 function colorOf(
-  editable: EditableProp,
-  value: Option<PropValue>,
+  effective: Option<PropValue>,
   tokens: TokenSet,
 ): Option<ColorToken> {
-  const effective = Option.or(value, editable.defaultValue);
   return Option.flatMap(effective, (name) =>
     TokenSet.findColor(tokens, String(name)),
   );
 }
 
 /**
+ * 効いているトークン名が指す数値。
+ *
+ * @param effective 今その prop に効いているトークン名
+ * @param tokens 数値を引くトークン一式
+ * @param kind 引く種別
+ * @returns そのトークンの数値。効いている名前が無いとき、および実在しない
+ *   トークンを指しているときは `none`
+ */
+function numberOf(
+  effective: Option<PropValue>,
+  tokens: TokenSet,
+  kind: NumericTokenKind,
+): Option<number> {
+  return Option.flatMap(effective, (name) =>
+    TokenSet.findNumber(tokens, kind, String(name)),
+  );
+}
+
+/**
  * 入力欄の形。値域（`domain`）と、今設定されている値から決まる。
+ *
+ * トークン参照を最後に置いて `switch` を関数の末尾にしているのは、種別を足して
+ * `case` を足し忘れたときに「返さない経路がある」としてここがコンパイルエラーに
+ * なるようにするため（`rules/coding.md`「列挙した状態の網羅を型で強制する」）。
  *
  * @param editable 入力の形を決める prop
  * @param value 今その prop に設定されている値
- * @param tokens トークン参照の選択肢と色の出どころ
+ * @param tokens トークン参照の選択肢と解決値の出どころ
  * @returns 値域に応じた入力欄の形。選択式には今の値も選択肢として含む
  */
 function inputOf(
@@ -170,18 +200,31 @@ function inputOf(
       values: withCurrentValue(definition.values, value),
     };
   }
-  if (PropDefinition.isToken(definition)) {
-    const names = withCurrentValue(
-      TokenSet.names(tokens, definition.tokenKind),
-      value,
-    );
-    return definition.tokenKind === "colors"
-      ? { kind: "colorToken", names, color: colorOf(editable, value, tokens) }
-      : { kind: "token", names };
+  if (PropDefinition.isLiteral(definition)) {
+    return definition.literalType === "number"
+      ? { kind: "number" }
+      : { kind: "text" };
   }
-  return definition.literalType === "number"
-    ? { kind: "number" }
-    : { kind: "text" };
+  const names = withCurrentValue(
+    TokenSet.names(tokens, definition.tokenKind),
+    value,
+  );
+  /* 解決値も色も、明示値が無ければ既定値が効く（未設定でも既定の色は見える）。 */
+  const effective = Option.or(value, editable.defaultValue);
+  switch (definition.tokenKind) {
+    case "colors":
+      return { kind: "colorToken", names, color: colorOf(effective, tokens) };
+    case "spacing":
+    case "radius":
+      return {
+        kind: "numericToken",
+        names,
+        resolvedValue: numberOf(effective, tokens, definition.tokenKind),
+      };
+    case "shadows":
+    case "typography":
+      return { kind: "token", names };
+  }
 }
 
 /**
