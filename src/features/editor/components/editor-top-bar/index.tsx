@@ -4,7 +4,12 @@ import type { DocumentSaveState } from "@/features/editor/domains/document-save-
 import { OpenedDocument } from "@/features/editor/domains/opened-document";
 
 /**
- * 画面上部の帯（UI 案 docs/Design Composer.html の Default 画面。高さ 38px）。
+ * 編集画面の上端の帯（UI 案 docs/Design Composer.html の Default 画面。高さ 38px）。
+ *
+ * `Document*` ではなく `Editor*` なのは、並ぶものがドキュメントの話に閉じないため。
+ * パンくずと保存状態は開いているドキュメントの話だが、倍率はキャンバスの見え方
+ * （非永続の view state）で、ドキュメントには保存しない。3 ペインの外側にある
+ * 編集画面の器という点で `EditorLayout` / `EditorScreen` と同じ並び。
  *
  * ランドマークを与えないのは、`DocumentToolbar` が既に `<header>`（banner）を出しており、
  * ここも `<header>` にすると banner が 2 つ並ぶため。中身はそれぞれが自分の役割を
@@ -17,7 +22,7 @@ import { OpenedDocument } from "@/features/editor/domains/opened-document";
  * 高さ（`h-[38px]`）を落としても中身の分だけ縮むだけでテストは 1 件も落ちない。
  * 気づく手段は Storybook の視覚差分だけ。
  */
-function DocumentTopBarRoot({ children }: Readonly<{ children: ReactNode }>) {
+function EditorTopBarRoot({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <div className="flex h-[38px] shrink-0 items-center gap-3 border-gray-300 border-b bg-white px-3 text-gray-900 text-xs">
       {children}
@@ -114,7 +119,7 @@ const ZOOM_STEP_BUTTON =
  * `−` / 倍率 / `+` の 3 つしか描いておらず、描かれていない操作は既存の流儀へ寄せる
  * （rules/ui-verification.md）。
  */
-function DocumentZoom({
+function CanvasZoom({
   view,
   onZoomIn,
   onZoomOut,
@@ -160,8 +165,8 @@ function DocumentZoom({
 }
 
 /** 上部バー。中身は呼び出し側が children で組む。 */
-export const DocumentTopBar = Object.assign(DocumentTopBarRoot, {
+export const EditorTopBar = Object.assign(EditorTopBarRoot, {
   Breadcrumb: DocumentBreadcrumb,
   SaveBadge: DocumentSaveBadge,
-  Zoom: DocumentZoom,
+  Zoom: CanvasZoom,
 });

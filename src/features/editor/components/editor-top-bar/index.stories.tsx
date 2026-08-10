@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import { CanvasView } from "@/features/editor/domains/canvas-view";
 import { DocumentSaveState } from "@/features/editor/domains/document-save-state";
-import { DocumentTopBar } from "./index";
+import { EditorTopBar } from "./index";
 
 const OPENED = {
   path: "/work/settings-ui/app.dcmp",
@@ -15,21 +15,21 @@ const OPENED = {
  */
 function TopBar({ state }: Readonly<{ state: DocumentSaveState }>) {
   return (
-    <DocumentTopBar>
-      <DocumentTopBar.Breadcrumb opened={OPENED} />
-      <DocumentTopBar.SaveBadge state={state} />
-      <DocumentTopBar.Zoom
+    <EditorTopBar>
+      <EditorTopBar.Breadcrumb opened={OPENED} />
+      <EditorTopBar.SaveBadge state={state} />
+      <EditorTopBar.Zoom
         view={CanvasView.create()}
         onZoomIn={() => {}}
         onZoomOut={() => {}}
         onReset={() => {}}
       />
-    </DocumentTopBar>
+    </EditorTopBar>
   );
 }
 
 const meta = {
-  title: "features/editor/DocumentTopBar",
+  title: "features/editor/EditorTopBar",
   component: TopBar,
   parameters: { layout: "fullscreen" },
 } satisfies Meta<typeof TopBar>;

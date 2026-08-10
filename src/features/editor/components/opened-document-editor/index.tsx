@@ -5,12 +5,12 @@ import {
   DocumentErrorList,
 } from "@/features/editor/components/document-error-list";
 import { DocumentSyncFailureList } from "@/features/editor/components/document-sync-failure-list";
-import { DocumentTopBar } from "@/features/editor/components/document-top-bar";
 import { EditorLayout } from "@/features/editor/components/editor-layout";
 import {
   EditorProvider,
   useEditor,
 } from "@/features/editor/components/editor-provider";
+import { EditorTopBar } from "@/features/editor/components/editor-top-bar";
 import { LeftPane } from "@/features/editor/components/left-pane";
 import {
   LEFT_PANE_VIEWS,
@@ -262,16 +262,16 @@ function EditorBody({
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <DocumentTopBar>
-        <DocumentTopBar.Breadcrumb opened={opened} />
-        <DocumentTopBar.SaveBadge state={saveState} />
-        <DocumentTopBar.Zoom
+      <EditorTopBar>
+        <EditorTopBar.Breadcrumb opened={opened} />
+        <EditorTopBar.SaveBadge state={saveState} />
+        <EditorTopBar.Zoom
           view={canvasView.view}
           onZoomIn={canvasView.zoomIn}
           onZoomOut={canvasView.zoomOut}
           onReset={canvasView.reset}
         />
-      </DocumentTopBar>
+      </EditorTopBar>
       <DocumentSyncFailureList
         autoSave={DocumentSaveState.failure(saveState)}
         watch={watchFailure}

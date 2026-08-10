@@ -3,13 +3,13 @@ import type { ReactNode } from "react";
 import { DocumentSaveState } from "@/features/editor/domains/document-save-state";
 import type { OpenedDocument } from "@/features/editor/domains/opened-document";
 import { useCanvasView } from "@/features/editor/hooks/use-canvas-view";
-import { DocumentTopBar } from "../index";
+import { EditorTopBar } from "../index";
 
 /** 倍率の並びを、実物の表示（`useCanvasView`）に繋いで描く。 */
 function ZoomWithView(): ReactNode {
   const { view, zoomIn, zoomOut, reset } = useCanvasView();
   return (
-    <DocumentTopBar.Zoom
+    <EditorTopBar.Zoom
       view={view}
       onZoomIn={zoomIn}
       onZoomOut={zoomOut}
@@ -32,13 +32,11 @@ export function renderTopBar(
   }>,
 ) {
   return render(
-    <DocumentTopBar>
-      {bar.opened ? <DocumentTopBar.Breadcrumb opened={bar.opened} /> : null}
-      {bar.saveState ? (
-        <DocumentTopBar.SaveBadge state={bar.saveState} />
-      ) : null}
+    <EditorTopBar>
+      {bar.opened ? <EditorTopBar.Breadcrumb opened={bar.opened} /> : null}
+      {bar.saveState ? <EditorTopBar.SaveBadge state={bar.saveState} /> : null}
       {bar.zoom ? <ZoomWithView /> : null}
-    </DocumentTopBar>,
+    </EditorTopBar>,
   );
 }
 
