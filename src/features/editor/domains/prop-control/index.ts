@@ -13,7 +13,7 @@ import {
   PropDefinition,
   type PropDefinitionRecord,
 } from "@/domains/primitive-schema";
-import { TokenSet } from "@/domains/token";
+import { type ColorToken, TokenSet } from "@/domains/token";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
@@ -29,9 +29,25 @@ import { Option } from "@/utils/Option";
  * 表現を知ることになり、依存が domains → features へ逆流する。
  */
 
-/** 入力欄の種類。値の決め方（`domain`）から決まる。 */
+/**
+ * 入力欄の種類。値の決め方（`domain`）から決まる。
+ *
+ * enum とトークン参照はどちらも選択式だが、UI 案（docs/Design Composer.html）は
+ * enum をセグメント、トークンを `▾` 付きの欄と描き分けているので枝を分ける。
+ * 1 つに畳むと、パネル側が「選択肢がスキーマ由来かトークン由来か」を prop 名でしか
+ * 判別できなくなる。
+ *
+ * 色のトークンだけ別の枝にするのは、`gap`（spacing）が色を持つ状態を型で作れなく
+ * するため（`rules/coding.md`「正しい状態だけを列挙する」）。
+ */
 export type PropControlInput =
-  | Readonly<{ kind: "choice"; options: readonly string[] }>
+  | Readonly<{ kind: "enum"; values: readonly string[] }>
+  | Readonly<{ kind: "token"; names: readonly string[] }>
+  | Readonly<{
+      kind: "colorToken";
+      names: readonly string[];
+      color: Option<ColorToken>;
+    }>
   | Readonly<{ kind: "number" }>
   | Readonly<{ kind: "text" }>;
 
@@ -39,12 +55,17 @@ export type PropControlInput =
  * 1 prop 分の編集欄。
  * `value`（明示的に設定されている値）と `defaultValue`（設定が無いときに効く値）を
  * 別々に持つのは、パネルが両者を区別して見せるため（docs/06-ui.md）。
+ *
+ * `enabledBy` は、その prop が編集できる条件を出している prop の名前
+ * （スキーマの `enabledWhen.prop`）。真偽ではなく名前を持つのは、どの行にぶら下がる
+ * 欄なのかがコントロールから読めるようにするため。
  */
 export type PropControl = Readonly<{
   prop: string;
   input: PropControlInput;
   value: Option<PropValue>;
   defaultValue: Option<PropValue>;
+  enabledBy: Option<string>;
 }>;
 
 /** `group` ごとのまとまり（docs/03「`group` プロパティパネルのセクション」）。 */
@@ -90,25 +111,79 @@ type EditableProp = Readonly<{
 }>;
 
 /**
- * enum とトークン参照はどちらも選択式で、選択肢の出どころだけが違う
- * （`values` を読むか tokens 定義から引くか）ため 1 つの種類に畳む。
+ * 今の値が選択肢に無ければ先頭へ足した並び。
  *
- * @param definition 入力の形を決める prop の宣言
- * @param tokens トークン参照の選択肢の出どころ
- * @returns 選択式なら選択肢つきの `choice`、それ以外は `number` / `text`
+ * ファイル由来の不正な値（宣言に無い enum の値・存在しないトークン名）を落とすと
+ * 未指定と見分けが付かず、検証エラーの原因が画面から消える（不正なドキュメントも
+ * 描画は残る / docs/03-schema.md「不正ファイル時の挙動」）。
+ *
+ * @param options その prop が本来取れる値の並び
+ * @param value 今その prop に設定されている値
+ * @returns 今の値を含む選択肢の並び。設定が無い / 既に含まれるなら元のまま
+ */
+function withCurrentValue(
+  options: readonly string[],
+  value: Option<PropValue>,
+): readonly string[] {
+  if (!value.some) {
+    return options;
+  }
+  const current = String(value.value);
+  return options.includes(current) ? options : [current, ...options];
+}
+
+/**
+ * 今その prop に効いている色。明示値が無ければ既定値で引く。
+ *
+ * @param editable 既定値の出どころになる prop
+ * @param value 今その prop に設定されている値
+ * @param tokens 色を引くトークン一式
+ * @returns 効いている名前のトークンが実在すればその色。値も既定も無いとき、
+ *   および実在しないトークンを指しているときは `none`
+ */
+function colorOf(
+  editable: EditableProp,
+  value: Option<PropValue>,
+  tokens: TokenSet,
+): Option<ColorToken> {
+  const effective = value.some ? value : editable.defaultValue;
+  return Option.flatMap(effective, (name) =>
+    Option.flatMap(
+      TokenSet.find(tokens, { kind: "colors", name: String(name) }),
+      (token) =>
+        token.kind === "colors" ? Option.some(token.value) : Option.none,
+    ),
+  );
+}
+
+/**
+ * 入力欄の形。値域（`domain`）と、今設定されている値から決まる。
+ *
+ * @param editable 入力の形を決める prop
+ * @param value 今その prop に設定されている値
+ * @param tokens トークン参照の選択肢と色の出どころ
+ * @returns 値域に応じた入力欄の形。選択式には今の値も選択肢として含む
  */
 function inputOf(
-  definition: PropDefinition,
+  editable: EditableProp,
+  value: Option<PropValue>,
   tokens: TokenSet,
 ): PropControlInput {
+  const definition = editable.definition;
   if (PropDefinition.isEnum(definition)) {
-    return { kind: "choice", options: definition.values };
+    return {
+      kind: "enum",
+      values: withCurrentValue(definition.values, value),
+    };
   }
   if (PropDefinition.isToken(definition)) {
-    return {
-      kind: "choice",
-      options: TokenSet.names(tokens, definition.tokenKind),
-    };
+    const names = withCurrentValue(
+      TokenSet.names(tokens, definition.tokenKind),
+      value,
+    );
+    return definition.tokenKind === "colors"
+      ? { kind: "colorToken", names, color: colorOf(editable, value, tokens) }
+      : { kind: "token", names };
   }
   return definition.literalType === "number"
     ? { kind: "number" }
@@ -203,11 +278,13 @@ function controlOf(
   props: Props,
   tokens: TokenSet,
 ): PropControl {
+  const value = Option.fromNullable(props[editable.name]);
   return {
     prop: editable.name,
-    input: inputOf(editable.definition, tokens),
-    value: Option.fromNullable(props[editable.name]),
+    input: inputOf(editable, value, tokens),
+    value,
     defaultValue: editable.defaultValue,
+    enabledBy: Option.fromNullable(editable.definition.enabledWhen?.prop),
   };
 }
 
