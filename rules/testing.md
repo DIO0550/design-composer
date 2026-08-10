@@ -89,6 +89,12 @@ expect(collect(document, GRAY_900).map(toText)).toEqual(["title.color"]);
 
 **「出さない」を確かめるときは、入力から自明にならない側を見る。** 0 件のときに行が無いのは入力から決まるので、行の数を見ても実装を守れない。守りたいのが「0 件なら枠を出さない」なら、枠そのものを見る（`queryAllByRole("listitem")` が空 → `queryByRole("list")` が `null`）。
 
+**`queryBy*` が `null` になる理由が2通り以上あるなら、その assert は守っていない。** 絞り込みの条件（`name` / `description` / テキスト）を重ねた `queryBy*` は、**条件が外れたのか、対象そのものが消えたのか**を区別しない。**対象を `getBy*` で引いてから、外れてほしい側だけを見る。**
+
+| NG | OK |
+|---|---|
+| `expect(queryByRole("combobox", { name: "Shadow", description: "8" })).toBeNull()` — `Shadow` の欄ごと消えても通る | `expect(getByRole("combobox", { name: "Shadow" }).getAttribute("aria-describedby")).toBeNull()` |
+
 **落ちるか迷ったら、その1件だけ実装を壊して走らせる。** 全体のミューテーションテストは重いが、疑わしい assert 1 つのために分岐を消して 1 ファイル回すだけなら数秒で済む。頭で判断せず確かめる。
 
 **2. 1つの assert が複数の仕様を固定していないか。** 表示全体を文字列として比べると、テスト名が指していない仕様まで巻き込む。関係のない変更で落ちるため、リファクタリング耐性が下がる。
