@@ -7,10 +7,12 @@
 # 方針: lint エラーは「抑制」ではなく「コードの修正」で解決する。
 # どうしても抑制が必要な場合のみ、対象ファイルに // @lint-suppress-ok を記載する。
 #
-# 許可される例外:
-#   - useExhaustiveDependencies / react-hooks/exhaustive-deps(useEffect マウント時)
-#   - noUnusedVariables / no-unused-vars(ブランド型 declare const ... unique symbol の直前行のみ)
+# 判定そのものは lib/lint-suppressions.py。同じスクリプトを CI の
+# check-added-lint-suppressions.sh が使う(フックが発火しない環境の代替 /
+# .claude/hooks/README.md「強制力の序列」)。
 set -euo pipefail
+
+hook_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 input="$(cat)"
 file="$(jq -r '.tool_input.file_path // .tool_input.path // empty' <<< "$input")"
@@ -41,45 +43,10 @@ esac
 
 [ -z "$content" ] && exit 0
 
-# 抑制コメントを検出。
-suppression_lines="$(echo "$content" | grep -nE 'biome-ignore|eslint-disable(-next-line|-line)?' || true)"
-[ -z "$suppression_lines" ] && exit 0
+suppressions="$(printf '%s' "$content" | python3 "$hook_dir/lib/lint-suppressions.py" || true)"
+[ -z "$suppressions" ] && exit 0
 
-# 許可される例外: useEffect の依存配列警告(マウント時のみ実行する正当なケース)。
-filtered="$(echo "$suppression_lines" \
-  | grep -v 'biome-ignore lint/correctness/useExhaustiveDependencies' \
-  | grep -v 'react-hooks/exhaustive-deps' \
-  || true)"
-[ -z "$filtered" ] && exit 0
-
-# 許可される例外: ブランド型 (declare const ... unique symbol) 直前の未使用変数抑制。
-brand_ok_lines="$(echo "$content" | awk '
-  /biome-ignore.*noUnusedVariables|eslint-disable[^ ]*.*no-unused-vars/ {
-    suppress_nr = NR; next
-  }
-  suppress_nr && NR == suppress_nr + 1 {
-    if ($0 ~ /declare[[:space:]]+const.*unique[[:space:]]+symbol/) {
-      print suppress_nr
-    }
-    suppress_nr = 0
-  }
-  suppress_nr && NR > suppress_nr + 1 { suppress_nr = 0 }
-  END { if (suppress_nr) print "no-match" }
-')"
-
-if [ -n "$brand_ok_lines" ]; then
-  tmp_filtered="$filtered"
-  while IFS= read -r ok_line_nr; do
-    [ -z "$ok_line_nr" ] && continue
-    [ "$ok_line_nr" = "no-match" ] && continue
-    tmp_filtered="$(echo "$tmp_filtered" | grep -v "^${ok_line_nr}:" || true)"
-  done <<< "$brand_ok_lines"
-  filtered="$tmp_filtered"
-fi
-
-[ -z "$filtered" ] && exit 0
-
-jq -n --arg lines "$filtered" '{
+jq -n --arg lines "$suppressions" '{
   hookSpecificOutput: {
     hookEventName: "PreToolUse",
     permissionDecision: "deny",

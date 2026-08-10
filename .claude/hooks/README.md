@@ -19,6 +19,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `check-doc-comments.sh`  | `PostToolUse` (Edit/Write) | **doc コメントの検証**(rules/coding.md「コメントは doc と Why / Why not に絞る」)。doc の無い宣言と、`@param` / `@returns` / `@throws` が欠けた doc を知らせる |
 | `pre-push-doc-comments.sh` | `PreToolUse` (Bash)     | **push 前の doc コメント検査**。`src/` に doc の無い宣言、または `@param` / `@returns` / `@throws` の欠けた doc があれば push をブロック |
 | `post-merge-review.sh`   | `PostToolUse` (Bash/MCP)  | **マージ後の振り返りの提示**。PR のマージを検知し、Issue への追記と評価の記録を促す       |
+| `hook-canary.sh`         | `PreToolUse` (Bash)       | **カナリア**。`echo hook-canary` を必ず deny する。通ってしまったらフックが発火しない実行環境（後述） |
 
 ## 移植元から見送ったもの
 
@@ -40,19 +41,58 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | --- | --- | --- |
 | `lib/test-conditionals.awk` | `check-test-rules.sh` / `pre-push-test-rules.sh` | `test()` / `it()` ブロック内の `if` / `else` / `switch` を行番号付きで出力する |
 | `lib/duplicate-test-helpers.py` | `check-test-helper-duplication.sh` | `__tests__/` の中で本体が完全に一致するヘルパーを探す。`--all` で全体を検査できる |
-| `lib/missing-doc-comments.py` | `check-doc-comments.sh` / `pre-push-doc-comments.sh` | `src/` のファイル直下の宣言のうち doc コメントの無いものを探す。`--all` で全体を検査できる |
+| `lib/missing-doc-comments.py` | `check-doc-comments.sh` / `pre-push-doc-comments.sh` / `harness/githooks/pre-push` | `src/` のファイル直下の宣言のうち doc コメントの無いものを探す。`--all` で全体を検査できる |
+| `lib/test-rules-scan.sh` | `pre-push-test-rules.sh` / `harness/githooks/pre-push` | 指定したルート配下の `*.test.ts(x)` をすべて検査する。違反があれば exit 1 |
+| `lib/lint-suppressions.py` | `block-lint-suppress.sh` / `.github/scripts/check-added-lint-suppressions.sh` | 許可されていない lint 抑制コメントの行を報告する。例外の判定もここが持つ |
 
-## フックが発火しない実行環境がある
+## 強制力の序列 — フックが発火しない実行環境がある
 
-PR #168 では、biome の format 差分を含む状態で `git push` が通り、CI で落ちた。
+PR #168 では、biome の format 差分を含む状態で push が通り、CI で落ちた。
 **`pre-push-lint.sh` 単体は正しく動く**(一時ファイルを置いてフックへ直接 JSON を流し、
-`&&` で連結した `git push` にマッチすること・format 差分を検出して deny を返すことを実測)。
+`&&` で連結した push コマンドにマッチすること・format 差分を検出して deny を返すことを実測)。
 それでも push は通り、同じセッションでは `post-edit-lint.sh` による編集後の自動整形も
-一度も働いていなかった。
+一度も働いていなかった。リモート実行環境(Claude Code on the web など)では
+`.claude/settings.json` の配線が読み込まれないことがある。
 
-**リモート実行環境(Claude Code on the web など)では `.claude/settings.json` の配線が
-読み込まれない可能性がある**(確証は取れていない)。フックは**最後の網であって唯一の網ではない**
-前提で、push 前の検査は手順としても踏む(`implementation-flow` フェーズ 7)。
+**フェイルオープンかつサイレント**なので、通ったのか検査されなかったのかを区別できない。
+したがって **Claude Code のフックを enforcement の最上位として数えることはできない**。
+序列は次のとおり。
+
+| # | 層 | 効く範囲 | タイミング | 置き場所 |
+| --- | --- | --- | --- | --- |
+| 1 | CI | 無条件 | push の後 | `.github/workflows/` |
+| 2 | git hooks | クライアント非依存 | push の前 | [`harness/githooks/`](../../harness/githooks/README.md) |
+| 3 | Claude Code hooks | CLI 起動セッションのみ | 編集・コマンドの直前 | ここ |
+| 4 | skill / rules | お願いベース | 読まれたとき | `.claude/skills/` / `rules/` |
+
+**push 前検査の enforcement は git hooks が担う。** ここにある `pre-push-*` は、同じ
+スクリプト(`lib/`)を編集中に走らせる**最速フィードバック層**という位置づけになる。
+`harness-growth` が「層 1(`hook`)に置く」と判断したときは、`harness/githooks/` か CI の
+どちらかに置き、Claude Code 側はその共有版として足す。
+
+### カバー範囲と残る穴
+
+git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の 2 つは発火しない環境では
+効かず、git のイベントに対応物が無いので移設もできない。
+
+| 効かなくなるもの | CI の代替 |
+| --- | --- |
+| `block-lint-suppress.sh`(編集時のブロック) | **あり**。抑制コメントは diff に残るので、`.github/scripts/check-added-lint-suppressions.sh` が**追加行の分だけ**同じ判定で落とす(許可される例外も `lib/lint-suppressions.py` で共有) |
+| `block-npx.sh`(セッション中の行為の禁止) | **無し**。push の時点で痕跡が残らないため代替不能 |
+| `post-edit-lint.sh` / `check-test-rules.sh` / `check-doc-comments.sh` / `check-test-helper-duplication.sh`(即時フィードバック) | 結果は push 前の検査(git hooks)と CI が拾う。**即時性だけが失われる** |
+
+### 発火しているかを確かめる(カナリア)
+
+`hook-canary.sh` は `echo hook-canary` を必ず deny する。push の前にこれを 1 度実行すると、
+silent だったフックの不発が detected に変わる。
+
+- **deny される** → このセッションではフックが発火している
+- **通ってしまう** → フック不発環境。その旨を PR 本文と `harness/records/` の記録に残す
+  (実行環境ごとの統計が記録に溜まる)
+
+検出そのものは指示ベースだが、**失敗しても穴は開かない**。ゲートは git hooks と CI にあり、
+カナリアはそれが効いているかを知るためだけのもの。指示ベースに置いてよいのは、
+失敗してもガードが破れない検出系だけ。
 
 ## 例外(エスケープハッチ)
 
@@ -113,6 +153,17 @@ python3 .claude/hooks/lib/missing-doc-comments.py --all src
 # push がブロックされること(deny が出力される。doc 無しの宣言があるとき)
 echo '{"tool_input":{"command":"git push"}}' \
   | bash .claude/hooks/pre-push-doc-comments.sh
+```
+
+```bash
+# カナリアが deny を返すこと(セッションで実行して通ってしまったらフック不発環境)
+echo '{"tool_input":{"command":"echo hook-canary"}}' | bash .claude/hooks/hook-canary.sh
+
+# テスト規約の全体検査(git hooks と共有。違反があれば exit 1)
+bash .claude/hooks/lib/test-rules-scan.sh src
+
+# この PR で追加された lint 抑制コメントを数える(CI と同じ判定)
+bash .github/scripts/check-added-lint-suppressions.sh origin/main
 ```
 
 ```bash
