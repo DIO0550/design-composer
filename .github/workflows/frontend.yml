@@ -64,6 +64,24 @@ jobs:
           if-no-files-found: ignore
           retention-days: 1
 
+  lint-suppress:
+    name: lint 抑制コメントの追加チェック
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      # 追加行を base と突き合わせるため、履歴ごと取得する
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      # .claude/hooks/block-lint-suppress.sh と同じ判定を、フックが発火しない
+      # 実行環境でも通す（.claude/hooks/README.md「強制力の序列」）
+      - name: Check added lint suppressions
+        run: bash .github/scripts/check-added-lint-suppressions.sh "${{ github.event.pull_request.base.sha }}"
+
   report-comment:
     name: post ci report comment
     needs: check

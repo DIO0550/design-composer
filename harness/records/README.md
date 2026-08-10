@@ -18,15 +18,25 @@
 ## 数え方
 
 ```bash
-grep -rho '^- 分類: `[^`]*`' harness/records/ | sort | uniq -c | sort -rn
+bash harness/records/count.sh
 ```
 
-2 回以上の分類は `rules/` / `.claude/skills/` / `.claude/hooks/` の抜けとして扱う。
-判断の手順は `.claude/skills/harness-growth/SKILL.md`「Step 4」。
+分類ごとに「**最後の介入以降**の再発数」「通算」「介入後の記録の本数」「前回置いた層」を出す。
+判断の手順は `.claude/skills/harness-growth/SKILL.md`「Step 3」「Step 4」。
+
+**通算ではなく再発で判断する。** 通算は単調増加するので、介入が効いたかどうかを表さない。
+再発を数えられるのは、介入した回の記録に次の行が入っているため。
+
+```markdown
+- 対策済: `naming` 層=rules at pr-168
+```
+
+この行は `pr-141.md` 〜 `pr-171.md` については、各記録の「規約への反映」が結論している内容を
+後から機械可読な 1 行にしたもの(判断そのものは書き換えていない)。以降は介入した回に書く。
 
 ## 書き方
 
-形式と分類の語彙は `.claude/skills/harness-growth/templates/record.md`。
+形式・層の語彙・分類の語彙は `.claude/skills/harness-growth/templates/record.md`。
 
 - 指摘 1 件 = 1 ブロック(まとめない)
 - 指摘 0 件の回も記録を残す(「順調だった」もデータ)

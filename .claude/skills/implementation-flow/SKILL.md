@@ -86,21 +86,28 @@ description: "design-composer の実装を ゴールの確定 → タスクの�
 - 関連 Issue を本文からリンクする
 - CI(lint / typecheck / test / 視覚差分)を通す
 
-**push の前に、CI と同じ検査を 1 つずつ独立に実行して結果を確認する。**
+**push の前に、まずフックが発火する環境かを確かめ、続けて CI と同じ検査を 1 つずつ
+独立に実行して結果を確認する。**
 
 ```bash
+echo hook-canary          # 必ず deny されるカナリア(.claude/hooks/hook-canary.sh)
 pnpm run typecheck        # tsc -b
 pnpm run lint             # oxlint
 pnpm exec biome check     # Biome（oxlint とは別のステップ。format 差分もここで出る）
 pnpm run test:run         # vitest
 ```
 
+- **カナリアが通ってしまったらフック不発環境。** その旨を PR 本文と `harness/records/` の
+  記録に残す(実行環境ごとの統計が溜まる)。ゲートは git hooks と CI にあるので、
+  通ってしまっても以降の手順は変わらない
 - **`&&` で 1 本に連ねない。** 連ねると途中の出力が流れて末尾しか見えず、「全部通った」と
   読み違える。実際、oxlint まで確認して biome の出力を見ておらず、format 差分のまま push して
   CI を落としている(PR #124 / #168 の 2 回)
 - **oxlint と biome は別物。** 片方が 0 件でももう片方は落ちうる
-- **フックに任せない。** `pre-push-lint.sh` は同じ検査を push 前に走らせてブロックするが、
-  **実行環境によっては発火しない**(PR #168 ではフック単体は正しく検出したのに push は通った)
+- **フックは保険ではなく確認。** push 前検査の enforcement は git hooks
+  (`harness/githooks/`)が担う。`.claude/hooks/` の `pre-push-*` は同じスクリプトを走らせる
+  即時フィードバック層で、**実行環境によっては発火しない**(PR #168 ではフック単体は
+  正しく検出したのに push は通った / `.claude/hooks/README.md`「強制力の序列」)
 
 ## フェーズ 8: マージ後の追記
 

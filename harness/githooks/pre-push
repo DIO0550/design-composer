@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+#
+# push 前の検査（git ネイティブのフック）。Claude Code の配線に依存しない最終網。
+#
+# .claude/hooks/ の pre-push-* と同じ検査を、同じスクリプトを呼んで走らせる。
+# 違いは発火条件だけで、こちらは CLI・IDE・素の git のどれから push しても必ず走る
+# （.claude/hooks/README.md「強制力の序列」）。
+#
+# 配線: git config core.hooksPath harness/githooks
+set -e
+
+cd "$(git rev-parse --show-toplevel)"
+
+# 1 つずつ独立に実行する。&& で連ねると途中の出力が流れて末尾しか見えない
+# （implementation-flow フェーズ 7 / PR #124・#168 で実際に読み違えている）。
+#
+# ツールが無い環境では、そのツールを使う検査だけを飛ばして黙って通す
+# （既存の pre-push-* と同じ扱い。検査できないことを理由に止めても検査の質は上がらない）。
+if command -v pnpm >/dev/null 2>&1 && [ -d node_modules ]; then
+  echo "pre-push: typecheck"
+  pnpm run typecheck
+
+  echo "pre-push: oxlint"
+  pnpm run lint
+
+  echo "pre-push: biome"
+  pnpm exec biome check
+else
+  echo "pre-push: pnpm / node_modules が無いため typecheck / lint / format は飛ばします"
+fi
+
+if command -v python3 >/dev/null 2>&1; then
+  echo "pre-push: doc コメント"
+  python3 .claude/hooks/lib/missing-doc-comments.py --all src
+fi
+
+echo "pre-push: テスト規約"
+bash .claude/hooks/lib/test-rules-scan.sh src
