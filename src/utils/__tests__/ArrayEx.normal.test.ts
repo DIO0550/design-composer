@@ -144,5 +144,9 @@ test("prependIfAbsent は含まれていない値を先頭へ足す", () => {
 });
 
 test("prependIfAbsent は既に含まれている値の位置を動かさない", () => {
-  expect(ArrayEx.prependIfAbsent(["a", "b", "c"], "c")).toEqual(["a", "b", "c"]);
+  expect(ArrayEx.prependIfAbsent(["a", "b", "c"], "c")).toEqual([
+    "a",
+    "b",
+    "c",
+  ]);
 });
