@@ -54,3 +54,16 @@
 - **別の表現から作り直すのは `from*`。** 変換元を名前に出す(`Component.fromNode` / `DocumentReload.fromContent` / `Selection.fromArtboard`)。`create` と使い分ける基準は「引数がその値の材料か(`create`)、別の形で同じものを表しているか(`from*`)」
 - **`of*` は使わない。** `create` / `from*` のどちらかに寄せる
 - 判定は `is*` / `has*`、変換は `to*` / `*Value`、収集は `collect*`
+
+## `utils/` のメソッドは動詞で始める
+
+`src/utils/` の `<型名>Ex`(`ArrayEx` / `SetEx` / `StringEx` / `NumberEx`)は、**組み込み型への操作**を集めた場所。メソッド名は**動詞、または結果そのものを表す語**で始め、`with*` の過去分詞にしない。
+
+- 既存の語形: `first` / `last` / `dropFirst` / `dropLast` / `distinct` / `insertAt` / `replaceAt` / `moveWithin` / `toggle` / `isNatural`
+- **`with*` はドメイン側の語彙。** 「その値を持つ新しい値」を返すコンパニオンオブジェクトのメソッド(`ColorToken.withRgb` / `withLocation`)に使う。`utils/` へ持ち込むと、同じ層の中で語形が 2 通りに割れる
+- 条件付きの操作は、条件を名前に出す(`prependIfAbsent`)。`*Distinct` のように**結果の性質**で名付けると、その性質を保証していない実装と食い違う
+
+| NG | OK | 理由 |
+|---|---|---|
+| `ArrayEx.withPrepended(array, item)` | `ArrayEx.prependIfAbsent(array, item)` | `ArrayEx` に `with*` は 1 つも無く、語形が浮く。「含まれていなければ先頭へ足す」という実体も名前に出ていない |
+| `ArrayEx.prependDistinct(array, item)` | 同上 | 「重複を取り除いて足す」と読めるが、元の並びにある重複は畳まない |
