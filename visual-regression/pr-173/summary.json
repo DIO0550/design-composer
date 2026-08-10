@@ -1,5 +1,5 @@
 {
-  "reportVersion": "199c46efbd75a5c6be961d49115df4a422cb28f8",
+  "reportVersion": "c913ba524043fdebde7445001553dff1150e79a4",
   "maxDiffRatio": 0.002,
   "changed": 6,
   "new": 3,
@@ -294,45 +294,6 @@
       "hasDiff": false
     },
     {
-      "story": "features-editor-documenttopbar--failed",
-      "id": "features-editor-documenttopbar--failed",
-      "title": "features/editor/DocumentTopBar",
-      "name": "保存に失敗",
-      "status": "new",
-      "reason": "no-baseline",
-      "diffPixels": 0,
-      "diffRatio": 0,
-      "hasExpected": false,
-      "hasActual": true,
-      "hasDiff": false
-    },
-    {
-      "story": "features-editor-documenttopbar--saved",
-      "id": "features-editor-documenttopbar--saved",
-      "title": "features/editor/DocumentTopBar",
-      "name": "保存済み",
-      "status": "new",
-      "reason": "no-baseline",
-      "diffPixels": 0,
-      "diffRatio": 0,
-      "hasExpected": false,
-      "hasActual": true,
-      "hasDiff": false
-    },
-    {
-      "story": "features-editor-documenttopbar--saving",
-      "id": "features-editor-documenttopbar--saving",
-      "title": "features/editor/DocumentTopBar",
-      "name": "保存中",
-      "status": "new",
-      "reason": "no-baseline",
-      "diffPixels": 0,
-      "diffRatio": 0,
-      "hasExpected": false,
-      "hasActual": true,
-      "hasDiff": false
-    },
-    {
       "story": "features-editor-documenttree--default",
       "id": "features-editor-documenttree--default",
       "title": "features/editor/DocumentTree",
@@ -407,6 +368,45 @@
       "diffPixels": 0,
       "diffRatio": 0,
       "hasExpected": true,
+      "hasActual": true,
+      "hasDiff": false
+    },
+    {
+      "story": "features-editor-editortopbar--failed",
+      "id": "features-editor-editortopbar--failed",
+      "title": "features/editor/EditorTopBar",
+      "name": "保存に失敗",
+      "status": "new",
+      "reason": "no-baseline",
+      "diffPixels": 0,
+      "diffRatio": 0,
+      "hasExpected": false,
+      "hasActual": true,
+      "hasDiff": false
+    },
+    {
+      "story": "features-editor-editortopbar--saved",
+      "id": "features-editor-editortopbar--saved",
+      "title": "features/editor/EditorTopBar",
+      "name": "保存済み",
+      "status": "new",
+      "reason": "no-baseline",
+      "diffPixels": 0,
+      "diffRatio": 0,
+      "hasExpected": false,
+      "hasActual": true,
+      "hasDiff": false
+    },
+    {
+      "story": "features-editor-editortopbar--saving",
+      "id": "features-editor-editortopbar--saving",
+      "title": "features/editor/EditorTopBar",
+      "name": "保存中",
+      "status": "new",
+      "reason": "no-baseline",
+      "diffPixels": 0,
+      "diffRatio": 0,
+      "hasExpected": false,
       "hasActual": true,
       "hasDiff": false
     },
