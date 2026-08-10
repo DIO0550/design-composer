@@ -1,4 +1,5 @@
 import { type ReactElement, useState } from "react";
+import { ColorSwatch } from "@/components/color-swatch";
 import { Token, type TokenKind, type TokenRef } from "@/domains/token";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import {
@@ -28,14 +29,7 @@ function PreviewSlot({
 }: Readonly<{ preview: TokenPreview }>): ReactElement {
   switch (preview.kind) {
     case "swatch":
-      return (
-        <span
-          aria-hidden="true"
-          // 色は値そのものなのでクラス名に固定できない。白でも見えるよう枠を付ける。
-          style={{ backgroundColor: preview.color }}
-          className="inline-block size-3 shrink-0 border border-gray-300"
-        />
-      );
+      return <ColorSwatch color={preview.color} />;
     case "bar":
       return (
         <span

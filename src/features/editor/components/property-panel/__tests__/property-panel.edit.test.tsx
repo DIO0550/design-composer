@@ -4,6 +4,10 @@ import { expect, test, vi } from "vitest";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import type { PropEdit } from "@/domains/node";
 import {
+  pressedSegmentsOf,
+  segmentOf,
+} from "@/features/editor/__tests__/segmented-controls";
+import {
   EditorProvider,
   useEditor,
 } from "@/features/editor/components/editor-provider";
@@ -64,32 +68,36 @@ async function setupPanel(selected: string) {
   return user;
 }
 
-test("選択式の prop を選ぶとその値が入力欄に反映される", async () => {
+test("セグメントを押すとその値が選ばれた状態になる", async () => {
   const user = await setupPanel("home-title");
 
-  await user.selectOptions(screen.getByRole("combobox", { name: "Align" }), [
-    "center",
-  ]);
+  await user.click(segmentOf("Align", "center"));
 
-  expect(screen.getByRole("combobox", { name: "Align" })).toHaveProperty(
-    "value",
-    "center",
-  );
+  expect(pressedSegmentsOf("Align")).toEqual(["center"]);
 });
 
-test("選択式の prop を未指定へ戻すと既定が効く表示に戻る", async () => {
+test("選ばれているセグメントをもう一度押すと未指定へ戻り既定が効く表示になる", async () => {
   const user = await setupPanel("home-title");
-  await user.selectOptions(screen.getByRole("combobox", { name: "Align" }), [
-    "center",
-  ]);
+  await user.click(segmentOf("Align", "center"));
 
-  await user.selectOptions(screen.getByRole("combobox", { name: "Align" }), [
-    "",
-  ]);
+  await user.click(segmentOf("Align", "center"));
 
-  expect(
-    screen.getByRole("option", { name: "未指定（既定: left）" }),
-  ).toHaveProperty("selected", true);
+  expect(screen.getByText("未指定（既定: left）")).toBeDefined();
+});
+
+test("同じ選択肢を持つ 2 つの enum は取り違えずに別々に編集できる", async () => {
+  /*
+   * Box の `align` と `justify` はどちらも start / center / end を持つ。
+   * 取り違えると押した側が空になり、押していない側が `center` になって落ちる。
+   */
+  const user = await setupPanel("home-body");
+
+  await user.click(segmentOf("Justify", "center"));
+
+  expect([pressedSegmentsOf("Align"), pressedSegmentsOf("Justify")]).toEqual([
+    [],
+    ["center"],
+  ]);
 });
 
 test("文字入力の prop を書き換えるとその値が入力欄に反映される", async () => {
@@ -101,6 +109,19 @@ test("文字入力の prop を書き換えるとその値が入力欄に反映�
   expect(screen.getByRole("textbox", { name: "Content" })).toHaveProperty(
     "value",
     "設定",
+  );
+});
+
+test("トークン参照の prop を選び直すとその値が入力欄に反映される", async () => {
+  const user = await setupPanel("home-title");
+
+  await user.selectOptions(screen.getByRole("combobox", { name: "Color" }), [
+    "primary",
+  ]);
+
+  expect(screen.getByRole("combobox", { name: "Color" })).toHaveProperty(
+    "value",
+    "primary",
   );
 });
 
@@ -119,20 +140,23 @@ test("サイズのモードを fixed にすると長さの入力欄が現れる"
   const user = await setupPanel("home-body");
   expect(screen.queryByRole("spinbutton", { name: "Width" })).toBeNull();
 
-  await user.selectOptions(
-    screen.getByRole("combobox", { name: "Width Mode" }),
-    ["fixed"],
-  );
+  await user.click(segmentOf("Width Mode", "fixed"));
 
   expect(screen.getByRole("spinbutton", { name: "Width" })).toBeDefined();
 });
 
+test("サイズのモードを fixed から戻すと長さの入力欄が消える", async () => {
+  const user = await setupPanel("home-body");
+  await user.click(segmentOf("Width Mode", "fixed"));
+
+  await user.click(segmentOf("Width Mode", "hug"));
+
+  expect(screen.queryByRole("spinbutton", { name: "Width" })).toBeNull();
+});
+
 test("数値入力の prop を書き換えるとその値が入力欄に反映される", async () => {
   const user = await setupPanel("home-body");
-  await user.selectOptions(
-    screen.getByRole("combobox", { name: "Width Mode" }),
-    ["fixed"],
-  );
+  await user.click(segmentOf("Width Mode", "fixed"));
 
   await user.type(screen.getByRole("spinbutton", { name: "Width" }), "240");
 

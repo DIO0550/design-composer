@@ -138,3 +138,15 @@ test("dropFirst は先頭を除いた並びを返す", () => {
 test("dropLast は末尾を除いた並びを返す", () => {
   expect(ArrayEx.dropLast(["a", "b", "c"])).toEqual(["a", "b"]);
 });
+
+test("prependIfAbsent は含まれていない値を先頭へ足す", () => {
+  expect(ArrayEx.prependIfAbsent(["b", "c"], "a")).toEqual(["a", "b", "c"]);
+});
+
+test("prependIfAbsent は既に含まれている値の位置を動かさない", () => {
+  expect(ArrayEx.prependIfAbsent(["a", "b", "c"], "c")).toEqual([
+    "a",
+    "b",
+    "c",
+  ]);
+});

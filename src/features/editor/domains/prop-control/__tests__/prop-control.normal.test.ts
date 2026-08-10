@@ -4,7 +4,7 @@ import type { Node } from "@/domains/node";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
 import { SelectionControls } from "../index";
-import { sectionsOf } from "./setup";
+import { colorOfControl, sectionsOf } from "./setup";
 
 function setupState(children: readonly Node[], selected: string): EditorState {
   return EditorState.select(
@@ -37,8 +37,8 @@ test("enum の prop は宣言された値から選ぶコントロールになる
   const state = setupState([{ name: "box", type: "Box" }], "box");
 
   expect(controlOf(state, "direction")?.input).toEqual({
-    kind: "choice",
-    options: ["row", "column"],
+    kind: "enum",
+    values: ["row", "column"],
   });
 });
 
@@ -46,8 +46,72 @@ test("トークン参照の prop はその種別のトークン名から選ぶ�
   const state = setupState([{ name: "box", type: "Box" }], "box");
 
   expect(controlOf(state, "gap")?.input).toEqual({
-    kind: "choice",
-    options: ["xs", "sm", "md", "lg", "xl"],
+    kind: "token",
+    names: ["xs", "sm", "md", "lg", "xl"],
+  });
+});
+
+test("色のトークン参照の prop はトークン名から選ぶコントロールになる", () => {
+  const state = setupState([{ name: "box", type: "Box" }], "box");
+
+  expect(controlOf(state, "background")?.input.kind).toBe("colorToken");
+});
+
+test("色のトークン参照の prop は設定されている色を持つ", () => {
+  const state = setupState(
+    [{ name: "box", type: "Box", props: { background: "primary" } }],
+    "box",
+  );
+
+  expect(colorOfControl(controlOf(state, "background"))).toEqual(
+    Option.some(DocumentTemplate.DEFAULT.tokens.colors.primary),
+  );
+});
+
+test("値が無くても既定を持つ色のトークン参照は既定の色を持つ", () => {
+  const state = setupState([{ name: "label", type: "Text" }], "label");
+
+  expect(colorOfControl(controlOf(state, "color"))).toEqual(
+    Option.some(DocumentTemplate.DEFAULT.tokens.colors["gray-900"]),
+  );
+});
+
+test("値も既定も持たない色のトークン参照は色を持たない", () => {
+  const state = setupState([{ name: "box", type: "Box" }], "box");
+
+  expect(colorOfControl(controlOf(state, "background"))).toEqual(Option.none);
+});
+
+test("実在しないトークンを指す色の prop は色を持たない", () => {
+  const state = setupState(
+    [{ name: "box", type: "Box", props: { background: "nope" } }],
+    "box",
+  );
+
+  expect(colorOfControl(controlOf(state, "background"))).toEqual(Option.none);
+});
+
+test("宣言に無い値が設定されている enum はその値も選択肢に出る", () => {
+  const state = setupState(
+    [{ name: "box", type: "Box", props: { direction: "diagonal" } }],
+    "box",
+  );
+
+  expect(controlOf(state, "direction")?.input).toEqual({
+    kind: "enum",
+    values: ["diagonal", "row", "column"],
+  });
+});
+
+test("実在しないトークンを指す prop はその名前も選択肢に出る", () => {
+  const state = setupState(
+    [{ name: "box", type: "Box", props: { gap: "nope" } }],
+    "box",
+  );
+
+  expect(controlOf(state, "gap")?.input).toEqual({
+    kind: "token",
+    names: ["nope", "xs", "sm", "md", "lg", "xl"],
   });
 });
 
@@ -83,6 +147,23 @@ test("設定されていない prop は値を持たず、スキーマの既定�
   expect(control?.defaultValue).toEqual(Option.some("column"));
 });
 
+test("条件付きの prop は条件を出している prop の名前を持つ", () => {
+  const state = setupState(
+    [{ name: "box", type: "Box", props: { widthMode: "fixed" } }],
+    "box",
+  );
+
+  expect(controlOf(state, "width")?.enabledBy).toEqual(
+    Option.some("widthMode"),
+  );
+});
+
+test("条件を持たない prop は条件を出している prop の名前を持たない", () => {
+  const state = setupState([{ name: "box", type: "Box" }], "box");
+
+  expect(controlOf(state, "direction")?.enabledBy).toEqual(Option.none);
+});
+
 test("コントロールは group ごとのセクションに分かれる", () => {
   const state = setupState([{ name: "label", type: "Text" }], "label");
 
@@ -108,7 +189,7 @@ test("セクション内のコントロールはスキーマの宣言順に並�
 test("artboard を選ぶと Box の prop を編集するコントロールが出る", () => {
   const state = setupState([], "home");
 
-  expect(controlOf(state, "background")?.input.kind).toBe("choice");
+  expect(controlOf(state, "background")?.input.kind).toBe("colorToken");
 });
 
 test("artboard のはみ出しの既定は clip として出る", () => {

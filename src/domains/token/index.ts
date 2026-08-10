@@ -392,6 +392,21 @@ export const TokenSet = {
     return tokensOfKind(tokens, kind);
   },
 
+  /**
+   * 名前で色を引く。
+   *
+   * `find` と分けているのは、`find` の戻り値が種別ごとの直和（`Token`）で、
+   * 色を取り出すには呼び出し側で種別を絞り直すことになるため。引く種別が
+   * 決まっている呼び出しに、取られることのない分岐を書かせない。
+   *
+   * @param tokens 引き先のトークン一式
+   * @param name 引きたい色の名前
+   * @returns その名前の色。`colors` にその名前が無ければ `none`
+   */
+  findColor(tokens: TokenSet, name: string): Option<ColorToken> {
+    return Option.fromNullable(tokens.colors[name]);
+  },
+
   /** 参照でトークンを引く。その種別にその名前が無ければ `none`。 */
   find(tokens: TokenSet, ref: TokenRef): Option<Token> {
     return Option.fromNullable(

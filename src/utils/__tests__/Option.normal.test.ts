@@ -65,3 +65,11 @@ test("unwrapOr は none に対してデフォルト値を返す", () => {
 test("unwrap は存在する値を取り出す", () => {
   expect(Option.unwrap(Option.some(42))).toBe(42);
 });
+
+test("or は値を持つほうをそのまま返す", () => {
+  expect(Option.or(Option.some(1), Option.some(2))).toEqual(Option.some(1));
+});
+
+test("or は値を持たないとき代わりの Option を返す", () => {
+  expect(Option.or(Option.none, Option.some(2))).toEqual(Option.some(2));
+});

@@ -1,7 +1,14 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
-import { renderOpenedDocument, selectArtboard, selectInTree } from "./setup";
+import { renderedElement } from "@/features/editor/__tests__/canvas-elements";
+import { segmentOf } from "@/features/editor/__tests__/segmented-controls";
+import {
+  canvasPane,
+  renderOpenedDocument,
+  selectArtboard,
+  selectInTree,
+} from "./setup";
 
 /*
  * プロパティパネルからの props 編集を、編集画面の配線ごと確かめる
@@ -37,4 +44,13 @@ test("トークン参照の prop を選び直すとその値がパネルに残�
     "value",
     "gray-100",
   );
+});
+
+test("セグメントコントロールで並びを変えるとキャンバスの表示が変わる", async () => {
+  await renderOpenedDocument();
+  await selectArtboard("home");
+
+  await userEvent.click(segmentOf("Direction", "row"));
+
+  expect(renderedElement(canvasPane(), "home").style.flexDirection).toBe("row");
 });

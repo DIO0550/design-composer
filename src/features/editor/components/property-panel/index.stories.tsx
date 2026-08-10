@@ -8,6 +8,26 @@ import { PropertyPanel } from "./index";
 /** 帯の幅に収まらない名前。省略の見え方を視覚差分で見るためだけの状態。 */
 const LONG_NODE_NAME = "very-long-node-name-that-does-not-fit-in-the-heading";
 
+/**
+ * 既存のストーリーが持っていない状態を視覚差分に載せるための Box。
+ * 大半の prop が未指定（既定の注記が出る行）で、`background` だけが
+ * 実在しないトークンを指す（見本の出ない色の行）。
+ */
+const UNSET_EDITOR_STATE = EditorState.create(
+  DesignDocument.create({
+    artboards: [
+      {
+        name: "home",
+        width: 360,
+        height: 240,
+        children: [
+          { name: "unset-box", type: "Box", props: { background: "missing" } },
+        ],
+      },
+    ],
+  }),
+);
+
 const LONG_NAME_EDITOR_STATE = EditorState.create(
   DesignDocument.create({
     artboards: [
@@ -70,6 +90,11 @@ export const InstanceSelected: Story = {
 export const BoxSelected: Story = {
   name: "Box ノードを選択中",
   args: { state: EditorState.select(SAMPLE_EDITOR_STATE, "overflow-wide") },
+};
+
+export const Unset: Story = {
+  name: "未指定の prop だけの Box を選択中",
+  args: { state: EditorState.select(UNSET_EDITOR_STATE, "unset-box") },
 };
 
 /** 名前が帯の幅に収まらない状態（省略されることを視覚差分で見る）。 */

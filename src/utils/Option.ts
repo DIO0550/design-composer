@@ -43,6 +43,18 @@ export const Option = {
   },
 
   /**
+   * 値があればそれ、無ければ代わりの `Option`。
+   *
+   * @param option 先に見るほう
+   * @param fallback `option` が `none` のときに答えるほう
+   * @returns `option` が値を持てばそれ。持たなければ `fallback` をそのまま返すので、
+   *   両方 `none` なら `none`
+   */
+  or<T>(option: Option<T>, fallback: Option<T>): Option<T> {
+    return option.some ? option : fallback;
+  },
+
+  /**
    * Some の値を取り出す。None の場合は例外を投げる。
    * 分岐せず値を前提にしてよいのは、失敗をそのままテストの失敗にしたいテストコードだけ
    * （`Result.unwrap` と同じ位置づけ / rules/coding.md）。

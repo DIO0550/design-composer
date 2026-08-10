@@ -1,4 +1,6 @@
 import { type ReactElement, useId } from "react";
+import { ColorSwatch } from "@/components/color-swatch";
+import { SegmentedControl } from "@/components/segmented-control";
 import type { PropEdit } from "@/domains/node";
 import { EditorLayout } from "@/features/editor/components/editor-layout";
 import { TypeGlyph } from "@/features/editor/components/type-glyph";
@@ -15,7 +17,20 @@ import type {
 import { CaseStyle } from "@/utils/CaseStyle";
 import { Option } from "@/utils/Option";
 
-const FIELD_CLASS = "w-full rounded border border-gray-300 px-2 py-1";
+const FIELD_CLASS =
+  "h-7 w-full rounded-md border border-gray-300 px-2 text-[11px]";
+
+/**
+ * ラベル欄の幅。UI 案の 52px では `Width Mode` / `Padding X` が収まらない。
+ * 変えたら `CONTROL_OFFSET_CLASS` も一緒に動かす（片方だけ変えると字下げがずれる）。
+ */
+const LABEL_CLASS = "w-[4.25rem] shrink-0 truncate text-[11px] text-gray-500";
+
+/**
+ * ラベル欄の右、コントロールの左端へ揃えるための字下げ。
+ * ラベル欄 4.25rem + ラベルとコントロールの間隔 0.5rem。
+ */
+const CONTROL_OFFSET_CLASS = "pl-[4.75rem]";
 
 /**
  * 未指定のときに何が効くかを出す（#34「未指定 prop はデフォルト値を
@@ -32,52 +47,52 @@ function unsetLabel(control: PropControl): string {
 
 /** ラベルと入力欄を結び付ける識別子と、その prop のコントロール。 */
 type FieldBinding = Readonly<{
-  id: string;
+  labelledBy: string;
   control: PropControl;
 }>;
 
-/** 値域が列挙で決まっている prop の入力欄。 */
-function ChoiceInput({
+/**
+ * トークン名から選ぶ入力欄。
+ *
+ * @param names 選択肢に出すトークン名（ファイル由来の不正な参照を含む）
+ * @returns トークン名の選択欄
+ */
+function TokenSelect({
   field,
-  options,
+  names,
   onEdit,
 }: Readonly<{
   field: FieldBinding;
-  options: readonly string[];
+  names: readonly string[];
   onEdit: (edit: PropEdit) => void;
-}>) {
+}>): ReactElement {
   const control = field.control;
-  const value = Option.map(control.value, String);
-  /*
-   * ファイル由来の不正な値（存在しないトークン名など）も選択肢に出す。
-   * 出さないと未指定と見分けが付かず、検証エラーの原因が画面から消える
-   * （不正なドキュメントも描画は残る / docs/03-schema.md「不正ファイル時の挙動」）。
-   */
-  const selectable =
-    value.some && !options.includes(value.value)
-      ? [value.value, ...options]
-      : options;
 
   return (
     <select
-      id={field.id}
+      aria-labelledby={field.labelledBy}
       className={FIELD_CLASS}
-      value={Option.unwrapOr(value, "")}
+      value={Option.unwrapOr(Option.map(control.value, String), "")}
       onChange={(event) =>
         onEdit(PropControl.editFrom(control, event.target.value))
       }
     >
       <option value="">{unsetLabel(control)}</option>
-      {selectable.map((option) => (
-        <option key={option} value={option}>
-          {option}
+      {names.map((name) => (
+        <option key={name} value={name}>
+          {name}
         </option>
       ))}
     </select>
   );
 }
 
-/** 値域が数値・文字列で決まっている prop の入力欄。 */
+/**
+ * 値域が数値・文字列で決まっている prop の入力欄。
+ *
+ * @param inputType 数値を受けるか文字を受けるか
+ * @returns 生の値を打ち込む入力欄
+ */
 function LiteralInput({
   field,
   inputType,
@@ -86,11 +101,12 @@ function LiteralInput({
   field: FieldBinding;
   inputType: "number" | "text";
   onEdit: (edit: PropEdit) => void;
-}>) {
+}>): ReactElement {
   const control = field.control;
+
   return (
     <input
-      id={field.id}
+      aria-labelledby={field.labelledBy}
       type={inputType}
       className={FIELD_CLASS}
       value={Option.unwrapOr(Option.map(control.value, String), "")}
@@ -102,16 +118,47 @@ function LiteralInput({
   );
 }
 
-/** prop 1 件の行。入力の形は値域から決まる。 */
+/**
+ * prop 1 件の入力欄。入力の形は値域から決まる。
+ *
+ * 戻り値を `ReactElement` と書いているのは、入力の種類を足して `case` を足し忘れた
+ * ときにコンパイルエラーにするため（`rules/coding.md`「列挙した状態の網羅を型で強制する」）。
+ *
+ * @returns 値域に応じた入力欄
+ */
 function PropField({
   field,
   onEdit,
-}: Readonly<{ field: FieldBinding; onEdit: (edit: PropEdit) => void }>) {
-  const input = field.control.input;
+}: Readonly<{
+  field: FieldBinding;
+  onEdit: (edit: PropEdit) => void;
+}>): ReactElement {
+  const control = field.control;
+  const input = control.input;
+
   switch (input.kind) {
-    case "choice":
+    case "enum":
       return (
-        <ChoiceInput field={field} options={input.options} onEdit={onEdit} />
+        <SegmentedControl
+          labelledBy={field.labelledBy}
+          options={input.values}
+          value={Option.map(control.value, String)}
+          onChange={(next) => onEdit(PropControl.edit(control, next))}
+        />
+      );
+    case "token":
+      return <TokenSelect field={field} names={input.names} onEdit={onEdit} />;
+    /*
+     * Why not: 見本を欄の内側に置かない（UI 案 docs/Design Composer.html は内側）。
+     * ネイティブの `<select>` の中には要素を描けず、内側に置くには一覧そのものを
+     * 自作することになる（キーボード操作と読み上げを自前で持つ）。
+     */
+    case "colorToken":
+      return (
+        <div className="flex items-center gap-2">
+          {input.color.some ? <ColorSwatch color={input.color.value} /> : null}
+          <TokenSelect field={field} names={input.names} onEdit={onEdit} />
+        </div>
       );
     case "number":
       return <LiteralInput field={field} inputType="number" onEdit={onEdit} />;
@@ -121,26 +168,80 @@ function PropField({
 }
 
 /**
- * 1 prop 分の行。表示名は prop 名の機械的な整形で作る
- * （docs/03-schema.md「表示名フィールドは持たない」）。
+ * 1 prop 分の行。UI 案（docs/Design Composer.html）はラベル左・コントロール右で並べる。
+ * 表示名は prop 名の機械的な整形で作る（docs/03-schema.md「表示名フィールドは持たない」）。
+ *
+ * 条件付きの prop はラベルを出さず字下げする（UI 案は `width` の数値欄をモードの行の
+ * 下へぶら下げている）。条件を出している行の**直下**に来るのはスキーマの宣言順に
+ * 依っており（`BOX_SCHEMA` は `widthMode` の直後に `width` を宣言する）、順が変われば
+ * 離れた位置に字下げだけが残る。**この出し分けは class の違いにしかならないので、
+ * 崩れに気づける手段は Storybook の視覚差分だけ**（happy-dom は Tailwind を解決しない）。
+ *
+ * セグメントには `<select>` の「未指定（既定: …）」に当たる選択肢が無いので、
+ * 未指定のときだけ同じ綴りを行の下に出す。`title` では出さない（ホバーでしか読めず、
+ * キーボード・タッチから届かない）。
+ *
+ * ラベルを `<label htmlFor>` にしないのは、`role="group"` を持つセグメントの器を
+ * `<label>` で指せないため。行ごとに結び方が 2 通りに割れるより、全行を
+ * `aria-labelledby` に揃える（代償として、ラベルを押しても入力欄へフォーカスが移らない）。
+ *
+ * @returns ラベルと入力欄を並べた 1 行
  */
 function PropRow({
   control,
   onEdit,
-}: Readonly<{ control: PropControl; onEdit: (edit: PropEdit) => void }>) {
-  const id = useId();
+}: Readonly<{
+  control: PropControl;
+  onEdit: (edit: PropEdit) => void;
+}>): ReactElement {
+  const labelledBy = useId();
+  const isDependent = control.enabledBy.some;
+  const showsUnsetNote =
+    control.input.kind === "enum" && !PropControl.hasValue(control);
 
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={id} className="text-gray-600 text-xs">
-        {CaseStyle.toCapitalCase(control.prop)}
-      </label>
-      <PropField field={{ id, control }} onEdit={onEdit} />
+      <div
+        className={
+          isDependent
+            ? `flex items-center ${CONTROL_OFFSET_CLASS}`
+            : "flex items-center gap-2"
+        }
+      >
+        <span id={labelledBy} className={isDependent ? "sr-only" : LABEL_CLASS}>
+          {CaseStyle.toCapitalCase(control.prop)}
+        </span>
+        <div className="min-w-0 flex-1">
+          <PropField field={{ labelledBy, control }} onEdit={onEdit} />
+        </div>
+      </div>
+      {showsUnsetNote ? (
+        <p className={`text-gray-400 text-xs ${CONTROL_OFFSET_CLASS}`}>
+          {unsetLabel(control)}
+        </p>
+      ) : null}
     </div>
   );
 }
 
-/** 見出しでまとめた prop の並び（Layout / Size / Appearance）。 */
+/**
+ * 節の見出し。
+ *
+ * @returns 見出しと、右端に添えるものを並べた帯
+ */
+function SectionHeading({
+  children,
+  trailing,
+}: Readonly<{ children: string; trailing?: ReactElement }>): ReactElement {
+  return (
+    <div className="flex items-center justify-between">
+      <h3 className="font-semibold text-[11px] text-gray-900">{children}</h3>
+      {trailing}
+    </div>
+  );
+}
+
+/** 見出しでまとめた prop の並び（Layout / Size / Appearance）。UI 案は罫線で区切る。 */
 function GroupSection({
   section,
   onEdit,
@@ -149,10 +250,8 @@ function GroupSection({
   onEdit: (edit: PropEdit) => void;
 }>) {
   return (
-    <div className="flex flex-col gap-2">
-      <h3 className="font-semibold text-gray-400 text-xs uppercase">
-        {CaseStyle.toCapitalCase(section.group)}
-      </h3>
+    <div className="flex flex-col gap-2 border-gray-200 border-t pt-3 first:border-t-0 first:pt-0">
+      <SectionHeading>{CaseStyle.toCapitalCase(section.group)}</SectionHeading>
       {section.controls.map((control) => (
         <PropRow key={control.prop} control={control} onEdit={onEdit} />
       ))}
@@ -198,7 +297,7 @@ function OverriddenNote({ control }: Readonly<{ control: PropControl }>) {
   const defaultValue = control.defaultValue;
 
   return (
-    <p className="text-gray-400 text-xs">
+    <p className={`text-gray-400 text-xs ${CONTROL_OFFSET_CLASS}`}>
       {INSTANCE_LABELS.overridden}
       {defaultValue.some ? (
         <>
@@ -261,21 +360,20 @@ function InstanceBody({
       </p>
 
       <section className="flex flex-col gap-2">
-        <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-gray-400 text-xs uppercase">
-            {INSTANCE_LABELS.publicProps}
-          </h3>
-          <span className="text-gray-400 text-xs">{publicProps.length}</span>
-        </div>
+        <SectionHeading
+          trailing={
+            <span className="text-gray-400 text-xs">{publicProps.length}</span>
+          }
+        >
+          {INSTANCE_LABELS.publicProps}
+        </SectionHeading>
         {publicProps.map((control) => (
           <PublicPropRow key={control.prop} control={control} onEdit={onEdit} />
         ))}
       </section>
 
       <section className="flex flex-col gap-2 border-gray-200 border-t pt-3">
-        <h3 className="font-semibold text-gray-400 text-xs uppercase">
-          {INSTANCE_LABELS.instance}
-        </h3>
+        <SectionHeading>{INSTANCE_LABELS.instance}</SectionHeading>
         <button
           type="button"
           onClick={actions.goToSource}
@@ -314,7 +412,7 @@ function GroupsBody({
     return <p className="text-gray-500">編集できる prop がありません</p>;
   }
   return (
-    <div className="flex w-full flex-col gap-4">
+    <div className="flex w-full flex-col gap-3">
       {sections.map((section) => (
         <GroupSection key={section.group} section={section} onEdit={onEdit} />
       ))}
@@ -328,6 +426,8 @@ function GroupsBody({
  * 戻り値を `ReactElement`（`ReactNode` ではない）と書いているのは、種類を足して
  * `case` を足し忘れたときにコンパイルエラーにするため（`rules/coding.md`
  * 「列挙した状態の網羅を型で強制する」）。
+ *
+ * @returns 選択の種類に応じた本文
  */
 function SelectionBody({
   controls,
@@ -404,10 +504,6 @@ function SelectionTitle({ selection }: Readonly<{ selection: Selection }>) {
  *
  * 入力欄はスキーマ定数の走査だけで決まる（`SelectionControls.forSelection`）ため、
  * ここには prop 名で分岐するコードを置かない。
- *
- * Why not: インスタンスの行だけを UI 案どおりの横並び（ラベル左・入力右）にはしない。
- * パネルの他の行はすべて縦積みで、ここだけ変えると同じパネルに行の形が 2 つ並ぶ。
- * 乖離の解消は個別の issue で行う（`rules/ui-verification.md`）。
  */
 export function PropertyPanel({
   state,

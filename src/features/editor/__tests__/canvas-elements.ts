@@ -21,8 +21,23 @@ export function canvasContent(): HTMLElement {
   return screen.getByTestId("canvas-content");
 }
 
-export function renderedElement(canvas: HTMLElement, name: string): Element {
-  const element = canvas.querySelector(`[${ELEMENT_NAME_ATTRIBUTE}="${name}"]`);
+/**
+ * キャンバスに描かれた 1 要素。
+ *
+ * ノードの style はインライン style に出る（`CompiledElement.html`）ので、
+ * それを読めるよう `HTMLElement` で返す。
+ *
+ * @param canvas 探す範囲になるキャンバス
+ * @param name 描かれている artboard / ノードの名前
+ * @returns その名前の要素。描かれていなければテストを落とす
+ */
+export function renderedElement(
+  canvas: HTMLElement,
+  name: string,
+): HTMLElement {
+  const element = canvas.querySelector<HTMLElement>(
+    `[${ELEMENT_NAME_ATTRIBUTE}="${name}"]`,
+  );
   if (element === null) {
     throw new Error(`キャンバスに ${name} が描かれていない`);
   }

@@ -1,3 +1,4 @@
+import type { ColorToken } from "@/domains/token";
 import type { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
 import {
@@ -73,4 +74,19 @@ export function controlNamed(
   return Option.unwrap(
     Option.fromNullable(controls.find((candidate) => candidate.prop === prop)),
   );
+}
+
+/**
+ * 色のトークン参照の編集欄が持つ色。
+ *
+ * @param control 色を見たい編集欄
+ * @returns 今効いている色。色のトークン参照でなければテストを落とす
+ */
+export function colorOfControl(
+  control: PropControl | undefined,
+): Option<ColorToken> {
+  if (control?.input.kind !== "colorToken") {
+    throw new Error("色のトークン参照の編集欄ではない");
+  }
+  return control.input.color;
 }
