@@ -1,5 +1,5 @@
 {
-  "reportVersion": "a255bfc8562655d86ff8844c23895c5c9b7a24b5",
+  "reportVersion": "bc19b8206565011350d8a043bfd164002190e7ca",
   "maxDiffRatio": 0.002,
   "changed": 5,
   "new": 1,
@@ -547,8 +547,8 @@
       "name": "Box ノードを選択中",
       "status": "changed",
       "reason": "pixel-diff",
-      "diffPixels": 12920,
-      "diffRatio": 0.013999999999999999,
+      "diffPixels": 13141,
+      "diffRatio": 0.0143,
       "hasExpected": true,
       "hasActual": true,
       "hasDiff": true
@@ -586,8 +586,8 @@
       "name": "名前が長いノードを選択中",
       "status": "changed",
       "reason": "pixel-diff",
-      "diffPixels": 13110,
-      "diffRatio": 0.014199999999999999,
+      "diffPixels": 13596,
+      "diffRatio": 0.0148,
       "hasExpected": true,
       "hasActual": true,
       "hasDiff": true
@@ -599,8 +599,8 @@
       "name": "artboard を選択中",
       "status": "changed",
       "reason": "pixel-diff",
-      "diffPixels": 12547,
-      "diffRatio": 0.013600000000000001,
+      "diffPixels": 12743,
+      "diffRatio": 0.0138,
       "hasExpected": true,
       "hasActual": true,
       "hasDiff": true
@@ -612,8 +612,8 @@
       "name": "Text ノードを選択中",
       "status": "changed",
       "reason": "pixel-diff",
-      "diffPixels": 8862,
-      "diffRatio": 0.0096,
+      "diffPixels": 8906,
+      "diffRatio": 0.0097,
       "hasExpected": true,
       "hasActual": true,
       "hasDiff": true
