@@ -39,6 +39,8 @@ function EditorTopBarRoot({ children }: Readonly<{ children: ReactNode }>) {
  *
  * フルパスを `title` に持たせるのは、末尾 2 つだけでは同名のファイルを別フォルダで
  * 開いたときに区別できないため。
+ *
+ * @returns 親フォルダ名（あれば）と区切り、ファイル名を並べたパンくず
  */
 function DocumentBreadcrumb({
   opened,
@@ -87,6 +89,8 @@ const SAVE_BADGE_FACES = {
  * `保存に失敗` は案に無いが、`saved` 固定にすると書き込みが失敗している間も
  * 「保存済み」と名乗ることになるため、状態をそのまま出す
  * （Error 画面の赤いバッジは `2 errors · file invalid` で、保存状態ではなくエラー件数）。
+ *
+ * @returns 保存状態に応じた字面と色のバッジ
  */
 function DocumentSaveBadge({
   state,
@@ -118,6 +122,8 @@ const ZOOM_STEP_BUTTON =
  * Why not: `等倍に戻す` のボタンを 4 つ目として並べない。UI 案の倍率の並びは
  * `−` / 倍率 / `+` の 3 つしか描いておらず、描かれていない操作は既存の流儀へ寄せる
  * （rules/ui-verification.md）。
+ *
+ * @returns 縮小・倍率表示（クリックで等倍に戻す）・拡大を並べた操作列
  */
 function CanvasZoom({
   view,
