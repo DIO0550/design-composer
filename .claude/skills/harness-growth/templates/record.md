@@ -72,6 +72,7 @@
 | `test-placement` | rules/testing.md「配置と命名」 |
 | `test-behavior` | rules/testing.md「古典学派のテスト」 |
 | `test-nesting` | rules/testing.md「テストの書き方: ネスト禁止」 |
+| `test-conditional` | rules/testing.md「テストケース内の条件分岐禁止」 |
 | `effect` | rules/hooks.md「useEffect: 最終手段として扱う」 |
 | `state-management` | rules/hooks.md「useState / useReducer の使い分け」 |
 | `ref-guard` | rules/hooks.md「useRef の使い分け」 |

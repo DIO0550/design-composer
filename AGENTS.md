@@ -17,7 +17,7 @@
 - @rules/architecture.md — フォルダ構造・依存方向・ロジックの帰属先・services / utils の責務
 - @rules/coding.md — コンパニオンオブジェクトパターン・イミュータブル・Result / Option・型による境界・禁止事項
 - @rules/naming.md — 命名(名前と実体の一致・汎用語の禁止・ファイル名)
-- @rules/testing.md — テスト配置・テストの書き方(ネスト禁止)
+- @rules/testing.md — テスト配置・テストの書き方(ネスト禁止・条件分岐禁止)
 - @rules/hooks.md — useEffect / useState / useReducer / カスタムフックの使い方
 - @rules/components.md — コンポーネント設計(Composition パターン)
 - @rules/ui-verification.md — UIの表示確認手順(playwright-cli)
