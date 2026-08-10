@@ -126,7 +126,7 @@ function withCurrentValue(
   value: Option<PropValue>,
 ): readonly string[] {
   return value.some
-    ? ArrayEx.withPrepended(options, String(value.value))
+    ? ArrayEx.prependIfAbsent(options, String(value.value))
     : options;
 }
 

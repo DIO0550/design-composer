@@ -56,14 +56,14 @@ export const ArrayEx = {
   },
 
   /**
-   * まだ含まれていない値を先頭へ足した並び。
+   * 含まれていなければ先頭へ足した並び。
    *
    * @param array 足す前の並び
    * @param item 先頭へ足したい値
    * @returns 含まれていなければ先頭へ足した新しい並び。既に含まれていれば元の並びのまま
    *   （`distinct` と違い、既にある値の位置を動かさない）
    */
-  withPrepended<T>(array: readonly T[], item: T): readonly T[] {
+  prependIfAbsent<T>(array: readonly T[], item: T): readonly T[] {
     return array.includes(item) ? array : [item, ...array];
   },
 
