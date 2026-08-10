@@ -17,8 +17,13 @@ type CanvasHandlers = Readonly<{
 
 /**
  * 表示（倍率・位置）を自分で持つキャンバス。
- * 本番は上部バーと 1 つの表示を共有するが（`OpenedDocumentEditor`）、
- * キャンバス単体の振る舞いは共有相手に依らないので、ここでは自前で持たせる。
+ *
+ * 本番は上部バーと 1 つの表示を共有する（`OpenedDocumentEditor`）が、キャンバス単体の
+ * 振る舞いは共有相手に依らないので、ここでは自前で持たせる。
+ *
+ * Why not: 同じ形が `index.stories.tsx` にもあるが、1 箇所へ寄せていない。
+ * このファイルは `vitest` の `vi` を import しており、story から読むと Storybook の
+ * バンドルへ `vitest` が入る。逆に story 側へ寄せるとテストが Storybook に依存する。
  */
 function CanvasWithView(
   props: Readonly<{ state: EditorState }> & CanvasHandlers,

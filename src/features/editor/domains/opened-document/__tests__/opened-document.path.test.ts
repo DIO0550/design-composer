@@ -1,12 +1,7 @@
 import { expect, test } from "vitest";
-import { artboardDocument } from "@/features/editor/__tests__/sample-document";
+import { openedAt } from "@/features/editor/__tests__/sample-document";
 import { Option } from "@/utils/Option";
 import { OpenedDocument } from "../index";
-
-/** 保存先だけが違う、開いているドキュメント。中身は名前の分解に影響しない。 */
-function openedAt(path: string): OpenedDocument {
-  return { path, document: artboardDocument("home") };
-}
 
 test("開いているファイルの名前はパスの末尾になる", () => {
   expect(
@@ -42,6 +37,12 @@ test("Windows の区切りでもファイルの名前が取れる", () => {
   expect(
     OpenedDocument.fileName(openedAt("C:\\work\\settings-ui\\app.dcmp")),
   ).toStrictEqual(Option.some("app.dcmp"));
+});
+
+test("Windows のドライブ直下ではドライブ名が親フォルダの名前になる", () => {
+  expect(OpenedDocument.folderName(openedAt("C:\\app.dcmp"))).toStrictEqual(
+    Option.some("C:"),
+  );
 });
 
 test("Windows の区切りでも親フォルダの名前が取れる", () => {

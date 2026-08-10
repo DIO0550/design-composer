@@ -13,6 +13,9 @@ import { OpenedDocument } from "@/features/editor/domains/opened-document";
  * UI 案は左端に macOS の信号機ボタンを描いているが、置いていない。
  * Why not: `src-tauri/tauri.conf.json` は `decorations` を指定しておらず既定（OS が
  * ウィンドウ装飾を描く）なので、装飾が二重になり、押しても閉じない偽の閉じるボタンが並ぶ。
+ *
+ * 高さ（`h-[38px]`）を落としても中身の分だけ縮むだけでテストは 1 件も落ちない。
+ * 気づく手段は Storybook の視覚差分だけ。
  */
 function DocumentTopBarRoot({ children }: Readonly<{ children: ReactNode }>) {
   return (
@@ -53,7 +56,14 @@ function DocumentBreadcrumb({
   );
 }
 
-/** 保存状態ごとの、バッジの字面と色。 */
+/**
+ * 保存状態ごとの、バッジの字面と色。
+ *
+ * `satisfies Record<DocumentSaveState["kind"], …>` が網羅を強制する（状態を 1 つ足すと
+ * ここがコンパイルエラーになる）。`rules/coding.md`「状態をキーにした対応表は網羅のためだけに
+ * 選ばない」に触れるが、ここが持つのは props 一式を受ける関数ではなく**字面と色の 2 つ**で、
+ * `switch` で書くと同じマークアップが 3 回並ぶだけになるため対応表にしている。
+ */
 const SAVE_BADGE_FACES = {
   saved: { label: "保存済み", className: "bg-green-50 text-green-700" },
   saving: { label: "保存中", className: "bg-gray-100 text-gray-600" },
@@ -68,12 +78,10 @@ const SAVE_BADGE_FACES = {
 /**
  * 画面のドキュメントがファイルに載っているか（UI 案の `● saved`）。
  *
- * UI 案が描いているのは `saved`（緑）と、Error 画面の赤いバッジの 2 つ。
- * 書き出し待ちの `保存中` だけが案に無いが、固定の字面にすると書き込みが失敗している間も
- * 「保存済み」と名乗ることになるため、状態をそのまま出す。
- *
- * 出し分けを `switch` で書き戻り値を `ReactElement` にしているのは、状態を 1 つ足したときに
- * コンパイルエラーにするため（rules/coding.md「列挙した状態の網羅を型で強制する」）。
+ * UI 案が保存状態として描いているのは `saved`（緑）だけ。書き出し待ちの `保存中` と
+ * `保存に失敗` は案に無いが、`saved` 固定にすると書き込みが失敗している間も
+ * 「保存済み」と名乗ることになるため、状態をそのまま出す
+ * （Error 画面の赤いバッジは `2 errors · file invalid` で、保存状態ではなくエラー件数）。
  */
 function DocumentSaveBadge({
   state,
@@ -83,21 +91,28 @@ function DocumentSaveBadge({
     <p
       className={`flex items-center gap-1.5 rounded px-1.5 py-0.5 ${face.className}`}
     >
+      {/*
+        UI 案の `●`。読み上げからは外れるので、消してもテストは 1 件も落ちない。
+        気づく手段は Storybook の視覚差分だけ。
+      */}
       <span aria-hidden="true" className="size-1.5 rounded-full bg-current" />
       {face.label}
     </p>
   );
 }
 
-/** 帯の中でのボタンの形。倍率とその両隣で同じ大きさに揃える。 */
-const ZOOM_BUTTON = "rounded px-1.5 py-0.5 text-gray-600 hover:bg-gray-100";
+/** 倍率の両隣（`−` / `+`）のボタンの形。中央の倍率はこれより横に広いので別に持つ。 */
+const ZOOM_STEP_BUTTON =
+  "rounded px-1.5 py-0.5 text-gray-600 hover:bg-gray-100";
 
 /**
- * 倍率の操作（UI 案の `− 55% +`）。右端へ寄るのはこの並び自身の性質なので `ml-auto` を持つ。
+ * 倍率の操作（UI 案の `− 55% +`）。右端へ寄るのはこの並び自身の性質なので `ml-auto` を持つ
+ * （外すとパンくずの隣へ寄るが、テストは 1 件も落ちない。気づく手段は Storybook の視覚差分だけ）。
  *
  * 倍率の表示そのものを等倍へ戻すボタンにしている。
- * Why not: `等倍に戻す` のボタンを 4 つ目として並べない。UI 案の帯は 3 つしか描いておらず、
- * 描かれていない操作は既存の流儀へ寄せる（rules/ui-verification.md）。
+ * Why not: `等倍に戻す` のボタンを 4 つ目として並べない。UI 案の倍率の並びは
+ * `−` / 倍率 / `+` の 3 つしか描いておらず、描かれていない操作は既存の流儀へ寄せる
+ * （rules/ui-verification.md）。
  */
 function DocumentZoom({
   view,
@@ -120,7 +135,7 @@ function DocumentZoom({
         type="button"
         aria-label="縮小"
         onClick={onZoomOut}
-        className={ZOOM_BUTTON}
+        className={ZOOM_STEP_BUTTON}
       >
         −
       </button>
@@ -136,7 +151,7 @@ function DocumentZoom({
         type="button"
         aria-label="拡大"
         onClick={onZoomIn}
-        className={ZOOM_BUTTON}
+        className={ZOOM_STEP_BUTTON}
       >
         +
       </button>

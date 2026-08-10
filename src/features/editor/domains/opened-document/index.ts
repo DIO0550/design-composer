@@ -81,7 +81,10 @@ export const OpenedDocument = {
    *
    * @param opened 収め先を知りたい、開いているドキュメント
    * @returns パスの末尾から 2 番目の要素。相対パスのファイル名だけ（`app.dcmp`）や
-   *   ルート直下（`/app.dcmp`）にはフォルダの名前が無いので `none`
+   *   ルート直下（`/app.dcmp`）にはフォルダの名前が無いので `none`。
+   *   Windows のドライブ直下（`C:\app.dcmp`）はドライブ名（`C:`）を返す
+   *   （区切りで割った 2 番目という規則をドライブ名だけ例外にすると、
+   *   仕様に無い正規化をドメインへ持ち込むことになるため）
    */
   folderName(opened: OpenedDocument): Option<string> {
     return ArrayEx.last(ArrayEx.dropLast(pathSegments(opened.path)));

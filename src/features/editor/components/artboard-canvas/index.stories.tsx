@@ -15,6 +15,9 @@ import { ArtboardCanvas } from "./index";
  * 本番は上部バーと 1 つの表示を共有する（`OpenedDocumentEditor`）が、キャンバス単体の
  * 見た目は共有相手に依らない。ストーリーの `component` をこちらにしているのは、
  * フックの戻り値は args として書けないため。
+ *
+ * Why not: 同じ形が `__tests__/setup.tsx` にもあるが、1 箇所へ寄せていない
+ * （理由はそちらのコメント。`vitest` と Storybook のどちらかが相手のバンドルへ入る）。
  */
 function CanvasWithView(
   props: Omit<ComponentProps<typeof ArtboardCanvas>, "canvasView">,

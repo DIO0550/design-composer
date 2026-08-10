@@ -57,12 +57,17 @@ test("編集すると上部バーが保存中になる", async () => {
   expect(screen.getByText("保存中")).toBeDefined();
 });
 
-test("編集がファイルへ書き出されると上部バーが保存済みに戻る", async () => {
+test("編集がファイルへ書き出されると上部バーが保存中でなくなる", async () => {
   await renderOpenedDocument();
-
   await userEvent.click(
     screen.getByRole("button", { name: "home-title を下へ" }),
   );
 
-  expect(await screen.findByText("保存済み")).toBeDefined();
+  await screen.findByText("保存済み");
+
+  /*
+   * 「保存中が消えた」を見る。開いた直後も「保存済み」なので、出ている側だけを見ると
+   * 保存状態を 1 つに潰した実装でも通ってしまう（rules/testing.md）。
+   */
+  expect(screen.queryByText("保存中")).toBeNull();
 });

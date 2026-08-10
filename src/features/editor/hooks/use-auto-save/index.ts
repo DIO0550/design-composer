@@ -46,8 +46,9 @@ export function useAutoSave({
    * これが無いと、開いただけで書き込みが走り、ユーザーが編集していないのに
    * ファイルが現在の形式へ正規化されて差分になる（旧 major を読み込んだ場合など）。
    *
-   * ref なので render では読めない。「書き出し待ちかどうか」を render 中の導出に
-   * できないのはこのため（rules/hooks.md「render で読むなら useState」）。
+   * ref を書き換えても再レンダーは起きないので、「書き出し待ちかどうか」を
+   * render 中の導出にすると表示が更新されない。保存状態を state で持つのはこのため
+   * （rules/hooks.md「render で読むなら useState」）。
    */
   const savedDocumentRef = useRef(document);
 

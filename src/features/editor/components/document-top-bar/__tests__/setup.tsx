@@ -1,15 +1,9 @@
 import { render } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { artboardDocument } from "@/features/editor/__tests__/sample-document";
 import { DocumentSaveState } from "@/features/editor/domains/document-save-state";
 import type { OpenedDocument } from "@/features/editor/domains/opened-document";
 import { useCanvasView } from "@/features/editor/hooks/use-canvas-view";
 import { DocumentTopBar } from "../index";
-
-/** 保存先だけが違う、開いているドキュメント。中身は帯の表示に影響しない。 */
-export function openedAt(path: string): OpenedDocument {
-  return { path, document: artboardDocument("home") };
-}
 
 /** 倍率の並びを、実物の表示（`useCanvasView`）に繋いで描く。 */
 function ZoomWithView(): ReactNode {

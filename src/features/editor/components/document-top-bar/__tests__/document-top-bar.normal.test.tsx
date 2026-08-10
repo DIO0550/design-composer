@@ -1,7 +1,8 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
-import { openedAt, renderTopBar, SAVE_STATES } from "./setup";
+import { openedAt } from "@/features/editor/__tests__/sample-document";
+import { renderTopBar, SAVE_STATES } from "./setup";
 
 test("開いているファイルの名前が上部バーに出る", () => {
   renderTopBar({ opened: openedAt("/work/settings-ui/app.dcmp") });
