@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
 import { PropEdit } from "@/domains/node";
@@ -8,7 +8,7 @@ import {
 } from "@/features/editor/__tests__/canvas-elements";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import type { CanvasBounds } from "@/features/editor/domains/node-drop";
-import { ArtboardCanvas } from "../index";
+import { renderCanvas } from "./setup";
 
 /**
  * `home` に、文言を持つ `title`、文言を設定していない `caption`、Box の `panel` が
@@ -68,23 +68,8 @@ function editor(): HTMLInputElement {
   return screen.getByRole("textbox", { name: "文言を編集" });
 }
 
-function renderCanvas(
-  state: EditorState,
-  onEditProp: (edit: PropEdit) => void = vi.fn(),
-): void {
-  render(
-    <ArtboardCanvas
-      state={state}
-      onSelect={vi.fn()}
-      onMoveNode={vi.fn()}
-      onResize={vi.fn()}
-      onEditProp={onEditProp}
-    />,
-  );
-}
-
 test("選択中の Text をダブルクリックすると今の文言が入った入力欄が出る", () => {
-  renderCanvas(setupState("title"));
+  renderCanvas({ state: setupState("title") });
 
   fireEvent.doubleClick(drawn("title"));
 
@@ -92,7 +77,7 @@ test("選択中の Text をダブルクリックすると今の文言が入っ�
 });
 
 test("入力欄は文言が描かれている位置に重なる", () => {
-  renderCanvas(setupState("title"));
+  renderCanvas({ state: setupState("title") });
 
   fireEvent.doubleClick(drawnAt("title", TITLE_BOUNDS));
 
@@ -100,7 +85,7 @@ test("入力欄は文言が描かれている位置に重なる", () => {
 });
 
 test("文言を設定していない Text をダブルクリックすると空の入力欄が出る", () => {
-  renderCanvas(setupState("caption"));
+  renderCanvas({ state: setupState("caption") });
 
   fireEvent.doubleClick(drawn("caption"));
 
@@ -108,7 +93,7 @@ test("文言を設定していない Text をダブルクリックすると空�
 });
 
 test("Text 以外を選択中にダブルクリックしても入力欄は出ない", () => {
-  renderCanvas(setupState("panel"));
+  renderCanvas({ state: setupState("panel") });
 
   fireEvent.doubleClick(drawn("panel"));
 
@@ -116,7 +101,7 @@ test("Text 以外を選択中にダブルクリックしても入力欄は出な
 });
 
 test("選択中の Text から離れたところをダブルクリックしても入力欄は出ない", () => {
-  renderCanvas(setupState("title"));
+  renderCanvas({ state: setupState("title") });
 
   fireEvent.doubleClick(drawn("panel"));
 
@@ -124,7 +109,7 @@ test("選択中の Text から離れたところをダブルクリックして�
 });
 
 test("何も選択していなければダブルクリックしても入力欄は出ない", () => {
-  renderCanvas(setupState());
+  renderCanvas({ state: setupState() });
 
   fireEvent.doubleClick(drawn("title"));
 
@@ -133,7 +118,7 @@ test("何も選択していなければダブルクリックしても入力欄�
 
 test("書き換えて Enter を押すと、その文言が content の編集として通知される", () => {
   const onEditProp = vi.fn();
-  renderCanvas(setupState("title"), onEditProp);
+  renderCanvas({ state: setupState("title"), onEditProp });
   fireEvent.doubleClick(drawn("title"));
 
   fireEvent.change(editor(), { target: { value: "トップ" } });
@@ -143,7 +128,7 @@ test("書き換えて Enter を押すと、その文言が content の編集と�
 });
 
 test("確定すると入力欄は消える", () => {
-  renderCanvas(setupState("title"));
+  renderCanvas({ state: setupState("title") });
   fireEvent.doubleClick(drawn("title"));
 
   fireEvent.keyDown(editor(), { key: "Enter" });
@@ -153,7 +138,7 @@ test("確定すると入力欄は消える", () => {
 
 test("書き換えてフォーカスを外すと、その文言が content の編集として通知される", () => {
   const onEditProp = vi.fn();
-  renderCanvas(setupState("title"), onEditProp);
+  renderCanvas({ state: setupState("title"), onEditProp });
   fireEvent.doubleClick(drawn("title"));
 
   fireEvent.change(editor(), { target: { value: "トップ" } });
@@ -164,7 +149,7 @@ test("書き換えてフォーカスを外すと、その文言が content の�
 
 test("書き換えて Escape を押すと文言は変わらない", () => {
   const onEditProp = vi.fn();
-  renderCanvas(setupState("title"), onEditProp);
+  renderCanvas({ state: setupState("title"), onEditProp });
   fireEvent.doubleClick(drawn("title"));
 
   fireEvent.change(editor(), { target: { value: "トップ" } });
@@ -174,7 +159,7 @@ test("書き換えて Escape を押すと文言は変わらない", () => {
 });
 
 test("Escape で取り消すと入力欄は消える", () => {
-  renderCanvas(setupState("title"));
+  renderCanvas({ state: setupState("title") });
   fireEvent.doubleClick(drawn("title"));
 
   fireEvent.keyDown(editor(), { key: "Escape" });
@@ -183,7 +168,7 @@ test("Escape で取り消すと入力欄は消える", () => {
 });
 
 test("取り消したあとにダブルクリックすると元の文言から編集し直せる", () => {
-  renderCanvas(setupState("title"));
+  renderCanvas({ state: setupState("title") });
   fireEvent.doubleClick(drawn("title"));
   fireEvent.change(editor(), { target: { value: "トップ" } });
   fireEvent.keyDown(editor(), { key: "Escape" });

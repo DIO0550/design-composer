@@ -1,4 +1,4 @@
-import { fireEvent, render } from "@testing-library/react";
+import { fireEvent } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import {
@@ -8,7 +8,7 @@ import {
 } from "@/features/editor/__tests__/canvas-gesture";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
-import { ArtboardCanvas } from "../index";
+import { renderCanvas } from "./setup";
 
 /**
  * `home` に Text の `title` と、空の Box `panel` が並ぶ状態。
@@ -63,15 +63,7 @@ function dragNode(from: Element, to: Element): void {
 
 test("ノードを Box の上へ運んで離すとその Box の子になる", () => {
   const onMoveNode = vi.fn();
-  render(
-    <ArtboardCanvas
-      state={setupState()}
-      onSelect={vi.fn()}
-      onMoveNode={onMoveNode}
-      onResize={vi.fn()}
-      onEditProp={vi.fn()}
-    />,
-  );
+  renderCanvas({ state: setupState(), onMoveNode });
 
   dragNode(drawn("title"), drawn("panel"));
 
@@ -83,15 +75,7 @@ test("ノードを Box の上へ運んで離すとその Box の子になる", (
 
 test("ノードを別の artboard の上へ運んで離すとその artboard の子になる", () => {
   const onMoveNode = vi.fn();
-  render(
-    <ArtboardCanvas
-      state={setupState()}
-      onSelect={vi.fn()}
-      onMoveNode={onMoveNode}
-      onResize={vi.fn()}
-      onEditProp={vi.fn()}
-    />,
-  );
+  renderCanvas({ state: setupState(), onMoveNode });
 
   dragNode(drawn("title"), drawn("settings"));
 
@@ -103,15 +87,7 @@ test("ノードを別の artboard の上へ運んで離すとその artboard の
 
 test("子を持てない Text の上で離すと、外側の Box の子になる", () => {
   const onMoveNode = vi.fn();
-  render(
-    <ArtboardCanvas
-      state={setupState()}
-      onSelect={vi.fn()}
-      onMoveNode={onMoveNode}
-      onResize={vi.fn()}
-      onEditProp={vi.fn()}
-    />,
-  );
+  renderCanvas({ state: setupState(), onMoveNode });
 
   dragNode(drawn("panel"), drawn("title"));
 
@@ -128,15 +104,7 @@ test("子を持てない Text の上で離すと、外側の Box の子になる
 
 test("押しただけで運んでいなければ移動は起きない", () => {
   const onMoveNode = vi.fn();
-  render(
-    <ArtboardCanvas
-      state={setupState()}
-      onSelect={vi.fn()}
-      onMoveNode={onMoveNode}
-      onResize={vi.fn()}
-      onEditProp={vi.fn()}
-    />,
-  );
+  renderCanvas({ state: setupState(), onMoveNode });
 
   pressPointer(drawn("title"), { x: 100, y: 100 });
   releasePointer(drawn("title"), { x: 100, y: 100 });
@@ -145,15 +113,7 @@ test("押しただけで運んでいなければ移動は起きない", () => {
 });
 
 test("受け入れ先の上ではドロップ先が線で示される", () => {
-  const { queryByTestId } = render(
-    <ArtboardCanvas
-      state={setupState()}
-      onSelect={vi.fn()}
-      onMoveNode={vi.fn()}
-      onResize={vi.fn()}
-      onEditProp={vi.fn()}
-    />,
-  );
+  const { queryByTestId } = renderCanvas({ state: setupState() });
 
   pressPointer(drawn("title"), { x: 100, y: 100 });
   movePointer(drawn("panel"), { x: 100, y: 150 });
@@ -162,15 +122,7 @@ test("受け入れ先の上ではドロップ先が線で示される", () => {
 });
 
 test("受け入れ先の上では、その Box が枠で示される", () => {
-  render(
-    <ArtboardCanvas
-      state={setupState()}
-      onSelect={vi.fn()}
-      onMoveNode={vi.fn()}
-      onResize={vi.fn()}
-      onEditProp={vi.fn()}
-    />,
-  );
+  renderCanvas({ state: setupState() });
 
   pressPointer(drawn("title"), { x: 100, y: 100 });
   movePointer(drawn("panel"), { x: 100, y: 150 });
@@ -179,15 +131,7 @@ test("受け入れ先の上では、その Box が枠で示される", () => {
 });
 
 test("受け入れ先が無い場所ではハイライトが出ない", () => {
-  const { queryByTestId } = render(
-    <ArtboardCanvas
-      state={setupState()}
-      onSelect={vi.fn()}
-      onMoveNode={vi.fn()}
-      onResize={vi.fn()}
-      onEditProp={vi.fn()}
-    />,
-  );
+  const { queryByTestId } = renderCanvas({ state: setupState() });
 
   pressPointer(drawn("title"), { x: 100, y: 100 });
   movePointer(artboardList(), { x: 100, y: 150 });
@@ -197,15 +141,7 @@ test("受け入れ先が無い場所ではハイライトが出ない", () => {
 
 test("受け入れ先が無い場所で離しても移動は起きない", () => {
   const onMoveNode = vi.fn();
-  render(
-    <ArtboardCanvas
-      state={setupState()}
-      onSelect={vi.fn()}
-      onMoveNode={onMoveNode}
-      onResize={vi.fn()}
-      onEditProp={vi.fn()}
-    />,
-  );
+  renderCanvas({ state: setupState(), onMoveNode });
 
   dragNode(drawn("title"), artboardList());
 
@@ -214,15 +150,7 @@ test("受け入れ先が無い場所で離しても移動は起きない", () =>
 
 test("運んだ直後のクリックでは選択が変わらない", () => {
   const onSelect = vi.fn();
-  render(
-    <ArtboardCanvas
-      state={setupState()}
-      onSelect={onSelect}
-      onMoveNode={vi.fn()}
-      onResize={vi.fn()}
-      onEditProp={vi.fn()}
-    />,
-  );
+  renderCanvas({ state: setupState(), onSelect });
 
   dragNode(drawn("title"), drawn("panel"));
   fireEvent.click(drawn("panel"));
@@ -232,15 +160,7 @@ test("運んだ直後のクリックでは選択が変わらない", () => {
 
 test("ドラッグの外で押したクリックはそのまま選択に使われる", () => {
   const onSelect = vi.fn();
-  render(
-    <ArtboardCanvas
-      state={setupState()}
-      onSelect={onSelect}
-      onMoveNode={vi.fn()}
-      onResize={vi.fn()}
-      onEditProp={vi.fn()}
-    />,
-  );
+  renderCanvas({ state: setupState(), onSelect });
 
   pressPointer(drawn("title"), { x: 100, y: 100 });
   releasePointer(drawn("title"), { x: 100, y: 100 });

@@ -1,4 +1,4 @@
-import { fireEvent, render } from "@testing-library/react";
+import { fireEvent } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
 import {
@@ -9,7 +9,7 @@ import {
 import { EditorState } from "@/features/editor/domains/editor-state";
 import type { CanvasBounds } from "@/features/editor/domains/node-drop";
 import { Option } from "@/utils/Option";
-import { ArtboardCanvas } from "../index";
+import { renderCanvas } from "./setup";
 
 /**
  * `home` に、2 軸とも固定の `panel`、モードを指定していない `title`、
@@ -85,59 +85,40 @@ const PANEL_BOUNDS: CanvasBounds = {
   height: 100,
 };
 
-function renderCanvas(
-  state: EditorState,
-  handlers: Readonly<{
-    onResize?: (size: { axis: string; length: number }) => void;
-    onSelect?: (names: readonly string[]) => void;
-    onMoveNode?: () => void;
-  }>,
-): void {
-  render(
-    <ArtboardCanvas
-      state={state}
-      onSelect={handlers.onSelect ?? vi.fn()}
-      onMoveNode={handlers.onMoveNode ?? vi.fn()}
-      onResize={handlers.onResize ?? vi.fn()}
-      onEditProp={vi.fn()}
-    />,
-  );
-}
-
 test("fixed のノードを選ぶと幅と高さのハンドルが描かれる", () => {
-  renderCanvas(setupState("panel"), {});
+  renderCanvas({ state: setupState("panel") });
 
   expect(injectedStyles()).toContain('[data-name="panel"]::after');
   expect(injectedStyles()).toContain('[data-name="panel"]::before');
 });
 
 test("モードを指定していないノードを選んでもハンドルは描かれない", () => {
-  renderCanvas(setupState("title"), {});
+  renderCanvas({ state: setupState("title") });
 
   expect(injectedStyles()).not.toContain('[data-name="title"]::after');
 });
 
 test("部品インスタンスを選んでもハンドルは描かれない", () => {
-  renderCanvas(setupState("action"), {});
+  renderCanvas({ state: setupState("action") });
 
   expect(injectedStyles()).not.toContain('[data-name="action"]::after');
 });
 
 test("artboard を選ぶとハンドルが描かれる", () => {
-  renderCanvas(setupState("home"), {});
+  renderCanvas({ state: setupState("home") });
 
   expect(injectedStyles()).toContain('[data-name="home"]::after');
 });
 
 test("何も選んでいなければハンドルは描かれない", () => {
-  renderCanvas(setupState(), {});
+  renderCanvas({ state: setupState() });
 
   expect(injectedStyles()).not.toContain("::after");
 });
 
 test("右辺を掴んで右へ運ぶと、動かした分だけ幅が伸びた大きさが通知される", () => {
   const onResize = vi.fn();
-  renderCanvas(setupState("panel"), { onResize });
+  renderCanvas({ state: setupState("panel"), onResize });
   const panel = drawnAt("panel", PANEL_BOUNDS);
 
   pressPointer(panel, { x: 298, y: 100 });
@@ -149,7 +130,7 @@ test("右辺を掴んで右へ運ぶと、動かした分だけ幅が伸びた�
 
 test("下辺を掴んで下へ運ぶと、動かした分だけ高さが伸びた大きさが通知される", () => {
   const onResize = vi.fn();
-  renderCanvas(setupState("panel"), { onResize });
+  renderCanvas({ state: setupState("panel"), onResize });
   const panel = drawnAt("panel", PANEL_BOUNDS);
 
   pressPointer(panel, { x: 200, y: 148 });
@@ -161,7 +142,7 @@ test("下辺を掴んで下へ運ぶと、動かした分だけ高さが伸び�
 
 test("ハンドルから離れたところを掴んで運んでも大きさは変わらない", () => {
   const onResize = vi.fn();
-  renderCanvas(setupState("panel"), { onResize });
+  renderCanvas({ state: setupState("panel"), onResize });
   const panel = drawnAt("panel", PANEL_BOUNDS);
 
   pressPointer(panel, { x: 200, y: 100 });
@@ -173,7 +154,7 @@ test("ハンドルから離れたところを掴んで運んでも大きさは�
 
 test("選んでいないノードの辺を掴んでも大きさは変わらない", () => {
   const onResize = vi.fn();
-  renderCanvas(setupState("title"), { onResize });
+  renderCanvas({ state: setupState("title"), onResize });
   const panel = drawnAt("panel", PANEL_BOUNDS);
 
   pressPointer(panel, { x: 298, y: 100 });
@@ -184,7 +165,7 @@ test("選んでいないノードの辺を掴んでも大きさは変わらな�
 
 test("ハンドルを掴んでいる間はツリー内の移動が起きない", () => {
   const onMoveNode = vi.fn();
-  renderCanvas(setupState("panel"), { onMoveNode });
+  renderCanvas({ state: setupState("panel"), onMoveNode });
   const panel = drawnAt("panel", PANEL_BOUNDS);
 
   pressPointer(panel, { x: 298, y: 100 });
@@ -196,7 +177,7 @@ test("ハンドルを掴んでいる間はツリー内の移動が起きない",
 
 test("大きさを変えた直後のクリックでは選択が変わらない", () => {
   const onSelect = vi.fn();
-  renderCanvas(setupState("panel"), { onSelect });
+  renderCanvas({ state: setupState("panel"), onSelect });
   const panel = drawnAt("panel", PANEL_BOUNDS);
 
   pressPointer(panel, { x: 298, y: 100 });

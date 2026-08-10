@@ -1,5 +1,6 @@
 import { afterEach, expect, test, vi } from "vitest";
 import { artboardDocument } from "@/features/editor/__tests__/sample-document";
+import { DocumentSaveState } from "@/features/editor/domains/document-save-state";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
 import { Option } from "@/utils/Option";
@@ -49,6 +50,39 @@ test("編集が続いている間は書き出されず、止まってから最�
   expect(fake.contentOf(PATH)).toStrictEqual(
     Option.some(DocumentJson.serialize(last)),
   );
+});
+
+test("編集してから書き出されるまでの間は保存中になる", async () => {
+  vi.useFakeTimers();
+  const opened = artboardDocument("home");
+  const fake = DocumentIpcFake.create({
+    [PATH]: DocumentJson.serialize(opened),
+  });
+  const { result, rerender } = renderAutoSave({
+    ipc: fake.ipc,
+    document: opened,
+  });
+
+  rerender({ ipc: fake.ipc, document: artboardDocument("settings") });
+
+  expect(result.current).toStrictEqual(DocumentSaveState.SAVING);
+});
+
+test("書き出しが終わると保存済みに戻る", async () => {
+  vi.useFakeTimers();
+  const opened = artboardDocument("home");
+  const fake = DocumentIpcFake.create({
+    [PATH]: DocumentJson.serialize(opened),
+  });
+  const { result, rerender } = renderAutoSave({
+    ipc: fake.ipc,
+    document: opened,
+  });
+
+  rerender({ ipc: fake.ipc, document: artboardDocument("settings") });
+  await waitDebounce();
+
+  expect(result.current).toStrictEqual(DocumentSaveState.SAVED);
 });
 
 test("編集を取り消して元のドキュメントへ戻すと、その内容が書き出される", async () => {

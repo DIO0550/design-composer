@@ -1,5 +1,6 @@
 import { afterEach, expect, test, vi } from "vitest";
 import { artboardDocument } from "@/features/editor/__tests__/sample-document";
+import { DocumentSaveState } from "@/features/editor/domains/document-save-state";
 import { DocumentIpc, type DocumentIpcError } from "@/libs/document-ipc";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
@@ -84,7 +85,7 @@ test("書き込みに失敗すると、その失敗が返る", async () => {
   rerender({ ipc, document: artboardDocument("settings") });
   await waitDebounce();
 
-  expect(result.current).toStrictEqual(Option.some(DENIED));
+  expect(result.current).toStrictEqual(DocumentSaveState.fromError(DENIED));
 });
 
 test("失敗した後の書き込みが成功すると、失敗は返らなくなる", async () => {
@@ -104,5 +105,39 @@ test("失敗した後の書き込みが成功すると、失敗は返らなく�
   rerender({ ipc: fake.ipc, document: artboardDocument("profile") });
   await waitDebounce();
 
-  expect(result.current).toStrictEqual(Option.none);
+  expect(result.current).toStrictEqual(DocumentSaveState.SAVED);
+});
+
+test("書き出される前に編集を取り消すと、保存中のまま止まらない", async () => {
+  vi.useFakeTimers();
+  const opened = artboardDocument("home");
+  const fake = DocumentIpcFake.create({
+    [PATH]: DocumentJson.serialize(opened),
+  });
+  const { result, rerender } = renderAutoSave({
+    ipc: fake.ipc,
+    document: opened,
+  });
+
+  rerender({ ipc: fake.ipc, document: artboardDocument("settings") });
+  await waitDebounce(AUTO_SAVE_DEBOUNCE_MS - 1);
+  rerender({ ipc: fake.ipc, document: opened });
+
+  expect(result.current).toStrictEqual(DocumentSaveState.SAVED);
+});
+
+test("書き込みに失敗したあと編集を取り消すと、失敗が残らない", async () => {
+  vi.useFakeTimers();
+  const opened = artboardDocument("home");
+  const denying = denyingIpc();
+  const { result, rerender } = renderAutoSave({
+    ipc: denying,
+    document: opened,
+  });
+
+  rerender({ ipc: denying, document: artboardDocument("settings") });
+  await waitDebounce();
+  rerender({ ipc: denying, document: opened });
+
+  expect(result.current).toStrictEqual(DocumentSaveState.SAVED);
 });

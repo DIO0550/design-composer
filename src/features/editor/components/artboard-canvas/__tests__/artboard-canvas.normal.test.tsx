@@ -1,8 +1,8 @@
-import { render, screen } from "@testing-library/react";
-import { expect, test, vi } from "vitest";
+import { screen } from "@testing-library/react";
+import { expect, test } from "vitest";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import { EditorState } from "@/features/editor/domains/editor-state";
-import { ArtboardCanvas } from "../index";
+import { renderCanvas } from "./setup";
 
 /** artboard の並びだけを差し替えたエディタ状態（トークンと部品は雛形をそのまま使う）。 */
 function setupState(
@@ -37,15 +37,7 @@ test("artboard の中身がキャンバスに描画される", () => {
     },
   ]);
 
-  render(
-    <ArtboardCanvas
-      state={state}
-      onSelect={vi.fn()}
-      onMoveNode={vi.fn()}
-      onResize={vi.fn()}
-      onEditProp={vi.fn()}
-    />,
-  );
+  renderCanvas({ state });
 
   expect(screen.getByText("ホーム")).toBeDefined();
 });
@@ -66,15 +58,7 @@ test("部品インスタンスは overrides を適用した中身で描画され
     },
   ]);
 
-  render(
-    <ArtboardCanvas
-      state={state}
-      onSelect={vi.fn()}
-      onMoveNode={vi.fn()}
-      onResize={vi.fn()}
-      onEditProp={vi.fn()}
-    />,
-  );
+  renderCanvas({ state });
 
   expect(screen.getByText("ログイン")).toBeDefined();
 });
@@ -86,15 +70,7 @@ test("artboard は artboards 配列の順に並ぶ", () => {
     { name: "about", width: 360, height: 240, children: [] },
   ]);
 
-  render(
-    <ArtboardCanvas
-      state={state}
-      onSelect={vi.fn()}
-      onMoveNode={vi.fn()}
-      onResize={vi.fn()}
-      onEditProp={vi.fn()}
-    />,
-  );
+  renderCanvas({ state });
 
   expect(renderedArtboardNames()).toEqual(["home", "settings", "about"]);
 });
@@ -104,15 +80,7 @@ test("artboard は自身の幅と高さで描画される", () => {
     { name: "home", width: 360, height: 240, children: [] },
   ]);
 
-  render(
-    <ArtboardCanvas
-      state={state}
-      onSelect={vi.fn()}
-      onMoveNode={vi.fn()}
-      onResize={vi.fn()}
-      onEditProp={vi.fn()}
-    />,
-  );
+  renderCanvas({ state });
 
   const frame = document.querySelector('[data-name="home"]');
   expect(frame?.getAttribute("style")).toContain("width:360px");
@@ -141,15 +109,7 @@ test("artboard からはみ出した中身はデフォルトで clip される",
     },
   ]);
 
-  render(
-    <ArtboardCanvas
-      state={state}
-      onSelect={vi.fn()}
-      onMoveNode={vi.fn()}
-      onResize={vi.fn()}
-      onEditProp={vi.fn()}
-    />,
-  );
+  renderCanvas({ state });
 
   const frame = document.querySelector('[data-name="home"]');
   expect(frame?.getAttribute("style")).toContain("overflow:hidden");
@@ -166,15 +126,7 @@ test("トークンはキャンバス側のカスタムプロパティとして�
     },
   ]);
 
-  render(
-    <ArtboardCanvas
-      state={state}
-      onSelect={vi.fn()}
-      onMoveNode={vi.fn()}
-      onResize={vi.fn()}
-      onEditProp={vi.fn()}
-    />,
-  );
+  renderCanvas({ state });
 
   const frame = document.querySelector('[data-name="home"]');
   expect(frame?.getAttribute("style")).toContain("var(--colors-primary)");
@@ -192,15 +144,7 @@ test("選択中の artboard は選択状態として示される", () => {
     "settings",
   );
 
-  render(
-    <ArtboardCanvas
-      state={state}
-      onSelect={vi.fn()}
-      onMoveNode={vi.fn()}
-      onResize={vi.fn()}
-      onEditProp={vi.fn()}
-    />,
-  );
+  renderCanvas({ state });
 
   expect(
     screen
@@ -215,15 +159,7 @@ test("選択中の artboard は選択状態として示される", () => {
 test("artboard が無いときはその旨が表示される", () => {
   const state = EditorState.create(DesignDocument.create({ artboards: [] }));
 
-  render(
-    <ArtboardCanvas
-      state={state}
-      onSelect={vi.fn()}
-      onMoveNode={vi.fn()}
-      onResize={vi.fn()}
-      onEditProp={vi.fn()}
-    />,
-  );
+  renderCanvas({ state });
 
   expect(screen.getByText("artboard がありません")).toBeDefined();
 });
@@ -238,15 +174,7 @@ test("コンパイルに失敗したときは失敗した旨が表示される",
     },
   ]);
 
-  render(
-    <ArtboardCanvas
-      state={state}
-      onSelect={vi.fn()}
-      onMoveNode={vi.fn()}
-      onResize={vi.fn()}
-      onEditProp={vi.fn()}
-    />,
-  );
+  renderCanvas({ state });
 
   expect(screen.getByText(/コンパイルに失敗しました/)).toBeDefined();
   expect(screen.queryByText("artboard がありません")).toBeNull();

@@ -1,5 +1,6 @@
 import { Artboard } from "@/domains/artboard";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import type { OpenedDocument } from "@/features/editor/domains/opened-document";
 import { DocumentJson } from "@/libs/document-json";
 
 /**
@@ -68,4 +69,13 @@ export function artboardDocument(name: string): DesignDocument {
 /** ファイルに載っている状態の `artboardDocument`。 */
 export function artboardContent(name: string): string {
   return DocumentJson.serialize(artboardDocument(name));
+}
+
+/**
+ * 保存先だけが違う、開いているドキュメント。
+ * パスの分解（`OpenedDocument.fileName` / `folderName`）と上部バーの表示は
+ * どちらも中身に依らないので、同じものを両方から使う。
+ */
+export function openedAt(path: string): OpenedDocument {
+  return { path, document: artboardDocument("home") };
 }
