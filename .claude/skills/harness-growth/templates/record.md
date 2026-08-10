@@ -68,6 +68,7 @@
 | `type-vocabulary` | rules/coding.md「値の語彙を型で閉じる」 |
 | `illegal-state` | rules/coding.md「不正な状態を型で表現できなくする(型による境界)」 |
 | `naming` | rules/naming.md |
+| `comment` | rules/coding.md「コメントは実装と一致させる」「コメントは doc と Why / Why not に絞る」 |
 | `test-placement` | rules/testing.md「配置と命名」 |
 | `test-behavior` | rules/testing.md「古典学派のテスト」 |
 | `test-nesting` | rules/testing.md「テストの書き方: ネスト禁止」 |
