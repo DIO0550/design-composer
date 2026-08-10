@@ -140,6 +140,21 @@
     "name": "開始画面"
   },
   {
+    "id": "features-editor-editortopbar--failed",
+    "title": "features/editor/EditorTopBar",
+    "name": "保存に失敗"
+  },
+  {
+    "id": "features-editor-editortopbar--saved",
+    "title": "features/editor/EditorTopBar",
+    "name": "保存済み"
+  },
+  {
+    "id": "features-editor-editortopbar--saving",
+    "title": "features/editor/EditorTopBar",
+    "name": "保存中"
+  },
+  {
     "id": "features-editor-leftpane--assets",
     "title": "features/editor/LeftPane",
     "name": "Assets（部品のパレット）"
