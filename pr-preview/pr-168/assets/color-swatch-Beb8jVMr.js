@@ -1,4 +1,0 @@
-import{n as e}from"./chunk-BneVvdWh.js";import{t}from"./jsx-runtime-4HHWW5MW.js";function n({color:e}){return(0,r.jsx)(`span`,{"aria-hidden":`true`,style:{backgroundColor:e},className:`inline-block size-3 shrink-0 border border-gray-300`})}var r,i=e((()=>{r=t();try{n.displayName=`ColorSwatch`,n.__docgenInfo={description:`色そのものを見せる見本。
-
-色は値なのでクラス名に固定できず、インライン style で塗る。何の色かは隣に並ぶ
-文字（トークン名・値）が伝えるので、見本自体は飾りとして読み上げから外す。`,displayName:`ColorSwatch`,filePath:`/home/runner/work/design-composer/design-composer/src/components/color-swatch/index.tsx`,methods:[],props:{color:{defaultValue:null,declarations:[{fileName:`design-composer/src/components/color-swatch/index.tsx`,name:`TypeLiteral`}],description:``,name:`color`,required:!0,tags:{},type:{name:`string`}}},tags:{}}}catch{}}));export{i as n,n as t};
