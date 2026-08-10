@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import type { DesignDocument } from "@/domains/design-document";
-import type { DocumentIpc, DocumentIpcError } from "@/libs/document-ipc";
+import { DocumentSaveState } from "@/features/editor/domains/document-save-state";
+import type { DocumentIpc } from "@/libs/document-ipc";
 import { DocumentJson } from "@/libs/document-json";
-import { Option } from "@/utils/Option";
 
 /**
  * 編集が止まってからファイルへ書き出すまでの待ち時間
@@ -29,26 +29,39 @@ export type AutoSaveTarget = Readonly<{
  * 保存は last-write-wins で、書き込み前に現在のファイル内容を読み直したり
  * マージしたりはしない（docs/05-architecture.md「競合の解決」）。
  *
- * @returns 直近の書き込みの失敗。1 度も失敗していなければ `none`
+ * @returns 画面のドキュメントとファイルが一致しているか。書き出し待ち・書き出し中は
+ *   `saving`、書き込みが拒まれている間は `failed`
  */
 export function useAutoSave({
   ipc,
   path,
   document,
-}: AutoSaveTarget): Option<DocumentIpcError> {
-  const [failure, setFailure] = useState<Option<DocumentIpcError>>(Option.none);
+}: AutoSaveTarget): DocumentSaveState {
+  const [saveState, setSaveState] = useState<DocumentSaveState>(
+    DocumentSaveState.SAVED,
+  );
   /*
    * ファイルに載っていると分かっているドキュメント。マウント時の値はファイルから
    * 読んだ内容そのものなので、これと同一の間は書き込まない。
    * これが無いと、開いただけで書き込みが走り、ユーザーが編集していないのに
    * ファイルが現在の形式へ正規化されて差分になる（旧 major を読み込んだ場合など）。
+   *
+   * ref なので render では読めない。「書き出し待ちかどうか」を render 中の導出に
+   * できないのはこのため（rules/hooks.md「render で読むなら useState」）。
    */
   const savedDocumentRef = useRef(document);
 
   useEffect(() => {
     if (document === savedDocumentRef.current) {
+      /*
+       * ファイルに載っている版へ戻ってきたので、書き出すものはもう無い。
+       * ここで確定させないと、デバウンス中の undo（`EditHistory` は積んだ同じ参照を
+       * 戻すので、この分岐に入りタイマーが cleanup で消える）で `saving` のまま固まる。
+       */
+      setSaveState(DocumentSaveState.SAVED);
       return;
     }
+    setSaveState(DocumentSaveState.SAVING);
 
     // 書き込み中に次の編集が来たら、その結果は捨てて後続の書き込みに任せる
     // （rules/hooks.md「ref をフラグにした防御」の代わりのクリーンアップ）。
@@ -59,11 +72,11 @@ export function useAutoSave({
         return;
       }
       if (!saved.ok) {
-        setFailure(Option.some(saved.error));
+        setSaveState(DocumentSaveState.fromError(saved.error));
         return;
       }
       savedDocumentRef.current = document;
-      setFailure(Option.none);
+      setSaveState(DocumentSaveState.SAVED);
     }, AUTO_SAVE_DEBOUNCE_MS);
 
     return () => {
@@ -72,5 +85,5 @@ export function useAutoSave({
     };
   }, [ipc, path, document]);
 
-  return failure;
+  return saveState;
 }

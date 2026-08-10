@@ -5,6 +5,7 @@ import {
   DocumentErrorList,
 } from "@/features/editor/components/document-error-list";
 import { DocumentSyncFailureList } from "@/features/editor/components/document-sync-failure-list";
+import { DocumentTopBar } from "@/features/editor/components/document-top-bar";
 import { EditorLayout } from "@/features/editor/components/editor-layout";
 import {
   EditorProvider,
@@ -19,9 +20,14 @@ import { NodeInsertToolbar } from "@/features/editor/components/node-insert-tool
 import { PropertyPanel } from "@/features/editor/components/property-panel";
 import { TokenEditor } from "@/features/editor/components/token-editor";
 import type { DocumentError } from "@/features/editor/domains/document-error";
+import { DocumentSaveState } from "@/features/editor/domains/document-save-state";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import type { OpenedDocument } from "@/features/editor/domains/opened-document";
 import { useAutoSave } from "@/features/editor/hooks/use-auto-save";
+import {
+  type CanvasViewControl,
+  useCanvasView,
+} from "@/features/editor/hooks/use-canvas-view";
 import { useDocumentReload } from "@/features/editor/hooks/use-document-reload";
 import { useEditShortcuts } from "@/features/editor/hooks/use-edit-shortcuts";
 import {
@@ -164,7 +170,9 @@ function CanvasDockContent({
  * 読み出しをここ 1 箇所に集めることで、ペインは props だけで描ける
  * （個別に単体描画・テストできる）。
  */
-function EditorPanes() {
+function EditorPanes({
+  canvasView,
+}: Readonly<{ canvasView: CanvasViewControl }>) {
   const { state } = useEditor();
   const node = useNodeActions();
   const token = useTokenActions();
@@ -193,6 +201,7 @@ function EditorPanes() {
       <EditorLayout.CenterPane>
         <ArtboardCanvas
           state={state}
+          canvasView={canvasView}
           onSelect={node.selectAt}
           onMoveNode={node.move}
           onResize={node.resize}
@@ -229,11 +238,18 @@ function EditorPanes() {
  */
 function EditorBody({
   ipc,
-  path,
-}: Readonly<{ ipc: DocumentIpc; path: string }>) {
+  opened,
+}: Readonly<{ ipc: DocumentIpc; opened: OpenedDocument }>) {
   const { state, dispatch } = useEditor();
+  const path = opened.path;
+  /*
+   * ズーム / パンをここで持つのは、倍率の操作（上部バー）と操作の対象（キャンバス）が
+   * 兄弟として並ぶため。パンのたびに 3 ペインまで再レンダーが広がるが、Context へ
+   * 移しても state の位置は変わらないので同じ（#134）。
+   */
+  const canvasView = useCanvasView();
 
-  const autoSaveFailure = useAutoSave({
+  const saveState = useAutoSave({
     ipc,
     path,
     document: EditorState.document(state),
@@ -246,11 +262,21 @@ function EditorBody({
 
   return (
     <div className="flex h-full min-h-0 flex-col">
+      <DocumentTopBar>
+        <DocumentTopBar.Breadcrumb opened={opened} />
+        <DocumentTopBar.SaveBadge state={saveState} />
+        <DocumentTopBar.Zoom
+          view={canvasView.view}
+          onZoomIn={canvasView.zoomIn}
+          onZoomOut={canvasView.zoomOut}
+          onReset={canvasView.reset}
+        />
+      </DocumentTopBar>
       <DocumentSyncFailureList
-        autoSave={autoSaveFailure}
+        autoSave={DocumentSaveState.failure(saveState)}
         watch={watchFailure}
       />
-      <EditorPanes />
+      <EditorPanes canvasView={canvasView} />
     </div>
   );
 }
@@ -266,7 +292,7 @@ export function OpenedDocumentEditor({
 }: Readonly<{ ipc: DocumentIpc; opened: OpenedDocument }>) {
   return (
     <EditorProvider initialDocument={opened.document}>
-      <EditorBody ipc={ipc} path={opened.path} />
+      <EditorBody ipc={ipc} opened={opened} />
     </EditorProvider>
   );
 }

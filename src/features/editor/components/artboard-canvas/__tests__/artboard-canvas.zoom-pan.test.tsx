@@ -1,6 +1,5 @@
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { expect, test, vi } from "vitest";
+import { screen } from "@testing-library/react";
+import { expect, test } from "vitest";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import {
   drag,
@@ -9,7 +8,7 @@ import {
   wheel,
 } from "@/features/editor/__tests__/canvas-gesture";
 import { EditorState } from "@/features/editor/domains/editor-state";
-import { ArtboardCanvas } from "../index";
+import { renderCanvas } from "./setup";
 
 /** artboard を 1 枚だけ持つエディタ状態。ズーム / パンは中身に依存しない。 */
 function setupState(): EditorState {
@@ -33,99 +32,13 @@ function canvasSurface(): Element {
 }
 
 test("キャンバスを開いた直後は等倍で表示される", () => {
-  render(
-    <ArtboardCanvas
-      state={setupState()}
-      onSelect={vi.fn()}
-      onMoveNode={vi.fn()}
-      onResize={vi.fn()}
-      onEditProp={vi.fn()}
-    />,
-  );
+  renderCanvas({ state: setupState() });
 
-  expect(screen.getByText("倍率 100%")).toBeDefined();
   expect(canvasTransform()).toContain("scale(1)");
 });
 
-test("拡大すると表示倍率が上がる", async () => {
-  render(
-    <ArtboardCanvas
-      state={setupState()}
-      onSelect={vi.fn()}
-      onMoveNode={vi.fn()}
-      onResize={vi.fn()}
-      onEditProp={vi.fn()}
-    />,
-  );
-
-  await userEvent.click(screen.getByRole("button", { name: "拡大" }));
-
-  expect(screen.getByText("倍率 120%")).toBeDefined();
-  expect(canvasTransform()).toContain("scale(1.2)");
-});
-
-test("縮小すると表示倍率が下がる", async () => {
-  render(
-    <ArtboardCanvas
-      state={setupState()}
-      onSelect={vi.fn()}
-      onMoveNode={vi.fn()}
-      onResize={vi.fn()}
-      onEditProp={vi.fn()}
-    />,
-  );
-
-  await userEvent.click(screen.getByRole("button", { name: "縮小" }));
-
-  expect(screen.getByText("倍率 83%")).toBeDefined();
-});
-
-test("等倍に戻すと 100% に戻る", async () => {
-  render(
-    <ArtboardCanvas
-      state={setupState()}
-      onSelect={vi.fn()}
-      onMoveNode={vi.fn()}
-      onResize={vi.fn()}
-      onEditProp={vi.fn()}
-    />,
-  );
-  await userEvent.click(screen.getByRole("button", { name: "拡大" }));
-
-  await userEvent.click(screen.getByRole("button", { name: "等倍に戻す" }));
-
-  expect(screen.getByText("倍率 100%")).toBeDefined();
-});
-
-test("縮小を繰り返しても下限より小さくならない", async () => {
-  render(
-    <ArtboardCanvas
-      state={setupState()}
-      onSelect={vi.fn()}
-      onMoveNode={vi.fn()}
-      onResize={vi.fn()}
-      onEditProp={vi.fn()}
-    />,
-  );
-  const zoomOut = screen.getByRole("button", { name: "縮小" });
-
-  for (const _ of Array.from({ length: 20 })) {
-    await userEvent.click(zoomOut);
-  }
-
-  expect(screen.getByText("倍率 10%")).toBeDefined();
-});
-
 test("キャンバスをドラッグすると中身が同じだけ移動する", () => {
-  render(
-    <ArtboardCanvas
-      state={setupState()}
-      onSelect={vi.fn()}
-      onMoveNode={vi.fn()}
-      onResize={vi.fn()}
-      onEditProp={vi.fn()}
-    />,
-  );
+  renderCanvas({ state: setupState() });
 
   drag(canvasSurface(), { from: { x: 100, y: 100 }, to: { x: 130, y: 80 } });
 
@@ -133,15 +46,7 @@ test("キャンバスをドラッグすると中身が同じだけ移動する",
 });
 
 test("artboard の上で始めたドラッグではキャンバスが動かない", () => {
-  render(
-    <ArtboardCanvas
-      state={setupState()}
-      onSelect={vi.fn()}
-      onMoveNode={vi.fn()}
-      onResize={vi.fn()}
-      onEditProp={vi.fn()}
-    />,
-  );
+  renderCanvas({ state: setupState() });
 
   pressPointer(screen.getByRole("button", { name: "home" }), {
     x: 100,
@@ -152,35 +57,18 @@ test("artboard の上で始めたドラッグではキャンバスが動かな�
   expect(canvasTransform()).toContain("translate(0px, 0px)");
 });
 
-test("ctrl を押しながらホイールを回すと拡大する", () => {
-  render(
-    <ArtboardCanvas
-      state={setupState()}
-      onSelect={vi.fn()}
-      onMoveNode={vi.fn()}
-      onResize={vi.fn()}
-      onEditProp={vi.fn()}
-    />,
-  );
+test("ctrl を押しながらホイールを回すと中身が拡大される", () => {
+  renderCanvas({ state: setupState() });
 
   wheel(canvasSurface(), { x: 0, y: -100 }, "ctrl");
 
-  expect(screen.getByText("倍率 120%")).toBeDefined();
+  expect(canvasTransform()).toContain("scale(1.2)");
 });
 
-test("ズームやパンをしても選択は変わらない", async () => {
-  const state = EditorState.select(setupState(), "home");
-  render(
-    <ArtboardCanvas
-      state={state}
-      onSelect={vi.fn()}
-      onMoveNode={vi.fn()}
-      onResize={vi.fn()}
-      onEditProp={vi.fn()}
-    />,
-  );
+test("ズームやパンをしても選択は変わらない", () => {
+  renderCanvas({ state: EditorState.select(setupState(), "home") });
 
-  await userEvent.click(screen.getByRole("button", { name: "拡大" }));
+  wheel(canvasSurface(), { x: 0, y: -100 }, "ctrl");
   drag(canvasSurface(), { from: { x: 100, y: 100 }, to: { x: 130, y: 80 } });
 
   expect(

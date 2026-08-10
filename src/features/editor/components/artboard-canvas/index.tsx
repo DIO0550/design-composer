@@ -24,7 +24,7 @@ import {
   RESIZE_HANDLE_THICKNESS_PX,
 } from "@/features/editor/domains/node-resize";
 import type { TextEdit } from "@/features/editor/domains/text-edit";
-import { useCanvasView } from "@/features/editor/hooks/use-canvas-view";
+import type { CanvasViewControl } from "@/features/editor/hooks/use-canvas-view";
 import {
   type NodeDragControl,
   useNodeDrag,
@@ -240,46 +240,6 @@ function DropMarker({ bounds }: Readonly<{ bounds: CanvasBounds }>) {
         height: `${bounds.height}px`,
       }}
     />
-  );
-}
-
-/** 倍率の操作（拡大・縮小・等倍に戻す）。 */
-function CanvasToolbar({
-  view,
-  onZoomIn,
-  onZoomOut,
-  onReset,
-}: Readonly<{
-  view: CanvasView;
-  onZoomIn: () => void;
-  onZoomOut: () => void;
-  onReset: () => void;
-}>) {
-  return (
-    <div className="flex items-center gap-2 border-gray-300 border-b bg-white px-3 py-2 text-sm">
-      <button
-        type="button"
-        onClick={onZoomOut}
-        className="rounded border border-gray-300 px-2 hover:bg-gray-100"
-      >
-        縮小
-      </button>
-      <p className="w-24 text-center tabular-nums">{`倍率 ${CanvasView.scalePercent(view)}%`}</p>
-      <button
-        type="button"
-        onClick={onZoomIn}
-        className="rounded border border-gray-300 px-2 hover:bg-gray-100"
-      >
-        拡大
-      </button>
-      <button
-        type="button"
-        onClick={onReset}
-        className="rounded border border-gray-300 px-2 hover:bg-gray-100"
-      >
-        等倍に戻す
-      </button>
-    </div>
   );
 }
 
@@ -516,23 +476,31 @@ const CONTENT_TRANSFORM_ORIGIN: CSSProperties["transformOrigin"] = "0 0";
 /**
  * キャンバス（docs/06-ui.md「画面構成」）。
  * artboard を配列順に自動配置し、コンパイル結果（実 HTML / CSS）をレンダリングする。
- * ズーム / パンはこのコンポーネントに閉じた非永続の view state で、ドキュメントには保存しない。
+ * ズーム / パンは非永続の view state で、ドキュメントには保存しない。
+ *
+ * 表示（倍率・位置）を自分で持たず受け取るのは、倍率の操作が上部バーへ移り、
+ * キャンバスと上部バーが同じ 1 つの表示を見る必要があるため（#134）。
+ *
+ * props が 6 つあるが Composition へは割っていない。関心は「キャンバス」1 つで、
+ * 4 つのハンドラはいずれもキャンバス上の操作を外へ渡すもの。`NodeActions` を丸ごと
+ * 受けると、使わない `createComponent` / `insertInstance` などまで渡ることになる。
  */
 export function ArtboardCanvas({
   state,
+  canvasView,
   onSelect,
   onMoveNode,
   onResize,
   onEditProp,
 }: Readonly<{
   state: EditorState;
+  canvasView: CanvasViewControl;
   onSelect: (names: readonly string[]) => void;
   onMoveNode: (name: string, to: ChildPosition) => void;
   onResize: (size: AxisLength) => void;
   onEditProp: (edit: PropEdit) => void;
 }>) {
-  const { view, surfaceRef, panHandlers, zoomIn, zoomOut, reset } =
-    useCanvasView();
+  const { view, surfaceRef, panHandlers } = canvasView;
   const designDocument = EditorState.document(state);
   const nodeDrag = useNodeDrag({
     document: designDocument,
@@ -549,12 +517,6 @@ export function ArtboardCanvas({
 
   return (
     <div className="flex h-full flex-col">
-      <CanvasToolbar
-        view={view}
-        onZoomIn={zoomIn}
-        onZoomOut={zoomOut}
-        onReset={reset}
-      />
       <div
         ref={surfaceRef}
         data-testid="canvas-surface"
