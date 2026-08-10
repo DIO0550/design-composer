@@ -117,6 +117,8 @@ function CreateButton({
  * 作れたあとに下書きを捨てる処理を持たないのは、作れた時点で選択がインスタンスに変わり
  * この部品ごと消えるため。選択を別のものへ移したときの取り直しは、呼び出し側が
  * `key` に元の名前を混ぜて行う（rules/hooks.md「state リセット目的の Effect 禁止」）。
+ *
+ * @returns 押す前は作成ボタンのみ、押した後は名前の入力欄と作成ボタン
  */
 function ReadyBody({
   state,
