@@ -1,11 +1,16 @@
 import { expect, test } from "vitest";
 import type { ComponentSet } from "@/domains/component";
-import { DesignDocument } from "@/domains/design-document";
+import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import type { Node } from "@/domains/node";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
 import { SelectionControls } from "../index";
-import { controlNamed, instanceOf, sectionsOf } from "./setup";
+import {
+  controlNamed,
+  instanceOf,
+  resolvedValueOfControl,
+  sectionsOf,
+} from "./setup";
 
 const COMPONENTS: ComponentSet = {
   "primary-button": {
@@ -14,6 +19,13 @@ const COMPONENTS: ComponentSet = {
     children: [
       { name: "button-label", type: "Text", props: { content: "Button" } },
     ],
+  },
+  /** 数値のトークンを公開 prop にしている部品。既定からの解決を見るために使う。 */
+  "gapped-card": {
+    publicProps: { gap: { node: "gapped-card", prop: "gap" } },
+    type: "Box",
+    props: { gap: "lg" },
+    children: [{ name: "gapped-card-title", type: "Text" }],
   },
   /** 公開 prop の並びと、条件つきの公開 prop を見るための部品。 */
   "sized-card": {
@@ -31,6 +43,7 @@ function setupInstanceState(node: Node): EditorState {
   return EditorState.select(
     EditorState.create(
       DesignDocument.create({
+        tokens: DocumentTemplate.DEFAULT.tokens,
         components: COMPONENTS,
         artboards: [
           { name: "home", width: 360, height: 240, children: [node] },
@@ -69,6 +82,14 @@ test("公開 prop のコントロールは binding 先の prop の入力形式�
   expect(controlNamed(instanceOf(state).publicProps, "label").input).toEqual({
     kind: "text",
   });
+});
+
+test("上書きしていない数値トークンの公開 prop は部品が設定している値の解決値を持つ", () => {
+  const state = setupInstanceState({ name: "action", ref: "gapped-card" });
+
+  expect(
+    resolvedValueOfControl(controlNamed(instanceOf(state).publicProps, "gap")),
+  ).toEqual(Option.some(DocumentTemplate.DEFAULT.tokens.spacing.lg));
 });
 
 test("上書きしていない公開 prop は部品が設定している値が既定として出る", () => {

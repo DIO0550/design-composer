@@ -4,7 +4,7 @@ import type { Node } from "@/domains/node";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
 import { SelectionControls } from "../index";
-import { colorOfControl, sectionsOf } from "./setup";
+import { colorOfControl, resolvedValueOfControl, sectionsOf } from "./setup";
 
 function setupState(children: readonly Node[], selected: string): EditorState {
   return EditorState.select(
@@ -45,10 +45,53 @@ test("enum の prop は宣言された値から選ぶコントロールになる
 test("トークン参照の prop はその種別のトークン名から選ぶコントロールになる", () => {
   const state = setupState([{ name: "box", type: "Box" }], "box");
 
-  expect(controlOf(state, "gap")?.input).toEqual({
+  expect(controlOf(state, "shadow")?.input).toEqual({
     kind: "token",
-    names: ["xs", "sm", "md", "lg", "xl"],
+    names: ["sm", "md", "lg"],
   });
+});
+
+test("数値のトークンを取る prop は今効いているトークンの解決値を持つ", () => {
+  const state = setupState(
+    [{ name: "box", type: "Box", props: { gap: "md" } }],
+    "box",
+  );
+
+  expect(resolvedValueOfControl(controlOf(state, "gap"))).toEqual(
+    Option.some(DocumentTemplate.DEFAULT.tokens.spacing.md),
+  );
+});
+
+test("値も既定も持たない数値のトークン参照は解決値を持たない", () => {
+  const state = setupState([{ name: "box", type: "Box" }], "box");
+
+  expect(resolvedValueOfControl(controlOf(state, "gap"))).toEqual(Option.none);
+});
+
+test("実在しないトークンを指す数値の prop は解決値を持たない", () => {
+  const state = setupState(
+    [{ name: "box", type: "Box", props: { gap: "nope" } }],
+    "box",
+  );
+
+  expect(resolvedValueOfControl(controlOf(state, "gap"))).toEqual(Option.none);
+});
+
+test("トークンの値を変えると解決値もその値に追随する", () => {
+  const state = setupState(
+    [{ name: "box", type: "Box", props: { gap: "md" } }],
+    "box",
+  );
+  const edited = Option.unwrap(
+    EditorState.setTokenValue(
+      EditorState.selectToken(state, { kind: "spacing", name: "md" }),
+      { kind: "spacing", value: 40 },
+    ),
+  );
+
+  expect(
+    resolvedValueOfControl(controlOf(EditorState.select(edited, "box"), "gap")),
+  ).toEqual(Option.some(40));
 });
 
 test("色のトークン参照の prop はトークン名から選ぶコントロールになる", () => {
@@ -110,8 +153,9 @@ test("実在しないトークンを指す prop はその名前も選択肢に�
   );
 
   expect(controlOf(state, "gap")?.input).toEqual({
-    kind: "token",
+    kind: "numericToken",
     names: ["nope", "xs", "sm", "md", "lg", "xl"],
+    resolvedValue: Option.none,
   });
 });
 

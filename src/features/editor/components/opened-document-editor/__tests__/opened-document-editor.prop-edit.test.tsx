@@ -46,6 +46,20 @@ test("トークン参照の prop を選び直すとその値がパネルに残�
   );
 });
 
+test("数値のトークン参照を選び直すと併記される解決値も追随する", async () => {
+  await renderOpenedDocument();
+  await selectArtboard("home");
+
+  await userEvent.selectOptions(
+    screen.getByRole("combobox", { name: "Gap" }),
+    "xl",
+  );
+
+  expect(
+    screen.getByRole("combobox", { name: "Gap", description: "32" }),
+  ).toBeDefined();
+});
+
 test("セグメントコントロールで並びを変えるとキャンバスの表示が変わる", async () => {
   await renderOpenedDocument();
   await selectArtboard("home");
