@@ -47,7 +47,7 @@ export type EditorAction =
  * @param action 解釈するアクション
  * @returns 遷移後のエディタの状態
  */
-function editorReducer(state: EditorState, action: EditorAction): EditorState {
+function applyAction(state: EditorState, action: EditorAction): EditorState {
   switch (action.type) {
     case "select":
       return EditorState.select(state, action.name);
@@ -175,14 +175,16 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
 }
 
 /**
+ * エディタの状態を 1 つ持ち、アクションで進める。
+ *
  * ドキュメントと選択は 1 つの操作で同時に変わる（読み直しで選択が外れる）ため、
- * useState を 2 つ並べずに reducer へ統合する（rules/hooks.md）。
+ * `useState` を 2 つ並べず 1 つの状態へ統合している（rules/hooks.md）。
  *
  * @param initialDocument 開いた直後のドキュメント
  * @returns 今のエディタの状態と、アクションの送り先
  */
-export function useEditorReducer(
+export function useEditorState(
   initialDocument: DesignDocument,
 ): [EditorState, ActionDispatch<[action: EditorAction]>] {
-  return useReducer(editorReducer, initialDocument, EditorState.create);
+  return useReducer(applyAction, initialDocument, EditorState.create);
 }

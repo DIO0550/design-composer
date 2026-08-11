@@ -6,7 +6,7 @@ import { DesignDocument } from "@/domains/design-document";
 import { Node } from "@/domains/node";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
-import { useEditorReducer } from "../index";
+import { useEditorState } from "../index";
 
 /** 部品化の対象になるノードと、名前が衝突する既存の部品を 1 つずつ置く。 */
 function setupDocument(): DesignDocument {
@@ -47,7 +47,7 @@ function isRefNamed(state: EditorState, name: string): boolean {
  * インスタンスになったかは参照ノードかどうかで読める。
  */
 function ComponentizeHarness() {
-  const [state, dispatch] = useEditorReducer(setupDocument());
+  const [state, dispatch] = useEditorState(setupDocument());
 
   return (
     <>
