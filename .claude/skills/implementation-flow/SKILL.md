@@ -13,6 +13,7 @@ description: "design-composer の実装を ゴールの確定 → タスクの�
 | 1 | ゴールの確定 | Issue に書かれたゴール |
 | 2 | タスクの分割 | 必要なら分離した Issue |
 | 3 | 計画 | Issue に書かれた計画と却下案 |
+| 3.5 | 計画の実行可能性 | 数えた結果と、直した計画(`plan-feasibility`) |
 | 4 | 計画の検証 | サブエージェントの指摘と、それへの対応 |
 | 5 | 実装 | コードとテスト |
 | 6 | 実装の検証 | サブエージェントの指摘と、それへの対応 |
@@ -56,6 +57,15 @@ description: "design-composer の実装を ゴールの確定 → タスクの�
 
 却下案を残すのは、後で同じ案が再浮上したときに前回の理由が失われるため。
 「A にした」だけでは、B を試していないのか、試して駄目だったのかが読めない。
+
+## フェーズ 3.5: 計画の実行可能性を確かめる
+
+計画を Issue に書いたら、**サブエージェントへ渡す前に** `plan-feasibility` スキルを通す
+(`.claude/skills/plan-feasibility/`)。触る公開 API の呼び出し側を grep で数え、計画した
+テストが今の足場で書けるかを確かめ、計画のファイル表を直す。
+
+妥当性(帰属先・却下案の理由)はフェーズ 4 が見る。ここで見るのは**書いたとおりに手を
+動かせるか**だけ。数えた結果は Issue へ残す。
 
 ## フェーズ 4: 計画の検証(サブエージェント)
 
@@ -142,5 +152,6 @@ pnpm run test:run         # vitest
 
 | ファイル | 内容 | 読むタイミング |
 | --- | --- | --- |
+| [`.claude/skills/plan-feasibility/SKILL.md`](../plan-feasibility/SKILL.md) | 計画をそのまま実行できるかを数える手順 | フェーズ 3.5 |
 | [references/plan-review.md](references/plan-review.md) | 計画の妥当性とテストケースの検証観点 | フェーズ 4 |
 | [references/implementation-review.md](references/implementation-review.md) | 過剰なブロック / フォールバックの検証観点 | フェーズ 6 |
