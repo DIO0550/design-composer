@@ -105,9 +105,19 @@
     "name": "エラーがない"
   },
   {
+    "id": "features-editor-documenterrorlist--reverting",
+    "title": "features/editor/DocumentErrorList",
+    "name": "書き戻しの最中"
+  },
+  {
     "id": "features-editor-documenterrorlist--schema-errors",
     "title": "features/editor/DocumentErrorList",
     "name": "スキーマ違反が複数"
+  },
+  {
+    "id": "features-editor-documenterrorlist--unopened-file",
+    "title": "features/editor/DocumentErrorList",
+    "name": "開けなかったファイル"
   },
   {
     "id": "features-editor-documenttree--default",
