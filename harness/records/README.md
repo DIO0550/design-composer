@@ -1,7 +1,8 @@
 # harness/records — マージ後の評価記録
 
 マージされた PR 1 本につき `pr-<番号>.md` を 1 ファイル置く。
-書くのは `harness-growth` スキル(`.claude/skills/harness-growth/`)。
+書くのは `harness-record` スキル(`.claude/skills/harness-record/`)。
+数えて手を入れるのは `harness-growth` スキル(`.claude/skills/harness-growth/`)。
 
 **`.claude/` の下には置かない。** 記録はマージのたびに必ず 1 ファイル増えるが、
 `.claude/` 配下への書き込みは編集のたびに承認を求められる。記録を残すこと自体が
@@ -22,7 +23,7 @@ bash harness/records/count.sh
 ```
 
 分類ごとに「**最後の介入以降**の再発数」「通算」「介入後の記録の本数」「前回置いた層」を出す。
-判断の手順は `.claude/skills/harness-growth/SKILL.md`「Step 3」「Step 4」。
+判断の手順は `.claude/skills/harness-growth/SKILL.md`「Step 1」「Step 2」。
 
 **通算ではなく再発で判断する。** 通算は単調増加するので、介入が効いたかどうかを表さない。
 再発を数えられるのは、介入した回の記録に次の行が入っているため。
@@ -36,7 +37,7 @@ bash harness/records/count.sh
 
 ## 書き方
 
-形式・層の語彙・分類の語彙は `.claude/skills/harness-growth/templates/record.md`。
+形式・層の語彙・分類の語彙は `.claude/skills/harness-record/templates/record.md`。
 
 - 指摘 1 件 = 1 ブロック(まとめない)
 - 指摘 0 件の回も記録を残す(「順調だった」もデータ)

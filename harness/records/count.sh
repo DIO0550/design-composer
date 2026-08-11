@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # 分類ごとの「最後の介入以降の再発数」を数える。
-# harness-growth スキル（.claude/skills/harness-growth/SKILL.md）の Step 3 / Step 5 の入力。
+# harness-growth スキル（.claude/skills/harness-growth/SKILL.md）の Step 1 / Step 3 の入力。
 #
 # 読むのは記録の次の 2 種類の行:
 #   - 分類: `<分類>`                       … 指摘 1 件

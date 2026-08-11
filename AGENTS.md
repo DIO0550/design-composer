@@ -32,8 +32,9 @@
 Issue は判断の履歴、という分担にする。採用した案だけを残すと、後で同じ案が再浮上した
 ときに前回やめた理由が失われる。
 
-マージ後は `harness-growth` スキルでその回の評価を記録する
-(`.claude/skills/harness-growth/`)。
+マージ後は `harness-record` スキルでその回の評価を記録する
+(`.claude/skills/harness-record/`)。記録を数えて規約やフックへ手を入れるのは
+`harness-growth` スキル(`.claude/skills/harness-growth/`)で、別の機会に行う。
 
 ## タスクの分割
 
@@ -63,11 +64,11 @@ Issue は判断の履歴、という分担にする。採用した案だけを�
 
 レビューで新しい判断基準が示されたら、その場の修正で終わらせず **`rules/` 配下へ反映**する。ルールに書かれていない指摘が2回以上出たら、規約の抜けとして扱う。
 
-回数を数える材料は `harness/records/` に溜まる(マージのたびに `harness-growth`
+回数を数える材料は `harness/records/` に溜まる(マージのたびに `harness-record`
 スキルが記録を1ファイル追加する)。数えるのは `harness/records/count.sh`。
 **通算ではなく「最後の介入以降の再発数」で見る**(通算は単調増加するので、介入が効いたかを
 表さない)。同じ層で再発したら層を1つ上げる。手順は
-`.claude/skills/harness-growth/SKILL.md`「Step 3」「Step 4」。
+`.claude/skills/harness-growth/SKILL.md`「Step 1」「Step 2」。
 
 ## 設計判断の確認
 

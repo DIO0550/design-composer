@@ -121,7 +121,8 @@ pnpm run test:run         # vitest
 
    変わっていないなら書かない。
 
-2. **`harness-growth` スキルでその回の評価を記録する**(`.claude/skills/harness-growth/`)。
+2. **`harness-record` スキルでその回の評価を記録する**(`.claude/skills/harness-record/`)。
+   記録を残すところまでで、集計と規約の見直しは行わない(→ `harness-growth`)。
 
 ---
 
