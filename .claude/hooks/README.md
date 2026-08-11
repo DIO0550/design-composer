@@ -181,6 +181,7 @@ echo '{"tool_name":"Bash","tool_input":{"command":"git merge origin/main"},"tool
 | スキル                                | 内容                                                                   |
 | ------------------------------------- | ---------------------------------------------------------------------- |
 | `.claude/skills/implementation-flow/` | 実装の手順(計画・サブエージェントによる検証・Issue への記録・マージ後の追記) |
-| `.claude/skills/harness-growth/`      | マージ後の評価記録と、規約 / フックの改善(`harness/records/`)   |
+| `.claude/skills/harness-record/`      | マージ後の評価記録(`harness/records/` へ 1 ファイル)            |
+| `.claude/skills/harness-growth/`      | 記録の集計と、規約 / フックの改善                               |
 
 `post-merge-review.sh` はこの2つのスキルへの入口として働く。
