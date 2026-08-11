@@ -7,6 +7,7 @@ import {
 } from "react";
 import type { AxisLength } from "@/domains/axis-length";
 import type { ChildPosition } from "@/domains/child-position";
+import type { CompiledArtboard } from "@/domains/compiled-artboard";
 import {
   CompiledElement,
   ELEMENT_NAME_ATTRIBUTE,
@@ -36,11 +37,7 @@ import {
   type TextEditControl,
   useTextEdit,
 } from "@/features/editor/hooks/use-text-edit";
-import {
-  type CompiledArtboard,
-  type CompiledDocument,
-  DocumentHtml,
-} from "@/services/document-html";
+import { type CompiledDocument, DocumentHtml } from "@/services/document-html";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Css } from "@/utils/Css";
 import { ElementEx } from "@/utils/ElementEx";

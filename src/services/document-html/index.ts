@@ -1,4 +1,5 @@
 import { Artboard } from "@/domains/artboard";
+import { CompiledArtboard } from "@/domains/compiled-artboard";
 import { BoxElement, CompiledElement } from "@/domains/compiled-element";
 import { CssDeclarations } from "@/domains/css-declaration";
 import type { DesignDocument } from "@/domains/design-document";
@@ -9,22 +10,6 @@ import { Html } from "@/utils/Html";
 import { Result } from "@/utils/Result";
 
 export type { CssVariables };
-
-/**
- * コンパイル済みの artboard 1 枚。描く中身と、宣言されている大きさ。
- *
- * 大きさを別に持つのは、キャンバスのラベルが `720 × 900` を出すため (#184)。
- * `element.style` にも `width` / `height` は載っているが、そちらは CSS 出力の綴り
- * (`"720px"`) なので、読み戻すと UI が出力形式に依存する。
- *
- * この型を組み立てるのは `compileArtboard` だけ (`create` を公開しない)。
- * 外から組み立てられると `element.style` と食い違う大きさを持ててしまう。
- */
-export type CompiledArtboard = Readonly<{
-  element: BoxElement;
-  width: number;
-  height: number;
-}>;
 
 /**
  * ドキュメント全体のコンパイル結果。
@@ -58,16 +43,17 @@ function compileArtboard(
   return Result.flatMap(
     InstanceComposition.expandAll(artboard.children, document.components),
     (expanded) =>
-      Result.map(NodeHtml.compileAll(expanded, childParent), (children) => ({
-        // artboard は親を持たないが、サイズは常に fixed なので親の向きに依存しない
-        element: BoxElement.create(
-          artboard.name,
-          BoxElement.declarations(props, undefined, TokenCss.refs),
-          children,
+      Result.map(NodeHtml.compileAll(expanded, childParent), (children) =>
+        CompiledArtboard.fromArtboard(
+          artboard,
+          // artboard は親を持たないが、サイズは常に fixed なので親の向きに依存しない
+          BoxElement.create(
+            artboard.name,
+            BoxElement.declarations(props, undefined, TokenCss.refs),
+            children,
+          ),
         ),
-        width: artboard.width,
-        height: artboard.height,
-      })),
+      ),
   );
 }
 
