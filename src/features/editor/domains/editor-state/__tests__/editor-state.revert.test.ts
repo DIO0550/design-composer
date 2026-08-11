@@ -2,7 +2,6 @@ import { expect, test } from "vitest";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import { SYNTAX_ERROR } from "@/features/editor/__tests__/document-errors";
 import { RECEIVED_AT } from "@/features/editor/__tests__/instants";
-import { FileValidity } from "@/features/editor/domains/file-validity";
 import { EditorState } from "../index";
 
 /**
@@ -45,7 +44,7 @@ test("ファイルへ書き戻すと、ファイル由来のエラーは無く�
 
   const reverted = EditorState.applyRevert(rejected);
 
-  expect(FileValidity.errors(reverted.fileValidity)).toStrictEqual([]);
+  expect(reverted.fileValidity.kind).toBe("valid");
 });
 
 test("ファイルへ書き戻しても、表示中のドキュメントは戻らない", () => {

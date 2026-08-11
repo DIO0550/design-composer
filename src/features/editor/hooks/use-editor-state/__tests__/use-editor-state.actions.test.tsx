@@ -6,7 +6,6 @@ import { DesignDocument } from "@/domains/design-document";
 import { SYNTAX_ERROR } from "@/features/editor/__tests__/document-errors";
 import { RECEIVED_AT } from "@/features/editor/__tests__/instants";
 import { EditorState } from "@/features/editor/domains/editor-state";
-import { FileValidity } from "@/features/editor/domains/file-validity";
 import { Option } from "@/utils/Option";
 import { useEditorState } from "../index";
 
@@ -66,9 +65,7 @@ function EditorStateHarness() {
       </p>
       <p data-testid="children">{childNames(state).join(",")}</p>
       <p data-testid="artboard-width">{artboardWidth(state)}</p>
-      <p data-testid="file-errors">
-        {FileValidity.errors(state.fileValidity).length}
-      </p>
+      <p data-testid="file-validity">{state.fileValidity.kind}</p>
       <button
         type="button"
         onClick={() => dispatch({ type: "select", name: "title" })}
@@ -198,8 +195,8 @@ function artboardWidthText(): string {
   return screen.getByTestId("artboard-width").textContent ?? "";
 }
 
-function fileErrorCount(): string {
-  return screen.getByTestId("file-errors").textContent ?? "";
+function fileValidityKind(): string {
+  return screen.getByTestId("file-validity").textContent ?? "";
 }
 
 test("開いた直後は何も選択されていない", () => {
@@ -351,7 +348,7 @@ test("書き戻しのアクションを送ると、ファイル由来のエラ�
     screen.getByRole("button", { name: "ファイルへ書き戻す" }),
   );
 
-  expect(fileErrorCount()).toBe("0");
+  expect(fileValidityKind()).toBe("valid");
 });
 
 test("不正なファイルを取り込むと、ファイル由来のエラーが載る", async () => {
@@ -361,5 +358,5 @@ test("不正なファイルを取り込むと、ファイル由来のエラー�
     screen.getByRole("button", { name: "不正なファイルを取り込む" }),
   );
 
-  expect(fileErrorCount()).toBe("1");
+  expect(fileValidityKind()).toBe("invalid");
 });

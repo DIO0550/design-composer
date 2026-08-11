@@ -120,9 +120,11 @@ test("編集で不正を作ってもファイルのエラー一覧は変わら�
 
   const removed = removeToken(rejected, "heading");
 
-  expect(FileValidity.errors(removed.fileValidity)).toStrictEqual([
-    SYNTAX_ERROR,
-  ]);
+  expect(removed.fileValidity).toStrictEqual({
+    kind: "invalid",
+    errors: [SYNTAX_ERROR],
+    since: RECEIVED_AT,
+  });
 });
 
 test("編集で不正を作っても食い違いの起点は変わらない", () => {

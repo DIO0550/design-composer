@@ -94,7 +94,11 @@ test("外部変更を拒むと、その理由がファイルのエラー一覧�
     RECEIVED_AT,
   );
 
-  expect(FileValidity.errors(state.fileValidity)).toStrictEqual([SYNTAX_ERROR]);
+  expect(state.fileValidity).toStrictEqual({
+    kind: "invalid",
+    errors: [SYNTAX_ERROR],
+    since: RECEIVED_AT,
+  });
 });
 
 test("外部変更を拒むと、受け取った時刻が食い違いの起点になる", () => {
@@ -127,7 +131,7 @@ test("ファイルが直って取り込めるようになるとファイルの�
     RECEIVED_AT,
   );
 
-  expect(FileValidity.errors(state.fileValidity)).toStrictEqual([]);
+  expect(state.fileValidity.kind).toBe("valid");
 });
 
 test("ファイルが直ると食い違いの起点も消える", () => {

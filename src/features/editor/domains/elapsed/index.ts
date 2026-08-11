@@ -1,4 +1,4 @@
-import { Instant, type InstantSpan } from "@/domains/instant";
+import { InstantSpan } from "@/domains/instant";
 import type { ValueOf } from "@/types/ValueOf";
 
 /** 経過時間を読むときの単位。 */
@@ -38,7 +38,7 @@ export const Elapsed = {
    *   （時計が巻き戻る・起点が未来になる状況で負の数を出さない）
    */
   create(span: InstantSpan): Elapsed {
-    const milliseconds = Math.max(0, Instant.millisecondsOf(span));
+    const milliseconds = Math.max(0, InstantSpan.toMilliseconds(span));
     const seconds = Math.floor(milliseconds / MILLISECONDS_PER_SECOND);
     if (seconds < SECONDS_PER_MINUTE) {
       return { unit: ElapsedUnits.Seconds, count: seconds };

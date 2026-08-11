@@ -39,7 +39,11 @@ test("拒んだ内容を反映すると、その理由がエラー一覧にな�
     FIRST_AT,
   );
 
-  expect(FileValidity.errors(validity)).toStrictEqual([SYNTAX_ERROR]);
+  expect(validity).toStrictEqual({
+    kind: "invalid",
+    errors: [SYNTAX_ERROR],
+    since: FIRST_AT,
+  });
 });
 
 test("拒んだ内容を反映すると、受け取った時刻が食い違いの起点になる", () => {
@@ -81,7 +85,11 @@ test("不正なまま拒み直すと、エラー一覧は新しい理由に入�
     SECOND_AT,
   );
 
-  expect(FileValidity.errors(second)).toStrictEqual([DANGLING_TOKEN_ERROR]);
+  expect(second).toStrictEqual({
+    kind: "invalid",
+    errors: [DANGLING_TOKEN_ERROR],
+    since: FIRST_AT,
+  });
 });
 
 test("不正な状態から取り込めた内容を反映すると食い違いの起点は消える", () => {
@@ -113,6 +121,6 @@ test("一度直ってから再び壊れると、食い違いの起点は新し�
   expect(FileValidity.since(brokenAgain)).toStrictEqual(Option.some(SECOND_AT));
 });
 
-test("妥当な状態ではエラー一覧は空になる", () => {
-  expect(FileValidity.errors(FileValidity.valid)).toStrictEqual([]);
+test("妥当な状態は拒んだ理由も起点も持たない", () => {
+  expect(FileValidity.valid).toStrictEqual({ kind: "valid" });
 });

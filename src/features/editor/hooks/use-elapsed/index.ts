@@ -31,6 +31,11 @@ export function useElapsed(
     if (sinceEpochMs === undefined) {
       return;
     }
+    /*
+     * 購読を始める前に今の時刻へ追いつく。`now` は mount 時のままなので、数え始めた
+     * 時点では起点より古く、これが無いと最初の 1 秒だけ負の経過時間が出る。
+     */
+    setNow(clock.now());
     return clock.subscribeSeconds(() => {
       setNow(clock.now());
     });

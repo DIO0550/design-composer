@@ -14,8 +14,12 @@ function lastValidRenderRow(): HTMLElement | null {
   return screen.queryByText(/^showing last valid render · /);
 }
 
-test("外部編集でファイルが壊れると、上部バーに最後に正常だった表示の古さが出る", async () => {
+test("開いてしばらく経ってから壊れても、古さは壊れた時点から数える", async () => {
   const { ipc, clock } = await renderOpenedDocumentWithClock();
+  // 開いた時刻と壊れた時刻をずらす（一致していると起点を固定値へ潰しても通る）
+  act(() => {
+    clock.advanceSeconds(10);
+  });
 
   await breakFileExternally(ipc);
   act(() => {
@@ -25,8 +29,26 @@ test("外部編集でファイルが壊れると、上部バーに最後に正�
   expect(screen.getByText("showing last valid render · 4s ago")).toBeDefined();
 });
 
+/*
+ * 数え始めた時点の `now` は mount 時のままなので、追いつかせないと起点より古くなり
+ * 負の経過時間が出る（`use-elapsed` が購読前に時刻を読み直している理由）。
+ */
+test("壊れた直後は 0 秒から数え始める", async () => {
+  const { ipc, clock } = await renderOpenedDocumentWithClock();
+  act(() => {
+    clock.advanceSeconds(600);
+  });
+
+  await breakFileExternally(ipc);
+
+  expect(screen.getByText("showing last valid render · 0s ago")).toBeDefined();
+});
+
 test("ファイルが壊れたまま時間が経つと、上部バーの古さも進む", async () => {
   const { ipc, clock } = await renderOpenedDocumentWithClock();
+  act(() => {
+    clock.advanceSeconds(10);
+  });
   await breakFileExternally(ipc);
   act(() => {
     clock.advanceSeconds(4);
@@ -41,6 +63,9 @@ test("ファイルが壊れたまま時間が経つと、上部バーの古さ�
 
 test("外部編集でファイルが直ると、上部バーから古さの行が消える", async () => {
   const { ipc, clock } = await renderOpenedDocumentWithClock();
+  act(() => {
+    clock.advanceSeconds(10);
+  });
   await breakFileExternally(ipc);
   act(() => {
     clock.advanceSeconds(4);

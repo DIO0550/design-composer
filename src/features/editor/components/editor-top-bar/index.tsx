@@ -191,7 +191,7 @@ const ELAPSED_UNIT_SUFFIXES = {
  * 単位と数までだから（rules/architecture.md「表示のための綴りをドメインへ持ち込まない」）。
  *
  * `ml-auto` を持たないのは、右端へ寄せる役目を隣の `CanvasZoom` が既に持っているため。
- * 2 つ置くと余白が 2 つの auto マージンへ等分され、この行が帯の中ほどへ落ちる
+ * 2 つ置くと余白が 2 つの auto マージンへ等分され、`CanvasZoom` が帯の中ほどへ落ちる
  * （**テストでは落ちない** — happy-dom は Tailwind を解決しない。気づく手段は視覚差分だけ）。
  *
  * @returns 最後に正常だった表示からの経過時間を添えた 1 行

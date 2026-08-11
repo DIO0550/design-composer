@@ -11,15 +11,11 @@ import { Option } from "@/utils/Option";
  * 別々のフィールドで並べないのは、「エラーが空なのに起点がある」「エラーがあるのに
  * 起点が無い」が表現できてしまうため（rules/coding.md「正しい状態だけを列挙する」）。
  *
- * `errors` は必ず 1 件以上入る（拒む理由が無ければ `reloaded` になる）が、非空タプルでは
- * 縛っていない。理由は `DocumentReload` と同じで、テキストの解釈の失敗が空配列を返さない
- * ことは型に出ておらず、縛ると「起こらない空配列」の分岐をここで書く羽目になるため。
- * 直和にしたことで `{ kind: "invalid", errors: [] }` が新たに書けるようになるが、
- * 従来の `fileErrors.length > 0` と同じく到達しない。
+ * `errors` を非空タプルで縛らないのは `DocumentReload` と同じ理由（テキストの解釈の失敗が
+ * 空配列を返さないことは型に出ておらず、縛ると起こらない空配列の分岐を書く羽目になる）。
  *
  * 名前を隣の `DocumentSaveState` に揃えないのは、あちらが「保存という操作の状態」なのに対し
- * こちらは操作ではなく「ファイルが妥当かどうか」だから。`DocumentFileState` にすると
- * 何の状態かを名前が答えなくなる（rules/naming.md「内容を表さない汎用語を使わない」）。
+ * こちらは操作ではなく「ファイルが妥当かどうか」だから。
  */
 export type FileValidity =
   | Readonly<{ kind: "valid" }>
@@ -63,16 +59,6 @@ export const FileValidity = {
           since: previous.kind === "invalid" ? previous.since : at,
         };
     }
-  },
-
-  /**
-   * 画面に出すファイル由来のエラー。
-   *
-   * @param validity 見る妥当性
-   * @returns 不正なら拒んだ理由の一覧、妥当なら空
-   */
-  errors(validity: FileValidity): readonly DocumentError[] {
-    return validity.kind === "invalid" ? validity.errors : [];
   },
 
   /**
