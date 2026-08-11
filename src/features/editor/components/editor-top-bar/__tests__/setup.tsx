@@ -1,6 +1,7 @@
 import { render } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { DocumentSaveState } from "@/features/editor/domains/document-save-state";
+import type { Elapsed } from "@/features/editor/domains/elapsed";
 import type { OpenedDocument } from "@/features/editor/domains/opened-document";
 import { useCanvasView } from "@/features/editor/hooks/use-canvas-view";
 import { EditorTopBar } from "../index";
@@ -29,6 +30,7 @@ export function renderTopBar(
     opened?: OpenedDocument;
     saveState?: DocumentSaveState;
     zoom?: boolean;
+    elapsed?: Elapsed;
   }>,
 ) {
   return render(
@@ -36,6 +38,9 @@ export function renderTopBar(
       {bar.opened ? <EditorTopBar.Breadcrumb opened={bar.opened} /> : null}
       {bar.saveState ? <EditorTopBar.SaveBadge state={bar.saveState} /> : null}
       {bar.zoom ? <ZoomWithView /> : null}
+      {bar.elapsed ? (
+        <EditorTopBar.LastValidRender elapsed={bar.elapsed} />
+      ) : null}
     </EditorTopBar>,
   );
 }

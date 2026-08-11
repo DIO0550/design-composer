@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
+import { RECEIVED_AT } from "@/features/editor/__tests__/instants";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 
@@ -137,12 +138,16 @@ test("戻した結果にも選択中のノードがあれば選択は引き継�
 
 test("外部変更の取り込みを戻すと取り込む前のドキュメントに戻る", () => {
   const opened = setupState();
-  const reloaded = EditorState.applyReload(opened, {
-    kind: "reloaded",
-    document: DesignDocument.create({
-      artboards: [{ name: "home", width: 414, height: 896, children: [] }],
-    }),
-  });
+  const reloaded = EditorState.applyReload(
+    opened,
+    {
+      kind: "reloaded",
+      document: DesignDocument.create({
+        artboards: [{ name: "home", width: 414, height: 896, children: [] }],
+      }),
+    },
+    RECEIVED_AT,
+  );
 
   const undone = Option.unwrap(EditorState.undo(reloaded));
 
@@ -150,16 +155,20 @@ test("外部変更の取り込みを戻すと取り込む前のドキュメン�
 });
 
 test("取り込みを拒んだときは履歴に積まれない", () => {
-  const rejected = EditorState.applyReload(setupState(), {
-    kind: "rejected",
-    errors: [
-      {
-        kind: "syntax-error",
-        message: "expected ',' or '}'",
-        location: { kind: "text-position", position: 42 },
-      },
-    ],
-  });
+  const rejected = EditorState.applyReload(
+    setupState(),
+    {
+      kind: "rejected",
+      errors: [
+        {
+          kind: "syntax-error",
+          message: "expected ',' or '}'",
+          location: { kind: "text-position", position: 42 },
+        },
+      ],
+    },
+    RECEIVED_AT,
+  );
 
   expect(EditorState.undo(rejected).some).toBe(false);
 });

@@ -4,7 +4,9 @@ import { expect, test } from "vitest";
 import { AxisLength } from "@/domains/axis-length";
 import { DesignDocument } from "@/domains/design-document";
 import { SYNTAX_ERROR } from "@/features/editor/__tests__/document-errors";
+import { RECEIVED_AT } from "@/features/editor/__tests__/instants";
 import { EditorState } from "@/features/editor/domains/editor-state";
+import { FileValidity } from "@/features/editor/domains/file-validity";
 import { Option } from "@/utils/Option";
 import { useEditorState } from "../index";
 
@@ -64,7 +66,9 @@ function EditorStateHarness() {
       </p>
       <p data-testid="children">{childNames(state).join(",")}</p>
       <p data-testid="artboard-width">{artboardWidth(state)}</p>
-      <p data-testid="file-errors">{state.fileErrors.length}</p>
+      <p data-testid="file-errors">
+        {FileValidity.errors(state.fileValidity).length}
+      </p>
       <button
         type="button"
         onClick={() => dispatch({ type: "select", name: "title" })}
@@ -89,6 +93,7 @@ function EditorStateHarness() {
           dispatch({
             type: "reload_document",
             reload: { kind: "reloaded", document: setupReloadedDocument() },
+            at: RECEIVED_AT,
           })
         }
       >
@@ -100,6 +105,7 @@ function EditorStateHarness() {
           dispatch({
             type: "reload_document",
             reload: { kind: "rejected", errors: [SYNTAX_ERROR] },
+            at: RECEIVED_AT,
           })
         }
       >
