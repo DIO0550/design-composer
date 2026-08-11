@@ -7,6 +7,7 @@ import type {
   DocumentJsonError,
   DocumentJsonErrorKind,
 } from "@/libs/document-json";
+import { Option } from "@/utils/Option";
 
 /**
  * エラーが指している場所。
@@ -20,6 +21,21 @@ export type DocumentErrorLocation =
   | Readonly<{ kind: "document-path"; path: string }>
   | Readonly<{ kind: "node"; nodeName: string; prop?: string }>
   | Readonly<{ kind: "whole-document" }>;
+
+export const DocumentErrorLocation = {
+  /**
+   * その場所が指しているノードの名前。エラー行から飛べる先があるかの判断に使う。
+   *
+   * @param location エラーが指している場所
+   * @returns ノードを指しているならその名前。テキストの文字位置・ドキュメント内の
+   *   パス・ファイル全体を指すものは、飛べるノードが決まらないので `none`
+   */
+  nodeName(location: DocumentErrorLocation): Option<string> {
+    return location.kind === "node"
+      ? Option.some(location.nodeName)
+      : Option.none;
+  },
+} as const;
 
 /** 画面に出すエラーの種別。テキストの解釈由来とスキーマ検証由来の両方を含む。 */
 export type DocumentErrorKind =
