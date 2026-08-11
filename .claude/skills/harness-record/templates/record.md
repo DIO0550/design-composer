@@ -94,7 +94,8 @@
 | `immutability` | rules/coding.md「イミュータブル」 |
 | `result-option` | rules/coding.md「エラーと不在の表現(Result / Option)」 |
 | `signature` | rules/coding.md「関数のシグネチャ」 |
-| `duplication` | rules/coding.md「同じ処理が2箇所に現れたら共通化する」 |
+| `duplication-test` | rules/testing.md「テスト用ヘルパーの置き場所」(`__tests__/` のヘルパー・定数・フィクスチャの重複。本体比較で機械判定できる形) |
+| `duplication-logic` | rules/coding.md「同じ処理が2箇所に現れたら共通化する」(テスト以外の重複。同じ事実を複数箇所で独立に導出している等、判断が要る形) |
 | `type-vocabulary` | rules/coding.md「値の語彙を型で閉じる」 |
 | `illegal-state` | rules/coding.md「不正な状態を型で表現できなくする(型による境界)」 |
 | `naming` | rules/naming.md |
@@ -130,3 +131,7 @@
 (`.claude/skills/harness-growth/SKILL.md`「`なし` の逃し弁」)。
 **この表を更新するのは `harness-growth` の 2c と逃し弁だけ**で、
 各記録を書く時点(`harness-record`)では増やさない。
+
+`duplication` は pr-192 時点で `duplication-test` / `duplication-logic` へ分割した
+(hook 層まで介入済みなのに再発 11 件で飽和 — `.claude/skills/harness-growth/SKILL.md`
+「2c. 介入後 5 回以上」)。過去の記録の `分類: duplication` は書き換えない。
