@@ -1,8 +1,11 @@
 import { expect, test } from "vitest";
 import { Artboard } from "@/domains/artboard";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import { Instant } from "@/domains/instant";
 import { SYNTAX_ERROR } from "@/features/editor/__tests__/document-errors";
+import { RECEIVED_AT } from "@/features/editor/__tests__/instants";
 import type { DocumentErrorLocation } from "@/features/editor/domains/document-error";
+import { FileValidity } from "@/features/editor/domains/file-validity";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 
@@ -76,19 +79,27 @@ test("トークンの削除を取り消すとドキュメントのエラーは�
 });
 
 test("外部変更を拒んでいても、表示中のドキュメントが正常ならドキュメントのエラーは出ない", () => {
-  const rejected = EditorState.applyReload(openedState(), {
-    kind: "rejected",
-    errors: [SYNTAX_ERROR],
-  });
+  const rejected = EditorState.applyReload(
+    openedState(),
+    {
+      kind: "rejected",
+      errors: [SYNTAX_ERROR],
+    },
+    RECEIVED_AT,
+  );
 
   expect(EditorState.documentErrors(rejected)).toStrictEqual([]);
 });
 
 test("外部変更を拒んでいる間に編集で作った不正は、ファイルのエラーとは別に出る", () => {
-  const rejected = EditorState.applyReload(openedState(), {
-    kind: "rejected",
-    errors: [SYNTAX_ERROR],
-  });
+  const rejected = EditorState.applyReload(
+    openedState(),
+    {
+      kind: "rejected",
+      errors: [SYNTAX_ERROR],
+    },
+    RECEIVED_AT,
+  );
 
   const removed = removeToken(rejected, "heading");
 
@@ -98,12 +109,38 @@ test("外部変更を拒んでいる間に編集で作った不正は、ファ�
 });
 
 test("編集で不正を作ってもファイルのエラー一覧は変わらない", () => {
-  const rejected = EditorState.applyReload(openedState(), {
-    kind: "rejected",
-    errors: [SYNTAX_ERROR],
-  });
+  const rejected = EditorState.applyReload(
+    openedState(),
+    {
+      kind: "rejected",
+      errors: [SYNTAX_ERROR],
+    },
+    RECEIVED_AT,
+  );
 
   const removed = removeToken(rejected, "heading");
 
-  expect(removed.fileErrors).toStrictEqual([SYNTAX_ERROR]);
+  expect(removed.fileValidity).toStrictEqual({
+    kind: "invalid",
+    errors: [SYNTAX_ERROR],
+    since: RECEIVED_AT,
+  });
+});
+
+test("編集で不正を作っても食い違いの起点は変わらない", () => {
+  const receivedAt = Instant.create(1_700_000_000_000);
+  const rejected = EditorState.applyReload(
+    openedState(),
+    {
+      kind: "rejected",
+      errors: [SYNTAX_ERROR],
+    },
+    receivedAt,
+  );
+
+  const removed = removeToken(rejected, "heading");
+
+  expect(FileValidity.since(removed.fileValidity)).toStrictEqual(
+    Option.some(receivedAt),
+  );
 });

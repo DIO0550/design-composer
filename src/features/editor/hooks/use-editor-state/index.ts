@@ -2,6 +2,7 @@ import { type ActionDispatch, useReducer } from "react";
 import type { AxisLength } from "@/domains/axis-length";
 import type { ChildPosition } from "@/domains/child-position";
 import type { DesignDocument } from "@/domains/design-document";
+import type { Instant } from "@/domains/instant";
 import type { PropEdit } from "@/domains/node";
 import type { TokenRef, TokenValue } from "@/domains/token";
 import type { DocumentReload } from "@/features/editor/domains/document-reload";
@@ -16,7 +17,11 @@ export type EditorAction =
   | Readonly<{ type: "select_innermost"; names: readonly string[] }>
   | Readonly<{ type: "clear_selection" }>
   | Readonly<{ type: "reveal"; name: string }>
-  | Readonly<{ type: "reload_document"; reload: DocumentReload }>
+  /*
+   * 受け取った時刻を載せるのは、reducer が純粋関数でなければならず、その中で時計を
+   * 読めないため（rules/hooks.md「reducer 内での I/O・副作用は禁止」）。
+   */
+  | Readonly<{ type: "reload_document"; reload: DocumentReload; at: Instant }>
   | Readonly<{ type: "revert_file" }>
   | Readonly<{
       type: "reorder_node";
@@ -63,7 +68,7 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
        */
       return Option.unwrapOr(EditorState.reveal(state, action.name), state);
     case "reload_document":
-      return EditorState.applyReload(state, action.reload);
+      return EditorState.applyReload(state, action.reload, action.at);
     case "revert_file":
       return EditorState.applyRevert(state);
     case "reorder_node":

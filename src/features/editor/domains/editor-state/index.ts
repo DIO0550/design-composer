@@ -2,11 +2,13 @@ import type { Artboard } from "@/domains/artboard";
 import type { AxisLength } from "@/domains/axis-length";
 import { ChildPosition } from "@/domains/child-position";
 import { DesignDocument, type TokenReferrer } from "@/domains/design-document";
+import type { Instant } from "@/domains/instant";
 import type { Node, PropEdit } from "@/domains/node";
 import { Token, type TokenRef, TokenSet, TokenValue } from "@/domains/token";
 import { DocumentError } from "@/features/editor/domains/document-error";
 import type { DocumentReload } from "@/features/editor/domains/document-reload";
 import { EditHistory } from "@/features/editor/domains/edit-history";
+import { FileValidity } from "@/features/editor/domains/file-validity";
 import { NodeTemplate } from "@/features/editor/domains/node-template";
 import { Selection } from "@/features/editor/domains/selection";
 import { TokenTemplate } from "@/features/editor/domains/token-template";
@@ -26,7 +28,7 @@ import { Option } from "@/utils/Option";
  * 表示に使うドキュメントは `EditorState.document`。
  *
  * 現在地は常に「最後に正常だったドキュメント」で、外部変更を拒んでも差し替えない。
- * `fileErrors` が空でない間は、画面に映っているものがファイルの現在の中身と違う
+ * `fileValidity` が `invalid` の間は、画面に映っているものがファイルの現在の中身と違う
  * （docs/03-schema.md「不正ファイル時の挙動」）。
  *
  * ドキュメント自身の不正（アプリ内の編集で作ったもの）はここに持たず
@@ -37,7 +39,7 @@ export type EditorState = Readonly<{
   selectedName: Option<string>;
   selectedToken: Option<TokenRef>;
   copiedNode: Option<Node>;
-  fileErrors: readonly DocumentError[];
+  fileValidity: FileValidity;
 }>;
 
 /**
@@ -151,7 +153,7 @@ export const EditorState = {
       selectedName: Option.none,
       selectedToken: Option.none,
       copiedNode: Option.none,
-      fileErrors: [],
+      fileValidity: FileValidity.valid,
     };
   },
 
@@ -231,16 +233,30 @@ export const EditorState = {
    * undo バッファから復元できる」の中身だから（docs/05-architecture.md「競合の解決」）。
    * 読み直した内容を新たな起点にして履歴を捨てると、この復元経路が無くなる。
    *
-   * 拒んだときはドキュメントも選択もそのままにし、ファイルのエラー一覧だけを載せ替える。
+   * 拒んだときはドキュメントも選択もそのままにし、ファイルの妥当性だけを載せ替える。
    * 正常 / 不正の 2 つの遷移を 1 つのメソッドで受けるのは、呼び出し側が
    * 「ドキュメントを差し替えたのにエラーが残っている」ような組み合わせを作れないようにするため。
+   *
+   * @param state 取り込む前の状態
+   * @param reload 外部変更を取り込んだ結果
+   * @param at この取り込みを受け取った時刻（不正になった起点として `FileValidity` が持つ）
+   * @returns 取り込めたならドキュメントを差し替えた状態、拒んだなら妥当性だけを載せ替えた状態
    */
-  applyReload(state: EditorState, reload: DocumentReload): EditorState {
+  applyReload(
+    state: EditorState,
+    reload: DocumentReload,
+    at: Instant,
+  ): EditorState {
+    const fileValidity = FileValidity.withReload(
+      state.fileValidity,
+      reload,
+      at,
+    );
     switch (reload.kind) {
       case "reloaded":
-        return withEdit({ ...state, fileErrors: [] }, reload.document);
+        return withEdit({ ...state, fileValidity }, reload.document);
       case "rejected":
-        return { ...state, fileErrors: reload.errors };
+        return { ...state, fileValidity };
     }
   },
 
@@ -258,7 +274,7 @@ export const EditorState = {
    * @returns ファイル由来のエラーを畳んだ状態
    */
   applyRevert(state: EditorState): EditorState {
-    return { ...state, fileErrors: [] };
+    return { ...state, fileValidity: FileValidity.valid };
   },
 
   /**

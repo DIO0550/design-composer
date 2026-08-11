@@ -1,6 +1,7 @@
 import type { ReactElement, ReactNode } from "react";
 import { CanvasView } from "@/features/editor/domains/canvas-view";
 import type { DocumentSaveState } from "@/features/editor/domains/document-save-state";
+import type { Elapsed, ElapsedUnit } from "@/features/editor/domains/elapsed";
 import { OpenedDocument } from "@/features/editor/domains/opened-document";
 
 /**
@@ -170,9 +171,46 @@ function CanvasZoom({
   );
 }
 
+/**
+ * 経過時間の単位ごとの、数の後ろに付ける綴り。
+ *
+ * `satisfies Record<ElapsedUnit, string>` が網羅を強制する（単位を 1 つ足すと
+ * ここがコンパイルエラーになる）。
+ */
+const ELAPSED_UNIT_SUFFIXES = {
+  seconds: "s",
+  minutes: "m",
+  hours: "h",
+} as const satisfies Readonly<Record<ElapsedUnit, string>>;
+
+/**
+ * 今映っているのが最後に正常だった表示で、それがどれだけ古いか
+ * （UI 案 docs/Design Composer.html の Error 画面の `showing last valid render · 4s ago`）。
+ *
+ * 単位の綴り（`s` / `m` / `h`）と `ago` をここが持つのは、ドメイン（`Elapsed`）が持つのが
+ * 単位と数までだから（rules/architecture.md「表示のための綴りをドメインへ持ち込まない」）。
+ *
+ * `ml-auto` を持たないのは、右端へ寄せる役目を隣の `CanvasZoom` が既に持っているため。
+ * 2 つ置くと余白が 2 つの auto マージンへ等分され、`CanvasZoom` が帯の中ほどへ落ちる
+ * （**テストでは落ちない** — happy-dom は Tailwind を解決しない。気づく手段は視覚差分だけ）。
+ *
+ * @returns 最後に正常だった表示からの経過時間を添えた 1 行
+ */
+function LastValidRender({
+  elapsed,
+}: Readonly<{ elapsed: Elapsed }>): ReactElement {
+  const suffix = ELAPSED_UNIT_SUFFIXES[elapsed.unit];
+  return (
+    <p className="text-[#b58080] text-[11px]">
+      {`showing last valid render · ${elapsed.count}${suffix} ago`}
+    </p>
+  );
+}
+
 /** 上部バー。中身は呼び出し側が children で組む。 */
 export const EditorTopBar = Object.assign(EditorTopBarRoot, {
   Breadcrumb: DocumentBreadcrumb,
   SaveBadge: DocumentSaveBadge,
   Zoom: CanvasZoom,
+  LastValidRender,
 });

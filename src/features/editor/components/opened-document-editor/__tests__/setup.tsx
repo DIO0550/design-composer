@@ -4,6 +4,7 @@ import { DesignDocument } from "@/domains/design-document";
 import { PropEdit } from "@/domains/node";
 import { changeFileExternally } from "@/features/editor/__tests__/document-change";
 import { SAMPLE_DOCUMENT } from "@/features/editor/__tests__/sample-document";
+import { ClockFake } from "@/libs/clock/fake";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
 import { Result } from "@/utils/Result";
@@ -12,27 +13,47 @@ import { OpenedDocumentEditor } from "../index";
 /** 開いているファイル。テストの中で開いているファイルは常に 1 つ。 */
 export const PATH = "/work/sample.dcmp";
 
+/** 編集画面が外部世界とやり取りする口の代役一式。 */
+export type OpenedDocumentFakes = Readonly<{
+  ipc: DocumentIpcFake;
+  clock: ClockFake;
+}>;
+
 /**
- * サンプルのドキュメントを開いた編集画面を描画する。
+ * サンプルのドキュメントを開いた編集画面を、時計の代役つきで描画する。
  *
  * 監視と購読は非同期に成立するので、操作を始める前にここで待ち合わせる
  * （待たずに操作すると、成立したときの状態更新が act の外で起きる）。
  *
- * 代役を返すのは、外部変更を起こすテストが同じものを必要とするため。
+ * 時計まで返すのは、経過時間（#183）を確かめるテストが時計を進める必要があるため。
+ * 時計を要らないテストのほうが圧倒的に多いので、口を 1 つだけ返す
+ * `renderOpenedDocument` を別に置いている。
  */
-export async function renderOpenedDocument(): Promise<DocumentIpcFake> {
-  const fake = DocumentIpcFake.create({
+export async function renderOpenedDocumentWithClock(): Promise<OpenedDocumentFakes> {
+  const ipc = DocumentIpcFake.create({
     [PATH]: DocumentJson.serialize(SAMPLE_DOCUMENT),
   });
+  const clock = ClockFake.create();
 
   render(
     <OpenedDocumentEditor
-      ipc={fake.ipc}
+      clock={clock.clock}
+      ipc={ipc.ipc}
       opened={{ path: PATH, document: SAMPLE_DOCUMENT }}
     />,
   );
   await act(async () => {});
-  return fake;
+  return { ipc, clock };
+}
+
+/**
+ * サンプルのドキュメントを開いた編集画面を描画する。
+ *
+ * 代役を返すのは、外部変更を起こすテストが同じものを必要とするため。
+ */
+export async function renderOpenedDocument(): Promise<DocumentIpcFake> {
+  const { ipc } = await renderOpenedDocumentWithClock();
+  return ipc;
 }
 
 /**

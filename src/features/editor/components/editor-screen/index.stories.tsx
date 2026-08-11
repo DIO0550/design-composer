@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { SAMPLE_EDITOR_STATE } from "@/features/editor/__stories__/sample-editor-state";
 import { EditorState } from "@/features/editor/domains/editor-state";
+import { ClockFake } from "@/libs/clock/fake";
 import { DialogChoice, DocumentDialogFake } from "@/libs/document-dialog/fake";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
@@ -23,11 +24,14 @@ const dialog = DocumentDialogFake.create({
   save: DialogChoice.chosen("/work/untitled.dcmp"),
 });
 
+/** 時計も Storybook には無いので代役にする。 */
+const clock = ClockFake.create();
+
 const meta = {
   title: "features/editor/EditorScreen",
   component: EditorScreen,
   parameters: { layout: "fullscreen" },
-  args: { ipc: files.ipc, dialog: dialog.dialog },
+  args: { clock: clock.clock, ipc: files.ipc, dialog: dialog.dialog },
 } satisfies Meta<typeof EditorScreen>;
 
 export default meta;

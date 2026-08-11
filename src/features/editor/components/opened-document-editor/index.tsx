@@ -22,6 +22,7 @@ import { TokenEditor } from "@/features/editor/components/token-editor";
 import type { DocumentError } from "@/features/editor/domains/document-error";
 import { DocumentSaveState } from "@/features/editor/domains/document-save-state";
 import { EditorState } from "@/features/editor/domains/editor-state";
+import { FileValidity } from "@/features/editor/domains/file-validity";
 import type { OpenedDocument } from "@/features/editor/domains/opened-document";
 import { useAutoSave } from "@/features/editor/hooks/use-auto-save";
 import {
@@ -30,6 +31,7 @@ import {
 } from "@/features/editor/hooks/use-canvas-view";
 import { useDocumentReload } from "@/features/editor/hooks/use-document-reload";
 import { useEditShortcuts } from "@/features/editor/hooks/use-edit-shortcuts";
+import { useElapsed } from "@/features/editor/hooks/use-elapsed";
 import {
   type FileRevertControl,
   useFileRevert,
@@ -42,6 +44,7 @@ import {
   type TokenActions,
   useTokenActions,
 } from "@/features/editor/hooks/use-token-actions";
+import type { Clock } from "@/libs/clock";
 import type { DocumentIpc } from "@/libs/document-ipc";
 
 /**
@@ -109,9 +112,9 @@ type CanvasDock =
  * @returns ファイルが不正ならそのエラー、そうでなければ編集で作ったエラー
  */
 function canvasDock(state: EditorState): CanvasDock {
-  const fileErrors = state.fileErrors;
-  if (fileErrors.length > 0) {
-    return { kind: "file-invalid", errors: fileErrors };
+  const fileValidity = state.fileValidity;
+  if (fileValidity.kind === "invalid") {
+    return { kind: "file-invalid", errors: fileValidity.errors };
   }
   return { kind: "editable", errors: EditorState.documentErrors(state) };
 }
@@ -269,9 +272,10 @@ function EditorPanes({
  * それを読めるのが Provider の内側だけだから。
  */
 function EditorBody({
+  clock,
   ipc,
   opened,
-}: Readonly<{ ipc: DocumentIpc; opened: OpenedDocument }>) {
+}: Readonly<{ clock: Clock; ipc: DocumentIpc; opened: OpenedDocument }>) {
   const { state, dispatch } = useEditor();
   const path = opened.path;
   /*
@@ -289,8 +293,11 @@ function EditorBody({
   const watchFailure = useDocumentReload({
     ipc,
     path,
-    onReload: (reload) => dispatch({ type: "reload_document", reload }),
+    // 時計を読むのはハンドラの中。reducer は純粋関数なのでその中では読めない。
+    onReload: (reload) =>
+      dispatch({ type: "reload_document", reload, at: clock.now() }),
   });
+  const elapsed = useElapsed(clock, FileValidity.since(state.fileValidity));
   const fileRevert = useFileRevert({
     ipc,
     path,
@@ -309,6 +316,9 @@ function EditorBody({
           onZoomOut={canvasView.zoomOut}
           onReset={canvasView.reset}
         />
+        {elapsed.some ? (
+          <EditorTopBar.LastValidRender elapsed={elapsed.value} />
+        ) : null}
       </EditorTopBar>
       <DocumentSyncFailureList
         autoSave={DocumentSaveState.failure(saveState)}
@@ -326,12 +336,13 @@ function EditorBody({
  * 状態の器（Provider）と中身の組み立てだけを持つ。
  */
 export function OpenedDocumentEditor({
+  clock,
   ipc,
   opened,
-}: Readonly<{ ipc: DocumentIpc; opened: OpenedDocument }>) {
+}: Readonly<{ clock: Clock; ipc: DocumentIpc; opened: OpenedDocument }>) {
   return (
     <EditorProvider initialDocument={opened.document}>
-      <EditorBody ipc={ipc} opened={opened} />
+      <EditorBody clock={clock} ipc={ipc} opened={opened} />
     </EditorProvider>
   );
 }

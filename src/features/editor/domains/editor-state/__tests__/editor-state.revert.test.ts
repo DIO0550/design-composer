@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import { SYNTAX_ERROR } from "@/features/editor/__tests__/document-errors";
+import { RECEIVED_AT } from "@/features/editor/__tests__/instants";
 import { EditorState } from "../index";
 
 /**
@@ -32,21 +33,29 @@ function openedState(): EditorState {
 }
 
 test("ファイルへ書き戻すと、ファイル由来のエラーは無くなる", () => {
-  const rejected = EditorState.applyReload(openedState(), {
-    kind: "rejected",
-    errors: [SYNTAX_ERROR],
-  });
+  const rejected = EditorState.applyReload(
+    openedState(),
+    {
+      kind: "rejected",
+      errors: [SYNTAX_ERROR],
+    },
+    RECEIVED_AT,
+  );
 
   const reverted = EditorState.applyRevert(rejected);
 
-  expect(reverted.fileErrors).toStrictEqual([]);
+  expect(reverted.fileValidity.kind).toBe("valid");
 });
 
 test("ファイルへ書き戻しても、表示中のドキュメントは戻らない", () => {
-  const rejected = EditorState.applyReload(openedState(), {
-    kind: "rejected",
-    errors: [SYNTAX_ERROR],
-  });
+  const rejected = EditorState.applyReload(
+    openedState(),
+    {
+      kind: "rejected",
+      errors: [SYNTAX_ERROR],
+    },
+    RECEIVED_AT,
+  );
 
   const reverted = EditorState.applyRevert(rejected);
 
