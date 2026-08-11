@@ -4,7 +4,7 @@ import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
-import { useEditorReducer } from "../index";
+import { useEditorState } from "../index";
 
 function setupDocument(): DesignDocument {
   return DesignDocument.create({
@@ -31,7 +31,7 @@ function childNames(state: EditorState): readonly string[] {
  * 選択の切り替えも同じ器から行い、選択に応じた結果を見る。
  */
 function TreeEditHarness() {
-  const [state, dispatch] = useEditorReducer(setupDocument());
+  const [state, dispatch] = useEditorState(setupDocument());
 
   return (
     <>

@@ -1,9 +1,12 @@
 import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { DesignDocument } from "@/domains/design-document";
+import { PropEdit } from "@/domains/node";
 import { changeFileExternally } from "@/features/editor/__tests__/document-change";
 import { SAMPLE_DOCUMENT } from "@/features/editor/__tests__/sample-document";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
+import { Result } from "@/utils/Result";
 import { OpenedDocumentEditor } from "../index";
 
 /** 開いているファイル。テストの中で開いているファイルは常に 1 つ。 */
@@ -43,11 +46,51 @@ export async function breakFileExternally(
 }
 
 /**
+ * 外部が「読めるが仕様に反する」内容を書いたことにする。
+ *
+ * `breakFileExternally` の壊し方（字句スキャンで落ちる）ではエラーの場所が
+ * 文字位置になり、ノードを指す行が 1 つも出ない。エラー行から該当ノードへ飛ぶ
+ * 経路を確かめるには、**パースは通り、スキーマ検証で落ち、しかも指す先が
+ * 最後に正常だった表示にも在る**内容が要る（#136）。
+ *
+ * `home-title` は `SAMPLE_DOCUMENT` にも在るので、飛び先が成立する。
+ */
+export async function invalidateFileExternally(
+  fake: DocumentIpcFake,
+): Promise<void> {
+  const dangling = Result.unwrap(
+    DesignDocument.applyPropEdit(
+      SAMPLE_DOCUMENT,
+      "home-title",
+      PropEdit.set("typography", "居ないタイポグラフィ"),
+    ),
+  );
+  await changeFileExternally({
+    fake,
+    path: PATH,
+    content: DocumentJson.serialize(dangling),
+  });
+}
+
+/**
  * キャンバス。同じ名前がツリーにも出るので絞るのに使う。挿入のツールバーもこの中に
  * あり、絞らないと左ペインへ置き戻す実装でも通ってしまう（#112）。
  */
 export function canvasPane(): HTMLElement {
   return screen.getByRole("main", { name: "キャンバス" });
+}
+
+/**
+ * 下端に出ているファイル由来のエラー一覧。編集で作った不正の一覧とは
+ * 読み上げ名で分かれている（`document-error-list` の `originPresentation`）。
+ */
+export function fileErrorList(): HTMLElement {
+  return screen.getByRole("alert", { name: "エラー一覧" });
+}
+
+/** 下端に出ている、編集で作った不正の一覧。 */
+export function documentErrorList(): HTMLElement {
+  return screen.getByRole("alert", { name: "ドキュメントのエラー一覧" });
 }
 
 /** 左ペイン。 */

@@ -202,6 +202,25 @@ export const EditorState = {
   },
 
   /**
+   * エラーが指すノードを選ぶ（#136 のエラー行の `Reveal`）。
+   *
+   * Why not: `select` に繋がない。エラーの飛び先は表示中のドキュメントに無いことがあり
+   * （ファイルが不正な間、映っているのは最後に正常だった内容なので、壊れたファイルで
+   * 増えたノードは在らない。部品定義の中のノードも `selectableName` の対象外）、
+   * `select` は選べない名前で選択を外すため、繋ぐと「押したら選択が消えた」になる。
+   *
+   * @param state 選択を移す前の状態
+   * @param name エラーが指しているノードの名前
+   * @returns そのノードを選んだ状態。表示中のドキュメントで選べない名前なら `none`
+   */
+  reveal(state: EditorState, name: string): Option<EditorState> {
+    return Option.map(
+      selectableName(EditorState.document(state), name),
+      (revealed) => ({ ...state, selectedName: Option.some(revealed) }),
+    );
+  },
+
+  /**
    * 外部変更の取り込み結果を状態へ反映する（docs/05-architecture.md「外部編集の検知」）。
    *
    * 取り込めたときは無条件にドキュメントを差し替える（自動保存により
@@ -223,6 +242,23 @@ export const EditorState = {
       case "rejected":
         return { ...state, fileErrors: reload.errors };
     }
+  },
+
+  /**
+   * 表示中の内容をファイルへ書き戻した後の状態（#136 の `revert file`）。
+   *
+   * ファイルの中身が表示中のドキュメントと一致したので、ファイル由来のエラーは無くなる。
+   * ドキュメントには触れないので履歴も伸びない（戻した先が今映っているものそのもので、
+   * undo で戻る先が増えるような編集は起きていない）。
+   *
+   * Why not: 書き戻しを `applyReload` の `reloaded` として表さない。`withEdit` を通るため
+   * 中身が変わっていないのに履歴が 1 つ伸び、undo が「何も起きない 1 手」を挟むことになる。
+   *
+   * @param state 書き戻す前の状態
+   * @returns ファイル由来のエラーを畳んだ状態
+   */
+  applyRevert(state: EditorState): EditorState {
+    return { ...state, fileErrors: [] };
   },
 
   /**

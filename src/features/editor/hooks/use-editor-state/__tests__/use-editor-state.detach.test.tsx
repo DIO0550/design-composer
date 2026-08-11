@@ -5,7 +5,7 @@ import { DesignDocument } from "@/domains/design-document";
 import { Node } from "@/domains/node";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
-import { useEditorReducer } from "../index";
+import { useEditorState } from "../index";
 
 /**
  * `home-broken` は定義の無い部品を指す。解除は失敗し木は変わらないが、
@@ -48,7 +48,7 @@ function childNamesOf(state: EditorState, name: string): readonly string[] {
  * 部品の中身が子として現れるので、解除できたかは子の並びで読める。
  */
 function DetachHarness() {
-  const [state, dispatch] = useEditorReducer(setupDocument());
+  const [state, dispatch] = useEditorState(setupDocument());
 
   return (
     <>

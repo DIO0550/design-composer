@@ -25,6 +25,24 @@ export type DocumentIpcFake = Readonly<{
    * 監視の開始 / 停止は Rust 側に残る状態なので、代役の側から見えるようにしておく。
    */
   isWatching(path: string): boolean;
+  /**
+   * そのパスへの書き込みだけを拒むようにする（読み込みと監視はそのまま動く）。
+   *
+   * 全コマンドを失敗させる代役だと監視も張れず、「ファイルが不正な状態」に
+   * 到達できないため、書き込みだけを落とせるようにしている（#136）。
+   */
+  denyWrites(path: string): void;
+  /**
+   * そのパスへの書き込みを、返した関数が呼ばれるまで終わらせないようにする。
+   *
+   * 代役の書き込みは即座に解決するため、そのままでは「書き込み中」の状態を
+   * 画面から観測できない。押した直後の見え方（ボタンが押せないこと）を
+   * 確かめるために止められるようにしている（#136）。
+   *
+   * @param path 止める対象のパス
+   * @returns 止めていた書き込みを進める関数
+   */
+  holdWrites(path: string): () => void;
 }>;
 
 /**
@@ -52,9 +70,25 @@ function notFound(path: string): Promise<never> {
   });
 }
 
+/**
+ * 本物と同じ形（種別つき）で書き込みの拒否を返す。
+ *
+ * @param path 書けなかったパス
+ * @returns 決して解決しない Promise
+ * @throws 必ず。`permissionDenied` の種別を持つ失敗で reject する
+ */
+function permissionDenied(path: string): Promise<never> {
+  return Promise.reject({
+    kind: "permissionDenied",
+    message: `${path}: 書き込みが拒まれた`,
+  });
+}
+
 export const DocumentIpcFake = {
   create(files: Readonly<Record<string, string>> = {}): DocumentIpcFake {
     const contents = new Map(Object.entries(files));
+    const deniedWritePaths = new Set<string>();
+    const heldWrites = new Map<string, Promise<void>>();
     const watchedPaths = new Set<string>();
     const listeners = new Set<(payload: unknown) => void>();
 
@@ -75,6 +109,16 @@ export const DocumentIpcFake = {
     const saveDocument = (path: string, content: unknown): Promise<unknown> => {
       if (typeof content !== "string") {
         return ipcFailure("save_document: content が文字列でない");
+      }
+      if (deniedWritePaths.has(path)) {
+        return permissionDenied(path);
+      }
+      const held = heldWrites.get(path);
+      if (held !== undefined) {
+        // 解放されるまで書き込みを終わらせない（呼び出し側が「書き込み中」を観測できる）
+        return held.then(() => {
+          contents.set(path, content);
+        });
       }
       contents.set(path, content);
       // 自アプリの書き込みでは通知しない。Rust 側が自書き込みを識別して
@@ -141,6 +185,24 @@ export const DocumentIpcFake = {
 
       isWatching(path) {
         return watchedPaths.has(path);
+      },
+
+      denyWrites(path) {
+        deniedWritePaths.add(path);
+      },
+
+      holdWrites(path) {
+        let release = (): void => {};
+        heldWrites.set(
+          path,
+          new Promise<void>((resolve) => {
+            release = resolve;
+          }),
+        );
+        return () => {
+          heldWrites.delete(path);
+          release();
+        };
       },
     };
   },

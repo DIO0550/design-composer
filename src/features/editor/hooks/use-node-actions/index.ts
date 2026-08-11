@@ -17,6 +17,8 @@ export type NodeActions = Readonly<{
   select: (name: string) => void;
   selectAt: (names: readonly string[]) => void;
   clearSelection: () => void;
+  /** エラー行から、そのエラーが指すノードを見せる（#136）。 */
+  reveal: (nodeName: string) => void;
   reorder: (from: ChildPosition, toIndex: number) => void;
   move: (name: string, to: ChildPosition) => void;
   resize: (size: AxisLength) => void;
@@ -48,6 +50,11 @@ export function useNodeActions(): NodeActions {
      */
     selectAt: (names) => dispatch({ type: "select_innermost", names }),
     clearSelection: () => dispatch({ type: "clear_selection" }),
+    /*
+     * `select` と分けているのは、エラーの飛び先が表示中のドキュメントに
+     * 無いことがあるため（`EditorState.reveal` の doc）。
+     */
+    reveal: (nodeName) => dispatch({ type: "reveal", name: nodeName }),
     reorder: (from, toIndex) =>
       dispatch({ type: "reorder_node", from, toIndex }),
     /** キャンバスのドラッグはツリー内の移動（docs/06-ui.md「キャンバス直接操作」）。 */

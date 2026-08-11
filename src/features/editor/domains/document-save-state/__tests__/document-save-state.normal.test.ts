@@ -25,3 +25,17 @@ test("書き出しを待っている状態からは失敗を取り出せない",
     Option.none,
   );
 });
+
+test("書き出し中は、書き出しの最中として読める", () => {
+  expect(DocumentSaveState.isSaving(DocumentSaveState.SAVING)).toBe(true);
+});
+
+test("書き出し済みは、書き出しの最中ではない", () => {
+  expect(DocumentSaveState.isSaving(DocumentSaveState.SAVED)).toBe(false);
+});
+
+test("書き込みが拒まれている間も、書き出しの最中ではない", () => {
+  expect(DocumentSaveState.isSaving(DocumentSaveState.fromError(DENIED))).toBe(
+    false,
+  );
+});

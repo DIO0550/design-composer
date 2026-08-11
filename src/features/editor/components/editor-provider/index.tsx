@@ -9,8 +9,8 @@ import type { DesignDocument } from "@/domains/design-document";
 import type { EditorState } from "@/features/editor/domains/editor-state";
 import {
   type EditorAction,
-  useEditorReducer,
-} from "@/features/editor/hooks/use-editor-reducer";
+  useEditorState,
+} from "@/features/editor/hooks/use-editor-state";
 import { Option } from "@/utils/Option";
 
 /** ペインが読む値。状態と更新手段は常に対で必要になるため 1 つにまとめる。 */
@@ -23,7 +23,7 @@ const EditorContext = createContext<Option<Editor>>(Option.none);
 
 /**
  * 3 つのペインが同じ状態を読むための Provider（rules/components.md）。
- * 状態の生存期間を Provider に閉じるため、reducer もここで持つ。
+ * 状態の生存期間を Provider に閉じるため、状態そのものもここで持つ。
  *
  * @returns 状態と dispatch を配る Provider
  */
@@ -31,7 +31,7 @@ export function EditorProvider({
   initialDocument,
   children,
 }: Readonly<{ initialDocument: DesignDocument; children: ReactNode }>) {
-  const [state, dispatch] = useEditorReducer(initialDocument);
+  const [state, dispatch] = useEditorState(initialDocument);
   const editor = useMemo(
     () => Option.some({ state, dispatch }),
     [state, dispatch],
