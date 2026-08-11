@@ -36,23 +36,16 @@ function compileArtboard(
   artboard: Artboard,
   document: DesignDocument,
 ): Result<CompiledArtboard, Error> {
-  const props = Artboard.boxProps(artboard);
+  // 子のコンパイルより先に要る（`fill` の出し分けが親の向きに依存する）ので、
+  // 中身の組み立てを `CompiledArtboard` へ預けたあともここに残る
   const childParent: ParentContext = {
-    direction: BoxElement.childDirection(props),
+    direction: BoxElement.childDirection(Artboard.boxProps(artboard)),
   };
   return Result.flatMap(
     InstanceComposition.expandAll(artboard.children, document.components),
     (expanded) =>
       Result.map(NodeHtml.compileAll(expanded, childParent), (children) =>
-        CompiledArtboard.fromArtboard(
-          artboard,
-          // artboard は親を持たないが、サイズは常に fixed なので親の向きに依存しない
-          BoxElement.create(
-            artboard.name,
-            BoxElement.declarations(props, undefined, TokenCss.refs),
-            children,
-          ),
-        ),
+        CompiledArtboard.fromArtboard(artboard, children, TokenCss.refs),
       ),
   );
 }

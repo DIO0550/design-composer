@@ -1,5 +1,6 @@
-import type { Artboard } from "@/domains/artboard";
-import type { BoxElement } from "@/domains/compiled-element";
+import { Artboard } from "@/domains/artboard";
+import { BoxElement, type CompiledElement } from "@/domains/compiled-element";
+import type { TokenRefs } from "@/domains/css-declaration";
 
 /**
  * コンパイル済みの artboard 1 枚。描く中身と、宣言されている大きさ。
@@ -16,18 +17,27 @@ export type CompiledArtboard = Readonly<{
 
 export const CompiledArtboard = {
   /**
-   * 宣言元の artboard と、それをコンパイルした中身を対にする。
+   * artboard と、コンパイル済みの子から 1 枚ぶんのコンパイル結果を作る。
    *
-   * 大きさを直接受け取らず artboard から読むのは、`element.style` と食い違う
-   * 大きさを持つ値を作れなくするため。artboard の `width` / `height` は
-   * `BoxElement.declarations` が `style` へ写す元でもあるので、ここから取れば
-   * 2 つが同じ出どころになる。
+   * 中身を組み立てずに受け取らないのは、`element.style` と食い違う大きさを持つ値を
+   * 作れなくするため。大きさも style も同じ `Artboard` から引くので、2 つが割れない。
    *
-   * @param artboard 大きさの出どころになる、コンパイル前の artboard
-   * @param element その artboard をコンパイルした中身
+   * @param artboard 中身と大きさの出どころになる、コンパイル前の artboard
+   * @param children ref 展開とコンパイルを終えた子の並び
+   * @param tokens カスタムプロパティ名の綴り方（出力層の知識なので引数で受け取る）
    * @returns 中身と大きさを対にしたコンパイル結果
    */
-  fromArtboard(artboard: Artboard, element: BoxElement): CompiledArtboard {
+  fromArtboard(
+    artboard: Artboard,
+    children: readonly CompiledElement[],
+    tokens: TokenRefs,
+  ): CompiledArtboard {
+    const element = BoxElement.create(
+      artboard.name,
+      // artboard は親を持たないが、サイズは常に fixed なので親の向きに依存しない
+      BoxElement.declarations(Artboard.boxProps(artboard), undefined, tokens),
+      children,
+    );
     return { element, width: artboard.width, height: artboard.height };
   },
 } as const;
