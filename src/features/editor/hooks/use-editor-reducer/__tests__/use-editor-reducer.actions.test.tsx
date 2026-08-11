@@ -64,6 +64,7 @@ function EditorReducerHarness() {
       </p>
       <p data-testid="children">{childNames(state).join(",")}</p>
       <p data-testid="artboard-width">{artboardWidth(state)}</p>
+      <p data-testid="file-errors">{state.fileErrors.length}</p>
       <button
         type="button"
         onClick={() => dispatch({ type: "select", name: "title" })}
@@ -103,6 +104,21 @@ function EditorReducerHarness() {
         }
       >
         不正なファイルを取り込む
+      </button>
+      <button
+        type="button"
+        onClick={() => dispatch({ type: "reveal", name: "footer" })}
+      >
+        footer を明かす
+      </button>
+      <button
+        type="button"
+        onClick={() => dispatch({ type: "reveal", name: "居ないノード" })}
+      >
+        居ないノードを明かす
+      </button>
+      <button type="button" onClick={() => dispatch({ type: "revert_file" })}>
+        ファイルへ書き戻す
       </button>
       <button
         type="button"
@@ -174,6 +190,10 @@ function children(): string {
 
 function artboardWidthText(): string {
   return screen.getByTestId("artboard-width").textContent ?? "";
+}
+
+function fileErrorCount(): string {
+  return screen.getByTestId("file-errors").textContent ?? "";
 }
 
 test("開いた直後は何も選択されていない", () => {
@@ -290,4 +310,50 @@ test("何も選んでいないままリサイズのアクションを送って�
   );
 
   expect(artboardWidthText()).toBe("375");
+});
+
+test("明かすアクションを送ると、そのノードが選択される", async () => {
+  render(<EditorReducerHarness />);
+  // 別のノードを選択済みから始める（選択なしだと「何もしない」実装でも通る）
+  await userEvent.click(screen.getByRole("button", { name: "title を選ぶ" }));
+
+  await userEvent.click(
+    screen.getByRole("button", { name: "footer を明かす" }),
+  );
+
+  expect(selected()).toBe("footer");
+});
+
+test("表示中のドキュメントに無いノードを明かしても選択は変わらない", async () => {
+  render(<EditorReducerHarness />);
+  await userEvent.click(screen.getByRole("button", { name: "title を選ぶ" }));
+
+  await userEvent.click(
+    screen.getByRole("button", { name: "居ないノードを明かす" }),
+  );
+
+  expect(selected()).toBe("title");
+});
+
+test("書き戻しのアクションを送ると、ファイル由来のエラーが消える", async () => {
+  render(<EditorReducerHarness />);
+  await userEvent.click(
+    screen.getByRole("button", { name: "不正なファイルを取り込む" }),
+  );
+
+  await userEvent.click(
+    screen.getByRole("button", { name: "ファイルへ書き戻す" }),
+  );
+
+  expect(fileErrorCount()).toBe("0");
+});
+
+test("不正なファイルを取り込むと、ファイル由来のエラーが載る", async () => {
+  render(<EditorReducerHarness />);
+
+  await userEvent.click(
+    screen.getByRole("button", { name: "不正なファイルを取り込む" }),
+  );
+
+  expect(fileErrorCount()).toBe("1");
 });

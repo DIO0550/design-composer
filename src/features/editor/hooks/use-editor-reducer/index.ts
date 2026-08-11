@@ -15,7 +15,9 @@ export type EditorAction =
   | Readonly<{ type: "select"; name: string }>
   | Readonly<{ type: "select_innermost"; names: readonly string[] }>
   | Readonly<{ type: "clear_selection" }>
+  | Readonly<{ type: "reveal"; name: string }>
   | Readonly<{ type: "reload_document"; reload: DocumentReload }>
+  | Readonly<{ type: "revert_file" }>
   | Readonly<{
       type: "reorder_node";
       from: ChildPosition;
@@ -53,8 +55,17 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
       return EditorState.selectInnermost(state, action.names);
     case "clear_selection":
       return EditorState.clearSelection(state);
+    case "reveal":
+      /*
+       * 飛び先が表示中のドキュメントに無ければ選択は変わらない
+       * （EditorState.reveal の `none`）。エラー行の Reveal はファイルが不正な間に
+       * 押せるので、この `none` には画面の操作から到達する。
+       */
+      return Option.unwrapOr(EditorState.reveal(state, action.name), state);
     case "reload_document":
       return EditorState.applyReload(state, action.reload);
+    case "revert_file":
+      return EditorState.applyRevert(state);
     case "reorder_node":
       // 移動が存在しなければ並びは変わらない（EditorState.reorderNode の `none`）。
       return Option.unwrapOr(
