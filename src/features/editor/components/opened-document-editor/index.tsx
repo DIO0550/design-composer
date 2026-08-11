@@ -1,8 +1,8 @@
 import { type ReactElement, type ReactNode, useState } from "react";
 import { ArtboardCanvas } from "@/features/editor/components/artboard-canvas";
 import {
-  DOCUMENT_ERROR_ORIGINS,
   DocumentErrorList,
+  DocumentErrorOrigins,
 } from "@/features/editor/components/document-error-list";
 import { DocumentSyncFailureList } from "@/features/editor/components/document-sync-failure-list";
 import { EditorLayout } from "@/features/editor/components/editor-layout";
@@ -157,7 +157,7 @@ function CanvasDockContent({
       return (
         <DocumentErrorList
           errors={dock.errors}
-          origin={DOCUMENT_ERROR_ORIGINS.openedFile}
+          origin={DocumentErrorOrigins.OpenedFile}
           onReveal={onReveal}
           onRevertFile={fileRevert.revert}
           isReverting={DocumentSaveState.isSaving(fileRevert.saveState)}
@@ -168,7 +168,7 @@ function CanvasDockContent({
         <CanvasDockStack>
           <DocumentErrorList
             errors={dock.errors}
-            origin={DOCUMENT_ERROR_ORIGINS.document}
+            origin={DocumentErrorOrigins.Document}
             onReveal={onReveal}
           />
           <NodeInsertToolbar

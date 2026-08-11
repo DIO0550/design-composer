@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
 import { SYNTAX_ERROR } from "@/features/editor/__tests__/document-errors";
 import type { DocumentError } from "@/features/editor/domains/document-error";
-import { DOCUMENT_ERROR_ORIGINS, DocumentErrorList } from "../index";
+import { DocumentErrorList, DocumentErrorOrigins } from "../index";
 
 /**
  * 飛べる行と飛べない行を混ぜた一覧。片方だけだと「常に出す」「常に出さない」の
@@ -32,7 +32,7 @@ test("ノードを指すエラーの行にだけ、そのノードを表示す�
   render(
     <DocumentErrorList
       errors={MIXED_ERRORS}
-      origin={DOCUMENT_ERROR_ORIGINS.openedFile}
+      origin={DocumentErrorOrigins.OpenedFile}
       onReveal={vi.fn()}
       onRevertFile={vi.fn()}
       isReverting={false}
@@ -51,7 +51,7 @@ test("表示のボタンを押すと、その行が指すノード名が通知�
   render(
     <DocumentErrorList
       errors={MIXED_ERRORS}
-      origin={DOCUMENT_ERROR_ORIGINS.openedFile}
+      origin={DocumentErrorOrigins.OpenedFile}
       onReveal={onReveal}
       onRevertFile={vi.fn()}
       isReverting={false}
@@ -69,7 +69,7 @@ test("編集で作った不正でも、ノードを指す行から表示でき�
   render(
     <DocumentErrorList
       errors={MIXED_ERRORS}
-      origin={DOCUMENT_ERROR_ORIGINS.document}
+      origin={DocumentErrorOrigins.Document}
       onReveal={onReveal}
     />,
   );
@@ -81,7 +81,7 @@ test("開けなかったファイルの一覧には、表示のボタンが出�
   render(
     <DocumentErrorList
       errors={MIXED_ERRORS}
-      origin={DOCUMENT_ERROR_ORIGINS.unopenedFile}
+      origin={DocumentErrorOrigins.UnopenedFile}
     />,
   );
 
@@ -98,7 +98,7 @@ test("開いているファイルが不正なときは、ファイルを書き�
   render(
     <DocumentErrorList
       errors={MIXED_ERRORS}
-      origin={DOCUMENT_ERROR_ORIGINS.openedFile}
+      origin={DocumentErrorOrigins.OpenedFile}
       onReveal={vi.fn()}
       onRevertFile={onRevertFile}
       isReverting={false}
@@ -114,7 +114,7 @@ test("書き戻しの最中は、書き戻しを押し直せない", () => {
   render(
     <DocumentErrorList
       errors={MIXED_ERRORS}
-      origin={DOCUMENT_ERROR_ORIGINS.openedFile}
+      origin={DocumentErrorOrigins.OpenedFile}
       onReveal={vi.fn()}
       onRevertFile={vi.fn()}
       isReverting
@@ -132,7 +132,7 @@ test("編集で作った不正の一覧には、ファイルを書き戻すボ�
   render(
     <DocumentErrorList
       errors={MIXED_ERRORS}
-      origin={DOCUMENT_ERROR_ORIGINS.document}
+      origin={DocumentErrorOrigins.Document}
       onReveal={vi.fn()}
     />,
   );

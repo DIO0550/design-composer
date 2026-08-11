@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
 import {
-  DOCUMENT_ERROR_ORIGINS,
   DocumentErrorList,
   type DocumentErrorListProps,
+  DocumentErrorOrigins,
 } from "./index";
 
 /*
@@ -36,7 +36,7 @@ type Story = StoryObj<typeof DocumentErrorList>;
 export const BrokenJson: Story = {
   name: "JSON が壊れている",
   args: {
-    origin: DOCUMENT_ERROR_ORIGINS.openedFile,
+    origin: DocumentErrorOrigins.OpenedFile,
     onReveal: fn(),
     onRevertFile: fn(),
     isReverting: false,
@@ -57,7 +57,7 @@ export const BrokenJson: Story = {
 export const SchemaErrors: Story = {
   name: "スキーマ違反が複数",
   args: {
-    origin: DOCUMENT_ERROR_ORIGINS.openedFile,
+    origin: DocumentErrorOrigins.OpenedFile,
     onReveal: fn(),
     onRevertFile: fn(),
     isReverting: false,
@@ -91,7 +91,7 @@ export const SchemaErrors: Story = {
 export const Reverting: Story = {
   name: "書き戻しの最中",
   args: {
-    origin: DOCUMENT_ERROR_ORIGINS.openedFile,
+    origin: DocumentErrorOrigins.OpenedFile,
     onReveal: fn(),
     onRevertFile: fn(),
     isReverting: true,
@@ -112,7 +112,7 @@ export const Reverting: Story = {
 export const UnopenedFile: Story = {
   name: "開けなかったファイル",
   args: {
-    origin: DOCUMENT_ERROR_ORIGINS.unopenedFile,
+    origin: DocumentErrorOrigins.UnopenedFile,
     errors: [
       {
         kind: "dangling-ref",
@@ -126,7 +126,7 @@ export const UnopenedFile: Story = {
 export const NoErrors: Story = {
   name: "エラーがない",
   args: {
-    origin: DOCUMENT_ERROR_ORIGINS.unopenedFile,
+    origin: DocumentErrorOrigins.UnopenedFile,
     errors: [],
   } satisfies DocumentErrorListProps,
 };
@@ -138,7 +138,7 @@ export const NoErrors: Story = {
 export const DocumentOrigin: Story = {
   name: "編集で作った不正",
   args: {
-    origin: DOCUMENT_ERROR_ORIGINS.document,
+    origin: DocumentErrorOrigins.Document,
     onReveal: fn(),
     errors: [
       {

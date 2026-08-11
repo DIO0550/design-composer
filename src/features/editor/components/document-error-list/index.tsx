@@ -16,14 +16,14 @@ import type { ValueOf } from "@/types/ValueOf";
  * 開けていない側には飛び先のノードも書き戻す表示中の内容も存在しないので、
  * `Reveal` も `revert file` も渡せない（props の直和がそれを型で示す）。
  */
-export const DOCUMENT_ERROR_ORIGINS = {
-  unopenedFile: "unopened-file",
-  openedFile: "opened-file",
-  document: "document",
+export const DocumentErrorOrigins = {
+  UnopenedFile: "unopened-file",
+  OpenedFile: "opened-file",
+  Document: "document",
 } as const;
 
 /** エラーの由来。 */
-export type DocumentErrorOrigin = ValueOf<typeof DOCUMENT_ERROR_ORIGINS>;
+export type DocumentErrorOrigin = ValueOf<typeof DocumentErrorOrigins>;
 
 /**
  * 一覧に渡すもの。由来ごとに使える操作が変わるので、由来を判別子にした直和で受ける。
@@ -36,15 +36,15 @@ export type DocumentErrorListProps = Readonly<{
   errors: readonly DocumentError[];
 }> &
   (
-    | Readonly<{ origin: typeof DOCUMENT_ERROR_ORIGINS.unopenedFile }>
+    | Readonly<{ origin: typeof DocumentErrorOrigins.UnopenedFile }>
     | Readonly<{
-        origin: typeof DOCUMENT_ERROR_ORIGINS.openedFile;
+        origin: typeof DocumentErrorOrigins.OpenedFile;
         onReveal: (nodeName: string) => void;
         onRevertFile: () => void;
         isReverting: boolean;
       }>
     | Readonly<{
-        origin: typeof DOCUMENT_ERROR_ORIGINS.document;
+        origin: typeof DocumentErrorOrigins.Document;
         onReveal: (nodeName: string) => void;
       }>
   );
@@ -92,14 +92,14 @@ function originPresentation(origin: DocumentErrorOrigin): Readonly<{
   layout: string;
 }> {
   switch (origin) {
-    case DOCUMENT_ERROR_ORIGINS.unopenedFile:
-    case DOCUMENT_ERROR_ORIGINS.openedFile:
+    case DocumentErrorOrigins.UnopenedFile:
+    case DocumentErrorOrigins.OpenedFile:
       return {
         listLabel: "エラー一覧",
         headingSubject: "ファイル",
         layout: "absolute inset-x-0 bottom-0 border-t",
       };
-    case DOCUMENT_ERROR_ORIGINS.document:
+    case DocumentErrorOrigins.Document:
       return {
         listLabel: "ドキュメントのエラー一覧",
         headingSubject: "編集中のドキュメント",
@@ -287,9 +287,9 @@ function originOperations(props: DocumentErrorListProps): Readonly<{
   onReveal?: (nodeName: string) => void;
 }> {
   switch (props.origin) {
-    case DOCUMENT_ERROR_ORIGINS.unopenedFile:
+    case DocumentErrorOrigins.UnopenedFile:
       return { headingExtra: null };
-    case DOCUMENT_ERROR_ORIGINS.openedFile:
+    case DocumentErrorOrigins.OpenedFile:
       return {
         headingExtra: (
           <RevertFileButton
@@ -299,7 +299,7 @@ function originOperations(props: DocumentErrorListProps): Readonly<{
         ),
         onReveal: props.onReveal,
       };
-    case DOCUMENT_ERROR_ORIGINS.document:
+    case DocumentErrorOrigins.Document:
       return { headingExtra: null, onReveal: props.onReveal };
   }
 }

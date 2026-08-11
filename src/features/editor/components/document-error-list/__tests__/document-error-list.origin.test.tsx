@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
 import type { DocumentError } from "@/features/editor/domains/document-error";
-import { DOCUMENT_ERROR_ORIGINS, DocumentErrorList } from "../index";
+import { DocumentErrorList, DocumentErrorOrigins } from "../index";
 
 /** 使用中トークンを消したときに出る、ドキュメント自身の不正。 */
 const DANGLING_TOKEN: DocumentError = {
@@ -14,7 +14,7 @@ test("開いているファイル由来のエラーはファイルの不正と�
   render(
     <DocumentErrorList
       errors={[DANGLING_TOKEN]}
-      origin={DOCUMENT_ERROR_ORIGINS.openedFile}
+      origin={DocumentErrorOrigins.OpenedFile}
       onReveal={vi.fn()}
       onRevertFile={vi.fn()}
       isReverting={false}
@@ -28,7 +28,7 @@ test("開けなかったファイル由来のエラーもファイルの不正�
   render(
     <DocumentErrorList
       errors={[DANGLING_TOKEN]}
-      origin={DOCUMENT_ERROR_ORIGINS.unopenedFile}
+      origin={DocumentErrorOrigins.UnopenedFile}
     />,
   );
 
@@ -39,7 +39,7 @@ test("ドキュメント由来のエラーは編集中の不正として出る",
   render(
     <DocumentErrorList
       errors={[DANGLING_TOKEN]}
-      origin={DOCUMENT_ERROR_ORIGINS.document}
+      origin={DocumentErrorOrigins.Document}
       onReveal={vi.fn()}
     />,
   );
@@ -52,14 +52,14 @@ test("2 つの由来の一覧は読み上げ名で区別できる", () => {
     <>
       <DocumentErrorList
         errors={[DANGLING_TOKEN]}
-        origin={DOCUMENT_ERROR_ORIGINS.openedFile}
+        origin={DocumentErrorOrigins.OpenedFile}
         onReveal={vi.fn()}
         onRevertFile={vi.fn()}
         isReverting={false}
       />
       <DocumentErrorList
         errors={[DANGLING_TOKEN]}
-        origin={DOCUMENT_ERROR_ORIGINS.document}
+        origin={DocumentErrorOrigins.Document}
         onReveal={vi.fn()}
       />
     </>,
