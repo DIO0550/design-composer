@@ -70,7 +70,7 @@ description: "design-composer の実装を ゴールの確定 → タスクの�
 - 計画の順に実装する
 - **計画から外れたら、外れた時点で Issue に追記する。** 後でまとめて書くと理由が思い出せなくなる
 - `AGENTS.md`「実装を始める前に」の自己チェックはここで通す
-- **UI を触るなら、書く前に [references/ui-fidelity-preflight.md](references/ui-fidelity-preflight.md) の手順を実行する。** 書いたあとは `rules/ui-verification.md` の表示確認まで行う
+- UI を触ったなら `rules/ui-verification.md` の表示確認まで行う
 
 ## フェーズ 6: 実装の検証(サブエージェント)
 
@@ -143,5 +143,4 @@ pnpm run test:run         # vitest
 | ファイル | 内容 | 読むタイミング |
 | --- | --- | --- |
 | [references/plan-review.md](references/plan-review.md) | 計画の妥当性とテストケースの検証観点 | フェーズ 4 |
-| [references/ui-fidelity-preflight.md](references/ui-fidelity-preflight.md) | UI 案のマークアップを展開し数え直す必須手順 | フェーズ 5(UI を触るとき) |
 | [references/implementation-review.md](references/implementation-review.md) | 過剰なブロック / フォールバックの検証観点 | フェーズ 6 |

@@ -101,7 +101,6 @@
 | `ref-guard` | rules/hooks.md「useRef の使い分け」 |
 | `composition` | rules/components.md「Composition パターン」 |
 | `ui-fidelity` | rules/ui-verification.md「UIの拠り所」 |
-| `ui-affordance` | rules/ui-verification.md「UI案の見た目と、操作性・入力値域は別に確かめる」 |
 | `over-guard` | 過剰なブロック / フォールバック(implementation-flow のフェーズ 6) |
 | `plan` | 計画の誤り・不足(implementation-flow のフェーズ 3〜4) |
 | `なし` | 既存の規約に対応が無い(＝規約の抜けの候補) |
