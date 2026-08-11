@@ -310,6 +310,7 @@ function originOperations(props: DocumentErrorListProps): Readonly<{
  *
  * キャンバスを覆い切らないのは、エラーの原因になった箇所の周辺を見ながら直せるようにするため。
  *
+ * @param props 由来（`DocumentErrorOrigins`）ごとに使える操作が変わる、一覧に渡すもの
  * @returns 由来に応じた操作つきのエラー一覧。エラーが 0 件なら `null`
  */
 export function DocumentErrorList(
