@@ -25,7 +25,7 @@ test("artboard は固定サイズの Box としてコンパイルされる", () 
 
   const compiled = Result.unwrap(DocumentHtml.compile(document));
 
-  expect(compiled.artboards[0]?.style).toMatchObject({
+  expect(compiled.artboards[0]?.element.style).toMatchObject({
     display: "flex",
     width: "375px",
     height: "812px",
@@ -41,7 +41,7 @@ test("artboard のはみ出しは既定で隠される", () => {
 
   const compiled = Result.unwrap(DocumentHtml.compile(document));
 
-  expect(compiled.artboards[0]?.style.overflow).toBe("hidden");
+  expect(compiled.artboards[0]?.element.style.overflow).toBe("hidden");
 });
 
 test("artboard の props は Box のマッピングで CSS になる", () => {
@@ -60,7 +60,7 @@ test("artboard の props は Box のマッピングで CSS になる", () => {
 
   const compiled = Result.unwrap(DocumentHtml.compile(document));
 
-  expect(compiled.artboards[0]?.style).toMatchObject({
+  expect(compiled.artboards[0]?.element.style).toMatchObject({
     "flex-direction": "row",
     gap: "var(--spacing-md)",
     background: "var(--colors-primary)",
@@ -98,7 +98,7 @@ test("artboard の子はツリーの構造のまま入れ子の要素になる",
   });
 
   const compiled = Result.unwrap(DocumentHtml.compile(document));
-  const form = compiled.artboards[0]?.children[0];
+  const form = compiled.artboards[0]?.element.children[0];
 
   expect(form?.name).toBe("login-form");
   expect(form?.kind === "box" && form.children[0]?.name).toBe("title");
@@ -120,7 +120,7 @@ test("artboard の子の fill は artboard の並べる向きで決まる", () =
   });
 
   const compiled = Result.unwrap(DocumentHtml.compile(document));
-  const sidebar = compiled.artboards[0]?.children[0];
+  const sidebar = compiled.artboards[0]?.element.children[0];
 
   expect(sidebar?.style["flex-grow"]).toBe("1");
 });
@@ -144,7 +144,7 @@ test("部品インスタンスは展開されてから要素になる", () => {
   });
 
   const compiled = Result.unwrap(DocumentHtml.compile(document));
-  const instance = compiled.artboards[0]?.children[0];
+  const instance = compiled.artboards[0]?.element.children[0];
 
   expect(instance?.name).toBe("login-submit");
   expect(instance?.kind === "box" && instance.children[0]?.name).toBe(
@@ -162,7 +162,7 @@ test("artboard は配列順のまま並ぶ", () => {
 
   const compiled = Result.unwrap(DocumentHtml.compile(document));
 
-  expect(compiled.artboards.map((artboard) => artboard.name)).toEqual([
+  expect(compiled.artboards.map((artboard) => artboard.element.name)).toEqual([
     "first",
     "second",
   ]);
@@ -223,4 +223,23 @@ test("ドキュメント1つからレンダリング可能な HTML が得られ�
       "</div>" +
       "</div>",
   );
+});
+
+test("コンパイル結果は artboard ごとに宣言された大きさを持つ", () => {
+  // 大きさの違う 2 枚を置く。1 枚だと「先頭の大きさを全部に配る」実装でも通る
+  const document = DesignDocument.create({
+    artboards: [
+      { name: "home", width: 360, height: 240, children: [] },
+      { name: "settings", width: 720, height: 900, children: [] },
+    ],
+  });
+
+  const compiled = Result.unwrap(DocumentHtml.compile(document));
+
+  expect(
+    compiled.artboards.map((artboard) => [artboard.width, artboard.height]),
+  ).toStrictEqual([
+    [360, 240],
+    [720, 900],
+  ]);
 });

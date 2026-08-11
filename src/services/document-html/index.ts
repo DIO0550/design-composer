@@ -11,6 +11,22 @@ import { Result } from "@/utils/Result";
 export type { CssVariables };
 
 /**
+ * コンパイル済みの artboard 1 枚。描く中身と、宣言されている大きさ。
+ *
+ * 大きさを別に持つのは、キャンバスのラベルが `720 × 900` を出すため (#184)。
+ * `element.style` にも `width` / `height` は載っているが、そちらは CSS 出力の綴り
+ * (`"720px"`) なので、読み戻すと UI が出力形式に依存する。
+ *
+ * この型を組み立てるのは `compileArtboard` だけ (`create` を公開しない)。
+ * 外から組み立てられると `element.style` と食い違う大きさを持ててしまう。
+ */
+export type CompiledArtboard = Readonly<{
+  element: BoxElement;
+  width: number;
+  height: number;
+}>;
+
+/**
  * ドキュメント全体のコンパイル結果。
  * トークンはルート要素のカスタムプロパティ、artboard はその下に並ぶ要素になる
  * (docs/03「ルート要素に `--{種別}-{名前}: 値` を出力し、ノード側は `var()` で参照する」)。
@@ -20,7 +36,7 @@ export type { CssVariables };
  */
 export type CompiledDocument = Readonly<{
   variables: CssVariables;
-  artboards: readonly BoxElement[];
+  artboards: readonly CompiledArtboard[];
 }>;
 
 /**
@@ -28,12 +44,13 @@ export type CompiledDocument = Readonly<{
  *
  * @param artboard コンパイル対象の artboard
  * @param document 部品の引き先になるドキュメント
- * @returns コンパイル済みの Box。ref の展開か子のコンパイルが失敗すればその失敗
+ * @returns コンパイル済みの中身と、宣言されている大きさ。
+ *   ref の展開か子のコンパイルが失敗すればその失敗
  */
 function compileArtboard(
   artboard: Artboard,
   document: DesignDocument,
-): Result<BoxElement, Error> {
+): Result<CompiledArtboard, Error> {
   const props = Artboard.boxProps(artboard);
   const childParent: ParentContext = {
     direction: BoxElement.childDirection(props),
@@ -41,14 +58,16 @@ function compileArtboard(
   return Result.flatMap(
     InstanceComposition.expandAll(artboard.children, document.components),
     (expanded) =>
-      Result.map(NodeHtml.compileAll(expanded, childParent), (children) =>
+      Result.map(NodeHtml.compileAll(expanded, childParent), (children) => ({
         // artboard は親を持たないが、サイズは常に fixed なので親の向きに依存しない
-        BoxElement.create(
+        element: BoxElement.create(
           artboard.name,
           BoxElement.declarations(props, undefined, TokenCss.refs),
           children,
         ),
-      ),
+        width: artboard.width,
+        height: artboard.height,
+      })),
   );
 }
 
@@ -56,12 +75,12 @@ function compileArtboard(
  * すべての artboard をコンパイルする。1 枚でも失敗したら全体を失敗にする。
  *
  * @param document コンパイル対象のドキュメント
- * @returns 並び順を保ったコンパイル済みの Box。1 枚でも失敗すればその失敗
+ * @returns 並び順を保ったコンパイル結果。1 枚でも失敗すればその失敗
  */
 function compileArtboards(
   document: DesignDocument,
-): Result<readonly BoxElement[], Error> {
-  const compiled: BoxElement[] = [];
+): Result<readonly CompiledArtboard[], Error> {
+  const compiled: CompiledArtboard[] = [];
   for (const artboard of document.artboards) {
     const result = compileArtboard(artboard, document);
     if (!result.ok) {
@@ -94,7 +113,9 @@ export const DocumentHtml = {
   /** コンパイル結果を HTML 文字列にする。ルート `div` がカスタムプロパティを持つ。 */
   html(compiled: CompiledDocument): string {
     const style = Html.escapeAttribute(DocumentHtml.rootStyleText(compiled));
-    const artboards = compiled.artboards.map(CompiledElement.html).join("");
+    const artboards = compiled.artboards
+      .map((artboard) => CompiledElement.html(artboard.element))
+      .join("");
     return `<div style="${style}">${artboards}</div>`;
   },
 
