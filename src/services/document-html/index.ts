@@ -1,4 +1,5 @@
 import { Artboard } from "@/domains/artboard";
+import { CompiledArtboard } from "@/domains/compiled-artboard";
 import { BoxElement, CompiledElement } from "@/domains/compiled-element";
 import { CssDeclarations } from "@/domains/css-declaration";
 import type { DesignDocument } from "@/domains/design-document";
@@ -20,7 +21,7 @@ export type { CssVariables };
  */
 export type CompiledDocument = Readonly<{
   variables: CssVariables;
-  artboards: readonly BoxElement[];
+  artboards: readonly CompiledArtboard[];
 }>;
 
 /**
@@ -28,26 +29,23 @@ export type CompiledDocument = Readonly<{
  *
  * @param artboard コンパイル対象の artboard
  * @param document 部品の引き先になるドキュメント
- * @returns コンパイル済みの Box。ref の展開か子のコンパイルが失敗すればその失敗
+ * @returns コンパイル済みの中身と、宣言されている大きさ。
+ *   ref の展開か子のコンパイルが失敗すればその失敗
  */
 function compileArtboard(
   artboard: Artboard,
   document: DesignDocument,
-): Result<BoxElement, Error> {
-  const props = Artboard.boxProps(artboard);
+): Result<CompiledArtboard, Error> {
+  // 子のコンパイルより先に要る（`fill` の出し分けが親の向きに依存する）ので、
+  // 中身の組み立てを `CompiledArtboard` へ預けたあともここに残る
   const childParent: ParentContext = {
-    direction: BoxElement.childDirection(props),
+    direction: BoxElement.childDirection(Artboard.boxProps(artboard)),
   };
   return Result.flatMap(
     InstanceComposition.expandAll(artboard.children, document.components),
     (expanded) =>
       Result.map(NodeHtml.compileAll(expanded, childParent), (children) =>
-        // artboard は親を持たないが、サイズは常に fixed なので親の向きに依存しない
-        BoxElement.create(
-          artboard.name,
-          BoxElement.declarations(props, undefined, TokenCss.refs),
-          children,
-        ),
+        CompiledArtboard.fromArtboard(artboard, children, TokenCss.refs),
       ),
   );
 }
@@ -56,12 +54,12 @@ function compileArtboard(
  * すべての artboard をコンパイルする。1 枚でも失敗したら全体を失敗にする。
  *
  * @param document コンパイル対象のドキュメント
- * @returns 並び順を保ったコンパイル済みの Box。1 枚でも失敗すればその失敗
+ * @returns 並び順を保ったコンパイル結果。1 枚でも失敗すればその失敗
  */
 function compileArtboards(
   document: DesignDocument,
-): Result<readonly BoxElement[], Error> {
-  const compiled: BoxElement[] = [];
+): Result<readonly CompiledArtboard[], Error> {
+  const compiled: CompiledArtboard[] = [];
   for (const artboard of document.artboards) {
     const result = compileArtboard(artboard, document);
     if (!result.ok) {
@@ -94,7 +92,9 @@ export const DocumentHtml = {
   /** コンパイル結果を HTML 文字列にする。ルート `div` がカスタムプロパティを持つ。 */
   html(compiled: CompiledDocument): string {
     const style = Html.escapeAttribute(DocumentHtml.rootStyleText(compiled));
-    const artboards = compiled.artboards.map(CompiledElement.html).join("");
+    const artboards = compiled.artboards
+      .map((artboard) => CompiledElement.html(artboard.element))
+      .join("");
     return `<div style="${style}">${artboards}</div>`;
   },
 
