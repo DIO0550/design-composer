@@ -1,6 +1,19 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { DOCUMENT_ERROR_ORIGINS, DocumentErrorList } from "./index";
+import { fn } from "storybook/test";
+import {
+  DOCUMENT_ERROR_ORIGINS,
+  DocumentErrorList,
+  type DocumentErrorListProps,
+} from "./index";
 
+/*
+ * `StoryObj<typeof meta>` ではなく `StoryObj<typeof DocumentErrorList>` を使う。
+ * props が由来ごとの直和なので、meta 経由だと args が全変種の交差になり
+ * どの変種の args も渡せなくなる（#136）。
+ *
+ * ただしこちらは args が `Partial` になり、必須の args を落としても `tsc` が通る。
+ * 各 story の args に `satisfies DocumentErrorListProps` を付けて欠落を弾く。
+ */
 const meta = {
   title: "features/editor/DocumentErrorList",
   component: DocumentErrorList,
@@ -18,12 +31,15 @@ const meta = {
 
 export default meta;
 
-type Story = StoryObj<typeof meta>;
+type Story = StoryObj<typeof DocumentErrorList>;
 
 export const BrokenJson: Story = {
   name: "JSON が壊れている",
   args: {
-    origin: DOCUMENT_ERROR_ORIGINS.file,
+    origin: DOCUMENT_ERROR_ORIGINS.openedFile,
+    onReveal: fn(),
+    onRevertFile: fn(),
+    isReverting: false,
     errors: [
       {
         kind: "syntax-error",
@@ -31,13 +47,20 @@ export const BrokenJson: Story = {
         location: { kind: "text-position", position: 142 },
       },
     ],
-  },
+  } satisfies DocumentErrorListProps,
 };
 
+/**
+ * 場所の持ち方が 4 種類そろう。`Reveal` が出るのはノードを指す 2 件だけで、
+ * 出し分けがそのまま見える（#136）。
+ */
 export const SchemaErrors: Story = {
   name: "スキーマ違反が複数",
   args: {
-    origin: DOCUMENT_ERROR_ORIGINS.file,
+    origin: DOCUMENT_ERROR_ORIGINS.openedFile,
+    onReveal: fn(),
+    onRevertFile: fn(),
+    isReverting: false,
     errors: [
       {
         kind: "unknown-prop",
@@ -61,12 +84,51 @@ export const SchemaErrors: Story = {
         location: { kind: "whole-document" },
       },
     ],
-  },
+  } satisfies DocumentErrorListProps,
+};
+
+/** 書き込み中は書き戻しを押し直せない（rules/hooks.md「連打防止は disabled」）。 */
+export const Reverting: Story = {
+  name: "書き戻しの最中",
+  args: {
+    origin: DOCUMENT_ERROR_ORIGINS.openedFile,
+    onReveal: fn(),
+    onRevertFile: fn(),
+    isReverting: true,
+    errors: [
+      {
+        kind: "dangling-ref",
+        message: 'unknown component "missing-button"',
+        location: { kind: "node", nodeName: "home-login" },
+      },
+    ],
+  } satisfies DocumentErrorListProps,
+};
+
+/**
+ * まだ何も開けていない画面（開始画面）。飛び先のノードも書き戻す表示中の内容も
+ * 無いので、`Reveal` も `revert file` も出ない（#136）。
+ */
+export const UnopenedFile: Story = {
+  name: "開けなかったファイル",
+  args: {
+    origin: DOCUMENT_ERROR_ORIGINS.unopenedFile,
+    errors: [
+      {
+        kind: "dangling-ref",
+        message: 'unknown component "missing-button"',
+        location: { kind: "node", nodeName: "home-login" },
+      },
+    ],
+  } satisfies DocumentErrorListProps,
 };
 
 export const NoErrors: Story = {
   name: "エラーがない",
-  args: { origin: DOCUMENT_ERROR_ORIGINS.file, errors: [] },
+  args: {
+    origin: DOCUMENT_ERROR_ORIGINS.unopenedFile,
+    errors: [],
+  } satisfies DocumentErrorListProps,
 };
 
 /**
@@ -77,6 +139,7 @@ export const DocumentOrigin: Story = {
   name: "編集で作った不正",
   args: {
     origin: DOCUMENT_ERROR_ORIGINS.document,
+    onReveal: fn(),
     errors: [
       {
         kind: "dangling-token",
@@ -85,5 +148,5 @@ export const DocumentOrigin: Story = {
         location: { kind: "node", nodeName: "home-title", prop: "typography" },
       },
     ],
-  },
+  } satisfies DocumentErrorListProps,
 };

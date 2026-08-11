@@ -45,7 +45,7 @@ function OpenFailure({ failure }: Readonly<{ failure: DocumentOpenFailure }>) {
         </p>
         <DocumentErrorList
           errors={failure.errors}
-          origin={DOCUMENT_ERROR_ORIGINS.file}
+          origin={DOCUMENT_ERROR_ORIGINS.unopenedFile}
         />
       </>
     );

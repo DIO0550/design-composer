@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { expect, test } from "vitest";
+import { expect, test, vi } from "vitest";
 import type { DocumentError } from "@/features/editor/domains/document-error";
 import { DOCUMENT_ERROR_ORIGINS, DocumentErrorList } from "../index";
 
@@ -10,11 +10,25 @@ const DANGLING_TOKEN: DocumentError = {
   location: { kind: "node", nodeName: "home-title", prop: "typography" },
 };
 
-test("ファイル由来のエラーはファイルの不正として出る", () => {
+test("開いているファイル由来のエラーはファイルの不正として出る", () => {
   render(
     <DocumentErrorList
       errors={[DANGLING_TOKEN]}
-      origin={DOCUMENT_ERROR_ORIGINS.file}
+      origin={DOCUMENT_ERROR_ORIGINS.openedFile}
+      onReveal={vi.fn()}
+      onRevertFile={vi.fn()}
+      isReverting={false}
+    />,
+  );
+
+  expect(screen.getByText("ファイルに 1 件のエラー")).toBeDefined();
+});
+
+test("開けなかったファイル由来のエラーもファイルの不正として出る", () => {
+  render(
+    <DocumentErrorList
+      errors={[DANGLING_TOKEN]}
+      origin={DOCUMENT_ERROR_ORIGINS.unopenedFile}
     />,
   );
 
@@ -26,6 +40,7 @@ test("ドキュメント由来のエラーは編集中の不正として出る",
     <DocumentErrorList
       errors={[DANGLING_TOKEN]}
       origin={DOCUMENT_ERROR_ORIGINS.document}
+      onReveal={vi.fn()}
     />,
   );
 
@@ -37,11 +52,15 @@ test("2 つの由来の一覧は読み上げ名で区別できる", () => {
     <>
       <DocumentErrorList
         errors={[DANGLING_TOKEN]}
-        origin={DOCUMENT_ERROR_ORIGINS.file}
+        origin={DOCUMENT_ERROR_ORIGINS.openedFile}
+        onReveal={vi.fn()}
+        onRevertFile={vi.fn()}
+        isReverting={false}
       />
       <DocumentErrorList
         errors={[DANGLING_TOKEN]}
         origin={DOCUMENT_ERROR_ORIGINS.document}
+        onReveal={vi.fn()}
       />
     </>,
   );

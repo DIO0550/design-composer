@@ -31,6 +31,10 @@ import {
 import { useDocumentReload } from "@/features/editor/hooks/use-document-reload";
 import { useEditShortcuts } from "@/features/editor/hooks/use-edit-shortcuts";
 import {
+  type FileRevertControl,
+  useFileRevert,
+} from "@/features/editor/hooks/use-file-revert";
+import {
   type NodeActions,
   useNodeActions,
 } from "@/features/editor/hooks/use-node-actions";
@@ -140,13 +144,23 @@ function CanvasDockStack({ children }: Readonly<{ children: ReactNode }>) {
 function CanvasDockContent({
   dock,
   node,
-}: Readonly<{ dock: CanvasDock; node: NodeActions }>): ReactElement {
+  onReveal,
+  fileRevert,
+}: Readonly<{
+  dock: CanvasDock;
+  node: NodeActions;
+  onReveal: (nodeName: string) => void;
+  fileRevert: FileRevertControl;
+}>): ReactElement {
   switch (dock.kind) {
     case "file-invalid":
       return (
         <DocumentErrorList
           errors={dock.errors}
-          origin={DOCUMENT_ERROR_ORIGINS.file}
+          origin={DOCUMENT_ERROR_ORIGINS.openedFile}
+          onReveal={onReveal}
+          onRevertFile={fileRevert.revert}
+          isReverting={DocumentSaveState.isSaving(fileRevert.saveState)}
         />
       );
     case "editable":
@@ -155,6 +169,7 @@ function CanvasDockContent({
           <DocumentErrorList
             errors={dock.errors}
             origin={DOCUMENT_ERROR_ORIGINS.document}
+            onReveal={onReveal}
           />
           <NodeInsertToolbar
             isInsertEnabled={node.isInsertEnabled}
@@ -172,7 +187,11 @@ function CanvasDockContent({
  */
 function EditorPanes({
   canvasView,
-}: Readonly<{ canvasView: CanvasViewControl }>) {
+  fileRevert,
+}: Readonly<{
+  canvasView: CanvasViewControl;
+  fileRevert: FileRevertControl;
+}>) {
   const { state } = useEditor();
   const node = useNodeActions();
   const token = useTokenActions();
@@ -207,7 +226,20 @@ function EditorPanes({
           onResize={node.resize}
           onEditProp={node.editProp}
         />
-        <CanvasDockContent dock={canvasDock(state)} node={node} />
+        <CanvasDockContent
+          dock={canvasDock(state)}
+          node={node}
+          /*
+           * 選ぶだけでなく行き先も Layers へ戻す。トークンを消して不正を作った直後は
+           * 左ペインが Tokens なので、選んでもツリーにもプロパティにも出ない
+           * （`Go to source component` が Assets へ移すのと同じ形）。
+           */
+          onReveal={(nodeName) => {
+            node.reveal(nodeName);
+            setLeftPaneView(LEFT_PANE_VIEWS.layers);
+          }}
+          fileRevert={fileRevert}
+        />
       </EditorLayout.CenterPane>
       <EditorLayout.RightPane>
         <RightPaneContent
@@ -259,6 +291,12 @@ function EditorBody({
     path,
     onReload: (reload) => dispatch({ type: "reload_document", reload }),
   });
+  const fileRevert = useFileRevert({
+    ipc,
+    path,
+    document: EditorState.document(state),
+    onReverted: () => dispatch({ type: "revert_file" }),
+  });
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -275,8 +313,9 @@ function EditorBody({
       <DocumentSyncFailureList
         autoSave={DocumentSaveState.failure(saveState)}
         watch={watchFailure}
+        revert={DocumentSaveState.failure(fileRevert.saveState)}
       />
-      <EditorPanes canvasView={canvasView} />
+      <EditorPanes canvasView={canvasView} fileRevert={fileRevert} />
     </div>
   );
 }

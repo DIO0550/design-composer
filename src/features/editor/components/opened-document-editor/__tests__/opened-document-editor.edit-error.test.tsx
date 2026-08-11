@@ -5,6 +5,7 @@ import { rowNames } from "@/features/editor/__tests__/row-names";
 import {
   breakFileExternally,
   canvasPane,
+  documentErrorList,
   leftPane,
   propertyPane,
   renderOpenedDocument,
@@ -48,10 +49,36 @@ test("使用中のトークンを消すと、それを参照しているノー�
 
   await removeHeadingToken();
 
-  const errorList = screen.getByRole("alert", {
-    name: "ドキュメントのエラー一覧",
-  });
-  expect(within(errorList).getByText("home-title.typography")).toBeDefined();
+  expect(
+    within(documentErrorList()).getByText("home-title.typography"),
+  ).toBeDefined();
+});
+
+test("編集で作った不正のエラー行からも、そのノードをプロパティパネルに出せる", async () => {
+  await renderOpenedDocument();
+  await removeHeadingToken();
+
+  await userEvent.click(
+    within(documentErrorList()).getByRole("button", {
+      name: "home-title を表示",
+    }),
+  );
+
+  expect(within(propertyPane()).getByText("home-title")).toBeDefined();
+});
+
+test("エラー行から表示すると、左ペインはツリーへ戻る", async () => {
+  await renderOpenedDocument();
+  // トークンを消して不正を作った直後は、左ペインが Tokens になっている
+  await removeHeadingToken();
+
+  await userEvent.click(
+    within(documentErrorList()).getByRole("button", {
+      name: "home-title を表示",
+    }),
+  );
+
+  expect(rowNames(tree())).toContain("home-title");
 });
 
 test("編集で作った不正は、外部変更で壊れたときの一覧には出ない", async () => {
