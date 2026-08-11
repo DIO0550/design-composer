@@ -155,6 +155,11 @@
     "name": "保存に失敗"
   },
   {
+    "id": "features-editor-editortopbar--last-valid-render",
+    "title": "features/editor/EditorTopBar",
+    "name": "最後に正常だった表示を出している状態"
+  },
+  {
     "id": "features-editor-editortopbar--saved",
     "title": "features/editor/EditorTopBar",
     "name": "保存済み"
