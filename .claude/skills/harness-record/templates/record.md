@@ -99,7 +99,8 @@
 | `type-vocabulary` | rules/coding.md「値の語彙を型で閉じる」 |
 | `illegal-state` | rules/coding.md「不正な状態を型で表現できなくする(型による境界)」 |
 | `naming` | rules/naming.md |
-| `comment` | rules/coding.md「コメントは実装と一致させる」「コメントは doc と Why / Why not に絞る」 |
+| `comment-mismatch` | rules/coding.md「コメントは実装と一致させる」(コメントの内容が実装・現状と食い違う、または確かめていない主張を含む形。書く前に確かめていれば防げた) |
+| `comment-missing` | rules/coding.md「コメントは doc と Why / Why not に絞る」(書くべき Why / Why not がコードに無い形。読み手が『なぜこれではないのか』を聞くまで気づかれない) |
 | `test-placement` | rules/testing.md「配置と命名」 |
 | `test-behavior` | rules/testing.md「古典学派のテスト」 |
 | `test-nesting` | rules/testing.md「テストの書き方: ネスト禁止」 |
@@ -135,3 +136,9 @@
 `duplication` は pr-192 時点で `duplication-test` / `duplication-logic` へ分割した
 (hook 層まで介入済みなのに再発 11 件で飽和 — `.claude/skills/harness-growth/SKILL.md`
 「2c. 介入後 5 回以上」)。過去の記録の `分類: duplication` は書き換えない。
+
+`comment` は pr-192 時点で `comment-mismatch` / `comment-missing` へ分割した
+(観点層まで介入済みなのに再発 6 件で飽和 — 同じく「2c. 介入後 5 回以上」)。
+6 件中 5 件が「書いた主張・説明が実装や事実と食い違う」形、1 件が「聞かれるまで
+Why が無かった」形で、内容の誤りと欠如という別種の問題が 1 タグに畳まれていた。
+過去の記録の `分類: comment` は書き換えない。
