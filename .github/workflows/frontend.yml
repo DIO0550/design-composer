@@ -82,6 +82,30 @@ jobs:
       - name: Check added lint suppressions
         run: bash .github/scripts/check-added-lint-suppressions.sh "${{ github.event.pull_request.base.sha }}"
 
+  rules-check:
+    name: doc コメント / テスト規約のチェック
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 1
+
+      # push 前の検査（harness/githooks/pre-push）と同じスクリプトを呼ぶ。
+      # この 2 つは git hooks と Claude Code のフックにしか無く、どちらも
+      # 発火しない実行環境がある（クローン直後は core.hooksPath が未設定で、
+      # リモート実行環境では .claude/settings.json の配線が読まれないことがある）。
+      # 実際に doc の無い宣言が main へ入っている（src/features/editor/domains/elapsed）ので、
+      # 無条件に効く層へ上げる（.claude/hooks/README.md「強制力の序列」）。
+      - name: doc コメント
+        run: python3 .claude/hooks/lib/missing-doc-comments.py --all src
+
+      - name: テスト規約
+        run: bash .claude/hooks/lib/test-rules-scan.sh src
+
   report-comment:
     name: post ci report comment
     needs: check
