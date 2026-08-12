@@ -5,7 +5,7 @@ git ネイティブのフック置き場。`core.hooksPath` をここへ向け�
 
 ## 配線
 
-`pnpm install` が `package.json` の `prepare` から [`install.sh`](install.sh) を呼び、
+`pnpm install` が `package.json` の `prepare` から [`set-hooks-path.sh`](set-hooks-path.sh) を呼び、
 `core.hooksPath` をここへ向ける。**クローン直後に手で実行するものは無い。**
 
 ```bash
@@ -29,7 +29,7 @@ DevContainer の `postCreateCommand` も走らない。そこは Claude Code の
 
 | スクリプト | 呼ばれ方 | 内容 |
 | --- | --- | --- |
-| `install.sh` | `package.json` の `prepare`（`pnpm install`） | `core.hooksPath` をここへ向ける。git の無い環境・git リポジトリでない場所では黙って飛ばす |
+| `set-hooks-path.sh` | `package.json` の `prepare`（`pnpm install`） | `core.hooksPath` をここへ向ける。git の無い環境・git リポジトリでない場所では黙って飛ばす |
 
 **検査そのものは `.claude/hooks/lib/` と共有している。** Claude Code のフックはこれと
 同じスクリプトを走らせる即時フィードバック版で、内容が二重管理にならないようにしている。
