@@ -85,7 +85,9 @@
 
 | 分類 | 対応する規約 |
 | --- | --- |
-| `logic-ownership` | rules/architecture.md「ロジックの帰属先」 |
+| `ownership-reasoning` | rules/architecture.md「ロジックの帰属先」(帰属先の判断・理由付け。第1引数の型を見る、という判断の起点を実際に適用できていない形。置き場所自体は合っていても理由が間違っている場合を含む) |
+| `domain-input-convention` | rules/architecture.md「逆向きも見る: 入力欄の約束事をドメインへ持ち込まない」 |
+| `domain-scope-promotion` | rules/architecture.md「配置の判断基準」(`features/<x>/domains/` か `src/domains/` かの昇格判断) |
 | `service-placement` | rules/architecture.md「services はドメインを探してから使う」 |
 | `layer-dependency` | rules/architecture.md「依存方向のルール」 |
 | `module-api` | rules/architecture.md「モジュールの公開API」 |
@@ -142,3 +144,11 @@
 6 件中 5 件が「書いた主張・説明が実装や事実と食い違う」形、1 件が「聞かれるまで
 Why が無かった」形で、内容の誤りと欠如という別種の問題が 1 タグに畳まれていた。
 過去の記録の `分類: comment` は書き換えない。
+
+`logic-ownership` は pr-192 時点で `ownership-reasoning` / `domain-input-convention` /
+`domain-scope-promotion` へ分割した(rules 層まで介入済みなのに再発 5 件で飽和 —
+同じく「2c. 介入後 5 回以上」)。5 件の内訳は「第1引数の型を見る、という判断の起点を
+適用できていなかった」形が 3 件(置き場所自体は合っていて理由だけが誤っていた場合を含む)、
+「入力欄の約束事(空文字を未設定と読む等)をドメインへ持ち込んだ」形が 1 件、
+「feature 固有か `src/domains/` かの昇格判断を誤った」形が 1 件で、判断の性質が異なる
+3 種が 1 タグに畳まれていた。過去の記録の `分類: logic-ownership` は書き換えない。
