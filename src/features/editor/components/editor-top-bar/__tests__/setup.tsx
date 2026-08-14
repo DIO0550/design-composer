@@ -6,9 +6,9 @@ import type { Elapsed } from "@/features/editor/domains/elapsed";
 import type { OpenedDocument } from "@/features/editor/domains/opened-document";
 import { useCanvasView } from "@/features/editor/hooks/use-canvas-view";
 import {
-  EDITOR_TOP_BAR_TONES,
   EditorTopBar,
   type EditorTopBarTone,
+  EditorTopBarTones,
 } from "../index";
 
 /** 倍率の並びを、実物の表示（`useCanvasView`）に繋いで描く。 */
@@ -41,7 +41,7 @@ export function renderTopBar(
   }>,
 ) {
   // 色味の入口は帯だけ（パンくずは Context から読む）。
-  const tone = bar.tone ?? EDITOR_TOP_BAR_TONES.normal;
+  const tone = bar.tone ?? EditorTopBarTones.Normal;
   return render(
     <EditorTopBar tone={tone}>
       {bar.opened ? <EditorTopBar.Breadcrumb opened={bar.opened} /> : null}

@@ -19,13 +19,13 @@ import { Option } from "@/utils/Option";
  * 名前で指せるようにするのは、消費側が `"error"` を綴り直さずに済ませるため
  * （rules/coding.md「値の集合から union を導出する」）。
  */
-export const EDITOR_TOP_BAR_TONES = {
-  normal: "normal",
-  error: "error",
+export const EditorTopBarTones = {
+  Normal: "normal",
+  Error: "error",
 } as const;
 
 /** 帯の色味。 */
-export type EditorTopBarTone = ValueOf<typeof EDITOR_TOP_BAR_TONES>;
+export type EditorTopBarTone = ValueOf<typeof EditorTopBarTones>;
 
 /** 色味ごとの、帯の地と下線と文字。 */
 const ROOT_TONE_CLASS = {

@@ -214,7 +214,7 @@ export const EditorState = {
    * @returns 外部変更を拒んだままなら `true`
    */
   isFileInvalid(state: EditorState): boolean {
-    return state.fileValidity.kind === "invalid";
+    return FileValidity.isInvalid(state.fileValidity);
   },
 
   /**

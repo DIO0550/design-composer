@@ -6,9 +6,9 @@ import type { DocumentError } from "@/features/editor/domains/document-error";
 import { DocumentSaveState } from "@/features/editor/domains/document-save-state";
 import { type Elapsed, ElapsedUnits } from "@/features/editor/domains/elapsed";
 import {
-  EDITOR_TOP_BAR_TONES,
   EditorTopBar,
   type EditorTopBarTone,
+  EditorTopBarTones,
 } from "./index";
 
 const OPENED = {
@@ -55,7 +55,7 @@ const meta = {
   title: "features/editor/EditorTopBar",
   component: TopBar,
   parameters: { layout: "fullscreen" },
-  args: { tone: EDITOR_TOP_BAR_TONES.normal },
+  args: { tone: EditorTopBarTones.Normal },
 } satisfies Meta<typeof TopBar>;
 
 export default meta;
@@ -105,7 +105,7 @@ export const LastValidRender: Story = {
 export const FileInvalid: Story = {
   name: "ファイルが不正",
   args: {
-    tone: EDITOR_TOP_BAR_TONES.error,
+    tone: EditorTopBarTones.Error,
     fileErrors: SAMPLE_FILE_ERRORS,
     elapsed: { unit: ElapsedUnits.Seconds, count: 4 },
   },

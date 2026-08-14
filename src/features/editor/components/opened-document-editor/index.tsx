@@ -11,8 +11,8 @@ import {
   useEditor,
 } from "@/features/editor/components/editor-provider";
 import {
-  EDITOR_TOP_BAR_TONES,
   EditorTopBar,
+  EditorTopBarTones,
 } from "@/features/editor/components/editor-top-bar";
 import { LeftPane } from "@/features/editor/components/left-pane";
 import {
@@ -128,7 +128,7 @@ type CanvasDock =
  */
 function canvasDock(state: EditorState): CanvasDock {
   const fileValidity = state.fileValidity;
-  if (fileValidity.kind === "invalid") {
+  if (FileValidity.isInvalid(fileValidity)) {
     return { kind: "file-invalid", errors: fileValidity.errors };
   }
   return { kind: "editable", errors: EditorState.documentErrors(state) };
@@ -340,10 +340,9 @@ function EditorBody({
    * 組み合わせが書ける）。
    */
   const fileValidity = state.fileValidity;
-  const tone =
-    fileValidity.kind === "invalid"
-      ? EDITOR_TOP_BAR_TONES.error
-      : EDITOR_TOP_BAR_TONES.normal;
+  const tone = FileValidity.isInvalid(fileValidity)
+    ? EditorTopBarTones.Error
+    : EditorTopBarTones.Normal;
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -353,7 +352,7 @@ function EditorBody({
           ファイルが不正な間は保存状態を出さない。映っているのは最後に正常だった
           表示で、それがファイルに載っているかどうかは今の関心ではないため（#135）。
         */}
-        {fileValidity.kind === "invalid" ? (
+        {FileValidity.isInvalid(fileValidity) ? (
           <EditorTopBar.FileInvalidBadge errors={fileValidity.errors} />
         ) : (
           <EditorTopBar.SaveBadge state={saveState} />
