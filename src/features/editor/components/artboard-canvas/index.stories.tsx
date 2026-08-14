@@ -61,6 +61,25 @@ export const Selected: Story = {
   args: { state: EditorState.select(SAMPLE_EDITOR_STATE, "settings") },
 };
 
+/**
+ * 選択中のトークンを参照しているノードに破線が出る（#147）。
+ *
+ * `primary` を選ぶのは、キャンバス上でこれを指しているのが `overflow-wide` の 1 件だけで、
+ * 破線が掛かる相手と掛からない相手の両方が 1 画面に出るため。
+ *
+ * **この破線はテストでは見えない**（happy-dom は CSS を解決しない）。
+ * 目で確かめる手段はこのストーリーの視覚差分だけ。
+ */
+export const TokenSelected: Story = {
+  name: "トークンを選択中",
+  args: {
+    state: EditorState.selectToken(SAMPLE_EDITOR_STATE, {
+      kind: "colors",
+      name: "primary",
+    }),
+  },
+};
+
 export const Empty: Story = {
   name: "artboard がない",
   args: { state: EMPTY_EDITOR_STATE },

@@ -64,6 +64,16 @@ const SELECTION_OUTLINE = "outline:2px solid #3b82f6;outline-offset:1px";
 const DROP_PARENT_OUTLINE = "outline:2px dashed #10b981;outline-offset:1px";
 
 /**
+ * 選択中のトークンを参照しているノードに描く枠
+ * （UI 案 docs/Design Composer.html の Tokens 画面）。
+ *
+ * UI 案は要素ごとに `outline-offset` を 2px と 3px で使い分けているが、名前で引く規則は
+ * 1 本しか差し込めないので 2px に寄せた。
+ */
+const TOKEN_REFERRER_OUTLINE =
+  "outline:1.5px dashed #0d99ff;outline-offset:2px";
+
+/**
  * 名前で指した要素だけに効く規則をキャンバスへ差し込む。
  *
  * キャンバスの中身は文字列の HTML を流し込んでおり React の管理下に無いため、
@@ -431,8 +441,28 @@ function ArtboardList({
     },
   };
 
+  /*
+   * ドキュメント全体を走査するので、パン / ズームのたびに数え直さない
+   * （`compiled` を覚えているのと同じ理由）。
+   */
+  const tokenReferrerNames = useMemo(
+    () => EditorState.tokenReferrerNodeNames(state),
+    [state],
+  );
+
   return (
     <>
+      {/*
+        選択の枠より**前**に置く。同じ選択子・同じ詳細度なので後に書いたほうが勝ち、
+        選択中のノードがそのトークンを参照していると選択の枠が消えてしまう。
+      */}
+      {tokenReferrerNames.map((name) => (
+        <NameStyleRule
+          key={name}
+          name={name}
+          declarations={TOKEN_REFERRER_OUTLINE}
+        />
+      ))}
       {state.selectedName.some ? (
         <NameStyleRule
           name={state.selectedName.value}

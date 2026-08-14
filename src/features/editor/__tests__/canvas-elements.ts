@@ -57,3 +57,32 @@ export function highlightedNames(canvas: HTMLElement): readonly string[] {
     ),
   );
 }
+
+/**
+ * 選択中のトークンを参照しているノードに差し込まれる枠の綴り
+ * （規則の中身は components/artboard-canvas）。
+ */
+const TOKEN_REFERRER_DECLARATION = "dashed #0d99ff";
+
+/**
+ * トークンの参照元として破線が掛かっている名前。
+ *
+ * `highlightedNames` と分けているのは、あちらがキャンバス内のすべての規則から名前を
+ * 抜くため、選択の枠・ドロップ先の枠・リサイズハンドルと区別できないから。
+ * 「参照元だけが破線になる」を確かめるには、破線の宣言を持つ規則に絞る必要がある。
+ *
+ * @param canvas 探す範囲になるキャンバス
+ * @returns 破線の規則が指している名前。重複は落とす
+ */
+export function tokenReferrerNames(canvas: HTMLElement): readonly string[] {
+  const dashedRules = [...canvas.querySelectorAll("style")].filter((style) =>
+    (style.textContent ?? "").includes(TOKEN_REFERRER_DECLARATION),
+  );
+  return ArrayEx.distinct(
+    dashedRules.flatMap((style) =>
+      [...(style.textContent ?? "").matchAll(HIGHLIGHTED_NAME_PATTERN)].map(
+        (match) => match[1],
+      ),
+    ),
+  );
+}
