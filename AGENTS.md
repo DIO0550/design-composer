@@ -84,9 +84,11 @@ Claude Code セッションの URL を併記する**(`https://claude.ai/code/ses
   回答後に引き継ぐ**別のセッション**が辿れなくなる(`harness-record` の「推測で埋めない」が
   効かなくなるのも同じ理由)
 - 通知(Discord 等)にだけ載せるのでは足りない。**通知は流れるが Issue は残る**
-- **Why not: フックにはしない。** 止まるのは webhook 起動のリモートセッションが多く、
-  そこは `.claude/hooks/` が発火しない実行環境(`.claude/hooks/README.md`「強制力の序列」)。
-  発火しない層に置いても効かないので、規約の層に置く
+- **Why not: 層を上げられない。** 見たいのは GitHub のコメントで、**リポジトリに痕跡が
+  残らない**ため git hooks(層 2)も CI(層 1)も検査できない(`.claude/hooks/README.md`
+  「カバー範囲と残る穴」の `block-npx.sh` と同じ型)。Claude Code のフック(層 3)なら
+  届くが、止まるのは webhook 起動のリモートセッションが多く、そこは
+  `.claude/settings.json` の配線が読まれない。残るのは規約の層だけになる
 
 ## Common Commands
 
