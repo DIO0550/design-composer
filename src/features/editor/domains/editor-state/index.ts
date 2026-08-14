@@ -1,7 +1,7 @@
 import type { Artboard } from "@/domains/artboard";
 import type { AxisLength } from "@/domains/axis-length";
 import { ChildPosition } from "@/domains/child-position";
-import { DesignDocument, type TokenReferrer } from "@/domains/design-document";
+import { DesignDocument, TokenReferrer } from "@/domains/design-document";
 import type { Instant } from "@/domains/instant";
 import type { Node, PropEdit } from "@/domains/node";
 import { Token, type TokenRef, TokenSet, TokenValue } from "@/domains/token";
@@ -657,6 +657,25 @@ export const EditorState = {
     return DesignDocument.collectTokenReferrers(
       EditorState.document(state),
       state.selectedToken.value,
+    );
+  },
+
+  /**
+   * 選択中のトークンを参照している、**キャンバスに出ているノード**の名前（#147 の破線の相手）。
+   *
+   * 2 段で絞るのは、落とす相手が違うため。`TokenReferrer.nodeNames` が外すのは
+   * artboard と部品定義のルートで、これは直和の枝だけで決まる。`findNode` が外すのは
+   * 部品定義の**中の**ノードで、こちらは `primitive` / `instance` として集まるので
+   * ドキュメントを引かないと決まらない。片方だけでは残る側を取り逃す。
+   *
+   * @param state 選択とドキュメントの出どころ
+   * @returns 破線を引くノードの名前。重複は無い。**部品定義の中のノードは含まない**。
+   *   トークンを選んでいなければ空
+   */
+  tokenReferrerNodeNames(state: EditorState): readonly string[] {
+    const document = EditorState.document(state);
+    return TokenReferrer.nodeNames(EditorState.tokenReferrers(state)).filter(
+      (name) => DesignDocument.findNode(document, name).some,
     );
   },
 
