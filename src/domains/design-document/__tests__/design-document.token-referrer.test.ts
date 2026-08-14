@@ -255,3 +255,75 @@ test("キャンバス上の参照元は artboard の並び順で並ぶ", () => {
     "settings-title.color",
   ]);
 });
+
+test("1つのノードが2つの prop から同じトークンを指しても、ノード名は1つだけになる", () => {
+  const document = DesignDocument.create({
+    tokens: { ...TokenSet.empty(), spacing: { md: 16 } },
+    artboards: [
+      {
+        name: "login",
+        width: 375,
+        height: 812,
+        children: [
+          {
+            name: "login-form",
+            type: "Box",
+            props: { paddingX: "md", paddingY: "md" },
+            children: [],
+          },
+        ],
+      },
+    ],
+  });
+
+  const referrers = DesignDocument.collectTokenReferrers(document, {
+    kind: "spacing",
+    name: "md",
+  });
+
+  expect(TokenReferrer.nodeNames(referrers)).toEqual(["login-form"]);
+});
+
+test("artboard 自身がトークンを指していても、ノード名としては並ばない", () => {
+  const document = DesignDocument.create({
+    tokens: { ...TokenSet.empty(), colors: { "gray-900": "#111827" } },
+    artboards: [
+      {
+        name: "login",
+        width: 375,
+        height: 812,
+        props: { background: "gray-900" },
+        children: [
+          { name: "title", type: "Text", props: { color: "gray-900" } },
+        ],
+      },
+    ],
+  });
+
+  const referrers = DesignDocument.collectTokenReferrers(document, GRAY_900);
+
+  expect(TokenReferrer.nodeNames(referrers)).toEqual(["title"]);
+});
+
+test("部品定義のルートがトークンを指していても、ノード名としては並ばない", () => {
+  const document = DesignDocument.create({
+    tokens: { ...TokenSet.empty(), colors: { "gray-900": "#111827" } },
+    components: {
+      "primary-button": { type: "Box", props: { background: "gray-900" } },
+    },
+    artboards: [
+      {
+        name: "login",
+        width: 375,
+        height: 812,
+        children: [
+          { name: "title", type: "Text", props: { color: "gray-900" } },
+        ],
+      },
+    ],
+  });
+
+  const referrers = DesignDocument.collectTokenReferrers(document, GRAY_900);
+
+  expect(TokenReferrer.nodeNames(referrers)).toEqual(["title"]);
+});

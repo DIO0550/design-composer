@@ -18,6 +18,7 @@ import {
 } from "@/features/editor/components/left-pane-rail";
 import { NodeInsertToolbar } from "@/features/editor/components/node-insert-toolbar";
 import { PropertyPanel } from "@/features/editor/components/property-panel";
+import { TokenDashedNodes } from "@/features/editor/components/token-dashed-nodes";
 import { TokenEditor } from "@/features/editor/components/token-editor";
 import type { DocumentError } from "@/features/editor/domains/document-error";
 import { DocumentSaveState } from "@/features/editor/domains/document-save-state";
@@ -146,11 +147,13 @@ function CanvasDockStack({ children }: Readonly<{ children: ReactNode }>) {
  */
 function CanvasDockContent({
   dock,
+  state,
   node,
   onReveal,
   fileRevert,
 }: Readonly<{
   dock: CanvasDock;
+  state: EditorState;
   node: NodeActions;
   onReveal: (nodeName: string) => void;
   fileRevert: FileRevertControl;
@@ -158,13 +161,20 @@ function CanvasDockContent({
   switch (dock.kind) {
     case "file-invalid":
       return (
-        <DocumentErrorList
-          errors={dock.errors}
-          origin={DocumentErrorOrigins.OpenedFile}
-          onReveal={onReveal}
-          onRevertFile={fileRevert.revert}
-          isReverting={DocumentSaveState.isSaving(fileRevert.saveState)}
-        />
+        <CanvasDockStack>
+          <DocumentErrorList
+            errors={dock.errors}
+            origin={DocumentErrorOrigins.OpenedFile}
+            onReveal={onReveal}
+            onRevertFile={fileRevert.revert}
+            isReverting={DocumentSaveState.isSaving(fileRevert.saveState)}
+          />
+          {/*
+            ファイルが不正な間もトークンは選べるので破線は出る。ここへ出さないと、
+            破線だけが出て何を指しているか読めない状態が画面に残る。
+          */}
+          <TokenDashedNodes state={state} />
+        </CanvasDockStack>
       );
     case "editable":
       return (
@@ -174,6 +184,7 @@ function CanvasDockContent({
             origin={DocumentErrorOrigins.Document}
             onReveal={onReveal}
           />
+          <TokenDashedNodes state={state} />
           <NodeInsertToolbar
             isInsertEnabled={node.isInsertEnabled}
             onInsert={node.insert}
@@ -231,6 +242,7 @@ function EditorPanes({
         />
         <CanvasDockContent
           dock={canvasDock(state)}
+          state={state}
           node={node}
           /*
            * 選ぶだけでなく行き先も Layers へ戻す。トークンを消して不正を作った直後は

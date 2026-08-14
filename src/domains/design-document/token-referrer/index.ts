@@ -9,6 +9,7 @@ import {
   PropDefinitionRecord,
 } from "@/domains/primitive-schema";
 import type { TokenRef } from "@/domains/token";
+import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 
 /**
@@ -167,7 +168,48 @@ function collectNodeReferrers(
   return [...ownReferrers, ...childReferrers];
 }
 
+/**
+ * 参照元 1 件がノードを指しているなら、その名前。
+ *
+ * `artboard` は artboard 自身、`component` は部品定義のルートで、どちらもノードではない。
+ * この区別は直和の枝だけで決まるのでドキュメントを引かなくてよい。
+ *
+ * `switch` に `default` を置かず戻り値を `readonly string[]`（`undefined` を含まない）に
+ * しているので、参照元の種類を足してここを足し忘れるとコンパイルエラーになる
+ * （rules/coding.md「列挙した状態の網羅を型で強制する」）。
+ *
+ * @param referrer 名前を取りたい参照元
+ * @returns ノードを指しているならその名前 1 つ、指していなければ空
+ */
+function nodeNameOf(referrer: TokenReferrer): readonly string[] {
+  switch (referrer.target) {
+    case "primitive":
+    case "instance":
+      return [referrer.name];
+    case "artboard":
+    case "component":
+      return [];
+  }
+}
+
 export const TokenReferrer = {
+  /**
+   * 参照元のうちノードを指しているものの名前。重複は落とす。
+   *
+   * 落とすのは、1 つのノードが 2 つの prop から同じトークンを指しうるため
+   * （`Used by` の件数が参照箇所の総数なのに対し、こちらはノードの数になる）。
+   *
+   * ここで外れるのは artboard と部品定義のルートまで。部品定義の**中の**ノードは
+   * `primitive` / `instance` として集まるので、この並びに残る（キャンバスに出ているかは
+   * ドキュメントを引かないと決まらないため、絞るのは受け取った側の仕事）。
+   *
+   * @param referrers 名前を取りたい参照元の並び
+   * @returns ノードを指している参照元の名前を、最初に現れた順で重複なく並べたもの
+   */
+  nodeNames(referrers: readonly TokenReferrer[]): readonly string[] {
+    return ArrayEx.distinct(referrers.flatMap(nodeNameOf));
+  },
+
   /**
    * `title.color` の形の表記（UI 案の `Used by` の行）。
    * 参照箇所を1つの文字列で指せる形なので、対の側が持つ。

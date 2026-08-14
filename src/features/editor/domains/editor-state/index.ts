@@ -1,7 +1,7 @@
 import type { Artboard } from "@/domains/artboard";
 import type { AxisLength } from "@/domains/axis-length";
 import { ChildPosition } from "@/domains/child-position";
-import { DesignDocument, type TokenReferrer } from "@/domains/design-document";
+import { DesignDocument, TokenReferrer } from "@/domains/design-document";
 import type { Instant } from "@/domains/instant";
 import type { Node, PropEdit } from "@/domains/node";
 import { Token, type TokenRef, TokenSet, TokenValue } from "@/domains/token";
@@ -140,6 +140,33 @@ function withEdit(state: EditorState, document: DesignDocument): EditorState {
  */
 function removableName(state: EditorState): Option<string> {
   return Option.map(selectedNode(state), (node) => node.name);
+}
+
+/**
+ * 選択中のトークンの参照元を、渡された集め方で集める。
+ *
+ * 選択が無いときも空を返し、参照が 0 件であることと区別しない。消費側の見え方が
+ * どちらでも同じ（`Used by` の枠も #147 の破線も出ない）ため、`Option` で区別しても
+ * 分岐が増えるだけになる。区別が要る消費側が現れたら、選択を引数で受け取る形
+ * （未選択の状態を渡せない形）にする。
+ *
+ * ドキュメントから引き直すので、編集・undo のあとも現在の中身を映す（`selectedToken` と同じ）。
+ *
+ * @param state 選択とドキュメントの出どころ
+ * @param collect 集める範囲（全体か、キャンバス上だけか）
+ * @returns 集まった参照元の並び。トークンを選んでいなければ空
+ */
+function referrersOfSelectedToken(
+  state: EditorState,
+  collect: (
+    document: DesignDocument,
+    ref: TokenRef,
+  ) => readonly TokenReferrer[],
+): readonly TokenReferrer[] {
+  if (!state.selectedToken.some) {
+    return [];
+  }
+  return collect(EditorState.document(state), state.selectedToken.value);
 }
 
 export const EditorState = {
@@ -651,12 +678,28 @@ export const EditorState = {
    * ドキュメントから引き直すので、編集・undo のあとも現在の中身を映す（`selectedToken` と同じ）。
    */
   tokenReferrers(state: EditorState): readonly TokenReferrer[] {
-    if (!state.selectedToken.some) {
-      return [];
-    }
-    return DesignDocument.collectTokenReferrers(
-      EditorState.document(state),
-      state.selectedToken.value,
+    return referrersOfSelectedToken(
+      state,
+      DesignDocument.collectTokenReferrers,
+    );
+  },
+
+  /**
+   * 選択中のトークンを参照している、キャンバス上のノードの名前（#147 の破線の相手）。
+   *
+   * artboard 自身の参照が落ちるのは `TokenReferrer.nodeNames` の担当で、
+   * 部品定義の中の参照はそもそも集める範囲に入っていない。
+   *
+   * @param state 選択とドキュメントの出どころ
+   * @returns 破線を引くノードの名前。重複は無い。artboard 自身と部品定義の中のノードは
+   *   含まない。トークンを選んでいなければ空
+   */
+  tokenReferrerNodeNames(state: EditorState): readonly string[] {
+    return TokenReferrer.nodeNames(
+      referrersOfSelectedToken(
+        state,
+        DesignDocument.collectCanvasTokenReferrers,
+      ),
     );
   },
 
