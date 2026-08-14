@@ -3,15 +3,15 @@ import { DesignDocument } from "@/domains/design-document";
 import { TokenSet } from "@/domains/token";
 import { SAMPLE_EDITOR_STATE } from "@/features/editor/__stories__/sample-editor-state";
 import { EditorState } from "@/features/editor/domains/editor-state";
-import { TokenCanvasLegend } from "./index";
+import { TokenDashedNodes } from "./index";
 
 /**
  * 帯は灰色のキャンバス面に影付きで浮く部品なので、decorator で面と余白を与える。
  * 白地に置くと影と角丸が沈み、実画面と違うものが視覚差分の基準になる。
  */
 const meta = {
-  title: "features/editor/TokenCanvasLegend",
-  component: TokenCanvasLegend,
+  title: "features/editor/TokenDashedNodes",
+  component: TokenDashedNodes,
   decorators: [
     (Story) => (
       <div className="flex bg-gray-100 p-6">
@@ -19,7 +19,7 @@ const meta = {
       </div>
     ),
   ],
-} satisfies Meta<typeof TokenCanvasLegend>;
+} satisfies Meta<typeof TokenDashedNodes>;
 
 export default meta;
 

@@ -3,7 +3,7 @@ import { expect, test } from "vitest";
 import { COLOR_SWATCH_TEST_ID } from "@/components/color-swatch";
 import { DesignDocument } from "@/domains/design-document";
 import { TokenSet } from "@/domains/token";
-import { renderLegend } from "./render";
+import { renderDashedNodes } from "./render";
 
 const GRAY_900 = { kind: "colors", name: "gray-900" } as const;
 
@@ -27,13 +27,13 @@ function setupDocument(nodeNames: readonly string[]): DesignDocument {
 }
 
 test("トークンを選ぶと、そのトークンの名前が帯に出る", () => {
-  renderLegend(setupDocument(["title", "caption"]), GRAY_900);
+  renderDashedNodes(setupDocument(["title", "caption"]), GRAY_900);
 
   expect(screen.getByText("gray-900")).toBeDefined();
 });
 
 test("参照しているノードが2つあると、帯の件数が2になる", () => {
-  renderLegend(setupDocument(["title", "caption"]), GRAY_900);
+  renderDashedNodes(setupDocument(["title", "caption"]), GRAY_900);
 
   expect(screen.getByText("2 nodes · dashed in canvas")).toBeDefined();
 });
@@ -58,7 +58,7 @@ test("1つのノードが2つの prop から同じトークンを指しても、
     ],
   });
 
-  renderLegend(document, { kind: "spacing", name: "md" });
+  renderDashedNodes(document, { kind: "spacing", name: "md" });
 
   expect(screen.getByText("1 node · dashed in canvas")).toBeDefined();
 });
@@ -91,13 +91,13 @@ test("部品定義の中の参照は帯の件数に入らない", () => {
     ],
   });
 
-  renderLegend(document, GRAY_900);
+  renderDashedNodes(document, GRAY_900);
 
   expect(screen.getByText("1 node · dashed in canvas")).toBeDefined();
 });
 
 test("色トークンを選ぶと、その色の見本が帯に出る", () => {
-  renderLegend(setupDocument(["title"]), GRAY_900);
+  renderDashedNodes(setupDocument(["title"]), GRAY_900);
 
   expect(screen.getByTestId(COLOR_SWATCH_TEST_ID)).toBeDefined();
 });
@@ -122,7 +122,7 @@ test("色以外のトークンを選ぶと、帯に見本は出ない", () => {
     ],
   });
 
-  renderLegend(document, { kind: "spacing", name: "md" });
+  renderDashedNodes(document, { kind: "spacing", name: "md" });
 
   // 帯そのものは出ている（見本だけが出ない、を確かめる）
   expect(

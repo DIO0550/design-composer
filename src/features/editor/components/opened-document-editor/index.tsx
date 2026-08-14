@@ -18,7 +18,7 @@ import {
 } from "@/features/editor/components/left-pane-rail";
 import { NodeInsertToolbar } from "@/features/editor/components/node-insert-toolbar";
 import { PropertyPanel } from "@/features/editor/components/property-panel";
-import { TokenCanvasLegend } from "@/features/editor/components/token-canvas-legend";
+import { TokenDashedNodes } from "@/features/editor/components/token-dashed-nodes";
 import { TokenEditor } from "@/features/editor/components/token-editor";
 import type { DocumentError } from "@/features/editor/domains/document-error";
 import { DocumentSaveState } from "@/features/editor/domains/document-save-state";
@@ -170,10 +170,10 @@ function CanvasDockContent({
             isReverting={DocumentSaveState.isSaving(fileRevert.saveState)}
           />
           {/*
-            ファイルが不正な間もトークンは選べるので破線は出る。凡例をここへ出さないと、
+            ファイルが不正な間もトークンは選べるので破線は出る。ここへ出さないと、
             破線だけが出て何を指しているか読めない状態が画面に残る。
           */}
-          <TokenCanvasLegend state={state} />
+          <TokenDashedNodes state={state} />
         </CanvasDockStack>
       );
     case "editable":
@@ -184,7 +184,7 @@ function CanvasDockContent({
             origin={DocumentErrorOrigins.Document}
             onReveal={onReveal}
           />
-          <TokenCanvasLegend state={state} />
+          <TokenDashedNodes state={state} />
           <NodeInsertToolbar
             isInsertEnabled={node.isInsertEnabled}
             onInsert={node.insert}

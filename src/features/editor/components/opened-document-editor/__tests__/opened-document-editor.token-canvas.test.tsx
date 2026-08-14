@@ -40,7 +40,7 @@ async function selectToken(name: string): Promise<void> {
 }
 
 /** キャンバス下端の帯。 */
-function legend(): HTMLElement {
+function dashedNodes(): HTMLElement {
   return within(canvasPane()).getByRole("region", { name: "キャンバスの破線" });
 }
 
@@ -59,7 +59,9 @@ test("トークンを選ぶと、キャンバス下端に破線の本数が出�
   await openTypographySection();
   await selectToken("heading");
 
-  expect(within(legend()).getByText("1 node · dashed in canvas")).toBeDefined();
+  expect(
+    within(dashedNodes()).getByText("1 node · dashed in canvas"),
+  ).toBeDefined();
 });
 
 test("トークンを選び直すと、破線が掛かる相手も選び直した先のものになる", async () => {
@@ -90,5 +92,7 @@ test("ファイルが不正な間も、選んだトークンの破線と帯が�
   await selectToken("heading");
 
   // 映っているのは最後に正常だった表示なので、破線の相手もそこに残っている
-  expect(within(legend()).getByText("1 node · dashed in canvas")).toBeDefined();
+  expect(
+    within(dashedNodes()).getByText("1 node · dashed in canvas"),
+  ).toBeDefined();
 });

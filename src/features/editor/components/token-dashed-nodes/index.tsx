@@ -19,8 +19,8 @@ function nodeCountText(count: number): string {
  * キャンバスの破線が何を指しているかを示す帯
  * （UI 案 docs/Design Composer.html の Tokens 画面。キャンバス下部に浮く）。
  *
- * 破線が 1 本も無いときは出さない。この帯は破線の凡例なので、指す相手が無いまま出しても
- * 読み手に伝えるものが無い（`Used by` が 0 件でも件数を出すのとは役割が違う。
+ * 破線が 1 本も無いときは出さない。この帯が伝えるのは「今どれが破線になっているか」なので、
+ * 破線が無いまま出しても指す相手がいない（`Used by` が 0 件でも件数を出すのとは役割が違う。
  * あちらは「使われていない」こと自体が削除の判断材料になる）。
  *
  * 左寄せ（`self-start`）を器ではなくここが持つのは、UI 案でツールバーが中央、
@@ -33,7 +33,7 @@ function nodeCountText(count: number): string {
  *
  * @returns トークン名と破線の本数を並べた帯。破線が 1 本も無いときは何も出さない
  */
-export function TokenCanvasLegend({
+export function TokenDashedNodes({
   state,
 }: Readonly<{ state: EditorState }>): ReactElement | null {
   const token = EditorState.selectedToken(state);

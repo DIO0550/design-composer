@@ -2,7 +2,7 @@ import { screen } from "@testing-library/react";
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
 import { TokenSet } from "@/domains/token";
-import { renderLegend, renderLegendWithoutSelection } from "./render";
+import { renderDashedNodes, renderWithoutSelection } from "./render";
 
 const GRAY_900 = { kind: "colors", name: "gray-900" } as const;
 
@@ -30,7 +30,7 @@ function setupComponentOnlyDocument(): DesignDocument {
 }
 
 test("キャンバスに破線が1本も無いときは帯を出さない", () => {
-  renderLegend(setupComponentOnlyDocument(), GRAY_900);
+  renderDashedNodes(setupComponentOnlyDocument(), GRAY_900);
 
   expect(screen.queryByRole("region", { name: "キャンバスの破線" })).toBeNull();
 });
@@ -51,7 +51,7 @@ test("トークンを選んでいないときは帯を出さない", () => {
     ],
   });
 
-  renderLegendWithoutSelection(document);
+  renderWithoutSelection(document);
 
   expect(screen.queryByRole("region", { name: "キャンバスの破線" })).toBeNull();
 });
