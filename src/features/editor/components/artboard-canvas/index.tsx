@@ -477,6 +477,9 @@ const CONTENT_TRANSFORM_ORIGIN: CSSProperties["transformOrigin"] = "0 0";
 /**
  * 斜線のスクリム（UI 案 docs/Design Composer.html の Error 画面の実測値は
  * `repeating-linear-gradient(-45deg, transparent 0 22px, rgba(209,52,56,0.055) 22px 24px)`）。
+ *
+ * この斜線を落としてもバッジは残り、テストは 1 件も落ちない。
+ * 気づく手段は Storybook の視覚差分だけ。
  */
 const STALE_SCRIM_CLASS =
   "bg-[repeating-linear-gradient(-45deg,transparent_0_22px,rgba(209,52,56,0.055)_22px_24px)]";
@@ -497,7 +500,8 @@ function StaleCanvasOverlay(): ReactElement {
         aria-hidden="true"
         className={`pointer-events-none absolute inset-0 ${STALE_SCRIM_CLASS}`}
       />
-      <p className="absolute top-3.5 right-3.5 rounded-[5px] border border-red-200 bg-white px-2 py-1 font-semibold text-[10px] text-red-600">
+      {/* 掴んで動かす操作を食わないよう、バッジもポインタを素通しする */}
+      <p className="pointer-events-none absolute top-3.5 right-3.5 rounded-[5px] border border-red-200 bg-white px-2 py-1 font-semibold text-[10px] text-red-600">
         最後に正常だった表示
       </p>
     </>
@@ -555,6 +559,7 @@ export function ArtboardCanvas({
   return (
     // relative はスクリムとバッジの基準。中央ペインも relative だが、そちらは
     // キャンバスの外（下端に積むエラー一覧）の基準なので、覆う範囲がここより広い。
+    // これを落とすとスクリムが中央ペインいっぱいに広がるが、テストは 1 件も落ちない。
     <div className="relative flex h-full flex-col">
       <div
         ref={surfaceRef}
@@ -570,8 +575,9 @@ export function ArtboardCanvas({
            * ファイルが不正な間は選択もドラッグもさせない（映っているのは最後に
            * 正常だった表示なので、そこへ加えた編集は今のファイルと噛み合わない）。
            * 掴んで動かす操作は外側の surface が持つので、`inert` を中身に付けても
-           * 見る位置は変えられる。**happy-dom は `inert` を強制しない**ため、
-           * 押せないこと自体はブラウザでしか確かめられない。
+           * 見る位置は変えられる。**happy-dom が強制するのはフォーカスまでで、
+           * click は届く**（キーボードからの活性化が止まることは
+           * `artboard-canvas.frozen.test.tsx` が確かめている）。
            */
           inert={isFrozen}
           style={{

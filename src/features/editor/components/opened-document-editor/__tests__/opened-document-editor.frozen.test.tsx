@@ -17,9 +17,10 @@ import {
  * （#135）。凍結は上部バー・左ペイン・キャンバス・右ペインへ同時に効くので、
  * 配線ごと確かめられるのはここだけ（部品単体のストーリーには相手のペインが居ない）。
  *
- * 「操作を受け付けない」は `inert` で作っているが、**happy-dom は `inert` を強制しない**
- * （属性は付くが click は届く）。押せないこと自体はブラウザでしか確かめられないので、
- * ここでは属性が付くところまでを見る。
+ * 「操作を受け付けない」は `inert` で作っているが、**happy-dom が強制するのは
+ * フォーカスまでで click は届く**。押せないこと自体はブラウザでしか確かめられないので、
+ * ここでは属性が付くところまでを見る（キーボードからの活性化が止まることは
+ * `artboard-canvas.frozen.test.tsx` が確かめている）。
  */
 
 test("外部変更でファイルが壊れると、映っているのが最後に正常だった表示だとキャンバスに出る", async () => {
@@ -50,6 +51,12 @@ test("ファイルが壊れると、左ペインの見出しが凍結中を名�
   await breakFileExternally(fake);
 
   expect(within(leftPane()).getByText("凍結中")).toBeDefined();
+});
+
+test("ファイルが壊れていなければ、左ペインの見出しは凍結中を名乗らない", async () => {
+  await renderOpenedDocument();
+
+  expect(within(leftPane()).queryByText("凍結中")).toBeNull();
 });
 
 test("ファイルが壊れると、キャンバスの中身が操作を受け付けなくなる", async () => {
@@ -118,4 +125,26 @@ test("ファイルが直ると凍結が解けて通常表示に戻る", async ()
 
   expect(screen.queryByText("最後に正常だった表示")).toBeNull();
   expect(leftPane().hasAttribute("inert")).toBe(false);
+});
+
+test("Tokens を開いたままファイルが壊れると、トークンの編集欄が残らない", async () => {
+  const fake = await renderOpenedDocument();
+  await userEvent.click(
+    within(leftPane()).getByRole("button", { name: "Tokens" }),
+  );
+  await userEvent.click(
+    // `primary-dark` に巻き込まれないよう、値まで含めて 1 つに絞る
+    within(leftPane()).getByRole("button", { name: "primary #3b82f6" }),
+  );
+  // 壊す前は編集できることを対照に置く。行き先を見ない実装でも通ってしまうため
+  expect(
+    within(propertyPane()).getByRole("region", { name: "トークン編集" }),
+  ).toBeDefined();
+
+  await breakFileExternally(fake);
+
+  expect(
+    within(propertyPane()).queryByRole("region", { name: "トークン編集" }),
+  ).toBeNull();
+  expect(within(propertyPane()).getByText("選択は凍結中")).toBeDefined();
 });

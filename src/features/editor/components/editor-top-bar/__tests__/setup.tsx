@@ -38,13 +38,11 @@ export function renderTopBar(
     zoom?: boolean;
   }>,
 ) {
-  // 帯とパンくずは同じ色味から決まるので、テストからも 1 つの値で渡す。
+  // 色味の入口は帯だけ（パンくずは Context から読む）。
   const tone = bar.tone ?? EDITOR_TOP_BAR_TONES.normal;
   return render(
     <EditorTopBar tone={tone}>
-      {bar.opened ? (
-        <EditorTopBar.Breadcrumb opened={bar.opened} tone={tone} />
-      ) : null}
+      {bar.opened ? <EditorTopBar.Breadcrumb opened={bar.opened} /> : null}
       {bar.saveState ? <EditorTopBar.SaveBadge state={bar.saveState} /> : null}
       {bar.fileErrors ? (
         <EditorTopBar.FileInvalidBadge errors={bar.fileErrors} />

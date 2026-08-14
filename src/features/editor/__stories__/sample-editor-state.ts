@@ -91,8 +91,10 @@ export const EMPTY_EDITOR_STATE = EditorState.create(
 /**
  * 外部エディタがファイルを壊したときに届くエラー。UI 案の Error 画面が 2 件なので
  * 件数も揃える（上部バーのバッジが `2 件のエラー` になる）。
+ *
+ * 上部バー単体のストーリーも件数だけを必要とするので、同じものを共有する。
  */
-const FILE_ERRORS: readonly DocumentError[] = [
+export const SAMPLE_FILE_ERRORS: readonly DocumentError[] = [
   {
     kind: "syntax-error",
     message: "expected ',' or '}'",
@@ -108,10 +110,12 @@ const FILE_ERRORS: readonly DocumentError[] = [
 /**
  * 外部編集でファイルが壊れ、表示が最後に正常だったもので止まっている状態（#135）。
  *
- * ノードを選んだうえで壊すのは、右ペインが**見出しの選択名を保ったまま**中身だけ
- * 「選択は凍結中」になることを、ストーリーで確かめられるようにするため。
+ * 選んでおくのは、右ペインが**見出しの選択名を保ったまま**中身だけ「選択は凍結中」に
+ * なることを映すため。選ぶ相手を artboard にしているのは、**リサイズハンドルを持つのが
+ * 2 軸とも fixed のものだけ**だから。ノード（`home-title`）を選ぶと凍結の有無に関わらず
+ * ハンドルが出ず、「凍結中はハンドルを出さない」がストーリーに現れない。
  */
 export const FILE_INVALID_EDITOR_STATE = EditorState.applyReload(
-  EditorState.select(SAMPLE_EDITOR_STATE, "home-title"),
-  { kind: "rejected", errors: FILE_ERRORS },
+  EditorState.select(SAMPLE_EDITOR_STATE, "home"),
+  { kind: "rejected", errors: SAMPLE_FILE_ERRORS },
 );

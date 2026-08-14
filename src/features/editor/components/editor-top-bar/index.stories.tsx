@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import { SAMPLE_FILE_ERRORS } from "@/features/editor/__stories__/sample-editor-state";
 import { CanvasView } from "@/features/editor/domains/canvas-view";
 import type { DocumentError } from "@/features/editor/domains/document-error";
 import { DocumentSaveState } from "@/features/editor/domains/document-save-state";
@@ -13,20 +14,6 @@ const OPENED = {
   path: "/work/settings-ui/app.dcmp",
   document: DesignDocument.createFromTemplate(DocumentTemplate.DEFAULT),
 };
-
-/** ファイルが不正なときに帯へ出る件数の元。中身は一覧（キャンバス下端）が出す。 */
-const FILE_ERRORS: readonly DocumentError[] = [
-  {
-    kind: "syntax-error",
-    message: "expected ',' or '}'",
-    location: { kind: "text-position", position: 42 },
-  },
-  {
-    kind: "dangling-ref",
-    message: "colors.brand-red が見つからない",
-    location: { kind: "node", nodeName: "password-input", prop: "background" },
-  },
-];
 
 /**
  * 帯は children で組むので、ストーリーは中身を揃えた 1 本を描き、色味と保存状態だけを
@@ -45,7 +32,7 @@ function TopBar({
 }>) {
   return (
     <EditorTopBar tone={tone}>
-      <EditorTopBar.Breadcrumb opened={OPENED} tone={tone} />
+      <EditorTopBar.Breadcrumb opened={OPENED} />
       {saveState ? <EditorTopBar.SaveBadge state={saveState} /> : null}
       {fileErrors ? (
         <EditorTopBar.FileInvalidBadge errors={fileErrors} />
@@ -99,6 +86,6 @@ export const FileInvalid: Story = {
   name: "ファイルが不正",
   args: {
     tone: EDITOR_TOP_BAR_TONES.error,
-    fileErrors: FILE_ERRORS,
+    fileErrors: SAMPLE_FILE_ERRORS,
   },
 };

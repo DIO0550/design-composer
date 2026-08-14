@@ -66,20 +66,25 @@ function RightPaneContent({
   token: TokenActions;
   onGoToSource: () => void;
 }>): ReactElement {
+  const inspector = (
+    <PropertyPanel
+      state={state}
+      onEditProp={node.editProp}
+      onClearSelection={node.clearSelection}
+      instance={{
+        goToSource: onGoToSource,
+        detach: node.detachInstance,
+      }}
+    />
+  );
+
   /*
    * 凍結は行き先より先に見る。ファイルが不正な間はトークンも編集できないので、
    * Tokens を開いたまま壊れたときに編集欄が残らないようにする（#135）。
    * プロパティパネルが凍結時の中身（「選択は凍結中」）を持つ。
    */
   if (EditorState.isFileInvalid(state)) {
-    return (
-      <PropertyPanel
-        state={state}
-        onEditProp={node.editProp}
-        onClearSelection={node.clearSelection}
-        instance={{ goToSource: onGoToSource, detach: node.detachInstance }}
-      />
-    );
+    return inspector;
   }
 
   switch (view) {
@@ -94,17 +99,7 @@ function RightPaneContent({
       );
     case LEFT_PANE_VIEWS.layers:
     case LEFT_PANE_VIEWS.assets:
-      return (
-        <PropertyPanel
-          state={state}
-          onEditProp={node.editProp}
-          onClearSelection={node.clearSelection}
-          instance={{
-            goToSource: onGoToSource,
-            detach: node.detachInstance,
-          }}
-        />
-      );
+      return inspector;
   }
 }
 
@@ -280,27 +275,30 @@ function EditorBody({
     onReload: (reload) => dispatch({ type: "reload_document", reload }),
   });
 
-  /*
-   * 帯とパンくずは同じ色味から決まるので、1 つの値を両方へ渡す
-   * （片方だけ赤い組み合わせを作らない）。
-   */
-  const tone = EditorState.isFileInvalid(state)
+  const isFileInvalid = EditorState.isFileInvalid(state);
+  const tone = isFileInvalid
     ? EDITOR_TOP_BAR_TONES.error
     : EDITOR_TOP_BAR_TONES.normal;
 
   return (
     <div className="flex h-full min-h-0 flex-col">
       <EditorTopBar tone={tone}>
-        <EditorTopBar.Breadcrumb opened={opened} tone={tone} />
+        <EditorTopBar.Breadcrumb opened={opened} />
         {/*
           ファイルが不正な間は保存状態を出さない。映っているのは最後に正常だった
           表示で、それがファイルに載っているかどうかは今の関心ではないため（#135）。
         */}
-        {EditorState.isFileInvalid(state) ? (
+        {isFileInvalid ? (
           <EditorTopBar.FileInvalidBadge errors={state.fileErrors} />
         ) : (
           <EditorTopBar.SaveBadge state={saveState} />
         )}
+        {/*
+          Why not: UI 案の Error 画面は倍率の枠を `showing last valid render · 4s ago`
+          へ置き換えて倍率を落としているが、倍率は表示の操作でファイルにも編集履歴にも
+          触れないので凍結中も残す（最後に正常だった表示を確かめるのに使える）。
+          相対時刻は #183 でこの左隣に入る。
+        */}
         <EditorTopBar.Zoom
           view={canvasView.view}
           onZoomIn={canvasView.zoomIn}

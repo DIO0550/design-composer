@@ -8,7 +8,7 @@ import {
 } from "@/features/editor/__tests__/canvas-gesture";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
-import { renderCanvas } from "./setup";
+import { injectedStyles, renderCanvas } from "./setup";
 
 /**
  * `home` に Text の `title` と、空の Box `panel` が並ぶ状態。
@@ -45,13 +45,6 @@ function drawn(name: string): Element {
 /** artboard の並び。キャンバスの中で、名前を持たない場所として使う。 */
 function artboardList(): Element {
   return Option.unwrap(Option.fromNullable(document.querySelector("ul")));
-}
-
-/** キャンバスへ差し込まれている規則をすべて連結したもの。 */
-function injectedStyles(): string {
-  return Array.from(document.querySelectorAll("style"))
-    .map((style) => style.textContent ?? "")
-    .join("");
 }
 
 /** ノードを掴んで運び、離すまで。運ぶ距離はクリックと区別が付くだけ取る。 */

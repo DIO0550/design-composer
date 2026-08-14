@@ -1,9 +1,15 @@
-import type { ReactElement, ReactNode } from "react";
+import {
+  createContext,
+  type ReactElement,
+  type ReactNode,
+  useContext,
+} from "react";
 import { CanvasView } from "@/features/editor/domains/canvas-view";
 import type { DocumentError } from "@/features/editor/domains/document-error";
 import type { DocumentSaveState } from "@/features/editor/domains/document-save-state";
 import { OpenedDocument } from "@/features/editor/domains/opened-document";
 import type { ValueOf } from "@/types/ValueOf";
+import { Option } from "@/utils/Option";
 
 /**
  * 帯全体の色味。ファイルが不正な間は帯ごと赤へ振れる（UI 案 docs/Design Composer.html の
@@ -26,14 +32,7 @@ const ROOT_TONE_CLASS = {
   error: "border-red-200 bg-red-50 text-red-900",
 } as const satisfies Readonly<Record<EditorTopBarTone, string>>;
 
-/**
- * 色味ごとの、パンくずの 3 つの部品の色。
- *
- * 帯とパンくずは同じ色味から決まるので、呼び出し側は**同じ値**を両方へ渡すこと
- * （帯だけ赤くしてパンくずが灰色のまま、という組み合わせを作らない）。
- * Why not: Context で暗黙に配る案は採らない。両者は 1 階層しか離れておらず、
- * `rules/components.md` は「まずは props / Composition で十分かを確認する」としている。
- */
+/** 色味ごとの、パンくずの 3 つの部品の色。 */
 const BREADCRUMB_TONE_FACES = {
   normal: {
     folder: "text-gray-500",
@@ -51,6 +50,32 @@ const BREADCRUMB_TONE_FACES = {
     Readonly<{ folder: string; separator: string; file: string }>
   >
 >;
+
+const EditorTopBarToneContext = createContext<Option<EditorTopBarTone>>(
+  Option.none,
+);
+
+/**
+ * 帯が配っている色味。
+ *
+ * 帯とパンくずは同じ色味から決まるので、**入口を 1 つにして食い違いを書けなくする**
+ * （props で 2 箇所へ渡す形にすると「帯だけ赤い」組み合わせが作れてしまい、
+ * それを禁じるのはコメント＝規律になる / rules/coding.md「前提をコメントで書くのは、
+ * 型で閉じたことにならない」）。親が暗黙のスタイルを配り子が使う形なので
+ * `rules/components.md` のコンパウンドコンポーネントに当たる。
+ *
+ * @returns 囲っている `EditorTopBar` の色味
+ * @throws `EditorTopBar` の外で呼ばれたとき（配置ミスなので隠さずに落とす）
+ */
+function useEditorTopBarTone(): EditorTopBarTone {
+  const tone = useContext(EditorTopBarToneContext);
+  if (!tone.some) {
+    throw new Error(
+      "EditorTopBar.Breadcrumb は EditorTopBar の内側でのみ使える",
+    );
+  }
+  return tone.value;
+}
 
 /**
  * 編集画面の上端の帯（UI 案 docs/Design Composer.html の Default 画面。高さ 38px）。
@@ -76,11 +101,13 @@ function EditorTopBarRoot({
   children,
 }: Readonly<{ tone: EditorTopBarTone; children: ReactNode }>) {
   return (
-    <div
-      className={`flex h-[38px] shrink-0 items-center gap-3 border-b px-3 text-xs ${ROOT_TONE_CLASS[tone]}`}
-    >
-      {children}
-    </div>
+    <EditorTopBarToneContext value={Option.some(tone)}>
+      <div
+        className={`flex h-[38px] shrink-0 items-center gap-3 border-b px-3 text-xs ${ROOT_TONE_CLASS[tone]}`}
+      >
+        {children}
+      </div>
+    </EditorTopBarToneContext>
   );
 }
 
@@ -98,11 +125,10 @@ function EditorTopBarRoot({
  */
 function DocumentBreadcrumb({
   opened,
-  tone,
-}: Readonly<{ opened: OpenedDocument; tone: EditorTopBarTone }>): ReactElement {
+}: Readonly<{ opened: OpenedDocument }>): ReactElement {
   const folderName = OpenedDocument.folderName(opened);
   const fileName = OpenedDocument.fileName(opened);
-  const face = BREADCRUMB_TONE_FACES[tone];
+  const face = BREADCRUMB_TONE_FACES[useEditorTopBarTone()];
 
   return (
     <nav aria-label="ファイルの場所" title={opened.path}>
@@ -116,6 +142,31 @@ function DocumentBreadcrumb({
         <span className={`font-medium ${face.file}`}>{fileName.value}</span>
       ) : null}
     </nav>
+  );
+}
+
+/**
+ * 帯に座るバッジの枠（UI 案はどちらの状態も `●` + 短い一言）。保存状態とファイルの不正は
+ * 入れ替わりで同じ場所に出るので、形は 1 つにして字面と色だけを差し替える。
+ *
+ * @param className 状態ごとの地と文字の色
+ * @returns `●` の点と、渡された字面を並べたバッジ
+ */
+function TopBarBadge({
+  className,
+  children,
+}: Readonly<{ className: string; children: ReactNode }>): ReactElement {
+  return (
+    <p
+      className={`flex items-center gap-1.5 rounded px-1.5 py-0.5 ${className}`}
+    >
+      {/*
+        UI 案の `●`。読み上げからは外れるので、消してもテストは 1 件も落ちない。
+        気づく手段は Storybook の視覚差分だけ。
+      */}
+      <span aria-hidden="true" className="size-1.5 rounded-full bg-current" />
+      {children}
+    </p>
   );
 }
 
@@ -152,18 +203,7 @@ function DocumentSaveBadge({
   state,
 }: Readonly<{ state: DocumentSaveState }>): ReactElement {
   const face = SAVE_BADGE_FACES[state.kind];
-  return (
-    <p
-      className={`flex items-center gap-1.5 rounded px-1.5 py-0.5 ${face.className}`}
-    >
-      {/*
-        UI 案の `●`。読み上げからは外れるので、消してもテストは 1 件も落ちない。
-        気づく手段は Storybook の視覚差分だけ。
-      */}
-      <span aria-hidden="true" className="size-1.5 rounded-full bg-current" />
-      {face.label}
-    </p>
-  );
+  return <TopBarBadge className={face.className}>{face.label}</TopBarBadge>;
 }
 
 /**
@@ -173,6 +213,10 @@ function DocumentSaveBadge({
  * ものがファイルに載っていると読めてしまうため（映っているのは最後に正常だった
  * 表示で、ファイルの現在の中身とは違う / #135）。
  *
+ * Why not: 「凍結中なら必ず 1 件以上」を型で縛る（`Option<非空の一覧>` を受ける）形は
+ * 採らない。同じ判断が `DocumentReload` で既に済んでおり、そこでの理由（起こらない
+ * 空配列の分岐を書く羽目になる）はここでも変わらないため。
+ *
  * @param errors ファイルを取り込めなかった理由。件数だけを出す（中身はキャンバス下端の一覧が出す）
  * @returns エラーの件数とファイルが不正であることを示すバッジ
  */
@@ -180,11 +224,9 @@ function FileInvalidBadge({
   errors,
 }: Readonly<{ errors: readonly DocumentError[] }>): ReactElement {
   return (
-    <p className="flex items-center gap-1.5 rounded bg-red-100 px-1.5 py-0.5 text-red-700">
-      {/* 保存状態のバッジと同じ `●`。読み上げからは外れる。 */}
-      <span aria-hidden="true" className="size-1.5 rounded-full bg-current" />
+    <TopBarBadge className="bg-red-100 text-red-700">
       {`${errors.length} 件のエラー · ファイルが不正`}
-    </p>
+    </TopBarBadge>
   );
 }
 

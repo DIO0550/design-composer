@@ -10,9 +10,16 @@ type FreezablePaneProps = PaneProps & Readonly<{ isFrozen: boolean }>;
 
 /**
  * 凍結中のペインの見え方（UI 案 docs/Design Composer.html の Error 画面は
- * `opacity:0.45` と `filter:saturate(0.4)`）。彩度も落とすのは、色が付いている
- * ものだけが凍結中も普段どおりの強さで目に入るのを避けるため
+ * パネルと右ペインが `opacity:0.45` + `filter:saturate(0.4)`）。彩度も落とすのは、
+ * 色が付いているものだけが凍結中も普段どおりの強さで目に入るのを避けるため
  * （インスタンスの紫・選択の青）。
+ *
+ * UI 案でアイコンレールだけは `saturate` を持たないが、実装ではレールを含む
+ * `<aside>` へまとめて掛けている。レールは白地に灰色の図形しか持たず、彩度を
+ * 落としても見た目が変わらないため（分けると器が 1 つ増える）。
+ *
+ * この class を落としても凍結の判定は動いたままで、テストは 1 件も落ちない。
+ * 気づく手段は Storybook の視覚差分だけ。
  */
 const FROZEN_PANE_CLASS = "opacity-45 saturate-[0.4]";
 
@@ -42,8 +49,9 @@ function EditorLayoutRoot({ children }: PaneProps) {
  * 凍結中に `inert` を付けるのは、UI 案がレールもパネルも淡色にしており、行き先の
  * 切り替えまで止めているため。`inert` はフォーカス・クリック・支援技術のすべてから
  * 外れるので、押せる見た目のまま何も起きない状態を作らずに済む。
- * **happy-dom は `inert` を強制しない**（属性は付くが click は届く）ので、押せない
- * こと自体はブラウザでしか確かめられない。
+ * **happy-dom が強制するのはフォーカスまでで、click は届く**。押せないこと自体は
+ * ブラウザでしか確かめられない（キーボードからの活性化は
+ * `artboard-canvas.frozen.test.tsx` が確かめている）。
  */
 function LeftPane({ isFrozen, children }: FreezablePaneProps) {
   return (
