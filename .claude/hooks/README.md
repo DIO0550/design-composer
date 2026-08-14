@@ -20,6 +20,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `pre-push-doc-comments.sh` | `PreToolUse` (Bash)     | **push 前の doc コメント検査**。`src/` に doc の無い宣言、または `@param` / `@returns` / `@throws` の欠けた doc があれば push をブロック |
 | `post-merge-review.sh`   | `PostToolUse` (Bash/MCP)  | **マージ後の振り返りの提示**。PR のマージを検知し、Issue への追記と評価の記録を促す       |
 | `hook-canary.sh`         | `PreToolUse` (Bash)       | **カナリア**。`echo hook-canary` を必ず deny する。通ってしまったらフックが発火しない実行環境（後述） |
+| `session-url-notice.sh`  | `SessionStart`            | **セッション URL の提示**（AGENTS.md「Issue に紐づいて起動したら、セッションの URL を Issue に残す」）。URL を組み立てて渡す。ブランチが `claude/issue-<N>-...` なら対象の番号も添える |
 
 ## 移植元から見送ったもの
 
@@ -79,6 +80,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 | --- | --- |
 | `block-lint-suppress.sh`(編集時のブロック) | **あり**。抑制コメントは diff に残るので、`.github/scripts/check-added-lint-suppressions.sh` が**追加行の分だけ**同じ判定で落とす(許可される例外も `lib/lint-suppressions.py` で共有) |
 | `block-npx.sh`(セッション中の行為の禁止) | **無し**。push の時点で痕跡が残らないため代替不能 |
+| `session-url-notice.sh`(セッション URL の提示) | **無し**。URL はセッションの中にしか無く、残す先も GitHub のコメントなので、push の時点で痕跡が残らない。落ちても穴は開かない(規約が AGENTS.md に残り、失っても情報が 1 つ足りないだけでガードは破れない) |
 | `post-edit-lint.sh` / `check-test-rules.sh` / `check-doc-comments.sh` / `check-test-helper-duplication.sh`(即時フィードバック) | 結果は push 前の検査(git hooks)と CI が拾う。**即時性だけが失われる** |
 
 **doc コメントとテスト規約は CI(層 1)へ上げた**(`frontend.yml` の `rules-check`)。
@@ -98,6 +100,14 @@ silent だったフックの不発が detected に変わる。
 - **deny される** → このセッションではフックが発火している
 - **通ってしまう** → フック不発環境。その旨を PR 本文と `harness/records/` の記録に残す
   (実行環境ごとの統計が記録に溜まる)
+
+実測は割れている。**同じ「リモート実行環境」でも発火する場合としない場合がある**ので、
+不発を前提に設計しつつ、発火する側を捨てない(層 3 に置く価値はある)。
+
+| 実測 | 起動元 | 結果 |
+| --- | --- | --- |
+| PR #192(2026-08-11) | webhook 起動 | **通ってしまった** = 不発 |
+| 2026-08-14 | claude.ai/code から起動 | **deny された** = 発火 |
 
 **カナリアだけは外部コマンドに依存しない。** PreToolUse は exit 2 以外の異常終了を
 「非ブロックのエラー」として素通りさせるので、`jq` の無い環境では他のフックと同様に
