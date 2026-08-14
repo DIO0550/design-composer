@@ -1,5 +1,5 @@
 {
-  "reportVersion": "53301eda1f165c7beb9d7d54d4e9d1a998bfe754",
+  "reportVersion": "1608f7cc18f0cc68b2381106e2f801b6970ecf2f",
   "maxDiffRatio": 0.002,
   "changed": 0,
   "new": 4,
@@ -723,9 +723,9 @@
       "hasDiff": false
     },
     {
-      "story": "features-editor-tokencanvaslegend--multiple",
-      "id": "features-editor-tokencanvaslegend--multiple",
-      "title": "features/editor/TokenCanvasLegend",
+      "story": "features-editor-tokendashednodes--multiple",
+      "id": "features-editor-tokendashednodes--multiple",
+      "title": "features/editor/TokenDashedNodes",
       "name": "参照が複数",
       "status": "new",
       "reason": "no-baseline",
@@ -736,9 +736,9 @@
       "hasDiff": false
     },
     {
-      "story": "features-editor-tokencanvaslegend--non-color",
-      "id": "features-editor-tokencanvaslegend--non-color",
-      "title": "features/editor/TokenCanvasLegend",
+      "story": "features-editor-tokendashednodes--non-color",
+      "id": "features-editor-tokendashednodes--non-color",
+      "title": "features/editor/TokenDashedNodes",
       "name": "色以外のトークン",
       "status": "new",
       "reason": "no-baseline",
@@ -749,9 +749,9 @@
       "hasDiff": false
     },
     {
-      "story": "features-editor-tokencanvaslegend--single",
-      "id": "features-editor-tokencanvaslegend--single",
-      "title": "features/editor/TokenCanvasLegend",
+      "story": "features-editor-tokendashednodes--single",
+      "id": "features-editor-tokendashednodes--single",
+      "title": "features/editor/TokenDashedNodes",
       "name": "参照が1件",
       "status": "new",
       "reason": "no-baseline",
