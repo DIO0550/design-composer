@@ -5,18 +5,31 @@ git ネイティブのフック置き場。`core.hooksPath` をここへ向け�
 
 ## 配線
 
+`pnpm install` が `package.json` の `prepare` から [`set-hooks-path.sh`](set-hooks-path.sh) を呼び、
+`core.hooksPath` をここへ向ける。**クローン直後に手で実行するものは無い。**
+
 ```bash
-git config core.hooksPath harness/githooks
+# 配線されているかの確認
+git config --get core.hooksPath   # → harness/githooks
 ```
 
-DevContainer では `postCreateCommand` が実行する（`.devcontainer/devcontainer.json`）。
-それ以外の環境では、クローン後に手で 1 度実行する。
+DevContainer の `postCreateCommand`（`.devcontainer/devcontainer.json`）にも同じ設定が
+残っている。`pnpm install` より前に配線されるので消していないが、配線の担当は `prepare`。
+
+**手で 1 度実行する形をやめたのは、実行し忘れた環境が実際に穴になっていたため。**
+リモート実行環境（Claude Code on the web など）は毎回クローンからやり直すうえ、
+DevContainer の `postCreateCommand` も走らない。そこは Claude Code のフックが
+読まれないことがある環境と同じなので、**2 層が同時に抜けて CI だけが残る**状態になっていた。
 
 ## 何が走るか
 
 | フック | 検査 | 呼んでいるもの |
 | --- | --- | --- |
 | `pre-push` | 型 / lint / format / doc コメント / テスト規約 | `pnpm run typecheck`・`pnpm run lint`・`pnpm exec biome check`・`.claude/hooks/lib/missing-doc-comments.py`・`.claude/hooks/lib/test-rules-scan.sh` |
+
+| スクリプト | 呼ばれ方 | 内容 |
+| --- | --- | --- |
+| `set-hooks-path.sh` | `package.json` の `prepare`（`pnpm install`） | `core.hooksPath` をここへ向ける。git の無い環境・git リポジトリでない場所では黙って飛ばす |
 
 **検査そのものは `.claude/hooks/lib/` と共有している。** Claude Code のフックはこれと
 同じスクリプトを走らせる即時フィードバック版で、内容が二重管理にならないようにしている。

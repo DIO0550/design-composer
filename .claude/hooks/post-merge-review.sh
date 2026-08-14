@@ -5,7 +5,7 @@
 #
 # 提示する内容:
 #   1. 意思決定が変わっていれば該当 Issue にコメントする(implementation-flow スキル フェーズ 8)
-#   2. その回の評価を記録して PR にする(harness-growth スキル)
+#   2. その回の評価を記録して PR にする(harness-record スキル)
 #
 # マージ自体はブロックしない。マージは人の判断で行われるので、記録が無いことを理由に
 # 止めても実装者が困るだけで、記録の質は上がらないため。
@@ -62,10 +62,13 @@ message="${target} がマージされました。マージ後の 2 つを行っ�
    手順: .claude/skills/implementation-flow/SKILL.md「フェーズ 8: マージ後の追記」
 
 2. その回の評価を記録する
-   harness-growth スキルを実行し、${record_path} に記録を書いて別ブランチで PR を出す。
-   同じ分類が 2 回以上出ていれば rules/ / .claude/skills/ / .claude/hooks/ の改善も
-   同じ PR に含める。指摘が 0 件の回も記録は残す。
-   手順: .claude/skills/harness-growth/SKILL.md"
+   harness-record スキルを実行し、${record_path} に記録を書いて別ブランチで PR を出す。
+   指摘が 0 件の回も記録は残す。
+   手順: .claude/skills/harness-record/SKILL.md
+
+   記録を残すところまでで、集計(count.sh)と rules/ / .claude/skills/ /
+   .claude/hooks/ の改善はここでは行わない。それは harness-growth スキルの管轄で、
+   棚卸しの機会にまとめて行う。"
 
 jq -Rn --arg msg "$message" '{
   hookSpecificOutput: {

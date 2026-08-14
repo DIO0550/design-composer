@@ -2,6 +2,7 @@ import { DocumentStart } from "@/features/editor/components/document-start";
 import { DocumentToolbar } from "@/features/editor/components/document-toolbar";
 import { OpenedDocumentEditor } from "@/features/editor/components/opened-document-editor";
 import { useDocumentSession } from "@/features/editor/hooks/use-document-session";
+import type { Clock } from "@/libs/clock";
 import type { DocumentDialog } from "@/libs/document-dialog";
 import type { DocumentIpc } from "@/libs/document-ipc";
 
@@ -13,9 +14,10 @@ import type { DocumentIpc } from "@/libs/document-ipc";
  * 実物の組み立ては `app/` が持つ（rules/architecture.md）。
  */
 export function EditorScreen({
+  clock,
   ipc,
   dialog,
-}: Readonly<{ ipc: DocumentIpc; dialog: DocumentDialog }>) {
+}: Readonly<{ clock: Clock; ipc: DocumentIpc; dialog: DocumentDialog }>) {
   const { session, openDocument, createDocument } = useDocumentSession({
     ipc,
     dialog,
@@ -34,6 +36,7 @@ export function EditorScreen({
           // key の差し替えで捨てるのは、Effect で state をリセットしないため（rules/hooks.md）。
           <OpenedDocumentEditor
             key={session.opened.path}
+            clock={clock}
             ipc={ipc}
             opened={session.opened}
           />

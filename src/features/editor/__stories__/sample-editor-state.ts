@@ -1,4 +1,5 @@
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import { Instant } from "@/domains/instant";
 import type { DocumentError } from "@/features/editor/domains/document-error";
 import { EditorState } from "@/features/editor/domains/editor-state";
 
@@ -118,4 +119,5 @@ export const SAMPLE_FILE_ERRORS: readonly DocumentError[] = [
 export const FILE_INVALID_EDITOR_STATE = EditorState.applyReload(
   EditorState.select(SAMPLE_EDITOR_STATE, "home"),
   { kind: "rejected", errors: SAMPLE_FILE_ERRORS },
+  Instant.create(0),
 );

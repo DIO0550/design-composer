@@ -1,6 +1,7 @@
 import { act, render, screen } from "@testing-library/react";
 import { expect, test } from "vitest";
 import { SAMPLE_DOCUMENT } from "@/features/editor/__tests__/sample-document";
+import { ClockFake } from "@/libs/clock/fake";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { OpenedDocumentEditor } from "../index";
 import { canvasPane, PATH } from "./setup";
@@ -11,6 +12,7 @@ test("開いているファイルを監視できないと、その失敗が画�
 
   render(
     <OpenedDocumentEditor
+      clock={ClockFake.create().clock}
       ipc={fake.ipc}
       opened={{ path: PATH, document: SAMPLE_DOCUMENT }}
     />,
@@ -25,6 +27,7 @@ test("監視できないファイルでも、開いているドキュメント�
 
   render(
     <OpenedDocumentEditor
+      clock={ClockFake.create().clock}
       ipc={fake.ipc}
       opened={{ path: PATH, document: SAMPLE_DOCUMENT }}
     />,

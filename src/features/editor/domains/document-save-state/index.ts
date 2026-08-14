@@ -31,6 +31,17 @@ export const DocumentSaveState = {
   },
 
   /**
+   * 書き出しの最中か。
+   * ボタンを `disabled` にして二重に書かせないために読む（rules/hooks.md）。
+   *
+   * @param state 今の保存状態
+   * @returns 書き出し待ち・書き出し中なら真
+   */
+  isSaving(state: DocumentSaveState): boolean {
+    return state.kind === "saving";
+  },
+
+  /**
    * 直近の書き込みの失敗。
    *
    * @param state 今の保存状態

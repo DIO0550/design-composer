@@ -2,6 +2,7 @@ import { render } from "@testing-library/react";
 import type { ReactNode } from "react";
 import type { DocumentError } from "@/features/editor/domains/document-error";
 import { DocumentSaveState } from "@/features/editor/domains/document-save-state";
+import type { Elapsed } from "@/features/editor/domains/elapsed";
 import type { OpenedDocument } from "@/features/editor/domains/opened-document";
 import { useCanvasView } from "@/features/editor/hooks/use-canvas-view";
 import {
@@ -36,6 +37,7 @@ export function renderTopBar(
     saveState?: DocumentSaveState;
     fileErrors?: readonly DocumentError[];
     zoom?: boolean;
+    elapsed?: Elapsed;
   }>,
 ) {
   // 色味の入口は帯だけ（パンくずは Context から読む）。
@@ -48,6 +50,9 @@ export function renderTopBar(
         <EditorTopBar.FileInvalidBadge errors={bar.fileErrors} />
       ) : null}
       {bar.zoom ? <ZoomWithView /> : null}
+      {bar.elapsed ? (
+        <EditorTopBar.LastValidRender elapsed={bar.elapsed} />
+      ) : null}
     </EditorTopBar>,
   );
 }

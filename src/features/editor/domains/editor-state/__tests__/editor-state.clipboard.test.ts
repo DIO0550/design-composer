@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
+import { RECEIVED_AT } from "@/features/editor/__tests__/instants";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 
@@ -159,12 +160,16 @@ test("外部変更を取り込んでもクリップボードの中身は残る",
   const state = EditorState.select(setupState(), "title");
   const copied = Option.unwrap(EditorState.copyNode(state));
 
-  const reloaded = EditorState.applyReload(copied, {
-    kind: "reloaded",
-    document: DesignDocument.create({
-      artboards: [{ name: "home", width: 375, height: 812, children: [] }],
-    }),
-  });
+  const reloaded = EditorState.applyReload(
+    copied,
+    {
+      kind: "reloaded",
+      document: DesignDocument.create({
+        artboards: [{ name: "home", width: 375, height: 812, children: [] }],
+      }),
+    },
+    RECEIVED_AT,
+  );
 
   expect(reloaded.copiedNode).toEqual(
     Option.some({ name: "title", type: "Text" }),

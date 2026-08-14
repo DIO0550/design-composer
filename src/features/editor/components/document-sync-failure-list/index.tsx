@@ -3,26 +3,31 @@ import type { Option } from "@/utils/Option";
 
 /**
  * 開いているファイルとの同期に失敗していることを伝える一覧
- * （docs/05-architecture.md「保存モデル: 自動保存」「外部編集の検知」）。
+ * （docs/05-architecture.md「保存モデル: 自動保存」「外部編集の検知」/ #136 の書き戻し）。
  *
- * 自動保存と外部変更の監視をまとめて 1 つの一覧にするのは、どちらが失敗しても
- * 利用者に伝わる意味が同じ（画面の内容とファイルの中身がずれているかもしれない）だから。
- * 失敗が 1 つも無ければ何も描かず、キャンバスのレイアウトに影響させない。
+ * 自動保存・外部変更の監視・ファイルへの書き戻しをまとめて 1 つの一覧にするのは、
+ * どれが失敗しても利用者に伝わる意味が同じ（画面の内容とファイルの中身がずれているかも
+ * しれない）だから。失敗が 1 つも無ければ何も描かず、キャンバスのレイアウトに影響させない。
+ *
+ * 並びは同期が起きる順（自動で書く → 外から届く → 明示的に書き戻す）に固定する。
  */
 export function DocumentSyncFailureList({
   autoSave,
   watch,
+  revert,
 }: Readonly<{
   autoSave: Option<DocumentIpcError>;
   watch: Option<DocumentIpcError>;
+  revert: Option<DocumentIpcError>;
 }>) {
-  const autoSaveFailures = autoSave.some
-    ? [{ label: "自動保存に失敗しました", error: autoSave.value }]
-    : [];
-  const watchFailures = watch.some
-    ? [{ label: "外部変更の監視に失敗しました", error: watch.value }]
-    : [];
-  const failures = [...autoSaveFailures, ...watchFailures];
+  const syncKinds = [
+    { label: "自動保存に失敗しました", failure: autoSave },
+    { label: "外部変更の監視に失敗しました", failure: watch },
+    { label: "ファイルへの書き戻しに失敗しました", failure: revert },
+  ];
+  const failures = syncKinds.flatMap(({ label, failure }) =>
+    failure.some ? [{ label, error: failure.value }] : [],
+  );
 
   if (failures.length === 0) {
     return null;

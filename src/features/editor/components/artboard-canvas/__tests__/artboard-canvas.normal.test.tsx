@@ -179,3 +179,17 @@ test("コンパイルに失敗したときは失敗した旨が表示される",
   expect(screen.getByText(/コンパイルに失敗しました/)).toBeDefined();
   expect(screen.queryByText("artboard がありません")).toBeNull();
 });
+
+test("artboard のラベルには、その artboard 自身の大きさが出る", () => {
+  // 大きさの違う 2 枚を置く。1 枚だと先頭固定・幅と高さの取り違えでも通る
+  const state = setupState([
+    { name: "home", width: 360, height: 240, children: [] },
+    { name: "settings", width: 720, height: 900, children: [] },
+  ]);
+
+  renderCanvas({ state });
+
+  expect(
+    screen.getAllByText(/^\d+ × \d+$/).map((size) => size.textContent),
+  ).toStrictEqual(["360 × 240", "720 × 900"]);
+});

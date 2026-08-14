@@ -1,8 +1,8 @@
 import { type ReactElement, type ReactNode, useState } from "react";
 import { ArtboardCanvas } from "@/features/editor/components/artboard-canvas";
 import {
-  DOCUMENT_ERROR_ORIGINS,
   DocumentErrorList,
+  DocumentErrorOrigins,
 } from "@/features/editor/components/document-error-list";
 import { DocumentSyncFailureList } from "@/features/editor/components/document-sync-failure-list";
 import { EditorLayout } from "@/features/editor/components/editor-layout";
@@ -21,10 +21,12 @@ import {
 } from "@/features/editor/components/left-pane-rail";
 import { NodeInsertToolbar } from "@/features/editor/components/node-insert-toolbar";
 import { PropertyPanel } from "@/features/editor/components/property-panel";
+import { TokenDashedNodes } from "@/features/editor/components/token-dashed-nodes";
 import { TokenEditor } from "@/features/editor/components/token-editor";
 import type { DocumentError } from "@/features/editor/domains/document-error";
 import { DocumentSaveState } from "@/features/editor/domains/document-save-state";
 import { EditorState } from "@/features/editor/domains/editor-state";
+import { FileValidity } from "@/features/editor/domains/file-validity";
 import type { OpenedDocument } from "@/features/editor/domains/opened-document";
 import { useAutoSave } from "@/features/editor/hooks/use-auto-save";
 import {
@@ -33,6 +35,11 @@ import {
 } from "@/features/editor/hooks/use-canvas-view";
 import { useDocumentReload } from "@/features/editor/hooks/use-document-reload";
 import { useEditShortcuts } from "@/features/editor/hooks/use-edit-shortcuts";
+import { useElapsed } from "@/features/editor/hooks/use-elapsed";
+import {
+  type FileRevertControl,
+  useFileRevert,
+} from "@/features/editor/hooks/use-file-revert";
 import {
   type NodeActions,
   useNodeActions,
@@ -41,6 +48,7 @@ import {
   type TokenActions,
   useTokenActions,
 } from "@/features/editor/hooks/use-token-actions";
+import type { Clock } from "@/libs/clock";
 import type { DocumentIpc } from "@/libs/document-ipc";
 
 /**
@@ -119,8 +127,9 @@ type CanvasDock =
  * @returns ファイルが不正ならそのエラー、そうでなければ編集で作ったエラー
  */
 function canvasDock(state: EditorState): CanvasDock {
-  if (EditorState.isFileInvalid(state)) {
-    return { kind: "file-invalid", errors: state.fileErrors };
+  const fileValidity = state.fileValidity;
+  if (fileValidity.kind === "invalid") {
+    return { kind: "file-invalid", errors: fileValidity.errors };
   }
   return { kind: "editable", errors: EditorState.documentErrors(state) };
 }
@@ -152,23 +161,45 @@ function CanvasDockStack({ children }: Readonly<{ children: ReactNode }>) {
  */
 function CanvasDockContent({
   dock,
+  state,
   node,
-}: Readonly<{ dock: CanvasDock; node: NodeActions }>): ReactElement {
+  onReveal,
+  fileRevert,
+}: Readonly<{
+  dock: CanvasDock;
+  state: EditorState;
+  node: NodeActions;
+  onReveal: (nodeName: string) => void;
+  fileRevert: FileRevertControl;
+}>): ReactElement {
   switch (dock.kind) {
     case "file-invalid":
       return (
-        <DocumentErrorList
-          errors={dock.errors}
-          origin={DOCUMENT_ERROR_ORIGINS.file}
-        />
+        <CanvasDockStack>
+          <DocumentErrorList
+            errors={dock.errors}
+            origin={DocumentErrorOrigins.OpenedFile}
+            onReveal={onReveal}
+            onRevertFile={fileRevert.revert}
+            isReverting={DocumentSaveState.isSaving(fileRevert.saveState)}
+          />
+          {/*
+            ファイルが不正な間は左ペインが凍る（#135）ので選び直しはできないが、
+            壊れる前に選んでいたトークンの破線はキャンバスに残る。ここへ出さないと、
+            破線だけが出て何を指しているか読めない状態が画面に残る。
+          */}
+          <TokenDashedNodes state={state} />
+        </CanvasDockStack>
       );
     case "editable":
       return (
         <CanvasDockStack>
           <DocumentErrorList
             errors={dock.errors}
-            origin={DOCUMENT_ERROR_ORIGINS.document}
+            origin={DocumentErrorOrigins.Document}
+            onReveal={onReveal}
           />
+          <TokenDashedNodes state={state} />
           <NodeInsertToolbar
             isInsertEnabled={node.isInsertEnabled}
             onInsert={node.insert}
@@ -185,7 +216,11 @@ function CanvasDockContent({
  */
 function EditorPanes({
   canvasView,
-}: Readonly<{ canvasView: CanvasViewControl }>) {
+  fileRevert,
+}: Readonly<{
+  canvasView: CanvasViewControl;
+  fileRevert: FileRevertControl;
+}>) {
   const { state } = useEditor();
   const node = useNodeActions();
   const token = useTokenActions();
@@ -222,7 +257,21 @@ function EditorPanes({
           onResize={node.resize}
           onEditProp={node.editProp}
         />
-        <CanvasDockContent dock={canvasDock(state)} node={node} />
+        <CanvasDockContent
+          dock={canvasDock(state)}
+          state={state}
+          node={node}
+          /*
+           * 選ぶだけでなく行き先も Layers へ戻す。トークンを消して不正を作った直後は
+           * 左ペインが Tokens なので、選んでもツリーにもプロパティにも出ない
+           * （`Go to source component` が Assets へ移すのと同じ形）。
+           */
+          onReveal={(nodeName) => {
+            node.reveal(nodeName);
+            setLeftPaneView(LEFT_PANE_VIEWS.layers);
+          }}
+          fileRevert={fileRevert}
+        />
       </EditorLayout.CenterPane>
       <EditorLayout.RightPane isFrozen={isFrozen}>
         <RightPaneContent
@@ -252,9 +301,10 @@ function EditorPanes({
  * それを読めるのが Provider の内側だけだから。
  */
 function EditorBody({
+  clock,
   ipc,
   opened,
-}: Readonly<{ ipc: DocumentIpc; opened: OpenedDocument }>) {
+}: Readonly<{ clock: Clock; ipc: DocumentIpc; opened: OpenedDocument }>) {
   const { state, dispatch } = useEditor();
   const path = opened.path;
   /*
@@ -272,13 +322,28 @@ function EditorBody({
   const watchFailure = useDocumentReload({
     ipc,
     path,
-    onReload: (reload) => dispatch({ type: "reload_document", reload }),
+    // 時計を読むのはハンドラの中。reducer は純粋関数なのでその中では読めない。
+    onReload: (reload) =>
+      dispatch({ type: "reload_document", reload, at: clock.now() }),
+  });
+  const elapsed = useElapsed(clock, FileValidity.since(state.fileValidity));
+  const fileRevert = useFileRevert({
+    ipc,
+    path,
+    document: EditorState.document(state),
+    onReverted: () => dispatch({ type: "revert_file" }),
   });
 
-  const isFileInvalid = EditorState.isFileInvalid(state);
-  const tone = isFileInvalid
-    ? EDITOR_TOP_BAR_TONES.error
-    : EDITOR_TOP_BAR_TONES.normal;
+  /*
+   * 直和のまま持つのは、エラー一式を出す側が「不正である」ことと同時に受け取れるように
+   * するため（`isFileInvalid` で分岐してから別に読むと、0 件のまま不正と名乗る
+   * 組み合わせが書ける）。
+   */
+  const fileValidity = state.fileValidity;
+  const tone =
+    fileValidity.kind === "invalid"
+      ? EDITOR_TOP_BAR_TONES.error
+      : EDITOR_TOP_BAR_TONES.normal;
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -288,16 +353,15 @@ function EditorBody({
           ファイルが不正な間は保存状態を出さない。映っているのは最後に正常だった
           表示で、それがファイルに載っているかどうかは今の関心ではないため（#135）。
         */}
-        {isFileInvalid ? (
-          <EditorTopBar.FileInvalidBadge errors={state.fileErrors} />
+        {fileValidity.kind === "invalid" ? (
+          <EditorTopBar.FileInvalidBadge errors={fileValidity.errors} />
         ) : (
           <EditorTopBar.SaveBadge state={saveState} />
         )}
         {/*
-          Why not: UI 案の Error 画面は倍率の枠を `showing last valid render · 4s ago`
-          へ置き換えて倍率を落としているが、倍率は表示の操作でファイルにも編集履歴にも
-          触れないので凍結中も残す（最後に正常だった表示を確かめるのに使える）。
-          相対時刻は #183 でこの左隣に入る。
+          Why not: UI 案の Error 画面は倍率の枠を古さの行へ置き換えて倍率を落として
+          いるが、倍率は表示の操作でファイルにも編集履歴にも触れないので凍結中も残す
+          （最後に正常だった表示を確かめるのに使える）。古さの行（#183）は右隣に並ぶ。
         */}
         <EditorTopBar.Zoom
           view={canvasView.view}
@@ -305,12 +369,16 @@ function EditorBody({
           onZoomOut={canvasView.zoomOut}
           onReset={canvasView.reset}
         />
+        {elapsed.some ? (
+          <EditorTopBar.LastValidRender elapsed={elapsed.value} />
+        ) : null}
       </EditorTopBar>
       <DocumentSyncFailureList
         autoSave={DocumentSaveState.failure(saveState)}
         watch={watchFailure}
+        revert={DocumentSaveState.failure(fileRevert.saveState)}
       />
-      <EditorPanes canvasView={canvasView} />
+      <EditorPanes canvasView={canvasView} fileRevert={fileRevert} />
     </div>
   );
 }
@@ -321,12 +389,13 @@ function EditorBody({
  * 状態の器（Provider）と中身の組み立てだけを持つ。
  */
 export function OpenedDocumentEditor({
+  clock,
   ipc,
   opened,
-}: Readonly<{ ipc: DocumentIpc; opened: OpenedDocument }>) {
+}: Readonly<{ clock: Clock; ipc: DocumentIpc; opened: OpenedDocument }>) {
   return (
     <EditorProvider initialDocument={opened.document}>
-      <EditorBody ipc={ipc} opened={opened} />
+      <EditorBody clock={clock} ipc={ipc} opened={opened} />
     </EditorProvider>
   );
 }

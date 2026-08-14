@@ -119,19 +119,28 @@ export type Px = `${number}px`; // "16" / "16rem" は代入不可
 
 ### 値の集合から union を導出する
 
-自前で値の集合を定義してそこから union を作る場合は、**定数のオブジェクト + `ValueOf`**(`src/types/ValueOf.ts`)で書く。値を名前で指せる(`AXES.width`)ため、消費側が綴りを直接書かずに済む。走査が必要なときは `Object.values()` で並びにする。
+自前で値の集合を定義してそこから union を作る場合は、**定数のオブジェクト + `ValueOf`**(`src/types/ValueOf.ts`)で書く。値を名前で指せる(`Axes.Width`)ため、消費側が綴りを直接書かずに済む。走査が必要なときは `Object.values()` で並びにする。
+
+**名前は定数オブジェクトもプロパティも PascalCase にする。** SCREAMING_SNAKE_CASE は使わない。呼び出し側が `Hoge.Fuga` の形で読めるようにするため、`.` の左右で綴りの流儀を割らない。
 
 ```typescript
-// OK: 集合と union を二重管理しない
-export const AXES = { width: "width", height: "height" } as const;
-export type Axis = ValueOf<typeof AXES>;
+// OK: 集合と union を二重管理しない。定数もプロパティも PascalCase
+export const Axes = { Width: "width", Height: "height" } as const;
+export type Axis = ValueOf<typeof Axes>;
 
 // 走査は値の並びにしてから
-Object.values(AXES).flatMap((axis) => /* ... */);
+Object.values(Axes).flatMap((axis) => /* ... */);
 ```
 
+| NG | OK |
+|---|---|
+| `AXES.width` | `Axes.Width` |
+| `DOCUMENT_ERROR_ORIGINS.openedFile` | `DocumentErrorOrigins.OpenedFile` |
+
+- **union の型名は単数、定数オブジェクトは複数形**にして両方を同じファイルから export する(`Axes` / `Axis`)
 - スキーマなど**既にある定数から導出する**場合はこの限りではない(`CssDirection` が `BOX_SCHEMA.props.direction.values` から引くように、出どころの形に従う)
 - 既存の `TOKEN_KINDS` / `TYPOGRAPHY_FIELDS` / `PRIMITIVE_TYPES` は配列 + `(typeof X)[number]` のままになっている(#105 で寄せる)
+- 既存の `AXES` / `LEFT_PANE_VIEWS` / `PRIMITIVE_SCHEMAS` などは SCREAMING_SNAKE_CASE のままになっている(#186 で寄せる)
 
 ## 不正な状態を型で表現できなくする(型による境界)
 
@@ -273,6 +282,7 @@ function withoutToken(tokens: TokenSet, ref: TokenRef): TokenSet { /* ... */ }
 | **What の言い換え** | `// キャンバスの下端に浮かべる` の隣に `absolute bottom-4` | コードが既に言っている |
 | **コード内の値の再掲** | `（UI 案の 36×32 / border-radius:6px）` の隣に `h-8 w-9 rounded-md` | 二重管理になり、片方だけ直ると食い違う |
 | **経緯・実行履歴** | 「実際にアイコンを消して 703 件すべて通ることを確かめた」 | **Issue / PR の担当**(`AGENTS.md`「PR 本文は差分の説明、Issue は判断の履歴」) |
+| **Issue の見出し番号だけを指す** | `// #183 の決定 B のため` | コードだけを読む人には何も伝わらない。理由そのものをその場に書く(見出し番号の引用も経緯の一種) |
 | **一般論** | 「アイコンだけのボタンなので読み上げ名が要る」 | 規約や常識で、この箇所固有の情報ではない |
 
 - **判断軸は「これを消したら、次に読む人が同じ間違いをするか」。** しないなら消す

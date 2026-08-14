@@ -1,12 +1,14 @@
 import type { Artboard } from "@/domains/artboard";
 import type { AxisLength } from "@/domains/axis-length";
 import { ChildPosition } from "@/domains/child-position";
-import { DesignDocument, type TokenReferrer } from "@/domains/design-document";
+import { DesignDocument, TokenReferrer } from "@/domains/design-document";
+import type { Instant } from "@/domains/instant";
 import type { Node, PropEdit } from "@/domains/node";
 import { Token, type TokenRef, TokenSet, TokenValue } from "@/domains/token";
 import { DocumentError } from "@/features/editor/domains/document-error";
 import type { DocumentReload } from "@/features/editor/domains/document-reload";
 import { EditHistory } from "@/features/editor/domains/edit-history";
+import { FileValidity } from "@/features/editor/domains/file-validity";
 import { NodeTemplate } from "@/features/editor/domains/node-template";
 import { Selection } from "@/features/editor/domains/selection";
 import { TokenTemplate } from "@/features/editor/domains/token-template";
@@ -26,7 +28,7 @@ import { Option } from "@/utils/Option";
  * 表示に使うドキュメントは `EditorState.document`。
  *
  * 現在地は常に「最後に正常だったドキュメント」で、外部変更を拒んでも差し替えない。
- * `fileErrors` が空でない間は、画面に映っているものがファイルの現在の中身と違う
+ * `fileValidity` が `invalid` の間は、画面に映っているものがファイルの現在の中身と違う
  * （docs/03-schema.md「不正ファイル時の挙動」）。
  *
  * ドキュメント自身の不正（アプリ内の編集で作ったもの）はここに持たず
@@ -37,7 +39,7 @@ export type EditorState = Readonly<{
   selectedName: Option<string>;
   selectedToken: Option<TokenRef>;
   copiedNode: Option<Node>;
-  fileErrors: readonly DocumentError[];
+  fileValidity: FileValidity;
 }>;
 
 /**
@@ -140,6 +142,33 @@ function removableName(state: EditorState): Option<string> {
   return Option.map(selectedNode(state), (node) => node.name);
 }
 
+/**
+ * 選択中のトークンの参照元を、渡された集め方で集める。
+ *
+ * 選択が無いときも空を返し、参照が 0 件であることと区別しない。消費側の見え方が
+ * どちらでも同じ（`Used by` の枠も #147 の破線も出ない）ため、`Option` で区別しても
+ * 分岐が増えるだけになる。区別が要る消費側が現れたら、選択を引数で受け取る形
+ * （未選択の状態を渡せない形）にする。
+ *
+ * ドキュメントから引き直すので、編集・undo のあとも現在の中身を映す（`selectedToken` と同じ）。
+ *
+ * @param state 選択とドキュメントの出どころ
+ * @param collect 集める範囲（全体か、キャンバス上だけか）
+ * @returns 集まった参照元の並び。トークンを選んでいなければ空
+ */
+function referrersOfSelectedToken(
+  state: EditorState,
+  collect: (
+    document: DesignDocument,
+    ref: TokenRef,
+  ) => readonly TokenReferrer[],
+): readonly TokenReferrer[] {
+  if (!state.selectedToken.some) {
+    return [];
+  }
+  return collect(EditorState.document(state), state.selectedToken.value);
+}
+
 export const EditorState = {
   /**
    * 選択なしの状態から始める（選択は非永続なので開いた直後は何も選ばれていない）。
@@ -151,7 +180,7 @@ export const EditorState = {
       selectedName: Option.none,
       selectedToken: Option.none,
       copiedNode: Option.none,
-      fileErrors: [],
+      fileValidity: FileValidity.valid,
     };
   },
 
@@ -178,13 +207,14 @@ export const EditorState = {
    * ドキュメントなので、表示を凍結する側（キャンバスのスクリム・両ペインの淡色・
    * 上部バーのエラー表示 / #135）はこれを見て決める。
    *
-   * `fileErrors.length > 0` を見る側が書き写さないよう、判定はここに 1 つだけ置く。
+   * 凍結するかどうかだけを尋ねる側（エラーも起点も要らない側）が `fileValidity` の
+   * 直和を開かずに済むよう、判定はここに 1 つだけ置く。
    *
-   * @param state ファイルのエラーの出どころになるエディタの状態
-   * @returns 外部変更を拒んだ結果のエラーを抱えているなら `true`
+   * @param state ファイルの妥当性の出どころになるエディタの状態
+   * @returns 外部変更を拒んだままなら `true`
    */
   isFileInvalid(state: EditorState): boolean {
-    return state.fileErrors.length > 0;
+    return state.fileValidity.kind === "invalid";
   },
 
   /**
@@ -218,6 +248,25 @@ export const EditorState = {
   },
 
   /**
+   * エラーが指すノードを選ぶ（#136 のエラー行の `Reveal`）。
+   *
+   * Why not: `select` に繋がない。エラーの飛び先は表示中のドキュメントに無いことがあり
+   * （ファイルが不正な間、映っているのは最後に正常だった内容なので、壊れたファイルで
+   * 増えたノードは在らない。部品定義の中のノードも `selectableName` の対象外）、
+   * `select` は選べない名前で選択を外すため、繋ぐと「押したら選択が消えた」になる。
+   *
+   * @param state 選択を移す前の状態
+   * @param name エラーが指しているノードの名前
+   * @returns そのノードを選んだ状態。表示中のドキュメントで選べない名前なら `none`
+   */
+  reveal(state: EditorState, name: string): Option<EditorState> {
+    return Option.map(
+      selectableName(EditorState.document(state), name),
+      (revealed) => ({ ...state, selectedName: Option.some(revealed) }),
+    );
+  },
+
+  /**
    * 外部変更の取り込み結果を状態へ反映する（docs/05-architecture.md「外部編集の検知」）。
    *
    * 取り込めたときは無条件にドキュメントを差し替える（自動保存により
@@ -228,17 +277,48 @@ export const EditorState = {
    * undo バッファから復元できる」の中身だから（docs/05-architecture.md「競合の解決」）。
    * 読み直した内容を新たな起点にして履歴を捨てると、この復元経路が無くなる。
    *
-   * 拒んだときはドキュメントも選択もそのままにし、ファイルのエラー一覧だけを載せ替える。
+   * 拒んだときはドキュメントも選択もそのままにし、ファイルの妥当性だけを載せ替える。
    * 正常 / 不正の 2 つの遷移を 1 つのメソッドで受けるのは、呼び出し側が
    * 「ドキュメントを差し替えたのにエラーが残っている」ような組み合わせを作れないようにするため。
+   *
+   * @param state 取り込む前の状態
+   * @param reload 外部変更を取り込んだ結果
+   * @param at この取り込みを受け取った時刻（不正になった起点として `FileValidity` が持つ）
+   * @returns 取り込めたならドキュメントを差し替えた状態、拒んだなら妥当性だけを載せ替えた状態
    */
-  applyReload(state: EditorState, reload: DocumentReload): EditorState {
+  applyReload(
+    state: EditorState,
+    reload: DocumentReload,
+    at: Instant,
+  ): EditorState {
+    const fileValidity = FileValidity.withReload(
+      state.fileValidity,
+      reload,
+      at,
+    );
     switch (reload.kind) {
       case "reloaded":
-        return withEdit({ ...state, fileErrors: [] }, reload.document);
+        return withEdit({ ...state, fileValidity }, reload.document);
       case "rejected":
-        return { ...state, fileErrors: reload.errors };
+        return { ...state, fileValidity };
     }
+  },
+
+  /**
+   * 表示中の内容をファイルへ書き戻した後の状態（#136 の `revert file`）。
+   *
+   * ファイルの中身が表示中のドキュメントと一致したので、ファイル由来のエラーは無くなる。
+   * ドキュメントには触れないので履歴も伸びない（戻した先が今映っているものそのもので、
+   * undo で戻る先が増えるような編集は起きていない）。
+   *
+   * Why not: 書き戻しを `applyReload` の `reloaded` として表さない。`withEdit` を通るため
+   * 中身が変わっていないのに履歴が 1 つ伸び、undo が「何も起きない 1 手」を挟むことになる。
+   *
+   * @param state 書き戻す前の状態
+   * @returns ファイル由来のエラーを畳んだ状態
+   */
+  applyRevert(state: EditorState): EditorState {
+    return { ...state, fileValidity: FileValidity.valid };
   },
 
   /**
@@ -615,12 +695,28 @@ export const EditorState = {
    * ドキュメントから引き直すので、編集・undo のあとも現在の中身を映す（`selectedToken` と同じ）。
    */
   tokenReferrers(state: EditorState): readonly TokenReferrer[] {
-    if (!state.selectedToken.some) {
-      return [];
-    }
-    return DesignDocument.collectTokenReferrers(
-      EditorState.document(state),
-      state.selectedToken.value,
+    return referrersOfSelectedToken(
+      state,
+      DesignDocument.collectTokenReferrers,
+    );
+  },
+
+  /**
+   * 選択中のトークンを参照している、キャンバス上のノードの名前（#147 の破線の相手）。
+   *
+   * artboard 自身の参照が落ちるのは `TokenReferrer.nodeNames` の担当で、
+   * 部品定義の中の参照はそもそも集める範囲に入っていない。
+   *
+   * @param state 選択とドキュメントの出どころ
+   * @returns 破線を引くノードの名前。重複は無い。artboard 自身と部品定義の中のノードは
+   *   含まない。トークンを選んでいなければ空
+   */
+  tokenReferrerNodeNames(state: EditorState): readonly string[] {
+    return TokenReferrer.nodeNames(
+      referrersOfSelectedToken(
+        state,
+        DesignDocument.collectCanvasTokenReferrers,
+      ),
     );
   },
 

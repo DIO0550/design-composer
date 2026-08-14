@@ -18,6 +18,7 @@ const NODE_ACTIONS: NodeActions = {
   select: fn(),
   selectAt: fn(),
   clearSelection: fn(),
+  reveal: fn(),
   reorder: fn(),
   move: fn(),
   resize: fn(),

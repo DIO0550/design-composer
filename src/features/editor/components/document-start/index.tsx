@@ -1,6 +1,6 @@
 import {
-  DOCUMENT_ERROR_ORIGINS,
   DocumentErrorList,
+  DocumentErrorOrigins,
 } from "@/features/editor/components/document-error-list";
 import type {
   DocumentOpenFailure,
@@ -45,7 +45,7 @@ function OpenFailure({ failure }: Readonly<{ failure: DocumentOpenFailure }>) {
         </p>
         <DocumentErrorList
           errors={failure.errors}
-          origin={DOCUMENT_ERROR_ORIGINS.file}
+          origin={DocumentErrorOrigins.UnopenedFile}
         />
       </>
     );

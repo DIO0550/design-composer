@@ -3,6 +3,7 @@ import { expect, screen, waitFor } from "storybook/test";
 import { DesignDocument } from "@/domains/design-document";
 import { SAMPLE_EDITOR_STATE } from "@/features/editor/__stories__/sample-editor-state";
 import { EditorState } from "@/features/editor/domains/editor-state";
+import { ClockFake } from "@/libs/clock/fake";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
 import { OpenedDocumentEditor } from "./index";
@@ -16,11 +17,15 @@ const files = DocumentIpcFake.create({
   ),
 });
 
+/** 時計も Storybook には無いので代役にする。進めないので経過時間は動かない。 */
+const clock = ClockFake.create();
+
 const meta = {
   title: "features/editor/OpenedDocumentEditor",
   component: OpenedDocumentEditor,
   parameters: { layout: "fullscreen" },
   args: {
+    clock: clock.clock,
     ipc: files.ipc,
     opened: {
       path: SAMPLE_PATH,

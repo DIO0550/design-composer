@@ -42,6 +42,7 @@
 ## ファイル名
 
 - **ファイル名を関数名にしない。** ファイルはモジュールであり、その中の1関数の名前ではない(`resolve-prop-definition.ts` のような名前は付けない)。分割するときはモジュールとして意味のある名前を付ける
+- **React の API 名をモジュール名にしない。** `useReducer` を使っているから `use-editor-reducer`、`useContext` を使っているから `use-xxx-context` のような名前は、**何を持っているか**ではなく**何で実装したか**を指している。器を差し替えたら名前が嘘になる。フックは**返すもの**で名付ける(状態を持つなら `use-editor-state`)
 - テストファイル名は関数名ではなく**観点のラベル**にする(`rules/testing.md` の命名規則に従う)
 - `src/domains/` `src/services/` `features/` のモジュールフォルダはケバブケース + `index.ts`
 - `src/utils/` はフラットな PascalCase 1ファイル(`ArrayEx.ts` / `Result.ts` / `Font.ts`)

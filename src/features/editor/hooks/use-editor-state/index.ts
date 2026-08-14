@@ -2,6 +2,7 @@ import { type ActionDispatch, useReducer } from "react";
 import type { AxisLength } from "@/domains/axis-length";
 import type { ChildPosition } from "@/domains/child-position";
 import type { DesignDocument } from "@/domains/design-document";
+import type { Instant } from "@/domains/instant";
 import type { PropEdit } from "@/domains/node";
 import type { TokenRef, TokenValue } from "@/domains/token";
 import type { DocumentReload } from "@/features/editor/domains/document-reload";
@@ -15,7 +16,13 @@ export type EditorAction =
   | Readonly<{ type: "select"; name: string }>
   | Readonly<{ type: "select_innermost"; names: readonly string[] }>
   | Readonly<{ type: "clear_selection" }>
-  | Readonly<{ type: "reload_document"; reload: DocumentReload }>
+  | Readonly<{ type: "reveal"; name: string }>
+  /*
+   * 受け取った時刻を載せるのは、reducer が純粋関数でなければならず、その中で時計を
+   * 読めないため（rules/hooks.md「reducer 内での I/O・副作用は禁止」）。
+   */
+  | Readonly<{ type: "reload_document"; reload: DocumentReload; at: Instant }>
+  | Readonly<{ type: "revert_file" }>
   | Readonly<{
       type: "reorder_node";
       from: ChildPosition;
@@ -45,7 +52,7 @@ export type EditorAction =
  * @param action 解釈するアクション
  * @returns 遷移後のエディタの状態
  */
-function editorReducer(state: EditorState, action: EditorAction): EditorState {
+function applyAction(state: EditorState, action: EditorAction): EditorState {
   switch (action.type) {
     case "select":
       return EditorState.select(state, action.name);
@@ -53,8 +60,17 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
       return EditorState.selectInnermost(state, action.names);
     case "clear_selection":
       return EditorState.clearSelection(state);
+    case "reveal":
+      /*
+       * 飛び先が表示中のドキュメントに無ければ選択は変わらない
+       * （EditorState.reveal の `none`）。エラー行の Reveal はファイルが不正な間に
+       * 押せるので、この `none` には画面の操作から到達する。
+       */
+      return Option.unwrapOr(EditorState.reveal(state, action.name), state);
     case "reload_document":
-      return EditorState.applyReload(state, action.reload);
+      return EditorState.applyReload(state, action.reload, action.at);
+    case "revert_file":
+      return EditorState.applyRevert(state);
     case "reorder_node":
       // 移動が存在しなければ並びは変わらない（EditorState.reorderNode の `none`）。
       return Option.unwrapOr(
@@ -164,14 +180,16 @@ function editorReducer(state: EditorState, action: EditorAction): EditorState {
 }
 
 /**
+ * エディタの状態を 1 つ持ち、アクションで進める。
+ *
  * ドキュメントと選択は 1 つの操作で同時に変わる（読み直しで選択が外れる）ため、
- * useState を 2 つ並べずに reducer へ統合する（rules/hooks.md）。
+ * `useState` を 2 つ並べず 1 つの状態へ統合している（rules/hooks.md）。
  *
  * @param initialDocument 開いた直後のドキュメント
  * @returns 今のエディタの状態と、アクションの送り先
  */
-export function useEditorReducer(
+export function useEditorState(
   initialDocument: DesignDocument,
 ): [EditorState, ActionDispatch<[action: EditorAction]>] {
-  return useReducer(editorReducer, initialDocument, EditorState.create);
+  return useReducer(applyAction, initialDocument, EditorState.create);
 }

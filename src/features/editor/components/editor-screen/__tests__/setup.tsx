@@ -1,6 +1,7 @@
 import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { changeFileExternally } from "@/features/editor/__tests__/document-change";
+import { ClockFake } from "@/libs/clock/fake";
 import {
   type DialogChoices,
   DocumentDialogFake,
@@ -24,7 +25,13 @@ export function renderEditorScreen(
   const ipcFake = DocumentIpcFake.create(files);
   const dialogFake = DocumentDialogFake.create(choices);
 
-  render(<EditorScreen ipc={ipcFake.ipc} dialog={dialogFake.dialog} />);
+  render(
+    <EditorScreen
+      clock={ClockFake.create().clock}
+      ipc={ipcFake.ipc}
+      dialog={dialogFake.dialog}
+    />,
+  );
   return ipcFake;
 }
 

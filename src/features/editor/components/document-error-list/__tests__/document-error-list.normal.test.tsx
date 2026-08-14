@@ -1,11 +1,14 @@
 import { render, screen, within } from "@testing-library/react";
 import { expect, test } from "vitest";
 import { SYNTAX_ERROR } from "@/features/editor/__tests__/document-errors";
-import { DOCUMENT_ERROR_ORIGINS, DocumentErrorList } from "../index";
+import { DocumentErrorList, DocumentErrorOrigins } from "../index";
 
 test("エラーが無いときは何も重ねない", () => {
   render(
-    <DocumentErrorList errors={[]} origin={DOCUMENT_ERROR_ORIGINS.file} />,
+    <DocumentErrorList
+      errors={[]}
+      origin={DocumentErrorOrigins.UnopenedFile}
+    />,
   );
 
   expect(screen.queryByRole("alert")).toBeNull();
@@ -14,7 +17,7 @@ test("エラーが無いときは何も重ねない", () => {
 test("エラーが複数あると、件数とそれぞれの内容が一覧で出る", () => {
   render(
     <DocumentErrorList
-      origin={DOCUMENT_ERROR_ORIGINS.file}
+      origin={DocumentErrorOrigins.UnopenedFile}
       errors={[
         SYNTAX_ERROR,
         {
@@ -39,7 +42,7 @@ test("テキストの位置が分かるエラーには何文字目かが出る",
   render(
     <DocumentErrorList
       errors={[SYNTAX_ERROR]}
-      origin={DOCUMENT_ERROR_ORIGINS.file}
+      origin={DocumentErrorOrigins.UnopenedFile}
     />,
   );
 
@@ -49,7 +52,7 @@ test("テキストの位置が分かるエラーには何文字目かが出る",
 test("ノードの prop で起きたエラーにはノード名と prop 名が出る", () => {
   render(
     <DocumentErrorList
-      origin={DOCUMENT_ERROR_ORIGINS.file}
+      origin={DocumentErrorOrigins.UnopenedFile}
       errors={[
         {
           kind: "unknown-prop",
@@ -66,7 +69,7 @@ test("ノードの prop で起きたエラーにはノード名と prop 名が�
 test("prop に紐づかないノードのエラーにはノード名だけが出る", () => {
   render(
     <DocumentErrorList
-      origin={DOCUMENT_ERROR_ORIGINS.file}
+      origin={DocumentErrorOrigins.UnopenedFile}
       errors={[
         {
           kind: "dangling-ref",
@@ -83,7 +86,7 @@ test("prop に紐づかないノードのエラーにはノード名だけが出
 test("位置を持たないエラーはファイル全体の問題として出る", () => {
   render(
     <DocumentErrorList
-      origin={DOCUMENT_ERROR_ORIGINS.file}
+      origin={DocumentErrorOrigins.UnopenedFile}
       errors={[
         {
           kind: "unsupported-format-version",
@@ -100,7 +103,7 @@ test("位置を持たないエラーはファイル全体の問題として出�
 test("ドキュメント内のパスが分かるエラーにはそのパスが出る", () => {
   render(
     <DocumentErrorList
-      origin={DOCUMENT_ERROR_ORIGINS.file}
+      origin={DocumentErrorOrigins.UnopenedFile}
       errors={[
         {
           kind: "invalid-type",

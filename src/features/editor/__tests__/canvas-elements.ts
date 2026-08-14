@@ -1,5 +1,6 @@
 import { screen } from "@testing-library/react";
 import { ELEMENT_NAME_ATTRIBUTE } from "@/domains/compiled-element";
+import { TOKEN_REFERRER_OUTLINE } from "@/features/editor/components/artboard-canvas";
 import { ArrayEx } from "@/utils/ArrayEx";
 
 /**
@@ -45,15 +46,44 @@ export function renderedElement(
 }
 
 /**
+ * 渡された規則が指している名前。
+ *
  * 1 つの名前に対して差し込まれる規則は 1 本とは限らない（リサイズハンドルは
  * 基準の位置指定と辺ごとの規則を出す）ため、名前で重複を落として答える。
+ *
+ * @param styles 名前を抜きたい規則
+ * @returns その規則が指している名前。重複は落とす
  */
-export function highlightedNames(canvas: HTMLElement): readonly string[] {
+function namesIn(styles: readonly HTMLStyleElement[]): readonly string[] {
   return ArrayEx.distinct(
-    [...canvas.querySelectorAll("style")].flatMap((style) =>
+    styles.flatMap((style) =>
       [...(style.textContent ?? "").matchAll(HIGHLIGHTED_NAME_PATTERN)].map(
         (match) => match[1],
       ),
     ),
   );
+}
+
+/** キャンバスへ差し込まれたすべての規則が指している名前。 */
+export function highlightedNames(canvas: HTMLElement): readonly string[] {
+  return namesIn([...canvas.querySelectorAll("style")]);
+}
+
+/**
+ * トークンの参照元として破線が掛かっている名前。
+ *
+ * `highlightedNames` と分けているのは、あちらがすべての規則から名前を抜くため、
+ * 選択の枠・ドロップ先の枠・リサイズハンドルと区別できないから。
+ * 「参照元だけが破線になる」を確かめるには、破線の規則に絞る必要がある。
+ *
+ * 綴りを写さず実装の定数で引くので、色や太さを UI 案へ寄せ直しても落ちない。
+ *
+ * @param canvas 探す範囲になるキャンバス
+ * @returns 破線の規則が指している名前。重複は落とす
+ */
+export function tokenReferrerNames(canvas: HTMLElement): readonly string[] {
+  const dashedRules = [...canvas.querySelectorAll("style")].filter((style) =>
+    (style.textContent ?? "").includes(TOKEN_REFERRER_OUTLINE),
+  );
+  return namesIn(dashedRules);
 }
