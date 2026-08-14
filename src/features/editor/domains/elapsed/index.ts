@@ -8,7 +8,7 @@ export const ElapsedUnits = {
   Hours: "hours",
 } as const;
 
-/** 経過時間を数える単位のいずれか。 */
+/** 経過時間を読むときの単位。取りうる値は `ElapsedUnits` が列挙する。 */
 export type ElapsedUnit = ValueOf<typeof ElapsedUnits>;
 
 /**
