@@ -104,7 +104,8 @@
 | `comment-mismatch` | rules/coding.md「コメントは実装と一致させる」(コメントの内容が実装・現状と食い違う、または確かめていない主張を含む形。書く前に確かめていれば防げた) |
 | `comment-missing` | rules/coding.md「コメントは doc と Why / Why not に絞る」(書くべき Why / Why not がコードに無い形。読み手が『なぜこれではないのか』を聞くまで気づかれない) |
 | `test-placement` | rules/testing.md「配置と命名」 |
-| `test-behavior` | rules/testing.md「古典学派のテスト」 |
+| `test-default-input` | rules/testing.md「既定値・フォールバックがある処理では、既定値と違う答えになる入力を選ぶ」(確かめた入力が既定値と一致しており、規則を壊すミューテーションでも既定値側で通ってしまう形) |
+| `test-coverage-gap` | rules/testing.md「古典学派のテスト」/ `implementation-review.md`「テストが守っているかの観点」(差分の中心の判断・分岐がそもそもどのテストからも参照されておらず、ミューテーションで1件も落ちない形) |
 | `test-nesting` | rules/testing.md「テストの書き方: ネスト禁止」 |
 | `effect` | rules/hooks.md「useEffect: 最終手段として扱う」 |
 | `state-management` | rules/hooks.md「useState / useReducer の使い分け」 |
@@ -152,3 +153,12 @@ Why が無かった」形で、内容の誤りと欠如という別種の問題�
 「入力欄の約束事(空文字を未設定と読む等)をドメインへ持ち込んだ」形が 1 件、
 「feature 固有か `src/domains/` かの昇格判断を誤った」形が 1 件で、判断の性質が異なる
 3 種が 1 タグに畳まれていた。過去の記録の `分類: logic-ownership` は書き換えない。
+
+`test-behavior` は pr-211 時点で `test-default-input` / `test-coverage-gap` へ分割した
+(rules 層まで介入済みなのに再発 5 件で飽和 — 同じく「2c. 介入後 5 回以上」)。5 件の
+内訳は「確かめた入力が既定値と一致しており、ミューテーションでも既定値側で通ってしまう」
+形が 2 件(pr-173#12・pr-192#5)、「差分の中心の判断・分岐がそもそもどのテストからも
+参照されていない」形が 2 件(pr-185#7・pr-211#1)で、原因の性質が異なる 2 種が 1 タグに
+畳まれていた。残り 1 件(pr-173#13)は happy-dom が Tailwind を解決しないため原理的に
+テストで確かめられない形で、既存ルールどおりコメントで対処済みのケースであり、1 件しか
+無いためどちらの新語彙にも割らない。過去の記録の `分類: test-behavior` は書き換えない。
