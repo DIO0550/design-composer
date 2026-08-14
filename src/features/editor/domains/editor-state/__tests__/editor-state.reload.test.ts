@@ -103,3 +103,29 @@ test("ファイルが直って取り込めるようになるとファイルの�
 
   expect(state.fileErrors).toStrictEqual([]);
 });
+
+test("外部変更を拒むと、ファイルが不正なままだと答える", () => {
+  const state = EditorState.applyReload(openedState("home"), {
+    kind: "rejected",
+    errors: [SYNTAX_ERROR],
+  });
+
+  expect(EditorState.isFileInvalid(state)).toBe(true);
+});
+
+test("ファイルが直って取り込めるようになると、ファイルは不正でないと答える", () => {
+  const rejected = EditorState.applyReload(openedState("home"), {
+    kind: "rejected",
+    errors: [SYNTAX_ERROR],
+  });
+  const fixed = DesignDocument.create({
+    artboards: [{ name: "home", width: 414, height: 896, children: [] }],
+  });
+
+  const state = EditorState.applyReload(rejected, {
+    kind: "reloaded",
+    document: fixed,
+  });
+
+  expect(EditorState.isFileInvalid(state)).toBe(false);
+});

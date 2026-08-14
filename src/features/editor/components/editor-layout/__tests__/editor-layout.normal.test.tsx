@@ -5,9 +5,9 @@ import { EditorLayout } from "../index";
 function setupLayout() {
   return render(
     <EditorLayout>
-      <EditorLayout.LeftPane>左の中身</EditorLayout.LeftPane>
+      <EditorLayout.LeftPane isFrozen={false}>左の中身</EditorLayout.LeftPane>
       <EditorLayout.CenterPane>中央の中身</EditorLayout.CenterPane>
-      <EditorLayout.RightPane>右の中身</EditorLayout.RightPane>
+      <EditorLayout.RightPane isFrozen={false}>右の中身</EditorLayout.RightPane>
     </EditorLayout>,
   );
 }

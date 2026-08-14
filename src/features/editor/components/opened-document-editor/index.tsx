@@ -10,7 +10,10 @@ import {
   EditorProvider,
   useEditor,
 } from "@/features/editor/components/editor-provider";
-import { EditorTopBar } from "@/features/editor/components/editor-top-bar";
+import {
+  EDITOR_TOP_BAR_TONES,
+  EditorTopBar,
+} from "@/features/editor/components/editor-top-bar";
 import { LeftPane } from "@/features/editor/components/left-pane";
 import {
   LEFT_PANE_VIEWS,
@@ -63,6 +66,22 @@ function RightPaneContent({
   token: TokenActions;
   onGoToSource: () => void;
 }>): ReactElement {
+  /*
+   * 凍結は行き先より先に見る。ファイルが不正な間はトークンも編集できないので、
+   * Tokens を開いたまま壊れたときに編集欄が残らないようにする（#135）。
+   * プロパティパネルが凍結時の中身（「選択は凍結中」）を持つ。
+   */
+  if (EditorState.isFileInvalid(state)) {
+    return (
+      <PropertyPanel
+        state={state}
+        onEditProp={node.editProp}
+        onClearSelection={node.clearSelection}
+        instance={{ goToSource: onGoToSource, detach: node.detachInstance }}
+      />
+    );
+  }
+
   switch (view) {
     case LEFT_PANE_VIEWS.tokens:
       return (
@@ -105,9 +124,8 @@ type CanvasDock =
  * @returns ファイルが不正ならそのエラー、そうでなければ編集で作ったエラー
  */
 function canvasDock(state: EditorState): CanvasDock {
-  const fileErrors = state.fileErrors;
-  if (fileErrors.length > 0) {
-    return { kind: "file-invalid", errors: fileErrors };
+  if (EditorState.isFileInvalid(state)) {
+    return { kind: "file-invalid", errors: state.fileErrors };
   }
   return { kind: "editable", errors: EditorState.documentErrors(state) };
 }
@@ -187,9 +205,11 @@ function EditorPanes({
   );
   useEditShortcuts();
 
+  const isFrozen = EditorState.isFileInvalid(state);
+
   return (
     <EditorLayout>
-      <EditorLayout.LeftPane>
+      <EditorLayout.LeftPane isFrozen={isFrozen}>
         <LeftPane
           view={leftPaneView}
           onSelectView={setLeftPaneView}
@@ -209,7 +229,7 @@ function EditorPanes({
         />
         <CanvasDockContent dock={canvasDock(state)} node={node} />
       </EditorLayout.CenterPane>
-      <EditorLayout.RightPane>
+      <EditorLayout.RightPane isFrozen={isFrozen}>
         <RightPaneContent
           view={leftPaneView}
           state={state}
@@ -260,11 +280,27 @@ function EditorBody({
     onReload: (reload) => dispatch({ type: "reload_document", reload }),
   });
 
+  /*
+   * 帯とパンくずは同じ色味から決まるので、1 つの値を両方へ渡す
+   * （片方だけ赤い組み合わせを作らない）。
+   */
+  const tone = EditorState.isFileInvalid(state)
+    ? EDITOR_TOP_BAR_TONES.error
+    : EDITOR_TOP_BAR_TONES.normal;
+
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <EditorTopBar>
-        <EditorTopBar.Breadcrumb opened={opened} />
-        <EditorTopBar.SaveBadge state={saveState} />
+      <EditorTopBar tone={tone}>
+        <EditorTopBar.Breadcrumb opened={opened} tone={tone} />
+        {/*
+          ファイルが不正な間は保存状態を出さない。映っているのは最後に正常だった
+          表示で、それがファイルに載っているかどうかは今の関心ではないため（#135）。
+        */}
+        {EditorState.isFileInvalid(state) ? (
+          <EditorTopBar.FileInvalidBadge errors={state.fileErrors} />
+        ) : (
+          <EditorTopBar.SaveBadge state={saveState} />
+        )}
         <EditorTopBar.Zoom
           view={canvasView.view}
           onZoomIn={canvasView.zoomIn}

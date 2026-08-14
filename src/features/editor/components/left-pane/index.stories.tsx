@@ -1,6 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
-import { SAMPLE_EDITOR_STATE } from "@/features/editor/__stories__/sample-editor-state";
+import {
+  FILE_INVALID_EDITOR_STATE,
+  SAMPLE_EDITOR_STATE,
+} from "@/features/editor/__stories__/sample-editor-state";
 import { LEFT_PANE_VIEWS } from "@/features/editor/components/left-pane-rail";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import type { NodeActions } from "@/features/editor/hooks/use-node-actions";
@@ -92,5 +95,17 @@ export const LayersSelected: Story = {
   args: {
     view: LEFT_PANE_VIEWS.layers,
     state: EditorState.select(SAMPLE_EDITOR_STATE, "home"),
+  },
+};
+
+/**
+ * 外部編集でファイルが壊れているときの `Layers`（#135）。見出しの右端が `凍結中` に
+ * なる。淡色と操作不可は器（`EditorLayout.LeftPane`）が持つので、ここには出ない。
+ */
+export const LayersFrozen: Story = {
+  name: "Layers（凍結中）",
+  args: {
+    view: LEFT_PANE_VIEWS.layers,
+    state: FILE_INVALID_EDITOR_STATE,
   },
 };

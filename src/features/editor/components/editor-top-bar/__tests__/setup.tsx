@@ -1,9 +1,14 @@
 import { render } from "@testing-library/react";
 import type { ReactNode } from "react";
+import type { DocumentError } from "@/features/editor/domains/document-error";
 import { DocumentSaveState } from "@/features/editor/domains/document-save-state";
 import type { OpenedDocument } from "@/features/editor/domains/opened-document";
 import { useCanvasView } from "@/features/editor/hooks/use-canvas-view";
-import { EditorTopBar } from "../index";
+import {
+  EDITOR_TOP_BAR_TONES,
+  EditorTopBar,
+  type EditorTopBarTone,
+} from "../index";
 
 /** 倍率の並びを、実物の表示（`useCanvasView`）に繋いで描く。 */
 function ZoomWithView(): ReactNode {
@@ -27,14 +32,23 @@ function ZoomWithView(): ReactNode {
 export function renderTopBar(
   bar: Readonly<{
     opened?: OpenedDocument;
+    tone?: EditorTopBarTone;
     saveState?: DocumentSaveState;
+    fileErrors?: readonly DocumentError[];
     zoom?: boolean;
   }>,
 ) {
+  // 帯とパンくずは同じ色味から決まるので、テストからも 1 つの値で渡す。
+  const tone = bar.tone ?? EDITOR_TOP_BAR_TONES.normal;
   return render(
-    <EditorTopBar>
-      {bar.opened ? <EditorTopBar.Breadcrumb opened={bar.opened} /> : null}
+    <EditorTopBar tone={tone}>
+      {bar.opened ? (
+        <EditorTopBar.Breadcrumb opened={bar.opened} tone={tone} />
+      ) : null}
       {bar.saveState ? <EditorTopBar.SaveBadge state={bar.saveState} /> : null}
+      {bar.fileErrors ? (
+        <EditorTopBar.FileInvalidBadge errors={bar.fileErrors} />
+      ) : null}
       {bar.zoom ? <ZoomWithView /> : null}
     </EditorTopBar>,
   );

@@ -549,6 +549,53 @@ function SelectionTitle({ selection }: Readonly<{ selection: Selection }>) {
 }
 
 /**
+ * 帯の下の本文。出すものは「凍結中」「選択あり」「選択なし」の 3 つ。
+ *
+ * 凍結を最初に見るのは、ファイルが不正な間は選択の有無によらず編集させないため
+ * （#135。映っているのは最後に正常だった表示で、そこへ加えた編集は今のファイルとは
+ * 噛み合わない）。見出しの選択名は残すので、何を選んでいたかは分かる。
+ *
+ * @returns 凍結中はその旨、選択があれば入力欄、無ければ選択を促す 1 行
+ */
+function InspectorBody({
+  state,
+  onEditProp,
+  onClearSelection,
+  instance,
+}: Readonly<{
+  state: EditorState;
+  onEditProp: (edit: PropEdit) => void;
+  onClearSelection: () => void;
+  instance: InstanceActions;
+}>): ReactElement {
+  if (EditorState.isFileInvalid(state)) {
+    return <p className="text-[11px] text-gray-400">選択は凍結中</p>;
+  }
+
+  const controls = SelectionControls.forSelection(state);
+  if (!controls.some) {
+    return <p className="text-gray-500 text-sm">選択されていません</p>;
+  }
+
+  return (
+    <div className="flex flex-col items-start gap-3 text-sm">
+      <SelectionBody
+        controls={controls.value}
+        onEdit={onEditProp}
+        instance={instance}
+      />
+      <button
+        type="button"
+        onClick={onClearSelection}
+        className="rounded border border-gray-300 px-2 py-1 text-sm hover:bg-gray-100"
+      >
+        選択を解除
+      </button>
+    </div>
+  );
+}
+
+/**
  * プロパティパネル（docs/06-ui.md「画面構成」。
  * UI 案 docs/Design Composer.html のインスペクタ）。
  *
@@ -570,7 +617,6 @@ export function PropertyPanel({
   instance: InstanceActions;
 }>) {
   const selection = EditorState.selection(state);
-  const controls = SelectionControls.forSelection(state);
 
   return (
     <>
@@ -578,24 +624,12 @@ export function PropertyPanel({
         {selection.some ? <SelectionTitle selection={selection.value} /> : null}
       </EditorLayout.RightPane.Heading>
       <EditorLayout.RightPane.Body>
-        {controls.some ? (
-          <div className="flex flex-col items-start gap-3 text-sm">
-            <SelectionBody
-              controls={controls.value}
-              onEdit={onEditProp}
-              instance={instance}
-            />
-            <button
-              type="button"
-              onClick={onClearSelection}
-              className="rounded border border-gray-300 px-2 py-1 text-sm hover:bg-gray-100"
-            >
-              選択を解除
-            </button>
-          </div>
-        ) : (
-          <p className="text-gray-500 text-sm">選択されていません</p>
-        )}
+        <InspectorBody
+          state={state}
+          onEditProp={onEditProp}
+          onClearSelection={onClearSelection}
+          instance={instance}
+        />
       </EditorLayout.RightPane.Body>
     </>
   );

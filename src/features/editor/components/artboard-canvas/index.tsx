@@ -3,6 +3,7 @@ import {
   type KeyboardEvent,
   type MouseEvent,
   type PointerEvent,
+  type ReactElement,
   useMemo,
 } from "react";
 import type { AxisLength } from "@/domains/axis-length";
@@ -474,6 +475,36 @@ function CanvasBody({
 const CONTENT_TRANSFORM_ORIGIN: CSSProperties["transformOrigin"] = "0 0";
 
 /**
+ * 斜線のスクリム（UI 案 docs/Design Composer.html の Error 画面の実測値は
+ * `repeating-linear-gradient(-45deg, transparent 0 22px, rgba(209,52,56,0.055) 22px 24px)`）。
+ */
+const STALE_SCRIM_CLASS =
+  "bg-[repeating-linear-gradient(-45deg,transparent_0_22px,rgba(209,52,56,0.055)_22px_24px)]";
+
+/**
+ * ファイルが不正な間、キャンバスへ重ねるもの（#135）。斜線のスクリムと、
+ * 映っているのが最後に正常だった表示であることを名乗るバッジ。
+ *
+ * スクリムが `pointer-events-none` なのは、下のキャンバスを掴んで動かせるようにするため
+ * （凍らせるのは編集で、どこを見るかは変えられてよい）。
+ *
+ * @returns キャンバス全面の斜線と、右上のバッジ
+ */
+function StaleCanvasOverlay(): ReactElement {
+  return (
+    <>
+      <div
+        aria-hidden="true"
+        className={`pointer-events-none absolute inset-0 ${STALE_SCRIM_CLASS}`}
+      />
+      <p className="absolute top-3.5 right-3.5 rounded-[5px] border border-red-200 bg-white px-2 py-1 font-semibold text-[10px] text-red-600">
+        最後に正常だった表示
+      </p>
+    </>
+  );
+}
+
+/**
  * キャンバス（docs/06-ui.md「画面構成」）。
  * artboard を配列順に自動配置し、コンパイル結果（実 HTML / CSS）をレンダリングする。
  * ズーム / パンは非永続の view state で、ドキュメントには保存しない。
@@ -508,7 +539,13 @@ export function ArtboardCanvas({
   });
   const nodeResize = useNodeResize({ state, view, onResize });
   const textEdit = useTextEdit({ state, onEditProp });
-  const resizeHandles = NodeResize.handles(state);
+  const isFrozen = EditorState.isFileInvalid(state);
+  /*
+   * 凍結中はリサイズハンドルを出さない。`inert` の中にあって掴めないのに、
+   * 掴める帯だけが普段どおり見えることになるため。選択の枠そのものは残す
+   * （何を選んでいたかは右ペインの見出しと揃えて保つ）。
+   */
+  const resizeHandles = isFrozen ? [] : NodeResize.handles(state);
   const compiled = useMemo(
     () => DocumentHtml.compile(designDocument),
     [designDocument],
@@ -516,7 +553,9 @@ export function ArtboardCanvas({
   const dropTarget = NodeDrag.dropTarget(nodeDrag.drag);
 
   return (
-    <div className="flex h-full flex-col">
+    // relative はスクリムとバッジの基準。中央ペインも relative だが、そちらは
+    // キャンバスの外（下端に積むエラー一覧）の基準なので、覆う範囲がここより広い。
+    <div className="relative flex h-full flex-col">
       <div
         ref={surfaceRef}
         data-testid="canvas-surface"
@@ -527,6 +566,14 @@ export function ArtboardCanvas({
       >
         <div
           data-testid="canvas-content"
+          /*
+           * ファイルが不正な間は選択もドラッグもさせない（映っているのは最後に
+           * 正常だった表示なので、そこへ加えた編集は今のファイルと噛み合わない）。
+           * 掴んで動かす操作は外側の surface が持つので、`inert` を中身に付けても
+           * 見る位置は変えられる。**happy-dom は `inert` を強制しない**ため、
+           * 押せないこと自体はブラウザでしか確かめられない。
+           */
+          inert={isFrozen}
           style={{
             transform: CanvasView.transform(view),
             transformOrigin: CONTENT_TRANSFORM_ORIGIN,
@@ -542,6 +589,7 @@ export function ArtboardCanvas({
           />
         </div>
       </div>
+      {isFrozen ? <StaleCanvasOverlay /> : null}
       {state.selectedName.some ? (
         <ResizeHandleStyle
           name={state.selectedName.value}

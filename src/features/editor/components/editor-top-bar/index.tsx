@@ -1,7 +1,56 @@
 import type { ReactElement, ReactNode } from "react";
 import { CanvasView } from "@/features/editor/domains/canvas-view";
+import type { DocumentError } from "@/features/editor/domains/document-error";
 import type { DocumentSaveState } from "@/features/editor/domains/document-save-state";
 import { OpenedDocument } from "@/features/editor/domains/opened-document";
+import type { ValueOf } from "@/types/ValueOf";
+
+/**
+ * 帯全体の色味。ファイルが不正な間は帯ごと赤へ振れる（UI 案 docs/Design Composer.html の
+ * Error 画面は帯の地を `#fff6f6`、下線を `#f5d5d5`、パンくずまで赤系にする / #135）。
+ *
+ * 名前で指せるようにするのは、消費側が `"error"` を綴り直さずに済ませるため
+ * （rules/coding.md「値の集合から union を導出する」）。
+ */
+export const EDITOR_TOP_BAR_TONES = {
+  normal: "normal",
+  error: "error",
+} as const;
+
+/** 帯の色味。 */
+export type EditorTopBarTone = ValueOf<typeof EDITOR_TOP_BAR_TONES>;
+
+/** 色味ごとの、帯の地と下線と文字。 */
+const ROOT_TONE_CLASS = {
+  normal: "border-gray-300 bg-white text-gray-900",
+  error: "border-red-200 bg-red-50 text-red-900",
+} as const satisfies Readonly<Record<EditorTopBarTone, string>>;
+
+/**
+ * 色味ごとの、パンくずの 3 つの部品の色。
+ *
+ * 帯とパンくずは同じ色味から決まるので、呼び出し側は**同じ値**を両方へ渡すこと
+ * （帯だけ赤くしてパンくずが灰色のまま、という組み合わせを作らない）。
+ * Why not: Context で暗黙に配る案は採らない。両者は 1 階層しか離れておらず、
+ * `rules/components.md` は「まずは props / Composition で十分かを確認する」としている。
+ */
+const BREADCRUMB_TONE_FACES = {
+  normal: {
+    folder: "text-gray-500",
+    separator: "text-gray-300",
+    file: "text-gray-900",
+  },
+  error: {
+    folder: "text-red-400",
+    separator: "text-red-200",
+    file: "text-red-600",
+  },
+} as const satisfies Readonly<
+  Record<
+    EditorTopBarTone,
+    Readonly<{ folder: string; separator: string; file: string }>
+  >
+>;
 
 /**
  * 編集画面の上端の帯（UI 案 docs/Design Composer.html の Default 画面。高さ 38px）。
@@ -22,9 +71,14 @@ import { OpenedDocument } from "@/features/editor/domains/opened-document";
  * 高さ（`h-[38px]`）を落としても中身の分だけ縮むだけでテストは 1 件も落ちない。
  * 気づく手段は Storybook の視覚差分だけ。
  */
-function EditorTopBarRoot({ children }: Readonly<{ children: ReactNode }>) {
+function EditorTopBarRoot({
+  tone,
+  children,
+}: Readonly<{ tone: EditorTopBarTone; children: ReactNode }>) {
   return (
-    <div className="flex h-[38px] shrink-0 items-center gap-3 border-gray-300 border-b bg-white px-3 text-gray-900 text-xs">
+    <div
+      className={`flex h-[38px] shrink-0 items-center gap-3 border-b px-3 text-xs ${ROOT_TONE_CLASS[tone]}`}
+    >
       {children}
     </div>
   );
@@ -44,20 +98,22 @@ function EditorTopBarRoot({ children }: Readonly<{ children: ReactNode }>) {
  */
 function DocumentBreadcrumb({
   opened,
-}: Readonly<{ opened: OpenedDocument }>): ReactElement {
+  tone,
+}: Readonly<{ opened: OpenedDocument; tone: EditorTopBarTone }>): ReactElement {
   const folderName = OpenedDocument.folderName(opened);
   const fileName = OpenedDocument.fileName(opened);
+  const face = BREADCRUMB_TONE_FACES[tone];
 
   return (
     <nav aria-label="ファイルの場所" title={opened.path}>
       {folderName.some ? (
         <>
-          <span className="text-gray-500">{folderName.value}</span>
-          <span className="px-1.5 text-gray-300">/</span>
+          <span className={face.folder}>{folderName.value}</span>
+          <span className={`px-1.5 ${face.separator}`}>/</span>
         </>
       ) : null}
       {fileName.some ? (
-        <span className="font-medium">{fileName.value}</span>
+        <span className={`font-medium ${face.file}`}>{fileName.value}</span>
       ) : null}
     </nav>
   );
@@ -106,6 +162,28 @@ function DocumentSaveBadge({
       */}
       <span aria-hidden="true" className="size-1.5 rounded-full bg-current" />
       {face.label}
+    </p>
+  );
+}
+
+/**
+ * ファイルが不正な間、保存状態の代わりに出るもの（UI 案の `● 2 errors · file invalid`）。
+ *
+ * 保存状態と入れ替えるのは、ファイルが不正な間に「保存済み」と名乗ると、映っている
+ * ものがファイルに載っていると読めてしまうため（映っているのは最後に正常だった
+ * 表示で、ファイルの現在の中身とは違う / #135）。
+ *
+ * @param errors ファイルを取り込めなかった理由。件数だけを出す（中身はキャンバス下端の一覧が出す）
+ * @returns エラーの件数とファイルが不正であることを示すバッジ
+ */
+function FileInvalidBadge({
+  errors,
+}: Readonly<{ errors: readonly DocumentError[] }>): ReactElement {
+  return (
+    <p className="flex items-center gap-1.5 rounded bg-red-100 px-1.5 py-0.5 text-red-700">
+      {/* 保存状態のバッジと同じ `●`。読み上げからは外れる。 */}
+      <span aria-hidden="true" className="size-1.5 rounded-full bg-current" />
+      {`${errors.length} 件のエラー · ファイルが不正`}
     </p>
   );
 }
@@ -174,5 +252,6 @@ function CanvasZoom({
 export const EditorTopBar = Object.assign(EditorTopBarRoot, {
   Breadcrumb: DocumentBreadcrumb,
   SaveBadge: DocumentSaveBadge,
+  FileInvalidBadge,
   Zoom: CanvasZoom,
 });

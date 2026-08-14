@@ -1,12 +1,7 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
-import { canvasPane, renderOpenedDocument } from "./setup";
-
-/** 倍率の操作が並ぶところ。 */
-function zoomToolbar(): HTMLElement {
-  return screen.getByRole("toolbar", { name: "表示倍率" });
-}
+import { canvasPane, renderOpenedDocument, zoomToolbar } from "./setup";
 
 /** キャンバスの中身に効いている変形（ズームの結果）。 */
 function canvasTransform(): string {

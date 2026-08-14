@@ -138,6 +138,13 @@ export function LeftPane({
       <LeftPaneRail current={view} onSelect={onSelectView} />
       <LeftPanePanel
         title={LEFT_PANE_VIEW_LABELS[view]}
+        /*
+         * ファイルが不正な間は操作を受け付けない（器の `EditorLayout.LeftPane` が
+         * `inert` にする）ので、見出しでその旨を名乗る。UI 案 Error 画面の `frozen`。
+         */
+        note={
+          EditorState.isFileInvalid(state) ? Option.some("凍結中") : Option.none
+        }
         footer={leftPaneFooter(view, state, node)}
       >
         <LeftPaneContent view={view} state={state} node={node} token={token} />

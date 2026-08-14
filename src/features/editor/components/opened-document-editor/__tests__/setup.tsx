@@ -43,11 +43,28 @@ export async function breakFileExternally(
 }
 
 /**
+ * 外部がファイルを直したことにする。取り込みが成立し、ファイルのエラーは消えて
+ * 通常表示へ戻る（docs/03-schema.md「不正ファイル時の挙動」）。
+ */
+export async function fixFileExternally(fake: DocumentIpcFake): Promise<void> {
+  await changeFileExternally({
+    fake,
+    path: PATH,
+    content: DocumentJson.serialize(SAMPLE_DOCUMENT),
+  });
+}
+
+/**
  * キャンバス。同じ名前がツリーにも出るので絞るのに使う。挿入のツールバーもこの中に
  * あり、絞らないと左ペインへ置き戻す実装でも通ってしまう（#112）。
  */
 export function canvasPane(): HTMLElement {
   return screen.getByRole("main", { name: "キャンバス" });
+}
+
+/** 倍率の操作が並ぶところ。 */
+export function zoomToolbar(): HTMLElement {
+  return screen.getByRole("toolbar", { name: "表示倍率" });
 }
 
 /** 左ペイン。 */

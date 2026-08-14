@@ -1,7 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
 import { DesignDocument } from "@/domains/design-document";
-import { SAMPLE_EDITOR_STATE } from "@/features/editor/__stories__/sample-editor-state";
+import {
+  FILE_INVALID_EDITOR_STATE,
+  SAMPLE_EDITOR_STATE,
+} from "@/features/editor/__stories__/sample-editor-state";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { PropertyPanel } from "./index";
 
@@ -103,4 +106,13 @@ export const LongName: Story = {
   args: {
     state: EditorState.select(LONG_NAME_EDITOR_STATE, LONG_NODE_NAME),
   },
+};
+
+/**
+ * 外部編集でファイルが壊れているとき（#135）。見出しは選んでいたものを保ったまま、
+ * 本文だけが「選択は凍結中」になる（何を選んでいたかは消さない）。
+ */
+export const Frozen: Story = {
+  name: "凍結中",
+  args: { state: FILE_INVALID_EDITOR_STATE },
 };
