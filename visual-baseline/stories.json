@@ -15,6 +15,11 @@
     "name": "artboard を選択中"
   },
   {
+    "id": "features-editor-artboardcanvas--token-selected",
+    "title": "features/editor/ArtboardCanvas",
+    "name": "トークンを選択中"
+  },
+  {
     "id": "features-editor-artboardlist--default",
     "title": "features/editor/ArtboardList",
     "name": "選択なし（先頭が今の 1 枚）"
@@ -268,6 +273,21 @@
     "id": "features-editor-propertypanel--unset",
     "title": "features/editor/PropertyPanel",
     "name": "未指定の prop だけの Box を選択中"
+  },
+  {
+    "id": "features-editor-tokendashednodes--multiple",
+    "title": "features/editor/TokenDashedNodes",
+    "name": "参照が複数"
+  },
+  {
+    "id": "features-editor-tokendashednodes--non-color",
+    "title": "features/editor/TokenDashedNodes",
+    "name": "色以外のトークン"
+  },
+  {
+    "id": "features-editor-tokendashednodes--single",
+    "title": "features/editor/TokenDashedNodes",
+    "name": "参照が1件"
   },
   {
     "id": "features-editor-tokeneditor--color-selected",
