@@ -69,8 +69,11 @@ const DROP_PARENT_OUTLINE = "outline:2px dashed #10b981;outline-offset:1px";
  *
  * UI 案は要素ごとに `outline-offset` を 2px と 3px で使い分けているが、名前で引く規則は
  * 1 本しか差し込めないので 2px に寄せた。
+ *
+ * export しているのは、どの規則が破線かをテストが綴りを写さずに引けるようにするため
+ * （`features/editor/__tests__/canvas-elements`）。写すと色を変えただけでテストが落ちる。
  */
-const TOKEN_REFERRER_OUTLINE =
+export const TOKEN_REFERRER_OUTLINE =
   "outline:1.5px dashed #0d99ff;outline-offset:2px";
 
 /**

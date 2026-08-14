@@ -5,7 +5,12 @@ import {
   canvasContent,
   tokenReferrerNames,
 } from "@/features/editor/__tests__/canvas-elements";
-import { canvasPane, leftPane, renderOpenedDocument } from "./setup";
+import {
+  breakFileExternally,
+  canvasPane,
+  leftPane,
+  renderOpenedDocument,
+} from "./setup";
 
 /**
  * 左ペインを tokens へ切り替え、typography の節を開く。
@@ -62,17 +67,28 @@ test("トークンを選び直すと、破線が掛かる相手も選び直し�
 
   await openTypographySection();
   await selectToken("heading");
-  await selectToken("body");
+  // `subheading` を指すのは card の部品定義の中だけで、キャンバス上には 1 件も無い
+  await selectToken("subheading");
 
-  // `body` を指すのは部品定義の中だけで、キャンバス上には 1 件も無い
   expect(tokenReferrerNames(canvasContent())).toEqual([]);
 });
 
-test("破線が1本も無いトークンを選ぶと、キャンバス下端の帯も出ない", async () => {
+test("部品定義の中からしか参照されていないトークンを選ぶと、キャンバス下端の帯も出ない", async () => {
   await renderOpenedDocument();
 
   await openTypographySection();
-  await selectToken("body");
+  await selectToken("subheading");
 
   expect(screen.queryByRole("region", { name: "キャンバスの破線" })).toBeNull();
+});
+
+test("ファイルが不正な間も、選んだトークンの破線と帯が出る", async () => {
+  const ipc = await renderOpenedDocument();
+  await breakFileExternally(ipc);
+
+  await openTypographySection();
+  await selectToken("heading");
+
+  // 映っているのは最後に正常だった表示なので、破線の相手もそこに残っている
+  expect(within(legend()).getByText("1 node · dashed in canvas")).toBeDefined();
 });

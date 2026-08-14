@@ -1,4 +1,4 @@
-import type { ReactElement } from "react";
+import { type ReactElement, useMemo } from "react";
 import { ColorSwatch } from "@/components/color-swatch";
 import { EditorState } from "@/features/editor/domains/editor-state";
 
@@ -37,7 +37,16 @@ export function TokenCanvasLegend({
   state,
 }: Readonly<{ state: EditorState }>): ReactElement | null {
   const token = EditorState.selectedToken(state);
-  const nodeNames = EditorState.tokenReferrerNodeNames(state);
+  /*
+   * キャンバス側と同じ走査をここでも行う。パン / ズームでこの帯まで再レンダーされるので、
+   * 覚えないと数え直しがキャンバスと二重に走る。
+   * Why not: 上（`EditorPanes`）で 1 度求めて両方へ配らない。配ると、渡された名前と
+   * `state` が食い違う組み合わせを呼び出し側が作れてしまう。
+   */
+  const nodeNames = useMemo(
+    () => EditorState.tokenReferrerNodeNames(state),
+    [state],
+  );
 
   if (!token.some || nodeNames.length === 0) {
     return null;

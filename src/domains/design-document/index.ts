@@ -707,14 +707,37 @@ export const DesignDocument = {
     document: DesignDocument,
     ref: TokenRef,
   ): readonly TokenReferrer[] {
-    const artboardReferrers = document.artboards.flatMap((artboard) =>
-      TokenReferrer.collectInArtboard(document.components, artboard, ref),
+    const canvasReferrers = DesignDocument.collectCanvasTokenReferrers(
+      document,
+      ref,
     );
     const componentReferrers = TokenReferrer.collectInComponents(
       document.components,
       ref,
     );
-    return [...artboardReferrers, ...componentReferrers];
+    return [...canvasReferrers, ...componentReferrers];
+  },
+
+  /**
+   * キャンバスに描かれているものの中から、そのトークンを参照している箇所を集める（#147）。
+   *
+   * 走るのは artboard とその配下だけ。インスタンスは上書きしか持たず、その先の
+   * 部品定義へは降りないので、ここで集まるものはすべてキャンバスに描かれている。
+   *
+   * 全体（`collectTokenReferrers`）から絞り込むのではなく走る範囲を狭めているのは、
+   * 集めたあとに名前でドキュメントを引き直すと、由来を捨ててから復元することになるため。
+   *
+   * @param document 参照元を探すドキュメント
+   * @param ref 参照されているかを知りたいトークン
+   * @returns キャンバス上の参照元の並び。artboard 自身の props も含む
+   */
+  collectCanvasTokenReferrers(
+    document: DesignDocument,
+    ref: TokenRef,
+  ): readonly TokenReferrer[] {
+    return document.artboards.flatMap((artboard) =>
+      TokenReferrer.collectInArtboard(document.components, artboard, ref),
+    );
   },
 
   /** ドキュメントの単一名前空間で使われている名前。 */
