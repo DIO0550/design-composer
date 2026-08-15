@@ -227,9 +227,10 @@ export function TokenEditor({
                 {field.label}
               </label>
               {/*
-            数値として読めない入力では値を変えない（`TokenControl.valueFrom` の
-            `none`）。名前欄と同じで、通らなかったことは画面に出さず打ち直しに
-            任せる。仕様に無い中間状態のエラー表示を発明しないため。
+            数値として読めない入力と、値域を外れた入力では値を変えない
+            （`TokenControl.valueFrom` の `none`）。名前欄と同じで、通らなかった
+            ことは画面に出さず打ち直しに任せる。仕様に無い中間状態のエラー表示を
+            発明しないため。
           */}
               <ValueField
                 id={`${valueId}-${field.name}`}

@@ -5,6 +5,7 @@ import {
   type JsonDecoded,
   type JsonObject,
 } from "@/utils/Json";
+import { NumberEx } from "@/utils/NumberEx";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 import { ColorToken } from "./color";
@@ -15,13 +16,13 @@ export { ColorToken, Rgb } from "./color";
 export {
   type BoxShadowValue,
   type ShadowField,
-  type ShadowFieldEdit,
+  ShadowFieldEdit,
   ShadowToken,
 } from "./shadow";
 export {
   type TypographyCssProperty,
   TypographyField,
-  type TypographyFieldEdit,
+  TypographyFieldEdit,
   TypographyFieldRef,
   TypographyToken,
 } from "./typography";
@@ -119,6 +120,25 @@ export const TokenValue = {
   /** 値に名前を付けてトークンにする。 */
   toToken(value: TokenValue, name: string): Token {
     return { ...value, name };
+  },
+
+  /**
+   * 数値の種別（spacing / radius）の値を作る。
+   *
+   * どちらも px の長さなので負にはならない（docs/04-tokens.md「値の形式」）。
+   * typography / shadows のように値域付きの型で閉じられないのは、この 2 種別では
+   * 編集で渡る型が保存される値そのもの（`TokenValue`）だから。`value` を
+   * ブランド型にしても `TokenSet` が持つ入れ物は `number` のままなので、
+   * 型では弾けずこの入口の `Option` だけが境界になる。
+   *
+   * @param kind 書き込み先の種別
+   * @param value 入力欄から数値として読めた値
+   * @returns 有限で 0 以上のときだけ some
+   */
+  createNumeric(kind: NumericTokenKind, value: number): Option<TokenValue> {
+    return NumberEx.isFiniteNonNegative(value)
+      ? Option.some({ kind, value })
+      : Option.none;
   },
 } as const;
 

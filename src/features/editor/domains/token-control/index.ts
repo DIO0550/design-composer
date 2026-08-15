@@ -4,12 +4,14 @@ import {
   ColorToken,
   Rgb,
   type ShadowField,
+  ShadowFieldEdit,
   ShadowToken,
   type Token,
   type TokenKind,
   TokenSet,
-  type TokenValue,
+  TokenValue,
   type TypographyField,
+  TypographyFieldEdit,
   TypographyToken,
 } from "@/domains/token";
 import { EditorState } from "@/features/editor/domains/editor-state";
@@ -312,7 +314,8 @@ function numberFromRaw(raw: string): Option<number> {
  *
  * @param target 書き換える影と、そのどのフィールドか
  * @param raw 入力欄に入っている文字列
- * @returns 書き換え後のトークンの値。数値 / 6桁の色として読めなければ `none`
+ * @returns 書き換え後のトークンの値。数値 / 6桁の色として読めないとき、
+ *   および値域（ぼかしは 0 以上）を外れるときは `none`
  */
 function shadowValueFrom(
   target: Extract<TokenFieldTarget, { kind: "shadows" }>,
@@ -336,10 +339,12 @@ function shadowValueFrom(
       }),
     }));
   }
-  return Option.map(numberFromRaw(raw), (value) => ({
-    kind: "shadows",
-    value: ShadowToken.withField(shadow, { field, value }),
-  }));
+  return Option.flatMap(numberFromRaw(raw), (value) =>
+    Option.map(ShadowFieldEdit.createNumeric(field, value), (edit) => ({
+      kind: "shadows",
+      value: ShadowToken.withField(shadow, edit),
+    })),
+  );
 }
 
 /**
@@ -347,7 +352,8 @@ function shadowValueFrom(
  *
  * @param target 書き換える書体トークンと、そのどのフィールドか
  * @param raw 入力欄に入っている文字列
- * @returns 書き換え後のトークンの値。数値として読めなければ `none`
+ * @returns 書き換え後のトークンの値。数値として読めないとき、および値域
+ *   （太さ 100–900・サイズと行間は正の数）を外れるときは `none`
  */
 function typographyValueFrom(
   target: Extract<TokenFieldTarget, { kind: "typography" }>,
@@ -367,10 +373,12 @@ function typographyValueFrom(
       }),
     });
   }
-  return Option.map(numberFromRaw(raw), (value) => ({
-    kind: "typography",
-    value: TypographyToken.withField(typography, { field, value }),
-  }));
+  return Option.flatMap(numberFromRaw(raw), (value) =>
+    Option.map(TypographyFieldEdit.createNumeric(field, value), (edit) => ({
+      kind: "typography",
+      value: TypographyToken.withField(typography, edit),
+    })),
+  );
 }
 
 /** 選択中のトークンから編集欄を組み立て、打たれた値をトークンの値へ読み替える。 */
@@ -391,6 +399,11 @@ export const TokenControl = {
    *
    * 書き戻し先は行が持つ `target` から決める。入力欄の種類（色 / 数値）で決めると
    * 数値の欄が `spacing` と `radius` を区別できず、書き込み先を取り違えるため。
+   *
+   * @param target 書き戻し先の種別と、複合の種別ではどのフィールドか
+   * @param raw 入力欄に入っている文字列
+   * @returns 書き換え後のトークンの値。数値 / 6桁の色として読めないとき、および
+   *   値域（docs/04-tokens.md「値の形式」）を外れるときは `none`
    */
   valueFrom(target: TokenFieldTarget, raw: string): Option<TokenValue> {
     switch (target.kind) {
@@ -405,16 +418,15 @@ export const TokenControl = {
           kind: "colors",
           value: rgb,
         }));
+      /*
+       * 長さの 2 種別は値域も書き戻し方も同じなので枝を分けない。分けると、
+       * 一方だけ検証を通し忘れても型もテストも通ってしまう。
+       */
       case "spacing":
-        return Option.map(numberFromRaw(raw), (value) => ({
-          kind: "spacing",
-          value,
-        }));
       case "radius":
-        return Option.map(numberFromRaw(raw), (value) => ({
-          kind: "radius",
-          value,
-        }));
+        return Option.flatMap(numberFromRaw(raw), (value) =>
+          TokenValue.createNumeric(target.kind, value),
+        );
       case "shadows":
         return shadowValueFrom(target, raw);
       case "typography":

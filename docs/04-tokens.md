@@ -43,6 +43,7 @@ tokens セクションの体系を規定する。「見た目に関わる値は�
 ### spacing / radius
 
 - 単位なしの number。px として解釈する（生リテラルの width / height と同じ規則）
+- 長さなので **0 以上**（負は取らない）
 
 ### typography
 
@@ -50,10 +51,12 @@ tokens セクションの体系を規定する。「見た目に関わる値は�
 
 | フィールド | 型 | 必須 | 内容 |
 |---|---|---|---|
-| `fontSize` | number | ✔ | px |
-| `lineHeight` | number | ✔ | 単位なし倍率（CSS の unitless line-height） |
+| `fontSize` | number | ✔ | px。0 より大きい |
+| `lineHeight` | number | ✔ | 単位なし倍率（CSS の unitless line-height）。0 より大きい |
 | `fontWeight` | number | ✔ | 100–900 |
 | `fontFamily` | string | - | 省略時はシステムフォントスタック |
+
+- `fontWeight` は **100–900 の範囲**であって「100 刻みの 9 値」ではない。可変フォントの `450` も取りうる
 
 ### shadows
 
@@ -61,14 +64,19 @@ tokens セクションの体系を規定する。「見た目に関わる値は�
 
 | フィールド | 型 | 必須 | 内容 |
 |---|---|---|---|
-| `x` / `y` | number | ✔ | オフセット px |
-| `blur` | number | ✔ | px |
-| `spread` | number | - | px、省略時 0 |
+| `x` / `y` | number | ✔ | オフセット px。負も取る |
+| `blur` | number | ✔ | px。0 以上（CSS の blur-radius は負を取れない） |
+| `spread` | number | - | px、省略時 0。負も取る |
 | `color` | string | ✔ | **生 hex**（`#rrggbbaa` 可） |
 
 - shadows 内の `color` は colors トークンへの参照ではなく生 hex で持つ
   - 影の色は実務上ほぼ半透明の黒であり、colors パレット（背景・文字用の色一覧）に影専用色を混ぜない
   - トークン間参照（alias）導入時に、参照も許可する形へ拡張できる
+
+### 値域の扱い
+
+- 値域は**編集で受け取るところ**で課す。範囲外の入力は値を変えず、画面には何も出さない（数値として読めない入力と同じ扱い）
+- **読み込みでは値域を見ない。** 既に書かれている範囲外の値はそのまま読む。値域違反はバリデーションエラーにもしない（「警告という中間区分は設けない」ため、トークン 1 つの値域違反でファイル全体が不正になってしまう / 03-schema.md）
 
 ## トークン間参照（alias）
 

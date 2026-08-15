@@ -1,7 +1,11 @@
 import { expect, test } from "vitest";
 import { Font } from "@/utils/Font";
 import { Option } from "@/utils/Option";
-import { TypographyFieldRef, TypographyToken } from "../index";
+import {
+  TypographyFieldEdit,
+  TypographyFieldRef,
+  TypographyToken,
+} from "../index";
 
 /** fontFamily を省略した書体（docs/04-tokens.md の初期テーマの `typography.body`）。 */
 function setupTypography(): TypographyToken {
@@ -9,19 +13,19 @@ function setupTypography(): TypographyToken {
 }
 
 test("書体のサイズを変えても他のフィールドはそのまま残る", () => {
-  const changed = TypographyToken.withField(setupTypography(), {
-    field: "fontSize",
-    value: 24,
-  });
+  const changed = TypographyToken.withField(
+    setupTypography(),
+    Option.unwrap(TypographyFieldEdit.createNumeric("fontSize", 24)),
+  );
 
   expect(changed).toEqual({ fontSize: 24, lineHeight: 1.6, fontWeight: 400 });
 });
 
 test("書体の太さを変えても他のフィールドはそのまま残る", () => {
-  const changed = TypographyToken.withField(setupTypography(), {
-    field: "fontWeight",
-    value: 700,
-  });
+  const changed = TypographyToken.withField(
+    setupTypography(),
+    Option.unwrap(TypographyFieldEdit.createNumeric("fontWeight", 700)),
+  );
 
   expect(changed).toEqual({ fontSize: 16, lineHeight: 1.6, fontWeight: 700 });
 });
