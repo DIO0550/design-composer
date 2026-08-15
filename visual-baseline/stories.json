@@ -10,6 +10,11 @@
     "name": "artboard がない"
   },
   {
+    "id": "features-editor-artboardcanvas--frozen",
+    "title": "features/editor/ArtboardCanvas",
+    "name": "ファイルが不正（凍結中）"
+  },
+  {
     "id": "features-editor-artboardcanvas--selected",
     "title": "features/editor/ArtboardCanvas",
     "name": "artboard を選択中"
@@ -150,6 +155,11 @@
     "name": "3ペインに中身を差し込む"
   },
   {
+    "id": "features-editor-editorlayout--frozen",
+    "title": "features/editor/EditorLayout",
+    "name": "凍結した3ペイン"
+  },
+  {
     "id": "features-editor-editorscreen--default",
     "title": "features/editor/EditorScreen",
     "name": "開始画面"
@@ -158,6 +168,11 @@
     "id": "features-editor-editortopbar--failed",
     "title": "features/editor/EditorTopBar",
     "name": "保存に失敗"
+  },
+  {
+    "id": "features-editor-editortopbar--file-invalid",
+    "title": "features/editor/EditorTopBar",
+    "name": "ファイルが不正"
   },
   {
     "id": "features-editor-editortopbar--last-valid-render",
@@ -188,6 +203,11 @@
     "id": "features-editor-leftpane--layers",
     "title": "features/editor/LeftPane",
     "name": "Layers（ツリー）"
+  },
+  {
+    "id": "features-editor-leftpane--layers-frozen",
+    "title": "features/editor/LeftPane",
+    "name": "Layers（凍結中）"
   },
   {
     "id": "features-editor-leftpane--layers-selected",
@@ -235,6 +255,11 @@
     "name": "編集で作った不正がある編集画面"
   },
   {
+    "id": "features-editor-openeddocumenteditor--file-invalid",
+    "title": "features/editor/OpenedDocumentEditor",
+    "name": "ファイルが不正になった編集画面"
+  },
+  {
     "id": "features-editor-openeddocumenteditor--sync-failed",
     "title": "features/editor/OpenedDocumentEditor",
     "name": "同期に失敗した編集画面"
@@ -248,6 +273,11 @@
     "id": "features-editor-propertypanel--default",
     "title": "features/editor/PropertyPanel",
     "name": "選択されていない"
+  },
+  {
+    "id": "features-editor-propertypanel--frozen",
+    "title": "features/editor/PropertyPanel",
+    "name": "凍結中"
   },
   {
     "id": "features-editor-propertypanel--instance-selected",
