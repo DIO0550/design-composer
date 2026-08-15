@@ -1,4 +1,5 @@
 import { Px } from "@/domains/px";
+import type { Brand } from "@/types/Brand";
 import {
   Json,
   type JsonCursor,
@@ -29,7 +30,7 @@ export type ShadowToken = Readonly<{
  *
  * 素の `number` と構造が変わらないのでブランドで隔てている（`FontSize` と同じ理由）。
  */
-export type Blur = number & { readonly __brand: unique symbol };
+export type Blur = Brand<number, "Blur">;
 
 export const Blur = {
   /**

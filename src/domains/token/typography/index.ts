@@ -1,4 +1,5 @@
 import { Px } from "@/domains/px";
+import type { Brand } from "@/types/Brand";
 import { Font } from "@/utils/Font";
 import {
   Json,
@@ -32,7 +33,7 @@ export type TypographyToken = Readonly<{
  * テンプレートリテラル型で構造を狭められず、これが無いと `create` を通らない値が
  * 同じ顔で編集へ流れる。
  */
-export type FontSize = number & { readonly __brand: unique symbol };
+export type FontSize = Brand<number, "FontSize">;
 
 export const FontSize = {
   /**
@@ -47,7 +48,7 @@ export const FontSize = {
 } as const;
 
 /** 行の高さ（docs/04-tokens.md「typography」の `lineHeight`）。単位なしの倍率。 */
-export type LineHeight = number & { readonly __brand: unique symbol };
+export type LineHeight = Brand<number, "LineHeight">;
 
 export const LineHeight = {
   /**
@@ -70,7 +71,7 @@ const FONT_WEIGHT_RANGE = { min: 100, max: 900 } as const;
  * 100 刻みの 9 値ではなく 100–900 の範囲。docs が定めているのは型 `number` と
  * その範囲で、可変フォントの `450` も仕様の内側にある。
  */
-export type FontWeight = number & { readonly __brand: unique symbol };
+export type FontWeight = Brand<number, "FontWeight">;
 
 export const FontWeight = {
   /**
