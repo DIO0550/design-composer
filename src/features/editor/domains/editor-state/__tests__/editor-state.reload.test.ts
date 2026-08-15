@@ -152,3 +152,32 @@ test("ファイルが直ると食い違いの起点も消える", () => {
 
   expect(FileValidity.since(state.fileValidity).some).toBe(false);
 });
+
+test("外部変更を拒むと、ファイルが不正なままだと答える", () => {
+  const state = EditorState.applyReload(
+    openedState("home"),
+    { kind: "rejected", errors: [SYNTAX_ERROR] },
+    RECEIVED_AT,
+  );
+
+  expect(EditorState.isFileInvalid(state)).toBe(true);
+});
+
+test("ファイルが直って取り込めるようになると、ファイルは不正でないと答える", () => {
+  const rejected = EditorState.applyReload(
+    openedState("home"),
+    { kind: "rejected", errors: [SYNTAX_ERROR] },
+    RECEIVED_AT,
+  );
+  const fixed = DesignDocument.create({
+    artboards: [{ name: "home", width: 414, height: 896, children: [] }],
+  });
+
+  const state = EditorState.applyReload(
+    rejected,
+    { kind: "reloaded", document: fixed },
+    RECEIVED_AT,
+  );
+
+  expect(EditorState.isFileInvalid(state)).toBe(false);
+});

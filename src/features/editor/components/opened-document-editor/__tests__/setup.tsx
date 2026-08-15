@@ -67,6 +67,18 @@ export async function breakFileExternally(
 }
 
 /**
+ * 外部がファイルを直したことにする。取り込みが成立し、ファイルのエラーは消えて
+ * 通常表示へ戻る（docs/03-schema.md「不正ファイル時の挙動」）。
+ */
+export async function fixFileExternally(fake: DocumentIpcFake): Promise<void> {
+  await changeFileExternally({
+    fake,
+    path: PATH,
+    content: DocumentJson.serialize(SAMPLE_DOCUMENT),
+  });
+}
+
+/**
  * 外部が「読めるが仕様に反する」内容を書いたことにする。
  *
  * `breakFileExternally` の壊し方（字句スキャンで落ちる）ではエラーの場所が
@@ -99,6 +111,11 @@ export async function invalidateFileExternally(
  */
 export function canvasPane(): HTMLElement {
   return screen.getByRole("main", { name: "キャンバス" });
+}
+
+/** 倍率の操作が並ぶところ。 */
+export function zoomToolbar(): HTMLElement {
+  return screen.getByRole("toolbar", { name: "表示倍率" });
 }
 
 /**

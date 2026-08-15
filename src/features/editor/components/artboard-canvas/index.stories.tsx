@@ -3,6 +3,7 @@ import type { ComponentProps } from "react";
 import { fn } from "storybook/test";
 import {
   EMPTY_EDITOR_STATE,
+  FILE_INVALID_EDITOR_STATE,
   SAMPLE_EDITOR_STATE,
 } from "@/features/editor/__stories__/sample-editor-state";
 import { EditorState } from "@/features/editor/domains/editor-state";
@@ -84,4 +85,18 @@ export const TokenSelected: Story = {
 export const Empty: Story = {
   name: "artboard がない",
   args: { state: EMPTY_EDITOR_STATE },
+};
+
+/**
+ * 外部編集でファイルが壊れているとき（#135）。最後に描けた内容が斜線のスクリムの下に
+ * 残り、右上に「最後に正常だった表示」のバッジが出る。
+ *
+ * 選んだままの artboard に選択の枠は残るが、掴める帯（リサイズハンドル）は出ない。
+ * 帯を出さないのは `inert` の効果ではなく、キャンバスが凍結中はハンドルを 1 本も
+ * 渡さないため。**この差はこのストーリーにしか映らない**（凍結していない
+ * `artboard を選択中` と見比べる）。
+ */
+export const Frozen: Story = {
+  name: "ファイルが不正（凍結中）",
+  args: { state: FILE_INVALID_EDITOR_STATE },
 };

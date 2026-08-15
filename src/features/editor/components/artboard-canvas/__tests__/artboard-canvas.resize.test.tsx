@@ -9,7 +9,7 @@ import {
 import { EditorState } from "@/features/editor/domains/editor-state";
 import type { CanvasBounds } from "@/features/editor/domains/node-drop";
 import { Option } from "@/utils/Option";
-import { renderCanvas } from "./setup";
+import { injectedStyles, renderCanvas } from "./setup";
 
 /**
  * `home` に、2 軸とも固定の `panel`、モードを指定していない `title`、
@@ -53,13 +53,6 @@ function drawn(name: string): Element {
   return Option.unwrap(
     Option.fromNullable(document.querySelector(`[data-name="${name}"]`)),
   );
-}
-
-/** キャンバスへ差し込まれている規則をすべて連結したもの。 */
-function injectedStyles(): string {
-  return Array.from(document.querySelectorAll("style"))
-    .map((style) => style.textContent ?? "")
-    .join("");
 }
 
 /**

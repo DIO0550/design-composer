@@ -1,9 +1,15 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import { SAMPLE_FILE_ERRORS } from "@/features/editor/__stories__/sample-editor-state";
 import { CanvasView } from "@/features/editor/domains/canvas-view";
+import type { DocumentError } from "@/features/editor/domains/document-error";
 import { DocumentSaveState } from "@/features/editor/domains/document-save-state";
 import { type Elapsed, ElapsedUnits } from "@/features/editor/domains/elapsed";
-import { EditorTopBar } from "./index";
+import {
+  EditorTopBar,
+  type EditorTopBarTone,
+  EditorTopBarTones,
+} from "./index";
 
 const OPENED = {
   path: "/work/settings-ui/app.dcmp",
@@ -11,17 +17,29 @@ const OPENED = {
 };
 
 /**
- * 帯は children で組むので、ストーリーは中身を揃えた 1 本を描き、保存状態だけを
- * 差し替えて 3 つの見え方を比べられるようにする。倍率の操作は表示だけを見たいので繋がない。
+ * 帯は children で組むので、ストーリーは中身を揃えた 1 本を描き、色味と保存状態だけを
+ * 差し替えて見え方を比べられるようにする。倍率の操作は表示だけを見たいので繋がない。
+ *
+ * 保存状態とファイルのエラーは**同時に出さない**（本物も入れ替える / #135）。
  */
 function TopBar({
-  state,
+  tone,
+  saveState,
+  fileErrors,
   elapsed,
-}: Readonly<{ state: DocumentSaveState; elapsed?: Elapsed }>) {
+}: Readonly<{
+  tone: EditorTopBarTone;
+  saveState?: DocumentSaveState;
+  fileErrors?: readonly DocumentError[];
+  elapsed?: Elapsed;
+}>) {
   return (
-    <EditorTopBar>
+    <EditorTopBar tone={tone}>
       <EditorTopBar.Breadcrumb opened={OPENED} />
-      <EditorTopBar.SaveBadge state={state} />
+      {saveState ? <EditorTopBar.SaveBadge state={saveState} /> : null}
+      {fileErrors ? (
+        <EditorTopBar.FileInvalidBadge errors={fileErrors} />
+      ) : null}
       <EditorTopBar.Zoom
         view={CanvasView.create()}
         onZoomIn={() => {}}
@@ -37,6 +55,7 @@ const meta = {
   title: "features/editor/EditorTopBar",
   component: TopBar,
   parameters: { layout: "fullscreen" },
+  args: { tone: EditorTopBarTones.Normal },
 } satisfies Meta<typeof TopBar>;
 
 export default meta;
@@ -45,18 +64,18 @@ type Story = StoryObj<typeof meta>;
 
 export const Saved: Story = {
   name: "保存済み",
-  args: { state: DocumentSaveState.SAVED },
+  args: { saveState: DocumentSaveState.SAVED },
 };
 
 export const Saving: Story = {
   name: "保存中",
-  args: { state: DocumentSaveState.SAVING },
+  args: { saveState: DocumentSaveState.SAVING },
 };
 
 export const Failed: Story = {
   name: "保存に失敗",
   args: {
-    state: DocumentSaveState.fromError({
+    saveState: DocumentSaveState.fromError({
       kind: "permissionDenied",
       message: "/work/settings-ui/app.dcmp: 書き込みが許可されていない",
     }),
@@ -64,15 +83,30 @@ export const Failed: Story = {
 };
 
 /**
- * 外部編集でファイルが不正になり、映っているのが最後に正常だった表示になっている状態（#183）。
+ * 古さの行だけを出した状態（#183）。帯の色味と保存状態は普段のままなので、
+ * **古さの行と倍率が同じ帯へ並ぶ**ところだけを見られる。
  *
- * このストーリーだけが、古さの行と倍率が**同じ帯へ並ぶ**ところを映す。UI 案の Error 画面には
- * 倍率が無く、凍結表示（#135）が入るまでの過渡的な並びなので、視覚差分で見えるようにしておく。
+ * UI 案の Error 画面には倍率が無いが、倍率はファイルにも編集履歴にも触れない表示の操作
+ * なので凍結中も残す（判断は #135）。並びは過渡ではなくこの形で確定している。
  */
 export const LastValidRender: Story = {
   name: "最後に正常だった表示を出している状態",
   args: {
-    state: DocumentSaveState.SAVED,
+    saveState: DocumentSaveState.SAVED,
+    elapsed: { unit: ElapsedUnits.Seconds, count: 4 },
+  },
+};
+
+/**
+ * 外部編集でファイルが壊れている状態（#135）。帯ごと赤へ振れ、保存状態の代わりに
+ * エラーの件数が出る。パンくずも同じ色味へ寄ることと、古さの行が同じ帯に並ぶことを
+ * ここで確かめる（実画面で凍結中に見えるのはこの組み合わせ）。
+ */
+export const FileInvalid: Story = {
+  name: "ファイルが不正",
+  args: {
+    tone: EditorTopBarTones.Error,
+    fileErrors: SAMPLE_FILE_ERRORS,
     elapsed: { unit: ElapsedUnits.Seconds, count: 4 },
   },
 };

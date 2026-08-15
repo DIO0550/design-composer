@@ -1,10 +1,15 @@
 import { render } from "@testing-library/react";
 import type { ReactNode } from "react";
+import type { DocumentError } from "@/features/editor/domains/document-error";
 import { DocumentSaveState } from "@/features/editor/domains/document-save-state";
 import type { Elapsed } from "@/features/editor/domains/elapsed";
 import type { OpenedDocument } from "@/features/editor/domains/opened-document";
 import { useCanvasView } from "@/features/editor/hooks/use-canvas-view";
-import { EditorTopBar } from "../index";
+import {
+  EditorTopBar,
+  type EditorTopBarTone,
+  EditorTopBarTones,
+} from "../index";
 
 /** 倍率の並びを、実物の表示（`useCanvasView`）に繋いで描く。 */
 function ZoomWithView(): ReactNode {
@@ -28,15 +33,22 @@ function ZoomWithView(): ReactNode {
 export function renderTopBar(
   bar: Readonly<{
     opened?: OpenedDocument;
+    tone?: EditorTopBarTone;
     saveState?: DocumentSaveState;
+    fileErrors?: readonly DocumentError[];
     zoom?: boolean;
     elapsed?: Elapsed;
   }>,
 ) {
+  // 色味の入口は帯だけ（パンくずは Context から読む）。
+  const tone = bar.tone ?? EditorTopBarTones.Normal;
   return render(
-    <EditorTopBar>
+    <EditorTopBar tone={tone}>
       {bar.opened ? <EditorTopBar.Breadcrumb opened={bar.opened} /> : null}
       {bar.saveState ? <EditorTopBar.SaveBadge state={bar.saveState} /> : null}
+      {bar.fileErrors ? (
+        <EditorTopBar.FileInvalidBadge errors={bar.fileErrors} />
+      ) : null}
       {bar.zoom ? <ZoomWithView /> : null}
       {bar.elapsed ? (
         <EditorTopBar.LastValidRender elapsed={bar.elapsed} />

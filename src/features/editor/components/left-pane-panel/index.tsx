@@ -15,10 +15,13 @@ import type { Option } from "@/utils/Option";
  */
 export function LeftPanePanel({
   title,
+  note,
   footer,
   children,
 }: Readonly<{
   title: string;
+  /** 見出しの右端に添える補助情報（UI 案の Error 画面の `frozen`）。 */
+  note: Option<ReactNode>;
   footer: Option<ReactNode>;
   children: ReactNode;
 }>) {
@@ -26,6 +29,11 @@ export function LeftPanePanel({
     <div className="flex min-w-0 flex-1 flex-col overflow-hidden bg-white">
       <div className="flex h-11 shrink-0 items-center border-gray-300 border-b px-3">
         <h2 className="font-semibold text-gray-900 text-sm">{title}</h2>
+        {note.some ? (
+          <span className="ml-auto text-[10px] text-gray-400">
+            {note.value}
+          </span>
+        ) : null}
       </div>
       {/*
         `min-h-0 flex-1` を外すと本体が中身の高さのままになり、フッターが下端から

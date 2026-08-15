@@ -51,3 +51,16 @@ export function renderCanvas(
     />,
   );
 }
+
+/**
+ * キャンバスへ差し込まれた CSS 規則をすべて繋いだもの。
+ *
+ * 選択の枠もリサイズハンドルも、キャンバスの中身が React の管理外にあるため
+ * `<style>` として差し込まれる（`NameStyleRule` / `ResizeHandleStyle`）。
+ * 出ているかどうかはここを読むしかない。
+ */
+export function injectedStyles(): string {
+  return Array.from(document.querySelectorAll("style"))
+    .map((style) => style.textContent ?? "")
+    .join("");
+}

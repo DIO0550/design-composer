@@ -10,7 +10,10 @@ import {
   EditorProvider,
   useEditor,
 } from "@/features/editor/components/editor-provider";
-import { EditorTopBar } from "@/features/editor/components/editor-top-bar";
+import {
+  EditorTopBar,
+  EditorTopBarTones,
+} from "@/features/editor/components/editor-top-bar";
 import { LeftPane } from "@/features/editor/components/left-pane";
 import {
   LEFT_PANE_VIEWS,
@@ -71,6 +74,27 @@ function RightPaneContent({
   token: TokenActions;
   onGoToSource: () => void;
 }>): ReactElement {
+  const inspector = (
+    <PropertyPanel
+      state={state}
+      onEditProp={node.editProp}
+      onClearSelection={node.clearSelection}
+      instance={{
+        goToSource: onGoToSource,
+        detach: node.detachInstance,
+      }}
+    />
+  );
+
+  /*
+   * 凍結は行き先より先に見る。ファイルが不正な間はトークンも編集できないので、
+   * Tokens を開いたまま壊れたときに編集欄が残らないようにする（#135）。
+   * プロパティパネルが凍結時の中身（「選択は凍結中」）を持つ。
+   */
+  if (EditorState.isFileInvalid(state)) {
+    return inspector;
+  }
+
   switch (view) {
     case LEFT_PANE_VIEWS.tokens:
       return (
@@ -83,17 +107,7 @@ function RightPaneContent({
       );
     case LEFT_PANE_VIEWS.layers:
     case LEFT_PANE_VIEWS.assets:
-      return (
-        <PropertyPanel
-          state={state}
-          onEditProp={node.editProp}
-          onClearSelection={node.clearSelection}
-          instance={{
-            goToSource: onGoToSource,
-            detach: node.detachInstance,
-          }}
-        />
-      );
+      return inspector;
   }
 }
 
@@ -114,7 +128,7 @@ type CanvasDock =
  */
 function canvasDock(state: EditorState): CanvasDock {
   const fileValidity = state.fileValidity;
-  if (fileValidity.kind === "invalid") {
+  if (FileValidity.isInvalid(fileValidity)) {
     return { kind: "file-invalid", errors: fileValidity.errors };
   }
   return { kind: "editable", errors: EditorState.documentErrors(state) };
@@ -170,7 +184,8 @@ function CanvasDockContent({
             isReverting={DocumentSaveState.isSaving(fileRevert.saveState)}
           />
           {/*
-            ファイルが不正な間もトークンは選べるので破線は出る。ここへ出さないと、
+            ファイルが不正な間は左ペインが凍る（#135）ので選び直しはできないが、
+            壊れる前に選んでいたトークンの破線はキャンバスに残る。ここへ出さないと、
             破線だけが出て何を指しているか読めない状態が画面に残る。
           */}
           <TokenDashedNodes state={state} />
@@ -220,9 +235,11 @@ function EditorPanes({
   );
   useEditShortcuts();
 
+  const isFrozen = EditorState.isFileInvalid(state);
+
   return (
     <EditorLayout>
-      <EditorLayout.LeftPane>
+      <EditorLayout.LeftPane isFrozen={isFrozen}>
         <LeftPane
           view={leftPaneView}
           onSelectView={setLeftPaneView}
@@ -256,7 +273,7 @@ function EditorPanes({
           fileRevert={fileRevert}
         />
       </EditorLayout.CenterPane>
-      <EditorLayout.RightPane>
+      <EditorLayout.RightPane isFrozen={isFrozen}>
         <RightPaneContent
           view={leftPaneView}
           state={state}
@@ -317,11 +334,34 @@ function EditorBody({
     onReverted: () => dispatch({ type: "revert_file" }),
   });
 
+  /*
+   * 直和のまま持つのは、エラー一式を出す側が「不正である」ことと同時に受け取れるように
+   * するため（`isFileInvalid` で分岐してから別に読むと、0 件のまま不正と名乗る
+   * 組み合わせが書ける）。
+   */
+  const fileValidity = state.fileValidity;
+  const tone = FileValidity.isInvalid(fileValidity)
+    ? EditorTopBarTones.Error
+    : EditorTopBarTones.Normal;
+
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <EditorTopBar>
+      <EditorTopBar tone={tone}>
         <EditorTopBar.Breadcrumb opened={opened} />
-        <EditorTopBar.SaveBadge state={saveState} />
+        {/*
+          ファイルが不正な間は保存状態を出さない。映っているのは最後に正常だった
+          表示で、それがファイルに載っているかどうかは今の関心ではないため（#135）。
+        */}
+        {FileValidity.isInvalid(fileValidity) ? (
+          <EditorTopBar.FileInvalidBadge errors={fileValidity.errors} />
+        ) : (
+          <EditorTopBar.SaveBadge state={saveState} />
+        )}
+        {/*
+          Why not: UI 案の Error 画面は倍率の枠を古さの行へ置き換えて倍率を落として
+          いるが、倍率は表示の操作でファイルにも編集履歴にも触れないので凍結中も残す
+          （最後に正常だった表示を確かめるのに使える）。古さの行（#183）は右隣に並ぶ。
+        */}
         <EditorTopBar.Zoom
           view={canvasView.view}
           onZoomIn={canvasView.zoomIn}

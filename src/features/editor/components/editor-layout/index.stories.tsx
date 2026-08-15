@@ -16,9 +16,32 @@ export const Default: Story = {
   args: {
     children: (
       <>
-        <EditorLayout.LeftPane>レール・パネル</EditorLayout.LeftPane>
+        <EditorLayout.LeftPane isFrozen={false}>
+          レール・パネル
+        </EditorLayout.LeftPane>
         <EditorLayout.CenterPane>キャンバス</EditorLayout.CenterPane>
-        <EditorLayout.RightPane>プロパティパネル</EditorLayout.RightPane>
+        <EditorLayout.RightPane isFrozen={false}>
+          プロパティパネル
+        </EditorLayout.RightPane>
+      </>
+    ),
+  },
+};
+
+/**
+ * ファイルが不正で表示を凍結した 3 ペイン（#135）。左右が淡色に落ちることを
+ * ここで比べられる（凍結は左右のペインだけで、キャンバスは自前でスクリムを持つ）。
+ */
+export const Frozen: Story = {
+  name: "凍結した3ペイン",
+  args: {
+    children: (
+      <>
+        <EditorLayout.LeftPane isFrozen>レール・パネル</EditorLayout.LeftPane>
+        <EditorLayout.CenterPane>キャンバス</EditorLayout.CenterPane>
+        <EditorLayout.RightPane isFrozen>
+          プロパティパネル
+        </EditorLayout.RightPane>
       </>
     ),
   },
