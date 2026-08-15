@@ -124,9 +124,9 @@ const SCALAR_FIELD_NAME = "value";
 const SCALAR_LABEL = "値";
 
 /** 色に添える不透明度の行。見出しは既存の編集欄に合わせて日本語で書く。 */
-const COLORS_ALPHA_FIELD_NAME = "alpha";
-const SHADOW_ALPHA_FIELD_NAME = "colorAlpha";
-const ALPHA_LABEL = "不透明度";
+const ColorsAlphaFieldName = "alpha";
+const ShadowAlphaFieldName = "colorAlpha";
+const AlphaLabel = "不透明度";
 
 /** 影のフィールドの見出し。既存の編集欄に合わせて日本語で書く。 */
 const SHADOW_LABELS = {
@@ -322,8 +322,8 @@ function fieldsOf(token: Token): readonly TokenControlField[] {
           target: { kind: "colors", color: token.value },
         },
         {
-          name: COLORS_ALPHA_FIELD_NAME,
-          label: ALPHA_LABEL,
+          name: ColorsAlphaFieldName,
+          label: AlphaLabel,
           target: { kind: "colorsAlpha", color: token.value },
         },
       );
@@ -352,8 +352,8 @@ function fieldsOf(token: Token): readonly TokenControlField[] {
                 target: { kind: "shadows", shadow: token.value, field },
               },
               {
-                name: SHADOW_ALPHA_FIELD_NAME,
-                label: ALPHA_LABEL,
+                name: ShadowAlphaFieldName,
+                label: AlphaLabel,
                 target: { kind: "shadowsAlpha", shadow: token.value },
               },
             )
