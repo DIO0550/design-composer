@@ -113,6 +113,7 @@
 | `ref-guard` | rules/hooks.md「useRef の使い分け」 |
 | `composition` | rules/components.md「Composition パターン」 |
 | `ui-fidelity` | rules/ui-verification.md「UIの拠り所」 |
+| `ui-fidelity-misread` | rules/ui-verification.md「見るのはスクリーンショットではなくマークアップ」/ `implementation-review.md`「UI 要素の意味の観点」(マークアップを見たうえで、UI 要素が実際に何を表しているかを他の画面・状態・属性と突き合わせずに断定して読み違える形) |
 | `over-guard` | 過剰なブロック / フォールバック(implementation-flow のフェーズ 6) |
 | `plan` | 計画の誤り・不足(implementation-flow のフェーズ 3〜4) |
 | `なし` | 既存の規約に対応が無い(＝規約の抜けの候補) |
@@ -176,3 +177,15 @@ Why が無かった」形で、内容の誤りと欠如という別種の問題�
 層=rules のまま据え置き、前者は既存ルールがあるのに気づく手段が無く出どころがすべて
 レビューだったため、`implementation-review.md`「命名の観点」へ引き上げた。過去の記録の
 `分類: naming` は書き換えない。
+
+`ui-fidelity` は pr-199 時点で `ui-fidelity-misread` へ部分分割した(rules 層まで介入済み
+なのに再発 5 件で飽和 — 同じく「2c. 介入後 5 回以上」)。5 件のうち 3 件(pr-162#9・pr-173#9・
+pr-199#1)は「マークアップを見たうえで、UI 要素が実際に何を表しているかを他の画面・状態・
+属性と突き合わせずに断定する」という同じ形で、原因の性質が共通していた。残り 2 件
+(pr-157#6・pr-171#12)はそれぞれ「UI 案に無い配置を提案しかけた」「VRT の閾値未満の差を
+赤くなると見込んだ」で性質が異なる単発の指摘のため、新語彙には割らず旧タグに残す
+(1 件しか出ていない分類は何もしない)。層は `implementation-review.md`「UI 要素の意味の
+観点」と `plan-review.md`「UI 案の要素が実際に何を表しているか」へ引き上げた(観点)。
+フック化は不成立(要素が何を表すかの判断には意味理解が要り、機械判定できない)、新しい
+スキルも不要(段取りが増えるのではなく判断基準が増えただけ)。過去の記録の
+`分類: ui-fidelity` は書き換えない。
