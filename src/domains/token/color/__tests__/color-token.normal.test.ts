@@ -18,6 +18,18 @@ test("hex として読めない値は正規化されずそのまま返る", () =
   expect(ColorToken.normalize("RED")).toBe("RED");
 });
 
+test("不透明を表す alpha を持つ色は6桁へ正規化される", () => {
+  expect(ColorToken.normalize("#3b82f6ff")).toBe("#3b82f6");
+});
+
+test("大文字で書かれた不透明の alpha も6桁へ正規化される", () => {
+  expect(ColorToken.normalize("#3B82F6FF")).toBe("#3b82f6");
+});
+
+test("末尾が ff でも6桁の色は桁が落ちない", () => {
+  expect(ColorToken.normalize("#ccccff")).toBe("#ccccff");
+});
+
 test("正規化した色は有効な色として判定される", () => {
   expect(ColorToken.isValid(ColorToken.normalize("#3B82F6"))).toBe(true);
 });
