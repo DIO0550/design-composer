@@ -1,5 +1,6 @@
 import { Json, type JsonCursor, type JsonDecoded } from "@/utils/Json";
 import { Option } from "@/utils/Option";
+import { Range } from "@/utils/Range";
 import { Result } from "@/utils/Result";
 
 /** 色の値。`#rrggbb` または alpha 込みの `#rrggbbaa`(docs/04-tokens.md)。 */
@@ -52,6 +53,30 @@ function alphaOf(color: ColorToken): string {
   return ANY_CASE_HEX_COLOR_PATTERN.exec(color)?.[1]?.toLowerCase() ?? "";
 }
 
+/** 不透明を表す alpha の 2 桁。 */
+const OPAQUE_ALPHA_HEX = "ff";
+
+/** alpha を最大まで開いたときのバイト値。 */
+const OPAQUE_ALPHA_BYTE = 255;
+
+/** `#` と 6 桁を合わせた長さ。alpha の桁を落とすときの切り取り位置。 */
+const RGB_LENGTH = 7;
+
+/**
+ * 不透明度の % の値域。
+ * CSS の alpha と同じく 0%（完全に透明）から 100%（不透明）まで。
+ */
+const AlphaPercentRange: Range = { min: 0, max: 100 };
+
+/**
+ * 保存形式の 2 桁と行き来しても値が変わらない、% の刻み。
+ *
+ * 0.1% 刻みにすると 256 通りの alpha すべてが同じ 2 桁へ戻る。整数 % だと
+ * 155 通りが別の値になり（`#rrggbb01` は 0% を経由して完全な透明になる）、
+ * 往復で値が変わらないという仕様（#142）を満たせない。
+ */
+const PERCENT_STEPS_PER_UNIT = 10;
+
 export const ColorToken = {
   /**
    * 正規形は小文字の hex のみ。
@@ -63,27 +88,87 @@ export const ColorToken = {
   },
 
   /**
-   * hex として読める値を正規形(小文字)へ倒す。
+   * hex として読める値を正規形(小文字・不透明なら6桁)へ倒す。
    * hex でない値は正規形が定義できないので、意味を変えずそのまま返す
    * (不正値としての報告はバリデーションの担当)。
+   *
+   * `ff` を落とすのは、`#111827` と `#111827ff` が同値異表記で、
+   * docs/04-tokens.md「値の形式」が正規形を1つに保つと明文で決めているため。
+   * `ShadowToken.normalized` が `spread` の 0 を省略へ倒さないのとは事情が違う
+   * (あちらが定めているのは既定値の解決規則で、表記の規則ではない)。
    */
   normalize(value: string): ColorToken {
-    return ANY_CASE_HEX_COLOR_PATTERN.test(value) ? value.toLowerCase() : value;
+    if (!ANY_CASE_HEX_COLOR_PATTERN.test(value)) {
+      return value;
+    }
+    const lowered = value.toLowerCase();
+    return alphaOf(lowered) === OPAQUE_ALPHA_HEX
+      ? lowered.slice(0, RGB_LENGTH)
+      : lowered;
   },
 
   /**
-   * RGB の6桁だけを差し替え、alpha は元の値から引き継ぐ。
+   * ピッカーに載せられる 6 桁の部分。
+   *
+   * `input[type=color]` は6桁しか扱えず、8桁を渡すとブラウザが `#000000` へ
+   * 落として黙って黒い見本を出すため、載せる前にここで分ける。
+   *
+   * @param color 6 桁の部分を取り出したい色
+   * @returns hex として読めた場合だけ `some`。読めない値は取り出しようがないので `none`
+   */
+  rgbOf(color: ColorToken): Option<Rgb> {
+    return ANY_CASE_HEX_COLOR_PATTERN.test(color)
+      ? Rgb.create(color.slice(0, RGB_LENGTH))
+      : Option.none;
+  },
+
+  /**
+   * その色の不透明度(%)。小数第1位まで。
+   *
+   * @param color 不透明度を読みたい色
+   * @returns 0（完全に透明）から 100（不透明）。alpha の桁を持たない色は
+   *   不透明なので 100（hex として読めない値も alpha を持たないので同じ）
+   */
+  alphaPercentOf(color: ColorToken): number {
+    const alpha = alphaOf(color);
+    const byte = alpha === "" ? OPAQUE_ALPHA_BYTE : Number.parseInt(alpha, 16);
+    return (
+      Math.round((byte / OPAQUE_ALPHA_BYTE) * 100 * PERCENT_STEPS_PER_UNIT) /
+      PERCENT_STEPS_PER_UNIT
+    );
+  },
+
+  /**
+   * RGB の6桁だけを差し替えた色。alpha は元の値のまま残る。
    * 6桁であることは `Rgb` が型で保証するので、ここでは確かめ直さない。
    *
-   * `#rrggbbaa` は正規形として認められている(docs/04-tokens.md「colors」)が、
-   * `input[type=color]` は6桁しか扱えず alpha を表せない。引き継がないと、
-   * 半透明が常用される影の色(同「shadows」)をピッカーで触るだけで不透明になる。
-   *
-   * 引き継ぐ側の代償として、alpha を外す手段が画面に無い。alpha の入力欄は
-   * UI 案(docs/Design Composer.html)に無いため #142 で別に決める。
+   * @param color 差し替える前の色
+   * @param rgb 差し替え後の 6 桁
+   * @returns RGB だけが入れ替わった色
    */
   withRgb(color: ColorToken, rgb: Rgb): ColorToken {
     return `${rgb}${alphaOf(color)}`;
+  },
+
+  /**
+   * 不透明度だけを差し替えた色。RGB は元の値のまま残る。
+   *
+   * @param color 差し替える前の色
+   * @param percent 差し替え後の不透明度(%)。小数も取る
+   * @returns 不透明度だけが入れ替わった色。0–100 の外、および hex として
+   *   読めない色（差し替える先の 6 桁が取り出せない）では `none`
+   */
+  withAlphaPercent(color: ColorToken, percent: number): Option<ColorToken> {
+    if (!Range.contains(AlphaPercentRange, percent)) {
+      return Option.none;
+    }
+    return Option.map(ColorToken.rgbOf(color), (rgb) => {
+      const byte = Math.round((percent / 100) * OPAQUE_ALPHA_BYTE);
+      // 不透明なら6桁へ倒すのは normalize の担当。ここで二重に持たない
+      return ColorToken.normalize(
+        `${rgb}${byte.toString(16).padStart(2, "0")}`,
+      );
+    });
   },
 
   /** JSON 上の表現は hex 文字列。読み込んだ時点で正規形へ倒す。 */

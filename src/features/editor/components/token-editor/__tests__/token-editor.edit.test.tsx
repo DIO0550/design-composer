@@ -285,6 +285,30 @@ test("確定した値が正規化されると入力欄の表示も追随する",
   expect(screen.getByLabelText("ぼかし")).toHaveProperty("value", "7");
 });
 
+test("色の不透明度を打って確定すると一覧の hex に alpha が付く", async () => {
+  const user = renderPanes();
+  await user.click(screen.getByRole("button", { name: /primary/ }));
+
+  await user.clear(screen.getByLabelText("不透明度"));
+  await user.type(screen.getByLabelText("不透明度"), "10");
+  await user.tab();
+
+  expect(
+    screen.getByRole("button", { name: "primary #3b82f61a" }),
+  ).toBeDefined();
+});
+
+test("打った不透明度が保存形式へ丸められると入力欄の表示も追随する", async () => {
+  const user = renderPanes();
+  await user.click(screen.getByRole("button", { name: /primary/ }));
+
+  await user.clear(screen.getByLabelText("不透明度"));
+  await user.type(screen.getByLabelText("不透明度"), "10");
+  await user.tab();
+
+  expect(screen.getByLabelText("不透明度")).toHaveProperty("value", "10.2");
+});
+
 test("数値として読めない入力を確定してもトークンの値は変わらない", async () => {
   const user = renderPanes();
   await selectToken(user, "shadows", "sm");

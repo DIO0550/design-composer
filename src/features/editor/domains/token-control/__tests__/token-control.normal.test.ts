@@ -1,57 +1,16 @@
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
-import type { TokenSet } from "@/domains/token";
+import type { TokenKind } from "@/domains/token";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { Font } from "@/utils/Font";
 import { Option } from "@/utils/Option";
-import { TokenControl, type TokenControlField, TokenSection } from "../index";
+import { TokenControl, TokenSection } from "../index";
+import { fieldOf, fieldsOf, setupState } from "./setup";
 
-/** 5 種別すべてに 1 件ずつ持つドキュメントの編集状態。 */
-function setupState(): EditorState {
-  return EditorState.create(
-    DesignDocument.create({
-      tokens: {
-        colors: { primary: "#3b82f6", veil: "#3b82f680" },
-        spacing: { lg: 24 },
-        radius: { md: 8 },
-        shadows: { sm: { x: 0, y: 1, blur: 3, color: "#0000001a" } },
-        typography: {
-          body: { fontSize: 16, lineHeight: 1.6, fontWeight: 400 },
-        },
-      },
-    }),
-  );
-}
-
-function sectionOf(
-  state: EditorState,
-  kind: Parameters<typeof TokenSet.names>[1],
-): TokenSection {
+function sectionOf(state: EditorState, kind: TokenKind): TokenSection {
   return Option.unwrap(
     Option.fromNullable(
       TokenSection.forDocument(state).find((section) => section.kind === kind),
-    ),
-  );
-}
-
-/** 選択したトークンの編集欄の並び。 */
-function fieldsOf(
-  kind: Parameters<typeof TokenSet.names>[1],
-  name: string,
-): readonly TokenControlField[] {
-  const state = EditorState.selectToken(setupState(), { kind, name });
-  return Option.unwrap(TokenControl.forSelection(state)).fields;
-}
-
-/** 見出しで編集欄の1行を引く。 */
-function fieldOf(
-  kind: Parameters<typeof TokenSet.names>[1],
-  name: string,
-  label: string,
-): TokenControlField {
-  return Option.unwrap(
-    Option.fromNullable(
-      fieldsOf(kind, name).find((field) => field.label === label),
     ),
   );
 }
@@ -120,15 +79,28 @@ test("書体の行の見本は太さと解決済みのフォントを持つ", ()
   });
 });
 
-test("色を選ぶとカラーピッカーの入力欄が1つ出る", () => {
+test("色を選ぶとカラーピッカーと不透明度の入力欄が並ぶ", () => {
   expect(fieldsOf("colors", "primary")).toEqual([
     {
       name: "value",
       label: "値",
       input: { kind: "color", value: "#3b82f6" },
-      target: { kind: "colors" },
+      target: { kind: "colors", color: "#3b82f6" },
+    },
+    {
+      name: "alpha",
+      label: "不透明度",
+      input: { kind: "alphaPercent", value: 100 },
+      target: { kind: "colorsAlpha", color: "#3b82f6" },
     },
   ]);
+});
+
+test("alpha を持つ色でもカラーピッカーに渡るのは6桁だけになる", () => {
+  expect(fieldOf("colors", "veil", "値").input).toEqual({
+    kind: "color",
+    value: "#3b82f6",
+  });
 });
 
 test("長さを選ぶと数値の入力欄が1つ出る", () => {
@@ -142,13 +114,14 @@ test("長さを選ぶと数値の入力欄が1つ出る", () => {
   ]);
 });
 
-test("影を選ぶとフィールドごとの入力欄が仕様の順で並ぶ", () => {
+test("影を選ぶとフィールドごとの入力欄が仕様の順で並び、不透明度が色の直後に入る", () => {
   expect(fieldsOf("shadows", "sm").map((field) => field.label)).toEqual([
     "横のずれ",
     "縦のずれ",
     "ぼかし",
     "広がり",
     "色",
+    "不透明度",
   ]);
 });
 
@@ -262,14 +235,6 @@ test("書体のフォントを空欄にすると指定が外れる", () => {
       kind: "typography",
       value: { fontSize: 16, lineHeight: 1.6, fontWeight: 400 },
     }),
-  );
-});
-
-test("色のトークンはピッカーで選び直すと alpha が落ちる", () => {
-  const field = fieldOf("colors", "veil", "値");
-
-  expect(TokenControl.valueFrom(field.target, "#00ff00")).toEqual(
-    Option.some({ kind: "colors", value: "#00ff00" }),
   );
 });
 
