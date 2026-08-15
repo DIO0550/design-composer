@@ -221,6 +221,14 @@ function compile(props: ResolvedProps<"Box">): Style { /* ... */ }
   ```typescript
   declare const FontWeightBrand: unique symbol;
   export type FontWeight = Brand<number, typeof FontWeightBrand>;
+
+  export const FontWeight = {
+    create(value: number): Option<FontWeight> {
+      return Range.contains(FONT_WEIGHT_RANGE, value)
+        ? Option.some(value as FontWeight)
+        : Option.none;
+    },
+  } as const;
   ```
 
   - **目印の `unique symbol` は使う側で宣言する。** `unique symbol` は宣言した場所ごとに別の型になる性質を持つので、目印まで `Brand` の中へ書くとそこから作った型がすべて同じ目印を共有し、取り違えを弾けなくなる

@@ -9,6 +9,7 @@ import {
 } from "@/utils/Json";
 import { NumberEx } from "@/utils/NumberEx";
 import { Option } from "@/utils/Option";
+import { Range } from "@/utils/Range";
 import { Result } from "@/utils/Result";
 
 /*
@@ -72,7 +73,7 @@ export const LineHeight = {
 } as const;
 
 /** 書体の太さが取りうる範囲（docs/04-tokens.md「typography」の `fontWeight`）。 */
-const FONT_WEIGHT_RANGE = { min: 100, max: 900 } as const;
+const FONT_WEIGHT_RANGE = { min: 100, max: 900 } as const satisfies Range;
 
 /**
  * 書体の太さ（docs/04-tokens.md「typography」の `fontWeight`）。
@@ -88,7 +89,7 @@ export const FontWeight = {
    * @returns 100 以上 900 以下のときだけ some
    */
   create(value: number): Option<FontWeight> {
-    return NumberEx.isWithin(value, FONT_WEIGHT_RANGE)
+    return Range.contains(FONT_WEIGHT_RANGE, value)
       ? Option.some(value as FontWeight)
       : Option.none;
   },

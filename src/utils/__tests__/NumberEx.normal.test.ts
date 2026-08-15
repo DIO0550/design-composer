@@ -56,24 +56,3 @@ test("Infinity は有限の非負の数として false になる", () => {
 test("NaN は有限の非負の数として false になる", () => {
   expect(NumberEx.isFiniteNonNegative(Number.NaN)).toBe(false);
 });
-
-test("下端と上端はどちらも範囲に入っているとみなされる", () => {
-  const range = { min: 100, max: 900 };
-
-  expect(NumberEx.isWithin(100, range)).toBe(true);
-  expect(NumberEx.isWithin(900, range)).toBe(true);
-});
-
-test("下端の手前と上端の先は範囲の外になる", () => {
-  const range = { min: 100, max: 900 };
-
-  expect(NumberEx.isWithin(99, range)).toBe(false);
-  expect(NumberEx.isWithin(901, range)).toBe(false);
-});
-
-test("NaN と Infinity は有限の範囲の外になる", () => {
-  const range = { min: 100, max: 900 };
-
-  expect(NumberEx.isWithin(Number.NaN, range)).toBe(false);
-  expect(NumberEx.isWithin(Number.POSITIVE_INFINITY, range)).toBe(false);
-});

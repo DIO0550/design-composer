@@ -26,21 +26,4 @@ export const NumberEx = {
   isFiniteNonNegative(value: number): boolean {
     return Number.isFinite(value) && value >= 0;
   },
-
-  /**
-   * 閉区間に入っているか。
-   *
-   * 上下端が有限なら `NaN` と `±Infinity` は比較で落ちるので、
-   * 有限かどうかを別に見る必要はない。
-   *
-   * @param value 見たい数値
-   * @param range 下端と上端（どちらも含む）
-   * @returns 下端以上・上端以下なら true
-   */
-  isWithin(
-    value: number,
-    range: Readonly<{ min: number; max: number }>,
-  ): boolean {
-    return range.min <= value && value <= range.max;
-  },
 } as const;
