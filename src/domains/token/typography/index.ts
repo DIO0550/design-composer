@@ -73,7 +73,7 @@ export const LineHeight = {
 } as const;
 
 /** 書体の太さが取りうる範囲（docs/04-tokens.md「typography」の `fontWeight`）。 */
-const FONT_WEIGHT_RANGE = { min: 100, max: 900 } as const satisfies Range;
+const FontWeightRange = { min: 100, max: 900 } as const satisfies Range;
 
 /**
  * 書体の太さ（docs/04-tokens.md「typography」の `fontWeight`）。
@@ -89,7 +89,7 @@ export const FontWeight = {
    * @returns 100 以上 900 以下のときだけ some
    */
   create(value: number): Option<FontWeight> {
-    return Range.contains(FONT_WEIGHT_RANGE, value)
+    return Range.contains(FontWeightRange, value)
       ? Option.some(value as FontWeight)
       : Option.none;
   },

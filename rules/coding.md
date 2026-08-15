@@ -224,7 +224,7 @@ function compile(props: ResolvedProps<"Box">): Style { /* ... */ }
 
   export const FontWeight = {
     create(value: number): Option<FontWeight> {
-      return Range.contains(FONT_WEIGHT_RANGE, value)
+      return Range.contains(FontWeightRange, value)
         ? Option.some(value as FontWeight)
         : Option.none;
     },
