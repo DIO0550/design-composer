@@ -60,3 +60,13 @@ test("省略された fontFamily は書き出されない", () => {
     "fontWeight",
   ]);
 });
+
+test("値域を外れた太さが書かれていても、そのまま読み込める", () => {
+  const body = { fontSize: 16, lineHeight: 1.6, fontWeight: 1000 };
+
+  const token = Result.unwrap(
+    TypographyToken.fromJson(Json.create(body, "body")),
+  );
+
+  expect(token.fontWeight).toBe(1000);
+});

@@ -6,16 +6,83 @@ import {
   type JsonDecoded,
   type JsonObject,
 } from "@/utils/Json";
-import type { Option } from "@/utils/Option";
+import { NumberEx } from "@/utils/NumberEx";
+import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
-/** 書体のトークン（docs/04-tokens.md「typography」）。`fontFamily` だけ省略できる。 */
+/**
+ * 書体のトークン（docs/04-tokens.md「typography」）。`fontFamily` だけ省略できる。
+ *
+ * 数値のフィールドが値域付きの型（`FontSize` 等）ではなく素の `number` なのは、
+ * 既にファイルに入っている値をそのまま読むため（#143 の決定 D）。値域付きにすると
+ * `fromJson` が範囲外を読んだときに、読み込みを失敗させるか `as` で嘘をつくかの
+ * どちらかになる。値域を課すのは編集で受け取る側（`TypographyFieldEdit`）。
+ */
 export type TypographyToken = Readonly<{
   fontSize: number;
   lineHeight: number;
   fontWeight: number;
   fontFamily?: string;
 }>;
+
+/**
+ * 書体の大きさ（docs/04-tokens.md「typography」の `fontSize`）。単位は px。
+ *
+ * 素の `number` と構造が変わらないのでブランドで隔てている。数値は `Px` のような
+ * テンプレートリテラル型で構造を狭められず、これが無いと `create` を通らない値が
+ * 同じ顔で編集へ流れる。
+ */
+export type FontSize = number & { readonly __brand: unique symbol };
+
+export const FontSize = {
+  /**
+   * @param value 書体の大きさにしたい数値
+   * @returns 有限で 0 より大きいときだけ some。0 以下は文字が出ず、大きさとして意味を持たない
+   */
+  create(value: number): Option<FontSize> {
+    return NumberEx.isFinitePositive(value)
+      ? Option.some(value as FontSize)
+      : Option.none;
+  },
+} as const;
+
+/** 行の高さ（docs/04-tokens.md「typography」の `lineHeight`）。単位なしの倍率。 */
+export type LineHeight = number & { readonly __brand: unique symbol };
+
+export const LineHeight = {
+  /**
+   * @param value 行の高さにしたい倍率
+   * @returns 有限で 0 より大きいときだけ some。0 は全行が高さ 0 に潰れる
+   */
+  create(value: number): Option<LineHeight> {
+    return NumberEx.isFinitePositive(value)
+      ? Option.some(value as LineHeight)
+      : Option.none;
+  },
+} as const;
+
+/** 書体の太さが取りうる範囲（docs/04-tokens.md「typography」の `fontWeight`）。 */
+const FONT_WEIGHT_RANGE = { min: 100, max: 900 } as const;
+
+/**
+ * 書体の太さ（docs/04-tokens.md「typography」の `fontWeight`）。
+ *
+ * 100 刻みの 9 値ではなく 100–900 の範囲。docs が定めているのは型 `number` と
+ * その範囲で、可変フォントの `450` も仕様の内側にある。
+ */
+export type FontWeight = number & { readonly __brand: unique symbol };
+
+export const FontWeight = {
+  /**
+   * @param value 書体の太さにしたい数値
+   * @returns 100 以上 900 以下のときだけ some
+   */
+  create(value: number): Option<FontWeight> {
+    return NumberEx.isWithin(value, FONT_WEIGHT_RANGE)
+      ? Option.some(value as FontWeight)
+      : Option.none;
+  },
+} as const;
 
 /**
  * フィールドの走査に使う実行時のリスト。`TypographyField` はここから導出し、
@@ -37,13 +104,53 @@ export type TypographyField = (typeof TYPOGRAPHY_FIELDS)[number];
  * フィールドごとに値の型が違うので直和にして、「fontSize に文字列」を
  * 型で表現できなくする。`fontFamily` の不在は `Option` で受ける
  * (空文字を不在と読むのは入力欄の約束事なので、ドメインには持たせない)。
+ *
+ * 数値の3フィールドを1つのメンバにまとめない。まとめると値の型も union になり、
+ * 「fontSize の値を fontWeight として渡す」が型で通ってしまう。
  */
 export type TypographyFieldEdit =
-  | Readonly<{
-      field: "fontSize" | "lineHeight" | "fontWeight";
-      value: number;
-    }>
+  | Readonly<{ field: "fontSize"; value: FontSize }>
+  | Readonly<{ field: "lineHeight"; value: LineHeight }>
+  | Readonly<{ field: "fontWeight"; value: FontWeight }>
   | Readonly<{ field: "fontFamily"; value: Option<string> }>;
+
+/** 数値で受け取る書体のフィールド。`fontFamily` だけは文字列なので外れる。 */
+export type TypographyNumberField = Exclude<TypographyField, "fontFamily">;
+
+export const TypographyFieldEdit = {
+  /**
+   * 数値のフィールドの書き換えを作る。
+   *
+   * フィールドごとの値域の対応をここが持つのは、それがドメインの知識だから。
+   * 入力欄側が `FontWeight.create` を直に呼ぶ形にすると、対応表が feature へ漏れる。
+   *
+   * @param field 書き換えるフィールド
+   * @param value 入力欄から数値として読めた値
+   * @returns そのフィールドの値域を満たすときだけ some
+   */
+  create(
+    field: TypographyNumberField,
+    value: number,
+  ): Option<TypographyFieldEdit> {
+    switch (field) {
+      case "fontSize":
+        return Option.map(FontSize.create(value), (fontSize) => ({
+          field,
+          value: fontSize,
+        }));
+      case "lineHeight":
+        return Option.map(LineHeight.create(value), (lineHeight) => ({
+          field,
+          value: lineHeight,
+        }));
+      case "fontWeight":
+        return Option.map(FontWeight.create(value), (fontWeight) => ({
+          field,
+          value: fontWeight,
+        }));
+    }
+  },
+} as const;
 
 /**
  * フィールドと、展開先の CSS プロパティ名の対応。
@@ -105,9 +212,8 @@ export const TypographyToken = {
   /**
    * 1フィールドだけ差し替えた書体を返す。
    *
-   * 値域(fontWeight は仕様上 100–900、fontSize / lineHeight は正の数)はここで
-   * 縛っていない。不正な値をどう見せるかが UI 案にも #126 にも無く、
-   * 表示の形と対でしか決められないため(縛るのは #143)。
+   * 値域の検査はここには無い。`TypographyFieldEdit` が値域付きの型しか
+   * 持てないので、範囲外の書き換えはそもそも組み立てられない。
    */
   withField(
     token: TypographyToken,

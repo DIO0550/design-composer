@@ -292,3 +292,55 @@ test("影の色をピッカーで選び直しても元の alpha は残る", () =
     }),
   );
 });
+
+test("書体の太さの欄に値域の内側を打つと太さが変わる", () => {
+  const field = fieldOf("typography", "body", "太さ");
+
+  expect(TokenControl.valueFrom(field.target, "700")).toEqual(
+    Option.some({
+      kind: "typography",
+      value: { fontSize: 16, lineHeight: 1.6, fontWeight: 700 },
+    }),
+  );
+});
+
+test("書体の太さの欄に値域の外を打っても値を変えない", () => {
+  const field = fieldOf("typography", "body", "太さ");
+
+  expect(TokenControl.valueFrom(field.target, "1000")).toEqual(Option.none);
+});
+
+test("書体のサイズの欄に 0 を打っても値を変えない", () => {
+  const field = fieldOf("typography", "body", "サイズ");
+
+  expect(TokenControl.valueFrom(field.target, "0")).toEqual(Option.none);
+});
+
+test("影のぼかしの欄に負の数を打っても値を変えない", () => {
+  const field = fieldOf("shadows", "sm", "ぼかし");
+
+  expect(TokenControl.valueFrom(field.target, "-1")).toEqual(Option.none);
+});
+
+test("影の横のずれの欄には負の数を打てる", () => {
+  const field = fieldOf("shadows", "sm", "横のずれ");
+
+  expect(TokenControl.valueFrom(field.target, "-4")).toEqual(
+    Option.some({
+      kind: "shadows",
+      value: { x: -4, y: 1, blur: 3, color: "#0000001a" },
+    }),
+  );
+});
+
+test("余白の欄に負の数を打っても値を変えない", () => {
+  const field = fieldOf("spacing", "lg", "値");
+
+  expect(TokenControl.valueFrom(field.target, "-1")).toEqual(Option.none);
+});
+
+test("角丸の欄に負の数を打っても値を変えない", () => {
+  const field = fieldOf("radius", "md", "値");
+
+  expect(TokenControl.valueFrom(field.target, "-1")).toEqual(Option.none);
+});

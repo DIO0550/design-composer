@@ -1,27 +1,43 @@
 import { expect, test } from "vitest";
 import { Font } from "@/utils/Font";
 import { Option } from "@/utils/Option";
-import { TypographyFieldRef, TypographyToken } from "../index";
+import {
+  TypographyFieldEdit,
+  TypographyFieldRef,
+  type TypographyNumberField,
+  TypographyToken,
+} from "../index";
 
 /** fontFamily を省略した書体（docs/04-tokens.md の初期テーマの `typography.body`）。 */
 function setupTypography(): TypographyToken {
   return { fontSize: 16, lineHeight: 1.6, fontWeight: 400 };
 }
 
+/**
+ * 数値のフィールドの書き換え。値域を満たさない値ではテストを落としたいので
+ * `unwrap` で通す（rules/coding.md「例外に変換してよいのは…テストコードだけ」）。
+ */
+function edit(
+  field: TypographyNumberField,
+  value: number,
+): TypographyFieldEdit {
+  return Option.unwrap(TypographyFieldEdit.create(field, value));
+}
+
 test("書体のサイズを変えても他のフィールドはそのまま残る", () => {
-  const changed = TypographyToken.withField(setupTypography(), {
-    field: "fontSize",
-    value: 24,
-  });
+  const changed = TypographyToken.withField(
+    setupTypography(),
+    edit("fontSize", 24),
+  );
 
   expect(changed).toEqual({ fontSize: 24, lineHeight: 1.6, fontWeight: 400 });
 });
 
 test("書体の太さを変えても他のフィールドはそのまま残る", () => {
-  const changed = TypographyToken.withField(setupTypography(), {
-    field: "fontWeight",
-    value: 700,
-  });
+  const changed = TypographyToken.withField(
+    setupTypography(),
+    edit("fontWeight", 700),
+  );
 
   expect(changed).toEqual({ fontSize: 16, lineHeight: 1.6, fontWeight: 700 });
 });

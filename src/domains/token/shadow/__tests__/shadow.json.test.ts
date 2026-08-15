@@ -67,3 +67,13 @@ test("省略された spread は書き出されない", () => {
 
   expect(Object.keys(written)).toEqual(["x", "y", "blur", "color"]);
 });
+
+test("負のぼかしが書かれていても、そのまま読み込める", () => {
+  const shadow = Result.unwrap(
+    ShadowToken.fromJson(
+      Json.create({ x: 0, y: 1, blur: -3, color: "#000000" }, "sm"),
+    ),
+  );
+
+  expect(shadow.blur).toBe(-3);
+});
