@@ -16,31 +16,31 @@ import { Option } from "@/utils/Option";
  * 帯全体の色味。ファイルが不正な間は帯ごと赤へ振れる（UI 案 docs/Design Composer.html の
  * Error 画面は帯の地を `#fff6f6`、下線を `#f5d5d5`、パンくずまで赤系にする / #135）。
  *
- * 名前で指せるようにするのは、消費側が `"error"` を綴り直さずに済ませるため
+ * 名前で指せるようにするのは、消費側が `"Error"` を綴り直さずに済ませるため
  * （rules/coding.md「値の集合から union を導出する」）。
  */
 export const EditorTopBarTones = {
-  Normal: "normal",
-  Error: "error",
+  Normal: "Normal",
+  Error: "Error",
 } as const;
 
 /** 帯の色味。 */
 export type EditorTopBarTone = ValueOf<typeof EditorTopBarTones>;
 
 /** 色味ごとの、帯の地と下線と文字。 */
-const ROOT_TONE_CLASS = {
-  normal: "border-gray-300 bg-white text-gray-900",
-  error: "border-red-200 bg-red-50 text-red-900",
+const RootToneClass = {
+  Normal: "border-gray-300 bg-white text-gray-900",
+  Error: "border-red-200 bg-red-50 text-red-900",
 } as const satisfies Readonly<Record<EditorTopBarTone, string>>;
 
 /** 色味ごとの、パンくずの 3 つの部品の色。 */
-const BREADCRUMB_TONE_FACES = {
-  normal: {
+const BreadcrumbToneFaces = {
+  Normal: {
     folder: "text-gray-500",
     separator: "text-gray-300",
     file: "text-gray-900",
   },
-  error: {
+  Error: {
     folder: "text-red-400",
     separator: "text-red-200",
     file: "text-red-600",
@@ -104,7 +104,7 @@ function EditorTopBarRoot({
   return (
     <EditorTopBarToneContext value={Option.some(tone)}>
       <div
-        className={`flex h-[38px] shrink-0 items-center gap-3 border-b px-3 text-xs ${ROOT_TONE_CLASS[tone]}`}
+        className={`flex h-[38px] shrink-0 items-center gap-3 border-b px-3 text-xs ${RootToneClass[tone]}`}
       >
         {children}
       </div>
@@ -129,7 +129,7 @@ function DocumentBreadcrumb({
 }: Readonly<{ opened: OpenedDocument }>): ReactElement {
   const folderName = OpenedDocument.folderName(opened);
   const fileName = OpenedDocument.fileName(opened);
-  const face = BREADCRUMB_TONE_FACES[useEditorTopBarTone()];
+  const face = BreadcrumbToneFaces[useEditorTopBarTone()];
 
   return (
     <nav aria-label="ファイルの場所" title={opened.path}>
