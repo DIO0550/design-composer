@@ -109,7 +109,8 @@ function DraftField({
 /**
  * トークンの 1 フィールドの入力欄。形は値の種別で決まる。
  *
- * @returns 色ならカラーピッカー、数値なら数値欄、それ以外はテキスト欄
+ * @returns 色ならカラーピッカー、不透明度なら % を添えた数値欄、
+ *   数値なら数値欄、それ以外はテキスト欄
  */
 function ValueField({
   id,
@@ -133,6 +134,23 @@ function ValueField({
     case "text":
       return (
         <DraftField id={id} type="text" value={input.value} onCommit={onEdit} />
+      );
+    case "alphaPercent":
+      return (
+        <div className="flex items-center gap-2">
+          <DraftField
+            id={id}
+            type="number"
+            value={String(input.value)}
+            onCommit={onEdit}
+          />
+          {/*
+            単位を欄の外に出すのは、値だけを打てるようにするため（`%` まで
+            打たせると数値として読めない下書きが増える）。UI 案（docs/Design
+            Composer.html）が hex の右へ `100%` を添えているのと同じ並び。
+          */}
+          <span className="text-gray-600 text-xs">%</span>
+        </div>
       );
     case "color":
       return (

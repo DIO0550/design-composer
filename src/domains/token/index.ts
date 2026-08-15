@@ -17,6 +17,7 @@ export {
   type BoxShadowValue,
   type ShadowField,
   ShadowFieldEdit,
+  type ShadowNumberField,
   ShadowToken,
 } from "./shadow";
 export {

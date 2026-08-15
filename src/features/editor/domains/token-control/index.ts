@@ -5,6 +5,7 @@ import {
   Rgb,
   type ShadowField,
   ShadowFieldEdit,
+  type ShadowNumberField,
   ShadowToken,
   type Token,
   type TokenKind,
@@ -51,24 +52,35 @@ export type TokenSection = Readonly<{
 /**
  * 1行分の入力欄。値の形式（docs/04-tokens.md「値の形式」）から
  * 入力欄の種類が決まる。語彙は `PropControlInput` に揃える。
+ *
+ * 色が `ColorToken` ではなく `Rgb` を持つのは、`input[type=color]` が6桁しか
+ * 扱えないため。alpha は `alphaPercent` の欄が別に持つ。
  */
 export type TokenControlInput =
-  | Readonly<{ kind: "color"; value: ColorToken }>
+  | Readonly<{ kind: "color"; value: Rgb }>
+  | Readonly<{ kind: "alphaPercent"; value: number }>
   | Readonly<{ kind: "number"; value: number }>
   | Readonly<{ kind: "text"; value: string }>;
 
 /**
- * その行が書き戻す先。値が1つの種別は種別だけ、複合オブジェクトの種別は
- * 書き換え前の値とフィールドを対で持つ。
+ * その行が書き戻す先。書き換え前の値を持つのは、その行が値の一部だけを
+ * 差し替えるため（色は RGB と不透明度、複合の種別はフィールド）。
  *
  * 種別で判別する直和にしているのは、「種別 + フィールド名」を並べて持つと
  * shadows のトークンに fontSize を指す組み合わせが型で作れてしまうため。
+ * 不透明度を `part: "rgb" | "alpha"` として平らに足さないのも同じ理由で、
+ * そちらは影の `x` の不透明度という組み合わせが作れてしまう。
+ *
+ * `kind` は `TokenKind` と1対1ではない。不透明度の行は色の一部を差し替える
+ * だけなので、`colorsAlpha` が書き戻すのは `colors` の値になる。
  */
 export type TokenFieldTarget =
-  | Readonly<{ kind: "colors" }>
+  | Readonly<{ kind: "colors"; color: ColorToken }>
+  | Readonly<{ kind: "colorsAlpha"; color: ColorToken }>
   | Readonly<{ kind: "spacing" }>
   | Readonly<{ kind: "radius" }>
   | Readonly<{ kind: "shadows"; shadow: ShadowToken; field: ShadowField }>
+  | Readonly<{ kind: "shadowsAlpha"; shadow: ShadowToken }>
   | Readonly<{
       kind: "typography";
       typography: TypographyToken;
@@ -76,11 +88,11 @@ export type TokenFieldTarget =
     }>;
 
 /**
- * 編集欄の1行。値が1つの種別は1行、複合の種別はフィールドの数だけ並ぶ。
+ * 編集欄の1行。色は2行（RGB と不透明度）、複合の種別はフィールドの数だけ並ぶ。
  *
- * `name` は行の識別子で、1つのトークンの中で一意（複合の種別はフィールド名、
- * 値が1つの種別は行が1本しかない）。見出しの文字列とは別に持つのは、
- * 表示の文言が偶然衝突しても行の同一性が壊れないようにするため。
+ * `name` は行の識別子で、1つのトークンの中で一意（複合の種別はフィールド名）。
+ * 見出しの文字列とは別に持つのは、表示の文言が偶然衝突しても行の同一性が
+ * 壊れないようにするため。
  */
 export type TokenControlField = Readonly<{
   name: string;
@@ -88,6 +100,12 @@ export type TokenControlField = Readonly<{
   input: TokenControlInput;
   target: TokenFieldTarget;
 }>;
+
+/**
+ * 入力欄が決まる前の行。何の値を載せるかで入力欄が変わる色のために、
+ * 綴りと書き戻し先だけを先に決めて渡す。
+ */
+type TokenControlRow = Omit<TokenControlField, "input">;
 
 /** 1 つのトークンを編集する画面の中身。並べる欄は種別で決まる。 */
 export type TokenControl = Readonly<{
@@ -101,9 +119,14 @@ export type TokenControl = Readonly<{
  */
 const PREVIEW_MAX_WIDTH_PX = 20;
 
-/** 値が1つの種別の行。1本しかないので、何のフィールドかを言い分ける必要がない。 */
+/** 値が1つの種別の行。何のフィールドかを言い分ける必要がない。 */
 const SCALAR_FIELD_NAME = "value";
 const SCALAR_LABEL = "値";
+
+/** 色に添える不透明度の行。見出しは既存の編集欄に合わせて日本語で書く。 */
+const COLORS_ALPHA_FIELD_NAME = "alpha";
+const SHADOW_ALPHA_FIELD_NAME = "colorAlpha";
+const ALPHA_LABEL = "不透明度";
 
 /** 影のフィールドの見出し。既存の編集欄に合わせて日本語で書く。 */
 const SHADOW_LABELS = {
@@ -199,15 +222,16 @@ export const TokenSection = {
 } as const;
 
 /**
- * 影の 1 フィールドを、対応する入力欄の形にする。
+ * 影の数値のフィールドを、対応する入力欄の形にする。
+ * 色は入力欄が2つに分かれるので `colorFields` の担当。
  *
  * @param shadow 編集対象の影
  * @param field 入力欄にするフィールド
- * @returns 色は色欄、それ以外は数値欄
+ * @returns そのフィールドの数値欄
  */
 function shadowInput(
   shadow: ShadowToken,
-  field: ShadowField,
+  field: ShadowNumberField,
 ): TokenControlInput {
   switch (field) {
     case "x":
@@ -218,9 +242,40 @@ function shadowInput(
       return { kind: "number", value: shadow.blur };
     case "spread":
       return { kind: "number", value: ShadowToken.spreadOf(shadow) };
-    case "color":
-      return { kind: "color", value: shadow.color };
   }
+}
+
+/**
+ * 1 つの色に並べる編集欄。
+ *
+ * hex として読めない値はピッカーにも不透明度の欄にも載せられないので、
+ * 打ち直せるようにテキスト欄1本にする。ピッカーへ渡すとブラウザが黒へ落として
+ * しまい、値が壊れていることが画面から分からなくなる。
+ *
+ * @param color 編集する色
+ * @param rgbRow 色そのものの行の綴りと書き戻し先
+ * @param alphaRow 不透明度の行の綴りと書き戻し先
+ * @returns hex として読めれば色と不透明度の2行、読めなければテキスト欄1行
+ */
+function colorFields(
+  color: ColorToken,
+  rgbRow: TokenControlRow,
+  alphaRow: TokenControlRow,
+): readonly TokenControlField[] {
+  const rgb = ColorToken.rgbOf(color);
+  if (!rgb.some) {
+    return [{ ...rgbRow, input: { kind: "text", value: color } }];
+  }
+  return [
+    { ...rgbRow, input: { kind: "color", value: rgb.value } },
+    {
+      ...alphaRow,
+      input: {
+        kind: "alphaPercent",
+        value: ColorToken.alphaPercentOf(color),
+      },
+    },
+  ];
 }
 
 /**
@@ -259,14 +314,19 @@ function typographyInput(
 function fieldsOf(token: Token): readonly TokenControlField[] {
   switch (token.kind) {
     case "colors":
-      return [
+      return colorFields(
+        token.value,
         {
           name: SCALAR_FIELD_NAME,
           label: SCALAR_LABEL,
-          input: { kind: "color", value: token.value },
-          target: { kind: "colors" },
+          target: { kind: "colors", color: token.value },
         },
-      ];
+        {
+          name: COLORS_ALPHA_FIELD_NAME,
+          label: ALPHA_LABEL,
+          target: { kind: "colorsAlpha", color: token.value },
+        },
+      );
     case "spacing":
     case "radius":
       return [
@@ -277,13 +337,35 @@ function fieldsOf(token: Token): readonly TokenControlField[] {
           target: { kind: token.kind },
         },
       ];
+    /*
+     * 色だけ行が2本になるので `flatMap` で広げる。不透明度の行を色の直後に
+     * 置くのは、両方が同じ1つの色を差し替えるため（仕様のフィールド順は保つ）。
+     */
     case "shadows":
-      return ShadowToken.fields().map((field) => ({
-        name: field,
-        label: SHADOW_LABELS[field],
-        input: shadowInput(token.value, field),
-        target: { kind: "shadows", shadow: token.value, field },
-      }));
+      return ShadowToken.fields().flatMap((field) =>
+        field === "color"
+          ? colorFields(
+              token.value.color,
+              {
+                name: field,
+                label: SHADOW_LABELS[field],
+                target: { kind: "shadows", shadow: token.value, field },
+              },
+              {
+                name: SHADOW_ALPHA_FIELD_NAME,
+                label: ALPHA_LABEL,
+                target: { kind: "shadowsAlpha", shadow: token.value },
+              },
+            )
+          : [
+              {
+                name: field,
+                label: SHADOW_LABELS[field],
+                input: shadowInput(token.value, field),
+                target: { kind: "shadows", shadow: token.value, field },
+              },
+            ],
+      );
     case "typography":
       return TypographyToken.fields().map((field) => ({
         name: field,
@@ -324,9 +406,7 @@ function shadowValueFrom(
   const { shadow, field } = target;
   if (field === "color") {
     /*
-     * 影の色だけは、ピッカーが返した6桁に元の alpha を戻す。影の色は半透明が
-     * 常用される（docs/04-tokens.md「影の色は実務上ほぼ半透明の黒」）ので、
-     * 引き継がないと色を選び直すだけで影が不透明になる。
+     * ピッカーが返した6桁だけを差し替え、不透明度は不透明度の欄が持つ。
      *
      * 6桁として読めない入力で値を変えないのは数値の欄と同じ扱い（`Rgb.create`
      * の `none`）。ピッカーは常に6桁を返すので、通常の操作では通らない枝。
@@ -403,21 +483,40 @@ export const TokenControl = {
    * @param target 書き戻し先の種別と、複合の種別ではどのフィールドか
    * @param raw 入力欄に入っている文字列
    * @returns 書き換え後のトークンの値。数値 / 6桁の色として読めないとき、および
-   *   値域（docs/04-tokens.md「値の形式」）を外れるときは `none`
+   *   値域（docs/04-tokens.md「値の形式」・不透明度は 0–100）を外れるときは `none`
    */
   valueFrom(target: TokenFieldTarget, raw: string): Option<TokenValue> {
     switch (target.kind) {
       /*
-       * 色の種別ではピッカーが返した hex をそのまま値にする。影の色（下記）と
-       * 違って alpha を引き継がないのは、パレットの色は不透明が既定で、
-       * 引き継ぐと alpha 付きの色を不透明へ戻す手段が画面から無くなるため。
-       * どちらの種別も alpha を直接編集する欄は UI 案に無い（#142）。
+       * ピッカーが返した6桁だけを差し替え、不透明度は残す。影の色と扱いが
+       * 揃っているのは、どちらも同じ「生 hex」（docs/04-tokens.md「値の形式」）で、
+       * 不透明度をそれぞれの欄が持つようになったため。
        */
       case "colors":
         return Option.map(Rgb.create(raw), (rgb) => ({
           kind: "colors",
-          value: rgb,
+          value: ColorToken.withRgb(target.color, rgb),
         }));
+      case "colorsAlpha":
+        return Option.flatMap(numberFromRaw(raw), (percent) =>
+          Option.map(
+            ColorToken.withAlphaPercent(target.color, percent),
+            (value) => ({ kind: "colors", value }),
+          ),
+        );
+      case "shadowsAlpha":
+        return Option.flatMap(numberFromRaw(raw), (percent) =>
+          Option.map(
+            ColorToken.withAlphaPercent(target.shadow.color, percent),
+            (color) => ({
+              kind: "shadows",
+              value: ShadowToken.withField(target.shadow, {
+                field: "color",
+                value: color,
+              }),
+            }),
+          ),
+        );
       /*
        * 長さの 2 種別は値域も書き戻し方も同じなので枝を分けない。分けると、
        * 一方だけ検証を通し忘れても型もテストも通ってしまう。
