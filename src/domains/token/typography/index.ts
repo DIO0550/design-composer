@@ -128,7 +128,7 @@ export const TypographyFieldEdit = {
    * @param value 入力欄から数値として読めた値
    * @returns そのフィールドの値域を満たすときだけ some
    */
-  create(
+  createNumeric(
     field: TypographyNumberField,
     value: number,
   ): Option<TypographyFieldEdit> {
@@ -212,8 +212,8 @@ export const TypographyToken = {
   /**
    * 1フィールドだけ差し替えた書体を返す。
    *
-   * 値域の検査はここには無い。`TypographyFieldEdit` が値域付きの型しか
-   * 持てないので、範囲外の書き換えはそもそも組み立てられない。
+   * 値域の検査はここには無い。数値の3フィールドの値が `FontSize` / `LineHeight` /
+   * `FontWeight` なので、範囲外の書き換えはそもそも組み立てられない。
    */
   withField(
     token: TypographyToken,

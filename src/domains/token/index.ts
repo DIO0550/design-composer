@@ -14,22 +14,16 @@ import { TypographyToken } from "./typography";
 
 export { ColorToken, Rgb } from "./color";
 export {
-  Blur,
   type BoxShadowValue,
   type ShadowField,
   ShadowFieldEdit,
-  type ShadowNumberField,
   ShadowToken,
 } from "./shadow";
 export {
-  FontSize,
-  FontWeight,
-  LineHeight,
   type TypographyCssProperty,
   TypographyField,
   TypographyFieldEdit,
   TypographyFieldRef,
-  type TypographyNumberField,
   TypographyToken,
 } from "./typography";
 
@@ -142,15 +136,9 @@ export const TokenValue = {
    * @returns 有限で 0 以上のときだけ some
    */
   createNumeric(kind: NumericTokenKind, value: number): Option<TokenValue> {
-    if (!NumberEx.isFiniteNonNegative(value)) {
-      return Option.none;
-    }
-    switch (kind) {
-      case "spacing":
-        return Option.some({ kind, value });
-      case "radius":
-        return Option.some({ kind, value });
-    }
+    return NumberEx.isFiniteNonNegative(value)
+      ? Option.some({ kind, value })
+      : Option.none;
   },
 } as const;
 

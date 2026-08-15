@@ -340,7 +340,7 @@ function shadowValueFrom(
     }));
   }
   return Option.flatMap(numberFromRaw(raw), (value) =>
-    Option.map(ShadowFieldEdit.create(field, value), (edit) => ({
+    Option.map(ShadowFieldEdit.createNumeric(field, value), (edit) => ({
       kind: "shadows",
       value: ShadowToken.withField(shadow, edit),
     })),
@@ -374,7 +374,7 @@ function typographyValueFrom(
     });
   }
   return Option.flatMap(numberFromRaw(raw), (value) =>
-    Option.map(TypographyFieldEdit.create(field, value), (edit) => ({
+    Option.map(TypographyFieldEdit.createNumeric(field, value), (edit) => ({
       kind: "typography",
       value: TypographyToken.withField(typography, edit),
     })),
@@ -399,6 +399,11 @@ export const TokenControl = {
    *
    * 書き戻し先は行が持つ `target` から決める。入力欄の種類（色 / 数値）で決めると
    * 数値の欄が `spacing` と `radius` を区別できず、書き込み先を取り違えるため。
+   *
+   * @param target 書き戻し先の種別と、複合の種別ではどのフィールドか
+   * @param raw 入力欄に入っている文字列
+   * @returns 書き換え後のトークンの値。数値 / 6桁の色として読めないとき、および
+   *   値域（docs/04-tokens.md「値の形式」）を外れるときは `none`
    */
   valueFrom(target: TokenFieldTarget, raw: string): Option<TokenValue> {
     switch (target.kind) {

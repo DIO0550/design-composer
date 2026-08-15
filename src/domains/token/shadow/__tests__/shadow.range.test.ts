@@ -1,37 +1,33 @@
 import { expect, test } from "vitest";
 import { Option } from "@/utils/Option";
-import { ShadowFieldEdit, type ShadowNumberField } from "../index";
-
-/**
- * 影の値域（docs/04-tokens.md「shadows」）。
- * 受け付けたかどうかだけを見たいので、値は `some` かで比べる。
- */
-function accepts(field: ShadowNumberField, value: number): boolean {
-  return ShadowFieldEdit.create(field, value).some;
-}
+import { ShadowFieldEdit } from "../index";
 
 test("ぼかしは 0 を受け付ける", () => {
-  expect(accepts("blur", 0)).toBe(true);
+  expect(ShadowFieldEdit.createNumeric("blur", 0).some).toBe(true);
 });
 
 test("ぼかしは負の数を受け付けない", () => {
-  expect(accepts("blur", -1)).toBe(false);
+  expect(ShadowFieldEdit.createNumeric("blur", -1).some).toBe(false);
 });
 
 test("ずれと広がりは負の数も受け付ける", () => {
-  expect(accepts("x", -4)).toBe(true);
-  expect(accepts("y", -4)).toBe(true);
-  expect(accepts("spread", -2)).toBe(true);
+  expect(ShadowFieldEdit.createNumeric("x", -4).some).toBe(true);
+  expect(ShadowFieldEdit.createNumeric("y", -4).some).toBe(true);
+  expect(ShadowFieldEdit.createNumeric("spread", -2).some).toBe(true);
 });
 
 test("有限でない値はどのフィールドでも受け付けない", () => {
-  expect(accepts("blur", Number.POSITIVE_INFINITY)).toBe(false);
-  expect(accepts("x", Number.NEGATIVE_INFINITY)).toBe(false);
-  expect(accepts("spread", Number.NaN)).toBe(false);
+  expect(
+    ShadowFieldEdit.createNumeric("blur", Number.POSITIVE_INFINITY).some,
+  ).toBe(false);
+  expect(
+    ShadowFieldEdit.createNumeric("x", Number.NEGATIVE_INFINITY).some,
+  ).toBe(false);
+  expect(ShadowFieldEdit.createNumeric("spread", Number.NaN).some).toBe(false);
 });
 
 test("受け付けた値はそのフィールドの書き換えになる", () => {
-  expect(Option.unwrap(ShadowFieldEdit.create("blur", 8))).toEqual({
+  expect(Option.unwrap(ShadowFieldEdit.createNumeric("blur", 8))).toEqual({
     field: "blur",
     value: 8,
   });

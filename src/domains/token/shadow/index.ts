@@ -81,13 +81,16 @@ export const ShadowFieldEdit = {
    * 数値のフィールドの書き換えを作る。
    *
    * フィールドごとの値域の対応をここが持つのは、それがドメインの知識だから
-   * （`TypographyFieldEdit.create` と同じ理由）。
+   * （`TypographyFieldEdit.createNumeric` と同じ理由）。
    *
    * @param field 書き換えるフィールド
    * @param value 入力欄から数値として読めた値
    * @returns そのフィールドの値域を満たすときだけ some。ずれと広がりは有限であればよい
    */
-  create(field: ShadowNumberField, value: number): Option<ShadowFieldEdit> {
+  createNumeric(
+    field: ShadowNumberField,
+    value: number,
+  ): Option<ShadowFieldEdit> {
     switch (field) {
       case "blur":
         return Option.map(Blur.create(value), (blur) => ({
@@ -140,8 +143,8 @@ export const ShadowToken = {
    * 正規化はここでは通さない。保存形式の規則は書き込みの境界が持つ
    * (`Token.normalized`)ので、ここで通すと同じ正規化が経路上で二重に走る。
    *
-   * 値域の検査もここには無い。`ShadowFieldEdit` が値域付きの型しか持てないので、
-   * マイナスのぼかしはそもそも組み立てられない。
+   * 値域の検査もここには無い。ぼかしの値が `Blur` なので、マイナスのぼかしは
+   * そもそも組み立てられない(ずれと広がりはマイナスが正当なので素の `number`)。
    */
   withField(shadow: ShadowToken, edit: ShadowFieldEdit): ShadowToken {
     switch (edit.field) {
