@@ -11,6 +11,13 @@ import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 import { ColorToken } from "../color";
 
+/*
+ * ぼかしを他の値域付きの型と別物にするための目印。`unique symbol` は宣言した場所
+ * ごとに別の型になるので、書体のサイズ等と取り違えても型で弾ける
+ * （`src/types/Brand.ts`）。値は持たないので実行時には何も残らない。
+ */
+declare const BlurBrand: unique symbol;
+
 /**
  * 影のトークン（docs/04-tokens.md「shadows」）。`spread` だけ省略できる。
  *
@@ -30,7 +37,7 @@ export type ShadowToken = Readonly<{
  *
  * 素の `number` と構造が変わらないのでブランドで隔てている（`FontSize` と同じ理由）。
  */
-export type Blur = Brand<number, "Blur">;
+export type Blur = Brand<number, typeof BlurBrand>;
 
 export const Blur = {
   /**

@@ -11,6 +11,15 @@ import { NumberEx } from "@/utils/NumberEx";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
+/*
+ * 値域付きの型どうしを別物にするための目印。`unique symbol` は宣言した場所ごとに
+ * 別の型になるので、3 つを別々に宣言することでサイズ・行間・太さの取り違えが
+ * 型で弾ける（`src/types/Brand.ts`）。値は持たないので実行時には何も残らない。
+ */
+declare const FontSizeBrand: unique symbol;
+declare const LineHeightBrand: unique symbol;
+declare const FontWeightBrand: unique symbol;
+
 /**
  * 書体のトークン（docs/04-tokens.md「typography」）。`fontFamily` だけ省略できる。
  *
@@ -33,7 +42,7 @@ export type TypographyToken = Readonly<{
  * テンプレートリテラル型で構造を狭められず、これが無いと `create` を通らない値が
  * 同じ顔で編集へ流れる。
  */
-export type FontSize = Brand<number, "FontSize">;
+export type FontSize = Brand<number, typeof FontSizeBrand>;
 
 export const FontSize = {
   /**
@@ -48,7 +57,7 @@ export const FontSize = {
 } as const;
 
 /** 行の高さ（docs/04-tokens.md「typography」の `lineHeight`）。単位なしの倍率。 */
-export type LineHeight = Brand<number, "LineHeight">;
+export type LineHeight = Brand<number, typeof LineHeightBrand>;
 
 export const LineHeight = {
   /**
@@ -71,7 +80,7 @@ const FONT_WEIGHT_RANGE = { min: 100, max: 900 } as const;
  * 100 刻みの 9 値ではなく 100–900 の範囲。docs が定めているのは型 `number` と
  * その範囲で、可変フォントの `450` も仕様の内側にある。
  */
-export type FontWeight = Brand<number, "FontWeight">;
+export type FontWeight = Brand<number, typeof FontWeightBrand>;
 
 export const FontWeight = {
   /**
