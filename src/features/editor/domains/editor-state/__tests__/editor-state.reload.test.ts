@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
 import { Instant } from "@/domains/instant";
-import { DocumentSyntaxError } from "@/features/editor/__tests__/document-errors";
+import { SampleSyntaxError } from "@/features/editor/__tests__/document-errors";
 import { ReceivedAt } from "@/features/editor/__tests__/instants";
 import { FileValidity } from "@/features/editor/domains/file-validity";
 import { Option } from "@/utils/Option";
@@ -68,7 +68,7 @@ test("外部変更を拒んだときは表示中のドキュメントがその�
 
   const state = EditorState.applyReload(
     opened,
-    { kind: "rejected", errors: [DocumentSyntaxError] },
+    { kind: "rejected", errors: [SampleSyntaxError] },
     ReceivedAt,
   );
 
@@ -80,7 +80,7 @@ test("外部変更を拒んでも選択は外れない", () => {
 
   const state = EditorState.applyReload(
     selected,
-    { kind: "rejected", errors: [DocumentSyntaxError] },
+    { kind: "rejected", errors: [SampleSyntaxError] },
     ReceivedAt,
   );
 
@@ -90,13 +90,13 @@ test("外部変更を拒んでも選択は外れない", () => {
 test("外部変更を拒むと、その理由がファイルのエラー一覧として画面に載る", () => {
   const state = EditorState.applyReload(
     openedState("home"),
-    { kind: "rejected", errors: [DocumentSyntaxError] },
+    { kind: "rejected", errors: [SampleSyntaxError] },
     ReceivedAt,
   );
 
   expect(state.fileValidity).toStrictEqual({
     kind: "invalid",
-    errors: [DocumentSyntaxError],
+    errors: [SampleSyntaxError],
     since: ReceivedAt,
   });
 });
@@ -106,7 +106,7 @@ test("外部変更を拒むと、受け取った時刻が食い違いの起点�
 
   const state = EditorState.applyReload(
     openedState("home"),
-    { kind: "rejected", errors: [DocumentSyntaxError] },
+    { kind: "rejected", errors: [SampleSyntaxError] },
     receivedAt,
   );
 
@@ -118,7 +118,7 @@ test("外部変更を拒むと、受け取った時刻が食い違いの起点�
 test("ファイルが直って取り込めるようになるとファイルのエラー一覧は消える", () => {
   const rejected = EditorState.applyReload(
     openedState("home"),
-    { kind: "rejected", errors: [DocumentSyntaxError] },
+    { kind: "rejected", errors: [SampleSyntaxError] },
     ReceivedAt,
   );
   const fixed = DesignDocument.create({
@@ -137,7 +137,7 @@ test("ファイルが直って取り込めるようになるとファイルの�
 test("ファイルが直ると食い違いの起点も消える", () => {
   const rejected = EditorState.applyReload(
     openedState("home"),
-    { kind: "rejected", errors: [DocumentSyntaxError] },
+    { kind: "rejected", errors: [SampleSyntaxError] },
     Instant.create(1_700_000_000_000),
   );
   const fixed = DesignDocument.create({
@@ -156,7 +156,7 @@ test("ファイルが直ると食い違いの起点も消える", () => {
 test("外部変更を拒むと、ファイルが不正なままだと答える", () => {
   const state = EditorState.applyReload(
     openedState("home"),
-    { kind: "rejected", errors: [DocumentSyntaxError] },
+    { kind: "rejected", errors: [SampleSyntaxError] },
     ReceivedAt,
   );
 
@@ -166,7 +166,7 @@ test("外部変更を拒むと、ファイルが不正なままだと答える",
 test("ファイルが直って取り込めるようになると、ファイルは不正でないと答える", () => {
   const rejected = EditorState.applyReload(
     openedState("home"),
-    { kind: "rejected", errors: [DocumentSyntaxError] },
+    { kind: "rejected", errors: [SampleSyntaxError] },
     ReceivedAt,
   );
   const fixed = DesignDocument.create({

@@ -14,7 +14,7 @@ import {
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { PropertyPanel } from "../index";
 
-const Document = DesignDocument.create({
+const EditedDocument = DesignDocument.create({
   tokens: DocumentTemplate.Default.tokens,
   components: DocumentTemplate.Default.components,
   artboards: [
@@ -60,7 +60,7 @@ function EditablePanel({ selected }: Readonly<{ selected: string }>) {
 async function setupPanel(selected: string) {
   const user = userEvent.setup();
   render(
-    <EditorProvider initialDocument={Document}>
+    <EditorProvider initialDocument={EditedDocument}>
       <EditablePanel selected={selected} />
     </EditorProvider>,
   );

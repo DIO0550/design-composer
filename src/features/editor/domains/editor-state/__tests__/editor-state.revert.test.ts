@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
-import { DocumentSyntaxError } from "@/features/editor/__tests__/document-errors";
+import { SampleSyntaxError } from "@/features/editor/__tests__/document-errors";
 import { ReceivedAt } from "@/features/editor/__tests__/instants";
 import { EditorState } from "../index";
 
@@ -37,7 +37,7 @@ test("ファイルへ書き戻すと、ファイル由来のエラーは無く�
     openedState(),
     {
       kind: "rejected",
-      errors: [DocumentSyntaxError],
+      errors: [SampleSyntaxError],
     },
     ReceivedAt,
   );
@@ -52,7 +52,7 @@ test("ファイルへ書き戻しても、表示中のドキュメントは戻�
     openedState(),
     {
       kind: "rejected",
-      errors: [DocumentSyntaxError],
+      errors: [SampleSyntaxError],
     },
     ReceivedAt,
   );

@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { AxisLength } from "@/domains/axis-length";
 import { DesignDocument } from "@/domains/design-document";
-import { DocumentSyntaxError } from "@/features/editor/__tests__/document-errors";
+import { SampleSyntaxError } from "@/features/editor/__tests__/document-errors";
 import { ReceivedAt } from "@/features/editor/__tests__/instants";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
@@ -101,7 +101,7 @@ function EditorStateHarness() {
         onClick={() =>
           dispatch({
             type: "reload_document",
-            reload: { kind: "rejected", errors: [DocumentSyntaxError] },
+            reload: { kind: "rejected", errors: [SampleSyntaxError] },
             at: ReceivedAt,
           })
         }

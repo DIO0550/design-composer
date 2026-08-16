@@ -10,7 +10,7 @@ import { TokenList } from "@/features/editor/components/token-list";
 import { useTokenActions } from "@/features/editor/hooks/use-token-actions";
 import { TokenEditor } from "../index";
 
-const Document = DesignDocument.create({
+const EditedDocument = DesignDocument.create({
   tokens: {
     colors: { primary: "#3b82f6", danger: "#ef4444" },
     spacing: { lg: 24 },
@@ -60,7 +60,7 @@ function TokenPanes() {
 
 function renderPanes() {
   render(
-    <EditorProvider initialDocument={Document}>
+    <EditorProvider initialDocument={EditedDocument}>
       <TokenPanes />
     </EditorProvider>,
   );

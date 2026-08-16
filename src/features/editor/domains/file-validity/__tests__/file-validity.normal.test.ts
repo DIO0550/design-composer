@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
 import { Instant } from "@/domains/instant";
-import { DocumentSyntaxError } from "@/features/editor/__tests__/document-errors";
+import { SampleSyntaxError } from "@/features/editor/__tests__/document-errors";
 import type { DocumentError } from "@/features/editor/domains/document-error";
 import { Option } from "@/utils/Option";
 import { FileValidity } from "../index";
@@ -35,13 +35,13 @@ test("取り込めた内容を反映すると妥当な状態になる", () => {
 test("拒んだ内容を反映すると、その理由がエラー一覧になる", () => {
   const validity = FileValidity.withReload(
     FileValidity.valid,
-    { kind: "rejected", errors: [DocumentSyntaxError] },
+    { kind: "rejected", errors: [SampleSyntaxError] },
     FirstAt,
   );
 
   expect(validity).toStrictEqual({
     kind: "invalid",
-    errors: [DocumentSyntaxError],
+    errors: [SampleSyntaxError],
     since: FirstAt,
   });
 });
@@ -49,7 +49,7 @@ test("拒んだ内容を反映すると、その理由がエラー一覧にな�
 test("拒んだ内容を反映すると、受け取った時刻が食い違いの起点になる", () => {
   const validity = FileValidity.withReload(
     FileValidity.valid,
-    { kind: "rejected", errors: [DocumentSyntaxError] },
+    { kind: "rejected", errors: [SampleSyntaxError] },
     FirstAt,
   );
 
@@ -59,7 +59,7 @@ test("拒んだ内容を反映すると、受け取った時刻が食い違い�
 test("不正なまま別の理由で拒み直しても、食い違いの起点は最初のままになる", () => {
   const first = FileValidity.withReload(
     FileValidity.valid,
-    { kind: "rejected", errors: [DocumentSyntaxError] },
+    { kind: "rejected", errors: [SampleSyntaxError] },
     FirstAt,
   );
 
@@ -75,7 +75,7 @@ test("不正なまま別の理由で拒み直しても、食い違いの起点�
 test("不正なまま拒み直すと、エラー一覧は新しい理由に入れ替わる", () => {
   const first = FileValidity.withReload(
     FileValidity.valid,
-    { kind: "rejected", errors: [DocumentSyntaxError] },
+    { kind: "rejected", errors: [SampleSyntaxError] },
     FirstAt,
   );
 
@@ -95,7 +95,7 @@ test("不正なまま拒み直すと、エラー一覧は新しい理由に入�
 test("不正な状態から取り込めた内容を反映すると食い違いの起点は消える", () => {
   const rejected = FileValidity.withReload(
     FileValidity.valid,
-    { kind: "rejected", errors: [DocumentSyntaxError] },
+    { kind: "rejected", errors: [SampleSyntaxError] },
     FirstAt,
   );
 
@@ -107,14 +107,14 @@ test("不正な状態から取り込めた内容を反映すると食い違い�
 test("一度直ってから再び壊れると、食い違いの起点は新しい時刻になる", () => {
   const rejected = FileValidity.withReload(
     FileValidity.valid,
-    { kind: "rejected", errors: [DocumentSyntaxError] },
+    { kind: "rejected", errors: [SampleSyntaxError] },
     FirstAt,
   );
   const fixed = FileValidity.withReload(rejected, Reloaded, SecondAt);
 
   const brokenAgain = FileValidity.withReload(
     fixed,
-    { kind: "rejected", errors: [DocumentSyntaxError] },
+    { kind: "rejected", errors: [SampleSyntaxError] },
     SecondAt,
   );
 

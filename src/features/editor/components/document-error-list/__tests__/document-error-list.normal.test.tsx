@@ -1,6 +1,6 @@
 import { render, screen, within } from "@testing-library/react";
 import { expect, test } from "vitest";
-import { DocumentSyntaxError } from "@/features/editor/__tests__/document-errors";
+import { SampleSyntaxError } from "@/features/editor/__tests__/document-errors";
 import { DocumentErrorList, DocumentErrorOrigins } from "../index";
 
 test("エラーが無いときは何も重ねない", () => {
@@ -19,7 +19,7 @@ test("エラーが複数あると、件数とそれぞれの内容が一覧で�
     <DocumentErrorList
       origin={DocumentErrorOrigins.UnopenedFile}
       errors={[
-        DocumentSyntaxError,
+        SampleSyntaxError,
         {
           kind: "dangling-ref",
           message: 'unknown component "missing-button"',
@@ -41,7 +41,7 @@ test("エラーが複数あると、件数とそれぞれの内容が一覧で�
 test("テキストの位置が分かるエラーには何文字目かが出る", () => {
   render(
     <DocumentErrorList
-      errors={[DocumentSyntaxError]}
+      errors={[SampleSyntaxError]}
       origin={DocumentErrorOrigins.UnopenedFile}
     />,
   );

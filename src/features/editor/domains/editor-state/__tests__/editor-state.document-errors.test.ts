@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 import { Artboard } from "@/domains/artboard";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import { Instant } from "@/domains/instant";
-import { DocumentSyntaxError } from "@/features/editor/__tests__/document-errors";
+import { SampleSyntaxError } from "@/features/editor/__tests__/document-errors";
 import { ReceivedAt } from "@/features/editor/__tests__/instants";
 import type { DocumentErrorLocation } from "@/features/editor/domains/document-error";
 import { FileValidity } from "@/features/editor/domains/file-validity";
@@ -83,7 +83,7 @@ test("外部変更を拒んでいても、表示中のドキュメントが正�
     openedState(),
     {
       kind: "rejected",
-      errors: [DocumentSyntaxError],
+      errors: [SampleSyntaxError],
     },
     ReceivedAt,
   );
@@ -96,7 +96,7 @@ test("外部変更を拒んでいる間に編集で作った不正は、ファ�
     openedState(),
     {
       kind: "rejected",
-      errors: [DocumentSyntaxError],
+      errors: [SampleSyntaxError],
     },
     ReceivedAt,
   );
@@ -113,7 +113,7 @@ test("編集で不正を作ってもファイルのエラー一覧は変わら�
     openedState(),
     {
       kind: "rejected",
-      errors: [DocumentSyntaxError],
+      errors: [SampleSyntaxError],
     },
     ReceivedAt,
   );
@@ -122,7 +122,7 @@ test("編集で不正を作ってもファイルのエラー一覧は変わら�
 
   expect(removed.fileValidity).toStrictEqual({
     kind: "invalid",
-    errors: [DocumentSyntaxError],
+    errors: [SampleSyntaxError],
     since: ReceivedAt,
   });
 });
@@ -133,7 +133,7 @@ test("編集で不正を作っても食い違いの起点は変わらない", ()
     openedState(),
     {
       kind: "rejected",
-      errors: [DocumentSyntaxError],
+      errors: [SampleSyntaxError],
     },
     receivedAt,
   );

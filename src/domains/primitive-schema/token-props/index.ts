@@ -76,7 +76,7 @@ export type TokenPropKinds = {
  * 集めているのはスキーマの宣言そのものなので、`TokenPropKinds` が表す事実は
  * この構築処理で成立している（狭い型への表明が許されるのはこの1箇所）。
  */
-const TokenPropKindTable = Object.fromEntries(
+const TokenKindByProp = Object.fromEntries(
   Object.values(PrimitiveSchemas).flatMap((schema: PrimitiveSchema) =>
     Object.entries(schema.props).flatMap(([name, definition]) =>
       PropDefinition.isToken(definition)
@@ -92,6 +92,6 @@ export const TokenPropKinds = {
    * 出力側が「どの種別から引くか」を書き写さずに済むよう、スキーマの宣言を引かせる。
    */
   kindOf<P extends TokenPropName>(prop: P): TokenPropKinds[P] {
-    return TokenPropKindTable[prop];
+    return TokenKindByProp[prop];
   },
 } as const;
