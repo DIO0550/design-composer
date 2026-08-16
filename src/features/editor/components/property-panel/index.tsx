@@ -22,16 +22,16 @@ const FieldClass =
   "h-7 w-full rounded-md border border-gray-300 px-2 text-[11px]";
 
 /**
- * ラベル欄の幅。UI 案の 52px では `Width Mode` / `Padding X` が収まらない。
+ * ラベル欄の幅。UI 案の 52px では `Width Mode` / `Padding Bottom` が収まらない。
  * 変えたら `ControlOffsetClass` も一緒に動かす（片方だけ変えると字下げがずれる）。
  */
-const LabelClass = "w-[4.25rem] shrink-0 truncate text-[11px] text-gray-500";
+const LabelClass = "w-[5.25rem] shrink-0 truncate text-[11px] text-gray-500";
 
 /**
  * ラベル欄の右、コントロールの左端へ揃えるための字下げ。
- * ラベル欄 4.25rem + ラベルとコントロールの間隔 0.5rem。
+ * ラベル欄 5.25rem + ラベルとコントロールの間隔 0.5rem。
  */
-const ControlOffsetClass = "pl-[4.75rem]";
+const ControlOffsetClass = "pl-[5.75rem]";
 
 /**
  * 未指定のときに何が効くかを出す（#34「未指定 prop はデフォルト値を

@@ -50,7 +50,12 @@ test("1つのノードが2つの prop から同じトークンを指しても、
           {
             name: "login-form",
             type: "Box",
-            props: { paddingX: "md", paddingY: "md" },
+            props: {
+              paddingTop: "md",
+              paddingRight: "md",
+              paddingBottom: "md",
+              paddingLeft: "md",
+            },
             children: [],
           },
         ],
@@ -114,7 +119,7 @@ test("色以外のトークンを選ぶと、帯に見本は出ない", () => {
           {
             name: "login-form",
             type: "Box",
-            props: { paddingX: "md" },
+            props: { paddingRight: "md", paddingLeft: "md" },
             children: [],
           },
         ],

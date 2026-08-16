@@ -9,7 +9,7 @@ tokens セクションの体系を規定する。「見た目に関わる値は�
 | 種別 | 値の形式 | 参照する prop の例 |
 |---|---|---|
 | `colors` | hex 文字列 | background, color |
-| `spacing` | number（px） | gap, paddingX, paddingY |
+| `spacing` | number（px） | gap, paddingTop / paddingRight / paddingBottom / paddingLeft |
 | `radius` | number（px） | radius |
 | `shadows` | 複合オブジェクト | shadow |
 | `typography` | 複合オブジェクト | typography |
@@ -137,7 +137,7 @@ tokens セクションの体系を規定する。「見た目に関わる値は�
     "type": "Box",
     "props": {
       "direction": "row", "align": "center", "justify": "center",
-      "paddingX": "md", "paddingY": "sm",
+      "paddingTop": "sm", "paddingRight": "md", "paddingBottom": "sm", "paddingLeft": "md",
       "background": "primary", "radius": "md"
     },
     "children": [
@@ -152,7 +152,7 @@ tokens セクションの体系を規定する。「見た目に関わる値は�
     "type": "Box",
     "props": {
       "direction": "row", "align": "center", "justify": "center",
-      "paddingX": "md", "paddingY": "sm",
+      "paddingTop": "sm", "paddingRight": "md", "paddingBottom": "sm", "paddingLeft": "md",
       "background": "gray-100", "radius": "md"
     },
     "children": [
@@ -166,7 +166,7 @@ tokens セクションの体系を規定する。「見た目に関わる値は�
     },
     "type": "Box",
     "props": {
-      "paddingX": "md", "paddingY": "sm",
+      "paddingTop": "sm", "paddingRight": "md", "paddingBottom": "sm", "paddingLeft": "md",
       "background": "gray-100", "radius": "md",
       "widthMode": "fill"
     },
@@ -183,7 +183,7 @@ tokens セクションの体系を規定する。「見た目に関わる値は�
     "type": "Box",
     "props": {
       "direction": "column", "gap": "sm",
-      "paddingX": "lg", "paddingY": "lg",
+      "paddingTop": "lg", "paddingRight": "lg", "paddingBottom": "lg", "paddingLeft": "lg",
       "background": "white", "radius": "lg", "shadow": "sm"
     },
     "children": [

@@ -59,8 +59,10 @@
 |---|---|---|---|
 | `direction` | enum | `row` / `column` | `column` |
 | `gap` | トークン (spacing) | | なし (0) |
-| `paddingX` | トークン (spacing) | 左右 | なし (0) |
-| `paddingY` | トークン (spacing) | 上下 | なし (0) |
+| `paddingTop` | トークン (spacing) | 上 | なし (0) |
+| `paddingRight` | トークン (spacing) | 右 | なし (0) |
+| `paddingBottom` | トークン (spacing) | 下 | なし (0) |
+| `paddingLeft` | トークン (spacing) | 左 | なし (0) |
 | `align` | enum | `start` / `center` / `end` / `stretch` | `stretch` |
 | `justify` | enum | `start` / `center` / `end` / `space-between` | `start` |
 | `widthMode` | enum | `hug` / `fill` / `fixed` | `hug` |
@@ -72,7 +74,7 @@
 | `shadow` | トークン (shadows) | | なし |
 | `overflow` | enum | `visible` / `clip` | `visible` |
 
-- padding は Figma の基本操作に合わせ X / Y の2軸。4方向個別は必要になった時点で追加を検討する
+- padding は 4 方向個別。ドキュメントが持つのは4方向の値だけで、プロパティパネルでの畳み方（Figma と同じ垂直 / 水平への切り替え）は表示の都合なので持たない
 - border 系は初期セットに含めない（スキーマへの追加で対応可能）
 - artboard は Box スキーマを流用するが、`widthMode` / `heightMode` は `fixed` に固定され、`width` / `height` が必須、`overflow` のデフォルトは `clip`
 
@@ -99,7 +101,7 @@
 | Box 自体 | `div` + `display: flex` |
 | `direction` | `flex-direction` |
 | `gap` | `gap: var(--spacing-*)` |
-| `paddingX` / `paddingY` | `padding: var(--spacing-*)` （Y X の順で合成） |
+| `paddingTop` / `paddingRight` / `paddingBottom` / `paddingLeft` | `padding: var(--spacing-*)` （上 右 下 左 の順で4値に合成。未指定の辺は `0`） |
 | `align` | `align-items` |
 | `justify` | `justify-content` |
 | `widthMode: hug` | `width: fit-content` |

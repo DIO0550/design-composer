@@ -28,8 +28,10 @@ export const BoxSchema = {
       group: "layout",
     },
     gap: { domain: "token", tokenKind: "spacing", group: "layout" },
-    paddingX: { domain: "token", tokenKind: "spacing", group: "layout" },
-    paddingY: { domain: "token", tokenKind: "spacing", group: "layout" },
+    paddingTop: { domain: "token", tokenKind: "spacing", group: "layout" },
+    paddingRight: { domain: "token", tokenKind: "spacing", group: "layout" },
+    paddingBottom: { domain: "token", tokenKind: "spacing", group: "layout" },
+    paddingLeft: { domain: "token", tokenKind: "spacing", group: "layout" },
     align: {
       domain: "enum",
       values: ["start", "center", "end", "stretch"],

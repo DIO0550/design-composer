@@ -18,7 +18,7 @@ import { Html } from "@/utils/Html";
  * (docs/03「HTML/CSS へのコンパイル規則」の表。仕様と同じく prop 名で引く)。
  * 引くトークン種別はスキーマの `tokenKind` だけが宣言するため、ここには書かず
  * `TokenPropKinds.kindOf` から引く (`gap` を colors から引く組み合わせを書けない)。
- * `paddingX` / `paddingY` は2軸を1つの `padding` へ合成するため `Padding` が、
+ * `paddingTop` などの4方向は1つの `padding` へ合成するため `Padding` が、
  * `typography` は複数プロパティへ展開されるため下の関数が担当し、この表には含めない。
  */
 const TokenPropProperties = {
@@ -152,7 +152,12 @@ export const BoxElement = {
       CssDeclaration.create("flex-direction", String(props.direction)),
       ...tokenDeclarations("gap", props.gap, tokens),
       ...Padding.declarations(
-        Padding.create(props.paddingY, props.paddingX),
+        Padding.create({
+          top: props.paddingTop,
+          right: props.paddingRight,
+          bottom: props.paddingBottom,
+          left: props.paddingLeft,
+        }),
         (token) => tokens.ref("spacing", token),
       ),
       CssDeclaration.create("align-items", String(props.align)),

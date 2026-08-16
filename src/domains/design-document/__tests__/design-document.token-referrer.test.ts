@@ -61,7 +61,12 @@ test("1つのノードが2つの prop から同じトークンを指すと prop 
           {
             name: "login-form",
             type: "Box",
-            props: { paddingX: "md", paddingY: "md" },
+            props: {
+              paddingTop: "md",
+              paddingRight: "md",
+              paddingBottom: "md",
+              paddingLeft: "md",
+            },
             children: [],
           },
         ],
@@ -75,8 +80,10 @@ test("1つのノードが2つの prop から同じトークンを指すと prop 
   });
 
   expect(referrers.map(TokenReferrer.toText)).toEqual([
-    "login-form.paddingX",
-    "login-form.paddingY",
+    "login-form.paddingTop",
+    "login-form.paddingRight",
+    "login-form.paddingBottom",
+    "login-form.paddingLeft",
   ]);
 });
 
@@ -268,7 +275,12 @@ test("1つのノードが2つの prop から同じトークンを指しても、
           {
             name: "login-form",
             type: "Box",
-            props: { paddingX: "md", paddingY: "md" },
+            props: {
+              paddingTop: "md",
+              paddingRight: "md",
+              paddingBottom: "md",
+              paddingLeft: "md",
+            },
             children: [],
           },
         ],

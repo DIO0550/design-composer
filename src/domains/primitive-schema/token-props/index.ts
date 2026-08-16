@@ -25,7 +25,8 @@ type SchemaPropsOf<T extends PrimitiveType> =
  *
  * props の各キーを走査し、トークン参照でないものを `never` に潰してから
  * `[keyof ...]` で値側を union として取り出す（`never` は union から消える）。
- * 例: Box なら `"gap" | "paddingX" | "paddingY" | "background" | "radius" | "shadow"`。
+ * 例: Box なら `"gap" | "paddingTop" | "paddingRight" | "paddingBottom" |
+ * "paddingLeft" | "background" | "radius" | "shadow"`。
  */
 type TokenPropNameOf<T extends PrimitiveType> = {
   [K in keyof SchemaPropsOf<T>]: SchemaPropsOf<T>[K] extends { domain: "token" }

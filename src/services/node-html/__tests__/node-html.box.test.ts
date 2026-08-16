@@ -37,34 +37,41 @@ test("gap はトークンを参照する CSS カスタムプロパティにな�
   expect(style.gap).toBe("var(--spacing-md)");
 });
 
-test("paddingY と paddingX は Y X の順で padding 1宣言に合成される", () => {
+test("4辺の padding は 上 右 下 左 の順で padding 1宣言に合成される", () => {
   const style = styleOf({
     name: "box",
     type: "Box",
-    props: { paddingY: "sm", paddingX: "lg" },
+    props: {
+      paddingTop: "xs",
+      paddingRight: "sm",
+      paddingBottom: "md",
+      paddingLeft: "lg",
+    },
   });
 
-  expect(style.padding).toBe("var(--spacing-sm) var(--spacing-lg)");
+  expect(style.padding).toBe(
+    "var(--spacing-xs) var(--spacing-sm) var(--spacing-md) var(--spacing-lg)",
+  );
 });
 
-test("paddingX だけを指定すると上下は 0 になる", () => {
+test("下だけを指定すると残りの3辺は 0 になる", () => {
   const style = styleOf({
     name: "box",
     type: "Box",
-    props: { paddingX: "lg" },
+    props: { paddingBottom: "lg" },
   });
 
-  expect(style.padding).toBe("0 var(--spacing-lg)");
+  expect(style.padding).toBe("0 0 var(--spacing-lg) 0");
 });
 
-test("paddingY だけを指定すると左右は 0 になる", () => {
+test("右だけを指定すると残りの3辺は 0 になる", () => {
   const style = styleOf({
     name: "box",
     type: "Box",
-    props: { paddingY: "sm" },
+    props: { paddingRight: "sm" },
   });
 
-  expect(style.padding).toBe("var(--spacing-sm) 0");
+  expect(style.padding).toBe("0 var(--spacing-sm) 0 0");
 });
 
 test("padding を指定しなければ padding 宣言は出力されない", () => {
