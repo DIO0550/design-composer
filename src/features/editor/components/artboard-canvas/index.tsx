@@ -2,12 +2,10 @@ import {
   type CSSProperties,
   type KeyboardEvent,
   type MouseEvent,
-  type PointerEvent,
   type ReactElement,
   useMemo,
 } from "react";
 import type { AxisLength } from "@/domains/axis-length";
-import type { ChildPosition } from "@/domains/child-position";
 import type { CompiledArtboard } from "@/domains/compiled-artboard";
 import {
   CompiledElement,
@@ -19,17 +17,17 @@ import { Px } from "@/domains/px";
 import { CanvasView } from "@/features/editor/domains/canvas-view";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { NodeDrag } from "@/features/editor/domains/node-drag";
-import type { CanvasBounds } from "@/features/editor/domains/node-drop";
+import type {
+  CanvasBounds,
+  DropTarget,
+} from "@/features/editor/domains/node-drop";
 import {
   NodeResize,
   ResizeHandleThicknessPx,
 } from "@/features/editor/domains/node-resize";
 import type { TextEdit } from "@/features/editor/domains/text-edit";
 import type { CanvasViewControl } from "@/features/editor/hooks/use-canvas-view";
-import {
-  type NodeDragControl,
-  useNodeDrag,
-} from "@/features/editor/hooks/use-node-drag";
+import type { NodeDragControl } from "@/features/editor/hooks/use-node-drag";
 import {
   type NodeResizeControl,
   useNodeResize,
@@ -258,6 +256,38 @@ function DropMarker({ bounds }: Readonly<{ bounds: CanvasBounds }>) {
 }
 
 /**
+ * ドロップ先を「どの親の何個中どこか」として読ませるラベル
+ * （UI 案 docs/Design Composer.html の `into login-form · child 3 of 5`）。
+ *
+ * 数え方は UI 案の図に合わせた。`login-form` は子を 5 つ持ち、線はその 4 つ目の手前に
+ * あるので、`N` は挿入位置（0 起点）、`M` は落とす前の子の数になる。先頭へ落とすと
+ * `child 0 of 5` になり日本語としては硬いが、綴りを読みやすくすると UI 案の数字を
+ * 再現できなくなる。
+ *
+ * 色は今のドロップ提示（緑の破線）に合わせる。UI 案はここも選択と同じ青にしているが、
+ * 選択と見分けるために緑にしてあるので、まとめて青へ寄せるのは #112 の担当。
+ *
+ * `DropMarker` と同じくズーム / パンの変形の**外側**へ置き、実測した client 座標を
+ * `position: fixed` で使う。
+ */
+function DropPositionLabel({ target }: Readonly<{ target: DropTarget }>) {
+  return (
+    <p
+      aria-hidden
+      className="pointer-events-none fixed z-10 whitespace-nowrap rounded-t-[3px] bg-emerald-500 px-1.5 py-0.5 font-medium text-[10px] text-white"
+      style={{
+        left: `${target.parentBounds.left}px`,
+        // ラベルの高さぶん親の上へ持ち上げ、枠に載せる（UI 案と同じ置き方）
+        top: `${target.parentBounds.top - 18}px`,
+      }}
+    >
+      into {target.position.parentName} · child {target.position.index} of{" "}
+      {target.childCount}
+    </p>
+  );
+}
+
+/**
  * artboard の見出し（UI 案 docs/Design Composer.html。名前の右に大きさが並ぶ）。
  *
  * 名前が青く太くなるのは「今ツリーが映している 1 枚」のとき（#184）。UI 案で色が
@@ -425,25 +455,6 @@ function ArtboardList({
   textEdit: TextEditControl;
 }>) {
   const dropTarget = NodeDrag.dropTarget(nodeDrag.drag);
-  /*
-   * 動かしている間のポインタは移動とリサイズの両方へ配る。押した時点でどちらか
-   * 一方しか始まっておらず（`grabHandle` を先に試す）、始まっていない側は
-   * 何も起こさないため、配る順序を気にする必要が無い。
-   */
-  const dragHandlers = {
-    onPointerMove: (event: PointerEvent<HTMLElement>) => {
-      nodeDrag.dragHandlers.onPointerMove(event);
-      nodeResize.dragHandlers.onPointerMove(event);
-    },
-    onPointerUp: () => {
-      nodeDrag.dragHandlers.onPointerUp();
-      nodeResize.dragHandlers.onPointerUp();
-    },
-    onPointerLeave: () => {
-      nodeDrag.dragHandlers.onPointerLeave();
-      nodeResize.dragHandlers.onPointerLeave();
-    },
-  };
 
   /*
    * ドキュメント全体を走査するので、パン / ズームのたびに数え直さない
@@ -478,13 +489,14 @@ function ArtboardList({
         />
       ) : null}
       {/*
-        運んでいる間のポインタは並び全体で受ける。artboard の枠ごとに受けると、
-        artboard をまたぐ移動が枠を出た時点で切れてしまう。
+        リサイズ中のポインタは並び全体で受ける。artboard の枠ごとに受けると、
+        枠の外まで引っ張ったときに追従が切れてしまう。ツリー内の移動 / 挿入の
+        ポインタは 3 ペインの器が受ける（掴む場所が左ペインにもあるため）。
       */}
       <ul
         style={compiled.variables}
         className="flex flex-wrap items-start gap-8 p-8"
-        {...dragHandlers}
+        {...nodeResize.dragHandlers}
       >
         {compiled.artboards.map((artboard) => (
           <ArtboardFrame
@@ -592,31 +604,31 @@ function StaleCanvasOverlay(): ReactElement {
  * 表示（倍率・位置）を自分で持たず受け取るのは、倍率の操作が上部バーへ移り、
  * キャンバスと上部バーが同じ 1 つの表示を見る必要があるため（#134）。
  *
- * props が 6 つあるが Composition へは割っていない。関心は「キャンバス」1 つで、
- * 4 つのハンドラはいずれもキャンバス上の操作を外へ渡すもの。`NodeActions` を丸ごと
- * 受けると、使わない `createComponent` / `insertInstance` などまで渡ることになる。
+ * props が 5 つあるが Composition へは割っていない。関心は「キャンバス」1 つで、
+ * ハンドラはいずれもキャンバス上の操作を外へ渡すもの。`NodeActions` を丸ごと
+ * 受けると、使わない `createComponent` / `insertAt` などまで渡ることになる。
+ *
+ * ツリー内の移動 / 挿入のドラッグを自分で持たず受け取るのは、掴む場所がキャンバスだけで
+ * なくなったため。パレット（左ペイン）からも掴めるので、状態は両方の親が持つ
+ * （`opened-document-editor`）。
  */
 export function ArtboardCanvas({
   state,
   canvasView,
+  nodeDrag,
   onSelect,
-  onMoveNode,
   onResize,
   onEditProp,
 }: Readonly<{
   state: EditorState;
   canvasView: CanvasViewControl;
+  nodeDrag: NodeDragControl;
   onSelect: (names: readonly string[]) => void;
-  onMoveNode: (name: string, to: ChildPosition) => void;
   onResize: (size: AxisLength) => void;
   onEditProp: (edit: PropEdit) => void;
 }>) {
   const { view, surfaceRef, panHandlers } = canvasView;
   const designDocument = EditorState.document(state);
-  const nodeDrag = useNodeDrag({
-    document: designDocument,
-    onMove: onMoveNode,
-  });
   const nodeResize = useNodeResize({ state, view, onResize });
   const textEdit = useTextEdit({ state, onEditProp });
   const isFrozen = EditorState.isFileInvalid(state);
@@ -681,7 +693,12 @@ export function ArtboardCanvas({
           scale={view.scale}
         />
       ) : null}
-      {dropTarget.some ? <DropMarker bounds={dropTarget.value.marker} /> : null}
+      {dropTarget.some ? (
+        <>
+          <DropMarker bounds={dropTarget.value.marker} />
+          <DropPositionLabel target={dropTarget.value} />
+        </>
+      ) : null}
       {textEdit.edit.some ? (
         <TextInlineEditor
           edit={textEdit.edit.value}

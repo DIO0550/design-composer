@@ -63,19 +63,23 @@ test("Assets から Layers に戻すとツリーが出る", async () => {
   expect(screen.getByRole("region", { name: "ツリー" })).toBeDefined();
 });
 
-test("Assets の部品を挿すと選択位置の子としてインスタンスが増える", async () => {
+test("Assets の行は押しても挿さらない", async () => {
   await renderOpenedDocument();
   await selectArtboard("home");
+  // ツリーは Layers のときしか出ないので、比べる元をここで読む
+  const before = rowNames(screen.getByRole("region", { name: "ツリー" }));
   await goTo(LeftPaneViews.Assets);
 
-  await userEvent.click(screen.getByRole("button", { name: "card を挿入" }));
+  /*
+   * UI 案は `Assets` を browse-only とし、挿入をドラッグだけの入口にしている（#203）。
+   * 運ぶところまで含めた挿入は `opened-document-editor.asset-drag` が見る。
+   */
+  await userEvent.click(within(leftPane()).getByText("card"));
 
   await goTo(LeftPaneViews.Layers);
-  expect(rowNames(screen.getByRole("region", { name: "ツリー" }))).toEqual([
-    "home-title",
-    "home-login",
-    "card-2",
-  ]);
+  expect(rowNames(screen.getByRole("region", { name: "ツリー" }))).toEqual(
+    before,
+  );
 });
 
 /*

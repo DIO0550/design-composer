@@ -24,7 +24,8 @@ export type NodeActions = Readonly<{
   resize: (size: AxisLength) => void;
   editProp: (edit: PropEdit) => void;
   insert: (template: NodeTemplate) => void;
-  insertInstance: (componentName: string) => void;
+  /** パレットから運んできたものを、落とした先のツリー位置へ挿す（#203）。 */
+  insertAt: (template: NodeTemplate, at: ChildPosition) => void;
   detachInstance: () => void;
   /** 同じ部品を指すインスタンスをまとめて選ぶ（`Select all N instances`）。 */
   selectAllInstances: () => void;
@@ -69,12 +70,13 @@ export function useNodeActions(): NodeActions {
      */
     editProp: (edit) => dispatch({ type: "apply_prop_edit", edit }),
     insert: (template) => dispatch({ type: "insert_node", template }),
-    /** 部品一覧からの挿入は、その部品のインスタンスを挿すこと（docs/06-ui.md）。 */
-    insertInstance: (componentName) =>
-      dispatch({
-        type: "insert_node",
-        template: { kind: "instance", componentName },
-      }),
+    /**
+     * パレットからのドラッグは、落とした先へ挿すこと（UI 案 docs/Design Composer.html は
+     * `Assets` を挿入がドラッグ専用の browse-only とする）。選択位置ではなく落とし先へ
+     * 挿すので `insert` とは別のアクションになる。
+     */
+    insertAt: (template, at) =>
+      dispatch({ type: "insert_node_at", template, at }),
     /**
      * インスタンスの解除は選択中のものへの操作なので、対象を渡さない
      * （UI 案 docs/Design Composer.html の `Detach instance`）。

@@ -6,18 +6,20 @@ import type { CanvasOffset } from "@/features/editor/domains/canvas-view";
 import { NodeDrag } from "@/features/editor/domains/node-drag";
 import {
   CanvasBounds,
+  type DraggedNode,
   DropParent,
   type DropTarget,
   DropZone,
 } from "@/features/editor/domains/node-drop";
+import type { NodeTemplate } from "@/features/editor/domains/node-template";
 import { CanvasPointer } from "@/features/editor/utils/CanvasPointer";
 import { CanvasDom } from "@/libs/canvas-dom";
 import { ElementEx } from "@/utils/ElementEx";
 import { Option } from "@/utils/Option";
 
-/** ドラッグの進み方（docs/06-ui.md「キャンバス直接操作」の移動）。 */
+/** ドラッグの進み方（docs/06-ui.md「キャンバス直接操作」の移動と、挿入）。 */
 type NodeDragAction =
-  | Readonly<{ type: "grab"; name: string; origin: CanvasOffset }>
+  | Readonly<{ type: "grab"; dragged: DraggedNode; origin: CanvasOffset }>
   | Readonly<{ type: "move"; pointer: CanvasOffset; drop: Option<DropTarget> }>
   | Readonly<{ type: "release" }>
   | Readonly<{ type: "cancel" }>
@@ -33,7 +35,7 @@ type NodeDragAction =
 function nodeDragReducer(drag: NodeDrag, action: NodeDragAction): NodeDrag {
   switch (action.type) {
     case "grab":
-      return NodeDrag.grab(action.name, action.origin);
+      return NodeDrag.grab(action.dragged, action.origin);
     case "move":
       return NodeDrag.moveTo(drag, action.pointer, action.drop);
     case "release":
@@ -76,21 +78,21 @@ function measureZone(parent: DropParent): Option<DropZone> {
 }
 
 /**
- * ポインタの下にある、掴んでいるノードを受け入れられる位置。
+ * ポインタの下にある、運んでいるものを受け入れられる位置。
  *
  * @param document 落とし先を決めるためのドキュメント
- * @param heldName 掴んでいるノードの名前
+ * @param dragged 運んでいるもの
  * @param event 今のポインタの位置を持つイベント
  * @returns 落とせる親と、その中での挿入位置。受け入れられる親が無ければ `none`
  */
 function dropTargetAt(
   document: DesignDocument,
-  heldName: string,
+  dragged: DraggedNode,
   event: ReactPointerEvent<HTMLElement>,
 ): Option<DropTarget> {
   const parent = DropParent.innermost(
     document,
-    heldName,
+    dragged,
     namesToRoot(event.target),
   );
   return Option.map(Option.flatMap(parent, measureZone), (zone) =>
@@ -98,29 +100,34 @@ function dropTargetAt(
   );
 }
 
-/** ノードを掴む側（artboard の枠）へ渡す props。 */
+/** キャンバスの既存ノードを掴む側（artboard の枠）へ渡す props。 */
 export type NodeGrabHandlers = Readonly<{
   onPointerDown: (event: ReactPointerEvent<HTMLElement>) => void;
 }>;
 
-/** 運んでいる間のポインタを追う側（artboard の並び）へ渡す props。 */
+/** 運んでいる間のポインタを追う側（3 ペインの器）へ渡す props。 */
 export type NodeDragHandlers = Readonly<{
   onPointerMove: (event: ReactPointerEvent<HTMLElement>) => void;
   onPointerUp: () => void;
   onPointerLeave: () => void;
 }>;
 
-/** ドラッグ中の状態と、キャンバスの要素へ渡すハンドラ。 */
+/** ドラッグ中の状態と、画面の要素へ渡すハンドラ。 */
 export type NodeDragControl = Readonly<{
   drag: NodeDrag;
   grabHandlers: NodeGrabHandlers;
   dragHandlers: NodeDragHandlers;
+  /** パレットの行から掴む。掴めるものは行が知っているので指定を受け取る。 */
+  grabTemplate: (
+    template: NodeTemplate,
+    event: ReactPointerEvent<HTMLElement>,
+  ) => void;
   /** ドラッグ直後の `click` を飲み込む。飲み込んだ（＝選択に使わない）なら `true`。 */
   consumeClick: () => boolean;
 }>;
 
 /**
- * キャンバス上のドラッグを「ツリー内の移動」として解釈する
+ * 掴んでキャンバスへ落とす操作を、ツリー上の位置への移動・挿入として解釈する
  * （docs/06-ui.md「キャンバス直接操作」/ docs/02-data-model.md「基本原則」）。
  *
  * このフックが持つのは DOM の実測とイベントの仲介だけで、
@@ -128,15 +135,18 @@ export type NodeDragControl = Readonly<{
  *
  * ポインタキャプチャを使わないのは、捕捉すると以後のイベントの `target` が捕捉した要素に
  * 固定され、「今どのノードの上にいるか」を読めなくなるため。代わりに掴んだあとの
- * ポインタは artboard の並び全体で受け、そこから出たらドラッグを取り消す。
+ * ポインタは 3 ペインの器全体で受ける。キャンバスの中だけで受けると、パレットの行で
+ * 掴んで左ペインの上で離したときに `pointerup` が届かず、掴んだまま戻らなくなる。
  *
- * @param params 落とし先を決める `document` と、移動が確定したときに呼ぶ `onMove`
- * @returns 今のドラッグの状態と、キャンバスの要素へ渡すハンドラ
+ * @param params 落とし先を決める `document` と、移動・挿入が確定したときに呼ぶ
+ *   `onMove` / `onInsertAt`
+ * @returns 今のドラッグの状態と、画面の要素へ渡すハンドラ
  */
 export function useNodeDrag(
   params: Readonly<{
     document: DesignDocument;
     onMove: (name: string, to: ChildPosition) => void;
+    onInsertAt: (template: NodeTemplate, at: ChildPosition) => void;
   }>,
 ): NodeDragControl {
   const [drag, dispatch] = useReducer(
@@ -155,13 +165,24 @@ export function useNodeDrag(
     }
     dispatch({
       type: "grab",
-      name: name.value,
+      dragged: { kind: "existing", name: name.value },
+      origin: CanvasPointer.offsetOf(event),
+    });
+  };
+
+  const grabTemplate = (
+    template: NodeTemplate,
+    event: ReactPointerEvent<HTMLElement>,
+  ) => {
+    dispatch({
+      type: "grab",
+      dragged: { kind: "new", template },
       origin: CanvasPointer.offsetOf(event),
     });
   };
 
   const trackPointer = (event: ReactPointerEvent<HTMLElement>) => {
-    const held = NodeDrag.heldName(drag);
+    const held = NodeDrag.heldNode(drag);
     if (!held.some) {
       return;
     }
@@ -172,12 +193,20 @@ export function useNodeDrag(
     });
   };
 
-  /** 離した時点で提示していた位置へ落とす（最後に届いた移動が決めた先）。 */
+  /**
+   * 離した時点で提示していた位置へ落とす（最後に届いた移動が決めた先）。
+   * 運んでいたものが木にある既存ノードなら移動、パレットの雛形なら挿入になる。
+   */
   const release = () => {
-    const held = NodeDrag.heldName(drag);
+    const held = NodeDrag.heldNode(drag);
     const target = NodeDrag.dropTarget(drag);
     if (held.some && target.some) {
-      params.onMove(held.value, target.value.position);
+      const at = target.value.position;
+      if (held.value.kind === "existing") {
+        params.onMove(held.value.name, at);
+      } else {
+        params.onInsertAt(held.value.template, at);
+      }
     }
     dispatch({ type: "release" });
   };
@@ -185,6 +214,7 @@ export function useNodeDrag(
   return {
     drag,
     grabHandlers: { onPointerDown: grab },
+    grabTemplate,
     dragHandlers: {
       onPointerMove: trackPointer,
       onPointerUp: release,
