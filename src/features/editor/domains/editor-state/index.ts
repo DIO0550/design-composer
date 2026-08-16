@@ -3,7 +3,7 @@ import type { AxisLength } from "@/domains/axis-length";
 import { ChildPosition } from "@/domains/child-position";
 import { DesignDocument, TokenReferrer } from "@/domains/design-document";
 import type { Instant } from "@/domains/instant";
-import type { Node, PropEdit } from "@/domains/node";
+import { Node, type PropEdit } from "@/domains/node";
 import { Token, type TokenRef, TokenSet, TokenValue } from "@/domains/token";
 import { DocumentError } from "@/features/editor/domains/document-error";
 import type { DocumentReload } from "@/features/editor/domains/document-reload";
@@ -11,6 +11,7 @@ import { EditHistory } from "@/features/editor/domains/edit-history";
 import { FileValidity } from "@/features/editor/domains/file-validity";
 import { NodeTemplate } from "@/features/editor/domains/node-template";
 import { Selection } from "@/features/editor/domains/selection";
+import { SelectionState } from "@/features/editor/domains/selection-state";
 import { TokenTemplate } from "@/features/editor/domains/token-template";
 import { InstanceComposition } from "@/services/instance-composition";
 import { ArrayEx } from "@/utils/ArrayEx";
@@ -36,7 +37,7 @@ import { Option } from "@/utils/Option";
  */
 export type EditorState = Readonly<{
   history: EditHistory;
-  selectedName: Option<string>;
+  selection: SelectionState;
   selectedToken: Option<TokenRef>;
   copiedNode: Option<Node>;
   fileValidity: FileValidity;
@@ -44,7 +45,7 @@ export type EditorState = Readonly<{
 
 /**
  * 選択中のトークン。ドキュメントから消えていれば選択は無い。
- * `selectedName` と同時に立っていてよい。左ペインのタブ（Layers / Tokens）が
+ * `selection` と同時に立っていてよい。左ペインのタブ（Layers / Tokens）が
  * どちらを右ペインに映すかを決めるので、2 つは「それぞれのタブの中の選択」であって
  * 矛盾しないため（UI 案 docs/Design Composer.html の tokens 状態）。
  *
@@ -85,7 +86,7 @@ function selectableName(
  * @returns 選択中のノード。未選択と、選択が artboard のときは `none`
  */
 function selectedNode(state: EditorState): Option<Node> {
-  return Option.flatMap(state.selectedName, (name) =>
+  return Option.flatMap(EditorState.singleName(state), (name) =>
     DesignDocument.findNode(EditorState.document(state), name),
   );
 }
@@ -96,6 +97,8 @@ function selectedNode(state: EditorState): Option<Node> {
  * 選択は name によるベストエフォートで引き継ぎ、新しい現在地に無くなっていれば外す。
  * 選択を持ち回すのは編集・undo・外部変更の取り込みで共通の扱いなので、
  * 「存在しないものが選択されている」状態をここ 1 箇所で潰す（docs/06-ui.md「選択」）。
+ * 複数選択も同じ扱いで、残った名前だけで作り直す。3 件のうち 2 件が消えれば単一選択、
+ * 全部消えれば未選択へ落ちるのは `SelectionState.create` が決める。
  * クリップボードは引き継ぐ。切り離された複製であり、貼るときに必ず採番し直すので、
  * ドキュメントが差し替わっても貼れる状態が壊れないため。
  *
@@ -107,8 +110,10 @@ function withHistory(state: EditorState, history: EditHistory): EditorState {
   return {
     ...state,
     history,
-    selectedName: Option.flatMap(state.selectedName, (name) =>
-      selectableName(history.present, name),
+    selection: SelectionState.create(
+      SelectionState.names(state.selection).filter(
+        (name) => selectableName(history.present, name).some,
+      ),
     ),
     selectedToken: Option.flatMap(state.selectedToken, (ref) =>
       selectableToken(history.present, ref),
@@ -177,7 +182,7 @@ export const EditorState = {
   create(document: DesignDocument): EditorState {
     return {
       history: EditHistory.create(document),
-      selectedName: Option.none,
+      selection: SelectionState.None,
       selectedToken: Option.none,
       copiedNode: Option.none,
       fileValidity: FileValidity.valid,
@@ -187,6 +192,21 @@ export const EditorState = {
   /** 画面に映っているドキュメント（履歴の現在地）。 */
   document(state: EditorState): DesignDocument {
     return state.history.present;
+  },
+
+  /**
+   * 1 つだけ選んでいるときの、その名前。
+   *
+   * 単一選択を前提とする操作（削除・コピー・prop 編集・リサイズ・部品化・解除・
+   * テキスト編集）はすべてこれを通す。複数選択で `none` になるので、「複数選んでいる
+   * 間は単一前提の操作が成立しない」（docs/06-ui.md「選択」）が、消費側ごとの分岐では
+   * なくこの 1 つで決まる。
+   *
+   * @param state 選択の出どころになるエディタの状態
+   * @returns 単一選択ならその名前。未選択と複数選択では `none`
+   */
+  singleName(state: EditorState): Option<string> {
+    return SelectionState.singleName(state.selection);
   },
 
   /**
@@ -220,12 +240,71 @@ export const EditorState = {
   /**
    * 選択を切り替える。ドキュメントに存在しない名前は選択状態にしない
    * （「存在しないものが選択されている」状態を作らないため、選択が外れる）。
+   * 複数選んでいたときは、この 1 つだけの選択に戻る。
    */
   select(state: EditorState, name: string): EditorState {
     return {
       ...state,
-      selectedName: selectableName(EditorState.document(state), name),
+      selection: SelectionState.fromName(
+        selectableName(EditorState.document(state), name),
+      ),
     };
+  },
+
+  /**
+   * 選んでいるものがすべて同じ部品のインスタンスであるときの、その部品の名前
+   * （UI 案 docs/Design Composer.html の `from ◆ primary-button` と
+   * `Assets` の `source of selection`）。
+   *
+   * 右ペインと `Assets` パネルが同じ答えを要るので、参照先を引く経路をここ 1 つにする。
+   * 別々に導出すると「パネルはインスタンスなのに `Assets` はどこも光らない」が作れる。
+   *
+   * 複数選択でも答えるのは、まとめて選べるのが「同じ部品のインスタンス」だけで、
+   * 出どころが 1 つに定まるため（`selectAllInstances`）。
+   *
+   * @param state 選択とドキュメントの出どころ
+   * @returns 選択が空でなく、すべて同じ部品のインスタンスならその部品名。
+   *   1 つでもインスタンスでないもの・別の部品を指すものが混ざれば `none`
+   */
+  sourceName(state: EditorState): Option<string> {
+    const document = EditorState.document(state);
+    const names = SelectionState.names(state.selection);
+    const refs = names.flatMap((name) => {
+      const found = DesignDocument.findNode(document, name);
+      return found.some && Node.isRef(found.value) ? [found.value.ref] : [];
+    });
+    const isSameSource =
+      refs.length === names.length && ArrayEx.distinct(refs).length === 1;
+    return isSameSource ? ArrayEx.first(refs) : Option.none;
+  },
+
+  /**
+   * 選択中のインスタンスと同じ部品を指すインスタンスをまとめて選ぶ
+   * （UI 案 docs/Design Composer.html の `Select all N instances`）。
+   *
+   * 集めるのは `DesignDocument.collectInstanceNames` が持ち、ここは対象の部品を
+   * 選択から決めて選択へ入れるだけ（`rules/coding.md`「features 層にドメイン知識を
+   * 書かない」）。対象を引数で受け取らないのは `detachInstance` と同じ理由で、
+   * 導線が「選択中のインスタンスと同じものを選ぶ」しか無いため。
+   *
+   * 集まるのは artboard 配下だけなので、選択が複数の artboard にまたがりうる。
+   * ツリーは 1 枚しか映さないため、映っていない artboard のぶんはキャンバスにだけ
+   * 枠が出る（docs/06-ui.md「選択」）。
+   *
+   * @param state 選択元のエディタの状態
+   * @returns まとめて選んだ状態。選んでいるものが同じ部品のインスタンスで揃って
+   *   いないとき（未選択・artboard・プリミティブ・参照先が混ざった複数選択）は `none`
+   */
+  selectAllInstances(state: EditorState): Option<EditorState> {
+    return Option.map(EditorState.sourceName(state), (componentName) => ({
+      ...state,
+      selection: SelectionState.create(
+        DesignDocument.collectInstanceNames(
+          EditorState.document(state),
+          componentName,
+        ),
+      ),
+    }));
   },
 
   /**
@@ -240,11 +319,14 @@ export const EditorState = {
     const innermost = names.find(
       (name) => selectableName(EditorState.document(state), name).some,
     );
-    return { ...state, selectedName: Option.fromNullable(innermost) };
+    return {
+      ...state,
+      selection: SelectionState.fromName(Option.fromNullable(innermost)),
+    };
   },
 
   clearSelection(state: EditorState): EditorState {
-    return { ...state, selectedName: Option.none };
+    return { ...state, selection: SelectionState.None };
   },
 
   /**
@@ -262,7 +344,10 @@ export const EditorState = {
   reveal(state: EditorState, name: string): Option<EditorState> {
     return Option.map(
       selectableName(EditorState.document(state), name),
-      (revealed) => ({ ...state, selectedName: Option.some(revealed) }),
+      (revealed) => ({
+        ...state,
+        selection: SelectionState.fromName(Option.some(revealed)),
+      }),
     );
   },
 
@@ -409,7 +494,7 @@ export const EditorState = {
    * 画面の操作から `insertNode` の `none` には到達しない。
    */
   insertPosition(state: EditorState): Option<ChildPosition> {
-    return Option.flatMap(state.selectedName, (name) =>
+    return Option.flatMap(EditorState.singleName(state), (name) =>
       DesignDocument.appendPositionOf(EditorState.document(state), name),
     );
   },
@@ -511,7 +596,7 @@ export const EditorState = {
    *   参照先が無い・循環している部品を指しているときは `none`
    */
   detachInstance(state: EditorState): Option<EditorState> {
-    return Option.flatMap(state.selectedName, (name) => {
+    return Option.flatMap(EditorState.singleName(state), (name) => {
       const detached = InstanceComposition.detach(
         EditorState.document(state),
         name,
@@ -546,7 +631,7 @@ export const EditorState = {
     state: EditorState,
     componentName: string,
   ): Option<EditorState> {
-    return Option.flatMap(state.selectedName, (name) => {
+    return Option.flatMap(EditorState.singleName(state), (name) => {
       const created = DesignDocument.createComponent(
         EditorState.document(state),
         name,
@@ -567,7 +652,7 @@ export const EditorState = {
    * 選択が無い・書き換えられない指定は「その編集が存在しない」ことなので `none`。
    */
   applyPropEdit(state: EditorState, edit: PropEdit): Option<EditorState> {
-    return Option.flatMap(state.selectedName, (name) => {
+    return Option.flatMap(EditorState.singleName(state), (name) => {
       const edited = DesignDocument.applyPropEdit(
         EditorState.document(state),
         name,
@@ -589,7 +674,7 @@ export const EditorState = {
    * 選択は name で持っておりリサイズでは変わらないため、そのまま引き継ぐ。
    */
   resize(state: EditorState, size: AxisLength): Option<EditorState> {
-    return Option.flatMap(state.selectedName, (name) => {
+    return Option.flatMap(EditorState.singleName(state), (name) => {
       const resized = DesignDocument.resize(
         EditorState.document(state),
         name,
@@ -602,18 +687,38 @@ export const EditorState = {
   },
 
   isSelected(state: EditorState, name: string): boolean {
-    return state.selectedName.some && state.selectedName.value === name;
+    return SelectionState.includes(state.selection, name);
   },
 
   /**
-   * 今選ばれているものの正体（名前と種別）。何も選んでいなければ `none`。
+   * 選ばれているものすべての名前。
+   *
+   * キャンバスは選んだぶんだけ枠を出すのでこれを使う（ツリーと違い、選択は
+   * artboard をまたげる / docs/06-ui.md「選択」）。
+   *
+   * @param state 選択の出どころになるエディタの状態
+   * @returns 選ばれている名前の並び。未選択なら空
+   */
+  selectedNames(state: EditorState): readonly string[] {
+    return SelectionState.names(state.selection);
+  },
+
+  /**
+   * 1 つだけ選んでいるときの、その正体（名前と種別）。
    *
    * 名前だけを返さないのは、消費側（インスペクタの見出し）が名前と種別の両方を
    * 出すため。名前を渡して種別を引き直させると、artboard かノードかの場合分けが
    * features 層へ出る（`rules/coding.md`「features 層にドメイン知識を書かない」）。
+   *
+   * 状態の `selection` と綴りを分けているのは、こちらが「選ばれている 1 つが何か」、
+   * あちらが「いくつ選ばれているか」で別のことを答えるため。同じ綴りだと読み手が
+   * 取り違える。
+   *
+   * @param state 選択の出どころになるエディタの状態
+   * @returns 単一選択ならその名前と種別。未選択と複数選択では `none`
    */
-  selection(state: EditorState): Option<Selection> {
-    return Option.flatMap(state.selectedName, (name) => {
+  singleSelection(state: EditorState): Option<Selection> {
+    return Option.flatMap(EditorState.singleName(state), (name) => {
       const document = EditorState.document(state);
       const artboard = DesignDocument.findArtboard(document, name);
       if (artboard.some) {
@@ -633,15 +738,21 @@ export const EditorState = {
    * 選んでいるのが artboard ならそれ自身、ノードならそれを載せている artboard、
    * 何も選んでいなければ先頭の 1 枚。artboard が 1 枚も無ければ `none`。
    *
+   * 複数選択のときは**先頭の名前**が載っている artboard を映す。まとめて選んだ
+   * インスタンスは複数の artboard に散らばりうるが、ツリーは 1 枚しか映せないため
+   * （`Select all N instances`。映っていない artboard のぶんはキャンバスにだけ枠が出る）。
+   * Why not: 複数選択のとき `none` にして先頭の 1 枚へ落とす案は採らない。選んだ結果
+   * ツリーが無関係の artboard へ飛ぶことになる。
+   *
    * どれを見ているかを状態として持たずここで導出するのは、持つと
-   * 「今見ている artboard の外にあるノードが選択されている」という食い違った状態が
-   * 表現できてしまうため。選択から導けば「選択は常に今見ている artboard の中にある」が
-   * 構造的に成り立つ（rules/coding.md「不正な状態を型で表現できなくする」）。
+   * 「選択のどれもが今見ている artboard に無い」という食い違った状態が表現できて
+   * しまうため（rules/coding.md「不正な状態を型で表現できなくする」）。
    */
   currentArtboard(state: EditorState): Option<Artboard> {
     const document = EditorState.document(state);
-    const owning = Option.flatMap(state.selectedName, (name) =>
-      DesignDocument.findOwningArtboard(document, name),
+    const owning = Option.flatMap(
+      ArrayEx.first(SelectionState.names(state.selection)),
+      (name) => DesignDocument.findOwningArtboard(document, name),
     );
     if (owning.some) {
       return owning;

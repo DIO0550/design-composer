@@ -55,7 +55,11 @@ function setupState(): EditorState {
 function renderPanel(state: EditorState) {
   render(
     <PropertyPanel
-      instance={{ goToSource: vi.fn(), detach: vi.fn() }}
+      instance={{
+        goToSource: vi.fn(),
+        selectAllInstances: vi.fn(),
+        detach: vi.fn(),
+      }}
       state={state}
       onEditProp={vi.fn()}
       onClearSelection={vi.fn()}

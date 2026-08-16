@@ -1,11 +1,13 @@
 import { render } from "@testing-library/react";
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
+import { EditorState } from "@/features/editor/domains/editor-state";
 import { EditorProvider, useEditor } from "../index";
 
 function SelectedNameView() {
   const { state } = useEditor();
-  return <p>{state.selectedName.some ? state.selectedName.value : "未選択"}</p>;
+  const name = EditorState.singleName(state);
+  return <p>{name.some ? name.value : "未選択"}</p>;
 }
 
 test("Provider の内側ならエディタの状態を読める", () => {

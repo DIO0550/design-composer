@@ -332,6 +332,30 @@ export const DesignDocument = {
     );
   },
 
+  /**
+   * その部品を指しているインスタンスの名前（UI 案 docs/Design Composer.html の
+   * `Select all N instances`）。走査は `Node` が持ち、ここは artboard を跨ぐ調停だけを行う。
+   *
+   * 見るのは artboard の配下だけ。部品定義の中にある参照ノードはキャンバスには描かれるが
+   * ドキュメントの木には無いので選択の対象にならない（`EditorState.select` と同じ線引き）。
+   * `componentAssets` の使用数が部品定義の中の参照も数えるのに対し、こちらが数えないのは
+   * このため（同じ部品でも 2 つの数が食い違いうる / docs/06-ui.md「選択」）。
+   *
+   * @param document 走査するドキュメント
+   * @param componentName 参照先として探す部品の名前
+   * @returns その部品を指すインスタンスの名前。1 つも無ければ空
+   */
+  collectInstanceNames(
+    document: DesignDocument,
+    componentName: string,
+  ): readonly string[] {
+    return document.artboards.flatMap((artboard) =>
+      artboard.children.flatMap((node) =>
+        Node.collectInstanceNames(node, componentName),
+      ),
+    );
+  },
+
   /** 名前で artboard を引く。名前は単一名前空間なので artboard 名も一意に決まる。 */
   findArtboard(document: DesignDocument, name: string): Option<Artboard> {
     return Option.fromNullable(

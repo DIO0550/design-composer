@@ -34,10 +34,11 @@ export const Componentization = {
    *   それ以外は選んでいるものを表す理由
    */
   forSelection(state: EditorState): Componentization {
-    if (!state.selectedName.some) {
+    const selected = EditorState.singleName(state);
+    if (!selected.some) {
       return { kind: "unselected" };
     }
-    const name = state.selectedName.value;
+    const name = selected.value;
     const node = DesignDocument.findNode(EditorState.document(state), name);
     if (!node.some) {
       // 選択できるもののうちノードでないのは artboard だけ（`EditorState` の線引き）

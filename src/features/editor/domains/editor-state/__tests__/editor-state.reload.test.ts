@@ -60,7 +60,7 @@ test("取り込んだドキュメントから選択中の名前が消えてい�
     ReceivedAt,
   );
 
-  expect(state.selectedName.some).toBe(false);
+  expect(EditorState.singleName(state).some).toBe(false);
 });
 
 test("外部変更を拒んだときは表示中のドキュメントがそのまま残る", () => {

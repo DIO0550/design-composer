@@ -48,7 +48,7 @@ test("prop を書き換えても選択は変わらない", () => {
     }),
   );
 
-  expect(edited.selectedName).toEqual(Option.some("home-title"));
+  expect(EditorState.singleName(edited)).toEqual(Option.some("home-title"));
 });
 
 test("何も選択していなければ prop の編集は起きない", () => {

@@ -95,7 +95,7 @@ test("部品にしたあとも同じ名前が選ばれたままになる", () =>
     EditorState.createComponent(selected, "info-panel"),
   );
 
-  expect(created.selectedName).toEqual(Option.some("home-panel"));
+  expect(EditorState.singleName(created)).toEqual(Option.some("home-panel"));
 });
 
 test("部品化は元に戻せる", () => {

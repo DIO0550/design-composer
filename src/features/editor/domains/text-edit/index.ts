@@ -42,7 +42,7 @@ function contentOf(node: PrimitiveNode): string {
  * @returns 名前と今の文言。未選択と、選択が Text でないときは `none`
  */
 function forSelection(state: EditorState): Option<EditableText> {
-  return Option.flatMap(state.selectedName, (name) => {
+  return Option.flatMap(EditorState.singleName(state), (name) => {
     const found = DesignDocument.findNode(EditorState.document(state), name);
     if (!found.some) {
       return Option.none;

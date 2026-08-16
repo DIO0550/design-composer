@@ -61,7 +61,7 @@ function EditorStateHarness() {
   return (
     <>
       <p data-testid="selected">
-        {Option.unwrapOr(state.selectedName, "選択なし")}
+        {Option.unwrapOr(EditorState.singleName(state), "選択なし")}
       </p>
       <p data-testid="children">{childNames(state).join(",")}</p>
       <p data-testid="artboard-width">{artboardWidth(state)}</p>
@@ -83,6 +83,12 @@ function EditorStateHarness() {
         onClick={() => dispatch({ type: "clear_selection" })}
       >
         選択を外す
+      </button>
+      <button
+        type="button"
+        onClick={() => dispatch({ type: "select_all_instances" })}
+      >
+        まとめて選ぶ
       </button>
       <button
         type="button"
@@ -359,4 +365,13 @@ test("不正なファイルを取り込むと、ファイル由来のエラー�
   );
 
   expect(fileValidityKind()).toBe("invalid");
+});
+
+test("インスタンス以外を選んでまとめて選ぶアクションを送っても選択は変わらない", async () => {
+  render(<EditorStateHarness />);
+  await userEvent.click(screen.getByRole("button", { name: "title を選ぶ" }));
+
+  await userEvent.click(screen.getByRole("button", { name: "まとめて選ぶ" }));
+
+  expect(screen.getByTestId("selected").textContent).toBe("title");
 });

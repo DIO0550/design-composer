@@ -121,7 +121,7 @@ test("戻した結果に選択中のノードが無ければ選択は外れる",
     EditorState.undo(EditorState.select(inserted, "text")),
   );
 
-  expect(undone.selectedName.some).toBe(false);
+  expect(EditorState.singleName(undone).some).toBe(false);
 });
 
 test("戻した結果にも選択中のノードがあれば選択は引き継がれる", () => {

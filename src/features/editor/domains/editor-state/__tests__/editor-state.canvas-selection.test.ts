@@ -63,7 +63,7 @@ test("どれも選択できない候補しか無ければ選択は外れる", ()
 
   const state = EditorState.selectInnermost(selected, ["unknown"]);
 
-  expect(state.selectedName.some).toBe(false);
+  expect(EditorState.singleName(state).some).toBe(false);
 });
 
 test("候補が1つも無ければ選択は外れる", () => {
@@ -74,7 +74,7 @@ test("候補が1つも無ければ選択は外れる", () => {
 
   const state = EditorState.selectInnermost(selected, []);
 
-  expect(state.selectedName.some).toBe(false);
+  expect(EditorState.singleName(state).some).toBe(false);
 });
 
 test("押した場所を変えても元の状態は変わらない", () => {

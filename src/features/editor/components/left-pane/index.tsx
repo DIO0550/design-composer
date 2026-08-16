@@ -13,7 +13,6 @@ import {
 } from "@/features/editor/components/left-pane-rail";
 import { TokenList } from "@/features/editor/components/token-list";
 import { EditorState } from "@/features/editor/domains/editor-state";
-import { SelectionControls } from "@/features/editor/domains/prop-control";
 import type { NodeActions } from "@/features/editor/hooks/use-node-actions";
 import type { TokenActions } from "@/features/editor/hooks/use-token-actions";
 import { Option } from "@/utils/Option";
@@ -60,10 +59,7 @@ function LeftPaneContent({
       return (
         <AssetsPanel
           assets={DesignDocument.componentAssets(EditorState.document(state))}
-          sourceName={Option.flatMap(
-            SelectionControls.forSelection(state),
-            SelectionControls.sourceName,
-          )}
+          sourceName={EditorState.sourceName(state)}
           isInsertEnabled={node.isInsertEnabled}
           onInsert={node.insertInstance}
         />

@@ -26,6 +26,7 @@ const SampleNodeActions: NodeActions = {
   insert: fn(),
   insertInstance: fn(),
   detachInstance: fn(),
+  selectAllInstances: fn(),
   createComponent: fn(),
   isInsertEnabled: true,
 };

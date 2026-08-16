@@ -42,7 +42,11 @@ function EditablePanel({ selected }: Readonly<{ selected: string }>) {
 
   return EditorState.isSelected(state, selected) ? (
     <PropertyPanel
-      instance={{ goToSource: vi.fn(), detach: vi.fn() }}
+      instance={{
+        goToSource: vi.fn(),
+        selectAllInstances: vi.fn(),
+        detach: vi.fn(),
+      }}
       state={state}
       onEditProp={editProp}
       onClearSelection={() => dispatch({ type: "clear_selection" })}

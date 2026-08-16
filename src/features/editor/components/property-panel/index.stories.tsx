@@ -62,7 +62,7 @@ const meta = {
   args: {
     onClearSelection: fn(),
     onEditProp: fn(),
-    instance: { goToSource: fn(), detach: fn() },
+    instance: { goToSource: fn(), selectAllInstances: fn(), detach: fn() },
   },
 } satisfies Meta<typeof PropertyPanel>;
 

@@ -50,7 +50,7 @@ test("削除すると選択が外れる", () => {
 
   const removed = Option.unwrap(EditorState.removeNode(state));
 
-  expect(removed.selectedName).toEqual(Option.none);
+  expect(EditorState.singleName(removed)).toEqual(Option.none);
 });
 
 test("削除しても兄弟は残る", () => {

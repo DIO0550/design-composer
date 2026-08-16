@@ -153,7 +153,7 @@ test("貼っても選択は動かない", () => {
 
   const pasted = Option.unwrap(copyThenPaste(state, "home"));
 
-  expect(pasted.selectedName).toEqual(Option.some("home"));
+  expect(EditorState.singleName(pasted)).toEqual(Option.some("home"));
 });
 
 test("外部変更を取り込んでもクリップボードの中身は残る", () => {

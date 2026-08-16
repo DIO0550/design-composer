@@ -32,6 +32,7 @@ export type EditorAction =
   | Readonly<{ type: "insert_node"; template: NodeTemplate }>
   | Readonly<{ type: "remove_node" }>
   | Readonly<{ type: "detach_instance" }>
+  | Readonly<{ type: "select_all_instances" }>
   | Readonly<{ type: "create_component"; componentName: string }>
   | Readonly<{ type: "copy_node" }>
   | Readonly<{ type: "paste_node" }>
@@ -104,6 +105,13 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
        * 参照先の部品が壊れている（無い・循環している）ときだけ。
        */
       return Option.unwrapOr(EditorState.detachInstance(state), state);
+    case "select_all_instances":
+      /*
+       * インスタンスを選んでいなければ選択は変わらない
+       * （EditorState.selectAllInstances の `none`）。このボタンはインスタンスを
+       * 選んでいるときにしか出ないため、画面の操作からこの `none` には到達しない。
+       */
+      return Option.unwrapOr(EditorState.selectAllInstances(state), state);
     case "create_component":
       /*
        * 部品にできない選択・使えない名前では木は変わらない

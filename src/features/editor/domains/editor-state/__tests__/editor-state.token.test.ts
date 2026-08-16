@@ -169,7 +169,7 @@ test("ノードの選択とトークンの選択は同時に持てる", () => {
     { kind: "colors", name: "primary" },
   );
 
-  expect(state.selectedName).toEqual(Option.some("home"));
+  expect(EditorState.singleName(state)).toEqual(Option.some("home"));
   expect(
     EditorState.isTokenSelected(state, { kind: "colors", name: "primary" }),
   ).toBe(true);

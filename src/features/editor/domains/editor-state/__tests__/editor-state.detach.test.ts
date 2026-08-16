@@ -83,7 +83,7 @@ test("解除したあとも同じものが選ばれたままになる", () => {
 
   const detached = Option.unwrap(EditorState.detachInstance(selected));
 
-  expect(detached.selectedName).toEqual(Option.some("home-login"));
+  expect(EditorState.singleName(detached)).toEqual(Option.some("home-login"));
 });
 
 test("解除は元に戻せる", () => {

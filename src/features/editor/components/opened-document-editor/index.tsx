@@ -81,6 +81,7 @@ function RightPaneContent({
       onClearSelection={node.clearSelection}
       instance={{
         goToSource: onGoToSource,
+        selectAllInstances: node.selectAllInstances,
         detach: node.detachInstance,
       }}
     />
