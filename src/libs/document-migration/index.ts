@@ -1,5 +1,5 @@
 import { FormatVersion } from "@/domains/format-version";
-import type { JsonRecord } from "@/utils/Json";
+import { Json, type JsonRecord } from "@/utils/Json";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 import { migrateV1ToV2 } from "./v1-to-v2";
@@ -97,10 +97,7 @@ function withFormatVersion(
  * @returns オブジェクトとして読めれば `some`、配列・`null`・それ以外なら `none`
  */
 function asRecord(value: unknown): Option<JsonRecord> {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) {
-    return Option.none;
-  }
-  return Option.some(value as JsonRecord);
+  return Json.isRecord(value) ? Option.some(value) : Option.none;
 }
 
 /**
@@ -159,8 +156,8 @@ function migrateUpTo(
  * 補って進めるのではなく、形の検証を担うデコード側にそのまま報告させる。
  *
  * `steps` / `appVersion` は既定値を持つ（`FormatVersion.compatibility` と同じ形）。
- * 登録済みステップが空のままでも枠組み自体を確かめられるよう、変換手段と
- * 到達先の版を差し替えられるようにしてある。
+ * 差し替えられるようにしてあるのは、枠組みの振る舞いを登録内容から切り離して
+ * 確かめられるようにするため。
  */
 export const DocumentMigration = {
   toCurrent(

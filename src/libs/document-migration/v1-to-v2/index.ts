@@ -1,4 +1,5 @@
-import type { JsonRecord } from "@/utils/Json";
+import { Json, type JsonRecord } from "@/utils/Json";
+import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
 /*
@@ -20,16 +21,6 @@ const AxisSides = {
 const AxisEntries = Object.entries(AxisSides);
 
 /**
- * オブジェクトとして読めるか。配列と `null` は含めない。
- *
- * @param value 読み込んだ値
- * @returns オブジェクトとして扱えるなら true
- */
-function isRecord(value: unknown): value is JsonRecord {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-/**
  * props 1 つ分の読み替え。軸の prop を 2 辺へ複製し、軸の prop 自身は落とす。
  *
  * 既に 4 方向の prop が書かれている辺は上書きしない。1.x のファイルに 4 方向の prop は
@@ -38,7 +29,7 @@ function isRecord(value: unknown): value is JsonRecord {
  * @param props 読み替える前の props
  * @returns 軸の prop が 2 辺へ展開された props
  */
-function withSidePadding(props: JsonRecord): JsonRecord {
+function withSidePaddingProps(props: JsonRecord): JsonRecord {
   return AxisEntries.reduce<JsonRecord>((current, [axis, sides]) => {
     if (!(axis in current)) {
       return current;
@@ -52,51 +43,69 @@ function withSidePadding(props: JsonRecord): JsonRecord {
 }
 
 /**
- * ノードとその子孫の props を読み替える。
- * artboard も Box スキーマを流用して props と children を持つ（docs/03-schema.md）ので、
- * 同じ関数で写せる。
+ * `props` と `children` を持つものと、その子孫を読み替える。
+ * 対象は artboard・ノード・部品定義の 3 つで、artboard と部品定義も Box スキーマを
+ * 流用して props を持つ（docs/03-schema.md）ため同じ形で写せる。
  *
- * @param node 読み替える前のノード
- * @returns props と children が読み替えられたノード。ノードとして読めない値はそのまま
+ * @param value 読み替える前の値
+ * @returns props と children が読み替えられた値。オブジェクトとして読めない値はそのまま
  */
-function withSidePaddingNode(node: unknown): unknown {
-  if (!isRecord(node)) {
-    return node;
+function withSidePaddingSubtree(value: unknown): unknown {
+  if (!Json.isRecord(value)) {
+    return value;
   }
-  const props = isRecord(node.props)
-    ? { props: withSidePadding(node.props) }
+  const props = Json.isRecord(value.props)
+    ? { props: withSidePaddingProps(value.props) }
     : {};
-  const children = Array.isArray(node.children)
-    ? { children: node.children.map(withSidePaddingNode) }
+  const children = Array.isArray(value.children)
+    ? { children: value.children.map(withSidePaddingSubtree) }
     : {};
-  return { ...node, ...props, ...children };
+  return { ...value, ...props, ...children };
 }
 
 /**
- * 公開 prop が軸の padding へ binding されている箇所。
+ * 公開 prop が軸の padding へ binding されている箇所の綴り。
  *
  * binding は 1 つの prop しか指せないので、軸を 2 辺へ複製すると
  * その公開 prop が効く範囲が半分になる。黙って意味を変えないため、
  * 見つけた時点で変換を失敗させる。
  *
- * @param components 部品の辞書として読める値
+ * Why not: binding だけを落として開かせる案は採らない。公開 prop が 1 つ静かに
+ * 消えるだけになり、利用者が失ったことに気づけない。
+ *
+ * @param components 部品の辞書
  * @returns `<部品名>.<公開 prop 名>` の並び。該当する binding が無ければ空
  */
-function axisBoundPublicProps(components: JsonRecord): readonly string[] {
+function axisBoundPublicPropLabels(components: JsonRecord): readonly string[] {
   const axisNames = AxisEntries.map(([axis]) => axis);
   return Object.entries(components).flatMap(([componentName, component]) => {
-    if (!isRecord(component) || !isRecord(component.publicProps)) {
+    if (!Json.isRecord(component) || !Json.isRecord(component.publicProps)) {
       return [];
     }
     return Object.entries(component.publicProps)
       .filter(
         ([, binding]) =>
-          isRecord(binding) &&
+          Json.isRecord(binding) &&
           typeof binding.prop === "string" &&
           axisNames.includes(binding.prop),
       )
       .map(([publicPropName]) => `${componentName}.${publicPropName}`);
   });
+}
+
+/**
+ * 部品の辞書を丸ごと読み替える。
+ *
+ * @param components 部品の辞書
+ * @returns 各部品を読み替えた辞書
+ */
+function withSidePaddingComponents(components: JsonRecord): JsonRecord {
+  return Object.fromEntries(
+    Object.entries(components).map(([name, component]) => [
+      name,
+      withSidePaddingSubtree(component),
+    ]),
+  );
 }
 
 /**
@@ -109,26 +118,24 @@ function axisBoundPublicProps(components: JsonRecord): readonly string[] {
 export function migrateV1ToV2(
   document: JsonRecord,
 ): Result<JsonRecord, string> {
-  const components = isRecord(document.components) ? document.components : {};
-  const bound = axisBoundPublicProps(components);
+  const components = Json.isRecord(document.components)
+    ? Option.some(document.components)
+    : Option.none;
+
+  const bound = components.some
+    ? axisBoundPublicPropLabels(components.value)
+    : [];
   if (bound.length > 0) {
     return Result.err(
       `public props bound to paddingX/paddingY cannot be split into four sides: ${bound.join(", ")}`,
     );
   }
 
-  const migratedComponents = isRecord(document.components)
-    ? {
-        components: Object.fromEntries(
-          Object.entries(document.components).map(([name, component]) => [
-            name,
-            withSidePaddingNode(component),
-          ]),
-        ),
-      }
+  const migratedComponents = components.some
+    ? { components: withSidePaddingComponents(components.value) }
     : {};
   const migratedArtboards = Array.isArray(document.artboards)
-    ? { artboards: document.artboards.map(withSidePaddingNode) }
+    ? { artboards: document.artboards.map(withSidePaddingSubtree) }
     : {};
 
   return Result.ok({

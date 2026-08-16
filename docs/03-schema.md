@@ -74,7 +74,7 @@
 | `shadow` | トークン (shadows) | | なし |
 | `overflow` | enum | `visible` / `clip` | `visible` |
 
-- padding は 4 方向個別。プロパティパネルでは Figma と同じく垂直 / 水平の2軸へ畳んで見せ、ボタンで個別の4欄へ切り替える（畳んだ欄の編集は対応する2辺へ同じ値を書く）。畳み方は表示の都合なので、ドキュメントには4方向の値だけを持つ
+- padding は 4 方向個別。ドキュメントが持つのは4方向の値だけで、プロパティパネルでの畳み方（Figma と同じ垂直 / 水平への切り替え）は表示の都合なので持たない
 - border 系は初期セットに含めない（スキーマへの追加で対応可能）
 - artboard は Box スキーマを流用するが、`widthMode` / `heightMode` は `fixed` に固定され、`width` / `height` が必須、`overflow` のデフォルトは `clip`
 

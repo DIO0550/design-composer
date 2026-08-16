@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import { Artboard } from "@/domains/artboard";
+import { DesignDocument } from "@/domains/design-document";
 import { Result } from "@/utils/Result";
 import { DocumentJson } from "../index";
 
@@ -56,6 +57,19 @@ test("読み込んだドキュメントは現在の版を名乗る", () => {
   );
 
   expect(document.formatVersion).toEqual({ major: 2, minor: 0 });
+});
+
+test("読み替えたドキュメントはそのままバリデーションを通せる", () => {
+  /*
+   * 読み替えが出す辺の名前が本当にスキーマの prop かを見る。
+   * 綴りを間違えても JSON は読めてしまう（Props は任意のキーを通す）ので、
+   * ここを通さないと unknown-prop に気づけない。
+   */
+  const document = Result.unwrap(
+    DocumentJson.parse(setupText(`{ "paddingX": "lg", "paddingY": "md" }`)),
+  );
+
+  expect(DesignDocument.collectErrors(document)).toEqual([]);
 });
 
 test("公開 prop が paddingX へ binding されたファイルは読み込めない", () => {

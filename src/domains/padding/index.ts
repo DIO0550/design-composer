@@ -20,7 +20,7 @@ export type Padding = Readonly<{
  * 位置引数で 4 つ並べると同じ型が続いて取り違えても型エラーにならないため、
  * 名前で受け取る。
  */
-export type PaddingSides = Readonly<{
+type PaddingSides = Readonly<{
   top?: PropValue;
   right?: PropValue;
   bottom?: PropValue;
