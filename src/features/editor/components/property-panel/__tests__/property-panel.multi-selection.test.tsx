@@ -98,3 +98,13 @@ test("複数選んでいても選択を解除できる", () => {
 
   expect(screen.getByRole("button", { name: "選択を解除" })).toBeDefined();
 });
+
+test("複数選んでいると、編集できる prop が無いときの案内も出ない", () => {
+  /*
+   * 「複数選んでいる」を空のセクションで表すと、1 つ選んで編集できる prop が
+   * 無いときと同じ見え方になる。区別が付いていることをこの 1 件が守る。
+   */
+  renderPanel(setupMultiSelected());
+
+  expect(screen.queryByText("編集できる prop がありません")).toBeNull();
+});

@@ -101,8 +101,10 @@ export type PropControlSection = Readonly<{
  * 不正なドキュメントも画面には残る（docs/03-schema.md「不正ファイル時の挙動」）ので、
  * この状態は実際に出る。
  *
- * 複数選択（`multiple`）が値を持たないのは、編集欄を 1 つも出さないため
- * （docs/06-ui.md「選択」。件数は帯が `EditorState.selectionCount` から出す）。
+ * 複数選択（`multiple`）が件数だけを持つのは、編集欄を 1 つも出さず帯に件数を出す
+ * ため（docs/06-ui.md「選択」）。件数をここに持たせるのは、帯と本文が同じ 1 つの値から
+ * 出し分けるようにするため。別々に導くと「帯は `2 selected` なのに本文はインスタンスの
+ * 編集欄」という食い違いが作れる。
  * `groups` の空セクションで表さず枝を分けるのは、「複数選んでいる」と
  * 「1 つ選んだが編集できる prop が無い」を混ぜないため。
  *
@@ -118,7 +120,7 @@ export type SelectionControls =
       isDetachEnabled: boolean;
       sourceInstanceCount: number;
     }>
-  | Readonly<{ kind: "multiple" }>;
+  | Readonly<{ kind: "multiple"; count: number }>;
 
 /**
  * パネルに出す prop 1件の素材。定義と既定値を別々に持つのは、参照ノードでは
@@ -514,8 +516,9 @@ export const SelectionControls = {
    *   セクションが空になる
    */
   forSelection(state: EditorState): Option<SelectionControls> {
-    if (EditorState.selectionCount(state) > 1) {
-      return Option.some({ kind: "multiple" });
+    const selectedNames = EditorState.selectedNames(state);
+    if (selectedNames.length > 1) {
+      return Option.some({ kind: "multiple", count: selectedNames.length });
     }
     const selected = EditorState.singleName(state);
     if (!selected.some) {

@@ -252,23 +252,6 @@ export const EditorState = {
   },
 
   /**
-   * 選択中のインスタンスと同じ部品を指すインスタンスをまとめて選ぶ
-   * （UI 案 docs/Design Composer.html の `Select all N instances`）。
-   *
-   * 集めるのは `DesignDocument.collectInstanceNames` が持ち、ここは対象の部品を
-   * 選択から決めて選択へ入れるだけ（`rules/coding.md`「features 層にドメイン知識を
-   * 書かない」）。対象を引数で受け取らないのは `detachInstance` と同じ理由で、
-   * 導線が「選択中のインスタンスと同じものを選ぶ」しか無いため。
-   *
-   * 集まるのは artboard 配下だけなので、選択が複数の artboard にまたがりうる。
-   * ツリーは 1 枚しか映さないため、映っていない artboard のぶんはキャンバスにだけ
-   * 枠が出る（docs/06-ui.md「選択」）。
-   *
-   * @param state 選択元のエディタの状態
-   * @returns まとめて選んだ状態。インスタンスを選んでいないとき（未選択・artboard・
-   *   プリミティブ・複数選択のとき）は `none`
-   */
-  /**
    * 選んでいるものがすべて同じ部品のインスタンスであるときの、その部品の名前
    * （UI 案 docs/Design Composer.html の `from ◆ primary-button` と
    * `Assets` の `source of selection`）。
@@ -295,6 +278,23 @@ export const EditorState = {
     return isSameSource ? ArrayEx.first(refs) : Option.none;
   },
 
+  /**
+   * 選択中のインスタンスと同じ部品を指すインスタンスをまとめて選ぶ
+   * （UI 案 docs/Design Composer.html の `Select all N instances`）。
+   *
+   * 集めるのは `DesignDocument.collectInstanceNames` が持ち、ここは対象の部品を
+   * 選択から決めて選択へ入れるだけ（`rules/coding.md`「features 層にドメイン知識を
+   * 書かない」）。対象を引数で受け取らないのは `detachInstance` と同じ理由で、
+   * 導線が「選択中のインスタンスと同じものを選ぶ」しか無いため。
+   *
+   * 集まるのは artboard 配下だけなので、選択が複数の artboard にまたがりうる。
+   * ツリーは 1 枚しか映さないため、映っていない artboard のぶんはキャンバスにだけ
+   * 枠が出る（docs/06-ui.md「選択」）。
+   *
+   * @param state 選択元のエディタの状態
+   * @returns まとめて選んだ状態。選んでいるものが同じ部品のインスタンスで揃って
+   *   いないとき（未選択・artboard・プリミティブ・参照先が混ざった複数選択）は `none`
+   */
   selectAllInstances(state: EditorState): Option<EditorState> {
     return Option.map(EditorState.sourceName(state), (componentName) => ({
       ...state,
@@ -346,7 +346,7 @@ export const EditorState = {
       selectableName(EditorState.document(state), name),
       (revealed) => ({
         ...state,
-        selection: { kind: "single", name: revealed },
+        selection: SelectionState.fromName(Option.some(revealed)),
       }),
     );
   },
@@ -688,11 +688,6 @@ export const EditorState = {
 
   isSelected(state: EditorState, name: string): boolean {
     return SelectionState.includes(state.selection, name);
-  },
-
-  /** 今いくつ選ばれているか（複数選択のとき右ペインの帯に出す件数）。 */
-  selectionCount(state: EditorState): number {
-    return SelectionState.count(state.selection);
   },
 
   /**

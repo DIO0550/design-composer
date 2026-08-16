@@ -123,3 +123,22 @@ test("まとめて選ぶと、その部品を載せていない artboard から�
 
   expect(EditorState.selectedNames(all)).toContain("home-login");
 });
+
+test("複数選んでいるとき、ツリーが映すのは選択の先頭が載っている artboard になる", () => {
+  // 2 枚目を起点にする。先頭の artboard へ落ちる実装と区別が付かなくなるため
+  const selected = EditorState.select(setupState(), "settings-login");
+  const all = Option.unwrap(EditorState.selectAllInstances(selected));
+
+  // 選択の並びは collectInstanceNames の順（home-login が先頭）
+  expect(EditorState.selectedNames(all)[0]).toBe("home-login");
+  expect(Option.unwrap(EditorState.currentArtboard(all)).name).toBe("home");
+});
+
+test("複数選んでいても、選択に含まれない artboard は映さない", () => {
+  const selected = EditorState.select(setupState(), "home-login");
+  const all = Option.unwrap(EditorState.selectAllInstances(selected));
+
+  expect(Option.unwrap(EditorState.currentArtboard(all)).name).not.toBe(
+    "settings",
+  );
+});

@@ -24,11 +24,7 @@ function setupState(): EditorState {
           children: [
             { name: "home-login", ref: "primary-button" },
             { name: "home-signup", ref: "primary-button" },
-            /*
-             * 部品化と挿入の対照。インスタンスはどちらも元々できない
-             * （`createComponent` / `insertPosition` の doc）ので、
-             * 「複数だからできない」ことを見るには別のものを単一で選ぶ必要がある。
-             */
+            // 部品化と挿入の単一側の対照（インスタンスはどちらも元々できない）
             { name: "home-panel", type: "Box" },
           ],
         },
@@ -68,6 +64,14 @@ test("複数選んでいる間はインスタンスを解除できない", () =>
   expect(EditorState.detachInstance(setupMultiSelected()).some).toBe(false);
 });
 
+/*
+ * 部品化と挿入位置の 2 件は、複数選択のゲートを外しても答えが変わらない。
+ * まとめて選べるのはインスタンスだけで、インスタンスはもともと部品化も
+ * 追加位置も持てないため（`createComponent` / `insertPosition` の doc）。
+ * Box を含む複数選択は `selectAllInstances` からは作れないので、この 2 件は
+ * 「複数だから不可」ではなく「今の画面でこの操作が成立しない」ことの記録として置く。
+ * ゲートそのものを守っているのは、上の削除・コピー・解除・prop 編集・リサイズの 5 件。
+ */
 test("複数選んでいる間は部品化できない", () => {
   const single = EditorState.select(setupState(), "home-panel");
 
@@ -106,7 +110,7 @@ test("複数選んでいる間は右ペインが 1 つの正体を答えない",
 });
 
 test("複数選んでいると選択数がその件数になる", () => {
-  expect(EditorState.selectionCount(setupMultiSelected())).toBe(2);
+  expect(EditorState.selectedNames(setupMultiSelected()).length).toBe(2);
 });
 
 test("複数選んでいる間も、選んだものはすべて選択中として扱われる", () => {
@@ -127,7 +131,7 @@ test("複数選んだあとに1つを選び直すと単一選択に戻る", () =
 test("複数選んだあとに選択を解除すると何も選ばれていない状態になる", () => {
   const cleared = EditorState.clearSelection(setupMultiSelected());
 
-  expect(EditorState.selectionCount(cleared)).toBe(0);
+  expect(EditorState.selectedNames(cleared)).toEqual([]);
 });
 
 /**
@@ -158,4 +162,37 @@ test("ドキュメントから消えた名前は複数選択から外れる", ()
   expect(EditorState.selectedNames(setupMultiSelectedThenLost())).not.toContain(
     "home-signup",
   );
+});
+
+/**
+ * 選んだ 2 つのうち片方だけがインスタンスでなくなった状態。
+ *
+ * `redo` は複数選択中でも通る（`singleName` を経由しない）ので、選択を 2 件に保った
+ * まま現在地だけが動く。これで「参照先が混ざった複数選択」が実際に作れる。
+ */
+function setupMultiSelectedWithMixedSource(): EditorState {
+  const detached = Option.unwrap(
+    EditorState.detachInstance(EditorState.select(setupState(), "home-signup")),
+  );
+  const restored = Option.unwrap(EditorState.undo(detached));
+  const multi = Option.unwrap(
+    EditorState.selectAllInstances(EditorState.select(restored, "home-login")),
+  );
+  return Option.unwrap(EditorState.redo(multi));
+}
+
+test("選んだものの参照先が混ざると出どころの部品は決まらない", () => {
+  const mixed = setupMultiSelectedWithMixedSource();
+
+  // 対照。混ざっていない複数選択では出どころが決まる
+  expect(EditorState.sourceName(setupMultiSelected())).toEqual(
+    Option.some("primary-button"),
+  );
+  expect(EditorState.sourceName(mixed).some).toBe(false);
+});
+
+test("参照先が混ざった複数選択からはまとめて選び直せない", () => {
+  expect(
+    EditorState.selectAllInstances(setupMultiSelectedWithMixedSource()).some,
+  ).toBe(false);
 });
