@@ -11,7 +11,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `block-npx.sh`           | `PreToolUse` (Bash)       | **npx / pnpm dlx 禁止**。パッケージは `pnpm add` でインストールしてから使用する           |
 | `block-lint-suppress.sh` | `PreToolUse` (Edit/Write) | **lint 抑制コメント禁止**。`biome-ignore` / `eslint-disable` の追加を拒否する             |
 | `post-edit-lint.sh`      | `PostToolUse` (Edit/Write) | **編集後の自動リント**。oxlint / Biome を `--fix` 付きで実行し、残った診断をフィードバック |
-| `check-test-rules.sh`    | `PostToolUse` (Edit/Write) | **テスト規約検証**(rules/testing.md)。describe 禁止・テストケース内の条件分岐禁止・命名規則をチェック |
+| `check-test-rules.sh`    | `PostToolUse` (Edit/Write) | **テスト規約検証**(rules/testing.md)。describe 禁止・テストケース内の条件分岐禁止・命名規則・置き場所(`__tests__/` 直下)をチェック |
 | `pre-push-typecheck.sh`  | `PreToolUse` (Bash)       | **push 前の型チェック**。`pnpm run typecheck`(tsc -b)でエラーがあれば push をブロック    |
 | `pre-push-lint.sh`       | `PreToolUse` (Bash)       | **push 前の全体 lint**。oxlint / Biome のエラーがあれば push をブロック                   |
 | `pre-push-test-rules.sh` | `PreToolUse` (Bash)       | **push 前の全体テスト規約検査**。全 `*.test.ts(x)` を検査し違反があれば push をブロック   |
@@ -133,8 +133,11 @@ deny のメッセージは、`jq` / `python3` が欠けていればその名前�
   - `rules/testing.md` が禁じているのは「テストケースが入力によって形を変える」ことであって、セットアップの分岐ではないため
   - ファイル全体を見ていた頃は、テストが1件も分岐していないファイルでもヘルパーの1行で push が止まっていた。誤検知で止まるフックは、エスケープハッチを足す運用を招いて全体が信用されなくなる
 - テスト規約チェック(`check-test-rules.sh` / `pre-push-test-rules.sh`)は以下で個別に無効化できる:
-  - ファイル単位: `// @test-rules-disable [no-describe|no-conditional|file-naming ...]`(引数なしで全ルール無効化)
+  - ファイル単位: `// @test-rules-disable [no-describe|no-conditional|file-naming|test-location ...]`(引数なしで全ルール無効化)
   - プロジェクト単位: 最寄りの `.test-rules.yml` に `<ルール名>: false` を記載
+- テスト規約チェックの `test-location`(テストは対象モジュールの `__tests__/` 直下に置く)は、`分類: test-placement` が未介入のまま 5 回出たため #233 で足した
+  - 判定は「親フォルダ名が `__tests__` か」だけ。`rules/testing.md`「配置と命名」のうち機械判定できるのはここまでで、「実装を `index.ts` に直接書く」「分割はサブフォルダで」は判定できない
+  - 導入時点で `src/` の 321 件すべてが既に `__tests__/` 直下にあり、偽陽性 0 件で入れられた(絞る理由が無い)
 - `check-test-helper-duplication.sh` は**ブロックしない**(`additionalContext` を返すだけ)。また、見るのは**編集したファイルが絡む重複だけ**
   - 判定は「本体が一字一句同じ」に限る。似ているだけのものは見ない(偽陽性で止めない)
   - push ブロックにしなかったのは、導入時点でリポジトリに既存の重複が 13 組あったため。触っていない分まで止めると、直す気の無い違反を避けるためのエスケープハッチが増える(既存分の解消は #153)

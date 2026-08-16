@@ -7,14 +7,34 @@
 #   - 分類: `<分類>`                       … 指摘 1 件
 #   - 対策済: `<分類>` 層=<層> at pr-<番号> … その回に介入したこと
 #
+# 使い方:
+#   count.sh            分類ごとの再発数・通算・以降・最終介入を出す
+#   count.sh --unused   語彙表にあるが記録に 1 件も出ていない分類を出す（Step 3 の棚卸し）
+#
 # 出力の列:
-#   再発      最後の介入より後の記録に出た件数。4a / 4b / 4c の判断はこれで行う
+#   再発      最後の介入より後の記録に出た件数。2a / 2b / 2c の判断はこれで行う
 #   通算      全記録での件数。語彙が飽和していないかを目視するときの参考
 #   以降      最後の介入より後の記録の本数（「介入後 N 本再発ゼロ」の N）
 #   最終介入  最後に置いた層と、その回の PR 番号。無ければ「未介入」
 set -euo pipefail
 
 cd "$(dirname "$0")"
+
+vocabulary="../../.claude/skills/harness-record/templates/record.md"
+
+# --unused: 語彙表にあるのに記録へ 1 件も出ていない分類。
+# 「効いているから 0」と「読まれていないから 0」は記録では区別できないので、
+# 強制の有無での切り分けは harness-growth の Step 3 が行う。
+if [ "${1:-}" = "--unused" ]; then
+  used="$(grep -h '^- 分類: `' pr-*.md | sed 's/^- 分類: `\([^`]*\)`.*/\1/' | sort -u)"
+  printf '%s\n' "記録に 1 件も出ていない分類（語彙表: ${vocabulary}）"
+  # 「分類の語彙」の表だけを読む（同じ書式の「層の語彙」の表を拾わないため）
+  awk '/^## 分類の語彙/{inside=1; next} /^## /{inside=0} inside' "$vocabulary" \
+    | sed -n 's/^| `\([a-z-]*\)` | .*/\1/p' | sort -u | while read -r tag; do
+    printf '%s\n' "$used" | grep -qx "$tag" || printf '  %s\n' "$tag"
+  done
+  exit 0
+fi
 
 tags="$(grep -h '^- 分類: `' pr-*.md | sed 's/^- 分類: `\([^`]*\)`.*/\1/' | sort -u)"
 
@@ -44,10 +64,10 @@ for tag in $tags; do
     after=$((after + 1))
   done
 
-  body="${body}$(printf '%4d  %4d  %4d  %-18s %s' \
+  body="${body}$(printf '%4d  %4d  %4d  %-22s %s' \
     "$recurrence" "$total" "$after" "$tag" "$intervention")
 "
 done
 
-printf '%s\n' "再発  通算  以降  分類               最終介入"
+printf '%s\n' "再発  通算  以降  分類                   最終介入"
 printf '%s' "$body" | sort -rn
