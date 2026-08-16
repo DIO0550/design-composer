@@ -82,15 +82,6 @@ design-composer のドキュメントは、単一の JSON ファイル（`.dcmp`
 
 - マイグレーションは一方向のみ。旧形式へのダウングレード書き出しは持たない
 
-### major の履歴
-
-| major | 変更 |
-|---|---|
-| 1 | 初版 |
-| 2 | Box の padding を `paddingX` / `paddingY` の2軸から `paddingTop` / `paddingRight` / `paddingBottom` / `paddingLeft` の4方向へ置き換えた |
-
-major 1 → 2 のマイグレーションは、`paddingX` を `paddingLeft` と `paddingRight` へ、`paddingY` を `paddingTop` と `paddingBottom` へ複製する。ただし**公開 prop が `paddingX` / `paddingY` に binding されているドキュメントは変換できない**（binding は 1 つの prop しか指せないため、複製すると公開 prop が効く範囲が半分になる）。この場合はエラーにして読み込みを止める。
-
 ## ノードの識別（name）
 
 - **すべてのノードは `name` を必須で持つ**（Pencil の id と同方式。意味のある人間可読な名前であり、不透明な採番ではない)

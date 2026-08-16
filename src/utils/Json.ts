@@ -124,17 +124,6 @@ export const Json = {
     return { value, path };
   },
 
-  /**
-   * その値がオブジェクトか（配列と `null` は含めない）。
-   * カーソルを通さず生の値を触る層（マイグレーション等）が使う。
-   *
-   * @param value 判定する値
-   * @returns オブジェクトなら true
-   */
-  isRecord(value: unknown): value is JsonRecord {
-    return isJsonRecord(value);
-  },
-
   error(
     kind: JsonDecodeErrorKind,
     path: string,

@@ -29,12 +29,8 @@ const Major = 1;
  * minor は後方互換な追加なので幅を持つ（1.0 のファイルも 1.2 のファイルもこの形）。
  *
  * 版を上げるときはこのフォルダを残したまま隣に `v2/` を作る。
- * 本体からは呼ばれない。凍結した版の JSON 表現をコードとして残しておくためのもので、
- * 呼び出しは自身のテストだけになる。
- *
- * Why not マイグレーションをこの型で書く: `libs/document-migration` の `MigrationStep`
- * は `JsonRecord` のまま扱う。旧 major のファイルは今のドメインの型では表せない
- * （表せなくなる変更が major の定義）ので、デコード前の形で写す。
+ * 旧版の型が残ることで、マイグレーション（`libs/document-migration`）が
+ * 「どの形から どの形へ」を型で書けるようになる。
  */
 export type DesignDocumentV1 = Readonly<{
   formatVersion: FormatVersionOf<typeof Major>;

@@ -6,7 +6,7 @@ import { DocumentJson } from "../index";
 /** docs/01-file-format.md「ドキュメント全体の例」に沿った最小のドキュメント。 */
 function setupText(): string {
   return `{
-  "formatVersion": "2.0",
+  "formatVersion": "1.0",
   "tokens": {
     "colors": { "primary": "#3b82f6", "white": "#ffffff" },
     "spacing": { "md": 16 },
@@ -42,7 +42,7 @@ test("ドキュメント全体を読み込むと仕様どおりのドメイン�
   const document = Result.unwrap(DocumentJson.parse(setupText()));
 
   expect(document).toEqual({
-    formatVersion: { major: 2, minor: 0 },
+    formatVersion: { major: 1, minor: 0 },
     tokens: {
       colors: { primary: "#3b82f6", white: "#ffffff" },
       spacing: { md: 16 },
@@ -91,11 +91,11 @@ test("読み込んだドキュメントはそのままバリデーションを�
 });
 
 test("アプリと同じ形式のファイルはそのまま読み込める", () => {
-  const text = `{ "formatVersion": "2.0", "tokens": {}, "components": {}, "artboards": [] }`;
+  const text = `{ "formatVersion": "1.0", "tokens": {}, "components": {}, "artboards": [] }`;
 
   const document = Result.unwrap(DocumentJson.parse(text));
 
-  expect(document.formatVersion).toEqual({ major: 2, minor: 0 });
+  expect(document.formatVersion).toEqual({ major: 1, minor: 0 });
 });
 
 test("大文字で書かれた色は小文字の hex に正規化される", () => {

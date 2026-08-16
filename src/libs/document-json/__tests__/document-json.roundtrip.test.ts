@@ -82,14 +82,14 @@ test("読み込んで書き出しても同じテキストに戻る", () => {
 });
 
 test("整形が崩れたテキストを読み込んで書き出すと正規形になる", () => {
-  const messy = `{"artboards":[{"children":[],"height":200,"name":"screen","width":100}],"components":{},"formatVersion":"2.0","tokens":{"colors":{"primary":"#3B82F6"}}}`;
+  const messy = `{"artboards":[{"children":[],"height":200,"name":"screen","width":100}],"components":{},"formatVersion":"1.0","tokens":{"colors":{"primary":"#3B82F6"}}}`;
 
   const normalized = DocumentJson.serialize(
     Result.unwrap(DocumentJson.parse(messy)),
   );
 
   expect(normalized).toBe(`{
-  "formatVersion": "2.0",
+  "formatVersion": "1.0",
   "tokens": {
     "colors": {
       "primary": "#3b82f6"

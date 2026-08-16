@@ -4,9 +4,8 @@ import { Result } from "@/utils/Result";
 import { DocumentMigration, type MigrationSteps } from "../index";
 
 /**
- * 枠組みの振る舞いは、渡したステップと到達先の版だけで決まることを確かめたいので、
- * 登録済みのステップ（アプリの実際の版）ではなく差し替えたステップで見る。
- * 登録済みステップを通す経路は `document-migration.v1-to-v2.*.test.ts` が担当する。
+ * 登録済みのステップは（破壊的変更がまだ無いため）空なので、
+ * 枠組みの振る舞いは設計上の拡張点であるステップを渡して確かめる。
  */
 function setupRenameSteps(): MigrationSteps {
   return {
@@ -29,7 +28,7 @@ function setupTrailSteps(): MigrationSteps {
 }
 
 test("アプリと同じ形式のドキュメントはそのまま通る", () => {
-  const document = setupDocument("2.0");
+  const document = setupDocument("1.0");
 
   expect(DocumentMigration.toCurrent(document)).toEqual({
     ok: true,
@@ -41,10 +40,7 @@ test("major がアプリより小さいドキュメントは登録されたス�
   const document = setupDocument("0.9");
 
   const migrated = Result.unwrap(
-    DocumentMigration.toCurrent(document, setupRenameSteps(), {
-      major: 1,
-      minor: 0,
-    }),
+    DocumentMigration.toCurrent(document, setupRenameSteps()),
   );
 
   expect(migrated).toMatchObject({ tokens: { colors: {} } });
@@ -54,10 +50,7 @@ test("変換後のドキュメントは上げた先の major を名乗る", () =
   const document = setupDocument("0.9");
 
   const migrated = Result.unwrap(
-    DocumentMigration.toCurrent(document, setupRenameSteps(), {
-      major: 1,
-      minor: 0,
-    }),
+    DocumentMigration.toCurrent(document, setupRenameSteps()),
   );
 
   expect(migrated).toMatchObject({ formatVersion: "1.0" });
@@ -88,10 +81,7 @@ test("formatVersion を持たない入力はそのまま通る", () => {
 test("元のドキュメントは変換で書き換えられない", () => {
   const document = setupDocument("0.9");
 
-  DocumentMigration.toCurrent(document, setupRenameSteps(), {
-    major: 1,
-    minor: 0,
-  });
+  DocumentMigration.toCurrent(document, setupRenameSteps());
 
   expect(document).toEqual({
     formatVersion: "0.9",
