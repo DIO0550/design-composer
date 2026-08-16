@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { DesignDocument } from "@/domains/design-document";
 import { DocumentSaveState } from "@/features/editor/domains/document-save-state";
+import { FileValidity } from "@/features/editor/domains/file-validity";
 import type { DocumentIpc } from "@/libs/document-ipc";
 import { DocumentJson } from "@/libs/document-json";
 
@@ -11,11 +12,21 @@ import { DocumentJson } from "@/libs/document-json";
  */
 export const AutoSaveDebounceMs = 500;
 
-/** 書き出す内容と書き出し先。片方だけでは書き込みが決まらないため 1 つにまとめる。 */
+/**
+ * 書き出す内容と書き出し先、および書き出してよいか。
+ * どれか 1 つでは書き込みが決まらないため 1 つにまとめる。
+ *
+ * Why not: 「書き出してよい内容」を `Option<DesignDocument>` にして渡さない。
+ * `Option.some` は呼ぶたびに新しいオブジェクトを作るため、依存配列に入れると
+ * 再レンダーのたびに effect が張り直されてデバウンスが取り直される。
+ * `fileValidity` は妥当なら共有の定数、不正なら取り込みを拒んだときにだけ作られるので、
+ * 依存として同一性が安定している。
+ */
 export type AutoSaveTarget = Readonly<{
   ipc: DocumentIpc;
   path: string;
   document: DesignDocument;
+  fileValidity: FileValidity;
 }>;
 
 /**
@@ -29,6 +40,11 @@ export type AutoSaveTarget = Readonly<{
  * 保存は last-write-wins で、書き込み前に現在のファイル内容を読み直したり
  * マージしたりはしない（docs/05-architecture.md「競合の解決」）。
  *
+ * ファイルが不正な間は書き出さない。映っているのは最後に正常だった表示なので、
+ * 書き出すと**より新しい外部の書き込みを古い内容で潰す**ことになり、
+ * last-write-wins から外れる。表示中の内容でファイルを潰す操作自体は
+ * `revert file`（`useFileRevert`）が別に持っている。
+ *
  * @returns 画面のドキュメントとファイルが一致しているか。書き出し待ち・書き出し中は
  *   `saving`、書き込みが拒まれている間は `failed`
  */
@@ -36,6 +52,7 @@ export function useAutoSave({
   ipc,
   path,
   document,
+  fileValidity,
 }: AutoSaveTarget): DocumentSaveState {
   const [saveState, setSaveState] = useState<DocumentSaveState>(
     DocumentSaveState.Saved,
@@ -53,6 +70,10 @@ export function useAutoSave({
   const savedDocumentRef = useRef(document);
 
   useEffect(() => {
+    // 凍結が解ければ妥当性が変わってこの effect が再び走り、書き出しの要否から決め直される。
+    if (FileValidity.isInvalid(fileValidity)) {
+      return;
+    }
     if (document === savedDocumentRef.current) {
       /*
        * ファイルに載っている版へ戻ってきたので、書き出すものはもう無い。
@@ -84,7 +105,7 @@ export function useAutoSave({
       ignore = true;
       clearTimeout(timer);
     };
-  }, [ipc, path, document]);
+  }, [ipc, path, document, fileValidity]);
 
   return saveState;
 }

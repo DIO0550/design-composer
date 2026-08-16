@@ -319,6 +319,7 @@ function EditorBody({
     ipc,
     path,
     document: EditorState.document(state),
+    fileValidity: state.fileValidity,
   });
   const watchFailure = useDocumentReload({
     ipc,

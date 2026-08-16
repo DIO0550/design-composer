@@ -94,7 +94,8 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
       /*
        * 消せる対象が無ければ木は変わらない（EditorState.removeNode の `none`）。
        * ボタンは選択が無いと押せないが、Delete キーはいつでも押せるため
-       * この `none` には画面の操作から到達する。
+       * この `none` には画面の操作から到達する。ファイルが不正な間も `none`
+       * （凍結は `inert` で作るが、キーは `document` に張るので素通りする / #155）。
        */
       return Option.unwrapOr(EditorState.removeNode(state), state);
     case "detach_instance":
@@ -134,6 +135,8 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
       /*
        * クリップボードが空・挿せる位置が無ければ木は変わらない
        * （EditorState.pasteNode の `none`）。到達しうる理由は copy_node と同じ。
+       * ファイルが不正な間も `none`。コピーは通るが貼り付けは止まる
+       * （クリップボードはドキュメントを変えない / #155）。
        */
       return Option.unwrapOr(EditorState.pasteNode(state), state);
     case "apply_prop_edit":
@@ -149,6 +152,7 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
       /*
        * 戻る先が無ければ何も変わらない（EditorState.undo の `none`）。
        * ショートカットは履歴が空でも押せるため、この `none` には画面の操作から到達する。
+       * ファイルが不正な間も `none`（戻した内容が自動保存へ流れるため / #155）。
        */
       return Option.unwrapOr(EditorState.undo(state), state);
     case "redo":

@@ -1,11 +1,9 @@
 import { expect, test } from "vitest";
 import { Artboard } from "@/domains/artboard";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
-import { Instant } from "@/domains/instant";
 import { SampleSyntaxError } from "@/features/editor/__tests__/document-errors";
 import { ReceivedAt } from "@/features/editor/__tests__/instants";
 import type { DocumentErrorLocation } from "@/features/editor/domains/document-error";
-import { FileValidity } from "@/features/editor/domains/file-validity";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 
@@ -91,56 +89,22 @@ test("外部変更を拒んでいても、表示中のドキュメントが正�
   expect(EditorState.documentErrors(rejected)).toStrictEqual([]);
 });
 
-test("外部変更を拒んでいる間に編集で作った不正は、ファイルのエラーとは別に出る", () => {
+/*
+ * 拒んだ後に編集する順序では書けない。凍結中は編集そのものが起きないため（#155）。
+ */
+test("編集で作った不正は、外部変更を拒んだ後もファイルのエラーとは別に残る", () => {
+  const removed = removeToken(openedState(), "heading");
+
   const rejected = EditorState.applyReload(
-    openedState(),
+    removed,
     {
       kind: "rejected",
       errors: [SampleSyntaxError],
     },
     ReceivedAt,
   );
-
-  const removed = removeToken(rejected, "heading");
 
   expect(
-    EditorState.documentErrors(removed).map((error) => error.location),
+    EditorState.documentErrors(rejected).map((error) => error.location),
   ).toStrictEqual([HomeTitleTypography]);
-});
-
-test("編集で不正を作ってもファイルのエラー一覧は変わらない", () => {
-  const rejected = EditorState.applyReload(
-    openedState(),
-    {
-      kind: "rejected",
-      errors: [SampleSyntaxError],
-    },
-    ReceivedAt,
-  );
-
-  const removed = removeToken(rejected, "heading");
-
-  expect(removed.fileValidity).toStrictEqual({
-    kind: "invalid",
-    errors: [SampleSyntaxError],
-    since: ReceivedAt,
-  });
-});
-
-test("編集で不正を作っても食い違いの起点は変わらない", () => {
-  const receivedAt = Instant.create(1_700_000_000_000);
-  const rejected = EditorState.applyReload(
-    openedState(),
-    {
-      kind: "rejected",
-      errors: [SampleSyntaxError],
-    },
-    receivedAt,
-  );
-
-  const removed = removeToken(rejected, "heading");
-
-  expect(FileValidity.since(removed.fileValidity)).toStrictEqual(
-    Option.some(receivedAt),
-  );
 });
