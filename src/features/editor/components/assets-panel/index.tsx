@@ -3,6 +3,7 @@ import type { ComponentAsset } from "@/domains/component";
 import { PrimitiveTypes } from "@/domains/primitive-schema";
 import { ComponentList } from "@/features/editor/components/component-list";
 import { PrimitiveList } from "@/features/editor/components/primitive-list";
+import type { AssetGrab } from "@/features/editor/types/AssetGrab";
 import type { Option } from "@/utils/Option";
 import { StringEx } from "@/utils/StringEx";
 
@@ -31,13 +32,11 @@ const NoMatchMessage = "一致するものがありません";
 export function AssetsPanel({
   assets,
   sourceName,
-  isInsertEnabled,
-  onInsert,
+  grab,
 }: Readonly<{
   assets: readonly ComponentAsset[];
   sourceName: Option<string>;
-  isInsertEnabled: boolean;
-  onInsert: (name: string) => void;
+  grab: AssetGrab;
 }>) {
   const [query, setQuery] = useState("");
 
@@ -71,12 +70,11 @@ export function AssetsPanel({
         <p className="text-gray-500 text-sm">{NoMatchMessage}</p>
       ) : (
         <>
-          <PrimitiveList types={matchedTypes} />
+          <PrimitiveList types={matchedTypes} grab={grab} />
           <ComponentList
             assets={matchedAssets}
             sourceName={sourceName}
-            isInsertEnabled={isInsertEnabled}
-            onInsert={onInsert}
+            grab={grab}
           />
         </>
       )}

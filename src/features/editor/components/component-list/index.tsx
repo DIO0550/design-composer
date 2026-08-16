@@ -1,12 +1,35 @@
+import type { PointerEvent as ReactPointerEvent } from "react";
 import { ComponentAsset } from "@/domains/component";
 import { TypeGlyph } from "@/features/editor/components/type-glyph";
+import { NodeTemplate } from "@/features/editor/domains/node-template";
+import type { AssetGrab } from "@/features/editor/types/AssetGrab";
 import type { Option } from "@/utils/Option";
-
-/** 選択の状態から決まる、押せない理由。ボタンの `title` に出して操作の見当を付けさせる。 */
-const InsertDisabledReason = "子を持てるものを選ぶと挿入できます";
 
 /** 使われていない部品の右端に出す語（UI 案は `×0` ではなくこの語を出す）。 */
 const UnusedLabel = "unused";
+
+/**
+ * 行の背景。掴んでいる青（UI 案の `#e5f4ff` と左端の帯）と、選択中のインスタンスの
+ * 出どころを示す紫（`#f3ebff` / `#9747ff`）は別物で、UI 案も別の画面で描き分けている。
+ *
+ * 掴んでいる間は掴んでいることを優先する（出どころは選択が変わらない限り残るので、
+ * 掴んでいる最中に出どころを出すと、どちらの意味の色か読めなくなる）。
+ *
+ * @param isGrabbed 今この行を掴んでいるか
+ * @param isSourceOfSelection 選択中のインスタンスの元がこの行か
+ * @returns 背景と左端の帯を与える class。どちらでもなければ空文字
+ */
+function rowToneClass(
+  isGrabbed: boolean,
+  isSourceOfSelection: boolean,
+): string {
+  if (isGrabbed) {
+    return "bg-[#e5f4ff] shadow-[inset_2px_0_0_#0d99ff]";
+  }
+  return isSourceOfSelection
+    ? "bg-purple-50 shadow-[inset_2px_0_0_#9747ff]"
+    : "";
+}
 
 /** 選択中のインスタンスの元になっている行に添える語（UI 案の綴り）。 */
 const SourceOfSelectionLabel = "source of selection";
@@ -19,20 +42,19 @@ const SourceOfSelectionLabel = "source of selection";
  * 使用数の綴りだけをここで決める。「使われていない」かどうかは部品の性質なので
  * `ComponentAsset.isUnused` が答え、こちらは `unused` と `×N` のどちらを書くかだけを持つ。
  *
- * 挿入ボタンは UI 案に無いが残している。消すとインスタンスを作る手段が画面から
- * 無くなるため（キャンバスにもツリーにも代わりの入口が無い）。ツリーの並べ替えボタンと
- * 同じ扱いで、代わりの操作は別の単位で入れる（#112）。
+ * 行に操作は付けない。掴んでキャンバスへ落とすのが唯一の挿入の入口で、押しても何も
+ * 起きない（UI 案「Assets is browse-only … Insertion is drag-only」/ #203）。
  */
 function ComponentRow({
   asset,
   isSourceOfSelection,
-  isInsertEnabled,
-  onInsert,
+  isGrabbed,
+  onGrab,
 }: Readonly<{
   asset: ComponentAsset;
   isSourceOfSelection: boolean;
-  isInsertEnabled: boolean;
-  onInsert: (name: string) => void;
+  isGrabbed: boolean;
+  onGrab: (event: ReactPointerEvent<HTMLElement>) => void;
 }>) {
   /*
    * 出どころの行では、公開 prop の名前を `source of selection` に譲る。
@@ -44,9 +66,16 @@ function ComponentRow({
 
   return (
     <li
-      className={`flex items-center gap-1.5 rounded px-2 py-1 hover:bg-gray-100 ${
-        isSourceOfSelection ? "bg-purple-50 shadow-[inset_2px_0_0_#9747ff]" : ""
-      }`}
+      /*
+       * 文字を選択させないのは、掴んで運ぶドラッグが範囲選択に化けるため
+       * （キャンバスの artboard の枠と同じ理由）。掴んだまま画面を横断するので、
+       * 選択の帯は左ペインだけでなく通り道の全体に残る。
+       */
+      className={`flex select-none items-center gap-1.5 rounded px-2 py-1 hover:bg-gray-100 ${rowToneClass(
+        isGrabbed,
+        isSourceOfSelection,
+      )}`}
+      onPointerDown={onGrab}
     >
       <TypeGlyph kind="component" />
       {/* 名前が余りを占める。flex の子は既定で内容幅より縮まないため省略には min-w-0 が要る */}
@@ -66,16 +95,6 @@ function ComponentRow({
       <span className="shrink-0 text-gray-400 text-xs">
         {ComponentAsset.isUnused(asset) ? UnusedLabel : `×${asset.refCount}`}
       </span>
-      <button
-        type="button"
-        aria-label={`${asset.name} を挿入`}
-        onClick={() => onInsert(asset.name)}
-        disabled={!isInsertEnabled}
-        title={isInsertEnabled ? undefined : InsertDisabledReason}
-        className="shrink-0 rounded border border-gray-300 px-1 text-gray-600 text-xs hover:bg-gray-100 disabled:opacity-50"
-      >
-        挿入
-      </button>
     </li>
   );
 }
@@ -83,7 +102,8 @@ function ComponentRow({
 /**
  * パレットの部品（UI 案 docs/Design Composer.html の `Assets` > `Components`。
  * `docs/06-ui.md`「画面構成」が左ペインの内容として挙げている部品一覧）。
- * 各行から選択位置へインスタンス（参照ノード）を挿せる（docs/06-ui.md「編集操作の一覧」）。
+ * 各行を掴んでキャンバスへ落とすとインスタンス（参照ノード）が挿さる
+ * （docs/06-ui.md「編集操作の一覧」/ #203）。
  *
  * 見出しと件数は UI 案に合わせて左右に離して置く。
  *
@@ -100,13 +120,11 @@ function ComponentRow({
 export function ComponentList({
   assets,
   sourceName,
-  isInsertEnabled,
-  onInsert,
+  grab,
 }: Readonly<{
   assets: readonly ComponentAsset[];
   sourceName: Option<string>;
-  isInsertEnabled: boolean;
-  onInsert: (name: string) => void;
+  grab: AssetGrab;
 }>) {
   return (
     <section className="text-sm">
@@ -117,17 +135,27 @@ export function ComponentList({
         <span className="text-gray-400 text-xs">{assets.length}</span>
       </div>
       <ul>
-        {assets.map((asset) => (
-          <ComponentRow
-            key={asset.name}
-            asset={asset}
-            isSourceOfSelection={
-              sourceName.some && sourceName.value === asset.name
-            }
-            isInsertEnabled={isInsertEnabled}
-            onInsert={onInsert}
-          />
-        ))}
+        {assets.map((asset) => {
+          const template: NodeTemplate = {
+            kind: "instance",
+            componentName: asset.name,
+          };
+
+          return (
+            <ComponentRow
+              key={asset.name}
+              asset={asset}
+              isSourceOfSelection={
+                sourceName.some && sourceName.value === asset.name
+              }
+              isGrabbed={
+                grab.dragged.some &&
+                NodeTemplate.isSame(grab.dragged.value, template)
+              }
+              onGrab={(event) => grab.onGrab(template, event)}
+            />
+          );
+        })}
       </ul>
     </section>
   );

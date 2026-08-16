@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { expect, test } from "vitest";
+import { setupAssetGrab } from "@/features/editor/__tests__/asset-grab";
 import { Option } from "@/utils/Option";
 import { ComponentList } from "../index";
 
@@ -11,8 +12,7 @@ test("ドキュメントの部品が一覧に並ぶ", () => {
         { name: "primary-button", publicPropNames: ["label"], refCount: 1 },
         { name: "divider", publicPropNames: [], refCount: 0 },
       ]}
-      isInsertEnabled
-      onInsert={() => {}}
+      grab={setupAssetGrab()}
     />,
   );
 
@@ -24,8 +24,7 @@ test("部品の行には部品を表す型アイコンが出る", () => {
     <ComponentList
       sourceName={Option.none}
       assets={[{ name: "divider", publicPropNames: [], refCount: 0 }]}
-      isInsertEnabled
-      onInsert={() => {}}
+      grab={setupAssetGrab()}
     />,
   );
 
@@ -37,8 +36,7 @@ test("部品が1つも無いときは行が出ない", () => {
     <ComponentList
       sourceName={Option.none}
       assets={[]}
-      isInsertEnabled
-      onInsert={() => {}}
+      grab={setupAssetGrab()}
     />,
   );
 

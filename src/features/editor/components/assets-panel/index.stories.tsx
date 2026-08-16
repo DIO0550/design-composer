@@ -1,6 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Artboard } from "@/domains/artboard";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import {
+  grabbingComponent,
+  setupAssetGrab,
+} from "@/features/editor/__tests__/asset-grab";
 import { LeftPanePanel } from "@/features/editor/components/left-pane-panel";
 import { Option } from "@/utils/Option";
 import { AssetsPanel } from "./index";
@@ -33,8 +37,7 @@ const meta = {
   args: {
     assets: DesignDocument.componentAssets(UsedComponentsDocument),
     sourceName: Option.none,
-    isInsertEnabled: true,
-    onInsert: () => {},
+    grab: setupAssetGrab(),
   },
   // 実際の幅（248px のパネル）で見ないと、名前と使用数の詰まり方が分からない。
   decorators: [
@@ -56,9 +59,10 @@ export const Default: Story = {
   name: "パレット",
 };
 
-export const InsertDisabled: Story = {
-  name: "挿せる位置が無い",
-  args: { isInsertEnabled: false },
+/** パレットの行を掴んでキャンバスへ運んでいる状態（#203）。 */
+export const Grabbed: Story = {
+  name: "行を掴んで運んでいる",
+  args: { grab: grabbingComponent("primary-button") },
 };
 
 export const NoComponents: Story = {
