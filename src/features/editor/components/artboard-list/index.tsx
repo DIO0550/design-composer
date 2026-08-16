@@ -3,7 +3,7 @@ import { TypeGlyph } from "@/features/editor/components/type-glyph";
 import { EditorState } from "@/features/editor/domains/editor-state";
 
 /** artboard が 1 枚も無いときの知らせ。 */
-const NO_ARTBOARD_MESSAGE = "artboard がありません";
+const NoArtboardMessage = "artboard がありません";
 
 /**
  * artboard 1 枚の行（UI 案 docs/Design Composer.html の `# login 720×900`）。
@@ -74,7 +74,7 @@ export function ArtboardList({
         Artboards
       </h3>
       {artboards.length === 0 ? (
-        <p className="text-gray-500">{NO_ARTBOARD_MESSAGE}</p>
+        <p className="text-gray-500">{NoArtboardMessage}</p>
       ) : (
         <ul>
           {artboards.map((artboard) => (

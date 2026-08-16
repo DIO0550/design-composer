@@ -12,13 +12,13 @@ import { Result } from "@/utils/Result";
 export type DocumentDialogError = Readonly<{ message: string }>;
 
 /** 1 ドキュメント = 1 ファイル（docs/01-file-format.md「ファイル」）。 */
-const DOCUMENT_FILE_FILTER: FileFilter = {
+const DocumentFileFilter: FileFilter = {
   name: "Design Composer ドキュメント",
   extensions: ["dcmp"],
 };
 
 /** 新規作成の保存ダイアログに入れておく名前。 */
-const DEFAULT_FILE_NAME = "untitled.dcmp";
+const DefaultFileName = "untitled.dcmp";
 
 /**
  * .dcmp を選ばせるダイアログ。
@@ -55,12 +55,12 @@ export const DocumentDialog = {
   create(dialog: TauriDialog): DocumentDialog {
     return {
       chooseOpenPath() {
-        return choose(() => dialog.chooseOpenPath(DOCUMENT_FILE_FILTER));
+        return choose(() => dialog.chooseOpenPath(DocumentFileFilter));
       },
 
       chooseSavePath() {
         return choose(() =>
-          dialog.chooseSavePath(DOCUMENT_FILE_FILTER, DEFAULT_FILE_NAME),
+          dialog.chooseSavePath(DocumentFileFilter, DefaultFileName),
         );
       },
     };

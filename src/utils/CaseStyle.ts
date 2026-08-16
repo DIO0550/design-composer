@@ -10,7 +10,7 @@
  * kebab-case の綴り。使用可能文字は `[a-z0-9-]` で、
  * 先頭・末尾のハイフンと連続ハイフンは許さない。
  */
-const KEBAB_CASE_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const KebabCasePattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 /** 綴りの流儀どうしの変換と判定。 */
 export const CaseStyle = {
@@ -22,7 +22,7 @@ export const CaseStyle = {
    * 名前の側の知識なので、判定だけをここに置いて意味づけは呼び出し側で与える。
    */
   isKebabCase(value: string): boolean {
-    return KEBAB_CASE_PATTERN.test(value);
+    return KebabCasePattern.test(value);
   },
 
   /**

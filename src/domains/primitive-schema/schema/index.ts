@@ -1,10 +1,10 @@
 import type { PropDefinitionRecord } from "../prop-definition";
 
 /** 走査に使う実行時のリスト。`PrimitiveType` はここから導出し、二重管理しない。 */
-export const PRIMITIVE_TYPES = ["Box", "Text"] as const;
+export const PrimitiveTypes = ["Box", "Text"] as const;
 
 /** 組み込みで用意されているノードの型（docs/02「プリミティブ」）。 */
-export type PrimitiveType = (typeof PRIMITIVE_TYPES)[number];
+export type PrimitiveType = (typeof PrimitiveTypes)[number];
 
 /** 1つの primitive の仕様。子を持てるかと、受け付ける props を宣言する。 */
 export type PrimitiveSchema = Readonly<{
@@ -18,7 +18,7 @@ export type PrimitiveSchema = Readonly<{
  * prop 名・`tokenKind`・デフォルト値をリテラル型のまま残すため
  * （`token-props/` の型レベルの導出がこの情報に依存している）。
  */
-export const BOX_SCHEMA = {
+export const BoxSchema = {
   allowsChildren: true,
   props: {
     direction: {
@@ -79,7 +79,7 @@ export const BOX_SCHEMA = {
 } as const satisfies PrimitiveSchema;
 
 /** Text の仕様（docs/02 の表）。子は持たず、文言と見た目だけを持つ。 */
-export const TEXT_SCHEMA = {
+export const TextSchema = {
   allowsChildren: false,
   props: {
     content: {
@@ -110,9 +110,9 @@ export const TEXT_SCHEMA = {
 } as const satisfies PrimitiveSchema;
 
 /** primitive の型 → その仕様。型を取り違えた引き当てにならないよう対応で持つ。 */
-export const PRIMITIVE_SCHEMAS = {
-  Box: BOX_SCHEMA,
-  Text: TEXT_SCHEMA,
+export const PrimitiveSchemas = {
+  Box: BoxSchema,
+  Text: TextSchema,
 } as const satisfies Readonly<Record<PrimitiveType, PrimitiveSchema>>;
 
 export const PrimitiveSchema = {
@@ -121,13 +121,13 @@ export const PrimitiveSchema = {
    * 戻り値を `PrimitiveSchema` へ広げず型引数で受けるのは、
    * 呼び出し側が prop 名やデフォルト値をリテラル型のまま扱えるようにするため。
    */
-  forType<T extends PrimitiveType>(type: T): (typeof PRIMITIVE_SCHEMAS)[T] {
-    return PRIMITIVE_SCHEMAS[type];
+  forType<T extends PrimitiveType>(type: T): (typeof PrimitiveSchemas)[T] {
+    return PrimitiveSchemas[type];
   },
 
   /** その名前が primitive の型か（ファイル由来の未知の type を弾く境界）。 */
   isPrimitiveType(type: string): type is PrimitiveType {
-    return (PRIMITIVE_TYPES as readonly string[]).includes(type);
+    return (PrimitiveTypes as readonly string[]).includes(type);
   },
 
   /**
@@ -137,7 +137,7 @@ export const PrimitiveSchema = {
   allowsChildren(type: string): boolean {
     return (
       PrimitiveSchema.isPrimitiveType(type) &&
-      PRIMITIVE_SCHEMAS[type].allowsChildren
+      PrimitiveSchemas[type].allowsChildren
     );
   },
 } as const;

@@ -9,11 +9,11 @@ export type {
 export { PropDefinition, PropDefinitionRecord } from "./prop-definition";
 export type { PrimitiveType } from "./schema";
 export {
-  BOX_SCHEMA,
-  PRIMITIVE_SCHEMAS,
-  PRIMITIVE_TYPES,
+  BoxSchema,
   PrimitiveSchema,
-  TEXT_SCHEMA,
+  PrimitiveSchemas,
+  PrimitiveTypes,
+  TextSchema,
 } from "./schema";
 export type { TokenPropName } from "./token-props";
 export { TokenPropKinds } from "./token-props";

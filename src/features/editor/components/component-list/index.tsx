@@ -3,13 +3,13 @@ import { TypeGlyph } from "@/features/editor/components/type-glyph";
 import type { Option } from "@/utils/Option";
 
 /** 選択の状態から決まる、押せない理由。ボタンの `title` に出して操作の見当を付けさせる。 */
-const INSERT_DISABLED_REASON = "子を持てるものを選ぶと挿入できます";
+const InsertDisabledReason = "子を持てるものを選ぶと挿入できます";
 
 /** 使われていない部品の右端に出す語（UI 案は `×0` ではなくこの語を出す）。 */
-const UNUSED_LABEL = "unused";
+const UnusedLabel = "unused";
 
 /** 選択中のインスタンスの元になっている行に添える語（UI 案の綴り）。 */
-const SOURCE_OF_SELECTION_LABEL = "source of selection";
+const SourceOfSelectionLabel = "source of selection";
 
 /**
  * 部品 1 件の行。名前の左に部品を表すアイコン、名前の下にその部品が公開している prop の
@@ -59,19 +59,19 @@ function ComponentRow({
         ) : null}
         {isSourceOfSelection ? (
           <span className="block truncate text-[#9747ff] text-xs">
-            {SOURCE_OF_SELECTION_LABEL}
+            {SourceOfSelectionLabel}
           </span>
         ) : null}
       </span>
       <span className="shrink-0 text-gray-400 text-xs">
-        {ComponentAsset.isUnused(asset) ? UNUSED_LABEL : `×${asset.refCount}`}
+        {ComponentAsset.isUnused(asset) ? UnusedLabel : `×${asset.refCount}`}
       </span>
       <button
         type="button"
         aria-label={`${asset.name} を挿入`}
         onClick={() => onInsert(asset.name)}
         disabled={!isInsertEnabled}
-        title={isInsertEnabled ? undefined : INSERT_DISABLED_REASON}
+        title={isInsertEnabled ? undefined : InsertDisabledReason}
         className="shrink-0 rounded border border-gray-300 px-1 text-gray-600 text-xs hover:bg-gray-100 disabled:opacity-50"
       >
         挿入

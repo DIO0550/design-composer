@@ -2,8 +2,8 @@ import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
-import { SYNTAX_ERROR } from "@/features/editor/__tests__/document-errors";
-import { RECEIVED_AT } from "@/features/editor/__tests__/instants";
+import { SampleSyntaxError } from "@/features/editor/__tests__/document-errors";
+import { ReceivedAt } from "@/features/editor/__tests__/instants";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { injectedStyles, renderCanvas } from "./setup";
 
@@ -30,8 +30,8 @@ function selectedArtboard(): EditorState {
 function frozen(state: EditorState): EditorState {
   return EditorState.applyReload(
     state,
-    { kind: "rejected", errors: [SYNTAX_ERROR] },
-    RECEIVED_AT,
+    { kind: "rejected", errors: [SampleSyntaxError] },
+    ReceivedAt,
   );
 }
 

@@ -1,20 +1,18 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, screen, waitFor } from "storybook/test";
 import { DesignDocument } from "@/domains/design-document";
-import { SAMPLE_EDITOR_STATE } from "@/features/editor/__stories__/sample-editor-state";
+import { SampleEditorState } from "@/features/editor/__stories__/sample-editor-state";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { ClockFake } from "@/libs/clock/fake";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
 import { OpenedDocumentEditor } from "./index";
 
-const SAMPLE_PATH = "/work/sample.dcmp";
+const SamplePath = "/work/sample.dcmp";
 
 /** Storybook には Tauri が無いので、自動保存と監視の相手はインメモリの代役にする。 */
 const files = DocumentIpcFake.create({
-  [SAMPLE_PATH]: DocumentJson.serialize(
-    EditorState.document(SAMPLE_EDITOR_STATE),
-  ),
+  [SamplePath]: DocumentJson.serialize(EditorState.document(SampleEditorState)),
 });
 
 /** 時計も Storybook には無いので代役にする。進めないので経過時間は動かない。 */
@@ -28,8 +26,8 @@ const meta = {
     clock: clock.clock,
     ipc: files.ipc,
     opened: {
-      path: SAMPLE_PATH,
-      document: EditorState.document(SAMPLE_EDITOR_STATE),
+      path: SamplePath,
+      document: EditorState.document(SampleEditorState),
     },
   },
 } satisfies Meta<typeof OpenedDocumentEditor>;
@@ -56,12 +54,12 @@ export const SyncFailed: Story = {
     ipc: DocumentIpcFake.create({}).ipc,
     opened: {
       path: "/work/missing.dcmp",
-      document: EditorState.document(SAMPLE_EDITOR_STATE),
+      document: EditorState.document(SampleEditorState),
     },
   },
 };
 
-const SAMPLE = EditorState.document(SAMPLE_EDITOR_STATE);
+const Sample = EditorState.document(SampleEditorState);
 
 /*
  * 使用中トークンを消したあとのドキュメント。`home-title` が指す typography の
@@ -69,13 +67,13 @@ const SAMPLE = EditorState.document(SAMPLE_EDITOR_STATE);
  * Why not: `DesignDocument.removeToken` は通さない。ストーリーには `Result` の失敗を
  * 伝える先が無く、既定値へ落として握りつぶすことになるため（rules/coding.md）。
  */
-const DOCUMENT_WITH_DANGLING_TOKEN = DesignDocument.create({
-  components: SAMPLE.components,
-  artboards: SAMPLE.artboards,
+const DocumentWithDanglingToken = DesignDocument.create({
+  components: Sample.components,
+  artboards: Sample.artboards,
   tokens: {
-    ...SAMPLE.tokens,
+    ...Sample.tokens,
     typography: Object.fromEntries(
-      Object.entries(SAMPLE.tokens.typography).filter(
+      Object.entries(Sample.tokens.typography).filter(
         ([name]) => name !== "heading",
       ),
     ),
@@ -92,9 +90,9 @@ export const DocumentErrors: Story = {
   name: "編集で作った不正がある編集画面",
   args: {
     ipc: DocumentIpcFake.create({
-      [SAMPLE_PATH]: DocumentJson.serialize(DOCUMENT_WITH_DANGLING_TOKEN),
+      [SamplePath]: DocumentJson.serialize(DocumentWithDanglingToken),
     }).ipc,
-    opened: { path: SAMPLE_PATH, document: DOCUMENT_WITH_DANGLING_TOKEN },
+    opened: { path: SamplePath, document: DocumentWithDanglingToken },
   },
 };
 
@@ -103,9 +101,7 @@ export const DocumentErrors: Story = {
  * 共有しない（共有すると、先に描かれたストーリーまで壊れたファイルを掴む）。
  */
 const brokenFiles = DocumentIpcFake.create({
-  [SAMPLE_PATH]: DocumentJson.serialize(
-    EditorState.document(SAMPLE_EDITOR_STATE),
-  ),
+  [SamplePath]: DocumentJson.serialize(EditorState.document(SampleEditorState)),
 });
 
 /**
@@ -126,16 +122,16 @@ export const FileInvalid: Story = {
   args: {
     ipc: brokenFiles.ipc,
     opened: {
-      path: SAMPLE_PATH,
-      document: EditorState.document(SAMPLE_EDITOR_STATE),
+      path: SamplePath,
+      document: EditorState.document(SampleEditorState),
     },
   },
   play: async () => {
     // 監視が張られる前に書き換えると通知が届かないので、張れるまで待つ。
     await waitFor(() => {
-      expect(brokenFiles.isWatching(SAMPLE_PATH)).toBe(true);
+      expect(brokenFiles.isWatching(SamplePath)).toBe(true);
     });
-    brokenFiles.changeExternally(SAMPLE_PATH, "{ 壊れた");
+    brokenFiles.changeExternally(SamplePath, "{ 壊れた");
     await waitFor(() => {
       expect(screen.getByText("最後に正常だった表示")).toBeDefined();
     });

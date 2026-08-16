@@ -8,36 +8,36 @@ import { OpenedDocument } from "@/features/editor/domains/opened-document";
 import { DialogChoice } from "@/libs/document-dialog/fake";
 import { DocumentJson } from "@/libs/document-json";
 import { Option } from "@/utils/Option";
-import { PATH, renderDocumentSession } from "./setup";
+import { Path, renderDocumentSession } from "./setup";
 
-const NEW_PATH = "/work/untitled.dcmp";
+const NewPath = "/work/untitled.dcmp";
 
 test("ダイアログで選んだファイルが開かれる", async () => {
   const observer = renderDocumentSession(
-    { [PATH]: artboardContent("home") },
-    { open: DialogChoice.chosen(PATH), save: DialogChoice.CANCELED },
+    { [Path]: artboardContent("home") },
+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
   );
 
   await observer.openDocument();
 
   // JSON を経由すると省略可能なキーが落ちるため、キーの有無ではなく値で比べる。
   expect(observer.session()).toEqual(
-    DocumentSession.opened({ path: PATH, document: artboardDocument("home") }),
+    DocumentSession.opened({ path: Path, document: artboardDocument("home") }),
   );
 });
 
 test("新規作成すると、選んだ保存先に雛形のドキュメントが書き出される", async () => {
   const observer = renderDocumentSession(
     {},
-    { open: DialogChoice.CANCELED, save: DialogChoice.chosen(NEW_PATH) },
+    { open: DialogChoice.Canceled, save: DialogChoice.chosen(NewPath) },
   );
 
   await observer.createDocument();
 
-  expect(observer.files.contentOf(NEW_PATH)).toStrictEqual(
+  expect(observer.files.contentOf(NewPath)).toStrictEqual(
     Option.some(
       DocumentJson.serialize(
-        OpenedDocument.createFromTemplate(NEW_PATH).document,
+        OpenedDocument.createFromTemplate(NewPath).document,
       ),
     ),
   );
@@ -46,12 +46,12 @@ test("新規作成すると、選んだ保存先に雛形のドキュメント�
 test("新規作成したドキュメントはそのまま開かれる", async () => {
   const observer = renderDocumentSession(
     {},
-    { open: DialogChoice.CANCELED, save: DialogChoice.chosen(NEW_PATH) },
+    { open: DialogChoice.Canceled, save: DialogChoice.chosen(NewPath) },
   );
 
   await observer.createDocument();
 
   expect(DocumentSession.openedPath(observer.session())).toStrictEqual(
-    Option.some(NEW_PATH),
+    Option.some(NewPath),
   );
 });

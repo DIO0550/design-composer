@@ -10,7 +10,7 @@ import { ComponentList } from "../index";
  *
  * どの行が出どころかは 2 件以上ないと確かめられないので、どのテストも対照を 1 件置く。
  */
-const ASSETS: readonly ComponentAsset[] = [
+const Assets: readonly ComponentAsset[] = [
   { name: "primary-button", publicPropNames: ["label"], refCount: 4 },
   { name: "card", publicPropNames: ["title", "body"], refCount: 2 },
 ];
@@ -18,7 +18,7 @@ const ASSETS: readonly ComponentAsset[] = [
 function renderList(sourceName: Option<string>) {
   render(
     <ComponentList
-      assets={ASSETS}
+      assets={Assets}
       sourceName={sourceName}
       isInsertEnabled
       onInsert={() => {}}

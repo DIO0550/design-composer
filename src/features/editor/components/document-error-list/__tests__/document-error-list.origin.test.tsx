@@ -4,7 +4,7 @@ import type { DocumentError } from "@/features/editor/domains/document-error";
 import { DocumentErrorList, DocumentErrorOrigins } from "../index";
 
 /** 使用中トークンを消したときに出る、ドキュメント自身の不正。 */
-const DANGLING_TOKEN: DocumentError = {
+const DanglingToken: DocumentError = {
   kind: "dangling-token",
   message: 'prop "typography" references unknown typography token "heading"',
   location: { kind: "node", nodeName: "home-title", prop: "typography" },
@@ -13,7 +13,7 @@ const DANGLING_TOKEN: DocumentError = {
 test("開いているファイル由来のエラーはファイルの不正として出る", () => {
   render(
     <DocumentErrorList
-      errors={[DANGLING_TOKEN]}
+      errors={[DanglingToken]}
       origin={DocumentErrorOrigins.OpenedFile}
       onReveal={vi.fn()}
       onRevertFile={vi.fn()}
@@ -27,7 +27,7 @@ test("開いているファイル由来のエラーはファイルの不正と�
 test("開けなかったファイル由来のエラーもファイルの不正として出る", () => {
   render(
     <DocumentErrorList
-      errors={[DANGLING_TOKEN]}
+      errors={[DanglingToken]}
       origin={DocumentErrorOrigins.UnopenedFile}
     />,
   );
@@ -38,7 +38,7 @@ test("開けなかったファイル由来のエラーもファイルの不正�
 test("ドキュメント由来のエラーは編集中の不正として出る", () => {
   render(
     <DocumentErrorList
-      errors={[DANGLING_TOKEN]}
+      errors={[DanglingToken]}
       origin={DocumentErrorOrigins.Document}
       onReveal={vi.fn()}
     />,
@@ -51,14 +51,14 @@ test("2 つの由来の一覧は読み上げ名で区別できる", () => {
   render(
     <>
       <DocumentErrorList
-        errors={[DANGLING_TOKEN]}
+        errors={[DanglingToken]}
         origin={DocumentErrorOrigins.OpenedFile}
         onReveal={vi.fn()}
         onRevertFile={vi.fn()}
         isReverting={false}
       />
       <DocumentErrorList
-        errors={[DANGLING_TOKEN]}
+        errors={[DanglingToken]}
         origin={DocumentErrorOrigins.Document}
         onReveal={vi.fn()}
       />

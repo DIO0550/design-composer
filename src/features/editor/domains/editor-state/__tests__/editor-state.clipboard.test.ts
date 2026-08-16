@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
-import { RECEIVED_AT } from "@/features/editor/__tests__/instants";
+import { ReceivedAt } from "@/features/editor/__tests__/instants";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 
@@ -168,7 +168,7 @@ test("外部変更を取り込んでもクリップボードの中身は残る",
         artboards: [{ name: "home", width: 375, height: 812, children: [] }],
       }),
     },
-    RECEIVED_AT,
+    ReceivedAt,
   );
 
   expect(reloaded.copiedNode).toEqual(

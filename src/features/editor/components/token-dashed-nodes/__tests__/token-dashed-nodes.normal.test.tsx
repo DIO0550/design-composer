@@ -1,11 +1,11 @@
 import { screen } from "@testing-library/react";
 import { expect, test } from "vitest";
-import { COLOR_SWATCH_TEST_ID } from "@/components/color-swatch";
+import { ColorSwatchTestId } from "@/components/color-swatch";
 import { DesignDocument } from "@/domains/design-document";
 import { TokenSet } from "@/domains/token";
 import { renderDashedNodes } from "./render";
 
-const GRAY_900 = { kind: "colors", name: "gray-900" } as const;
+const Gray900 = { kind: "colors", name: "gray-900" } as const;
 
 /** `gray-900` を、渡した名前のノードそれぞれの `color` から指すドキュメント。 */
 function setupDocument(nodeNames: readonly string[]): DesignDocument {
@@ -27,13 +27,13 @@ function setupDocument(nodeNames: readonly string[]): DesignDocument {
 }
 
 test("トークンを選ぶと、そのトークンの名前が帯に出る", () => {
-  renderDashedNodes(setupDocument(["title", "caption"]), GRAY_900);
+  renderDashedNodes(setupDocument(["title", "caption"]), Gray900);
 
   expect(screen.getByText("gray-900")).toBeDefined();
 });
 
 test("参照しているノードが2つあると、帯の件数が2になる", () => {
-  renderDashedNodes(setupDocument(["title", "caption"]), GRAY_900);
+  renderDashedNodes(setupDocument(["title", "caption"]), Gray900);
 
   expect(screen.getByText("2 nodes · dashed in canvas")).toBeDefined();
 });
@@ -91,15 +91,15 @@ test("部品定義の中の参照は帯の件数に入らない", () => {
     ],
   });
 
-  renderDashedNodes(document, GRAY_900);
+  renderDashedNodes(document, Gray900);
 
   expect(screen.getByText("1 node · dashed in canvas")).toBeDefined();
 });
 
 test("色トークンを選ぶと、その色の見本が帯に出る", () => {
-  renderDashedNodes(setupDocument(["title"]), GRAY_900);
+  renderDashedNodes(setupDocument(["title"]), Gray900);
 
-  expect(screen.getByTestId(COLOR_SWATCH_TEST_ID)).toBeDefined();
+  expect(screen.getByTestId(ColorSwatchTestId)).toBeDefined();
 });
 
 test("色以外のトークンを選ぶと、帯に見本は出ない", () => {
@@ -128,5 +128,5 @@ test("色以外のトークンを選ぶと、帯に見本は出ない", () => {
   expect(
     screen.getByRole("region", { name: "キャンバスの破線" }),
   ).toBeDefined();
-  expect(screen.queryByTestId(COLOR_SWATCH_TEST_ID)).toBeNull();
+  expect(screen.queryByTestId(ColorSwatchTestId)).toBeNull();
 });

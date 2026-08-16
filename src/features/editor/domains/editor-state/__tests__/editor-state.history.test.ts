@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
-import { RECEIVED_AT } from "@/features/editor/__tests__/instants";
+import { ReceivedAt } from "@/features/editor/__tests__/instants";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 
@@ -146,7 +146,7 @@ test("外部変更の取り込みを戻すと取り込む前のドキュメン�
         artboards: [{ name: "home", width: 414, height: 896, children: [] }],
       }),
     },
-    RECEIVED_AT,
+    ReceivedAt,
   );
 
   const undone = Option.unwrap(EditorState.undo(reloaded));
@@ -167,7 +167,7 @@ test("取り込みを拒んだときは履歴に積まれない", () => {
         },
       ],
     },
-    RECEIVED_AT,
+    ReceivedAt,
   );
 
   expect(EditorState.undo(rejected).some).toBe(false);

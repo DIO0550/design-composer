@@ -2,9 +2,9 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { ComponentProps } from "react";
 import { fn } from "storybook/test";
 import {
-  EMPTY_EDITOR_STATE,
-  FILE_INVALID_EDITOR_STATE,
-  SAMPLE_EDITOR_STATE,
+  EmptyEditorState,
+  FileInvalidEditorState,
+  SampleEditorState,
 } from "@/features/editor/__stories__/sample-editor-state";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { useCanvasView } from "@/features/editor/hooks/use-canvas-view";
@@ -53,13 +53,13 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   name: "選択なし",
-  args: { state: SAMPLE_EDITOR_STATE },
+  args: { state: SampleEditorState },
 };
 
 /** artboard は 2 軸とも fixed なので、選択するとリサイズハンドルも出る（docs/06-ui.md）。 */
 export const Selected: Story = {
   name: "artboard を選択中",
-  args: { state: EditorState.select(SAMPLE_EDITOR_STATE, "settings") },
+  args: { state: EditorState.select(SampleEditorState, "settings") },
 };
 
 /**
@@ -75,7 +75,7 @@ export const Selected: Story = {
 export const TokenSelected: Story = {
   name: "トークンを選択中",
   args: {
-    state: EditorState.selectToken(SAMPLE_EDITOR_STATE, {
+    state: EditorState.selectToken(SampleEditorState, {
       kind: "colors",
       name: "primary",
     }),
@@ -84,7 +84,7 @@ export const TokenSelected: Story = {
 
 export const Empty: Story = {
   name: "artboard がない",
-  args: { state: EMPTY_EDITOR_STATE },
+  args: { state: EmptyEditorState },
 };
 
 /**
@@ -98,5 +98,5 @@ export const Empty: Story = {
  */
 export const Frozen: Story = {
   name: "ファイルが不正（凍結中）",
-  args: { state: FILE_INVALID_EDITOR_STATE },
+  args: { state: FileInvalidEditorState },
 };

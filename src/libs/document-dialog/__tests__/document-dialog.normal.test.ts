@@ -6,7 +6,7 @@ import { DialogChoice, DocumentDialogFake } from "../fake";
 test("開くファイルを選ぶと、そのパスが返る", async () => {
   const fake = DocumentDialogFake.create({
     open: DialogChoice.chosen("/work/login.dcmp"),
-    save: DialogChoice.CANCELED,
+    save: DialogChoice.Canceled,
   });
 
   const chosen = await fake.dialog.chooseOpenPath();
@@ -16,7 +16,7 @@ test("開くファイルを選ぶと、そのパスが返る", async () => {
 
 test("保存先を選ぶと、そのパスが返る", async () => {
   const fake = DocumentDialogFake.create({
-    open: DialogChoice.CANCELED,
+    open: DialogChoice.Canceled,
     save: DialogChoice.chosen("/work/untitled.dcmp"),
   });
 
@@ -29,8 +29,8 @@ test("保存先を選ぶと、そのパスが返る", async () => {
 
 test("ファイルを選ばずに閉じると、選ばれたパスは無い", async () => {
   const fake = DocumentDialogFake.create({
-    open: DialogChoice.CANCELED,
-    save: DialogChoice.CANCELED,
+    open: DialogChoice.Canceled,
+    save: DialogChoice.Canceled,
   });
 
   const chosen = await fake.dialog.chooseOpenPath();

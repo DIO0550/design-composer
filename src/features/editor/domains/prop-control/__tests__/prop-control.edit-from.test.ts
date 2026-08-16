@@ -11,7 +11,7 @@ function setupControl(node: Node, prop: string): PropControl {
   const state = EditorState.select(
     EditorState.create(
       DesignDocument.create({
-        tokens: DocumentTemplate.DEFAULT.tokens,
+        tokens: DocumentTemplate.Default.tokens,
         artboards: [
           { name: "home", width: 360, height: 240, children: [node] },
         ],

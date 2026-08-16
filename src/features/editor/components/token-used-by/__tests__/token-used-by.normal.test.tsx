@@ -10,7 +10,7 @@ import { renderUsedBy } from "./render";
  * - `white`: artboard 自身の `background` と Box の `background` の 2 件
  * - `accent`: インスタンスの上書き 1 件
  */
-const DOCUMENT = DesignDocument.create({
+const ReferringDocument = DesignDocument.create({
   tokens: {
     ...TokenSet.empty(),
     colors: { white: "#ffffff", accent: "#f97316" },
@@ -42,7 +42,7 @@ const DOCUMENT = DesignDocument.create({
 });
 
 function renderFor(ref: TokenRef): void {
-  renderUsedBy(DOCUMENT, ref);
+  renderUsedBy(ReferringDocument, ref);
 }
 
 test("参照元の行に「名前.prop 名」が出る", () => {

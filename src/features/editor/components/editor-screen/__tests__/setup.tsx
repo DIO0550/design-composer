@@ -10,9 +10,9 @@ import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { EditorScreen } from "../index";
 
 /** 既に置いてあるファイル。 */
-export const PATH = "/work/login.dcmp";
+export const Path = "/work/login.dcmp";
 /** 新規作成やファイルの切り替えで使うもう 1 つのパス。 */
-export const OTHER_PATH = "/work/settings.dcmp";
+export const OtherPath = "/work/settings.dcmp";
 
 /**
  * 置いてあるファイルと、利用者がダイアログで行う選択を決めて画面を描画する。

@@ -1,7 +1,7 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
-import { ELEMENT_NAME_ATTRIBUTE } from "@/domains/compiled-element";
+import { ElementNameAttribute } from "@/domains/compiled-element";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import {
   canvasContent,
@@ -17,8 +17,8 @@ function setupState(
 ): EditorState {
   return EditorState.create(
     DesignDocument.create({
-      tokens: DocumentTemplate.DEFAULT.tokens,
-      components: DocumentTemplate.DEFAULT.components,
+      tokens: DocumentTemplate.Default.tokens,
+      components: DocumentTemplate.Default.components,
       artboards,
     }),
   );
@@ -129,6 +129,6 @@ test("名前に二重引用符が含まれていても選択子の中に収ま�
 
   const styleText = canvasContent().querySelector("style")?.textContent ?? "";
   expect(styleText).toContain(
-    `[${ELEMENT_NAME_ATTRIBUTE}="home\\"]{display:none}[x"]`,
+    `[${ElementNameAttribute}="home\\"]{display:none}[x"]`,
   );
 });

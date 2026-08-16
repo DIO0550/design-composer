@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { DesignDocument } from "@/domains/design-document";
 import { TokenSet } from "@/domains/token";
-import { SAMPLE_EDITOR_STATE } from "@/features/editor/__stories__/sample-editor-state";
+import { SampleEditorState } from "@/features/editor/__stories__/sample-editor-state";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { TokenDashedNodes } from "./index";
 
@@ -29,7 +29,7 @@ type Story = StoryObj<typeof meta>;
 export const Single: Story = {
   name: "参照が1件",
   args: {
-    state: EditorState.selectToken(SAMPLE_EDITOR_STATE, {
+    state: EditorState.selectToken(SampleEditorState, {
       kind: "colors",
       name: "primary",
     }),
@@ -39,7 +39,7 @@ export const Single: Story = {
 /**
  * 複数形が出る状態。
  *
- * `SAMPLE_EDITOR_STATE` では作れないので専用のドキュメントを組む。あちらで同じトークンを
+ * `SampleEditorState` では作れないので専用のドキュメントを組む。あちらで同じトークンを
  * 2 箇所から指しているのは artboard の props（`gap` / `paddingX`）で、artboard は
  * 破線の相手にならないため件数が 0 になる。
  */
@@ -80,7 +80,7 @@ export const Multiple: Story = {
 export const NonColor: Story = {
   name: "色以外のトークン",
   args: {
-    state: EditorState.selectToken(SAMPLE_EDITOR_STATE, {
+    state: EditorState.selectToken(SampleEditorState, {
       kind: "typography",
       name: "heading",
     }),

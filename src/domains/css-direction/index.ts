@@ -1,6 +1,6 @@
 import { CssDeclaration } from "@/domains/css-declaration";
 import type { PropValue } from "@/domains/node";
-import { BOX_SCHEMA } from "@/domains/primitive-schema";
+import { BoxSchema } from "@/domains/primitive-schema";
 import type { ValueOf } from "@/types/ValueOf";
 
 /**
@@ -8,24 +8,24 @@ import type { ValueOf } from "@/types/ValueOf";
  * Box スキーマの `direction` から導出し二重管理しない。
  */
 export type CssDirection =
-  (typeof BOX_SCHEMA)["props"]["direction"]["values"][number];
+  (typeof BoxSchema)["props"]["direction"]["values"][number];
 
-/** サイズを指定する軸。走査するときは `Object.values(AXES)` で並びにする。 */
-export const AXES = {
-  width: "width",
-  height: "height",
+/** サイズを指定する軸。走査するときは `Object.values(Axes)` で並びにする。 */
+export const Axes = {
+  Width: "width",
+  Height: "height",
 } as const;
 
 /** 大きさを測る向き。 */
-export type Axis = ValueOf<typeof AXES>;
+export type Axis = ValueOf<typeof Axes>;
 
 export const CssDirection = {
   /** `direction` prop の値から向きを決める。スキーマのデフォルトを既定とする。 */
   from(value: PropValue | undefined): CssDirection {
     return (
-      BOX_SCHEMA.props.direction.values.find(
+      BoxSchema.props.direction.values.find(
         (direction) => direction === value,
-      ) ?? BOX_SCHEMA.props.direction.default
+      ) ?? BoxSchema.props.direction.default
     );
   },
 

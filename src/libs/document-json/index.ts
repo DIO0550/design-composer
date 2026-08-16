@@ -87,7 +87,7 @@ function parseJson(
   }
 }
 
-const INDENT_WIDTH = 2;
+const IndentWidth = 2;
 
 /**
  * ドキュメントと JSON テキストの相互変換。
@@ -128,6 +128,6 @@ export const DocumentJson = {
     const value: JsonValue = DesignDocument.toJson(
       DesignDocument.withCurrentFormatVersion(document),
     );
-    return `${JSON.stringify(value, null, INDENT_WIDTH)}\n`;
+    return `${JSON.stringify(value, null, IndentWidth)}\n`;
   },
 } as const;

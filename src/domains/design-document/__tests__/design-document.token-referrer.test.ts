@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 import { TokenSet } from "@/domains/token";
 import { DesignDocument, TokenReferrer } from "../index";
 
-const GRAY_900 = { kind: "colors", name: "gray-900" } as const;
+const Gray900 = { kind: "colors", name: "gray-900" } as const;
 
 test("ノードの prop がトークンを指していると、そのノードと prop が参照元になる", () => {
   const document = DesignDocument.create({
@@ -23,7 +23,7 @@ test("ノードの prop がトークンを指していると、そのノード�
     ],
   });
 
-  const referrers = DesignDocument.collectTokenReferrers(document, GRAY_900);
+  const referrers = DesignDocument.collectTokenReferrers(document, Gray900);
 
   expect(referrers.map(TokenReferrer.toText)).toEqual(["title.color"]);
 });
@@ -42,7 +42,7 @@ test("artboard の props がトークンを指していると artboard も参照
     ],
   });
 
-  const referrers = DesignDocument.collectTokenReferrers(document, GRAY_900);
+  const referrers = DesignDocument.collectTokenReferrers(document, Gray900);
 
   expect(referrers).toEqual([
     { target: "artboard", name: "login", prop: "background" },
@@ -111,7 +111,7 @@ test("入れ子の奥にあるノードからも参照元が集まる", () => {
     ],
   });
 
-  const referrers = DesignDocument.collectTokenReferrers(document, GRAY_900);
+  const referrers = DesignDocument.collectTokenReferrers(document, Gray900);
 
   expect(referrers.map(TokenReferrer.toText)).toEqual(["login-label.color"]);
 });
@@ -142,7 +142,7 @@ test("インスタンスの上書きがトークンを指すと、そのイン�
     ],
   });
 
-  const referrers = DesignDocument.collectTokenReferrers(document, GRAY_900);
+  const referrers = DesignDocument.collectTokenReferrers(document, Gray900);
 
   expect(referrers).toEqual([
     { target: "instance", name: "login-badge", prop: "tone" },
@@ -158,7 +158,7 @@ test("部品定義の props がトークンを指すと、部品名が参照元�
     artboards: [],
   });
 
-  const referrers = DesignDocument.collectTokenReferrers(document, GRAY_900);
+  const referrers = DesignDocument.collectTokenReferrers(document, Gray900);
 
   expect(referrers).toEqual([
     { target: "component", name: "primary-button", prop: "background" },
@@ -183,7 +183,7 @@ test("部品定義の中のノードがトークンを指すと、そのノー�
     artboards: [],
   });
 
-  const referrers = DesignDocument.collectTokenReferrers(document, GRAY_900);
+  const referrers = DesignDocument.collectTokenReferrers(document, Gray900);
 
   expect(referrers).toEqual([
     {
@@ -213,7 +213,7 @@ test("参照元はキャンバス上のものが先、部品定義の中のも�
     ],
   });
 
-  const referrers = DesignDocument.collectTokenReferrers(document, GRAY_900);
+  const referrers = DesignDocument.collectTokenReferrers(document, Gray900);
 
   expect(referrers.map(TokenReferrer.toText)).toEqual([
     "title.color",
@@ -248,7 +248,7 @@ test("キャンバス上の参照元は artboard の並び順で並ぶ", () => {
     ],
   });
 
-  const referrers = DesignDocument.collectTokenReferrers(document, GRAY_900);
+  const referrers = DesignDocument.collectTokenReferrers(document, Gray900);
 
   expect(referrers.map(TokenReferrer.toText)).toEqual([
     "home-title.color",
@@ -300,7 +300,7 @@ test("artboard 自身がトークンを指していても、ノード名とし�
     ],
   });
 
-  const referrers = DesignDocument.collectTokenReferrers(document, GRAY_900);
+  const referrers = DesignDocument.collectTokenReferrers(document, Gray900);
 
   expect(TokenReferrer.nodeNames(referrers)).toEqual(["title"]);
 });
@@ -323,7 +323,7 @@ test("部品定義のルートがトークンを指していても、ノード�
     ],
   });
 
-  const referrers = DesignDocument.collectTokenReferrers(document, GRAY_900);
+  const referrers = DesignDocument.collectTokenReferrers(document, Gray900);
 
   expect(TokenReferrer.nodeNames(referrers)).toEqual(["title"]);
 });

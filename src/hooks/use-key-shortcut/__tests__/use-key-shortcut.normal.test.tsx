@@ -4,7 +4,7 @@ import { expect, test } from "vitest";
 import { type KeyShortcut, useKeyShortcut } from "../index";
 
 /** 修飾キーを伴わない組み合わせ。テストごとに同じものを使う。 */
-const PLAIN_SHORTCUT: KeyShortcut = {
+const PlainShortcut: KeyShortcut = {
   keys: ["Enter"],
   withCommandKey: false,
   withShiftKey: false,
@@ -15,7 +15,7 @@ const PLAIN_SHORTCUT: KeyShortcut = {
  * フォーカスの位置で扱いが変わることを見られるようにする。
  */
 function KeyShortcutHarness({
-  shortcut = PLAIN_SHORTCUT,
+  shortcut = PlainShortcut,
   onPress,
 }: Readonly<{ shortcut?: KeyShortcut; onPress: () => void }>) {
   useKeyShortcut(shortcut, onPress);

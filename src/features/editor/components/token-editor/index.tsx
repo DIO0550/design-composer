@@ -9,10 +9,10 @@ import {
 } from "@/features/editor/domains/token-control";
 import { Option } from "@/utils/Option";
 
-const FIELD_CLASS = "w-full rounded border border-gray-300 px-2 py-1";
+const FieldClass = "w-full rounded border border-gray-300 px-2 py-1";
 
 /** トークンが選ばれていないときに本文へ出す知らせ。 */
-const NO_SELECTION_MESSAGE = "トークンが選択されていません";
+const NoSelectionMessage = "トークンが選択されていません";
 
 /**
  * 帯の右端に出す種別の綴り。
@@ -23,7 +23,7 @@ const NO_SELECTION_MESSAGE = "トークンが選択されていません";
  *
  * 種別を足して綴りを足し忘れると、ここがコンパイルエラーになる。
  */
-const KIND_LABELS = {
+const KindLabels = {
   colors: "Color",
   spacing: "Spacing",
   radius: "Radius",
@@ -55,7 +55,7 @@ function TokenTitle({ token }: Readonly<{ token: Token }>) {
         {token.name}
       </h2>
       <span className="shrink-0 text-gray-400 text-xs">
-        {KIND_LABELS[token.kind]}
+        {KindLabels[token.kind]}
       </span>
     </>
   );
@@ -101,7 +101,7 @@ function DraftField({
           event.currentTarget.blur();
         }
       }}
-      className={FIELD_CLASS}
+      className={FieldClass}
     />
   );
 }
@@ -206,7 +206,7 @@ export function TokenEditor({
         {/* 選んでいなくても帯は残す。消すと選択のたびに本文の位置が帯のぶん動く */}
         <EditorLayout.RightPane.Heading>{null}</EditorLayout.RightPane.Heading>
         <EditorLayout.RightPane.Body>
-          <p className="text-gray-500 text-sm">{NO_SELECTION_MESSAGE}</p>
+          <p className="text-gray-500 text-sm">{NoSelectionMessage}</p>
         </EditorLayout.RightPane.Body>
       </>
     );

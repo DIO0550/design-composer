@@ -1,4 +1,4 @@
-import { ELEMENT_NAME_ATTRIBUTE } from "@/domains/compiled-element";
+import { ElementNameAttribute } from "@/domains/compiled-element";
 import { Css } from "@/utils/Css";
 import { Option } from "@/utils/Option";
 
@@ -17,7 +17,7 @@ export const CanvasDom = {
   elementOf(name: string): Option<Element> {
     return Option.fromNullable(
       globalThis.document.querySelector(
-        `[${ELEMENT_NAME_ATTRIBUTE}="${Css.escapeQuotedString(name)}"]`,
+        `[${ElementNameAttribute}="${Css.escapeQuotedString(name)}"]`,
       ),
     );
   },

@@ -22,7 +22,7 @@ export type DropTarget = Readonly<{
 }>;
 
 /** 挿入位置に引く線の太さ（px）。 */
-const MARKER_THICKNESS_PX = 2;
+const MarkerThicknessPx = 2;
 
 /**
  * 挿入位置（線を引く座標）を、子が並ぶ向きの軸上で求める。
@@ -57,19 +57,19 @@ function insertionCoordinate(zone: DropZone, index: number): number {
  * @returns 線として描く矩形
  */
 function markerBounds(zone: DropZone, coordinate: number): CanvasBounds {
-  const half = MARKER_THICKNESS_PX / 2;
+  const half = MarkerThicknessPx / 2;
   return zone.parent.direction === "row"
     ? {
         left: coordinate - half,
         top: zone.bounds.top,
-        width: MARKER_THICKNESS_PX,
+        width: MarkerThicknessPx,
         height: zone.bounds.height,
       }
     : {
         left: zone.bounds.left,
         top: coordinate - half,
         width: zone.bounds.width,
-        height: MARKER_THICKNESS_PX,
+        height: MarkerThicknessPx,
       };
 }
 

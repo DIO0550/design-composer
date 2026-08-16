@@ -21,9 +21,9 @@ export type ElapsedUnit = ValueOf<typeof ElapsedUnits>;
  */
 export type Elapsed = Readonly<{ unit: ElapsedUnit; count: number }>;
 
-const MILLISECONDS_PER_SECOND = 1000;
-const SECONDS_PER_MINUTE = 60;
-const MINUTES_PER_HOUR = 60;
+const MillisecondsPerSecond = 1000;
+const SecondsPerMinute = 60;
+const MinutesPerHour = 60;
 
 export const Elapsed = {
   /**
@@ -40,19 +40,19 @@ export const Elapsed = {
    */
   create(span: InstantSpan): Elapsed {
     const milliseconds = Math.max(0, InstantSpan.toMilliseconds(span));
-    const seconds = Math.floor(milliseconds / MILLISECONDS_PER_SECOND);
-    if (seconds < SECONDS_PER_MINUTE) {
+    const seconds = Math.floor(milliseconds / MillisecondsPerSecond);
+    if (seconds < SecondsPerMinute) {
       return { unit: ElapsedUnits.Seconds, count: seconds };
     }
 
-    const minutes = Math.floor(seconds / SECONDS_PER_MINUTE);
-    if (minutes < MINUTES_PER_HOUR) {
+    const minutes = Math.floor(seconds / SecondsPerMinute);
+    if (minutes < MinutesPerHour) {
       return { unit: ElapsedUnits.Minutes, count: minutes };
     }
 
     return {
       unit: ElapsedUnits.Hours,
-      count: Math.floor(minutes / MINUTES_PER_HOUR),
+      count: Math.floor(minutes / MinutesPerHour),
     };
   },
 } as const;

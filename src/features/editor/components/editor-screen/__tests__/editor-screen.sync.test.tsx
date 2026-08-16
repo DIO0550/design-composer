@@ -4,7 +4,7 @@ import { expect, test } from "vitest";
 import { rowNames } from "@/features/editor/__tests__/row-names";
 import {
   artboardContent,
-  SAMPLE_DOCUMENT,
+  SampleDocument,
 } from "@/features/editor/__tests__/sample-document";
 import { DialogChoice } from "@/libs/document-dialog/fake";
 import { DocumentJson } from "@/libs/document-json";
@@ -13,8 +13,8 @@ import {
   changeExternally,
   clickCreate,
   clickOpen,
-  OTHER_PATH,
-  PATH,
+  OtherPath,
+  Path,
   renderEditorScreen,
 } from "./setup";
 
@@ -27,10 +27,10 @@ function artboardList(): HTMLElement {
 }
 
 test("編集した内容が自動保存され、開き直すとその状態が読み戻る", async () => {
-  const opened = DocumentJson.serialize(SAMPLE_DOCUMENT);
+  const opened = DocumentJson.serialize(SampleDocument);
   const files = renderEditorScreen(
-    { [PATH]: opened },
-    { open: DialogChoice.chosen(PATH), save: DialogChoice.chosen(OTHER_PATH) },
+    { [Path]: opened },
+    { open: DialogChoice.chosen(Path), save: DialogChoice.chosen(OtherPath) },
   );
   await clickOpen();
 
@@ -39,7 +39,7 @@ test("編集した内容が自動保存され、開き直すとその状態が�
   );
   await waitFor(
     () => {
-      expect(files.contentOf(PATH)).not.toStrictEqual(Option.some(opened));
+      expect(files.contentOf(Path)).not.toStrictEqual(Option.some(opened));
     },
     { timeout: 3000 },
   );
@@ -53,12 +53,12 @@ test("編集した内容が自動保存され、開き直すとその状態が�
 
 test("開いているファイルが外部から書き換わると、その内容が画面に反映される", async () => {
   const files = renderEditorScreen(
-    { [PATH]: artboardContent("home") },
-    { open: DialogChoice.chosen(PATH), save: DialogChoice.CANCELED },
+    { [Path]: artboardContent("home") },
+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
   );
   await clickOpen();
 
-  await changeExternally(files, PATH, artboardContent("profile"));
+  await changeExternally(files, Path, artboardContent("profile"));
 
   expect(
     within(artboardList()).getByRole("button", { name: "profile" }),
@@ -67,37 +67,37 @@ test("開いているファイルが外部から書き換わると、その内�
 
 test("別のファイルを開くと、前に開いていたファイルの監視が止まる", async () => {
   const files = renderEditorScreen(
-    { [PATH]: artboardContent("home") },
-    { open: DialogChoice.chosen(PATH), save: DialogChoice.chosen(OTHER_PATH) },
+    { [Path]: artboardContent("home") },
+    { open: DialogChoice.chosen(Path), save: DialogChoice.chosen(OtherPath) },
   );
   await clickOpen();
 
   await clickCreate();
 
-  expect(files.isWatching(PATH)).toBe(false);
+  expect(files.isWatching(Path)).toBe(false);
 });
 
 test("別のファイルを開くと、そのファイルの監視が始まる", async () => {
   const files = renderEditorScreen(
-    { [PATH]: artboardContent("home") },
-    { open: DialogChoice.chosen(PATH), save: DialogChoice.chosen(OTHER_PATH) },
+    { [Path]: artboardContent("home") },
+    { open: DialogChoice.chosen(Path), save: DialogChoice.chosen(OtherPath) },
   );
   await clickOpen();
 
   await clickCreate();
 
-  expect(files.isWatching(OTHER_PATH)).toBe(true);
+  expect(files.isWatching(OtherPath)).toBe(true);
 });
 
 test("別のファイルを開いた後は、前のファイルが書き換わっても画面は変わらない", async () => {
   const files = renderEditorScreen(
-    { [PATH]: artboardContent("home") },
-    { open: DialogChoice.chosen(PATH), save: DialogChoice.chosen(OTHER_PATH) },
+    { [Path]: artboardContent("home") },
+    { open: DialogChoice.chosen(Path), save: DialogChoice.chosen(OtherPath) },
   );
   await clickOpen();
   await clickCreate();
 
-  await changeExternally(files, PATH, artboardContent("profile"));
+  await changeExternally(files, Path, artboardContent("profile"));
 
   expect(screen.queryByRole("button", { name: "profile" })).toBeNull();
 });

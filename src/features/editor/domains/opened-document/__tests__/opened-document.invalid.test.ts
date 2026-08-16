@@ -4,7 +4,7 @@ import { DesignDocument } from "@/domains/design-document";
 import { DocumentJson } from "@/libs/document-json";
 import { OpenedDocument } from "../index";
 
-const PATH = "/work/login.dcmp";
+const Path = "/work/login.dcmp";
 
 /** 定義されていない部品を参照するドキュメント（スキーマ検証で dangling ref になる）。 */
 function danglingRefContent(): string {
@@ -23,7 +23,7 @@ function danglingRefContent(): string {
 }
 
 test("テキストが JSON として壊れているファイルは開けず、エラーの位置が分かる", () => {
-  const opened = OpenedDocument.fromContent(PATH, '{ "formatVersion": ');
+  const opened = OpenedDocument.fromContent(Path, '{ "formatVersion": ');
 
   expect(opened.ok ? [] : opened.error).toStrictEqual([
     {
@@ -35,7 +35,7 @@ test("テキストが JSON として壊れているファイルは開けず、�
 });
 
 test("存在しない部品を参照しているファイルは開けず、そのノードが指される", () => {
-  const opened = OpenedDocument.fromContent(PATH, danglingRefContent());
+  const opened = OpenedDocument.fromContent(Path, danglingRefContent());
 
   expect(opened.ok ? [] : opened.error).toStrictEqual([
     {

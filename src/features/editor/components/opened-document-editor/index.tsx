@@ -16,8 +16,8 @@ import {
 } from "@/features/editor/components/editor-top-bar";
 import { LeftPane } from "@/features/editor/components/left-pane";
 import {
-  LEFT_PANE_VIEWS,
   type LeftPaneView,
+  LeftPaneViews,
 } from "@/features/editor/components/left-pane-rail";
 import { NodeInsertToolbar } from "@/features/editor/components/node-insert-toolbar";
 import { PropertyPanel } from "@/features/editor/components/property-panel";
@@ -96,7 +96,7 @@ function RightPaneContent({
   }
 
   switch (view) {
-    case LEFT_PANE_VIEWS.tokens:
+    case LeftPaneViews.Tokens:
       return (
         <TokenEditor
           state={state}
@@ -105,8 +105,8 @@ function RightPaneContent({
           onRemoveToken={token.remove}
         />
       );
-    case LEFT_PANE_VIEWS.layers:
-    case LEFT_PANE_VIEWS.assets:
+    case LeftPaneViews.Layers:
+    case LeftPaneViews.Assets:
       return inspector;
   }
 }
@@ -231,7 +231,7 @@ function EditorPanes({
    * 両ペインを組むここに置く。
    */
   const [leftPaneView, setLeftPaneView] = useState<LeftPaneView>(
-    LEFT_PANE_VIEWS.layers,
+    LeftPaneViews.Layers,
   );
   useEditShortcuts();
 
@@ -268,7 +268,7 @@ function EditorPanes({
            */
           onReveal={(nodeName) => {
             node.reveal(nodeName);
-            setLeftPaneView(LEFT_PANE_VIEWS.layers);
+            setLeftPaneView(LeftPaneViews.Layers);
           }}
           fileRevert={fileRevert}
         />
@@ -285,7 +285,7 @@ function EditorPanes({
            * 「元の部品を示す」= パレットのその行を見せることになる。行の強調は
            * インスタンスを選んだ時点で出ているため、ここは行き先を変えるだけ。
            */
-          onGoToSource={() => setLeftPaneView(LEFT_PANE_VIEWS.assets)}
+          onGoToSource={() => setLeftPaneView(LeftPaneViews.Assets)}
         />
       </EditorLayout.RightPane>
     </EditorLayout>

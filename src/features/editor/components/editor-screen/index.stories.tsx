@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { SAMPLE_EDITOR_STATE } from "@/features/editor/__stories__/sample-editor-state";
+import { SampleEditorState } from "@/features/editor/__stories__/sample-editor-state";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { ClockFake } from "@/libs/clock/fake";
 import { DialogChoice, DocumentDialogFake } from "@/libs/document-dialog/fake";
@@ -7,20 +7,18 @@ import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
 import { EditorScreen } from "./index";
 
-const SAMPLE_PATH = "/work/sample.dcmp";
+const SamplePath = "/work/sample.dcmp";
 
 /**
  * ファイルへの口はインメモリの代役に差し替える。Storybook には Tauri が無く、
  * 実物の口では「開く」を押した先が動かないため。
  */
 const files = DocumentIpcFake.create({
-  [SAMPLE_PATH]: DocumentJson.serialize(
-    EditorState.document(SAMPLE_EDITOR_STATE),
-  ),
+  [SamplePath]: DocumentJson.serialize(EditorState.document(SampleEditorState)),
 });
 
 const dialog = DocumentDialogFake.create({
-  open: DialogChoice.chosen(SAMPLE_PATH),
+  open: DialogChoice.chosen(SamplePath),
   save: DialogChoice.chosen("/work/untitled.dcmp"),
 });
 

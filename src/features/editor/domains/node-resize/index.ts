@@ -1,6 +1,6 @@
 import type { Artboard } from "@/domains/artboard";
 import { AxisLength } from "@/domains/axis-length";
-import { AXES } from "@/domains/css-direction";
+import { Axes } from "@/domains/css-direction";
 import { DesignDocument } from "@/domains/design-document";
 import { Node, type Props } from "@/domains/node";
 import { Size } from "@/domains/size";
@@ -16,7 +16,7 @@ import { Option } from "@/utils/Option";
  * ハンドルの太さ（画面上の px）。
  * 描く帯の幅と掴める帯の幅を同じ値にして、見えているところがそのまま掴めるようにする。
  */
-export const RESIZE_HANDLE_THICKNESS_PX = 8;
+export const ResizeHandleThicknessPx = 8;
 
 /**
  * キャンバス上でリサイズハンドルを掴んでから離すまでの状態
@@ -56,7 +56,7 @@ function artboardHandles(artboard: Artboard): readonly AxisLength[] {
  * @returns `fixed` で長さも設定されている軸のハンドルだけの並び
  */
 function propsHandles(props: Props): readonly AxisLength[] {
-  return Object.values(AXES).flatMap((axis) => {
+  return Object.values(Axes).flatMap((axis) => {
     const length = Size.fixedLength(
       Size.create(props[Size.modeProp(axis)], props[axis]),
     );
@@ -107,7 +107,7 @@ export const NodeResize = {
   },
 
   /**
-   * ポインタが乗っているハンドル。終端から内側へ `RESIZE_HANDLE_THICKNESS_PX` までを
+   * ポインタが乗っているハンドル。終端から内側へ `ResizeHandleThicknessPx` までを
    * 掴める帯とする（描いている帯と同じ範囲）。
    *
    * 角では 2 本の帯が重なるので、先にある方（`handles` の並び順）を掴む。
@@ -126,7 +126,7 @@ export const NodeResize = {
         (handle) =>
           CanvasBounds.edge(bounds, handle.axis) -
             CanvasOffset.along(pointer, handle.axis) <=
-          RESIZE_HANDLE_THICKNESS_PX,
+          ResizeHandleThicknessPx,
       ),
     );
   },

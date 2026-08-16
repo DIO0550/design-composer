@@ -1,7 +1,7 @@
 import { type KeyShortcut, useKeyShortcut } from "@/hooks/use-key-shortcut";
 
 /** コピーに割り当てる組み合わせ（Windows は Ctrl+C / macOS は Cmd+C）。 */
-const COPY_SHORTCUT: KeyShortcut = {
+const CopyShortcut: KeyShortcut = {
   keys: ["c"],
   withCommandKey: true,
   withShiftKey: false,
@@ -17,5 +17,5 @@ const COPY_SHORTCUT: KeyShortcut = {
  * @param onCopy 組み合わせが押されたときに呼ぶ手続き
  */
 export function useCopyShortcut(onCopy: () => void): void {
-  useKeyShortcut(COPY_SHORTCUT, onCopy);
+  useKeyShortcut(CopyShortcut, onCopy);
 }

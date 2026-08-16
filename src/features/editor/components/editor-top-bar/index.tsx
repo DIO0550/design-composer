@@ -179,7 +179,7 @@ function TopBarBadge({
  * 選ばない」に触れるが、ここが持つのは props 一式を受ける関数ではなく**字面と色の 2 つ**で、
  * `switch` で書くと同じマークアップが 3 回並ぶだけになるため対応表にしている。
  */
-const SAVE_BADGE_FACES = {
+const SaveBadgeFaces = {
   saved: { label: "保存済み", className: "bg-green-50 text-green-700" },
   saving: { label: "保存中", className: "bg-gray-100 text-gray-600" },
   failed: { label: "保存に失敗", className: "bg-red-50 text-red-700" },
@@ -203,7 +203,7 @@ const SAVE_BADGE_FACES = {
 function DocumentSaveBadge({
   state,
 }: Readonly<{ state: DocumentSaveState }>): ReactElement {
-  const face = SAVE_BADGE_FACES[state.kind];
+  const face = SaveBadgeFaces[state.kind];
   return <TopBarBadge className={face.className}>{face.label}</TopBarBadge>;
 }
 
@@ -232,8 +232,7 @@ function FileInvalidBadge({
 }
 
 /** 倍率の両隣（`−` / `+`）のボタンの形。中央の倍率はこれより横に広いので別に持つ。 */
-const ZOOM_STEP_BUTTON =
-  "rounded px-1.5 py-0.5 text-gray-600 hover:bg-gray-100";
+const ZoomStepButton = "rounded px-1.5 py-0.5 text-gray-600 hover:bg-gray-100";
 
 /**
  * 倍率の操作（UI 案の `− 55% +`）。右端へ寄るのはこの並び自身の性質なので `ml-auto` を持つ
@@ -267,7 +266,7 @@ function CanvasZoom({
         type="button"
         aria-label="縮小"
         onClick={onZoomOut}
-        className={ZOOM_STEP_BUTTON}
+        className={ZoomStepButton}
       >
         −
       </button>
@@ -283,7 +282,7 @@ function CanvasZoom({
         type="button"
         aria-label="拡大"
         onClick={onZoomIn}
-        className={ZOOM_STEP_BUTTON}
+        className={ZoomStepButton}
       >
         +
       </button>
@@ -297,7 +296,7 @@ function CanvasZoom({
  * `satisfies Record<ElapsedUnit, string>` が網羅を強制する（単位を 1 つ足すと
  * ここがコンパイルエラーになる）。
  */
-const ELAPSED_UNIT_SUFFIXES = {
+const ElapsedUnitSuffixes = {
   seconds: "s",
   minutes: "m",
   hours: "h",
@@ -319,7 +318,7 @@ const ELAPSED_UNIT_SUFFIXES = {
 function LastValidRender({
   elapsed,
 }: Readonly<{ elapsed: Elapsed }>): ReactElement {
-  const suffix = ELAPSED_UNIT_SUFFIXES[elapsed.unit];
+  const suffix = ElapsedUnitSuffixes[elapsed.unit];
   return (
     <p className="text-[#b58080] text-[11px]">
       {`showing last valid render · ${elapsed.count}${suffix} ago`}

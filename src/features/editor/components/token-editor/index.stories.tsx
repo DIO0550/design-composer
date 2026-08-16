@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
-import { SAMPLE_EDITOR_STATE } from "@/features/editor/__stories__/sample-editor-state";
+import { SampleEditorState } from "@/features/editor/__stories__/sample-editor-state";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { TokenEditor } from "./index";
 
@@ -32,13 +32,13 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   name: "選択されていない",
-  args: { state: SAMPLE_EDITOR_STATE },
+  args: { state: SampleEditorState },
 };
 
 export const ColorSelected: Story = {
   name: "色トークンを選択中",
   args: {
-    state: EditorState.selectToken(SAMPLE_EDITOR_STATE, {
+    state: EditorState.selectToken(SampleEditorState, {
       kind: "colors",
       name: "primary",
     }),
@@ -48,7 +48,7 @@ export const ColorSelected: Story = {
 export const SpacingSelected: Story = {
   name: "間隔トークンを選択中",
   args: {
-    state: EditorState.selectToken(SAMPLE_EDITOR_STATE, {
+    state: EditorState.selectToken(SampleEditorState, {
       kind: "spacing",
       name: "md",
     }),
@@ -58,7 +58,7 @@ export const SpacingSelected: Story = {
 export const ShadowSelected: Story = {
   name: "影トークンを選択中",
   args: {
-    state: EditorState.selectToken(SAMPLE_EDITOR_STATE, {
+    state: EditorState.selectToken(SampleEditorState, {
       kind: "shadows",
       name: "md",
     }),
@@ -68,7 +68,7 @@ export const ShadowSelected: Story = {
 export const TypographySelected: Story = {
   name: "書体トークンを選択中",
   args: {
-    state: EditorState.selectToken(SAMPLE_EDITOR_STATE, {
+    state: EditorState.selectToken(SampleEditorState, {
       kind: "typography",
       name: "body",
     }),
@@ -78,7 +78,7 @@ export const TypographySelected: Story = {
 export const RadiusSelected: Story = {
   name: "角丸トークンを選択中",
   args: {
-    state: EditorState.selectToken(SAMPLE_EDITOR_STATE, {
+    state: EditorState.selectToken(SampleEditorState, {
       kind: "radius",
       name: "md",
     }),

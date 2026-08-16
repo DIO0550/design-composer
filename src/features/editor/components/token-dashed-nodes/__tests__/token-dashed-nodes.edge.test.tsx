@@ -4,7 +4,7 @@ import { DesignDocument } from "@/domains/design-document";
 import { TokenSet } from "@/domains/token";
 import { renderDashedNodes, renderWithoutSelection } from "./render";
 
-const GRAY_900 = { kind: "colors", name: "gray-900" } as const;
+const Gray900 = { kind: "colors", name: "gray-900" } as const;
 
 /**
  * `gray-900` を部品定義の中からだけ指し、キャンバス上には参照が無いドキュメント。
@@ -30,7 +30,7 @@ function setupComponentOnlyDocument(): DesignDocument {
 }
 
 test("キャンバスに破線が1本も無いときは帯を出さない", () => {
-  renderDashedNodes(setupComponentOnlyDocument(), GRAY_900);
+  renderDashedNodes(setupComponentOnlyDocument(), Gray900);
 
   expect(screen.queryByRole("region", { name: "キャンバスの破線" })).toBeNull();
 });

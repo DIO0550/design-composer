@@ -1,13 +1,13 @@
 import { act, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
-import { SAMPLE_DOCUMENT } from "@/features/editor/__tests__/sample-document";
+import { SampleDocument } from "@/features/editor/__tests__/sample-document";
 import { DocumentJson } from "@/libs/document-json";
 import { Option } from "@/utils/Option";
 import {
   fileErrorList,
   invalidateFileExternally,
-  PATH,
+  Path,
   propertyPane,
   renderOpenedDocument,
   selectInTree,
@@ -38,8 +38,8 @@ test("書き戻すと、表示中の内容がファイルへ書かれてエラ�
   await userEvent.click(revertButton());
   await act(async () => {});
 
-  expect(Option.unwrap(fake.contentOf(PATH))).toBe(
-    DocumentJson.serialize(SAMPLE_DOCUMENT),
+  expect(Option.unwrap(fake.contentOf(Path))).toBe(
+    DocumentJson.serialize(SampleDocument),
   );
   expect(screen.queryByRole("alert", { name: "エラー一覧" })).toBeNull();
 });
@@ -47,7 +47,7 @@ test("書き戻すと、表示中の内容がファイルへ書かれてエラ�
 test("書き込みが終わるまでは、書き戻しを押し直せない", async () => {
   const fake = await renderOpenedDocument();
   await invalidateFileExternally(fake);
-  const releaseWrite = fake.holdWrites(PATH);
+  const releaseWrite = fake.holdWrites(Path);
 
   await userEvent.click(revertButton());
 
@@ -60,7 +60,7 @@ test("書き込みが終わるまでは、書き戻しを押し直せない", as
 test("書き戻しに失敗すると、エラー一覧は残ったまま失敗が伝わる", async () => {
   const fake = await renderOpenedDocument();
   await invalidateFileExternally(fake);
-  fake.denyWrites(PATH);
+  fake.denyWrites(Path);
 
   await userEvent.click(revertButton());
   await act(async () => {});

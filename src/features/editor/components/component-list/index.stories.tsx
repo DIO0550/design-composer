@@ -27,8 +27,8 @@ type Story = StoryObj<typeof meta>;
  * 雛形の初期部品セットは参照を 1 つも持たないため、そのまま使うと全行が `×0` になり
  * 使用数の出方が分からない。
  */
-const USED_COMPONENTS_DOCUMENT = DesignDocument.create({
-  components: DocumentTemplate.DEFAULT.components,
+const UsedComponentsDocument = DesignDocument.create({
+  components: DocumentTemplate.Default.components,
   artboards: [
     Artboard.create({
       name: "home",
@@ -46,7 +46,7 @@ const USED_COMPONENTS_DOCUMENT = DesignDocument.create({
 export const Default: Story = {
   name: "使用数のある部品",
   args: {
-    assets: DesignDocument.componentAssets(USED_COMPONENTS_DOCUMENT),
+    assets: DesignDocument.componentAssets(UsedComponentsDocument),
     isInsertEnabled: true,
     onInsert: () => {},
   },
@@ -55,7 +55,7 @@ export const Default: Story = {
 export const InsertDisabled: Story = {
   name: "挿せる位置が無い",
   args: {
-    assets: DesignDocument.componentAssets(USED_COMPONENTS_DOCUMENT),
+    assets: DesignDocument.componentAssets(UsedComponentsDocument),
     isInsertEnabled: false,
     onInsert: () => {},
   },
@@ -70,7 +70,7 @@ export const Empty: Story = {
 export const SourceOfSelection: Story = {
   name: "選択中のインスタンスの元になっている部品がある",
   args: {
-    assets: DesignDocument.componentAssets(USED_COMPONENTS_DOCUMENT),
+    assets: DesignDocument.componentAssets(UsedComponentsDocument),
     sourceName: Option.some("primary-button"),
     isInsertEnabled: true,
     onInsert: () => {},

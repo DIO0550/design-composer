@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { LEFT_PANE_VIEWS, LeftPaneRail } from "./index";
+import { LeftPaneRail, LeftPaneViews } from "./index";
 
 const meta = {
   title: "features/editor/LeftPaneRail",
@@ -21,15 +21,15 @@ type Story = StoryObj<typeof meta>;
 
 export const Layers: Story = {
   name: "Layers を見ている",
-  args: { current: LEFT_PANE_VIEWS.layers },
+  args: { current: LeftPaneViews.Layers },
 };
 
 export const Assets: Story = {
   name: "Assets を見ている",
-  args: { current: LEFT_PANE_VIEWS.assets },
+  args: { current: LeftPaneViews.Assets },
 };
 
 export const Tokens: Story = {
   name: "Tokens を見ている",
-  args: { current: LEFT_PANE_VIEWS.tokens },
+  args: { current: LeftPaneViews.Tokens },
 };

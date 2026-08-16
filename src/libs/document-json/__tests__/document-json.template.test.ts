@@ -4,7 +4,7 @@ import { Result } from "@/utils/Result";
 import { DocumentJson } from "../index";
 
 test("新規ドキュメントは書き出して読み戻しても同じ内容になる", () => {
-  const document = DesignDocument.createFromTemplate(DocumentTemplate.DEFAULT);
+  const document = DesignDocument.createFromTemplate(DocumentTemplate.Default);
 
   const restored = DocumentJson.parse(DocumentJson.serialize(document));
 
@@ -12,7 +12,7 @@ test("新規ドキュメントは書き出して読み戻しても同じ内容�
 });
 
 test("読み戻した新規ドキュメントもバリデーションを通る", () => {
-  const document = DesignDocument.createFromTemplate(DocumentTemplate.DEFAULT);
+  const document = DesignDocument.createFromTemplate(DocumentTemplate.Default);
 
   const restored = DocumentJson.parse(DocumentJson.serialize(document));
 

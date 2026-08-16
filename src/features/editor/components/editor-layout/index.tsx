@@ -21,7 +21,7 @@ type FreezablePaneProps = PaneProps & Readonly<{ isFrozen: boolean }>;
  * この class を落としても凍結の判定は動いたままで、テストは 1 件も落ちない。
  * 気づく手段は Storybook の視覚差分だけ。
  */
-const FROZEN_PANE_CLASS = "opacity-45 saturate-[0.4]";
+const FrozenPaneClass = "opacity-45 saturate-[0.4]";
 
 /**
  * 3 ペインの器（docs/06-ui.md「画面構成」）。
@@ -59,7 +59,7 @@ function LeftPane({ isFrozen, children }: FreezablePaneProps) {
       aria-label="左ペイン"
       inert={isFrozen}
       className={`flex overflow-hidden border-r border-gray-300 bg-white ${
-        isFrozen ? FROZEN_PANE_CLASS : ""
+        isFrozen ? FrozenPaneClass : ""
       }`}
     >
       {children}
@@ -100,7 +100,7 @@ function RightPane({ isFrozen, children }: FreezablePaneProps) {
     <aside
       aria-label="プロパティパネル"
       className={`flex min-h-0 flex-col overflow-hidden border-l border-gray-300 bg-white ${
-        isFrozen ? FROZEN_PANE_CLASS : ""
+        isFrozen ? FrozenPaneClass : ""
       }`}
     >
       {children}

@@ -8,7 +8,7 @@ import { Option } from "@/utils/Option";
  * 画面から採る。`artboard` と `unselected` の 2 行は UI 案が描いていない状態なので、
  * インスタンスの行と同じ言い回しに揃えてここで決めた（#131）。
  */
-const LABELS = {
+const Labels = {
   create: "Create component",
   fromSelection: "from selection ·",
   instance: "an instance can't be componentized",
@@ -26,10 +26,10 @@ const LABELS = {
  * 書き分けるには失敗の種別を UI まで運ぶことになり、押せるかを部品化そのものに
  * 答えさせている形（`isCreatable`）を崩す。
  */
-const UNUSABLE_NAME_REASON = "使える部品名を入れると作成できます";
+const UnusableNameReason = "使える部品名を入れると作成できます";
 
 /** 部品にできないときの 1 行（UI 案の淡い灰色）。 */
-const UNAVAILABLE_CAPTION_CLASS = "text-center text-[#c4c4c4] text-xs";
+const UnavailableCaptionClass = "text-center text-[#c4c4c4] text-xs";
 
 /**
  * 部品にできない理由の 1 行。
@@ -45,11 +45,11 @@ function unavailableReason(
 ): string {
   switch (componentization.kind) {
     case "instance":
-      return LABELS.instance;
+      return Labels.instance;
     case "artboard":
-      return LABELS.artboard;
+      return Labels.artboard;
     case "unselected":
-      return LABELS.unselected;
+      return Labels.unselected;
   }
 }
 
@@ -64,7 +64,7 @@ function Caption({
   if (componentization.kind === "ready") {
     return (
       <p className="text-center text-[#b3b3b3] text-xs">
-        {LABELS.fromSelection}{" "}
+        {Labels.fromSelection}{" "}
         <span className="font-mono text-gray-500">
           {componentization.sourceName}
         </span>
@@ -73,7 +73,7 @@ function Caption({
   }
 
   return (
-    <p className={UNAVAILABLE_CAPTION_CLASS}>
+    <p className={UnavailableCaptionClass}>
       {unavailableReason(componentization)}
     </p>
   );
@@ -102,7 +102,7 @@ function CreateButton({
       <span aria-hidden="true" className={isEnabled ? "text-[#c9a6ff]" : ""}>
         ◆
       </span>
-      {LABELS.create}
+      {Labels.create}
     </button>
   );
 }
@@ -147,8 +147,8 @@ function ReadyBody({
     <>
       <input
         type="text"
-        aria-label={LABELS.nameField}
-        placeholder={LABELS.namePlaceholder}
+        aria-label={Labels.nameField}
+        placeholder={Labels.namePlaceholder}
         value={componentName}
         onChange={(event) => setDraft(Option.some(event.target.value))}
         onKeyDown={(event) => {
@@ -164,7 +164,7 @@ function ReadyBody({
       />
       <CreateButton
         isEnabled={isCreatable}
-        reason={isCreatable ? undefined : UNUSABLE_NAME_REASON}
+        reason={isCreatable ? undefined : UnusableNameReason}
         onClick={() => onCreate(componentName)}
       />
     </>

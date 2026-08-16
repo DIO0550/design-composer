@@ -4,7 +4,7 @@ import type { ComponentAsset } from "@/domains/component";
 import { Option } from "@/utils/Option";
 import { AssetsPanel } from "../index";
 
-const ASSETS: readonly ComponentAsset[] = [
+const Assets: readonly ComponentAsset[] = [
   { name: "primary-button", publicPropNames: ["label"], refCount: 4 },
   { name: "card", publicPropNames: ["title", "body"], refCount: 2 },
 ];
@@ -13,7 +13,7 @@ test("プリミティブと部品の両方が並ぶ", () => {
   render(
     <AssetsPanel
       sourceName={Option.none}
-      assets={ASSETS}
+      assets={Assets}
       isInsertEnabled
       onInsert={() => {}}
     />,
@@ -27,7 +27,7 @@ test("組み込みのプリミティブが行として出る", () => {
   render(
     <AssetsPanel
       sourceName={Option.none}
-      assets={ASSETS}
+      assets={Assets}
       isInsertEnabled
       onInsert={() => {}}
     />,
@@ -41,7 +41,7 @@ test("渡された部品が行として出る", () => {
   render(
     <AssetsPanel
       sourceName={Option.none}
-      assets={ASSETS}
+      assets={Assets}
       isInsertEnabled
       onInsert={() => {}}
     />,
@@ -67,7 +67,7 @@ test("部品の行から挿せる", () => {
   render(
     <AssetsPanel
       sourceName={Option.none}
-      assets={ASSETS}
+      assets={Assets}
       isInsertEnabled
       onInsert={() => {}}
     />,

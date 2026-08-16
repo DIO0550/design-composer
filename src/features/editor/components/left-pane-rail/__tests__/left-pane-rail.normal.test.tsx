@@ -1,10 +1,10 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
-import { LEFT_PANE_VIEWS, LeftPaneRail } from "../index";
+import { LeftPaneRail, LeftPaneViews } from "../index";
 
 test("レールに3つの行き先がUI案の順で並ぶ", () => {
-  render(<LeftPaneRail current={LEFT_PANE_VIEWS.layers} onSelect={() => {}} />);
+  render(<LeftPaneRail current={LeftPaneViews.Layers} onSelect={() => {}} />);
 
   expect(
     screen.getAllByRole("button").map((button) => button.textContent),
@@ -12,7 +12,7 @@ test("レールに3つの行き先がUI案の順で並ぶ", () => {
 });
 
 test("今見ている行き先が選択中として示される", () => {
-  render(<LeftPaneRail current={LEFT_PANE_VIEWS.assets} onSelect={() => {}} />);
+  render(<LeftPaneRail current={LeftPaneViews.Assets} onSelect={() => {}} />);
 
   expect(
     screen.getByRole("button", { name: "Assets" }).getAttribute("aria-current"),
@@ -20,7 +20,7 @@ test("今見ている行き先が選択中として示される", () => {
 });
 
 test("見ていない行き先は選択中にならない", () => {
-  render(<LeftPaneRail current={LEFT_PANE_VIEWS.assets} onSelect={() => {}} />);
+  render(<LeftPaneRail current={LeftPaneViews.Assets} onSelect={() => {}} />);
 
   expect(
     screen.getByRole("button", { name: "Layers" }).getAttribute("aria-current"),
@@ -32,7 +32,7 @@ test("別の行き先を押すとその行き先が伝わる", async () => {
   const selected: string[] = [];
   render(
     <LeftPaneRail
-      current={LEFT_PANE_VIEWS.layers}
+      current={LeftPaneViews.Layers}
       onSelect={(view) => selected.push(view)}
     />,
   );
@@ -47,7 +47,7 @@ test("今見ている行き先を押してもその行き先が伝わる", async
   const selected: string[] = [];
   render(
     <LeftPaneRail
-      current={LEFT_PANE_VIEWS.layers}
+      current={LeftPaneViews.Layers}
       onSelect={(view) => selected.push(view)}
     />,
   );

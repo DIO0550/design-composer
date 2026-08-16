@@ -71,7 +71,7 @@ function drawnAt(name: string, bounds: CanvasBounds): Element {
 }
 
 /** 画面の (100, 50) に 200x100 で描かれている、という前提。右辺 x=300 / 下辺 y=150。 */
-const PANEL_BOUNDS: CanvasBounds = {
+const PanelBounds: CanvasBounds = {
   left: 100,
   top: 50,
   width: 200,
@@ -112,7 +112,7 @@ test("何も選んでいなければハンドルは描かれない", () => {
 test("右辺を掴んで右へ運ぶと、動かした分だけ幅が伸びた大きさが通知される", () => {
   const onResize = vi.fn();
   renderCanvas({ state: setupState("panel"), onResize });
-  const panel = drawnAt("panel", PANEL_BOUNDS);
+  const panel = drawnAt("panel", PanelBounds);
 
   pressPointer(panel, { x: 298, y: 100 });
   movePointer(panel, { x: 338, y: 100 });
@@ -124,7 +124,7 @@ test("右辺を掴んで右へ運ぶと、動かした分だけ幅が伸びた�
 test("下辺を掴んで下へ運ぶと、動かした分だけ高さが伸びた大きさが通知される", () => {
   const onResize = vi.fn();
   renderCanvas({ state: setupState("panel"), onResize });
-  const panel = drawnAt("panel", PANEL_BOUNDS);
+  const panel = drawnAt("panel", PanelBounds);
 
   pressPointer(panel, { x: 200, y: 148 });
   movePointer(panel, { x: 200, y: 178 });
@@ -136,7 +136,7 @@ test("下辺を掴んで下へ運ぶと、動かした分だけ高さが伸び�
 test("ハンドルから離れたところを掴んで運んでも大きさは変わらない", () => {
   const onResize = vi.fn();
   renderCanvas({ state: setupState("panel"), onResize });
-  const panel = drawnAt("panel", PANEL_BOUNDS);
+  const panel = drawnAt("panel", PanelBounds);
 
   pressPointer(panel, { x: 200, y: 100 });
   movePointer(panel, { x: 240, y: 100 });
@@ -148,7 +148,7 @@ test("ハンドルから離れたところを掴んで運んでも大きさは�
 test("選んでいないノードの辺を掴んでも大きさは変わらない", () => {
   const onResize = vi.fn();
   renderCanvas({ state: setupState("title"), onResize });
-  const panel = drawnAt("panel", PANEL_BOUNDS);
+  const panel = drawnAt("panel", PanelBounds);
 
   pressPointer(panel, { x: 298, y: 100 });
   movePointer(panel, { x: 338, y: 100 });
@@ -159,7 +159,7 @@ test("選んでいないノードの辺を掴んでも大きさは変わらな�
 test("ハンドルを掴んでいる間はツリー内の移動が起きない", () => {
   const onMoveNode = vi.fn();
   renderCanvas({ state: setupState("panel"), onMoveNode });
-  const panel = drawnAt("panel", PANEL_BOUNDS);
+  const panel = drawnAt("panel", PanelBounds);
 
   pressPointer(panel, { x: 298, y: 100 });
   movePointer(drawn("title"), { x: 338, y: 100 });
@@ -171,7 +171,7 @@ test("ハンドルを掴んでいる間はツリー内の移動が起きない",
 test("大きさを変えた直後のクリックでは選択が変わらない", () => {
   const onSelect = vi.fn();
   renderCanvas({ state: setupState("panel"), onSelect });
-  const panel = drawnAt("panel", PANEL_BOUNDS);
+  const panel = drawnAt("panel", PanelBounds);
 
   pressPointer(panel, { x: 298, y: 100 });
   movePointer(panel, { x: 338, y: 100 });

@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
-import { SYNTAX_ERROR } from "@/features/editor/__tests__/document-errors";
+import { SampleSyntaxError } from "@/features/editor/__tests__/document-errors";
 import type { DocumentError } from "@/features/editor/domains/document-error";
 import { DocumentErrorList, DocumentErrorOrigins } from "../index";
 
@@ -9,8 +9,8 @@ import { DocumentErrorList, DocumentErrorOrigins } from "../index";
  * 飛べる行と飛べない行を混ぜた一覧。片方だけだと「常に出す」「常に出さない」の
  * どちらの実装でも通ってしまうので、4 種類の場所を 1 つの入力に入れる。
  */
-const MIXED_ERRORS: readonly DocumentError[] = [
-  SYNTAX_ERROR,
+const MixedErrors: readonly DocumentError[] = [
+  SampleSyntaxError,
   {
     kind: "unknown-prop",
     message: 'unknown prop "colour"',
@@ -31,7 +31,7 @@ const MIXED_ERRORS: readonly DocumentError[] = [
 test("ノードを指すエラーの行にだけ、そのノードを表示するボタンが出る", () => {
   render(
     <DocumentErrorList
-      errors={MIXED_ERRORS}
+      errors={MixedErrors}
       origin={DocumentErrorOrigins.OpenedFile}
       onReveal={vi.fn()}
       onRevertFile={vi.fn()}
@@ -50,7 +50,7 @@ test("表示のボタンを押すと、その行が指すノード名が通知�
   const onReveal = vi.fn();
   render(
     <DocumentErrorList
-      errors={MIXED_ERRORS}
+      errors={MixedErrors}
       origin={DocumentErrorOrigins.OpenedFile}
       onReveal={onReveal}
       onRevertFile={vi.fn()}
@@ -68,7 +68,7 @@ test("編集で作った不正でも、ノードを指す行から表示でき�
   const onReveal = vi.fn();
   render(
     <DocumentErrorList
-      errors={MIXED_ERRORS}
+      errors={MixedErrors}
       origin={DocumentErrorOrigins.Document}
       onReveal={onReveal}
     />,
@@ -80,7 +80,7 @@ test("編集で作った不正でも、ノードを指す行から表示でき�
 test("開けなかったファイルの一覧には、表示のボタンが出ない", () => {
   render(
     <DocumentErrorList
-      errors={MIXED_ERRORS}
+      errors={MixedErrors}
       origin={DocumentErrorOrigins.UnopenedFile}
     />,
   );
@@ -97,7 +97,7 @@ test("開いているファイルが不正なときは、ファイルを書き�
   const onRevertFile = vi.fn();
   render(
     <DocumentErrorList
-      errors={MIXED_ERRORS}
+      errors={MixedErrors}
       origin={DocumentErrorOrigins.OpenedFile}
       onReveal={vi.fn()}
       onRevertFile={onRevertFile}
@@ -113,7 +113,7 @@ test("開いているファイルが不正なときは、ファイルを書き�
 test("書き戻しの最中は、書き戻しを押し直せない", () => {
   render(
     <DocumentErrorList
-      errors={MIXED_ERRORS}
+      errors={MixedErrors}
       origin={DocumentErrorOrigins.OpenedFile}
       onReveal={vi.fn()}
       onRevertFile={vi.fn()}
@@ -131,7 +131,7 @@ test("書き戻しの最中は、書き戻しを押し直せない", () => {
 test("編集で作った不正の一覧には、ファイルを書き戻すボタンが出ない", () => {
   render(
     <DocumentErrorList
-      errors={MIXED_ERRORS}
+      errors={MixedErrors}
       origin={DocumentErrorOrigins.Document}
       onReveal={vi.fn()}
     />,

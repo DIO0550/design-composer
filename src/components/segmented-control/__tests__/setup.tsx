@@ -4,7 +4,7 @@ import type { Option } from "@/utils/Option";
 import { SegmentedControl } from "../index";
 
 /** ラベルとコントロールを結び付ける識別子。 */
-const LABEL_ID = "direction-label";
+const LabelId = "direction-label";
 
 /**
  * ラベルは呼び出し側が持つものなので、器と一緒に描画する。
@@ -18,9 +18,9 @@ export function renderControl(
 ): void {
   render(
     <>
-      <span id={LABEL_ID}>Direction</span>
+      <span id={LabelId}>Direction</span>
       <SegmentedControl
-        labelledBy={LABEL_ID}
+        labelledBy={LabelId}
         options={["row", "column"]}
         value={value}
         onChange={onChange}

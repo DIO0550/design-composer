@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 
 /** 見本を引くための目印。 */
-export const COLOR_SWATCH_TEST_ID = "color-swatch";
+export const ColorSwatchTestId = "color-swatch";
 
 /**
  * 色そのものを見せる見本。
@@ -18,7 +18,7 @@ export function ColorSwatch({
   return (
     <span
       aria-hidden="true"
-      data-testid={COLOR_SWATCH_TEST_ID}
+      data-testid={ColorSwatchTestId}
       // 色は値そのものなのでクラス名に固定できない
       style={{ backgroundColor: color }}
       // 白い色でも輪郭が見えるよう枠を付ける

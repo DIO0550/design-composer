@@ -117,11 +117,11 @@ export type TokenControl = Readonly<{
  * 長さのプレビューの上限（px）。
  * これを超える長さも同じ幅で頭打ちにする（一覧の行の幅が値で伸び縮みしないため）。
  */
-const PREVIEW_MAX_WIDTH_PX = 20;
+const PreviewMaxWidthPx = 20;
 
 /** 値が1つの種別の行。何のフィールドかを言い分ける必要がない。 */
-const SCALAR_FIELD_NAME = "value";
-const SCALAR_LABEL = "値";
+const ScalarFieldName = "value";
+const ScalarLabel = "値";
 
 /** 色に添える不透明度の行。見出しは既存の編集欄に合わせて日本語で書く。 */
 const ColorsAlphaFieldName = "alpha";
@@ -129,7 +129,7 @@ const ShadowAlphaFieldName = "colorAlpha";
 const AlphaLabel = "不透明度";
 
 /** 影のフィールドの見出し。既存の編集欄に合わせて日本語で書く。 */
-const SHADOW_LABELS = {
+const ShadowLabels = {
   x: "横のずれ",
   y: "縦のずれ",
   blur: "ぼかし",
@@ -138,7 +138,7 @@ const SHADOW_LABELS = {
 } as const satisfies Readonly<Record<ShadowField, string>>;
 
 /** 書体のフィールドの見出し。 */
-const TYPOGRAPHY_LABELS = {
+const TypographyLabels = {
   fontSize: "サイズ",
   lineHeight: "行間",
   fontWeight: "太さ",
@@ -159,7 +159,7 @@ function previewOf(token: Token): TokenPreview {
     case "radius":
       return {
         kind: "bar",
-        widthPx: Math.min(token.value, PREVIEW_MAX_WIDTH_PX),
+        widthPx: Math.min(token.value, PreviewMaxWidthPx),
       };
     case "shadows":
       return { kind: "shadow", value: ShadowToken.cssValue(token.value) };
@@ -317,8 +317,8 @@ function fieldsOf(token: Token): readonly TokenControlField[] {
       return colorFields(
         token.value,
         {
-          name: SCALAR_FIELD_NAME,
-          label: SCALAR_LABEL,
+          name: ScalarFieldName,
+          label: ScalarLabel,
           target: { kind: "colors", color: token.value },
         },
         {
@@ -331,8 +331,8 @@ function fieldsOf(token: Token): readonly TokenControlField[] {
     case "radius":
       return [
         {
-          name: SCALAR_FIELD_NAME,
-          label: SCALAR_LABEL,
+          name: ScalarFieldName,
+          label: ScalarLabel,
           input: { kind: "number", value: token.value },
           target: { kind: token.kind },
         },
@@ -348,7 +348,7 @@ function fieldsOf(token: Token): readonly TokenControlField[] {
               token.value.color,
               {
                 name: field,
-                label: SHADOW_LABELS[field],
+                label: ShadowLabels[field],
                 target: { kind: "shadows", shadow: token.value, field },
               },
               {
@@ -360,7 +360,7 @@ function fieldsOf(token: Token): readonly TokenControlField[] {
           : [
               {
                 name: field,
-                label: SHADOW_LABELS[field],
+                label: ShadowLabels[field],
                 input: shadowInput(token.value, field),
                 target: { kind: "shadows", shadow: token.value, field },
               },
@@ -369,7 +369,7 @@ function fieldsOf(token: Token): readonly TokenControlField[] {
     case "typography":
       return TypographyToken.fields().map((field) => ({
         name: field,
-        label: TYPOGRAPHY_LABELS[field],
+        label: TypographyLabels[field],
         input: typographyInput(token.value, field),
         target: { kind: "typography", typography: token.value, field },
       }));

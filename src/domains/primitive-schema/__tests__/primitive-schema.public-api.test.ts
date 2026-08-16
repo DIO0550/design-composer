@@ -1,8 +1,8 @@
 import { expect, test } from "vitest";
 import {
-  BOX_SCHEMA,
+  BoxSchema,
   PrimitiveSchema,
-  TEXT_SCHEMA,
+  TextSchema,
   TokenPropKinds,
 } from "../index";
 
@@ -12,8 +12,8 @@ import {
  */
 
 test("primitive の型を指定するとその仕様が得られる", () => {
-  expect(PrimitiveSchema.forType("Box")).toBe(BOX_SCHEMA);
-  expect(PrimitiveSchema.forType("Text")).toBe(TEXT_SCHEMA);
+  expect(PrimitiveSchema.forType("Box")).toBe(BoxSchema);
+  expect(PrimitiveSchema.forType("Text")).toBe(TextSchema);
 });
 
 test("primitive として宣言されている名前だけが primitive の型と判定される", () => {

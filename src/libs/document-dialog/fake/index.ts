@@ -13,10 +13,10 @@ export type DialogChoice =
   | Readonly<{ kind: "canceled" }>
   | Readonly<{ kind: "failed"; message: string }>;
 
-const CANCELED: DialogChoice = { kind: "canceled" };
+const Canceled: DialogChoice = { kind: "canceled" };
 
 export const DialogChoice = {
-  CANCELED,
+  Canceled,
 
   chosen(path: string): DialogChoice {
     return { kind: "chosen", path };

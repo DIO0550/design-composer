@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
-import { SAMPLE_EDITOR_STATE } from "@/features/editor/__stories__/sample-editor-state";
+import { SampleEditorState } from "@/features/editor/__stories__/sample-editor-state";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { DocumentTree } from "./index";
 
@@ -25,17 +25,17 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   name: "選択なし",
-  args: { state: SAMPLE_EDITOR_STATE },
+  args: { state: SampleEditorState },
 };
 
 export const OtherArtboard: Story = {
   name: "別の artboard を選択中",
-  args: { state: EditorState.select(SAMPLE_EDITOR_STATE, "settings") },
+  args: { state: EditorState.select(SampleEditorState, "settings") },
 };
 
 export const NodeSelected: Story = {
   name: "artboard 配下のノードを選択中",
-  args: { state: EditorState.select(SAMPLE_EDITOR_STATE, "home-title") },
+  args: { state: EditorState.select(SampleEditorState, "home-title") },
 };
 
 /**
@@ -43,10 +43,10 @@ export const NodeSelected: Story = {
  * 1 枚で見るための状態。共有のサンプル状態はキャンバスのストーリーも使うため、
  * ツリー都合の構造はここに閉じる。
  */
-const NESTED_EDITOR_STATE = EditorState.create(
+const NestedEditorState = EditorState.create(
   DesignDocument.create({
-    tokens: DocumentTemplate.DEFAULT.tokens,
-    components: DocumentTemplate.DEFAULT.components,
+    tokens: DocumentTemplate.Default.tokens,
+    components: DocumentTemplate.Default.components,
     artboards: [
       {
         name: "nested",
@@ -81,5 +81,5 @@ const NESTED_EDITOR_STATE = EditorState.create(
 
 export const Nested: Story = {
   name: "入れ子のノードと並べ替え",
-  args: { state: NESTED_EDITOR_STATE },
+  args: { state: NestedEditorState },
 };

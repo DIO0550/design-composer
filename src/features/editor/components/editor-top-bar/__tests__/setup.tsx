@@ -58,9 +58,9 @@ export function renderTopBar(
 }
 
 /** 保存状態の 3 つを、テストから名前で指せるようにまとめる。 */
-export const SAVE_STATES = {
-  saved: DocumentSaveState.SAVED,
-  saving: DocumentSaveState.SAVING,
+export const SaveStates = {
+  saved: DocumentSaveState.Saved,
+  saving: DocumentSaveState.Saving,
   failed: DocumentSaveState.fromError({
     kind: "permissionDenied",
     message: "/work/app.dcmp: 書き込みが許可されていない",

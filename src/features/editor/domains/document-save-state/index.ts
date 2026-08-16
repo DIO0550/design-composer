@@ -13,12 +13,12 @@ export type DocumentSaveState =
   | Readonly<{ kind: "failed"; error: DocumentIpcError }>;
 
 /** 状態を持たない枝は生成せず 1 つを共有する。 */
-const SAVED: DocumentSaveState = Object.freeze({ kind: "saved" });
-const SAVING: DocumentSaveState = Object.freeze({ kind: "saving" });
+const Saved: DocumentSaveState = Object.freeze({ kind: "saved" });
+const Saving: DocumentSaveState = Object.freeze({ kind: "saving" });
 
 export const DocumentSaveState = {
-  SAVED,
-  SAVING,
+  Saved,
+  Saving,
 
   /**
    * 書き込みが失敗している状態。

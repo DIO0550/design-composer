@@ -7,7 +7,7 @@ import type { DocumentError } from "@/features/editor/domains/document-error";
  * 書かず共有する（rules/testing.md「同じヘルパーを 2 つ以上のテストファイルに
  * 書いたら共通化する」）。
  */
-export const SYNTAX_ERROR: DocumentError = {
+export const SampleSyntaxError: DocumentError = {
   kind: "syntax-error",
   message: "expected ',' or '}'",
   location: { kind: "text-position", position: 42 },

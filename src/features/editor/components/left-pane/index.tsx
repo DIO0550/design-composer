@@ -6,10 +6,10 @@ import { CreateComponent } from "@/features/editor/components/create-component";
 import { DocumentTree } from "@/features/editor/components/document-tree";
 import { LeftPanePanel } from "@/features/editor/components/left-pane-panel";
 import {
-  LEFT_PANE_VIEW_LABELS,
-  LEFT_PANE_VIEWS,
   LeftPaneRail,
   type LeftPaneView,
+  LeftPaneViewLabels,
+  LeftPaneViews,
 } from "@/features/editor/components/left-pane-rail";
 import { TokenList } from "@/features/editor/components/token-list";
 import { EditorState } from "@/features/editor/domains/editor-state";
@@ -40,7 +40,7 @@ function LeftPaneContent({
   token: TokenActions;
 }>): ReactElement {
   switch (view) {
-    case LEFT_PANE_VIEWS.layers:
+    case LeftPaneViews.Layers:
       return (
         <>
           {/*
@@ -56,7 +56,7 @@ function LeftPaneContent({
           />
         </>
       );
-    case LEFT_PANE_VIEWS.assets:
+    case LeftPaneViews.Assets:
       return (
         <AssetsPanel
           assets={DesignDocument.componentAssets(EditorState.document(state))}
@@ -68,7 +68,7 @@ function LeftPaneContent({
           onInsert={node.insertInstance}
         />
       );
-    case LEFT_PANE_VIEWS.tokens:
+    case LeftPaneViews.Tokens:
       return (
         <TokenList
           state={state}
@@ -101,13 +101,13 @@ function leftPaneFooter(
   node: NodeActions,
 ): Option<ReactElement> {
   switch (view) {
-    case LEFT_PANE_VIEWS.layers:
+    case LeftPaneViews.Layers:
       return Option.none;
-    case LEFT_PANE_VIEWS.assets:
+    case LeftPaneViews.Assets:
       return Option.some(
         <CreateComponent state={state} onCreate={node.createComponent} />,
       );
-    case LEFT_PANE_VIEWS.tokens:
+    case LeftPaneViews.Tokens:
       return Option.none;
   }
 }
@@ -137,7 +137,7 @@ export function LeftPane({
     <>
       <LeftPaneRail current={view} onSelect={onSelectView} />
       <LeftPanePanel
-        title={LEFT_PANE_VIEW_LABELS[view]}
+        title={LeftPaneViewLabels[view]}
         /*
          * ファイルが不正な間は操作を受け付けない（器の `EditorLayout.LeftPane` が
          * `inert` にする）ので、見出しでその旨を名乗る。UI 案 Error 画面の `frozen`。

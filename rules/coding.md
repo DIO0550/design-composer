@@ -138,9 +138,9 @@ Object.values(Axes).flatMap((axis) => /* ... */);
 | `DOCUMENT_ERROR_ORIGINS.openedFile` | `DocumentErrorOrigins.OpenedFile` |
 
 - **union の型名は単数、定数オブジェクトは複数形**にして両方を同じファイルから export する(`Axes` / `Axis`)
-- スキーマなど**既にある定数から導出する**場合はこの限りではない(`CssDirection` が `BOX_SCHEMA.props.direction.values` から引くように、出どころの形に従う)
-- 既存の `TOKEN_KINDS` / `TYPOGRAPHY_FIELDS` / `PRIMITIVE_TYPES` は配列 + `(typeof X)[number]` のままになっている(#105 で寄せる)
-- 既存の `AXES` / `LEFT_PANE_VIEWS` / `PRIMITIVE_SCHEMAS` などは SCREAMING_SNAKE_CASE のままになっている(#186 で寄せる)
+- スキーマなど**既にある定数から導出する**場合はこの限りではない(`CssDirection` が `BoxSchema.props.direction.values` から引くように、出どころの形に従う)
+- 既存の `TokenKinds` / `TypographyFields` / `PrimitiveTypes` は配列 + `(typeof X)[number]` のままになっている(#105 で寄せる)
+- **キーの型が union そのものだと、キーを PascalCase にした時点で `satisfies` が落ちる。** `Capitalize` を通して過不足の検査を残す(`LeftPaneViews` が `Readonly<Record<Capitalize<LeftPaneView>, LeftPaneView>>`)。行き先の id にハイフンや複数語が入ると `Capitalize<"left-pane">` = `"Left-pane"` を型が要求するので、そのときはキーの綴りを別に持つ
 
 ## 不正な状態を型で表現できなくする(型による境界)
 

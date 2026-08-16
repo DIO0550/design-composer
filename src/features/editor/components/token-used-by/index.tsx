@@ -9,7 +9,7 @@ import type { SelectionKind } from "@/features/editor/domains/selection";
  * UI 案（docs/Design Composer.html の Tokens 画面）は 8 件のうち 3 行を出し、
  * 残りを `+ 5 more` と書いている。
  */
-const VISIBLE_ROW_LIMIT = 3;
+const VisibleRowLimit = 3;
 
 /**
  * 参照元に当たる型アイコン。
@@ -77,7 +77,7 @@ export function TokenUsedBy({
   state,
 }: Readonly<{ state: EditorState }>): ReactElement {
   const referrers = EditorState.tokenReferrers(state);
-  const visibleReferrers = referrers.slice(0, VISIBLE_ROW_LIMIT);
+  const visibleReferrers = referrers.slice(0, VisibleRowLimit);
   const hiddenCount = referrers.length - visibleReferrers.length;
 
   return (

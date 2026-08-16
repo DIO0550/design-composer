@@ -1,6 +1,6 @@
 import { screen } from "@testing-library/react";
-import { ELEMENT_NAME_ATTRIBUTE } from "@/domains/compiled-element";
-import { TOKEN_REFERRER_OUTLINE } from "@/features/editor/components/artboard-canvas";
+import { ElementNameAttribute } from "@/domains/compiled-element";
+import { TokenReferrerOutline } from "@/features/editor/components/artboard-canvas";
 import { ArrayEx } from "@/utils/ArrayEx";
 
 /**
@@ -12,8 +12,8 @@ import { ArrayEx } from "@/utils/ArrayEx";
  */
 
 /** 強調の規則が指している名前（規則の書式は components/artboard-canvas）。 */
-const HIGHLIGHTED_NAME_PATTERN = new RegExp(
-  `\\[${ELEMENT_NAME_ATTRIBUTE}="(.*?)"\\]`,
+const HighlightedNamePattern = new RegExp(
+  `\\[${ElementNameAttribute}="(.*?)"\\]`,
   "g",
 );
 
@@ -37,7 +37,7 @@ export function renderedElement(
   name: string,
 ): HTMLElement {
   const element = canvas.querySelector<HTMLElement>(
-    `[${ELEMENT_NAME_ATTRIBUTE}="${name}"]`,
+    `[${ElementNameAttribute}="${name}"]`,
   );
   if (element === null) {
     throw new Error(`キャンバスに ${name} が描かれていない`);
@@ -57,7 +57,7 @@ export function renderedElement(
 function namesIn(styles: readonly HTMLStyleElement[]): readonly string[] {
   return ArrayEx.distinct(
     styles.flatMap((style) =>
-      [...(style.textContent ?? "").matchAll(HIGHLIGHTED_NAME_PATTERN)].map(
+      [...(style.textContent ?? "").matchAll(HighlightedNamePattern)].map(
         (match) => match[1],
       ),
     ),
@@ -83,7 +83,7 @@ export function highlightedNames(canvas: HTMLElement): readonly string[] {
  */
 export function tokenReferrerNames(canvas: HTMLElement): readonly string[] {
   const dashedRules = [...canvas.querySelectorAll("style")].filter((style) =>
-    (style.textContent ?? "").includes(TOKEN_REFERRER_OUTLINE),
+    (style.textContent ?? "").includes(TokenReferrerOutline),
   );
   return namesIn(dashedRules);
 }

@@ -11,7 +11,7 @@ import { renderUsedBy } from "./render";
  * - `primary`: Box 3 件（ちょうど上限）
  * - `danger`: 参照なし
  */
-const DOCUMENT = DesignDocument.create({
+const ReferringDocument = DesignDocument.create({
   tokens: {
     ...TokenSet.empty(),
     colors: {
@@ -55,7 +55,7 @@ const DOCUMENT = DesignDocument.create({
 });
 
 function renderFor(ref: TokenRef): void {
-  renderUsedBy(DOCUMENT, ref);
+  renderUsedBy(ReferringDocument, ref);
 }
 
 test("参照元が上限を超えても行は上限の件数までしか出ない", () => {

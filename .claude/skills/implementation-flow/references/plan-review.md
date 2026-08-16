@@ -89,7 +89,7 @@
     `default` 無しで書き、戻り値の型を `ReactNode` ではなく `ReactElement` にする
     (PR #139 / #157)
   - **`as const` から union を export する計画に `satisfies` と型テストが付いているか。**
-    隣接する既存の語彙(`TYPOGRAPHY_FIELDS` 等)と縛り方を揃える(PR #141)
+    隣接する既存の語彙(`TypographyFields` 等)と縛り方を揃える(PR #141)
   - **本来届かないはずの `Option.none` / 分岐を計画で作っていないか。** `findX` → `findY`
     のような多段の参照は、途中の `none` が「起こり得ないのに UI が持つ枝」になる。
     1 段で引ける型・既存の公開 API を先に探す(PR #148)

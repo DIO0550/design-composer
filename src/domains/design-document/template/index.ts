@@ -7,7 +7,7 @@ import type { TokenSet } from "@/domains/token";
  * トークン縛り切りのため、tokens が空のドキュメントでは見た目の prop を
  * 一切設定できない。そのため新規ドキュメントに必ず同梱する。
  */
-const DEFAULT_THEME: TokenSet = {
+const DefaultTheme: TokenSet = {
   colors: {
     white: "#ffffff",
     "gray-100": "#f3f4f6",
@@ -44,7 +44,7 @@ const DEFAULT_THEME: TokenSet = {
  * border 系 prop が初期スキーマに無いため、text-input / secondary-button は
  * 背景色で領域を表現している（border 追加時に見直す）。
  */
-const INITIAL_COMPONENTS: ComponentSet = {
+const InitialComponents: ComponentSet = {
   "primary-button": {
     publicProps: {
       label: { node: "primary-button-label", prop: "content" },
@@ -158,13 +158,13 @@ export type DocumentTemplate = Readonly<{
 
 /**
  * 仕様が定める既定の雛形。取りうる雛形は今のところこれ1つなので、
- * 生成の手続きではなく定数として公開する（`FormatVersion.CURRENT` と同じ形）。
+ * 生成の手続きではなく定数として公開する（`FormatVersion.Current` と同じ形）。
  */
-const DEFAULT: DocumentTemplate = {
-  tokens: DEFAULT_THEME,
-  components: INITIAL_COMPONENTS,
+const Default: DocumentTemplate = {
+  tokens: DefaultTheme,
+  components: InitialComponents,
 };
 
 export const DocumentTemplate = {
-  DEFAULT,
+  Default,
 } as const;

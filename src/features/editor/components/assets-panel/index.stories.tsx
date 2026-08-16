@@ -10,8 +10,8 @@ import { AssetsPanel } from "./index";
  * 雛形の初期部品セットは参照を 1 つも持たないため、そのまま使うと全行が `unused` になり
  * 使用数の出方が分からない。
  */
-const USED_COMPONENTS_DOCUMENT = DesignDocument.create({
-  components: DocumentTemplate.DEFAULT.components,
+const UsedComponentsDocument = DesignDocument.create({
+  components: DocumentTemplate.Default.components,
   artboards: [
     Artboard.create({
       name: "home",
@@ -31,7 +31,7 @@ const meta = {
   component: AssetsPanel,
   parameters: { layout: "padded" },
   args: {
-    assets: DesignDocument.componentAssets(USED_COMPONENTS_DOCUMENT),
+    assets: DesignDocument.componentAssets(UsedComponentsDocument),
     sourceName: Option.none,
     isInsertEnabled: true,
     onInsert: () => {},

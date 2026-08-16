@@ -6,12 +6,12 @@ import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
 import type { TauriIpc } from "@/libs/tauri-ipc";
 import { Option } from "@/utils/Option";
-import { AUTO_SAVE_DEBOUNCE_MS } from "../index";
-import { PATH, renderAutoSave, waitDebounce } from "./setup";
+import { AutoSaveDebounceMs } from "../index";
+import { Path, renderAutoSave, waitDebounce } from "./setup";
 
-const DENIED: DocumentIpcError = {
+const Denied: DocumentIpcError = {
   kind: "permissionDenied",
-  message: `${PATH}: 書き込みが許可されていない`,
+  message: `${Path}: 書き込みが許可されていない`,
 };
 
 afterEach(() => {
@@ -21,7 +21,7 @@ afterEach(() => {
 /** 書き込みが必ず失敗する Rust 側の代役。 */
 function denyingIpc(): DocumentIpc {
   const tauriIpc: TauriIpc = {
-    invoke: () => Promise.reject(DENIED),
+    invoke: () => Promise.reject(Denied),
     listen: () => Promise.reject("Event not emitted"),
   };
   return DocumentIpc.create(tauriIpc);
@@ -30,26 +30,26 @@ function denyingIpc(): DocumentIpc {
 test("開いたドキュメントを編集していなければファイルへ書き出さない", async () => {
   vi.useFakeTimers();
   const openedFileContent = `{ "外部が書いた体裁": true }`;
-  const fake = DocumentIpcFake.create({ [PATH]: openedFileContent });
+  const fake = DocumentIpcFake.create({ [Path]: openedFileContent });
 
   renderAutoSave({ ipc: fake.ipc, document: artboardDocument("home") });
   await waitDebounce();
 
-  expect(fake.contentOf(PATH)).toStrictEqual(Option.some(openedFileContent));
+  expect(fake.contentOf(Path)).toStrictEqual(Option.some(openedFileContent));
 });
 
 test("デバウンス時間が経つ前は編集内容がファイルへ書き出されない", async () => {
   vi.useFakeTimers();
   const opened = artboardDocument("home");
   const fake = DocumentIpcFake.create({
-    [PATH]: DocumentJson.serialize(opened),
+    [Path]: DocumentJson.serialize(opened),
   });
   const { rerender } = renderAutoSave({ ipc: fake.ipc, document: opened });
 
   rerender({ ipc: fake.ipc, document: artboardDocument("settings") });
-  await waitDebounce(AUTO_SAVE_DEBOUNCE_MS - 1);
+  await waitDebounce(AutoSaveDebounceMs - 1);
 
-  expect(fake.contentOf(PATH)).toStrictEqual(
+  expect(fake.contentOf(Path)).toStrictEqual(
     Option.some(DocumentJson.serialize(opened)),
   );
 });
@@ -58,7 +58,7 @@ test("書き出される前に画面を閉じると、その編集はファイ�
   vi.useFakeTimers();
   const opened = artboardDocument("home");
   const fake = DocumentIpcFake.create({
-    [PATH]: DocumentJson.serialize(opened),
+    [Path]: DocumentJson.serialize(opened),
   });
   const { rerender, unmount } = renderAutoSave({
     ipc: fake.ipc,
@@ -69,7 +69,7 @@ test("書き出される前に画面を閉じると、その編集はファイ�
   unmount();
   await waitDebounce();
 
-  expect(fake.contentOf(PATH)).toStrictEqual(
+  expect(fake.contentOf(Path)).toStrictEqual(
     Option.some(DocumentJson.serialize(opened)),
   );
 });
@@ -85,7 +85,7 @@ test("書き込みに失敗すると、その失敗が返る", async () => {
   rerender({ ipc, document: artboardDocument("settings") });
   await waitDebounce();
 
-  expect(result.current).toStrictEqual(DocumentSaveState.fromError(DENIED));
+  expect(result.current).toStrictEqual(DocumentSaveState.fromError(Denied));
 });
 
 test("失敗した後の書き込みが成功すると、失敗は返らなくなる", async () => {
@@ -93,7 +93,7 @@ test("失敗した後の書き込みが成功すると、失敗は返らなく�
   const opened = artboardDocument("home");
   const denying = denyingIpc();
   const fake = DocumentIpcFake.create({
-    [PATH]: DocumentJson.serialize(opened),
+    [Path]: DocumentJson.serialize(opened),
   });
   const { result, rerender } = renderAutoSave({
     ipc: denying,
@@ -105,14 +105,14 @@ test("失敗した後の書き込みが成功すると、失敗は返らなく�
   rerender({ ipc: fake.ipc, document: artboardDocument("profile") });
   await waitDebounce();
 
-  expect(result.current).toStrictEqual(DocumentSaveState.SAVED);
+  expect(result.current).toStrictEqual(DocumentSaveState.Saved);
 });
 
 test("書き出される前に編集を取り消すと、保存中のまま止まらない", async () => {
   vi.useFakeTimers();
   const opened = artboardDocument("home");
   const fake = DocumentIpcFake.create({
-    [PATH]: DocumentJson.serialize(opened),
+    [Path]: DocumentJson.serialize(opened),
   });
   const { result, rerender } = renderAutoSave({
     ipc: fake.ipc,
@@ -120,10 +120,10 @@ test("書き出される前に編集を取り消すと、保存中のまま止�
   });
 
   rerender({ ipc: fake.ipc, document: artboardDocument("settings") });
-  await waitDebounce(AUTO_SAVE_DEBOUNCE_MS - 1);
+  await waitDebounce(AutoSaveDebounceMs - 1);
   rerender({ ipc: fake.ipc, document: opened });
 
-  expect(result.current).toStrictEqual(DocumentSaveState.SAVED);
+  expect(result.current).toStrictEqual(DocumentSaveState.Saved);
 });
 
 test("書き込みに失敗したあと編集を取り消すと、失敗が残らない", async () => {
@@ -139,5 +139,5 @@ test("書き込みに失敗したあと編集を取り消すと、失敗が残�
   await waitDebounce();
   rerender({ ipc: denying, document: opened });
 
-  expect(result.current).toStrictEqual(DocumentSaveState.SAVED);
+  expect(result.current).toStrictEqual(DocumentSaveState.Saved);
 });

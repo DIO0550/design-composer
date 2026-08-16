@@ -117,8 +117,8 @@ export type RefNode = Readonly<{
 export type Node = PrimitiveNode | RefNode;
 
 /** ノードが JSON 上で持ちうるフィールド(docs/01-file-format.md)。 */
-const PRIMITIVE_NODE_FIELDS = ["name", "type", "props", "children"] as const;
-const REF_NODE_FIELDS = ["name", "ref", "overrides"] as const;
+const PrimitiveNodeFields = ["name", "type", "props", "children"] as const;
+const RefNodeFields = ["name", "ref", "overrides"] as const;
 
 /** ノードの判定・子の取り出し・JSON 表現との相互変換。 */
 export const Node = {
@@ -251,7 +251,7 @@ function primitiveNodeFromJson(record: JsonRecordCursor): JsonDecoded<Node> {
       }),
     ),
     record,
-    PRIMITIVE_NODE_FIELDS,
+    PrimitiveNodeFields,
   );
 }
 
@@ -275,6 +275,6 @@ function refNodeFromJson(record: JsonRecordCursor): JsonDecoded<Node> {
       }),
     ),
     record,
-    REF_NODE_FIELDS,
+    RefNodeFields,
   );
 }

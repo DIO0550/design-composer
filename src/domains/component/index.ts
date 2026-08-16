@@ -24,10 +24,10 @@ export type PublicPropBinding = Readonly<{
   prop: string;
 }>;
 
-const BINDING_FIELDS = ["node", "prop"] as const;
+const BindingFields = ["node", "prop"] as const;
 
 /** 部品が JSON 上で持ちうるフィールド(docs/04-tokens.md「初期部品セット」の並び)。 */
-const COMPONENT_FIELDS = ["publicProps", "type", "props", "children"] as const;
+const ComponentFields = ["publicProps", "type", "props", "children"] as const;
 
 /** binding の JSON 表現との相互変換。 */
 export const PublicPropBinding = {
@@ -40,7 +40,7 @@ export const PublicPropBinding = {
           (node, prop) => ({ node, prop }),
         ),
         record,
-        BINDING_FIELDS,
+        BindingFields,
       ),
     );
   },
@@ -269,7 +269,7 @@ export const Component = {
           }),
         ),
         record,
-        COMPONENT_FIELDS,
+        ComponentFields,
       ),
     );
   },

@@ -41,7 +41,7 @@ export type DocumentCommand =
   | "unwatch_document";
 
 /** 外部変更を知らせるイベント名（Rust 側の `DOCUMENT_CHANGED_EVENT` と対）。 */
-const DOCUMENT_CHANGED_EVENT = "document-changed";
+const DocumentChangedEvent = "document-changed";
 
 /**
  * ドキュメントの永続化 I/O。IPC を渡るのは常に生の JSON 文字列で、
@@ -63,7 +63,7 @@ export type DocumentIpc = Readonly<{
   ): Promise<Result<Unsubscribe, DocumentIpcError>>;
 }>;
 
-const IO_ERROR_KINDS: readonly DocumentIpcErrorKind[] = [
+const IoErrorKinds: readonly DocumentIpcErrorKind[] = [
   "notFound",
   "permissionDenied",
   "invalidPath",
@@ -84,7 +84,7 @@ function isDocumentIoError(reason: unknown): reason is DocumentIpcError {
   const { kind, message } = reason as Record<string, unknown>;
   return (
     typeof message === "string" &&
-    IO_ERROR_KINDS.some((ioErrorKind) => ioErrorKind === kind)
+    IoErrorKinds.some((ioErrorKind) => ioErrorKind === kind)
   );
 }
 
@@ -202,7 +202,7 @@ export const DocumentIpc = {
       async subscribeChanged(listener) {
         try {
           const unsubscribe = await tauriIpc.listen(
-            DOCUMENT_CHANGED_EVENT,
+            DocumentChangedEvent,
             (payload) => {
               // 形が合わない値は配らない。ドキュメント変更として渡せる中身が無く、
               // イベントのコールバックには失敗を返す相手もいないため（#28）。

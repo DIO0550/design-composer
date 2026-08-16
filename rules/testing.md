@@ -77,14 +77,14 @@ expect(currentName(state)).toBe("settings");
 ```typescript
 // NG: gray-900 を指すものが 1 つも無いので、常に空を返す実装でも通る
 const document = setupDocument({ title: { color: "gray-500" } });
-expect(collect(document, GRAY_900)).toEqual([]);
+expect(collect(document, Gray900)).toEqual([]);
 
 // OK: 同じドキュメントに gray-900 を指すノードを 1 件置く
 const document = setupDocument({
   plain: {},                      // color 未設定（既定で gray-900 に解決される）
   title: { color: "gray-900" },   // 対照
 });
-expect(collect(document, GRAY_900).map(toText)).toEqual(["title.color"]);
+expect(collect(document, Gray900).map(toText)).toEqual(["title.color"]);
 ```
 
 **「出さない」を確かめるときは、入力から自明にならない側を見る。** 0 件のときに行が無いのは入力から決まるので、行の数を見ても実装を守れない。守りたいのが「0 件なら枠を出さない」なら、枠そのものを見る（`queryAllByRole("listitem")` が空 → `queryByRole("list")` が `null`）。

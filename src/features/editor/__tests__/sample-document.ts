@@ -9,9 +9,9 @@ import { DocumentJson } from "@/libs/document-json";
  * 雛形のトークン・部品に artboard を 2 枚足したもので、ツリービュー・キャンバス・
  * プロパティパネルのどれからでも同じ中身を辿れる状態にしてある。
  */
-export const SAMPLE_DOCUMENT = DesignDocument.create({
-  tokens: DocumentTemplate.DEFAULT.tokens,
-  components: DocumentTemplate.DEFAULT.components,
+export const SampleDocument = DesignDocument.create({
+  tokens: DocumentTemplate.Default.tokens,
+  components: DocumentTemplate.Default.components,
   artboards: [
     Artboard.create({
       name: "home",

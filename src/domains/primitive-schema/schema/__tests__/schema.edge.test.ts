@@ -1,8 +1,8 @@
 import { expect, test } from "vitest";
-import { PRIMITIVE_TYPES, PrimitiveSchema } from "../index";
+import { PrimitiveSchema, PrimitiveTypes } from "../index";
 
 test("プリミティブ語彙は Box と Text の2種類に閉じている", () => {
-  expect(PRIMITIVE_TYPES).toEqual(["Box", "Text"]);
+  expect(PrimitiveTypes).toEqual(["Box", "Text"]);
 });
 
 test("Box は子要素を持てる", () => {

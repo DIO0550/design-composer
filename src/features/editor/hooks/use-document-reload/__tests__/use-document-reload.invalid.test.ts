@@ -2,10 +2,10 @@ import { expect, test } from "vitest";
 import { artboardContent } from "@/features/editor/__tests__/sample-document";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { Option } from "@/utils/Option";
-import { changeExternally, PATH, renderDocumentReload } from "./setup";
+import { changeExternally, Path, renderDocumentReload } from "./setup";
 
 test("外部エディタが不正な JSON を保存すると、エラー一覧として届く", async () => {
-  const fake = DocumentIpcFake.create({ [PATH]: artboardContent("home") });
+  const fake = DocumentIpcFake.create({ [Path]: artboardContent("home") });
   const observer = await renderDocumentReload(fake.ipc);
 
   await changeExternally(fake, '{ "formatVersion": ');
@@ -25,7 +25,7 @@ test("外部エディタが不正な JSON を保存すると、エラー一覧�
 });
 
 test("不正な JSON を直して保存すると、そのドキュメントが取り込まれる", async () => {
-  const fake = DocumentIpcFake.create({ [PATH]: artboardContent("home") });
+  const fake = DocumentIpcFake.create({ [Path]: artboardContent("home") });
   const observer = await renderDocumentReload(fake.ipc);
 
   await changeExternally(fake, '{ "formatVersion": ');

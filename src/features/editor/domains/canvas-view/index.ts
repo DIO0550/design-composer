@@ -9,7 +9,7 @@ import { Option } from "@/utils/Option";
 export type CanvasOffset = Readonly<{ x: number; y: number }>;
 
 export const CanvasOffset = {
-  ORIGIN: { x: 0, y: 0 },
+  Origin: { x: 0, y: 0 },
 
   add(offset: CanvasOffset, delta: CanvasOffset): CanvasOffset {
     return { x: offset.x + delta.x, y: offset.y + delta.y };
@@ -49,17 +49,17 @@ export type CanvasView = Readonly<{
 }>;
 
 /** 等倍。開いた直後とリセット後の倍率。 */
-const DEFAULT_SCALE = 1;
+const DefaultScale = 1;
 
 /**
  * 倍率の下限・上限。artboard が判別できないほど潰れる / 画面から溢れて
  * 現在位置を見失う状態を作れなくするための境界。
  */
-const MIN_SCALE = 0.1;
-const MAX_SCALE = 4;
+const MinScale = 0.1;
+const MaxScale = 4;
 
 /** 1 操作あたりの拡大率。倍率は等比で動かす（等差だと拡大側ほど変化が鈍る）。 */
-const ZOOM_FACTOR = 1.2;
+const ZoomFactor = 1.2;
 
 /**
  * 倍率を上下限の内側へ収める。
@@ -68,7 +68,7 @@ const ZOOM_FACTOR = 1.2;
  * @returns 上下限の内側に収まった倍率
  */
 function clampScale(scale: number): number {
-  return Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale));
+  return Math.min(MaxScale, Math.max(MinScale, scale));
 }
 
 /**
@@ -86,18 +86,18 @@ export const CanvasView = {
   /** 等倍・原点から始める（ズーム / パンは保存しないので毎回この状態で開く）。 */
   create(): CanvasView {
     return {
-      scale: DEFAULT_SCALE,
-      offset: CanvasOffset.ORIGIN,
+      scale: DefaultScale,
+      offset: CanvasOffset.Origin,
       dragFrom: Option.none,
     };
   },
 
   zoomIn(view: CanvasView): CanvasView {
-    return scaleBy(view, ZOOM_FACTOR);
+    return scaleBy(view, ZoomFactor);
   },
 
   zoomOut(view: CanvasView): CanvasView {
-    return scaleBy(view, 1 / ZOOM_FACTOR);
+    return scaleBy(view, 1 / ZoomFactor);
   },
 
   /**

@@ -33,7 +33,7 @@ export type ClockFake = Readonly<{
   subscribedCount(): number;
 }>;
 
-const MILLISECONDS_PER_SECOND = 1000;
+const MillisecondsPerSecond = 1000;
 
 export const ClockFake = {
   create(startEpochMs = 0): ClockFake {
@@ -57,7 +57,7 @@ export const ClockFake = {
       },
 
       advanceSeconds(seconds) {
-        epochMs += seconds * MILLISECONDS_PER_SECOND;
+        epochMs += seconds * MillisecondsPerSecond;
         for (const listener of listeners) {
           listener();
         }

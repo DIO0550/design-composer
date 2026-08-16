@@ -20,7 +20,7 @@ function setupDocument(): DesignDocument {
   });
 }
 
-const DROP_TARGET: DropTarget = {
+const SampleDropTarget: DropTarget = {
   position: { parentName: "body", index: 0 },
   marker: { left: 0, top: 0, width: 100, height: 2 },
 };
@@ -45,7 +45,7 @@ test("ドラッグ中は受け入れ先の上にいる間だけ落ちる位置�
   const dragging = NodeDrag.moveTo(
     NodeDrag.grab("title", { x: 100, y: 100 }),
     { x: 100, y: 140 },
-    Option.some(DROP_TARGET),
+    Option.some(SampleDropTarget),
   );
 
   expect(Option.unwrap(NodeDrag.dropTarget(dragging)).position).toEqual({
@@ -58,7 +58,7 @@ test("受け入れられない場所へ移ると落ちる位置は無くなる",
   const dragging = NodeDrag.moveTo(
     NodeDrag.grab("title", { x: 100, y: 100 }),
     { x: 100, y: 140 },
-    Option.some(DROP_TARGET),
+    Option.some(SampleDropTarget),
   );
 
   const outside = NodeDrag.moveTo(dragging, { x: 100, y: 180 }, Option.none);
@@ -70,7 +70,7 @@ test("掴んでいないときのポインタ移動では何も起きない", ()
   const moved = NodeDrag.moveTo(
     NodeDrag.create(),
     { x: 100, y: 140 },
-    Option.some(DROP_TARGET),
+    Option.some(SampleDropTarget),
   );
 
   expect(NodeDrag.isDragging(moved)).toBe(false);
@@ -86,7 +86,7 @@ test("運んでから離したときは直後のクリックを選択に使わ�
   const dragging = NodeDrag.moveTo(
     NodeDrag.grab("title", { x: 100, y: 100 }),
     { x: 100, y: 140 },
-    Option.some(DROP_TARGET),
+    Option.some(SampleDropTarget),
   );
 
   expect(NodeDrag.consumesClick(NodeDrag.release(dragging))).toBe(true);
@@ -96,7 +96,7 @@ test("離したあとは何も掴んでいない状態に戻る", () => {
   const dragging = NodeDrag.moveTo(
     NodeDrag.grab("title", { x: 100, y: 100 }),
     { x: 100, y: 140 },
-    Option.some(DROP_TARGET),
+    Option.some(SampleDropTarget),
   );
 
   expect(NodeDrag.heldName(NodeDrag.release(dragging)).some).toBe(false);

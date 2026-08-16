@@ -100,7 +100,7 @@ export const FontWeight = {
  * フィールドを二重管理しない。`satisfies` で TypographyToken に無いフィールドが
  * 混ざらないことを、網羅は `__tests__/typography.type.test.ts` の型テストで担保する。
  */
-const TYPOGRAPHY_FIELDS = [
+const TypographyFields = [
   "fontSize",
   "lineHeight",
   "fontWeight",
@@ -108,7 +108,7 @@ const TYPOGRAPHY_FIELDS = [
 ] as const satisfies readonly (keyof Required<TypographyToken>)[];
 
 /** 書体が持つフィールドの名前。 */
-export type TypographyField = (typeof TYPOGRAPHY_FIELDS)[number];
+export type TypographyField = (typeof TypographyFields)[number];
 
 /**
  * 書体の1フィールドの書き換え。
@@ -167,7 +167,7 @@ export const TypographyFieldEdit = {
  * フィールドと、展開先の CSS プロパティ名の対応。
  * `satisfies` により、フィールドを増やしたらこの対応表の漏れがコンパイルエラーになる。
  */
-const CSS_PROPERTIES = {
+const CssProperties = {
   fontSize: "font-size",
   lineHeight: "line-height",
   fontWeight: "font-weight",
@@ -175,7 +175,7 @@ const CSS_PROPERTIES = {
 } as const satisfies Readonly<Record<TypographyField, string>>;
 
 /** 書体のフィールドが展開される CSS プロパティ名。 */
-export type TypographyCssProperty = (typeof CSS_PROPERTIES)[TypographyField];
+export type TypographyCssProperty = (typeof CssProperties)[TypographyField];
 
 /** フィールドと CSS プロパティ名の対応。 */
 export const TypographyField = {
@@ -184,7 +184,7 @@ export const TypographyField = {
    * 参照だけを組み立てる用途(`var()` 参照の生成)ではトークンを持たずに引ける。
    */
   cssProperty(field: TypographyField): TypographyCssProperty {
-    return CSS_PROPERTIES[field];
+    return CssProperties[field];
   },
 } as const;
 
@@ -212,7 +212,7 @@ function withFontFamily(
 /** 書体の値の読み書き・CSS 宣言への展開と、JSON 表現との相互変換。 */
 export const TypographyToken = {
   fields(): readonly TypographyField[] {
-    return TYPOGRAPHY_FIELDS;
+    return TypographyFields;
   },
 
   /** フォントファミリ省略時はシステムフォントスタックを既定値とする(docs/04-tokens.md)。 */
@@ -258,7 +258,7 @@ export const TypographyToken = {
           }),
         ),
         record,
-        TYPOGRAPHY_FIELDS,
+        TypographyFields,
       ),
     );
   },
