@@ -2,6 +2,7 @@ import { FormatVersion } from "@/domains/format-version";
 import type { JsonRecord } from "@/utils/Json";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
+import { migrateV1ToV2 } from "./v1-to-v2";
 
 /**
  * major ひとつ分の変換。1つの major を次の major の形へ写す（v1 → v2 の変換1つ分）。
@@ -52,11 +53,12 @@ export const DocumentMigrationError = {
 } as const;
 
 /**
- * 登録済みの変換ステップ。破壊的変更がまだ無いため空。
- * major を上げるときは変換元の major をキーにして1つ足す
- * (`1: migrateV1ToV2` のように、1つの major 分の変換を1つの塊として持つ)。
+ * 登録済みの変換ステップ。変換元の major をキーにして、1つの major 分の変換を
+ * 1つの塊として持つ。major を上げるときはここへ1つ足す。
  */
-const RegisteredMigrationSteps: MigrationSteps = {};
+const RegisteredMigrationSteps: MigrationSteps = {
+  1: migrateV1ToV2,
+};
 
 /**
  * JSON のデータモデルから formatVersion を読む。

@@ -12,33 +12,33 @@ function setupFailingSteps(): MigrationSteps {
 }
 
 test("major がアプリより大きいファイルは unsupported-format-version になる", () => {
-  const document: JsonRecord = { formatVersion: "2.0" };
+  const document: JsonRecord = { formatVersion: "3.0" };
 
   expect(DocumentMigration.toCurrent(document)).toEqual({
     ok: false,
     error: {
       kind: "unsupported-format-version",
-      fileVersion: { major: 2, minor: 0 },
-      appVersion: { major: 1, minor: 0 },
+      fileVersion: { major: 3, minor: 0 },
+      appVersion: { major: 2, minor: 0 },
     },
   });
 });
 
 test("major が一致し minor がアプリより大きいファイルは unsupported-format-version になる", () => {
-  const document: JsonRecord = { formatVersion: "1.5" };
+  const document: JsonRecord = { formatVersion: "2.5" };
 
   expect(DocumentMigration.toCurrent(document)).toEqual({
     ok: false,
     error: {
       kind: "unsupported-format-version",
-      fileVersion: { major: 1, minor: 5 },
-      appVersion: { major: 1, minor: 0 },
+      fileVersion: { major: 2, minor: 5 },
+      appVersion: { major: 2, minor: 0 },
     },
   });
 });
 
 test("新しすぎるファイルのメッセージはアプリの更新を促す", () => {
-  const result = DocumentMigration.toCurrent({ formatVersion: "2.0" });
+  const result = DocumentMigration.toCurrent({ formatVersion: "3.0" });
 
   expect(
     result.ok ? "" : DocumentMigrationError.message(result.error),

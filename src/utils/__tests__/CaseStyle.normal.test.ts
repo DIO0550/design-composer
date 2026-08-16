@@ -6,7 +6,7 @@ test("camelCase は語の切れ目で分かれ、先頭が大文字の Capital C
 });
 
 test("大文字1文字の語も独立した語として分かれる", () => {
-  expect(CaseStyle.toCapitalCase("paddingX")).toBe("Padding X");
+  expect(CaseStyle.toCapitalCase("positionX")).toBe("Position X");
 });
 
 test("語が3つ以上でもすべての切れ目で分かれる", () => {

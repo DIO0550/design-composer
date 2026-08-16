@@ -40,7 +40,7 @@ export const Single: Story = {
  * 複数形が出る状態。
  *
  * `SampleEditorState` では作れないので専用のドキュメントを組む。あちらで同じトークンを
- * 2 箇所から指しているのは artboard の props（`gap` / `paddingX`）で、artboard は
+ * 2 箇所から指しているのは artboard の props（`gap` / `paddingRight`）で、artboard は
  * 破線の相手にならないため件数が 0 になる。
  */
 export const Multiple: Story = {

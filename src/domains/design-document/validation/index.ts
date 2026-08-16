@@ -15,7 +15,7 @@ import {
   PropDefinitionRecord,
 } from "@/domains/primitive-schema";
 import { TokenSet } from "@/domains/token";
-import type { DesignDocumentV1 as DesignDocument } from "../v1";
+import type { DesignDocumentV2 as DesignDocument } from "../v2";
 
 /** ドキュメントが不正になる理由（docs/03-schema.md「バリデーション仕様」）。 */
 export type DesignDocumentValidationErrorKind =

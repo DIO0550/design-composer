@@ -52,7 +52,12 @@ const NestedEditorState = EditorState.create(
         name: "nested",
         width: 360,
         height: 240,
-        props: { direction: "column", gap: "md", paddingX: "lg" },
+        props: {
+          direction: "column",
+          gap: "md",
+          paddingRight: "lg",
+          paddingLeft: "lg",
+        },
         children: [
           {
             name: "header",

@@ -20,8 +20,10 @@ export const SampleDocument = DesignDocument.create({
       props: {
         direction: "column",
         gap: "md",
-        paddingX: "lg",
-        paddingY: "lg",
+        paddingTop: "lg",
+        paddingRight: "lg",
+        paddingBottom: "lg",
+        paddingLeft: "lg",
         background: "white",
       },
       children: [
@@ -44,8 +46,10 @@ export const SampleDocument = DesignDocument.create({
       props: {
         direction: "column",
         gap: "md",
-        paddingX: "lg",
-        paddingY: "lg",
+        paddingTop: "lg",
+        paddingRight: "lg",
+        paddingBottom: "lg",
+        paddingLeft: "lg",
         background: "gray-100",
       },
       children: [

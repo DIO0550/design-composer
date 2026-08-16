@@ -19,30 +19,29 @@ const DocumentFields = [
 ] as const;
 
 /** この版の major。型にもデコードの検証にもこの1箇所から与える。 */
-const Major = 1;
+const Major = 2;
 
 /**
- * major 1 の仕様で書かれたドキュメント(docs/01-file-format.md)。
+ * major 2 の仕様で書かれたドキュメント(docs/01-file-format.md)。
+ * major 1 との違いは Box の padding が4方向個別になったことで、
+ * トップレベルの形は変わっていない。
  *
  * `formatVersion` の major が型に固定されているので、この型の値は
- * 1 以外の major を名乗れない（中身の形と名乗る版が食い違う状態を作れない）。
- * minor は後方互換な追加なので幅を持つ（1.0 のファイルも 1.2 のファイルもこの形）。
+ * 2 以外の major を名乗れない（中身の形と名乗る版が食い違う状態を作れない）。
+ * minor は後方互換な追加なので幅を持つ（2.0 のファイルも 2.2 のファイルもこの形）。
  *
- * 版を上げるときはこのフォルダを残したまま隣に `v2/` を作る。
- * 残すのは「1.x を名乗るテキストがこの版として読める」という検査を保つため。
- *
- * Why not マイグレーションをこの型で書く: `libs/document-migration` の `MigrationStep`
- * は `JsonRecord` のまま扱う。旧 major のファイルは今のドメインの型では表せない
- * （表せなくなる変更が major の定義）ので、デコード前の形で写す。
+ * Why not 共通化: `v1/` とはトップレベルの読み書きがまだ同じだが、次の major が
+ * 壊すのはまさにこの形なので、差分を `Major` だけにまとめると次に形が割れたときに
+ * 共通側を割り直すことになる。
  */
-export type DesignDocumentV1 = Readonly<{
+export type DesignDocumentV2 = Readonly<{
   formatVersion: FormatVersionOf<typeof Major>;
   tokens: TokenSet;
   components: ComponentSet;
   artboards: readonly Artboard[];
 }>;
 
-export const DesignDocumentV1 = {
+export const DesignDocumentV2 = {
   /**
    * JSON のデータモデルからこの版のドキュメントを組み立てる。
    * 検証するのは形（必須フィールド・型・未知フィールド）だけで、
@@ -53,7 +52,7 @@ export const DesignDocumentV1 = {
    * 互換性判定とマイグレーション自体はデコードより前
    * （JSON のデータモデルの段階）で `libs/document-migration` が済ませている。
    */
-  fromJson(cursor: JsonCursor): JsonDecoded<DesignDocumentV1> {
+  fromJson(cursor: JsonCursor): JsonDecoded<DesignDocumentV2> {
     return Result.flatMap(Json.record(cursor), (record) =>
       Json.knownFields(
         Json.combine4(
@@ -83,7 +82,7 @@ export const DesignDocumentV1 = {
    * 明示的に設定された値だけを書き、スキーマのデフォルト値は書かない
    * （ドキュメントはそもそも明示的な props しか保持しない）。
    */
-  toJson(document: DesignDocumentV1): JsonObject {
+  toJson(document: DesignDocumentV2): JsonObject {
     return {
       formatVersion: FormatVersion.format(document.formatVersion),
       tokens: TokenSet.toJson(document.tokens),

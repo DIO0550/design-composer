@@ -23,8 +23,10 @@ export const SampleEditorState = EditorState.create(
         props: {
           direction: "column",
           gap: "md",
-          paddingX: "lg",
-          paddingY: "lg",
+          paddingTop: "lg",
+          paddingRight: "lg",
+          paddingBottom: "lg",
+          paddingLeft: "lg",
           background: "white",
         },
         children: [
@@ -47,8 +49,10 @@ export const SampleEditorState = EditorState.create(
         props: {
           direction: "column",
           gap: "md",
-          paddingX: "lg",
-          paddingY: "lg",
+          paddingTop: "lg",
+          paddingRight: "lg",
+          paddingBottom: "lg",
+          paddingLeft: "lg",
           background: "gray-100",
         },
         children: [
@@ -63,7 +67,13 @@ export const SampleEditorState = EditorState.create(
         name: "overflow",
         width: 240,
         height: 160,
-        props: { paddingX: "md", paddingY: "md", background: "white" },
+        props: {
+          paddingTop: "md",
+          paddingRight: "md",
+          paddingBottom: "md",
+          paddingLeft: "md",
+          background: "white",
+        },
         children: [
           {
             name: "overflow-wide",

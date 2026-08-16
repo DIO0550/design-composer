@@ -26,7 +26,7 @@ export type FormatVersionCompatibility =
   | "unsupported";
 
 /** アプリが読み書きする仕様の major。ドメインの型はこの major に固定される。 */
-const CurrentMajor = 1;
+const CurrentMajor = 2;
 
 const Current: FormatVersionOf<typeof CurrentMajor> = {
   major: CurrentMajor,

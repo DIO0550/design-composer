@@ -41,7 +41,8 @@ function setupState(): EditorState {
                 background: "missing",
                 /* 解決値が出ない側（dangling）と、同じ画面に出る側の対照。 */
                 gap: "nope",
-                paddingX: "sm",
+                paddingRight: "sm",
+                paddingLeft: "sm",
                 shadow: "sm",
               },
             },
@@ -179,13 +180,13 @@ test("数値のトークン参照には解決後の値が欄の説明として�
 
 test("実在しないトークンを指す数値の prop には解決値が出ない", () => {
   /*
-   * 同じ画面の `Padding X` が対照（`sm` → 8）。何も出ない入力で確かめると、
+   * 同じ画面の `Padding Right` が対照（`sm` → 8）。何も出ない入力で確かめると、
    * 併記を丸ごと消しても通ってしまう。
    */
   renderPanel(EditorState.select(setupState(), "home-odd"));
 
   expect(
-    screen.getByRole("combobox", { name: "Padding X", description: "8" }),
+    screen.getByRole("combobox", { name: "Padding Right", description: "8" }),
   ).toBeDefined();
   expect(
     screen
@@ -252,7 +253,7 @@ test("既定を持たない未指定の prop は未指定とだけ出る", () =>
 test("prop 名は camelCase の切れ目で語に分けた表示名になる", () => {
   renderPanel(EditorState.select(setupState(), "home"));
 
-  expect(screen.getByRole("combobox", { name: "Padding X" })).toBeDefined();
+  expect(screen.getByRole("combobox", { name: "Padding Right" })).toBeDefined();
 });
 
 test("group ごとのセクションが見出しとして出る", () => {

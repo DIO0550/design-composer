@@ -8,7 +8,7 @@ test("トップレベルのフィールドは仕様の定義順で書き出さ�
   const text = DocumentJson.serialize(document);
 
   expect(text).toBe(`{
-  "formatVersion": "1.0",
+  "formatVersion": "2.0",
   "tokens": {},
   "components": {},
   "artboards": []
