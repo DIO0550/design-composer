@@ -39,6 +39,34 @@
 - **名前が思いつかないのは、その型が2つの役割を抱き合わせているサイン**であることが多い。改名で解決しようとする前に役割を分けられないか確認する(分けた結果その型自体が不要になることもある)
 - 例: 「名前空間の構成要素」と「エラー報告用の位置」を1つの型に持たせていたため名前が付かなかった → 役割を分けたら型が不要になった
 
+## 定数は PascalCase
+
+**`const` の名前に SCREAMING_SNAKE_CASE を使わない。** オブジェクト・配列・スカラーのどれでも、また export の有無にもよらず PascalCase で書く。コンパニオンオブジェクトのメンバー(`DocumentTemplate.Default` / `DocumentSaveState.Saved`)も同じ。呼び出し側が `Hoge.Fuga` の形で読めるよう、`.` の左右で綴りの流儀を割らないため。
+
+| NG | OK |
+|---|---|
+| `const AUTO_SAVE_DEBOUNCE_MS = 500;` | `const AutoSaveDebounceMs = 500;` |
+| `DocumentTemplate.DEFAULT` | `DocumentTemplate.Default` |
+
+### プロパティを PascalCase にするのは「キーが値の別名」のときだけ
+
+**キーと値が同じ 1 つの語彙を指している定数**(`Axes` / `LeftPaneViews` / `DocumentErrorOrigins`)は、キーも PascalCase にする。値を名前で指すための定数なので、キーは値の綴り違いでしかない。
+
+```typescript
+// OK: キーは値の別名なので PascalCase にする
+export const Axes = { Width: "width", Height: "height" } as const;
+```
+
+**それ以外はキーを据え置く。** キーが「何かを引くための見出し」になっているものは、キーの綴りが別の都合で決まっている。
+
+| キーが何か | 例 | 据え置く理由 |
+|---|---|---|
+| union の値を引く見出し | `LeftPaneViewLabels[view]` / `KindLabels` | 引くたびに実行時の capitalize が要る |
+| 外部フォーマットのキー | `BoxSchema.props.direction` | `docs/01-file-format.md` の JSON キーそのもの |
+| 表示文字列・フィクスチャの見出し | `Labels.instance` / `SaveStates.saved` | 値が別のもの(表示文字列・オブジェクト)で、キーの語彙ではない |
+
+判断の仕方: **キーを値へ置き換えても意味が変わらないか。** 変わらないならキーは値の別名なので PascalCase、変わるなら見出しなので据え置く。
+
 ## ファイル名
 
 - **ファイル名を関数名にしない。** ファイルはモジュールであり、その中の1関数の名前ではない(`resolve-prop-definition.ts` のような名前は付けない)。分割するときはモジュールとして意味のある名前を付ける
