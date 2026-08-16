@@ -21,13 +21,18 @@ export type LeftPaneView = (typeof LeftPaneViewOrder)[number];
 /**
  * 行き先を名前で指すための対応表。消費側が綴りを直接書かずに済むよう置く
  * （rules/coding.md「値の集合から union を導出する」）。
- * 過不足は `Record<LeftPaneView, LeftPaneView>` がコンパイルエラーにする。
+ * 過不足は `Record<Capitalize<LeftPaneView>, LeftPaneView>` がコンパイルエラーにする。
+ *
+ * Why not: キーの型を `LeftPaneView` のままにしない。行き先を PascalCase で指す形に
+ * すると、キーの型も `Capitalize` を通さないと `satisfies` が落ちる。ただし行き先の
+ * id にハイフンや複数語が入ると `Capitalize<"left-pane">` = `"Left-pane"` を型が
+ * 要求するので、そのときはキーの綴りを別に持つ。
  */
 export const LeftPaneViews = {
-  layers: "layers",
-  assets: "assets",
-  tokens: "tokens",
-} as const satisfies Readonly<Record<LeftPaneView, LeftPaneView>>;
+  Layers: "layers",
+  Assets: "assets",
+  Tokens: "tokens",
+} as const satisfies Readonly<Record<Capitalize<LeftPaneView>, LeftPaneView>>;
 
 /**
  * 行き先の名前。データモデルの語ではなく UI 案の綴りに合わせる。

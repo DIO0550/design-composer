@@ -40,7 +40,7 @@ function LeftPaneContent({
   token: TokenActions;
 }>): ReactElement {
   switch (view) {
-    case LeftPaneViews.layers:
+    case LeftPaneViews.Layers:
       return (
         <>
           {/*
@@ -56,7 +56,7 @@ function LeftPaneContent({
           />
         </>
       );
-    case LeftPaneViews.assets:
+    case LeftPaneViews.Assets:
       return (
         <AssetsPanel
           assets={DesignDocument.componentAssets(EditorState.document(state))}
@@ -68,7 +68,7 @@ function LeftPaneContent({
           onInsert={node.insertInstance}
         />
       );
-    case LeftPaneViews.tokens:
+    case LeftPaneViews.Tokens:
       return (
         <TokenList
           state={state}
@@ -101,13 +101,13 @@ function leftPaneFooter(
   node: NodeActions,
 ): Option<ReactElement> {
   switch (view) {
-    case LeftPaneViews.layers:
+    case LeftPaneViews.Layers:
       return Option.none;
-    case LeftPaneViews.assets:
+    case LeftPaneViews.Assets:
       return Option.some(
         <CreateComponent state={state} onCreate={node.createComponent} />,
       );
-    case LeftPaneViews.tokens:
+    case LeftPaneViews.Tokens:
       return Option.none;
   }
 }

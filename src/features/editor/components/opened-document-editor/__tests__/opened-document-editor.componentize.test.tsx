@@ -32,7 +32,7 @@ async function goToAssets(): Promise<void> {
     within(
       screen.getByRole("navigation", { name: "左ペインの表示" }),
     ).getByRole("button", {
-      name: LeftPaneViewLabels[LeftPaneViews.assets],
+      name: LeftPaneViewLabels[LeftPaneViews.Assets],
     }),
   );
 }
@@ -74,7 +74,7 @@ test("Tokens を見ている間は部品化の入口が出ない", async () => {
     within(
       screen.getByRole("navigation", { name: "左ペインの表示" }),
     ).getByRole("button", {
-      name: LeftPaneViewLabels[LeftPaneViews.tokens],
+      name: LeftPaneViewLabels[LeftPaneViews.Tokens],
     }),
   );
 

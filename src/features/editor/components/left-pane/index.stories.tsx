@@ -64,17 +64,17 @@ type Story = StoryObj<typeof meta>;
 
 export const Layers: Story = {
   name: "Layers（ツリー）",
-  args: { view: LeftPaneViews.layers },
+  args: { view: LeftPaneViews.Layers },
 };
 
 export const Assets: Story = {
   name: "Assets（部品のパレット）",
-  args: { view: LeftPaneViews.assets },
+  args: { view: LeftPaneViews.Assets },
 };
 
 export const Tokens: Story = {
   name: "Tokens（トークン一覧）",
-  args: { view: LeftPaneViews.tokens },
+  args: { view: LeftPaneViews.Tokens },
 };
 
 /**
@@ -83,7 +83,7 @@ export const Tokens: Story = {
 export const AssetsInsertDisabled: Story = {
   name: "Assets（挿せる位置が無い）",
   args: {
-    view: LeftPaneViews.assets,
+    view: LeftPaneViews.Assets,
     node: { ...SampleNodeActions, isInsertEnabled: false },
   },
 };
@@ -94,7 +94,7 @@ export const AssetsInsertDisabled: Story = {
 export const LayersSelected: Story = {
   name: "Layers（ノードを選択中）",
   args: {
-    view: LeftPaneViews.layers,
+    view: LeftPaneViews.Layers,
     state: EditorState.select(SampleEditorState, "home"),
   },
 };
@@ -106,7 +106,7 @@ export const LayersSelected: Story = {
 export const LayersFrozen: Story = {
   name: "Layers（凍結中）",
   args: {
-    view: LeftPaneViews.layers,
+    view: LeftPaneViews.Layers,
     state: FileInvalidEditorState,
   },
 };

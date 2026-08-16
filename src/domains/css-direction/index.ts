@@ -12,8 +12,8 @@ export type CssDirection =
 
 /** サイズを指定する軸。走査するときは `Object.values(Axes)` で並びにする。 */
 export const Axes = {
-  width: "width",
-  height: "height",
+  Width: "width",
+  Height: "height",
 } as const;
 
 /** 大きさを測る向き。 */

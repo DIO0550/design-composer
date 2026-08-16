@@ -96,7 +96,7 @@ function RightPaneContent({
   }
 
   switch (view) {
-    case LeftPaneViews.tokens:
+    case LeftPaneViews.Tokens:
       return (
         <TokenEditor
           state={state}
@@ -105,8 +105,8 @@ function RightPaneContent({
           onRemoveToken={token.remove}
         />
       );
-    case LeftPaneViews.layers:
-    case LeftPaneViews.assets:
+    case LeftPaneViews.Layers:
+    case LeftPaneViews.Assets:
       return inspector;
   }
 }
@@ -231,7 +231,7 @@ function EditorPanes({
    * 両ペインを組むここに置く。
    */
   const [leftPaneView, setLeftPaneView] = useState<LeftPaneView>(
-    LeftPaneViews.layers,
+    LeftPaneViews.Layers,
   );
   useEditShortcuts();
 
@@ -268,7 +268,7 @@ function EditorPanes({
            */
           onReveal={(nodeName) => {
             node.reveal(nodeName);
-            setLeftPaneView(LeftPaneViews.layers);
+            setLeftPaneView(LeftPaneViews.Layers);
           }}
           fileRevert={fileRevert}
         />
@@ -285,7 +285,7 @@ function EditorPanes({
            * 「元の部品を示す」= パレットのその行を見せることになる。行の強調は
            * インスタンスを選んだ時点で出ているため、ここは行き先を変えるだけ。
            */
-          onGoToSource={() => setLeftPaneView(LeftPaneViews.assets)}
+          onGoToSource={() => setLeftPaneView(LeftPaneViews.Assets)}
         />
       </EditorLayout.RightPane>
     </EditorLayout>

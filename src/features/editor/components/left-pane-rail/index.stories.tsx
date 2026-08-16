@@ -21,15 +21,15 @@ type Story = StoryObj<typeof meta>;
 
 export const Layers: Story = {
   name: "Layers を見ている",
-  args: { current: LeftPaneViews.layers },
+  args: { current: LeftPaneViews.Layers },
 };
 
 export const Assets: Story = {
   name: "Assets を見ている",
-  args: { current: LeftPaneViews.assets },
+  args: { current: LeftPaneViews.Assets },
 };
 
 export const Tokens: Story = {
   name: "Tokens を見ている",
-  args: { current: LeftPaneViews.tokens },
+  args: { current: LeftPaneViews.Tokens },
 };
