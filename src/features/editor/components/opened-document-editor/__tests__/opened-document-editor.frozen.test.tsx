@@ -1,6 +1,7 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
+import { rowNames } from "@/features/editor/__tests__/row-names";
 import {
   breakFileExternally,
   canvasPane,
@@ -9,6 +10,7 @@ import {
   propertyPane,
   renderOpenedDocument,
   selectInTree,
+  tree,
   zoomToolbar,
 } from "./setup";
 
@@ -147,4 +149,52 @@ test("Tokens を開いたままファイルが壊れると、トークンの編�
     within(propertyPane()).queryByRole("region", { name: "トークン編集" }),
   ).toBeNull();
   expect(within(propertyPane()).getByText("選択は凍結中")).toBeDefined();
+});
+
+/*
+ * 凍結が**ショートカット経由の編集にも効く**こと（#155）。`inert` は `document` に
+ * 張ったキーハンドラを止めないので、ここが切れると凍結中の画面から編集が通る。
+ *
+ * ファイルが書き換わらないことはここでは見ない。自動保存は 500ms のデバウンスで、
+ * このファイルはフェイクタイマーを使っていないため、タイマーを進めない限り実装が
+ * 何をしてもファイルは変わらず assert が落ちない。書き込みの抑止は
+ * `use-auto-save.file-invalid.test.tsx` が持つ。
+ */
+
+test("ファイルが壊れると、Delete を押してもツリーからノードが消えない", async () => {
+  const fake = await renderOpenedDocument();
+  await selectInTree("home-title");
+  // 壊す前は消せることを対照に置く（Delete が元から効かない実装でも通ってしまうため）
+  await userEvent.keyboard("{Delete}");
+  expect(rowNames(tree())).toEqual(["home-login"]);
+  await fixFileExternally(fake);
+  await selectInTree("home-title");
+
+  await breakFileExternally(fake);
+  await userEvent.keyboard("{Delete}");
+
+  expect(rowNames(tree())).toEqual(["home-title", "home-login"]);
+});
+
+test("ファイルが壊れると、Ctrl+V を押してもツリーにノードが増えない", async () => {
+  const fake = await renderOpenedDocument();
+  await selectInTree("home-title");
+  await userEvent.keyboard("{Control>}c{/Control}");
+
+  await breakFileExternally(fake);
+  await userEvent.keyboard("{Control>}v{/Control}");
+
+  expect(rowNames(tree())).toEqual(["home-title", "home-login"]);
+});
+
+test("ファイルが壊れると、Ctrl+Z を押しても直前の編集が戻らない", async () => {
+  const fake = await renderOpenedDocument();
+  await selectInTree("home-title");
+  await userEvent.keyboard("{Delete}");
+  expect(rowNames(tree())).toEqual(["home-login"]);
+
+  await breakFileExternally(fake);
+  await userEvent.keyboard("{Control>}z{/Control}");
+
+  expect(rowNames(tree())).toEqual(["home-login"]);
 });

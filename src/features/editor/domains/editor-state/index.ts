@@ -30,7 +30,8 @@ import { Option } from "@/utils/Option";
  *
  * 現在地は常に「最後に正常だったドキュメント」で、外部変更を拒んでも差し替えない。
  * `fileValidity` が `invalid` の間は、画面に映っているものがファイルの現在の中身と違う
- * （docs/03-schema.md「不正ファイル時の挙動」）。
+ * （docs/03-schema.md「不正ファイル時の挙動」）。この間は編集を受け付けない。
+ * 古い表示から作った内容を書き出すと、より新しい外部の書き込みを潰すため（#155）。
  *
  * ドキュメント自身の不正（アプリ内の編集で作ったもの）はここに持たず
  * `EditorState.documentErrors` で導出する（#128）。
@@ -122,14 +123,43 @@ function withHistory(state: EditorState, history: EditHistory): EditorState {
 }
 
 /**
+ * 新しいドキュメントを履歴へ積んで現在地にする。凍結を見ない。
+ *
+ * `withEdit` と分けているのは、外部変更の取り込みが**凍結を解く側**だから。
+ * 取り込みを `withEdit` に通すと、渡す時点で妥当性を `valid` へ差し替えてあるために
+ * 必ず `some` になり、呼び出し側に永久に届かない `none` の分岐が増える。
+ *
+ * @param state 積む先のエディタの状態
+ * @param document 現在地にするドキュメント
+ * @returns 履歴に 1 件積まれ、それを現在地にしたエディタの状態
+ */
+function withRecorded(
+  state: EditorState,
+  document: DesignDocument,
+): EditorState {
+  return withHistory(state, EditHistory.record(state.history, document));
+}
+
+/**
  * 編集の結果を履歴へ積んで現在地にする。
+ *
+ * ファイルが不正な間は編集そのものが存在しないので `none`。映っているのは最後に正常
+ * だった表示で、そこへ加えた編集を書き出すと外部の書き込みを上書きしてしまうため
+ * （UI 案 docs/Design Composer.html の Error 画面が `freezes rail / panels / toolbar`）。
+ * ドキュメントが変わる経路をここ 1 箇所に絞っているので、編集を足しても凍結から漏れない。
  *
  * @param state 積む先のエディタの状態
  * @param document 編集後のドキュメント
- * @returns 履歴に 1 件積まれ、それを現在地にしたエディタの状態
+ * @returns 履歴に 1 件積まれ、それを現在地にしたエディタの状態。
+ *   ファイルが不正な間は `none`
  */
-function withEdit(state: EditorState, document: DesignDocument): EditorState {
-  return withHistory(state, EditHistory.record(state.history, document));
+function withEdit(
+  state: EditorState,
+  document: DesignDocument,
+): Option<EditorState> {
+  return FileValidity.isInvalid(state.fileValidity)
+    ? Option.none
+    : Option.some(withRecorded(state, document));
 }
 
 /**
@@ -225,7 +255,8 @@ export const EditorState = {
    *
    * 真のあいだ、画面に映っているのはファイルの現在の中身ではなく最後に正常だった
    * ドキュメントなので、表示を凍結する側（キャンバスのスクリム・両ペインの淡色・
-   * 上部バーのエラー表示 / #135）はこれを見て決める。
+   * 上部バーのエラー表示 / #135）はこれを見て決める。編集を止める側（`withEdit` /
+   * `undo` / `redo`）と自動保存も同じ妥当性を見る（#155）。
    *
    * 凍結するかどうかだけを尋ねる側（エラーも起点も要らない側）が `fileValidity` の
    * 直和を開かずに済むよう、判定はここに 1 つだけ置く。
@@ -383,7 +414,7 @@ export const EditorState = {
     );
     switch (reload.kind) {
       case "reloaded":
-        return withEdit({ ...state, fileValidity }, reload.document);
+        return withRecorded({ ...state, fileValidity }, reload.document);
       case "rejected":
         return { ...state, fileValidity };
     }
@@ -411,10 +442,15 @@ export const EditorState = {
    *
    * 戻る先が無ければ「その undo は存在しない」ことなので `none`。
    * ショートカットは履歴が空でも押せるため、画面の操作からこの `none` に到達する。
+   * ファイルが不正な間も `none`。現在地が動くとその内容が自動保存へ流れるので、
+   * 履歴を戻すことも凍結中は編集と同じ扱いにする。
    * 戻した結果は通常の編集と同じ経路でファイルへ自動保存される
    * （docs/05-architecture.md「保存モデル」）。
    */
   undo(state: EditorState): Option<EditorState> {
+    if (FileValidity.isInvalid(state.fileValidity)) {
+      return Option.none;
+    }
     return Option.map(EditHistory.undo(state.history), (history) =>
       withHistory(state, history),
     );
@@ -423,9 +459,13 @@ export const EditorState = {
   /**
    * undo で戻る前のドキュメントへ進める（docs/06-ui.md「編集操作の一覧」の redo / #41）。
    *
-   * 進む先が無ければ `none`。到達しうる理由は `undo` と同じ。
+   * 進む先が無ければ `none`。ファイルが不正な間も `none`。
+   * 到達しうる理由は `undo` と同じ。
    */
   redo(state: EditorState): Option<EditorState> {
+    if (FileValidity.isInvalid(state.fileValidity)) {
+      return Option.none;
+    }
     return Option.map(EditHistory.redo(state.history), (history) =>
       withHistory(state, history),
     );
@@ -449,9 +489,7 @@ export const EditorState = {
       from,
       toIndex,
     );
-    return reordered.ok
-      ? Option.some(withEdit(state, reordered.value))
-      : Option.none;
+    return reordered.ok ? withEdit(state, reordered.value) : Option.none;
   },
 
   /**
@@ -482,7 +520,7 @@ export const EditorState = {
       name,
       ChildPosition.afterRemoving(to, current.value),
     );
-    return moved.ok ? Option.some(withEdit(state, moved.value)) : Option.none;
+    return moved.ok ? withEdit(state, moved.value) : Option.none;
   },
 
   /**
@@ -532,9 +570,7 @@ export const EditorState = {
           at,
           node,
         );
-        return pasted.ok
-          ? Option.some(withEdit(state, pasted.value))
-          : Option.none;
+        return pasted.ok ? withEdit(state, pasted.value) : Option.none;
       }),
     );
   },
@@ -555,9 +591,7 @@ export const EditorState = {
         DesignDocument.usedNames(document),
       );
       const inserted = DesignDocument.insertNode(document, at, node);
-      return inserted.ok
-        ? Option.some(withEdit(state, inserted.value))
-        : Option.none;
+      return inserted.ok ? withEdit(state, inserted.value) : Option.none;
     });
   },
 
@@ -574,9 +608,7 @@ export const EditorState = {
         EditorState.document(state),
         name,
       );
-      return removed.ok
-        ? Option.some(withEdit(state, removed.value))
-        : Option.none;
+      return removed.ok ? withEdit(state, removed.value) : Option.none;
     });
   },
 
@@ -601,9 +633,7 @@ export const EditorState = {
         EditorState.document(state),
         name,
       );
-      return detached.ok
-        ? Option.some(withEdit(state, detached.value))
-        : Option.none;
+      return detached.ok ? withEdit(state, detached.value) : Option.none;
     });
   },
 
@@ -637,9 +667,7 @@ export const EditorState = {
         name,
         componentName,
       );
-      return created.ok
-        ? Option.some(withEdit(state, created.value))
-        : Option.none;
+      return created.ok ? withEdit(state, created.value) : Option.none;
     });
   },
 
@@ -658,9 +686,7 @@ export const EditorState = {
         name,
         edit,
       );
-      return edited.ok
-        ? Option.some(withEdit(state, edited.value))
-        : Option.none;
+      return edited.ok ? withEdit(state, edited.value) : Option.none;
     });
   },
 
@@ -680,9 +706,7 @@ export const EditorState = {
         name,
         size,
       );
-      return resized.ok
-        ? Option.some(withEdit(state, resized.value))
-        : Option.none;
+      return resized.ok ? withEdit(state, resized.value) : Option.none;
     });
   },
 
@@ -847,11 +871,8 @@ export const EditorState = {
     );
     const added = DesignDocument.addToken(document, token);
     return added.ok
-      ? Option.some(
-          EditorState.selectToken(
-            withEdit(state, added.value),
-            Token.ref(token),
-          ),
+      ? Option.map(withEdit(state, added.value), (edited) =>
+          EditorState.selectToken(edited, Token.ref(token)),
         )
       : Option.none;
   },
@@ -870,9 +891,7 @@ export const EditorState = {
         EditorState.document(state),
         TokenValue.toToken(value, token.name),
       );
-      return replaced.ok
-        ? Option.some(withEdit(state, replaced.value))
-        : Option.none;
+      return replaced.ok ? withEdit(state, replaced.value) : Option.none;
     });
   },
 
@@ -893,11 +912,8 @@ export const EditorState = {
       if (!renamed.ok) {
         return Option.none;
       }
-      return Option.some(
-        EditorState.selectToken(withEdit(state, renamed.value), {
-          kind: ref.kind,
-          name: newName,
-        }),
+      return Option.map(withEdit(state, renamed.value), (edited) =>
+        EditorState.selectToken(edited, { kind: ref.kind, name: newName }),
       );
     });
   },
@@ -915,9 +931,7 @@ export const EditorState = {
         EditorState.document(state),
         ref,
       );
-      return removed.ok
-        ? Option.some(withEdit(state, removed.value))
-        : Option.none;
+      return removed.ok ? withEdit(state, removed.value) : Option.none;
     });
   },
 } as const;
