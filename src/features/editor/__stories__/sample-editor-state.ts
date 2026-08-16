@@ -11,10 +11,10 @@ import { EditorState } from "@/features/editor/domains/editor-state";
  * 3 枚目は中身が artboard より大きく、はみ出しがデフォルトで clip されることを
  * 目で確認できるようにしている（docs/01「はみ出し: …デフォルトで clip」）。
  */
-export const SAMPLE_EDITOR_STATE = EditorState.create(
+export const SampleEditorState = EditorState.create(
   DesignDocument.create({
-    tokens: DocumentTemplate.DEFAULT.tokens,
-    components: DocumentTemplate.DEFAULT.components,
+    tokens: DocumentTemplate.Default.tokens,
+    components: DocumentTemplate.Default.components,
     artboards: [
       {
         name: "home",
@@ -85,7 +85,7 @@ export const SAMPLE_EDITOR_STATE = EditorState.create(
 );
 
 /** artboard も部品も持たないドキュメントの状態（空表示の確認用）。 */
-export const EMPTY_EDITOR_STATE = EditorState.create(
+export const EmptyEditorState = EditorState.create(
   DesignDocument.create({ artboards: [] }),
 );
 
@@ -95,7 +95,7 @@ export const EMPTY_EDITOR_STATE = EditorState.create(
  *
  * 上部バー単体のストーリーも件数だけを必要とするので、同じものを共有する。
  */
-export const SAMPLE_FILE_ERRORS: readonly DocumentError[] = [
+export const SampleFileErrors: readonly DocumentError[] = [
   {
     kind: "syntax-error",
     message: "expected ',' or '}'",
@@ -116,8 +116,8 @@ export const SAMPLE_FILE_ERRORS: readonly DocumentError[] = [
  * 2 軸とも fixed のものだけ**だから。ノード（`home-title`）を選ぶと凍結の有無に関わらず
  * ハンドルが出ず、「凍結中はハンドルを出さない」がストーリーに現れない。
  */
-export const FILE_INVALID_EDITOR_STATE = EditorState.applyReload(
-  EditorState.select(SAMPLE_EDITOR_STATE, "home"),
-  { kind: "rejected", errors: SAMPLE_FILE_ERRORS },
+export const FileInvalidEditorState = EditorState.applyReload(
+  EditorState.select(SampleEditorState, "home"),
+  { kind: "rejected", errors: SampleFileErrors },
   Instant.create(0),
 );

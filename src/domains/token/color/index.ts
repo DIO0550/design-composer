@@ -6,13 +6,13 @@ import { Result } from "@/utils/Result";
 /** 色の値。`#rrggbb` または alpha 込みの `#rrggbbaa`(docs/04-tokens.md)。 */
 export type ColorToken = string;
 
-const HEX_COLOR_PATTERN = /^#[0-9a-f]{6}([0-9a-f]{2})?$/;
+const HexColorPattern = /^#[0-9a-f]{6}([0-9a-f]{2})?$/;
 
 /** 大文字の hex も受ける版。正規化の対象かどうかの判定にだけ使う。 */
-const ANY_CASE_HEX_COLOR_PATTERN = /^#[0-9a-f]{6}([0-9a-f]{2})?$/i;
+const AnyCaseHexColorPattern = /^#[0-9a-f]{6}([0-9a-f]{2})?$/i;
 
 /** alpha を持たない6桁だけの hex。大文字も受ける(生成時に小文字へ倒す)。 */
-const ANY_CASE_RGB_PATTERN = /^#[0-9a-f]{6}$/i;
+const AnyCaseRgbPattern = /^#[0-9a-f]{6}$/i;
 
 /**
  * alpha を持たない色(`#rrggbb`)。
@@ -33,7 +33,7 @@ export const Rgb = {
    * 「生成された = 6桁の小文字 hex である」を成立させるための唯一の入口。
    */
   create(value: string): Option<Rgb> {
-    return ANY_CASE_RGB_PATTERN.test(value)
+    return AnyCaseRgbPattern.test(value)
       ? // 実行時に6桁 hex であることを確かめた戻り値なので、ここだけ as を許す
         Option.some(value.toLowerCase() as Rgb)
       : Option.none;
@@ -50,17 +50,17 @@ export const Rgb = {
  * @returns 小文字の 2 桁。alpha を持たなければ空文字
  */
 function alphaOf(color: ColorToken): string {
-  return ANY_CASE_HEX_COLOR_PATTERN.exec(color)?.[1]?.toLowerCase() ?? "";
+  return AnyCaseHexColorPattern.exec(color)?.[1]?.toLowerCase() ?? "";
 }
 
 /** 不透明を表す alpha の 2 桁。 */
-const OPAQUE_ALPHA_HEX = "ff";
+const OpaqueAlphaHex = "ff";
 
 /** alpha を最大まで開いたときのバイト値。 */
-const OPAQUE_ALPHA_BYTE = 255;
+const OpaqueAlphaByte = 255;
 
 /** `#` と 6 桁を合わせた長さ。alpha の桁を落とすときの切り取り位置。 */
-const RGB_LENGTH = 7;
+const RgbLength = 7;
 
 /**
  * 不透明度の % の値域。
@@ -75,7 +75,7 @@ const AlphaPercentRange: Range = { min: 0, max: 100 };
  * 155 通りが別の値になり（`#rrggbb01` は 0% を経由して完全な透明になる）、
  * 往復で値が変わらないという仕様（#142）を満たせない。
  */
-const PERCENT_STEPS_PER_UNIT = 10;
+const PercentStepsPerUnit = 10;
 
 export const ColorToken = {
   /**
@@ -84,7 +84,7 @@ export const ColorToken = {
    * 構造的に排除するため(docs/04-tokens.md「値の形式」)。
    */
   isValid(value: string): boolean {
-    return HEX_COLOR_PATTERN.test(value);
+    return HexColorPattern.test(value);
   },
 
   /**
@@ -98,12 +98,12 @@ export const ColorToken = {
    * (あちらが定めているのは既定値の解決規則で、表記の規則ではない)。
    */
   normalize(value: string): ColorToken {
-    if (!ANY_CASE_HEX_COLOR_PATTERN.test(value)) {
+    if (!AnyCaseHexColorPattern.test(value)) {
       return value;
     }
     const lowered = value.toLowerCase();
-    return alphaOf(lowered) === OPAQUE_ALPHA_HEX
-      ? lowered.slice(0, RGB_LENGTH)
+    return alphaOf(lowered) === OpaqueAlphaHex
+      ? lowered.slice(0, RgbLength)
       : lowered;
   },
 
@@ -117,8 +117,8 @@ export const ColorToken = {
    * @returns hex として読めた場合だけ `some`。読めない値は取り出しようがないので `none`
    */
   rgbOf(color: ColorToken): Option<Rgb> {
-    return ANY_CASE_HEX_COLOR_PATTERN.test(color)
-      ? Rgb.create(color.slice(0, RGB_LENGTH))
+    return AnyCaseHexColorPattern.test(color)
+      ? Rgb.create(color.slice(0, RgbLength))
       : Option.none;
   },
 
@@ -131,10 +131,10 @@ export const ColorToken = {
    */
   alphaPercentOf(color: ColorToken): number {
     const alpha = alphaOf(color);
-    const byte = alpha === "" ? OPAQUE_ALPHA_BYTE : Number.parseInt(alpha, 16);
+    const byte = alpha === "" ? OpaqueAlphaByte : Number.parseInt(alpha, 16);
     return (
-      Math.round((byte / OPAQUE_ALPHA_BYTE) * 100 * PERCENT_STEPS_PER_UNIT) /
-      PERCENT_STEPS_PER_UNIT
+      Math.round((byte / OpaqueAlphaByte) * 100 * PercentStepsPerUnit) /
+      PercentStepsPerUnit
     );
   },
 
@@ -163,7 +163,7 @@ export const ColorToken = {
       return Option.none;
     }
     return Option.map(ColorToken.rgbOf(color), (rgb) => {
-      const byte = Math.round((percent / 100) * OPAQUE_ALPHA_BYTE);
+      const byte = Math.round((percent / 100) * OpaqueAlphaByte);
       // 不透明なら6桁へ倒すのは normalize の担当。ここで二重に持たない
       return ColorToken.normalize(
         `${rgb}${byte.toString(16).padStart(2, "0")}`,

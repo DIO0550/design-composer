@@ -3,39 +3,39 @@ import { artboardContent } from "@/features/editor/__tests__/sample-document";
 import { DocumentSession } from "@/features/editor/domains/document-session";
 import { DialogChoice } from "@/libs/document-dialog/fake";
 import { Option } from "@/utils/Option";
-import { PATH, renderDocumentSession } from "./setup";
+import { Path, renderDocumentSession } from "./setup";
 
-const NEW_PATH = "/work/untitled.dcmp";
+const NewPath = "/work/untitled.dcmp";
 
 test("ファイルを選ばずにダイアログを閉じると、何も開かれない", async () => {
   const observer = renderDocumentSession(
-    { [PATH]: artboardContent("home") },
-    { open: DialogChoice.CANCELED, save: DialogChoice.CANCELED },
+    { [Path]: artboardContent("home") },
+    { open: DialogChoice.Canceled, save: DialogChoice.Canceled },
   );
 
   await observer.openDocument();
 
-  expect(observer.session()).toStrictEqual(DocumentSession.CLOSED);
+  expect(observer.session()).toStrictEqual(DocumentSession.Closed);
 });
 
 test("開いている最中にダイアログを閉じても、開いていたドキュメントはそのまま残る", async () => {
   const observer = renderDocumentSession(
     {},
-    { open: DialogChoice.CANCELED, save: DialogChoice.chosen(NEW_PATH) },
+    { open: DialogChoice.Canceled, save: DialogChoice.chosen(NewPath) },
   );
   await observer.createDocument();
 
   await observer.openDocument();
 
   expect(DocumentSession.openedPath(observer.session())).toStrictEqual(
-    Option.some(NEW_PATH),
+    Option.some(NewPath),
   );
 });
 
 test("読み込めないファイルを選ぶと、その失敗が残る", async () => {
   const observer = renderDocumentSession(
     {},
-    { open: DialogChoice.chosen(PATH), save: DialogChoice.CANCELED },
+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
   );
 
   await observer.openDocument();
@@ -43,15 +43,15 @@ test("読み込めないファイルを選ぶと、その失敗が残る", async
   expect(observer.session()).toStrictEqual(
     DocumentSession.failed({
       kind: "io",
-      error: { kind: "notFound", message: `${PATH}: ファイルが存在しない` },
+      error: { kind: "notFound", message: `${Path}: ファイルが存在しない` },
     }),
   );
 });
 
 test("内容が不正なファイルを選ぶと、エラー一覧が残る", async () => {
   const observer = renderDocumentSession(
-    { [PATH]: '{ "formatVersion": ' },
-    { open: DialogChoice.chosen(PATH), save: DialogChoice.CANCELED },
+    { [Path]: '{ "formatVersion": ' },
+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
   );
 
   await observer.openDocument();
@@ -75,7 +75,7 @@ test("ダイアログを出せなかったときは、その失敗が残る", as
     {},
     {
       open: DialogChoice.failed("dialog.open not allowed"),
-      save: DialogChoice.CANCELED,
+      save: DialogChoice.Canceled,
     },
   );
 

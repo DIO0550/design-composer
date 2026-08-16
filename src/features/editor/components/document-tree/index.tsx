@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { ChildPosition } from "@/domains/child-position";
 import { Node, type PrimitiveNode } from "@/domains/node";
-import type { TEXT_SCHEMA } from "@/domains/primitive-schema";
+import type { TextSchema } from "@/domains/primitive-schema";
 import { TypeGlyph } from "@/features/editor/components/type-glyph";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import {
@@ -13,18 +13,18 @@ import { Option } from "@/utils/Option";
 import { SetEx } from "@/utils/SetEx";
 
 /** 1 段ぶんの字下げ幅と、行の左端の余白（px）。 */
-const INDENT_WIDTH_PX = 12;
-const ROW_PADDING_PX = 8;
+const IndentWidthPx = 12;
+const RowPaddingPx = 8;
 
 /**
  * 開閉の三角を置く枠（UI 案 docs/Design Composer.html の実測値は 10px）。
  * 子を持たない行でも同じ幅を空けて、型アイコンの左端を兄弟と揃える
  * （UI 案も子を持たない行に空の枠を置いている）。
  */
-const BRANCH_TOGGLE_SLOT_STYLE = { width: "10px" };
+const BranchToggleSlotStyle = { width: "10px" };
 
 /** 文言を読む prop。Text のスキーマが宣言している名前に限る。 */
-const CONTENT_PROP = "content" satisfies keyof typeof TEXT_SCHEMA.props;
+const ContentProp = "content" satisfies keyof typeof TextSchema.props;
 
 /**
  * 名前の右に出す補助情報。何を出すかは種別ごとに違うので、種別と値を対で持つ。
@@ -50,7 +50,7 @@ type TreeItemMarks = Readonly<{
  * @returns 文言を持つなら `some`。未設定と空文字なら `none`
  */
 function contentNote(node: PrimitiveNode): Option<TreeItemNote> {
-  const content = node.props?.[CONTENT_PROP];
+  const content = node.props?.[ContentProp];
   if (content === undefined || content === "") {
     return Option.none;
   }
@@ -275,7 +275,7 @@ function BranchToggle({
       aria-label={`${name} の開閉`}
       aria-expanded={isExpanded}
       onClick={onToggle}
-      style={BRANCH_TOGGLE_SLOT_STYLE}
+      style={BranchToggleSlotStyle}
       /*
        * 列の幅は名前の左端を揃えるための 10px だが、それだけでは押す的が小さすぎる。
        * 疑似要素で当たり判定だけを外へ広げ、行の組み方（列幅）は変えない。
@@ -318,7 +318,7 @@ function TreeBranch({
     <>
       <div
         style={{
-          paddingInlineStart: `${ROW_PADDING_PX + depth * INDENT_WIDTH_PX}px`,
+          paddingInlineStart: `${RowPaddingPx + depth * IndentWidthPx}px`,
         }}
         className={`flex items-center gap-1.5 rounded py-1 pr-1 ${
           // 押せる範囲を示す hover と、選択の色を重ねない（選択中はホバーで灰にしない）
@@ -335,7 +335,7 @@ function TreeBranch({
           // 子を持たない行にも同じ幅を空け、型アイコンの左端を兄弟と揃える
           <span
             aria-hidden="true"
-            style={BRANCH_TOGGLE_SLOT_STYLE}
+            style={BranchToggleSlotStyle}
             className="shrink-0"
           />
         )}

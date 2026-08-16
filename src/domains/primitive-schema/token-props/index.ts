@@ -1,13 +1,13 @@
 import { PropDefinition, type TokenPropDefinition } from "../prop-definition";
 import {
-  PRIMITIVE_SCHEMAS,
   type PrimitiveSchema,
+  PrimitiveSchemas,
   type PrimitiveType,
 } from "../schema";
 
 /*
  * このフォルダは「スキーマが宣言した事実」を型として取り出すための導出を持つ。
- * スキーマ（`BOX_SCHEMA` / `TEXT_SCHEMA`）を `as const satisfies` で書いているため
+ * スキーマ（`BoxSchema` / `TextSchema`）を `as const satisfies` で書いているため
  * prop 名も `domain` も `tokenKind` もリテラル型として残っており、
  * 対応表を別に書き写さずに型レベルで走査できる。
  */
@@ -18,7 +18,7 @@ import {
  * prop 名も `tokenKind` もリテラル型が失われるため、スキーマの実体から直接引く。
  */
 type SchemaPropsOf<T extends PrimitiveType> =
-  (typeof PRIMITIVE_SCHEMAS)[T]["props"];
+  (typeof PrimitiveSchemas)[T]["props"];
 
 /**
  * ある primitive のうち `domain: "token"` と宣言された prop の名前。
@@ -76,8 +76,8 @@ export type TokenPropKinds = {
  * 集めているのはスキーマの宣言そのものなので、`TokenPropKinds` が表す事実は
  * この構築処理で成立している（狭い型への表明が許されるのはこの1箇所）。
  */
-const TOKEN_PROP_KINDS = Object.fromEntries(
-  Object.values(PRIMITIVE_SCHEMAS).flatMap((schema: PrimitiveSchema) =>
+const TokenPropKindTable = Object.fromEntries(
+  Object.values(PrimitiveSchemas).flatMap((schema: PrimitiveSchema) =>
     Object.entries(schema.props).flatMap(([name, definition]) =>
       PropDefinition.isToken(definition)
         ? [[name, definition.tokenKind] as const]
@@ -92,6 +92,6 @@ export const TokenPropKinds = {
    * 出力側が「どの種別から引くか」を書き写さずに済むよう、スキーマの宣言を引かせる。
    */
   kindOf<P extends TokenPropName>(prop: P): TokenPropKinds[P] {
-    return TOKEN_PROP_KINDS[prop];
+    return TokenPropKindTable[prop];
   },
 } as const;

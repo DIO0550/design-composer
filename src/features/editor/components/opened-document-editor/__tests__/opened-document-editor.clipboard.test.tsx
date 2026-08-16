@@ -17,7 +17,7 @@ import {
  */
 
 /** 開いた直後のツリーの行（今見ている artboard = home の配下）。 */
-const ORIGINAL_ROWS = ["home-title", "home-login"];
+const OriginalRows = ["home-title", "home-login"];
 
 test("配下のノードをコピーして貼ると自動で採番された複製が増える", async () => {
   await renderOpenedDocument();
@@ -54,7 +54,7 @@ test("artboard を選んでコピーしても貼れるものは増えない", as
   await userEvent.keyboard("{Control>}v{/Control}");
 
   // artboard はノードとして貼れない（複製は artboard 操作の担当 / #43）。
-  expect(rowNames(tree())).toEqual(ORIGINAL_ROWS);
+  expect(rowNames(tree())).toEqual(OriginalRows);
 });
 
 test("コピーしていない状態で Ctrl+V を押してもツリーは変わらない", async () => {
@@ -63,5 +63,5 @@ test("コピーしていない状態で Ctrl+V を押してもツリーは変わ
 
   await userEvent.keyboard("{Control>}v{/Control}");
 
-  expect(rowNames(tree())).toEqual(ORIGINAL_ROWS);
+  expect(rowNames(tree())).toEqual(OriginalRows);
 });

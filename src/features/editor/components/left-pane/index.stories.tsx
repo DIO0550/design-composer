@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
 import {
-  FILE_INVALID_EDITOR_STATE,
-  SAMPLE_EDITOR_STATE,
+  FileInvalidEditorState,
+  SampleEditorState,
 } from "@/features/editor/__stories__/sample-editor-state";
-import { LEFT_PANE_VIEWS } from "@/features/editor/components/left-pane-rail";
+import { LeftPaneViews } from "@/features/editor/components/left-pane-rail";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import type { NodeActions } from "@/features/editor/hooks/use-node-actions";
 import type { TokenActions } from "@/features/editor/hooks/use-token-actions";
@@ -14,7 +14,7 @@ import { LeftPane } from "./index";
  * 操作の受け口。ここでは押せることだけ分かればよいので、届いた先での編集は行わない
  * （編集まで通した様子は `OpenedDocumentEditor` のストーリーで見る）。
  */
-const NODE_ACTIONS: NodeActions = {
+const SampleNodeActions: NodeActions = {
   select: fn(),
   selectAt: fn(),
   clearSelection: fn(),
@@ -30,7 +30,7 @@ const NODE_ACTIONS: NodeActions = {
   isInsertEnabled: true,
 };
 
-const TOKEN_ACTIONS: TokenActions = {
+const SampleTokenActions: TokenActions = {
   select: fn(),
   add: fn(),
   setValue: fn(),
@@ -44,9 +44,9 @@ const meta = {
   parameters: { layout: "fullscreen" },
   args: {
     onSelectView: fn(),
-    state: SAMPLE_EDITOR_STATE,
-    node: NODE_ACTIONS,
-    token: TOKEN_ACTIONS,
+    state: SampleEditorState,
+    node: SampleNodeActions,
+    token: SampleTokenActions,
   },
   // 実際の幅（レール 56px + パネル 248px）と高さで見ないと、行の詰まり方が分からない。
   decorators: [
@@ -64,17 +64,17 @@ type Story = StoryObj<typeof meta>;
 
 export const Layers: Story = {
   name: "Layers（ツリー）",
-  args: { view: LEFT_PANE_VIEWS.layers },
+  args: { view: LeftPaneViews.layers },
 };
 
 export const Assets: Story = {
   name: "Assets（部品のパレット）",
-  args: { view: LEFT_PANE_VIEWS.assets },
+  args: { view: LeftPaneViews.assets },
 };
 
 export const Tokens: Story = {
   name: "Tokens（トークン一覧）",
-  args: { view: LEFT_PANE_VIEWS.tokens },
+  args: { view: LeftPaneViews.tokens },
 };
 
 /**
@@ -83,8 +83,8 @@ export const Tokens: Story = {
 export const AssetsInsertDisabled: Story = {
   name: "Assets（挿せる位置が無い）",
   args: {
-    view: LEFT_PANE_VIEWS.assets,
-    node: { ...NODE_ACTIONS, isInsertEnabled: false },
+    view: LeftPaneViews.assets,
+    node: { ...SampleNodeActions, isInsertEnabled: false },
   },
 };
 
@@ -94,8 +94,8 @@ export const AssetsInsertDisabled: Story = {
 export const LayersSelected: Story = {
   name: "Layers（ノードを選択中）",
   args: {
-    view: LEFT_PANE_VIEWS.layers,
-    state: EditorState.select(SAMPLE_EDITOR_STATE, "home"),
+    view: LeftPaneViews.layers,
+    state: EditorState.select(SampleEditorState, "home"),
   },
 };
 
@@ -106,7 +106,7 @@ export const LayersSelected: Story = {
 export const LayersFrozen: Story = {
   name: "Layers（凍結中）",
   args: {
-    view: LEFT_PANE_VIEWS.layers,
-    state: FILE_INVALID_EDITOR_STATE,
+    view: LeftPaneViews.layers,
+    state: FileInvalidEditorState,
   },
 };

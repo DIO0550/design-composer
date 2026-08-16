@@ -40,7 +40,7 @@ function setupState(selectedName?: string): EditorState {
     : EditorState.select(state, selectedName);
 }
 
-const TITLE_BOUNDS: CanvasBounds = {
+const TitleBounds: CanvasBounds = {
   left: 100,
   top: 50,
   width: 80,
@@ -82,7 +82,7 @@ test("部品の中身の Text を指しても編集できない", () => {
 test("空の下書きは content を空にする編集になる（未設定へは戻さない）", () => {
   const started = TextEdit.create(
     { name: "title", content: "ホーム" },
-    TITLE_BOUNDS,
+    TitleBounds,
   );
 
   expect(TextEdit.toPropEdit(TextEdit.withDraft(started, ""))).toEqual(

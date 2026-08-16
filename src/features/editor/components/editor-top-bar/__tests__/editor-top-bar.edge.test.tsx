@@ -1,7 +1,7 @@
 import { screen } from "@testing-library/react";
 import { expect, test } from "vitest";
 import { openedAt } from "@/features/editor/__tests__/sample-document";
-import { renderTopBar, SAVE_STATES } from "./setup";
+import { renderTopBar, SaveStates } from "./setup";
 
 test("親フォルダを持たないパスではファイルの名前だけが出る", () => {
   renderTopBar({ opened: openedAt("app.dcmp") });
@@ -21,7 +21,7 @@ test("区切りだけのパスではファイルの名前も親フォルダの�
 });
 
 test("書き込みが拒まれている間は保存に失敗したと出る", () => {
-  renderTopBar({ saveState: SAVE_STATES.failed });
+  renderTopBar({ saveState: SaveStates.failed });
 
   expect(screen.getByText("保存に失敗")).toBeDefined();
 });

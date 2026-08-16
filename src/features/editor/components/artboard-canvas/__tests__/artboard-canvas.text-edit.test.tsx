@@ -56,7 +56,7 @@ function drawnAt(name: string, bounds: CanvasBounds): Element {
 }
 
 /** 画面の (100, 50) に 80x20 で描かれている、という前提。 */
-const TITLE_BOUNDS: CanvasBounds = {
+const TitleBounds: CanvasBounds = {
   left: 100,
   top: 50,
   width: 80,
@@ -79,7 +79,7 @@ test("選択中の Text をダブルクリックすると今の文言が入っ�
 test("入力欄は文言が描かれている位置に重なる", () => {
   renderCanvas({ state: setupState("title") });
 
-  fireEvent.doubleClick(drawnAt("title", TITLE_BOUNDS));
+  fireEvent.doubleClick(drawnAt("title", TitleBounds));
 
   expect(editor().getAttribute("style")).toContain("left: 100px");
 });

@@ -2,8 +2,8 @@ import { expect, test } from "vitest";
 import { Artboard } from "@/domains/artboard";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import { Instant } from "@/domains/instant";
-import { SYNTAX_ERROR } from "@/features/editor/__tests__/document-errors";
-import { RECEIVED_AT } from "@/features/editor/__tests__/instants";
+import { DocumentSyntaxError } from "@/features/editor/__tests__/document-errors";
+import { ReceivedAt } from "@/features/editor/__tests__/instants";
 import type { DocumentErrorLocation } from "@/features/editor/domains/document-error";
 import { FileValidity } from "@/features/editor/domains/file-validity";
 import { Option } from "@/utils/Option";
@@ -18,7 +18,7 @@ import { EditorState } from "../index";
 function openedState(): EditorState {
   return EditorState.create(
     DesignDocument.create({
-      tokens: DocumentTemplate.DEFAULT.tokens,
+      tokens: DocumentTemplate.Default.tokens,
       artboards: [
         Artboard.create({
           name: "home",
@@ -43,7 +43,7 @@ function openedState(): EditorState {
 }
 
 /** dangling 参照が出る位置。表示の綴りは UI の担当なので、構造のまま比べる。 */
-const HOME_TITLE_TYPOGRAPHY: DocumentErrorLocation = {
+const HomeTitleTypography: DocumentErrorLocation = {
   kind: "node",
   nodeName: "home-title",
   prop: "typography",
@@ -63,7 +63,7 @@ test("使用中のトークンを削除すると、そのトークンを参照�
 
   expect(
     EditorState.documentErrors(removed).map((error) => error.location),
-  ).toStrictEqual([HOME_TITLE_TYPOGRAPHY]);
+  ).toStrictEqual([HomeTitleTypography]);
 });
 
 test("編集で不正が生まれていないうちはドキュメントのエラーは出ない", () => {
@@ -83,9 +83,9 @@ test("外部変更を拒んでいても、表示中のドキュメントが正�
     openedState(),
     {
       kind: "rejected",
-      errors: [SYNTAX_ERROR],
+      errors: [DocumentSyntaxError],
     },
-    RECEIVED_AT,
+    ReceivedAt,
   );
 
   expect(EditorState.documentErrors(rejected)).toStrictEqual([]);
@@ -96,16 +96,16 @@ test("外部変更を拒んでいる間に編集で作った不正は、ファ�
     openedState(),
     {
       kind: "rejected",
-      errors: [SYNTAX_ERROR],
+      errors: [DocumentSyntaxError],
     },
-    RECEIVED_AT,
+    ReceivedAt,
   );
 
   const removed = removeToken(rejected, "heading");
 
   expect(
     EditorState.documentErrors(removed).map((error) => error.location),
-  ).toStrictEqual([HOME_TITLE_TYPOGRAPHY]);
+  ).toStrictEqual([HomeTitleTypography]);
 });
 
 test("編集で不正を作ってもファイルのエラー一覧は変わらない", () => {
@@ -113,17 +113,17 @@ test("編集で不正を作ってもファイルのエラー一覧は変わら�
     openedState(),
     {
       kind: "rejected",
-      errors: [SYNTAX_ERROR],
+      errors: [DocumentSyntaxError],
     },
-    RECEIVED_AT,
+    ReceivedAt,
   );
 
   const removed = removeToken(rejected, "heading");
 
   expect(removed.fileValidity).toStrictEqual({
     kind: "invalid",
-    errors: [SYNTAX_ERROR],
-    since: RECEIVED_AT,
+    errors: [DocumentSyntaxError],
+    since: ReceivedAt,
   });
 });
 
@@ -133,7 +133,7 @@ test("編集で不正を作っても食い違いの起点は変わらない", ()
     openedState(),
     {
       kind: "rejected",
-      errors: [SYNTAX_ERROR],
+      errors: [DocumentSyntaxError],
     },
     receivedAt,
   );

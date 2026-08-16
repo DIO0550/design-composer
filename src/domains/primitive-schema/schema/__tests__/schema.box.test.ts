@@ -1,13 +1,13 @@
 import { expect, test } from "vitest";
 import { PropDefinition } from "../../prop-definition";
-import { BOX_SCHEMA, PrimitiveSchema } from "../index";
+import { BoxSchema, PrimitiveSchema } from "../index";
 
 test("Box は子を持てるスキーマとして定義されている", () => {
-  expect(BOX_SCHEMA.allowsChildren).toBe(true);
+  expect(BoxSchema.allowsChildren).toBe(true);
 });
 
 test("Box の direction は row / column の enum でデフォルトが column", () => {
-  const definition = BOX_SCHEMA.props.direction;
+  const definition = BoxSchema.props.direction;
   expect(PropDefinition.isEnum(definition)).toBe(true);
   expect(definition).toMatchObject({
     domain: "enum",
@@ -17,14 +17,14 @@ test("Box の direction は row / column の enum でデフォルトが column",
 });
 
 test("Box の gap は spacing トークン参照でデフォルトを持たない", () => {
-  const definition = BOX_SCHEMA.props.gap;
+  const definition = BoxSchema.props.gap;
   expect(PropDefinition.isToken(definition)).toBe(true);
   expect(definition).toMatchObject({ domain: "token", tokenKind: "spacing" });
   expect("default" in definition).toBe(false);
 });
 
 test("Box の width は widthMode が fixed のときのみ有効になる", () => {
-  const definition = BOX_SCHEMA.props.width;
+  const definition = BoxSchema.props.width;
   expect(PropDefinition.isLiteral(definition)).toBe(true);
   expect(PropDefinition.isEnabled(definition, { widthMode: "fixed" })).toBe(
     true,
@@ -35,7 +35,7 @@ test("Box の width は widthMode が fixed のときのみ有効になる", () 
 });
 
 test("Box の height は heightMode が fixed のときのみ有効になる", () => {
-  const definition = BOX_SCHEMA.props.height;
+  const definition = BoxSchema.props.height;
   expect(PropDefinition.isEnabled(definition, { heightMode: "fixed" })).toBe(
     true,
   );
@@ -45,7 +45,7 @@ test("Box の height は heightMode が fixed のときのみ有効になる", (
 });
 
 test("Box の overflow は visible / clip の enum でデフォルトが visible", () => {
-  const definition = BOX_SCHEMA.props.overflow;
+  const definition = BoxSchema.props.overflow;
   expect(definition).toMatchObject({
     domain: "enum",
     values: ["visible", "clip"],
@@ -54,5 +54,5 @@ test("Box の overflow は visible / clip の enum でデフォルトが visible
 });
 
 test("Box を指定するとその仕様が得られる", () => {
-  expect(PrimitiveSchema.forType("Box")).toBe(BOX_SCHEMA);
+  expect(PrimitiveSchema.forType("Box")).toBe(BoxSchema);
 });

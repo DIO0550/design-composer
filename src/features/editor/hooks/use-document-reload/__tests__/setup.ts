@@ -7,7 +7,7 @@ import type { Option } from "@/utils/Option";
 import { useDocumentReload } from "../index";
 
 /** 開いているファイル。テストの中で開いているファイルは常に 1 つ。 */
-export const PATH = "/work/login.dcmp";
+export const Path = "/work/login.dcmp";
 
 export type ReloadObserver = Readonly<{
   /** 取り込み結果が届いた順に入る。 */
@@ -23,7 +23,7 @@ export type ReloadObserver = Readonly<{
  */
 export async function renderDocumentReload(
   ipc: DocumentIpc,
-  path: string = PATH,
+  path: string = Path,
 ): Promise<ReloadObserver> {
   const reloads: DocumentReload[] = [];
   const { result, unmount } = renderHook(() =>
@@ -44,7 +44,7 @@ export async function renderDocumentReload(
 export async function changeExternally(
   fake: DocumentIpcFake,
   content: string,
-  path: string = PATH,
+  path: string = Path,
 ): Promise<void> {
   await changeFileExternally({ fake, path, content });
 }

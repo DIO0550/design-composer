@@ -2,21 +2,21 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
 import { DesignDocument } from "@/domains/design-document";
 import {
-  FILE_INVALID_EDITOR_STATE,
-  SAMPLE_EDITOR_STATE,
+  FileInvalidEditorState,
+  SampleEditorState,
 } from "@/features/editor/__stories__/sample-editor-state";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { PropertyPanel } from "./index";
 
 /** 帯の幅に収まらない名前。省略の見え方を視覚差分で見るためだけの状態。 */
-const LONG_NODE_NAME = "very-long-node-name-that-does-not-fit-in-the-heading";
+const LongNodeName = "very-long-node-name-that-does-not-fit-in-the-heading";
 
 /**
  * 既存のストーリーが持っていない状態を視覚差分に載せるための Box。
  * 大半の prop が未指定（既定の注記が出る行）で、`background` だけが
  * 実在しないトークンを指す（見本の出ない色の行）。
  */
-const UNSET_EDITOR_STATE = EditorState.create(
+const UnsetEditorState = EditorState.create(
   DesignDocument.create({
     artboards: [
       {
@@ -31,14 +31,14 @@ const UNSET_EDITOR_STATE = EditorState.create(
   }),
 );
 
-const LONG_NAME_EDITOR_STATE = EditorState.create(
+const LongNameEditorState = EditorState.create(
   DesignDocument.create({
     artboards: [
       {
         name: "home",
         width: 360,
         height: 240,
-        children: [{ name: LONG_NODE_NAME, type: "Box" }],
+        children: [{ name: LongNodeName, type: "Box" }],
       },
     ],
   }),
@@ -72,39 +72,39 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   name: "選択されていない",
-  args: { state: SAMPLE_EDITOR_STATE },
+  args: { state: SampleEditorState },
 };
 
 export const Selected: Story = {
   name: "artboard を選択中",
-  args: { state: EditorState.select(SAMPLE_EDITOR_STATE, "home") },
+  args: { state: EditorState.select(SampleEditorState, "home") },
 };
 
 export const TextSelected: Story = {
   name: "Text ノードを選択中",
-  args: { state: EditorState.select(SAMPLE_EDITOR_STATE, "home-title") },
+  args: { state: EditorState.select(SampleEditorState, "home-title") },
 };
 
 export const InstanceSelected: Story = {
   name: "インスタンスを選択中（publicProps から生成）",
-  args: { state: EditorState.select(SAMPLE_EDITOR_STATE, "home-login") },
+  args: { state: EditorState.select(SampleEditorState, "home-login") },
 };
 
 export const BoxSelected: Story = {
   name: "Box ノードを選択中",
-  args: { state: EditorState.select(SAMPLE_EDITOR_STATE, "overflow-wide") },
+  args: { state: EditorState.select(SampleEditorState, "overflow-wide") },
 };
 
 export const Unset: Story = {
   name: "未指定の prop だけの Box を選択中",
-  args: { state: EditorState.select(UNSET_EDITOR_STATE, "unset-box") },
+  args: { state: EditorState.select(UnsetEditorState, "unset-box") },
 };
 
 /** 名前が帯の幅に収まらない状態（省略されることを視覚差分で見る）。 */
 export const LongName: Story = {
   name: "名前が長いノードを選択中",
   args: {
-    state: EditorState.select(LONG_NAME_EDITOR_STATE, LONG_NODE_NAME),
+    state: EditorState.select(LongNameEditorState, LongNodeName),
   },
 };
 
@@ -114,5 +114,5 @@ export const LongName: Story = {
  */
 export const Frozen: Story = {
   name: "凍結中",
-  args: { state: FILE_INVALID_EDITOR_STATE },
+  args: { state: FileInvalidEditorState },
 };

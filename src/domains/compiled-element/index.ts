@@ -21,7 +21,7 @@ import { Html } from "@/utils/Html";
  * `paddingX` / `paddingY` は2軸を1つの `padding` へ合成するため `Padding` が、
  * `typography` は複数プロパティへ展開されるため下の関数が担当し、この表には含めない。
  */
-const TOKEN_PROP_PROPERTIES = {
+const TokenPropProperties = {
   gap: "gap",
   background: "background",
   radius: "border-radius",
@@ -30,7 +30,7 @@ const TOKEN_PROP_PROPERTIES = {
 } as const satisfies Readonly<Partial<Record<TokenPropName, CssProperty>>>;
 
 /** 単一の CSS プロパティへ写るトークン参照 prop。語彙は上の表で閉じている。 */
-type TokenBackedProp = keyof typeof TOKEN_PROP_PROPERTIES;
+type TokenBackedProp = keyof typeof TokenPropProperties;
 
 /**
  * トークン参照 prop を `var()` 参照の宣言にする。未指定の prop は宣言を出力しない
@@ -49,7 +49,7 @@ function tokenDeclarations(
   if (value === undefined) {
     return [];
   }
-  const property = TOKEN_PROP_PROPERTIES[prop];
+  const property = TokenPropProperties[prop];
   const kind = TokenPropKinds.kindOf(prop);
   return [CssDeclaration.create(property, tokens.ref(kind, String(value)))];
 }
@@ -98,7 +98,7 @@ function typographyDeclarations(
  * 出力だけを見てどのノードかを追えるようにするためのもので、
  * 描いた結果から名前を引く側 (キャンバスの選択) も同じ綴りを使う。
  */
-export const ELEMENT_NAME_ATTRIBUTE = "data-name";
+export const ElementNameAttribute = "data-name";
 
 /**
  * コンパイル済みの Box。子を持ち、テキストは持たない。
@@ -226,10 +226,10 @@ export const CompiledElement = {
 
   /**
    * `div` + インライン style の HTML へ直列化する (docs/03)。
-   * ノードの `name` は `ELEMENT_NAME_ATTRIBUTE` として残す。
+   * ノードの `name` は `ElementNameAttribute` として残す。
    */
   html(element: CompiledElement): string {
-    const attributes = `${ELEMENT_NAME_ATTRIBUTE}="${Html.escapeAttribute(element.name)}" style="${Html.escapeAttribute(CompiledElement.styleText(element))}"`;
+    const attributes = `${ElementNameAttribute}="${Html.escapeAttribute(element.name)}" style="${Html.escapeAttribute(CompiledElement.styleText(element))}"`;
     const content = CompiledElement.isText(element)
       ? Html.escapeText(element.content)
       : element.children.map(CompiledElement.html).join("");

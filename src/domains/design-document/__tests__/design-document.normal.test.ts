@@ -5,7 +5,7 @@ import { DesignDocument } from "../index";
 
 test("パラメータを省略して DesignDocument を作成すると現在の formatVersion が設定される", () => {
   expect(DesignDocument.create({}).formatVersion).toEqual(
-    FormatVersion.CURRENT,
+    FormatVersion.Current,
   );
 });
 

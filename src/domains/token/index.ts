@@ -47,7 +47,7 @@ export type TokenSet = Readonly<{
  * `satisfies` で TokenSet のキー以外が混ざらないことを、
  * 種別の網羅は `__tests__/token.type.test.ts` の型テストで担保する。
  */
-const TOKEN_KINDS = [
+const TokenKinds = [
   "colors",
   "spacing",
   "radius",
@@ -56,7 +56,7 @@ const TOKEN_KINDS = [
 ] as const satisfies readonly (keyof TokenSet)[];
 
 /** トークンの種別。 */
-export type TokenKind = (typeof TOKEN_KINDS)[number];
+export type TokenKind = (typeof TokenKinds)[number];
 
 /**
  * 種別ごとの値の形式(docs/04-tokens.md「値の形式」)。
@@ -409,7 +409,7 @@ export const TokenSet = {
   },
 
   kinds(): readonly TokenKind[] {
-    return TOKEN_KINDS;
+    return TokenKinds;
   },
 
   names(tokens: TokenSet, kind: TokenKind): readonly string[] {
@@ -544,7 +544,7 @@ export const TokenSet = {
           }),
         ),
         record,
-        TOKEN_KINDS,
+        TokenKinds,
       ),
     );
   },
@@ -552,7 +552,7 @@ export const TokenSet = {
   /** トークンを1つも持たない種別は書き出さない(空の種別を残さない)。 */
   toJson(tokens: TokenSet): JsonObject {
     return Object.fromEntries(
-      TOKEN_KINDS.filter((kind) => Object.keys(tokens[kind]).length > 0).map(
+      TokenKinds.filter((kind) => Object.keys(tokens[kind]).length > 0).map(
         (kind) => [kind, tokenKindToJson(tokens, kind)],
       ),
     );

@@ -45,7 +45,7 @@ function setupState(selectedName?: string): EditorState {
 }
 
 /** 画面の (100, 50) に 200x100 で描かれている、という前提。右辺 x=300 / 下辺 y=150。 */
-const PANEL_BOUNDS: CanvasBounds = {
+const PanelBounds: CanvasBounds = {
   left: 100,
   top: 50,
   width: 200,
@@ -102,10 +102,10 @@ function panel(): Element {
   const element = screen.getByTestId("panel");
   element.getBoundingClientRect = () =>
     new DOMRect(
-      PANEL_BOUNDS.left,
-      PANEL_BOUNDS.top,
-      PANEL_BOUNDS.width,
-      PANEL_BOUNDS.height,
+      PanelBounds.left,
+      PanelBounds.top,
+      PanelBounds.width,
+      PanelBounds.height,
     );
   return element;
 }

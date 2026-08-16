@@ -1,6 +1,6 @@
 import { render, screen, within } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
-import { COLOR_SWATCH_TEST_ID } from "@/components/color-swatch";
+import { ColorSwatchTestId } from "@/components/color-swatch";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import type { TokenSet } from "@/domains/token";
 import { pressedSegmentsOf } from "@/features/editor/__tests__/segmented-controls";
@@ -12,16 +12,16 @@ import { PropertyPanel } from "../index";
  * 「色のトークン参照だけ見本を出す」を壊して spacing まで色として引くと、
  * `Gap` の行に見本が出て落ちる（同名が無いと、壊しても引けずに通ってしまう）。
  */
-const TOKENS: TokenSet = {
-  ...DocumentTemplate.DEFAULT.tokens,
-  colors: { ...DocumentTemplate.DEFAULT.tokens.colors, md: "#123456" },
+const Tokens: TokenSet = {
+  ...DocumentTemplate.Default.tokens,
+  colors: { ...DocumentTemplate.Default.tokens.colors, md: "#123456" },
 };
 
 function setupState(): EditorState {
   return EditorState.create(
     DesignDocument.create({
-      tokens: TOKENS,
-      components: DocumentTemplate.DEFAULT.components,
+      tokens: Tokens,
+      components: DocumentTemplate.Default.components,
       artboards: [
         {
           name: "home",
@@ -76,7 +76,7 @@ function optionValuesOf(select: HTMLElement): readonly string[] {
 function swatchNextTo(select: HTMLElement): HTMLElement | null {
   return (
     select.parentElement?.querySelector<HTMLElement>(
-      `[data-testid="${COLOR_SWATCH_TEST_ID}"]`,
+      `[data-testid="${ColorSwatchTestId}"]`,
     ) ?? null
   );
 }
@@ -162,7 +162,7 @@ test("色のトークン参照には今効いている色の見本が出る", ()
   const swatch = swatchNextTo(
     screen.getByRole("combobox", { name: "Background" }),
   );
-  expect(swatch?.style.backgroundColor).toBe(TOKENS.colors.white);
+  expect(swatch?.style.backgroundColor).toBe(Tokens.colors.white);
 });
 
 test("数値のトークン参照には解決後の値が欄の説明として添えて出る", () => {

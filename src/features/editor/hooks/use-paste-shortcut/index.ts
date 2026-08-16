@@ -1,7 +1,7 @@
 import { type KeyShortcut, useKeyShortcut } from "@/hooks/use-key-shortcut";
 
 /** ペーストに割り当てる組み合わせ（Windows は Ctrl+V / macOS は Cmd+V）。 */
-const PASTE_SHORTCUT: KeyShortcut = {
+const PasteShortcut: KeyShortcut = {
   keys: ["v"],
   withCommandKey: true,
   withShiftKey: false,
@@ -17,5 +17,5 @@ const PASTE_SHORTCUT: KeyShortcut = {
  * @param onPaste 組み合わせが押されたときに呼ぶ手続き
  */
 export function usePasteShortcut(onPaste: () => void): void {
-  useKeyShortcut(PASTE_SHORTCUT, onPaste);
+  useKeyShortcut(PasteShortcut, onPaste);
 }

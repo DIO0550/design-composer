@@ -25,7 +25,7 @@ export type NodeDrag =
  * ここまでの動きはクリックとして扱う（px）。
  * 閾値を置かないと、押したときの手ぶれで選択がドラッグに化けて選択できなくなる。
  */
-const DRAG_THRESHOLD_PX = 4;
+const DragThresholdPx = 4;
 
 export const NodeDrag = {
   /** 何も掴んでいない状態から始める。 */
@@ -83,7 +83,7 @@ export const NodeDrag = {
     if (drag.kind !== "held") {
       return drag;
     }
-    return CanvasOffset.distance(drag.origin, pointer) < DRAG_THRESHOLD_PX
+    return CanvasOffset.distance(drag.origin, pointer) < DragThresholdPx
       ? drag
       : { kind: "dragging", name: drag.name, drop };
   },

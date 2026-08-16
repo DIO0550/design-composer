@@ -228,7 +228,7 @@ export const DesignDocument = {
     artboards?: readonly Artboard[];
   }): DesignDocument {
     return {
-      formatVersion: params.formatVersion ?? FormatVersion.CURRENT,
+      formatVersion: params.formatVersion ?? FormatVersion.Current,
       tokens: params.tokens ?? TokenSet.empty(),
       components: params.components ?? {},
       artboards: params.artboards ?? [],
@@ -257,7 +257,7 @@ export const DesignDocument = {
    * マイグレーションは一方向）ため、書き出す値はこれを通したものになる。
    */
   withCurrentFormatVersion(document: DesignDocument): DesignDocument {
-    return { ...document, formatVersion: FormatVersion.CURRENT };
+    return { ...document, formatVersion: FormatVersion.Current };
   },
 
   /**

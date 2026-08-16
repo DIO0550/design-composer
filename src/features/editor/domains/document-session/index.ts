@@ -34,14 +34,14 @@ export type DocumentSession =
  */
 export type UnopenedSession = Exclude<DocumentSession, { kind: "opened" }>;
 
-const CLOSED: DocumentSession = { kind: "closed" };
-const OPENING: DocumentSession = { kind: "opening" };
+const Closed: DocumentSession = { kind: "closed" };
+const Opening: DocumentSession = { kind: "opening" };
 
 export const DocumentSession = {
   /** まだ何も開いていない状態。アプリはここから始まる。 */
-  CLOSED,
+  Closed,
   /** 選択・読み込みの最中。 */
-  OPENING,
+  Opening,
 
   opened(opened: OpenedDocument): DocumentSession {
     return { kind: "opened", opened };

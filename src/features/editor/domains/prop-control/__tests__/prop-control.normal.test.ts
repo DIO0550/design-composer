@@ -10,8 +10,8 @@ function setupState(children: readonly Node[], selected: string): EditorState {
   return EditorState.select(
     EditorState.create(
       DesignDocument.create({
-        tokens: DocumentTemplate.DEFAULT.tokens,
-        components: DocumentTemplate.DEFAULT.components,
+        tokens: DocumentTemplate.Default.tokens,
+        components: DocumentTemplate.Default.components,
         artboards: [
           { name: "home", width: 360, height: 240, children: [...children] },
         ],
@@ -58,7 +58,7 @@ test("数値のトークンを取る prop は今効いているトークンの�
   );
 
   expect(resolvedValueOfControl(controlOf(state, "gap"))).toEqual(
-    Option.some(DocumentTemplate.DEFAULT.tokens.spacing.md),
+    Option.some(DocumentTemplate.Default.tokens.spacing.md),
   );
 });
 
@@ -107,7 +107,7 @@ test("色のトークン参照の prop は設定されている色を持つ", ()
   );
 
   expect(colorOfControl(controlOf(state, "background"))).toEqual(
-    Option.some(DocumentTemplate.DEFAULT.tokens.colors.primary),
+    Option.some(DocumentTemplate.Default.tokens.colors.primary),
   );
 });
 
@@ -115,7 +115,7 @@ test("値が無くても既定を持つ色のトークン参照は既定の色�
   const state = setupState([{ name: "label", type: "Text" }], "label");
 
   expect(colorOfControl(controlOf(state, "color"))).toEqual(
-    Option.some(DocumentTemplate.DEFAULT.tokens.colors["gray-900"]),
+    Option.some(DocumentTemplate.Default.tokens.colors["gray-900"]),
   );
 });
 

@@ -9,7 +9,7 @@ import { NameSpace } from "@/domains/name-space";
 import { Node, Props, type RefNode } from "@/domains/node";
 import type { PropValidationError } from "@/domains/primitive-schema";
 import {
-  BOX_SCHEMA,
+  BoxSchema,
   PrimitiveSchema,
   PropDefinition,
   PropDefinitionRecord,
@@ -352,7 +352,7 @@ export function collectArtboardErrors(
   const propErrors = withLocation(
     { nodeName: artboard.name },
     PropDefinitionRecord.collectErrors(
-      BOX_SCHEMA.props,
+      BoxSchema.props,
       artboard.props ?? {},
       context.tokens,
     ),

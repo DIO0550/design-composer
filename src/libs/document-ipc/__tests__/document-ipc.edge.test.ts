@@ -4,8 +4,8 @@ import { Result } from "@/utils/Result";
 import { DocumentIpcFake } from "../fake";
 import { type DocumentChanged, DocumentIpc } from "../index";
 
-const PATH = "/work/login.dcmp";
-const MISSING_PATH = "/work/missing.dcmp";
+const Path = "/work/login.dcmp";
+const MissingPath = "/work/missing.dcmp";
 
 /** コマンドの結果だけを差し替えた IPC。イベントは流れない。 */
 function setupIpc(invoke: TauriIpc["invoke"]): DocumentIpc {
@@ -18,12 +18,12 @@ function setupIpc(invoke: TauriIpc["invoke"]): DocumentIpc {
 test("存在しないファイルを読み込むと notFound が返る", async () => {
   const fake = DocumentIpcFake.create();
 
-  const loaded = await fake.ipc.load(MISSING_PATH);
+  const loaded = await fake.ipc.load(MissingPath);
 
   expect(loaded).toStrictEqual(
     Result.err({
       kind: "notFound",
-      message: `${MISSING_PATH}: ファイルが存在しない`,
+      message: `${MissingPath}: ファイルが存在しない`,
     }),
   );
 });
@@ -31,12 +31,12 @@ test("存在しないファイルを読み込むと notFound が返る", async (
 test("存在しないファイルの監視を始めると notFound が返る", async () => {
   const fake = DocumentIpcFake.create();
 
-  const watched = await fake.ipc.watch(MISSING_PATH);
+  const watched = await fake.ipc.watch(MissingPath);
 
   expect(watched).toStrictEqual(
     Result.err({
       kind: "notFound",
-      message: `${MISSING_PATH}: ファイルが存在しない`,
+      message: `${MissingPath}: ファイルが存在しない`,
     }),
   );
 });
@@ -44,7 +44,7 @@ test("存在しないファイルの監視を始めると notFound が返る", a
 test("Tauri 自身がコマンドを拒むと ipcFailed が返る", async () => {
   const ipc = setupIpc(() => Promise.reject("Command load_document not found"));
 
-  const loaded = await ipc.load(PATH);
+  const loaded = await ipc.load(Path);
 
   expect(loaded).toStrictEqual(
     Result.err({
@@ -57,7 +57,7 @@ test("Tauri 自身がコマンドを拒むと ipcFailed が返る", async () => 
 test("読み込みが文字列以外を返すと ipcFailed が返る", async () => {
   const ipc = setupIpc(() => Promise.resolve(42));
 
-  const loaded = await ipc.load(PATH);
+  const loaded = await ipc.load(Path);
 
   expect(loaded).toStrictEqual(
     Result.err({
@@ -87,7 +87,7 @@ test("path と content が揃っていない通知は配られない", async () 
   const malformedPayloads = [
     null,
     "changed",
-    { path: PATH },
+    { path: Path },
     { content: "{}" },
   ];
   const received: DocumentChanged[] = [];

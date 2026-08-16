@@ -11,7 +11,7 @@ import type { ChildPosition } from "@/domains/child-position";
 import type { CompiledArtboard } from "@/domains/compiled-artboard";
 import {
   CompiledElement,
-  ELEMENT_NAME_ATTRIBUTE,
+  ElementNameAttribute,
 } from "@/domains/compiled-element";
 import type { Axis } from "@/domains/css-direction";
 import type { PropEdit } from "@/domains/node";
@@ -22,7 +22,7 @@ import { NodeDrag } from "@/features/editor/domains/node-drag";
 import type { CanvasBounds } from "@/features/editor/domains/node-drop";
 import {
   NodeResize,
-  RESIZE_HANDLE_THICKNESS_PX,
+  ResizeHandleThicknessPx,
 } from "@/features/editor/domains/node-resize";
 import type { TextEdit } from "@/features/editor/domains/text-edit";
 import type { CanvasViewControl } from "@/features/editor/hooks/use-canvas-view";
@@ -45,7 +45,7 @@ import { ElementEx } from "@/utils/ElementEx";
 import type { Result } from "@/utils/Result";
 
 /** キーボードでも artboard を選べるようにする（role="button" は既定の活性化を持たない）。 */
-const ACTIVATION_KEYS = ["Enter", " "];
+const ActivationKeys = ["Enter", " "];
 
 /**
  * 選択中の要素に描く枠。Tailwind の `outline-blue-500` と同じ色を綴り直している
@@ -56,13 +56,13 @@ const ACTIVATION_KEYS = ["Enter", " "];
  * 枠に使えるのは `outline` だけで、`box-shadow` はノードの `shadow` prop が
  * インライン style で使う（docs/03 の対応表）ため奪えない。
  */
-const SELECTION_OUTLINE = "outline:2px solid #3b82f6;outline-offset:1px";
+const SelectionOutline = "outline:2px solid #3b82f6;outline-offset:1px";
 
 /**
  * ドロップ先の Box に描く枠。選択の枠と同時に出るので、色（Tailwind の
  * `emerald-500`）と破線で選択と見分けられるようにする。
  */
-const DROP_PARENT_OUTLINE = "outline:2px dashed #10b981;outline-offset:1px";
+const DropParentOutline = "outline:2px dashed #10b981;outline-offset:1px";
 
 /**
  * 選択中のトークンを参照しているノードに描く枠
@@ -74,7 +74,7 @@ const DROP_PARENT_OUTLINE = "outline:2px dashed #10b981;outline-offset:1px";
  * export しているのは、どの規則が破線かをテストが綴りを写さずに引けるようにするため
  * （`features/editor/__tests__/canvas-elements`）。写すと色を変えただけでテストが落ちる。
  */
-export const TOKEN_REFERRER_OUTLINE =
+export const TokenReferrerOutline =
   "outline:1.5px dashed #0d99ff;outline-offset:2px";
 
 /**
@@ -89,7 +89,7 @@ export const TOKEN_REFERRER_OUTLINE =
  * @returns その名前の属性に当たる属性選択子
  */
 function nameSelector(name: string): string {
-  return `[${ELEMENT_NAME_ATTRIBUTE}="${Css.escapeQuotedString(name)}"]`;
+  return `[${ElementNameAttribute}="${Css.escapeQuotedString(name)}"]`;
 }
 
 /** 1 ノード分の宣言を、名前で引く選択子の規則としてキャンバスへ差し込む。 */
@@ -106,7 +106,7 @@ function NameStyleRule({
  * 2 本を別々の擬似要素へ割り当てるのは、1 要素が持てる擬似要素が 2 つだからで、
  * 3 本目（角）を足すなら描き方から見直すことになる。
  */
-const HANDLE_FACES = {
+const HandleFaces = {
   width: {
     pseudo: "::after",
     edge: "top:0;right:0;height:100%",
@@ -132,7 +132,7 @@ const HANDLE_FACES = {
 >;
 
 /** ハンドルの色。選択枠と同じ青（Tailwind の `blue-500`）を、中身が透けるよう薄くして使う。 */
-const HANDLE_COLOR = "rgb(59 130 246 / 0.6)";
+const HandleColor = "rgb(59 130 246 / 0.6)";
 
 /**
  * リサイズハンドル 1 本を描く規則。掴める帯と見た目の帯を倍率にかかわらず一致させる。
@@ -143,13 +143,13 @@ const HANDLE_COLOR = "rgb(59 130 246 / 0.6)";
  * @returns その辺に帯を描く CSS 規則 1 本
  */
 function handleRule(name: string, handle: AxisLength, scale: number): string {
-  const face = HANDLE_FACES[handle.axis];
+  const face = HandleFaces[handle.axis];
   /*
    * 太さを倍率で割るのは、掴める帯（当たり判定は client 座標 = 画面上の px）と
    * 見た目の帯を一致させるため。中身は倍率をかけて描かれている。
    */
-  const thickness = Px.create(RESIZE_HANDLE_THICKNESS_PX / scale);
-  return `${nameSelector(name)}${face.pseudo}{content:"";position:absolute;${face.edge};${face.extent}:${thickness};cursor:${face.cursor};background:${HANDLE_COLOR}}`;
+  const thickness = Px.create(ResizeHandleThicknessPx / scale);
+  return `${nameSelector(name)}${face.pseudo}{content:"";position:absolute;${face.edge};${face.extent}:${thickness};cursor:${face.cursor};background:${HandleColor}}`;
 }
 
 /**
@@ -179,8 +179,8 @@ function ResizeHandleStyle({
 }
 
 /** 編集を終えるキー（docs/06-ui.md「確定（Enter / フォーカス外し）」「キャンセル（Escape）」）。 */
-const COMMIT_KEY = "Enter";
-const CANCEL_KEY = "Escape";
+const CommitKey = "Enter";
+const CancelKey = "Escape";
 
 /**
  * 編集中の Text に重ねる入力欄（docs/06-ui.md「Text のインライン編集」）。
@@ -211,10 +211,10 @@ function TextInlineEditor({
       onChange={(event) => onChange(event.target.value)}
       onBlur={onCommit}
       onKeyDown={(event: KeyboardEvent<HTMLInputElement>) => {
-        if (event.key === COMMIT_KEY) {
+        if (event.key === CommitKey) {
           onCommit();
         }
-        if (event.key === CANCEL_KEY) {
+        if (event.key === CancelKey) {
           onCancel();
         }
       }}
@@ -329,12 +329,12 @@ function ArtboardFrame({
   const element = artboard.element;
   const namesAt = (target: EventTarget): readonly string[] =>
     ArrayEx.distinct([
-      ...ElementEx.attributeValuesToRoot(target, ELEMENT_NAME_ATTRIBUTE),
+      ...ElementEx.attributeValuesToRoot(target, ElementNameAttribute),
       element.name,
     ]);
 
   const activate = (event: KeyboardEvent<HTMLElement>) => {
-    if (!ACTIVATION_KEYS.includes(event.key)) {
+    if (!ActivationKeys.includes(event.key)) {
       return;
     }
     event.preventDefault();
@@ -464,19 +464,19 @@ function ArtboardList({
         <NameStyleRule
           key={name}
           name={name}
-          declarations={TOKEN_REFERRER_OUTLINE}
+          declarations={TokenReferrerOutline}
         />
       ))}
       {state.selectedName.some ? (
         <NameStyleRule
           name={state.selectedName.value}
-          declarations={SELECTION_OUTLINE}
+          declarations={SelectionOutline}
         />
       ) : null}
       {dropTarget.some ? (
         <NameStyleRule
           name={dropTarget.value.position.parentName}
-          declarations={DROP_PARENT_OUTLINE}
+          declarations={DropParentOutline}
         />
       ) : null}
       {/*
@@ -550,7 +550,7 @@ function CanvasBody({
 }
 
 /** 拡大の基準を左上に固定する（中央基準だと倍率を変えるたびに並びの原点が動く）。 */
-const CONTENT_TRANSFORM_ORIGIN: CSSProperties["transformOrigin"] = "0 0";
+const ContentTransformOrigin: CSSProperties["transformOrigin"] = "0 0";
 
 /**
  * 斜線のスクリム（UI 案 docs/Design Composer.html の Error 画面の実測値は
@@ -559,7 +559,7 @@ const CONTENT_TRANSFORM_ORIGIN: CSSProperties["transformOrigin"] = "0 0";
  * この斜線を落としてもバッジは残り、テストは 1 件も落ちない。
  * 気づく手段は Storybook の視覚差分だけ。
  */
-const STALE_SCRIM_CLASS =
+const StaleScrimClass =
   "bg-[repeating-linear-gradient(-45deg,transparent_0_22px,rgba(209,52,56,0.055)_22px_24px)]";
 
 /**
@@ -576,7 +576,7 @@ function StaleCanvasOverlay(): ReactElement {
     <>
       <div
         aria-hidden="true"
-        className={`pointer-events-none absolute inset-0 ${STALE_SCRIM_CLASS}`}
+        className={`pointer-events-none absolute inset-0 ${StaleScrimClass}`}
       />
       {/* 掴んで動かす操作を食わないよう、バッジもポインタを素通しする */}
       <p className="pointer-events-none absolute top-3.5 right-3.5 rounded-[5px] border border-red-200 bg-white px-2 py-1 font-semibold text-[10px] text-red-600">
@@ -660,7 +660,7 @@ export function ArtboardCanvas({
           inert={isFrozen}
           style={{
             transform: CanvasView.transform(view),
-            transformOrigin: CONTENT_TRANSFORM_ORIGIN,
+            transformOrigin: ContentTransformOrigin,
           }}
         >
           <CanvasBody

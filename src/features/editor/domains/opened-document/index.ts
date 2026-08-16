@@ -8,7 +8,7 @@ import { Result } from "@/utils/Result";
 /**
  * パスの区切り。動かす OS の綴りで届く（Windows は `\`）ため両方を区切りとして扱う。
  */
-const PATH_SEPARATOR = /[\\/]/;
+const PathSeparator = /[\\/]/;
 
 /**
  * パスを区切りで割った並び。
@@ -17,7 +17,7 @@ const PATH_SEPARATOR = /[\\/]/;
  * @returns 空の要素を落とした並び（区切りの連続・先頭の区切りで空が生まれる）
  */
 function pathSegments(path: string): readonly string[] {
-  return path.split(PATH_SEPARATOR).filter((segment) => segment.length > 0);
+  return path.split(PathSeparator).filter((segment) => segment.length > 0);
 }
 
 /**
@@ -40,7 +40,7 @@ export const OpenedDocument = {
   createFromTemplate(path: string): OpenedDocument {
     return {
       path,
-      document: DesignDocument.createFromTemplate(DocumentTemplate.DEFAULT),
+      document: DesignDocument.createFromTemplate(DocumentTemplate.Default),
     };
   },
 

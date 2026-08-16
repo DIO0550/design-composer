@@ -1,13 +1,13 @@
 import { expect, test } from "vitest";
 import { PropDefinition } from "../../prop-definition";
-import { PrimitiveSchema, TEXT_SCHEMA } from "../index";
+import { PrimitiveSchema, TextSchema } from "../index";
 
 test("Text は子を持てないスキーマとして定義されている", () => {
-  expect(TEXT_SCHEMA.allowsChildren).toBe(false);
+  expect(TextSchema.allowsChildren).toBe(false);
 });
 
 test("Text の content は生リテラル文字列でデフォルトが空文字", () => {
-  const definition = TEXT_SCHEMA.props.content;
+  const definition = TextSchema.props.content;
   expect(PropDefinition.isLiteral(definition)).toBe(true);
   expect(definition).toMatchObject({
     domain: "literal",
@@ -17,7 +17,7 @@ test("Text の content は生リテラル文字列でデフォルトが空文字
 });
 
 test("Text の typography は typography トークン参照でデフォルトが body", () => {
-  const definition = TEXT_SCHEMA.props.typography;
+  const definition = TextSchema.props.typography;
   expect(PropDefinition.isToken(definition)).toBe(true);
   expect(definition).toMatchObject({
     domain: "token",
@@ -27,7 +27,7 @@ test("Text の typography は typography トークン参照でデフォルトが
 });
 
 test("Text の color は colors トークン参照でデフォルトが gray-900", () => {
-  const definition = TEXT_SCHEMA.props.color;
+  const definition = TextSchema.props.color;
   expect(definition).toMatchObject({
     domain: "token",
     tokenKind: "colors",
@@ -36,7 +36,7 @@ test("Text の color は colors トークン参照でデフォルトが gray-900
 });
 
 test("Text の align は left / center / right の enum でデフォルトが left", () => {
-  const definition = TEXT_SCHEMA.props.align;
+  const definition = TextSchema.props.align;
   expect(definition).toMatchObject({
     domain: "enum",
     values: ["left", "center", "right"],
@@ -45,5 +45,5 @@ test("Text の align は left / center / right の enum でデフォルトが le
 });
 
 test("Text を指定するとその仕様が得られる", () => {
-  expect(PrimitiveSchema.forType("Text")).toBe(TEXT_SCHEMA);
+  expect(PrimitiveSchema.forType("Text")).toBe(TextSchema);
 });

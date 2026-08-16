@@ -26,21 +26,21 @@ export type FormatVersionCompatibility =
   | "unsupported";
 
 /** アプリが読み書きする仕様の major。ドメインの型はこの major に固定される。 */
-const CURRENT_MAJOR = 1;
+const CurrentMajor = 1;
 
-const CURRENT: FormatVersionOf<typeof CURRENT_MAJOR> = {
-  major: CURRENT_MAJOR,
+const Current: FormatVersionOf<typeof CurrentMajor> = {
+  major: CurrentMajor,
   minor: 0,
 };
 
-const FORMAT_VERSION_PATTERN = /^(\d+)\.(\d+)$/;
+const FormatVersionPattern = /^(\d+)\.(\d+)$/;
 
 export const FormatVersion = {
-  CURRENT,
+  Current,
 
   /** `"major.minor"` 形式でなければ none を返す。 */
   parse(value: string): Option<FormatVersion> {
-    const match = FORMAT_VERSION_PATTERN.exec(value);
+    const match = FormatVersionPattern.exec(value);
     if (match === null) {
       return Option.none;
     }
@@ -89,7 +89,7 @@ export const FormatVersion = {
 
   compatibility(
     fileVersion: FormatVersion,
-    appVersion: FormatVersion = CURRENT,
+    appVersion: FormatVersion = Current,
   ): FormatVersionCompatibility {
     if (fileVersion.major !== appVersion.major) {
       return fileVersion.major < appVersion.major

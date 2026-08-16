@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { SAMPLE_EDITOR_STATE } from "@/features/editor/__stories__/sample-editor-state";
+import { SampleEditorState } from "@/features/editor/__stories__/sample-editor-state";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { TokenUsedBy } from "./index";
 
@@ -24,7 +24,7 @@ type Story = StoryObj<typeof meta>;
 export const Unused: Story = {
   name: "参照されていない",
   args: {
-    state: EditorState.selectToken(SAMPLE_EDITOR_STATE, {
+    state: EditorState.selectToken(SampleEditorState, {
       kind: "colors",
       name: "danger",
     }),
@@ -35,7 +35,7 @@ export const Unused: Story = {
 export const WithinLimit: Story = {
   name: "上限内の件数",
   args: {
-    state: EditorState.selectToken(SAMPLE_EDITOR_STATE, {
+    state: EditorState.selectToken(SampleEditorState, {
       kind: "colors",
       name: "primary",
     }),
@@ -46,7 +46,7 @@ export const WithinLimit: Story = {
 export const OverLimit: Story = {
   name: "上限を超える件数",
   args: {
-    state: EditorState.selectToken(SAMPLE_EDITOR_STATE, {
+    state: EditorState.selectToken(SampleEditorState, {
       kind: "spacing",
       name: "md",
     }),

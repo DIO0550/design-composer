@@ -30,7 +30,7 @@ type Glyph = Readonly<{ symbol: string; className: string }>;
  * 行の背景色と `aria-current` が伝える。同じ 1 つのことを 2 つの見た目で二重に持つと、
  * 片方だけ直したときに食い違う。
  */
-const GLYPHS = {
+const Glyphs = {
   artboard: { symbol: "#", className: "text-[#0d99ff]" },
   Box: { symbol: "□", className: "text-[#00a0a0]" },
   Text: { symbol: "T", className: "font-bold text-[#c67c00]" },
@@ -44,7 +44,7 @@ const GLYPHS = {
  * 「◆ primary-button」のように装飾を含んだ読み上げ名になる。
  */
 export function TypeGlyph({ kind }: Readonly<{ kind: SelectionKind }>) {
-  const glyph = GLYPHS[kind];
+  const glyph = Glyphs[kind];
 
   return (
     <span aria-hidden="true" className={`shrink-0 ${glyph.className}`}>

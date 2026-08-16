@@ -2,7 +2,7 @@ import type { AxisLength } from "@/domains/axis-length";
 import { Node, type PropEdit, Props } from "@/domains/node";
 import { NodeTree } from "@/domains/node-tree";
 import {
-  BOX_SCHEMA,
+  BoxSchema,
   type PropDefinition,
   type PropDefinitionRecord,
 } from "@/domains/primitive-schema";
@@ -26,7 +26,7 @@ export type Artboard = Readonly<{
 }>;
 
 /** artboard が JSON 上で持ちうるフィールド(docs/01-file-format.md「artboards」)。 */
-const ARTBOARD_FIELDS = [
+const ArtboardFields = [
   "name",
   "width",
   "height",
@@ -39,14 +39,14 @@ const ARTBOARD_FIELDS = [
  * (docs/03「artboard は…`overflow` のデフォルトは `clip`」)。
  * デフォルトなので artboard 側の指定が勝つ。
  */
-const ARTBOARD_PROP_DEFAULTS: Props = { overflow: "clip" };
+const ArtboardPropDefaults: Props = { overflow: "clip" };
 
 /**
  * artboard の props では変えられない prop
  * (docs/03「`widthMode` / `heightMode` は `fixed` に固定され、`width` / `height` が必須」)。
  * 長さは artboard 自身の `width` / `height` が持ち、`boxProps` がそれを固定値として与える。
  */
-const ARTBOARD_FIXED_SIZE_PROPS: readonly string[] = [
+const ArtboardFixedSizeProps: readonly string[] = [
   "widthMode",
   "width",
   "heightMode",
@@ -64,7 +64,7 @@ function withArtboardDefault(
   name: string,
   definition: PropDefinition,
 ): PropDefinition {
-  const artboardDefault = ARTBOARD_PROP_DEFAULTS[name];
+  const artboardDefault = ArtboardPropDefaults[name];
   return artboardDefault === undefined
     ? definition
     : { ...definition, default: artboardDefault };
@@ -130,7 +130,7 @@ export const Artboard = {
   boxProps(artboard: Artboard): ArtboardBoxProps {
     return {
       ...ResolvedProps.resolve("Box", {
-        ...ARTBOARD_PROP_DEFAULTS,
+        ...ArtboardPropDefaults,
         ...artboard.props,
       }),
       widthMode: "fixed",
@@ -146,8 +146,8 @@ export const Artboard = {
    * 固定で与えるため、props に書いても効かないから。
    */
   propDefinitions(): PropDefinitionRecord {
-    const editable = Object.entries(BOX_SCHEMA.props).filter(
-      ([name]) => !ARTBOARD_FIXED_SIZE_PROPS.includes(name),
+    const editable = Object.entries(BoxSchema.props).filter(
+      ([name]) => !ArtboardFixedSizeProps.includes(name),
     );
     return Object.fromEntries(
       editable.map(([name, definition]) => [
@@ -192,7 +192,7 @@ export const Artboard = {
           }),
         ),
         record,
-        ARTBOARD_FIELDS,
+        ArtboardFields,
       ),
     );
   },

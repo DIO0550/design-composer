@@ -57,7 +57,7 @@ export const Blur = {
  * `satisfies` で ShadowToken に無いフィールドが混ざらないことを、
  * 網羅は `__tests__/shadow.type.test.ts` の型テストで担保する。
  */
-const SHADOW_TOKEN_FIELDS = [
+const ShadowTokenFields = [
   "x",
   "y",
   "blur",
@@ -66,7 +66,7 @@ const SHADOW_TOKEN_FIELDS = [
 ] as const satisfies readonly (keyof Required<ShadowToken>)[];
 
 /** 影が持つフィールドの名前。 */
-export type ShadowField = (typeof SHADOW_TOKEN_FIELDS)[number];
+export type ShadowField = (typeof ShadowTokenFields)[number];
 
 /**
  * 影の1フィールドの書き換え。
@@ -121,7 +121,7 @@ export type BoxShadowValue = `${Px} ${Px} ${Px} ${Px} ${string}`;
 /** 影の値の読み書き・`box-shadow` への展開と、JSON 表現との相互変換。 */
 export const ShadowToken = {
   fields(): readonly ShadowField[] {
-    return SHADOW_TOKEN_FIELDS;
+    return ShadowTokenFields;
   },
 
   /** 省略された spread は 0 とみなす(docs/04-tokens.md)。 */
@@ -199,7 +199,7 @@ export const ShadowToken = {
           }),
         ),
         record,
-        SHADOW_TOKEN_FIELDS,
+        ShadowTokenFields,
       ),
     );
   },

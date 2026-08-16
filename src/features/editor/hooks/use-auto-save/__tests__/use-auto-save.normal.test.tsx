@@ -4,8 +4,8 @@ import { DocumentSaveState } from "@/features/editor/domains/document-save-state
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
 import { Option } from "@/utils/Option";
-import { AUTO_SAVE_DEBOUNCE_MS } from "../index";
-import { PATH, renderAutoSave, waitDebounce } from "./setup";
+import { AutoSaveDebounceMs } from "../index";
+import { Path, renderAutoSave, waitDebounce } from "./setup";
 
 afterEach(() => {
   vi.useRealTimers();
@@ -16,14 +16,14 @@ test("編集するとデバウンス時間の経過後にその内容がファ�
   const opened = artboardDocument("home");
   const edited = artboardDocument("settings");
   const fake = DocumentIpcFake.create({
-    [PATH]: DocumentJson.serialize(opened),
+    [Path]: DocumentJson.serialize(opened),
   });
   const { rerender } = renderAutoSave({ ipc: fake.ipc, document: opened });
 
   rerender({ ipc: fake.ipc, document: edited });
   await waitDebounce();
 
-  expect(fake.contentOf(PATH)).toStrictEqual(
+  expect(fake.contentOf(Path)).toStrictEqual(
     Option.some(DocumentJson.serialize(edited)),
   );
 });
@@ -33,21 +33,21 @@ test("編集が続いている間は書き出されず、止まってから最�
   const opened = artboardDocument("home");
   const last = artboardDocument("profile");
   const fake = DocumentIpcFake.create({
-    [PATH]: DocumentJson.serialize(opened),
+    [Path]: DocumentJson.serialize(opened),
   });
   const { rerender } = renderAutoSave({ ipc: fake.ipc, document: opened });
 
   rerender({ ipc: fake.ipc, document: artboardDocument("settings") });
-  await waitDebounce(AUTO_SAVE_DEBOUNCE_MS - 1);
+  await waitDebounce(AutoSaveDebounceMs - 1);
   rerender({ ipc: fake.ipc, document: last });
-  await waitDebounce(AUTO_SAVE_DEBOUNCE_MS - 1);
-  const beforeLastEditSettles = fake.contentOf(PATH);
+  await waitDebounce(AutoSaveDebounceMs - 1);
+  const beforeLastEditSettles = fake.contentOf(Path);
   await waitDebounce(1);
 
   expect(beforeLastEditSettles).toStrictEqual(
     Option.some(DocumentJson.serialize(opened)),
   );
-  expect(fake.contentOf(PATH)).toStrictEqual(
+  expect(fake.contentOf(Path)).toStrictEqual(
     Option.some(DocumentJson.serialize(last)),
   );
 });
@@ -56,7 +56,7 @@ test("編集してから書き出されるまでの間は保存中になる", as
   vi.useFakeTimers();
   const opened = artboardDocument("home");
   const fake = DocumentIpcFake.create({
-    [PATH]: DocumentJson.serialize(opened),
+    [Path]: DocumentJson.serialize(opened),
   });
   const { result, rerender } = renderAutoSave({
     ipc: fake.ipc,
@@ -65,14 +65,14 @@ test("編集してから書き出されるまでの間は保存中になる", as
 
   rerender({ ipc: fake.ipc, document: artboardDocument("settings") });
 
-  expect(result.current).toStrictEqual(DocumentSaveState.SAVING);
+  expect(result.current).toStrictEqual(DocumentSaveState.Saving);
 });
 
 test("書き出しが終わると保存済みに戻る", async () => {
   vi.useFakeTimers();
   const opened = artboardDocument("home");
   const fake = DocumentIpcFake.create({
-    [PATH]: DocumentJson.serialize(opened),
+    [Path]: DocumentJson.serialize(opened),
   });
   const { result, rerender } = renderAutoSave({
     ipc: fake.ipc,
@@ -82,14 +82,14 @@ test("書き出しが終わると保存済みに戻る", async () => {
   rerender({ ipc: fake.ipc, document: artboardDocument("settings") });
   await waitDebounce();
 
-  expect(result.current).toStrictEqual(DocumentSaveState.SAVED);
+  expect(result.current).toStrictEqual(DocumentSaveState.Saved);
 });
 
 test("編集を取り消して元のドキュメントへ戻すと、その内容が書き出される", async () => {
   vi.useFakeTimers();
   const opened = artboardDocument("home");
   const fake = DocumentIpcFake.create({
-    [PATH]: DocumentJson.serialize(opened),
+    [Path]: DocumentJson.serialize(opened),
   });
   const { rerender } = renderAutoSave({ ipc: fake.ipc, document: opened });
 
@@ -98,7 +98,7 @@ test("編集を取り消して元のドキュメントへ戻すと、その内�
   rerender({ ipc: fake.ipc, document: opened });
   await waitDebounce();
 
-  expect(fake.contentOf(PATH)).toStrictEqual(
+  expect(fake.contentOf(Path)).toStrictEqual(
     Option.some(DocumentJson.serialize(opened)),
   );
 });

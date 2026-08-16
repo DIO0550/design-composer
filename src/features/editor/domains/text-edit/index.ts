@@ -1,16 +1,16 @@
 import { DesignDocument } from "@/domains/design-document";
 import { Node, type PrimitiveNode, PropEdit } from "@/domains/node";
-import type { PrimitiveType, TEXT_SCHEMA } from "@/domains/primitive-schema";
+import type { PrimitiveType, TextSchema } from "@/domains/primitive-schema";
 import { ResolvedProps } from "@/domains/resolved-props";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import type { CanvasBounds } from "@/features/editor/domains/node-drop";
 import { Option } from "@/utils/Option";
 
 /** その場で編集できる文言を持つのは Text だけ（docs/02-data-model.md の表）。 */
-const TEXT_TYPE = "Text" satisfies PrimitiveType;
+const TextType = "Text" satisfies PrimitiveType;
 
 /** 書き換える prop。Text のスキーマが宣言している名前に限る。 */
-const CONTENT_PROP = "content" satisfies keyof typeof TEXT_SCHEMA.props;
+const ContentProp = "content" satisfies keyof typeof TextSchema.props;
 
 /**
  * キャンバス上でその場で編集できる文言（docs/06-ui.md「キャンバス直接操作」の
@@ -32,7 +32,7 @@ export type EditableText = Readonly<{
  * @returns 既定を解決した後の文言
  */
 function contentOf(node: PrimitiveNode): string {
-  return String(ResolvedProps.resolve(TEXT_TYPE, node.props ?? {}).content);
+  return String(ResolvedProps.resolve(TextType, node.props ?? {}).content);
 }
 
 /**
@@ -48,7 +48,7 @@ function forSelection(state: EditorState): Option<EditableText> {
       return Option.none;
     }
     const node = found.value;
-    if (!Node.isPrimitive(node) || node.type !== TEXT_TYPE) {
+    if (!Node.isPrimitive(node) || node.type !== TextType) {
       return Option.none;
     }
     return Option.some({ name, content: contentOf(node) });
@@ -113,6 +113,6 @@ export const TextEdit = {
    * そのまま `content` であり、空にする操作は「文言を空にした」としか読めない。
    */
   toPropEdit(edit: TextEdit): PropEdit {
-    return PropEdit.set(CONTENT_PROP, edit.draft);
+    return PropEdit.set(ContentProp, edit.draft);
   },
 } as const;

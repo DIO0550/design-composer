@@ -1,7 +1,7 @@
 import { type KeyShortcut, useKeyShortcut } from "@/hooks/use-key-shortcut";
 
 /** 削除に割り当てる組み合わせ。Windows / macOS どちらの流儀でも消せるよう両方を受ける。 */
-const DELETE_SHORTCUT: KeyShortcut = {
+const DeleteShortcut: KeyShortcut = {
   keys: ["Delete", "Backspace"],
   withCommandKey: false,
   withShiftKey: false,
@@ -17,5 +17,5 @@ const DELETE_SHORTCUT: KeyShortcut = {
  * @param onDelete 組み合わせが押されたときに呼ぶ手続き
  */
 export function useDeleteShortcut(onDelete: () => void): void {
-  useKeyShortcut(DELETE_SHORTCUT, onDelete);
+  useKeyShortcut(DeleteShortcut, onDelete);
 }

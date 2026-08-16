@@ -25,5 +25,5 @@ test.each([
 });
 
 test("appVersion を省略すると現在の FormatVersion と比較される", () => {
-  expect(FormatVersion.compatibility(FormatVersion.CURRENT)).toBe("compatible");
+  expect(FormatVersion.compatibility(FormatVersion.Current)).toBe("compatible");
 });

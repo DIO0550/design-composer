@@ -1,11 +1,11 @@
 import { act, screen } from "@testing-library/react";
 import { expect, test } from "vitest";
 import { changeFileExternally } from "@/features/editor/__tests__/document-change";
-import { SAMPLE_DOCUMENT } from "@/features/editor/__tests__/sample-document";
+import { SampleDocument } from "@/features/editor/__tests__/sample-document";
 import { DocumentJson } from "@/libs/document-json";
 import {
   breakFileExternally,
-  PATH,
+  Path,
   renderOpenedDocumentWithClock,
 } from "./setup";
 
@@ -73,8 +73,8 @@ test("外部編集でファイルが直ると、上部バーから古さの行�
 
   await changeFileExternally({
     fake: ipc,
-    path: PATH,
-    content: DocumentJson.serialize(SAMPLE_DOCUMENT),
+    path: Path,
+    content: DocumentJson.serialize(SampleDocument),
   });
 
   expect(lastValidRenderRow()).toBeNull();

@@ -2,7 +2,7 @@ import { CssDeclaration } from "@/domains/css-declaration";
 import type { PropValue } from "@/domains/node";
 
 /** 未指定の軸が取る長さ。 */
-const NONE = "0";
+const None = "0";
 
 /**
  * X / Y の2軸で表すパディング
@@ -33,8 +33,8 @@ export const Padding = {
    * 変換は引数で受け取りドメインからは切り離す。
    */
   cssValue(padding: Padding, resolveToken: (token: string) => string): string {
-    const y = padding.y === undefined ? NONE : resolveToken(padding.y);
-    const x = padding.x === undefined ? NONE : resolveToken(padding.x);
+    const y = padding.y === undefined ? None : resolveToken(padding.y);
+    const x = padding.x === undefined ? None : resolveToken(padding.x);
     return `${y} ${x}`;
   },
 

@@ -10,8 +10,8 @@ function setupState(
 ): EditorState {
   return EditorState.create(
     DesignDocument.create({
-      tokens: DocumentTemplate.DEFAULT.tokens,
-      components: DocumentTemplate.DEFAULT.components,
+      tokens: DocumentTemplate.Default.tokens,
+      components: DocumentTemplate.Default.components,
       artboards,
     }),
   );

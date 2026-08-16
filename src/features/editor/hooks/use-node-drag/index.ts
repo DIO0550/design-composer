@@ -1,6 +1,6 @@
 import { type PointerEvent as ReactPointerEvent, useReducer } from "react";
 import type { ChildPosition } from "@/domains/child-position";
-import { ELEMENT_NAME_ATTRIBUTE } from "@/domains/compiled-element";
+import { ElementNameAttribute } from "@/domains/compiled-element";
 import type { DesignDocument } from "@/domains/design-document";
 import type { CanvasOffset } from "@/features/editor/domains/canvas-view";
 import { NodeDrag } from "@/features/editor/domains/node-drag";
@@ -52,7 +52,7 @@ function nodeDragReducer(drag: NodeDrag, action: NodeDragAction): NodeDrag {
  * @returns 内側から根へ向かう順のノード名の並び
  */
 function namesToRoot(target: EventTarget): readonly string[] {
-  return ElementEx.attributeValuesToRoot(target, ELEMENT_NAME_ATTRIBUTE);
+  return ElementEx.attributeValuesToRoot(target, ElementNameAttribute);
 }
 
 /**
@@ -69,7 +69,7 @@ function measureZone(parent: DropParent): Option<DropZone> {
       parent,
       CanvasBounds.ofElement(element),
       Array.from(element.children)
-        .filter((child) => child.hasAttribute(ELEMENT_NAME_ATTRIBUTE))
+        .filter((child) => child.hasAttribute(ElementNameAttribute))
         .map(CanvasBounds.ofElement),
     ),
   );

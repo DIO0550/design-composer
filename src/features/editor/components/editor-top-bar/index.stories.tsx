@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
-import { SAMPLE_FILE_ERRORS } from "@/features/editor/__stories__/sample-editor-state";
+import { SampleFileErrors } from "@/features/editor/__stories__/sample-editor-state";
 import { CanvasView } from "@/features/editor/domains/canvas-view";
 import type { DocumentError } from "@/features/editor/domains/document-error";
 import { DocumentSaveState } from "@/features/editor/domains/document-save-state";
@@ -11,9 +11,9 @@ import {
   EditorTopBarTones,
 } from "./index";
 
-const OPENED = {
+const Opened = {
   path: "/work/settings-ui/app.dcmp",
-  document: DesignDocument.createFromTemplate(DocumentTemplate.DEFAULT),
+  document: DesignDocument.createFromTemplate(DocumentTemplate.Default),
 };
 
 /**
@@ -35,7 +35,7 @@ function TopBar({
 }>) {
   return (
     <EditorTopBar tone={tone}>
-      <EditorTopBar.Breadcrumb opened={OPENED} />
+      <EditorTopBar.Breadcrumb opened={Opened} />
       {saveState ? <EditorTopBar.SaveBadge state={saveState} /> : null}
       {fileErrors ? (
         <EditorTopBar.FileInvalidBadge errors={fileErrors} />
@@ -64,12 +64,12 @@ type Story = StoryObj<typeof meta>;
 
 export const Saved: Story = {
   name: "保存済み",
-  args: { saveState: DocumentSaveState.SAVED },
+  args: { saveState: DocumentSaveState.Saved },
 };
 
 export const Saving: Story = {
   name: "保存中",
-  args: { saveState: DocumentSaveState.SAVING },
+  args: { saveState: DocumentSaveState.Saving },
 };
 
 export const Failed: Story = {
@@ -92,7 +92,7 @@ export const Failed: Story = {
 export const LastValidRender: Story = {
   name: "最後に正常だった表示を出している状態",
   args: {
-    saveState: DocumentSaveState.SAVED,
+    saveState: DocumentSaveState.Saved,
     elapsed: { unit: ElapsedUnits.Seconds, count: 4 },
   },
 };
@@ -106,7 +106,7 @@ export const FileInvalid: Story = {
   name: "ファイルが不正",
   args: {
     tone: EditorTopBarTones.Error,
-    fileErrors: SAMPLE_FILE_ERRORS,
+    fileErrors: SampleFileErrors,
     elapsed: { unit: ElapsedUnits.Seconds, count: 4 },
   },
 };

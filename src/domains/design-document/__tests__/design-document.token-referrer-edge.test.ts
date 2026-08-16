@@ -6,7 +6,7 @@ import {
   TokenReferrer,
 } from "../index";
 
-const GRAY_900 = { kind: "colors", name: "gray-900" } as const;
+const Gray900 = { kind: "colors", name: "gray-900" } as const;
 
 /**
  * 色を 2 つ持つトークンセット。
@@ -109,7 +109,7 @@ test("トークンを引かない prop に同じ文字列が入っていても�
     ],
   });
 
-  const referrers = DesignDocument.collectTokenReferrers(document, GRAY_900);
+  const referrers = DesignDocument.collectTokenReferrers(document, Gray900);
 
   expect(referrers.map(TokenReferrer.toText)).toEqual(["title.color"]);
 });
@@ -134,7 +134,7 @@ test("スキーマに宣言の無い prop がトークン名と同じ値を持�
     ],
   });
 
-  const referrers = DesignDocument.collectTokenReferrers(document, GRAY_900);
+  const referrers = DesignDocument.collectTokenReferrers(document, Gray900);
 
   expect(referrers.map(TokenReferrer.toText)).toEqual([
     "login-form.background",
@@ -166,7 +166,7 @@ test("スキーマに無い type のノードの props は参照元にならな�
     ],
   });
 
-  const referrers = DesignDocument.collectTokenReferrers(document, GRAY_900);
+  const referrers = DesignDocument.collectTokenReferrers(document, Gray900);
 
   expect(referrers.map(TokenReferrer.toText)).toEqual([
     "login-form.background",
@@ -190,7 +190,7 @@ test("デフォルトで解決されるトークンは参照元にならない",
     ],
   });
 
-  const referrers = DesignDocument.collectTokenReferrers(document, GRAY_900);
+  const referrers = DesignDocument.collectTokenReferrers(document, Gray900);
 
   expect(referrers.map(TokenReferrer.toText)).toEqual(["title.color"]);
 });
@@ -205,7 +205,7 @@ test("スキーマに無い type の部品定義の props は参照元になら�
     artboards: [],
   });
 
-  const referrers = DesignDocument.collectTokenReferrers(document, GRAY_900);
+  const referrers = DesignDocument.collectTokenReferrers(document, Gray900);
 
   expect(referrers.map(TokenReferrer.toText)).toEqual(["panel.background"]);
 });
@@ -213,7 +213,7 @@ test("スキーマに無い type の部品定義の props は参照元になら�
 test("公開 prop が生の値の prop へ binding されているとき、上書きの値がトークン名と同じでも参照元にならない", () => {
   const document = setupInstanceDocument({ label: "gray-900" });
 
-  const referrers = DesignDocument.collectTokenReferrers(document, GRAY_900);
+  const referrers = DesignDocument.collectTokenReferrers(document, Gray900);
 
   expect(referrers.map(TokenReferrer.toText)).toEqual(["title.color"]);
 });
@@ -221,7 +221,7 @@ test("公開 prop が生の値の prop へ binding されているとき、上�
 test("宣言されていない公開 prop の上書きは参照元にならない", () => {
   const document = setupInstanceDocument({ tint: "gray-900" });
 
-  const referrers = DesignDocument.collectTokenReferrers(document, GRAY_900);
+  const referrers = DesignDocument.collectTokenReferrers(document, Gray900);
 
   expect(referrers.map(TokenReferrer.toText)).toEqual(["title.color"]);
 });
@@ -242,7 +242,7 @@ test("定義の無い部品を指すインスタンスの上書きは参照元�
     ],
   });
 
-  const referrers = DesignDocument.collectTokenReferrers(document, GRAY_900);
+  const referrers = DesignDocument.collectTokenReferrers(document, Gray900);
 
   expect(referrers.map(TokenReferrer.toText)).toEqual(["title.color"]);
 });
@@ -283,7 +283,7 @@ test("どこからも参照されていないトークンでは参照元が空�
     ],
   });
 
-  const referrers = DesignDocument.collectTokenReferrers(document, GRAY_900);
+  const referrers = DesignDocument.collectTokenReferrers(document, Gray900);
 
   expect(referrers).toEqual([]);
 });

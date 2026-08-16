@@ -2,7 +2,7 @@ import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { openedAt } from "@/features/editor/__tests__/sample-document";
-import { renderTopBar, SAVE_STATES } from "./setup";
+import { renderTopBar, SaveStates } from "./setup";
 
 test("開いているファイルの名前が上部バーに出る", () => {
   renderTopBar({ opened: openedAt("/work/settings-ui/app.dcmp") });
@@ -17,13 +17,13 @@ test("開いているファイルの親フォルダの名前が上部バーに�
 });
 
 test("書き出しが終わっているときは保存済みと出る", () => {
-  renderTopBar({ saveState: SAVE_STATES.saved });
+  renderTopBar({ saveState: SaveStates.saved });
 
   expect(screen.getByText("保存済み")).toBeDefined();
 });
 
 test("書き出しを待っている間は保存中と出る", () => {
-  renderTopBar({ saveState: SAVE_STATES.saving });
+  renderTopBar({ saveState: SaveStates.saving });
 
   expect(screen.getByText("保存中")).toBeDefined();
 });

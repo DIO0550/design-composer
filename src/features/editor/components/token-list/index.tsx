@@ -11,7 +11,7 @@ import type { TokenTemplate } from "@/features/editor/domains/token-template";
 import { SetEx } from "@/utils/SetEx";
 
 /** 見本の枠。どの種別でも同じ幅を空けて、名前の左端を揃える。 */
-const PREVIEW_WIDTH_PX = 20;
+const PreviewWidthPx = 20;
 
 /**
  * 一覧のどの種別を開いているか。
@@ -34,7 +34,7 @@ function PreviewSlot({
       return (
         <span
           aria-hidden="true"
-          style={{ width: `${PREVIEW_WIDTH_PX}px` }}
+          style={{ width: `${PreviewWidthPx}px` }}
           className="inline-flex h-3 shrink-0 items-center"
         >
           <span
@@ -47,7 +47,7 @@ function PreviewSlot({
       return (
         <span
           aria-hidden="true"
-          style={{ width: `${PREVIEW_WIDTH_PX}px` }}
+          style={{ width: `${PreviewWidthPx}px` }}
           className="inline-flex h-3 shrink-0 items-center justify-center"
         >
           {/* 影は白地に落として見せる。影そのものが値なのでクラス名に固定できない。 */}
@@ -62,7 +62,7 @@ function PreviewSlot({
         <span
           aria-hidden="true"
           style={{
-            width: `${PREVIEW_WIDTH_PX}px`,
+            width: `${PreviewWidthPx}px`,
             fontWeight: preview.fontWeight,
             fontFamily: preview.fontFamily,
           }}

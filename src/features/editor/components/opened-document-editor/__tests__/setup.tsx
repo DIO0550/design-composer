@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { DesignDocument } from "@/domains/design-document";
 import { PropEdit } from "@/domains/node";
 import { changeFileExternally } from "@/features/editor/__tests__/document-change";
-import { SAMPLE_DOCUMENT } from "@/features/editor/__tests__/sample-document";
+import { SampleDocument } from "@/features/editor/__tests__/sample-document";
 import { ClockFake } from "@/libs/clock/fake";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
@@ -11,7 +11,7 @@ import { Result } from "@/utils/Result";
 import { OpenedDocumentEditor } from "../index";
 
 /** 開いているファイル。テストの中で開いているファイルは常に 1 つ。 */
-export const PATH = "/work/sample.dcmp";
+export const Path = "/work/sample.dcmp";
 
 /** 編集画面が外部世界とやり取りする口の代役一式。 */
 export type OpenedDocumentFakes = Readonly<{
@@ -31,7 +31,7 @@ export type OpenedDocumentFakes = Readonly<{
  */
 export async function renderOpenedDocumentWithClock(): Promise<OpenedDocumentFakes> {
   const ipc = DocumentIpcFake.create({
-    [PATH]: DocumentJson.serialize(SAMPLE_DOCUMENT),
+    [Path]: DocumentJson.serialize(SampleDocument),
   });
   const clock = ClockFake.create();
 
@@ -39,7 +39,7 @@ export async function renderOpenedDocumentWithClock(): Promise<OpenedDocumentFak
     <OpenedDocumentEditor
       clock={clock.clock}
       ipc={ipc.ipc}
-      opened={{ path: PATH, document: SAMPLE_DOCUMENT }}
+      opened={{ path: Path, document: SampleDocument }}
     />,
   );
   await act(async () => {});
@@ -63,7 +63,7 @@ export async function renderOpenedDocument(): Promise<DocumentIpcFake> {
 export async function breakFileExternally(
   fake: DocumentIpcFake,
 ): Promise<void> {
-  await changeFileExternally({ fake, path: PATH, content: "{ 壊れた" });
+  await changeFileExternally({ fake, path: Path, content: "{ 壊れた" });
 }
 
 /**
@@ -73,8 +73,8 @@ export async function breakFileExternally(
 export async function fixFileExternally(fake: DocumentIpcFake): Promise<void> {
   await changeFileExternally({
     fake,
-    path: PATH,
-    content: DocumentJson.serialize(SAMPLE_DOCUMENT),
+    path: Path,
+    content: DocumentJson.serialize(SampleDocument),
   });
 }
 
@@ -86,21 +86,21 @@ export async function fixFileExternally(fake: DocumentIpcFake): Promise<void> {
  * 経路を確かめるには、**パースは通り、スキーマ検証で落ち、しかも指す先が
  * 最後に正常だった表示にも在る**内容が要る（#136）。
  *
- * `home-title` は `SAMPLE_DOCUMENT` にも在るので、飛び先が成立する。
+ * `home-title` は `SampleDocument` にも在るので、飛び先が成立する。
  */
 export async function invalidateFileExternally(
   fake: DocumentIpcFake,
 ): Promise<void> {
   const dangling = Result.unwrap(
     DesignDocument.applyPropEdit(
-      SAMPLE_DOCUMENT,
+      SampleDocument,
       "home-title",
       PropEdit.set("typography", "居ないタイポグラフィ"),
     ),
   );
   await changeFileExternally({
     fake,
-    path: PATH,
+    path: Path,
     content: DocumentJson.serialize(dangling),
   });
 }

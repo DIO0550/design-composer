@@ -35,7 +35,7 @@ function setupState(selectedName?: string): EditorState {
 }
 
 /** 画面の (100, 50) に 80x20 で描かれている、という前提。 */
-const TITLE_BOUNDS: CanvasBounds = {
+const TitleBounds: CanvasBounds = {
   left: 100,
   top: 50,
   width: 80,
@@ -57,7 +57,7 @@ test("文言を設定していない Text では既定の文言が編集の初�
 test("編集を始めると今の文言が下書きの初期値になる", () => {
   const edit = TextEdit.create(
     { name: "title", content: "ホーム" },
-    TITLE_BOUNDS,
+    TitleBounds,
   );
 
   expect(edit.draft).toBe("ホーム");
@@ -66,7 +66,7 @@ test("編集を始めると今の文言が下書きの初期値になる", () =>
 test("入力された文言で下書きが差し替わる", () => {
   const started = TextEdit.create(
     { name: "title", content: "ホーム" },
-    TITLE_BOUNDS,
+    TitleBounds,
   );
 
   expect(TextEdit.withDraft(started, "トップ").draft).toBe("トップ");
@@ -75,16 +75,16 @@ test("入力された文言で下書きが差し替わる", () => {
 test("下書きを差し替えても入力欄を重ねる位置は変わらない", () => {
   const started = TextEdit.create(
     { name: "title", content: "ホーム" },
-    TITLE_BOUNDS,
+    TitleBounds,
   );
 
-  expect(TextEdit.withDraft(started, "トップ").bounds).toEqual(TITLE_BOUNDS);
+  expect(TextEdit.withDraft(started, "トップ").bounds).toEqual(TitleBounds);
 });
 
 test("下書きは content への編集になる", () => {
   const started = TextEdit.create(
     { name: "title", content: "ホーム" },
-    TITLE_BOUNDS,
+    TitleBounds,
   );
 
   expect(TextEdit.toPropEdit(TextEdit.withDraft(started, "トップ"))).toEqual(

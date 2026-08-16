@@ -5,10 +5,10 @@ import { rowNames } from "@/features/editor/__tests__/row-names";
 import { renderOpenedDocument, selectInTree, tree } from "./setup";
 
 /** 並べ替え前の home の子の並び。 */
-const ORIGINAL_CHILDREN = ["home-title", "home-login"];
+const OriginalChildren = ["home-title", "home-login"];
 
 /** 並べ替え後の home の子の並び。 */
-const REORDERED_CHILDREN = ["home-login", "home-title"];
+const ReorderedChildren = ["home-login", "home-title"];
 
 test("並べ替えたあとに Ctrl+Z を押すと並びが元に戻る", async () => {
   await renderOpenedDocument();
@@ -18,7 +18,7 @@ test("並べ替えたあとに Ctrl+Z を押すと並びが元に戻る", async 
 
   await userEvent.keyboard("{Control>}z{/Control}");
 
-  expect(rowNames(tree())).toEqual(ORIGINAL_CHILDREN);
+  expect(rowNames(tree())).toEqual(OriginalChildren);
 });
 
 test("戻したあとに Ctrl+Shift+Z を押すと並べ替えが再び反映される", async () => {
@@ -30,7 +30,7 @@ test("戻したあとに Ctrl+Shift+Z を押すと並べ替えが再び反映さ
 
   await userEvent.keyboard("{Control>}{Shift>}z{/Shift}{/Control}");
 
-  expect(rowNames(tree())).toEqual(REORDERED_CHILDREN);
+  expect(rowNames(tree())).toEqual(ReorderedChildren);
 });
 
 test("何も編集していないときに Ctrl+Z を押しても画面は変わらない", async () => {
@@ -38,7 +38,7 @@ test("何も編集していないときに Ctrl+Z を押しても画面は変わ
 
   await userEvent.keyboard("{Control>}z{/Control}");
 
-  expect(rowNames(tree())).toEqual(ORIGINAL_CHILDREN);
+  expect(rowNames(tree())).toEqual(OriginalChildren);
 });
 
 test("削除を戻すと消したノードがツリーに返ってくる", async () => {
@@ -50,5 +50,5 @@ test("削除を戻すと消したノードがツリーに返ってくる", async
 
   await userEvent.keyboard("{Control>}z{/Control}");
 
-  expect(rowNames(tree())).toEqual(ORIGINAL_CHILDREN);
+  expect(rowNames(tree())).toEqual(OriginalChildren);
 });

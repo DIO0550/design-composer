@@ -8,4 +8,4 @@ import { Instant } from "@/domains/instant";
  * テストファイルに書いたら共通化する」）。起点を見る観点は、この値との差が分かる
  * 別の時刻をテストの中で作る。
  */
-export const RECEIVED_AT = Instant.create(0);
+export const ReceivedAt = Instant.create(0);

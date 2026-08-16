@@ -8,7 +8,7 @@ import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { useDocumentSession } from "../index";
 
 /** 既に置いてあるファイル。テストの中で開いているファイルは常に 1 つ。 */
-export const PATH = "/work/login.dcmp";
+export const Path = "/work/login.dcmp";
 
 export type SessionObserver = Readonly<{
   /** インメモリのファイル表。書き出された内容の確認に使う。 */

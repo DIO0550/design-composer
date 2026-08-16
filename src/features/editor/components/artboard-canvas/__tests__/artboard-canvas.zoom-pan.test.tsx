@@ -14,8 +14,8 @@ import { renderCanvas } from "./setup";
 function setupState(): EditorState {
   return EditorState.create(
     DesignDocument.create({
-      tokens: DocumentTemplate.DEFAULT.tokens,
-      components: DocumentTemplate.DEFAULT.components,
+      tokens: DocumentTemplate.Default.tokens,
+      components: DocumentTemplate.Default.components,
       artboards: [{ name: "home", width: 360, height: 240, children: [] }],
     }),
   );

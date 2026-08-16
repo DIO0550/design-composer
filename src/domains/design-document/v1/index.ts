@@ -11,7 +11,7 @@ import {
 import { Result } from "@/utils/Result";
 
 /** この版が JSON 上で持つトップレベルフィールド(docs/01-file-format.md)。 */
-const DOCUMENT_FIELDS = [
+const DocumentFields = [
   "formatVersion",
   "tokens",
   "components",
@@ -19,7 +19,7 @@ const DOCUMENT_FIELDS = [
 ] as const;
 
 /** この版の major。型にもデコードの検証にもこの1箇所から与える。 */
-const MAJOR = 1;
+const Major = 1;
 
 /**
  * major 1 の仕様で書かれたドキュメント(docs/01-file-format.md)。
@@ -33,7 +33,7 @@ const MAJOR = 1;
  * 「どの形から どの形へ」を型で書けるようになる。
  */
 export type DesignDocumentV1 = Readonly<{
-  formatVersion: FormatVersionOf<typeof MAJOR>;
+  formatVersion: FormatVersionOf<typeof Major>;
   tokens: TokenSet;
   components: ComponentSet;
   artboards: readonly Artboard[];
@@ -55,7 +55,7 @@ export const DesignDocumentV1 = {
       Json.knownFields(
         Json.combine4(
           Json.required(record, "formatVersion", (version) =>
-            FormatVersion.fromJsonOf(version, MAJOR),
+            FormatVersion.fromJsonOf(version, Major),
           ),
           Json.required(record, "tokens", TokenSet.fromJson),
           Json.required(record, "components", ComponentSet.fromJson),
@@ -70,7 +70,7 @@ export const DesignDocumentV1 = {
           }),
         ),
         record,
-        DOCUMENT_FIELDS,
+        DocumentFields,
       ),
     );
   },

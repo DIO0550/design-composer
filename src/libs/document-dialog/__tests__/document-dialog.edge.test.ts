@@ -4,7 +4,7 @@ import { DialogChoice, DocumentDialogFake } from "../fake";
 test("ダイアログを出せなかったときは失敗として返り、例外にはならない", async () => {
   const fake = DocumentDialogFake.create({
     open: DialogChoice.failed("dialog.open not allowed"),
-    save: DialogChoice.CANCELED,
+    save: DialogChoice.Canceled,
   });
 
   const chosen = await fake.dialog.chooseOpenPath();
@@ -14,7 +14,7 @@ test("ダイアログを出せなかったときは失敗として返り、例�
 
 test("ダイアログを出せなかった理由がメッセージに残る", async () => {
   const fake = DocumentDialogFake.create({
-    open: DialogChoice.CANCELED,
+    open: DialogChoice.Canceled,
     save: DialogChoice.failed("dialog.save not allowed"),
   });
 

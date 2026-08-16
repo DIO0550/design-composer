@@ -11,7 +11,7 @@ import { AssetsPanel } from "../index";
  * 絞り込みの振る舞いはここでまとめて見る。
  */
 
-const ASSETS: readonly ComponentAsset[] = [
+const Assets: readonly ComponentAsset[] = [
   { name: "primary-button", publicPropNames: ["label"], refCount: 4 },
   { name: "card", publicPropNames: ["title", "body"], refCount: 2 },
 ];
@@ -27,7 +27,7 @@ function setup() {
   render(
     <AssetsPanel
       sourceName={Option.none}
-      assets={ASSETS}
+      assets={Assets}
       isInsertEnabled
       onInsert={() => {}}
     />,

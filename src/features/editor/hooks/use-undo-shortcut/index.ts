@@ -1,7 +1,7 @@
 import { type KeyShortcut, useKeyShortcut } from "@/hooks/use-key-shortcut";
 
 /** undo に割り当てる組み合わせ（Windows は Ctrl+Z / macOS は Cmd+Z）。 */
-const UNDO_SHORTCUT: KeyShortcut = {
+const UndoShortcut: KeyShortcut = {
   keys: ["z"],
   withCommandKey: true,
   withShiftKey: false,
@@ -17,5 +17,5 @@ const UNDO_SHORTCUT: KeyShortcut = {
  * @param onUndo 組み合わせが押されたときに呼ぶ手続き
  */
 export function useUndoShortcut(onUndo: () => void): void {
-  useKeyShortcut(UNDO_SHORTCUT, onUndo);
+  useKeyShortcut(UndoShortcut, onUndo);
 }

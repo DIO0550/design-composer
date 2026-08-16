@@ -3,7 +3,7 @@ import { ColorToken, TokenSet } from "@/domains/token";
 import { DocumentTemplate } from "../index";
 
 test("デフォルトテーマは仕様の初期カラーパレットを持つ", () => {
-  expect(DocumentTemplate.DEFAULT.tokens.colors).toEqual({
+  expect(DocumentTemplate.Default.tokens.colors).toEqual({
     white: "#ffffff",
     "gray-100": "#f3f4f6",
     "gray-300": "#d1d5db",
@@ -17,7 +17,7 @@ test("デフォルトテーマは仕様の初期カラーパレットを持つ",
 });
 
 test("デフォルトテーマの色はすべて正規形の hex で書かれている", () => {
-  const { colors } = DocumentTemplate.DEFAULT.tokens;
+  const { colors } = DocumentTemplate.Default.tokens;
 
   const invalid = Object.values(colors).filter(
     (color) => !ColorToken.isValid(color),
@@ -27,7 +27,7 @@ test("デフォルトテーマの色はすべて正規形の hex で書かれて
 });
 
 test("デフォルトテーマは xs から xl までの5段の spacing を持つ", () => {
-  expect(DocumentTemplate.DEFAULT.tokens.spacing).toEqual({
+  expect(DocumentTemplate.Default.tokens.spacing).toEqual({
     xs: 4,
     sm: 8,
     md: 16,
@@ -37,7 +37,7 @@ test("デフォルトテーマは xs から xl までの5段の spacing を持�
 });
 
 test("デフォルトテーマは sm から full までの4段の radius を持つ", () => {
-  expect(DocumentTemplate.DEFAULT.tokens.radius).toEqual({
+  expect(DocumentTemplate.Default.tokens.radius).toEqual({
     sm: 4,
     md: 8,
     lg: 16,
@@ -46,7 +46,7 @@ test("デフォルトテーマは sm から full までの4段の radius を持�
 });
 
 test("デフォルトテーマは sm / md / lg の3段の shadows を持つ", () => {
-  expect(DocumentTemplate.DEFAULT.tokens.shadows).toEqual({
+  expect(DocumentTemplate.Default.tokens.shadows).toEqual({
     sm: { x: 0, y: 1, blur: 3, color: "#0000001a" },
     md: { x: 0, y: 4, blur: 12, color: "#00000026" },
     lg: { x: 0, y: 8, blur: 24, color: "#00000033" },
@@ -54,7 +54,7 @@ test("デフォルトテーマは sm / md / lg の3段の shadows を持つ", ()
 });
 
 test("デフォルトテーマは heading / subheading / body / caption の4種の typography を持つ", () => {
-  expect(DocumentTemplate.DEFAULT.tokens.typography).toEqual({
+  expect(DocumentTemplate.Default.tokens.typography).toEqual({
     heading: { fontSize: 24, lineHeight: 1.4, fontWeight: 700 },
     subheading: { fontSize: 18, lineHeight: 1.5, fontWeight: 600 },
     body: { fontSize: 16, lineHeight: 1.6, fontWeight: 400 },
@@ -63,7 +63,7 @@ test("デフォルトテーマは heading / subheading / body / caption の4種�
 });
 
 test("デフォルトテーマはトークン種別を1つも空にしない", () => {
-  const { tokens } = DocumentTemplate.DEFAULT;
+  const { tokens } = DocumentTemplate.Default;
 
   const emptyKinds = TokenSet.kinds().filter(
     (kind) => TokenSet.names(tokens, kind).length === 0,

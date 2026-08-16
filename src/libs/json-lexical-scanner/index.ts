@@ -33,7 +33,7 @@ type StringScanSuccess = Readonly<{
 
 type StringScanOutcome = StringScanSuccess | ScanFailure;
 
-const ESCAPE_MAP: Readonly<Record<string, string>> = {
+const EscapeMap: Readonly<Record<string, string>> = {
   '"': '"',
   "\\": "\\",
   "/": "/",
@@ -44,8 +44,8 @@ const ESCAPE_MAP: Readonly<Record<string, string>> = {
   t: "\t",
 };
 
-const NUMBER_PATTERN = /^-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?/;
-const LITERALS = ["true", "false", "null"] as const;
+const NumberPattern = /^-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?/;
+const Literals = ["true", "false", "null"] as const;
 
 /**
  * そこまで読めたことを表す結果。集めたエラーは読み進めたまま持ち回る。
@@ -143,7 +143,7 @@ function scanEscapeSequence(text: string, position: number): StringScanOutcome {
   if (esc === "u") {
     return scanUnicodeEscape(text, escCharPos, escapePos);
   }
-  const mapped = esc === undefined ? undefined : ESCAPE_MAP[esc];
+  const mapped = esc === undefined ? undefined : EscapeMap[esc];
   if (mapped === undefined) {
     return fail(escCharPos, [
       {
@@ -218,7 +218,7 @@ function scanString(text: string, position: number): StringScanOutcome {
  * @returns 数値の次の位置。JSON の数値として読めなければ失敗
  */
 function scanNumber(text: string, position: number): ScanOutcome {
-  const match = NUMBER_PATTERN.exec(text.slice(position));
+  const match = NumberPattern.exec(text.slice(position));
   if (match === null || match[0].length === 0) {
     return fail(position, [
       { kind: "syntax-error", message: "invalid number", position },
@@ -235,7 +235,7 @@ function scanNumber(text: string, position: number): ScanOutcome {
  * @returns リテラルの次の位置。どのリテラルでもなければ `null`
  */
 function scanLiteral(text: string, position: number): number | null {
-  for (const literal of LITERALS) {
+  for (const literal of Literals) {
     if (text.startsWith(literal, position)) {
       return position + literal.length;
     }

@@ -6,7 +6,7 @@ import { type KeyShortcut, useKeyShortcut } from "@/hooks/use-key-shortcut";
  * Windows の流儀にある Ctrl+Y は割り当てない。#41 が挙げているのは Shift+Z だけで、
  * 仕様に無いキーを先回りで押さえると、後から別の操作へ割り当てにくくなるため。
  */
-const REDO_SHORTCUT: KeyShortcut = {
+const RedoShortcut: KeyShortcut = {
   keys: ["z"],
   withCommandKey: true,
   withShiftKey: true,
@@ -22,5 +22,5 @@ const REDO_SHORTCUT: KeyShortcut = {
  * @param onRedo 組み合わせが押されたときに呼ぶ手続き
  */
 export function useRedoShortcut(onRedo: () => void): void {
-  useKeyShortcut(REDO_SHORTCUT, onRedo);
+  useKeyShortcut(RedoShortcut, onRedo);
 }

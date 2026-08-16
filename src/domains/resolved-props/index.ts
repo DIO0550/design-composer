@@ -1,13 +1,13 @@
 import type { PrimitiveNode, Props, PropValue } from "@/domains/node";
 import {
-  type PRIMITIVE_SCHEMAS,
   PrimitiveSchema,
+  type PrimitiveSchemas,
   type PrimitiveType,
   type PropDefinitionRecord,
 } from "@/domains/primitive-schema";
 
 type SchemaPropsOf<T extends PrimitiveType> =
-  (typeof PRIMITIVE_SCHEMAS)[T]["props"];
+  (typeof PrimitiveSchemas)[T]["props"];
 
 type DefaultedKeys<P extends PropDefinitionRecord> = {
   [K in keyof P]: P[K] extends { default: PropValue } ? K : never;

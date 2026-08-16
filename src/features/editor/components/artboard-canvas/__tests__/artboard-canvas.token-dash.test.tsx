@@ -8,7 +8,7 @@ import {
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { renderCanvas } from "./setup";
 
-const GRAY_900 = { kind: "colors", name: "gray-900" } as const;
+const Gray900 = { kind: "colors", name: "gray-900" } as const;
 
 /**
  * `gray-900` を `title` だけが指し、`caption` は別の色を指すドキュメントの編集状態。
@@ -37,7 +37,7 @@ function setupState(): EditorState {
 }
 
 test("トークンを選ぶと、そのトークンを参照しているノードだけが破線になる", () => {
-  renderCanvas({ state: EditorState.selectToken(setupState(), GRAY_900) });
+  renderCanvas({ state: EditorState.selectToken(setupState(), Gray900) });
 
   expect(tokenReferrerNames(canvasContent())).toEqual(["title"]);
 });
@@ -66,7 +66,7 @@ test("2つのノードが同じトークンを指していると、その2つが
     }),
   );
 
-  renderCanvas({ state: EditorState.selectToken(state, GRAY_900) });
+  renderCanvas({ state: EditorState.selectToken(state, Gray900) });
 
   expect(tokenReferrerNames(canvasContent())).toEqual(["title", "caption"]);
 });
@@ -101,7 +101,7 @@ test("部品定義の中だけで参照しているノードは破線になら�
     }),
   );
 
-  renderCanvas({ state: EditorState.selectToken(state, GRAY_900) });
+  renderCanvas({ state: EditorState.selectToken(state, Gray900) });
 
   expect(tokenReferrerNames(canvasContent())).toEqual(["title"]);
 });
@@ -126,7 +126,7 @@ function ruleIndexOf(name: string, declaration: string): number {
 
 test("選択中のノードがそのトークンを参照していても、選択の枠が破線に負けない", () => {
   const selected = EditorState.select(
-    EditorState.selectToken(setupState(), GRAY_900),
+    EditorState.selectToken(setupState(), Gray900),
     "title",
   );
 

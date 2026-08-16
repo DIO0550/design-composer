@@ -1,13 +1,13 @@
 import { useState } from "react";
 import type { ComponentAsset } from "@/domains/component";
-import { PRIMITIVE_TYPES } from "@/domains/primitive-schema";
+import { PrimitiveTypes } from "@/domains/primitive-schema";
 import { ComponentList } from "@/features/editor/components/component-list";
 import { PrimitiveList } from "@/features/editor/components/primitive-list";
 import type { Option } from "@/utils/Option";
 import { StringEx } from "@/utils/StringEx";
 
 /** 検索欄に出す案内（UI 案 docs/Design Composer.html の綴り）。 */
-const SEARCH_PLACEHOLDER = "Search assets";
+const SearchPlaceholder = "Search assets";
 
 /**
  * 検索して何も残らなかったときの知らせ。
@@ -16,7 +16,7 @@ const SEARCH_PLACEHOLDER = "Search assets";
  * ドキュメントに部品があるのに無いと言うことになる（絞り込みで 0 件になっただけ）。
  * 検索語を持っているのはここだけなので、ここで 1 度だけ伝える。
  */
-const NO_MATCH_MESSAGE = "一致するものがありません";
+const NoMatchMessage = "一致するものがありません";
 
 /**
  * 挿せる部品のパレット（UI 案 docs/Design Composer.html の `Assets` パネル）。
@@ -41,7 +41,7 @@ export function AssetsPanel({
 }>) {
   const [query, setQuery] = useState("");
 
-  const matchedTypes = PRIMITIVE_TYPES.filter((type) =>
+  const matchedTypes = PrimitiveTypes.filter((type) =>
     StringEx.includesIgnoreCase(type, query),
   );
   const matchedAssets = assets.filter((asset) =>
@@ -55,8 +55,8 @@ export function AssetsPanel({
     <>
       <input
         type="search"
-        aria-label={SEARCH_PLACEHOLDER}
-        placeholder={SEARCH_PLACEHOLDER}
+        aria-label={SearchPlaceholder}
+        placeholder={SearchPlaceholder}
         value={query}
         onChange={(event) => setQuery(event.target.value)}
         className="rounded border border-gray-300 px-2 py-1 text-sm placeholder:text-gray-400"
@@ -68,7 +68,7 @@ export function AssetsPanel({
        * （そちらは「この節には無い」という情報になる）。
        */}
       {hasNoMatch ? (
-        <p className="text-gray-500 text-sm">{NO_MATCH_MESSAGE}</p>
+        <p className="text-gray-500 text-sm">{NoMatchMessage}</p>
       ) : (
         <>
           <PrimitiveList types={matchedTypes} />

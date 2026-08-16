@@ -6,7 +6,7 @@ import type { TokenRef } from "@/domains/token";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { TokenList } from "../index";
 
-const NOOP = () => {};
+const Noop = () => {};
 
 /** 5 種別すべてに 1 件ずつ持つドキュメントの編集状態。 */
 function setupState(): EditorState {
@@ -26,7 +26,7 @@ function setupState(): EditorState {
 }
 
 function renderList(state: EditorState = setupState()) {
-  render(<TokenList state={state} onSelectToken={NOOP} onAddToken={NOOP} />);
+  render(<TokenList state={state} onSelectToken={Noop} onAddToken={Noop} />);
 }
 
 test("5種別すべての見出しが件数付きで並ぶ", () => {
@@ -95,7 +95,7 @@ test("複合オブジェクトの種別の行も押して選べる", async () =>
     <TokenList
       state={setupState()}
       onSelectToken={(ref) => selected.push(ref)}
-      onAddToken={NOOP}
+      onAddToken={Noop}
     />,
   );
 

@@ -13,17 +13,17 @@ import type { ReactNode } from "react";
  * ない値まで行として並ぶため（配列の `map` は添字だけを見るので影響を受けない。
  * vitest では docgen が走らず、テストだけでは気付けない / #129）。
  */
-const LEFT_PANE_VIEW_ORDER = ["layers", "assets", "tokens"] as const;
+const LeftPaneViewOrder = ["layers", "assets", "tokens"] as const;
 
 /** 左ペインが映せる行き先。 */
-export type LeftPaneView = (typeof LEFT_PANE_VIEW_ORDER)[number];
+export type LeftPaneView = (typeof LeftPaneViewOrder)[number];
 
 /**
  * 行き先を名前で指すための対応表。消費側が綴りを直接書かずに済むよう置く
  * （rules/coding.md「値の集合から union を導出する」）。
  * 過不足は `Record<LeftPaneView, LeftPaneView>` がコンパイルエラーにする。
  */
-export const LEFT_PANE_VIEWS = {
+export const LeftPaneViews = {
   layers: "layers",
   assets: "assets",
   tokens: "tokens",
@@ -33,7 +33,7 @@ export const LEFT_PANE_VIEWS = {
  * 行き先の名前。データモデルの語ではなく UI 案の綴りに合わせる。
  * レールのラベルと、その先に出るパネルの見出しの両方がこれを使う。
  */
-export const LEFT_PANE_VIEW_LABELS = {
+export const LeftPaneViewLabels = {
   layers: "Layers",
   assets: "Assets",
   tokens: "Tokens",
@@ -83,10 +83,10 @@ function TokensGlyph() {
 }
 
 /**
- * 行き先ごとの図形（`type-glyph` の `GLYPHS` と同じ形の対応表）。
+ * 行き先ごとの図形（`type-glyph` の `Glyphs` と同じ形の対応表）。
  * 行き先を足して図形を足し忘れると、ここがコンパイルエラーになる。
  */
-const VIEW_GLYPHS = {
+const ViewGlyphs = {
   layers: LayersGlyph,
   assets: AssetsGlyph,
   tokens: TokensGlyph,
@@ -108,8 +108,8 @@ export function LeftPaneRail({
       aria-label="左ペインの表示"
       className="flex w-14 shrink-0 flex-col items-center gap-1 border-gray-300 border-r bg-white py-2"
     >
-      {LEFT_PANE_VIEW_ORDER.map((view) => {
-        const Glyph = VIEW_GLYPHS[view];
+      {LeftPaneViewOrder.map((view) => {
+        const Glyph = ViewGlyphs[view];
 
         return (
           <button
@@ -120,7 +120,7 @@ export function LeftPaneRail({
             className="flex w-12 flex-col items-center gap-1 rounded py-1.5 text-[9px] text-gray-500 hover:bg-gray-100 aria-[current=true]:bg-[#0d99ff]/10 aria-[current=true]:text-[#0d99ff]"
           >
             <Glyph />
-            {LEFT_PANE_VIEW_LABELS[view]}
+            {LeftPaneViewLabels[view]}
           </button>
         );
       })}

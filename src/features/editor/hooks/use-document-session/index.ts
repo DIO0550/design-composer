@@ -100,19 +100,19 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
   createDocument: () => void;
 }> {
   const [session, setSession] = useState<DocumentSession>(
-    DocumentSession.CLOSED,
+    DocumentSession.Closed,
   );
 
   return {
     session,
 
     openDocument() {
-      setSession(DocumentSession.OPENING);
+      setSession(DocumentSession.Opening);
       void openWithDialog(ports, session).then(setSession);
     },
 
     createDocument() {
-      setSession(DocumentSession.OPENING);
+      setSession(DocumentSession.Opening);
       void createWithDialog(ports, session).then(setSession);
     },
   };

@@ -8,11 +8,11 @@ import type { CanvasOffset } from "@/features/editor/domains/canvas-view";
  */
 
 /** 1 本の指 / 1 つのマウスによる操作として扱う。 */
-const POINTER_ID = 1;
+const PointerId = 1;
 
 export function pressPointer(element: Element, at: CanvasOffset): void {
   fireEvent.pointerDown(element, {
-    pointerId: POINTER_ID,
+    pointerId: PointerId,
     clientX: at.x,
     clientY: at.y,
   });
@@ -20,7 +20,7 @@ export function pressPointer(element: Element, at: CanvasOffset): void {
 
 export function movePointer(element: Element, to: CanvasOffset): void {
   fireEvent.pointerMove(element, {
-    pointerId: POINTER_ID,
+    pointerId: PointerId,
     clientX: to.x,
     clientY: to.y,
   });
@@ -28,7 +28,7 @@ export function movePointer(element: Element, to: CanvasOffset): void {
 
 export function releasePointer(element: Element, at: CanvasOffset): void {
   fireEvent.pointerUp(element, {
-    pointerId: POINTER_ID,
+    pointerId: PointerId,
     clientX: at.x,
     clientY: at.y,
   });

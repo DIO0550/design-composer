@@ -56,7 +56,7 @@ export const DocumentMigrationError = {
  * major を上げるときは変換元の major をキーにして1つ足す
  * (`1: migrateV1ToV2` のように、1つの major 分の変換を1つの塊として持つ)。
  */
-const MIGRATION_STEPS: MigrationSteps = {};
+const RegisteredMigrationSteps: MigrationSteps = {};
 
 /**
  * JSON のデータモデルから formatVersion を読む。
@@ -163,8 +163,8 @@ function migrateUpTo(
 export const DocumentMigration = {
   toCurrent(
     value: unknown,
-    steps: MigrationSteps = MIGRATION_STEPS,
-    appVersion: FormatVersion = FormatVersion.CURRENT,
+    steps: MigrationSteps = RegisteredMigrationSteps,
+    appVersion: FormatVersion = FormatVersion.Current,
   ): Result<unknown, DocumentMigrationError> {
     const document = asRecord(value);
     if (!document.some) {

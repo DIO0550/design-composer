@@ -12,7 +12,7 @@ import {
   sectionsOf,
 } from "./setup";
 
-const COMPONENTS: ComponentSet = {
+const Components: ComponentSet = {
   "primary-button": {
     publicProps: { label: { node: "button-label", prop: "content" } },
     type: "Box",
@@ -43,8 +43,8 @@ function setupInstanceState(node: Node): EditorState {
   return EditorState.select(
     EditorState.create(
       DesignDocument.create({
-        tokens: DocumentTemplate.DEFAULT.tokens,
-        components: COMPONENTS,
+        tokens: DocumentTemplate.Default.tokens,
+        components: Components,
         artboards: [
           { name: "home", width: 360, height: 240, children: [node] },
         ],
@@ -89,7 +89,7 @@ test("上書きしていない数値トークンの公開 prop は部品が設�
 
   expect(
     resolvedValueOfControl(controlNamed(instanceOf(state).publicProps, "gap")),
-  ).toEqual(Option.some(DocumentTemplate.DEFAULT.tokens.spacing.lg));
+  ).toEqual(Option.some(DocumentTemplate.Default.tokens.spacing.lg));
 });
 
 test("上書きしていない公開 prop は部品が設定している値が既定として出る", () => {

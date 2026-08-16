@@ -23,7 +23,7 @@ export type TokenTemplate = Readonly<{ kind: TokenKind }>;
  * とは値が一致するだけで、参照はしていない。追加直後の見え方を決めるのはこちらの
  * 関心事で、テーマを直したときに連動して変わってよいものではないため。
  */
-const INITIAL_VALUES = {
+const InitialValues = {
   colors: { kind: "colors", value: "#000000" },
   spacing: { kind: "spacing", value: 0 },
   radius: { kind: "radius", value: 0 },
@@ -44,7 +44,7 @@ const INITIAL_VALUES = {
  * 末尾の `s` を落とす規則では `radiu` になる。どれも識別子の規則（kebab-case）を
  * 満たす綴りにしておき、衝突したときの連番は `DesignDocument.uniqueName` が付ける。
  */
-const BASE_NAMES = {
+const BaseNames = {
   colors: "color",
   spacing: "spacing",
   radius: "radius",
@@ -55,7 +55,7 @@ const BASE_NAMES = {
 export const TokenTemplate = {
   /** 採番の元になる名前。 */
   baseName(template: TokenTemplate): string {
-    return BASE_NAMES[template.kind];
+    return BaseNames[template.kind];
   },
 
   /**
@@ -68,6 +68,6 @@ export const TokenTemplate = {
       TokenTemplate.baseName(template),
       usedNames,
     );
-    return { ...INITIAL_VALUES[template.kind], name };
+    return { ...InitialValues[template.kind], name };
   },
 } as const;

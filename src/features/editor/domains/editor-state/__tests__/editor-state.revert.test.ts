@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
-import { SYNTAX_ERROR } from "@/features/editor/__tests__/document-errors";
-import { RECEIVED_AT } from "@/features/editor/__tests__/instants";
+import { DocumentSyntaxError } from "@/features/editor/__tests__/document-errors";
+import { ReceivedAt } from "@/features/editor/__tests__/instants";
 import { EditorState } from "../index";
 
 /**
@@ -15,8 +15,8 @@ import { EditorState } from "../index";
 function openedState(): EditorState {
   return EditorState.create(
     DesignDocument.create({
-      tokens: DocumentTemplate.DEFAULT.tokens,
-      components: DocumentTemplate.DEFAULT.components,
+      tokens: DocumentTemplate.Default.tokens,
+      components: DocumentTemplate.Default.components,
       artboards: [
         {
           name: "home",
@@ -37,9 +37,9 @@ test("ファイルへ書き戻すと、ファイル由来のエラーは無く�
     openedState(),
     {
       kind: "rejected",
-      errors: [SYNTAX_ERROR],
+      errors: [DocumentSyntaxError],
     },
-    RECEIVED_AT,
+    ReceivedAt,
   );
 
   const reverted = EditorState.applyRevert(rejected);
@@ -52,9 +52,9 @@ test("ファイルへ書き戻しても、表示中のドキュメントは戻�
     openedState(),
     {
       kind: "rejected",
-      errors: [SYNTAX_ERROR],
+      errors: [DocumentSyntaxError],
     },
-    RECEIVED_AT,
+    ReceivedAt,
   );
 
   const reverted = EditorState.applyRevert(rejected);

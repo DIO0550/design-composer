@@ -18,20 +18,20 @@ import type {
 import { CaseStyle } from "@/utils/CaseStyle";
 import { Option } from "@/utils/Option";
 
-const FIELD_CLASS =
+const FieldClass =
   "h-7 w-full rounded-md border border-gray-300 px-2 text-[11px]";
 
 /**
  * ラベル欄の幅。UI 案の 52px では `Width Mode` / `Padding X` が収まらない。
- * 変えたら `CONTROL_OFFSET_CLASS` も一緒に動かす（片方だけ変えると字下げがずれる）。
+ * 変えたら `ControlOffsetClass` も一緒に動かす（片方だけ変えると字下げがずれる）。
  */
-const LABEL_CLASS = "w-[4.25rem] shrink-0 truncate text-[11px] text-gray-500";
+const LabelClass = "w-[4.25rem] shrink-0 truncate text-[11px] text-gray-500";
 
 /**
  * ラベル欄の右、コントロールの左端へ揃えるための字下げ。
  * ラベル欄 4.25rem + ラベルとコントロールの間隔 0.5rem。
  */
-const CONTROL_OFFSET_CLASS = "pl-[4.75rem]";
+const ControlOffsetClass = "pl-[4.75rem]";
 
 /**
  * 未指定のときに何が効くかを出す（#34「未指定 prop はデフォルト値を
@@ -76,7 +76,7 @@ function TokenSelect({
     <select
       aria-labelledby={field.labelledBy}
       aria-describedby={describedBy}
-      className={FIELD_CLASS}
+      className={FieldClass}
       value={Option.unwrapOr(Option.map(control.value, String), "")}
       onChange={(event) =>
         onEdit(PropControl.editFrom(control, event.target.value))
@@ -159,7 +159,7 @@ function LiteralInput({
     <input
       aria-labelledby={field.labelledBy}
       type={inputType}
-      className={FIELD_CLASS}
+      className={FieldClass}
       value={Option.unwrapOr(Option.map(control.value, String), "")}
       placeholder={unsetLabel(control)}
       onChange={(event) =>
@@ -226,7 +226,7 @@ function PropField({
  *
  * 条件付きの prop はラベルを出さず字下げする（UI 案は `width` の数値欄をモードの行の
  * 下へぶら下げている）。条件を出している行の**直下**に来るのはスキーマの宣言順に
- * 依っており（`BOX_SCHEMA` は `widthMode` の直後に `width` を宣言する）、順が変われば
+ * 依っており（`BoxSchema` は `widthMode` の直後に `width` を宣言する）、順が変われば
  * 離れた位置に字下げだけが残る。**この出し分けは class の違いにしかならないので、
  * 崩れに気づける手段は Storybook の視覚差分だけ**（happy-dom は Tailwind を解決しない）。
  *
@@ -257,11 +257,11 @@ function PropRow({
       <div
         className={
           isDependent
-            ? `flex items-center ${CONTROL_OFFSET_CLASS}`
+            ? `flex items-center ${ControlOffsetClass}`
             : "flex items-center gap-2"
         }
       >
-        <span id={labelledBy} className={isDependent ? "sr-only" : LABEL_CLASS}>
+        <span id={labelledBy} className={isDependent ? "sr-only" : LabelClass}>
           {CaseStyle.toCapitalCase(control.prop)}
         </span>
         <div className="min-w-0 flex-1">
@@ -269,7 +269,7 @@ function PropRow({
         </div>
       </div>
       {showsUnsetNote ? (
-        <p className={`text-gray-400 text-xs ${CONTROL_OFFSET_CLASS}`}>
+        <p className={`text-gray-400 text-xs ${ControlOffsetClass}`}>
           {unsetLabel(control)}
         </p>
       ) : null}
@@ -317,7 +317,7 @@ function GroupSection({
  * 画面から採る。日本語にしないのは、同じ画面の `Public props` / `Assets` /
  * `Components` が既に UI 案の綴りのままで、片方だけ訳すと節の名前が混ざるため。
  */
-const INSTANCE_LABELS = {
+const InstanceLabels = {
   from: "from",
   publicProps: "Public props",
   instance: "Instance",
@@ -331,7 +331,7 @@ const INSTANCE_LABELS = {
 } as const;
 
 /** 解除できないときに、ボタンの `title` へ出す理由（挿入ボタンと同じ扱い）。 */
-const DETACH_DISABLED_REASON = "参照先の部品が見つからないため解除できません";
+const DetachDisabledReason = "参照先の部品が見つからないため解除できません";
 
 /** インスタンスの節から呼ぶ操作。常に対で要るので 1 つにまとめて受け取る。 */
 export type InstanceActions = Readonly<{
@@ -350,8 +350,8 @@ function OverriddenNote({ control }: Readonly<{ control: PropControl }>) {
   const defaultValue = control.defaultValue;
 
   return (
-    <p className={`text-gray-400 text-xs ${CONTROL_OFFSET_CLASS}`}>
-      {INSTANCE_LABELS.overridden}
+    <p className={`text-gray-400 text-xs ${ControlOffsetClass}`}>
+      {InstanceLabels.overridden}
       {defaultValue.some ? (
         <>
           {" · default "}
@@ -405,7 +405,7 @@ function InstanceBody({
   return (
     <div className="flex w-full flex-col gap-4">
       <p className="flex items-center gap-1.5 text-gray-400 text-xs">
-        {INSTANCE_LABELS.from}
+        {InstanceLabels.from}
         <span className="flex items-center gap-1 rounded bg-purple-50 px-2 py-0.5 font-medium text-[#7a34d6]">
           <TypeGlyph kind="component" />
           {source}
@@ -418,7 +418,7 @@ function InstanceBody({
             <span className="text-gray-400 text-xs">{publicProps.length}</span>
           }
         >
-          {INSTANCE_LABELS.publicProps}
+          {InstanceLabels.publicProps}
         </SectionHeading>
         {publicProps.map((control) => (
           <PublicPropRow key={control.prop} control={control} onEdit={onEdit} />
@@ -426,28 +426,28 @@ function InstanceBody({
       </section>
 
       <section className="flex flex-col gap-2 border-gray-200 border-t pt-3">
-        <SectionHeading>{INSTANCE_LABELS.instance}</SectionHeading>
+        <SectionHeading>{InstanceLabels.instance}</SectionHeading>
         <button
           type="button"
           onClick={actions.goToSource}
           className="rounded border border-gray-300 px-2 py-1 text-left text-sm hover:bg-gray-100"
         >
-          {INSTANCE_LABELS.goToSource}
+          {InstanceLabels.goToSource}
         </button>
         <button
           type="button"
           onClick={actions.detach}
           disabled={!controls.isDetachEnabled}
-          title={controls.isDetachEnabled ? undefined : DETACH_DISABLED_REASON}
+          title={controls.isDetachEnabled ? undefined : DetachDisabledReason}
           className="rounded border border-gray-300 px-2 py-1 text-left text-sm hover:bg-gray-100 disabled:opacity-50"
         >
-          {INSTANCE_LABELS.detach}
+          {InstanceLabels.detach}
         </button>
-        <p className="text-gray-400 text-xs">{INSTANCE_LABELS.detachNote}</p>
+        <p className="text-gray-400 text-xs">{InstanceLabels.detachNote}</p>
       </section>
 
       <p className="border-gray-200 border-t pt-3 text-gray-400 text-xs">
-        {INSTANCE_LABELS.footnote}
+        {InstanceLabels.footnote}
       </p>
     </div>
   );
@@ -515,7 +515,7 @@ function SelectionBody({
  *
  * 種別を足して綴りを足し忘れると、ここがコンパイルエラーになる。
  */
-const KIND_LABELS = {
+const KindLabels = {
   artboard: "Artboard",
   Box: "Box",
   Text: "Text",
@@ -541,7 +541,7 @@ function SelectionTitle({ selection }: Readonly<{ selection: Selection }>) {
       </h2>
       {kind.some ? (
         <span className="shrink-0 text-gray-400 text-xs">
-          {KIND_LABELS[kind.value]}
+          {KindLabels[kind.value]}
         </span>
       ) : null}
     </>

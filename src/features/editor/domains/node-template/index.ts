@@ -22,7 +22,7 @@ export type NodeTemplate =
  * 選択もダブルクリックによるインライン編集もできず、挿入した結果を確かめられないため、
  * 挿入時に限って初期値を与える（#39）。
  */
-const INITIAL_PROPS = {
+const InitialProps = {
   Box: { widthMode: "fixed", width: 120, heightMode: "fixed", height: 80 },
   Text: { content: "テキスト" },
 } as const satisfies Readonly<Record<PrimitiveType, Props>>;
@@ -54,6 +54,6 @@ export const NodeTemplate = {
     if (template.kind === "instance") {
       return { name, ref: template.componentName };
     }
-    return { name, type: template.type, props: INITIAL_PROPS[template.type] };
+    return { name, type: template.type, props: InitialProps[template.type] };
   },
 } as const;

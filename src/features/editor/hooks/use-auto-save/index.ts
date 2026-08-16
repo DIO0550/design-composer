@@ -9,7 +9,7 @@ import { DocumentJson } from "@/libs/document-json";
  * （docs/05-architecture.md「保存モデル: 自動保存」）。
  * 自動保存の間隔はこの 1 箇所で決める（#29）。
  */
-export const AUTO_SAVE_DEBOUNCE_MS = 500;
+export const AutoSaveDebounceMs = 500;
 
 /** 書き出す内容と書き出し先。片方だけでは書き込みが決まらないため 1 つにまとめる。 */
 export type AutoSaveTarget = Readonly<{
@@ -38,7 +38,7 @@ export function useAutoSave({
   document,
 }: AutoSaveTarget): DocumentSaveState {
   const [saveState, setSaveState] = useState<DocumentSaveState>(
-    DocumentSaveState.SAVED,
+    DocumentSaveState.Saved,
   );
   /*
    * ファイルに載っていると分かっているドキュメント。マウント時の値はファイルから
@@ -59,10 +59,10 @@ export function useAutoSave({
        * ここで確定させないと、デバウンス中の undo（`EditHistory` は積んだ同じ参照を
        * 戻すので、この分岐に入りタイマーが cleanup で消える）で `saving` のまま固まる。
        */
-      setSaveState(DocumentSaveState.SAVED);
+      setSaveState(DocumentSaveState.Saved);
       return;
     }
-    setSaveState(DocumentSaveState.SAVING);
+    setSaveState(DocumentSaveState.Saving);
 
     // 書き込み中に次の編集が来たら、その結果は捨てて後続の書き込みに任せる
     // （rules/hooks.md「ref をフラグにした防御」の代わりのクリーンアップ）。
@@ -77,8 +77,8 @@ export function useAutoSave({
         return;
       }
       savedDocumentRef.current = document;
-      setSaveState(DocumentSaveState.SAVED);
-    }, AUTO_SAVE_DEBOUNCE_MS);
+      setSaveState(DocumentSaveState.Saved);
+    }, AutoSaveDebounceMs);
 
     return () => {
       ignore = true;

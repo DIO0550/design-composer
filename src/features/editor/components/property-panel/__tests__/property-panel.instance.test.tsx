@@ -14,8 +14,8 @@ import { type InstanceActions, PropertyPanel } from "../index";
  * 入力欄そのものと編集の反映は `.normal` / `.edit` が見る。ここで見るのは
  * この画面にしか無いもの（出どころ・件数・上書きの注記・インスタンスの操作）。
  */
-const COMPONENTS: ComponentSet = {
-  ...DocumentTemplate.DEFAULT.components,
+const Components: ComponentSet = {
+  ...DocumentTemplate.Default.components,
   /** 公開 prop 2 件。片方だけ上書きした状態を作るために使う。 */
   "profile-card": {
     publicProps: {
@@ -37,8 +37,8 @@ const COMPONENTS: ComponentSet = {
 function setupState(): EditorState {
   return EditorState.create(
     DesignDocument.create({
-      tokens: DocumentTemplate.DEFAULT.tokens,
-      components: COMPONENTS,
+      tokens: DocumentTemplate.Default.tokens,
+      components: Components,
       artboards: [
         {
           name: "home",

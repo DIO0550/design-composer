@@ -9,7 +9,7 @@ import { Option } from "@/utils/Option";
 import { useElapsed } from "../index";
 
 /** 時計の開始時刻。起点はここから作る。 */
-const START_EPOCH_MS = 1_700_000_000_000;
+const StartEpochMs = 1_700_000_000_000;
 
 /**
  * 起点を持たせたり外したりできる器。
@@ -36,7 +36,7 @@ function ElapsedHarness({
       </button>
       <button
         type="button"
-        onClick={() => setSince(Option.some(Instant.create(START_EPOCH_MS)))}
+        onClick={() => setSince(Option.some(Instant.create(StartEpochMs)))}
       >
         起点を持たせる
       </button>
@@ -50,7 +50,7 @@ function elapsedText(): string {
 }
 
 test("起点が無いあいだは経過時間を返さない", () => {
-  const clock = ClockFake.create(START_EPOCH_MS);
+  const clock = ClockFake.create(StartEpochMs);
 
   render(<ElapsedHarness clock={clock.clock} initialSince={Option.none} />);
 
@@ -58,12 +58,12 @@ test("起点が無いあいだは経過時間を返さない", () => {
 });
 
 test("起点があると経過時間を返す", () => {
-  const clock = ClockFake.create(START_EPOCH_MS + 4000);
+  const clock = ClockFake.create(StartEpochMs + 4000);
 
   render(
     <ElapsedHarness
       clock={clock.clock}
-      initialSince={Option.some(Instant.create(START_EPOCH_MS))}
+      initialSince={Option.some(Instant.create(StartEpochMs))}
     />,
   );
 
@@ -71,11 +71,11 @@ test("起点があると経過時間を返す", () => {
 });
 
 test("時計が進むと経過時間も進む", () => {
-  const clock = ClockFake.create(START_EPOCH_MS + 4000);
+  const clock = ClockFake.create(StartEpochMs + 4000);
   render(
     <ElapsedHarness
       clock={clock.clock}
-      initialSince={Option.some(Instant.create(START_EPOCH_MS))}
+      initialSince={Option.some(Instant.create(StartEpochMs))}
     />,
   );
 
@@ -87,7 +87,7 @@ test("時計が進むと経過時間も進む", () => {
 });
 
 test("起点が無いあいだは時計を購読しない", () => {
-  const clock = ClockFake.create(START_EPOCH_MS);
+  const clock = ClockFake.create(StartEpochMs);
 
   render(<ElapsedHarness clock={clock.clock} initialSince={Option.none} />);
 
@@ -95,11 +95,11 @@ test("起点が無いあいだは時計を購読しない", () => {
 });
 
 test("起点が消えると時計の購読も解除される", async () => {
-  const clock = ClockFake.create(START_EPOCH_MS);
+  const clock = ClockFake.create(StartEpochMs);
   render(
     <ElapsedHarness
       clock={clock.clock}
-      initialSince={Option.some(Instant.create(START_EPOCH_MS))}
+      initialSince={Option.some(Instant.create(StartEpochMs))}
     />,
   );
 
@@ -109,11 +109,11 @@ test("起点が消えると時計の購読も解除される", async () => {
 });
 
 test("起点が消えると経過時間も返さなくなる", async () => {
-  const clock = ClockFake.create(START_EPOCH_MS + 4000);
+  const clock = ClockFake.create(StartEpochMs + 4000);
   render(
     <ElapsedHarness
       clock={clock.clock}
-      initialSince={Option.some(Instant.create(START_EPOCH_MS))}
+      initialSince={Option.some(Instant.create(StartEpochMs))}
     />,
   );
 
@@ -128,11 +128,11 @@ test("起点が消えると経過時間も返さなくなる", async () => {
  * 数字を見るテストでは気づけない（代役の購読回数でだけ見える）。
  */
 test("起点が変わらないまま再レンダーしても時計を購読し直さない", async () => {
-  const clock = ClockFake.create(START_EPOCH_MS);
+  const clock = ClockFake.create(StartEpochMs);
   render(
     <ElapsedHarness
       clock={clock.clock}
-      initialSince={Option.some(Instant.create(START_EPOCH_MS))}
+      initialSince={Option.some(Instant.create(StartEpochMs))}
     />,
   );
 

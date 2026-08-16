@@ -3,22 +3,22 @@ import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import {
   artboardContent,
-  SAMPLE_DOCUMENT,
+  SampleDocument,
 } from "@/features/editor/__tests__/sample-document";
 import { DialogChoice } from "@/libs/document-dialog/fake";
 import { DocumentJson } from "@/libs/document-json";
 import {
   clickCreate,
   clickOpen,
-  OTHER_PATH,
-  PATH,
+  OtherPath,
+  Path,
   renderEditorScreen,
 } from "./setup";
 
 test("起動直後はドキュメントを開くよう案内される", () => {
   renderEditorScreen(
     {},
-    { open: DialogChoice.CANCELED, save: DialogChoice.CANCELED },
+    { open: DialogChoice.Canceled, save: DialogChoice.Canceled },
   );
 
   expect(
@@ -29,7 +29,7 @@ test("起動直後はドキュメントを開くよう案内される", () => {
 test("起動直後はキャンバスが表示されない", () => {
   renderEditorScreen(
     {},
-    { open: DialogChoice.CANCELED, save: DialogChoice.CANCELED },
+    { open: DialogChoice.Canceled, save: DialogChoice.Canceled },
   );
 
   expect(screen.queryByRole("main", { name: "キャンバス" })).toBeNull();
@@ -37,8 +37,8 @@ test("起動直後はキャンバスが表示されない", () => {
 
 test("ファイルを開くと、そのドキュメントがキャンバスに表示される", async () => {
   renderEditorScreen(
-    { [PATH]: DocumentJson.serialize(SAMPLE_DOCUMENT) },
-    { open: DialogChoice.chosen(PATH), save: DialogChoice.CANCELED },
+    { [Path]: DocumentJson.serialize(SampleDocument) },
+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
   );
 
   await clickOpen();
@@ -49,20 +49,20 @@ test("ファイルを開くと、そのドキュメントがキャンバスに�
 
 test("ファイルを開くと、開いているファイルのパスが分かる", async () => {
   renderEditorScreen(
-    { [PATH]: DocumentJson.serialize(SAMPLE_DOCUMENT) },
-    { open: DialogChoice.chosen(PATH), save: DialogChoice.CANCELED },
+    { [Path]: DocumentJson.serialize(SampleDocument) },
+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
   );
 
   await clickOpen();
 
   const toolbar = screen.getByRole("banner");
-  expect(within(toolbar).getByText(PATH)).toBeDefined();
+  expect(within(toolbar).getByText(Path)).toBeDefined();
 });
 
 test("新規作成すると、雛形の部品を持つドキュメントが開かれる", async () => {
   renderEditorScreen(
     {},
-    { open: DialogChoice.CANCELED, save: DialogChoice.chosen(OTHER_PATH) },
+    { open: DialogChoice.Canceled, save: DialogChoice.chosen(OtherPath) },
   );
 
   await clickCreate();
@@ -77,18 +77,18 @@ test("新規作成すると、雛形の部品を持つドキュメントが開�
 test("新規作成すると、選んだ保存先にファイルが作られる", async () => {
   const files = renderEditorScreen(
     {},
-    { open: DialogChoice.CANCELED, save: DialogChoice.chosen(OTHER_PATH) },
+    { open: DialogChoice.Canceled, save: DialogChoice.chosen(OtherPath) },
   );
 
   await clickCreate();
 
-  expect(files.contentOf(OTHER_PATH).some).toBe(true);
+  expect(files.contentOf(OtherPath).some).toBe(true);
 });
 
 test("内容が不正なファイルを開くと、開けない理由が表示される", async () => {
   renderEditorScreen(
-    { [PATH]: '{ "formatVersion": ' },
-    { open: DialogChoice.chosen(PATH), save: DialogChoice.CANCELED },
+    { [Path]: '{ "formatVersion": ' },
+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
   );
 
   await clickOpen();
@@ -101,7 +101,7 @@ test("内容が不正なファイルを開くと、開けない理由が表示�
 test("読み込めないファイルを開くと、見つからないことが表示される", async () => {
   renderEditorScreen(
     {},
-    { open: DialogChoice.chosen(PATH), save: DialogChoice.CANCELED },
+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
   );
 
   await clickOpen();
@@ -111,13 +111,13 @@ test("読み込めないファイルを開くと、見つからないことが�
 
 test("開いている途中でダイアログを閉じても、開いていたドキュメントは表示されたまま", async () => {
   renderEditorScreen(
-    { [OTHER_PATH]: artboardContent("settings") },
-    { open: DialogChoice.CANCELED, save: DialogChoice.chosen(PATH) },
+    { [OtherPath]: artboardContent("settings") },
+    { open: DialogChoice.Canceled, save: DialogChoice.chosen(Path) },
   );
   await clickCreate();
 
   await clickOpen();
 
   const toolbar = screen.getByRole("banner");
-  expect(within(toolbar).getByText(PATH)).toBeDefined();
+  expect(within(toolbar).getByText(Path)).toBeDefined();
 });

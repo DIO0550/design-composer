@@ -19,7 +19,7 @@ export type Clock = Readonly<{
   subscribeSeconds(listener: () => void): () => void;
 }>;
 
-const MILLISECONDS_PER_SECOND = 1000;
+const MillisecondsPerSecond = 1000;
 
 export const Clock = {
   create(): Clock {
@@ -29,7 +29,7 @@ export const Clock = {
       },
 
       subscribeSeconds(listener) {
-        const timer = setInterval(listener, MILLISECONDS_PER_SECOND);
+        const timer = setInterval(listener, MillisecondsPerSecond);
         return () => {
           clearInterval(timer);
         };

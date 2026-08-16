@@ -3,8 +3,8 @@ import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { renderedElement } from "@/features/editor/__tests__/canvas-elements";
 import {
-  LEFT_PANE_VIEW_LABELS,
-  LEFT_PANE_VIEWS,
+  LeftPaneViewLabels,
+  LeftPaneViews,
 } from "@/features/editor/components/left-pane-rail";
 import {
   canvasPane,
@@ -32,7 +32,7 @@ async function goToAssets(): Promise<void> {
     within(
       screen.getByRole("navigation", { name: "左ペインの表示" }),
     ).getByRole("button", {
-      name: LEFT_PANE_VIEW_LABELS[LEFT_PANE_VIEWS.assets],
+      name: LeftPaneViewLabels[LeftPaneViews.assets],
     }),
   );
 }
@@ -74,7 +74,7 @@ test("Tokens を見ている間は部品化の入口が出ない", async () => {
     within(
       screen.getByRole("navigation", { name: "左ペインの表示" }),
     ).getByRole("button", {
-      name: LEFT_PANE_VIEW_LABELS[LEFT_PANE_VIEWS.tokens],
+      name: LeftPaneViewLabels[LeftPaneViews.tokens],
     }),
   );
 

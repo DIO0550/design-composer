@@ -51,17 +51,17 @@ export function useFileRevert({
    * （rules/hooks.md「1 つの処理が複数の state を更新するなら」）。
    */
   const [saveState, setSaveState] = useState<DocumentSaveState>(
-    DocumentSaveState.SAVED,
+    DocumentSaveState.Saved,
   );
 
   const revert = () => {
-    setSaveState(DocumentSaveState.SAVING);
+    setSaveState(DocumentSaveState.Saving);
     void ipc.save(path, DocumentJson.serialize(document)).then((saved) => {
       if (!saved.ok) {
         setSaveState(DocumentSaveState.fromError(saved.error));
         return;
       }
-      setSaveState(DocumentSaveState.SAVED);
+      setSaveState(DocumentSaveState.Saved);
       onReverted();
     });
   };
