@@ -54,17 +54,20 @@ test("編集の直後にファイルが不正になると、デバウンス中�
   const fake = DocumentIpcFake.create({
     [Path]: DocumentJson.serialize(opened),
   });
+  /*
+   * 編集後のドキュメントは 1 つだけ作って両方の `rerender` に渡す。作り直すと
+   * `document` の同一性が変わって effect が張り直され、`fileValidity` を依存に
+   * 入れていない実装でも書き込みが止まってしまう（拒否は `document` を変えないので、
+   * 実際に張り直しの契機になるのは妥当性の変化だけ）。
+   */
+  const edited = artboardDocument("settings");
   const { rerender } = renderAutoSave({ ipc: fake.ipc, document: opened });
 
   // 編集してデバウンスを走らせ、書き出される前に外部がファイルを壊す
-  rerender({ ipc: fake.ipc, document: artboardDocument("settings") });
+  rerender({ ipc: fake.ipc, document: edited });
   await waitDebounce(AutoSaveDebounceMs - 1);
   fake.changeExternally(Path, broken);
-  rerender({
-    ipc: fake.ipc,
-    document: artboardDocument("settings"),
-    fileValidity: Invalid,
-  });
+  rerender({ ipc: fake.ipc, document: edited, fileValidity: Invalid });
   await waitDebounce();
 
   expect(fake.contentOf(Path)).toStrictEqual(Option.some(broken));

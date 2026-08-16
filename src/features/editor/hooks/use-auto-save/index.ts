@@ -17,9 +17,10 @@ export const AutoSaveDebounceMs = 500;
  * どれか 1 つでは書き込みが決まらないため 1 つにまとめる。
  *
  * Why not: 「書き出してよい内容」を `Option<DesignDocument>` にして渡さない。
- * `Option.some` は毎回新しいオブジェクトを作るので、依存配列に入れるとレンダーのたびに
- * effect が張り直され、デバウンスが毎回リセットされて自動保存が発火しなくなる。
- * `fileValidity` は reducer が作ったときだけ同一性が変わるので依存として安全。
+ * `Option.some` は呼ぶたびに新しいオブジェクトを作るため、依存配列に入れると
+ * 再レンダーのたびに effect が張り直されてデバウンスが取り直される。
+ * `fileValidity` は妥当なら共有の定数、不正なら取り込みを拒んだときにだけ作られるので、
+ * 依存として同一性が安定している。
  */
 export type AutoSaveTarget = Readonly<{
   ipc: DocumentIpc;
@@ -45,8 +46,7 @@ export type AutoSaveTarget = Readonly<{
  * `revert file`（`useFileRevert`）が別に持っている。
  *
  * @returns 画面のドキュメントとファイルが一致しているか。書き出し待ち・書き出し中は
- *   `saving`、書き込みが拒まれている間は `failed`。ファイルが不正な間は
- *   直前の状態のまま（凍結中は上部バーが保存状態を出さない）
+ *   `saving`、書き込みが拒まれている間は `failed`
  */
 export function useAutoSave({
   ipc,
@@ -70,11 +70,7 @@ export function useAutoSave({
   const savedDocumentRef = useRef(document);
 
   useEffect(() => {
-    /*
-     * 妥当性を最初に見る。書き出す必要の有無より先に置くことで、凍結中は
-     * `saveState` を動かさずに抜ける（凍結が解ければこの effect が再び走り、
-     * そこで書き出しの要否から決め直される）。
-     */
+    // 凍結が解ければ妥当性が変わってこの effect が再び走り、書き出しの要否から決め直される。
     if (FileValidity.isInvalid(fileValidity)) {
       return;
     }

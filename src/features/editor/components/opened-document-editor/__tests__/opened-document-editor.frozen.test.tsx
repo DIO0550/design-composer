@@ -9,6 +9,7 @@ import {
   leftPane,
   propertyPane,
   renderOpenedDocument,
+  selectArtboard,
   selectInTree,
   tree,
   zoomToolbar,
@@ -180,6 +181,9 @@ test("ファイルが壊れると、Ctrl+V を押してもツリーにノード�
   const fake = await renderOpenedDocument();
   await selectInTree("home-title");
   await userEvent.keyboard("{Control>}c{/Control}");
+  // 挿せる先へ選択を移す。Text を選んだままだと凍結と関係なく貼れず、
+  // 凍結を外しても増えないので何も守らないテストになる
+  await selectArtboard("home");
 
   await breakFileExternally(fake);
   await userEvent.keyboard("{Control>}v{/Control}");

@@ -133,7 +133,7 @@ function withHistory(state: EditorState, history: EditHistory): EditorState {
  * @param document 現在地にするドキュメント
  * @returns 履歴に 1 件積まれ、それを現在地にしたエディタの状態
  */
-function withRecorded(
+function withDocument(
   state: EditorState,
   document: DesignDocument,
 ): EditorState {
@@ -157,9 +157,9 @@ function withEdit(
   state: EditorState,
   document: DesignDocument,
 ): Option<EditorState> {
-  return FileValidity.isInvalid(state.fileValidity)
+  return EditorState.isFileInvalid(state)
     ? Option.none
-    : Option.some(withRecorded(state, document));
+    : Option.some(withDocument(state, document));
 }
 
 /**
@@ -414,7 +414,7 @@ export const EditorState = {
     );
     switch (reload.kind) {
       case "reloaded":
-        return withRecorded({ ...state, fileValidity }, reload.document);
+        return withDocument({ ...state, fileValidity }, reload.document);
       case "rejected":
         return { ...state, fileValidity };
     }
@@ -427,7 +427,7 @@ export const EditorState = {
    * ドキュメントには触れないので履歴も伸びない（戻した先が今映っているものそのもので、
    * undo で戻る先が増えるような編集は起きていない）。
    *
-   * Why not: 書き戻しを `applyReload` の `reloaded` として表さない。`withEdit` を通るため
+   * Why not: 書き戻しを `applyReload` の `reloaded` として表さない。`withDocument` を通るため
    * 中身が変わっていないのに履歴が 1 つ伸び、undo が「何も起きない 1 手」を挟むことになる。
    *
    * @param state 書き戻す前の状態
@@ -448,7 +448,7 @@ export const EditorState = {
    * （docs/05-architecture.md「保存モデル」）。
    */
   undo(state: EditorState): Option<EditorState> {
-    if (FileValidity.isInvalid(state.fileValidity)) {
+    if (EditorState.isFileInvalid(state)) {
       return Option.none;
     }
     return Option.map(EditHistory.undo(state.history), (history) =>
@@ -463,7 +463,7 @@ export const EditorState = {
    * 到達しうる理由は `undo` と同じ。
    */
   redo(state: EditorState): Option<EditorState> {
-    if (FileValidity.isInvalid(state.fileValidity)) {
+    if (EditorState.isFileInvalid(state)) {
       return Option.none;
     }
     return Option.map(EditHistory.redo(state.history), (history) =>
