@@ -4,7 +4,6 @@ import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import type { Node } from "@/domains/node";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
-import { SelectionControls } from "../index";
 import {
   controlNamed,
   instanceOf,
@@ -154,22 +153,4 @@ test("スキーマの分からない type のノードにはコントロール�
   const state = setupInstanceState({ name: "action", type: "Unknown" });
 
   expect(sectionsOf(state)).toEqual([]);
-});
-
-test("インスタンスを選ぶと元の部品の名前が Assets 側へも渡る", () => {
-  const state = setupInstanceState({ name: "action", ref: "primary-button" });
-
-  expect(SelectionControls.sourceName(instanceOf(state))).toEqual(
-    Option.some("primary-button"),
-  );
-});
-
-test("インスタンス以外を選んでいるときは元の部品が無い", () => {
-  const state = setupInstanceState({ name: "action", type: "Box" });
-
-  expect(
-    SelectionControls.sourceName(
-      Option.unwrap(SelectionControls.forSelection(state)),
-    ),
-  ).toEqual(Option.none);
 });

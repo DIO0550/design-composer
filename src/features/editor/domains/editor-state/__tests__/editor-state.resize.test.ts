@@ -63,7 +63,7 @@ test("大きさを変えても選択は動かない", () => {
     EditorState.resize(state, AxisLength.create("width", 200)),
   );
 
-  expect(resized.selectedName).toEqual(Option.some("panel"));
+  expect(EditorState.singleName(resized)).toEqual(Option.some("panel"));
 });
 
 test("何も選んでいなければ大きさは変えられない", () => {

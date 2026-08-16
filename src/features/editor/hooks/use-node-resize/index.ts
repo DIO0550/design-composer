@@ -4,7 +4,7 @@ import type {
   CanvasOffset,
   CanvasView,
 } from "@/features/editor/domains/canvas-view";
-import type { EditorState } from "@/features/editor/domains/editor-state";
+import { EditorState } from "@/features/editor/domains/editor-state";
 import { CanvasBounds } from "@/features/editor/domains/node-drop";
 import { NodeResize } from "@/features/editor/domains/node-resize";
 import { CanvasPointer } from "@/features/editor/utils/CanvasPointer";
@@ -49,7 +49,7 @@ function nodeResizeReducer(
  */
 function selectionBounds(state: EditorState): Option<CanvasBounds> {
   return Option.map(
-    Option.flatMap(state.selectedName, CanvasDom.elementOf),
+    Option.flatMap(EditorState.singleName(state), CanvasDom.elementOf),
     CanvasBounds.ofElement,
   );
 }

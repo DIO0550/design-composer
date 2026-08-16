@@ -93,5 +93,7 @@ test("挿しても選択は挿したノードへ移らない", () => {
     type: "Box",
   });
 
-  expect(Option.unwrap(inserted).selectedName).toEqual(Option.some("home"));
+  expect(EditorState.singleName(Option.unwrap(inserted))).toEqual(
+    Option.some("home"),
+  );
 });

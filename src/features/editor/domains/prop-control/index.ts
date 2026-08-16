@@ -100,6 +100,14 @@ export type PropControlSection = Readonly<{
  * （`InstanceComposition.detach` が失敗する）、押しても何も起きないボタンになるため。
  * 不正なドキュメントも画面には残る（docs/03-schema.md「不正ファイル時の挙動」）ので、
  * この状態は実際に出る。
+ *
+ * 複数選択（`multiple`）が値を持たないのは、編集欄を 1 つも出さないため
+ * （docs/06-ui.md「選択」。件数は帯が `EditorState.selectionCount` から出す）。
+ * `groups` の空セクションで表さず枝を分けるのは、「複数選んでいる」と
+ * 「1 つ選んだが編集できる prop が無い」を混ぜないため。
+ *
+ * `sourceInstanceCount` を `instance` が持つのは、`Select all N instances` の N が
+ * 「押したときに選ばれる件数」と同じ出どころで決まる必要があるため。
  */
 export type SelectionControls =
   | Readonly<{ kind: "groups"; sections: readonly PropControlSection[] }>
@@ -108,7 +116,9 @@ export type SelectionControls =
       source: string;
       publicProps: readonly PropControl[];
       isDetachEnabled: boolean;
-    }>;
+      sourceInstanceCount: number;
+    }>
+  | Readonly<{ kind: "multiple" }>;
 
 /**
  * パネルに出す prop 1件の素材。定義と既定値を別々に持つのは、参照ノードでは
@@ -415,6 +425,14 @@ function nodeControls(state: EditorState, node: Node): SelectionControls {
        * 片方だけ変わったときにボタンの出方と結果が食い違う。
        */
       isDetachEnabled: EditorState.detachInstance(state).some,
+      /*
+       * `componentAssets` の使用数ではなく、まとめて選ぶときと同じ集め方で数える。
+       * あちらは部品定義の中の参照も数えるので、押した結果選ばれる件数と食い違う。
+       */
+      sourceInstanceCount: DesignDocument.collectInstanceNames(
+        document,
+        node.ref,
+      ).length,
     };
   }
   if (!PrimitiveSchema.isPrimitiveType(node.type)) {
@@ -490,16 +508,21 @@ export const SelectionControls = {
    *
    * @param state 選択とドキュメントの出どころ
    * @returns インスタンスを選んでいるなら出どころの部品つきの公開 prop、
+   *   複数選んでいるなら編集欄を持たない `multiple`、
    *   それ以外は `group` ごとのセクション。何も選んでいないときは `none`。
    *   スキーマの分からない `type`・解決できない部品では、選択はあるので `some` だが
    *   セクションが空になる
    */
   forSelection(state: EditorState): Option<SelectionControls> {
-    if (!state.selectedName.some) {
+    if (EditorState.selectionCount(state) > 1) {
+      return Option.some({ kind: "multiple" });
+    }
+    const selected = EditorState.singleName(state);
+    if (!selected.some) {
       return Option.none;
     }
     const document = EditorState.document(state);
-    const name = state.selectedName.value;
+    const name = selected.value;
     const artboard = DesignDocument.findArtboard(document, name);
     if (artboard.some) {
       return Option.some({
@@ -514,22 +537,5 @@ export const SelectionControls = {
     return Option.map(DesignDocument.findNode(document, name), (node) =>
       nodeControls(state, node),
     );
-  },
-
-  /**
-   * 選んでいるものがインスタンスなら、その元になっている部品の名前
-   * （UI 案 docs/Design Composer.html の `from ◆ primary-button` と
-   * `Assets` の `source of selection`）。
-   *
-   * 右ペインと `Assets` パネルが同じ答えを要るので、参照先を引く経路をここ 1 つにする。
-   * 別々に導出すると「パネルはインスタンスなのに `Assets` はどこも光らない」が作れる。
-   *
-   * @param controls 選択中のものの編集欄
-   * @returns インスタンスなら元の部品名。それ以外は `none`
-   */
-  sourceName(controls: SelectionControls): Option<string> {
-    return controls.kind === "instance"
-      ? Option.some(controls.source)
-      : Option.none;
   },
 } as const;

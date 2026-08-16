@@ -66,7 +66,11 @@ function setupState(): EditorState {
 
 function renderPanel(
   state: EditorState,
-  instance: InstanceActions = { goToSource: vi.fn(), detach: vi.fn() },
+  instance: InstanceActions = {
+    goToSource: vi.fn(),
+    selectAllInstances: vi.fn(),
+    detach: vi.fn(),
+  },
 ) {
   render(
     <PropertyPanel
@@ -128,6 +132,7 @@ test("元の部品へ移動できる", async () => {
   const goToSource = vi.fn();
   renderPanel(EditorState.select(setupState(), "home-login"), {
     goToSource,
+    selectAllInstances: vi.fn(),
     detach: vi.fn(),
   });
 
@@ -142,6 +147,7 @@ test("インスタンスを解除できる", async () => {
   const detach = vi.fn();
   renderPanel(EditorState.select(setupState(), "home-login"), {
     goToSource: vi.fn(),
+    selectAllInstances: vi.fn(),
     detach,
   });
 
@@ -178,4 +184,103 @@ test("インスタンス以外を選んでいるときは group の見出しが�
   renderPanel(EditorState.select(setupState(), "home-title"));
 
   expect(screen.getByRole("heading", { name: "Content" })).toBeDefined();
+});
+
+/**
+ * 同じ部品を指すインスタンスが 2 つあるドキュメント。
+ *
+ * `setupState` を使い回さないのは、あちらの `primary-button` が 1 件しか無く、
+ * ボタンが押せる側の見え方を確かめられないため。
+ */
+function setupMultiInstanceState(): EditorState {
+  return EditorState.create(
+    DesignDocument.create({
+      tokens: DocumentTemplate.Default.tokens,
+      components: Components,
+      artboards: [
+        {
+          name: "home",
+          width: 360,
+          height: 240,
+          children: [
+            { name: "home-login", ref: "primary-button" },
+            { name: "home-signup", ref: "primary-button" },
+            { name: "home-card", ref: "profile-card" },
+          ],
+        },
+      ],
+    }),
+  );
+}
+
+test("インスタンスを選ぶと、同じ部品を指すインスタンスの数がボタンに出る", () => {
+  renderPanel(EditorState.select(setupMultiInstanceState(), "home-login"));
+
+  expect(
+    screen.getByRole("button", { name: "Select all 2 instances" }),
+  ).toBeDefined();
+});
+
+test("同じ部品を指すインスタンスが2つ以上あればまとめて選ぶボタンを押せる", () => {
+  renderPanel(EditorState.select(setupMultiInstanceState(), "home-login"));
+
+  expect(
+    screen.getByRole("button", { name: "Select all 2 instances" }),
+  ).toHaveProperty("disabled", false);
+});
+
+test("そのインスタンスしか無いときはまとめて選ぶボタンを押せない", () => {
+  renderPanel(EditorState.select(setupMultiInstanceState(), "home-card"));
+
+  expect(
+    screen.getByRole("button", { name: "Select all 1 instances" }),
+  ).toHaveProperty("disabled", true);
+});
+
+test("まとめて選ぶボタンを押すとまとめて選ぶ操作が呼ばれる", async () => {
+  const selectAllInstances = vi.fn();
+  renderPanel(EditorState.select(setupMultiInstanceState(), "home-login"), {
+    goToSource: vi.fn(),
+    selectAllInstances,
+    detach: vi.fn(),
+  });
+
+  await userEvent.click(
+    screen.getByRole("button", { name: "Select all 2 instances" }),
+  );
+
+  expect(selectAllInstances).toHaveBeenCalled();
+});
+
+test("数えるのは artboard 配下だけで、部品定義の中の参照は入らない", () => {
+  const state = EditorState.create(
+    DesignDocument.create({
+      tokens: DocumentTemplate.Default.tokens,
+      components: {
+        ...Components,
+        // 部品定義の中のインスタンス。キャンバスには描かれるが選択の対象にならない
+        "login-card": {
+          type: "Box",
+          children: [{ name: "login-card-action", ref: "primary-button" }],
+        },
+      },
+      artboards: [
+        {
+          name: "home",
+          width: 360,
+          height: 240,
+          children: [
+            { name: "home-login", ref: "primary-button" },
+            { name: "home-signup", ref: "primary-button" },
+          ],
+        },
+      ],
+    }),
+  );
+
+  renderPanel(EditorState.select(state, "home-login"));
+
+  expect(
+    screen.getByRole("button", { name: "Select all 2 instances" }),
+  ).toBeDefined();
 });

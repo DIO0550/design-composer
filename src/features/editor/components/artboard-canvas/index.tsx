@@ -467,12 +467,10 @@ function ArtboardList({
           declarations={TokenReferrerOutline}
         />
       ))}
-      {state.selectedName.some ? (
-        <NameStyleRule
-          name={state.selectedName.value}
-          declarations={SelectionOutline}
-        />
-      ) : null}
+      {/* 複数選んでいるときは選んだぶんだけ枠を出す（ツリーと違い artboard をまたげる） */}
+      {EditorState.selectedNames(state).map((name) => (
+        <NameStyleRule key={name} name={name} declarations={SelectionOutline} />
+      ))}
       {dropTarget.some ? (
         <NameStyleRule
           name={dropTarget.value.position.parentName}
@@ -628,6 +626,7 @@ export function ArtboardCanvas({
    * （何を選んでいたかは右ペインの見出しと揃えて保つ）。
    */
   const resizeHandles = isFrozen ? [] : NodeResize.handles(state);
+  const singleName = EditorState.singleName(state);
   const compiled = useMemo(
     () => DocumentHtml.compile(designDocument),
     [designDocument],
@@ -674,9 +673,10 @@ export function ArtboardCanvas({
         </div>
       </div>
       {isFrozen ? <StaleCanvasOverlay /> : null}
-      {state.selectedName.some ? (
+      {/* ハンドルは 1 つだけ選んでいるときに出す（複数選択ではリサイズできない） */}
+      {singleName.some ? (
         <ResizeHandleStyle
-          name={state.selectedName.value}
+          name={singleName.value}
           handles={resizeHandles}
           scale={view.scale}
         />

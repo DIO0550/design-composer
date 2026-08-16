@@ -27,7 +27,7 @@ function controlsOf(state: EditorState): SelectionControls {
 export function sectionsOf(state: EditorState): readonly PropControlSection[] {
   const controls = controlsOf(state);
   if (controls.kind !== "groups") {
-    throw new Error(`${controls.source} のインスタンスにセクションは無い`);
+    throw new Error(`${controls.kind} の選択にセクションは無い`);
   }
   return controls.sections;
 }

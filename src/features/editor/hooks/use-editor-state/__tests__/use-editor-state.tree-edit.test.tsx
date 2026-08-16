@@ -37,7 +37,7 @@ function TreeEditHarness() {
     <>
       <p data-testid="children">{childNames(state).join(",")}</p>
       <p data-testid="selected">
-        {Option.unwrapOr(state.selectedName, "選択なし")}
+        {Option.unwrapOr(EditorState.singleName(state), "選択なし")}
       </p>
       <button
         type="button"

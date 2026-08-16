@@ -322,6 +322,7 @@ const InstanceLabels = {
   publicProps: "Public props",
   instance: "Instance",
   goToSource: "Go to source component",
+  selectAllInstances: (count: number) => `Select all ${count} instances`,
   detach: "Detach instance",
   detachNote:
     "Detach bakes overrides into a real tree and auto-renames inner nodes.",
@@ -333,9 +334,17 @@ const InstanceLabels = {
 /** 解除できないときに、ボタンの `title` へ出す理由（挿入ボタンと同じ扱い）。 */
 const DetachDisabledReason = "参照先の部品が見つからないため解除できません";
 
+/** まとめて選んでも選択が変わらないときに、ボタンの `title` へ出す理由。 */
+const SelectAllInstancesDisabledReason =
+  "このインスタンスしか無いため、まとめて選んでも選択は変わりません";
+
+/** 複数選んでいるときに帯へ出す綴り。UI 案に該当の画面が無いので最小の 1 行にする。 */
+const MultipleSelectionLabel = (count: number) => `${count} selected`;
+
 /** インスタンスの節から呼ぶ操作。常に対で要るので 1 つにまとめて受け取る。 */
 export type InstanceActions = Readonly<{
   goToSource: () => void;
+  selectAllInstances: () => void;
   detach: () => void;
 }>;
 
@@ -386,10 +395,6 @@ function PublicPropRow({
  *
  * `group` の見出しを出さないのは、公開 prop の `group` が binding 先の
  * プリミティブのものだから（出すと部品の内部構造が漏れる）。
- *
- * Why not: `Select all N instances` は置かない。同じ部品を指すインスタンスを
- * まとめて選ぶには選択を複数持てる必要があり、押しても何も起きないボタンに
- * なるため（#161 で選択の持ち方と一緒に入れる）。
  */
 function InstanceBody({
   controls,
@@ -401,6 +406,7 @@ function InstanceBody({
   actions: InstanceActions;
 }>) {
   const { source, publicProps } = controls;
+  const isSelectAllInstancesEnabled = controls.sourceInstanceCount > 1;
 
   return (
     <div className="flex w-full flex-col gap-4">
@@ -433,6 +439,24 @@ function InstanceBody({
           className="rounded border border-gray-300 px-2 py-1 text-left text-sm hover:bg-gray-100"
         >
           {InstanceLabels.goToSource}
+        </button>
+        {/*
+          UI 案は `Go to source component` と `Detach instance` の間に置いている。
+          1 つしか無いときに押せなくするのは、押しても選択が変わらないため
+          （`isDetachEnabled` と同じ扱い）。
+        */}
+        <button
+          type="button"
+          onClick={actions.selectAllInstances}
+          disabled={!isSelectAllInstancesEnabled}
+          title={
+            isSelectAllInstancesEnabled
+              ? undefined
+              : SelectAllInstancesDisabledReason
+          }
+          className="rounded border border-gray-300 px-2 py-1 text-left text-sm hover:bg-gray-100 disabled:opacity-50"
+        >
+          {InstanceLabels.selectAllInstances(controls.sourceInstanceCount)}
         </button>
         <button
           type="button"
@@ -498,6 +522,12 @@ function SelectionBody({
       );
     case "groups":
       return <GroupsBody sections={controls.sections} onEdit={onEdit} />;
+    /*
+     * 複数選んでいる間は編集欄を 1 つも出さない（docs/06-ui.md「選択」）。
+     * 件数は帯が出すので、ここは本文を空にして「選択を解除」だけを残す。
+     */
+    case "multiple":
+      return <></>;
   }
 }
 
@@ -616,12 +646,22 @@ export function PropertyPanel({
   onClearSelection: () => void;
   instance: InstanceActions;
 }>) {
-  const selection = EditorState.selection(state);
+  const selection = EditorState.singleSelection(state);
+  /*
+   * 複数選んでいるときは 1 つの名前も種別も決まらないので、帯には件数を出す
+   * （docs/06-ui.md「選択」。本文は編集欄を出さないため、ここが唯一の手がかりになる）。
+   */
+  const selectionCount = EditorState.selectionCount(state);
 
   return (
     <>
       <EditorLayout.RightPane.Heading>
         {selection.some ? <SelectionTitle selection={selection.value} /> : null}
+        {selectionCount > 1 ? (
+          <h2 className="min-w-0 flex-1 truncate font-semibold text-gray-900 text-sm">
+            {MultipleSelectionLabel(selectionCount)}
+          </h2>
+        ) : null}
       </EditorLayout.RightPane.Heading>
       <EditorLayout.RightPane.Body>
         <InspectorBody

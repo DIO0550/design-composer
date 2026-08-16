@@ -28,10 +28,15 @@ export type OpenedDocumentFakes = Readonly<{
  * 時計まで返すのは、経過時間（#183）を確かめるテストが時計を進める必要があるため。
  * 時計を要らないテストのほうが圧倒的に多いので、口を 1 つだけ返す
  * `renderOpenedDocument` を別に置いている。
+ *
+ * @param document 開くドキュメント。`SampleDocument` に無い形（同じ部品を指す
+ *   インスタンスが 2 つ以上あるなど）を要るテストだけが渡す
  */
-export async function renderOpenedDocumentWithClock(): Promise<OpenedDocumentFakes> {
+export async function renderOpenedDocumentWithClock(
+  document: DesignDocument = SampleDocument,
+): Promise<OpenedDocumentFakes> {
   const ipc = DocumentIpcFake.create({
-    [Path]: DocumentJson.serialize(SampleDocument),
+    [Path]: DocumentJson.serialize(document),
   });
   const clock = ClockFake.create();
 
@@ -39,7 +44,7 @@ export async function renderOpenedDocumentWithClock(): Promise<OpenedDocumentFak
     <OpenedDocumentEditor
       clock={clock.clock}
       ipc={ipc.ipc}
-      opened={{ path: Path, document: SampleDocument }}
+      opened={{ path: Path, document }}
     />,
   );
   await act(async () => {});
@@ -50,9 +55,13 @@ export async function renderOpenedDocumentWithClock(): Promise<OpenedDocumentFak
  * サンプルのドキュメントを開いた編集画面を描画する。
  *
  * 代役を返すのは、外部変更を起こすテストが同じものを必要とするため。
+ *
+ * @param document 開くドキュメント。省略すると `SampleDocument`
  */
-export async function renderOpenedDocument(): Promise<DocumentIpcFake> {
-  const { ipc } = await renderOpenedDocumentWithClock();
+export async function renderOpenedDocument(
+  document?: DesignDocument,
+): Promise<DocumentIpcFake> {
+  const { ipc } = await renderOpenedDocumentWithClock(document);
   return ipc;
 }
 

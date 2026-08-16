@@ -145,6 +145,25 @@ export const Node = {
     return Node.children(node).flatMap(Node.collectRefs);
   },
 
+  /**
+   * その部品を指しているインスタンス自身の名前を、自分と子孫から集める。
+   *
+   * `collectRefs` と別に要るのは、あちらが返すのが**指されている部品の名前**で、
+   * インスタンス側の名前は残らないため。
+   *
+   * @param node 走査の起点になるノード
+   * @param componentName 参照先として探す部品の名前
+   * @returns その部品を指す参照ノードの名前。1 つも無ければ空
+   */
+  collectInstanceNames(node: Node, componentName: string): readonly string[] {
+    if (Node.isRef(node)) {
+      return node.ref === componentName ? [node.name] : [];
+    }
+    return Node.children(node).flatMap((child) =>
+      Node.collectInstanceNames(child, componentName),
+    );
+  },
+
   find(node: Node, name: string): Option<Node> {
     if (node.name === name) {
       return Option.some(node);

@@ -19,7 +19,7 @@ function setupDocument(): DesignDocument {
 test("ドキュメントを開いた直後は何も選択されていない", () => {
   const state = EditorState.create(setupDocument());
 
-  expect(state.selectedName.some).toBe(false);
+  expect(EditorState.singleName(state).some).toBe(false);
 });
 
 test("artboard を選ぶとその artboard が選択状態になる", () => {
@@ -43,13 +43,13 @@ test("ドキュメントに存在しない名前を選ぼうとしても選択�
     "unknown",
   );
 
-  expect(state.selectedName.some).toBe(false);
+  expect(EditorState.singleName(state).some).toBe(false);
 });
 
 test("キャンバスに描かれない部品定義の名前は選択状態にならない", () => {
   const state = EditorState.select(EditorState.create(setupDocument()), "card");
 
-  expect(state.selectedName.some).toBe(false);
+  expect(EditorState.singleName(state).some).toBe(false);
 });
 
 test("選択を解除すると何も選択されていない状態に戻る", () => {
@@ -58,7 +58,9 @@ test("選択を解除すると何も選択されていない状態に戻る", ()
     "home",
   );
 
-  expect(EditorState.clearSelection(selected).selectedName.some).toBe(false);
+  expect(
+    EditorState.singleName(EditorState.clearSelection(selected)).some,
+  ).toBe(false);
 });
 
 test("選択中でない名前は選択状態ではない", () => {

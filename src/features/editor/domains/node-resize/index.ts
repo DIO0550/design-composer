@@ -91,10 +91,11 @@ export const NodeResize = {
    * 呼び出し側が作れてしまうため。
    */
   handles(state: EditorState): readonly AxisLength[] {
-    if (!state.selectedName.some) {
+    const selected = EditorState.singleName(state);
+    if (!selected.some) {
       return [];
     }
-    const name = state.selectedName.value;
+    const name = selected.value;
     const artboard = DesignDocument.findArtboard(
       EditorState.document(state),
       name,

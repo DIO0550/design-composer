@@ -26,6 +26,8 @@ export type NodeActions = Readonly<{
   insert: (template: NodeTemplate) => void;
   insertInstance: (componentName: string) => void;
   detachInstance: () => void;
+  /** 同じ部品を指すインスタンスをまとめて選ぶ（`Select all N instances`）。 */
+  selectAllInstances: () => void;
   createComponent: (componentName: string) => void;
   isInsertEnabled: boolean;
 }>;
@@ -78,6 +80,7 @@ export function useNodeActions(): NodeActions {
      * （UI 案 docs/Design Composer.html の `Detach instance`）。
      */
     detachInstance: () => dispatch({ type: "detach_instance" }),
+    selectAllInstances: () => dispatch({ type: "select_all_instances" }),
     /**
      * 部品化も選択中のものへの操作なので、渡すのは新しい部品に付ける名前だけ
      * （docs/06-ui.md「部品化（Create Component）」の「操作時に部品名のみを入力させる」）。
