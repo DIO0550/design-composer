@@ -73,7 +73,7 @@
 | --- | --- |
 | `hook` | git hooks(`harness/githooks/`)・CI・`.claude/hooks/` |
 | `skill` | `.claude/skills/` の新しいスキル |
-| `観点` | 既存スキルの手順・観点(`implementation-flow` と `references/`) |
+| `観点` | 既存スキルの手順、または `.claude/agents/` の検証エージェントの観点 |
 | `rules` | `rules/` への追記・表現の修正 |
 
 ---
@@ -97,17 +97,23 @@
 | `result-option` | rules/coding.md「エラーと不在の表現(Result / Option)」 |
 | `signature` | rules/coding.md「関数のシグネチャ」 |
 | `duplication-test` | rules/testing.md「テスト用ヘルパーの置き場所」(`__tests__/` のヘルパー・定数・フィクスチャの重複。本体比較で機械判定できる形) |
-| `duplication-logic` | rules/coding.md「同じ処理が2箇所に現れたら共通化する」(テスト以外の重複。同じ事実を複数箇所で独立に導出している等、判断が要る形) |
+| `duplication-derivation` | rules/coding.md「同じ処理が2箇所に現れたら共通化する」(同じ事実を別々のドメインオブジェクト・別々の道筋から独立に導いており、食い違う組み合わせが型で作れてしまう形) |
+| `duplication-branch-shape` | 同上(`switch` や対応表の分岐が、由来ごとに同じ構造 — 器・見出し・件数・行の組み立て — を繰り返している形) |
+| `duplication-traversal` | 同上(同じ走査・同じ判定を書き足しており、同じ層の既存モジュールと同じことをしている形。`find` と `findIndex` のように戻り値だけが違う形を含む) |
 | `type-vocabulary` | rules/coding.md「値の語彙を型で閉じる」 |
 | `illegal-state` | rules/coding.md「不正な状態を型で表現できなくする(型による境界)」 |
-| `naming-precedent` | rules/naming.md「名前と実体を一致させる」「内容を表さない汎用語を使わない」(命名前に、その語がこのリポジトリの他の場所──既存の接頭辞・UI 案・仕様書──で既に別の意味に使われていないかを確認していない形) |
+| `naming-prefix-collision` | rules/naming.md「その名前が既に別の意味を持っていないか確認する」(既存の接頭辞・語幹が指している対象と、新しく付けた名前の対象がずれている形) |
+| `naming-borrowed-convention` | 同上(他ツールの慣習名を借りたが、このリポジトリの文脈で何を指すかを言えない形) |
+| `naming-absent-metaphor` | 同上(UI 案・仕様書に `grep -i` で 0 回の比喩・抽象語を使った形) |
 | `naming-vocabulary-gap` | rules/naming.md / rules/coding.md(綴りの流儀や外部 API 名の借用可否など、命名規約にまだ判断基準が書かれていない論点がレビューで初めて示され、その場で rules へ追記して解消する形) |
 | `comment-false-claim` | rules/coding.md「コメントは実装と一致させる」(主張を実装・実測に照らして確認しないまま書き、最初から事実と食い違っていた形) |
 | `comment-stale-edit` | rules/coding.md「実装を変えたらコメントも同時に直す」(同じ差分内の別の変更に、コメント・doc の記述の一部だけが追随しなかった形) |
 | `comment-missing` | rules/coding.md「コメントは doc と Why / Why not に絞る」(書くべき Why / Why not がコードに無い形。読み手が『なぜこれではないのか』を聞くまで気づかれない) |
 | `test-placement` | rules/testing.md「配置と命名」 |
 | `test-default-input` | rules/testing.md「既定値・フォールバックがある処理では、既定値と違う答えになる入力を選ぶ」(確かめた入力が既定値と一致しており、規則を壊すミューテーションでも既定値側で通ってしまう形) |
-| `test-coverage-gap` | rules/testing.md「古典学派のテスト」/ `implementation-review.md`「テストが守っているかの観点」(差分の中心の判断・分岐がそもそもどのテストからも参照されておらず、ミューテーションで1件も落ちない形) |
+| `test-coverage-branch` | rules/testing.md「古典学派のテスト」/ `implementation-reviewer`「テストが守っているかの観点」(分岐・出し分けそのものを参照するテストが 1 件も無く、枝を消しても全件通る形) |
+| `test-coverage-wiring` | 同上(配線 — props → 表示、hook → コンポーネント — を通すテストが無く、配線を切っても全件通る形。単体だけを揃えた回に出る) |
+| `test-coverage-conflict` | 同上(2 つの状態が同時に成り立つ入力を作ったテストが無く、優先順位を反転しても全件通る形) |
 | `test-nesting` | rules/testing.md「テストの書き方: ネスト禁止」 |
 | `effect` | rules/hooks.md「useEffect: 最終手段として扱う」 |
 | `state-management` | rules/hooks.md「useState / useReducer の使い分け」 |
@@ -119,6 +125,9 @@
 | `plan` | 計画の誤り・不足(implementation-flow のフェーズ 3〜4。下の 2 語彙のどちらにも当たらない形) |
 | `plan-scope-verification` | implementation-flow フェーズ 3(SKILL.md「計画」)(一括置換・grep 収集など機械的な手順を伴う計画で、立てた収集条件・対象範囲・判定基準を対象になる実例へ実際に当てて検算していない形) |
 | `plan-integration-coverage` | `plan-review.md`「ゴールが『画面から届く経路を通すこと』なら」/「未決の判断が残っていないか」(計画のテスト一覧が、実装が横断する配線・既存の不変条件・仕様の裏付けを見落としている形) |
+| `rules-consistency` | AGENTS.md「規約の更新」/ `harness-growth`「Step 2a-1」(規約へ足した記述が、同じファイルの前の節と矛盾する / 規約自身が挙げている例で判定文が逆の答えを出す / 表の行が実在するケースを網羅していない / Why not の根拠が一時的な事実になっている形) |
+| `subagent-control` | `implementation-flow`「サブエージェントの使い方」(検証エージェントが指示に反して実装を書き換えた / バックグラウンド起動の結果を取り逃した形) |
+| `hook-environment` | `.claude/hooks/README.md`「強制力の序列」(`echo hook-canary` が deny されず、`.claude/hooks/` が発火しない実行環境だった形) |
 | `なし` | 既存の規約に対応が無い(＝規約の抜けの候補) |
 
 ---

@@ -9,6 +9,8 @@
 #   - no-conditional:   test() / it() のブロック内の if/else/switch 禁止（test.each を使用）
 #                       ヘルパー関数内の分岐は対象外（lib/test-conditionals.awk）
 #   - file-naming:      {テスト対象}.{カテゴリ}.test.ts|tsx 形式
+#   - test-location:    テストは対象モジュールと同じフォルダの __tests__/ 直下に置く
+#                       （rules/testing.md「配置と命名」/ 分類 test-placement）
 #
 # 無効化:
 #   - プロジェクト: 最寄りの .test-rules.yml（rules: 配下に <ルール名>: false）
@@ -61,16 +63,18 @@ read_yaml_rule() {
 rule_no_describe=true
 rule_no_conditional=true
 rule_file_naming=true
+rule_test_location=true
 
 config_file="$(find_config "$(dirname "$file")")" || true
 if [ -n "$config_file" ]; then
   rule_no_describe="$(read_yaml_rule "$config_file" "no-describe")"
   rule_no_conditional="$(read_yaml_rule "$config_file" "no-conditional")"
   rule_file_naming="$(read_yaml_rule "$config_file" "file-naming")"
+  rule_test_location="$(read_yaml_rule "$config_file" "test-location")"
 fi
 
 # ファイルレベル: コメントで個別ルールを無効化
-#   // @test-rules-disable no-describe no-conditional file-naming
+#   // @test-rules-disable no-describe no-conditional file-naming test-location
 #   // @test-rules-disable (全ルール無効化)
 disable_line="$(grep -m1 '@test-rules-disable' "$file" 2>/dev/null || true)"
 if [ -n "$disable_line" ]; then
@@ -80,6 +84,7 @@ if [ -n "$disable_line" ]; then
   echo "$disable_line" | grep -q 'no-describe' && rule_no_describe=false
   echo "$disable_line" | grep -q 'no-conditional' && rule_no_conditional=false
   echo "$disable_line" | grep -q 'file-naming' && rule_file_naming=false
+  echo "$disable_line" | grep -q 'test-location' && rule_test_location=false
 fi
 
 violations=""
@@ -119,12 +124,26 @@ if [ "$rule_file_naming" = "true" ]; then
   fi
 fi
 
+# --- テストの置き場所チェック ---
+# rules/testing.md「配置と命名」: 1 フォルダ = index.ts + __tests__/。
+# テストが対象モジュールの外（並びのファイル・別階層）に置かれると、
+# 公開 API 経由で書いているかが読めなくなる（分類 test-placement）。
+if [ "$rule_test_location" = "true" ]; then
+  parent="$(basename "$(dirname "$file")")"
+  if [ "$parent" != "__tests__" ]; then
+    violations="${violations}[配置] テストは対象モジュールと同じフォルダの __tests__/ 直下に置いてください（rules/testing.md「配置と命名」）。
+現在の置き場所: ${file}
+
+"
+  fi
+fi
+
 # --- 違反があればフィードバック ---
 if [ -n "$violations" ]; then
   jq -Rn --arg msg "$violations" '{
     hookSpecificOutput: {
       hookEventName: "PostToolUse",
-      additionalContext: ("テストルール違反を検出しました。以下を修正してください:\n\n" + $msg + "\nルール: フラット構造（describeなし）、テストケース内の条件分岐禁止（test.eachを使用）、ファイル名は {対象名}.{カテゴリ}.test.ts|tsx")
+      additionalContext: ("テストルール違反を検出しました。以下を修正してください:\n\n" + $msg + "\nルール: フラット構造（describeなし）、テストケース内の条件分岐禁止（test.eachを使用）、ファイル名は {対象名}.{カテゴリ}.test.ts|tsx、置き場所は対象モジュールの __tests__/ 直下")
     }
   }'
 fi

@@ -11,6 +11,7 @@
 #   - no-describe:    describe/context/suite 禁止
 #   - no-conditional: test() / it() のブロック内の if/else/switch 禁止
 #   - file-naming:    {テスト対象}.{カテゴリ}.test.ts|tsx 形式
+#   - test-location:  テストは対象モジュールと同じフォルダの __tests__/ 直下
 set -euo pipefail
 
 lib_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -48,12 +49,13 @@ read_yaml_rule() {
 # --- 1ファイル分のテストルール違反を検出 ---
 check_file() {
   local file="$1"
-  local rule_no_describe=true rule_no_conditional=true rule_file_naming=true
+  local rule_no_describe=true rule_no_conditional=true rule_file_naming=true rule_test_location=true
   local config_file
   if config_file="$(find_config "$(dirname "$file")")"; then
     rule_no_describe="$(read_yaml_rule "$config_file" "no-describe")"
     rule_no_conditional="$(read_yaml_rule "$config_file" "no-conditional")"
     rule_file_naming="$(read_yaml_rule "$config_file" "file-naming")"
+    rule_test_location="$(read_yaml_rule "$config_file" "test-location")"
   fi
 
   # ファイルレベル無効化 (// @test-rules-disable [ルール名...])
@@ -66,6 +68,7 @@ check_file() {
     echo "$disable_line" | grep -q 'no-describe' && rule_no_describe=false
     echo "$disable_line" | grep -q 'no-conditional' && rule_no_conditional=false
     echo "$disable_line" | grep -q 'file-naming' && rule_file_naming=false
+    echo "$disable_line" | grep -q 'test-location' && rule_test_location=false
   fi
 
   local file_violations=""
@@ -102,6 +105,17 @@ ${matches}
     basename="$(basename "$file")"
     if [[ ! "$basename" =~ ^[^.]+\.[^.]+\.test\.tsx?$ ]]; then
       file_violations="${file_violations}[命名規則] ${file}: テストファイル名は {テスト対象名}.{カテゴリ}.test.ts|tsx を推奨します（例: layout.normal.test.ts）。
+
+"
+    fi
+  fi
+
+  # 置き場所チェック（rules/testing.md「配置と命名」/ 分類 test-placement）
+  if [ "$rule_test_location" = "true" ]; then
+    local parent
+    parent="$(basename "$(dirname "$file")")"
+    if [ "$parent" != "__tests__" ]; then
+      file_violations="${file_violations}[配置] ${file}: テストは対象モジュールと同じフォルダの __tests__/ 直下に置いてください（rules/testing.md「配置と命名」）。
 
 "
     fi
