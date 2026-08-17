@@ -1,1 +1,0 @@
-import{n as e}from"./chunk-BneVvdWh.js";import{G as t,K as n}from"./design-document-CmzPaaBf.js";function r(e={}){return{dragged:t.none,onGrab:()=>{},...e}}function i(e){return r({dragged:t.some({kind:`instance`,componentName:e})})}var a=e((()=>{n()}));export{a as n,r,i as t};
