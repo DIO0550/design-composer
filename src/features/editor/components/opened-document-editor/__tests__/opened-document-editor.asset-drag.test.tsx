@@ -1,4 +1,4 @@
-import { screen, within } from "@testing-library/react";
+import { fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { Artboard } from "@/domains/artboard";
@@ -152,6 +152,9 @@ test("左ペインの上で離しても掴んだままにならない", async ()
 
   // 掴んだまま戻らないと、次に運ぼうとしたときに前のものが付いてくる
   carryTo("card", drawn("home-panel"));
+  // 先に運べていることを確かめる。運びが始まらない実装でも「掴んでいない」は通るため
+  expect(screen.getByText(/^into /)).toBeDefined();
+
   releasePointer(paletteRow("card"), { x: 100, y: 100 });
 
   expect(screen.queryByText(/^into /)).toBeNull();
@@ -163,8 +166,28 @@ test("運んでいる間は落ちる先がどの親のどこかとして示さ�
 
   carryTo("card", drawn("home-panel"));
 
-  // 何個中どこかの数え方は `domains/node-drop` のテストが持つ（happy-dom は矩形を返さない）
-  expect(screen.getByText(/^into home-panel · child /)).toBeDefined();
+  /*
+   * 綴り全体で比べるのは、どちらの数をどの語に入れるかがここにしか無いため
+   * （`domains/node-drop` が固定するのは `index` と `childCount` の値まで）。
+   * `home-panel` は空の Box なので、矩形を返さない happy-dom でも数が決まる。
+   */
+  expect(screen.getByText("into home-panel · child 0 of 0")).toBeDefined();
+});
+
+test("落ちる先の何番目かと子の数は、入れ替わらずにこの順で出る", async () => {
+  await renderOpenedDocument(setupDocument());
+  await goToAssets();
+
+  /*
+   * 子を 3 つ持つ `home` の**先頭**へ落ちる位置で見る。happy-dom は矩形を返さず
+   * すべての子が原点に居ることになるので、ポインタがそこより手前にある場合だけ
+   * 先頭（0 番目）になり、子の数（3）と違う数になる。両方が同じ数になる入力では、
+   * 2 つの数を入れ替えても綴りが変わらない。
+   */
+  pressPointer(paletteRow("card"), { x: 100, y: 100 });
+  movePointer(drawn("home"), { x: 300, y: -1 });
+
+  expect(screen.getByText("into home · child 0 of 3")).toBeDefined();
 });
 
 test("パレットから落とした直後にキャンバスのノードを押すとそのノードが選択できる", async () => {
@@ -173,12 +196,16 @@ test("パレットから落とした直後にキャンバスのノードを押�
 
   carryTo("card", drawn("home-panel"));
   releasePointer(drawn("home-panel"), { x: 300, y: 150 });
-  await userEvent.click(drawn("home-title"));
-
   /*
    * 落とした直後の `click` はキャンバスの枠まで上がってこない（押した場所が左ペイン）。
    * ここで飲み込む状態に入っていると、この 1 回の選択が黙って消える。
+   *
+   * `userEvent.click` を使わないのは、あれが自前の `pointerup` を伴い、それが器の
+   * `release` を通って飲み込む状態を先に消してしまうため。ブラウザが drop の直後に
+   * 投げるのは素の `click` 1 つだけなので、それだけを起こす。
    */
+  fireEvent.click(drawn("home-title"));
+
   expect(within(propertyPane()).getByText("home-title")).toBeDefined();
 });
 

@@ -99,7 +99,7 @@ export const NodeDrag = {
    * @param drag 今のドラッグの状態
    * @returns 運んでいるもの。動かしていなければ `none`
    */
-  carried(drag: NodeDrag): Option<DraggedNode> {
+  carriedNode(drag: NodeDrag): Option<DraggedNode> {
     return drag.kind === "dragging" ? Option.some(drag.dragged) : Option.none;
   },
 

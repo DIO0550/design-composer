@@ -152,7 +152,7 @@ test("運んでいる最中だけ、何を運んでいるかを答える", () =>
     Option.none,
   );
 
-  expect(Option.unwrap(NodeDrag.carried(dragging))).toEqual(PlacingBox);
+  expect(Option.unwrap(NodeDrag.carriedNode(dragging))).toEqual(PlacingBox);
 });
 
 test("押しただけでまだ動かしていない間は、何を運んでいるかを答えない", () => {
@@ -160,5 +160,5 @@ test("押しただけでまだ動かしていない間は、何を運んでい�
   // クリックのたびに一瞬光る
   const held = NodeDrag.grab(PlacingBox, { x: 100, y: 100 });
 
-  expect(NodeDrag.carried(held).some).toBe(false);
+  expect(NodeDrag.carriedNode(held).some).toBe(false);
 });

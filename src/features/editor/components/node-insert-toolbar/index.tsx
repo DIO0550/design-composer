@@ -31,8 +31,9 @@ function InsertButton({
 }
 
 /**
- * インスタンスを運んでいることの表示（UI 案 docs/Design Composer.html は 5 画面すべてに
- * `◆` を置き、部品を運んでいる画面でだけ `background:#f3ebff` を付けている）。
+ * インスタンスを運んでいることの表示（UI 案 docs/Design Composer.html は、浮かぶ
+ * ツールバーを描いている 4 画面すべてに `◆` を置き、部品を運んでいる画面でだけ
+ * `background:#f3ebff` を付けている。Error 画面にはツールバー自体が無い）。
  *
  * ボタンにはしない。`Assets` が browse-only で挿入がドラッグ専用である以上、
  * これを押して挿す経路は UI 案に存在しない（#198）。押せない見た目のまま置くと

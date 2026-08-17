@@ -269,6 +269,10 @@ function DropMarker({ bounds }: Readonly<{ bounds: CanvasBounds }>) {
  *
  * `DropMarker` と同じくズーム / パンの変形の**外側**へ置き、実測した client 座標を
  * `position: fixed` で使う。
+ *
+ * **置き方（`fixed` と持ち上げ量）を落としても気づく手段が無い。** happy-dom は
+ * レイアウトを解決せず、運んでいる最中のキャンバスを映すストーリーも無いので視覚差分にも
+ * 出ない。落ちるのは「ラベルが出る」ところまで（`opened-document-editor.asset-drag`）。
  */
 function DropPositionLabel({ target }: Readonly<{ target: DropTarget }>) {
   return (
@@ -604,7 +608,7 @@ function StaleCanvasOverlay(): ReactElement {
  * 表示（倍率・位置）を自分で持たず受け取るのは、倍率の操作が上部バーへ移り、
  * キャンバスと上部バーが同じ 1 つの表示を見る必要があるため（#134）。
  *
- * props が 5 つあるが Composition へは割っていない。関心は「キャンバス」1 つで、
+ * props が 6 つあるが Composition へは割っていない。関心は「キャンバス」1 つで、
  * ハンドラはいずれもキャンバス上の操作を外へ渡すもの。`NodeActions` を丸ごと
  * 受けると、使わない `createComponent` / `insertAt` などまで渡ることになる。
  *

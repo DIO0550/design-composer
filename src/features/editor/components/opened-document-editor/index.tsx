@@ -256,7 +256,7 @@ function EditorPanes({
   });
   /** 今パレットから運んでいる指定。掴んだ行の強調とツールバーの点灯がこれで決まる。 */
   const draggedTemplate = Option.flatMap(
-    NodeDrag.carried(nodeDrag.drag),
+    NodeDrag.carriedNode(nodeDrag.drag),
     DraggedNode.template,
   );
 

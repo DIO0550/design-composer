@@ -1,0 +1,84 @@
+import { render, screen, within } from "@testing-library/react";
+import { expect, test } from "vitest";
+import type { NodeTemplate } from "@/features/editor/domains/node-template";
+import { Option } from "@/utils/Option";
+import { NodeInsertToolbar } from "../index";
+
+/*
+ * パレットから運んでいることの表示（UI 案 docs/Design Composer.html の `3a · ASSETS` は
+ * `◆` に `background:#f3ebff` を付ける / #203）。
+ */
+
+/** 器を起点に探す。ボタンを直接引くと、器が読み上げ名を失っても気づけない。 */
+function toolbar() {
+  return within(screen.getByRole("region", { name: "挿入" }));
+}
+
+/** 運んでいるものを変えてツールバーを描き、`◆` を返す。 */
+function glyphWhilePlacing(dragged: Option<NodeTemplate>): HTMLElement {
+  const { unmount } = render(
+    <NodeInsertToolbar isInsertEnabled dragged={dragged} onInsert={() => {}} />,
+  );
+  const glyph = toolbar().getByText("◆");
+  unmount();
+  return glyph;
+}
+
+test("何も運んでいないときもツールバーにインスタンスの印が残る", () => {
+  // UI 案は `◆` を常に置き、運んでいる間だけ背景を付ける（要素が現れるのではない）
+  render(
+    <NodeInsertToolbar
+      isInsertEnabled
+      dragged={Option.none}
+      onInsert={() => {}}
+    />,
+  );
+
+  expect(toolbar().getByText("◆")).toBeDefined();
+});
+
+test("インスタンスの印は押せない", () => {
+  // 挿入の入口はドラッグだけで、これは状態表示（#198）
+  render(
+    <NodeInsertToolbar
+      isInsertEnabled
+      dragged={Option.some<NodeTemplate>({
+        kind: "instance",
+        componentName: "card",
+      })}
+      onInsert={() => {}}
+    />,
+  );
+
+  expect(
+    toolbar()
+      .getAllByRole("button")
+      .map((button) => button.getAttribute("aria-label")),
+  ).toEqual(["Box を追加", "Text を追加"]);
+});
+
+test("部品を運んでいる間はインスタンスの印が運んでいないときと違う姿になる", () => {
+  /*
+   * 点灯そのものは Tailwind の class でしか表れず happy-dom では読めないので、
+   * 確かめるのは 2 つの入力で姿が変わることまで。色は Storybook の視覚差分が見る。
+   */
+  const idle = glyphWhilePlacing(Option.none);
+  const placing = glyphWhilePlacing(
+    Option.some<NodeTemplate>({ kind: "instance", componentName: "card" }),
+  );
+
+  expect(placing.className).not.toBe(idle.className);
+});
+
+test("プリミティブを運んでいる間はインスタンスの印が点かない", () => {
+  /*
+   * `◆` はアプリ全体で「部品 / インスタンス」を指す記号（`TypeGlyph` の `component`）。
+   * Box を運んでいる間に点けると記号が 2 つの意味を持つ。
+   */
+  const idle = glyphWhilePlacing(Option.none);
+  const placingBox = glyphWhilePlacing(
+    Option.some<NodeTemplate>({ kind: "primitive", type: "Box" }),
+  );
+
+  expect(placingBox.className).toBe(idle.className);
+});
