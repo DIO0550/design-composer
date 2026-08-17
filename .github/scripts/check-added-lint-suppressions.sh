@@ -9,10 +9,21 @@
 #
 # 判定そのものは .claude/hooks/lib/lint-suppressions.py で共有している。
 # 既存行の抑制で落とさないよう、**追加された行に載っているものだけ**を違反とする。
+# ただし追加行かどうかは行番号でしか見えないため、ファイルを分けると既にあった抑制が
+# すべて「追加」に見える。base に同じ綴りの行があるものは移動として除く。
 set -euo pipefail
 
 base="${1:-${BASE_SHA:-origin/main}}"
 cd "$(git rev-parse --show-toplevel)"
+
+# base に既にあった抑制コメントの綴り。ファイルをまたぐ移動を「追加」と読まないために使う
+# (新しいファイルは全行が追加行になるので、行番号だけでは移動と新設を見分けられない)。
+# 抑制コメントは理由を必ず後ろに書くので、綴りが一字一句同じなら同じ抑制が移ったもの。
+existing_suppressions="$(
+  git grep -h -E 'biome-ignore|eslint-disable' "$base" -- \
+    '*.ts' '*.tsx' '*.js' '*.jsx' 2>/dev/null |
+    sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | sort -u || true
+)"
 
 # 追加・変更された行の行番号を、統一 diff のハンク見出しから取り出す
 added_line_numbers() {
@@ -45,6 +56,8 @@ while IFS= read -r file; do
   while IFS= read -r entry; do
     [ -z "$entry" ] && continue
     echo "$added" | grep -qx "${entry%%:*}" || continue
+    text="$(printf '%s' "${entry#*:}" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
+    printf '%s\n' "$existing_suppressions" | grep -qxF "$text" && continue
     violations="${violations}${file}:${entry}
 "
   done <<< "$reported"
