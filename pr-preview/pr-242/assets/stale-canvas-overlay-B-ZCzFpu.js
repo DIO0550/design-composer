@@ -1,5 +1,0 @@
-import{n as e}from"./chunk-BneVvdWh.js";import{t}from"./jsx-runtime-ChEsXk_u.js";function n(){return(0,r.jsxs)(r.Fragment,{children:[(0,r.jsx)(`div`,{"aria-hidden":`true`,className:`pointer-events-none absolute inset-0 ${i}`}),(0,r.jsx)(`p`,{className:`pointer-events-none absolute top-3.5 right-3.5 rounded-[5px] border border-red-200 bg-white px-2 py-1 font-semibold text-[10px] text-red-600`,children:`最後に正常だった表示`})]})}var r,i,a=e((()=>{r=t(),i=`bg-[repeating-linear-gradient(-45deg,transparent_0_22px,rgba(209,52,56,0.055)_22px_24px)]`;try{n.displayName=`StaleCanvasOverlay`,n.__docgenInfo={description:`ファイルが不正な間、キャンバスへ重ねるもの（#135）。斜線のスクリムと、
-映っているのが最後に正常だった表示であることを名乗るバッジ。
-
-スクリムが \`pointer-events-none\` なのは、下のキャンバスを掴んで動かせるようにするため
-（凍らせるのは編集で、どこを見るかは変えられてよい）。`,displayName:`StaleCanvasOverlay`,filePath:`/home/runner/work/design-composer/design-composer/src/features/editor/components/artboard-canvas/stale-canvas-overlay/index.tsx`,methods:[],props:{},tags:{returns:`キャンバス全面の斜線と、右上のバッジ`}}}catch{}}));export{a as n,n as t};
