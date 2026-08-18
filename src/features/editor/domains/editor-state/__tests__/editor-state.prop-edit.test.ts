@@ -23,7 +23,7 @@ test("選択中のノードの prop を書き換えられる", () => {
 
   const edited = Option.unwrap(
     EditorState.applyPropEdit(state, {
-      name: "content",
+      names: ["content"],
       value: Option.some("ホーム"),
     }),
   );
@@ -43,7 +43,7 @@ test("prop を書き換えても選択は変わらない", () => {
 
   const edited = Option.unwrap(
     EditorState.applyPropEdit(state, {
-      name: "content",
+      names: ["content"],
       value: Option.some("ホーム"),
     }),
   );
@@ -53,7 +53,7 @@ test("prop を書き換えても選択は変わらない", () => {
 
 test("何も選択していなければ prop の編集は起きない", () => {
   const edited = EditorState.applyPropEdit(setupState(), {
-    name: "content",
+    names: ["content"],
     value: Option.some("ホーム"),
   });
 

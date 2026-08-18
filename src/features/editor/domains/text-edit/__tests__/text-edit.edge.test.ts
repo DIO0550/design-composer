@@ -86,6 +86,6 @@ test("空の下書きは content を空にする編集になる（未設定へ�
   );
 
   expect(TextEdit.toPropEdit(TextEdit.withDraft(started, ""))).toEqual(
-    PropEdit.set("content", ""),
+    PropEdit.set(["content"], ""),
   );
 });

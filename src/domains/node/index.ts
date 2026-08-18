@@ -25,25 +25,30 @@ export type PropAssignment = Readonly<{
 /**
  * props への編集1件。値を消す編集(`none`)も同じ操作なので、
  * 設定と消去で別の型に分けない(どちらも「その prop を今どうするか」を表す)。
+ *
+ * 書き込み先を 1 つに固定せず並びで持つのは、1 回の操作が複数の prop を
+ * 同じ値にすることがあるため(パディングの垂直の欄は上辺と下辺を同時に書く)。
+ * 編集を分けて 2 回適用すると履歴も 2 段になり、1 回の undo で片側しか戻らない。
+ * 空の並びは「何も書かないのに履歴だけ積む」編集になるので、非空のタプルで受ける。
  */
 export type PropEdit = Readonly<{
-  name: string;
+  names: readonly [string, ...string[]];
   value: Option<PropValue>;
 }>;
 
 export const PropEdit = {
-  /** その prop に値を設定する編集。 */
-  set(name: string, value: PropValue): PropEdit {
-    return { name, value: Option.some(value) };
+  /** 指した prop すべてに同じ値を設定する編集。 */
+  set(names: readonly [string, ...string[]], value: PropValue): PropEdit {
+    return { names, value: Option.some(value) };
   },
 
   /**
-   * その prop を未設定へ戻す編集。
+   * 指した prop すべてを未設定へ戻す編集。
    * 「未設定」は値が無いことではなくデフォルトが効く状態なので、
    * 空文字や 0 を入れて表さない(`Props.apply` がキーごと落とす)。
    */
-  clear(name: string): PropEdit {
-    return { name, value: Option.none };
+  clear(names: readonly [string, ...string[]]): PropEdit {
+    return { names, value: Option.none };
   },
 } as const;
 
@@ -87,13 +92,16 @@ export const Props = {
   /**
    * 編集を適用した props。値の消去は「未設定に戻す」ことなのでキーごと落とす
    * (デフォルト解決は未設定かどうかを見るため、`undefined` を値として残せない)。
+   * 指した prop はすべて同じ値になる。
    */
   apply(props: Props, edit: PropEdit): Props {
     if (edit.value.some) {
-      return { ...props, [edit.name]: edit.value.value };
+      const value = edit.value.value;
+      const written = edit.names.map((name) => [name, value] as const);
+      return { ...props, ...Object.fromEntries(written) };
     }
     return Object.fromEntries(
-      Object.entries(props).filter(([name]) => name !== edit.name),
+      Object.entries(props).filter(([name]) => !edit.names.includes(name)),
     );
   },
 } as const;

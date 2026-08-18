@@ -88,6 +88,6 @@ test("下書きは content への編集になる", () => {
   );
 
   expect(TextEdit.toPropEdit(TextEdit.withDraft(started, "トップ"))).toEqual(
-    PropEdit.set("content", "トップ"),
+    PropEdit.set(["content"], "トップ"),
   );
 });

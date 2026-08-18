@@ -113,6 +113,6 @@ export const TextEdit = {
    * そのまま `content` であり、空にする操作は「文言を空にした」としか読めない。
    */
   toPropEdit(edit: TextEdit): PropEdit {
-    return PropEdit.set(ContentProp, edit.draft);
+    return PropEdit.set([ContentProp], edit.draft);
   },
 } as const;

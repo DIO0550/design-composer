@@ -31,7 +31,7 @@ function setupDocument(): DesignDocument {
 test("ノードの prop を設定すると そのノードの props に入る", () => {
   const edited = Result.unwrap(
     DesignDocument.applyPropEdit(setupDocument(), "home-title", {
-      name: "align",
+      names: ["align"],
       value: Option.some("center"),
     }),
   );
@@ -46,7 +46,7 @@ test("ノードの prop を設定すると そのノードの props に入る", 
 test("ノードの prop を消すとその prop が未設定に戻る", () => {
   const edited = Result.unwrap(
     DesignDocument.applyPropEdit(setupDocument(), "home-title", {
-      name: "content",
+      names: ["content"],
       value: Option.none,
     }),
   );
@@ -58,7 +58,7 @@ test("ノードの prop を消すとその prop が未設定に戻る", () => {
 test("参照ノードの prop を設定すると overrides に入る", () => {
   const edited = Result.unwrap(
     DesignDocument.applyPropEdit(setupDocument(), "home-action", {
-      name: "label",
+      names: ["label"],
       value: Option.some("送信"),
     }),
   );
@@ -70,7 +70,7 @@ test("参照ノードの prop を設定すると overrides に入る", () => {
 test("artboard の prop を設定すると artboard の props に入る", () => {
   const edited = Result.unwrap(
     DesignDocument.applyPropEdit(setupDocument(), "home", {
-      name: "gap",
+      names: ["gap"],
       value: Option.some("md"),
     }),
   );
@@ -81,7 +81,7 @@ test("artboard の prop を設定すると artboard の props に入る", () => 
 
 test("存在しない名前を指した prop の編集は失敗する", () => {
   const edited = DesignDocument.applyPropEdit(setupDocument(), "missing", {
-    name: "gap",
+    names: ["gap"],
     value: Option.some("md"),
   });
 
@@ -95,7 +95,7 @@ test("prop を編集しても元のドキュメントは変わらない", () => 
   const document = setupDocument();
 
   DesignDocument.applyPropEdit(document, "home", {
-    name: "gap",
+    names: ["gap"],
     value: Option.some("md"),
   });
 

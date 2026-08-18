@@ -1,6 +1,7 @@
 import {
   Node,
   type PrimitiveNode,
+  PropEdit,
   Props,
   type PropValue,
   type RefNode,
@@ -240,10 +241,10 @@ export const Component = {
           : toChildren.reduce(
               (children, [binding, value]) =>
                 updateNodeByName(children, binding.node, (target) =>
-                  Node.applyPropEdit(target, {
-                    name: binding.prop,
-                    value: Option.some(value),
-                  }),
+                  Node.applyPropEdit(
+                    target,
+                    PropEdit.set([binding.prop], value),
+                  ),
                 ),
               component.children ?? [],
             ),

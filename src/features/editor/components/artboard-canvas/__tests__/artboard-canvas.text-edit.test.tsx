@@ -124,7 +124,7 @@ test("書き換えて Enter を押すと、その文言が content の編集と�
   fireEvent.change(editor(), { target: { value: "トップ" } });
   fireEvent.keyDown(editor(), { key: "Enter" });
 
-  expect(onEditProp).toHaveBeenCalledWith(PropEdit.set("content", "トップ"));
+  expect(onEditProp).toHaveBeenCalledWith(PropEdit.set(["content"], "トップ"));
 });
 
 test("確定すると入力欄は消える", () => {
@@ -144,7 +144,7 @@ test("書き換えてフォーカスを外すと、その文言が content の�
   fireEvent.change(editor(), { target: { value: "トップ" } });
   fireEvent.blur(editor());
 
-  expect(onEditProp).toHaveBeenCalledWith(PropEdit.set("content", "トップ"));
+  expect(onEditProp).toHaveBeenCalledWith(PropEdit.set(["content"], "トップ"));
 });
 
 test("書き換えて Escape を押すと文言は変わらない", () => {
