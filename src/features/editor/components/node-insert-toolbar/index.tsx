@@ -1,6 +1,7 @@
 import { type PrimitiveType, PrimitiveTypes } from "@/domains/primitive-schema";
 import { TypeGlyph } from "@/features/editor/components/type-glyph";
-import type { NodeTemplate } from "@/features/editor/domains/node-template";
+import { NodeTemplate } from "@/features/editor/domains/node-template";
+import type { Option } from "@/utils/Option";
 
 /** 押せないときに `title` へ出す理由。押せない状態を見せるだけだと打つ手が分からない。 */
 const InsertDisabledReason = "子を持てるものを選ぶと追加できます";
@@ -30,11 +31,41 @@ function InsertButton({
 }
 
 /**
+ * インスタンスを運んでいることの表示（UI 案 docs/Design Composer.html は、浮かぶ
+ * ツールバーを描いている 4 画面すべてに `◆` を置き、部品を運んでいる画面でだけ
+ * `background:#f3ebff` を付けている。Error 画面にはツールバー自体が無い）。
+ *
+ * ボタンにはしない。`Assets` が browse-only で挿入がドラッグ専用である以上、
+ * これを押して挿す経路は UI 案に存在しない（#198）。押せない見た目のまま置くと
+ * 「挿せる位置が無いから押せない」と読めてしまうので、操作ではなく状態として描く。
+ *
+ * @returns 運んでいる間だけ色の付く `◆`
+ */
+function InstancePlacementIndicator({
+  isPlacing,
+}: Readonly<{ isPlacing: boolean }>) {
+  return (
+    <span
+      /*
+       * 運んでいることは行の強調とドロップ先の提示でも伝わるので、読み上げでは
+       * 同じことを 3 回言わせない（`TypeGlyph` を読み上げから外すのと同じ扱い）。
+       */
+      aria-hidden="true"
+      className={`flex h-8 w-9 items-center justify-center rounded-md text-[#9747ff] ${
+        isPlacing ? "bg-[#f3ebff]" : ""
+      }`}
+    >
+      ◆
+    </span>
+  );
+}
+
+/**
  * キャンバスに浮かぶツールバー（UI 案 docs/Design Composer.html / #112）。
  *
- * UI 案が並べるポインタ・`#`（artboard）・`◆`（インスタンス）は置かない。順に
- * ツールモードの概念が無い / artboard の追加が未実装（#43）/ 押したときの挙動が
- * 未決（#198）、が理由（`ArtboardList` が UI 案の `+` を出していないのと同じ判断）。
+ * UI 案が並べるポインタ・`#`（artboard）は置かない。順にツールモードの概念が無い /
+ * artboard の追加が未実装（#43）が理由（`ArtboardList` が UI 案の `+` を出していないのと
+ * 同じ判断）。`◆` は**ボタンではなく状態表示**として置く（#203）。
  * 並びを `PrimitiveTypes` から作るのは、スキーマと二重管理しないため。
  *
  * 影と丸みはこの部品が持つが、**位置は持たない**。キャンバス下端にはエラー一覧も
@@ -45,11 +76,22 @@ function InsertButton({
  */
 export function NodeInsertToolbar({
   isInsertEnabled,
+  dragged,
   onInsert,
 }: Readonly<{
   isInsertEnabled: boolean;
+  /** 今パレットから運んでいる指定。`◆` を点けるかどうかがこれで決まる。 */
+  dragged: Option<NodeTemplate>;
   onInsert: (template: NodeTemplate) => void;
 }>) {
+  /*
+   * 点けるのは部品を運んでいるときだけ。`◆` はアプリ全体で「部品 / インスタンス」を
+   * 指す記号（`TypeGlyph` の `component`）なので、Box を運んでいる間に点けると
+   * 記号が 2 つの意味を持つ。UI 案が点灯を描いているのも部品を運んでいる画面だけ。
+   */
+  const isPlacingInstance =
+    dragged.some && NodeTemplate.isInstance(dragged.value);
+
   return (
     <section
       aria-label="挿入"
@@ -63,6 +105,9 @@ export function NodeInsertToolbar({
           onClick={() => onInsert({ kind: "primitive", type })}
         />
       ))}
+      {/* UI 案は `◆` の手前に区切り線を置く（プリミティブの追加とは別の並びを表す） */}
+      <span aria-hidden="true" className="mx-1 h-5 w-px bg-gray-200" />
+      <InstancePlacementIndicator isPlacing={isPlacingInstance} />
     </section>
   );
 }

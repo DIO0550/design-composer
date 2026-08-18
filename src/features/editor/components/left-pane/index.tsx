@@ -15,6 +15,7 @@ import { TokenList } from "@/features/editor/components/token-list";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import type { NodeActions } from "@/features/editor/hooks/use-node-actions";
 import type { TokenActions } from "@/features/editor/hooks/use-token-actions";
+import type { AssetGrab } from "@/features/editor/types/AssetGrab";
 import { Option } from "@/utils/Option";
 
 /**
@@ -32,11 +33,13 @@ function LeftPaneContent({
   state,
   node,
   token,
+  grab,
 }: Readonly<{
   view: LeftPaneView;
   state: EditorState;
   node: NodeActions;
   token: TokenActions;
+  grab: AssetGrab;
 }>): ReactElement {
   switch (view) {
     case LeftPaneViews.Layers:
@@ -44,8 +47,9 @@ function LeftPaneContent({
         <>
           {/*
             UI 案（docs/Design Composer.html）の `Layers` パネルは、artboard の一覧を
-            上段に、選んだ 1 枚の中身を下段に置く。挿入の入口はキャンバスに浮かぶ
-            ツールバーへ移した（#112）ので、ここには並べない。
+            上段に、選んだ 1 枚の中身を下段に置く。プリミティブを挿す入口はキャンバスに
+            浮かぶツールバーが持ち（#112）、部品はパレットの行を掴んで落とす（#203）ので、
+            どちらもここには並べない。
           */}
           <ArtboardList state={state} onSelect={node.select} />
           <DocumentTree
@@ -60,8 +64,7 @@ function LeftPaneContent({
         <AssetsPanel
           assets={DesignDocument.componentAssets(EditorState.document(state))}
           sourceName={EditorState.sourceName(state)}
-          isInsertEnabled={node.isInsertEnabled}
-          onInsert={node.insertInstance}
+          grab={grab}
         />
       );
     case LeftPaneViews.Tokens:
@@ -122,12 +125,14 @@ export function LeftPane({
   state,
   node,
   token,
+  grab,
 }: Readonly<{
   view: LeftPaneView;
   onSelectView: (view: LeftPaneView) => void;
   state: EditorState;
   node: NodeActions;
   token: TokenActions;
+  grab: AssetGrab;
 }>) {
   return (
     <>
@@ -143,7 +148,13 @@ export function LeftPane({
         }
         footer={leftPaneFooter(view, state, node)}
       >
-        <LeftPaneContent view={view} state={state} node={node} token={token} />
+        <LeftPaneContent
+          view={view}
+          state={state}
+          node={node}
+          token={token}
+          grab={grab}
+        />
       </LeftPanePanel>
     </>
   );

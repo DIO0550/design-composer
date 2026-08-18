@@ -42,6 +42,36 @@ export const NodeTemplate = {
   },
 
   /**
+   * 同じものを指す指定か。
+   *
+   * パレットの行が「今掴まれているのは自分か」を答えるのに使う。行は自分の指定を
+   * 組み立てられるので、掴まれている指定と突き合わせれば行ごとの判定が要らない。
+   *
+   * @param template 突き合わせる指定
+   * @param other 突き合わせ先の指定
+   * @returns 種別も指す先も同じなら `true`
+   */
+  isSame(template: NodeTemplate, other: NodeTemplate): boolean {
+    if (template.kind === "primitive") {
+      return other.kind === "primitive" && other.type === template.type;
+    }
+    return (
+      other.kind === "instance" &&
+      other.componentName === template.componentName
+    );
+  },
+
+  /**
+   * 部品のインスタンスを指す指定か。
+   *
+   * @param template 見たい指定
+   * @returns インスタンスなら `true`。プリミティブなら `false`
+   */
+  isInstance(template: NodeTemplate): boolean {
+    return template.kind === "instance";
+  },
+
+  /**
    * 指定を、そのドキュメントへ挿せるノードにする。
    * `usedNames` と衝突しない名前を採番するため、生成されたノードは
    * そのまま挿しても単一名前空間の一意性を壊さない。

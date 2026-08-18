@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import type { ComponentAsset } from "@/domains/component";
+import { setupAssetGrab } from "@/features/editor/__tests__/asset-grab";
 import { Option } from "@/utils/Option";
 import { AssetsPanel } from "../index";
 
@@ -28,8 +29,7 @@ function setup() {
     <AssetsPanel
       sourceName={Option.none}
       assets={Assets}
-      isInsertEnabled
-      onInsert={() => {}}
+      grab={setupAssetGrab()}
     />,
   );
 }

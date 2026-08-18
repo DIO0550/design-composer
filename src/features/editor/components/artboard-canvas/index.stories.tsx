@@ -8,23 +8,31 @@ import {
 } from "@/features/editor/__stories__/sample-editor-state";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { useCanvasView } from "@/features/editor/hooks/use-canvas-view";
+import { useNodeDrag } from "@/features/editor/hooks/use-node-drag";
 import { ArtboardCanvas } from "./index";
 
 /**
  * 表示（倍率・位置）を自分で持つキャンバス。
  *
- * 本番は上部バーと 1 つの表示を共有する（`OpenedDocumentEditor`）が、キャンバス単体の
- * 見た目は共有相手に依らない。ストーリーの `component` をこちらにしているのは、
- * フックの戻り値は args として書けないため。
+ * 本番は上部バーとドラッグの状態を編集画面と共有する（`OpenedDocumentEditor`）が、
+ * キャンバス単体の見た目は共有相手に依らない。ストーリーの `component` を
+ * こちらにしているのは、フックの戻り値は args として書けないため。
  *
  * Why not: 同じ形が `__tests__/setup.tsx` にもあるが、1 箇所へ寄せていない
  * （理由はそちらのコメント。`vitest` と Storybook のどちらかが相手のバンドルへ入る）。
  */
 function CanvasWithView(
-  props: Omit<ComponentProps<typeof ArtboardCanvas>, "canvasView">,
+  props: Omit<ComponentProps<typeof ArtboardCanvas>, "canvasView" | "nodeDrag">,
 ) {
   const canvasView = useCanvasView();
-  return <ArtboardCanvas {...props} canvasView={canvasView} />;
+  const nodeDrag = useNodeDrag({
+    document: EditorState.document(props.state),
+    onMove: () => {},
+    onInsertAt: () => {},
+  });
+  return (
+    <ArtboardCanvas {...props} canvasView={canvasView} nodeDrag={nodeDrag} />
+  );
 }
 
 const meta = {
@@ -41,7 +49,6 @@ const meta = {
   ],
   args: {
     onSelect: fn(),
-    onMoveNode: fn(),
     onResize: fn(),
     onEditProp: fn(),
   },

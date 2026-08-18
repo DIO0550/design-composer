@@ -576,23 +576,44 @@ export const EditorState = {
   },
 
   /**
+   * ツリー上の指した位置へノードを挿す（docs/06-ui.md「編集操作の一覧」の挿入）。
+   *
+   * 名前の採番に要るのはドキュメント全体の名前なので、ノードの組み立ては挿入先を
+   * 受け取ってから行う（`NodeTemplate` は名前を持たない）。
+   * 位置を引数で受けるのは、パレットからキャンバスへ落とす経路が落とした先へ挿すため
+   * （UI 案 docs/Design Composer.html は `Assets` を挿入がドラッグ専用の
+   * browse-only とし、ドロップ先をツリー上の位置として示す / #203）。
+   * 選択は動かさない（理由は `insertNode` と同じ）。
+   *
+   * @param state 挿す前のエディタの状態
+   * @param template 挿すものの指定
+   * @param at 挿す位置
+   * @returns 挿したあとの状態。居ない親・範囲外の位置と、ファイルが不正な間は `none`
+   */
+  insertNodeAt(
+    state: EditorState,
+    template: NodeTemplate,
+    at: ChildPosition,
+  ): Option<EditorState> {
+    const document = EditorState.document(state);
+    const node = NodeTemplate.toNode(
+      template,
+      DesignDocument.usedNames(document),
+    );
+    const inserted = DesignDocument.insertNode(document, at, node);
+    return inserted.ok ? withEdit(state, inserted.value) : Option.none;
+  },
+
+  /**
    * 選択位置の子としてノードを挿す（docs/06-ui.md「編集操作の一覧」の挿入）。
    *
-   * 名前の採番に要るのはドキュメント全体の名前なので、ノードの組み立ては挿入先が
-   * 決まってから行う（`NodeTemplate` は名前を持たない）。
    * 選択は動かさない。続けて挿したときに兄弟が並ぶのが「選択位置の子として追加」の素直な
    * 繰り返しで、挿すたびに選択が内側へ移ると Box を足しただけで入れ子が深くなるため。
    */
   insertNode(state: EditorState, template: NodeTemplate): Option<EditorState> {
-    return Option.flatMap(EditorState.insertPosition(state), (at) => {
-      const document = EditorState.document(state);
-      const node = NodeTemplate.toNode(
-        template,
-        DesignDocument.usedNames(document),
-      );
-      const inserted = DesignDocument.insertNode(document, at, node);
-      return inserted.ok ? withEdit(state, inserted.value) : Option.none;
-    });
+    return Option.flatMap(EditorState.insertPosition(state), (at) =>
+      EditorState.insertNodeAt(state, template, at),
+    );
   },
 
   /**

@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { expect, test } from "vitest";
 import type { ComponentAsset } from "@/domains/component";
+import { setupAssetGrab } from "@/features/editor/__tests__/asset-grab";
 import { Option } from "@/utils/Option";
 import { ComponentList } from "../index";
 
@@ -20,8 +21,7 @@ function renderList(sourceName: Option<string>) {
     <ComponentList
       assets={Assets}
       sourceName={sourceName}
-      isInsertEnabled
-      onInsert={() => {}}
+      grab={setupAssetGrab()}
     />,
   );
 }

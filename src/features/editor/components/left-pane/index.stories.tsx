@@ -4,6 +4,10 @@ import {
   FileInvalidEditorState,
   SampleEditorState,
 } from "@/features/editor/__stories__/sample-editor-state";
+import {
+  grabbingComponent,
+  setupAssetGrab,
+} from "@/features/editor/__tests__/asset-grab";
 import { LeftPaneViews } from "@/features/editor/components/left-pane-rail";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import type { NodeActions } from "@/features/editor/hooks/use-node-actions";
@@ -24,7 +28,7 @@ const SampleNodeActions: NodeActions = {
   resize: fn(),
   editProp: fn(),
   insert: fn(),
-  insertInstance: fn(),
+  insertAt: fn(),
   detachInstance: fn(),
   selectAllInstances: fn(),
   createComponent: fn(),
@@ -48,6 +52,7 @@ const meta = {
     state: SampleEditorState,
     node: SampleNodeActions,
     token: SampleTokenActions,
+    grab: setupAssetGrab(),
   },
   // 実際の幅（レール 56px + パネル 248px）と高さで見ないと、行の詰まり方が分からない。
   decorators: [
@@ -79,13 +84,14 @@ export const Tokens: Story = {
 };
 
 /**
- * 挿せる位置が無いときの `Assets`。部品の行の挿入ボタンが押せなくなる。
+ * パレットの行を掴んでキャンバスへ運んでいる `Assets`（#203）。
+ * 掴んでいる行だけが青くなる。
  */
-export const AssetsInsertDisabled: Story = {
-  name: "Assets（挿せる位置が無い）",
+export const AssetsGrabbed: Story = {
+  name: "Assets（行を掴んで運んでいる）",
   args: {
     view: LeftPaneViews.Assets,
-    node: { ...SampleNodeActions, isInsertEnabled: false },
+    grab: grabbingComponent("primary-button"),
   },
 };
 

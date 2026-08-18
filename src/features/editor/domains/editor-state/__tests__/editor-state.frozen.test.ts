@@ -180,3 +180,27 @@ test("書き戻すと、凍結中は止まっていた編集が再びできる�
 
   expect(EditorState.removeNode(reverted).some).toBe(true);
 });
+
+test("ファイルが不正な間は、落とし先を指しても挿さらない", () => {
+  const opened = openedState();
+
+  expect(
+    EditorState.insertNodeAt(
+      frozen(opened),
+      { kind: "primitive", type: "Box" },
+      { parentName: "home", index: 0 },
+    ),
+  ).toStrictEqual(Option.none);
+});
+
+test("ファイルが不正でなければ、落とし先を指して挿せる", () => {
+  const opened = openedState();
+
+  expect(
+    EditorState.insertNodeAt(
+      opened,
+      { kind: "primitive", type: "Box" },
+      { parentName: "home", index: 0 },
+    ).some,
+  ).toBe(true);
+});

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import type { NodeDragHandlers } from "@/features/editor/hooks/use-node-drag";
 
 type PaneProps = Readonly<{ children: ReactNode }>;
 
@@ -30,10 +31,21 @@ const FrozenPaneClass = "opacity-45 saturate-[0.4]";
  *
  * 高さは画面ではなく親に合わせる。ファイル操作のツールバーと同期の失敗表示が
  * 上に並ぶため、画面の高さを取ると 3 ペインがその分はみ出す。
+ *
+ * 運んでいる間のポインタをここで受けるのは、掴む場所（左ペインのパレット）と落とす場所
+ * （キャンバス）がこの器の別の枝にあるため。キャンバスの中だけで受けると、パレットで
+ * 掴んで左ペインの上で離したときに `pointerup` が届かず、掴んだまま戻らなくなる。
+ * 器から出たら取り消す（`onPointerLeave`）。
  */
-function EditorLayoutRoot({ children }: PaneProps) {
+function EditorLayoutRoot({
+  dragHandlers,
+  children,
+}: PaneProps & Readonly<{ dragHandlers: NodeDragHandlers }>) {
   return (
-    <div className="grid h-full min-h-0 w-full grid-cols-[19rem_1fr_18rem] overflow-hidden bg-gray-100 text-gray-900">
+    <div
+      {...dragHandlers}
+      className="grid h-full min-h-0 w-full grid-cols-[19rem_1fr_18rem] overflow-hidden bg-gray-100 text-gray-900"
+    >
       {children}
     </div>
   );

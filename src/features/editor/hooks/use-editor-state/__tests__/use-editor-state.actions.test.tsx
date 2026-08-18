@@ -180,6 +180,30 @@ function EditorStateHarness() {
       <button
         type="button"
         onClick={() =>
+          dispatch({
+            type: "insert_node_at",
+            template: { kind: "primitive", type: "Box" },
+            at: { parentName: "home", index: 1 },
+          })
+        }
+      >
+        home の 2 番目へ挿す
+      </button>
+      <button
+        type="button"
+        onClick={() =>
+          dispatch({
+            type: "insert_node_at",
+            template: { kind: "primitive", type: "Box" },
+            at: { parentName: "title", index: 0 },
+          })
+        }
+      >
+        Text の下へ挿す
+      </button>
+      <button
+        type="button"
+        onClick={() =>
           dispatch({ type: "resize", size: AxisLength.create("width", 500) })
         }
       >
@@ -295,6 +319,31 @@ test("子を持てないノードの下を移動先にすると子の並びが�
 
   await userEvent.click(
     screen.getByRole("button", { name: "title を Text の下へ運ぶ" }),
+  );
+
+  expect(children()).toBe("title,footer");
+});
+
+test("落とし先を指した挿入のアクションを送ると、その位置に子が増える", async () => {
+  render(<EditorStateHarness />);
+
+  // 先頭・末尾だと、落とし先を捨てて足すだけの実装でも同じ並びになる
+  await userEvent.click(
+    screen.getByRole("button", { name: "home の 2 番目へ挿す" }),
+  );
+
+  expect(children()).toBe("title,box,footer");
+});
+
+test("子を持てないノードを落とし先にした挿入のアクションを送っても子は増えない", async () => {
+  render(<EditorStateHarness />);
+
+  /*
+   * 画面の操作からは `DropParent.innermost` が受け入れられない親を外すのでここへ来ないが、
+   * アクションは誰でも送れるので、届いたときに何もしないことをここで固定する。
+   */
+  await userEvent.click(
+    screen.getByRole("button", { name: "Text の下へ挿す" }),
   );
 
   expect(children()).toBe("title,footer");

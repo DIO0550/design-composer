@@ -30,6 +30,12 @@ export type EditorAction =
     }>
   | Readonly<{ type: "move_node"; name: string; to: ChildPosition }>
   | Readonly<{ type: "insert_node"; template: NodeTemplate }>
+  /* 落とした先へ挿す経路。挿す位置が選択ではなくドロップ位置で決まる（#203）。 */
+  | Readonly<{
+      type: "insert_node_at";
+      template: NodeTemplate;
+      at: ChildPosition;
+    }>
   | Readonly<{ type: "remove_node" }>
   | Readonly<{ type: "detach_instance" }>
   | Readonly<{ type: "select_all_instances" }>
@@ -88,6 +94,17 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
       // 挿せる位置が無ければ木は変わらない（EditorState.insertNode の `none`）。
       return Option.unwrapOr(
         EditorState.insertNode(state, action.template),
+        state,
+      );
+    case "insert_node_at":
+      /*
+       * 落とし先が受け入れられない位置なら木は変わらない
+       * （EditorState.insertNodeAt の `none`）。落とし先は描かれている親と子から
+       * 決まる（`DropZone`）ので、画面の操作から居ない親・範囲外の位置には到達しない。
+       * ファイルが不正な間は `none` だが、そのとき左ペインは `inert` なので掴めない。
+       */
+      return Option.unwrapOr(
+        EditorState.insertNodeAt(state, action.template, action.at),
         state,
       );
     case "remove_node":

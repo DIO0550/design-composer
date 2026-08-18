@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { expect, test } from "vitest";
 import type { ComponentAsset } from "@/domains/component";
+import { setupAssetGrab } from "@/features/editor/__tests__/asset-grab";
 import { Option } from "@/utils/Option";
 import { AssetsPanel } from "../index";
 
@@ -14,8 +15,7 @@ test("プリミティブと部品の両方が並ぶ", () => {
     <AssetsPanel
       sourceName={Option.none}
       assets={Assets}
-      isInsertEnabled
-      onInsert={() => {}}
+      grab={setupAssetGrab()}
     />,
   );
 
@@ -28,8 +28,7 @@ test("組み込みのプリミティブが行として出る", () => {
     <AssetsPanel
       sourceName={Option.none}
       assets={Assets}
-      isInsertEnabled
-      onInsert={() => {}}
+      grab={setupAssetGrab()}
     />,
   );
 
@@ -42,8 +41,7 @@ test("渡された部品が行として出る", () => {
     <AssetsPanel
       sourceName={Option.none}
       assets={Assets}
-      isInsertEnabled
-      onInsert={() => {}}
+      grab={setupAssetGrab()}
     />,
   );
 
@@ -55,25 +53,23 @@ test("部品が1件も無くてもプリミティブは出る", () => {
     <AssetsPanel
       sourceName={Option.none}
       assets={[]}
-      isInsertEnabled
-      onInsert={() => {}}
+      grab={setupAssetGrab()}
     />,
   );
 
   expect(screen.getByText("Box")).toBeDefined();
 });
 
-test("部品の行から挿せる", () => {
+test("部品の行にもプリミティブの行にも押せるものが無い", () => {
+  // `Assets` は browse-only（UI 案「Insertion is drag-only」/ #203）。
+  // 検索欄は `searchbox` なので、ここで数える `button` は行の操作だけになる
   render(
     <AssetsPanel
       sourceName={Option.none}
       assets={Assets}
-      isInsertEnabled
-      onInsert={() => {}}
+      grab={setupAssetGrab()}
     />,
   );
 
-  expect(
-    screen.getByRole("button", { name: "primary-button を挿入" }),
-  ).toBeDefined();
+  expect(screen.queryAllByRole("button")).toEqual([]);
 });

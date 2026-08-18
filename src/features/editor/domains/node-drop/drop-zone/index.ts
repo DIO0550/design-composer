@@ -15,10 +15,20 @@ export type DropZone = Readonly<{
   children: readonly CanvasBounds[];
 }>;
 
-/** 落ちる位置と、それを画面で示す線。位置だけでは何も描けないため対で持つ。 */
+/**
+ * 落ちる位置と、それを画面で示すのに要る実測値。位置だけでは何も描けないため対で持つ。
+ *
+ * `childCount` と `parentBounds` を持つのは、落ちる先を「どの親の何個中どこか」として
+ * 示すため（UI 案 docs/Design Composer.html の `into login-form · child 3 of 5`）。
+ * 綴りは持たない — どう書くかは表示側の関心事（rules/architecture.md「出口も同じ」）。
+ */
 export type DropTarget = Readonly<{
   position: ChildPosition;
   marker: CanvasBounds;
+  /** 落とす前にその親が持っている子の数。 */
+  childCount: number;
+  /** 落とし先の親の矩形。落ちる位置を示すラベルをこの端へ寄せる。 */
+  parentBounds: CanvasBounds;
 }>;
 
 /** 挿入位置に引く線の太さ（px）。 */
@@ -96,6 +106,8 @@ export const DropZone = {
     return {
       position: { parentName: zone.parent.name, index },
       marker: markerBounds(zone, insertionCoordinate(zone, index)),
+      childCount: zone.children.length,
+      parentBounds: zone.bounds,
     };
   },
 } as const;

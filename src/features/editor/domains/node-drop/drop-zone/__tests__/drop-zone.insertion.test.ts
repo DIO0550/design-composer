@@ -115,3 +115,33 @@ test("子がいない親では、線は親の内側の先頭に引かれる", ()
 
   expect(target.marker).toEqual({ left: 10, top: 19, width: 100, height: 2 });
 });
+
+test("落とし先には、その親が今持っている子の数が付く", () => {
+  // 「何個中どこへ落ちるか」を示すのに要る（UI 案の `child 3 of 5`）
+  const target = DropZone.targetAt(setupColumnZone(), { x: 50, y: 120 });
+
+  expect(target.childCount).toBe(3);
+});
+
+test("子がいない親では、落とし先に付く子の数が0になる", () => {
+  const zone = DropZone.create(
+    { name: "empty", direction: "column" },
+    { left: 10, top: 20, width: 100, height: 100 },
+    [],
+  );
+
+  const target = DropZone.targetAt(zone, { x: 50, y: 90 });
+
+  expect(target.childCount).toBe(0);
+});
+
+test("落とし先には、位置を示すラベルを寄せるための親の矩形が付く", () => {
+  const target = DropZone.targetAt(setupColumnZone(), { x: 50, y: 120 });
+
+  expect(target.parentBounds).toEqual({
+    left: 0,
+    top: 0,
+    width: 100,
+    height: 300,
+  });
+});

@@ -1,9 +1,7 @@
 import { ComponentAsset } from "@/domains/component";
-import { TypeGlyph } from "@/features/editor/components/type-glyph";
+import { AssetRow } from "@/features/editor/components/asset-row";
+import type { AssetGrab } from "@/features/editor/types/AssetGrab";
 import type { Option } from "@/utils/Option";
-
-/** 選択の状態から決まる、押せない理由。ボタンの `title` に出して操作の見当を付けさせる。 */
-const InsertDisabledReason = "子を持てるものを選ぶと挿入できます";
 
 /** 使われていない部品の右端に出す語（UI 案は `×0` ではなくこの語を出す）。 */
 const UnusedLabel = "unused";
@@ -12,80 +10,49 @@ const UnusedLabel = "unused";
 const SourceOfSelectionLabel = "source of selection";
 
 /**
- * 部品 1 件の行。名前の左に部品を表すアイコン、名前の下にその部品が公開している prop の
- * 名前、右端にドキュメント内での使用数を出す
- * （UI 案 docs/Design Composer.html の `primary-button / label / ×4`）。
+ * 部品 1 件の名前まわり。名前の下に、その部品が公開している prop の名前か、
+ * 選択中のインスタンスの出どころであることを出す
+ * （UI 案 docs/Design Composer.html の `primary-button / label`）。
  *
- * 使用数の綴りだけをここで決める。「使われていない」かどうかは部品の性質なので
- * `ComponentAsset.isUnused` が答え、こちらは `unused` と `×N` のどちらを書くかだけを持つ。
+ * 出どころの行では公開 prop の名前を `source of selection` に譲る。両方を出すと 1 行に
+ * 2 段の補足が並び、UI 案が 1 段しか置いていない位置に収まらなくなる
+ * （公開 prop は右ペインの `Public props` が出している）。
  *
- * 挿入ボタンは UI 案に無いが残している。消すとインスタンスを作る手段が画面から
- * 無くなるため（キャンバスにもツリーにも代わりの入口が無い）。ツリーの並べ替えボタンと
- * 同じ扱いで、代わりの操作は別の単位で入れる（#112）。
+ * @returns 名前と、その下に置く 1 段の補足
  */
-function ComponentRow({
+function ComponentName({
   asset,
   isSourceOfSelection,
-  isInsertEnabled,
-  onInsert,
-}: Readonly<{
-  asset: ComponentAsset;
-  isSourceOfSelection: boolean;
-  isInsertEnabled: boolean;
-  onInsert: (name: string) => void;
-}>) {
-  /*
-   * 出どころの行では、公開 prop の名前を `source of selection` に譲る。
-   * 両方を出すと 1 行に 2 段の補足が並び、UI 案が 1 段しか置いていない位置に
-   * 収まらなくなる（公開 prop は右ペインの `Public props` が出している）。
-   */
+}: Readonly<{ asset: ComponentAsset; isSourceOfSelection: boolean }>) {
   const showsPublicProps =
     !isSourceOfSelection && asset.publicPropNames.length > 0;
 
   return (
-    <li
-      className={`flex items-center gap-1.5 rounded px-2 py-1 hover:bg-gray-100 ${
-        isSourceOfSelection ? "bg-purple-50 shadow-[inset_2px_0_0_#9747ff]" : ""
-      }`}
-    >
-      <TypeGlyph kind="component" />
-      {/* 名前が余りを占める。flex の子は既定で内容幅より縮まないため省略には min-w-0 が要る */}
-      <span className="min-w-0 flex-1">
-        <span className="block truncate">{asset.name}</span>
-        {showsPublicProps ? (
-          <span className="block truncate text-gray-400 text-xs">
-            {asset.publicPropNames.join(", ")}
-          </span>
-        ) : null}
-        {isSourceOfSelection ? (
-          <span className="block truncate text-[#9747ff] text-xs">
-            {SourceOfSelectionLabel}
-          </span>
-        ) : null}
-      </span>
-      <span className="shrink-0 text-gray-400 text-xs">
-        {ComponentAsset.isUnused(asset) ? UnusedLabel : `×${asset.refCount}`}
-      </span>
-      <button
-        type="button"
-        aria-label={`${asset.name} を挿入`}
-        onClick={() => onInsert(asset.name)}
-        disabled={!isInsertEnabled}
-        title={isInsertEnabled ? undefined : InsertDisabledReason}
-        className="shrink-0 rounded border border-gray-300 px-1 text-gray-600 text-xs hover:bg-gray-100 disabled:opacity-50"
-      >
-        挿入
-      </button>
-    </li>
+    <>
+      <span className="block truncate">{asset.name}</span>
+      {showsPublicProps ? (
+        <span className="block truncate text-gray-400 text-xs">
+          {asset.publicPropNames.join(", ")}
+        </span>
+      ) : null}
+      {isSourceOfSelection ? (
+        <span className="block truncate text-[#9747ff] text-xs">
+          {SourceOfSelectionLabel}
+        </span>
+      ) : null}
+    </>
   );
 }
 
 /**
  * パレットの部品（UI 案 docs/Design Composer.html の `Assets` > `Components`。
  * `docs/06-ui.md`「画面構成」が左ペインの内容として挙げている部品一覧）。
- * 各行から選択位置へインスタンス（参照ノード）を挿せる（docs/06-ui.md「編集操作の一覧」）。
+ * 各行を掴んでキャンバスへ落とすとインスタンス（参照ノード）が挿さる
+ * （docs/06-ui.md「編集操作の一覧」/ #203）。
  *
- * 見出しと件数は UI 案に合わせて左右に離して置く。
+ * 見出しと件数は UI 案に合わせて左右に離して置く。使用数の綴りだけをここで決める
+ * （「使われていない」かどうかは部品の性質なので `ComponentAsset.isUnused` が答え、
+ * こちらは `unused` と `×N` のどちらを書くかだけを持つ）。
  *
  * 絞り込みはここでは行わない。何を出すかは検索欄を持つ `AssetsPanel` が決め、
  * ここは渡された並びを描くだけ。1 件も無いときに「部品がありません」と言わないのは、
@@ -100,13 +67,11 @@ function ComponentRow({
 export function ComponentList({
   assets,
   sourceName,
-  isInsertEnabled,
-  onInsert,
+  grab,
 }: Readonly<{
   assets: readonly ComponentAsset[];
   sourceName: Option<string>;
-  isInsertEnabled: boolean;
-  onInsert: (name: string) => void;
+  grab: AssetGrab;
 }>) {
   return (
     <section className="text-sm">
@@ -117,17 +82,32 @@ export function ComponentList({
         <span className="text-gray-400 text-xs">{assets.length}</span>
       </div>
       <ul>
-        {assets.map((asset) => (
-          <ComponentRow
-            key={asset.name}
-            asset={asset}
-            isSourceOfSelection={
-              sourceName.some && sourceName.value === asset.name
-            }
-            isInsertEnabled={isInsertEnabled}
-            onInsert={onInsert}
-          />
-        ))}
+        {assets.map((asset) => {
+          const isSourceOfSelection =
+            sourceName.some && sourceName.value === asset.name;
+
+          return (
+            <AssetRow
+              key={asset.name}
+              kind="component"
+              name={
+                <ComponentName
+                  asset={asset}
+                  isSourceOfSelection={isSourceOfSelection}
+                />
+              }
+              template={{ kind: "instance", componentName: asset.name }}
+              grab={grab}
+              accent={isSourceOfSelection ? "source-of-selection" : "none"}
+            >
+              <span className="shrink-0 text-gray-400 text-xs">
+                {ComponentAsset.isUnused(asset)
+                  ? UnusedLabel
+                  : `×${asset.refCount}`}
+              </span>
+            </AssetRow>
+          );
+        })}
       </ul>
     </section>
   );

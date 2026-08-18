@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { expect, test } from "vitest";
+import { Option } from "@/utils/Option";
 import { NodeInsertToolbar } from "../index";
 
 /** 全部を見る。1 つだけだと、押せるかどうかを片方にしか渡していない実装が通る。 */
@@ -8,7 +9,13 @@ function insertButtons(): readonly HTMLElement[] {
 }
 
 test("挿せる位置が無いときはどの追加ボタンも押せない", () => {
-  render(<NodeInsertToolbar isInsertEnabled={false} onInsert={() => {}} />);
+  render(
+    <NodeInsertToolbar
+      isInsertEnabled={false}
+      dragged={Option.none}
+      onInsert={() => {}}
+    />,
+  );
 
   expect(
     insertButtons().map((button) => button.hasAttribute("disabled")),
@@ -16,7 +23,13 @@ test("挿せる位置が無いときはどの追加ボタンも押せない", ()
 });
 
 test("押せないときはどの追加ボタンからも理由が読める", () => {
-  render(<NodeInsertToolbar isInsertEnabled={false} onInsert={() => {}} />);
+  render(
+    <NodeInsertToolbar
+      isInsertEnabled={false}
+      dragged={Option.none}
+      onInsert={() => {}}
+    />,
+  );
 
   // `component-list` は「挿入できます」。揺れているのはボタンの動詞のほうで、
   // 揃えるなら両方の入口の語彙を決め直す別の単位になる（#112）。

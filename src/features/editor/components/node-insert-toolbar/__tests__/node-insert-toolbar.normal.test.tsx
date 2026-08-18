@@ -2,6 +2,7 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import type { NodeTemplate } from "@/features/editor/domains/node-template";
+import { Option } from "@/utils/Option";
 import { NodeInsertToolbar } from "../index";
 
 /** 器を起点に探す。ボタンを直接引くと、器が読み上げ名を失っても気づけない。 */
@@ -10,14 +11,26 @@ function toolbar() {
 }
 
 test("プリミティブごとの追加ボタンが並ぶ", () => {
-  render(<NodeInsertToolbar isInsertEnabled onInsert={() => {}} />);
+  render(
+    <NodeInsertToolbar
+      isInsertEnabled
+      dragged={Option.none}
+      onInsert={() => {}}
+    />,
+  );
 
   expect(toolbar().getByRole("button", { name: "Box を追加" })).toBeDefined();
   expect(toolbar().getByRole("button", { name: "Text を追加" })).toBeDefined();
 });
 
 test("追加ボタンはそれぞれの型アイコンを出す", () => {
-  render(<NodeInsertToolbar isInsertEnabled onInsert={() => {}} />);
+  render(
+    <NodeInsertToolbar
+      isInsertEnabled
+      dragged={Option.none}
+      onInsert={() => {}}
+    />,
+  );
 
   // 読み上げ名は `aria-label` から出るので、名前で探すテストはアイコンを消しても通る。
   expect(
@@ -34,6 +47,7 @@ test("Box を追加すると Box の挿入が伝わる", async () => {
   render(
     <NodeInsertToolbar
       isInsertEnabled
+      dragged={Option.none}
       onInsert={(template) => inserted.push(template)}
     />,
   );
@@ -49,6 +63,7 @@ test("Text を追加すると Text の挿入が伝わる", async () => {
   render(
     <NodeInsertToolbar
       isInsertEnabled
+      dragged={Option.none}
       onInsert={(template) => inserted.push(template)}
     />,
   );

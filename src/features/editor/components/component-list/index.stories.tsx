@@ -1,6 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Artboard } from "@/domains/artboard";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import {
+  grabbingComponent,
+  setupAssetGrab,
+} from "@/features/editor/__tests__/asset-grab";
 import { Option } from "@/utils/Option";
 import { ComponentList } from "./index";
 
@@ -15,7 +19,7 @@ const meta = {
       </div>
     ),
   ],
-  args: { sourceName: Option.none },
+  args: { sourceName: Option.none, grab: setupAssetGrab() },
 } satisfies Meta<typeof ComponentList>;
 
 export default meta;
@@ -45,25 +49,27 @@ const UsedComponentsDocument = DesignDocument.create({
 
 export const Default: Story = {
   name: "使用数のある部品",
-  args: {
-    assets: DesignDocument.componentAssets(UsedComponentsDocument),
-    isInsertEnabled: true,
-    onInsert: () => {},
-  },
-};
-
-export const InsertDisabled: Story = {
-  name: "挿せる位置が無い",
-  args: {
-    assets: DesignDocument.componentAssets(UsedComponentsDocument),
-    isInsertEnabled: false,
-    onInsert: () => {},
-  },
+  args: { assets: DesignDocument.componentAssets(UsedComponentsDocument) },
 };
 
 export const Empty: Story = {
   name: "部品がない",
-  args: { assets: [], isInsertEnabled: true, onInsert: () => {} },
+  args: { assets: [] },
+};
+
+/**
+ * 行を掴んでキャンバスへ運んでいる状態（UI 案 docs/Design Composer.html の
+ * `3a · ASSETS`）。掴んでいる行だけが青くなる。
+ *
+ * **青と左端の帯はテストでは見えない**（happy-dom は Tailwind を解決しない）。
+ * 出どころの紫と取り違えていないかを確かめる手段はこのストーリーの視覚差分だけ。
+ */
+export const Grabbed: Story = {
+  name: "行を掴んで運んでいる",
+  args: {
+    assets: DesignDocument.componentAssets(UsedComponentsDocument),
+    grab: grabbingComponent("primary-button"),
+  },
 };
 
 /** インスタンスを選んでいる状態。元になっている部品の行だけが出どころとして光る。 */
@@ -72,7 +78,5 @@ export const SourceOfSelection: Story = {
   args: {
     assets: DesignDocument.componentAssets(UsedComponentsDocument),
     sourceName: Option.some("primary-button"),
-    isInsertEnabled: true,
-    onInsert: () => {},
   },
 };

@@ -27,6 +27,9 @@ import type { DocumentError } from "@/features/editor/domains/document-error";
 import { DocumentSaveState } from "@/features/editor/domains/document-save-state";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { FileValidity } from "@/features/editor/domains/file-validity";
+import { NodeDrag } from "@/features/editor/domains/node-drag";
+import { DraggedNode } from "@/features/editor/domains/node-drop";
+import type { NodeTemplate } from "@/features/editor/domains/node-template";
 import type { OpenedDocument } from "@/features/editor/domains/opened-document";
 import { useAutoSave } from "@/features/editor/hooks/use-auto-save";
 import {
@@ -44,12 +47,14 @@ import {
   type NodeActions,
   useNodeActions,
 } from "@/features/editor/hooks/use-node-actions";
+import { useNodeDrag } from "@/features/editor/hooks/use-node-drag";
 import {
   type TokenActions,
   useTokenActions,
 } from "@/features/editor/hooks/use-token-actions";
 import type { Clock } from "@/libs/clock";
 import type { DocumentIpc } from "@/libs/document-ipc";
+import { Option } from "@/utils/Option";
 
 /**
  * 行き先ごとの右ペインの中身。`Assets` がプロパティパネルのままなのは、パレットは
@@ -164,12 +169,14 @@ function CanvasDockContent({
   dock,
   state,
   node,
+  dragged,
   onReveal,
   fileRevert,
 }: Readonly<{
   dock: CanvasDock;
   state: EditorState;
   node: NodeActions;
+  dragged: Option<NodeTemplate>;
   onReveal: (nodeName: string) => void;
   fileRevert: FileRevertControl;
 }>): ReactElement {
@@ -203,6 +210,7 @@ function CanvasDockContent({
           <TokenDashedNodes state={state} />
           <NodeInsertToolbar
             isInsertEnabled={node.isInsertEnabled}
+            dragged={dragged}
             onInsert={node.insert}
           />
         </CanvasDockStack>
@@ -236,10 +244,26 @@ function EditorPanes({
   );
   useEditShortcuts();
 
+  /*
+   * 掴む場所（左ペインのパレット）と落とす場所（キャンバス）が別のペインにあるので、
+   * ドラッグの状態は両方の親であるここが持つ。運んでいるものが既存ノードなら移動、
+   * パレットの雛形なら落とした先への挿入になる（#203）。
+   */
+  const nodeDrag = useNodeDrag({
+    document: EditorState.document(state),
+    onMove: node.move,
+    onInsertAt: node.insertAt,
+  });
+  /** 今パレットから運んでいる指定。掴んだ行の強調とツールバーの点灯がこれで決まる。 */
+  const draggedTemplate = Option.flatMap(
+    NodeDrag.carriedNode(nodeDrag.drag),
+    DraggedNode.template,
+  );
+
   const isFrozen = EditorState.isFileInvalid(state);
 
   return (
-    <EditorLayout>
+    <EditorLayout dragHandlers={nodeDrag.dragHandlers}>
       <EditorLayout.LeftPane isFrozen={isFrozen}>
         <LeftPane
           view={leftPaneView}
@@ -247,14 +271,18 @@ function EditorPanes({
           state={state}
           node={node}
           token={token}
+          grab={{
+            dragged: draggedTemplate,
+            onGrab: nodeDrag.grabTemplate,
+          }}
         />
       </EditorLayout.LeftPane>
       <EditorLayout.CenterPane>
         <ArtboardCanvas
           state={state}
           canvasView={canvasView}
+          nodeDrag={nodeDrag}
           onSelect={node.selectAt}
-          onMoveNode={node.move}
           onResize={node.resize}
           onEditProp={node.editProp}
         />
@@ -262,6 +290,7 @@ function EditorPanes({
           dock={canvasDock(state)}
           state={state}
           node={node}
+          dragged={draggedTemplate}
           /*
            * 選ぶだけでなく行き先も Layers へ戻す。トークンを消して不正を作った直後は
            * 左ペインが Tokens なので、選んでもツリーにもプロパティにも出ない

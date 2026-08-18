@@ -1,12 +1,18 @@
 import type { PrimitiveType } from "@/domains/primitive-schema";
-import { TypeGlyph } from "@/features/editor/components/type-glyph";
+import { AssetRow } from "@/features/editor/components/asset-row";
+import type { AssetGrab } from "@/features/editor/types/AssetGrab";
+
+/** 行の右端に出す、掴めることの知らせ（UI 案 docs/Design Composer.html の綴り）。 */
+const GrabHint = "drag";
 
 /**
  * パレットのプリミティブ（UI 案 docs/Design Composer.html の `Assets` > `Primitives`）。
  *
- * 行に操作は付けない。UI 案でのプリミティブの挿入はドラッグだけで、ドラッグは #129 の
- * スコープ外。ボタンを足すと挿入の入口が、キャンバスに浮かぶ `NodeInsertToolbar` と
- * 二重になる。
+ * 行は掴んでキャンバスへ落とす起点で、押しても何も挿さらない。UI 案の `Assets` は
+ * browse-only で、挿入はドラッグだけが入口になっている（#203）。
+ *
+ * 出どころの強調を出さないのは、出どころになれるのが選択中のインスタンスの元になっている
+ * **部品**だけで、プリミティブはインスタンスの元にならないため。
  *
  * 絞り込みはここでは行わない。何を出すかは検索欄を持つ `AssetsPanel` が決め、
  * ここは渡された並びを描くだけ（同じ絞り込みが 2 箇所に現れないようにする）。
@@ -15,7 +21,8 @@ import { TypeGlyph } from "@/features/editor/components/type-glyph";
  */
 export function PrimitiveList({
   types,
-}: Readonly<{ types: readonly PrimitiveType[] }>) {
+  grab,
+}: Readonly<{ types: readonly PrimitiveType[]; grab: AssetGrab }>) {
   return (
     <section className="text-sm">
       <h3 className="mb-2 font-semibold text-gray-500 text-xs uppercase">
@@ -23,13 +30,16 @@ export function PrimitiveList({
       </h3>
       <ul>
         {types.map((type) => (
-          <li
+          <AssetRow
             key={type}
-            className="flex items-center gap-1.5 rounded px-2 py-1 hover:bg-gray-100"
+            kind={type}
+            name={<span className="block truncate">{type}</span>}
+            template={{ kind: "primitive", type }}
+            grab={grab}
+            accent="none"
           >
-            <TypeGlyph kind={type} />
-            <span className="min-w-0 flex-1 truncate">{type}</span>
-          </li>
+            <span className="shrink-0 text-[#c4c4c4] text-xs">{GrabHint}</span>
+          </AssetRow>
         ))}
       </ul>
     </section>

@@ -1,8 +1,20 @@
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
-import type { DropTarget } from "@/features/editor/domains/node-drop";
+import type {
+  DraggedNode,
+  DropTarget,
+} from "@/features/editor/domains/node-drop";
 import { Option } from "@/utils/Option";
 import { NodeDrag } from "../index";
+
+/** 木にある `title` を掴んでいる状態。 */
+const MovingTitle: DraggedNode = { kind: "existing", name: "title" };
+
+/** パレットの Box を掴んでいる状態。 */
+const PlacingBox: DraggedNode = {
+  kind: "new",
+  template: { kind: "primitive", type: "Box" },
+};
 
 function setupDocument(): DesignDocument {
   return DesignDocument.create({
@@ -23,10 +35,12 @@ function setupDocument(): DesignDocument {
 const SampleDropTarget: DropTarget = {
   position: { parentName: "body", index: 0 },
   marker: { left: 0, top: 0, width: 100, height: 2 },
+  childCount: 0,
+  parentBounds: { left: 0, top: 0, width: 100, height: 100 },
 };
 
 test("押した位置から少ししか動かないうちはドラッグとして扱われない", () => {
-  const held = NodeDrag.grab("title", { x: 100, y: 100 });
+  const held = NodeDrag.grab(MovingTitle, { x: 100, y: 100 });
 
   const moved = NodeDrag.moveTo(held, { x: 102, y: 100 }, Option.none);
 
@@ -34,7 +48,7 @@ test("押した位置から少ししか動かないうちはドラッグとし�
 });
 
 test("押した位置から離れるとドラッグとして扱われる", () => {
-  const held = NodeDrag.grab("title", { x: 100, y: 100 });
+  const held = NodeDrag.grab(MovingTitle, { x: 100, y: 100 });
 
   const moved = NodeDrag.moveTo(held, { x: 100, y: 140 }, Option.none);
 
@@ -43,7 +57,7 @@ test("押した位置から離れるとドラッグとして扱われる", () =>
 
 test("ドラッグ中は受け入れ先の上にいる間だけ落ちる位置が決まる", () => {
   const dragging = NodeDrag.moveTo(
-    NodeDrag.grab("title", { x: 100, y: 100 }),
+    NodeDrag.grab(MovingTitle, { x: 100, y: 100 }),
     { x: 100, y: 140 },
     Option.some(SampleDropTarget),
   );
@@ -56,7 +70,7 @@ test("ドラッグ中は受け入れ先の上にいる間だけ落ちる位置�
 
 test("受け入れられない場所へ移ると落ちる位置は無くなる", () => {
   const dragging = NodeDrag.moveTo(
-    NodeDrag.grab("title", { x: 100, y: 100 }),
+    NodeDrag.grab(MovingTitle, { x: 100, y: 100 }),
     { x: 100, y: 140 },
     Option.some(SampleDropTarget),
   );
@@ -77,14 +91,16 @@ test("掴んでいないときのポインタ移動では何も起きない", ()
 });
 
 test("動かさずに離したときは直後のクリックを選択に使う", () => {
-  const released = NodeDrag.release(NodeDrag.grab("title", { x: 100, y: 100 }));
+  const released = NodeDrag.release(
+    NodeDrag.grab(MovingTitle, { x: 100, y: 100 }),
+  );
 
   expect(NodeDrag.consumesClick(released)).toBe(false);
 });
 
 test("運んでから離したときは直後のクリックを選択に使わない", () => {
   const dragging = NodeDrag.moveTo(
-    NodeDrag.grab("title", { x: 100, y: 100 }),
+    NodeDrag.grab(MovingTitle, { x: 100, y: 100 }),
     { x: 100, y: 140 },
     Option.some(SampleDropTarget),
   );
@@ -94,12 +110,12 @@ test("運んでから離したときは直後のクリックを選択に使わ�
 
 test("離したあとは何も掴んでいない状態に戻る", () => {
   const dragging = NodeDrag.moveTo(
-    NodeDrag.grab("title", { x: 100, y: 100 }),
+    NodeDrag.grab(MovingTitle, { x: 100, y: 100 }),
     { x: 100, y: 140 },
     Option.some(SampleDropTarget),
   );
 
-  expect(NodeDrag.heldName(NodeDrag.release(dragging)).some).toBe(false);
+  expect(NodeDrag.heldNode(NodeDrag.release(dragging)).some).toBe(false);
 });
 
 test("押された位置から外へ辿った名前のうち最も内側のノードを掴む", () => {
@@ -112,4 +128,37 @@ test("artboard の枠だけを押したときは掴めるノードが無い", ()
   const name = NodeDrag.grabbableName(setupDocument(), ["home"]);
 
   expect(name.some).toBe(false);
+});
+
+test("パレットの雛形を運んでから離したときは、直後のクリックを飲み込まない", () => {
+  const dragging = NodeDrag.moveTo(
+    NodeDrag.grab(PlacingBox, { x: 100, y: 100 }),
+    { x: 100, y: 140 },
+    Option.some(SampleDropTarget),
+  );
+
+  /*
+   * 押した場所（パレットの行）と離した場所（キャンバス）が別の枝にあるので、
+   * `click` はキャンバスの枠まで上がってこない。飲み込む状態に入ると、
+   * 次にキャンバスを押したときの選択が消える。
+   */
+  expect(NodeDrag.consumesClick(NodeDrag.release(dragging))).toBe(false);
+});
+
+test("運んでいる最中だけ、何を運んでいるかを答える", () => {
+  const dragging = NodeDrag.moveTo(
+    NodeDrag.grab(PlacingBox, { x: 100, y: 100 }),
+    { x: 100, y: 140 },
+    Option.none,
+  );
+
+  expect(Option.unwrap(NodeDrag.carriedNode(dragging))).toEqual(PlacingBox);
+});
+
+test("押しただけでまだ動かしていない間は、何を運んでいるかを答えない", () => {
+  // 掴んだ行の強調とツールバーの点灯がこれで決まるので、押しただけで点くと
+  // クリックのたびに一瞬光る
+  const held = NodeDrag.grab(PlacingBox, { x: 100, y: 100 });
+
+  expect(NodeDrag.carriedNode(held).some).toBe(false);
 });
