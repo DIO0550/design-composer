@@ -434,7 +434,11 @@ function ShorthandCell({
  * shorthand 名をセルごとに組み立て直さずに済むのも同じ理由。
  */
 
-/** 1 辺分のセル。 */
+/**
+ * 1 辺分のセル。
+ *
+ * @returns 辺の頭文字とその辺の入力欄を並べたセル
+ */
 function ShorthandSideCell({
   side,
   rowLabelId,
@@ -463,7 +467,11 @@ function ShorthandSideCell({
   );
 }
 
-/** 畳んだ 1 欄分のセル。 */
+/**
+ * 畳んだ 1 欄分のセル。
+ *
+ * @returns 組の頭文字と、2 辺へまとめて書く入力欄を並べたセル
+ */
 function ShorthandPairCell({
   pair,
   rowLabelId,
