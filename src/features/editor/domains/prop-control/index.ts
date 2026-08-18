@@ -21,6 +21,7 @@ import {
   TokenSet,
 } from "@/domains/token";
 import { EditorState } from "@/features/editor/domains/editor-state";
+import { InstanceComposition } from "@/services/instance-composition";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 
@@ -145,7 +146,8 @@ export type PropControlSection = Readonly<{
  * `isDetachEnabled` を持つのは、参照先の部品が無い・循環している間は解除できず
  * （`InstanceComposition.detach` が失敗する）、押しても何も起きないボタンになるため。
  * 不正なドキュメントも画面には残る（docs/03-schema.md「不正ファイル時の挙動」）ので、
- * この状態は実際に出る。
+ * この状態は実際に出る。凍結中（#155）をここで見ないのは、凍結中は解除のボタンごと
+ * 出ないため（`InspectorBody`）。重ねると同じ判断が 2 層に散る。
  *
  * 複数選択（`multiple`）が件数だけを持つのは、編集欄を 1 つも出さず帯に件数を出す
  * ため（docs/06-ui.md「選択」）。件数をここに持たせるのは、帯と本文が同じ 1 つの値から
@@ -520,14 +522,13 @@ function sectionsOf(
 /**
  * ノードが編集できる prop。参照ノードは公開 prop、プリミティブはスキーマから引く。
  *
- * @param state 解除できるかの判定に使うエディタの状態
+ * @param document 公開 prop の引き先と、解除できるかの判定に使うドキュメント
  * @param node 編集欄を出したいノード
  * @returns 参照ノードなら出どころの部品つきの公開 prop、
  *   プリミティブなら `group` ごとにまとめた編集欄。
  *   スキーマの分からない `type` ではセクションが空になる
  */
-function nodeControls(state: EditorState, node: Node): SelectionControls {
-  const document = EditorState.document(state);
+function nodeControls(document: DesignDocument, node: Node): SelectionControls {
   if (Node.isRef(node)) {
     return {
       kind: "instance",
@@ -538,11 +539,11 @@ function nodeControls(state: EditorState, node: Node): SelectionControls {
         document.tokens,
       ),
       /*
-       * 解除できるかは、解除そのものに答えさせる。失敗の条件（参照先が無い・
+       * 解除できるかは、解除と同じ判定に答えさせる。失敗の条件（参照先が無い・
        * 循環している）を書き写すと `InstanceComposition.detach` と二重管理になり、
        * 片方だけ変わったときにボタンの出方と結果が食い違う。
        */
-      isDetachEnabled: EditorState.detachInstance(state).some,
+      isDetachEnabled: InstanceComposition.isDetachable(document, node.name),
       /*
        * `componentAssets` の使用数ではなく、まとめて選ぶときと同じ集め方で数える。
        * あちらは部品定義の中の参照も数えるので、押した結果選ばれる件数と食い違う。
@@ -781,7 +782,7 @@ export const SelectionControls = {
       });
     }
     return Option.map(DesignDocument.findNode(document, name), (node) =>
-      nodeControls(state, node),
+      nodeControls(document, node),
     );
   },
 } as const;
