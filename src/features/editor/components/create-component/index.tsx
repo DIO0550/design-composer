@@ -1,4 +1,5 @@
 import { type ReactElement, useState } from "react";
+import { DesignDocument } from "@/domains/design-document";
 import { Componentization } from "@/features/editor/domains/componentization";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
@@ -21,10 +22,10 @@ const Labels = {
 /**
  * 打った名前では作れないときに、ボタンの `title` へ出す理由（挿入・解除のボタンと同じ扱い）。
  *
- * 規則違反と重複を書き分けないのは、`EditorState.createComponent` が
- * 「その部品化は存在しない」を `Option` で返すだけで理由を持たないため。
- * 書き分けるには失敗の種別を UI まで運ぶことになり、押せるかを部品化そのものに
- * 答えさせている形（`isCreatable`）を崩す。
+ * 規則違反と重複を書き分けないのは、`DesignDocument.isUsableName` が可否だけを
+ * 返すため。ドメイン側は理由（`invalid-name` / `duplicate-name`）を持っているが、
+ * 書き分けるにはそれを UI まで運ぶことになり、仕様（docs/06-ui.md「部品化」）が
+ * 求めていない中間状態のエラー表示を発明することになる。
  */
 const UnusableNameReason = "使える部品名を入れると作成できます";
 
@@ -122,10 +123,12 @@ function CreateButton({
  *   作れない名前を打っている間、作成ボタンは理由付きで押せない
  */
 function ReadyBody({
-  state,
+  designDocument,
+  isFrozen,
   onCreate,
 }: Readonly<{
-  state: EditorState;
+  designDocument: DesignDocument;
+  isFrozen: boolean;
   onCreate: (componentName: string) => void;
 }>): ReactElement {
   const [draft, setDraft] = useState<Option<string>>(Option.none);
@@ -136,12 +139,20 @@ function ReadyBody({
 
   const componentName = draft.value;
   /*
-   * その名前で作れるかは、部品化そのものに答えさせる。失敗の条件（識別子の規則・
-   * 名前空間での重複）を書き写すと `DesignDocument.createComponent` と二重管理になり、
-   * 片方だけ変わったときにボタンの出方と結果が食い違う
+   * その名前を付けられるかは、部品化と同じ判定に答えさせる。失敗の条件（識別子の
+   * 規則・名前空間での重複）を書き写すと `DesignDocument.createComponent` と
+   * 二重管理になり、片方だけ変わったときにボタンの出方と結果が食い違う
    * （`SelectionControls` の `isDetachEnabled` と同じ扱い）。
    */
-  const isCreatable = EditorState.createComponent(state, componentName).some;
+  const isUsableName = DesignDocument.isUsableName(
+    designDocument,
+    componentName,
+  );
+  /*
+   * 凍結中（#155）を重ねるのは、左ペインが `inert` のまま描かれ続けるため。
+   * ここで見ないと、押せない状態のボタンが押せる見た目で残る。
+   */
+  const isCreatable = !isFrozen && isUsableName;
 
   return (
     <>
@@ -164,7 +175,8 @@ function ReadyBody({
       />
       <CreateButton
         isEnabled={isCreatable}
-        reason={isCreatable ? undefined : UnusableNameReason}
+        // 理由を添えるのは名前が理由のときだけ。凍結中は左ペインの見出しが名乗る
+        reason={isUsableName ? undefined : UnusableNameReason}
         onClick={() => onCreate(componentName)}
       />
     </>
@@ -195,7 +207,8 @@ export function CreateComponent({
       {componentization.kind === "ready" ? (
         <ReadyBody
           key={componentization.sourceName}
-          state={state}
+          designDocument={EditorState.document(state)}
+          isFrozen={EditorState.isFileInvalid(state)}
           onCreate={onCreate}
         />
       ) : (

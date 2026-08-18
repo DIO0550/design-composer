@@ -132,9 +132,10 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
       return Option.unwrapOr(EditorState.selectAllInstances(state), state);
     case "create_component":
       /*
-       * 部品にできない選択・使えない名前では木は変わらない
+       * 部品にできない選択・使えない名前・ファイルが不正な間は木は変わらない
        * （EditorState.createComponent の `none`）。部品化のボタンは
-       * `EditorState.createComponent(state, 下書き).some` が偽の間は押せないため、
+       * `Componentization.forSelection` が `ready` でない・
+       * `DesignDocument.isUsableName(下書き)` が偽・凍結中のいずれかの間は押せないため、
        * 画面の操作からこの `none` には到達しない。
        */
       return Option.unwrapOr(
