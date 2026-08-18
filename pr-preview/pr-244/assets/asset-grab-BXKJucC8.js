@@ -1,0 +1,1 @@
+import{n as e}from"./chunk-BneVvdWh.js";import{M as t,j as n}from"./primitive-schema-Ke4zSQuu.js";function r(e={}){return{dragged:n.none,onGrab:()=>{},...e}}function i(e){return r({dragged:n.some({kind:`instance`,componentName:e})})}var a=e((()=>{t()}));export{a as n,r,i as t};
