@@ -1,10 +1,10 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
 import type { ComponentSet } from "@/domains/component";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import { EditorState } from "@/features/editor/domains/editor-state";
-import { type InstanceActions, PropertyPanel } from "../index";
+import { renderPanel } from "./setup";
 
 /**
  * インスタンスを選んだときの右ペイン
@@ -61,24 +61,6 @@ function setupState(): EditorState {
         },
       ],
     }),
-  );
-}
-
-function renderPanel(
-  state: EditorState,
-  instance: InstanceActions = {
-    goToSource: vi.fn(),
-    selectAllInstances: vi.fn(),
-    detach: vi.fn(),
-  },
-) {
-  render(
-    <PropertyPanel
-      state={state}
-      instance={instance}
-      onEditProp={vi.fn()}
-      onClearSelection={vi.fn()}
-    />,
   );
 }
 

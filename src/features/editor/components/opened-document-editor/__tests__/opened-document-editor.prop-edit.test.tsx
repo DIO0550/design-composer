@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { renderedElement } from "@/features/editor/__tests__/canvas-elements";
 import { segmentOf } from "@/features/editor/__tests__/segmented-controls";
+import { ShorthandLabels } from "@/features/editor/components/property-panel";
 import {
   canvasPane,
   renderOpenedDocument,
@@ -67,4 +68,51 @@ test("セグメントコントロールで並びを変えるとキャンバス�
   await userEvent.click(segmentOf("Direction", "row"));
 
   expect(renderedElement(canvasPane(), "home").style.flexDirection).toBe("row");
+});
+
+test("畳んだ padding の欄を変えると向かい合う 2 辺がまとめて変わる", async () => {
+  await renderOpenedDocument();
+  await selectArtboard("home");
+
+  await userEvent.selectOptions(
+    screen.getByRole("combobox", { name: "Padding Vertical" }),
+    "sm",
+  );
+  await userEvent.click(
+    screen.getByRole("button", { name: ShorthandLabels.perEdge }),
+  );
+
+  expect(
+    ["Padding Top", "Padding Bottom", "Padding Right"].map(
+      (name) => screen.getByRole<HTMLSelectElement>("combobox", { name }).value,
+    ),
+  ).toEqual(["sm", "sm", "lg"]);
+});
+
+test("畳んだ padding の欄を変えたあと Ctrl+Z を 1 回押すと両辺が戻る", async () => {
+  /*
+   * 2 辺への書き込みを 1 件の編集にしている根拠がここにある。辺ごとに分けて
+   * 適用すると履歴も 2 段になり、1 回戻したところで上辺だけが `lg` へ戻る。
+   *
+   * 今は `PropEdit` が書き込み先を並びで持つので分けて適用する経路自体が無く、
+   * このテストは実装を局所的に壊しても落ちない。分ける形へ戻したときに
+   * 落ちる場所として置いている。
+   */
+  await renderOpenedDocument();
+  await selectArtboard("home");
+  await userEvent.selectOptions(
+    screen.getByRole("combobox", { name: "Padding Vertical" }),
+    "sm",
+  );
+
+  await userEvent.keyboard("{Control>}z{/Control}");
+  await userEvent.click(
+    screen.getByRole("button", { name: ShorthandLabels.perEdge }),
+  );
+
+  expect(
+    ["Padding Top", "Padding Bottom"].map(
+      (name) => screen.getByRole<HTMLSelectElement>("combobox", { name }).value,
+    ),
+  ).toEqual(["lg", "lg"]);
 });

@@ -1,12 +1,12 @@
-import { render, screen, within } from "@testing-library/react";
-import { expect, test, vi } from "vitest";
+import { screen, within } from "@testing-library/react";
+import { expect, test } from "vitest";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import {
   headingOfName,
   rightPaneHeading,
 } from "@/features/editor/__tests__/inspector-heading";
 import { EditorState } from "@/features/editor/domains/editor-state";
-import { PropertyPanel } from "../index";
+import { renderPanel } from "./setup";
 
 /**
  * 見出しの帯が「何を選んでいるか」を伝えることを見る
@@ -34,21 +34,6 @@ function setupState(): EditorState {
         },
       ],
     }),
-  );
-}
-
-function renderPanel(state: EditorState) {
-  render(
-    <PropertyPanel
-      instance={{
-        goToSource: vi.fn(),
-        selectAllInstances: vi.fn(),
-        detach: vi.fn(),
-      }}
-      state={state}
-      onEditProp={vi.fn()}
-      onClearSelection={vi.fn()}
-    />,
   );
 }
 

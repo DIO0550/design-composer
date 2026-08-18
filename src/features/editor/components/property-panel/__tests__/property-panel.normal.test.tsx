@@ -1,11 +1,11 @@
-import { render, screen, within } from "@testing-library/react";
-import { expect, test, vi } from "vitest";
+import { screen, within } from "@testing-library/react";
+import { expect, test } from "vitest";
 import { ColorSwatchTestId } from "@/components/color-swatch";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import type { TokenSet } from "@/domains/token";
 import { pressedSegmentsOf } from "@/features/editor/__tests__/segmented-controls";
 import { EditorState } from "@/features/editor/domains/editor-state";
-import { PropertyPanel } from "../index";
+import { renderPanel } from "./setup";
 
 /*
  * 色のトークンに `md` を足してある。`gap`（spacing）にも `md` があるので、
@@ -50,21 +50,6 @@ function setupState(): EditorState {
         },
       ],
     }),
-  );
-}
-
-function renderPanel(state: EditorState) {
-  render(
-    <PropertyPanel
-      instance={{
-        goToSource: vi.fn(),
-        selectAllInstances: vi.fn(),
-        detach: vi.fn(),
-      }}
-      state={state}
-      onEditProp={vi.fn()}
-      onClearSelection={vi.fn()}
-    />,
   );
 }
 
@@ -180,13 +165,16 @@ test("数値のトークン参照には解決後の値が欄の説明として�
 
 test("実在しないトークンを指す数値の prop には解決値が出ない", () => {
   /*
-   * 同じ画面の `Padding Right` が対照（`sm` → 8）。何も出ない入力で確かめると、
-   * 併記を丸ごと消しても通ってしまう。
+   * 同じ画面の `Padding Horizontal` が対照（左右とも `sm` → 8）。何も出ない入力で
+   * 確かめると、併記を丸ごと消しても通ってしまう。
    */
   renderPanel(EditorState.select(setupState(), "home-odd"));
 
   expect(
-    screen.getByRole("combobox", { name: "Padding Right", description: "8" }),
+    screen.getByRole("combobox", {
+      name: "Padding Horizontal",
+      description: "8",
+    }),
   ).toBeDefined();
   expect(
     screen
@@ -251,9 +239,9 @@ test("既定を持たない未指定の prop は未指定とだけ出る", () =>
 });
 
 test("prop 名は camelCase の切れ目で語に分けた表示名になる", () => {
-  renderPanel(EditorState.select(setupState(), "home"));
+  renderPanel(EditorState.select(setupState(), "home-body"));
 
-  expect(screen.getByRole("combobox", { name: "Padding Right" })).toBeDefined();
+  expect(screen.getByRole("group", { name: "Width Mode" })).toBeDefined();
 });
 
 test("group ごとのセクションが見出しとして出る", () => {

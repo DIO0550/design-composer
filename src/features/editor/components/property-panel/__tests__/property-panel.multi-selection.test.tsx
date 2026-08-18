@@ -1,9 +1,9 @@
-import { render, screen } from "@testing-library/react";
-import { expect, test, vi } from "vitest";
+import { screen } from "@testing-library/react";
+import { expect, test } from "vitest";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
-import { PropertyPanel } from "../index";
+import { renderPanel } from "./setup";
 
 /**
  * 複数選んでいるときの右ペイン（docs/06-ui.md「選択」）。
@@ -37,21 +37,6 @@ function setupMultiSelected(): EditorState {
     EditorState.selectAllInstances(
       EditorState.select(setupState(), "home-login"),
     ),
-  );
-}
-
-function renderPanel(state: EditorState) {
-  render(
-    <PropertyPanel
-      state={state}
-      instance={{
-        goToSource: vi.fn(),
-        selectAllInstances: vi.fn(),
-        detach: vi.fn(),
-      }}
-      onEditProp={vi.fn()}
-      onClearSelection={vi.fn()}
-    />,
   );
 }
 
