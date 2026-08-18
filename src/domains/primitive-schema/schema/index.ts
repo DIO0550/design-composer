@@ -1,4 +1,4 @@
-import type { PropDefinitionRecord } from "../prop-definition";
+import { type PropDefinitionRecord, ShorthandNames } from "../prop-definition";
 
 /** 走査に使う実行時のリスト。`PrimitiveType` はここから導出し、二重管理しない。 */
 export const PrimitiveTypes = ["Box", "Text"] as const;
@@ -28,10 +28,30 @@ export const BoxSchema = {
       group: "layout",
     },
     gap: { domain: "token", tokenKind: "spacing", group: "layout" },
-    paddingTop: { domain: "token", tokenKind: "spacing", group: "layout" },
-    paddingRight: { domain: "token", tokenKind: "spacing", group: "layout" },
-    paddingBottom: { domain: "token", tokenKind: "spacing", group: "layout" },
-    paddingLeft: { domain: "token", tokenKind: "spacing", group: "layout" },
+    paddingTop: {
+      domain: "token",
+      tokenKind: "spacing",
+      group: "layout",
+      shorthand: { name: ShorthandNames.Padding, side: "top" },
+    },
+    paddingRight: {
+      domain: "token",
+      tokenKind: "spacing",
+      group: "layout",
+      shorthand: { name: ShorthandNames.Padding, side: "right" },
+    },
+    paddingBottom: {
+      domain: "token",
+      tokenKind: "spacing",
+      group: "layout",
+      shorthand: { name: ShorthandNames.Padding, side: "bottom" },
+    },
+    paddingLeft: {
+      domain: "token",
+      tokenKind: "spacing",
+      group: "layout",
+      shorthand: { name: ShorthandNames.Padding, side: "left" },
+    },
     align: {
       domain: "enum",
       values: ["start", "center", "end", "stretch"],
