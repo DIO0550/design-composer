@@ -425,6 +425,21 @@
     "name": "名前が長いノードを選択中"
   },
   {
+    "id": "features-editor-propertypanel--padding-mixed",
+    "title": "features/editor/PropertyPanel",
+    "name": "padding が不揃いな Box を選択中"
+  },
+  {
+    "id": "features-editor-propertypanel--padding-per-edge",
+    "title": "features/editor/PropertyPanel",
+    "name": "padding を辺ごとに出した Box を選択中"
+  },
+  {
+    "id": "features-editor-propertypanel--padding-uniform",
+    "title": "features/editor/PropertyPanel",
+    "name": "padding が揃っている Box を選択中"
+  },
+  {
     "id": "features-editor-propertypanel--selected",
     "title": "features/editor/PropertyPanel",
     "name": "artboard を選択中"
