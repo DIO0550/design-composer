@@ -151,6 +151,11 @@ export const BoxElement = {
       CssDeclaration.create("display", "flex"),
       CssDeclaration.create("flex-direction", String(props.direction)),
       ...tokenDeclarations("gap", props.gap, tokens),
+      /*
+       * prop 名と辺の対応は、スキーマの `shorthand` 宣言（`paddingTop` は padding の
+       * 上辺、など）と同じ事実をここでも書いている。宣言から導くと CSS 出力が
+       * スキーマ走査に依存するので今は分けてある（片方を直したらもう片方も直す）。
+       */
       ...Padding.declarations(
         Padding.create({
           top: props.paddingTop,

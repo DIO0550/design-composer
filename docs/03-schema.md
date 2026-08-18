@@ -33,6 +33,7 @@
 | `default` | デフォルト値。省略時は「なし」 |
 | `group` | プロパティパネルのセクション（layout / size / appearance 等） |
 | `enabledWhen` | 条件付き有効。`{ prop: "...", equals: "..." }` の**単純等値のみ**（条件式言語は作らない） |
+| `shorthand` | 4 辺の longhand であることの宣言。`{ name: "padding", edge: "top" }` |
 
 - パネルの表示順は定数の定義順をそのまま使う。order フィールドは持たない
 - 表示名フィールドは持たない。prop 名をパネル側で機械的に整形して表示する
@@ -75,6 +76,7 @@
 | `overflow` | enum | `visible` / `clip` | `visible` |
 
 - padding は 4 方向個別。ドキュメントが持つのは4方向の値だけで、プロパティパネルでの畳み方（Figma と同じ垂直 / 水平への切り替え）は表示の都合なので持たない
+  - ただし**「その prop がどの shorthand のどの辺の longhand か」はスキーマが `shorthand` で宣言する**。これは prop 自身の性質（`paddingTop` は padding の上辺である）であって、今そのパネルが畳んでいるかという画面の状態ではない。パネルはこの宣言を使って 4 prop を 1 行にまとめ、畳むかどうかは画面側だけで決める
 - border 系は初期セットに含めない（スキーマへの追加で対応可能）
 - artboard は Box スキーマを流用するが、`widthMode` / `heightMode` は `fixed` に固定され、`width` / `height` が必須、`overflow` のデフォルトは `clip`
 

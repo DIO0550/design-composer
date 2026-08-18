@@ -1,6 +1,8 @@
 import { type PropAssignment, Props, type PropValue } from "@/domains/node";
+import type { Side } from "@/domains/side";
 import type { TokenKind, TokenRef } from "@/domains/token";
 import { TokenSet } from "@/domains/token";
+import type { ValueOf } from "@/types/ValueOf";
 
 /**
  * その prop が編集可能になる条件。
@@ -12,11 +14,35 @@ export type EnabledWhen = Readonly<{
   equals: PropValue;
 }>;
 
+/** 4 辺の longhand をまとめて指す名前（CSS の shorthand と同じ語）。 */
+export const ShorthandNames = {
+  Padding: "padding",
+} as const;
+
+/** shorthand の名前。 */
+export type ShorthandName = ValueOf<typeof ShorthandNames>;
+
+/**
+ * その prop が、どの shorthand のどの辺にあたるか。
+ *
+ * 宣言するのは prop 自身の性質（`paddingTop` は padding の上辺の longhand である）で、
+ * パネルがそれを畳んで見せているかどうかは持たない
+ * （docs/03「畳み方は表示の都合なので持たない」）。
+ *
+ * 名前を素の `string` にしないのは、4 辺のうち 1 つだけ綴りを間違えても型では落ちず、
+ * 行が 2 つに割れて画面に出るまで気づけないため。
+ */
+export type PropShorthand = Readonly<{
+  name: ShorthandName;
+  side: Side;
+}>;
+
 /** prop 定義のうち、値の決め方（`domain`）によらず共通の部分。 */
 type PropDefinitionBase = Readonly<{
   default?: PropValue;
   group: string;
   enabledWhen?: EnabledWhen;
+  shorthand?: PropShorthand;
 }>;
 
 /** 決まった選択肢から選ぶ prop。取りうる値を `values` が列挙する。 */

@@ -2,11 +2,17 @@ export type {
   EnabledWhen,
   EnumPropDefinition,
   LiteralPropDefinition,
+  PropShorthand,
   PropValidationError,
   PropValidationErrorKind,
+  ShorthandName,
   TokenPropDefinition,
 } from "./prop-definition";
-export { PropDefinition, PropDefinitionRecord } from "./prop-definition";
+export {
+  PropDefinition,
+  PropDefinitionRecord,
+  ShorthandNames,
+} from "./prop-definition";
 export type { PrimitiveType } from "./schema";
 export {
   BoxSchema,

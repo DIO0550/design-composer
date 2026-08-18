@@ -104,7 +104,7 @@ export async function invalidateFileExternally(
     DesignDocument.applyPropEdit(
       SampleDocument,
       "home-title",
-      PropEdit.set("typography", "居ないタイポグラフィ"),
+      PropEdit.set(["typography"], "居ないタイポグラフィ"),
     ),
   );
   await changeFileExternally({

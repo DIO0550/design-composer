@@ -503,7 +503,7 @@ export const DesignDocument = {
     return DesignDocument.applyPropEdit(
       document,
       name,
-      PropEdit.set(size.axis, size.length),
+      PropEdit.set([size.axis], size.length),
     );
   },
 

@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
 import type { AxisLength } from "@/domains/axis-length";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import { PropEdit } from "@/domains/node";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 
@@ -82,7 +83,7 @@ test("複数選んでいる間は部品化できない", () => {
 });
 
 test("複数選んでいる間は prop を編集できない", () => {
-  const edit = { name: "label", value: Option.some("送信") } as const;
+  const edit = PropEdit.set(["label"], "送信");
 
   expect(EditorState.applyPropEdit(setupSingleSelected(), edit).some).toBe(
     true,

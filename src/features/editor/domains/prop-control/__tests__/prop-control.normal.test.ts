@@ -4,7 +4,12 @@ import type { Node } from "@/domains/node";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
 import { SelectionControls } from "../index";
-import { colorOfControl, resolvedValueOfControl, sectionsOf } from "./setup";
+import {
+  colorOfControl,
+  controlsIn,
+  resolvedValueOfControl,
+  sectionsOf,
+} from "./setup";
 
 function setupState(children: readonly Node[], selected: string): EditorState {
   return EditorState.select(
@@ -23,7 +28,7 @@ function setupState(children: readonly Node[], selected: string): EditorState {
 
 function controlOf(state: EditorState, prop: string) {
   return sectionsOf(state)
-    .flatMap((section) => section.controls)
+    .flatMap(controlsIn)
     .find((control) => control.prop === prop);
 }
 
@@ -223,11 +228,11 @@ test("セクション内のコントロールはスキーマの宣言順に並�
     (section) => section.group === "appearance",
   );
 
-  expect(appearance?.controls.map((control) => control.prop)).toEqual([
-    "typography",
-    "color",
-    "align",
-  ]);
+  expect(
+    appearance === undefined
+      ? undefined
+      : controlsIn(appearance).map((control) => control.prop),
+  ).toEqual(["typography", "color", "align"]);
 });
 
 test("artboard を選ぶと Box の prop を編集するコントロールが出る", () => {

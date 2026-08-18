@@ -1,14 +1,18 @@
-import { type ReactElement, useId } from "react";
+import { type ReactElement, useId, useState } from "react";
 import { ColorSwatch } from "@/components/color-swatch";
 import { SegmentedControl } from "@/components/segmented-control";
 import type { PropEdit } from "@/domains/node";
+import type { Side, SidePair } from "@/domains/side";
 import { EditorLayout } from "@/features/editor/components/editor-layout";
 import { TypeGlyph } from "@/features/editor/components/type-glyph";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import {
   PropControl,
   type PropControlInput,
+  type PropControlRow,
   type PropControlSection,
+  PropPairControl,
+  PropShorthandControl,
   SelectionControls,
 } from "@/features/editor/domains/prop-control";
 import type {
@@ -22,10 +26,13 @@ const FieldClass =
   "h-7 w-full rounded-md border border-gray-300 px-2 text-[11px]";
 
 /**
- * ラベル欄の幅。UI 案の 52px では `Width Mode` / `Padding Bottom` が収まらない。
+ * ラベル欄の幅。UI 案の 52px では `Width Mode` / `Height Mode` が収まらず、
+ * 束ねた行はこの幅に見出しと切り替えボタンを縦に積む。
  * 変えたら `ControlOffsetClass` も一緒に動かす（片方だけ変えると字下げがずれる）。
  */
-const LabelClass = "w-[5.25rem] shrink-0 truncate text-[11px] text-gray-500";
+const LabelWidthClass = "w-[5.25rem] shrink-0";
+
+const LabelClass = `${LabelWidthClass} truncate text-[11px] text-gray-500`;
 
 /**
  * ラベル欄の右、コントロールの左端へ揃えるための字下げ。
@@ -46,11 +53,76 @@ function unsetLabel(control: PropControl): string {
     : "未指定";
 }
 
-/** ラベルと入力欄を結び付ける識別子と、その prop のコントロール。 */
+/** 2 辺が食い違っているときに、値の代わりに欄へ出す綴り。 */
+const MixedLabel = "不揃い";
+
+/**
+ * 入力欄が要るもの。
+ *
+ * `PropControl` そのものではなく**解釈済みの値と編集を作る口**で受ける。
+ * 畳んだ欄は 1 つの prop に対応せず、不揃いという状態も `PropControl.value`
+ * （`Option<PropValue>`）では表せないため、辺のコントロールを合成して
+ * 偽のコントロールを作らずに済ませる。
+ */
 type FieldBinding = Readonly<{
   labelledBy: string;
-  control: PropControl;
+  /** 今入っている値。未設定・不揃いなら空文字。 */
+  value: string;
+  /** 値が入っていないときに欄へ出す綴り。 */
+  unsetLabel: string;
+  onChangeRaw: (raw: string) => void;
 }>;
+
+/**
+ * 1 prop の編集欄が要るもの。
+ *
+ * @param labelledBy ラベルと欄を結び付ける識別子
+ * @param control 編集したい prop の編集欄
+ * @param onEdit 作った編集の渡し先
+ * @returns そのコントロールから編集を作る入力欄の口
+ */
+function fieldOf(
+  labelledBy: string,
+  control: PropControl,
+  onEdit: (edit: PropEdit) => void,
+): FieldBinding {
+  return {
+    labelledBy,
+    value: Option.unwrapOr(Option.map(control.value, String), ""),
+    unsetLabel: unsetLabel(control),
+    onChangeRaw: (raw) => onEdit(PropControl.editFrom(control, raw)),
+  };
+}
+
+/**
+ * 畳んだ欄が要るもの。編集は 2 辺への 1 件になる。
+ *
+ * 不揃いのときに空欄として出すのは、どちらの辺の値を出しても
+ * 残りの辺と食い違うため。代わりに未選択スロットの綴りを差し替える。
+ *
+ * @param labelledBy ラベルと欄を結び付ける識別子
+ * @param pair 編集したい畳んだ欄
+ * @param onEdit 作った編集の渡し先
+ * @returns 2 辺へまとめて書く入力欄の口
+ */
+function pairFieldOf(
+  labelledBy: string,
+  pair: PropPairControl,
+  onEdit: (edit: PropEdit) => void,
+): FieldBinding {
+  const value = PropPairControl.value(pair);
+  const [first] = pair.sides;
+
+  return {
+    labelledBy,
+    value:
+      value.kind === "uniform"
+        ? Option.unwrapOr(Option.map(value.value, String), "")
+        : "",
+    unsetLabel: value.kind === "uniform" ? unsetLabel(first) : MixedLabel,
+    onChangeRaw: (raw) => onEdit(PropPairControl.editFrom(pair, raw)),
+  };
+}
 
 /**
  * トークン名から選ぶ入力欄。
@@ -63,26 +135,20 @@ function TokenSelect({
   field,
   names,
   describedBy,
-  onEdit,
 }: Readonly<{
   field: FieldBinding;
   names: readonly string[];
   describedBy?: string;
-  onEdit: (edit: PropEdit) => void;
 }>): ReactElement {
-  const control = field.control;
-
   return (
     <select
       aria-labelledby={field.labelledBy}
       aria-describedby={describedBy}
       className={FieldClass}
-      value={Option.unwrapOr(Option.map(control.value, String), "")}
-      onChange={(event) =>
-        onEdit(PropControl.editFrom(control, event.target.value))
-      }
+      value={field.value}
+      onChange={(event) => field.onChangeRaw(event.target.value)}
     >
-      <option value="">{unsetLabel(control)}</option>
+      <option value="">{field.unsetLabel}</option>
       {names.map((name) => (
         <option key={name} value={name}>
           {name}
@@ -93,8 +159,21 @@ function TokenSelect({
 }
 
 /**
- * 数値のトークンを選ぶ入力欄。解決後の値を右に添える（UI 案 docs/Design Composer.html
- * の `gap` は `lg` の右端に `20`、`radius` は `md` の右端に `8` を出す）。
+ * 解決値の添え方。
+ *
+ * `beside` は全幅の行で、UI 案 docs/Design Composer.html の `gap`（`lg` の右端に `20`）
+ * と同じ並び。`below` は半幅セル用で、横に並べると `<select>` に残る幅が
+ * 20px ほどしか無く、トークン名が矢印に食われて読めなくなる（実表示で確認）。
+ */
+type ResolvedValuePlacement = "beside" | "below";
+
+const ResolvedValueLayouts = {
+  beside: "flex min-w-0 items-center gap-2",
+  below: "flex min-w-0 flex-col gap-0.5",
+} as const satisfies Readonly<Record<ResolvedValuePlacement, string>>;
+
+/**
+ * 数値のトークンを選ぶ入力欄。解決後の値を添える。
  *
  * 読み上げへ繋ぐのは、この数値が `<select>` の読み上げ（トークン名だけ）からは
  * 得られない情報だから。色の見本が `aria-hidden` なのは、何の色かを隣のトークン名が
@@ -103,35 +182,34 @@ function TokenSelect({
  * Why not: 数値を欄の内側に置かない。理由は色の見本と同じで、ネイティブの
  * `<select>` の中には要素を描けない。
  *
- * 欄と数値を横に並べているのは class の違いにしかならないので、**崩れに気づける
- * 手段は Storybook の視覚差分だけ**（happy-dom は Tailwind を解決しない）。
+ * 添える位置は class の違いにしかならないので、**崩れに気づける手段は Storybook の
+ * 視覚差分だけ**（happy-dom は Tailwind を解決しない）。
  *
- * @returns 解決できたトークンならその値を右に添えた選択欄、解決できなければ選択欄だけ
+ * @returns 解決できたトークンならその値を添えた選択欄、解決できなければ選択欄だけ
  */
 function NumericTokenField({
   field,
   input,
-  onEdit,
+  placement,
 }: Readonly<{
   field: FieldBinding;
   input: Extract<PropControlInput, { kind: "numericToken" }>;
-  onEdit: (edit: PropEdit) => void;
+  placement: ResolvedValuePlacement;
 }>): ReactElement {
   const describedBy = useId();
   const resolvedValue = input.resolvedValue;
 
   if (!resolvedValue.some) {
-    return <TokenSelect field={field} names={input.names} onEdit={onEdit} />;
+    return <TokenSelect field={field} names={input.names} />;
   }
   return (
-    <div className="flex items-center gap-2">
+    <div className={ResolvedValueLayouts[placement]}>
       <TokenSelect
         field={field}
         names={input.names}
         describedBy={describedBy}
-        onEdit={onEdit}
       />
-      <span id={describedBy} className="text-[10px] text-gray-400">
+      <span id={describedBy} className="shrink-0 text-[10px] text-gray-400">
         {resolvedValue.value}
       </span>
     </div>
@@ -147,30 +225,27 @@ function NumericTokenField({
 function LiteralInput({
   field,
   inputType,
-  onEdit,
 }: Readonly<{
   field: FieldBinding;
   inputType: "number" | "text";
-  onEdit: (edit: PropEdit) => void;
 }>): ReactElement {
-  const control = field.control;
-
   return (
     <input
       aria-labelledby={field.labelledBy}
       type={inputType}
       className={FieldClass}
-      value={Option.unwrapOr(Option.map(control.value, String), "")}
-      placeholder={unsetLabel(control)}
-      onChange={(event) =>
-        onEdit(PropControl.editFrom(control, event.target.value))
-      }
+      value={field.value}
+      placeholder={field.unsetLabel}
+      onChange={(event) => field.onChangeRaw(event.target.value)}
     />
   );
 }
 
 /**
- * prop 1 件の入力欄。入力の形は値域から決まる。
+ * 1 欄分の入力欄。入力の形は値域から決まる。
+ *
+ * 値と編集の作り方を `FieldBinding` で受けるので、1 prop の行と畳んだ欄の
+ * どちらからも同じものを描ける（欄の見た目を 2 通りに割らない）。
  *
  * 戻り値を `ReactElement` と書いているのは、入力の種類を足して `case` を足し忘れた
  * ときにコンパイルエラーにするため（`rules/coding.md`「列挙した状態の網羅を型で強制する」）。
@@ -179,28 +254,37 @@ function LiteralInput({
  */
 function PropField({
   field,
-  onEdit,
+  input,
+  resolvedValuePlacement,
 }: Readonly<{
   field: FieldBinding;
-  onEdit: (edit: PropEdit) => void;
+  input: PropControlInput;
+  resolvedValuePlacement: ResolvedValuePlacement;
 }>): ReactElement {
-  const control = field.control;
-  const input = control.input;
-
   switch (input.kind) {
+    /*
+     * セグメントは `Option` で選択を表すので、空文字を未選択として読み替える
+     * （`PropControl.editFrom` が空欄を「未設定へ戻す」と読むのと同じ約束事）。
+     */
     case "enum":
       return (
         <SegmentedControl
           labelledBy={field.labelledBy}
           options={input.values}
-          value={Option.map(control.value, String)}
-          onChange={(next) => onEdit(PropControl.edit(control, next))}
+          value={field.value === "" ? Option.none : Option.some(field.value)}
+          onChange={(next) => field.onChangeRaw(Option.unwrapOr(next, ""))}
         />
       );
     case "token":
-      return <TokenSelect field={field} names={input.names} onEdit={onEdit} />;
+      return <TokenSelect field={field} names={input.names} />;
     case "numericToken":
-      return <NumericTokenField field={field} input={input} onEdit={onEdit} />;
+      return (
+        <NumericTokenField
+          field={field}
+          input={input}
+          placement={resolvedValuePlacement}
+        />
+      );
     /*
      * Why not: 見本を欄の内側に置かない（UI 案 docs/Design Composer.html は内側）。
      * ネイティブの `<select>` の中には要素を描けず、内側に置くには一覧そのものを
@@ -208,15 +292,15 @@ function PropField({
      */
     case "colorToken":
       return (
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 items-center gap-2">
           {input.color.some ? <ColorSwatch color={input.color.value} /> : null}
-          <TokenSelect field={field} names={input.names} onEdit={onEdit} />
+          <TokenSelect field={field} names={input.names} />
         </div>
       );
     case "number":
-      return <LiteralInput field={field} inputType="number" onEdit={onEdit} />;
+      return <LiteralInput field={field} inputType="number" />;
     case "text":
-      return <LiteralInput field={field} inputType="text" onEdit={onEdit} />;
+      return <LiteralInput field={field} inputType="text" />;
   }
 }
 
@@ -265,7 +349,11 @@ function PropRow({
           {CaseStyle.toCapitalCase(control.prop)}
         </span>
         <div className="min-w-0 flex-1">
-          <PropField field={{ labelledBy, control }} onEdit={onEdit} />
+          <PropField
+            field={fieldOf(labelledBy, control, onEdit)}
+            input={control.input}
+            resolvedValuePlacement="beside"
+          />
         </div>
       </div>
       {showsUnsetNote ? (
@@ -275,6 +363,238 @@ function PropRow({
       ) : null}
     </div>
   );
+}
+
+/**
+ * 半幅セルの左に出す辺の頭文字（UI 案 docs/Design Composer.html の `T` / `R` / `B` / `L`）。
+ * 辺を足して頭文字を足し忘れると、ここがコンパイルエラーになる。
+ *
+ * 見える側だけの手がかりなので（読み上げ名は別に持つ）、**消えても気づける手段は
+ * Storybook の視覚差分だけ**（happy-dom は `aria-hidden` の字面を検査できない）。
+ */
+const SideGlyphs = {
+  top: "T",
+  right: "R",
+  bottom: "B",
+  left: "L",
+} as const satisfies Readonly<Record<Side, string>>;
+
+/**
+ * 畳んだ欄の左に出す頭文字。UI 案は畳んだ状態を描いていないので、
+ * 同じ行の辺の頭文字と同じ流儀（1 文字）で決めた。
+ * 消えても気づける手段は `SideGlyphs` と同じく視覚差分だけ。
+ */
+const SidePairGlyphs = {
+  vertical: "V",
+  horizontal: "H",
+} as const satisfies Readonly<Record<SidePair, string>>;
+
+/** 束ねた行が出す綴り。テストとストーリーが同じ綴りを書き写さずに済むよう公開する。 */
+export const ShorthandLabels = {
+  /** 4 辺を個別に出すかを切り替えるボタン。押されている間は 4 辺が出る。 */
+  perEdge: "辺ごと",
+} as const;
+
+/**
+ * 束ねた行の半幅セル 1 つ分の器。
+ *
+ * 見える文字は 1 文字（`T`）で、辺の綴りは読み上げ専用に別途置く。1 文字だけでは
+ * どの辺かが読み上げから分からず、UI 案の半幅セルには綴りを置く幅が無いため。
+ *
+ * @returns 頭文字と入力欄を横に並べたセル
+ */
+function ShorthandCell({
+  glyph,
+  labelId,
+  label,
+  children,
+}: Readonly<{
+  glyph: string;
+  labelId: string;
+  label: string;
+  children: ReactElement;
+}>): ReactElement {
+  return (
+    <div className="flex min-w-0 items-center gap-1.5">
+      <span aria-hidden className="shrink-0 text-[10px] text-gray-400">
+        {glyph}
+      </span>
+      <span id={labelId} className="sr-only">
+        {label}
+      </span>
+      <div className="min-w-0 flex-1">{children}</div>
+    </div>
+  );
+}
+
+/*
+ * セルの読み上げ名は**行の見出し + 自分の辺**で組み立てる（`Padding` + `Right`）。
+ * 行の見出しを指す id を繋いでいるので、見出しを消すと読み上げ名も欠ける
+ * （束ねた行の可視ラベルが誰にも見られていない状態を作らない）。
+ * shorthand 名をセルごとに組み立て直さずに済むのも同じ理由。
+ */
+
+/**
+ * 1 辺分のセル。
+ *
+ * @returns 辺の頭文字とその辺の入力欄を並べたセル
+ */
+function ShorthandSideCell({
+  side,
+  rowLabelId,
+  control,
+  onEdit,
+}: Readonly<{
+  side: Side;
+  rowLabelId: string;
+  control: PropControl;
+  onEdit: (edit: PropEdit) => void;
+}>): ReactElement {
+  const labelId = useId();
+
+  return (
+    <ShorthandCell
+      glyph={SideGlyphs[side]}
+      labelId={labelId}
+      label={CaseStyle.toCapitalCase(side)}
+    >
+      <PropField
+        field={fieldOf(`${rowLabelId} ${labelId}`, control, onEdit)}
+        input={control.input}
+        resolvedValuePlacement="below"
+      />
+    </ShorthandCell>
+  );
+}
+
+/**
+ * 畳んだ 1 欄分のセル。
+ *
+ * @returns 組の頭文字と、2 辺へまとめて書く入力欄を並べたセル
+ */
+function ShorthandPairCell({
+  pair,
+  rowLabelId,
+  onEdit,
+}: Readonly<{
+  pair: PropPairControl;
+  rowLabelId: string;
+  onEdit: (edit: PropEdit) => void;
+}>): ReactElement {
+  const labelId = useId();
+
+  return (
+    <ShorthandCell
+      glyph={SidePairGlyphs[pair.pair]}
+      labelId={labelId}
+      label={CaseStyle.toCapitalCase(pair.pair)}
+    >
+      <PropField
+        field={pairFieldOf(`${rowLabelId} ${labelId}`, pair, onEdit)}
+        input={PropPairControl.input(pair)}
+        resolvedValuePlacement="below"
+      />
+    </ShorthandCell>
+  );
+}
+
+/**
+ * 4 辺を 1 行にまとめた行（UI 案 docs/Design Composer.html の `padding`）。
+ * 半幅セルを 2 列のグリッドに詰めるところまで UI 案と同じ。
+ *
+ * 既定を畳んだ 2 欄にするのは Figma と同じ形にするため（#230）。UI 案は
+ * 4 辺の状態しか描いていないので、切り替えボタンの見た目はここで決めている。
+ *
+ * 切り替えを `useState` で持つのは、畳んでいるかがドキュメントではなく画面の状態
+ * だから（docs/03「畳み方は表示の都合なので持たない」）。道具の状態であって
+ * ノードの状態ではないので、**同じ行が出続ける間（Box 系を選び直す間）は残る**
+ * （行の `key` が shorthand 名で安定するため）。この行を持たない Text を選ぶと
+ * 行ごと消えるので、戻ったときは畳んだ状態から始まる。
+ *
+ * @returns ラベルと切り替えボタン、右に半幅セルのグリッドを並べた 1 行
+ */
+function ShorthandRow({
+  shorthand,
+  onEdit,
+}: Readonly<{
+  shorthand: PropShorthandControl;
+  onEdit: (edit: PropEdit) => void;
+}>): ReactElement {
+  const rowLabelId = useId();
+  const [isPerEdge, setIsPerEdge] = useState(false);
+
+  return (
+    <div className="flex items-start gap-2">
+      <div
+        className={`${LabelWidthClass} flex flex-col items-start gap-1 text-[11px] text-gray-500`}
+      >
+        <span id={rowLabelId} className="max-w-full truncate">
+          {CaseStyle.toCapitalCase(shorthand.name)}
+        </span>
+        <button
+          type="button"
+          aria-pressed={isPerEdge}
+          onClick={() => setIsPerEdge((current) => !current)}
+          className="rounded border border-gray-300 px-1 py-0.5 text-[10px] text-gray-500 aria-pressed:border-gray-400 aria-pressed:bg-gray-100 aria-pressed:text-gray-900"
+        >
+          {ShorthandLabels.perEdge}
+        </button>
+      </div>
+      <div className="grid min-w-0 flex-1 grid-cols-2 gap-1.5">
+        {isPerEdge
+          ? PropShorthandControl.sides(shorthand).map((side) => (
+              <ShorthandSideCell
+                key={side.side}
+                side={side.side}
+                rowLabelId={rowLabelId}
+                control={side.control}
+                onEdit={onEdit}
+              />
+            ))
+          : PropShorthandControl.pairs(shorthand).map((pair) => (
+              <ShorthandPairCell
+                key={pair.pair}
+                pair={pair}
+                rowLabelId={rowLabelId}
+                onEdit={onEdit}
+              />
+            ))}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * セクションに並ぶ 1 行。
+ *
+ * 戻り値を `ReactElement`（`ReactNode` ではない）と書いているのは、行の種類を
+ * 足して `case` を足し忘れたときにコンパイルエラーにするため。
+ *
+ * @returns 行の種類に応じた 1 行
+ */
+function SectionRow({
+  row,
+  onEdit,
+}: Readonly<{
+  row: PropControlRow;
+  onEdit: (edit: PropEdit) => void;
+}>): ReactElement {
+  switch (row.kind) {
+    case "prop":
+      return <PropRow control={row.control} onEdit={onEdit} />;
+    case "shorthand":
+      return <ShorthandRow shorthand={row.shorthand} onEdit={onEdit} />;
+  }
+}
+
+/**
+ * 行を並びの中で見分ける識別子。
+ *
+ * @param row 識別子が欲しい行
+ * @returns 1 prop の行は prop 名、束ねた行は shorthand 名
+ */
+function rowKey(row: PropControlRow): string {
+  return row.kind === "prop" ? row.control.prop : row.shorthand.name;
 }
 
 /**
@@ -311,8 +631,8 @@ function GroupSection({
   return (
     <div className="flex flex-col gap-2 border-gray-200 border-t pt-3 first:border-t-0 first:pt-0">
       <SectionHeading>{CaseStyle.toCapitalCase(section.group)}</SectionHeading>
-      {section.controls.map((control) => (
-        <PropRow key={control.prop} control={control} onEdit={onEdit} />
+      {section.rows.map((row) => (
+        <SectionRow key={rowKey(row)} row={row} onEdit={onEdit} />
       ))}
     </div>
   );

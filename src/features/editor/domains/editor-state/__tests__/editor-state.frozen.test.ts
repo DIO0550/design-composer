@@ -69,7 +69,7 @@ test("ファイルが不正な間は、選んでいるノードの prop を編�
   expect(
     EditorState.applyPropEdit(
       frozen(selected),
-      PropEdit.set("content", "書き換え"),
+      PropEdit.set(["content"], "書き換え"),
     ),
   ).toStrictEqual(Option.none);
 });
