@@ -25,6 +25,136 @@
     "name": "トークンを選択中"
   },
   {
+    "id": "features-editor-artboardcanvas-artboardframe--current-only",
+    "title": "features/editor/ArtboardCanvas/ArtboardFrame",
+    "name": "今見ている 1 枚（選択は配下のノード）"
+  },
+  {
+    "id": "features-editor-artboardcanvas-artboardframe--default",
+    "title": "features/editor/ArtboardCanvas/ArtboardFrame",
+    "name": "選択なし"
+  },
+  {
+    "id": "features-editor-artboardcanvas-artboardframe--selected",
+    "title": "features/editor/ArtboardCanvas/ArtboardFrame",
+    "name": "選択中"
+  },
+  {
+    "id": "features-editor-artboardcanvas-artboardframelist--artboard-selected",
+    "title": "features/editor/ArtboardCanvas/ArtboardFrameList",
+    "name": "artboard を選択中"
+  },
+  {
+    "id": "features-editor-artboardcanvas-artboardframelist--default",
+    "title": "features/editor/ArtboardCanvas/ArtboardFrameList",
+    "name": "選択なし"
+  },
+  {
+    "id": "features-editor-artboardcanvas-artboardframelist--node-selected",
+    "title": "features/editor/ArtboardCanvas/ArtboardFrameList",
+    "name": "配下のノードを選択中"
+  },
+  {
+    "id": "features-editor-artboardcanvas-artboardlabel--current",
+    "title": "features/editor/ArtboardCanvas/ArtboardLabel",
+    "name": "今見ている 1 枚"
+  },
+  {
+    "id": "features-editor-artboardcanvas-artboardlabel--not-current",
+    "title": "features/editor/ArtboardCanvas/ArtboardLabel",
+    "name": "他の artboard"
+  },
+  {
+    "id": "features-editor-artboardcanvas-canvasbody--artboards",
+    "title": "features/editor/ArtboardCanvas/CanvasBody",
+    "name": "artboard が並ぶ"
+  },
+  {
+    "id": "features-editor-artboardcanvas-canvasbody--compile-failure",
+    "title": "features/editor/ArtboardCanvas/CanvasBody",
+    "name": "コンパイルに失敗"
+  },
+  {
+    "id": "features-editor-artboardcanvas-canvasbody--no-artboards",
+    "title": "features/editor/ArtboardCanvas/CanvasBody",
+    "name": "artboard が 0 枚"
+  },
+  {
+    "id": "features-editor-artboardcanvas-dropmarker--between-columns",
+    "title": "features/editor/ArtboardCanvas/DropMarker",
+    "name": "横並びの子の間"
+  },
+  {
+    "id": "features-editor-artboardcanvas-dropmarker--between-rows",
+    "title": "features/editor/ArtboardCanvas/DropMarker",
+    "name": "縦並びの子の間"
+  },
+  {
+    "id": "features-editor-artboardcanvas-droppositionlabel--at-head",
+    "title": "features/editor/ArtboardCanvas/DropPositionLabel",
+    "name": "先頭へ落ちる"
+  },
+  {
+    "id": "features-editor-artboardcanvas-droppositionlabel--between-children",
+    "title": "features/editor/ArtboardCanvas/DropPositionLabel",
+    "name": "子の間へ落ちる"
+  },
+  {
+    "id": "features-editor-artboardcanvas-droppositionlabel--empty-parent",
+    "title": "features/editor/ArtboardCanvas/DropPositionLabel",
+    "name": "子がいない親へ落ちる"
+  },
+  {
+    "id": "features-editor-artboardcanvas-namestylerule--drop-parent",
+    "title": "features/editor/ArtboardCanvas/NameStyleRule",
+    "name": "ドロップ先の枠"
+  },
+  {
+    "id": "features-editor-artboardcanvas-namestylerule--selection",
+    "title": "features/editor/ArtboardCanvas/NameStyleRule",
+    "name": "選択の枠"
+  },
+  {
+    "id": "features-editor-artboardcanvas-namestylerule--token-referrer",
+    "title": "features/editor/ArtboardCanvas/NameStyleRule",
+    "name": "トークンの参照元の破線"
+  },
+  {
+    "id": "features-editor-artboardcanvas-resizehandlestyle--both-axes",
+    "title": "features/editor/ArtboardCanvas/ResizeHandleStyle",
+    "name": "幅と高さの両方"
+  },
+  {
+    "id": "features-editor-artboardcanvas-resizehandlestyle--width-only",
+    "title": "features/editor/ArtboardCanvas/ResizeHandleStyle",
+    "name": "幅だけ"
+  },
+  {
+    "id": "features-editor-artboardcanvas-resizehandlestyle--zoomed",
+    "title": "features/editor/ArtboardCanvas/ResizeHandleStyle",
+    "name": "倍率 2 倍"
+  },
+  {
+    "id": "features-editor-artboardcanvas-stalecanvasoverlay--default",
+    "title": "features/editor/ArtboardCanvas/StaleCanvasOverlay",
+    "name": "斜線とバッジ"
+  },
+  {
+    "id": "features-editor-artboardcanvas-stalecanvasoverlay--over-content",
+    "title": "features/editor/ArtboardCanvas/StaleCanvasOverlay",
+    "name": "キャンバスの中身に重なる"
+  },
+  {
+    "id": "features-editor-artboardcanvas-textinlineeditor--editing",
+    "title": "features/editor/ArtboardCanvas/TextInlineEditor",
+    "name": "文言を編集中"
+  },
+  {
+    "id": "features-editor-artboardcanvas-textinlineeditor--empty-text",
+    "title": "features/editor/ArtboardCanvas/TextInlineEditor",
+    "name": "文言が空の Text を編集中"
+  },
+  {
     "id": "features-editor-artboardlist--default",
     "title": "features/editor/ArtboardList",
     "name": "選択なし（先頭が今の 1 枚）"
@@ -50,9 +180,9 @@
     "name": "パレット"
   },
   {
-    "id": "features-editor-assetspanel--insert-disabled",
+    "id": "features-editor-assetspanel--grabbed",
     "title": "features/editor/AssetsPanel",
-    "name": "挿せる位置が無い"
+    "name": "行を掴んで運んでいる"
   },
   {
     "id": "features-editor-assetspanel--no-components",
@@ -70,9 +200,9 @@
     "name": "部品がない"
   },
   {
-    "id": "features-editor-componentlist--insert-disabled",
+    "id": "features-editor-componentlist--grabbed",
     "title": "features/editor/ComponentList",
-    "name": "挿せる位置が無い"
+    "name": "行を掴んで運んでいる"
   },
   {
     "id": "features-editor-componentlist--source-of-selection",
@@ -195,9 +325,9 @@
     "name": "Assets（部品のパレット）"
   },
   {
-    "id": "features-editor-leftpane--assets-insert-disabled",
+    "id": "features-editor-leftpane--assets-grabbed",
     "title": "features/editor/LeftPane",
-    "name": "Assets（挿せる位置が無い）"
+    "name": "Assets（行を掴んで運んでいる）"
   },
   {
     "id": "features-editor-leftpane--layers",
@@ -243,6 +373,11 @@
     "id": "features-editor-nodeinserttoolbar--no-selection",
     "title": "features/editor/NodeInsertToolbar",
     "name": "何も選んでいない"
+  },
+  {
+    "id": "features-editor-nodeinserttoolbar--placing-instance",
+    "title": "features/editor/NodeInsertToolbar",
+    "name": "部品を運んでいる"
   },
   {
     "id": "features-editor-openeddocumenteditor--default",
