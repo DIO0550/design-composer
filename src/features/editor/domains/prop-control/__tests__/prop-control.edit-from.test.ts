@@ -4,7 +4,7 @@ import type { Node } from "@/domains/node";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
 import { PropControl } from "../index";
-import { controlNamed, sectionsOf } from "./setup";
+import { controlNamed, controlsIn, sectionsOf } from "./setup";
 
 /** 実物のスキーマから引いたコントロールを使う（入力欄の種類を手で組み立てない）。 */
 function setupControl(node: Node, prop: string): PropControl {
@@ -19,17 +19,14 @@ function setupControl(node: Node, prop: string): PropControl {
     ),
     node.name,
   );
-  return controlNamed(
-    sectionsOf(state).flatMap((section) => section.controls),
-    prop,
-  );
+  return controlNamed(sectionsOf(state).flatMap(controlsIn), prop);
 }
 
 test("選択式に値を選ぶとその値を設定する編集になる", () => {
   const control = setupControl({ name: "box", type: "Box" }, "direction");
 
   expect(PropControl.editFrom(control, "row")).toEqual({
-    name: "direction",
+    names: ["direction"],
     value: Option.some("row"),
   });
 });
@@ -41,7 +38,7 @@ test("数値入力に入れた文字列は数値として設定される", () =>
   );
 
   expect(PropControl.editFrom(control, "240")).toEqual({
-    name: "width",
+    names: ["width"],
     value: Option.some(240),
   });
 });
@@ -50,7 +47,7 @@ test("文字入力に入れた文字列はそのまま設定される", () => {
   const control = setupControl({ name: "label", type: "Text" }, "content");
 
   expect(PropControl.editFrom(control, "240")).toEqual({
-    name: "content",
+    names: ["content"],
     value: Option.some("240"),
   });
 });

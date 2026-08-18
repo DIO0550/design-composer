@@ -4,6 +4,7 @@ import { Option } from "@/utils/Option";
 import {
   type PropControl,
   type PropControlSection,
+  PropShorthandControl,
   SelectionControls,
 } from "../index";
 
@@ -49,6 +50,22 @@ export function instanceOf(
 }
 
 /**
+ * セクション内の編集欄を、束ねた行を辺ごとにほどいて並べる。
+ *
+ * @param section ほどきたいセクション
+ * @returns 行の順・束ねた行の中は上 右 下 左の順に並んだ編集欄
+ */
+export function controlsIn(
+  section: PropControlSection,
+): readonly PropControl[] {
+  return section.rows.flatMap((row) =>
+    row.kind === "prop"
+      ? [row.control]
+      : PropShorthandControl.sides(row.shorthand).map((side) => side.control),
+  );
+}
+
+/**
  * セクションをまたいで prop 名だけを並べる。
  *
  * @param state 選択の出どころ
@@ -56,7 +73,7 @@ export function instanceOf(
  */
 export function propNamesOf(state: EditorState): readonly string[] {
   return sectionsOf(state).flatMap((section) =>
-    section.controls.map((control) => control.prop),
+    controlsIn(section).map((control) => control.prop),
   );
 }
 
