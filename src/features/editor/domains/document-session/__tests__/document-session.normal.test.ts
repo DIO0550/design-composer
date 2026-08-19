@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { artboardDocument } from "@/features/editor/__tests__/sample-document";
+import { artboardDocument } from "@/domains/__tests__/sample-document";
 import { Option } from "@/utils/Option";
 import { DocumentSession } from "../index";
 

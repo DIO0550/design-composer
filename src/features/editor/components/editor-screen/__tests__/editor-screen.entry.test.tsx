@@ -1,10 +1,8 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
-import {
-  artboardContent,
-  SampleDocument,
-} from "@/features/editor/__tests__/sample-document";
+import { artboardContent } from "@/domains/__tests__/sample-document";
+import { SampleDocument } from "@/features/editor/__tests__/sample-document";
 import { DialogChoice } from "@/libs/document-dialog/fake";
 import { DocumentJson } from "@/libs/document-json";
 import {

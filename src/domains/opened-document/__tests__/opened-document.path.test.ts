@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { openedAt } from "@/features/editor/__tests__/sample-document";
+import { openedAt } from "@/domains/__tests__/sample-document";
 import { Option } from "@/utils/Option";
 import { OpenedDocument } from "../index";
 

@@ -1,5 +1,5 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { artboardDocument } from "@/features/editor/__tests__/sample-document";
+import { artboardDocument } from "@/domains/__tests__/sample-document";
 import { DocumentSaveState } from "@/features/editor/domains/document-save-state";
 import { DocumentIpc, type DocumentIpcError } from "@/libs/document-ipc";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
