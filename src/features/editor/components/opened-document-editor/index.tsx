@@ -1,4 +1,6 @@
 import { type ReactElement, type ReactNode, useState } from "react";
+import type { DocumentError } from "@/domains/document-error";
+import { FileValidity } from "@/domains/file-validity";
 import { ArtboardCanvas } from "@/features/editor/components/artboard-canvas";
 import {
   DocumentErrorList,
@@ -23,10 +25,8 @@ import { NodeInsertToolbar } from "@/features/editor/components/node-insert-tool
 import { PropertyPanel } from "@/features/editor/components/property-panel";
 import { TokenDashedNodes } from "@/features/editor/components/token-dashed-nodes";
 import { TokenEditor } from "@/features/editor/components/token-editor";
-import type { DocumentError } from "@/features/editor/domains/document-error";
 import { DocumentSaveState } from "@/features/editor/domains/document-save-state";
 import { EditorState } from "@/features/editor/domains/editor-state";
-import { FileValidity } from "@/features/editor/domains/file-validity";
 import { NodeDrag } from "@/features/editor/domains/node-drag";
 import { DraggedNode } from "@/features/editor/domains/node-drop";
 import type { NodeTemplate } from "@/features/editor/domains/node-template";

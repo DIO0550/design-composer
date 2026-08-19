@@ -1,5 +1,5 @@
 import type { DesignDocument } from "@/domains/design-document";
-import { DocumentError } from "@/features/editor/domains/document-error";
+import { DocumentError } from "@/domains/document-error";
 import { DocumentJson } from "@/libs/document-json";
 
 /**

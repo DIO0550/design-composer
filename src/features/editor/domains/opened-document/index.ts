@@ -1,6 +1,6 @@
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
-import type { DocumentError } from "@/features/editor/domains/document-error";
-import { DocumentReload } from "@/features/editor/domains/document-reload";
+import type { DocumentError } from "@/domains/document-error";
+import { DocumentReload } from "@/domains/document-reload";
 import { ArrayEx } from "@/utils/ArrayEx";
 import type { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";

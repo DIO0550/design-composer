@@ -1,9 +1,9 @@
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
+import { FileValidity } from "@/domains/file-validity";
 import { Instant } from "@/domains/instant";
 import { SampleSyntaxError } from "@/features/editor/__tests__/document-errors";
 import { ReceivedAt } from "@/features/editor/__tests__/instants";
-import { FileValidity } from "@/features/editor/domains/file-validity";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 

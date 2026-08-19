@@ -1,8 +1,8 @@
 import { afterEach, expect, test, vi } from "vitest";
+import { FileValidity } from "@/domains/file-validity";
 import { SampleSyntaxError } from "@/features/editor/__tests__/document-errors";
 import { ReceivedAt } from "@/features/editor/__tests__/instants";
 import { artboardDocument } from "@/features/editor/__tests__/sample-document";
-import { FileValidity } from "@/features/editor/domains/file-validity";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
 import { Option } from "@/utils/Option";

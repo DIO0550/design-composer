@@ -1,10 +1,21 @@
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
+import type { DocumentError } from "@/domains/document-error";
 import { Instant } from "@/domains/instant";
-import { SampleSyntaxError } from "@/features/editor/__tests__/document-errors";
-import type { DocumentError } from "@/features/editor/domains/document-error";
 import { Option } from "@/utils/Option";
 import { FileValidity } from "../index";
+
+/**
+ * 外部エディタが不正なファイルを保存したときに届くエラー。
+ *
+ * `features/editor` にも同じ形のフィクスチャがあるが、そちらを import すると
+ * ドメインのテストが feature を見ることになるので、この層では自前で持つ。
+ */
+const SampleSyntaxError: DocumentError = {
+  kind: "syntax-error",
+  message: "expected ',' or '}'",
+  location: { kind: "text-position", position: 42 },
+};
 
 /** 拒む理由が 1 度目と 2 度目で変わったことを見るための、もう 1 つのエラー。 */
 const DanglingTokenError: DocumentError = {

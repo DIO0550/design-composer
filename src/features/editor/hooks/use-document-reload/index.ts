@@ -1,5 +1,5 @@
 import { useEffect, useEffectEvent, useState } from "react";
-import { DocumentReload } from "@/features/editor/domains/document-reload";
+import { DocumentReload } from "@/domains/document-reload";
 import type {
   DocumentChanged,
   DocumentIpc,

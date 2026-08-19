@@ -1,6 +1,6 @@
 import { render } from "@testing-library/react";
 import type { ReactNode } from "react";
-import type { DocumentError } from "@/features/editor/domains/document-error";
+import type { DocumentError } from "@/domains/document-error";
 import { DocumentSaveState } from "@/features/editor/domains/document-save-state";
 import type { Elapsed } from "@/features/editor/domains/elapsed";
 import type { OpenedDocument } from "@/features/editor/domains/opened-document";

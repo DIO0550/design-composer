@@ -1,6 +1,6 @@
+import type { DocumentError } from "@/domains/document-error";
+import type { DocumentReload } from "@/domains/document-reload";
 import type { Instant } from "@/domains/instant";
-import type { DocumentError } from "@/features/editor/domains/document-error";
-import type { DocumentReload } from "@/features/editor/domains/document-reload";
 import { Option } from "@/utils/Option";
 
 /**

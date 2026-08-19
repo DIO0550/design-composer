@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import type { DocumentError } from "@/domains/document-error";
 import { SampleFileErrors } from "@/features/editor/__stories__/sample-editor-state";
 import { CanvasView } from "@/features/editor/domains/canvas-view";
-import type { DocumentError } from "@/features/editor/domains/document-error";
 import { DocumentSaveState } from "@/features/editor/domains/document-save-state";
 import { type Elapsed, ElapsedUnits } from "@/features/editor/domains/elapsed";
 import {
