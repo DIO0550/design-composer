@@ -1,7 +1,7 @@
 import { act, screen } from "@testing-library/react";
 import { expect, test } from "vitest";
-import { changeFileExternally } from "@/features/editor/__tests__/document-change";
 import { SampleDocument } from "@/features/editor/__tests__/sample-document";
+import { changeFileExternally } from "@/libs/__tests__/document-change";
 import { DocumentJson } from "@/libs/document-json";
 import {
   breakFileExternally,

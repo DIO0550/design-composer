@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { SampleSyntaxError } from "@/domains/__tests__/document-errors";
+import { ReceivedAt } from "@/domains/__tests__/instants";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
-import { ReceivedAt } from "@/features/editor/__tests__/instants";
 import { EditorState } from "../index";
 
 /**

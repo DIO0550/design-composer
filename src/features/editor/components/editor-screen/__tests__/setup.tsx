@@ -1,6 +1,6 @@
 import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { changeFileExternally } from "@/features/editor/__tests__/document-change";
+import { changeFileExternally } from "@/libs/__tests__/document-change";
 import { ClockFake } from "@/libs/clock/fake";
 import {
   type DialogChoices,

@@ -1,9 +1,9 @@
 import { expect, test } from "vitest";
+import { ReceivedAt } from "@/domains/__tests__/instants";
 import { Artboard } from "@/domains/artboard";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import { PropEdit } from "@/domains/node";
 import { frozen } from "@/features/editor/__tests__/frozen-state";
-import { ReceivedAt } from "@/features/editor/__tests__/instants";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 

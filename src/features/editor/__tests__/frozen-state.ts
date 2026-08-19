@@ -1,6 +1,6 @@
 import { SampleSyntaxError } from "@/domains/__tests__/document-errors";
+import { ReceivedAt } from "@/domains/__tests__/instants";
 import { EditorState } from "@/features/editor/domains/editor-state";
-import { ReceivedAt } from "./instants";
 
 /**
  * 外部がファイルを壊し、その読み直しを拒んだあとの状態
