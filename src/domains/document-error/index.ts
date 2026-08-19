@@ -39,11 +39,10 @@ export const DocumentErrorLocation = {
  *
  * 字句スキャン（`syntax-error` / `duplicate-key`）と版の解決（`unsupported-*` 以下 3 つ）の
  * 綴りを直接並べているのは、それらを報告する `libs/` をドメインから import できないため。
- * 綴りが食い違うと `libs/document-json` が `DocumentError` を組み立てる代入で落ちる。
+ * 一致は `libs/document-json` 側の型テスト（`document-json.type.test.ts`）が固定する。
  *
- * Why not: `libs/` 側から kind が**消えた**場合と、ここにだけ書かれた綴りは落ちない。
- * この向きを検出するには `json-lexical-scanner` / `document-migration` の kind ごと
- * `src/domains/` へ移すことになり、libs の境界の掃除（#247）の範囲を超える。
+ * Why not: 出どころから導出する（`json-lexical-scanner` / `document-migration` の kind ごと
+ * `src/domains/` へ移す）ことはしない。libs の境界の掃除（#247）の範囲を超えるため。
  */
 export type DocumentErrorKind =
   | "syntax-error"

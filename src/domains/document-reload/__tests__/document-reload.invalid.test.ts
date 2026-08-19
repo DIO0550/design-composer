@@ -1,16 +1,24 @@
 import { expect, test } from "vitest";
+import { SampleSyntaxError } from "@/domains/__tests__/document-errors";
 import { Artboard } from "@/domains/artboard";
 import { DesignDocument } from "@/domains/design-document";
-import type { DocumentError } from "@/domains/document-error";
+import type { Node, Props } from "@/domains/node";
 import { Result } from "@/utils/Result";
 import { DocumentReload } from "../index";
 
-/** テキストの解釈が返す失敗。位置の割り当ては `libs/document-json` の担当。 */
-const SampleSyntaxError: DocumentError = {
-  kind: "syntax-error",
-  message: "expected ',' or '}'",
-  location: { kind: "text-position", position: 42 },
-};
+/**
+ * artboard を 1 枚だけ持つドキュメント。壊した箇所だけを渡し、それ以外は同じ形にする
+ * （各テストで「何を壊したか」が 1 箇所で読めるようにするため）。
+ */
+function documentWith(
+  broken: Readonly<{ props?: Props; children?: readonly Node[] }>,
+): DesignDocument {
+  return DesignDocument.create({
+    artboards: [
+      Artboard.create({ name: "home", width: 360, height: 240, ...broken }),
+    ],
+  });
+}
 
 test("解釈に失敗していたら、その理由をそのまま拒む理由にする", () => {
   const reload = DocumentReload.fromParsed(Result.err([SampleSyntaxError]));
@@ -22,18 +30,9 @@ test("解釈に失敗していたら、その理由をそのまま拒む理由�
 });
 
 test("スキーマに無い prop を持つドキュメントは、そのノードの名前つきで拒まれる", () => {
-  const document = DesignDocument.create({
-    artboards: [
-      Artboard.create({
-        name: "home",
-        width: 360,
-        height: 240,
-        props: { colour: "white" },
-      }),
-    ],
-  });
-
-  const reload = DocumentReload.fromParsed(Result.ok(document));
+  const reload = DocumentReload.fromParsed(
+    Result.ok(documentWith({ props: { colour: "white" } })),
+  );
 
   expect(reload).toStrictEqual({
     kind: "rejected",
@@ -48,25 +47,16 @@ test("スキーマに無い prop を持つドキュメントは、そのノー�
 });
 
 test("存在しない部品を参照するドキュメントは、参照しているノードの名前つきで拒まれる", () => {
-  const document = DesignDocument.create({
-    artboards: [
-      Artboard.create({
-        name: "home",
-        width: 360,
-        height: 240,
-        children: [{ name: "cta", ref: "missing-button" }],
-      }),
-    ],
-  });
-
-  const reload = DocumentReload.fromParsed(Result.ok(document));
+  const reload = DocumentReload.fromParsed(
+    Result.ok(documentWith({ children: [{ name: "cta", ref: "missing" }] })),
+  );
 
   expect(reload).toStrictEqual({
     kind: "rejected",
     errors: [
       {
         kind: "dangling-ref",
-        message: 'unknown component "missing-button"',
+        message: 'unknown component "missing"',
         location: { kind: "node", nodeName: "cta" },
       },
     ],
@@ -74,22 +64,18 @@ test("存在しない部品を参照するドキュメントは、参照して�
 });
 
 test("スキーマ違反が 2 件あるドキュメントは、両方が並んで拒まれる", () => {
-  const document = DesignDocument.create({
-    artboards: [
-      Artboard.create({
-        name: "home",
-        width: 360,
-        height: 240,
+  const reload = DocumentReload.fromParsed(
+    Result.ok(
+      documentWith({
         props: { colour: "white" },
-        children: [{ name: "cta", ref: "missing-button" }],
+        children: [{ name: "cta", ref: "missing" }],
       }),
-    ],
-  });
-
-  const reload = DocumentReload.fromParsed(Result.ok(document));
+    ),
+  );
 
   const kinds =
     reload.kind === "rejected" ? reload.errors.map((error) => error.kind) : [];
 
-  expect(kinds).toEqual(["unknown-prop", "dangling-ref"]);
+  // 並び順は `DesignDocument.collectErrors` の仕様なので、揃えてから中身だけを見る。
+  expect([...kinds].sort()).toEqual(["dangling-ref", "unknown-prop"]);
 });

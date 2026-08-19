@@ -16,15 +16,17 @@ type Parsed = Result<DesignDocument, readonly DocumentError[]>;
 /**
  * 字句スキャンの失敗は、テキストの何文字目かを指す。
  *
- * @param error 字句スキャンが報告した失敗
- * @returns 文字位置を指す 1 件のエラー
+ * @param errors 字句スキャンが報告した失敗の並び
+ * @returns 文字位置を指すエラーの並び
  */
-function fromScanError(error: JsonScanError): DocumentError {
-  return {
+function fromScanErrors(
+  errors: readonly JsonScanError[],
+): readonly DocumentError[] {
+  return errors.map((error) => ({
     kind: error.kind,
     message: error.message,
     location: { kind: "text-position", position: error.position },
-  };
+  }));
 }
 
 /**
@@ -65,8 +67,13 @@ function fromDecodeErrors(
  * 字句スキャンを通っていれば `JSON.parse` は成功するが、
  * 「例外を散らさない」ために失敗も値として扱う。
  *
+ * Why: `JsonLexicalScanner` が受理する文法は `JSON.parse` と同じなので、
+ * スキャンを通った後にここが失敗することは実際には無い（外部 API を境界で握る保険）。
+ * 位置をファイル全体にしているのはそのためで、投げられた例外からは
+ * テキストの何文字目かが分からない（`rules/coding.md` の「既定値へフォールバックしない」）。
+ *
  * @param text 読み込む JSON のテキスト
- * @returns 読み込んだ値。`JSON.parse` が投げたら `syntax-error` の失敗
+ * @returns 読み込んだ値。`JSON.parse` が投げたら、ファイル全体を指す `syntax-error` の失敗
  */
 function parseJson(text: string): Result<unknown, readonly DocumentError[]> {
   try {
@@ -77,7 +84,7 @@ function parseJson(text: string): Result<unknown, readonly DocumentError[]> {
       {
         kind: "syntax-error",
         message: error instanceof Error ? error.message : String(error),
-        location: { kind: "text-position", position: 0 },
+        location: { kind: "whole-document" },
       },
     ]);
   }
@@ -110,7 +117,7 @@ export const DocumentJson = {
   parse(text: string): Parsed {
     const scanErrors = JsonLexicalScanner.scan(text);
     if (scanErrors.length > 0) {
-      return Result.err(scanErrors.map(fromScanError));
+      return Result.err(fromScanErrors(scanErrors));
     }
     return Result.flatMap(parseJson(text), (value) =>
       Result.flatMap(

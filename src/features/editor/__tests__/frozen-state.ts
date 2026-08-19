@@ -1,5 +1,5 @@
+import { SampleSyntaxError } from "@/domains/__tests__/document-errors";
 import { EditorState } from "@/features/editor/domains/editor-state";
-import { SampleSyntaxError } from "./document-errors";
 import { ReceivedAt } from "./instants";
 
 /**

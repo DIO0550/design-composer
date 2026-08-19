@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
+import { SampleSyntaxError } from "@/domains/__tests__/document-errors";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
-import { SampleSyntaxError } from "@/features/editor/__tests__/document-errors";
 import { ReceivedAt } from "@/features/editor/__tests__/instants";
 import { EditorState } from "../index";
 
