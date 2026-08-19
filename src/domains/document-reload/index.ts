@@ -30,10 +30,7 @@ export const DocumentReload = {
   fromContent(content: string): DocumentReload {
     const parsed = DocumentJson.parse(content);
     if (!parsed.ok) {
-      return {
-        kind: "rejected",
-        errors: DocumentError.fromJsonErrors(parsed.error),
-      };
+      return { kind: "rejected", errors: parsed.error };
     }
 
     const validationErrors = DocumentError.collectFrom(parsed.value);

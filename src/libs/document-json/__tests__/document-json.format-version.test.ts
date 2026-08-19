@@ -12,6 +12,7 @@ test("major がアプリより新しいファイルを読むとアプリの更�
     expect.objectContaining({
       kind: "unsupported-format-version",
       message: expect.stringContaining("update the app"),
+      location: { kind: "whole-document" },
     }),
   ]);
 });
@@ -22,7 +23,10 @@ test("minor がアプリより新しいファイルを読むとアプリの更�
   const result = DocumentJson.parse(text);
 
   expect(result.ok ? [] : result.error).toEqual([
-    expect.objectContaining({ kind: "unsupported-format-version" }),
+    expect.objectContaining({
+      kind: "unsupported-format-version",
+      location: { kind: "whole-document" },
+    }),
   ]);
 });
 
@@ -32,7 +36,10 @@ test("major がアプリより古いファイルは変換できないとエラ�
   const result = DocumentJson.parse(text);
 
   expect(result.ok ? [] : result.error).toEqual([
-    expect.objectContaining({ kind: "missing-migration-step" }),
+    expect.objectContaining({
+      kind: "missing-migration-step",
+      location: { kind: "whole-document" },
+    }),
   ]);
 });
 
@@ -42,7 +49,10 @@ test("formatVersion が欠けているファイルは版のエラーではなく
   const result = DocumentJson.parse(text);
 
   expect(result.ok ? [] : result.error).toEqual([
-    expect.objectContaining({ kind: "missing-field", path: "formatVersion" }),
+    expect.objectContaining({
+      kind: "missing-field",
+      location: { kind: "document-path", path: "formatVersion" },
+    }),
   ]);
 });
 
