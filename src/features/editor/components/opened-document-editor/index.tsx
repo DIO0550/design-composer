@@ -1,6 +1,7 @@
 import { type ReactElement, type ReactNode, useState } from "react";
 import type { DocumentError } from "@/domains/document-error";
 import { FileValidity } from "@/domains/file-validity";
+import type { OpenedDocument } from "@/domains/opened-document";
 import { ArtboardCanvas } from "@/features/editor/components/artboard-canvas";
 import {
   DocumentErrorList,
@@ -30,7 +31,6 @@ import { EditorState } from "@/features/editor/domains/editor-state";
 import { NodeDrag } from "@/features/editor/domains/node-drag";
 import { DraggedNode } from "@/features/editor/domains/node-drop";
 import type { NodeTemplate } from "@/features/editor/domains/node-template";
-import type { OpenedDocument } from "@/features/editor/domains/opened-document";
 import { useAutoSave } from "@/features/editor/hooks/use-auto-save";
 import {
   type CanvasViewControl,

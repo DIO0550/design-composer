@@ -1,7 +1,13 @@
-import { DocumentStart } from "@/features/editor/components/document-start";
-import { DocumentToolbar } from "@/features/editor/components/document-toolbar";
+import {
+  DocumentStart,
+  DocumentToolbar,
+  useDocumentSession,
+} from "@/features/document-start";
+import {
+  DocumentErrorList,
+  DocumentErrorOrigins,
+} from "@/features/editor/components/document-error-list";
 import { OpenedDocumentEditor } from "@/features/editor/components/opened-document-editor";
-import { useDocumentSession } from "@/features/editor/hooks/use-document-session";
 import type { Clock } from "@/libs/clock";
 import type { DocumentDialog } from "@/libs/document-dialog";
 import type { DocumentIpc } from "@/libs/document-ipc";
@@ -41,7 +47,17 @@ export function EditorScreen({
             opened={session.opened}
           />
         ) : (
-          <DocumentStart session={session} />
+          // 開く前に見つかった不正なので、由来は unopened-file で固定になる
+          // （飛び先のノードも書き戻す表示中の内容もまだ無い）。
+          <DocumentStart
+            session={session}
+            renderErrors={(errors) => (
+              <DocumentErrorList
+                errors={errors}
+                origin={DocumentErrorOrigins.UnopenedFile}
+              />
+            )}
+          />
         )}
       </div>
     </div>

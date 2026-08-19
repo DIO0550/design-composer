@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { artboardContent } from "@/features/editor/__tests__/sample-document";
+import { artboardContent } from "@/domains/__tests__/sample-document";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { Option } from "@/utils/Option";
 import { changeExternally, Path, renderDocumentReload } from "./setup";

@@ -1,10 +1,8 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
-import {
-  artboardContent,
-  SampleDocument,
-} from "@/features/editor/__tests__/sample-document";
+import { artboardContent } from "@/domains/__tests__/sample-document";
+import { SampleDocument } from "@/features/editor/__tests__/sample-document";
 import { DialogChoice } from "@/libs/document-dialog/fake";
 import { DocumentJson } from "@/libs/document-json";
 import {
@@ -96,6 +94,19 @@ test("内容が不正なファイルを開くと、開けない理由が表示�
   expect(
     screen.getByText("ファイルの内容が正しくないため開けませんでした"),
   ).toBeDefined();
+});
+
+test("内容が不正なファイルを開くと、ファイルのエラー一覧が並ぶ", async () => {
+  renderEditorScreen(
+    { [Path]: '{ "formatVersion": ' },
+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
+  );
+
+  await clickOpen();
+
+  // 読み上げ名で引くのは、由来（unopened-file）まで固定するため。開始画面は
+  // 「開けませんでした」の 1 行にも role="alert" を付けるので、名前無しでは引けない。
+  expect(screen.getByRole("alert", { name: "エラー一覧" })).toBeDefined();
 });
 
 test("読み込めないファイルを開くと、見つからないことが表示される", async () => {

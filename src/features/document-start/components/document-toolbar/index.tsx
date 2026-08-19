@@ -1,4 +1,4 @@
-import { DocumentSession } from "@/features/editor/domains/document-session";
+import { DocumentSession } from "@/features/document-start/domains/document-session";
 
 /**
  * ファイルの導線（docs/05-architecture.md「ファイルを開くダイアログ等は Tauri 標準

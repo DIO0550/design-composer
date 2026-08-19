@@ -1,12 +1,23 @@
-import {
-  DocumentErrorList,
-  DocumentErrorOrigins,
-} from "@/features/editor/components/document-error-list";
+import type { ReactNode } from "react";
+import type { DocumentError } from "@/domains/document-error";
 import type {
   DocumentOpenFailure,
   UnopenedSession,
-} from "@/features/editor/domains/document-session";
+} from "@/features/document-start/domains/document-session";
 import type { DocumentIpcError } from "@/libs/document-ipc";
+
+/**
+ * 開けなかったエラーを画面に並べる手段。
+ *
+ * 開始画面が持つのは「どの失敗のときに一覧を出すか」までで、その一覧をどう綴るかは
+ * 呼び出し側が決める。ここが知っているのは一覧の部品ではなく、返るものが
+ * 絶対位置で下端に重なるという置かれ方だけ。
+ *
+ * @param errors 開こうとしたファイルが持っていた不正
+ * @returns この節の中で絶対位置に置かれる、エラーの一覧。位置を持たないものを返すと
+ *   案内の文と一緒に中央へ流れ込む（型でもテストでも縛れないので、視覚差分で見る）
+ */
+type RenderDocumentErrors = (errors: readonly DocumentError[]) => ReactNode;
 
 /**
  * I/O の失敗を利用者向けの言い方にする。診断用の原文は後ろに添える。
@@ -36,17 +47,20 @@ function ioFailureLabel(error: DocumentIpcError): string {
  * 不正なファイルだけは件数分の一覧になるため、1 行のメッセージとは別の見せ方をする
  * （docs/03-schema.md「不正ファイル時の挙動」）。
  */
-function OpenFailure({ failure }: Readonly<{ failure: DocumentOpenFailure }>) {
+function OpenFailure({
+  failure,
+  renderErrors,
+}: Readonly<{
+  failure: DocumentOpenFailure;
+  renderErrors: RenderDocumentErrors;
+}>) {
   if (failure.kind === "invalid") {
     return (
       <>
         <p role="alert" className="text-red-700">
           ファイルの内容が正しくないため開けませんでした
         </p>
-        <DocumentErrorList
-          errors={failure.errors}
-          origin={DocumentErrorOrigins.UnopenedFile}
-        />
+        {renderErrors(failure.errors)}
       </>
     );
   }
@@ -74,9 +88,15 @@ function OpenFailure({ failure }: Readonly<{ failure: DocumentOpenFailure }>) {
  */
 export function DocumentStart({
   session,
-}: Readonly<{ session: UnopenedSession }>) {
+  renderErrors,
+}: Readonly<{
+  session: UnopenedSession;
+  renderErrors: RenderDocumentErrors;
+}>) {
   return (
-    // relative はエラー一覧を下から重ねる基準（DocumentErrorList の置き方に合わせる）。
+    // relative は renderErrors が返すものの包含ブロック。外すと基準がビューポートへ移り、
+    // 一覧の高さの上限（画面の半分）が帯のぶんだけ広がる。happy-dom は Tailwind を
+    // 解決しないのでテストでは落ちず、気づけるのは視覚差分だけ。
     <section
       aria-label="ドキュメントの開始"
       className="relative flex h-full flex-col items-center justify-center gap-2 bg-gray-100 text-gray-700 text-sm"
@@ -86,7 +106,9 @@ export function DocumentStart({
       ) : (
         <p>ドキュメントを開くか、新しく作成してください。</p>
       )}
-      {session.kind === "failed" && <OpenFailure failure={session.failure} />}
+      {session.kind === "failed" && (
+        <OpenFailure failure={session.failure} renderErrors={renderErrors} />
+      )}
     </section>
   );
 }

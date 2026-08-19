@@ -1,9 +1,9 @@
 import { expect, test } from "vitest";
-import { DocumentTemplate } from "@/domains/design-document";
 import {
   artboardContent,
   artboardDocument,
-} from "@/features/editor/__tests__/sample-document";
+} from "@/domains/__tests__/sample-document";
+import { DocumentTemplate } from "@/domains/design-document";
 import { DocumentJson } from "@/libs/document-json";
 import { Result } from "@/utils/Result";
 import { OpenedDocument } from "../index";

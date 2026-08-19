@@ -1,7 +1,7 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
-import { openedAt } from "@/features/editor/__tests__/sample-document";
+import { openedAt } from "@/domains/__tests__/sample-document";
 import { renderTopBar, SaveStates } from "./setup";
 
 test("開いているファイルの名前が上部バーに出る", () => {
