@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
+import { frozen } from "@/features/editor/__tests__/frozen-state";
 import { Option } from "@/utils/Option";
 import { CreateComponent } from "../index";
 import { setupState } from "./setup";
@@ -183,6 +184,29 @@ test("既に使われている名前では部品化のボタンを押せない",
     screen.getByRole("textbox", { name: "部品名" }),
     "primary-button",
   );
+
+  expect(isCreateDisabled()).toBe(true);
+});
+
+/*
+ * 選択も名前も通る状態を作ってから凍結する。どちらかを外すと、凍結の条件を丸ごと
+ * 消しても通るテストになる（`rules/testing.md`「その assert は落ちうるか」）。
+ */
+test("ファイルが不正な間は使える部品名を入れても部品化のボタンを押せない", async () => {
+  const user = userEvent.setup();
+  const selected = setupState(Option.some("home-panel"));
+  const { rerender } = render(
+    <CreateComponent state={selected} onCreate={() => {}} />,
+  );
+
+  await user.click(screen.getByRole("button", { name: /Create component/ }));
+  await user.type(
+    screen.getByRole("textbox", { name: "部品名" }),
+    "info-panel",
+  );
+  expect(isCreateDisabled()).toBe(false);
+
+  rerender(<CreateComponent state={frozen(selected)} onCreate={() => {}} />);
 
   expect(isCreateDisabled()).toBe(true);
 });

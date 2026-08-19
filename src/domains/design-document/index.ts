@@ -215,6 +215,31 @@ function nameSpaceOf(document: DesignDocument): NameSpace {
 }
 
 /**
+ * 新しい名前を単一名前空間へ加えられないときの理由。
+ *
+ * 加える側（`createComponent`）と、加えられるかだけを知りたい側
+ * （`isUsableName`）の両方がここを通る。条件を 2 箇所に書くと、片方だけ変わった
+ * ときにボタンの出方と編集の結果が食い違う。
+ *
+ * @param document 名前空間の出どころ
+ * @param name 新しく加えたい名前
+ * @returns 識別子の規則を満たさないなら `invalid-name`、既に使われているなら
+ *   `duplicate-name`。加えられるなら `none`
+ */
+function unusableNameError(
+  document: DesignDocument,
+  name: string,
+): Option<DesignDocumentEditError> {
+  if (!DesignDocument.isValidIdentifier(name)) {
+    return Option.some({ kind: "invalid-name", name });
+  }
+  if (DesignDocument.usedNames(document).has(name)) {
+    return Option.some({ kind: "duplicate-name", name });
+  }
+  return Option.none;
+}
+
+/**
  * ドキュメントのコンパニオンオブジェクト。
  * ツリーの探索・編集は `NodeTree`、名前の規則は `NameSpace`、
  * 部品への変換は `Component`、検証は `validation/`、版ごとの JSON 表現は `v1/` が持ち、
@@ -584,11 +609,9 @@ export const DesignDocument = {
     if (!found.some) {
       return Result.err({ kind: "node-not-found", name });
     }
-    if (!NameSpace.isValidIdentifier(componentName)) {
-      return Result.err({ kind: "invalid-name", name: componentName });
-    }
-    if (NameSpace.has(nameSpaceOf(document), componentName)) {
-      return Result.err({ kind: "duplicate-name", name: componentName });
+    const unavailable = unusableNameError(document, componentName);
+    if (unavailable.some) {
+      return Result.err(unavailable.value);
     }
     const component = Component.fromNode(found.value);
     if (!component.some) {
@@ -772,6 +795,21 @@ export const DesignDocument = {
   /** その名前が識別子の規則（kebab-case）を満たすか。 */
   isValidIdentifier(name: string): boolean {
     return NameSpace.isValidIdentifier(name);
+  },
+
+  /**
+   * その名前を新しい名前としてこのドキュメントへ加えられるか
+   * （識別子の規則を満たし、単一名前空間でまだ使われていない）。
+   *
+   * 部品化のボタンの可否がこれを見る。`createComponent` を空撃ちして `ok` を
+   * 見る形だと、押せるかを知るためだけにドキュメントを 1 つ組み立てることになる。
+   *
+   * @param document 名前空間の出どころ
+   * @param name 新しく加えたい名前
+   * @returns 加えられるなら true
+   */
+  isUsableName(document: DesignDocument, name: string): boolean {
+    return !unusableNameError(document, name).some;
   },
 
   /** 使用済みの名前と衝突しない名前。衝突する場合は連番を付ける。 */

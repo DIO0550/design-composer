@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 import { Artboard } from "@/domains/artboard";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import { PropEdit } from "@/domains/node";
-import { SampleSyntaxError } from "@/features/editor/__tests__/document-errors";
+import { frozen } from "@/features/editor/__tests__/frozen-state";
 import { ReceivedAt } from "@/features/editor/__tests__/instants";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
@@ -39,15 +39,6 @@ function openedState(): EditorState {
         }),
       ],
     }),
-  );
-}
-
-/** 外部がファイルを壊したことにする。 */
-function frozen(state: EditorState): EditorState {
-  return EditorState.applyReload(
-    state,
-    { kind: "rejected", errors: [SampleSyntaxError] },
-    ReceivedAt,
   );
 }
 

@@ -96,6 +96,32 @@ function expandNodes(
   return Result.ok(expanded);
 }
 
+/**
+ * 解除の対象になる ref ノードを、部品を辿って展開したもの。
+ *
+ * 解除できるか（`isDetachable`）と解除そのもの（`detach`）の両方がここを通る。
+ * 失敗の条件を 2 箇所に書くと、片方だけ変わったときにボタンの出方と結果が食い違う。
+ *
+ * @param document 解除元のドキュメント
+ * @param name 解除したいノードの名前
+ * @returns 展開後のノード。ノードが無い・ref ノードでない・参照先の部品が無い・
+ *   参照が循環しているときは失敗
+ */
+function expandInstance(
+  document: DesignDocument,
+  name: string,
+): Result<ExpandedNode, Error> {
+  const found = DesignDocument.findNode(document, name);
+  if (!found.some) {
+    return Result.err(new Error(`node "${name}" not found`));
+  }
+  const node = found.value;
+  if (!Node.isRef(node)) {
+    return Result.err(new Error(`node "${name}" is not a ref node`));
+  }
+  return expandNode(node, document.components, new Set());
+}
+
 /** 部品インスタンスを定義の中身へ展開する（docs/02-data-model.md「部品」）。 */
 export const InstanceComposition = {
   expand(node: Node, components: ComponentSet): Result<ExpandedNode, Error> {
@@ -113,33 +139,38 @@ export const InstanceComposition = {
     document: DesignDocument,
     name: string,
   ): Result<DesignDocument, Error> {
-    const found = DesignDocument.findNode(document, name);
-    if (!found.some) {
-      return Result.err(new Error(`node "${name}" not found`));
-    }
-    const node = found.value;
-    if (!Node.isRef(node)) {
-      return Result.err(new Error(`node "${name}" is not a ref node`));
-    }
-    const expandedResult = expandNode(node, document.components, new Set());
-    if (!expandedResult.ok) {
-      return expandedResult;
-    }
-    const expanded = expandedResult.value;
-    const usedNames = DesignDocument.usedNames(document);
-    const children =
-      expanded.children === undefined
-        ? undefined
-        : DesignDocument.renameSubtree(expanded.children, usedNames).nodes;
-    const replacement: Node = {
-      name: expanded.name,
-      type: expanded.type,
-      ...(expanded.props !== undefined ? { props: expanded.props } : {}),
-      ...(children !== undefined ? { children } : {}),
-    };
-    return Result.mapErr(
-      DesignDocument.replaceNode(document, name, replacement),
-      (error) => new Error(DesignDocumentEditError.message(error)),
-    );
+    return Result.flatMap(expandInstance(document, name), (expanded) => {
+      const usedNames = DesignDocument.usedNames(document);
+      const children =
+        expanded.children === undefined
+          ? undefined
+          : DesignDocument.renameSubtree(expanded.children, usedNames).nodes;
+      const replacement: Node = {
+        name: expanded.name,
+        type: expanded.type,
+        ...(expanded.props !== undefined ? { props: expanded.props } : {}),
+        ...(children !== undefined ? { children } : {}),
+      };
+      return Result.mapErr(
+        DesignDocument.replaceNode(document, name, replacement),
+        (error) => new Error(DesignDocumentEditError.message(error)),
+      );
+    });
+  },
+
+  /**
+   * その名前のノードを解除できるか（ref ノードで、参照先を辿りきれる）。
+   *
+   * 展開までしか見ないのは、`detach` の残り（名前の付け替えと置き換え）が
+   * 失敗しないため。`DesignDocument.replaceNode` も `Result` を返すが、探索
+   * （`findNode`）と置き換えは同じ `Node.children` の走査を通るので、探索できた
+   * ノードの置き換えは必ず成功する。
+   *
+   * @param document 解除元のドキュメント
+   * @param name 解除したいノードの名前
+   * @returns 解除できるなら true
+   */
+  isDetachable(document: DesignDocument, name: string): boolean {
+    return expandInstance(document, name).ok;
   },
 } as const;
