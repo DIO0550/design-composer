@@ -1,11 +1,13 @@
 import {
+  DocumentStart,
+  DocumentToolbar,
+  useDocumentSession,
+} from "@/features/document-start";
+import {
   DocumentErrorList,
   DocumentErrorOrigins,
 } from "@/features/editor/components/document-error-list";
-import { DocumentStart } from "@/features/editor/components/document-start";
-import { DocumentToolbar } from "@/features/editor/components/document-toolbar";
 import { OpenedDocumentEditor } from "@/features/editor/components/opened-document-editor";
-import { useDocumentSession } from "@/features/editor/hooks/use-document-session";
 import type { Clock } from "@/libs/clock";
 import type { DocumentDialog } from "@/libs/document-dialog";
 import type { DocumentIpc } from "@/libs/document-ipc";

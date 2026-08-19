@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { artboardContent } from "@/domains/__tests__/sample-document";
-import { DocumentSession } from "@/features/editor/domains/document-session";
+import { DocumentSession } from "@/features/document-start/domains/document-session";
 import { DialogChoice } from "@/libs/document-dialog/fake";
 import { Option } from "@/utils/Option";
 import { Path, renderDocumentSession } from "./setup";

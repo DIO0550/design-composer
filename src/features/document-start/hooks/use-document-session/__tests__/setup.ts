@@ -1,5 +1,5 @@
 import { act, renderHook } from "@testing-library/react";
-import type { DocumentSession } from "@/features/editor/domains/document-session";
+import type { DocumentSession } from "@/features/document-start/domains/document-session";
 import {
   type DialogChoices,
   DocumentDialogFake,

@@ -3,7 +3,7 @@ import type { DocumentError } from "@/domains/document-error";
 import type {
   DocumentOpenFailure,
   UnopenedSession,
-} from "@/features/editor/domains/document-session";
+} from "@/features/document-start/domains/document-session";
 import type { DocumentIpcError } from "@/libs/document-ipc";
 
 /**
