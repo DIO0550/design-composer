@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { DocumentSaveState } from "@/features/editor/domains/document-save-state";
+import { DocumentSaveState } from "@/domains/document-save-state";
 import type { DocumentIpcError } from "@/libs/document-ipc";
 import { Option } from "@/utils/Option";
 

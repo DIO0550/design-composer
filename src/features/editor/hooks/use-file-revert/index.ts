@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { DesignDocument } from "@/domains/design-document";
-import { DocumentSaveState } from "@/features/editor/domains/document-save-state";
+import { DocumentSaveState } from "@/domains/document-save-state";
 import type { DocumentIpc } from "@/libs/document-ipc";
 import { DocumentJson } from "@/libs/document-json";
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
+import { Elapsed } from "@/domains/elapsed";
 import type { Instant } from "@/domains/instant";
-import { Elapsed } from "@/features/editor/domains/elapsed";
 import type { Clock } from "@/libs/clock";
 import { Option } from "@/utils/Option";
 

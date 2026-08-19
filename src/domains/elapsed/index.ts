@@ -17,7 +17,7 @@ export type ElapsedUnit = ValueOf<typeof ElapsedUnits>;
  *
  * 単位と数までしか持たないのは、`4s` の `s` や `ago` が表示の綴りだから
  * （rules/architecture.md「表示のための綴りをドメインへ持ち込まない」）。
- * 綴りは `editor-top-bar` が持つ。
+ * 綴りは表示側（上部バー）が持つ。
  */
 export type Elapsed = Readonly<{ unit: ElapsedUnit; count: number }>;
 
