@@ -96,6 +96,19 @@ test("内容が不正なファイルを開くと、開けない理由が表示�
   ).toBeDefined();
 });
 
+test("内容が不正なファイルを開くと、ファイルのエラー一覧が並ぶ", async () => {
+  renderEditorScreen(
+    { [Path]: '{ "formatVersion": ' },
+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
+  );
+
+  await clickOpen();
+
+  // 読み上げ名で引くのは、由来（unopened-file）まで固定するため。開始画面は
+  // 「開けませんでした」の 1 行にも role="alert" を付けるので、名前無しでは引けない。
+  expect(screen.getByRole("alert", { name: "エラー一覧" })).toBeDefined();
+});
+
 test("読み込めないファイルを開くと、見つからないことが表示される", async () => {
   renderEditorScreen(
     {},

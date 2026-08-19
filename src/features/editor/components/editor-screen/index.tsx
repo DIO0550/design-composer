@@ -1,3 +1,7 @@
+import {
+  DocumentErrorList,
+  DocumentErrorOrigins,
+} from "@/features/editor/components/document-error-list";
 import { DocumentStart } from "@/features/editor/components/document-start";
 import { DocumentToolbar } from "@/features/editor/components/document-toolbar";
 import { OpenedDocumentEditor } from "@/features/editor/components/opened-document-editor";
@@ -41,7 +45,17 @@ export function EditorScreen({
             opened={session.opened}
           />
         ) : (
-          <DocumentStart session={session} />
+          // 開く前に見つかった不正なので、由来は unopened-file で固定になる
+          // （飛び先のノードも書き戻す表示中の内容もまだ無い）。
+          <DocumentStart
+            session={session}
+            renderErrors={(errors) => (
+              <DocumentErrorList
+                errors={errors}
+                origin={DocumentErrorOrigins.UnopenedFile}
+              />
+            )}
+          />
         )}
       </div>
     </div>
