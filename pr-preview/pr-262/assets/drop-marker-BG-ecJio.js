@@ -1,6 +1,0 @@
-import{n as e}from"./chunk-BneVvdWh.js";import{t}from"./jsx-runtime-ChEsXk_u.js";function n({bounds:e}){return(0,r.jsx)(`div`,{"data-testid":`drop-marker`,"aria-hidden":!0,className:`pointer-events-none fixed z-10 bg-emerald-500`,style:{left:`${e.left}px`,top:`${e.top}px`,width:`${e.width}px`,height:`${e.height}px`}})}var r,i=e((()=>{r=t();try{n.displayName=`DropMarker`,n.__docgenInfo={description:`ドロップ先を示す線（docs/06-ui.md「ドロップ先は『どの Box の何番目の子になるか』を
-ハイライトで提示する」）。
-
-ズーム / パンの変形の**外側**に置き、実測した client 座標をそのまま \`position: fixed\`
-で使う。変形の内側に置くと、倍率と平行移動を打ち消す座標変換が要るうえ、
-中身は React の管理外なので線を差し込む場所も無い。`,displayName:`DropMarker`,filePath:`/home/runner/work/design-composer/design-composer/src/features/editor/components/artboard-canvas/drop-marker/index.tsx`,methods:[],props:{bounds:{defaultValue:null,declarations:[{fileName:`design-composer/src/features/editor/components/artboard-canvas/drop-marker/index.tsx`,name:`TypeLiteral`}],description:``,name:`bounds`,required:!0,tags:{},type:{name:`Readonly<{ left: number; top: number; width: number; height: number; }>`}}},tags:{}}}catch{}}));export{i as n,n as t};
