@@ -1,6 +1,6 @@
 import { render, screen, within } from "@testing-library/react";
 import { expect, test } from "vitest";
-import { SampleSyntaxError } from "@/features/editor/__tests__/document-errors";
+import { SampleSyntaxError } from "@/domains/__tests__/document-errors";
 import { DocumentErrorList, DocumentErrorOrigins } from "../index";
 
 test("エラーが無いときは何も重ねない", () => {

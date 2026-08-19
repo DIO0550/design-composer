@@ -1,6 +1,6 @@
 import type { ReactElement, ReactNode } from "react";
-import type { DocumentError } from "@/features/editor/domains/document-error";
-import { DocumentErrorLocation } from "@/features/editor/domains/document-error";
+import type { DocumentError } from "@/domains/document-error";
+import { DocumentErrorLocation } from "@/domains/document-error";
 import type { ValueOf } from "@/types/ValueOf";
 
 /**

@@ -3,10 +3,7 @@ import {
   type DesignDocumentValidationError,
   type DesignDocumentValidationErrorKind,
 } from "@/domains/design-document";
-import type {
-  DocumentJsonError,
-  DocumentJsonErrorKind,
-} from "@/libs/document-json";
+import type { JsonDecodeErrorKind } from "@/utils/Json";
 import { Option } from "@/utils/Option";
 
 /**
@@ -37,9 +34,23 @@ export const DocumentErrorLocation = {
   },
 } as const;
 
-/** 画面に出すエラーの種別。テキストの解釈由来とスキーマ検証由来の両方を含む。 */
+/**
+ * 画面に出すエラーの種別。テキストの解釈由来とスキーマ検証由来の両方を含む。
+ *
+ * 字句スキャン（`syntax-error` / `duplicate-key`）と版の解決（`unsupported-*` 以下 3 つ）の
+ * 綴りを直接並べているのは、それらを報告する `libs/` をドメインから import できないため。
+ * 一致は `libs/document-json` 側の型テスト（`document-json.type.test.ts`）が固定する。
+ *
+ * Why not: 出どころから導出する（`json-lexical-scanner` / `document-migration` の kind ごと
+ * `src/domains/` へ移す）ことはしない。libs の境界の掃除（#247）の範囲を超えるため。
+ */
 export type DocumentErrorKind =
-  | DocumentJsonErrorKind
+  | "syntax-error"
+  | "duplicate-key"
+  | "unsupported-format-version"
+  | "missing-migration-step"
+  | "migration-step-failed"
+  | JsonDecodeErrorKind
   | DesignDocumentValidationErrorKind;
 
 /**
@@ -47,7 +58,9 @@ export type DocumentErrorKind =
  *
  * テキストの解釈（`libs/document-json`）とスキーマ検証（`DesignDocument.collectErrors`）は
  * 別々の形で失敗を返すが、仕様が画面に求めるのは 1 本の「エラー一覧」なので、
- * 表示側が 2 系統に分岐しなくて済む形へここで揃える。
+ * 表示側が 2 系統に分岐しなくて済むよう、どちらもこの形へ揃えてから渡す。
+ * 揃える処理は失敗を報告する側が持つ（テキストの解釈は `libs/document-json`、
+ * スキーマ検証は `collectFrom`）。
  */
 export type DocumentError = Readonly<{
   kind: DocumentErrorKind;
@@ -56,62 +69,37 @@ export type DocumentError = Readonly<{
 }>;
 
 /**
- * 字句スキャン由来なら `position`、形の検証由来なら `path` が付き、
- * 版の解決の失敗はどちらも持たない（`libs/document-json` の 3 系統に対応する）。
+ * スキーマ検証の失敗は、どのノードの（あれば）どの prop かを指す。
  *
- * @param error 場所を読みたい読み込みの失敗
- * @returns 文字位置 / ドキュメント内のパス / ファイル全体のいずれか
+ * @param errors スキーマ検証が報告した失敗の並び
+ * @returns ノードを指すエラーの並び
  */
-function locationOf(error: DocumentJsonError): DocumentErrorLocation {
-  if (error.position !== undefined) {
-    return { kind: "text-position", position: error.position };
-  }
-  if (error.path !== undefined) {
-    return { kind: "document-path", path: error.path };
-  }
-  return { kind: "whole-document" };
+function fromValidationErrors(
+  errors: readonly DesignDocumentValidationError[],
+): readonly DocumentError[] {
+  return errors.map((error) => ({
+    kind: error.kind,
+    message: error.message,
+    location: {
+      kind: "node",
+      nodeName: error.nodeName,
+      ...(error.prop !== undefined ? { prop: error.prop } : {}),
+    },
+  }));
 }
 
-/*
- * 変換を元の型（`DocumentJsonError` / `DesignDocumentValidationError`）側ではなく
- * ここに置いているのは、`libs/` と `src/domains/` から feature を import できないため。
- * 生成の語彙を `create` に揃えられない代わりに、何から作るかを名前に出している。
- */
 export const DocumentError = {
-  fromJsonErrors(
-    errors: readonly DocumentJsonError[],
-  ): readonly DocumentError[] {
-    return errors.map((error) => ({
-      kind: error.kind,
-      message: error.message,
-      location: locationOf(error),
-    }));
-  },
-
-  fromValidationErrors(
-    errors: readonly DesignDocumentValidationError[],
-  ): readonly DocumentError[] {
-    return errors.map((error) => ({
-      kind: error.kind,
-      message: error.message,
-      location: {
-        kind: "node",
-        nodeName: error.nodeName,
-        ...(error.prop !== undefined ? { prop: error.prop } : {}),
-      },
-    }));
-  },
-
   /**
    * 組み立て済みのドキュメント自身の不正を集める。
    *
    * テキストの解釈を挟まないので、ファイルから読んだ内容にも、アプリ内の編集で
    * 作ったドキュメントにも同じように使える（#128）。
    * `from*` ではなく `collect*` なのは、変換ではなく走査して集めるため。
+   *
+   * @param document 不正を集める対象のドキュメント
+   * @returns 見つかった不正の並び。不正が無ければ空
    */
   collectFrom(document: DesignDocument): readonly DocumentError[] {
-    return DocumentError.fromValidationErrors(
-      DesignDocument.collectErrors(document),
-    );
+    return fromValidationErrors(DesignDocument.collectErrors(document));
   },
 } as const;

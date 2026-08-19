@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
-import type { DocumentError } from "@/features/editor/domains/document-error";
+import type { DocumentError } from "@/domains/document-error";
 import { DocumentErrorList, DocumentErrorOrigins } from "../index";
 
 /** 使用中トークンを消したときに出る、ドキュメント自身の不正。 */

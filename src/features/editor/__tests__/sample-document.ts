@@ -1,3 +1,4 @@
+import { artboardDocument } from "@/domains/__tests__/sample-document";
 import { Artboard } from "@/domains/artboard";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import type { OpenedDocument } from "@/features/editor/domains/opened-document";
@@ -63,12 +64,7 @@ export const SampleDocument = DesignDocument.create({
   ],
 });
 
-/** artboard を 1 枚だけ持つドキュメント。名前の違いがドキュメントの違いになる。 */
-export function artboardDocument(name: string): DesignDocument {
-  return DesignDocument.create({
-    artboards: [Artboard.create({ name, width: 360, height: 240 })],
-  });
-}
+export { artboardDocument };
 
 /** ファイルに載っている状態の `artboardDocument`。 */
 export function artboardContent(name: string): string {

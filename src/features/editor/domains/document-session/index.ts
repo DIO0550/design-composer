@@ -1,4 +1,4 @@
-import type { DocumentError } from "@/features/editor/domains/document-error";
+import type { DocumentError } from "@/domains/document-error";
 import type { OpenedDocument } from "@/features/editor/domains/opened-document";
 import type { DocumentDialogError } from "@/libs/document-dialog";
 import type { DocumentIpcError } from "@/libs/document-ipc";

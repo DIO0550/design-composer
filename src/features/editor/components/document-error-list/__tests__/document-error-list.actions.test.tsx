@@ -1,8 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
-import { SampleSyntaxError } from "@/features/editor/__tests__/document-errors";
-import type { DocumentError } from "@/features/editor/domains/document-error";
+import { SampleSyntaxError } from "@/domains/__tests__/document-errors";
+import type { DocumentError } from "@/domains/document-error";
 import { DocumentErrorList, DocumentErrorOrigins } from "../index";
 
 /**

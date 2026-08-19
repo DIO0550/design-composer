@@ -1,6 +1,6 @@
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import type { DocumentError } from "@/domains/document-error";
 import { Instant } from "@/domains/instant";
-import type { DocumentError } from "@/features/editor/domains/document-error";
 import { EditorState } from "@/features/editor/domains/editor-state";
 
 /**

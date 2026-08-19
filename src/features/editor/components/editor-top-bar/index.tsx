@@ -4,8 +4,8 @@ import {
   type ReactNode,
   useContext,
 } from "react";
+import type { DocumentError } from "@/domains/document-error";
 import { CanvasView } from "@/features/editor/domains/canvas-view";
-import type { DocumentError } from "@/features/editor/domains/document-error";
 import type { DocumentSaveState } from "@/features/editor/domains/document-save-state";
 import type { Elapsed, ElapsedUnit } from "@/features/editor/domains/elapsed";
 import { OpenedDocument } from "@/features/editor/domains/opened-document";

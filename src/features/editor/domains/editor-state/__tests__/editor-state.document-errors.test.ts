@@ -1,9 +1,9 @@
 import { expect, test } from "vitest";
+import { SampleSyntaxError } from "@/domains/__tests__/document-errors";
 import { Artboard } from "@/domains/artboard";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
-import { SampleSyntaxError } from "@/features/editor/__tests__/document-errors";
+import type { DocumentErrorLocation } from "@/domains/document-error";
 import { ReceivedAt } from "@/features/editor/__tests__/instants";
-import type { DocumentErrorLocation } from "@/features/editor/domains/document-error";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 

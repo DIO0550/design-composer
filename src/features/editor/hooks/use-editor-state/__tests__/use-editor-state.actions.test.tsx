@@ -1,9 +1,9 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
+import { SampleSyntaxError } from "@/domains/__tests__/document-errors";
 import { AxisLength } from "@/domains/axis-length";
 import { DesignDocument } from "@/domains/design-document";
-import { SampleSyntaxError } from "@/features/editor/__tests__/document-errors";
 import { ReceivedAt } from "@/features/editor/__tests__/instants";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";

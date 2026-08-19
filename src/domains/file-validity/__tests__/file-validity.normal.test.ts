@@ -1,8 +1,8 @@
 import { expect, test } from "vitest";
+import { SampleSyntaxError } from "@/domains/__tests__/document-errors";
 import { DesignDocument } from "@/domains/design-document";
+import type { DocumentError } from "@/domains/document-error";
 import { Instant } from "@/domains/instant";
-import { SampleSyntaxError } from "@/features/editor/__tests__/document-errors";
-import type { DocumentError } from "@/features/editor/domains/document-error";
 import { Option } from "@/utils/Option";
 import { FileValidity } from "../index";
 
