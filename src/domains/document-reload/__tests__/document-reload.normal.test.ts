@@ -1,21 +1,20 @@
 import { expect, test } from "vitest";
+import { Artboard } from "@/domains/artboard";
+import { DesignDocument } from "@/domains/design-document";
+import { Result } from "@/utils/Result";
 import { DocumentReload } from "../index";
-import { artboardContent, artboardDocument } from "./setup";
 
-test("仕様どおりの内容は、そのままのドキュメントとして取り込まれる", () => {
-  const reload = DocumentReload.fromContent(artboardContent("home"));
-
-  // JSON を経由すると省略可能なキーが落ちるため、キーの有無ではなく値で比べる。
-  expect(reload).toEqual({
-    kind: "reloaded",
-    document: artboardDocument("home"),
+/** artboard を 1 枚だけ持つ、スキーマ検証を通るドキュメント。 */
+function artboardDocument(): DesignDocument {
+  return DesignDocument.create({
+    artboards: [Artboard.create({ name: "home", width: 360, height: 240 })],
   });
-});
+}
 
-test("不正な内容の次に正しい内容が来ると、取り込めるようになる", () => {
-  const rejected = DocumentReload.fromContent("{");
-  const reload = DocumentReload.fromContent(artboardContent("home"));
+test("解釈できたドキュメントに不正が無ければ、そのまま取り込まれる", () => {
+  const document = artboardDocument();
 
-  expect(rejected.kind).toBe("rejected");
-  expect(reload.kind).toBe("reloaded");
+  const reload = DocumentReload.fromParsed(Result.ok(document));
+
+  expect(reload).toStrictEqual({ kind: "reloaded", document });
 });

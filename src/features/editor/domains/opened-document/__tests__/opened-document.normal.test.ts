@@ -4,13 +4,17 @@ import {
   artboardContent,
   artboardDocument,
 } from "@/features/editor/__tests__/sample-document";
+import { DocumentJson } from "@/libs/document-json";
 import { Result } from "@/utils/Result";
 import { OpenedDocument } from "../index";
 
 const Path = "/work/login.dcmp";
 
 test("読み込んだ内容が正しければ、そのドキュメントを開いた状態になる", () => {
-  const opened = OpenedDocument.fromContent(Path, artboardContent("home"));
+  const opened = OpenedDocument.fromParsed(
+    Path,
+    DocumentJson.parse(artboardContent("home")),
+  );
 
   // JSON を経由すると省略可能なキーが落ちるため、キーの有無ではなく値で比べる。
   expect(Result.unwrap(opened)).toEqual({

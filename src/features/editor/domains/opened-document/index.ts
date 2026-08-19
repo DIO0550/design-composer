@@ -45,17 +45,22 @@ export const OpenedDocument = {
   },
 
   /**
-   * 読み込んだ中身を、開いたドキュメントか、画面に出すエラー一覧として解釈する。
+   * 解釈した結果を、開いたドキュメントか、画面に出すエラー一覧に振り分ける。
    *
-   * 解釈の規則（テキストの検証 → 版の解決 → 形の検証 → スキーマ検証）は外部変更の
-   * 取り込みと同一なので `DocumentReload` に委ね、ここは保存先と対にするだけにする。
-   * 同じ判定を 2 つ持つと、仕様が動いたときに片方だけ追従して食い違うため。
+   * スキーマ検証まで含めた振り分けは外部変更の取り込みと同一なので `DocumentReload`
+   * に委ね、ここは保存先と対にするだけにする。同じ判定を 2 つ持つと、仕様が動いた
+   * ときに片方だけ追従して食い違うため。
+   *
+   * @param path このドキュメントの保存先
+   * @param parsed 読み込んだ中身を解釈した結果
+   * @returns 開ける内容なら保存先と対にしたドキュメント、開けなければ画面に出す
+   *   エラー一覧
    */
-  fromContent(
+  fromParsed(
     path: string,
-    content: string,
+    parsed: Result<DesignDocument, readonly DocumentError[]>,
   ): Result<OpenedDocument, readonly DocumentError[]> {
-    const reload = DocumentReload.fromContent(content);
+    const reload = DocumentReload.fromParsed(parsed);
     switch (reload.kind) {
       case "reloaded":
         return Result.ok({ path, document: reload.document });

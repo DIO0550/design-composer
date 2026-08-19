@@ -17,7 +17,8 @@ export type DocumentSessionPorts = Readonly<{
 /**
  * 既存のファイルを開く（docs/01-file-format.md の表 / docs/05-architecture.md「Tauri IPC」）。
  *
- * マイグレーション判定・パース・バリデーションは `OpenedDocument.fromContent` の担当で、
+ * テキストの解釈（マイグレーション判定・パース）は `DocumentJson.parse`、その結果を
+ * 開いた状態かエラー一覧かへ振り分けるのは `OpenedDocument.fromParsed` の担当で、
  * ここは「選ばせて、読んで、解釈へ渡す」順序だけを持つ。
  *
  * @param canceled 選ばずに閉じたときに戻す状態。開く操作が無かったことにするため、
@@ -43,7 +44,10 @@ async function openWithDialog(
     return DocumentSession.failed({ kind: "io", error: loaded.error });
   }
 
-  const opened = OpenedDocument.fromContent(path, loaded.value);
+  const opened = OpenedDocument.fromParsed(
+    path,
+    DocumentJson.parse(loaded.value),
+  );
   return opened.ok
     ? DocumentSession.opened(opened.value)
     : DocumentSession.failed({ kind: "invalid", errors: opened.error });

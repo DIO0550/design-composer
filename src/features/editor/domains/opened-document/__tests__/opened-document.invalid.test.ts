@@ -23,7 +23,10 @@ function danglingRefContent(): string {
 }
 
 test("テキストが JSON として壊れているファイルは開けず、エラーの位置が分かる", () => {
-  const opened = OpenedDocument.fromContent(Path, '{ "formatVersion": ');
+  const opened = OpenedDocument.fromParsed(
+    Path,
+    DocumentJson.parse('{ "formatVersion": '),
+  );
 
   expect(opened.ok ? [] : opened.error).toStrictEqual([
     {
@@ -35,7 +38,10 @@ test("テキストが JSON として壊れているファイルは開けず、�
 });
 
 test("存在しない部品を参照しているファイルは開けず、そのノードが指される", () => {
-  const opened = OpenedDocument.fromContent(Path, danglingRefContent());
+  const opened = OpenedDocument.fromParsed(
+    Path,
+    DocumentJson.parse(danglingRefContent()),
+  );
 
   expect(opened.ok ? [] : opened.error).toStrictEqual([
     {

@@ -1,93 +1,39 @@
 import { expect, test } from "vitest";
+import { Artboard } from "@/domains/artboard";
+import { DesignDocument } from "@/domains/design-document";
+import type { DocumentError } from "@/domains/document-error";
+import { Result } from "@/utils/Result";
 import { DocumentReload } from "../index";
-import { artboardJson, contentOf } from "./setup";
 
-test("JSON として壊れている内容は、テキスト内の位置つきで拒まれる", () => {
-  const reload = DocumentReload.fromContent('{ "formatVersion": ');
+/** テキストの解釈が返す失敗。位置の割り当ては `libs/document-json` の担当。 */
+const SampleSyntaxError: DocumentError = {
+  kind: "syntax-error",
+  message: "expected ',' or '}'",
+  location: { kind: "text-position", position: 42 },
+};
 
-  expect(reload).toStrictEqual({
-    kind: "rejected",
-    errors: [
-      {
-        kind: "syntax-error",
-        message: expect.any(String),
-        location: { kind: "text-position", position: expect.any(Number) },
-      },
-    ],
-  });
-});
-
-test("同じキーが 2 度書かれている内容は、重複として拒まれる", () => {
-  const reload = DocumentReload.fromContent(
-    '{ "formatVersion": "1.0", "tokens": {}, "tokens": {}, "components": {}, "artboards": [] }',
-  );
+test("解釈に失敗していたら、その理由をそのまま拒む理由にする", () => {
+  const reload = DocumentReload.fromParsed(Result.err([SampleSyntaxError]));
 
   expect(reload).toStrictEqual({
     kind: "rejected",
-    errors: [
-      {
-        kind: "duplicate-key",
-        message: 'duplicate key "tokens"',
-        location: { kind: "text-position", position: expect.any(Number) },
-      },
-    ],
+    errors: [SampleSyntaxError],
   });
 });
 
-test("値の型が違う内容は、ドキュメント内のパスつきで拒まれる", () => {
-  const content = contentOf({
-    ...artboardJson(),
+test("スキーマに無い prop を持つドキュメントは、そのノードの名前つきで拒まれる", () => {
+  const document = DesignDocument.create({
     artboards: [
-      { name: "home", width: "とても広い", height: 240, children: [] },
-    ],
-  });
-
-  const reload = DocumentReload.fromContent(content);
-
-  expect(reload).toStrictEqual({
-    kind: "rejected",
-    errors: [
-      {
-        kind: "invalid-type",
-        message: expect.any(String),
-        location: { kind: "document-path", path: "artboards[0].width" },
-      },
-    ],
-  });
-});
-
-test("アプリより新しい形式の内容は、位置を持たないエラーとして拒まれる", () => {
-  const content = contentOf({ ...artboardJson(), formatVersion: "99.0" });
-
-  const reload = DocumentReload.fromContent(content);
-
-  expect(reload).toStrictEqual({
-    kind: "rejected",
-    errors: [
-      {
-        kind: "unsupported-format-version",
-        message: expect.any(String),
-        location: { kind: "whole-document" },
-      },
-    ],
-  });
-});
-
-test("スキーマに無い prop を書いた内容は、そのノードの名前つきで拒まれる", () => {
-  const content = contentOf({
-    ...artboardJson(),
-    artboards: [
-      {
+      Artboard.create({
         name: "home",
         width: 360,
         height: 240,
         props: { colour: "white" },
-        children: [],
-      },
+      }),
     ],
   });
 
-  const reload = DocumentReload.fromContent(content);
+  const reload = DocumentReload.fromParsed(Result.ok(document));
 
   expect(reload).toStrictEqual({
     kind: "rejected",
@@ -101,20 +47,19 @@ test("スキーマに無い prop を書いた内容は、そのノードの名�
   });
 });
 
-test("存在しない部品を参照する内容は、参照しているノードの名前つきで拒まれる", () => {
-  const content = contentOf({
-    ...artboardJson(),
+test("存在しない部品を参照するドキュメントは、参照しているノードの名前つきで拒まれる", () => {
+  const document = DesignDocument.create({
     artboards: [
-      {
+      Artboard.create({
         name: "home",
         width: 360,
         height: 240,
         children: [{ name: "cta", ref: "missing-button" }],
-      },
+      }),
     ],
   });
 
-  const reload = DocumentReload.fromContent(content);
+  const reload = DocumentReload.fromParsed(Result.ok(document));
 
   expect(reload).toStrictEqual({
     kind: "rejected",
@@ -126,4 +71,25 @@ test("存在しない部品を参照する内容は、参照しているノー�
       },
     ],
   });
+});
+
+test("スキーマ違反が 2 件あるドキュメントは、両方が並んで拒まれる", () => {
+  const document = DesignDocument.create({
+    artboards: [
+      Artboard.create({
+        name: "home",
+        width: 360,
+        height: 240,
+        props: { colour: "white" },
+        children: [{ name: "cta", ref: "missing-button" }],
+      }),
+    ],
+  });
+
+  const reload = DocumentReload.fromParsed(Result.ok(document));
+
+  const kinds =
+    reload.kind === "rejected" ? reload.errors.map((error) => error.kind) : [];
+
+  expect(kinds).toEqual(["unknown-prop", "dangling-ref"]);
 });

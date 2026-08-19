@@ -1,6 +1,6 @@
 import type { DesignDocument } from "@/domains/design-document";
 import { DocumentError } from "@/domains/document-error";
-import { DocumentJson } from "@/libs/document-json";
+import type { Result } from "@/utils/Result";
 
 /**
  * 外部変更で届いた内容を取り込んだ結果（docs/05-architecture.md「外部編集の検知」）。
@@ -9,10 +9,11 @@ import { DocumentJson } from "@/libs/document-json";
  * 「ドキュメントもエラーも持つ」中間状態を作らないのは、不正なファイルでは
  * 表示を差し替えず最後に正常だった状態を保つため（docs/03-schema.md「不正ファイル時の挙動」）。
  *
- * `errors` は必ず 1 件以上入る（拒む理由が無ければ `reloaded` になる）が、
- * 非空タプルでは縛っていない。テキストの解釈の失敗（`DocumentJson.parse` の `Err`）が
- * 空配列を返さないことは型に出ておらず、縛ると「起こらない空配列」の分岐を
- * ここで書く羽目になるため（rules/coding.md「対で縛るコストが釣り合わない場合」）。
+ * `errors` に入る拒む理由は、スキーマ検証由来なら 0 件のときに `reloaded` になり、
+ * テキストの解釈由来なら解釈した側が返した失敗をそのまま持つ。非空タプルでは縛っていない。
+ * 形の検証の失敗（`readonly JsonDecodeError[]`）が空配列を返さないことは型に出ておらず、
+ * 縛ると解釈する側に「起こらない空配列」のフォールバックを書く羽目になるため
+ * （rules/coding.md「対で縛るコストが釣り合わない場合」）。
  */
 export type DocumentReload =
   | Readonly<{ kind: "reloaded"; document: DesignDocument }>
@@ -20,15 +21,23 @@ export type DocumentReload =
 
 export const DocumentReload = {
   /**
-   * ファイルの中身を、描画に使えるドキュメントか、画面に出すエラー一覧として解釈する。
+   * 解釈した結果を、描画に使えるドキュメントか、画面に出すエラー一覧に振り分ける。
    *
-   * テキストの解釈（`libs/document-json`）に失敗した時点で返すのは、
-   * ドキュメントが組み立たっておらずスキーマ検証を走らせる相手がいないため。
-   * 仕様上どちらも「エラー」で警告という中間区分は無い（docs/03-schema.md「バリデーション仕様」）ので、
-   * 検出できたエラーはすべて 1 本の一覧にまとめて返す。
+   * テキストの解釈そのものを持たないのは、テキストの読み方が外部フォーマットの知識で
+   * `libs/` の担当だから（rules/architecture.md）。ここが足すのはスキーマ検証だけで、
+   * 解釈に失敗していればその時点で返す（ドキュメントが組み立っておらず、
+   * スキーマ検証を走らせる相手がいないため）。仕様上どちらも「エラー」で警告という
+   * 中間区分は無い（docs/03-schema.md「バリデーション仕様」）ので、検出できたエラーは
+   * すべて 1 本の一覧にまとめて返す。
+   *
+   * @param parsed テキストを解釈した結果。成功ならドキュメント、失敗なら画面に出す
+   *   エラー一覧
+   * @returns 解釈にもスキーマ検証にも通れば取り込んだ状態、どちらかで落ちれば
+   *   その理由を持つ拒んだ状態
    */
-  fromContent(content: string): DocumentReload {
-    const parsed = DocumentJson.parse(content);
+  fromParsed(
+    parsed: Result<DesignDocument, readonly DocumentError[]>,
+  ): DocumentReload {
     if (!parsed.ok) {
       return { kind: "rejected", errors: parsed.error };
     }
