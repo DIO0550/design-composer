@@ -8,9 +8,7 @@ import { DocumentSession } from "@/features/document-start/domains/document-sess
 import { DialogChoice } from "@/libs/document-dialog/fake";
 import { DocumentJson } from "@/libs/document-json";
 import { Option } from "@/utils/Option";
-import { Path, renderDocumentSession } from "./setup";
-
-const NewPath = "/work/untitled.dcmp";
+import { NewPath, Path, renderDocumentSession } from "./setup";
 
 test("ダイアログで選んだファイルが開かれる", async () => {
   const observer = renderDocumentSession(

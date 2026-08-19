@@ -13,8 +13,9 @@ export function artboardDocument(name: string): DesignDocument {
 /**
  * ファイルに載っている状態の `artboardDocument`。
  *
- * ここだけ `libs/` に触れるのは、「ファイルに載っている綴り」がまさに外部フォーマットの
- * 境界だから（`src/domains/` の production からの libs 依存は 0 件のまま）。
+ * `src/domains/` の側で `libs/` に触れるのは、フィクスチャとテストが「ファイルに載っている
+ * 綴り」を要るときだけ（`opened-document` のテストも同じ理由で触れている）。
+ * production からの libs 依存は 0 件のまま。
  *
  * @param name 収める artboard の名前
  * @returns そのドキュメントを保存したときのファイルの中身

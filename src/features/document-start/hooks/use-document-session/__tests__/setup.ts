@@ -9,6 +9,8 @@ import { useDocumentSession } from "../index";
 
 /** 既に置いてあるファイル。テストの中で開いているファイルは常に 1 つ。 */
 export const Path = "/work/login.dcmp";
+/** 新規作成の保存先。まだ置かれていないパス。 */
+export const NewPath = "/work/untitled.dcmp";
 
 export type SessionObserver = Readonly<{
   /** インメモリのファイル表。書き出された内容の確認に使う。 */

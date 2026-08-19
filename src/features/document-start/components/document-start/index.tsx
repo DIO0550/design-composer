@@ -10,10 +10,12 @@ import type { DocumentIpcError } from "@/libs/document-ipc";
  * 開けなかったエラーを画面に並べる手段。
  *
  * 開始画面が持つのは「どの失敗のときに一覧を出すか」までで、その一覧をどう綴るかは
- * 呼び出し側が決める（この画面は一覧の部品を知らない）。
+ * 呼び出し側が決める。ここが知っているのは一覧の部品ではなく、返るものが
+ * 絶対位置で下端に重なるという置かれ方だけ。
  *
  * @param errors 開こうとしたファイルが持っていた不正
- * @returns この節を基準に下端へ重ねる、エラーの一覧
+ * @returns この節の中で絶対位置に置かれる、エラーの一覧。位置を持たないものを返すと
+ *   案内の文と一緒に中央へ流れ込む（型でもテストでも縛れないので、視覚差分で見る）
  */
 type RenderDocumentErrors = (errors: readonly DocumentError[]) => ReactNode;
 
@@ -92,8 +94,9 @@ export function DocumentStart({
   renderErrors: RenderDocumentErrors;
 }>) {
   return (
-    // relative は renderErrors が返すものを下端へ重ねる基準。
-    // 一覧の側は絶対位置で置かれるので、ここを外すと画面の端まで抜ける。
+    // relative は renderErrors が返すものの包含ブロック。外すと基準がビューポートへ移り、
+    // 一覧の高さの上限（画面の半分）が帯のぶんだけ広がる。happy-dom は Tailwind を
+    // 解決しないのでテストでは落ちず、気づけるのは視覚差分だけ。
     <section
       aria-label="ドキュメントの開始"
       className="relative flex h-full flex-col items-center justify-center gap-2 bg-gray-100 text-gray-700 text-sm"
