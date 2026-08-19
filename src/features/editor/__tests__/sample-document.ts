@@ -1,7 +1,7 @@
 import { artboardDocument } from "@/domains/__tests__/sample-document";
 import { Artboard } from "@/domains/artboard";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
-import type { OpenedDocument } from "@/features/editor/domains/opened-document";
+import type { OpenedDocument } from "@/domains/opened-document";
 import { DocumentJson } from "@/libs/document-json";
 
 /**

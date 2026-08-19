@@ -5,10 +5,10 @@ import {
   useContext,
 } from "react";
 import type { DocumentError } from "@/domains/document-error";
+import { OpenedDocument } from "@/domains/opened-document";
 import { CanvasView } from "@/features/editor/domains/canvas-view";
 import type { DocumentSaveState } from "@/features/editor/domains/document-save-state";
 import type { Elapsed, ElapsedUnit } from "@/features/editor/domains/elapsed";
-import { OpenedDocument } from "@/features/editor/domains/opened-document";
 import type { ValueOf } from "@/types/ValueOf";
 import { Option } from "@/utils/Option";
 

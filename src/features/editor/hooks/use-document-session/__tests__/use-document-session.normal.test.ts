@@ -1,10 +1,10 @@
 import { expect, test } from "vitest";
+import { OpenedDocument } from "@/domains/opened-document";
 import {
   artboardContent,
   artboardDocument,
 } from "@/features/editor/__tests__/sample-document";
 import { DocumentSession } from "@/features/editor/domains/document-session";
-import { OpenedDocument } from "@/features/editor/domains/opened-document";
 import { DialogChoice } from "@/libs/document-dialog/fake";
 import { DocumentJson } from "@/libs/document-json";
 import { Option } from "@/utils/Option";

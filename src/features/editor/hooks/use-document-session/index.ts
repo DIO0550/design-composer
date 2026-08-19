@@ -1,6 +1,6 @@
 import { useState } from "react";
+import { OpenedDocument } from "@/domains/opened-document";
 import { DocumentSession } from "@/features/editor/domains/document-session";
-import { OpenedDocument } from "@/features/editor/domains/opened-document";
 import type { DocumentDialog } from "@/libs/document-dialog";
 import type { DocumentIpc } from "@/libs/document-ipc";
 import { DocumentJson } from "@/libs/document-json";
