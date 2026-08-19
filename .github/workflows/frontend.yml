@@ -98,7 +98,7 @@ jobs:
       # この 2 つは git hooks と Claude Code のフックにしか無く、どちらも
       # 発火しない実行環境がある（クローン直後は core.hooksPath が未設定で、
       # リモート実行環境では .claude/settings.json の配線が読まれないことがある）。
-      # 実際に doc の無い宣言が main へ入っている（src/features/editor/domains/elapsed）ので、
+      # 実際に doc の無い宣言が main へ入っている（src/domains/elapsed）ので、
       # 無条件に効く層へ上げる（.claude/hooks/README.md「強制力の序列」）。
       - name: doc コメント
         run: python3 .claude/hooks/lib/missing-doc-comments.py --all src

@@ -159,7 +159,7 @@ test("Tokens を開いたままファイルが壊れると、トークンの編�
  * ファイルが書き換わらないことはここでは見ない。自動保存は 500ms のデバウンスで、
  * このファイルはフェイクタイマーを使っていないため、タイマーを進めない限り実装が
  * 何をしてもファイルは変わらず assert が落ちない。書き込みの抑止は
- * `use-auto-save.file-invalid.test.tsx` が持つ。
+ * `document-sync` の `use-auto-save.file-invalid.test.tsx` が持つ。
  */
 
 test("ファイルが壊れると、Delete を押してもツリーからノードが消えない", async () => {
