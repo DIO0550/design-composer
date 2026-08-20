@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { TypeGlyph } from "@/components/type-glyph";
 import { NodeTemplate } from "@/domains/node-template";
-import type { SelectionKind } from "@/features/editor/domains/selection";
+import type { PrimitiveType } from "@/domains/primitive-schema";
 import type { AssetGrab } from "@/features/editor/types/AssetGrab";
 
 /**
@@ -49,7 +49,7 @@ export function AssetRow({
   accent,
   children,
 }: Readonly<{
-  kind: SelectionKind;
+  kind: PrimitiveType | "component";
   /** 行が指しているものの見え方。名前だけの行も、名前の下に補足が付く行もある。 */
   name: ReactNode;
   /** この行を掴んだときに運ぶもの。掴まれているのが自分かの判定にも使う。 */
