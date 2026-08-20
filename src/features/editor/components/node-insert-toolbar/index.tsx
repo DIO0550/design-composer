@@ -1,5 +1,5 @@
+import { TypeGlyph } from "@/components/type-glyph";
 import { type PrimitiveType, PrimitiveTypes } from "@/domains/primitive-schema";
-import { TypeGlyph } from "@/features/editor/components/type-glyph";
 import { NodeTemplate } from "@/features/editor/domains/node-template";
 import type { Option } from "@/utils/Option";
 

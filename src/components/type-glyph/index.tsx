@@ -1,15 +1,18 @@
-import type { SelectionKind } from "@/features/editor/domains/selection";
-
-/*
- * アイコンが表す対象の種別は `SelectionKind` をそのまま受ける。別名を立てないのは、
- * 構造が同じ型エイリアスを増やしても何も防がないため（rules/coding.md
- * 「構造が変わらない型エイリアスの新設は禁止」）。
+/**
+ * アイコンで描き分けられる対象の種別。
  *
- * パレットの部品**定義**の行にも `component` を渡す。`SelectionKind` は選択できる
- * ものの種別で、定義そのものは選択できないので語としてはずれるが、UI 案が定義と
- * インスタンスのどちらにも `◆` を置いている以上、描き分けの並びは 1 つでよい。
- * 並びを 2 つ持つと、primitive が増えたときに両方へ足す必要が出る。
+ * ここで綴っているのは、横断層（`src/components/`）が `domains/` を import できず
+ * （rules/architecture.md「依存方向のルール」）、選択の種別（`SelectionKind`）を
+ * そのまま受けられないため。呼び出し側はその種別を渡しているので、描けない種別が
+ * 増えれば呼び出し側がコンパイルエラーになる（`selection.glyph-kind.test.ts` が
+ * その関係を型で固定している）。
+ *
+ * パレットの部品**定義**の行にも `component` を渡す。選択できるものの種別としては
+ * 定義そのものが外れるが、UI 案が定義とインスタンスのどちらにも `◆` を置いている以上、
+ * 描き分けの並びは 1 つでよい。並びを 2 つ持つと、primitive が増えたときに両方へ足す
+ * 必要が出る。
  */
+export type TypeGlyphKind = "artboard" | "Box" | "Text" | "component";
 
 /** 字面と色の対で 1 つの種別を表す。 */
 type Glyph = Readonly<{ symbol: string; className: string }>;
@@ -35,7 +38,7 @@ const Glyphs = {
   Box: { symbol: "□", className: "text-[#00a0a0]" },
   Text: { symbol: "T", className: "font-bold text-[#c67c00]" },
   component: { symbol: "◆", className: "text-[#9747ff]" },
-} as const satisfies Readonly<Record<SelectionKind, Glyph>>;
+} as const satisfies Readonly<Record<TypeGlyphKind, Glyph>>;
 
 /**
  * 名前の左に出す型アイコン（UI 案 docs/Design Composer.html）。
@@ -43,7 +46,7 @@ const Glyphs = {
  * 読み上げからは外す。その行が何であるかは名前が伝えるので、アイコンまで読ませると
  * 「◆ primary-button」のように装飾を含んだ読み上げ名になる。
  */
-export function TypeGlyph({ kind }: Readonly<{ kind: SelectionKind }>) {
+export function TypeGlyph({ kind }: Readonly<{ kind: TypeGlyphKind }>) {
   const glyph = Glyphs[kind];
 
   return (

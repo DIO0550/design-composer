@@ -1,8 +1,8 @@
 import { useState } from "react";
+import { TypeGlyph } from "@/components/type-glyph";
 import type { ChildPosition } from "@/domains/child-position";
 import { Node, type PrimitiveNode } from "@/domains/node";
 import type { TextSchema } from "@/domains/primitive-schema";
-import { TypeGlyph } from "@/features/editor/components/type-glyph";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import {
   Selection,

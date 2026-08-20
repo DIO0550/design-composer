@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import { TokenReferrer } from "@/domains/design-document";
-import { TypeGlyph } from "@/features/editor/components/type-glyph";
+import { TypeGlyph } from "@/components/type-glyph";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import type { SelectionKind } from "@/features/editor/domains/selection";
 
