@@ -11,11 +11,11 @@ import {
   LeftPaneViewLabels,
   LeftPaneViews,
 } from "@/features/editor/components/left-pane-rail";
-import { TokenList } from "@/features/editor/components/token-list";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import type { NodeActions } from "@/features/editor/hooks/use-node-actions";
 import type { TokenActions } from "@/features/editor/hooks/use-token-actions";
 import type { AssetGrab } from "@/features/editor/types/AssetGrab";
+import { TokenList } from "@/features/tokens";
 import { Option } from "@/utils/Option";
 
 /**
@@ -70,7 +70,7 @@ function LeftPaneContent({
     case LeftPaneViews.Tokens:
       return (
         <TokenList
-          state={state}
+          selection={EditorState.tokenSelection(state)}
           onSelectToken={token.select}
           onAddToken={token.add}
         />

@@ -1,10 +1,10 @@
 import { type ReactElement, useId, useState } from "react";
 import { ColorSwatch } from "@/components/color-swatch";
 import { SegmentedControl } from "@/components/segmented-control";
+import { TypeGlyph } from "@/components/type-glyph";
 import type { PropEdit } from "@/domains/node";
 import type { Side, SidePair } from "@/domains/side";
 import { EditorLayout } from "@/features/editor/components/editor-layout";
-import { TypeGlyph } from "@/features/editor/components/type-glyph";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import {
   PropControl,

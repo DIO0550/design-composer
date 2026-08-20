@@ -1,5 +1,5 @@
+import { TypeGlyph } from "@/components/type-glyph";
 import type { Artboard } from "@/domains/artboard";
-import { TypeGlyph } from "@/features/editor/components/type-glyph";
 import { EditorState } from "@/features/editor/domains/editor-state";
 
 /** artboard が 1 枚も無いときの知らせ。 */

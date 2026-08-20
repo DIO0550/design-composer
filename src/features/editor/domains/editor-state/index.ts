@@ -1,13 +1,14 @@
 import type { Artboard } from "@/domains/artboard";
 import type { AxisLength } from "@/domains/axis-length";
 import { ChildPosition } from "@/domains/child-position";
-import { DesignDocument, TokenReferrer } from "@/domains/design-document";
+import { DesignDocument } from "@/domains/design-document";
 import { DocumentError } from "@/domains/document-error";
 import type { DocumentReload } from "@/domains/document-reload";
 import { FileValidity } from "@/domains/file-validity";
 import type { Instant } from "@/domains/instant";
 import { Node, type PropEdit } from "@/domains/node";
 import { Token, type TokenRef, TokenSet, TokenValue } from "@/domains/token";
+import { TokenSelection } from "@/domains/token-selection";
 import { EditHistory } from "@/features/editor/domains/edit-history";
 import { NodeTemplate } from "@/features/editor/domains/node-template";
 import { Selection } from "@/features/editor/domains/selection";
@@ -175,33 +176,6 @@ function withEdit(
  */
 function removableName(state: EditorState): Option<string> {
   return Option.map(selectedNode(state), (node) => node.name);
-}
-
-/**
- * 選択中のトークンの参照元を、渡された集め方で集める。
- *
- * 選択が無いときも空を返し、参照が 0 件であることと区別しない。消費側の見え方が
- * どちらでも同じ（`Used by` の枠も #147 の破線も出ない）ため、`Option` で区別しても
- * 分岐が増えるだけになる。区別が要る消費側が現れたら、選択を引数で受け取る形
- * （未選択の状態を渡せない形）にする。
- *
- * ドキュメントから引き直すので、編集・undo のあとも現在の中身を映す（`selectedToken` と同じ）。
- *
- * @param state 選択とドキュメントの出どころ
- * @param collect 集める範囲（全体か、キャンバス上だけか）
- * @returns 集まった参照元の並び。トークンを選んでいなければ空
- */
-function referrersOfSelectedToken(
-  state: EditorState,
-  collect: (
-    document: DesignDocument,
-    ref: TokenRef,
-  ) => readonly TokenReferrer[],
-): readonly TokenReferrer[] {
-  if (!state.selectedToken.some) {
-    return [];
-  }
-  return collect(EditorState.document(state), state.selectedToken.value);
 }
 
 export const EditorState = {
@@ -811,16 +785,6 @@ export const EditorState = {
     return current.some && current.value.name === name;
   },
 
-  /** そのトークンが選択中か。名前は種別の中でしか一意でないので種別も見る。 */
-  isTokenSelected(state: EditorState, ref: TokenRef): boolean {
-    const selected = state.selectedToken;
-    return (
-      selected.some &&
-      selected.value.kind === ref.kind &&
-      selected.value.name === ref.name
-    );
-  },
-
   /**
    * 編集するトークンを選ぶ（docs/06-ui.md「編集操作の一覧」の tokens 編集）。
    * ドキュメントに無いトークンは選択状態にしない（`select` と同じ理由で、
@@ -833,47 +797,26 @@ export const EditorState = {
     };
   },
 
+  /**
+   * 表示中のドキュメントと、その中で選ばれているトークンの対
+   * （`TokenSelection`。トークン編集の画面はこれだけで描ける）。
+   *
+   * 参照元・破線の相手・選択中かの判定はこの対に属するので、`EditorState` は
+   * 対を渡すところまでを持つ（#250）。
+   *
+   * @param state ドキュメントと選択の出どころ
+   * @returns 表示中のドキュメントと選択中のトークンの対
+   */
+  tokenSelection(state: EditorState): TokenSelection {
+    return TokenSelection.create(
+      EditorState.document(state),
+      state.selectedToken,
+    );
+  },
+
   /** 選択中のトークン。ドキュメントから引き直すので、値は常に現在のもの。 */
   selectedToken(state: EditorState): Option<Token> {
-    return Option.flatMap(state.selectedToken, (ref) =>
-      TokenSet.find(EditorState.document(state).tokens, ref),
-    );
-  },
-
-  /**
-   * 選択中のトークンを参照している箇所（UI 案 docs/Design Composer.html の `Used by` / #127）。
-   *
-   * 選択が無いときも空を返し、参照が 0 件であることと区別しない。消費側の見え方が
-   * どちらでも同じ（`Used by` の枠も #147 の破線も出ない）ため、`Option` で区別しても
-   * 分岐が増えるだけになる。区別が要る消費側が現れたら、選択を引数で受け取る形
-   * （未選択の状態を渡せない形）にする。
-   *
-   * ドキュメントから引き直すので、編集・undo のあとも現在の中身を映す（`selectedToken` と同じ）。
-   */
-  tokenReferrers(state: EditorState): readonly TokenReferrer[] {
-    return referrersOfSelectedToken(
-      state,
-      DesignDocument.collectTokenReferrers,
-    );
-  },
-
-  /**
-   * 選択中のトークンを参照している、キャンバス上のノードの名前（#147 の破線の相手）。
-   *
-   * artboard 自身の参照が落ちるのは `TokenReferrer.nodeNames` の担当で、
-   * 部品定義の中の参照はそもそも集める範囲に入っていない。
-   *
-   * @param state 選択とドキュメントの出どころ
-   * @returns 破線を引くノードの名前。重複は無い。artboard 自身と部品定義の中のノードは
-   *   含まない。トークンを選んでいなければ空
-   */
-  tokenReferrerNodeNames(state: EditorState): readonly string[] {
-    return TokenReferrer.nodeNames(
-      referrersOfSelectedToken(
-        state,
-        DesignDocument.collectCanvasTokenReferrers,
-      ),
-    );
+    return TokenSelection.token(EditorState.tokenSelection(state));
   },
 
   /**
