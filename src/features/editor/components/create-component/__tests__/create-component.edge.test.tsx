@@ -1,10 +1,9 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
-import { frozen } from "@/features/editor/__tests__/frozen-state";
 import { Option } from "@/utils/Option";
 import { CreateComponent } from "../index";
-import { setupState } from "./setup";
+import { setupInput } from "./setup";
 
 /** 部品化のボタンが押せない状態か。 */
 function isCreateDisabled(): boolean {
@@ -14,9 +13,12 @@ function isCreateDisabled(): boolean {
 }
 
 test("インスタンスを選んでいると部品化のボタンを押せない", () => {
+  const input = setupInput(Option.some("home-login"));
   render(
     <CreateComponent
-      state={setupState(Option.some("home-login"))}
+      document={input.document}
+      singleName={input.singleName}
+      isFrozen={false}
       onCreate={() => {}}
     />,
   );
@@ -25,9 +27,12 @@ test("インスタンスを選んでいると部品化のボタンを押せな�
 });
 
 test("インスタンスを選んでいると部品にできない理由が出る", () => {
+  const input = setupInput(Option.some("home-login"));
   render(
     <CreateComponent
-      state={setupState(Option.some("home-login"))}
+      document={input.document}
+      singleName={input.singleName}
+      isFrozen={false}
       onCreate={() => {}}
     />,
   );
@@ -36,9 +41,12 @@ test("インスタンスを選んでいると部品にできない理由が出�
 });
 
 test("artboard を選んでいると部品化のボタンを押せない", () => {
+  const input = setupInput(Option.some("home"));
   render(
     <CreateComponent
-      state={setupState(Option.some("home"))}
+      document={input.document}
+      singleName={input.singleName}
+      isFrozen={false}
       onCreate={() => {}}
     />,
   );
@@ -47,9 +55,12 @@ test("artboard を選んでいると部品化のボタンを押せない", () =>
 });
 
 test("artboard を選んでいると部品にできない理由が出る", () => {
+  const input = setupInput(Option.some("home"));
   render(
     <CreateComponent
-      state={setupState(Option.some("home"))}
+      document={input.document}
+      singleName={input.singleName}
+      isFrozen={false}
       onCreate={() => {}}
     />,
   );
@@ -58,16 +69,28 @@ test("artboard を選んでいると部品にできない理由が出る", () =>
 });
 
 test("何も選んでいないと部品化のボタンを押せない", () => {
+  const input = setupInput(Option.none);
   render(
-    <CreateComponent state={setupState(Option.none)} onCreate={() => {}} />,
+    <CreateComponent
+      document={input.document}
+      singleName={input.singleName}
+      isFrozen={false}
+      onCreate={() => {}}
+    />,
   );
 
   expect(isCreateDisabled()).toBe(true);
 });
 
 test("何も選んでいないと選ぶよう促される", () => {
+  const input = setupInput(Option.none);
   render(
-    <CreateComponent state={setupState(Option.none)} onCreate={() => {}} />,
+    <CreateComponent
+      document={input.document}
+      singleName={input.singleName}
+      isFrozen={false}
+      onCreate={() => {}}
+    />,
   );
 
   expect(screen.getByText("select a node to componentize")).toBeDefined();
@@ -75,9 +98,12 @@ test("何も選んでいないと選ぶよう促される", () => {
 
 test("部品名が空のままでは部品化のボタンを押せない", async () => {
   const user = userEvent.setup();
+  const input = setupInput(Option.some("home-panel"));
   render(
     <CreateComponent
-      state={setupState(Option.some("home-panel"))}
+      document={input.document}
+      singleName={input.singleName}
+      isFrozen={false}
       onCreate={() => {}}
     />,
   );
@@ -89,9 +115,12 @@ test("部品名が空のままでは部品化のボタンを押せない", async
 
 test("識別子の規則を満たさない部品名では部品化のボタンを押せない", async () => {
   const user = userEvent.setup();
+  const input = setupInput(Option.some("home-panel"));
   render(
     <CreateComponent
-      state={setupState(Option.some("home-panel"))}
+      document={input.document}
+      singleName={input.singleName}
+      isFrozen={false}
       onCreate={() => {}}
     />,
   );
@@ -108,9 +137,12 @@ test("識別子の規則を満たさない部品名では部品化のボタン�
 test("使えない部品名では Enter を押しても部品化が要求されない", async () => {
   const user = userEvent.setup();
   const onCreate = vi.fn();
+  const input = setupInput(Option.some("home-panel"));
   render(
     <CreateComponent
-      state={setupState(Option.some("home-panel"))}
+      document={input.document}
+      singleName={input.singleName}
+      isFrozen={false}
       onCreate={onCreate}
     />,
   );
@@ -126,9 +158,12 @@ test("使えない部品名では Enter を押しても部品化が要求され�
 
 test("使えない部品名のときはボタンにその旨が添えられる", async () => {
   const user = userEvent.setup();
+  const input = setupInput(Option.some("home-panel"));
   render(
     <CreateComponent
-      state={setupState(Option.some("home-panel"))}
+      document={input.document}
+      singleName={input.singleName}
+      isFrozen={false}
       onCreate={() => {}}
     />,
   );
@@ -148,9 +183,12 @@ test("使えない部品名のときはボタンにその旨が添えられる",
 
 test("部品にできる別のノードを選び直すと打ちかけの部品名が消える", async () => {
   const user = userEvent.setup();
+  const first = setupInput(Option.some("home-panel"));
   const { rerender } = render(
     <CreateComponent
-      state={setupState(Option.some("home-panel"))}
+      document={first.document}
+      singleName={first.singleName}
+      isFrozen={false}
       onCreate={() => {}}
     />,
   );
@@ -160,9 +198,12 @@ test("部品にできる別のノードを選び直すと打ちかけの部品�
     "info-panel",
   );
 
+  const second = setupInput(Option.some("home-title"));
   rerender(
     <CreateComponent
-      state={setupState(Option.some("home-title"))}
+      document={second.document}
+      singleName={second.singleName}
+      isFrozen={false}
       onCreate={() => {}}
     />,
   );
@@ -172,9 +213,12 @@ test("部品にできる別のノードを選び直すと打ちかけの部品�
 
 test("既に使われている名前では部品化のボタンを押せない", async () => {
   const user = userEvent.setup();
+  const input = setupInput(Option.some("home-panel"));
   render(
     <CreateComponent
-      state={setupState(Option.some("home-panel"))}
+      document={input.document}
+      singleName={input.singleName}
+      isFrozen={false}
       onCreate={() => {}}
     />,
   );
@@ -194,9 +238,14 @@ test("既に使われている名前では部品化のボタンを押せない",
  */
 test("ファイルが不正な間は使える部品名を入れても部品化のボタンを押せない", async () => {
   const user = userEvent.setup();
-  const selected = setupState(Option.some("home-panel"));
+  const input = setupInput(Option.some("home-panel"));
   const { rerender } = render(
-    <CreateComponent state={selected} onCreate={() => {}} />,
+    <CreateComponent
+      document={input.document}
+      singleName={input.singleName}
+      isFrozen={false}
+      onCreate={() => {}}
+    />,
   );
 
   await user.click(screen.getByRole("button", { name: /Create component/ }));
@@ -206,7 +255,14 @@ test("ファイルが不正な間は使える部品名を入れても部品化�
   );
   expect(isCreateDisabled()).toBe(false);
 
-  rerender(<CreateComponent state={frozen(selected)} onCreate={() => {}} />);
+  rerender(
+    <CreateComponent
+      document={input.document}
+      singleName={input.singleName}
+      isFrozen={true}
+      onCreate={() => {}}
+    />,
+  );
 
   expect(isCreateDisabled()).toBe(true);
 });

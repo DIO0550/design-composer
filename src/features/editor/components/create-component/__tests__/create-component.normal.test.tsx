@@ -3,12 +3,15 @@ import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
 import { Option } from "@/utils/Option";
 import { CreateComponent } from "../index";
-import { setupState } from "./setup";
+import { setupInput } from "./setup";
 
 test("部品にできるノードを選んでいると部品化のボタンを押せる", () => {
+  const input = setupInput(Option.some("home-panel"));
   render(
     <CreateComponent
-      state={setupState(Option.some("home-panel"))}
+      document={input.document}
+      singleName={input.singleName}
+      isFrozen={false}
       onCreate={() => {}}
     />,
   );
@@ -21,9 +24,12 @@ test("部品にできるノードを選んでいると部品化のボタンを�
 });
 
 test("部品化のボタンには部品を表すアイコンが付く", () => {
+  const input = setupInput(Option.some("home-panel"));
   render(
     <CreateComponent
-      state={setupState(Option.some("home-panel"))}
+      document={input.document}
+      singleName={input.singleName}
+      isFrozen={false}
       onCreate={() => {}}
     />,
   );
@@ -32,9 +38,12 @@ test("部品化のボタンには部品を表すアイコンが付く", () => {
 });
 
 test("部品にできるノードを選んでいると元にするものの名前が出る", () => {
+  const input = setupInput(Option.some("home-panel"));
   render(
     <CreateComponent
-      state={setupState(Option.some("home-panel"))}
+      document={input.document}
+      singleName={input.singleName}
+      isFrozen={false}
       onCreate={() => {}}
     />,
   );
@@ -44,9 +53,12 @@ test("部品にできるノードを選んでいると元にするものの名�
 
 test("部品化のボタンを押すと部品名の入力欄が出る", async () => {
   const user = userEvent.setup();
+  const input = setupInput(Option.some("home-panel"));
   render(
     <CreateComponent
-      state={setupState(Option.some("home-panel"))}
+      document={input.document}
+      singleName={input.singleName}
+      isFrozen={false}
       onCreate={() => {}}
     />,
   );
@@ -59,9 +71,12 @@ test("部品化のボタンを押すと部品名の入力欄が出る", async ()
 test("部品名を入れて押すとその名前で部品化が要求される", async () => {
   const user = userEvent.setup();
   const onCreate = vi.fn();
+  const input = setupInput(Option.some("home-panel"));
   render(
     <CreateComponent
-      state={setupState(Option.some("home-panel"))}
+      document={input.document}
+      singleName={input.singleName}
+      isFrozen={false}
       onCreate={onCreate}
     />,
   );
@@ -79,9 +94,12 @@ test("部品名を入れて押すとその名前で部品化が要求される",
 test("部品名を入れて Enter を押してもその名前で部品化が要求される", async () => {
   const user = userEvent.setup();
   const onCreate = vi.fn();
+  const input = setupInput(Option.some("home-panel"));
   render(
     <CreateComponent
-      state={setupState(Option.some("home-panel"))}
+      document={input.document}
+      singleName={input.singleName}
+      isFrozen={false}
       onCreate={onCreate}
     />,
   );
@@ -97,9 +115,12 @@ test("部品名を入れて Enter を押してもその名前で部品化が要�
 
 test("入力欄を開いている間も元にするものの名前は出たままになる", async () => {
   const user = userEvent.setup();
+  const input = setupInput(Option.some("home-panel"));
   render(
     <CreateComponent
-      state={setupState(Option.some("home-panel"))}
+      document={input.document}
+      singleName={input.singleName}
+      isFrozen={false}
       onCreate={() => {}}
     />,
   );

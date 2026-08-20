@@ -1,6 +1,6 @@
 import { DesignDocument } from "@/domains/design-document";
 import { Node } from "@/domains/node";
-import { EditorState } from "@/features/editor/domains/editor-state";
+import type { Option } from "@/utils/Option";
 
 /**
  * 今の選択に対する部品化（UI 案 docs/Design Composer.html の `Assets` 下部にある
@@ -29,17 +29,20 @@ export const Componentization = {
    * ドキュメントに残る未知の `type` のノードだけ部品にできなくなり、
    * ドメイン側の受理条件と静かにずれる。
    *
-   * @param state 選択とドキュメントの出どころ
+   * @param document 選択先を引くドキュメント
+   * @param singleName 選ばれている 1 つの名前。何も選んでいない・複数選んでいるなら不在
    * @returns 部品にできるノードを選んでいるなら元の名前つきの `ready`、
    *   それ以外は選んでいるものを表す理由
    */
-  forSelection(state: EditorState): Componentization {
-    const selected = EditorState.singleName(state);
-    if (!selected.some) {
+  forSelection(
+    document: DesignDocument,
+    singleName: Option<string>,
+  ): Componentization {
+    if (!singleName.some) {
       return { kind: "unselected" };
     }
-    const name = selected.value;
-    const node = DesignDocument.findNode(EditorState.document(state), name);
+    const name = singleName.value;
+    const node = DesignDocument.findNode(document, name);
     if (!node.some) {
       // 選択できるもののうちノードでないのは artboard だけ（`EditorState` の線引き）
       return { kind: "artboard" };

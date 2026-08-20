@@ -104,7 +104,12 @@ function leftPaneFooter(
       return Option.none;
     case LeftPaneViews.Assets:
       return Option.some(
-        <CreateComponent state={state} onCreate={node.createComponent} />,
+        <CreateComponent
+          document={EditorState.document(state)}
+          singleName={EditorState.singleName(state)}
+          isFrozen={EditorState.isFileInvalid(state)}
+          onCreate={node.createComponent}
+        />,
       );
     case LeftPaneViews.Tokens:
       return Option.none;

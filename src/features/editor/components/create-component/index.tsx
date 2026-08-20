@@ -1,7 +1,6 @@
 import { type ReactElement, useState } from "react";
 import { DesignDocument } from "@/domains/design-document";
 import { Componentization } from "@/features/editor/domains/componentization";
-import { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
 
 /**
@@ -192,13 +191,19 @@ function ReadyBody({
  * 入力欄はボタンを押してから出す。
  */
 export function CreateComponent({
-  state,
+  document,
+  singleName,
+  isFrozen,
   onCreate,
 }: Readonly<{
-  state: EditorState;
+  document: DesignDocument;
+  /** 選ばれている 1 つの名前。何も選んでいない・複数選んでいるなら不在 */
+  singleName: Option<string>;
+  /** ファイルが不正な間の凍結（#155）。左ペインが `inert` のまま描かれ続けるので UI 側でも見る */
+  isFrozen: boolean;
   onCreate: (componentName: string) => void;
 }>) {
-  const componentization = Componentization.forSelection(state);
+  const componentization = Componentization.forSelection(document, singleName);
 
   return (
     // `shrink-0` を外すと一覧が長いときにフッターが潰れるが、happy-dom は Tailwind を
@@ -207,8 +212,8 @@ export function CreateComponent({
       {componentization.kind === "ready" ? (
         <ReadyBody
           key={componentization.sourceName}
-          designDocument={EditorState.document(state)}
-          isFrozen={EditorState.isFileInvalid(state)}
+          designDocument={document}
+          isFrozen={isFrozen}
           onCreate={onCreate}
         />
       ) : (
