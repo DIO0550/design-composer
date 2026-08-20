@@ -12,6 +12,9 @@ import { TokenEditor } from "./index";
  *
  * 器（`EditorLayout.RightPane`）は編集画面の組み立てに属していてこの feature からは
  * import できないので、帯の高さと本文の余白だけをここで真似ている。
+ *
+ * **この写しが、器を落としたことに気づける唯一の手段**（テストは 1 件も落ちない）。
+ * `editor-layout` の `RightPaneHeading` / `RightPaneBody` を直したらここも直す。
  */
 function TokenEditorPanel(
   props: ComponentProps<typeof TokenEditor.Body>,

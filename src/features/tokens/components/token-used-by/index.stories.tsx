@@ -35,7 +35,7 @@ export const WithinLimit: Story = {
   },
 };
 
-/** `md` は artboard の余白・間隔と初期部品の余白から参照されており、上限を超える。 */
+/** `md` は artboard の間隔と初期部品の余白・角丸から参照されており、上限を超える。 */
 export const OverLimit: Story = {
   name: "上限を超える件数",
   args: {

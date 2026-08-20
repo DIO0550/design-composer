@@ -110,6 +110,10 @@ function RightPaneContent({
             帯と本文の器をここで着せる。器は 3 ペインの組み立ての一部なので
             `features/tokens` からは呼べない（`features/tokens/index.ts` の Why not）。
             選んでいなくても帯は残す。消すと選択のたびに本文の位置が帯のぶん動く。
+
+            **本文の器を落としてもテストは 1 件も落ちない** — 器が持つのは
+            スクロールと余白だけで、happy-dom はそれを解決しない。気づく手段は
+            `features/tokens/TokenEditor` のストーリーの視覚差分だけ。
           */}
           <EditorLayout.RightPane.Heading>
             <TokenEditor.Title selection={tokenSelection} />

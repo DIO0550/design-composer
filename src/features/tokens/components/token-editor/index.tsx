@@ -38,6 +38,9 @@ const KindLabels = {
  *
  * UI 案に無い枠線を足しているのは、白や薄い色のトークンが白い帯に溶けて
  * 見本が消えるため（UI 案の見本は `#111827` の 1 例だけで、この場合が出ていない）。
+ *
+ * Why not: `components/color-swatch` は使わない。UI 案は一覧の 12px の四角と、
+ * この帯の 14px の角丸チップを描き分けており、寄せるとどちらかが UI 案から離れる。
  */
 function TokenTitle({ token }: Readonly<{ token: Token }>) {
   return (

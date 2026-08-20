@@ -4,7 +4,7 @@
  * ここで綴っているのは、横断層（`src/components/`）が `domains/` を import できず
  * （rules/architecture.md「依存方向のルール」）、選択の種別（`SelectionKind`）を
  * そのまま受けられないため。呼び出し側はその種別を渡しているので、描けない種別が
- * 増えれば呼び出し側がコンパイルエラーになる（`selection.glyph-kind.test.ts` が
+ * 増えれば呼び出し側がコンパイルエラーになる（`selection.type.test.ts` が
  * その関係を型で固定している）。
  *
  * パレットの部品**定義**の行にも `component` を渡す。選択できるものの種別としては

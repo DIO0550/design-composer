@@ -27,18 +27,39 @@ function setupDocument(): DesignDocument {
 }
 
 /** そのトークンを選んだ状態の見出しを描く。 */
-function renderTitle(ref: TokenRef): void {
-  render(
+function renderTitle(ref: TokenRef): HTMLElement {
+  const { container } = render(
     <TokenEditor.Title
       selection={TokenSelection.create(setupDocument(), Option.some(ref))}
     />,
   );
+  return container;
+}
+
+/**
+ * 見出しの色見本。飾りとして読み上げから外してあり役割で引けないので、
+ * 値そのものを載せている style で引く（`token-list` の影の見本と同じ引き方）。
+ */
+function swatchIn(container: HTMLElement): Element | null {
+  return container.querySelector("[style*='background']");
 }
 
 test("編集中のトークンの名前が見出しに出る", () => {
   renderTitle({ kind: "colors", name: "primary" });
 
   expect(screen.getByRole("heading", { level: 2 }).textContent).toBe("primary");
+});
+
+test("色トークンの見出しには色見本が出る", () => {
+  const container = renderTitle({ kind: "colors", name: "primary" });
+
+  expect(swatchIn(container)).not.toBeNull();
+});
+
+test("色以外のトークンの見出しには色見本が出ない", () => {
+  const container = renderTitle({ kind: "spacing", name: "lg" });
+
+  expect(swatchIn(container)).toBeNull();
 });
 
 test("色トークンの種別は Color と出る", () => {
