@@ -29,3 +29,14 @@ test("スキーマに無い型のノードを選んでいてもそれを元に�
     sourceName: "home-unknown",
   });
 });
+
+/*
+ * 対照として、同じドキュメントに実在する artboard（`home`）が `artboard` を返すことを
+ * 隣のテストで固定してある（componentization.normal）。両方を見ることで、
+ * 「ノードで無ければ artboard」と決め打つ実装でも、artboard の判定を丸ごと消した実装でも落ちる。
+ */
+test("ドキュメントに無い名前を指していると何も選んでいない扱いになる", () => {
+  expect(
+    Componentization.forSelection(setupDocument(), Option.some("home-removed")),
+  ).toEqual({ kind: "unselected" });
+});

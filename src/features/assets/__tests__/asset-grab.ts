@@ -1,16 +1,17 @@
-import type { NodeTemplate } from "@/domains/node-template";
 import type { AssetGrab } from "@/features/assets/types/AssetGrab";
 import { Option } from "@/utils/Option";
 
+/*
+ * `grabbingComponent` は `__stories__/asset-grab.ts` にも要るため、そちらに置いて
+ * ここでは再輸出だけ行う。同じ形（`AssetGrab` の組み立て方）が 2 箇所に現れないよう
+ * にするため（`rules/coding.md`「同じ処理が 2 箇所に現れたら共通化する」）。
+ * `setupAssetGrab` はテスト固有のオーバーライド用途で、ストーリー側は要らないので
+ * こちらだけに置く。
+ */
+export { grabbingComponent } from "@/features/assets/__stories__/asset-grab";
+
 /**
- * パレットの行へ渡す掴む口。
- * パレット（`AssetsPanel`）とその中の 2 つの一覧（`ComponentList` / `PrimitiveList`）、
- * 部品化のフッター（`CreateComponent` は使わないが行の描画テストが要る）のテストが
- * どれも同じ形の値を要るため、feature 直下に置いて共有する。
- *
- * `features/editor` 側の消費者（左ペインのストーリー 1 箇所）はこの helper には
- * 依らず、`AssetGrab` の値を直接組む。features 間で `__tests__/` を deep import
- * しないようにするため。
+ * パレットの行へ渡す掴む口を、既定に上書きを足して組み立てる。
  *
  * 既定は「何も掴んでいない・掴んでも何も起きない」で、確かめたいものだけを渡す。
  *
@@ -19,11 +20,4 @@ import { Option } from "@/utils/Option";
  */
 export function setupAssetGrab(overrides: Partial<AssetGrab> = {}): AssetGrab {
   return { dragged: Option.none, onGrab: () => {}, ...overrides };
-}
-
-/** その部品を掴んでいる状態。 */
-export function grabbingComponent(componentName: string): AssetGrab {
-  return setupAssetGrab({
-    dragged: Option.some<NodeTemplate>({ kind: "instance", componentName }),
-  });
 }

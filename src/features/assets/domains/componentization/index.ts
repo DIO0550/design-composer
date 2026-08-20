@@ -43,12 +43,18 @@ export const Componentization = {
     }
     const name = singleName.value;
     const node = DesignDocument.findNode(document, name);
-    if (!node.some) {
-      // 選択できるもののうちノードでないのは artboard だけ（`EditorState` の線引き）
-      return { kind: "artboard" };
+    if (node.some) {
+      return Node.isRef(node.value)
+        ? { kind: "instance" }
+        : { kind: "ready", sourceName: name };
     }
-    return Node.isRef(node.value)
-      ? { kind: "instance" }
-      : { kind: "ready", sourceName: name };
+    /*
+     * ノードでないなら artboard かを引き直す。「ノードで無ければ artboard」と決め打つと、
+     * ドキュメントに無い名前（消えたノードを指したままの選択など）が黙って artboard として
+     * 扱われる。どちらでも無い名前は何も選んでいないのと同じなので `unselected` に落とす。
+     */
+    return DesignDocument.findArtboard(document, name).some
+      ? { kind: "artboard" }
+      : { kind: "unselected" };
   },
 } as const;

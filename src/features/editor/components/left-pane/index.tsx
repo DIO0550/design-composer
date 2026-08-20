@@ -1,7 +1,11 @@
 import type { ReactElement } from "react";
 import { DesignDocument } from "@/domains/design-document";
+import {
+  type AssetGrab,
+  AssetsPanel,
+  CreateComponent,
+} from "@/features/assets";
 import { ArtboardList } from "@/features/editor/components/artboard-list";
-import { type AssetGrab, AssetsPanel, CreateComponent } from "@/features/assets";
 import { DocumentTree } from "@/features/editor/components/document-tree";
 import { LeftPanePanel } from "@/features/editor/components/left-pane-panel";
 import {
