@@ -35,7 +35,7 @@ import { PropertyPanel } from "@/features/editor/components/property-panel";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { NodeDrag } from "@/features/editor/domains/node-drag";
 import { DraggedNode } from "@/features/editor/domains/node-drop";
-import type { NodeTemplate } from "@/features/editor/domains/node-template";
+import type { NodeTemplate } from "@/domains/node-template";
 import {
   type CanvasViewControl,
   useCanvasView,

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { TypeGlyph } from "@/components/type-glyph";
-import { NodeTemplate } from "@/features/editor/domains/node-template";
+import { NodeTemplate } from "@/domains/node-template";
 import type { SelectionKind } from "@/features/editor/domains/selection";
 import type { AssetGrab } from "@/features/editor/types/AssetGrab";
 

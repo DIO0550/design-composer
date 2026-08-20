@@ -1,5 +1,5 @@
 import type { PointerEvent as ReactPointerEvent } from "react";
-import type { NodeTemplate } from "@/features/editor/domains/node-template";
+import type { NodeTemplate } from "@/domains/node-template";
 import type { Option } from "@/utils/Option";
 
 /**

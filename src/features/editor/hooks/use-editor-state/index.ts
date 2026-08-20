@@ -7,7 +7,7 @@ import type { Instant } from "@/domains/instant";
 import type { PropEdit } from "@/domains/node";
 import type { TokenRef, TokenValue } from "@/domains/token";
 import { EditorState } from "@/features/editor/domains/editor-state";
-import type { NodeTemplate } from "@/features/editor/domains/node-template";
+import type { NodeTemplate } from "@/domains/node-template";
 import type { TokenTemplate } from "@/features/editor/domains/token-template";
 import { Option } from "@/utils/Option";
 

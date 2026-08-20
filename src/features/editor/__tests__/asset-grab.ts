@@ -1,4 +1,4 @@
-import type { NodeTemplate } from "@/features/editor/domains/node-template";
+import type { NodeTemplate } from "@/domains/node-template";
 import type { AssetGrab } from "@/features/editor/types/AssetGrab";
 import { Option } from "@/utils/Option";
 

@@ -11,7 +11,7 @@ import {
   type DropTarget,
   DropZone,
 } from "@/features/editor/domains/node-drop";
-import type { NodeTemplate } from "@/features/editor/domains/node-template";
+import type { NodeTemplate } from "@/domains/node-template";
 import { CanvasPointer } from "@/features/editor/utils/CanvasPointer";
 import { CanvasDom } from "@/libs/canvas-dom";
 import { ElementEx } from "@/utils/ElementEx";

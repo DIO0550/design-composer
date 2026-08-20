@@ -10,7 +10,7 @@ import { Node, type PropEdit } from "@/domains/node";
 import { Token, type TokenRef, TokenSet, TokenValue } from "@/domains/token";
 import { TokenSelection } from "@/domains/token-selection";
 import { EditHistory } from "@/features/editor/domains/edit-history";
-import { NodeTemplate } from "@/features/editor/domains/node-template";
+import { NodeTemplate } from "@/domains/node-template";
 import { Selection } from "@/features/editor/domains/selection";
 import { SelectionState } from "@/features/editor/domains/selection-state";
 import { TokenTemplate } from "@/features/editor/domains/token-template";
