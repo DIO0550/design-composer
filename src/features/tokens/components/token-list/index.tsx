@@ -1,13 +1,12 @@
 import { type ReactElement, useState } from "react";
 import { ColorSwatch } from "@/components/color-swatch";
 import { Token, type TokenKind, type TokenRef } from "@/domains/token";
-import { EditorState } from "@/features/editor/domains/editor-state";
+import { TokenSelection } from "@/domains/token-selection";
 import {
   type TokenPreview,
   type TokenRow,
   TokenSection,
-} from "@/features/editor/domains/token-control";
-import type { TokenTemplate } from "@/features/editor/domains/token-template";
+} from "@/features/tokens/domains/token-control";
 import { SetEx } from "@/utils/SetEx";
 
 /** 見本の枠。どの種別でも同じ幅を空けて、名前の左端を揃える。 */
@@ -81,17 +80,17 @@ function PreviewSlot({
  */
 function TokenRowItem({
   row,
-  state,
+  selection,
   onSelect,
 }: Readonly<{
   row: TokenRow;
-  state: EditorState;
+  selection: TokenSelection;
   onSelect: (ref: TokenRef) => void;
 }>): ReactElement {
   return (
     <button
       type="button"
-      aria-current={EditorState.isTokenSelected(state, Token.ref(row.token))}
+      aria-current={TokenSelection.isSelected(selection, Token.ref(row.token))}
       onClick={() => onSelect(Token.ref(row.token))}
       className="flex w-full items-center gap-2 rounded py-1 pr-3 pl-6 text-xs hover:bg-gray-100 aria-[current=true]:bg-blue-100 aria-[current=true]:text-blue-900"
     >
@@ -120,7 +119,7 @@ function SectionHeading({
   section: TokenSection;
   isOpen: boolean;
   onToggle: () => void;
-  onAdd: (template: TokenTemplate) => void;
+  onAdd: (kind: TokenKind) => void;
 }>): ReactElement {
   const kind = section.kind;
 
@@ -146,7 +145,7 @@ function SectionHeading({
         <button
           type="button"
           aria-label={`${kind} にトークンを追加`}
-          onClick={() => onAdd(TokenSection.addTemplate(section))}
+          onClick={() => onAdd(kind)}
           className="px-1 text-gray-500 text-sm hover:text-gray-900"
         >
           +
@@ -165,15 +164,15 @@ function SectionHeading({
  * @returns 種別ごとの見出しと、開いている種別の行を並べた一覧
  */
 export function TokenList({
-  state,
+  selection,
   onSelectToken,
   onAddToken,
 }: Readonly<{
-  state: EditorState;
+  selection: TokenSelection;
   onSelectToken: (ref: TokenRef) => void;
-  onAddToken: (template: TokenTemplate) => void;
+  onAddToken: (kind: TokenKind) => void;
 }>): ReactElement {
-  const sections = TokenSection.forDocument(state);
+  const sections = TokenSection.forDocument(selection.document);
   /*
    * 開いた直後は最初の種別だけを開く（UI 案 docs/Design Composer.html の
    * tokens 状態が colors だけ開いた形）。
@@ -201,7 +200,7 @@ export function TokenList({
                   <TokenRowItem
                     key={row.token.name}
                     row={row}
-                    state={state}
+                    selection={selection}
                     onSelect={onSelectToken}
                   />
                 ))

@@ -1,4 +1,4 @@
-import { type ReactElement, type ReactNode, useState } from "react";
+import { type ReactElement, type ReactNode, useMemo, useState } from "react";
 import type { DocumentError } from "@/domains/document-error";
 import { DocumentSaveState } from "@/domains/document-save-state";
 import { FileValidity } from "@/domains/file-validity";
@@ -32,8 +32,6 @@ import {
 } from "@/features/editor/components/left-pane-rail";
 import { NodeInsertToolbar } from "@/features/editor/components/node-insert-toolbar";
 import { PropertyPanel } from "@/features/editor/components/property-panel";
-import { TokenDashedNodes } from "@/features/editor/components/token-dashed-nodes";
-import { TokenEditor } from "@/features/editor/components/token-editor";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { NodeDrag } from "@/features/editor/domains/node-drag";
 import { DraggedNode } from "@/features/editor/domains/node-drop";
@@ -52,6 +50,7 @@ import {
   type TokenActions,
   useTokenActions,
 } from "@/features/editor/hooks/use-token-actions";
+import { TokenDashedNodes, TokenEditor } from "@/features/tokens";
 import type { Clock } from "@/libs/clock";
 import type { DocumentIpc } from "@/libs/document-ipc";
 import { Option } from "@/utils/Option";
@@ -101,15 +100,29 @@ function RightPaneContent({
     return inspector;
   }
 
+  const tokenSelection = EditorState.tokenSelection(state);
+
   switch (view) {
     case LeftPaneViews.Tokens:
       return (
-        <TokenEditor
-          state={state}
-          onSetTokenValue={token.setValue}
-          onRenameToken={token.rename}
-          onRemoveToken={token.remove}
-        />
+        <>
+          {/*
+            帯と本文の器をここで着せる。器は 3 ペインの組み立ての一部なので
+            `features/tokens` からは呼べない（`features/tokens/index.ts` の Why not）。
+            選んでいなくても帯は残す。消すと選択のたびに本文の位置が帯のぶん動く。
+          */}
+          <EditorLayout.RightPane.Heading>
+            <TokenEditor.Title selection={tokenSelection} />
+          </EditorLayout.RightPane.Heading>
+          <EditorLayout.RightPane.Body>
+            <TokenEditor.Body
+              selection={tokenSelection}
+              onSetTokenValue={token.setValue}
+              onRenameToken={token.rename}
+              onRemoveToken={token.remove}
+            />
+          </EditorLayout.RightPane.Body>
+        </>
       );
     case LeftPaneViews.Layers:
     case LeftPaneViews.Assets:
@@ -180,6 +193,16 @@ function CanvasDockContent({
   onReveal: (nodeName: string) => void;
   fileRevert: FileRevertControl;
 }>): ReactElement {
+  /*
+   * 対をここで 1 つだけ作る。帯（`TokenDashedNodes`）はこれを覚えて数え直しを避けるので、
+   * レンダーのたびに作り直すと覚えたものが毎回捨てられる（パン / ズームで下端まで
+   * 再レンダーされる）。
+   */
+  const tokenSelection = useMemo(
+    () => EditorState.tokenSelection(state),
+    [state],
+  );
+
   switch (dock.kind) {
     case "file-invalid":
       return (
@@ -196,7 +219,7 @@ function CanvasDockContent({
             壊れる前に選んでいたトークンの破線はキャンバスに残る。ここへ出さないと、
             破線だけが出て何を指しているか読めない状態が画面に残る。
           */}
-          <TokenDashedNodes state={state} />
+          <TokenDashedNodes selection={tokenSelection} />
         </CanvasDockStack>
       );
     case "editable":
@@ -207,7 +230,7 @@ function CanvasDockContent({
             origin={DocumentErrorOrigins.Document}
             onReveal={onReveal}
           />
-          <TokenDashedNodes state={state} />
+          <TokenDashedNodes selection={tokenSelection} />
           <NodeInsertToolbar
             isInsertEnabled={node.isInsertEnabled}
             dragged={dragged}

@@ -1,3 +1,4 @@
+import type { DesignDocument } from "@/domains/design-document";
 import { Px } from "@/domains/px";
 import {
   type BoxShadowValue,
@@ -15,8 +16,7 @@ import {
   TypographyFieldEdit,
   TypographyToken,
 } from "@/domains/token";
-import { EditorState } from "@/features/editor/domains/editor-state";
-import type { TokenTemplate } from "@/features/editor/domains/token-template";
+import { TokenSelection } from "@/domains/token-selection";
 import { Option } from "@/utils/Option";
 
 /*
@@ -24,8 +24,8 @@ import { Option } from "@/utils/Option";
  * 「編集操作の一覧」の tokens 編集）。種別ごとの見せ方・入力欄の対応表をここに集め、
  * 一覧とエディタのコンポーネント側には種別で分岐するコードを書かない。
  *
- * 「入力欄」「行」「プレビュー」はエディタ画面の語彙なので、この導出は
- * `src/domains/` ではなく feature 側に置く（`prop-control` と同じ理由。
+ * 「入力欄」「行」「プレビュー」はトークン編集画面の語彙なので、この導出は
+ * `src/domains/` ではなくこの feature に置く（`prop-control` と同じ理由。
  * `Token` に `controlInput()` を生やすと core が UI の表現を知ることになる）。
  */
 
@@ -198,18 +198,16 @@ function valueTextOf(token: Token): string {
 }
 
 export const TokenSection = {
-  /** そのセクションへ足すときの指定。 */
-  addTemplate(section: TokenSection): TokenTemplate {
-    return { kind: section.kind };
-  },
-
   /**
    * トークン一覧に出すセクションの並び。
    * 種別は `TokenSet.kinds()` の順、種別内は TokenSet が持つ定義順を保つ。
    * トークンが1つも無い種別も見出しだけ出す（足す先が画面から消えないため）。
+   *
+   * @param document トークンの出どころ
+   * @returns 種別ごとのセクションの並び。トークンが無い種別も 1 つ並ぶ
    */
-  forDocument(state: EditorState): readonly TokenSection[] {
-    const tokens = EditorState.document(state).tokens;
+  forDocument(document: DesignDocument): readonly TokenSection[] {
+    const tokens = document.tokens;
     return TokenSet.kinds().map((kind) => ({
       kind,
       rows: TokenSet.tokensOf(tokens, kind).map((token) => ({
@@ -465,10 +463,12 @@ function typographyValueFrom(
 export const TokenControl = {
   /**
    * 選択中のトークンの編集欄（docs/06-ui.md「編集操作の一覧」の tokens 編集）。
-   * 選択が無いときは空になる。
+   *
+   * @param selection ドキュメントと、その中で選ばれているトークン
+   * @returns 編集欄一式。トークンを選んでいなければ `none`
    */
-  forSelection(state: EditorState): Option<TokenControl> {
-    return Option.map(EditorState.selectedToken(state), (token) => ({
+  forSelection(selection: TokenSelection): Option<TokenControl> {
+    return Option.map(TokenSelection.token(selection), (token) => ({
       token,
       fields: fieldsOf(token),
     }));

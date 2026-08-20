@@ -1,8 +1,7 @@
 import type { ReactElement } from "react";
+import { TypeGlyph, type TypeGlyphKind } from "@/components/type-glyph";
 import { TokenReferrer } from "@/domains/design-document";
-import { TypeGlyph } from "@/components/type-glyph";
-import { EditorState } from "@/features/editor/domains/editor-state";
-import type { SelectionKind } from "@/features/editor/domains/selection";
+import { TokenSelection } from "@/domains/token-selection";
 
 /**
  * 枠の中に出す行数の上限。
@@ -14,18 +13,18 @@ const VisibleRowLimit = 3;
 /**
  * 参照元に当たる型アイコン。
  *
- * 種別の語彙は `Selection` が持つものに合わせる（`TypeGlyph` が受けるのがそれで、
- * ツリーの行も同じ語彙でアイコンを描く）。部品定義は選択の対象ではないが、
- * 指しているものが部品である点はインスタンスと同じなので同じアイコンになる。
+ * 種別の語彙は `TypeGlyph` が受けるものに合わせる（ツリーの行も同じ語彙でアイコンを
+ * 描く）。部品定義は選択の対象ではないが、指しているものが部品である点は
+ * インスタンスと同じなので同じアイコンになる。
  *
- * `switch` に `default` を置かず戻り値を `SelectionKind`（`undefined` を含まない）に
+ * `switch` に `default` を置かず戻り値を `TypeGlyphKind`（`undefined` を含まない）に
  * しているので、参照元の種類を足してここを足し忘れるとコンパイルエラーになる
  * （rules/coding.md「列挙した状態の網羅を型で強制する」）。
  *
  * @param referrer アイコンを出したい参照元
  * @returns その行に描くアイコンの種類
  */
-function glyphKindOf(referrer: TokenReferrer): SelectionKind {
+function glyphKindOf(referrer: TokenReferrer): TypeGlyphKind {
   switch (referrer.target) {
     case "artboard":
       return "artboard";
@@ -74,9 +73,9 @@ function UsedByRow({
  * @returns 見出しと件数、参照元の行（0 件なら枠を出さない）
  */
 export function TokenUsedBy({
-  state,
-}: Readonly<{ state: EditorState }>): ReactElement {
-  const referrers = EditorState.tokenReferrers(state);
+  selection,
+}: Readonly<{ selection: TokenSelection }>): ReactElement {
+  const referrers = TokenSelection.collectReferrers(selection);
   const visibleReferrers = referrers.slice(0, VisibleRowLimit);
   const hiddenCount = referrers.length - visibleReferrers.length;
 

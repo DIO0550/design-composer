@@ -45,12 +45,10 @@ test("同じ名前でも種別が違えば別のトークンとして扱う", ()
     name: "sm",
   });
 
-  expect(
-    EditorState.isTokenSelected(state, { kind: "spacing", name: "sm" }),
-  ).toBe(true);
-  expect(
-    EditorState.isTokenSelected(state, { kind: "shadows", name: "sm" }),
-  ).toBe(false);
+  /* 種別まで見ていることは中身で分かる（`shadows.sm` は値の形が違う）。 */
+  expect(EditorState.selectedToken(state)).toEqual(
+    Option.some({ kind: "spacing", name: "sm", value: 8 }),
+  );
 });
 
 test("トークンを追加すると種別の中で衝突しない名前が付く", () => {
@@ -170,7 +168,7 @@ test("ノードの選択とトークンの選択は同時に持てる", () => {
   );
 
   expect(EditorState.singleName(state)).toEqual(Option.some("home"));
-  expect(
-    EditorState.isTokenSelected(state, { kind: "colors", name: "primary" }),
-  ).toBe(true);
+  expect(EditorState.selectedToken(state)).toEqual(
+    Option.some({ kind: "colors", name: "primary", value: "#3b82f6" }),
+  );
 });

@@ -3,30 +3,41 @@ import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
 import type { TokenRef } from "@/domains/token";
-import { EditorState } from "@/features/editor/domains/editor-state";
+import { TokenSelection } from "@/domains/token-selection";
+import { Option } from "@/utils/Option";
 import { TokenList } from "../index";
 
 const Noop = () => {};
 
-/** 5 種別すべてに 1 件ずつ持つドキュメントの編集状態。 */
-function setupState(): EditorState {
-  return EditorState.create(
-    DesignDocument.create({
-      tokens: {
-        colors: { primary: "#3b82f6" },
-        spacing: { lg: 24 },
-        radius: { md: 8 },
-        shadows: { sm: { x: 0, y: 1, blur: 3, color: "#0000001a" } },
-        typography: {
-          body: { fontSize: 16, lineHeight: 1.6, fontWeight: 400 },
-        },
+/** 5 種別すべてに 1 件ずつ持つドキュメント。 */
+function setupDocument(): DesignDocument {
+  return DesignDocument.create({
+    tokens: {
+      colors: { primary: "#3b82f6" },
+      spacing: { lg: 24 },
+      radius: { md: 8 },
+      shadows: { sm: { x: 0, y: 1, blur: 3, color: "#0000001a" } },
+      typography: {
+        body: { fontSize: 16, lineHeight: 1.6, fontWeight: 400 },
       },
-    }),
-  );
+    },
+  });
 }
 
-function renderList(state: EditorState = setupState()) {
-  render(<TokenList state={state} onSelectToken={Noop} onAddToken={Noop} />);
+/** そのトークンを選んでいる状態。 */
+function selectionOf(ref: TokenRef): TokenSelection {
+  return TokenSelection.create(setupDocument(), Option.some(ref));
+}
+
+function renderList(
+  selection: TokenSelection = TokenSelection.create(
+    setupDocument(),
+    Option.none,
+  ),
+) {
+  render(
+    <TokenList selection={selection} onSelectToken={Noop} onAddToken={Noop} />,
+  );
 }
 
 test("5種別すべての見出しが件数付きで並ぶ", () => {
@@ -93,7 +104,7 @@ test("複合オブジェクトの種別の行も押して選べる", async () =>
   const selected: TokenRef[] = [];
   render(
     <TokenList
-      state={setupState()}
+      selection={TokenSelection.create(setupDocument(), Option.none)}
       onSelectToken={(ref) => selected.push(ref)}
       onAddToken={Noop}
     />,
@@ -118,9 +129,7 @@ test("影の行の見本にはその影が当たる", async () => {
 });
 
 test("選択中のトークンの行が選択済みとして示される", () => {
-  renderList(
-    EditorState.selectToken(setupState(), { kind: "colors", name: "primary" }),
-  );
+  renderList(selectionOf({ kind: "colors", name: "primary" }));
 
   expect(
     screen
@@ -131,9 +140,7 @@ test("選択中のトークンの行が選択済みとして示される", () =>
 
 test("同じ名前でも種別が違えば選択済みにならない", async () => {
   const user = userEvent.setup();
-  renderList(
-    EditorState.selectToken(setupState(), { kind: "shadows", name: "sm" }),
-  );
+  renderList(selectionOf({ kind: "shadows", name: "sm" }));
 
   await user.click(screen.getByRole("button", { name: /^radius 1$/ }));
 

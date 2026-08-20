@@ -1,11 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
-import { SampleEditorState } from "@/features/editor/__stories__/sample-editor-state";
-import { EditorState } from "@/features/editor/domains/editor-state";
+import {
+  NoTokenSelection,
+  sampleTokenSelection,
+} from "@/features/tokens/__stories__/sample-token-document";
 import { TokenList } from "./index";
 
 const meta = {
-  title: "features/editor/TokenList",
+  title: "features/tokens/TokenList",
   component: TokenList,
   parameters: { layout: "padded" },
   decorators: [
@@ -24,15 +26,12 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   name: "colors だけが開いている",
-  args: { state: SampleEditorState },
+  args: { selection: NoTokenSelection },
 };
 
 export const ColorSelected: Story = {
   name: "色トークンを選択中",
   args: {
-    state: EditorState.selectToken(SampleEditorState, {
-      kind: "colors",
-      name: "primary",
-    }),
+    selection: sampleTokenSelection({ kind: "colors", name: "primary" }),
   },
 };

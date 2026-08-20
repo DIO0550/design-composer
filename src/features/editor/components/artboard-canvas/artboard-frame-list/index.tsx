@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { TokenSelection } from "@/domains/token-selection";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { NodeDrag } from "@/features/editor/domains/node-drag";
 import type { NodeDragControl } from "@/features/editor/hooks/use-node-drag";
@@ -72,7 +73,10 @@ export function ArtboardFrameList({
    * （`compiled` を覚えているのと同じ理由）。
    */
   const tokenReferrerNames = useMemo(
-    () => EditorState.tokenReferrerNodeNames(state),
+    () =>
+      TokenSelection.collectCanvasReferrerNames(
+        EditorState.tokenSelection(state),
+      ),
     [state],
   );
 

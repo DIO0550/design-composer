@@ -1,22 +1,24 @@
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
 import type { TokenKind } from "@/domains/token";
-import { EditorState } from "@/features/editor/domains/editor-state";
+import { TokenSelection } from "@/domains/token-selection";
 import { Font } from "@/utils/Font";
 import { Option } from "@/utils/Option";
 import { TokenControl, TokenSection } from "../index";
-import { fieldOf, fieldsOf, setupState } from "./setup";
+import { fieldOf, fieldsOf, setupDocument } from "./setup";
 
-function sectionOf(state: EditorState, kind: TokenKind): TokenSection {
+function sectionOf(document: DesignDocument, kind: TokenKind): TokenSection {
   return Option.unwrap(
     Option.fromNullable(
-      TokenSection.forDocument(state).find((section) => section.kind === kind),
+      TokenSection.forDocument(document).find(
+        (section) => section.kind === kind,
+      ),
     ),
   );
 }
 
 test("一覧には5種別すべてのセクションが仕様の順で並ぶ", () => {
-  const sections = TokenSection.forDocument(setupState());
+  const sections = TokenSection.forDocument(setupDocument());
 
   expect(sections.map((section) => section.kind)).toEqual([
     "colors",
@@ -28,33 +30,33 @@ test("一覧には5種別すべてのセクションが仕様の順で並ぶ", (
 });
 
 test("トークンを1つも持たない種別も見出しだけ並ぶ", () => {
-  const state = EditorState.create(DesignDocument.create({}));
+  const document = DesignDocument.create({});
 
-  expect(TokenSection.forDocument(state)).toHaveLength(5);
+  expect(TokenSection.forDocument(document)).toHaveLength(5);
 });
 
 test("色の行には色見本と hex が出る", () => {
-  const [row] = sectionOf(setupState(), "colors").rows;
+  const [row] = sectionOf(setupDocument(), "colors").rows;
 
   expect(row.preview).toEqual({ kind: "swatch", color: "#3b82f6" });
   expect(row.valueText).toBe("#3b82f6");
 });
 
 test("長さの行には値に比例した幅の見本と px 付きの値が出る", () => {
-  const [row] = sectionOf(setupState(), "radius").rows;
+  const [row] = sectionOf(setupDocument(), "radius").rows;
 
   expect(row.preview).toEqual({ kind: "bar", widthPx: 8 });
   expect(row.valueText).toBe("8px");
 });
 
 test("上限より長い長さの見本は同じ幅で頭打ちになる", () => {
-  const [row] = sectionOf(setupState(), "spacing").rows;
+  const [row] = sectionOf(setupDocument(), "spacing").rows;
 
   expect(row.preview).toEqual({ kind: "bar", widthPx: 20 });
 });
 
 test("影の行には影を当てた見本と box-shadow に渡せる値が出る", () => {
-  const [row] = sectionOf(setupState(), "shadows").rows;
+  const [row] = sectionOf(setupDocument(), "shadows").rows;
 
   expect(row.preview).toEqual({
     kind: "shadow",
@@ -64,13 +66,13 @@ test("影の行には影を当てた見本と box-shadow に渡せる値が出�
 });
 
 test("書体の行にはサイズ・行間・太さが出る", () => {
-  const [row] = sectionOf(setupState(), "typography").rows;
+  const [row] = sectionOf(setupDocument(), "typography").rows;
 
   expect(row.valueText).toBe("16px / 1.6 / 400");
 });
 
 test("書体の行の見本は太さと解決済みのフォントを持つ", () => {
-  const [row] = sectionOf(setupState(), "typography").rows;
+  const [row] = sectionOf(setupDocument(), "typography").rows;
 
   expect(row.preview).toEqual({
     kind: "letters",
@@ -157,7 +159,9 @@ test("省略された書体のフォントの欄は空欄になる", () => {
 });
 
 test("選択が無いときは編集欄が出ない", () => {
-  expect(TokenControl.forSelection(setupState())).toEqual(Option.none);
+  const selection = TokenSelection.create(setupDocument(), Option.none);
+
+  expect(TokenControl.forSelection(selection)).toEqual(Option.none);
 });
 
 test("長さの入力欄に打った文字列は編集中のトークンの種別の値になる", () => {

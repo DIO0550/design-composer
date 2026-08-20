@@ -1,6 +1,6 @@
 import { type ReactElement, useMemo } from "react";
 import { ColorSwatch } from "@/components/color-swatch";
-import { EditorState } from "@/features/editor/domains/editor-state";
+import { TokenSelection } from "@/domains/token-selection";
 
 /**
  * 破線が掛かっているノードの数の綴り。
@@ -34,18 +34,19 @@ function nodeCountText(count: number): string {
  * @returns トークン名と破線の本数を並べた帯。破線が 1 本も無いときは何も出さない
  */
 export function TokenDashedNodes({
-  state,
-}: Readonly<{ state: EditorState }>): ReactElement | null {
-  const token = EditorState.selectedToken(state);
+  selection,
+}: Readonly<{ selection: TokenSelection }>): ReactElement | null {
+  const token = TokenSelection.token(selection);
   /*
    * キャンバス側と同じ走査をここでも行う。パン / ズームでこの帯まで再レンダーされるので、
-   * 覚えないと数え直しがキャンバスと二重に走る。
-   * Why not: 上（`EditorPanes`）で 1 度求めて両方へ配らない。配ると、渡された名前と
-   * `state` が食い違う組み合わせを呼び出し側が作れてしまう。
+   * 覚えないと数え直しがキャンバスと二重に走る（覚えたものが効くよう、呼び出し側は
+   * 対を `state` ごとに 1 つだけ作る）。
+   * Why not: 数え終えた名前を props で受け取らない。受け取ると、名前とトークンが
+   * 食い違う組み合わせを呼び出し側が作れてしまう（対で受ければ作れない）。
    */
   const nodeNames = useMemo(
-    () => EditorState.tokenReferrerNodeNames(state),
-    [state],
+    () => TokenSelection.collectCanvasReferrerNames(selection),
+    [selection],
   );
 
   if (!token.some || nodeNames.length === 0) {
