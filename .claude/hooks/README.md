@@ -88,7 +88,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 リモート実行環境はクローンからやり直すので `core.hooksPath` が未設定のまま
 (`postCreateCommand` は DevContainer でしか走らない)で、そこは `.claude/settings.json` の
 配線が読まれないことがある環境と同じだった。実際に doc の無い宣言が main へ入っている
-(`src/features/editor/domains/elapsed`)。層 2 の配線は `pnpm install` の `prepare` が
+(`src/domains/elapsed`)。層 2 の配線は `pnpm install` の `prepare` が
 自動でやるようにしたが、**同じ層で再発したら層を 1 つ上げる**に従い、検査そのものも
 無条件に効く層へ置いた。
 

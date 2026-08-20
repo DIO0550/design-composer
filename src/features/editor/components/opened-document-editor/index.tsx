@@ -1,13 +1,21 @@
 import { type ReactElement, type ReactNode, useState } from "react";
 import type { DocumentError } from "@/domains/document-error";
+import { DocumentSaveState } from "@/domains/document-save-state";
 import { FileValidity } from "@/domains/file-validity";
 import type { OpenedDocument } from "@/domains/opened-document";
+import {
+  DocumentSyncFailureList,
+  type FileRevertControl,
+  useAutoSave,
+  useDocumentReload,
+  useElapsed,
+  useFileRevert,
+} from "@/features/document-sync";
 import { ArtboardCanvas } from "@/features/editor/components/artboard-canvas";
 import {
   DocumentErrorList,
   DocumentErrorOrigins,
 } from "@/features/editor/components/document-error-list";
-import { DocumentSyncFailureList } from "@/features/editor/components/document-sync-failure-list";
 import { EditorLayout } from "@/features/editor/components/editor-layout";
 import {
   EditorProvider,
@@ -26,23 +34,15 @@ import { NodeInsertToolbar } from "@/features/editor/components/node-insert-tool
 import { PropertyPanel } from "@/features/editor/components/property-panel";
 import { TokenDashedNodes } from "@/features/editor/components/token-dashed-nodes";
 import { TokenEditor } from "@/features/editor/components/token-editor";
-import { DocumentSaveState } from "@/features/editor/domains/document-save-state";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { NodeDrag } from "@/features/editor/domains/node-drag";
 import { DraggedNode } from "@/features/editor/domains/node-drop";
 import type { NodeTemplate } from "@/features/editor/domains/node-template";
-import { useAutoSave } from "@/features/editor/hooks/use-auto-save";
 import {
   type CanvasViewControl,
   useCanvasView,
 } from "@/features/editor/hooks/use-canvas-view";
-import { useDocumentReload } from "@/features/editor/hooks/use-document-reload";
 import { useEditShortcuts } from "@/features/editor/hooks/use-edit-shortcuts";
-import { useElapsed } from "@/features/editor/hooks/use-elapsed";
-import {
-  type FileRevertControl,
-  useFileRevert,
-} from "@/features/editor/hooks/use-file-revert";
 import {
   type NodeActions,
   useNodeActions,

@@ -1,18 +1,19 @@
 import { expect, test } from "vitest";
+import { ReceivedAt } from "@/domains/__tests__/instants";
 import { Artboard } from "@/domains/artboard";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import { PropEdit } from "@/domains/node";
 import { frozen } from "@/features/editor/__tests__/frozen-state";
-import { ReceivedAt } from "@/features/editor/__tests__/instants";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 
 /*
  * 外部編集でファイルが壊れている間、編集が起こらないこと（#155）。
  *
- * 編集が通ると `useAutoSave` がその内容をファイルへ書き出し、**より新しい外部の
- * 書き込みを古い内容で潰す**。凍結の見た目（#135）は `inert` で作られているが、
- * ショートカットは `document` に張るので `inert` を素通りする。止まるのは状態の側。
+ * 編集が通ると `document-sync` の `useAutoSave` がその内容をファイルへ書き出し、
+ * **より新しい外部の書き込みを古い内容で潰す**。凍結の見た目（#135）は `inert` で
+ * 作られているが、ショートカットは `document` に張るので `inert` を素通りする。
+ * 止まるのは状態の側。
  *
  * どのテストも**凍結する前に**対象（選択・履歴・クリップボード）を用意している。
  * これらのメソッドは凍結と無関係にも `none` を返す（未選択・履歴が空・未コピー）ので、

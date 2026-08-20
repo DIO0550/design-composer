@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { DesignDocument } from "@/domains/design-document";
+import { DocumentSaveState } from "@/domains/document-save-state";
 import { FileValidity } from "@/domains/file-validity";
-import { DocumentSaveState } from "@/features/editor/domains/document-save-state";
 import type { DocumentIpc } from "@/libs/document-ipc";
 import { DocumentJson } from "@/libs/document-json";
 

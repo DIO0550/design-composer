@@ -1,6 +1,6 @@
 import { screen } from "@testing-library/react";
 import { expect, test } from "vitest";
-import { ElapsedUnits } from "@/features/editor/domains/elapsed";
+import { ElapsedUnits } from "@/domains/elapsed";
 import { renderTopBar } from "./setup";
 
 test("経過時間を渡すと、映っているのが最後に正常だった表示だと分かる行が出る", () => {

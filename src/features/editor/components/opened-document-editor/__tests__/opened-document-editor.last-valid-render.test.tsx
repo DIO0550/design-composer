@@ -1,7 +1,7 @@
 import { act, screen } from "@testing-library/react";
 import { expect, test } from "vitest";
-import { changeFileExternally } from "@/features/editor/__tests__/document-change";
 import { SampleDocument } from "@/features/editor/__tests__/sample-document";
+import { changeFileExternally } from "@/libs/__tests__/document-change";
 import { DocumentJson } from "@/libs/document-json";
 import {
   breakFileExternally,
@@ -31,7 +31,8 @@ test("開いてしばらく経ってから壊れても、古さは壊れた時�
 
 /*
  * 数え始めた時点の `now` は mount 時のままなので、追いつかせないと起点より古くなり
- * 負の経過時間が出る（`use-elapsed` が購読前に時刻を読み直している理由）。
+ * 負の経過時間が出る（`document-sync` の `use-elapsed` が購読前に時刻を
+ * 読み直している理由）。
  */
 test("壊れた直後は 0 秒から数え始める", async () => {
   const { ipc, clock } = await renderOpenedDocumentWithClock();

@@ -1,9 +1,9 @@
 import { render } from "@testing-library/react";
 import type { ReactNode } from "react";
 import type { DocumentError } from "@/domains/document-error";
+import { DocumentSaveState } from "@/domains/document-save-state";
+import type { Elapsed } from "@/domains/elapsed";
 import type { OpenedDocument } from "@/domains/opened-document";
-import { DocumentSaveState } from "@/features/editor/domains/document-save-state";
-import type { Elapsed } from "@/features/editor/domains/elapsed";
 import { useCanvasView } from "@/features/editor/hooks/use-canvas-view";
 import {
   EditorTopBar,
