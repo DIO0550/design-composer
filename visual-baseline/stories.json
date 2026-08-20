@@ -455,73 +455,73 @@
     "name": "未指定の prop だけの Box を選択中"
   },
   {
-    "id": "features-editor-tokendashednodes--multiple",
-    "title": "features/editor/TokenDashedNodes",
+    "id": "features-tokens-tokendashednodes--multiple",
+    "title": "features/tokens/TokenDashedNodes",
     "name": "参照が複数"
   },
   {
-    "id": "features-editor-tokendashednodes--non-color",
-    "title": "features/editor/TokenDashedNodes",
+    "id": "features-tokens-tokendashednodes--non-color",
+    "title": "features/tokens/TokenDashedNodes",
     "name": "色以外のトークン"
   },
   {
-    "id": "features-editor-tokendashednodes--single",
-    "title": "features/editor/TokenDashedNodes",
+    "id": "features-tokens-tokendashednodes--single",
+    "title": "features/tokens/TokenDashedNodes",
     "name": "参照が1件"
   },
   {
-    "id": "features-editor-tokeneditor--color-selected",
-    "title": "features/editor/TokenEditor",
+    "id": "features-tokens-tokeneditor--color-selected",
+    "title": "features/tokens/TokenEditor",
     "name": "色トークンを選択中"
   },
   {
-    "id": "features-editor-tokeneditor--default",
-    "title": "features/editor/TokenEditor",
+    "id": "features-tokens-tokeneditor--default",
+    "title": "features/tokens/TokenEditor",
     "name": "選択されていない"
   },
   {
-    "id": "features-editor-tokeneditor--radius-selected",
-    "title": "features/editor/TokenEditor",
+    "id": "features-tokens-tokeneditor--radius-selected",
+    "title": "features/tokens/TokenEditor",
     "name": "角丸トークンを選択中"
   },
   {
-    "id": "features-editor-tokeneditor--shadow-selected",
-    "title": "features/editor/TokenEditor",
+    "id": "features-tokens-tokeneditor--shadow-selected",
+    "title": "features/tokens/TokenEditor",
     "name": "影トークンを選択中"
   },
   {
-    "id": "features-editor-tokeneditor--spacing-selected",
-    "title": "features/editor/TokenEditor",
+    "id": "features-tokens-tokeneditor--spacing-selected",
+    "title": "features/tokens/TokenEditor",
     "name": "間隔トークンを選択中"
   },
   {
-    "id": "features-editor-tokeneditor--typography-selected",
-    "title": "features/editor/TokenEditor",
+    "id": "features-tokens-tokeneditor--typography-selected",
+    "title": "features/tokens/TokenEditor",
     "name": "書体トークンを選択中"
   },
   {
-    "id": "features-editor-tokenlist--color-selected",
-    "title": "features/editor/TokenList",
+    "id": "features-tokens-tokenlist--color-selected",
+    "title": "features/tokens/TokenList",
     "name": "色トークンを選択中"
   },
   {
-    "id": "features-editor-tokenlist--default",
-    "title": "features/editor/TokenList",
+    "id": "features-tokens-tokenlist--default",
+    "title": "features/tokens/TokenList",
     "name": "colors だけが開いている"
   },
   {
-    "id": "features-editor-tokenusedby--over-limit",
-    "title": "features/editor/TokenUsedBy",
+    "id": "features-tokens-tokenusedby--over-limit",
+    "title": "features/tokens/TokenUsedBy",
     "name": "上限を超える件数"
   },
   {
-    "id": "features-editor-tokenusedby--unused",
-    "title": "features/editor/TokenUsedBy",
+    "id": "features-tokens-tokenusedby--unused",
+    "title": "features/tokens/TokenUsedBy",
     "name": "参照されていない"
   },
   {
-    "id": "features-editor-tokenusedby--within-limit",
-    "title": "features/editor/TokenUsedBy",
+    "id": "features-tokens-tokenusedby--within-limit",
+    "title": "features/tokens/TokenUsedBy",
     "name": "上限内の件数"
   }
 ]
