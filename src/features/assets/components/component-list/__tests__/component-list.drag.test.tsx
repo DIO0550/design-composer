@@ -3,7 +3,7 @@ import { expect, test } from "vitest";
 import {
   grabbingComponent,
   setupAssetGrab,
-} from "@/features/editor/__tests__/asset-grab";
+} from "@/features/assets/__tests__/asset-grab";
 import type { NodeTemplate } from "@/domains/node-template";
 import { Option } from "@/utils/Option";
 import { ComponentList } from "../index";

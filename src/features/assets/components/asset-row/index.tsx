@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { TypeGlyph } from "@/components/type-glyph";
 import { NodeTemplate } from "@/domains/node-template";
 import type { PrimitiveType } from "@/domains/primitive-schema";
-import type { AssetGrab } from "@/features/editor/types/AssetGrab";
+import type { AssetGrab } from "@/features/assets/types/AssetGrab";
 
 /**
  * 掴んでいないときに行へ付く強調。

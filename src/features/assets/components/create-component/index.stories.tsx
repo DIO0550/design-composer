@@ -1,18 +1,15 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
-import { SampleEditorState } from "@/features/editor/__stories__/sample-editor-state";
-import { EditorState } from "@/features/editor/domains/editor-state";
+import { SampleAssetsDocument } from "@/features/assets/__stories__/sample-assets-document";
 import { Option } from "@/utils/Option";
 import { CreateComponent } from "./index";
 
-const SampleDocument = EditorState.document(SampleEditorState);
-
 const meta = {
-  title: "features/editor/CreateComponent",
+  title: "features/assets/CreateComponent",
   component: CreateComponent,
   parameters: { layout: "padded" },
   args: {
-    document: SampleDocument,
+    document: SampleAssetsDocument,
     singleName: Option.some("home-title"),
     isFrozen: false,
     onCreate: fn(),

@@ -1,9 +1,9 @@
 import { useState } from "react";
 import type { ComponentAsset } from "@/domains/component";
 import { PrimitiveTypes } from "@/domains/primitive-schema";
-import { ComponentList } from "@/features/editor/components/component-list";
-import { PrimitiveList } from "@/features/editor/components/primitive-list";
-import type { AssetGrab } from "@/features/editor/types/AssetGrab";
+import { ComponentList } from "@/features/assets/components/component-list";
+import { PrimitiveList } from "@/features/assets/components/primitive-list";
+import type { AssetGrab } from "@/features/assets/types/AssetGrab";
 import type { Option } from "@/utils/Option";
 import { StringEx } from "@/utils/StringEx";
 

@@ -1,6 +1,6 @@
 import type { PrimitiveType } from "@/domains/primitive-schema";
-import { AssetRow } from "@/features/editor/components/asset-row";
-import type { AssetGrab } from "@/features/editor/types/AssetGrab";
+import { AssetRow } from "@/features/assets/components/asset-row";
+import type { AssetGrab } from "@/features/assets/types/AssetGrab";
 
 /** 行の右端に出す、掴めることの知らせ（UI 案 docs/Design Composer.html の綴り）。 */
 const GrabHint = "drag";

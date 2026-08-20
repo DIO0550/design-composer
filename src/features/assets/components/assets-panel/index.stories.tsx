@@ -4,8 +4,7 @@ import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import {
   grabbingComponent,
   setupAssetGrab,
-} from "@/features/editor/__tests__/asset-grab";
-import { LeftPanePanel } from "@/features/editor/components/left-pane-panel";
+} from "@/features/assets/__tests__/asset-grab";
 import { Option } from "@/utils/Option";
 import { AssetsPanel } from "./index";
 
@@ -31,7 +30,7 @@ const UsedComponentsDocument = DesignDocument.create({
 });
 
 const meta = {
-  title: "features/editor/AssetsPanel",
+  title: "features/assets/AssetsPanel",
   component: AssetsPanel,
   parameters: { layout: "padded" },
   args: {
@@ -40,12 +39,12 @@ const meta = {
     grab: setupAssetGrab(),
   },
   // 実際の幅（248px のパネル）で見ないと、名前と使用数の詰まり方が分からない。
+  // 左ペインの見出し帯（`LeftPanePanel`）は付けない。features/editor 側の器を
+  // deep import せずに済ませるため（rules/architecture.md「モジュールの公開API」）。
   decorators: [
     (Story) => (
-      <div className="flex h-96 w-62 border border-gray-300">
-        <LeftPanePanel title="Assets" note={Option.none} footer={Option.none}>
-          <Story />
-        </LeftPanePanel>
+      <div className="h-96 w-62 border border-gray-300 bg-white p-3">
+        <Story />
       </div>
     ),
   ],

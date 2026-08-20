@@ -1,8 +1,7 @@
 import type { ReactElement } from "react";
 import { DesignDocument } from "@/domains/design-document";
 import { ArtboardList } from "@/features/editor/components/artboard-list";
-import { AssetsPanel } from "@/features/editor/components/assets-panel";
-import { CreateComponent } from "@/features/editor/components/create-component";
+import { type AssetGrab, AssetsPanel, CreateComponent } from "@/features/assets";
 import { DocumentTree } from "@/features/editor/components/document-tree";
 import { LeftPanePanel } from "@/features/editor/components/left-pane-panel";
 import {
@@ -14,7 +13,6 @@ import {
 import { EditorState } from "@/features/editor/domains/editor-state";
 import type { NodeActions } from "@/features/editor/hooks/use-node-actions";
 import type { TokenActions } from "@/features/editor/hooks/use-token-actions";
-import type { AssetGrab } from "@/features/editor/types/AssetGrab";
 import { TokenList } from "@/features/tokens";
 import { Option } from "@/utils/Option";
 

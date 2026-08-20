@@ -1,18 +1,26 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
+import type { AssetGrab } from "@/features/assets";
 import {
   FileInvalidEditorState,
   SampleEditorState,
 } from "@/features/editor/__stories__/sample-editor-state";
-import {
-  grabbingComponent,
-  setupAssetGrab,
-} from "@/features/editor/__tests__/asset-grab";
 import { LeftPaneViews } from "@/features/editor/components/left-pane-rail";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import type { NodeActions } from "@/features/editor/hooks/use-node-actions";
 import type { TokenActions } from "@/features/editor/hooks/use-token-actions";
+import { Option } from "@/utils/Option";
 import { LeftPane } from "./index";
+
+/**
+ * ストーリーが要る掴む口の 2 状態。features/assets の test helper を deep import
+ * しないよう、ここで値を直接組む（helper の中身と同じ形）。
+ */
+const IdleGrab: AssetGrab = { dragged: Option.none, onGrab: () => {} };
+const GrabbingPrimaryButton: AssetGrab = {
+  dragged: Option.some({ kind: "instance", componentName: "primary-button" }),
+  onGrab: () => {},
+};
 
 /**
  * 操作の受け口。ここでは押せることだけ分かればよいので、届いた先での編集は行わない
@@ -52,7 +60,7 @@ const meta = {
     state: SampleEditorState,
     node: SampleNodeActions,
     token: SampleTokenActions,
-    grab: setupAssetGrab(),
+    grab: IdleGrab,
   },
   // 実際の幅（レール 56px + パネル 248px）と高さで見ないと、行の詰まり方が分からない。
   decorators: [
@@ -91,7 +99,7 @@ export const AssetsGrabbed: Story = {
   name: "Assets（行を掴んで運んでいる）",
   args: {
     view: LeftPaneViews.Assets,
-    grab: grabbingComponent("primary-button"),
+    grab: GrabbingPrimaryButton,
   },
 };
 

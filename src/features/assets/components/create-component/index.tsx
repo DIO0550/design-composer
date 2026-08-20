@@ -1,6 +1,6 @@
 import { type ReactElement, useState } from "react";
 import { DesignDocument } from "@/domains/design-document";
-import { Componentization } from "@/features/editor/domains/componentization";
+import { Componentization } from "@/features/assets/domains/componentization";
 import { Option } from "@/utils/Option";
 
 /**

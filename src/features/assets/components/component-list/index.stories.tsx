@@ -4,12 +4,12 @@ import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import {
   grabbingComponent,
   setupAssetGrab,
-} from "@/features/editor/__tests__/asset-grab";
+} from "@/features/assets/__tests__/asset-grab";
 import { Option } from "@/utils/Option";
 import { ComponentList } from "./index";
 
 const meta = {
-  title: "features/editor/ComponentList",
+  title: "features/assets/ComponentList",
   component: ComponentList,
   parameters: { layout: "padded" },
   decorators: [

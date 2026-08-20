@@ -1,6 +1,5 @@
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
-import { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
 import { Componentization } from "../index";
 
@@ -24,21 +23,9 @@ function setupDocument(): DesignDocument {
 
 test("スキーマに無い型のノードを選んでいてもそれを元に部品を作れる", () => {
   expect(
-    Componentization.forSelection(
-      setupDocument(),
-      Option.some("home-unknown"),
-    ),
+    Componentization.forSelection(setupDocument(), Option.some("home-unknown")),
   ).toEqual({
     kind: "ready",
     sourceName: "home-unknown",
   });
-});
-
-test("スキーマに無い型のノードは実際に部品にできる", () => {
-  const selected = EditorState.select(
-    EditorState.create(setupDocument()),
-    "home-unknown",
-  );
-
-  expect(EditorState.createComponent(selected, "unknown-part").some).toBe(true);
 });

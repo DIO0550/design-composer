@@ -61,3 +61,27 @@ test("識別子の規則を満たさない名前では部品にできない", ()
     Option.none,
   );
 });
+
+/*
+ * 不正なドキュメントも画面には残る（docs/03-schema.md「不正ファイル時の挙動」）ので
+ * スキーマに無い `type` のノードが選ばれることがある。部品化を受理する条件
+ * （`Component.fromNode`）は「参照ノードでないこと」だけなので、スキーマに知られていない
+ * 型でも部品にできる。
+ */
+test("スキーマに無い型のノードでも部品にできる", () => {
+  const state = EditorState.create(
+    DesignDocument.create({
+      artboards: [
+        {
+          name: "home",
+          width: 360,
+          height: 240,
+          children: [{ name: "home-unknown", type: "Unknown" }],
+        },
+      ],
+    }),
+  );
+  const selected = EditorState.select(state, "home-unknown");
+
+  expect(EditorState.createComponent(selected, "unknown-part").some).toBe(true);
+});

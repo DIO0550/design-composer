@@ -1,6 +1,6 @@
 import { ComponentAsset } from "@/domains/component";
-import { AssetRow } from "@/features/editor/components/asset-row";
-import type { AssetGrab } from "@/features/editor/types/AssetGrab";
+import { AssetRow } from "@/features/assets/components/asset-row";
+import type { AssetGrab } from "@/features/assets/types/AssetGrab";
 import type { Option } from "@/utils/Option";
 
 /** 使われていない部品の右端に出す語（UI 案は `×0` ではなくこの語を出す）。 */
