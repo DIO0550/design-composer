@@ -1,3 +1,4 @@
+import type { ReactElement } from "react";
 import { type NestedRow, NestedRowList } from "@/components/nested-row-list";
 import { TypeGlyph } from "@/components/type-glyph";
 import type { ChildPosition } from "@/domains/child-position";
@@ -72,8 +73,16 @@ function nodeMarks(node: Node): NodeMarks {
   return { glyph: Selection.fromNode(node).kind, note: noteOf(node) };
 }
 
-/** 行の右端に出る補助情報（大きさ・文言・インスタンスの印）。 */
-function NoteText({ note }: Readonly<{ note: NodeNote }>) {
+/**
+ * 行の右端に出る補助情報（大きさ・文言・インスタンスの印）。
+ *
+ * 戻り値を `ReactElement` と書くのは、`default` の無い `switch` で
+ * 種別の網羅をコンパイラに強制するため（`ReactNode` は `undefined` を含むので
+ * case が抜けても通ってしまう）。
+ *
+ * @returns 種別に応じた 1 行ぶんの補助情報
+ */
+function NoteText({ note }: Readonly<{ note: NodeNote }>): ReactElement {
   /*
    * 補助情報は行の右端に出る（UI 案では名前と離れた位置に出る）。
    * 幅を半分までに抑えて自身も省略するのは、長い文言が名前を押し出さないため
@@ -184,7 +193,9 @@ function rowFromNode(
  * どの枝を畳んでいるかは編集ではなく見え方なので、ドキュメントの状態
  * （`EditorState`）には持たず、行を並べる器（`NestedRowList`）に閉じる。名前は
  * 使い回されるので、同じ名前でノードを作り直すと畳んだ状態で現れる
- * （三角で状態は読めるので許容している）。
+ * （三角で状態は読めるので許容している）。器は artboard があるときだけ描かれるため、
+ * artboard が 0 枚になって戻ると畳んだ状態は消える（行が 1 つも無い状態を挟むので
+ * 見え方は変わらない）。
  */
 export function DocumentTree({
   state,
