@@ -122,8 +122,14 @@ pnpm run typecheck        # tsc -b
 pnpm run lint             # oxlint
 pnpm exec biome check     # Biome（oxlint とは別のステップ。format 差分もここで出る）
 pnpm run test:run         # vitest
+python3 .claude/hooks/lib/missing-doc-comments.py --all src  # doc コメント
+bash .claude/hooks/lib/test-rules-scan.sh src                # テスト規約
 ```
 
+- **doc コメントとテスト規約は `pnpm` のスクリプトに無い。** この 2 つは git hooks と CI
+  (`frontend.yml` の `rules-check`)だけが走らせるので、上の 2 行を省くと手元の確認が
+  ゲートより狭くなる。**この 2 つが CI へ上げられたのは、層 2 と層 3 が同じ環境で同時に
+  抜けたため**(`.claude/hooks/README.md`「カバー範囲と残る穴」)
 - **カナリアが通ってしまったらフック不発環境**(`分類: hook-environment`)。その旨を PR 本文と
   記録に残す。ゲートは git hooks と CI にあるので、通ってしまっても以降の手順は変わらない
 - **`&&` で 1 本に連ねない。** 連ねると途中の出力が流れて末尾しか見えず、「全部通った」と
