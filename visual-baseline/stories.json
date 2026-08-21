@@ -1,5 +1,60 @@
 [
   {
+    "id": "features-assets-assetspanel--default",
+    "title": "features/assets/AssetsPanel",
+    "name": "パレット"
+  },
+  {
+    "id": "features-assets-assetspanel--grabbed",
+    "title": "features/assets/AssetsPanel",
+    "name": "行を掴んで運んでいる"
+  },
+  {
+    "id": "features-assets-assetspanel--no-components",
+    "title": "features/assets/AssetsPanel",
+    "name": "部品がない"
+  },
+  {
+    "id": "features-assets-componentlist--default",
+    "title": "features/assets/ComponentList",
+    "name": "使用数のある部品"
+  },
+  {
+    "id": "features-assets-componentlist--empty",
+    "title": "features/assets/ComponentList",
+    "name": "部品がない"
+  },
+  {
+    "id": "features-assets-componentlist--grabbed",
+    "title": "features/assets/ComponentList",
+    "name": "行を掴んで運んでいる"
+  },
+  {
+    "id": "features-assets-componentlist--source-of-selection",
+    "title": "features/assets/ComponentList",
+    "name": "選択中のインスタンスの元になっている部品がある"
+  },
+  {
+    "id": "features-assets-createcomponent--artboard-selected",
+    "title": "features/assets/CreateComponent",
+    "name": "artboard を選んでいる"
+  },
+  {
+    "id": "features-assets-createcomponent--instance-selected",
+    "title": "features/assets/CreateComponent",
+    "name": "インスタンスを選んでいる"
+  },
+  {
+    "id": "features-assets-createcomponent--ready",
+    "title": "features/assets/CreateComponent",
+    "name": "ノードを選んでいる"
+  },
+  {
+    "id": "features-assets-createcomponent--unselected",
+    "title": "features/assets/CreateComponent",
+    "name": "何も選んでいない"
+  },
+  {
     "id": "features-editor-artboardcanvas--default",
     "title": "features/editor/ArtboardCanvas",
     "name": "選択なし"
@@ -173,61 +228,6 @@
     "id": "features-editor-artboardlist--selected",
     "title": "features/editor/ArtboardList",
     "name": "別の artboard を選択中"
-  },
-  {
-    "id": "features-editor-assetspanel--default",
-    "title": "features/editor/AssetsPanel",
-    "name": "パレット"
-  },
-  {
-    "id": "features-editor-assetspanel--grabbed",
-    "title": "features/editor/AssetsPanel",
-    "name": "行を掴んで運んでいる"
-  },
-  {
-    "id": "features-editor-assetspanel--no-components",
-    "title": "features/editor/AssetsPanel",
-    "name": "部品がない"
-  },
-  {
-    "id": "features-editor-componentlist--default",
-    "title": "features/editor/ComponentList",
-    "name": "使用数のある部品"
-  },
-  {
-    "id": "features-editor-componentlist--empty",
-    "title": "features/editor/ComponentList",
-    "name": "部品がない"
-  },
-  {
-    "id": "features-editor-componentlist--grabbed",
-    "title": "features/editor/ComponentList",
-    "name": "行を掴んで運んでいる"
-  },
-  {
-    "id": "features-editor-componentlist--source-of-selection",
-    "title": "features/editor/ComponentList",
-    "name": "選択中のインスタンスの元になっている部品がある"
-  },
-  {
-    "id": "features-editor-createcomponent--artboard-selected",
-    "title": "features/editor/CreateComponent",
-    "name": "artboard を選んでいる"
-  },
-  {
-    "id": "features-editor-createcomponent--instance-selected",
-    "title": "features/editor/CreateComponent",
-    "name": "インスタンスを選んでいる"
-  },
-  {
-    "id": "features-editor-createcomponent--ready",
-    "title": "features/editor/CreateComponent",
-    "name": "ノードを選んでいる"
-  },
-  {
-    "id": "features-editor-createcomponent--unselected",
-    "title": "features/editor/CreateComponent",
-    "name": "何も選んでいない"
   },
   {
     "id": "features-editor-documenterrorlist--broken-json",
