@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { type NestedRow, NestedRowList } from "@/components/nested-row-list";
 import { TypeGlyph } from "@/components/type-glyph";
 import type { ChildPosition } from "@/domains/child-position";
 import { Node, type PrimitiveNode } from "@/domains/node";
@@ -8,20 +8,7 @@ import {
   Selection,
   type SelectionKind,
 } from "@/features/editor/domains/selection";
-import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
-import { SetEx } from "@/utils/SetEx";
-
-/** 1 段ぶんの字下げ幅と、行の左端の余白（px）。 */
-const IndentWidthPx = 12;
-const RowPaddingPx = 8;
-
-/**
- * 開閉の三角を置く枠（UI 案 docs/Design Composer.html の実測値は 10px）。
- * 子を持たない行でも同じ幅を空けて、型アイコンの左端を兄弟と揃える
- * （UI 案も子を持たない行に空の枠を置いている）。
- */
-const BranchToggleSlotStyle = { width: "10px" };
 
 /** 文言を読む prop。Text のスキーマが宣言している名前に限る。 */
 const ContentProp = "content" satisfies keyof typeof TextSchema.props;
@@ -29,14 +16,14 @@ const ContentProp = "content" satisfies keyof typeof TextSchema.props;
 /**
  * 名前の右に出す補助情報。何を出すかは種別ごとに違うので、種別と値を対で持つ。
  */
-type TreeItemNote =
+type NodeNote =
   | Readonly<{ kind: "content"; text: string }>
   | Readonly<{ kind: "instance" }>;
 
 /** 行が名前の左右に出すもの（左に型アイコン、右に補助情報）。 */
-type TreeItemMarks = Readonly<{
+type NodeMarks = Readonly<{
   glyph: Option<SelectionKind>;
-  note: Option<TreeItemNote>;
+  note: Option<NodeNote>;
 }>;
 
 /**
@@ -49,7 +36,7 @@ type TreeItemMarks = Readonly<{
  * @param node 文言を読む対象の Text ノード
  * @returns 文言を持つなら `some`。未設定と空文字なら `none`
  */
-function contentNote(node: PrimitiveNode): Option<TreeItemNote> {
+function contentNote(node: PrimitiveNode): Option<NodeNote> {
   const content = node.props?.[ContentProp];
   if (content === undefined || content === "") {
     return Option.none;
@@ -64,7 +51,7 @@ function contentNote(node: PrimitiveNode): Option<TreeItemNote> {
  * @param node 補助情報を出したいノード
  * @returns 参照ノードはインスタンスの印、Text は文言。それ以外は `none`
  */
-function noteOf(node: Node): Option<TreeItemNote> {
+function noteOf(node: Node): Option<NodeNote> {
   if (Node.isRef(node)) {
     return Option.some({ kind: "instance" });
   }
@@ -81,55 +68,12 @@ function noteOf(node: Node): Option<TreeItemNote> {
  * @param node 行に出したいノード
  * @returns 名前の左に出す種別の印と、右に出す補助情報
  */
-function nodeMarks(node: Node): TreeItemMarks {
+function nodeMarks(node: Node): NodeMarks {
   return { glyph: Selection.fromNode(node).kind, note: noteOf(node) };
 }
 
-/**
- * ツリーのどの行でも同じ値（今の見え方と、行から起こせる操作）。
- * 行ごとに props を積み増さないため 1 つにまとめる
- * （rules/components.md「props が概ね5個を超える…」）。
- *
- * 状態と操作を 1 つの型に持つのは `useCanvasView` が返す `CanvasViewControl` と
- * 同じ形で、この feature で既に使っている流儀に合わせている。
- */
-type TreeControl = Readonly<{
-  state: EditorState;
-  /** 畳んでいる枝の名前。畳んだ側を持つので、開いた直後は空になる。 */
-  collapsedNames: ReadonlySet<string>;
-  onSelect: (name: string) => void;
-  onReorder: (from: ChildPosition, toIndex: number) => void;
-  onToggleBranch: (name: string) => void;
-}>;
-
-/**
- * 行が兄弟の並びのどこにいるか。
- * どちらの向きへ動かせるかは位置と並びの両方が無いと決まらないため 1 つの型にまとめる。
- */
-type SiblingPlacement = Readonly<{
-  position: ChildPosition;
-  siblings: readonly Node[];
-}>;
-
-/**
- * 並びの中に収まる移動先だけを返す（端では隣がいないので `none`）。
- *
- * @param placement 行の位置と、その兄弟の並び
- * @param step 動かす向きと段数（上へ 1 つなら -1）
- * @returns 並びに収まる移動先の位置。端で収まらなければ `none`
- */
-function moveTargetIndex(
-  placement: SiblingPlacement,
-  step: number,
-): Option<number> {
-  const toIndex = placement.position.index + step;
-  return ArrayEx.isIndexInRange(placement.siblings, toIndex)
-    ? Option.some(toIndex)
-    : Option.none;
-}
-
 /** 行の右端に出る補助情報（大きさ・文言・インスタンスの印）。 */
-function NoteText({ note }: Readonly<{ note: TreeItemNote }>) {
+function NoteText({ note }: Readonly<{ note: NodeNote }>) {
   /*
    * 補助情報は行の右端に出る（UI 案では名前と離れた位置に出る）。
    * 幅を半分までに抑えて自身も省略するのは、長い文言が名前を押し出さないため
@@ -160,7 +104,7 @@ function NoteText({ note }: Readonly<{ note: TreeItemNote }>) {
  * 選ぶ対象がノードの名前だからで、こうしないと読み上げ名が「T title Sign in」のように
  * 装飾を含んだ文字列になる。
  *
- * 選択の色は行の器（`TreeBranch`）が持つ。三角と字下げまで含めた行全体に色が付く形が
+ * 選択の色は行の器（`NestedRowList`）が持つ。三角と字下げまで含めた行全体に色が付く形が
  * UI 案（docs/Design Composer.html）なので、名前のボタンだけを塗らない。
  */
 function SelectableName({
@@ -170,7 +114,7 @@ function SelectableName({
   onSelect,
 }: Readonly<{
   name: string;
-  marks: TreeItemMarks;
+  marks: NodeMarks;
   isSelected: boolean;
   onSelect: (name: string) => void;
 }>) {
@@ -193,223 +137,54 @@ function SelectableName({
   );
 }
 
-/** 同じ親の中で 1 つ分だけ順序を動かすボタン。 */
-function ReorderButton({
-  label,
-  symbol,
-  onClick,
-}: Readonly<{
-  label: string;
-  symbol: string;
-  onClick: () => void;
-}>) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      onClick={onClick}
-      className="rounded border border-gray-300 px-1 text-gray-600 text-xs hover:bg-gray-100"
-    >
-      {symbol}
-    </button>
-  );
-}
-
 /**
- * 同じ親の中で子を動かすボタン（docs/06-ui.md「編集操作の一覧」の並べ替え）。
- * 隣がいない向きはボタン自体を出さず、並びの外を指す移動を画面から作れなくする。
- */
-function ReorderButtons({
-  name,
-  placement,
-  onReorder,
-}: Readonly<{
-  name: string;
-  placement: SiblingPlacement;
-  onReorder: (from: ChildPosition, toIndex: number) => void;
-}>) {
-  const toPrevious = moveTargetIndex(placement, -1);
-  const toNext = moveTargetIndex(placement, 1);
-
-  return (
-    <span className="flex shrink-0 items-center gap-1">
-      {toPrevious.some ? (
-        <ReorderButton
-          label={`${name} を上へ`}
-          symbol="↑"
-          onClick={() => onReorder(placement.position, toPrevious.value)}
-        />
-      ) : null}
-      {toNext.some ? (
-        <ReorderButton
-          label={`${name} を下へ`}
-          symbol="↓"
-          onClick={() => onReorder(placement.position, toNext.value)}
-        />
-      ) : null}
-    </span>
-  );
-}
-
-/**
- * 枝を開閉する三角（UI 案 docs/Design Composer.html の `▾` / `▸`）。
+ * ノードを、ツリービューが並べる 1 行へ作り直す。子も同じ形で作り直す。
  *
- * 名前のボタンとは別のボタンにする。名前の行が既に `button` で入れ子にできないことと、
- * 1 つのボタンに「選ぶ」と「開閉する」の 2 つの結果を持たせないため。
+ * 選択されているかを 1 度だけ引いて行の器と名前のボタンの両方へ配るのは、
+ * 同じ判定を 2 箇所で書かないため。
  *
- * ラベルを状態で変えないのは、押した瞬間に読み上げ名が変わって何を押したのかが
- * 分からなくなるため。開いているかどうかは `aria-expanded` が伝える。
+ * @param node 行にしたいノード
+ * @param state 選択を読む今の状態
+ * @param onSelect 行が押されたときに名前を伝える先
+ * @returns そのノードと、その子孫を映した行
  */
-function BranchToggle({
-  name,
-  isExpanded,
-  onToggle,
-}: Readonly<{
-  name: string;
-  isExpanded: boolean;
-  onToggle: () => void;
-}>) {
-  return (
-    <button
-      type="button"
-      aria-label={`${name} の開閉`}
-      aria-expanded={isExpanded}
-      onClick={onToggle}
-      style={BranchToggleSlotStyle}
-      /*
-       * 列の幅は名前の左端を揃えるための 10px だが、それだけでは押す的が小さすぎる。
-       * 疑似要素で当たり判定だけを外へ広げ、行の組み方（列幅）は変えない。
-       */
-      className="relative shrink-0 text-[9px] text-gray-400 before:absolute before:-inset-1.5 before:content-['']"
-    >
-      {isExpanded ? "▾" : "▸"}
-    </button>
-  );
-}
+function rowFromNode(
+  node: Node,
+  state: EditorState,
+  onSelect: (name: string) => void,
+): NestedRow {
+  const isSelected = EditorState.isSelected(state, node.name);
 
-/**
- * ツリーの枝（1 行と、開いていればその下にぶら下がる子の並び）。
- * 字下げ・開閉の列・選択の色といった行の組み立てをここ 1 箇所に集める。
- *
- * 字下げ幅は深さで決まる値でクラス名に固定できないため、インラインスタイルで与える。
- */
-function TreeBranch({
-  node,
-  placement,
-  depth,
-  control,
-}: Readonly<{
-  node: Node;
-  placement: SiblingPlacement;
-  depth: number;
-  control: TreeControl;
-}>) {
-  const children = Node.children(node);
-  const hasChildren = children.length > 0;
-  const isExpanded = !control.collapsedNames.has(node.name);
-  const isSelected = EditorState.isSelected(control.state, node.name);
-  /*
-   * 子の並びを出す条件。子がいない行は畳めないので常に「開いている」側に倒れるが、
-   * 出すものが無いので空の <ul> を作らないよう子の有無も見る。
-   */
-  const showsChildren = hasChildren && isExpanded;
-
-  return (
-    <>
-      <div
-        style={{
-          paddingInlineStart: `${RowPaddingPx + depth * IndentWidthPx}px`,
-        }}
-        className={`flex items-center gap-1.5 rounded py-1 pr-1 ${
-          // 押せる範囲を示す hover と、選択の色を重ねない（選択中はホバーで灰にしない）
-          isSelected ? "bg-blue-100 text-blue-900" : "hover:bg-gray-100"
-        }`}
-      >
-        {hasChildren ? (
-          <BranchToggle
-            name={node.name}
-            isExpanded={isExpanded}
-            onToggle={() => control.onToggleBranch(node.name)}
-          />
-        ) : (
-          // 子を持たない行にも同じ幅を空け、型アイコンの左端を兄弟と揃える
-          <span
-            aria-hidden="true"
-            style={BranchToggleSlotStyle}
-            className="shrink-0"
-          />
-        )}
-        <SelectableName
-          name={node.name}
-          marks={nodeMarks(node)}
-          isSelected={isSelected}
-          onSelect={control.onSelect}
-        />
-        <ReorderButtons
-          name={node.name}
-          placement={placement}
-          onReorder={control.onReorder}
-        />
-      </div>
-      {showsChildren ? (
-        <NodeList
-          nodes={children}
-          parentName={node.name}
-          depth={depth + 1}
-          control={control}
-        />
-      ) : null}
-    </>
-  );
-}
-
-/**
- * 同じ親を持つノードの並び。子も同じ形なので枝を通して自分自身へ戻る。
- * 各行の親の名前と兄弟内 index は描画をたどる過程でそのまま分かるため、
- * 並べ替えの位置を求めるのにツリーを探索する必要がない。
- *
- * 空の並びで呼ばれることはない（子を持つ枝が開いているときだけ描かれる）。
- */
-function NodeList({
-  nodes,
-  parentName,
-  depth,
-  control,
-}: Readonly<{
-  nodes: readonly Node[];
-  parentName: string;
-  depth: number;
-  control: TreeControl;
-}>) {
-  return (
-    <ul>
-      {nodes.map((node, index) => (
-        <li key={node.name}>
-          <TreeBranch
-            node={node}
-            placement={{ position: { parentName, index }, siblings: nodes }}
-            depth={depth}
-            control={control}
-          />
-        </li>
-      ))}
-    </ul>
-  );
+  return {
+    name: node.name,
+    isSelected,
+    content: (
+      <SelectableName
+        name={node.name}
+        marks={nodeMarks(node)}
+        isSelected={isSelected}
+        onSelect={onSelect}
+      />
+    ),
+    children: Node.children(node).map((child) =>
+      rowFromNode(child, state, onSelect),
+    ),
+  };
 }
 
 /**
  * 今見ている artboard の中身を出すツリービュー（docs/06-ui.md「画面構成」。
- * UI 案 docs/Design Composer.html の `Layers` パネル下段）。
+ * UI 案 docs/Design Composer.html の `Layers` パネル下段）。行の並べ替えは
+ * docs/06-ui.md「編集操作の一覧」の並べ替えにあたる。
  *
  * artboard 自身は行として出さない。UI 案は artboard を上段の `Artboards`
  * （`ArtboardList`）に並べ、ツリーはそのうちの 1 枚の中身だけを映す。どの 1 枚かは
  * 選択から決まる（`EditorState.currentArtboard`）ので、ここは持たない。
  *
  * どの枝を畳んでいるかは編集ではなく見え方なので、ドキュメントの状態
- * （`EditorState`）には持たずここに閉じる。畳んだ側の名前を持つので、開いた直後は
- * 全部が開いた状態になり、後から増えたノードが畳まれた状態で現れることもない。
- * ただし畳んだ名前は消えたノードのぶんも残るので、同じ名前でノードを作り直すと
- * 畳んだ状態で現れる（名前は使い回される。三角で状態は読めるので許容している）。
+ * （`EditorState`）には持たず、行を並べる器（`NestedRowList`）に閉じる。名前は
+ * 使い回されるので、同じ名前でノードを作り直すと畳んだ状態で現れる
+ * （三角で状態は読めるので許容している）。
  */
 export function DocumentTree({
   state,
@@ -421,9 +196,6 @@ export function DocumentTree({
   onReorder: (from: ChildPosition, toIndex: number) => void;
 }>) {
   const current = EditorState.currentArtboard(state);
-  const [collapsedNames, setCollapsedNames] = useState<ReadonlySet<string>>(
-    () => new Set(),
-  );
 
   /*
    * 映す artboard が無いのは artboard が 1 枚も無いときだけで、それは
@@ -434,14 +206,6 @@ export function DocumentTree({
   }
 
   const artboard = current.value;
-  const control: TreeControl = {
-    state,
-    collapsedNames,
-    onSelect,
-    onReorder,
-    onToggleBranch: (name) =>
-      setCollapsedNames((current) => SetEx.toggle(current, name)),
-  };
 
   return (
     /*
@@ -460,14 +224,13 @@ export function DocumentTree({
           {artboard.name}
         </span>
       </div>
-      {artboard.children.length === 0 ? null : (
-        <NodeList
-          nodes={artboard.children}
-          parentName={artboard.name}
-          depth={0}
-          control={control}
-        />
-      )}
+      <NestedRowList
+        rows={artboard.children.map((child) =>
+          rowFromNode(child, state, onSelect),
+        )}
+        parentName={artboard.name}
+        onReorder={onReorder}
+      />
     </section>
   );
 }
