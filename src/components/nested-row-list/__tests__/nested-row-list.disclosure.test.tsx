@@ -1,12 +1,12 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
-import { renderRowList, rowNames } from "./setup";
+import { contentTexts, renderRowList } from "./setup";
 
 test("初めて描いたときはどの枝も開いた状態として示される", () => {
   renderRowList();
 
-  // 枝は body / deep / aside の 3 つ。畳んだ側を持つ設計を壊すとここが 0 になる
+  // 枝は body / deep / aside の 3 つ。畳んだ側を持つ設計を壊すとこの引き方が失敗する
   expect(screen.getAllByRole("button", { expanded: true })).toHaveLength(3);
 });
 
@@ -79,7 +79,7 @@ test("枝を畳んでもその枝自身の行は並びに残る", async () => {
 
   await userEvent.click(screen.getByRole("button", { name: "body の開閉" }));
 
-  expect(rowNames(list)).toEqual([
+  expect(contentTexts(list)).toEqual([
     "title",
     "body",
     "aside",
