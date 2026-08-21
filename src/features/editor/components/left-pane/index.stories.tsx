@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
 import {
+  grabbingComponent,
+  IdleGrab,
+} from "@/features/assets/__stories__/asset-grab";
+import {
   FileInvalidEditorState,
   SampleEditorState,
 } from "@/features/editor/__stories__/sample-editor-state";
-import {
-  grabbingComponent,
-  setupAssetGrab,
-} from "@/features/editor/__tests__/asset-grab";
 import { LeftPaneViews } from "@/features/editor/components/left-pane-rail";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import type { NodeActions } from "@/features/editor/hooks/use-node-actions";
@@ -52,7 +52,7 @@ const meta = {
     state: SampleEditorState,
     node: SampleNodeActions,
     token: SampleTokenActions,
-    grab: setupAssetGrab(),
+    grab: IdleGrab,
   },
   // 実際の幅（レール 56px + パネル 248px）と高さで見ないと、行の詰まり方が分からない。
   decorators: [

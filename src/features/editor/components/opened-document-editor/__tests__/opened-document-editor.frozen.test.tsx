@@ -70,6 +70,50 @@ test("ファイルが壊れると、キャンバスの中身が操作を受け�
   expect(screen.getByTestId("canvas-content").hasAttribute("inert")).toBe(true);
 });
 
+/*
+ * `Create component` フッターの `disabled` は `CreateComponent` の props `isFrozen` に
+ * 直接繋がっている。`left-pane` の側で `EditorState.isFileInvalid(state)` を渡す
+ * 配線を通しで固定するため、Assets を開いてから凍結する順で見る。押せることを対照に
+ * 置かないと、フッターが最初から無い実装でも通ってしまう（rules/testing.md
+ * 「その assert は落ちうるか」）。
+ */
+/*
+ * `Create component` フッターの押せる/押せないは、下書きを打ってはじめて `isFrozen` に
+ * 効く（打つ前は押しても入力欄を開くだけなので凍結の可否とは別）。下書きを打ってから
+ * 壊す並びで見ることで、`left-pane` が `isFrozen={EditorState.isFileInvalid(state)}` を
+ * 渡す配線を、フッターの `disabled` 属性で通しに固定できる。押せる状態を対照に置かないと、
+ * フッターが最初から disabled な実装でも通る（rules/testing.md「その assert は落ちうるか」）。
+ */
+test("Assets を開いて下書きを入れているとき、ファイルが壊れると Create component が押せなくなる", async () => {
+  const fake = await renderOpenedDocument();
+  // 部品にできるノードを Layers 側で選んでから Assets に切り替える（ツリーは Layers 側にしか出ない）
+  await selectInTree("home-title");
+  await userEvent.click(
+    within(leftPane()).getByRole("button", { name: "Assets" }),
+  );
+  // 下書きを開いて使える名前を打つ。ここまでで押せる状態
+  await userEvent.click(
+    within(leftPane()).getByRole("button", { name: /Create component/ }),
+  );
+  await userEvent.type(
+    within(leftPane()).getByRole("textbox", { name: "部品名" }),
+    "info-panel",
+  );
+  expect(
+    within(leftPane())
+      .getByRole("button", { name: /Create component/ })
+      .hasAttribute("disabled"),
+  ).toBe(false);
+
+  await breakFileExternally(fake);
+
+  expect(
+    within(leftPane())
+      .getByRole("button", { name: /Create component/ })
+      .hasAttribute("disabled"),
+  ).toBe(true);
+});
+
 test("ファイルが壊れると、選んでいたノードのプロパティを編集できなくなる", async () => {
   const fake = await renderOpenedDocument();
   await selectInTree("home-title");

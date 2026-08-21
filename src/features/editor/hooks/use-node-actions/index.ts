@@ -1,9 +1,9 @@
 import type { AxisLength } from "@/domains/axis-length";
 import type { ChildPosition } from "@/domains/child-position";
 import type { PropEdit } from "@/domains/node";
+import type { NodeTemplate } from "@/domains/node-template";
 import { useEditor } from "@/features/editor/components/editor-provider";
 import { EditorState } from "@/features/editor/domains/editor-state";
-import type { NodeTemplate } from "@/features/editor/domains/node-template";
 
 /**
  * ツリー・キャンバス・プロパティパネルから届くノード編集の操作

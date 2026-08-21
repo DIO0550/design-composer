@@ -2,6 +2,7 @@ import { type PointerEvent as ReactPointerEvent, useReducer } from "react";
 import type { ChildPosition } from "@/domains/child-position";
 import { ElementNameAttribute } from "@/domains/compiled-element";
 import type { DesignDocument } from "@/domains/design-document";
+import type { NodeTemplate } from "@/domains/node-template";
 import type { CanvasOffset } from "@/features/editor/domains/canvas-view";
 import { NodeDrag } from "@/features/editor/domains/node-drag";
 import {
@@ -11,7 +12,6 @@ import {
   type DropTarget,
   DropZone,
 } from "@/features/editor/domains/node-drop";
-import type { NodeTemplate } from "@/features/editor/domains/node-template";
 import { CanvasPointer } from "@/features/editor/utils/CanvasPointer";
 import { CanvasDom } from "@/libs/canvas-dom";
 import { ElementEx } from "@/utils/ElementEx";

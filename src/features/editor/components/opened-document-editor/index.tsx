@@ -2,6 +2,7 @@ import { type ReactElement, type ReactNode, useMemo, useState } from "react";
 import type { DocumentError } from "@/domains/document-error";
 import { DocumentSaveState } from "@/domains/document-save-state";
 import { FileValidity } from "@/domains/file-validity";
+import type { NodeTemplate } from "@/domains/node-template";
 import type { OpenedDocument } from "@/domains/opened-document";
 import {
   DocumentSyncFailureList,
@@ -35,7 +36,6 @@ import { PropertyPanel } from "@/features/editor/components/property-panel";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { NodeDrag } from "@/features/editor/domains/node-drag";
 import { DraggedNode } from "@/features/editor/domains/node-drop";
-import type { NodeTemplate } from "@/features/editor/domains/node-template";
 import {
   type CanvasViewControl,
   useCanvasView,

@@ -1,6 +1,6 @@
 import { DesignDocument } from "@/domains/design-document";
 import { Node } from "@/domains/node";
-import type { NodeTemplate } from "@/features/editor/domains/node-template";
+import type { NodeTemplate } from "@/domains/node-template";
 import { Option } from "@/utils/Option";
 
 /**
