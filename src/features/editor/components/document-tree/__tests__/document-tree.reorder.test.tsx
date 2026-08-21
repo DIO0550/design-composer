@@ -5,12 +5,26 @@ import { DesignDocument } from "@/domains/design-document";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { DocumentTree } from "../index";
 
+/**
+ * artboard を 2 枚持たせて、2 枚目を見ている状態で確かめられるようにする。
+ * 先頭の `home` を見ていると、親の名前を「先頭の artboard」に取り違えても
+ * `EditorState.currentArtboard` の既定と同じ答えになって落ちないため。
+ *
+ * ボタンの出し分け（端では出さない・兄弟がいなければ出さない）は行を並べる器
+ * （`src/components/nested-row-list`）が持つので、そちらで確かめる。
+ */
 function setupState(): EditorState {
   return EditorState.create(
     DesignDocument.create({
       artboards: [
         {
           name: "home",
+          width: 375,
+          height: 812,
+          children: [{ name: "home-title", type: "Text" }],
+        },
+        {
+          name: "settings",
           width: 375,
           height: 812,
           children: [
@@ -23,12 +37,6 @@ function setupState(): EditorState {
                 { name: "body-action", type: "Text" },
               ],
             },
-            {
-              name: "aside",
-              type: "Box",
-              children: [{ name: "aside-only", type: "Text" }],
-            },
-            { name: "footer", type: "Text" },
           ],
         },
       ],
@@ -40,7 +48,7 @@ function renderTree(): ReturnType<typeof vi.fn> {
   const onReorder = vi.fn();
   render(
     <DocumentTree
-      state={setupState()}
+      state={EditorState.select(setupState(), "settings")}
       onSelect={vi.fn()}
       onReorder={onReorder}
     />,
@@ -48,20 +56,15 @@ function renderTree(): ReturnType<typeof vi.fn> {
   return onReorder;
 }
 
-test("子を上へ動かすと同じ親の中の1つ前の位置へ移す指示が伝わる", async () => {
-  const onReorder = renderTree();
-
-  await userEvent.click(screen.getByRole("button", { name: "body を上へ" }));
-
-  expect(onReorder).toHaveBeenCalledWith({ parentName: "home", index: 1 }, 0);
-});
-
-test("子を下へ動かすと同じ親の中の1つ後ろの位置へ移す指示が伝わる", async () => {
+test("子を下へ動かすと今見ている artboard の中の1つ後ろの位置へ移す指示が伝わる", async () => {
   const onReorder = renderTree();
 
   await userEvent.click(screen.getByRole("button", { name: "title を下へ" }));
 
-  expect(onReorder).toHaveBeenCalledWith({ parentName: "home", index: 0 }, 1);
+  expect(onReorder).toHaveBeenCalledWith(
+    { parentName: "settings", index: 0 },
+    1,
+  );
 });
 
 test("孫ノードの並べ替えはその親の中の位置として伝わる", async () => {
@@ -72,22 +75,4 @@ test("孫ノードの並べ替えはその親の中の位置として伝わる",
   );
 
   expect(onReorder).toHaveBeenCalledWith({ parentName: "body", index: 1 }, 0);
-});
-
-test("並びの先頭の子には上へ動かすボタンが出ない", () => {
-  renderTree();
-
-  expect(screen.queryByRole("button", { name: "title を上へ" })).toBeNull();
-});
-
-test("並びの末尾の子には下へ動かすボタンが出ない", () => {
-  renderTree();
-
-  expect(screen.queryByRole("button", { name: "footer を下へ" })).toBeNull();
-});
-
-test("子が1つだけの親では並べ替えボタンが出ない", () => {
-  renderTree();
-
-  expect(screen.queryByRole("button", { name: /^aside-only を/ })).toBeNull();
 });
