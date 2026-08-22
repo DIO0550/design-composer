@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { NodeDragHandlers } from "@/features/editor/hooks/use-node-drag";
+import type { NodeDragHandlers } from "@/features/canvas";
 
 type PaneProps = Readonly<{ children: ReactNode }>;
 

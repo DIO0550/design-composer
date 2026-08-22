@@ -200,11 +200,13 @@ export const EditorState = {
    * 映っているドキュメントと、その中で選ばれているものの対
    * （`DocumentSelection`。左ペインはこれだけで描ける）。
    *
-   * 選択から決まる読み（`isSelected` / `singleName` / `sourceName` /
-   * `isCurrentArtboard` / `singleSelection`）はすべてこの対が持つ。`EditorState` は
-   * 使う側が要るものだけをここへ委譲し、対から直接引けるもの（右ペインが読む
-   * `singleSelection`）は委譲を置かない。選択がどう変わるか（`select` / `reveal` / 履歴の取り込み）だけが
-   * `EditorState` に残る。
+   * 選択から決まる読み（`isSelected` / `names` / `singleName` / `sourceName` /
+   * `isCurrentArtboard` / `singleSelection`）はすべてこの対が持つ。`EditorState` が
+   * 委譲を置くのは、状態しか持っていない消費側が要る 3 つ（`singleName` /
+   * `sourceName` / `isSelected`）だけで、対を受け取る側が直接引けるもの
+   * （キャンバスが読む `names` / `isCurrentArtboard`、右ペインが読む
+   * `singleSelection`）には置かない。選択がどう変わるか（`select` / `reveal` /
+   * 履歴の取り込み）だけが `EditorState` に残る。
    *
    * @param state 選択とドキュメントの出どころ
    * @returns 今のドキュメントと選択の対
@@ -709,34 +711,6 @@ export const EditorState = {
 
   isSelected(state: EditorState, name: string): boolean {
     return DocumentSelection.isSelected(
-      EditorState.documentSelection(state),
-      name,
-    );
-  },
-
-  /**
-   * 選ばれているものすべての名前。
-   *
-   * キャンバスは選んだぶんだけ枠を出すのでこれを使う（ツリーと違い、選択は
-   * artboard をまたげる / docs/06-ui.md「選択」）。
-   *
-   * @param state 選択の出どころになるエディタの状態
-   * @returns 選ばれている名前の並び。未選択なら空
-   */
-  selectedNames(state: EditorState): readonly string[] {
-    return SelectionState.names(state.selection);
-  },
-
-  /**
-   * その名前の artboard が今見ている 1 枚か。
-   * どれを今の 1 枚とするかは `DocumentSelection.currentArtboard` が決める。
-   *
-   * @param state 選択とドキュメントの出どころ
-   * @param name 今見ている 1 枚かを知りたい artboard の名前
-   * @returns 今見ている artboard の名前と一致すれば真
-   */
-  isCurrentArtboard(state: EditorState, name: string): boolean {
-    return DocumentSelection.isCurrentArtboard(
       EditorState.documentSelection(state),
       name,
     );

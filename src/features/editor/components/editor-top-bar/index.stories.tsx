@@ -3,8 +3,8 @@ import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import type { DocumentError } from "@/domains/document-error";
 import { DocumentSaveState } from "@/domains/document-save-state";
 import { type Elapsed, ElapsedUnits } from "@/domains/elapsed";
+import { CanvasView } from "@/features/canvas";
 import { SampleFileErrors } from "@/features/editor/__stories__/sample-editor-state";
-import { CanvasView } from "@/features/editor/domains/canvas-view";
 import {
   EditorTopBar,
   type EditorTopBarTone,

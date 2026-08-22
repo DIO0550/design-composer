@@ -8,7 +8,7 @@ import {
   movePointer,
   pressPointer,
   releasePointer,
-} from "@/features/editor/__tests__/canvas-gesture";
+} from "@/features/canvas/__tests__/canvas-gesture";
 import {
   type LeftPaneView,
   LeftPaneViewLabels,

@@ -4,6 +4,14 @@ import { DocumentSaveState } from "@/domains/document-save-state";
 import { FileValidity } from "@/domains/file-validity";
 import type { NodeTemplate } from "@/domains/node-template";
 import type { OpenedDocument } from "@/domains/opened-document";
+import type { TokenSelection } from "@/domains/token-selection";
+import {
+  ArtboardCanvas,
+  type CanvasViewControl,
+  NodeInsertToolbar,
+  useCanvasView,
+  useNodeDrag,
+} from "@/features/canvas";
 import {
   DocumentSyncFailureList,
   type FileRevertControl,
@@ -12,7 +20,6 @@ import {
   useElapsed,
   useFileRevert,
 } from "@/features/document-sync";
-import { ArtboardCanvas } from "@/features/editor/components/artboard-canvas";
 import {
   DocumentErrorList,
   DocumentErrorOrigins,
@@ -26,20 +33,12 @@ import {
   EditorTopBar,
   EditorTopBarTones,
 } from "@/features/editor/components/editor-top-bar";
-import { NodeInsertToolbar } from "@/features/editor/components/node-insert-toolbar";
 import { EditorState } from "@/features/editor/domains/editor-state";
-import { NodeDrag } from "@/features/editor/domains/node-drag";
-import { DraggedNode } from "@/features/editor/domains/node-drop";
-import {
-  type CanvasViewControl,
-  useCanvasView,
-} from "@/features/editor/hooks/use-canvas-view";
 import { useEditShortcuts } from "@/features/editor/hooks/use-edit-shortcuts";
 import {
   type NodeActions,
   useNodeActions,
 } from "@/features/editor/hooks/use-node-actions";
-import { useNodeDrag } from "@/features/editor/hooks/use-node-drag";
 import {
   type TokenActions,
   useTokenActions,
@@ -49,7 +48,7 @@ import { LeftPane, type LeftPaneView, LeftPaneViews } from "@/features/sidebar";
 import { TokenDashedNodes, TokenEditor } from "@/features/tokens";
 import type { Clock } from "@/libs/clock";
 import type { DocumentIpc } from "@/libs/document-ipc";
-import { Option } from "@/utils/Option";
+import type { Option } from "@/utils/Option";
 
 /**
  * 右ペインの帯と本文に出すもの。器（`EditorLayout.RightPane.Heading` / `.Body`）は
@@ -186,29 +185,19 @@ function CanvasDockStack({ children }: Readonly<{ children: ReactNode }>) {
  */
 function CanvasDockContent({
   dock,
-  state,
+  tokenSelection,
   node,
   dragged,
   onReveal,
   fileRevert,
 }: Readonly<{
   dock: CanvasDock;
-  state: EditorState;
+  tokenSelection: TokenSelection;
   node: NodeActions;
   dragged: Option<NodeTemplate>;
   onReveal: (nodeName: string) => void;
   fileRevert: FileRevertControl;
 }>): ReactElement {
-  /*
-   * 対をここで 1 つだけ作る。帯（`TokenDashedNodes`）はこれを覚えて数え直しを避けるので、
-   * レンダーのたびに作り直すと覚えたものが毎回捨てられる（パン / ズームで下端まで
-   * 再レンダーされる）。
-   */
-  const tokenSelection = useMemo(
-    () => EditorState.tokenSelection(state),
-    [state],
-  );
-
   switch (dock.kind) {
     case "file-invalid":
       return (
@@ -283,10 +272,19 @@ function EditorPanes({
     onMove: node.move,
     onInsertAt: node.insertAt,
   });
-  /** 今パレットから運んでいる指定。掴んだ行の強調とツールバーの点灯がこれで決まる。 */
-  const draggedTemplate = Option.flatMap(
-    NodeDrag.carriedNode(nodeDrag.drag),
-    DraggedNode.template,
+  /*
+   * ドキュメントと選択の対・トークンの対を、ここで 1 つずつだけ作る。
+   * 受け取る側（キャンバスの破線、下端の帯）はこれを覚えて数え直しを避けるので、
+   * レンダーのたびに作り直すと覚えたものが毎回捨てられる
+   * （パン / ズームでこのツリー全体が再レンダーされる）。
+   */
+  const documentSelection = useMemo(
+    () => EditorState.documentSelection(state),
+    [state],
+  );
+  const tokenSelection = useMemo(
+    () => EditorState.tokenSelection(state),
+    [state],
   );
 
   const isFrozen = EditorState.isFileInvalid(state);
@@ -310,20 +308,22 @@ function EditorPanes({
         <LeftPane
           view={leftPaneView}
           onSelectView={setLeftPaneView}
-          selection={EditorState.documentSelection(state)}
-          tokenSelection={EditorState.tokenSelection(state)}
+          selection={documentSelection}
+          tokenSelection={tokenSelection}
           isFrozen={isFrozen}
           node={node}
           token={token}
           grab={{
-            dragged: draggedTemplate,
+            dragged: nodeDrag.carriedTemplate,
             onGrab: nodeDrag.grabTemplate,
           }}
         />
       </EditorLayout.LeftPane>
       <EditorLayout.CenterPane>
         <ArtboardCanvas
-          state={state}
+          selection={documentSelection}
+          tokenSelection={tokenSelection}
+          isFrozen={isFrozen}
           canvasView={canvasView}
           nodeDrag={nodeDrag}
           onSelect={node.selectAt}
@@ -332,9 +332,9 @@ function EditorPanes({
         />
         <CanvasDockContent
           dock={canvasDock(state)}
-          state={state}
+          tokenSelection={tokenSelection}
           node={node}
-          dragged={draggedTemplate}
+          dragged={nodeDrag.carriedTemplate}
           /*
            * 選ぶだけでなく行き先も Layers へ戻す。トークンを消して不正を作った直後は
            * 左ペインが Tokens なので、選んでもツリーにもプロパティにも出ない

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { NodeDragHandlers } from "@/features/editor/hooks/use-node-drag";
+import type { NodeDragHandlers } from "@/features/canvas";
 import { EditorLayout } from "./index";
 
 /** 何も掴んでいない状態のポインタの受け口。器の見た目はドラッグに依らない。 */
