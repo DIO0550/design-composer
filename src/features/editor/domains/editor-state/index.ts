@@ -4,18 +4,18 @@ import { ChildPosition } from "@/domains/child-position";
 import { DesignDocument } from "@/domains/design-document";
 import { DocumentError } from "@/domains/document-error";
 import type { DocumentReload } from "@/domains/document-reload";
+import { DocumentSelection } from "@/domains/document-selection";
 import { FileValidity } from "@/domains/file-validity";
 import type { Instant } from "@/domains/instant";
-import { Node, type PropEdit } from "@/domains/node";
+import type { Node, PropEdit } from "@/domains/node";
 import { NodeTemplate } from "@/domains/node-template";
+import type { Selection } from "@/domains/selection";
+import { SelectionState } from "@/domains/selection-state";
 import { Token, type TokenRef, TokenSet, TokenValue } from "@/domains/token";
 import { TokenSelection } from "@/domains/token-selection";
 import { EditHistory } from "@/features/editor/domains/edit-history";
-import { Selection } from "@/features/editor/domains/selection";
-import { SelectionState } from "@/features/editor/domains/selection-state";
 import { TokenTemplate } from "@/features/editor/domains/token-template";
 import { InstanceComposition } from "@/services/instance-composition";
-import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 
 /**
@@ -199,6 +199,23 @@ export const EditorState = {
   },
 
   /**
+   * 映っているドキュメントと、その中で選ばれているものの対
+   * （`DocumentSelection`。左ペインはこれだけで描ける）。
+   *
+   * 選択から決まる読み（今見ている artboard・選んでいる 1 つの正体・出どころの部品）は
+   * すべてこの対が持ち、`EditorState` 側はここへ委譲する。
+   *
+   * @param state 選択とドキュメントの出どころ
+   * @returns 今のドキュメントと選択の対
+   */
+  documentSelection(state: EditorState): DocumentSelection {
+    return DocumentSelection.create(
+      EditorState.document(state),
+      state.selection,
+    );
+  },
+
+  /**
    * 1 つだけ選んでいるときの、その名前。
    *
    * 単一選択を前提とする操作（削除・コピー・prop 編集・リサイズ・部品化・解除・
@@ -272,15 +289,7 @@ export const EditorState = {
    *   1 つでもインスタンスでないもの・別の部品を指すものが混ざれば `none`
    */
   sourceName(state: EditorState): Option<string> {
-    const document = EditorState.document(state);
-    const names = SelectionState.names(state.selection);
-    const refs = names.flatMap((name) => {
-      const found = DesignDocument.findNode(document, name);
-      return found.some && Node.isRef(found.value) ? [found.value.ref] : [];
-    });
-    const isSameSource =
-      refs.length === names.length && ArrayEx.distinct(refs).length === 1;
-    return isSameSource ? ArrayEx.first(refs) : Option.none;
+    return DocumentSelection.sourceName(EditorState.documentSelection(state));
   },
 
   /**
@@ -706,7 +715,10 @@ export const EditorState = {
   },
 
   isSelected(state: EditorState, name: string): boolean {
-    return SelectionState.includes(state.selection, name);
+    return DocumentSelection.isSelected(
+      EditorState.documentSelection(state),
+      name,
+    );
   },
 
   /**
@@ -737,17 +749,9 @@ export const EditorState = {
    * @returns 単一選択ならその名前と種別。未選択と複数選択では `none`
    */
   singleSelection(state: EditorState): Option<Selection> {
-    return Option.flatMap(EditorState.singleName(state), (name) => {
-      const document = EditorState.document(state);
-      const artboard = DesignDocument.findArtboard(document, name);
-      if (artboard.some) {
-        return Option.some(Selection.fromArtboard(artboard.value));
-      }
-      return Option.map(
-        DesignDocument.findNode(document, name),
-        Selection.fromNode,
-      );
-    });
+    return DocumentSelection.singleSelection(
+      EditorState.documentSelection(state),
+    );
   },
 
   /**
@@ -768,21 +772,17 @@ export const EditorState = {
    * しまうため（rules/coding.md「不正な状態を型で表現できなくする」）。
    */
   currentArtboard(state: EditorState): Option<Artboard> {
-    const document = EditorState.document(state);
-    const owning = Option.flatMap(
-      ArrayEx.first(SelectionState.names(state.selection)),
-      (name) => DesignDocument.findOwningArtboard(document, name),
+    return DocumentSelection.currentArtboard(
+      EditorState.documentSelection(state),
     );
-    if (owning.some) {
-      return owning;
-    }
-    return ArrayEx.first(document.artboards);
   },
 
   /** その名前の artboard が今見ている 1 枚か。 */
   isCurrentArtboard(state: EditorState, name: string): boolean {
-    const current = EditorState.currentArtboard(state);
-    return current.some && current.value.name === name;
+    return DocumentSelection.isCurrentArtboard(
+      EditorState.documentSelection(state),
+      name,
+    );
   },
 
   /**

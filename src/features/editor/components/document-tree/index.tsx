@@ -4,11 +4,8 @@ import { TypeGlyph } from "@/components/type-glyph";
 import type { ChildPosition } from "@/domains/child-position";
 import { Node, type PrimitiveNode } from "@/domains/node";
 import type { TextSchema } from "@/domains/primitive-schema";
+import { Selection, type SelectionKind } from "@/domains/selection";
 import { EditorState } from "@/features/editor/domains/editor-state";
-import {
-  Selection,
-  type SelectionKind,
-} from "@/features/editor/domains/selection";
 import { Option } from "@/utils/Option";
 
 /** 文言を読む prop。Text のスキーマが宣言している名前に限る。 */

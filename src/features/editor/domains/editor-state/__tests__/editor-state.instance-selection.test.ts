@@ -93,20 +93,11 @@ test("参照先の部品が無いインスタンスでも、同じ参照を持�
   expect(EditorState.selectedNames(all)).toEqual(["settings-broken"]);
 });
 
-test("インスタンスを選ぶと元の部品の名前が Assets 側へも渡る", () => {
-  const selected = EditorState.select(setupState(), "home-login");
-
-  expect(EditorState.sourceName(selected)).toEqual(
-    Option.some("primary-button"),
-  );
-});
-
-test("インスタンス以外を選んでいるときは元の部品が無い", () => {
-  const selected = EditorState.select(setupState(), "home-title");
-
-  expect(EditorState.sourceName(selected).some).toBe(false);
-});
-
+/*
+ * 選択そのものから決まる出どころ（インスタンスなら読める / インスタンス以外なら無い）は
+ * 対の側（`document-selection.source-name.test.ts`）が持つ。ここで見るのは
+ * まとめて選ぶ操作を通しても答えが変わらないこと。
+ */
 test("まとめて選んだあとも元の部品の名前は Assets 側へ渡り続ける", () => {
   const selected = EditorState.select(setupState(), "home-login");
 
