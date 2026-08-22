@@ -1,17 +1,13 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { useState } from "react";
 import { expect, test, vi } from "vitest";
-import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
-import type { PropEdit } from "@/domains/node";
 import {
   pressedSegmentsOf,
   segmentOf,
-} from "@/features/editor/__tests__/segmented-controls";
-import {
-  EditorProvider,
-  useEditor,
-} from "@/features/editor/components/editor-provider";
-import { EditorState } from "@/features/editor/domains/editor-state";
+} from "@/components/__tests__/segmented-controls";
+import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import { DocumentSelection } from "@/domains/document-selection";
 import { PropertyPanel } from "../index";
 
 const EditedDocument = DesignDocument.create({
@@ -32,48 +28,51 @@ const EditedDocument = DesignDocument.create({
 });
 
 /**
- * 編集がドキュメントに反映されることを、reducer と domains の実物を通して確かめる。
- * 選択は Provider の中でしか作れないので、描画直後に選択を送る。
+ * 渡した編集がドキュメントに入り、その結果が欄へ戻ってくることを、domains の実物を
+ * 通して確かめる。書き込みは `DesignDocument.applyPropEdit`（編集画面の reducer が
+ * 呼ぶのと同じ関数）で、通らなかった編集は捨てて今の値を保つ。
+ *
+ * 編集画面の配線（reducer → 履歴 → キャンバス）は
+ * `opened-document-editor.prop-edit.test.tsx` が通す。ここが見るのはパネルの往復だけ。
  */
 function EditablePanel({ selected }: Readonly<{ selected: string }>) {
-  const { state, dispatch } = useEditor();
-  const editProp = (edit: PropEdit) =>
-    dispatch({ type: "apply_prop_edit", edit });
+  const [selection, setSelection] = useState(() =>
+    DocumentSelection.fromNames(EditedDocument, [selected]),
+  );
 
-  return EditorState.isSelected(state, selected) ? (
-    <PropertyPanel
+  return (
+    <PropertyPanel.Body
+      selection={selection}
+      isFrozen={false}
       instance={{
         goToSource: vi.fn(),
         selectAllInstances: vi.fn(),
         detach: vi.fn(),
       }}
-      state={state}
-      onEditProp={editProp}
-      onClearSelection={() => dispatch({ type: "clear_selection" })}
+      onEditProp={(edit) =>
+        setSelection((current) => {
+          const edited = DesignDocument.applyPropEdit(
+            current.document,
+            selected,
+            edit,
+          );
+          return edited.ok
+            ? DocumentSelection.fromNames(edited.value, [selected])
+            : current;
+        })
+      }
+      onClearSelection={vi.fn()}
     />
-  ) : (
-    <button
-      type="button"
-      onClick={() => dispatch({ type: "select", name: selected })}
-    >
-      選択する
-    </button>
   );
 }
 
-async function setupPanel(selected: string) {
-  const user = userEvent.setup();
-  render(
-    <EditorProvider initialDocument={EditedDocument}>
-      <EditablePanel selected={selected} />
-    </EditorProvider>,
-  );
-  await user.click(screen.getByRole("button", { name: "選択する" }));
-  return user;
+function setupPanel(selected: string) {
+  render(<EditablePanel selected={selected} />);
+  return userEvent.setup();
 }
 
 test("セグメントを押すとその値が選ばれた状態になる", async () => {
-  const user = await setupPanel("home-title");
+  const user = setupPanel("home-title");
 
   await user.click(segmentOf("Align", "center"));
 
@@ -81,7 +80,7 @@ test("セグメントを押すとその値が選ばれた状態になる", async
 });
 
 test("選ばれているセグメントをもう一度押すと未指定へ戻り既定が効く表示になる", async () => {
-  const user = await setupPanel("home-title");
+  const user = setupPanel("home-title");
   await user.click(segmentOf("Align", "center"));
 
   await user.click(segmentOf("Align", "center"));
@@ -94,7 +93,7 @@ test("同じ選択肢を持つ 2 つの enum は取り違えずに別々に編�
    * Box の `align` と `justify` はどちらも start / center / end を持つ。
    * 取り違えると押した側が空になり、押していない側が `center` になって落ちる。
    */
-  const user = await setupPanel("home-body");
+  const user = setupPanel("home-body");
 
   await user.click(segmentOf("Justify", "center"));
 
@@ -105,7 +104,7 @@ test("同じ選択肢を持つ 2 つの enum は取り違えずに別々に編�
 });
 
 test("文字入力の prop を書き換えるとその値が入力欄に反映される", async () => {
-  const user = await setupPanel("home-title");
+  const user = setupPanel("home-title");
 
   await user.clear(screen.getByRole("textbox", { name: "Content" }));
   await user.type(screen.getByRole("textbox", { name: "Content" }), "設定");
@@ -117,7 +116,7 @@ test("文字入力の prop を書き換えるとその値が入力欄に反映�
 });
 
 test("トークン参照の prop を選び直すとその値が入力欄に反映される", async () => {
-  const user = await setupPanel("home-title");
+  const user = setupPanel("home-title");
 
   await user.selectOptions(screen.getByRole("combobox", { name: "Color" }), [
     "primary",
@@ -130,7 +129,7 @@ test("トークン参照の prop を選び直すとその値が入力欄に反�
 });
 
 test("インスタンスの公開 prop を書き換えると overrides として反映される", async () => {
-  const user = await setupPanel("home-action");
+  const user = setupPanel("home-action");
 
   await user.type(screen.getByRole("textbox", { name: "Label" }), "ログイン");
 
@@ -146,7 +145,7 @@ test("インスタンスの公開 prop を書き換えると overrides として
  * （入力欄の `value` は、空文字を設定してしまう壊し方でも空のままになる）。
  */
 test("インスタンスの公開 prop の入力欄を空にすると上書きが解かれる", async () => {
-  const user = await setupPanel("home-action");
+  const user = setupPanel("home-action");
   await user.type(screen.getByRole("textbox", { name: "Label" }), "ログイン");
 
   await user.clear(screen.getByRole("textbox", { name: "Label" }));
@@ -155,7 +154,7 @@ test("インスタンスの公開 prop の入力欄を空にすると上書き�
 });
 
 test("サイズのモードを fixed にすると長さの入力欄が現れる", async () => {
-  const user = await setupPanel("home-body");
+  const user = setupPanel("home-body");
   expect(screen.queryByRole("spinbutton", { name: "Width" })).toBeNull();
 
   await user.click(segmentOf("Width Mode", "fixed"));
@@ -164,7 +163,7 @@ test("サイズのモードを fixed にすると長さの入力欄が現れる"
 });
 
 test("サイズのモードを fixed から戻すと長さの入力欄が消える", async () => {
-  const user = await setupPanel("home-body");
+  const user = setupPanel("home-body");
   await user.click(segmentOf("Width Mode", "fixed"));
 
   await user.click(segmentOf("Width Mode", "hug"));
@@ -173,7 +172,7 @@ test("サイズのモードを fixed から戻すと長さの入力欄が消え�
 });
 
 test("数値入力の prop を書き換えるとその値が入力欄に反映される", async () => {
-  const user = await setupPanel("home-body");
+  const user = setupPanel("home-body");
   await user.click(segmentOf("Width Mode", "fixed"));
 
   await user.type(screen.getByRole("spinbutton", { name: "Width" }), "240");

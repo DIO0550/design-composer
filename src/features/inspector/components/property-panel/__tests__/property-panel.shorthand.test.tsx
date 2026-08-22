@@ -2,8 +2,8 @@ import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import { DocumentSelection } from "@/domains/document-selection";
 import type { Props } from "@/domains/node";
-import { EditorState } from "@/features/editor/domains/editor-state";
 import { ShorthandLabels } from "../index";
 import { renderPanel } from "./setup";
 
@@ -25,23 +25,18 @@ const UniformSides = {
  * @returns 操作に使うユーザ
  */
 function renderBoxPanel(props: Props) {
-  const state = EditorState.select(
-    EditorState.create(
-      DesignDocument.create({
-        tokens: DocumentTemplate.Default.tokens,
-        artboards: [
-          {
-            name: "home",
-            width: 360,
-            height: 240,
-            children: [{ name: "box", type: "Box", props }],
-          },
-        ],
-      }),
-    ),
-    "box",
-  );
-  renderPanel(state);
+  const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
+    artboards: [
+      {
+        name: "home",
+        width: 360,
+        height: 240,
+        children: [{ name: "box", type: "Box", props }],
+      },
+    ],
+  });
+  renderPanel(DocumentSelection.fromNames(document, ["box"]));
   return userEvent.setup();
 }
 

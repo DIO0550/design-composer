@@ -2,6 +2,7 @@ import { type ReactElement, useId, useState } from "react";
 import { ColorSwatch } from "@/components/color-swatch";
 import { SegmentedControl } from "@/components/segmented-control";
 import { TypeGlyph } from "@/components/type-glyph";
+import { DocumentSelection } from "@/domains/document-selection";
 import type { PropEdit } from "@/domains/node";
 import {
   PropControl,
@@ -14,8 +15,6 @@ import {
 } from "@/domains/prop-control";
 import type { Selection, SelectionKind } from "@/domains/selection";
 import type { Side, SidePair } from "@/domains/side";
-import { EditorLayout } from "@/features/editor/components/editor-layout";
-import { EditorState } from "@/features/editor/domains/editor-state";
 import { InstanceComposition } from "@/services/instance-composition";
 import { CaseStyle } from "@/utils/CaseStyle";
 import { Option } from "@/utils/Option";
@@ -918,23 +917,40 @@ function SelectionTitle({ selection }: Readonly<{ selection: Selection }>) {
 }
 
 /**
- * 帯に出す中身。何も選んでいなければ空（帯そのものは残す）。
+ * その選択に対する編集欄。帯と本文の両方がここから出し分ける。
+ *
+ * 解除できるかは、解除と同じ判定に答えさせる。失敗の条件（参照先が無い・
+ * 循環している）を書き写すと `InstanceComposition.detach` と二重管理になり、
+ * 片方だけ変わったときにボタンの出方と結果が食い違う。
+ *
+ * @param selection 選択とドキュメントの出どころ
+ * @returns 選択の種類に応じた編集欄。何も選んでいないときは `none`
+ */
+function controlsOf(selection: DocumentSelection): Option<SelectionControls> {
+  return SelectionControls.forSelection(
+    selection,
+    InstanceComposition.isDetachable,
+  );
+}
+
+/**
+ * 右ペインの帯に出す、いま選んでいるもの
+ * （UI 案 docs/Design Composer.html のインスペクタの 44px の帯）。
+ *
+ * 帯そのもの（`EditorLayout.RightPane.Heading`）は呼び出し側が置く。器は編集画面の
+ * 組み立ての一部で、この feature からは触れないため。選んでいないときに中身だけを
+ * 空にするのはそのためで、帯ごと消すと選択のたびに本文の位置が帯のぶん動く。
  *
  * 複数選んでいるときに件数を出すのは、1 つの名前も種別も決まらないため
  * （docs/06-ui.md「選択」。本文は編集欄を出さないので、ここが唯一の手がかりになる）。
  *
- * 戻り値を `ReactElement`（`ReactNode` ではない）と書いているのは、選択の種類を
- * 足して `case` を足し忘れたときにコンパイルエラーにするため。
- *
  * @returns 複数選択なら件数、1 つ選んでいれば名前と種別、何も選んでいなければ空
  */
-function SelectionHeading({
-  controls,
-  state,
-}: Readonly<{
-  controls: Option<SelectionControls>;
-  state: EditorState;
-}>): ReactElement | null {
+function PropertyPanelTitle({
+  selection,
+}: Readonly<{ selection: DocumentSelection }>): ReactElement | null {
+  const controls = controlsOf(selection);
+
   if (controls.some && controls.value.kind === "multiple") {
     return (
       <h2 className="min-w-0 flex-1 truncate font-semibold text-gray-900 text-sm">
@@ -942,12 +958,14 @@ function SelectionHeading({
       </h2>
     );
   }
-  const selection = EditorState.singleSelection(state);
-  return selection.some ? <SelectionTitle selection={selection.value} /> : null;
+  const single = DocumentSelection.singleSelection(selection);
+  return single.some ? <SelectionTitle selection={single.value} /> : null;
 }
 
 /**
  * 帯の下の本文。出すものは「凍結中」「選択あり」「選択なし」の 3 つ。
+ *
+ * 器（`EditorLayout.RightPane.Body`）は帯と同じく呼び出し側が着せる。
  *
  * 凍結を最初に見るのは、ファイルが不正な間は選択の有無によらず編集させないため
  * （#135。映っているのは最後に正常だった表示で、そこへ加えた編集は今のファイルとは
@@ -955,15 +973,15 @@ function SelectionHeading({
  *
  * @returns 凍結中はその旨、選択があれば入力欄、無ければ選択を促す 1 行
  */
-function InspectorBody({
+function PropertyPanelBody({
+  selection,
   isFrozen,
-  controls,
   onEditProp,
   onClearSelection,
   instance,
 }: Readonly<{
+  selection: DocumentSelection;
   isFrozen: boolean;
-  controls: Option<SelectionControls>;
   onEditProp: (edit: PropEdit) => void;
   onClearSelection: () => void;
   instance: InstanceActions;
@@ -972,6 +990,7 @@ function InspectorBody({
     return <p className="text-[11px] text-gray-400">選択は凍結中</p>;
   }
 
+  const controls = controlsOf(selection);
   if (!controls.some) {
     return <p className="text-gray-500 text-sm">選択されていません</p>;
   }
@@ -996,53 +1015,21 @@ function InspectorBody({
 
 /**
  * プロパティパネル（docs/06-ui.md「画面構成」。
- * UI 案 docs/Design Composer.html のインスペクタ）。
+ * UI 案 docs/Design Composer.html のインスペクタ）。右ペインの帯に出す見出しと、
+ * その下の本文の 2 つに分かれる。
  *
- * 見出しの帯には選んでいるものを出す。何も選んでいないときも**帯は残す**
- * （消すと選択のたびに本文の位置が帯のぶん動く）。
+ * 1 つの部品にまとめて器（`EditorLayout.RightPane`）ごと返さないのは、器が編集画面の
+ * 組み立て（`features/editor`）に属していて、この feature からは import できないため。
+ * 呼び出し側が帯と本文それぞれの器に入れる。
+ *
+ * 帯と本文は**呼び出し側が同じ 1 つの `selection` を両方へ渡す前提**で、同じ純粋関数
+ * （`controlsOf`）を通す。別々の選択を渡せば「帯は件数なのに本文はインスタンスの
+ * 編集欄」が作れるので、器を着せる側（`rightPaneParts`）で 1 つの値を作って配る。
  *
  * 入力欄はスキーマ定数の走査だけで決まる（`SelectionControls.forSelection`）ため、
  * ここには prop 名で分岐するコードを置かない。
  */
-export function PropertyPanel({
-  state,
-  onEditProp,
-  onClearSelection,
-  instance,
-}: Readonly<{
-  state: EditorState;
-  onEditProp: (edit: PropEdit) => void;
-  onClearSelection: () => void;
-  instance: InstanceActions;
-}>) {
-  /*
-   * 帯と本文を同じ 1 つの `controls` から出し分ける。別々に導くと
-   * 「帯は件数なのに本文はインスタンスの編集欄」という食い違いが作れる。
-   */
-  /*
-   * 解除できるかは、解除と同じ判定に答えさせる。失敗の条件（参照先が無い・
-   * 循環している）を書き写すと `InstanceComposition.detach` と二重管理になり、
-   * 片方だけ変わったときにボタンの出方と結果が食い違う。
-   */
-  const controls = SelectionControls.forSelection(
-    EditorState.documentSelection(state),
-    InstanceComposition.isDetachable,
-  );
-
-  return (
-    <>
-      <EditorLayout.RightPane.Heading>
-        <SelectionHeading controls={controls} state={state} />
-      </EditorLayout.RightPane.Heading>
-      <EditorLayout.RightPane.Body>
-        <InspectorBody
-          isFrozen={EditorState.isFileInvalid(state)}
-          controls={controls}
-          onEditProp={onEditProp}
-          onClearSelection={onClearSelection}
-          instance={instance}
-        />
-      </EditorLayout.RightPane.Body>
-    </>
-  );
-}
+export const PropertyPanel = {
+  Title: PropertyPanelTitle,
+  Body: PropertyPanelBody,
+} as const;

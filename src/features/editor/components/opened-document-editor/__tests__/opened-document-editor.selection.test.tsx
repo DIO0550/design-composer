@@ -6,6 +6,7 @@ import {
   highlightedNames,
   renderedElement,
 } from "@/features/editor/__tests__/canvas-elements";
+import { rightPaneHeading } from "@/features/editor/__tests__/right-pane-heading";
 import {
   artboardList,
   canvasPane,
@@ -103,4 +104,15 @@ test("ノードを選ぶとそれを載せている artboard が今見ている 
   );
 
   expect(currentRowNames(artboardList())).toEqual(["settings"]);
+});
+
+test("何も選んでいなくても右ペインの見出しの帯は残る", async () => {
+  await renderOpenedDocument();
+
+  /*
+   * 帯を着せるのは `EditorPanes`（`PropertyPanel.Title` は中身しか返さない）。
+   * 器ごと落としても `features/inspector` のテストは 1 件も落ちないので、ここで見る。
+   * 帯ごと消すと、選択のたびに本文の位置が帯のぶん動く。
+   */
+  expect(rightPaneHeading()).toBeDefined();
 });

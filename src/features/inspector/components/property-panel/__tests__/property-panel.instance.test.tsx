@@ -3,7 +3,8 @@ import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
 import type { ComponentSet } from "@/domains/component";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
-import { EditorState } from "@/features/editor/domains/editor-state";
+import { DocumentSelection } from "@/domains/document-selection";
+import type { InstanceActions } from "../index";
 import { renderPanel } from "./setup";
 
 /**
@@ -34,56 +35,59 @@ const Components: ComponentSet = {
   },
 };
 
-function setupState(): EditorState {
-  return EditorState.create(
-    DesignDocument.create({
-      tokens: DocumentTemplate.Default.tokens,
-      components: Components,
-      artboards: [
-        {
-          name: "home",
-          width: 360,
-          height: 240,
-          children: [
-            { name: "home-title", type: "Text" },
-            {
-              name: "home-login",
-              ref: "primary-button",
-              overrides: { label: "ログイン" },
-            },
-            {
-              name: "home-card",
-              ref: "profile-card",
-              overrides: { title: "プロフィール" },
-            },
-            { name: "home-broken", ref: "missing" },
-          ],
-        },
-      ],
-    }),
-  );
+function setupDocument(): DesignDocument {
+  return DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
+    components: Components,
+    artboards: [
+      {
+        name: "home",
+        width: 360,
+        height: 240,
+        children: [
+          { name: "home-title", type: "Text" },
+          {
+            name: "home-login",
+            ref: "primary-button",
+            overrides: { label: "ログイン" },
+          },
+          {
+            name: "home-card",
+            ref: "profile-card",
+            overrides: { title: "プロフィール" },
+          },
+          { name: "home-broken", ref: "missing" },
+        ],
+      },
+    ],
+  });
+}
+
+/** その名前を選んだ状態のパネルを描く。 */
+function renderSelected(name: string, instance?: InstanceActions) {
+  renderPanel(DocumentSelection.fromNames(setupDocument(), [name]), instance);
 }
 
 test("インスタンスを選ぶと元になっている部品が出る", () => {
-  renderPanel(EditorState.select(setupState(), "home-login"));
+  renderSelected("home-login");
 
   expect(screen.getByText("primary-button")).toBeDefined();
 });
 
 test("インスタンスを選ぶと公開 prop の件数が出る", () => {
-  renderPanel(EditorState.select(setupState(), "home-card"));
+  renderSelected("home-card");
 
   expect(screen.getByText("2")).toBeDefined();
 });
 
 test("上書きしている公開 prop には上書き済みであることが出る", () => {
-  renderPanel(EditorState.select(setupState(), "home-login"));
+  renderSelected("home-login");
 
   expect(screen.getByText(/overridden/)).toBeDefined();
 });
 
 test("上書きしている公開 prop には部品側の既定値が添えて出る", () => {
-  renderPanel(EditorState.select(setupState(), "home-login"));
+  renderSelected("home-login");
 
   expect(screen.getByText(/Button/)).toBeDefined();
 });
@@ -93,26 +97,26 @@ test("上書きしていない公開 prop には上書き済みの注記が出�
    * `profile-card` は公開 prop 2 件のうち `title` だけを上書きしている。
    * 上書きしていない側にも注記を出す実装にすると 2 件になって落ちる。
    */
-  renderPanel(EditorState.select(setupState(), "home-card"));
+  renderSelected("home-card");
 
   expect(screen.getAllByText(/overridden/).length).toBe(1);
 });
 
 test("インスタンスでは binding 先の group の見出しが出ない", () => {
-  renderPanel(EditorState.select(setupState(), "home-login"));
+  renderSelected("home-login");
 
   expect(screen.queryByRole("heading", { name: "Content" })).toBeNull();
 });
 
 test("インスタンスでは公開 prop の節の見出しが出る", () => {
-  renderPanel(EditorState.select(setupState(), "home-login"));
+  renderSelected("home-login");
 
   expect(screen.getByRole("heading", { name: "Public props" })).toBeDefined();
 });
 
 test("元の部品へ移動できる", async () => {
   const goToSource = vi.fn();
-  renderPanel(EditorState.select(setupState(), "home-login"), {
+  renderSelected("home-login", {
     goToSource,
     selectAllInstances: vi.fn(),
     detach: vi.fn(),
@@ -127,7 +131,7 @@ test("元の部品へ移動できる", async () => {
 
 test("インスタンスを解除できる", async () => {
   const detach = vi.fn();
-  renderPanel(EditorState.select(setupState(), "home-login"), {
+  renderSelected("home-login", {
     goToSource: vi.fn(),
     selectAllInstances: vi.fn(),
     detach,
@@ -141,7 +145,7 @@ test("インスタンスを解除できる", async () => {
 });
 
 test("存在しない部品を指すインスタンスは解除のボタンを押せない", () => {
-  renderPanel(EditorState.select(setupState(), "home-broken"));
+  renderSelected("home-broken");
 
   expect(
     screen.getByRole("button", { name: "Detach instance" }),
@@ -149,7 +153,7 @@ test("存在しない部品を指すインスタンスは解除のボタンを�
 });
 
 test("部品が引けるインスタンスは解除のボタンを押せる", () => {
-  renderPanel(EditorState.select(setupState(), "home-login"));
+  renderSelected("home-login");
 
   expect(
     screen.getByRole("button", { name: "Detach instance" }),
@@ -157,13 +161,13 @@ test("部品が引けるインスタンスは解除のボタンを押せる", ()
 });
 
 test("インスタンス以外を選んでいるときはインスタンスの操作が出ない", () => {
-  renderPanel(EditorState.select(setupState(), "home-title"));
+  renderSelected("home-title");
 
   expect(screen.queryByRole("button", { name: "Detach instance" })).toBeNull();
 });
 
 test("インスタンス以外を選んでいるときは group の見出しが出る", () => {
-  renderPanel(EditorState.select(setupState(), "home-title"));
+  renderSelected("home-title");
 
   expect(screen.getByRole("heading", { name: "Content" })).toBeDefined();
 });
@@ -171,32 +175,38 @@ test("インスタンス以外を選んでいるときは group の見出しが�
 /**
  * 同じ部品を指すインスタンスが 2 つあるドキュメント。
  *
- * `setupState` を使い回さないのは、あちらの `primary-button` が 1 件しか無く、
+ * `setupDocument` を使い回さないのは、あちらの `primary-button` が 1 件しか無く、
  * ボタンが押せる側の見え方を確かめられないため。
  */
-function setupMultiInstanceState(): EditorState {
-  return EditorState.create(
-    DesignDocument.create({
-      tokens: DocumentTemplate.Default.tokens,
-      components: Components,
-      artboards: [
-        {
-          name: "home",
-          width: 360,
-          height: 240,
-          children: [
-            { name: "home-login", ref: "primary-button" },
-            { name: "home-signup", ref: "primary-button" },
-            { name: "home-card", ref: "profile-card" },
-          ],
-        },
-      ],
-    }),
+function setupMultiInstanceDocument(): DesignDocument {
+  return DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
+    components: Components,
+    artboards: [
+      {
+        name: "home",
+        width: 360,
+        height: 240,
+        children: [
+          { name: "home-login", ref: "primary-button" },
+          { name: "home-signup", ref: "primary-button" },
+          { name: "home-card", ref: "profile-card" },
+        ],
+      },
+    ],
+  });
+}
+
+/** 同じ部品を指すインスタンスが 2 つあるドキュメントで、その名前を選んだ状態を描く。 */
+function renderMultiInstanceSelected(name: string, instance?: InstanceActions) {
+  renderPanel(
+    DocumentSelection.fromNames(setupMultiInstanceDocument(), [name]),
+    instance,
   );
 }
 
 test("インスタンスを選ぶと、同じ部品を指すインスタンスの数がボタンに出る", () => {
-  renderPanel(EditorState.select(setupMultiInstanceState(), "home-login"));
+  renderMultiInstanceSelected("home-login");
 
   expect(
     screen.getByRole("button", { name: "Select all 2 instances" }),
@@ -204,7 +214,7 @@ test("インスタンスを選ぶと、同じ部品を指すインスタンス�
 });
 
 test("同じ部品を指すインスタンスが2つ以上あればまとめて選ぶボタンを押せる", () => {
-  renderPanel(EditorState.select(setupMultiInstanceState(), "home-login"));
+  renderMultiInstanceSelected("home-login");
 
   expect(
     screen.getByRole("button", { name: "Select all 2 instances" }),
@@ -212,7 +222,7 @@ test("同じ部品を指すインスタンスが2つ以上あればまとめて�
 });
 
 test("そのインスタンスしか無いときはまとめて選ぶボタンを押せない", () => {
-  renderPanel(EditorState.select(setupMultiInstanceState(), "home-card"));
+  renderMultiInstanceSelected("home-card");
 
   expect(
     screen.getByRole("button", { name: "Select all 1 instances" }),
@@ -221,7 +231,7 @@ test("そのインスタンスしか無いときはまとめて選ぶボタン�
 
 test("まとめて選ぶボタンを押すとまとめて選ぶ操作が呼ばれる", async () => {
   const selectAllInstances = vi.fn();
-  renderPanel(EditorState.select(setupMultiInstanceState(), "home-login"), {
+  renderMultiInstanceSelected("home-login", {
     goToSource: vi.fn(),
     selectAllInstances,
     detach: vi.fn(),
@@ -235,32 +245,30 @@ test("まとめて選ぶボタンを押すとまとめて選ぶ操作が呼ば�
 });
 
 test("数えるのは artboard 配下だけで、部品定義の中の参照は入らない", () => {
-  const state = EditorState.create(
-    DesignDocument.create({
-      tokens: DocumentTemplate.Default.tokens,
-      components: {
-        ...Components,
-        // 部品定義の中のインスタンス。キャンバスには描かれるが選択の対象にならない
-        "login-card": {
-          type: "Box",
-          children: [{ name: "login-card-action", ref: "primary-button" }],
-        },
+  const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
+    components: {
+      ...Components,
+      // 部品定義の中のインスタンス。キャンバスには描かれるが選択の対象にならない
+      "login-card": {
+        type: "Box",
+        children: [{ name: "login-card-action", ref: "primary-button" }],
       },
-      artboards: [
-        {
-          name: "home",
-          width: 360,
-          height: 240,
-          children: [
-            { name: "home-login", ref: "primary-button" },
-            { name: "home-signup", ref: "primary-button" },
-          ],
-        },
-      ],
-    }),
-  );
+    },
+    artboards: [
+      {
+        name: "home",
+        width: 360,
+        height: 240,
+        children: [
+          { name: "home-login", ref: "primary-button" },
+          { name: "home-signup", ref: "primary-button" },
+        ],
+      },
+    ],
+  });
 
-  renderPanel(EditorState.select(state, "home-login"));
+  renderPanel(DocumentSelection.fromNames(document, ["home-login"]));
 
   expect(
     screen.getByRole("button", { name: "Select all 2 instances" }),

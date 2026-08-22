@@ -105,11 +105,6 @@ test("複数選んでいる間は挿入位置が決まらない", () => {
   expect(EditorState.insertPosition(setupMultiSelected()).some).toBe(false);
 });
 
-test("複数選んでいる間は右ペインが 1 つの正体を答えない", () => {
-  expect(EditorState.singleSelection(setupSingleSelected()).some).toBe(true);
-  expect(EditorState.singleSelection(setupMultiSelected()).some).toBe(false);
-});
-
 test("複数選んでいると選択数がその件数になる", () => {
   expect(EditorState.selectedNames(setupMultiSelected()).length).toBe(2);
 });
