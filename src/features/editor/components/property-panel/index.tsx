@@ -3,10 +3,6 @@ import { ColorSwatch } from "@/components/color-swatch";
 import { SegmentedControl } from "@/components/segmented-control";
 import { TypeGlyph } from "@/components/type-glyph";
 import type { PropEdit } from "@/domains/node";
-import type { Selection, SelectionKind } from "@/domains/selection";
-import type { Side, SidePair } from "@/domains/side";
-import { EditorLayout } from "@/features/editor/components/editor-layout";
-import { EditorState } from "@/features/editor/domains/editor-state";
 import {
   PropControl,
   type PropControlInput,
@@ -15,7 +11,12 @@ import {
   PropPairControl,
   PropShorthandControl,
   SelectionControls,
-} from "@/features/editor/domains/prop-control";
+} from "@/domains/prop-control";
+import type { Selection, SelectionKind } from "@/domains/selection";
+import type { Side, SidePair } from "@/domains/side";
+import { EditorLayout } from "@/features/editor/components/editor-layout";
+import { EditorState } from "@/features/editor/domains/editor-state";
+import { InstanceComposition } from "@/services/instance-composition";
 import { CaseStyle } from "@/utils/CaseStyle";
 import { Option } from "@/utils/Option";
 
@@ -54,6 +55,22 @@ function unsetLabel(control: PropControl): string {
 const MixedLabel = "不揃い";
 
 /**
+ * 欄の文字列を、その欄が指している値として読む。
+ *
+ * 空文字を「値が無い」と読むのはこのパネルの入力欄の約束事で、入れる向き
+ * （`FieldBinding.value` は未設定・不揃いを空文字で表す）と受け取る向き
+ * （`<select>` / `<input>` は空欄で空文字を返す）の両方に効く。ドメインへ渡す前に
+ * ここで解釈するのは、文字列 prop にとって `""` はそれ自体が正当な値になりうるため
+ * （`PropControl` 側で決めると、その値にとっての意味が固定される）。
+ *
+ * @param text 欄が持っている文字列
+ * @returns 空文字なら `none`、それ以外はその文字列
+ */
+function valueFrom(text: string): Option<string> {
+  return text === "" ? Option.none : Option.some(text);
+}
+
+/**
  * 入力欄が要るもの。
  *
  * `PropControl` そのものではなく**解釈済みの値と編集を作る口**で受ける。
@@ -87,7 +104,7 @@ function fieldOf(
     labelledBy,
     value: Option.unwrapOr(Option.map(control.value, String), ""),
     unsetLabel: unsetLabel(control),
-    onChangeRaw: (raw) => onEdit(PropControl.editFrom(control, raw)),
+    onChangeRaw: (raw) => onEdit(PropControl.editFrom(control, valueFrom(raw))),
   };
 }
 
@@ -117,7 +134,8 @@ function pairFieldOf(
         ? Option.unwrapOr(Option.map(value.value, String), "")
         : "",
     unsetLabel: value.kind === "uniform" ? unsetLabel(first) : MixedLabel,
-    onChangeRaw: (raw) => onEdit(PropPairControl.editFrom(pair, raw)),
+    onChangeRaw: (raw) =>
+      onEdit(PropPairControl.editFrom(pair, valueFrom(raw))),
   };
 }
 
@@ -259,16 +277,12 @@ function PropField({
   resolvedValuePlacement: ResolvedValuePlacement;
 }>): ReactElement {
   switch (input.kind) {
-    /*
-     * セグメントは `Option` で選択を表すので、空文字を未選択として読み替える
-     * （`PropControl.editFrom` が空欄を「未設定へ戻す」と読むのと同じ約束事）。
-     */
     case "enum":
       return (
         <SegmentedControl
           labelledBy={field.labelledBy}
           options={input.values}
-          value={field.value === "" ? Option.none : Option.some(field.value)}
+          value={valueFrom(field.value)}
           onChange={(next) => field.onChangeRaw(Option.unwrapOr(next, ""))}
         />
       );
@@ -768,7 +782,7 @@ function InstanceBody({
         {/*
           UI 案は `Go to source component` と `Detach instance` の間に置いている。
           1 つしか無いときに押せなくするのは、押しても選択が変わらないため
-          （`isDetachEnabled` と同じ扱い）。
+          （`isDetachable` と同じ扱い）。
         */}
         <button
           type="button"
@@ -786,8 +800,8 @@ function InstanceBody({
         <button
           type="button"
           onClick={actions.detach}
-          disabled={!controls.isDetachEnabled}
-          title={controls.isDetachEnabled ? undefined : DetachDisabledReason}
+          disabled={!controls.isDetachable}
+          title={controls.isDetachable ? undefined : DetachDisabledReason}
           className="rounded border border-gray-300 px-2 py-1 text-left text-sm hover:bg-gray-100 disabled:opacity-50"
         >
           {InstanceLabels.detach}
@@ -1005,7 +1019,15 @@ export function PropertyPanel({
    * 帯と本文を同じ 1 つの `controls` から出し分ける。別々に導くと
    * 「帯は件数なのに本文はインスタンスの編集欄」という食い違いが作れる。
    */
-  const controls = SelectionControls.forSelection(state);
+  /*
+   * 解除できるかは、解除と同じ判定に答えさせる。失敗の条件（参照先が無い・
+   * 循環している）を書き写すと `InstanceComposition.detach` と二重管理になり、
+   * 片方だけ変わったときにボタンの出方と結果が食い違う。
+   */
+  const controls = SelectionControls.forSelection(
+    EditorState.documentSelection(state),
+    InstanceComposition.isDetachable,
+  );
 
   return (
     <>

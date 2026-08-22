@@ -24,9 +24,11 @@ import { Option } from "@/utils/Option";
  * 「編集操作の一覧」の tokens 編集）。種別ごとの見せ方・入力欄の対応表をここに集め、
  * 一覧とエディタのコンポーネント側には種別で分岐するコードを書かない。
  *
- * 「入力欄」「行」「プレビュー」はトークン編集画面の語彙なので、この導出は
- * `src/domains/` ではなくこの feature に置く（`prop-control` と同じ理由。
- * `Token` に `controlInput()` を生やすと core が UI の表現を知ることになる）。
+ * この導出は `src/domains/` ではなくこの feature に置く。`valueText` や
+ * `TokenPreview` の `widthPx` のように**綴りと見せ方そのもの**を持っているため
+ * （`rules/architecture.md`「表示のための綴りをドメインへ持ち込まない」）。
+ * Why not: 同じ形に見える `src/domains/prop-control` は昇格させてある。あちらが
+ * 持つのは値の種別までで、綴りはパネル側にあるという違いによる。
  */
 
 /** 一覧の行に出す値の見せ方。種別ごとに何を見せられるかが違う。 */
@@ -441,7 +443,8 @@ function typographyValueFrom(
   if (field === "fontFamily") {
     /*
      * 空欄を「指定しない」と読むのは入力欄の約束事なので、`TypographyFieldEdit`
-     * ではなく入力欄を知っているここで解釈する（`PropControl.editFrom` と同じ理由）。
+     * ではなく入力欄を知っているここで解釈する（プロパティパネルの `valueFrom`
+     * と同じ理由）。
      */
     return Option.some({
       kind: "typography",

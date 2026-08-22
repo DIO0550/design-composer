@@ -141,7 +141,7 @@ function ReadyBody({
    * その名前を付けられるかは、部品化と同じ判定に答えさせる。失敗の条件（識別子の
    * 規則・名前空間での重複）を書き写すと `DesignDocument.createComponent` と
    * 二重管理になり、片方だけ変わったときにボタンの出方と結果が食い違う
-   * （`SelectionControls` の `isDetachEnabled` と同じ扱い）。
+   * （`SelectionControls` の `isDetachable` と同じ扱い）。
    */
   const isUsableName = DesignDocument.isUsableName(
     designDocument,

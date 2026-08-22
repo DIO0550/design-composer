@@ -140,6 +140,20 @@ test("インスタンスの公開 prop を書き換えると overrides として
   );
 });
 
+/*
+ * 空欄を「値が無い」と読むのはこのパネルの入力欄の約束事（`valueFrom`）なので、
+ * ドメイン側ではなくここで守る。上書きが解けたかは `overridden` の添え書きで見る
+ * （入力欄の `value` は、空文字を設定してしまう壊し方でも空のままになる）。
+ */
+test("インスタンスの公開 prop の入力欄を空にすると上書きが解かれる", async () => {
+  const user = await setupPanel("home-action");
+  await user.type(screen.getByRole("textbox", { name: "Label" }), "ログイン");
+
+  await user.clear(screen.getByRole("textbox", { name: "Label" }));
+
+  expect(screen.queryByText(/overridden/)).toBeNull();
+});
+
 test("サイズのモードを fixed にすると長さの入力欄が現れる", async () => {
   const user = await setupPanel("home-body");
   expect(screen.queryByRole("spinbutton", { name: "Width" })).toBeNull();

@@ -1,6 +1,7 @@
 import { Artboard } from "@/domains/artboard";
 import { Component, ComponentSet } from "@/domains/component";
 import { DesignDocument } from "@/domains/design-document";
+import { DocumentSelection } from "@/domains/document-selection";
 import {
   Node,
   PropEdit,
@@ -20,8 +21,6 @@ import {
   type NumericTokenKind,
   TokenSet,
 } from "@/domains/token";
-import { EditorState } from "@/features/editor/domains/editor-state";
-import { InstanceComposition } from "@/services/instance-composition";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 
@@ -31,10 +30,30 @@ import { Option } from "@/utils/Option";
  * 1エントリ追加で完結する状態を保つため、prop 名で分岐するコードをここにも
  * パネル側にも書かない。
  *
- * 「コントロール」はエディタ画面の語彙なので、この導出は `src/domains/` ではなく
- * feature 側に置く。`PropDefinition` に `controlInput()` を生やすと core が UI の
- * 表現を知ることになり、依存が domains → features へ逆流する。
+ * ここが持つのは props の編集規則（値域・既定・`enabledWhen`・`group`・`shorthand`）
+ * で、いずれもスキーマの性質なので `src/domains/` に置く。人が読む綴り（未設定の
+ * ラベル・不揃いの綴り・単位）と、空欄をどう読むかは持たず、パネル側に残す
+ * （`rules/architecture.md`「表示のための綴りをドメインへ持ち込まない」
+ * 「入力欄の約束事をドメインへ持ち込まない」）。
+ * Why not: 同じ形の `features/tokens/domains/token-control` は feature に残る。
+ * あちらは `valueText` や `TokenPreview` の `widthPx` のように**綴りと見せ方そのもの**
+ * を持つため。
+ *
+ * 今の消費側は `features/editor` の 1 つだけで、「2 つ以上の feature が必要としたら
+ * 昇格」の引き金は引かれていない。それでもここに置くのは帰属を根拠にしたためで、
+ * 判断は #174 の feature 分割の決定にある（#254 で分離）。
  */
+
+/**
+ * インスタンスを解除できるかを答える判定。
+ *
+ * 答えるのは `services/instance-composition`（参照の再帰展開と循環検出）で、
+ * `src/domains/` からは import できないため引数で受け取る。
+ */
+export type DetachableCheck = (
+  document: DesignDocument,
+  name: string,
+) => boolean;
 
 /**
  * 入力欄の種類。値の決め方（`domain`）から決まる。
@@ -143,7 +162,7 @@ export type PropControlSection = Readonly<{
  * 公開 prop に `group` を持たせないのは、その `group` が binding 先のプリミティブの
  * ものだから。出すと部品の内部構造が見出しに漏れる。
  *
- * `isDetachEnabled` を持つのは、参照先の部品が無い・循環している間は解除できず
+ * `isDetachable` を持つのは、参照先の部品が無い・循環している間は解除できず
  * （`InstanceComposition.detach` が失敗する）、押しても何も起きないボタンになるため。
  * 不正なドキュメントも画面には残る（docs/03-schema.md「不正ファイル時の挙動」）ので、
  * この状態は実際に出る。凍結中（#155）をここで見ないのは、凍結中は解除のボタンごと
@@ -165,7 +184,7 @@ export type SelectionControls =
       kind: "instance";
       source: string;
       publicProps: readonly PropControl[];
-      isDetachEnabled: boolean;
+      isDetachable: boolean;
       sourceInstanceCount: number;
     }>
   | Readonly<{ kind: "multiple"; count: number }>;
@@ -524,11 +543,16 @@ function sectionsOf(
  *
  * @param document 公開 prop の引き先と、解除できるかの判定に使うドキュメント
  * @param node 編集欄を出したいノード
+ * @param isDetachable インスタンスを解除できるかを答える判定
  * @returns 参照ノードなら出どころの部品つきの公開 prop、
  *   プリミティブなら `group` ごとにまとめた編集欄。
  *   スキーマの分からない `type` ではセクションが空になる
  */
-function nodeControls(document: DesignDocument, node: Node): SelectionControls {
+function nodeControls(
+  document: DesignDocument,
+  node: Node,
+  isDetachable: DetachableCheck,
+): SelectionControls {
   if (Node.isRef(node)) {
     return {
       kind: "instance",
@@ -538,12 +562,7 @@ function nodeControls(document: DesignDocument, node: Node): SelectionControls {
         node.overrides ?? {},
         document.tokens,
       ),
-      /*
-       * 解除できるかは、解除と同じ判定に答えさせる。失敗の条件（参照先が無い・
-       * 循環している）を書き写すと `InstanceComposition.detach` と二重管理になり、
-       * 片方だけ変わったときにボタンの出方と結果が食い違う。
-       */
-      isDetachEnabled: InstanceComposition.isDetachable(document, node.name),
+      isDetachable: isDetachable(document, node.name),
       /*
        * `componentAssets` の使用数ではなく、まとめて選ぶときと同じ集め方で数える。
        * あちらは部品定義の中の参照も数えるので、押した結果選ばれる件数と食い違う。
@@ -596,21 +615,25 @@ export const PropControl = {
   },
 
   /**
-   * 入力欄に入った文字列を、その prop への編集にする。
+   * 入力された値を、その prop への編集にする。
    * 値の作り方は入力欄の種類だけで決まるので、prop 名では分岐しない。
    *
-   * 空欄を「未設定へ戻す」と読むのは `<select>` / `<input>` の約束事なので、
-   * `PropEdit` ではなくコントロールを知っているここで解釈する（文字列 prop にとって
-   * `""` はそれ自体が正当な値になりうるため、ドメイン側に持たせると意味が固定される）。
+   * 受け取るのは**解釈済みの値**で、空欄を「値が無い」と読むのは
+   * `<select>` / `<input>` の約束事なので呼び出し側が済ませておく
+   * （文字列 prop にとって `""` はそれ自体が正当な値になりうるため、
+   * ここで `""` を未設定と決めるとその値にとっての意味が固定される）。
    *
    * @param control 編集したい prop の編集欄
-   * @param raw 入力欄が持っている生の文字列
-   * @returns 空欄なら未設定へ戻す編集、それ以外は設定する編集
+   * @param value 入力された値。入力欄が空なら `none`
+   * @returns 値が無いなら未設定へ戻す編集、あれば設定する編集
    */
-  editFrom(control: PropControl, raw: string): PropEdit {
-    return raw === ""
-      ? PropEdit.clear([control.prop])
-      : PropEdit.set([control.prop], parseInputValue(control.input, raw));
+  editFrom(control: PropControl, value: Option<string>): PropEdit {
+    return value.some
+      ? PropEdit.set(
+          [control.prop],
+          parseInputValue(control.input, value.value),
+        )
+      : PropEdit.clear([control.prop]);
   },
 } as const;
 
@@ -728,22 +751,22 @@ export const PropPairControl = {
   },
 
   /**
-   * 入力欄に入った文字列を、2 辺への 1 件の編集にする。
+   * 入力された値を、2 辺への 1 件の編集にする。
    *
    * 1 件にまとめるのは、辺ごとに分けて適用すると履歴も 2 段になり、
-   * 1 回の undo で片側しか戻らないため。空欄を「未設定へ戻す」と読むのは
-   * `PropControl.editFrom` と同じ入力欄の約束事。
+   * 1 回の undo で片側しか戻らないため。受け取るのが解釈済みの値なのは
+   * `PropControl.editFrom` と同じ。
    *
    * @param pair 編集したい畳んだ欄
-   * @param raw 入力欄が持っている生の文字列
-   * @returns 空欄なら 2 辺を未設定へ戻す編集、それ以外は 2 辺を同じ値にする編集
+   * @param value 入力された値。入力欄が空なら `none`
+   * @returns 値が無いなら 2 辺を未設定へ戻す編集、あれば 2 辺を同じ値にする編集
    */
-  editFrom(pair: PropPairControl, raw: string): PropEdit {
+  editFrom(pair: PropPairControl, value: Option<string>): PropEdit {
     const [first, second] = pair.sides;
     const names: readonly [string, ...string[]] = [first.prop, second.prop];
-    return raw === ""
-      ? PropEdit.clear(names)
-      : PropEdit.set(names, parseInputValue(first.input, raw));
+    return value.some
+      ? PropEdit.set(names, parseInputValue(first.input, value.value))
+      : PropEdit.clear(names);
   },
 } as const;
 
@@ -752,23 +775,36 @@ export const SelectionControls = {
    * 選択中のものを編集する欄（docs/06-ui.md「画面構成」）。
    * 未選択を `none` で表すのは、同じ位置づけの `TokenControl.forSelection` に揃えるため。
    *
-   * @param state 選択とドキュメントの出どころ
+   * 解除できるかを判定として受け取るのは、答えるのが `services/instance-composition`
+   * （参照の再帰展開と循環検出）で、`src/domains/` からは import できないため。
+   * Why not: 失敗の条件をここへ書き写す案は採らない。解除の実装と二重管理になる。
+   * この判定がドメインへ移せるかは #279 で見る（移れば引数ごと要らなくなる）。
+   * 渡された判定が本当に解除可否かは型では閉じられないので、そこは規律で担保する。
+   *
+   * @param selection 選択とドキュメントの出どころ
+   * @param isDetachable インスタンスを解除できるかを答える判定。
+   *   ドキュメントは対が持つものをそのまま渡す（呼び出し側が別のドキュメントを
+   *   閉じ込めた判定を渡すと、可否だけが古いドキュメントで決まる）
    * @returns インスタンスを選んでいるなら出どころの部品つきの公開 prop、
    *   複数選んでいるなら編集欄を持たない `multiple`、
-   *   それ以外は `group` ごとのセクション。何も選んでいないときは `none`。
+   *   それ以外は `group` ごとのセクション。何も選んでいないとき、および選んでいる
+   *   名前がドキュメントに無いときは `none`。
    *   スキーマの分からない `type`・解決できない部品では、選択はあるので `some` だが
    *   セクションが空になる
    */
-  forSelection(state: EditorState): Option<SelectionControls> {
-    const selectedNames = EditorState.selectedNames(state);
-    if (selectedNames.length > 1) {
-      return Option.some({ kind: "multiple", count: selectedNames.length });
+  forSelection(
+    selection: DocumentSelection,
+    isDetachable: DetachableCheck,
+  ): Option<SelectionControls> {
+    const count = DocumentSelection.count(selection);
+    if (count > 1) {
+      return Option.some({ kind: "multiple", count });
     }
-    const selected = EditorState.singleName(state);
+    const selected = DocumentSelection.singleName(selection);
     if (!selected.some) {
       return Option.none;
     }
-    const document = EditorState.document(state);
+    const document = selection.document;
     const name = selected.value;
     const artboard = DesignDocument.findArtboard(document, name);
     if (artboard.some) {
@@ -782,7 +818,7 @@ export const SelectionControls = {
       });
     }
     return Option.map(DesignDocument.findNode(document, name), (node) =>
-      nodeControls(document, node),
+      nodeControls(document, node, isDetachable),
     );
   },
 } as const;
