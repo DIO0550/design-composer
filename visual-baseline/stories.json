@@ -210,26 +210,6 @@
     "name": "文言が空の Text を編集中"
   },
   {
-    "id": "features-editor-artboardlist--default",
-    "title": "features/editor/ArtboardList",
-    "name": "選択なし（先頭が今の 1 枚）"
-  },
-  {
-    "id": "features-editor-artboardlist--empty",
-    "title": "features/editor/ArtboardList",
-    "name": "artboard がない"
-  },
-  {
-    "id": "features-editor-artboardlist--node-selected",
-    "title": "features/editor/ArtboardList",
-    "name": "artboard 配下のノードを選択中"
-  },
-  {
-    "id": "features-editor-artboardlist--selected",
-    "title": "features/editor/ArtboardList",
-    "name": "別の artboard を選択中"
-  },
-  {
     "id": "features-editor-documenterrorlist--broken-json",
     "title": "features/editor/DocumentErrorList",
     "name": "JSON が壊れている"
@@ -258,26 +238,6 @@
     "id": "features-editor-documenterrorlist--unopened-file",
     "title": "features/editor/DocumentErrorList",
     "name": "開けなかったファイル"
-  },
-  {
-    "id": "features-editor-documenttree--default",
-    "title": "features/editor/DocumentTree",
-    "name": "選択なし"
-  },
-  {
-    "id": "features-editor-documenttree--nested",
-    "title": "features/editor/DocumentTree",
-    "name": "入れ子のノードと並べ替え"
-  },
-  {
-    "id": "features-editor-documenttree--node-selected",
-    "title": "features/editor/DocumentTree",
-    "name": "artboard 配下のノードを選択中"
-  },
-  {
-    "id": "features-editor-documenttree--other-artboard",
-    "title": "features/editor/DocumentTree",
-    "name": "別の artboard を選択中"
   },
   {
     "id": "features-editor-editorlayout--default",
@@ -318,51 +278,6 @@
     "id": "features-editor-editortopbar--saving",
     "title": "features/editor/EditorTopBar",
     "name": "保存中"
-  },
-  {
-    "id": "features-editor-leftpane--assets",
-    "title": "features/editor/LeftPane",
-    "name": "Assets（部品のパレット）"
-  },
-  {
-    "id": "features-editor-leftpane--assets-grabbed",
-    "title": "features/editor/LeftPane",
-    "name": "Assets（行を掴んで運んでいる）"
-  },
-  {
-    "id": "features-editor-leftpane--layers",
-    "title": "features/editor/LeftPane",
-    "name": "Layers（ツリー）"
-  },
-  {
-    "id": "features-editor-leftpane--layers-frozen",
-    "title": "features/editor/LeftPane",
-    "name": "Layers（凍結中）"
-  },
-  {
-    "id": "features-editor-leftpane--layers-selected",
-    "title": "features/editor/LeftPane",
-    "name": "Layers（ノードを選択中）"
-  },
-  {
-    "id": "features-editor-leftpane--tokens",
-    "title": "features/editor/LeftPane",
-    "name": "Tokens（トークン一覧）"
-  },
-  {
-    "id": "features-editor-leftpanerail--assets",
-    "title": "features/editor/LeftPaneRail",
-    "name": "Assets を見ている"
-  },
-  {
-    "id": "features-editor-leftpanerail--layers",
-    "title": "features/editor/LeftPaneRail",
-    "name": "Layers を見ている"
-  },
-  {
-    "id": "features-editor-leftpanerail--tokens",
-    "title": "features/editor/LeftPaneRail",
-    "name": "Tokens を見ている"
   },
   {
     "id": "features-editor-nodeinserttoolbar--insert-enabled",
@@ -453,6 +368,91 @@
     "id": "features-editor-propertypanel--unset",
     "title": "features/editor/PropertyPanel",
     "name": "未指定の prop だけの Box を選択中"
+  },
+  {
+    "id": "features-sidebar-artboardlist--default",
+    "title": "features/sidebar/ArtboardList",
+    "name": "選択なし（先頭が今の 1 枚）"
+  },
+  {
+    "id": "features-sidebar-artboardlist--empty",
+    "title": "features/sidebar/ArtboardList",
+    "name": "artboard がない"
+  },
+  {
+    "id": "features-sidebar-artboardlist--node-selected",
+    "title": "features/sidebar/ArtboardList",
+    "name": "artboard 配下のノードを選択中"
+  },
+  {
+    "id": "features-sidebar-artboardlist--selected",
+    "title": "features/sidebar/ArtboardList",
+    "name": "別の artboard を選択中"
+  },
+  {
+    "id": "features-sidebar-documenttree--default",
+    "title": "features/sidebar/DocumentTree",
+    "name": "選択なし"
+  },
+  {
+    "id": "features-sidebar-documenttree--nested",
+    "title": "features/sidebar/DocumentTree",
+    "name": "入れ子のノードと並べ替え"
+  },
+  {
+    "id": "features-sidebar-documenttree--node-selected",
+    "title": "features/sidebar/DocumentTree",
+    "name": "artboard 配下のノードを選択中"
+  },
+  {
+    "id": "features-sidebar-documenttree--other-artboard",
+    "title": "features/sidebar/DocumentTree",
+    "name": "別の artboard を選択中"
+  },
+  {
+    "id": "features-sidebar-leftpane--assets",
+    "title": "features/sidebar/LeftPane",
+    "name": "Assets（部品のパレット）"
+  },
+  {
+    "id": "features-sidebar-leftpane--assets-grabbed",
+    "title": "features/sidebar/LeftPane",
+    "name": "Assets（行を掴んで運んでいる）"
+  },
+  {
+    "id": "features-sidebar-leftpane--layers",
+    "title": "features/sidebar/LeftPane",
+    "name": "Layers（ツリー）"
+  },
+  {
+    "id": "features-sidebar-leftpane--layers-frozen",
+    "title": "features/sidebar/LeftPane",
+    "name": "Layers（凍結中）"
+  },
+  {
+    "id": "features-sidebar-leftpane--layers-selected",
+    "title": "features/sidebar/LeftPane",
+    "name": "Layers（ノードを選択中）"
+  },
+  {
+    "id": "features-sidebar-leftpane--tokens",
+    "title": "features/sidebar/LeftPane",
+    "name": "Tokens（トークン一覧）"
+  },
+  {
+    "id": "features-sidebar-leftpanerail--assets",
+    "title": "features/sidebar/LeftPaneRail",
+    "name": "Assets を見ている"
+  },
+  {
+    "id": "features-sidebar-leftpanerail--layers",
+    "title": "features/sidebar/LeftPaneRail",
+    "name": "Layers を見ている"
+  },
+  {
+    "id": "features-sidebar-leftpanerail--tokens",
+    "title": "features/sidebar/LeftPaneRail",
+    "name": "Tokens を見ている"
   },
   {
     "id": "features-tokens-tokendashednodes--multiple",
