@@ -315,58 +315,58 @@
     "name": "同期に失敗した編集画面"
   },
   {
-    "id": "features-editor-propertypanel--box-selected",
-    "title": "features/editor/PropertyPanel",
+    "id": "features-inspector-propertypanel--box-selected",
+    "title": "features/inspector/PropertyPanel",
     "name": "Box ノードを選択中"
   },
   {
-    "id": "features-editor-propertypanel--default",
-    "title": "features/editor/PropertyPanel",
+    "id": "features-inspector-propertypanel--default",
+    "title": "features/inspector/PropertyPanel",
     "name": "選択されていない"
   },
   {
-    "id": "features-editor-propertypanel--frozen",
-    "title": "features/editor/PropertyPanel",
+    "id": "features-inspector-propertypanel--frozen",
+    "title": "features/inspector/PropertyPanel",
     "name": "凍結中"
   },
   {
-    "id": "features-editor-propertypanel--instance-selected",
-    "title": "features/editor/PropertyPanel",
+    "id": "features-inspector-propertypanel--instance-selected",
+    "title": "features/inspector/PropertyPanel",
     "name": "インスタンスを選択中（publicProps から生成）"
   },
   {
-    "id": "features-editor-propertypanel--long-name",
-    "title": "features/editor/PropertyPanel",
+    "id": "features-inspector-propertypanel--long-name",
+    "title": "features/inspector/PropertyPanel",
     "name": "名前が長いノードを選択中"
   },
   {
-    "id": "features-editor-propertypanel--padding-mixed",
-    "title": "features/editor/PropertyPanel",
+    "id": "features-inspector-propertypanel--padding-mixed",
+    "title": "features/inspector/PropertyPanel",
     "name": "padding が不揃いな Box を選択中"
   },
   {
-    "id": "features-editor-propertypanel--padding-per-edge",
-    "title": "features/editor/PropertyPanel",
+    "id": "features-inspector-propertypanel--padding-per-edge",
+    "title": "features/inspector/PropertyPanel",
     "name": "padding を辺ごとに出した Box を選択中"
   },
   {
-    "id": "features-editor-propertypanel--padding-uniform",
-    "title": "features/editor/PropertyPanel",
+    "id": "features-inspector-propertypanel--padding-uniform",
+    "title": "features/inspector/PropertyPanel",
     "name": "padding が揃っている Box を選択中"
   },
   {
-    "id": "features-editor-propertypanel--selected",
-    "title": "features/editor/PropertyPanel",
+    "id": "features-inspector-propertypanel--selected",
+    "title": "features/inspector/PropertyPanel",
     "name": "artboard を選択中"
   },
   {
-    "id": "features-editor-propertypanel--text-selected",
-    "title": "features/editor/PropertyPanel",
+    "id": "features-inspector-propertypanel--text-selected",
+    "title": "features/inspector/PropertyPanel",
     "name": "Text ノードを選択中"
   },
   {
-    "id": "features-editor-propertypanel--unset",
-    "title": "features/editor/PropertyPanel",
+    "id": "features-inspector-propertypanel--unset",
+    "title": "features/inspector/PropertyPanel",
     "name": "未指定の prop だけの Box を選択中"
   },
   {
