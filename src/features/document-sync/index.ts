@@ -12,10 +12,11 @@
  * 古いか**だから。追従が失敗している側の状態そのものなので、経過時間は一般の計時ではなく
  * この feature の関心事になる。
  *
- * Why not: 上部バー（`editor-top-bar`）はここに置かない。バーはズームも映すので、移すと
- * この feature が `canvas` の表示（`CanvasView`）にも依存することになる。`EditorState` を読む
- * `opened-document-editor` も同じ（`editor-state` への import が要る）。どちらも `editor`
- * に残し、両方を知ってよい組み立て点を `editor` 側に置いて一方向にする。
+ * Why not: 上部バー（`editor-top-bar`）はここに置かない。バーが映すのはファイルとの
+ * ずれ（保存状態・古さ）だけでなくズームや開いているファイル名でもあり、移すとこの
+ * feature が編集画面の状態（`editor-state`）まで import することになる（他 feature の
+ * domains への直接 import で規約違反）。`editor` に残し、両方を知ってよい組み立て点を
+ * `editor` 側に置いて一方向にする。
  */
 export { DocumentSyncFailureList } from "@/features/document-sync/components/document-sync-failure-list";
 export { useAutoSave } from "@/features/document-sync/hooks/use-auto-save";

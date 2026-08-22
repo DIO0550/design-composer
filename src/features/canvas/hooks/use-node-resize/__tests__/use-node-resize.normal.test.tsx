@@ -14,7 +14,9 @@ import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
 import { useNodeResize } from "../index";
 
 /** 2 軸とも固定した `panel` を持つドキュメントと、選択の対。 */
-function setupSelection(selectedName?: string): DocumentSelection {
+function setupSelection(
+  selectedNames: readonly string[] = [],
+): DocumentSelection {
   const designDocument = DesignDocument.create({
     artboards: [
       {
@@ -37,10 +39,7 @@ function setupSelection(selectedName?: string): DocumentSelection {
       },
     ],
   });
-  return DocumentSelection.fromNames(
-    designDocument,
-    selectedName === undefined ? [] : [selectedName],
-  );
+  return DocumentSelection.fromNames(designDocument, selectedNames);
 }
 
 /** 画面の (100, 50) に 200x100 で描かれている、という前提。右辺 x=300 / 下辺 y=150。 */
@@ -124,7 +123,7 @@ function clicked(): string {
 test("選択中のノードの辺を押すとハンドルを掴む", () => {
   render(
     <NodeResizeHarness
-      selection={setupSelection("panel")}
+      selection={setupSelection(["panel"])}
       onResize={vi.fn()}
     />,
   );
@@ -137,7 +136,7 @@ test("選択中のノードの辺を押すとハンドルを掴む", () => {
 test("辺から離れたところを押してもハンドルは掴まない", () => {
   render(
     <NodeResizeHarness
-      selection={setupSelection("panel")}
+      selection={setupSelection(["panel"])}
       onResize={vi.fn()}
     />,
   );
@@ -159,7 +158,7 @@ test("掴んだままポインタを動かすと動かした分の大きさが�
   const onResize = vi.fn();
   render(
     <NodeResizeHarness
-      selection={setupSelection("panel")}
+      selection={setupSelection(["panel"])}
       onResize={onResize}
     />,
   );
@@ -174,7 +173,7 @@ test("掴んでいなければポインタを動かしても大きさは通知�
   const onResize = vi.fn();
   render(
     <NodeResizeHarness
-      selection={setupSelection("panel")}
+      selection={setupSelection(["panel"])}
       onResize={onResize}
     />,
   );
@@ -188,7 +187,7 @@ test("離したあとにポインタを動かしても大きさは通知され�
   const onResize = vi.fn();
   render(
     <NodeResizeHarness
-      selection={setupSelection("panel")}
+      selection={setupSelection(["panel"])}
       onResize={onResize}
     />,
   );
@@ -204,7 +203,7 @@ test("ポインタがキャンバスの外へ出るとリサイズが取り消�
   const onResize = vi.fn();
   render(
     <NodeResizeHarness
-      selection={setupSelection("panel")}
+      selection={setupSelection(["panel"])}
       onResize={onResize}
     />,
   );
@@ -219,7 +218,7 @@ test("ポインタがキャンバスの外へ出るとリサイズが取り消�
 test("大きさを変えた直後の click は飲み込まれる", () => {
   render(
     <NodeResizeHarness
-      selection={setupSelection("panel")}
+      selection={setupSelection(["panel"])}
       onResize={vi.fn()}
     />,
   );
@@ -235,7 +234,7 @@ test("大きさを変えた直後の click は飲み込まれる", () => {
 test("リサイズしていないときの click はそのまま選択に使える", () => {
   render(
     <NodeResizeHarness
-      selection={setupSelection("panel")}
+      selection={setupSelection(["panel"])}
       onResize={vi.fn()}
     />,
   );

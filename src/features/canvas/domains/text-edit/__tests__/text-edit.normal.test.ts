@@ -10,7 +10,9 @@ import { Option } from "@/utils/Option";
  * `home` に、文言を持つ `title`、文言を設定していない `caption`、
  * Box の `panel`、部品インスタンスの `action` が並ぶ状態。
  */
-function setupSelection(selectedName?: string): DocumentSelection {
+function setupSelection(
+  selectedNames: readonly string[] = [],
+): DocumentSelection {
   const designDocument = DesignDocument.create({
     components: { card: { type: "Box", children: [] } },
     artboards: [
@@ -27,10 +29,7 @@ function setupSelection(selectedName?: string): DocumentSelection {
       },
     ],
   });
-  return DocumentSelection.fromNames(
-    designDocument,
-    selectedName === undefined ? [] : [selectedName],
-  );
+  return DocumentSelection.fromNames(designDocument, selectedNames);
 }
 
 /** 画面の (100, 50) に 80x20 で描かれている、という前提。 */
@@ -42,13 +41,16 @@ const TitleBounds: CanvasBounds = {
 };
 
 test("選択中の Text を指してダブルクリックすると、その文言を編集できる", () => {
-  const text = EditableText.at(setupSelection("title"), ["title", "home"]);
+  const text = EditableText.at(setupSelection(["title"]), ["title", "home"]);
 
   expect(text).toEqual(Option.some({ name: "title", content: "ホーム" }));
 });
 
 test("文言を設定していない Text では既定の文言が編集の初期値になる", () => {
-  const text = EditableText.at(setupSelection("caption"), ["caption", "home"]);
+  const text = EditableText.at(setupSelection(["caption"]), [
+    "caption",
+    "home",
+  ]);
 
   expect(text).toEqual(Option.some({ name: "caption", content: "" }));
 });

@@ -10,7 +10,9 @@ import { Option } from "@/utils/Option";
  * `home` に、文言を持つ `title`、Box の `panel`、部品インスタンスの `action` が並ぶ状態。
  * 部品 `card` は中身に Text の `card-label` を持つ。
  */
-function setupSelection(selectedName?: string): DocumentSelection {
+function setupSelection(
+  selectedNames: readonly string[] = [],
+): DocumentSelection {
   const designDocument = DesignDocument.create({
     components: {
       card: {
@@ -33,10 +35,7 @@ function setupSelection(selectedName?: string): DocumentSelection {
       },
     ],
   });
-  return DocumentSelection.fromNames(
-    designDocument,
-    selectedName === undefined ? [] : [selectedName],
-  );
+  return DocumentSelection.fromNames(designDocument, selectedNames);
 }
 
 const TitleBounds: CanvasBounds = {
@@ -53,32 +52,36 @@ test("何も選択していなければ Text を指しても編集できない",
 });
 
 test("選択中の Text から離れたところを指すと編集できない", () => {
-  expect(EditableText.at(setupSelection("title"), ["panel", "home"])).toEqual(
+  expect(EditableText.at(setupSelection(["title"]), ["panel", "home"])).toEqual(
     Option.none,
   );
 });
 
 test("Box を選択中は編集できない", () => {
-  expect(EditableText.at(setupSelection("panel"), ["panel", "home"])).toEqual(
+  expect(EditableText.at(setupSelection(["panel"]), ["panel", "home"])).toEqual(
     Option.none,
   );
 });
 
 test("artboard を選択中は編集できない", () => {
-  expect(EditableText.at(setupSelection("home"), ["home"])).toEqual(
+  expect(EditableText.at(setupSelection(["home"]), ["home"])).toEqual(
     Option.none,
   );
 });
 
 test("部品インスタンスを選択中は編集できない", () => {
-  expect(EditableText.at(setupSelection("action"), ["action", "home"])).toEqual(
-    Option.none,
-  );
+  expect(
+    EditableText.at(setupSelection(["action"]), ["action", "home"]),
+  ).toEqual(Option.none);
 });
 
 test("部品の中身の Text を指しても編集できない", () => {
   expect(
-    EditableText.at(setupSelection("action"), ["card-label", "action", "home"]),
+    EditableText.at(setupSelection(["action"]), [
+      "card-label",
+      "action",
+      "home",
+    ]),
   ).toEqual(Option.none);
 });
 

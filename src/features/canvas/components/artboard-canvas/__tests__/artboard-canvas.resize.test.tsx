@@ -15,7 +15,9 @@ import { injectedStyles, renderCanvas } from "./setup";
  * `home` に、2 軸とも固定の `panel`、モードを指定していない `title`、
  * 部品インスタンスの `action` が並ぶ状態。
  */
-function setupSelection(selectedName?: string): DocumentSelection {
+function setupSelection(
+  selectedNames: readonly string[] = [],
+): DocumentSelection {
   const designDocument = DesignDocument.create({
     components: { card: { type: "Box", children: [] } },
     artboards: [
@@ -41,10 +43,7 @@ function setupSelection(selectedName?: string): DocumentSelection {
       },
     ],
   });
-  return DocumentSelection.fromNames(
-    designDocument,
-    selectedName === undefined ? [] : [selectedName],
-  );
+  return DocumentSelection.fromNames(designDocument, selectedNames);
 }
 
 /** キャンバスに描かれている、名前で指した要素。 */
@@ -78,26 +77,26 @@ const PanelBounds: CanvasBounds = {
 };
 
 test("fixed のノードを選ぶと幅と高さのハンドルが描かれる", () => {
-  renderCanvas({ selection: setupSelection("panel") });
+  renderCanvas({ selection: setupSelection(["panel"]) });
 
   expect(injectedStyles()).toContain('[data-name="panel"]::after');
   expect(injectedStyles()).toContain('[data-name="panel"]::before');
 });
 
 test("モードを指定していないノードを選んでもハンドルは描かれない", () => {
-  renderCanvas({ selection: setupSelection("title") });
+  renderCanvas({ selection: setupSelection(["title"]) });
 
   expect(injectedStyles()).not.toContain('[data-name="title"]::after');
 });
 
 test("部品インスタンスを選んでもハンドルは描かれない", () => {
-  renderCanvas({ selection: setupSelection("action") });
+  renderCanvas({ selection: setupSelection(["action"]) });
 
   expect(injectedStyles()).not.toContain('[data-name="action"]::after');
 });
 
 test("artboard を選ぶとハンドルが描かれる", () => {
-  renderCanvas({ selection: setupSelection("home") });
+  renderCanvas({ selection: setupSelection(["home"]) });
 
   expect(injectedStyles()).toContain('[data-name="home"]::after');
 });
@@ -110,7 +109,7 @@ test("何も選んでいなければハンドルは描かれない", () => {
 
 test("右辺を掴んで右へ運ぶと、動かした分だけ幅が伸びた大きさが通知される", () => {
   const onResize = vi.fn();
-  renderCanvas({ selection: setupSelection("panel"), onResize });
+  renderCanvas({ selection: setupSelection(["panel"]), onResize });
   const panel = drawnAt("panel", PanelBounds);
 
   pressPointer(panel, { x: 298, y: 100 });
@@ -122,7 +121,7 @@ test("右辺を掴んで右へ運ぶと、動かした分だけ幅が伸びた�
 
 test("下辺を掴んで下へ運ぶと、動かした分だけ高さが伸びた大きさが通知される", () => {
   const onResize = vi.fn();
-  renderCanvas({ selection: setupSelection("panel"), onResize });
+  renderCanvas({ selection: setupSelection(["panel"]), onResize });
   const panel = drawnAt("panel", PanelBounds);
 
   pressPointer(panel, { x: 200, y: 148 });
@@ -134,7 +133,7 @@ test("下辺を掴んで下へ運ぶと、動かした分だけ高さが伸び�
 
 test("ハンドルから離れたところを掴んで運んでも大きさは変わらない", () => {
   const onResize = vi.fn();
-  renderCanvas({ selection: setupSelection("panel"), onResize });
+  renderCanvas({ selection: setupSelection(["panel"]), onResize });
   const panel = drawnAt("panel", PanelBounds);
 
   pressPointer(panel, { x: 200, y: 100 });
@@ -146,7 +145,7 @@ test("ハンドルから離れたところを掴んで運んでも大きさは�
 
 test("選んでいないノードの辺を掴んでも大きさは変わらない", () => {
   const onResize = vi.fn();
-  renderCanvas({ selection: setupSelection("title"), onResize });
+  renderCanvas({ selection: setupSelection(["title"]), onResize });
   const panel = drawnAt("panel", PanelBounds);
 
   pressPointer(panel, { x: 298, y: 100 });
@@ -157,7 +156,7 @@ test("選んでいないノードの辺を掴んでも大きさは変わらな�
 
 test("ハンドルを掴んでいる間はツリー内の移動が起きない", () => {
   const onMoveNode = vi.fn();
-  renderCanvas({ selection: setupSelection("panel"), onMoveNode });
+  renderCanvas({ selection: setupSelection(["panel"]), onMoveNode });
   const panel = drawnAt("panel", PanelBounds);
 
   pressPointer(panel, { x: 298, y: 100 });
@@ -169,7 +168,7 @@ test("ハンドルを掴んでいる間はツリー内の移動が起きない",
 
 test("大きさを変えた直後のクリックでは選択が変わらない", () => {
   const onSelect = vi.fn();
-  renderCanvas({ selection: setupSelection("panel"), onSelect });
+  renderCanvas({ selection: setupSelection(["panel"]), onSelect });
   const panel = drawnAt("panel", PanelBounds);
 
   pressPointer(panel, { x: 298, y: 100 });

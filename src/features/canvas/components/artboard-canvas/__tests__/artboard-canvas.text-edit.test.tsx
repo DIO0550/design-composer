@@ -14,7 +14,9 @@ import { renderCanvas } from "./setup";
  * `home` に、文言を持つ `title`、文言を設定していない `caption`、Box の `panel` が
  * 並ぶ状態（docs/06-ui.md「Text のインライン編集」）。
  */
-function setupSelection(selectedName?: string): DocumentSelection {
+function setupSelection(
+  selectedNames: readonly string[] = [],
+): DocumentSelection {
   const designDocument = DesignDocument.create({
     artboards: [
       {
@@ -29,10 +31,7 @@ function setupSelection(selectedName?: string): DocumentSelection {
       },
     ],
   });
-  return DocumentSelection.fromNames(
-    designDocument,
-    selectedName === undefined ? [] : [selectedName],
-  );
+  return DocumentSelection.fromNames(designDocument, selectedNames);
 }
 
 /** キャンバスに描かれている、名前で指した要素。 */
@@ -68,7 +67,7 @@ function editor(): HTMLInputElement {
 }
 
 test("選択中の Text をダブルクリックすると今の文言が入った入力欄が出る", () => {
-  renderCanvas({ selection: setupSelection("title") });
+  renderCanvas({ selection: setupSelection(["title"]) });
 
   fireEvent.doubleClick(drawn("title"));
 
@@ -76,7 +75,7 @@ test("選択中の Text をダブルクリックすると今の文言が入っ�
 });
 
 test("入力欄は文言が描かれている位置に重なる", () => {
-  renderCanvas({ selection: setupSelection("title") });
+  renderCanvas({ selection: setupSelection(["title"]) });
 
   fireEvent.doubleClick(drawnAt("title", TitleBounds));
 
@@ -84,7 +83,7 @@ test("入力欄は文言が描かれている位置に重なる", () => {
 });
 
 test("文言を設定していない Text をダブルクリックすると空の入力欄が出る", () => {
-  renderCanvas({ selection: setupSelection("caption") });
+  renderCanvas({ selection: setupSelection(["caption"]) });
 
   fireEvent.doubleClick(drawn("caption"));
 
@@ -92,7 +91,7 @@ test("文言を設定していない Text をダブルクリックすると空�
 });
 
 test("Text 以外を選択中にダブルクリックしても入力欄は出ない", () => {
-  renderCanvas({ selection: setupSelection("panel") });
+  renderCanvas({ selection: setupSelection(["panel"]) });
 
   fireEvent.doubleClick(drawn("panel"));
 
@@ -100,7 +99,7 @@ test("Text 以外を選択中にダブルクリックしても入力欄は出な
 });
 
 test("選択中の Text から離れたところをダブルクリックしても入力欄は出ない", () => {
-  renderCanvas({ selection: setupSelection("title") });
+  renderCanvas({ selection: setupSelection(["title"]) });
 
   fireEvent.doubleClick(drawn("panel"));
 
@@ -117,7 +116,7 @@ test("何も選択していなければダブルクリックしても入力欄�
 
 test("書き換えて Enter を押すと、その文言が content の編集として通知される", () => {
   const onEditProp = vi.fn();
-  renderCanvas({ selection: setupSelection("title"), onEditProp });
+  renderCanvas({ selection: setupSelection(["title"]), onEditProp });
   fireEvent.doubleClick(drawn("title"));
 
   fireEvent.change(editor(), { target: { value: "トップ" } });
@@ -127,7 +126,7 @@ test("書き換えて Enter を押すと、その文言が content の編集と�
 });
 
 test("確定すると入力欄は消える", () => {
-  renderCanvas({ selection: setupSelection("title") });
+  renderCanvas({ selection: setupSelection(["title"]) });
   fireEvent.doubleClick(drawn("title"));
 
   fireEvent.keyDown(editor(), { key: "Enter" });
@@ -137,7 +136,7 @@ test("確定すると入力欄は消える", () => {
 
 test("書き換えてフォーカスを外すと、その文言が content の編集として通知される", () => {
   const onEditProp = vi.fn();
-  renderCanvas({ selection: setupSelection("title"), onEditProp });
+  renderCanvas({ selection: setupSelection(["title"]), onEditProp });
   fireEvent.doubleClick(drawn("title"));
 
   fireEvent.change(editor(), { target: { value: "トップ" } });
@@ -148,7 +147,7 @@ test("書き換えてフォーカスを外すと、その文言が content の�
 
 test("書き換えて Escape を押すと文言は変わらない", () => {
   const onEditProp = vi.fn();
-  renderCanvas({ selection: setupSelection("title"), onEditProp });
+  renderCanvas({ selection: setupSelection(["title"]), onEditProp });
   fireEvent.doubleClick(drawn("title"));
 
   fireEvent.change(editor(), { target: { value: "トップ" } });
@@ -158,7 +157,7 @@ test("書き換えて Escape を押すと文言は変わらない", () => {
 });
 
 test("Escape で取り消すと入力欄は消える", () => {
-  renderCanvas({ selection: setupSelection("title") });
+  renderCanvas({ selection: setupSelection(["title"]) });
   fireEvent.doubleClick(drawn("title"));
 
   fireEvent.keyDown(editor(), { key: "Escape" });
@@ -167,7 +166,7 @@ test("Escape で取り消すと入力欄は消える", () => {
 });
 
 test("取り消したあとにダブルクリックすると元の文言から編集し直せる", () => {
-  renderCanvas({ selection: setupSelection("title") });
+  renderCanvas({ selection: setupSelection(["title"]) });
   fireEvent.doubleClick(drawn("title"));
   fireEvent.change(editor(), { target: { value: "トップ" } });
   fireEvent.keyDown(editor(), { key: "Escape" });

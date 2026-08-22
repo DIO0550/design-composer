@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
 import type { AxisLength } from "@/domains/axis-length";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import { DocumentSelection } from "@/domains/document-selection";
 import { PropEdit } from "@/domains/node";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
@@ -106,7 +107,10 @@ test("複数選んでいる間は挿入位置が決まらない", () => {
 });
 
 test("複数選んでいると選択数がその件数になる", () => {
-  expect(EditorState.selectedNames(setupMultiSelected()).length).toBe(2);
+  expect(
+    DocumentSelection.names(EditorState.documentSelection(setupMultiSelected()))
+      .length,
+  ).toBe(2);
 });
 
 test("複数選んでいる間も、選んだものはすべて選択中として扱われる", () => {
@@ -127,7 +131,9 @@ test("複数選んだあとに1つを選び直すと単一選択に戻る", () =
 test("複数選んだあとに選択を解除すると何も選ばれていない状態になる", () => {
   const cleared = EditorState.clearSelection(setupMultiSelected());
 
-  expect(EditorState.selectedNames(cleared)).toEqual([]);
+  expect(
+    DocumentSelection.names(EditorState.documentSelection(cleared)),
+  ).toEqual([]);
 });
 
 /**
@@ -155,9 +161,11 @@ test("複数選んだうちの1つがドキュメントから消えると、残�
 });
 
 test("ドキュメントから消えた名前は複数選択から外れる", () => {
-  expect(EditorState.selectedNames(setupMultiSelectedThenLost())).not.toContain(
-    "home-signup",
-  );
+  expect(
+    DocumentSelection.names(
+      EditorState.documentSelection(setupMultiSelectedThenLost()),
+    ),
+  ).not.toContain("home-signup");
 });
 
 /**

@@ -161,7 +161,7 @@ export const DocumentSelection = {
    */
   sourceName(selection: DocumentSelection): Option<string> {
     const document = selection.document;
-    const names = SelectionState.names(selection.selected);
+    const names = DocumentSelection.names(selection);
     const refs = names.flatMap((name) => {
       const found = DesignDocument.findNode(document, name);
       return found.some && Node.isRef(found.value) ? [found.value.ref] : [];
@@ -194,7 +194,7 @@ export const DocumentSelection = {
   currentArtboard(selection: DocumentSelection): Option<Artboard> {
     const document = selection.document;
     const owning = Option.flatMap(
-      ArrayEx.first(SelectionState.names(selection.selected)),
+      ArrayEx.first(DocumentSelection.names(selection)),
       (name) => DesignDocument.findOwningArtboard(document, name),
     );
     if (owning.some) {

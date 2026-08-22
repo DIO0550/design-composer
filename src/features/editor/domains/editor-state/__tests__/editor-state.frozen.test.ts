@@ -3,9 +3,9 @@ import { ReceivedAt } from "@/domains/__tests__/instants";
 import { Artboard } from "@/domains/artboard";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import { PropEdit } from "@/domains/node";
-import { frozen } from "@/features/editor/__tests__/frozen-state";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
+import { frozen } from "./frozen-state";
 
 /*
  * 外部編集でファイルが壊れている間、編集が起こらないこと（#155）。

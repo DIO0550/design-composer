@@ -54,7 +54,7 @@ test("インスタンスを選んでまとめて選ぶと、同じ部品を指�
 
   const all = Option.unwrap(EditorState.selectAllInstances(selected));
 
-  expect(EditorState.selectedNames(all)).toEqual([
+  expect(DocumentSelection.names(EditorState.documentSelection(all))).toEqual([
     "home-login",
     "settings-login",
   ]);
@@ -65,7 +65,9 @@ test("まとめて選んだ結果には、部品定義の中にある同じ部�
 
   const all = Option.unwrap(EditorState.selectAllInstances(selected));
 
-  expect(EditorState.selectedNames(all)).not.toContain("login-card-action");
+  expect(
+    DocumentSelection.names(EditorState.documentSelection(all)),
+  ).not.toContain("login-card-action");
 });
 
 test("同じ部品のインスタンスが1つしか無いときにまとめて選ぶと単一選択のままになる", () => {
@@ -91,7 +93,9 @@ test("参照先の部品が無いインスタンスでも、同じ参照を持�
 
   const all = Option.unwrap(EditorState.selectAllInstances(selected));
 
-  expect(EditorState.selectedNames(all)).toEqual(["settings-broken"]);
+  expect(DocumentSelection.names(EditorState.documentSelection(all))).toEqual([
+    "settings-broken",
+  ]);
 });
 
 /*
@@ -113,7 +117,9 @@ test("まとめて選ぶと、その部品を載せていない artboard から�
 
   const all = Option.unwrap(EditorState.selectAllInstances(selected));
 
-  expect(EditorState.selectedNames(all)).toContain("home-login");
+  expect(DocumentSelection.names(EditorState.documentSelection(all))).toContain(
+    "home-login",
+  );
 });
 
 test("複数選んでいるとき、ツリーが映すのは選択の先頭が載っている artboard になる", () => {
@@ -122,7 +128,9 @@ test("複数選んでいるとき、ツリーが映すのは選択の先頭が�
   const all = Option.unwrap(EditorState.selectAllInstances(selected));
 
   // 選択の並びは collectInstanceNames の順（home-login が先頭）
-  expect(EditorState.selectedNames(all)[0]).toBe("home-login");
+  expect(DocumentSelection.names(EditorState.documentSelection(all))[0]).toBe(
+    "home-login",
+  );
   expect(
     Option.unwrap(
       DocumentSelection.currentArtboard(EditorState.documentSelection(all)),

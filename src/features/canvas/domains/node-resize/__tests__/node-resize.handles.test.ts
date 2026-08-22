@@ -7,7 +7,9 @@ import { NodeResize } from "../index";
  * `home` に、2 軸とも固定の `panel`、幅だけ固定の `column`、モードを持たない `title`、
  * 幅を固定と書きながら長さの無い `broken`、部品インスタンスの `action` が並ぶドキュメント。
  */
-function setupSelection(selectedName?: string): DocumentSelection {
+function setupSelection(
+  selectedNames: readonly string[] = [],
+): DocumentSelection {
   return DocumentSelection.fromNames(
     DesignDocument.create({
       components: {
@@ -48,12 +50,14 @@ function setupSelection(selectedName?: string): DocumentSelection {
         },
       ],
     }),
-    selectedName === undefined ? [] : [selectedName],
+    selectedNames,
   );
 }
 
 function handlesOf(name: string): readonly string[] {
-  return NodeResize.handles(setupSelection(name)).map((handle) => handle.axis);
+  return NodeResize.handles(setupSelection([name])).map(
+    (handle) => handle.axis,
+  );
 }
 
 test("何も選んでいないときはハンドルが出ない", () => {
@@ -85,14 +89,14 @@ test("artboard は常に幅と高さの両方のハンドルが出る", () => {
 });
 
 test("ハンドルは掴んだ時点の長さを持つ", () => {
-  expect(NodeResize.handles(setupSelection("panel"))).toEqual([
+  expect(NodeResize.handles(setupSelection(["panel"]))).toEqual([
     { axis: "width", length: 120 },
     { axis: "height", length: 80 },
   ]);
 });
 
 test("artboard のハンドルは artboard 自身の大きさを持つ", () => {
-  expect(NodeResize.handles(setupSelection("home"))).toEqual([
+  expect(NodeResize.handles(setupSelection(["home"]))).toEqual([
     { axis: "width", length: 360 },
     { axis: "height", length: 240 },
   ]);

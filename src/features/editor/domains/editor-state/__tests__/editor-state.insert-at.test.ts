@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
+import { DocumentSelection } from "@/domains/document-selection";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 
@@ -135,5 +136,7 @@ test("挿しても選択は動かない", () => {
     ),
   );
 
-  expect(EditorState.selectedNames(inserted)).toEqual(["title"]);
+  expect(
+    DocumentSelection.names(EditorState.documentSelection(inserted)),
+  ).toEqual(["title"]);
 });

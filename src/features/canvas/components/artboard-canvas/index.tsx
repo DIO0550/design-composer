@@ -44,8 +44,10 @@ const ContentTransformOrigin: CSSProperties["transformOrigin"] = "0 0";
  * 呼び出し側が組み立てられない）。`EditorState` を丸ごと受けると feature として
  * 切り出せない（#256）。
  *
- * `isFrozen` を真偽値のまま受けるのは、凍結が「操作を受け付けない」1 点だから
- * （淡色にするのと器の `inert` は 3 ペインの器 `EditorLayout` が持つ）。
+ * `isFrozen` を真偽値のまま受けるのは、凍結の取りうる状態が 2 つしかないため。
+ * 中央ペインの凍結（ハンドルの抑止・`inert`・スクリム）はここが自分で出す
+ * （左右のペインと違い、器の `EditorLayout` は中央に淡色も `inert` も付けない。
+ * 映っているものは最後に正常だった表示なので、見る操作だけは残す）。
  *
  * `selection` と `tokenSelection` がそれぞれドキュメントを持つが、束ねる型は作らない。
  * トークンの対を単独で受けている `TokenList` / `TokenEditor` と流儀が割れるため。
@@ -86,9 +88,10 @@ export function ArtboardCanvas({
   const resizeHandles = isFrozen ? [] : NodeResize.handles(selection);
   const singleName = DocumentSelection.singleName(selection);
   /*
-   * 覚える相手はドキュメントであって対ではない。対は呼び出し側がレンダーのたびに
-   * 組み直すので、`selection` を deps にするとパン / ズームのたびに全 artboard を
-   * コンパイルし直すことになる（テストでも視覚差分でも落ちない）。
+   * 覚える相手はドキュメントであって対ではない。`selection` を deps にすると
+   * **選択のたびに**コンパイルし直して中身の HTML を入れ直すので、`click` 2 回の
+   * あとのダブルクリックが入れ替わった木へ飛んで届かなくなる
+   * （`opened-document-editor.text-edit` が 3 件落ちる）。性能ではなく振る舞いの話。
    */
   const compiled = useMemo(
     () => DocumentHtml.compile(designDocument),
