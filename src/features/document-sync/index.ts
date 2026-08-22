@@ -13,8 +13,7 @@
  * この feature の関心事になる。
  *
  * Why not: 上部バー（`editor-top-bar`）はここに置かない。バーはズームも映すので、移すと
- * この feature から `editor` の domain（`canvas-view`）を import することになり、
- * 他 feature の domains への直接 import になる。`EditorState` を読む
+ * この feature が `canvas` の表示（`CanvasView`）にも依存することになる。`EditorState` を読む
  * `opened-document-editor` も同じ（`editor-state` への import が要る）。どちらも `editor`
  * に残し、両方を知ってよい組み立て点を `editor` 側に置いて一方向にする。
  */

@@ -80,6 +80,20 @@ export const DocumentSelection = {
   },
 
   /**
+   * 選ばれているものすべての名前。
+   *
+   * 答えは選択だけで決まる（`SelectionState.names`）が、対しか持っていない消費側
+   * （キャンバスの枠。ツリーと違い選択は artboard をまたげる / docs/06-ui.md「選択」）
+   * のために置く。
+   *
+   * @param selection 名前の出どころになる選択
+   * @returns 選ばれている名前の並び。未選択なら空
+   */
+  names(selection: DocumentSelection): readonly string[] {
+    return SelectionState.names(selection.selected);
+  },
+
+  /**
    * いくつ選ばれているか。
    *
    * `isSelected` と同じく答えは選択だけで決まる（`SelectionState.count`）が、

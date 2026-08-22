@@ -4,7 +4,7 @@ import { expect, test } from "vitest";
 import {
   canvasContent,
   tokenReferrerNames,
-} from "@/features/editor/__tests__/canvas-elements";
+} from "@/features/canvas/__tests__/canvas-elements";
 import {
   breakFileExternally,
   canvasPane,

@@ -4,7 +4,7 @@ import { expect, test } from "vitest";
 import { currentRowNames } from "@/components/__tests__/row-names";
 import { Artboard } from "@/domains/artboard";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
-import { highlightedNames } from "@/features/editor/__tests__/canvas-elements";
+import { highlightedNames } from "@/features/canvas/__tests__/canvas-elements";
 import { canvasPane, propertyPane, renderOpenedDocument, tree } from "./setup";
 
 /**

@@ -5,7 +5,7 @@ import { currentRowNames } from "@/components/__tests__/row-names";
 import {
   highlightedNames,
   renderedElement,
-} from "@/features/editor/__tests__/canvas-elements";
+} from "@/features/canvas/__tests__/canvas-elements";
 import { rightPaneHeading } from "@/features/editor/__tests__/right-pane-heading";
 import {
   artboardList,

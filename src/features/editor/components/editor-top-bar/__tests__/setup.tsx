@@ -4,7 +4,7 @@ import type { DocumentError } from "@/domains/document-error";
 import { DocumentSaveState } from "@/domains/document-save-state";
 import type { Elapsed } from "@/domains/elapsed";
 import type { OpenedDocument } from "@/domains/opened-document";
-import { useCanvasView } from "@/features/editor/hooks/use-canvas-view";
+import { useCanvasView } from "@/features/canvas";
 import {
   EditorTopBar,
   type EditorTopBarTone,
