@@ -94,18 +94,23 @@ function LeftPaneContent({
  * 足し忘れたときにコンパイルエラーにするため（`ReactElement | undefined` だと
  * 抜けても通ってしまう）。
  *
- * @param view 今の行き先
- * @param selection 部品化の可否を決める選択の出どころ
- * @param isFrozen ファイルが不正で編集を受け付けないか
- * @param node 部品化を送る先
  * @returns Assets なら部品化のフッター、他の行き先では不在
  */
-function leftPaneFooter(
-  view: LeftPaneView,
-  selection: DocumentSelection,
-  isFrozen: boolean,
-  node: LeftPaneNodeActions,
-): Option<ReactElement> {
+function leftPaneFooter({
+  view,
+  selection,
+  isFrozen,
+  node,
+}: Readonly<{
+  /** 今の行き先 */
+  view: LeftPaneView;
+  /** 部品化の可否を決める選択の出どころ */
+  selection: DocumentSelection;
+  /** ファイルが不正で編集を受け付けないか */
+  isFrozen: boolean;
+  /** 部品化を送る先 */
+  node: LeftPaneNodeActions;
+}>): Option<ReactElement> {
   switch (view) {
     case LeftPaneViews.Layers:
       return Option.none;
@@ -163,7 +168,7 @@ export function LeftPane({
          * `inert` にする）ので、見出しでその旨を名乗る。UI 案 Error 画面の `frozen`。
          */
         note={isFrozen ? Option.some("凍結中") : Option.none}
-        footer={leftPaneFooter(view, selection, isFrozen, node)}
+        footer={leftPaneFooter({ view, selection, isFrozen, node })}
       >
         <LeftPaneContent
           view={view}

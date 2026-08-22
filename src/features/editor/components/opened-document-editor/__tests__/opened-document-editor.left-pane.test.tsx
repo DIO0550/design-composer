@@ -6,7 +6,7 @@ import {
   type LeftPaneView,
   LeftPaneViewLabels,
   LeftPaneViews,
-} from "@/features/sidebar/components/left-pane-rail";
+} from "@/features/sidebar";
 import {
   leftPane,
   propertyPane,

@@ -21,8 +21,9 @@
  * `features/editor` に属するため、淡色と `inert` は器の担当のまま（凍結の見出しだけを
  * `isFrozen` で受け取る）。
  *
- * Why not: 行き先（`LeftPaneView`）をこの feature の中へ閉じない。右ペインに何を出すかも
- * 同じ行き先で決まるので、持ち主は両ペインを組む `opened-document-editor` に置く。
+ * Why not: 「今どの行き先か」という状態はこの feature が持たない。右ペインに何を出すかも
+ * 同じ行き先で決まるので、状態の持ち主は両ペインを組む `opened-document-editor` に置き、
+ * ここは行き先の語彙（`LeftPaneView`）だけを公開する。
  */
 export { LeftPane } from "@/features/sidebar/components/left-pane";
 export {
@@ -30,5 +31,3 @@ export {
   LeftPaneViewLabels,
   LeftPaneViews,
 } from "@/features/sidebar/components/left-pane-rail";
-export type { LeftPaneNodeActions } from "@/features/sidebar/types/LeftPaneNodeActions";
-export type { LeftPaneTokenActions } from "@/features/sidebar/types/LeftPaneTokenActions";

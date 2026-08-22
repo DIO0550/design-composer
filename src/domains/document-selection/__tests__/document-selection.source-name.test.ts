@@ -1,7 +1,6 @@
 import { expect, test } from "vitest";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import { DocumentSelection } from "@/domains/document-selection";
-import { SelectionState } from "@/domains/selection-state";
 import { Option } from "@/utils/Option";
 
 /**
@@ -31,39 +30,55 @@ function setupDocument(): DesignDocument {
   });
 }
 
-/** その名前を選んでいる状態の対。 */
-function setupSelecting(...names: readonly string[]): DocumentSelection {
-  return DocumentSelection.create(
-    setupDocument(),
-    SelectionState.create(names),
-  );
-}
-
 test("インスタンスを選んでいるときは元の部品の名前が読める", () => {
-  expect(DocumentSelection.sourceName(setupSelecting("home-login"))).toEqual(
+  const selection = DocumentSelection.fromNames(setupDocument(), [
+    "home-login",
+  ]);
+
+  expect(DocumentSelection.sourceName(selection)).toEqual(
     Option.some("primary-button"),
   );
 });
 
 test("インスタンス以外を選んでいるときは元の部品が無い", () => {
-  expect(DocumentSelection.sourceName(setupSelecting("home-title")).some).toBe(
-    false,
-  );
+  const selection = DocumentSelection.fromNames(setupDocument(), [
+    "home-title",
+  ]);
+
+  expect(DocumentSelection.sourceName(selection).some).toBe(false);
 });
 
 test("同じ部品のインスタンスを複数選んでいるときも元の部品の名前が読める", () => {
-  expect(
-    DocumentSelection.sourceName(setupSelecting("home-login", "home-signup")),
-  ).toEqual(Option.some("primary-button"));
+  const selection = DocumentSelection.fromNames(setupDocument(), [
+    "home-login",
+    "home-signup",
+  ]);
+
+  expect(DocumentSelection.sourceName(selection)).toEqual(
+    Option.some("primary-button"),
+  );
 });
 
 test("別々の部品のインスタンスを選んでいるときは元の部品が無い", () => {
-  expect(
-    DocumentSelection.sourceName(setupSelecting("home-login", "home-cancel"))
-      .some,
-  ).toBe(false);
+  const selection = DocumentSelection.fromNames(setupDocument(), [
+    "home-login",
+    "home-cancel",
+  ]);
+
+  expect(DocumentSelection.sourceName(selection).some).toBe(false);
+});
+
+test("インスタンスでないものが混ざっているときは元の部品が無い", () => {
+  const selection = DocumentSelection.fromNames(setupDocument(), [
+    "home-login",
+    "home-title",
+  ]);
+
+  expect(DocumentSelection.sourceName(selection).some).toBe(false);
 });
 
 test("何も選んでいないときは元の部品が無い", () => {
-  expect(DocumentSelection.sourceName(setupSelecting()).some).toBe(false);
+  const selection = DocumentSelection.fromNames(setupDocument(), []);
+
+  expect(DocumentSelection.sourceName(selection).some).toBe(false);
 });

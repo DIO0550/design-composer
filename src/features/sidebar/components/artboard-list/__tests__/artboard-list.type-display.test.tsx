@@ -2,15 +2,14 @@ import { render, screen } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
 import { DocumentSelection } from "@/domains/document-selection";
-import { SelectionState } from "@/domains/selection-state";
 import { ArtboardList } from "../index";
 
 function setupSelection(): DocumentSelection {
-  return DocumentSelection.create(
+  return DocumentSelection.fromNames(
     DesignDocument.create({
       artboards: [{ name: "home", width: 360, height: 240, children: [] }],
     }),
-    SelectionState.None,
+    [],
   );
 }
 

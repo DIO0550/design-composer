@@ -4,7 +4,6 @@ import { expect, test, vi } from "vitest";
 import { rowNames } from "@/components/__tests__/row-names";
 import { DesignDocument } from "@/domains/design-document";
 import { DocumentSelection } from "@/domains/document-selection";
-import { SelectionState } from "@/domains/selection-state";
 import { DocumentTree } from "../index";
 
 /**
@@ -42,14 +41,6 @@ function setupDocument(): DesignDocument {
   });
 }
 
-/** その名前を選んでいる状態の対。 */
-function setupSelecting(...names: readonly string[]): DocumentSelection {
-  return DocumentSelection.create(
-    setupDocument(),
-    SelectionState.create(names),
-  );
-}
-
 function renderTree(selection: DocumentSelection): {
   tree: HTMLElement;
   onSelect: ReturnType<typeof vi.fn>;
@@ -66,55 +57,63 @@ function renderTree(selection: DocumentSelection): {
 }
 
 test("今見ている artboard の直下のノードがツリーに並ぶ", () => {
-  renderTree(setupSelecting());
+  renderTree(DocumentSelection.fromNames(setupDocument(), []));
 
   expect(screen.getByRole("button", { name: "title" })).toBeDefined();
 });
 
 test("入れ子になった孫ノードもツリーに並ぶ", () => {
-  renderTree(setupSelecting());
+  renderTree(DocumentSelection.fromNames(setupDocument(), []));
 
   expect(screen.getByRole("button", { name: "body-text" })).toBeDefined();
 });
 
 test("ツリーは子・孫の順に並ぶ", () => {
-  const { tree } = renderTree(setupSelecting());
+  const { tree } = renderTree(DocumentSelection.fromNames(setupDocument(), []));
 
   expect(rowNames(tree)).toEqual(["title", "body", "body-text", "body-action"]);
 });
 
 test("artboard 自身はツリーの行に出ない", () => {
-  renderTree(setupSelecting());
+  renderTree(DocumentSelection.fromNames(setupDocument(), []));
 
   expect(screen.queryByRole("button", { name: "home" })).toBeNull();
 });
 
 test("別の artboard を選ぶとツリーの中身がその artboard のものに入れ替わる", () => {
-  const { tree } = renderTree(setupSelecting("settings"));
+  const { tree } = renderTree(
+    DocumentSelection.fromNames(setupDocument(), ["settings"]),
+  );
 
   expect(rowNames(tree)).toEqual(["settings-title"]);
 });
 
 test("別の artboard の配下のノードを選んでもその artboard の中身が出たままになる", () => {
-  const { tree } = renderTree(setupSelecting("settings-title"));
+  const { tree } = renderTree(
+    DocumentSelection.fromNames(setupDocument(), ["settings-title"]),
+  );
 
   expect(rowNames(tree)).toEqual(["settings-title"]);
 });
 
 test("子を持たない artboard を見ているときは行が1つも出ない", () => {
-  const { tree } = renderTree(setupSelecting("empty-board"));
+  const { tree } = renderTree(
+    DocumentSelection.fromNames(setupDocument(), ["empty-board"]),
+  );
 
   expect(rowNames(tree)).toEqual([]);
 });
 
 test("ツリーは今見ている artboard の名前を示す", () => {
-  renderTree(setupSelecting("settings"));
+  renderTree(DocumentSelection.fromNames(setupDocument(), ["settings"]));
 
   expect(screen.getByText("settings")).toBeDefined();
 });
 
 test("ノードを選ぶとそのノードの名前が選択として伝わる", async () => {
-  const { onSelect } = renderTree(setupSelecting());
+  const { onSelect } = renderTree(
+    DocumentSelection.fromNames(setupDocument(), []),
+  );
 
   await userEvent.click(screen.getByRole("button", { name: "body-text" }));
 
@@ -122,7 +121,7 @@ test("ノードを選ぶとそのノードの名前が選択として伝わる",
 });
 
 test("選択中のノードは選択状態として示される", () => {
-  renderTree(setupSelecting("title"));
+  renderTree(DocumentSelection.fromNames(setupDocument(), ["title"]));
 
   expect(
     screen.getByRole("button", { name: "title" }).getAttribute("aria-current"),
@@ -131,10 +130,7 @@ test("選択中のノードは選択状態として示される", () => {
 
 test("artboard が1枚も無いときはツリーが出ない", () => {
   renderTree(
-    DocumentSelection.create(
-      DesignDocument.create({ artboards: [] }),
-      SelectionState.None,
-    ),
+    DocumentSelection.fromNames(DesignDocument.create({ artboards: [] }), []),
   );
 
   expect(screen.queryByRole("region", { name: "ツリー" })).toBeNull();

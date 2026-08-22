@@ -2,7 +2,6 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import { DocumentSelection } from "@/domains/document-selection";
-import { SelectionState } from "@/domains/selection-state";
 import { sampleSidebarSelection } from "@/features/sidebar/__stories__/sample-sidebar-document";
 import { DocumentTree } from "./index";
 
@@ -44,7 +43,7 @@ export const NodeSelected: Story = {
  * 1 枚で見るための対。共有のサンプルは 3 つの行き先を揃えるためのものなので、
  * ツリー都合の構造はここに閉じる。
  */
-const NestedSelection = DocumentSelection.create(
+const NestedSelection = DocumentSelection.fromNames(
   DesignDocument.create({
     tokens: DocumentTemplate.Default.tokens,
     components: DocumentTemplate.Default.components,
@@ -83,7 +82,7 @@ const NestedSelection = DocumentSelection.create(
       },
     ],
   }),
-  SelectionState.None,
+  [],
 );
 
 export const Nested: Story = {

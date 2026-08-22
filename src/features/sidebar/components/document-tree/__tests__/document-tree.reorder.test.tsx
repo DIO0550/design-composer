@@ -3,7 +3,6 @@ import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
 import { DocumentSelection } from "@/domains/document-selection";
-import { SelectionState } from "@/domains/selection-state";
 import { DocumentTree } from "../index";
 
 /**
@@ -47,10 +46,7 @@ function renderTree(): ReturnType<typeof vi.fn> {
   const onReorder = vi.fn();
   render(
     <DocumentTree
-      selection={DocumentSelection.create(
-        setupDocument(),
-        SelectionState.create(["settings"]),
-      )}
+      selection={DocumentSelection.fromNames(setupDocument(), ["settings"])}
       onSelect={vi.fn()}
       onReorder={onReorder}
     />,

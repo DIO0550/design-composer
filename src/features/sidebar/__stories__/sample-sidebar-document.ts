@@ -1,6 +1,5 @@
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import { DocumentSelection } from "@/domains/document-selection";
-import { SelectionState } from "@/domains/selection-state";
 
 /**
  * 左ペインのストーリー用のサンプルドキュメント。
@@ -61,14 +60,11 @@ export const SampleSidebarDocument = DesignDocument.create({
 export function sampleSidebarSelection(
   ...names: readonly string[]
 ): DocumentSelection {
-  return DocumentSelection.create(
-    SampleSidebarDocument,
-    SelectionState.create(names),
-  );
+  return DocumentSelection.fromNames(SampleSidebarDocument, names);
 }
 
 /** artboard も部品も持たないドキュメントの対（空表示の確認用）。 */
-export const EmptySidebarSelection = DocumentSelection.create(
+export const EmptySidebarSelection = DocumentSelection.fromNames(
   DesignDocument.create({ artboards: [] }),
-  SelectionState.None,
+  [],
 );

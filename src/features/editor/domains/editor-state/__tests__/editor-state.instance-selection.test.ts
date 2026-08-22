@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import { DocumentSelection } from "@/domains/document-selection";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 
@@ -122,14 +123,20 @@ test("複数選んでいるとき、ツリーが映すのは選択の先頭が�
 
   // 選択の並びは collectInstanceNames の順（home-login が先頭）
   expect(EditorState.selectedNames(all)[0]).toBe("home-login");
-  expect(Option.unwrap(EditorState.currentArtboard(all)).name).toBe("home");
+  expect(
+    Option.unwrap(
+      DocumentSelection.currentArtboard(EditorState.documentSelection(all)),
+    ).name,
+  ).toBe("home");
 });
 
 test("複数選んでいても、選択に含まれない artboard は映さない", () => {
   const selected = EditorState.select(setupState(), "home-login");
   const all = Option.unwrap(EditorState.selectAllInstances(selected));
 
-  expect(Option.unwrap(EditorState.currentArtboard(all)).name).not.toBe(
-    "settings",
-  );
+  expect(
+    Option.unwrap(
+      DocumentSelection.currentArtboard(EditorState.documentSelection(all)),
+    ).name,
+  ).not.toBe("settings");
 });

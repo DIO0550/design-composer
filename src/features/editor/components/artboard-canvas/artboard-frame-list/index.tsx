@@ -48,7 +48,7 @@ export const TokenReferrerOutline =
  * トークンはこの並びのルートへ載せる。artboard の出力は `var()` 参照だけを持つので、
  * トークンの編集は再コンパイルなしにここの差し替えだけで全 artboard へ波及する。
  *
- * 名前が `ArtboardList` でないのは、左ペインの一覧（`components/artboard-list`）と
+ * 名前が `ArtboardList` でないのは、左ペインの一覧（`features/sidebar` の `artboard-list`）と
  * 綴りがぶつかるため。並べているのは枠（`ArtboardFrame`）なのでそちらを名前に出す。
  */
 export function ArtboardFrameList({

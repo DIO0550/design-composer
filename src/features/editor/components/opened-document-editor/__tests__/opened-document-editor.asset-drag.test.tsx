@@ -13,7 +13,7 @@ import {
   type LeftPaneView,
   LeftPaneViewLabels,
   LeftPaneViews,
-} from "@/features/sidebar/components/left-pane-rail";
+} from "@/features/sidebar";
 import { Option } from "@/utils/Option";
 import {
   leftPane,

@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
 import { TokenSelection } from "@/domains/token-selection";
+// 掴む口のサンプルは掴まれる側（features/assets）が持つ。ストーリー専用の値なので
+// features/assets/index.ts（本番の公開 API）には出さず、ここから直接読む。
 import {
   grabbingComponent,
   IdleGrab,

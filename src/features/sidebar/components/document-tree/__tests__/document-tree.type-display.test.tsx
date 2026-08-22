@@ -2,7 +2,6 @@ import { render, screen } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
 import { DocumentSelection } from "@/domains/document-selection";
-import { SelectionState } from "@/domains/selection-state";
 import { DocumentTree } from "../index";
 
 /**
@@ -10,7 +9,7 @@ import { DocumentTree } from "../index";
  * 文言のある Text と無い Text を両方置いて、補助情報の出し分けを確かめる。
  */
 function setupSelection(): DocumentSelection {
-  return DocumentSelection.create(
+  return DocumentSelection.fromNames(
     DesignDocument.create({
       components: { "primary-button": { type: "Box" } },
       artboards: [
@@ -30,7 +29,7 @@ function setupSelection(): DocumentSelection {
         },
       ],
     }),
-    SelectionState.None,
+    [],
   );
 }
 
@@ -82,7 +81,7 @@ test("部品インスタンスの行にはインスタンスであることを�
 
 test("スキーマに無い type のノードの行には型アイコンが出ない", () => {
   renderTree(
-    DocumentSelection.create(
+    DocumentSelection.fromNames(
       DesignDocument.create({
         artboards: [
           {
@@ -93,7 +92,7 @@ test("スキーマに無い type のノードの行には型アイコンが出�
           },
         ],
       }),
-      SelectionState.None,
+      [],
     ),
   );
 

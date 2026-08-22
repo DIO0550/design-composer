@@ -1,7 +1,6 @@
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
 import { DocumentSelection } from "@/domains/document-selection";
-import { SelectionState } from "@/domains/selection-state";
 import { Option } from "@/utils/Option";
 
 /**
@@ -26,44 +25,48 @@ function setupDocument(): DesignDocument {
   });
 }
 
-/** その名前を選んでいる状態の対。 */
-function setupSelecting(...names: readonly string[]): DocumentSelection {
-  return DocumentSelection.create(
-    setupDocument(),
-    SelectionState.create(names),
-  );
-}
-
 test("artboard を選んでいるときは artboard として読める", () => {
-  const selection = Option.unwrap(
-    DocumentSelection.singleSelection(setupSelecting("home")),
-  );
+  const selection = DocumentSelection.fromNames(setupDocument(), ["home"]);
 
-  expect(selection).toEqual({ name: "home", kind: Option.some("artboard") });
+  expect(Option.unwrap(DocumentSelection.singleSelection(selection))).toEqual({
+    name: "home",
+    kind: Option.some("artboard"),
+  });
 });
 
 test("ノードを選んでいるときはそのノードの型として読める", () => {
-  const selection = Option.unwrap(
-    DocumentSelection.singleSelection(setupSelecting("home-title")),
-  );
+  const selection = DocumentSelection.fromNames(setupDocument(), [
+    "home-title",
+  ]);
 
-  expect(selection).toEqual({ name: "home-title", kind: Option.some("Text") });
+  expect(Option.unwrap(DocumentSelection.singleSelection(selection))).toEqual({
+    name: "home-title",
+    kind: Option.some("Text"),
+  });
 });
 
 test("スキーマに無い型のノードを選んでいるときは種別が読めない", () => {
-  const selection = Option.unwrap(
-    DocumentSelection.singleSelection(setupSelecting("home-unknown")),
-  );
+  const selection = DocumentSelection.fromNames(setupDocument(), [
+    "home-unknown",
+  ]);
 
-  expect(selection.kind.some).toBe(false);
+  expect(
+    Option.unwrap(DocumentSelection.singleSelection(selection)).kind.some,
+  ).toBe(false);
 });
 
-/*
- * 対は選択を映すだけで名前の実在を検証しない（型の doc）。実在しない名前は
- * ここで正体を引けないことになる。
- */
 test("選んでいる名前がドキュメントに無いときは正体が読めない", () => {
-  expect(DocumentSelection.singleSelection(setupSelecting("ghost")).some).toBe(
-    false,
-  );
+  // 対は選択を映すだけで名前の実在を検証しない（型の doc）ので、引けないことになる
+  const selection = DocumentSelection.fromNames(setupDocument(), ["ghost"]);
+
+  expect(DocumentSelection.singleSelection(selection).some).toBe(false);
+});
+
+test("複数選んでいるときは正体が読めない", () => {
+  const selection = DocumentSelection.fromNames(setupDocument(), [
+    "home-title",
+    "home-unknown",
+  ]);
+
+  expect(DocumentSelection.singleSelection(selection).some).toBe(false);
 });

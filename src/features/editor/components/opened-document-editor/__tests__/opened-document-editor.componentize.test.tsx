@@ -2,10 +2,7 @@ import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { renderedElement } from "@/features/editor/__tests__/canvas-elements";
-import {
-  LeftPaneViewLabels,
-  LeftPaneViews,
-} from "@/features/sidebar/components/left-pane-rail";
+import { LeftPaneViewLabels, LeftPaneViews } from "@/features/sidebar";
 import {
   canvasPane,
   leftPane,

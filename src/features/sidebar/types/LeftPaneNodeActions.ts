@@ -7,9 +7,9 @@ import type { ChildPosition } from "@/domains/child-position";
  * 書き込みは編集履歴（undo / redo）と自動保存に載る 1 つの経路に閉じていて、その
  * 入口は `features/editor` にあるため。
  *
- * 呼び出し側の `NodeActions` をそのまま型として受け取らないのは、それが Provider と
- * 結び付いた `features/editor` の型で、type だけでも import すると
- * `sidebar -> editor` の辺ができて循環するため。左ペインが実際に呼ぶ 3 つだけを
+ * 呼び出し側の `NodeActions` をそのまま型として受け取らないのは、それが
+ * `features/editor` にある型で、type だけでも import すると `sidebar -> editor` の辺が
+ * できて循環するため（`editor -> sidebar` は実在する）。左ペインが実際に呼ぶ 3 つだけを
  * 消費側で綴る（`rules/coding.md`「消費側の関数は、自分が前提とする状態の型を
  * 引数で要求する」）。
  */
