@@ -5,7 +5,7 @@ import { renderedElement } from "@/features/editor/__tests__/canvas-elements";
 import {
   LeftPaneViewLabels,
   LeftPaneViews,
-} from "@/features/editor/components/left-pane-rail";
+} from "@/features/sidebar/components/left-pane-rail";
 import {
   canvasPane,
   leftPane,

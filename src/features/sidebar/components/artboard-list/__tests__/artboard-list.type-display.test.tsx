@@ -1,19 +1,21 @@
 import { render, screen } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
-import { EditorState } from "@/features/editor/domains/editor-state";
+import { DocumentSelection } from "@/domains/document-selection";
+import { SelectionState } from "@/domains/selection-state";
 import { ArtboardList } from "../index";
 
-function setupState(): EditorState {
-  return EditorState.create(
+function setupSelection(): DocumentSelection {
+  return DocumentSelection.create(
     DesignDocument.create({
       artboards: [{ name: "home", width: 360, height: 240, children: [] }],
     }),
+    SelectionState.None,
   );
 }
 
 function renderList(): void {
-  render(<ArtboardList state={setupState()} onSelect={vi.fn()} />);
+  render(<ArtboardList selection={setupSelection()} onSelect={vi.fn()} />);
 }
 
 test("行には artboard を表す型アイコンが出る", () => {

@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { LeftPaneRail, LeftPaneViews } from "./index";
 
 const meta = {
-  title: "features/editor/LeftPaneRail",
+  title: "features/sidebar/LeftPaneRail",
   component: LeftPaneRail,
   parameters: { layout: "padded" },
   args: { onSelect: () => {} },

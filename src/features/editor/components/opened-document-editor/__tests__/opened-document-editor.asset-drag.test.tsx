@@ -1,6 +1,7 @@
 import { fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
+import { rowNames } from "@/components/__tests__/row-names";
 import { Artboard } from "@/domains/artboard";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import {
@@ -8,12 +9,11 @@ import {
   pressPointer,
   releasePointer,
 } from "@/features/editor/__tests__/canvas-gesture";
-import { rowNames } from "@/features/editor/__tests__/row-names";
 import {
   type LeftPaneView,
   LeftPaneViewLabels,
   LeftPaneViews,
-} from "@/features/editor/components/left-pane-rail";
+} from "@/features/sidebar/components/left-pane-rail";
 import { Option } from "@/utils/Option";
 import {
   leftPane,

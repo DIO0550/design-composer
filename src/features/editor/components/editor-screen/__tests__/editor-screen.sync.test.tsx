@@ -1,8 +1,8 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
+import { rowNames } from "@/components/__tests__/row-names";
 import { artboardContent } from "@/domains/__tests__/sample-document";
-import { rowNames } from "@/features/editor/__tests__/row-names";
 import { SampleDocument } from "@/features/editor/__tests__/sample-document";
 import { DialogChoice } from "@/libs/document-dialog/fake";
 import { DocumentJson } from "@/libs/document-json";

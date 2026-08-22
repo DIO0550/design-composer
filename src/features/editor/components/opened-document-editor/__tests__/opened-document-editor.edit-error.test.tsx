@@ -1,7 +1,7 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
-import { rowNames } from "@/features/editor/__tests__/row-names";
+import { rowNames } from "@/components/__tests__/row-names";
 import {
   breakFileExternally,
   canvasPane,

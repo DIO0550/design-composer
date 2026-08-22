@@ -2,10 +2,10 @@ import { within } from "@testing-library/react";
 
 /**
  * 名前の並んだ一覧が「どう見えているか」を読む。
- * ツリービュー（components/document-tree）・artboard の一覧
- * （components/artboard-list）・エディタ画面（components/editor-screen /
- * components/opened-document-editor）のどれもが同じ読み方をするため、
- * feature 直下に置いて共有する。
+ * ツリービュー（features/sidebar）・artboard の一覧（features/sidebar）・
+ * エディタ画面（features/editor）のどれもが同じ読み方をするため、feature を
+ * またいで読めるよう横断層に置いて共有する（読み方に持っているのは `aria-current` を
+ * 名乗るボタンが行である、という汎用 UI の知識だけで、ドメインは知らない）。
  *
  * 行は名前のほかに型アイコンと補助情報も出すため、名前は表示文字列ではなく
  * 読み上げ名（`aria-label`）から読む。

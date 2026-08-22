@@ -1,12 +1,10 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
+import { currentRowNames, rowNames } from "@/components/__tests__/row-names";
 import { DesignDocument } from "@/domains/design-document";
-import {
-  currentRowNames,
-  rowNames,
-} from "@/features/editor/__tests__/row-names";
-import { EditorState } from "@/features/editor/domains/editor-state";
+import { DocumentSelection } from "@/domains/document-selection";
+import { SelectionState } from "@/domains/selection-state";
 import { ArtboardList } from "../index";
 
 /**
@@ -14,41 +12,47 @@ import { ArtboardList } from "../index";
  * 「ノードから artboard を辿る」規則を壊しても「選択なしは先頭」の既定で同じ答えになり、
  * ノードを選んだときのテストが落ちなくなるため。
  */
-function setupState(): EditorState {
-  return EditorState.create(
-    DesignDocument.create({
-      artboards: [
-        { name: "home", width: 360, height: 240, children: [] },
-        {
-          name: "settings",
-          width: 375,
-          height: 812,
-          children: [{ name: "settings-title", type: "Text" }],
-        },
-      ],
-    }),
+function setupDocument(): DesignDocument {
+  return DesignDocument.create({
+    artboards: [
+      { name: "home", width: 360, height: 240, children: [] },
+      {
+        name: "settings",
+        width: 375,
+        height: 812,
+        children: [{ name: "settings-title", type: "Text" }],
+      },
+    ],
+  });
+}
+
+/** その名前を選んでいる状態の対。 */
+function setupSelecting(...names: readonly string[]): DocumentSelection {
+  return DocumentSelection.create(
+    setupDocument(),
+    SelectionState.create(names),
   );
 }
 
-function renderList(state: EditorState): {
+function renderList(selection: DocumentSelection): {
   list: HTMLElement;
   onSelect: ReturnType<typeof vi.fn>;
 } {
   const onSelect = vi.fn();
   const { container } = render(
-    <ArtboardList state={state} onSelect={onSelect} />,
+    <ArtboardList selection={selection} onSelect={onSelect} />,
   );
   return { list: container, onSelect };
 }
 
 test("ドキュメントの artboard がファイルに並んでいる順で出る", () => {
-  const { list } = renderList(setupState());
+  const { list } = renderList(setupSelecting());
 
   expect(rowNames(list)).toEqual(["home", "settings"]);
 });
 
 test("行を押すとその artboard の名前が選択として伝わる", async () => {
-  const { onSelect } = renderList(setupState());
+  const { onSelect } = renderList(setupSelecting());
 
   await userEvent.click(screen.getByRole("button", { name: "settings" }));
 
@@ -56,27 +60,30 @@ test("行を押すとその artboard の名前が選択として伝わる", asyn
 });
 
 test("何も選んでいないときは先頭の artboard が今見ている1枚として示される", () => {
-  const { list } = renderList(setupState());
+  const { list } = renderList(setupSelecting());
 
   expect(currentRowNames(list)).toEqual(["home"]);
 });
 
 test("artboard を選ぶとその artboard が今見ている1枚として示される", () => {
-  const { list } = renderList(EditorState.select(setupState(), "settings"));
+  const { list } = renderList(setupSelecting("settings"));
 
   expect(currentRowNames(list)).toEqual(["settings"]);
 });
 
 test("配下のノードを選んでいるときはそれを載せている artboard が今見ている1枚として示される", () => {
-  const { list } = renderList(
-    EditorState.select(setupState(), "settings-title"),
-  );
+  const { list } = renderList(setupSelecting("settings-title"));
 
   expect(currentRowNames(list)).toEqual(["settings"]);
 });
 
 test("artboard が1枚も無いときはその旨が表示される", () => {
-  renderList(EditorState.create(DesignDocument.create({ artboards: [] })));
+  renderList(
+    DocumentSelection.create(
+      DesignDocument.create({ artboards: [] }),
+      SelectionState.None,
+    ),
+  );
 
   expect(screen.getByText("artboard がありません")).toBeDefined();
 });

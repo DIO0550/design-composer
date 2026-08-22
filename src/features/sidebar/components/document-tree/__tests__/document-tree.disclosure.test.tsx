@@ -2,7 +2,8 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
-import { EditorState } from "@/features/editor/domains/editor-state";
+import { DocumentSelection } from "@/domains/document-selection";
+import { SelectionState } from "@/domains/selection-state";
 import { DocumentTree } from "../index";
 
 /**
@@ -12,8 +13,8 @@ import { DocumentTree } from "../index";
  * 兄弟の枝が残ること）は行を並べる器（`src/components/nested-row-list`）が持つので、
  * そちらで確かめる。ここに場合分けのための木を組むと、見ていない枝が残る。
  */
-function setupState(): EditorState {
-  return EditorState.create(
+function setupSelection(): DocumentSelection {
+  return DocumentSelection.create(
     DesignDocument.create({
       artboards: [
         {
@@ -30,6 +31,7 @@ function setupState(): EditorState {
         },
       ],
     }),
+    SelectionState.None,
   );
 }
 
@@ -37,7 +39,7 @@ function renderTree(): ReturnType<typeof vi.fn> {
   const onSelect = vi.fn();
   render(
     <DocumentTree
-      state={setupState()}
+      selection={setupSelection()}
       onSelect={onSelect}
       onReorder={vi.fn()}
     />,

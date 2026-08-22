@@ -12,7 +12,8 @@
  * 落とす側は公開 API からの type import で受け取る。
  *
  * Why not: 部品化のロジック（`Componentization`）はここから export しない。使うのは
- * `CreateComponent` の内側だけで、features/editor 側の consumer が居ないため。
+ * `CreateComponent` の内側だけで、これを並べる側（`features/sidebar` の左ペイン）に
+ * consumer が居ないため。
  */
 export { AssetsPanel } from "@/features/assets/components/assets-panel";
 export { CreateComponent } from "@/features/assets/components/create-component";

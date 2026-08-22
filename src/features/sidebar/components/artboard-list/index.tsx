@@ -1,6 +1,6 @@
 import { TypeGlyph } from "@/components/type-glyph";
 import type { Artboard } from "@/domains/artboard";
-import { EditorState } from "@/features/editor/domains/editor-state";
+import { DocumentSelection } from "@/domains/document-selection";
 
 /** artboard が 1 枚も無いときの知らせ。 */
 const NoArtboardMessage = "artboard がありません";
@@ -60,13 +60,13 @@ function ArtboardRow({
  * 映す場所で、1 枚も無いのは artboard の一覧の話なので、持ち主をこちらに置く。
  */
 export function ArtboardList({
-  state,
+  selection,
   onSelect,
 }: Readonly<{
-  state: EditorState;
+  selection: DocumentSelection;
   onSelect: (name: string) => void;
 }>) {
-  const artboards = EditorState.document(state).artboards;
+  const artboards = selection.document.artboards;
 
   return (
     <section aria-label="artboard 一覧" className="text-sm">
@@ -81,7 +81,10 @@ export function ArtboardList({
             <ArtboardRow
               key={artboard.name}
               artboard={artboard}
-              isCurrent={EditorState.isCurrentArtboard(state, artboard.name)}
+              isCurrent={DocumentSelection.isCurrentArtboard(
+                selection,
+                artboard.name,
+              )}
               onSelect={onSelect}
             />
           ))}

@@ -1,12 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
-import { SampleEditorState } from "@/features/editor/__stories__/sample-editor-state";
-import { EditorState } from "@/features/editor/domains/editor-state";
+import { DocumentSelection } from "@/domains/document-selection";
+import { SelectionState } from "@/domains/selection-state";
+import { sampleSidebarSelection } from "@/features/sidebar/__stories__/sample-sidebar-document";
 import { DocumentTree } from "./index";
 
 const meta = {
-  title: "features/editor/DocumentTree",
+  title: "features/sidebar/DocumentTree",
   component: DocumentTree,
   parameters: { layout: "padded" },
   decorators: [
@@ -25,25 +26,25 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   name: "選択なし",
-  args: { state: SampleEditorState },
+  args: { selection: sampleSidebarSelection() },
 };
 
 export const OtherArtboard: Story = {
   name: "別の artboard を選択中",
-  args: { state: EditorState.select(SampleEditorState, "settings") },
+  args: { selection: sampleSidebarSelection("settings") },
 };
 
 export const NodeSelected: Story = {
   name: "artboard 配下のノードを選択中",
-  args: { state: EditorState.select(SampleEditorState, "home-title") },
+  args: { selection: sampleSidebarSelection("home-title") },
 };
 
 /**
  * 入れ子の深さと並べ替えボタンの出方（先頭には「上へ」、末尾には「下へ」が出ない）を
- * 1 枚で見るための状態。共有のサンプル状態はキャンバスのストーリーも使うため、
+ * 1 枚で見るための対。共有のサンプルは 3 つの行き先を揃えるためのものなので、
  * ツリー都合の構造はここに閉じる。
  */
-const NestedEditorState = EditorState.create(
+const NestedSelection = DocumentSelection.create(
   DesignDocument.create({
     tokens: DocumentTemplate.Default.tokens,
     components: DocumentTemplate.Default.components,
@@ -82,9 +83,10 @@ const NestedEditorState = EditorState.create(
       },
     ],
   }),
+  SelectionState.None,
 );
 
 export const Nested: Story = {
   name: "入れ子のノードと並べ替え",
-  args: { state: NestedEditorState },
+  args: { selection: NestedSelection },
 };

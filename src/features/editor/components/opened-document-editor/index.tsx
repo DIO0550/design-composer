@@ -26,11 +26,6 @@ import {
   EditorTopBar,
   EditorTopBarTones,
 } from "@/features/editor/components/editor-top-bar";
-import { LeftPane } from "@/features/editor/components/left-pane";
-import {
-  type LeftPaneView,
-  LeftPaneViews,
-} from "@/features/editor/components/left-pane-rail";
 import { NodeInsertToolbar } from "@/features/editor/components/node-insert-toolbar";
 import { PropertyPanel } from "@/features/editor/components/property-panel";
 import { EditorState } from "@/features/editor/domains/editor-state";
@@ -50,6 +45,7 @@ import {
   type TokenActions,
   useTokenActions,
 } from "@/features/editor/hooks/use-token-actions";
+import { LeftPane, type LeftPaneView, LeftPaneViews } from "@/features/sidebar";
 import { TokenDashedNodes, TokenEditor } from "@/features/tokens";
 import type { Clock } from "@/libs/clock";
 import type { DocumentIpc } from "@/libs/document-ipc";
@@ -295,7 +291,9 @@ function EditorPanes({
         <LeftPane
           view={leftPaneView}
           onSelectView={setLeftPaneView}
-          state={state}
+          selection={EditorState.documentSelection(state)}
+          tokenSelection={EditorState.tokenSelection(state)}
+          isFrozen={isFrozen}
           node={node}
           token={token}
           grab={{

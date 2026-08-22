@@ -1,55 +1,44 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
+import { TokenSelection } from "@/domains/token-selection";
 import {
   grabbingComponent,
   IdleGrab,
 } from "@/features/assets/__stories__/asset-grab";
 import {
-  FileInvalidEditorState,
-  SampleEditorState,
-} from "@/features/editor/__stories__/sample-editor-state";
-import { LeftPaneViews } from "@/features/editor/components/left-pane-rail";
-import { EditorState } from "@/features/editor/domains/editor-state";
-import type { NodeActions } from "@/features/editor/hooks/use-node-actions";
-import type { TokenActions } from "@/features/editor/hooks/use-token-actions";
+  SampleSidebarDocument,
+  sampleSidebarSelection,
+} from "@/features/sidebar/__stories__/sample-sidebar-document";
+import { LeftPaneViews } from "@/features/sidebar/components/left-pane-rail";
+import type { LeftPaneNodeActions } from "@/features/sidebar/types/LeftPaneNodeActions";
+import type { LeftPaneTokenActions } from "@/features/sidebar/types/LeftPaneTokenActions";
+import { Option } from "@/utils/Option";
 import { LeftPane } from "./index";
 
 /**
  * 操作の受け口。ここでは押せることだけ分かればよいので、届いた先での編集は行わない
  * （編集まで通した様子は `OpenedDocumentEditor` のストーリーで見る）。
  */
-const SampleNodeActions: NodeActions = {
+const SampleNodeActions: LeftPaneNodeActions = {
   select: fn(),
-  selectAt: fn(),
-  clearSelection: fn(),
-  reveal: fn(),
   reorder: fn(),
-  move: fn(),
-  resize: fn(),
-  editProp: fn(),
-  insert: fn(),
-  insertAt: fn(),
-  detachInstance: fn(),
-  selectAllInstances: fn(),
   createComponent: fn(),
-  isInsertEnabled: true,
 };
 
-const SampleTokenActions: TokenActions = {
+const SampleTokenActions: LeftPaneTokenActions = {
   select: fn(),
   add: fn(),
-  setValue: fn(),
-  rename: fn(),
-  remove: fn(),
 };
 
 const meta = {
-  title: "features/editor/LeftPane",
+  title: "features/sidebar/LeftPane",
   component: LeftPane,
   parameters: { layout: "fullscreen" },
   args: {
     onSelectView: fn(),
-    state: SampleEditorState,
+    selection: sampleSidebarSelection(),
+    tokenSelection: TokenSelection.create(SampleSidebarDocument, Option.none),
+    isFrozen: false,
     node: SampleNodeActions,
     token: SampleTokenActions,
     grab: IdleGrab,
@@ -102,7 +91,7 @@ export const LayersSelected: Story = {
   name: "Layers（ノードを選択中）",
   args: {
     view: LeftPaneViews.Layers,
-    state: EditorState.select(SampleEditorState, "home"),
+    selection: sampleSidebarSelection("home-title"),
   },
 };
 
@@ -114,6 +103,6 @@ export const LayersFrozen: Story = {
   name: "Layers（凍結中）",
   args: {
     view: LeftPaneViews.Layers,
-    state: FileInvalidEditorState,
+    isFrozen: true,
   },
 };
