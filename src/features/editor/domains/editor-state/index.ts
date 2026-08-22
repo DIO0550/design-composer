@@ -8,7 +8,6 @@ import { FileValidity } from "@/domains/file-validity";
 import type { Instant } from "@/domains/instant";
 import type { Node, PropEdit } from "@/domains/node";
 import { NodeTemplate } from "@/domains/node-template";
-import type { Selection } from "@/domains/selection";
 import { SelectionState } from "@/domains/selection-state";
 import { Token, type TokenRef, TokenSet, TokenValue } from "@/domains/token";
 import { TokenSelection } from "@/domains/token-selection";
@@ -201,9 +200,10 @@ export const EditorState = {
    * 映っているドキュメントと、その中で選ばれているものの対
    * （`DocumentSelection`。左ペインはこれだけで描ける）。
    *
-   * 選択から決まる読み（`isSelected` / `singleName` / `singleSelection` /
-   * `sourceName` / `isCurrentArtboard`）はすべてこの対が持ち、`EditorState` 側は
-   * ここへ委譲する。選択がどう変わるか（`select` / `reveal` / 履歴の取り込み）だけが
+   * 選択から決まる読み（`isSelected` / `singleName` / `sourceName` /
+   * `isCurrentArtboard` / `singleSelection`）はすべてこの対が持つ。`EditorState` は
+   * 使う側が要るものだけをここへ委譲し、対から直接引けるもの（右ペインが読む
+   * `singleSelection`）は委譲を置かない。選択がどう変わるか（`select` / `reveal` / 履歴の取り込み）だけが
    * `EditorState` に残る。
    *
    * @param state 選択とドキュメントの出どころ
@@ -725,23 +725,6 @@ export const EditorState = {
    */
   selectedNames(state: EditorState): readonly string[] {
     return SelectionState.names(state.selection);
-  },
-
-  /**
-   * 1 つだけ選んでいるときの、その正体（名前と種別）。
-   * 規則は `DocumentSelection.singleSelection` が持つ。
-   *
-   * 状態の `selection` と綴りを分けているのは、こちらが「選ばれている 1 つが何か」、
-   * あちらが「いくつ選ばれているか」で別のことを答えるため。同じ綴りだと読み手が
-   * 取り違える。
-   *
-   * @param state 選択の出どころになるエディタの状態
-   * @returns 単一選択ならその名前と種別。未選択と複数選択では `none`
-   */
-  singleSelection(state: EditorState): Option<Selection> {
-    return DocumentSelection.singleSelection(
-      EditorState.documentSelection(state),
-    );
   },
 
   /**

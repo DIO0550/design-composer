@@ -52,25 +52,28 @@ import type { DocumentIpc } from "@/libs/document-ipc";
 import { Option } from "@/utils/Option";
 
 /**
+ * 右ペインの帯と本文に出すもの。器（`EditorLayout.RightPane.Heading` / `.Body`）は
+ * 呼び出し側が着せるので、ここが持つのは中身だけ。
+ *
+ * 帯を `ReactNode` にしているのは、選んでいないときに中身が空になるため
+ * （`PropertyPanel.Title` / `TokenEditor.Title` は `null` を返す）。
+ */
+type RightPaneParts = Readonly<{ title: ReactNode; body: ReactElement }>;
+
+/**
  * 行き先ごとの右ペインの中身。`Assets` がプロパティパネルのままなのは、パレットは
  * 見るだけの場所で選択に触れないため
  * （UI 案「Assets is browse-only — the inspector keeps the previous selection」）。
  *
- * 帯と本文の器（`EditorLayout.RightPane.Heading` / `.Body`）はどちらの行き先でもここで
- * 着せる。器は 3 ペインの組み立ての一部なので、中身を持つ feature からは呼べない
- * （`features/inspector/index.ts` / `features/tokens/index.ts` の Why not）。
- * 選んでいなくても帯は残す。消すと選択のたびに本文の位置が帯のぶん動く。
+ * 器を返さず帯と本文に分けて返すのは、器を着せるところを 1 箇所にするため
+ * （行き先ごとに着せると、片方だけ器を落とした状態が書ける）。
  *
- * **本文の器を落としてもテストは 1 件も落ちない** — 器が持つのはスクロールと余白だけで、
- * happy-dom はそれを解決しない。気づく手段は `PropertyPanel` / `TokenEditor` の
- * ストーリーが器を写している絵の視覚差分だけ。
- *
- * 戻り値を `ReactElement` と書いている理由は `LeftPaneContent` と同じ
- * （`case` の足し忘れをコンパイルエラーにする）。
+ * 戻り値を `RightPaneParts`（`undefined` を含まない）と書いているのは、行き先を足して
+ * `case` を足し忘れたときにコンパイルエラーにするため。
  *
  * @returns Tokens ならトークンの編集欄、Layers / Assets ならプロパティパネル
  */
-function RightPaneContent({
+function rightPaneParts({
   view,
   state,
   node,
@@ -82,29 +85,25 @@ function RightPaneContent({
   node: NodeActions;
   token: TokenActions;
   onGoToSource: () => void;
-}>): ReactElement {
+}>): RightPaneParts {
   const isFrozen = EditorState.isFileInvalid(state);
   const documentSelection = EditorState.documentSelection(state);
-  const inspector = (
-    <>
-      <EditorLayout.RightPane.Heading>
-        <PropertyPanel.Title selection={documentSelection} />
-      </EditorLayout.RightPane.Heading>
-      <EditorLayout.RightPane.Body>
-        <PropertyPanel.Body
-          selection={documentSelection}
-          isFrozen={isFrozen}
-          onEditProp={node.editProp}
-          onClearSelection={node.clearSelection}
-          instance={{
-            goToSource: onGoToSource,
-            selectAllInstances: node.selectAllInstances,
-            detach: node.detachInstance,
-          }}
-        />
-      </EditorLayout.RightPane.Body>
-    </>
-  );
+  const inspector: RightPaneParts = {
+    title: <PropertyPanel.Title selection={documentSelection} />,
+    body: (
+      <PropertyPanel.Body
+        selection={documentSelection}
+        isFrozen={isFrozen}
+        onEditProp={node.editProp}
+        onClearSelection={node.clearSelection}
+        instance={{
+          goToSource: onGoToSource,
+          selectAllInstances: node.selectAllInstances,
+          detach: node.detachInstance,
+        }}
+      />
+    ),
+  };
 
   /*
    * 凍結は行き先より先に見る。ファイルが不正な間はトークンも編集できないので、
@@ -119,21 +118,17 @@ function RightPaneContent({
 
   switch (view) {
     case LeftPaneViews.Tokens:
-      return (
-        <>
-          <EditorLayout.RightPane.Heading>
-            <TokenEditor.Title selection={tokenSelection} />
-          </EditorLayout.RightPane.Heading>
-          <EditorLayout.RightPane.Body>
-            <TokenEditor.Body
-              selection={tokenSelection}
-              onSetTokenValue={token.setValue}
-              onRenameToken={token.rename}
-              onRemoveToken={token.remove}
-            />
-          </EditorLayout.RightPane.Body>
-        </>
-      );
+      return {
+        title: <TokenEditor.Title selection={tokenSelection} />,
+        body: (
+          <TokenEditor.Body
+            selection={tokenSelection}
+            onSetTokenValue={token.setValue}
+            onRenameToken={token.rename}
+            onRemoveToken={token.remove}
+          />
+        ),
+      };
     case LeftPaneViews.Layers:
     case LeftPaneViews.Assets:
       return inspector;
@@ -181,7 +176,8 @@ function CanvasDockStack({ children }: Readonly<{ children: ReactNode }>) {
 }
 
 /**
- * 下端の出し分け。戻り値を `ReactElement` と書いている理由は `RightPaneContent` と同じ。
+ * 下端の出し分け。戻り値を `ReactElement` と書いているのは、状態を足して `case` を
+ * 足し忘れたときにコンパイルエラーにするため（`rightPaneParts` と同じ）。
  *
  * ドキュメント由来のときにツールバーを消さないのは、表示がファイルと一致していて
  * 古くないから。編集を続けたまま直せる（#128）。一覧は 0 件なら何も出さない。
@@ -294,6 +290,19 @@ function EditorPanes({
   );
 
   const isFrozen = EditorState.isFileInvalid(state);
+  const rightPane = rightPaneParts({
+    view: leftPaneView,
+    state,
+    node,
+    token,
+    /*
+     * `Go to source component` の行き先は `Assets` パネル。部品定義は
+     * キャンバスに描かれず選択もできない（`ComponentList` の線引き）ので、
+     * 「元の部品を示す」= パレットのその行を見せることになる。行の強調は
+     * インスタンスを選んだ時点で出ているため、ここは行き先を変えるだけ。
+     */
+    onGoToSource: () => setLeftPaneView(LeftPaneViews.Assets),
+  });
 
   return (
     <EditorLayout dragHandlers={nodeDrag.dragHandlers}>
@@ -339,19 +348,23 @@ function EditorPanes({
         />
       </EditorLayout.CenterPane>
       <EditorLayout.RightPane isFrozen={isFrozen}>
-        <RightPaneContent
-          view={leftPaneView}
-          state={state}
-          node={node}
-          token={token}
-          /*
-           * `Go to source component` の行き先は `Assets` パネル。部品定義は
-           * キャンバスに描かれず選択もできない（`ComponentList` の線引き）ので、
-           * 「元の部品を示す」= パレットのその行を見せることになる。行の強調は
-           * インスタンスを選んだ時点で出ているため、ここは行き先を変えるだけ。
-           */
-          onGoToSource={() => setLeftPaneView(LeftPaneViews.Assets)}
-        />
+        {/*
+          帯と本文の器はどちらの行き先でもここで着せる。器は 3 ペインの組み立ての
+          一部なので、中身を持つ feature からは呼べない（`features/inspector/index.ts`
+          / `features/tokens/index.ts` の Why not）。選んでいなくても帯は残す。
+          消すと選択のたびに本文の位置が帯のぶん動く。
+
+          **本文の器を落としてもテストは 1 件も落ちない** — 器が持つのはスクロールと
+          余白だけで、happy-dom はそれを解決しない。気づく手段は
+          `OpenedDocumentEditor` のストーリーの視覚差分だけ（各 feature の
+          ストーリーは器を import せず自前の写しを描くので、そちらは変わらない）。
+        */}
+        <EditorLayout.RightPane.Heading>
+          {rightPane.title}
+        </EditorLayout.RightPane.Heading>
+        <EditorLayout.RightPane.Body>
+          {rightPane.body}
+        </EditorLayout.RightPane.Body>
       </EditorLayout.RightPane>
     </EditorLayout>
   );

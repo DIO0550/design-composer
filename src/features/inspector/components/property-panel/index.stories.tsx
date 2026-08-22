@@ -11,10 +11,10 @@ const LongNodeName = "very-long-node-name-that-does-not-fit-in-the-heading";
 /**
  * このパネルのストーリー用のサンプルドキュメント。
  *
- * `features/editor/__stories__/sample-editor-state.ts` の中身をそのまま写している
- * （`EditorState` そのものなのでこの feature からは持ち込めない）。写しにするのは、
- * 別のドキュメントに替えると 11 本すべての絵が変わり、移設で変わったのか組み直しで
- * 変わったのかが視覚差分から読めなくなるため。
+ * `features/editor/__stories__/sample-editor-state.ts` から、ストーリーが選ぶ 2 枚
+ * （`home` / `overflow`）を写している（`EditorState` そのものなのでこの feature からは
+ * 持ち込めない）。組み直さず写すのは、別のドキュメントに替えると 11 本すべての絵が
+ * 変わり、移設で変わったのか組み直しで変わったのかが視覚差分から読めなくなるため。
  *
  * `unset-box` / padding の 2 つの Box / 名前の長いノードは、このパネルにしか要らない
  * 状態なのでここで足している。
@@ -153,8 +153,9 @@ const LongNameDocument = DesignDocument.create({
  * 器（`EditorLayout.RightPane`）は編集画面の組み立てに属していてこの feature からは
  * import できないので、帯の高さと本文の余白だけをここで真似ている。
  *
- * **この写しが、器を落としたことに気づける唯一の手段**（テストは 1 件も落ちない）。
- * `editor-layout` の `RightPaneHeading` / `RightPaneBody` を直したらここも直す。
+ * 写しなので、器を落としたことはここには映らない（映るのは `OpenedDocumentEditor` の
+ * ストーリー）。同じ class が `editor-layout` と `features/tokens` のストーリーにもあり
+ * 計 3 箇所なので、`editor-layout` を直したら両方のストーリーも直す。
  */
 function PropertyPanelPane(
   props: ComponentProps<typeof PropertyPanel.Body>,

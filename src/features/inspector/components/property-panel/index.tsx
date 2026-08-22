@@ -944,9 +944,6 @@ function controlsOf(selection: DocumentSelection): Option<SelectionControls> {
  * 複数選んでいるときに件数を出すのは、1 つの名前も種別も決まらないため
  * （docs/06-ui.md「選択」。本文は編集欄を出さないので、ここが唯一の手がかりになる）。
  *
- * 戻り値を `ReactElement`（`ReactNode` ではない）と書いているのは、選択の種類を
- * 足して `case` を足し忘れたときにコンパイルエラーにするため。
- *
  * @returns 複数選択なら件数、1 つ選んでいれば名前と種別、何も選んでいなければ空
  */
 function PropertyPanelTitle({
@@ -989,12 +986,11 @@ function PropertyPanelBody({
   onClearSelection: () => void;
   instance: InstanceActions;
 }>): ReactElement {
-  const controls = controlsOf(selection);
-
   if (isFrozen) {
     return <p className="text-[11px] text-gray-400">選択は凍結中</p>;
   }
 
+  const controls = controlsOf(selection);
   if (!controls.some) {
     return <p className="text-gray-500 text-sm">選択されていません</p>;
   }
@@ -1026,8 +1022,9 @@ function PropertyPanelBody({
  * 組み立て（`features/editor`）に属していて、この feature からは import できないため。
  * 呼び出し側が帯と本文それぞれの器に入れる。
  *
- * 帯と本文は**同じ 1 つの `selection` を受け取り、同じ純粋関数（`controlsOf`）を
- * 通す**ので、「帯は件数なのに本文はインスタンスの編集欄」という食い違いは作れない。
+ * 帯と本文は**呼び出し側が同じ 1 つの `selection` を両方へ渡す前提**で、同じ純粋関数
+ * （`controlsOf`）を通す。別々の選択を渡せば「帯は件数なのに本文はインスタンスの
+ * 編集欄」が作れるので、器を着せる側（`rightPaneParts`）で 1 つの値を作って配る。
  *
  * 入力欄はスキーマ定数の走査だけで決まる（`SelectionControls.forSelection`）ため、
  * ここには prop 名で分岐するコードを置かない。

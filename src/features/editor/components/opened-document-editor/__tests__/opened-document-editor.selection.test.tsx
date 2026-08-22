@@ -110,7 +110,7 @@ test("何も選んでいなくても右ペインの見出しの帯は残る", as
   await renderOpenedDocument();
 
   /*
-   * 帯を着せるのは `RightPaneContent`（`PropertyPanel.Title` は中身しか返さない）。
+   * 帯を着せるのは `EditorPanes`（`PropertyPanel.Title` は中身しか返さない）。
    * 器ごと落としても `features/inspector` のテストは 1 件も落ちないので、ここで見る。
    * 帯ごと消すと、選択のたびに本文の位置が帯のぶん動く。
    */

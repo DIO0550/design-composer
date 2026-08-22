@@ -6,9 +6,15 @@ import { renderFrozenPanel, renderPanel } from "./setup";
 
 /**
  * 外部編集でファイルが壊れている間の本文（#135）。映っているのは最後に正常だった
- * 表示なので、そこへ編集を加えさせない。何を選んでいたかは帯に残す。
+ * 表示なので、そこへ編集を加えさせない。
+ *
+ * 見出しが選んでいたものを保つことはここでは見ない。帯の中身（`PropertyPanel.Title`）は
+ * `isFrozen` を受け取らないので、この単位ではその主張を破る実装を書けない。
+ * 見ているのは器を着せる側（`opened-document-editor.frozen.test.tsx`）。
+ *
+ * @returns Text ノードを 1 つ選んだ状態の選択
  */
-function selectedTitle(): DocumentSelection {
+function frozenSelection(): DocumentSelection {
   return DocumentSelection.fromNames(
     DesignDocument.create({
       artboards: [
@@ -27,7 +33,7 @@ function selectedTitle(): DocumentSelection {
 }
 
 test("凍結中は選んでいても編集欄を出さず、凍結中であることを出す", () => {
-  renderFrozenPanel(selectedTitle());
+  renderFrozenPanel(frozenSelection());
 
   expect(screen.getByText("選択は凍結中")).toBeDefined();
   expect(screen.queryByRole("textbox", { name: "Content" })).toBeNull();
@@ -35,13 +41,7 @@ test("凍結中は選んでいても編集欄を出さず、凍結中である�
 
 test("凍結していなければ同じ選択で編集欄が出る", () => {
   // 上の対照。凍結の分岐を丸ごと消しても、これが無いと上の 1 件だけでは落ちない
-  renderPanel(selectedTitle());
+  renderPanel(frozenSelection());
 
   expect(screen.getByRole("textbox", { name: "Content" })).toBeDefined();
-});
-
-test("凍結中でも何を選んでいたかは見出しに残る", () => {
-  renderFrozenPanel(selectedTitle());
-
-  expect(screen.getByRole("heading", { name: "home-title" })).toBeDefined();
 });

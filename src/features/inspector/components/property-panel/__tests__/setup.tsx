@@ -13,25 +13,27 @@ function noopInstanceActions(): InstanceActions {
 }
 
 /**
- * その選択のパネルを、帯の中身と本文を並べて描画する。
+ * 帯の中身と本文を並べて描画する。
  *
  * 帯そのもの（`EditorLayout.RightPane.Heading`）は着せない。器は編集画面の組み立てに
  * 属していてこの feature からは呼べず、帯が残ること自体は
  * `opened-document-editor.selection.test.tsx` が見ている。
- *
- * @param selection 選択とドキュメントの出どころ
- * @param instance インスタンスの節から呼ぶ操作。押した結果を見るテストだけが渡す
  */
-export function renderPanel(
-  selection: DocumentSelection,
-  instance: InstanceActions = noopInstanceActions(),
-) {
+function renderParts({
+  selection,
+  isFrozen,
+  instance,
+}: Readonly<{
+  selection: DocumentSelection;
+  isFrozen: boolean;
+  instance: InstanceActions;
+}>) {
   render(
     <>
       <PropertyPanel.Title selection={selection} />
       <PropertyPanel.Body
         selection={selection}
-        isFrozen={false}
+        isFrozen={isFrozen}
         instance={instance}
         onEditProp={vi.fn()}
         onClearSelection={vi.fn()}
@@ -41,24 +43,30 @@ export function renderPanel(
 }
 
 /**
+ * その選択のパネルを描画する。
+ *
+ * @param selection 選択とドキュメントの出どころ
+ * @param instance インスタンスの節から呼ぶ操作。押した結果を見るテストだけが渡す
+ */
+export function renderPanel(
+  selection: DocumentSelection,
+  instance: InstanceActions = noopInstanceActions(),
+) {
+  renderParts({ selection, isFrozen: false, instance });
+}
+
+/**
  * その選択のパネルを、凍結中として描画する
  * （外部編集でファイルが壊れ、表示が最後に正常だったもので止まっている状態 / #135）。
  *
  * @param selection 凍結する前に選んでいたものと、そのドキュメント
  */
 export function renderFrozenPanel(selection: DocumentSelection) {
-  render(
-    <>
-      <PropertyPanel.Title selection={selection} />
-      <PropertyPanel.Body
-        selection={selection}
-        isFrozen
-        instance={noopInstanceActions()}
-        onEditProp={vi.fn()}
-        onClearSelection={vi.fn()}
-      />
-    </>,
-  );
+  renderParts({
+    selection,
+    isFrozen: true,
+    instance: noopInstanceActions(),
+  });
 }
 
 /**
