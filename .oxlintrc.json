@@ -6,5 +6,58 @@
   "rules": {
     "curly": ["error", "all"],
     "max-depth": ["error", { "max": 3 }]
-  }
+  },
+  "overrides": [
+    {
+      "files": ["src/domains/**/*.ts", "src/domains/**/*.tsx"],
+      "rules": {
+        "no-restricted-imports": ["warn", { "patterns": [
+          { "group": ["**/services/**", "@/services/**", "@/services"], "message": "domains は services を import できません（rules/architecture.md「依存方向のルール」）" },
+          { "group": ["**/features/**", "@/features/**", "@/features"], "message": "domains は features を import できません（rules/architecture.md「依存方向のルール」）" },
+          { "group": ["**/libs/**", "@/libs/**", "@/libs"], "message": "domains は libs（I/O・外部フォーマットの境界）を import できません" },
+          { "group": ["react", "react/*", "react-dom", "react-dom/*"], "message": "domains は React に依存できません" },
+          { "group": ["@tauri-apps/**"], "message": "domains は Tauri API に依存できません" }
+        ] }]
+      }
+    },
+    {
+      "files": ["src/services/**/*.ts", "src/services/**/*.tsx"],
+      "rules": {
+        "no-restricted-imports": ["error", { "patterns": [
+          { "group": ["**/features/**", "@/features/**", "@/features"], "message": "services は features を import できません（rules/architecture.md「依存方向のルール」）" },
+          { "group": ["**/libs/**", "@/libs/**", "@/libs"], "message": "services は libs を import できません" },
+          { "group": ["**/components/**", "@/components/**", "@/components"], "message": "services は components を import できません" },
+          { "group": ["**/hooks/**", "@/hooks/**", "@/hooks"], "message": "services は hooks を import できません" },
+          { "group": ["react", "react/*", "react-dom", "react-dom/*"], "message": "services は React に依存できません" },
+          { "group": ["@tauri-apps/**"], "message": "services は Tauri API に依存できません" }
+        ] }]
+      }
+    },
+    {
+      "files": [
+        "src/components/**/*.ts", "src/components/**/*.tsx",
+        "src/hooks/**/*.ts", "src/hooks/**/*.tsx",
+        "src/utils/**/*.ts", "src/utils/**/*.tsx",
+        "src/types/**/*.ts", "src/types/**/*.tsx"
+      ],
+      "rules": {
+        "no-restricted-imports": ["error", { "patterns": [
+          { "group": ["**/domains/**", "@/domains/**", "@/domains"], "message": "components/hooks/utils/types はドメイン知識(domains)を import できません（rules/architecture.md「依存方向のルール」）" },
+          { "group": ["**/services/**", "@/services/**", "@/services"], "message": "components/hooks/utils/types はドメイン知識(services)を import できません" },
+          { "group": ["**/features/**", "@/features/**", "@/features"], "message": "components/hooks/utils/types はドメイン知識(features)を import できません" }
+        ] }]
+      }
+    },
+    {
+      "files": ["src/libs/**/*.ts", "src/libs/**/*.tsx"],
+      "rules": {
+        "no-restricted-imports": ["error", { "patterns": [
+          { "group": ["**/services/**", "@/services/**", "@/services"], "message": "libs は services を import できません（rules/architecture.md「依存方向のルール」）" },
+          { "group": ["**/features/**", "@/features/**", "@/features"], "message": "libs は features を import できません" },
+          { "group": ["**/components/**", "@/components/**", "@/components"], "message": "libs は components を import できません" },
+          { "group": ["**/hooks/**", "@/hooks/**", "@/hooks"], "message": "libs は hooks を import できません" }
+        ] }]
+      }
+    }
+  ]
 }
