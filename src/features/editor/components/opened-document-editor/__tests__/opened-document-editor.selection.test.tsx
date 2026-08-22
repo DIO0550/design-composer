@@ -1,11 +1,11 @@
 import { within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
+import { currentRowNames } from "@/components/__tests__/row-names";
 import {
   highlightedNames,
   renderedElement,
 } from "@/features/editor/__tests__/canvas-elements";
-import { currentRowNames } from "@/features/editor/__tests__/row-names";
 import {
   artboardList,
   canvasPane,

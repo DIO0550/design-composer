@@ -2,13 +2,10 @@ import type { ReactElement } from "react";
 import { type NestedRow, NestedRowList } from "@/components/nested-row-list";
 import { TypeGlyph } from "@/components/type-glyph";
 import type { ChildPosition } from "@/domains/child-position";
+import { DocumentSelection } from "@/domains/document-selection";
 import { Node, type PrimitiveNode } from "@/domains/node";
 import type { TextSchema } from "@/domains/primitive-schema";
-import { EditorState } from "@/features/editor/domains/editor-state";
-import {
-  Selection,
-  type SelectionKind,
-} from "@/features/editor/domains/selection";
+import { Selection, type SelectionKind } from "@/domains/selection";
 import { Option } from "@/utils/Option";
 
 /** 文言を読む prop。Text のスキーマが宣言している名前に限る。 */
@@ -153,16 +150,16 @@ function SelectableName({
  * 同じ判定を 2 箇所で書かないため。
  *
  * @param node 行にしたいノード
- * @param state 選択を読む今の状態
+ * @param selection 選択を読む対
  * @param onSelect 行が押されたときに名前を伝える先
  * @returns そのノードと、その子孫を映した行
  */
 function rowFromNode(
   node: Node,
-  state: EditorState,
+  selection: DocumentSelection,
   onSelect: (name: string) => void,
 ): NestedRow {
-  const isSelected = EditorState.isSelected(state, node.name);
+  const isSelected = DocumentSelection.isSelected(selection, node.name);
 
   return {
     name: node.name,
@@ -176,7 +173,7 @@ function rowFromNode(
       />
     ),
     children: Node.children(node).map((child) =>
-      rowFromNode(child, state, onSelect),
+      rowFromNode(child, selection, onSelect),
     ),
   };
 }
@@ -188,25 +185,25 @@ function rowFromNode(
  *
  * artboard 自身は行として出さない。UI 案は artboard を上段の `Artboards`
  * （`ArtboardList`）に並べ、ツリーはそのうちの 1 枚の中身だけを映す。どの 1 枚かは
- * 選択から決まる（`EditorState.currentArtboard`）ので、ここは持たない。
+ * 選択から決まる（`DocumentSelection.currentArtboard`）ので、ここは持たない。
  *
- * どの枝を畳んでいるかは編集ではなく見え方なので、ドキュメントの状態
- * （`EditorState`）には持たず、行を並べる器（`NestedRowList`）に閉じる。名前は
+ * どの枝を畳んでいるかは編集ではなく見え方なので、受け取った選択とドキュメントの対
+ * には持たず、行を並べる器（`NestedRowList`）に閉じる。名前は
  * 使い回されるので、同じ名前でノードを作り直すと畳んだ状態で現れる
  * （三角で状態は読めるので許容している）。器は artboard があるときだけ描かれるため、
  * artboard が 0 枚になって戻ると畳んだ状態は消える（行が 1 つも無い状態を挟むので
  * 見え方は変わらない）。
  */
 export function DocumentTree({
-  state,
+  selection,
   onSelect,
   onReorder,
 }: Readonly<{
-  state: EditorState;
+  selection: DocumentSelection;
   onSelect: (name: string) => void;
   onReorder: (from: ChildPosition, toIndex: number) => void;
 }>) {
-  const current = EditorState.currentArtboard(state);
+  const current = DocumentSelection.currentArtboard(selection);
 
   /*
    * 映す artboard が無いのは artboard が 1 枚も無いときだけで、それは
@@ -237,7 +234,7 @@ export function DocumentTree({
       </div>
       <NestedRowList
         rows={artboard.children.map((child) =>
-          rowFromNode(child, state, onSelect),
+          rowFromNode(child, selection, onSelect),
         )}
         parentName={artboard.name}
         onReorder={onReorder}

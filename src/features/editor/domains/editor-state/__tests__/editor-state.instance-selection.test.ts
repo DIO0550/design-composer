@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import { DocumentSelection } from "@/domains/document-selection";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 
@@ -93,20 +94,11 @@ test("参照先の部品が無いインスタンスでも、同じ参照を持�
   expect(EditorState.selectedNames(all)).toEqual(["settings-broken"]);
 });
 
-test("インスタンスを選ぶと元の部品の名前が Assets 側へも渡る", () => {
-  const selected = EditorState.select(setupState(), "home-login");
-
-  expect(EditorState.sourceName(selected)).toEqual(
-    Option.some("primary-button"),
-  );
-});
-
-test("インスタンス以外を選んでいるときは元の部品が無い", () => {
-  const selected = EditorState.select(setupState(), "home-title");
-
-  expect(EditorState.sourceName(selected).some).toBe(false);
-});
-
+/*
+ * 選択そのものから決まる出どころ（インスタンスなら読める / インスタンス以外なら無い）は
+ * 対の側（`document-selection.source-name.test.ts`）が持つ。ここで見るのは
+ * まとめて選ぶ操作を通しても答えが変わらないこと。
+ */
 test("まとめて選んだあとも元の部品の名前は Assets 側へ渡り続ける", () => {
   const selected = EditorState.select(setupState(), "home-login");
 
@@ -131,14 +123,20 @@ test("複数選んでいるとき、ツリーが映すのは選択の先頭が�
 
   // 選択の並びは collectInstanceNames の順（home-login が先頭）
   expect(EditorState.selectedNames(all)[0]).toBe("home-login");
-  expect(Option.unwrap(EditorState.currentArtboard(all)).name).toBe("home");
+  expect(
+    Option.unwrap(
+      DocumentSelection.currentArtboard(EditorState.documentSelection(all)),
+    ).name,
+  ).toBe("home");
 });
 
 test("複数選んでいても、選択に含まれない artboard は映さない", () => {
   const selected = EditorState.select(setupState(), "home-login");
   const all = Option.unwrap(EditorState.selectAllInstances(selected));
 
-  expect(Option.unwrap(EditorState.currentArtboard(all)).name).not.toBe(
-    "settings",
-  );
+  expect(
+    Option.unwrap(
+      DocumentSelection.currentArtboard(EditorState.documentSelection(all)),
+    ).name,
+  ).not.toBe("settings");
 });

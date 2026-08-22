@@ -2,53 +2,51 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
-import { EditorState } from "@/features/editor/domains/editor-state";
+import { DocumentSelection } from "@/domains/document-selection";
 import { DocumentTree } from "../index";
 
 /**
  * artboard を 2 枚持たせて、2 枚目を見ている状態で確かめられるようにする。
  * 先頭の `home` を見ていると、親の名前を「先頭の artboard」に取り違えても
- * `EditorState.currentArtboard` の既定と同じ答えになって落ちないため。
+ * `DocumentSelection.currentArtboard` の既定と同じ答えになって落ちないため。
  *
  * ボタンの出し分け（端では出さない・兄弟がいなければ出さない）は行を並べる器
  * （`src/components/nested-row-list`）が持つので、そちらで確かめる。
  */
-function setupState(): EditorState {
-  return EditorState.create(
-    DesignDocument.create({
-      artboards: [
-        {
-          name: "home",
-          width: 375,
-          height: 812,
-          children: [{ name: "home-title", type: "Text" }],
-        },
-        {
-          name: "settings",
-          width: 375,
-          height: 812,
-          children: [
-            { name: "title", type: "Text" },
-            {
-              name: "body",
-              type: "Box",
-              children: [
-                { name: "body-text", type: "Text" },
-                { name: "body-action", type: "Text" },
-              ],
-            },
-          ],
-        },
-      ],
-    }),
-  );
+function setupDocument(): DesignDocument {
+  return DesignDocument.create({
+    artboards: [
+      {
+        name: "home",
+        width: 375,
+        height: 812,
+        children: [{ name: "home-title", type: "Text" }],
+      },
+      {
+        name: "settings",
+        width: 375,
+        height: 812,
+        children: [
+          { name: "title", type: "Text" },
+          {
+            name: "body",
+            type: "Box",
+            children: [
+              { name: "body-text", type: "Text" },
+              { name: "body-action", type: "Text" },
+            ],
+          },
+        ],
+      },
+    ],
+  });
 }
 
 function renderTree(): ReturnType<typeof vi.fn> {
   const onReorder = vi.fn();
   render(
     <DocumentTree
-      state={EditorState.select(setupState(), "settings")}
+      selection={DocumentSelection.fromNames(setupDocument(), ["settings"])}
       onSelect={vi.fn()}
       onReorder={onReorder}
     />,

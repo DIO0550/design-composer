@@ -1,22 +1,23 @@
 import type { ReactElement } from "react";
 import { DesignDocument } from "@/domains/design-document";
+import { DocumentSelection } from "@/domains/document-selection";
+import type { TokenSelection } from "@/domains/token-selection";
 import {
   type AssetGrab,
   AssetsPanel,
   CreateComponent,
 } from "@/features/assets";
-import { ArtboardList } from "@/features/editor/components/artboard-list";
-import { DocumentTree } from "@/features/editor/components/document-tree";
-import { LeftPanePanel } from "@/features/editor/components/left-pane-panel";
+import { ArtboardList } from "@/features/sidebar/components/artboard-list";
+import { DocumentTree } from "@/features/sidebar/components/document-tree";
+import { LeftPanePanel } from "@/features/sidebar/components/left-pane-panel";
 import {
   LeftPaneRail,
   type LeftPaneView,
   LeftPaneViewLabels,
   LeftPaneViews,
-} from "@/features/editor/components/left-pane-rail";
-import { EditorState } from "@/features/editor/domains/editor-state";
-import type { NodeActions } from "@/features/editor/hooks/use-node-actions";
-import type { TokenActions } from "@/features/editor/hooks/use-token-actions";
+} from "@/features/sidebar/components/left-pane-rail";
+import type { LeftPaneNodeActions } from "@/features/sidebar/types/LeftPaneNodeActions";
+import type { LeftPaneTokenActions } from "@/features/sidebar/types/LeftPaneTokenActions";
 import { TokenList } from "@/features/tokens";
 import { Option } from "@/utils/Option";
 
@@ -32,15 +33,17 @@ import { Option } from "@/utils/Option";
  */
 function LeftPaneContent({
   view,
-  state,
+  selection,
+  tokenSelection,
   node,
   token,
   grab,
 }: Readonly<{
   view: LeftPaneView;
-  state: EditorState;
-  node: NodeActions;
-  token: TokenActions;
+  selection: DocumentSelection;
+  tokenSelection: TokenSelection;
+  node: LeftPaneNodeActions;
+  token: LeftPaneTokenActions;
   grab: AssetGrab;
 }>): ReactElement {
   switch (view) {
@@ -53,9 +56,9 @@ function LeftPaneContent({
             浮かぶツールバーが持ち（#112）、部品はパレットの行を掴んで落とす（#203）ので、
             どちらもここには並べない。
           */}
-          <ArtboardList state={state} onSelect={node.select} />
+          <ArtboardList selection={selection} onSelect={node.select} />
           <DocumentTree
-            state={state}
+            selection={selection}
             onSelect={node.select}
             onReorder={node.reorder}
           />
@@ -64,15 +67,15 @@ function LeftPaneContent({
     case LeftPaneViews.Assets:
       return (
         <AssetsPanel
-          assets={DesignDocument.componentAssets(EditorState.document(state))}
-          sourceName={EditorState.sourceName(state)}
+          assets={DesignDocument.componentAssets(selection.document)}
+          sourceName={DocumentSelection.sourceName(selection)}
           grab={grab}
         />
       );
     case LeftPaneViews.Tokens:
       return (
         <TokenList
-          selection={EditorState.tokenSelection(state)}
+          selection={tokenSelection}
           onSelectToken={token.select}
           onAddToken={token.add}
         />
@@ -91,25 +94,32 @@ function LeftPaneContent({
  * 足し忘れたときにコンパイルエラーにするため（`ReactElement | undefined` だと
  * 抜けても通ってしまう）。
  *
- * @param view 今の行き先
- * @param state 部品化の可否を決める選択の出どころ
- * @param node 部品化を送る先
  * @returns Assets なら部品化のフッター、他の行き先では不在
  */
-function leftPaneFooter(
-  view: LeftPaneView,
-  state: EditorState,
-  node: NodeActions,
-): Option<ReactElement> {
+function leftPaneFooter({
+  view,
+  selection,
+  isFrozen,
+  node,
+}: Readonly<{
+  /** 今の行き先 */
+  view: LeftPaneView;
+  /** 部品化の可否を決める選択の出どころ */
+  selection: DocumentSelection;
+  /** ファイルが不正で編集を受け付けないか */
+  isFrozen: boolean;
+  /** 部品化を送る先 */
+  node: LeftPaneNodeActions;
+}>): Option<ReactElement> {
   switch (view) {
     case LeftPaneViews.Layers:
       return Option.none;
     case LeftPaneViews.Assets:
       return Option.some(
         <CreateComponent
-          document={EditorState.document(state)}
-          singleName={EditorState.singleName(state)}
-          isFrozen={EditorState.isFileInvalid(state)}
+          document={selection.document}
+          singleName={DocumentSelection.singleName(selection)}
+          isFrozen={isFrozen}
           onCreate={node.createComponent}
         />,
       );
@@ -125,20 +135,27 @@ function leftPaneFooter(
  * どこを見ているか（`view`）を自分で持たないのは、右ペインに何を出すかも同じ行き先で
  * 決まるため。ここが握ると右ペインから読めなくなるので、両ペインを組む側に置いて
  * もらう（`opened-document-editor`）。
+ *
+ * 編集画面の状態（`EditorState`）ではなく値で受け取るのは、この feature が編集画面を
+ * 知らずに描けるようにするため（`features/sidebar/index.ts`）。
  */
 export function LeftPane({
   view,
   onSelectView,
-  state,
+  selection,
+  tokenSelection,
+  isFrozen,
   node,
   token,
   grab,
 }: Readonly<{
   view: LeftPaneView;
   onSelectView: (view: LeftPaneView) => void;
-  state: EditorState;
-  node: NodeActions;
-  token: TokenActions;
+  selection: DocumentSelection;
+  tokenSelection: TokenSelection;
+  isFrozen: boolean;
+  node: LeftPaneNodeActions;
+  token: LeftPaneTokenActions;
   grab: AssetGrab;
 }>) {
   return (
@@ -150,14 +167,13 @@ export function LeftPane({
          * ファイルが不正な間は操作を受け付けない（器の `EditorLayout.LeftPane` が
          * `inert` にする）ので、見出しでその旨を名乗る。UI 案 Error 画面の `frozen`。
          */
-        note={
-          EditorState.isFileInvalid(state) ? Option.some("凍結中") : Option.none
-        }
-        footer={leftPaneFooter(view, state, node)}
+        note={isFrozen ? Option.some("凍結中") : Option.none}
+        footer={leftPaneFooter({ view, selection, isFrozen, node })}
       >
         <LeftPaneContent
           view={view}
-          state={state}
+          selection={selection}
+          tokenSelection={tokenSelection}
           node={node}
           token={token}
           grab={grab}

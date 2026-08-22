@@ -39,7 +39,7 @@ const meta = {
     grab: setupAssetGrab(),
   },
   // 実際の幅（248px のパネル）で見ないと、名前と使用数の詰まり方が分からない。
-  // 左ペインの見出し帯（`LeftPanePanel`）は付けない。features/editor 側の器を
+  // 左ペインの見出し帯（`LeftPanePanel`）は付けない。features/sidebar 側の器を
   // deep import せずに済ませるため（rules/architecture.md「モジュールの公開API」）。
   decorators: [
     (Story) => (

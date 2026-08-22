@@ -80,7 +80,7 @@ export function renderRowList(): RenderedRowList {
  * 画面に出ている順の、行の中身の字面。器が出すボタン（開閉・並べ替え）は読み上げ名を
  * 持つので、それを持たないボタン＝検査が渡した行の中身だけを拾う。
  *
- * `rowNames`（`src/features/editor/__tests__/row-names.ts`）とは別物で、
+ * `rowNames`（`src/components/__tests__/row-names.ts`）とは別物で、
  * あちらは `aria-current` を持つボタンの読み上げ名を読む。同じ DOM に対して
  * 違う答えを返すので、名前を分けてある。
  *

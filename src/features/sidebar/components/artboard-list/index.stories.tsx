@@ -1,14 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
 import {
-  EmptyEditorState,
-  SampleEditorState,
-} from "@/features/editor/__stories__/sample-editor-state";
-import { EditorState } from "@/features/editor/domains/editor-state";
+  EmptySidebarSelection,
+  sampleSidebarSelection,
+} from "@/features/sidebar/__stories__/sample-sidebar-document";
 import { ArtboardList } from "./index";
 
 const meta = {
-  title: "features/editor/ArtboardList",
+  title: "features/sidebar/ArtboardList",
   component: ArtboardList,
   parameters: { layout: "padded" },
   decorators: [
@@ -27,21 +26,21 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   name: "選択なし（先頭が今の 1 枚）",
-  args: { state: SampleEditorState },
+  args: { selection: sampleSidebarSelection() },
 };
 
 export const Selected: Story = {
   name: "別の artboard を選択中",
-  args: { state: EditorState.select(SampleEditorState, "settings") },
+  args: { selection: sampleSidebarSelection("settings") },
 };
 
 /** 配下のノードを選んでいる状態。それを載せている artboard が今の 1 枚として出る。 */
 export const NodeSelected: Story = {
   name: "artboard 配下のノードを選択中",
-  args: { state: EditorState.select(SampleEditorState, "settings-card") },
+  args: { selection: sampleSidebarSelection("settings-card") },
 };
 
 export const Empty: Story = {
   name: "artboard がない",
-  args: { state: EmptyEditorState },
+  args: { selection: EmptySidebarSelection },
 };

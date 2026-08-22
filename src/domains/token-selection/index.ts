@@ -13,8 +13,8 @@ import { Option } from "@/utils/Option";
  * 選択そのものではなく `TokenRef` を持つのは、値を持ち回すと編集・undo のあとに古い値が
  * 残るため。中身は引き直す（`TokenSelection.token`）。
  *
- * `features/editor` の `Selection`（選んだ**ノード**の正体）とは別物で、あちらは
- * ドキュメントを持たない。
+ * ノード側の対は `DocumentSelection`。`Selection`（選んだ 1 つの正体）とも別物で、
+ * あちらはドキュメントを持たない。
  */
 export type TokenSelection = Readonly<{
   document: DesignDocument;

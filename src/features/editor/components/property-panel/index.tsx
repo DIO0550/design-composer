@@ -3,6 +3,7 @@ import { ColorSwatch } from "@/components/color-swatch";
 import { SegmentedControl } from "@/components/segmented-control";
 import { TypeGlyph } from "@/components/type-glyph";
 import type { PropEdit } from "@/domains/node";
+import type { Selection, SelectionKind } from "@/domains/selection";
 import type { Side, SidePair } from "@/domains/side";
 import { EditorLayout } from "@/features/editor/components/editor-layout";
 import { EditorState } from "@/features/editor/domains/editor-state";
@@ -15,10 +16,6 @@ import {
   PropShorthandControl,
   SelectionControls,
 } from "@/features/editor/domains/prop-control";
-import type {
-  Selection,
-  SelectionKind,
-} from "@/features/editor/domains/selection";
 import { CaseStyle } from "@/utils/CaseStyle";
 import { Option } from "@/utils/Option";
 
