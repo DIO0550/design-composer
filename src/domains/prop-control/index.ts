@@ -38,7 +38,22 @@ import { Option } from "@/utils/Option";
  * Why not: 同じ形の `features/tokens/domains/token-control` は feature に残る。
  * あちらは `valueText` や `TokenPreview` の `widthPx` のように**綴りと見せ方そのもの**
  * を持つため。
+ *
+ * 今の消費側は `features/editor` の 1 つだけで、「2 つ以上の feature が必要としたら
+ * 昇格」の引き金は引かれていない。それでもここに置くのは帰属を根拠にしたためで、
+ * 判断は #174 の feature 分割の決定にある（#254 で分離）。
  */
+
+/**
+ * インスタンスを解除できるかを答える判定。
+ *
+ * 答えるのは `services/instance-composition`（参照の再帰展開と循環検出）で、
+ * `src/domains/` からは import できないため引数で受け取る。
+ */
+export type DetachableCheck = (
+  document: DesignDocument,
+  name: string,
+) => boolean;
 
 /**
  * 入力欄の種類。値の決め方（`domain`）から決まる。
@@ -536,7 +551,7 @@ function sectionsOf(
 function nodeControls(
   document: DesignDocument,
   node: Node,
-  isDetachable: (document: DesignDocument, name: string) => boolean,
+  isDetachable: DetachableCheck,
 ): SelectionControls {
   if (Node.isRef(node)) {
     return {
@@ -547,11 +562,6 @@ function nodeControls(
         node.overrides ?? {},
         document.tokens,
       ),
-      /*
-       * 解除できるかは、解除と同じ判定に答えさせる。失敗の条件（参照先が無い・
-       * 循環している）を書き写すと `InstanceComposition.detach` と二重管理になり、
-       * 片方だけ変わったときにボタンの出方と結果が食い違う。
-       */
       isDetachable: isDetachable(document, node.name),
       /*
        * `componentAssets` の使用数ではなく、まとめて選ぶときと同じ集め方で数える。
@@ -784,7 +794,7 @@ export const SelectionControls = {
    */
   forSelection(
     selection: DocumentSelection,
-    isDetachable: (document: DesignDocument, name: string) => boolean,
+    isDetachable: DetachableCheck,
   ): Option<SelectionControls> {
     const count = DocumentSelection.count(selection);
     if (count > 1) {

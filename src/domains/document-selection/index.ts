@@ -83,7 +83,7 @@ export const DocumentSelection = {
    * いくつ選ばれているか。
    *
    * `isSelected` と同じく答えは選択だけで決まる（`SelectionState.count`）が、
-   * 対しか持っていない消費側（右ペインの帯と本文）のために置く。
+   * 対しか持っていない消費側（`SelectionControls.forSelection`）のために置く。
    *
    * @param selection 件数の出どころになる選択
    * @returns 選ばれているものの件数。未選択なら 0

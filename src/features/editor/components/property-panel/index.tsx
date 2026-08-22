@@ -55,17 +55,19 @@ function unsetLabel(control: PropControl): string {
 const MixedLabel = "不揃い";
 
 /**
- * 入力欄が返した文字列を、入力された値として読む。
+ * 欄の文字列を、その欄が指している値として読む。
  *
- * 空欄を「値が無い」と読むのは `<select>` / `<input>` の約束事なので、
- * ドメインへ渡す前にここで解釈する（文字列 prop にとって `""` はそれ自体が
- * 正当な値になりうるため、`PropControl` 側で決めるとその値にとっての意味が固定される）。
+ * 空文字を「値が無い」と読むのはこのパネルの入力欄の約束事で、入れる向き
+ * （`FieldBinding.value` は未設定・不揃いを空文字で表す）と受け取る向き
+ * （`<select>` / `<input>` は空欄で空文字を返す）の両方に効く。ドメインへ渡す前に
+ * ここで解釈するのは、文字列 prop にとって `""` はそれ自体が正当な値になりうるため
+ * （`PropControl` 側で決めると、その値にとっての意味が固定される）。
  *
- * @param raw 入力欄が持っている生の文字列
- * @returns 空欄なら `none`、それ以外はその文字列
+ * @param text 欄が持っている文字列
+ * @returns 空文字なら `none`、それ以外はその文字列
  */
-function enteredValue(raw: string): Option<string> {
-  return raw === "" ? Option.none : Option.some(raw);
+function valueFrom(text: string): Option<string> {
+  return text === "" ? Option.none : Option.some(text);
 }
 
 /**
@@ -102,8 +104,7 @@ function fieldOf(
     labelledBy,
     value: Option.unwrapOr(Option.map(control.value, String), ""),
     unsetLabel: unsetLabel(control),
-    onChangeRaw: (raw) =>
-      onEdit(PropControl.editFrom(control, enteredValue(raw))),
+    onChangeRaw: (raw) => onEdit(PropControl.editFrom(control, valueFrom(raw))),
   };
 }
 
@@ -134,7 +135,7 @@ function pairFieldOf(
         : "",
     unsetLabel: value.kind === "uniform" ? unsetLabel(first) : MixedLabel,
     onChangeRaw: (raw) =>
-      onEdit(PropPairControl.editFrom(pair, enteredValue(raw))),
+      onEdit(PropPairControl.editFrom(pair, valueFrom(raw))),
   };
 }
 
@@ -276,16 +277,12 @@ function PropField({
   resolvedValuePlacement: ResolvedValuePlacement;
 }>): ReactElement {
   switch (input.kind) {
-    /*
-     * セグメントは `Option` で選択を表すので、空文字を未選択として読み替える
-     * （`enteredValue` と同じ、この画面の入力欄の約束事）。
-     */
     case "enum":
       return (
         <SegmentedControl
           labelledBy={field.labelledBy}
           options={input.values}
-          value={enteredValue(field.value)}
+          value={valueFrom(field.value)}
           onChange={(next) => field.onChangeRaw(Option.unwrapOr(next, ""))}
         />
       );
@@ -1021,6 +1018,11 @@ export function PropertyPanel({
   /*
    * 帯と本文を同じ 1 つの `controls` から出し分ける。別々に導くと
    * 「帯は件数なのに本文はインスタンスの編集欄」という食い違いが作れる。
+   */
+  /*
+   * 解除できるかは、解除と同じ判定に答えさせる。失敗の条件（参照先が無い・
+   * 循環している）を書き写すと `InstanceComposition.detach` と二重管理になり、
+   * 片方だけ変わったときにボタンの出方と結果が食い違う。
    */
   const controls = SelectionControls.forSelection(
     EditorState.documentSelection(state),

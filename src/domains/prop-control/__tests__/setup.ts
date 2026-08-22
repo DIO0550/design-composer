@@ -1,8 +1,10 @@
-import type { DocumentSelection } from "@/domains/document-selection";
+import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import { DocumentSelection } from "@/domains/document-selection";
+import type { Props } from "@/domains/node";
 import type { ColorToken } from "@/domains/token";
-import { InstanceComposition } from "@/services/instance-composition";
 import { Option } from "@/utils/Option";
 import {
+  type DetachableCheck,
   type PropControl,
   type PropControlSection,
   PropShorthandControl,
@@ -10,20 +12,50 @@ import {
 } from "../index";
 
 /**
+ * 解除できないことにする判定。
+ *
+ * 解除できるかの規則そのものは `services/instance-composition` のテストが、
+ * パネルがその規則を渡していることは `property-panel.instance.test.tsx` が持つ。
+ * ここが見るのは**渡された答えがそのまま `isDetachable` に載るか**なので、
+ * 判定はテストが渡す（`src/domains/` から `@/services` を引かないため）。
+ */
+const NotDetachable: DetachableCheck = () => false;
+
+/**
+ * Box を 1 つ選んだ状態。
+ *
+ * @param props その Box に設定する props
+ * @returns その Box を選んでいるドキュメントと選択の対
+ */
+export function boxSelection(props: Props): DocumentSelection {
+  return DocumentSelection.fromNames(
+    DesignDocument.create({
+      tokens: DocumentTemplate.Default.tokens,
+      artboards: [
+        {
+          name: "home",
+          width: 360,
+          height: 240,
+          children: [{ name: "box", type: "Box", props }],
+        },
+      ],
+    }),
+    ["box"],
+  );
+}
+
+/**
  * 選択中のものの編集欄。選択が無ければテストを落とす。
  *
- * 解除できるかの判定に実物の `InstanceComposition.isDetachable` を渡すのは、
- * ここで述語を自作すると解除可否のテストが自作した偽物を検証することになるため
- * （`rules/testing.md`「依存は実物を使う」）。依存方向が縛るのは本番コードの
- * import なので、`src/domains/prop-control/index.ts` からの `@/services` は 0 のまま。
- *
  * @param selection 選択の出どころ
+ * @param isDetachable インスタンスを解除できるかを答える判定
  * @returns 選択中のものの編集欄
  */
-function controlsOf(selection: DocumentSelection): SelectionControls {
-  return Option.unwrap(
-    SelectionControls.forSelection(selection, InstanceComposition.isDetachable),
-  );
+function controlsOf(
+  selection: DocumentSelection,
+  isDetachable: DetachableCheck = NotDetachable,
+): SelectionControls {
+  return Option.unwrap(SelectionControls.forSelection(selection, isDetachable));
 }
 
 /**
@@ -47,12 +79,14 @@ export function sectionsOf(
  * インスタンスの編集欄。インスタンス以外を選んでいたらテストを落とす。
  *
  * @param selection 選択の出どころ
+ * @param isDetachable インスタンスを解除できるかを答える判定
  * @returns 出どころの部品と公開 prop を持つ編集欄
  */
 export function instanceOf(
   selection: DocumentSelection,
+  isDetachable: DetachableCheck = NotDetachable,
 ): Extract<SelectionControls, { kind: "instance" }> {
-  const controls = controlsOf(selection);
+  const controls = controlsOf(selection, isDetachable);
   if (controls.kind !== "instance") {
     throw new Error("インスタンスを選んでいない");
   }

@@ -1,7 +1,5 @@
 import { expect, test } from "vitest";
-import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
-import { DocumentSelection } from "@/domains/document-selection";
-import type { Props } from "@/domains/node";
+import type { DocumentSelection } from "@/domains/document-selection";
 import { SidePairs, Sides } from "@/domains/side";
 import { Option } from "@/utils/Option";
 import {
@@ -10,30 +8,7 @@ import {
   PropPairControl,
   PropShorthandControl,
 } from "../index";
-import { resolvedValueOfControl, sectionsOf } from "./setup";
-
-/**
- * Box を 1 つ選んだ状態。
- *
- * @param props その Box に設定する props
- * @returns その Box を選んでいるドキュメントと選択の対
- */
-function setupSelection(props: Props): DocumentSelection {
-  return DocumentSelection.fromNames(
-    DesignDocument.create({
-      tokens: DocumentTemplate.Default.tokens,
-      artboards: [
-        {
-          name: "home",
-          width: 360,
-          height: 240,
-          children: [{ name: "box", type: "Box", props }],
-        },
-      ],
-    }),
-    ["box"],
-  );
-}
+import { boxSelection, resolvedValueOfControl, sectionsOf } from "./setup";
 
 /** Layout セクションの行。セクションが無ければテストを落とす。 */
 function layoutRows(selection: DocumentSelection): readonly PropControlRow[] {
@@ -73,7 +48,7 @@ const UniformSides = {
 } as const;
 
 test("辺を宣言した prop は束ねた行にまとまり、辺ごとの行としては出ない", () => {
-  const rows = layoutRows(setupSelection(UniformSides));
+  const rows = layoutRows(boxSelection(UniformSides));
 
   expect(
     rows.flatMap((row) => (row.kind === "prop" ? [row.control.prop] : [])),
@@ -81,7 +56,7 @@ test("辺を宣言した prop は束ねた行にまとまり、辺ごとの行�
 });
 
 test("束ねた行はセクション内で最初の辺の位置に出る", () => {
-  const rows = layoutRows(setupSelection(UniformSides));
+  const rows = layoutRows(boxSelection(UniformSides));
 
   expect(
     rows.map((row) =>
@@ -92,7 +67,7 @@ test("束ねた行はセクション内で最初の辺の位置に出る", () =>
 
 test("束ねた行は 4 辺を上 右 下 左の順に持つ", () => {
   const sides = PropShorthandControl.sides(
-    paddingRow(setupSelection(UniformSides)),
+    paddingRow(boxSelection(UniformSides)),
   );
 
   expect(sides.map((side) => [side.side, side.control.prop])).toEqual([
@@ -105,7 +80,7 @@ test("束ねた行は 4 辺を上 右 下 左の順に持つ", () => {
 
 test("畳んだ欄は垂直 水平の順に並ぶ", () => {
   const pairs = PropShorthandControl.pairs(
-    paddingRow(setupSelection(UniformSides)),
+    paddingRow(boxSelection(UniformSides)),
   );
 
   expect(pairs.map((pair) => pair.pair)).toEqual([
@@ -116,7 +91,7 @@ test("畳んだ欄は垂直 水平の順に並ぶ", () => {
 
 test("畳んだ欄は向かい合う 2 辺だけを書き込み先に持つ", () => {
   const [vertical, horizontal] = PropShorthandControl.pairs(
-    paddingRow(setupSelection(UniformSides)),
+    paddingRow(boxSelection(UniformSides)),
   );
 
   expect(
@@ -128,7 +103,7 @@ test("畳んだ欄は向かい合う 2 辺だけを書き込み先に持つ", ()
 });
 
 test("向かい合う 2 辺が同じ値なら畳んだ欄はその値になる", () => {
-  const selection = setupSelection({
+  const selection = boxSelection({
     ...UniformSides,
     paddingTop: "md",
     paddingBottom: "md",
@@ -141,7 +116,7 @@ test("向かい合う 2 辺が同じ値なら畳んだ欄はその値になる",
 });
 
 test("向かい合う 2 辺が違う値なら畳んだ欄は不揃いになる", () => {
-  const selection = setupSelection({ ...UniformSides, paddingTop: "md" });
+  const selection = boxSelection({ ...UniformSides, paddingTop: "md" });
 
   expect(PropPairControl.value(verticalPair(selection))).toEqual({
     kind: "mixed",
@@ -150,7 +125,7 @@ test("向かい合う 2 辺が違う値なら畳んだ欄は不揃いになる",
 
 test("向かい合う 2 辺がどちらも未設定なら畳んだ欄は不揃いではなく未設定になる", () => {
   /* 左右は揃った値を入れておく。垂直だけを見ていることを確かめるため。 */
-  const selection = setupSelection({ paddingRight: "sm", paddingLeft: "sm" });
+  const selection = boxSelection({ paddingRight: "sm", paddingLeft: "sm" });
 
   expect(PropPairControl.value(verticalPair(selection))).toEqual({
     kind: "uniform",
@@ -159,7 +134,7 @@ test("向かい合う 2 辺がどちらも未設定なら畳んだ欄は不揃�
 });
 
 test("向かい合う 2 辺の片方だけが設定されていれば畳んだ欄は不揃いになる", () => {
-  const selection = setupSelection({ paddingTop: "md" });
+  const selection = boxSelection({ paddingTop: "md" });
 
   expect(PropPairControl.value(verticalPair(selection))).toEqual({
     kind: "mixed",
@@ -167,7 +142,7 @@ test("向かい合う 2 辺の片方だけが設定されていれば畳んだ�
 });
 
 test("畳んだ欄が揃っていれば辺と同じ解決値を持つ", () => {
-  const selection = setupSelection(UniformSides);
+  const selection = boxSelection(UniformSides);
   const input = PropPairControl.input(verticalPair(selection));
   const [top] = PropShorthandControl.sides(paddingRow(selection));
 
@@ -178,7 +153,7 @@ test("畳んだ欄が揃っていれば辺と同じ解決値を持つ", () => {
 
 test("畳んだ欄が不揃いのときは解決値を持たない", () => {
   /* 上辺は実在するトークンを指したままにする（辺の側は解決値を持つ）。 */
-  const selection = setupSelection({ ...UniformSides, paddingTop: "md" });
+  const selection = boxSelection({ ...UniformSides, paddingTop: "md" });
   const input = PropPairControl.input(verticalPair(selection));
 
   expect(
@@ -187,7 +162,7 @@ test("畳んだ欄が不揃いのときは解決値を持たない", () => {
 });
 
 test("畳んだ欄を編集すると向かい合う 2 辺を同じ値にする 1 件の編集になる", () => {
-  const selection = setupSelection(UniformSides);
+  const selection = boxSelection(UniformSides);
 
   expect(
     PropPairControl.editFrom(verticalPair(selection), Option.some("lg")),
@@ -198,7 +173,7 @@ test("畳んだ欄を編集すると向かい合う 2 辺を同じ値にする 1
 });
 
 test("畳んだ欄に値が無いときは向かい合う 2 辺を未設定へ戻す 1 件の編集になる", () => {
-  const selection = setupSelection(UniformSides);
+  const selection = boxSelection(UniformSides);
 
   expect(
     PropPairControl.editFrom(verticalPair(selection), Option.none),
@@ -210,7 +185,7 @@ test("畳んだ欄に値が無いときは向かい合う 2 辺を未設定へ�
 
 test("辺の欄を編集するとその辺だけを指す 1 件の編集になる", () => {
   const [top] = PropShorthandControl.sides(
-    paddingRow(setupSelection(UniformSides)),
+    paddingRow(boxSelection(UniformSides)),
   );
 
   expect(PropControl.editFrom(top.control, Option.some("lg"))).toEqual({
@@ -221,7 +196,7 @@ test("辺の欄を編集するとその辺だけを指す 1 件の編集にな�
 
 test("4 辺が揃っていない並びからは束ねた行を作れない", () => {
   const [top, right, bottom] = PropShorthandControl.sides(
-    paddingRow(setupSelection(UniformSides)),
+    paddingRow(boxSelection(UniformSides)),
   );
 
   expect(PropShorthandControl.create("padding", [top, right, bottom])).toEqual(
@@ -231,7 +206,7 @@ test("4 辺が揃っていない並びからは束ねた行を作れない", () 
 
 test("同じ辺が 2 つ来る並びからは束ねた行を作れない", () => {
   const [top, right, bottom, left] = PropShorthandControl.sides(
-    paddingRow(setupSelection(UniformSides)),
+    paddingRow(boxSelection(UniformSides)),
   );
 
   expect(
@@ -241,7 +216,7 @@ test("同じ辺が 2 つ来る並びからは束ねた行を作れない", () =>
 
 test("4 辺が揃った並びからは束ねた行を作れる", () => {
   const sides = PropShorthandControl.sides(
-    paddingRow(setupSelection(UniformSides)),
+    paddingRow(boxSelection(UniformSides)),
   );
 
   expect(PropShorthandControl.create("padding", sides).some).toBe(true);

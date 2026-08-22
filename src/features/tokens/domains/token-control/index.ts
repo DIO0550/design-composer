@@ -443,7 +443,7 @@ function typographyValueFrom(
   if (field === "fontFamily") {
     /*
      * 空欄を「指定しない」と読むのは入力欄の約束事なので、`TypographyFieldEdit`
-     * ではなく入力欄を知っているここで解釈する（プロパティパネルの `enteredValue`
+     * ではなく入力欄を知っているここで解釈する（プロパティパネルの `valueFrom`
      * と同じ理由）。
      */
     return Option.some({

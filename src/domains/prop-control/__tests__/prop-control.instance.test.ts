@@ -152,19 +152,39 @@ test("存在しない部品を指すインスタンスには公開 prop のコ�
   expect(instanceOf(selection).publicProps).toEqual([]);
 });
 
-test("存在しない部品を指すインスタンスは解除できない", () => {
-  const selection = setupInstanceSelection({ name: "action", ref: "missing" });
-
-  expect(instanceOf(selection).isDetachable).toBe(false);
-});
-
-test("部品が引けるインスタンスは解除できる", () => {
+/*
+ * 解除できるかの規則（参照先が無い・循環している）は
+ * `services/instance-composition` が持ち、パネルがその規則を渡していることは
+ * `property-panel.instance.test.tsx` が持つ。ここが見るのは、渡された答えが
+ * そのままインスタンスの編集欄に載るかだけ。
+ */
+test("解除できないと答える判定を渡すとインスタンスは解除できないものとして出る", () => {
   const selection = setupInstanceSelection({
     name: "action",
     ref: "primary-button",
   });
 
-  expect(instanceOf(selection).isDetachable).toBe(true);
+  expect(instanceOf(selection, () => false).isDetachable).toBe(false);
+});
+
+test("解除できると答える判定を渡すとインスタンスは解除できるものとして出る", () => {
+  const selection = setupInstanceSelection({
+    name: "action",
+    ref: "primary-button",
+  });
+
+  expect(instanceOf(selection, () => true).isDetachable).toBe(true);
+});
+
+test("解除できるかの判定にはそのインスタンスの名前が渡る", () => {
+  const selection = setupInstanceSelection({
+    name: "action",
+    ref: "primary-button",
+  });
+
+  expect(
+    instanceOf(selection, (_document, name) => name === "action").isDetachable,
+  ).toBe(true);
 });
 
 test("スキーマの分からない type のノードにはコントロールが出ない", () => {
