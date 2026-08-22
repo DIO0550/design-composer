@@ -1,5 +1,6 @@
+import type { DocumentSelection } from "@/domains/document-selection";
 import type { ColorToken } from "@/domains/token";
-import type { EditorState } from "@/features/editor/domains/editor-state";
+import { InstanceComposition } from "@/services/instance-composition";
 import { Option } from "@/utils/Option";
 import {
   type PropControl,
@@ -11,22 +12,31 @@ import {
 /**
  * 選択中のものの編集欄。選択が無ければテストを落とす。
  *
- * @param state 選択の出どころ
+ * 解除できるかの判定に実物の `InstanceComposition.isDetachable` を渡すのは、
+ * ここで述語を自作すると解除可否のテストが自作した偽物を検証することになるため
+ * （`rules/testing.md`「依存は実物を使う」）。依存方向が縛るのは本番コードの
+ * import なので、`src/domains/prop-control/index.ts` からの `@/services` は 0 のまま。
+ *
+ * @param selection 選択の出どころ
  * @returns 選択中のものの編集欄
  */
-function controlsOf(state: EditorState): SelectionControls {
-  return Option.unwrap(SelectionControls.forSelection(state));
+function controlsOf(selection: DocumentSelection): SelectionControls {
+  return Option.unwrap(
+    SelectionControls.forSelection(selection, InstanceComposition.isDetachable),
+  );
 }
 
 /**
  * `group` ごとのセクション。インスタンスを選んでいたらテストを落とす
  * （セクションを見るテストがインスタンスの状態で通ってしまうのを防ぐ）。
  *
- * @param state 選択の出どころ
+ * @param selection 選択の出どころ
  * @returns 選択中のものの `group` ごとのセクション
  */
-export function sectionsOf(state: EditorState): readonly PropControlSection[] {
-  const controls = controlsOf(state);
+export function sectionsOf(
+  selection: DocumentSelection,
+): readonly PropControlSection[] {
+  const controls = controlsOf(selection);
   if (controls.kind !== "groups") {
     throw new Error(`${controls.kind} の選択にセクションは無い`);
   }
@@ -36,13 +46,13 @@ export function sectionsOf(state: EditorState): readonly PropControlSection[] {
 /**
  * インスタンスの編集欄。インスタンス以外を選んでいたらテストを落とす。
  *
- * @param state 選択の出どころ
+ * @param selection 選択の出どころ
  * @returns 出どころの部品と公開 prop を持つ編集欄
  */
 export function instanceOf(
-  state: EditorState,
+  selection: DocumentSelection,
 ): Extract<SelectionControls, { kind: "instance" }> {
-  const controls = controlsOf(state);
+  const controls = controlsOf(selection);
   if (controls.kind !== "instance") {
     throw new Error("インスタンスを選んでいない");
   }
@@ -68,11 +78,11 @@ export function controlsIn(
 /**
  * セクションをまたいで prop 名だけを並べる。
  *
- * @param state 選択の出どころ
+ * @param selection 選択の出どころ
  * @returns セクションの順・セクション内の宣言順に並んだ prop 名
  */
-export function propNamesOf(state: EditorState): readonly string[] {
-  return sectionsOf(state).flatMap((section) =>
+export function propNamesOf(selection: DocumentSelection): readonly string[] {
+  return sectionsOf(selection).flatMap((section) =>
     controlsIn(section).map((control) => control.prop),
   );
 }

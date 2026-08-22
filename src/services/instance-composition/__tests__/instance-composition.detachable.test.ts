@@ -4,7 +4,7 @@ import { DesignDocument } from "@/domains/design-document";
 import { InstanceComposition } from "../index";
 
 /*
- * 解除できるかは解除のボタンが読む（`SelectionControls.isDetachEnabled`）。
+ * 解除できるかは解除のボタンが読む（`SelectionControls` の `isDetachable`）。
  * `detach` を空撃ちして `ok` を見ていたものを述語へ置き換えた（#246）。
  *
  * 両者は同じ私有ヘルパーを通るので条件はずれない。ずれうるのは `detach` がそのヘルパーを

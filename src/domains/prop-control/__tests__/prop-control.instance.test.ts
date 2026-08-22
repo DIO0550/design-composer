@@ -1,8 +1,8 @@
 import { expect, test } from "vitest";
 import type { ComponentSet } from "@/domains/component";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import { DocumentSelection } from "@/domains/document-selection";
 import type { Node } from "@/domains/node";
-import { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
 import {
   controlNamed,
@@ -38,119 +38,137 @@ const Components: ComponentSet = {
   },
 };
 
-function setupInstanceState(node: Node): EditorState {
-  return EditorState.select(
-    EditorState.create(
-      DesignDocument.create({
-        tokens: DocumentTemplate.Default.tokens,
-        components: Components,
-        artboards: [
-          { name: "home", width: 360, height: 240, children: [node] },
-        ],
-      }),
-    ),
-    node.name,
+function setupInstanceSelection(node: Node): DocumentSelection {
+  return DocumentSelection.fromNames(
+    DesignDocument.create({
+      tokens: DocumentTemplate.Default.tokens,
+      components: Components,
+      artboards: [{ name: "home", width: 360, height: 240, children: [node] }],
+    }),
+    [node.name],
   );
 }
 
-function publicPropNames(state: EditorState): readonly string[] {
-  return instanceOf(state).publicProps.map((control) => control.prop);
+function publicPropNames(selection: DocumentSelection): readonly string[] {
+  return instanceOf(selection).publicProps.map((control) => control.prop);
 }
 
 test("インスタンスを選ぶと部品が公開している prop のコントロールが出る", () => {
-  const state = setupInstanceState({ name: "action", ref: "primary-button" });
+  const selection = setupInstanceSelection({
+    name: "action",
+    ref: "primary-button",
+  });
 
-  expect(publicPropNames(state)).toEqual(["label"]);
+  expect(publicPropNames(selection)).toEqual(["label"]);
 });
 
 test("インスタンスを選ぶと元になっている部品の名前が出る", () => {
-  const state = setupInstanceState({ name: "action", ref: "primary-button" });
+  const selection = setupInstanceSelection({
+    name: "action",
+    ref: "primary-button",
+  });
 
-  expect(instanceOf(state).source).toBe("primary-button");
+  expect(instanceOf(selection).source).toBe("primary-button");
 });
 
 test("インスタンス以外を選ぶと group ごとのセクションになる", () => {
-  const state = setupInstanceState({ name: "action", type: "Box" });
+  const selection = setupInstanceSelection({ name: "action", type: "Box" });
 
-  expect(sectionsOf(state).length).toBeGreaterThan(0);
+  expect(sectionsOf(selection).length).toBeGreaterThan(0);
 });
 
 test("公開 prop のコントロールは binding 先の prop の入力形式になる", () => {
-  const state = setupInstanceState({ name: "action", ref: "primary-button" });
+  const selection = setupInstanceSelection({
+    name: "action",
+    ref: "primary-button",
+  });
 
-  expect(controlNamed(instanceOf(state).publicProps, "label").input).toEqual({
+  expect(
+    controlNamed(instanceOf(selection).publicProps, "label").input,
+  ).toEqual({
     kind: "text",
   });
 });
 
 test("上書きしていない数値トークンの公開 prop は部品が設定している値の解決値を持つ", () => {
-  const state = setupInstanceState({ name: "action", ref: "gapped-card" });
+  const selection = setupInstanceSelection({
+    name: "action",
+    ref: "gapped-card",
+  });
 
   expect(
-    resolvedValueOfControl(controlNamed(instanceOf(state).publicProps, "gap")),
+    resolvedValueOfControl(
+      controlNamed(instanceOf(selection).publicProps, "gap"),
+    ),
   ).toEqual(Option.some(DocumentTemplate.Default.tokens.spacing.lg));
 });
 
 test("上書きしていない公開 prop は部品が設定している値が既定として出る", () => {
-  const state = setupInstanceState({ name: "action", ref: "primary-button" });
-  const control = controlNamed(instanceOf(state).publicProps, "label");
+  const selection = setupInstanceSelection({
+    name: "action",
+    ref: "primary-button",
+  });
+  const control = controlNamed(instanceOf(selection).publicProps, "label");
 
   expect(control.value.some).toBe(false);
   expect(control.defaultValue).toEqual(Option.some("Button"));
 });
 
 test("上書きしている公開 prop はその値がコントロールに乗る", () => {
-  const state = setupInstanceState({
+  const selection = setupInstanceSelection({
     name: "action",
     ref: "primary-button",
     overrides: { label: "ログイン" },
   });
 
-  expect(controlNamed(instanceOf(state).publicProps, "label").value).toEqual(
-    Option.some("ログイン"),
-  );
+  expect(
+    controlNamed(instanceOf(selection).publicProps, "label").value,
+  ).toEqual(Option.some("ログイン"));
 });
 
 test("公開 prop は部品が宣言した順に並ぶ", () => {
-  const state = setupInstanceState({
+  const selection = setupInstanceSelection({
     name: "card",
     ref: "sized-card",
     overrides: { widthMode: "fixed" },
   });
 
-  expect(publicPropNames(state)).toEqual(["title", "widthMode", "width"]);
+  expect(publicPropNames(selection)).toEqual(["title", "widthMode", "width"]);
 });
 
 test("条件を満たさない公開 prop はコントロールが出ない", () => {
-  const state = setupInstanceState({
+  const selection = setupInstanceSelection({
     name: "card",
     ref: "sized-card",
     overrides: { widthMode: "hug" },
   });
 
-  expect(publicPropNames(state)).toEqual(["title", "widthMode"]);
+  expect(publicPropNames(selection)).toEqual(["title", "widthMode"]);
 });
 
 test("存在しない部品を指すインスタンスには公開 prop のコントロールが出ない", () => {
-  const state = setupInstanceState({ name: "action", ref: "missing" });
+  const selection = setupInstanceSelection({ name: "action", ref: "missing" });
 
-  expect(instanceOf(state).publicProps).toEqual([]);
+  expect(instanceOf(selection).publicProps).toEqual([]);
 });
 
 test("存在しない部品を指すインスタンスは解除できない", () => {
-  const state = setupInstanceState({ name: "action", ref: "missing" });
+  const selection = setupInstanceSelection({ name: "action", ref: "missing" });
 
-  expect(instanceOf(state).isDetachEnabled).toBe(false);
+  expect(instanceOf(selection).isDetachable).toBe(false);
 });
 
 test("部品が引けるインスタンスは解除できる", () => {
-  const state = setupInstanceState({ name: "action", ref: "primary-button" });
+  const selection = setupInstanceSelection({
+    name: "action",
+    ref: "primary-button",
+  });
 
-  expect(instanceOf(state).isDetachEnabled).toBe(true);
+  expect(instanceOf(selection).isDetachable).toBe(true);
 });
 
 test("スキーマの分からない type のノードにはコントロールが出ない", () => {
-  const state = setupInstanceState({ name: "action", type: "Unknown" });
+  const selection = setupInstanceSelection({ name: "action", type: "Unknown" });
 
-  expect(sectionsOf(state)).toEqual([]);
+  expect(sectionsOf(selection)).toEqual([]);
 });
