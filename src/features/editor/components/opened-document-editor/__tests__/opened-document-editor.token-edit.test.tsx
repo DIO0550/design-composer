@@ -2,7 +2,7 @@ import { fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
-import { rightPaneHeading } from "@/features/editor/__tests__/inspector-heading";
+import { rightPaneHeading } from "@/features/editor/__tests__/right-pane-heading";
 import { leftPane, propertyPane, renderOpenedDocument } from "./setup";
 
 /**

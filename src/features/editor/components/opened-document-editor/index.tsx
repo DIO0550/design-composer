@@ -27,7 +27,6 @@ import {
   EditorTopBarTones,
 } from "@/features/editor/components/editor-top-bar";
 import { NodeInsertToolbar } from "@/features/editor/components/node-insert-toolbar";
-import { PropertyPanel } from "@/features/editor/components/property-panel";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { NodeDrag } from "@/features/editor/domains/node-drag";
 import { DraggedNode } from "@/features/editor/domains/node-drop";
@@ -45,6 +44,7 @@ import {
   type TokenActions,
   useTokenActions,
 } from "@/features/editor/hooks/use-token-actions";
+import { PropertyPanel } from "@/features/inspector";
 import { LeftPane, type LeftPaneView, LeftPaneViews } from "@/features/sidebar";
 import { TokenDashedNodes, TokenEditor } from "@/features/tokens";
 import type { Clock } from "@/libs/clock";
@@ -55,6 +55,15 @@ import { Option } from "@/utils/Option";
  * 行き先ごとの右ペインの中身。`Assets` がプロパティパネルのままなのは、パレットは
  * 見るだけの場所で選択に触れないため
  * （UI 案「Assets is browse-only — the inspector keeps the previous selection」）。
+ *
+ * 帯と本文の器（`EditorLayout.RightPane.Heading` / `.Body`）はどちらの行き先でもここで
+ * 着せる。器は 3 ペインの組み立ての一部なので、中身を持つ feature からは呼べない
+ * （`features/inspector/index.ts` / `features/tokens/index.ts` の Why not）。
+ * 選んでいなくても帯は残す。消すと選択のたびに本文の位置が帯のぶん動く。
+ *
+ * **本文の器を落としてもテストは 1 件も落ちない** — 器が持つのはスクロールと余白だけで、
+ * happy-dom はそれを解決しない。気づく手段は `PropertyPanel` / `TokenEditor` の
+ * ストーリーが器を写している絵の視覚差分だけ。
  *
  * 戻り値を `ReactElement` と書いている理由は `LeftPaneContent` と同じ
  * （`case` の足し忘れをコンパイルエラーにする）。
@@ -74,17 +83,27 @@ function RightPaneContent({
   token: TokenActions;
   onGoToSource: () => void;
 }>): ReactElement {
+  const isFrozen = EditorState.isFileInvalid(state);
+  const documentSelection = EditorState.documentSelection(state);
   const inspector = (
-    <PropertyPanel
-      state={state}
-      onEditProp={node.editProp}
-      onClearSelection={node.clearSelection}
-      instance={{
-        goToSource: onGoToSource,
-        selectAllInstances: node.selectAllInstances,
-        detach: node.detachInstance,
-      }}
-    />
+    <>
+      <EditorLayout.RightPane.Heading>
+        <PropertyPanel.Title selection={documentSelection} />
+      </EditorLayout.RightPane.Heading>
+      <EditorLayout.RightPane.Body>
+        <PropertyPanel.Body
+          selection={documentSelection}
+          isFrozen={isFrozen}
+          onEditProp={node.editProp}
+          onClearSelection={node.clearSelection}
+          instance={{
+            goToSource: onGoToSource,
+            selectAllInstances: node.selectAllInstances,
+            detach: node.detachInstance,
+          }}
+        />
+      </EditorLayout.RightPane.Body>
+    </>
   );
 
   /*
@@ -92,7 +111,7 @@ function RightPaneContent({
    * Tokens を開いたまま壊れたときに編集欄が残らないようにする（#135）。
    * プロパティパネルが凍結時の中身（「選択は凍結中」）を持つ。
    */
-  if (EditorState.isFileInvalid(state)) {
+  if (isFrozen) {
     return inspector;
   }
 
@@ -102,15 +121,6 @@ function RightPaneContent({
     case LeftPaneViews.Tokens:
       return (
         <>
-          {/*
-            帯と本文の器をここで着せる。器は 3 ペインの組み立ての一部なので
-            `features/tokens` からは呼べない（`features/tokens/index.ts` の Why not）。
-            選んでいなくても帯は残す。消すと選択のたびに本文の位置が帯のぶん動く。
-
-            **本文の器を落としてもテストは 1 件も落ちない** — 器が持つのは
-            スクロールと余白だけで、happy-dom はそれを解決しない。気づく手段は
-            `features/tokens/TokenEditor` のストーリーの視覚差分だけ。
-          */}
           <EditorLayout.RightPane.Heading>
             <TokenEditor.Title selection={tokenSelection} />
           </EditorLayout.RightPane.Heading>

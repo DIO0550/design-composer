@@ -5,8 +5,9 @@ import { screen, within } from "@testing-library/react";
  *
  * 同じ選択肢を持つコントロールが 1 画面に並ぶ（Box の `align` と `justify` は
  * どちらも `start` / `center` / `end` を持つ）ため、必ず器で絞ってから引く。
- * プロパティパネル単体と編集画面の通しの両方が同じ引き方を要るので、
- * feature 直下に置いて共有する。
+ * 読んでいるのが `src/components/segmented-control` という汎用部品なので、
+ * feature ではなくこの部品の隣に置いて共有する（`features/inspector` のパネル単体と
+ * `features/editor` の編集画面の通しが、どちらも同じ引き方を要る）。
  */
 
 /**

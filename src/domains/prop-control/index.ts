@@ -166,7 +166,7 @@ export type PropControlSection = Readonly<{
  * （`InstanceComposition.detach` が失敗する）、押しても何も起きないボタンになるため。
  * 不正なドキュメントも画面には残る（docs/03-schema.md「不正ファイル時の挙動」）ので、
  * この状態は実際に出る。凍結中（#155）をここで見ないのは、凍結中は解除のボタンごと
- * 出ないため（`InspectorBody`）。重ねると同じ判断が 2 層に散る。
+ * 出ないため（`PropertyPanel.Body`）。重ねると同じ判断が 2 層に散る。
  *
  * 複数選択（`multiple`）が件数だけを持つのは、編集欄を 1 つも出さず帯に件数を出す
  * ため（docs/06-ui.md「選択」）。件数をここに持たせるのは、帯と本文が同じ 1 つの値から
