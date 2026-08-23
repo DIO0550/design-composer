@@ -67,8 +67,8 @@ function TokenTitle({ token }: Readonly<{ token: Token }>) {
  * 右ペインの帯に出す、いま編集しているトークン
  * （UI 案 docs/Design Composer.html の Tokens 画面）。
  *
- * 帯そのもの（`EditorLayout.RightPane.Heading`）は呼び出し側が置く。器は編集画面の
- * 組み立ての一部で、この feature からは触れないため。選んでいないときに中身だけを
+ * 帯そのもの（`PaneHeading`）は呼び出し側が置く。どのペインへ着せるかは 3 ペインの
+ * 組み立ての判断で、この feature は持たないため。選んでいないときに中身だけを
  * 空にするのはそのためで、帯ごと消すと選択のたびに本文の位置が帯のぶん動く。
  *
  * @returns 見本・名前・種別の綴り。トークンを選んでいなければ何も出さない

@@ -15,9 +15,8 @@ function noopInstanceActions(): InstanceActions {
 /**
  * 帯の中身と本文を並べて描画する。
  *
- * 帯そのもの（`EditorLayout.RightPane.Heading`）は着せない。器は編集画面の組み立てに
- * 属していてこの feature からは呼べず、帯が残ること自体は
- * `opened-document-editor.selection.test.tsx` が見ている。
+ * 帯そのもの（`PaneHeading`）は着せない。着せるのは編集画面の組み立ての側で、
+ * 帯が残ること自体は `opened-document-editor.selection.test.tsx` が見ている。
  */
 function renderParts({
   selection,

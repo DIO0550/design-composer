@@ -1,20 +1,19 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { ReactElement } from "react";
+import { PaneHeading } from "@/components/pane-heading";
 import { Option } from "@/utils/Option";
 import { SelectionTitle } from "./index";
 
 /**
  * 帯の中身（型アイコン + 名前 + 右端に種別）。
  *
- * 器は帯そのもの（44px・両端まで届く）なので、右ペインの幅の枠ではなく帯を真似た器で
- * 見る（`property-panel/index.stories.tsx` の帯と同じ綴り）。
+ * 器は帯そのもの（44px・両端まで届く）なので、右ペインの幅の枠ではなく編集画面が
+ * 着せるのと同じ帯（`PaneHeading`）に入れて見る。外側の枠が持つのは幅だけ。
  */
 function HeadingFrame({ children }: Readonly<{ children: ReactElement }>) {
   return (
     <div className="w-72 border border-gray-300 bg-white">
-      <div className="flex h-11 items-center gap-2 border-gray-300 border-b px-3">
-        {children}
-      </div>
+      <PaneHeading>{children}</PaneHeading>
     </div>
   );
 }

@@ -11,9 +11,10 @@
  * 受け口へ渡すだけで、ここには置かない。編集は編集履歴（undo / redo）と自動保存に載る
  * 1 つの経路に閉じており、その入口は `features/editor` にあるため。
  *
- * Why not: 器（`EditorLayout.RightPane`）はここから呼ばない。3 ペインの組み立ての一部で
- * `features/editor` に属するため、`PropertyPanel` は帯の中身と本文を分けて返し、
- * 器に入れるのは呼び出し側に任せる（`features/tokens` と同じ形）。
+ * Why not: ペインの殻（`EditorLayout.RightPane`）はここから呼ばない。3 ペインの組み立ての
+ * 一部で `features/editor` に属するため。帯と本文（`PaneHeading` / `PaneBody`）は横断層に
+ * あるのでストーリーからは呼べるが、実画面でどのペインへ着せるかは編集画面が決める。
+ * `PropertyPanel` が返すのは帯の中身と本文だけ（`features/tokens` と同じ形）。
  *
  * Why not: feature 名（`inspector`）と部品名（`PropertyPanel`）で語彙を揃えない。
  * 右ペインは行き先によって中身が替わる**場所**（Tokens を選べば `TokenEditor` が入る）で、

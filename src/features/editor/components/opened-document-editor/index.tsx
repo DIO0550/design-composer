@@ -1,4 +1,6 @@
 import { type ReactElement, type ReactNode, useMemo, useState } from "react";
+import { PaneBody } from "@/components/pane-body";
+import { PaneHeading } from "@/components/pane-heading";
 import type { DocumentError } from "@/domains/document-error";
 import { DocumentSaveState } from "@/domains/document-save-state";
 import { FileValidity } from "@/domains/file-validity";
@@ -51,8 +53,8 @@ import type { DocumentIpc } from "@/libs/document-ipc";
 import type { Option } from "@/utils/Option";
 
 /**
- * 右ペインの帯と本文に出すもの。器（`EditorLayout.RightPane.Heading` / `.Body`）は
- * 呼び出し側が着せるので、ここが持つのは中身だけ。
+ * 右ペインの帯と本文に出すもの。器（`PaneHeading` / `PaneBody`）は呼び出し側が
+ * 着せるので、ここが持つのは中身だけ。
  *
  * 帯を `ReactNode` にしているのは、選んでいないときに中身が空になるため
  * （`PropertyPanel.Title` / `TokenEditor.Title` は `null` を返す）。
@@ -349,22 +351,15 @@ function EditorPanes({
       </EditorLayout.CenterPane>
       <EditorLayout.RightPane isFrozen={isFrozen}>
         {/*
-          帯と本文の器はどちらの行き先でもここで着せる。器は 3 ペインの組み立ての
-          一部なので、中身を持つ feature からは呼べない（`features/inspector/index.ts`
-          / `features/tokens/index.ts` の Why not）。選んでいなくても帯は残す。
-          消すと選択のたびに本文の位置が帯のぶん動く。
+          帯と本文の器はどちらの行き先でもここで着せる。どのペインに何を着せるかは
+          3 ペインの組み立ての判断で、中身を持つ feature は持たない
+          （`features/inspector/index.ts` / `features/tokens/index.ts` の Why not）。
 
-          **本文の器を落としてもテストは 1 件も落ちない** — 器が持つのはスクロールと
-          余白だけで、happy-dom はそれを解決しない。気づく手段は
-          `OpenedDocumentEditor` のストーリーの視覚差分だけ（各 feature の
-          ストーリーは器を import せず自前の写しを描くので、そちらは変わらない）。
+          選んでいなくても帯は残すので、中身が空でも `PaneHeading` ごと外さない。
+          外すと選択のたびに本文の位置が帯のぶん動く。
         */}
-        <EditorLayout.RightPane.Heading>
-          {rightPane.title}
-        </EditorLayout.RightPane.Heading>
-        <EditorLayout.RightPane.Body>
-          {rightPane.body}
-        </EditorLayout.RightPane.Body>
+        <PaneHeading>{rightPane.title}</PaneHeading>
+        <PaneBody>{rightPane.body}</PaneBody>
       </EditorLayout.RightPane>
     </EditorLayout>
   );
