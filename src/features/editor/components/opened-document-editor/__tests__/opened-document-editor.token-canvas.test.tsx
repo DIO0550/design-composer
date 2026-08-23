@@ -1,10 +1,7 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
-import {
-  canvasContent,
-  tokenReferrerNames,
-} from "@/features/canvas/__tests__/canvas-elements";
+import { canvasContent, tokenReferrerNames } from "@/features/canvas/__tests__";
 import {
   breakFileExternally,
   canvasPane,

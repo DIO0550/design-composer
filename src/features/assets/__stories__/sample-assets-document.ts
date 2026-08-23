@@ -11,8 +11,7 @@ import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
  *
  * Why not: `features/editor` のサンプル状態（`SampleEditorState`）を持ってこない。
  * 3 枚の artboard を持つのはキャンバスの配置（はみ出し・部品の並び）を映すためで、
- * このパレット側で見たいものが違う。features 間の deep import（`__stories__/` は
- * 公開 API ではない）を避ける意味もある。
+ * このパレット側で見たいものが違う。
  */
 export const SampleAssetsDocument = DesignDocument.create({
   tokens: DocumentTemplate.Default.tokens,
