@@ -58,8 +58,8 @@ function valueFrom(text: string): Option<string> {
  * （`Option<PropValue>`）では表せないため、辺のコントロールを合成して
  * 偽のコントロールを作らずに済ませる。
  *
- * このフォルダの外へは出さない。作る口を `fieldOf` / `pairFieldOf` の 2 つに
- * 閉じておくと、矛盾した組（不揃いなのに値がある等）が外から作れない。
+ * 型はこのフォルダの外へ出さない。作る口を `fieldOf` / `pairFieldOf` の 2 つに揃えて
+ * おくためで、型で閉じてはいない（`PropField` の props は構造的に到達できる）。
  */
 type FieldBinding = Readonly<{
   labelledBy: string;
@@ -247,6 +247,10 @@ function LiteralInput({
  *
  * 戻り値を `ReactElement` と書いているのは、入力の種類を足して `case` を足し忘れた
  * ときにコンパイルエラーにするため（`rules/coding.md`「列挙した状態の網羅を型で強制する」）。
+ *
+ * `resolvedValuePlacement` は呼び出し側（`prop-row` は `beside`、`shorthand-row` は
+ * `below`）が決める。取り違えても class の違いにしかならないので、**気づける手段は
+ * Storybook の視覚差分だけ**（happy-dom は Tailwind を解決しない）。
  *
  * @returns 値域に応じた入力欄
  */

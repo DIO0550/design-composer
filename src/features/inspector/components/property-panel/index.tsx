@@ -7,9 +7,10 @@ import { type InstanceActions, InstanceBody } from "./instance-body";
 import { SelectionTitle } from "./selection-title";
 
 /*
- * 中身は部品ごとにサブフォルダへ分けてある（`rules/architecture.md`
- * 「複数ファイルへの分割が必要になったら…サブフォルダに分割する」）。
- * ここに残すのは帯と本文の組み立てだけ。
+ * 中身は部品ごとにサブフォルダへ分けてあり、ここに残すのは帯と本文の組み立てだけ。
+ *
+ * Why not: サブフォルダに `__tests__/` は置かない。テストは `PropertyPanel` を通した
+ * 振る舞いを見ており、部品ごとに割ると公開 API ではなく内部構造に対するテストになる。
  */
 
 /** インスタンスの節から呼ぶ操作。呼び出し側が組み立てて渡す（定義側の doc を参照）。 */
@@ -19,9 +20,9 @@ export type { InstanceActions } from "./instance-body";
 export { ShorthandLabels } from "./shorthand-row";
 
 /**
- * 帯に出す綴り。英語のままにするのは、同じ帯の右端に出る種別
- * （`selection-title` の `KindLabels`）が UI 案の綴りのままで、
- * 片方だけ訳すと 1 本の帯の中で綴りが混ざるため。
+ * 帯に出す綴り。英語のままにするのは、1 つ選んでいるときに同じ帯が出す種別
+ * （`selection-title` の `KindLabels`）が UI 案の綴りのままで、件数だけ訳すと
+ * 選択の状態をまたいで帯の綴りが和洋に割れるため。
  */
 const SelectionLabels = {
   /** 複数選んでいるときに帯へ出す綴り。UI 案に該当の画面が無いので最小の 1 行にする。 */
