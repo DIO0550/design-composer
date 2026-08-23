@@ -18,6 +18,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `check-test-helper-duplication.sh` | `PostToolUse` (Edit/Write) | **テストヘルパーの重複検出**(rules/testing.md「テスト用ヘルパーの置き場所」)。同じ `__tests__/` に本体が一字一句同じヘルパーが 2 つ以上あれば知らせる |
 | `check-doc-comments.sh`  | `PostToolUse` (Edit/Write) | **doc コメントの検証**(rules/coding.md「コメントは doc と Why / Why not に絞る」)。doc の無い宣言と、`@param` / `@returns` / `@throws` が欠けた doc を知らせる |
 | `pre-push-doc-comments.sh` | `PreToolUse` (Bash)     | **push 前の doc コメント検査**。`src/` に doc の無い宣言、または `@param` / `@returns` / `@throws` の欠けた doc があれば push をブロック |
+| `pre-push-import-rules.sh` | `PreToolUse` (Bash)     | **push 前の import 規約検査**(rules/architecture.md「モジュールの公開API」「依存方向のルール」)。公開 API を迂回する import・循環参照があれば push をブロック |
 | `post-merge-review.sh`   | `PostToolUse` (Bash/MCP)  | **マージ後の振り返りの提示**。PR のマージを検知し、Issue への追記と評価の記録を促す       |
 | `hook-canary.sh`         | `PreToolUse` (Bash)       | **カナリア**。`echo hook-canary` を必ず deny する。通ってしまったらフックが発火しない実行環境（後述） |
 | `session-url-notice.sh`  | `SessionStart`            | **セッション URL の提示**（AGENTS.md「Issue に紐づいて起動したら、セッションの URL を Issue に残す」）。URL を組み立てて渡す。ブランチが `claude/issue-<N>-...` なら対象の番号も添える |
@@ -45,6 +46,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `lib/missing-doc-comments.py` | `check-doc-comments.sh` / `pre-push-doc-comments.sh` / `harness/githooks/pre-push` | `src/` のファイル直下の宣言のうち doc コメントの無いものを探す。`--all` で全体を検査できる |
 | `lib/test-rules-scan.sh` | `pre-push-test-rules.sh` / `harness/githooks/pre-push` | 指定したルート配下の `*.test.ts(x)` をすべて検査する。違反があれば exit 1 |
 | `lib/lint-suppressions.py` | `block-lint-suppress.sh` / `.github/scripts/check-added-lint-suppressions.sh` | 許可されていない lint 抑制コメントの行を報告する。例外の判定もここが持つ |
+| `lib/import-rule-violations.py` | `pre-push-import-rules.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | 公開 API を迂回する import（`feature-public-api` / `module-public-api`）と循環（`import-cycle` / `feature-cycle`）を報告する |
 
 ## 強制力の序列 — フックが発火しない実行環境がある
 
@@ -83,8 +85,8 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 | `session-url-notice.sh`(セッション URL の提示) | **無し**。URL はセッションの中にしか無く、残す先も GitHub のコメントなので、push の時点で痕跡が残らない。落ちても穴は開かない(規約が AGENTS.md に残り、失っても情報が 1 つ足りないだけでガードは破れない) |
 | `post-edit-lint.sh` / `check-test-rules.sh` / `check-doc-comments.sh` / `check-test-helper-duplication.sh`(即時フィードバック) | 結果は push 前の検査(git hooks)と CI が拾う。**即時性だけが失われる** |
 
-**doc コメントとテスト規約は CI(層 1)へ上げた**(`frontend.yml` の `rules-check`)。
-この 2 つは層 2・層 3 にしか無かったが、**層 2 と層 3 は同じ環境で同時に抜ける**。
+**doc コメント・テスト規約・import 規約は CI(層 1)へ上げた**(`frontend.yml` の `rules-check`)。
+**doc コメントとテスト規約の 2 つ**は層 2・層 3 にしか無かったが、**層 2 と層 3 は同じ環境で同時に抜ける**。
 リモート実行環境はクローンからやり直すので `core.hooksPath` が未設定のまま
 (`postCreateCommand` は DevContainer でしか走らない)で、そこは `.claude/settings.json` の
 配線が読まれないことがある環境と同じだった。実際に doc の無い宣言が main へ入っている
@@ -155,7 +157,12 @@ deny のメッセージは、`jq` / `python3` が欠けていればその名前�
 - `post-merge-review.sh` はマージを**ブロックしない**(`additionalContext` を返すだけ)。マージは人の判断で行われるので、記録が無いことを理由に止めても記録の質は上がらないため
   - 検知対象は `mcp__github__merge_pull_request` と `gh pr merge` のみ。素の `git merge` は見ない(ベースブランチの取り込みで日常的に走るため、拾うと誤発火のほうが多くなる)
 - `.oxlintrc.json` の `overrides`(`rules/architecture.md`「依存方向のルール」の強制。`分類: layer-dependency`、#257)は、`domains/` → `libs/` の辺だけ `warn`(**ブロックしない**)。導入時点で `@/libs/document-ipc`(型のみ)・`@/libs/document-json` への import が計 5 件既に存在しており(`document-save-state` は pr-261/#257 で申し送りと決めた既知の債務、残り 3 件はテストの `DocumentJson` fixture 利用)、どちらもドメインの型・モジュール再配置を伴う判断(CLAUDE.md「設計判断の確認」)のため、この回では移動を行わない。`services/` → `features/libs/components/hooks`・`components/hooks/utils/types/` → `domains/services/features`・`libs/` → `services/features/components/hooks` の 3 方向は既存違反 0 件だったため `error` でそのまま導入した
-  - `features/<x>/domains/` への同種の適用、feature 間の deep import・循環参照・モジュール内部への deep import(#257 のゴール 1・2・6)は未実装。同一 feature 内のドメイン間 import まで一律に禁止してしまい `overrides` の `files` では「自分の feature を除く」を静的に表現できないため、別の判定手段(feature ごとの列挙、または `lib/` スクリプト)を要する。詳細は #257 のコメントに残す
+  - `features/<x>/domains/` への同種の適用は未実装
+- **feature 間の deep import・循環参照・モジュール内部への deep import**(#257 のゴール 1・2・6)は `lib/import-rule-violations.py` が見る。oxlint に置かなかったのは、3 つとも**リポジトリの構造を読まないと判定できない**ため(「自分の feature を除く」は呼び出し元のパスに依存し、循環はグラフ、deep import は「そのフォルダが `index.ts` を持つか」を要する)。`overrides.files` の静的な glob では書けない(#284 の実測では同一 feature 内のドメイン間 import まで巻き込んで 38 件の偽陽性。数値の出どころは #257 のコメント)
+  - **判定の根拠はスクリプトの docstring に書いてある**(入れ子モジュールの扱い・`__tests__/` の扱い・feature だけ狭い理由)。ここに写すと片方だけ古くなるので繰り返さない
+  - **ゴール 6 の実効範囲は現状ほぼ fixture 専用。** 入れ子モジュールの index を許すため、`module-public-api` に当たるのは「モジュールフォルダ配下の非 index ファイルを外から読む」形だけで、実測するとテスト・ストーリーを除いた該当ファイルは 4 件しか無い(このリポジトリが「実装は `index.ts` に直接書く」を守っているため)。**将来の退行を止める枠であって、いま何かを剥がす検査ではない**
+  - **エスケープハッチは置かない。** 他の push ブロック系(`@doc-comments-ok` / `@test-rules-disable`)と違い、この検査は「その import を書いてよいか」の判定で、**ファイル単位で例外にできる性質のものではない**(例外にした瞬間そのファイルからは何でも読める)。偽陽性を避ける側で手当てしてある — コメント行は数えない・入れ子の index は通す
+  - 導入時点の既存違反は 8 件(feature をまたぐ fixture の直接 import)で、テスト用の公開口を置いて 0 件にしてから `error` 相当(exit 1)で入れた
 
 ## 動作確認
 
@@ -198,6 +205,71 @@ bash .claude/hooks/lib/test-rules-scan.sh src
 
 # この PR で追加された lint 抑制コメントを数える(CI と同じ判定)
 bash .github/scripts/check-added-lint-suppressions.sh origin/main
+```
+
+**終了コードまで見る。** 層 1(CI の `run:`)と層 2(`pre-push` の `set -e`)は**終了コードだけが配線**なので、
+標準出力の文字列しか確かめないと「無条件に落ちる」というゴールの本体が守られない。
+`; echo "exit=$?"` を必ず付ける。
+
+**probe は `.tsx` でも置く。** 解消した既存違反 8 件はすべて `.test.tsx` / `.stories.tsx` で、
+`src` には `index.tsx` を持つモジュールが 40 個ある。`.ts` だけで確かめると、
+拡張子の取りこぼし(`SOURCE_SUFFIXES` / `INDEX_NAMES` から `.tsx` が落ちる形)を素通りさせる。
+
+```bash
+# import 規約の全体検査(git hooks・CI と共有)
+python3 .claude/hooks/lib/import-rule-violations.py src; echo "exit=$?"   # → 違反 0 件・exit=0
+
+# 他 feature の内部を読むと落ちること(feature-public-api。importer が .tsx)
+printf 'import { CanvasView } from "@/features/canvas/domains/canvas-view";\nexport const Probe = () => <p>{String(CanvasView)}</p>;\n' \
+  > src/features/editor/probe.tsx
+python3 .claude/hooks/lib/import-rule-violations.py src; echo "exit=$?"   # → [feature-public-api] 1 件・exit=1
+rm src/features/editor/probe.tsx
+
+# feature の外(app 層)からでも落ちること — 呼び出し元ではなく行き先で決めている根拠
+printf 'export { EditorScreen } from "@/features/editor/components/editor-screen";\n' > src/app/probe.ts
+python3 .claude/hooks/lib/import-rule-violations.py src; echo "exit=$?"   # → [feature-public-api] 1 件・exit=1
+rm src/app/probe.ts
+
+# 入れ子モジュールの index は通ること(`libs/<x>/fake` を例外リスト無しで通す根拠)
+printf 'import { FakeDocumentIpc } from "@/libs/document-ipc/fake";\nexport const Probe = FakeDocumentIpc;\n' \
+  > src/features/editor/probe.ts
+python3 .claude/hooks/lib/import-rule-violations.py src; echo "exit=$?"   # → 違反 0 件・exit=0
+rm src/features/editor/probe.ts
+
+# モジュールの内部(index 以外)を外から読むと落ちること(module-public-api。index.tsx を持つモジュール)
+printf 'export const InternalProbe = 1;\n' > src/components/type-glyph/internal-probe.ts
+printf 'export { InternalProbe } from "@/components/type-glyph/internal-probe";\n' > src/components/probe.ts
+python3 .claude/hooks/lib/import-rule-violations.py src; echo "exit=$?"   # → [module-public-api] 1 件・exit=1
+rm src/components/type-glyph/internal-probe.ts src/components/probe.ts
+
+# 3 ファイルの閉路が拾えること(import-cycle。相互参照だけを見る実装では通らない)
+printf 'import "./probe-b";\nexport const A = 1;\n' > src/utils/probe-a.ts
+printf 'import "./probe-c";\nexport const B = 1;\n' > src/utils/probe-b.ts
+printf 'import "./probe-a";\nexport const C = 1;\n' > src/utils/probe-c.ts
+python3 .claude/hooks/lib/import-rule-violations.py src; echo "exit=$?"   # → [import-cycle] 1 件・exit=1
+rm src/utils/probe-a.ts src/utils/probe-b.ts src/utils/probe-c.ts
+
+# feature 単位の閉路が拾えること(feature-cycle。index 経由なので import-cycle には出ない)
+printf 'export { ArtboardCanvas } from "@/features/canvas";\n' > src/features/tokens/probe.ts
+printf 'export { TokensPanel } from "@/features/tokens";\n' > src/features/canvas/probe.ts
+python3 .claude/hooks/lib/import-rule-violations.py src; echo "exit=$?"   # → [feature-cycle] 1 件・exit=1
+rm src/features/tokens/probe.ts src/features/canvas/probe.ts
+
+# コメントに書いた import のパスで止まらないこと(doc に綴りを書く箇所があるため)
+printf '// かつては import { CanvasView } from "@/features/canvas/domains/canvas-view"; と書いていた\nexport const Probe = 1;\n' \
+  > src/features/editor/probe.ts
+python3 .claude/hooks/lib/import-rule-violations.py src; echo "exit=$?"   # → 違反 0 件・exit=0
+rm src/features/editor/probe.ts
+
+# push がブロックされること(deny が出力される。違反があるとき)
+printf 'export { EditorScreen } from "@/features/editor/components/editor-screen";\n' > src/app/probe.ts
+echo '{"tool_input":{"command":"git push"}}' \
+  | bash .claude/hooks/pre-push-import-rules.sh
+rm src/app/probe.ts
+
+# 通ること(違反 0 のとき。出力なし・exit 0)
+echo '{"tool_input":{"command":"git push"}}' \
+  | bash .claude/hooks/pre-push-import-rules.sh; echo "exit=$?"
 ```
 
 ```bash
