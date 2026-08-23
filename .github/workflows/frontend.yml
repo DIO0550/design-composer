@@ -83,7 +83,7 @@ jobs:
         run: bash .github/scripts/check-added-lint-suppressions.sh "${{ github.event.pull_request.base.sha }}"
 
   rules-check:
-    name: doc コメント / テスト規約のチェック
+    name: doc コメント / テスト規約 / import 規約のチェック
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
@@ -105,6 +105,12 @@ jobs:
 
       - name: テスト規約
         run: bash .claude/hooks/lib/test-rules-scan.sh src
+
+      # 公開 API を迂回する import と循環参照（#257 のゴール 1・2・6）。
+      # 層と方向の対は oxlint（check ジョブ）が見るので、ここで見るのは
+      # import グラフを組まないと判定できないものだけ。
+      - name: import 規約
+        run: python3 .claude/hooks/lib/import-rule-violations.py src
 
   report-comment:
     name: post ci report comment

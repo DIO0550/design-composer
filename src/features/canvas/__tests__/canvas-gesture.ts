@@ -5,8 +5,9 @@ import type { CanvasOffset } from "@/features/canvas/domains/canvas-view";
  * キャンバスへのポインタ / ホイール操作。
  * キャンバス本体（`components/artboard-canvas`）とズーム / パンのフック
  * （`hooks/use-canvas-view`）、および編集画面の通し（`features/editor` の
- * `opened-document-editor`）から使うため、feature 直下に置いて共有する
- * （feature をまたぐ読み方の理由は `canvas-elements.ts` の doc）。
+ * `opened-document-editor`）から使うため、feature 直下に置いて共有する。
+ * 外の feature へはテスト用の公開口（`__tests__/index.ts`）から出す
+ * （分けている理由はその `__tests__/index.ts` の doc）。
  */
 
 /** 1 本の指 / 1 つのマウスによる操作として扱う。 */

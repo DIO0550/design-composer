@@ -10,13 +10,8 @@ import { ArrayEx } from "@/utils/ArrayEx";
  *
  * キャンバス単体（`components/artboard-canvas`）と編集画面の通し
  * （`features/editor` の `opened-document-editor`）の両方が「何が描かれているか」を
- * 確かめるので、**持ち主であるこの feature に置き、editor のテストからは直接読む**。
- *
- * feature をまたいだ直接の import は、この `__tests__/` の 2 つのヘルパー
- * （`canvas-elements` / `canvas-gesture`）だけの例外。読む向きは本番と同じ
- * `editor -> canvas` で、逆向き（canvas が editor のヘルパーを読む）にすると
- * 循環するため。本番の公開 API（`features/canvas/index.ts`）には出さない
- * （`@testing-library/react` がアプリのバンドルへ入る）。
+ * 確かめるので、**持ち主であるこの feature に置く**。外の feature へはテスト用の
+ * 公開口（`__tests__/index.ts`）から出し、そちらだけを読ませる。
  */
 
 /** 強調の規則が指している名前（規則の書式は components/artboard-canvas）。 */
