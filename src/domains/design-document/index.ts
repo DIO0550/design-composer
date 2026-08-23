@@ -675,15 +675,20 @@ export const DesignDocument = {
   ): Result<DesignDocument, DesignDocumentEditError> {
     return Result.flatMap(expandInstance(document, name), (expanded) => {
       const usedNames = DesignDocument.usedNames(document);
-      const children =
-        expanded.children === undefined
-          ? undefined
-          : DesignDocument.renameSubtree(expanded.children, usedNames).nodes;
+      /*
+       * ここに来る `expanded` は参照ノードを展開したものだけで、その `children` は
+       * 必ず配列（部品に子が無ければ空）。`ExpandedNode` の `children?` が省略可能
+       * なのは、木の途中に居る子無しのプリミティブのため。
+       */
+      const children = DesignDocument.renameSubtree(
+        expanded.children ?? [],
+        usedNames,
+      ).nodes;
       const replacement: Node = {
         name: expanded.name,
         type: expanded.type,
         ...(expanded.props !== undefined ? { props: expanded.props } : {}),
-        ...(children !== undefined ? { children } : {}),
+        children,
       };
       return DesignDocument.replaceNode(document, name, replacement);
     });

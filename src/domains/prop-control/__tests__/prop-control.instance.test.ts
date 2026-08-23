@@ -38,15 +38,24 @@ const Components: ComponentSet = {
   },
 };
 
-function setupInstanceSelection(node: Node): DocumentSelection {
+function setupSelection(
+  children: readonly Node[],
+  selected: string,
+): DocumentSelection {
   return DocumentSelection.fromNames(
     DesignDocument.create({
       tokens: DocumentTemplate.Default.tokens,
       components: Components,
-      artboards: [{ name: "home", width: 360, height: 240, children: [node] }],
+      artboards: [
+        { name: "home", width: 360, height: 240, children: [...children] },
+      ],
     }),
-    [node.name],
+    [selected],
   );
+}
+
+function setupInstanceSelection(node: Node): DocumentSelection {
+  return setupSelection([node], node.name);
 }
 
 function publicPropNames(selection: DocumentSelection): readonly string[] {
@@ -160,23 +169,12 @@ test("存在しない部品を指すインスタンスには公開 prop のコ�
  * 分けると「そのドキュメント唯一のインスタンス」で答える誤りが通ってしまう。
  */
 function setupDetachSelection(selected: string): DocumentSelection {
-  return DocumentSelection.fromNames(
-    DesignDocument.create({
-      tokens: DocumentTemplate.Default.tokens,
-      components: Components,
-      artboards: [
-        {
-          name: "home",
-          width: 360,
-          height: 240,
-          children: [
-            { name: "action", ref: "primary-button" },
-            { name: "broken", ref: "missing" },
-          ],
-        },
-      ],
-    }),
-    [selected],
+  return setupSelection(
+    [
+      { name: "action", ref: "primary-button" },
+      { name: "broken", ref: "missing" },
+    ],
+    selected,
   );
 }
 

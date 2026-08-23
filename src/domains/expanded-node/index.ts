@@ -5,6 +5,9 @@ import { Result } from "@/utils/Result";
 /**
  * ref がすべて展開済みであることを構造で保証したノード。
  * children が ExpandedNode のみで構成され、RefNode を含み得ない。
+ *
+ * ここでの「展開済み（expanded）」は**参照の解決**を指す。`components/` 側の
+ * `isExpanded` / `aria-expanded`（ツリーの行が開いているか）とは別の意味。
  */
 export type ExpandedNode = Readonly<{
   name: string;
@@ -16,10 +19,14 @@ export type ExpandedNode = Readonly<{
 /**
  * 展開が失敗する理由。
  * 呼び出し側が種類で分岐できるよう、メッセージ文字列ではなく直和で列挙する。
+ *
+ * 引けなかった部品名を `ref` ではなく `component` で持つのは、この直和を取り込む
+ * `DesignDocumentEditError` の中に `ref`（`TokenRef`）を持つメンバが既にあるため。
+ * 同じ綴りで別の型を指すと、フィールド名での絞り込みが型を広げてしまう。
  */
 export type ExpandedNodeError =
-  | Readonly<{ kind: "component-not-found"; ref: string }>
-  | Readonly<{ kind: "circular-component-reference"; ref: string }>;
+  | Readonly<{ kind: "component-not-found"; component: string }>
+  | Readonly<{ kind: "circular-component-reference"; component: string }>;
 
 export const ExpandedNodeError = {
   /**
@@ -32,9 +39,9 @@ export const ExpandedNodeError = {
   message(error: ExpandedNodeError): string {
     switch (error.kind) {
       case "component-not-found":
-        return `component "${error.ref}" not found`;
+        return `component "${error.component}" not found`;
       case "circular-component-reference":
-        return `circular component reference detected at "${error.ref}"`;
+        return `circular component reference detected at "${error.component}"`;
     }
   },
 } as const;
@@ -71,12 +78,12 @@ function expandNode(
   if (expanding.has(node.ref)) {
     return Result.err({
       kind: "circular-component-reference",
-      ref: node.ref,
+      component: node.ref,
     });
   }
   const component = ComponentSet.get(components, node.ref);
   if (component === undefined) {
-    return Result.err({ kind: "component-not-found", ref: node.ref });
+    return Result.err({ kind: "component-not-found", component: node.ref });
   }
   const overridden = Component.applyOverrides(
     component,
@@ -120,7 +127,7 @@ function expandNodes(
 }
 
 /**
- * 部品インスタンスを定義の中身へ展開する（docs/02-data-model.md「部品」）。
+ * 部品インスタンスを定義の中身へ展開する（docs/02-data-model.md「部品参照ノード」）。
  *
  * 生成規則をここに置くのは、`ExpandedNode` が「ref を含み得ない」ことを構造で
  * 保証した型で、その保証を成立させる手続きが展開の走査そのものだから。

@@ -58,6 +58,15 @@ test("ref-node-not-supported は部品化できなかったノード名を含む
   ).toBe('cannot create a component from ref node "instance"');
 });
 
+test("ref-node-required は解除できなかったノード名を含むメッセージになる", () => {
+  expect(
+    DesignDocumentEditError.message({
+      kind: "ref-node-required",
+      name: "box-1",
+    }),
+  ).toBe('node "box-1" is not a ref node');
+});
+
 test("duplicate-name は既に使われている名前を含むメッセージになる", () => {
   expect(
     DesignDocumentEditError.message({
