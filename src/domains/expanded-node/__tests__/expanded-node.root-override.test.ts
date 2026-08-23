@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 import type { ComponentSet } from "@/domains/component";
 import type { RefNode } from "@/domains/node";
 import { Result } from "@/utils/Result";
-import { InstanceComposition } from "../index";
+import { ExpandedNode } from "../index";
 
 test("部品のルートに binding された publicProps を上書きするとルートの prop が変わる", () => {
   const components: ComponentSet = {
@@ -18,9 +18,7 @@ test("部品のルートに binding された publicProps を上書きすると�
     overrides: { text: "見出し" },
   };
 
-  const expanded = Result.unwrap(
-    InstanceComposition.expand(instance, components),
-  );
+  const expanded = Result.unwrap(ExpandedNode.fromNode(instance, components));
 
   expect(expanded).toEqual({
     name: "title",
@@ -44,9 +42,7 @@ test("ルートへの上書きは binding されていない prop を保持す�
     overrides: { surface: "secondary" },
   };
 
-  const expanded = Result.unwrap(
-    InstanceComposition.expand(instance, components),
-  );
+  const expanded = Result.unwrap(ExpandedNode.fromNode(instance, components));
 
   expect(expanded.props).toEqual({
     background: "secondary",
@@ -74,9 +70,7 @@ test("ルートと内部ノードの両方への上書きが同時に反映さ�
     overrides: { surface: "secondary", label: "保存" },
   };
 
-  const expanded = Result.unwrap(
-    InstanceComposition.expand(instance, components),
-  );
+  const expanded = Result.unwrap(ExpandedNode.fromNode(instance, components));
 
   expect(expanded).toEqual({
     name: "submit",

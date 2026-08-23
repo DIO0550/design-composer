@@ -1,8 +1,7 @@
 import { expect, test } from "vitest";
 import type { ComponentSet } from "@/domains/component";
-import { DesignDocument } from "@/domains/design-document";
 import { Result } from "@/utils/Result";
-import { InstanceComposition } from "../index";
+import { DesignDocument } from "../index";
 
 const components: ComponentSet = {
   "primary-button": {
@@ -34,9 +33,7 @@ test("ref ノードを解除すると部品定義の type / props / children を
     ],
   });
 
-  const result = Result.unwrap(
-    InstanceComposition.detach(document, "save-button"),
-  );
+  const result = Result.unwrap(DesignDocument.detach(document, "save-button"));
 
   expect(result.artboards[0].children).toEqual([
     {
@@ -73,9 +70,7 @@ test("overrides を持つ ref ノードを解除すると overrides が焼き込
     ],
   });
 
-  const result = Result.unwrap(
-    InstanceComposition.detach(document, "save-button"),
-  );
+  const result = Result.unwrap(DesignDocument.detach(document, "save-button"));
 
   expect(result.artboards[0].children[0]).toMatchObject({
     children: [{ name: "primary-button-label-2", props: { content: "保存" } }],
@@ -98,9 +93,7 @@ test("解除した実ノードの直下の name は既存のノード名と衝�
     ],
   });
 
-  const result = Result.unwrap(
-    InstanceComposition.detach(document, "save-button"),
-  );
+  const result = Result.unwrap(DesignDocument.detach(document, "save-button"));
 
   const detached = result.artboards[0].children[1];
   expect(detached).toMatchObject({ name: "save-button" });
@@ -122,9 +115,7 @@ test("解除した実ノード自身の name は変わらない", () => {
     ],
   });
 
-  const result = Result.unwrap(
-    InstanceComposition.detach(document, "save-button"),
-  );
+  const result = Result.unwrap(DesignDocument.detach(document, "save-button"));
 
   expect(result.artboards[0].children[0].name).toBe("save-button");
 });
@@ -144,14 +135,12 @@ test("解除したドキュメントは部品定義の内部ノード名と重�
     ],
   });
 
-  const result = Result.unwrap(
-    InstanceComposition.detach(document, "profile-card"),
-  );
+  const result = Result.unwrap(DesignDocument.detach(document, "profile-card"));
 
   expect(DesignDocument.collectErrors(result)).toEqual([]);
 });
 
-test("detach は元のドキュメントを変更しない", () => {
+test("解除しても元のドキュメントは変更されない", () => {
   const document = DesignDocument.create({
     components,
     artboards: [
@@ -164,7 +153,7 @@ test("detach は元のドキュメントを変更しない", () => {
     ],
   });
 
-  InstanceComposition.detach(document, "save-button");
+  DesignDocument.detach(document, "save-button");
 
   expect(document.artboards[0].children).toEqual([
     { name: "save-button", ref: "primary-button" },

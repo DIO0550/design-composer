@@ -6,6 +6,7 @@ import {
   type ComponentAsset,
   ComponentSet,
 } from "@/domains/component";
+import { ExpandedNode } from "@/domains/expanded-node";
 import {
   FormatVersion,
   type FormatVersionCompatibility,
@@ -237,6 +238,32 @@ function unusableNameError(
     return Option.some({ kind: "duplicate-name", name });
   }
   return Option.none;
+}
+
+/**
+ * 解除の対象になる参照ノードを、部品を辿って展開したもの。
+ *
+ * 解除できるか（`isDetachable`）と解除そのもの（`detach`）の両方がここを通る。
+ * 失敗の条件を 2 箇所に書くと、片方だけ変わったときにボタンの出方と結果が食い違う。
+ *
+ * @param document 解除元のドキュメント
+ * @param name 解除したいノードの名前
+ * @returns 展開後のノード。ノードが無い・参照ノードでない・参照先の部品が無い・
+ *   参照が循環しているときは失敗
+ */
+function expandInstance(
+  document: DesignDocument,
+  name: string,
+): Result<ExpandedNode, DesignDocumentEditError> {
+  const found = DesignDocument.findNode(document, name);
+  if (!found.some) {
+    return Result.err({ kind: "node-not-found", name });
+  }
+  const node = found.value;
+  if (!Node.isRef(node)) {
+    return Result.err({ kind: "ref-node-required", name });
+  }
+  return ExpandedNode.fromNode(node, document.components);
 }
 
 /**
@@ -628,6 +655,54 @@ export const DesignDocument = {
         },
       }),
     );
+  },
+
+  /**
+   * 部品インスタンスを定義の中身へ置き換える
+   * （docs/06-ui.md「部品化・解除」。`createComponent` の逆向き）。
+   *
+   * 内側のノード名は既存の名前と衝突しないよう付け替える。
+   *
+   * @param document 解除元のドキュメント
+   * @param name 解除したいインスタンスの名前
+   * @returns 参照ノードが実体の木に変わったドキュメント。
+   *   ノードが無い・参照ノードでない・参照先の部品が無い・
+   *   参照が循環しているときは失敗
+   */
+  detach(
+    document: DesignDocument,
+    name: string,
+  ): Result<DesignDocument, DesignDocumentEditError> {
+    return Result.flatMap(expandInstance(document, name), (expanded) => {
+      const usedNames = DesignDocument.usedNames(document);
+      const children =
+        expanded.children === undefined
+          ? undefined
+          : DesignDocument.renameSubtree(expanded.children, usedNames).nodes;
+      const replacement: Node = {
+        name: expanded.name,
+        type: expanded.type,
+        ...(expanded.props !== undefined ? { props: expanded.props } : {}),
+        ...(children !== undefined ? { children } : {}),
+      };
+      return DesignDocument.replaceNode(document, name, replacement);
+    });
+  },
+
+  /**
+   * その名前のノードを解除できるか（参照ノードで、参照先を辿りきれる）。
+   *
+   * 展開までしか見ないのは、`detach` の残り（名前の付け替えと置き換え）が
+   * 失敗しないため。`DesignDocument.replaceNode` も `Result` を返すが、探索
+   * （`findNode`）と置き換えは同じ `Node.children` の走査を通るので、探索できた
+   * ノードの置き換えは必ず成功する。
+   *
+   * @param document 解除元のドキュメント
+   * @param name 解除したいノードの名前
+   * @returns 解除できるなら true
+   */
+  isDetachable(document: DesignDocument, name: string): boolean {
+    return expandInstance(document, name).ok;
   },
 
   /** artboard をドキュメントの指定位置へ挿入する。 */

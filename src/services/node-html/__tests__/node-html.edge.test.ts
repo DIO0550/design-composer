@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import type { ComponentSet } from "@/domains/component";
+import { ExpandedNode } from "@/domains/expanded-node";
 import type { RefNode } from "@/domains/node";
-import { InstanceComposition } from "@/services/instance-composition";
 import { Result } from "@/utils/Result";
 import { NodeHtml } from "../index";
 
@@ -83,11 +83,8 @@ test("部品インスタンスは展開してからコンパイルすると部�
   };
   const instance: RefNode = { name: "save-button", ref: "primary-button" };
 
-  const compiled = Result.unwrap(
-    Result.flatMap(InstanceComposition.expand(instance, components), (node) =>
-      NodeHtml.compile(node),
-    ),
-  );
+  const expanded = Result.unwrap(ExpandedNode.fromNode(instance, components));
+  const compiled = Result.unwrap(NodeHtml.compile(expanded));
 
   expect(compiled.name).toBe("save-button");
   expect(compiled.style.background).toBe("var(--colors-primary)");

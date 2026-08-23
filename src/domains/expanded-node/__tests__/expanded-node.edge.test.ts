@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 import type { ComponentSet } from "@/domains/component";
 import type { RefNode } from "@/domains/node";
 import { Result } from "@/utils/Result";
-import { InstanceComposition } from "../index";
+import { ExpandedNode } from "../index";
 
 test("自分自身を参照する部品を展開すると無限再帰にならずエラーになる", () => {
   const components: ComponentSet = {
@@ -13,7 +13,7 @@ test("自分自身を参照する部品を展開すると無限再帰になら�
   };
   const instance: RefNode = { name: "root", ref: "self-referencing" };
 
-  const result = InstanceComposition.expand(instance, components);
+  const result = ExpandedNode.fromNode(instance, components);
 
   expect(result.ok).toBe(false);
 });
@@ -31,7 +31,7 @@ test("互いに参照し合う部品同士を展開すると無限再帰にな�
   };
   const instance: RefNode = { name: "root", ref: "component-a" };
 
-  const result = InstanceComposition.expand(instance, components);
+  const result = ExpandedNode.fromNode(instance, components);
 
   expect(result.ok).toBe(false);
 });
@@ -48,9 +48,7 @@ test("同じ部品を兄弟として複数回インスタンス化しても循�
     { name: "button-2", ref: "primary-button" },
   ];
 
-  const expanded = Result.unwrap(
-    InstanceComposition.expandAll(nodes, components),
-  );
+  const expanded = Result.unwrap(ExpandedNode.fromNodes(nodes, components));
 
   expect(expanded.map((node) => node.name)).toEqual(["button-1", "button-2"]);
   expect(expanded[0].children?.[0]).toEqual(expanded[1].children?.[0]);
@@ -60,7 +58,7 @@ test("存在しない部品への参照を展開しようとするとエラー�
   const components: ComponentSet = {};
   const instance: RefNode = { name: "root", ref: "missing-component" };
 
-  const result = InstanceComposition.expand(instance, components);
+  const result = ExpandedNode.fromNode(instance, components);
 
   expect(result.ok).toBe(false);
 });
@@ -81,9 +79,7 @@ test("publicProps 宣言に無いキーへの overrides は無視され定義値
     overrides: { unknownKey: "無視されるべき値" },
   };
 
-  const expanded = Result.unwrap(
-    InstanceComposition.expand(instance, components),
-  );
+  const expanded = Result.unwrap(ExpandedNode.fromNode(instance, components));
 
   expect(expanded.children?.[0]).toEqual({
     name: "label",
@@ -105,9 +101,7 @@ test("publicProps 宣言を持たない部品に overrides を渡しても定義
     overrides: { label: "無視されるべき値" },
   };
 
-  const expanded = Result.unwrap(
-    InstanceComposition.expand(instance, components),
-  );
+  const expanded = Result.unwrap(ExpandedNode.fromNode(instance, components));
 
   expect(expanded.children?.[0]).toEqual({
     name: "label",

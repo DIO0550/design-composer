@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 import type { ComponentSet } from "@/domains/component";
 import type { PrimitiveNode, RefNode } from "@/domains/node";
 import { Result } from "@/utils/Result";
-import { InstanceComposition } from "../index";
+import { ExpandedNode } from "../index";
 
 const components: ComponentSet = {
   "primary-button": {
@@ -24,9 +24,7 @@ const components: ComponentSet = {
 test("ref ノードを展開すると部品定義の type と props を継承した実ツリーになる", () => {
   const instance: RefNode = { name: "save-button", ref: "primary-button" };
 
-  const expanded = Result.unwrap(
-    InstanceComposition.expand(instance, components),
-  );
+  const expanded = Result.unwrap(ExpandedNode.fromNode(instance, components));
 
   expect(expanded).toEqual({
     name: "save-button",
@@ -49,9 +47,7 @@ test("overrides で publicProps に binding された内部ノードの prop が
     overrides: { label: "保存" },
   };
 
-  const expanded = Result.unwrap(
-    InstanceComposition.expand(instance, components),
-  );
+  const expanded = Result.unwrap(ExpandedNode.fromNode(instance, components));
 
   expect(expanded.children?.[0]).toEqual({
     name: "primary-button-label",
@@ -63,9 +59,7 @@ test("overrides で publicProps に binding された内部ノードの prop が
 test("overrides を指定しないインスタンスは部品定義そのままの値になる", () => {
   const instance: RefNode = { name: "save-button", ref: "primary-button" };
 
-  const expanded = Result.unwrap(
-    InstanceComposition.expand(instance, components),
-  );
+  const expanded = Result.unwrap(ExpandedNode.fromNode(instance, components));
 
   expect(expanded.children?.[0]).toEqual({
     name: "primary-button-label",
@@ -77,14 +71,12 @@ test("overrides を指定しないインスタンスは部品定義そのまま�
 test("展開結果のインスタンス名は部品定義の名前ではなくインスタンス自身の name になる", () => {
   const instance: RefNode = { name: "save-button", ref: "primary-button" };
 
-  const expanded = Result.unwrap(
-    InstanceComposition.expand(instance, components),
-  );
+  const expanded = Result.unwrap(ExpandedNode.fromNode(instance, components));
 
   expect(expanded.name).toBe("save-button");
 });
 
-test("expand は渡された部品定義を書き換えない", () => {
+test("展開しても渡された部品定義は書き換わらない", () => {
   const frozenComponents = Object.freeze({
     ...components,
     "primary-button": Object.freeze(components["primary-button"]),
@@ -95,7 +87,7 @@ test("expand は渡された部品定義を書き換えない", () => {
     overrides: { label: "保存" },
   };
 
-  InstanceComposition.expand(instance, frozenComponents as ComponentSet);
+  ExpandedNode.fromNode(instance, frozenComponents as ComponentSet);
 
   expect(components["primary-button"].children?.[0]).toEqual({
     name: "primary-button-label",
@@ -104,7 +96,7 @@ test("expand は渡された部品定義を書き換えない", () => {
   });
 });
 
-test("expandAll は複数ノードの配列を一括で展開できる", () => {
+test("並びをまとめて渡すと複数ノードを一括で展開できる", () => {
   const nodes: readonly RefNode[] = [
     { name: "save-button", ref: "primary-button" },
     {
@@ -114,9 +106,7 @@ test("expandAll は複数ノードの配列を一括で展開できる", () => {
     },
   ];
 
-  const expanded = Result.unwrap(
-    InstanceComposition.expandAll(nodes, components),
-  );
+  const expanded = Result.unwrap(ExpandedNode.fromNodes(nodes, components));
 
   expect(expanded.map((node) => node.name)).toEqual([
     "save-button",
@@ -137,7 +127,7 @@ test("Box の子として ref ノードを含むツリーも子孫まで展開�
     children: [{ name: "save-button", ref: "primary-button" }],
   };
 
-  const expanded = Result.unwrap(InstanceComposition.expand(tree, components));
+  const expanded = Result.unwrap(ExpandedNode.fromNode(tree, components));
 
   expect(expanded.children?.[0]).toMatchObject({
     name: "save-button",

@@ -8,7 +8,7 @@ import { EditorState } from "../index";
  * インスタンスの解除（UI 案 docs/Design Composer.html の `Detach instance`）。
  *
  * 展開そのものの規則（overrides の焼き込み・内側ノードの自動改名）は
- * `services/instance-composition` のテストが持つ。ここで見るのは
+ * `design-document.detach.test.ts` が持つ。ここで見るのは
  * 「選択中のものが解除され、履歴と選択がどうなるか」だけ。
  */
 function setupState(): EditorState {

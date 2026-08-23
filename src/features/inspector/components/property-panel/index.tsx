@@ -15,7 +15,6 @@ import {
 } from "@/domains/prop-control";
 import type { Selection, SelectionKind } from "@/domains/selection";
 import type { Side, SidePair } from "@/domains/side";
-import { InstanceComposition } from "@/services/instance-composition";
 import { CaseStyle } from "@/utils/CaseStyle";
 import { Option } from "@/utils/Option";
 
@@ -917,23 +916,6 @@ function SelectionTitle({ selection }: Readonly<{ selection: Selection }>) {
 }
 
 /**
- * その選択に対する編集欄。帯と本文の両方がここから出し分ける。
- *
- * 解除できるかは、解除と同じ判定に答えさせる。失敗の条件（参照先が無い・
- * 循環している）を書き写すと `InstanceComposition.detach` と二重管理になり、
- * 片方だけ変わったときにボタンの出方と結果が食い違う。
- *
- * @param selection 選択とドキュメントの出どころ
- * @returns 選択の種類に応じた編集欄。何も選んでいないときは `none`
- */
-function controlsOf(selection: DocumentSelection): Option<SelectionControls> {
-  return SelectionControls.forSelection(
-    selection,
-    InstanceComposition.isDetachable,
-  );
-}
-
-/**
  * 右ペインの帯に出す、いま選んでいるもの
  * （UI 案 docs/Design Composer.html のインスペクタの 44px の帯）。
  *
@@ -949,7 +931,7 @@ function controlsOf(selection: DocumentSelection): Option<SelectionControls> {
 function PropertyPanelTitle({
   selection,
 }: Readonly<{ selection: DocumentSelection }>): ReactElement | null {
-  const controls = controlsOf(selection);
+  const controls = SelectionControls.forSelection(selection);
 
   if (controls.some && controls.value.kind === "multiple") {
     return (
@@ -990,7 +972,7 @@ function PropertyPanelBody({
     return <p className="text-[11px] text-gray-400">選択は凍結中</p>;
   }
 
-  const controls = controlsOf(selection);
+  const controls = SelectionControls.forSelection(selection);
   if (!controls.some) {
     return <p className="text-gray-500 text-sm">選択されていません</p>;
   }
@@ -1023,7 +1005,7 @@ function PropertyPanelBody({
  * 呼び出し側が帯と本文それぞれの器に入れる。
  *
  * 帯と本文は**呼び出し側が同じ 1 つの `selection` を両方へ渡す前提**で、同じ純粋関数
- * （`controlsOf`）を通す。別々の選択を渡せば「帯は件数なのに本文はインスタンスの
+ * （`SelectionControls.forSelection`）を通す。別々の選択を渡せば「帯は件数なのに本文はインスタンスの
  * 編集欄」が作れるので、器を着せる側（`rightPaneParts`）で 1 つの値を作って配る。
  *
  * 入力欄はスキーマ定数の走査だけで決まる（`SelectionControls.forSelection`）ため、

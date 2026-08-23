@@ -4,16 +4,13 @@ import { DocumentSelection } from "@/domains/document-selection";
 import type { Node } from "@/domains/node";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
-import { type DetachableCheck, SelectionControls } from "../index";
+import { SelectionControls } from "../index";
 import {
   colorOfControl,
   controlsIn,
   resolvedValueOfControl,
   sectionsOf,
 } from "./setup";
-
-/** インスタンス以外を見るテストでは結果に出ないので、常に解除できないことにする。 */
-const NotDetachable: DetachableCheck = () => false;
 
 function setupDocument(children: readonly Node[]): DesignDocument {
   return DesignDocument.create({
@@ -41,17 +38,13 @@ function controlOf(selection: DocumentSelection, prop: string) {
 test("選択されていないときはコントロールが生成されない", () => {
   const selection = DocumentSelection.fromNames(DesignDocument.create({}), []);
 
-  expect(SelectionControls.forSelection(selection, NotDetachable)).toEqual(
-    Option.none,
-  );
+  expect(SelectionControls.forSelection(selection)).toEqual(Option.none);
 });
 
 test("選んでいる名前がドキュメントに無いときはコントロールが生成されない", () => {
   const selection = setupSelection([{ name: "box", type: "Box" }], "ghost");
 
-  expect(SelectionControls.forSelection(selection, NotDetachable)).toEqual(
-    Option.none,
-  );
+  expect(SelectionControls.forSelection(selection)).toEqual(Option.none);
 });
 
 test("複数選んでいるときは編集欄を持たず選択件数だけを持つ", () => {
@@ -66,7 +59,7 @@ test("複数選んでいるときは編集欄を持たず選択件数だけを�
     "note",
   );
 
-  expect(SelectionControls.forSelection(selection, NotDetachable)).toEqual(
+  expect(SelectionControls.forSelection(selection)).toEqual(
     Option.some({ kind: "multiple", count: 3 }),
   );
 });

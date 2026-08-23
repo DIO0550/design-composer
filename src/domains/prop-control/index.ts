@@ -45,17 +45,6 @@ import { Option } from "@/utils/Option";
  */
 
 /**
- * インスタンスを解除できるかを答える判定。
- *
- * 答えるのは `services/instance-composition`（参照の再帰展開と循環検出）で、
- * `src/domains/` からは import できないため引数で受け取る。
- */
-export type DetachableCheck = (
-  document: DesignDocument,
-  name: string,
-) => boolean;
-
-/**
  * 入力欄の種類。値の決め方（`domain`）から決まる。
  *
  * enum とトークン参照はどちらも選択式だが、UI 案（docs/Design Composer.html）は
@@ -163,7 +152,7 @@ export type PropControlSection = Readonly<{
  * ものだから。出すと部品の内部構造が見出しに漏れる。
  *
  * `isDetachable` を持つのは、参照先の部品が無い・循環している間は解除できず
- * （`InstanceComposition.detach` が失敗する）、押しても何も起きないボタンになるため。
+ * （`DesignDocument.detach` が失敗する）、押しても何も起きないボタンになるため。
  * 不正なドキュメントも画面には残る（docs/03-schema.md「不正ファイル時の挙動」）ので、
  * この状態は実際に出る。凍結中（#155）をここで見ないのは、凍結中は解除のボタンごと
  * 出ないため（`PropertyPanel.Body`）。重ねると同じ判断が 2 層に散る。
@@ -543,16 +532,11 @@ function sectionsOf(
  *
  * @param document 公開 prop の引き先と、解除できるかの判定に使うドキュメント
  * @param node 編集欄を出したいノード
- * @param isDetachable インスタンスを解除できるかを答える判定
  * @returns 参照ノードなら出どころの部品つきの公開 prop、
  *   プリミティブなら `group` ごとにまとめた編集欄。
  *   スキーマの分からない `type` ではセクションが空になる
  */
-function nodeControls(
-  document: DesignDocument,
-  node: Node,
-  isDetachable: DetachableCheck,
-): SelectionControls {
+function nodeControls(document: DesignDocument, node: Node): SelectionControls {
   if (Node.isRef(node)) {
     return {
       kind: "instance",
@@ -562,7 +546,7 @@ function nodeControls(
         node.overrides ?? {},
         document.tokens,
       ),
-      isDetachable: isDetachable(document, node.name),
+      isDetachable: DesignDocument.isDetachable(document, node.name),
       /*
        * `componentAssets` の使用数ではなく、まとめて選ぶときと同じ集め方で数える。
        * あちらは部品定義の中の参照も数えるので、押した結果選ばれる件数と食い違う。
@@ -775,16 +759,12 @@ export const SelectionControls = {
    * 選択中のものを編集する欄（docs/06-ui.md「画面構成」）。
    * 未選択を `none` で表すのは、同じ位置づけの `TokenControl.forSelection` に揃えるため。
    *
-   * 解除できるかを判定として受け取るのは、答えるのが `services/instance-composition`
-   * （参照の再帰展開と循環検出）で、`src/domains/` からは import できないため。
-   * Why not: 失敗の条件をここへ書き写す案は採らない。解除の実装と二重管理になる。
-   * この判定がドメインへ移せるかは #279 で見る（移れば引数ごと要らなくなる）。
-   * 渡された判定が本当に解除可否かは型では閉じられないので、そこは規律で担保する。
+   * 解除できるかは `DesignDocument.isDetachable` に答えさせる。
+   * Why not: 失敗の条件（参照先が無い・循環している）をここへ書き写す案は採らない。
+   * 解除そのもの（`DesignDocument.detach`）と二重管理になり、片方だけ変わったときに
+   * ボタンの出方と結果が食い違う。
    *
    * @param selection 選択とドキュメントの出どころ
-   * @param isDetachable インスタンスを解除できるかを答える判定。
-   *   ドキュメントは対が持つものをそのまま渡す（呼び出し側が別のドキュメントを
-   *   閉じ込めた判定を渡すと、可否だけが古いドキュメントで決まる）
    * @returns インスタンスを選んでいるなら出どころの部品つきの公開 prop、
    *   複数選んでいるなら編集欄を持たない `multiple`、
    *   それ以外は `group` ごとのセクション。何も選んでいないとき、および選んでいる
@@ -792,10 +772,7 @@ export const SelectionControls = {
    *   スキーマの分からない `type`・解決できない部品では、選択はあるので `some` だが
    *   セクションが空になる
    */
-  forSelection(
-    selection: DocumentSelection,
-    isDetachable: DetachableCheck,
-  ): Option<SelectionControls> {
+  forSelection(selection: DocumentSelection): Option<SelectionControls> {
     const count = DocumentSelection.count(selection);
     if (count > 1) {
       return Option.some({ kind: "multiple", count });
@@ -818,7 +795,7 @@ export const SelectionControls = {
       });
     }
     return Option.map(DesignDocument.findNode(document, name), (node) =>
-      nodeControls(document, node, isDetachable),
+      nodeControls(document, node),
     );
   },
 } as const;
