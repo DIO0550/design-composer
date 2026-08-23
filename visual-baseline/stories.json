@@ -370,6 +370,141 @@
     "name": "未指定の prop だけの Box を選択中"
   },
   {
+    "id": "features-inspector-propertypanel-groupsbody--default",
+    "title": "features/inspector/PropertyPanel/GroupsBody",
+    "name": "節が並んでいる"
+  },
+  {
+    "id": "features-inspector-propertypanel-groupsbody--empty",
+    "title": "features/inspector/PropertyPanel/GroupsBody",
+    "name": "編集できる prop が無い"
+  },
+  {
+    "id": "features-inspector-propertypanel-instancebody--default",
+    "title": "features/inspector/PropertyPanel/InstanceBody",
+    "name": "インスタンスを選択中"
+  },
+  {
+    "id": "features-inspector-propertypanel-instancebody--not-detachable",
+    "title": "features/inspector/PropertyPanel/InstanceBody",
+    "name": "解除できないインスタンス"
+  },
+  {
+    "id": "features-inspector-propertypanel-instancebody--only-instance",
+    "title": "features/inspector/PropertyPanel/InstanceBody",
+    "name": "同じ部品のインスタンスが 1 つだけ"
+  },
+  {
+    "id": "features-inspector-propertypanel-labelwidth--default",
+    "title": "features/inspector/PropertyPanel/LabelWidth",
+    "name": "ラベル欄の幅と字下げ"
+  },
+  {
+    "id": "features-inspector-propertypanel-propfield--color-token",
+    "title": "features/inspector/PropertyPanel/PropField",
+    "name": "色のトークン（見本あり）"
+  },
+  {
+    "id": "features-inspector-propertypanel-propfield--dangling-token",
+    "title": "features/inspector/PropertyPanel/PropField",
+    "name": "数値のトークン（解決できない）"
+  },
+  {
+    "id": "features-inspector-propertypanel-propfield--enum",
+    "title": "features/inspector/PropertyPanel/PropField",
+    "name": "enum（未指定）"
+  },
+  {
+    "id": "features-inspector-propertypanel-propfield--missing-color-token",
+    "title": "features/inspector/PropertyPanel/PropField",
+    "name": "色のトークン（見本なし）"
+  },
+  {
+    "id": "features-inspector-propertypanel-propfield--number-input",
+    "title": "features/inspector/PropertyPanel/PropField",
+    "name": "数値を打ち込む"
+  },
+  {
+    "id": "features-inspector-propertypanel-propfield--numeric-token",
+    "title": "features/inspector/PropertyPanel/PropField",
+    "name": "数値のトークン（解決値あり）"
+  },
+  {
+    "id": "features-inspector-propertypanel-propfield--numeric-token-below",
+    "title": "features/inspector/PropertyPanel/PropField",
+    "name": "数値のトークン（解決値を下に添える）"
+  },
+  {
+    "id": "features-inspector-propertypanel-propfield--text-input",
+    "title": "features/inspector/PropertyPanel/PropField",
+    "name": "文字を打ち込む"
+  },
+  {
+    "id": "features-inspector-propertypanel-propfield--token",
+    "title": "features/inspector/PropertyPanel/PropField",
+    "name": "トークン名から選ぶ"
+  },
+  {
+    "id": "features-inspector-propertypanel-proprow--dependent",
+    "title": "features/inspector/PropertyPanel/PropRow",
+    "name": "条件付きの行（ラベルを出さず字下げする）"
+  },
+  {
+    "id": "features-inspector-propertypanel-proprow--normal",
+    "title": "features/inspector/PropertyPanel/PropRow",
+    "name": "値の入った行"
+  },
+  {
+    "id": "features-inspector-propertypanel-proprow--unset",
+    "title": "features/inspector/PropertyPanel/PropRow",
+    "name": "未指定の enum（既定の注記が付く）"
+  },
+  {
+    "id": "features-inspector-propertypanel-sectionheading--default",
+    "title": "features/inspector/PropertyPanel/SectionHeading",
+    "name": "見出しだけ"
+  },
+  {
+    "id": "features-inspector-propertypanel-sectionheading--with-trailing",
+    "title": "features/inspector/PropertyPanel/SectionHeading",
+    "name": "右端に件数を添える"
+  },
+  {
+    "id": "features-inspector-propertypanel-selectiontitle--box",
+    "title": "features/inspector/PropertyPanel/SelectionTitle",
+    "name": "Box を選択中"
+  },
+  {
+    "id": "features-inspector-propertypanel-selectiontitle--instance",
+    "title": "features/inspector/PropertyPanel/SelectionTitle",
+    "name": "インスタンスを選択中"
+  },
+  {
+    "id": "features-inspector-propertypanel-selectiontitle--long-name",
+    "title": "features/inspector/PropertyPanel/SelectionTitle",
+    "name": "名前が長いノードを選択中"
+  },
+  {
+    "id": "features-inspector-propertypanel-selectiontitle--unknown-kind",
+    "title": "features/inspector/PropertyPanel/SelectionTitle",
+    "name": "種別が分からないノードを選択中"
+  },
+  {
+    "id": "features-inspector-propertypanel-shorthandrow--mixed",
+    "title": "features/inspector/PropertyPanel/ShorthandRow",
+    "name": "4 辺が揃っていない"
+  },
+  {
+    "id": "features-inspector-propertypanel-shorthandrow--per-edge",
+    "title": "features/inspector/PropertyPanel/ShorthandRow",
+    "name": "辺ごとに出したとき"
+  },
+  {
+    "id": "features-inspector-propertypanel-shorthandrow--uniform",
+    "title": "features/inspector/PropertyPanel/ShorthandRow",
+    "name": "4 辺が揃っている"
+  },
+  {
     "id": "features-sidebar-artboardlist--default",
     "title": "features/sidebar/ArtboardList",
     "name": "選択なし（先頭が今の 1 枚）"
