@@ -38,15 +38,24 @@ const Components: ComponentSet = {
   },
 };
 
-function setupInstanceSelection(node: Node): DocumentSelection {
+function setupSelection(
+  children: readonly Node[],
+  selected: string,
+): DocumentSelection {
   return DocumentSelection.fromNames(
     DesignDocument.create({
       tokens: DocumentTemplate.Default.tokens,
       components: Components,
-      artboards: [{ name: "home", width: 360, height: 240, children: [node] }],
+      artboards: [
+        { name: "home", width: 360, height: 240, children: [...children] },
+      ],
     }),
-    [node.name],
+    [selected],
   );
+}
+
+function setupInstanceSelection(node: Node): DocumentSelection {
+  return setupSelection([node], node.name);
 }
 
 function publicPropNames(selection: DocumentSelection): readonly string[] {
@@ -153,38 +162,28 @@ test("存在しない部品を指すインスタンスには公開 prop のコ�
 });
 
 /*
- * 解除できるかの規則（参照先が無い・循環している）は
- * `services/instance-composition` が持ち、パネルがその規則を渡していることは
- * `property-panel.instance.test.tsx` が持つ。ここが見るのは、渡された答えが
- * そのままインスタンスの編集欄に載るかだけ。
+ * 解除できるかの規則そのもの（参照先が無い・循環している）は
+ * `design-document.detachable.test.ts` が持つ。ここが見るのは、答えが
+ * **選んでいるインスタンス自身**のもので、それがそのまま編集欄に載るかだけ。
+ * 2 件が同じドキュメントを共有しているのはそのためで、別々のドキュメントに
+ * 分けると「そのドキュメント唯一のインスタンス」で答える誤りが通ってしまう。
  */
-test("解除できないと答える判定を渡すとインスタンスは解除できないものとして出る", () => {
-  const selection = setupInstanceSelection({
-    name: "action",
-    ref: "primary-button",
-  });
+function setupDetachSelection(selected: string): DocumentSelection {
+  return setupSelection(
+    [
+      { name: "action", ref: "primary-button" },
+      { name: "broken", ref: "missing" },
+    ],
+    selected,
+  );
+}
 
-  expect(instanceOf(selection, () => false).isDetachable).toBe(false);
+test("参照先の部品が引けるインスタンスは解除できるものとして出る", () => {
+  expect(instanceOf(setupDetachSelection("action")).isDetachable).toBe(true);
 });
 
-test("解除できると答える判定を渡すとインスタンスは解除できるものとして出る", () => {
-  const selection = setupInstanceSelection({
-    name: "action",
-    ref: "primary-button",
-  });
-
-  expect(instanceOf(selection, () => true).isDetachable).toBe(true);
-});
-
-test("解除できるかの判定にはそのインスタンスの名前が渡る", () => {
-  const selection = setupInstanceSelection({
-    name: "action",
-    ref: "primary-button",
-  });
-
-  expect(
-    instanceOf(selection, (_document, name) => name === "action").isDetachable,
-  ).toBe(true);
+test("存在しない部品を指すインスタンスは解除できないものとして出る", () => {
+  expect(instanceOf(setupDetachSelection("broken")).isDetachable).toBe(false);
 });
 
 test("スキーマの分からない type のノードにはコントロールが出ない", () => {

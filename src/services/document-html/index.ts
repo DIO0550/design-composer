@@ -3,7 +3,7 @@ import { CompiledArtboard } from "@/domains/compiled-artboard";
 import { BoxElement, CompiledElement } from "@/domains/compiled-element";
 import { CssDeclarations } from "@/domains/css-declaration";
 import type { DesignDocument } from "@/domains/design-document";
-import { InstanceComposition } from "@/services/instance-composition";
+import { ExpandedNode, ExpandedNodeError } from "@/domains/expanded-node";
 import { NodeHtml, type ParentContext } from "@/services/node-html";
 import { type CssVariables, TokenCss } from "@/services/token-css";
 import { Html } from "@/utils/Html";
@@ -41,12 +41,15 @@ function compileArtboard(
   const childParent: ParentContext = {
     direction: BoxElement.childDirection(Artboard.boxProps(artboard)),
   };
-  return Result.flatMap(
-    InstanceComposition.expandAll(artboard.children, document.components),
-    (expanded) =>
-      Result.map(NodeHtml.compileAll(expanded, childParent), (children) =>
-        CompiledArtboard.fromArtboard(artboard, children, TokenCss.refs),
-      ),
+  // 展開の失敗はドメインの直和で返るので、コンパイル側の語彙（`Error`）へ畳んでから繋ぐ
+  const expanded = Result.mapErr(
+    ExpandedNode.fromNodes(artboard.children, document.components),
+    (error) => new Error(ExpandedNodeError.message(error)),
+  );
+  return Result.flatMap(expanded, (nodes) =>
+    Result.map(NodeHtml.compileAll(nodes, childParent), (children) =>
+      CompiledArtboard.fromArtboard(artboard, children, TokenCss.refs),
+    ),
   );
 }
 

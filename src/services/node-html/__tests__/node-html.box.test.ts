@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { CompiledElement } from "@/domains/compiled-element";
-import type { ExpandedNode } from "@/services/instance-composition";
+import type { ExpandedNode } from "@/domains/expanded-node";
 import { Result } from "@/utils/Result";
 import { NodeHtml } from "../index";
 

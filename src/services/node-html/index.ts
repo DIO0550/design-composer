@@ -5,10 +5,10 @@ import {
 } from "@/domains/compiled-element";
 import type { CssDeclarations } from "@/domains/css-declaration";
 import type { CssDirection } from "@/domains/css-direction";
+import type { ExpandedNode } from "@/domains/expanded-node";
 import type { Props } from "@/domains/node";
 import { PrimitiveSchema } from "@/domains/primitive-schema";
 import { ResolvedProps } from "@/domains/resolved-props";
-import type { ExpandedNode } from "@/services/instance-composition";
 import { TokenCss } from "@/services/token-css";
 import { Result } from "@/utils/Result";
 
@@ -112,7 +112,7 @@ function compileNodes(
 export const NodeHtml = {
   /**
    * ノードを `div` + インライン style の要素へコンパイルする。
-   * 入力は ref 展開済みのノード (`InstanceComposition.expand` の結果)。
+   * 入力は ref 展開済みのノード (`ExpandedNode.fromNode` の結果)。
    * 未知の `type` はバリデーションで検出される対象だが、単体でも安全に扱えるよう Err を返す。
    */
   compile(

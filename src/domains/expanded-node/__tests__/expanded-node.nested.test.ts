@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 import type { ComponentSet } from "@/domains/component";
 import type { RefNode } from "@/domains/node";
 import { Result } from "@/utils/Result";
-import { InstanceComposition } from "../index";
+import { ExpandedNode } from "../index";
 
 const components: ComponentSet = {
   "text-field": {
@@ -31,9 +31,7 @@ const components: ComponentSet = {
 test("部品内の ref (ネストした部品) も再帰的に展開される", () => {
   const instance: RefNode = { name: "profile-card", ref: "card" };
 
-  const expanded = Result.unwrap(
-    InstanceComposition.expand(instance, components),
-  );
+  const expanded = Result.unwrap(ExpandedNode.fromNode(instance, components));
 
   expect(expanded.children?.[0]).toEqual({
     name: "card-field",
@@ -52,9 +50,7 @@ test("親部品の publicProps から子部品の publicProps への binding が
     overrides: { fieldValue: "山田太郎" },
   };
 
-  const expanded = Result.unwrap(
-    InstanceComposition.expand(instance, components),
-  );
+  const expanded = Result.unwrap(ExpandedNode.fromNode(instance, components));
 
   const fieldNode = expanded.children?.[0];
   expect(fieldNode?.children?.[0]).toEqual({
@@ -67,9 +63,7 @@ test("親部品の publicProps から子部品の publicProps への binding が
 test("ネスト先の部品自身の子要素はそのままの構造を保つ", () => {
   const instance: RefNode = { name: "profile-card", ref: "card" };
 
-  const expanded = Result.unwrap(
-    InstanceComposition.expand(instance, components),
-  );
+  const expanded = Result.unwrap(ExpandedNode.fromNode(instance, components));
 
   expect(expanded.children?.[1]).toEqual({
     name: "card-title",

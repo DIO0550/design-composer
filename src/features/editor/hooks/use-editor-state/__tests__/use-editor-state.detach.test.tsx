@@ -103,7 +103,7 @@ test("インスタンスを選んで解除すると部品の中身が子とし�
    * `card-label` は部品定義の内部ノード名として既に使われているので、実体化した側は
    * 採番される（docs/01-file-format.md「ツールはコピー & ペースト時に自動リネームして
    * 一意性を保つ」と同じ規則）。採番の規則そのものは
-   * `services/instance-composition` のテストが持つ。
+   * `design-document.detach.test.ts` が持つ。
    */
   expect(screen.getByTestId("card-children").textContent).toBe("card-label-2");
 });

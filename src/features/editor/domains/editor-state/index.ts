@@ -13,7 +13,6 @@ import { Token, type TokenRef, TokenSet, TokenValue } from "@/domains/token";
 import { TokenSelection } from "@/domains/token-selection";
 import { EditHistory } from "@/features/editor/domains/edit-history";
 import { TokenTemplate } from "@/features/editor/domains/token-template";
-import { InstanceComposition } from "@/services/instance-composition";
 import { Option } from "@/utils/Option";
 
 /**
@@ -615,7 +614,7 @@ export const EditorState = {
    * 選択中のインスタンスを実体の木へ置き換える
    * （UI 案 docs/Design Composer.html の `Detach instance`）。
    *
-   * 展開・overrides の焼き込み・内側のノードの改名は `InstanceComposition.detach`
+   * 展開・overrides の焼き込み・内側のノードの改名は `DesignDocument.detach`
    * が持つ。ここは対象を選択から決めて履歴へ積むだけ（`rules/coding.md`
    * 「features 層にドメイン知識を書かない」）。
    *
@@ -628,10 +627,7 @@ export const EditorState = {
    */
   detachInstance(state: EditorState): Option<EditorState> {
     return Option.flatMap(EditorState.singleName(state), (name) => {
-      const detached = InstanceComposition.detach(
-        EditorState.document(state),
-        name,
-      );
+      const detached = DesignDocument.detach(EditorState.document(state), name);
       return detached.ok ? withEdit(state, detached.value) : Option.none;
     });
   },

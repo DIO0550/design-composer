@@ -1,15 +1,14 @@
 import { expect, test } from "vitest";
 import type { ComponentSet } from "@/domains/component";
-import { DesignDocument } from "@/domains/design-document";
 import { Result } from "@/utils/Result";
-import { InstanceComposition } from "../index";
+import { DesignDocument } from "../index";
 
 test("存在しないノード名を指定して解除しようとすると Err が返る", () => {
   const document = DesignDocument.create({
     artboards: [{ name: "screen", width: 375, height: 812, children: [] }],
   });
 
-  const result = InstanceComposition.detach(document, "missing");
+  const result = DesignDocument.detach(document, "missing");
 
   expect(result.ok).toBe(false);
 });
@@ -26,7 +25,7 @@ test("ref ノードでないノードを指定して解除しようとすると 
     ],
   });
 
-  const result = InstanceComposition.detach(document, "box-1");
+  const result = DesignDocument.detach(document, "box-1");
 
   expect(result.ok).toBe(false);
 });
@@ -43,7 +42,7 @@ test("存在しない部品を参照する ref ノードを解除しようとす
     ],
   });
 
-  const result = InstanceComposition.detach(document, "save-button");
+  const result = DesignDocument.detach(document, "save-button");
 
   expect(result.ok).toBe(false);
 });
@@ -71,9 +70,7 @@ test("ネストした部品参照を持つ ref ノードを解除すると子孫
     ],
   });
 
-  const result = Result.unwrap(
-    InstanceComposition.detach(document, "profile-card"),
-  );
+  const result = Result.unwrap(DesignDocument.detach(document, "profile-card"));
 
   expect(result.artboards[0].children[0]).toEqual({
     name: "profile-card",

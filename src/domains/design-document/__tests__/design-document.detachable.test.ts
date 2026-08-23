@@ -1,7 +1,6 @@
 import { expect, test } from "vitest";
 import type { ComponentSet } from "@/domains/component";
-import { DesignDocument } from "@/domains/design-document";
-import { InstanceComposition } from "../index";
+import { DesignDocument } from "../index";
 
 /*
  * 解除できるかは解除のボタンが読む（`SelectionControls` の `isDetachable`）。
@@ -11,7 +10,7 @@ import { InstanceComposition } from "../index";
  * 参照しなくなったときで、それを 3 番目のテストで留めている（述語が解除できないと
  * 答えたものを解除できてしまうと落ちる）。
  *
- * 「ref ノードでない」「存在しない名前」は `instance-composition.detach-edge.test.ts`
+ * 「ref ノードでない」「存在しない名前」は `design-document.detach-edge.test.ts`
  * が同じ判定を通して固定しているので、ここには重ねない。
  */
 
@@ -38,7 +37,7 @@ function setupDocument(): DesignDocument {
 }
 
 test("参照先の部品が引けるインスタンスは解除できる", () => {
-  expect(InstanceComposition.isDetachable(setupDocument(), "save-button")).toBe(
+  expect(DesignDocument.isDetachable(setupDocument(), "save-button")).toBe(
     true,
   );
 });
@@ -61,14 +60,14 @@ function setupCircularDocument(): DesignDocument {
 }
 
 test("循環参照になっている部品を指すインスタンスは解除できない", () => {
-  expect(
-    InstanceComposition.isDetachable(setupCircularDocument(), "summary"),
-  ).toBe(false);
+  expect(DesignDocument.isDetachable(setupCircularDocument(), "summary")).toBe(
+    false,
+  );
 });
 
 test("解除できないと判定したインスタンスは解除しようとしても失敗する", () => {
   const document = setupCircularDocument();
 
-  expect(InstanceComposition.isDetachable(document, "summary")).toBe(false);
-  expect(InstanceComposition.detach(document, "summary").ok).toBe(false);
+  expect(DesignDocument.isDetachable(document, "summary")).toBe(false);
+  expect(DesignDocument.detach(document, "summary").ok).toBe(false);
 });
