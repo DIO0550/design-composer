@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
+import { LeftPaneShell } from "@/components/__stories__/left-pane-shell";
 import {
   EmptySidebarSelection,
   sampleSidebarSelection,
@@ -12,9 +13,11 @@ const meta = {
   parameters: { layout: "padded" },
   decorators: [
     (Story) => (
-      <div className="w-64 border border-gray-300 bg-white p-3">
-        <Story />
-      </div>
+      <LeftPaneShell>
+        <div className="p-3">
+          <Story />
+        </div>
+      </LeftPaneShell>
     ),
   ],
   args: { onSelect: fn() },

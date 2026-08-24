@@ -1,6 +1,7 @@
 import { render } from "@testing-library/react";
 import type { ComponentProps, ReactElement } from "react";
 import { expect, test } from "vitest";
+import { LeftPaneShell } from "@/components/__stories__/left-pane-shell";
 import { RightPaneShell } from "@/components/__stories__/right-pane-shell";
 import { Option } from "@/utils/Option";
 import { EditorLayout } from "../index";
@@ -73,6 +74,43 @@ function renderedShellWidth(
   return Option.unwrap(arbitraryValue(root, "w-"));
 }
 
+/**
+ * `rem` を単位に持つ幅の綴りから数値を取り出す（`"19rem"` → `19`）。
+ * 左ペインは 1 列目とレールの引き算で比べるため、任意値の文字列のままでは突き合わせられない。
+ *
+ * @param value `rem` 単位の幅（列指定の中身や `w-[15.5rem]` の中身）
+ * @returns rem の数値
+ */
+function remOf(value: string): number {
+  return Number.parseFloat(value);
+}
+
+/**
+ * ストーリーの左ペインの枠に実際に当たっている幅。
+ *
+ * @returns 幅の class の中身（`w-[15.5rem]` なら `15.5rem`）
+ */
+function renderedLeftShellWidth(): string {
+  const root = renderedRoot(<LeftPaneShell>中身</LeftPaneShell>);
+
+  return Option.unwrap(arbitraryValue(root, "w-"));
+}
+
+/**
+ * レール（`LeftPaneRail` の `w-14` = 56px）の幅（rem）。左ペインのパネル部は、器の左列から
+ * この分だけ狭い（レールがパネルの左隣に常に立つため）。
+ *
+ * ここに写しで持つのは、本物のレールを描画して読めないため。`LeftPaneRail` は
+ * `features/sidebar` の公開 API（`index.ts`）に出ておらず、横断層の `LeftPaneShell` も
+ * この editor 側のテストもレール本体へ deep import できない。
+ *
+ * Why not: この結合の弱点は、レール幅を変えたときにこのテストが「パネル部（15.5rem）を
+ * 動かせ」と誤って迫ること（本来動かすべきは列の側）。許容するのは、レールが UI 案どおり
+ * 56px で安定しており、レール自身のストーリーの視覚差分が別途その変更を捉えるため。
+ * **レール幅を変えたらこの値も直す。**
+ */
+const RailWidthRem = 3.5;
+
 test("ペインの高さのストーリーの枠は、編集画面の右ペインの列と同じ幅で描かれる", () => {
   const columns = renderedEditorColumns();
 
@@ -86,4 +124,14 @@ test("中身の高さのストーリーの枠も、編集画面の右ペイン�
 
   expect(columns).toHaveLength(3);
   expect(renderedShellWidth("content")).toBe(columns[2]);
+});
+
+test("左ペインのストーリーの枠は、編集画面の左列からレールの幅を引いた幅で描かれる", () => {
+  const columns = renderedEditorColumns();
+
+  // 左ペインは 1 列目。列の数が変わると比べる相手が変わるので、先にそこで落とす
+  expect(columns).toHaveLength(3);
+  expect(remOf(columns[0]) - remOf(renderedLeftShellWidth())).toBe(
+    RailWidthRem,
+  );
 });
