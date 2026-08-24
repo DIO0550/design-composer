@@ -96,11 +96,43 @@ function compile(props: ResolvedProps<"Box">): Style { /* ... */ }
 
 ## `comment-stale-edit` — 一部だけ直して終えた
 
+**この判断は pr-305 で更新された。** `comment-stale-edit` は
+`comment-referent-drift` / `comment-enumeration-drift` / `comment-premise-drift` /
+`comment-block-placement` へ分割し、下の実例もそれぞれの節へ引き継いだ。以降は
+1 件しか出ていない単発の形だけがこのタグに残る。
+
 | 記述の組 | 実例 |
 |---|---|
 | コメントが手法を説明している | `switch` と書いたまま実装が対応表になっていた |
 | 挙動を説明する記述が 2 箇所以上 | `@returns` は更新したのに、ゴールそのものを書いた唯一の箇所（呼び出し側のコメント）が元のまま |
 | 削除・改名したシンボル名がコメントに残る | `isWithin` を `Range.contains` へ移した同じ PR で、`Brand.ts` の `@example` だけ古い名前を指したまま（typecheck も lint も落ちない） |
+
+## `comment-referent-drift` — 名指しした先が同じ差分でずれた
+
+| ずれ方 | 実例 |
+|---|---|
+| `@param` の名前が実引数名と不一致 | `rowsOf` の doc に `@param editables` と書いたが仮引数は `enabled`。`@param props` の説明も判定を済ませている呼び出し側 `sectionsOf` の doc をコピーしたまま残っていた |
+| 移設・シグネチャ変更後も doc が旧層の型を根拠にしたまま | 上位層へ移した doc が、移動後の層からは参照できない型を名指ししたまま残っていた |
+
+## `comment-enumeration-drift` — 列挙・件数が同じ差分の増減に追随しなかった
+
+| ずれ方 | 実例 |
+|---|---|
+| 見出し項目を増やしたのに後続の件数表現が追随しない | `.claude/hooks/README.md` の「doc コメントとテスト規約は CI へ上げた」に import 規約を挿し込んで 3 項目にしたのに、後続の「この 2 つは層 2・層 3 にしか無かった」がそのまま残り、指す先が壊れた |
+
+## `comment-premise-drift` — Why / Why not の前提が同じ差分で崩れた
+
+| ずれ方 | 実例 |
+|---|---|
+| 分岐が無くなったのに、分岐由来の理由が残る | `PropertyPanelTitle` の doc に「`case` を足し忘れたときにコンパイルエラーにするため `ReactElement` と書いている」が残っていたが、この関数に `switch` は無く（`if` + 三項）、戻り値も `ReactElement \| null` で理屈が効かなくなっていた |
+| 実装を対へ移した後もコメントが元の場所に逐語で残る | 実装をペアの型へ移したのに、Why / Why not をほぼ逐語のまま元の場所にも残し、二重管理になっていた |
+
+## `comment-block-placement` — doc の付着・行幅が機械的にずれた
+
+| ずれ方 | 実例 |
+|---|---|
+| 隣接する `/** */` ブロックが同じ宣言に付く | メソッドを足す編集の途中で doc ブロックの位置がずれ、`sourceName` が doc を 2 つ重ねて持ち、`selectAllInstances` は doc 無しになっていた。**typecheck も lint も `check-doc-comments.sh` も落ちない**（`missing-doc-comments.py` は入れ子の宣言を対象外にしているため） |
+| ファイル全体の doc が直後の宣言の doc に隣接する | テストファイル冒頭の `/**` ブロックが直後の `editor()` の doc に隣接し、ツール上は両方が `editor()` に付く形になっていた。このリポジトリには `/*`（アスタリスク 1 つ）で書き分けて宣言に付けない前例が既にある |
 
 ## `comment-missing` — 書くべき Why / Why not が無い
 
