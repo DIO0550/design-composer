@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { ComponentProps, ReactElement } from "react";
 import { expect, fn, screen, userEvent } from "storybook/test";
+import { RightPaneShell } from "@/components/__stories__/right-pane-shell";
 import { PaneBody } from "@/components/pane-body";
 import { PaneHeading } from "@/components/pane-heading";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
@@ -153,9 +154,8 @@ const LongNameDocument = DesignDocument.create({
  * 帯と本文を実画面と同じ並びで見る。
  *
  * 帯と本文は編集画面が着せるのと同じもの（`PaneHeading` / `PaneBody`）。真似ずに
- * 呼べるのは、どちらも横断層にあるため（#297）。ペインの殻（`EditorLayout.RightPane`）
- * だけは編集画面の組み立てに属していてこの feature からは呼べないので、幅と枠線は
- * デコレータで代わりに作る。
+ * 呼べるのは、どちらも横断層にあるため（#297）。ペインの殻も横断層の代わり
+ * （`RightPaneShell`）をデコレータで着せる（#300）。
  */
 function PropertyPanelPane(
   props: ComponentProps<typeof PropertyPanel.Body>,
@@ -176,20 +176,11 @@ const meta = {
   title: "features/inspector/PropertyPanel",
   component: PropertyPanelPane,
   parameters: { layout: "padded" },
-  /*
-   * ペインの殻の代わり。帯の下線を両端まで届かせるため、殻は余白を持たない
-   * （`EditorLayout.RightPane` と同じ形）。高さを固定するのは、本文がスクロールを
-   * 受けていることを視覚差分に載せるため（`artboard を選択中` は 32rem に収まらず、
-   * スクロールバーが絵に出る）。
-   *
-   * Why not: この殻は `features/tokens` のストーリーと綴りが同じだが、共有していない。
-   * フィーチャを跨いだストーリー専用ヘルパーの置き場所を決める判断が要るため（#300）。
-   */
   decorators: [
     (Story) => (
-      <div className="flex h-[32rem] w-72 flex-col border border-gray-300 bg-white">
+      <RightPaneShell height="pane">
         <Story />
-      </div>
+      </RightPaneShell>
     ),
   ],
   args: {

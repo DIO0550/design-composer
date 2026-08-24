@@ -1,16 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { ReactElement } from "react";
+import { RightPaneShell } from "@/components/__stories__/right-pane-shell";
 import { PaneHeading } from "./index";
-
-/**
- * ペインの殻の代わり。幅だけを与え、余白は持たない（帯の下線がペインの両端まで
- * 届くことを視覚差分に載せるため）。
- *
- * @returns 受け取った帯を、ペインの幅の枠に入れたもの
- */
-function PaneFrame({ children }: Readonly<{ children: ReactElement }>) {
-  return <div className="w-72 border border-gray-300 bg-white">{children}</div>;
-}
 
 /** ペインの見出しの帯。中身の有無で 2 通りある。 */
 const meta = {
@@ -19,9 +9,9 @@ const meta = {
   parameters: { layout: "padded" },
   decorators: [
     (Story) => (
-      <PaneFrame>
+      <RightPaneShell height="content">
         <Story />
-      </PaneFrame>
+      </RightPaneShell>
     ),
   ],
 } satisfies Meta<typeof PaneHeading>;

@@ -1,23 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { ReactElement } from "react";
+import { RightPaneShell } from "@/components/__stories__/right-pane-shell";
 import { PaneBody } from "./index";
 
 /**
- * ペインの殻の代わり。高さを固定するのは、本文が `flex-1 min-h-0` で縦スクロールを
- * 受けていることを視覚差分に載せるため（高さの決まらない親では本文が伸び続ける）。
- * 殻が余白を持たないのも実画面と同じで、余白は本文が内側に持つ。
- *
- * @returns 受け取った本文を、高さの決まった縦並びの枠に入れたもの
+ * 枠より確実に高くするための行。中身は問わないので通し番号にする。
+ * 20 行で 32rem（`RightPaneShell` の `pane`）に収まらない。
  */
-function PaneFrame({ children }: Readonly<{ children: ReactElement }>) {
-  return (
-    <div className="flex h-64 w-72 flex-col border border-gray-300 bg-white">
-      {children}
-    </div>
-  );
-}
-
-/** 枠より確実に高くするための行。中身は問わないので通し番号にする。 */
 const OverflowingRows = Array.from(
   { length: 20 },
   (_, index) => `行 ${index + 1}`,
@@ -30,9 +18,9 @@ const meta = {
   parameters: { layout: "padded" },
   decorators: [
     (Story) => (
-      <PaneFrame>
+      <RightPaneShell height="pane">
         <Story />
-      </PaneFrame>
+      </RightPaneShell>
     ),
   ],
 } satisfies Meta<typeof PaneBody>;
