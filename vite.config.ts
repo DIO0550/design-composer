@@ -44,7 +44,8 @@ export default defineConfig(() => ({
       exclude: [
         "src/**/*.test.{ts,tsx}",
         "src/**/*.stories.{ts,tsx}",
-        // story からのみ使うサンプルデータ。story 本体と同じくテストの対象外
+        // story のための器・サンプルデータ。story 本体と同じくカバレッジの対象外
+        // （器が実画面と揃っているかを確かめるテストが読むことはある / #300）
         "src/**/__stories__/**",
         "src/**/*.d.ts",
         "src/app/main.tsx",
