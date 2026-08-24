@@ -5,6 +5,7 @@ import { DesignDocument } from "@/domains/design-document";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
 import { useEditorState } from "../index";
+import { homeChildNames } from "./setup";
 
 function setupDocument(): DesignDocument {
   return DesignDocument.create({
@@ -20,12 +21,6 @@ function setupDocument(): DesignDocument {
   });
 }
 
-function childNames(state: EditorState): readonly string[] {
-  return Option.unwrap(
-    DesignDocument.findChildren(EditorState.document(state), "home"),
-  ).map((child) => child.name);
-}
-
 /**
  * 挿入・削除・コピー & ペーストのアクションを 1 つずつ送る器。
  * 選択の切り替えも同じ器から行い、選択に応じた結果を見る。
@@ -35,7 +30,7 @@ function TreeEditHarness() {
 
   return (
     <>
-      <p data-testid="children">{childNames(state).join(",")}</p>
+      <p data-testid="children">{homeChildNames(state).join(",")}</p>
       <p data-testid="selected">
         {Option.unwrapOr(EditorState.singleName(state), "選択なし")}
       </p>

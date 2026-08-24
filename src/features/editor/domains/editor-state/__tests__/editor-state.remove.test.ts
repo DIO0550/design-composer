@@ -2,31 +2,10 @@ import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
-
-function setupState(): EditorState {
-  return EditorState.create(
-    DesignDocument.create({
-      artboards: [
-        {
-          name: "home",
-          width: 375,
-          height: 812,
-          children: [
-            { name: "title", type: "Text" },
-            {
-              name: "body",
-              type: "Box",
-              children: [{ name: "body-text", type: "Text" }],
-            },
-          ],
-        },
-      ],
-    }),
-  );
-}
+import { stateWithNestedBox } from "./setup";
 
 test("選択中のノードを削除するとツリーから消える", () => {
-  const state = EditorState.select(setupState(), "title");
+  const state = EditorState.select(stateWithNestedBox(), "title");
 
   const removed = Option.unwrap(EditorState.removeNode(state));
 
@@ -36,7 +15,7 @@ test("選択中のノードを削除するとツリーから消える", () => {
 });
 
 test("削除は選択したノードのサブツリーごと消す", () => {
-  const state = EditorState.select(setupState(), "body");
+  const state = EditorState.select(stateWithNestedBox(), "body");
 
   const removed = Option.unwrap(EditorState.removeNode(state));
 
@@ -46,7 +25,7 @@ test("削除は選択したノードのサブツリーごと消す", () => {
 });
 
 test("削除すると選択が外れる", () => {
-  const state = EditorState.select(setupState(), "title");
+  const state = EditorState.select(stateWithNestedBox(), "title");
 
   const removed = Option.unwrap(EditorState.removeNode(state));
 
@@ -54,7 +33,7 @@ test("削除すると選択が外れる", () => {
 });
 
 test("削除しても兄弟は残る", () => {
-  const state = EditorState.select(setupState(), "title");
+  const state = EditorState.select(stateWithNestedBox(), "title");
 
   const removed = Option.unwrap(EditorState.removeNode(state));
 
@@ -64,7 +43,7 @@ test("削除しても兄弟は残る", () => {
 });
 
 test("削除した名前は使われていない名前に戻る", () => {
-  const state = EditorState.select(setupState(), "title");
+  const state = EditorState.select(stateWithNestedBox(), "title");
 
   const removed = Option.unwrap(EditorState.removeNode(state));
 

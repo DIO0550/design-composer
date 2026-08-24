@@ -1,14 +1,7 @@
 import { expect, test } from "vitest";
-import { DesignDocument } from "@/domains/design-document";
 import { Option } from "@/utils/Option";
 import { EditHistory } from "../index";
-
-/** artboard を 1 枚だけ持つドキュメント。幅の違いで「どの版か」を見分ける。 */
-function documentOfWidth(width: number): DesignDocument {
-  return DesignDocument.create({
-    artboards: [{ name: "home", width, height: 812, children: [] }],
-  });
-}
+import { documentOfWidth } from "./setup";
 
 test("編集を積むと積んだドキュメントが現在地になる", () => {
   const history = EditHistory.record(

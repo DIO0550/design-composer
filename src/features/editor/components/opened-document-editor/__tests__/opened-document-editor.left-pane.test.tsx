@@ -2,12 +2,9 @@ import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { rowNames } from "@/components/__tests__/row-names";
+import { LeftPaneViews } from "@/features/sidebar";
 import {
-  type LeftPaneView,
-  LeftPaneViewLabels,
-  LeftPaneViews,
-} from "@/features/sidebar";
-import {
+  goTo,
   leftPane,
   propertyPane,
   renderOpenedDocument,
@@ -22,15 +19,6 @@ import {
  * レール単体のテストは「押した行き先が伝わる」ところまでしか見ないので、
  * 行き先ごとに左ペインと右ペインへ何が出るかはここでしか通らない。
  */
-
-/** レールで行き先を選ぶ。綴りではなく行き先で指す（取り違えを型で弾く）。 */
-async function goTo(view: LeftPaneView): Promise<void> {
-  await userEvent.click(
-    within(
-      screen.getByRole("navigation", { name: "左ペインの表示" }),
-    ).getByRole("button", { name: LeftPaneViewLabels[view] }),
-  );
-}
 
 test("開いた直後の左ペインにはツリーが出る", async () => {
   await renderOpenedDocument();

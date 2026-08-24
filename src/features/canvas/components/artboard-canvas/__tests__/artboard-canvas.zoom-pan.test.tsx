@@ -1,25 +1,20 @@
 import { screen } from "@testing-library/react";
 import { expect, test } from "vitest";
-import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
-import { DocumentSelection } from "@/domains/document-selection";
+import type { DocumentSelection } from "@/domains/document-selection";
 import {
   drag,
   movePointer,
   pressPointer,
   wheel,
 } from "@/features/canvas/__tests__/canvas-gesture";
-import { renderCanvas } from "./setup";
+import { renderCanvas, selectionFromArtboards } from "./setup";
 
 /** artboard を 1 枚だけ持つドキュメントと選択の対。ズーム / パンは中身に依存しない。 */
 function setupSelection(
   selectedNames: readonly string[] = [],
 ): DocumentSelection {
-  return DocumentSelection.fromNames(
-    DesignDocument.create({
-      tokens: DocumentTemplate.Default.tokens,
-      components: DocumentTemplate.Default.components,
-      artboards: [{ name: "home", width: 360, height: 240, children: [] }],
-    }),
+  return selectionFromArtboards(
+    [{ name: "home", width: 360, height: 240, children: [] }],
     selectedNames,
   );
 }

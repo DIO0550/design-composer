@@ -1,24 +1,16 @@
-import { render, screen, within } from "@testing-library/react";
 import { expect, test } from "vitest";
 import type { NodeTemplate } from "@/domains/node-template";
 import { Option } from "@/utils/Option";
-import { NodeInsertToolbar } from "../index";
+import { renderToolbar, toolbar } from "./setup";
 
 /*
  * パレットから運んでいることの表示（UI 案 docs/Design Composer.html の `3a · ASSETS` は
  * `◆` に `background:#f3ebff` を付ける / #203）。
  */
 
-/** 器を起点に探す。ボタンを直接引くと、器が読み上げ名を失っても気づけない。 */
-function toolbar() {
-  return within(screen.getByRole("region", { name: "挿入" }));
-}
-
 /** 運んでいるものを変えてツールバーを描き、`◆` を返す。 */
 function glyphWhilePlacing(dragged: Option<NodeTemplate>): HTMLElement {
-  const { unmount } = render(
-    <NodeInsertToolbar isInsertEnabled dragged={dragged} onInsert={() => {}} />,
-  );
+  const { unmount } = renderToolbar({ dragged });
   const glyph = toolbar().getByText("◆");
   unmount();
   return glyph;
@@ -26,29 +18,19 @@ function glyphWhilePlacing(dragged: Option<NodeTemplate>): HTMLElement {
 
 test("何も運んでいないときもツールバーにインスタンスの印が残る", () => {
   // UI 案は `◆` を常に置き、運んでいる間だけ背景を付ける（要素が現れるのではない）
-  render(
-    <NodeInsertToolbar
-      isInsertEnabled
-      dragged={Option.none}
-      onInsert={() => {}}
-    />,
-  );
+  renderToolbar();
 
   expect(toolbar().getByText("◆")).toBeDefined();
 });
 
 test("インスタンスの印は押せない", () => {
   // 挿入の入口はドラッグだけで、これは状態表示（#198）
-  render(
-    <NodeInsertToolbar
-      isInsertEnabled
-      dragged={Option.some<NodeTemplate>({
-        kind: "instance",
-        componentName: "card",
-      })}
-      onInsert={() => {}}
-    />,
-  );
+  renderToolbar({
+    dragged: Option.some<NodeTemplate>({
+      kind: "instance",
+      componentName: "card",
+    }),
+  });
 
   expect(
     toolbar()

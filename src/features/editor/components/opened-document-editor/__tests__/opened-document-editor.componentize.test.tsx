@@ -5,6 +5,7 @@ import { renderedElement } from "@/features/canvas/__tests__";
 import { LeftPaneViewLabels, LeftPaneViews } from "@/features/sidebar";
 import {
   canvasPane,
+  goTo,
   leftPane,
   renderOpenedDocument,
   selectInTree,
@@ -22,17 +23,6 @@ import {
  * `create-component` のテストが持つ（このドキュメントには部品にできるノードが
  * `home-title` しか無いため、ここでは `key` を通れない）。
  */
-
-/** レールで `Assets` へ切り替える。部品化の入口はこの行き先にしか無い。 */
-async function goToAssets(): Promise<void> {
-  await userEvent.click(
-    within(
-      screen.getByRole("navigation", { name: "左ペインの表示" }),
-    ).getByRole("button", {
-      name: LeftPaneViewLabels[LeftPaneViews.Assets],
-    }),
-  );
-}
 
 /** 部品化のボタン。 */
 function createButton(): HTMLElement {
@@ -83,7 +73,7 @@ test("Tokens を見ている間は部品化の入口が出ない", async () => {
 test("選択中のノードを部品にするとパレットにその部品が並ぶ", async () => {
   await renderOpenedDocument();
   await selectInTree("home-title");
-  await goToAssets();
+  await goTo(LeftPaneViews.Assets);
 
   await createComponentNamed("title-part");
 
@@ -93,7 +83,7 @@ test("選択中のノードを部品にするとパレットにその部品が�
 test("部品にすると元の位置がその部品のインスタンスになる", async () => {
   await renderOpenedDocument();
   await selectInTree("home-title");
-  await goToAssets();
+  await goTo(LeftPaneViews.Assets);
 
   await createComponentNamed("title-part");
 
@@ -108,7 +98,7 @@ test("部品にすると元の位置がその部品のインスタンスにな�
 test("部品にすると入力欄が閉じる", async () => {
   await renderOpenedDocument();
   await selectInTree("home-title");
-  await goToAssets();
+  await goTo(LeftPaneViews.Assets);
 
   await createComponentNamed("title-part");
 
@@ -120,7 +110,7 @@ test("部品にすると入力欄が閉じる", async () => {
 test("インスタンスを選び直すと部品化のボタンを押せなくなる", async () => {
   await renderOpenedDocument();
   await selectInTree("home-title");
-  await goToAssets();
+  await goTo(LeftPaneViews.Assets);
 
   await userEvent.click(within(canvasPane()).getByText("ログイン"));
 
@@ -130,7 +120,7 @@ test("インスタンスを選び直すと部品化のボタンを押せなく�
 test("部品にできないものを選び直すと打ちかけの部品名が消える", async () => {
   await renderOpenedDocument();
   await selectInTree("home-title");
-  await goToAssets();
+  await goTo(LeftPaneViews.Assets);
   await userEvent.click(createButton());
   await userEvent.type(
     within(leftPane()).getByRole("textbox", { name: "部品名" }),

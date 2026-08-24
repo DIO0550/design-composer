@@ -2,6 +2,7 @@ import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
+import { childNames } from "./setup";
 
 function setupState(): EditorState {
   return EditorState.create(
@@ -22,12 +23,6 @@ function setupState(): EditorState {
   );
 }
 
-function childNames(state: EditorState): readonly string[] {
-  return Option.unwrap(
-    DesignDocument.findChildren(EditorState.document(state), "home"),
-  ).map((child) => child.name);
-}
-
 test("子を1つ前の位置へ動かすと兄弟の並びがその順序に変わる", () => {
   const reordered = EditorState.reorderNode(
     setupState(),
@@ -35,7 +30,7 @@ test("子を1つ前の位置へ動かすと兄弟の並びがその順序に変�
     0,
   );
 
-  expect(childNames(Option.unwrap(reordered))).toEqual([
+  expect(childNames(Option.unwrap(reordered), "home")).toEqual([
     "body",
     "title",
     "footer",
@@ -49,7 +44,7 @@ test("子を1つ後ろの位置へ動かすと兄弟の並びがその順序に�
     1,
   );
 
-  expect(childNames(Option.unwrap(reordered))).toEqual([
+  expect(childNames(Option.unwrap(reordered), "home")).toEqual([
     "body",
     "title",
     "footer",

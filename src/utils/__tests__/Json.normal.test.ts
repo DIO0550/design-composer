@@ -1,13 +1,7 @@
 import { expect, test } from "vitest";
-import { Json, type JsonRecordCursor } from "@/utils/Json";
+import { Json } from "@/utils/Json";
 import { Result } from "@/utils/Result";
-
-function setupRecord(
-  record: Readonly<Record<string, unknown>>,
-  path = "",
-): JsonRecordCursor {
-  return Result.unwrap(Json.record(Json.create(record, path)));
-}
+import { recordCursor } from "./Json.setup";
 
 test("文字列を期待する位置に文字列があるとその値が取り出せる", () => {
   expect(Result.unwrap(Json.string(Json.create("hello", "name")))).toBe(
@@ -20,7 +14,7 @@ test("数値を期待する位置に数値があるとその値が取り出せ�
 });
 
 test("必須フィールドが存在するとその値がデコードされる", () => {
-  const record = setupRecord({ name: "screen" });
+  const record = recordCursor({ name: "screen" });
 
   expect(Result.unwrap(Json.required(record, "name", Json.string))).toBe(
     "screen",
@@ -28,7 +22,7 @@ test("必須フィールドが存在するとその値がデコードされる",
 });
 
 test("任意フィールドが存在しないと未設定として扱われる", () => {
-  const record = setupRecord({});
+  const record = recordCursor({});
 
   expect(
     Result.unwrap(Json.optional(record, "props", Json.string)),
@@ -51,7 +45,7 @@ test("配列は要素ごとにデコードされて順序が保たれる", () =>
 });
 
 test("知っているフィールドだけのオブジェクトはそのまま通る", () => {
-  const record = setupRecord({ name: "screen" });
+  const record = recordCursor({ name: "screen" });
   const decoded = Json.knownFields(Result.ok("ok"), record, ["name"]);
 
   expect(Result.unwrap(decoded)).toBe("ok");

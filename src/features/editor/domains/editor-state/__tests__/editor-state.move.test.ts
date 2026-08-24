@@ -2,6 +2,7 @@ import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
+import { childNames } from "./setup";
 
 function setupState(): EditorState {
   return EditorState.create(
@@ -23,13 +24,6 @@ function setupState(): EditorState {
       ],
     }),
   );
-}
-
-/** 名前で指した親の子の並び。artboard もノードも「子を持つもの」として同じに見る。 */
-function childNames(state: EditorState, parentName: string): readonly string[] {
-  return Option.unwrap(
-    DesignDocument.findChildren(EditorState.document(state), parentName),
-  ).map((child) => child.name);
 }
 
 test("別の親の下へ移すとその親の指定した位置の子になる", () => {

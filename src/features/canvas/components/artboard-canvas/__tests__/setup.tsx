@@ -2,13 +2,41 @@ import { render } from "@testing-library/react";
 import { vi } from "vitest";
 import type { AxisLength } from "@/domains/axis-length";
 import type { ChildPosition } from "@/domains/child-position";
-import type { DocumentSelection } from "@/domains/document-selection";
+import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import { DocumentSelection } from "@/domains/document-selection";
 import type { PropEdit } from "@/domains/node";
 import { TokenSelection } from "@/domains/token-selection";
+import {
+  canvasContent,
+  renderedElement,
+} from "@/features/canvas/__tests__/canvas-elements";
+import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
 import { useCanvasView } from "@/features/canvas/hooks/use-canvas-view";
 import { useNodeDrag } from "@/features/canvas/hooks/use-node-drag";
 import { Option } from "@/utils/Option";
 import { ArtboardCanvas } from "../index";
+
+/**
+ * artboard の並びだけを差し替えたドキュメントと、選択の対
+ * （トークンと部品は雛形をそのまま使う）。
+ *
+ * @param artboards 差し替える artboard の並び
+ * @param selectedNames 選んでいるノードの名前。省略すると未選択
+ * @returns その並びを持つドキュメントと選択の対
+ */
+export function selectionFromArtboards(
+  artboards: Parameters<typeof DesignDocument.create>[0]["artboards"],
+  selectedNames: readonly string[] = [],
+): DocumentSelection {
+  return DocumentSelection.fromNames(
+    DesignDocument.create({
+      tokens: DocumentTemplate.Default.tokens,
+      components: DocumentTemplate.Default.components,
+      artboards,
+    }),
+    selectedNames,
+  );
+}
 
 /**
  * キャンバスが描くのに要る値。トークンと凍結は見たいテストだけが渡せばよいので、
@@ -96,4 +124,35 @@ export function injectedStyles(): string {
   return Array.from(document.querySelectorAll("style"))
     .map((style) => style.textContent ?? "")
     .join("");
+}
+
+/**
+ * キャンバスに描かれている、名前で指した要素。
+ *
+ * @param name 描かれている artboard / ノードの名前
+ * @returns その名前の要素。描かれていなければテストを落とす
+ */
+export function drawn(name: string): HTMLElement {
+  return renderedElement(canvasContent(), name);
+}
+
+/**
+ * 描かれた位置と大きさをテスト用の値にする。
+ *
+ * happy-dom はレイアウトを行わず矩形をすべて 0 で返すため、そのままでは
+ * **どこが掴める帯か**（リサイズ）も**入力欄を重ねる位置**（インライン編集）も
+ * 決まらない。差し替えるのはブラウザが行う測定だけで、その矩形から何が決まるかは
+ * 実物のドメインが答える（リサイズなら `node-resize`、インライン編集なら `text-edit`。
+ * どちらも `CanvasBounds.ofElement` 経由でここを読む）
+ * （rules/testing.md「プロセス外・制御不能な境界」）。
+ *
+ * @param name 描かれているノードの名前
+ * @param bounds そのノードが描かれていることにする位置と大きさ
+ * @returns 測定を差し替えたあとの要素
+ */
+export function drawnAt(name: string, bounds: CanvasBounds): HTMLElement {
+  const element = drawn(name);
+  element.getBoundingClientRect = () =>
+    new DOMRect(bounds.left, bounds.top, bounds.width, bounds.height);
+  return element;
 }

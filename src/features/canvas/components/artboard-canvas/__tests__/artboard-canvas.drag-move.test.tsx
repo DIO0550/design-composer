@@ -1,45 +1,38 @@
 import { fireEvent } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
-import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
-import { DocumentSelection } from "@/domains/document-selection";
+import type { DocumentSelection } from "@/domains/document-selection";
 import {
   movePointer,
   pressPointer,
   releasePointer,
 } from "@/features/canvas/__tests__/canvas-gesture";
 import { Option } from "@/utils/Option";
-import { injectedStyles, renderCanvas } from "./setup";
+import {
+  drawn,
+  injectedStyles,
+  renderCanvas,
+  selectionFromArtboards,
+} from "./setup";
 
 /**
  * `home` に Text の `title` と、空の Box `panel` が並ぶ、未選択の対。
  * `settings` は別 artboard への移動先。
  */
 function setupSelection(): DocumentSelection {
-  return DocumentSelection.fromNames(
-    DesignDocument.create({
-      tokens: DocumentTemplate.Default.tokens,
-      components: DocumentTemplate.Default.components,
-      artboards: [
-        {
-          name: "home",
-          width: 360,
-          height: 240,
-          children: [
-            { name: "title", type: "Text", props: { content: "ホーム" } },
-            { name: "panel", type: "Box", children: [] },
-          ],
-        },
-        { name: "settings", width: 360, height: 240, children: [] },
-      ],
-    }),
+  return selectionFromArtboards(
+    [
+      {
+        name: "home",
+        width: 360,
+        height: 240,
+        children: [
+          { name: "title", type: "Text", props: { content: "ホーム" } },
+          { name: "panel", type: "Box", children: [] },
+        ],
+      },
+      { name: "settings", width: 360, height: 240, children: [] },
+    ],
     [],
-  );
-}
-
-/** キャンバスに描かれている、名前で指した要素。 */
-function drawn(name: string): Element {
-  return Option.unwrap(
-    Option.fromNullable(document.querySelector(`[data-name="${name}"]`)),
   );
 }
 
