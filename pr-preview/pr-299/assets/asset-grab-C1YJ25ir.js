@@ -1,1 +1,0 @@
-import{n as e}from"./chunk-BneVvdWh.js";import{n as t,t as n}from"./Option-Bq002N32.js";import{r}from"./asset-grab-B5J5_Hn6.js";function i(e={}){return{dragged:n.none,onGrab:()=>{},...e}}var a=e((()=>{t(),r()}));export{i as n,a as t};
