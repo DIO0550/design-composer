@@ -1,14 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import { expect, test } from "vitest";
-import type { NodeDragHandlers } from "@/features/canvas";
 import { EditorLayout } from "../index";
-
-/** 何も掴んでいない状態のポインタの受け口。器の見た目はドラッグに依らない。 */
-const IdleDragHandlers: NodeDragHandlers = {
-  onPointerMove: () => {},
-  onPointerUp: () => {},
-  onPointerLeave: () => {},
-};
+import { IdleDragHandlers } from "./idle-drag-handlers";
 
 function setupLayout() {
   return render(
