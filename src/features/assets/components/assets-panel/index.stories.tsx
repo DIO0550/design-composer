@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { LeftPaneShell } from "@/components/__stories__/left-pane-shell";
 import { Artboard } from "@/domains/artboard";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import {
@@ -43,9 +44,11 @@ const meta = {
   // deep import せずに済ませるため（rules/architecture.md「モジュールの公開API」）。
   decorators: [
     (Story) => (
-      <div className="h-96 w-62 border border-gray-300 bg-white p-3">
-        <Story />
-      </div>
+      <LeftPaneShell>
+        <div className="p-3">
+          <Story />
+        </div>
+      </LeftPaneShell>
     ),
   ],
 } satisfies Meta<typeof AssetsPanel>;

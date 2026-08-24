@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { LeftPaneShell } from "@/components/__stories__/left-pane-shell";
 import { Artboard } from "@/domains/artboard";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import {
@@ -14,9 +15,11 @@ const meta = {
   parameters: { layout: "padded" },
   decorators: [
     (Story) => (
-      <div className="w-64 border border-gray-300 bg-white p-3">
-        <Story />
-      </div>
+      <LeftPaneShell>
+        <div className="p-3">
+          <Story />
+        </div>
+      </LeftPaneShell>
     ),
   ],
   args: { sourceName: Option.none, grab: setupAssetGrab() },

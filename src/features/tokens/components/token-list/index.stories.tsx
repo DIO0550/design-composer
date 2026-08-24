@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
+import { LeftPaneShell } from "@/components/__stories__/left-pane-shell";
 import {
   NoTokenSelection,
   sampleTokenSelection,
@@ -12,9 +13,9 @@ const meta = {
   parameters: { layout: "padded" },
   decorators: [
     (Story) => (
-      <div className="w-64 border border-gray-300 bg-white">
+      <LeftPaneShell>
         <Story />
-      </div>
+      </LeftPaneShell>
     ),
   ],
   args: { onSelectToken: fn(), onAddToken: fn() },
