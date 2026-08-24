@@ -1,5 +1,25 @@
 [
   {
+    "id": "components-panebody--default",
+    "title": "components/PaneBody",
+    "name": "中身が枠に収まる"
+  },
+  {
+    "id": "components-panebody--overflowing",
+    "title": "components/PaneBody",
+    "name": "中身が枠に収まらない"
+  },
+  {
+    "id": "components-paneheading--default",
+    "title": "components/PaneHeading",
+    "name": "中身が並ぶ"
+  },
+  {
+    "id": "components-paneheading--empty",
+    "title": "components/PaneHeading",
+    "name": "中身が空"
+  },
+  {
     "id": "features-assets-assetspanel--default",
     "title": "features/assets/AssetsPanel",
     "name": "パレット"
