@@ -1,4 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { RightPaneShell } from "@/components/__stories__/right-pane-shell";
+import { PaneBody } from "@/components/pane-body";
 import { sampleTokenSelection } from "@/features/tokens/__stories__/sample-token-document";
 import { TokenUsedBy } from "./index";
 
@@ -8,9 +10,11 @@ const meta = {
   parameters: { layout: "padded" },
   decorators: [
     (Story) => (
-      <div className="w-72 border border-gray-300 bg-white p-3">
-        <Story />
-      </div>
+      <RightPaneShell height="content">
+        <PaneBody>
+          <Story />
+        </PaneBody>
+      </RightPaneShell>
     ),
   ],
 } satisfies Meta<typeof TokenUsedBy>;

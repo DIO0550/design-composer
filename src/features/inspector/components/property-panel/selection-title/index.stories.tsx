@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { ReactElement } from "react";
+import { RightPaneShell } from "@/components/__stories__/right-pane-shell";
 import { PaneHeading } from "@/components/pane-heading";
 import { Option } from "@/utils/Option";
 import { SelectionTitle } from "./index";
@@ -7,26 +7,20 @@ import { SelectionTitle } from "./index";
 /**
  * 帯の中身（型アイコン + 名前 + 右端に種別）。
  *
- * 器は帯そのもの（44px・両端まで届く）なので、右ペインの幅の枠ではなく編集画面が
- * 着せるのと同じ帯（`PaneHeading`）に入れて見る。外側の枠が持つのは幅だけ。
+ * 器は帯そのもの（44px・両端まで届く）なので、本文には入れず、編集画面が着せるのと
+ * 同じ帯（`PaneHeading`）に入れて見る。外側の殻が持つのは幅だけ。
  */
-function HeadingFrame({ children }: Readonly<{ children: ReactElement }>) {
-  return (
-    <div className="w-72 border border-gray-300 bg-white">
-      <PaneHeading>{children}</PaneHeading>
-    </div>
-  );
-}
-
 const meta = {
   title: "features/inspector/PropertyPanel/SelectionTitle",
   component: SelectionTitle,
   parameters: { layout: "padded" },
   decorators: [
     (Story) => (
-      <HeadingFrame>
-        <Story />
-      </HeadingFrame>
+      <RightPaneShell height="content">
+        <PaneHeading>
+          <Story />
+        </PaneHeading>
+      </RightPaneShell>
     ),
   ],
 } satisfies Meta<typeof SelectionTitle>;
