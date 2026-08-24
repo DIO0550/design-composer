@@ -2,6 +2,7 @@ import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { rowNames } from "@/components/__tests__/row-names";
+import { rightPaneHeading } from "@/features/editor/__tests__/right-pane-heading";
 import {
   breakFileExternally,
   canvasPane,
@@ -136,9 +137,7 @@ test("ファイルが壊れても、右ペインの見出しは選んでいた�
 
   await breakFileExternally(fake);
 
-  expect(
-    within(screen.getByTestId("right-pane-heading")).getByText("home-title"),
-  ).toBeDefined();
+  expect(within(rightPaneHeading()).getByText("home-title")).toBeDefined();
 });
 
 test("ファイルが壊れると、上部バーが保存状態ではなくエラーの件数を出す", async () => {

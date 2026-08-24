@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { ComponentProps, ReactElement } from "react";
 import { expect, fn, screen, userEvent } from "storybook/test";
+import { PaneBody } from "@/components/pane-body";
+import { PaneHeading } from "@/components/pane-heading";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import { DocumentSelection } from "@/domains/document-selection";
 import { PropertyPanel, ShorthandLabels } from "./index";
@@ -150,24 +152,22 @@ const LongNameDocument = DesignDocument.create({
 /**
  * 帯と本文を実画面と同じ並びで見る。
  *
- * 器（`EditorLayout.RightPane`）は編集画面の組み立てに属していてこの feature からは
- * import できないので、帯の高さと本文の余白だけをここで真似ている。
- *
- * 写しなので、器を落としたことはここには映らない（映るのは `OpenedDocumentEditor` の
- * ストーリー）。同じ class が `editor-layout` と `features/tokens` のストーリーにもあり
- * 計 3 箇所なので、`editor-layout` を直したら両方のストーリーも直す。
+ * 帯と本文は編集画面が着せるのと同じもの（`PaneHeading` / `PaneBody`）。真似ずに
+ * 呼べるのは、どちらも横断層にあるため（#297）。ペインの殻（`EditorLayout.RightPane`）
+ * だけは編集画面の組み立てに属していてこの feature からは呼べないので、幅と枠線は
+ * デコレータで代わりに作る。
  */
 function PropertyPanelPane(
   props: ComponentProps<typeof PropertyPanel.Body>,
 ): ReactElement {
   return (
     <>
-      <div className="flex h-11 shrink-0 items-center gap-2 border-gray-300 border-b px-3">
+      <PaneHeading>
         <PropertyPanel.Title selection={props.selection} />
-      </div>
-      <div className="min-h-0 flex-1 overflow-auto p-3">
+      </PaneHeading>
+      <PaneBody>
         <PropertyPanel.Body {...props} />
-      </div>
+      </PaneBody>
     </>
   );
 }
@@ -177,8 +177,13 @@ const meta = {
   component: PropertyPanelPane,
   parameters: { layout: "padded" },
   /*
-   * 実際の右ペインと同じ器で見る。帯は器の両端まで届くので、
-   * 余白は器ではなく帯と本文がそれぞれ内側に持つ（`EditorLayout.RightPane` と同じ形）。
+   * ペインの殻の代わり。帯の下線を両端まで届かせるため、殻は余白を持たない
+   * （`EditorLayout.RightPane` と同じ形）。高さを固定するのは、本文がスクロールを
+   * 受けていることを視覚差分に載せるため（`artboard を選択中` は 32rem に収まらず、
+   * スクロールバーが絵に出る）。
+   *
+   * Why not: この殻は `features/tokens` のストーリーと綴りが同じだが、共有していない。
+   * フィーチャを跨いだストーリー専用ヘルパーの置き場所を決める判断が要るため（#300）。
    */
   decorators: [
     (Story) => (

@@ -16,9 +16,10 @@
  * （`TokenKind`）までで、指定を組むのは書き込み経路の入口（`useTokenActions`）が行う。
  * ここが指定を組むと、`EditorState.addToken` と同じ型を 2 つの feature が共有することになる。
  *
- * Why not: 右ペインの器（`EditorLayout.RightPane`）はここから呼ばない。器は 3 ペインの
- * 組み立ての一部で `features/editor` に属するため、`TokenEditor` は帯の中身と本文を
- * 分けて返し、器に入れるのは呼び出し側に任せる。
+ * Why not: 右ペインの殻（`EditorLayout.RightPane`）はここから呼ばない。殻は 3 ペインの
+ * 組み立ての一部で `features/editor` に属するため。帯と本文（`PaneHeading` / `PaneBody`）は
+ * 横断層にあるのでストーリーからは呼べるが、実画面でどのペインへ着せるかは編集画面が決める。
+ * `TokenEditor` が返すのは帯の中身と本文だけ。
  */
 export { TokenDashedNodes } from "@/features/tokens/components/token-dashed-nodes";
 export { TokenEditor } from "@/features/tokens/components/token-editor";

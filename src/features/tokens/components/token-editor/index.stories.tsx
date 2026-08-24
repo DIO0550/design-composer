@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { ComponentProps, ReactElement } from "react";
 import { fn } from "storybook/test";
+import { PaneBody } from "@/components/pane-body";
+import { PaneHeading } from "@/components/pane-heading";
 import {
   NoTokenSelection,
   sampleTokenSelection,
@@ -10,24 +12,22 @@ import { TokenEditor } from "./index";
 /**
  * 帯と本文を実画面と同じ並びで見る。
  *
- * 器（`EditorLayout.RightPane`）は編集画面の組み立てに属していてこの feature からは
- * import できないので、帯の高さと本文の余白だけをここで真似ている。
- *
- * 写しなので、器を落としたことはここには映らない（映るのは `OpenedDocumentEditor` の
- * ストーリー）。同じ class が `editor-layout` と `features/inspector` のストーリーにも
- * あり計 3 箇所なので、`editor-layout` を直したら両方のストーリーも直す。
+ * 帯と本文は編集画面が着せるのと同じもの（`PaneHeading` / `PaneBody`）。真似ずに
+ * 呼べるのは、どちらも横断層にあるため（#297）。ペインの殻（`EditorLayout.RightPane`）
+ * だけは編集画面の組み立てに属していてこの feature からは呼べないので、幅と枠線は
+ * デコレータで代わりに作る。
  */
 function TokenEditorPanel(
   props: ComponentProps<typeof TokenEditor.Body>,
 ): ReactElement {
   return (
     <>
-      <div className="flex h-11 shrink-0 items-center gap-2 border-gray-300 border-b px-3">
+      <PaneHeading>
         <TokenEditor.Title selection={props.selection} />
-      </div>
-      <div className="min-h-0 flex-1 overflow-auto p-3">
+      </PaneHeading>
+      <PaneBody>
         <TokenEditor.Body {...props} />
-      </div>
+      </PaneBody>
     </>
   );
 }
@@ -37,8 +37,12 @@ const meta = {
   component: TokenEditorPanel,
   parameters: { layout: "padded" },
   /*
-   * 実際の右ペインと同じ器で見る。帯は器の両端まで届くので、
-   * 余白は器ではなく帯と本文がそれぞれ内側に持つ（`EditorLayout.RightPane` と同じ形）。
+   * ペインの殻の代わり。帯の下線を両端まで届かせるため、殻は余白を持たない
+   * （`EditorLayout.RightPane` と同じ形）。高さを固定するのは、実画面と同じ縦の長さで
+   * 見るため。どのストーリーも中身は 32rem に収まるので、スクロールは絵に出ない。
+   *
+   * Why not: この殻は `features/inspector` のストーリーと綴りが同じだが、共有していない。
+   * フィーチャを跨いだストーリー専用ヘルパーの置き場所を決める判断が要るため（#300）。
    */
   decorators: [
     (Story) => (
