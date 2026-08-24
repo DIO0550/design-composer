@@ -1,26 +1,8 @@
 import { screen } from "@testing-library/react";
 import { expect, test } from "vitest";
-import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import { DesignDocument } from "@/domains/design-document";
 import { DocumentSelection } from "@/domains/document-selection";
-import { renderCanvas } from "./setup";
-
-/**
- * artboard の並びだけを差し替えたドキュメントと、選択の対
- * （トークンと部品は雛形をそのまま使う）。
- */
-function setupSelection(
-  artboards: Parameters<typeof DesignDocument.create>[0]["artboards"],
-  selectedNames: readonly string[] = [],
-): DocumentSelection {
-  return DocumentSelection.fromNames(
-    DesignDocument.create({
-      tokens: DocumentTemplate.Default.tokens,
-      components: DocumentTemplate.Default.components,
-      artboards,
-    }),
-    selectedNames,
-  );
-}
+import { renderCanvas, selectionFromArtboards } from "./setup";
 
 /** 画面に出ている artboard を、描画されている順に並べた名前。 */
 function renderedArtboardNames(): readonly string[] {
@@ -31,7 +13,7 @@ function renderedArtboardNames(): readonly string[] {
 }
 
 test("artboard の中身がキャンバスに描画される", () => {
-  const selection = setupSelection([
+  const selection = selectionFromArtboards([
     {
       name: "home",
       width: 360,
@@ -48,7 +30,7 @@ test("artboard の中身がキャンバスに描画される", () => {
 });
 
 test("部品インスタンスは overrides を適用した中身で描画される", () => {
-  const selection = setupSelection([
+  const selection = selectionFromArtboards([
     {
       name: "home",
       width: 360,
@@ -69,7 +51,7 @@ test("部品インスタンスは overrides を適用した中身で描画され
 });
 
 test("artboard は artboards 配列の順に並ぶ", () => {
-  const selection = setupSelection([
+  const selection = selectionFromArtboards([
     { name: "home", width: 360, height: 240, children: [] },
     { name: "settings", width: 360, height: 240, children: [] },
     { name: "about", width: 360, height: 240, children: [] },
@@ -81,7 +63,7 @@ test("artboard は artboards 配列の順に並ぶ", () => {
 });
 
 test("artboard は自身の幅と高さで描画される", () => {
-  const selection = setupSelection([
+  const selection = selectionFromArtboards([
     { name: "home", width: 360, height: 240, children: [] },
   ]);
 
@@ -93,7 +75,7 @@ test("artboard は自身の幅と高さで描画される", () => {
 });
 
 test("artboard からはみ出した中身はデフォルトで clip される", () => {
-  const selection = setupSelection([
+  const selection = selectionFromArtboards([
     {
       name: "home",
       width: 240,
@@ -121,7 +103,7 @@ test("artboard からはみ出した中身はデフォルトで clip される",
 });
 
 test("トークンはキャンバス側のカスタムプロパティとして与えられる", () => {
-  const selection = setupSelection([
+  const selection = selectionFromArtboards([
     {
       name: "home",
       width: 360,
@@ -141,7 +123,7 @@ test("トークンはキャンバス側のカスタムプロパティとして�
 });
 
 test("選択中の artboard は選択状態として示される", () => {
-  const selection = setupSelection(
+  const selection = selectionFromArtboards(
     [
       { name: "home", width: 360, height: 240, children: [] },
       { name: "settings", width: 360, height: 240, children: [] },
@@ -173,7 +155,7 @@ test("artboard が無いときはその旨が表示される", () => {
 });
 
 test("コンパイルに失敗したときは失敗した旨が表示される", () => {
-  const selection = setupSelection([
+  const selection = selectionFromArtboards([
     {
       name: "home",
       width: 360,
@@ -190,7 +172,7 @@ test("コンパイルに失敗したときは失敗した旨が表示される",
 
 test("artboard のラベルには、その artboard 自身の大きさが出る", () => {
   // 大きさの違う 2 枚を置く。1 枚だと先頭固定・幅と高さの取り違えでも通る
-  const selection = setupSelection([
+  const selection = selectionFromArtboards([
     { name: "home", width: 360, height: 240, children: [] },
     { name: "settings", width: 720, height: 900, children: [] },
   ]);

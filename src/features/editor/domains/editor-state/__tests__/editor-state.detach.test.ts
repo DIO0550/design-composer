@@ -3,6 +3,7 @@ import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import { Node } from "@/domains/node";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
+import { nodeNamed } from "./setup";
 
 /**
  * インスタンスの解除（UI 案 docs/Design Composer.html の `Detach instance`）。
@@ -33,19 +34,6 @@ function setupState(): EditorState {
         },
       ],
     }),
-  );
-}
-
-/**
- * 名前で引いたノード。見つからなければテストを落とす。
- *
- * @param state 引き先のエディタの状態
- * @param name 引きたいノードの名前
- * @returns そのノード
- */
-function nodeNamed(state: EditorState, name: string): Node {
-  return Option.unwrap(
-    DesignDocument.findNode(EditorState.document(state), name),
   );
 }
 

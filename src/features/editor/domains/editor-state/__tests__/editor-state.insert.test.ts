@@ -3,6 +3,7 @@ import { DesignDocument } from "@/domains/design-document";
 import { Node } from "@/domains/node";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
+import { childNames } from "./setup";
 
 function setupState(): EditorState {
   return EditorState.create(
@@ -21,12 +22,6 @@ function setupState(): EditorState {
       ],
     }),
   );
-}
-
-function childNames(state: EditorState, parentName: string): readonly string[] {
-  return Option.unwrap(
-    DesignDocument.findChildren(EditorState.document(state), parentName),
-  ).map((child) => child.name);
 }
 
 test("artboard を選んで Box を挿すと artboard の子の末尾に並ぶ", () => {

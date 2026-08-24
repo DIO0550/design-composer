@@ -1,36 +1,18 @@
-import { render, screen, within } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import type { NodeTemplate } from "@/domains/node-template";
-import { Option } from "@/utils/Option";
-import { NodeInsertToolbar } from "../index";
-
-/** 器を起点に探す。ボタンを直接引くと、器が読み上げ名を失っても気づけない。 */
-function toolbar() {
-  return within(screen.getByRole("region", { name: "挿入" }));
-}
+import { renderToolbar, toolbar } from "./setup";
 
 test("プリミティブごとの追加ボタンが並ぶ", () => {
-  render(
-    <NodeInsertToolbar
-      isInsertEnabled
-      dragged={Option.none}
-      onInsert={() => {}}
-    />,
-  );
+  renderToolbar();
 
   expect(toolbar().getByRole("button", { name: "Box を追加" })).toBeDefined();
   expect(toolbar().getByRole("button", { name: "Text を追加" })).toBeDefined();
 });
 
 test("追加ボタンはそれぞれの型アイコンを出す", () => {
-  render(
-    <NodeInsertToolbar
-      isInsertEnabled
-      dragged={Option.none}
-      onInsert={() => {}}
-    />,
-  );
+  renderToolbar();
 
   // 読み上げ名は `aria-label` から出るので、名前で探すテストはアイコンを消しても通る。
   expect(
@@ -44,13 +26,7 @@ test("追加ボタンはそれぞれの型アイコンを出す", () => {
 test("Box を追加すると Box の挿入が伝わる", async () => {
   const user = userEvent.setup();
   const inserted: NodeTemplate[] = [];
-  render(
-    <NodeInsertToolbar
-      isInsertEnabled
-      dragged={Option.none}
-      onInsert={(template) => inserted.push(template)}
-    />,
-  );
+  renderToolbar({ onInsert: (template) => inserted.push(template) });
 
   await user.click(screen.getByRole("button", { name: "Box を追加" }));
 
@@ -60,13 +36,7 @@ test("Box を追加すると Box の挿入が伝わる", async () => {
 test("Text を追加すると Text の挿入が伝わる", async () => {
   const user = userEvent.setup();
   const inserted: NodeTemplate[] = [];
-  render(
-    <NodeInsertToolbar
-      isInsertEnabled
-      dragged={Option.none}
-      onInsert={(template) => inserted.push(template)}
-    />,
-  );
+  renderToolbar({ onInsert: (template) => inserted.push(template) });
 
   await user.click(screen.getByRole("button", { name: "Text を追加" }));
 

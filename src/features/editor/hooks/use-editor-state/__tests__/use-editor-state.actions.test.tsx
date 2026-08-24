@@ -8,6 +8,7 @@ import { DesignDocument } from "@/domains/design-document";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
 import { useEditorState } from "../index";
+import { homeChildNames } from "./setup";
 
 function setupDocument(): DesignDocument {
   return DesignDocument.create({
@@ -45,12 +46,6 @@ function artboardWidth(state: EditorState): number {
   ).width;
 }
 
-function childNames(state: EditorState): readonly string[] {
-  return Option.unwrap(
-    DesignDocument.findChildren(EditorState.document(state), "home"),
-  ).map((child) => child.name);
-}
-
 /**
  * フックを DOM へ繋いだだけの器。
  * アクションを 1 つずつ送る口と、状態の読み出し（選択・子の並び）を与える。
@@ -63,7 +58,7 @@ function EditorStateHarness() {
       <p data-testid="selected">
         {Option.unwrapOr(EditorState.singleName(state), "選択なし")}
       </p>
-      <p data-testid="children">{childNames(state).join(",")}</p>
+      <p data-testid="children">{homeChildNames(state).join(",")}</p>
       <p data-testid="artboard-width">{artboardWidth(state)}</p>
       <p data-testid="file-validity">{state.fileValidity.kind}</p>
       <button

@@ -3,6 +3,7 @@ import { DesignDocument } from "@/domains/design-document";
 import { DocumentSelection } from "@/domains/document-selection";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
+import { childNames } from "./setup";
 
 /*
  * ツリー上の位置を指した挿入（キャンバスへ落とす経路 / #203）。
@@ -28,12 +29,6 @@ function setupState(): EditorState {
       ],
     }),
   );
-}
-
-function childNames(state: EditorState, parentName: string): readonly string[] {
-  return Option.unwrap(
-    DesignDocument.findChildren(EditorState.document(state), parentName),
-  ).map((child) => child.name);
 }
 
 test("指した位置へ挿すと、先頭でも末尾でもない位置に入る", () => {

@@ -8,8 +8,7 @@ import {
   releasePointer,
 } from "@/features/canvas/__tests__/canvas-gesture";
 import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
-import { Option } from "@/utils/Option";
-import { injectedStyles, renderCanvas } from "./setup";
+import { drawn, drawnAt, injectedStyles, renderCanvas } from "./setup";
 
 /**
  * `home` に、2 軸とも固定の `panel`、モードを指定していない `title`、
@@ -44,28 +43,6 @@ function setupSelection(
     ],
   });
   return DocumentSelection.fromNames(designDocument, selectedNames);
-}
-
-/** キャンバスに描かれている、名前で指した要素。 */
-function drawn(name: string): Element {
-  return Option.unwrap(
-    Option.fromNullable(document.querySelector(`[data-name="${name}"]`)),
-  );
-}
-
-/**
- * 描かれた大きさをテスト用の値にする。
- *
- * happy-dom はレイアウトを行わず矩形をすべて 0 で返すため、そのままでは
- * 「どこが掴める帯か」が決まらない。差し替えるのはブラウザが行う測定だけで、
- * 掴めるかどうかと長さの決まり方は実物の `node-resize` が答える
- * （rules/testing.md「プロセス外・制御不能な境界」）。
- */
-function drawnAt(name: string, bounds: CanvasBounds): Element {
-  const element = drawn(name);
-  element.getBoundingClientRect = () =>
-    new DOMRect(bounds.left, bounds.top, bounds.width, bounds.height);
-  return element;
 }
 
 /** 画面の (100, 50) に 200x100 で描かれている、という前提。右辺 x=300 / 下辺 y=150。 */

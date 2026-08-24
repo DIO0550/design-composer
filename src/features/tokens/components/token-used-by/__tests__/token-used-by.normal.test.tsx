@@ -1,7 +1,7 @@
 import { screen } from "@testing-library/react";
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
-import { type TokenRef, TokenSet } from "@/domains/token";
+import { TokenSet } from "@/domains/token";
 import { renderUsedBy } from "./render";
 
 /**
@@ -41,30 +41,26 @@ const ReferringDocument = DesignDocument.create({
   ],
 });
 
-function renderFor(ref: TokenRef): void {
-  renderUsedBy(ReferringDocument, ref);
-}
-
 test("参照元の行に「名前.prop 名」が出る", () => {
-  renderFor({ kind: "colors", name: "white" });
+  renderUsedBy(ReferringDocument, { kind: "colors", name: "white" });
 
   expect(screen.getByText("surface.background")).toBeDefined();
 });
 
 test("参照元の件数が出る", () => {
-  renderFor({ kind: "colors", name: "white" });
+  renderUsedBy(ReferringDocument, { kind: "colors", name: "white" });
 
   expect(screen.getByTestId("used-by-count").textContent).toBe("2");
 });
 
 test("artboard の props からの参照元には artboard のアイコンが出る", () => {
-  renderFor({ kind: "colors", name: "white" });
+  renderUsedBy(ReferringDocument, { kind: "colors", name: "white" });
 
   expect(screen.getByText("#")).toBeDefined();
 });
 
 test("インスタンスの上書きからの参照元には部品のアイコンが出る", () => {
-  renderFor({ kind: "colors", name: "accent" });
+  renderUsedBy(ReferringDocument, { kind: "colors", name: "accent" });
 
   expect(screen.getByText("◆")).toBeDefined();
 });

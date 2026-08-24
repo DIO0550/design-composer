@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { DesignDocument } from "@/domains/design-document";
 import { PropEdit } from "@/domains/node";
 import { SampleDocument } from "@/features/editor/__tests__/sample-document";
+import { type LeftPaneView, LeftPaneViewLabels } from "@/features/sidebar";
 import { changeFileExternally } from "@/libs/__tests__/document-change";
 import { ClockFake } from "@/libs/clock/fake";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
@@ -175,4 +176,17 @@ export async function selectInTree(name: string): Promise<void> {
 /** artboard の一覧から選ぶ。artboard はツリーの行ではないのでこちらから押す。 */
 export async function selectArtboard(name: string): Promise<void> {
   await userEvent.click(within(artboardList()).getByRole("button", { name }));
+}
+
+/**
+ * レールで行き先を選ぶ。綴りではなく行き先で指す（取り違えを型で弾く）。
+ *
+ * @param view 切り替える先の左ペインの行き先
+ */
+export async function goTo(view: LeftPaneView): Promise<void> {
+  await userEvent.click(
+    within(
+      screen.getByRole("navigation", { name: "左ペインの表示" }),
+    ).getByRole("button", { name: LeftPaneViewLabels[view] }),
+  );
 }

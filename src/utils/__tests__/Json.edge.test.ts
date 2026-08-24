@@ -1,21 +1,10 @@
 import { expect, test } from "vitest";
-import {
-  Json,
-  type JsonDecoded,
-  type JsonDecodeError,
-  type JsonRecordCursor,
-} from "@/utils/Json";
+import { Json, type JsonDecoded, type JsonDecodeError } from "@/utils/Json";
 import { Result } from "@/utils/Result";
+import { recordCursor } from "./Json.setup";
 
 function errorsOf(result: JsonDecoded<unknown>): readonly JsonDecodeError[] {
   return result.ok ? [] : result.error;
-}
-
-function setupRecord(
-  record: Readonly<Record<string, unknown>>,
-  path = "",
-): JsonRecordCursor {
-  return Result.unwrap(Json.record(Json.create(record, path)));
 }
 
 test("期待と違う型の値は位置つきで報告される", () => {
@@ -49,7 +38,7 @@ test("配列をオブジェクトとして読もうとすると型が違う値�
 });
 
 test("必須フィールドが無いと欠落として報告される", () => {
-  const record = setupRecord({}, "artboards[0]");
+  const record = recordCursor({}, "artboards[0]");
 
   expect(errorsOf(Json.required(record, "name", Json.string))).toEqual([
     {
@@ -61,7 +50,7 @@ test("必須フィールドが無いと欠落として報告される", () => {
 });
 
 test("知らないフィールドは未知のフィールドとして報告される", () => {
-  const record = setupRecord({ name: "screen", zoom: 1.5 });
+  const record = recordCursor({ name: "screen", zoom: 1.5 });
 
   expect(errorsOf(Json.knownFields(Result.ok("ok"), record, ["name"]))).toEqual(
     [{ kind: "unknown-field", path: "zoom", message: 'unknown field "zoom"' }],
@@ -69,7 +58,7 @@ test("知らないフィールドは未知のフィールドとして報告さ�
 });
 
 test("プロトタイプ由来のキーはフィールドとして存在しない扱いになる", () => {
-  const record = setupRecord({});
+  const record = recordCursor({});
 
   expect(errorsOf(Json.required(record, "toString", Json.string))).toEqual([
     {

@@ -2,38 +2,19 @@ import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
 import { ElementNameAttribute } from "@/domains/compiled-element";
-import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
-import { DocumentSelection } from "@/domains/document-selection";
+import type { DocumentSelection } from "@/domains/document-selection";
 import {
   canvasContent,
   highlightedNames,
   renderedElement,
 } from "@/features/canvas/__tests__/canvas-elements";
-import { renderCanvas } from "./setup";
-
-/**
- * artboard の並びだけを差し替えたドキュメントと、選択の対
- * （トークンと部品は雛形をそのまま使う）。
- */
-function setupSelection(
-  artboards: Parameters<typeof DesignDocument.create>[0]["artboards"],
-  selectedNames: readonly string[] = [],
-): DocumentSelection {
-  return DocumentSelection.fromNames(
-    DesignDocument.create({
-      tokens: DocumentTemplate.Default.tokens,
-      components: DocumentTemplate.Default.components,
-      artboards,
-    }),
-    selectedNames,
-  );
-}
+import { renderCanvas, selectionFromArtboards } from "./setup";
 
 /** キャンバスの中身が載る領域（強調の規則も描かれた要素もこの中に出る）。 */
 function setupHomeArtboard(
   selectedNames: readonly string[] = [],
 ): DocumentSelection {
-  return setupSelection(
+  return selectionFromArtboards(
     [
       {
         name: "home",
@@ -77,7 +58,7 @@ test("部品インスタンスの中身を押すと、内側の部品定義の�
 
 test("artboard の枠を押すとその artboard だけが候補になる", async () => {
   const onSelect = vi.fn();
-  const selection = setupSelection([
+  const selection = selectionFromArtboards([
     { name: "home", width: 360, height: 240, children: [] },
     { name: "settings", width: 360, height: 240, children: [] },
   ]);
@@ -90,7 +71,7 @@ test("artboard の枠を押すとその artboard だけが候補になる", asyn
 
 test("キーボードで artboard を活性化するとその artboard だけが候補になる", async () => {
   const onSelect = vi.fn();
-  const selection = setupSelection([
+  const selection = selectionFromArtboards([
     { name: "home", width: 360, height: 240, children: [] },
   ]);
   renderCanvas({ selection, onSelect });
@@ -130,7 +111,7 @@ test("何も選択していなければ強調されるものは無い", () => {
  */
 test("名前に二重引用符が含まれていても選択子の中に収まる", () => {
   const quotedName = 'home"]{display:none}[x';
-  const selection = setupSelection(
+  const selection = selectionFromArtboards(
     [{ name: quotedName, width: 360, height: 240, children: [] }],
     [quotedName],
   );

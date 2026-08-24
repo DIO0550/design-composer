@@ -3,12 +3,8 @@ import { expect, test, vi } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
 import { DocumentSelection } from "@/domains/document-selection";
 import { PropEdit } from "@/domains/node";
-import {
-  canvasContent,
-  renderedElement,
-} from "@/features/canvas/__tests__/canvas-elements";
 import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
-import { renderCanvas } from "./setup";
+import { drawn, drawnAt, renderCanvas } from "./setup";
 
 /**
  * `home` に、文言を持つ `title`、文言を設定していない `caption`、Box の `panel` が
@@ -32,25 +28,6 @@ function setupSelection(
     ],
   });
   return DocumentSelection.fromNames(designDocument, selectedNames);
-}
-
-/** キャンバスに描かれている、名前で指した要素。 */
-function drawn(name: string): Element {
-  return renderedElement(canvasContent(), name);
-}
-
-/**
- * 描かれた位置と大きさをテスト用の値にする。
- *
- * happy-dom はレイアウトを行わず矩形をすべて 0 で返すため、そのままでは
- * 入力欄を重ねる位置が決まらない。差し替えるのはブラウザが行う測定だけ
- * （rules/testing.md「プロセス外・制御不能な境界」）。
- */
-function drawnAt(name: string, bounds: CanvasBounds): Element {
-  const element = drawn(name);
-  element.getBoundingClientRect = () =>
-    new DOMRect(bounds.left, bounds.top, bounds.width, bounds.height);
-  return element;
 }
 
 /** 画面の (100, 50) に 80x20 で描かれている、という前提。 */

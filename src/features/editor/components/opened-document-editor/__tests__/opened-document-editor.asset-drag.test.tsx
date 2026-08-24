@@ -1,5 +1,4 @@
 import { fireEvent, screen, within } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { rowNames } from "@/components/__tests__/row-names";
 import { Artboard } from "@/domains/artboard";
@@ -8,14 +7,13 @@ import {
   movePointer,
   pressPointer,
   releasePointer,
+  renderedElement,
 } from "@/features/canvas/__tests__";
-import {
-  type LeftPaneView,
-  LeftPaneViewLabels,
-  LeftPaneViews,
-} from "@/features/sidebar";
+import { LeftPaneViews } from "@/features/sidebar";
 import { Option } from "@/utils/Option";
 import {
+  canvasPane,
+  goTo,
   leftPane,
   propertyPane,
   renderOpenedDocument,
@@ -59,29 +57,8 @@ function setupDocument(): DesignDocument {
 }
 
 /** キャンバスに描かれている、名前で指した要素。 */
-function drawn(name: string): Element {
-  return Option.unwrap(
-    Option.fromNullable(document.querySelector(`[data-name="${name}"]`)),
-  );
-}
-
-/** レールで行き先を選ぶ。 */
-async function goTo(view: LeftPaneView): Promise<void> {
-  await userEvent.click(
-    within(
-      screen.getByRole("navigation", { name: "左ペインの表示" }),
-    ).getByRole("button", { name: LeftPaneViewLabels[view] }),
-  );
-}
-
-/** パレットを開く。掴む起点はここにしか無い。 */
-async function goToAssets(): Promise<void> {
-  await goTo(LeftPaneViews.Assets);
-}
-
-/** ツリーへ戻る。挿さった結果を読めるのは Layers のときだけ。 */
-async function goToLayers(): Promise<void> {
-  await goTo(LeftPaneViews.Layers);
+function drawn(name: string): HTMLElement {
+  return renderedElement(canvasPane(), name);
 }
 
 /** パレットの行。押して掴む起点になる。 */
@@ -99,12 +76,12 @@ function carryTo(rowName: string, target: Element): void {
 
 test("部品の行からキャンバスの Box へ運んで離すと、その Box の子にインスタンスが増える", async () => {
   await renderOpenedDocument(setupDocument());
-  await goToAssets();
+  await goTo(LeftPaneViews.Assets);
 
   carryTo("card", drawn("home-panel"));
   releasePointer(drawn("home-panel"), { x: 300, y: 150 });
 
-  await goToLayers();
+  await goTo(LeftPaneViews.Layers);
   expect(rowNames(tree())).toEqual([
     "home-title",
     "home-panel",
@@ -115,12 +92,12 @@ test("部品の行からキャンバスの Box へ運んで離すと、その Bo
 
 test("プリミティブの行から artboard へ運んで離すと、その artboard の子に増える", async () => {
   await renderOpenedDocument(setupDocument());
-  await goToAssets();
+  await goTo(LeftPaneViews.Assets);
 
   carryTo("Box", drawn("home"));
   releasePointer(drawn("home"), { x: 300, y: 150 });
 
-  await goToLayers();
+  await goTo(LeftPaneViews.Layers);
   // 落とし先は artboard なので、`home-panel` の中ではなく `home` の並びへ入る
   expect(rowNames(tree())).toEqual([
     "home-title",
@@ -134,7 +111,7 @@ test("受け入れ先が無い場所で離しても木は変わらない", async
   await renderOpenedDocument(setupDocument());
   // ツリーは Layers のときしか出ないので、比べる元をここで読む
   const before = rowNames(tree());
-  await goToAssets();
+  await goTo(LeftPaneViews.Assets);
 
   // artboard の外（キャンバスの余白）には受け入れられる親が無い
   const surface = screen.getByTestId("canvas-surface");
@@ -142,13 +119,13 @@ test("受け入れ先が無い場所で離しても木は変わらない", async
   movePointer(surface, { x: 300, y: 150 });
   releasePointer(surface, { x: 300, y: 150 });
 
-  await goToLayers();
+  await goTo(LeftPaneViews.Layers);
   expect(rowNames(tree())).toEqual(before);
 });
 
 test("左ペインの上で離しても掴んだままにならない", async () => {
   await renderOpenedDocument(setupDocument());
-  await goToAssets();
+  await goTo(LeftPaneViews.Assets);
 
   // 掴んだまま戻らないと、次に運ぼうとしたときに前のものが付いてくる
   carryTo("card", drawn("home-panel"));
@@ -162,7 +139,7 @@ test("左ペインの上で離しても掴んだままにならない", async ()
 
 test("運んでいる間は落ちる先がどの親のどこかとして示される", async () => {
   await renderOpenedDocument(setupDocument());
-  await goToAssets();
+  await goTo(LeftPaneViews.Assets);
 
   carryTo("card", drawn("home-panel"));
 
@@ -176,7 +153,7 @@ test("運んでいる間は落ちる先がどの親のどこかとして示さ�
 
 test("落ちる先の何番目かと子の数は、入れ替わらずにこの順で出る", async () => {
   await renderOpenedDocument(setupDocument());
-  await goToAssets();
+  await goTo(LeftPaneViews.Assets);
 
   /*
    * 子を 3 つ持つ `home` の**先頭**へ落ちる位置で見る。happy-dom は矩形を返さず
@@ -192,7 +169,7 @@ test("落ちる先の何番目かと子の数は、入れ替わらずにこの�
 
 test("パレットから落とした直後にキャンバスのノードを押すとそのノードが選択できる", async () => {
   await renderOpenedDocument(setupDocument());
-  await goToAssets();
+  await goTo(LeftPaneViews.Assets);
 
   carryTo("card", drawn("home-panel"));
   releasePointer(drawn("home-panel"), { x: 300, y: 150 });
@@ -212,7 +189,7 @@ test("パレットから落とした直後にキャンバスのノードを押�
 test("パレットの行を掴んでも選択は変わらない", async () => {
   await renderOpenedDocument(setupDocument());
   await selectInTree("home-title");
-  await goToAssets();
+  await goTo(LeftPaneViews.Assets);
 
   carryTo("card", drawn("home-panel"));
 
@@ -223,7 +200,7 @@ test("パレットの行を掴んでも選択は変わらない", async () => {
 test("落としても選択は動かない", async () => {
   await renderOpenedDocument(setupDocument());
   await selectInTree("home-title");
-  await goToAssets();
+  await goTo(LeftPaneViews.Assets);
 
   carryTo("card", drawn("home-panel"));
   releasePointer(drawn("home-panel"), { x: 300, y: 150 });

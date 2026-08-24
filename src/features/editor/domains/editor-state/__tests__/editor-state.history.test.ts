@@ -3,32 +3,11 @@ import { ReceivedAt } from "@/domains/__tests__/instants";
 import { DesignDocument } from "@/domains/design-document";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
-
-function setupState(): EditorState {
-  return EditorState.create(
-    DesignDocument.create({
-      artboards: [
-        {
-          name: "home",
-          width: 375,
-          height: 812,
-          children: [
-            { name: "title", type: "Text" },
-            {
-              name: "body",
-              type: "Box",
-              children: [{ name: "body-text", type: "Text" }],
-            },
-          ],
-        },
-      ],
-    }),
-  );
-}
+import { stateWithNestedBox } from "./setup";
 
 test("削除を戻すと消したノードがツリーに返ってくる", () => {
   const removed = Option.unwrap(
-    EditorState.removeNode(EditorState.select(setupState(), "title")),
+    EditorState.removeNode(EditorState.select(stateWithNestedBox(), "title")),
   );
 
   const undone = Option.unwrap(EditorState.undo(removed));
@@ -40,7 +19,7 @@ test("削除を戻すと消したノードがツリーに返ってくる", () =>
 
 test("挿入を戻すと足したノードがツリーから消える", () => {
   const inserted = Option.unwrap(
-    EditorState.insertNode(EditorState.select(setupState(), "body"), {
+    EditorState.insertNode(EditorState.select(stateWithNestedBox(), "body"), {
       kind: "primitive",
       type: "Text",
     }),
@@ -49,13 +28,13 @@ test("挿入を戻すと足したノードがツリーから消える", () => {
   const undone = Option.unwrap(EditorState.undo(inserted));
 
   expect(EditorState.document(undone)).toEqual(
-    EditorState.document(setupState()),
+    EditorState.document(stateWithNestedBox()),
   );
 });
 
 test("続けて 2 回編集したあと 2 回戻すと最初のドキュメントに戻る", () => {
   const first = Option.unwrap(
-    EditorState.removeNode(EditorState.select(setupState(), "title")),
+    EditorState.removeNode(EditorState.select(stateWithNestedBox(), "title")),
   );
   const second = Option.unwrap(
     EditorState.removeNode(EditorState.select(first, "body-text")),
@@ -66,13 +45,13 @@ test("続けて 2 回編集したあと 2 回戻すと最初のドキュメン�
   );
 
   expect(EditorState.document(undone)).toEqual(
-    EditorState.document(setupState()),
+    EditorState.document(stateWithNestedBox()),
   );
 });
 
 test("戻した編集はやり直すと再び反映される", () => {
   const removed = Option.unwrap(
-    EditorState.removeNode(EditorState.select(setupState(), "title")),
+    EditorState.removeNode(EditorState.select(stateWithNestedBox(), "title")),
   );
   const undone = Option.unwrap(EditorState.undo(removed));
 
@@ -84,26 +63,26 @@ test("戻した編集はやり直すと再び反映される", () => {
 });
 
 test("何も編集していなければ戻せない", () => {
-  expect(EditorState.undo(setupState()).some).toBe(false);
+  expect(EditorState.undo(stateWithNestedBox()).some).toBe(false);
 });
 
 test("戻していなければやり直せない", () => {
   const removed = Option.unwrap(
-    EditorState.removeNode(EditorState.select(setupState(), "title")),
+    EditorState.removeNode(EditorState.select(stateWithNestedBox(), "title")),
   );
 
   expect(EditorState.redo(removed).some).toBe(false);
 });
 
 test("選択の切り替えは履歴に積まれない", () => {
-  const selected = EditorState.select(setupState(), "title");
+  const selected = EditorState.select(stateWithNestedBox(), "title");
 
   expect(EditorState.undo(selected).some).toBe(false);
 });
 
 test("コピーは履歴に積まれない", () => {
   const copied = Option.unwrap(
-    EditorState.copyNode(EditorState.select(setupState(), "title")),
+    EditorState.copyNode(EditorState.select(stateWithNestedBox(), "title")),
   );
 
   expect(EditorState.undo(copied).some).toBe(false);
@@ -111,7 +90,7 @@ test("コピーは履歴に積まれない", () => {
 
 test("戻した結果に選択中のノードが無ければ選択は外れる", () => {
   const inserted = Option.unwrap(
-    EditorState.insertNode(EditorState.select(setupState(), "body"), {
+    EditorState.insertNode(EditorState.select(stateWithNestedBox(), "body"), {
       kind: "primitive",
       type: "Text",
     }),
@@ -126,7 +105,7 @@ test("戻した結果に選択中のノードが無ければ選択は外れる",
 
 test("戻した結果にも選択中のノードがあれば選択は引き継がれる", () => {
   const removed = Option.unwrap(
-    EditorState.removeNode(EditorState.select(setupState(), "title")),
+    EditorState.removeNode(EditorState.select(stateWithNestedBox(), "title")),
   );
 
   const undone = Option.unwrap(
@@ -137,7 +116,7 @@ test("戻した結果にも選択中のノードがあれば選択は引き継�
 });
 
 test("外部変更の取り込みを戻すと取り込む前のドキュメントに戻る", () => {
-  const opened = setupState();
+  const opened = stateWithNestedBox();
   const reloaded = EditorState.applyReload(
     opened,
     {
@@ -156,7 +135,7 @@ test("外部変更の取り込みを戻すと取り込む前のドキュメン�
 
 test("取り込みを拒んだときは履歴に積まれない", () => {
   const rejected = EditorState.applyReload(
-    setupState(),
+    stateWithNestedBox(),
     {
       kind: "rejected",
       errors: [
@@ -175,7 +154,7 @@ test("取り込みを拒んだときは履歴に積まれない", () => {
 
 test("戻したあとに別の編集をするとやり直せなくなる", () => {
   const removed = Option.unwrap(
-    EditorState.removeNode(EditorState.select(setupState(), "title")),
+    EditorState.removeNode(EditorState.select(stateWithNestedBox(), "title")),
   );
   const undone = Option.unwrap(EditorState.undo(removed));
 
