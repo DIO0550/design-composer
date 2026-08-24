@@ -71,6 +71,72 @@
 
 ---
 
+この 5 つの語彙は、`なし` として溜まっていた 23 件を `harness-growth` の「逃し弁」で
+グルーピングして昇格させたもの（pr-233〜pr-301 の間）。
+
+## `vrt-blind-spot` — VRT が構造上効かない場面を見落とす
+
+**story の id が変わると、VRT は「変更」ではなく new + deleted のペアとして出す。**
+ベースラインの無い story は `new` 扱いで `failed` に数えられないため、器の中身がずれても
+緑のまま通る。
+
+| 起きたこと |
+|---|
+| ストーリーを別 feature へ移したら、見た目を変えていないのに VRT が `0 changed / 11 new / 11 deleted` になり、予告していた「差分が出る」が外れた |
+| story の `title` を変えて id が全 11 本変わったのに、旧計画に表示確認の行が 1 つも無く、`PropertyPanelPane` の器が実物とずれても VRT は緑のまま通る状態だった |
+| 視覚差分でしか守れない部品（`PaneBody`）に単体ストーリーが無く、`PropertyPanel` / `TokenEditor` という器と中身が混ざったストーリーでしか差分を追えなかった（退行が器と中身のどちらで起きたか読めない） |
+
+- **story のファイル移動・`title` 変更を伴う計画では、id が全て変わることを予告に書く。**
+  「VRT で守られる」と書くだけでは不十分
+- **視覚差分でしか守れない部品には、単体のストーリーを置く。** 器と中身が混ざったストーリー
+  1 枚に頼らない
+
+## `naming-vocabulary-alignment` — 既存の命名規約はあるが対応するタグが無かった
+
+`rules/naming.md` は書かれており、レビュー（`plan-reviewer` / `implementation-reviewer`）は
+実際に指摘を出せていた。**規約自体の抜けではなく、指摘を数えるタグが無かった形。**
+
+| 起きたこと |
+|---|
+| `TokenControl.forSelection` を `create` へ改名しようとしたが、`forSelection` は 4 モジュールが同じ意味で使っている語彙で揃っていなかった |
+| 委譲先が `collectTokenReferrers` なのに、呼び出し側の名前が `referrers` / `referrerNodeNames` で「収集は `collect*`」に揃っていなかった |
+| `isDetachEnabled` をドメインへ昇格すると、`Enabled` という UI 側の語彙がドメインに紛れ込む形になっていた。中身と一致する `isDetachable` へ改名した |
+| ラベル欄の共有モジュール名が 2 つの export の片方しか覆っておらず、`plan-reviewer` と `implementation-reviewer` が逆向きの改名を指摘した |
+
+## `duplication-uncovered-shape` — 既存の `duplication-*` が想定していない重複の形
+
+既存の 4 語彙（`duplication-test` / `duplication-logic` / `duplication-branch-shape` /
+`duplication-traversal`）は走査・分岐・ヘルパーの重複を指しており、次の形は拾えなかった。
+
+| 起きたこと |
+|---|
+| 同じ「ドキュメントの性質」を引くのに、`NameSpace` への直接呼び出しと `DesignDocument` のコンパニオン経由の 2 経路が混在していた |
+| 色見本 UI 部品が、手書きの `<span>` と共有コンポーネント `color-swatch` の 2 実装に分かれていた |
+| 関数型 `(document, name) => boolean` の型注釈が 2 箇所に直書きされ、片方だけ変えても型エラーにならなかった |
+
+## `tooling-rule-scope-gap` — 規約・検査の対象範囲が harness 自身のツールに及んでいなかった
+
+| 起きたこと |
+|---|
+| `check-added-lint-suppressions.sh` が行番号だけで追加を判定しており、ファイル分割による抑制コメントの「移動」を「新規追加」と誤検知した |
+| `.claude/hooks/lib/` の Python コードが 4 段ネスト・無名の複合条件式を持っていたが、`rules/coding.md` / `rules/naming.md` は TypeScript を想定した記述で Python への適用が明記されていなかった |
+| 同じ判断根拠が `import-rule-violations.py` の docstring と `.claude/hooks/README.md` の 2 箇所にあり、片方（README）だけが古くなった |
+
+対策は `rules/coding.md`「規約の適用範囲」で、`.claude/hooks/` `.github/scripts/` にも
+規約が及ぶことと、doc 間の重複も対象になることを明記した。
+
+## `test-assert-unfalsifiable` — その assert は落ちうるかの判定タグが無かった
+
+`rules/testing.md`「その assert は落ちうるか」は既にあり、`plan-reviewer` の指摘で実際に
+差し替えている。**規約はあるがタグが無かった形。**
+
+| 起きたこと |
+|---|
+| `fromParsed` が純関数のため、計画に残したテストケースはどう実装を壊しても他のケースと差が出ず、落ちる実装の壊し方が存在しなかった |
+| 「中身は空」という assert の括弧書き部分が、空の children を渡した結果として自明で、実装をどう壊しても落ちなかった |
+
+---
+
 ## 単発（まだ語彙にしていない）
 
 2 件目が出たら語彙へ昇格する候補。
@@ -85,3 +151,11 @@
 | `return <></>` が Biome の指摘を新規に増やした | pr-227 |
 | 改名で 1 行が折り返しの閾値を超え、`biome check` の format 差分で CI が落ちた | pr-211 |
 | `pnpm run typecheck` / `lint` / `test:run` は通っていたが `biome check` を見ておらず format 差分で落とした | pr-124 / pr-168 |
+| `Option.none` に新しい理由（凍結中）を足したことで、`.some` を判定に使っている消費側の文言が原因と食い違った | pr-233 |
+| Issue 本文が根拠に引用した前例が、既に別 PR で実装済みになっており前提が古かった | pr-236 |
+| コミットメッセージの `Claude-Session` URL に作業ディレクトリの UUID を書き、存在しないセッションを指した | pr-240 |
+| テストヘルパーの `@param` にテストの書き方の手順文を書いており、doc の書式から逸脱していた | pr-258 |
+| 別モジュールの仕様である並び順を、このモジュールのテストで固定していた（over-specification） | pr-261 |
+| モジュールが公開 API に昇格したのに、モジュール直下の `__tests__/` が無かった | pr-267 |
+| 凍結の早期 return より前で、凍結中は要らない値を計算していた（実害は無い可読性の話） | pr-282 |
+| 削除する関数が持っていた Why コメントの移送先が計画に書かれておらず、全部は移せない事情も未整理だった | pr-301 |
