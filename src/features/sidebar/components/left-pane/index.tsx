@@ -62,7 +62,7 @@ function LeftPaneContent({
           <ArtboardList
             selection={selection}
             onSelect={node.select}
-            artboard={artboard}
+            artboardActions={artboard}
           />
           <DocumentTree
             selection={selection}

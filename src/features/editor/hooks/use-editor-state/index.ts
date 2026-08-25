@@ -7,7 +7,10 @@ import type { Instant } from "@/domains/instant";
 import type { PropEdit } from "@/domains/node";
 import type { NodeTemplate } from "@/domains/node-template";
 import type { TokenRef, TokenValue } from "@/domains/token";
-import { EditorState } from "@/features/editor/domains/editor-state";
+import {
+  type ArtboardMove,
+  EditorState,
+} from "@/features/editor/domains/editor-state";
 import type { TokenTemplate } from "@/features/editor/domains/token-template";
 import { Option } from "@/utils/Option";
 
@@ -38,7 +41,7 @@ export type EditorAction =
     }>
   | Readonly<{ type: "remove_selected" }>
   | Readonly<{ type: "add_artboard" }>
-  | Readonly<{ type: "reorder_artboard"; fromIndex: number; toIndex: number }>
+  | Readonly<{ type: "reorder_artboard"; move: ArtboardMove }>
   | Readonly<{ type: "detach_instance" }>
   | Readonly<{ type: "select_all_instances" }>
   | Readonly<{ type: "create_component"; componentName: string }>
@@ -130,10 +133,7 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
        * 到達しない（reorder_node と同じ扱い）。
        */
       return Option.unwrapOr(
-        EditorState.reorderArtboard(state, {
-          fromIndex: action.fromIndex,
-          toIndex: action.toIndex,
-        }),
+        EditorState.reorderArtboard(state, action.move),
         state,
       );
     case "detach_instance":

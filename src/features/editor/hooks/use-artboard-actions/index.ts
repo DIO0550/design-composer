@@ -1,4 +1,5 @@
 import { useEditor } from "@/features/editor/components/editor-provider";
+import type { ArtboardMove } from "@/features/editor/domains/editor-state";
 
 /**
  * artboard の一覧から届く操作（docs/06-ui.md「編集操作の一覧」の artboard 操作）。
@@ -11,7 +12,7 @@ export type ArtboardActions = Readonly<{
   /** 末尾に 1 枚足して、そのまま見られるよう選択する。 */
   add: () => void;
   /** 並びの中で 1 枚を別の位置へ移す。 */
-  reorder: (move: Readonly<{ fromIndex: number; toIndex: number }>) => void;
+  reorder: (move: ArtboardMove) => void;
 }>;
 
 /**
@@ -28,11 +29,6 @@ export function useArtboardActions(): ArtboardActions {
 
   return {
     add: () => dispatch({ type: "add_artboard" }),
-    reorder: (move) =>
-      dispatch({
-        type: "reorder_artboard",
-        fromIndex: move.fromIndex,
-        toIndex: move.toIndex,
-      }),
+    reorder: (move) => dispatch({ type: "reorder_artboard", move }),
   };
 }

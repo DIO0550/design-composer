@@ -1,4 +1,7 @@
-import { ReorderButtons } from "@/components/reorder-buttons";
+import {
+  type ListPlacement,
+  ReorderButtons,
+} from "@/components/reorder-buttons";
 import { TypeGlyph } from "@/components/type-glyph";
 import type { Artboard } from "@/domains/artboard";
 import { DocumentSelection } from "@/domains/document-selection";
@@ -29,10 +32,10 @@ function ArtboardRow({
   onReorder,
 }: Readonly<{
   artboard: Artboard;
-  placement: Readonly<{ index: number; count: number }>;
+  placement: ListPlacement;
   isCurrent: boolean;
   onSelect: (name: string) => void;
-  onReorder: (move: Readonly<{ fromIndex: number; toIndex: number }>) => void;
+  onReorder: LeftPaneArtboardActions["reorder"];
 }>) {
   return (
     <li className="flex items-center gap-1 pr-1">
@@ -81,11 +84,11 @@ function ArtboardRow({
 export function ArtboardList({
   selection,
   onSelect,
-  artboard,
+  artboardActions,
 }: Readonly<{
   selection: DocumentSelection;
   onSelect: (name: string) => void;
-  artboard: LeftPaneArtboardActions;
+  artboardActions: LeftPaneArtboardActions;
 }>) {
   const artboards = selection.document.artboards;
 
@@ -98,7 +101,7 @@ export function ArtboardList({
         <button
           type="button"
           aria-label={AddArtboardLabel}
-          onClick={artboard.add}
+          onClick={artboardActions.add}
           className="px-1 text-gray-500 text-sm hover:text-gray-900"
         >
           +
@@ -108,17 +111,17 @@ export function ArtboardList({
         <p className="text-gray-500">{NoArtboardMessage}</p>
       ) : (
         <ul>
-          {artboards.map((current, index) => (
+          {artboards.map((artboard, index) => (
             <ArtboardRow
-              key={current.name}
-              artboard={current}
+              key={artboard.name}
+              artboard={artboard}
               placement={{ index, count: artboards.length }}
               isCurrent={DocumentSelection.isCurrentArtboard(
                 selection,
-                current.name,
+                artboard.name,
               )}
               onSelect={onSelect}
-              onReorder={artboard.reorder}
+              onReorder={artboardActions.reorder}
             />
           ))}
         </ul>

@@ -44,6 +44,13 @@ export type EditorState = Readonly<{
 }>;
 
 /**
+ * artboard を並びの中で動かす指定。
+ * 今の位置と移す先は片方だけでは移動が決まらないため 1 つの型にまとめる
+ * （同じ型の数が 2 つ並ぶので、位置引数だと取り違えても型エラーにならない）。
+ */
+export type ArtboardMove = Readonly<{ fromIndex: number; toIndex: number }>;
+
+/**
  * 選択中のトークン。ドキュメントから消えていれば選択は無い。
  * `selection` と同時に立っていてよい。左ペインのタブ（Layers / Tokens）が
  * どちらを右ペインに映すかを決めるので、2 つは「それぞれのタブの中の選択」であって
@@ -658,10 +665,7 @@ export const EditorState = {
    * @param move 動かす artboard の今の位置と、移す先の位置
    * @returns 並びが変わった状態。並びの外を指すときと、ファイルが不正な間は `none`
    */
-  reorderArtboard(
-    state: EditorState,
-    move: Readonly<{ fromIndex: number; toIndex: number }>,
-  ): Option<EditorState> {
+  reorderArtboard(state: EditorState, move: ArtboardMove): Option<EditorState> {
     const reordered = DesignDocument.reorderArtboard(
       EditorState.document(state),
       move.fromIndex,

@@ -34,7 +34,7 @@ function renderList(selection: DocumentSelection): {
     <ArtboardList
       selection={selection}
       onSelect={onSelect}
-      artboard={{ add: vi.fn(), reorder: vi.fn() }}
+      artboardActions={{ add: vi.fn(), reorder: vi.fn() }}
     />,
   );
   return { list: container, onSelect };

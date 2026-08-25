@@ -16,6 +16,18 @@
 export type LeftPaneArtboardActions = Readonly<{
   /** 見出しの `+` が押されたときに、artboard を 1 枚足すことを伝える。 */
   add: () => void;
-  /** 行を動かしたときに、今の位置と移す先を並びの中の位置として伝える。 */
-  reorder: (move: Readonly<{ fromIndex: number; toIndex: number }>) => void;
+  /** 行を動かしたときに、今の位置と移す先を伝える。 */
+  reorder: (move: LeftPaneArtboardMove) => void;
+}>;
+
+/**
+ * 動かす artboard の今の位置と、移す先。
+ * 片方だけでは移動が決まらないため 1 つの型にまとめる。
+ *
+ * `features/editor` の `ArtboardMove` と同じ形を綴り直しているのは、
+ * `LeftPaneArtboardActions` 自体と同じ理由（`sidebar -> editor` の辺を作らない）。
+ */
+export type LeftPaneArtboardMove = Readonly<{
+  fromIndex: number;
+  toIndex: number;
 }>;

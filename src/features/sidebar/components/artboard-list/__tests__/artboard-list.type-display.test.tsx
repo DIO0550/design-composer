@@ -18,7 +18,7 @@ function renderList(): void {
     <ArtboardList
       selection={setupSelection()}
       onSelect={vi.fn()}
-      artboard={{ add: vi.fn(), reorder: vi.fn() }}
+      artboardActions={{ add: vi.fn(), reorder: vi.fn() }}
     />,
   );
 }
