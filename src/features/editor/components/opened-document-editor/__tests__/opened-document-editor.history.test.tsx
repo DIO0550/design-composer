@@ -1,12 +1,8 @@
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
+import { dragRowNamed } from "@/components/__tests__/row-drag";
 import { rowNames } from "@/components/__tests__/row-names";
-import {
-  dragRowNamed,
-  renderOpenedDocument,
-  selectInTree,
-  tree,
-} from "./setup";
+import { renderOpenedDocument, selectInTree, tree } from "./setup";
 
 /** 並べ替え前の home の子の並び。 */
 const OriginalChildren = ["home-title", "home-login"];

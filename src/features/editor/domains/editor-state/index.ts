@@ -15,6 +15,7 @@ import { TokenSelection } from "@/domains/token-selection";
 import { EditHistory } from "@/features/editor/domains/edit-history";
 import { TokenTemplate } from "@/features/editor/domains/token-template";
 import { Option } from "@/utils/Option";
+import type { ReorderMove } from "@/utils/ReorderDrag";
 
 /**
  * エディタ画面が保持する状態（docs/06-ui.md「画面構成」「選択」）。
@@ -42,13 +43,6 @@ export type EditorState = Readonly<{
   copiedNode: Option<Node>;
   fileValidity: FileValidity;
 }>;
-
-/**
- * artboard を並びの中で動かす指定。
- * 今の位置と移す先は片方だけでは移動が決まらないため 1 つの型にまとめる
- * （同じ型の数が 2 つ並ぶので、位置引数だと取り違えても型エラーにならない）。
- */
-export type ArtboardMove = Readonly<{ fromIndex: number; toIndex: number }>;
 
 /**
  * 選択中のトークン。ドキュメントから消えていれば選択は無い。
@@ -665,7 +659,7 @@ export const EditorState = {
    * @param move 動かす artboard の今の位置と、移す先の位置
    * @returns 並びが変わった状態。並びの外を指すときと、ファイルが不正な間は `none`
    */
-  reorderArtboard(state: EditorState, move: ArtboardMove): Option<EditorState> {
+  reorderArtboard(state: EditorState, move: ReorderMove): Option<EditorState> {
     const reordered = DesignDocument.reorderArtboard(
       EditorState.document(state),
       move.fromIndex,

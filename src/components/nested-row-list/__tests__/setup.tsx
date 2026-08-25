@@ -77,40 +77,6 @@ export function renderRowList(): RenderedRowList {
 }
 
 /**
- * 名前で行の枠を引く。並べ替えは行を掴んで運ぶので、掴む相手を指すのに使う。
- *
- * `<li>` ではなくその中の枠を返すのは、掴む口が**その行だけ**を包む要素に
- * 張ってあるため。`<li>` は配下の並びまで包んでいるので、そちらに張ると
- * 子の行を押したときに親を掴んでしまう（pointerdown はバブルする）。
- *
- * @param list 器を描いた要素
- * @param name 引きたい行の名前
- * @returns その行の枠。見つからなければテストを落とす
- */
-export function rowOf(list: HTMLElement, name: string): HTMLElement {
-  const content = within(list).getByText(name);
-  const row = content.parentElement;
-  if (row === null) {
-    throw new Error(`行が見つからない: ${name}`);
-  }
-  return row;
-}
-
-/**
- * その行が属する並びの器（`<ul>`）。離した通知はここが受ける。
- *
- * @param row 行の枠
- * @returns その行を包む `<ul>`。見つからなければテストを落とす
- */
-export function groupOf(row: HTMLElement): HTMLElement {
-  const group = row.closest("ul");
-  if (group === null) {
-    throw new Error("並びの器が見つからない");
-  }
-  return group;
-}
-
-/**
  * 画面に出ている順の、行の中身の字面。器が出すボタン（開閉）は読み上げ名を
  * 持つので、それを持たないボタン＝検査が渡した行の中身だけを拾う。
  *

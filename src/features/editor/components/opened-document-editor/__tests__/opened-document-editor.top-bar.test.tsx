@@ -1,13 +1,8 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
-import {
-  canvasPane,
-  dragRowNamed,
-  renderOpenedDocument,
-  tree,
-  zoomToolbar,
-} from "./setup";
+import { dragRowNamed } from "@/components/__tests__/row-drag";
+import { canvasPane, renderOpenedDocument, tree, zoomToolbar } from "./setup";
 
 /** キャンバスの中身に効いている変形（ズームの結果）。 */
 function canvasTransform(): string {

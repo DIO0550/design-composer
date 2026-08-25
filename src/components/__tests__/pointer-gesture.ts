@@ -78,15 +78,16 @@ export function drag(
 /**
  * 行を掴んで別の行の上まで運び、そこで離す（並べ替えの 1 操作）。
  *
- * 離すのを器（`<ul>`）へ撃つのは、行から離した通知が器までバブルするのを
- * そのまま使っているため（実装が受けているのは器の側）。
+ * 離すのを**運んだ先の行**へ撃つのは、ブラウザで起きるのがそれだから。
+ * 実装が受けているのは器（`<ul>`）だが、そこへ直接撃つと行から器までの
+ * バブルを一度も通さないことになり、行の側で止められても気づけない。
  *
- * @param movement 掴む行・運ぶ先の行・離す通知を受ける器
+ * @param movement 掴む行と、運んで離す先の行
  */
 export function dragRow(
-  movement: Readonly<{ from: Element; to: Element; group: Element }>,
+  movement: Readonly<{ from: Element; to: Element }>,
 ): void {
   pressPointer(movement.from, { x: 0, y: 0 });
   enterPointer(movement.to);
-  releasePointer(movement.group, { x: 0, y: 0 });
+  releasePointer(movement.to, { x: 0, y: 0 });
 }

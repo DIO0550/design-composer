@@ -1,6 +1,5 @@
 import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { dragRow } from "@/components/__tests__/pointer-gesture";
 import { DesignDocument } from "@/domains/design-document";
 import { PropEdit } from "@/domains/node";
 import { SampleDocument } from "@/features/editor/__tests__/sample-document";
@@ -172,43 +171,6 @@ export function artboardList(): HTMLElement {
 /** ツリーの行を名前で押して選ぶ。同じ名前はキャンバスにも出るのでツリーに絞る。 */
 export async function selectInTree(name: string): Promise<void> {
   await userEvent.click(within(tree()).getByRole("button", { name }));
-}
-
-/**
- * 名前で行の枠を引く。並べ替えは行を掴んで運ぶので、掴む相手を指すのに使う。
- *
- * `<li>` ではなくその中の枠を返すのは、掴む口が**その行だけ**を包む要素に張って
- * あるため（`<li>` は配下の並びまで包む）。artboard の一覧は `<li>` が行そのもの
- * なので、どちらでも同じ要素に行き着く。
- *
- * @param pane 行が並んでいる領域（ツリー / artboard の一覧）
- * @param name 引きたい行の名前
- * @returns その行の枠。見つからなければテストを落とす
- */
-export function rowOf(pane: HTMLElement, name: string): HTMLElement {
-  const row = within(pane).getByRole("button", { name }).parentElement;
-  if (row === null) {
-    throw new Error(`行が見つからない: ${name}`);
-  }
-  return row;
-}
-
-/**
- * 行を掴んで別の行の上まで運ぶ（並べ替えの 1 操作）。
- *
- * @param pane 行が並んでいる領域
- * @param movement 掴む行と運ぶ先の行の名前
- */
-export function dragRowNamed(
-  pane: HTMLElement,
-  movement: Readonly<{ from: string; to: string }>,
-): void {
-  const from = rowOf(pane, movement.from);
-  const group = from.closest("ul");
-  if (group === null) {
-    throw new Error("並びの器が見つからない");
-  }
-  dragRow({ from, to: rowOf(pane, movement.to), group });
 }
 
 /** artboard の一覧から選ぶ。artboard はツリーの行ではないのでこちらから押す。 */

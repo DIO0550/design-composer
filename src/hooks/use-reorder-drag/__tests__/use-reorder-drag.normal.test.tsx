@@ -39,11 +39,7 @@ function renderHarness(): ReturnType<typeof vi.fn> {
 test("掴んで別の行の上で離すとその位置への移動が伝わる", () => {
   const onReorder = renderHarness();
 
-  dragRow({
-    from: screen.getByTestId("a"),
-    to: screen.getByTestId("c"),
-    group: screen.getByTestId("group"),
-  });
+  dragRow({ from: screen.getByTestId("a"), to: screen.getByTestId("c") });
 
   expect(onReorder).toHaveBeenCalledWith({ fromIndex: 0, toIndex: 2 });
 });
@@ -51,11 +47,7 @@ test("掴んで別の行の上で離すとその位置への移動が伝わる",
 test("掴んだ行の上で離しても移動は伝わらない", () => {
   const onReorder = renderHarness();
 
-  dragRow({
-    from: screen.getByTestId("a"),
-    to: screen.getByTestId("a"),
-    group: screen.getByTestId("group"),
-  });
+  dragRow({ from: screen.getByTestId("a"), to: screen.getByTestId("a") });
 
   expect(onReorder).not.toHaveBeenCalled();
 });

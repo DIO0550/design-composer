@@ -1,4 +1,4 @@
-import { screen, within } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { contentTexts, renderRowList } from "./setup";
@@ -64,18 +64,6 @@ test("枝を畳むとその枝の孫も並びから消える", async () => {
   await userEvent.click(screen.getByRole("button", { name: "body の開閉" }));
 
   expect(screen.queryByRole("button", { name: "deep-text" })).toBeNull();
-});
-
-/*
- * 畳んだ枝の子は掴む相手ごと消える。並べ替えの入口が行そのもの（ドラッグ）に
- * なったので、行が残っていないことがそのまま「並べ替えられない」ことになる。
- */
-test("枝を畳むとその枝の子は掴む相手ごと並びから消える", async () => {
-  const { list } = renderRowList();
-
-  await userEvent.click(screen.getByRole("button", { name: "body の開閉" }));
-
-  expect(within(list).queryByText("body-text")).toBeNull();
 });
 
 test("枝を畳んでもその枝自身の行は並びに残る", async () => {

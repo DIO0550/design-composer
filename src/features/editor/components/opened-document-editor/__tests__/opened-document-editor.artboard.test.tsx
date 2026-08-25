@@ -1,12 +1,12 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
+import { dragRowNamed } from "@/components/__tests__/row-drag";
 import { rowNames } from "@/components/__tests__/row-names";
 import { LeftPaneViews } from "@/features/sidebar";
 import {
   artboardList,
   canvasPane,
-  dragRowNamed,
   goTo,
   renderOpenedDocument,
   selectArtboard,

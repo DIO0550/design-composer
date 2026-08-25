@@ -7,12 +7,10 @@ import type { Instant } from "@/domains/instant";
 import type { PropEdit } from "@/domains/node";
 import type { NodeTemplate } from "@/domains/node-template";
 import type { TokenRef, TokenValue } from "@/domains/token";
-import {
-  type ArtboardMove,
-  EditorState,
-} from "@/features/editor/domains/editor-state";
+import { EditorState } from "@/features/editor/domains/editor-state";
 import type { TokenTemplate } from "@/features/editor/domains/token-template";
 import { Option } from "@/utils/Option";
+import type { ReorderMove } from "@/utils/ReorderDrag";
 
 /** エディタ画面で起きる状態遷移（docs/06-ui.md「選択」「編集操作の一覧」）。 */
 export type EditorAction =
@@ -41,7 +39,7 @@ export type EditorAction =
     }>
   | Readonly<{ type: "remove_selected" }>
   | Readonly<{ type: "add_artboard" }>
-  | Readonly<{ type: "reorder_artboard"; move: ArtboardMove }>
+  | Readonly<{ type: "reorder_artboard"; move: ReorderMove }>
   | Readonly<{ type: "detach_instance" }>
   | Readonly<{ type: "select_all_instances" }>
   | Readonly<{ type: "create_component"; componentName: string }>

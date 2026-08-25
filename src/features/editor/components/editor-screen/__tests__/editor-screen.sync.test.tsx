@@ -1,6 +1,6 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import { expect, test } from "vitest";
-import { dragRow } from "@/components/__tests__/pointer-gesture";
+import { dragRowNamed } from "@/components/__tests__/row-drag";
 import { rowNames } from "@/components/__tests__/row-names";
 import { artboardContent } from "@/domains/__tests__/sample-document";
 import { SampleDocument } from "@/features/editor/__tests__/sample-document";
@@ -24,27 +24,6 @@ function artboardList(): HTMLElement {
   return screen.getByRole("region", { name: "artboard 一覧" });
 }
 
-/**
- * ツリーの行を掴んで別の行の上まで運ぶ。編集を 1 つ起こす手段として使う
- * （何の編集かはこのテストの関心ではない）。
- *
- * @param movement 掴む行と運ぶ先の行の名前
- */
-function reorderInTree(movement: Readonly<{ from: string; to: string }>): void {
-  const tree = screen.getByRole("region", { name: "ツリー" });
-  const from = within(tree).getByRole("button", {
-    name: movement.from,
-  }).parentElement;
-  const to = within(tree).getByRole("button", {
-    name: movement.to,
-  }).parentElement;
-  const group = from?.closest("ul");
-  if (from === null || to === null || !group) {
-    throw new Error("ツリーの行が見つからない");
-  }
-  dragRow({ from, to, group });
-}
-
 test("編集した内容が自動保存され、開き直すとその状態が読み戻る", async () => {
   const opened = DocumentJson.serialize(SampleDocument);
   const files = renderEditorScreen(
@@ -53,7 +32,10 @@ test("編集した内容が自動保存され、開き直すとその状態が�
   );
   await clickOpen();
 
-  reorderInTree({ from: "home-title", to: "home-login" });
+  dragRowNamed(screen.getByRole("region", { name: "ツリー" }), {
+    from: "home-title",
+    to: "home-login",
+  });
   await waitFor(
     () => {
       expect(files.contentOf(Path)).not.toStrictEqual(Option.some(opened));

@@ -3,9 +3,9 @@ import { TypeGlyph } from "@/components/type-glyph";
 import type { Artboard } from "@/domains/artboard";
 import { DocumentSelection } from "@/domains/document-selection";
 import type { LeftPaneArtboardActions } from "@/features/sidebar/types/LeftPaneArtboardActions";
-import { useReorderDrag } from "@/hooks/use-reorder-drag";
-import { Option } from "@/utils/Option";
-import { ReorderDrag } from "@/utils/ReorderDrag";
+import { type RowProps, useReorderDrag } from "@/hooks/use-reorder-drag";
+import type { Option } from "@/utils/Option";
+import { type DropSide, ReorderDrag } from "@/utils/ReorderDrag";
 
 /** artboard が 1 枚も無いときの知らせ。 */
 const NoArtboardMessage = "artboard がありません";
@@ -38,8 +38,8 @@ function ArtboardRow({
   /** 今掴まれている行か。掴んでいる間は淡くする */
   isHeld: boolean;
   /** 落ちる先ならどちら側に線を引くか。落ちる先でなければ不在 */
-  dropSide: Option<"before" | "after">;
-  rowProps: Readonly<{ onPointerDown: () => void; onPointerEnter: () => void }>;
+  dropSide: Option<DropSide>;
+  rowProps: RowProps;
   onSelect: (name: string) => void;
 }>) {
   return (
@@ -77,9 +77,14 @@ function ArtboardRow({
  * 見出しの右の `+` は UI 案そのもの（展開後 379〜382 行）。押すと末尾に 1 枚増え、
  * そのまま選択になる。
  *
- * 並べ替えは行を掴んで運ぶ（docs/06-ui.md「編集操作の一覧」の並べ替えは
- * 「ドラッグまたはツリービュー」）。ツリー（`NestedRowList`）も同じ `useReorderDrag`
- * に載っているので、左ペインの中で操作の流儀が割れない。
+ * 並べ替えは行を掴んで運ぶ。docs/06-ui.md「編集操作の一覧」がドラッグと定めているのは
+ * **ノードの同一親内の並べ替え**で、artboard の入口は定めておらず UI 案も描いていない。
+ * 新しい形を発明せず、同じ左ペインのツリー（`NestedRowList`）と同じ機構
+ * （`useReorderDrag`）に載せて、パネルの中で操作の流儀が割れないようにしている。
+ *
+ * 並びが 1 つしか無いので、落ちる先が並びの外を指すことは構造上ありえない
+ * （入った行の index しか落ちる先にならない）。ツリー側は親をまたげてしまうため、
+ * 階層ごとに状態を分けることで同じ性質を作っている。
  *
  * artboard が 1 枚も無いことを伝えるのはここ。ツリー側は「今見ている 1 枚の中身」を
  * 映す場所で、1 枚も無いのは artboard の一覧の話なので、持ち主をこちらに置く。
@@ -98,7 +103,6 @@ export function ArtboardList({
   const { drag, rowProps, groupProps } = useReorderDrag(
     artboardActions.reorder,
   );
-  const dropSide = ReorderDrag.dropSide(drag);
 
   return (
     <section aria-label="artboard 一覧" className="text-sm">
@@ -128,9 +132,7 @@ export function ArtboardList({
                 artboard.name,
               )}
               isHeld={ReorderDrag.isHeld(drag, index)}
-              dropSide={
-                ReorderDrag.isDropTarget(drag, index) ? dropSide : Option.none
-              }
+              dropSide={ReorderDrag.dropSideAt(drag, index)}
               rowProps={rowProps(index)}
               onSelect={onSelect}
             />

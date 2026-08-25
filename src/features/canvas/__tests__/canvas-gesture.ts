@@ -10,37 +10,18 @@ import type { CanvasOffset } from "@/features/canvas/domains/canvas-view";
  * （分けている理由はその `__tests__/index.ts` の doc）。
  *
  * ポインタそのものの操作は左ペインの並べ替えでも同じものが要るので、横断層
- * （`components/__tests__/pointer-gesture`）へ置いて委譲する。ここに残すのは
- * ホイール（キャンバス固有）と、`CanvasOffset` で受ける入口だけ。
+ * （`components/__tests__/pointer-gesture`）へ移して**そのまま再輸出**する。
+ * 包み直さないのは、`CanvasOffset` が `PointerPoint` と構造的に同じで型の上でも
+ * 何も足せないため（rules/coding.md「構造が変わらない型エイリアスの新設は禁止」と
+ * 同じ形）。ここが自前で持つのはホイール（キャンバス固有）だけ。
  */
 
-import {
-  movePointer as movePointerAt,
-  pressPointer as pressPointerAt,
-  releasePointer as releasePointerAt,
+export {
+  drag,
+  movePointer,
+  pressPointer,
+  releasePointer,
 } from "@/components/__tests__/pointer-gesture";
-
-export function pressPointer(element: Element, at: CanvasOffset): void {
-  pressPointerAt(element, at);
-}
-
-export function movePointer(element: Element, to: CanvasOffset): void {
-  movePointerAt(element, to);
-}
-
-export function releasePointer(element: Element, at: CanvasOffset): void {
-  releasePointerAt(element, at);
-}
-
-/** 掴んで運んで離す、までを 1 つの操作として起こす。 */
-export function drag(
-  element: Element,
-  movement: Readonly<{ from: CanvasOffset; to: CanvasOffset }>,
-): void {
-  pressPointer(element, movement.from);
-  movePointer(element, movement.to);
-  releasePointer(element, movement.to);
-}
 
 /** ホイールと一緒に押されている修飾キー。 */
 export type WheelModifier = "none" | "ctrl" | "meta";

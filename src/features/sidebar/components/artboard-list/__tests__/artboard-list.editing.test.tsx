@@ -1,11 +1,11 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
 import {
-  dragRow,
   enterPointer,
   pressPointer,
 } from "@/components/__tests__/pointer-gesture";
+import { dragRowNamed, rowOf } from "@/components/__tests__/row-drag";
 import { DropLineTestId } from "@/components/drop-line";
 import { DesignDocument } from "@/domains/design-document";
 import { DocumentSelection } from "@/domains/document-selection";
@@ -38,39 +38,6 @@ function renderList(document: DesignDocument = setupDocument()): {
     />,
   );
   return { list: container, add, reorder };
-}
-
-/**
- * 名前で行の `<li>` を引く（掴む口は行に張ってある）。
- *
- * @param list 描いた一覧
- * @param name 引きたい artboard の名前
- * @returns その行の `<li>`。見つからなければテストを落とす
- */
-function rowOf(list: HTMLElement, name: string): HTMLElement {
-  const row = within(list).getByRole("button", { name }).closest("li");
-  if (row === null) {
-    throw new Error(`行が見つからない: ${name}`);
-  }
-  return row;
-}
-
-/**
- * 行を掴んで別の行の上まで運ぶ。
- *
- * @param list 描いた一覧
- * @param movement 掴む行と運ぶ先の行の名前
- */
-function dragRowNamed(
-  list: HTMLElement,
-  movement: Readonly<{ from: string; to: string }>,
-): void {
-  const from = rowOf(list, movement.from);
-  const group = from.closest("ul");
-  if (group === null) {
-    throw new Error("並びの器が見つからない");
-  }
-  dragRow({ from, to: rowOf(list, movement.to), group });
 }
 
 test("見出しの追加ボタンを押すと追加が伝わる", async () => {

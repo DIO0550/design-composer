@@ -1,8 +1,8 @@
 import { type ReactElement, type ReactNode, useState } from "react";
 import { DropLine } from "@/components/drop-line";
-import { useReorderDrag } from "@/hooks/use-reorder-drag";
-import { Option } from "@/utils/Option";
-import { ReorderDrag } from "@/utils/ReorderDrag";
+import { type RowProps, useReorderDrag } from "@/hooks/use-reorder-drag";
+import type { Option } from "@/utils/Option";
+import { type DropSide, ReorderDrag } from "@/utils/ReorderDrag";
 import { SetEx } from "@/utils/SetEx";
 
 /** 1 段ぶんの字下げ幅と、行の左端の余白（px）。 */
@@ -127,11 +127,11 @@ function RowBranch({
   row: NestedRow;
   depth: number;
   /** 掴む口と、ポインタが入ったことを伝える口 */
-  rowProps: Readonly<{ onPointerDown: () => void; onPointerEnter: () => void }>;
+  rowProps: RowProps;
   /** 今掴まれている行か。掴んでいる間は淡くする */
   isHeld: boolean;
   /** 落ちる先ならどちら側に線を引くか。落ちる先でなければ不在 */
-  dropSide: Option<"before" | "after">;
+  dropSide: Option<DropSide>;
   control: BranchControl;
 }>): ReactElement {
   const hasChildren = row.children.length > 0;
@@ -148,6 +148,7 @@ function RowBranch({
         style={{
           paddingInlineStart: `${RowPaddingPx + depth * IndentWidthPx}px`,
         }}
+        /* 落ちる先の線を行の縁へ重ねるので、行を位置の基準にする（relative） */
         className={`relative flex items-center gap-1.5 rounded py-1 pr-1 ${
           // 押せる範囲を示す hover と、選択の色を重ねない（選択中はホバーで灰にしない）
           row.isSelected ? "bg-blue-100 text-blue-900" : "hover:bg-gray-100"
@@ -212,7 +213,6 @@ function RowList({
   const { drag, rowProps, groupProps } = useReorderDrag((move) =>
     control.onReorder({ parentName, index: move.fromIndex }, move.toIndex),
   );
-  const dropSide = ReorderDrag.dropSide(drag);
 
   return (
     <ul {...groupProps()}>
@@ -223,9 +223,7 @@ function RowList({
             depth={depth}
             rowProps={rowProps(index)}
             isHeld={ReorderDrag.isHeld(drag, index)}
-            dropSide={
-              ReorderDrag.isDropTarget(drag, index) ? dropSide : Option.none
-            }
+            dropSide={ReorderDrag.dropSideAt(drag, index)}
             control={control}
           />
         </li>

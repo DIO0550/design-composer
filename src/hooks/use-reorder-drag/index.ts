@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ReorderDrag, type ReorderMove } from "@/utils/ReorderDrag";
 
 /** 行に配る props。掴む口と、ポインタが入ったことを伝える口。 */
-type RowProps = Readonly<{
+export type RowProps = Readonly<{
   onPointerDown: () => void;
   onPointerEnter: () => void;
 }>;
@@ -26,7 +26,8 @@ type GroupProps = Readonly<{
  * 起きない**（同じ親の中の並べ替えしか作れない）。
  *
  * 位置は並びの中の index だけで扱う。ツリーの `parentName` のような「その並びが
- * 何の並びか」は呼び出し側が足す（ここが持つとジェネリクスか 4 つ目の引数が要る）。
+ * 何の並びか」は呼び出し側が足す。ここが持つと、位置の形が消費側ごとに違う
+ * （ツリーは親の名前つき / artboard は index だけ）ぶんジェネリクスが要る。
  *
  * @param onReorder 離したときに起きた移動を伝える先
  * @returns 今の状態と、行・器へ配る props
@@ -41,26 +42,24 @@ export function useReorderDrag(onReorder: (move: ReorderMove) => void): {
   return {
     drag,
     rowProps: (index) => ({
-      onPointerDown: () => setDrag(ReorderDrag.hold(index)),
+      onPointerDown: () => setDrag(ReorderDrag.grab(index)),
       onPointerEnter: () =>
         setDrag((current) => ReorderDrag.enter(current, index)),
     }),
     groupProps: () => ({
       onPointerUp: () => {
-        const move = ReorderDrag.release(drag);
+        const move = ReorderDrag.releasedMove(drag);
         if (move.some) {
           onReorder(move.value);
         }
-        setDrag(ReorderDrag.cancel());
+        setDrag(ReorderDrag.create());
       },
       /*
        * 並びの外で離されると離した通知が届かないので、出た時点で取り消す。
        * ポインタを捕捉（`setPointerCapture`）しないのは、捕捉すると入った行が
        * 読めなくなり落ちる先が決まらなくなるため（`useNodeDrag` と同じ理由）。
        */
-      onPointerLeave: () => setDrag(ReorderDrag.cancel()),
+      onPointerLeave: () => setDrag(ReorderDrag.create()),
     }),
   };
 }
-
-export type { ReorderMove };

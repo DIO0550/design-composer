@@ -1,26 +1,12 @@
 import { screen } from "@testing-library/react";
 import { expect, test } from "vitest";
 import {
-  dragRow,
   enterPointer,
   pressPointer,
 } from "@/components/__tests__/pointer-gesture";
+import { dragRowNamed, rowOf } from "@/components/__tests__/row-drag";
 import { DropLineTestId } from "@/components/drop-line";
-import { groupOf, renderRowList, rowOf } from "./setup";
-
-/**
- * 行を掴んで別の行の上まで運ぶ。
- *
- * @param list 器を描いた要素
- * @param movement 掴む行と運ぶ先の行の名前
- */
-function dragRowNamed(
-  list: HTMLElement,
-  movement: Readonly<{ from: string; to: string }>,
-): void {
-  const from = rowOf(list, movement.from);
-  dragRow({ from, to: rowOf(list, movement.to), group: groupOf(from) });
-}
+import { renderRowList } from "./setup";
 
 test("行を1つ前の兄弟の上へ運ぶと同じ親の中の位置として伝わる", () => {
   const { list, onReorder } = renderRowList();
@@ -56,18 +42,18 @@ test("掴んだ行の上で離しても移動は伝わらない", () => {
 
 /*
  * 別の親の子は別の `<ul>` に属していて、そちらの群は掴んでいない状態のまま。
- * ここが通らないと「同じ親の中の並べ替え」しか受けない `onReorder` へ、
- * 別の親の中の index が渡ってしまう（並びの外を指す移動が画面から作れる）。
+ * これが通らないと、同じ親の中の並べ替えしか受けない `onReorder` へ別の親の中の
+ * index が渡ってしまう（並びの外を指す移動が画面から作れる）。
+ *
+ * 掴む行と運ぶ先で index を**わざと違えている**（`title` は root の 0、`deep` は
+ * `body` の子の 1）。index が一致する組み合わせだと、状態を全階層で共有する実装でも
+ * 「掴んだ位置へ入り直した」の枝に落ちて同じ答えになり、規則を壊しても落ちない。
+ * この入力は、掴む口を `<li>`（配下の並びまで包む）へ張り替えたときにも落ちる。
  */
 test("別の親の行の上で離しても移動は伝わらない", () => {
   const { list, onReorder } = renderRowList();
 
-  const from = rowOf(list, "title");
-  dragRow({
-    from,
-    to: rowOf(list, "body-text"),
-    group: groupOf(from),
-  });
+  dragRowNamed(list, { from: "title", to: "deep" });
 
   expect(onReorder).not.toHaveBeenCalled();
 });

@@ -1,8 +1,9 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
+import { dragRowNamed } from "@/components/__tests__/row-drag";
 import { rowNames } from "@/components/__tests__/row-names";
-import { dragRowNamed, renderOpenedDocument, tree } from "./setup";
+import { renderOpenedDocument, tree } from "./setup";
 
 test("ツリービューで子を後ろの行の上へ運ぶと兄弟の並びがその順序に変わる", async () => {
   await renderOpenedDocument();
