@@ -2,9 +2,7 @@ import { screen } from "@testing-library/react";
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
 import { TokenSet } from "@/domains/token";
-import { renderDashedNodes, renderWithoutSelection } from "./render";
-
-const Gray900 = { kind: "colors", name: "gray-900" } as const;
+import { Gray900, renderDashedNodes, renderWithoutSelection } from "./setup";
 
 /**
  * `gray-900` を部品定義の中からだけ指し、キャンバス上には参照が無いドキュメント。
