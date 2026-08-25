@@ -748,6 +748,30 @@ export const DesignDocument = {
     });
   },
 
+  /**
+   * 単一名前空間の名前で指したものを取り除く（docs/06-ui.md「編集操作の一覧」の
+   * 削除と artboard 操作）。artboard ならその 1 枚を配下ごと、そうでなければ
+   * ノードをサブツリーごと取り除く。
+   *
+   * 振り分けをここに置くのは、名前だけでは artboard かノードかが決まらず、
+   * どのドキュメントの中の名前かで初めて引けるため（`applyPropEdit` / `resize` が
+   * 同じ理由で名前から振り分けているのと同じ形）。呼び出し側で分けると
+   * 「選んでいるものが artboard か」の判定が features 層へ出る。
+   *
+   * @param document 取り除く先のドキュメント
+   * @param name 取り除きたい artboard / ノードの名前
+   * @returns 取り除いたドキュメント。どちらにも無い名前は `node-not-found`
+   *   （artboard でなければノードとして扱うため）
+   */
+  remove(
+    document: DesignDocument,
+    name: string,
+  ): Result<DesignDocument, DesignDocumentEditError> {
+    return DesignDocument.findArtboard(document, name).some
+      ? DesignDocument.removeArtboard(document, name)
+      : DesignDocument.removeNode(document, name);
+  },
+
   /** artboard の並び順を入れ替える。 */
   reorderArtboard(
     document: DesignDocument,
