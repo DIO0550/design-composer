@@ -1,1 +1,0 @@
-import{n as e}from"./chunk-BneVvdWh.js";import{n as t,t as n}from"./Option-CEQn841D.js";function r(e){return{dragged:n.some({kind:`instance`,componentName:e}),onGrab:()=>{}}}var i,a=e((()=>{t(),i={dragged:n.none,onGrab:()=>{}}}));export{r as n,a as r,i as t};
