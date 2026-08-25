@@ -31,7 +31,8 @@ type Glyph = Readonly<{ symbol: string; className: string }>;
  * `artboard` の色は 1 色のままにする。UI 案は `Artboards` の一覧で、今見ている 1 枚の
  * `#` を青、それ以外を灰に描き分けているが、アイコンが表すのは種別で、どれが今の 1 枚かは
  * 行の背景色と `aria-current` が伝える。同じ 1 つのことを 2 つの見た目で二重に持つと、
- * 片方だけ直したときに食い違う。
+ * 片方だけ直したときに食い違う。キャンバスのツールバーの `#`（#316）も同じ 1 色で、
+ * UI 案がそこへ与えている灰とは離れる（`□` / `T` と同じ #112 の乖離）。
  */
 const Glyphs = {
   artboard: { symbol: "#", className: "text-[#0d99ff]" },
