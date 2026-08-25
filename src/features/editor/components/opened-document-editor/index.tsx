@@ -338,10 +338,9 @@ function EditorPanes({
           node={node}
           dragged={nodeDrag.carriedTemplate}
           /*
-           * 選ぶだけでなく行き先も Layers へ戻す。エラー行から飛ぶとき（トークンを消して
-           * 不正を作った直後）も帯から飛ぶとき（#209）も左ペインは Tokens なので、
-           * 選んでもツリーにもプロパティにも出ない
-           * （`Go to source component` が Assets へ移すのと同じ形）。
+           * 選ぶだけでなく行き先も Layers へ戻す。エラー行からも帯（#209）からも、
+           * Tokens を見たまま飛ぶことがあり、そのときは選んでもツリーにも
+           * プロパティにも出ない（`Go to source component` が Assets へ移すのと同じ形）。
            */
           onReveal={(nodeName) => {
             node.reveal(nodeName);

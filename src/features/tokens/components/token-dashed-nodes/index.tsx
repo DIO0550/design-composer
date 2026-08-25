@@ -35,8 +35,8 @@ function nodeCountText(count: number): string {
  * 飛び先は破線の先頭。UI 案がリンクを 1 本しか描いていないので、複数ある参照元から
  * 1 つ選ぶことになり、並びは既に `collectCanvasReferrerNames` が決めている（#209）。
  *
- * @returns トークン名・破線の本数・先頭へ飛ぶリンクを並べた帯。
- *   破線が 1 本も無いときは何も出さない
+ * @returns トークン名・破線の本数・先頭へ飛ぶリンクを並べた帯。破線が 1 本も無いときと、
+ *   選んでいるトークンがドキュメントから消えているときは何も出さない
  */
 export function TokenDashedNodes({
   selection,
@@ -64,9 +64,11 @@ export function TokenDashedNodes({
    * `undefined` を含んだまま残る）。
    */
   const firstDashedNodeName = ArrayEx.first(nodeNames);
-  const hasDashedNode = token.some && firstDashedNodeName.some;
+  // トークンの実在も見る。参照元の収集はトークンが在るかを見ないので、消されたトークンを
+  // 選んだままでも名前だけは集まる（`Used by` が dangling を出せるのと同じ理由）。
+  const canShowBand = token.some && firstDashedNodeName.some;
 
-  if (!hasDashedNode) {
+  if (!canShowBand) {
     return null;
   }
 
@@ -90,6 +92,9 @@ export function TokenDashedNodes({
         UI 案は押せるものも `<span style="cursor:pointer">` で描いているが、実装では
         ボタンにする（`document-error-list` の `revert file` と同じ形）。
         文字サイズを指定しないのは、UI 案の綴りも font-size を持たず帯の 11px を継ぐため。
+
+        **この見た目を守るものは無い** — happy-dom はレイアウトを解決せず、視覚差分も
+        リンク 1 本ぶんはしきい値（`--max-diff-ratio 0.002`）未満で通る（#209 で実測）。
       */}
       <button
         type="button"
