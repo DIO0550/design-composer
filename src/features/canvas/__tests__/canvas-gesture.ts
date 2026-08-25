@@ -8,33 +8,28 @@ import type { CanvasOffset } from "@/features/canvas/domains/canvas-view";
  * `opened-document-editor`）から使うため、feature 直下に置いて共有する。
  * 外の feature へはテスト用の公開口（`__tests__/index.ts`）から出す
  * （分けている理由はその `__tests__/index.ts` の doc）。
+ *
+ * ポインタそのものの操作は左ペインの並べ替えでも同じものが要るので、横断層
+ * （`components/__tests__/pointer-gesture`）へ置いて委譲する。ここに残すのは
+ * ホイール（キャンバス固有）と、`CanvasOffset` で受ける入口だけ。
  */
 
-/** 1 本の指 / 1 つのマウスによる操作として扱う。 */
-const PointerId = 1;
+import {
+  movePointer as movePointerAt,
+  pressPointer as pressPointerAt,
+  releasePointer as releasePointerAt,
+} from "@/components/__tests__/pointer-gesture";
 
 export function pressPointer(element: Element, at: CanvasOffset): void {
-  fireEvent.pointerDown(element, {
-    pointerId: PointerId,
-    clientX: at.x,
-    clientY: at.y,
-  });
+  pressPointerAt(element, at);
 }
 
 export function movePointer(element: Element, to: CanvasOffset): void {
-  fireEvent.pointerMove(element, {
-    pointerId: PointerId,
-    clientX: to.x,
-    clientY: to.y,
-  });
+  movePointerAt(element, to);
 }
 
 export function releasePointer(element: Element, at: CanvasOffset): void {
-  fireEvent.pointerUp(element, {
-    pointerId: PointerId,
-    clientX: at.x,
-    clientY: at.y,
-  });
+  releasePointerAt(element, at);
 }
 
 /** 掴んで運んで離す、までを 1 つの操作として起こす。 */
