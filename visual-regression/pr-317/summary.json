@@ -1,12 +1,38 @@
 {
-  "reportVersion": "ee75bbb11512a15a842c03a71196fb702fac5fb2",
+  "reportVersion": "b25e4447625ecbb67899222c5195770c4cb4b072",
   "maxDiffRatio": 0.002,
   "changed": 9,
-  "new": 0,
+  "new": 2,
   "deleted": 0,
   "passed": 127,
   "failed": 9,
   "results": [
+    {
+      "story": "components-dropline--after",
+      "id": "components-dropline--after",
+      "title": "components/DropLine",
+      "name": "後ろへ動かしている",
+      "status": "new",
+      "reason": "no-baseline",
+      "diffPixels": 0,
+      "diffRatio": 0,
+      "hasExpected": false,
+      "hasActual": true,
+      "hasDiff": false
+    },
+    {
+      "story": "components-dropline--before",
+      "id": "components-dropline--before",
+      "title": "components/DropLine",
+      "name": "前へ動かしている",
+      "status": "new",
+      "reason": "no-baseline",
+      "diffPixels": 0,
+      "diffRatio": 0,
+      "hasExpected": false,
+      "hasActual": true,
+      "hasDiff": false
+    },
     {
       "story": "components-panebody--default",
       "id": "components-panebody--default",
