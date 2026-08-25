@@ -116,7 +116,7 @@ export async function invalidateFileExternally(
 }
 
 /**
- * キャンバス。同じ名前がツリーにも出るので絞るのに使う。挿入のツールバーもこの中に
+ * キャンバス。同じ名前がツリーにも出るので絞るのに使う。キャンバスのツールバーもこの中に
  * あり、絞らないと左ペインへ置き戻す実装でも通ってしまう（#112）。
  */
 export function canvasPane(): HTMLElement {

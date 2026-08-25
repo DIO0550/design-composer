@@ -9,8 +9,8 @@ import type { OpenedDocument } from "@/domains/opened-document";
 import type { TokenSelection } from "@/domains/token-selection";
 import {
   ArtboardCanvas,
+  CanvasToolbar,
   type CanvasViewControl,
-  NodeInsertToolbar,
   useCanvasView,
   useNodeDrag,
 } from "@/features/canvas";
@@ -36,7 +36,10 @@ import {
   EditorTopBarTones,
 } from "@/features/editor/components/editor-top-bar";
 import { EditorState } from "@/features/editor/domains/editor-state";
-import { useArtboardActions } from "@/features/editor/hooks/use-artboard-actions";
+import {
+  type ArtboardActions,
+  useArtboardActions,
+} from "@/features/editor/hooks/use-artboard-actions";
 import { useEditShortcuts } from "@/features/editor/hooks/use-edit-shortcuts";
 import {
   type NodeActions,
@@ -161,7 +164,7 @@ function canvasDock(state: EditorState): CanvasDock {
 }
 
 /**
- * 下端に積む器。エラー一覧と挿入のツールバーが同じ場所を取り合うため、
+ * 下端に積む器。エラー一覧とキャンバスのツールバーが同じ場所を取り合うため、
  * 順序と間隔はここが持つ（各部品が浮くと重なる）。
  *
  * **この位置指定を落としてもテストは落ちない** — happy-dom はレイアウトを解決しない。
@@ -184,12 +187,13 @@ function CanvasDockStack({ children }: Readonly<{ children: ReactNode }>) {
  * ドキュメント由来のときにツールバーを消さないのは、表示がファイルと一致していて
  * 古くないから。編集を続けたまま直せる（#128）。一覧は 0 件なら何も出さない。
  *
- * @returns ファイルが不正ならエラー一覧だけ、そうでなければエラー一覧と挿入のツールバー
+ * @returns ファイルが不正ならエラー一覧だけ、そうでなければエラー一覧とキャンバスのツールバー
  */
 function CanvasDockContent({
   dock,
   tokenSelection,
   node,
+  artboard,
   dragged,
   onReveal,
   fileRevert,
@@ -197,6 +201,7 @@ function CanvasDockContent({
   dock: CanvasDock;
   tokenSelection: TokenSelection;
   node: NodeActions;
+  artboard: ArtboardActions;
   dragged: Option<NodeTemplate>;
   onReveal: (nodeName: string) => void;
   fileRevert: FileRevertControl;
@@ -229,9 +234,10 @@ function CanvasDockContent({
             onReveal={onReveal}
           />
           <TokenDashedNodes selection={tokenSelection} onReveal={onReveal} />
-          <NodeInsertToolbar
+          <CanvasToolbar
             isInsertEnabled={node.isInsertEnabled}
             dragged={dragged}
+            onAddArtboard={artboard.add}
             onInsert={node.insert}
           />
         </CanvasDockStack>
@@ -339,6 +345,7 @@ function EditorPanes({
           dock={canvasDock(state)}
           tokenSelection={tokenSelection}
           node={node}
+          artboard={artboard}
           dragged={nodeDrag.carriedTemplate}
           /*
            * 選ぶだけでなく行き先も Layers へ戻す。エラー行からも帯（#209）からも、

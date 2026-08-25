@@ -1,8 +1,8 @@
 /**
  * キャンバスの直接操作一式（docs/06-ui.md「画面構成」の中央ペインと
  * 「キャンバス直接操作」/ UI 案 docs/Design Composer.html の中央の面）。
- * artboard の並びを描く面（`ArtboardCanvas`）と、その下端に浮く挿入のツールバー
- * （`NodeInsertToolbar`）、ズーム / パン・移動 / 挿入のドラッグ・リサイズ・Text の
+ * artboard の並びを描く面（`ArtboardCanvas`）と、その下端に浮くツールバー
+ * （`CanvasToolbar`）、ズーム / パン・移動 / 挿入のドラッグ・リサイズ・Text の
  * インライン編集が属する。
  *
  * 描くのに要るのは**ドキュメントと選択の対**（`DocumentSelection`）・**選ばれている
@@ -26,7 +26,7 @@
  * 何を運んでいるか」だけなので、`NodeDragControl.carriedTemplate` で答える。
  */
 export { ArtboardCanvas } from "@/features/canvas/components/artboard-canvas";
-export { NodeInsertToolbar } from "@/features/canvas/components/node-insert-toolbar";
+export { CanvasToolbar } from "@/features/canvas/components/canvas-toolbar";
 export { CanvasView } from "@/features/canvas/domains/canvas-view";
 export {
   type CanvasViewControl,

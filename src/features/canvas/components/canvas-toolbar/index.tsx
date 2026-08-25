@@ -4,10 +4,42 @@ import { type PrimitiveType, PrimitiveTypes } from "@/domains/primitive-schema";
 import type { Option } from "@/utils/Option";
 
 /** 押せないときに `title` へ出す理由。押せない状態を見せるだけだと打つ手が分からない。 */
-const InsertDisabledReason = "子を持てるものを選ぶと追加できます";
+const PrimitiveInsertDisabledReason = "子を持てるものを選ぶと追加できます";
+
+/** artboard を足すボタンの読み上げ名。UI 案の字面は `#` だけなので、名前は別に与える。 */
+const AddArtboardLabel = "artboard を追加";
+
+/**
+ * 1 スロットぶんの器（UI 案 docs/Design Composer.html は 5 スロットとも
+ * `36×32` / `border-radius:6px`）。押せるもの・押せないものが同じ枠に並ぶので、
+ * 枠の寸法は 1 箇所に置く。
+ */
+const SlotClassName = "flex h-8 w-9 items-center justify-center rounded-md";
+
+/**
+ * artboard を 1 枚足すボタン。
+ *
+ * Why not: `PrimitiveInsertButton` に相乗りさせない。プリミティブは選択位置へ挿すので
+ * 挿せる位置が無ければ押せないが、artboard は選択に依らず常に押せる（`Artboards` の
+ * 見出しの `+` と同じ）。押せない理由の `title` も要らない。
+ */
+function AddArtboardButton({ onClick }: Readonly<{ onClick: () => void }>) {
+  return (
+    <button
+      type="button"
+      // `aria-current` は付けない。付けるとキャンバスの artboard の行として拾われる
+      // （`components/__tests__/row-names.ts`）
+      aria-label={AddArtboardLabel}
+      onClick={onClick}
+      className={`${SlotClassName} hover:bg-gray-100`}
+    >
+      <TypeGlyph kind="artboard" />
+    </button>
+  );
+}
 
 /** アイコンだけのボタン。`TypeGlyph` は `aria-hidden` なので、名前は `aria-label` で与える。 */
-function InsertButton({
+function PrimitiveInsertButton({
   type,
   isEnabled,
   onClick,
@@ -22,8 +54,8 @@ function InsertButton({
       aria-label={`${type} を追加`}
       onClick={onClick}
       disabled={!isEnabled}
-      title={isEnabled ? undefined : InsertDisabledReason}
-      className="flex h-8 w-9 items-center justify-center rounded-md hover:bg-gray-100 disabled:opacity-40 disabled:hover:bg-transparent"
+      title={isEnabled ? undefined : PrimitiveInsertDisabledReason}
+      className={`${SlotClassName} hover:bg-gray-100 disabled:opacity-40 disabled:hover:bg-transparent`}
     >
       <TypeGlyph kind={type} />
     </button>
@@ -51,7 +83,7 @@ function InstancePlacementIndicator({
        * 同じことを 3 回言わせない（`TypeGlyph` を読み上げから外すのと同じ扱い）。
        */
       aria-hidden="true"
-      className={`flex h-8 w-9 items-center justify-center rounded-md text-[#9747ff] ${
+      className={`${SlotClassName} text-[#9747ff] ${
         isPlacing ? "bg-[#f3ebff]" : ""
       }`}
     >
@@ -61,13 +93,20 @@ function InstancePlacementIndicator({
 }
 
 /**
- * キャンバスに浮かぶツールバー（UI 案 docs/Design Composer.html / #112）。
+ * キャンバスに浮かぶツールバー（UI 案 docs/Design Composer.html / #112 / #316）。
+ * artboard を 1 枚足す `#` と、プリミティブを選択位置へ挿す `□` / `T` が並ぶ。
  *
- * UI 案が並べるポインタ・`#`（artboard）は置かない。順にツールモードの概念が無い /
- * この器が名前どおりノードの挿入だけを担っているのが理由（artboard を足す口を
- * ここへ入れるなら、まずモジュール名から変えることになる / #316）。artboard の追加は
- * `Artboards` の見出しの `+` が持つ。`◆` は**ボタンではなく状態表示**として置く（#203）。
- * 並びを `PrimitiveTypes` から作るのは、スキーマと二重管理しないため。
+ * UI 案が先頭に置くポインタは持たない（ツールモードの概念が無い）。**`#` を先頭に
+ * 置く**のはそのため — UI 案の並びは `ポインタ → # → □ → T` で、実装する 4 つの
+ * 相対順序を保つと `#` が先頭になる。`◆` は**ボタンではなく状態表示**（#203）。
+ * プリミティブの並びを `PrimitiveTypes` から作るのは、スキーマと二重管理しないため。
+ *
+ * Why not: `#` を「今のツール」のトグルにはしない。この実装では `□` / `T` が既に
+ * 即時挿入のボタンなので、`#` だけをモードにすると 1 列の中で操作モデルが 2 つに割れる。
+ *
+ * 押せる条件を artboard について持たないのは、**ファイルが不正な間はこのツールバー
+ * 自体が出ない**（出し分けはキャンバス下端に積む器が持つ / #128）ため。押せる形のまま
+ * 何も起きない経路は無い。
  *
  * 影と丸みはこの部品が持つが、**位置は持たない**。キャンバス下端にはエラー一覧も
  * 並ぶため、順序は両方を積む器（`CanvasDockStack`）が決める（#128）。ここで浮かせると
@@ -75,14 +114,16 @@ function InstancePlacementIndicator({
  * **形を落としてもテストは落ちない** — happy-dom は Tailwind を解決せず、
  * class 名の assert は実装詳細のテストになる。気づく手段は Storybook の視覚差分だけ。
  */
-export function NodeInsertToolbar({
+export function CanvasToolbar({
   isInsertEnabled,
   dragged,
+  onAddArtboard,
   onInsert,
 }: Readonly<{
   isInsertEnabled: boolean;
   /** 今パレットから運んでいる指定。`◆` を点けるかどうかがこれで決まる。 */
   dragged: Option<NodeTemplate>;
+  onAddArtboard: () => void;
   onInsert: (template: NodeTemplate) => void;
 }>) {
   /*
@@ -95,11 +136,16 @@ export function NodeInsertToolbar({
 
   return (
     <section
-      aria-label="挿入"
+      /*
+       * 中身を動詞で括らない。並ぶのは追加の入口（`#` / `□` / `T`）だけでなく
+       * 運んでいることの表示（`◆`）でもあるので、器はモジュール名と同じく場所で呼ぶ。
+       */
+      aria-label="キャンバスのツールバー"
       className="flex h-11 items-center gap-0.5 rounded-[13px] bg-white px-1.5 shadow-[0_5px_18px_rgba(0,0,0,0.18),0_0_0_0.5px_rgba(0,0,0,0.06)]"
     >
+      <AddArtboardButton onClick={onAddArtboard} />
       {PrimitiveTypes.map((type) => (
-        <InsertButton
+        <PrimitiveInsertButton
           key={type}
           type={type}
           isEnabled={isInsertEnabled}

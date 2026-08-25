@@ -116,11 +116,11 @@ export type NodeDragHandlers = Readonly<{
 export type NodeDragControl = Readonly<{
   drag: NodeDrag;
   /**
-   * 今パレットから運んでいる雛形。掴んだ行の強調と挿入のツールバーの点灯が
+   * 今パレットから運んでいる雛形。掴んだ行の強調とキャンバスのツールバーの点灯が
    * これで決まる。運んでいない / 既存ノードを運んでいるなら `none`。
    *
    * **この配線を外してもテストは 1 件も落ちない** — 届く先はどちらも class の
-   * 差し替えだけ（`asset-row` の強調 / `node-insert-toolbar` の `◆` の背景）で、
+   * 差し替えだけ（`asset-row` の強調 / `canvas-toolbar` の `◆` の背景）で、
    * happy-dom では見えない。気づく手段は Storybook の視覚差分だけ。
    */
   carriedTemplate: Option<NodeTemplate>;

@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { NodeTemplate } from "@/domains/node-template";
 import { Option } from "@/utils/Option";
-import { NodeInsertToolbar } from "./index";
+import { CanvasToolbar } from "./index";
 
 const meta = {
-  title: "features/canvas/NodeInsertToolbar",
-  component: NodeInsertToolbar,
+  title: "features/canvas/CanvasToolbar",
+  component: CanvasToolbar,
   parameters: { layout: "fullscreen" },
-  args: { onInsert: () => {}, dragged: Option.none },
+  args: { onAddArtboard: () => {}, onInsert: () => {}, dragged: Option.none },
   decorators: [
     // 位置は下端に積む器（`CanvasDockStack`）が持つので、ここでも実画面と同じ
     // 下端中央へ置く。器を与えないと左上に貼り付き、実画面と違う姿で記録される。
@@ -19,7 +19,7 @@ const meta = {
       </div>
     ),
   ],
-} satisfies Meta<typeof NodeInsertToolbar>;
+} satisfies Meta<typeof CanvasToolbar>;
 
 export default meta;
 
