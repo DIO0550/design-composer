@@ -100,12 +100,14 @@
 | `duplication-derivation` | rules/coding.md「同じ処理が2箇所に現れたら共通化する」(同じ事実を別々のドメインオブジェクト・別々の道筋から独立に導いており、食い違う組み合わせが型で作れてしまう形) |
 | `duplication-branch-shape` | 同上(`switch` や対応表の分岐が、由来ごとに同じ構造 — 器・見出し・件数・行の組み立て — を繰り返している形) |
 | `duplication-traversal` | 同上(同じ走査・同じ判定を書き足しており、同じ層の既存モジュールと同じことをしている形。`find` と `findIndex` のように戻り値だけが違う形を含む) |
+| `duplication-uncovered-shape` | 同上(同じ事実を 2 つの経路(コンパニオン経由と直接呼び出し等)から独立に引いている形 / 同じ見た目の UI 部品を手書きと共有コンポーネントの 2 実装で持っている形 / 関数型の注釈を 2 箇所に直書きしている形。上 4 語彙のどれにも当たらない重複) |
 | `type-vocabulary` | rules/coding.md「値の語彙を型で閉じる」 |
 | `illegal-state` | rules/coding.md「不正な状態を型で表現できなくする(型による境界)」 |
 | `naming-prefix-collision` | rules/naming.md「その名前が既に別の意味を持っていないか確認する」(既存の接頭辞・語幹が指している対象と、新しく付けた名前の対象がずれている形) |
 | `naming-borrowed-convention` | 同上(他ツールの慣習名を借りたが、このリポジトリの文脈で何を指すかを言えない形) |
 | `naming-absent-metaphor` | 同上(UI 案・仕様書に `grep -i` で 0 回の比喩・抽象語を使った形) |
 | `naming-vocabulary-gap` | rules/naming.md / rules/coding.md(綴りの流儀や外部 API 名の借用可否など、命名規約にまだ判断基準が書かれていない論点がレビューで初めて示され、その場で rules へ追記して解消する形) |
+| `naming-vocabulary-alignment` | rules/naming.md「メソッド名を既存のドメインに揃える」/「名前と実体を一致させる」(新しく付ける名前が、既存の同じ意味の操作の呼び方 / 昇格先レイヤーの語彙 / 複数の公開物を 1 つの名前で覆えているかのいずれかに揃っていない形。`naming-prefix-collision` 等が指す「対象がずれている」とは別に、対象は合っているが規約の別の判断軸に揃っていない形) |
 | `comment-behavior-claim` | rules/coding.md「コメントは実装と一致させる」(実行・テストの結果についての主張を、実際に動かして確認しないまま書き、最初から事実と食い違っていた形) |
 | `comment-structure-claim` | rules/coding.md「コメントは実装と一致させる」(コード・外部ドキュメント(UI 案・仕様書等)の構造や中身についての主張を、読んで確認しないまま書き、最初から事実と食い違っていた形) |
 | `comment-stale-edit` | rules/coding.md「実装を変えたらコメントも同時に直す」(同じ差分内の別の変更に、コメント・doc の記述の一部だけが追随しなかった形のうち、下 4 語彙のどれにも当たらない単発の形) |
@@ -119,6 +121,7 @@
 | `test-coverage-branch` | rules/testing.md「古典学派のテスト」/ `implementation-reviewer`「テストが守っているかの観点」(分岐・出し分けそのものを参照するテストが 1 件も無く、枝を消しても全件通る形) |
 | `test-coverage-wiring` | 同上(配線 — props → 表示、hook → コンポーネント — を通すテストが無く、配線を切っても全件通る形。単体だけを揃えた回に出る) |
 | `test-coverage-conflict` | 同上(2 つの状態が同時に成り立つ入力を作ったテストが無く、優先順位を反転しても全件通る形) |
+| `test-assert-unfalsifiable` | rules/testing.md「その assert は落ちうるか」(計画時点で載せたテストケースが、純関数の当然の帰結・空入力の自明な結果など、実装をどう壊しても同じ結果になる形。`test-default-input` は既定値と一致する入力の話で別物) |
 | `test-nesting` | rules/testing.md「テストの書き方: ネスト禁止」 |
 | `effect` | rules/hooks.md「useEffect: 最終手段として扱う」 |
 | `state-management` | rules/hooks.md「useState / useReducer の使い分け」 |
@@ -126,6 +129,7 @@
 | `composition` | rules/components.md「Composition パターン」 |
 | `ui-fidelity` | rules/ui-verification.md「UIの拠り所」 |
 | `ui-fidelity-misread` | rules/ui-verification.md「見るのはスクリーンショットではなくマークアップ」/ `implementation-review.md`「UI 要素の意味の観点」(マークアップを見たうえで、UI 要素が実際に何を表しているかを他の画面・状態・属性と突き合わせずに断定して読み違える形) |
+| `vrt-blind-spot` | rules/ui-verification.md「Storybook の視覚差分(VRT)」(story のファイル移動・`title` 変更で story id が変わり VRT が「変更」ではなく new+deleted として出る形 / 視覚差分でしか守れない部品に単体 story が無く、器と中身が混ざった story でしか退行を追えない形。VRT という検知手段自体の死角で、`ui-fidelity` `ui-fidelity-misread` が指す「UI 案の読み違い」とは別軸) |
 | `over-guard` | 過剰なブロック / フォールバック(implementation-flow のフェーズ 6) |
 | `plan` | 計画の誤り・不足(implementation-flow のフェーズ 3〜4。下の 2 語彙のどちらにも当たらない形) |
 | `plan-scope-verification` | implementation-flow フェーズ 3(SKILL.md「計画」フェーズ 3 手順 2)(一括置換・複数箇所の書き換えを伴う計画で、立てた収集条件・件数・基数・判定基準(想定した接続先や条件が実例で成立するか、検証コマンド自体が意図した範囲を覆っているかを含む)を対象になる実例へ実際に当てて検算していない形) |
@@ -138,6 +142,7 @@
 | `rules-consistency` | AGENTS.md「規約の更新」/ `harness-growth`「Step 2a-1」(規約へ足した記述が、同じファイルの前の節と矛盾する / 規約自身が挙げている例で判定文が逆の答えを出す / 表の行が実在するケースを網羅していない / Why not の根拠が一時的な事実になっている形) |
 | `subagent-control` | `implementation-flow`「サブエージェントの使い方」(検証エージェントが指示に反して実装を書き換えた / バックグラウンド起動の結果を取り逃した形) |
 | `hook-environment` | `.claude/hooks/README.md`「強制力の序列」(`echo hook-canary` が deny されず、`.claude/hooks/` が発火しない実行環境だった形) |
+| `tooling-rule-scope-gap` | rules/coding.md「規約の適用範囲」(`rules/` の規律が `.claude/hooks/` `.github/scripts/` などハーネス自身のツールにも及ぶかどうかが宣言されていない形。ネスト段数・重複禁止等の判断基準はあっても対象範囲が書かれておらず、対象を harness 自身のスクリプトへ広げると気づかれない) |
 | `なし` | 既存の規約に対応が無い(＝規約の抜けの候補) |
 
 ---
@@ -347,3 +352,50 @@ pr-291#5・pr-267#17)で、原因の性質が異なる 4 種が 1 タグに畳�
 フック化に留めるかは同様に次回以降の再発数を見て判断する。**skill 化(新しいスキル)も不要**
 (既存の `implementation-reviewer` の 1 観点を具体化する話で、新しい段取りが増えるわけでは
 ない)。過去の記録の `分類: comment-stale-edit` は書き換えない。
+
+`なし` は pr-233〜pr-301 の間に `vrt-blind-spot` / `naming-vocabulary-alignment` /
+`duplication-uncovered-shape` / `tooling-rule-scope-gap` / `test-assert-unfalsifiable` へ
+分割した(観点層まで介入済み(pr-227)なのに再発 23 件で逃し弁の閾値(10 件)を超えて溜まった —
+`harness-growth` の SKILL.md「`なし` の逃し弁」)。23 件の内訳は、story のファイル移動・
+`title` 変更で story id が変わり VRT が「変更」ではなく new+deleted として出る / 視覚差分
+でしか守れない部品に単体 story が無い形が 3 件(pr-271#13・pr-282#8・pr-301#16)、新しく
+付ける名前が既存の同じ意味の操作の呼び方・昇格先レイヤーの語彙・複数の公開物を 1 つの
+名前で覆えているかのいずれかに揃っていない形が 4 件(pr-269#8・pr-269#10・pr-280#15・
+pr-298#5)、同じ事実を 2 つの経路から独立に引いている / 同じ見た目の UI 部品を 2 実装
+持っている / 関数型の注釈を 2 箇所に直書きしている形が 3 件(pr-258#20・pr-269#22・
+pr-280#17)、`rules/` の規律が harness 自身のツール(`.claude/hooks/` `.github/scripts/`)
+にも及ぶかどうかが宣言されていない形が 3 件(pr-240#4・pr-289#11・pr-289#15)、計画時点で
+載せたテストケースが実装をどう壊しても同じ結果になる形が 2 件(pr-261#7・pr-301#8)で、
+原因の性質が異なる 5 種が 1 タグに畳まれていた。残り 8 件(pr-233#13・pr-236#1・pr-240#12・
+pr-258#21・pr-261#18・pr-267#15・pr-282#21・pr-301#7)はそれぞれ単発の指摘のため、新語彙
+には割らず `harness/case-law/process.md`「単発」へ書き出して次を待つ(1 件しか出ていない
+分類は何もしない)。
+
+層はいずれも観点で置いた(`tooling-rule-scope-gap` のみ rules)。`vrt-blind-spot` は
+`.claude/agents/plan-reviewer.md` の VRT に関する既存項目へ、story の id 変化と単体 story
+の要否を確認する観点を追加した。`naming-vocabulary-alignment` は同エージェントの命名 grep
+手順(`naming-prefix-collision` の隣)に、既存の同じ意味の操作への揃え・昇格先レイヤーの
+語彙・複数公開物の名前の網羅を確認する観点を加えた。`duplication-uncovered-shape` は
+`.claude/agents/implementation-reviewer.md`「重複の観点」に 3 つの形を追加した。
+`test-assert-unfalsifiable` は `implementation-reviewer` ではなく `plan-reviewer.md`
+「テストケースの観点」へ足した(2 件とも出どころが `plan-reviewer` で、計画段階で防げる
+形のため)。**フック化は不成立**(いずれも意味理解が要る判断で、文字列一致では偽陽性しか
+出ない。`duplication-uncovered-shape` のうち関数型注釈の重複のみ AST で機械判定できる
+見込みがあるが、対象を広げる改修が要るためこの回では見送った。今後 2 回再発したら 2a に
+戻って検討する)。**skill 化(新しいスキル)も不要**(既存エージェントの 1 観点を追加する話で、
+新しい段取りが増えるわけではない)。
+
+`tooling-rule-scope-gap` のみ rules へ置いた。**観点(検証エージェント)は実装前後に
+「気づく」ためのものだが、そもそも `rules/` 自身がどこまで及ぶかを宣言していないと、
+人でもエージェントでも拠り所にする文章が無く観点を強化しても気づけない。** そのため
+`rules/coding.md` に適用範囲の一文を追記した。**Why not 層 1・2:** 適用範囲そのものが
+規約の記述の欠落であり、機械判定にも段取り化にもなじまない。過去の記録の `分類: なし`
+は書き換えない。
+
+`なし` の 23 件の分割元になった記録のうち、`分類: なし` が最後に出たのは pr-301 なので、
+`対策済: なし 層=観点` の行と、5 新語彙それぞれの `対策済: <分類> 層=<層>` の行は
+`harness/records/pr-301.md`「規約への反映」へ追記して締めるのが本来の手順(`harness-growth`
+の SKILL.md「2a. 介入したら 3 つを同じ PR に含める」)。**この回は棚卸しルーティンの制約
+(「やらないこと: harness/records/ への書き込み」)により、その追記だけは今回のPRに含めて
+いない。** 次に `なし` を数える回、または `harness-record` が pr-301 以降の記録を書く回に
+追記する。
