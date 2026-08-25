@@ -1,5 +1,5 @@
 import { render } from "@testing-library/react";
-import { type Mock, vi } from "vitest";
+import { vi } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
 import { type TokenRef, TokenSet } from "@/domains/token";
 import { TokenSelection } from "@/domains/token-selection";
@@ -42,10 +42,7 @@ export function gray900Document(nodeNames: readonly string[]): DesignDocument {
  * @param ref 選んでいるトークンの種別と名前
  * @returns `reveal in tree` が渡した名前を読むための代役
  */
-export function renderDashedNodes(
-  document: DesignDocument,
-  ref: TokenRef,
-): Mock<(nodeName: string) => void> {
+export function renderDashedNodes(document: DesignDocument, ref: TokenRef) {
   const onReveal = vi.fn<(nodeName: string) => void>();
   render(
     <TokenDashedNodes
