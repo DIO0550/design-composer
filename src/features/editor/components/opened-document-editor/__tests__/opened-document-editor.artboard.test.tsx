@@ -6,6 +6,7 @@ import { LeftPaneViews } from "@/features/sidebar";
 import {
   artboardList,
   canvasPane,
+  dragRowNamed,
   goTo,
   renderOpenedDocument,
   selectArtboard,
@@ -57,12 +58,10 @@ test("artboard を選んで Delete を押すとキャンバスから消える", 
   expect(canvasArtboardNames()).toEqual(["settings"]);
 });
 
-test("行を下へ動かすとキャンバスの並び順が入れ替わる", async () => {
+test("行を後ろの行の上へ運ぶとキャンバスの並び順が入れ替わる", async () => {
   await renderOpenedDocument();
 
-  await userEvent.click(
-    within(artboardList()).getByRole("button", { name: "home を下へ" }),
-  );
+  dragRowNamed(artboardList(), { from: "home", to: "settings" });
 
   expect(canvasArtboardNames()).toEqual(["settings", "home"]);
 });
@@ -70,9 +69,7 @@ test("行を下へ動かすとキャンバスの並び順が入れ替わる", as
 test("artboard の一覧にも並べ替えの結果が出る", async () => {
   await renderOpenedDocument();
 
-  await userEvent.click(
-    within(artboardList()).getByRole("button", { name: "home を下へ" }),
-  );
+  dragRowNamed(artboardList(), { from: "home", to: "settings" });
 
   expect(rowNames(artboardList())).toEqual(["settings", "home"]);
 });

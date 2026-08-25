@@ -1,6 +1,6 @@
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { render, within } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
+import { dragRow } from "@/components/__tests__/pointer-gesture";
 import { DesignDocument } from "@/domains/design-document";
 import { DocumentSelection } from "@/domains/document-selection";
 import { DocumentTree } from "../index";
@@ -10,8 +10,8 @@ import { DocumentTree } from "../index";
  * 先頭の `home` を見ていると、親の名前を「先頭の artboard」に取り違えても
  * `DocumentSelection.currentArtboard` の既定と同じ答えになって落ちないため。
  *
- * ボタンの出し分け（端では出さない・兄弟がいなければ出さない）は行を並べる器
- * （`src/components/nested-row-list`）が持つので、そちらで確かめる。
+ * 落ちる先の決まり方（同じ親の中だけ・掴んだ行の上で離せば何も起きない）は行を
+ * 並べる器（`src/components/nested-row-list`）が持つので、そちらで確かめる。
  */
 function setupDocument(): DesignDocument {
   return DesignDocument.create({
@@ -42,22 +42,58 @@ function setupDocument(): DesignDocument {
   });
 }
 
-function renderTree(): ReturnType<typeof vi.fn> {
+function renderTree(): {
+  tree: HTMLElement;
+  onReorder: ReturnType<typeof vi.fn>;
+} {
   const onReorder = vi.fn();
-  render(
+  const { container } = render(
     <DocumentTree
       selection={DocumentSelection.fromNames(setupDocument(), ["settings"])}
       onSelect={vi.fn()}
       onReorder={onReorder}
     />,
   );
-  return onReorder;
+  return { tree: container, onReorder };
 }
 
-test("子を下へ動かすと今見ている artboard の中の1つ後ろの位置へ移す指示が伝わる", async () => {
-  const onReorder = renderTree();
+/**
+ * 名前で行の枠を引く（掴む口はその行だけを包む要素に張ってある）。
+ *
+ * @param tree 描いたツリー
+ * @param name 引きたい行の名前
+ * @returns その行の枠。見つからなければテストを落とす
+ */
+function rowOf(tree: HTMLElement, name: string): HTMLElement {
+  const row = within(tree).getByRole("button", { name }).parentElement;
+  if (row === null) {
+    throw new Error(`行が見つからない: ${name}`);
+  }
+  return row;
+}
 
-  await userEvent.click(screen.getByRole("button", { name: "title を下へ" }));
+/**
+ * 行を掴んで別の行の上まで運ぶ。
+ *
+ * @param tree 描いたツリー
+ * @param movement 掴む行と運ぶ先の行の名前
+ */
+function dragRowNamed(
+  tree: HTMLElement,
+  movement: Readonly<{ from: string; to: string }>,
+): void {
+  const from = rowOf(tree, movement.from);
+  const group = from.closest("ul");
+  if (group === null) {
+    throw new Error("並びの器が見つからない");
+  }
+  dragRow({ from, to: rowOf(tree, movement.to), group });
+}
+
+test("子を後ろへ運ぶと今見ている artboard の中の位置として伝わる", () => {
+  const { tree, onReorder } = renderTree();
+
+  dragRowNamed(tree, { from: "title", to: "body" });
 
   expect(onReorder).toHaveBeenCalledWith(
     { parentName: "settings", index: 0 },
@@ -70,12 +106,10 @@ test("子を下へ動かすと今見ている artboard の中の1つ後ろの位
  * 器が見ているのが描画をたどって作る位置なのに対し、こちらが見ているのは
  * `rowFromNode` が Node の木を行の木へ再帰で移すときに親子関係を保っていることだから。
  */
-test("孫ノードの並べ替えはその親の中の位置として伝わる", async () => {
-  const onReorder = renderTree();
+test("孫ノードの並べ替えはその親の中の位置として伝わる", () => {
+  const { tree, onReorder } = renderTree();
 
-  await userEvent.click(
-    screen.getByRole("button", { name: "body-action を上へ" }),
-  );
+  dragRowNamed(tree, { from: "body-action", to: "body-text" });
 
   expect(onReorder).toHaveBeenCalledWith({ parentName: "body", index: 1 }, 0);
 });

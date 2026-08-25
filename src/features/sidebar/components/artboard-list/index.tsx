@@ -1,11 +1,11 @@
-import {
-  type ListPlacement,
-  ReorderButtons,
-} from "@/components/reorder-buttons";
+import { DropLine } from "@/components/drop-line";
 import { TypeGlyph } from "@/components/type-glyph";
 import type { Artboard } from "@/domains/artboard";
 import { DocumentSelection } from "@/domains/document-selection";
 import type { LeftPaneArtboardActions } from "@/features/sidebar/types/LeftPaneArtboardActions";
+import { useReorderDrag } from "@/hooks/use-reorder-drag";
+import { Option } from "@/utils/Option";
+import { ReorderDrag } from "@/utils/ReorderDrag";
 
 /** artboard が 1 枚も無いときの知らせ。 */
 const NoArtboardMessage = "artboard がありません";
@@ -16,6 +16,7 @@ const AddArtboardLabel = "artboard を追加";
 /**
  * artboard 1 枚の行（UI 案 docs/Design Composer.html の `# login 720×900`）。
  * 押すとその artboard が選択になり、ツリーもその中身に入れ替わる。
+ * 掴んで別の行の上で離すと、その位置へ移る。
  *
  * `aria-current` が指すのは選択ではなく「今ツリーが映している 1 枚」。
  * 中のノードを選んでいる間も、それを載せている artboard がここでは current になる
@@ -26,19 +27,27 @@ const AddArtboardLabel = "artboard を追加";
  */
 function ArtboardRow({
   artboard,
-  placement,
   isCurrent,
+  isHeld,
+  dropSide,
+  rowProps,
   onSelect,
-  onReorder,
 }: Readonly<{
   artboard: Artboard;
-  placement: ListPlacement;
   isCurrent: boolean;
+  /** 今掴まれている行か。掴んでいる間は淡くする */
+  isHeld: boolean;
+  /** 落ちる先ならどちら側に線を引くか。落ちる先でなければ不在 */
+  dropSide: Option<"before" | "after">;
+  rowProps: Readonly<{ onPointerDown: () => void; onPointerEnter: () => void }>;
   onSelect: (name: string) => void;
-  onReorder: LeftPaneArtboardActions["reorder"];
 }>) {
   return (
-    <li className="flex items-center gap-1 pr-1">
+    <li
+      // 落ちる先の線を行の縁へ重ねるので、行を位置の基準にする
+      className={`relative flex items-center ${isHeld ? "opacity-40" : ""}`}
+      {...rowProps}
+    >
       <button
         type="button"
         aria-label={artboard.name}
@@ -56,11 +65,7 @@ function ArtboardRow({
           {artboard.width}×{artboard.height}
         </span>
       </button>
-      <ReorderButtons
-        name={artboard.name}
-        placement={placement}
-        onMove={(toIndex) => onReorder({ fromIndex: placement.index, toIndex })}
-      />
+      {dropSide.some ? <DropLine side={dropSide.value} /> : null}
     </li>
   );
 }
@@ -72,10 +77,9 @@ function ArtboardRow({
  * 見出しの右の `+` は UI 案そのもの（展開後 379〜382 行）。押すと末尾に 1 枚増え、
  * そのまま選択になる。
  *
- * 行ごとの `↑` / `↓` は UI 案が描いていない。UI 案は並べ替えの入口を描かないまま
- * `Artboards` の一覧を「artboard の追加 / 並べ替えの置き場」と位置づけている
- * （Design notes の `artboard add / reorder has an obvious home`）ので、新しい形を
- * 発明せず、同じ左ペインのツリー（`NestedRowList`）と同じ `↑` / `↓` に寄せている。
+ * 並べ替えは行を掴んで運ぶ（docs/06-ui.md「編集操作の一覧」の並べ替えは
+ * 「ドラッグまたはツリービュー」）。ツリー（`NestedRowList`）も同じ `useReorderDrag`
+ * に載っているので、左ペインの中で操作の流儀が割れない。
  *
  * artboard が 1 枚も無いことを伝えるのはここ。ツリー側は「今見ている 1 枚の中身」を
  * 映す場所で、1 枚も無いのは artboard の一覧の話なので、持ち主をこちらに置く。
@@ -91,6 +95,10 @@ export function ArtboardList({
   artboardActions: LeftPaneArtboardActions;
 }>) {
   const artboards = selection.document.artboards;
+  const { drag, rowProps, groupProps } = useReorderDrag(
+    artboardActions.reorder,
+  );
+  const dropSide = ReorderDrag.dropSide(drag);
 
   return (
     <section aria-label="artboard 一覧" className="text-sm">
@@ -110,18 +118,21 @@ export function ArtboardList({
       {artboards.length === 0 ? (
         <p className="text-gray-500">{NoArtboardMessage}</p>
       ) : (
-        <ul>
+        <ul {...groupProps()}>
           {artboards.map((artboard, index) => (
             <ArtboardRow
               key={artboard.name}
               artboard={artboard}
-              placement={{ index, count: artboards.length }}
               isCurrent={DocumentSelection.isCurrentArtboard(
                 selection,
                 artboard.name,
               )}
+              isHeld={ReorderDrag.isHeld(drag, index)}
+              dropSide={
+                ReorderDrag.isDropTarget(drag, index) ? dropSide : Option.none
+              }
+              rowProps={rowProps(index)}
               onSelect={onSelect}
-              onReorder={artboardActions.reorder}
             />
           ))}
         </ul>
