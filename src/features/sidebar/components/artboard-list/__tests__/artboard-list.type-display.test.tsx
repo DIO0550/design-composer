@@ -14,7 +14,13 @@ function setupSelection(): DocumentSelection {
 }
 
 function renderList(): void {
-  render(<ArtboardList selection={setupSelection()} onSelect={vi.fn()} />);
+  render(
+    <ArtboardList
+      selection={setupSelection()}
+      onSelect={vi.fn()}
+      artboard={{ add: vi.fn(), reorder: vi.fn() }}
+    />,
+  );
 }
 
 test("行には artboard を表す型アイコンが出る", () => {

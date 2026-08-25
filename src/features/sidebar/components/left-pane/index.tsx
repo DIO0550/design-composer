@@ -16,6 +16,7 @@ import {
   LeftPaneViewLabels,
   LeftPaneViews,
 } from "@/features/sidebar/components/left-pane-rail";
+import type { LeftPaneArtboardActions } from "@/features/sidebar/types/LeftPaneArtboardActions";
 import type { LeftPaneNodeActions } from "@/features/sidebar/types/LeftPaneNodeActions";
 import type { LeftPaneTokenActions } from "@/features/sidebar/types/LeftPaneTokenActions";
 import { TokenList } from "@/features/tokens";
@@ -35,6 +36,7 @@ function LeftPaneContent({
   view,
   selection,
   tokenSelection,
+  artboard,
   node,
   token,
   grab,
@@ -42,6 +44,7 @@ function LeftPaneContent({
   view: LeftPaneView;
   selection: DocumentSelection;
   tokenSelection: TokenSelection;
+  artboard: LeftPaneArtboardActions;
   node: LeftPaneNodeActions;
   token: LeftPaneTokenActions;
   grab: AssetGrab;
@@ -56,7 +59,11 @@ function LeftPaneContent({
             浮かぶツールバーが持ち（#112）、部品はパレットの行を掴んで落とす（#203）ので、
             どちらもここには並べない。
           */}
-          <ArtboardList selection={selection} onSelect={node.select} />
+          <ArtboardList
+            selection={selection}
+            onSelect={node.select}
+            artboard={artboard}
+          />
           <DocumentTree
             selection={selection}
             onSelect={node.select}
@@ -145,6 +152,7 @@ export function LeftPane({
   selection,
   tokenSelection,
   isFrozen,
+  artboard,
   node,
   token,
   grab,
@@ -154,6 +162,7 @@ export function LeftPane({
   selection: DocumentSelection;
   tokenSelection: TokenSelection;
   isFrozen: boolean;
+  artboard: LeftPaneArtboardActions;
   node: LeftPaneNodeActions;
   token: LeftPaneTokenActions;
   grab: AssetGrab;
@@ -174,6 +183,7 @@ export function LeftPane({
           view={view}
           selection={selection}
           tokenSelection={tokenSelection}
+          artboard={artboard}
           node={node}
           token={token}
           grab={grab}
