@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "tauri-devcontainer-template",
+  "productName": "Design Composer",
   "version": "0.1.0",
-  "identifier": "com.tauri.dev",
+  "identifier": "io.github.dio0550.design-composer",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:14000",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "Tauri App",
+        "title": "Design Composer",
         "width": 800,
         "height": 600,
         "resizable": true,
