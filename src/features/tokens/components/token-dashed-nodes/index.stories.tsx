@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { fn } from "storybook/test";
 import { sampleTokenSelection } from "@/features/tokens/__stories__/sample-token-document";
 import { TokenDashedNodes } from "./index";
 
@@ -9,6 +10,7 @@ import { TokenDashedNodes } from "./index";
 const meta = {
   title: "features/tokens/TokenDashedNodes",
   component: TokenDashedNodes,
+  args: { onReveal: fn() },
   decorators: [
     (Story) => (
       <div className="flex bg-gray-100 p-6">

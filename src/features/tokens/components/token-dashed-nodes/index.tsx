@@ -1,6 +1,7 @@
 import { type ReactElement, useMemo } from "react";
 import { ColorSwatch } from "@/components/color-swatch";
 import { TokenSelection } from "@/domains/token-selection";
+import { ArrayEx } from "@/utils/ArrayEx";
 
 /**
  * 破線が掛かっているノードの数の綴り。
@@ -31,11 +32,19 @@ function nodeCountText(count: number): string {
  * Why not: `token-control` の `TokenPreview` は使わない。使うと `token-list` の
  * `PreviewSlot` と 4 枝すべてが重なる。
  *
- * @returns トークン名と破線の本数を並べた帯。破線が 1 本も無いときは何も出さない
+ * 飛び先は破線の先頭。UI 案がリンクを 1 本しか描いていないので、複数ある参照元から
+ * 1 つ選ぶことになり、並びは既に `collectCanvasReferrerNames` が決めている（#209）。
+ *
+ * @returns トークン名・破線の本数・先頭へ飛ぶリンクを並べた帯。
+ *   破線が 1 本も無いときは何も出さない
  */
 export function TokenDashedNodes({
   selection,
-}: Readonly<{ selection: TokenSelection }>): ReactElement | null {
+  onReveal,
+}: Readonly<{
+  selection: TokenSelection;
+  onReveal: (nodeName: string) => void;
+}>): ReactElement | null {
   const token = TokenSelection.token(selection);
   /*
    * キャンバス側と同じ走査をここでも行う。パン / ズームでこの帯まで再レンダーされるので、
@@ -49,7 +58,15 @@ export function TokenDashedNodes({
     [selection],
   );
 
-  if (!token.some || nodeNames.length === 0) {
+  /*
+   * 帯を出す条件を「先頭が在るか」で書くのは、リンクに飛び先が必ずあることを
+   * 構造で保つため（`nodeNames.length === 0` で弾くと、飛び先は `nodeNames[0]` の
+   * `undefined` を含んだまま残る）。
+   */
+  const firstDashedNodeName = ArrayEx.first(nodeNames);
+  const hasDashedNode = token.some && firstDashedNodeName.some;
+
+  if (!hasDashedNode) {
     return null;
   }
 
@@ -69,6 +86,18 @@ export function TokenDashedNodes({
       <span className="shrink-0">
         {`${nodeCountText(nodeNames.length)} · dashed in canvas`}
       </span>
+      {/*
+        UI 案は押せるものも `<span style="cursor:pointer">` で描いているが、実装では
+        ボタンにする（`document-error-list` の `revert file` と同じ形）。
+        文字サイズを指定しないのは、UI 案の綴りも font-size を持たず帯の 11px を継ぐため。
+      */}
+      <button
+        type="button"
+        onClick={() => onReveal(firstDashedNodeName.value)}
+        className="ml-1 shrink-0 text-[#0d99ff]"
+      >
+        reveal in tree
+      </button>
     </section>
   );
 }

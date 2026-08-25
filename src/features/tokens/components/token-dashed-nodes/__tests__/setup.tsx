@@ -1,4 +1,5 @@
 import { render } from "@testing-library/react";
+import { type Mock, vi } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
 import { type TokenRef, TokenSet } from "@/domains/token";
 import { TokenSelection } from "@/domains/token-selection";
@@ -36,16 +37,23 @@ export function gray900Document(nodeNames: readonly string[]): DesignDocument {
  * トークンを選んだ状態の帯を描く。
  * 出る中身は選んでいるトークンから決まるので、どのテストも「ドキュメントを作って選ぶ」から始まる。
  * 観点ごとに土台のドキュメントが違うため、ドキュメントは引数で受け取る。
+ *
+ * @param document 帯が参照元を数える相手
+ * @param ref 選んでいるトークンの種別と名前
+ * @returns `reveal in tree` が渡した名前を読むための代役
  */
 export function renderDashedNodes(
   document: DesignDocument,
   ref: TokenRef,
-): void {
+): Mock<(nodeName: string) => void> {
+  const onReveal = vi.fn<(nodeName: string) => void>();
   render(
     <TokenDashedNodes
       selection={TokenSelection.create(document, Option.some(ref))}
+      onReveal={onReveal}
     />,
   );
+  return onReveal;
 }
 
 /**
@@ -56,6 +64,7 @@ export function renderWithoutSelection(document: DesignDocument): void {
   render(
     <TokenDashedNodes
       selection={TokenSelection.create(document, Option.none)}
+      onReveal={vi.fn()}
     />,
   );
 }
