@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { ReorderDrag, type ReorderMove } from "@/utils/ReorderDrag";
+import type { IndexMove } from "@/types/IndexMove";
+import { ReorderDrag } from "@/utils/ReorderDrag";
 
 /** 行に配る props。掴む口と、ポインタが入ったことを伝える口。 */
 export type RowProps = Readonly<{
@@ -32,7 +33,7 @@ type GroupProps = Readonly<{
  * @param onReorder 離したときに起きた移動を伝える先
  * @returns 今の状態と、行・器へ配る props
  */
-export function useReorderDrag(onReorder: (move: ReorderMove) => void): {
+export function useReorderDrag(onReorder: (move: IndexMove) => void): {
   drag: ReorderDrag;
   rowProps: (index: number) => RowProps;
   groupProps: () => GroupProps;

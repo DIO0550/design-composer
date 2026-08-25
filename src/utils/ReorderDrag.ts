@@ -1,11 +1,5 @@
+import type { IndexMove } from "@/types/IndexMove";
 import { Option } from "@/utils/Option";
-
-/**
- * 並びの中で 1 つを別の位置へ移す指定。
- * 今の位置と移す先は片方だけでは移動が決まらないため 1 つの型にまとめる
- * （同じ型の数が 2 つ並ぶので、位置引数だと取り違えても型エラーにならない）。
- */
-export type ReorderMove = Readonly<{ fromIndex: number; toIndex: number }>;
 
 /** 落ちる先を示す線を、行のどちら側へ引くか。 */
 export type DropSide = "before" | "after";
@@ -85,7 +79,7 @@ export const ReorderDrag = {
    * @param drag 離す前の状態
    * @returns 動かしていたならその移動。掴んだだけ・掴んでいないなら `none`
    */
-  releasedMove(drag: ReorderDrag): Option<ReorderMove> {
+  releasedMove(drag: ReorderDrag): Option<IndexMove> {
     return drag.kind === "dragging"
       ? Option.some({ fromIndex: drag.fromIndex, toIndex: drag.toIndex })
       : Option.none;

@@ -9,8 +9,8 @@ import type { NodeTemplate } from "@/domains/node-template";
 import type { TokenRef, TokenValue } from "@/domains/token";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import type { TokenTemplate } from "@/features/editor/domains/token-template";
+import type { IndexMove } from "@/types/IndexMove";
 import { Option } from "@/utils/Option";
-import type { ReorderMove } from "@/utils/ReorderDrag";
 
 /** エディタ画面で起きる状態遷移（docs/06-ui.md「選択」「編集操作の一覧」）。 */
 export type EditorAction =
@@ -39,7 +39,7 @@ export type EditorAction =
     }>
   | Readonly<{ type: "remove_selected" }>
   | Readonly<{ type: "add_artboard" }>
-  | Readonly<{ type: "reorder_artboard"; move: ReorderMove }>
+  | Readonly<{ type: "reorder_artboard"; move: IndexMove }>
   | Readonly<{ type: "detach_instance" }>
   | Readonly<{ type: "select_all_instances" }>
   | Readonly<{ type: "create_component"; componentName: string }>

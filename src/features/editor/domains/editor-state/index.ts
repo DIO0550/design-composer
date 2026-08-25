@@ -14,8 +14,8 @@ import { Token, type TokenRef, TokenSet, TokenValue } from "@/domains/token";
 import { TokenSelection } from "@/domains/token-selection";
 import { EditHistory } from "@/features/editor/domains/edit-history";
 import { TokenTemplate } from "@/features/editor/domains/token-template";
+import type { IndexMove } from "@/types/IndexMove";
 import { Option } from "@/utils/Option";
-import type { ReorderMove } from "@/utils/ReorderDrag";
 
 /**
  * エディタ画面が保持する状態（docs/06-ui.md「画面構成」「選択」）。
@@ -659,7 +659,7 @@ export const EditorState = {
    * @param move 動かす artboard の今の位置と、移す先の位置
    * @returns 並びが変わった状態。並びの外を指すときと、ファイルが不正な間は `none`
    */
-  reorderArtboard(state: EditorState, move: ReorderMove): Option<EditorState> {
+  reorderArtboard(state: EditorState, move: IndexMove): Option<EditorState> {
     const reordered = DesignDocument.reorderArtboard(
       EditorState.document(state),
       move.fromIndex,
