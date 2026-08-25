@@ -35,6 +35,31 @@ export function stateWithNestedBox(): EditorState {
 }
 
 /**
+ * artboard を 2 枚持ち、先頭の `home` だけが子を持つ状態。
+ *
+ * 2 枚あるのは、並べ替えと「消しても残る 1 枚がある」を確かめるのに 1 枚では
+ * 足りないため。子を持たせてあるのは、artboard の削除が配下ごと消すことを
+ * 空の artboard では確かめられないため。
+ *
+ * @returns artboard が 2 枚並ぶエディタの状態
+ */
+export function stateWithTwoArtboards(): EditorState {
+  return EditorState.create(
+    DesignDocument.create({
+      artboards: [
+        {
+          name: "home",
+          width: 375,
+          height: 812,
+          children: [{ name: "home-title", type: "Text" }],
+        },
+        { name: "settings", width: 375, height: 812, children: [] },
+      ],
+    }),
+  );
+}
+
+/**
  * `home` に Text を 2 つ持ち、部品定義は雛形のものをそのまま使う状態
  * （`primary-button-label` が部品定義の中のノードにあたる）。
  *

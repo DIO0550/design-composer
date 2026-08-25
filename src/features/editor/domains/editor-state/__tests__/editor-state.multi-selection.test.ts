@@ -52,8 +52,8 @@ function setupSingleSelected(): EditorState {
 const Width: AxisLength = { axis: "width", length: 120 };
 
 test("複数選んでいる間は削除できない", () => {
-  expect(EditorState.removeNode(setupSingleSelected()).some).toBe(true);
-  expect(EditorState.removeNode(setupMultiSelected()).some).toBe(false);
+  expect(EditorState.removeSelected(setupSingleSelected()).some).toBe(true);
+  expect(EditorState.removeSelected(setupMultiSelected()).some).toBe(false);
 });
 
 test("複数選んでいる間はコピーできない", () => {
@@ -145,7 +145,7 @@ test("複数選んだあとに選択を解除すると何も選ばれていな�
  */
 function setupMultiSelectedThenLost(): EditorState {
   const removed = Option.unwrap(
-    EditorState.removeNode(EditorState.select(setupState(), "home-signup")),
+    EditorState.removeSelected(EditorState.select(setupState(), "home-signup")),
   );
   const restored = Option.unwrap(EditorState.undo(removed));
   const multi = Option.unwrap(

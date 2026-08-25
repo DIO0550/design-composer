@@ -36,7 +36,9 @@ export type EditorAction =
       template: NodeTemplate;
       at: ChildPosition;
     }>
-  | Readonly<{ type: "remove_node" }>
+  | Readonly<{ type: "remove_selected" }>
+  | Readonly<{ type: "add_artboard" }>
+  | Readonly<{ type: "reorder_artboard"; fromIndex: number; toIndex: number }>
   | Readonly<{ type: "detach_instance" }>
   | Readonly<{ type: "select_all_instances" }>
   | Readonly<{ type: "create_component"; componentName: string }>
@@ -107,14 +109,33 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
         EditorState.insertNodeAt(state, action.template, action.at),
         state,
       );
-    case "remove_node":
+    case "remove_selected":
       /*
-       * 消せる対象が無ければ木は変わらない（EditorState.removeNode の `none`）。
-       * ボタンは選択が無いと押せないが、Delete キーはいつでも押せるため
-       * この `none` には画面の操作から到達する。ファイルが不正な間も `none`
+       * 消せる対象が無ければドキュメントは変わらない（EditorState.removeSelected の
+       * `none`）。Delete キーは何も選んでいなくても押せるため、この `none` には
+       * 画面の操作から到達する。ファイルが不正な間も `none`
        * （凍結は `inert` で作るが、キーは `document` に張るので素通りする / #155）。
        */
-      return Option.unwrapOr(EditorState.removeNode(state), state);
+      return Option.unwrapOr(EditorState.removeSelected(state), state);
+    case "add_artboard":
+      /*
+       * ファイルが不正な間は増えない（EditorState.addArtboard の `none`）。
+       * そのとき左ペインは `inert` なので、画面の操作からこの `none` には到達しない。
+       */
+      return Option.unwrapOr(EditorState.addArtboard(state), state);
+    case "reorder_artboard":
+      /*
+       * 移動が存在しなければ並びは変わらない（EditorState.reorderArtboard の `none`）。
+       * 一覧は隣がいない向きのボタンを出さないため、画面の操作からこの `none` には
+       * 到達しない（reorder_node と同じ扱い）。
+       */
+      return Option.unwrapOr(
+        EditorState.reorderArtboard(state, {
+          fromIndex: action.fromIndex,
+          toIndex: action.toIndex,
+        }),
+        state,
+      );
     case "detach_instance":
       /*
        * インスタンスを選んでいなければ木は変わらない

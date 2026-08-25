@@ -123,7 +123,7 @@ test("同じものを続けて貼ると別々の名前で並ぶ", () => {
 test("コピー元を消してから貼ると元の名前のまま入る", () => {
   const state = EditorState.select(setupState(), "title");
   const copied = Option.unwrap(EditorState.copyNode(state));
-  const removed = Option.unwrap(EditorState.removeNode(copied));
+  const removed = Option.unwrap(EditorState.removeSelected(copied));
 
   const pasted = Option.unwrap(
     EditorState.pasteNode(EditorState.select(removed, "home")),
