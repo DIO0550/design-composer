@@ -1,12 +1,15 @@
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/design-document";
 import { DocumentSelection } from "@/domains/document-selection";
+import {
+  artboardNames,
+  stateWithThreeArtboards,
+} from "@/features/editor/__tests__/artboard-fixtures";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
-import { stateWithTwoArtboards } from "./setup";
 
-function artboardNames(state: EditorState): readonly string[] {
-  return EditorState.document(state).artboards.map((artboard) => artboard.name);
+function namesOf(state: EditorState): readonly string[] {
+  return artboardNames(EditorState.document(state));
 }
 
 /**
@@ -23,13 +26,15 @@ function currentArtboardName(state: EditorState): Option<string> {
 }
 
 test("artboard を追加すると並びの末尾に1枚増える", () => {
-  const added = Option.unwrap(EditorState.addArtboard(stateWithTwoArtboards()));
+  const added = Option.unwrap(
+    EditorState.addArtboard(stateWithThreeArtboards()),
+  );
 
-  expect(artboardNames(added)).toEqual(["home", "settings", "artboard"]);
+  expect(namesOf(added)).toEqual(["home", "settings", "about", "artboard"]);
 });
 
 test("追加した artboard が選択になる", () => {
-  const state = EditorState.select(stateWithTwoArtboards(), "home");
+  const state = EditorState.select(stateWithThreeArtboards(), "home");
 
   const added = Option.unwrap(EditorState.addArtboard(state));
 
@@ -37,44 +42,61 @@ test("追加した artboard が選択になる", () => {
 });
 
 test("追加した artboard をツリーが映す", () => {
-  const state = EditorState.select(stateWithTwoArtboards(), "home");
+  const state = EditorState.select(stateWithThreeArtboards(), "home");
 
   const added = Option.unwrap(EditorState.addArtboard(state));
 
   expect(currentArtboardName(added)).toEqual(Option.some("artboard"));
 });
 
+test("追加した artboard は子を持たない", () => {
+  const added = Option.unwrap(
+    EditorState.addArtboard(stateWithThreeArtboards()),
+  );
+
+  expect(
+    Option.unwrap(
+      DesignDocument.findArtboard(EditorState.document(added), "artboard"),
+    ).children,
+  ).toEqual([]);
+});
+
 test("追加を繰り返しても名前は重ならない", () => {
-  const once = Option.unwrap(EditorState.addArtboard(stateWithTwoArtboards()));
+  const once = Option.unwrap(
+    EditorState.addArtboard(stateWithThreeArtboards()),
+  );
 
   const twice = Option.unwrap(EditorState.addArtboard(once));
 
-  expect(artboardNames(twice)).toEqual([
+  expect(namesOf(twice)).toEqual([
     "home",
     "settings",
+    "about",
     "artboard",
     "artboard-2",
   ]);
 });
 
 test("追加は取り消せる", () => {
-  const added = Option.unwrap(EditorState.addArtboard(stateWithTwoArtboards()));
+  const added = Option.unwrap(
+    EditorState.addArtboard(stateWithThreeArtboards()),
+  );
 
   const undone = Option.unwrap(EditorState.undo(added));
 
-  expect(artboardNames(undone)).toEqual(["home", "settings"]);
+  expect(namesOf(undone)).toEqual(["home", "settings", "about"]);
 });
 
 test("選択中の artboard を削除するとその1枚が並びから消える", () => {
-  const state = EditorState.select(stateWithTwoArtboards(), "home");
+  const state = EditorState.select(stateWithThreeArtboards(), "home");
 
   const removed = Option.unwrap(EditorState.removeSelected(state));
 
-  expect(artboardNames(removed)).toEqual(["settings"]);
+  expect(namesOf(removed)).toEqual(["settings", "about"]);
 });
 
 test("artboard を削除すると配下のノードも消える", () => {
-  const state = EditorState.select(stateWithTwoArtboards(), "home");
+  const state = EditorState.select(stateWithThreeArtboards(), "home");
 
   const removed = Option.unwrap(EditorState.removeSelected(state));
 
@@ -84,29 +106,44 @@ test("artboard を削除すると配下のノードも消える", () => {
 });
 
 test("artboard を削除すると選択が外れる", () => {
-  const state = EditorState.select(stateWithTwoArtboards(), "home");
+  const state = EditorState.select(stateWithThreeArtboards(), "home");
 
   const removed = Option.unwrap(EditorState.removeSelected(state));
 
   expect(EditorState.singleName(removed)).toEqual(Option.none);
 });
 
-test("artboard を1つ後ろへ動かすと並び順が入れ替わる", () => {
+test("artboard を1つ後ろへ動かすと隣と入れ替わる", () => {
   const moved = Option.unwrap(
-    EditorState.reorderArtboard(stateWithTwoArtboards(), {
+    EditorState.reorderArtboard(stateWithThreeArtboards(), {
       fromIndex: 0,
       toIndex: 1,
     }),
   );
 
-  expect(artboardNames(moved)).toEqual(["settings", "home"]);
+  expect(namesOf(moved)).toEqual(["settings", "home", "about"]);
+});
+
+/*
+ * 隣り合わない移動を見るのは、隣接移動だと移動元と移動先を取り違えても同じ並びに
+ * なるため（`{0,1}` と `{1,0}` はどちらも先頭 2 枚が入れ替わった並びを作る）。
+ */
+test("先頭の artboard を末尾へ動かすと間の2枚が前へ詰まる", () => {
+  const moved = Option.unwrap(
+    EditorState.reorderArtboard(stateWithThreeArtboards(), {
+      fromIndex: 0,
+      toIndex: 2,
+    }),
+  );
+
+  expect(namesOf(moved)).toEqual(["settings", "about", "home"]);
 });
 
 test("並べ替えても選んでいる artboard は選ばれたまま", () => {
-  const state = EditorState.select(stateWithTwoArtboards(), "home");
+  const state = EditorState.select(stateWithThreeArtboards(), "home");
 
   const moved = Option.unwrap(
-    EditorState.reorderArtboard(state, { fromIndex: 0, toIndex: 1 }),
+    EditorState.reorderArtboard(state, { fromIndex: 0, toIndex: 2 }),
   );
 
   expect(EditorState.singleName(moved)).toEqual(Option.some("home"));
@@ -118,9 +155,9 @@ test("並べ替えても選んでいる artboard は選ばれたまま", () => {
  */
 test("何も選んでいないときに並べ替えるとツリーが映す1枚も入れ替わる", () => {
   const moved = Option.unwrap(
-    EditorState.reorderArtboard(stateWithTwoArtboards(), {
+    EditorState.reorderArtboard(stateWithThreeArtboards(), {
       fromIndex: 0,
-      toIndex: 1,
+      toIndex: 2,
     }),
   );
 
@@ -129,9 +166,9 @@ test("何も選んでいないときに並べ替えるとツリーが映す1枚�
 
 test("並びの外を指す移動は起きない", () => {
   expect(
-    EditorState.reorderArtboard(stateWithTwoArtboards(), {
+    EditorState.reorderArtboard(stateWithThreeArtboards(), {
       fromIndex: 0,
-      toIndex: 2,
+      toIndex: 3,
     }),
   ).toEqual(Option.none);
 });

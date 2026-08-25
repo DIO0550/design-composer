@@ -27,7 +27,7 @@ function renderList(document: DesignDocument = setupDocument()): {
     <ArtboardList
       selection={DocumentSelection.fromNames(document, [])}
       onSelect={vi.fn()}
-      artboard={{ add, reorder }}
+      artboardActions={{ add, reorder }}
     />,
   );
   return { add, reorder };
@@ -77,4 +77,24 @@ test("並びの先頭の行には上へ動かすボタンが出ない", () => {
   renderList();
 
   expect(screen.queryByRole("button", { name: "home を上へ" })).toBeNull();
+});
+
+/*
+ * 末尾の行に `↓` が残ると、並びの外を指す移動を画面から作れてしまう
+ * （`EditorState.reorderArtboard` の `none` に画面の操作から到達する）。
+ * 先頭側だけを見ていると、行に渡す並びの長さを取り違えても気づけない。
+ */
+test("並びの末尾の行には下へ動かすボタンが出ない", () => {
+  renderList();
+
+  expect(screen.queryByRole("button", { name: "about を下へ" })).toBeNull();
+});
+
+/* UI 案（展開後 379〜382 行）が置いているのは `+` の 1 字。 */
+test("追加のボタンには + が出る", () => {
+  renderList();
+
+  expect(
+    screen.getByRole("button", { name: "artboard を追加" }).textContent,
+  ).toBe("+");
 });

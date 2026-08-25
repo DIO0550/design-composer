@@ -2,9 +2,11 @@ import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { rowNames } from "@/components/__tests__/row-names";
+import { LeftPaneViews } from "@/features/sidebar";
 import {
   artboardList,
   canvasPane,
+  goTo,
   renderOpenedDocument,
   selectArtboard,
   tree,
@@ -98,10 +100,32 @@ test("追加した直後に Delete を押すと足した1枚だけが消える",
   expect(canvasArtboardNames()).toEqual(["home", "settings"]);
 });
 
-test("追加のボタンは Layers を映しているときだけ出る", async () => {
+/*
+ * `Artboards` の一覧は Layers の中身なので、他の行き先へ移ると追加のボタンごと
+ * 消える。初期表示（= Layers）で 1 つあることだけを見ると、どの行き先でも一覧を
+ * 描く実装でも通ってしまうため、出ない側を見る。
+ */
+test("Tokens を映している間は追加のボタンが出ない", async () => {
   await renderOpenedDocument();
 
-  expect(
-    screen.getAllByRole("button", { name: "artboard を追加" }),
-  ).toHaveLength(1);
+  await goTo(LeftPaneViews.Tokens);
+
+  expect(screen.queryByRole("button", { name: "artboard を追加" })).toBeNull();
+});
+
+test("Assets を映している間は追加のボタンが出ない", async () => {
+  await renderOpenedDocument();
+
+  await goTo(LeftPaneViews.Assets);
+
+  expect(screen.queryByRole("button", { name: "artboard を追加" })).toBeNull();
+});
+
+test("Layers へ戻すと追加のボタンが出る", async () => {
+  await renderOpenedDocument();
+  await goTo(LeftPaneViews.Tokens);
+
+  await goTo(LeftPaneViews.Layers);
+
+  expect(screen.getByRole("button", { name: "artboard を追加" })).toBeDefined();
 });

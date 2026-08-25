@@ -1,19 +1,6 @@
 import { expect, test } from "vitest";
-import { Artboard } from "@/domains/artboard";
 import { DesignDocument } from "../index";
-
-function setupDocument(): DesignDocument {
-  return DesignDocument.create({
-    artboards: [
-      Artboard.create({
-        name: "home",
-        width: 360,
-        height: 240,
-        children: [{ name: "home-title", type: "Text" }],
-      }),
-    ],
-  });
-}
+import { documentWithOneArtboard } from "./artboard-edit-setup";
 
 /*
  * `remove` は artboard で無ければノードとして扱うので、どちらにも無い名前は
@@ -21,7 +8,7 @@ function setupDocument(): DesignDocument {
  * （`artboard-not-found`）と入れ替わっても `ok` だけでは気づけないため。
  */
 test("どこにも無い名前を指すとノードが見つからない失敗になる", () => {
-  const removed = DesignDocument.remove(setupDocument(), "居ない");
+  const removed = DesignDocument.remove(documentWithOneArtboard(), "居ない");
 
   expect(removed).toEqual({
     ok: false,

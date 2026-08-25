@@ -52,6 +52,22 @@ test("並びの末尾では下へ動かすボタンが出ない", () => {
   expect(screen.queryByRole("button", { name: "home を下へ" })).toBeNull();
 });
 
+test("上へ動かすボタンには ↑ が出る", () => {
+  renderButtons(1, 3);
+
+  expect(screen.getByRole("button", { name: "home を上へ" }).textContent).toBe(
+    "↑",
+  );
+});
+
+test("下へ動かすボタンには ↓ が出る", () => {
+  renderButtons(1, 3);
+
+  expect(screen.getByRole("button", { name: "home を下へ" }).textContent).toBe(
+    "↓",
+  );
+});
+
 test("並びに1つしか無ければどちらのボタンも出ない", () => {
   renderButtons(0, 1);
 

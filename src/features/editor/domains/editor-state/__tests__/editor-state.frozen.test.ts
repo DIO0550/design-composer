@@ -3,10 +3,10 @@ import { ReceivedAt } from "@/domains/__tests__/instants";
 import { Artboard } from "@/domains/artboard";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import { PropEdit } from "@/domains/node";
+import { stateWithThreeArtboards } from "@/features/editor/__tests__/artboard-fixtures";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 import { frozen } from "./frozen-state";
-import { stateWithTwoArtboards } from "./setup";
 
 /*
  * 外部編集でファイルが壊れている間、編集が起こらないこと（#155）。
@@ -76,20 +76,28 @@ test("ファイルが不正な間は、選んでいる artboard を削除でき�
   );
 });
 
+test("ファイルが不正でなければ、選んでいる artboard を削除できる", () => {
+  const selected = EditorState.select(stateWithThreeArtboards(), "home");
+
+  const removed = Option.unwrap(EditorState.removeSelected(selected));
+
+  expect(EditorState.document(removed).artboards).toHaveLength(2);
+});
+
 test("ファイルが不正な間は、artboard を並べ替えられない", () => {
   const move = { fromIndex: 0, toIndex: 1 };
 
   expect(
-    EditorState.reorderArtboard(frozen(stateWithTwoArtboards()), move),
+    EditorState.reorderArtboard(frozen(stateWithThreeArtboards()), move),
   ).toStrictEqual(Option.none);
 });
 
 test("ファイルが不正でなければ、artboard を並べ替えられる", () => {
   const move = { fromIndex: 0, toIndex: 1 };
 
-  expect(EditorState.reorderArtboard(stateWithTwoArtboards(), move).some).toBe(
-    true,
-  );
+  expect(
+    EditorState.reorderArtboard(stateWithThreeArtboards(), move).some,
+  ).toBe(true);
 });
 
 test("ファイルが不正な間は、選んでいるノードの prop を編集できない", () => {

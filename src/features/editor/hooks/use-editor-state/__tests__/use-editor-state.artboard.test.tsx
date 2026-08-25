@@ -1,37 +1,23 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
-import { DesignDocument } from "@/domains/design-document";
+import {
+  artboardNames,
+  documentWithThreeArtboards,
+} from "@/features/editor/__tests__/artboard-fixtures";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
 import { useEditorState } from "../index";
 
-/** artboard 2 枚。並べ替えを確かめるのに 1 枚では足りない。 */
-function setupDocument(): DesignDocument {
-  return DesignDocument.create({
-    artboards: [
-      {
-        name: "home",
-        width: 375,
-        height: 812,
-        children: [{ name: "title", type: "Text" }],
-      },
-      { name: "settings", width: 375, height: 812, children: [] },
-    ],
-  });
-}
-
-function artboardNames(state: EditorState): readonly string[] {
-  return EditorState.document(state).artboards.map((artboard) => artboard.name);
-}
-
 /** artboard 操作のアクションだけを送る器。 */
 function ArtboardActionHarness() {
-  const [state, dispatch] = useEditorState(setupDocument());
+  const [state, dispatch] = useEditorState(documentWithThreeArtboards());
 
   return (
     <>
-      <p data-testid="artboards">{artboardNames(state).join(",")}</p>
+      <p data-testid="artboards">
+        {artboardNames(EditorState.document(state)).join(",")}
+      </p>
       <p data-testid="selected">
         {Option.unwrapOr(EditorState.singleName(state), "選択なし")}
       </p>
@@ -41,15 +27,21 @@ function ArtboardActionHarness() {
       <button
         type="button"
         onClick={() =>
-          dispatch({ type: "reorder_artboard", fromIndex: 0, toIndex: 1 })
+          dispatch({
+            type: "reorder_artboard",
+            move: { fromIndex: 0, toIndex: 2 },
+          })
         }
       >
-        先頭を下へ
+        先頭を末尾へ
       </button>
       <button
         type="button"
         onClick={() =>
-          dispatch({ type: "reorder_artboard", fromIndex: 0, toIndex: 5 })
+          dispatch({
+            type: "reorder_artboard",
+            move: { fromIndex: 0, toIndex: 5 },
+          })
         }
       >
         並びの外へ
@@ -83,7 +75,7 @@ test("追加のアクションを送ると artboard が末尾に1枚増える", 
 
   await press("artboard を足す");
 
-  expect(artboards()).toBe("home,settings,artboard");
+  expect(artboards()).toBe("home,settings,about,artboard");
 });
 
 test("追加のアクションを送ると足した artboard が選択になる", async () => {
@@ -94,12 +86,12 @@ test("追加のアクションを送ると足した artboard が選択になる"
   expect(screen.getByTestId("selected").textContent).toBe("artboard");
 });
 
-test("並べ替えのアクションを送ると並び順が入れ替わる", async () => {
+test("並べ替えのアクションを送ると指した位置へ移る", async () => {
   render(<ArtboardActionHarness />);
 
-  await press("先頭を下へ");
+  await press("先頭を末尾へ");
 
-  expect(artboards()).toBe("settings,home");
+  expect(artboards()).toBe("settings,about,home");
 });
 
 test("並びの外を指す並べ替えでは並び順が変わらない", async () => {
@@ -107,7 +99,7 @@ test("並びの外を指す並べ替えでは並び順が変わらない", async
 
   await press("並びの外へ");
 
-  expect(artboards()).toBe("home,settings");
+  expect(artboards()).toBe("home,settings,about");
 });
 
 test("artboard を選んで削除のアクションを送るとその1枚が消える", async () => {
@@ -116,5 +108,5 @@ test("artboard を選んで削除のアクションを送るとその1枚が消�
 
   await press("選んでいるものを消す");
 
-  expect(artboards()).toBe("settings");
+  expect(artboards()).toBe("settings,about");
 });
