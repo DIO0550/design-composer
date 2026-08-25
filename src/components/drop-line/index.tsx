@@ -18,6 +18,8 @@ export const DropLineTestId = "drop-line";
  * 居ないため（`DropMarker` も同じ理由で `aria-hidden`）。代わりに `data-testid` と
  * `data-side` を持たせて、線が出ているかと**どちら側か**をテストから読めるようにする。
  * class にしか出ない形にすると happy-dom では読めない。
+ * 太さと色は class にしか出ないので、確かめる手段は自分のストーリーの視覚差分だけ
+ * （運んでいる最中の姿は左ペインのストーリーには出せない）。
  *
  * @returns 落ちる先を示す 2px の線
  */
