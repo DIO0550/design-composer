@@ -27,18 +27,11 @@ test("子の行の並べ替えはその親の中の位置として伝わる", as
   expect(onReorder).toHaveBeenCalledWith({ parentName: "body", index: 1 }, 0);
 });
 
-test("並びの先頭の行には上へ動かすボタンが出ない", () => {
-  renderRowList();
-
-  expect(screen.queryByRole("button", { name: "title を上へ" })).toBeNull();
-});
-
-test("並びの末尾の行には下へ動かすボタンが出ない", () => {
-  renderRowList();
-
-  expect(screen.queryByRole("button", { name: "footer を下へ" })).toBeNull();
-});
-
+/*
+ * 端でボタンが出ないこと自体は `ReorderButtons` の観点なので、そちらのテストが持つ
+ * （`components/reorder-buttons/__tests__`）。ここに残すのは、**器が渡す並びの取り方**
+ * を壊すと落ちるもの——子が 1 つだけの枝を、その枝の兄弟の並びで数えていないか——に絞る。
+ */
 test("兄弟がいない行には並べ替えボタンが出ない", () => {
   renderRowList();
 

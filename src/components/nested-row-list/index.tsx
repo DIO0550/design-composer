@@ -1,6 +1,5 @@
 import { type ReactElement, type ReactNode, useState } from "react";
-import { ArrayEx } from "@/utils/ArrayEx";
-import { Option } from "@/utils/Option";
+import { ReorderButtons } from "@/components/reorder-buttons";
 import { SetEx } from "@/utils/SetEx";
 
 /** 1 段ぶんの字下げ幅と、行の左端の余白（px）。 */
@@ -76,87 +75,6 @@ type SiblingPlacement = Readonly<{
   position: NestedRowPosition;
   siblings: readonly NestedRow[];
 }>;
-
-/**
- * 並びの中に収まる移動先だけを返す（端では隣がいないので `none`）。
- *
- * @param placement 行の位置と、その兄弟の並び
- * @param step 動かす向きと段数（上へ 1 つなら -1）
- * @returns 並びに収まる移動先の位置。端で収まらなければ `none`
- */
-function moveTargetIndex(
-  placement: SiblingPlacement,
-  step: number,
-): Option<number> {
-  const toIndex = placement.position.index + step;
-  return ArrayEx.isIndexInRange(placement.siblings, toIndex)
-    ? Option.some(toIndex)
-    : Option.none;
-}
-
-/**
- * 同じ親の中で 1 つ分だけ順序を動かすボタン。
- *
- * @returns 押すと 1 つ分の移動を起こすボタン
- */
-function ReorderButton({
-  label,
-  symbol,
-  onClick,
-}: Readonly<{
-  label: string;
-  symbol: string;
-  onClick: () => void;
-}>): ReactElement {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      onClick={onClick}
-      className="rounded border border-gray-300 px-1 text-gray-600 text-xs hover:bg-gray-100"
-    >
-      {symbol}
-    </button>
-  );
-}
-
-/**
- * 同じ親の中で行を動かすボタン。
- * 隣がいない向きはボタン自体を出さず、並びの外を指す移動を画面から作れなくする。
- *
- * @returns 動かせる向きのぶんだけボタンを並べた枠。両端では 1 つ、兄弟がいなければ空
- */
-function ReorderButtons({
-  name,
-  placement,
-  onReorder,
-}: Readonly<{
-  name: string;
-  placement: SiblingPlacement;
-  onReorder: (from: NestedRowPosition, toIndex: number) => void;
-}>): ReactElement {
-  const toPrevious = moveTargetIndex(placement, -1);
-  const toNext = moveTargetIndex(placement, 1);
-
-  return (
-    <span className="flex shrink-0 items-center gap-1">
-      {toPrevious.some ? (
-        <ReorderButton
-          label={`${name} を上へ`}
-          symbol="↑"
-          onClick={() => onReorder(placement.position, toPrevious.value)}
-        />
-      ) : null}
-      {toNext.some ? (
-        <ReorderButton
-          label={`${name} を下へ`}
-          symbol="↓"
-          onClick={() => onReorder(placement.position, toNext.value)}
-        />
-      ) : null}
-    </span>
-  );
-}
 
 /**
  * 枝を開閉する三角（UI 案 docs/Design Composer.html の `▾` / `▸`）。
@@ -252,8 +170,11 @@ function RowBranch({
         {row.content}
         <ReorderButtons
           name={row.name}
-          placement={placement}
-          onReorder={control.onReorder}
+          placement={{
+            index: placement.position.index,
+            count: placement.siblings.length,
+          }}
+          onMove={(toIndex) => control.onReorder(placement.position, toIndex)}
         />
       </div>
       {showsChildren ? (
@@ -306,9 +227,12 @@ function RowList({
 
 /**
  * 入れ子の行を並べ、枝の開閉と、同じ親の中での並べ替えができる器。
- * 行に何を描くかは持たず、字下げ・開閉の列・並べ替えの当たり判定だけを持つ。
+ * 行に何を描くかは持たず、字下げ・開閉の列と、行がどの並びのどこにいるかだけを持つ。
  *
- * 並べ替えの当たり判定まで含めて 1 つの機構として切り出してあるので、
+ * 上下のボタン自体は `ReorderButtons` が持つ。ここが渡すのは兄弟の並びの中での
+ * 位置だけで、移動先を「同じ親の中の位置」として読み替えるのはここの担当
+ * （artboard の一覧も同じボタンを使うが、あちらの位置はドキュメントの並びを指す）。
+ *
  * 並べ替えを出すかどうかの出し分けは持たない（どの行にも上下のボタンが付く）。
  *
  * 畳んだ**側**の名前を持つので、初めて描いたときは全部が開いた状態になり、
