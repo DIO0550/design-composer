@@ -6,7 +6,14 @@ import type { Option } from "@/utils/Option";
 /** 押せないときに `title` へ出す理由。押せない状態を見せるだけだと打つ手が分からない。 */
 const PrimitiveInsertDisabledReason = "子を持てるものを選ぶと追加できます";
 
-/** artboard を足すボタンの読み上げ名。UI 案の字面は `#` だけなので、名前は別に与える。 */
+/**
+ * artboard を足すボタンの読み上げ名。UI 案の字面は `#` だけなので、名前は別に与える。
+ *
+ * `features/sidebar` の `artboard-list` が `+` に与える名前と**同じ綴りにしてある**
+ * （同じ操作に別の名前を与えない）。共有の定数にしないのは、表示の綴りのために
+ * feature 間へ辺を張ることになるため。片方だけ変えると、同じ操作が 2 つの名前で
+ * 読み上げられる。
+ */
 const AddArtboardLabel = "artboard を追加";
 
 /**
@@ -17,11 +24,22 @@ const AddArtboardLabel = "artboard を追加";
 const SlotClassName = "flex h-8 w-9 items-center justify-center rounded-md";
 
 /**
+ * 押せるスロット。`SlotClassName` と分けているのは、`◆` が押せるものではなく
+ * hover を持たないため（3 者で共通にできるのは寸法までになる）。
+ */
+const PressableSlotClassName = `${SlotClassName} hover:bg-gray-100`;
+
+/**
  * artboard を 1 枚足すボタン。
  *
  * Why not: `PrimitiveInsertButton` に相乗りさせない。プリミティブは選択位置へ挿すので
  * 挿せる位置が無ければ押せないが、artboard は選択に依らず常に押せる（`Artboards` の
  * 見出しの `+` と同じ）。押せない理由の `title` も要らない。
+ *
+ * Why not: 字面を手書きせず `TypeGlyph` を使うので、`#` は UI 案のツールバーの灰
+ * （`#5c5c5c`）ではなく種別色の青になる。`□` / `T` が既に同じ乖離を抱えており
+ * （#112 の単位で扱う）、ここだけ寄せると同じ列で色の決まり方が 2 通りになる。
+ * **この色はテストでは落ちない** — 気づく手段は Storybook の視覚差分だけ。
  */
 function AddArtboardButton({ onClick }: Readonly<{ onClick: () => void }>) {
   return (
@@ -31,7 +49,7 @@ function AddArtboardButton({ onClick }: Readonly<{ onClick: () => void }>) {
       // （`components/__tests__/row-names.ts`）
       aria-label={AddArtboardLabel}
       onClick={onClick}
-      className={`${SlotClassName} hover:bg-gray-100`}
+      className={PressableSlotClassName}
     >
       <TypeGlyph kind="artboard" />
     </button>
@@ -55,7 +73,7 @@ function PrimitiveInsertButton({
       onClick={onClick}
       disabled={!isEnabled}
       title={isEnabled ? undefined : PrimitiveInsertDisabledReason}
-      className={`${SlotClassName} hover:bg-gray-100 disabled:opacity-40 disabled:hover:bg-transparent`}
+      className={`${PressableSlotClassName} disabled:opacity-40 disabled:hover:bg-transparent`}
     >
       <TypeGlyph kind={type} />
     </button>
@@ -139,6 +157,10 @@ export function CanvasToolbar({
       /*
        * 中身を動詞で括らない。並ぶのは追加の入口（`#` / `□` / `T`）だけでなく
        * 運んでいることの表示（`◆`）でもあるので、器はモジュール名と同じく場所で呼ぶ。
+       *
+       * Why not: 名前は「ツールバー」だが `role="toolbar"` にはしない。その role は
+       * 矢印キーでスロット間を移る操作（roving tabindex）を約束するもので、ここは
+       * 実装しておらず、操作でない `◆` も並びに混ざる。
        */
       aria-label="キャンバスのツールバー"
       className="flex h-11 items-center gap-0.5 rounded-[13px] bg-white px-1.5 shadow-[0_5px_18px_rgba(0,0,0,0.18),0_0_0_0.5px_rgba(0,0,0,0.06)]"
