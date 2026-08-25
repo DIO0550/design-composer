@@ -216,7 +216,7 @@ function CanvasDockContent({
             壊れる前に選んでいたトークンの破線はキャンバスに残る。ここへ出さないと、
             破線だけが出て何を指しているか読めない状態が画面に残る。
           */}
-          <TokenDashedNodes selection={tokenSelection} />
+          <TokenDashedNodes selection={tokenSelection} onReveal={onReveal} />
         </CanvasDockStack>
       );
     case "editable":
@@ -227,7 +227,7 @@ function CanvasDockContent({
             origin={DocumentErrorOrigins.Document}
             onReveal={onReveal}
           />
-          <TokenDashedNodes selection={tokenSelection} />
+          <TokenDashedNodes selection={tokenSelection} onReveal={onReveal} />
           <NodeInsertToolbar
             isInsertEnabled={node.isInsertEnabled}
             dragged={dragged}
@@ -338,9 +338,9 @@ function EditorPanes({
           node={node}
           dragged={nodeDrag.carriedTemplate}
           /*
-           * 選ぶだけでなく行き先も Layers へ戻す。トークンを消して不正を作った直後は
-           * 左ペインが Tokens なので、選んでもツリーにもプロパティにも出ない
-           * （`Go to source component` が Assets へ移すのと同じ形）。
+           * 選ぶだけでなく行き先も Layers へ戻す。エラー行からも帯（#209）からも、
+           * Tokens を見たまま飛ぶことがあり、そのときは選んでもツリーにも
+           * プロパティにも出ない（`Go to source component` が Assets へ移すのと同じ形）。
            */
           onReveal={(nodeName) => {
             node.reveal(nodeName);

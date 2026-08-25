@@ -1,8 +1,8 @@
-import { screen, within } from "@testing-library/react";
+import { within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { renderedElement } from "@/features/canvas/__tests__";
-import { LeftPaneViewLabels, LeftPaneViews } from "@/features/sidebar";
+import { LeftPaneViews } from "@/features/sidebar";
 import {
   canvasPane,
   goTo,
@@ -57,13 +57,7 @@ test("Tokens を見ている間は部品化の入口が出ない", async () => {
   await renderOpenedDocument();
   await selectInTree("home-title");
 
-  await userEvent.click(
-    within(
-      screen.getByRole("navigation", { name: "左ペインの表示" }),
-    ).getByRole("button", {
-      name: LeftPaneViewLabels[LeftPaneViews.Tokens],
-    }),
-  );
+  await goTo(LeftPaneViews.Tokens);
 
   expect(
     within(leftPane()).queryByRole("button", { name: /Create component/ }),

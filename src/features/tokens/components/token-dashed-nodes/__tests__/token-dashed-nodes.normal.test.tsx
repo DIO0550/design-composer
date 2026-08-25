@@ -3,37 +3,16 @@ import { expect, test } from "vitest";
 import { ColorSwatchTestId } from "@/components/color-swatch";
 import { DesignDocument } from "@/domains/design-document";
 import { TokenSet } from "@/domains/token";
-import { renderDashedNodes } from "./render";
-
-const Gray900 = { kind: "colors", name: "gray-900" } as const;
-
-/** `gray-900` を、渡した名前のノードそれぞれの `color` から指すドキュメント。 */
-function setupDocument(nodeNames: readonly string[]): DesignDocument {
-  return DesignDocument.create({
-    tokens: { ...TokenSet.empty(), colors: { "gray-900": "#111827" } },
-    artboards: [
-      {
-        name: "login",
-        width: 375,
-        height: 812,
-        children: nodeNames.map((name) => ({
-          name,
-          type: "Text" as const,
-          props: { color: "gray-900" },
-        })),
-      },
-    ],
-  });
-}
+import { Gray900, gray900Document, renderDashedNodes } from "./setup";
 
 test("トークンを選ぶと、そのトークンの名前が帯に出る", () => {
-  renderDashedNodes(setupDocument(["title", "caption"]), Gray900);
+  renderDashedNodes(gray900Document(["title", "caption"]), Gray900);
 
   expect(screen.getByText("gray-900")).toBeDefined();
 });
 
 test("参照しているノードが2つあると、帯の件数が2になる", () => {
-  renderDashedNodes(setupDocument(["title", "caption"]), Gray900);
+  renderDashedNodes(gray900Document(["title", "caption"]), Gray900);
 
   expect(screen.getByText("2 nodes · dashed in canvas")).toBeDefined();
 });
@@ -102,7 +81,7 @@ test("部品定義の中の参照は帯の件数に入らない", () => {
 });
 
 test("色トークンを選ぶと、その色の見本が帯に出る", () => {
-  renderDashedNodes(setupDocument(["title"]), Gray900);
+  renderDashedNodes(gray900Document(["title"]), Gray900);
 
   expect(screen.getByTestId(ColorSwatchTestId)).toBeDefined();
 });
