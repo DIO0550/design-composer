@@ -1,6 +1,6 @@
-import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
+import { dragRowNamed } from "@/components/__tests__/row-drag";
 import { rowNames } from "@/components/__tests__/row-names";
 import { renderOpenedDocument, selectInTree, tree } from "./setup";
 
@@ -12,9 +12,7 @@ const ReorderedChildren = ["home-login", "home-title"];
 
 test("並べ替えたあとに Ctrl+Z を押すと並びが元に戻る", async () => {
   await renderOpenedDocument();
-  await userEvent.click(
-    screen.getByRole("button", { name: "home-title を下へ" }),
-  );
+  dragRowNamed(tree(), { from: "home-title", to: "home-login" });
 
   await userEvent.keyboard("{Control>}z{/Control}");
 
@@ -23,9 +21,7 @@ test("並べ替えたあとに Ctrl+Z を押すと並びが元に戻る", async 
 
 test("戻したあとに Ctrl+Shift+Z を押すと並べ替えが再び反映される", async () => {
   await renderOpenedDocument();
-  await userEvent.click(
-    screen.getByRole("button", { name: "home-title を下へ" }),
-  );
+  dragRowNamed(tree(), { from: "home-title", to: "home-login" });
   await userEvent.keyboard("{Control>}z{/Control}");
 
   await userEvent.keyboard("{Control>}{Shift>}z{/Shift}{/Control}");

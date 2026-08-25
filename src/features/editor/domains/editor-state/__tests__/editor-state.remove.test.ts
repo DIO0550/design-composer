@@ -7,7 +7,7 @@ import { stateWithNestedBox } from "./setup";
 test("選択中のノードを削除するとツリーから消える", () => {
   const state = EditorState.select(stateWithNestedBox(), "title");
 
-  const removed = Option.unwrap(EditorState.removeNode(state));
+  const removed = Option.unwrap(EditorState.removeSelected(state));
 
   expect(
     DesignDocument.findNode(EditorState.document(removed), "title"),
@@ -17,7 +17,7 @@ test("選択中のノードを削除するとツリーから消える", () => {
 test("削除は選択したノードのサブツリーごと消す", () => {
   const state = EditorState.select(stateWithNestedBox(), "body");
 
-  const removed = Option.unwrap(EditorState.removeNode(state));
+  const removed = Option.unwrap(EditorState.removeSelected(state));
 
   expect(
     DesignDocument.findNode(EditorState.document(removed), "body-text"),
@@ -27,7 +27,7 @@ test("削除は選択したノードのサブツリーごと消す", () => {
 test("削除すると選択が外れる", () => {
   const state = EditorState.select(stateWithNestedBox(), "title");
 
-  const removed = Option.unwrap(EditorState.removeNode(state));
+  const removed = Option.unwrap(EditorState.removeSelected(state));
 
   expect(EditorState.singleName(removed)).toEqual(Option.none);
 });
@@ -35,7 +35,7 @@ test("削除すると選択が外れる", () => {
 test("削除しても兄弟は残る", () => {
   const state = EditorState.select(stateWithNestedBox(), "title");
 
-  const removed = Option.unwrap(EditorState.removeNode(state));
+  const removed = Option.unwrap(EditorState.removeSelected(state));
 
   expect(
     DesignDocument.findNode(EditorState.document(removed), "body").some,
@@ -45,7 +45,7 @@ test("削除しても兄弟は残る", () => {
 test("削除した名前は使われていない名前に戻る", () => {
   const state = EditorState.select(stateWithNestedBox(), "title");
 
-  const removed = Option.unwrap(EditorState.removeNode(state));
+  const removed = Option.unwrap(EditorState.removeSelected(state));
 
   expect(
     DesignDocument.usedNames(EditorState.document(removed)).has("title"),

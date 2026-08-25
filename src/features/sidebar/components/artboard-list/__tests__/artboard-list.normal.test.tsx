@@ -31,7 +31,11 @@ function renderList(selection: DocumentSelection): {
 } {
   const onSelect = vi.fn();
   const { container } = render(
-    <ArtboardList selection={selection} onSelect={onSelect} />,
+    <ArtboardList
+      selection={selection}
+      onSelect={onSelect}
+      artboardActions={{ add: vi.fn(), reorder: vi.fn() }}
+    />,
   );
   return { list: container, onSelect };
 }

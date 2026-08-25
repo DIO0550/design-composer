@@ -20,7 +20,7 @@ const meta = {
       </LeftPaneShell>
     ),
   ],
-  args: { onSelect: fn() },
+  args: { onSelect: fn(), artboardActions: { add: fn(), reorder: fn() } },
 } satisfies Meta<typeof ArtboardList>;
 
 export default meta;

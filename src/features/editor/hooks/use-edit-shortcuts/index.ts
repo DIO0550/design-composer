@@ -9,7 +9,8 @@ import { useUndoShortcut } from "@/features/editor/hooks/use-undo-shortcut";
  * 編集操作のキーボードショートカットをまとめて張る
  * （docs/06-ui.md「編集操作の一覧」）。
  *
- * 削除（#39）・コピー & ペースト（#40）・undo / redo（#41）はキーボードだけの操作。
+ * 削除（#39。artboard の削除もこの導線 / #43）・コピー & ペースト（#40）・
+ * undo / redo（#41）はキーボードだけの操作。
  * UI 案（docs/Design Composer.html）が対応するボタンを持たないため、画面にも置いていない
  * （削除のボタンは #112 で外した。キャンバスに浮かぶツールバーが持つのは挿入だけ）。
  *
@@ -19,7 +20,7 @@ import { useUndoShortcut } from "@/features/editor/hooks/use-undo-shortcut";
 export function useEditShortcuts(): void {
   const { dispatch } = useEditor();
 
-  useDeleteShortcut(() => dispatch({ type: "remove_node" }));
+  useDeleteShortcut(() => dispatch({ type: "remove_selected" }));
   useCopyShortcut(() => dispatch({ type: "copy_node" }));
   usePasteShortcut(() => dispatch({ type: "paste_node" }));
   useUndoShortcut(() => dispatch({ type: "undo" }));

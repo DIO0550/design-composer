@@ -36,6 +36,7 @@ import {
   EditorTopBarTones,
 } from "@/features/editor/components/editor-top-bar";
 import { EditorState } from "@/features/editor/domains/editor-state";
+import { useArtboardActions } from "@/features/editor/hooks/use-artboard-actions";
 import { useEditShortcuts } from "@/features/editor/hooks/use-edit-shortcuts";
 import {
   type NodeActions,
@@ -253,6 +254,7 @@ function EditorPanes({
   const { state } = useEditor();
   const node = useNodeActions();
   const token = useTokenActions();
+  const artboard = useArtboardActions();
   /**
    * 左ペインが何を映しているか（UI 案 docs/Design Composer.html のアイコンレール）。
    * 右ペインに出すのもこれで決まる（Tokens ならトークン編集、それ以外はプロパティ）。
@@ -313,6 +315,7 @@ function EditorPanes({
           selection={documentSelection}
           tokenSelection={tokenSelection}
           isFrozen={isFrozen}
+          artboard={artboard}
           node={node}
           token={token}
           grab={{

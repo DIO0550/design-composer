@@ -77,7 +77,7 @@ export function renderRowList(): RenderedRowList {
 }
 
 /**
- * 画面に出ている順の、行の中身の字面。器が出すボタン（開閉・並べ替え）は読み上げ名を
+ * 画面に出ている順の、行の中身の字面。器が出すボタン（開閉）は読み上げ名を
  * 持つので、それを持たないボタン＝検査が渡した行の中身だけを拾う。
  *
  * `rowNames`（`src/components/__tests__/row-names.ts`）とは別物で、

@@ -3,6 +3,7 @@ import { ReceivedAt } from "@/domains/__tests__/instants";
 import { Artboard } from "@/domains/artboard";
 import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
 import { PropEdit } from "@/domains/node";
+import { stateWithThreeArtboards } from "@/features/editor/__tests__/artboard-fixtures";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 import { frozen } from "./frozen-state";
@@ -46,13 +47,57 @@ function openedState(): EditorState {
 test("ファイルが不正な間は、選んでいるノードを削除できない", () => {
   const selected = EditorState.select(openedState(), "home-title");
 
-  expect(EditorState.removeNode(frozen(selected))).toStrictEqual(Option.none);
+  expect(EditorState.removeSelected(frozen(selected))).toStrictEqual(
+    Option.none,
+  );
 });
 
 test("ファイルが不正でなければ、選んでいるノードを削除できる", () => {
   const selected = EditorState.select(openedState(), "home-title");
 
-  expect(EditorState.removeNode(selected).some).toBe(true);
+  expect(EditorState.removeSelected(selected).some).toBe(true);
+});
+
+test("ファイルが不正な間は、artboard を追加できない", () => {
+  expect(EditorState.addArtboard(frozen(openedState()))).toStrictEqual(
+    Option.none,
+  );
+});
+
+test("ファイルが不正でなければ、artboard を追加できる", () => {
+  expect(EditorState.addArtboard(openedState()).some).toBe(true);
+});
+
+test("ファイルが不正な間は、選んでいる artboard を削除できない", () => {
+  const selected = EditorState.select(openedState(), "home");
+
+  expect(EditorState.removeSelected(frozen(selected))).toStrictEqual(
+    Option.none,
+  );
+});
+
+test("ファイルが不正でなければ、選んでいる artboard を削除できる", () => {
+  const selected = EditorState.select(stateWithThreeArtboards(), "home");
+
+  const removed = Option.unwrap(EditorState.removeSelected(selected));
+
+  expect(EditorState.document(removed).artboards).toHaveLength(2);
+});
+
+test("ファイルが不正な間は、artboard を並べ替えられない", () => {
+  const move = { fromIndex: 0, toIndex: 1 };
+
+  expect(
+    EditorState.reorderArtboard(frozen(stateWithThreeArtboards()), move),
+  ).toStrictEqual(Option.none);
+});
+
+test("ファイルが不正でなければ、artboard を並べ替えられる", () => {
+  const move = { fromIndex: 0, toIndex: 1 };
+
+  expect(
+    EditorState.reorderArtboard(stateWithThreeArtboards(), move).some,
+  ).toBe(true);
 });
 
 test("ファイルが不正な間は、選んでいるノードの prop を編集できない", () => {
@@ -79,14 +124,14 @@ test("ファイルが不正な間は、選んでいる位置へノードを挿�
 
 test("ファイルが不正な間は、積んである編集を undo できない", () => {
   const selected = EditorState.select(openedState(), "home-title");
-  const edited = Option.unwrap(EditorState.removeNode(selected));
+  const edited = Option.unwrap(EditorState.removeSelected(selected));
 
   expect(EditorState.undo(frozen(edited))).toStrictEqual(Option.none);
 });
 
 test("ファイルが不正な間は、戻した編集を redo できない", () => {
   const selected = EditorState.select(openedState(), "home-title");
-  const edited = Option.unwrap(EditorState.removeNode(selected));
+  const edited = Option.unwrap(EditorState.removeSelected(selected));
   const undone = Option.unwrap(EditorState.undo(edited));
 
   expect(EditorState.redo(frozen(undone))).toStrictEqual(Option.none);
@@ -170,7 +215,7 @@ test("書き戻すと、凍結中は止まっていた編集が再びできる�
 
   const reverted = EditorState.applyRevert(frozen(selected));
 
-  expect(EditorState.removeNode(reverted).some).toBe(true);
+  expect(EditorState.removeSelected(reverted).some).toBe(true);
 });
 
 test("ファイルが不正な間は、落とし先を指しても挿さらない", () => {

@@ -1,6 +1,8 @@
 import { type ReactElement, type ReactNode, useState } from "react";
-import { ArrayEx } from "@/utils/ArrayEx";
-import { Option } from "@/utils/Option";
+import { DropLine } from "@/components/drop-line";
+import { type RowProps, useReorderDrag } from "@/hooks/use-reorder-drag";
+import type { Option } from "@/utils/Option";
+import { type DropSide, ReorderDrag } from "@/utils/ReorderDrag";
 import { SetEx } from "@/utils/SetEx";
 
 /** 1 段ぶんの字下げ幅と、行の左端の余白（px）。 */
@@ -69,96 +71,6 @@ type BranchControl = Readonly<{
 }>;
 
 /**
- * 行が兄弟の並びのどこにいるか。
- * どちらの向きへ動かせるかは位置と並びの両方が無いと決まらないため 1 つの型にまとめる。
- */
-type SiblingPlacement = Readonly<{
-  position: NestedRowPosition;
-  siblings: readonly NestedRow[];
-}>;
-
-/**
- * 並びの中に収まる移動先だけを返す（端では隣がいないので `none`）。
- *
- * @param placement 行の位置と、その兄弟の並び
- * @param step 動かす向きと段数（上へ 1 つなら -1）
- * @returns 並びに収まる移動先の位置。端で収まらなければ `none`
- */
-function moveTargetIndex(
-  placement: SiblingPlacement,
-  step: number,
-): Option<number> {
-  const toIndex = placement.position.index + step;
-  return ArrayEx.isIndexInRange(placement.siblings, toIndex)
-    ? Option.some(toIndex)
-    : Option.none;
-}
-
-/**
- * 同じ親の中で 1 つ分だけ順序を動かすボタン。
- *
- * @returns 押すと 1 つ分の移動を起こすボタン
- */
-function ReorderButton({
-  label,
-  symbol,
-  onClick,
-}: Readonly<{
-  label: string;
-  symbol: string;
-  onClick: () => void;
-}>): ReactElement {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      onClick={onClick}
-      className="rounded border border-gray-300 px-1 text-gray-600 text-xs hover:bg-gray-100"
-    >
-      {symbol}
-    </button>
-  );
-}
-
-/**
- * 同じ親の中で行を動かすボタン。
- * 隣がいない向きはボタン自体を出さず、並びの外を指す移動を画面から作れなくする。
- *
- * @returns 動かせる向きのぶんだけボタンを並べた枠。両端では 1 つ、兄弟がいなければ空
- */
-function ReorderButtons({
-  name,
-  placement,
-  onReorder,
-}: Readonly<{
-  name: string;
-  placement: SiblingPlacement;
-  onReorder: (from: NestedRowPosition, toIndex: number) => void;
-}>): ReactElement {
-  const toPrevious = moveTargetIndex(placement, -1);
-  const toNext = moveTargetIndex(placement, 1);
-
-  return (
-    <span className="flex shrink-0 items-center gap-1">
-      {toPrevious.some ? (
-        <ReorderButton
-          label={`${name} を上へ`}
-          symbol="↑"
-          onClick={() => onReorder(placement.position, toPrevious.value)}
-        />
-      ) : null}
-      {toNext.some ? (
-        <ReorderButton
-          label={`${name} を下へ`}
-          symbol="↓"
-          onClick={() => onReorder(placement.position, toNext.value)}
-        />
-      ) : null}
-    </span>
-  );
-}
-
-/**
  * 枝を開閉する三角（UI 案 docs/Design Composer.html の `▾` / `▸`）。
  *
  * 行の中身とは別のボタンにする。中身が既に `button` のことがあって入れ子にできないことと、
@@ -206,13 +118,20 @@ function BranchToggle({
  */
 function RowBranch({
   row,
-  placement,
   depth,
+  rowProps,
+  isHeld,
+  dropSide,
   control,
 }: Readonly<{
   row: NestedRow;
-  placement: SiblingPlacement;
   depth: number;
+  /** 掴む口と、ポインタが入ったことを伝える口 */
+  rowProps: RowProps;
+  /** 今掴まれている行か。掴んでいる間は淡くする */
+  isHeld: boolean;
+  /** 落ちる先ならどちら側に線を引くか。落ちる先でなければ不在 */
+  dropSide: Option<DropSide>;
   control: BranchControl;
 }>): ReactElement {
   const hasChildren = row.children.length > 0;
@@ -229,10 +148,12 @@ function RowBranch({
         style={{
           paddingInlineStart: `${RowPaddingPx + depth * IndentWidthPx}px`,
         }}
-        className={`flex items-center gap-1.5 rounded py-1 pr-1 ${
+        /* 落ちる先の線を行の縁へ重ねるので、行を位置の基準にする（relative） */
+        className={`relative flex items-center gap-1.5 rounded py-1 pr-1 ${
           // 押せる範囲を示す hover と、選択の色を重ねない（選択中はホバーで灰にしない）
           row.isSelected ? "bg-blue-100 text-blue-900" : "hover:bg-gray-100"
-        }`}
+        } ${isHeld ? "opacity-40" : ""}`}
+        {...rowProps}
       >
         {hasChildren ? (
           <BranchToggle
@@ -250,11 +171,7 @@ function RowBranch({
           />
         )}
         {row.content}
-        <ReorderButtons
-          name={row.name}
-          placement={placement}
-          onReorder={control.onReorder}
-        />
+        {dropSide.some ? <DropLine side={dropSide.value} /> : null}
       </div>
       {showsChildren ? (
         <RowList
@@ -273,6 +190,11 @@ function RowBranch({
  * 各行の親の名前と兄弟内 index は描画をたどる過程でそのまま分かるため、
  * 並べ替えの位置を求めるのに木を探索する必要がない。
  *
+ * **ドラッグの状態をこの階層ごとに持つ。** 1 つの `<ul>` = 1 つの親の子の並びなので、
+ * 掴んだ群だけが落ちる先を持ち、入れ子の群は掴んでいない状態のままになる。
+ * これで**別の親の行の上で離しても移動が起きない**（同じ親の中の並べ替えしか作れず、
+ * `onReorder` が並びの外を指すことがない）。
+ *
  * 空の並びで呼ばれることはない（子を持つ枝が開いているときだけ描かれる）。
  *
  * @returns 行を 1 段ぶん並べた `<ul>`
@@ -288,14 +210,20 @@ function RowList({
   depth: number;
   control: BranchControl;
 }>): ReactElement {
+  const { drag, rowProps, groupProps } = useReorderDrag((move) =>
+    control.onReorder({ parentName, index: move.fromIndex }, move.toIndex),
+  );
+
   return (
-    <ul>
+    <ul {...groupProps()}>
       {rows.map((row, index) => (
         <li key={row.name}>
           <RowBranch
             row={row}
-            placement={{ position: { parentName, index }, siblings: rows }}
             depth={depth}
+            rowProps={rowProps(index)}
+            isHeld={ReorderDrag.isHeld(drag, index)}
+            dropSide={ReorderDrag.dropSideAt(drag, index)}
             control={control}
           />
         </li>
@@ -306,10 +234,12 @@ function RowList({
 
 /**
  * 入れ子の行を並べ、枝の開閉と、同じ親の中での並べ替えができる器。
- * 行に何を描くかは持たず、字下げ・開閉の列・並べ替えの当たり判定だけを持つ。
+ * 行に何を描くかは持たず、字下げ・開閉の列と、行がどの並びのどこにいるかだけを持つ。
  *
- * 並べ替えの当たり判定まで含めて 1 つの機構として切り出してあるので、
- * 並べ替えを出すかどうかの出し分けは持たない（どの行にも上下のボタンが付く）。
+ * 並べ替えは行を掴んで運ぶ（`useReorderDrag`。artboard の一覧も同じものに載る）。
+ * 掴む口を配るのは階層ごとの `RowList` で、ここが渡すのは移動を受け取る口だけ。
+ * 移動先を「同じ親の中の位置」として読み替えるのも `RowList` の担当（artboard の
+ * 一覧も同じフックを使うが、あちらの位置はドキュメントの並びを指す）。
  *
  * 畳んだ**側**の名前を持つので、初めて描いたときは全部が開いた状態になり、
  * 後から増えた行が畳まれた状態で現れることもない。

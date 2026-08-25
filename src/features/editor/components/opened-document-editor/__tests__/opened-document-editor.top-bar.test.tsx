@@ -1,7 +1,8 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
-import { canvasPane, renderOpenedDocument, zoomToolbar } from "./setup";
+import { dragRowNamed } from "@/components/__tests__/row-drag";
+import { canvasPane, renderOpenedDocument, tree, zoomToolbar } from "./setup";
 
 /** キャンバスの中身に効いている変形（ズームの結果）。 */
 function canvasTransform(): string {
@@ -45,18 +46,14 @@ test("倍率の操作はキャンバスではなく上部バーにある", async
 test("編集すると上部バーが保存中になる", async () => {
   await renderOpenedDocument();
 
-  await userEvent.click(
-    screen.getByRole("button", { name: "home-title を下へ" }),
-  );
+  dragRowNamed(tree(), { from: "home-title", to: "home-login" });
 
   expect(screen.getByText("保存中")).toBeDefined();
 });
 
 test("編集がファイルへ書き出されると上部バーが保存中でなくなる", async () => {
   await renderOpenedDocument();
-  await userEvent.click(
-    screen.getByRole("button", { name: "home-title を下へ" }),
-  );
+  dragRowNamed(tree(), { from: "home-title", to: "home-login" });
 
   await screen.findByText("保存済み");
 

@@ -9,6 +9,7 @@ import {
   sampleSidebarSelection,
 } from "@/features/sidebar/__stories__/sample-sidebar-document";
 import { LeftPaneViews } from "@/features/sidebar/components/left-pane-rail";
+import type { LeftPaneArtboardActions } from "@/features/sidebar/types/LeftPaneArtboardActions";
 import type { LeftPaneNodeActions } from "@/features/sidebar/types/LeftPaneNodeActions";
 import type { LeftPaneTokenActions } from "@/features/sidebar/types/LeftPaneTokenActions";
 import { Option } from "@/utils/Option";
@@ -22,6 +23,11 @@ const SampleNodeActions: LeftPaneNodeActions = {
   select: fn(),
   reorder: fn(),
   createComponent: fn(),
+};
+
+const SampleArtboardActions: LeftPaneArtboardActions = {
+  add: fn(),
+  reorder: fn(),
 };
 
 const SampleTokenActions: LeftPaneTokenActions = {
@@ -38,6 +44,7 @@ const meta = {
     selection: sampleSidebarSelection(),
     tokenSelection: TokenSelection.create(SampleSidebarDocument, Option.none),
     isFrozen: false,
+    artboard: SampleArtboardActions,
     node: SampleNodeActions,
     token: SampleTokenActions,
     grab: IdleGrab,

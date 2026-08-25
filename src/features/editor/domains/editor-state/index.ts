@@ -1,3 +1,4 @@
+import { Artboard } from "@/domains/artboard";
 import type { AxisLength } from "@/domains/axis-length";
 import { ChildPosition } from "@/domains/child-position";
 import { DesignDocument } from "@/domains/design-document";
@@ -13,6 +14,7 @@ import { Token, type TokenRef, TokenSet, TokenValue } from "@/domains/token";
 import { TokenSelection } from "@/domains/token-selection";
 import { EditHistory } from "@/features/editor/domains/edit-history";
 import { TokenTemplate } from "@/features/editor/domains/token-template";
+import type { IndexMove } from "@/types/IndexMove";
 import { Option } from "@/utils/Option";
 
 /**
@@ -158,21 +160,6 @@ function withEdit(
   return EditorState.isFileInvalid(state)
     ? Option.none
     : Option.some(withDocument(state, document));
-}
-
-/**
- * 削除できる対象の名前。
- *
- * 選択できるものには artboard も含まれるが、artboard の削除は artboard 操作（#43）の
- * 担当なので、ここで消せるのは配下のノードだけ。
- *
- * 公開しないのは、消費者が `removeNode` だけになったため（#112）。
- *
- * @param state 選択の出どころになるエディタの状態
- * @returns 削除できるノードの名前。未選択と、選択が artboard のときは `none`
- */
-function removableName(state: EditorState): Option<string> {
-  return Option.map(selectedNode(state), (node) => node.name);
 }
 
 export const EditorState = {
@@ -519,8 +506,8 @@ export const EditorState = {
    * （docs/06-ui.md「編集操作の一覧」のコピー & ペースト）。
    *
    * コピーはサブツリー単位なので対象はノードそのもの。artboard も選択できるが、
-   * artboard はノードとして貼れない（artboard の複製は artboard 操作（#43）の担当）
-   * ため `none` にする。
+   * artboard はノードとして貼れない（貼る先が「選択位置の子」で、artboard は
+   * どのノードの子にもなれない）ため `none` にする。
    * ドキュメントは変わらない。入れるのは切り離された複製なので、
    * この後に元のノードを消しても貼れる。
    */
@@ -594,20 +581,91 @@ export const EditorState = {
   },
 
   /**
-   * 選択中のノードをサブツリーごと削除する（docs/06-ui.md「編集操作の一覧」）。
+   * 選んでいるものを削除する（docs/06-ui.md「編集操作の一覧」の削除と artboard 操作）。
+   * ノードならサブツリーごと、artboard ならその 1 枚を配下ごと消す。
    *
    * 対象を引数で受け取らず選択から決めるのは `applyPropEdit` と同じ理由で、
-   * 削除の導線が「選択中のものを消す」しか無いため。
+   * 削除の導線が「選択中のものを消す」しか無いため。artboard とノードで入口を
+   * 分けないのは、削除の導線がキーボード（Delete / Backspace）1 つしかなく、
+   * どちらを消すかは押した時点の選択でしか決まらないため。振り分けそのものは
+   * `DesignDocument.remove` が持つ。
+   *
    * 消したものは新しいドキュメントに無いので、選択は `withHistory` で外れる。
+   * artboard を消したときにツリーが映す 1 枚が先頭へ落ちるのは、選択が外れた結果
+   * `DocumentSelection.currentArtboard` が導出し直すため。
    */
-  removeNode(state: EditorState): Option<EditorState> {
-    return Option.flatMap(removableName(state), (name) => {
-      const removed = DesignDocument.removeNode(
-        EditorState.document(state),
-        name,
-      );
+  removeSelected(state: EditorState): Option<EditorState> {
+    return Option.flatMap(EditorState.singleName(state), (name) => {
+      const removed = DesignDocument.remove(EditorState.document(state), name);
       return removed.ok ? withEdit(state, removed.value) : Option.none;
     });
+  },
+
+  /**
+   * artboard を 1 枚足して、そのまま見られるよう選択する
+   * （docs/06-ui.md「編集操作の一覧」の artboard 操作 / UI 案 docs/Design Composer.html の
+   * `Artboards` 見出しの右の `+`）。
+   *
+   * 名前は呼び出し側が決めず、ドキュメントの中で衝突しない名前をここで採る
+   * （追加のボタンが渡せるものは無く、名前の一意性はドキュメントを見ないと決まらない）。
+   * 足す先は並びの末尾。UI 案が並べ替えの入口を `Artboards` の一覧に置いている以上、
+   * どこへ足すかは後から動かせる。
+   *
+   * 選択まで動かすのは、`DocumentSelection.currentArtboard` が未選択のとき**先頭**へ
+   * 落ちるため。選択しないと、末尾に足した 1 枚をツリーが映さない
+   * （`addToken` が追加したトークンを編集できるよう選ぶのと同じ扱い）。
+   * Why not: 挿入（`insertNode`）に揃えて選択を動かさない案は採らない。ノードは
+   * 「選択位置の子」へ挿すので選択が起点だが、artboard は起点を持たないため、
+   * 揃えても繰り返しの結果が素直にならない。
+   *
+   * @param state 足す前のエディタの状態
+   * @returns 1 枚増え、それを選んだ状態。ファイルが不正な間は `none`
+   *   （`insertArtboard` の失敗は末尾を指す限り起こらないので、そちらでは `none` にならない）
+   */
+  addArtboard(state: EditorState): Option<EditorState> {
+    const document = EditorState.document(state);
+    const artboard = Artboard.createInitial(
+      DesignDocument.uniqueName(
+        Artboard.BaseName,
+        DesignDocument.usedNames(document),
+      ),
+    );
+    const added = DesignDocument.insertArtboard(
+      document,
+      document.artboards.length,
+      artboard,
+    );
+    return added.ok
+      ? Option.map(withEdit(state, added.value), (edited) =>
+          EditorState.select(edited, artboard.name),
+        )
+      : Option.none;
+  },
+
+  /**
+   * artboard の並び順を入れ替える（docs/06-ui.md「編集操作の一覧」の artboard 操作。
+   * キャンバスは配列順に自動配置するので、並びがそのまま置かれる順になる）。
+   *
+   * 動かせない指定（移動先が並びの外）は「その移動が存在しない」ことと同じなので
+   * `none` にする。一覧は隣がいない向きのボタンを出さないため、画面の操作から
+   * この `none` には到達しない（`reorderNode` と同じ扱い）。
+   *
+   * 選択は artboard の name で持っており並べ替えでは変わらないため、そのまま引き継ぐ。
+   * ただし**何も選んでいないときはツリーが映す 1 枚が入れ替わる**。
+   * `DocumentSelection.currentArtboard` が未選択のとき先頭を映す規則によるもので、
+   * 並びを変えた結果として意図している。
+   *
+   * @param state 並べ替える前のエディタの状態
+   * @param move 動かす artboard の今の位置と、移す先の位置
+   * @returns 並びが変わった状態。並びの外を指すときと、ファイルが不正な間は `none`
+   */
+  reorderArtboard(state: EditorState, move: IndexMove): Option<EditorState> {
+    const reordered = DesignDocument.reorderArtboard(
+      EditorState.document(state),
+      move.fromIndex,
+      move.toIndex,
+    );
+    return reordered.ok ? withEdit(state, reordered.value) : Option.none;
   },
 
   /**
@@ -618,7 +676,7 @@ export const EditorState = {
    * が持つ。ここは対象を選択から決めて履歴へ積むだけ（`rules/coding.md`
    * 「features 層にドメイン知識を書かない」）。
    *
-   * 対象を引数で受け取らないのは `removeNode` と同じ理由で、解除の導線が
+   * 対象を引数で受け取らないのは `removeSelected` と同じ理由で、解除の導線が
    * 「選択中のインスタンスを解除する」しか無いため。
    *
    * @param state 解除元のエディタの状態

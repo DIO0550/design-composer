@@ -53,7 +53,7 @@ test("artboard を選んでコピーしても貼れるものは増えない", as
   await userEvent.keyboard("{Control>}c{/Control}");
   await userEvent.keyboard("{Control>}v{/Control}");
 
-  // artboard はノードとして貼れない（複製は artboard 操作の担当 / #43）。
+  // artboard はノードとして貼れない（貼る先が「選択位置の子」なので入る場所が無い）。
   expect(rowNames(tree())).toEqual(OriginalRows);
 });
 

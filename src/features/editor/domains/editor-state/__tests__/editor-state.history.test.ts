@@ -7,7 +7,9 @@ import { stateWithNestedBox } from "./setup";
 
 test("削除を戻すと消したノードがツリーに返ってくる", () => {
   const removed = Option.unwrap(
-    EditorState.removeNode(EditorState.select(stateWithNestedBox(), "title")),
+    EditorState.removeSelected(
+      EditorState.select(stateWithNestedBox(), "title"),
+    ),
   );
 
   const undone = Option.unwrap(EditorState.undo(removed));
@@ -34,10 +36,12 @@ test("挿入を戻すと足したノードがツリーから消える", () => {
 
 test("続けて 2 回編集したあと 2 回戻すと最初のドキュメントに戻る", () => {
   const first = Option.unwrap(
-    EditorState.removeNode(EditorState.select(stateWithNestedBox(), "title")),
+    EditorState.removeSelected(
+      EditorState.select(stateWithNestedBox(), "title"),
+    ),
   );
   const second = Option.unwrap(
-    EditorState.removeNode(EditorState.select(first, "body-text")),
+    EditorState.removeSelected(EditorState.select(first, "body-text")),
   );
 
   const undone = Option.unwrap(
@@ -51,7 +55,9 @@ test("続けて 2 回編集したあと 2 回戻すと最初のドキュメン�
 
 test("戻した編集はやり直すと再び反映される", () => {
   const removed = Option.unwrap(
-    EditorState.removeNode(EditorState.select(stateWithNestedBox(), "title")),
+    EditorState.removeSelected(
+      EditorState.select(stateWithNestedBox(), "title"),
+    ),
   );
   const undone = Option.unwrap(EditorState.undo(removed));
 
@@ -68,7 +74,9 @@ test("何も編集していなければ戻せない", () => {
 
 test("戻していなければやり直せない", () => {
   const removed = Option.unwrap(
-    EditorState.removeNode(EditorState.select(stateWithNestedBox(), "title")),
+    EditorState.removeSelected(
+      EditorState.select(stateWithNestedBox(), "title"),
+    ),
   );
 
   expect(EditorState.redo(removed).some).toBe(false);
@@ -105,7 +113,9 @@ test("戻した結果に選択中のノードが無ければ選択は外れる",
 
 test("戻した結果にも選択中のノードがあれば選択は引き継がれる", () => {
   const removed = Option.unwrap(
-    EditorState.removeNode(EditorState.select(stateWithNestedBox(), "title")),
+    EditorState.removeSelected(
+      EditorState.select(stateWithNestedBox(), "title"),
+    ),
   );
 
   const undone = Option.unwrap(
@@ -154,12 +164,14 @@ test("取り込みを拒んだときは履歴に積まれない", () => {
 
 test("戻したあとに別の編集をするとやり直せなくなる", () => {
   const removed = Option.unwrap(
-    EditorState.removeNode(EditorState.select(stateWithNestedBox(), "title")),
+    EditorState.removeSelected(
+      EditorState.select(stateWithNestedBox(), "title"),
+    ),
   );
   const undone = Option.unwrap(EditorState.undo(removed));
 
   const branched = Option.unwrap(
-    EditorState.removeNode(EditorState.select(undone, "body")),
+    EditorState.removeSelected(EditorState.select(undone, "body")),
   );
 
   expect(EditorState.redo(branched).some).toBe(false);

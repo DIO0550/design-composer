@@ -1,6 +1,6 @@
 import { screen, waitFor, within } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
+import { dragRowNamed } from "@/components/__tests__/row-drag";
 import { rowNames } from "@/components/__tests__/row-names";
 import { artboardContent } from "@/domains/__tests__/sample-document";
 import { SampleDocument } from "@/features/editor/__tests__/sample-document";
@@ -32,9 +32,10 @@ test("編集した内容が自動保存され、開き直すとその状態が�
   );
   await clickOpen();
 
-  await userEvent.click(
-    screen.getByRole("button", { name: "home-title を下へ" }),
-  );
+  dragRowNamed(screen.getByRole("region", { name: "ツリー" }), {
+    from: "home-title",
+    to: "home-login",
+  });
   await waitFor(
     () => {
       expect(files.contentOf(Path)).not.toStrictEqual(Option.some(opened));

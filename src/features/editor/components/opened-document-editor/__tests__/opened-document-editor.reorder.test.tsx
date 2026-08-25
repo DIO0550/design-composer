@@ -1,38 +1,37 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
+import { dragRowNamed } from "@/components/__tests__/row-drag";
 import { rowNames } from "@/components/__tests__/row-names";
 import { renderOpenedDocument, tree } from "./setup";
 
-test("ツリービューで子を下へ動かすと兄弟の並びがその順序に変わる", async () => {
+test("ツリービューで子を後ろの行の上へ運ぶと兄弟の並びがその順序に変わる", async () => {
   await renderOpenedDocument();
 
-  await userEvent.click(
-    screen.getByRole("button", { name: "home-title を下へ" }),
-  );
+  dragRowNamed(tree(), { from: "home-title", to: "home-login" });
 
   expect(rowNames(tree())).toEqual(["home-login", "home-title"]);
 });
 
-test("並べ替えたあとは動かした先の位置に合わせて移動できる向きが変わる", async () => {
+/*
+ * 旧「並べ替えたあとは動かした先の位置に合わせて移動できる向きが変わる」の
+ * 置き換え。`↑` / `↓` の出し分けが無くなったので、代わりに**動かした先から
+ * もう一度運べる**ことを見る（並べ替えのたびに位置を数え直しているか）。
+ */
+test("並べ替えたあとも動かした先から運び直せる", async () => {
   await renderOpenedDocument();
+  dragRowNamed(tree(), { from: "home-title", to: "home-login" });
 
-  await userEvent.click(
-    screen.getByRole("button", { name: "home-title を下へ" }),
-  );
+  dragRowNamed(tree(), { from: "home-title", to: "home-login" });
 
-  expect(
-    screen.queryByRole("button", { name: "home-title を下へ" }),
-  ).toBeNull();
+  expect(rowNames(tree())).toEqual(["home-title", "home-login"]);
 });
 
 test("並べ替えても選択していたノードは選択されたままになる", async () => {
   await renderOpenedDocument();
   await userEvent.click(screen.getByRole("button", { name: "home-title" }));
 
-  await userEvent.click(
-    screen.getByRole("button", { name: "home-title を下へ" }),
-  );
+  dragRowNamed(tree(), { from: "home-title", to: "home-login" });
 
   expect(
     screen

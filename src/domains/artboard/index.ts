@@ -83,8 +83,23 @@ export type ArtboardBoxProps = ResolvedProps<"Box"> &
     height: number;
   }>;
 
+/**
+ * 追加直後の artboard の大きさ。
+ *
+ * UI 案（docs/Design Composer.html）が描く artboard が 2 枚とも 720×900 で、
+ * 既定の大きさを決めている材料はここしか無い（docs/ のどれにも既定値は無い）。
+ */
+const InitialSize = { width: 720, height: 900 } as const;
+
 /** artboard の生成・大きさの読み出しと、JSON 表現との相互変換。 */
 export const Artboard = {
+  /**
+   * 採番の元になる名前。識別子の規則（kebab-case）を満たす綴りで、
+   * 衝突したときの連番は `DesignDocument.uniqueName` が付ける
+   * （`NodeTemplate.baseName` / `TokenTemplate.baseName` と同じ扱い）。
+   */
+  BaseName: "artboard",
+
   create(params: {
     name: string;
     width: number;
@@ -99,6 +114,20 @@ export const Artboard = {
       props: params.props,
       children: params.children ?? [],
     };
+  },
+
+  /**
+   * 追加直後の artboard（docs/06-ui.md「編集操作の一覧」の artboard 操作の追加）。
+   *
+   * 名前だけを受け取るのは、一意な名前が**どのドキュメントへ足すか**を見ないと
+   * 決まらないため（採番は名前空間を持つ `DesignDocument` の担当）。大きさと
+   * 空の子はこの型自身の性質なのでここが持つ。
+   *
+   * @param name 採番済みの名前
+   * @returns 既定の大きさを持ち、子を持たない artboard
+   */
+  createInitial(name: string): Artboard {
+    return Artboard.create({ name, ...InitialSize });
   },
 
   /**

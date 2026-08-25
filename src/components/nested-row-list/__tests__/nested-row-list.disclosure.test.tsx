@@ -66,14 +66,6 @@ test("枝を畳むとその枝の孫も並びから消える", async () => {
   expect(screen.queryByRole("button", { name: "deep-text" })).toBeNull();
 });
 
-test("枝を畳むとその枝の子の並べ替えも並びから消える", async () => {
-  renderRowList();
-
-  await userEvent.click(screen.getByRole("button", { name: "body の開閉" }));
-
-  expect(screen.queryByRole("button", { name: "body-text を下へ" })).toBeNull();
-});
-
 test("枝を畳んでもその枝自身の行は並びに残る", async () => {
   const { list } = renderRowList();
 

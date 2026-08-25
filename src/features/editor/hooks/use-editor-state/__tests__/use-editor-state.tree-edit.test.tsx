@@ -68,7 +68,10 @@ function TreeEditHarness() {
       >
         card を挿す
       </button>
-      <button type="button" onClick={() => dispatch({ type: "remove_node" })}>
+      <button
+        type="button"
+        onClick={() => dispatch({ type: "remove_selected" })}
+      >
         削除する
       </button>
       <button type="button" onClick={() => dispatch({ type: "copy_node" })}>

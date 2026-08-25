@@ -8,44 +8,20 @@ import type { CanvasOffset } from "@/features/canvas/domains/canvas-view";
  * `opened-document-editor`）から使うため、feature 直下に置いて共有する。
  * 外の feature へはテスト用の公開口（`__tests__/index.ts`）から出す
  * （分けている理由はその `__tests__/index.ts` の doc）。
+ *
+ * ポインタそのものの操作は左ペインの並べ替えでも同じものが要るので、横断層
+ * （`components/__tests__/pointer-gesture`）へ移して**そのまま再輸出**する。
+ * 包み直さないのは、`CanvasOffset` が `PointerPoint` と構造的に同じで型の上でも
+ * 何も足せないため（rules/coding.md「構造が変わらない型エイリアスの新設は禁止」と
+ * 同じ形）。ここが自前で持つのはホイール（キャンバス固有）だけ。
  */
 
-/** 1 本の指 / 1 つのマウスによる操作として扱う。 */
-const PointerId = 1;
-
-export function pressPointer(element: Element, at: CanvasOffset): void {
-  fireEvent.pointerDown(element, {
-    pointerId: PointerId,
-    clientX: at.x,
-    clientY: at.y,
-  });
-}
-
-export function movePointer(element: Element, to: CanvasOffset): void {
-  fireEvent.pointerMove(element, {
-    pointerId: PointerId,
-    clientX: to.x,
-    clientY: to.y,
-  });
-}
-
-export function releasePointer(element: Element, at: CanvasOffset): void {
-  fireEvent.pointerUp(element, {
-    pointerId: PointerId,
-    clientX: at.x,
-    clientY: at.y,
-  });
-}
-
-/** 掴んで運んで離す、までを 1 つの操作として起こす。 */
-export function drag(
-  element: Element,
-  movement: Readonly<{ from: CanvasOffset; to: CanvasOffset }>,
-): void {
-  pressPointer(element, movement.from);
-  movePointer(element, movement.to);
-  releasePointer(element, movement.to);
-}
+export {
+  drag,
+  movePointer,
+  pressPointer,
+  releasePointer,
+} from "@/components/__tests__/pointer-gesture";
 
 /** ホイールと一緒に押されている修飾キー。 */
 export type WheelModifier = "none" | "ctrl" | "meta";
