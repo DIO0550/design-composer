@@ -179,14 +179,23 @@ export async function selectArtboard(name: string): Promise<void> {
 }
 
 /**
- * レールで行き先を選ぶ。綴りではなく行き先で指す（取り違えを型で弾く）。
+ * レールの行き先のボタン。綴りではなく行き先で指す（取り違えを型で弾く）。
+ * 今どこを映しているかはこのボタンの `aria-current` に出る。
+ *
+ * @param view 引きたい左ペインの行き先
+ * @returns レールのその行き先のボタン
+ */
+export function railButton(view: LeftPaneView): HTMLElement {
+  return within(
+    screen.getByRole("navigation", { name: "左ペインの表示" }),
+  ).getByRole("button", { name: LeftPaneViewLabels[view] });
+}
+
+/**
+ * レールで行き先を選ぶ。
  *
  * @param view 切り替える先の左ペインの行き先
  */
 export async function goTo(view: LeftPaneView): Promise<void> {
-  await userEvent.click(
-    within(
-      screen.getByRole("navigation", { name: "左ペインの表示" }),
-    ).getByRole("button", { name: LeftPaneViewLabels[view] }),
-  );
+  await userEvent.click(railButton(view));
 }

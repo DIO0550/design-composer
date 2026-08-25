@@ -1,12 +1,16 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
+import { currentRowNames } from "@/components/__tests__/row-names";
 import { canvasContent, tokenReferrerNames } from "@/features/canvas/__tests__";
+import { LeftPaneViews } from "@/features/sidebar";
 import {
   breakFileExternally,
   canvasPane,
   leftPane,
+  railButton,
   renderOpenedDocument,
+  tree,
 } from "./setup";
 
 /**
@@ -39,6 +43,13 @@ async function selectToken(name: string): Promise<void> {
 /** キャンバス下端の帯。 */
 function dashedNodes(): HTMLElement {
   return within(canvasPane()).getByRole("region", { name: "キャンバスの破線" });
+}
+
+/** 帯のリンクを押す（#209）。 */
+async function revealInTree(): Promise<void> {
+  await userEvent.click(
+    within(dashedNodes()).getByRole("button", { name: "reveal in tree" }),
+  );
 }
 
 test("トークンを選ぶと、それを参照しているノードがキャンバスで破線になる", async () => {
@@ -79,6 +90,35 @@ test("部品定義の中からしか参照されていないトークンを選�
   await selectToken("subheading");
 
   expect(screen.queryByRole("region", { name: "キャンバスの破線" })).toBeNull();
+});
+
+/*
+ * 以下 2 本は帯のリンク（#209）。飛び先が「先頭」であることは単体
+ * （`token-dashed-nodes.reveal.test.tsx`）が守る。`SampleDocument` の `heading` を
+ * 指すのは `home-title` の 1 件だけなので、ここでは先頭の規則を確かめられない。
+ */
+
+test("帯の reveal in tree を押すと、破線が掛かっていたノードがツリーで選択状態になる", async () => {
+  await renderOpenedDocument();
+  await openTypographySection();
+  await selectToken("heading");
+
+  await revealInTree();
+
+  // ツリーが出ること自体は次のテストが単独で見る
+  expect(currentRowNames(tree())).toEqual(["home-title"]);
+});
+
+test("帯の reveal in tree を押すと、左ペインが Layers へ切り替わる", async () => {
+  await renderOpenedDocument();
+  await openTypographySection();
+  await selectToken("heading");
+
+  await revealInTree();
+
+  expect(railButton(LeftPaneViews.Layers).getAttribute("aria-current")).toBe(
+    "true",
+  );
 });
 
 test("ファイルが不正な間も、選んだトークンの破線と帯が出る", async () => {
