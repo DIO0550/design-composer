@@ -22,14 +22,16 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `post-merge-review.sh`   | `PostToolUse` (Bash/MCP)  | **マージ後の振り返りの提示**。PR のマージを検知し、Issue への追記と評価の記録を促す       |
 | `hook-canary.sh`         | `PreToolUse` (Bash)       | **カナリア**。`echo hook-canary` を必ず deny する。通ってしまったらフックが発火しない実行環境（後述） |
 | `session-url-notice.sh`  | `SessionStart`            | **セッション URL の提示**（AGENTS.md「Issue に紐づいて起動したら、セッションの URL を Issue に残す」）。URL を組み立てて渡す。ブランチが `claude/issue-<N>-...` なら対象の番号も添える |
+| `record-firings.sh`      | `SessionStart` + `PostToolUse` (Skill/Task/Agent) | **スキル・サブエージェントの発火ログ**。tmp のセッション別ログへ追記し、`harness-record` が記録を書くときに読む。SessionStart のセッション見出しで「起動しなかった」と「フック不発」を切り分ける |
 
 ## 移植元から見送ったもの
 
-- `require-skill-before-edit.sh` / `record-skill-fired.sh` — typescript-rules-plugin 固有のスキルに依存するスキルゲートのため
+- `require-skill-before-edit.sh` — typescript-rules-plugin 固有のスキルに依存するスキルゲートのため
 
 ### 見送りを取り消したもの
 
 - `check-jsdoc-rules.sh` / `pre-push-jsdoc.sh` — 「JSDoc 必須ルールはこのリポジトリの規約に存在しない」を理由に見送っていたが、**その前提は PR #152 で `rules/coding.md`「コメントは doc と Why / Why not に絞る」が入った時点で消えていた**。見送りの判断が更新されないまま残り、PR #157 で doc の無い関数がレビューまで残った(#157 のレビュー / `harness/records/pr-157.md`)。移植元をそのまま戻すのではなく、このリポジトリの形(型とコンパニオンオブジェクトが doc を共有する)に合わせた `check-doc-comments.sh` を書いた
+- `record-skill-fired.sh` — 「plugin 固有のスキルに依存する」を理由に見送っていたが、その理由は**特定スキルへのゲート**にしか当てはまらず、発火を記録すること自体は汎用だった。`harness-record` の材料のうち発火だけが記憶(自己申告)からしか取れない穴が残っていたため、汎用版を `record-firings.sh` として書いた
 - **規約が増えたら、それを理由に見送ったフックを見直す。** 見送りの理由は「今の規約に無いから」であることが多く、規約が変わると理由ごと消える
 
 ## 配線
@@ -84,6 +86,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 | `block-npx.sh`(セッション中の行為の禁止) | **無し**。push の時点で痕跡が残らないため代替不能 |
 | `session-url-notice.sh`(セッション URL の提示) | **無し**。URL はセッションの中にしか無く、残す先も GitHub のコメントなので、push の時点で痕跡が残らない。落ちても穴は開かない(規約が AGENTS.md に残り、失っても情報が 1 つ足りないだけでガードは破れない) |
 | `post-edit-lint.sh` / `check-test-rules.sh` / `check-doc-comments.sh` / `check-test-helper-duplication.sh`(即時フィードバック) | 結果は push 前の検査(git hooks)と CI が拾う。**即時性だけが失われる** |
+| `record-firings.sh`(発火ログ) | **無し**。ただし失敗しても穴は開かない(セッション見出しが無いログは `harness-record` が「計測対象外」と書く設計で、誤ったゼロにはならない)。カナリアと同じ「失敗してもガードが破れない」検出系 |
 
 **doc コメント・テスト規約・import 規約は CI(層 1)へ上げた**(`frontend.yml` の `rules-check`)。
 **doc コメントとテスト規約の 2 つ**は層 2・層 3 にしか無かったが、**層 2 と層 3 は同じ環境で同時に抜ける**。
@@ -207,6 +210,18 @@ bash .claude/hooks/lib/test-rules-scan.sh src
 
 # この PR で追加された lint 抑制コメントを数える(CI と同じ判定)
 bash .github/scripts/check-added-lint-suppressions.sh origin/main
+```
+
+```bash
+# 発火ログが書き出されること(見出し + skill + agent の 3 行)
+echo '{"hook_event_name":"SessionStart","session_id":"probe"}' | bash .claude/hooks/record-firings.sh
+echo '{"session_id":"probe","tool_name":"Skill","tool_input":{"skill":"implementation-flow"}}' | bash .claude/hooks/record-firings.sh
+echo '{"session_id":"probe","tool_name":"Task","tool_input":{"subagent_type":"plan-reviewer"}}' | bash .claude/hooks/record-firings.sh
+cat "${TMPDIR:-/tmp}/design-composer-firings-probe.log"
+rm "${TMPDIR:-/tmp}/design-composer-firings-probe.log"
+
+# 対象外のツールでは書かれないこと(出力なし・exit 0・ファイルも増えない)
+echo '{"session_id":"probe","tool_name":"Bash","tool_input":{"command":"ls"}}' | bash .claude/hooks/record-firings.sh; echo "exit=$?"
 ```
 
 **終了コードまで見る。** 層 1(CI の `run:`)と層 2(`pre-push` の `set -e`)は**終了コードだけが配線**なので、
