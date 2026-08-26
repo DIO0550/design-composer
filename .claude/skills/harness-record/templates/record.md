@@ -72,7 +72,7 @@
 
 | 層 | 置いた場所 |
 | --- | --- |
-| `hook` | git hooks(`harness/githooks/`)・CI・`.claude/hooks/` |
+| `hook` | linter 設定(`.oxlintrc.json` / Biome)・git hooks(`harness/githooks/`)・CI・`.claude/hooks/` |
 | `skill` | `.claude/skills/` の新しいスキル |
 | `観点` | 既存スキルの手順、または `.claude/agents/` の検証エージェントの観点 |
 | `rules` | `rules/` への追記・表現の修正 |
