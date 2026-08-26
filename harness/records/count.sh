@@ -3,10 +3,11 @@
 # 分類ごとの「最後の介入以降の再発数」を数える。
 # harness-growth スキル（.claude/skills/harness-growth/SKILL.md）の Step 1 / Step 3 の入力。
 #
-# 読むのは記録の次の 3 種類の行:
+# 読むのは記録の次の 4 種類の行:
 #   - 分類: `<分類>`                       … 指摘 1 件
 #   - 出どころ: `<出どころ>`               … 直前の「分類」の指摘を誰が見つけたか
 #   - 対策済: `<分類>` 層=<層> at pr-<番号> … その回に介入したこと
+#   - 見送り: `<分類>` at pr-<番号>        … 縮める候補を見送ったこと（--shrink が数える）
 #
 # 使い方:
 #   count.sh            分類ごとの再発数・すり抜け・通算・以降・最終介入を出す（増やす側）
@@ -132,8 +133,18 @@ if [ "${1:-}" = "--shrink" ]; then
   printf '%s\n\n' "縮める候補（harness-growth の SKILL.md「Step 3」）"
 
   # 効いている対策は、その層より下に同内容の記述を二重に持つ理由が無い。
+  # 層=rules は最下層で「下の層」が無いので、削るのではなく実例・経緯を判例へ落とせるかを見る。
+  # 見送り回数は「- 見送り: `<分類>` at pr-<番号>」の行（harness-growth だけが書く）から数える。
+  # 見送りを PR 本文にしか書かないと、同じ候補を何回見送ったかが数えられない。
   printf '%s\n' "1. 効いている対策（以降 10 本以上・再発 0）— その対策より下の層の記述を削る"
-  proven="$(summary_rows | awk '$1 == 0 && $4 >= 10 {printf "     %-28s 以降=%-4s 最終介入=%s\n", $5, $4, $6}')"
+  printf '%s\n' "   ※ 層=rules は下の層が無い。実例・経緯を判例へ落とせるかを見る"
+  proven="$(summary_rows | awk '$1 == 0 && $4 >= 10 {print $5, $4, $6}' \
+    | while read -r tag after intervention; do
+      deferrals="$( { grep -hoE "^- 見送り: \`$tag\` at pr-[0-9]+" pr-*.md || true; } | wc -l | tr -d ' ')"
+      note=""
+      [ "$deferrals" -gt 0 ] && note="  見送り=${deferrals}回"
+      printf '     %-28s 以降=%-4s 最終介入=%s%s\n' "$tag" "$after" "$intervention" "$note"
+    done)"
   printf '%s\n\n' "${proven:-     該当なし}"
 
   # 足したばかりの語彙は必ずここに出るので、割った回の分を除いてから読む。
