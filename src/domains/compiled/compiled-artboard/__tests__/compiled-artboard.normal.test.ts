@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { TextElement } from "@/domains/compiled-element";
+import { TextElement } from "@/domains/compiled/compiled-element";
 import { Artboard } from "@/domains/dcmp/artboard";
 import type { TokenRefs } from "@/domains/dcmp/css-declaration";
 import { CompiledArtboard } from "../index";

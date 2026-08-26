@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { expect, test } from "vitest";
-import type { CompiledArtboard } from "@/domains/compiled-artboard";
-import { BoxElement } from "@/domains/compiled-element";
+import type { CompiledArtboard } from "@/domains/compiled/compiled-artboard";
+import { BoxElement } from "@/domains/compiled/compiled-element";
 import { ArtboardLabel } from "../index";
 
 /*

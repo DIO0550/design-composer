@@ -1,4 +1,4 @@
-import { BoxElement } from "@/domains/compiled-element";
+import { BoxElement } from "@/domains/compiled/compiled-element";
 import { Artboard } from "@/domains/dcmp/artboard";
 import type { CssDirection } from "@/domains/dcmp/css-direction";
 import { DesignDocument } from "@/domains/dcmp/design-document";

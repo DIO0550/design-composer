@@ -1,9 +1,9 @@
 import { type KeyboardEvent, type MouseEvent, useMemo } from "react";
-import type { CompiledArtboard } from "@/domains/compiled-artboard";
+import type { CompiledArtboard } from "@/domains/compiled/compiled-artboard";
 import {
   CompiledElement,
   ElementNameAttribute,
-} from "@/domains/compiled-element";
+} from "@/domains/compiled/compiled-element";
 import type { NodeDragControl } from "@/features/canvas/hooks/use-node-drag";
 import type { NodeResizeControl } from "@/features/canvas/hooks/use-node-resize";
 import type { TextEditControl } from "@/features/canvas/hooks/use-text-edit";

@@ -1,5 +1,5 @@
 import { type PointerEvent as ReactPointerEvent, useReducer } from "react";
-import { ElementNameAttribute } from "@/domains/compiled-element";
+import { ElementNameAttribute } from "@/domains/compiled/compiled-element";
 import type { ChildPosition } from "@/domains/dcmp/child-position";
 import type { DesignDocument } from "@/domains/dcmp/design-document";
 import type { NodeTemplate } from "@/domains/node-template";

@@ -1,6 +1,6 @@
 import { render } from "@testing-library/react";
 import { expect, test } from "vitest";
-import { ElementNameAttribute } from "@/domains/compiled-element";
+import { ElementNameAttribute } from "@/domains/compiled/compiled-element";
 import { NameStyleRule, nameSelector } from "../index";
 
 /*

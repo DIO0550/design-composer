@@ -2,7 +2,7 @@ import {
   BoxElement,
   type CompiledElement,
   TextElement,
-} from "@/domains/compiled-element";
+} from "@/domains/compiled/compiled-element";
 import type { CssDeclarations } from "@/domains/dcmp/css-declaration";
 import type { CssDirection } from "@/domains/dcmp/css-direction";
 import type { ExpandedNode } from "@/domains/dcmp/expanded-node";

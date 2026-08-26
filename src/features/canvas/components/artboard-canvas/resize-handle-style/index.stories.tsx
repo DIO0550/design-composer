@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { ElementNameAttribute } from "@/domains/compiled-element";
+import { ElementNameAttribute } from "@/domains/compiled/compiled-element";
 import { AxisLength } from "@/domains/dcmp/axis-length";
 import { ResizeHandleStyle } from "./index";
 

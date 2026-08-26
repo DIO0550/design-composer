@@ -1,4 +1,7 @@
-import { BoxElement, type CompiledElement } from "@/domains/compiled-element";
+import {
+  BoxElement,
+  type CompiledElement,
+} from "@/domains/compiled/compiled-element";
 import { Artboard } from "@/domains/dcmp/artboard";
 import type { TokenRefs } from "@/domains/dcmp/css-declaration";
 

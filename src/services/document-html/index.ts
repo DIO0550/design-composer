@@ -1,5 +1,8 @@
-import { CompiledArtboard } from "@/domains/compiled-artboard";
-import { BoxElement, CompiledElement } from "@/domains/compiled-element";
+import { CompiledArtboard } from "@/domains/compiled/compiled-artboard";
+import {
+  BoxElement,
+  CompiledElement,
+} from "@/domains/compiled/compiled-element";
 import { Artboard } from "@/domains/dcmp/artboard";
 import { CssDeclarations } from "@/domains/dcmp/css-declaration";
 import type { DesignDocument } from "@/domains/dcmp/design-document";

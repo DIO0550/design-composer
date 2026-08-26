@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { CompiledElement } from "@/domains/compiled-element";
+import { CompiledElement } from "@/domains/compiled/compiled-element";
 import type { ExpandedNode } from "@/domains/dcmp/expanded-node";
 import { Result } from "@/utils/Result";
 import { NodeHtml } from "../index";
