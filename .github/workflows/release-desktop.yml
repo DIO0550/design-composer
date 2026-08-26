@@ -48,7 +48,7 @@ jobs:
           fi
 
   build-macos:
-    name: build unsigned Apple Silicon .app
+    name: build unsigned Apple Silicon .app and .dmg
     needs: create-release
     runs-on: macos-latest
     timeout-minutes: 45
@@ -79,23 +79,32 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build unsigned .app (no installer)
-        run: pnpm tauri build --target aarch64-apple-darwin --bundles app --ci --no-sign
+      - name: Build unsigned .app and .dmg
+        run: pnpm tauri build --target aarch64-apple-darwin --bundles app,dmg --ci --no-sign
 
       - name: Prepare release assets
         run: |
           mkdir -p release-assets
 
           APP_BUNDLES=(src-tauri/target/aarch64-apple-darwin/release/bundle/macos/*.app)
+          DMG_FILES=(src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/*.dmg)
+
           APP_PATH="${APP_BUNDLES[0]}"
+          DMG_PATH="${DMG_FILES[0]}"
 
           if [ ! -d "$APP_PATH" ]; then
             echo "No .app bundle found under src-tauri/target/aarch64-apple-darwin/release/bundle/macos"
             exit 1
           fi
 
+          if [ ! -f "$DMG_PATH" ]; then
+            echo "No .dmg bundle found under src-tauri/target/aarch64-apple-darwin/release/bundle/dmg"
+            exit 1
+          fi
+
           APP_NAME="$(basename "$APP_PATH" .app)"
           ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "release-assets/${APP_NAME}-unsigned-aarch64-apple-darwin.app.zip"
+          cp "$DMG_PATH" "release-assets/$(basename "$DMG_PATH")"
 
       - name: Upload workflow artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
