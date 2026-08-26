@@ -32,11 +32,8 @@ test("インスタンスの印は押せない", () => {
     }),
   });
 
-  expect(
-    toolbar()
-      .getAllByRole("button")
-      .map((button) => button.getAttribute("aria-label")),
-  ).toEqual(["Box を追加", "Text を追加"]);
+  // ボタンにした（包んだ場合も含む）実装で落ちる。並びそのものは `.artboard` が見る
+  expect(toolbar().getByText("◆").closest("button")).toBeNull();
 });
 
 test("部品を運んでいる間はインスタンスの印が運んでいないときと違う姿になる", () => {

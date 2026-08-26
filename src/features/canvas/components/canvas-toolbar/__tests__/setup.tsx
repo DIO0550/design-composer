@@ -1,7 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import type { ComponentProps } from "react";
 import { Option } from "@/utils/Option";
-import { NodeInsertToolbar } from "../index";
+import { CanvasToolbar } from "../index";
 
 /**
  * ツールバーを描く。
@@ -14,12 +14,13 @@ import { NodeInsertToolbar } from "../index";
  * @returns `render` の戻り値
  */
 export function renderToolbar(
-  props: Partial<ComponentProps<typeof NodeInsertToolbar>> = {},
+  props: Partial<ComponentProps<typeof CanvasToolbar>> = {},
 ) {
   return render(
-    <NodeInsertToolbar
+    <CanvasToolbar
       isInsertEnabled
       dragged={Option.none}
+      onAddArtboard={() => {}}
       onInsert={() => {}}
       {...props}
     />,
@@ -29,8 +30,8 @@ export function renderToolbar(
 /**
  * 器を起点に探す。ボタンを直接引くと、器が読み上げ名を失っても気づけない。
  *
- * @returns 挿入のツールバーに絞った検索の入口
+ * @returns キャンバスのツールバーに絞った検索の入口
  */
 export function toolbar() {
-  return within(screen.getByRole("region", { name: "挿入" }));
+  return within(screen.getByRole("region", { name: "キャンバスのツールバー" }));
 }

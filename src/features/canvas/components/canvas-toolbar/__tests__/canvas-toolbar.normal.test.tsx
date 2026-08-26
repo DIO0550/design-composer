@@ -21,6 +21,11 @@ test("追加ボタンはそれぞれの型アイコンを出す", () => {
   expect(
     within(screen.getByRole("button", { name: "Text を追加" })).getByText("T"),
   ).toBeDefined();
+  expect(
+    within(screen.getByRole("button", { name: "artboard を追加" })).getByText(
+      "#",
+    ),
+  ).toBeDefined();
 });
 
 test("Box を追加すると Box の挿入が伝わる", async () => {
