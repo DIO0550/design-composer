@@ -3,7 +3,7 @@ import {
   DesignDocument,
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
-import { DocumentSelection } from "@/domains/document-selection";
+import { DocumentSelection } from "@/domains/session/document-selection";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 

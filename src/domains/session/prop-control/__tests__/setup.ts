@@ -4,7 +4,7 @@ import {
 } from "@/domains/dcmp/design-document";
 import type { Props } from "@/domains/dcmp/node";
 import type { ColorToken } from "@/domains/dcmp/token";
-import { DocumentSelection } from "@/domains/document-selection";
+import { DocumentSelection } from "@/domains/session/document-selection";
 import { Option } from "@/utils/Option";
 import {
   type PropControl,

@@ -4,7 +4,7 @@ import type {
   PropControlSection,
   PropShorthandControl,
   SelectionControls,
-} from "@/domains/prop-control";
+} from "@/domains/session/prop-control";
 import type { Side } from "@/domains/unit/side";
 import { Option } from "@/utils/Option";
 

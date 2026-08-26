@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
 import { rowNames } from "@/components/__tests__/row-names";
 import { DesignDocument } from "@/domains/dcmp/design-document";
-import { DocumentSelection } from "@/domains/document-selection";
+import { DocumentSelection } from "@/domains/session/document-selection";
 import { DocumentTree } from "../index";
 
 /**

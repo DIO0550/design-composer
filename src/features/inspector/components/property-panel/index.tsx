@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 import type { PropEdit } from "@/domains/dcmp/node";
-import { DocumentSelection } from "@/domains/document-selection";
-import { SelectionControls } from "@/domains/prop-control";
+import { DocumentSelection } from "@/domains/session/document-selection";
+import { SelectionControls } from "@/domains/session/prop-control";
 import { GroupsBody } from "./groups-body";
 import { type InstanceActions, InstanceBody } from "./instance-body";
 import { SelectionTitle } from "./selection-title";

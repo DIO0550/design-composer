@@ -8,7 +8,7 @@ import {
 import { dragRowNamed, rowOf } from "@/components/__tests__/row-drag";
 import { DropLineTestId } from "@/components/drop-line";
 import { DesignDocument } from "@/domains/dcmp/design-document";
-import { DocumentSelection } from "@/domains/document-selection";
+import { DocumentSelection } from "@/domains/session/document-selection";
 import { ArtboardList } from "../index";
 
 /** artboard 3 枚。両端と中ほどで並べ替えのボタンの出方が変わるので 3 枚要る。 */

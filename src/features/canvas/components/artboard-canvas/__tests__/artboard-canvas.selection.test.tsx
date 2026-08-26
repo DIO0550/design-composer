@@ -2,7 +2,7 @@ import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
 import { ElementNameAttribute } from "@/domains/compiled/compiled-element";
-import type { DocumentSelection } from "@/domains/document-selection";
+import type { DocumentSelection } from "@/domains/session/document-selection";
 import {
   canvasContent,
   highlightedNames,

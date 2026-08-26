@@ -4,9 +4,9 @@ import {
   type ReactNode,
   useContext,
 } from "react";
-import type { DocumentError } from "@/domains/document-error";
-import type { DocumentSaveState } from "@/domains/document-save-state";
-import { OpenedDocument } from "@/domains/opened-document";
+import type { DocumentError } from "@/domains/session/document-error";
+import type { DocumentSaveState } from "@/domains/session/document-save-state";
+import { OpenedDocument } from "@/domains/session/opened-document";
 import type { Elapsed, ElapsedUnit } from "@/domains/unit/elapsed";
 import { CanvasView } from "@/features/canvas";
 import type { ValueOf } from "@/types/ValueOf";

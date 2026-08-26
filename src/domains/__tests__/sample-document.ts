@@ -1,6 +1,6 @@
 import { Artboard } from "@/domains/dcmp/artboard";
 import { DesignDocument } from "@/domains/dcmp/design-document";
-import type { OpenedDocument } from "@/domains/opened-document";
+import type { OpenedDocument } from "@/domains/session/opened-document";
 import { DocumentJson } from "@/libs/document-json";
 
 /** artboard を 1 枚だけ持つドキュメント。名前の違いがドキュメントの違いになる。 */

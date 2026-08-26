@@ -6,7 +6,7 @@ import {
   PropControl,
   type PropControlInput,
   PropPairControl,
-} from "@/domains/prop-control";
+} from "@/domains/session/prop-control";
 import { Option } from "@/utils/Option";
 
 /*

@@ -1,5 +1,5 @@
-import type { DocumentSelection } from "@/domains/document-selection";
-import type { TokenSelection } from "@/domains/token-selection";
+import type { DocumentSelection } from "@/domains/session/document-selection";
+import type { TokenSelection } from "@/domains/session/token-selection";
 import type { NodeDragControl } from "@/features/canvas/hooks/use-node-drag";
 import type { NodeResizeControl } from "@/features/canvas/hooks/use-node-resize";
 import type { TextEditControl } from "@/features/canvas/hooks/use-text-edit";

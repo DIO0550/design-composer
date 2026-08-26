@@ -7,7 +7,7 @@ import {
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
 import type { TokenSet } from "@/domains/dcmp/token";
-import { DocumentSelection } from "@/domains/document-selection";
+import { DocumentSelection } from "@/domains/session/document-selection";
 import { renderPanel } from "./setup";
 
 /*

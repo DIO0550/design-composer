@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 import { SampleSyntaxError } from "@/domains/__tests__/document-errors";
 import { ReceivedAt } from "@/domains/__tests__/instants";
 import { DesignDocument } from "@/domains/dcmp/design-document";
-import { FileValidity } from "@/domains/file-validity";
+import { FileValidity } from "@/domains/session/file-validity";
 import { Instant } from "@/domains/unit/instant";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";

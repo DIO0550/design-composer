@@ -1,5 +1,5 @@
 import { act, renderHook } from "@testing-library/react";
-import type { DocumentReload } from "@/domains/document-reload";
+import type { DocumentReload } from "@/domains/session/document-reload";
 import { changeFileExternally } from "@/libs/__tests__/document-change";
 import type { DocumentIpc, DocumentIpcError } from "@/libs/document-ipc";
 import type { DocumentIpcFake } from "@/libs/document-ipc/fake";

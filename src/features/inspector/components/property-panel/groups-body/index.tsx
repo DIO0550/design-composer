@@ -3,7 +3,7 @@ import type { PropEdit } from "@/domains/dcmp/node";
 import type {
   PropControlRow,
   PropControlSection,
-} from "@/domains/prop-control";
+} from "@/domains/session/prop-control";
 import { CaseStyle } from "@/utils/CaseStyle";
 import { PropRow } from "../prop-row";
 import { SectionHeading } from "../section-heading";

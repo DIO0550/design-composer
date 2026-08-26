@@ -1,5 +1,5 @@
 import type { DesignDocument } from "@/domains/dcmp/design-document";
-import { DocumentError } from "@/domains/document-error";
+import { DocumentError } from "@/domains/session/document-error";
 import type { Result } from "@/utils/Result";
 
 /**

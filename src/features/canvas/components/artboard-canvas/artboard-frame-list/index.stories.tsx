@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { DocumentSelection } from "@/domains/document-selection";
-import { TokenSelection } from "@/domains/token-selection";
+import type { DocumentSelection } from "@/domains/session/document-selection";
+import { TokenSelection } from "@/domains/session/token-selection";
 import { sampleCanvasSelection } from "@/features/canvas/__stories__/sample-canvas-document";
 import { DocumentHtml } from "@/services/document-html";
 import { Option } from "@/utils/Option";

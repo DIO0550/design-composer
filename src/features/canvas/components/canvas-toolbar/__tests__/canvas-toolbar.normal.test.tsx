@@ -1,7 +1,7 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
-import type { NodeTemplate } from "@/domains/node-template";
+import type { NodeTemplate } from "@/domains/session/node-template";
 import { renderToolbar, toolbar } from "./setup";
 
 test("プリミティブごとの追加ボタンが並ぶ", () => {

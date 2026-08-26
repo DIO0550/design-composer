@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { DocumentSelection } from "@/domains/document-selection";
+import type { DocumentSelection } from "@/domains/session/document-selection";
 import { sampleCanvasSelection } from "@/features/canvas/__stories__/sample-canvas-document";
 import { DocumentHtml } from "@/services/document-html";
 import { WithCanvasControls } from "../__stories__/canvas-controls";

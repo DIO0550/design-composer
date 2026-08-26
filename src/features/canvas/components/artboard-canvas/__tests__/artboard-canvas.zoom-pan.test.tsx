@@ -1,6 +1,6 @@
 import { screen } from "@testing-library/react";
 import { expect, test } from "vitest";
-import type { DocumentSelection } from "@/domains/document-selection";
+import type { DocumentSelection } from "@/domains/session/document-selection";
 import {
   drag,
   movePointer,

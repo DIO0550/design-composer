@@ -1,6 +1,6 @@
 import { type PointerEvent as ReactPointerEvent, useReducer } from "react";
 import type { AxisLength } from "@/domains/dcmp/axis-length";
-import { DocumentSelection } from "@/domains/document-selection";
+import { DocumentSelection } from "@/domains/session/document-selection";
 import type {
   CanvasOffset,
   CanvasView,

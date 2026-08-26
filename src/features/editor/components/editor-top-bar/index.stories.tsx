@@ -3,8 +3,8 @@ import {
   DesignDocument,
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
-import type { DocumentError } from "@/domains/document-error";
-import { DocumentSaveState } from "@/domains/document-save-state";
+import type { DocumentError } from "@/domains/session/document-error";
+import { DocumentSaveState } from "@/domains/session/document-save-state";
 import { type Elapsed, ElapsedUnits } from "@/domains/unit/elapsed";
 import { CanvasView } from "@/features/canvas";
 import { SampleFileErrors } from "@/features/editor/__stories__/sample-editor-state";

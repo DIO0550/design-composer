@@ -4,7 +4,7 @@ import { Axes } from "@/domains/dcmp/css-direction";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { Node, type Props } from "@/domains/dcmp/node";
 import { Size } from "@/domains/dcmp/size";
-import { DocumentSelection } from "@/domains/document-selection";
+import { DocumentSelection } from "@/domains/session/document-selection";
 import {
   CanvasOffset,
   CanvasView,

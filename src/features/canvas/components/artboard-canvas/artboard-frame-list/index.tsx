@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { DocumentSelection } from "@/domains/document-selection";
-import { TokenSelection } from "@/domains/token-selection";
+import { DocumentSelection } from "@/domains/session/document-selection";
+import { TokenSelection } from "@/domains/session/token-selection";
 import { NodeDrag } from "@/features/canvas/domains/node-drag";
 import type { NodeDragControl } from "@/features/canvas/hooks/use-node-drag";
 import type { NodeResizeControl } from "@/features/canvas/hooks/use-node-resize";

@@ -7,8 +7,8 @@ import {
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
 import type { PropEdit } from "@/domains/dcmp/node";
-import { DocumentSelection } from "@/domains/document-selection";
-import { TokenSelection } from "@/domains/token-selection";
+import { DocumentSelection } from "@/domains/session/document-selection";
+import { TokenSelection } from "@/domains/session/token-selection";
 import {
   canvasContent,
   renderedElement,

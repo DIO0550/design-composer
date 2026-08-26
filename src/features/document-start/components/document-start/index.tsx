@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { DocumentError } from "@/domains/document-error";
+import type { DocumentError } from "@/domains/session/document-error";
 import type {
   DocumentOpenFailure,
   UnopenedSession,

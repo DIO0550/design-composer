@@ -1,4 +1,4 @@
-import type { DocumentError } from "@/domains/document-error";
+import type { DocumentError } from "@/domains/session/document-error";
 
 /**
  * 外部エディタが不正なファイルを保存したときに届くエラー。

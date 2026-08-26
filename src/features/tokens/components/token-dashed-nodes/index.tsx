@@ -1,6 +1,6 @@
 import { type ReactElement, useMemo } from "react";
 import { ColorSwatch } from "@/components/color-swatch";
-import { TokenSelection } from "@/domains/token-selection";
+import { TokenSelection } from "@/domains/session/token-selection";
 import { ArrayEx } from "@/utils/ArrayEx";
 
 /**

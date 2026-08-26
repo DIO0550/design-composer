@@ -5,7 +5,7 @@ import {
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
 import type { Node } from "@/domains/dcmp/node";
-import { DocumentSelection } from "@/domains/document-selection";
+import { DocumentSelection } from "@/domains/session/document-selection";
 import { Option } from "@/utils/Option";
 import {
   controlNamed,

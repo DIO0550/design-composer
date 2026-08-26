@@ -6,7 +6,7 @@ import {
   DesignDocument,
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
-import type { DocumentErrorLocation } from "@/domains/document-error";
+import type { DocumentErrorLocation } from "@/domains/session/document-error";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 

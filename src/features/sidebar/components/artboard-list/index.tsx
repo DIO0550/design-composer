@@ -1,7 +1,7 @@
 import { DropLine } from "@/components/drop-line";
 import { TypeGlyph } from "@/components/type-glyph";
 import type { Artboard } from "@/domains/dcmp/artboard";
-import { DocumentSelection } from "@/domains/document-selection";
+import { DocumentSelection } from "@/domains/session/document-selection";
 import type { LeftPaneArtboardActions } from "@/features/sidebar/types/LeftPaneArtboardActions";
 import { type RowProps, useReorderDrag } from "@/hooks/use-reorder-drag";
 import type { Option } from "@/utils/Option";

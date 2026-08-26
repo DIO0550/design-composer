@@ -1,5 +1,5 @@
 import { DesignDocument } from "@/domains/dcmp/design-document";
-import type { NodeTemplate } from "@/domains/node-template";
+import type { NodeTemplate } from "@/domains/session/node-template";
 import { CanvasOffset } from "@/features/canvas/domains/canvas-view";
 import {
   DraggedNode,

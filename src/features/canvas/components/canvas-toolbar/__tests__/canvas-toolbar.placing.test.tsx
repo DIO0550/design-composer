@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import type { NodeTemplate } from "@/domains/node-template";
+import type { NodeTemplate } from "@/domains/session/node-template";
 import { Option } from "@/utils/Option";
 import { renderToolbar, toolbar } from "./setup";
 

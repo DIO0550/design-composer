@@ -3,7 +3,7 @@ import {
   artboardContent,
   artboardDocument,
 } from "@/domains/__tests__/sample-document";
-import { OpenedDocument } from "@/domains/opened-document";
+import { OpenedDocument } from "@/domains/session/opened-document";
 import { DocumentSession } from "@/features/document-start/domains/document-session";
 import { DialogChoice } from "@/libs/document-dialog/fake";
 import { DocumentJson } from "@/libs/document-json";

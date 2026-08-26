@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 import { TypeGlyph, type TypeGlyphKind } from "@/components/type-glyph";
 import { TokenReferrer } from "@/domains/dcmp/design-document";
-import { TokenSelection } from "@/domains/token-selection";
+import { TokenSelection } from "@/domains/session/token-selection";
 
 /**
  * 枠の中に出す行数の上限。

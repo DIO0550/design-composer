@@ -4,7 +4,7 @@ import {
   artboardContent,
   artboardDocument,
 } from "@/domains/__tests__/sample-document";
-import { DocumentSaveState } from "@/domains/document-save-state";
+import { DocumentSaveState } from "@/domains/session/document-save-state";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
 import { Option } from "@/utils/Option";

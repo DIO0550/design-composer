@@ -5,7 +5,7 @@ import {
   DesignDocument,
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
-import { DocumentSelection } from "@/domains/document-selection";
+import { DocumentSelection } from "@/domains/session/document-selection";
 import { sampleSidebarSelection } from "@/features/sidebar/__stories__/sample-sidebar-document";
 import { DocumentTree } from "./index";
 

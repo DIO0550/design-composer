@@ -1,8 +1,8 @@
 import { render } from "@testing-library/react";
 import type { ReactNode } from "react";
-import type { DocumentError } from "@/domains/document-error";
-import { DocumentSaveState } from "@/domains/document-save-state";
-import type { OpenedDocument } from "@/domains/opened-document";
+import type { DocumentError } from "@/domains/session/document-error";
+import { DocumentSaveState } from "@/domains/session/document-save-state";
+import type { OpenedDocument } from "@/domains/session/opened-document";
 import type { Elapsed } from "@/domains/unit/elapsed";
 import { useCanvasView } from "@/features/canvas";
 import {

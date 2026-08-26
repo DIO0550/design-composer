@@ -1,6 +1,6 @@
 import { useReducer } from "react";
 import type { PropEdit } from "@/domains/dcmp/node";
-import type { DocumentSelection } from "@/domains/document-selection";
+import type { DocumentSelection } from "@/domains/session/document-selection";
 import { CanvasBounds } from "@/features/canvas/domains/node-drop";
 import { EditableText, TextEdit } from "@/features/canvas/domains/text-edit";
 import { CanvasDom } from "@/libs/canvas-dom";

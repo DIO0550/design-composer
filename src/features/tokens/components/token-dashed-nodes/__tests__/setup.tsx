@@ -2,7 +2,7 @@ import { render } from "@testing-library/react";
 import { vi } from "vitest";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { type TokenRef, TokenSet } from "@/domains/dcmp/token";
-import { TokenSelection } from "@/domains/token-selection";
+import { TokenSelection } from "@/domains/session/token-selection";
 import { Option } from "@/utils/Option";
 import { TokenDashedNodes } from "../index";
 

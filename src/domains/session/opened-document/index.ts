@@ -2,8 +2,8 @@ import {
   DesignDocument,
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
-import type { DocumentError } from "@/domains/document-error";
-import { DocumentReload } from "@/domains/document-reload";
+import type { DocumentError } from "@/domains/session/document-error";
+import { DocumentReload } from "@/domains/session/document-reload";
 import { ArrayEx } from "@/utils/ArrayEx";
 import type { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";

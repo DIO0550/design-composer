@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { expect, test } from "vitest";
-import type { NodeTemplate } from "@/domains/node-template";
+import type { NodeTemplate } from "@/domains/session/node-template";
 import { setupAssetGrab } from "@/features/assets/__tests__/asset-grab";
 import { Option } from "@/utils/Option";
 import { PrimitiveList } from "../index";

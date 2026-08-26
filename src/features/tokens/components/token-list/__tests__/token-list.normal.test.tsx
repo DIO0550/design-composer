@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import type { TokenRef } from "@/domains/dcmp/token";
-import { TokenSelection } from "@/domains/token-selection";
+import { TokenSelection } from "@/domains/session/token-selection";
 import { Option } from "@/utils/Option";
 import { TokenList } from "../index";
 

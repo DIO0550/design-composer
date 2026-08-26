@@ -5,7 +5,7 @@ import type {
   TextSchema,
 } from "@/domains/dcmp/primitive-schema";
 import { ResolvedProps } from "@/domains/dcmp/resolved-props";
-import { DocumentSelection } from "@/domains/document-selection";
+import { DocumentSelection } from "@/domains/session/document-selection";
 import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
 import { Option } from "@/utils/Option";
 

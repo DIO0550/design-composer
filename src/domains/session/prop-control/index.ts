@@ -19,7 +19,7 @@ import {
   type NumericTokenKind,
   TokenSet,
 } from "@/domains/dcmp/token";
-import { DocumentSelection } from "@/domains/document-selection";
+import { DocumentSelection } from "@/domains/session/document-selection";
 import { type Side, SidePair, SidePairs, Sides } from "@/domains/unit/side";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";

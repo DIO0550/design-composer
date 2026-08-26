@@ -9,13 +9,13 @@ import {
   TokenSet,
   TokenValue,
 } from "@/domains/dcmp/token";
-import { DocumentError } from "@/domains/document-error";
-import type { DocumentReload } from "@/domains/document-reload";
-import { DocumentSelection } from "@/domains/document-selection";
-import { FileValidity } from "@/domains/file-validity";
-import { NodeTemplate } from "@/domains/node-template";
-import { SelectionState } from "@/domains/selection-state";
-import { TokenSelection } from "@/domains/token-selection";
+import { DocumentError } from "@/domains/session/document-error";
+import type { DocumentReload } from "@/domains/session/document-reload";
+import { DocumentSelection } from "@/domains/session/document-selection";
+import { FileValidity } from "@/domains/session/file-validity";
+import { NodeTemplate } from "@/domains/session/node-template";
+import { SelectionState } from "@/domains/session/selection-state";
+import { TokenSelection } from "@/domains/session/token-selection";
 import type { Instant } from "@/domains/unit/instant";
 import { EditHistory } from "@/features/editor/domains/edit-history";
 import { TokenTemplate } from "@/features/editor/domains/token-template";

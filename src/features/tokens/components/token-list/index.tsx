@@ -1,7 +1,7 @@
 import { type ReactElement, useState } from "react";
 import { ColorSwatch } from "@/components/color-swatch";
 import { Token, type TokenKind, type TokenRef } from "@/domains/dcmp/token";
-import { TokenSelection } from "@/domains/token-selection";
+import { TokenSelection } from "@/domains/session/token-selection";
 import {
   type TokenPreview,
   type TokenRow,

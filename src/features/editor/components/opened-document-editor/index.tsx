@@ -1,12 +1,12 @@
 import { type ReactElement, type ReactNode, useMemo, useState } from "react";
 import { PaneBody } from "@/components/pane-body";
 import { PaneHeading } from "@/components/pane-heading";
-import type { DocumentError } from "@/domains/document-error";
-import { DocumentSaveState } from "@/domains/document-save-state";
-import { FileValidity } from "@/domains/file-validity";
-import type { NodeTemplate } from "@/domains/node-template";
-import type { OpenedDocument } from "@/domains/opened-document";
-import type { TokenSelection } from "@/domains/token-selection";
+import type { DocumentError } from "@/domains/session/document-error";
+import { DocumentSaveState } from "@/domains/session/document-save-state";
+import { FileValidity } from "@/domains/session/file-validity";
+import type { NodeTemplate } from "@/domains/session/node-template";
+import type { OpenedDocument } from "@/domains/session/opened-document";
+import type { TokenSelection } from "@/domains/session/token-selection";
 import {
   ArtboardCanvas,
   CanvasToolbar,

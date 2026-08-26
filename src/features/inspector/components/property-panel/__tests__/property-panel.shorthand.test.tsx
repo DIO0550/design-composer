@@ -6,7 +6,7 @@ import {
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
 import type { Props } from "@/domains/dcmp/node";
-import { DocumentSelection } from "@/domains/document-selection";
+import { DocumentSelection } from "@/domains/session/document-selection";
 import { ShorthandLabels } from "../index";
 import { renderPanel } from "./setup";
 

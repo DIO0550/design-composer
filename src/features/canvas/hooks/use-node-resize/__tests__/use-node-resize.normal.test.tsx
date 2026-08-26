@@ -3,7 +3,7 @@ import { useState } from "react";
 import { expect, test, vi } from "vitest";
 import type { AxisLength } from "@/domains/dcmp/axis-length";
 import { DesignDocument } from "@/domains/dcmp/design-document";
-import { DocumentSelection } from "@/domains/document-selection";
+import { DocumentSelection } from "@/domains/session/document-selection";
 import {
   movePointer,
   pressPointer,
