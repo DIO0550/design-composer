@@ -1,7 +1,7 @@
 import { type PropAssignment, Props, type PropValue } from "@/domains/node";
-import type { Side } from "@/domains/side";
 import type { TokenKind, TokenRef } from "@/domains/token";
 import { TokenSet } from "@/domains/token";
+import type { Side } from "@/domains/unit/side";
 import type { ValueOf } from "@/types/ValueOf";
 
 /**

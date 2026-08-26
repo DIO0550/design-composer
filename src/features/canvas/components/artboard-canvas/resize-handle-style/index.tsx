@@ -1,6 +1,6 @@
 import type { AxisLength } from "@/domains/axis-length";
 import type { Axis } from "@/domains/css-direction";
-import { Px } from "@/domains/px";
+import { Px } from "@/domains/unit/px";
 import { ResizeHandleThicknessPx } from "@/features/canvas/domains/node-resize";
 import { nameSelector } from "../name-style-rule";
 

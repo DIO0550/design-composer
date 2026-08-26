@@ -1,4 +1,4 @@
-import { Instant } from "@/domains/instant";
+import { Instant } from "@/domains/unit/instant";
 
 /** 数え始めた時刻。終点はここから進めた時刻を作る。 */
 export const From = Instant.create(1_700_000_000_000);

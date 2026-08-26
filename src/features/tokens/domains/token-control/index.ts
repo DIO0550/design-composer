@@ -1,5 +1,4 @@
 import type { DesignDocument } from "@/domains/design-document";
-import { Px } from "@/domains/px";
 import {
   type BoxShadowValue,
   ColorToken,
@@ -17,6 +16,7 @@ import {
   TypographyToken,
 } from "@/domains/token";
 import { TokenSelection } from "@/domains/token-selection";
+import { Px } from "@/domains/unit/px";
 import { Option } from "@/utils/Option";
 
 /*

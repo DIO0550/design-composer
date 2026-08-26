@@ -6,8 +6,8 @@ import {
 } from "react";
 import type { DocumentError } from "@/domains/document-error";
 import type { DocumentSaveState } from "@/domains/document-save-state";
-import type { Elapsed, ElapsedUnit } from "@/domains/elapsed";
 import { OpenedDocument } from "@/domains/opened-document";
+import type { Elapsed, ElapsedUnit } from "@/domains/unit/elapsed";
 import { CanvasView } from "@/features/canvas";
 import type { ValueOf } from "@/types/ValueOf";
 import { Option } from "@/utils/Option";

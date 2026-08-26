@@ -1,4 +1,4 @@
-import { InstantSpan } from "@/domains/instant";
+import { InstantSpan } from "@/domains/unit/instant";
 import type { ValueOf } from "@/types/ValueOf";
 
 /** 経過時間を読むときの単位。 */

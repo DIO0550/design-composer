@@ -5,7 +5,7 @@ import {
   PropPairControl,
   PropShorthandControl,
 } from "@/domains/prop-control";
-import type { Side, SidePair } from "@/domains/side";
+import type { Side, SidePair } from "@/domains/unit/side";
 import { CaseStyle } from "@/utils/CaseStyle";
 import { LabelWidthClass } from "../label-width";
 import { fieldOf, PropField, pairFieldOf } from "../prop-field";

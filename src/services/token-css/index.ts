@@ -4,7 +4,6 @@ import type {
   TokenRefs,
 } from "@/domains/css-declaration";
 import { CssDeclarations } from "@/domains/css-declaration";
-import { Px } from "@/domains/px";
 import {
   ShadowToken,
   type TokenKind,
@@ -13,6 +12,7 @@ import {
   TypographyFieldRef,
   TypographyToken,
 } from "@/domains/token";
+import { Px } from "@/domains/unit/px";
 
 export type { CssVariableName, SingleVariableTokenKind };
 

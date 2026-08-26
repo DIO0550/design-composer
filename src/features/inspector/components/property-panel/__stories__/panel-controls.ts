@@ -5,7 +5,7 @@ import type {
   PropShorthandControl,
   SelectionControls,
 } from "@/domains/prop-control";
-import type { Side } from "@/domains/side";
+import type { Side } from "@/domains/unit/side";
 import { Option } from "@/utils/Option";
 
 /*

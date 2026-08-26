@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import type { DocumentSelection } from "@/domains/document-selection";
-import { SidePairs, Sides } from "@/domains/side";
+import { SidePairs, Sides } from "@/domains/unit/side";
 import { Option } from "@/utils/Option";
 import {
   PropControl,

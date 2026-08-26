@@ -15,12 +15,12 @@ import {
   type PropDefinitionRecord,
   type ShorthandName,
 } from "@/domains/primitive-schema";
-import { type Side, SidePair, SidePairs, Sides } from "@/domains/side";
 import {
   type ColorToken,
   type NumericTokenKind,
   TokenSet,
 } from "@/domains/token";
+import { type Side, SidePair, SidePairs, Sides } from "@/domains/unit/side";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 

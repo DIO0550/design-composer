@@ -1,5 +1,5 @@
 import type { Axis } from "@/domains/css-direction";
-import { Px } from "@/domains/px";
+import { Px } from "@/domains/unit/px";
 import { Option } from "@/utils/Option";
 
 /**

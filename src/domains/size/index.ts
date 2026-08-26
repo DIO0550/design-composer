@@ -1,7 +1,7 @@
 import { CssDeclaration } from "@/domains/css-declaration";
 import { type Axis, CssDirection } from "@/domains/css-direction";
 import type { PropValue } from "@/domains/node";
-import { Px } from "@/domains/px";
+import { Px } from "@/domains/unit/px";
 import { Option } from "@/utils/Option";
 
 /**

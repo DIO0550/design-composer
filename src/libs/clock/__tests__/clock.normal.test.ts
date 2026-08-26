@@ -1,5 +1,5 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { Instant } from "@/domains/instant";
+import { Instant } from "@/domains/unit/instant";
 import { Clock } from "../index";
 
 /** 時刻とタイマーを進めるのはテストの側なので、各テストのあとで実物へ戻す。 */

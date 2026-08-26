@@ -3,7 +3,7 @@ import { SampleSyntaxError } from "@/domains/__tests__/document-errors";
 import { ReceivedAt } from "@/domains/__tests__/instants";
 import { DesignDocument } from "@/domains/design-document";
 import { FileValidity } from "@/domains/file-validity";
-import { Instant } from "@/domains/instant";
+import { Instant } from "@/domains/unit/instant";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 
