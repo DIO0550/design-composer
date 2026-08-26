@@ -158,8 +158,33 @@ if [ "${1:-}" = "--shrink" ]; then
   growth="$(wc -l < ../../.claude/skills/harness-growth/SKILL.md)"
   printf '     %-34s %4s / %s 行%s\n' "AGENTS.md + rules/" "$loaded" 900 \
     "$([ "$loaded" -gt 900 ] && printf ' ← 超過' || true)"
-  printf '     %-34s %4s / %s 行%s\n' "harness-growth/SKILL.md" "$growth" 200 \
+  printf '     %-34s %4s / %s 行%s\n\n' "harness-growth/SKILL.md" "$growth" 200 \
     "$([ "$growth" -gt 200 ] && printf ' ← 超過' || true)"
+
+  # 装置(スキル・エージェント)の間引き候補。記録の「## 発火」の行から数える。
+  # フックはここでは数えない(予防装置は発火 0 が「効いている」でありうるため。
+  # フックの重複は節 1 と層上げの側で削る)。プラグインのスキルは発火した分しか
+  # 表に出ない(リポジトリからは一覧を数えられない)。
+  printf '%s\n' "4. 装置の間引き候補（発火を計測できた記録 10 本から判断）"
+  measured=0
+  for record in pr-*.md; do
+    grep -qE '^- 発火: (`|無し)' "$record" && measured=$((measured + 1))
+  done
+  printf '   %s\n' "発火を計測できた記録: ${measured} 本"
+  if [ "$measured" -lt 10 ]; then
+    printf '   %s\n' "(10 本未満のため候補は出さない)"
+    exit 0
+  fi
+  printf '%s\n' "   計測した記録での発火回数:"
+  grep -hoE '^- 発火: `[^`]+` [0-9]+回' pr-*.md \
+    | sed 's/^- 発火: `\([^`]*\)` \([0-9]*\)回/\1 \2/' \
+    | awk '{sum[$1] += $2} END {for (name in sum) printf "     %-34s %4d 回\n", name, sum[name]}' \
+    | sort -k2 -rn
+  printf '%s\n' "   計測した記録で発火 0 のリポジトリ内装置 — 退役候補:"
+  for device in ../../.claude/skills/*/ ../../.claude/agents/*.md; do
+    name="$(basename "$device" .md)"
+    grep -qE "^- 発火: \`$name\`" pr-*.md || printf '     %s\n' "$name"
+  done
   exit 0
 fi
 
