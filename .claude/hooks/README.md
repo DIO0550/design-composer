@@ -90,7 +90,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 リモート実行環境はクローンからやり直すので `core.hooksPath` が未設定のまま
 (`postCreateCommand` は DevContainer でしか走らない)で、そこは `.claude/settings.json` の
 配線が読まれないことがある環境と同じだった。実際に doc の無い宣言が main へ入っている
-(`src/domains/elapsed`)。層 2 の配線は `pnpm install` の `prepare` が
+(`src/domains/unit/elapsed`)。層 2 の配線は `pnpm install` の `prepare` が
 自動でやるようにしたが、**同じ層で再発したら層を 1 つ上げる**に従い、検査そのものも
 無条件に効く層へ置いた。
 
@@ -187,7 +187,7 @@ python3 .claude/hooks/lib/duplicate-test-helpers.py --all src
 
 ```bash
 # doc の無い宣言が報告されること(additionalContext が出力される)
-echo '{"tool_input":{"file_path":"src/domains/token/index.ts"}}' \
+echo '{"tool_input":{"file_path":"src/domains/dcmp/token/index.ts"}}' \
   | bash .claude/hooks/check-doc-comments.sh
 
 # 全体の doc 抜けを数える
