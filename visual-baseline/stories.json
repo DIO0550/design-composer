@@ -240,18 +240,18 @@
     "name": "文言が空の Text を編集中"
   },
   {
-    "id": "features-canvas-nodeinserttoolbar--insert-enabled",
-    "title": "features/canvas/NodeInsertToolbar",
+    "id": "features-canvas-canvastoolbar--insert-enabled",
+    "title": "features/canvas/CanvasToolbar",
     "name": "挿せる位置がある"
   },
   {
-    "id": "features-canvas-nodeinserttoolbar--no-selection",
-    "title": "features/canvas/NodeInsertToolbar",
+    "id": "features-canvas-canvastoolbar--no-selection",
+    "title": "features/canvas/CanvasToolbar",
     "name": "何も選んでいない"
   },
   {
-    "id": "features-canvas-nodeinserttoolbar--placing-instance",
-    "title": "features/canvas/NodeInsertToolbar",
+    "id": "features-canvas-canvastoolbar--placing-instance",
+    "title": "features/canvas/CanvasToolbar",
     "name": "部品を運んでいる"
   },
   {
