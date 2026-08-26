@@ -21,6 +21,30 @@
       }
     },
     {
+      "files": ["src/domains/unit/**/*.ts", "src/domains/unit/**/*.tsx"],
+      "rules": {
+        "no-restricted-imports": ["error", { "patterns": [
+          { "group": ["@/domains/dcmp/**", "@/domains/compiled/**", "@/domains/session/**"], "message": "unit は他のカテゴリを import できません（rules/architecture.md「domains のカテゴリ」）" }
+        ] }]
+      }
+    },
+    {
+      "files": ["src/domains/dcmp/**/*.ts", "src/domains/dcmp/**/*.tsx"],
+      "rules": {
+        "no-restricted-imports": ["error", { "patterns": [
+          { "group": ["@/domains/compiled/**", "@/domains/session/**"], "message": "dcmp が import してよいのは unit だけです（rules/architecture.md「domains のカテゴリ」）" }
+        ] }]
+      }
+    },
+    {
+      "files": ["src/domains/compiled/**/*.ts", "src/domains/compiled/**/*.tsx"],
+      "rules": {
+        "no-restricted-imports": ["error", { "patterns": [
+          { "group": ["@/domains/session/**"], "message": "compiled は session を import できません（rules/architecture.md「domains のカテゴリ」）" }
+        ] }]
+      }
+    },
+    {
       "files": ["src/services/**/*.ts", "src/services/**/*.tsx"],
       "rules": {
         "no-restricted-imports": ["error", { "patterns": [
