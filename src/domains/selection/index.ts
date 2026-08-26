@@ -1,9 +1,9 @@
-import type { Artboard } from "@/domains/artboard";
-import { Node } from "@/domains/node";
+import type { Artboard } from "@/domains/dcmp/artboard";
+import { Node } from "@/domains/dcmp/node";
 import {
   PrimitiveSchema,
   type PrimitiveType,
-} from "@/domains/primitive-schema";
+} from "@/domains/dcmp/primitive-schema";
 import { Option } from "@/utils/Option";
 
 /**

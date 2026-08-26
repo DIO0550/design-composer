@@ -1,6 +1,9 @@
 import { TypeGlyph } from "@/components/type-glyph";
+import {
+  type PrimitiveType,
+  PrimitiveTypes,
+} from "@/domains/dcmp/primitive-schema";
 import { NodeTemplate } from "@/domains/node-template";
-import { type PrimitiveType, PrimitiveTypes } from "@/domains/primitive-schema";
 import type { Option } from "@/utils/Option";
 
 /** 押せないときに `title` へ出す理由。押せない状態を見せるだけだと打つ手が分からない。 */

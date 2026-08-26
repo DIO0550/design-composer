@@ -1,8 +1,8 @@
 import { expect, test } from "vitest";
 import { SampleSyntaxError } from "@/domains/__tests__/document-errors";
-import { Artboard } from "@/domains/artboard";
-import { DesignDocument } from "@/domains/design-document";
-import type { Node, Props } from "@/domains/node";
+import { Artboard } from "@/domains/dcmp/artboard";
+import { DesignDocument } from "@/domains/dcmp/design-document";
+import type { Node, Props } from "@/domains/dcmp/node";
 import { Result } from "@/utils/Result";
 import { DocumentReload } from "../index";
 

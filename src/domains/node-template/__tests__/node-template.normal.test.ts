@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { Node } from "@/domains/node";
+import { Node } from "@/domains/dcmp/node";
 import { NodeTemplate } from "../index";
 
 test("Box の挿入指定からは型が Box のノードができる", () => {

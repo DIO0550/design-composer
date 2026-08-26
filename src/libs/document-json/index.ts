@@ -1,4 +1,4 @@
-import { DesignDocument } from "@/domains/design-document";
+import { DesignDocument } from "@/domains/dcmp/design-document";
 import type { DocumentError } from "@/domains/document-error";
 import {
   DocumentMigration,

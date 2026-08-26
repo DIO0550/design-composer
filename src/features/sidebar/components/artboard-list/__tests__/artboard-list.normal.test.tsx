@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
 import { currentRowNames, rowNames } from "@/components/__tests__/row-names";
-import { DesignDocument } from "@/domains/design-document";
+import { DesignDocument } from "@/domains/dcmp/design-document";
 import { DocumentSelection } from "@/domains/document-selection";
 import { ArtboardList } from "../index";
 

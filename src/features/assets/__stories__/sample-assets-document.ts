@@ -1,4 +1,7 @@
-import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import {
+  DesignDocument,
+  DocumentTemplate,
+} from "@/domains/dcmp/design-document";
 
 /**
  * ストーリー用のサンプルドキュメント。

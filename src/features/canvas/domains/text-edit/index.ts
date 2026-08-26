@@ -1,8 +1,11 @@
-import { DesignDocument } from "@/domains/design-document";
+import { DesignDocument } from "@/domains/dcmp/design-document";
+import { Node, type PrimitiveNode, PropEdit } from "@/domains/dcmp/node";
+import type {
+  PrimitiveType,
+  TextSchema,
+} from "@/domains/dcmp/primitive-schema";
+import { ResolvedProps } from "@/domains/dcmp/resolved-props";
 import { DocumentSelection } from "@/domains/document-selection";
-import { Node, type PrimitiveNode, PropEdit } from "@/domains/node";
-import type { PrimitiveType, TextSchema } from "@/domains/primitive-schema";
-import { ResolvedProps } from "@/domains/resolved-props";
 import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
 import { Option } from "@/utils/Option";
 

@@ -1,5 +1,5 @@
 import { expectTypeOf, test } from "vitest";
-import type { DesignDocumentValidationErrorKind } from "@/domains/design-document";
+import type { DesignDocumentValidationErrorKind } from "@/domains/dcmp/design-document";
 import type { DocumentErrorKind } from "@/domains/document-error";
 import type { DocumentMigrationError } from "@/libs/document-migration";
 import type { JsonScanErrorKind } from "@/libs/json-lexical-scanner";

@@ -4,7 +4,10 @@ import { expect, fn, screen, userEvent } from "storybook/test";
 import { RightPaneShell } from "@/components/__stories__/right-pane-shell";
 import { PaneBody } from "@/components/pane-body";
 import { PaneHeading } from "@/components/pane-heading";
-import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import {
+  DesignDocument,
+  DocumentTemplate,
+} from "@/domains/dcmp/design-document";
 import { DocumentSelection } from "@/domains/document-selection";
 import { PropertyPanel, ShorthandLabels } from "./index";
 

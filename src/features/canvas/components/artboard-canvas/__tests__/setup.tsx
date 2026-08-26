@@ -1,10 +1,13 @@
 import { render } from "@testing-library/react";
 import { vi } from "vitest";
-import type { AxisLength } from "@/domains/axis-length";
-import type { ChildPosition } from "@/domains/child-position";
-import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import type { AxisLength } from "@/domains/dcmp/axis-length";
+import type { ChildPosition } from "@/domains/dcmp/child-position";
+import {
+  DesignDocument,
+  DocumentTemplate,
+} from "@/domains/dcmp/design-document";
+import type { PropEdit } from "@/domains/dcmp/node";
 import { DocumentSelection } from "@/domains/document-selection";
-import type { PropEdit } from "@/domains/node";
 import { TokenSelection } from "@/domains/token-selection";
 import {
   canvasContent,

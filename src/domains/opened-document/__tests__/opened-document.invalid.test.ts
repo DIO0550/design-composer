@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
-import { Artboard } from "@/domains/artboard";
-import { DesignDocument } from "@/domains/design-document";
+import { Artboard } from "@/domains/dcmp/artboard";
+import { DesignDocument } from "@/domains/dcmp/design-document";
 import { DocumentJson } from "@/libs/document-json";
 import { OpenedDocument } from "../index";
 

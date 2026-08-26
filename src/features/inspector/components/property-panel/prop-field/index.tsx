@@ -1,7 +1,7 @@
 import { type ReactElement, useId } from "react";
 import { ColorSwatch } from "@/components/color-swatch";
 import { SegmentedControl } from "@/components/segmented-control";
-import type { PropEdit } from "@/domains/node";
+import type { PropEdit } from "@/domains/dcmp/node";
 import {
   PropControl,
   type PropControlInput,

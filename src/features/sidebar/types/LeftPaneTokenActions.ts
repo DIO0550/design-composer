@@ -1,4 +1,4 @@
-import type { TokenKind, TokenRef } from "@/domains/token";
+import type { TokenKind, TokenRef } from "@/domains/dcmp/token";
 
 /**
  * 左ペインから届くトークン編集の受け口（docs/06-ui.md「編集操作の一覧」の tokens 編集）。

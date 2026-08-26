@@ -1,5 +1,5 @@
-import { DesignDocument, TokenReferrer } from "@/domains/design-document";
-import { type Token, type TokenRef, TokenSet } from "@/domains/token";
+import { DesignDocument, TokenReferrer } from "@/domains/dcmp/design-document";
+import { type Token, type TokenRef, TokenSet } from "@/domains/dcmp/token";
 import { Option } from "@/utils/Option";
 
 /**

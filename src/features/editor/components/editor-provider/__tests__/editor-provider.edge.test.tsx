@@ -1,6 +1,6 @@
 import { render } from "@testing-library/react";
 import { expect, test } from "vitest";
-import { DesignDocument } from "@/domains/design-document";
+import { DesignDocument } from "@/domains/dcmp/design-document";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { EditorProvider, useEditor } from "../index";
 

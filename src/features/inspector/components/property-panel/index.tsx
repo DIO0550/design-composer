@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
+import type { PropEdit } from "@/domains/dcmp/node";
 import { DocumentSelection } from "@/domains/document-selection";
-import type { PropEdit } from "@/domains/node";
 import { SelectionControls } from "@/domains/prop-control";
 import { GroupsBody } from "./groups-body";
 import { type InstanceActions, InstanceBody } from "./instance-body";

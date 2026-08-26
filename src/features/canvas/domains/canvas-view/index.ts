@@ -1,4 +1,4 @@
-import type { Axis } from "@/domains/css-direction";
+import type { Axis } from "@/domains/dcmp/css-direction";
 import { Px } from "@/domains/unit/px";
 import { Option } from "@/utils/Option";
 

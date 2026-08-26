@@ -1,5 +1,5 @@
 import { type ReactElement, useId } from "react";
-import type { PropEdit } from "@/domains/node";
+import type { PropEdit } from "@/domains/dcmp/node";
 import { PropControl } from "@/domains/prop-control";
 import { CaseStyle } from "@/utils/CaseStyle";
 import { ControlOffsetClass, LabelWidthClass } from "../label-width";

@@ -1,7 +1,7 @@
 import { screen } from "@testing-library/react";
 import { expect, test } from "vitest";
-import { DesignDocument } from "@/domains/design-document";
-import { TokenSet } from "@/domains/token";
+import { DesignDocument } from "@/domains/dcmp/design-document";
+import { TokenSet } from "@/domains/dcmp/token";
 import { renderUsedBy } from "./render";
 
 /**

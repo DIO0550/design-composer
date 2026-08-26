@@ -1,5 +1,5 @@
-import { DesignDocument } from "@/domains/design-document";
-import type { Token, TokenKind, TokenValue } from "@/domains/token";
+import { DesignDocument } from "@/domains/dcmp/design-document";
+import type { Token, TokenKind, TokenValue } from "@/domains/dcmp/token";
 
 /**
  * これから追加するトークンの指定（docs/06-ui.md「編集操作の一覧」の tokens 編集）。
@@ -19,7 +19,7 @@ export type TokenTemplate = Readonly<{ kind: TokenKind }>;
  * 影と書体だけは 0 や空から始めない。影を 0/0/0 にすると一覧の見本にも
  * キャンバスにも何も出ず、色を白にしたときと同じ「足したのに見えない」になる。
  * どちらも docs/04-tokens.md「初期トークンセット」が挙げている値（`shadows.sm` /
- * `typography.body`）を選んだ。デフォルトテーマ（`domains/design-document/template`）
+ * `typography.body`）を選んだ。デフォルトテーマ（`domains/dcmp/design-document/template`）
  * とは値が一致するだけで、参照はしていない。追加直後の見え方を決めるのはこちらの
  * 関心事で、テーマを直したときに連動して変わってよいものではないため。
  */

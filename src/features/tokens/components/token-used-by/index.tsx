@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import { TypeGlyph, type TypeGlyphKind } from "@/components/type-glyph";
-import { TokenReferrer } from "@/domains/design-document";
+import { TokenReferrer } from "@/domains/dcmp/design-document";
 import { TokenSelection } from "@/domains/token-selection";
 
 /**

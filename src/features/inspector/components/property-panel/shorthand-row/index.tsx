@@ -1,5 +1,5 @@
 import { type ReactElement, useId, useState } from "react";
-import type { PropEdit } from "@/domains/node";
+import type { PropEdit } from "@/domains/dcmp/node";
 import {
   type PropControl,
   PropPairControl,

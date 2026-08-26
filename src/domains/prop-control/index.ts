@@ -1,25 +1,25 @@
-import { Artboard } from "@/domains/artboard";
-import { Component, ComponentSet } from "@/domains/component";
-import { DesignDocument } from "@/domains/design-document";
-import { DocumentSelection } from "@/domains/document-selection";
+import { Artboard } from "@/domains/dcmp/artboard";
+import { Component, ComponentSet } from "@/domains/dcmp/component";
+import { DesignDocument } from "@/domains/dcmp/design-document";
 import {
   Node,
   PropEdit,
   type Props,
   type PropValue,
   type RefNode,
-} from "@/domains/node";
+} from "@/domains/dcmp/node";
 import {
   PrimitiveSchema,
   PropDefinition,
   type PropDefinitionRecord,
   type ShorthandName,
-} from "@/domains/primitive-schema";
+} from "@/domains/dcmp/primitive-schema";
 import {
   type ColorToken,
   type NumericTokenKind,
   TokenSet,
-} from "@/domains/token";
+} from "@/domains/dcmp/token";
+import { DocumentSelection } from "@/domains/document-selection";
 import { type Side, SidePair, SidePairs, Sides } from "@/domains/unit/side";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";

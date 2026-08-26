@@ -1,7 +1,10 @@
-import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import {
+  DesignDocument,
+  DocumentTemplate,
+} from "@/domains/dcmp/design-document";
+import type { Props } from "@/domains/dcmp/node";
+import type { ColorToken } from "@/domains/dcmp/token";
 import { DocumentSelection } from "@/domains/document-selection";
-import type { Props } from "@/domains/node";
-import type { ColorToken } from "@/domains/token";
 import { Option } from "@/utils/Option";
 import {
   type PropControl,

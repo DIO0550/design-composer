@@ -1,8 +1,8 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { useState } from "react";
 import { expect, test, vi } from "vitest";
-import type { AxisLength } from "@/domains/axis-length";
-import { DesignDocument } from "@/domains/design-document";
+import type { AxisLength } from "@/domains/dcmp/axis-length";
+import { DesignDocument } from "@/domains/dcmp/design-document";
 import { DocumentSelection } from "@/domains/document-selection";
 import {
   movePointer,

@@ -7,7 +7,7 @@ import {
 } from "@/components/__tests__/pointer-gesture";
 import { dragRowNamed, rowOf } from "@/components/__tests__/row-drag";
 import { DropLineTestId } from "@/components/drop-line";
-import { DesignDocument } from "@/domains/design-document";
+import { DesignDocument } from "@/domains/dcmp/design-document";
 import { DocumentSelection } from "@/domains/document-selection";
 import { ArtboardList } from "../index";
 

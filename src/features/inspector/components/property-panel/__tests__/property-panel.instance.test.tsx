@@ -1,8 +1,11 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
-import type { ComponentSet } from "@/domains/component";
-import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import type { ComponentSet } from "@/domains/dcmp/component";
+import {
+  DesignDocument,
+  DocumentTemplate,
+} from "@/domains/dcmp/design-document";
 import { DocumentSelection } from "@/domains/document-selection";
 import type { InstanceActions } from "../index";
 import { renderPanel } from "./setup";

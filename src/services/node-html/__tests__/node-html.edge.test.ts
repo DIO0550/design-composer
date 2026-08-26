@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
-import type { ComponentSet } from "@/domains/component";
-import { ExpandedNode } from "@/domains/expanded-node";
-import type { RefNode } from "@/domains/node";
+import type { ComponentSet } from "@/domains/dcmp/component";
+import { ExpandedNode } from "@/domains/dcmp/expanded-node";
+import type { RefNode } from "@/domains/dcmp/node";
 import { Result } from "@/utils/Result";
 import { NodeHtml } from "../index";
 

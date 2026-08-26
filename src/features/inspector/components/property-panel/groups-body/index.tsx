@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import type { PropEdit } from "@/domains/node";
+import type { PropEdit } from "@/domains/dcmp/node";
 import type {
   PropControlRow,
   PropControlSection,

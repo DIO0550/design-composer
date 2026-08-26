@@ -1,5 +1,5 @@
-import { DesignDocument } from "@/domains/design-document";
-import type { TokenKind } from "@/domains/token";
+import { DesignDocument } from "@/domains/dcmp/design-document";
+import type { TokenKind } from "@/domains/dcmp/token";
 import { TokenSelection } from "@/domains/token-selection";
 import {
   TokenControl,

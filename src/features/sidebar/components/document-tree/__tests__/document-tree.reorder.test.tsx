@@ -1,7 +1,7 @@
 import { render } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
 import { dragRowNamed } from "@/components/__tests__/row-drag";
-import { DesignDocument } from "@/domains/design-document";
+import { DesignDocument } from "@/domains/dcmp/design-document";
 import { DocumentSelection } from "@/domains/document-selection";
 import { DocumentTree } from "../index";
 

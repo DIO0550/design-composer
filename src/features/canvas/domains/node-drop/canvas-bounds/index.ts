@@ -1,4 +1,4 @@
-import { type Axis, CssDirection } from "@/domains/css-direction";
+import { type Axis, CssDirection } from "@/domains/dcmp/css-direction";
 import type { CanvasOffset } from "@/features/canvas/domains/canvas-view";
 
 /**

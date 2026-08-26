@@ -1,10 +1,10 @@
-import type { Artboard } from "@/domains/artboard";
-import { AxisLength } from "@/domains/axis-length";
-import { Axes } from "@/domains/css-direction";
-import { DesignDocument } from "@/domains/design-document";
+import type { Artboard } from "@/domains/dcmp/artboard";
+import { AxisLength } from "@/domains/dcmp/axis-length";
+import { Axes } from "@/domains/dcmp/css-direction";
+import { DesignDocument } from "@/domains/dcmp/design-document";
+import { Node, type Props } from "@/domains/dcmp/node";
+import { Size } from "@/domains/dcmp/size";
 import { DocumentSelection } from "@/domains/document-selection";
-import { Node, type Props } from "@/domains/node";
-import { Size } from "@/domains/size";
 import {
   CanvasOffset,
   CanvasView,

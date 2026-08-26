@@ -50,7 +50,7 @@ export type NestedRow = Readonly<{
  * 同じ親の中での位置。
  * 親の名前と index は片方だけでは位置が決まらないため1つの型にまとめる。
  *
- * Why: 同じ構造の `ChildPosition`（`src/domains/child-position`）を使わずに綴り直して
+ * Why: 同じ構造の `ChildPosition`（`src/domains/dcmp/child-position`）を使わずに綴り直して
  * いるのは、横断層から `domains/` を import できないため。渡せることは
  * `document-tree.type.test.ts` が型で固定している。
  */

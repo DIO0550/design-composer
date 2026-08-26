@@ -1,6 +1,6 @@
 import { render } from "@testing-library/react";
-import type { DesignDocument } from "@/domains/design-document";
-import type { TokenRef } from "@/domains/token";
+import type { DesignDocument } from "@/domains/dcmp/design-document";
+import type { TokenRef } from "@/domains/dcmp/token";
 import { TokenSelection } from "@/domains/token-selection";
 import { Option } from "@/utils/Option";
 import { TokenUsedBy } from "../index";

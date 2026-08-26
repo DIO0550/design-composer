@@ -1,4 +1,7 @@
-import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import {
+  DesignDocument,
+  DocumentTemplate,
+} from "@/domains/dcmp/design-document";
 import type { DocumentError } from "@/domains/document-error";
 import { EditorState } from "@/features/editor/domains/editor-state";
 

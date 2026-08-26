@@ -1,8 +1,8 @@
 import { screen } from "@testing-library/react";
 import { expect, test } from "vitest";
 import { ColorSwatchTestId } from "@/components/color-swatch";
-import { DesignDocument } from "@/domains/design-document";
-import { TokenSet } from "@/domains/token";
+import { DesignDocument } from "@/domains/dcmp/design-document";
+import { TokenSet } from "@/domains/dcmp/token";
 import { Gray900, gray900Document, renderDashedNodes } from "./setup";
 
 test("トークンを選ぶと、そのトークンの名前が帯に出る", () => {

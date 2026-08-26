@@ -1,6 +1,6 @@
-import { Artboard } from "@/domains/artboard";
 import { BoxElement, type CompiledElement } from "@/domains/compiled-element";
-import type { TokenRefs } from "@/domains/css-declaration";
+import { Artboard } from "@/domains/dcmp/artboard";
+import type { TokenRefs } from "@/domains/dcmp/css-declaration";
 
 /**
  * コンパイル済みの artboard 1 枚。描く中身と、宣言されている大きさ。

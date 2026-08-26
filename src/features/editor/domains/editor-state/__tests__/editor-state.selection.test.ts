@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { DesignDocument } from "@/domains/design-document";
+import { DesignDocument } from "@/domains/dcmp/design-document";
 import { EditorState } from "../index";
 
 function setupDocument(): DesignDocument {

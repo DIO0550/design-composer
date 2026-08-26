@@ -1,6 +1,6 @@
-import type { Artboard } from "@/domains/artboard";
-import { DesignDocument } from "@/domains/design-document";
-import { Node } from "@/domains/node";
+import type { Artboard } from "@/domains/dcmp/artboard";
+import { DesignDocument } from "@/domains/dcmp/design-document";
+import { Node } from "@/domains/dcmp/node";
 import { Selection } from "@/domains/selection";
 import { SelectionState } from "@/domains/selection-state";
 import { ArrayEx } from "@/utils/ArrayEx";

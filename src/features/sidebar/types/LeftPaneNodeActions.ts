@@ -1,4 +1,4 @@
-import type { ChildPosition } from "@/domains/child-position";
+import type { ChildPosition } from "@/domains/dcmp/child-position";
 
 /**
  * 左ペインから届くノード編集の受け口（docs/06-ui.md「編集操作の一覧」）。

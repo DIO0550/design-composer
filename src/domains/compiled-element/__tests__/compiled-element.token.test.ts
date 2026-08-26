@@ -1,8 +1,8 @@
 import { expect, test } from "vitest";
-import type { TokenRefs } from "@/domains/css-declaration";
-import { CssDeclarations } from "@/domains/css-declaration";
-import type { Props } from "@/domains/node";
-import { ResolvedProps } from "@/domains/resolved-props";
+import type { TokenRefs } from "@/domains/dcmp/css-declaration";
+import { CssDeclarations } from "@/domains/dcmp/css-declaration";
+import type { Props } from "@/domains/dcmp/node";
+import { ResolvedProps } from "@/domains/dcmp/resolved-props";
 import { BoxElement, TextElement } from "../index";
 
 /** カスタムプロパティ名の綴り方は出力層の知識なので、テストからも引数で渡す。 */

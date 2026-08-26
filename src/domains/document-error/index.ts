@@ -2,7 +2,7 @@ import {
   DesignDocument,
   type DesignDocumentValidationError,
   type DesignDocumentValidationErrorKind,
-} from "@/domains/design-document";
+} from "@/domains/dcmp/design-document";
 import type { JsonDecodeErrorKind } from "@/utils/Json";
 import { Option } from "@/utils/Option";
 

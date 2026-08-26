@@ -2,8 +2,8 @@ import { expect, test } from "vitest";
 import type {
   CssDeclaration,
   CssDeclarationName,
-} from "@/domains/css-declaration";
-import { CssDeclaration as Declaration } from "@/domains/css-declaration";
+} from "@/domains/dcmp/css-declaration";
+import { CssDeclaration as Declaration } from "@/domains/dcmp/css-declaration";
 import { BoxElement, CompiledElement, TextElement } from "../index";
 
 function style(

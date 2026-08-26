@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { DesignDocument } from "@/domains/design-document";
+import type { DesignDocument } from "@/domains/dcmp/design-document";
 import { DocumentSaveState } from "@/domains/document-save-state";
 import { FileValidity } from "@/domains/file-validity";
 import type { DocumentIpc } from "@/libs/document-ipc";

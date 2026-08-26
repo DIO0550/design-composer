@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { CssDeclaration } from "@/domains/css-declaration";
+import { CssDeclaration } from "@/domains/dcmp/css-declaration";
 import { BoxElement, CompiledElement, TextElement } from "../index";
 
 test("要素はインライン style を持つ div になる", () => {

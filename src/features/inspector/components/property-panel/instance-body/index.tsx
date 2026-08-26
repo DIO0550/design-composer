@@ -1,5 +1,5 @@
 import { TypeGlyph } from "@/components/type-glyph";
-import type { PropEdit } from "@/domains/node";
+import type { PropEdit } from "@/domains/dcmp/node";
 import { PropControl, type SelectionControls } from "@/domains/prop-control";
 import { ControlOffsetClass } from "../label-width";
 import { PropRow } from "../prop-row";

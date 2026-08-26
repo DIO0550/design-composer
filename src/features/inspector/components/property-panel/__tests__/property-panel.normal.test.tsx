@@ -2,9 +2,12 @@ import { screen, within } from "@testing-library/react";
 import { expect, test } from "vitest";
 import { pressedSegmentsOf } from "@/components/__tests__/segmented-controls";
 import { ColorSwatchTestId } from "@/components/color-swatch";
-import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import {
+  DesignDocument,
+  DocumentTemplate,
+} from "@/domains/dcmp/design-document";
+import type { TokenSet } from "@/domains/dcmp/token";
 import { DocumentSelection } from "@/domains/document-selection";
-import type { TokenSet } from "@/domains/token";
 import { renderPanel } from "./setup";
 
 /*

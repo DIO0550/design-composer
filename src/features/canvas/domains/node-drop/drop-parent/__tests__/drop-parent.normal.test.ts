@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { DesignDocument } from "@/domains/design-document";
+import { DesignDocument } from "@/domains/dcmp/design-document";
 import type { DraggedNode } from "@/features/canvas/domains/node-drop";
 import { Option } from "@/utils/Option";
 import { DropParent } from "../index";

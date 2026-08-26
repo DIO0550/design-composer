@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
-import { DesignDocument } from "@/domains/design-document";
-import type { TokenSet } from "@/domains/token";
+import { DesignDocument } from "@/domains/dcmp/design-document";
+import type { TokenSet } from "@/domains/dcmp/token";
 import { Result } from "@/utils/Result";
 import { DocumentHtml } from "../index";
 

@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
-import { Artboard } from "@/domains/artboard";
 import { TextElement } from "@/domains/compiled-element";
-import type { TokenRefs } from "@/domains/css-declaration";
+import { Artboard } from "@/domains/dcmp/artboard";
+import type { TokenRefs } from "@/domains/dcmp/css-declaration";
 import { CompiledArtboard } from "../index";
 
 /** カスタムプロパティ名の綴り方は出力層の知識なので、テストからも引数で渡す。 */

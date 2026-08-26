@@ -6,7 +6,10 @@ import {
   pressedSegmentsOf,
   segmentOf,
 } from "@/components/__tests__/segmented-controls";
-import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import {
+  DesignDocument,
+  DocumentTemplate,
+} from "@/domains/dcmp/design-document";
 import { DocumentSelection } from "@/domains/document-selection";
 import { PropertyPanel } from "../index";
 

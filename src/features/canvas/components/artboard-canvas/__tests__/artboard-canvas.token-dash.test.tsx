@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
-import { DesignDocument } from "@/domains/design-document";
+import { DesignDocument } from "@/domains/dcmp/design-document";
+import { TokenSet } from "@/domains/dcmp/token";
 import { DocumentSelection } from "@/domains/document-selection";
-import { TokenSet } from "@/domains/token";
 import { TokenSelection } from "@/domains/token-selection";
 import {
   canvasContent,

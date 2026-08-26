@@ -1,7 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
 import { LeftPaneShell } from "@/components/__stories__/left-pane-shell";
-import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import {
+  DesignDocument,
+  DocumentTemplate,
+} from "@/domains/dcmp/design-document";
 import { DocumentSelection } from "@/domains/document-selection";
 import { sampleSidebarSelection } from "@/features/sidebar/__stories__/sample-sidebar-document";
 import { DocumentTree } from "./index";

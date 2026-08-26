@@ -1,6 +1,9 @@
 import { screen } from "@testing-library/react";
 import { expect, test } from "vitest";
-import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import {
+  DesignDocument,
+  DocumentTemplate,
+} from "@/domains/dcmp/design-document";
 import { DocumentSelection } from "@/domains/document-selection";
 import { renderTitle } from "./setup";
 

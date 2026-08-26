@@ -1,7 +1,7 @@
 import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { DesignDocument } from "@/domains/design-document";
-import { PropEdit } from "@/domains/node";
+import { DesignDocument } from "@/domains/dcmp/design-document";
+import { PropEdit } from "@/domains/dcmp/node";
 import { SampleDocument } from "@/features/editor/__tests__/sample-document";
 import { type LeftPaneView, LeftPaneViewLabels } from "@/features/sidebar";
 import { changeFileExternally } from "@/libs/__tests__/document-change";

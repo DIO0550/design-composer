@@ -1,9 +1,12 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
-import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import {
+  DesignDocument,
+  DocumentTemplate,
+} from "@/domains/dcmp/design-document";
+import type { Props } from "@/domains/dcmp/node";
 import { DocumentSelection } from "@/domains/document-selection";
-import type { Props } from "@/domains/node";
 import { ShorthandLabels } from "../index";
 import { renderPanel } from "./setup";
 

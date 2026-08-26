@@ -2,15 +2,21 @@ import type {
   CssDeclaration as CssDeclarationType,
   CssProperty,
   TokenRefs,
-} from "@/domains/css-declaration";
-import { CssDeclaration, CssDeclarations } from "@/domains/css-declaration";
-import { CssDirection } from "@/domains/css-direction";
-import type { PropValue } from "@/domains/node";
-import { Padding } from "@/domains/padding";
-import { TokenPropKinds, type TokenPropName } from "@/domains/primitive-schema";
-import type { ResolvedProps } from "@/domains/resolved-props";
-import { Size } from "@/domains/size";
-import { TypographyField, TypographyToken } from "@/domains/token";
+} from "@/domains/dcmp/css-declaration";
+import {
+  CssDeclaration,
+  CssDeclarations,
+} from "@/domains/dcmp/css-declaration";
+import { CssDirection } from "@/domains/dcmp/css-direction";
+import type { PropValue } from "@/domains/dcmp/node";
+import { Padding } from "@/domains/dcmp/padding";
+import {
+  TokenPropKinds,
+  type TokenPropName,
+} from "@/domains/dcmp/primitive-schema";
+import type { ResolvedProps } from "@/domains/dcmp/resolved-props";
+import { Size } from "@/domains/dcmp/size";
+import { TypographyField, TypographyToken } from "@/domains/dcmp/token";
 import { Html } from "@/utils/Html";
 
 /**

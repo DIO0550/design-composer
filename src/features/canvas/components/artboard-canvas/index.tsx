@@ -1,7 +1,7 @@
 import { type CSSProperties, useMemo } from "react";
-import type { AxisLength } from "@/domains/axis-length";
+import type { AxisLength } from "@/domains/dcmp/axis-length";
+import type { PropEdit } from "@/domains/dcmp/node";
 import { DocumentSelection } from "@/domains/document-selection";
-import type { PropEdit } from "@/domains/node";
 import type { TokenSelection } from "@/domains/token-selection";
 import { CanvasView } from "@/features/canvas/domains/canvas-view";
 import { NodeDrag } from "@/features/canvas/domains/node-drag";

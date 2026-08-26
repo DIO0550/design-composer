@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { TokenSet } from "@/domains/token";
+import { TokenSet } from "@/domains/dcmp/token";
 import { TokenCss } from "../index";
 
 test("colors トークンは hex 値のまま CSS カスタムプロパティになる", () => {

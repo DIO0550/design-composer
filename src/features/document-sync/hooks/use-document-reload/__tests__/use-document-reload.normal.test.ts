@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { artboardContent } from "@/domains/__tests__/sample-document";
-import { Artboard } from "@/domains/artboard";
-import { DesignDocument } from "@/domains/design-document";
+import { Artboard } from "@/domains/dcmp/artboard";
+import { DesignDocument } from "@/domains/dcmp/design-document";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { changeExternally, Path, renderDocumentReload } from "./setup";
 

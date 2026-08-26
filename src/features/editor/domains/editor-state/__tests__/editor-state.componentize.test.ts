@@ -1,7 +1,10 @@
 import { expect, test } from "vitest";
-import { ComponentSet } from "@/domains/component";
-import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
-import { Node } from "@/domains/node";
+import { ComponentSet } from "@/domains/dcmp/component";
+import {
+  DesignDocument,
+  DocumentTemplate,
+} from "@/domains/dcmp/design-document";
+import { Node } from "@/domains/dcmp/node";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 import { nodeNamed } from "./setup";
@@ -11,7 +14,7 @@ import { nodeNamed } from "./setup";
  * docs/06-ui.md「部品化・解除」）。
  *
  * 切り出しそのものの規則（元の位置を参照ノードに置き換える・名前の衝突）は
- * `domains/design-document` のテストが持つ。ここで見るのは
+ * `domains/dcmp/design-document` のテストが持つ。ここで見るのは
  * 「選択中のものが部品になり、履歴と選択がどうなるか」だけ。
  */
 function setupState(): EditorState {

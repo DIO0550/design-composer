@@ -1,4 +1,4 @@
-import type { PrimitiveType } from "@/domains/primitive-schema";
+import type { PrimitiveType } from "@/domains/dcmp/primitive-schema";
 import { AssetRow } from "@/features/assets/components/asset-row";
 import type { AssetGrab } from "@/features/assets/types/AssetGrab";
 

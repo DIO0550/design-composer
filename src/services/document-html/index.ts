@@ -1,9 +1,9 @@
-import { Artboard } from "@/domains/artboard";
 import { CompiledArtboard } from "@/domains/compiled-artboard";
 import { BoxElement, CompiledElement } from "@/domains/compiled-element";
-import { CssDeclarations } from "@/domains/css-declaration";
-import type { DesignDocument } from "@/domains/design-document";
-import { ExpandedNode, ExpandedNodeError } from "@/domains/expanded-node";
+import { Artboard } from "@/domains/dcmp/artboard";
+import { CssDeclarations } from "@/domains/dcmp/css-declaration";
+import type { DesignDocument } from "@/domains/dcmp/design-document";
+import { ExpandedNode, ExpandedNodeError } from "@/domains/dcmp/expanded-node";
 import { NodeHtml, type ParentContext } from "@/services/node-html";
 import { type CssVariables, TokenCss } from "@/services/token-css";
 import { Html } from "@/utils/Html";

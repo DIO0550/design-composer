@@ -3,7 +3,7 @@ import {
   artboardContent,
   artboardDocument,
 } from "@/domains/__tests__/sample-document";
-import { DocumentTemplate } from "@/domains/design-document";
+import { DocumentTemplate } from "@/domains/dcmp/design-document";
 import { DocumentJson } from "@/libs/document-json";
 import { Result } from "@/utils/Result";
 import { OpenedDocument } from "../index";

@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
-import { Artboard } from "@/domains/artboard";
-import type { Node } from "@/domains/node";
+import { Artboard } from "@/domains/dcmp/artboard";
+import type { Node } from "@/domains/dcmp/node";
 import { Option } from "@/utils/Option";
 import { Selection } from "../index";
 

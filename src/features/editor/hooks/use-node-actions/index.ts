@@ -1,6 +1,6 @@
-import type { AxisLength } from "@/domains/axis-length";
-import type { ChildPosition } from "@/domains/child-position";
-import type { PropEdit } from "@/domains/node";
+import type { AxisLength } from "@/domains/dcmp/axis-length";
+import type { ChildPosition } from "@/domains/dcmp/child-position";
+import type { PropEdit } from "@/domains/dcmp/node";
 import type { NodeTemplate } from "@/domains/node-template";
 import { useEditor } from "@/features/editor/components/editor-provider";
 import { EditorState } from "@/features/editor/domains/editor-state";

@@ -1,15 +1,20 @@
-import { Artboard } from "@/domains/artboard";
-import type { AxisLength } from "@/domains/axis-length";
-import { ChildPosition } from "@/domains/child-position";
-import { DesignDocument } from "@/domains/design-document";
+import { Artboard } from "@/domains/dcmp/artboard";
+import type { AxisLength } from "@/domains/dcmp/axis-length";
+import { ChildPosition } from "@/domains/dcmp/child-position";
+import { DesignDocument } from "@/domains/dcmp/design-document";
+import type { Node, PropEdit } from "@/domains/dcmp/node";
+import {
+  Token,
+  type TokenRef,
+  TokenSet,
+  TokenValue,
+} from "@/domains/dcmp/token";
 import { DocumentError } from "@/domains/document-error";
 import type { DocumentReload } from "@/domains/document-reload";
 import { DocumentSelection } from "@/domains/document-selection";
 import { FileValidity } from "@/domains/file-validity";
-import type { Node, PropEdit } from "@/domains/node";
 import { NodeTemplate } from "@/domains/node-template";
 import { SelectionState } from "@/domains/selection-state";
-import { Token, type TokenRef, TokenSet, TokenValue } from "@/domains/token";
 import { TokenSelection } from "@/domains/token-selection";
 import type { Instant } from "@/domains/unit/instant";
 import { EditHistory } from "@/features/editor/domains/edit-history";

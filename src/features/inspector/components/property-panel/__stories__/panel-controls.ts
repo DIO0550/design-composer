@@ -1,4 +1,4 @@
-import { ShorthandNames } from "@/domains/primitive-schema";
+import { ShorthandNames } from "@/domains/dcmp/primitive-schema";
 import type {
   PropControl,
   PropControlSection,

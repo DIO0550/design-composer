@@ -1,4 +1,4 @@
-import type { DesignDocument } from "@/domains/design-document";
+import type { DesignDocument } from "@/domains/dcmp/design-document";
 import {
   type BoxShadowValue,
   ColorToken,
@@ -14,7 +14,7 @@ import {
   type TypographyField,
   TypographyFieldEdit,
   TypographyToken,
-} from "@/domains/token";
+} from "@/domains/dcmp/token";
 import { TokenSelection } from "@/domains/token-selection";
 import { Px } from "@/domains/unit/px";
 import { Option } from "@/utils/Option";

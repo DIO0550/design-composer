@@ -1,6 +1,9 @@
 import { expect, test } from "vitest";
-import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
-import { Node } from "@/domains/node";
+import {
+  DesignDocument,
+  DocumentTemplate,
+} from "@/domains/dcmp/design-document";
+import { Node } from "@/domains/dcmp/node";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 import { nodeNamed } from "./setup";

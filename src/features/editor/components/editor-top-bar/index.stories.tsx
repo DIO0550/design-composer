@@ -1,5 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import {
+  DesignDocument,
+  DocumentTemplate,
+} from "@/domains/dcmp/design-document";
 import type { DocumentError } from "@/domains/document-error";
 import { DocumentSaveState } from "@/domains/document-save-state";
 import { type Elapsed, ElapsedUnits } from "@/domains/unit/elapsed";

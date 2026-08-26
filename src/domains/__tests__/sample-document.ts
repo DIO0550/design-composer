@@ -1,5 +1,5 @@
-import { Artboard } from "@/domains/artboard";
-import { DesignDocument } from "@/domains/design-document";
+import { Artboard } from "@/domains/dcmp/artboard";
+import { DesignDocument } from "@/domains/dcmp/design-document";
 import type { OpenedDocument } from "@/domains/opened-document";
 import { DocumentJson } from "@/libs/document-json";
 

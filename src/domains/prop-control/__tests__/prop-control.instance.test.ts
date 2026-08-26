@@ -1,8 +1,11 @@
 import { expect, test } from "vitest";
-import type { ComponentSet } from "@/domains/component";
-import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import type { ComponentSet } from "@/domains/dcmp/component";
+import {
+  DesignDocument,
+  DocumentTemplate,
+} from "@/domains/dcmp/design-document";
+import type { Node } from "@/domains/dcmp/node";
 import { DocumentSelection } from "@/domains/document-selection";
-import type { Node } from "@/domains/node";
 import { Option } from "@/utils/Option";
 import {
   controlNamed,

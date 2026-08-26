@@ -1,4 +1,4 @@
-import type { DesignDocument } from "@/domains/design-document";
+import type { DesignDocument } from "@/domains/dcmp/design-document";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 

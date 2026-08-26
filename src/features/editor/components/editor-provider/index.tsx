@@ -5,7 +5,7 @@ import {
   useContext,
   useMemo,
 } from "react";
-import type { DesignDocument } from "@/domains/design-document";
+import type { DesignDocument } from "@/domains/dcmp/design-document";
 import type { EditorState } from "@/features/editor/domains/editor-state";
 import {
   type EditorAction,

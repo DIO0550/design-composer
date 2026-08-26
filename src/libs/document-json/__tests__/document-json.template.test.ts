@@ -1,5 +1,8 @@
 import { expect, test } from "vitest";
-import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import {
+  DesignDocument,
+  DocumentTemplate,
+} from "@/domains/dcmp/design-document";
 import { Result } from "@/utils/Result";
 import { DocumentJson } from "../index";
 

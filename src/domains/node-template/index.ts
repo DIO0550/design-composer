@@ -1,6 +1,6 @@
-import { DesignDocument } from "@/domains/design-document";
-import type { Node, Props } from "@/domains/node";
-import type { PrimitiveType } from "@/domains/primitive-schema";
+import { DesignDocument } from "@/domains/dcmp/design-document";
+import type { Node, Props } from "@/domains/dcmp/node";
+import type { PrimitiveType } from "@/domains/dcmp/primitive-schema";
 
 /**
  * これから挿入するノードの指定（docs/06-ui.md「編集操作の一覧」の挿入）。

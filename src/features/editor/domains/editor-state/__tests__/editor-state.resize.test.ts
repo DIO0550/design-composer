@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
-import { AxisLength } from "@/domains/axis-length";
-import { DesignDocument } from "@/domains/design-document";
-import { Node } from "@/domains/node";
+import { AxisLength } from "@/domains/dcmp/axis-length";
+import { DesignDocument } from "@/domains/dcmp/design-document";
+import { Node } from "@/domains/dcmp/node";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 

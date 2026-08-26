@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { PrimitiveTypes } from "@/domains/primitive-schema";
+import { PrimitiveTypes } from "@/domains/dcmp/primitive-schema";
 import { renderToolbar, toolbar } from "./setup";
 
 /**

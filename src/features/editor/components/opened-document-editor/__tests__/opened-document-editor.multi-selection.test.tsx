@@ -2,8 +2,11 @@ import { within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { currentRowNames } from "@/components/__tests__/row-names";
-import { Artboard } from "@/domains/artboard";
-import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import { Artboard } from "@/domains/dcmp/artboard";
+import {
+  DesignDocument,
+  DocumentTemplate,
+} from "@/domains/dcmp/design-document";
 import { highlightedNames } from "@/features/canvas/__tests__";
 import { canvasPane, propertyPane, renderOpenedDocument, tree } from "./setup";
 
