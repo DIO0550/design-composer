@@ -1,128 +1,118 @@
-# tauri-devcontainer-template
+# design-composer
 
-Tauri + React (TypeScript) 開発をすぐに始めるための **Dev Container 付きスターターテンプレート**です。
-Ubuntu ベースのコンテナに Tauri のビルドに必要なシステムライブラリ・Node.js・Rust ツールチェーンを組み込み、さらにフロントエンド（React 19 / Vite / Storybook / Biome / oxlint / Vitest）の設定一式を同梱しています。ホスト側に依存環境を入れずに、統一された開発環境を再現できます。
+ローカルで動く、宣言的データ駆動のデザインツール。**部品も画面も同じデータモデルで扱い、両方を主役にする。**
 
-## 含まれるツール
+スキーマで縛った宣言的データ（JSON）から、実 HTML/CSS をそのまま組み立てる。デザインの成果物はベクター画像ではなく、レンダリングにそのまま使える 1 つの JSON ファイルになる。
 
-| カテゴリ | ツール / バージョン |
+## コンセプト
+
+- **Figma との違い**: Figma はベクターで描き直すため実コードと切れる。design-composer は実 HTML/CSS をそのまま構成する。
+- **pattern-lab 系との違い**: パターンをドキュメントとして見せるのではなく、データから部品・画面を組み立てて編集できる。
+- **AI フレンドリー**: source of truth は JSON。可読性の受益者は AI と Git diff のレビューであり、人間の閲覧はアプリが担う（人間はファイルを直接読まない想定）。
+
+## ドキュメント（`.dcmp`）
+
+編集の実体はすべて「ドキュメント（JSON）への変更」で、GUI はその 1 クライアントに過ぎない（AI・外部エディタと対等）。
+
+- 拡張子 `.dcmp`、JSON（UTF-8）。**1 ドキュメント = 1 ファイル**で、外部ファイルへの依存を持たない
+- 明示的な保存操作は無い。編集はデバウンス付きで即座にファイルへ**自動保存**される（書き込みは一時ファイル + rename でアトミックに行う）
+- ファイルを watch し、**外部（AI・エディタ・git 操作）による変更を検知して再読み込み**する。不正な内容だった場合は最後に正常だった描画を保持してエラーを重ねて表示する
+
+フォーマットの詳細は [docs/01-file-format.md](docs/01-file-format.md)、保存モデルと外部編集の扱いは [docs/05-architecture.md](docs/05-architecture.md) を参照。
+
+## 技術スタック
+
+| 項目 | 内容 |
 | --- | --- |
-| OS | Ubuntu 24.04 |
-| Node.js | v24 (nodesource) |
-| パッケージマネージャー | pnpm |
-| Rust | stable (`rustup` / `rustfmt` / `clippy` / `rust-src`) |
-| Tauri CLI | v2 (`@tauri-apps/cli` / Node ベース。`pnpm tauri` で利用) |
-| バージョン管理 | Git |
-| GitHub CLI | gh |
-| フロントエンド | React 19 / Vite 8 / TypeScript 5.8 |
-| スタイル | Tailwind CSS v4 (`@tailwindcss/vite`。同梱・任意利用) |
-| Lint / Format | Biome / oxlint |
-| テスト | Vitest (happy-dom) / Playwright (ブラウザ依存パッケージ込み) |
-| UI カタログ | Storybook (ポート 6006 を転送済み) |
-| GUI 表示 | desktop-lite (noVNC / VNC。Tauri ウィンドウをブラウザで表示) |
-| ターミナル | tmux |
-| ネットワーク | ファイアウォール (外向き通信を許可リストで制限。iptables / ipset) |
+| デスクトップ | Tauri v2 |
+| フロントエンド | React 19 / Vite / TypeScript（strict） |
+| スタイル | Tailwind CSS v4 |
+| テスト | Vitest（happy-dom） / Playwright |
+| UI カタログ | Storybook |
+| Lint / Format | oxlint / Biome |
+| パッケージマネージャ | pnpm |
 
-## VS Code 拡張機能
+**スキーマ定義・検証・HTML/CSS へのコンパイルは TypeScript 側に置き、Rust は JSON の読み書きと file watch（永続化 I/O）だけを担う。** Rust に `.dcmp` の構造を教えず、IPC を渡るのは常に生の JSON 文字列とする。
 
-- [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
-- [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
-- [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) — 保存時に自動フォーマット
+外部ランタイム依存は原則として増やさない（React / Tauri 本体・Tailwind CSS と devDependencies を除く）。
 
-## 前提条件
+## 入手
 
-- [Docker](https://www.docker.com/)
-- [Visual Studio Code](https://code.visualstudio.com/)
-- [Dev Containers 拡張機能](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+[Releases](https://github.com/DIO0550/design-composer/releases) からダウンロードできる。
 
-## 使い方
-
-1. このリポジトリを **Use this template** でコピー、またはクローンします。
-2. VS Code でプロジェクトを開きます。
-3. コマンドパレット (`F1`) → **Dev Containers: Reopen in Container** を選択します。
-4. コンテナのビルドが完了すると、開発環境が利用可能になります。
-5. `pnpm install` で依存をインストールします。フロントエンド（`pnpm dev` / `pnpm storybook` / `pnpm test:run`）はこの時点で動きます。
-6. Rust/Tauri 側を初期化します（`pnpm tauri init` → `pnpm tauri dev`）。詳細は [TAURI_SETUP.md](TAURI_SETUP.md) を参照してください。
-
-以下のポートがホストへ自動転送されます。
-
-| ポート | 用途 |
+| プラットフォーム | 成果物 |
 | --- | --- |
-| 14000 | Vite 開発サーバー |
-| 14001 | Vite HMR |
-| 6006 | Storybook (任意) |
-| 16080 | デスクトップ表示 (noVNC / ブラウザ) |
-| 15901 | デスクトップ表示 (VNC クライアント) |
+| macOS（Apple Silicon） | `.app` / `.dmg` |
+| Windows（x86_64） | `.exe`（zip） |
 
-## Tauri ウィンドウの表示（コンテナ内 GUI）
+いずれも**未署名ビルド**のため、初回起動時に OS の警告が出る。
 
-Tauri はデスクトップ GUI アプリのため、コンテナ内に仮想デスクトップ（[desktop-lite](https://github.com/devcontainers/features/tree/main/src/desktop-lite)）を同梱しています。`pnpm tauri dev` で起動したウィンドウは、ブラウザで <http://localhost:16080>（パスワード: `vscode`）、または VNC クライアントで `localhost:15901` から確認できます。
+## 開発
 
-WebView（WebKitGTK）の描画向けに `WEBKIT_DISABLE_DMABUF_RENDERER` / `WEBKIT_DISABLE_COMPOSITING_MODE` / `DISPLAY=:1` を `devcontainer.json` の `containerEnv` に設定済みです。
+Dev Container に入った状態で、リポジトリのルートから実行する。
 
-## ネットワークファイアウォール（外向き通信の制限）
-
-コンテナからの外向き通信（egress）を、`.devcontainer/init-firewall.sh` で **許可リスト方式** に制限しています。開発に必要な宛先（GitHub / npm レジストリ / crates.io / rustup / Anthropic API など）だけを許可し、それ以外への通信はすべて遮断します。意図しない外部への通信を防ぐための安全策です。
-
-- 適用タイミング: コンテナ起動時（`.devcontainer/entrypoint.sh` が root で実行し、その中で `init-firewall.sh` を適用）。再起動のたびに再適用されます。
-- 仕組み: `iptables` でデフォルト DROP にし、`ipset` に登録した許可先（GitHub の公開 IP レンジ + 許可ドメインの解決結果）だけを ACCEPT します。DNS・localhost・確立済みコネクション・ホストネットワークは常に許可します。
-- 必要な権限: `docker-compose.yml` の `cap_add` に `NET_ADMIN` / `NET_RAW` を付与しています。
-
-許可先を追加したいときは、`.devcontainer/init-firewall.sh` の `ALLOWED_DOMAINS` 配列にドメインを追記してください。ファイアウォールが不要な場合は、`.devcontainer/entrypoint.sh` のファイアウォール適用部分と、`docker-compose.yml` の `cap_add` を削除します。
-
-## sudo を使わない設計（特権分離）
-
-開発セッションのユーザー（`vscode`）には **sudo 権限を付与していません**。特権が必要な初期化（VNC デスクトップ / ファイアウォール）は、コンテナ起動時に root として動く `.devcontainer/entrypoint.sh` で実行します。
-
-- ビルド時のセットアップスクリプトのためだけに sudo を使い、`Dockerfile` の最後で `/etc/sudoers.d/vscode` を削除して実行時には残しません。
-- コンテナ本体プロセスは root（エントリポイント）で動きますが、VS Code のセッション・ターミナルは `devcontainer.json` の `remoteUser: vscode` で動くため、日常操作は非 root ユーザーです。
-- 実行時に root 権限が必要な作業を追加したい場合は、`entrypoint.sh`（root で実行される）に処理を足すか、`Dockerfile` の `rm -f /etc/sudoers.d/$USERNAME` を削除して従来どおり sudo を許可します。
-
-## プロジェクト構成
-
-```
-.devcontainer/
-├── devcontainer.json   # Dev Container 設定
-├── docker-compose.yml  # Docker Compose 定義
-├── entrypoint.sh       # 起動時に root で特権初期化(VNC/firewall)を実行
-├── init-firewall.sh    # 外向き通信を許可リストで制限するファイアウォール
-└── node/
-    └── Dockerfile      # コンテナイメージ定義
-.storybook/             # Storybook 設定 (main.ts / preview.ts)
-.vscode/
-└── extensions.json     # 推奨拡張機能
-src/                    # React フロントエンド (create-tauri-app デフォルト構成)
-├── main.tsx            # エントリーポイント
-├── App.tsx             # ルートコンポーネント (greet デモ)
-├── App.css             # スタイル
-├── assets/             # 画像アセット (react.svg など)
-└── vite-env.d.ts       # Vite 型定義
-src-tauri/              # Tauri (Rust 側)。tauri init 標準構成を同梱
-├── Cargo.toml          # Rust 依存 / クレート設定
-├── tauri.conf.json     # Tauri 設定 (ポート / コマンド / アプリ名)
-├── build.rs            # ビルドスクリプト
-├── capabilities/       # 権限 (capability) 定義
-├── icons/              # アプリアイコン (デフォルト同梱)
-└── src/                # Rust エントリ (main.rs / lib.rs。greet コマンド)
-public/                 # 静的アセット (tauri.svg / vite.svg)
-index.html              # Vite エントリ HTML
-package.json            # 依存 / スクリプト
-vite.config.ts          # Vite + Vitest 設定 (ポート 14000/14001)
-tsconfig*.json          # TypeScript 設定
-biome.json / .oxlintrc.json  # Lint / Format 設定
-TAURI_SETUP.md          # セットアップ / 開発コマンド
+```bash
+pnpm install
+pnpm run tauri dev
 ```
 
-`src-tauri/`（Rust 側）は `pnpm tauri init` で生成した標準構成を同梱済みです。`pnpm install` 後、そのまま `pnpm tauri dev` で起動できます。詳細は [TAURI_SETUP.md](TAURI_SETUP.md) を参照してください。
+コマンドの一覧（開発サーバー・型チェック・テスト・Lint・Storybook）は [AGENTS.md](AGENTS.md) の「Common Commands」にある。依存インストールと Tauri 側の設定項目は [TAURI_SETUP.md](TAURI_SETUP.md) を参照。
 
-## カスタマイズ
+## 開発環境（Dev Container）
 
-- **Node.js のバージョン**: `.devcontainer/node/Dockerfile` の `ARG NODE_VERSION` を変更します。
-- **転送ポート**: アプリのポート（`14000`/`14001`）は `.devcontainer/devcontainer.json` の `forwardPorts` と `.devcontainer/docker-compose.yml` の `ports` を揃えて変更します。GUI ポート（`16080`/`15901`）は `devcontainer.json` の `features` の `webPort` / `vncPort` と `forwardPorts` を揃えます。
-- **GUI パスワード**: `devcontainer.json` の `features` → `desktop-lite` → `password` で変更します。GUI が不要な場合は `features` / `containerEnv` / GUI ポートに加えて、`.devcontainer/entrypoint.sh` の desktop-init 実行部分を削除します。
-- **ファイアウォール許可先**: `.devcontainer/init-firewall.sh` の `ALLOWED_DOMAINS` 配列で追加・削除します。ファイアウォール自体が不要な場合は `.devcontainer/entrypoint.sh` の該当部分と `docker-compose.yml` の `cap_add` を削除します。
-- **sudo 権限**: 既定では実行時ユーザー(`vscode`)に sudo を付与しません（`Dockerfile` 末尾で sudoers を削除）。従来どおり sudo を使いたい場合は、その `rm -f /etc/sudoers.d/$USERNAME` を削除します。
-- **セットアップスクリプト**: `Dockerfile` / `devcontainer.json` はコンテナ構築時に外部 gist（リポジトリオーナーの gist）から gh / pnpm / AI ツール / tmux / Playwright などのセットアップスクリプトを取得します。用途に応じて差し替え・削除してください。
+Ubuntu 24.04 ベースのコンテナに、Tauri のビルドに必要なシステムライブラリ・Node.js 24・Rust ツールチェーンを組み込んである（[`.devcontainer/`](.devcontainer/)）。VS Code でプロジェクトを開き、コマンドパレット（`F1`）→ **Dev Containers: Reopen in Container** を選ぶ。
+
+| ポート | 用途 | 経路 |
+| --- | --- | --- |
+| 14000 | Vite 開発サーバー | `docker-compose.yml` の `ports` |
+| 14001 | Vite HMR | `docker-compose.yml` の `ports` |
+| 6006 | Storybook | `docker-compose.yml` の `ports` |
+| 16080 | デスクトップ表示（noVNC / ブラウザ） | `devcontainer.json` の `forwardPorts` |
+| 15901 | デスクトップ表示（VNC クライアント） | `devcontainer.json` の `forwardPorts` |
+
+- **Tauri ウィンドウの表示**: GUI アプリなのでコンテナ内に仮想デスクトップ（desktop-lite）を同梱している。表示方法と WebView 向けの環境変数は [TAURI_SETUP.md](TAURI_SETUP.md) にある
+- **ネットワークファイアウォール**: コンテナからの外向き通信を [`.devcontainer/init-firewall.sh`](.devcontainer/init-firewall.sh) で許可リスト方式に制限している。許可先の追加はこのファイルの `ALLOWED_DOMAINS` 配列で行う
+- **sudo を使わない設計**: 開発セッションのユーザー（`vscode`）に sudo 権限を付与していない。特権が必要な初期化は、コンテナ起動時に root で動く [`.devcontainer/entrypoint.sh`](.devcontainer/entrypoint.sh) が行う
+
+## リポジトリ構成
+
+```
+src/                # React フロントエンド
+├── app/            # エントリ層（main.tsx / App.tsx・Provider の組み立て）
+├── features/       # ユースケース単位の feature
+├── domains/        # 複数 feature から使われるドメインオブジェクト
+├── services/       # 複数ドメインを組み合わせるロジック
+├── components/     # 汎用UIコンポーネント
+├── hooks/          # 汎用カスタムフック
+├── libs/           # 外部世界との境界（Tauri API・I/O・外部フォーマットの解釈）
+├── types/          # ロジックを持たない型定義
+└── utils/          # 汎用純粋関数
+src-tauri/          # Tauri（Rust 側）。永続化 I/O のみ
+docs/               # 仕様書
+rules/              # 実装規約（常時ロード）
+harness/            # 判例・git hooks・振り返りの記録
+.claude/            # サブエージェント・フック・スキル
+.storybook/         # Storybook 設定
+.devcontainer/      # Dev Container 設定
+.github/            # CI ワークフローとスクリプト
+```
+
+各フォルダの責務と依存方向は [rules/architecture.md](rules/architecture.md) が規定する。
+
+## 仕様書
+
+仕様の拠り所は [`docs/`](docs/) の `00-overview.md` 〜 `06-ui.md`（概要・ドキュメントフォーマット・データモデル・スキーマ・トークン・アーキテクチャ・UI）。各ファイルの内容と決定状況は [docs/00-overview.md](docs/00-overview.md) にまとまっている。
+
+**画面の見た目・構成の拠り所は [`docs/Design Composer.html`](docs/Design%20Composer.html)**（UI 案のプロトタイプ）。文章の仕様書が規定するのは何ができるかで、それをどう見せるかはこのファイルが持つ。
+
+## 実装規約
+
+このリポジトリの実装（人・AI を問わない）は [AGENTS.md](AGENTS.md) の規約に従う。
+
+- [`rules/`](rules/) — アーキテクチャ・コーディング・命名・テスト・hooks・コンポーネント・UI 表示確認の**規範**
+- [`harness/case-law/`](harness/case-law/) — 過去に指摘された NG / OK の**実例**（規範と分けて、常時ロードしない）
+- [`harness/githooks/`](harness/githooks/) — push 前の検査（型チェック・Lint・テスト規約・doc コメント）
+- [`.claude/skills/`](.claude/skills/) — 実装フロー・振り返りの記録・ハーネスの見直しの手順
 
 ## ライセンス
 
