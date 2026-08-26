@@ -25,10 +25,8 @@ bash harness/records/count.sh
 分類ごとに「**最後の介入以降**の再発数」「そのうち人・bot まで届いた件数(すり抜け)」
 「通算」「介入後の記録の本数」「前回置いた層」を出す。
 
-**すり抜けを別に数えるのは、同じ分類でも誰が見つけたかで意味が正反対になるため。**
-`plan-reviewer` / `implementation-reviewer` が見つけたなら観点が効いた証拠、人や bot の
-レビューまで届いたならその 2 つが捕まえられなかった証拠になる。混ぜて数えると、
-効いている観点をさらに厚くして再発が止まらない。
+**すり抜けを別に数える理由**は
+`.claude/skills/harness-record/templates/record.md`「出どころの語彙」。
 判断の手順は `.claude/skills/harness-growth/SKILL.md`「Step 1」「Step 2」。
 
 **通算ではなく再発で判断する。** 通算は単調増加するので、介入が効いたかどうかを表さない。

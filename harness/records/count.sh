@@ -9,8 +9,9 @@
 #   - 対策済: `<分類>` 層=<層> at pr-<番号> … その回に介入したこと
 #
 # 使い方:
-#   count.sh            分類ごとの再発数・すり抜け・通算・以降・最終介入を出す
-#   count.sh --unused   語彙表にあるが記録に 1 件も出ていない分類を出す（Step 3 の棚卸し）
+#   count.sh            分類ごとの再発数・すり抜け・通算・以降・最終介入を出す（増やす側）
+#   count.sh --shrink   縮める側の条件を数字で出す（Step 3 の棚卸し。--unused を含む）
+#   count.sh --unused   語彙表にあるが記録に 1 件も出ていない分類だけを出す
 #
 # 出力の列:
 #   再発      最後の介入より後の記録に出た件数。2a / 2b / 2c の判断はこれで行う
@@ -26,19 +27,17 @@ cd "$(dirname "$0")"
 
 vocabulary="../../.claude/skills/harness-record/templates/record.md"
 
-# --unused: 語彙表にあるのに記録へ 1 件も出ていない分類。
+# 語彙表にあるのに記録へ 1 件も出ていない分類を 1 行 1 件で返す。
 # 「効いているから 0」と「読まれていないから 0」は記録では区別できないので、
 # 強制の有無での切り分けは harness-growth の Step 3 が行う。
-if [ "${1:-}" = "--unused" ]; then
+unused_tags() {
   used="$(grep -h '^- 分類: `' pr-*.md | sed 's/^- 分類: `\([^`]*\)`.*/\1/' | sort -u)"
-  printf '%s\n' "記録に 1 件も出ていない分類（語彙表: ${vocabulary}）"
   # 「分類の語彙」の表だけを読む（同じ書式の「層の語彙」の表を拾わないため）
   awk '/^## 分類の語彙/{inside=1; next} /^## /{inside=0} inside' "$vocabulary" \
     | sed -n 's/^| `\([a-z-]*\)` | .*/\1/p' | sort -u | while read -r tag; do
-    printf '%s\n' "$used" | grep -qx "$tag" || printf '  %s\n' "$tag"
+    printf '%s\n' "$used" | grep -qx "$tag" || printf '%s\n' "$tag"
   done
-  exit 0
-fi
+}
 
 # 1 つの記録の中で「分類」行と、その次に現れる「出どころ」行が指摘 1 件の対になる。
 # 指定した分類の件数と、そのうち出どころが人・bot だった件数を "<件数> <すり抜け>" で返す。
@@ -74,6 +73,9 @@ count_tag() {
   ' "$1"
 }
 
+# 分類ごとの集計行を返す（列は「出力の列」のとおり・並べ替えは呼び出し側で行う）。
+# 既定の表と --shrink の両方が読むので、数え方をここ 1 箇所に持つ。
+summary_rows() {
 tags="$(grep -h '^- 分類: `' pr-*.md | sed 's/^- 分類: `\([^`]*\)`.*/\1/' | sort -u)"
 
 body=""
@@ -110,7 +112,46 @@ EOF
     "$recurrence" "$escape" "$total" "$after" "$tag" "$intervention")
 "
 done
+printf '%s' "$body"
+}
+
+# --unused: 語彙表にあるのに記録へ 1 件も出ていない分類。
+if [ "${1:-}" = "--unused" ]; then
+  printf '%s\n' "記録に 1 件も出ていない分類（語彙表: ${vocabulary}）"
+  unused_tags | sed 's/^/  /'
+  exit 0
+fi
+
+# --shrink: 縮める側の条件を数字で出す（harness-growth の SKILL.md「Step 3」）。
+#
+# 増やす側は count.sh が数字を出して 2a / 2b / 2c が分岐するのに対し、縮める側は
+# 条件が満たされているかを目で確かめる形だったため、一度も発火していなかった
+# （rules/ と AGENTS.md が正味マイナスになったコミットは全履歴で 0 件）。
+# 同じように数字で出して、判断の入力を揃える。
+if [ "${1:-}" = "--shrink" ]; then
+  printf '%s\n\n' "縮める候補（harness-growth の SKILL.md「Step 3」）"
+
+  # 効いている対策は、その層より下に同内容の記述を二重に持つ理由が無い。
+  printf '%s\n' "1. 効いている対策（以降 10 本以上・再発 0）— その対策より下の層の記述を削る"
+  proven="$(summary_rows | awk '$1 == 0 && $4 >= 10 {printf "     %-28s 以降=%-4s 最終介入=%s\n", $5, $4, $6}')"
+  printf '%s\n\n' "${proven:-     該当なし}"
+
+  # 足したばかりの語彙は必ずここに出るので、割った回の分を除いてから読む。
+  printf '%s\n' "2. 未使用の分類 — 対応する rules/ の節を縮める候補"
+  printf '%s\n' "   ※ 2c / 逃し弁で語彙を割った回に足した分は必ずここに出る。除いてから読む"
+  unused="$(unused_tags | sed 's/^/     /')"
+  printf '%s\n\n' "${unused:-     該当なし}"
+
+  printf '%s\n' "3. 常時ロードの行数"
+  loaded="$(cd ../.. && wc -l AGENTS.md rules/*.md | tail -1 | awk '{print $1}')"
+  growth="$(wc -l < ../../.claude/skills/harness-growth/SKILL.md)"
+  printf '     %-34s %4s / %s 行%s\n' "AGENTS.md + rules/" "$loaded" 900 \
+    "$([ "$loaded" -gt 900 ] && printf ' ← 超過' || true)"
+  printf '     %-34s %4s / %s 行%s\n' "harness-growth/SKILL.md" "$growth" 200 \
+    "$([ "$growth" -gt 200 ] && printf ' ← 超過' || true)"
+  exit 0
+fi
 
 printf '%s\n' "再発  すり抜け  通算  以降  分類                   最終介入"
 # 再発が同数なら、すり抜けが出ている分類を上に出す（効いていない側が分かっているため）
-printf '%s' "$body" | sort -k1,1rn -k2,2rn
+summary_rows | sort -k1,1rn -k2,2rn
