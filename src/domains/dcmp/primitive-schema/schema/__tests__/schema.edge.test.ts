@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 import { PrimitiveSchema, PrimitiveTypes } from "../index";
 
 test("プリミティブ語彙は Box と Text の2種類に閉じている", () => {
-  expect(PrimitiveTypes).toEqual(["Box", "Text"]);
+  expect(Object.values(PrimitiveTypes)).toEqual(["Box", "Text"]);
 });
 
 test("Box は子要素を持てる", () => {

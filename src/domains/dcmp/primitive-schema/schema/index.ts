@@ -1,10 +1,21 @@
+import type { ValueOf } from "@/types/ValueOf";
 import { type PropDefinitionRecord, ShorthandNames } from "../prop-definition";
 
-/** 走査に使う実行時のリスト。`PrimitiveType` はここから導出し、二重管理しない。 */
-export const PrimitiveTypes = ["Box", "Text"] as const;
+/**
+ * primitive の型を名前で指すための対応表。`PrimitiveType` はここから導出し、
+ * 二重管理しない。走査するときは `Object.values(PrimitiveTypes)` で並びにする。
+ *
+ * Why not: 過不足を縛る `satisfies` を付けない。`PrimitiveType` を自身から導出して
+ * いるので `Record<Capitalize<PrimitiveType>, PrimitiveType>` が循環する。
+ * 語彙が 2 種類に閉じていることは `__tests__/schema.edge.test.ts` が押さえる。
+ */
+export const PrimitiveTypes = {
+  Box: "Box",
+  Text: "Text",
+} as const;
 
 /** 組み込みで用意されているノードの型（docs/02「プリミティブ」）。 */
-export type PrimitiveType = (typeof PrimitiveTypes)[number];
+export type PrimitiveType = ValueOf<typeof PrimitiveTypes>;
 
 /** 1つの primitive の仕様。子を持てるかと、受け付ける props を宣言する。 */
 export type PrimitiveSchema = Readonly<{
@@ -149,7 +160,7 @@ export const PrimitiveSchema = {
 
   /** その名前が primitive の型か（ファイル由来の未知の type を弾く境界）。 */
   isPrimitiveType(type: string): type is PrimitiveType {
-    return (PrimitiveTypes as readonly string[]).includes(type);
+    return (Object.values(PrimitiveTypes) as readonly string[]).includes(type);
   },
 
   /**

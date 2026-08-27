@@ -40,7 +40,7 @@ export function AssetsPanel({
 }>) {
   const [query, setQuery] = useState("");
 
-  const matchedTypes = PrimitiveTypes.filter((type) =>
+  const matchedTypes = Object.values(PrimitiveTypes).filter((type) =>
     StringEx.includesIgnoreCase(type, query),
   );
   const matchedAssets = assets.filter((asset) =>

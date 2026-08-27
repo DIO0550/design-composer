@@ -1,5 +1,6 @@
 import { Px } from "@/domains/unit/px";
 import type { Brand } from "@/types/Brand";
+import type { ValueOf } from "@/types/ValueOf";
 import {
   Json,
   type JsonCursor,
@@ -52,21 +53,26 @@ export const Blur = {
 } as const;
 
 /**
- * 影が持つフィールド(docs/04-tokens.md「shadows」)。
- * `ShadowField` はここから導出し、フィールドを二重管理しない。
- * `satisfies` で ShadowToken に無いフィールドが混ざらないことを、
- * 網羅は `__tests__/shadow.type.test.ts` の型テストで担保する。
+ * 影が持つフィールドを名前で指すための対応表(docs/04-tokens.md「shadows」)。
+ * `ShadowField` はここから導出し、フィールドを二重管理しない。過不足とキーの綴りは
+ * `Record<Capitalize<keyof Required<ShadowToken>>, keyof Required<ShadowToken>>` が
+ * コンパイルエラーにする。
+ *
+ * 並びが要るときは `ShadowToken.fields()` を使う。ここを直接走査する入口と
+ * 分けているのは、並びの公開 API が既に `ShadowToken` 側にあるため。
  */
-const ShadowTokenFields = [
-  "x",
-  "y",
-  "blur",
-  "spread",
-  "color",
-] as const satisfies readonly (keyof Required<ShadowToken>)[];
+export const ShadowTokenFields = {
+  X: "x",
+  Y: "y",
+  Blur: "blur",
+  Spread: "spread",
+  Color: "color",
+} as const satisfies Readonly<
+  Record<Capitalize<keyof Required<ShadowToken>>, keyof Required<ShadowToken>>
+>;
 
 /** 影が持つフィールドの名前。 */
-export type ShadowField = (typeof ShadowTokenFields)[number];
+export type ShadowField = ValueOf<typeof ShadowTokenFields>;
 
 /**
  * 影の1フィールドの書き換え。
@@ -121,7 +127,7 @@ export type BoxShadowValue = `${Px} ${Px} ${Px} ${Px} ${string}`;
 /** 影の値の読み書き・`box-shadow` への展開と、JSON 表現との相互変換。 */
 export const ShadowToken = {
   fields(): readonly ShadowField[] {
-    return ShadowTokenFields;
+    return Object.values(ShadowTokenFields);
   },
 
   /** 省略された spread は 0 とみなす(docs/04-tokens.md)。 */
@@ -199,7 +205,7 @@ export const ShadowToken = {
           }),
         ),
         record,
-        ShadowTokenFields,
+        Object.values(ShadowTokenFields),
       ),
     );
   },

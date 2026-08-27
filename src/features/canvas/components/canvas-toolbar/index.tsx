@@ -169,7 +169,7 @@ export function CanvasToolbar({
       className="flex h-11 items-center gap-0.5 rounded-[13px] bg-white px-1.5 shadow-[0_5px_18px_rgba(0,0,0,0.18),0_0_0_0.5px_rgba(0,0,0,0.06)]"
     >
       <AddArtboardButton onClick={onAddArtboard} />
-      {PrimitiveTypes.map((type) => (
+      {Object.values(PrimitiveTypes).map((type) => (
         <PrimitiveInsertButton
           key={type}
           type={type}
