@@ -31,7 +31,9 @@ import { Option } from "@/utils/Option";
  * パネル側にも書かない。
  *
  * ここが持つのは props の編集規則（値域・既定・`enabledWhen`・`group`・`shorthand`）
- * で、いずれもスキーマの性質なので `src/domains/` に置く。人が読む綴り（未設定の
+ * で、いずれもスキーマの性質なので `src/domains/` に置く。カテゴリが `dcmp` ではなく
+ * `session` なのは、**今の選択に対して**何を出すかを決める側で、`document-selection`
+ * を引くため（`rules/architecture.md`「domains のカテゴリ」）。人が読む綴り（未設定の
  * ラベル・不揃いの綴り・単位）と、空欄をどう読むかは持たず、パネル側に残す
  * （`rules/architecture.md`「表示のための綴りをドメインへ持ち込まない」
  * 「入力欄の約束事をドメインへ持ち込まない」）。

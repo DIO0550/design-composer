@@ -9,6 +9,10 @@ import type { PrimitiveType } from "@/domains/dcmp/primitive-schema";
  * 直和にすることで「両方持つ」「どちらも持たない」指定を表現できなくする。
  * 名前を持たないのは、一意な名前が挿入先のドキュメントを見ないと決まらないため
  * （採番は `toNode` が行う）。
+ *
+ * カテゴリは `session`。import は `dcmp` だけなので機械では決まらないが、これは
+ * ファイルに書かれる値ではなく**編集操作の指定**（何を挿すかという編集中の意図）で、
+ * `.dcmp` に現れない（`rules/architecture.md`「domains のカテゴリ」）。
  */
 export type NodeTemplate =
   | Readonly<{ kind: "primitive"; type: PrimitiveType }>
