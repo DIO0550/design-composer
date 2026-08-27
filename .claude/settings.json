@@ -100,6 +100,10 @@
           {
             "type": "command",
             "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/session-url-notice.sh\""
+          },
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/record-firings.sh\""
           }
         ]
       }
@@ -176,6 +180,15 @@
           {
             "type": "command",
             "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/post-merge-review.sh\""
+          }
+        ]
+      },
+      {
+        "matcher": "Skill|Task|Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/record-firings.sh\""
           }
         ]
       }
