@@ -24,7 +24,12 @@
       "files": ["src/domains/unit/**/*.ts", "src/domains/unit/**/*.tsx"],
       "rules": {
         "no-restricted-imports": ["error", { "patterns": [
-          { "group": ["@/domains/dcmp/**", "@/domains/compiled/**", "@/domains/session/**"], "message": "unit は他のカテゴリを import できません（rules/architecture.md「domains のカテゴリ」）" }
+          { "group": ["**/services/**", "@/services/**", "@/services"], "message": "domains は services を import できません（rules/architecture.md「依存方向のルール」）" },
+          { "group": ["**/features/**", "@/features/**", "@/features"], "message": "domains は features を import できません（rules/architecture.md「依存方向のルール」）" },
+          { "group": ["**/libs/**", "@/libs/**", "@/libs"], "message": "domains は libs（I/O・外部フォーマットの境界）を import できません" },
+          { "group": ["react", "react/*", "react-dom", "react-dom/*"], "message": "domains は React に依存できません" },
+          { "group": ["@tauri-apps/**"], "message": "domains は Tauri API に依存できません" },
+          { "group": ["**/dcmp/**", "@/domains/dcmp/**", "**/compiled/**", "@/domains/compiled/**", "**/session/**", "@/domains/session/**"], "message": "unit は他のカテゴリを import できません（rules/architecture.md「domains のカテゴリ」）" }
         ] }]
       }
     },
@@ -32,7 +37,12 @@
       "files": ["src/domains/dcmp/**/*.ts", "src/domains/dcmp/**/*.tsx"],
       "rules": {
         "no-restricted-imports": ["error", { "patterns": [
-          { "group": ["@/domains/compiled/**", "@/domains/session/**"], "message": "dcmp が import してよいのは unit だけです（rules/architecture.md「domains のカテゴリ」）" }
+          { "group": ["**/services/**", "@/services/**", "@/services"], "message": "domains は services を import できません（rules/architecture.md「依存方向のルール」）" },
+          { "group": ["**/features/**", "@/features/**", "@/features"], "message": "domains は features を import できません（rules/architecture.md「依存方向のルール」）" },
+          { "group": ["**/libs/**", "@/libs/**", "@/libs"], "message": "domains は libs（I/O・外部フォーマットの境界）を import できません" },
+          { "group": ["react", "react/*", "react-dom", "react-dom/*"], "message": "domains は React に依存できません" },
+          { "group": ["@tauri-apps/**"], "message": "domains は Tauri API に依存できません" },
+          { "group": ["**/compiled/**", "@/domains/compiled/**", "**/session/**", "@/domains/session/**"], "message": "dcmp が import してよいのは unit だけです（rules/architecture.md「domains のカテゴリ」）" }
         ] }]
       }
     },
@@ -40,7 +50,12 @@
       "files": ["src/domains/compiled/**/*.ts", "src/domains/compiled/**/*.tsx"],
       "rules": {
         "no-restricted-imports": ["error", { "patterns": [
-          { "group": ["@/domains/session/**"], "message": "compiled は session を import できません（rules/architecture.md「domains のカテゴリ」）" }
+          { "group": ["**/services/**", "@/services/**", "@/services"], "message": "domains は services を import できません（rules/architecture.md「依存方向のルール」）" },
+          { "group": ["**/features/**", "@/features/**", "@/features"], "message": "domains は features を import できません（rules/architecture.md「依存方向のルール」）" },
+          { "group": ["**/libs/**", "@/libs/**", "@/libs"], "message": "domains は libs（I/O・外部フォーマットの境界）を import できません" },
+          { "group": ["react", "react/*", "react-dom", "react-dom/*"], "message": "domains は React に依存できません" },
+          { "group": ["@tauri-apps/**"], "message": "domains は Tauri API に依存できません" },
+          { "group": ["**/session/**", "@/domains/session/**"], "message": "compiled は session を import できません（rules/architecture.md「domains のカテゴリ」）" }
         ] }]
       }
     },
