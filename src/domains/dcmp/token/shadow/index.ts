@@ -54,14 +54,16 @@ export const Blur = {
 
 /**
  * 影が持つフィールドを名前で指すための対応表(docs/04-tokens.md「shadows」)。
- * `ShadowField` はここから導出し、フィールドを二重管理しない。過不足とキーの綴りは
- * `Record<Capitalize<keyof Required<ShadowToken>>, keyof Required<ShadowToken>>` が
- * コンパイルエラーにする。
+ * `ShadowField` はここから導出し、フィールドを二重管理しない。
  *
- * 並びが要るときは `ShadowToken.fields()` を使う。ここを直接走査する入口と
- * 分けているのは、並びの公開 API が既に `ShadowToken` 側にあるため。
+ * `satisfies` が見るのは**キーの過不足と綴り**だけで、キーに割り当てた値がずれても
+ * ここでは落ちない。**値の網羅**は `__tests__/shadow.type.test.ts` の型テスト
+ * (`ShadowField` == `keyof Required<ShadowToken>`)で担保する。
+ *
+ * 並びが要るときは `ShadowToken.fields()` を使う(このファイルの中も含む)。
+ * `Object.values` をそこ 1 箇所に閉じ、並びを引く経路を 2 通りにしない。
  */
-export const ShadowTokenFields = {
+export const ShadowFields = {
   X: "x",
   Y: "y",
   Blur: "blur",
@@ -72,7 +74,7 @@ export const ShadowTokenFields = {
 >;
 
 /** 影が持つフィールドの名前。 */
-export type ShadowField = ValueOf<typeof ShadowTokenFields>;
+export type ShadowField = ValueOf<typeof ShadowFields>;
 
 /**
  * 影の1フィールドの書き換え。
@@ -127,7 +129,7 @@ export type BoxShadowValue = `${Px} ${Px} ${Px} ${Px} ${string}`;
 /** 影の値の読み書き・`box-shadow` への展開と、JSON 表現との相互変換。 */
 export const ShadowToken = {
   fields(): readonly ShadowField[] {
-    return Object.values(ShadowTokenFields);
+    return Object.values(ShadowFields);
   },
 
   /** 省略された spread は 0 とみなす(docs/04-tokens.md)。 */
@@ -205,7 +207,7 @@ export const ShadowToken = {
           }),
         ),
         record,
-        Object.values(ShadowTokenFields),
+        ShadowToken.fields(),
       ),
     );
   },

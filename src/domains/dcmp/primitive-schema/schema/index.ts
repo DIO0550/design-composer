@@ -3,11 +3,13 @@ import { type PropDefinitionRecord, ShorthandNames } from "../prop-definition";
 
 /**
  * primitive の型を名前で指すための対応表。`PrimitiveType` はここから導出し、
- * 二重管理しない。走査するときは `Object.values(PrimitiveTypes)` で並びにする。
+ * 二重管理しない。走査するときは `Object.values(PrimitiveTypes)` で並びにする
+ * (`token/` の 3 定数と違い、並びを返すコンパニオンの入口をここは持たないため)。
  *
- * Why not: 過不足を縛る `satisfies` を付けない。`PrimitiveType` を自身から導出して
- * いるので `Record<Capitalize<PrimitiveType>, PrimitiveType>` が循環する。
- * 語彙が 2 種類に閉じていることは `__tests__/schema.edge.test.ts` が押さえる。
+ * Why not: `satisfies` を付けない。`PrimitiveType` を自身から導出しているので
+ * `Record<Capitalize<PrimitiveType>, PrimitiveType>` が循環する。代わりに
+ * **キーの綴りと過不足**は `__tests__/schema.type.test.ts` の型テストが、
+ * **値**が 2 種類に閉じていることは `__tests__/schema.edge.test.ts` が押さえる。
  */
 export const PrimitiveTypes = {
   Box: "Box",

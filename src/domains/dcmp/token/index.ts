@@ -20,14 +20,12 @@ export {
   ShadowFieldEdit,
   type ShadowNumberField,
   ShadowToken,
-  ShadowTokenFields,
 } from "./shadow";
 export {
   type TypographyCssProperty,
   TypographyField,
   TypographyFieldEdit,
   TypographyFieldRef,
-  TypographyFields,
   TypographyToken,
 } from "./typography";
 
@@ -47,11 +45,14 @@ export type TokenSet = Readonly<{
 
 /**
  * 種別を名前で指すための対応表。`TokenKind` はここから導出し、種別を二重管理しない。
- * 過不足とキーの綴りは `Record<Capitalize<keyof TokenSet>, keyof TokenSet>` が
- * コンパイルエラーにする。
+ * union と対で export するのは規約(rules/coding.md「値の集合から union を導出する」)。
  *
- * 並びが要るときは `TokenSet.kinds()` を使う。ここを直接走査する入口と分けているのは、
- * 並びの公開 API が既に `TokenSet` 側にあるため。
+ * `satisfies` が見るのは**キーの過不足と綴り**だけで、キーに割り当てた値がずれても
+ * ここでは落ちない。**値の網羅**は `__tests__/token.type.test.ts` の型テスト
+ * (`TokenKind` == `keyof TokenSet`)で担保する。
+ *
+ * 並びが要るときは `TokenSet.kinds()` を使う(このファイルの中も含む)。
+ * `Object.values` をそこ 1 箇所に閉じ、並びを引く経路を 2 通りにしない。
  */
 export const TokenKinds = {
   Colors: "colors",
@@ -552,7 +553,7 @@ export const TokenSet = {
           }),
         ),
         record,
-        Object.values(TokenKinds),
+        TokenSet.kinds(),
       ),
     );
   },
@@ -560,7 +561,7 @@ export const TokenSet = {
   /** トークンを1つも持たない種別は書き出さない(空の種別を残さない)。 */
   toJson(tokens: TokenSet): JsonObject {
     return Object.fromEntries(
-      Object.values(TokenKinds)
+      TokenSet.kinds()
         .filter((kind) => Object.keys(tokens[kind]).length > 0)
         .map((kind) => [kind, tokenKindToJson(tokens, kind)]),
     );

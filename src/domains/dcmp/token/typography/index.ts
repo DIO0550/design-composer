@@ -98,12 +98,14 @@ export const FontWeight = {
 
 /**
  * フィールドを名前で指すための対応表。`TypographyField` はここから導出し、
- * フィールドを二重管理しない。過不足とキーの綴りは
- * `Record<Capitalize<keyof Required<TypographyToken>>, keyof Required<TypographyToken>>`
- * がコンパイルエラーにする。
+ * フィールドを二重管理しない。
  *
- * 並びが要るときは `TypographyToken.fields()` を使う。ここを直接走査する入口と
- * 分けているのは、並びの公開 API が既に `TypographyToken` 側にあるため。
+ * `satisfies` が見るのは**キーの過不足と綴り**だけで、キーに割り当てた値がずれても
+ * ここでは落ちない。**値の網羅**は `__tests__/typography.type.test.ts` の型テスト
+ * (`TypographyField` == `keyof Required<TypographyToken>`)で担保する。
+ *
+ * 並びが要るときは `TypographyToken.fields()` を使う(このファイルの中も含む)。
+ * `Object.values` をそこ 1 箇所に閉じ、並びを引く経路を 2 通りにしない。
  */
 export const TypographyFields = {
   FontSize: "fontSize",
@@ -268,7 +270,7 @@ export const TypographyToken = {
           }),
         ),
         record,
-        Object.values(TypographyFields),
+        TypographyToken.fields(),
       ),
     );
   },
