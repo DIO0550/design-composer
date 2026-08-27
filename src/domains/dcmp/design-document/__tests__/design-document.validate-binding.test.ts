@@ -1,8 +1,9 @@
 import { expect, test } from "vitest";
-import { DesignDocument } from "../index";
+import { DesignDocument, DocumentTemplate } from "../index";
 
 test("存在しない内部ノード名への binding は dangling-binding-node エラーになる", () => {
   const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
     components: {
       button: {
         type: "Box",
@@ -25,6 +26,7 @@ test("存在しない内部ノード名への binding は dangling-binding-node 
 
 test("存在しない prop への binding は dangling-binding-prop エラーになる", () => {
   const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
     components: {
       button: {
         type: "Box",
@@ -47,6 +49,7 @@ test("存在しない prop への binding は dangling-binding-prop エラーに
 
 test("binding 先ノードが持たない型の prop への binding は dangling-binding-prop エラーになる", () => {
   const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
     components: {
       button: {
         type: "Box",
@@ -69,6 +72,7 @@ test("binding 先ノードが持たない型の prop への binding は dangling
 
 test("部品のルートノードへの binding は有効になる", () => {
   const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
     components: {
       label: {
         type: "Text",
@@ -82,6 +86,7 @@ test("部品のルートノードへの binding は有効になる", () => {
 
 test("内部ノードへの binding は有効になる", () => {
   const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
     components: {
       button: {
         type: "Box",
@@ -96,6 +101,7 @@ test("内部ノードへの binding は有効になる", () => {
 
 test("ネストした部品が公開する publicProps への binding は有効になる", () => {
   const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
     components: {
       label: {
         type: "Text",
@@ -114,6 +120,7 @@ test("ネストした部品が公開する publicProps への binding は有効�
 
 test("ネストした部品が公開していない prop への binding は dangling-binding-prop エラーになる", () => {
   const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
     components: {
       label: {
         type: "Text",
@@ -140,6 +147,7 @@ test("ネストした部品が公開していない prop への binding は dang
 
 test("ネストした部品の内部ノードへ直接 binding すると dangling-binding-node エラーになる", () => {
   const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
     components: {
       label: {
         type: "Box",
@@ -166,6 +174,7 @@ test("ネストした部品の内部ノードへ直接 binding すると danglin
 
 test("複数の binding の不整合がすべて報告される", () => {
   const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
     components: {
       button: {
         type: "Box",

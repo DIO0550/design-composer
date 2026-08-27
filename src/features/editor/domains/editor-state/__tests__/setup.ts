@@ -18,6 +18,7 @@ import { EditorState } from "../index";
 export function stateWithNestedBox(): EditorState {
   return EditorState.create(
     DesignDocument.create({
+      tokens: DocumentTemplate.Default.tokens,
       artboards: [
         {
           name: "home",

@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { DesignDocument } from "../index";
+import { DesignDocument, DocumentTemplate } from "../index";
 
 test("循環参照する部品への上書きがあっても検証が終了し循環だけが報告される", () => {
   const document = DesignDocument.create({
@@ -77,6 +77,7 @@ test("未知の type のノードへ binding していても unknown-type だけ
 
 test("overrides を持たない ref ノードはエラーにならない", () => {
   const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
     components: {
       button: {
         type: "Box",

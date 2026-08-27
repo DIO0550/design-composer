@@ -1,10 +1,11 @@
 import { expect, test } from "vitest";
 import { Result } from "@/utils/Result";
-import { DesignDocument } from "../index";
+import { DesignDocument, DocumentTemplate } from "../index";
 
 /** ノード 1 つを持つ artboard。コピー元がドキュメントに残っている状態を作る。 */
 function setupDocument(): DesignDocument {
   return DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
     artboards: [
       {
         name: "screen",

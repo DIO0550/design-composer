@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { DesignDocument } from "../index";
+import { DesignDocument, DocumentTemplate } from "../index";
 
 test("すべての props がスキーマに適合するドキュメントはエラーを返さない", () => {
   const document = DesignDocument.create({
@@ -38,8 +38,9 @@ test("すべての props がスキーマに適合するドキュメントはエ�
   expect(DesignDocument.collectErrors(document)).toEqual([]);
 });
 
-test("props を指定しないノードはデフォルト値が省略されているだけなのでエラーにならない", () => {
+test("props を指定しないノードは、デフォルトが指すトークンが揃っていればエラーにならない", () => {
   const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
     artboards: [
       {
         name: "screen",
@@ -71,6 +72,7 @@ test("ref ノードはプリミティブとしてのスキーマ検証を受け�
 
 test("複数の違反がある場合、最初の1件で止まらず全件報告される", () => {
   const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
     artboards: [
       {
         name: "screen",

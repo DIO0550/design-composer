@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { DesignDocument } from "../index";
+import { DesignDocument, DocumentTemplate } from "../index";
 
 test("大文字を含むノード名は invalid-identifier エラーになる", () => {
   const document = DesignDocument.create({
@@ -145,6 +145,7 @@ test("artboard 名が識別子規則に違反していると invalid-identifier 
 
 test("部品内部のノード名も識別子規則で検証される", () => {
   const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
     components: {
       card: { type: "Box", children: [{ name: "Label", type: "Text" }] },
     },
@@ -181,11 +182,11 @@ test("トークン名が識別子規則に違反していると invalid-identifi
 test("kebab-case の名前とトークン名だけのドキュメントはエラーにならない", () => {
   const document = DesignDocument.create({
     tokens: {
-      colors: { "brand-primary": "#112233" },
+      colors: { "brand-primary": "#112233", "gray-900": "#111827" },
       spacing: { md: 8 },
       radius: {},
       shadows: {},
-      typography: {},
+      typography: { body: { fontSize: 16, lineHeight: 1.6, fontWeight: 400 } },
     },
     components: {
       "primary-button": {
@@ -208,6 +209,7 @@ test("kebab-case の名前とトークン名だけのドキュメントはエラ
 
 test("識別子規則に違反する名前が重複していると規則違反と重複の両方が報告される", () => {
   const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
     artboards: [
       {
         name: "screen",
