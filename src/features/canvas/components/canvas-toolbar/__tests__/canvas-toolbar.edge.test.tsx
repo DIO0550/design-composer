@@ -10,7 +10,7 @@ import { renderToolbar, toolbar } from "./setup";
  * この並びには入らない。
  */
 function primitiveInsertButtons(): readonly HTMLElement[] {
-  return PrimitiveTypes.map((type) =>
+  return Object.values(PrimitiveTypes).map((type) =>
     toolbar().getByRole("button", { name: `${type} を追加` }),
   );
 }

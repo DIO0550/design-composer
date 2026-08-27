@@ -1,5 +1,6 @@
 import { Px } from "@/domains/unit/px";
 import type { Brand } from "@/types/Brand";
+import type { ValueOf } from "@/types/ValueOf";
 import { Font } from "@/utils/Font";
 import {
   Json,
@@ -96,19 +97,30 @@ export const FontWeight = {
 } as const;
 
 /**
- * フィールドの走査に使う実行時のリスト。`TypographyField` はここから導出し、
- * フィールドを二重管理しない。`satisfies` で TypographyToken に無いフィールドが
- * 混ざらないことを、網羅は `__tests__/typography.type.test.ts` の型テストで担保する。
+ * フィールドを名前で指すための対応表。`TypographyField` はここから導出し、
+ * フィールドを二重管理しない。
+ *
+ * `satisfies` が見るのは**キーの過不足と綴り**だけで、キーに割り当てた値がずれても
+ * ここでは落ちない。**値の網羅**は `__tests__/typography.type.test.ts` の型テスト
+ * (`TypographyField` == `keyof Required<TypographyToken>`)で担保する。
+ *
+ * 並びが要るときは `TypographyToken.fields()` を使う(このファイルの中も含む)。
+ * `Object.values` をそこ 1 箇所に閉じ、並びを引く経路を 2 通りにしない。
  */
-const TypographyFields = [
-  "fontSize",
-  "lineHeight",
-  "fontWeight",
-  "fontFamily",
-] as const satisfies readonly (keyof Required<TypographyToken>)[];
+export const TypographyFields = {
+  FontSize: "fontSize",
+  LineHeight: "lineHeight",
+  FontWeight: "fontWeight",
+  FontFamily: "fontFamily",
+} as const satisfies Readonly<
+  Record<
+    Capitalize<keyof Required<TypographyToken>>,
+    keyof Required<TypographyToken>
+  >
+>;
 
 /** 書体が持つフィールドの名前。 */
-export type TypographyField = (typeof TypographyFields)[number];
+export type TypographyField = ValueOf<typeof TypographyFields>;
 
 /**
  * 書体の1フィールドの書き換え。
@@ -212,7 +224,7 @@ function withFontFamily(
 /** 書体の値の読み書き・CSS 宣言への展開と、JSON 表現との相互変換。 */
 export const TypographyToken = {
   fields(): readonly TypographyField[] {
-    return TypographyFields;
+    return Object.values(TypographyFields);
   },
 
   /** フォントファミリ省略時はシステムフォントスタックを既定値とする(docs/04-tokens.md)。 */
@@ -258,7 +270,7 @@ export const TypographyToken = {
           }),
         ),
         record,
-        TypographyFields,
+        TypographyToken.fields(),
       ),
     );
   },

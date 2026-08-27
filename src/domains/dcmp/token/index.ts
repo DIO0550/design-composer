@@ -1,3 +1,4 @@
+import type { ValueOf } from "@/types/ValueOf";
 import { CaseStyle } from "@/utils/CaseStyle";
 import {
   Json,
@@ -43,20 +44,28 @@ export type TokenSet = Readonly<{
 }>;
 
 /**
- * 種別の走査に使う実行時のリスト。`TokenKind` はここから導出し、種別を二重管理しない。
- * `satisfies` で TokenSet のキー以外が混ざらないことを、
- * 種別の網羅は `__tests__/token.type.test.ts` の型テストで担保する。
+ * 種別を名前で指すための対応表。`TokenKind` はここから導出し、種別を二重管理しない。
+ * union と対で export するのは規約(rules/coding.md「値の集合から union を導出する」)。
+ *
+ * `satisfies` が見るのは**キーの過不足と綴り**だけで、キーに割り当てた値がずれても
+ * ここでは落ちない。**値の網羅**は `__tests__/token.type.test.ts` の型テスト
+ * (`TokenKind` == `keyof TokenSet`)で担保する。
+ *
+ * 並びが要るときは `TokenSet.kinds()` を使う(このファイルの中も含む)。
+ * `Object.values` をそこ 1 箇所に閉じ、並びを引く経路を 2 通りにしない。
  */
-const TokenKinds = [
-  "colors",
-  "spacing",
-  "radius",
-  "shadows",
-  "typography",
-] as const satisfies readonly (keyof TokenSet)[];
+export const TokenKinds = {
+  Colors: "colors",
+  Spacing: "spacing",
+  Radius: "radius",
+  Shadows: "shadows",
+  Typography: "typography",
+} as const satisfies Readonly<
+  Record<Capitalize<keyof TokenSet>, keyof TokenSet>
+>;
 
 /** トークンの種別。 */
-export type TokenKind = (typeof TokenKinds)[number];
+export type TokenKind = ValueOf<typeof TokenKinds>;
 
 /**
  * 種別ごとの値の形式(docs/04-tokens.md「値の形式」)。
@@ -409,7 +418,7 @@ export const TokenSet = {
   },
 
   kinds(): readonly TokenKind[] {
-    return TokenKinds;
+    return Object.values(TokenKinds);
   },
 
   names(tokens: TokenSet, kind: TokenKind): readonly string[] {
@@ -544,7 +553,7 @@ export const TokenSet = {
           }),
         ),
         record,
-        TokenKinds,
+        TokenSet.kinds(),
       ),
     );
   },
@@ -552,9 +561,9 @@ export const TokenSet = {
   /** トークンを1つも持たない種別は書き出さない(空の種別を残さない)。 */
   toJson(tokens: TokenSet): JsonObject {
     return Object.fromEntries(
-      TokenKinds.filter((kind) => Object.keys(tokens[kind]).length > 0).map(
-        (kind) => [kind, tokenKindToJson(tokens, kind)],
-      ),
+      TokenSet.kinds()
+        .filter((kind) => Object.keys(tokens[kind]).length > 0)
+        .map((kind) => [kind, tokenKindToJson(tokens, kind)]),
     );
   },
 } as const;

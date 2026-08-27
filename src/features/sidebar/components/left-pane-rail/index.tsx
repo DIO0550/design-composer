@@ -12,6 +12,10 @@ import type { ReactNode } from "react";
  * `__docgenInfo` を**列挙可能なプロパティとして**足すことがあり、走査すると行き先では
  * ない値まで行として並ぶため（配列の `map` は添字だけを見るので影響を受けない。
  * vitest では docgen が走らず、テストだけでは気付けない / #129）。
+ *
+ * これが効くのは**この定数のように `.tsx` で export しているもの**に限る。docgen の
+ * 既定の対象は `**\/*.tsx` なので、`.ts` で export した定数（`PrimitiveTypes` 等）は
+ * `.tsx` から `Object.values` で走査してよい（#105 で Storybook の実表示で確認）。
  */
 const LeftPaneViewOrder = ["layers", "assets", "tokens"] as const;
 
