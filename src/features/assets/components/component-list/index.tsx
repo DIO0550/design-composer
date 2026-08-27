@@ -1,4 +1,4 @@
-import { ComponentAsset } from "@/domains/component";
+import { ComponentAsset } from "@/domains/dcmp/component";
 import { AssetRow } from "@/features/assets/components/asset-row";
 import type { AssetGrab } from "@/features/assets/types/AssetGrab";
 import type { Option } from "@/utils/Option";

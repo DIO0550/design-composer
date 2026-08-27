@@ -1,4 +1,4 @@
-import { Instant } from "@/domains/instant";
+import { Instant } from "@/domains/unit/instant";
 
 /**
  * 現在時刻の取得と、一定間隔の通知。

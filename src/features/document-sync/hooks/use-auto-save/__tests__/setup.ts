@@ -1,7 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { vi } from "vitest";
-import type { DesignDocument } from "@/domains/design-document";
-import { FileValidity } from "@/domains/file-validity";
+import type { DesignDocument } from "@/domains/dcmp/design-document";
+import { FileValidity } from "@/domains/session/file-validity";
 import type { DocumentIpc } from "@/libs/document-ipc";
 import { AutoSaveDebounceMs, useAutoSave } from "../index";
 

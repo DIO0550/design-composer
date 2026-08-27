@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { BoxElement } from "@/domains/compiled-element";
+import { BoxElement } from "@/domains/compiled/compiled-element";
 import { ArtboardLabel } from "./index";
 
 /**

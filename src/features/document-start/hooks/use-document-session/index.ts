@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { OpenedDocument } from "@/domains/opened-document";
+import { OpenedDocument } from "@/domains/session/opened-document";
 import { DocumentSession } from "@/features/document-start/domains/document-session";
 import type { DocumentDialog } from "@/libs/document-dialog";
 import type { DocumentIpc } from "@/libs/document-ipc";

@@ -1,6 +1,6 @@
 import { render } from "@testing-library/react";
 import { expect, test } from "vitest";
-import { AxisLength } from "@/domains/axis-length";
+import { AxisLength } from "@/domains/dcmp/axis-length";
 import { ResizeHandleStyle } from "../index";
 
 /*

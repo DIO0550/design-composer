@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
-"""公開 API を迂回する import と、import の循環を探す。
+"""公開 API を迂回する import と、import の循環と、公開 API の置き場所を探す。
 
-`rules/architecture.md`「モジュールの公開API」「依存方向のルール」のうち、
-**import グラフを組まないと判定できないもの**を機械で確かめるためのもの。層と方向の対
-（`services/` → `features/` のように、呼び出し元と禁止パターンが静的に決まるもの）は
-`.oxlintrc.json` の `no-restricted-imports` が見るので、ここでは扱わない。
+`rules/architecture.md`「モジュールの公開API」「依存方向のルール」「domains のカテゴリ」の
+うち、**`index.ts` がどこにあるかを集めないと判定できないもの**を機械で確かめるためのもの。
+層と方向の対（`services/` → `features/` のように、呼び出し元と禁止パターンが静的に決まる
+もの）は `.oxlintrc.json` の `no-restricted-imports` が見るので、ここでは扱わない。
 
-報告する違反は 4 つ。
+報告する違反は 5 つ。
 
 - `feature-public-api` — feature の外から、その feature の公開口以外を読んでいる
 - `module-public-api` — `index.ts` を持つフォルダの内部を、そのフォルダの外から読んでいる
+- `domains-category` — `src/domains/` のモジュールがカテゴリのフォルダの下にいない
 - `import-cycle` — ファイル単位の循環
 - `feature-cycle` — feature 単位の循環
 
@@ -40,6 +41,9 @@ ALIAS_ROOT = "src"
 
 # feature 層の位置。この直下で `index.ts` を持つフォルダを 1 つの feature として数える。
 FEATURES_ROOT = f"{ALIAS_ROOT}/features"
+
+# ドメイン層の位置。この直下はカテゴリのフォルダで、モジュールはその下に置く。
+DOMAINS_ROOT = f"{ALIAS_ROOT}/domains"
 
 # `import ... from "X"` / `export ... from "X"` / `import("X")` の X を、行番号付きで拾う。
 #
@@ -179,6 +183,34 @@ def ancestors(path: str) -> list[str]:
     return found
 
 
+def uncategorized_domains(modules: set[str]) -> list[str]:
+    """`src/domains/` のモジュールが、カテゴリのフォルダの下にいるかを答える。
+
+    `rules/architecture.md`「domains のカテゴリ」は、モジュールを
+    `src/domains/<カテゴリ>/<モジュール>/` に置き、カテゴリ自身は `index.ts` を持たない、
+    と決めている。どちらの破り方も `src/domains/` 直下のフォルダが `index.ts` を持つ形に
+    なるので、1 つの条件で拾える。
+
+    Why: カテゴリ**間の向き**は `.oxlintrc.json` が見るが、そちらはカテゴリのフォルダ名で
+    対象を絞るため、直下に作られたモジュールにはどの override も当たらない。規約に沿った
+    モジュールだけが縛られ、外れたモジュールが素通りになるのを防ぐ。
+
+    @param modules `index.ts` を持つフォルダの集合
+    @returns 違反 1 件ごとの説明。すべてカテゴリ配下なら空
+    """
+    directly_under = [
+        folder
+        for folder in sorted(modules)
+        if folder.startswith(f"{DOMAINS_ROOT}/")
+        and "/" not in folder[len(DOMAINS_ROOT) + 1 :]
+    ]
+    return [
+        f"{folder}/index.ts（カテゴリのフォルダは公開 API を持たず、"
+        f"モジュールは `{DOMAINS_ROOT}/<カテゴリ>/` の下に置く）"
+        for folder in directly_under
+    ]
+
+
 def bypassed_module(importer: str, target: str, modules: set[str]) -> str | None:
     """モジュールフォルダの内部を、そのフォルダの外から読んでいるかを答える。
 
@@ -294,15 +326,18 @@ def scan(root: Path) -> int:
     file_cycles = [" -> ".join(c) for c in cycles_in({k: [t for _, t in v] for k, v in graph.items()})]
     feature_cycles = [" -> ".join(c) for c in cycles_in(feature_edges)]
 
+    uncategorized = uncategorized_domains(modules)
+
     for kind, lines in (
         ("feature-public-api", crossing),
         ("module-public-api", bypassing),
+        ("domains-category", uncategorized),
         ("import-cycle", file_cycles),
         ("feature-cycle", feature_cycles),
     ):
         if lines:
             report(kind, lines)
-    total = len(crossing) + len(bypassing) + len(file_cycles) + len(feature_cycles)
+    total = len(crossing) + len(bypassing) + len(uncategorized) + len(file_cycles) + len(feature_cycles)
     print(f"import 規約の違反 {total} 件 / {len(paths)} ファイル")
     return 1 if total else 0
 

@@ -1,8 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
-import { DesignDocument } from "@/domains/design-document";
-import { Node } from "@/domains/node";
+import { DesignDocument } from "@/domains/dcmp/design-document";
+import { Node } from "@/domains/dcmp/node";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
 import { useEditorState } from "../index";

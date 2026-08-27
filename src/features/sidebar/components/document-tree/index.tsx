@@ -1,11 +1,11 @@
 import type { ReactElement } from "react";
 import { type NestedRow, NestedRowList } from "@/components/nested-row-list";
 import { TypeGlyph } from "@/components/type-glyph";
-import type { ChildPosition } from "@/domains/child-position";
-import { DocumentSelection } from "@/domains/document-selection";
-import { Node, type PrimitiveNode } from "@/domains/node";
-import type { TextSchema } from "@/domains/primitive-schema";
-import { Selection, type SelectionKind } from "@/domains/selection";
+import type { ChildPosition } from "@/domains/dcmp/child-position";
+import { Node, type PrimitiveNode } from "@/domains/dcmp/node";
+import type { TextSchema } from "@/domains/dcmp/primitive-schema";
+import { DocumentSelection } from "@/domains/session/document-selection";
+import { Selection, type SelectionKind } from "@/domains/session/selection";
 import { Option } from "@/utils/Option";
 
 /** 文言を読む prop。Text のスキーマが宣言している名前に限る。 */

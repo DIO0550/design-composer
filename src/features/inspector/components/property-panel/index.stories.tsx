@@ -4,8 +4,11 @@ import { expect, fn, screen, userEvent } from "storybook/test";
 import { RightPaneShell } from "@/components/__stories__/right-pane-shell";
 import { PaneBody } from "@/components/pane-body";
 import { PaneHeading } from "@/components/pane-heading";
-import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
-import { DocumentSelection } from "@/domains/document-selection";
+import {
+  DesignDocument,
+  DocumentTemplate,
+} from "@/domains/dcmp/design-document";
+import { DocumentSelection } from "@/domains/session/document-selection";
 import { PropertyPanel, ShorthandLabels } from "./index";
 
 /** 帯の幅に収まらない名前。省略の見え方を視覚差分で見るためだけの状態。 */

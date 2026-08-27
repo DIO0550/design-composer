@@ -1,4 +1,4 @@
-import { Instant } from "@/domains/instant";
+import { Instant } from "@/domains/unit/instant";
 import type { Clock } from "../index";
 
 /**

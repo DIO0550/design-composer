@@ -1,8 +1,11 @@
 import { fireEvent, screen, within } from "@testing-library/react";
 import { expect, test } from "vitest";
 import { rowNames } from "@/components/__tests__/row-names";
-import { Artboard } from "@/domains/artboard";
-import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import { Artboard } from "@/domains/dcmp/artboard";
+import {
+  DesignDocument,
+  DocumentTemplate,
+} from "@/domains/dcmp/design-document";
 import {
   movePointer,
   pressPointer,

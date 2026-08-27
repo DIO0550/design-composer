@@ -1,8 +1,11 @@
 import { expect, test } from "vitest";
-import type { AxisLength } from "@/domains/axis-length";
-import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
-import { DocumentSelection } from "@/domains/document-selection";
-import { PropEdit } from "@/domains/node";
+import type { AxisLength } from "@/domains/dcmp/axis-length";
+import {
+  DesignDocument,
+  DocumentTemplate,
+} from "@/domains/dcmp/design-document";
+import { PropEdit } from "@/domains/dcmp/node";
+import { DocumentSelection } from "@/domains/session/document-selection";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 

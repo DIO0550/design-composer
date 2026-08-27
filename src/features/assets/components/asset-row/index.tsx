@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { TypeGlyph } from "@/components/type-glyph";
-import { NodeTemplate } from "@/domains/node-template";
-import type { PrimitiveType } from "@/domains/primitive-schema";
+import type { PrimitiveType } from "@/domains/dcmp/primitive-schema";
+import { NodeTemplate } from "@/domains/session/node-template";
 import type { AssetGrab } from "@/features/assets/types/AssetGrab";
 
 /**

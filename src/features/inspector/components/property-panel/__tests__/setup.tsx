@@ -1,6 +1,6 @@
 import { render } from "@testing-library/react";
 import { vi } from "vitest";
-import type { DocumentSelection } from "@/domains/document-selection";
+import type { DocumentSelection } from "@/domains/session/document-selection";
 import { type InstanceActions, PropertyPanel } from "../index";
 
 /** 押した結果を見ないテストが毎回組み立てずに済むよう埋める、インスタンスの操作。 */

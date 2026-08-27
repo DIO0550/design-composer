@@ -1,6 +1,6 @@
 import { type ReactElement, useId, useState } from "react";
-import type { Token, TokenKind, TokenValue } from "@/domains/token";
-import { TokenSelection } from "@/domains/token-selection";
+import type { Token, TokenKind, TokenValue } from "@/domains/dcmp/token";
+import { TokenSelection } from "@/domains/session/token-selection";
 import { TokenUsedBy } from "@/features/tokens/components/token-used-by";
 import {
   TokenControl,

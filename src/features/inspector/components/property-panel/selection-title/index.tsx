@@ -1,5 +1,5 @@
 import { TypeGlyph } from "@/components/type-glyph";
-import type { Selection, SelectionKind } from "@/domains/selection";
+import type { Selection, SelectionKind } from "@/domains/session/selection";
 
 /**
  * 帯の右端に出す種別の綴り。

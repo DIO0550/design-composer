@@ -1,5 +1,4 @@
-import type { DesignDocument } from "@/domains/design-document";
-import { Px } from "@/domains/px";
+import type { DesignDocument } from "@/domains/dcmp/design-document";
 import {
   type BoxShadowValue,
   ColorToken,
@@ -15,8 +14,9 @@ import {
   type TypographyField,
   TypographyFieldEdit,
   TypographyToken,
-} from "@/domains/token";
-import { TokenSelection } from "@/domains/token-selection";
+} from "@/domains/dcmp/token";
+import { TokenSelection } from "@/domains/session/token-selection";
+import { Px } from "@/domains/unit/px";
 import { Option } from "@/utils/Option";
 
 /*
@@ -27,7 +27,7 @@ import { Option } from "@/utils/Option";
  * この導出は `src/domains/` ではなくこの feature に置く。`valueText` や
  * `TokenPreview` の `widthPx` のように**綴りと見せ方そのもの**を持っているため
  * （`rules/architecture.md`「表示のための綴りをドメインへ持ち込まない」）。
- * Why not: 同じ形に見える `src/domains/prop-control` は昇格させてある。あちらが
+ * Why not: 同じ形に見える `src/domains/session/prop-control` は昇格させてある。あちらが
  * 持つのは値の種別までで、綴りはパネル側にあるという違いによる。
  */
 

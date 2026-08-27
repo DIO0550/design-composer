@@ -18,7 +18,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `check-test-helper-duplication.sh` | `PostToolUse` (Edit/Write) | **テストヘルパーの重複検出**(rules/testing.md「テスト用ヘルパーの置き場所」)。同じ `__tests__/` に本体が一字一句同じヘルパーが 2 つ以上あれば知らせる |
 | `check-doc-comments.sh`  | `PostToolUse` (Edit/Write) | **doc コメントの検証**(rules/coding.md「コメントは doc と Why / Why not に絞る」)。doc の無い宣言と、`@param` / `@returns` / `@throws` が欠けた doc を知らせる |
 | `pre-push-doc-comments.sh` | `PreToolUse` (Bash)     | **push 前の doc コメント検査**。`src/` に doc の無い宣言、または `@param` / `@returns` / `@throws` の欠けた doc があれば push をブロック |
-| `pre-push-import-rules.sh` | `PreToolUse` (Bash)     | **push 前の import 規約検査**(rules/architecture.md「モジュールの公開API」「依存方向のルール」)。公開 API を迂回する import・循環参照があれば push をブロック |
+| `pre-push-import-rules.sh` | `PreToolUse` (Bash)     | **push 前の import 規約検査**(rules/architecture.md「モジュールの公開API」「依存方向のルール」)。公開 API を迂回する import・循環参照・カテゴリの外に置かれた domains のモジュールがあれば push をブロック |
 | `post-merge-review.sh`   | `PostToolUse` (Bash/MCP)  | **マージ後の振り返りの提示**。PR のマージを検知し、Issue への追記と評価の記録を促す       |
 | `hook-canary.sh`         | `PreToolUse` (Bash)       | **カナリア**。`echo hook-canary` を必ず deny する。通ってしまったらフックが発火しない実行環境（後述） |
 | `session-url-notice.sh`  | `SessionStart`            | **セッション URL の提示**（AGENTS.md「Issue に紐づいて起動したら、セッションの URL を Issue に残す」）。URL を組み立てて渡す。ブランチが `claude/issue-<N>-...` なら対象の番号も添える |
@@ -48,7 +48,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `lib/missing-doc-comments.py` | `check-doc-comments.sh` / `pre-push-doc-comments.sh` / `harness/githooks/pre-push` | `src/` のファイル直下の宣言のうち doc コメントの無いものを探す。`--all` で全体を検査できる |
 | `lib/test-rules-scan.sh` | `pre-push-test-rules.sh` / `harness/githooks/pre-push` | 指定したルート配下の `*.test.ts(x)` をすべて検査する。違反があれば exit 1 |
 | `lib/lint-suppressions.py` | `block-lint-suppress.sh` / `.github/scripts/check-added-lint-suppressions.sh` | 許可されていない lint 抑制コメントの行を報告する。例外の判定もここが持つ |
-| `lib/import-rule-violations.py` | `pre-push-import-rules.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | 公開 API を迂回する import（`feature-public-api` / `module-public-api`）と循環（`import-cycle` / `feature-cycle`）を報告する |
+| `lib/import-rule-violations.py` | `pre-push-import-rules.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | 公開 API を迂回する import（`feature-public-api` / `module-public-api`）・循環（`import-cycle` / `feature-cycle`）・カテゴリの外に置かれた domains のモジュール（`domains-category`）を報告する |
 
 ## 強制力の序列 — フックが発火しない実行環境がある
 
@@ -93,7 +93,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 リモート実行環境はクローンからやり直すので `core.hooksPath` が未設定のまま
 (`postCreateCommand` は DevContainer でしか走らない)で、そこは `.claude/settings.json` の
 配線が読まれないことがある環境と同じだった。実際に doc の無い宣言が main へ入っている
-(`src/domains/elapsed`)。層 2 の配線は `pnpm install` の `prepare` が
+(`src/domains/unit/elapsed`)。層 2 の配線は `pnpm install` の `prepare` が
 自動でやるようにしたが、**同じ層で再発したら層を 1 つ上げる**に従い、検査そのものも
 無条件に効く層へ置いた。
 
@@ -190,7 +190,7 @@ python3 .claude/hooks/lib/duplicate-test-helpers.py --all src
 
 ```bash
 # doc の無い宣言が報告されること(additionalContext が出力される)
-echo '{"tool_input":{"file_path":"src/domains/token/index.ts"}}' \
+echo '{"tool_input":{"file_path":"src/domains/dcmp/token/index.ts"}}' \
   | bash .claude/hooks/check-doc-comments.sh
 
 # 全体の doc 抜けを数える

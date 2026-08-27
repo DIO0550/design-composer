@@ -1,6 +1,6 @@
 import { useState } from "react";
-import type { ComponentAsset } from "@/domains/component";
-import { PrimitiveTypes } from "@/domains/primitive-schema";
+import type { ComponentAsset } from "@/domains/dcmp/component";
+import { PrimitiveTypes } from "@/domains/dcmp/primitive-schema";
 import { ComponentList } from "@/features/assets/components/component-list";
 import { PrimitiveList } from "@/features/assets/components/primitive-list";
 import type { AssetGrab } from "@/features/assets/types/AssetGrab";

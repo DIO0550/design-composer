@@ -11,7 +11,7 @@
 src/
   app/         # エントリ層: main.tsx / App.tsx・ルーティング・Provider の組み立てのみ。薄く保つ
   features/    # Feature 層: ユースケース単位(内部構成は後述)
-  domains/     # ドメイン層: 複数 feature から使われるドメインオブジェクト(コンパニオンオブジェクト)
+  domains/     # ドメイン層: 複数 feature から使われるドメインオブジェクト(コンパニオンオブジェクト)。カテゴリを1段挟む(後述)
   services/    # ドメインサービス層: 複数ドメインを組み合わせるロジック(置く前に帰属先のドメインを探す)
   components/  # 汎用UIコンポーネント(ドメイン知識を持たない)
   hooks/       # 汎用カスタムフック(ドメイン知識を持たない)
@@ -31,7 +31,7 @@ features/<feature-name>/
 
 ## 配置の判断基準
 
-- ドメインオブジェクトはまず `features/<x>/domains/` に置き、**2つ以上の feature が必要としたら `src/domains/` に昇格**させる(重複実装は禁止)
+- ドメインオブジェクトはまず `features/<x>/domains/` に置き、**2つ以上の feature が必要としたら `src/domains/<カテゴリ>/` に昇格**させる(重複実装は禁止)
 - ロジックを持たない純粋な型定義は `types/`(汎用は `src/types/`、feature 固有は `features/<x>/types/`)に置く。**`domains/` 内に型定義だけのファイル(`type.ts` / `types.ts` 等)を作ることは禁止**
 - `domains/` に置いてよいのは「型 + 同名コンパニオンオブジェクト」が揃ったドメインオブジェクトのみ。型はコンパニオンオブジェクトと**同一ファイル**で定義する(型だけを別ファイルに分離しない)
 - I/O(Tauri API・localStorage・fetch・外部ライブラリ)・外部フォーマットの解釈は必ず `src/libs/` 経由
@@ -87,9 +87,24 @@ features/<feature-name>/
 - 汎用の操作が1つだけでも、`<型名>Ex` に押し込めず**まとまりを表すモジュール**を立てる。ただし呼び出しの無い操作を「揃っているから」と先回りで足さない(過度な抽象化)
 - 型で閉じた対応表(`as const satisfies` でリテラル型を保つもの)を汎用変換に置き換えない
 
+## domains のカテゴリ
+
+`src/domains/` はカテゴリを1段挟み、`src/domains/<カテゴリ>/<モジュール>/` に置く。**カテゴリは層で、import してよい向きが決まっている**(向きは oxlint、カテゴリを挟んでいることは `import-rule-violations.py` が強制)。
+
+| カテゴリ | 置くもの | import してよいカテゴリ |
+|---|---|---|
+| `unit/` | ドキュメントに依らない値そのものの語彙。長さ・辺・時刻(`px` `side` `instant` `elapsed`) | 無し |
+| `dcmp/` | `.dcmp` に書かれる中身と、その語彙・派生 | `unit` |
+| `compiled/` | ドキュメントから作った描画用の表現 | `dcmp` `unit` |
+| `session/` | 開いている・選んでいる・保存できている、という編集中の状態と、編集操作の指定 | すべて |
+
+- **カテゴリフォルダは `index.ts` を持たない。** 公開APIはモジュールの `index.ts` のまま
+- 新しいドメインオブジェクトは、**その向きに収まるカテゴリ**へ置く。どれにも収まらないなら、それはカテゴリの切り直しなので実装前に相談する
+- テスト用の共有フィクスチャは、消費側が1つのモジュールに収まらないなら `src/domains/__tests__/` に置く。カテゴリの中ではなく**カテゴリと並べて**置くのは、消費側が feature にもまたがるため
+
 ## モジュールの公開API
 
-- モジュールフォルダ(domains/services/features の各サブフォルダ)は `index.ts` を公開APIとする
+- モジュールフォルダ(domains のカテゴリ配下 / services・features の各サブフォルダ、およびその中で分割したサブフォルダ)は `index.ts` を公開APIとする
 - モジュールフォルダの基本形は「`index.ts` + `__tests__/`」。**実装は `index.ts` に直接書く**。複数ファイルへの分割が必要になったら、実装ファイルを1つだけ切り出すのではなく、その時点で**サブフォルダに分割**する(サブフォルダも同じ形を保つ)
 - フォルダ外部からの import は必ず `index.ts` 経由とし、**内部ファイルへの deep import は禁止**
 - `index.ts` から export するのは外部に公開する必要があるものだけに絞る
@@ -100,10 +115,10 @@ features/<feature-name>/
 app → features → services → domains
 ```
 
-- `src/domains/<x>/` は他の domain を import してよい(一方向のみ・循環禁止)。services / features / React / Tauri API への依存は禁止
+- `src/domains/<カテゴリ>/<x>/` は他の domain を import してよい(カテゴリの向きに従う・一方向のみ・循環禁止)。services / features / React / Tauri API への依存は禁止
 - `src/services/` は `src/domains/` と `src/types/` と `src/utils/` のみ import 可。React / Tauri API への依存は禁止
 - `features/<x>/` は自分の内部、`src/services/`、`src/domains/`、横断層(`components/` `hooks/` `libs/` `utils/` `types/`)を import 可。**他 feature の import も可**(ただし公開API = その feature の `index.ts` 経由のみ・feature 間の循環参照は禁止)
-- `features/<x>/domains/` は `src/domains/` を import してよいが、他 feature の domains への直接 import は不可(2つ以上の feature が必要とするドメインオブジェクトは `src/domains/` へ昇格させる)
+- `features/<x>/domains/` は `src/domains/` を import してよいが、他 feature の domains への直接 import は不可(2つ以上の feature が必要とするドメインオブジェクトは昇格させる → 「配置の判断基準」)
 - `app/` はロジックを持たない。`features/` の呼び出しとルーティング・Provider の組み立てのみ
 - `components/` `hooks/` `utils/` `types/` は domains / services / features を import してはならない(ドメイン知識の流入禁止)
 - `libs/` は外部ライブラリ(`@tauri-apps/*` 等)・`src/types/`・`src/utils/`・`src/domains/` を import 可。`services/` `features/` `components/` `hooks/` への依存は禁止(外部世界とドメインの間の変換に閉じる)。オーケストレーション(複数ドメインを組み合わせる手順)は `libs/` に置かない — それは `services/` の責務

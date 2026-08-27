@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { ReceivedAt } from "@/domains/__tests__/instants";
-import { DesignDocument } from "@/domains/design-document";
+import { DesignDocument } from "@/domains/dcmp/design-document";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 

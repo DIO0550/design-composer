@@ -1,7 +1,12 @@
-import { Artboard } from "@/domains/artboard";
-import { DesignDocument } from "@/domains/design-document";
-import type { OpenedDocument } from "@/domains/opened-document";
+import { Artboard } from "@/domains/dcmp/artboard";
+import { DesignDocument } from "@/domains/dcmp/design-document";
+import type { OpenedDocument } from "@/domains/session/opened-document";
 import { DocumentJson } from "@/libs/document-json";
+
+/*
+ * カテゴリの中ではなくカテゴリと並べて置くのは、消費側が `session` のテストと
+ * feature のテストにまたがるため（`rules/architecture.md`「domains のカテゴリ」）。
+ */
 
 /** artboard を 1 枚だけ持つドキュメント。名前の違いがドキュメントの違いになる。 */
 export function artboardDocument(name: string): DesignDocument {

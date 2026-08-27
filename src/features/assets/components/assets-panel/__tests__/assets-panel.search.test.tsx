@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
-import type { ComponentAsset } from "@/domains/component";
+import type { ComponentAsset } from "@/domains/dcmp/component";
 import { setupAssetGrab } from "@/features/assets/__tests__/asset-grab";
 import { Option } from "@/utils/Option";
 import { AssetsPanel } from "../index";

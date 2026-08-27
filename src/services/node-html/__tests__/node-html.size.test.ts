@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import type { ExpandedNode } from "@/domains/expanded-node";
+import type { ExpandedNode } from "@/domains/dcmp/expanded-node";
 import { Result } from "@/utils/Result";
 import type { ParentContext } from "../index";
 import { NodeHtml } from "../index";

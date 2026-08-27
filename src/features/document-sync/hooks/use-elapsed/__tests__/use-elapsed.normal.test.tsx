@@ -2,7 +2,7 @@ import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { expect, test } from "vitest";
-import { Instant } from "@/domains/instant";
+import { Instant } from "@/domains/unit/instant";
 import type { Clock } from "@/libs/clock";
 import { ClockFake } from "@/libs/clock/fake";
 import { Option } from "@/utils/Option";

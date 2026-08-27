@@ -2,13 +2,13 @@ import {
   BoxElement,
   type CompiledElement,
   TextElement,
-} from "@/domains/compiled-element";
-import type { CssDeclarations } from "@/domains/css-declaration";
-import type { CssDirection } from "@/domains/css-direction";
-import type { ExpandedNode } from "@/domains/expanded-node";
-import type { Props } from "@/domains/node";
-import { PrimitiveSchema } from "@/domains/primitive-schema";
-import { ResolvedProps } from "@/domains/resolved-props";
+} from "@/domains/compiled/compiled-element";
+import type { CssDeclarations } from "@/domains/dcmp/css-declaration";
+import type { CssDirection } from "@/domains/dcmp/css-direction";
+import type { ExpandedNode } from "@/domains/dcmp/expanded-node";
+import type { Props } from "@/domains/dcmp/node";
+import { PrimitiveSchema } from "@/domains/dcmp/primitive-schema";
+import { ResolvedProps } from "@/domains/dcmp/resolved-props";
 import { TokenCss } from "@/services/token-css";
 import { Result } from "@/utils/Result";
 

@@ -1,5 +1,5 @@
 import { screen } from "@testing-library/react";
-import { ElementNameAttribute } from "@/domains/compiled-element";
+import { ElementNameAttribute } from "@/domains/compiled/compiled-element";
 import { TokenReferrerOutline } from "@/features/canvas/components/artboard-canvas";
 import { ArrayEx } from "@/utils/ArrayEx";
 

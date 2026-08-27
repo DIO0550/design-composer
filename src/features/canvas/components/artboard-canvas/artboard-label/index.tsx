@@ -1,4 +1,4 @@
-import type { CompiledArtboard } from "@/domains/compiled-artboard";
+import type { CompiledArtboard } from "@/domains/compiled/compiled-artboard";
 
 /**
  * artboard の見出し（UI 案 docs/Design Composer.html。名前の右に大きさが並ぶ）。

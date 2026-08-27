@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
-import { DesignDocument } from "@/domains/design-document";
-import { DocumentSelection } from "@/domains/document-selection";
+import { DesignDocument } from "@/domains/dcmp/design-document";
+import { DocumentSelection } from "@/domains/session/document-selection";
 import { NodeResize } from "../index";
 
 /**

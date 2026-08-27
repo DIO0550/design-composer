@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
-import { DesignDocument } from "@/domains/design-document";
-import { DocumentSelection } from "@/domains/document-selection";
-import type { TokenSelection } from "@/domains/token-selection";
+import { DesignDocument } from "@/domains/dcmp/design-document";
+import { DocumentSelection } from "@/domains/session/document-selection";
+import type { TokenSelection } from "@/domains/session/token-selection";
 import {
   type AssetGrab,
   AssetsPanel,

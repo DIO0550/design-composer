@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { AxisLength } from "@/domains/axis-length";
+import { AxisLength } from "@/domains/dcmp/axis-length";
 import { CanvasView } from "@/features/canvas/domains/canvas-view";
 import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
 import { Option } from "@/utils/Option";

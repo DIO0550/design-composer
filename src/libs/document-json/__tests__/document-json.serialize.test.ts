@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { DesignDocument } from "@/domains/design-document";
+import { DesignDocument } from "@/domains/dcmp/design-document";
 import { DocumentJson } from "../index";
 
 test("トップレベルのフィールドは仕様の定義順で書き出される", () => {

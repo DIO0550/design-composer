@@ -1,5 +1,5 @@
 import { expectTypeOf, test } from "vitest";
-import type { TokenKind } from "@/domains/token";
+import type { TokenKind } from "@/domains/dcmp/token";
 import type {
   CssVariableName,
   CssVariableReference,

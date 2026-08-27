@@ -1,4 +1,4 @@
-import { FormatVersion } from "@/domains/format-version";
+import { FormatVersion } from "@/domains/dcmp/format-version";
 import type { JsonRecord } from "@/utils/Json";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";

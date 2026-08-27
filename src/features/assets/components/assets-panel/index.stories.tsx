@@ -1,7 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { LeftPaneShell } from "@/components/__stories__/left-pane-shell";
-import { Artboard } from "@/domains/artboard";
-import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import { Artboard } from "@/domains/dcmp/artboard";
+import {
+  DesignDocument,
+  DocumentTemplate,
+} from "@/domains/dcmp/design-document";
 import {
   grabbingComponent,
   setupAssetGrab,

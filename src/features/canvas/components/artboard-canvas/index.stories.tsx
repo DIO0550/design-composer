@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { ComponentProps } from "react";
 import { fn } from "storybook/test";
-import { DocumentSelection } from "@/domains/document-selection";
-import { TokenSelection } from "@/domains/token-selection";
+import { DocumentSelection } from "@/domains/session/document-selection";
+import { TokenSelection } from "@/domains/session/token-selection";
 import {
   EmptyCanvasDocument,
   SampleCanvasDocument,

@@ -1,4 +1,4 @@
-import { ElementNameAttribute } from "@/domains/compiled-element";
+import { ElementNameAttribute } from "@/domains/compiled/compiled-element";
 import { Css } from "@/utils/Css";
 
 /**

@@ -1,6 +1,6 @@
 import { expectTypeOf, test } from "vitest";
 import type { NestedRowPosition } from "@/components/nested-row-list";
-import type { ChildPosition } from "@/domains/child-position";
+import type { ChildPosition } from "@/domains/dcmp/child-position";
 
 /*
  * 行を並べる器（`src/components/nested-row-list`）は横断層にあり `ChildPosition` を

@@ -1,6 +1,9 @@
-import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
-import type { TokenRef } from "@/domains/token";
-import { TokenSelection } from "@/domains/token-selection";
+import {
+  DesignDocument,
+  DocumentTemplate,
+} from "@/domains/dcmp/design-document";
+import type { TokenRef } from "@/domains/dcmp/token";
+import { TokenSelection } from "@/domains/session/token-selection";
 import { Option } from "@/utils/Option";
 
 /**

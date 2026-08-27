@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
 import { SampleSyntaxError } from "@/domains/__tests__/document-errors";
-import type { DocumentError } from "@/domains/document-error";
+import type { DocumentError } from "@/domains/session/document-error";
 import { DocumentErrorList, DocumentErrorOrigins } from "../index";
 
 /**

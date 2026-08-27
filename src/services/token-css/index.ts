@@ -2,9 +2,8 @@ import type {
   CssVariableName,
   SingleVariableTokenKind,
   TokenRefs,
-} from "@/domains/css-declaration";
-import { CssDeclarations } from "@/domains/css-declaration";
-import { Px } from "@/domains/px";
+} from "@/domains/dcmp/css-declaration";
+import { CssDeclarations } from "@/domains/dcmp/css-declaration";
 import {
   ShadowToken,
   type TokenKind,
@@ -12,7 +11,8 @@ import {
   type TypographyCssProperty,
   TypographyFieldRef,
   TypographyToken,
-} from "@/domains/token";
+} from "@/domains/dcmp/token";
+import { Px } from "@/domains/unit/px";
 
 export type { CssVariableName, SingleVariableTokenKind };
 

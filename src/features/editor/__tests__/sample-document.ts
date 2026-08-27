@@ -1,5 +1,8 @@
-import { Artboard } from "@/domains/artboard";
-import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
+import { Artboard } from "@/domains/dcmp/artboard";
+import {
+  DesignDocument,
+  DocumentTemplate,
+} from "@/domains/dcmp/design-document";
 
 /**
  * テストで開くドキュメント。

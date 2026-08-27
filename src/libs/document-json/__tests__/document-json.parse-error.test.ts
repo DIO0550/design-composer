@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
-import type { DesignDocument } from "@/domains/design-document";
-import type { DocumentError } from "@/domains/document-error";
+import type { DesignDocument } from "@/domains/dcmp/design-document";
+import type { DocumentError } from "@/domains/session/document-error";
 import type { Result } from "@/utils/Result";
 import { DocumentJson } from "../index";
 

@@ -95,7 +95,10 @@ tools: Read, Grep, Glob, Bash
 `分類: module-api`。**typecheck も lint も落ちないので、見なければ通る。**
 
 - **deep import が入っていないか。** フォルダ外部からの import は `index.ts` 経由だけ。
-  `from "@/domains/<x>/<内部ファイル>"` の形が差分に無いか grep する
+  段数を数えず `python3 .claude/hooks/lib/import-rule-violations.py src` で見る
+  （`index.ts` の有無で判定する）。`domains/` はカテゴリを 1 段挟むので、
+  `@/domains/<カテゴリ>/<x>/<入れ子モジュール>` は正当で、パスの段数だけでは
+  内部ファイルへの deep import と区別できない
 - **`index.ts` 以外へ実装が切り出されていないか。** 分割が要るなら実装ファイルを 1 つ切り出す
   のではなく**サブフォルダに分割**する（サブフォルダも `index.ts` + `__tests__/` を保つ）
 - **`index.ts` の export が増えていないか。** 外部に公開する必要があるものだけに絞る。

@@ -1,5 +1,5 @@
-import { DesignDocument } from "@/domains/design-document";
-import type { DocumentError } from "@/domains/document-error";
+import { DesignDocument } from "@/domains/dcmp/design-document";
+import type { DocumentError } from "@/domains/session/document-error";
 import {
   DocumentMigration,
   DocumentMigrationError,

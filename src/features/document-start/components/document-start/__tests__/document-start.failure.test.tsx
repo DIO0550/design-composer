@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { expect, test } from "vitest";
-import type { DocumentError } from "@/domains/document-error";
+import type { DocumentError } from "@/domains/session/document-error";
 import type { DocumentIpcErrorKind } from "@/libs/document-ipc";
 import { DocumentStart } from "../index";
 

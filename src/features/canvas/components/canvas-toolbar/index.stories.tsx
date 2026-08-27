@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { NodeTemplate } from "@/domains/node-template";
+import type { NodeTemplate } from "@/domains/session/node-template";
 import { Option } from "@/utils/Option";
 import { CanvasToolbar } from "./index";
 

@@ -1,10 +1,10 @@
-import { Artboard } from "@/domains/artboard";
-import { BoxElement } from "@/domains/compiled-element";
-import type { CssDirection } from "@/domains/css-direction";
-import { DesignDocument } from "@/domains/design-document";
-import { Node } from "@/domains/node";
-import { NodeTree } from "@/domains/node-tree";
-import { ResolvedProps } from "@/domains/resolved-props";
+import { BoxElement } from "@/domains/compiled/compiled-element";
+import { Artboard } from "@/domains/dcmp/artboard";
+import type { CssDirection } from "@/domains/dcmp/css-direction";
+import { DesignDocument } from "@/domains/dcmp/design-document";
+import { Node } from "@/domains/dcmp/node";
+import { NodeTree } from "@/domains/dcmp/node-tree";
+import { ResolvedProps } from "@/domains/dcmp/resolved-props";
 import { Option } from "@/utils/Option";
 import { DraggedNode } from "../dragged-node";
 

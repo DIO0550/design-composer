@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import type { DocumentSelection } from "@/domains/document-selection";
+import type { DocumentSelection } from "@/domains/session/document-selection";
 import { CanvasView } from "@/features/canvas/domains/canvas-view";
 import {
   type NodeDragControl,

@@ -1,4 +1,4 @@
-import { DesignDocument } from "@/domains/design-document";
+import { DesignDocument } from "@/domains/dcmp/design-document";
 
 /**
  * artboard を 1 枚だけ持つドキュメント。幅の違いで「どの版か」を見分ける。

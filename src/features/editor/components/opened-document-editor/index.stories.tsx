@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, screen, waitFor } from "storybook/test";
-import { DesignDocument } from "@/domains/design-document";
+import { DesignDocument } from "@/domains/dcmp/design-document";
 import { SampleEditorState } from "@/features/editor/__stories__/sample-editor-state";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { ClockFake } from "@/libs/clock/fake";

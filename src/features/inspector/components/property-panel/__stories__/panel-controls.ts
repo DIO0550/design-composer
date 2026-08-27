@@ -1,11 +1,11 @@
-import { ShorthandNames } from "@/domains/primitive-schema";
+import { ShorthandNames } from "@/domains/dcmp/primitive-schema";
 import type {
   PropControl,
   PropControlSection,
   PropShorthandControl,
   SelectionControls,
-} from "@/domains/prop-control";
-import type { Side } from "@/domains/side";
+} from "@/domains/session/prop-control";
+import type { Side } from "@/domains/unit/side";
 import { Option } from "@/utils/Option";
 
 /*

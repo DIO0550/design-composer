@@ -1,4 +1,4 @@
-import type { ChildPosition } from "@/domains/child-position";
+import type { ChildPosition } from "@/domains/dcmp/child-position";
 import type { CanvasOffset } from "@/features/canvas/domains/canvas-view";
 import { CanvasBounds } from "../canvas-bounds";
 import type { DropParent } from "../drop-parent";

@@ -1,4 +1,4 @@
-import type { TokenKind, TokenRef, TokenValue } from "@/domains/token";
+import type { TokenKind, TokenRef, TokenValue } from "@/domains/dcmp/token";
 import { useEditor } from "@/features/editor/components/editor-provider";
 
 /**

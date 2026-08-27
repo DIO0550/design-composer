@@ -1,8 +1,11 @@
 import { expect, test } from "vitest";
 import { ReceivedAt } from "@/domains/__tests__/instants";
-import { Artboard } from "@/domains/artboard";
-import { DesignDocument, DocumentTemplate } from "@/domains/design-document";
-import { PropEdit } from "@/domains/node";
+import { Artboard } from "@/domains/dcmp/artboard";
+import {
+  DesignDocument,
+  DocumentTemplate,
+} from "@/domains/dcmp/design-document";
+import { PropEdit } from "@/domains/dcmp/node";
 import { stateWithThreeArtboards } from "@/features/editor/__tests__/artboard-fixtures";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";

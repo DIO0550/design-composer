@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import type { TokenSet } from "@/domains/token";
+import type { TokenSet } from "@/domains/dcmp/token";
 import { Font } from "@/utils/Font";
 import { TokenCss } from "../index";
 

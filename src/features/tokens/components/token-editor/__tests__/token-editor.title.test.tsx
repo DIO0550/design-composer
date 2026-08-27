@@ -1,8 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import { expect, test } from "vitest";
-import { DesignDocument } from "@/domains/design-document";
-import type { TokenRef } from "@/domains/token";
-import { TokenSelection } from "@/domains/token-selection";
+import { DesignDocument } from "@/domains/dcmp/design-document";
+import type { TokenRef } from "@/domains/dcmp/token";
+import { TokenSelection } from "@/domains/session/token-selection";
 import { Option } from "@/utils/Option";
 import { TokenEditor } from "../index";
 

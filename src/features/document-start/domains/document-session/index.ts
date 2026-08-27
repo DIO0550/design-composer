@@ -1,5 +1,5 @@
-import type { DocumentError } from "@/domains/document-error";
-import type { OpenedDocument } from "@/domains/opened-document";
+import type { DocumentError } from "@/domains/session/document-error";
+import type { OpenedDocument } from "@/domains/session/opened-document";
 import type { DocumentDialogError } from "@/libs/document-dialog";
 import type { DocumentIpcError } from "@/libs/document-ipc";
 import { Option } from "@/utils/Option";

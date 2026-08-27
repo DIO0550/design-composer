@@ -1,7 +1,7 @@
 import { screen } from "@testing-library/react";
 import { expect, test } from "vitest";
-import { DesignDocument } from "@/domains/design-document";
-import { DocumentSelection } from "@/domains/document-selection";
+import { DesignDocument } from "@/domains/dcmp/design-document";
+import { DocumentSelection } from "@/domains/session/document-selection";
 import { renderCanvas, selectionFromArtboards } from "./setup";
 
 /** 画面に出ている artboard を、描画されている順に並べた名前。 */

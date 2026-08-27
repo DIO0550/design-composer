@@ -1,8 +1,8 @@
 import { type PointerEvent as ReactPointerEvent, useReducer } from "react";
-import type { ChildPosition } from "@/domains/child-position";
-import { ElementNameAttribute } from "@/domains/compiled-element";
-import type { DesignDocument } from "@/domains/design-document";
-import type { NodeTemplate } from "@/domains/node-template";
+import { ElementNameAttribute } from "@/domains/compiled/compiled-element";
+import type { ChildPosition } from "@/domains/dcmp/child-position";
+import type { DesignDocument } from "@/domains/dcmp/design-document";
+import type { NodeTemplate } from "@/domains/session/node-template";
 import type { CanvasOffset } from "@/features/canvas/domains/canvas-view";
 import { NodeDrag } from "@/features/canvas/domains/node-drag";
 import {
