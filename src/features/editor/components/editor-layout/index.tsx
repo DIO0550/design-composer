@@ -20,7 +20,10 @@ type FreezablePaneProps = PaneProps & Readonly<{ isFrozen: boolean }>;
  * 落としても見た目が変わらないため（分けると器が 1 つ増える）。
  *
  * この class を落としても凍結の判定は動いたままで、テストは 1 件も落ちない。
- * 気づく手段は Storybook の視覚差分だけ。
+ * 気づく手段は `OpenedDocumentEditor / ファイルが不正になった編集画面` の視覚差分だけ。
+ *
+ * Why not: `EditorLayout / 凍結した3ペイン` は数えない。ペインの中身が白地の文字だけなので、
+ * 淡色に落ちても閾値に届く差にならない（#344 で実測。器の有無では変わらない）。
  */
 const FrozenPaneClass = "opacity-45 saturate-[0.4]";
 
