@@ -46,6 +46,10 @@ jobs:
       - name: Build Storybook
         run: pnpm build-storybook
 
+      # 撮影はストーリーが撮影範囲に収まっていないと落ちる(#344)。ここが落ちると後段の
+      # デプロイごと止まり、ベースラインだけでなく Storybook 本体の配信も止まる。
+      # それでも continue-on-error にしないのは、PR 側の同じ検査が先に落ちて main へ入る
+      # 経路が塞がっているため。入ってしまっても、直す PR は自分の撮影が通るので復帰できる。
       - name: Capture visual baseline
         run: pnpm visual:capture -- --storybook-dir storybook-static --out visual-baseline
 
