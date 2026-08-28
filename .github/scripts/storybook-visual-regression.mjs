@@ -278,7 +278,9 @@ const capture = async (options) => {
       const scrollSize = await evaluateInPage(cdp, documentScrollSizeProbe);
       const outOfFrame = scrollSize.scrollWidth > width || scrollSize.scrollHeight > height;
       if (outOfFrame) {
-        overflowing.push({ id: story.id, ...scrollSize });
+        // ラベルはレポートと PR コメントで人が見ている綴りに合わせる(id だけだと引き当てに戻る)。
+        const label = storyLabel({ story: story.id, title: story.title, name: story.name });
+        overflowing.push({ id: story.id, label, ...scrollSize });
       }
       writeFileSync(join(out, `${story.id}.png`), Buffer.from(screenshot.data, "base64"));
       cdp.close();
@@ -292,8 +294,11 @@ const capture = async (options) => {
     // はみ出した部分は写らないので、その中身は視覚差分の対象から外れる(#322 では
     // 下端のドックが枠外へ出たまま誰も気づかなかった)。絵を見ても分からないため、
     // 撮影のついでに読んだ実寸で落とす。
+    //
+    // この検査を守るテストは無い(このリポジトリの vitest は src/ だけを見る)。壊れて
+    // いないことは `--height` に小さい値を与えて 1 回走らせ、非 0 で終わることで確かめる。
     if (overflowing.length > 0) {
-      const lines = overflowing.map(({ id, scrollWidth, scrollHeight }) => `  ${id}: ${scrollWidth}x${scrollHeight}`);
+      const lines = overflowing.map(({ id, label, scrollWidth, scrollHeight }) => `  ${label} [${id}]: ${scrollWidth}x${scrollHeight}`);
       const message = [
         `${overflowing.length} story(ies) do not fit in the ${width}x${height} capture viewport:`,
         ...lines,
