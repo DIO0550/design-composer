@@ -47,7 +47,7 @@ export function EditorScreen({
             opened={session.opened}
           />
         ) : (
-          // 開く前に見つかった不正なので、由来は unopened-file で固定になる
+          // 解釈できずに開けなかったファイルなので、由来は unopened-file で固定になる
           // （飛び先のノードも書き戻す表示中の内容もまだ無い）。
           <DocumentStart
             session={session}

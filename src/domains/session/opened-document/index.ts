@@ -3,7 +3,6 @@ import {
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
 import type { DocumentError } from "@/domains/session/document-error";
-import { DocumentReload } from "@/domains/session/document-reload";
 import { ArrayEx } from "@/utils/ArrayEx";
 import type { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
@@ -28,6 +27,11 @@ function pathSegments(path: string): readonly string[] {
  *
  * 自動保存も外部変更の監視も「どのパスの、どのドキュメントか」が揃って初めて決まる。
  * 片方だけでは何も書き出せず何も監視できないため、対を 1 つの型にして名前を付ける。
+ *
+ * **ここが運ぶドキュメントはスキーマ検証を通っていない**（docs/03-schema.md
+ * 「不正ファイル時の挙動」の「開く時」）。取り込みの `DocumentReload.reloaded` が
+ * 検証済みを運ぶのと非対称で、その違いは型に出ない。消費側は `DocumentError.collectFrom`
+ * で自分で集める前提で書く。
  */
 export type OpenedDocument = Readonly<{
   path: string;
@@ -48,28 +52,28 @@ export const OpenedDocument = {
   },
 
   /**
-   * 解釈した結果を、開いたドキュメントか、画面に出すエラー一覧に振り分ける。
+   * 解釈した結果に保存先を添えて、開いた状態にする。
    *
-   * スキーマ検証まで含めた振り分けは外部変更の取り込みと同一なので `DocumentReload`
-   * に委ね、ここは保存先と対にするだけにする。同じ判定を 2 つ持つと、仕様が動いた
-   * ときに片方だけ追従して食い違うため。
+   * **スキーマ検証はしない。** 組み立てられたドキュメントは、不正でもそのまま開いて
+   * エラー一覧として画面に出す（docs/03-schema.md「不正ファイル時の挙動」の「開く時」）。
+   * Why: 自動保存は画面の内容をそのまま書き出すので、アプリ内の編集で作った不正は
+   * ファイルにも載る。ここで落とすと、それを直す手段が外部エディタにしか無くなる（#158）。
+   *
+   * Why not: 取り込みと同じ `DocumentReload` へ委ねない。開いている最中の外部変更は
+   * 「最後に正常だった状態を保つ」という別の規定に従うので、判定を共有できなくなった。
+   * Why not: `create(path, document)` を公開して `Result.map` を呼び出し側へ出さない。
+   * `{ path, document }` の対を組み立てる場所が `createFromTemplate` と 2 箇所に割れる。
    *
    * @param path このドキュメントの保存先
    * @param parsed 読み込んだ中身を解釈した結果
-   * @returns 開ける内容なら保存先と対にしたドキュメント、開けなければ画面に出す
-   *   エラー一覧
+   * @returns 解釈できていれば保存先と対にしたドキュメント。解釈に失敗していれば
+   *   その理由（載せる相手のドキュメントが組み立っていないので開けない）
    */
   fromParsed(
     path: string,
     parsed: Result<DesignDocument, readonly DocumentError[]>,
   ): Result<OpenedDocument, readonly DocumentError[]> {
-    const reload = DocumentReload.fromParsed(parsed);
-    switch (reload.kind) {
-      case "reloaded":
-        return Result.ok({ path, document: reload.document });
-      case "rejected":
-        return Result.err(reload.errors);
-    }
+    return Result.map(parsed, (document) => ({ path, document }));
   },
 
   /**

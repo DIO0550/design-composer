@@ -83,7 +83,7 @@ test("新規作成すると、選んだ保存先にファイルが作られる",
   expect(files.contentOf(OtherPath).some).toBe(true);
 });
 
-test("内容が不正なファイルを開くと、開けない理由が表示される", async () => {
+test("解釈できないファイルを開くと、開けない理由が表示される", async () => {
   renderEditorScreen(
     { [Path]: '{ "formatVersion": ' },
     { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
@@ -92,11 +92,13 @@ test("内容が不正なファイルを開くと、開けない理由が表示�
   await clickOpen();
 
   expect(
-    screen.getByText("ファイルの内容が正しくないため開けませんでした"),
+    screen.getByText(
+      "ファイルをドキュメントとして読み取れなかったため開けませんでした",
+    ),
   ).toBeDefined();
 });
 
-test("内容が不正なファイルを開くと、ファイルのエラー一覧が並ぶ", async () => {
+test("解釈できないファイルを開くと、ファイルのエラー一覧が並ぶ", async () => {
   renderEditorScreen(
     { [Path]: '{ "formatVersion": ' },
     { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },

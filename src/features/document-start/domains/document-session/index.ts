@@ -7,13 +7,17 @@ import { Option } from "@/utils/Option";
 /**
  * 開けなかった理由。
  *
- * 由来ごとに画面へ出すものが変わる（不正なファイルはエラー一覧、I/O とダイアログは
- * 1 行のメッセージ）ため、1 つのメッセージへ潰さずに分けて持つ。
+ * 由来ごとに画面へ出すものが変わる（解釈できなかったファイルはエラー一覧、I/O と
+ * ダイアログは 1 行のメッセージ）ため、1 つのメッセージへ潰さずに分けて持つ。
+ *
+ * `unparsable` が運ぶのは `DocumentJson.parse` が返した失敗だけ（字句スキャン・
+ * `JSON.parse`・版の解決・構造のデコード）。スキーマ検証で落ちるファイルはここへ来ず、
+ * そのまま開く（docs/03-schema.md「不正ファイル時の挙動」の「開く時」）。
  */
 export type DocumentOpenFailure =
   | Readonly<{ kind: "dialog"; error: DocumentDialogError }>
   | Readonly<{ kind: "io"; error: DocumentIpcError }>
-  | Readonly<{ kind: "invalid"; errors: readonly DocumentError[] }>;
+  | Readonly<{ kind: "unparsable"; errors: readonly DocumentError[] }>;
 
 /**
  * アプリがどのドキュメントを開いているか（docs/01-file-format.md「ファイル」/

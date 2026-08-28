@@ -94,18 +94,52 @@ const DocumentWithDanglingToken = DesignDocument.create({
 });
 
 /**
- * アプリ内の編集で使用中トークンを消したあとの状態（#128）。
+ * ドキュメント自身が不正な状態（#128）。アプリ内の編集で使用中トークンを消したあとも、
+ * その内容が自動保存されたファイルを開き直した直後も、画面はこれになる（#158）。
  *
  * このストーリーだけが、ドキュメント由来の一覧とキャンバスのツールバーが**重ならずに積まれる**
  * ことを映す（部品単体のストーリーにはツールバーが居ないため、重なりが誰にも見えない）。
  */
 export const DocumentErrors: Story = {
-  name: "編集で作った不正がある編集画面",
+  name: "ドキュメント自身が不正な編集画面",
   args: {
     ipc: DocumentIpcFake.create({
       [SamplePath]: DocumentJson.serialize(DocumentWithDanglingToken),
     }).ipc,
     opened: { path: SamplePath, document: DocumentWithDanglingToken },
+  },
+};
+
+/*
+ * 居ない部品を指すドキュメント。トークンの dangling と違い `DocumentHtml.compile` が
+ * 失敗するので、キャンバスには artboard が 1 枚も出ない。
+ */
+const DocumentWithMissingComponent = DesignDocument.create({
+  tokens: Sample.tokens,
+  components: Sample.components,
+  artboards: Sample.artboards.map((artboard) => ({
+    ...artboard,
+    children: artboard.children.map((node) =>
+      node.name === "home-login" ? { ...node, ref: "居ない部品" } : node,
+    ),
+  })),
+});
+
+/**
+ * 不正のうち**描画そのものが成立しない**もの（循環参照・居ない部品への参照）を開いた状態。
+ * 開いた時点から不正でありうるようになったので到達する（#158）。
+ *
+ * 映すのは、キャンバスがコンパイルの失敗 1 行になっても**左右のペインとエラー一覧は
+ * 生きている**こと。これが「不正でも開く」を成り立たせている前提で、ここが凍って
+ * 見えると判断ごと間違って読まれる。
+ */
+export const CompileFailed: Story = {
+  name: "コンパイルできないドキュメントの編集画面",
+  args: {
+    ipc: DocumentIpcFake.create({
+      [SamplePath]: DocumentJson.serialize(DocumentWithMissingComponent),
+    }).ipc,
+    opened: { path: SamplePath, document: DocumentWithMissingComponent },
   },
 };
 
