@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, screen, waitFor } from "storybook/test";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { SampleEditorState } from "@/features/editor/__stories__/sample-editor-state";
+import { ScreenHeightShell } from "@/features/editor/__stories__/screen-height-shell";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { ClockFake } from "@/libs/clock/fake";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
@@ -22,17 +23,12 @@ const meta = {
   title: "features/editor/OpenedDocumentEditor",
   component: OpenedDocumentEditor,
   parameters: { layout: "fullscreen" },
+  // 殻が無いと中身の高さまで伸び、下端のドックが撮影のビューポートの外へ出る（#322）。
   decorators: [
     (Story) => (
-      /*
-       * 編集画面は高さを親に合わせる（`EditorLayout` の doc）ので、器を与えないと中身の
-       * 高さまで伸び、下端のドックが撮影のビューポートの外へ出る（#322）。
-       * 写していないのは本体（`EditorScreen`）が上に置くファイル操作のツールバー 47px だけ。
-       * Why not: 本物のツールバーを入れると、それを触っただけで編集画面の絵が 4 本とも動く。
-       */
-      <div className="h-screen">
+      <ScreenHeightShell>
         <Story />
-      </div>
+      </ScreenHeightShell>
     ),
   ],
   args: {

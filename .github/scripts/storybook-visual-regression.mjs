@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { createServer } from "node:http";
 import { spawn, spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, extname, join } from "node:path";
 import { ODiffServer } from "odiff-bin";
@@ -116,6 +116,25 @@ const openCdp = async (wsUrl) => {
   return { send, close: () => socket.close() };
 };
 
+/**
+ * ページ内で関数を評価し、その戻り値を受け取る。
+ *
+ * @param cdp 対象ページへ開いた CDP 接続
+ * @param probe ページ内で実行する関数。ページの外の変数は参照できない(文字列化して送るため)
+ * @returns probe の戻り値
+ * @throws 評価中に例外が出たとき(probe の名前を添える)
+ */
+const evaluateInPage = async (cdp, probe) => {
+  const { result, exceptionDetails } = await cdp.send("Runtime.evaluate", {
+    expression: `(${probe.toString()})()`,
+    returnByValue: true,
+  });
+  if (exceptionDetails) {
+    throw new Error(`${probe.name} failed to evaluate: ${exceptionDetails.text ?? "unknown error"}`);
+  }
+  return result.value;
+};
+
 // ページ内で評価して、日本語グリフが notdef(豆腐)へフォールバックしていないか調べる。
 // 同条件で「あ」「未割り当てコードポイント」「空白」を描き分け、ビットマップを比較する。
 // 未割り当てコードポイントはどのフォントでも必ず notdef になるため、これと一致したら
@@ -141,14 +160,7 @@ const assertJapaneseFontAvailable = async () => {
   const target = await requestJson(`http://127.0.0.1:9222/json/new?${encodeURIComponent("about:blank")}`, { method: "PUT" });
   const cdp = await openCdp(target.webSocketDebuggerUrl);
   try {
-    const { result, exceptionDetails } = await cdp.send("Runtime.evaluate", {
-      expression: `(${japaneseGlyphProbe.toString()})()`,
-      returnByValue: true,
-    });
-    if (exceptionDetails) {
-      throw new Error(`Japanese font probe failed to evaluate: ${exceptionDetails.text ?? "unknown error"}`);
-    }
-    const { japanese, notdef, blank } = result.value;
+    const { japanese, notdef, blank } = await evaluateInPage(cdp, japaneseGlyphProbe);
     if (japanese === notdef || japanese === blank) {
       throw new Error(
         "No Japanese font is available to Chrome; Japanese text would be captured as tofu (□).\n" +
@@ -160,6 +172,16 @@ const assertJapaneseFontAvailable = async () => {
     await requestOk(`http://127.0.0.1:9222/json/close/${target.id}`);
   }
 };
+
+// ページ内で評価して、ページ全体が占めている大きさを読む。
+// 撮影は `captureBeyondViewport: false` なので、これが撮影サイズを超えた分は写らない。
+//
+// ここに出るのは**文書そのものが伸びた場合**だけ。`position: fixed` の重なり、
+// `overflow: hidden` の祖先にクリップされた中身、左・上へのはみ出しは数に入らない。
+const documentScrollSizeProbe = () => ({
+  scrollWidth: document.documentElement.scrollWidth,
+  scrollHeight: document.documentElement.scrollHeight,
+});
 
 const capture = async (options) => {
   const storybookDir = options["storybook-dir"] ?? "storybook-static";
@@ -225,6 +247,7 @@ const capture = async (options) => {
     const stories = Object.values(index.entries ?? {}).filter((entry) => entry.type === "story").sort((a, b) => a.id.localeCompare(b.id));
     writeFileSync(join(out, "stories.json"), JSON.stringify(stories.map(({ id, title, name }) => ({ id, title, name })), null, 2));
     const unstable = [];
+    const overflowing = [];
     for (const story of stories) {
       const target = await requestJson(`http://127.0.0.1:9222/json/new?${encodeURIComponent(`${origin}/iframe.html?id=${story.id}`)}`, { method: "PUT" });
       const cdp = await openCdp(target.webSocketDebuggerUrl);
@@ -252,6 +275,13 @@ const capture = async (options) => {
         screenshot = settledShot;
         unstable.push(story.id);
       }
+      const scrollSize = await evaluateInPage(cdp, documentScrollSizeProbe);
+      const outOfFrame = scrollSize.scrollWidth > width || scrollSize.scrollHeight > height;
+      if (outOfFrame) {
+        // ラベルはレポートと PR コメントで人が見ている綴りに合わせる(id だけだと引き当てに戻る)。
+        const label = storyLabel({ story: story.id, title: story.title, name: story.name });
+        overflowing.push({ id: story.id, label, ...scrollSize });
+      }
       writeFileSync(join(out, `${story.id}.png`), Buffer.from(screenshot.data, "base64"));
       cdp.close();
       await requestOk(`http://127.0.0.1:9222/json/close/${target.id}`);
@@ -260,6 +290,27 @@ const capture = async (options) => {
     if (unstable.length > 0) {
       // 撮影は続けるが、アニメーション等で揺れ続けるストーリーは差分の温床なので明示する。
       console.warn(`warning: ${unstable.length} story(ies) never stabilized within ${stableTimeoutMs}ms: ${unstable.join(", ")}`);
+    }
+    // はみ出した部分は写らないので、その中身は視覚差分の対象から外れる(#322 では
+    // 下端のドックが枠外へ出たまま誰も気づかなかった)。絵を見ても分からないため、
+    // 撮影のついでに読んだ実寸で落とす。
+    //
+    // この検査を守るテストは無い(このリポジトリの vitest は src/ だけを見る)。壊れて
+    // いないことは `--height` に小さい値を与えて 1 回走らせ、非 0 で終わることで確かめる。
+    if (overflowing.length > 0) {
+      const lines = overflowing.map(({ id, label, scrollWidth, scrollHeight }) => `  ${label} [${id}]: ${scrollWidth}x${scrollHeight}`);
+      const message = [
+        `${overflowing.length} story(ies) do not fit in the ${width}x${height} capture viewport:`,
+        ...lines,
+        "Give the story a container with a determined size (a decorator) instead of raising the capture size;",
+        "without one the content keeps growing with the capture viewport.",
+      ].join("\n");
+      // ここで落ちると compare まで届かず、PR に貼られるのは「レポートが見つかりませんでした」に
+      // なる。どのストーリーが何 px かは run の要約にも書いて、ログを開かずに読めるようにする。
+      if (process.env.GITHUB_STEP_SUMMARY) {
+        appendFileSync(process.env.GITHUB_STEP_SUMMARY, `### Storybook capture\n\n\`\`\`\n${message}\n\`\`\`\n`);
+      }
+      throw new Error(message);
     }
   } finally {
     chrome.kill("SIGTERM");
