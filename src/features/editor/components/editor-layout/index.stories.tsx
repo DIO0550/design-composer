@@ -13,6 +13,19 @@ const meta = {
   title: "features/editor/EditorLayout",
   component: EditorLayout,
   parameters: { layout: "fullscreen" },
+  decorators: [
+    (Story) => (
+      /*
+       * 3 ペインは高さを画面ではなく親に合わせる（`EditorLayout` の doc）ので、高さの決まった
+       * 親が無いと中身の高さ（24px）まで潰れ、本物の画面と違うものが映る（#344）。
+       * Why not: 本体（`EditorScreen`）が上に置くファイル操作のツールバーは写さない。
+       * 写すと、器のストーリーがその帯を触っただけで動く。
+       */
+      <div className="h-screen">
+        <Story />
+      </div>
+    ),
+  ],
   args: { dragHandlers: IdleDragHandlers },
 } satisfies Meta<typeof EditorLayout>;
 
