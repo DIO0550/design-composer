@@ -1,9 +1,10 @@
+import { MissingTypography } from "@/domains/__tests__/sample-document";
 import { Artboard } from "@/domains/dcmp/artboard";
 import {
   DesignDocument,
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
-import { PropEdit } from "@/domains/dcmp/node";
+import { PropEdit, type RefNode } from "@/domains/dcmp/node";
 import { Result } from "@/utils/Result";
 
 /**
@@ -66,9 +67,6 @@ export const SampleDocument = DesignDocument.create({
   ],
 });
 
-/** どのトークン一式にも入っていない typography トークンの名前。 */
-const MissingTypography = "居ないタイポグラフィ";
-
 /**
  * `home-title` が居ないトークンを指している `SampleDocument`。
  *
@@ -84,20 +82,31 @@ export const SampleDocumentWithDanglingToken = Result.unwrap(
   ),
 );
 
+/** どの部品一式にも入っていない部品の名前。 */
+export const MissingComponent = "居ない部品";
+
 /**
  * `home-login` が居ない部品を指している `SampleDocument`。
  *
  * こちらは `DocumentHtml.compile` が失敗するため、キャンバスが 1 枚も描けない
  * （`canvas-body` がコンパイルの失敗を 1 行で出す）。開いた直後からこの状態に
  * なりうるようになったので（#158）、そこでも直せることを確かめる側が使う。
+ *
+ * Why: 差し替える中身を `RefNode` と注釈した定数にしてから渡す。`Node` は直和なので、
+ * 注釈なしの literal（`{ ...node, ref }` を含む）だと `type` と `ref` を両方持つノードが
+ * 型を通ってしまう（`Node.isRef` は `"ref" in node` で先に真になり、props を抱えたまま
+ * ref ノード扱いになる）。`replaceNode` に通すだけでは閉じない。
  */
-export const SampleDocumentWithMissingComponent = DesignDocument.create({
-  tokens: SampleDocument.tokens,
-  components: SampleDocument.components,
-  artboards: SampleDocument.artboards.map((artboard) => ({
-    ...artboard,
-    children: artboard.children.map((node) =>
-      node.name === "home-login" ? { ...node, ref: "居ない部品" } : node,
-    ),
-  })),
-});
+const MissingComponentInstance: RefNode = {
+  name: "home-login",
+  ref: MissingComponent,
+  overrides: { label: "ログイン" },
+};
+
+export const SampleDocumentWithMissingComponent = Result.unwrap(
+  DesignDocument.replaceNode(
+    SampleDocument,
+    MissingComponentInstance.name,
+    MissingComponentInstance,
+  ),
+);
