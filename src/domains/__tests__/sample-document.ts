@@ -1,5 +1,8 @@
 import { Artboard } from "@/domains/dcmp/artboard";
-import { DesignDocument } from "@/domains/dcmp/design-document";
+import {
+  DesignDocument,
+  DocumentTemplate,
+} from "@/domains/dcmp/design-document";
 import type { OpenedDocument } from "@/domains/session/opened-document";
 import { DocumentJson } from "@/libs/document-json";
 
@@ -27,6 +30,57 @@ export function artboardDocument(name: string): DesignDocument {
  */
 export function artboardContent(name: string): string {
   return DocumentJson.serialize(artboardDocument(name));
+}
+
+/**
+ * どのトークン一式にも入っていない typography トークンの名前。
+ *
+ * 不正の作り方を**部品**ではなく**トークン**の dangling に揃えるための綴り。部品の
+ * dangling は `DocumentHtml.compile` が失敗してキャンバスが 1 枚も描けなくなるので、
+ * 「開けて、見えて、直せる」を確かめる側からは外れる（トークン参照は `var()` に落ちるだけ）。
+ */
+export const MissingTypography = "居ないタイポグラフィ";
+
+/**
+ * 存在しないトークンを指しているドキュメント。パースは通り、スキーマ検証だけが落ちる。
+ *
+ * @param name 収める artboard の名前
+ * @returns 中の Text が `MissingTypography` を指しているドキュメント
+ */
+export function danglingTokenDocument(name: string): DesignDocument {
+  return DesignDocument.create({
+    // 雛形のトークンを入れるのは、スキーマが既定値で指すトークン（Text の `color`）まで
+    // dangling になり、確かめたい 1 件が埋もれるため。
+    tokens: DocumentTemplate.Default.tokens,
+    artboards: [
+      Artboard.create({
+        name,
+        width: 360,
+        height: 240,
+        children: [
+          {
+            name: `${name}-title`,
+            type: "Text",
+            props: { content: "ホーム", typography: MissingTypography },
+          },
+        ],
+      }),
+    ],
+  });
+}
+
+/**
+ * ファイルに載っている状態の `danglingTokenDocument`（`artboardContent` と同じ理由で
+ * `libs/` に触れる）。
+ *
+ * 自動保存が書き出す綴りと、開き直すときに読む綴りを同じものにするため、往復を
+ * 確かめる側はこれを使う（別々に組むと、書いた綴りが読み直せることを誰も見ない）。
+ *
+ * @param name 収める artboard の名前
+ * @returns そのドキュメントを保存したときのファイルの中身
+ */
+export function danglingTokenContent(name: string): string {
+  return DocumentJson.serialize(danglingTokenDocument(name));
 }
 
 /**

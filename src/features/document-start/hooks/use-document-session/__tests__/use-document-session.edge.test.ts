@@ -1,5 +1,9 @@
 import { expect, test } from "vitest";
-import { artboardContent } from "@/domains/__tests__/sample-document";
+import {
+  artboardContent,
+  danglingTokenContent,
+  danglingTokenDocument,
+} from "@/domains/__tests__/sample-document";
 import { DocumentSession } from "@/features/document-start/domains/document-session";
 import { DialogChoice } from "@/libs/document-dialog/fake";
 import { Option } from "@/utils/Option";
@@ -46,7 +50,7 @@ test("読み込めないファイルを選ぶと、その失敗が残る", async
   );
 });
 
-test("内容が不正なファイルを選ぶと、エラー一覧が残る", async () => {
+test("解釈できないファイルを選ぶと、エラー一覧が残る", async () => {
   const observer = renderDocumentSession(
     { [Path]: '{ "formatVersion": ' },
     { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
@@ -56,7 +60,7 @@ test("内容が不正なファイルを選ぶと、エラー一覧が残る", as
 
   expect(observer.session()).toStrictEqual(
     DocumentSession.failed({
-      kind: "invalid",
+      kind: "unparsable",
       errors: [
         {
           kind: "syntax-error",
@@ -64,6 +68,27 @@ test("内容が不正なファイルを選ぶと、エラー一覧が残る", as
           location: { kind: "text-position", position: expect.any(Number) },
         },
       ],
+    }),
+  );
+});
+
+/*
+ * 自動保存が書き出した不正なドキュメントを開き直せること（#158）。置いてある内容は
+ * 自動保存が書くのと同じ綴り（`danglingTokenContent`）なので、往復がここで閉じる。
+ */
+test("スキーマ検証にだけ落ちるファイルを選ぶと、そのまま開いた状態になる", async () => {
+  const observer = renderDocumentSession(
+    { [Path]: danglingTokenContent("home") },
+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
+  );
+
+  await observer.openDocument();
+
+  // JSON を経由すると省略可能なキーが落ちるため、キーの有無ではなく値で比べる。
+  expect(observer.session()).toEqual(
+    DocumentSession.opened({
+      path: Path,
+      document: danglingTokenDocument("home"),
     }),
   );
 });

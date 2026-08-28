@@ -8,7 +8,7 @@ import type { ValueOf } from "@/types/ValueOf";
  * 由来ごとに画面での意味が違うので、一覧を出す側が取り違えないよう名前で指せるようにする
  * （rules/coding.md「値の集合から union を導出する」）。
  *
- * - `unopened-file`: 開こうとしたファイルが不正で、まだ何も開けていない（開始画面）
+ * - `unopened-file`: 開こうとしたファイルを解釈できず、まだ何も開けていない（開始画面）
  * - `opened-file`: 開いているファイルが不正で、映っているのは最後に正常だった表示（docs/03-schema.md）
  * - `document`: 映っているものは最新で、その中身が不正
  *

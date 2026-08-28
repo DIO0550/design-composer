@@ -1,14 +1,15 @@
 import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { DesignDocument } from "@/domains/dcmp/design-document";
-import { PropEdit } from "@/domains/dcmp/node";
-import { SampleDocument } from "@/features/editor/__tests__/sample-document";
+import type { DesignDocument } from "@/domains/dcmp/design-document";
+import {
+  SampleDocument,
+  SampleDocumentWithDanglingToken,
+} from "@/features/editor/__tests__/sample-document";
 import { type LeftPaneView, LeftPaneViewLabels } from "@/features/sidebar";
 import { changeFileExternally } from "@/libs/__tests__/document-change";
 import { ClockFake } from "@/libs/clock/fake";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
-import { Result } from "@/utils/Result";
 import { OpenedDocumentEditor } from "../index";
 
 /** 開いているファイル。テストの中で開いているファイルは常に 1 つ。 */
@@ -93,25 +94,16 @@ export async function fixFileExternally(fake: DocumentIpcFake): Promise<void> {
  *
  * `breakFileExternally` の壊し方（字句スキャンで落ちる）ではエラーの場所が
  * 文字位置になり、ノードを指す行が 1 つも出ない。エラー行から該当ノードへ飛ぶ
- * 経路を確かめるには、**パースは通り、スキーマ検証で落ち、しかも指す先が
- * 最後に正常だった表示にも在る**内容が要る（#136）。
- *
- * `home-title` は `SampleDocument` にも在るので、飛び先が成立する。
+ * 経路を確かめるにはノードを指すエラーが要る（#136）ので、
+ * `SampleDocumentWithDanglingToken` を書き込む。
  */
 export async function invalidateFileExternally(
   fake: DocumentIpcFake,
 ): Promise<void> {
-  const dangling = Result.unwrap(
-    DesignDocument.applyPropEdit(
-      SampleDocument,
-      "home-title",
-      PropEdit.set(["typography"], "居ないタイポグラフィ"),
-    ),
-  );
   await changeFileExternally({
     fake,
     path: Path,
-    content: DocumentJson.serialize(dangling),
+    content: DocumentJson.serialize(SampleDocumentWithDanglingToken),
   });
 }
 
@@ -136,7 +128,10 @@ export function fileErrorList(): HTMLElement {
   return screen.getByRole("alert", { name: "エラー一覧" });
 }
 
-/** 下端に出ている、編集で作った不正の一覧。 */
+/**
+ * 下端に出ている、ドキュメント自身の不正の一覧。編集で作ったものと、開いた時点で
+ * 既にあったもの（#158）の両方がここに出る。
+ */
 export function documentErrorList(): HTMLElement {
   return screen.getByRole("alert", { name: "ドキュメントのエラー一覧" });
 }

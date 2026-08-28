@@ -18,7 +18,7 @@ function ioFailure(kind: DocumentIpcErrorKind) {
 /**
  * 渡されたエラーに依らず必ず何かを描くスタブ。
  * 「一覧を出すかどうか」だけを見るテストで使う。エラーが 0 件でも描くので、
- * 出す条件（不正なファイルのときだけ）を壊すと必ず落ちる。
+ * 出す条件（解釈できなかったファイルのときだけ）を壊すと必ず落ちる。
  */
 function renderPlaceholder() {
   return <p>一覧の代役</p>;
@@ -136,18 +136,18 @@ test("ダイアログを出せなかったときは、ファイルの選択に�
   expect(screen.getByText("ファイルの選択に失敗しました")).toBeDefined();
 });
 
-test("内容が不正なファイルのときは、そのエラーが一覧に渡される", () => {
+test("解釈できなかったファイルのときは、そのエラーが一覧に渡される", () => {
   render(
     <DocumentStart
       session={{
         kind: "failed",
         failure: {
-          kind: "invalid",
+          kind: "unparsable",
           errors: [
             {
-              kind: "dangling-ref",
-              message: 'unknown component "missing-button"',
-              location: { kind: "node", nodeName: "home-login" },
+              kind: "syntax-error",
+              message: "unexpected end of JSON input",
+              location: { kind: "text-position", position: 19 },
             },
           ],
         },
@@ -156,7 +156,7 @@ test("内容が不正なファイルのときは、そのエラーが一覧に�
     />,
   );
 
-  expect(screen.getByText('unknown component "missing-button"')).toBeDefined();
+  expect(screen.getByText("unexpected end of JSON input")).toBeDefined();
 });
 
 test("読み込んでいる間は、その最中であることが分かる", () => {

@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, screen, waitFor } from "storybook/test";
 import { DesignDocument } from "@/domains/dcmp/design-document";
+import type { RefNode } from "@/domains/dcmp/node";
 import { SampleEditorState } from "@/features/editor/__stories__/sample-editor-state";
 import { ScreenHeightShell } from "@/features/editor/__stories__/screen-height-shell";
 import { EditorState } from "@/features/editor/domains/editor-state";
@@ -90,18 +91,68 @@ const DocumentWithDanglingToken = DesignDocument.create({
 });
 
 /**
- * アプリ内の編集で使用中トークンを消したあとの状態（#128）。
+ * ドキュメント自身が不正な状態（#128）。アプリ内の編集で使用中トークンを消したあとも、
+ * その内容が自動保存されたファイルを開き直した直後も、画面はこれになる（#158）。
  *
- * このストーリーだけが、ドキュメント由来の一覧とキャンバスのツールバーが**重ならずに積まれる**
- * ことを映す（部品単体のストーリーにはツールバーが居ないため、重なりが誰にも見えない）。
+ * ドキュメント由来の一覧とキャンバスのツールバーが**重ならずに積まれる**ことを映す
+ * （部品単体のストーリーにはツールバーが居ないため、重なりが誰にも見えない）。
+ * 同じものは `CompileFailed` も映すが、あちらはキャンバスが描けない側の絵。
  */
 export const DocumentErrors: Story = {
-  name: "編集で作った不正がある編集画面",
+  name: "ドキュメント自身が不正な編集画面",
   args: {
     ipc: DocumentIpcFake.create({
       [SamplePath]: DocumentJson.serialize(DocumentWithDanglingToken),
     }).ipc,
     opened: { path: SamplePath, document: DocumentWithDanglingToken },
+  },
+};
+
+/*
+ * 居ない部品へ向け直した `home-login`。`RefNode` と注釈した定数にしてから差し込むのは、
+ * `Node` が直和で、注釈なしの literal（`{ ...node, ref }` を含む）だと `type` と `ref` を
+ * 両方持つノードが型を通ってしまうため（`Node.isRef` は `"ref" in node` で先に真になる）。
+ */
+const MissingComponentInstance: RefNode = {
+  name: "home-login",
+  ref: "居ない部品",
+  overrides: { label: "ログイン" },
+};
+
+/*
+ * 居ない部品を指すドキュメント。トークンの dangling と違い `DocumentHtml.compile` が
+ * 失敗するので、キャンバスには artboard が 1 枚も出ない。
+ * Why not: テスト側と揃えて `DesignDocument.replaceNode` は通さない。隣の
+ * `DocumentWithDanglingToken` と同じ理由で、ストーリーには `Result` の失敗を伝える先が無い。
+ */
+const DocumentWithMissingComponent = DesignDocument.create({
+  tokens: Sample.tokens,
+  components: Sample.components,
+  artboards: Sample.artboards.map((artboard) => ({
+    ...artboard,
+    children: artboard.children.map((node) =>
+      node.name === MissingComponentInstance.name
+        ? MissingComponentInstance
+        : node,
+    ),
+  })),
+});
+
+/**
+ * 不正のうち**描画そのものが成立しない**もの（循環参照・居ない部品への参照）を開いた状態。
+ * 開いた時点から不正でありうるようになったので到達する（#158）。
+ *
+ * 映すのは、キャンバスがコンパイルの失敗 1 行になっても**左右のペインとエラー一覧は
+ * 生きている**こと。これが「不正でも開く」を成り立たせている前提で、ここが凍って
+ * 見えると判断ごと間違って読まれる。
+ */
+export const CompileFailed: Story = {
+  name: "コンパイルできないドキュメントの編集画面",
+  args: {
+    ipc: DocumentIpcFake.create({
+      [SamplePath]: DocumentJson.serialize(DocumentWithMissingComponent),
+    }).ipc,
+    opened: { path: SamplePath, document: DocumentWithMissingComponent },
   },
 };
 
@@ -118,8 +169,8 @@ const brokenFiles = DocumentIpcFake.create({
  * 一度に映す**（帯の色 / 左ペインの淡色と `凍結中` / スクリムとバッジ /
  * 右ペインの「選択は凍結中」）。
  *
- * 開いてから壊すのは、取り込みが**変更の通知**でしか起きないため。壊れた中身で
- * 開き直しても凍結にはならない（それは「開けないファイル」で、別の画面）。
+ * 開いてから壊すのは、取り込みが**変更の通知**でしか起きないため。壊れた中身で開き直しても
+ * 凍結にはならない（解釈できなければ開始画面、スキーマ検証だけなら `DocumentErrors` の絵）。
  *
  * この `play` に凍結の見た目を預けている点は弱い。撮影は「同じフレームが 2 回続いたら
  * 採用」なので、`play` が間に合わなければ**通常表示がベースラインに焼き付き、しかも

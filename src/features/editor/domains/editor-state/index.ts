@@ -38,8 +38,7 @@ import { Option } from "@/utils/Option";
  * （docs/03-schema.md「不正ファイル時の挙動」）。この間は編集を受け付けない。
  * 古い表示から作った内容を書き出すと、より新しい外部の書き込みを潰すため（#155）。
  *
- * ドキュメント自身の不正（アプリ内の編集で作ったもの）はここに持たず
- * `EditorState.documentErrors` で導出する（#128）。
+ * ドキュメント自身の不正はここに持たず `EditorState.documentErrors` で導出する（#128）。
  */
 export type EditorState = Readonly<{
   history: EditHistory;
@@ -225,8 +224,8 @@ export const EditorState = {
   },
 
   /**
-   * 画面に映っているドキュメント自身の不正（#128）。使用中トークンの削除のように、
-   * アプリ内の編集で作った dangling 参照がここに出る。
+   * 画面に映っているドキュメント自身の不正（#128）。使用中トークンの削除で作った
+   * dangling 参照も、開いた時点で既にファイルに載っていた不正（#158）も、ここに出る。
    *
    * 状態として持たないのは、ドキュメントと食い違ったエラー一覧を表現できなく
    * するため（rules/hooks.md「導出可能な値の state 化禁止」）。

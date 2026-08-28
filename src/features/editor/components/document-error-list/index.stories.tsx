@@ -132,11 +132,11 @@ export const NoErrors: Story = {
 };
 
 /**
- * アプリ内の編集で作った不正（#128）。ファイル由来と見出し・読み上げ名が分かれ、
+ * ドキュメント自身の不正（#128）。ファイル由来と見出し・読み上げ名が分かれ、
  * 下端へ密着せず、キャンバスのツールバーと積み重なる形で出る。
  */
 export const DocumentOrigin: Story = {
-  name: "編集で作った不正",
+  name: "ドキュメント自身の不正",
   args: {
     origin: DocumentErrorOrigins.Document,
     onReveal: fn(),

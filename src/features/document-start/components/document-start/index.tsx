@@ -13,7 +13,7 @@ import type { DocumentIpcError } from "@/libs/document-ipc";
  * 呼び出し側が決める。ここが知っているのは一覧の部品ではなく、返るものが
  * 絶対位置で下端に重なるという置かれ方だけ。
  *
- * @param errors 開こうとしたファイルが持っていた不正
+ * @param errors 開こうとしたファイルを解釈できなかった理由
  * @returns この節の中で絶対位置に置かれる、エラーの一覧。位置を持たないものを返すと
  *   案内の文と一緒に中央へ流れ込む（型でもテストでも縛れないので、視覚差分で見る）
  */
@@ -44,8 +44,8 @@ function ioFailureLabel(error: DocumentIpcError): string {
 
 /**
  * 開けなかった理由。
- * 不正なファイルだけは件数分の一覧になるため、1 行のメッセージとは別の見せ方をする
- * （docs/03-schema.md「不正ファイル時の挙動」）。
+ * 解釈できなかったファイルだけは件数分の一覧になるため、1 行のメッセージとは
+ * 別の見せ方をする（docs/03-schema.md「不正ファイル時の挙動」の「開く時」）。
  */
 function OpenFailure({
   failure,
@@ -54,11 +54,11 @@ function OpenFailure({
   failure: DocumentOpenFailure;
   renderErrors: RenderDocumentErrors;
 }>) {
-  if (failure.kind === "invalid") {
+  if (failure.kind === "unparsable") {
     return (
       <>
         <p role="alert" className="text-red-700">
-          ファイルの内容が正しくないため開けませんでした
+          ファイルをドキュメントとして読み取れなかったため開けませんでした
         </p>
         {renderErrors(failure.errors)}
       </>
