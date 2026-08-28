@@ -62,7 +62,8 @@ export const OpenedDocument = {
    * Why not: 取り込みと同じ `DocumentReload` へ委ねない。開いている最中の外部変更は
    * 「最後に正常だった状態を保つ」という別の規定に従うので、判定を共有できなくなった。
    * Why not: `create(path, document)` を公開して `Result.map` を呼び出し側へ出さない。
-   * `{ path, document }` の対を組み立てる場所が `createFromTemplate` と 2 箇所に割れる。
+   * 「解釈できたならそのまま開く」という線引きが呼び出し側へ移り、開く経路が増えるたびに
+   * そこで決め直すことになる。
    *
    * @param path このドキュメントの保存先
    * @param parsed 読み込んだ中身を解釈した結果
