@@ -22,6 +22,19 @@ const meta = {
   title: "features/editor/OpenedDocumentEditor",
   component: OpenedDocumentEditor,
   parameters: { layout: "fullscreen" },
+  decorators: [
+    (Story) => (
+      /*
+       * 編集画面は高さを親に合わせる（`EditorLayout` の doc）ので、器を与えないと中身の
+       * 高さまで伸び、下端のドックが撮影のビューポートの外へ出る（#322）。
+       * 写していないのは本体（`EditorScreen`）が上に置くファイル操作のツールバー 47px だけ。
+       * Why not: 本物のツールバーを入れると、それを触っただけで編集画面の絵が 4 本とも動く。
+       */
+      <div className="h-screen">
+        <Story />
+      </div>
+    ),
+  ],
   args: {
     clock: clock.clock,
     ipc: files.ipc,
