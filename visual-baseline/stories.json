@@ -262,7 +262,7 @@
   {
     "id": "features-editor-documenterrorlist--document-origin",
     "title": "features/editor/DocumentErrorList",
-    "name": "編集で作った不正"
+    "name": "ドキュメント自身の不正"
   },
   {
     "id": "features-editor-documenterrorlist--no-errors",
@@ -325,6 +325,11 @@
     "name": "保存中"
   },
   {
+    "id": "features-editor-openeddocumenteditor--compile-failed",
+    "title": "features/editor/OpenedDocumentEditor",
+    "name": "コンパイルできないドキュメントの編集画面"
+  },
+  {
     "id": "features-editor-openeddocumenteditor--default",
     "title": "features/editor/OpenedDocumentEditor",
     "name": "編集画面"
@@ -332,7 +337,7 @@
   {
     "id": "features-editor-openeddocumenteditor--document-errors",
     "title": "features/editor/OpenedDocumentEditor",
-    "name": "編集で作った不正がある編集画面"
+    "name": "ドキュメント自身が不正な編集画面"
   },
   {
     "id": "features-editor-openeddocumenteditor--file-invalid",
