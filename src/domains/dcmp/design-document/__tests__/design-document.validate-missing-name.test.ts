@@ -1,8 +1,9 @@
 import { expect, test } from "vitest";
-import { DesignDocument } from "../index";
+import { DesignDocument, DocumentTemplate } from "../index";
 
 test("name が欠落したノードは missing-name エラーになる", () => {
   const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
     artboards: [
       {
         name: "screen",
@@ -25,6 +26,7 @@ test("name が欠落したノードは missing-name エラーになる", () => {
 
 test("name が空文字のノードは missing-name エラーになる", () => {
   const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
     artboards: [
       {
         name: "screen",
@@ -44,6 +46,7 @@ test("name が空文字のノードは missing-name エラーになる", () => {
 
 test("name が欠落したノードは親の名前と子の位置で報告される", () => {
   const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
     artboards: [
       {
         name: "screen",
@@ -82,6 +85,7 @@ test("name が欠落した artboard は missing-name エラーになる", () => 
 
 test("部品内部のノードの name 欠落も missing-name エラーになる", () => {
   const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
     components: {
       card: { type: "Box", children: [{ name: "", type: "Text" }] },
     },
@@ -96,6 +100,7 @@ test("部品内部のノードの name 欠落も missing-name エラーになる
 
 test("name が欠落したノードは識別子規則違反として二重に報告されない", () => {
   const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
     artboards: [
       {
         name: "screen",

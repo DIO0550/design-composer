@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import type { ComponentSet } from "@/domains/dcmp/component";
 import { Result } from "@/utils/Result";
-import { DesignDocument } from "../index";
+import { DesignDocument, DocumentTemplate } from "../index";
 
 const components: ComponentSet = {
   "primary-button": {
@@ -122,6 +122,7 @@ test("解除した実ノード自身の name は変わらない", () => {
 
 test("解除したドキュメントは部品定義の内部ノード名と重複しない", () => {
   const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
     components: {
       card: { type: "Box", children: [{ name: "card-label", type: "Text" }] },
     },

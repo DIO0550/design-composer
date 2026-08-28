@@ -1,8 +1,9 @@
 import { expect, test } from "vitest";
-import { DesignDocument } from "../index";
+import { DesignDocument, DocumentTemplate } from "../index";
 
 test("publicProps に宣言の無いキーを上書きすると undeclared-override エラーになる", () => {
   const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
     components: {
       button: {
         type: "Box",
@@ -61,6 +62,7 @@ test("publicProps を持たない部品への上書きは undeclared-override �
 
 test("宣言済みの publicProps を上書きしてもエラーにならない", () => {
   const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
     components: {
       button: {
         type: "Box",
@@ -85,6 +87,7 @@ test("宣言済みの publicProps を上書きしてもエラーにならない"
 
 test("上書き値が binding 先 prop の enum に無い値だと enum-violation エラーになる", () => {
   const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
     components: {
       button: {
         type: "Box",
@@ -121,6 +124,7 @@ test("上書き値が binding 先 prop の enum に無い値だと enum-violatio
 
 test("上書き値が binding 先 prop の literalType と異なると literal-type-mismatch エラーになる", () => {
   const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
     components: {
       button: {
         type: "Box",
@@ -185,6 +189,7 @@ test("上書き値が存在しないトークン名を指すと dangling-token �
 
 test("ネストした部品の publicProps 経由でも上書き値のドメインが継承される", () => {
   const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
     components: {
       label: {
         type: "Text",
@@ -221,6 +226,7 @@ test("ネストした部品の publicProps 経由でも上書き値のドメイ�
 
 test("複数の overrides の違反がすべて報告される", () => {
   const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
     components: {
       button: {
         type: "Box",

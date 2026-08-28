@@ -1,9 +1,10 @@
 import { expect, test } from "vitest";
 import { Result } from "@/utils/Result";
-import { DesignDocument } from "../index";
+import { DesignDocument, DocumentTemplate } from "../index";
 
 test("同じ artboard 内に同名のノードが2つあると duplicate-name エラーになる", () => {
   const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
     artboards: [
       {
         name: "screen",
@@ -26,6 +27,7 @@ test("同じ artboard 内に同名のノードが2つあると duplicate-name �
 
 test("別の artboard 配下であっても同名のノードは duplicate-name エラーになる", () => {
   const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
     artboards: [
       {
         name: "first-screen",
@@ -90,6 +92,7 @@ test("artboard 名とノード名が同じだと duplicate-name エラーにな�
 
 test("部品内部のノード名と artboard 配下のノード名が同じだと duplicate-name エラーになる", () => {
   const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
     components: {
       card: { type: "Box", children: [{ name: "label", type: "Text" }] },
     },
@@ -112,6 +115,7 @@ test("部品内部のノード名と artboard 配下のノード名が同じだ�
 
 test("入れ子の深さが違っても同名のノードは duplicate-name エラーになる", () => {
   const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
     artboards: [
       {
         name: "screen",
@@ -138,6 +142,7 @@ test("入れ子の深さが違っても同名のノードは duplicate-name エ�
 
 test("同じ名前が3回現れても duplicate-name エラーは1件だけ報告される", () => {
   const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
     artboards: [
       {
         name: "screen",
@@ -176,11 +181,11 @@ test("種別の違うトークンに同名があってもエラーにならな�
 test("トークン名とノード名が同じでもエラーにならない", () => {
   const document = DesignDocument.create({
     tokens: {
-      colors: { label: "#112233" },
+      colors: { label: "#112233", "gray-900": "#111827" },
       spacing: {},
       radius: {},
       shadows: {},
-      typography: {},
+      typography: { body: { fontSize: 16, lineHeight: 1.6, fontWeight: 400 } },
     },
     artboards: [
       {
@@ -197,6 +202,7 @@ test("トークン名とノード名が同じでもエラーにならない", ()
 
 test("部品化したサブツリーの内部ノード名も使用中の名前に含まれる", () => {
   const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
     artboards: [
       {
         name: "screen",

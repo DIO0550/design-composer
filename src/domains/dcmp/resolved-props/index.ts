@@ -3,7 +3,7 @@ import {
   PrimitiveSchema,
   type PrimitiveSchemas,
   type PrimitiveType,
-  type PropDefinitionRecord,
+  PropDefinitionRecord,
 } from "@/domains/dcmp/primitive-schema";
 
 type SchemaPropsOf<T extends PrimitiveType> =
@@ -23,19 +23,22 @@ export type ResolvedProps<T extends PrimitiveType> = Props &
 export const ResolvedProps = {
   resolve<T extends PrimitiveType>(type: T, props: Props): ResolvedProps<T> {
     const schema: PrimitiveSchema = PrimitiveSchema.forType(type);
-    const entries = Object.entries(schema.props).flatMap(
-      ([name, definition]): (readonly [string, PropValue])[] => {
-        if (name in props) {
-          return [[name, props[name]]];
-        }
-        if (definition.default === undefined) {
-          return [];
-        }
-        return [[name, definition.default]];
-      },
+    const declared = Object.keys(schema.props).flatMap(
+      (name): (readonly [string, PropValue])[] =>
+        name in props ? [[name, props[name]]] : [],
     );
-    // デフォルト持ち prop の補完は上の走査で保証されるため、狭い型への表明は安全
-    return Object.fromEntries(entries) as ResolvedProps<T>;
+    const defaulted = PropDefinitionRecord.collectDefaultsIfAbsent(
+      schema.props,
+      props,
+    ).map(({ name, value }): readonly [string, PropValue] => [name, value]);
+    // デフォルトの上に設定値を重ねる。2 つの走査の条件がずれても明示値が勝つ
+    // （`Object.fromEntries` は後勝ち。`session/prop-control` の `effectiveProps` と同じ形）
+    const resolved = {
+      ...Object.fromEntries(defaulted),
+      ...Object.fromEntries(declared),
+    };
+    // デフォルト持ち prop はどちらかの走査に必ず現れるため、狭い型への表明は安全
+    return resolved as ResolvedProps<T>;
   },
 
   forNode(node: PrimitiveNode): ResolvedProps<PrimitiveType> {

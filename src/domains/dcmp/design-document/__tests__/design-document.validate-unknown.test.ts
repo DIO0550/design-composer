@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { DesignDocument } from "../index";
+import { DesignDocument, DocumentTemplate } from "../index";
 
 test("未知の type を持つノードは unknown-type エラーになる", () => {
   const document = DesignDocument.create({
@@ -45,6 +45,7 @@ test("未知の prop を指定したノードは unknown-prop エラーになる
 
 test("未知の type でも子ノードは独立して検証される", () => {
   const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
     artboards: [
       {
         name: "screen",

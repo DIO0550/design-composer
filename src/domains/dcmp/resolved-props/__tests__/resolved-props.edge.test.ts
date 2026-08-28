@@ -16,6 +16,11 @@ test("デフォルト「なし」の prop も明示的に指定すればその�
   expect(resolved.gap).toBe("md");
 });
 
+test("スキーマに宣言の無い prop は解決済み props に含まれない", () => {
+  const resolved = ResolvedProps.resolve("Box", { unknownProp: "x" });
+  expect("unknownProp" in resolved).toBe(false);
+});
+
 test("resolve は渡された props オブジェクトを書き換えない", () => {
   const original = { direction: "row" as const };
   const frozen = Object.freeze(original);

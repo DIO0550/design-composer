@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { DesignDocument } from "../index";
+import { DesignDocument, DocumentTemplate } from "../index";
 
 test("存在しない部品名を参照すると dangling-ref エラーになる", () => {
   const document = DesignDocument.create({
@@ -117,6 +117,7 @@ test("3つの部品を経由する循環参照も検出される", () => {
 
 test("循環していない入れ子の部品参照はエラーにならない", () => {
   const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
     components: {
       label: { type: "Text" },
       button: {

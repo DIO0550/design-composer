@@ -1,6 +1,9 @@
 import { expect, test } from "vitest";
 import { ReceivedAt } from "@/domains/__tests__/instants";
-import { DesignDocument } from "@/domains/dcmp/design-document";
+import {
+  DesignDocument,
+  DocumentTemplate,
+} from "@/domains/dcmp/design-document";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 
@@ -11,6 +14,7 @@ import { EditorState } from "../index";
 function setupState(): EditorState {
   return EditorState.create(
     DesignDocument.create({
+      tokens: DocumentTemplate.Default.tokens,
       components: { card: { type: "Box" } },
       artboards: [
         {

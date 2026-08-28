@@ -211,12 +211,38 @@ export const PropDefinitionRecord = {
   },
 
   /**
+   * 設定されていない prop に効くデフォルト。並びはスキーマの宣言順。
+   *
+   * 「未設定ならどの値が効くか」はスキーマ自身の性質なので、デフォルト解決を要する側
+   * がそれぞれ走査を持たずここを呼ぶ（今の呼び出しは `collectErrors` と
+   * `ResolvedProps.resolve`。`session/prop-control` は既定の出どころが binding にも
+   * またがるので寄せていない）。
+   *
+   * @param schema 補いの出どころになる prop 定義
+   * @param props 実際に設定されている props
+   * @returns 未設定でデフォルトを持つ prop の、prop 名とデフォルト値の対の並び
+   */
+  collectDefaultsIfAbsent(
+    schema: PropDefinitionRecord,
+    props: Props,
+  ): readonly PropAssignment[] {
+    return Object.entries(schema).flatMap(
+      ([name, definition]): readonly PropAssignment[] => {
+        const isAbsentWithDefault =
+          !(name in props) && definition.default !== undefined;
+        return isAbsentWithDefault ? [{ name, value: definition.default }] : [];
+      },
+    );
+  },
+
+  /**
    * 設定されている props のうち、指したトークンを参照しているものの prop 名。
    *
    * 見るのは設定されている props だけで、スキーマのデフォルトで解決される値は含まない。
    * 「どの prop がそのトークンを指しているか」に答えるものなので、指せる実体
-   * （設定された prop）が無いものは答えに入らない（`collectErrors` が設定済み props
-   * しか検証しないのと同じ範囲）。
+   * （設定された prop）が無いものは答えに入らない。デフォルト経由の参照を数えるかは
+   * `Used by` の見せ方の判断なので #337 が決める（`collectErrors` はデフォルト解決後を
+   * 見るので、この範囲とは既に食い違っている）。
    *
    * スキーマに宣言の無い prop も含まない（値の意味が決まらない。
    * `unknown-prop` として `collectErrors` が報告する）。
@@ -238,16 +264,30 @@ export const PropDefinitionRecord = {
   },
 
   /**
-   * 設定されている props をスキーマに照らしてエラーを集める。
+   * デフォルト解決後の props をスキーマに照らしてエラーを集める。
    * 最初の1件で止めず全件返す（不正なファイルのエラー一覧を出せるようにするため）。
-   * スキーマに宣言の無い prop は `unknown-prop` として報告する。
+   *
+   * 未設定でデフォルトを持つ prop も照らすのは、その prop が実際に効いているため
+   * （docs/04-tokens.md「スキーマデフォルトとの関係」: デフォルトが指すトークンを
+   * 削除したら dangling 参照として検出される・特別扱いしない）。
+   *
+   * @param schema 照らす先の prop 定義
+   * @param props 実際に設定されている props
+   * @param tokens トークン参照の解決に使うトークン一式
+   * @returns 1 ノード分のエラーの並び。明示設定された prop（props の並び順）を先に、
+   *   デフォルトで補われた prop（スキーマの宣言順）を後に並べる。
+   *   スキーマに宣言の無い prop は `unknown-prop` として報告する
    */
   collectErrors(
     schema: PropDefinitionRecord,
     props: Props,
     tokens: TokenSet,
   ): readonly PropValidationError[] {
-    return Props.toAssignments(props).flatMap((assignment) => {
+    const assignments = [
+      ...Props.toAssignments(props),
+      ...PropDefinitionRecord.collectDefaultsIfAbsent(schema, props),
+    ];
+    return assignments.flatMap((assignment) => {
       const definition = schema[assignment.name];
       if (definition === undefined) {
         return [
