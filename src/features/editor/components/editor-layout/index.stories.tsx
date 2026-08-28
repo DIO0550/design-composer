@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { NodeDragHandlers } from "@/features/canvas";
+import { ScreenHeightShell } from "@/features/editor/__stories__/screen-height-shell";
 import { EditorLayout } from "./index";
 
 /** 何も掴んでいない状態のポインタの受け口。器の見た目はドラッグに依らない。 */
@@ -13,17 +14,12 @@ const meta = {
   title: "features/editor/EditorLayout",
   component: EditorLayout,
   parameters: { layout: "fullscreen" },
+  // 殻が無いと 3 ペインが中身の高さ（24px）まで潰れ、本物の画面と違うものが映る（#344）。
   decorators: [
     (Story) => (
-      /*
-       * 3 ペインは高さを画面ではなく親に合わせる（`EditorLayout` の doc）ので、高さの決まった
-       * 親が無いと中身の高さ（24px）まで潰れ、本物の画面と違うものが映る（#344）。
-       * Why not: 本体（`EditorScreen`）が上に置くファイル操作のツールバーは写さない。
-       * 写すと、器のストーリーがその帯を触っただけで動く。
-       */
-      <div className="h-screen">
+      <ScreenHeightShell>
         <Story />
-      </div>
+      </ScreenHeightShell>
     ),
   ],
   args: { dragHandlers: IdleDragHandlers },
