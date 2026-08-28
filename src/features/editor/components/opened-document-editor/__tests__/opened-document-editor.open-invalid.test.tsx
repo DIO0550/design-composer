@@ -36,9 +36,12 @@ test("開いた時点であった不正は、そのノードを消すと一覧�
 
   await userEvent.keyboard("{Delete}");
 
-  expect(
-    screen.queryByRole("alert", { name: "ドキュメントのエラー一覧" }),
-  ).toBeNull();
+  /*
+   * 読み上げ名で絞らずに見るのは、絞ると「一覧が消えた」と「凍って別の由来の一覧に
+   * 変わった」を区別できないため（rules/testing.md「`queryBy*` が `null` になる理由が
+   * 2 通り以上あるなら…」）。不正が 1 件も無ければ、どの由来の一覧も出ない。
+   */
+  expect(screen.queryByRole("alert")).toBeNull();
 });
 
 /*
