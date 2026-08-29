@@ -70,9 +70,19 @@
     "name": "artboard を選んでいる"
   },
   {
+    "id": "features-assets-createcomponent--frozen",
+    "title": "features/assets/CreateComponent",
+    "name": "ファイルが不正な間に部品名を打っている"
+  },
+  {
     "id": "features-assets-createcomponent--instance-selected",
     "title": "features/assets/CreateComponent",
     "name": "インスタンスを選んでいる"
+  },
+  {
+    "id": "features-assets-createcomponent--naming",
+    "title": "features/assets/CreateComponent",
+    "name": "部品名を打っている"
   },
   {
     "id": "features-assets-createcomponent--ready",
