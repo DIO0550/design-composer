@@ -39,8 +39,11 @@ export function LeftPanePanel({
         `min-h-0 flex-1` を外すと本体が中身の高さのままになり、フッターが下端から
         浮く（一覧が長いときは押し出される）。happy-dom は Tailwind を解決しないため
         テストでは落ちず、気づく手段は Storybook の視覚差分だけ。
+
+        `scrollbar-gutter: stable` は `PaneBody` と同じ理由で置く（一覧が伸び縮みする
+        たびに中身が横へ跳ねないようにする）。
       */}
-      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-auto p-3">
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-auto p-3 [scrollbar-gutter:stable]">
         {children}
       </div>
       {footer.some ? footer.value : null}

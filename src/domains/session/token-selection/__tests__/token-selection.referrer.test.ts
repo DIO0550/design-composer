@@ -126,6 +126,34 @@ test("artboard 自身が参照していても、破線の相手には並ばな�
   ]);
 });
 
+test("デフォルトで解決されるトークンを選ぶと、そのノードも破線の相手に並ぶ", () => {
+  /*
+   * Text の `color` の既定は `gray-900`。破線が指すのは「そのトークンが効いているノード」
+   * なので、書いていないノードにも掛かる。明示した側を 1 件並べて対照にする。
+   */
+  const document = DesignDocument.create({
+    tokens: { ...TokenSet.empty(), colors: { "gray-900": "#111827" } },
+    artboards: [
+      {
+        name: "login",
+        width: 375,
+        height: 812,
+        children: [
+          { name: "plain", type: "Text" },
+          { name: "title", type: "Text", props: { color: "gray-900" } },
+        ],
+      },
+    ],
+  });
+
+  const selection = selectionOf(document, { kind: "colors", name: "gray-900" });
+
+  expect(TokenSelection.collectCanvasReferrerNames(selection)).toEqual([
+    "plain",
+    "title",
+  ]);
+});
+
 test("別のトークンを選ぶと、破線の相手もそのトークンのものになる", () => {
   const selection = selectionOf(setupDocument(), {
     kind: "colors",
