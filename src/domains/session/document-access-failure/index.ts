@@ -1,12 +1,13 @@
 import type { ValueOf } from "@/types/ValueOf";
 
 /**
- * ドキュメントの中身へ届かなかった理由。
+ * ドキュメントのファイルとのやりとりが成り立たなかった理由。
  *
- * 6 つとも「ファイルの中身を読めた / 書けた」に至らなかった理由で、
- * 相手が無い・許されない・指定が壊れている・読み書きが失敗した、に加えて、
- * 届いたが読めない（`undecodableText`）と、そもそも受け渡しが途切れた
- * （`undelivered`）もここに含む。
+ * 読み書きが届かなかった場合だけでなく、届いたが読めない（`undecodableText`）と、
+ * 変更通知の購読が張れなかった（`undelivered`）も同じ語彙で表す。
+ *
+ * Why: 仕様書は「読み書き」と書く（docs/01-file-format.md / docs/05-architecture.md）が、
+ * この 2 つは読み書きの成否に収まらないため、届かなかったことを指す `Access` を採った。
  *
  * 外の世界（Rust の `DocumentIoError` と Tauri の IPC）が持つ語彙をそのまま流さず、
  * ドメイン側の語彙として持ち直すための union（腐敗防止層）。詰め替えは
@@ -40,7 +41,9 @@ export type DocumentAccessFailureReason = ValueOf<
  * （docs/01-file-format.md「ファイル」/ docs/05-architecture.md「Tauri IPC」
  * 「保存モデル: 自動保存」「外部編集の検知」）。
  *
- * 開く・自動保存・監視・書き戻しの 4 経路で 1 つの型を共有する。
+ * **この型を共有する経路の一覧はここを正とする**（他の doc はここを指すだけにする）:
+ * 開く / 自動保存 / 外部変更の監視 / ファイルへの書き戻し の 4 つ。
+ *
  * Why: 届かなかった理由の語彙はどの経路でも同じで、**どの出来事で起きたか**は
  * 受け取る側（`DocumentOpenFailure` の枝 / `DocumentSyncFailureList` の経路ラベル）が持つ。
  */

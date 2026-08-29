@@ -1,5 +1,6 @@
 import {
   DocumentAccessFailure,
+  type DocumentAccessFailureReason,
   DocumentAccessFailureReasons,
 } from "@/domains/session/document-access-failure";
 import type { TauriIpc, Unsubscribe } from "@/libs/tauri-ipc";
@@ -31,8 +32,9 @@ export type DocumentIpcError = Readonly<{
 /**
  * 外の失敗を、ドメインが持つ「中身へ届かなかった理由」として読み直す（腐敗防止層の詰め替え）。
  *
- * 開く経路（`useDocumentSession`）と同期の 3 経路（自動保存 / 監視 / 書き戻し）が
- * この 1 箇所を通る。外の語彙を features へ出さない入口はここだけ。
+ * **`DocumentIpcError` が features へ出る入口はここだけ**で、`DocumentAccessFailure` を
+ * 共有する経路はすべてここを通る（経路の一覧はその型の doc にある）。
+ * ダイアログの失敗（`DocumentDialogError`）は別の境界で、詰め替えを通らずに features へ渡る。
  *
  * `notFound` 〜 `io` は Rust の都合、`ipcFailed` は Tauri の都合で決まる語彙なので、
  * そのままドメインへ渡さずにここで寄せる。`default` を置かずに書いてあるので、
@@ -56,10 +58,15 @@ export function toDocumentAccessFailure(
 /**
  * 失敗の種別だけを詰め替える。
  *
+ * 戻り値を明示するのは、case が抜けたときに TS2366 をこの関数自身で出すため
+ * （注釈が無いと、エラーは戻り値を使う側へずれる）。
+ *
  * @param kind IPC が返した失敗の種別
  * @returns 対応するドメインの語彙
  */
-function toDocumentAccessFailureReason(kind: DocumentIpcErrorKind) {
+function toDocumentAccessFailureReason(
+  kind: DocumentIpcErrorKind,
+): DocumentAccessFailureReason {
   switch (kind) {
     case "notFound":
       return DocumentAccessFailureReasons.Missing;

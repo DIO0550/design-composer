@@ -28,8 +28,8 @@ export type DocumentReloadTarget = Readonly<{
  * `DocumentReload` が持ち、ここは外部システム（file watch）との同期と、
  * その 2 つへの受け渡しだけを行う（rules/hooks.md）。
  *
- * 失敗を IPC の語彙のままではなくドメインの語彙で返すのは、`DocumentSyncFailureList` が
- * 3 つを同じ型で並べるため（残る 2 つは `DocumentSaveState.failure()` 経由で届く）。
+ * 失敗をドメインの語彙で返す理由は `toDocumentAccessFailure` の doc にある
+ * （残る 2 つの経路は `DocumentSaveState.failure()` 経由で届く）。
  *
  * @returns 直近の監視 / 読み込みの失敗。1 度も失敗していなければ `none`
  */

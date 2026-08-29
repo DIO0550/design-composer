@@ -15,7 +15,7 @@ import { Option } from "@/utils/Option";
  * そのまま開く（docs/03-schema.md「不正ファイル時の挙動」の「開く時」）。
  *
  * 枝が指すのは**どの段で失敗したか**（ダイアログ / I/O / 解釈）で、`io` が運ぶ理由の
- * 語彙は同期の 3 経路と共有する（`DocumentAccessFailure`）。
+ * 語彙は他の経路と共有する（`DocumentAccessFailure`）。
  */
 export type DocumentOpenFailure =
   | Readonly<{ kind: "dialog"; error: DocumentDialogError }>
