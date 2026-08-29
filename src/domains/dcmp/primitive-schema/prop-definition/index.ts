@@ -204,31 +204,6 @@ export const PropDefinition = {
   },
 } as const;
 
-/**
- * 実際に効いている prop 設定の並び。明示設定に、未設定の prop のデフォルトを足したもの。
- * この並びが `collectRefPropNames` と `collectErrors` の共通の走査対象で、並びを決めるのもここ。
- *
- * Why: 片方だけがデフォルトを見ると、参照が 0 件のトークンを消して dangling が出る、という
- * 食い違いが利用者に見える。
- * Why not: `ResolvedProps.resolve` は使えない。あちらは宣言済みの prop だけに絞ったレコードを
- * 返すが、ここは `unknown-prop` を報告するために未宣言の prop も残す必要がある。
- *
- * `session/prop-control` の `effectiveProps` とは範囲が違う（あちらは binding 由来の既定も含む）。
- *
- * @param schema 効いている値の出どころになる prop 定義
- * @param props 実際に設定されている props
- * @returns 明示設定（props の並び順）を先に、デフォルトで補われた prop
- *   （スキーマの宣言順）を後に並べた prop 設定の並び
- */
-function collectEffectiveAssignments(
-  schema: PropDefinitionRecord,
-  props: Props,
-): readonly PropAssignment[] {
-  const assigned = Props.toAssignments(props);
-  const defaulted = PropDefinitionRecord.collectDefaultsIfAbsent(schema, props);
-  return [...assigned, ...defaulted];
-}
-
 export const PropDefinitionRecord = {
   /** スキーマが宣言している prop の名前。宣言順で返る。 */
   propNames(schema: PropDefinitionRecord): readonly string[] {
@@ -261,6 +236,39 @@ export const PropDefinitionRecord = {
   },
 
   /**
+   * その props の下で実際に効いている prop 設定の並び。
+   * 明示設定に、未設定の prop のデフォルトを足したもの。
+   *
+   * スキーマに帰属するのは、「どの値が効いているか」がスキーマの宣言で決まるため
+   * （`collectDefaultsIfAbsent` と同じ理由）。props だけでは未設定の prop に何が効くかが
+   * 決まらない。
+   *
+   * この並びが `collectRefPropNames` と `collectErrors` の共通の走査対象で、並びもここが決める。
+   * 走査を 1 つにしてあるのは、片方だけがデフォルトを見る状態に戻ると、参照が 0 件のトークンを
+   * 消して dangling が出る、という食い違いが利用者に見えるため。
+   *
+   * Why not: `ResolvedProps.resolve` は使えない。あちらは宣言済みの prop だけに絞った
+   * レコードを返すが、ここは `unknown-prop` を報告するために未宣言の prop も残す。
+   * `session/prop-control` の `effectiveProps` とも範囲が違う（あちらは binding 由来の既定も含む）。
+   *
+   * @param schema 効いている値の出どころになる prop 定義
+   * @param props 実際に設定されている props
+   * @returns 明示設定（props の並び順）を先に、デフォルトで補われた prop
+   *   （スキーマの宣言順）を後に並べた prop 設定の並び
+   */
+  collectEffectiveAssignments(
+    schema: PropDefinitionRecord,
+    props: Props,
+  ): readonly PropAssignment[] {
+    const assigned = Props.toAssignments(props);
+    const defaulted = PropDefinitionRecord.collectDefaultsIfAbsent(
+      schema,
+      props,
+    );
+    return [...assigned, ...defaulted];
+  },
+
+  /**
    * 実際に効いている props のうち、指したトークンを参照しているものの prop 名。
    * 未設定でデフォルトが効いている prop も数える（`typography` を書いていない Text も
    * `body` を引く）。
@@ -280,7 +288,10 @@ export const PropDefinitionRecord = {
     props: Props,
     ref: TokenRef,
   ): readonly string[] {
-    return collectEffectiveAssignments(schema, props).flatMap((assignment) => {
+    return PropDefinitionRecord.collectEffectiveAssignments(
+      schema,
+      props,
+    ).flatMap((assignment) => {
       const definition = schema[assignment.name];
       if (definition === undefined) {
         return [];
@@ -311,7 +322,10 @@ export const PropDefinitionRecord = {
     props: Props,
     tokens: TokenSet,
   ): readonly PropValidationError[] {
-    return collectEffectiveAssignments(schema, props).flatMap((assignment) => {
+    return PropDefinitionRecord.collectEffectiveAssignments(
+      schema,
+      props,
+    ).flatMap((assignment) => {
       const definition = schema[assignment.name];
       if (definition === undefined) {
         return [
