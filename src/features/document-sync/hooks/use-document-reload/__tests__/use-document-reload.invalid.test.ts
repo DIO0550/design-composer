@@ -1,5 +1,9 @@
 import { expect, test } from "vitest";
 import { artboardContent } from "@/domains/__tests__/sample-document";
+import {
+  DocumentSyncFailure,
+  DocumentSyncFailureReasons,
+} from "@/domains/session/document-sync-failure";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { Option } from "@/utils/Option";
 import { changeExternally, Path, renderDocumentReload } from "./setup";
@@ -37,15 +41,35 @@ test("不正な JSON を直して保存すると、そのドキュメントが�
   ]);
 });
 
+test("外部変更の購読を張れないときは、その失敗がドメインの語彙で返る", async () => {
+  const fake = DocumentIpcFake.create({ [Path]: artboardContent("home") });
+  fake.denySubscribe();
+
+  const observer = await renderDocumentReload(fake.ipc);
+
+  // Tauri 自身が失敗すると文字列で reject されるので、IPC の語彙では `ipcFailed`。
+  // 境界を通っていれば `undelivered` になる。
+  expect(observer.failure()).toStrictEqual(
+    Option.some(
+      DocumentSyncFailure.create(
+        DocumentSyncFailureReasons.Undelivered,
+        "document-changed: 購読を開始できない",
+      ),
+    ),
+  );
+});
+
 test("存在しないファイルは監視できず、その失敗が返る", async () => {
   const fake = DocumentIpcFake.create({});
 
   const observer = await renderDocumentReload(fake.ipc, "/work/missing.dcmp");
 
   expect(observer.failure()).toStrictEqual(
-    Option.some({
-      kind: "notFound",
-      message: "/work/missing.dcmp: ファイルが存在しない",
-    }),
+    Option.some(
+      DocumentSyncFailure.create(
+        DocumentSyncFailureReasons.Missing,
+        "/work/missing.dcmp: ファイルが存在しない",
+      ),
+    ),
   );
 });

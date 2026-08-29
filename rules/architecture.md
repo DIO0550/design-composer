@@ -32,8 +32,7 @@ features/<feature-name>/
 ## 配置の判断基準
 
 - ドメインオブジェクトはまず `features/<x>/domains/` に置き、**2つ以上の feature が必要としたら `src/domains/<カテゴリ>/` に昇格**させる(重複実装は禁止)
-- ロジックを持たない純粋な型定義は `types/`(汎用は `src/types/`、feature 固有は `features/<x>/types/`)に置く。**`domains/` 内に型定義だけのファイル(`type.ts` / `types.ts` 等)を作ることは禁止**
-- `domains/` に置いてよいのは「型 + 同名コンパニオンオブジェクト」が揃ったドメインオブジェクトのみ。型はコンパニオンオブジェクトと**同一ファイル**で定義する(型だけを別ファイルに分離しない)
+- ロジックを持たない純粋な型定義は `types/`(汎用は `src/types/`、feature 固有は `features/<x>/types/`)に置く。`domains/` に置いてよいのは型 + 同名コンパニオンオブジェクトが揃ったものだけ(→ `rules/coding.md`「ルール」)
 - I/O(Tauri API・localStorage・fetch・外部ライブラリ)・外部フォーマットの解釈は必ず `src/libs/` 経由
 - ストーリー専用の共有物(器・サンプルデータ)は、**使う範囲がいちばん狭いフォルダの `__stories__/`** に置く(1モジュールの中なら `<モジュール>/__stories__/`、1 feature の中なら `features/<x>/__stories__/`、2つ以上の feature が使うなら `src/components/__stories__/`)。テスト専用の共有ヘルパーを `__tests__/` に置くのと同じ形
 - 複数ドメインを組み合わせるロジックで、UIにもI/Oにも依存しないものは `src/services/`。ただし置く前に**帰属先のドメインオブジェクトが無いかを確認する**(後述)
@@ -116,6 +115,7 @@ app → features → services → domains
 ```
 
 - `src/domains/<カテゴリ>/<x>/` は他の domain を import してよい(カテゴリの向きに従う・一方向のみ・循環禁止)。services / features / React / Tauri API への依存は禁止
+- **domains から libs への import は `__tests__/` の中だけ許す。** ファイルに載っている綴りを作るのに外部フォーマットの解釈が要り、そこを差し替えるとテストが実物で確かめられなくなるため(`rules/testing.md`「代替してよいのはプロセス外の境界のみ」)。**production 側は 0 件**で、外の語彙が要るなら境界(`libs/`)で詰め替えてドメインの語彙にする
 - `src/services/` は `src/domains/` と `src/types/` と `src/utils/` のみ import 可。React / Tauri API への依存は禁止
 - `features/<x>/` は自分の内部、`src/services/`、`src/domains/`、横断層(`components/` `hooks/` `libs/` `utils/` `types/`)を import 可。**他 feature の import も可**(ただし公開API = その feature の `index.ts` 経由のみ・feature 間の循環参照は禁止)
 - `features/<x>/domains/` は `src/domains/` を import してよいが、他 feature の domains への直接 import は不可(2つ以上の feature が必要とするドメインオブジェクトは昇格させる → 「配置の判断基準」)

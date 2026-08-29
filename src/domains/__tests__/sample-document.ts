@@ -21,9 +21,8 @@ export function artboardDocument(name: string): DesignDocument {
 /**
  * ファイルに載っている状態の `artboardDocument`。
  *
- * `src/domains/` の側で `libs/` に触れるのは、フィクスチャとテストが「ファイルに載っている
- * 綴り」を要るときだけ（`opened-document` のテストも同じ理由で触れている）。
- * production からの libs 依存は 0 件のまま。
+ * `libs/` に触れているのは「ファイルに載っている綴り」を作るため
+ * （`rules/architecture.md`「依存方向のルール」が `__tests__/` にだけ認めている例外）。
  *
  * @param name 収める artboard の名前
  * @returns そのドキュメントを保存したときのファイルの中身

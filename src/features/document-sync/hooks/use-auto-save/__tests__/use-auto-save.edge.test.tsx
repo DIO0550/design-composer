@@ -1,6 +1,10 @@
 import { afterEach, expect, test, vi } from "vitest";
 import { artboardDocument } from "@/domains/__tests__/sample-document";
 import { DocumentSaveState } from "@/domains/session/document-save-state";
+import {
+  DocumentSyncFailure,
+  DocumentSyncFailureReasons,
+} from "@/domains/session/document-sync-failure";
 import { DocumentIpc, type DocumentIpcError } from "@/libs/document-ipc";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
@@ -85,7 +89,16 @@ test("書き込みに失敗すると、その失敗が返る", async () => {
   rerender({ ipc, document: artboardDocument("settings") });
   await waitDebounce();
 
-  expect(result.current).toStrictEqual(DocumentSaveState.fromError(Denied));
+  // 期待値は詰め替えた結果を書き下す（`toDocumentSyncFailure(Denied)` で組むと、
+  // 変換が何を返しても両辺が同じ値になって落ちなくなる）。
+  expect(result.current).toStrictEqual(
+    DocumentSaveState.failed(
+      DocumentSyncFailure.create(
+        DocumentSyncFailureReasons.NotPermitted,
+        Denied.message,
+      ),
+    ),
+  );
 });
 
 test("失敗した後の書き込みが成功すると、失敗は返らなくなる", async () => {

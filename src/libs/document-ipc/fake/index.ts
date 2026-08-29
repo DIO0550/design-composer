@@ -33,6 +33,13 @@ export type DocumentIpcFake = Readonly<{
    */
   denyWrites(path: string): void;
   /**
+   * 外部変更の購読そのものを張れないようにする。
+   *
+   * 監視は「購読を張る」と「watch を始める」の 2 段で、`denyWrites` でも
+   * `notFound` でも前段には届かない。前段が失敗したときの見え方を確かめるために分けている。
+   */
+  denySubscribe(): void;
+  /**
    * そのパスへの書き込みを、返した関数が呼ばれるまで終わらせないようにする。
    *
    * 代役の書き込みは即座に解決するため、そのままでは「書き込み中」の状態を
@@ -91,6 +98,7 @@ export const DocumentIpcFake = {
     const heldWrites = new Map<string, Promise<void>>();
     const watchedPaths = new Set<string>();
     const listeners = new Set<(payload: unknown) => void>();
+    let subscribeDenied = false;
 
     const notifyChange = (path: string, content: string): void => {
       if (!watchedPaths.has(path)) {
@@ -164,6 +172,9 @@ export const DocumentIpcFake = {
         if (event !== "document-changed") {
           return ipcFailure(`Event ${event} not emitted`);
         }
+        if (subscribeDenied) {
+          return ipcFailure(`${event}: 購読を開始できない`);
+        }
         listeners.add(handler);
         return Promise.resolve(() => {
           listeners.delete(handler);
@@ -189,6 +200,10 @@ export const DocumentIpcFake = {
 
       denyWrites(path) {
         deniedWritePaths.add(path);
+      },
+
+      denySubscribe() {
+        subscribeDenied = true;
       },
 
       holdWrites(path) {

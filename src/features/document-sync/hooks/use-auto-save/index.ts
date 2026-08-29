@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { DesignDocument } from "@/domains/dcmp/design-document";
 import { DocumentSaveState } from "@/domains/session/document-save-state";
 import { FileValidity } from "@/domains/session/file-validity";
-import type { DocumentIpc } from "@/libs/document-ipc";
+import { type DocumentIpc, toDocumentSyncFailure } from "@/libs/document-ipc";
 import { DocumentJson } from "@/libs/document-json";
 
 /**
@@ -94,7 +94,9 @@ export function useAutoSave({
         return;
       }
       if (!saved.ok) {
-        setSaveState(DocumentSaveState.fromError(saved.error));
+        setSaveState(
+          DocumentSaveState.failed(toDocumentSyncFailure(saved.error)),
+        );
         return;
       }
       savedDocumentRef.current = document;

@@ -1,13 +1,20 @@
 import { render, screen } from "@testing-library/react";
 import { expect, test } from "vitest";
+import {
+  DocumentSyncFailure,
+  DocumentSyncFailureReasons,
+} from "@/domains/session/document-sync-failure";
 import { Option } from "@/utils/Option";
 import { DocumentSyncFailureList } from "../index";
 
-const NotFound = { kind: "notFound", message: "/work/login.dcmp" } as const;
-const PermissionDenied = {
-  kind: "permissionDenied",
-  message: "/work/login.dcmp",
-} as const;
+const Missing = DocumentSyncFailure.create(
+  DocumentSyncFailureReasons.Missing,
+  "/work/login.dcmp",
+);
+const NotPermitted = DocumentSyncFailure.create(
+  DocumentSyncFailureReasons.NotPermitted,
+  "/work/login.dcmp",
+);
 
 test("同期が失敗していないときは何も出さない", () => {
   render(
@@ -24,7 +31,7 @@ test("同期が失敗していないときは何も出さない", () => {
 test("自動保存が失敗すると、書き出せていないことが伝わる", () => {
   render(
     <DocumentSyncFailureList
-      autoSave={Option.some(PermissionDenied)}
+      autoSave={Option.some(NotPermitted)}
       watch={Option.none}
       revert={Option.none}
     />,
@@ -37,7 +44,7 @@ test("監視が失敗すると、外部の変更を追えていないことが�
   render(
     <DocumentSyncFailureList
       autoSave={Option.none}
-      watch={Option.some(NotFound)}
+      watch={Option.some(Missing)}
       revert={Option.none}
     />,
   );
@@ -48,8 +55,8 @@ test("監視が失敗すると、外部の変更を追えていないことが�
 test("両方が失敗すると、2 つとも並んで出る", () => {
   render(
     <DocumentSyncFailureList
-      autoSave={Option.some(PermissionDenied)}
-      watch={Option.some(NotFound)}
+      autoSave={Option.some(NotPermitted)}
+      watch={Option.some(Missing)}
       revert={Option.none}
     />,
   );
@@ -62,7 +69,7 @@ test("ファイルへの書き戻しが失敗すると、戻せていないこ�
     <DocumentSyncFailureList
       autoSave={Option.none}
       watch={Option.none}
-      revert={Option.some(PermissionDenied)}
+      revert={Option.some(NotPermitted)}
     />,
   );
 
@@ -72,9 +79,9 @@ test("ファイルへの書き戻しが失敗すると、戻せていないこ�
 test("3 つの同期の失敗は、同期が起きる順に並ぶ", () => {
   render(
     <DocumentSyncFailureList
-      autoSave={Option.some(PermissionDenied)}
-      watch={Option.some(NotFound)}
-      revert={Option.some(PermissionDenied)}
+      autoSave={Option.some(NotPermitted)}
+      watch={Option.some(Missing)}
+      revert={Option.some(NotPermitted)}
     />,
   );
 
@@ -92,7 +99,7 @@ test("3 つの同期の失敗は、同期が起きる順に並ぶ", () => {
 test("失敗の原因が分かるよう、診断用のメッセージも添えられる", () => {
   render(
     <DocumentSyncFailureList
-      autoSave={Option.some(PermissionDenied)}
+      autoSave={Option.some(NotPermitted)}
       watch={Option.none}
       revert={Option.none}
     />,

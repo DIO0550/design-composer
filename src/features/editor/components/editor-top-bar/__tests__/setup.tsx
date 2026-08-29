@@ -2,6 +2,10 @@ import { render } from "@testing-library/react";
 import type { ReactNode } from "react";
 import type { DocumentError } from "@/domains/session/document-error";
 import { DocumentSaveState } from "@/domains/session/document-save-state";
+import {
+  DocumentSyncFailure,
+  DocumentSyncFailureReasons,
+} from "@/domains/session/document-sync-failure";
 import type { OpenedDocument } from "@/domains/session/opened-document";
 import type { Elapsed } from "@/domains/unit/elapsed";
 import { useCanvasView } from "@/features/canvas";
@@ -61,8 +65,10 @@ export function renderTopBar(
 export const SaveStates = {
   saved: DocumentSaveState.Saved,
   saving: DocumentSaveState.Saving,
-  failed: DocumentSaveState.fromError({
-    kind: "permissionDenied",
-    message: "/work/app.dcmp: 書き込みが許可されていない",
-  }),
+  failed: DocumentSaveState.failed(
+    DocumentSyncFailure.create(
+      DocumentSyncFailureReasons.NotPermitted,
+      "/work/app.dcmp: 書き込みが許可されていない",
+    ),
+  ),
 } as const;

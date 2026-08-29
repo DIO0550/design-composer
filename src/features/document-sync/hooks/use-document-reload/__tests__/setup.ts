@@ -1,7 +1,8 @@
 import { act, renderHook } from "@testing-library/react";
 import type { DocumentReload } from "@/domains/session/document-reload";
+import type { DocumentSyncFailure } from "@/domains/session/document-sync-failure";
 import { changeFileExternally } from "@/libs/__tests__/document-change";
-import type { DocumentIpc, DocumentIpcError } from "@/libs/document-ipc";
+import type { DocumentIpc } from "@/libs/document-ipc";
 import type { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import type { Option } from "@/utils/Option";
 import { useDocumentReload } from "../index";
@@ -12,8 +13,8 @@ export const Path = "/work/login.dcmp";
 export type ReloadObserver = Readonly<{
   /** 取り込み結果が届いた順に入る。 */
   reloads: readonly DocumentReload[];
-  /** 直近の IPC の失敗。 */
-  failure: () => Option<DocumentIpcError>;
+  /** 直近の同期の失敗。 */
+  failure: () => Option<DocumentSyncFailure>;
   unmount: () => void;
 }>;
 

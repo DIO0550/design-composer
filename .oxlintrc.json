@@ -11,7 +11,7 @@
     {
       "files": ["src/domains/**/*.ts", "src/domains/**/*.tsx"],
       "rules": {
-        "no-restricted-imports": ["warn", { "patterns": [
+        "no-restricted-imports": ["error", { "patterns": [
           { "group": ["**/services/**", "@/services/**", "@/services"], "message": "domains は services を import できません（rules/architecture.md「依存方向のルール」）" },
           { "group": ["**/features/**", "@/features/**", "@/features"], "message": "domains は features を import できません（rules/architecture.md「依存方向のルール」）" },
           { "group": ["**/libs/**", "@/libs/**", "@/libs"], "message": "domains は libs（I/O・外部フォーマットの境界）を import できません" },
@@ -53,6 +53,53 @@
           { "group": ["**/services/**", "@/services/**", "@/services"], "message": "domains は services を import できません（rules/architecture.md「依存方向のルール」）" },
           { "group": ["**/features/**", "@/features/**", "@/features"], "message": "domains は features を import できません（rules/architecture.md「依存方向のルール」）" },
           { "group": ["**/libs/**", "@/libs/**", "@/libs"], "message": "domains は libs（I/O・外部フォーマットの境界）を import できません" },
+          { "group": ["react", "react/*", "react-dom", "react-dom/*"], "message": "domains は React に依存できません" },
+          { "group": ["@tauri-apps/**"], "message": "domains は Tauri API に依存できません" },
+          { "group": ["**/session/**", "@/domains/session/**"], "message": "compiled は session を import できません（rules/architecture.md「domains のカテゴリ」）" }
+        ] }]
+      }
+    },
+    {
+      "files": ["src/domains/**/__tests__/**/*.ts", "src/domains/**/__tests__/**/*.tsx"],
+      "rules": {
+        "no-restricted-imports": ["error", { "patterns": [
+          { "group": ["**/services/**", "@/services/**", "@/services"], "message": "domains は services を import できません（rules/architecture.md「依存方向のルール」）" },
+          { "group": ["**/features/**", "@/features/**", "@/features"], "message": "domains は features を import できません（rules/architecture.md「依存方向のルール」）" },
+          { "group": ["react", "react/*", "react-dom", "react-dom/*"], "message": "domains は React に依存できません" },
+          { "group": ["@tauri-apps/**"], "message": "domains は Tauri API に依存できません" }
+        ] }]
+      }
+    },
+    {
+      "files": ["src/domains/unit/**/__tests__/**/*.ts", "src/domains/unit/**/__tests__/**/*.tsx"],
+      "rules": {
+        "no-restricted-imports": ["error", { "patterns": [
+          { "group": ["**/services/**", "@/services/**", "@/services"], "message": "domains は services を import できません（rules/architecture.md「依存方向のルール」）" },
+          { "group": ["**/features/**", "@/features/**", "@/features"], "message": "domains は features を import できません（rules/architecture.md「依存方向のルール」）" },
+          { "group": ["react", "react/*", "react-dom", "react-dom/*"], "message": "domains は React に依存できません" },
+          { "group": ["@tauri-apps/**"], "message": "domains は Tauri API に依存できません" },
+          { "group": ["**/dcmp/**", "@/domains/dcmp/**", "**/compiled/**", "@/domains/compiled/**", "**/session/**", "@/domains/session/**"], "message": "unit は他のカテゴリを import できません（rules/architecture.md「domains のカテゴリ」）" }
+        ] }]
+      }
+    },
+    {
+      "files": ["src/domains/dcmp/**/__tests__/**/*.ts", "src/domains/dcmp/**/__tests__/**/*.tsx"],
+      "rules": {
+        "no-restricted-imports": ["error", { "patterns": [
+          { "group": ["**/services/**", "@/services/**", "@/services"], "message": "domains は services を import できません（rules/architecture.md「依存方向のルール」）" },
+          { "group": ["**/features/**", "@/features/**", "@/features"], "message": "domains は features を import できません（rules/architecture.md「依存方向のルール」）" },
+          { "group": ["react", "react/*", "react-dom", "react-dom/*"], "message": "domains は React に依存できません" },
+          { "group": ["@tauri-apps/**"], "message": "domains は Tauri API に依存できません" },
+          { "group": ["**/compiled/**", "@/domains/compiled/**", "**/session/**", "@/domains/session/**"], "message": "dcmp が import してよいのは unit だけです（rules/architecture.md「domains のカテゴリ」）" }
+        ] }]
+      }
+    },
+    {
+      "files": ["src/domains/compiled/**/__tests__/**/*.ts", "src/domains/compiled/**/__tests__/**/*.tsx"],
+      "rules": {
+        "no-restricted-imports": ["error", { "patterns": [
+          { "group": ["**/services/**", "@/services/**", "@/services"], "message": "domains は services を import できません（rules/architecture.md「依存方向のルール」）" },
+          { "group": ["**/features/**", "@/features/**", "@/features"], "message": "domains は features を import できません（rules/architecture.md「依存方向のルール」）" },
           { "group": ["react", "react/*", "react-dom", "react-dom/*"], "message": "domains は React に依存できません" },
           { "group": ["@tauri-apps/**"], "message": "domains は Tauri API に依存できません" },
           { "group": ["**/session/**", "@/domains/session/**"], "message": "compiled は session を import できません（rules/architecture.md「domains のカテゴリ」）" }
