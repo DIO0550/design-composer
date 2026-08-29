@@ -1,11 +1,11 @@
 {
-  "reportVersion": "6ff62e9841ed16c7d761aa3251a89df8d9d76d0c",
+  "reportVersion": "0f88b6771f81bff72ad3bc11d07b61a31da78927",
   "maxDiffRatio": 0.002,
-  "changed": 1,
+  "changed": 5,
   "new": 0,
   "deleted": 0,
-  "passed": 138,
-  "failed": 1,
+  "passed": 134,
+  "failed": 5,
   "results": [
     {
       "story": "components-dropline--after",
@@ -858,12 +858,12 @@
       "title": "features/editor/OpenedDocumentEditor",
       "name": "コンパイルできないドキュメントの編集画面",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
-      "diffRatio": 0,
+      "reason": "within-threshold",
+      "diffPixels": 1088,
+      "diffRatio": 0.0012,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-editor-openeddocumenteditor--default",
@@ -871,12 +871,12 @@
       "title": "features/editor/OpenedDocumentEditor",
       "name": "編集画面",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
-      "diffRatio": 0,
+      "reason": "within-threshold",
+      "diffPixels": 1088,
+      "diffRatio": 0.0012,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-editor-openeddocumenteditor--document-errors",
@@ -884,12 +884,12 @@
       "title": "features/editor/OpenedDocumentEditor",
       "name": "ドキュメント自身が不正な編集画面",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
-      "diffRatio": 0,
+      "reason": "within-threshold",
+      "diffPixels": 1088,
+      "diffRatio": 0.0012,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-editor-openeddocumenteditor--file-invalid",
@@ -897,12 +897,12 @@
       "title": "features/editor/OpenedDocumentEditor",
       "name": "ファイルが不正になった編集画面",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
-      "diffRatio": 0,
+      "reason": "within-threshold",
+      "diffPixels": 515,
+      "diffRatio": 0.0006,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-editor-openeddocumenteditor--sync-failed",
@@ -910,12 +910,12 @@
       "title": "features/editor/OpenedDocumentEditor",
       "name": "同期に失敗した編集画面",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
-      "diffRatio": 0,
+      "reason": "within-threshold",
+      "diffPixels": 1088,
+      "diffRatio": 0.0012,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-inspector-propertypanel--box-selected",
@@ -961,13 +961,13 @@
       "id": "features-inspector-propertypanel--instance-selected",
       "title": "features/inspector/PropertyPanel",
       "name": "インスタンスを選択中（publicProps から生成）",
-      "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
-      "diffRatio": 0,
+      "status": "changed",
+      "reason": "pixel-diff",
+      "diffPixels": 9959,
+      "diffRatio": 0.0108,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-inspector-propertypanel--long-name",
@@ -1040,12 +1040,12 @@
       "title": "features/inspector/PropertyPanel",
       "name": "Text ノードを選択中",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
-      "diffRatio": 0,
+      "reason": "within-threshold",
+      "diffPixels": 557,
+      "diffRatio": 0.0006,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-inspector-propertypanel--unset",
@@ -1066,12 +1066,12 @@
       "title": "features/inspector/PropertyPanel/GroupsBody",
       "name": "節が並んでいる",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
-      "diffRatio": 0,
+      "reason": "within-threshold",
+      "diffPixels": 1043,
+      "diffRatio": 0.0011,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-inspector-propertypanel-groupsbody--empty",
@@ -1091,39 +1091,39 @@
       "id": "features-inspector-propertypanel-instancebody--default",
       "title": "features/inspector/PropertyPanel/InstanceBody",
       "name": "インスタンスを選択中",
-      "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
-      "diffRatio": 0,
+      "status": "changed",
+      "reason": "pixel-diff",
+      "diffPixels": 11382,
+      "diffRatio": 0.0124,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-inspector-propertypanel-instancebody--not-detachable",
       "id": "features-inspector-propertypanel-instancebody--not-detachable",
       "title": "features/inspector/PropertyPanel/InstanceBody",
       "name": "解除できないインスタンス",
-      "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
-      "diffRatio": 0,
+      "status": "changed",
+      "reason": "pixel-diff",
+      "diffPixels": 10541,
+      "diffRatio": 0.011399999999999999,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-inspector-propertypanel-instancebody--only-instance",
       "id": "features-inspector-propertypanel-instancebody--only-instance",
       "title": "features/inspector/PropertyPanel/InstanceBody",
       "name": "同じ部品のインスタンスが 1 つだけ",
-      "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
-      "diffRatio": 0,
+      "status": "changed",
+      "reason": "pixel-diff",
+      "diffPixels": 10383,
+      "diffRatio": 0.0113,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-inspector-propertypanel-labelwidth--default",
@@ -1131,12 +1131,12 @@
       "title": "features/inspector/PropertyPanel/LabelWidth",
       "name": "ラベル欄の幅と字下げ",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
-      "diffRatio": 0,
+      "reason": "within-threshold",
+      "diffPixels": 460,
+      "diffRatio": 0.0005,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-inspector-propertypanel-propfield--color-token",
@@ -1144,12 +1144,12 @@
       "title": "features/inspector/PropertyPanel/PropField",
       "name": "色のトークン（見本あり）",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
-      "diffRatio": 0,
+      "reason": "within-threshold",
+      "diffPixels": 78,
+      "diffRatio": 0.0001,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-inspector-propertypanel-propfield--dangling-token",
@@ -1157,12 +1157,12 @@
       "title": "features/inspector/PropertyPanel/PropField",
       "name": "数値のトークン（解決できない）",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
-      "diffRatio": 0,
+      "reason": "within-threshold",
+      "diffPixels": 78,
+      "diffRatio": 0.0001,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-inspector-propertypanel-propfield--enum",
@@ -1170,12 +1170,12 @@
       "title": "features/inspector/PropertyPanel/PropField",
       "name": "enum（未指定）",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
-      "diffRatio": 0,
+      "reason": "within-threshold",
+      "diffPixels": 199,
+      "diffRatio": 0.0002,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-inspector-propertypanel-propfield--missing-color-token",
@@ -1183,12 +1183,12 @@
       "title": "features/inspector/PropertyPanel/PropField",
       "name": "色のトークン（見本なし）",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
-      "diffRatio": 0,
+      "reason": "within-threshold",
+      "diffPixels": 78,
+      "diffRatio": 0.0001,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-inspector-propertypanel-propfield--number-input",
@@ -1196,12 +1196,12 @@
       "title": "features/inspector/PropertyPanel/PropField",
       "name": "数値を打ち込む",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
-      "diffRatio": 0,
+      "reason": "within-threshold",
+      "diffPixels": 58,
+      "diffRatio": 0.0001,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-inspector-propertypanel-propfield--numeric-token-below",
@@ -1209,12 +1209,12 @@
       "title": "features/inspector/PropertyPanel/PropField",
       "name": "数値のトークン（解決値を下に添える）",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
-      "diffRatio": 0,
+      "reason": "within-threshold",
+      "diffPixels": 78,
+      "diffRatio": 0.0001,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-inspector-propertypanel-propfield--numeric-token",
@@ -1222,12 +1222,12 @@
       "title": "features/inspector/PropertyPanel/PropField",
       "name": "数値のトークン（解決値あり）",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
-      "diffRatio": 0,
+      "reason": "within-threshold",
+      "diffPixels": 132,
+      "diffRatio": 0.0001,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-inspector-propertypanel-propfield--text-input",
@@ -1235,12 +1235,12 @@
       "title": "features/inspector/PropertyPanel/PropField",
       "name": "文字を打ち込む",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
-      "diffRatio": 0,
+      "reason": "within-threshold",
+      "diffPixels": 58,
+      "diffRatio": 0.0001,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-inspector-propertypanel-propfield--token",
@@ -1248,12 +1248,12 @@
       "title": "features/inspector/PropertyPanel/PropField",
       "name": "トークン名から選ぶ",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
-      "diffRatio": 0,
+      "reason": "within-threshold",
+      "diffPixels": 78,
+      "diffRatio": 0.0001,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-inspector-propertypanel-proprow--dependent",
@@ -1261,12 +1261,12 @@
       "title": "features/inspector/PropertyPanel/PropRow",
       "name": "条件付きの行（ラベルを出さず字下げする）",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
-      "diffRatio": 0,
+      "reason": "within-threshold",
+      "diffPixels": 58,
+      "diffRatio": 0.0001,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-inspector-propertypanel-proprow--normal",
@@ -1274,12 +1274,12 @@
       "title": "features/inspector/PropertyPanel/PropRow",
       "name": "値の入った行",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
-      "diffRatio": 0,
+      "reason": "within-threshold",
+      "diffPixels": 78,
+      "diffRatio": 0.0001,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-inspector-propertypanel-proprow--unset",
@@ -1287,12 +1287,12 @@
       "title": "features/inspector/PropertyPanel/PropRow",
       "name": "未指定の enum（既定の注記が付く）",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
-      "diffRatio": 0,
+      "reason": "within-threshold",
+      "diffPixels": 199,
+      "diffRatio": 0.0002,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-inspector-propertypanel-sectionheading--default",
@@ -1313,12 +1313,12 @@
       "title": "features/inspector/PropertyPanel/SectionHeading",
       "name": "右端に件数を添える",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
+      "reason": "within-threshold",
+      "diffPixels": 24,
       "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-inspector-propertypanel-selectiontitle--box",
@@ -1378,12 +1378,12 @@
       "title": "features/inspector/PropertyPanel/ShorthandRow",
       "name": "4 辺が揃っていない",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
-      "diffRatio": 0,
+      "reason": "within-threshold",
+      "diffPixels": 268,
+      "diffRatio": 0.0003,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-inspector-propertypanel-shorthandrow--per-edge",
@@ -1391,12 +1391,12 @@
       "title": "features/inspector/PropertyPanel/ShorthandRow",
       "name": "辺ごとに出したとき",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
-      "diffRatio": 0,
+      "reason": "within-threshold",
+      "diffPixels": 514,
+      "diffRatio": 0.0006,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-inspector-propertypanel-shorthandrow--uniform",
@@ -1404,12 +1404,12 @@
       "title": "features/inspector/PropertyPanel/ShorthandRow",
       "name": "4 辺が揃っている",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
-      "diffRatio": 0,
+      "reason": "within-threshold",
+      "diffPixels": 273,
+      "diffRatio": 0.0003,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-sidebar-artboardlist--default",
@@ -1521,12 +1521,12 @@
       "title": "features/sidebar/LeftPane",
       "name": "Assets（行を掴んで運んでいる）",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
-      "diffRatio": 0,
+      "reason": "within-threshold",
+      "diffPixels": 804,
+      "diffRatio": 0.0009,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-sidebar-leftpane--assets",
@@ -1534,12 +1534,12 @@
       "title": "features/sidebar/LeftPane",
       "name": "Assets（部品のパレット）",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
-      "diffRatio": 0,
+      "reason": "within-threshold",
+      "diffPixels": 804,
+      "diffRatio": 0.0009,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-sidebar-leftpane--layers-frozen",
@@ -1547,12 +1547,12 @@
       "title": "features/sidebar/LeftPane",
       "name": "Layers（凍結中）",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
-      "diffRatio": 0,
+      "reason": "within-threshold",
+      "diffPixels": 871,
+      "diffRatio": 0.0009,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-sidebar-leftpane--layers-selected",
@@ -1560,12 +1560,12 @@
       "title": "features/sidebar/LeftPane",
       "name": "Layers（ノードを選択中）",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
-      "diffRatio": 0,
+      "reason": "within-threshold",
+      "diffPixels": 870,
+      "diffRatio": 0.0009,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-sidebar-leftpane--layers",
@@ -1573,12 +1573,12 @@
       "title": "features/sidebar/LeftPane",
       "name": "Layers（ツリー）",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
-      "diffRatio": 0,
+      "reason": "within-threshold",
+      "diffPixels": 871,
+      "diffRatio": 0.0009,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-sidebar-leftpane--tokens",
@@ -1586,12 +1586,12 @@
       "title": "features/sidebar/LeftPane",
       "name": "Tokens（トークン一覧）",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
-      "diffRatio": 0,
+      "reason": "within-threshold",
+      "diffPixels": 1708,
+      "diffRatio": 0.0019,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-sidebar-leftpanerail--assets",
@@ -1677,12 +1677,12 @@
       "title": "features/tokens/TokenEditor",
       "name": "色トークンを選択中",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
-      "diffRatio": 0,
+      "reason": "within-threshold",
+      "diffPixels": 711,
+      "diffRatio": 0.0008,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-tokens-tokeneditor--default",
@@ -1703,12 +1703,12 @@
       "title": "features/tokens/TokenEditor",
       "name": "角丸トークンを選択中",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
-      "diffRatio": 0,
+      "reason": "within-threshold",
+      "diffPixels": 750,
+      "diffRatio": 0.0008,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-tokens-tokeneditor--shadow-selected",
@@ -1729,12 +1729,12 @@
       "title": "features/tokens/TokenEditor",
       "name": "間隔トークンを選択中",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
-      "diffRatio": 0,
+      "reason": "within-threshold",
+      "diffPixels": 735,
+      "diffRatio": 0.0008,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-tokens-tokeneditor--typography-selected",
@@ -1781,12 +1781,12 @@
       "title": "features/tokens/TokenUsedBy",
       "name": "上限を超える件数",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
-      "diffRatio": 0,
+      "reason": "within-threshold",
+      "diffPixels": 128,
+      "diffRatio": 0.0001,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-tokens-tokenusedby--unused",
@@ -1794,12 +1794,12 @@
       "title": "features/tokens/TokenUsedBy",
       "name": "参照されていない",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
+      "reason": "within-threshold",
+      "diffPixels": 32,
       "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-tokens-tokenusedby--within-limit",
@@ -1807,12 +1807,12 @@
       "title": "features/tokens/TokenUsedBy",
       "name": "上限内の件数",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
+      "reason": "within-threshold",
+      "diffPixels": 24,
       "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     }
   ]
 }
