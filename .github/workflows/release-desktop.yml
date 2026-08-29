@@ -165,7 +165,11 @@ jobs:
           EXE_PATH="src-tauri/target/release/${APP_NAME}.exe"
 
           if [ ! -f "$EXE_PATH" ]; then
-            EXE_PATH="src-tauri/target/release/app.exe"
+            # productName へのリネームが起きなかったときの受け皿。cargo が出す実行ファイル名は
+            # [package] name なので Cargo.toml から読む（綴りをここへ写すと改名で黙って古くなる）。
+            # [lib] にも name があるため節を指定して取る。取れなくても直後の -f 判定で exit 1 する。
+            PACKAGE_NAME="$(sed -n '/^\[package\]/,/^\[/{s/^name = "\(.*\)"/\1/p;}' src-tauri/Cargo.toml || echo "")"
+            EXE_PATH="src-tauri/target/release/${PACKAGE_NAME}.exe"
           fi
 
           if [ ! -f "$EXE_PATH" ]; then

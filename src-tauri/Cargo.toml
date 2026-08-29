@@ -1,17 +1,19 @@
 [package]
-name = "app"
+name = "design-composer"
 version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
-license = ""
-repository = ""
+description = "ローカルで動く、宣言的データ駆動のデザインツール"
+authors = ["DIO0550"]
+license = "MIT"
+repository = "https://github.com/DIO0550/design-composer"
 edition = "2021"
 rust-version = "1.77.2"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
-name = "app_lib"
+# bin と同名にしないための接尾辞。Windows では staticlib の .lib と bin のインポート
+# ライブラリが同じファイル名になり、ビルド出力がぶつかる（Linux では衝突しない）。
+name = "design_composer_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
