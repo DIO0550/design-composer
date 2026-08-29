@@ -4,8 +4,8 @@ import {
   artboardContent,
   artboardDocument,
 } from "@/domains/__tests__/sample-document";
+import { DocumentAccessFailureReasons } from "@/domains/session/document-access-failure";
 import { DocumentSaveState } from "@/domains/session/document-save-state";
-import { DocumentSyncFailureReasons } from "@/domains/session/document-sync-failure";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
 import { Option } from "@/utils/Option";
@@ -115,7 +115,7 @@ test("書き込みが拒まれると、拒まれた理由が保存状態に残�
       DocumentSaveState.failure(control().saveState),
       (failure) => failure.reason,
     ),
-  ).toStrictEqual(Option.some(DocumentSyncFailureReasons.NotPermitted));
+  ).toStrictEqual(Option.some(DocumentAccessFailureReasons.NotPermitted));
 });
 
 test("書き込みが拒まれたときは、書き戻せたことを伝えない", async () => {

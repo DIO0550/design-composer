@@ -1,18 +1,18 @@
 import { render, screen } from "@testing-library/react";
 import { expect, test } from "vitest";
 import {
-  DocumentSyncFailure,
-  DocumentSyncFailureReasons,
-} from "@/domains/session/document-sync-failure";
+  DocumentAccessFailure,
+  DocumentAccessFailureReasons,
+} from "@/domains/session/document-access-failure";
 import { Option } from "@/utils/Option";
 import { DocumentSyncFailureList } from "../index";
 
-const Missing = DocumentSyncFailure.create(
-  DocumentSyncFailureReasons.Missing,
+const Missing = DocumentAccessFailure.create(
+  DocumentAccessFailureReasons.Missing,
   "/work/login.dcmp",
 );
-const NotPermitted = DocumentSyncFailure.create(
-  DocumentSyncFailureReasons.NotPermitted,
+const NotPermitted = DocumentAccessFailure.create(
+  DocumentAccessFailureReasons.NotPermitted,
   "/work/login.dcmp",
 );
 

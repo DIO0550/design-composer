@@ -1,12 +1,12 @@
 import { expect, expectTypeOf, test } from "vitest";
 import type {
-  DocumentSyncFailure,
-  DocumentSyncFailureReason,
-} from "@/domains/session/document-sync-failure";
+  DocumentAccessFailure,
+  DocumentAccessFailureReason,
+} from "@/domains/session/document-access-failure";
 import {
   type DocumentIpcError,
   type DocumentIpcErrorKind,
-  toDocumentSyncFailure,
+  toDocumentAccessFailure,
 } from "@/libs/document-ipc";
 
 /**
@@ -19,7 +19,7 @@ import {
  */
 const Correspondences: readonly (readonly [
   DocumentIpcErrorKind,
-  DocumentSyncFailureReason,
+  DocumentAccessFailureReason,
 ])[] = [
   ["notFound", "missing"],
   ["permissionDenied", "notPermitted"],
@@ -32,14 +32,16 @@ const Correspondences: readonly (readonly [
 test.for(
   Correspondences,
 )("外の失敗 %s は、ドメインの語彙 %s として読み直される", ([kind, reason]) => {
-  expect(toDocumentSyncFailure({ kind, message: "/work/login.dcmp" })).toEqual({
+  expect(
+    toDocumentAccessFailure({ kind, message: "/work/login.dcmp" }),
+  ).toEqual({
     reason,
     message: "/work/login.dcmp",
   });
 });
 
 test("診断用の原文は、詰め替えても書き換えられずに残る", () => {
-  const failure = toDocumentSyncFailure({
+  const failure = toDocumentAccessFailure({
     kind: "io",
     message: "/work/login.dcmp: 書き込みに失敗した",
   });
@@ -51,6 +53,6 @@ test("外の失敗は、そのままではドメインの失敗として渡せ�
   // 詰め替えを飛ばして渡せてしまうと境界が成立しないので、型で弾かれることを固定する
   // （フィールド名まで `kind` へ戻すと、ここが落ちる。値の綴りだけを戻した場合に
   // 落ちるのは上の対応表のほう）。
-  expectTypeOf<DocumentIpcError>().not.toExtend<DocumentSyncFailure>();
-  expectTypeOf<DocumentSyncFailure>().not.toExtend<DocumentIpcError>();
+  expectTypeOf<DocumentIpcError>().not.toExtend<DocumentAccessFailure>();
+  expectTypeOf<DocumentAccessFailure>().not.toExtend<DocumentIpcError>();
 });

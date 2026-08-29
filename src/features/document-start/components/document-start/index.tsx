@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
+import type { DocumentAccessFailureReason } from "@/domains/session/document-access-failure";
 import type { DocumentError } from "@/domains/session/document-error";
 import type {
   DocumentOpenFailure,
   UnopenedSession,
 } from "@/features/document-start/domains/document-session";
-import type { DocumentIpcError } from "@/libs/document-ipc";
 
 /**
  * 開けなかったエラーを画面に並べる手段。
@@ -22,22 +22,25 @@ type RenderDocumentErrors = (errors: readonly DocumentError[]) => ReactNode;
 /**
  * I/O の失敗を利用者向けの言い方にする。診断用の原文は後ろに添える。
  *
- * @param error 画面に出したい I/O の失敗
+ * 綴りを表示側に置くのは、ドメインが持つのが理由の**種別**までだから
+ * （rules/architecture.md「表示のための綴りをドメインへ持ち込まない」）。
+ *
+ * @param reason ドキュメントの中身へ届かなかった理由
  * @returns 利用者向けの 1 行
  */
-function ioFailureLabel(error: DocumentIpcError): string {
-  switch (error.kind) {
-    case "notFound":
+function ioFailureLabel(reason: DocumentAccessFailureReason): string {
+  switch (reason) {
+    case "missing":
       return "ファイルが見つかりません";
-    case "permissionDenied":
+    case "notPermitted":
       return "ファイルを読み書きする権限がありません";
-    case "invalidPath":
+    case "unusablePath":
       return "パスが正しくありません";
-    case "invalidUtf8":
+    case "undecodableText":
       return "UTF-8 のテキストとして読めません";
-    case "io":
+    case "storageFailed":
       return "ファイルの読み書きに失敗しました";
-    case "ipcFailed":
+    case "undelivered":
       return "アプリ内部の呼び出しに失敗しました";
   }
 }
@@ -68,7 +71,7 @@ function OpenFailure({
   const label =
     failure.kind === "dialog"
       ? "ファイルの選択に失敗しました"
-      : ioFailureLabel(failure.error);
+      : ioFailureLabel(failure.error.reason);
 
   return (
     <p role="alert" className="text-red-700">

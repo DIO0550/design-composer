@@ -1,10 +1,10 @@
 import { useEffect, useEffectEvent, useState } from "react";
+import type { DocumentAccessFailure } from "@/domains/session/document-access-failure";
 import { DocumentReload } from "@/domains/session/document-reload";
-import type { DocumentSyncFailure } from "@/domains/session/document-sync-failure";
 import {
   type DocumentChanged,
   type DocumentIpc,
-  toDocumentSyncFailure,
+  toDocumentAccessFailure,
 } from "@/libs/document-ipc";
 import { DocumentJson } from "@/libs/document-json";
 import type { Unsubscribe } from "@/libs/tauri-ipc";
@@ -37,8 +37,8 @@ export function useDocumentReload({
   ipc,
   path,
   onReload,
-}: DocumentReloadTarget): Option<DocumentSyncFailure> {
-  const [failure, setFailure] = useState<Option<DocumentSyncFailure>>(
+}: DocumentReloadTarget): Option<DocumentAccessFailure> {
+  const [failure, setFailure] = useState<Option<DocumentAccessFailure>>(
     Option.none,
   );
 
@@ -66,7 +66,7 @@ export function useDocumentReload({
       // 変更を受け取れない。
       const subscribed = await ipc.subscribeChanged(reload);
       if (!subscribed.ok) {
-        setFailure(Option.some(toDocumentSyncFailure(subscribed.error)));
+        setFailure(Option.some(toDocumentAccessFailure(subscribed.error)));
         return;
       }
       if (stopped) {
@@ -77,7 +77,7 @@ export function useDocumentReload({
 
       const watched = await ipc.watch(path);
       if (!watched.ok) {
-        setFailure(Option.some(toDocumentSyncFailure(watched.error)));
+        setFailure(Option.some(toDocumentAccessFailure(watched.error)));
         return;
       }
       setFailure(Option.none);

@@ -1,7 +1,7 @@
 import {
-  DocumentSyncFailure,
-  DocumentSyncFailureReasons,
-} from "@/domains/session/document-sync-failure";
+  DocumentAccessFailure,
+  DocumentAccessFailureReasons,
+} from "@/domains/session/document-access-failure";
 import type { TauriIpc, Unsubscribe } from "@/libs/tauri-ipc";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
@@ -29,23 +29,26 @@ export type DocumentIpcError = Readonly<{
 }>;
 
 /**
- * 外の失敗を、ドメインが持つ同期の失敗として読み直す（腐敗防止層の詰め替え）。
+ * 外の失敗を、ドメインが持つ「中身へ届かなかった理由」として読み直す（腐敗防止層の詰め替え）。
+ *
+ * 開く経路（`useDocumentSession`）と同期の 3 経路（自動保存 / 監視 / 書き戻し）が
+ * この 1 箇所を通る。外の語彙を features へ出さない入口はここだけ。
  *
  * `notFound` 〜 `io` は Rust の都合、`ipcFailed` は Tauri の都合で決まる語彙なので、
  * そのままドメインへ渡さずにここで寄せる。`default` を置かずに書いてあるので、
  * Rust 側が種別を足すとこの関数がコンパイルエラーになり、寄せ先の判断を必ず通る。
  *
- * 対応の一覧は `__tests__/document-ipc.document-sync-failure.test.ts` にある
+ * 対応の一覧は `__tests__/document-ipc.document-access-failure.test.ts` にある
  * （走る表を 1 つだけ持ち、doc へ書き写さない）。
  *
  * @param error IPC が返した失敗
  * @returns 同じ失敗を、ドメインの語彙と診断用の原文で表したもの
  */
-export function toDocumentSyncFailure(
+export function toDocumentAccessFailure(
   error: DocumentIpcError,
-): DocumentSyncFailure {
-  return DocumentSyncFailure.create(
-    toDocumentSyncFailureReason(error.kind),
+): DocumentAccessFailure {
+  return DocumentAccessFailure.create(
+    toDocumentAccessFailureReason(error.kind),
     error.message,
   );
 }
@@ -56,20 +59,20 @@ export function toDocumentSyncFailure(
  * @param kind IPC が返した失敗の種別
  * @returns 対応するドメインの語彙
  */
-function toDocumentSyncFailureReason(kind: DocumentIpcErrorKind) {
+function toDocumentAccessFailureReason(kind: DocumentIpcErrorKind) {
   switch (kind) {
     case "notFound":
-      return DocumentSyncFailureReasons.Missing;
+      return DocumentAccessFailureReasons.Missing;
     case "permissionDenied":
-      return DocumentSyncFailureReasons.NotPermitted;
+      return DocumentAccessFailureReasons.NotPermitted;
     case "invalidPath":
-      return DocumentSyncFailureReasons.UnusablePath;
+      return DocumentAccessFailureReasons.UnusablePath;
     case "invalidUtf8":
-      return DocumentSyncFailureReasons.UndecodableText;
+      return DocumentAccessFailureReasons.UndecodableText;
     case "io":
-      return DocumentSyncFailureReasons.StorageFailed;
+      return DocumentAccessFailureReasons.StorageFailed;
     case "ipcFailed":
-      return DocumentSyncFailureReasons.Undelivered;
+      return DocumentAccessFailureReasons.Undelivered;
   }
 }
 
