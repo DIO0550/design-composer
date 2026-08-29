@@ -5,6 +5,7 @@ import {
   artboardDocument,
 } from "@/domains/__tests__/sample-document";
 import { DocumentSaveState } from "@/domains/session/document-save-state";
+import { DocumentSyncFailureReasons } from "@/domains/session/document-sync-failure";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
 import { Option } from "@/utils/Option";
@@ -107,12 +108,14 @@ test("書き込みが拒まれると、拒まれた理由が保存状態に残�
     control().revert();
   });
 
+  // 拒まれた理由が IPC の語彙（`permissionDenied`）ではなくドメインの語彙で残ることまで
+  // 見る。ここを緩めると、境界での詰め替えを飛ばしても通ってしまう。
   expect(
     Option.map(
       DocumentSaveState.failure(control().saveState),
-      (error) => error.kind,
+      (failure) => failure.reason,
     ),
-  ).toStrictEqual(Option.some("permissionDenied"));
+  ).toStrictEqual(Option.some(DocumentSyncFailureReasons.NotPermitted));
 });
 
 test("書き込みが拒まれたときは、書き戻せたことを伝えない", async () => {

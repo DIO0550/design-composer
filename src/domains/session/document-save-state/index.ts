@@ -1,16 +1,16 @@
-import type { DocumentIpcError } from "@/libs/document-ipc";
+import type { DocumentSyncFailure } from "@/domains/session/document-sync-failure";
 import { Option } from "@/utils/Option";
 
 /**
  * 画面のドキュメントとファイルの一致（docs/05-architecture.md「保存モデル: 自動保存」）。
  *
  * 「失敗しているのに保存済み」のような食い違いを作れないよう直和で列挙する
- * （`{ saved: boolean; failure: Option<DocumentIpcError> }` の形だと矛盾が書ける）。
+ * （`{ saved: boolean; failure: Option<DocumentSyncFailure> }` の形だと矛盾が書ける）。
  */
 export type DocumentSaveState =
   | Readonly<{ kind: "saved" }>
   | Readonly<{ kind: "saving" }>
-  | Readonly<{ kind: "failed"; error: DocumentIpcError }>;
+  | Readonly<{ kind: "failed"; failure: DocumentSyncFailure }>;
 
 /** 状態を持たない枝は生成せず 1 つを共有する。 */
 const Saved: DocumentSaveState = Object.freeze({ kind: "saved" });
@@ -23,11 +23,11 @@ export const DocumentSaveState = {
   /**
    * 書き込みが失敗している状態。
    *
-   * @param error 書き込みを拒んだ理由
+   * @param failure 書き込みができなかった理由
    * @returns その理由を抱えた失敗の状態
    */
-  fromError(error: DocumentIpcError): DocumentSaveState {
-    return { kind: "failed", error };
+  failed(failure: DocumentSyncFailure): DocumentSaveState {
+    return { kind: "failed", failure };
   },
 
   /**
@@ -47,7 +47,7 @@ export const DocumentSaveState = {
    * @param state 今の保存状態
    * @returns 失敗していればその理由。保存済み・保存中なら `none`
    */
-  failure(state: DocumentSaveState): Option<DocumentIpcError> {
-    return state.kind === "failed" ? Option.some(state.error) : Option.none;
+  failure(state: DocumentSaveState): Option<DocumentSyncFailure> {
+    return state.kind === "failed" ? Option.some(state.failure) : Option.none;
   },
 } as const;

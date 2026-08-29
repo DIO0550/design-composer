@@ -5,6 +5,10 @@ import {
 } from "@/domains/dcmp/design-document";
 import type { DocumentError } from "@/domains/session/document-error";
 import { DocumentSaveState } from "@/domains/session/document-save-state";
+import {
+  DocumentSyncFailure,
+  DocumentSyncFailureReasons,
+} from "@/domains/session/document-sync-failure";
 import { type Elapsed, ElapsedUnits } from "@/domains/unit/elapsed";
 import { CanvasView } from "@/features/canvas";
 import { SampleFileErrors } from "@/features/editor/__stories__/sample-editor-state";
@@ -78,10 +82,12 @@ export const Saving: Story = {
 export const Failed: Story = {
   name: "保存に失敗",
   args: {
-    saveState: DocumentSaveState.fromError({
-      kind: "permissionDenied",
-      message: "/work/settings-ui/app.dcmp: 書き込みが許可されていない",
-    }),
+    saveState: DocumentSaveState.failed(
+      DocumentSyncFailure.create(
+        DocumentSyncFailureReasons.NotPermitted,
+        "/work/settings-ui/app.dcmp: 書き込みが許可されていない",
+      ),
+    ),
   },
 };
 

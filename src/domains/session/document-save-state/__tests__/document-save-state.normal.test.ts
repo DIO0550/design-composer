@@ -1,15 +1,18 @@
 import { expect, test } from "vitest";
 import { DocumentSaveState } from "@/domains/session/document-save-state";
-import type { DocumentIpcError } from "@/libs/document-ipc";
+import {
+  DocumentSyncFailure,
+  DocumentSyncFailureReasons,
+} from "@/domains/session/document-sync-failure";
 import { Option } from "@/utils/Option";
 
-const Denied: DocumentIpcError = {
-  kind: "permissionDenied",
-  message: "/work/login.dcmp: 書き込みが許可されていない",
-};
+const Denied = DocumentSyncFailure.create(
+  DocumentSyncFailureReasons.NotPermitted,
+  "/work/login.dcmp: 書き込みが許可されていない",
+);
 
 test("書き込みに失敗した状態からは、拒まれた理由を取り出せる", () => {
-  const state = DocumentSaveState.fromError(Denied);
+  const state = DocumentSaveState.failed(Denied);
 
   expect(DocumentSaveState.failure(state)).toStrictEqual(Option.some(Denied));
 });
@@ -35,7 +38,7 @@ test("書き出し済みは、書き出しの最中ではない", () => {
 });
 
 test("書き込みが拒まれている間も、書き出しの最中ではない", () => {
-  expect(DocumentSaveState.isSaving(DocumentSaveState.fromError(Denied))).toBe(
+  expect(DocumentSaveState.isSaving(DocumentSaveState.failed(Denied))).toBe(
     false,
   );
 });
