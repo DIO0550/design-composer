@@ -70,7 +70,7 @@ pnpm run tauri dev
 
 5 つとも `devcontainer.json` の `forwardPorts` で転送する。14000 / 14001 / 6006 は `docker-compose.yml` の `ports` でも publish しているので、**変更するときは両方を揃える**。16080 / 15901 の実体は `devcontainer.json` の `features` → `desktop-lite` の `webPort` / `vncPort`。
 
-- **Tauri ウィンドウの表示**: GUI アプリなのでコンテナ内に仮想デスクトップ（desktop-lite）を同梱している。表示方法と WebView 向けの環境変数は [TAURI_SETUP.md](TAURI_SETUP.md) にある
+- **Tauri ウィンドウの表示**: GUI アプリなのでコンテナ内に仮想デスクトップ（desktop-lite）を組み込んでいる。表示方法と WebView 向けの環境変数は [TAURI_SETUP.md](TAURI_SETUP.md) にある
 - **ネットワークファイアウォール**: コンテナからの外向き通信を [`.devcontainer/init-firewall.sh`](.devcontainer/init-firewall.sh) で許可リスト方式に制限している。許可先の追加はこのファイルの `ALLOWED_DOMAINS` 配列で行う
 - **sudo を使わない設計**: 開発セッションのユーザー（`vscode`）に sudo 権限を付与していない。特権が必要な初期化は、コンテナ起動時に root で動く [`.devcontainer/entrypoint.sh`](.devcontainer/entrypoint.sh) が行う
 

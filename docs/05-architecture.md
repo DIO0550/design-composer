@@ -6,19 +6,23 @@
 
 ## パッケージ構成
 
-- **単一パッケージ＋ディレクトリ分割**（`src/core/`, `src/ui/`）から始める。pnpm workspace によるパッケージ分離は行わない
-- core → UI の import は禁止（一方向依存）。境界は lint ツールを足さず、レビューと CLAUDE.md の指示で守る
-- core を外部利用したくなった時点で workspace 化する（ディレクトリ境界を保っていれば移行は機械的）
+**core は概念であってディレクトリ名ではない。** `src/` 直下のどのフォルダが core 側（`domains` / `services` / `libs` / `utils` / `types`）でどれが UI 側（`app` / `features` / `components` / `hooks`）か、どの向きに import してよいかは [`rules/architecture.md`](../rules/architecture.md)「依存方向のルール」が規定する。**当初ここに書いていた「境界に lint ツールを足さず、レビューと指示で守る」という方針は撤回済み**で、いまは lint と hook で機械的に検査している。
+
+- **単一パッケージ＋ `src/` 配下のレイヤ分割**から始める。pnpm workspace によるパッケージ分離は行わない
+- core → UI の import は禁止（一方向依存）
+- core を外部利用したくなった時点で workspace 化する（レイヤ境界を保っていれば移行は機械的）
 
 ## core のモジュール分割
 
-| モジュール | 責務 | 依存 |
-|---|---|---|
-| `schema` | プリミティブ定義の TS 定数と型（03-schema） | なし |
-| `document` | ノード・部品・トークンの型、ツリー操作（挿入 / 移動 / 部品化 / detach / 自動リネーム） | schema |
-| `validator` | 03 の全エラー検出（重複キーの字句スキャンを含む） | schema, document |
-| `compiler` | ドキュメント → HTML/CSS（カスタムプロパティ＋インライン style）。ref / overrides の合成 | schema, document |
-| `serializer` | JSON ⇔ ドキュメントの正規化入出力。フォーマット差し替えの閉じ込め先。外部フォーマットの解釈なので実体は `src/libs/`（`document-json` / `json-lexical-scanner`） | document |
+**モジュールは責務の単位で、フォルダ名とは 1 対 1 にならない。** 実体の列は、責務の文が指している処理の現在の置き場所（そのモジュールに属するフォルダの全列挙ではない）。
+
+| モジュール | 責務 | 依存 | 実体 |
+|---|---|---|---|
+| `schema` | プリミティブ定義の TS 定数と型（03-schema） | なし | `src/domains/dcmp/primitive-schema` |
+| `document` | ノード・部品・トークンの型、ツリー操作（挿入 / 移動 / 部品化 / detach / 自動リネーム） | schema | `src/domains/dcmp/` の `design-document` / `node` / `node-tree`（型とツリー操作）、`component` / `component-binding`（部品）、`token`（トークン）、`name-space`（一意名と自動リネーム） |
+| `validator` | 03 の全エラー検出（重複キーの字句スキャンを含む） | schema, document | `src/domains/dcmp/design-document/validation`。ただし重複キーだけは検証ではなく**読み込み時**に見つかる（serializer 側の字句スキャン） |
+| `compiler` | ドキュメント → HTML/CSS（カスタムプロパティ＋インライン style）。ref / overrides の合成 | schema, document | 合成は `src/domains/dcmp/` の `expanded-node`（ref の展開）と `resolved-props`（既定値の解決）、HTML/CSS の組み立ては `src/services/` の `document-html` / `node-html` / `token-css`、描画用の表現は `src/domains/compiled/` |
+| `serializer` | JSON ⇔ ドキュメントの正規化入出力。フォーマット差し替えの閉じ込め先（外部フォーマットの解釈なので `libs/`） | document | `src/libs/document-json` / `src/libs/json-lexical-scanner` |
 
 - UI 層はこれらを呼ぶだけのクライアントとする
 

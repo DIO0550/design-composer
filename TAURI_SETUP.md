@@ -1,6 +1,6 @@
 # セットアップ / 開発コマンド
 
-Dev Container に入った状態で、リポジトリの root から実行します。フロントエンド（React + Vite + Storybook + Biome/oxlint）と Tauri（Rust 側の `src-tauri/`）はどちらも同梱済みなので、依存を入れればそのまま起動できます。
+Dev Container に入った状態で、リポジトリの root から実行します。フロントエンド（React + Vite + Storybook + Biome/oxlint）と Tauri（Rust 側の `src-tauri/`）は同じリポジトリにあるので、依存を入れればそのまま起動できます。
 
 ## 1. 依存インストール
 
@@ -8,16 +8,13 @@ Dev Container に入った状態で、リポジトリの root から実行しま
 pnpm install
 ```
 
-`pnpm-lock.yaml` を同梱しているため、バージョンを固定して入れる場合は `pnpm install --frozen-lockfile` を使います。これだけでフロントエンドは動きます。
+`pnpm-lock.yaml` をリポジトリに含めているため、バージョンを固定して入れる場合は `pnpm install --frozen-lockfile` を使います。これだけでフロントエンドは動きます。
 
-- 開発サーバー: `pnpm dev`（<http://localhost:14000>）
-- Storybook: `pnpm storybook`（<http://localhost:6006>）
-- テスト: `pnpm test:run`
-- Lint / Format: `pnpm lint` / `pnpm dlx @biomejs/biome format --write .`
+開発サーバー・型チェック・テスト・Lint / Format のコマンドは [AGENTS.md](AGENTS.md) の「Common Commands」にあります。
 
 ## 2. Tauri（Rust 側）の構成
 
-`src-tauri/` は `pnpm tauri init` で生成した標準構成を **同梱済み**です。ポート/コマンドはこのテンプレートに合わせて設定してあります。
+`src-tauri/` は Tauri の標準構成です。Vite 側とつなぐポート/コマンドは次のとおり設定してあります。
 
 | 項目 | 値 | 設定箇所 |
 | --- | --- | --- |
@@ -26,9 +23,9 @@ pnpm install
 | Frontend dev command | `pnpm dev` | `build.beforeDevCommand` |
 | Frontend build command | `pnpm build` | `build.beforeBuildCommand` |
 
-アプリ名・ウィンドウタイトル・識別子（`identifier`）などは `src-tauri/tauri.conf.json`、Rust クレート名は `src-tauri/Cargo.toml` で変更できます。
+アプリ名・ウィンドウタイトル・識別子（`identifier`）は `src-tauri/tauri.conf.json`、Rust のクレート名とパッケージメタデータは `src-tauri/Cargo.toml` にあります。
 
-`src-tauri/icons/` には **Tauri のデフォルトアイコン**が入っているため、そのまま `tauri dev` / `tauri build` が通ります。独自アイコンに差し替えたいときだけ、任意の 1024x1024 PNG から各プラットフォーム向けを生成します。
+`src-tauri/icons/` には design-composer のアイコンが入っています（原本は `icon.svg`。1024x1024）。差し替えるときは原本を描き直し、1024x1024 の PNG へ書き出してから各プラットフォーム向けを生成します。
 
 ```bash
 pnpm tauri icon path/to/app-icon.png
@@ -44,7 +41,7 @@ Vite の開発サーバーは **14000**、HMR は **14001** を使います（`v
 
 ### Tauri ウィンドウの表示（コンテナ内 GUI）
 
-Tauri はデスクトップ GUI アプリのため、コンテナ内に仮想デスクトップ（[desktop-lite](https://github.com/devcontainers/features/tree/main/src/desktop-lite)）を同梱しています。`pnpm tauri dev` で起動したウィンドウは以下から確認できます。
+Tauri はデスクトップ GUI アプリのため、コンテナ内に仮想デスクトップ（[desktop-lite](https://github.com/devcontainers/features/tree/main/src/desktop-lite)）を組み込んでいます。`pnpm tauri dev` で起動したウィンドウは以下から確認できます。
 
 - ブラウザ (noVNC): <http://localhost:16080>（パスワード: `vscode`）
 - VNC クライアント: `localhost:15901`（パスワード: `vscode`）
@@ -59,7 +56,7 @@ pnpm tauri build
 
 ## Storybook
 
-コンポーネントカタログは同梱済みです。ポート **6006** は `.devcontainer` で転送済み。
+コンポーネントカタログは Storybook で見ます。ポート **6006** は `.devcontainer` で転送済み。
 
 ```bash
 pnpm storybook          # 開発（http://localhost:6006）
