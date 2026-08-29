@@ -1,1 +1,0 @@
-import{n as e}from"./chunk-BneVvdWh.js";var t,n,r=e((()=>{t=`w-[5.25rem] shrink-0`,n=`pl-[5.75rem]`}));export{t as n,r,n as t};
