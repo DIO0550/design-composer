@@ -204,6 +204,31 @@ export const PropDefinition = {
   },
 } as const;
 
+/**
+ * 実際に効いている prop 設定の並び。明示設定に、未設定の prop のデフォルトを足したもの。
+ * この並びが `collectRefPropNames` と `collectErrors` の共通の走査対象で、並びを決めるのもここ。
+ *
+ * Why: 片方だけがデフォルトを見ると、参照が 0 件のトークンを消して dangling が出る、という
+ * 食い違いが利用者に見える。
+ * Why not: `ResolvedProps.resolve` は使えない。あちらは宣言済みの prop だけに絞ったレコードを
+ * 返すが、ここは `unknown-prop` を報告するために未宣言の prop も残す必要がある。
+ *
+ * `session/prop-control` の `effectiveProps` とは範囲が違う（あちらは binding 由来の既定も含む）。
+ *
+ * @param schema 効いている値の出どころになる prop 定義
+ * @param props 実際に設定されている props
+ * @returns 明示設定（props の並び順）を先に、デフォルトで補われた prop
+ *   （スキーマの宣言順）を後に並べた prop 設定の並び
+ */
+function collectEffectiveAssignments(
+  schema: PropDefinitionRecord,
+  props: Props,
+): readonly PropAssignment[] {
+  const assigned = Props.toAssignments(props);
+  const defaulted = PropDefinitionRecord.collectDefaultsIfAbsent(schema, props);
+  return [...assigned, ...defaulted];
+}
+
 export const PropDefinitionRecord = {
   /** スキーマが宣言している prop の名前。宣言順で返る。 */
   propNames(schema: PropDefinitionRecord): readonly string[] {
@@ -214,7 +239,7 @@ export const PropDefinitionRecord = {
    * 設定されていない prop に効くデフォルト。並びはスキーマの宣言順。
    *
    * 「未設定ならどの値が効くか」はスキーマ自身の性質なので、デフォルト解決を要する側
-   * がそれぞれ走査を持たずここを呼ぶ（今の呼び出しは `collectErrors` と
+   * がそれぞれ走査を持たずここを呼ぶ（今の呼び出しは `collectEffectiveAssignments` と
    * `ResolvedProps.resolve`。`session/prop-control` は既定の出どころが binding にも
    * またがるので寄せていない）。
    *
@@ -236,23 +261,26 @@ export const PropDefinitionRecord = {
   },
 
   /**
-   * 設定されている props のうち、指したトークンを参照しているものの prop 名。
+   * 実際に効いている props のうち、指したトークンを参照しているものの prop 名。
+   * 未設定でデフォルトが効いている prop も数える（`typography` を書いていない Text も
+   * `body` を引く）。
    *
-   * 見るのは設定されている props だけで、スキーマのデフォルトで解決される値は含まない。
-   * 「どの prop がそのトークンを指しているか」に答えるものなので、指せる実体
-   * （設定された prop）が無いものは答えに入らない。デフォルト経由の参照を数えるかは
-   * `Used by` の見せ方の判断なので #337 が決める（`collectErrors` はデフォルト解決後を
-   * 見るので、この範囲とは既に食い違っている）。
-   *
-   * スキーマに宣言の無い prop も含まない（値の意味が決まらない。
+   * スキーマに宣言の無い prop は含まない（値の意味が決まらない。
    * `unknown-prop` として `collectErrors` が報告する）。
+   *
+   * @param schema 参照しているかを照らす先の prop 定義
+   * @param props 実際に設定されている props
+   * @param ref 参照されているかを知りたいトークン
+   * @returns そのトークンを指している prop 名の並び。並びは
+   *   `collectEffectiveAssignments` に従う（明示設定 → デフォルト）。
+   *   参照元の一覧は先頭から順に見せるので、並びは表示に出る
    */
   collectRefPropNames(
     schema: PropDefinitionRecord,
     props: Props,
     ref: TokenRef,
   ): readonly string[] {
-    return Props.toAssignments(props).flatMap((assignment) => {
+    return collectEffectiveAssignments(schema, props).flatMap((assignment) => {
       const definition = schema[assignment.name];
       if (definition === undefined) {
         return [];
@@ -274,8 +302,8 @@ export const PropDefinitionRecord = {
    * @param schema 照らす先の prop 定義
    * @param props 実際に設定されている props
    * @param tokens トークン参照の解決に使うトークン一式
-   * @returns 1 ノード分のエラーの並び。明示設定された prop（props の並び順）を先に、
-   *   デフォルトで補われた prop（スキーマの宣言順）を後に並べる。
+   * @returns 1 ノード分のエラーの並び。並びは `collectEffectiveAssignments` に従う
+   *   （明示設定 → デフォルト）。
    *   スキーマに宣言の無い prop は `unknown-prop` として報告する
    */
   collectErrors(
@@ -283,11 +311,7 @@ export const PropDefinitionRecord = {
     props: Props,
     tokens: TokenSet,
   ): readonly PropValidationError[] {
-    const assignments = [
-      ...Props.toAssignments(props),
-      ...PropDefinitionRecord.collectDefaultsIfAbsent(schema, props),
-    ];
-    return assignments.flatMap((assignment) => {
+    return collectEffectiveAssignments(schema, props).flatMap((assignment) => {
       const definition = schema[assignment.name];
       if (definition === undefined) {
         return [

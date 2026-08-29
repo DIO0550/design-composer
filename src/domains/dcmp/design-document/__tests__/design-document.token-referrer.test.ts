@@ -202,6 +202,43 @@ test("部品定義の中のノードがトークンを指すと、そのノー�
   ]);
 });
 
+test("部品定義の中のノードがデフォルトで指しているトークンも参照元になる", () => {
+  /*
+   * 初期部品セットの Text は `typography` を書いていない（docs/04-tokens.md「初期部品セット」）
+   * ので、既定を数えないと部品の中の参照が丸ごと落ちる。明示した側を 1 件並べて対照にする。
+   */
+  const document = DesignDocument.create({
+    tokens: {
+      ...TokenSet.empty(),
+      typography: { body: { fontSize: 16, lineHeight: 1.6, fontWeight: 400 } },
+    },
+    components: {
+      "primary-button": {
+        type: "Box",
+        children: [
+          { name: "primary-button-label", type: "Text" },
+          {
+            name: "primary-button-note",
+            type: "Text",
+            props: { typography: "body" },
+          },
+        ],
+      },
+    },
+    artboards: [],
+  });
+
+  const referrers = DesignDocument.collectTokenReferrers(document, {
+    kind: "typography",
+    name: "body",
+  });
+
+  expect(referrers.map(TokenReferrer.toText)).toEqual([
+    "primary-button-label.typography",
+    "primary-button-note.typography",
+  ]);
+});
+
 test("参照元はキャンバス上のものが先、部品定義の中のものが後に並ぶ", () => {
   const document = DesignDocument.create({
     tokens: { ...TokenSet.empty(), colors: { "gray-900": "#111827" } },

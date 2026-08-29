@@ -70,6 +70,10 @@ function collectSchemaRefProps(
  *
  * 参照ノードが持つのは自分の props ではなく部品への上書きなので、その値が何の prop なのかは
  * 公開 prop の binding を辿って初めて決まる。辿るのは `ComponentSet.publicPropTarget` の担当。
+ *
+ * Why not: 他の経路と違い、ここはスキーマデフォルトを足さない。上書きしていない公開 prop に
+ * 効いているのは部品定義側の値で、その参照は `collectInComponents` が数えるため。
+ * 足すとインスタンスの数だけ二重に数える。
  * 参照先の部品が無い・公開 prop に無い・連鎖が途切れているときは prop 定義が決まらないので
  * 数えない（それぞれ `dangling-ref` / `undeclared-override` / binding の不整合として
  * 検証側が報告する）。
@@ -233,6 +237,12 @@ export const TokenReferrer = {
    * artboard 自身の props も対象。受け付ける prop の定義は `Artboard.propDefinitions()`
    * （Box スキーマからサイズ系を落として `overflow` の既定を差し替えたもの）が持つので、
    * Box スキーマを直に見ない。artboard が受け付ける prop の唯一の答えがそちらだから。
+   *
+   * ただし検証側（`validation` の `collectArtboardErrors`）は Box スキーマを照らしており、
+   * artboard だけ照らす先が 2 通りある。artboard 固有の既定がトークンを指した時点で
+   * 参照元と dangling が食い違うが、**そうなっても落ちるテストは無い**（今は Box の既定が
+   * すべて enum なので差が出ず、差を作らないと再現できない）。寄せられない理由は
+   * `collectArtboardErrors` の Why not が持つ。
    *
    * 部品集合を受け取るのは、インスタンスの上書きの prop 定義を解決するために要るため。
    */

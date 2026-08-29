@@ -23,6 +23,10 @@ function twoColors(): TokenSet {
  * 公開 prop を 2 つ持つ部品と、そのインスタンスを載せたドキュメント。
  * `tone` はトークン参照 prop（Box の `background`）へ、`label` は生の値の prop
  * （Text の `content`）へ binding してある。
+ *
+ * `badge-label` に `color` を明示するのは、この土台を使うテストが見るのが
+ * **インスタンスの上書き**だけだから。書かないと Text の既定色（`gray-900`）が
+ * 参照元として並び、観点と関係のない行が期待値に混ざる。
  */
 function setupInstanceDocument(
   overrides: Readonly<Record<string, string>>,
@@ -38,7 +42,11 @@ function setupInstanceDocument(
         },
         children: [
           { name: "badge-body", type: "Box", children: [] },
-          { name: "badge-label", type: "Text" },
+          {
+            name: "badge-label",
+            type: "Text",
+            props: { color: "gray-500" },
+          },
         ],
       },
     },
@@ -173,8 +181,11 @@ test("スキーマに無い type のノードの props は参照元にならな�
   ]);
 });
 
-test("デフォルトで解決されるトークンは参照元にならない", () => {
-  /* Text の `color` はデフォルトが `gray-900`（docs/03-schema.md）。設定していないノードは数えない。 */
+test("デフォルトで解決されるトークンも参照元になる", () => {
+  /*
+   * Text の `color` はデフォルトが `gray-900`（docs/03-schema.md）。書いていないノードも
+   * そのトークンを引いているので数える。明示したノードを 1 件並べ、どちらも並ぶことを見る。
+   */
   const document = DesignDocument.create({
     tokens: twoColors(),
     artboards: [
@@ -192,7 +203,38 @@ test("デフォルトで解決されるトークンは参照元にならない",
 
   const referrers = DesignDocument.collectTokenReferrers(document, Gray900);
 
-  expect(referrers.map(TokenReferrer.toText)).toEqual(["title.color"]);
+  expect(referrers.map(TokenReferrer.toText)).toEqual([
+    "plain.color",
+    "title.color",
+  ]);
+});
+
+test("デフォルトが指していないトークンは、設定していないノードから参照元にならない", () => {
+  /*
+   * `gray-500` は Text の既定（`gray-900`）ではない。設定していない `plain` は数えず、
+   * 明示した `caption` だけが並ぶ（既定を無条件に数える実装だと `plain.color` が混ざる）。
+   */
+  const document = DesignDocument.create({
+    tokens: twoColors(),
+    artboards: [
+      {
+        name: "login",
+        width: 375,
+        height: 812,
+        children: [
+          { name: "plain", type: "Text" },
+          { name: "caption", type: "Text", props: { color: "gray-500" } },
+        ],
+      },
+    ],
+  });
+
+  const referrers = DesignDocument.collectTokenReferrers(document, {
+    kind: "colors",
+    name: "gray-500",
+  });
+
+  expect(referrers.map(TokenReferrer.toText)).toEqual(["caption.color"]);
 });
 
 test("スキーマに無い type の部品定義の props は参照元にならない", () => {
