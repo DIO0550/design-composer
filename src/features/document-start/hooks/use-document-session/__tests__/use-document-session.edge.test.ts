@@ -45,7 +45,27 @@ test("読み込めないファイルを選ぶと、その失敗が残る", async
   expect(observer.session()).toStrictEqual(
     DocumentSession.failed({
       kind: "io",
-      error: { kind: "notFound", message: `${Path}: ファイルが存在しない` },
+      error: { reason: "missing", message: `${Path}: ファイルが存在しない` },
+    }),
+  );
+});
+
+test("新規作成の保存先へ書けないときは、その失敗が残る", async () => {
+  const observer = renderDocumentSession(
+    {},
+    { open: DialogChoice.Canceled, save: DialogChoice.chosen(NewPath) },
+  );
+  observer.files.denyWrites(NewPath);
+
+  await observer.createDocument();
+
+  expect(observer.session()).toStrictEqual(
+    DocumentSession.failed({
+      kind: "io",
+      error: {
+        reason: "notPermitted",
+        message: `${NewPath}: 書き込みが拒まれた`,
+      },
     }),
   );
 });

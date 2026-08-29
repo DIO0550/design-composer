@@ -1,16 +1,16 @@
 import { render, screen } from "@testing-library/react";
 import { expect, test } from "vitest";
+import type { DocumentAccessFailureReason } from "@/domains/session/document-access-failure";
 import type { DocumentError } from "@/domains/session/document-error";
-import type { DocumentIpcErrorKind } from "@/libs/document-ipc";
 import { DocumentStart } from "../index";
 
-/** 読み書きに失敗した状態。失敗の種類ごとに言い方が変わる。 */
-function ioFailure(kind: DocumentIpcErrorKind) {
+/** 読み書きに失敗した状態。届かなかった理由ごとに言い方が変わる。 */
+function ioFailure(reason: DocumentAccessFailureReason) {
   return {
     kind: "failed",
     failure: {
       kind: "io",
-      error: { kind, message: "/work/login.dcmp" },
+      error: { reason, message: "/work/login.dcmp" },
     },
   } as const;
 }
@@ -35,7 +35,7 @@ function renderMessages(errors: readonly DocumentError[]) {
 test("ファイルが無いときは、見つからないことが伝わる", () => {
   render(
     <DocumentStart
-      session={ioFailure("notFound")}
+      session={ioFailure("missing")}
       renderErrors={renderPlaceholder}
     />,
   );
@@ -46,7 +46,7 @@ test("ファイルが無いときは、見つからないことが伝わる", ()
 test("読み書きが許されていないときは、権限の問題だと伝わる", () => {
   render(
     <DocumentStart
-      session={ioFailure("permissionDenied")}
+      session={ioFailure("notPermitted")}
       renderErrors={renderPlaceholder}
     />,
   );
@@ -59,7 +59,7 @@ test("読み書きが許されていないときは、権限の問題だと伝�
 test("パスとして扱えない指定のときは、パスの問題だと伝わる", () => {
   render(
     <DocumentStart
-      session={ioFailure("invalidPath")}
+      session={ioFailure("unusablePath")}
       renderErrors={renderPlaceholder}
     />,
   );
@@ -70,7 +70,7 @@ test("パスとして扱えない指定のときは、パスの問題だと伝�
 test("UTF-8 として読めないファイルのときは、文字コードの問題だと伝わる", () => {
   render(
     <DocumentStart
-      session={ioFailure("invalidUtf8")}
+      session={ioFailure("undecodableText")}
       renderErrors={renderPlaceholder}
     />,
   );
@@ -81,7 +81,7 @@ test("UTF-8 として読めないファイルのときは、文字コードの�
 test("読み書き自体が失敗したときは、その旨が伝わる", () => {
   render(
     <DocumentStart
-      session={ioFailure("io")}
+      session={ioFailure("storageFailed")}
       renderErrors={renderPlaceholder}
     />,
   );
@@ -92,7 +92,7 @@ test("読み書き自体が失敗したときは、その旨が伝わる", () =>
 test("コマンドを呼べなかったときは、アプリ内部の問題だと伝わる", () => {
   render(
     <DocumentStart
-      session={ioFailure("ipcFailed")}
+      session={ioFailure("undelivered")}
       renderErrors={renderPlaceholder}
     />,
   );
@@ -103,7 +103,7 @@ test("コマンドを呼べなかったときは、アプリ内部の問題だ�
 test("読み書きに失敗したときは、診断用のメッセージも添えられる", () => {
   render(
     <DocumentStart
-      session={ioFailure("notFound")}
+      session={ioFailure("missing")}
       renderErrors={renderPlaceholder}
     />,
   );
@@ -114,7 +114,7 @@ test("読み書きに失敗したときは、診断用のメッセージも添�
 test("読み書きに失敗したときは、エラーの一覧を出さない", () => {
   render(
     <DocumentStart
-      session={ioFailure("notFound")}
+      session={ioFailure("missing")}
       renderErrors={renderPlaceholder}
     />,
   );

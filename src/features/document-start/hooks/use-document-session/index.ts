@@ -2,7 +2,7 @@ import { useState } from "react";
 import { OpenedDocument } from "@/domains/session/opened-document";
 import { DocumentSession } from "@/features/document-start/domains/document-session";
 import type { DocumentDialog } from "@/libs/document-dialog";
-import type { DocumentIpc } from "@/libs/document-ipc";
+import { type DocumentIpc, toDocumentAccessFailure } from "@/libs/document-ipc";
 import { DocumentJson } from "@/libs/document-json";
 
 /**
@@ -41,7 +41,10 @@ async function openWithDialog(
   const path = chosen.value.value;
   const loaded = await ipc.load(path);
   if (!loaded.ok) {
-    return DocumentSession.failed({ kind: "io", error: loaded.error });
+    return DocumentSession.failed({
+      kind: "io",
+      error: toDocumentAccessFailure(loaded.error),
+    });
   }
 
   const opened = OpenedDocument.fromParsed(
@@ -82,7 +85,10 @@ async function createWithDialog(
     DocumentJson.serialize(created.document),
   );
   if (!saved.ok) {
-    return DocumentSession.failed({ kind: "io", error: saved.error });
+    return DocumentSession.failed({
+      kind: "io",
+      error: toDocumentAccessFailure(saved.error),
+    });
   }
   return DocumentSession.opened(created);
 }

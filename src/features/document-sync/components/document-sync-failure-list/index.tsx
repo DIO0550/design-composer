@@ -1,4 +1,4 @@
-import type { DocumentSyncFailure } from "@/domains/session/document-sync-failure";
+import type { DocumentAccessFailure } from "@/domains/session/document-access-failure";
 import type { Option } from "@/utils/Option";
 
 /**
@@ -11,18 +11,24 @@ import type { Option } from "@/utils/Option";
  *
  * 並びは同期が起きる順（自動で書く → 外から届く → 明示的に書き戻す）に固定する。
  *
- * 名前が `DocumentSyncFailure` と同じ語幹なのは、まさにその失敗を並べる器だから。
- * ただし `DocumentSyncFailure[]` は受け取らない。どの同期で失敗したかはラベルに出す
- * 必要があり、失敗の値そのものはどれで起きたかを持たないため、経路ごとに受ける。
+ * 名前が `Sync` なのは、並べているのが同期の失敗（自動保存・監視・書き戻し）だから。
+ * 受け取る値の型は開く経路と共有している（`DocumentAccessFailure`）が、**この一覧が出すのは
+ * 経路のラベルと診断用の原文だけで、`reason` は読まない**。
+ *
+ * Why not: 開く経路（`ioFailureLabel`）のように理由ごとの日本語を出さないのは、同期の失敗が
+ * 「何をしていて失敗したか」で伝わるため。必要になったらラベル表を共有できる形にする。
+ *
+ * `DocumentAccessFailure[]` を受け取らないのは、どの同期で失敗したかはラベルに出す必要が
+ * あり、失敗の値そのものはどれで起きたかを持たないため。経路ごとに受ける。
  */
 export function DocumentSyncFailureList({
   autoSave,
   watch,
   revert,
 }: Readonly<{
-  autoSave: Option<DocumentSyncFailure>;
-  watch: Option<DocumentSyncFailure>;
-  revert: Option<DocumentSyncFailure>;
+  autoSave: Option<DocumentAccessFailure>;
+  watch: Option<DocumentAccessFailure>;
+  revert: Option<DocumentAccessFailure>;
 }>) {
   const syncKinds = [
     { label: "自動保存に失敗しました", failure: autoSave },

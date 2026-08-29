@@ -1,16 +1,16 @@
-import type { DocumentSyncFailure } from "@/domains/session/document-sync-failure";
+import type { DocumentAccessFailure } from "@/domains/session/document-access-failure";
 import { Option } from "@/utils/Option";
 
 /**
  * 画面のドキュメントとファイルの一致（docs/05-architecture.md「保存モデル: 自動保存」）。
  *
  * 「失敗しているのに保存済み」のような食い違いを作れないよう直和で列挙する
- * （`{ saved: boolean; failure: Option<DocumentSyncFailure> }` の形だと矛盾が書ける）。
+ * （`{ saved: boolean; failure: Option<DocumentAccessFailure> }` の形だと矛盾が書ける）。
  */
 export type DocumentSaveState =
   | Readonly<{ kind: "saved" }>
   | Readonly<{ kind: "saving" }>
-  | Readonly<{ kind: "failed"; failure: DocumentSyncFailure }>;
+  | Readonly<{ kind: "failed"; failure: DocumentAccessFailure }>;
 
 /** 状態を持たない枝は生成せず 1 つを共有する。 */
 const Saved: DocumentSaveState = Object.freeze({ kind: "saved" });
@@ -26,7 +26,7 @@ export const DocumentSaveState = {
    * @param failure 書き込みができなかった理由
    * @returns その理由を抱えた失敗の状態
    */
-  failed(failure: DocumentSyncFailure): DocumentSaveState {
+  failed(failure: DocumentAccessFailure): DocumentSaveState {
     return { kind: "failed", failure };
   },
 
@@ -47,7 +47,7 @@ export const DocumentSaveState = {
    * @param state 今の保存状態
    * @returns 失敗していればその理由。保存済み・保存中なら `none`
    */
-  failure(state: DocumentSaveState): Option<DocumentSyncFailure> {
+  failure(state: DocumentSaveState): Option<DocumentAccessFailure> {
     return state.kind === "failed" ? Option.some(state.failure) : Option.none;
   },
 } as const;

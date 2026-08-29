@@ -1,6 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
+import type { DocumentAccessFailure } from "@/domains/session/document-access-failure";
 import type { DocumentReload } from "@/domains/session/document-reload";
-import type { DocumentSyncFailure } from "@/domains/session/document-sync-failure";
 import { changeFileExternally } from "@/libs/__tests__/document-change";
 import type { DocumentIpc } from "@/libs/document-ipc";
 import type { DocumentIpcFake } from "@/libs/document-ipc/fake";
@@ -14,7 +14,7 @@ export type ReloadObserver = Readonly<{
   /** 取り込み結果が届いた順に入る。 */
   reloads: readonly DocumentReload[];
   /** 直近の同期の失敗。 */
-  failure: () => Option<DocumentSyncFailure>;
+  failure: () => Option<DocumentAccessFailure>;
   unmount: () => void;
 }>;
 

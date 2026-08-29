@@ -1,7 +1,7 @@
+import type { DocumentAccessFailure } from "@/domains/session/document-access-failure";
 import type { DocumentError } from "@/domains/session/document-error";
 import type { OpenedDocument } from "@/domains/session/opened-document";
 import type { DocumentDialogError } from "@/libs/document-dialog";
-import type { DocumentIpcError } from "@/libs/document-ipc";
 import { Option } from "@/utils/Option";
 
 /**
@@ -13,10 +13,13 @@ import { Option } from "@/utils/Option";
  * `unparsable` が運ぶのは `DocumentJson.parse` が返した失敗だけ（字句スキャン・
  * `JSON.parse`・版の解決・構造のデコード）。スキーマ検証で落ちるファイルはここへ来ず、
  * そのまま開く（docs/03-schema.md「不正ファイル時の挙動」の「開く時」）。
+ *
+ * 枝が指すのは**どの段で失敗したか**（ダイアログ / I/O / 解釈）で、`io` が運ぶ理由の
+ * 語彙は他の経路と共有する（`DocumentAccessFailure`）。
  */
 export type DocumentOpenFailure =
   | Readonly<{ kind: "dialog"; error: DocumentDialogError }>
-  | Readonly<{ kind: "io"; error: DocumentIpcError }>
+  | Readonly<{ kind: "io"; error: DocumentAccessFailure }>
   | Readonly<{ kind: "unparsable"; errors: readonly DocumentError[] }>;
 
 /**

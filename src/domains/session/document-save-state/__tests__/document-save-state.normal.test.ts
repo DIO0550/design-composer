@@ -1,13 +1,13 @@
 import { expect, test } from "vitest";
-import { DocumentSaveState } from "@/domains/session/document-save-state";
 import {
-  DocumentSyncFailure,
-  DocumentSyncFailureReasons,
-} from "@/domains/session/document-sync-failure";
+  DocumentAccessFailure,
+  DocumentAccessFailureReasons,
+} from "@/domains/session/document-access-failure";
+import { DocumentSaveState } from "@/domains/session/document-save-state";
 import { Option } from "@/utils/Option";
 
-const Denied = DocumentSyncFailure.create(
-  DocumentSyncFailureReasons.NotPermitted,
+const Denied = DocumentAccessFailure.create(
+  DocumentAccessFailureReasons.NotPermitted,
   "/work/login.dcmp: 書き込みが許可されていない",
 );
 

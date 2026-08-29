@@ -3,12 +3,12 @@ import {
   DesignDocument,
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
+import {
+  DocumentAccessFailure,
+  DocumentAccessFailureReasons,
+} from "@/domains/session/document-access-failure";
 import type { DocumentError } from "@/domains/session/document-error";
 import { DocumentSaveState } from "@/domains/session/document-save-state";
-import {
-  DocumentSyncFailure,
-  DocumentSyncFailureReasons,
-} from "@/domains/session/document-sync-failure";
 import { type Elapsed, ElapsedUnits } from "@/domains/unit/elapsed";
 import { CanvasView } from "@/features/canvas";
 import { SampleFileErrors } from "@/features/editor/__stories__/sample-editor-state";
@@ -83,8 +83,8 @@ export const Failed: Story = {
   name: "保存に失敗",
   args: {
     saveState: DocumentSaveState.failed(
-      DocumentSyncFailure.create(
-        DocumentSyncFailureReasons.NotPermitted,
+      DocumentAccessFailure.create(
+        DocumentAccessFailureReasons.NotPermitted,
         "/work/settings-ui/app.dcmp: 書き込みが許可されていない",
       ),
     ),

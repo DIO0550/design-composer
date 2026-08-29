@@ -1,9 +1,9 @@
 import { expect, test } from "vitest";
 import { artboardContent } from "@/domains/__tests__/sample-document";
 import {
-  DocumentSyncFailure,
-  DocumentSyncFailureReasons,
-} from "@/domains/session/document-sync-failure";
+  DocumentAccessFailure,
+  DocumentAccessFailureReasons,
+} from "@/domains/session/document-access-failure";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { Option } from "@/utils/Option";
 import { changeExternally, Path, renderDocumentReload } from "./setup";
@@ -51,8 +51,8 @@ test("外部変更の購読を張れないときは、その失敗がドメイ�
   // 境界を通っていれば `undelivered` になる。
   expect(observer.failure()).toStrictEqual(
     Option.some(
-      DocumentSyncFailure.create(
-        DocumentSyncFailureReasons.Undelivered,
+      DocumentAccessFailure.create(
+        DocumentAccessFailureReasons.Undelivered,
         "document-changed: 購読を開始できない",
       ),
     ),
@@ -66,8 +66,8 @@ test("存在しないファイルは監視できず、その失敗が返る", as
 
   expect(observer.failure()).toStrictEqual(
     Option.some(
-      DocumentSyncFailure.create(
-        DocumentSyncFailureReasons.Missing,
+      DocumentAccessFailure.create(
+        DocumentAccessFailureReasons.Missing,
         "/work/missing.dcmp: ファイルが存在しない",
       ),
     ),
