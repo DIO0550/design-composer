@@ -30,8 +30,8 @@ const CurrentMajor = 1;
 
 /**
  * アプリが書き出す版。
- * minor は後方互換な追加のたびに上げる(docs/01-file-format.md「formatVersion」)。
- * 1.1 で `placement` / `x` / `y` が加わった。
+ * minor は後方互換な追加のたびに上げる(docs/01-file-format.md「formatVersion」。
+ * どの版で何が加わったかの内訳もそこの表が持つ)。
  */
 const Current: FormatVersionOf<typeof CurrentMajor> = {
   major: CurrentMajor,

@@ -1,15 +1,7 @@
 import { expect, test } from "vitest";
-import type { ExpandedNode } from "@/domains/dcmp/expanded-node";
 import { Result } from "@/utils/Result";
-import type { ParentContext } from "../index";
 import { NodeHtml } from "../index";
-
-function styleOf(
-  node: ExpandedNode,
-  parent?: ParentContext,
-): Readonly<Record<string, string>> {
-  return Result.unwrap(NodeHtml.compile(node, parent)).style;
-}
+import { styleOf } from "./setup";
 
 test("widthMode が hug のとき幅は内容に合わせて縮む", () => {
   const style = styleOf({

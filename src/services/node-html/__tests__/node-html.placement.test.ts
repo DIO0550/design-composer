@@ -2,10 +2,7 @@ import { expect, test } from "vitest";
 import type { ExpandedNode } from "@/domains/dcmp/expanded-node";
 import { Result } from "@/utils/Result";
 import { NodeHtml } from "../index";
-
-function styleOf(node: ExpandedNode): Readonly<Record<string, string>> {
-  return Result.unwrap(NodeHtml.compile(node)).style;
-}
+import { styleOf } from "./setup";
 
 /** 子の並びから、指定した宣言の値を並び順に取り出す。 */
 function childValuesOf(

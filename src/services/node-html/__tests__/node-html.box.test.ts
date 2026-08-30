@@ -1,12 +1,8 @@
 import { expect, test } from "vitest";
 import { CompiledElement } from "@/domains/compiled/compiled-element";
-import type { ExpandedNode } from "@/domains/dcmp/expanded-node";
 import { Result } from "@/utils/Result";
 import { NodeHtml } from "../index";
-
-function styleOf(node: ExpandedNode): Readonly<Record<string, string>> {
-  return Result.unwrap(NodeHtml.compile(node)).style;
-}
+import { styleOf } from "./setup";
 
 test("Box は flex コンテナになり、未指定の prop はスキーマのデフォルトで出力される", () => {
   const style = styleOf({ name: "root", type: "Box" });

@@ -1,11 +1,15 @@
 import { CssDeclaration } from "@/domains/dcmp/css-declaration";
-import type { PropValue } from "@/domains/dcmp/node";
+import type { Props } from "@/domains/dcmp/node";
 import { Px } from "@/domains/unit/px";
 
 /**
  * 親の中でのノードの置かれ方
  * (docs/03「配置の指定」)。
  * 座標を持つのは `absolute` のときだけであることを構造で表す。
+ *
+ * 指しているのは `.dcmp` のノードが親の中でどう置かれるかで、インスタンスを
+ * 置いている最中(`InstancePlacementIndicator`)でも、解決値をラベルのどちら側へ
+ * 添えるか(`ResolvedValuePlacement`)でもない。
  */
 export type Placement =
   | Readonly<{ mode: "flow" }>
@@ -13,28 +17,29 @@ export type Placement =
 
 export const Placement = {
   /**
-   * モードと座標の 3 prop から組み立てる。
+   * props から置かれ方を組み立てる。
+   * 配置を決める 3 prop の綴りを知っているのはここだけで、消費側は prop 名を持たない。
    *
-   * @param mode `placement` prop に設定されている値
-   * @param x `x` prop に設定されている値
-   * @param y `y` prop に設定されている値
-   * @returns 置かれ方。`absolute` なのに座標が数値でないなど、置き場所を決められない
-   *   ときは `undefined`
+   * 決められないときに `Option` ではなく `undefined` を返すのは、同じ形の
+   * `Size.create`(モードと値の 2 prop から直和を組む)と受け口を揃えるため。
+   *
+   * この `undefined` は「不在」ではなく「スキーマ違反で決められない」を表す。
+   * ただし**出力は `flow` と同じ**(座標の宣言を出さない)で、不正そのものは
+   * `DesignDocument.collectErrors` がエラー一覧に出す。
+   *
+   * @param props 配置を読み取る props(デフォルト解決済みでなくてよい)
+   * @returns 置かれ方。`absolute` なのに座標が数値でないなど、置き場所を
+   *   決められないときは `undefined`
    */
-  create(
-    mode: PropValue | undefined,
-    x: PropValue | undefined,
-    y: PropValue | undefined,
-  ): Placement | undefined {
-    if (mode === "flow") {
+  fromProps(props: Props): Placement | undefined {
+    const { placement, x, y } = props;
+    if (placement === "flow") {
       return { mode: "flow" };
     }
     const hasCoordinates = typeof x === "number" && typeof y === "number";
-    if (mode === "absolute" && hasCoordinates) {
+    if (placement === "absolute" && hasCoordinates) {
       return { mode: "absolute", x, y };
     }
-    // Why not: 決められないときに `flow` へ倒さない。スキーマ違反の値を
-    // 正しい配置へ読み替えると、検証が報告する不正が画面から消える
     return undefined;
   },
 

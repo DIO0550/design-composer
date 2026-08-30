@@ -117,7 +117,7 @@
 
 | prop | CSS |
 |---|---|
-| Box 自体 | `div` + `display: flex` + `position: relative`（絶対配置の子が位置を測る基準になるため。offset を伴わないので箱の位置は動かない） |
+| Box 自体 | `div` + `display: flex` + `position: relative`（絶対配置の子が位置を測る基準になるため。offset を伴わないので箱の位置は動かない。次の行と排他で、`placement: absolute` の Box では `absolute` に置き換わる） |
 | `placement: absolute` | `position: absolute` + `left: {x}px` + `top: {y}px` |
 | `direction` | `flex-direction` |
 | `gap` | `gap: var(--spacing-*)` |

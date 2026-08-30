@@ -62,6 +62,30 @@ function tokenDeclarations(
 }
 
 /**
+ * Box 自身の置かれ方の宣言。
+ *
+ * フローの Box が `position: relative` を出すのは、**絶対配置の子が位置を測る
+ * 基準になる**ため。子を持たない Text には要らないので `Placement` ではなく
+ * Box 側が持つ。offset を伴わない `relative` は箱の位置を動かさないが、
+ * positioned な要素は非 positioned な内容より上に描かれるので、重なりのある
+ * 配置では描画順が変わる。
+ *
+ * Why not: 「絶対配置の子を持つ Box だけ `relative` を出す」は採らない。
+ * 同じ props の Box が子によって違う宣言を持つことになり、この関数が
+ * props だけでは決まらなくなる。
+ *
+ * @param placement Box 自身の置かれ方。置き場所が決まらないときは `undefined`
+ * @returns 絶対配置なら座標込みの宣言、そうでなければ `position: relative` の 1 件
+ */
+function placementDeclarations(
+  placement: Placement | undefined,
+): readonly CssDeclarationType[] {
+  return Placement.isAbsolute(placement)
+    ? Placement.declarations(placement)
+    : [CssDeclaration.create("position", "relative")];
+}
+
+/**
  * 初期値と同じ `visible` は宣言を出力しない (docs/03 の表は clip のみを規定)。
  *
  * @param overflow `overflow` prop に設定されている値
@@ -154,14 +178,14 @@ export const BoxElement = {
     parentDirection: CssDirection | undefined,
     tokens: TokenRefs,
   ): readonly CssDeclarationType[] {
-    const placement = Placement.create(props.placement, props.x, props.y);
+    const placement = Placement.fromProps(props);
     // 絶対配置の子はフローから外れるので、flex アイテムとしての親を持たない
     const flexParentDirection = Placement.isAbsolute(placement)
       ? undefined
       : parentDirection;
     return [
       CssDeclaration.create("display", "flex"),
-      ...BoxElement.placementDeclarations(placement),
+      ...placementDeclarations(placement),
       CssDeclaration.create("flex-direction", String(props.direction)),
       ...tokenDeclarations("gap", props.gap, tokens),
       /*
@@ -197,26 +221,6 @@ export const BoxElement = {
     ];
   },
 
-  /**
-   * Box 自身の置かれ方の宣言。
-   *
-   * フローの Box が `position: relative` を出すのは、**絶対配置の子が位置を測る
-   * 基準になる**ため。子を持たない Text には要らないので `Placement` ではなく
-   * Box が持つ。offset を伴わない `relative` は箱の位置を動かさないが、
-   * positioned な要素は非 positioned な内容より上に描かれるので、重なりのある
-   * 配置では描画順が変わる。
-   *
-   * @param placement Box 自身の置かれ方。置き場所が決まらないときは `undefined`
-   * @returns 絶対配置なら座標込みの宣言、そうでなければ `position: relative` の 1 件
-   */
-  placementDeclarations(
-    placement: Placement | undefined,
-  ): readonly CssDeclarationType[] {
-    return Placement.isAbsolute(placement)
-      ? Placement.declarations(placement)
-      : [CssDeclaration.create("position", "relative")];
-  },
-
   /** 子を並べる向き。子の `fill` の出し分けはこの向きに従う。 */
   childDirection(props: ResolvedProps<"Box">): CssDirection {
     return CssDirection.from(props.direction);
@@ -244,9 +248,7 @@ export const TextElement = {
     tokens: TokenRefs,
   ): readonly CssDeclarationType[] {
     return [
-      ...Placement.declarations(
-        Placement.create(props.placement, props.x, props.y),
-      ),
+      ...Placement.declarations(Placement.fromProps(props)),
       ...typographyDeclarations(props.typography, tokens),
       ...tokenDeclarations("color", props.color, tokens),
       CssDeclaration.create("text-align", String(props.align)),

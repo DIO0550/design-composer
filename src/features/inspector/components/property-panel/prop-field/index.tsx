@@ -188,11 +188,11 @@ const ResolvedValueLayouts = {
 function NumericTokenField({
   field,
   input,
-  placement,
+  resolvedValuePlacement,
 }: Readonly<{
   field: FieldBinding;
   input: Extract<PropControlInput, { kind: "numericToken" }>;
-  placement: ResolvedValuePlacement;
+  resolvedValuePlacement: ResolvedValuePlacement;
 }>): ReactElement {
   const describedBy = useId();
   const resolvedValue = input.resolvedValue;
@@ -201,7 +201,7 @@ function NumericTokenField({
     return <TokenSelect field={field} names={input.names} />;
   }
   return (
-    <div className={ResolvedValueLayouts[placement]}>
+    <div className={ResolvedValueLayouts[resolvedValuePlacement]}>
       <TokenSelect
         field={field}
         names={input.names}
@@ -280,7 +280,7 @@ export function PropField({
         <NumericTokenField
           field={field}
           input={input}
-          placement={resolvedValuePlacement}
+          resolvedValuePlacement={resolvedValuePlacement}
         />
       );
     /*
