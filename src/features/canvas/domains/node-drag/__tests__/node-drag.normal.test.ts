@@ -171,6 +171,42 @@ test("座標を置き直す落とし方では挿さる位置を持たない", ()
   expect(DropEdit.insertionTarget(edit).some).toBe(false);
 });
 
+test("座標を置き直す落とし方のときだけ、動かす相手と行き先を答える", () => {
+  const dragging = NodeDrag.moveTo(
+    NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
+    { x: 100, y: 140 },
+    Option.some(
+      DropEdit.reposition("title", { mode: "absolute", x: 40, y: 24 }),
+    ),
+  );
+
+  expect(Option.unwrap(NodeDrag.repositionTarget(dragging))).toEqual({
+    name: "title",
+    placement: { mode: "absolute", x: 40, y: 24 },
+  });
+});
+
+test("ツリーへ落とす落とし方では、動かす相手と行き先を答えない", () => {
+  // 対照。ドロップ線が出る側では実体を動かさない
+  const dragging = NodeDrag.moveTo(
+    NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
+    { x: 100, y: 140 },
+    Option.some(SampleDrop),
+  );
+
+  expect(NodeDrag.repositionTarget(dragging).some).toBe(false);
+});
+
+test("押しただけでまだ動かしていない間は、動かす相手と行き先を答えない", () => {
+  // 閾値未満で答えると、クリックのたびにノードが一瞬ずれる
+  const held = NodeDrag.grab({
+    dragged: MovingTitle,
+    origin: { x: 100, y: 100 },
+  });
+
+  expect(NodeDrag.repositionTarget(held).some).toBe(false);
+});
+
 test("押された位置から外へ辿った名前のうち最も内側のノードを掴む", () => {
   const name = NodeDrag.grabbableName(setupDocument(), ["title", "home"]);
 

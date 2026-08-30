@@ -59,6 +59,15 @@ export type DropEdit =
       placement: AbsolutePlacement;
     }>;
 
+/**
+ * 置き直しの相手と行き先。
+ * 掴んだノードを離す前に、その位置へ見せる（プレビュー）ために使う。
+ */
+export type RepositionTarget = Readonly<{
+  name: string;
+  placement: AbsolutePlacement;
+}>;
+
 export const DropEdit = {
   /**
    * ツリーの中へ落とす編集。
@@ -98,6 +107,22 @@ export const DropEdit = {
         return Option.some(edit.target);
       case "reposition":
         return Option.none;
+    }
+  },
+
+  /**
+   * 置き直される相手と行き先。ツリーへ落とすときは持たない。
+   *
+   * @param edit 届く編集
+   * @returns 置き直しの相手と行き先。ツリーへの移動・挿入なら `none`
+   */
+  repositionTarget(edit: DropEdit): Option<RepositionTarget> {
+    switch (edit.kind) {
+      case "move":
+      case "insert":
+        return Option.none;
+      case "reposition":
+        return Option.some({ name: edit.name, placement: edit.placement });
     }
   },
 } as const;
@@ -228,6 +253,19 @@ export const NodeDrag = {
    */
   insertionTarget(drag: NodeDrag): Option<DropTarget> {
     return Option.flatMap(NodeDrag.drop(drag), DropEdit.insertionTarget);
+  },
+
+  /**
+   * 今ドロップしたら置き直される相手と行き先。座標を動かすドラッグのときだけ答える。
+   *
+   * 掴んだだけ（閾値未満）では答えないのは、`drop` を経由しているため。
+   * 押しただけで見た目が動くと、クリックのたびにノードが一瞬ずれる。
+   *
+   * @param drag 今のドラッグの状態
+   * @returns 置き直しの相手と行き先。ツリーへの移動・挿入 / 動かしていないなら `none`
+   */
+  repositionTarget(drag: NodeDrag): Option<RepositionTarget> {
+    return Option.flatMap(NodeDrag.drop(drag), DropEdit.repositionTarget);
   },
 
   /**

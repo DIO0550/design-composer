@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { Placement } from "../index";
+import { type AbsolutePlacement, Placement } from "../index";
 
 test("flow を指定するとフローの配置になる", () => {
   expect(Placement.fromProps({ placement: "flow", x: 40, y: 24 })).toEqual({
@@ -66,4 +66,12 @@ test("絶対配置を props の編集へ戻すと、横と縦の座標の 2 件�
     { names: ["x"], value: { some: true, value: 40 } },
     { names: ["y"], value: { some: true, value: 24 } },
   ]);
+});
+
+test("2 つの配置の差は、前から後への移動量になる", () => {
+  const from: AbsolutePlacement = { mode: "absolute", x: 40, y: 24 };
+  const to: AbsolutePlacement = { mode: "absolute", x: 10, y: 36 };
+
+  // 縦横で符号を違えて、取り違えと符号の反転を落とす
+  expect(Placement.delta(from, to)).toEqual({ x: -30, y: 12 });
 });

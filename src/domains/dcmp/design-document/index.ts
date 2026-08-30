@@ -16,6 +16,7 @@ import { NameSpace } from "@/domains/dcmp/name-space";
 import { Node, PropEdit, type RefNode } from "@/domains/dcmp/node";
 import { NodeTree, type NodeTreeUpdate } from "@/domains/dcmp/node-tree";
 import { type AbsolutePlacement, Placement } from "@/domains/dcmp/placement";
+import { ResolvedProps } from "@/domains/dcmp/resolved-props";
 import { type Token, type TokenRef, TokenSet } from "@/domains/dcmp/token";
 import { ArrayEx } from "@/utils/ArrayEx";
 import type { JsonCursor, JsonDecoded, JsonObject } from "@/utils/Json";
@@ -493,6 +494,34 @@ export const DesignDocument = {
       }
     }
     return Option.none;
+  },
+
+  /**
+   * 名前で指したノードが今置かれている座標。**座標で動かせるものだけ**が答えを持つ。
+   *
+   * 「置かれ方」ではなく絶対配置だけを答えるのは、消費側（キャンバスのドラッグと
+   * その見た目のプレビュー）が知りたいのが「このノードは座標で動かせるか、
+   * 動かせるなら今どこか」だから。`Placement.fromProps` が
+   * スキーマ違反に返す `undefined` をここで `none` へ潰せるのも、
+   * その区別が答えを変えないため（フローと同じく「動かせない」に落ちる）。
+   *
+   * @param document 引き先になるドキュメント
+   * @param name 座標を知りたいノードの名前
+   * @returns 今置かれている座標。木に無い名前 / 部品インスタンス（props を持たない）/
+   *   フロー / 座標が数値でないときは `none`
+   */
+  absolutePlacementOf(
+    document: DesignDocument,
+    name: string,
+  ): Option<AbsolutePlacement> {
+    const node = DesignDocument.findNode(document, name);
+    if (!node.some || !Node.isPrimitive(node.value)) {
+      return Option.none;
+    }
+    const placement = Placement.fromProps(ResolvedProps.forNode(node.value));
+    return Placement.isAbsolute(placement)
+      ? Option.some(placement)
+      : Option.none;
   },
 
   /** 名前でノードを引く。artboard 直下だけでなく子孫も辿る。 */

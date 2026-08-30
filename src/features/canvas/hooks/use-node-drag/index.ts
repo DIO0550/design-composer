@@ -2,10 +2,8 @@ import { type PointerEvent as ReactPointerEvent, useReducer } from "react";
 import { ElementNameAttribute } from "@/domains/compiled/compiled-element";
 import type { ChildPosition } from "@/domains/dcmp/child-position";
 import { DesignDocument } from "@/domains/dcmp/design-document";
-import { Node } from "@/domains/dcmp/node";
 import type { AbsolutePlacement } from "@/domains/dcmp/placement";
 import { Placement } from "@/domains/dcmp/placement";
-import { ResolvedProps } from "@/domains/dcmp/resolved-props";
 import type { NodeTemplate } from "@/domains/session/node-template";
 import { Offset } from "@/domains/unit/offset";
 import { CanvasView } from "@/features/canvas/domains/canvas-view";
@@ -125,20 +123,19 @@ type DropContext = Readonly<{
  * 移動量を倍率で割り戻したものを足す（倍率を変えても掴んだ点に追従する）。
  *
  * @param context 今の掴みと、配置の引き先になるドキュメント・倍率・ポインタ
- * @returns 座標の置き直しの編集。パレットの雛形を運んでいる / 名前が木に無い /
- *   部品インスタンス（props を持たない）/ フロー / 座標が数値でないなら `none`
+ * @returns 座標の置き直しの編集。パレットの雛形を運んでいる / 座標で動かせない
+ *   ノードを運んでいる（`DesignDocument.absolutePlacementOf` が `none`）なら `none`
  */
 function repositionAt(context: DropContext): Option<DropEdit> {
   const dragged = context.grab.dragged;
   if (dragged.kind !== "existing") {
     return Option.none;
   }
-  const node = DesignDocument.findNode(context.document, dragged.name);
-  if (!node.some || !Node.isPrimitive(node.value)) {
-    return Option.none;
-  }
-  const placement = Placement.fromProps(ResolvedProps.forNode(node.value));
-  if (!Placement.isAbsolute(placement)) {
+  const placement = DesignDocument.absolutePlacementOf(
+    context.document,
+    dragged.name,
+  );
+  if (!placement.some) {
     return Option.none;
   }
   const delta = CanvasView.toDocumentOffset(
@@ -146,7 +143,7 @@ function repositionAt(context: DropContext): Option<DropEdit> {
     Offset.delta(context.grab.origin, CanvasPointer.offsetOf(context.event)),
   );
   return Option.some(
-    DropEdit.reposition(dragged.name, Placement.moveBy(placement, delta)),
+    DropEdit.reposition(dragged.name, Placement.moveBy(placement.value, delta)),
   );
 }
 

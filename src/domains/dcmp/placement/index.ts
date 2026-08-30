@@ -1,6 +1,6 @@
 import { CssDeclaration } from "@/domains/dcmp/css-declaration";
 import { PropEdit, type Props } from "@/domains/dcmp/node";
-import type { Offset } from "@/domains/unit/offset";
+import { Offset } from "@/domains/unit/offset";
 import { Px } from "@/domains/unit/px";
 
 /**
@@ -80,6 +80,20 @@ export const Placement = {
       x: Math.round(placement.x + delta.x),
       y: Math.round(placement.y + delta.y),
     };
+  },
+
+  /**
+   * `from` から `to` へ動かすための移動量（`moveBy` の逆向き）。
+   *
+   * ドラッグ中の見た目を先に動かすのに使う。**離したときに書かれる値そのものから
+   * 逆算する**ので、丸めも込みでプレビューと確定結果が一致する。
+   *
+   * @param from 動かす前の配置
+   * @param to 動かした後の配置
+   * @returns ドキュメント上の px で表した移動量
+   */
+  delta(from: AbsolutePlacement, to: AbsolutePlacement): Offset {
+    return Offset.delta(from, to);
   },
 
   /**
