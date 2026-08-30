@@ -1,6 +1,6 @@
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import type { NodeTemplate } from "@/domains/session/node-template";
-import { CanvasOffset } from "@/features/canvas/domains/canvas-view";
+import { Offset } from "@/domains/unit/offset";
 import {
   DraggedNode,
   type DropTarget,
@@ -27,7 +27,7 @@ import { Option } from "@/utils/Option";
  */
 export type NodeDrag =
   | Readonly<{ kind: "idle" }>
-  | Readonly<{ kind: "held"; dragged: DraggedNode; origin: CanvasOffset }>
+  | Readonly<{ kind: "held"; dragged: DraggedNode; origin: Offset }>
   | Readonly<{
       kind: "dragging";
       dragged: DraggedNode;
@@ -70,7 +70,7 @@ export const NodeDrag = {
   },
 
   /** 掴む。まだ動かしていないので、この時点ではクリックと区別が付かない。 */
-  grab(dragged: DraggedNode, origin: CanvasOffset): NodeDrag {
+  grab(dragged: DraggedNode, origin: Offset): NodeDrag {
     return { kind: "held", dragged, origin };
   },
 
@@ -121,18 +121,14 @@ export const NodeDrag = {
    * ポインタの移動を反映する。閾値を越えたところで初めて「動かしている」状態になる。
    * 掴んでいなければ何も起きない（ボタンを離したあとのマウス移動）。
    */
-  moveTo(
-    drag: NodeDrag,
-    pointer: CanvasOffset,
-    drop: Option<DropTarget>,
-  ): NodeDrag {
+  moveTo(drag: NodeDrag, pointer: Offset, drop: Option<DropTarget>): NodeDrag {
     if (drag.kind === "dragging") {
       return { ...drag, drop };
     }
     if (drag.kind !== "held") {
       return drag;
     }
-    return CanvasOffset.distance(drag.origin, pointer) < DragThresholdPx
+    return Offset.distance(drag.origin, pointer) < DragThresholdPx
       ? drag
       : { kind: "dragging", dragged: drag.dragged, drop };
   },

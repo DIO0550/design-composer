@@ -1,5 +1,5 @@
 import { fireEvent } from "@testing-library/react";
-import type { CanvasOffset } from "@/features/canvas/domains/canvas-view";
+import type { Offset } from "@/domains/unit/offset";
 
 /**
  * キャンバスへのポインタ / ホイール操作。
@@ -11,7 +11,7 @@ import type { CanvasOffset } from "@/features/canvas/domains/canvas-view";
  *
  * ポインタそのものの操作は左ペインの並べ替えでも同じものが要るので、横断層
  * （`components/__tests__/pointer-gesture`）へ移して**そのまま再輸出**する。
- * 包み直さないのは、`CanvasOffset` が `PointerPoint` と構造的に同じで型の上でも
+ * 包み直さないのは、`Offset` が `PointerPoint` と構造的に同じで型の上でも
  * 何も足せないため（rules/coding.md「構造が変わらない型エイリアスの新設は禁止」と
  * 同じ形）。ここが自前で持つのはホイール（キャンバス固有）だけ。
  */
@@ -33,7 +33,7 @@ export type WheelModifier = "none" | "ctrl" | "meta";
  */
 export function wheel(
   element: Element,
-  delta: CanvasOffset,
+  delta: Offset,
   modifier: WheelModifier,
 ): void {
   const event = new WheelEvent("wheel", {

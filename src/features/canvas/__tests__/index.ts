@@ -10,7 +10,7 @@
  * 本番の入口と別に置かれているのと同じ形。
  *
  * Why not: fixture を層直下（`src/features/__tests__/`）へ移して共有する形は採らない。
- * ここの fixture はキャンバスの内部（`TokenReferrerOutline` / `CanvasOffset`）を読んで
+ * ここの fixture はキャンバスの内部（`TokenReferrerOutline` / `Offset`）を読んで
  * おり、層直下からはその内部を引けない（feature の外から feature の中を読めるのは
  * 公開口だけ、を `lib/import-rule-violations.py` が行き先で判定して落とす）。
  */

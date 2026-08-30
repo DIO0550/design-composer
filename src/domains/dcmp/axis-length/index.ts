@@ -1,4 +1,4 @@
-import type { Axis } from "@/domains/dcmp/css-direction";
+import type { Axis } from "@/domains/unit/axis";
 
 /**
  * 軸とその方向の長さ(px)。

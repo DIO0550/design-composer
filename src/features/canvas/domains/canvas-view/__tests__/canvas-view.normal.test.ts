@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { CanvasOffset, CanvasView } from "../index";
+import { CanvasView } from "../index";
 
 test("キャンバスを開いた直後は等倍で原点にある", () => {
   const view = CanvasView.create();
@@ -110,14 +110,6 @@ test("100% に戻すと等倍・原点の状態になる", () => {
   expect(CanvasView.transform(CanvasView.create())).toBe(
     "translate(0px, 0px) scale(1)",
   );
-});
-
-test("幅の軸に沿った移動量は横の成分になる", () => {
-  expect(CanvasOffset.along({ x: 30, y: 12 }, "width")).toBe(30);
-});
-
-test("高さの軸に沿った移動量は縦の成分になる", () => {
-  expect(CanvasOffset.along({ x: 30, y: 12 }, "height")).toBe(12);
 });
 
 test("等倍で見ているときは画面上の長さがそのままドキュメント上の長さになる", () => {

@@ -1,5 +1,5 @@
 import type { ChildPosition } from "@/domains/dcmp/child-position";
-import type { CanvasOffset } from "@/features/canvas/domains/canvas-view";
+import type { Offset } from "@/domains/unit/offset";
 import { CanvasBounds } from "../canvas-bounds";
 import type { DropParent } from "../drop-parent";
 
@@ -97,7 +97,7 @@ export const DropZone = {
    * ポインタの位置から「どの Box の何番目の子になるか」と、そこに引く線を決める。
    * index は「軸方向の中点をポインタが越えた子の数」で、子が無ければ 0 になる。
    */
-  targetAt(zone: DropZone, pointer: CanvasOffset): DropTarget {
+  targetAt(zone: DropZone, pointer: Offset): DropTarget {
     const direction = zone.parent.direction;
     const along = direction === "row" ? pointer.x : pointer.y;
     const index = zone.children.filter(

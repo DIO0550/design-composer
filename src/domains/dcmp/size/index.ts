@@ -1,6 +1,7 @@
 import { CssDeclaration } from "@/domains/dcmp/css-declaration";
-import { type Axis, CssDirection } from "@/domains/dcmp/css-direction";
+import { CssDirection } from "@/domains/dcmp/css-direction";
 import type { PropValue } from "@/domains/dcmp/node";
+import type { Axis } from "@/domains/unit/axis";
 import { Px } from "@/domains/unit/px";
 import { Option } from "@/utils/Option";
 

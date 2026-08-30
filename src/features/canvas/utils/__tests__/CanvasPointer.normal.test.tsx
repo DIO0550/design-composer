@@ -1,16 +1,16 @@
 import { render, screen } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
+import type { Offset } from "@/domains/unit/offset";
 import {
   movePointer,
   pressPointer,
 } from "@/features/canvas/__tests__/canvas-gesture";
-import type { CanvasOffset } from "@/features/canvas/domains/canvas-view";
 import { CanvasPointer } from "../CanvasPointer";
 
 /** ポインタイベントを受けて、読み取った位置をそのまま渡すだけの器。 */
 function PointerHarness({
   onRead,
-}: Readonly<{ onRead: (offset: CanvasOffset) => void }>) {
+}: Readonly<{ onRead: (offset: Offset) => void }>) {
   return (
     <div
       data-testid="surface"

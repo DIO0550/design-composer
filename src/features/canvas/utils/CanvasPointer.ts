@@ -1,5 +1,5 @@
 import type { PointerEvent as ReactPointerEvent } from "react";
-import type { CanvasOffset } from "@/features/canvas/domains/canvas-view";
+import type { Offset } from "@/domains/unit/offset";
 
 /**
  * キャンバス上のポインタイベントの読み取り。
@@ -10,7 +10,7 @@ export const CanvasPointer = {
    * イベントが起きた位置。
    * キャンバスの実測（`getBoundingClientRect`）と揃えるため client 座標で読む。
    */
-  offsetOf(event: ReactPointerEvent<HTMLElement>): CanvasOffset {
+  offsetOf(event: ReactPointerEvent<HTMLElement>): Offset {
     return { x: event.clientX, y: event.clientY };
   },
 } as const;

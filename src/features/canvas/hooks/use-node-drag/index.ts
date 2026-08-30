@@ -3,7 +3,7 @@ import { ElementNameAttribute } from "@/domains/compiled/compiled-element";
 import type { ChildPosition } from "@/domains/dcmp/child-position";
 import type { DesignDocument } from "@/domains/dcmp/design-document";
 import type { NodeTemplate } from "@/domains/session/node-template";
-import type { CanvasOffset } from "@/features/canvas/domains/canvas-view";
+import type { Offset } from "@/domains/unit/offset";
 import { NodeDrag } from "@/features/canvas/domains/node-drag";
 import {
   CanvasBounds,
@@ -19,8 +19,8 @@ import { Option } from "@/utils/Option";
 
 /** ドラッグの進み方（docs/06-ui.md「キャンバス直接操作」の移動と、挿入）。 */
 type NodeDragAction =
-  | Readonly<{ type: "grab"; dragged: DraggedNode; origin: CanvasOffset }>
-  | Readonly<{ type: "move"; pointer: CanvasOffset; drop: Option<DropTarget> }>
+  | Readonly<{ type: "grab"; dragged: DraggedNode; origin: Offset }>
+  | Readonly<{ type: "move"; pointer: Offset; drop: Option<DropTarget> }>
   | Readonly<{ type: "release" }>
   | Readonly<{ type: "cancel" }>
   | Readonly<{ type: "consume_click" }>;

@@ -1,14 +1,12 @@
 import type { Artboard } from "@/domains/dcmp/artboard";
 import { AxisLength } from "@/domains/dcmp/axis-length";
-import { Axes } from "@/domains/dcmp/css-direction";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { Node, type Props } from "@/domains/dcmp/node";
 import { Size } from "@/domains/dcmp/size";
 import { DocumentSelection } from "@/domains/session/document-selection";
-import {
-  CanvasOffset,
-  CanvasView,
-} from "@/features/canvas/domains/canvas-view";
+import { Axes } from "@/domains/unit/axis";
+import { Offset } from "@/domains/unit/offset";
+import { CanvasView } from "@/features/canvas/domains/canvas-view";
 import { CanvasBounds } from "@/features/canvas/domains/node-drop";
 import { Option } from "@/utils/Option";
 
@@ -30,7 +28,7 @@ export const ResizeHandleThicknessPx = 8;
  */
 export type NodeResize =
   | Readonly<{ kind: "idle" }>
-  | Readonly<{ kind: "resizing"; handle: AxisLength; origin: CanvasOffset }>
+  | Readonly<{ kind: "resizing"; handle: AxisLength; origin: Offset }>
   | Readonly<{ kind: "resized" }>;
 
 /**
@@ -117,7 +115,7 @@ export const NodeResize = {
   handleAt(
     handles: readonly AxisLength[],
     bounds: CanvasBounds,
-    pointer: CanvasOffset,
+    pointer: Offset,
   ): Option<AxisLength> {
     if (!CanvasBounds.contains(bounds, pointer)) {
       return Option.none;
@@ -126,14 +124,14 @@ export const NodeResize = {
       handles.find(
         (handle) =>
           CanvasBounds.edge(bounds, handle.axis) -
-            CanvasOffset.along(pointer, handle.axis) <=
+            Offset.along(pointer, handle.axis) <=
           ResizeHandleThicknessPx,
       ),
     );
   },
 
   /** ハンドルを掴む。以後の長さはこの位置とこの長さからの差分で決まる。 */
-  grab(handle: AxisLength, origin: CanvasOffset): NodeResize {
+  grab(handle: AxisLength, origin: Offset): NodeResize {
     return { kind: "resizing", handle, origin };
   },
 
@@ -146,14 +144,14 @@ export const NodeResize = {
    */
   lengthAt(
     resize: NodeResize,
-    pointer: CanvasOffset,
+    pointer: Offset,
     view: CanvasView,
   ): Option<AxisLength> {
     if (resize.kind !== "resizing") {
       return Option.none;
     }
-    const moved = CanvasOffset.along(
-      CanvasOffset.delta(resize.origin, pointer),
+    const moved = Offset.along(
+      Offset.delta(resize.origin, pointer),
       resize.handle.axis,
     );
     return Option.some(
