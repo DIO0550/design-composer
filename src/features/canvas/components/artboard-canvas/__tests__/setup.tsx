@@ -7,6 +7,7 @@ import {
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
 import type { PropEdit } from "@/domains/dcmp/node";
+import type { AbsolutePlacement } from "@/domains/dcmp/placement";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { TokenSelection } from "@/domains/session/token-selection";
 import {
@@ -55,6 +56,7 @@ type CanvasValues = Readonly<{
 type CanvasHandlers = Readonly<{
   onSelect: (names: readonly string[]) => void;
   onMoveNode: (name: string, to: ChildPosition) => void;
+  onRepositionNode: (name: string, placement: AbsolutePlacement) => void;
   onResize: (size: AxisLength) => void;
   onEditProp: (edit: PropEdit) => void;
 }>;
@@ -78,8 +80,10 @@ function CanvasWithView(props: CanvasValues & CanvasHandlers) {
   const canvasView = useCanvasView();
   const nodeDrag = useNodeDrag({
     document: props.selection.document,
+    view: canvasView.view,
     onMove: props.onMoveNode,
     onInsertAt: () => {},
+    onReposition: props.onRepositionNode,
   });
   return (
     <div {...nodeDrag.dragHandlers}>
@@ -109,6 +113,7 @@ export function renderCanvas(
       isFrozen={false}
       onSelect={vi.fn()}
       onMoveNode={vi.fn()}
+      onRepositionNode={vi.fn()}
       onResize={vi.fn()}
       onEditProp={vi.fn()}
       {...props}

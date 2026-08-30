@@ -97,7 +97,7 @@ export function ArtboardCanvas({
     () => DocumentHtml.compile(designDocument),
     [designDocument],
   );
-  const dropTarget = NodeDrag.dropTarget(nodeDrag.drag);
+  const dropTarget = NodeDrag.insertionTarget(nodeDrag.drag);
 
   return (
     // relative はスクリムとバッジの基準。中央ペインも relative だが、そちらは

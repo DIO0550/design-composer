@@ -1,4 +1,5 @@
 import { DesignDocument } from "@/domains/dcmp/design-document";
+import type { AbsolutePlacement } from "@/domains/dcmp/placement";
 import type { NodeTemplate } from "@/domains/session/node-template";
 import { Offset } from "@/domains/unit/offset";
 import {
@@ -31,9 +32,36 @@ export type NodeDrag =
   | Readonly<{
       kind: "dragging";
       dragged: DraggedNode;
-      drop: Option<DropTarget>;
+      origin: Offset;
+      drop: Option<NodeDrop>;
     }>
   | Readonly<{ kind: "dropped" }>;
+
+/**
+ * 離したときに起きること（docs/06-ui.md「キャンバス直接操作」の移動）。
+ *
+ * ツリーへ挿すのと座標を置き直すのは**排他**なので直和で列挙する。
+ * 並べて持つと「挿入位置と座標の両方がある」が型で書けてしまう。
+ *
+ * どちらになるかは運んでいるノード自身が絶対配置かで決まる。名前を持たないのは、
+ * 運んでいるものの名前を `dragging.dragged` が既に持っているため
+ * （両方持つと食い違いが書ける）。
+ */
+export type NodeDrop =
+  | Readonly<{ kind: "insertion"; target: DropTarget }>
+  | Readonly<{ kind: "placement"; placement: AbsolutePlacement }>;
+
+export const NodeDrop = {
+  /** ツリーの中へ挿す落とし方。 */
+  insertion(target: DropTarget): NodeDrop {
+    return { kind: "insertion", target };
+  },
+
+  /** 親の中の座標を置き直す落とし方。 */
+  placement(placement: AbsolutePlacement): NodeDrop {
+    return { kind: "placement", placement };
+  },
+} as const;
 
 /**
  * ここまでの動きはクリックとして扱う（px）。
@@ -121,7 +149,7 @@ export const NodeDrag = {
    * ポインタの移動を反映する。閾値を越えたところで初めて「動かしている」状態になる。
    * 掴んでいなければ何も起きない（ボタンを離したあとのマウス移動）。
    */
-  moveTo(drag: NodeDrag, pointer: Offset, drop: Option<DropTarget>): NodeDrag {
+  moveTo(drag: NodeDrag, pointer: Offset, drop: Option<NodeDrop>): NodeDrag {
     if (drag.kind === "dragging") {
       return { ...drag, drop };
     }
@@ -130,12 +158,49 @@ export const NodeDrag = {
     }
     return Offset.distance(drag.origin, pointer) < DragThresholdPx
       ? drag
-      : { kind: "dragging", dragged: drag.dragged, drop };
+      : { kind: "dragging", dragged: drag.dragged, origin: drag.origin, drop };
   },
 
-  /** 今ドロップしたら落ちる位置。動かしていて、かつ受け入れられる先の上にいるときだけ。 */
-  dropTarget(drag: NodeDrag): Option<DropTarget> {
+  /**
+   * 今ドロップしたら起きること。動かしていて、かつ落とせる状態のときだけ。
+   *
+   * @param drag 今のドラッグの状態
+   * @returns 挿入か座標の置き直し。動かしていない / 落とせる先が無いなら `none`
+   */
+  drop(drag: NodeDrag): Option<NodeDrop> {
     return drag.kind === "dragging" ? drag.drop : Option.none;
+  },
+
+  /**
+   * 掴んだ位置。座標の移動量はここからの差で決まる。
+   *
+   * @param drag 今のドラッグの状態
+   * @returns 掴んだ位置。掴んでいなければ `none`
+   */
+  grabOrigin(drag: NodeDrag): Option<Offset> {
+    switch (drag.kind) {
+      case "held":
+      case "dragging":
+        return Option.some(drag.origin);
+      case "idle":
+      case "dropped":
+        return Option.none;
+    }
+  },
+
+  /**
+   * 今ドロップしたら挿さる位置。挿入のときだけ答える。
+   *
+   * ドロップ線とラベルは「どの親の何番目の子になるか」の提示なので、
+   * 座標を置き直すドラッグでは出さない。
+   *
+   * @param drag 今のドラッグの状態
+   * @returns 挿さる位置。座標の置き直し / 動かしていないなら `none`
+   */
+  insertionTarget(drag: NodeDrag): Option<DropTarget> {
+    return Option.flatMap(NodeDrag.drop(drag), (drop) =>
+      drop.kind === "insertion" ? Option.some(drop.target) : Option.none,
+    );
   },
 
   /**

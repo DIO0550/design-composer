@@ -285,7 +285,9 @@ function EditorPanes({
    */
   const nodeDrag = useNodeDrag({
     document: EditorState.document(state),
+    view: canvasView.view,
     onMove: node.move,
+    onReposition: node.reposition,
     onInsertAt: node.insertAt,
   });
   /*

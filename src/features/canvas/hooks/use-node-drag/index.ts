@@ -1,10 +1,15 @@
 import { type PointerEvent as ReactPointerEvent, useReducer } from "react";
 import { ElementNameAttribute } from "@/domains/compiled/compiled-element";
 import type { ChildPosition } from "@/domains/dcmp/child-position";
-import type { DesignDocument } from "@/domains/dcmp/design-document";
+import { DesignDocument } from "@/domains/dcmp/design-document";
+import { Node } from "@/domains/dcmp/node";
+import type { AbsolutePlacement } from "@/domains/dcmp/placement";
+import { Placement } from "@/domains/dcmp/placement";
+import { ResolvedProps } from "@/domains/dcmp/resolved-props";
 import type { NodeTemplate } from "@/domains/session/node-template";
-import type { Offset } from "@/domains/unit/offset";
-import { NodeDrag } from "@/features/canvas/domains/node-drag";
+import { Offset } from "@/domains/unit/offset";
+import { CanvasView } from "@/features/canvas/domains/canvas-view";
+import { NodeDrag, NodeDrop } from "@/features/canvas/domains/node-drag";
 import {
   CanvasBounds,
   type DraggedNode,
@@ -17,10 +22,10 @@ import { CanvasDom } from "@/libs/canvas-dom";
 import { ElementEx } from "@/utils/ElementEx";
 import { Option } from "@/utils/Option";
 
-/** ドラッグの進み方（docs/06-ui.md「キャンバス直接操作」の移動と、挿入）。 */
+/** ドラッグの進み方（docs/06-ui.md「キャンバス直接操作」の移動・座標の置き直しと、挿入）。 */
 type NodeDragAction =
   | Readonly<{ type: "grab"; dragged: DraggedNode; origin: Offset }>
-  | Readonly<{ type: "move"; pointer: Offset; drop: Option<DropTarget> }>
+  | Readonly<{ type: "move"; pointer: Offset; drop: Option<NodeDrop> }>
   | Readonly<{ type: "release" }>
   | Readonly<{ type: "cancel" }>
   | Readonly<{ type: "consume_click" }>;
@@ -100,6 +105,68 @@ function dropTargetAt(
   );
 }
 
+/**
+ * 運んでいるノードが今持っている配置。絶対配置のときだけ答える。
+ *
+ * ドラッグの意味を決めるのは運んでいるノード自身の `placement` で、パレットの雛形は
+ * まだ木に無いので対象外（挿入にしかならない）。
+ *
+ * @param document 配置の引き先になるドキュメント
+ * @param dragged 運んでいるもの
+ * @returns 運んでいるノードの配置。フロー / 木に無い / 雛形なら `none`
+ */
+function absolutePlacementOf(
+  document: DesignDocument,
+  dragged: DraggedNode,
+): Option<AbsolutePlacement> {
+  if (dragged.kind !== "existing") {
+    return Option.none;
+  }
+  const node = DesignDocument.findNode(document, dragged.name);
+  if (!node.some || !Node.isPrimitive(node.value)) {
+    return Option.none;
+  }
+  const placement = Placement.fromProps(ResolvedProps.forNode(node.value));
+  return Placement.isAbsolute(placement) ? Option.some(placement) : Option.none;
+}
+
+/**
+ * 今ドロップしたら起きること。
+ *
+ * 絶対配置のノードを運んでいるなら座標の置き直し、そうでなければツリーへの挿入。
+ * 座標は掴んだ時点の値に、画面上の移動量を倍率で割り戻したものを足す
+ * （`NodeResize.lengthAt` と同じ形。倍率を変えても掴んだ点に追従する）。
+ *
+ * @param params 落とし先を決める材料
+ * @returns 落とし方。落とせる先が無ければ `none`
+ */
+function dropAt(
+  params: Readonly<{
+    document: DesignDocument;
+    dragged: DraggedNode;
+    view: CanvasView;
+    origin: Option<Offset>;
+    event: ReactPointerEvent<HTMLElement>;
+  }>,
+): Option<NodeDrop> {
+  const held = absolutePlacementOf(params.document, params.dragged);
+  if (held.some && params.origin.some) {
+    const moved = Offset.delta(
+      params.origin.value,
+      CanvasPointer.offsetOf(params.event),
+    );
+    const delta = {
+      x: CanvasView.toDocumentLength(params.view, moved.x),
+      y: CanvasView.toDocumentLength(params.view, moved.y),
+    };
+    return Option.some(NodeDrop.placement(Placement.moveBy(held.value, delta)));
+  }
+  return Option.map(
+    dropTargetAt(params.document, params.dragged, params.event),
+    NodeDrop.insertion,
+  );
+}
+
 /** キャンバスの既存ノードを掴む側（artboard の枠）へ渡す props。 */
 export type NodeGrabHandlers = Readonly<{
   onPointerDown: (event: ReactPointerEvent<HTMLElement>) => void;
@@ -136,7 +203,8 @@ export type NodeDragControl = Readonly<{
 }>;
 
 /**
- * 掴んでキャンバスへ落とす操作を、ツリー上の位置への移動・挿入として解釈する
+ * 掴んでキャンバスへ落とす操作を、ツリー上の位置への移動・挿入か、絶対配置の
+ * ノードの座標の置き直しとして解釈する
  * （docs/06-ui.md「キャンバス直接操作」/ docs/02-data-model.md「基本原則」）。
  *
  * このフックが持つのは DOM の実測とイベントの仲介だけで、
@@ -147,15 +215,17 @@ export type NodeDragControl = Readonly<{
  * ポインタは 3 ペインの器全体で受ける。キャンバスの中だけで受けると、パレットの行で
  * 掴んで左ペインの上で離したときに `pointerup` が届かず、掴んだまま戻らなくなる。
  *
- * @param params 落とし先を決める `document` と、移動・挿入が確定したときに呼ぶ
- *   `onMove` / `onInsertAt`
+ * @param params 落とし先を決める `document` / `view` と、確定したときに呼ぶ
+ *   `onMove` / `onInsertAt` / `onReposition`
  * @returns 今のドラッグの状態と、画面の要素へ渡すハンドラ
  */
 export function useNodeDrag(
   params: Readonly<{
     document: DesignDocument;
+    view: CanvasView;
     onMove: (name: string, to: ChildPosition) => void;
     onInsertAt: (template: NodeTemplate, at: ChildPosition) => void;
+    onReposition: (name: string, placement: AbsolutePlacement) => void;
   }>,
 ): NodeDragControl {
   const [drag, dispatch] = useReducer(
@@ -198,8 +268,34 @@ export function useNodeDrag(
     dispatch({
       type: "move",
       pointer: CanvasPointer.offsetOf(event),
-      drop: dropTargetAt(params.document, held.value, event),
+      drop: dropAt({
+        document: params.document,
+        dragged: held.value,
+        view: params.view,
+        origin: NodeDrag.grabOrigin(drag),
+        event,
+      }),
     });
+  };
+
+  /**
+   * 落とし方に応じて編集を届ける。
+   * 挿入は運んでいたものが既存ノードなら移動・雛形なら挿入で、座標の置き直しは
+   * 既存ノードにしか起きない（雛形はまだ木に無いので配置を持たない）。
+   */
+  const applyDrop = (dragged: DraggedNode, drop: NodeDrop) => {
+    if (drop.kind === "placement") {
+      if (dragged.kind === "existing") {
+        params.onReposition(dragged.name, drop.placement);
+      }
+      return;
+    }
+    const at = drop.target.position;
+    if (dragged.kind === "existing") {
+      params.onMove(dragged.name, at);
+      return;
+    }
+    params.onInsertAt(dragged.template, at);
   };
 
   /**
@@ -208,14 +304,9 @@ export function useNodeDrag(
    */
   const release = () => {
     const held = NodeDrag.heldNode(drag);
-    const target = NodeDrag.dropTarget(drag);
-    if (held.some && target.some) {
-      const at = target.value.position;
-      if (held.value.kind === "existing") {
-        params.onMove(held.value.name, at);
-      } else {
-        params.onInsertAt(held.value.template, at);
-      }
+    const drop = NodeDrag.drop(drag);
+    if (held.some && drop.some) {
+      applyDrop(held.value, drop.value);
     }
     dispatch({ type: "release" });
   };

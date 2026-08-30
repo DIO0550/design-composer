@@ -5,7 +5,7 @@ import type {
   DropTarget,
 } from "@/features/canvas/domains/node-drop";
 import { Option } from "@/utils/Option";
-import { NodeDrag } from "../index";
+import { NodeDrag, NodeDrop } from "../index";
 
 /** 木にある `title` を掴んでいる状態。 */
 const MovingTitle: DraggedNode = { kind: "existing", name: "title" };
@@ -39,6 +39,9 @@ const SampleDropTarget: DropTarget = {
   parentBounds: { left: 0, top: 0, width: 100, height: 100 },
 };
 
+/** ツリーへ挿す側の落とし方。座標の置き直しは別のファイルで見る。 */
+const SampleDrop = NodeDrop.insertion(SampleDropTarget);
+
 test("押した位置から少ししか動かないうちはドラッグとして扱われない", () => {
   const held = NodeDrag.grab(MovingTitle, { x: 100, y: 100 });
 
@@ -59,10 +62,10 @@ test("ドラッグ中は受け入れ先の上にいる間だけ落ちる位置�
   const dragging = NodeDrag.moveTo(
     NodeDrag.grab(MovingTitle, { x: 100, y: 100 }),
     { x: 100, y: 140 },
-    Option.some(SampleDropTarget),
+    Option.some(SampleDrop),
   );
 
-  expect(Option.unwrap(NodeDrag.dropTarget(dragging)).position).toEqual({
+  expect(Option.unwrap(NodeDrag.insertionTarget(dragging)).position).toEqual({
     parentName: "body",
     index: 0,
   });
@@ -72,19 +75,19 @@ test("受け入れられない場所へ移ると落ちる位置は無くなる",
   const dragging = NodeDrag.moveTo(
     NodeDrag.grab(MovingTitle, { x: 100, y: 100 }),
     { x: 100, y: 140 },
-    Option.some(SampleDropTarget),
+    Option.some(SampleDrop),
   );
 
   const outside = NodeDrag.moveTo(dragging, { x: 100, y: 180 }, Option.none);
 
-  expect(NodeDrag.dropTarget(outside).some).toBe(false);
+  expect(NodeDrag.insertionTarget(outside).some).toBe(false);
 });
 
 test("掴んでいないときのポインタ移動では何も起きない", () => {
   const moved = NodeDrag.moveTo(
     NodeDrag.create(),
     { x: 100, y: 140 },
-    Option.some(SampleDropTarget),
+    Option.some(SampleDrop),
   );
 
   expect(NodeDrag.isDragging(moved)).toBe(false);
@@ -102,7 +105,7 @@ test("運んでから離したときは直後のクリックを選択に使わ�
   const dragging = NodeDrag.moveTo(
     NodeDrag.grab(MovingTitle, { x: 100, y: 100 }),
     { x: 100, y: 140 },
-    Option.some(SampleDropTarget),
+    Option.some(SampleDrop),
   );
 
   expect(NodeDrag.consumesClick(NodeDrag.release(dragging))).toBe(true);
@@ -112,7 +115,7 @@ test("離したあとは何も掴んでいない状態に戻る", () => {
   const dragging = NodeDrag.moveTo(
     NodeDrag.grab(MovingTitle, { x: 100, y: 100 }),
     { x: 100, y: 140 },
-    Option.some(SampleDropTarget),
+    Option.some(SampleDrop),
   );
 
   expect(NodeDrag.heldNode(NodeDrag.release(dragging)).some).toBe(false);
@@ -134,7 +137,7 @@ test("パレットの雛形を運んでから離したときは、直後のク�
   const dragging = NodeDrag.moveTo(
     NodeDrag.grab(PlacingBox, { x: 100, y: 100 }),
     { x: 100, y: 140 },
-    Option.some(SampleDropTarget),
+    Option.some(SampleDrop),
   );
 
   /*

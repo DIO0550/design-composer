@@ -68,7 +68,7 @@ export function ArtboardFrameList({
   nodeResize: NodeResizeControl;
   textEdit: TextEditControl;
 }>) {
-  const dropTarget = NodeDrag.dropTarget(nodeDrag.drag);
+  const dropTarget = NodeDrag.insertionTarget(nodeDrag.drag);
 
   /*
    * ドキュメント全体を走査するので、パン / ズームのたびに数え直さない
