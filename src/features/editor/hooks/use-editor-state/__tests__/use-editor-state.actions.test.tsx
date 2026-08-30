@@ -5,6 +5,7 @@ import { SampleSyntaxError } from "@/domains/__tests__/document-errors";
 import { ReceivedAt } from "@/domains/__tests__/instants";
 import { AxisLength } from "@/domains/dcmp/axis-length";
 import { DesignDocument } from "@/domains/dcmp/design-document";
+import { Node } from "@/domains/dcmp/node";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
 import { useEditorState } from "../index";
@@ -19,7 +20,12 @@ function setupDocument(): DesignDocument {
         height: 812,
         children: [
           { name: "title", type: "Text" },
-          { name: "footer", type: "Text" },
+          // 置き直しの相手は絶対配置でなければ意味を持たないので、片方をそう置く
+          {
+            name: "footer",
+            type: "Text",
+            props: { placement: "absolute", x: 40, y: 24 },
+          },
         ],
       },
     ],
@@ -47,6 +53,19 @@ function artboardWidth(state: EditorState): number {
 }
 
 /**
+ * `footer` が今置かれている座標。縦横を続けて読み、片方だけの書き換えも見える形にする。
+ * 読み直しで `footer` ごと消える器なので、居ないときは座標の代わりに「無し」を出す。
+ */
+function footerCoordinates(state: EditorState): string {
+  const found = DesignDocument.findNode(EditorState.document(state), "footer");
+  if (!found.some) {
+    return "無し";
+  }
+  const props = Node.isPrimitive(found.value) ? (found.value.props ?? {}) : {};
+  return `${props.x},${props.y}`;
+}
+
+/**
  * フックを DOM へ繋いだだけの器。
  * アクションを 1 つずつ送る口と、状態の読み出し（選択・子の並び）を与える。
  */
@@ -60,6 +79,7 @@ function EditorStateHarness() {
       </p>
       <p data-testid="children">{homeChildNames(state).join(",")}</p>
       <p data-testid="artboard-width">{artboardWidth(state)}</p>
+      <p data-testid="footer-coordinates">{footerCoordinates(state)}</p>
       <p data-testid="file-validity">{state.fileValidity.kind}</p>
       <button
         type="button"
@@ -204,6 +224,18 @@ function EditorStateHarness() {
       >
         幅を 500 にする
       </button>
+      <button
+        type="button"
+        onClick={() =>
+          dispatch({
+            type: "reposition_node",
+            name: "footer",
+            placement: { mode: "absolute", x: 70, y: 12 },
+          })
+        }
+      >
+        footer を別の座標へ置き直す
+      </button>
     </>
   );
 }
@@ -222,6 +254,10 @@ function artboardWidthText(): string {
 
 function fileValidityKind(): string {
   return screen.getByTestId("file-validity").textContent ?? "";
+}
+
+function footerCoordinatesText(): string {
+  return screen.getByTestId("footer-coordinates").textContent ?? "";
 }
 
 test("開いた直後は何も選択されていない", () => {
@@ -342,6 +378,27 @@ test("子を持てないノードを落とし先にした挿入のアクショ�
   );
 
   expect(children()).toBe("title,footer");
+});
+
+test("置き直しのアクションを送ると縦横とも新しい座標になる", async () => {
+  render(<EditorStateHarness />);
+
+  await userEvent.click(
+    screen.getByRole("button", { name: "footer を別の座標へ置き直す" }),
+  );
+
+  expect(footerCoordinatesText()).toBe("70,12");
+});
+
+test("置き直しのアクションを送っても選択は変わらない", async () => {
+  render(<EditorStateHarness />);
+  await userEvent.click(screen.getByRole("button", { name: "title を選ぶ" }));
+
+  await userEvent.click(
+    screen.getByRole("button", { name: "footer を別の座標へ置き直す" }),
+  );
+
+  expect(selected()).toBe("title");
 });
 
 test("選択中の artboard にリサイズのアクションを送るとその大きさになる", async () => {

@@ -570,17 +570,24 @@ export const DesignDocument = {
    *
    * artboard を相手にしないのは、artboard が親 Box の中ではなくキャンバスの
    * 並びに置かれるため（`Artboard.boxProps` が `placement` を `flow` に固定する）。
+   * `applyPropEdit` は名前で artboard を先に相手にするので、委譲する前に
+   * ノードとして在ることを確かめる（そうしないと artboard の props に効かない
+   * `x` / `y` が黙って書かれ、undo 履歴だけが 1 件増える）。
    *
    * @param document 書き換える対象を含むドキュメント
    * @param name 置き直すノードの名前
    * @param placement 置き直したあとの配置
    * @returns 座標を書き換えたドキュメント。その名前のノードが無ければ失敗
+   *   （artboard の名前もノードではないので失敗する）
    */
   reposition(
     document: DesignDocument,
     name: string,
     placement: AbsolutePlacement,
   ): Result<DesignDocument, DesignDocumentEditError> {
+    if (!DesignDocument.findNode(document, name).some) {
+      return Result.err({ kind: "node-not-found", name });
+    }
     const unedited: Result<DesignDocument, DesignDocumentEditError> =
       Result.ok(document);
     return Placement.toPropEdits(placement).reduce<

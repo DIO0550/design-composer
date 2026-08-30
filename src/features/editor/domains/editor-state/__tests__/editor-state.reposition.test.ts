@@ -72,6 +72,17 @@ test("置き直したあと 1 回戻すと縦横とも元の座標に戻る", ()
   expect(badgeProps(undone)).toMatchObject({ x: 40, y: 24 });
 });
 
+test("artboard の名前を指すと置き直しは存在しない（履歴も dirty も動かない）", () => {
+  // artboard はキャンバスの並びに置かれるので、親からの座標を持たない（#383）
+  expect(
+    EditorState.reposition(setupState(), "home", {
+      mode: "absolute",
+      x: 70,
+      y: 12,
+    }),
+  ).toEqual(Option.none);
+});
+
 test("ドキュメントに無い名前を指すと置き直しは存在しない", () => {
   expect(
     EditorState.reposition(setupState(), "居ない", {

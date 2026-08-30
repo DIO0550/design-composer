@@ -49,6 +49,20 @@ test("置き直しても配置のモードは絶対配置のまま", () => {
   expect(repositionedProps(52, 19).placement).toBe("absolute");
 });
 
+test("artboard の名前を置き直そうとすると node-not-found エラーになる", () => {
+  // artboard はキャンバスの並びに置かれるので、親からの座標を持たない（#383）
+  expect(
+    DesignDocument.reposition(setupDocument(), "home", {
+      mode: "absolute",
+      x: 52,
+      y: 19,
+    }),
+  ).toEqual({
+    ok: false,
+    error: { kind: "node-not-found", name: "home" },
+  });
+});
+
 test("存在しないノードを置き直そうとすると node-not-found エラーになる", () => {
   expect(
     DesignDocument.reposition(setupDocument(), "居ない", {
