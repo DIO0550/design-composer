@@ -112,6 +112,11 @@ export const DocumentErrors: Story = {
  * `home` の先頭へ絶対配置の Box を 1 つ足したドキュメント。
  * 名前を `home-badge` にするのは、キャンバス側のテストが絶対配置のノードを `badge` と
  * 呼んでいるため（上部バーの `SaveBadge` などとは別物）。
+ *
+ * 先頭に置いても隠れないのは、次の兄弟が Text（`position` を出さない）だから。
+ * **フローの Box は `position: relative` を出す**ので、Box の兄弟と重ねると
+ * DOM 順で後ろのほうが上に来て、掴めなくなる（happy-dom では落ちず、VRT も
+ * 意図した差分と区別できない）。座標を動かすときはここを見る。
  */
 const DocumentWithAbsoluteNode = DesignDocument.create({
   tokens: Sample.tokens,
@@ -123,7 +128,7 @@ const DocumentWithAbsoluteNode = DesignDocument.create({
           children: [
             {
               name: "home-badge",
-              type: "Box" as const,
+              type: "Box",
               props: {
                 placement: "absolute",
                 x: 296,
@@ -144,11 +149,6 @@ const DocumentWithAbsoluteNode = DesignDocument.create({
   ),
 });
 
-/** 絶対配置のストーリー専用のファイル表。開いた文書と中身を揃える。 */
-const absoluteNodeFiles = DocumentIpcFake.create({
-  [SamplePath]: DocumentJson.serialize(DocumentWithAbsoluteNode),
-});
-
 /**
  * 絶対配置のノードが最初から居る編集画面（#379 / #381）。
  *
@@ -159,10 +159,12 @@ const absoluteNodeFiles = DocumentIpcFake.create({
  * `Default` に足さずに別の story にしているのは、あちらのベースライン 1 本が
  * 「ふつうの編集画面」を指しているため。絶対配置を持ち込むとその意味が変わる。
  */
-export const AbsolutePlacement: Story = {
+export const AbsoluteNode: Story = {
   name: "絶対配置のノードがある編集画面",
   args: {
-    ipc: absoluteNodeFiles.ipc,
+    ipc: DocumentIpcFake.create({
+      [SamplePath]: DocumentJson.serialize(DocumentWithAbsoluteNode),
+    }).ipc,
     opened: { path: SamplePath, document: DocumentWithAbsoluteNode },
   },
 };

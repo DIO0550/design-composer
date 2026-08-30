@@ -10,12 +10,11 @@ import {
   movePointer,
   pressPointer,
   releasePointer,
-  renderedElement,
 } from "@/features/canvas/__tests__";
 import { LeftPaneViews } from "@/features/sidebar";
 import { Option } from "@/utils/Option";
 import {
-  canvasPane,
+  drawn,
   goTo,
   leftPane,
   propertyPane,
@@ -57,11 +56,6 @@ function setupDocument(): DesignDocument {
       }),
     ],
   });
-}
-
-/** キャンバスに描かれている、名前で指した要素。 */
-function drawn(name: string): HTMLElement {
-  return renderedElement(canvasPane(), name);
 }
 
 /** パレットの行。押して掴む起点になる。 */

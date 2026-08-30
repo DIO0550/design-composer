@@ -1,16 +1,12 @@
 import { expect, test } from "vitest";
 import { rowNames } from "@/components/__tests__/row-names";
+import { Artboard } from "@/domains/dcmp/artboard";
 import {
   DesignDocument,
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
-import {
-  movePointer,
-  pressPointer,
-  releasePointer,
-  renderedElement,
-} from "@/features/canvas/__tests__";
-import { canvasPane, renderOpenedDocument, tree } from "./setup";
+import { drag } from "@/features/canvas/__tests__";
+import { drawn, renderOpenedDocument, tree } from "./setup";
 
 /*
  * キャンバスで運んだ結果がドキュメントへ届き、描き直されるまでを編集画面の配線ごと
@@ -18,7 +14,8 @@ import { canvasPane, renderOpenedDocument, tree } from "./setup";
  *
  * ここでしか通らないのは、`onReposition` → `reposition_node` → 再コンパイルまでを
  * 通して CSS の `left` / `top` が動くところを見るため。キャンバス単体
- * （`artboard-canvas.drag-placement.test.tsx`）はハンドラが呼ばれたことまでしか見ない。
+ * （`artboard-canvas.drag-placement.test.tsx`）は落とし方の値までは固定するが、
+ * それがドキュメントへ届いて描き直されるところは見ない。
  */
 
 /**
@@ -26,15 +23,15 @@ import { canvasPane, renderOpenedDocument, tree } from "./setup";
  * この順で並ぶドキュメント。
  *
  * `home-badge` を**先頭**に置くのは、末尾だと「並びが変わらない」を確かめられないため。
- * happy-dom は矩形を返さないので落とし先は必ず末尾になり、末尾のノードを末尾へ移す
- * 木の移動は元と同じ並びになる（座標の置き直しを丸ごと壊しても通ってしまう）。
+ * 末尾のノードを末尾へ移す木の移動は元と同じ並びになるので、座標の置き直しを丸ごと
+ * 壊してもテストが通ってしまう。
  */
 function setupDocument(): DesignDocument {
   return DesignDocument.create({
     tokens: DocumentTemplate.Default.tokens,
     components: DocumentTemplate.Default.components,
     artboards: [
-      {
+      Artboard.create({
         name: "home",
         width: 360,
         height: 240,
@@ -53,35 +50,34 @@ function setupDocument(): DesignDocument {
             },
             children: [],
           },
-          {
-            name: "home-title",
-            type: "Text",
-            props: { content: "ホーム" },
-          },
+          { name: "home-title", type: "Text", props: { content: "ホーム" } },
           { name: "home-panel", type: "Box", props: {}, children: [] },
         ],
-      },
+      }),
     ],
   });
 }
 
-/** キャンバスに描かれているノードを名前で引く。 */
-function drawn(name: string): HTMLElement {
-  return renderedElement(canvasPane(), name);
-}
-
-/** ノードを掴んで運び、離すまで。移動量は縦横で違う値にする（取り違えを落とすため）。 */
-function dragNode(from: Element, by: Readonly<{ x: number; y: number }>): void {
-  pressPointer(from, { x: 100, y: 100 });
-  movePointer(from, { x: 100 + by.x, y: 100 + by.y });
-  releasePointer(from, { x: 100 + by.x, y: 100 + by.y });
+/**
+ * `home-badge` を掴んで運び、離すまで。
+ *
+ * **離す位置は原点より奥（正の座標）に取る。** happy-dom は矩形を返さないので
+ * `DropZone.targetAt` は「原点よりポインタが奥にある子の数」を挿入位置にする。
+ * 負の座標で離すと挿入位置が 0（＝今と同じ位置）になり、木の移動へフォールバック
+ * した実装でも並びが変わらなくなる（`asset-drag` が同じ性質を使っている）。
+ */
+function dragBadge(): void {
+  drag(drawn("home-badge"), {
+    from: { x: 100, y: 100 },
+    to: { x: 70, y: 112 },
+  });
 }
 
 test("絶対配置のノードをキャンバスで運ぶと、描かれる位置が縦横ともその分だけ動く", async () => {
   await renderOpenedDocument(setupDocument());
 
   // 動いた先が既定値（0）と一致しない量を選ぶ。一致させると「座標を書かない実装」でも通る
-  dragNode(drawn("home-badge"), { x: -30, y: 12 });
+  dragBadge();
 
   const moved = drawn("home-badge");
   expect([moved.style.left, moved.style.top]).toEqual(["266px", "28px"]);
@@ -90,15 +86,18 @@ test("絶対配置のノードをキャンバスで運ぶと、描かれる位�
 test("絶対配置のノードを運んでもツリーの並びは変わらない", async () => {
   await renderOpenedDocument(setupDocument());
 
-  dragNode(drawn("home-badge"), { x: -30, y: 12 });
+  dragBadge();
 
   expect(rowNames(tree())).toEqual(["home-badge", "home-title", "home-panel"]);
 });
 
-test("フローのノードをキャンバスで運ぶと、座標ではなくツリーの並びが変わる", async () => {
+test("フローのノードをキャンバスで運ぶとツリーの並びが変わる", async () => {
   await renderOpenedDocument(setupDocument());
 
-  dragNode(drawn("home-title"), { x: -30, y: 12 });
+  drag(drawn("home-title"), {
+    from: { x: 100, y: 100 },
+    to: { x: 70, y: 112 },
+  });
 
   expect(rowNames(tree())).toEqual(["home-badge", "home-panel", "home-title"]);
 });

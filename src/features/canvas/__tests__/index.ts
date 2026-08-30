@@ -21,6 +21,7 @@ export {
   tokenReferrerNames,
 } from "@/features/canvas/__tests__/canvas-elements";
 export {
+  drag,
   movePointer,
   pressPointer,
   releasePointer,
