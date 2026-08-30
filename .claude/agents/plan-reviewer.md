@@ -107,9 +107,8 @@ tools: Read, Grep, Glob, Bash
   崩れていても誰も気づけない。既存の lint 設定(`.oxlintrc.json` の対象パターン等)がその依存を
   実際に検出できるかも合わせて確かめる
 
-- **移動・書き換えの対象を、コメント（doc / Why）内でだけ名指ししている箇所も
-  ファイル表に入っているか**（`分類: plan-comment-reference`）。コードの参照だけを
-  `grep` した表は、コメント内のシンボル言及を見落とす
+- **`implementation-flow` フェーズ 3 手順 4(`find-comment-references.sh`)を実際に走らせたか、
+  出力にファイル表への追加漏れが残っていないか**(`分類: plan-comment-reference`)
 
 - **部品から位置・大きさを外す計画なら、その部品の単体ストーリーが位置を与えているかを見る。**
   decorator が位置を持っていないと実画面は変わらずストーリーだけが変わり、VRT が赤くなる
