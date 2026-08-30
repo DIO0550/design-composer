@@ -63,15 +63,23 @@ export const Placement = {
   /**
    * 座標をずらした配置。
    *
-   * 丸めないのは、`NodeResize.lengthAt` が長さを丸めずに足しているのと揃えるため
-   * (掴んだ点への追従が倍率に依らない)。
+   * 整数へ丸めるのは、画面上の 1px 未満の差(倍率の割り戻しで出る)をドキュメントへ
+   * 残さないため。長さを `AxisLength.create` が丸めているのと同じ理由で、同じ操作
+   * (ドラッグ)から来る値がサイズと座標で違う粒度になるのを避ける。
+   *
+   * `AxisLength` と違って 0 で下限を切らないのは、負の座標が親からはみ出した位置と
+   * して成立するため(長さの負は存在しない)。
    *
    * @param placement ずらす前の配置
    * @param delta 動かす量。ドキュメント上の px（画面上の量なら倍率で割り戻してから渡す）
    * @returns 座標をずらした配置
    */
   moveBy(placement: AbsolutePlacement, delta: Offset): AbsolutePlacement {
-    return { ...placement, x: placement.x + delta.x, y: placement.y + delta.y };
+    return {
+      ...placement,
+      x: Math.round(placement.x + delta.x),
+      y: Math.round(placement.y + delta.y),
+    };
   },
 
   /**

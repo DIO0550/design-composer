@@ -55,10 +55,10 @@ test("座標をずらすと、ずらした分だけ動いた配置になる", ()
   ).toEqual({ mode: "absolute", x: 52, y: 19 });
 });
 
-test("座標をずらしても丸めない（倍率の割り戻しで端数が出る）", () => {
+test("座標は整数へ丸める（倍率の割り戻しで出た端数を残さない）", () => {
   expect(
-    Placement.moveBy({ mode: "absolute", x: 40, y: 24 }, { x: 0.5, y: 0.25 }),
-  ).toEqual({ mode: "absolute", x: 40.5, y: 24.25 });
+    Placement.moveBy({ mode: "absolute", x: 40, y: 24 }, { x: 0.6, y: 0.25 }),
+  ).toEqual({ mode: "absolute", x: 41, y: 24 });
 });
 
 test("絶対配置を props の編集へ戻すと、横と縦の座標の 2 件になる", () => {

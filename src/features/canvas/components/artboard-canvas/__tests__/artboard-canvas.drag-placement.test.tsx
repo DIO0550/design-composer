@@ -110,14 +110,18 @@ test("運んでいる途中でキャンバスの外へ出ると座標は動か�
 test("倍率を上げても、動く量は画面上ではなくドキュメント上の px になる", () => {
   const onRepositionNode = vi.fn();
   renderCanvas({ selection: setupSelection(), onRepositionNode });
-  // 1.2 倍で見ているとき、画面上の 30px はドキュメント上の 25px にあたる
   wheel(screen.getByTestId("canvas-surface"), { x: 0, y: -100 }, "ctrl");
 
-  dragNode(drawn("badge"), { x: 30, y: -12 });
+  /*
+   * 1.2 倍で見ているとき、画面上の (34, -13) はドキュメント上の
+   * (28.33…, -10.83…) にあたる。割り切れない量を選ぶのは、割り切れる量だと
+   * 丸めの有無で答えが変わらず「丸めている」ことを確かめられないため。
+   */
+  dragNode(drawn("badge"), { x: 34, y: -13 });
 
   expect(onRepositionNode).toHaveBeenCalledWith("badge", {
     mode: "absolute",
-    x: 65,
-    y: 14,
+    x: 68,
+    y: 13,
   });
 });
