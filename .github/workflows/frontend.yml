@@ -36,6 +36,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # Rust の tauri クレートと npm の @tauri-apps/api の major/minor 一致。
+      # tauri build はこの 2 つが揃っていることを要求するが、cargo を走らせる CI が
+      # 無いため、ずれても気づくのは release-desktop がタグで走るときだった（#366）。
+      - name: Tauri のバージョン整合
+        run: node .github/scripts/check-tauri-version-match.mjs
+
       - name: Typecheck
         run: pnpm typecheck
 

@@ -1,6 +1,13 @@
 packages:
   - '.'
 
+# 公開直後のバージョンを入れない（7 日 = 10080 分）。npm のサプライチェーン攻撃は
+# 乗っ取ったアカウントから新バージョンを publish する形が多く、発覚と unpublish は
+# 数時間〜数日で起きる。その窓を跨いでから取り込む。
+# 単位は分。ロックに載っているバージョンの install には効かず、解決するとき
+# （pnpm add / update）にだけ効くので、CI の --frozen-lockfile は素通りする。
+minimumReleaseAge: 10080
+
 supportedArchitectures:
   os:
     - linux
