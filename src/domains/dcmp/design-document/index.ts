@@ -15,6 +15,7 @@ import {
 import { NameSpace } from "@/domains/dcmp/name-space";
 import { Node, PropEdit, type RefNode } from "@/domains/dcmp/node";
 import { NodeTree, type NodeTreeUpdate } from "@/domains/dcmp/node-tree";
+import { type AbsolutePlacement, Placement } from "@/domains/dcmp/placement";
 import { type Token, type TokenRef, TokenSet } from "@/domains/dcmp/token";
 import { ArrayEx } from "@/utils/ArrayEx";
 import type { JsonCursor, JsonDecoded, JsonObject } from "@/utils/Json";
@@ -556,6 +557,40 @@ export const DesignDocument = {
       document,
       name,
       PropEdit.set([size.axis], size.length),
+    );
+  },
+
+  /**
+   * 名前で指したノードを、親の中の別の座標へ置き直す
+   * （docs/06-ui.md「キャンバス直接操作」の移動のうち、絶対配置のノードの分）。
+   *
+   * 座標の 2 prop を 1 回の呼び出しで書くのは、ドラッグ 1 回が undo 1 回で戻る
+   * ようにするため。`PropEdit` は同じ値を複数の prop へ入れる形なので、
+   * `x` と `y` は 1 件では表せない。
+   *
+   * artboard を相手にしないのは、artboard が親 Box の中ではなくキャンバスの
+   * 並びに置かれるため（`Artboard.boxProps` が `placement` を `flow` に固定する）。
+   *
+   * @param document 書き換える対象を含むドキュメント
+   * @param name 置き直すノードの名前
+   * @param placement 置き直したあとの配置
+   * @returns 座標を書き換えたドキュメント。その名前のノードが無ければ失敗
+   */
+  reposition(
+    document: DesignDocument,
+    name: string,
+    placement: AbsolutePlacement,
+  ): Result<DesignDocument, DesignDocumentEditError> {
+    const unedited: Result<DesignDocument, DesignDocumentEditError> =
+      Result.ok(document);
+    return Placement.toPropEdits(placement).reduce<
+      Result<DesignDocument, DesignDocumentEditError>
+    >(
+      (edited, edit) =>
+        Result.flatMap(edited, (current) =>
+          DesignDocument.applyPropEdit(current, name, edit),
+        ),
+      unedited,
     );
   },
 

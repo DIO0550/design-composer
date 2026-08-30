@@ -1,6 +1,17 @@
 import { CssDeclaration } from "@/domains/dcmp/css-declaration";
-import type { Props } from "@/domains/dcmp/node";
+import { PropEdit, type Props } from "@/domains/dcmp/node";
+import type { Offset } from "@/domains/unit/offset";
 import { Px } from "@/domains/unit/px";
+
+/**
+ * フローから外れ、親からの相対座標で置かれる配置。
+ * 座標を動かす操作はこの枝でしか意味を持たないので、枝そのものを型として公開する。
+ */
+export type AbsolutePlacement = Readonly<{
+  mode: "absolute";
+  x: number;
+  y: number;
+}>;
 
 /**
  * 親の中でのノードの置かれ方
@@ -11,9 +22,7 @@ import { Px } from "@/domains/unit/px";
  * 置いている最中(`InstancePlacementIndicator`)でも、解決値をラベルのどちら側へ
  * 添えるか(`ResolvedValuePlacement`)でもない。
  */
-export type Placement =
-  | Readonly<{ mode: "flow" }>
-  | Readonly<{ mode: "absolute"; x: number; y: number }>;
+export type Placement = Readonly<{ mode: "flow" }> | AbsolutePlacement;
 
 export const Placement = {
   /**
@@ -43,9 +52,40 @@ export const Placement = {
     return undefined;
   },
 
-  /** フローから外れて座標で置かれるか。flex アイテムとして並ばない。 */
-  isAbsolute(placement: Placement | undefined): boolean {
+  /**
+   * フローから外れて座標で置かれるか。flex アイテムとして並ばない。
+   * 絞り込みを兼ねるのは、座標を動かす操作が絶対配置の枝しか受け取らないため。
+   */
+  isAbsolute(placement: Placement | undefined): placement is AbsolutePlacement {
     return placement?.mode === "absolute";
+  },
+
+  /**
+   * 座標をずらした配置。
+   *
+   * 丸めないのは、`NodeResize.lengthAt` が長さを丸めずに足しているのと揃えるため
+   * (掴んだ点への追従が倍率に依らない)。
+   *
+   * @param placement ずらす前の配置
+   * @param delta 動かす量。ドキュメント上の px（画面上の量なら倍率で割り戻してから渡す）
+   * @returns 座標をずらした配置
+   */
+  moveBy(placement: AbsolutePlacement, delta: Offset): AbsolutePlacement {
+    return { ...placement, x: placement.x + delta.x, y: placement.y + delta.y };
+  },
+
+  /**
+   * 配置を props の編集へ戻す（`fromProps` の逆向きのうち、座標の 2 prop）。
+   *
+   * `placement` prop を含まないのは、動かす相手が既に絶対配置だから
+   * （フローのノードを絶対配置へ変える操作はまだ無い）。prop 名を知っているのが
+   * このモジュールだけ、という状態を保つために編集の側もここが組み立てる。
+   *
+   * @param placement 書き戻す配置
+   * @returns 横と縦の座標を設定する編集 2 件
+   */
+  toPropEdits(placement: AbsolutePlacement): readonly PropEdit[] {
+    return [PropEdit.set(["x"], placement.x), PropEdit.set(["y"], placement.y)];
   },
 
   /**
