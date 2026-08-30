@@ -252,10 +252,24 @@ test("条件を持たない prop は条件を出している prop の名前を�
   expect(controlOf(selection, "direction")?.enabledBy).toEqual(Option.none);
 });
 
+test("座標の欄は絶対配置のときだけ出る", () => {
+  const flowing = setupSelection([{ name: "box", type: "Box" }], "box");
+  const floating = setupSelection(
+    [{ name: "box", type: "Box", props: { placement: "absolute" } }],
+    "box",
+  );
+
+  expect([
+    controlOf(flowing, "x") !== undefined,
+    controlOf(floating, "x") !== undefined,
+  ]).toEqual([false, true]);
+});
+
 test("コントロールは group ごとのセクションに分かれる", () => {
   const selection = setupSelection([{ name: "label", type: "Text" }], "label");
 
   expect(sectionsOf(selection).map((s) => s.group)).toEqual([
+    "layout",
     "content",
     "appearance",
   ]);

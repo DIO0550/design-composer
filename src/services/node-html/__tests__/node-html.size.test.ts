@@ -100,6 +100,7 @@ test("子の fill は親ノードの direction に従って出し分けられる
 
   expect(compiled.kind === "box" && compiled.children[0].style).toEqual({
     display: "flex",
+    position: "relative",
     "flex-direction": "column",
     "align-items": "stretch",
     "justify-content": "start",

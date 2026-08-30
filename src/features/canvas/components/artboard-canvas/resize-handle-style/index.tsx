@@ -76,7 +76,9 @@ export function ResizeHandleStyle({
     return null;
   }
   const faces = handles.map((handle) => handleRule(name, handle, scale));
-  // 擬似要素を辺へ貼り付ける基準にするため、選択中の要素自身を位置指定済みにする
+  // 擬似要素を辺へ貼り付ける基準にするため、選択中の要素自身を位置指定済みにする。
+  // Box は常に位置指定済みだが、Text と絶対配置の要素はここが基準を与える
+  // (絶対配置ならインラインの `position:absolute` が勝ち、それ自身が基準になる)
   return (
     <style>{`${nameSelector(name)}{position:relative}${faces.join("")}`}</style>
   );

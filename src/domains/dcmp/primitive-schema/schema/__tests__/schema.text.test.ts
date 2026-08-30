@@ -1,9 +1,15 @@
 import { expect, test } from "vitest";
 import { PropDefinition } from "../../prop-definition";
-import { PrimitiveSchema, TextSchema } from "../index";
+import { BoxSchema, PrimitiveSchema, TextSchema } from "../index";
 
 test("Text は子を持てないスキーマとして定義されている", () => {
   expect(TextSchema.allowsChildren).toBe(false);
+});
+
+test("Text も Box と同じ配置の指定を持つ", () => {
+  expect(TextSchema.props.placement).toEqual(BoxSchema.props.placement);
+  expect(TextSchema.props.x).toEqual(BoxSchema.props.x);
+  expect(TextSchema.props.y).toEqual(BoxSchema.props.y);
 });
 
 test("Text の content は生リテラル文字列でデフォルトが空文字", () => {

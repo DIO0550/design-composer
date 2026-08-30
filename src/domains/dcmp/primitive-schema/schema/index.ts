@@ -26,6 +26,37 @@ export type PrimitiveSchema = Readonly<{
 }>;
 
 /**
+ * 親の中でのノードの置かれ方を決める props（docs/03「配置の指定」）。
+ * Box と Text のどちらも親の中に置かれるので、同じ 3 prop を両方が持つ。
+ *
+ * 座標に既定 `0` を置くのは、「絶対配置なのに座標が無い」を作れなくするため。
+ * 既定はファイルに書き出されない（docs/02「明示的に設定した props のみを保存する」）
+ * ので、書いていないノードの diff には現れない。
+ */
+const PlacementProps = {
+  placement: {
+    domain: "enum",
+    values: ["flow", "absolute"],
+    default: "flow",
+    group: "layout",
+  },
+  x: {
+    domain: "literal",
+    literalType: "number",
+    default: 0,
+    group: "layout",
+    enabledWhen: { prop: "placement", equals: "absolute" },
+  },
+  y: {
+    domain: "literal",
+    literalType: "number",
+    default: 0,
+    group: "layout",
+    enabledWhen: { prop: "placement", equals: "absolute" },
+  },
+} as const satisfies PropDefinitionRecord;
+
+/**
  * Box の仕様（docs/02「プリミティブ」の表）。
  * `as const satisfies` で書くのは、`PrimitiveSchema` への適合を検査しつつ
  * prop 名・`tokenKind`・デフォルト値をリテラル型のまま残すため
@@ -34,6 +65,7 @@ export type PrimitiveSchema = Readonly<{
 export const BoxSchema = {
   allowsChildren: true,
   props: {
+    ...PlacementProps,
     direction: {
       domain: "enum",
       values: ["row", "column"],
@@ -117,6 +149,7 @@ export const BoxSchema = {
 export const TextSchema = {
   allowsChildren: false,
   props: {
+    ...PlacementProps,
     content: {
       domain: "literal",
       literalType: "string",

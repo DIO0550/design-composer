@@ -13,6 +13,7 @@ test("Box は flex コンテナになり、未指定の prop はスキーマの�
 
   expect(style).toEqual({
     display: "flex",
+    position: "relative",
     "flex-direction": "column",
     "align-items": "stretch",
     "justify-content": "start",
@@ -133,6 +134,6 @@ test("style は style 属性へ載せられる宣言の並びに直列化でき�
   );
 
   expect(CompiledElement.styleText(compiled)).toBe(
-    "display:flex;flex-direction:row;gap:var(--spacing-md);align-items:stretch;justify-content:start;width:fit-content;height:fit-content",
+    "display:flex;position:relative;flex-direction:row;gap:var(--spacing-md);align-items:stretch;justify-content:start;width:fit-content;height:fit-content",
   );
 });

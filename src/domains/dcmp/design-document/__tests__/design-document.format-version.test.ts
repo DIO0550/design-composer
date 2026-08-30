@@ -8,7 +8,7 @@ test("新しい minor を名乗るドキュメントを現在の形式にする�
 
   expect(
     DesignDocument.withCurrentFormatVersion(document).formatVersion,
-  ).toEqual({ major: 1, minor: 0 });
+  ).toEqual({ major: 1, minor: 1 });
 });
 
 test("現在の形式にしたドキュメントは compatible と判定される", () => {

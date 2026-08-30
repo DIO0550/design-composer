@@ -47,6 +47,21 @@
 - **Button / Input はプリミティブではなく部品**。初期テンプレートに部品として同梱する
 - **Image は保留**。画像資産の参照は1ファイル自己完結の原則と衝突するため、資産管理の問題として 01-file-format の未定義項目に積む
 
+### 配置の指定
+
+すべてのノード（Box / Text）が、親の中でどう置かれるかを 3 prop で持つ。サイズ指定と同じく**モード（enum）と値（number）を分離**する。
+
+| prop | ドメイン | 値 | デフォルト |
+|---|---|---|---|
+| `placement` | enum | `flow` / `absolute` | `flow` |
+| `x` | 生リテラル (number, px) | 親の左辺からの距離。`placement: absolute` 時のみ有効 | `0` |
+| `y` | 生リテラル (number, px) | 親の上辺からの距離。`placement: absolute` 時のみ有効 | `0` |
+
+- `placement: absolute` のノードはフローから外れるため、`widthMode` / `heightMode` の `fill` は効かない（宣言を出力しない）
+- 座標は**親からの相対**。無限キャンバス上の絶対座標は持たない（02-data-model「基本原則」）
+- prop 名を CSS の `position` に揃えないのは、この仕様が既に「どの親の何番目の子か」の意味で位置の語を使っているため。CSS の綴りとの対応はコンパイル規則が持つ（`widthMode` → `width` と同じ）
+- artboard は Box スキーマを流用するが、**この 3 prop は受け付けない**。artboard は親 Box の中ではなくキャンバスの並びに置かれるため
+
 ### サイズ指定の原則
 
 - Figma の Hug / Fill / 固定値 に相当するサイズ指定は、**モード（enum）と値（number）の2 prop に分離**する
@@ -58,6 +73,7 @@
 
 | prop | ドメイン | 値 | デフォルト |
 |---|---|---|---|
+| `placement` / `x` / `y` | | 上記「配置の指定」 | |
 | `direction` | enum | `row` / `column` | `column` |
 | `gap` | トークン (spacing) | | なし (0) |
 | `paddingTop` | トークン (spacing) | 上 | なし (0) |
@@ -86,6 +102,7 @@
 
 | prop | ドメイン | 値 | デフォルト |
 |---|---|---|---|
+| `placement` / `x` / `y` | | 上記「配置の指定」 | |
 | `content` | 生リテラル (string) | | `""` |
 | `typography` | トークン (typography) | サイズ・行間・ウェイトの複合トークン | デフォルトトークン |
 | `color` | トークン (colors) | | デフォルトトークン |
@@ -100,7 +117,8 @@
 
 | prop | CSS |
 |---|---|
-| Box 自体 | `div` + `display: flex` |
+| Box 自体 | `div` + `display: flex` + `position: relative`（絶対配置の子が位置を測る基準になるため。offset を伴わないので箱の位置は動かない） |
+| `placement: absolute` | `position: absolute` + `left: {x}px` + `top: {y}px` |
 | `direction` | `flex-direction` |
 | `gap` | `gap: var(--spacing-*)` |
 | `paddingTop` / `paddingRight` / `paddingBottom` / `paddingLeft` | `padding: var(--spacing-*)` （上 右 下 左 の順で4値に合成。未指定の辺は `0`） |
@@ -117,7 +135,7 @@
 | Text `color` / `align` | `color` / `text-align` |
 
 - height 系は width 系と同じ規則を縦軸に適用する
-- `widthMode: fill` の出し分けが唯一親コンテキストに依存するコンパイル
+- `widthMode: fill` の出し分けだけが親コンテキストに依存するコンパイル。ただし親を見るのは**そのノードがフローに参加しているとき**に限る（`placement: absolute` のノードは flex アイテムではないので `fill` の宣言を出さない）
 
 ## バリデーション仕様
 
