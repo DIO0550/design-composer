@@ -9,10 +9,17 @@ import {
 import { Option } from "@/utils/Option";
 
 /**
+ * 掴んでいるものと、掴んだ位置。
+ * 座標の移動量は掴んだ位置からの差で決まるので、どちらか片方だけでは意味を持たない。
+ * 対で 1 つの型にして、「掴んでいるのに掴んだ位置が無い」を書けなくする。
+ */
+export type Grab = Readonly<{ dragged: DraggedNode; origin: Offset }>;
+
+/**
  * 何かを掴んでからキャンバスで離すまでの状態（docs/06-ui.md「キャンバス直接操作」の
  * 移動と、「編集操作の一覧」の挿入）。
  *
- * 掴んだ位置を持つのは動き出す前だけ、落ちる先を持つのは動かしている間だけ、と
+ * 掴んだものを持つのは離すまで、落ちる先を持つのは動かしている間だけ、と
  * 状態ごとに持つものが変わるため直和で列挙する（「動かしていないのに落ちる先がある」
  * のような組み合わせを作れなくするため）。
  *
@@ -28,38 +35,70 @@ import { Option } from "@/utils/Option";
  */
 export type NodeDrag =
   | Readonly<{ kind: "idle" }>
-  | Readonly<{ kind: "held"; dragged: DraggedNode; origin: Offset }>
-  | Readonly<{
-      kind: "dragging";
-      dragged: DraggedNode;
-      origin: Offset;
-      drop: Option<NodeDrop>;
-    }>
+  | Readonly<{ kind: "held"; grab: Grab }>
+  | Readonly<{ kind: "dragging"; grab: Grab; drop: Option<DropEdit> }>
   | Readonly<{ kind: "dropped" }>;
 
 /**
- * 離したときに起きること（docs/06-ui.md「キャンバス直接操作」の移動）。
+ * 離したときに届く編集（docs/06-ui.md「キャンバス直接操作」の移動と、
+ * 「編集操作の一覧」の挿入）。
  *
  * ツリーへ挿すのと座標を置き直すのは**排他**なので直和で列挙する。
  * 並べて持つと「挿入位置と座標の両方がある」が型で書けてしまう。
  *
- * どちらになるかは運んでいるノード自身が絶対配置かで決まる。名前を持たないのは、
- * 運んでいるものの名前を `dragging.dragged` が既に持っているため
- * （両方持つと食い違いが書ける）。
+ * 落とし先だけでなく**誰を**動かすかまで持つのは、運んでいるものと落とし方に
+ * 成立しない組み合わせがあるため（パレットの雛形はまだ木に無いので座標を持てない）。
+ * 分けて持つと「雛形を座標へ置き直す」が型で書け、受け取る側に捨てるだけの分岐が要る。
  */
-export type NodeDrop =
-  | Readonly<{ kind: "insertion"; target: DropTarget }>
-  | Readonly<{ kind: "placement"; placement: AbsolutePlacement }>;
+export type DropEdit =
+  | Readonly<{ kind: "move"; name: string; target: DropTarget }>
+  | Readonly<{ kind: "insert"; template: NodeTemplate; target: DropTarget }>
+  | Readonly<{
+      kind: "reposition";
+      name: string;
+      placement: AbsolutePlacement;
+    }>;
 
-export const NodeDrop = {
-  /** ツリーの中へ挿す落とし方。 */
-  insertion(target: DropTarget): NodeDrop {
-    return { kind: "insertion", target };
+export const DropEdit = {
+  /**
+   * ツリーの中へ落とす編集。
+   * 運んでいるものが既存ノードなら移動、パレットの雛形なら挿入になる。
+   *
+   * @param dragged 運んでいるもの
+   * @param target 落とせる親と、その中での挿入位置
+   * @returns 移動または挿入の編集
+   */
+  intoTree(dragged: DraggedNode, target: DropTarget): DropEdit {
+    return dragged.kind === "existing"
+      ? { kind: "move", name: dragged.name, target }
+      : { kind: "insert", template: dragged.template, target };
   },
 
-  /** 親の中の座標を置き直す落とし方。 */
-  placement(placement: AbsolutePlacement): NodeDrop {
-    return { kind: "placement", placement };
+  /**
+   * 親の中の座標を置き直す編集。既存ノードにしか起きない。
+   *
+   * @param name 置き直すノードの名前
+   * @param placement 置き直したあとの配置
+   * @returns 座標の置き直しの編集
+   */
+  reposition(name: string, placement: AbsolutePlacement): DropEdit {
+    return { kind: "reposition", name, placement };
+  },
+
+  /**
+   * ツリーへ挿さる位置。座標の置き直しでは持たない。
+   *
+   * @param edit 届く編集
+   * @returns 挿さる位置。座標の置き直しなら `none`
+   */
+  insertionTarget(edit: DropEdit): Option<DropTarget> {
+    switch (edit.kind) {
+      case "move":
+      case "insert":
+        return Option.some(edit.target);
+      case "reposition":
+        return Option.none;
+    }
   },
 } as const;
 
@@ -98,21 +137,25 @@ export const NodeDrag = {
   },
 
   /** 掴む。まだ動かしていないので、この時点ではクリックと区別が付かない。 */
-  grab(dragged: DraggedNode, origin: Offset): NodeDrag {
-    return { kind: "held", dragged, origin };
+  grab(grab: Grab): NodeDrag {
+    return { kind: "held", grab };
   },
 
   /**
-   * 掴んでいるもの。動き出す前も掴んではいるので `held` でも答える。
+   * 掴んでいるものと掴んだ位置。動き出す前も掴んではいるので `held` でも答える。
+   *
+   * 2 つを別々のアクセサに分けないのは、どちらも同じ状態でだけ存在するため。
+   * 分けると受け取る側が「片方だけある」場合の分岐を書くことになり、その分岐は
+   * 実際には到達しない（＝テストで守れない）。
    *
    * @param drag 今のドラッグの状態
-   * @returns 掴んでいるもの。掴んでいなければ `none`
+   * @returns 掴んでいるものと掴んだ位置。掴んでいなければ `none`
    */
-  heldNode(drag: NodeDrag): Option<DraggedNode> {
+  grabbed(drag: NodeDrag): Option<Grab> {
     switch (drag.kind) {
       case "held":
       case "dragging":
-        return Option.some(drag.dragged);
+        return Option.some(drag.grab);
       case "idle":
       case "dropped":
         return Option.none;
@@ -122,14 +165,16 @@ export const NodeDrag = {
   /**
    * 今まさに運んでいるもの。閾値を越えて動かしている間だけ答える。
    *
-   * `heldNode` と分けているのは、掴んだ行の強調やツールバーの点灯が「運んでいる」
+   * `grabbed` と分けているのは、掴んだ行の強調やツールバーの点灯が「運んでいる」
    * ことの表示だから。押しただけで点くと、クリックのたびに一瞬光る。
    *
    * @param drag 今のドラッグの状態
    * @returns 運んでいるもの。動かしていなければ `none`
    */
   carriedNode(drag: NodeDrag): Option<DraggedNode> {
-    return drag.kind === "dragging" ? Option.some(drag.dragged) : Option.none;
+    return drag.kind === "dragging"
+      ? Option.some(drag.grab.dragged)
+      : Option.none;
   },
 
   /**
@@ -149,47 +194,31 @@ export const NodeDrag = {
    * ポインタの移動を反映する。閾値を越えたところで初めて「動かしている」状態になる。
    * 掴んでいなければ何も起きない（ボタンを離したあとのマウス移動）。
    */
-  moveTo(drag: NodeDrag, pointer: Offset, drop: Option<NodeDrop>): NodeDrag {
+  moveTo(drag: NodeDrag, pointer: Offset, drop: Option<DropEdit>): NodeDrag {
     if (drag.kind === "dragging") {
       return { ...drag, drop };
     }
     if (drag.kind !== "held") {
       return drag;
     }
-    return Offset.distance(drag.origin, pointer) < DragThresholdPx
+    return Offset.distance(drag.grab.origin, pointer) < DragThresholdPx
       ? drag
-      : { kind: "dragging", dragged: drag.dragged, origin: drag.origin, drop };
+      : { kind: "dragging", grab: drag.grab, drop };
   },
 
   /**
-   * 今ドロップしたら起きること。動かしていて、かつ落とせる状態のときだけ。
+   * 今ドロップしたら届く編集。動かしていて、かつ落とせる状態のときだけ。
    *
    * @param drag 今のドラッグの状態
-   * @returns 挿入か座標の置き直し。動かしていない / 落とせる先が無いなら `none`
+   * @returns 移動・挿入・座標の置き直しのいずれか。動かしていない / 落とせる先が
+   *   無いなら `none`
    */
-  drop(drag: NodeDrag): Option<NodeDrop> {
+  drop(drag: NodeDrag): Option<DropEdit> {
     return drag.kind === "dragging" ? drag.drop : Option.none;
   },
 
   /**
-   * 掴んだ位置。座標の移動量はここからの差で決まる。
-   *
-   * @param drag 今のドラッグの状態
-   * @returns 掴んだ位置。掴んでいなければ `none`
-   */
-  grabOrigin(drag: NodeDrag): Option<Offset> {
-    switch (drag.kind) {
-      case "held":
-      case "dragging":
-        return Option.some(drag.origin);
-      case "idle":
-      case "dropped":
-        return Option.none;
-    }
-  },
-
-  /**
-   * 今ドロップしたら挿さる位置。挿入のときだけ答える。
+   * 今ドロップしたら挿さる位置。ツリーへ落とすときだけ答える。
    *
    * ドロップ線とラベルは「どの親の何番目の子になるか」の提示なので、
    * 座標を置き直すドラッグでは出さない。
@@ -198,9 +227,7 @@ export const NodeDrag = {
    * @returns 挿さる位置。座標の置き直し / 動かしていないなら `none`
    */
   insertionTarget(drag: NodeDrag): Option<DropTarget> {
-    return Option.flatMap(NodeDrag.drop(drag), (drop) =>
-      drop.kind === "insertion" ? Option.some(drop.target) : Option.none,
-    );
+    return Option.flatMap(NodeDrag.drop(drag), DropEdit.insertionTarget);
   },
 
   /**
@@ -216,7 +243,7 @@ export const NodeDrag = {
    */
   release(drag: NodeDrag): NodeDrag {
     const swallowsClick =
-      drag.kind === "dragging" && drag.dragged.kind === "existing";
+      drag.kind === "dragging" && drag.grab.dragged.kind === "existing";
     return swallowsClick ? { kind: "dropped" } : NodeDrag.create();
   },
 

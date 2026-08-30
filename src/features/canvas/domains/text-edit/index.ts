@@ -96,7 +96,7 @@ export const EditableText = {
  *
  * 「どう見せるか」（入力欄なのか吹き出しなのか）は持たない。矩形を持つのは、
  * どこを編集しているかがブラウザの実測でしか決まらないためで、`NodeResize` が
- * 掴んだ位置を、`NodeDrop` が実測した矩形を持つのと同じ扱いにしている。
+ * 掴んだ位置を、`DropZone` が実測した矩形を持つのと同じ扱いにしている。
  */
 export type TextEdit = Readonly<{
   draft: string;

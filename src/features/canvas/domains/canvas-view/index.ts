@@ -117,6 +117,23 @@ export const CanvasView = {
     return screenLength / view.scale;
   },
 
+  /**
+   * 画面上の移動量をドキュメント上の移動量へ直す。
+   *
+   * 縦横に同じ割り戻しを効かせるだけだが、呼び出し側で 2 回書くと片方だけ倍率を
+   * 忘れても動いてしまう（縦にだけ倍率が効かない、という壊れ方になる）。
+   *
+   * @param view 割り戻しに使う倍率を持つ表示
+   * @param screenDelta 画面で測った移動量
+   * @returns ドキュメント上の移動量
+   */
+  toDocumentOffset(view: CanvasView, screenDelta: Offset): Offset {
+    return {
+      x: CanvasView.toDocumentLength(view, screenDelta.x),
+      y: CanvasView.toDocumentLength(view, screenDelta.y),
+    };
+  },
+
   /** 表示用の倍率（%）。小数の倍率をそのまま出さないよう整数へ丸める。 */
   scalePercent(view: CanvasView): number {
     return Math.round(view.scale * 100);

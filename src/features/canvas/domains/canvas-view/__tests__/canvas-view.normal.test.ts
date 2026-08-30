@@ -121,3 +121,13 @@ test("拡大して見ているときは画面上の長さより短い長さと�
 
   expect(CanvasView.toDocumentLength(zoomedIn, 60)).toBe(50);
 });
+
+test("拡大して見ているときは移動量も縦横とも割り戻される", () => {
+  const zoomedIn = CanvasView.zoomIn(CanvasView.create());
+
+  // 縦横で違う値・違う符号にして、片方だけ割り戻す実装と取り違えを落とす
+  expect(CanvasView.toDocumentOffset(zoomedIn, { x: 60, y: -18 })).toEqual({
+    x: 50,
+    y: -15,
+  });
+});

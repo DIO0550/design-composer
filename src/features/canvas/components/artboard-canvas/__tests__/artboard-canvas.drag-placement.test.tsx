@@ -57,6 +57,24 @@ test("絶対配置のノードを運んで離すと、掴んだ時点の座標�
   });
 });
 
+test("何度も動かしても、ずれるのは掴んだ時点からの合計になる", () => {
+  const onRepositionNode = vi.fn();
+  renderCanvas({ selection: setupSelection(), onRepositionNode });
+
+  // 途中のポインタ位置を基準にし直すと、最後の 1 区間分（8, -4）しか動かない
+  pressPointer(drawn("badge"), { x: 100, y: 100 });
+  movePointer(drawn("badge"), { x: 115, y: 95 });
+  movePointer(drawn("badge"), { x: 122, y: 92 });
+  movePointer(drawn("badge"), { x: 130, y: 88 });
+  releasePointer(drawn("badge"), { x: 130, y: 88 });
+
+  expect(onRepositionNode).toHaveBeenCalledWith("badge", {
+    mode: "absolute",
+    x: 70,
+    y: 12,
+  });
+});
+
 test("絶対配置のノードを運んでもツリーの並びは変わらない", () => {
   const onMoveNode = vi.fn();
   renderCanvas({ selection: setupSelection(), onMoveNode });

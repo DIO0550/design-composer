@@ -9,7 +9,11 @@ import { ResolvedProps } from "@/domains/dcmp/resolved-props";
 import type { NodeTemplate } from "@/domains/session/node-template";
 import { Offset } from "@/domains/unit/offset";
 import { CanvasView } from "@/features/canvas/domains/canvas-view";
-import { NodeDrag, NodeDrop } from "@/features/canvas/domains/node-drag";
+import {
+  DropEdit,
+  type Grab,
+  NodeDrag,
+} from "@/features/canvas/domains/node-drag";
 import {
   CanvasBounds,
   type DraggedNode,
@@ -24,8 +28,8 @@ import { Option } from "@/utils/Option";
 
 /** ドラッグの進み方（docs/06-ui.md「キャンバス直接操作」の移動・座標の置き直しと、挿入）。 */
 type NodeDragAction =
-  | Readonly<{ type: "grab"; dragged: DraggedNode; origin: Offset }>
-  | Readonly<{ type: "move"; pointer: Offset; drop: Option<NodeDrop> }>
+  | Readonly<{ type: "grab"; grab: Grab }>
+  | Readonly<{ type: "move"; pointer: Offset; drop: Option<DropEdit> }>
   | Readonly<{ type: "release" }>
   | Readonly<{ type: "cancel" }>
   | Readonly<{ type: "consume_click" }>;
@@ -40,7 +44,7 @@ type NodeDragAction =
 function nodeDragReducer(drag: NodeDrag, action: NodeDragAction): NodeDrag {
   switch (action.type) {
     case "grab":
-      return NodeDrag.grab(action.dragged, action.origin);
+      return NodeDrag.grab(action.grab);
     case "move":
       return NodeDrag.moveTo(drag, action.pointer, action.drop);
     case "release":
@@ -105,65 +109,62 @@ function dropTargetAt(
   );
 }
 
+/** 落とし方を決めるのに要るもの（今の掴みと、それを解釈するための材料）。 */
+type DropContext = Readonly<{
+  document: DesignDocument;
+  grab: Grab;
+  view: CanvasView;
+  event: ReactPointerEvent<HTMLElement>;
+}>;
+
 /**
- * 運んでいるノードが今持っている配置。絶対配置のときだけ答える。
+ * 今の掴みを座標の置き直しとして読んだ結果。
  *
  * ドラッグの意味を決めるのは運んでいるノード自身の `placement` で、パレットの雛形は
- * まだ木に無いので対象外（挿入にしかならない）。
+ * まだ木に無いので対象外（挿入にしかならない）。座標は掴んだ時点の値に、画面上の
+ * 移動量を倍率で割り戻したものを足す（倍率を変えても掴んだ点に追従する）。
  *
- * @param document 配置の引き先になるドキュメント
- * @param dragged 運んでいるもの
- * @returns 運んでいるノードの配置。フロー / 木に無い / 雛形なら `none`
+ * @param context 今の掴みと、配置の引き先になるドキュメント・倍率・ポインタ
+ * @returns 座標の置き直しの編集。パレットの雛形を運んでいる / 名前が木に無い /
+ *   部品インスタンス（props を持たない）/ フロー / 座標が数値でないなら `none`
  */
-function absolutePlacementOf(
-  document: DesignDocument,
-  dragged: DraggedNode,
-): Option<AbsolutePlacement> {
+function repositionAt(context: DropContext): Option<DropEdit> {
+  const dragged = context.grab.dragged;
   if (dragged.kind !== "existing") {
     return Option.none;
   }
-  const node = DesignDocument.findNode(document, dragged.name);
+  const node = DesignDocument.findNode(context.document, dragged.name);
   if (!node.some || !Node.isPrimitive(node.value)) {
     return Option.none;
   }
   const placement = Placement.fromProps(ResolvedProps.forNode(node.value));
-  return Placement.isAbsolute(placement) ? Option.some(placement) : Option.none;
+  if (!Placement.isAbsolute(placement)) {
+    return Option.none;
+  }
+  const delta = CanvasView.toDocumentOffset(
+    context.view,
+    Offset.delta(context.grab.origin, CanvasPointer.offsetOf(context.event)),
+  );
+  return Option.some(
+    DropEdit.reposition(dragged.name, Placement.moveBy(placement, delta)),
+  );
 }
 
 /**
- * 今ドロップしたら起きること。
+ * 今ドロップしたら届く編集。
+ * 絶対配置のノードを運んでいるなら座標の置き直し、そうでなければツリーへの移動・挿入。
  *
- * 絶対配置のノードを運んでいるなら座標の置き直し、そうでなければツリーへの挿入。
- * 座標は掴んだ時点の値に、画面上の移動量を倍率で割り戻したものを足す
- * （`NodeResize.lengthAt` と同じ形。倍率を変えても掴んだ点に追従する）。
- *
- * @param params 落とし先を決める材料
- * @returns 落とし方。落とせる先が無ければ `none`
+ * @param context 今の掴みと、落とし先を決めるための材料
+ * @returns 届く編集。落とせる先が無ければ `none`
  */
-function dropAt(
-  params: Readonly<{
-    document: DesignDocument;
-    dragged: DraggedNode;
-    view: CanvasView;
-    origin: Option<Offset>;
-    event: ReactPointerEvent<HTMLElement>;
-  }>,
-): Option<NodeDrop> {
-  const held = absolutePlacementOf(params.document, params.dragged);
-  if (held.some && params.origin.some) {
-    const moved = Offset.delta(
-      params.origin.value,
-      CanvasPointer.offsetOf(params.event),
-    );
-    const delta = {
-      x: CanvasView.toDocumentLength(params.view, moved.x),
-      y: CanvasView.toDocumentLength(params.view, moved.y),
-    };
-    return Option.some(NodeDrop.placement(Placement.moveBy(held.value, delta)));
+function dropEditAt(context: DropContext): Option<DropEdit> {
+  const repositioned = repositionAt(context);
+  if (repositioned.some) {
+    return repositioned;
   }
   return Option.map(
-    dropTargetAt(params.document, params.dragged, params.event),
-    NodeDrop.insertion,
+    dropTargetAt(context.document, context.grab.dragged, context.event),
+    (target) => DropEdit.intoTree(context.grab.dragged, target),
   );
 }
 
@@ -244,8 +245,10 @@ export function useNodeDrag(
     }
     dispatch({
       type: "grab",
-      dragged: { kind: "existing", name: name.value },
-      origin: CanvasPointer.offsetOf(event),
+      grab: {
+        dragged: { kind: "existing", name: name.value },
+        origin: CanvasPointer.offsetOf(event),
+      },
     });
   };
 
@@ -255,58 +258,53 @@ export function useNodeDrag(
   ) => {
     dispatch({
       type: "grab",
-      dragged: { kind: "new", template },
-      origin: CanvasPointer.offsetOf(event),
+      grab: {
+        dragged: { kind: "new", template },
+        origin: CanvasPointer.offsetOf(event),
+      },
     });
   };
 
   const trackPointer = (event: ReactPointerEvent<HTMLElement>) => {
-    const held = NodeDrag.heldNode(drag);
-    if (!held.some) {
+    const grabbed = NodeDrag.grabbed(drag);
+    if (!grabbed.some) {
       return;
     }
     dispatch({
       type: "move",
       pointer: CanvasPointer.offsetOf(event),
-      drop: dropAt({
+      drop: dropEditAt({
         document: params.document,
-        dragged: held.value,
+        grab: grabbed.value,
         view: params.view,
-        origin: NodeDrag.grabOrigin(drag),
         event,
       }),
     });
   };
 
-  /**
-   * 落とし方に応じて編集を届ける。
-   * 挿入は運んでいたものが既存ノードなら移動・雛形なら挿入で、座標の置き直しは
-   * 既存ノードにしか起きない（雛形はまだ木に無いので配置を持たない）。
-   */
-  const applyDrop = (dragged: DraggedNode, drop: NodeDrop) => {
-    if (drop.kind === "placement") {
-      if (dragged.kind === "existing") {
-        params.onReposition(dragged.name, drop.placement);
-      }
-      return;
+  /** 届いた編集を、それぞれの受け口へ流す。 */
+  const applyDrop = (drop: DropEdit) => {
+    switch (drop.kind) {
+      case "move":
+        params.onMove(drop.name, drop.target.position);
+        return;
+      case "insert":
+        params.onInsertAt(drop.template, drop.target.position);
+        return;
+      case "reposition":
+        params.onReposition(drop.name, drop.placement);
+        return;
     }
-    const at = drop.target.position;
-    if (dragged.kind === "existing") {
-      params.onMove(dragged.name, at);
-      return;
-    }
-    params.onInsertAt(dragged.template, at);
   };
 
   /**
-   * 離した時点で提示していた位置へ落とす（最後に届いた移動が決めた先）。
-   * 運んでいたものが木にある既存ノードなら移動、パレットの雛形なら挿入になる。
+   * 離した時点で提示していた落とし方で落とす（最後に届いた移動が決めた編集）。
+   * 誰をどう動かすかは `DropEdit` が持っているので、ここでは運んでいたものを見ない。
    */
   const release = () => {
-    const held = NodeDrag.heldNode(drag);
     const drop = NodeDrag.drop(drag);
-    if (held.some && drop.some) {
-      applyDrop(held.value, drop.value);
+    if (drop.some) {
+      applyDrop(drop.value);
     }
     dispatch({ type: "release" });
   };
