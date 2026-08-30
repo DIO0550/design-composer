@@ -1,5 +1,5 @@
 {
-  "reportVersion": "9e3d308a4de91c14939f06150e6fc843d5b6ce2d",
+  "reportVersion": "1243ae9200a78b9f3938629d821d7939cdda0070",
   "maxDiffRatio": 0.002,
   "changed": 7,
   "new": 1,
@@ -879,8 +879,8 @@
       "hasDiff": false
     },
     {
-      "story": "features-editor-openeddocumenteditor--absolute-placement",
-      "id": "features-editor-openeddocumenteditor--absolute-placement",
+      "story": "features-editor-openeddocumenteditor--absolute-node",
+      "id": "features-editor-openeddocumenteditor--absolute-node",
       "title": "features/editor/OpenedDocumentEditor",
       "name": "絶対配置のノードがある編集画面",
       "status": "new",
