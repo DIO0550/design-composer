@@ -102,6 +102,9 @@ description: "design-composer の実装を ゴールの確定 → タスクの�
 - **計画から外れたら、外れた時点で Issue に追記する。** 後でまとめて書くと理由が思い出せなくなる
 - `AGENTS.md`「実装を始める前に」の読む順で自己チェックを通す
 - UI を触ったなら `rules/ui-verification.md` の表示確認まで行う
+- **コメント・doc・Issue/PR 本文に事実の主張を書いたら、書き終えるたびに
+  `claim-verification` スキルで確かめる**(フェーズ6まで持ち越さない。
+  `.claude/skills/claim-verification/`)
 
 ## フェーズ 6: 実装の検証(`implementation-reviewer`)
 
@@ -174,5 +177,6 @@ bash .claude/hooks/lib/test-rules-scan.sh src                # テスト規約
 | --- | --- | --- |
 | `.claude/agents/plan-reviewer.md` | 計画の検証観点(エージェントが読む) | フェーズ 4 |
 | `.claude/agents/implementation-reviewer.md` | 実装の検証観点(エージェントが読む) | フェーズ 6 |
+| `.claude/skills/claim-verification/SKILL.md` | コメント・doc・PR/Issue 本文の事実主張を書く前に確かめる手順 | フェーズ 5 |
 | [`harness/case-law/planning.md`](../../../harness/case-law/planning.md) | 計画で過去に踏んだ実例 | フェーズ 3 |
 | [`harness/case-law/process.md`](../../../harness/case-law/process.md) | サブエージェント・フック環境の実例 | フェーズ 4 / 6 / 7 |
