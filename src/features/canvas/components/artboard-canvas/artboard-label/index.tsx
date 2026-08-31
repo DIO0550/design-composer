@@ -21,8 +21,9 @@ export const ArtboardHandleTestId = "artboard-handle";
  * Why not: 大きさの綴りを `artboard-list` と共通化しない。UI 案はツリー側が
  * `720×900`、キャンバス側が `720 × 900` で空白の有無が違う。
  *
- * 見出しが artboard を動かす掴み口でもある（docs/06-ui.md「キャンバス直接操作」）。
- * 枠そのものを掴み口にしない理由は `ArtboardFrame` の `onGrab` の doc。
+ * 見出しは artboard を動かす掴み口の 1 つ（docs/06-ui.md「キャンバス直接操作」）。
+ * もう 1 つは枠の背景で、掴み分けは `ArtboardFrame` の `onPointerDown` にある。
+ * 見出しを残すのは、**子が全面を覆う artboard**では背景を押せないため。
  *
  * @returns 名前と大きさを並べた見出しの 1 行
  */
@@ -40,10 +41,10 @@ export function ArtboardLabel({
       data-testid={`${ArtboardHandleTestId}:${artboard.element.name}`}
       /*
        * 掴んで動かすドラッグが文字の範囲選択にならないようにする（`select-none`）。
-       * 幅を中身ぶんに留める（`w-fit`）のは、掴み口が枠の幅いっぱいに広がると
-       * 名前の右の余白でも artboard が動いてしまうため。
+       * 幅は器（`ArtboardFrame`）が枠に合わせるので、ここでは絞らない。名前の右の余白でも
+       * 動くが、背景でも動くようになった今はそちらのほうが一貫する。
        */
-      className="flex h-[18px] w-fit cursor-grab select-none items-center gap-2 text-[11px]"
+      className="flex h-[18px] cursor-grab select-none items-center gap-2 text-[11px]"
       onPointerDown={(event) => {
         // 見出しの上で始めたドラッグはパンにしない（掴んだものが動かないと操作が読めない）
         event.stopPropagation();
