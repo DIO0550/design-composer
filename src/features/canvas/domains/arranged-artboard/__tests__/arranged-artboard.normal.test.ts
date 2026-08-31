@@ -38,15 +38,21 @@ test("位置を持たない artboard は、直前までの自動配置の右隣�
   expect(positions[1]).toEqual({ x: 232, y: 0 });
 });
 
-test("位置を持つ artboard は、後続の自動配置の起点を進めない", () => {
-  const positions = positionsOf([
+test("既定の位置は配列順と幅で決まり、前の artboard が座標を持っても変わらない", () => {
+  const withPlaced = positionsOf([
     compiledArtboard("home", { width: 200, height: 100 }),
-    compiledArtboard("placed", { width: 500, height: 100 }, { x: 900, y: 300 }),
+    compiledArtboard("moved", { width: 500, height: 100 }, { x: 900, y: 300 }),
+    compiledArtboard("empty", { width: 200, height: 100 }),
+  ]);
+  const withoutPlaced = positionsOf([
+    compiledArtboard("home", { width: 200, height: 100 }),
+    compiledArtboard("moved", { width: 500, height: 100 }),
     compiledArtboard("empty", { width: 200, height: 100 }),
   ]);
 
-  // 置かれている 500 幅を飛ばして、1 枚目の右隣のまま
-  expect(positions[2]).toEqual({ x: 232, y: 0 });
+  // 2 枚目を動かしても 3 枚目は動かない（200 + 32 + 500 + 32）
+  expect(withPlaced[2]).toEqual({ x: 764, y: 0 });
+  expect(withPlaced[2]).toEqual(withoutPlaced[2]);
 });
 
 test("先頭が位置を持たないときは原点へ置かれる", () => {

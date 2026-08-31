@@ -39,9 +39,12 @@ export const ArrangedArtboard = {
   /**
    * 並び全体の置き場所を決める。
    *
-   * 座標を持つ artboard はその座標へ置き、持たない artboard だけを配列順に横へ並べる。
-   * 座標を持つものが自動配置の起点を動かさないのは、作者が置いた artboard は
-   * 並びの一部ではないため（1 枚を掴んで動かしても、残りの並びはずれない）。
+   * 座標を持つ artboard はその座標へ置き、持たない artboard は**既定の位置**へ置く。
+   * 既定の位置は配列順と幅だけで決まる（自分より前の artboard の幅 + 間隔の累積）。
+   *
+   * 座標を持つ artboard も既定の枠を空けたままにするのは、**1 枚を動かしても他が
+   * ずれない**ようにするため。空けずに詰めると、1 枚目を掴んで動かした瞬間に
+   * 2 枚目が原点へ飛ぶ。
    *
    * 自動配置されたものが座標を持つものに重なることはある。Figma も
    * フレーム同士の重なりを禁じていないので、避けずに受け入れている。
@@ -52,32 +55,18 @@ export const ArrangedArtboard = {
   fromArtboards(
     artboards: readonly CompiledArtboard[],
   ): readonly ArrangedArtboard[] {
-    /*
-     * 次に自動配置する artboard の左端を畳み込みながら運ぶ。`map` の外に可変の
-     * カーソルを置くと、並びを作る式が自分の外を書き換えることになる。
-     */
-    const arranged = artboards.reduce<
-      Readonly<{ placed: readonly ArrangedArtboard[]; nextLeft: number }>
-    >(
-      ({ placed, nextLeft }, artboard) => {
-        const written = artboard.canvasPosition;
-        if (written !== undefined) {
-          return {
-            placed: [...placed, { artboard, canvasPosition: written }],
-            nextLeft,
-          };
-        }
-        return {
-          placed: [
-            ...placed,
-            { artboard, canvasPosition: { x: nextLeft, y: AutoArrangeTop } },
-          ],
-          nextLeft: nextLeft + artboard.width + AutoArrangeGap,
-        };
-      },
-      { placed: [], nextLeft: 0 },
+    const defaultLefts = artboards.map((_, index) =>
+      artboards
+        .slice(0, index)
+        .reduce((left, before) => left + before.width + AutoArrangeGap, 0),
     );
-    return arranged.placed;
+    return artboards.map((artboard, index) => ({
+      artboard,
+      canvasPosition: artboard.canvasPosition ?? {
+        x: defaultLefts[index] ?? 0,
+        y: AutoArrangeTop,
+      },
+    }));
   },
 
   /**
