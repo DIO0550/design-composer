@@ -150,6 +150,11 @@
     "name": "配下のノードを選択中"
   },
   {
+    "id": "features-canvas-artboardcanvas-artboardframelist--with-canvas-position",
+    "title": "features/canvas/ArtboardCanvas/ArtboardFrameList",
+    "name": "キャンバス上の座標を持つ artboard"
+  },
+  {
     "id": "features-canvas-artboardcanvas-artboardlabel--current",
     "title": "features/canvas/ArtboardCanvas/ArtboardLabel",
     "name": "今見ている 1 枚"
