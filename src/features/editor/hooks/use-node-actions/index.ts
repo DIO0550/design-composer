@@ -78,7 +78,7 @@ export function useNodeActions(): NodeActions {
     reposition: (name, placement) =>
       dispatch({ type: "reposition_node", name, placement }),
     /**
-     * artboard の見出しを掴んだドラッグはキャンバス上の移動（#390）。
+     * artboard の見出し・背景を掴んだドラッグはキャンバス上の移動（#390 / #392）。
      * ノードの座標移動と別のアクションなのは、相手が artboard で座標系も違うため。
      */
     repositionArtboard: (name, canvasPosition) =>

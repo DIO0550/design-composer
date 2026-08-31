@@ -96,16 +96,22 @@ export function ArtboardFrame({
      */
     <li className="absolute" style={{ left: drawnAt.x, top: drawnAt.y }}>
       {/*
-        `right-0` で枠の幅いっぱいに広げるのは、見出しが掴み口だから
-        （`ArtboardLabel`）。中身ぶんだと `home 360 × 240` で 85px しか無く、
-        枠の 360px に対して狙いづらい。
+        `right-0` で枠の幅いっぱいに広げるのは、見出しが掴み口だから（`ArtboardLabel`）。
+        中身ぶんだと `home 360 × 240` で 85px しか無く、枠の 360px に対して狙いづらい。
+        UI 案（docs/Design Composer.html）の見出しも枠と同じ幅のブロックなので、
+        絞るほうが乖離だった。
+
+        **この幅はテストにも視覚差分にも出ない。** happy-dom はレイアウトしないので
+        測れず、見出しは左寄せで背景も枠線も持たないため絞っても絵が変わらない
+        （実測: `w-fit` を戻しても 2639 件すべて緑）。掴める範囲が 85px へ戻っても
+        気づく手段が無い。
       */}
       <div className="absolute right-0 bottom-full left-0 pb-1">
         <ArtboardLabel
           artboard={artboard}
           isCurrent={isCurrent}
           onGrab={(event) =>
-            artboardDrag.grab(artboard.element.name, canvasPosition, event)
+            artboardDrag.grab(element.name, canvasPosition, event)
           }
         />
       </div>

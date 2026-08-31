@@ -19,33 +19,17 @@ import { drawn, renderCanvas, selectionFromArtboards } from "./setup";
  * 3 枚並べるのは、掴む相手を**先頭以外**にできるようにするため。先頭は既定の位置が
  * 原点なので、掴んだ時点の位置を無視する実装でも同じ答えになる。
  *
+ * @param options `withChild` で `second` に子（Text の `title`）を 1 つ置く
  * @returns 3 枚の artboard を持つドキュメントと、未選択の対
  */
-function setupSelection() {
+function setupSelection(options: Readonly<{ withChild?: boolean }> = {}) {
+  // 中身を掴む経路を見るテストだけが子を要る（`second` の背景が狭くなるので既定では置かない）
+  const secondChildren = options.withChild
+    ? [{ name: "title", type: "Text" as const, props: { content: "設定" } }]
+    : [];
   return selectionFromArtboards([
     { name: "first", width: 200, height: 140, children: [] },
-    { name: "second", width: 200, height: 140, children: [] },
-    { name: "third", width: 200, height: 140, children: [] },
-  ]);
-}
-
-/**
- * `second` が Text の `title` を 1 つ持つ、未選択の対。
- *
- * 中身を掴む経路を見るのに使う。`setupSelection` は子を持たないので、そちらでは
- * 「背景ではないところ」を押せない。
- *
- * @returns 子を 1 つ持つ artboard を含むドキュメントと、未選択の対
- */
-function setupSelectionWithChild() {
-  return selectionFromArtboards([
-    { name: "first", width: 200, height: 140, children: [] },
-    {
-      name: "second",
-      width: 200,
-      height: 140,
-      children: [{ name: "title", type: "Text", props: { content: "設定" } }],
-    },
+    { name: "second", width: 200, height: 140, children: secondChildren },
     { name: "third", width: 200, height: 140, children: [] },
   ]);
 }
@@ -136,28 +120,27 @@ test("artboard の中身を掴んでも artboard の置き直しは届かない"
    * ときだけなので、押しただけでは掴み分けをどう壊しても呼ばれない）。
    */
   const onRepositionArtboard = vi.fn();
-  renderCanvas({ selection: setupSelectionWithChild(), onRepositionArtboard });
+  renderCanvas({
+    selection: setupSelection({ withChild: true }),
+    onRepositionArtboard,
+  });
 
   drag(drawn("title"), { from: { x: 0, y: 0 }, to: { x: 60, y: 40 } });
 
   expect(onRepositionArtboard).not.toHaveBeenCalled();
 });
 
-test("artboard の中身を掴んだときは、ノードの移動として届く", () => {
-  // 掴み分けが artboard 優先に入れ替わると、ノード側へ何も届かなくなる
+test("artboard の中身を掴んだときは、ツリー内の移動として届く", () => {
+  /*
+   * 掴み分けが artboard 優先に入れ替わると、ノード側へ何も届かなくなる。
+   * 子は flow の Text なので届く先は `onMoveNode` に決まっている（座標移動ではない）。
+   */
   const onMoveNode = vi.fn();
-  const onRepositionNode = vi.fn();
-  renderCanvas({
-    selection: setupSelectionWithChild(),
-    onMoveNode,
-    onRepositionNode,
-  });
+  renderCanvas({ selection: setupSelection({ withChild: true }), onMoveNode });
 
   drag(drawn("title"), { from: { x: 0, y: 0 }, to: { x: 60, y: 40 } });
 
-  const movedSomehow =
-    onMoveNode.mock.calls.length + onRepositionNode.mock.calls.length;
-  expect(movedSomehow).toBeGreaterThan(0);
+  expect(onMoveNode).toHaveBeenCalled();
 });
 
 test("背景を掴んで運んだ直後でも、次のクリックで選べる", () => {
@@ -209,7 +192,7 @@ test("見出しを掴んでもキャンバスは動かない", () => {
 test("見出しを掴んで運んだ直後でも、次のクリックで選べる", () => {
   /*
    * ノードのドラッグ / リサイズは「離した直後の click を飲み込む」状態を持つが、
-   * artboard の掴み口は枠の**兄弟**なのでドラッグ由来の click は枠まで上がってこない。
+   * **見出しは**枠の兄弟なので、ドラッグ由来の click は枠まで上がってこない。
    * 同じ形を写すと、飲み込む相手が居ないまま**次のクリックを食べる**（`ArtboardDrag` の doc）。
    */
   const onSelect = vi.fn();
