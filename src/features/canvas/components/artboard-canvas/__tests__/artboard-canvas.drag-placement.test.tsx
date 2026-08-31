@@ -11,6 +11,7 @@ import { Option } from "@/utils/Option";
 import { repositionPreviewDeclarations } from "../reposition-preview-style";
 import {
   drawn,
+  drawnSized,
   injectedStyles,
   renderCanvas,
   selectionFromArtboards,
@@ -21,8 +22,13 @@ import {
  *
  * 2 つ並べるのは、同じドラッグが配置によって別の意味になることを
  * 対照付きで確かめるため（片方だけだと、出し分けを丸ごと壊しても通る）。
+ *
+ * @param badgeAt `badge` を置く座標。省略すると `home` の内側
+ * @returns その座標に `badge` を置いたドキュメントと、未選択の対
  */
-function setupSelection(): DocumentSelection {
+function setupSelection(
+  badgeAt: Readonly<{ x: number; y: number }> = { x: 40, y: 24 },
+): DocumentSelection {
   return selectionFromArtboards(
     [
       {
@@ -33,7 +39,12 @@ function setupSelection(): DocumentSelection {
           {
             name: "badge",
             type: "Text",
-            props: { content: "3", placement: "absolute", x: 40, y: 24 },
+            props: {
+              content: "3",
+              placement: "absolute",
+              x: badgeAt.x,
+              y: badgeAt.y,
+            },
           },
           { name: "title", type: "Text", props: { content: "ホーム" } },
         ],
@@ -211,4 +222,59 @@ test("離すと見た目のずれは消える（座標そのものが動くた�
   releasePointer(drawn("badge"), { x: 130, y: 88 });
 
   expect(injectedStyles()).not.toContain("transform:translate(");
+});
+
+/**
+ * `home` と `badge` に描かれた大きさを持たせる。
+ * artboard はコンパイル結果が `overflow: hidden` を出すので、この大きさが
+ * そのまま「はみ出したら見えなくなる」境界になる。
+ */
+function measureHome(): void {
+  drawnSized("home", { width: 360, height: 240 });
+  drawnSized("badge", { width: 44, height: 24 });
+}
+
+test("親の外へ運んで離すと、届く座標は親の内側で止まる", () => {
+  const onRepositionNode = vi.fn();
+  renderCanvas({ selection: setupSelection(), onRepositionNode });
+  measureHome();
+
+  dragNode(drawn("badge"), { x: 400, y: 300 });
+
+  // 収めないと (440, 324) になり、artboard に切り取られて見えなくなる
+  expect(onRepositionNode).toHaveBeenCalledWith("badge", {
+    mode: "absolute",
+    x: 316,
+    y: 216,
+  });
+});
+
+test("運んでいる最中の見た目も、親の内側で止まる", () => {
+  renderCanvas({ selection: setupSelection() });
+  measureHome();
+
+  carryBadge({ x: 400, y: 300 });
+
+  // 収めた行き先 (316, 216) を掴んだ時点 (40, 24) から見たずれ。
+  // 確定側だけで収めると、ここは (400, 300) のまま＝運んでいる間だけ消える
+  expect(injectedStyles()).toContain(
+    repositionPreviewDeclarations({ x: 276, y: 192 }),
+  );
+});
+
+test("もともと親の外にあるノードは、動かした時点で親の内側へ戻る", () => {
+  const onRepositionNode = vi.fn();
+  renderCanvas({
+    selection: setupSelection({ x: -104, y: -44 }),
+    onRepositionNode,
+  });
+  measureHome();
+
+  dragNode(drawn("badge"), { x: 8, y: 6 });
+
+  expect(onRepositionNode).toHaveBeenCalledWith("badge", {
+    mode: "absolute",
+    x: 0,
+    y: 0,
+  });
 });

@@ -19,6 +19,7 @@ import {
   type DropTarget,
   DropZone,
 } from "@/features/canvas/domains/node-drop";
+import { RepositionLimit } from "@/features/canvas/domains/reposition-limit";
 import { CanvasPointer } from "@/features/canvas/utils/CanvasPointer";
 import { CanvasDom } from "@/libs/canvas-dom";
 import { ElementEx } from "@/utils/ElementEx";
@@ -120,10 +121,16 @@ type DropContext = Readonly<{
  *
  * ドラッグの意味を決めるのは運んでいるノード自身の `placement` で、パレットの雛形は
  * まだ木に無いので対象外（挿入にしかならない）。座標は掴んだ時点の値に、画面上の
- * 移動量を倍率で割り戻したものを足す（倍率を変えても掴んだ点に追従する）。
+ * 移動量を倍率で割り戻したものを足し（倍率を変えても掴んだ点に追従する）、
+ * **親の内側へ収めてから**返す。
+ *
+ * 収めるのを確定側（`applyDrop` / `EditorState`）ではなくここでやるのは、運んでいる
+ * 最中の見た目（`RepositionPreviewStyle`）がこの編集から逆算されるため。確定側で収めると
+ * 運んでいる間だけ親の外へ出たままになり、artboard に切り取られて掴んだものが消える。
  *
  * @param context 今の掴みと、配置の引き先になるドキュメント・倍率・ポインタ
- * @returns 座標の置き直しの編集。パレットの雛形を運んでいる / 座標で動かせない
+ * @returns 座標の置き直しの編集。返す座標は親の内側に収まっている（上限を実測できない
+ *   ときだけ収めずに返す）。パレットの雛形を運んでいる / 座標で動かせない
  *   ノードを運んでいる（`DesignDocument.absolutePlacementOf` が `none`）なら `none`
  */
 function repositionAt(context: DropContext): Option<DropEdit> {
@@ -142,8 +149,16 @@ function repositionAt(context: DropContext): Option<DropEdit> {
     context.view,
     Offset.delta(context.grab.origin, CanvasPointer.offsetOf(context.event)),
   );
+  const moved = Placement.moveBy(placement.value, delta);
+  const limit = Option.flatMap(
+    CanvasDom.elementOf(dragged.name),
+    RepositionLimit.fromElement,
+  );
+  const contained = Option.map(limit, (inside) =>
+    RepositionLimit.clamp(inside, moved),
+  );
   return Option.some(
-    DropEdit.reposition(dragged.name, Placement.moveBy(placement.value, delta)),
+    DropEdit.reposition(dragged.name, Option.unwrapOr(contained, moved)),
   );
 }
 

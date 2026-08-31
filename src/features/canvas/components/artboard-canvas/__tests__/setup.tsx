@@ -14,6 +14,7 @@ import {
   canvasContent,
   renderedElement,
 } from "@/features/canvas/__tests__/canvas-elements";
+import { measuredAs } from "@/features/canvas/__tests__/canvas-measure";
 import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
 import { useCanvasView } from "@/features/canvas/hooks/use-canvas-view";
 import { useNodeDrag } from "@/features/canvas/hooks/use-node-drag";
@@ -163,4 +164,18 @@ export function drawnAt(name: string, bounds: CanvasBounds): HTMLElement {
   element.getBoundingClientRect = () =>
     new DOMRect(bounds.left, bounds.top, bounds.width, bounds.height);
   return element;
+}
+
+/**
+ * 描かれた内側の大きさをテスト用の値にする（差し替える理由は `measuredAs` の doc）。
+ *
+ * @param name 描かれている artboard / ノードの名前
+ * @param size そのノードが描かれていることにする内側の大きさ
+ * @returns 測定を差し替えたあとの要素
+ */
+export function drawnSized(
+  name: string,
+  size: Readonly<{ width: number; height: number }>,
+): HTMLElement {
+  return measuredAs(drawn(name), size);
 }

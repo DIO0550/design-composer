@@ -1,5 +1,6 @@
 import { Offset } from "@/domains/unit/offset";
 import { Px } from "@/domains/unit/px";
+import { NumberEx } from "@/utils/NumberEx";
 import { Option } from "@/utils/Option";
 
 /**
@@ -38,7 +39,7 @@ const ZoomFactor = 1.2;
  * @returns 上下限の内側に収まった倍率
  */
 function clampScale(scale: number): number {
-  return Math.min(MaxScale, Math.max(MinScale, scale));
+  return NumberEx.clamp(scale, { min: MinScale, max: MaxScale });
 }
 
 /**
