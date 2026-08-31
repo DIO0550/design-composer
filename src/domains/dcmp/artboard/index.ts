@@ -274,6 +274,29 @@ export const Artboard = {
     return { ...artboard, [size.axis]: size.length };
   },
 
+  /**
+   * キャンバス上の位置を置き直した artboard。
+   *
+   * 書き込み先が props ではなく artboard 自身のフィールドなのは、キャンバス上の位置が
+   * props の `placement` / `x` / `y`（親の中での置かれ方）とは**別の座標系**のため
+   * (`ArtboardFixedPlacementProps` の doc)。
+   *
+   * 整数へ丸めるのは `Placement.moveBy`（ノード側の座標移動）と同じ理由による。
+   *
+   * @param artboard 置き直す元の artboard
+   * @param canvasPosition 置き直したあとの位置。枠の左上を指す
+   * @returns その位置を持つ artboard。座標は整数
+   */
+  withCanvasPosition(artboard: Artboard, canvasPosition: Offset): Artboard {
+    return {
+      ...artboard,
+      canvasPosition: {
+        x: Math.round(canvasPosition.x),
+        y: Math.round(canvasPosition.y),
+      },
+    };
+  },
+
   /** artboard の prop を書き換える。 */
   applyPropEdit(artboard: Artboard, edit: PropEdit): Artboard {
     return { ...artboard, props: Props.apply(artboard.props ?? {}, edit) };

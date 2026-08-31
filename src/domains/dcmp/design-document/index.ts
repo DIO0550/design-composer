@@ -18,6 +18,7 @@ import { NodeTree, type NodeTreeUpdate } from "@/domains/dcmp/node-tree";
 import { type AbsolutePlacement, Placement } from "@/domains/dcmp/placement";
 import { ResolvedProps } from "@/domains/dcmp/resolved-props";
 import { type Token, type TokenRef, TokenSet } from "@/domains/dcmp/token";
+import type { Offset } from "@/domains/unit/offset";
 import { ArrayEx } from "@/utils/ArrayEx";
 import type { JsonCursor, JsonDecoded, JsonObject } from "@/utils/Json";
 import { Option } from "@/utils/Option";
@@ -587,6 +588,32 @@ export const DesignDocument = {
       name,
       PropEdit.set([size.axis], size.length),
     );
+  },
+
+  /**
+   * 名前で指した artboard を、キャンバス上の別の位置へ置き直す
+   * （docs/06-ui.md「キャンバス直接操作」の移動のうち、artboard の分）。
+   *
+   * ノードを相手にしないのは、キャンバス上の位置を持つのが artboard だけのため
+   * （ノードの座標は親からの相対で、そちらは `reposition` が受ける）。
+   *
+   * @param document 書き換える対象を含むドキュメント
+   * @param name 置き直す artboard の名前
+   * @param canvasPosition 置き直したあとの位置。枠の左上を指す
+   * @returns 位置を書き換えたドキュメント。その名前の artboard が無ければ失敗
+   *   （ノードの名前を渡した場合も artboard ではないので失敗する）
+   */
+  repositionArtboard(
+    document: DesignDocument,
+    name: string,
+    canvasPosition: Offset,
+  ): Result<DesignDocument, DesignDocumentEditError> {
+    const repositioned = updateArtboardNamed(document, name, (artboard) =>
+      Artboard.withCanvasPosition(artboard, canvasPosition),
+    );
+    return repositioned.some
+      ? Result.ok(repositioned.value)
+      : Result.err({ kind: "node-not-found", name });
   },
 
   /**

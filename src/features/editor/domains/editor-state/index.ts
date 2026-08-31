@@ -18,6 +18,7 @@ import { NodeTemplate } from "@/domains/session/node-template";
 import { SelectionState } from "@/domains/session/selection-state";
 import { TokenSelection } from "@/domains/session/token-selection";
 import type { Instant } from "@/domains/unit/instant";
+import type { Offset } from "@/domains/unit/offset";
 import { EditHistory } from "@/features/editor/domains/edit-history";
 import { TokenTemplate } from "@/features/editor/domains/token-template";
 import type { IndexMove } from "@/types/IndexMove";
@@ -505,6 +506,31 @@ export const EditorState = {
    * 同じ形で、履歴も dirty も動かない。キャンバスは運んでいるノードの配置を見て
    * 落とし方を決めるため、画面の操作からこの `none` には到達しない。
    */
+  /**
+   * artboard をキャンバス上の別の位置へ置き直す（docs/06-ui.md「キャンバス直接操作」）。
+   *
+   * 相手が artboard でない（ノードの名前 / 無い名前）ときは、その置き直しが存在しない
+   * ことと同じなので `none`。履歴も dirty も動かない。キャンバスは掴んだものが
+   * artboard のときだけこの操作を送るため、画面の操作からこの `none` には到達しない。
+   *
+   * @param state 置き直す前の編集状態
+   * @param name 置き直す artboard の名前
+   * @param canvasPosition 置き直したあとの位置
+   * @returns 置き直したあとの編集状態。相手が artboard でなければ `none`
+   */
+  repositionArtboard(
+    state: EditorState,
+    name: string,
+    canvasPosition: Offset,
+  ): Option<EditorState> {
+    const repositioned = DesignDocument.repositionArtboard(
+      EditorState.document(state),
+      name,
+      canvasPosition,
+    );
+    return repositioned.ok ? withEdit(state, repositioned.value) : Option.none;
+  },
+
   reposition(
     state: EditorState,
     name: string,
