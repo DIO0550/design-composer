@@ -225,11 +225,11 @@ test("離すと見た目のずれは消える（座標そのものが動くた�
 });
 
 /**
- * `home` と `badge` に描かれた大きさを持たせる。
- * artboard はコンパイル結果が `overflow: hidden` を出すので、この大きさが
- * そのまま「はみ出したら見えなくなる」境界になる。
+ * `home` とその中の `badge` に、描かれた大きさを与える。
+ * happy-dom はレイアウトを行わないので、これを通さないとクランプが効かない
+ * （`canvas-measure` の doc）。上限は `360 - 44 = 316` / `240 - 24 = 216` になる。
  */
-function measureHome(): void {
+function drawnHomeWithBadge(): void {
   drawnSized("home", { width: 360, height: 240 });
   drawnSized("badge", { width: 44, height: 24 });
 }
@@ -237,7 +237,7 @@ function measureHome(): void {
 test("親の外へ運んで離すと、届く座標は親の内側で止まる", () => {
   const onRepositionNode = vi.fn();
   renderCanvas({ selection: setupSelection(), onRepositionNode });
-  measureHome();
+  drawnHomeWithBadge();
 
   dragNode(drawn("badge"), { x: 400, y: 300 });
 
@@ -251,7 +251,7 @@ test("親の外へ運んで離すと、届く座標は親の内側で止まる",
 
 test("運んでいる最中の見た目も、親の内側で止まる", () => {
   renderCanvas({ selection: setupSelection() });
-  measureHome();
+  drawnHomeWithBadge();
 
   carryBadge({ x: 400, y: 300 });
 
@@ -264,17 +264,19 @@ test("運んでいる最中の見た目も、親の内側で止まる", () => {
 
 test("もともと親の外にあるノードは、動かした時点で親の内側へ戻る", () => {
   const onRepositionNode = vi.fn();
+  // 左へ出た x と下へ出た y にして、軸ごとに違う側で止まることまで見る
+  // （両軸とも 0 に揃えると、スキーマの既定値へ戻すだけの実装でも通る）
   renderCanvas({
-    selection: setupSelection({ x: -104, y: -44 }),
+    selection: setupSelection({ x: -104, y: 300 }),
     onRepositionNode,
   });
-  measureHome();
+  drawnHomeWithBadge();
 
   dragNode(drawn("badge"), { x: 8, y: 6 });
 
   expect(onRepositionNode).toHaveBeenCalledWith("badge", {
     mode: "absolute",
     x: 0,
-    y: 0,
+    y: 216,
   });
 });

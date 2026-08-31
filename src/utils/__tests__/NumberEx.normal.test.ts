@@ -56,3 +56,21 @@ test("Infinity は有限の非負の数として false になる", () => {
 test("NaN は有限の非負の数として false になる", () => {
   expect(NumberEx.isFiniteNonNegative(Number.NaN)).toBe(false);
 });
+
+test("範囲の内側にある値はそのまま返る", () => {
+  expect(NumberEx.clamp(24, { min: 0, max: 216 })).toBe(24);
+});
+
+test("上限を超えた値は上限で止まる", () => {
+  expect(NumberEx.clamp(300, { min: 0, max: 216 })).toBe(216);
+});
+
+test("下限を下回った値は下限で止まる", () => {
+  expect(NumberEx.clamp(-44, { min: 0, max: 216 })).toBe(0);
+});
+
+test("下限が上限を上回る範囲では上限が勝つ", () => {
+  // 収める先が潰れているときにどちらへ寄るかは、上限を渡す側が壊れた場合の
+  // 答えを決める（`RepositionLimit` はこの向きに依存している）
+  expect(NumberEx.clamp(24, { min: 100, max: 10 })).toBe(10);
+});

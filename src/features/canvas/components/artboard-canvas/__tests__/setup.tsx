@@ -171,11 +171,10 @@ export function drawnAt(name: string, bounds: CanvasBounds): HTMLElement {
  *
  * @param name 描かれている artboard / ノードの名前
  * @param size そのノードが描かれていることにする内側の大きさ
- * @returns 測定を差し替えたあとの要素
  */
 export function drawnSized(
   name: string,
   size: Readonly<{ width: number; height: number }>,
-): HTMLElement {
-  return measuredAs(drawn(name), size);
+): void {
+  measuredAs(drawn(name), size);
 }
