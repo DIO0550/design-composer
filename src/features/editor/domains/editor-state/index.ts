@@ -506,6 +506,19 @@ export const EditorState = {
    * 同じ形で、履歴も dirty も動かない。キャンバスは運んでいるノードの配置を見て
    * 落とし方を決めるため、画面の操作からこの `none` には到達しない。
    */
+  reposition(
+    state: EditorState,
+    name: string,
+    placement: AbsolutePlacement,
+  ): Option<EditorState> {
+    const repositioned = DesignDocument.reposition(
+      EditorState.document(state),
+      name,
+      placement,
+    );
+    return repositioned.ok ? withEdit(state, repositioned.value) : Option.none;
+  },
+
   /**
    * artboard をキャンバス上の別の位置へ置き直す（docs/06-ui.md「キャンバス直接操作」）。
    *
@@ -527,19 +540,6 @@ export const EditorState = {
       EditorState.document(state),
       name,
       canvasPosition,
-    );
-    return repositioned.ok ? withEdit(state, repositioned.value) : Option.none;
-  },
-
-  reposition(
-    state: EditorState,
-    name: string,
-    placement: AbsolutePlacement,
-  ): Option<EditorState> {
-    const repositioned = DesignDocument.reposition(
-      EditorState.document(state),
-      name,
-      placement,
     );
     return repositioned.ok ? withEdit(state, repositioned.value) : Option.none;
   },

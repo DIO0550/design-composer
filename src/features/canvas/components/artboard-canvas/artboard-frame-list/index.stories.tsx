@@ -88,10 +88,11 @@ export const NodeSelected: Story = {
 /**
  * ファイルにキャンバス上の座標を持つ artboard（docs/01「artboards」の `x` / `y`）。
  *
- * 3 枚のうち `placed` だけが座標を持つ。**座標を持つ 1 枚が離れた位置に置かれても、
- * 残りの 2 枚は隣り合ったまま**であることがここで見える（座標を持つ artboard は
- * 自動配置の起点を進めない）。並びだけを映す `ArtboardFrameList` に置くのは、
- * `ArtboardCanvas` のストーリーだと倍率・パンの器ごと撮るため。
+ * 3 枚のうち `placed` だけが座標を持つ。**1 枚を離れた位置へ動かしても、残りの 2 枚は
+ * 元の位置から動かない**ことがここで見える（既定の位置は配列順と幅だけで決まり、
+ * 座標を持つ 1 枚もその枠を空けない）。`placed` が抜けた真ん中が空くのはそのため。
+ * 並びだけを映す `ArtboardFrameList` に置くのは、`ArtboardCanvas` のストーリーだと
+ * 倍率・パンの器ごと撮るため。
  */
 export const WithCanvasPosition: Story = {
   name: "キャンバス上の座標を持つ artboard",
