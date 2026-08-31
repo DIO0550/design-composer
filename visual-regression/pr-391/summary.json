@@ -1,11 +1,11 @@
 {
-  "reportVersion": "317219b8297dc55d89ff78ae4471da03126fa12e",
+  "reportVersion": "8e6b72466841e1c3316d9a71401e64699cf4262c",
   "maxDiffRatio": 0.002,
-  "changed": 17,
+  "changed": 16,
   "new": 1,
   "deleted": 0,
-  "passed": 125,
-  "failed": 17,
+  "passed": 126,
+  "failed": 16,
   "results": [
     {
       "story": "components-dropline--after",
@@ -195,12 +195,12 @@
       "title": "features/assets/CreateComponent",
       "name": "ファイルが不正な間に部品名を打っている",
       "status": "passed",
-      "reason": "within-threshold",
-      "diffPixels": 5,
+      "reason": "match",
+      "diffPixels": 0,
       "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": true
+      "hasDiff": false
     },
     {
       "story": "features-assets-createcomponent--instance-selected",
@@ -443,8 +443,8 @@
       "name": "artboard が並ぶ",
       "status": "changed",
       "reason": "pixel-diff",
-      "diffPixels": 41878,
-      "diffRatio": 0.0454,
+      "diffPixels": 20553,
+      "diffRatio": 0.0223,
       "hasExpected": true,
       "hasActual": true,
       "hasDiff": true
@@ -454,13 +454,13 @@
       "id": "features-canvas-artboardcanvas-canvasbody--compile-failure",
       "title": "features/canvas/ArtboardCanvas/CanvasBody",
       "name": "コンパイルに失敗",
-      "status": "changed",
-      "reason": "pixel-diff",
-      "diffPixels": 2320,
-      "diffRatio": 0.0025,
+      "status": "passed",
+      "reason": "match",
+      "diffPixels": 0,
+      "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": true
+      "hasDiff": false
     },
     {
       "story": "features-canvas-artboardcanvas-canvasbody--no-artboards",
@@ -468,12 +468,12 @@
       "title": "features/canvas/ArtboardCanvas/CanvasBody",
       "name": "artboard が 0 枚",
       "status": "passed",
-      "reason": "within-threshold",
-      "diffPixels": 838,
-      "diffRatio": 0.0009,
+      "reason": "match",
+      "diffPixels": 0,
+      "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": true
+      "hasDiff": false
     },
     {
       "story": "features-canvas-artboardcanvas-dropmarker--between-columns",
