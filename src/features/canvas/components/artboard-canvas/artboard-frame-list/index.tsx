@@ -107,34 +107,42 @@ export function ArtboardFrameList({
         />
       ) : null}
       {/*
-        座標平面そのもの。子を絶対配置にすると内容の大きさを失うので、並び全体の
-        大きさを与える。これが**リサイズ中のポインタを受ける範囲**（受け口は
-        `ArtboardCanvas` の `canvas-content`）の高さを決めるので、0 のままだと
-        辺を外へ引いたときに追従が切れる。
-
-        `relative` と子の `absolute` は座標配置そのもの。**潰してもテストは 1 件も
-        落ちない**（happy-dom はレイアウトしないため）。気づく手段は視覚差分だけ。
+        余白は座標平面の**外側**に置く。artboard の見出しは枠の上へ出るので、原点に
+        ある artboard の見出しがそのままでは上へはみ出す。座標側の起点をずらして
+        避けると、ファイルに書いた `y` と見た目が食い違う。`ul` 自身の padding では
+        効かない（絶対配置の子は padding box の辺を基準にするため）。
       */}
-      <ul style={{ ...compiled.variables, ...size }} className="relative">
-        {arranged.map((placed) => (
-          <ArtboardFrame
-            key={placed.artboard.element.name}
-            arranged={placed}
-            isSelected={DocumentSelection.isSelected(
-              selection,
-              placed.artboard.element.name,
-            )}
-            isCurrent={DocumentSelection.isCurrentArtboard(
-              selection,
-              placed.artboard.element.name,
-            )}
-            onSelect={onSelect}
-            nodeDrag={nodeDrag}
-            nodeResize={nodeResize}
-            textEdit={textEdit}
-          />
-        ))}
-      </ul>
+      <div className="p-8">
+        {/*
+          座標平面そのもの。子を絶対配置にすると内容の大きさを失うので、並び全体の
+          大きさを与える。これが**リサイズ中のポインタを受ける範囲**（受け口は
+          `ArtboardCanvas` の `canvas-content`）の高さを決めるので、0 のままだと
+          辺を外へ引いたときに追従が切れる。
+
+          この余白・`relative`・子の `absolute` は座標配置そのもの。**潰してもテストは
+          1 件も落ちない**（happy-dom はレイアウトしないため）。気づく手段は視覚差分だけ。
+        */}
+        <ul style={{ ...compiled.variables, ...size }} className="relative">
+          {arranged.map((placed) => (
+            <ArtboardFrame
+              key={placed.artboard.element.name}
+              arranged={placed}
+              isSelected={DocumentSelection.isSelected(
+                selection,
+                placed.artboard.element.name,
+              )}
+              isCurrent={DocumentSelection.isCurrentArtboard(
+                selection,
+                placed.artboard.element.name,
+              )}
+              onSelect={onSelect}
+              nodeDrag={nodeDrag}
+              nodeResize={nodeResize}
+              textEdit={textEdit}
+            />
+          ))}
+        </ul>
+      </div>
     </>
   );
 }

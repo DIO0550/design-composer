@@ -124,15 +124,6 @@ export function ArtboardCanvas({
            * `artboard-canvas.frozen.test.tsx` が確かめている）。
            */
           inert={isFrozen}
-          /*
-           * 余白は座標平面の外側に置く。artboard の見出しは枠の上へ出るので、
-           * 原点にある artboard の見出しがそのままでは上へはみ出す。座標側の
-           * 起点をずらして避けると、ファイルに書いた `y` と見た目が食い違う。
-           *
-           * 落とすと見出しが見切れるが、**テストは 1 件も落ちない**
-           * （happy-dom はレイアウトしないため）。気づく手段は視覚差分だけ。
-           */
-          className="p-8"
           style={{
             transform: CanvasView.transform(view),
             transformOrigin: ContentTransformOrigin,

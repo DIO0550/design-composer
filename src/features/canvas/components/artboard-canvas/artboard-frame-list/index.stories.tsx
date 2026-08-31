@@ -51,8 +51,7 @@ const meta = {
   parameters: { layout: "fullscreen" },
   decorators: [
     (Story) => (
-      // 見出しは枠の上へ出るので、器の側に余白を取る（キャンバス本体と同じ形）
-      <div className="h-[32rem] w-full overflow-auto bg-gray-100 p-8">
+      <div className="h-[32rem] w-full overflow-auto bg-gray-100">
         <Story />
       </div>
     ),
