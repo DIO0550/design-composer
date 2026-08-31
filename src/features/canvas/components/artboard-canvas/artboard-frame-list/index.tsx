@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { TokenSelection } from "@/domains/session/token-selection";
+import { ArrangedArtboard } from "@/features/canvas/domains/arranged-artboard";
 import { NodeDrag } from "@/features/canvas/domains/node-drag";
 import type { NodeDragControl } from "@/features/canvas/hooks/use-node-drag";
 import type { NodeResizeControl } from "@/features/canvas/hooks/use-node-resize";
@@ -42,8 +43,8 @@ export const TokenReferrerOutline =
 
 /**
  * artboard の並び。`artboards` 配列の順序をそのまま DOM の順序にする。
- * 位置を計算して持たないのは、「キャンバス座標は持たない。ツールが配列順に自動
- * レイアウトする」（docs/01）を、実装側にも座標を作らない形で満たすため。
+ * 置き場所はキャンバス上の座標で、ファイルに座標を持たない artboard だけを
+ * 配列順に横へ並べる（`ArrangedArtboard`）。
  *
  * トークンはこの並びのルートへ載せる。artboard の出力は `var()` 参照だけを持つので、
  * トークンの編集は再コンパイルなしにここの差し替えだけで全 artboard へ波及する。
@@ -69,6 +70,8 @@ export function ArtboardFrameList({
   textEdit: TextEditControl;
 }>) {
   const dropTarget = NodeDrag.insertionTarget(nodeDrag.drag);
+  const arranged = ArrangedArtboard.fromArtboards(compiled.artboards);
+  const size = ArrangedArtboard.size(arranged);
 
   /*
    * ドキュメント全体を走査するので、パン / ズームのたびに数え直さない
@@ -104,26 +107,26 @@ export function ArtboardFrameList({
         />
       ) : null}
       {/*
-        リサイズ中のポインタは並び全体で受ける。artboard の枠ごとに受けると、
-        枠の外まで引っ張ったときに追従が切れてしまう。ツリー内の移動 / 挿入の
-        ポインタは 3 ペインの器が受ける（掴む場所が左ペインにもあるため）。
+        座標平面そのもの。子を絶対配置にすると内容の大きさを失うので、並び全体の
+        大きさを与える。これが**リサイズ中のポインタを受ける範囲**（受け口は
+        `ArtboardCanvas` の `canvas-content`）の高さを決めるので、0 のままだと
+        辺を外へ引いたときに追従が切れる。
+
+        `relative` と子の `absolute` は座標配置そのもの。**潰してもテストは 1 件も
+        落ちない**（happy-dom はレイアウトしないため）。気づく手段は視覚差分だけ。
       */}
-      <ul
-        style={compiled.variables}
-        className="flex flex-wrap items-start gap-8 p-8"
-        {...nodeResize.dragHandlers}
-      >
-        {compiled.artboards.map((artboard) => (
+      <ul style={{ ...compiled.variables, ...size }} className="relative">
+        {arranged.map((placed) => (
           <ArtboardFrame
-            key={artboard.element.name}
-            artboard={artboard}
+            key={placed.artboard.element.name}
+            arranged={placed}
             isSelected={DocumentSelection.isSelected(
               selection,
-              artboard.element.name,
+              placed.artboard.element.name,
             )}
             isCurrent={DocumentSelection.isCurrentArtboard(
               selection,
-              artboard.element.name,
+              placed.artboard.element.name,
             )}
             onSelect={onSelect}
             nodeDrag={nodeDrag}

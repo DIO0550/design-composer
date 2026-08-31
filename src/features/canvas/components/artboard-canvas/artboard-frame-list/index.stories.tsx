@@ -1,5 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { DocumentSelection } from "@/domains/session/document-selection";
+import {
+  DesignDocument,
+  DocumentTemplate,
+} from "@/domains/dcmp/design-document";
+import { DocumentSelection } from "@/domains/session/document-selection";
 import { TokenSelection } from "@/domains/session/token-selection";
 import { sampleCanvasSelection } from "@/features/canvas/__stories__/sample-canvas-document";
 import { DocumentHtml } from "@/services/document-html";
@@ -10,8 +14,8 @@ import { ArtboardFrameList } from "./index";
 /**
  * artboard の並びと、名前で引く強調の規則。
  *
- * `ArtboardCanvas` のストーリーは倍率・パンの器ごと撮るので、並びの間隔（`gap-8`）と
- * 折り返しが読み取りにくい。ここは変形の外で素の並びだけを映す。
+ * `ArtboardCanvas` のストーリーは倍率・パンの器ごと撮るので、自動配置の間隔が
+ * 読み取りにくい。ここは変形の外で素の並びだけを映す。
  */
 function ArtboardFrameListWithControls({
   selection,
@@ -47,7 +51,8 @@ const meta = {
   parameters: { layout: "fullscreen" },
   decorators: [
     (Story) => (
-      <div className="h-[32rem] w-full overflow-auto bg-gray-100">
+      // 見出しは枠の上へ出るので、器の側に余白を取る（キャンバス本体と同じ形）
+      <div className="h-[32rem] w-full overflow-auto bg-gray-100 p-8">
         <Story />
       </div>
     ),
@@ -79,4 +84,36 @@ export const ArtboardSelected: Story = {
 export const NodeSelected: Story = {
   name: "配下のノードを選択中",
   args: { selection: sampleCanvasSelection(["overflow-wide"]) },
+};
+
+/**
+ * ファイルにキャンバス上の座標を持つ artboard（docs/01「artboards」の `x` / `y`）。
+ *
+ * 3 枚のうち `placed` だけが座標を持つ。**座標を持つ 1 枚が離れた位置に置かれても、
+ * 残りの 2 枚は隣り合ったまま**であることがここで見える（座標を持つ artboard は
+ * 自動配置の起点を進めない）。並びだけを映す `ArtboardFrameList` に置くのは、
+ * `ArtboardCanvas` のストーリーだと倍率・パンの器ごと撮るため。
+ */
+export const WithCanvasPosition: Story = {
+  name: "キャンバス上の座標を持つ artboard",
+  args: {
+    selection: DocumentSelection.fromNames(
+      DesignDocument.create({
+        tokens: DocumentTemplate.Default.tokens,
+        components: DocumentTemplate.Default.components,
+        artboards: [
+          { name: "first", width: 200, height: 140, children: [] },
+          {
+            name: "placed",
+            width: 200,
+            height: 140,
+            canvasPosition: { x: 620, y: 220 },
+            children: [],
+          },
+          { name: "second", width: 200, height: 140, children: [] },
+        ],
+      }),
+      [],
+    ),
+  },
 };

@@ -33,7 +33,7 @@ const ContentTransformOrigin: CSSProperties["transformOrigin"] = "0 0";
 
 /**
  * キャンバス（docs/06-ui.md「画面構成」）。
- * artboard を配列順に自動配置し、コンパイル結果（実 HTML / CSS）をレンダリングする。
+ * artboard をキャンバス上の座標へ置き、コンパイル結果（実 HTML / CSS）をレンダリングする。
  * ズーム / パンは非永続の view state で、ドキュメントには保存しない。
  *
  * 表示（倍率・位置）を自分で持たず受け取るのは、倍率の操作が上部バーへ移り、
@@ -124,10 +124,27 @@ export function ArtboardCanvas({
            * `artboard-canvas.frozen.test.tsx` が確かめている）。
            */
           inert={isFrozen}
+          /*
+           * 余白は座標平面の外側に置く。artboard の見出しは枠の上へ出るので、
+           * 原点にある artboard の見出しがそのままでは上へはみ出す。座標側の
+           * 起点をずらして避けると、ファイルに書いた `y` と見た目が食い違う。
+           *
+           * 落とすと見出しが見切れるが、**テストは 1 件も落ちない**
+           * （happy-dom はレイアウトしないため）。気づく手段は視覚差分だけ。
+           */
+          className="p-8"
           style={{
             transform: CanvasView.transform(view),
             transformOrigin: ContentTransformOrigin,
           }}
+          /*
+           * リサイズ中のポインタはこの器で受ける。artboard の枠ごとや座標平面
+           * （`ul`）で受けると、枠の外まで引っ張ったときに追従が切れる
+           * （`onPointerLeave` で取り消すため）。余白を持つのはこの器なので、
+           * 辺を外へ引いてもポインタが残る。ツリー内の移動 / 挿入のポインタは
+           * 3 ペインの器が受ける（掴む場所が左ペインにもあるため）。
+           */
+          {...nodeResize.dragHandlers}
         >
           <CanvasBody
             compiled={compiled}

@@ -30,13 +30,13 @@ export function CanvasBody({
 }>) {
   if (!compiled.ok) {
     return (
-      <p className="p-8 text-red-700 text-sm">
+      <p className="text-red-700 text-sm">
         コンパイルに失敗しました: {compiled.error.message}
       </p>
     );
   }
   if (compiled.value.artboards.length === 0) {
-    return <p className="p-8 text-gray-500 text-sm">artboard がありません</p>;
+    return <p className="text-gray-500 text-sm">artboard がありません</p>;
   }
   return (
     <ArtboardFrameList

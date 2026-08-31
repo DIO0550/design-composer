@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { DocumentSelection } from "@/domains/session/document-selection";
+import { Offset } from "@/domains/unit/offset";
 import { sampleCanvasSelection } from "@/features/canvas/__stories__/sample-canvas-document";
 import { DocumentHtml } from "@/services/document-html";
 import { WithCanvasControls } from "../__stories__/canvas-controls";
@@ -35,9 +36,11 @@ function ArtboardFrameWithControls({
   return (
     <WithCanvasControls selection={selection}>
       {(controls) => (
-        <ul style={compiled.value.variables} className="p-8">
+        // 枠は座標で置かれるので基準が要る。余白は器の側に取る
+        // （絶対配置の子は器の padding では動かないため、キャンバス本体と同じ形にする）
+        <ul style={compiled.value.variables} className="relative">
           <ArtboardFrame
-            artboard={artboard}
+            arranged={{ artboard, canvasPosition: Offset.Origin }}
             isSelected={isSelected}
             isCurrent={isCurrent}
             onSelect={() => {}}
@@ -56,7 +59,7 @@ const meta = {
   args: { selection: sampleCanvasSelection(), artboardName: "home" },
   decorators: [
     (Story) => (
-      <div className="h-96 w-full bg-gray-100">
+      <div className="h-96 w-full bg-gray-100 p-8">
         <Story />
       </div>
     ),
