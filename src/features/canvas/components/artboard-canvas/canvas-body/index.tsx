@@ -1,5 +1,6 @@
 import type { DocumentSelection } from "@/domains/session/document-selection";
 import type { TokenSelection } from "@/domains/session/token-selection";
+import type { ArtboardDragControl } from "@/features/canvas/hooks/use-artboard-drag";
 import type { NodeDragControl } from "@/features/canvas/hooks/use-node-drag";
 import type { NodeResizeControl } from "@/features/canvas/hooks/use-node-resize";
 import type { TextEditControl } from "@/features/canvas/hooks/use-text-edit";
@@ -16,6 +17,7 @@ export function CanvasBody({
   selection,
   tokenSelection,
   onSelect,
+  artboardDrag,
   nodeDrag,
   nodeResize,
   textEdit,
@@ -24,6 +26,7 @@ export function CanvasBody({
   selection: DocumentSelection;
   tokenSelection: TokenSelection;
   onSelect: (names: readonly string[]) => void;
+  artboardDrag: ArtboardDragControl;
   nodeDrag: NodeDragControl;
   nodeResize: NodeResizeControl;
   textEdit: TextEditControl;
@@ -44,6 +47,7 @@ export function CanvasBody({
       selection={selection}
       tokenSelection={tokenSelection}
       onSelect={onSelect}
+      artboardDrag={artboardDrag}
       nodeDrag={nodeDrag}
       nodeResize={nodeResize}
       textEdit={textEdit}

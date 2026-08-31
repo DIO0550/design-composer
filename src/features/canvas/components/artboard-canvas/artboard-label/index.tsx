@@ -1,3 +1,4 @@
+import type { PointerEvent as ReactPointerEvent } from "react";
 import type { CompiledArtboard } from "@/domains/compiled/compiled-artboard";
 
 /**
@@ -13,14 +14,30 @@ import type { CompiledArtboard } from "@/domains/compiled/compiled-artboard";
  * Why not: 大きさの綴りを `artboard-list` と共通化しない。UI 案はツリー側が
  * `720×900`、キャンバス側が `720 × 900` で空白の有無が違う。
  *
+ * 見出しが artboard を動かす掴み口でもある（docs/06-ui.md「キャンバス直接操作」）。
+ * 枠そのものを掴み口にしない理由は `ArtboardFrame` の `onGrab` の doc。
+ *
  * @returns 名前と大きさを並べた見出しの 1 行
  */
 export function ArtboardLabel({
   artboard,
   isCurrent,
-}: Readonly<{ artboard: CompiledArtboard; isCurrent: boolean }>) {
+  onGrab,
+}: Readonly<{
+  artboard: CompiledArtboard;
+  isCurrent: boolean;
+  onGrab: (event: ReactPointerEvent<HTMLElement>) => void;
+}>) {
   return (
-    <span className="flex h-[18px] items-center gap-2 text-[11px]">
+    <span
+      // 掴んで動かすドラッグが文字の範囲選択にならないようにする
+      className="flex h-[18px] w-fit cursor-grab select-none items-center gap-2 text-[11px]"
+      onPointerDown={(event) => {
+        // 見出しの上で始めたドラッグはパンにしない（掴んだものが動かないと操作が読めない）
+        event.stopPropagation();
+        onGrab(event);
+      }}
+    >
       {/*
         **この出し分けを潰してもテストは 1 件も落ちない。** happy-dom は Tailwind を
         解決せず、class 名を assert するのは実装詳細のテストになる。気づく手段は

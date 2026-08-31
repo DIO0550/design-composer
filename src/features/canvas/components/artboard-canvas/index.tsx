@@ -3,9 +3,11 @@ import type { AxisLength } from "@/domains/dcmp/axis-length";
 import type { PropEdit } from "@/domains/dcmp/node";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import type { TokenSelection } from "@/domains/session/token-selection";
+import type { Offset } from "@/domains/unit/offset";
 import { CanvasView } from "@/features/canvas/domains/canvas-view";
 import { NodeDrag } from "@/features/canvas/domains/node-drag";
 import { NodeResize } from "@/features/canvas/domains/node-resize";
+import { useArtboardDrag } from "@/features/canvas/hooks/use-artboard-drag";
 import type { CanvasViewControl } from "@/features/canvas/hooks/use-canvas-view";
 import type { NodeDragControl } from "@/features/canvas/hooks/use-node-drag";
 import { useNodeResize } from "@/features/canvas/hooks/use-node-resize";
@@ -39,8 +41,8 @@ const ContentTransformOrigin: CSSProperties["transformOrigin"] = "0 0";
  * 表示（倍率・位置）を自分で持たず受け取るのは、倍率の操作が上部バーへ移り、
  * キャンバスと上部バーが同じ 1 つの表示を見る必要があるため（#134）。
  *
- * props が 8 つあるが Composition へは割っていない。関心は「キャンバス」1 つで、
- * 前半 3 つは描くのに要る値、後半 5 つは表示とキャンバス上の操作を外へ渡す口。
+ * props が 9 つあるが Composition へは割っていない。関心は「キャンバス」1 つで、
+ * 前半 3 つは描くのに要る値、後半 6 つは表示とキャンバス上の操作を外へ渡す口。
  * 中身を子要素として受け取る形にはできない（描くものはコンパイル結果の HTML で、
  * 呼び出し側が組み立てられない）。`EditorState` を丸ごと受けると feature として
  * 切り出せない（#256）。
@@ -67,6 +69,7 @@ export function ArtboardCanvas({
   onSelect,
   onResize,
   onEditProp,
+  onRepositionArtboard,
 }: Readonly<{
   selection: DocumentSelection;
   tokenSelection: TokenSelection;
@@ -76,10 +79,15 @@ export function ArtboardCanvas({
   onSelect: (names: readonly string[]) => void;
   onResize: (size: AxisLength) => void;
   onEditProp: (edit: PropEdit) => void;
+  onRepositionArtboard: (name: string, canvasPosition: Offset) => void;
 }>) {
   const { view, surfaceRef, panHandlers } = canvasView;
   const designDocument = selection.document;
   const nodeResize = useNodeResize({ selection, view, onResize });
+  const artboardDrag = useArtboardDrag({
+    view,
+    onReposition: onRepositionArtboard,
+  });
   const textEdit = useTextEdit({ selection, onEditProp });
   /*
    * 凍結中はリサイズハンドルを出さない。`inert` の中にあって掴めないのに、
@@ -129,16 +137,31 @@ export function ArtboardCanvas({
             transformOrigin: ContentTransformOrigin,
           }}
           /*
-           * リサイズ中のポインタはこの器で受ける。artboard の枠ごとや座標平面
-           * （`ul`）で受けると、枠の外まで引っ張ったときに追従が切れる
+           * リサイズと artboard の移動のポインタはこの器で受ける。artboard の枠ごとや
+           * 座標平面（`ul`）で受けると、枠の外まで引っ張ったときに追従が切れる
            * （`onPointerLeave` で取り消すため）。余白を持つのはこの器なので、
-           * 辺を外へ引いてもポインタが残る。ツリー内の移動 / 挿入のポインタは
+           * 外へ引いてもポインタが残る。ツリー内の移動 / 挿入のポインタは
            * 3 ペインの器が受ける（掴む場所が左ペインにもあるため）。
+           *
+           * 2 つを 1 つのハンドラで束ねるのは、同じ器に別々には載せられないため。
+           * 掴んでいないほうは自分の状態を見て何もしないので、両方へ配って問題ない。
            */
-          {...nodeResize.dragHandlers}
+          onPointerMove={(event) => {
+            nodeResize.dragHandlers.onPointerMove(event);
+            artboardDrag.dragHandlers.onPointerMove(event);
+          }}
+          onPointerUp={(event) => {
+            nodeResize.dragHandlers.onPointerUp();
+            artboardDrag.dragHandlers.onPointerUp(event);
+          }}
+          onPointerLeave={() => {
+            nodeResize.dragHandlers.onPointerLeave();
+            artboardDrag.dragHandlers.onPointerLeave();
+          }}
         >
           <CanvasBody
             compiled={compiled}
+            artboardDrag={artboardDrag}
             selection={selection}
             tokenSelection={tokenSelection}
             onSelect={onSelect}

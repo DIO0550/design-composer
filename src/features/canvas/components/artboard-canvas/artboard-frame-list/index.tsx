@@ -3,6 +3,7 @@ import { DocumentSelection } from "@/domains/session/document-selection";
 import { TokenSelection } from "@/domains/session/token-selection";
 import { ArrangedArtboard } from "@/features/canvas/domains/arranged-artboard";
 import { NodeDrag } from "@/features/canvas/domains/node-drag";
+import type { ArtboardDragControl } from "@/features/canvas/hooks/use-artboard-drag";
 import type { NodeDragControl } from "@/features/canvas/hooks/use-node-drag";
 import type { NodeResizeControl } from "@/features/canvas/hooks/use-node-resize";
 import type { TextEditControl } from "@/features/canvas/hooks/use-text-edit";
@@ -57,6 +58,7 @@ export function ArtboardFrameList({
   selection,
   tokenSelection,
   onSelect,
+  artboardDrag,
   nodeDrag,
   nodeResize,
   textEdit,
@@ -65,6 +67,7 @@ export function ArtboardFrameList({
   selection: DocumentSelection;
   tokenSelection: TokenSelection;
   onSelect: (names: readonly string[]) => void;
+  artboardDrag: ArtboardDragControl;
   nodeDrag: NodeDragControl;
   nodeResize: NodeResizeControl;
   textEdit: TextEditControl;
@@ -136,6 +139,7 @@ export function ArtboardFrameList({
                 placed.artboard.element.name,
               )}
               onSelect={onSelect}
+              artboardDrag={artboardDrag}
               nodeDrag={nodeDrag}
               nodeResize={nodeResize}
               textEdit={textEdit}

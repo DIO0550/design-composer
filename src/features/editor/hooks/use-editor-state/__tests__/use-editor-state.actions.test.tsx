@@ -46,6 +46,20 @@ function setupReloadedDocument(): DesignDocument {
   });
 }
 
+/**
+ * `home` が今置かれているキャンバス上の位置。
+ * 座標を持たないうちは「無し」を出し、置き直しで付いたことが見える形にする。
+ *
+ * @param state 読み先の編集状態
+ * @returns `x,y` の並び。座標を持たなければ「無し」
+ */
+function artboardCanvasPosition(state: EditorState): string {
+  const position = Option.unwrap(
+    DesignDocument.findArtboard(EditorState.document(state), "home"),
+  ).canvasPosition;
+  return position === undefined ? "無し" : `${position.x},${position.y}`;
+}
+
 function artboardWidth(state: EditorState): number {
   return Option.unwrap(
     DesignDocument.findArtboard(EditorState.document(state), "home"),
@@ -80,6 +94,9 @@ function EditorStateHarness() {
       <p data-testid="children">{homeChildNames(state).join(",")}</p>
       <p data-testid="artboard-width">{artboardWidth(state)}</p>
       <p data-testid="footer-coordinates">{footerCoordinates(state)}</p>
+      <p data-testid="artboard-canvas-position">
+        {artboardCanvasPosition(state)}
+      </p>
       <p data-testid="file-validity">{state.fileValidity.kind}</p>
       <button
         type="button"
@@ -236,6 +253,30 @@ function EditorStateHarness() {
       >
         footer を別の座標へ置き直す
       </button>
+      <button
+        type="button"
+        onClick={() =>
+          dispatch({
+            type: "reposition_artboard",
+            name: "home",
+            canvasPosition: { x: 900, y: 300 },
+          })
+        }
+      >
+        home をキャンバス上の別の位置へ置き直す
+      </button>
+      <button
+        type="button"
+        onClick={() =>
+          dispatch({
+            type: "reposition_artboard",
+            name: "footer",
+            canvasPosition: { x: 900, y: 300 },
+          })
+        }
+      >
+        footer をキャンバス上の別の位置へ置き直す
+      </button>
     </>
   );
 }
@@ -254,6 +295,10 @@ function artboardWidthText(): string {
 
 function fileValidityKind(): string {
   return screen.getByTestId("file-validity").textContent ?? "";
+}
+
+function artboardCanvasPositionText(): string {
+  return screen.getByTestId("artboard-canvas-position").textContent ?? "";
 }
 
 function footerCoordinatesText(): string {
@@ -388,6 +433,31 @@ test("置き直しのアクションを送ると縦横とも新しい座標に�
   );
 
   expect(footerCoordinatesText()).toBe("70,12");
+});
+
+test("artboard の置き直しのアクションを送るとキャンバス上の位置が付く", async () => {
+  render(<EditorStateHarness />);
+
+  await userEvent.click(
+    screen.getByRole("button", {
+      name: "home をキャンバス上の別の位置へ置き直す",
+    }),
+  );
+
+  expect(artboardCanvasPositionText()).toBe("900,300");
+});
+
+test("artboard の置き直しにノードの名前を送っても何も変わらない", async () => {
+  // キャンバス上の位置を持つのは artboard だけ（ノードの座標は親からの相対）
+  render(<EditorStateHarness />);
+
+  await userEvent.click(
+    screen.getByRole("button", {
+      name: "footer をキャンバス上の別の位置へ置き直す",
+    }),
+  );
+
+  expect(artboardCanvasPositionText()).toBe("無し");
 });
 
 test("置き直しのアクションを送っても選択は変わらない", async () => {

@@ -348,6 +348,7 @@ function EditorPanes({
           onSelect={node.selectAt}
           onResize={node.resize}
           onEditProp={node.editProp}
+          onRepositionArtboard={node.repositionArtboard}
         />
         <CanvasDockContent
           dock={canvasDock(state)}

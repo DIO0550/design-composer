@@ -130,8 +130,11 @@ export const DropEdit = {
 /**
  * ここまでの動きはクリックとして扱う（px）。
  * 閾値を置かないと、押したときの手ぶれで選択がドラッグに化けて選択できなくなる。
+ *
+ * artboard のドラッグ（`ArtboardDrag`）も同じ閾値で判定するので export している。
+ * 掴む対象が違っても、手ぶれをクリックとして扱う境目は同じ。
  */
-const DragThresholdPx = 4;
+export const DragThresholdPx = 4;
 
 export const NodeDrag = {
   /** 何も掴んでいない状態から始める。 */

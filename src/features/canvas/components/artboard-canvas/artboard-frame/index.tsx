@@ -4,6 +4,7 @@ import {
   ElementNameAttribute,
 } from "@/domains/compiled/compiled-element";
 import type { ArrangedArtboard } from "@/features/canvas/domains/arranged-artboard";
+import type { ArtboardDragControl } from "@/features/canvas/hooks/use-artboard-drag";
 import type { NodeDragControl } from "@/features/canvas/hooks/use-node-drag";
 import type { NodeResizeControl } from "@/features/canvas/hooks/use-node-resize";
 import type { TextEditControl } from "@/features/canvas/hooks/use-text-edit";
@@ -28,6 +29,7 @@ export function ArtboardFrame({
   isSelected,
   isCurrent,
   onSelect,
+  artboardDrag,
   nodeDrag,
   nodeResize,
   textEdit,
@@ -36,11 +38,20 @@ export function ArtboardFrame({
   isSelected: boolean;
   isCurrent: boolean;
   onSelect: (names: readonly string[]) => void;
+  artboardDrag: ArtboardDragControl;
   nodeDrag: NodeDragControl;
   nodeResize: NodeResizeControl;
   textEdit: TextEditControl;
 }>) {
   const { artboard, canvasPosition } = arranged;
+  /*
+   * 運んでいる間は確定前の位置で描く。ドキュメントを書き換えるのは離したときだけなので、
+   * ここで見せないと離すまで画面に何も起きない（`useArtboardDrag` の doc）。
+   */
+  const preview = artboardDrag.preview;
+  const isDragged =
+    preview.some && preview.value.name === artboard.element.name;
+  const drawnAt = isDragged ? preview.value.canvasPosition : canvasPosition;
   /**
    * 押された位置から外へ辿った名前。最後に artboard 自身を置くのは、
    * 中身の外側（枠の上）を押したときにも artboard が選ばれるようにするため
@@ -83,12 +94,15 @@ export function ArtboardFrame({
      * **テストは 1 件も落ちない**（happy-dom はレイアウトしないため）。
      * 気づく手段は視覚差分だけ。
      */
-    <li
-      className="absolute"
-      style={{ left: canvasPosition.x, top: canvasPosition.y }}
-    >
+    <li className="absolute" style={{ left: drawnAt.x, top: drawnAt.y }}>
       <div className="absolute bottom-full left-0 pb-1">
-        <ArtboardLabel artboard={artboard} isCurrent={isCurrent} />
+        <ArtboardLabel
+          artboard={artboard}
+          isCurrent={isCurrent}
+          onGrab={(event) =>
+            artboardDrag.grab(artboard.element.name, canvasPosition, event)
+          }
+        />
       </div>
       {/* biome-ignore lint/a11y/useSemanticElements: button の中身は phrasing content に限られ、artboard の中身（div の木）を入れられないため role で表す */}
       <div
@@ -103,7 +117,8 @@ export function ArtboardFrame({
            */
           const afterDrag = nodeDrag.consumeClick();
           const afterResize = nodeResize.consumeClick();
-          if (afterDrag || afterResize) {
+          const afterArtboardDrag = artboardDrag.consumeClick();
+          if (afterDrag || afterResize || afterArtboardDrag) {
             return;
           }
           onSelect(namesAt(event.target));
