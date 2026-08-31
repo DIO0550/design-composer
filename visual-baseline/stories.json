@@ -335,6 +335,11 @@
     "name": "保存中"
   },
   {
+    "id": "features-editor-openeddocumenteditor--absolute-node",
+    "title": "features/editor/OpenedDocumentEditor",
+    "name": "絶対配置のノードがある編集画面"
+  },
+  {
     "id": "features-editor-openeddocumenteditor--compile-failed",
     "title": "features/editor/OpenedDocumentEditor",
     "name": "コンパイルできないドキュメントの編集画面"
