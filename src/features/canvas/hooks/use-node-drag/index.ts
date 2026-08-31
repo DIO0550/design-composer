@@ -180,11 +180,6 @@ function dropEditAt(context: DropContext): Option<DropEdit> {
   );
 }
 
-/** キャンバスの既存ノードを掴む側（artboard の枠）へ渡す props。 */
-export type NodeGrabHandlers = Readonly<{
-  onPointerDown: (event: ReactPointerEvent<HTMLElement>) => void;
-}>;
-
 /** 運んでいる間のポインタを追う側（3 ペインの器）へ渡す props。 */
 export type NodeDragHandlers = Readonly<{
   onPointerMove: (event: ReactPointerEvent<HTMLElement>) => void;
@@ -204,7 +199,14 @@ export type NodeDragControl = Readonly<{
    * happy-dom では見えない。気づく手段は Storybook の視覚差分だけ。
    */
   carriedTemplate: Option<NodeTemplate>;
-  grabHandlers: NodeGrabHandlers;
+  /**
+   * 押された位置にある既存ノードを掴む。
+   *
+   * @param event artboard の枠で受けた `pointerdown`
+   * @returns 掴んだ（＝この先の判定へ渡さない）なら `true`。押された位置から根までに
+   *   ドキュメントのノードが 1 つも無ければ `false`（artboard の背景を押したとき）
+   */
+  grabNode: (event: ReactPointerEvent<HTMLElement>) => boolean;
   dragHandlers: NodeDragHandlers;
   /** パレットの行から掴む。掴めるものは行が知っているので指定を受け取る。 */
   grabTemplate: (
@@ -247,13 +249,13 @@ export function useNodeDrag(
     NodeDrag.create,
   );
 
-  const grab = (event: ReactPointerEvent<HTMLElement>) => {
+  const grabNode = (event: ReactPointerEvent<HTMLElement>): boolean => {
     const name = NodeDrag.grabbableName(
       params.document,
       namesToRoot(event.target),
     );
     if (!name.some) {
-      return;
+      return false;
     }
     dispatch({
       type: "grab",
@@ -262,6 +264,7 @@ export function useNodeDrag(
         origin: CanvasPointer.offsetOf(event),
       },
     });
+    return true;
   };
 
   const grabTemplate = (
@@ -324,7 +327,7 @@ export function useNodeDrag(
   return {
     drag,
     carriedTemplate: NodeDrag.carriedTemplate(drag),
-    grabHandlers: { onPointerDown: grab },
+    grabNode,
     grabTemplate,
     dragHandlers: {
       onPointerMove: trackPointer,

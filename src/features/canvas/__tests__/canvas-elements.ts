@@ -70,10 +70,11 @@ export function artboardFrameContainer(
 }
 
 /**
- * artboard をキャンバス上で動かす掴み口（見出し）。
+ * artboard をキャンバス上で動かす掴み口のうち、**見出しのほう**。
+ * もう 1 つは枠の背景で、そちらは描かれた要素（`renderedElement`）を押す。
  *
  * @param name 掴む artboard の名前
- * @returns その artboard の掴み口。描かれていなければテストを落とす
+ * @returns その artboard の見出し。描かれていなければテストを落とす
  */
 export function artboardHandle(name: string): HTMLElement {
   return screen.getByTestId(`${ArtboardHandleTestId}:${name}`);

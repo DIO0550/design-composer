@@ -145,9 +145,13 @@ export const NodeDrag = {
   /**
    * 内側から外へ並べた候補のうち、最も内側の掴めるノードの名前。
    *
-   * 掴めるのは artboard 配下のノードだけ。artboard 自身は誰の子でもなく
-   * （`DesignDocument.findChildPosition` が `none`）ツリー内の移動先を持たない
-   * （artboard の並べ替えは別の操作 / docs/06-ui.md「編集操作の一覧」）。
+   * 掴めるのは artboard 配下のノードだけ。artboard 自身の名前はどのツリーにも無いので
+   * （`Artboard.findNode` が探すのは `children`）ここでは引けず、ツリー内の移動先も
+   * 持たない（artboard の並べ替えは別の操作 / docs/06-ui.md「編集操作の一覧」）。
+   *
+   * **artboard の背景を押したときにここが `none` を返すことに、キャンバスの掴み分けが
+   * 載っている**（`ArtboardFrame` の `onPointerDown`）。引けるようにすると、背景を
+   * 押しても artboard が動かなくなる。
    * 部品インスタンスの中身はドキュメントの木に無いので、そこを押すと
    * インスタンス自身が掴まれる（選択と同じ振る舞い / #35）。
    *

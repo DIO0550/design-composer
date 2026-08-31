@@ -95,7 +95,12 @@ export function ArtboardFrame({
      * 気づく手段は視覚差分だけ。
      */
     <li className="absolute" style={{ left: drawnAt.x, top: drawnAt.y }}>
-      <div className="absolute bottom-full left-0 pb-1">
+      {/*
+        `right-0` で枠の幅いっぱいに広げるのは、見出しが掴み口だから
+        （`ArtboardLabel`）。中身ぶんだと `home 360 × 240` で 85px しか無く、
+        枠の 360px に対して狙いづらい。
+      */}
+      <div className="absolute right-0 bottom-full left-0 pb-1">
         <ArtboardLabel
           artboard={artboard}
           isCurrent={isCurrent}
@@ -114,8 +119,10 @@ export function ArtboardFrame({
           /*
            * 直前の操作の結果として届く click は選択に使えない（運んだ先 / 掴んだハンドルを
            * 指している）。どちらの操作だったかで扱いは変わらないので両方に尋ねる。
-           * artboard のドラッグを尋ねないのは、掴み口が枠の兄弟にあってドラッグ由来の
-           * click がここまで上がってこないため（`ArtboardDrag` の doc）。
+           *
+           * artboard のドラッグは尋ねない。運んだあとの click はどちらの掴み口からも
+           * ここへ届かず、届いてもその artboard を選ぶだけで害が無い
+           * （`ArtboardDrag` の doc）。
            */
           const afterDrag = nodeDrag.consumeClick();
           const afterResize = nodeResize.consumeClick();
@@ -136,11 +143,15 @@ export function ArtboardFrame({
         onPointerDown={(event) => {
           // artboard の上で始めたドラッグはパンにしない（掴んだものが動かないと操作が読めなくなる）
           event.stopPropagation();
-          // ハンドルを掴んだならツリー内の移動ではなく大きさの変更（両方は起こらない）
+          /*
+           * 内側から外へ向かって掴み手を決める。ハンドル → 中身のノード → artboard 自身の順で、
+           * 先に掴んだものが後ろへ渡さない。artboard を末尾に置くのは、背景（子が乗っていない
+           * ところ）まで来たら必ず掴めるため（`ArtboardDrag.grab` は失敗しない）。
+           */
           if (nodeResize.grabHandle(event)) {
             return;
           }
-          nodeDrag.grabHandlers.onPointerDown(event);
+          artboardDrag.grab(element.name, canvasPosition, event);
         }}
         // 中身のテキストは選択させない（ノードを運ぶドラッグが範囲選択になってしまうため）
         className="w-fit select-none bg-white shadow-sm outline outline-gray-300 aria-[current=true]:outline-2 aria-[current=true]:outline-blue-500"

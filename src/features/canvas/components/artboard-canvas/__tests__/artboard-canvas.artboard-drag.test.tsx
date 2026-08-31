@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
 import {
   artboardFrameContainer,
@@ -11,7 +11,7 @@ import {
   pressPointer,
   releasePointer,
 } from "@/features/canvas/__tests__/canvas-gesture";
-import { renderCanvas, selectionFromArtboards } from "./setup";
+import { drawn, renderCanvas, selectionFromArtboards } from "./setup";
 
 /**
  * 幅 200 の artboard を 3 枚並べた、未選択の対。
@@ -25,6 +25,27 @@ function setupSelection() {
   return selectionFromArtboards([
     { name: "first", width: 200, height: 140, children: [] },
     { name: "second", width: 200, height: 140, children: [] },
+    { name: "third", width: 200, height: 140, children: [] },
+  ]);
+}
+
+/**
+ * `second` が Text の `title` を 1 つ持つ、未選択の対。
+ *
+ * 中身を掴む経路を見るのに使う。`setupSelection` は子を持たないので、そちらでは
+ * 「背景ではないところ」を押せない。
+ *
+ * @returns 子を 1 つ持つ artboard を含むドキュメントと、未選択の対
+ */
+function setupSelectionWithChild() {
+  return selectionFromArtboards([
+    { name: "first", width: 200, height: 140, children: [] },
+    {
+      name: "second",
+      width: 200,
+      height: 140,
+      children: [{ name: "title", type: "Text", props: { content: "設定" } }],
+    },
     { name: "third", width: 200, height: 140, children: [] },
   ]);
 }
@@ -91,15 +112,67 @@ test("閾値までの動きでは置き直しが届かない", () => {
   expect(onRepositionArtboard).not.toHaveBeenCalled();
 });
 
-test("artboard の中身を掴んでも artboard の置き直しは届かない", () => {
-  // 中身のドラッグはツリー内の移動 / 座標移動で、artboard は動かない
+test("artboard の背景を掴んで動かすと、離した位置の座標で置き直しが届く", () => {
+  /*
+   * 押すのは枠の `role="button"` ではなく**描かれた artboard そのもの**
+   * （`drawn`）。実ブラウザで背景を押したときの `event.target` はこちらで、
+   * 枠を押すと「名前を 1 つも辿らない」別の道を通ってしまう。
+   */
   const onRepositionArtboard = vi.fn();
   renderCanvas({ selection: setupSelection(), onRepositionArtboard });
 
-  const frame = screen.getByRole("button", { name: "second" });
-  pressPointer(frame, { x: 0, y: 0 });
+  drag(drawn("second"), { from: { x: 0, y: 0 }, to: { x: 60, y: 40 } });
+
+  expect(onRepositionArtboard).toHaveBeenCalledWith("second", {
+    x: 292,
+    y: 40,
+  });
+});
+
+test("artboard の中身を掴んでも artboard の置き直しは届かない", () => {
+  /*
+   * 中身のドラッグはツリー内の移動 / 座標移動で、artboard は動かない。
+   * 押すだけでなく**閾値を越えて動かして離す**まで撃つ（置き直しが届くのは離した
+   * ときだけなので、押しただけでは掴み分けをどう壊しても呼ばれない）。
+   */
+  const onRepositionArtboard = vi.fn();
+  renderCanvas({ selection: setupSelectionWithChild(), onRepositionArtboard });
+
+  drag(drawn("title"), { from: { x: 0, y: 0 }, to: { x: 60, y: 40 } });
 
   expect(onRepositionArtboard).not.toHaveBeenCalled();
+});
+
+test("artboard の中身を掴んだときは、ノードの移動として届く", () => {
+  // 掴み分けが artboard 優先に入れ替わると、ノード側へ何も届かなくなる
+  const onMoveNode = vi.fn();
+  const onRepositionNode = vi.fn();
+  renderCanvas({
+    selection: setupSelectionWithChild(),
+    onMoveNode,
+    onRepositionNode,
+  });
+
+  drag(drawn("title"), { from: { x: 0, y: 0 }, to: { x: 60, y: 40 } });
+
+  const movedSomehow =
+    onMoveNode.mock.calls.length + onRepositionNode.mock.calls.length;
+  expect(movedSomehow).toBeGreaterThan(0);
+});
+
+test("背景を掴んで運んだ直後でも、次のクリックで選べる", () => {
+  /*
+   * 見出し経路と**対**にして置く。次に「離した直後の click を飲み込む」状態を足す人が、
+   * どちらの掴み口でも次のクリックを食べることに気づけるようにするため
+   * （飲み込む相手が居ない理由は掴み口ごとに違う / `ArtboardDrag` の doc）。
+   */
+  const onSelect = vi.fn();
+  renderCanvas({ selection: setupSelection(), onSelect });
+
+  drag(drawn("second"), { from: { x: 0, y: 0 }, to: { x: 60, y: 40 } });
+  fireEvent.click(drawn("third"));
+
+  expect(onSelect).toHaveBeenCalledWith(["third"]);
 });
 
 test("運んでいる間は、離す前から運び先に描かれる", () => {
