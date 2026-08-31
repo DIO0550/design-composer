@@ -1,22 +1,18 @@
-import { screen } from "@testing-library/react";
 import { expect, test } from "vitest";
+import {
+  artboardFrameContainer,
+  canvasContent,
+} from "@/features/canvas/__tests__/canvas-elements";
 import { renderCanvas, selectionFromArtboards } from "./setup";
 
 /**
- * artboard の枠を載せている要素。枠そのものは `role="button"` で、
- * 座標を持つのはそれを包む `li`（見出しと枠をまとめた 1 枚ぶん）。
+ * artboard 1 枚ぶんの器。
  *
  * @param name 引く artboard の名前
- * @returns その artboard の 1 枚ぶんを包む要素
+ * @returns その artboard の器
  */
 function frameContainerOf(name: string): HTMLElement {
-  const frame = screen.getByRole("button", { name });
-  const container = frame.closest("li");
-  if (container === null) {
-    // 枠は必ず 1 枚ぶんの器の中にある（来たら描画の組み立てが壊れている）
-    throw new Error(`${name} の器が見つからない`);
-  }
-  return container;
+  return artboardFrameContainer(canvasContent(), name);
 }
 
 test("ファイルに書かれた座標を持つ artboard は、その座標に描かれる", () => {

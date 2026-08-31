@@ -15,6 +15,8 @@
  * `lib/import-rule-violations.py` が行き先で判定して落とす）。
  */
 export {
+  artboardFrameContainer,
+  artboardHandle,
   canvasContent,
   highlightedNames,
   renderedElement,

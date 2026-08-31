@@ -2,6 +2,13 @@ import type { PointerEvent as ReactPointerEvent } from "react";
 import type { CompiledArtboard } from "@/domains/compiled/compiled-artboard";
 
 /**
+ * 掴み口を指す目印。掴めることは `onPointerDown` にしか出ないので、テストから
+ * 引く手掛かりが他に無い（見た目の class で引くと Tailwind の綴りに縛られる）。
+ * 名前を付けるのは、1 枚のキャンバスに artboard の枚数だけ並ぶため。
+ */
+export const ArtboardHandleTestId = "artboard-handle";
+
+/**
  * artboard の見出し（UI 案 docs/Design Composer.html。名前の右に大きさが並ぶ）。
  *
  * 名前が青く太くなるのは「今ツリーが映している 1 枚」のとき（#184）。UI 案で色が
@@ -30,7 +37,12 @@ export function ArtboardLabel({
 }>) {
   return (
     <span
-      // 掴んで動かすドラッグが文字の範囲選択にならないようにする
+      data-testid={`${ArtboardHandleTestId}:${artboard.element.name}`}
+      /*
+       * 掴んで動かすドラッグが文字の範囲選択にならないようにする（`select-none`）。
+       * 幅を中身ぶんに留める（`w-fit`）のは、掴み口が枠の幅いっぱいに広がると
+       * 名前の右の余白でも artboard が動いてしまうため。
+       */
       className="flex h-[18px] w-fit cursor-grab select-none items-center gap-2 text-[11px]"
       onPointerDown={(event) => {
         // 見出しの上で始めたドラッグはパンにしない（掴んだものが動かないと操作が読めない）

@@ -1,11 +1,14 @@
-import { within } from "@testing-library/react";
 import { expect, test } from "vitest";
 import { Artboard } from "@/domains/dcmp/artboard";
 import {
   DesignDocument,
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
-import { drag } from "@/features/canvas/__tests__";
+import {
+  artboardFrameContainer,
+  artboardHandle,
+  drag,
+} from "@/features/canvas/__tests__";
 import { canvasPane, renderOpenedDocument } from "./setup";
 
 /*
@@ -20,10 +23,10 @@ import { canvasPane, renderOpenedDocument } from "./setup";
  */
 
 /**
- * 幅 200 の artboard が 3 枚並ぶドキュメント。
+ * 幅 200 の artboard が 3 枚並ぶドキュメント
+ * （3 枚置く理由は `artboard-canvas.artboard-drag.test.tsx` の `setupSelection`）。
  *
- * 掴むのを**先頭以外**にするため 3 枚置く。先頭の既定の位置は原点なので、掴んだ時点の
- * 位置を無視する実装でも同じ答えになってしまう。
+ * @returns 3 枚の artboard を持つドキュメント
  */
 function setupDocument(): DesignDocument {
   return DesignDocument.create({
@@ -41,28 +44,19 @@ function setupDocument(): DesignDocument {
  * artboard が描かれている位置。
  *
  * @param name 引く artboard の名前
- * @returns その artboard を包む `li` のインラインの `left` / `top`
+ * @returns その artboard の器のインラインの `left` / `top`
  */
 function drawnAt(name: string): Readonly<{ left: string; top: string }> {
-  const container = within(canvasPane())
-    .getByRole("button", { name })
-    .closest("li");
-  if (container === null) {
-    // 枠は必ず 1 枚ぶんの器の中にある（来たら描画の組み立てが壊れている）
-    throw new Error(`${name} の器が見つからない`);
-  }
-  return { left: container.style.left, top: container.style.top };
+  const { style } = artboardFrameContainer(canvasPane(), name);
+  return { left: style.left, top: style.top };
 }
 
 /** `second` の見出しを掴んで運び、離すまで。 */
 function dragSecondLabel(): void {
-  const handle = within(canvasPane())
-    .getByText("second")
-    .closest("span[class*='cursor-grab']");
-  if (handle === null) {
-    throw new Error("second の掴み口が見つからない");
-  }
-  drag(handle, { from: { x: 0, y: 0 }, to: { x: 60, y: 40 } });
+  drag(artboardHandle("second"), {
+    from: { x: 0, y: 0 },
+    to: { x: 60, y: 40 },
+  });
 }
 
 test("artboard の見出しをキャンバスで運ぶと、描かれる位置が縦横ともその分だけ動く", async () => {

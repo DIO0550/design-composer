@@ -1,6 +1,7 @@
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import { ElementNameAttribute } from "@/domains/compiled/compiled-element";
 import { TokenReferrerOutline } from "@/features/canvas/components/artboard-canvas";
+import { ArtboardHandleTestId } from "@/features/canvas/components/artboard-canvas/artboard-label";
 import { ArrayEx } from "@/utils/ArrayEx";
 
 /**
@@ -46,6 +47,36 @@ export function renderedElement(
     throw new Error(`キャンバスに ${name} が描かれていない`);
   }
   return element;
+}
+
+/**
+ * artboard 1 枚ぶんの器（見出しと枠をまとめたもの）。
+ * キャンバス上の座標を持つのはこの器で、枠そのもの（`role="button"`）ではない。
+ *
+ * @param scope 探す範囲。artboard の名前は左ペインにも出るので、呼ぶ側が絞って渡す
+ * @param name 引く artboard の名前
+ * @returns その artboard の器。描かれていなければテストを落とす
+ */
+export function artboardFrameContainer(
+  scope: HTMLElement,
+  name: string,
+): HTMLElement {
+  const container = within(scope).getByRole("button", { name }).closest("li");
+  if (container === null) {
+    // 枠は必ず 1 枚ぶんの器の中にある（来たら描画の組み立てが壊れている）
+    throw new Error(`${name} の器が見つからない`);
+  }
+  return container;
+}
+
+/**
+ * artboard をキャンバス上で動かす掴み口（見出し）。
+ *
+ * @param name 掴む artboard の名前
+ * @returns その artboard の掴み口。描かれていなければテストを落とす
+ */
+export function artboardHandle(name: string): HTMLElement {
+  return screen.getByTestId(`${ArtboardHandleTestId}:${name}`);
 }
 
 /**
