@@ -151,6 +151,9 @@ export function ArtboardFrame({
           if (nodeResize.grabHandle(event)) {
             return;
           }
+          if (nodeDrag.grabNode(event)) {
+            return;
+          }
           artboardDrag.grab(element.name, canvasPosition, event);
         }}
         // 中身のテキストは選択させない（ノードを運ぶドラッグが範囲選択になってしまうため）
