@@ -55,15 +55,14 @@ export const ArrangedArtboard = {
   fromArtboards(
     artboards: readonly CompiledArtboard[],
   ): readonly ArrangedArtboard[] {
-    const defaultLefts = artboards.map((_, index) =>
+    const defaultLeft = (index: number): number =>
       artboards
         .slice(0, index)
-        .reduce((left, before) => left + before.width + AutoArrangeGap, 0),
-    );
+        .reduce((left, before) => left + before.width + AutoArrangeGap, 0);
     return artboards.map((artboard, index) => ({
       artboard,
       canvasPosition: artboard.canvasPosition ?? {
-        x: defaultLefts[index] ?? 0,
+        x: defaultLeft(index),
         y: AutoArrangeTop,
       },
     }));
