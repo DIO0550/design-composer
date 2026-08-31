@@ -1,6 +1,7 @@
 import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { DesignDocument } from "@/domains/dcmp/design-document";
+import { renderedElement } from "@/features/canvas/__tests__";
 import {
   SampleDocument,
   SampleDocumentWithDanglingToken,
@@ -113,6 +114,11 @@ export async function invalidateFileExternally(
  */
 export function canvasPane(): HTMLElement {
   return screen.getByRole("main", { name: "キャンバス" });
+}
+
+/** キャンバスに描かれている、名前で指した要素。 */
+export function drawn(name: string): HTMLElement {
+  return renderedElement(canvasPane(), name);
 }
 
 /** 倍率の操作が並ぶところ。 */

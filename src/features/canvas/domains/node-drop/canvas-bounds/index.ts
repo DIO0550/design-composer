@@ -1,5 +1,6 @@
-import { type Axis, CssDirection } from "@/domains/dcmp/css-direction";
-import type { CanvasOffset } from "@/features/canvas/domains/canvas-view";
+import { CssDirection } from "@/domains/dcmp/css-direction";
+import type { Axis } from "@/domains/unit/axis";
+import type { Offset } from "@/domains/unit/offset";
 
 /**
  * 画面上の矩形（client 座標・px）。
@@ -32,7 +33,7 @@ export const CanvasBounds = {
   },
 
   /** ポインタが矩形の内側にあるか。 */
-  contains(bounds: CanvasBounds, pointer: CanvasOffset): boolean {
+  contains(bounds: CanvasBounds, pointer: Offset): boolean {
     return (
       pointer.x >= bounds.left &&
       pointer.x <= CanvasBounds.edge(bounds, "width") &&

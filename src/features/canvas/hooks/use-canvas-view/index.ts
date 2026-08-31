@@ -6,10 +6,8 @@ import {
   useReducer,
   useRef,
 } from "react";
-import {
-  type CanvasOffset,
-  CanvasView,
-} from "@/features/canvas/domains/canvas-view";
+import type { Offset } from "@/domains/unit/offset";
+import { CanvasView } from "@/features/canvas/domains/canvas-view";
 import { CanvasPointer } from "@/features/canvas/utils/CanvasPointer";
 
 /** キャンバスの見え方に対する操作（docs/06-ui.md「ズーム / パンは非永続の view state」）。 */
@@ -17,9 +15,9 @@ export type CanvasViewAction =
   | Readonly<{ type: "zoom_in" }>
   | Readonly<{ type: "zoom_out" }>
   | Readonly<{ type: "reset" }>
-  | Readonly<{ type: "pan"; delta: CanvasOffset }>
-  | Readonly<{ type: "drag_start"; pointer: CanvasOffset }>
-  | Readonly<{ type: "drag_move"; pointer: CanvasOffset }>
+  | Readonly<{ type: "pan"; delta: Offset }>
+  | Readonly<{ type: "drag_start"; pointer: Offset }>
+  | Readonly<{ type: "drag_move"; pointer: Offset }>
   | Readonly<{ type: "drag_end" }>;
 
 /**

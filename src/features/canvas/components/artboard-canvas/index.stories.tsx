@@ -29,8 +29,10 @@ function CanvasWithView(
   const canvasView = useCanvasView();
   const nodeDrag = useNodeDrag({
     document: props.selection.document,
+    view: canvasView.view,
     onMove: () => {},
     onInsertAt: () => {},
+    onReposition: () => {},
   });
   return (
     <ArtboardCanvas {...props} canvasView={canvasView} nodeDrag={nodeDrag} />

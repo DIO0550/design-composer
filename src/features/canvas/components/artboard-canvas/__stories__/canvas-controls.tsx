@@ -46,8 +46,10 @@ export function WithCanvasControls({
 }>): ReactElement {
   const nodeDrag = useNodeDrag({
     document: selection.document,
+    view: CanvasView.create(),
     onMove: () => {},
     onInsertAt: () => {},
+    onReposition: () => {},
   });
   const nodeResize = useNodeResize({
     selection,

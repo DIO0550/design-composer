@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { CanvasOffset, CanvasView } from "../index";
+import { CanvasView } from "../index";
 
 test("キャンバスを開いた直後は等倍で原点にある", () => {
   const view = CanvasView.create();
@@ -112,14 +112,6 @@ test("100% に戻すと等倍・原点の状態になる", () => {
   );
 });
 
-test("幅の軸に沿った移動量は横の成分になる", () => {
-  expect(CanvasOffset.along({ x: 30, y: 12 }, "width")).toBe(30);
-});
-
-test("高さの軸に沿った移動量は縦の成分になる", () => {
-  expect(CanvasOffset.along({ x: 30, y: 12 }, "height")).toBe(12);
-});
-
 test("等倍で見ているときは画面上の長さがそのままドキュメント上の長さになる", () => {
   expect(CanvasView.toDocumentLength(CanvasView.create(), 40)).toBe(40);
 });
@@ -128,4 +120,14 @@ test("拡大して見ているときは画面上の長さより短い長さと�
   const zoomedIn = CanvasView.zoomIn(CanvasView.create());
 
   expect(CanvasView.toDocumentLength(zoomedIn, 60)).toBe(50);
+});
+
+test("拡大して見ているときは移動量も縦横とも割り戻される", () => {
+  const zoomedIn = CanvasView.zoomIn(CanvasView.create());
+
+  // 縦横で違う値・違う符号にして、片方だけ割り戻す実装と取り違えを落とす
+  expect(CanvasView.toDocumentOffset(zoomedIn, { x: 60, y: -18 })).toEqual({
+    x: 50,
+    y: -15,
+  });
 });

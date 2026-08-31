@@ -1,28 +1,7 @@
 import { expect, test } from "vitest";
-import type { Props } from "@/domains/dcmp/node";
 import { Result } from "@/utils/Result";
-import { DesignDocument, DocumentTemplate } from "../index";
-
-/**
- * 雛形のトークンと、Text を 1 つ持つ artboard からなるドキュメント。
- *
- * @param props その Text に設定する props。デフォルトが効く側と明示設定が勝つ側の
- *   違いを、この引数だけにするためにファクトリで受け取る
- * @returns その Text を持つドキュメント
- */
-function documentWithText(props: Props): DesignDocument {
-  return DesignDocument.create({
-    tokens: DocumentTemplate.Default.tokens,
-    artboards: [
-      {
-        name: "home",
-        width: 360,
-        height: 240,
-        children: [{ name: "plain", type: "Text", props }],
-      },
-    ],
-  });
-}
+import { DesignDocument } from "../index";
+import { documentWithText } from "./text-node-setup";
 
 /** `typography` の `body` を消したドキュメント。 */
 function withoutBodyTypography(document: DesignDocument): DesignDocument {

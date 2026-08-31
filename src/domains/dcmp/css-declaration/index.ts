@@ -8,6 +8,9 @@ import type { TokenKind, TypographyCssProperty } from "@/domains/dcmp/token";
  */
 export type CssProperty =
   | "display"
+  | "position"
+  | "left"
+  | "top"
   | "flex-direction"
   | "flex-grow"
   | "align-self"

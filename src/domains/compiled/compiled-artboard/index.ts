@@ -38,6 +38,7 @@ export const CompiledArtboard = {
     const element = BoxElement.create(
       artboard.name,
       // artboard は親を持たないが、サイズは常に fixed なので親の向きに依存しない
+      // (配置は `boxProps` が `flow` に固定するので、絶対配置の子の基準になる)
       BoxElement.declarations(Artboard.boxProps(artboard), undefined, tokens),
       children,
     );

@@ -89,7 +89,7 @@ test("整形が崩れたテキストを読み込んで書き出すと正規形�
   );
 
   expect(normalized).toBe(`{
-  "formatVersion": "1.0",
+  "formatVersion": "1.1",
   "tokens": {
     "colors": {
       "primary": "#3b82f6"

@@ -24,7 +24,7 @@ export const SidePairs = {
 /**
  * 向かい合う 2 辺をひとまとめに指す向き。
  *
- * 大きさを測る軸（`css-direction` の `Axis`。`width` / `height`）とは別物で、
+ * 大きさを測る軸（`unit/axis` の `Axis`。`width` / `height`）とは別物で、
  * こちらが答えるのは「どの 2 辺が対になるか」だけ。
  */
 export type SidePair = ValueOf<typeof SidePairs>;

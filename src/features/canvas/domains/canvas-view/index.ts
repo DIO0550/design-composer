@@ -1,36 +1,7 @@
-import type { Axis } from "@/domains/dcmp/css-direction";
+import { Offset } from "@/domains/unit/offset";
 import { Px } from "@/domains/unit/px";
+import { NumberEx } from "@/utils/NumberEx";
 import { Option } from "@/utils/Option";
-
-/**
- * キャンバス上の位置・移動量。
- * x と y は片方だけでは位置が決まらないため、対で 1 つの型にする。
- */
-export type CanvasOffset = Readonly<{ x: number; y: number }>;
-
-export const CanvasOffset = {
-  Origin: { x: 0, y: 0 },
-
-  add(offset: CanvasOffset, delta: CanvasOffset): CanvasOffset {
-    return { x: offset.x + delta.x, y: offset.y + delta.y };
-  },
-
-  /** `from` から `to` への移動量。 */
-  delta(from: CanvasOffset, to: CanvasOffset): CanvasOffset {
-    return { x: to.x - from.x, y: to.y - from.y };
-  },
-
-  /** 軸に沿った成分。1 軸だけを見る操作（リサイズ）が使う。 */
-  along(offset: CanvasOffset, axis: Axis): number {
-    return axis === "width" ? offset.x : offset.y;
-  },
-
-  /** 2点の直線距離。「どれだけ動いたか」を向きに依らず1つの値で見るために使う。 */
-  distance(from: CanvasOffset, to: CanvasOffset): number {
-    const delta = CanvasOffset.delta(from, to);
-    return Math.hypot(delta.x, delta.y);
-  },
-} as const;
 
 /**
  * キャンバスの見え方（docs/06-ui.md「中央 | キャンバス…ズーム / パンは非永続の view state」）。
@@ -44,8 +15,8 @@ export const CanvasOffset = {
  */
 export type CanvasView = Readonly<{
   scale: number;
-  offset: CanvasOffset;
-  dragFrom: Option<CanvasOffset>;
+  offset: Offset;
+  dragFrom: Option<Offset>;
 }>;
 
 /** 等倍。開いた直後とリセット後の倍率。 */
@@ -68,7 +39,7 @@ const ZoomFactor = 1.2;
  * @returns 上下限の内側に収まった倍率
  */
 function clampScale(scale: number): number {
-  return Math.min(MaxScale, Math.max(MinScale, scale));
+  return NumberEx.clamp(scale, { min: MinScale, max: MaxScale });
 }
 
 /**
@@ -87,7 +58,7 @@ export const CanvasView = {
   create(): CanvasView {
     return {
       scale: DefaultScale,
-      offset: CanvasOffset.Origin,
+      offset: Offset.Origin,
       dragFrom: Option.none,
     };
   },
@@ -105,12 +76,12 @@ export const CanvasView = {
    * 移動量は画面上の px のまま足す。`transform` では translate が scale より先に
    * 適用され、translate は拡大前の座標系で効くため、倍率で割る必要はない。
    */
-  panBy(view: CanvasView, delta: CanvasOffset): CanvasView {
-    return { ...view, offset: CanvasOffset.add(view.offset, delta) };
+  panBy(view: CanvasView, delta: Offset): CanvasView {
+    return { ...view, offset: Offset.add(view.offset, delta) };
   },
 
   /** ドラッグによるパンを始める。以後の移動はこの位置からの差分で決まる。 */
-  startDrag(view: CanvasView, pointer: CanvasOffset): CanvasView {
+  startDrag(view: CanvasView, pointer: Offset): CanvasView {
     return { ...view, dragFrom: Option.some(pointer) };
   },
 
@@ -119,13 +90,13 @@ export const CanvasView = {
    * ドラッグしていないときのポインタ移動（ボタンを離したあとのマウス移動）では
    * 何も起きない。基準となる位置が無く、移動量が決まらないため。
    */
-  dragTo(view: CanvasView, pointer: CanvasOffset): CanvasView {
+  dragTo(view: CanvasView, pointer: Offset): CanvasView {
     if (!view.dragFrom.some) {
       return view;
     }
     const moved = CanvasView.panBy(
       view,
-      CanvasOffset.delta(view.dragFrom.value, pointer),
+      Offset.delta(view.dragFrom.value, pointer),
     );
     return { ...moved, dragFrom: Option.some(pointer) };
   },
@@ -145,6 +116,23 @@ export const CanvasView = {
    */
   toDocumentLength(view: CanvasView, screenLength: number): number {
     return screenLength / view.scale;
+  },
+
+  /**
+   * 画面上の移動量をドキュメント上の移動量へ直す。
+   *
+   * 縦横に同じ割り戻しを効かせるだけだが、呼び出し側で 2 回書くと片方だけ倍率を
+   * 忘れても動いてしまう（縦にだけ倍率が効かない、という壊れ方になる）。
+   *
+   * @param view 割り戻しに使う倍率を持つ表示
+   * @param screenDelta 画面で測った移動量
+   * @returns ドキュメント上の移動量
+   */
+  toDocumentOffset(view: CanvasView, screenDelta: Offset): Offset {
+    return {
+      x: CanvasView.toDocumentLength(view, screenDelta.x),
+      y: CanvasView.toDocumentLength(view, screenDelta.y),
+    };
   },
 
   /** 表示用の倍率（%）。小数の倍率をそのまま出さないよう整数へ丸める。 */

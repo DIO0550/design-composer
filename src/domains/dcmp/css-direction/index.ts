@@ -1,7 +1,7 @@
 import { CssDeclaration } from "@/domains/dcmp/css-declaration";
 import type { PropValue } from "@/domains/dcmp/node";
 import { BoxSchema } from "@/domains/dcmp/primitive-schema";
-import type { ValueOf } from "@/types/ValueOf";
+import type { Axis } from "@/domains/unit/axis";
 
 /**
  * flex コンテナが子を並べる方向。
@@ -9,15 +9,6 @@ import type { ValueOf } from "@/types/ValueOf";
  */
 export type CssDirection =
   (typeof BoxSchema)["props"]["direction"]["values"][number];
-
-/** サイズを指定する軸。走査するときは `Object.values(Axes)` で並びにする。 */
-export const Axes = {
-  Width: "width",
-  Height: "height",
-} as const;
-
-/** 大きさを測る向き。 */
-export type Axis = ValueOf<typeof Axes>;
 
 export const CssDirection = {
   /** `direction` prop の値から向きを決める。スキーマのデフォルトを既定とする。 */

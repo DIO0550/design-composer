@@ -3,6 +3,7 @@ import type { AxisLength } from "@/domains/dcmp/axis-length";
 import { ChildPosition } from "@/domains/dcmp/child-position";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import type { Node, PropEdit } from "@/domains/dcmp/node";
+import type { AbsolutePlacement } from "@/domains/dcmp/placement";
 import {
   Token,
   type TokenRef,
@@ -489,6 +490,32 @@ export const EditorState = {
       ChildPosition.afterRemoving(to, current.value),
     );
     return moved.ok ? withEdit(state, moved.value) : Option.none;
+  },
+
+  /**
+   * 絶対配置のノードを親の中の別の座標へ置き直す
+   * （docs/06-ui.md「キャンバス直接操作」の移動のうち、座標が動く側）。
+   *
+   * 対象を選択からではなく名前で受け取るのは、`moveNode` と同じくキャンバスの
+   * ドラッグが選択を変えないため（選んでいないノードも運べる）。プロパティパネル
+   * 経由の `applyPropEdit` が選択から決めているのとはここが違う。
+   *
+   * 座標を持たないもの（ドキュメントに無い名前・artboard 自身）は「その編集が
+   * 存在しない」ことなので `none`。`moveNode` が今いる位置を持たないものを弾くのと
+   * 同じ形で、履歴も dirty も動かない。キャンバスは運んでいるノードの配置を見て
+   * 落とし方を決めるため、画面の操作からこの `none` には到達しない。
+   */
+  reposition(
+    state: EditorState,
+    name: string,
+    placement: AbsolutePlacement,
+  ): Option<EditorState> {
+    const repositioned = DesignDocument.reposition(
+      EditorState.document(state),
+      name,
+      placement,
+    );
+    return repositioned.ok ? withEdit(state, repositioned.value) : Option.none;
   },
 
   /**

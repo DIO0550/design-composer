@@ -199,6 +199,7 @@ test("ドキュメント1つからレンダリング可能な HTML が得られ�
   ].join(";");
   const artboardStyle = [
     "display:flex",
+    "position:relative",
     "flex-direction:column",
     "align-items:stretch",
     "justify-content:start",

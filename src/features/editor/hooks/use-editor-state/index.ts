@@ -3,6 +3,7 @@ import type { AxisLength } from "@/domains/dcmp/axis-length";
 import type { ChildPosition } from "@/domains/dcmp/child-position";
 import type { DesignDocument } from "@/domains/dcmp/design-document";
 import type { PropEdit } from "@/domains/dcmp/node";
+import type { AbsolutePlacement } from "@/domains/dcmp/placement";
 import type { TokenRef, TokenValue } from "@/domains/dcmp/token";
 import type { DocumentReload } from "@/domains/session/document-reload";
 import type { NodeTemplate } from "@/domains/session/node-template";
@@ -30,6 +31,11 @@ export type EditorAction =
       toIndex: number;
     }>
   | Readonly<{ type: "move_node"; name: string; to: ChildPosition }>
+  | Readonly<{
+      type: "reposition_node";
+      name: string;
+      placement: AbsolutePlacement;
+    }>
   | Readonly<{ type: "insert_node"; template: NodeTemplate }>
   /* 落とした先へ挿す経路。挿す位置が選択ではなくドロップ位置で決まる（#203）。 */
   | Readonly<{
@@ -91,6 +97,12 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
       // 動かせない先なら木は変わらない（EditorState.moveNode の `none`）。
       return Option.unwrapOr(
         EditorState.moveNode(state, action.name, action.to),
+        state,
+      );
+    case "reposition_node":
+      // 置き直せない指定なら座標は変わらない（EditorState.reposition の `none`）。
+      return Option.unwrapOr(
+        EditorState.reposition(state, action.name, action.placement),
         state,
       );
     case "insert_node":

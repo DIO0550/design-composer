@@ -109,6 +109,67 @@ export const DocumentErrors: Story = {
 };
 
 /*
+ * `home` の先頭へ絶対配置の Box を 1 つ足したドキュメント。
+ * 名前を `home-badge` にするのは、キャンバス側のテストが絶対配置のノードを `badge` と
+ * 呼んでいるため（上部バーの `SaveBadge` などとは別物）。
+ *
+ * 先頭に置いても隠れないのは、次の兄弟が Text（`position` を出さない）だから。
+ * **フローの Box は `position: relative` を出す**ので、Box の兄弟と重ねると
+ * DOM 順で後ろのほうが上に来て、掴めなくなる（happy-dom では落ちず、VRT も
+ * 意図した差分と区別できない）。座標を動かすときはここを見る。
+ */
+const DocumentWithAbsoluteNode = DesignDocument.create({
+  tokens: Sample.tokens,
+  components: Sample.components,
+  artboards: Sample.artboards.map((artboard) =>
+    artboard.name === "home"
+      ? {
+          ...artboard,
+          children: [
+            {
+              name: "home-badge",
+              type: "Box",
+              props: {
+                placement: "absolute",
+                x: 296,
+                y: 16,
+                widthMode: "fixed",
+                width: 44,
+                heightMode: "fixed",
+                height: 24,
+                background: "primary",
+                radius: "md",
+              },
+              children: [],
+            },
+            ...artboard.children,
+          ],
+        }
+      : artboard,
+  ),
+});
+
+/**
+ * 絶対配置のノードが最初から居る編集画面（#379 / #381）。
+ *
+ * `home-badge` を運ぶと親の中の座標が動き、`home-title` / `home-login` を運ぶと
+ * ツリーの並びが変わる。**同じドラッグが配置によって別の意味になる**ところを、
+ * ここで実際に掴んで確認できる（運んでいる間、座標の側にはドロップ線が出ない）。
+ *
+ * `Default` に足さずに別の story にしているのは、あちらのベースライン 1 本が
+ * 「ふつうの編集画面」を指しているため。絶対配置を持ち込むとその意味が変わる。
+ */
+export const AbsoluteNode: Story = {
+  name: "絶対配置のノードがある編集画面",
+  args: {
+    ipc: DocumentIpcFake.create({
+      [SamplePath]: DocumentJson.serialize(DocumentWithAbsoluteNode),
+    }).ipc,
+    opened: { path: SamplePath, document: DocumentWithAbsoluteNode },
+  },
+};
+
+/*
  * 居ない部品へ向け直した `home-login`。`RefNode` と注釈した定数にしてから差し込むのは、
  * `Node` が直和で、注釈なしの literal（`{ ...node, ref }` を含む）だと `type` と `ref` を
  * 両方持つノードが型を通ってしまうため（`Node.isRef` は `"ref" in node` で先に真になる）。

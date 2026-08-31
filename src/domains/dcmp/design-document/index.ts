@@ -15,6 +15,8 @@ import {
 import { NameSpace } from "@/domains/dcmp/name-space";
 import { Node, PropEdit, type RefNode } from "@/domains/dcmp/node";
 import { NodeTree, type NodeTreeUpdate } from "@/domains/dcmp/node-tree";
+import { type AbsolutePlacement, Placement } from "@/domains/dcmp/placement";
+import { ResolvedProps } from "@/domains/dcmp/resolved-props";
 import { type Token, type TokenRef, TokenSet } from "@/domains/dcmp/token";
 import { ArrayEx } from "@/utils/ArrayEx";
 import type { JsonCursor, JsonDecoded, JsonObject } from "@/utils/Json";
@@ -494,6 +496,34 @@ export const DesignDocument = {
     return Option.none;
   },
 
+  /**
+   * 名前で指したノードが今置かれている座標。**座標で動かせるものだけ**が答えを持つ。
+   *
+   * 「置かれ方」ではなく絶対配置だけを答えるのは、消費側（キャンバスのドラッグと
+   * その見た目のプレビュー）が知りたいのが「このノードは座標で動かせるか、
+   * 動かせるなら今どこか」だから。`Placement.fromProps` が
+   * スキーマ違反に返す `undefined` をここで `none` へ潰せるのも、
+   * その区別が答えを変えないため（フローと同じく「動かせない」に落ちる）。
+   *
+   * @param document 引き先になるドキュメント
+   * @param name 座標を知りたいノードの名前
+   * @returns 今置かれている座標。木に無い名前 / 部品インスタンス（props を持たない）/
+   *   フロー / 座標が数値でないときは `none`
+   */
+  absolutePlacementOf(
+    document: DesignDocument,
+    name: string,
+  ): Option<AbsolutePlacement> {
+    const node = DesignDocument.findNode(document, name);
+    if (!node.some || !Node.isPrimitive(node.value)) {
+      return Option.none;
+    }
+    const placement = Placement.fromProps(ResolvedProps.forNode(node.value));
+    return Placement.isAbsolute(placement)
+      ? Option.some(placement)
+      : Option.none;
+  },
+
   /** 名前でノードを引く。artboard 直下だけでなく子孫も辿る。 */
   findNode(document: DesignDocument, name: string): Option<Node> {
     for (const artboard of document.artboards) {
@@ -556,6 +586,47 @@ export const DesignDocument = {
       document,
       name,
       PropEdit.set([size.axis], size.length),
+    );
+  },
+
+  /**
+   * 名前で指したノードを、親の中の別の座標へ置き直す
+   * （docs/06-ui.md「キャンバス直接操作」の移動のうち、絶対配置のノードの分）。
+   *
+   * 座標の 2 prop を 1 回の呼び出しで書くのは、ドラッグ 1 回が undo 1 回で戻る
+   * ようにするため。`PropEdit` は同じ値を複数の prop へ入れる形なので、
+   * `x` と `y` は 1 件では表せない。
+   *
+   * artboard を相手にしないのは、artboard が親 Box の中ではなくキャンバスの
+   * 並びに置かれるため（`Artboard.boxProps` が `placement` を `flow` に固定する）。
+   * `applyPropEdit` は名前で artboard を先に相手にするので、委譲する前に
+   * ノードとして在ることを確かめる（そうしないと artboard の props に効かない
+   * `x` / `y` が黙って書かれ、undo 履歴だけが 1 件増える）。
+   *
+   * @param document 書き換える対象を含むドキュメント
+   * @param name 置き直すノードの名前
+   * @param placement 置き直したあとの配置
+   * @returns 座標を書き換えたドキュメント。その名前のノードが無ければ失敗
+   *   （artboard の名前もノードではないので失敗する）
+   */
+  reposition(
+    document: DesignDocument,
+    name: string,
+    placement: AbsolutePlacement,
+  ): Result<DesignDocument, DesignDocumentEditError> {
+    if (!DesignDocument.findNode(document, name).some) {
+      return Result.err({ kind: "node-not-found", name });
+    }
+    const unedited: Result<DesignDocument, DesignDocumentEditError> =
+      Result.ok(document);
+    return Placement.toPropEdits(placement).reduce<
+      Result<DesignDocument, DesignDocumentEditError>
+    >(
+      (edited, edit) =>
+        Result.flatMap(edited, (current) =>
+          DesignDocument.applyPropEdit(current, name, edit),
+        ),
+      unedited,
     );
   },
 

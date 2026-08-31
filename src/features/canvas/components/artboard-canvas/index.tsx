@@ -14,6 +14,7 @@ import { DocumentHtml } from "@/services/document-html";
 import { CanvasBody } from "./canvas-body";
 import { DropMarker } from "./drop-marker";
 import { DropPositionLabel } from "./drop-position-label";
+import { RepositionPreviewStyle } from "./reposition-preview-style";
 import { ResizeHandleStyle } from "./resize-handle-style";
 import { StaleCanvasOverlay } from "./stale-canvas-overlay";
 import { TextInlineEditor } from "./text-inline-editor";
@@ -97,7 +98,7 @@ export function ArtboardCanvas({
     () => DocumentHtml.compile(designDocument),
     [designDocument],
   );
-  const dropTarget = NodeDrag.dropTarget(nodeDrag.drag);
+  const dropTarget = NodeDrag.insertionTarget(nodeDrag.drag);
 
   return (
     // relative はスクリムとバッジの基準。中央ペインも relative だが、そちらは
@@ -154,6 +155,8 @@ export function ArtboardCanvas({
           <DropPositionLabel target={dropTarget.value} />
         </>
       ) : null}
+      {/* 座標を動かすドラッグにはドロップ線が出ないので、代わりに実体を先に動かす */}
+      <RepositionPreviewStyle document={designDocument} drag={nodeDrag.drag} />
       {textEdit.edit.some ? (
         <TextInlineEditor
           edit={textEdit.edit.value}

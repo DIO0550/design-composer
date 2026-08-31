@@ -1,10 +1,8 @@
 import { type PointerEvent as ReactPointerEvent, useReducer } from "react";
 import type { AxisLength } from "@/domains/dcmp/axis-length";
 import { DocumentSelection } from "@/domains/session/document-selection";
-import type {
-  CanvasOffset,
-  CanvasView,
-} from "@/features/canvas/domains/canvas-view";
+import type { Offset } from "@/domains/unit/offset";
+import type { CanvasView } from "@/features/canvas/domains/canvas-view";
 import { CanvasBounds } from "@/features/canvas/domains/node-drop";
 import { NodeResize } from "@/features/canvas/domains/node-resize";
 import { CanvasPointer } from "@/features/canvas/utils/CanvasPointer";
@@ -13,7 +11,7 @@ import { Option } from "@/utils/Option";
 
 /** リサイズの進み方（docs/06-ui.md「キャンバス直接操作」のリサイズハンドル）。 */
 type NodeResizeAction =
-  | Readonly<{ type: "grab"; handle: AxisLength; origin: CanvasOffset }>
+  | Readonly<{ type: "grab"; handle: AxisLength; origin: Offset }>
   | Readonly<{ type: "release" }>
   | Readonly<{ type: "cancel" }>
   | Readonly<{ type: "consume_click" }>;

@@ -1,6 +1,7 @@
 import { CssDeclaration } from "@/domains/dcmp/css-declaration";
-import { type Axis, CssDirection } from "@/domains/dcmp/css-direction";
+import { CssDirection } from "@/domains/dcmp/css-direction";
 import type { PropValue } from "@/domains/dcmp/node";
+import type { Axis } from "@/domains/unit/axis";
 import { Px } from "@/domains/unit/px";
 import { Option } from "@/utils/Option";
 
@@ -51,13 +52,19 @@ export const Size = {
 
   /**
    * サイズを CSS の宣言にする。
-   * `fill` だけは親の向きに依存するため (docs/03「唯一親コンテキストに依存するコンパイル」)、
-   * 親を持たない位置では flex アイテムではなく宣言が意味を持たないので出力しない。
+   * `fill` だけは親の向きに依存する (docs/03「親コンテキストに依存するコンパイル」)。
+   *
+   * @param size 宣言にするサイズ。サイズが決まらないときは `undefined`
+   * @param axis どちらの軸のサイズか
+   * @param flexParentDirection flex アイテムとして並ぶ親の向き。フローに参加して
+   *   いない位置（親を持たない / 自身が絶対配置）では `undefined`。そこでは `fill`
+   *   が意味を持たないので宣言を出さない
+   * @returns その軸の宣言。`fill` がフローの外にあるときだけ空
    */
   declarations(
     size: Size | undefined,
     axis: Axis,
-    parentDirection: CssDirection | undefined,
+    flexParentDirection: CssDirection | undefined,
   ): readonly CssDeclaration[] {
     if (size === undefined) {
       return [];
@@ -68,9 +75,9 @@ export const Size = {
     if (size.mode === "fixed") {
       return [CssDeclaration.create(axis, Px.create(size.length))];
     }
-    if (parentDirection === undefined) {
+    if (flexParentDirection === undefined) {
       return [];
     }
-    return [CssDirection.fillDeclaration(parentDirection, axis)];
+    return [CssDirection.fillDeclaration(flexParentDirection, axis)];
   },
 } as const;

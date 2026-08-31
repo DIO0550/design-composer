@@ -54,6 +54,24 @@ const ArtboardFixedSizeProps: readonly string[] = [
 ];
 
 /**
+ * artboard の props では変えられない配置の prop。
+ *
+ * artboard はキャンバスの並びに置かれるのであって、親 Box の中に置かれる
+ * わけではないので、`placement: "absolute"` を書いても意味が決まらない。
+ * artboard 自身のキャンバス上の位置は別の話（#383）。
+ */
+const ArtboardFixedPlacementProps: readonly string[] = ["placement", "x", "y"];
+
+/**
+ * artboard の props では変えられない prop の全体。
+ * 落とす理由が 2 通りあるので、定数を分けたまま結合する。
+ */
+const ArtboardUneditableProps: readonly string[] = [
+  ...ArtboardFixedSizeProps,
+  ...ArtboardFixedPlacementProps,
+];
+
+/**
  * Box の prop 定義を artboard 用のデフォルトで上書きしたもの。
  *
  * @param name 上書きするかどうかを引く prop 名
@@ -81,6 +99,7 @@ export type ArtboardBoxProps = ResolvedProps<"Box"> &
     width: number;
     heightMode: "fixed";
     height: number;
+    placement: "flow";
   }>;
 
 /**
@@ -152,9 +171,12 @@ export const Artboard = {
    * artboard の props を Box の props として解決する
    * (docs/01「artboard は…ルートノード(Box)を兼ねる」/ docs/03「Box スキーマを流用する」)。
    *
-   * Box スキーマと違う点は2つで、それぞれ効き方が異なる:
+   * Box スキーマと違う点は3つで、それぞれ効き方が異なる:
    * - `overflow` の既定が `clip`。**デフォルト**なので artboard 側の指定が勝つ
    * - サイズは `fixed` **固定**で、長さは artboard の `width` / `height`。props では変えられない
+   * - 配置は `flow` **固定**。`propDefinitions()` から落としても、artboard の props を
+   *   照らす先は Box スキーマなので（`design-document/validation`）ファイルには書けてしまう。
+   *   ここで固定しないと、キャンバスの並びから外れた artboard が描かれる
    */
   boxProps(artboard: Artboard): ArtboardBoxProps {
     return {
@@ -166,17 +188,18 @@ export const Artboard = {
       width: artboard.width,
       heightMode: "fixed",
       height: artboard.height,
+      placement: "flow",
     };
   },
 
   /**
    * artboard が props として受け付ける prop の定義（docs/03「Box スキーマを流用する」）。
-   * サイズ系を落とすのは、`boxProps` が `fixed` と artboard の `width` / `height` を
-   * 固定で与えるため、props に書いても効かないから。
+   * サイズ系と配置系を落とすのは、`boxProps` が固定値を与えるため、props に書いても
+   * 効かないから（それぞれの理由は定数の doc）。
    */
   propDefinitions(): PropDefinitionRecord {
     const editable = Object.entries(BoxSchema.props).filter(
-      ([name]) => !ArtboardFixedSizeProps.includes(name),
+      ([name]) => !ArtboardUneditableProps.includes(name),
     );
     return Object.fromEntries(
       editable.map(([name, definition]) => [

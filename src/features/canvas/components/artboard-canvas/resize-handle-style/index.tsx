@@ -1,5 +1,5 @@
 import type { AxisLength } from "@/domains/dcmp/axis-length";
-import type { Axis } from "@/domains/dcmp/css-direction";
+import type { Axis } from "@/domains/unit/axis";
 import { Px } from "@/domains/unit/px";
 import { ResizeHandleThicknessPx } from "@/features/canvas/domains/node-resize";
 import { nameSelector } from "../name-style-rule";
@@ -76,7 +76,9 @@ export function ResizeHandleStyle({
     return null;
   }
   const faces = handles.map((handle) => handleRule(name, handle, scale));
-  // 擬似要素を辺へ貼り付ける基準にするため、選択中の要素自身を位置指定済みにする
+  // 擬似要素を辺へ貼り付ける基準にするため、選択中の要素自身を位置指定済みにする。
+  // これが効くのはフローの Text だけ。Box と絶対配置の要素は自分のインライン
+  // `position` を持ち、インラインのほうが勝つので既にそれ自身が基準になっている
   return (
     <style>{`${nameSelector(name)}{position:relative}${faces.join("")}`}</style>
   );

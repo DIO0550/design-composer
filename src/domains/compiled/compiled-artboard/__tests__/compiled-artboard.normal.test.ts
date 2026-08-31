@@ -36,6 +36,19 @@ test("コンパイル結果の中身は、宣言元の artboard の props から
   });
 });
 
+test("props で絶対配置を指定した artboard も、子が位置を測る基準のままになる", () => {
+  const artboard = Artboard.create({
+    name: "home",
+    width: 360,
+    height: 240,
+    props: { placement: "absolute", x: 40, y: 24 },
+  });
+
+  const compiled = CompiledArtboard.fromArtboard(artboard, [], tokenRefs);
+
+  expect(compiled.element.style.position).toBe("relative");
+});
+
 test("コンパイル結果の中身は、渡された子をそのまま並べる", () => {
   const artboard = Artboard.create({ name: "home", width: 360, height: 240 });
   const child = TextElement.create("home-title", [], "ようこそ");

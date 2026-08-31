@@ -1,18 +1,15 @@
 import { expect, test } from "vitest";
 import { CompiledElement } from "@/domains/compiled/compiled-element";
-import type { ExpandedNode } from "@/domains/dcmp/expanded-node";
 import { Result } from "@/utils/Result";
 import { NodeHtml } from "../index";
-
-function styleOf(node: ExpandedNode): Readonly<Record<string, string>> {
-  return Result.unwrap(NodeHtml.compile(node)).style;
-}
+import { styleOf } from "./setup";
 
 test("Box は flex コンテナになり、未指定の prop はスキーマのデフォルトで出力される", () => {
   const style = styleOf({ name: "root", type: "Box" });
 
   expect(style).toEqual({
     display: "flex",
+    position: "relative",
     "flex-direction": "column",
     "align-items": "stretch",
     "justify-content": "start",
@@ -133,6 +130,6 @@ test("style は style 属性へ載せられる宣言の並びに直列化でき�
   );
 
   expect(CompiledElement.styleText(compiled)).toBe(
-    "display:flex;flex-direction:row;gap:var(--spacing-md);align-items:stretch;justify-content:start;width:fit-content;height:fit-content",
+    "display:flex;position:relative;flex-direction:row;gap:var(--spacing-md);align-items:stretch;justify-content:start;width:fit-content;height:fit-content",
   );
 });

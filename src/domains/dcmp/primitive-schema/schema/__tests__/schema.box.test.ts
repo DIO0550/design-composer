@@ -16,6 +16,27 @@ test("Box の direction は row / column の enum でデフォルトが column",
   });
 });
 
+test("Box の placement は flow / absolute の enum でデフォルトが flow", () => {
+  const definition = BoxSchema.props.placement;
+  expect(PropDefinition.isEnum(definition)).toBe(true);
+  expect(definition).toMatchObject({
+    domain: "enum",
+    values: ["flow", "absolute"],
+    default: "flow",
+  });
+});
+
+test("Box の座標は placement が absolute のときのみ有効になる", () => {
+  const definition = BoxSchema.props.x;
+  expect(PropDefinition.isLiteral(definition)).toBe(true);
+  expect(PropDefinition.isEnabled(definition, { placement: "absolute" })).toBe(
+    true,
+  );
+  expect(PropDefinition.isEnabled(definition, { placement: "flow" })).toBe(
+    false,
+  );
+});
+
 test("Box の gap は spacing トークン参照でデフォルトを持たない", () => {
   const definition = BoxSchema.props.gap;
   expect(PropDefinition.isToken(definition)).toBe(true);

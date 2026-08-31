@@ -1,6 +1,7 @@
 import type { AxisLength } from "@/domains/dcmp/axis-length";
 import type { ChildPosition } from "@/domains/dcmp/child-position";
 import type { PropEdit } from "@/domains/dcmp/node";
+import type { AbsolutePlacement } from "@/domains/dcmp/placement";
 import type { NodeTemplate } from "@/domains/session/node-template";
 import { useEditor } from "@/features/editor/components/editor-provider";
 import { EditorState } from "@/features/editor/domains/editor-state";
@@ -21,6 +22,8 @@ export type NodeActions = Readonly<{
   reveal: (nodeName: string) => void;
   reorder: (from: ChildPosition, toIndex: number) => void;
   move: (name: string, to: ChildPosition) => void;
+  /** 絶対配置のノードを親の中の別の座標へ置き直す（#381）。 */
+  reposition: (name: string, placement: AbsolutePlacement) => void;
   resize: (size: AxisLength) => void;
   editProp: (edit: PropEdit) => void;
   insert: (template: NodeTemplate) => void;
@@ -60,8 +63,17 @@ export function useNodeActions(): NodeActions {
     reveal: (nodeName) => dispatch({ type: "reveal", name: nodeName }),
     reorder: (from, toIndex) =>
       dispatch({ type: "reorder_node", from, toIndex }),
-    /** キャンバスのドラッグはツリー内の移動（docs/06-ui.md「キャンバス直接操作」）。 */
+    /**
+     * キャンバスのドラッグは、既定ではツリー内の移動
+     * （docs/06-ui.md「キャンバス直接操作」）。
+     */
     move: (name, to) => dispatch({ type: "move_node", name, to }),
+    /**
+     * 運んでいるノードが絶対配置なら、同じドラッグが座標の置き直しになる（#381）。
+     * どちらになるかはキャンバス側が運んでいるノードの配置を見て決める。
+     */
+    reposition: (name, placement) =>
+      dispatch({ type: "reposition_node", name, placement }),
     /** リサイズハンドルのドラッグは選択中のものの大きさの変更（docs/06-ui.md）。 */
     resize: (size) => dispatch({ type: "resize", size }),
     /**

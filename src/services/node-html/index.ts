@@ -16,7 +16,7 @@ export type { CompiledElement, CssDeclarations };
 
 /**
  * `widthMode` / `heightMode` の `fill` の出し分けにだけ必要な親の情報
- * (docs/03「`widthMode: fill` の出し分けが唯一親コンテキストに依存するコンパイル」)。
+ * (docs/03「親コンテキストに依存するコンパイル」)。
  * 親を持たない位置では `undefined` を渡す。
  */
 export type ParentContext = Readonly<{ direction: CssDirection }>;
