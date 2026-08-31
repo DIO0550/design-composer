@@ -114,11 +114,12 @@ export function ArtboardFrame({
           /*
            * 直前の操作の結果として届く click は選択に使えない（運んだ先 / 掴んだハンドルを
            * 指している）。どちらの操作だったかで扱いは変わらないので両方に尋ねる。
+           * artboard のドラッグを尋ねないのは、掴み口が枠の兄弟にあってドラッグ由来の
+           * click がここまで上がってこないため（`ArtboardDrag` の doc）。
            */
           const afterDrag = nodeDrag.consumeClick();
           const afterResize = nodeResize.consumeClick();
-          const afterArtboardDrag = artboardDrag.consumeClick();
-          if (afterDrag || afterResize || afterArtboardDrag) {
+          if (afterDrag || afterResize) {
             return;
           }
           onSelect(namesAt(event.target));

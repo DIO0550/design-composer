@@ -1,6 +1,16 @@
 import { screen } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
-import { drag, pressPointer } from "@/features/canvas/__tests__/canvas-gesture";
+import {
+  artboardFrameContainer,
+  artboardHandle,
+  canvasContent,
+} from "@/features/canvas/__tests__/canvas-elements";
+import {
+  drag,
+  movePointer,
+  pressPointer,
+  releasePointer,
+} from "@/features/canvas/__tests__/canvas-gesture";
 import { renderCanvas, selectionFromArtboards } from "./setup";
 
 /**
@@ -19,33 +29,37 @@ function setupSelection() {
   ]);
 }
 
-/**
- * artboard を動かす掴み口（見出し）。
- *
- * @param name 掴む artboard の名前
- * @returns その artboard の見出し
- */
-function handleOf(name: string): HTMLElement {
-  const label = screen.getByText(name);
-  const handle = label.closest("span[class*='cursor-grab']");
-  if (handle === null) {
-    // 見出しは必ず掴み口の中にある（来たら掴み口の組み立てが壊れている）
-    throw new Error(`${name} の掴み口が見つからない`);
-  }
-  return handle as HTMLElement;
-}
-
 test("見出しを掴んで動かすと、離した位置の座標で置き直しが届く", () => {
   const onRepositionArtboard = vi.fn();
   renderCanvas({ selection: setupSelection(), onRepositionArtboard });
 
   // 2 枚目の既定の位置は x=232（200 + 32）。そこから動かす
-  drag(handleOf("second"), { from: { x: 0, y: 0 }, to: { x: 60, y: 40 } });
+  drag(artboardHandle("second"), {
+    from: { x: 0, y: 0 },
+    to: { x: 60, y: 40 },
+  });
 
   expect(onRepositionArtboard).toHaveBeenCalledWith("second", {
     x: 292,
     y: 40,
   });
+});
+
+test("何度動かしても、置き直しが届くのは離したときの 1 回だけ", () => {
+  /*
+   * 運ぶたびに送ると、1 回のドラッグで undo 履歴がポインタの移動回数だけ積まれる
+   * （`useArtboardDrag` の doc）。**途中で 2 回以上動かす**ことで、運搬中に送る実装を
+   * 落とせる（1 回しか動かさないと、閾値を越える前の 1 回目では送れないので通ってしまう）。
+   */
+  const onRepositionArtboard = vi.fn();
+  renderCanvas({ selection: setupSelection(), onRepositionArtboard });
+
+  pressPointer(artboardHandle("second"), { x: 0, y: 0 });
+  movePointer(canvasContent(), { x: 30, y: 20 });
+  movePointer(canvasContent(), { x: 60, y: 40 });
+  releasePointer(canvasContent(), { x: 60, y: 40 });
+
+  expect(onRepositionArtboard).toHaveBeenCalledTimes(1);
 });
 
 test("先頭以外を掴んでも原点へ飛ばない", () => {
@@ -56,7 +70,10 @@ test("先頭以外を掴んでも原点へ飛ばない", () => {
   const onRepositionArtboard = vi.fn();
   renderCanvas({ selection: setupSelection(), onRepositionArtboard });
 
-  drag(handleOf("second"), { from: { x: 0, y: 0 }, to: { x: 60, y: 40 } });
+  drag(artboardHandle("second"), {
+    from: { x: 0, y: 0 },
+    to: { x: 60, y: 40 },
+  });
 
   expect(onRepositionArtboard).not.toHaveBeenCalledWith("second", {
     x: 60,
@@ -69,7 +86,7 @@ test("閾値までの動きでは置き直しが届かない", () => {
   const onRepositionArtboard = vi.fn();
   renderCanvas({ selection: setupSelection(), onRepositionArtboard });
 
-  drag(handleOf("second"), { from: { x: 0, y: 0 }, to: { x: 3, y: 0 } });
+  drag(artboardHandle("second"), { from: { x: 0, y: 0 }, to: { x: 3, y: 0 } });
 
   expect(onRepositionArtboard).not.toHaveBeenCalled();
 });
@@ -83,4 +100,53 @@ test("artboard の中身を掴んでも artboard の置き直しは届かない"
   pressPointer(frame, { x: 0, y: 0 });
 
   expect(onRepositionArtboard).not.toHaveBeenCalled();
+});
+
+test("運んでいる間は、離す前から運び先に描かれる", () => {
+  /*
+   * ドキュメントを書き換えるのは離したときだけなので、確定前の位置を描かないと
+   * 離すまで画面で何も動かない（`useArtboardDrag` の doc）。
+   */
+  renderCanvas({ selection: setupSelection() });
+
+  pressPointer(artboardHandle("second"), { x: 0, y: 0 });
+  movePointer(canvasContent(), { x: 60, y: 40 });
+
+  const { style } = artboardFrameContainer(canvasContent(), "second");
+  // 既定の位置 x=232（200 + 32）から 60 / 40 動いた先
+  expect([style.left, style.top]).toEqual(["292px", "40px"]);
+});
+
+test("見出しを掴んでもキャンバスは動かない", () => {
+  /*
+   * 掴み口の上で始めたドラッグがパンにもなると、artboard と背景が同時に動いて
+   * 何を掴んだのか読めなくなる。
+   */
+  renderCanvas({ selection: setupSelection() });
+  const before = canvasContent().style.transform;
+
+  drag(artboardHandle("second"), {
+    from: { x: 0, y: 0 },
+    to: { x: 60, y: 40 },
+  });
+
+  expect(canvasContent().style.transform).toBe(before);
+});
+
+test("見出しを掴んで運んだ直後でも、次のクリックで選べる", () => {
+  /*
+   * ノードのドラッグ / リサイズは「離した直後の click を飲み込む」状態を持つが、
+   * artboard の掴み口は枠の**兄弟**なのでドラッグ由来の click は枠まで上がってこない。
+   * 同じ形を写すと、飲み込む相手が居ないまま**次のクリックを食べる**（`ArtboardDrag` の doc）。
+   */
+  const onSelect = vi.fn();
+  renderCanvas({ selection: setupSelection(), onSelect });
+
+  drag(artboardHandle("second"), {
+    from: { x: 0, y: 0 },
+    to: { x: 60, y: 40 },
+  });
+  screen.getByRole("button", { name: "third" }).click();
+
+  expect(onSelect).toHaveBeenCalledWith(["third"]);
 });

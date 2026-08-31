@@ -1,17 +1,23 @@
 import { type PointerEvent as ReactPointerEvent, useReducer } from "react";
 import type { Offset } from "@/domains/unit/offset";
-import { ArtboardDrag } from "@/features/canvas/domains/artboard-drag";
+import {
+  ArtboardDrag,
+  type ArtboardDragPreview,
+} from "@/features/canvas/domains/artboard-drag";
 import type { CanvasView } from "@/features/canvas/domains/canvas-view";
 import { CanvasPointer } from "@/features/canvas/utils/CanvasPointer";
-import { Option } from "@/utils/Option";
+import type { Option } from "@/utils/Option";
 
 /** ドラッグの状態を進める指示。 */
 type ArtboardDragAction =
-  | Readonly<{ type: "grab"; name: string; from: Offset; origin: Offset }>
+  | Readonly<{
+      type: "grab";
+      name: string;
+      grabbedAt: Offset;
+      pointerOrigin: Offset;
+    }>
   | Readonly<{ type: "move"; pointer: Offset }>
-  | Readonly<{ type: "release" }>
-  | Readonly<{ type: "cancel" }>
-  | Readonly<{ type: "consume_click" }>;
+  | Readonly<{ type: "release" }>;
 
 /**
  * ドラッグの状態遷移。判定は `ArtboardDrag` が持つので、ここは指示を配るだけ。
@@ -28,43 +34,30 @@ function artboardDragReducer(
     case "grab":
       return ArtboardDrag.grab({
         name: action.name,
-        from: action.from,
-        origin: action.origin,
+        grabbedAt: action.grabbedAt,
+        pointerOrigin: action.pointerOrigin,
       });
     case "move":
       return ArtboardDrag.moveTo(drag, action.pointer);
     case "release":
-      return ArtboardDrag.release(drag);
-    case "cancel":
-      return ArtboardDrag.create();
-    case "consume_click":
-      return ArtboardDrag.create();
+      return ArtboardDrag.release();
   }
 }
-
-/** 運んでいる artboard と、その運び先。 */
-export type ArtboardDragPreview = Readonly<{
-  name: string;
-  canvasPosition: Offset;
-}>;
 
 /** artboard を掴む側（見出し）と、ポインタを追う側（キャンバス）へ渡すもの。 */
 export type ArtboardDragControl = Readonly<{
   /** 見出しを押したときに掴む。掴んだ時点の描画位置を起点にする。 */
   grab: (
     name: string,
-    from: Offset,
+    grabbedAt: Offset,
     event: ReactPointerEvent<HTMLElement>,
   ) => void;
   dragHandlers: Readonly<{
     onPointerMove: (event: ReactPointerEvent<HTMLElement>) => void;
-    onPointerUp: (event: ReactPointerEvent<HTMLElement>) => void;
-    onPointerLeave: () => void;
+    onPointerUp: () => void;
   }>;
   /** 運んでいる間の見せかけの位置。離すまで確定しないので描く側だけが使う。 */
   preview: Option<ArtboardDragPreview>;
-  /** 運んだ直後の `click` を飲み込む。飲み込んだ（＝選択に使わない）なら `true`。 */
-  consumeClick: () => boolean;
 }>;
 
 /**
@@ -79,7 +72,7 @@ export type ArtboardDragControl = Readonly<{
  * 見た目は `preview` を描く側が使う。
  *
  * @param params 倍率を引く表示の状態と、離したときに編集を送る先
- * @returns 掴む手続き・ポインタを追うハンドラ・運搬中の位置・`click` を飲み込む手続き
+ * @returns 掴む手続きと、ポインタを追うハンドラ、運んでいる間の見せかけの位置
  */
 export function useArtboardDrag(
   params: Readonly<{
@@ -93,20 +86,21 @@ export function useArtboardDrag(
     ArtboardDrag.create,
   );
 
-  const position = ArtboardDrag.positionAt(drag, params.view);
-  const draggedName = ArtboardDrag.draggedName(drag);
-  const preview =
-    draggedName.some && position.some
-      ? Option.some({ name: draggedName.value, canvasPosition: position.value })
-      : Option.none;
+  const preview = ArtboardDrag.preview(drag, params.view);
 
   return {
-    grab: (name, from, event) => {
+    grab: (name, grabbedAt, event) => {
+      /*
+       * ポインタを捕捉して、キャンバスの外まで引いてもドラッグが続くようにする
+       * （原点より左・上へ運ぶと、器の外へ出る）。パン（`useCanvasView`）と同じ形。
+       * 解放は `pointerup` で暗黙に行われるので、離す側では触らない。
+       */
+      event.currentTarget.setPointerCapture(event.pointerId);
       dispatch({
         type: "grab",
         name,
-        from,
-        origin: CanvasPointer.offsetOf(event),
+        grabbedAt,
+        pointerOrigin: CanvasPointer.offsetOf(event),
       });
     },
     dragHandlers: {
@@ -119,15 +113,7 @@ export function useArtboardDrag(
         }
         dispatch({ type: "release" });
       },
-      onPointerLeave: () => dispatch({ type: "cancel" }),
     },
     preview,
-    consumeClick: () => {
-      if (!ArtboardDrag.consumesClick(drag)) {
-        return false;
-      }
-      dispatch({ type: "consume_click" });
-      return true;
-    },
   };
 }

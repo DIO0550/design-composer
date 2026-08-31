@@ -139,25 +139,26 @@ export function ArtboardCanvas({
           /*
            * リサイズと artboard の移動のポインタはこの器で受ける。artboard の枠ごとや
            * 座標平面（`ul`）で受けると、枠の外まで引っ張ったときに追従が切れる
-           * （`onPointerLeave` で取り消すため）。余白を持つのはこの器なので、
+           * （リサイズは `onPointerLeave` で取り消すため）。余白を持つのはこの器なので、
            * 外へ引いてもポインタが残る。ツリー内の移動 / 挿入のポインタは
            * 3 ペインの器が受ける（掴む場所が左ペインにもあるため）。
            *
            * 2 つを 1 つのハンドラで束ねるのは、同じ器に別々には載せられないため。
            * 掴んでいないほうは自分の状態を見て何もしないので、両方へ配って問題ない。
+           *
+           * 取り消し（`onPointerLeave`）を受けるのはリサイズだけ。artboard の移動は
+           * 掴んだ時点でポインタを捕捉するので、この器の外へ出ても届き続ける
+           * （`useArtboardDrag` の `grab`）。
            */
           onPointerMove={(event) => {
             nodeResize.dragHandlers.onPointerMove(event);
             artboardDrag.dragHandlers.onPointerMove(event);
           }}
-          onPointerUp={(event) => {
+          onPointerUp={() => {
             nodeResize.dragHandlers.onPointerUp();
-            artboardDrag.dragHandlers.onPointerUp(event);
+            artboardDrag.dragHandlers.onPointerUp();
           }}
-          onPointerLeave={() => {
-            nodeResize.dragHandlers.onPointerLeave();
-            artboardDrag.dragHandlers.onPointerLeave();
-          }}
+          onPointerLeave={() => nodeResize.dragHandlers.onPointerLeave()}
         >
           <CanvasBody
             compiled={compiled}
