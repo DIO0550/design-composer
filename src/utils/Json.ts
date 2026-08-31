@@ -355,6 +355,30 @@ export const Json = {
     ]);
   },
 
+  combine6<A, B, C, D, E, F, R>(
+    a: JsonDecoded<A>,
+    b: JsonDecoded<B>,
+    c: JsonDecoded<C>,
+    d: JsonDecoded<D>,
+    e: JsonDecoded<E>,
+    f: JsonDecoded<F>,
+    build: (a: A, b: B, c: C, d: D, e: E, f: F) => R,
+  ): JsonDecoded<R> {
+    if (a.ok && b.ok && c.ok && d.ok && e.ok && f.ok) {
+      return Result.ok(
+        build(a.value, b.value, c.value, d.value, e.value, f.value),
+      );
+    }
+    return Result.err([
+      ...Json.errorsOf(a),
+      ...Json.errorsOf(b),
+      ...Json.errorsOf(c),
+      ...Json.errorsOf(d),
+      ...Json.errorsOf(e),
+      ...Json.errorsOf(f),
+    ]);
+  },
+
   /**
    * 名前をキーとする辞書を名前の昇順で書き出す。
    * キー順を値だけから決めることで、同じ値からは

@@ -63,7 +63,7 @@ test("書き出しは常に現在の形式を名乗る", () => {
 
   const text = DocumentJson.serialize(document);
 
-  expect(text).toContain(`"formatVersion": "1.1"`);
+  expect(text).toContain(`"formatVersion": "1.2"`);
 });
 
 test("違う minor を名乗るドキュメントを書き出しても読み直せる", () => {
@@ -75,5 +75,5 @@ test("違う minor を名乗るドキュメントを書き出しても読み直�
     DocumentJson.parse(DocumentJson.serialize(document)),
   );
 
-  expect(reloaded.formatVersion).toEqual({ major: 1, minor: 1 });
+  expect(reloaded.formatVersion).toEqual({ major: 1, minor: 2 });
 });

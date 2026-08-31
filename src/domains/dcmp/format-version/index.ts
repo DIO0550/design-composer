@@ -35,7 +35,7 @@ const CurrentMajor = 1;
  */
 const Current: FormatVersionOf<typeof CurrentMajor> = {
   major: CurrentMajor,
-  minor: 1,
+  minor: 2,
 };
 
 const FormatVersionPattern = /^(\d+)\.(\d+)$/;
