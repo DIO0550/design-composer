@@ -50,7 +50,8 @@ test("置き直しても配置のモードは絶対配置のまま", () => {
 });
 
 test("artboard の名前を置き直そうとすると node-not-found エラーになる", () => {
-  // artboard はキャンバスの並びに置かれるので、親からの座標を持たない（#383）
+  // artboard は親 Box を持たないので、親からの座標を持たない
+  // （キャンバス上の位置は artboard 自身の `canvasPosition`）
   expect(
     DesignDocument.reposition(setupDocument(), "home", {
       mode: "absolute",
