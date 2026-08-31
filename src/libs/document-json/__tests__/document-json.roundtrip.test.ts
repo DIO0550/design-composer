@@ -81,6 +81,31 @@ test("読み込んで書き出しても同じテキストに戻る", () => {
   expect(rewritten).toBe(text);
 });
 
+test("キャンバス上の位置を持つ artboard は、書き出して読み直しても位置が変わらない", () => {
+  const text = `{
+  "formatVersion": "1.2",
+  "tokens": {},
+  "components": {},
+  "artboards": [
+    {
+      "name": "screen",
+      "width": 100,
+      "height": 200,
+      "x": 900,
+      "y": 300,
+      "children": []
+    }
+  ]
+}
+`;
+
+  const rewritten = DocumentJson.serialize(
+    Result.unwrap(DocumentJson.parse(text)),
+  );
+
+  expect(rewritten).toBe(text);
+});
+
 test("整形が崩れたテキストを読み込んで書き出すと正規形になる", () => {
   const messy = `{"artboards":[{"children":[],"height":200,"name":"screen","width":100}],"components":{},"formatVersion":"1.0","tokens":{"colors":{"primary":"#3B82F6"}}}`;
 
@@ -89,7 +114,7 @@ test("整形が崩れたテキストを読み込んで書き出すと正規形�
   );
 
   expect(normalized).toBe(`{
-  "formatVersion": "1.1",
+  "formatVersion": "1.2",
   "tokens": {
     "colors": {
       "primary": "#3b82f6"

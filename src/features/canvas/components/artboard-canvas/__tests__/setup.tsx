@@ -10,6 +10,7 @@ import type { PropEdit } from "@/domains/dcmp/node";
 import type { AbsolutePlacement } from "@/domains/dcmp/placement";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { TokenSelection } from "@/domains/session/token-selection";
+import type { Offset } from "@/domains/unit/offset";
 import {
   canvasContent,
   renderedElement,
@@ -58,6 +59,7 @@ type CanvasHandlers = Readonly<{
   onSelect: (names: readonly string[]) => void;
   onMoveNode: (name: string, to: ChildPosition) => void;
   onRepositionNode: (name: string, placement: AbsolutePlacement) => void;
+  onRepositionArtboard: (name: string, canvasPosition: Offset) => void;
   onResize: (size: AxisLength) => void;
   onEditProp: (edit: PropEdit) => void;
 }>;
@@ -115,6 +117,7 @@ export function renderCanvas(
       onSelect={vi.fn()}
       onMoveNode={vi.fn()}
       onRepositionNode={vi.fn()}
+      onRepositionArtboard={vi.fn()}
       onResize={vi.fn()}
       onEditProp={vi.fn()}
       {...props}

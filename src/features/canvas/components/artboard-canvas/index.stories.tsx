@@ -57,6 +57,7 @@ const meta = {
     onSelect: fn(),
     onResize: fn(),
     onEditProp: fn(),
+    onRepositionArtboard: fn(),
   },
 } satisfies Meta<typeof CanvasWithView>;
 

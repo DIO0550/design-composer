@@ -19,8 +19,9 @@ export type { CssVariables };
  * トークンはルート要素のカスタムプロパティ、artboard はその下に並ぶ要素になる
  * (docs/03「ルート要素に `--{種別}-{名前}: 値` を出力し、ノード側は `var()` で参照する」)。
  *
- * artboard 同士の配置は持たない。キャンバス座標は source of truth ではなく、
- * 配列順からの自動レイアウトはキャンバス側の非永続な view state だから (docs/01)。
+ * artboard のキャンバス上の位置は各 `CompiledArtboard` が持つ (docs/01)。ただし
+ * ファイルに座標を持たない artboard もあるので、**並び全体の置き場所は決まっていない**。
+ * 決めるのは描く側 (`features/canvas` の `ArrangedArtboard`)。
  */
 export type CompiledDocument = Readonly<{
   variables: CssVariables;

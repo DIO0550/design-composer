@@ -15,6 +15,7 @@ const meta = {
   component: ArtboardLabel,
   parameters: { layout: "centered" },
   args: {
+    onGrab: () => {},
     artboard: {
       element: BoxElement.create("login", [], []),
       width: 720,

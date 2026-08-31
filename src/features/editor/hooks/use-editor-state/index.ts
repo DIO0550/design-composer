@@ -8,6 +8,7 @@ import type { TokenRef, TokenValue } from "@/domains/dcmp/token";
 import type { DocumentReload } from "@/domains/session/document-reload";
 import type { NodeTemplate } from "@/domains/session/node-template";
 import type { Instant } from "@/domains/unit/instant";
+import type { Offset } from "@/domains/unit/offset";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import type { TokenTemplate } from "@/features/editor/domains/token-template";
 import type { IndexMove } from "@/types/IndexMove";
@@ -35,6 +36,12 @@ export type EditorAction =
       type: "reposition_node";
       name: string;
       placement: AbsolutePlacement;
+    }>
+  /* artboard をキャンバス上の別の位置へ置き直す経路（#390）。ノードの座標とは別の座標系。 */
+  | Readonly<{
+      type: "reposition_artboard";
+      name: string;
+      canvasPosition: Offset;
     }>
   | Readonly<{ type: "insert_node"; template: NodeTemplate }>
   /* 落とした先へ挿す経路。挿す位置が選択ではなくドロップ位置で決まる（#203）。 */
@@ -103,6 +110,16 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
       // 置き直せない指定なら座標は変わらない（EditorState.reposition の `none`）。
       return Option.unwrapOr(
         EditorState.reposition(state, action.name, action.placement),
+        state,
+      );
+    case "reposition_artboard":
+      // 相手が artboard でなければ位置は変わらない（EditorState.repositionArtboard の `none`）。
+      return Option.unwrapOr(
+        EditorState.repositionArtboard(
+          state,
+          action.name,
+          action.canvasPosition,
+        ),
         state,
       );
     case "insert_node":

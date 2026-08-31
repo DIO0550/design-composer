@@ -3,9 +3,11 @@ import type { AxisLength } from "@/domains/dcmp/axis-length";
 import type { PropEdit } from "@/domains/dcmp/node";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import type { TokenSelection } from "@/domains/session/token-selection";
+import type { Offset } from "@/domains/unit/offset";
 import { CanvasView } from "@/features/canvas/domains/canvas-view";
 import { NodeDrag } from "@/features/canvas/domains/node-drag";
 import { NodeResize } from "@/features/canvas/domains/node-resize";
+import { useArtboardDrag } from "@/features/canvas/hooks/use-artboard-drag";
 import type { CanvasViewControl } from "@/features/canvas/hooks/use-canvas-view";
 import type { NodeDragControl } from "@/features/canvas/hooks/use-node-drag";
 import { useNodeResize } from "@/features/canvas/hooks/use-node-resize";
@@ -33,14 +35,14 @@ const ContentTransformOrigin: CSSProperties["transformOrigin"] = "0 0";
 
 /**
  * キャンバス（docs/06-ui.md「画面構成」）。
- * artboard を配列順に自動配置し、コンパイル結果（実 HTML / CSS）をレンダリングする。
+ * artboard をキャンバス上の座標へ置き、コンパイル結果（実 HTML / CSS）をレンダリングする。
  * ズーム / パンは非永続の view state で、ドキュメントには保存しない。
  *
  * 表示（倍率・位置）を自分で持たず受け取るのは、倍率の操作が上部バーへ移り、
  * キャンバスと上部バーが同じ 1 つの表示を見る必要があるため（#134）。
  *
- * props が 8 つあるが Composition へは割っていない。関心は「キャンバス」1 つで、
- * 前半 3 つは描くのに要る値、後半 5 つは表示とキャンバス上の操作を外へ渡す口。
+ * props が 9 つあるが Composition へは割っていない。関心は「キャンバス」1 つで、
+ * 前半 3 つは描くのに要る値、後半 6 つは表示とキャンバス上の操作を外へ渡す口。
  * 中身を子要素として受け取る形にはできない（描くものはコンパイル結果の HTML で、
  * 呼び出し側が組み立てられない）。`EditorState` を丸ごと受けると feature として
  * 切り出せない（#256）。
@@ -67,6 +69,7 @@ export function ArtboardCanvas({
   onSelect,
   onResize,
   onEditProp,
+  onRepositionArtboard,
 }: Readonly<{
   selection: DocumentSelection;
   tokenSelection: TokenSelection;
@@ -76,10 +79,15 @@ export function ArtboardCanvas({
   onSelect: (names: readonly string[]) => void;
   onResize: (size: AxisLength) => void;
   onEditProp: (edit: PropEdit) => void;
+  onRepositionArtboard: (name: string, canvasPosition: Offset) => void;
 }>) {
   const { view, surfaceRef, panHandlers } = canvasView;
   const designDocument = selection.document;
   const nodeResize = useNodeResize({ selection, view, onResize });
+  const artboardDrag = useArtboardDrag({
+    view,
+    onReposition: onRepositionArtboard,
+  });
   const textEdit = useTextEdit({ selection, onEditProp });
   /*
    * 凍結中はリサイズハンドルを出さない。`inert` の中にあって掴めないのに、
@@ -128,9 +136,33 @@ export function ArtboardCanvas({
             transform: CanvasView.transform(view),
             transformOrigin: ContentTransformOrigin,
           }}
+          /*
+           * リサイズと artboard の移動のポインタはこの器で受ける。artboard の枠ごとや
+           * 座標平面（`ul`）で受けると、枠の外まで引っ張ったときに追従が切れる
+           * （リサイズは `onPointerLeave` で取り消すため）。余白を持つのはこの器なので、
+           * 外へ引いてもポインタが残る。ツリー内の移動 / 挿入のポインタは
+           * 3 ペインの器が受ける（掴む場所が左ペインにもあるため）。
+           *
+           * 2 つを 1 つのハンドラで束ねるのは、同じ器に別々には載せられないため。
+           * 掴んでいないほうは自分の状態を見て何もしないので、両方へ配って問題ない。
+           *
+           * 取り消し（`onPointerLeave`）を受けるのはリサイズだけ。artboard の移動は
+           * 掴んだ時点でポインタを捕捉するので、この器の外へ出ても届き続ける
+           * （`useArtboardDrag` の `grab`）。
+           */
+          onPointerMove={(event) => {
+            nodeResize.dragHandlers.onPointerMove(event);
+            artboardDrag.dragHandlers.onPointerMove(event);
+          }}
+          onPointerUp={() => {
+            nodeResize.dragHandlers.onPointerUp();
+            artboardDrag.dragHandlers.onPointerUp();
+          }}
+          onPointerLeave={() => nodeResize.dragHandlers.onPointerLeave()}
         >
           <CanvasBody
             compiled={compiled}
+            artboardDrag={artboardDrag}
             selection={selection}
             tokenSelection={tokenSelection}
             onSelect={onSelect}

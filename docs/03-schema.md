@@ -58,9 +58,9 @@
 | `y` | 生リテラル (number, px) | 親の上辺からの距離。`placement: absolute` 時のみ有効 | `0` |
 
 - `placement: absolute` のノードはフローから外れるため、`widthMode` / `heightMode` の `fill` は効かない（宣言を出力しない）
-- 座標は**親からの相対**。無限キャンバス上の絶対座標は持たない（02-data-model「基本原則」）
+- 座標は**親からの相対**。ノードが無限キャンバス上の絶対座標を持つことはない（02-data-model「基本原則」）。**同じ綴りの `x` / `y` が artboard 自身にもある**が、そちらはキャンバス上の絶対位置で別のもの（01-file-format「artboards」）
 - prop 名を CSS の `position` に揃えないのは、この仕様が既に「どの親の何番目の子か」の意味で位置の語を使っているため。CSS の綴りとの対応はコンパイル規則が持つ（`widthMode` → `width` と同じ）
-- artboard は Box スキーマを流用するが、**この 3 prop は受け付けない**。artboard は親 Box の中ではなくキャンバスの並びに置かれるため
+- artboard は Box スキーマを流用するが、**この 3 prop は受け付けない**。artboard は親 Box を持たないので、親からの相対で置かれるこの 3 prop では位置が決まらないため（キャンバス上の位置は artboard 自身の `x` / `y` が持つ）
 
 ### サイズ指定の原則
 

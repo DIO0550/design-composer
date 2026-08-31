@@ -18,6 +18,7 @@ import { NodeTemplate } from "@/domains/session/node-template";
 import { SelectionState } from "@/domains/session/selection-state";
 import { TokenSelection } from "@/domains/session/token-selection";
 import type { Instant } from "@/domains/unit/instant";
+import type { Offset } from "@/domains/unit/offset";
 import { EditHistory } from "@/features/editor/domains/edit-history";
 import { TokenTemplate } from "@/features/editor/domains/token-template";
 import type { IndexMove } from "@/types/IndexMove";
@@ -519,6 +520,31 @@ export const EditorState = {
   },
 
   /**
+   * artboard をキャンバス上の別の位置へ置き直す（docs/06-ui.md「キャンバス直接操作」）。
+   *
+   * 相手が artboard でない（ノードの名前 / 無い名前）ときは、その置き直しが存在しない
+   * ことと同じなので `none`。履歴も dirty も動かない。キャンバスは掴んだものが
+   * artboard のときだけこの操作を送るため、画面の操作からこの `none` には到達しない。
+   *
+   * @param state 置き直す前の編集状態
+   * @param name 置き直す artboard の名前
+   * @param canvasPosition 置き直したあとの位置
+   * @returns 置き直したあとの編集状態。相手が artboard でなければ `none`
+   */
+  repositionArtboard(
+    state: EditorState,
+    name: string,
+    canvasPosition: Offset,
+  ): Option<EditorState> {
+    const repositioned = DesignDocument.repositionArtboard(
+      EditorState.document(state),
+      name,
+      canvasPosition,
+    );
+    return repositioned.ok ? withEdit(state, repositioned.value) : Option.none;
+  },
+
+  /**
    * 選択位置へノードを挿すときの位置（docs/06-ui.md「編集操作の一覧」の挿入は
    * 「選択位置の子として追加」）。
    *
@@ -674,8 +700,11 @@ export const EditorState = {
   },
 
   /**
-   * artboard の並び順を入れ替える（docs/06-ui.md「編集操作の一覧」の artboard 操作。
-   * キャンバスは配列順に自動配置するので、並びがそのまま置かれる順になる）。
+   * artboard の並び順を入れ替える（docs/06-ui.md「編集操作の一覧」の artboard 操作）。
+   *
+   * キャンバス上で動くのは**座標を持たない artboard だけ**（そちらは配列順に自動配置
+   * されるため）。座標を持つ artboard は書かれた位置に置かれるので、並べ替えても
+   * キャンバス上では動かず、変わるのは一覧とツリーの並びになる。
    *
    * 動かせない指定（移動先が並びの外）は「その移動が存在しない」ことと同じなので
    * `none` にする。一覧は隣がいない向きのボタンを出さないため、画面の操作から

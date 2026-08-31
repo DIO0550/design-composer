@@ -32,7 +32,7 @@ test("props でサイズのモードを指定しても artboard の幅と高さ�
   });
 });
 
-test("props で絶対配置を指定しても artboard はキャンバスの並びに残る", () => {
+test("props で絶対配置を指定しても artboard の配置は flow のまま", () => {
   const props = Artboard.boxProps(
     Artboard.create({
       name: "login-screen",

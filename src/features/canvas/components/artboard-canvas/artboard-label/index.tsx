@@ -1,4 +1,12 @@
+import type { PointerEvent as ReactPointerEvent } from "react";
 import type { CompiledArtboard } from "@/domains/compiled/compiled-artboard";
+
+/**
+ * 掴み口を指す目印。掴めることは `onPointerDown` にしか出ないので、テストから
+ * 引く手掛かりが他に無い（見た目の class で引くと Tailwind の綴りに縛られる）。
+ * 名前を付けるのは、1 枚のキャンバスに artboard の枚数だけ並ぶため。
+ */
+export const ArtboardHandleTestId = "artboard-handle";
 
 /**
  * artboard の見出し（UI 案 docs/Design Composer.html。名前の右に大きさが並ぶ）。
@@ -13,14 +21,36 @@ import type { CompiledArtboard } from "@/domains/compiled/compiled-artboard";
  * Why not: 大きさの綴りを `artboard-list` と共通化しない。UI 案はツリー側が
  * `720×900`、キャンバス側が `720 × 900` で空白の有無が違う。
  *
+ * 見出しは artboard を動かす掴み口の 1 つ（docs/06-ui.md「キャンバス直接操作」）。
+ * もう 1 つは枠の背景で、掴み分けは `ArtboardFrame` の `onPointerDown` にある。
+ * 見出しを残すのは、**子が全面を覆う artboard**では背景を押せないため。
+ *
  * @returns 名前と大きさを並べた見出しの 1 行
  */
 export function ArtboardLabel({
   artboard,
   isCurrent,
-}: Readonly<{ artboard: CompiledArtboard; isCurrent: boolean }>) {
+  onGrab,
+}: Readonly<{
+  artboard: CompiledArtboard;
+  isCurrent: boolean;
+  onGrab: (event: ReactPointerEvent<HTMLElement>) => void;
+}>) {
   return (
-    <span className="flex h-[18px] items-center gap-2 text-[11px]">
+    <span
+      data-testid={`${ArtboardHandleTestId}:${artboard.element.name}`}
+      /*
+       * 掴んで動かすドラッグが文字の範囲選択にならないようにする（`select-none`）。
+       * 幅は器（`ArtboardFrame`）が枠に合わせるので、ここでは絞らない。名前の右の余白でも
+       * 動くが、背景でも動くようになった今はそちらのほうが一貫する。
+       */
+      className="flex h-[18px] cursor-grab select-none items-center gap-2 text-[11px]"
+      onPointerDown={(event) => {
+        // 見出しの上で始めたドラッグはパンにしない（掴んだものが動かないと操作が読めない）
+        event.stopPropagation();
+        onGrab(event);
+      }}
+    >
       {/*
         **この出し分けを潰してもテストは 1 件も落ちない。** happy-dom は Tailwind を
         解決せず、class 名を assert するのは実装詳細のテストになる。気づく手段は

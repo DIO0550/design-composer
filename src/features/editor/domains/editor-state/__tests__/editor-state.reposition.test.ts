@@ -73,7 +73,8 @@ test("置き直したあと 1 回戻すと縦横とも元の座標に戻る", ()
 });
 
 test("artboard の名前を指すと置き直しは存在しない（履歴も dirty も動かない）", () => {
-  // artboard はキャンバスの並びに置かれるので、親からの座標を持たない（#383）
+  // artboard は親 Box を持たないので、親からの座標を持たない
+  // （キャンバス上の位置は artboard 自身の `canvasPosition`）
   expect(
     EditorState.reposition(setupState(), "home", {
       mode: "absolute",

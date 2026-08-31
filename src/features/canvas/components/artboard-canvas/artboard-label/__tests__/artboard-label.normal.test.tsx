@@ -19,14 +19,26 @@ function setupArtboard(): CompiledArtboard {
 }
 
 test("見出しには artboard の名前が出る", () => {
-  render(<ArtboardLabel artboard={setupArtboard()} isCurrent={false} />);
+  render(
+    <ArtboardLabel
+      artboard={setupArtboard()}
+      isCurrent={false}
+      onGrab={() => {}}
+    />,
+  );
 
   expect(screen.getByText("login")).toBeDefined();
 });
 
 test("名前の右に大きさが並ぶ", () => {
   // UI 案はキャンバス側だけ `720 × 900` と空白を入れる（ツリー側は `720×900`）
-  render(<ArtboardLabel artboard={setupArtboard()} isCurrent={false} />);
+  render(
+    <ArtboardLabel
+      artboard={setupArtboard()}
+      isCurrent={false}
+      onGrab={() => {}}
+    />,
+  );
 
   expect(screen.getByText("720 × 900")).toBeDefined();
 });
@@ -37,11 +49,17 @@ test("今見ている 1 枚かどうかで名前の姿が変わる", () => {
    * 確かめるのは 2 つの入力で姿が変わることまで。
    */
   const { unmount } = render(
-    <ArtboardLabel artboard={setupArtboard()} isCurrent />,
+    <ArtboardLabel artboard={setupArtboard()} isCurrent onGrab={() => {}} />,
   );
   const current = screen.getByText("login").className;
   unmount();
-  render(<ArtboardLabel artboard={setupArtboard()} isCurrent={false} />);
+  render(
+    <ArtboardLabel
+      artboard={setupArtboard()}
+      isCurrent={false}
+      onGrab={() => {}}
+    />,
+  );
 
   expect(screen.getByText("login").className).not.toBe(current);
 });
@@ -49,11 +67,17 @@ test("今見ている 1 枚かどうかで名前の姿が変わる", () => {
 test("大きさの姿は今見ている 1 枚かどうかで変わらない", () => {
   // UI 案は選択中でも大きさの font-weight を明示している（太くしない）
   const { unmount } = render(
-    <ArtboardLabel artboard={setupArtboard()} isCurrent />,
+    <ArtboardLabel artboard={setupArtboard()} isCurrent onGrab={() => {}} />,
   );
   const current = screen.getByText("720 × 900").className;
   unmount();
-  render(<ArtboardLabel artboard={setupArtboard()} isCurrent={false} />);
+  render(
+    <ArtboardLabel
+      artboard={setupArtboard()}
+      isCurrent={false}
+      onGrab={() => {}}
+    />,
+  );
 
   expect(screen.getByText("720 × 900").className).toBe(current);
 });

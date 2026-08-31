@@ -4,18 +4,23 @@ import {
 } from "@/domains/compiled/compiled-element";
 import { Artboard } from "@/domains/dcmp/artboard";
 import type { TokenRefs } from "@/domains/dcmp/css-declaration";
+import type { Offset } from "@/domains/unit/offset";
 
 /**
- * コンパイル済みの artboard 1 枚。描く中身と、宣言されている大きさ。
+ * コンパイル済みの artboard 1 枚。描く中身と、宣言されている大きさ・キャンバス上の位置。
  *
  * 大きさを別に持つのは、キャンバスのラベルが `720 × 900` を出すため（#184）。
  * `element.style` にも `width` / `height` は載っているが、そちらは CSS 出力の綴り
  * （`"720px"`）なので、読み戻すと表示側が出力形式に依存する。
+ *
+ * 位置が省略されうるのは、ファイルに書かれていない artboard があるため。
+ * 書かれていないものをどこへ置くかは描く側が決める（`ArrangedArtboard`）。
  */
 export type CompiledArtboard = Readonly<{
   element: BoxElement;
   width: number;
   height: number;
+  canvasPosition?: Offset;
 }>;
 
 export const CompiledArtboard = {
@@ -28,7 +33,8 @@ export const CompiledArtboard = {
    * @param artboard 中身と大きさの出どころになる、コンパイル前の artboard
    * @param children ref 展開とコンパイルを終えた子の並び
    * @param tokens カスタムプロパティ名の綴り方（出力層の知識なので引数で受け取る）
-   * @returns 中身と大きさを対にしたコンパイル結果
+   * @returns 中身と、大きさ・キャンバス上の位置を対にしたコンパイル結果。
+   *   位置は artboard が持っていなければそのまま持たない
    */
   fromArtboard(
     artboard: Artboard,
@@ -42,6 +48,11 @@ export const CompiledArtboard = {
       BoxElement.declarations(Artboard.boxProps(artboard), undefined, tokens),
       children,
     );
-    return { element, width: artboard.width, height: artboard.height };
+    return {
+      element,
+      width: artboard.width,
+      height: artboard.height,
+      canvasPosition: artboard.canvasPosition,
+    };
   },
 } as const;

@@ -3,6 +3,7 @@ import type { ChildPosition } from "@/domains/dcmp/child-position";
 import type { PropEdit } from "@/domains/dcmp/node";
 import type { AbsolutePlacement } from "@/domains/dcmp/placement";
 import type { NodeTemplate } from "@/domains/session/node-template";
+import type { Offset } from "@/domains/unit/offset";
 import { useEditor } from "@/features/editor/components/editor-provider";
 import { EditorState } from "@/features/editor/domains/editor-state";
 
@@ -24,6 +25,8 @@ export type NodeActions = Readonly<{
   move: (name: string, to: ChildPosition) => void;
   /** 絶対配置のノードを親の中の別の座標へ置き直す（#381）。 */
   reposition: (name: string, placement: AbsolutePlacement) => void;
+  /** artboard をキャンバス上の別の位置へ置き直す（#390）。 */
+  repositionArtboard: (name: string, canvasPosition: Offset) => void;
   resize: (size: AxisLength) => void;
   editProp: (edit: PropEdit) => void;
   insert: (template: NodeTemplate) => void;
@@ -74,6 +77,12 @@ export function useNodeActions(): NodeActions {
      */
     reposition: (name, placement) =>
       dispatch({ type: "reposition_node", name, placement }),
+    /**
+     * artboard の見出し・背景を掴んだドラッグはキャンバス上の移動（#390 / #392）。
+     * ノードの座標移動と別のアクションなのは、相手が artboard で座標系も違うため。
+     */
+    repositionArtboard: (name, canvasPosition) =>
+      dispatch({ type: "reposition_artboard", name, canvasPosition }),
     /** リサイズハンドルのドラッグは選択中のものの大きさの変更（docs/06-ui.md）。 */
     resize: (size) => dispatch({ type: "resize", size }),
     /**

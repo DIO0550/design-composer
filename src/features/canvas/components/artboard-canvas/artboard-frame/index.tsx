@@ -1,9 +1,10 @@
 import { type KeyboardEvent, type MouseEvent, useMemo } from "react";
-import type { CompiledArtboard } from "@/domains/compiled/compiled-artboard";
 import {
   CompiledElement,
   ElementNameAttribute,
 } from "@/domains/compiled/compiled-element";
+import type { ArrangedArtboard } from "@/features/canvas/domains/arranged-artboard";
+import type { ArtboardDragControl } from "@/features/canvas/hooks/use-artboard-drag";
 import type { NodeDragControl } from "@/features/canvas/hooks/use-node-drag";
 import type { NodeResizeControl } from "@/features/canvas/hooks/use-node-resize";
 import type { TextEditControl } from "@/features/canvas/hooks/use-text-edit";
@@ -24,22 +25,33 @@ const ActivationKeys = ["Enter", " "];
  * 埋め込む文字列のエスケープはコンパイラ側（`Html.escapeText` / `escapeAttribute`）に閉じている。
  */
 export function ArtboardFrame({
-  artboard,
+  arranged,
   isSelected,
   isCurrent,
   onSelect,
+  artboardDrag,
   nodeDrag,
   nodeResize,
   textEdit,
 }: Readonly<{
-  artboard: CompiledArtboard;
+  arranged: ArrangedArtboard;
   isSelected: boolean;
   isCurrent: boolean;
   onSelect: (names: readonly string[]) => void;
+  artboardDrag: ArtboardDragControl;
   nodeDrag: NodeDragControl;
   nodeResize: NodeResizeControl;
   textEdit: TextEditControl;
 }>) {
+  const { artboard, canvasPosition } = arranged;
+  /*
+   * 運んでいる間は確定前の位置で描く。ドキュメントを書き換えるのは離したときだけなので、
+   * ここで見せないと離すまで画面に何も起きない（`useArtboardDrag` の doc）。
+   */
+  const preview = artboardDrag.preview;
+  const isDragged =
+    preview.some && preview.value.name === artboard.element.name;
+  const drawnAt = isDragged ? preview.value.canvasPosition : canvasPosition;
   /**
    * 押された位置から外へ辿った名前。最後に artboard 自身を置くのは、
    * 中身の外側（枠の上）を押したときにも artboard が選ばれるようにするため
@@ -73,8 +85,36 @@ export function ArtboardFrame({
   );
 
   return (
-    <li className="flex flex-col gap-1">
-      <ArtboardLabel artboard={artboard} isCurrent={isCurrent} />
+    /*
+     * 座標が指すのは**枠の左上**なので、ラベルは枠の上へ絶対配置してレイアウトを
+     * 食わせない。縦に積むと、ドキュメントに無いラベルの高さぶん枠が下がり、
+     * 保存した座標とキャンバス上の位置がずれる。
+     *
+     * この 2 つの `absolute` を潰すと枠は縦に積まれ、座標が効かなくなるが、
+     * **テストは 1 件も落ちない**（happy-dom はレイアウトしないため）。
+     * 気づく手段は視覚差分だけ。
+     */
+    <li className="absolute" style={{ left: drawnAt.x, top: drawnAt.y }}>
+      {/*
+        `right-0` で枠の幅いっぱいに広げるのは、見出しが掴み口だから（`ArtboardLabel`）。
+        中身ぶんだと `home 360 × 240` で 85px しか無く、枠の 360px に対して狙いづらい。
+        UI 案（docs/Design Composer.html）の見出しも枠と同じ幅のブロックなので、
+        絞るほうが乖離だった。
+
+        **この幅はテストにも視覚差分にも出ない。** happy-dom はレイアウトしないので
+        測れず、見出しは左寄せで背景も枠線も持たないため絞っても絵が変わらない
+        （実測: `w-fit` を戻しても 2639 件すべて緑）。掴める範囲が 85px へ戻っても
+        気づく手段が無い。
+      */}
+      <div className="absolute right-0 bottom-full left-0 pb-1">
+        <ArtboardLabel
+          artboard={artboard}
+          isCurrent={isCurrent}
+          onGrab={(event) =>
+            artboardDrag.grab(element.name, canvasPosition, event)
+          }
+        />
+      </div>
       {/* biome-ignore lint/a11y/useSemanticElements: button の中身は phrasing content に限られ、artboard の中身（div の木）を入れられないため role で表す */}
       <div
         role="button"
@@ -85,6 +125,10 @@ export function ArtboardFrame({
           /*
            * 直前の操作の結果として届く click は選択に使えない（運んだ先 / 掴んだハンドルを
            * 指している）。どちらの操作だったかで扱いは変わらないので両方に尋ねる。
+           *
+           * artboard のドラッグは尋ねない。運んだあとの click はどちらの掴み口からも
+           * ここへ届かず、届いてもその artboard を選ぶだけで害が無い
+           * （`ArtboardDrag` の doc）。
            */
           const afterDrag = nodeDrag.consumeClick();
           const afterResize = nodeResize.consumeClick();
@@ -105,11 +149,18 @@ export function ArtboardFrame({
         onPointerDown={(event) => {
           // artboard の上で始めたドラッグはパンにしない（掴んだものが動かないと操作が読めなくなる）
           event.stopPropagation();
-          // ハンドルを掴んだならツリー内の移動ではなく大きさの変更（両方は起こらない）
+          /*
+           * 内側から外へ向かって掴み手を決める。ハンドル → 中身のノード → artboard 自身の順で、
+           * 先に掴んだものが後ろへ渡さない。artboard を末尾に置くのは、背景（子が乗っていない
+           * ところ）まで来たら必ず掴めるため（`ArtboardDrag.grab` は失敗しない）。
+           */
           if (nodeResize.grabHandle(event)) {
             return;
           }
-          nodeDrag.grabHandlers.onPointerDown(event);
+          if (nodeDrag.grabNode(event)) {
+            return;
+          }
+          artboardDrag.grab(element.name, canvasPosition, event);
         }}
         // 中身のテキストは選択させない（ノードを運ぶドラッグが範囲選択になってしまうため）
         className="w-fit select-none bg-white shadow-sm outline outline-gray-300 aria-[current=true]:outline-2 aria-[current=true]:outline-blue-500"

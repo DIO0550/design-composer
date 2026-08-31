@@ -2,6 +2,10 @@ import type { ReactElement } from "react";
 import type { DocumentSelection } from "@/domains/session/document-selection";
 import { CanvasView } from "@/features/canvas/domains/canvas-view";
 import {
+  type ArtboardDragControl,
+  useArtboardDrag,
+} from "@/features/canvas/hooks/use-artboard-drag";
+import {
   type NodeDragControl,
   useNodeDrag,
 } from "@/features/canvas/hooks/use-node-drag";
@@ -22,13 +26,14 @@ import {
  * 各 story は子を組む関数だけを渡す。
  */
 export type CanvasControls = Readonly<{
+  artboardDrag: ArtboardDragControl;
   nodeDrag: NodeDragControl;
   nodeResize: NodeResizeControl;
   textEdit: TextEditControl;
 }>;
 
 /**
- * 3 つの口を本物のフックから組み立てて子へ渡す。
+ * 4 つの口を本物のフックから組み立てて子へ渡す。
  *
  * story のためにフックを差し替えないのは、差し替えると story が確かめているものが
  * 本番の配線から離れるため（VRT が見ているのは本番と同じ組み立ての結果であってほしい）。
@@ -44,6 +49,10 @@ export function WithCanvasControls({
   selection: DocumentSelection;
   children: (controls: CanvasControls) => ReactElement;
 }>): ReactElement {
+  const artboardDrag = useArtboardDrag({
+    view: CanvasView.create(),
+    onReposition: () => {},
+  });
   const nodeDrag = useNodeDrag({
     document: selection.document,
     view: CanvasView.create(),
@@ -57,5 +66,5 @@ export function WithCanvasControls({
     onResize: () => {},
   });
   const textEdit = useTextEdit({ selection, onEditProp: () => {} });
-  return children({ nodeDrag, nodeResize, textEdit });
+  return children({ artboardDrag, nodeDrag, nodeResize, textEdit });
 }

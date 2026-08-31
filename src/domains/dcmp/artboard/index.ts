@@ -7,20 +7,29 @@ import {
   type PropDefinitionRecord,
 } from "@/domains/dcmp/primitive-schema";
 import { ResolvedProps } from "@/domains/dcmp/resolved-props";
+import type { Offset } from "@/domains/unit/offset";
 import {
   Json,
   type JsonCursor,
   type JsonDecoded,
   type JsonObject,
+  type JsonRecordCursor,
 } from "@/utils/Json";
 import type { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
-/** キャンバスに置かれる 1 枚の画面。大きさを必ず持ち、配下にノードを並べる。 */
+/**
+ * キャンバスに置かれる 1 枚の画面。大きさを必ず持ち、配下にノードを並べる。
+ *
+ * `canvasPosition` は無限キャンバス上の位置で、指すのは**枠の左上**
+ * (docs/01-file-format.md「artboards」)。省略できるのは、この版より前に書かれた
+ * ドキュメントが座標を持たないため。持たないものをどこへ置くかは描く側が決める。
+ */
 export type Artboard = Readonly<{
   name: string;
   width: number;
   height: number;
+  canvasPosition?: Offset;
   props?: Props;
   children: readonly Node[];
 }>;
@@ -30,6 +39,8 @@ const ArtboardFields = [
   "name",
   "width",
   "height",
+  "x",
+  "y",
   "props",
   "children",
 ] as const;
@@ -56,9 +67,9 @@ const ArtboardFixedSizeProps: readonly string[] = [
 /**
  * artboard の props では変えられない配置の prop。
  *
- * artboard はキャンバスの並びに置かれるのであって、親 Box の中に置かれる
- * わけではないので、`placement: "absolute"` を書いても意味が決まらない。
- * artboard 自身のキャンバス上の位置は別の話（#383）。
+ * artboard は親 Box を持たないので、親からの相対で置かれる `placement: "absolute"`
+ * を書いても意味が決まらない。artboard 自身のキャンバス上の位置は**別の座標系**で、
+ * props ではなく `canvasPosition` が持つ。
  */
 const ArtboardFixedPlacementProps: readonly string[] = ["placement", "x", "y"];
 
@@ -70,6 +81,45 @@ const ArtboardUneditableProps: readonly string[] = [
   ...ArtboardFixedSizeProps,
   ...ArtboardFixedPlacementProps,
 ];
+
+/**
+ * キャンバス上の位置を `x` / `y` の対として読む。
+ *
+ * 片方だけを不在として通さないのは、位置が対でしか決まらないため
+ * (`Offset` の doc)。`Json.optional` を 2 つ並べると「`x` だけがある」が
+ * 読めてしまい、残りをどう埋めるかを呼び出し側が決めることになる。
+ *
+ * `Offset` 側に置かないのは、`x` / `y` という綴りで**フラットな兄弟フィールドに**
+ * 書くのが `.dcmp` の artboard の都合であって、`Offset` の性質ではないため
+ * (`unit/` は外部フォーマットを知らない層でもある)。
+ *
+ * @param record 読み取り元の artboard のフィールド一式
+ * @returns 位置。`x` と `y` がどちらも無ければ不在を表す `undefined`。
+ *   片方だけのとき・数値でないときは失敗
+ */
+function canvasPositionFromJson(
+  record: JsonRecordCursor,
+): JsonDecoded<Offset | undefined> {
+  const axes = Json.combine2(
+    Json.optional(record, "x", Json.number),
+    Json.optional(record, "y", Json.number),
+    (x, y) => ({ x, y }),
+  );
+  return Result.flatMap(axes, ({ x, y }) => {
+    if (x === undefined && y === undefined) {
+      return Result.ok(undefined);
+    }
+    const missing = x === undefined ? "x" : "y";
+    if (x === undefined || y === undefined) {
+      return Json.error(
+        "missing-field",
+        `${record.path}.${missing}`,
+        `"${missing}" is required when the other axis is present`,
+      );
+    }
+    return Result.ok({ x, y });
+  });
+}
 
 /**
  * Box の prop 定義を artboard 用のデフォルトで上書きしたもの。
@@ -123,6 +173,7 @@ export const Artboard = {
     name: string;
     width: number;
     height: number;
+    canvasPosition?: Offset;
     props?: Props;
     children?: readonly Node[];
   }): Artboard {
@@ -130,6 +181,7 @@ export const Artboard = {
       name: params.name,
       width: params.width,
       height: params.height,
+      canvasPosition: params.canvasPosition,
       props: params.props,
       children: params.children ?? [],
     };
@@ -176,7 +228,8 @@ export const Artboard = {
    * - サイズは `fixed` **固定**で、長さは artboard の `width` / `height`。props では変えられない
    * - 配置は `flow` **固定**。`propDefinitions()` から落としても、artboard の props を
    *   照らす先は Box スキーマなので（`design-document/validation`）ファイルには書けてしまう。
-   *   ここで固定しないと、キャンバスの並びから外れた artboard が描かれる
+   *   ここで固定しないと、持っていない親からの相対で置かれた artboard が描かれる
+   *   （キャンバス上の位置は `canvasPosition` が別に持つ）
    */
   boxProps(artboard: Artboard): ArtboardBoxProps {
     return {
@@ -221,6 +274,29 @@ export const Artboard = {
     return { ...artboard, [size.axis]: size.length };
   },
 
+  /**
+   * キャンバス上の位置を置き直した artboard。
+   *
+   * 書き込み先が props ではなく artboard 自身のフィールドなのは、キャンバス上の位置が
+   * props の `placement` / `x` / `y`（親の中での置かれ方）とは**別の座標系**のため
+   * (`ArtboardFixedPlacementProps` の doc)。
+   *
+   * 整数へ丸めるのは `Placement.moveBy`（ノード側の座標移動）と同じ理由による。
+   *
+   * @param artboard 置き直す元の artboard
+   * @param canvasPosition 置き直したあとの位置。枠の左上を指す
+   * @returns その位置を持つ artboard。座標は整数
+   */
+  withCanvasPosition(artboard: Artboard, canvasPosition: Offset): Artboard {
+    return {
+      ...artboard,
+      canvasPosition: {
+        x: Math.round(canvasPosition.x),
+        y: Math.round(canvasPosition.y),
+      },
+    };
+  },
+
   /** artboard の prop を書き換える。 */
   applyPropEdit(artboard: Artboard, edit: PropEdit): Artboard {
     return { ...artboard, props: Props.apply(artboard.props ?? {}, edit) };
@@ -229,16 +305,18 @@ export const Artboard = {
   fromJson(cursor: JsonCursor): JsonDecoded<Artboard> {
     return Result.flatMap(Json.record(cursor), (record) =>
       Json.knownFields(
-        Json.combine5(
+        Json.combine6(
           Json.required(record, "name", Json.string),
           Json.required(record, "width", Json.number),
           Json.required(record, "height", Json.number),
+          canvasPositionFromJson(record),
           Json.optional(record, "props", Props.fromJson),
           Json.required(record, "children", Node.fromJsonArray),
-          (name, width, height, props, children) => ({
+          (name, width, height, canvasPosition, props, children) => ({
             name,
             width,
             height,
+            ...(canvasPosition !== undefined ? { canvasPosition } : {}),
             ...(props !== undefined ? { props } : {}),
             children,
           }),
@@ -249,12 +327,20 @@ export const Artboard = {
     );
   },
 
-  /** `children` は必須フィールドなので空でも書き出す(docs/01-file-format.md)。 */
+  /**
+   * `children` は必須フィールドなので空でも書き出す(docs/01-file-format.md)。
+   * キャンバス上の位置は `x` / `y` の対で出し、持たないなら**どちらも出さない**
+   * (既定値を書き出すと、置き場所を書いていないドキュメントと区別が付かなくなる)。
+   */
   toJson(artboard: Artboard): JsonObject {
+    const canvasPosition = artboard.canvasPosition;
     return {
       name: artboard.name,
       width: artboard.width,
       height: artboard.height,
+      ...(canvasPosition !== undefined
+        ? { x: canvasPosition.x, y: canvasPosition.y }
+        : {}),
       ...Json.nonEmptyField(
         "props",
         artboard.props === undefined ? undefined : Props.toJson(artboard.props),
