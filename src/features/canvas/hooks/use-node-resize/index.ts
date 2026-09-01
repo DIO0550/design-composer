@@ -1,12 +1,13 @@
 import { type PointerEvent as ReactPointerEvent, useReducer } from "react";
 import type { AxisLength } from "@/domains/dcmp/axis-length";
 import { DocumentSelection } from "@/domains/session/document-selection";
+import type { Axis } from "@/domains/unit/axis";
 import type { Offset } from "@/domains/unit/offset";
 import type { CanvasView } from "@/features/canvas/domains/canvas-view";
 import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
 import { NodeResize } from "@/features/canvas/domains/node-resize";
-import { drawnBoundsOf } from "@/features/canvas/hooks/use-drawn-bounds";
 import { CanvasPointer } from "@/features/canvas/utils/CanvasPointer";
+import { DrawnBounds } from "@/features/canvas/utils/DrawnBounds";
 import { Option } from "@/utils/Option";
 
 /** リサイズの進み方（docs/06-ui.md「キャンバス直接操作」のリサイズハンドル）。 */
@@ -50,7 +51,10 @@ function nodeResizeReducer(
  * @returns 描かれている矩形。未選択と、まだ画面に出ていないときは `none`
  */
 function selectionBounds(selection: DocumentSelection): Option<CanvasBounds> {
-  return Option.flatMap(DocumentSelection.singleName(selection), drawnBoundsOf);
+  return Option.flatMap(
+    DocumentSelection.singleName(selection),
+    DrawnBounds.measure,
+  );
 }
 
 /** 運んでいる間のポインタを追う側（artboard の並び）へ渡す props。 */
@@ -69,8 +73,10 @@ export type NodeResizeControl = Readonly<{
    * （ハンドルは辺をまたいで置かれるので、外半分は要素の矩形の外にある）。
    */
   grab: (handle: AxisLength, event: ReactPointerEvent<HTMLElement>) => void;
-  /** 掴んで動かしている最中か。ハンドルをポインタに対して透明にするかを決める。 */
-  isGrabbing: boolean;
+  /**
+   * 掴んで動かしている軸。ハンドルを透明にするかと、その間のカーソルを決める。
+   */
+  grabbedAxis: Option<Axis>;
   dragHandlers: NodeResizeHandlers;
   /** リサイズ直後の `click` を飲み込む。飲み込んだ（＝選択に使わない）なら `true`。 */
   consumeClick: () => boolean;
@@ -146,7 +152,7 @@ export function useNodeResize(
   return {
     grabAt,
     grab,
-    isGrabbing: NodeResize.isGrabbing(resize),
+    grabbedAxis: NodeResize.grabbedAxis(resize),
     dragHandlers: {
       onPointerMove: trackPointer,
       onPointerUp: () => dispatch({ type: "release" }),

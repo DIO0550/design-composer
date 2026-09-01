@@ -1,20 +1,7 @@
 import { type RefObject, useLayoutEffect, useState } from "react";
 import { CanvasBounds } from "@/features/canvas/domains/node-drop";
-import { CanvasDom } from "@/libs/canvas-dom";
+import { DrawnBounds } from "@/features/canvas/utils/DrawnBounds";
 import { Option } from "@/utils/Option";
-
-/**
- * 名前で指した要素が今どこにどれだけの大きさで描かれているか（client 座標）。
- *
- * `use-node-resize`（押した瞬間の実測）と `useDrawnBounds`（描くためのスナップショット）
- * の両方が引くので 1 箇所に置く。
- *
- * @param name 描かれている artboard / ノードの名前
- * @returns 描かれている矩形。その名前の要素がまだ画面に出ていなければ `none`
- */
-export function drawnBoundsOf(name: string): Option<CanvasBounds> {
-  return Option.map(CanvasDom.elementOf(name), CanvasBounds.ofElement);
-}
 
 /**
  * 器からの相対に置き直した、名前で指した要素の矩形。
@@ -32,7 +19,7 @@ function measure(
     return Option.none;
   }
   const origin = CanvasBounds.ofElement(container);
-  return Option.map(Option.flatMap(target, drawnBoundsOf), (bounds) =>
+  return Option.map(Option.flatMap(target, DrawnBounds.measure), (bounds) =>
     CanvasBounds.relativeTo(bounds, origin),
   );
 }
