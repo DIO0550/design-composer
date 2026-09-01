@@ -14,11 +14,12 @@ import type { NodeDragControl } from "@/features/canvas/hooks/use-node-drag";
 import { useNodeResize } from "@/features/canvas/hooks/use-node-resize";
 import { useTextEdit } from "@/features/canvas/hooks/use-text-edit";
 import { DocumentHtml } from "@/services/document-html";
+import { Option } from "@/utils/Option";
 import { CanvasBody } from "./canvas-body";
 import { DropMarker } from "./drop-marker";
 import { DropPositionLabel } from "./drop-position-label";
 import { RepositionPreviewStyle } from "./reposition-preview-style";
-import { ResizeHandleOverlay } from "./resize-handle-overlay";
+import { AxisCursors, ResizeHandleOverlay } from "./resize-handle-overlay";
 import { StaleCanvasOverlay } from "./stale-canvas-overlay";
 import { TextInlineEditor } from "./text-inline-editor";
 
@@ -119,6 +120,19 @@ export function ArtboardCanvas({
     [designDocument],
   );
   const dropTarget = NodeDrag.insertionTarget(nodeDrag.drag);
+  /*
+   * ハンドルを置く矩形。掴める軸が無ければ出さないので、そのときは矩形も持たない。
+   * 矩形そのものが無いのはまだ描かれていない一瞬で、そこで出すと原点へ 8 個固まる。
+   */
+  const handleBounds = resizeHandles.length > 0 ? drawnBounds : Option.none;
+  /*
+   * 掴んでいる間のカーソルは器が出す。ハンドルはそのあいだポインタを通すので、
+   * 何も出さないと下にある `cursor-grab`（開いた手）に戻ってしまう。
+   */
+  const grabbedCursor = Option.map(
+    nodeResize.grabbedAxis,
+    (axis) => AxisCursors[axis],
+  );
 
   return (
     // relative はスクリムとバッジとリサイズハンドルの基準。中央ペインも relative だが、
@@ -152,6 +166,7 @@ export function ArtboardCanvas({
           style={{
             transform: CanvasView.transform(view),
             transformOrigin: ContentTransformOrigin,
+            cursor: grabbedCursor.some ? grabbedCursor.value : undefined,
           }}
           /*
            * リサイズと artboard の移動のポインタはこの器で受ける。artboard の枠ごとや
@@ -200,11 +215,11 @@ export function ArtboardCanvas({
         （単一選択でなければ空を返す）ので、ここで数え直してはいない。矩形が無いのは
         まだ描かれていないときで、そのときは置く場所が決まらないので出さない。
       */}
-      {resizeHandles.length > 0 && drawnBounds.some ? (
+      {handleBounds.some ? (
         <ResizeHandleOverlay
-          bounds={drawnBounds.value}
+          bounds={handleBounds.value}
           handles={resizeHandles}
-          isGrabbing={nodeResize.isGrabbing}
+          isGrabbing={nodeResize.grabbedAxis.some}
           onGrab={nodeResize.grab}
         />
       ) : null}
