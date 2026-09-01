@@ -27,6 +27,44 @@ export const CanvasBounds = {
     };
   },
 
+  /**
+   * 2 つの矩形が同じ位置・同じ大きさか。
+   *
+   * 測り直した結果を持ち替えるかどうかの判定に使う（`useDrawnBounds`）。
+   * 実測のたびに新しいオブジェクトになるので、参照では比べられない。
+   *
+   * @param bounds 比べる矩形
+   * @param other 比べる相手の矩形
+   * @returns 4 つの値がすべて等しければ `true`
+   */
+  equals(bounds: CanvasBounds, other: CanvasBounds): boolean {
+    return (
+      bounds.left === other.left &&
+      bounds.top === other.top &&
+      bounds.width === other.width &&
+      bounds.height === other.height
+    );
+  },
+
+  /**
+   * 別の矩形の左上を原点に置き直した矩形。
+   *
+   * 実測は client 座標で返るが、`position:absolute` で重ねる側は器からの相対で
+   * 置く必要があるため、その差を吸収する。
+   *
+   * @param bounds 置き直す矩形（client 座標）
+   * @param origin 原点にする矩形（client 座標）
+   * @returns `origin` の左上を (0, 0) とした矩形。大きさは変わらない
+   */
+  relativeTo(bounds: CanvasBounds, origin: CanvasBounds): CanvasBounds {
+    return {
+      left: bounds.left - origin.left,
+      top: bounds.top - origin.top,
+      width: bounds.width,
+      height: bounds.height,
+    };
+  },
+
   /** 子が並ぶ向きに沿った始点。 */
   start(bounds: CanvasBounds, direction: CssDirection): number {
     return direction === "row" ? bounds.left : bounds.top;
