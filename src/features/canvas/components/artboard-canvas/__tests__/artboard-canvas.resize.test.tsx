@@ -11,8 +11,8 @@ import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
 import { drawn, drawnAt, injectedStyles, renderCanvas } from "./setup";
 
 /**
- * `home` に、2 軸とも固定の `panel`、モードを指定していない `title`、
- * 部品インスタンスの `action` が並ぶ状態。
+ * `home` に、2 軸とも固定の `panel`、幅だけ固定の `banner`、
+ * モードを指定していない `title`、部品インスタンスの `action` が並ぶ状態。
  */
 function setupSelection(
   selectedNames: readonly string[] = [],
@@ -36,6 +36,12 @@ function setupSelection(
             },
             children: [],
           },
+          {
+            name: "banner",
+            type: "Box",
+            props: { widthMode: "fixed", width: 200 },
+            children: [],
+          },
           { name: "title", type: "Text", props: { content: "ホーム" } },
           { name: "action", ref: "card" },
         ],
@@ -53,11 +59,20 @@ const PanelBounds: CanvasBounds = {
   height: 100,
 };
 
-test("fixed のノードを選ぶと幅と高さのハンドルが描かれる", () => {
+test("2 軸とも fixed のノードを選ぶとハンドルが描かれる", () => {
   renderCanvas({ selection: setupSelection(["panel"]) });
 
   expect(injectedStyles()).toContain('[data-name="panel"]::after');
-  expect(injectedStyles()).toContain('[data-name="panel"]::before');
+});
+
+test("幅だけが fixed のノードを選んでもハンドルが描かれる", () => {
+  /*
+   * ハンドルは掴める軸ごとではなく、掴める軸が 1 つでもあれば四隅に出す
+   * （UI 案 docs/Design Composer.html の `login-form` は width=fixed / height=hug）。
+   */
+  renderCanvas({ selection: setupSelection(["banner"]) });
+
+  expect(injectedStyles()).toContain('[data-name="banner"]::after');
 });
 
 test("モードを指定していないノードを選んでもハンドルは描かれない", () => {

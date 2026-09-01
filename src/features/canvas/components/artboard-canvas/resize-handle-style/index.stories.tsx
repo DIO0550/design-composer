@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { ElementNameAttribute } from "@/domains/compiled/compiled-element";
-import { AxisLength } from "@/domains/dcmp/axis-length";
 import { ResizeHandleStyle } from "./index";
 
 /**
@@ -8,10 +7,11 @@ import { ResizeHandleStyle } from "./index";
  *
  * ハンドルは擬似要素なので `<style>` を差し込むだけで、この部品自身は何も描かない。
  * **当たった相手**を見るために、キャンバスの中身と同じ形（名前の属性を持つ div）を
- * 器として敷いている。
+ * 器として敷いている。器に `overflow-hidden` を付けているのは artboard に揃えるため
+ * （はみ出して描くと切られる、を絵で確かめられるようにしている）。
  *
  * `ArtboardCanvas` の「artboard を選択中」でも見えるが、そちらは倍率 1 のみ。
- * 帯の太さを倍率で割り戻していることは、倍率違いを並べないと確かめられない。
+ * 寸法を倍率で割り戻していることは、倍率違いを並べないと確かめられない。
  */
 const meta = {
   title: "features/canvas/ArtboardCanvas/ResizeHandleStyle",
@@ -23,7 +23,7 @@ const meta = {
       <div className="h-56 bg-gray-100 p-8">
         <div
           {...{ [ElementNameAttribute]: "home" }}
-          className="h-32 w-56 bg-white shadow-sm outline-2 outline-blue-500"
+          className="h-32 w-56 overflow-hidden bg-white shadow-sm outline-2 outline-blue-500"
         />
         <Story />
       </div>
@@ -35,38 +35,23 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** artboard は 2 軸とも fixed なので、右辺と下辺の両方に帯が出る。 */
-export const BothAxes: Story = {
-  name: "幅と高さの両方",
-  args: {
-    handles: [
-      AxisLength.create("width", 224),
-      AxisLength.create("height", 128),
-    ],
-    scale: 1,
-  },
-};
-
-/** 幅だけが fixed のノード。右辺にだけ帯が出る。 */
-export const WidthOnly: Story = {
-  name: "幅だけ",
-  args: { handles: [AxisLength.create("width", 224)], scale: 1 },
+/**
+ * 選択中の要素。掴める軸が 1 つでもあれば四隅に 4 個出る
+ * （UI 案の `login-form` は width=fixed / height=hug でも 4 個）。
+ */
+export const Selected: Story = {
+  name: "選択中",
+  args: { scale: 1 },
 };
 
 /**
  * 倍率を上げた状態。
  *
- * 帯の太さは倍率で割り戻すので、**中身が 2 倍に描かれても帯は見た目で同じ太さ**になる
- * （掴める帯は画面上の px で当たるため）。器は倍率を掛けていないので、ここでは
- * 帯が半分の太さで出るのが正しい姿。
+ * 寸法は倍率で割り戻すので、**中身が 2 倍に描かれてもハンドルは見た目で同じ大きさ**に
+ * なる（当たり判定は画面上の px で当たるため）。器は倍率を掛けていないので、
+ * ここではハンドルが半分の大きさで出るのが正しい姿。
  */
 export const Zoomed: Story = {
   name: "倍率 2 倍",
-  args: {
-    handles: [
-      AxisLength.create("width", 224),
-      AxisLength.create("height", 128),
-    ],
-    scale: 2,
-  },
+  args: { scale: 2 },
 };

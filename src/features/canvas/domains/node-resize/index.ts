@@ -11,10 +11,14 @@ import { CanvasBounds } from "@/features/canvas/domains/node-drop";
 import { Option } from "@/utils/Option";
 
 /**
- * ハンドルの太さ（画面上の px）。
- * 描く帯の幅と掴める帯の幅を同じ値にして、見えているところがそのまま掴めるようにする。
+ * 掴める帯の太さ（画面上の px）。終端からこの幅までが `handleAt` の当たり判定に入る。
+ *
+ * ハンドルは四隅の四角として描かれるので、**掴める場所と描かれている場所は一致しない**
+ * （四隅のうち掴めるのは右辺・下辺の帯に入る 3 つだけ）。一致させるには角で 2 軸を
+ * 同時に変えられる必要があり、それは掴んだハンドルを `AxisLength` 1 本しか持たない
+ * 今の `NodeResize` の作り直しになる。
  */
-export const ResizeHandleThicknessPx = 8;
+const ResizeHandleThicknessPx = 8;
 
 /**
  * キャンバス上でリサイズハンドルを掴んでから離すまでの状態
@@ -107,7 +111,7 @@ export const NodeResize = {
 
   /**
    * ポインタが乗っているハンドル。終端から内側へ `ResizeHandleThicknessPx` までを
-   * 掴める帯とする（描いている帯と同じ範囲）。
+   * 掴める帯とする（描かれている四隅の四角とは範囲が違う。上の定数を参照）。
    *
    * 角では 2 本の帯が重なるので、先にある方（`handles` の並び順）を掴む。
    * どちらを選んでも一方の軸しか変えられない以上、順序を決めておけば足りる。

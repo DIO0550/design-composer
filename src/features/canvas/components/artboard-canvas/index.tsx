@@ -91,10 +91,11 @@ export function ArtboardCanvas({
   const textEdit = useTextEdit({ selection, onEditProp });
   /*
    * 凍結中はリサイズハンドルを出さない。`inert` の中にあって掴めないのに、
-   * 掴める帯だけが普段どおり見えることになるため。選択の枠そのものは残す
+   * ハンドルだけが普段どおり見えることになるため。選択の枠そのものは残す
    * （何を選んでいたかは右ペインの見出しと揃えて保つ）。
    */
-  const resizeHandles = isFrozen ? [] : NodeResize.handles(selection);
+  const hasResizeHandles =
+    !isFrozen && NodeResize.handles(selection).length > 0;
   const singleName = DocumentSelection.singleName(selection);
   /*
    * 覚える相手はドキュメントであって対ではない。`selection` を deps にすると
@@ -174,12 +175,8 @@ export function ArtboardCanvas({
       </div>
       {isFrozen ? <StaleCanvasOverlay /> : null}
       {/* ハンドルは 1 つだけ選んでいるときに出す（複数選択ではリサイズできない） */}
-      {singleName.some ? (
-        <ResizeHandleStyle
-          name={singleName.value}
-          handles={resizeHandles}
-          scale={view.scale}
-        />
+      {singleName.some && hasResizeHandles ? (
+        <ResizeHandleStyle name={singleName.value} scale={view.scale} />
       ) : null}
       {dropTarget.some ? (
         <>
