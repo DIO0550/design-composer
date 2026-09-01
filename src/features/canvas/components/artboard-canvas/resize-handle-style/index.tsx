@@ -26,20 +26,24 @@ const HandleBorderColor = SelectionColor;
 const HandleInnerColor = "#fff";
 
 /**
- * ハンドルを出す四隅。値は背景レイヤーを置く位置（x, y の順）。
+ * ハンドルを出す 8 箇所（四隅と各辺の中間）。値は背景レイヤーを置く位置（x, y の順）。
+ * 並びは左上から時計回り。
  *
- * 掴める軸ごとではなく常に 4 個出すのは UI 案に合わせたもの。UI 案の `login-form` は
- * width=fixed / height=hug（画面末尾の Design notes）で、片方の軸しか固定していなくても
- * 四隅に 4 個描かれている。
+ * 掴める軸ごとではなく常に 8 個出す。片方の軸しか固定していなくてもハンドルを出すのは
+ * UI 案（`login-form` は width=fixed / height=hug なのにハンドルが出ている）に合わせたもの。
  */
-const HandleCorners = {
+const HandlePositions = {
   TopLeft: "0 0",
+  Top: "50% 0",
   TopRight: "100% 0",
-  BottomLeft: "0 100%",
+  Right: "100% 50%",
   BottomRight: "100% 100%",
+  Bottom: "50% 100%",
+  BottomLeft: "0 100%",
+  Left: "0 50%",
 } as const;
 
-/** 四隅に置く四角 1 種類ぶんの描き方（枠と、その内側で 1 種類ずつ）。 */
+/** 8 箇所に置く四角 1 種類ぶんの描き方（枠と、その内側で 1 種類ずつ）。 */
 type HandleSquare = Readonly<{
   color: string;
   /** 一辺の長さ（画面上の px）。倍率で割り戻してから使う。 */
@@ -49,16 +53,16 @@ type HandleSquare = Readonly<{
 }>;
 
 /**
- * 同じ四角を四隅へ 1 枚ずつ置く背景レイヤー。
+ * 同じ四角を 8 箇所へ 1 枚ずつ置く背景レイヤー。
  *
  * @param square 塗る色・一辺の長さ・位置の基準にする box
  * @param scale 今のキャンバスの倍率（一辺を割り戻すのに使う）
- * @returns 四隅ぶんのレイヤーを `,` で繋いだ `background` の値
+ * @returns 8 箇所ぶんのレイヤーを `,` で繋いだ `background` の値
  */
-function cornerLayers(square: HandleSquare, scale: number): string {
+function handleLayers(square: HandleSquare, scale: number): string {
   const side = Px.create(square.sizePx / scale);
   const paint = `linear-gradient(${square.color},${square.color})`;
-  return Object.values(HandleCorners)
+  return Object.values(HandlePositions)
     .map(
       (position) =>
         `${paint} ${position}/${side} ${side} no-repeat ${square.box}`,
@@ -67,24 +71,24 @@ function cornerLayers(square: HandleSquare, scale: number): string {
 }
 
 /**
- * 四隅のハンドルを描く規則。
+ * 8 箇所のハンドルを描く規則。
  *
- * 1 要素が持てる擬似要素は 2 つなので四隅 4 個は割れない。背景レイヤーなら
- * 1 つの擬似要素に 8 枚（内側 4 + 枠 4）置ける。枠の太さは `padding` で作り、
+ * 1 要素が持てる擬似要素は 2 つなので 8 個は割れない。背景レイヤーなら
+ * 1 つの擬似要素に 16 枚（内側 8 + 枠 8）置ける。枠の太さは `padding` で作り、
  * 内側のレイヤーだけを content box 基準にすることで枠の中へ寄せる
- * （`calc(100% - 1.5px)` を 4 箇所書かずに済む）。
+ * （`calc(100% - 1.5px)` を 8 箇所書かずに済む）。
  *
  * UI 案の四角が持つ `border-radius:1px` は落としている。背景レイヤーは矩形しか
- * 塗れず、角丸にするには要素を 4 つ置く形へ戻すことになるため。
+ * 塗れず、角丸にするには要素を 8 つ置く形へ戻すことになるため。
  *
  * ハンドルにカーソル（`ew-resize` / `ns-resize`）を載せていないのは、掴めるのが
- * 右辺・下辺の帯（`NodeResize.handleAt`）で、描いている四隅とは範囲が違うため。
- * 四隅へ載せると掴めない場所で形が変わる。残った擬似要素 1 つでは 2 種類の
- * カーソルを別々の辺へ載せられないので、角が掴めるようになるまで置かない。
+ * 右辺・下辺の帯（`NodeResize.handleAt`）で、描いている 8 箇所とは範囲が違うため。
+ * 載せると掴めない場所で形が変わる。残った擬似要素 1 つでは 2 種類のカーソルを
+ * 別々の辺へ載せられないので、全部が掴めるようになるまで置かない。
  *
  * @param name ハンドルを出す artboard / ノードの名前
  * @param scale 今のキャンバスの倍率（寸法を割り戻すのに使う）
- * @returns 四隅に四角を描く CSS 規則 1 本
+ * @returns 8 箇所に四角を描く CSS 規則 1 本
  */
 function handleRule(name: string, scale: number): string {
   const border = Px.create(HandleBorderPx / scale);
@@ -92,16 +96,16 @@ function handleRule(name: string, scale: number): string {
    * 先に並べたレイヤーが上に描かれるので、内側 → 枠 の順に並べる。
    * 逆にすると枠が内側を覆って、白抜きではなく塗り潰しの四角になる。
    */
-  const inners = cornerLayers(
+  const inners = handleLayers(
     { color: HandleInnerColor, sizePx: HandleInnerPx, box: "content-box" },
     scale,
   );
-  const borders = cornerLayers(
+  const borders = handleLayers(
     { color: HandleBorderColor, sizePx: HandleSizePx, box: "padding-box" },
     scale,
   );
   /*
-   * UI 案は四角を辺の中心（`-5px`）へ置くが、artboard は既定で `overflow:hidden`
+   * UI 案は四角を辺をまたぐ位置（`-5px`）へ置くが、artboard は既定で `overflow:hidden`
    * なので外へ出した部分が切られる。artboard とノードで描き方を分けるほうが
    * 乖離が増えるので、どちらも要素の内側（`inset:0`）に揃えた。
    *

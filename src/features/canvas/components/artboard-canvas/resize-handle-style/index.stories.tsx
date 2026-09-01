@@ -36,8 +36,8 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 /**
- * 選択中の要素。掴める軸が 1 つでもあれば四隅に 4 個出る
- * （UI 案の `login-form` は width=fixed / height=hug でも 4 個）。
+ * 選択中の要素。掴める軸が 1 つでもあれば四隅と各辺の中間に 8 個出る
+ * （片方の軸しか固定していなくても出るのは UI 案の `login-form` に合わせたもの）。
  */
 export const Selected: Story = {
   name: "選択中",

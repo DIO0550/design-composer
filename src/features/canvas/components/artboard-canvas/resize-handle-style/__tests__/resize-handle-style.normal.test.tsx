@@ -15,16 +15,25 @@ function ruleText(container: HTMLElement): string {
   return container.querySelector("style")?.textContent ?? "";
 }
 
-test("ハンドルは四隅に出る", () => {
+test("ハンドルは四隅と各辺の中間の 8 箇所に出る", () => {
   const { container } = render(<ResizeHandleStyle name="home" scale={1} />);
 
+  // 左上から時計回り。欠けた位置がそのまま差分に出るよう、並びごと比べる
+  const positions = [
+    "0 0",
+    "50% 0",
+    "100% 0",
+    "100% 50%",
+    "100% 100%",
+    "50% 100%",
+    "0 100%",
+    "0 50%",
+  ];
   const rule = ruleText(container);
-  expect([
-    rule.includes("0 0/10px"),
-    rule.includes("100% 0/10px"),
-    rule.includes("0 100%/10px"),
-    rule.includes("100% 100%/10px"),
-  ]).toEqual([true, true, true, true]);
+
+  expect(
+    positions.filter((position) => rule.includes(`${position}/10px`)),
+  ).toEqual(positions);
 });
 
 test("ハンドルの枠の内側は枠より上に描かれる", () => {
@@ -56,7 +65,7 @@ test("ハンドルの内側は枠の太さぶん寄せて置かれる", () => {
 
 test("ハンドルは要素の箱にぴったり重なる擬似要素として出る", () => {
   /*
-   * 3 つが揃って初めて四隅に貼り付く。`content` が無いと擬似要素はボックスを
+   * 3 つが揃って初めて辺と角へ貼り付く。`content` が無いと擬似要素はボックスを
    * 作らず、`position:absolute` が無いと `inset` が効かず、`inset:0` が無いと
    * 大きさを持たない。要素の外へ出さないのは、artboard が既定で
    * `overflow:hidden` を持ち、外へ出した部分が切られるため。
