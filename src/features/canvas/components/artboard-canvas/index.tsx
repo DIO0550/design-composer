@@ -174,7 +174,11 @@ export function ArtboardCanvas({
         </div>
       </div>
       {isFrozen ? <StaleCanvasOverlay /> : null}
-      {/* ハンドルは 1 つだけ選んでいるときに出す（複数選択ではリサイズできない） */}
+      {/*
+        `singleName` を見るのは規則を差し込む名前を取り出すためだけ。複数選択で
+        ハンドルを出さないことは `NodeResize.handles` が既に決めている（単一選択で
+        なければ空を返す）ので、ここで条件として数え直してはいない。
+      */}
       {singleName.some && hasResizeHandles ? (
         <ResizeHandleStyle name={singleName.value} scale={view.scale} />
       ) : null}
