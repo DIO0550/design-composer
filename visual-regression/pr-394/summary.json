@@ -1,5 +1,5 @@
 {
-  "reportVersion": "7339ae969a0d48a42892db9a338ac7cd02291ca4",
+  "reportVersion": "3223270504960b8f6c2dd8886f7be02fdab7412b",
   "maxDiffRatio": 0.002,
   "changed": 1,
   "new": 1,
@@ -195,12 +195,12 @@
       "title": "features/assets/CreateComponent",
       "name": "ファイルが不正な間に部品名を打っている",
       "status": "passed",
-      "reason": "within-threshold",
-      "diffPixels": 5,
+      "reason": "match",
+      "diffPixels": 0,
       "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": true
+      "hasDiff": false
     },
     {
       "story": "features-assets-createcomponent--instance-selected",
@@ -300,8 +300,8 @@
       "name": "artboard を選択中",
       "status": "changed",
       "reason": "pixel-diff",
-      "diffPixels": 4804,
-      "diffRatio": 0.0052,
+      "diffPixels": 4934,
+      "diffRatio": 0.0054,
       "hasExpected": true,
       "hasActual": true,
       "hasDiff": true
@@ -625,7 +625,7 @@
       "name": "倍率 2 倍",
       "status": "passed",
       "reason": "within-threshold",
-      "diffPixels": 1381,
+      "diffPixels": 1389,
       "diffRatio": 0.0015,
       "hasExpected": true,
       "hasActual": true,
