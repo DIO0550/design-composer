@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { DocumentSelection } from "@/domains/session/document-selection";
-import { injectedStyles, renderCanvas } from "./setup";
+import { injectedStyles, renderCanvas, resizeHandles } from "./setup";
 
 /*
  * 外部編集でファイルが壊れている間のキャンバス（#135）。
@@ -25,14 +25,14 @@ function selectedArtboard(): DocumentSelection {
 test("ファイルが不正な間はハンドルを描かない", () => {
   renderCanvas({ selection: selectedArtboard(), isFrozen: true });
 
-  expect(injectedStyles()).not.toContain('[data-name="home"]::after');
+  expect(resizeHandles()).toHaveLength(0);
 });
 
 test("ファイルが不正でなければ選択中の artboard にハンドルが出る", () => {
   renderCanvas({ selection: selectedArtboard() });
 
   // 上のテストの対照。これが無いと、ハンドルを一切描かない実装でも通ってしまう
-  expect(injectedStyles()).toContain('[data-name="home"]::after');
+  expect(resizeHandles()).toHaveLength(8);
 });
 
 test("ファイルが不正でも、選択の枠は残る", () => {

@@ -1,4 +1,4 @@
-import { render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { vi } from "vitest";
 import type { AxisLength } from "@/domains/dcmp/axis-length";
 import type { ChildPosition } from "@/domains/dcmp/child-position";
@@ -10,6 +10,7 @@ import type { PropEdit } from "@/domains/dcmp/node";
 import type { AbsolutePlacement } from "@/domains/dcmp/placement";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { TokenSelection } from "@/domains/session/token-selection";
+import type { Axis } from "@/domains/unit/axis";
 import type { Offset } from "@/domains/unit/offset";
 import {
   canvasContent,
@@ -17,6 +18,7 @@ import {
 } from "@/features/canvas/__tests__/canvas-elements";
 import { measuredAs } from "@/features/canvas/__tests__/canvas-measure";
 import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
+import { NodeResize } from "@/features/canvas/domains/node-resize";
 import { useCanvasView } from "@/features/canvas/hooks/use-canvas-view";
 import { useNodeDrag } from "@/features/canvas/hooks/use-node-drag";
 import { Option } from "@/utils/Option";
@@ -128,14 +130,39 @@ export function renderCanvas(
 /**
  * キャンバスへ差し込まれた CSS 規則をすべて繋いだもの。
  *
- * 選択の枠もリサイズハンドルも、キャンバスの中身が React の管理外にあるため
- * `<style>` として差し込まれる（`NameStyleRule` / `ResizeHandleStyle`）。
- * 出ているかどうかはここを読むしかない。
+ * 選択の枠は、キャンバスの中身が React の管理外にあるため `<style>` として
+ * 差し込まれる（`NameStyleRule`）。出ているかどうかはここを読むしかない
+ * （リサイズハンドルは実要素なので `resizeHandles` で引く）。
  */
 export function injectedStyles(): string {
   return Array.from(document.querySelectorAll("style"))
     .map((style) => style.textContent ?? "")
     .join("");
+}
+
+/**
+ * 出ているリサイズハンドル。左上から時計回りの並び（`NodeResize.Placements`）。
+ *
+ * @returns 出ているハンドルの並び。出ていなければ空
+ */
+export function resizeHandles(): readonly HTMLElement[] {
+  return screen.queryAllByTestId("resize-handle");
+}
+
+/**
+ * その軸を掴めるハンドル。
+ *
+ * 並びの何番目かを数字で書かず `Placements` から引くのは、位置と軸の対応を
+ * 決めているのがそちらだから（テスト側に写すと片方だけ変えられる）。
+ *
+ * @param axis 掴んだときに変わる軸
+ * @returns その軸に対応する位置のハンドル。出ていなければテストを落とす
+ */
+export function resizeHandleFor(axis: Axis): HTMLElement {
+  const index = NodeResize.Placements.findIndex(
+    (placement) => placement.axis.some && placement.axis.value === axis,
+  );
+  return screen.getAllByTestId("resize-handle")[index];
 }
 
 /**

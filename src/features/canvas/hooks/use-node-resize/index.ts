@@ -3,10 +3,10 @@ import type { AxisLength } from "@/domains/dcmp/axis-length";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import type { Offset } from "@/domains/unit/offset";
 import type { CanvasView } from "@/features/canvas/domains/canvas-view";
-import { CanvasBounds } from "@/features/canvas/domains/node-drop";
+import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
 import { NodeResize } from "@/features/canvas/domains/node-resize";
+import { drawnBoundsOf } from "@/features/canvas/hooks/use-drawn-bounds";
 import { CanvasPointer } from "@/features/canvas/utils/CanvasPointer";
-import { CanvasDom } from "@/libs/canvas-dom";
 import { Option } from "@/utils/Option";
 
 /** リサイズの進み方（docs/06-ui.md「キャンバス直接操作」のリサイズハンドル）。 */
@@ -42,17 +42,15 @@ function nodeResizeReducer(
 /**
  * 選択中のものが今どこにどれだけの大きさで描かれているか。
  *
+ * ハンドルを描く側（`useDrawnBounds`）が持つスナップショットを使い回さず、押した
+ * 瞬間に測り直す。スナップショットは再レンダーのたびにしか更新されないので、
+ * 再レンダーを伴わない位置変化があると掴める帯だけがずれる。
+ *
  * @param selection 選択とドキュメントの出どころになる対
  * @returns 描かれている矩形。未選択と、まだ画面に出ていないときは `none`
  */
 function selectionBounds(selection: DocumentSelection): Option<CanvasBounds> {
-  return Option.map(
-    Option.flatMap(
-      DocumentSelection.singleName(selection),
-      CanvasDom.elementOf,
-    ),
-    CanvasBounds.ofElement,
-  );
+  return Option.flatMap(DocumentSelection.singleName(selection), drawnBoundsOf);
 }
 
 /** 運んでいる間のポインタを追う側（artboard の並び）へ渡す props。 */
@@ -64,8 +62,15 @@ export type NodeResizeHandlers = Readonly<{
 
 /** リサイズ中の状態と、ハンドルへ渡すハンドラ。 */
 export type NodeResizeControl = Readonly<{
-  /** 押された位置がハンドルなら掴む。掴んだ（＝移動のドラッグに渡さない）なら `true`。 */
-  grabHandle: (event: ReactPointerEvent<HTMLElement>) => boolean;
+  /** 押された位置が掴める帯なら掴む。掴んだ（＝移動のドラッグに渡さない）なら `true`。 */
+  grabAt: (event: ReactPointerEvent<HTMLElement>) => boolean;
+  /**
+   * 押されたハンドルの軸をそのまま掴む。帯の当たり判定は通らない
+   * （ハンドルは辺をまたいで置かれるので、外半分は要素の矩形の外にある）。
+   */
+  grab: (handle: AxisLength, event: ReactPointerEvent<HTMLElement>) => void;
+  /** 掴んで動かしている最中か。ハンドルをポインタに対して透明にするかを決める。 */
+  isGrabbing: boolean;
   dragHandlers: NodeResizeHandlers;
   /** リサイズ直後の `click` を飲み込む。飲み込んだ（＝選択に使わない）なら `true`。 */
   consumeClick: () => boolean;
@@ -98,7 +103,14 @@ export function useNodeResize(
     NodeResize.create,
   );
 
-  const grabHandle = (event: ReactPointerEvent<HTMLElement>): boolean => {
+  const grab = (
+    handle: AxisLength,
+    event: ReactPointerEvent<HTMLElement>,
+  ): void => {
+    dispatch({ type: "grab", handle, origin: CanvasPointer.offsetOf(event) });
+  };
+
+  const grabAt = (event: ReactPointerEvent<HTMLElement>): boolean => {
     const bounds = selectionBounds(params.selection);
     if (!bounds.some) {
       return false;
@@ -111,11 +123,7 @@ export function useNodeResize(
     if (!handle.some) {
       return false;
     }
-    dispatch({
-      type: "grab",
-      handle: handle.value,
-      origin: CanvasPointer.offsetOf(event),
-    });
+    grab(handle.value, event);
     return true;
   };
 
@@ -136,7 +144,9 @@ export function useNodeResize(
   };
 
   return {
-    grabHandle,
+    grabAt,
+    grab,
+    isGrabbing: NodeResize.isGrabbing(resize),
     dragHandlers: {
       onPointerMove: trackPointer,
       onPointerUp: () => dispatch({ type: "release" }),

@@ -8,7 +8,13 @@ import {
   releasePointer,
 } from "@/features/canvas/__tests__/canvas-gesture";
 import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
-import { drawn, drawnAt, injectedStyles, renderCanvas } from "./setup";
+import {
+  drawn,
+  drawnAt,
+  renderCanvas,
+  resizeHandleFor,
+  resizeHandles,
+} from "./setup";
 
 /**
  * `home` に、2 軸とも固定の `panel`、幅だけ固定の `banner`、
@@ -62,7 +68,8 @@ const PanelBounds: CanvasBounds = {
 test("2 軸とも fixed のノードを選ぶとハンドルが描かれる", () => {
   renderCanvas({ selection: setupSelection(["panel"]) });
 
-  expect(injectedStyles()).toContain('[data-name="panel"]::after');
+  // 四隅と各辺の中間の 8 箇所（docs/06-ui.md「リサイズハンドル」）
+  expect(resizeHandles()).toHaveLength(8);
 });
 
 test("幅だけが fixed のノードを選んでもハンドルが描かれる", () => {
@@ -72,31 +79,31 @@ test("幅だけが fixed のノードを選んでもハンドルが描かれる"
    */
   renderCanvas({ selection: setupSelection(["banner"]) });
 
-  expect(injectedStyles()).toContain('[data-name="banner"]::after');
+  expect(resizeHandles()).toHaveLength(8);
 });
 
 test("モードを指定していないノードを選んでもハンドルは描かれない", () => {
   renderCanvas({ selection: setupSelection(["title"]) });
 
-  expect(injectedStyles()).not.toContain('[data-name="title"]::after');
+  expect(resizeHandles()).toHaveLength(0);
 });
 
 test("部品インスタンスを選んでもハンドルは描かれない", () => {
   renderCanvas({ selection: setupSelection(["action"]) });
 
-  expect(injectedStyles()).not.toContain('[data-name="action"]::after');
+  expect(resizeHandles()).toHaveLength(0);
 });
 
 test("artboard を選ぶとハンドルが描かれる", () => {
   renderCanvas({ selection: setupSelection(["home"]) });
 
-  expect(injectedStyles()).toContain('[data-name="home"]::after');
+  expect(resizeHandles()).toHaveLength(8);
 });
 
 test("何も選んでいなければハンドルは描かれない", () => {
   renderCanvas({ selection: setupSelection() });
 
-  expect(injectedStyles()).not.toContain("::after");
+  expect(resizeHandles()).toHaveLength(0);
 });
 
 test("右辺を掴んで右へ運ぶと、動かした分だけ幅が伸びた大きさが通知される", () => {
@@ -169,4 +176,35 @@ test("大きさを変えた直後のクリックでは選択が変わらない",
   fireEvent.click(drawn("title"));
 
   expect(onSelect).not.toHaveBeenCalled();
+});
+
+test("幅のハンドルを掴んで右へ運ぶと、動かした分だけ幅が伸びた大きさが通知される", () => {
+  /*
+   * ハンドルは辺をまたいで置かれるので外半分は要素の矩形の外にあり、帯の当たり判定
+   * （`NodeResize.handleAt`）では掴めない。掴んだあとの移動と解放を受けるのは
+   * キャンバスの器なので、運ぶ側はノードへ dispatch する（そこから器へ泡立つ）。
+   */
+  const onResize = vi.fn();
+  renderCanvas({ selection: setupSelection(["panel"]), onResize });
+  const panel = drawnAt("panel", PanelBounds);
+
+  pressPointer(resizeHandleFor("width"), { x: 300, y: 100 });
+  movePointer(panel, { x: 340, y: 100 });
+  releasePointer(panel, { x: 340, y: 100 });
+
+  expect(onResize).toHaveBeenLastCalledWith({ axis: "width", length: 240 });
+});
+
+test("測り直すと、幅のハンドルは要素の右辺の上へ置かれる", () => {
+  /*
+   * 測定 → 描画の配線。ハンドルが出ているだけでは、測った矩形を使わずに置いていても
+   * 通ってしまう。器の矩形は happy-dom では 0 なので、client 座標がそのまま
+   * 器からの相対になる。右辺 300 の上に中心が来るので、左端は 5px ぶん手前。
+   */
+  renderCanvas({ selection: setupSelection(["panel"]) });
+  drawnAt("panel", PanelBounds);
+
+  fireEvent(globalThis.window, new Event("resize"));
+
+  expect(resizeHandleFor("width").style.left).toBe("295px");
 });

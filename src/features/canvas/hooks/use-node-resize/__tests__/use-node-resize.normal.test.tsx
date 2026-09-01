@@ -79,7 +79,7 @@ function NodeResizeHarness({
         data-name="panel"
         data-testid="panel"
         onPointerDown={(event) =>
-          setGrabbed(nodeResize.grabHandle(event) ? "掴んだ" : "掴んでいない")
+          setGrabbed(nodeResize.grabAt(event) ? "掴んだ" : "掴んでいない")
         }
         onClick={() =>
           setClicked(nodeResize.consumeClick() ? "飲み込んだ" : "選択に使う")
