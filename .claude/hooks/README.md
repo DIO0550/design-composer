@@ -23,6 +23,8 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `hook-canary.sh`         | `PreToolUse` (Bash)       | **カナリア**。`echo hook-canary` を必ず deny する。通ってしまったらフックが発火しない実行環境（後述） |
 | `session-url-notice.sh`  | `SessionStart`            | **セッション URL の提示**（AGENTS.md「Issue に紐づいて起動したら、セッションの URL を Issue に残す」）。URL を組み立てて渡す。ブランチが `claude/issue-<N>-...` なら対象の番号も添える |
 | `record-firings.sh`      | `SessionStart` + `PostToolUse` (Skill/Task/Agent) | **スキル・サブエージェントの発火ログ**。tmp のセッション別ログへ追記し、`harness-record` が記録を書くときに読む。SessionStart のセッション見出しで「起動しなかった」と「フック不発」を切り分ける |
+| `track-verification-agent-activity.sh` | `PreToolUse` + `PostToolUse` (Task/Agent) | **検証エージェントの実行中フラグ**(`分類: subagent-control`)。`plan-reviewer` / `implementation-reviewer` の開始・終了をセッション別のマーカーで数える。`block-git-during-verification-agent.sh` が読む |
+| `block-git-during-verification-agent.sh` | `PreToolUse` (Bash)   | **検証エージェント実行中の git 操作を拒否**(`分類: subagent-control`)。マーカーが立っている間は `git add` / `commit` / `push` を deny する。ミューテーション実測の途中の書き換えをコミットへ取り込む事故(pr-391 #18)を防ぐ |
 
 ## 移植元から見送ったもの
 
@@ -84,6 +86,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 | --- | --- |
 | `block-lint-suppress.sh`(編集時のブロック) | **あり**。抑制コメントは diff に残るので、`.github/scripts/check-added-lint-suppressions.sh` が**追加行の分だけ**同じ判定で落とす(許可される例外も `lib/lint-suppressions.py` で共有) |
 | `block-npx.sh`(セッション中の行為の禁止) | **無し**。push の時点で痕跡が残らないため代替不能 |
+| `block-git-during-verification-agent.sh`(セッション中の行為の禁止) | **無し**。この競合はセッションの実行タイミングだけが原因で、コミット後のリポジトリの状態には痕跡が残らない |
 | `session-url-notice.sh`(セッション URL の提示) | **無し**。URL はセッションの中にしか無く、残す先も GitHub のコメントなので、push の時点で痕跡が残らない。落ちても穴は開かない(規約が AGENTS.md に残り、失っても情報が 1 つ足りないだけでガードは破れない) |
 | `post-edit-lint.sh` / `check-test-rules.sh` / `check-doc-comments.sh` / `check-test-helper-duplication.sh`(即時フィードバック) | 結果は push 前の検査(git hooks)と CI が拾う。**即時性だけが失われる** |
 | `record-firings.sh`(発火ログ) | **無し**。ただし失敗しても穴は開かない(セッション見出しが無いログは `harness-record` が「計測対象外」と書く設計で、誤ったゼロにはならない)。カナリアと同じ「失敗してもガードが破れない」検出系 |
@@ -199,6 +202,22 @@ python3 .claude/hooks/lib/missing-doc-comments.py --all src
 # push がブロックされること(deny が出力される。doc 無しの宣言があるとき)
 echo '{"tool_input":{"command":"git push"}}' \
   | bash .claude/hooks/pre-push-doc-comments.sh
+```
+
+```bash
+# 検証エージェント実行中は git add が拒否されること
+export TMPDIR=/tmp
+echo '{"hook_event_name":"PreToolUse","session_id":"probe","tool_name":"Task","tool_input":{"subagent_type":"implementation-reviewer"}}' \
+  | bash .claude/hooks/track-verification-agent-activity.sh
+echo '{"session_id":"probe","tool_input":{"command":"git add -A"}}' \
+  | bash .claude/hooks/block-git-during-verification-agent.sh
+
+# 終了すれば通ること(出力なし・exit 0)
+echo '{"hook_event_name":"PostToolUse","session_id":"probe","tool_name":"Task","tool_input":{"subagent_type":"implementation-reviewer"}}' \
+  | bash .claude/hooks/track-verification-agent-activity.sh
+echo '{"session_id":"probe","tool_input":{"command":"git add -A"}}' \
+  | bash .claude/hooks/block-git-during-verification-agent.sh; echo "exit=$?"
+rm -rf "${TMPDIR}/design-composer-verification-agents-probe"
 ```
 
 ```bash
