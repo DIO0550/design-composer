@@ -27,17 +27,22 @@ test("ハンドルは四隅に出る", () => {
   ]).toEqual([true, true, true, true]);
 });
 
-test("ハンドルの中身は枠より上に描かれる", () => {
-  // 逆順にすると枠が中身を覆い、白抜きではなく塗り潰しの四角になる
+test("ハンドルの枠の内側は枠より上に描かれる", () => {
+  // 逆順にすると枠が内側を覆い、白抜きではなく塗り潰しの四角になる。
+  // 先に内側の色があること自体を見るのは、無ければ `indexOf` が -1 を返して
+  // 順序の比較だけでは通ってしまうため
   const { container } = render(<ResizeHandleStyle name="home" scale={1} />);
 
   const rule = ruleText(container);
-  expect(rule.indexOf("#fff")).toBeLessThan(rule.indexOf("#3b82f6"));
+  expect([
+    rule.includes("#fff"),
+    rule.indexOf("#fff") < rule.indexOf("#3b82f6"),
+  ]).toEqual([true, true]);
 });
 
-test("ハンドルの中身は枠の太さぶん内側に置かれる", () => {
+test("ハンドルの内側は枠の太さぶん寄せて置かれる", () => {
   /*
-   * 枠の太さは `padding` が作り、中身は content box を基準に置かれる。
+   * 枠の太さは `padding` が作り、内側は content box を基準に置かれる。
    * どちらか一方が欠けると枠が閉じず、四角が L 字に見える。
    */
   const { container } = render(<ResizeHandleStyle name="home" scale={1} />);
@@ -49,11 +54,18 @@ test("ハンドルの中身は枠の太さぶん内側に置かれる", () => {
   ]).toEqual([true, true]);
 });
 
-test("ハンドルは要素の外へはみ出さない", () => {
-  // artboard は既定で `overflow:hidden` なので、外へ出した部分は切られてしまう
+test("ハンドルは要素の箱にぴったり重なる擬似要素として出る", () => {
+  /*
+   * 3 つが揃って初めて四隅に貼り付く。`content` が無いと擬似要素はボックスを
+   * 作らず、`position:absolute` が無いと `inset` が効かず、`inset:0` が無いと
+   * 大きさを持たない。要素の外へ出さないのは、artboard が既定で
+   * `overflow:hidden` を持ち、外へ出した部分が切られるため。
+   */
   const { container } = render(<ResizeHandleStyle name="home" scale={1} />);
 
-  expect(ruleText(container)).toContain("inset:0");
+  expect(ruleText(container)).toContain(
+    '::after{content:"";position:absolute;inset:0',
+  );
 });
 
 test("ハンドルはポインタを受け取らない", () => {
