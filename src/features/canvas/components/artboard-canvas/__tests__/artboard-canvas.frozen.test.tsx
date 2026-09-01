@@ -8,11 +8,11 @@ import { injectedStyles, renderCanvas } from "./setup";
 /*
  * 外部編集でファイルが壊れている間のキャンバス（#135）。
  *
- * 掴める帯を出さないことと、選択の枠を残すことは対で決めた判断なので、
- * 片方だけを見ると（枠まで消す実装 / 帯を出したままの実装のどちらかが）通ってしまう。
+ * ハンドルを出さないことと、選択の枠を残すことは対で決めた判断なので、
+ * 片方だけを見ると（枠まで消す実装 / ハンドルを出したままの実装のどちらかが）通ってしまう。
  */
 
-/** artboard を 1 枚だけ持ち、それを選んでいる対。artboard は 2 軸とも fixed なので帯が出る。 */
+/** artboard を 1 枚だけ持ち、それを選んでいる対。artboard は 2 軸とも fixed なのでハンドルが出る。 */
 function selectedArtboard(): DocumentSelection {
   return DocumentSelection.fromNames(
     DesignDocument.create({
@@ -22,16 +22,16 @@ function selectedArtboard(): DocumentSelection {
   );
 }
 
-test("ファイルが不正な間は掴める帯を描かない", () => {
+test("ファイルが不正な間はハンドルを描かない", () => {
   renderCanvas({ selection: selectedArtboard(), isFrozen: true });
 
   expect(injectedStyles()).not.toContain('[data-name="home"]::after');
 });
 
-test("ファイルが不正でなければ選択中の artboard に掴める帯が出る", () => {
+test("ファイルが不正でなければ選択中の artboard にハンドルが出る", () => {
   renderCanvas({ selection: selectedArtboard() });
 
-  // 上のテストの対照。これが無いと、帯を一切描かない実装でも通ってしまう
+  // 上のテストの対照。これが無いと、ハンドルを一切描かない実装でも通ってしまう
   expect(injectedStyles()).toContain('[data-name="home"]::after');
 });
 
