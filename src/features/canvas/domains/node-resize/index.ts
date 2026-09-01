@@ -4,7 +4,7 @@ import { DesignDocument } from "@/domains/dcmp/design-document";
 import { Node, type Props } from "@/domains/dcmp/node";
 import { Size } from "@/domains/dcmp/size";
 import { DocumentSelection } from "@/domains/session/document-selection";
-import { Axes } from "@/domains/unit/axis";
+import { Axes, type Axis } from "@/domains/unit/axis";
 import { Offset } from "@/domains/unit/offset";
 import { CanvasView } from "@/features/canvas/domains/canvas-view";
 import { CanvasBounds } from "@/features/canvas/domains/node-drop";
@@ -13,12 +13,34 @@ import { Option } from "@/utils/Option";
 /**
  * 掴める帯の太さ（画面上の px）。終端からこの幅までが `handleAt` の当たり判定に入る。
  *
- * ハンドルは四隅の四角として描かれるので、**掴める場所と描かれている場所は一致しない**
- * （四隅のうち掴めるのは右辺・下辺の帯に入る 3 つだけ）。一致させるには角で 2 軸を
- * 同時に変えられる必要があり、それは掴んだハンドルを `AxisLength` 1 本しか持たない
- * 今の `NodeResize` の作り直しになる。
+ * ハンドルの四角（`Placements`）とは別に、**右辺・下辺の全長が掴める**。描かれている
+ * 四角だけを掴み口にすると、辺のどこでも掴めていたものが 10px の的になって操作性が
+ * 落ちるため、四角の掴み口をこの帯に上乗せしている。結果として「掴めるがカーソルは
+ * 変わらない」場所（辺の全長）が残る。解消には角で 2 軸を同時に変えられる必要があり、
+ * それは掴んだハンドルを `AxisLength` 1 本しか持たない今の `NodeResize` の作り直しになる。
  */
 const ResizeHandleThicknessPx = 8;
+
+/**
+ * ハンドルの中心を矩形のどこに置くかの割合。0 が始点、0.5 が中央、1 が終端。
+ * 3 つ以外を取らないので、辺と中央だけを綴れる形に閉じる。
+ */
+type PlacementRatio = 0 | 0.5 | 1;
+
+/**
+ * ハンドルを出す 1 箇所（docs/06-ui.md「リサイズハンドル」）。
+ *
+ * `axis` は掴んだときに変わる軸で、掴めない位置では `none`。掴めるのが右辺・下辺の
+ * 中央だけなのは、**1 ハンドル 1 軸**（`NodeResize` は掴んだハンドルを `AxisLength`
+ * 1 本しか持たない）という今のモデルに一致する位置がそこだけのため。角は 2 軸同時、
+ * 左辺・上辺は反対側の辺を留める位置の補正が要る（`placement: "flow"` のノードは
+ * 座標を持たないので補正できない / #371）。
+ */
+export type ResizeHandlePlacement = Readonly<{
+  x: PlacementRatio;
+  y: PlacementRatio;
+  axis: Option<Axis>;
+}>;
 
 /**
  * キャンバス上でリサイズハンドルを掴んでから離すまでの状態
@@ -79,9 +101,50 @@ function nodeHandles(node: Node): readonly AxisLength[] {
 }
 
 export const NodeResize = {
+  /**
+   * ハンドルを出す 8 箇所（四隅と各辺の中間）。左上から時計回り。
+   *
+   * 描く側と掴める側がここ 1 箇所から決まるようにしている。並びを 2 箇所に持つと、
+   * 片方だけ変えたときに「カーソルが出る場所」と「掴める場所」が黙って割れる。
+   */
+  Placements: [
+    { x: 0, y: 0, axis: Option.none },
+    { x: 0.5, y: 0, axis: Option.none },
+    { x: 1, y: 0, axis: Option.none },
+    { x: 1, y: 0.5, axis: Option.some(Axes.Width) },
+    { x: 1, y: 1, axis: Option.none },
+    { x: 0.5, y: 1, axis: Option.some(Axes.Height) },
+    { x: 0, y: 1, axis: Option.none },
+    { x: 0, y: 0.5, axis: Option.none },
+  ] as const satisfies readonly ResizeHandlePlacement[],
+
   /** 何も掴んでいない状態から始める。 */
   create(): NodeResize {
     return { kind: "idle" };
+  },
+
+  /**
+   * その位置で掴めるハンドル。
+   *
+   * @param handles 選択中のものが持つ、掴める軸のハンドル
+   * @param placement 見ている位置
+   * @returns その位置に対応する軸のハンドル。位置が掴めない側か、その軸が
+   *   固定されていなければ `none`
+   */
+  handleFor(
+    handles: readonly AxisLength[],
+    placement: ResizeHandlePlacement,
+  ): Option<AxisLength> {
+    if (!placement.axis.some) {
+      return Option.none;
+    }
+    const axis = placement.axis.value;
+    return Option.fromNullable(handles.find((handle) => handle.axis === axis));
+  },
+
+  /** 今まさに掴んで動かしている最中か。 */
+  isGrabbing(resize: NodeResize): boolean {
+    return resize.kind === "resizing";
   },
 
   /**
@@ -111,7 +174,7 @@ export const NodeResize = {
 
   /**
    * ポインタが乗っているハンドル。終端から内側へ `ResizeHandleThicknessPx` までを
-   * 掴める帯とする（描かれている四隅の四角とは範囲が違う。上の定数を参照）。
+   * 掴める帯とする（描かれている四角より広い。上の定数を参照）。
    *
    * 角では 2 本の帯が重なるので、先にある方（`handles` の並び順）を掴む。
    * どちらを選んでも一方の軸しか変えられない以上、順序を決めておけば足りる。
