@@ -1,10 +1,10 @@
 {
-  "reportVersion": "3223270504960b8f6c2dd8886f7be02fdab7412b",
+  "reportVersion": "d301983a89e517aed49c316712254bdd6989f48e",
   "maxDiffRatio": 0.002,
   "changed": 1,
-  "new": 1,
-  "deleted": 2,
-  "passed": 140,
+  "new": 2,
+  "deleted": 3,
+  "passed": 139,
   "failed": 1,
   "results": [
     {
@@ -195,12 +195,12 @@
       "title": "features/assets/CreateComponent",
       "name": "ファイルが不正な間に部品名を打っている",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
+      "reason": "within-threshold",
+      "diffPixels": 5,
       "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-assets-createcomponent--instance-selected",
@@ -300,8 +300,8 @@
       "name": "artboard を選択中",
       "status": "changed",
       "reason": "pixel-diff",
-      "diffPixels": 4934,
-      "diffRatio": 0.0054,
+      "diffPixels": 5095,
+      "diffRatio": 0.0055000000000000005,
       "hasExpected": true,
       "hasActual": true,
       "hasDiff": true
@@ -580,6 +580,32 @@
       "hasDiff": false
     },
     {
+      "story": "features-canvas-artboardcanvas-resizehandleoverlay--both-axes",
+      "id": "features-canvas-artboardcanvas-resizehandleoverlay--both-axes",
+      "title": "features/canvas/ArtboardCanvas/ResizeHandleOverlay",
+      "name": "2 軸とも掴める",
+      "status": "new",
+      "reason": "no-baseline",
+      "diffPixels": 0,
+      "diffRatio": 0,
+      "hasExpected": false,
+      "hasActual": true,
+      "hasDiff": false
+    },
+    {
+      "story": "features-canvas-artboardcanvas-resizehandleoverlay--width-only",
+      "id": "features-canvas-artboardcanvas-resizehandleoverlay--width-only",
+      "title": "features/canvas/ArtboardCanvas/ResizeHandleOverlay",
+      "name": "幅だけ掴める",
+      "status": "new",
+      "reason": "no-baseline",
+      "diffPixels": 0,
+      "diffRatio": 0,
+      "hasExpected": false,
+      "hasActual": true,
+      "hasDiff": false
+    },
+    {
       "story": "features-canvas-artboardcanvas-resizehandlestyle--both-axes",
       "id": "features-canvas-artboardcanvas-resizehandlestyle--both-axes",
       "title": "features/canvas/ArtboardCanvas/ResizeHandleStyle",
@@ -590,19 +616,6 @@
       "diffRatio": 0,
       "hasExpected": true,
       "hasActual": false,
-      "hasDiff": false
-    },
-    {
-      "story": "features-canvas-artboardcanvas-resizehandlestyle--selected",
-      "id": "features-canvas-artboardcanvas-resizehandlestyle--selected",
-      "title": "features/canvas/ArtboardCanvas/ResizeHandleStyle",
-      "name": "選択中",
-      "status": "new",
-      "reason": "no-baseline",
-      "diffPixels": 0,
-      "diffRatio": 0,
-      "hasExpected": false,
-      "hasActual": true,
       "hasDiff": false
     },
     {
@@ -623,13 +636,13 @@
       "id": "features-canvas-artboardcanvas-resizehandlestyle--zoomed",
       "title": "features/canvas/ArtboardCanvas/ResizeHandleStyle",
       "name": "倍率 2 倍",
-      "status": "passed",
-      "reason": "within-threshold",
-      "diffPixels": 1389,
-      "diffRatio": 0.0015,
+      "status": "deleted",
+      "reason": "no-current",
+      "diffPixels": 0,
+      "diffRatio": 0,
       "hasExpected": true,
-      "hasActual": true,
-      "hasDiff": true
+      "hasActual": false,
+      "hasDiff": false
     },
     {
       "story": "features-canvas-artboardcanvas-stalecanvasoverlay--default",
