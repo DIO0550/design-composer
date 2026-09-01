@@ -22,13 +22,16 @@ import { Option } from "@/utils/Option";
 const ResizeHandleThicknessPx = 8;
 
 /**
- * ハンドルの中心を矩形のどこに置くかの割合。0 が始点、0.5 が中央、1 が終端。
+ * ハンドルの中心を矩形のどこに留めるかの割合。0 が始点、0.5 が中央、1 が終端。
  * 3 つ以外を取らないので、辺と中央だけを綴れる形に閉じる。
  */
-type PlacementRatio = 0 | 0.5 | 1;
+type AnchorRatio = 0 | 0.5 | 1;
 
 /**
- * ハンドルを出す 1 箇所（docs/06-ui.md「リサイズハンドル」）。
+ * ハンドルを留める 1 箇所（docs/06-ui.md「リサイズハンドル」）。
+ *
+ * `Placement` と呼ばないのは、このリポジトリの `placement` が「ノードが親の中で
+ * どう置かれるか」（`flow` / `absolute`。`domains/dcmp/placement`）を既に指しているため。
  *
  * `axis` は掴んだときに変わる軸で、掴めない位置では `none`。掴めるのが右辺・下辺の
  * 中央だけなのは、**1 ハンドル 1 軸**（`NodeResize` は掴んだハンドルを `AxisLength`
@@ -36,9 +39,9 @@ type PlacementRatio = 0 | 0.5 | 1;
  * 左辺・上辺は反対側の辺を留める位置の補正が要る（`placement: "flow"` のノードは
  * 座標を持たないので補正できない / #371）。
  */
-export type ResizeHandlePlacement = Readonly<{
-  x: PlacementRatio;
-  y: PlacementRatio;
+export type ResizeHandleAnchor = Readonly<{
+  x: AnchorRatio;
+  y: AnchorRatio;
   axis: Option<Axis>;
 }>;
 
@@ -102,12 +105,12 @@ function nodeHandles(node: Node): readonly AxisLength[] {
 
 export const NodeResize = {
   /**
-   * ハンドルを出す 8 箇所（四隅と各辺の中間）。左上から時計回り。
+   * ハンドルを留める 8 箇所（四隅と各辺の中間）。左上から時計回り。
    *
    * 描く側と掴める側がここ 1 箇所から決まるようにしている。並びを 2 箇所に持つと、
    * 片方だけ変えたときに「カーソルが出る場所」と「掴める場所」が黙って割れる。
    */
-  Placements: [
+  HandleAnchors: [
     { x: 0, y: 0, axis: Option.none },
     { x: 0.5, y: 0, axis: Option.none },
     { x: 1, y: 0, axis: Option.none },
@@ -116,7 +119,7 @@ export const NodeResize = {
     { x: 0.5, y: 1, axis: Option.some(Axes.Height) },
     { x: 0, y: 1, axis: Option.none },
     { x: 0, y: 0.5, axis: Option.none },
-  ] as const satisfies readonly ResizeHandlePlacement[],
+  ] as const satisfies readonly ResizeHandleAnchor[],
 
   /** 何も掴んでいない状態から始める。 */
   create(): NodeResize {
@@ -124,27 +127,37 @@ export const NodeResize = {
   },
 
   /**
-   * その位置で掴めるハンドル。
+   * その箇所で掴めるハンドル。
    *
    * @param handles 選択中のものが持つ、掴める軸のハンドル
-   * @param placement 見ている位置
-   * @returns その位置に対応する軸のハンドル。位置が掴めない側か、その軸が
+   * @param anchor 見ている箇所
+   * @returns その箇所に対応する軸のハンドル。箇所が掴めない側か、その軸が
    *   固定されていなければ `none`
    */
   handleFor(
     handles: readonly AxisLength[],
-    placement: ResizeHandlePlacement,
+    anchor: ResizeHandleAnchor,
   ): Option<AxisLength> {
-    if (!placement.axis.some) {
+    if (!anchor.axis.some) {
       return Option.none;
     }
-    const axis = placement.axis.value;
+    const axis = anchor.axis.value;
     return Option.fromNullable(handles.find((handle) => handle.axis === axis));
   },
 
-  /** 今まさに掴んで動かしている最中か。 */
-  isGrabbing(resize: NodeResize): boolean {
-    return resize.kind === "resizing";
+  /**
+   * 今まさに掴んで動かしている軸。
+   *
+   * 真偽値ではなく軸を返すのは、掴んでいる間のカーソル（`ew-resize` / `ns-resize`）を
+   * 器が出すのに軸が要るため。ハンドル自身はポインタを通すので出せない。
+   *
+   * @param resize 今のリサイズの状態
+   * @returns 掴んでいる軸。掴んでいなければ `none`
+   */
+  grabbedAxis(resize: NodeResize): Option<Axis> {
+    return resize.kind === "resizing"
+      ? Option.some(resize.handle.axis)
+      : Option.none;
   },
 
   /**

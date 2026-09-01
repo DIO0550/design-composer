@@ -4,7 +4,7 @@ import { Axes, type Axis } from "@/domains/unit/axis";
 import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
 import {
   NodeResize,
-  type ResizeHandlePlacement,
+  type ResizeHandleAnchor,
 } from "@/features/canvas/domains/node-resize";
 import { Option } from "@/utils/Option";
 import { SelectionColor } from "../artboard-frame-list";
@@ -17,9 +17,13 @@ const HandleBorderPx = 1.5;
 
 /**
  * 掴める軸ごとのカーソル。どちらの向きへ動かせるかを指す綴りで、軸から一意に
- * 決まるので位置ごとには持たない。
+ * 決まるので箇所ごとには持たない。
+ *
+ * export しているのは、掴んでいる間のカーソルを器（`ArtboardCanvas`）が出すため。
+ * ハンドルはそのあいだポインタを通すので、自分では出せない。別々に綴ると、
+ * 押す前と押している間でカーソルが変わってしまう。
  */
-const AxisCursors = {
+export const AxisCursors = {
   [Axes.Width]: "ew-resize",
   [Axes.Height]: "ns-resize",
 } as const satisfies Record<Axis, CSSProperties["cursor"]>;
@@ -31,20 +35,20 @@ const AxisCursors = {
  * artboard は `overflow:hidden` を持つが、このオーバーレイは artboard の外にあるので
  * はみ出した半分が切られない。
  *
- * @param placement 出す位置
+ * @param anchor 出す箇所
  * @param bounds 選択中のものが描かれている矩形（器からの相対）
  * @param grab その位置で今つかめるハンドル。掴めないなら `none`
  * @returns その位置へ置くためのスタイル
  */
 function handleStyle(
-  placement: ResizeHandlePlacement,
+  anchor: ResizeHandleAnchor,
   bounds: CanvasBounds,
   grab: Option<AxisLength>,
 ): CSSProperties {
   return {
     position: "absolute",
-    left: `${bounds.left + bounds.width * placement.x - HandleSizePx / 2}px`,
-    top: `${bounds.top + bounds.height * placement.y - HandleSizePx / 2}px`,
+    left: `${bounds.left + bounds.width * anchor.x - HandleSizePx / 2}px`,
+    top: `${bounds.top + bounds.height * anchor.y - HandleSizePx / 2}px`,
     width: `${HandleSizePx}px`,
     height: `${HandleSizePx}px`,
     boxSizing: "border-box",
@@ -87,20 +91,26 @@ export function ResizeHandleOverlay({
   onGrab: (handle: AxisLength, event: ReactPointerEvent<HTMLElement>) => void;
 }>) {
   return (
+    /*
+     * `pointer-events-none` は器そのものに要る。落とすと `inset-0` の透明な層が
+     * キャンバス全面を覆い、ノードの選択もパンもできなくなる。
+     * **`z-10` を落としてもテストは 1 件も落ちない**（happy-dom は重なりを持たない）。
+     * 気づく手段は絵を見ることだけ。
+     */
     <div aria-hidden className="pointer-events-none absolute inset-0 z-10">
-      {NodeResize.Placements.map((placement) => {
+      {NodeResize.HandleAnchors.map((anchor) => {
         /*
-         * 掴んでいる間は掴める位置も `none` 扱いにする。カーソルと当たり判定が
+         * 掴んでいる間は掴める箇所も `none` 扱いにする。カーソルと当たり判定が
          * 1 つの値から決まるので、片方だけ残ることがない。
          */
         const grab = isGrabbing
           ? Option.none
-          : NodeResize.handleFor(handles, placement);
+          : NodeResize.handleFor(handles, anchor);
         return (
           <div
-            key={`${placement.x},${placement.y}`}
+            key={`${anchor.x},${anchor.y}`}
             data-testid="resize-handle"
-            style={handleStyle(placement, bounds, grab)}
+            style={handleStyle(anchor, bounds, grab)}
             onPointerDown={
               grab.some ? (event) => onGrab(grab.value, event) : undefined
             }
