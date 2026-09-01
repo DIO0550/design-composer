@@ -141,7 +141,7 @@ export function injectedStyles(): string {
 }
 
 /**
- * 出ているリサイズハンドル。左上から時計回りの並び（`NodeResize.Placements`）。
+ * 出ているリサイズハンドル。左上から時計回りの並び（`NodeResize.HandleAnchors`）。
  *
  * @returns 出ているハンドルの並び。出ていなければ空
  */
@@ -152,16 +152,21 @@ export function resizeHandles(): readonly HTMLElement[] {
 /**
  * その軸を掴めるハンドル。
  *
- * 並びの何番目かを数字で書かず `Placements` から引くのは、位置と軸の対応を
+ * 並びの何番目かを数字で書かず `HandleAnchors` から引くのは、箇所と軸の対応を
  * 決めているのがそちらだから（テスト側に写すと片方だけ変えられる）。
  *
  * @param axis 掴んだときに変わる軸
- * @returns その軸に対応する位置のハンドル。出ていなければテストを落とす
+ * @returns その軸に対応する箇所のハンドル
+ * @throws その軸を掴める箇所が `HandleAnchors` に無いとき。ハンドルが 1 つも
+ *   出ていない場合は `getAllByTestId` がテストを落とす
  */
 export function resizeHandleFor(axis: Axis): HTMLElement {
-  const index = NodeResize.Placements.findIndex(
-    (placement) => placement.axis.some && placement.axis.value === axis,
+  const index = NodeResize.HandleAnchors.findIndex(
+    (anchor) => anchor.axis.some && anchor.axis.value === axis,
   );
+  if (index < 0) {
+    throw new Error(`${axis} を掴める箇所が HandleAnchors にありません`);
+  }
   return screen.getAllByTestId("resize-handle")[index];
 }
 

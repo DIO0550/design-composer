@@ -208,3 +208,47 @@ test("測り直すと、幅のハンドルは要素の右辺の上へ置かれ�
 
   expect(resizeHandleFor("width").style.left).toBe("295px");
 });
+
+test("高さのハンドルを掴んで下へ運ぶと、動かした分だけ高さが伸びた大きさが通知される", () => {
+  // 幅の 1 件だけだと、押されたハンドルに関わらず先頭の軸を掴む実装でも通ってしまう
+  const onResize = vi.fn();
+  renderCanvas({ selection: setupSelection(["panel"]), onResize });
+  const panel = drawnAt("panel", PanelBounds);
+
+  pressPointer(resizeHandleFor("height"), { x: 200, y: 150 });
+  movePointer(panel, { x: 200, y: 180 });
+  releasePointer(panel, { x: 200, y: 180 });
+
+  expect(onResize).toHaveBeenLastCalledWith({ axis: "height", length: 130 });
+});
+
+test("ハンドルを掴んでいる間は、どのハンドルもポインタを受け取らない", () => {
+  /*
+   * 掴んだあとの移動と解放を受けるのはキャンバスの器なので、ハンドルが不透明のままだと
+   * 追いかけてきたハンドルにポインタが乗った瞬間に器から離脱して取り消しになる。
+   * 掴んでいるかをオーバーレイへ渡す配線が切れていても、オーバーレイ自身のテストは
+   * props で受け取るぶん通ってしまうのでここで見る。
+   */
+  renderCanvas({ selection: setupSelection(["panel"]) });
+  drawnAt("panel", PanelBounds);
+
+  pressPointer(resizeHandleFor("width"), { x: 300, y: 100 });
+
+  expect(resizeHandles().map((handle) => handle.style.pointerEvents)).toEqual(
+    Array(8).fill("none"),
+  );
+});
+
+test("ハンドルを覆う層はポインタを受け取らず、支援技術からも隠される", () => {
+  /*
+   * 層はキャンバス全面を覆うので、ポインタを受け取るとノードの選択もパンもできなくなる。
+   * ハンドルは選択を示す飾りなので読み上げの対象にもしない（兄弟のオーバーレイと同じ）。
+   */
+  renderCanvas({ selection: setupSelection(["panel"]) });
+
+  const overlay = resizeHandleFor("width").parentElement;
+  expect([
+    overlay?.classList.contains("pointer-events-none"),
+    overlay?.getAttribute("aria-hidden"),
+  ]).toEqual([true, "true"]);
+});
