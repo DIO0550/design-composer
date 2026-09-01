@@ -204,7 +204,7 @@ export function ArtboardCanvas({
         <ResizeHandleOverlay
           bounds={drawnBounds.value}
           handles={resizeHandles}
-          isGrabbing={false}
+          isGrabbing={nodeResize.isGrabbing}
           onGrab={nodeResize.grab}
         />
       ) : null}
