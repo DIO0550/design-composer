@@ -1,5 +1,5 @@
 import { Artboard } from "@/domains/dcmp/artboard";
-import type { AxisLength } from "@/domains/dcmp/axis-length";
+import { AxisLength } from "@/domains/dcmp/axis-length";
 import type { ChildPosition } from "@/domains/dcmp/child-position";
 import {
   Component,
@@ -13,7 +13,7 @@ import {
   type FormatVersionOf,
 } from "@/domains/dcmp/format-version";
 import { NameSpace } from "@/domains/dcmp/name-space";
-import { Node, PropEdit, type RefNode } from "@/domains/dcmp/node";
+import { Node, type PropEdit, type RefNode } from "@/domains/dcmp/node";
 import { NodeTree, type NodeTreeUpdate } from "@/domains/dcmp/node-tree";
 import { type AbsolutePlacement, Placement } from "@/domains/dcmp/placement";
 import { ResolvedProps } from "@/domains/dcmp/resolved-props";
@@ -78,6 +78,33 @@ function artboardIndexOfNode(
     (artboard) => Artboard.findNode(artboard, name).some,
   );
   return index === -1 ? Option.none : Option.some(index);
+}
+
+/**
+ * 名前で指したノードへ、並びの順に編集を重ねる。
+ *
+ * 大きさ（軸ごと）と座標（`x` / `y`）がどちらも「1 回の編集で複数の prop を書く」
+ * 形なので 1 箇所に置く。途中で失敗したらそこで止めて失敗を返す。
+ *
+ * @param document 書き換える対象を含むドキュメント
+ * @param name 書き換えるノードの名前
+ * @param edits 重ねる編集。並びの順に適用する
+ * @returns すべて適用したドキュメント。途中で失敗したらその失敗
+ */
+function applyPropEdits(
+  document: DesignDocument,
+  name: string,
+  edits: readonly PropEdit[],
+): Result<DesignDocument, DesignDocumentEditError> {
+  const unedited: Result<DesignDocument, DesignDocumentEditError> =
+    Result.ok(document);
+  return edits.reduce<Result<DesignDocument, DesignDocumentEditError>>(
+    (edited, edit) =>
+      Result.flatMap(edited, (current) =>
+        DesignDocument.applyPropEdit(current, name, edit),
+      ),
+    unedited,
+  );
 }
 
 /**
@@ -575,19 +602,15 @@ export const DesignDocument = {
   resize(
     document: DesignDocument,
     name: string,
-    size: AxisLength,
+    sizes: readonly AxisLength[],
   ): Result<DesignDocument, DesignDocumentEditError> {
     const resizedArtboard = updateArtboardNamed(document, name, (artboard) =>
-      Artboard.resize(artboard, size),
+      sizes.reduce(Artboard.resize, artboard),
     );
     if (resizedArtboard.some) {
       return Result.ok(resizedArtboard.value);
     }
-    return DesignDocument.applyPropEdit(
-      document,
-      name,
-      PropEdit.set([size.axis], size.length),
-    );
+    return applyPropEdits(document, name, sizes.map(AxisLength.toPropEdit));
   },
 
   /**
@@ -644,17 +667,7 @@ export const DesignDocument = {
     if (!DesignDocument.findNode(document, name).some) {
       return Result.err({ kind: "node-not-found", name });
     }
-    const unedited: Result<DesignDocument, DesignDocumentEditError> =
-      Result.ok(document);
-    return Placement.toPropEdits(placement).reduce<
-      Result<DesignDocument, DesignDocumentEditError>
-    >(
-      (edited, edit) =>
-        Result.flatMap(edited, (current) =>
-          DesignDocument.applyPropEdit(current, name, edit),
-        ),
-      unedited,
-    );
+    return applyPropEdits(document, name, Placement.toPropEdits(placement));
   },
 
   /** 名前で指したノードを別のノードに差し替える。 */

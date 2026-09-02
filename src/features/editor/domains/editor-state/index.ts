@@ -811,13 +811,20 @@ export const EditorState = {
    * ハンドルが出るのが選択中のものだけだから。
    * 選択が無い・大きさを持たない指定は「そのリサイズが存在しない」ことなので `none`。
    * 選択は name で持っておりリサイズでは変わらないため、そのまま引き継ぐ。
+   *
+   * 長さを並びで受けるのは、角のハンドルが幅と高さを同時に変えるため。**まとめて
+   * 受けることで 1 回の編集になる**（軸ごとに呼ぶと Undo 1 回で片方しか戻らない）。
+   * ドラッグ全体が Undo 1 回で戻るわけではない（ポインタが動くたびに 1 件積む）。
    */
-  resize(state: EditorState, size: AxisLength): Option<EditorState> {
+  resize(
+    state: EditorState,
+    sizes: readonly AxisLength[],
+  ): Option<EditorState> {
     return Option.flatMap(EditorState.singleName(state), (name) => {
       const resized = DesignDocument.resize(
         EditorState.document(state),
         name,
-        size,
+        sizes,
       );
       return resized.ok ? withEdit(state, resized.value) : Option.none;
     });

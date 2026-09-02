@@ -59,7 +59,7 @@ export type EditorAction =
   | Readonly<{ type: "copy_node" }>
   | Readonly<{ type: "paste_node" }>
   | Readonly<{ type: "apply_prop_edit"; edit: PropEdit }>
-  | Readonly<{ type: "resize"; size: AxisLength }>
+  | Readonly<{ type: "resize"; sizes: readonly AxisLength[] }>
   | Readonly<{ type: "undo" }>
   | Readonly<{ type: "redo" }>
   | Readonly<{ type: "select_token"; ref: TokenRef }>
@@ -213,7 +213,7 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
       );
     case "resize":
       // 選択が無ければリサイズは存在しない（EditorState.resize の `none`）。
-      return Option.unwrapOr(EditorState.resize(state, action.size), state);
+      return Option.unwrapOr(EditorState.resize(state, action.sizes), state);
     case "undo":
       /*
        * 戻る先が無ければ何も変わらない（EditorState.undo の `none`）。

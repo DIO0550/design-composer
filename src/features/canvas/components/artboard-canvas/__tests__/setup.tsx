@@ -1,4 +1,4 @@
-import { render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { vi } from "vitest";
 import type { AxisLength } from "@/domains/dcmp/axis-length";
 import type { ChildPosition } from "@/domains/dcmp/child-position";
@@ -16,7 +16,9 @@ import {
   renderedElement,
 } from "@/features/canvas/__tests__/canvas-elements";
 import { measuredAs } from "@/features/canvas/__tests__/canvas-measure";
+import { resizeAnchorIndexFor } from "@/features/canvas/__tests__/canvas-resize";
 import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
+import type { ResizeGrip } from "@/features/canvas/domains/node-resize";
 import { useCanvasView } from "@/features/canvas/hooks/use-canvas-view";
 import { useNodeDrag } from "@/features/canvas/hooks/use-node-drag";
 import { Option } from "@/utils/Option";
@@ -60,7 +62,7 @@ type CanvasHandlers = Readonly<{
   onMoveNode: (name: string, to: ChildPosition) => void;
   onRepositionNode: (name: string, placement: AbsolutePlacement) => void;
   onRepositionArtboard: (name: string, canvasPosition: Offset) => void;
-  onResize: (size: AxisLength) => void;
+  onResize: (sizes: readonly AxisLength[]) => void;
   onEditProp: (edit: PropEdit) => void;
 }>;
 
@@ -128,14 +130,42 @@ export function renderCanvas(
 /**
  * キャンバスへ差し込まれた CSS 規則をすべて繋いだもの。
  *
- * 選択の枠もリサイズハンドルも、キャンバスの中身が React の管理外にあるため
- * `<style>` として差し込まれる（`NameStyleRule` / `ResizeHandleStyle`）。
- * 出ているかどうかはここを読むしかない。
+ * 選択の枠は、キャンバスの中身が React の管理外にあるため `<style>` として
+ * 差し込まれる（`NameStyleRule`）。出ているかどうかはここを読むしかない
+ * （リサイズハンドルは実要素なので `resizeHandles` で引く）。
  */
 export function injectedStyles(): string {
   return Array.from(document.querySelectorAll("style"))
     .map((style) => style.textContent ?? "")
     .join("");
+}
+
+/**
+ * 出ているリサイズハンドル。左上から時計回りの並び（`NodeResize.HandleAnchors`）。
+ *
+ * @returns 出ているハンドルの並び。出ていなければ空
+ */
+export function resizeHandles(): readonly HTMLElement[] {
+  return screen.queryAllByTestId("resize-handle");
+}
+
+/**
+ * その種類を掴めるハンドル。
+ *
+ * 並びの何番目かを数字で書かず `HandleAnchors` から引くのは、箇所と掴めるものの
+ * 対応を決めているのがそちらだから（テスト側に写すと片方だけ変えられる）。
+ *
+ * @param kind 掴める種類（`width` / `height` / `both`）
+ * @returns その種類を掴める箇所のハンドル
+ * @throws その種類を掴める箇所が `HandleAnchors` に無いとき。ハンドルが 1 つも
+ *   出ていない場合は `getAllByTestId` がテストを落とす
+ */
+export function resizeHandleFor(kind: ResizeGrip["kind"]): HTMLElement {
+  const index = resizeAnchorIndexFor(kind);
+  if (index < 0) {
+    throw new Error(`${kind} を掴める箇所が HandleAnchors にありません`);
+  }
+  return screen.getAllByTestId("resize-handle")[index];
 }
 
 /**

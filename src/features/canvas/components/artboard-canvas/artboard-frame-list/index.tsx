@@ -12,15 +12,23 @@ import { ArtboardFrame } from "../artboard-frame";
 import { NameStyleRule } from "../name-style-rule";
 
 /**
- * 選択中の要素に描く枠。Tailwind の `outline-blue-500` と同じ色を綴り直している
+ * 選択を表す青。Tailwind の `outline-blue-500` と同じ色を綴り直している
  * （選択子を組み立てて流し込む規則なので、クラスでは書けない）。
+ *
+ * export しているのは、枠とリサイズハンドル（`resize-handle-overlay`）が同じ色でなければ
+ * ならないため。別々に綴ると片方だけ変わって、同じ選択表示に青が 2 色出る。
+ */
+export const SelectionColor = "#3b82f6";
+
+/**
+ * 選択中の要素に描く枠。
  *
  * 要素の外側に描くのは、雛形の `primary` が同じ青（`#3b82f6`）で、内側に描くと
  * その色を背景に持つ要素（ボタンなど）の上で枠が見えなくなるため。
  * 枠に使えるのは `outline` だけで、`box-shadow` はノードの `shadow` prop が
  * インライン style で使う（docs/03 の対応表）ため奪えない。
  */
-const SelectionOutline = "outline:2px solid #3b82f6;outline-offset:1px";
+const SelectionOutline = `outline:2px solid ${SelectionColor};outline-offset:1px`;
 
 /**
  * ドロップ先の Box に描く枠。選択の枠と同時に出るので、色（Tailwind の

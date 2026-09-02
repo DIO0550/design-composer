@@ -27,7 +27,7 @@ export type NodeActions = Readonly<{
   reposition: (name: string, placement: AbsolutePlacement) => void;
   /** artboard をキャンバス上の別の位置へ置き直す（#390）。 */
   repositionArtboard: (name: string, canvasPosition: Offset) => void;
-  resize: (size: AxisLength) => void;
+  resize: (sizes: readonly AxisLength[]) => void;
   editProp: (edit: PropEdit) => void;
   insert: (template: NodeTemplate) => void;
   /** パレットから運んできたものを、落とした先のツリー位置へ挿す（#203）。 */
@@ -84,7 +84,7 @@ export function useNodeActions(): NodeActions {
     repositionArtboard: (name, canvasPosition) =>
       dispatch({ type: "reposition_artboard", name, canvasPosition }),
     /** リサイズハンドルのドラッグは選択中のものの大きさの変更（docs/06-ui.md）。 */
-    resize: (size) => dispatch({ type: "resize", size }),
+    resize: (sizes) => dispatch({ type: "resize", sizes }),
     /**
      * prop の編集はプロパティパネルとキャンバスのインライン編集の両方から届く
      * （どちらも選択中のものへの編集なので同じアクションで受ける）。

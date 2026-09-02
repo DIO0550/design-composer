@@ -31,7 +31,7 @@ test("選択中のノードの大きさを変えられる", () => {
   const state = EditorState.select(setupState(), "panel");
 
   const resized = Option.unwrap(
-    EditorState.resize(state, AxisLength.create("width", 200)),
+    EditorState.resize(state, [AxisLength.create("width", 200)]),
   );
 
   const node = Option.unwrap(
@@ -47,7 +47,7 @@ test("選択中の artboard の大きさを変えられる", () => {
   const state = EditorState.select(setupState(), "home");
 
   const resized = Option.unwrap(
-    EditorState.resize(state, AxisLength.create("height", 480)),
+    EditorState.resize(state, [AxisLength.create("height", 480)]),
   );
 
   const artboard = Option.unwrap(
@@ -60,7 +60,7 @@ test("大きさを変えても選択は動かない", () => {
   const state = EditorState.select(setupState(), "panel");
 
   const resized = Option.unwrap(
-    EditorState.resize(state, AxisLength.create("width", 200)),
+    EditorState.resize(state, [AxisLength.create("width", 200)]),
   );
 
   expect(EditorState.singleName(resized)).toEqual(Option.some("panel"));
@@ -68,6 +68,6 @@ test("大きさを変えても選択は動かない", () => {
 
 test("何も選んでいなければ大きさは変えられない", () => {
   expect(
-    EditorState.resize(setupState(), AxisLength.create("width", 200)),
+    EditorState.resize(setupState(), [AxisLength.create("width", 200)]),
   ).toEqual(Option.none);
 });

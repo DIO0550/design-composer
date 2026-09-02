@@ -154,7 +154,7 @@ export function ArtboardFrame({
            * 先に掴んだものが後ろへ渡さない。artboard を末尾に置くのは、背景（子が乗っていない
            * ところ）まで来たら必ず掴めるため（`ArtboardDrag.grab` は失敗しない）。
            */
-          if (nodeResize.grabHandle(event)) {
+          if (nodeResize.grabAt(event)) {
             return;
           }
           if (nodeDrag.grabNode(event)) {

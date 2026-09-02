@@ -1,5 +1,5 @@
-import { type CSSProperties, useMemo } from "react";
-import type { AxisLength } from "@/domains/dcmp/axis-length";
+import { type CSSProperties, useMemo, useRef } from "react";
+import type { AxisLengths } from "@/domains/dcmp/axis-length";
 import type { PropEdit } from "@/domains/dcmp/node";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import type { TokenSelection } from "@/domains/session/token-selection";
@@ -9,15 +9,17 @@ import { NodeDrag } from "@/features/canvas/domains/node-drag";
 import { NodeResize } from "@/features/canvas/domains/node-resize";
 import { useArtboardDrag } from "@/features/canvas/hooks/use-artboard-drag";
 import type { CanvasViewControl } from "@/features/canvas/hooks/use-canvas-view";
+import { useDrawnBounds } from "@/features/canvas/hooks/use-drawn-bounds";
 import type { NodeDragControl } from "@/features/canvas/hooks/use-node-drag";
 import { useNodeResize } from "@/features/canvas/hooks/use-node-resize";
 import { useTextEdit } from "@/features/canvas/hooks/use-text-edit";
 import { DocumentHtml } from "@/services/document-html";
+import { Option } from "@/utils/Option";
 import { CanvasBody } from "./canvas-body";
 import { DropMarker } from "./drop-marker";
 import { DropPositionLabel } from "./drop-position-label";
 import { RepositionPreviewStyle } from "./reposition-preview-style";
-import { ResizeHandleStyle } from "./resize-handle-style";
+import { ResizeHandleOverlay, resizeCursor } from "./resize-handle-overlay";
 import { StaleCanvasOverlay } from "./stale-canvas-overlay";
 import { TextInlineEditor } from "./text-inline-editor";
 
@@ -77,11 +79,16 @@ export function ArtboardCanvas({
   canvasView: CanvasViewControl;
   nodeDrag: NodeDragControl;
   onSelect: (names: readonly string[]) => void;
-  onResize: (size: AxisLength) => void;
+  onResize: (sizes: AxisLengths) => void;
   onEditProp: (edit: PropEdit) => void;
   onRepositionArtboard: (name: string, canvasPosition: Offset) => void;
 }>) {
   const { view, surfaceRef, panHandlers } = canvasView;
+  /*
+   * ハンドルを重ねる器。`canvas-surface` の中には置けない（パンのハンドラが
+   * どの `pointerdown` でもポインタを捕捉してしまい、ハンドルを押すとパンが始まる）。
+   */
+  const canvasAreaRef = useRef<HTMLDivElement>(null);
   const designDocument = selection.document;
   const nodeResize = useNodeResize({ selection, view, onResize });
   const artboardDrag = useArtboardDrag({
@@ -91,11 +98,17 @@ export function ArtboardCanvas({
   const textEdit = useTextEdit({ selection, onEditProp });
   /*
    * 凍結中はリサイズハンドルを出さない。`inert` の中にあって掴めないのに、
-   * 掴める帯だけが普段どおり見えることになるため。選択の枠そのものは残す
+   * ハンドルだけが普段どおり見えることになるため。選択の枠そのものは残す
    * （何を選んでいたかは右ペインの見出しと揃えて保つ）。
    */
   const resizeHandles = isFrozen ? [] : NodeResize.handles(selection);
   const singleName = DocumentSelection.singleName(selection);
+  /*
+   * ハンドルは選択中のものの辺へ重ねるので、描かれている位置を実測して追いかける。
+   * 選択していない間も呼ぶのは、フックを条件付きで呼べないため（`none` を渡すと
+   * 測らずに `none` を返す）。
+   */
+  const drawnBounds = useDrawnBounds(singleName, canvasAreaRef);
   /*
    * 覚える相手はドキュメントであって対ではない。`selection` を deps にすると
    * **選択のたびに**コンパイルし直して中身の HTML を入れ直すので、`click` 2 回の
@@ -107,12 +120,29 @@ export function ArtboardCanvas({
     [designDocument],
   );
   const dropTarget = NodeDrag.insertionTarget(nodeDrag.drag);
+  /*
+   * ハンドルを置く矩形。掴める軸が無ければ出さないので、そのときは矩形も持たない。
+   * 矩形そのものが無いのはまだ描かれていない一瞬で、そこで出すと原点へ 8 個固まる。
+   */
+  const handleBounds = resizeHandles.length > 0 ? drawnBounds : Option.none;
+  /*
+   * 掴んでいる間のカーソルは器が出す。ハンドルはそのあいだポインタを通すので、
+   * 何も出さないと下にある `cursor-grab`（開いた手）に戻ってしまう。
+   */
+  const grabbedCursor = Option.map(nodeResize.grabbed, (held) =>
+    resizeCursor(held.grip),
+  );
 
   return (
-    // relative はスクリムとバッジの基準。中央ペインも relative だが、そちらは
-    // キャンバスの外（下端に積むエラー一覧）の基準なので、覆う範囲がここより広い。
+    // relative はスクリムとバッジとリサイズハンドルの基準。中央ペインも relative だが、
+    // そちらはキャンバスの外（下端に積むエラー一覧）の基準なので、覆う範囲がここより広い。
     // これを落とすとスクリムが中央ペインいっぱいに広がるが、テストは 1 件も落ちない。
-    <div className="relative flex h-full flex-col">
+    // overflow-hidden はハンドルを切るため。パンで選択中のものを画面外へ出したときに、
+    // 左右のペインの上へハンドルが残らないようにする。
+    <div
+      ref={canvasAreaRef}
+      className="relative flex h-full flex-col overflow-hidden"
+    >
       <div
         ref={surfaceRef}
         data-testid="canvas-surface"
@@ -135,6 +165,7 @@ export function ArtboardCanvas({
           style={{
             transform: CanvasView.transform(view),
             transformOrigin: ContentTransformOrigin,
+            cursor: grabbedCursor.some ? grabbedCursor.value : undefined,
           }}
           /*
            * リサイズと artboard の移動のポインタはこの器で受ける。artboard の枠ごとや
@@ -145,6 +176,11 @@ export function ArtboardCanvas({
            *
            * 2 つを 1 つのハンドラで束ねるのは、同じ器に別々には載せられないため。
            * 掴んでいないほうは自分の状態を見て何もしないので、両方へ配って問題ない。
+           *
+           * **ハンドル（`ResizeHandleOverlay`）から掴んだときもここが受ける。**
+           * ハンドルは器の外にあるが、掴んでいる間はポインタに対して透明になるので
+           * 移動と解放がここまで届く。経路を 1 本にしておかないと、掴み方によって
+           * 追従と取り消しの挙動が割れる。
            *
            * 取り消し（`onPointerLeave`）を受けるのはリサイズだけ。artboard の移動は
            * 掴んだ時点でポインタを捕捉するので、この器の外へ出ても届き続ける
@@ -173,12 +209,17 @@ export function ArtboardCanvas({
         </div>
       </div>
       {isFrozen ? <StaleCanvasOverlay /> : null}
-      {/* ハンドルは 1 つだけ選んでいるときに出す（複数選択ではリサイズできない） */}
-      {singleName.some ? (
-        <ResizeHandleStyle
-          name={singleName.value}
+      {/*
+        複数選択でハンドルを出さないことは `NodeResize.handles` が既に決めている
+        （単一選択でなければ空を返す）ので、ここで数え直してはいない。矩形が無いのは
+        まだ描かれていないときで、そのときは置く場所が決まらないので出さない。
+      */}
+      {handleBounds.some ? (
+        <ResizeHandleOverlay
+          bounds={handleBounds.value}
           handles={resizeHandles}
-          scale={view.scale}
+          isGrabbing={nodeResize.grabbed.some}
+          onGrab={nodeResize.grab}
         />
       ) : null}
       {dropTarget.some ? (
