@@ -2,6 +2,7 @@ import { fireEvent } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { DocumentSelection } from "@/domains/session/document-selection";
+import { canvasContent } from "@/features/canvas/__tests__/canvas-elements";
 import {
   movePointer,
   pressPointer,
@@ -115,7 +116,7 @@ test("右辺を掴んで右へ運ぶと、動かした分だけ幅が伸びた�
   movePointer(panel, { x: 338, y: 100 });
   releasePointer(panel, { x: 338, y: 100 });
 
-  expect(onResize).toHaveBeenLastCalledWith({ axis: "width", length: 240 });
+  expect(onResize).toHaveBeenLastCalledWith([{ axis: "width", length: 240 }]);
 });
 
 test("下辺を掴んで下へ運ぶと、動かした分だけ高さが伸びた大きさが通知される", () => {
@@ -127,7 +128,7 @@ test("下辺を掴んで下へ運ぶと、動かした分だけ高さが伸び�
   movePointer(panel, { x: 200, y: 178 });
   releasePointer(panel, { x: 200, y: 178 });
 
-  expect(onResize).toHaveBeenLastCalledWith({ axis: "height", length: 130 });
+  expect(onResize).toHaveBeenLastCalledWith([{ axis: "height", length: 130 }]);
 });
 
 test("ハンドルから離れたところを掴んで運んでも大きさは変わらない", () => {
@@ -192,7 +193,7 @@ test("幅のハンドルを掴んで右へ運ぶと、動かした分だけ幅�
   movePointer(panel, { x: 340, y: 100 });
   releasePointer(panel, { x: 340, y: 100 });
 
-  expect(onResize).toHaveBeenLastCalledWith({ axis: "width", length: 240 });
+  expect(onResize).toHaveBeenLastCalledWith([{ axis: "width", length: 240 }]);
 });
 
 test("測り直すと、幅のハンドルは要素の右辺の上へ置かれる", () => {
@@ -219,7 +220,7 @@ test("高さのハンドルを掴んで下へ運ぶと、動かした分だけ�
   movePointer(panel, { x: 200, y: 180 });
   releasePointer(panel, { x: 200, y: 180 });
 
-  expect(onResize).toHaveBeenLastCalledWith({ axis: "height", length: 130 });
+  expect(onResize).toHaveBeenLastCalledWith([{ axis: "height", length: 130 }]);
 });
 
 test("ハンドルを掴んでいる間は、どのハンドルもポインタを受け取らない", () => {
@@ -251,4 +252,37 @@ test("ハンドルを覆う層はポインタを受け取らず、支援技術�
     overlay?.classList.contains("pointer-events-none"),
     overlay?.getAttribute("aria-hidden"),
   ]).toEqual([true, "true"]);
+});
+
+test("右下の角を掴んで斜めに運ぶと、幅と高さが同時に通知される", () => {
+  /*
+   * 縦横で違う量だけ動かすのは、両軸へ同じ差分を流す実装（軸の取り違え）でも
+   * 通ってしまわないようにするため。まとめて 1 回で通知することも同時に見ている
+   * （軸ごとに 2 回呼ぶと Undo 1 回で片方しか戻らない）。
+   */
+  const onResize = vi.fn();
+  renderCanvas({ selection: setupSelection(["panel"]), onResize });
+  const panel = drawnAt("panel", PanelBounds);
+
+  pressPointer(resizeHandleFor("both"), { x: 300, y: 150 });
+  movePointer(panel, { x: 340, y: 175 });
+  releasePointer(panel, { x: 340, y: 175 });
+
+  expect(onResize).toHaveBeenLastCalledWith([
+    { axis: "width", length: 240 },
+    { axis: "height", length: 125 },
+  ]);
+});
+
+test("角を掴んでいる間は、器が斜めのカーソルを出す", () => {
+  /*
+   * 掴んでいる間はハンドルがポインタを通すので、器が代わりに出さないと
+   * 下にある掴む手のカーソルへ戻ってしまう。
+   */
+  renderCanvas({ selection: setupSelection(["panel"]) });
+  drawnAt("panel", PanelBounds);
+
+  pressPointer(resizeHandleFor("both"), { x: 300, y: 150 });
+
+  expect(canvasContent().style.cursor).toBe("nwse-resize");
 });

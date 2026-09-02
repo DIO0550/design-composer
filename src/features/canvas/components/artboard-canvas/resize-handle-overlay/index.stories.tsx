@@ -48,7 +48,7 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** 2 軸とも固定の要素。右辺中央と下辺中央が掴め、そこだけカーソルが変わる。 */
+/** 2 軸とも固定の要素。右辺中央・下辺中央・右下の角が掴め、そこだけカーソルが変わる。 */
 export const BothAxes: Story = {
   name: "2 軸とも掴める",
   args: {
@@ -59,7 +59,7 @@ export const BothAxes: Story = {
   },
 };
 
-/** 幅だけが固定の要素。8 個とも描くが、掴めるのは右辺中央だけ。 */
+/** 幅だけが固定の要素。8 個とも描くが、掴めるのは右辺中央と右下の角（どちらも幅だけ）。 */
 export const WidthOnly: Story = {
   name: "幅だけ掴める",
   args: { handles: [AxisLength.create("width", 220)] },

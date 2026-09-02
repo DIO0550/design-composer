@@ -10,7 +10,6 @@ import type { PropEdit } from "@/domains/dcmp/node";
 import type { AbsolutePlacement } from "@/domains/dcmp/placement";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { TokenSelection } from "@/domains/session/token-selection";
-import type { Axis } from "@/domains/unit/axis";
 import type { Offset } from "@/domains/unit/offset";
 import {
   canvasContent,
@@ -18,7 +17,10 @@ import {
 } from "@/features/canvas/__tests__/canvas-elements";
 import { measuredAs } from "@/features/canvas/__tests__/canvas-measure";
 import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
-import { NodeResize } from "@/features/canvas/domains/node-resize";
+import {
+  NodeResize,
+  type ResizeGrip,
+} from "@/features/canvas/domains/node-resize";
 import { useCanvasView } from "@/features/canvas/hooks/use-canvas-view";
 import { useNodeDrag } from "@/features/canvas/hooks/use-node-drag";
 import { Option } from "@/utils/Option";
@@ -62,7 +64,7 @@ type CanvasHandlers = Readonly<{
   onMoveNode: (name: string, to: ChildPosition) => void;
   onRepositionNode: (name: string, placement: AbsolutePlacement) => void;
   onRepositionArtboard: (name: string, canvasPosition: Offset) => void;
-  onResize: (size: AxisLength) => void;
+  onResize: (sizes: readonly AxisLength[]) => void;
   onEditProp: (edit: PropEdit) => void;
 }>;
 
@@ -150,22 +152,22 @@ export function resizeHandles(): readonly HTMLElement[] {
 }
 
 /**
- * その軸を掴めるハンドル。
+ * その種類を掴めるハンドル。
  *
- * 並びの何番目かを数字で書かず `HandleAnchors` から引くのは、箇所と軸の対応を
- * 決めているのがそちらだから（テスト側に写すと片方だけ変えられる）。
+ * 並びの何番目かを数字で書かず `HandleAnchors` から引くのは、箇所と掴めるものの
+ * 対応を決めているのがそちらだから（テスト側に写すと片方だけ変えられる）。
  *
- * @param axis 掴んだときに変わる軸
- * @returns その軸に対応する箇所のハンドル
- * @throws その軸を掴める箇所が `HandleAnchors` に無いとき。ハンドルが 1 つも
+ * @param kind 掴める種類（`width` / `height` / `both`）
+ * @returns その種類を掴める箇所のハンドル
+ * @throws その種類を掴める箇所が `HandleAnchors` に無いとき。ハンドルが 1 つも
  *   出ていない場合は `getAllByTestId` がテストを落とす
  */
-export function resizeHandleFor(axis: Axis): HTMLElement {
+export function resizeHandleFor(kind: ResizeGrip["kind"]): HTMLElement {
   const index = NodeResize.HandleAnchors.findIndex(
-    (anchor) => anchor.axis.some && anchor.axis.value === axis,
+    (anchor) => anchor.grip.some && anchor.grip.value === kind,
   );
   if (index < 0) {
-    throw new Error(`${axis} を掴める箇所が HandleAnchors にありません`);
+    throw new Error(`${kind} を掴める箇所が HandleAnchors にありません`);
   }
   return screen.getAllByTestId("resize-handle")[index];
 }

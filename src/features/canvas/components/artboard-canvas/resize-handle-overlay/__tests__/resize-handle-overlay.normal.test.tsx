@@ -78,11 +78,28 @@ test("掴める軸のハンドルにはその軸のカーソルが出る", () =>
     "",
     "",
     "ew-resize",
-    "",
+    "nwse-resize",
     "ns-resize",
     "",
     "",
   ]);
+});
+
+test("右下の角では、掴める軸の数に応じてカーソルが変わる", () => {
+  /*
+   * 幅だけが固定なら角も 1 軸しか変えられないので、斜めではなく左右のカーソルを出す。
+   * 2 軸のときだけ斜めになることは「掴める軸のハンドルにはその軸のカーソルが出る」が見る。
+   */
+  render(
+    <ResizeHandleOverlay
+      bounds={PanelBounds}
+      handles={[WidthHandle]}
+      isGrabbing={false}
+      onGrab={() => {}}
+    />,
+  );
+
+  expect(handleStyles((style) => style.cursor)[4]).toBe("ew-resize");
 });
 
 test("掴めない軸のハンドルにはカーソルが出ない", () => {
@@ -122,7 +139,7 @@ test("掴めないハンドルだけがポインタを受け取らない", () =>
     "none",
     "none",
     "auto",
-    "none",
+    "auto",
     "auto",
     "none",
     "none",

@@ -1,9 +1,9 @@
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
 import type { AxisLength } from "@/domains/dcmp/axis-length";
-import { Axes, type Axis } from "@/domains/unit/axis";
 import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
 import {
   NodeResize,
+  type ResizeGrip,
   type ResizeHandleAnchor,
 } from "@/features/canvas/domains/node-resize";
 import { Option } from "@/utils/Option";
@@ -16,17 +16,33 @@ const HandleSizePx = 10;
 const HandleBorderPx = 1.5;
 
 /**
- * 掴める軸ごとのカーソル。どちらの向きへ動かせるかを指す綴りで、軸から一意に
- * 決まるので箇所ごとには持たない。
+ * 掴めるものに出すカーソル。
+ *
+ * **自由度（何軸か）だけでは決まらない。** 2 軸のとき斜めの向きは掴んだ箇所で決まり、
+ * 左上・右下は `nwse-resize`、右上・左下は `nesw-resize`。箇所の `x` と `y` が
+ * 同じ側（どちらも 0 か、どちらも 1）なら左上 - 右下の対角線に乗る。
  *
  * export しているのは、掴んでいる間のカーソルを器（`ArtboardCanvas`）が出すため。
  * ハンドルはそのあいだポインタを通すので、自分では出せない。別々に綴ると、
  * 押す前と押している間でカーソルが変わってしまう。
+ *
+ * @param grip 掴めるもの
+ * @param anchor 掴む箇所
+ * @returns その組み合わせで出すカーソル
  */
-export const AxisCursors = {
-  [Axes.Width]: "ew-resize",
-  [Axes.Height]: "ns-resize",
-} as const satisfies Record<Axis, CSSProperties["cursor"]>;
+export function resizeCursor(
+  grip: ResizeGrip,
+  anchor: ResizeHandleAnchor,
+): CSSProperties["cursor"] {
+  switch (grip.kind) {
+    case "width":
+      return "ew-resize";
+    case "height":
+      return "ns-resize";
+    case "both":
+      return anchor.x === anchor.y ? "nwse-resize" : "nesw-resize";
+  }
+}
 
 /**
  * ハンドル 1 個の見た目と位置。
@@ -37,13 +53,13 @@ export const AxisCursors = {
  *
  * @param anchor 出す箇所
  * @param bounds 選択中のものが描かれている矩形（器からの相対）
- * @param grab その位置で今つかめるハンドル。掴めないなら `none`
- * @returns その位置へ置くためのスタイル
+ * @param grab その箇所で今つかめるもの。掴めないなら `none`
+ * @returns その箇所へ置くためのスタイル
  */
 function handleStyle(
   anchor: ResizeHandleAnchor,
   bounds: CanvasBounds,
-  grab: Option<AxisLength>,
+  grab: Option<ResizeGrip>,
 ): CSSProperties {
   return {
     position: "absolute",
@@ -55,7 +71,7 @@ function handleStyle(
     background: "#fff",
     border: `${HandleBorderPx}px solid ${SelectionColor}`,
     borderRadius: "1px",
-    cursor: grab.some ? AxisCursors[grab.value.axis] : undefined,
+    cursor: grab.some ? resizeCursor(grab.value, anchor) : undefined,
     // 掴めない位置は透明にして、下にあるノードをクリックで選べるままにする
     pointerEvents: grab.some ? "auto" : "none",
   };
@@ -88,7 +104,11 @@ export function ResizeHandleOverlay({
   bounds: CanvasBounds;
   handles: readonly AxisLength[];
   isGrabbing: boolean;
-  onGrab: (handle: AxisLength, event: ReactPointerEvent<HTMLElement>) => void;
+  onGrab: (
+    grip: ResizeGrip,
+    anchor: ResizeHandleAnchor,
+    event: ReactPointerEvent<HTMLElement>,
+  ) => void;
 }>) {
   return (
     /*
@@ -105,14 +125,16 @@ export function ResizeHandleOverlay({
          */
         const grab = isGrabbing
           ? Option.none
-          : NodeResize.handleFor(handles, anchor);
+          : NodeResize.gripFor(handles, anchor);
         return (
           <div
             key={`${anchor.x},${anchor.y}`}
             data-testid="resize-handle"
             style={handleStyle(anchor, bounds, grab)}
             onPointerDown={
-              grab.some ? (event) => onGrab(grab.value, event) : undefined
+              grab.some
+                ? (event) => onGrab(grab.value, anchor, event)
+                : undefined
             }
           />
         );

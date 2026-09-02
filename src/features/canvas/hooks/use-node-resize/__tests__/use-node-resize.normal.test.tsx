@@ -62,7 +62,7 @@ function NodeResizeHarness({
   onResize,
 }: Readonly<{
   selection: DocumentSelection;
-  onResize: (size: AxisLength) => void;
+  onResize: (sizes: readonly AxisLength[]) => void;
 }>) {
   const [grabbed, setGrabbed] = useState("押していない");
   const [clicked, setClicked] = useState("click は届いていない");
@@ -166,7 +166,7 @@ test("掴んだままポインタを動かすと動かした分の大きさが�
   pressPointer(panel(), { x: 298, y: 100 });
   movePointer(surface(), { x: 338, y: 100 });
 
-  expect(onResize).toHaveBeenCalledWith({ axis: "width", length: 240 });
+  expect(onResize).toHaveBeenCalledWith([{ axis: "width", length: 240 }]);
 });
 
 test("掴んでいなければポインタを動かしても大きさは通知されない", () => {

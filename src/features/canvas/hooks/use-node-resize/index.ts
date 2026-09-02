@@ -1,18 +1,21 @@
 import { type PointerEvent as ReactPointerEvent, useReducer } from "react";
 import type { AxisLength } from "@/domains/dcmp/axis-length";
 import { DocumentSelection } from "@/domains/session/document-selection";
-import type { Axis } from "@/domains/unit/axis";
-import type { Offset } from "@/domains/unit/offset";
 import type { CanvasView } from "@/features/canvas/domains/canvas-view";
 import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
-import { NodeResize } from "@/features/canvas/domains/node-resize";
+import {
+  NodeResize,
+  type ResizeGrab,
+  type ResizeGrip,
+  type ResizeHandleAnchor,
+} from "@/features/canvas/domains/node-resize";
 import { CanvasPointer } from "@/features/canvas/utils/CanvasPointer";
 import { DrawnBounds } from "@/features/canvas/utils/DrawnBounds";
 import { Option } from "@/utils/Option";
 
 /** リサイズの進み方（docs/06-ui.md「キャンバス直接操作」のリサイズハンドル）。 */
 type NodeResizeAction =
-  | Readonly<{ type: "grab"; handle: AxisLength; origin: Offset }>
+  | Readonly<{ type: "grab"; grabbed: ResizeGrab }>
   | Readonly<{ type: "release" }>
   | Readonly<{ type: "cancel" }>
   | Readonly<{ type: "consume_click" }>;
@@ -30,7 +33,7 @@ function nodeResizeReducer(
 ): NodeResize {
   switch (action.type) {
     case "grab":
-      return NodeResize.grab(action.handle, action.origin);
+      return NodeResize.grab(action.grabbed);
     case "release":
       return NodeResize.release(resize);
     case "cancel":
@@ -69,14 +72,18 @@ export type NodeResizeControl = Readonly<{
   /** 押された位置が掴める帯なら掴む。掴んだ（＝移動のドラッグに渡さない）なら `true`。 */
   grabAt: (event: ReactPointerEvent<HTMLElement>) => boolean;
   /**
-   * 押されたハンドルの軸をそのまま掴む。帯の当たり判定は通らない
+   * 押されたハンドルで掴めるものをそのまま掴む。帯の当たり判定は通らない
    * （ハンドルは辺をまたいで置かれるので、外半分は要素の矩形の外にある）。
    */
-  grab: (handle: AxisLength, event: ReactPointerEvent<HTMLElement>) => void;
+  grab: (
+    grip: ResizeGrip,
+    anchor: ResizeHandleAnchor,
+    event: ReactPointerEvent<HTMLElement>,
+  ) => void;
   /**
-   * 掴んで動かしている軸。ハンドルを透明にするかと、その間のカーソルを決める。
+   * 掴んで動かしているもの。ハンドルを透明にするかと、その間のカーソルを決める。
    */
-  grabbedAxis: Option<Axis>;
+  grabbed: Option<ResizeGrab>;
   dragHandlers: NodeResizeHandlers;
   /** リサイズ直後の `click` を飲み込む。飲み込んだ（＝選択に使わない）なら `true`。 */
   consumeClick: () => boolean;
@@ -100,7 +107,7 @@ export function useNodeResize(
   params: Readonly<{
     selection: DocumentSelection;
     view: CanvasView;
-    onResize: (size: AxisLength) => void;
+    onResize: (sizes: readonly AxisLength[]) => void;
   }>,
 ): NodeResizeControl {
   const [resize, dispatch] = useReducer(
@@ -110,10 +117,14 @@ export function useNodeResize(
   );
 
   const grab = (
-    handle: AxisLength,
+    grip: ResizeGrip,
+    anchor: ResizeHandleAnchor,
     event: ReactPointerEvent<HTMLElement>,
   ): void => {
-    dispatch({ type: "grab", handle, origin: CanvasPointer.offsetOf(event) });
+    dispatch({
+      type: "grab",
+      grabbed: { anchor, grip, origin: CanvasPointer.offsetOf(event) },
+    });
   };
 
   const grabAt = (event: ReactPointerEvent<HTMLElement>): boolean => {
@@ -121,15 +132,15 @@ export function useNodeResize(
     if (!bounds.some) {
       return false;
     }
-    const handle = NodeResize.handleAt(
+    const grabbed = NodeResize.grabAt(
       NodeResize.handles(params.selection),
       bounds.value,
       CanvasPointer.offsetOf(event),
     );
-    if (!handle.some) {
+    if (!grabbed.some) {
       return false;
     }
-    grab(handle.value, event);
+    dispatch({ type: "grab", grabbed: grabbed.value });
     return true;
   };
 
@@ -138,21 +149,21 @@ export function useNodeResize(
    * 「掴んだ時点の長さ + 掴んでからの移動量」なので、反映が 1 回落ちても値はずれない。
    */
   const trackPointer = (event: ReactPointerEvent<HTMLElement>) => {
-    const length = NodeResize.lengthAt(
+    const lengths = NodeResize.lengthsAt(
       resize,
       CanvasPointer.offsetOf(event),
       params.view,
     );
-    if (!length.some) {
+    if (!lengths.some) {
       return;
     }
-    params.onResize(length.value);
+    params.onResize(lengths.value);
   };
 
   return {
     grabAt,
     grab,
-    grabbedAxis: NodeResize.grabbedAxis(resize),
+    grabbed: NodeResize.grabbed(resize),
     dragHandlers: {
       onPointerMove: trackPointer,
       onPointerUp: () => dispatch({ type: "release" }),

@@ -19,7 +19,7 @@ import { CanvasBody } from "./canvas-body";
 import { DropMarker } from "./drop-marker";
 import { DropPositionLabel } from "./drop-position-label";
 import { RepositionPreviewStyle } from "./reposition-preview-style";
-import { AxisCursors, ResizeHandleOverlay } from "./resize-handle-overlay";
+import { ResizeHandleOverlay, resizeCursor } from "./resize-handle-overlay";
 import { StaleCanvasOverlay } from "./stale-canvas-overlay";
 import { TextInlineEditor } from "./text-inline-editor";
 
@@ -79,7 +79,7 @@ export function ArtboardCanvas({
   canvasView: CanvasViewControl;
   nodeDrag: NodeDragControl;
   onSelect: (names: readonly string[]) => void;
-  onResize: (size: AxisLength) => void;
+  onResize: (sizes: readonly AxisLength[]) => void;
   onEditProp: (edit: PropEdit) => void;
   onRepositionArtboard: (name: string, canvasPosition: Offset) => void;
 }>) {
@@ -129,9 +129,8 @@ export function ArtboardCanvas({
    * 掴んでいる間のカーソルは器が出す。ハンドルはそのあいだポインタを通すので、
    * 何も出さないと下にある `cursor-grab`（開いた手）に戻ってしまう。
    */
-  const grabbedCursor = Option.map(
-    nodeResize.grabbedAxis,
-    (axis) => AxisCursors[axis],
+  const grabbedCursor = Option.map(nodeResize.grabbed, (grabbed) =>
+    resizeCursor(grabbed.grip, grabbed.anchor),
   );
 
   return (
@@ -219,7 +218,7 @@ export function ArtboardCanvas({
         <ResizeHandleOverlay
           bounds={handleBounds.value}
           handles={resizeHandles}
-          isGrabbing={nodeResize.grabbedAxis.some}
+          isGrabbing={nodeResize.grabbed.some}
           onGrab={nodeResize.grab}
         />
       ) : null}
