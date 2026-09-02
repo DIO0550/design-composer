@@ -220,19 +220,14 @@
     "name": "トークンの参照元の破線"
   },
   {
-    "id": "features-canvas-artboardcanvas-resizehandlestyle--both-axes",
-    "title": "features/canvas/ArtboardCanvas/ResizeHandleStyle",
-    "name": "幅と高さの両方"
+    "id": "features-canvas-artboardcanvas-resizehandleoverlay--both-axes",
+    "title": "features/canvas/ArtboardCanvas/ResizeHandleOverlay",
+    "name": "2 軸とも掴める"
   },
   {
-    "id": "features-canvas-artboardcanvas-resizehandlestyle--width-only",
-    "title": "features/canvas/ArtboardCanvas/ResizeHandleStyle",
-    "name": "幅だけ"
-  },
-  {
-    "id": "features-canvas-artboardcanvas-resizehandlestyle--zoomed",
-    "title": "features/canvas/ArtboardCanvas/ResizeHandleStyle",
-    "name": "倍率 2 倍"
+    "id": "features-canvas-artboardcanvas-resizehandleoverlay--width-only",
+    "title": "features/canvas/ArtboardCanvas/ResizeHandleOverlay",
+    "name": "幅だけ掴める"
   },
   {
     "id": "features-canvas-artboardcanvas-stalecanvasoverlay--default",
