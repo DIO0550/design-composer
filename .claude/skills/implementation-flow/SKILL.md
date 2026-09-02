@@ -176,6 +176,10 @@ bash .claude/hooks/lib/test-rules-scan.sh src                # テスト規約
 - **返ってきたら、指摘を読む前に `git status` を見る**(`分類: subagent-control`)。
   エージェント定義に「変更するな」と書いても書き換えることがある。戻さずに指摘へ対応すると、
   自分の変更とエージェントの書き換えが混ざってコミットに載る
+- **実行中に git add / commit / push を挟まない。** ミューテーション実測の途中でコミットすると、
+  その瞬間の書き換えが載る(pr-391 #18)。`block-git-during-verification-agent.sh` が
+  plan-reviewer / implementation-reviewer の実行中はここを機械的に止める
+  (`.claude/hooks/README.md`)
 - **バックグラウンドで起動した場合は、完了を取り逃さない。** 結果を受け取るまで次のフェーズへ
   進まない
 
