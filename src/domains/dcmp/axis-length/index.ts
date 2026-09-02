@@ -1,3 +1,4 @@
+import { PropEdit } from "@/domains/dcmp/node";
 import type { Axis } from "@/domains/unit/axis";
 
 /**
@@ -18,5 +19,19 @@ export const AxisLength = {
    */
   create(axis: Axis, length: number): AxisLength {
     return { axis, length: Math.max(0, Math.round(length)) };
+  },
+
+  /**
+   * ノードの props へ書き込む形。軸の綴りがそのまま prop の名前になる。
+   *
+   * ここに置くのは `Placement.toPropEdits`（座標を props へ書く形）と同じ理由で、
+   * どの prop に書くかはその値自身の性質だから。書き込む側（`DesignDocument`）に
+   * 直書きすると、同じ変換が呼び出し側ごとに散る。
+   *
+   * @param size 書き込む軸と長さ
+   * @returns その軸の prop を長さにする編集
+   */
+  toPropEdit(size: AxisLength): PropEdit {
+    return PropEdit.set([size.axis], size.length);
   },
 } as const;

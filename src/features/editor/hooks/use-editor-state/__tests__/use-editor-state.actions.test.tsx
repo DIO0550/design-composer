@@ -236,7 +236,7 @@ function EditorStateHarness() {
       <button
         type="button"
         onClick={() =>
-          dispatch({ type: "resize", size: AxisLength.create("width", 500) })
+          dispatch({ type: "resize", sizes: [AxisLength.create("width", 500)] })
         }
       >
         幅を 500 にする

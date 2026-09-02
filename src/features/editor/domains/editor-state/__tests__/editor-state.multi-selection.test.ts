@@ -98,8 +98,8 @@ test("複数選んでいる間は prop を編集できない", () => {
 });
 
 test("複数選んでいる間はリサイズできない", () => {
-  expect(EditorState.resize(setupSingleSelected(), Width).some).toBe(true);
-  expect(EditorState.resize(setupMultiSelected(), Width).some).toBe(false);
+  expect(EditorState.resize(setupSingleSelected(), [Width]).some).toBe(true);
+  expect(EditorState.resize(setupMultiSelected(), [Width]).some).toBe(false);
 });
 
 test("複数選んでいる間は挿入位置が決まらない", () => {

@@ -27,11 +27,9 @@ function setupDocument(): DesignDocument {
 
 test("ノードの大きさを変えると その軸の prop に長さが入る", () => {
   const resized = Result.unwrap(
-    DesignDocument.resize(
-      setupDocument(),
-      "panel",
+    DesignDocument.resize(setupDocument(), "panel", [
       AxisLength.create("width", 200),
-    ),
+    ]),
   );
 
   const node = Option.unwrap(DesignDocument.findNode(resized, "panel"));
@@ -43,11 +41,9 @@ test("ノードの大きさを変えると その軸の prop に長さが入る"
 
 test("artboard の大きさを変えると artboard 自身の長さが変わる", () => {
   const resized = Result.unwrap(
-    DesignDocument.resize(
-      setupDocument(),
-      "home",
+    DesignDocument.resize(setupDocument(), "home", [
       AxisLength.create("height", 480),
-    ),
+    ]),
   );
 
   const artboard = Option.unwrap(DesignDocument.findArtboard(resized, "home"));
@@ -56,11 +52,9 @@ test("artboard の大きさを変えると artboard 自身の長さが変わる"
 
 test("artboard の大きさは props には書かれない", () => {
   const resized = Result.unwrap(
-    DesignDocument.resize(
-      setupDocument(),
-      "home",
+    DesignDocument.resize(setupDocument(), "home", [
       AxisLength.create("height", 480),
-    ),
+    ]),
   );
 
   const artboard = Option.unwrap(DesignDocument.findArtboard(resized, "home"));
@@ -68,13 +62,43 @@ test("artboard の大きさは props には書かれない", () => {
 });
 
 test("ドキュメントに無い名前の大きさは変えられない", () => {
-  const resized = DesignDocument.resize(
-    setupDocument(),
-    "missing",
+  const resized = DesignDocument.resize(setupDocument(), "missing", [
     AxisLength.create("width", 200),
-  );
+  ]);
 
   expect(resized).toEqual(
     Result.err({ kind: "node-not-found", name: "missing" }),
   );
+});
+
+test("幅と高さをまとめて渡すと、ノードの両方の prop が書き換わる", () => {
+  /*
+   * 角のハンドルは 2 軸を同時に変える。畳み込みが直前の結果を捨てて元の
+   * ドキュメントから作り直すと、片方の軸しか残らない。
+   */
+  const resized = Result.unwrap(
+    DesignDocument.resize(setupDocument(), "panel", [
+      AxisLength.create("width", 240),
+      AxisLength.create("height", 125),
+    ]),
+  );
+
+  const node = Option.unwrap(DesignDocument.findNode(resized, "panel"));
+  expect(Node.isPrimitive(node) && node.props).toEqual({
+    widthMode: "fixed",
+    width: 240,
+    height: 125,
+  });
+});
+
+test("幅と高さをまとめて渡すと、artboard の両方の長さが変わる", () => {
+  const resized = Result.unwrap(
+    DesignDocument.resize(setupDocument(), "home", [
+      AxisLength.create("width", 400),
+      AxisLength.create("height", 480),
+    ]),
+  );
+
+  const artboard = Option.unwrap(DesignDocument.findArtboard(resized, "home"));
+  expect([artboard.width, artboard.height]).toEqual([400, 480]);
 });
