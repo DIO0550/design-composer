@@ -16,11 +16,9 @@ import {
   renderedElement,
 } from "@/features/canvas/__tests__/canvas-elements";
 import { measuredAs } from "@/features/canvas/__tests__/canvas-measure";
+import { resizeAnchorIndexFor } from "@/features/canvas/__tests__/canvas-resize";
 import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
-import {
-  NodeResize,
-  type ResizeGrip,
-} from "@/features/canvas/domains/node-resize";
+import type { ResizeGrip } from "@/features/canvas/domains/node-resize";
 import { useCanvasView } from "@/features/canvas/hooks/use-canvas-view";
 import { useNodeDrag } from "@/features/canvas/hooks/use-node-drag";
 import { Option } from "@/utils/Option";
@@ -163,9 +161,7 @@ export function resizeHandles(): readonly HTMLElement[] {
  *   出ていない場合は `getAllByTestId` がテストを落とす
  */
 export function resizeHandleFor(kind: ResizeGrip["kind"]): HTMLElement {
-  const index = NodeResize.HandleAnchors.findIndex(
-    (anchor) => anchor.grip.some && anchor.grip.value === kind,
-  );
+  const index = resizeAnchorIndexFor(kind);
   if (index < 0) {
     throw new Error(`${kind} を掴める箇所が HandleAnchors にありません`);
   }

@@ -102,6 +102,20 @@ test("右下の角では、掴める軸の数に応じてカーソルが変わ�
   expect(handleStyles((style) => style.cursor)[4]).toBe("ew-resize");
 });
 
+test("高さだけが固定なら、右下の角には上下のカーソルが出る", () => {
+  // 幅側だけを見ていると、高さ側の枝を消しても気づけない（対で見る）
+  render(
+    <ResizeHandleOverlay
+      bounds={PanelBounds}
+      handles={[HeightHandle]}
+      isGrabbing={false}
+      onGrab={() => {}}
+    />,
+  );
+
+  expect(handleStyles((style) => style.cursor)[4]).toBe("ns-resize");
+});
+
 test("掴めない軸のハンドルにはカーソルが出ない", () => {
   /*
    * 幅だけが固定なら、下辺中央は掴めないのでカーソルも出ない。

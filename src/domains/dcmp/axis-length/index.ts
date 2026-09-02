@@ -1,5 +1,6 @@
 import { PropEdit } from "@/domains/dcmp/node";
 import type { Axis } from "@/domains/unit/axis";
+import { Option } from "@/utils/Option";
 
 /**
  * 軸とその方向の長さ(px)。
@@ -10,6 +11,15 @@ export type AxisLength = Readonly<{
   length: number;
 }>;
 
+/**
+ * 1 回のリサイズで書き換える長さ。**空にはならない。**
+ *
+ * 素の配列にすると「0 軸のリサイズ」が書けてしまい、書き込む側が 1 度も編集を
+ * 通らずに成功を返す（`DesignDocument.resize`）。掴んだものを直和で閉じているのに
+ * 境界で緩めないよう、先頭が必ずある形にする。
+ */
+export type AxisLengths = readonly [AxisLength, ...AxisLength[]];
+
 export const AxisLength = {
   /**
    * 長さを 0 以上の整数へ丸めて組み立てる。
@@ -19,6 +29,17 @@ export const AxisLength = {
    */
   create(axis: Axis, length: number): AxisLength {
     return { axis, length: Math.max(0, Math.round(length)) };
+  },
+
+  /**
+   * 並びの中からその軸のものを探す。
+   *
+   * @param lengths 探す先の並び
+   * @param axis 探す軸
+   * @returns その軸の長さ。並びに無ければ `none`
+   */
+  find(lengths: readonly AxisLength[], axis: Axis): Option<AxisLength> {
+    return Option.fromNullable(lengths.find((length) => length.axis === axis));
   },
 
   /**

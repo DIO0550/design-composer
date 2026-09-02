@@ -1,13 +1,12 @@
 import { type PointerEvent as ReactPointerEvent, useReducer } from "react";
-import type { AxisLength } from "@/domains/dcmp/axis-length";
+import type { AxisLengths } from "@/domains/dcmp/axis-length";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import type { CanvasView } from "@/features/canvas/domains/canvas-view";
 import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
 import {
   NodeResize,
-  type ResizeGrab,
   type ResizeGrip,
-  type ResizeHandleAnchor,
+  type ResizeHold,
 } from "@/features/canvas/domains/node-resize";
 import { CanvasPointer } from "@/features/canvas/utils/CanvasPointer";
 import { DrawnBounds } from "@/features/canvas/utils/DrawnBounds";
@@ -15,7 +14,7 @@ import { Option } from "@/utils/Option";
 
 /** リサイズの進み方（docs/06-ui.md「キャンバス直接操作」のリサイズハンドル）。 */
 type NodeResizeAction =
-  | Readonly<{ type: "grab"; grabbed: ResizeGrab }>
+  | Readonly<{ type: "grab"; held: ResizeHold }>
   | Readonly<{ type: "release" }>
   | Readonly<{ type: "cancel" }>
   | Readonly<{ type: "consume_click" }>;
@@ -33,7 +32,7 @@ function nodeResizeReducer(
 ): NodeResize {
   switch (action.type) {
     case "grab":
-      return NodeResize.grab(action.grabbed);
+      return NodeResize.grab(action.held);
     case "release":
       return NodeResize.release(resize);
     case "cancel":
@@ -75,15 +74,11 @@ export type NodeResizeControl = Readonly<{
    * 押されたハンドルで掴めるものをそのまま掴む。帯の当たり判定は通らない
    * （ハンドルは辺をまたいで置かれるので、外半分は要素の矩形の外にある）。
    */
-  grab: (
-    grip: ResizeGrip,
-    anchor: ResizeHandleAnchor,
-    event: ReactPointerEvent<HTMLElement>,
-  ) => void;
+  grab: (grip: ResizeGrip, event: ReactPointerEvent<HTMLElement>) => void;
   /**
    * 掴んで動かしているもの。ハンドルを透明にするかと、その間のカーソルを決める。
    */
-  grabbed: Option<ResizeGrab>;
+  grabbed: Option<ResizeHold>;
   dragHandlers: NodeResizeHandlers;
   /** リサイズ直後の `click` を飲み込む。飲み込んだ（＝選択に使わない）なら `true`。 */
   consumeClick: () => boolean;
@@ -107,7 +102,7 @@ export function useNodeResize(
   params: Readonly<{
     selection: DocumentSelection;
     view: CanvasView;
-    onResize: (sizes: readonly AxisLength[]) => void;
+    onResize: (sizes: AxisLengths) => void;
   }>,
 ): NodeResizeControl {
   const [resize, dispatch] = useReducer(
@@ -118,12 +113,11 @@ export function useNodeResize(
 
   const grab = (
     grip: ResizeGrip,
-    anchor: ResizeHandleAnchor,
     event: ReactPointerEvent<HTMLElement>,
   ): void => {
     dispatch({
       type: "grab",
-      grabbed: { anchor, grip, origin: CanvasPointer.offsetOf(event) },
+      held: { grip, origin: CanvasPointer.offsetOf(event) },
     });
   };
 
@@ -140,7 +134,7 @@ export function useNodeResize(
     if (!grabbed.some) {
       return false;
     }
-    dispatch({ type: "grab", grabbed: grabbed.value });
+    dispatch({ type: "grab", held: grabbed.value });
     return true;
   };
 

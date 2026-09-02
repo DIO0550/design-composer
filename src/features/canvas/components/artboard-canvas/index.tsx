@@ -1,5 +1,5 @@
 import { type CSSProperties, useMemo, useRef } from "react";
-import type { AxisLength } from "@/domains/dcmp/axis-length";
+import type { AxisLengths } from "@/domains/dcmp/axis-length";
 import type { PropEdit } from "@/domains/dcmp/node";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import type { TokenSelection } from "@/domains/session/token-selection";
@@ -79,7 +79,7 @@ export function ArtboardCanvas({
   canvasView: CanvasViewControl;
   nodeDrag: NodeDragControl;
   onSelect: (names: readonly string[]) => void;
-  onResize: (sizes: readonly AxisLength[]) => void;
+  onResize: (sizes: AxisLengths) => void;
   onEditProp: (edit: PropEdit) => void;
   onRepositionArtboard: (name: string, canvasPosition: Offset) => void;
 }>) {
@@ -129,8 +129,8 @@ export function ArtboardCanvas({
    * 掴んでいる間のカーソルは器が出す。ハンドルはそのあいだポインタを通すので、
    * 何も出さないと下にある `cursor-grab`（開いた手）に戻ってしまう。
    */
-  const grabbedCursor = Option.map(nodeResize.grabbed, (grabbed) =>
-    resizeCursor(grabbed.grip, grabbed.anchor),
+  const grabbedCursor = Option.map(nodeResize.grabbed, (held) =>
+    resizeCursor(held.grip),
   );
 
   return (

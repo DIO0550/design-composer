@@ -18,29 +18,26 @@ const HandleBorderPx = 1.5;
 /**
  * 掴めるものに出すカーソル。
  *
- * **自由度（何軸か）だけでは決まらない。** 2 軸のとき斜めの向きは掴んだ箇所で決まり、
- * 左上・右下は `nwse-resize`、右上・左下は `nesw-resize`。箇所の `x` と `y` が
- * 同じ側（どちらも 0 か、どちらも 1）なら左上 - 右下の対角線に乗る。
- *
  * export しているのは、掴んでいる間のカーソルを器（`ArtboardCanvas`）が出すため。
  * ハンドルはそのあいだポインタを通すので、自分では出せない。別々に綴ると、
  * 押す前と押している間でカーソルが変わってしまう。
  *
+ * Why not: 掴んだ箇所を受け取って斜めの向きを出し分けてはいない。2 軸を掴めるのは
+ * 右下の角だけなので `nwse-resize` で決まり、向きを引数で受けても**どの入力でも
+ * 同じ枝しか通らない**。右上・左下（`nesw-resize`）を掴めるようにする回に、
+ * そのとき初めて箇所を持ち込む。
+ *
  * @param grip 掴めるもの
- * @param anchor 掴む箇所
- * @returns その組み合わせで出すカーソル
+ * @returns その掴み方で出すカーソル
  */
-export function resizeCursor(
-  grip: ResizeGrip,
-  anchor: ResizeHandleAnchor,
-): CSSProperties["cursor"] {
+export function resizeCursor(grip: ResizeGrip): CSSProperties["cursor"] {
   switch (grip.kind) {
     case "width":
       return "ew-resize";
     case "height":
       return "ns-resize";
     case "both":
-      return anchor.x === anchor.y ? "nwse-resize" : "nesw-resize";
+      return "nwse-resize";
   }
 }
 
@@ -71,7 +68,7 @@ function handleStyle(
     background: "#fff",
     border: `${HandleBorderPx}px solid ${SelectionColor}`,
     borderRadius: "1px",
-    cursor: grab.some ? resizeCursor(grab.value, anchor) : undefined,
+    cursor: grab.some ? resizeCursor(grab.value) : undefined,
     // 掴めない位置は透明にして、下にあるノードをクリックで選べるままにする
     pointerEvents: grab.some ? "auto" : "none",
   };
@@ -104,11 +101,7 @@ export function ResizeHandleOverlay({
   bounds: CanvasBounds;
   handles: readonly AxisLength[];
   isGrabbing: boolean;
-  onGrab: (
-    grip: ResizeGrip,
-    anchor: ResizeHandleAnchor,
-    event: ReactPointerEvent<HTMLElement>,
-  ) => void;
+  onGrab: (grip: ResizeGrip, event: ReactPointerEvent<HTMLElement>) => void;
 }>) {
   return (
     /*
@@ -132,9 +125,7 @@ export function ResizeHandleOverlay({
             data-testid="resize-handle"
             style={handleStyle(anchor, bounds, grab)}
             onPointerDown={
-              grab.some
-                ? (event) => onGrab(grab.value, anchor, event)
-                : undefined
+              grab.some ? (event) => onGrab(grab.value, event) : undefined
             }
           />
         );

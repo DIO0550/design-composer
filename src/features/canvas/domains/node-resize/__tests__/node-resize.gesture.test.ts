@@ -1,14 +1,11 @@
 import { expect, test } from "vitest";
 import { AxisLength } from "@/domains/dcmp/axis-length";
+import type { Offset } from "@/domains/unit/offset";
+import { resizeAnchorFor } from "@/features/canvas/__tests__/canvas-resize";
 import { CanvasView } from "@/features/canvas/domains/canvas-view";
 import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
 import { Option } from "@/utils/Option";
-import {
-  NodeResize,
-  type ResizeGrab,
-  type ResizeGrip,
-  type ResizeHandleAnchor,
-} from "../index";
+import { NodeResize, type ResizeGrip } from "../index";
 
 /** 画面の (100, 50) から 200x100 の大きさで描かれている要素。 */
 function setupBounds(): CanvasBounds {
@@ -26,44 +23,30 @@ function setupView(): CanvasView {
 }
 
 /**
- * その種類を掴める箇所。並びの何番目かをテストへ写さないよう `HandleAnchors` から引く。
- *
- * @param kind 掴める種類
- * @returns その種類を掴める箇所
- */
-function anchorFor(kind: ResizeGrip["kind"]): ResizeHandleAnchor {
-  return NodeResize.HandleAnchors.filter(
-    (anchor) => anchor.grip.some && anchor.grip.value === kind,
-  )[0];
-}
-
-/**
  * その箇所を押して掴んだ状態。
  *
  * @param kind 掴む種類
  * @param origin 押した位置
  * @returns 掴んだ状態
  */
-function grabbedAt(
-  kind: ResizeGrip["kind"],
-  origin: ResizeGrab["origin"],
-): NodeResize {
-  const anchor = anchorFor(kind);
+function grabbedAt(kind: ResizeGrip["kind"], origin: Offset): NodeResize {
   return NodeResize.grab({
-    anchor,
-    grip: Option.unwrap(NodeResize.gripFor(setupHandles(), anchor)),
+    grip: Option.unwrap(
+      NodeResize.gripFor(setupHandles(), Option.unwrap(resizeAnchorFor(kind))),
+    ),
     origin,
   });
 }
 
 test("右辺の内側を押すと幅のハンドルを掴む", () => {
-  const grabbed = NodeResize.grabAt(setupHandles(), setupBounds(), {
-    x: 297,
-    y: 100,
-  });
-
-  expect(Option.map(grabbed, (grab) => grab.grip)).toEqual(
-    Option.some({ kind: "width", width: { axis: "width", length: 200 } }),
+  // 戻り値はそのまま `grab` へ渡るので、押した位置（起点）まで含めて丸ごと固定する
+  expect(
+    NodeResize.grabAt(setupHandles(), setupBounds(), { x: 297, y: 100 }),
+  ).toEqual(
+    Option.some({
+      grip: { kind: "width", width: { axis: "width", length: 200 } },
+      origin: { x: 297, y: 100 },
+    }),
   );
 });
 
@@ -100,8 +83,8 @@ test("出ていないハンドルの辺を押しても掴めない", () => {
 
 test("角の帯を押しても 1 軸しか掴めない", () => {
   /*
-   * 帯の軸は「どちらの辺に近いか」で決まるので、角の付近でも 2 軸にはならない
-   * （角の四角の外側・帯の内側を押したときの話。四角そのものは 2 軸を掴める）。
+   * 2 本の帯が重なる角では、並び順で先にある幅を掴む（近さでは決まらない）。
+   * 角の四角の外側・帯の内側を押したときの話で、四角そのものは 2 軸を掴める。
    */
   const grabbed = NodeResize.grabAt(setupHandles(), setupBounds(), {
     x: 297,
@@ -114,7 +97,9 @@ test("角の帯を押しても 1 軸しか掴めない", () => {
 });
 
 test("右下の角では幅と高さの両方を掴める", () => {
-  expect(NodeResize.gripFor(setupHandles(), anchorFor("both"))).toEqual(
+  expect(
+    NodeResize.gripFor(setupHandles(), Option.unwrap(resizeAnchorFor("both"))),
+  ).toEqual(
     Option.some({
       kind: "both",
       width: { axis: "width", length: 200 },
@@ -127,13 +112,28 @@ test("幅だけが固定なら、右下の角でも幅しか掴めない", () =>
   // 固定されていない軸まで変えると hug / fill の指定を黙って壊すため
   const widthOnly = [AxisLength.create("width", 200)];
 
-  expect(NodeResize.gripFor(widthOnly, anchorFor("both"))).toEqual(
+  expect(
+    NodeResize.gripFor(widthOnly, Option.unwrap(resizeAnchorFor("both"))),
+  ).toEqual(
     Option.some({ kind: "width", width: { axis: "width", length: 200 } }),
   );
 });
 
+test("高さだけが固定なら、右下の角でも高さしか掴めない", () => {
+  // 幅側だけを見ていると、高さ側の枝を消しても気づけない（対で見る）
+  const heightOnly = [AxisLength.create("height", 100)];
+
+  expect(
+    NodeResize.gripFor(heightOnly, Option.unwrap(resizeAnchorFor("both"))),
+  ).toEqual(
+    Option.some({ kind: "height", height: { axis: "height", length: 100 } }),
+  );
+});
+
 test("どちらの軸も固定されていなければ、右下の角は掴めない", () => {
-  expect(NodeResize.gripFor([], anchorFor("both"))).toEqual(Option.none);
+  expect(
+    NodeResize.gripFor([], Option.unwrap(resizeAnchorFor("both"))),
+  ).toEqual(Option.none);
 });
 
 test("掴めない箇所では何も掴めない", () => {

@@ -1,26 +1,26 @@
 import type { Artboard } from "@/domains/dcmp/artboard";
-import { AxisLength } from "@/domains/dcmp/axis-length";
+import { AxisLength, type AxisLengths } from "@/domains/dcmp/axis-length";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { Node, type Props } from "@/domains/dcmp/node";
 import { Size } from "@/domains/dcmp/size";
 import { DocumentSelection } from "@/domains/session/document-selection";
-import { Axes, type Axis } from "@/domains/unit/axis";
+import { Axes } from "@/domains/unit/axis";
 import { Offset } from "@/domains/unit/offset";
 import { CanvasView } from "@/features/canvas/domains/canvas-view";
 import { CanvasBounds } from "@/features/canvas/domains/node-drop";
 import { Option } from "@/utils/Option";
 
 /**
- * 掴める帯の太さ（画面上の px）。終端からこの幅までが `handleAt` の当たり判定に入る。
+ * 掴める帯の太さ（画面上の px）。終端からこの幅までが `grabAt` の当たり判定に入る。
  *
  * ハンドルの四角（`HandleAnchors`）とは別に、**右辺・下辺の全長が掴める**。描かれている
  * 四角だけを掴み口にすると、辺のどこでも掴めていたものが 10px の的になって操作性が
  * 落ちるため、四角の掴み口をこの帯に上乗せしている。
  *
- * **帯は角でも 1 軸のまま。** 帯の軸は「どちらの辺に近いか」で決まるので、角の付近を
- * 2 軸にするには**どこからを角とみなすか**を決める必要があり、それは掴み口全体の
- * 設計（#371 の決めること 2）そのものになる。結果として、角の四角の外側・帯の内側を
- * 押すと幅だけが変わる。
+ * **帯は角でも 1 軸のまま。** 2 本の帯が重なる角では `handles` の並び順で先にある軸
+ * （幅が固定なら幅）を掴む。角の付近を 2 軸にするには**どこからを角とみなすか**を
+ * 決める必要があり、それは掴み口全体の設計そのものになるので #371 に残している。
+ * 結果として、角の四角の外側・帯の内側を押すと 1 軸しか変わらない。
  */
 const ResizeHandleThicknessPx = 8;
 
@@ -43,12 +43,24 @@ export type ResizeGrip =
 
 export const ResizeGrip = {
   /**
+   * 1 軸だけを掴む。軸は長さ自身が持っているので、どちらの枝になるかもそこで決まる。
+   *
+   * @param length 掴んだ軸とその時点の長さ
+   * @returns その軸だけを変える掴み方
+   */
+  create(length: AxisLength): ResizeGrip {
+    return length.axis === Axes.Width
+      ? { kind: "width", width: length }
+      : { kind: "height", height: length };
+  },
+
+  /**
    * 掴んだものが変える長さ。
    *
    * @param grip 掴んだもの
    * @returns 変える軸ぶんの長さ。2 軸なら幅・高さの順
    */
-  lengths(grip: ResizeGrip): readonly AxisLength[] {
+  lengths(grip: ResizeGrip): AxisLengths {
     switch (grip.kind) {
       case "width":
         return [grip.width];
@@ -77,9 +89,13 @@ export type ResizeHandleAnchor = Readonly<{
   grip: Option<ResizeGrip["kind"]>;
 }>;
 
-/** 掴んでいるもの。どこを掴んだか（カーソルの向きが決まる）と、何をどこから変えるか。 */
-export type ResizeGrab = Readonly<{
-  anchor: ResizeHandleAnchor;
+/**
+ * 掴んでいるもの。何を変えるかと、どこから測るか。
+ *
+ * `Grab` と呼ばないのは、`features/assets` の `AssetGrab`（掴み口の props 束）が
+ * 同じ語幹を別の意味で使っているため。
+ */
+export type ResizeHold = Readonly<{
   grip: ResizeGrip;
   origin: Offset;
 }>;
@@ -96,7 +112,7 @@ export type ResizeGrab = Readonly<{
  */
 export type NodeResize =
   | Readonly<{ kind: "idle" }>
-  | (Readonly<{ kind: "resizing" }> & ResizeGrab)
+  | (Readonly<{ kind: "resizing" }> & ResizeHold)
   | Readonly<{ kind: "resized" }>;
 
 /**
@@ -149,10 +165,11 @@ function nodeHandles(node: Node): readonly AxisLength[] {
  * @param height 高さのハンドル。高さが固定でなければ `none`
  * @returns 変えられるもの。どちらも固定でなければ `none`
  */
-function bothGrip(
+function cornerGrip(
   width: Option<AxisLength>,
   height: Option<AxisLength>,
 ): Option<ResizeGrip> {
+  // 名前を付けた変数にすると narrowing が効かないので、条件はここへ直に書く
   if (width.some && height.some) {
     return Option.some({
       kind: "both",
@@ -160,12 +177,7 @@ function bothGrip(
       height: height.value,
     });
   }
-  if (width.some) {
-    return Option.some({ kind: "width", width: width.value });
-  }
-  return height.some
-    ? Option.some({ kind: "height", height: height.value })
-    : Option.none;
+  return Option.map(Option.or(width, height), ResizeGrip.create);
 }
 
 /** 右辺の中央。幅だけを変える。帯（右辺の全長）で掴んだときもここを掴んだものとして扱う。 */
@@ -184,19 +196,6 @@ const BottomAnchor = {
 
 /** 掴めない箇所（残る 3 隅と左辺・上辺）。位置だけが違うので `grip` は共通。 */
 const DecorativeGrip = Option.none;
-
-/**
- * 帯で掴んだときに対応する箇所。帯は辺の全長なので、その辺の中央を掴んだものとして扱う。
- *
- * 並びから探さずに定数を直に返すのは、探索が失敗しうる形（見つからなければ例外）に
- * なるのを避けるため。同じ値を `HandleAnchors` にも並べているので二重には持たない。
- *
- * @param axis 帯が変える軸
- * @returns その辺の中央の箇所
- */
-function edgeAnchor(axis: Axis): ResizeHandleAnchor {
-  return axis === Axes.Width ? RightAnchor : BottomAnchor;
-}
 
 export const NodeResize = {
   /**
@@ -239,23 +238,15 @@ export const NodeResize = {
     if (!anchor.grip.some) {
       return Option.none;
     }
-    const width = Option.fromNullable(
-      handles.find((handle) => handle.axis === Axes.Width),
-    );
-    const height = Option.fromNullable(
-      handles.find((handle) => handle.axis === Axes.Height),
-    );
+    const width = AxisLength.find(handles, Axes.Width);
+    const height = AxisLength.find(handles, Axes.Height);
     switch (anchor.grip.value) {
       case "width":
-        return width.some
-          ? Option.some({ kind: "width", width: width.value })
-          : Option.none;
+        return Option.map(width, ResizeGrip.create);
       case "height":
-        return height.some
-          ? Option.some({ kind: "height", height: height.value })
-          : Option.none;
+        return Option.map(height, ResizeGrip.create);
       case "both":
-        return bothGrip(width, height);
+        return cornerGrip(width, height);
     }
   },
 
@@ -269,7 +260,7 @@ export const NodeResize = {
    * @param resize 今のリサイズの状態
    * @returns 掴んでいるもの。掴んでいなければ `none`
    */
-  grabbed(resize: NodeResize): Option<ResizeGrab> {
+  grabbed(resize: NodeResize): Option<ResizeHold> {
     return resize.kind === "resizing" ? Option.some(resize) : Option.none;
   },
 
@@ -314,7 +305,7 @@ export const NodeResize = {
     handles: readonly AxisLength[],
     bounds: CanvasBounds,
     pointer: Offset,
-  ): Option<ResizeGrab> {
+  ): Option<ResizeHold> {
     if (!CanvasBounds.contains(bounds, pointer)) {
       return Option.none;
     }
@@ -327,18 +318,14 @@ export const NodeResize = {
       ),
     );
     return Option.map(onBand, (handle) => ({
-      anchor: edgeAnchor(handle.axis),
-      grip:
-        handle.axis === Axes.Width
-          ? { kind: "width", width: handle }
-          : { kind: "height", height: handle },
+      grip: ResizeGrip.create(handle),
       origin: pointer,
     }));
   },
 
   /** 掴む。以後の長さは掴んだ位置と長さからの差分で決まる。 */
-  grab(grabbed: ResizeGrab): NodeResize {
-    return { kind: "resizing", ...grabbed };
+  grab(held: ResizeHold): NodeResize {
+    return { kind: "resizing", ...held };
   },
 
   /**
@@ -352,20 +339,20 @@ export const NodeResize = {
     resize: NodeResize,
     pointer: Offset,
     view: CanvasView,
-  ): Option<readonly AxisLength[]> {
+  ): Option<AxisLengths> {
     if (resize.kind !== "resizing") {
       return Option.none;
     }
     const moved = Offset.delta(resize.origin, pointer);
-    return Option.some(
-      ResizeGrip.lengths(resize.grip).map((handle) =>
-        AxisLength.create(
-          handle.axis,
-          handle.length +
-            CanvasView.toDocumentLength(view, Offset.along(moved, handle.axis)),
-        ),
-      ),
-    );
+    const movedTo = (length: AxisLength): AxisLength =>
+      AxisLength.create(
+        length.axis,
+        length.length +
+          CanvasView.toDocumentLength(view, Offset.along(moved, length.axis)),
+      );
+    // 先頭を分けて組み立てるのは、`map` だと並びが空になりうる型へ落ちるため
+    const [first, ...rest] = ResizeGrip.lengths(resize.grip);
+    return Option.some([movedTo(first), ...rest.map(movedTo)]);
   },
 
   /** 指を離す。掴んでいたなら直後の `click` を飲み込む状態へ。 */
