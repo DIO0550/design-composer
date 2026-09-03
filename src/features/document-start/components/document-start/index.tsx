@@ -122,9 +122,17 @@ function commandSourceFailureLabel(source: CommandSource): string {
   }
 }
 
-/** 押せる導線の共通の形。地と文字だけを差し替える。 */
+/**
+ * 押せる導線の共通の形。地・枠・文字だけを差し替える。
+ *
+ * 大きさ（高さ 30px / 角丸 5px / font-size 11px / 横 10px）と font-family は
+ * UI 案（`docs/Design Composer.html`）のボタン 2 種（主要 = 黒塗り・副 = 白 + 灰枠）に
+ * 合わせている。共通の `Button` にはしていない。UI 案のボタンはこのリポジトリの
+ * 帯・パレット・ダイアログ等でも使われる作りだが、今の Issue（#374）の外まで
+ * 塗り替えると差分が広がるため。共通化は乖離解消の一覧（#112）で別 Issue にする。
+ */
 const ActionButton =
-  "rounded border px-3 py-1.5 text-sm disabled:cursor-default disabled:opacity-50";
+  "flex h-[30px] items-center rounded-[5px] px-[10px] font-[inherit] text-[11px] disabled:cursor-default disabled:opacity-50";
 
 /**
  * ドキュメントを開く / 作る導線。
@@ -149,7 +157,7 @@ function StartActions({
         type="button"
         onClick={actions.openDocument}
         disabled={disabled}
-        className={`${ActionButton} border-[#0d99ff] bg-[#0d99ff] text-white hover:bg-[#0b8ae8]`}
+        className={`${ActionButton} border-none bg-[#1e1e1e] font-medium text-white hover:bg-[#111]`}
       >
         開く
       </button>
@@ -157,7 +165,7 @@ function StartActions({
         type="button"
         onClick={actions.createDocument}
         disabled={disabled}
-        className={`${ActionButton} border-[#e6e6e6] bg-white text-[#1e1e1e] hover:bg-[#f5f5f5]`}
+        className={`${ActionButton} border border-[#e6e6e6] bg-white text-[#1e1e1e] hover:bg-[#f5f5f5]`}
       >
         新規作成
       </button>
@@ -278,7 +286,9 @@ export function DocumentStart({
       aria-label="ドキュメントの開始"
       className="relative flex h-full flex-col items-center justify-center bg-[#fafafa] text-[#1e1e1e]"
     >
-      <div className="flex w-80 flex-col items-center gap-4 text-center">
+      {/* w-96 は案内の 1 行が折り返さない幅。中央揃えは、案内が伸びて折り返した
+         ときに整うようにしておく（今の綴りでは折り返さないので効かない）。*/}
+      <div className="flex w-96 flex-col items-center gap-4 text-center">
         <h1 className="font-medium text-2xl tracking-tight">Design Composer</h1>
         <p className="text-[#767676] text-sm">
           {isOpening
