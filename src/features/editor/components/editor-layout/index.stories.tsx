@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { ScreenHeightShell } from "@/components/__stories__/screen-height-shell";
 import type { NodeDragHandlers } from "@/features/canvas";
-import { ScreenHeightShell } from "@/features/editor/__stories__/screen-height-shell";
 import { EditorLayout } from "./index";
 
 /** 何も掴んでいない状態のポインタの受け口。器の見た目はドラッグに依らない。 */
