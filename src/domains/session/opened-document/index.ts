@@ -3,24 +3,9 @@ import {
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
 import type { DocumentError } from "@/domains/session/document-error";
-import { ArrayEx } from "@/utils/ArrayEx";
+import { FilePath } from "@/utils/FilePath";
 import type { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
-
-/**
- * パスの区切り。動かす OS の綴りで届く（Windows は `\`）ため両方を区切りとして扱う。
- */
-const PathSeparator = /[\\/]/;
-
-/**
- * パスを区切りで割った並び。
- *
- * @param path 割る対象のパス
- * @returns 空の要素を落とした並び（区切りの連続・先頭の区切りで空が生まれる）
- */
-function pathSegments(path: string): readonly string[] {
-  return path.split(PathSeparator).filter((segment) => segment.length > 0);
-}
 
 /**
  * 開いているドキュメントと、その保存先（docs/05-architecture.md「保存モデル: 自動保存」）。
@@ -81,25 +66,24 @@ export const OpenedDocument = {
    * 保存先のファイルの名前。
    *
    * 綴りではなく構造（どのファイルか）だけを答える。区切りをどう見せるかは表示側の関心事。
+   * 規則そのものは `FilePath` が持つ（最近使ったファイルの一覧はパスしか持たず、
+   * ここを通れないため）。
    *
    * @param opened 名前を知りたい、開いているドキュメント
    * @returns パスの末尾の要素。パスに要素が 1 つも無ければ `none`
    */
   fileName(opened: OpenedDocument): Option<string> {
-    return ArrayEx.last(pathSegments(opened.path));
+    return FilePath.fileName(opened.path);
   },
 
   /**
    * 保存先のファイルを収めているフォルダの名前。
    *
    * @param opened 収め先を知りたい、開いているドキュメント
-   * @returns パスの末尾から 2 番目の要素。相対パスのファイル名だけ（`app.dcmp`）や
-   *   ルート直下（`/app.dcmp`）にはフォルダの名前が無いので `none`。
-   *   Windows のドライブ直下（`C:\app.dcmp`）はドライブ名（`C:`）を返す
-   *   （区切りで割った 2 番目という規則をドライブ名だけ例外にすると、
-   *   仕様に無い正規化をドメインへ持ち込むことになるため）
+   * @returns パスの末尾から 2 番目の要素。フォルダの名前が無い場合と Windows の
+   *   ドライブ直下の扱いは `FilePath.folderName` が決める
    */
   folderName(opened: OpenedDocument): Option<string> {
-    return ArrayEx.last(ArrayEx.dropLast(pathSegments(opened.path)));
+    return FilePath.folderName(opened.path);
   },
 } as const;
