@@ -1,5 +1,5 @@
 {
-  "reportVersion": "e59ff5db8f49345a45b616e3a0c24eeb7823a141",
+  "reportVersion": "91f731a22570bd152e8e95985a43670294f73d23",
   "maxDiffRatio": 0.002,
   "changed": 1,
   "new": 5,
@@ -872,8 +872,8 @@
       "name": "開始画面",
       "status": "changed",
       "reason": "pixel-diff",
-      "diffPixels": 6247,
-      "diffRatio": 0.0068000000000000005,
+      "diffPixels": 5770,
+      "diffRatio": 0.0063,
       "hasExpected": true,
       "hasActual": true,
       "hasDiff": true
