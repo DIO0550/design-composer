@@ -1,12 +1,10 @@
-import { FileDrop } from "@/libs/file-drop";
-import type { TauriIpc } from "@/libs/tauri-ipc";
+import { SingleEventIpcFake } from "@/libs/tauri-ipc/fake";
+import { DragDropEvent, FileDrop } from "../index";
 
 /**
  * ウィンドウへのドロップの代役。落とされたファイルをテストから起こす。
  *
- * 差し込む先は `TauriIpc` の位置なので、`drop` を通した呼び出しでは `FileDrop` 本体
- * （イベント名・payload の解釈）がそのまま動く。モックライブラリを使わないのは
- * テスト規約に従うため。
+ * 包む相手が `FileDrop` になるだけで、口そのものは `SingleEventIpcFake` の形。
  */
 export type FileDropFake = Readonly<{
   /** 代役のイベントに向いた `FileDrop`。 */
@@ -24,47 +22,18 @@ export type FileDropFake = Readonly<{
 
 export const FileDropFake = {
   create(): FileDropFake {
-    const listeners = new Set<(payload: unknown) => void>();
-    let subscribeDenied = false;
-
-    const tauriIpc: TauriIpc = {
-      invoke(command) {
-        return Promise.reject(`Command ${command} not found`);
-      },
-
-      listen(event, handler) {
-        if (event !== "tauri://drag-drop") {
-          return Promise.reject(`Event ${event} not emitted`);
-        }
-        if (subscribeDenied) {
-          return Promise.reject(`${event}: 購読を開始できない`);
-        }
-        listeners.add(handler);
-        return Promise.resolve(() => {
-          listeners.delete(handler);
-        });
-      },
-    };
-
-    const deliver = (payload: unknown): void => {
-      for (const listener of listeners) {
-        listener(payload);
-      }
-    };
+    const events = SingleEventIpcFake.create(DragDropEvent);
 
     return {
-      drop: FileDrop.create(tauriIpc),
+      drop: FileDrop.create(events.ipc),
 
       dropFiles(paths) {
         // 本物と同じ形（位置も添える）で配る。
-        deliver({ paths: [...paths], position: { x: 0, y: 0 } });
+        events.deliver({ paths: [...paths], position: { x: 0, y: 0 } });
       },
 
-      deliverUnknown: deliver,
-
-      denySubscribe() {
-        subscribeDenied = true;
-      },
+      deliverUnknown: events.deliver,
+      denySubscribe: events.denySubscribe,
     };
   },
 } as const;

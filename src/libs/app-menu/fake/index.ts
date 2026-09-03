@@ -1,12 +1,10 @@
-import { AppMenu, type AppMenuCommand } from "@/libs/app-menu";
-import type { TauriIpc } from "@/libs/tauri-ipc";
+import { SingleEventIpcFake } from "@/libs/tauri-ipc/fake";
+import { AppMenu, type AppMenuCommand, MenuCommandEvent } from "../index";
 
 /**
  * OS のメニューの代役。利用者がどの項目を選んだかをテストから起こす。
  *
- * 差し込む先は `TauriIpc` の位置なので、`menu` を通した呼び出しでは `AppMenu` 本体
- * （イベント名・語彙の照合）がそのまま動く。モックライブラリを使わないのは
- * テスト規約に従うため。
+ * 包む相手が `AppMenu` になるだけで、口そのものは `SingleEventIpcFake` の形。
  */
 export type AppMenuFake = Readonly<{
   /** 代役のイベントに向いた `AppMenu`。 */
@@ -24,44 +22,13 @@ export type AppMenuFake = Readonly<{
 
 export const AppMenuFake = {
   create(): AppMenuFake {
-    const listeners = new Set<(payload: unknown) => void>();
-    let subscribeDenied = false;
-
-    const tauriIpc: TauriIpc = {
-      invoke(command) {
-        return Promise.reject(`Command ${command} not found`);
-      },
-
-      listen(event, handler) {
-        if (event !== "document-menu") {
-          return Promise.reject(`Event ${event} not emitted`);
-        }
-        if (subscribeDenied) {
-          return Promise.reject(`${event}: 購読を開始できない`);
-        }
-        listeners.add(handler);
-        return Promise.resolve(() => {
-          listeners.delete(handler);
-        });
-      },
-    };
-
-    const deliver = (payload: unknown): void => {
-      for (const listener of listeners) {
-        listener(payload);
-      }
-    };
+    const events = SingleEventIpcFake.create(MenuCommandEvent);
 
     return {
-      menu: AppMenu.create(tauriIpc),
-
-      choose: deliver,
-
-      deliverUnknown: deliver,
-
-      denySubscribe() {
-        subscribeDenied = true;
-      },
+      menu: AppMenu.create(events.ipc),
+      choose: events.deliver,
+      deliverUnknown: events.deliver,
+      denySubscribe: events.denySubscribe,
     };
   },
 } as const;

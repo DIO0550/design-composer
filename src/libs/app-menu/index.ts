@@ -18,8 +18,13 @@ export const AppMenuCommands = {
 /** メニューから届く指示。 */
 export type AppMenuCommand = ValueOf<typeof AppMenuCommands>;
 
-/** メニューの選択を知らせるイベント名（Rust 側の `MENU_COMMAND_EVENT` と対）。 */
-const MenuCommandEvent = "document-menu";
+/**
+ * メニューの選択を知らせるイベント名（Rust 側の `MENU_COMMAND_EVENT` と対）。
+ *
+ * export しているのは、テストの代役が同じ名前で配れるようにするため
+ * （代役側で綴り直すと、名前を変えたときに片方だけが古くなる）。
+ */
+export const MenuCommandEvent = "document-menu";
 
 /** 購読を張れなかった失敗と、診断用の原文。 */
 export type AppMenuError = Readonly<{ message: string }>;

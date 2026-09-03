@@ -7,8 +7,10 @@ import { Result } from "@/utils/Result";
  *
  * Tauri 自身が webview へ配る（`tauri` クレートの `DRAG_DROP_EVENT`）ので、
  * こちらの Rust 側には対になるコードが無い。
+ *
+ * export しているのは、テストの代役が同じ名前で配れるようにするため。
  */
-const DragDropEvent = "tauri://drag-drop";
+export const DragDropEvent = "tauri://drag-drop";
 
 /** 購読を張れなかった失敗と、診断用の原文。 */
 export type FileDropError = Readonly<{ message: string }>;
