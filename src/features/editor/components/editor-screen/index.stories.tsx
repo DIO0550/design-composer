@@ -1,10 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { SampleEditorState } from "@/features/editor/__stories__/sample-editor-state";
 import { EditorState } from "@/features/editor/domains/editor-state";
+import { AppMenuFake } from "@/libs/app-menu/fake";
 import { ClockFake } from "@/libs/clock/fake";
 import { DialogChoice, DocumentDialogFake } from "@/libs/document-dialog/fake";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
+import { FileDropFake } from "@/libs/file-drop/fake";
 import { EditorScreen } from "./index";
 
 const SamplePath = "/work/sample.dcmp";
@@ -25,11 +27,27 @@ const dialog = DocumentDialogFake.create({
 /** 時計も Storybook には無いので代役にする。 */
 const clock = ClockFake.create();
 
+/*
+ * OS のメニューとウィンドウへのドロップも Storybook には無い。代役を差し込むのは、
+ * 実物だと購読が張れず「メニューやドロップからの操作を受け取れません」が出てしまい、
+ * 開始画面の絵が実物と変わるため。
+ */
+const menu = AppMenuFake.create();
+const drop = FileDropFake.create();
+
 const meta = {
   title: "features/editor/EditorScreen",
   component: EditorScreen,
   parameters: { layout: "fullscreen" },
-  args: { clock: clock.clock, ipc: files.ipc, dialog: dialog.dialog },
+  args: {
+    clock: clock.clock,
+    ports: {
+      ipc: files.ipc,
+      dialog: dialog.dialog,
+      menu: menu.menu,
+      drop: drop.drop,
+    },
+  },
 } satisfies Meta<typeof EditorScreen>;
 
 export default meta;

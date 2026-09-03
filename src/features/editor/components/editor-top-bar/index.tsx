@@ -86,9 +86,9 @@ function useEditorTopBarTone(): EditorTopBarTone {
  * （非永続の view state）で、ドキュメントには保存しない。3 ペインの外側にある
  * 編集画面の器という点で `EditorLayout` / `EditorScreen` と同じ並び。
  *
- * ランドマークを与えないのは、`DocumentToolbar` が既に `<header>`（banner）を出しており、
- * ここも `<header>` にすると banner が 2 つ並ぶため。中身はそれぞれが自分の役割を
- * 名乗る（パンくずは `nav`、倍率は `toolbar`）。
+ * `<header>`（banner）にしているのは、画面の上端の帯がこれ 1 本だけだから（#374 で
+ * 常設のツールバーを畳み、開く / 新規作成は OS のメニューへ移した）。中身はそれぞれが
+ * 自分の役割も名乗る（パンくずは `nav`、倍率は `toolbar`）。
  *
  * UI 案は左端に macOS の信号機ボタンを描いているが、置いていない。
  * Why not: `src-tauri/tauri.conf.json` は `decorations` を指定しておらず既定（OS が
@@ -103,11 +103,11 @@ function EditorTopBarRoot({
 }: Readonly<{ tone: EditorTopBarTone; children: ReactNode }>) {
   return (
     <EditorTopBarToneContext value={Option.some(tone)}>
-      <div
+      <header
         className={`flex h-[38px] shrink-0 items-center gap-3 border-b px-3 text-xs ${RootToneClass[tone]}`}
       >
         {children}
-      </div>
+      </header>
     </EditorTopBarToneContext>
   );
 }
