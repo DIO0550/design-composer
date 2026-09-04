@@ -1,6 +1,6 @@
 import { CssDeclaration } from "@/domains/dcmp/css-declaration";
 import { CssDirection } from "@/domains/dcmp/css-direction";
-import type { PropValue } from "@/domains/dcmp/node";
+import type { Props, PropValue } from "@/domains/dcmp/node";
 import type { Axis } from "@/domains/unit/axis";
 import { Px } from "@/domains/unit/px";
 import { Option } from "@/utils/Option";
@@ -43,6 +43,19 @@ export const Size = {
    */
   modeProp(axis: Axis): "widthMode" | "heightMode" {
     return axis === "width" ? "widthMode" : "heightMode";
+  },
+
+  /**
+   * props からその軸のサイズを読む。
+   * モードと長さがどの prop に載っているかを知っているのはこのモジュールなので、
+   * 軸で引く側が 2 つの prop 名を組み立てずに済む。
+   *
+   * @param props 読み取り元の props (デフォルト解決済みでなくてよい)
+   * @param axis どちらの軸のサイズを読むか
+   * @returns その軸のサイズ。`fixed` なのに長さが無いなど決まらないときは `undefined`
+   */
+  fromProps(props: Props, axis: Axis): Size | undefined {
+    return Size.create(props[Size.modeProp(axis)], props[axis]);
   },
 
   /** 固定された長さ。`hug` / `fill` と、長さの決まらないサイズは持たない。 */
