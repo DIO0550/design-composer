@@ -83,7 +83,7 @@ test("読み込んで書き出しても同じテキストに戻る", () => {
 
 test("キャンバス上の位置を持つ artboard は、書き出して読み直しても位置が変わらない", () => {
   const text = `{
-  "formatVersion": "1.2",
+  "formatVersion": "1.3",
   "tokens": {},
   "components": {},
   "artboards": [
@@ -114,7 +114,7 @@ test("整形が崩れたテキストを読み込んで書き出すと正規形�
   );
 
   expect(normalized).toBe(`{
-  "formatVersion": "1.2",
+  "formatVersion": "1.3",
   "tokens": {
     "colors": {
       "primary": "#3b82f6"
