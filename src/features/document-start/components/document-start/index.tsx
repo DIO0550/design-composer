@@ -126,10 +126,10 @@ function commandSourceFailureLabel(source: CommandSource): string {
  * 押せる導線の共通の形。地・枠・文字だけを差し替える。
  *
  * 大きさ（高さ 30px / 角丸 5px / font-size 11px / 横 10px）と font-family は
- * UI 案（`docs/Design Composer.html`）のボタン 2 種（主要 = 塗り・副 = 白 + 灰枠）に
- * 合わせている。共通の `Button` にはしていない。UI 案のボタンはこのリポジトリの
- * 帯・パレット・ダイアログ等でも使われる作りだが、今の Issue（#374）の外まで
- * 塗り替えると差分が広がるため。共通化は乖離解消の一覧（#112）で別 Issue にする。
+ * UI 案（`docs/Design Composer.html`）の塗りのボタンに合わせている。共通の `Button`
+ * にはしていない。UI 案のボタンはこのリポジトリの帯・パレット・ダイアログ等でも
+ * 使われる作りだが、今の Issue（#374）の外まで塗り替えると差分が広がるため。
+ * 共通化は乖離解消の一覧（#112）で別 Issue にする。
  */
 const ActionButton =
   "flex h-[30px] items-center rounded-[5px] px-[10px] font-[inherit] text-[11px] disabled:cursor-default disabled:opacity-50";
@@ -153,25 +153,27 @@ function StartActions({
 }>): ReactElement {
   return (
     <div className="flex items-center gap-2">
-      {/* 主要のボタンは UI 案のアクセントの青（`#0d99ff`）。この地に文字を直接載せて
-         いるのは選択中の要素名のラベル 2 箇所だけで、どちらも白 + font-weight:500 な
-         ので、そこへ揃えている。hover を暗くせず `#4db2ff` にするのは、UI 案が持つ
-         唯一の `:hover` 宣言（`a:hover`）がこの青をその色へ振っているため。塗りの上
-         では白文字のコントラストが下がるが、青を1色足すより UI 案に無い色を作らない
-         ほうを採った。*/}
+      {/* 地はアクセントの青を一段薄めた `#4db2ff`、hover でその元になっている
+         `#0d99ff` へ寄せる。UI 案の `a:hover` がこの 2 色を対にしているので、薄い側を
+         平常時に置くと hover で濃くなり、押せることが伝わる向きに揃う。白 +
+         font-weight:500 は、UI 案が青地に文字を載せている 2 箇所と同じ組み合わせ。*/}
       <button
         type="button"
         onClick={actions.openDocument}
         disabled={disabled}
-        className={`${ActionButton} border-none bg-[#0d99ff] font-medium text-white hover:bg-[#4db2ff]`}
+        className={`${ActionButton} border-none bg-[#4db2ff] font-medium text-white hover:bg-[#0d99ff]`}
       >
         開く
       </button>
+      {/* 地も枠も持たず hover でだけ地が出る形。UI 案はこの形のボタンを描いておらず
+         （`ghost` の綴りも 0 回）、意図して離れている。開く を選んでほしい導線なので、
+         枠を持つ従来の形だと 2 つが同じ重さに見えるため。hover の `#f0f0f0` は下の
+         最近使ったファイルの行と同じで、押せる範囲の示し方をこの画面の中で揃えている。*/}
       <button
         type="button"
         onClick={actions.createDocument}
         disabled={disabled}
-        className={`${ActionButton} border border-[#e6e6e6] bg-white text-[#1e1e1e] hover:bg-[#f5f5f5]`}
+        className={`${ActionButton} border-none bg-transparent text-[#1e1e1e] hover:bg-[#f0f0f0]`}
       >
         新規作成
       </button>
@@ -260,8 +262,9 @@ function RecentFiles({
  *
  * UI 案（`docs/Design Composer.html`）は Default / Assets / Assets · Instance / Tokens /
  * Error の 5 画面で、開く前の画面を描いていない（`open` / `recent` / `welcome` はいずれも
- * 0 件）。そのため見せ方はここで決めているが、色と字の大きさは UI 案の語彙に合わせている
- * （地 `#fafafa`、文字 `#1e1e1e` / `#767676`、境界 `#e6e6e6`、強調 `#0d99ff`）。
+ * 0 件）。そのため見せ方はここで決めているが、使う色と字の大きさは UI 案の語彙から採っている
+ * （地 `#fafafa` と hover の `#f0f0f0`、文字 `#1e1e1e` / `#767676`、境界 `#e6e6e6`、
+ * 強調 `#4db2ff` / `#0d99ff`）。組み合わせ方には UI 案に無いものを含む（`StartActions`）。
  *
  * @param session ドキュメントを開いていないセッション
  * @param actions 開く / 作るを始める手続き
