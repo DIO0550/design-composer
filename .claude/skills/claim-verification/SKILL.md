@@ -1,6 +1,6 @@
 ---
 name: claim-verification
-description: "コメント・doc・Issue/PR 本文に「◯◯だからこうしている」「この参照先は◯◯だ」「この件数は◯◯だ」のような事実の主張を書いたら、implementation-flow のフェーズ3(計画)とフェーズ5(実装)の中で、書き終えるたびに呼んで実物と照合する。読んで確認する主張(comment-structure-claim)と動かして確認する主張(comment-behavior-claim)の両方が対象。implementation-reviewer / plan-reviewer の観点(層=観点)に留めたまま pr-294 以降 26 件・10 件、pr-352 以降 7 件(plan-scope-premise-verification)が再発し、レビューはすべて捕まえていた(すり抜け0)が差分・計画を出し直す手戻りが続いたため、書く時点で確かめる層へ上げた(harness-growth の 2b)。"
+description: "コメント・doc・Issue/PR 本文に「◯◯だからこうしている」「この参照先は◯◯だ」「この件数は◯◯だ」のような事実の主張を書いたら、implementation-flow のフェーズ3(計画)とフェーズ5(実装)の中で、書き終えるたびに呼んで実物と照合する。読んで確認する主張(comment-structure-claim)と動かして確認する主張(comment-behavior-claim)、加えて条件・仕組み・置き場所などの構造を変更したら、その構造を前提にしている既存の Why / Why not が差分の他の箇所で崩れていないかも確認する(comment-premise-drift)。implementation-reviewer / plan-reviewer の観点(層=観点)に留めたまま pr-294 以降 26 件・10 件、pr-352 以降 7 件(plan-scope-premise-verification)、pr-305 以降 13 件(comment-premise-drift)が再発し、レビューはすべて捕まえていた(すり抜け0)が差分・計画を出し直す手戻りが続いたため、書く時点で確かめる層へ上げた(harness-growth の 2b)。"
 ---
 
 # 主張を書く前に確かめる
@@ -29,6 +29,15 @@ description: "コメント・doc・Issue/PR 本文に「◯◯だからこうし
    違っていた場合の実装側の修正判断は、このスキルの対象外)
 5. 同じ事実を説明する記述が差分の複数箇所にあるなら、**すべての箇所を同じタイミングで
    開いて確かめる**(1箇所だけ直すと `comment-referent-drift` 等の食い違いが残る)
+6. **差分内で条件・仕組み・置き場所などの構造を変更したら、その構造を前提にしている
+   Why / Why not が差分の他の箇所(新規・既存問わず)に残っていないか確認する**
+   (`分類: comment-premise-drift`)。手順1〜5が「今書いた1文が正しいか」を確かめるのに対し、
+   これは向きが逆で「今の変更が、前に書いた文の前提を崩していないか」を確かめる。
+   変更前の条件・呼び出し順・置き場所を指す語で差分全体を `grep` し、ヒットした
+   Why / Why not について `.claude/agents/implementation-reviewer.md`「記述の組」表の
+   `comment-premise-drift` 行の確かめ方(差分の最終形を読み、前提がまだ成立しているか
+   付き合わせる)で確かめる。崩れていたら前提の記述を新しい構造に合わせて書き直す
+   (消すだけで済ませない)
 
 ## Why not: 観点への追記のままにしない
 
@@ -46,3 +55,11 @@ description: "コメント・doc・Issue/PR 本文に「◯◯だからこうし
 「対策済」)。**こちらもすり抜け0**で、`plan-reviewer` が毎回捕まえているのに計画の書き直しが
 繰り返された。捕まる位置が「計画を `plan-reviewer` に渡したあと」のままだったことが原因なので、
 comment 側と同じ理由でこのスキルへ寄せた(フェーズ3の呼び出しを追加)。
+
+`comment-premise-drift`(Why / Why not が前提にした構造が同じ差分内の別の変更で崩れる形)も
+同じ形だった。`comment-stale-edit` の4語彙分割(pr-305)で `implementation-reviewer` の観点
+(層=観点)として対応済みだったが、締めの `対策済` 行が積み残しになっており「未介入」に
+見えていた(`harness/records/pr-305.md`「対策済」に機械可読な再掲として追記済み)。積み残しを
+解消すると、観点まで介入済みのまま 13 件再発しておりすり抜けは 0 件。comment-structure-claim /
+comment-behavior-claim・plan-scope-premise-verification と同じく、レビュー時点でしか捕まらず
+差分を出し直す手戻りが続いていたため、このスキルへ寄せた(手順6)。
