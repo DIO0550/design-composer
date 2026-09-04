@@ -36,8 +36,11 @@ Rust に .dcmp の構造を一切教えず、IPC を渡るのは**常に生の J
 | command | `save_document(path, content)` | アトミック書き込み（tmp + rename）。自書き込みの識別を行う |
 | command | `watch_document(path)` / `unwatch_document(path)` | file watch の開始 / 停止 |
 | event | `document-changed` | 外部変更の通知（Rust → JS） |
+| event | `document-menu` | OS のメニューで選ばれた項目（`open` / `create`）の通知（Rust → JS） |
+| event | `tauri://drag-drop` | ウィンドウへ落とされたファイルの通知（Tauri → JS） |
 
 - ファイルを開くダイアログ等は Tauri 標準プラグインを使用する
+- ドキュメントを開く / 新しく作る指示は、OS のメニュー（⌘O / ⌘N）とウィンドウへのドロップ、および開く前の画面から届く
 
 ## 保存モデル: 自動保存
 

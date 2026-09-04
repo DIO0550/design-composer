@@ -1,13 +1,22 @@
-import type { ReactNode } from "react";
+import type { ReactElement, ReactNode } from "react";
 import type { DocumentAccessFailureReason } from "@/domains/session/document-access-failure";
 import type { DocumentError } from "@/domains/session/document-error";
 import type {
   DocumentOpenFailure,
   UnopenedSession,
 } from "@/features/document-start/domains/document-session";
+import { DocumentSession } from "@/features/document-start/domains/document-session";
+import {
+  type CommandSource,
+  type CommandSourceFailure,
+  CommandSources,
+  type DocumentSessionActions,
+} from "@/features/document-start/hooks/use-document-session";
+import { FilePath } from "@/utils/FilePath";
+import type { Option } from "@/utils/Option";
 
 /**
- * 開けなかったエラーを画面に並べる手段。
+ * エラーを画面に並べる手段。
  *
  * 開始画面が持つのは「どの失敗のときに一覧を出すか」までで、その一覧をどう綴るかは
  * 呼び出し側が決める。ここが知っているのは一覧の部品ではなく、返るものが
@@ -46,6 +55,25 @@ function ioFailureLabel(reason: DocumentAccessFailureReason): string {
 }
 
 /**
+ * 失敗の理由と、その原文を並べた 1 行。
+ *
+ * @param label 利用者向けの言い方
+ * @param message 診断用の原文
+ * @returns 読み上げの対象になる 1 行
+ */
+function FailureLine({
+  label,
+  message,
+}: Readonly<{ label: string; message: string }>): ReactElement {
+  return (
+    <p role="alert" className="text-red-700">
+      {label}
+      <span className="ml-2 font-mono text-red-900/70 text-xs">{message}</span>
+    </p>
+  );
+}
+
+/**
  * 開けなかった理由。
  * 解釈できなかったファイルだけは件数分の一覧になるため、1 行のメッセージとは
  * 別の見せ方をする（docs/03-schema.md「不正ファイル時の挙動」の「開く時」）。
@@ -73,45 +101,224 @@ function OpenFailure({
       ? "ファイルの選択に失敗しました"
       : ioFailureLabel(failure.error.reason);
 
+  return <FailureLine label={label} message={failure.error.message} />;
+}
+
+/**
+ * 開く指示を受け取れない経路を、利用者向けの言い方にする。
+ *
+ * 経路ごとに出し分けるのは、片方だけ使えないときに、生きている側まで壊れていると
+ * 読める文言にしないため（`switch` に `default` を置かず、経路を足したらここで気づく）。
+ *
+ * @param source 受け取れなかった経路
+ * @returns 利用者向けの 1 行
+ */
+function commandSourceFailureLabel(source: CommandSource): string {
+  switch (source) {
+    case CommandSources.Menu:
+      return "メニューからの操作を受け取れません";
+    case CommandSources.Drop:
+      return "ファイルのドロップを受け取れません";
+  }
+}
+
+/**
+ * 押せる導線の共通の形。地・枠・文字だけを差し替える。
+ *
+ * 大きさ（高さ 30px / 角丸 5px / font-size 11px / 横 10px）と font-family は
+ * UI 案（`docs/Design Composer.html`）の塗りのボタンに合わせている。共通の `Button`
+ * にはしていない。UI 案のボタンはこのリポジトリの帯・パレット・ダイアログ等でも
+ * 使われる作りだが、今の Issue（#374）の外まで塗り替えると差分が広がるため。
+ * 共通化は乖離解消の一覧（#112）で別 Issue にする。
+ */
+const ActionButton =
+  "flex h-[30px] items-center rounded-[5px] px-[10px] font-[inherit] text-[11px] disabled:cursor-default disabled:opacity-50";
+
+/**
+ * ドキュメントを開く / 作る導線。
+ *
+ * 開いた後はメニュー（⌘O / ⌘N）へ移るので、ボタンとして出るのはこの画面だけ
+ * （#374 / `src-tauri/src/menu.rs`）。
+ *
+ * @param actions 開く / 作るを始める手続き
+ * @param disabled 既に開く操作が始まっていて、押させたくないか
+ * @returns 開く（強調）と新規作成を並べた 2 つのボタン
+ */
+function StartActions({
+  actions,
+  disabled,
+}: Readonly<{
+  actions: DocumentSessionActions;
+  disabled: boolean;
+}>): ReactElement {
   return (
-    <p role="alert" className="text-red-700">
-      {label}
-      <span className="ml-2 font-mono text-red-900/70 text-xs">
-        {failure.error.message}
-      </span>
-    </p>
+    <div className="flex items-center gap-2">
+      {/* 地はアクセントの青を一段薄めた `#4db2ff`、hover でその元になっている
+         `#0d99ff` へ寄せる。UI 案の `a:hover` がこの 2 色を対にしているので、薄い側を
+         平常時に置くと hover で濃くなり、押せることが伝わる向きに揃う。白 +
+         font-weight:500 は、UI 案が青地に文字を載せている 2 箇所と同じ組み合わせ。*/}
+      <button
+        type="button"
+        onClick={actions.openDocument}
+        disabled={disabled}
+        className={`${ActionButton} border-none bg-[#4db2ff] font-medium text-white hover:bg-[#0d99ff]`}
+      >
+        開く
+      </button>
+      {/* 地も枠も持たず hover でだけ地が出る形。UI 案はこの形のボタンを描いておらず
+         （`ghost` の綴りも 0 回）、意図して離れている。開く を選んでほしい導線なので、
+         枠を持つ従来の形だと 2 つが同じ重さに見えるため。hover の `#f0f0f0` は下の
+         最近使ったファイルの行と同じで、押せる範囲の示し方をこの画面の中で揃えている。*/}
+      <button
+        type="button"
+        onClick={actions.createDocument}
+        disabled={disabled}
+        className={`${ActionButton} border-none bg-transparent text-[#1e1e1e] hover:bg-[#f0f0f0]`}
+      >
+        新規作成
+      </button>
+    </div>
+  );
+}
+
+/**
+ * 最近開いたファイルの 1 件。
+ *
+ * フォルダ名を添えるのは、ファイル名だけでは同名のファイルを別フォルダで開いたときに
+ * 区別できないため（`EditorTopBar.Breadcrumb` と同じ理由）。フルパスは `title` に持たせる。
+ *
+ * 名前を持たないパス（`/` だけなど）では字を出さずに `title` だけが残る。
+ * 出せない名前を綴り直す既定値を置かないのは、`EditorTopBar.Breadcrumb` と同じ扱い。
+ *
+ * @param path 開く先のパス
+ * @param onOpen そのパスを開く手続き
+ * @returns 押すとそのファイルを開くボタン
+ */
+function RecentFileButton({
+  path,
+  onOpen,
+}: Readonly<{ path: string; onOpen: (path: string) => void }>): ReactElement {
+  const fileName = FilePath.fileName(path);
+  const folderName = FilePath.folderName(path);
+
+  return (
+    <li>
+      <button
+        type="button"
+        title={path}
+        onClick={() => onOpen(path)}
+        className="flex w-full items-baseline gap-2 rounded px-2 py-1.5 text-left hover:bg-[#f0f0f0]"
+      >
+        {fileName.some && (
+          <span className="truncate font-medium text-[#1e1e1e] text-sm">
+            {fileName.value}
+          </span>
+        )}
+        {folderName.some && (
+          <span className="truncate text-[#767676] text-xs">
+            {folderName.value}
+          </span>
+        )}
+      </button>
+    </li>
+  );
+}
+
+/**
+ * 最近開いたファイルの一覧。
+ *
+ * 並べ替えも重複の除去もしない。どの順で何件持つかは一覧を供給する側の決め事で、
+ * 保存先が決まるまでは空のまま（#376）。
+ *
+ * @param paths 新しい順に並んだパス
+ * @param onOpen そのパスを開く手続き
+ * @returns 一覧。1 件も無ければ枠ごと出さない（見出しだけが残らないようにするため）
+ */
+function RecentFiles({
+  paths,
+  onOpen,
+}: Readonly<{
+  paths: readonly string[];
+  onOpen: (path: string) => void;
+}>): ReactNode {
+  if (paths.length === 0) {
+    return null;
+  }
+
+  return (
+    <nav aria-label="最近使ったファイル" className="w-full">
+      <h2 className="px-2 pb-1 text-[#767676] text-xs">最近使ったファイル</h2>
+      <ul>
+        {paths.map((path) => (
+          <RecentFileButton key={path} path={path} onOpen={onOpen} />
+        ))}
+      </ul>
+    </nav>
   );
 }
 
 /**
  * ドキュメントを開いていないときの画面。
  *
- * 開く / 新規作成のボタンは常設のツールバー側にあるので、ここは案内と、
- * 開けなかった理由だけを出す。
+ * UI 案（`docs/Design Composer.html`）は Default / Assets / Assets · Instance / Tokens /
+ * Error の 5 画面で、開く前の画面を描いていない（`open` / `recent` / `welcome` はいずれも
+ * 0 件）。そのため見せ方はここで決めているが、使う色と字の大きさは UI 案の語彙から採っている
+ * （地 `#fafafa` と hover の `#f0f0f0`、文字 `#1e1e1e` / `#767676`、境界 `#e6e6e6`、
+ * 強調 `#4db2ff` / `#0d99ff`）。組み合わせ方には UI 案に無いものを含む（`StartActions`）。
+ *
+ * @param session ドキュメントを開いていないセッション
+ * @param actions 開く / 作るを始める手続き
+ * @param recentPaths 最近開いたファイルのパス（新しい順）
+ * @param commandFailure 開く指示を受け取れなかった経路とその理由。両方受け取れていれば `none`
+ * @param renderErrors 解釈できなかったファイルのエラー一覧の描き方
  */
 export function DocumentStart({
   session,
+  actions,
+  recentPaths,
+  commandFailure,
   renderErrors,
 }: Readonly<{
   session: UnopenedSession;
+  actions: DocumentSessionActions;
+  recentPaths: readonly string[];
+  commandFailure: Option<CommandSourceFailure>;
   renderErrors: RenderDocumentErrors;
 }>) {
+  const isOpening = DocumentSession.isOpening(session);
+
   return (
     // relative は renderErrors が返すものの包含ブロック。外すと基準がビューポートへ移り、
     // 一覧の高さの上限（画面の半分）が帯のぶんだけ広がる。happy-dom は Tailwind を
     // 解決しないのでテストでは落ちず、気づけるのは視覚差分だけ。
     <section
       aria-label="ドキュメントの開始"
-      className="relative flex h-full flex-col items-center justify-center gap-2 bg-gray-100 text-gray-700 text-sm"
+      className="relative flex h-full flex-col items-center justify-center bg-[#fafafa] text-[#1e1e1e]"
     >
-      {session.kind === "opening" ? (
-        <p>ファイルを読み込んでいます…</p>
-      ) : (
-        <p>ドキュメントを開くか、新しく作成してください。</p>
-      )}
-      {session.kind === "failed" && (
-        <OpenFailure failure={session.failure} renderErrors={renderErrors} />
-      )}
+      {/* w-96 は案内の 1 行が折り返さない幅。中央揃えは、案内が伸びて折り返した
+         ときに整うようにしておく（今の綴りでは折り返さないので効かない）。*/}
+      <div className="flex w-96 flex-col items-center gap-4 text-center">
+        <h1 className="font-medium text-2xl tracking-tight">Design Composer</h1>
+        <p className="text-[#767676] text-sm">
+          {isOpening
+            ? "ファイルを読み込んでいます…"
+            : "ドキュメントを開くか、新しく作成してください。"}
+        </p>
+        <StartActions actions={actions} disabled={isOpening} />
+        <RecentFiles paths={recentPaths} onOpen={actions.openDocumentAt} />
+        <p className="rounded border border-[#e6e6e6] border-dashed px-3 py-2 text-[#767676] text-xs">
+          .dcmp ファイルをウィンドウに落としても開けます
+        </p>
+        {commandFailure.some && (
+          <FailureLine
+            label={commandSourceFailureLabel(commandFailure.value.source)}
+            message={commandFailure.value.message}
+          />
+        )}
+        {session.kind === "failed" && (
+          <OpenFailure failure={session.failure} renderErrors={renderErrors} />
+        )}
+      </div>
     </section>
   );
 }

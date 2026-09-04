@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, screen, waitFor } from "storybook/test";
+import { ScreenHeightShell } from "@/components/__stories__/screen-height-shell";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import type { RefNode } from "@/domains/dcmp/node";
 import { SampleEditorState } from "@/features/editor/__stories__/sample-editor-state";
-import { ScreenHeightShell } from "@/features/editor/__stories__/screen-height-shell";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { ClockFake } from "@/libs/clock/fake";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
