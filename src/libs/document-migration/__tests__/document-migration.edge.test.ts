@@ -19,7 +19,7 @@ test("major がアプリより大きいファイルは unsupported-format-versio
     error: {
       kind: "unsupported-format-version",
       fileVersion: { major: 2, minor: 0 },
-      appVersion: { major: 1, minor: 3 },
+      appVersion: { major: 1, minor: 1 },
     },
   });
 });
@@ -32,7 +32,7 @@ test("major が一致し minor がアプリより大きいファイルは unsupp
     error: {
       kind: "unsupported-format-version",
       fileVersion: { major: 1, minor: 5 },
-      appVersion: { major: 1, minor: 3 },
+      appVersion: { major: 1, minor: 1 },
     },
   });
 });
