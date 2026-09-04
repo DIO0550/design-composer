@@ -10,6 +10,8 @@ test("Text も Box と同じ配置の指定を持つ", () => {
   expect(TextSchema.props.placement).toEqual(BoxSchema.props.placement);
   expect(TextSchema.props.x).toEqual(BoxSchema.props.x);
   expect(TextSchema.props.y).toEqual(BoxSchema.props.y);
+  expect(TextSchema.props.constraintX).toEqual(BoxSchema.props.constraintX);
+  expect(TextSchema.props.constraintY).toEqual(BoxSchema.props.constraintY);
 });
 
 test("Text の content は生リテラル文字列でデフォルトが空文字", () => {
