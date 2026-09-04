@@ -11,11 +11,16 @@ const LabelClass = `${LabelWidthClass} truncate text-[11px] text-gray-500`;
  * 1 prop 分の行。UI 案（docs/Design Composer.html）はラベル左・コントロール右で並べる。
  * 表示名は prop 名の機械的な整形で作る（docs/03-schema.md「表示名フィールドは持たない」）。
  *
- * 条件付きの prop はラベルを出さず字下げする（UI 案は `width` の数値欄をモードの行の
- * 下へぶら下げている）。条件を出している行の**直下**に来るのはスキーマの宣言順に
- * 依っており（`BoxSchema` は `widthMode` の直後に `width` を宣言する）、順が変われば
- * 離れた位置に字下げだけが残る。**この出し分けは class の違いにしかならないので、
+ * 条件付きの prop のうち**数値・文字の欄だけ**ラベルを出さず字下げする（UI 案は `width`
+ * の数値欄をモードの行の下へぶら下げている）。条件を出している行の**直下**に来るのは
+ * スキーマの宣言順に依っており（`BoxSchema` は `widthMode` の直後に `width` を宣言する）、
+ * 順が変われば離れた位置に字下げだけが残る。**この出し分けは class の違いにしかならないので、
  * 崩れに気づける手段は Storybook の視覚差分だけ**（happy-dom は Tailwind を解決しない）。
+ *
+ * Why not: セグメント（enum）は条件付きでもラベルを出す。`placement: absolute` の下には
+ * `x` / `y` / `constraintX` / `constraintY` の 4 行がぶら下がり、同じ選択肢を持つ
+ * 追従の 2 行はラベルが無いと**どちらが横でどちらが縦か読めない**（数値欄は入る値で
+ * 見分けが付くので従来どおり）。
  *
  * セグメントには `<select>` の「未指定（既定: …）」に当たる選択肢が無いので、
  * 未指定のときだけ同じ綴りを行の下に出す。`title` では出さない（ホバーでしか読めず、
@@ -35,7 +40,7 @@ export function PropRow({
   onEdit: (edit: PropEdit) => void;
 }>): ReactElement {
   const labelledBy = useId();
-  const isDependent = control.enabledBy.some;
+  const isDependent = control.enabledBy.some && control.input.kind !== "enum";
   const showsUnsetNote =
     control.input.kind === "enum" && !PropControl.hasValue(control);
 
