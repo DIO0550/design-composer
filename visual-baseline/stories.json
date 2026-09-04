@@ -265,6 +265,31 @@
     "name": "部品を運んでいる"
   },
   {
+    "id": "features-documentstart-documentstart--default",
+    "title": "features/documentStart/DocumentStart",
+    "name": "開始画面"
+  },
+  {
+    "id": "features-documentstart-documentstart--entry-unavailable",
+    "title": "features/documentStart/DocumentStart",
+    "name": "メニューを受け取れない"
+  },
+  {
+    "id": "features-documentstart-documentstart--open-failed",
+    "title": "features/documentStart/DocumentStart",
+    "name": "開けなかった"
+  },
+  {
+    "id": "features-documentstart-documentstart--opening",
+    "title": "features/documentStart/DocumentStart",
+    "name": "読み込み中"
+  },
+  {
+    "id": "features-documentstart-documentstart--with-recent-documents",
+    "title": "features/documentStart/DocumentStart",
+    "name": "最近使ったファイルがある"
+  },
+  {
     "id": "features-editor-documenterrorlist--broken-json",
     "title": "features/editor/DocumentErrorList",
     "name": "JSON が壊れている"
