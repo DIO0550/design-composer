@@ -175,6 +175,37 @@ test("stretch の子は親が広がった分だけ長くなる", () => {
   expect(Option.unwrap(propOf(widened, "bar", "width"))).toBe(280);
 });
 
+test("長さを変えない追従では、子の長さが書き換わらない", () => {
+  const document = DesignDocument.create({
+    artboards: [
+      {
+        name: "home",
+        width: 200,
+        height: 100,
+        children: [
+          {
+            name: "right-badge",
+            type: "Box",
+            props: {
+              placement: "absolute",
+              x: 150,
+              y: 10,
+              constraintX: "max",
+              widthMode: "fixed",
+              width: 40.5,
+            },
+            children: [],
+          },
+        ],
+      },
+    ],
+  });
+
+  const widened = widen(document, "home");
+
+  expect(Option.unwrap(propOf(widened, "right-badge", "width"))).toBe(40.5);
+});
+
 test("長さを持たない子は scale でも位置だけが追従する", () => {
   const document = DesignDocument.create({
     artboards: [

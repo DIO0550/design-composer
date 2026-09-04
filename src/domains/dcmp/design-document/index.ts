@@ -64,6 +64,10 @@ export type DesignDocument = DesignDocumentV1;
  * 以下の関数は「どの artboard を相手にするか」を選ぶためのもの。
  * 並びの探索・編集そのものは `NodeTree` が、名前の規則は `NameSpace` が持っており、
  * ドキュメントに残るのは「複数の artboard のどれに対して行うか」という調停だけ。
+ *
+ * 例外は追従（`followPropEdits`）で、ここだけは `Placement` / `Constraint` / `Size` を
+ * 組み合わせて編集を作る。子側のドメイン（`Node`）へ置けないのは、`Placement` が
+ * `PropEdit` を `Node` から import しており、逆向きの import が循環になるため。
  */
 
 /**
@@ -134,9 +138,7 @@ function axisLengthOf(
   if (!node.some || !Node.isPrimitive(node.value)) {
     return Option.none;
   }
-  return Size.fixedLength(
-    Size.fromProps(ResolvedProps.forNode(node.value), axis),
-  );
+  return Size.fixedLengthFromProps(ResolvedProps.forNode(node.value), axis);
 }
 
 /**
@@ -163,13 +165,21 @@ function followPropEdits(node: Node, resize: AxisResize): readonly PropEdit[] {
     constraint.value,
     resize,
   );
-  const length = Size.fixedLength(Size.fromProps(props, resize.axis));
-  const lengthEdit = Option.map(length, (current) =>
-    AxisLength.toPropEdit(
-      AxisLength.create(
-        resize.axis,
-        Constraint.lengthAfter(constraint.value, current, resize),
-      ),
+  const length = Size.fixedLengthFromProps(props, resize.axis);
+  /*
+   * 長さが変わるときだけ編集にする。変わらないのに書くと、`AxisLength.create` の
+   * 丸めが**変えないはずの長さまで書き換える**（手で 40.5 と書いたファイルが、
+   * 長さを変えない追従でリサイズしただけで 41 になる）。
+   */
+  const lengthEdit = Option.flatMap(length, (current) =>
+    Option.map(
+      AxisResize.create({
+        axis: resize.axis,
+        before: current,
+        after: Constraint.lengthAfter(constraint.value, current, resize),
+      }),
+      (changed) =>
+        AxisLength.toPropEdit(AxisLength.create(changed.axis, changed.after)),
     ),
   );
   const edits = [offsetEdit, lengthEdit];
@@ -206,6 +216,7 @@ function withResizeFollowUp(
       return resize.some ? [resize.value] : [];
     });
     const children = DesignDocument.findChildren(after, name);
+    // 大きさと無関係な prop の編集（大半がそれ）で子の走査まで進まないための打ち切り
     if (resizes.length === 0 || !children.some) {
       return Result.ok(after);
     }
@@ -703,8 +714,9 @@ export const DesignDocument = {
    * 名前は単一名前空間なので、artboard とノードのどちらを相手にするかは名前で決まる。
    *
    * 大きさが変わったときは、直下の絶対配置の子をここで追従させる
-   * （`withResizeFollowUp`）。`resize` 側にも同じフックを置かないのは、ノードの
-   * リサイズがこの入口を通るため（両方に置くと子が 2 度動く）。
+   * （`withResizeFollowUp`）。`resize` の**ノード経路**にフックを置かないのは、
+   * そこがこの入口を通るため（両方に置くと子が 2 度動く）。artboard 経路だけは
+   * ここを通らないので `resize` 側が持つ。
    */
   applyPropEdit(
     document: DesignDocument,
