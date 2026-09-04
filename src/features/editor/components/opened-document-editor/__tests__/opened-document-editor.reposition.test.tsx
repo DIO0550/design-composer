@@ -5,7 +5,13 @@ import {
   DesignDocument,
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
-import { drag } from "@/features/canvas/__tests__";
+import {
+  drag,
+  movePointer,
+  pressPointer,
+  releasePointer,
+} from "@/features/canvas/__tests__";
+import { Option } from "@/utils/Option";
 import { drawn, renderOpenedDocument, tree } from "./setup";
 
 /*
@@ -20,11 +26,13 @@ import { drawn, renderOpenedDocument, tree } from "./setup";
 
 /**
  * `home` に絶対配置の `home-badge`・フローの `home-title` / `home-panel` が
- * この順で並ぶドキュメント。
+ * この順で並び、隣に `settings` があるドキュメント。
  *
  * `home-badge` を**先頭**に置くのは、末尾だと「並びが変わらない」を確かめられないため。
  * 末尾のノードを末尾へ移す木の移動は元と同じ並びになるので、座標の置き直しを丸ごと
  * 壊してもテストが通ってしまう。
+ *
+ * `settings` は親の付け替え先（#388）。
  */
 function setupDocument(): DesignDocument {
   return DesignDocument.create({
@@ -54,8 +62,21 @@ function setupDocument(): DesignDocument {
           { name: "home-panel", type: "Box", props: {}, children: [] },
         ],
       }),
+      Artboard.create({
+        name: "settings",
+        width: 360,
+        height: 240,
+        children: [],
+      }),
     ],
   });
+}
+
+/** 描かれた `home-badge` を包んでいる要素の名前。 */
+function badgeParentName(): string {
+  return Option.unwrap(
+    Option.fromNullable(drawn("home-badge").parentElement?.dataset.name),
+  );
 }
 
 /**
@@ -100,4 +121,24 @@ test("フローのノードをキャンバスで運ぶとツリーの並びが�
   });
 
   expect(rowNames(tree())).toEqual(["home-badge", "home-panel", "home-title"]);
+});
+
+test("絶対配置のノードを別の artboard の上へ運ぶと、その artboard の子になる", async () => {
+  await renderOpenedDocument(setupDocument());
+
+  // 離すのを運んだ先へ撃つのは、運んでいるノードが当たり判定から外れるため
+  pressPointer(drawn("home-badge"), { x: 100, y: 100 });
+  movePointer(drawn("settings"), { x: 70, y: 112 });
+  releasePointer(drawn("settings"), { x: 70, y: 112 });
+
+  expect(badgeParentName()).toBe("settings");
+});
+
+test("同じ親の中で運んだときは、包んでいる artboard が変わらない", async () => {
+  // 対照。付け替えを常に起こす実装にすると、こちらが落ちる
+  await renderOpenedDocument(setupDocument());
+
+  dragBadge();
+
+  expect(badgeParentName()).toBe("home");
 });

@@ -4,6 +4,7 @@ import type {
   DraggedNode,
   DropTarget,
 } from "@/features/canvas/domains/node-drop";
+import type { RepositionTarget } from "@/features/canvas/domains/reposition-target";
 import { Option } from "@/utils/Option";
 import { DropEdit, NodeDrag } from "../index";
 
@@ -41,6 +42,12 @@ const SampleDropTarget: DropTarget = {
 
 /** ツリーへ挿す側の落とし方。座標の置き直しは別のファイルで見る。 */
 const SampleDrop = DropEdit.intoTree(MovingTitle, SampleDropTarget);
+
+/** `body` の中の座標へ落ちる側の行き先。見た目のずらし量は行き先と別の値にする。 */
+const SampleRepositionTarget: RepositionTarget = {
+  to: { parentName: "body", placement: { mode: "absolute", x: 40, y: 24 } },
+  offset: { x: 30, y: -12 },
+};
 
 test("押した位置から少ししか動かないうちはドラッグとして扱われない", () => {
   const held = NodeDrag.grab({
@@ -166,27 +173,36 @@ test("パレットの雛形をツリーへ落とすと挿入になる", () => {
 
 test("座標を置き直す落とし方では挿さる位置を持たない", () => {
   // ドロップ線とラベルは「どの親の何番目の子になるか」の提示なので出さない
-  const edit = DropEdit.reposition("title", { mode: "absolute", x: 40, y: 24 });
+  const edit = DropEdit.reposition("title", SampleRepositionTarget);
 
   expect(DropEdit.insertionTarget(edit).some).toBe(false);
 });
 
-test("座標を置き直す落とし方のときだけ、動かす相手と行き先を答える", () => {
+test("座標を置き直す落とし方でも、子になる親の名前は答える", () => {
+  // 落とし先の枠は、ツリーの移動と同じ提示なので座標のドラッグでも出す
+  const edit = DropEdit.reposition("title", SampleRepositionTarget);
+
+  expect(DropEdit.dropParentName(edit)).toBe("body");
+});
+
+test("ツリーへ落とす落とし方では、挿さる位置の親が子になる親になる", () => {
+  expect(DropEdit.dropParentName(SampleDrop)).toBe("body");
+});
+
+test("座標を置き直す落とし方のときだけ、ずらして見せる相手と量を答える", () => {
   const dragging = NodeDrag.moveTo(
     NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
     { x: 100, y: 140 },
-    Option.some(
-      DropEdit.reposition("title", { mode: "absolute", x: 40, y: 24 }),
-    ),
+    Option.some(DropEdit.reposition("title", SampleRepositionTarget)),
   );
 
-  expect(Option.unwrap(NodeDrag.repositionTarget(dragging))).toEqual({
+  expect(Option.unwrap(NodeDrag.repositionPreview(dragging))).toEqual({
     name: "title",
-    placement: { mode: "absolute", x: 40, y: 24 },
+    offset: { x: 30, y: -12 },
   });
 });
 
-test("ツリーへ落とす落とし方では、動かす相手と行き先を答えない", () => {
+test("ツリーへ落とす落とし方では、ずらして見せる相手と量を答えない", () => {
   // 対照。ドロップ線が出る側では実体を動かさない
   const dragging = NodeDrag.moveTo(
     NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
@@ -194,17 +210,28 @@ test("ツリーへ落とす落とし方では、動かす相手と行き先を�
     Option.some(SampleDrop),
   );
 
-  expect(NodeDrag.repositionTarget(dragging).some).toBe(false);
+  expect(NodeDrag.repositionPreview(dragging).some).toBe(false);
 });
 
-test("押しただけでまだ動かしていない間は、動かす相手と行き先を答えない", () => {
+test("押しただけでまだ動かしていない間は、ずらして見せる相手と量を答えない", () => {
   // 閾値未満で答えると、クリックのたびにノードが一瞬ずれる
   const held = NodeDrag.grab({
     dragged: MovingTitle,
     origin: { x: 100, y: 100 },
   });
 
-  expect(NodeDrag.repositionTarget(held).some).toBe(false);
+  expect(NodeDrag.repositionPreview(held).some).toBe(false);
+});
+
+test("落とせる先が無い間は、子になる親の名前を答えない", () => {
+  // 枠を出す相手が居ないので、受け入れ先の提示も出ない
+  const dragging = NodeDrag.moveTo(
+    NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
+    { x: 100, y: 140 },
+    Option.none,
+  );
+
+  expect(NodeDrag.dropParentName(dragging).some).toBe(false);
 });
 
 test("押された位置から外へ辿った名前のうち最も内側のノードを掴む", () => {

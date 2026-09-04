@@ -1,20 +1,24 @@
-import { DesignDocument } from "@/domains/dcmp/design-document";
-import { Placement } from "@/domains/dcmp/placement";
 import type { Offset } from "@/domains/unit/offset";
 import { Px } from "@/domains/unit/px";
 import { NodeDrag } from "@/features/canvas/domains/node-drag";
 import { NameStyleRule } from "../name-style-rule";
 
 /**
- * 運んでいるノードをずらして見せる宣言。
- * テストが `translate(...)` の綴りを写さずに済むよう、組み立てをここから出す
+ * 運んでいるノードを**見た目だけの存在**にする宣言（ずらして見せることと、
+ * 当たり判定から外すこと）。テストが綴りを写さずに済むよう、組み立てをここから出す
  * （`TokenReferrerOutline` を export しているのと同じ理由）。
  *
+ * Why（`pointer-events:none`）: これが無いと、ポインタの下にあるのは運んでいるノード
+ * 自身になり、`DropParent.innermost` は自分を飛ばして**元の親**しか答えない
+ * （＝同じ親の中にある兄弟の Box へ入れられない）。親が中身を切り取る artboard の
+ * ときだけは、外へ出た分が当たり判定に出ないので付け替えが効いてしまい、
+ * **親の種類で挙動が変わる**。宣言で揃える。
+ *
  * @param offset ドキュメント上の px で表した移動量
- * @returns その分だけずらす 1 宣言
+ * @returns ずらす宣言と、当たり判定から外す宣言
  */
 export function repositionPreviewDeclarations(offset: Offset): string {
-  return `transform:translate(${Px.create(offset.x)},${Px.create(offset.y)})`;
+  return `transform:translate(${Px.create(offset.x)},${Px.create(offset.y)});pointer-events:none`;
 }
 
 /**
@@ -29,28 +33,20 @@ export function repositionPreviewDeclarations(offset: Offset): string {
  * `transform` は `CssDeclaration` の `CssProperty` に無い＝ノードのインライン
  * style に出ない語彙なので、`!important` 無しで重ねられる。
  *
+ * ずらす量をドキュメントから逆算せず `NodeDrag` から受け取るのは、親を付け替えると
+ * 書かれる座標の原点が変わる一方で、**画面上の位置は動かない**ため（`RepositionTarget`）。
+ *
  * @returns ずらす規則。座標を動かすドラッグをしていなければ何も出さない
  */
-export function RepositionPreviewStyle({
-  document,
-  drag,
-}: Readonly<{ document: DesignDocument; drag: NodeDrag }>) {
-  const target = NodeDrag.repositionTarget(drag);
-  if (!target.some) {
+export function RepositionPreviewStyle({ drag }: Readonly<{ drag: NodeDrag }>) {
+  const preview = NodeDrag.repositionPreview(drag);
+  if (!preview.some) {
     return null;
   }
-  const current = DesignDocument.absolutePlacementOf(
-    document,
-    target.value.name,
-  );
-  if (!current.some) {
-    return null;
-  }
-  const offset = Placement.delta(current.value, target.value.placement);
   return (
     <NameStyleRule
-      name={target.value.name}
-      declarations={repositionPreviewDeclarations(offset)}
+      name={preview.value.name}
+      declarations={repositionPreviewDeclarations(preview.value.offset)}
     />
   );
 }

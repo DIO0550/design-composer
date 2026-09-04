@@ -1,9 +1,9 @@
 import { type ActionDispatch, useReducer } from "react";
 import type { AxisLength } from "@/domains/dcmp/axis-length";
+import type { ChildPlacement } from "@/domains/dcmp/child-placement";
 import type { ChildPosition } from "@/domains/dcmp/child-position";
 import type { DesignDocument } from "@/domains/dcmp/design-document";
 import type { PropEdit } from "@/domains/dcmp/node";
-import type { AbsolutePlacement } from "@/domains/dcmp/placement";
 import type { TokenRef, TokenValue } from "@/domains/dcmp/token";
 import type { DocumentReload } from "@/domains/session/document-reload";
 import type { NodeTemplate } from "@/domains/session/node-template";
@@ -35,7 +35,7 @@ export type EditorAction =
   | Readonly<{
       type: "reposition_node";
       name: string;
-      placement: AbsolutePlacement;
+      to: ChildPlacement;
     }>
   /* artboard をキャンバス上の別の位置へ置き直す経路（#390）。ノードの座標とは別の座標系。 */
   | Readonly<{
@@ -107,9 +107,9 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
         state,
       );
     case "reposition_node":
-      // 置き直せない指定なら座標は変わらない（EditorState.reposition の `none`）。
+      // 置き直せない指定なら親も座標も変わらない（EditorState.reposition の `none`）。
       return Option.unwrapOr(
-        EditorState.reposition(state, action.name, action.placement),
+        EditorState.reposition(state, action.name, action.to),
         state,
       );
     case "reposition_artboard":

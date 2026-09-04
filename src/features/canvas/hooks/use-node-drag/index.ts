@@ -1,9 +1,8 @@
 import { type PointerEvent as ReactPointerEvent, useReducer } from "react";
 import { ElementNameAttribute } from "@/domains/compiled/compiled-element";
+import type { ChildPlacement } from "@/domains/dcmp/child-placement";
 import type { ChildPosition } from "@/domains/dcmp/child-position";
 import { DesignDocument } from "@/domains/dcmp/design-document";
-import type { AbsolutePlacement } from "@/domains/dcmp/placement";
-import { Placement } from "@/domains/dcmp/placement";
 import type { NodeTemplate } from "@/domains/session/node-template";
 import { Offset } from "@/domains/unit/offset";
 import { CanvasView } from "@/features/canvas/domains/canvas-view";
@@ -16,10 +15,12 @@ import {
   CanvasBounds,
   type DraggedNode,
   DropParent,
-  type DropTarget,
   DropZone,
 } from "@/features/canvas/domains/node-drop";
-import { RepositionLimit } from "@/features/canvas/domains/reposition-limit";
+import {
+  type ParentShift,
+  RepositionTarget,
+} from "@/features/canvas/domains/reposition-target";
 import { CanvasPointer } from "@/features/canvas/utils/CanvasPointer";
 import { CanvasDom } from "@/libs/canvas-dom";
 import { ElementEx } from "@/utils/ElementEx";
@@ -85,29 +86,6 @@ function measureZone(parent: DropParent): Option<DropZone> {
   );
 }
 
-/**
- * ポインタの下にある、運んでいるものを受け入れられる位置。
- *
- * @param document 落とし先を決めるためのドキュメント
- * @param dragged 運んでいるもの
- * @param event 今のポインタの位置を持つイベント
- * @returns 落とせる親と、その中での挿入位置。受け入れられる親が無ければ `none`
- */
-function dropTargetAt(
-  document: DesignDocument,
-  dragged: DraggedNode,
-  event: ReactPointerEvent<HTMLElement>,
-): Option<DropTarget> {
-  const parent = DropParent.innermost(
-    document,
-    dragged,
-    namesToRoot(event.target),
-  );
-  return Option.map(Option.flatMap(parent, measureZone), (zone) =>
-    DropZone.targetAt(zone, CanvasPointer.offsetOf(event)),
-  );
-}
-
 /** 落とし方を決めるのに要るもの（今の掴みと、それを解釈するための材料）。 */
 type DropContext = Readonly<{
   document: DesignDocument;
@@ -117,65 +95,134 @@ type DropContext = Readonly<{
 }>;
 
 /**
- * 今の掴みを座標の置き直しとして読んだ結果。
+ * 描かれている要素の矩形。
  *
- * ドラッグの意味を決めるのは運んでいるノード自身の `placement` で、パレットの雛形は
- * まだ木に無いので対象外（挿入にしかならない）。座標は掴んだ時点の値に、画面上の
- * 移動量を倍率で割り戻したものを足し（倍率を変えても掴んだ点に追従する）、
- * **親の内側へ収めてから**返す。
- *
- * 収めるのを確定側（`applyDrop` / `EditorState`）ではなくここでやるのは、運んでいる
- * 最中の見た目（`RepositionPreviewStyle`）がこの編集から逆算されるため。確定側で収めると
- * 運んでいる間だけ親の外へ出たままになり、artboard に切り取られて掴んだものが消える。
- *
- * @param context 今の掴みと、配置の引き先になるドキュメント・倍率・ポインタ
- * @returns 座標の置き直しの編集。返す座標は親の内側に収まっている（上限を実測できない
- *   ときだけ収めずに返す）。パレットの雛形を運んでいる / 座標で動かせない
- *   ノードを運んでいる（`DesignDocument.absolutePlacementOf` が `none`）なら `none`
+ * @param name 描かれている artboard / ノードの名前
+ * @returns その矩形。画面に無ければ `none`
  */
-function repositionAt(context: DropContext): Option<DropEdit> {
-  const dragged = context.grab.dragged;
-  if (dragged.kind !== "existing") {
+function boundsOf(name: string): Option<CanvasBounds> {
+  return Option.map(CanvasDom.elementOf(name), CanvasBounds.ofElement);
+}
+
+/**
+ * 落とし先の親と、今の親の左上から見たその左上のずれ。
+ *
+ * 親の矩形はドキュメントに書かれていない（`hug` / `fill` があるので、大きさも位置も
+ * レイアウトを通すまで決まらない）ため、実測でしか決められない。倍率は
+ * `transform` で効いており実測値に乗るので、ドキュメント上の px へ割り戻す。
+ *
+ * 落とし先が今の親と同じでも分岐しないのは、同じ要素を 2 回測ればずれが厳密に 0 に
+ * なるため（＝親を付け替えない回は座標がそのまま書かれる）。
+ *
+ * @param view 実測値を割り戻すための今の表示
+ * @param current 今の親の名前
+ * @param dropped 落とし先の親の名前
+ * @returns 落とし先の親と原点のずれ。どちらかが描かれていなければ `none`
+ */
+function parentShiftAt(
+  view: CanvasView,
+  current: string,
+  dropped: string,
+): Option<ParentShift> {
+  const currentBounds = boundsOf(current);
+  const droppedBounds = boundsOf(dropped);
+  if (!currentBounds.some || !droppedBounds.some) {
     return Option.none;
   }
-  const placement = DesignDocument.absolutePlacementOf(
-    context.document,
-    dragged.name,
-  );
-  if (!placement.some) {
-    return Option.none;
-  }
-  const delta = CanvasView.toDocumentOffset(
+  return Option.some({
+    name: dropped,
+    shift: CanvasView.toDocumentOffset(
+      view,
+      CanvasBounds.originShift(currentBounds.value, droppedBounds.value),
+    ),
+  });
+}
+
+/**
+ * 運んでいるものが今いる親と、その親から見た座標。
+ * **これがあることが「このドラッグは座標の置き直しになる」と同じ意味**になる
+ * （パレットの雛形はまだ木に無く、フローのノードは座標を持たない）。
+ *
+ * @param document 配置の引き先になるドキュメント
+ * @param dragged 運んでいるもの
+ * @returns 今いる親と座標。雛形を運んでいる / 座標で動かせないノードを運んでいるなら `none`
+ */
+function carriedPlacement(
+  document: DesignDocument,
+  dragged: DraggedNode,
+): Option<ChildPlacement> {
+  return dragged.kind === "existing"
+    ? DesignDocument.childPlacementOf(document, dragged.name)
+    : Option.none;
+}
+
+/**
+ * 掴んでいる絶対配置のノードを、今のポインタで置き直したときの落とし方。
+ *
+ * 運んだ量は画面上の移動量を倍率で割り戻したもので（倍率を変えても掴んだ点に追従する）、
+ * そこから書かれる座標と見た目のずらし量を決めるのは `RepositionTarget`。
+ *
+ * @param context 今の掴みと、倍率・ポインタ
+ * @param carried 運んでいるものが今いる親と、その親から見た座標
+ * @param parent ポインタの下で受け入れられる親
+ * @returns 座標の置き直しの落とし方。**親の矩形を実測できなければ `none`**
+ *   （そのときは落とせない。画面に描かれている親しか落とし先にならないので、
+ *   画面の操作からここには到達しない）
+ */
+function repositionAt(
+  context: DropContext,
+  carried: ChildPlacement,
+  parent: DropParent,
+): Option<DropEdit> {
+  const moved = CanvasView.toDocumentOffset(
     context.view,
     Offset.delta(context.grab.origin, CanvasPointer.offsetOf(context.event)),
   );
-  const moved = Placement.moveBy(placement.value, delta);
-  const limit = Option.flatMap(
-    CanvasDom.elementOf(dragged.name),
-    RepositionLimit.fromElement,
-  );
-  const contained = Option.map(limit, (inside) =>
-    RepositionLimit.clamp(inside, moved),
-  );
-  return Option.some(
-    DropEdit.reposition(dragged.name, Option.unwrapOr(contained, moved)),
+  return Option.map(
+    parentShiftAt(context.view, carried.parentName, parent.name),
+    (shift) =>
+      DropEdit.reposition(
+        context.grab.dragged.kind === "existing"
+          ? context.grab.dragged.name
+          : parent.name,
+        RepositionTarget.create(carried.placement, moved, shift),
+      ),
   );
 }
 
 /**
- * 今ドロップしたら届く編集。
+ * 今の落とし方。
  * 絶対配置のノードを運んでいるなら座標の置き直し、そうでなければツリーへの移動・挿入。
  *
+ * 受け入れられる親を先に 1 回だけ解決して両方へ渡すのは、どちらの落とし方でも
+ * 落ちる先の親が同じだから（2 回解決すると、同じ走査を 2 度行ううえに
+ * 食い違う余地ができる）。
+ *
+ * **どちらの落とし方になるかは運んでいるものだけで決まり、実測の成否では変わらない。**
+ * 置き直しに決まったあとで実測に失敗したら、ツリーの移動へ落とさずそのまま
+ * 「落とせない」にする（落とすと、座標を動かすつもりのドラッグが黙って木の並びを
+ * 書き換える別の編集になる）。
+ *
  * @param context 今の掴みと、落とし先を決めるための材料
- * @returns 届く編集。落とせる先が無ければ `none`
+ * @returns 今の落とし方。受け入れられる親が無ければ `none`
  */
 function dropEditAt(context: DropContext): Option<DropEdit> {
-  const repositioned = repositionAt(context);
-  if (repositioned.some) {
-    return repositioned;
+  const parent = DropParent.innermost(
+    context.document,
+    context.grab.dragged,
+    namesToRoot(context.event.target),
+  );
+  if (!parent.some) {
+    return Option.none;
+  }
+  const carried = carriedPlacement(context.document, context.grab.dragged);
+  if (carried.some) {
+    return repositionAt(context, carried.value, parent.value);
   }
   return Option.map(
-    dropTargetAt(context.document, context.grab.dragged, context.event),
+    Option.map(measureZone(parent.value), (zone) =>
+      DropZone.targetAt(zone, CanvasPointer.offsetOf(context.event)),
+    ),
     (target) => DropEdit.intoTree(context.grab.dragged, target),
   );
 }
@@ -219,11 +266,12 @@ export type NodeDragControl = Readonly<{
 
 /**
  * 掴んでキャンバスへ落とす操作を、ツリー上の位置への移動・挿入か、絶対配置の
- * ノードの座標の置き直しとして解釈する
+ * ノードの座標の置き直し（親をまたげば付け替え）として解釈する
  * （docs/06-ui.md「キャンバス直接操作」/ docs/02-data-model.md「基本原則」）。
  *
  * このフックが持つのは DOM の実測とイベントの仲介だけで、
- * 「どこへ落ちるか」「いつドラッグとみなすか」の判定は `node-drop` / `node-drag` にある。
+ * 「どこへ落ちるか」「いつドラッグとみなすか」の判定は `node-drop` / `node-drag` に、
+ * 「実測した親のずれからどの座標が書かれるか」は `reposition-target` にある。
  *
  * ポインタキャプチャを使わないのは、捕捉すると以後のイベントの `target` が捕捉した要素に
  * 固定され、「今どのノードの上にいるか」を読めなくなるため。代わりに掴んだあとの
@@ -240,7 +288,7 @@ export function useNodeDrag(
     view: CanvasView;
     onMove: (name: string, to: ChildPosition) => void;
     onInsertAt: (template: NodeTemplate, at: ChildPosition) => void;
-    onReposition: (name: string, placement: AbsolutePlacement) => void;
+    onReposition: (name: string, to: ChildPlacement) => void;
   }>,
 ): NodeDragControl {
   const [drag, dispatch] = useReducer(
@@ -298,16 +346,16 @@ export function useNodeDrag(
   };
 
   /** 届いた編集を、それぞれの受け口へ流す。 */
-  const applyDrop = (drop: DropEdit) => {
-    switch (drop.kind) {
+  const applyDrop = (edit: DropEdit) => {
+    switch (edit.kind) {
       case "move":
-        params.onMove(drop.name, drop.target.position);
+        params.onMove(edit.name, edit.target.position);
         return;
       case "insert":
-        params.onInsertAt(drop.template, drop.target.position);
+        params.onInsertAt(edit.template, edit.target.position);
         return;
       case "reposition":
-        params.onReposition(drop.name, drop.placement);
+        params.onReposition(edit.name, edit.target.to);
         return;
     }
   };
