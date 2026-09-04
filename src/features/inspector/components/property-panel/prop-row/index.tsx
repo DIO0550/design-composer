@@ -19,7 +19,8 @@ const LabelClass = `${LabelWidthClass} truncate text-[11px] text-gray-500`;
  *
  * Why not: セグメント（enum）は条件付きでもラベルを出す。`placement: absolute` の下には
  * `x` / `y` / `constraintX` / `constraintY` の 4 行がぶら下がり、同じ選択肢を持つ
- * 追従の 2 行はラベルが無いと**どちらが横でどちらが縦か読めない**（数値欄は入る値で
+ * 追従の 2 行はラベルが無いと**目で見てどちらが横でどちらが縦か分からない**（読み上げ名は
+ * `sr-only` のラベルが `aria-labelledby` で付くので変わらない。数値欄は入る値で
  * 見分けが付くので従来どおり）。
  *
  * セグメントには `<select>` の「未指定（既定: …）」に当たる選択肢が無いので、
@@ -40,7 +41,7 @@ export function PropRow({
   onEdit: (edit: PropEdit) => void;
 }>): ReactElement {
   const labelledBy = useId();
-  const isDependent = control.enabledBy.some && control.input.kind !== "enum";
+  const hidesLabel = control.enabledBy.some && control.input.kind !== "enum";
   const showsUnsetNote =
     control.input.kind === "enum" && !PropControl.hasValue(control);
 
@@ -48,12 +49,12 @@ export function PropRow({
     <div className="flex flex-col gap-1">
       <div
         className={
-          isDependent
+          hidesLabel
             ? `flex items-center ${ControlOffsetClass}`
             : "flex items-center gap-2"
         }
       >
-        <span id={labelledBy} className={isDependent ? "sr-only" : LabelClass}>
+        <span id={labelledBy} className={hidesLabel ? "sr-only" : LabelClass}>
           {CaseStyle.toCapitalCase(control.prop)}
         </span>
         <div className="min-w-0 flex-1">

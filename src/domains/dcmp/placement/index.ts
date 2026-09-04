@@ -150,7 +150,9 @@ export const Placement = {
    * @returns 横と縦の座標を設定する編集 2 件
    */
   toPropEdits(placement: AbsolutePlacement): readonly PropEdit[] {
-    return [PropEdit.set(["x"], placement.x), PropEdit.set(["y"], placement.y)];
+    return Object.values(OffsetProps).map((prop) =>
+      PropEdit.set([prop], placement[prop]),
+    );
   },
 
   /**

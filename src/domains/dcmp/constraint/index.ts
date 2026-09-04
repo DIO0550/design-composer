@@ -8,6 +8,11 @@ import { Option } from "@/utils/Option";
  * 絶対配置の子が、親の長さの変化にどう追従するか
  * (docs/03「配置の指定」の追従の表)。Figma の `constraints` から借りた語で、
  * このリポジトリでは **`placement: absolute` の子が親のサイズ変更に追従する側**を指す。
+ *
+ * Why not: `CssDirection` のようにスキーマから union を導出する向きは採らない。
+ * 追従の規則（どの値でどう動くか）を持つのがこのモジュールなので、値の出どころも
+ * ここに置き、スキーマ側が `Object.values` で引く（代償として、スキーマの `values` は
+ * 他の prop のような readonly タプルにならない）。
  */
 export const Constraints = {
   Min: "min",
@@ -27,19 +32,7 @@ export type Constraint = ValueOf<typeof Constraints>;
 const ConstraintProps = {
   width: "constraintX",
   height: "constraintY",
-} as const satisfies Readonly<Record<Axis, string>>;
-
-/**
- * 親の長さの変化を倍率にする。
- *
- * @param resize 親のその軸の長さの変化
- * @returns 変更後 / 変更前。変更前が 0 なら倍率が決まらないので `none`
- */
-function scaleRatio(resize: AxisResize): Option<number> {
-  return resize.before === 0
-    ? Option.none
-    : Option.some(resize.after / resize.before);
-}
+} as const satisfies Readonly<Record<Axis, "constraintX" | "constraintY">>;
 
 export const Constraint = {
   /**
@@ -91,10 +84,10 @@ export const Constraint = {
       case Constraints.Center:
         return offset + growth / 2;
       case Constraints.Scale:
-        return Option.unwrapOr(
-          Option.map(scaleRatio(resize), (ratio) => offset * ratio),
-          offset,
-        );
+        // 変更前が 0 だと倍率が決まらないので、そのときは変えない
+        return resize.before === 0
+          ? offset
+          : offset * (resize.after / resize.before);
     }
   },
 
@@ -121,10 +114,10 @@ export const Constraint = {
       case Constraints.Stretch:
         return length + growth;
       case Constraints.Scale:
-        return Option.unwrapOr(
-          Option.map(scaleRatio(resize), (ratio) => length * ratio),
-          length,
-        );
+        // 変更前が 0 だと倍率が決まらないので、そのときは変えない
+        return resize.before === 0
+          ? length
+          : length * (resize.after / resize.before);
     }
   },
 } as const;
