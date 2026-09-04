@@ -139,7 +139,7 @@ function artboardHandles(artboard: Artboard): readonly AxisLength[] {
  */
 function propsHandles(props: Props): readonly AxisLength[] {
   return Object.values(Axes).flatMap((axis) => {
-    const length = Size.fixedLength(Size.fromProps(props, axis));
+    const length = Size.fixedLengthFromProps(props, axis);
     return length.some ? [AxisLength.create(axis, length.value)] : [];
   });
 }

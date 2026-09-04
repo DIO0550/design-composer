@@ -45,22 +45,26 @@ export const Size = {
     return axis === "width" ? "widthMode" : "heightMode";
   },
 
-  /**
-   * props からその軸のサイズを読む。
-   * モードと長さがどの prop に載っているかを知っているのはこのモジュールなので、
-   * 軸で引く側が 2 つの prop 名を組み立てずに済む。
-   *
-   * @param props 読み取り元の props (デフォルト解決済みでなくてよい)
-   * @param axis どちらの軸のサイズを読むか
-   * @returns その軸のサイズ。`fixed` なのに長さが無いなど決まらないときは `undefined`
-   */
-  fromProps(props: Props, axis: Axis): Size | undefined {
-    return Size.create(props[Size.modeProp(axis)], props[axis]);
-  },
-
   /** 固定された長さ。`hug` / `fill` と、長さの決まらないサイズは持たない。 */
   fixedLength(size: Size | undefined): Option<number> {
     return size?.mode === "fixed" ? Option.some(size.length) : Option.none;
+  },
+
+  /**
+   * props からその軸の固定された長さを読む。
+   *
+   * モードと長さがどの prop に載っているかを知っているのはこのモジュールなので、
+   * 軸で引く側が 2 つの prop 名を組み立てずに済む。`fixedLength` と組で使う形が
+   * 呼び出し側に散っていたのでここへ集約している。
+   *
+   * @param props 読み取り元の props (デフォルト解決済みでなくてよい)
+   * @param axis どちらの軸の長さを読むか
+   * @returns その軸の長さ。`hug` / `fill` と、`fixed` なのに長さが無いときは `none`
+   */
+  fixedLengthFromProps(props: Props, axis: Axis): Option<number> {
+    return Size.fixedLength(
+      Size.create(props[Size.modeProp(axis)], props[axis]),
+    );
   },
 
   /**
