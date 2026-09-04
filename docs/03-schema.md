@@ -49,18 +49,38 @@
 
 ### 配置の指定
 
-すべてのノード（Box / Text）が、親の中でどう置かれるかを 3 prop で持つ。サイズ指定と同じく**モード（enum）と値（number）を分離**する。
+すべてのノード（Box / Text）が、親の中でどう置かれるかを 5 prop で持つ。サイズ指定と同じく**モード（enum）と値（number）を分離**する。
 
 | prop | ドメイン | 値 | デフォルト |
 |---|---|---|---|
 | `placement` | enum | `flow` / `absolute` | `flow` |
 | `x` | 生リテラル (number, px) | 親の左辺からの距離。`placement: absolute` 時のみ有効 | `0` |
 | `y` | 生リテラル (number, px) | 親の上辺からの距離。`placement: absolute` 時のみ有効 | `0` |
+| `constraintX` | enum | 横方向の追従（下記）。`placement: absolute` 時のみ有効 | `min` |
+| `constraintY` | enum | 縦方向の追従（下記）。`placement: absolute` 時のみ有効 | `min` |
 
 - `placement: absolute` のノードはフローから外れるため、`widthMode` / `heightMode` の `fill` は効かない（宣言を出力しない）
 - 座標は**親からの相対**。ノードが無限キャンバス上の絶対座標を持つことはない（02-data-model「基本原則」）。**同じ綴りの `x` / `y` が artboard 自身にもある**が、そちらはキャンバス上の絶対位置で別のもの（01-file-format「artboards」）
 - prop 名を CSS の `position` に揃えないのは、この仕様が既に「どの親の何番目の子か」の意味で位置の語を使っているため。CSS の綴りとの対応はコンパイル規則が持つ（`widthMode` → `width` と同じ）
-- artboard は Box スキーマを流用するが、**この 3 prop は受け付けない**。artboard は親 Box を持たないので、親からの相対で置かれるこの 3 prop では位置が決まらないため（キャンバス上の位置は artboard 自身の `x` / `y` が持つ）
+- artboard は Box スキーマを流用するが、**この 5 prop は受け付けない**。artboard は親 Box を持たないので、親からの相対で置かれるこの 5 prop では位置も追従も決まらないため（キャンバス上の位置は artboard 自身の `x` / `y` が持つ）
+
+#### 親のリサイズへの追従（`constraintX` / `constraintY`）
+
+**親（artboard / Box）の長さを変える編集をしたとき、絶対配置の子の座標と長さを書き換える。** 1 軸ぶんの規則は次の通り（`P` は変更前の親の長さ、`P'` は変更後）。
+
+| 値 | 位置 | 長さ |
+|---|---|---|
+| `min` | 変えない | 変えない |
+| `max` | `x + (P' - P)`（終端からの距離を保つ） | 変えない |
+| `center` | `x + (P' - P) / 2`（中心からのずれを保つ） | 変えない |
+| `stretch` | 変えない | `width + (P' - P)`（両端からの距離を保つ） |
+| `scale` | `x * P' / P` | `width * P' / P` |
+
+- **長さを書き換えるのは、その軸のモードが `fixed` のときだけ。** `hug` / `fill` の子には書ける長さが無いので位置だけが追従する（Text は長さの prop を持たないので、`stretch` / `scale` でも位置だけが動く）
+- **変更前の親の長さが決まらないとき（親が `hug` / `fill`）は追従しない。** 差分も倍率も出せないため
+- **`P` が 0 のときは `scale` の倍率が決まらないので追従しない**
+- 追従で長さが変わった子は、その子の絶対配置の子も追従する（親のサイズが変わったことに変わりはないため）
+- **これは編集時の規則で、コンパイル結果には出ない。** ファイルに載るのは追従後の `x` / `y` / `width` / `height` そのもので、CSS は下の表のとおり `left` / `top` を出すだけ（親のリサイズのたびに全体をコンパイルし直すので、CSS 側で追従を表現しても同じ `x` から作り直されて `min` と区別が付かない）
 
 ### サイズ指定の原則
 
@@ -73,7 +93,7 @@
 
 | prop | ドメイン | 値 | デフォルト |
 |---|---|---|---|
-| `placement` / `x` / `y` | | 上記「配置の指定」 | |
+| `placement` / `x` / `y` / `constraintX` / `constraintY` | | 上記「配置の指定」 | |
 | `direction` | enum | `row` / `column` | `column` |
 | `gap` | トークン (spacing) | | なし (0) |
 | `paddingTop` | トークン (spacing) | 上 | なし (0) |
@@ -102,7 +122,7 @@
 
 | prop | ドメイン | 値 | デフォルト |
 |---|---|---|---|
-| `placement` / `x` / `y` | | 上記「配置の指定」 | |
+| `placement` / `x` / `y` / `constraintX` / `constraintY` | | 上記「配置の指定」 | |
 | `content` | 生リテラル (string) | | `""` |
 | `typography` | トークン (typography) | サイズ・行間・ウェイトの複合トークン | デフォルトトークン |
 | `color` | トークン (colors) | | デフォルトトークン |
