@@ -1,7 +1,20 @@
+import type { AxisResize } from "@/domains/dcmp/axis-length";
+import { Constraint } from "@/domains/dcmp/constraint";
 import { CssDeclaration } from "@/domains/dcmp/css-declaration";
 import { PropEdit, type Props } from "@/domains/dcmp/node";
+import type { Axis } from "@/domains/unit/axis";
 import { Offset } from "@/domains/unit/offset";
 import { Px } from "@/domains/unit/px";
+import { Option } from "@/utils/Option";
+
+/**
+ * その軸の座標を持つ prop 名（docs/03「配置の指定」）。
+ * 綴りを知っているのがこのモジュールだけ、という状態を軸で引く側にも広げるための表。
+ */
+const OffsetProps = {
+  width: "x",
+  height: "y",
+} as const satisfies Readonly<Record<Axis, keyof AbsolutePlacement>>;
 
 /**
  * フローから外れ、親からの相対座標で置かれる配置。
@@ -27,7 +40,8 @@ export type Placement = Readonly<{ mode: "flow" }> | AbsolutePlacement;
 export const Placement = {
   /**
    * props から置かれ方を組み立てる。
-   * 配置を決める 3 prop の綴りを知っているのはここだけで、消費側は prop 名を持たない。
+   * 座標で置かれるかを決める 3 prop の綴りを知っているのはここだけで、消費側は prop 名を
+   * 持たない（追従の 2 prop は `Constraint` が読む。理由はそちらの doc）。
    *
    * 決められないときに `Option` ではなく `undefined` を返すのは、同じ形の
    * `Size.create`(モードと値の 2 prop から直和を組む)と受け口を揃えるため。
@@ -94,6 +108,35 @@ export const Placement = {
    */
   delta(from: AbsolutePlacement, to: AbsolutePlacement): Offset {
     return Offset.delta(from, to);
+  },
+
+  /**
+   * 親の軸方向の長さが変わったときに、追従した座標を書く編集
+   * （docs/03「配置の指定」の追従の表のうち、位置の列）。
+   *
+   * 長さ側の編集を返さないのは、`Placement` が持つのが座標だけのため
+   * （長さの prop は `AxisLength.toPropEdit` が書く）。
+   *
+   * 整数へ丸めるのは `moveBy` と同じ理由による。
+   *
+   * @param placement 追従する子の今の配置
+   * @param constraint その軸の追従の仕方
+   * @param resize 親のその軸の長さの変化
+   * @returns 座標を書き換える編集 1 件。追従しても位置が変わらないときは `none`
+   */
+  followPropEdit(
+    placement: AbsolutePlacement,
+    constraint: Constraint,
+    resize: AxisResize,
+  ): Option<PropEdit> {
+    const prop = OffsetProps[resize.axis];
+    const offset = placement[prop];
+    const followed = Math.round(
+      Constraint.offsetAfter(constraint, offset, resize),
+    );
+    return followed === offset
+      ? Option.none
+      : Option.some(PropEdit.set([prop], followed));
   },
 
   /**
