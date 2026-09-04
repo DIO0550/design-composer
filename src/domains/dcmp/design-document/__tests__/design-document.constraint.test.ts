@@ -7,10 +7,13 @@ import { Result } from "@/utils/Result";
 import { DesignDocument } from "../index";
 
 /**
- * 幅 200・高さ 100 の artboard に、右辺へ付いた子と左辺へ付いた子が並ぶドキュメント。
+ * 幅 200・高さ 100 の artboard に、右辺へ付いた子・中央に付いた子・左辺へ付いた子が
+ * この順で並ぶドキュメント。
  *
  * 既定が `min`（動かない）なので、**動く子と動かない子を同じ入力の中に置く**。
  * 対照が無いと、追従の規則を丸ごと壊しても既定側の答えで通ってしまう。
+ * 動く子を 2 件並べてあるのは、**先頭の子だけを追従させる実装**でも 1 件だけなら
+ * 通ってしまうため（実際にそう壊して全テストが緑のまま通った）。
  */
 function setupDocument(): DesignDocument {
   return DesignDocument.create({
@@ -30,6 +33,17 @@ function setupDocument(): DesignDocument {
               constraintX: "max",
               widthMode: "fixed",
               width: 40,
+            },
+            children: [],
+          },
+          {
+            name: "center-badge",
+            type: "Box",
+            props: {
+              placement: "absolute",
+              x: 80,
+              y: 10,
+              constraintX: "center",
             },
             children: [],
           },
@@ -68,6 +82,12 @@ test("artboard の幅を広げると max の子が右辺に追従する", () => 
   const widened = widen(setupDocument(), "home");
 
   expect(Option.unwrap(propOf(widened, "right-badge", "x"))).toBe(250);
+});
+
+test("並びの 2 件目以降の子も追従する", () => {
+  const widened = widen(setupDocument(), "home");
+
+  expect(Option.unwrap(propOf(widened, "center-badge", "x"))).toBe(130);
 });
 
 test("artboard の幅を広げても min の子は動かない", () => {

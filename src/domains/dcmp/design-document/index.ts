@@ -228,7 +228,7 @@ function followChildren(
 ): Result<DesignDocument, DesignDocumentEditError> {
   const unfollowed: Result<DesignDocument, DesignDocumentEditError> =
     Result.ok(document);
-  return children.slice(0, 1).reduce<Result<DesignDocument, DesignDocumentEditError>>(
+  return children.reduce<Result<DesignDocument, DesignDocumentEditError>>(
     (followed, child) =>
       Result.flatMap(followed, (current) =>
         applyPropEdits(
