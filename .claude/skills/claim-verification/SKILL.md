@@ -1,12 +1,15 @@
 ---
 name: claim-verification
-description: "コメント・doc・Issue/PR 本文に「◯◯だからこうしている」「この参照先は◯◯だ」「この件数は◯◯だ」のような事実の主張を書いたら、implementation-flow のフェーズ5(実装)の中で、書き終えるたびに呼んで実物と照合する。読んで確認する主張(comment-structure-claim)と動かして確認する主張(comment-behavior-claim)の両方が対象。implementation-reviewer の観点(層=観点)に留めたまま pr-294 以降 26 件・10 件再発し、レビューはすべて捕まえていた(すり抜け0)が実装を出し直す手戻りが続いたため、実装時点で確かめる層へ上げた(harness-growth の 2b)。"
+description: "コメント・doc・Issue/PR 本文に「◯◯だからこうしている」「この参照先は◯◯だ」「この件数は◯◯だ」のような事実の主張を書いたら、implementation-flow のフェーズ3(計画)とフェーズ5(実装)の中で、書き終えるたびに呼んで実物と照合する。読んで確認する主張(comment-structure-claim)と動かして確認する主張(comment-behavior-claim)の両方が対象。implementation-reviewer / plan-reviewer の観点(層=観点)に留めたまま pr-294 以降 26 件・10 件、pr-352 以降 7 件(plan-scope-premise-verification)が再発し、レビューはすべて捕まえていた(すり抜け0)が差分・計画を出し直す手戻りが続いたため、書く時点で確かめる層へ上げた(harness-growth の 2b)。"
 ---
 
 # 主張を書く前に確かめる
 
-`implementation-flow` フェーズ5(実装)でコメント・doc・Issue/PR 本文に**事実の主張**を
-書いたら、フェーズ6(`implementation-reviewer`)へ渡す前にこの手順で確かめる。
+`implementation-flow` フェーズ3(計画)・フェーズ5(実装)でコメント・doc・Issue/PR 本文に
+**事実の主張**を書いたら、それぞれ次の検証エージェントへ渡す前にこの手順で確かめる。
+
+- フェーズ3(計画)で書いた主張 → フェーズ4(`plan-reviewer`)へ渡す前
+- フェーズ5(実装)で書いた主張 → フェーズ6(`implementation-reviewer`)へ渡す前
 
 **このスキルの管轄は主張の検証だけ。** 主張の種類ごとの確かめ方の対応表は
 `.claude/agents/implementation-reviewer.md`「コメントや却下理由が...事実を主張していたら」に
@@ -36,3 +39,10 @@ description: "コメント・doc・Issue/PR 本文に「◯◯だからこうし
 「実装済みの差分をレビューに出したあと」のままだと、直すたびに差分を出し直す手戻りが
 繰り返される。観点への追記を繰り返しても再発は止まらなかった(2b「前回と同じ層への追記は
 選択肢に入れない」)ため、実装時点で確かめる層(スキル)へ上げた。
+
+同じ形が計画側にもあった。`plan-scope-premise-verification`(想定した接続先・前提・検証手段が
+実例で成立するかの主張)は pr-352 で `implementation-flow` フェーズ3の手順(層=観点)として
+分割されたが、その後も pr-359〜pr-394 の間に 7 件再発した(`harness/records/pr-352.md`
+「対策済」)。**こちらもすり抜け0**で、`plan-reviewer` が毎回捕まえているのに計画の書き直しが
+繰り返された。捕まる位置が「計画を `plan-reviewer` に渡したあと」のままだったことが原因なので、
+comment 側と同じ理由でこのスキルへ寄せた(フェーズ3の呼び出しを追加)。

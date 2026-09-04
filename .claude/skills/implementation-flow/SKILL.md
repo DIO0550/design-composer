@@ -79,7 +79,11 @@ description: "design-composer の実装を ゴールの確定 → タスクの�
    コード・実行結果で崩れていないかを、読むだけで済ませず実際に動かして確かめる。
    **検証コマンド自体が意図した範囲を覆っているか**(ディレクトリの深さ・拡張子の指定漏れ・
    `git mv` 後は `diff` に出ない・表記ゆれで grep が対象を拾えない、で一部しか見ていない、を
-   含む)も同じ手順で確かめる(`分類: plan-scope-premise-verification`)
+   含む)も同じ手順で確かめる。**この種の前提・接続先の主張を計画に書いたら、書き終える
+   たびに `claim-verification` スキルで確かめる**(フェーズ5だけでなく、計画を書くこの
+   フェーズでも呼ぶ。plan-reviewer に渡してから手戻りする形が pr-352 以降 7 件続き、
+   すり抜けは 0(毎回レビューで捕まる)なのに計画の書き直しが繰り返されたため、
+   `plan-reviewer` へ渡す前に確かめる位置へ前倒しした。`分類: plan-scope-premise-verification`)
 4. **テストケースが前提とするヘルパー・フィクスチャ・API が実在し、想定通り動くかを確認する。**
    既存のヘルパーを流用する計画なら、そのヘルパーが確かめたい経路へ実際に到達できるかを
    コードを読んで確認する(到達できないなら、その場で計画を直す)
@@ -189,6 +193,6 @@ bash .claude/hooks/lib/test-rules-scan.sh src                # テスト規約
 | --- | --- | --- |
 | `.claude/agents/plan-reviewer.md` | 計画の検証観点(エージェントが読む) | フェーズ 4 |
 | `.claude/agents/implementation-reviewer.md` | 実装の検証観点(エージェントが読む) | フェーズ 6 |
-| `.claude/skills/claim-verification/SKILL.md` | コメント・doc・PR/Issue 本文の事実主張を書く前に確かめる手順 | フェーズ 5 |
+| `.claude/skills/claim-verification/SKILL.md` | コメント・doc・PR/Issue 本文の事実主張を書く前に確かめる手順 | フェーズ 3 / 5 |
 | [`harness/case-law/planning.md`](../../../harness/case-law/planning.md) | 計画で過去に踏んだ実例 | フェーズ 3 |
 | [`harness/case-law/process.md`](../../../harness/case-law/process.md) | サブエージェント・フック環境の実例 | フェーズ 4 / 6 / 7 |
