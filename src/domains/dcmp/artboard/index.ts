@@ -68,10 +68,17 @@ const ArtboardFixedSizeProps: readonly string[] = [
  * artboard の props では変えられない配置の prop。
  *
  * artboard は親 Box を持たないので、親からの相対で置かれる `placement: "absolute"`
- * を書いても意味が決まらない。artboard 自身のキャンバス上の位置は**別の座標系**で、
+ * を書いても意味が決まらない。追従（`constraintX` / `constraintY`）も、変化する親の
+ * 長さが無いので同じく決まらない。artboard 自身のキャンバス上の位置は**別の座標系**で、
  * props ではなく `canvasPosition` が持つ。
  */
-const ArtboardFixedPlacementProps: readonly string[] = ["placement", "x", "y"];
+const ArtboardFixedPlacementProps: readonly string[] = [
+  "placement",
+  "x",
+  "y",
+  "constraintX",
+  "constraintY",
+];
 
 /**
  * artboard の props では変えられない prop の全体。

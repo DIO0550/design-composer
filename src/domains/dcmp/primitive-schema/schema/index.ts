@@ -1,3 +1,4 @@
+import { Constraints } from "@/domains/dcmp/constraint";
 import type { ValueOf } from "@/types/ValueOf";
 import { type PropDefinitionRecord, ShorthandNames } from "../prop-definition";
 
@@ -27,11 +28,12 @@ export type PrimitiveSchema = Readonly<{
 
 /**
  * 親の中でのノードの置かれ方を決める props（docs/03「配置の指定」）。
- * Box と Text のどちらも親の中に置かれるので、同じ 3 prop を両方が持つ。
+ * Box と Text のどちらも親の中に置かれるので、同じ 5 prop を両方が持つ。
  *
  * 座標に既定 `0` を置くのは、「絶対配置なのに座標が無い」を作れなくするため。
  * 既定はファイルに書き出されない（docs/02「明示的に設定した props のみを保存する」）
- * ので、書いていないノードの diff には現れない。
+ * ので、書いていないノードの diff には現れない。追従の既定を `min`（左上固定）に
+ * するのも同じで、書いていないノードは親をリサイズしても動かない。
  */
 const PlacementProps = {
   placement: {
@@ -51,6 +53,20 @@ const PlacementProps = {
     domain: "literal",
     literalType: "number",
     default: 0,
+    group: "layout",
+    enabledWhen: { prop: "placement", equals: "absolute" },
+  },
+  constraintX: {
+    domain: "enum",
+    values: Object.values(Constraints),
+    default: Constraints.Min,
+    group: "layout",
+    enabledWhen: { prop: "placement", equals: "absolute" },
+  },
+  constraintY: {
+    domain: "enum",
+    values: Object.values(Constraints),
+    default: Constraints.Min,
     group: "layout",
     enabledWhen: { prop: "placement", equals: "absolute" },
   },
