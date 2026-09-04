@@ -1,11 +1,12 @@
 import { Artboard } from "@/domains/dcmp/artboard";
-import { AxisLength } from "@/domains/dcmp/axis-length";
+import { AxisLength, AxisResize } from "@/domains/dcmp/axis-length";
 import type { ChildPosition } from "@/domains/dcmp/child-position";
 import {
   Component,
   type ComponentAsset,
   ComponentSet,
 } from "@/domains/dcmp/component";
+import { Constraint } from "@/domains/dcmp/constraint";
 import { ExpandedNode } from "@/domains/dcmp/expanded-node";
 import {
   FormatVersion,
@@ -17,7 +18,9 @@ import { Node, type PropEdit, type RefNode } from "@/domains/dcmp/node";
 import { NodeTree, type NodeTreeUpdate } from "@/domains/dcmp/node-tree";
 import { type AbsolutePlacement, Placement } from "@/domains/dcmp/placement";
 import { ResolvedProps } from "@/domains/dcmp/resolved-props";
+import { Size } from "@/domains/dcmp/size";
 import { type Token, type TokenRef, TokenSet } from "@/domains/dcmp/token";
+import { Axes, type Axis } from "@/domains/unit/axis";
 import type { Offset } from "@/domains/unit/offset";
 import { ArrayEx } from "@/utils/ArrayEx";
 import type { JsonCursor, JsonDecoded, JsonObject } from "@/utils/Json";
@@ -61,6 +64,10 @@ export type DesignDocument = DesignDocumentV1;
  * 以下の関数は「どの artboard を相手にするか」を選ぶためのもの。
  * 並びの探索・編集そのものは `NodeTree` が、名前の規則は `NameSpace` が持っており、
  * ドキュメントに残るのは「複数の artboard のどれに対して行うか」という調停だけ。
+ *
+ * 例外は追従（`followPropEdits`）で、ここだけは `Placement` / `Constraint` / `Size` を
+ * 組み合わせて編集を作る。子側のドメイン（`Node`）へ置けないのは、`Placement` が
+ * `PropEdit` を `Node` から import しており、逆向きの import が循環になるため。
  */
 
 /**
@@ -104,6 +111,144 @@ function applyPropEdits(
         DesignDocument.applyPropEdit(current, name, edit),
       ),
     unedited,
+  );
+}
+
+/**
+ * 名前で指した artboard / ノードが今持っている、軸ごとの長さ。
+ *
+ * artboard を先に見るのは、長さの持ち主が artboard 自身のフィールドで、
+ * `boxProps` が props の側を固定値で上書きするため（`Artboard.resize` の doc）。
+ *
+ * @param document 引き先になるドキュメント
+ * @param name 長さを知りたい artboard / ノードの名前
+ * @param axis どちらの軸の長さか
+ * @returns その軸の長さ。名前が無い / 部品インスタンス / `hug` `fill` のときは `none`
+ */
+function axisLengthOf(
+  document: DesignDocument,
+  name: string,
+  axis: Axis,
+): Option<number> {
+  const artboard = DesignDocument.findArtboard(document, name);
+  if (artboard.some) {
+    return Option.some(artboard.value[axis]);
+  }
+  const node = DesignDocument.findNode(document, name);
+  if (!node.some || !Node.isPrimitive(node.value)) {
+    return Option.none;
+  }
+  return Size.fixedLengthFromProps(ResolvedProps.forNode(node.value), axis);
+}
+
+/**
+ * 1 つの子を、親の長さの変化へ追従させる編集
+ * （docs/03「配置の指定」の追従の表）。
+ *
+ * @param node 追従させる子
+ * @param resize 親のその軸の長さの変化
+ * @returns 座標と長さの編集。フローの子・部品インスタンス・追従の綴りが読めない子と、
+ *   追従しても値が変わらない子では空
+ */
+function followPropEdits(node: Node, resize: AxisResize): readonly PropEdit[] {
+  if (!Node.isPrimitive(node)) {
+    return [];
+  }
+  const props = ResolvedProps.forNode(node);
+  const placement = Placement.fromProps(props);
+  const constraint = Constraint.fromProps(props, resize.axis);
+  if (!Placement.isAbsolute(placement) || !constraint.some) {
+    return [];
+  }
+  const offsetEdit = Placement.followPropEdit(
+    placement,
+    constraint.value,
+    resize,
+  );
+  const length = Size.fixedLengthFromProps(props, resize.axis);
+  /*
+   * 長さが変わるときだけ編集にする。変わらないのに書くと、`AxisLength.create` の
+   * 丸めが**変えないはずの長さまで書き換える**（手で 40.5 と書いたファイルが、
+   * 長さを変えない追従でリサイズしただけで 41 になる）。
+   */
+  const lengthEdit = Option.flatMap(length, (current) =>
+    Option.map(
+      AxisResize.create({
+        axis: resize.axis,
+        before: current,
+        after: Constraint.lengthAfter(constraint.value, current, resize),
+      }),
+      (changed) =>
+        AxisLength.toPropEdit(AxisLength.create(changed.axis, changed.after)),
+    ),
+  );
+  const edits = [offsetEdit, lengthEdit];
+  return edits.flatMap((edit) => (edit.some ? [edit.value] : []));
+}
+
+/**
+ * 大きさが変わった artboard / ノードの、直下の絶対配置の子を追従させる
+ * （docs/03「配置の指定」）。
+ *
+ * 子への書き込みを `applyPropEdit` へ戻すので、**長さが変わった子は自分の子の追従を
+ * 自分で引き起こす**（明示的な再帰を書かない）。
+ *
+ * Why not: 「どの prop を編集したか」で追従の要否を決めない。`width` を消して `hug`
+ * へ戻す編集のように、prop 名だけでは長さが変わったかを判定できないため。
+ *
+ * @param before 編集する前のドキュメント
+ * @param name 大きさが変わったかもしれない artboard / ノードの名前
+ * @param edited その編集の結果
+ * @returns 子を追従させたドキュメント。長さが変わっていなければ `edited` のまま
+ */
+function withResizeFollowUp(
+  before: DesignDocument,
+  name: string,
+  edited: Result<DesignDocument, DesignDocumentEditError>,
+): Result<DesignDocument, DesignDocumentEditError> {
+  return Result.flatMap(edited, (after) => {
+    const resizes = Object.values(Axes).flatMap((axis) => {
+      const resize = Option.flatMap(axisLengthOf(before, name, axis), (from) =>
+        Option.flatMap(axisLengthOf(after, name, axis), (to) =>
+          AxisResize.create({ axis, before: from, after: to }),
+        ),
+      );
+      return resize.some ? [resize.value] : [];
+    });
+    const children = DesignDocument.findChildren(after, name);
+    // 大きさと無関係な prop の編集（大半がそれ）で子の走査まで進まないための打ち切り
+    if (resizes.length === 0 || !children.some) {
+      return Result.ok(after);
+    }
+    return followChildren(after, children.value, resizes);
+  });
+}
+
+/**
+ * 子の並びを順に追従させる。
+ *
+ * @param document 書き換える元のドキュメント
+ * @param children 追従させる子の並び
+ * @param resizes 親の長さの変化（変化した軸のぶんだけ）
+ * @returns すべての子を追従させたドキュメント。途中で失敗したらその失敗
+ */
+function followChildren(
+  document: DesignDocument,
+  children: readonly Node[],
+  resizes: readonly AxisResize[],
+): Result<DesignDocument, DesignDocumentEditError> {
+  const unfollowed: Result<DesignDocument, DesignDocumentEditError> =
+    Result.ok(document);
+  return children.reduce<Result<DesignDocument, DesignDocumentEditError>>(
+    (followed, child) =>
+      Result.flatMap(followed, (current) =>
+        applyPropEdits(
+          current,
+          child.name,
+          resizes.flatMap((resize) => followPropEdits(child, resize)),
+        ),
+      ),
+    unfollowed,
   );
 }
 
@@ -567,6 +712,11 @@ export const DesignDocument = {
    * 名前で指した artboard またはノードの prop を書き換える
    * （docs/06-ui.md「編集操作の一覧」の props 編集）。
    * 名前は単一名前空間なので、artboard とノードのどちらを相手にするかは名前で決まる。
+   *
+   * 大きさが変わったときは、直下の絶対配置の子をここで追従させる
+   * （`withResizeFollowUp`）。`resize` の**ノード経路**にフックを置かないのは、
+   * そこがこの入口を通るため（両方に置くと子が 2 度動く）。artboard 経路だけは
+   * ここを通らないので `resize` 側が持つ。
    */
   applyPropEdit(
     document: DesignDocument,
@@ -583,10 +733,14 @@ export const DesignDocument = {
     if (!found.some) {
       return Result.err({ kind: "node-not-found", name });
     }
-    return DesignDocument.replaceNode(
+    return withResizeFollowUp(
       document,
       name,
-      Node.applyPropEdit(found.value, edit),
+      DesignDocument.replaceNode(
+        document,
+        name,
+        Node.applyPropEdit(found.value, edit),
+      ),
     );
   },
 
@@ -598,6 +752,9 @@ export const DesignDocument = {
    * ノードは `width` / `height` prop）ため、名前で相手を決めてから書き込み先を分ける。
    * ノード側でモードが `fixed` かどうかは見ない。ハンドルを出す軸を決めるのは
    * キャンバス側の役目で、ここは指定された長さを書くところ。
+   *
+   * 絶対配置の子の追従は、artboard の経路だけここで起こす。ノードの経路は
+   * `applyPropEdit` を通るのでそちらが起こす（`applyPropEdit` の doc）。
    */
   resize(
     document: DesignDocument,
@@ -608,7 +765,11 @@ export const DesignDocument = {
       sizes.reduce(Artboard.resize, artboard),
     );
     if (resizedArtboard.some) {
-      return Result.ok(resizedArtboard.value);
+      return withResizeFollowUp(
+        document,
+        name,
+        Result.ok(resizedArtboard.value),
+      );
     }
     return applyPropEdits(document, name, sizes.map(AxisLength.toPropEdit));
   },

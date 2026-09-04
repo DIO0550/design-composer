@@ -30,12 +30,13 @@ const CurrentMajor = 1;
 
 /**
  * アプリが書き出す版。
- * minor は後方互換な追加のたびに上げる(docs/01-file-format.md「formatVersion」。
- * どの版で何が加わったかの内訳もそこの表が持つ)。
+ * minor は後方互換な追加のたびに上げる。ただし**その版でまだ動作確認をしていない間は
+ * 上げ直さない**(docs/01-file-format.md「formatVersion」。どの版で何が加わったかの
+ * 内訳もそこの表が持つ)。
  */
 const Current: FormatVersionOf<typeof CurrentMajor> = {
   major: CurrentMajor,
-  minor: 2,
+  minor: 1,
 };
 
 const FormatVersionPattern = /^(\d+)\.(\d+)$/;

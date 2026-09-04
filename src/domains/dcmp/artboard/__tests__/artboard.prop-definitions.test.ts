@@ -27,6 +27,13 @@ test("親の中での置かれ方は artboard の props では受け付けない
   expect(names).not.toContain("y");
 });
 
+test("親のリサイズへの追従は artboard の props では受け付けない", () => {
+  const names = Object.keys(Artboard.propDefinitions());
+
+  expect(names).not.toContain("constraintX");
+  expect(names).not.toContain("constraintY");
+});
+
 test("はみ出しの既定は clip になる", () => {
   expect(Artboard.propDefinitions().overflow.default).toBe("clip");
 });

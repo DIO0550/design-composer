@@ -37,6 +37,26 @@ test("Box の座標は placement が absolute のときのみ有効になる", (
   );
 });
 
+test("Box の追従は min / max / center / stretch / scale の enum でデフォルトが min", () => {
+  const definition = BoxSchema.props.constraintX;
+  expect(PropDefinition.isEnum(definition)).toBe(true);
+  expect(definition).toMatchObject({
+    domain: "enum",
+    values: ["min", "max", "center", "stretch", "scale"],
+    default: "min",
+  });
+});
+
+test("Box の追従は placement が absolute のときのみ有効になる", () => {
+  const definition = BoxSchema.props.constraintY;
+  expect(PropDefinition.isEnabled(definition, { placement: "absolute" })).toBe(
+    true,
+  );
+  expect(PropDefinition.isEnabled(definition, { placement: "flow" })).toBe(
+    false,
+  );
+});
+
 test("Box の gap は spacing トークン参照でデフォルトを持たない", () => {
   const definition = BoxSchema.props.gap;
   expect(PropDefinition.isToken(definition)).toBe(true);

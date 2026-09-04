@@ -20,6 +20,38 @@ export type AxisLength = Readonly<{
  */
 export type AxisLengths = readonly [AxisLength, ...AxisLength[]];
 
+/**
+ * ある軸の長さが変わったこと。
+ *
+ * 前後を対で持つのは、変化した量も倍率も片方だけでは決まらないため
+ * (絶対配置の子の追従は差分と倍率の両方を使う → `Constraint`)。
+ */
+export type AxisResize = Readonly<{
+  axis: Axis;
+  before: number;
+  after: number;
+}>;
+
+export const AxisResize = {
+  /**
+   * 長さが実際に変わったときだけ組み立てる。
+   *
+   * 前後が同じときに `none` を返すのは、消費側 (追従) が「変化があった軸」だけを
+   * 受け取れるようにするため。構造的な型なので値そのものは直接も書ける (テストは
+   * そうしている) が、変化があったかを判定する入口はここに 1 つだけ置く。
+   * オブジェクト引数にするのは、同じ型の `before` / `after` を位置で並べると
+   * 取り違えても型エラーにならないため。
+   *
+   * @param lengths 変化した軸と、その前後の長さ
+   * @returns 長さの変化。前後が同じなら `none`
+   */
+  create(lengths: AxisResize): Option<AxisResize> {
+    return lengths.before === lengths.after
+      ? Option.none
+      : Option.some(lengths);
+  },
+} as const;
+
 export const AxisLength = {
   /**
    * 長さを 0 以上の整数へ丸めて組み立てる。
