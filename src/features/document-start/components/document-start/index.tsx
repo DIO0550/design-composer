@@ -126,7 +126,7 @@ function commandSourceFailureLabel(source: CommandSource): string {
  * 押せる導線の共通の形。地・枠・文字だけを差し替える。
  *
  * 大きさ（高さ 30px / 角丸 5px / font-size 11px / 横 10px）と font-family は
- * UI 案（`docs/Design Composer.html`）のボタン 2 種（主要 = 黒塗り・副 = 白 + 灰枠）に
+ * UI 案（`docs/Design Composer.html`）のボタン 2 種（主要 = 塗り・副 = 白 + 灰枠）に
  * 合わせている。共通の `Button` にはしていない。UI 案のボタンはこのリポジトリの
  * 帯・パレット・ダイアログ等でも使われる作りだが、今の Issue（#374）の外まで
  * 塗り替えると差分が広がるため。共通化は乖離解消の一覧（#112）で別 Issue にする。
@@ -153,11 +153,17 @@ function StartActions({
 }>): ReactElement {
   return (
     <div className="flex items-center gap-2">
+      {/* 主要のボタンは UI 案のアクセントの青（`#0d99ff`）。この地に文字を直接載せて
+         いるのは選択中の要素名のラベル 2 箇所だけで、どちらも白 + font-weight:500 な
+         ので、そこへ揃えている。hover を暗くせず `#4db2ff` にするのは、UI 案が持つ
+         唯一の `:hover` 宣言（`a:hover`）がこの青をその色へ振っているため。塗りの上
+         では白文字のコントラストが下がるが、青を1色足すより UI 案に無い色を作らない
+         ほうを採った。*/}
       <button
         type="button"
         onClick={actions.openDocument}
         disabled={disabled}
-        className={`${ActionButton} border-none bg-[#1e1e1e] font-medium text-white hover:bg-[#111]`}
+        className={`${ActionButton} border-none bg-[#0d99ff] font-medium text-white hover:bg-[#4db2ff]`}
       >
         開く
       </button>
