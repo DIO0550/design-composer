@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { Option } from "@/utils/Option";
 import { CanvasBounds } from "../index";
 
 /** 左 10・上 20 に置かれた、幅 100・高さ 40 の矩形。 */
@@ -73,4 +74,24 @@ test("別の矩形の左上から見たずれは、左上どうしの差にな�
   });
 
   expect(shift).toEqual({ x: -20, y: 15 });
+});
+
+test("並び全体を含む最小の矩形は、四辺のいちばん外側で決まる", () => {
+  // 左端は 2 つ目、上端と右端は 1 つ目、下端は 2 つ目が決める（1 つの矩形からは決まらない）
+  const spread: readonly CanvasBounds[] = [
+    { left: 10, top: 20, width: 100, height: 40 },
+    { left: 4, top: 50, width: 30, height: 60 },
+  ];
+
+  expect(CanvasBounds.enclosing(spread)).toEqual(
+    Option.some({ left: 4, top: 20, width: 106, height: 90 }),
+  );
+});
+
+test("矩形が 1 つだけなら、その矩形がそのまま全体になる", () => {
+  expect(CanvasBounds.enclosing([Bounds])).toEqual(Option.some(Bounds));
+});
+
+test("囲む矩形が 1 つも無ければ全体は決まらない", () => {
+  expect(CanvasBounds.enclosing([])).toEqual(Option.none);
 });

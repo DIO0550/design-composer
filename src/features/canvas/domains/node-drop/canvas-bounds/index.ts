@@ -1,6 +1,7 @@
 import { CssDirection } from "@/domains/dcmp/css-direction";
-import type { Axis } from "@/domains/unit/axis";
+import { Axes, type Axis } from "@/domains/unit/axis";
 import type { Offset } from "@/domains/unit/offset";
+import { Option } from "@/utils/Option";
 
 /**
  * 画面上の矩形（client 座標・px）。
@@ -106,6 +107,41 @@ export const CanvasBounds = {
   /** 子が並ぶ向きに沿った終点。 */
   end(bounds: CanvasBounds, direction: CssDirection): number {
     return CanvasBounds.edge(bounds, CssDirection.mainAxis(direction));
+  },
+
+  /**
+   * 並び全体を含む最小の矩形。
+   *
+   * まとめて 1 つの範囲として扱いたいとき（選択したものすべて / artboard すべてを
+   * 画面へ収める）に使う。
+   *
+   * Why: `create` / `from*` ではなく結果そのものを表す語で名付けている。あの 2 つは
+   * 材料から値を作る入口の語で、ここは**矩形から矩形を導く**操作なので、同じモジュールの
+   * `relativeTo` / `originShift` / `center` と同じ語形に揃う。
+   *
+   * @param boundsList 含めたい矩形の並び
+   * @returns すべてを含む最小の矩形。並びが空なら `none`（囲む対象が無いと矩形が決まらない）
+   */
+  enclosing(boundsList: readonly CanvasBounds[]): Option<CanvasBounds> {
+    if (boundsList.length === 0) {
+      return Option.none;
+    }
+    const lefts = boundsList.map((bounds) => bounds.left);
+    const tops = boundsList.map((bounds) => bounds.top);
+    const rights = boundsList.map((bounds) =>
+      CanvasBounds.edge(bounds, Axes.Width),
+    );
+    const bottoms = boundsList.map((bounds) =>
+      CanvasBounds.edge(bounds, Axes.Height),
+    );
+    const left = Math.min(...lefts);
+    const top = Math.min(...tops);
+    return Option.some({
+      left,
+      top,
+      width: Math.max(...rights) - left,
+      height: Math.max(...bottoms) - top,
+    });
   },
 
   /** 子が並ぶ向きに沿った中点。ポインタがここを越えたかで前後が決まる。 */
