@@ -22,3 +22,26 @@ test("要素でない発火元は文字を打ち込める場所ではない", ()
 test("発火元が無い場合は文字を打ち込める場所ではない", () => {
   expect(ElementEx.isTextEditable(null)).toBe(false);
 });
+
+test("選択欄は選択肢から値を選ぶ場所として扱う", () => {
+  expect(ElementEx.isOptionSelectable(document.createElement("select"))).toBe(
+    true,
+  );
+});
+
+test("選択欄は文字を打ち込める場所ではない", () => {
+  // 2 つを分けているのは、受け取るキーの範囲が違うため
+  expect(ElementEx.isTextEditable(document.createElement("select"))).toBe(
+    false,
+  );
+});
+
+test("入力欄は選択肢から値を選ぶ場所ではない", () => {
+  expect(ElementEx.isOptionSelectable(document.createElement("input"))).toBe(
+    false,
+  );
+});
+
+test("発火元が無い場合は選択肢から値を選ぶ場所ではない", () => {
+  expect(ElementEx.isOptionSelectable(null)).toBe(false);
+});
