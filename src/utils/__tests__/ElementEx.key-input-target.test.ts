@@ -23,8 +23,8 @@ test("発火元が無い場合は文字を打ち込める場所ではない", ()
   expect(ElementEx.isTextEditable(null)).toBe(false);
 });
 
-test("選択欄は選択肢から値を選ぶ場所として扱う", () => {
-  expect(ElementEx.isOptionSelectable(document.createElement("select"))).toBe(
+test("選択欄は選択肢から選ぶ場所として扱う", () => {
+  expect(ElementEx.isSelectControl(document.createElement("select"))).toBe(
     true,
   );
 });
@@ -37,11 +37,11 @@ test("選択欄は文字を打ち込める場所ではない", () => {
 });
 
 test("入力欄は選択肢から値を選ぶ場所ではない", () => {
-  expect(ElementEx.isOptionSelectable(document.createElement("input"))).toBe(
+  expect(ElementEx.isSelectControl(document.createElement("input"))).toBe(
     false,
   );
 });
 
 test("発火元が無い場合は選択肢から値を選ぶ場所ではない", () => {
-  expect(ElementEx.isOptionSelectable(null)).toBe(false);
+  expect(ElementEx.isSelectControl(null)).toBe(false);
 });

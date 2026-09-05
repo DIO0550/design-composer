@@ -11,8 +11,8 @@ const PlainShortcut: KeyShortcut = {
 };
 
 /**
- * ショートカットを張っただけの器。文字を打ち込める場所も持たせて、
- * フォーカスの位置で扱いが変わることを見られるようにする。
+ * ショートカットを張っただけの器。文字を打ち込める場所と選択肢から選ぶ場所を
+ * どちらも持たせて、フォーカスの位置で扱いが変わることを見られるようにする。
  */
 function KeyShortcutHarness({
   shortcut = PlainShortcut,
@@ -20,7 +20,15 @@ function KeyShortcutHarness({
 }: Readonly<{ shortcut?: KeyShortcut; onPress: () => void }>) {
   useKeyShortcut(shortcut, onPress);
 
-  return <input aria-label="文言" defaultValue="あ" />;
+  return (
+    <>
+      <input aria-label="文言" defaultValue="あ" />
+      <select aria-label="種別" defaultValue="a">
+        <option value="a">A</option>
+        <option value="b">B</option>
+      </select>
+    </>
+  );
 }
 
 test("割り当てたキーを押すと呼ばれる", async () => {
@@ -152,25 +160,32 @@ test("Shift を伴わない割り当ては Shift を押しながらでは呼ば�
   expect(pressed).toEqual([]);
 });
 
-/** 選択欄へフォーカスを置けるようにした器。選択欄自身は何も操作しない。 */
-function SelectFocusHarness({
-  shortcut = PlainShortcut,
-  onPress,
-}: Readonly<{ shortcut?: KeyShortcut; onPress: () => void }>) {
-  useKeyShortcut(shortcut, onPress);
-
-  return (
-    <select aria-label="種別" defaultValue="a">
-      <option value="a">A</option>
-      <option value="b">B</option>
-    </select>
+test("入力欄に文字を打ち込んでいる間は、修飾キーを伴う割り当ても呼ばれない", async () => {
+  // 選択欄と違い、入力欄ではどの割り当ても通さない（打ち込んでいる最中に走ると驚きになる）
+  const user = userEvent.setup();
+  const pressed: string[] = [];
+  render(
+    <KeyShortcutHarness
+      shortcut={{ keys: ["z"], withCommandKey: true, withShiftKey: false }}
+      onPress={() => pressed.push("押された")}
+    />,
   );
-}
 
+  await user.click(screen.getByRole("textbox", { name: "文言" }));
+  await user.keyboard("{Control>}z{/Control}");
+
+  expect(pressed).toEqual([]);
+});
+
+/*
+ * 選択欄の 2 件を素のキー（Enter）で書いているのは、happy-dom が `<select>` の
+ * 矢印操作を再現しないため。動機は「矢印が選択欄の値を変える」ことだが、確かめられるのは
+ * 「素のキーは通さない / 修飾キー付きは通す」という一般則までになる。
+ */
 test("選択欄にフォーカスがある間、修飾キーを伴わない割り当ては呼ばれない", async () => {
   const user = userEvent.setup();
   const pressed: string[] = [];
-  render(<SelectFocusHarness onPress={() => pressed.push("押された")} />);
+  render(<KeyShortcutHarness onPress={() => pressed.push("押された")} />);
 
   await user.click(screen.getByRole("combobox", { name: "種別" }));
   await user.keyboard("{Enter}");
@@ -183,7 +198,7 @@ test("選択欄にフォーカスがあっても、修飾キーを伴う割り�
   const user = userEvent.setup();
   const pressed: string[] = [];
   render(
-    <SelectFocusHarness
+    <KeyShortcutHarness
       shortcut={{ keys: ["z"], withCommandKey: true, withShiftKey: false }}
       onPress={() => pressed.push("押された")}
     />,
