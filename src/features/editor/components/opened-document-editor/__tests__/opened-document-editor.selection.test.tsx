@@ -68,6 +68,15 @@ test("キャンバスで選んだノードはキャンバス上でも強調さ�
   expect(highlightedNames(canvasPane())).toEqual(["home-title"]);
 });
 
+test("Esc を押すとノードの選択が外れる", async () => {
+  await renderOpenedDocument();
+  await userEvent.click(renderedElement(canvasPane(), "home-title"));
+
+  await userEvent.keyboard("{Escape}");
+
+  expect(currentRowNames(tree())).toEqual([]);
+});
+
 test("artboard を選ぶと前のノードの選択は解除される", async () => {
   await renderOpenedDocument();
   await userEvent.click(renderedElement(canvasPane(), "home-title"));

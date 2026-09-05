@@ -21,6 +21,17 @@ export const Offset = {
     return { x: to.x - from.x, y: to.y - from.y };
   },
 
+  /**
+   * 各成分へ同じ係数を掛けた差。向きだけを表す差から、長さのある移動量を作るのに使う。
+   *
+   * @param offset 掛ける元の差
+   * @param factor 掛ける係数
+   * @returns 各成分を `factor` 倍した差
+   */
+  scale(offset: Offset, factor: number): Offset {
+    return { x: offset.x * factor, y: offset.y * factor };
+  },
+
   /** 軸に沿った成分。1 軸だけを見る操作（リサイズ）が使う。 */
   along(offset: Offset, axis: Axis): number {
     return axis === "width" ? offset.x : offset.y;

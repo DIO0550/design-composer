@@ -27,6 +27,15 @@ test("並べ替えたあとも動かした先から運び直せる", async () =>
   expect(rowNames(tree())).toEqual(["home-title", "home-login"]);
 });
 
+test("選んでいるノードは ⌘] で兄弟の並びの中を前面へ動く", async () => {
+  await renderOpenedDocument();
+  await userEvent.click(screen.getByRole("button", { name: "home-title" }));
+
+  await userEvent.keyboard("{Meta>}]{/Meta}");
+
+  expect(rowNames(tree())).toEqual(["home-login", "home-title"]);
+});
+
 test("並べ替えても選択していたノードは選択されたままになる", async () => {
   await renderOpenedDocument();
   await userEvent.click(screen.getByRole("button", { name: "home-title" }));

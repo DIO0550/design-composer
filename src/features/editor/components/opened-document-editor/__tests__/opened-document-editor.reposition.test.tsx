@@ -1,3 +1,5 @@
+import { screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { rowNames } from "@/components/__tests__/row-names";
 import { Artboard } from "@/domains/dcmp/artboard";
@@ -102,6 +104,16 @@ test("絶対配置のノードをキャンバスで運ぶと、描かれる位�
 
   const moved = drawn("home-badge");
   expect([moved.style.left, moved.style.top]).toEqual(["266px", "28px"]);
+});
+
+test("選んでいる絶対配置のノードは矢印キーで、描かれる位置が動く", async () => {
+  await renderOpenedDocument(setupDocument());
+  await userEvent.click(screen.getByRole("button", { name: "home-badge" }));
+
+  await userEvent.keyboard("{Shift>}{ArrowRight}{/Shift}");
+
+  const moved = drawn("home-badge");
+  expect([moved.style.left, moved.style.top]).toEqual(["306px", "16px"]);
 });
 
 test("絶対配置のノードを運んでもツリーの並びは変わらない", async () => {

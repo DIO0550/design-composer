@@ -1,9 +1,10 @@
 import { Artboard } from "@/domains/dcmp/artboard";
 import type { AxisLength } from "@/domains/dcmp/axis-length";
-import type { ChildPlacement } from "@/domains/dcmp/child-placement";
+import { ChildPlacement } from "@/domains/dcmp/child-placement";
 import { ChildPosition } from "@/domains/dcmp/child-position";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import type { Node, PropEdit } from "@/domains/dcmp/node";
+import { Placement } from "@/domains/dcmp/placement";
 import {
   Token,
   type TokenRef,
@@ -20,6 +21,7 @@ import { TokenSelection } from "@/domains/session/token-selection";
 import type { Instant } from "@/domains/unit/instant";
 import type { Offset } from "@/domains/unit/offset";
 import { EditHistory } from "@/features/editor/domains/edit-history";
+import { ReorderStep } from "@/features/editor/domains/reorder-step";
 import { TokenTemplate } from "@/features/editor/domains/token-template";
 import type { IndexMove } from "@/types/IndexMove";
 import { Option } from "@/utils/Option";
@@ -445,8 +447,9 @@ export const EditorState = {
    * 同じ親の中で子の順序を入れ替える（docs/06-ui.md「編集操作の一覧」の並べ替え）。
    *
    * 動かせない指定（親が無い・移動先が並びの外）は「その移動が存在しない」ことと同じなので
-   * `none` にする。ツリービューは隣がいない向きの移動ボタンを出さないため、
-   * 画面の操作からこの `none` には到達しない。
+   * `none` にする。ツリービューは隣がいない向きの移動ボタンを出さないが、
+   * **キーボードの割り当ては端でも押せる**ため、画面の操作からこの `none` に到達する
+   * （`reorderSelectedNode`）。
    * 選択はノードの name で持っており並べ替えでは変わらないため、そのまま引き継ぐ。
    */
   reorderNode(
@@ -460,6 +463,34 @@ export const EditorState = {
       toIndex,
     );
     return reordered.ok ? withEdit(state, reordered.value) : Option.none;
+  },
+
+  /**
+   * 選択中のノードを、兄弟の並びの中で 1 つぶん動かす
+   * （docs/06-ui.md「編集操作の一覧」の並べ替え）。
+   *
+   * 対象を選択から決めるのは、キーボードからの操作が今の位置を知らないため。
+   * ツリーのドラッグは掴んだ位置を持っているので `reorderNode` を直に呼ぶ。
+   *
+   * @param state 動かす前の編集状態
+   * @param step 動かす向き
+   * @returns 動かしたあとの編集状態。1 つだけ選んでいないとき（未選択・複数選択）、
+   *   選んでいるものが並びに載っていないとき（artboard 自身）、その向きに隣がいないときは `none`
+   */
+  reorderSelectedNode(
+    state: EditorState,
+    step: ReorderStep,
+  ): Option<EditorState> {
+    const from = Option.flatMap(EditorState.singleName(state), (name) =>
+      DesignDocument.findChildPosition(EditorState.document(state), name),
+    );
+    return Option.flatMap(from, (position) =>
+      EditorState.reorderNode(
+        state,
+        position,
+        ReorderStep.toIndex(step, position),
+      ),
+    );
   },
 
   /**
@@ -507,7 +538,8 @@ export const EditorState = {
    * 親を指した指定は「その編集が存在しない」ことなので `none`。`moveNode` が今いる位置を
    * 持たないものを弾くのと同じ形で、履歴も dirty も動かない。キャンバスは運んでいる
    * ノードの配置と、受け入れられる落とし先だけを見て落とし方を決めるため、画面の操作から
-   * この `none` には到達しない。
+   * この `none` には到達しない（キーボードからの `repositionSelectedNodeBy` も、
+   * 座標を持たないものを先に弾いてから呼ぶので同じ）。
    *
    * @param state 置き直す前の編集状態
    * @param name 置き直すノードの名前
@@ -525,6 +557,40 @@ export const EditorState = {
       to,
     );
     return repositioned.ok ? withEdit(state, repositioned.value) : Option.none;
+  },
+
+  /**
+   * 選択中の絶対配置のノードを、今の座標からずらす
+   * （docs/06-ui.md「キャンバス直接操作」の移動のうち、座標が動く側）。
+   *
+   * 行き先ではなく移動量で受けるのは、キーボードからの操作が今の座標を知らないため。
+   * 親は変えない（ずらした先が別の親に重なっても付け替えない）。付け替えが起きるのは
+   * 落とし先の親が一緒に届くドラッグだけで、キーからは落とし先が決まらない。
+   *
+   * @param state ずらす前の編集状態
+   * @param delta 動かす量。ドキュメント上の px
+   * @returns ずらしたあとの編集状態。1 つだけ選んでいないとき（未選択・複数選択）と、
+   *   選んでいるものが座標を持たないとき（フロー配置・インスタンス・artboard 自身）は `none`
+   */
+  repositionSelectedNodeBy(
+    state: EditorState,
+    delta: Offset,
+  ): Option<EditorState> {
+    const document = EditorState.document(state);
+    return Option.flatMap(EditorState.singleName(state), (name) =>
+      Option.flatMap(
+        DesignDocument.childPlacementOf(document, name),
+        (current) =>
+          EditorState.reposition(
+            state,
+            name,
+            ChildPlacement.create(
+              current.parentName,
+              Placement.moveBy(current.placement, delta),
+            ),
+          ),
+      ),
+    );
   },
 
   /**

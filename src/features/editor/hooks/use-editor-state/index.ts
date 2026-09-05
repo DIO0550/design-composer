@@ -10,6 +10,7 @@ import type { NodeTemplate } from "@/domains/session/node-template";
 import type { Instant } from "@/domains/unit/instant";
 import type { Offset } from "@/domains/unit/offset";
 import { EditorState } from "@/features/editor/domains/editor-state";
+import type { ReorderStep } from "@/features/editor/domains/reorder-step";
 import type { TokenTemplate } from "@/features/editor/domains/token-template";
 import type { IndexMove } from "@/types/IndexMove";
 import { Option } from "@/utils/Option";
@@ -31,12 +32,16 @@ export type EditorAction =
       from: ChildPosition;
       toIndex: number;
     }>
+  /* 選択から向きだけで並べ替える経路（#417）。今の位置を持たないキーボードのための入口。 */
+  | Readonly<{ type: "reorder_selected_node"; step: ReorderStep }>
   | Readonly<{ type: "move_node"; name: string; to: ChildPosition }>
   | Readonly<{
       type: "reposition_node";
       name: string;
       to: ChildPlacement;
     }>
+  /* 選択を移動量だけで動かす経路（#413）。今の座標を持たないキーボードのための入口。 */
+  | Readonly<{ type: "reposition_selected_node"; delta: Offset }>
   /* artboard をキャンバス上の別の位置へ置き直す経路（#390）。ノードの座標とは別の座標系。 */
   | Readonly<{
       type: "reposition_artboard";
@@ -100,6 +105,16 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
         EditorState.reorderNode(state, action.from, action.toIndex),
         state,
       );
+    case "reorder_selected_node":
+      /*
+       * 1 つだけ選んでいないとき・選んでいるのが artboard のとき・その向きに隣が
+       * いないときは並びが変わらない（EditorState.reorderSelectedNode の `none`）。
+       * 割り当ては選択が無くても端でも押せるため、この `none` には画面の操作から到達する。
+       */
+      return Option.unwrapOr(
+        EditorState.reorderSelectedNode(state, action.step),
+        state,
+      );
     case "move_node":
       // 動かせない先なら木は変わらない（EditorState.moveNode の `none`）。
       return Option.unwrapOr(
@@ -110,6 +125,17 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
       // 置き直せない指定なら親も座標も変わらない（EditorState.reposition の `none`）。
       return Option.unwrapOr(
         EditorState.reposition(state, action.name, action.to),
+        state,
+      );
+    case "reposition_selected_node":
+      /*
+       * 1 つだけ選んでいないとき・選んでいるものが座標を持たない（フロー配置 /
+       * インスタンス / artboard）ときは何も動かない
+       * （EditorState.repositionSelectedNodeBy の `none`）。割り当ては何を選んでいても
+       * 押せるため、この `none` には画面の操作から到達する。
+       */
+      return Option.unwrapOr(
+        EditorState.repositionSelectedNodeBy(state, action.delta),
         state,
       );
     case "reposition_artboard":
