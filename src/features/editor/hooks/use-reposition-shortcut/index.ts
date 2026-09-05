@@ -51,7 +51,7 @@ export function useRepositionShortcut(
     ({ withShiftKey, length }) =>
       Object.entries(ArrowDirections).map(([key, direction]) => ({
         shortcut: {
-          waitsFor: KeyTriggers.TypedCharacter,
+          kind: KeyTriggers.TypedCharacter,
           keys: [key],
           withCommandKey: false,
           withShiftKey,

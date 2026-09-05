@@ -42,7 +42,7 @@ export function useReorderShortcut(
     ReorderKeys,
   ).map(([key, step]) => ({
     shortcut: {
-      waitsFor: KeyTriggers.TypedCharacter,
+      kind: KeyTriggers.TypedCharacter,
       keys: [key],
       withCommandKey: true,
       withShiftKey: false,

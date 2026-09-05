@@ -11,7 +11,7 @@ import {
  * 仕様に無いキーを先回りで押さえると、後から別の操作へ割り当てにくくなるため。
  */
 const RedoShortcut: KeyShortcut = {
-  waitsFor: KeyTriggers.TypedCharacter,
+  kind: KeyTriggers.TypedCharacter,
   keys: ["z"],
   withCommandKey: true,
   withShiftKey: true,

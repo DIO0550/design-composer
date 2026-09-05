@@ -10,7 +10,7 @@ import {
  * 押された物理キーで待つ理由は `KeyTriggers` の doc にある。
  */
 const FitSelectionShortcut: KeyShortcut = {
-  waitsFor: KeyTriggers.PhysicalKey,
+  kind: KeyTriggers.PhysicalKey,
   codes: ["Digit2"],
   withCommandKey: false,
   withShiftKey: true,

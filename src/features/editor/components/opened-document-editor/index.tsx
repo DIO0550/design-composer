@@ -313,6 +313,10 @@ function EditorPanes({
    * 収めるズームの 2 本は `useEditShortcuts` へは寄せない。あちらが張るのは
    * ドキュメントと編集履歴に触れる操作で、`useEditor()` の dispatch しか持たない。
    * ズームは表示だけの操作で、収める先を知っているのは `canvasView`（ここの props）。
+   *
+   * Why not: 上部バーの拡大 / 縮小の隣にボタンを置かない。UI 案
+   * （docs/Design Composer.html）に `zoom` / `fit` / 「ズーム」の綴りは 1 つも無く、
+   * 倍率の操作そのものが描かれていないため（`useEditShortcuts` と同じ線引き）。
    */
   useFitDocumentShortcut(() =>
     canvasView.fitTo(

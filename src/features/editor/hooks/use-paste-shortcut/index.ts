@@ -6,7 +6,7 @@ import {
 
 /** ペーストに割り当てる組み合わせ（Windows は Ctrl+V / macOS は Cmd+V）。 */
 const PasteShortcut: KeyShortcut = {
-  waitsFor: KeyTriggers.TypedCharacter,
+  kind: KeyTriggers.TypedCharacter,
   keys: ["v"],
   withCommandKey: true,
   withShiftKey: false,

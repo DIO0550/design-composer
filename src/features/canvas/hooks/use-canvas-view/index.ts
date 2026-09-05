@@ -7,7 +7,10 @@ import {
   useRef,
 } from "react";
 import type { Offset } from "@/domains/unit/offset";
-import { CanvasView } from "@/features/canvas/domains/canvas-view";
+import {
+  CanvasView,
+  type FitBounds,
+} from "@/features/canvas/domains/canvas-view";
 import { CanvasBounds } from "@/features/canvas/domains/node-drop";
 import { CanvasPointer } from "@/features/canvas/utils/CanvasPointer";
 import { DrawnBounds } from "@/features/canvas/utils/DrawnBounds";
@@ -17,7 +20,7 @@ export type CanvasViewAction =
   | Readonly<{ type: "zoom_in" }>
   | Readonly<{ type: "zoom_out" }>
   | Readonly<{ type: "reset" }>
-  | Readonly<{ type: "fit_to"; target: CanvasBounds; viewport: CanvasBounds }>
+  | Readonly<{ type: "fit_to"; bounds: FitBounds }>
   | Readonly<{ type: "pan"; delta: Offset }>
   | Readonly<{ type: "drag_start"; pointer: Offset }>
   | Readonly<{ type: "drag_move"; pointer: Offset }>
@@ -42,10 +45,7 @@ function canvasViewReducer(
     case "reset":
       return CanvasView.create();
     case "fit_to":
-      return CanvasView.fitTo(view, {
-        target: action.target,
-        viewport: action.viewport,
-      });
+      return CanvasView.fitTo(view, action.bounds);
     case "pan":
       return CanvasView.panBy(view, action.delta);
     case "drag_start":
@@ -175,9 +175,11 @@ export function useCanvasView(): CanvasViewControl {
       }
       dispatch({
         type: "fit_to",
-        target: target.value,
-        // 収める先は土台そのもの。その左上が中身の transform の原点になる
-        viewport: CanvasBounds.ofElement(surface),
+        bounds: {
+          target: target.value,
+          // 収める先は土台そのもの。その左上が中身の transform の原点になる
+          viewport: CanvasBounds.ofElement(surface),
+        },
       });
     },
   };

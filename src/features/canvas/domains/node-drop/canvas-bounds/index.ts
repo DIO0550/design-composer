@@ -115,9 +115,8 @@ export const CanvasBounds = {
    * まとめて 1 つの範囲として扱いたいとき（選択したものすべて / artboard すべてを
    * 画面へ収める）に使う。
    *
-   * Why: `create` / `from*` ではなく結果そのものを表す語で名付けている。あの 2 つは
-   * 材料から値を作る入口の語で、ここは**矩形から矩形を導く**操作なので、同じモジュールの
-   * `relativeTo` / `originShift` / `center` と同じ語形に揃う。
+   * Why: `create` / `from*` は材料から値を作る入口の語で、ここは矩形から矩形を導く操作。
+   * 同じモジュールの `relativeTo` / `originShift` と同じく結果そのものを表す語で名付ける。
    *
    * @param boundsList 含めたい矩形の並び
    * @returns すべてを含む最小の矩形。並びが空なら `none`（囲む対象が無いと矩形が決まらない）
@@ -126,21 +125,26 @@ export const CanvasBounds = {
     if (boundsList.length === 0) {
       return Option.none;
     }
-    const lefts = boundsList.map((bounds) => bounds.left);
-    const tops = boundsList.map((bounds) => bounds.top);
-    const rights = boundsList.map((bounds) =>
-      CanvasBounds.edge(bounds, Axes.Width),
+    // 空でないことは上で確かめてあるので、無限大の種は必ず 1 件目で置き換わる
+    const enclosed = boundsList.reduce(
+      (widest, bounds) => ({
+        left: Math.min(widest.left, bounds.left),
+        top: Math.min(widest.top, bounds.top),
+        right: Math.max(widest.right, CanvasBounds.edge(bounds, Axes.Width)),
+        bottom: Math.max(widest.bottom, CanvasBounds.edge(bounds, Axes.Height)),
+      }),
+      {
+        left: Number.POSITIVE_INFINITY,
+        top: Number.POSITIVE_INFINITY,
+        right: Number.NEGATIVE_INFINITY,
+        bottom: Number.NEGATIVE_INFINITY,
+      },
     );
-    const bottoms = boundsList.map((bounds) =>
-      CanvasBounds.edge(bounds, Axes.Height),
-    );
-    const left = Math.min(...lefts);
-    const top = Math.min(...tops);
     return Option.some({
-      left,
-      top,
-      width: Math.max(...rights) - left,
-      height: Math.max(...bottoms) - top,
+      left: enclosed.left,
+      top: enclosed.top,
+      width: enclosed.right - enclosed.left,
+      height: enclosed.bottom - enclosed.top,
     });
   },
 

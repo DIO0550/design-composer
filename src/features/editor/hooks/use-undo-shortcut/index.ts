@@ -6,7 +6,7 @@ import {
 
 /** undo に割り当てる組み合わせ（Windows は Ctrl+Z / macOS は Cmd+Z）。 */
 const UndoShortcut: KeyShortcut = {
-  waitsFor: KeyTriggers.TypedCharacter,
+  kind: KeyTriggers.TypedCharacter,
   keys: ["z"],
   withCommandKey: true,
   withShiftKey: false,

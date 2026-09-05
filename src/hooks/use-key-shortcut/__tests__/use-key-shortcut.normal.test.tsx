@@ -10,7 +10,7 @@ import {
 
 /** 修飾キーを伴わない組み合わせ。テストごとに同じものを使う。 */
 const PlainShortcut: KeyShortcut = {
-  waitsFor: KeyTriggers.TypedCharacter,
+  kind: KeyTriggers.TypedCharacter,
   keys: ["Enter"],
   withCommandKey: false,
   withShiftKey: false,
@@ -87,7 +87,7 @@ test("Ctrl と組み合わせた割り当ては Ctrl を押しながらで呼ば
   render(
     <KeyShortcutHarness
       shortcut={{
-        waitsFor: KeyTriggers.TypedCharacter,
+        kind: KeyTriggers.TypedCharacter,
         keys: ["c"],
         withCommandKey: true,
         withShiftKey: false,
@@ -107,7 +107,7 @@ test("Command と組み合わせた割り当ては Command を押しながらで
   render(
     <KeyShortcutHarness
       shortcut={{
-        waitsFor: KeyTriggers.TypedCharacter,
+        kind: KeyTriggers.TypedCharacter,
         keys: ["c"],
         withCommandKey: true,
         withShiftKey: false,
@@ -127,7 +127,7 @@ test("修飾キーと組み合わせた割り当ては修飾キーなしでは�
   render(
     <KeyShortcutHarness
       shortcut={{
-        waitsFor: KeyTriggers.TypedCharacter,
+        kind: KeyTriggers.TypedCharacter,
         keys: ["c"],
         withCommandKey: true,
         withShiftKey: false,
@@ -157,7 +157,7 @@ test("Shift を伴う割り当ては Shift を押しながらで呼ばれる", a
   render(
     <KeyShortcutHarness
       shortcut={{
-        waitsFor: KeyTriggers.TypedCharacter,
+        kind: KeyTriggers.TypedCharacter,
         keys: ["z"],
         withCommandKey: true,
         withShiftKey: true,
@@ -177,7 +177,7 @@ test("Shift を伴わない割り当ては Shift を押しながらでは呼ば�
   render(
     <KeyShortcutHarness
       shortcut={{
-        waitsFor: KeyTriggers.TypedCharacter,
+        kind: KeyTriggers.TypedCharacter,
         keys: ["z"],
         withCommandKey: true,
         withShiftKey: false,
@@ -198,7 +198,7 @@ test("入力欄に文字を打ち込んでいる間は、修飾キーを伴う�
   render(
     <KeyShortcutHarness
       shortcut={{
-        waitsFor: KeyTriggers.TypedCharacter,
+        kind: KeyTriggers.TypedCharacter,
         keys: ["z"],
         withCommandKey: true,
         withShiftKey: false,
@@ -236,7 +236,7 @@ test("選択欄にフォーカスがあっても、修飾キーを伴う割り�
   render(
     <KeyShortcutHarness
       shortcut={{
-        waitsFor: KeyTriggers.TypedCharacter,
+        kind: KeyTriggers.TypedCharacter,
         keys: ["z"],
         withCommandKey: true,
         withShiftKey: false,
@@ -261,7 +261,7 @@ function KeyShortcutsHarness({
   useKeyShortcuts([
     {
       shortcut: {
-        waitsFor: KeyTriggers.TypedCharacter,
+        kind: KeyTriggers.TypedCharacter,
         keys: ["["],
         withCommandKey: true,
         withShiftKey: false,
@@ -270,7 +270,7 @@ function KeyShortcutsHarness({
     },
     {
       shortcut: {
-        waitsFor: KeyTriggers.TypedCharacter,
+        kind: KeyTriggers.TypedCharacter,
         keys: ["]"],
         withCommandKey: true,
         withShiftKey: false,
@@ -330,7 +330,7 @@ test("物理キーで待つ割り当ては、Shift で打たれる文字が変�
   render(
     <KeyShortcutHarness
       shortcut={{
-        waitsFor: KeyTriggers.PhysicalKey,
+        kind: KeyTriggers.PhysicalKey,
         codes: ["Digit1"],
         withCommandKey: false,
         withShiftKey: true,
@@ -350,7 +350,7 @@ test("物理キーで待つ割り当ては、別の物理キーでは呼ばれ�
   render(
     <KeyShortcutHarness
       shortcut={{
-        waitsFor: KeyTriggers.PhysicalKey,
+        kind: KeyTriggers.PhysicalKey,
         codes: ["Digit1"],
         withCommandKey: false,
         withShiftKey: true,
@@ -370,7 +370,7 @@ test("物理キーで待つ割り当ても、Shift の有無が違えば呼ば�
   render(
     <KeyShortcutHarness
       shortcut={{
-        waitsFor: KeyTriggers.PhysicalKey,
+        kind: KeyTriggers.PhysicalKey,
         codes: ["Digit1"],
         withCommandKey: false,
         withShiftKey: true,

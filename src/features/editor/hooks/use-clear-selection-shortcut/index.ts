@@ -6,7 +6,7 @@ import {
 
 /** 選択解除に割り当てる組み合わせ。修飾キーは伴わない。 */
 const ClearSelectionShortcut: KeyShortcut = {
-  waitsFor: KeyTriggers.TypedCharacter,
+  kind: KeyTriggers.TypedCharacter,
   keys: ["Escape"],
   withCommandKey: false,
   withShiftKey: false,

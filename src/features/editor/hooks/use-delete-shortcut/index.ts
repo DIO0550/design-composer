@@ -6,7 +6,7 @@ import {
 
 /** 削除に割り当てる組み合わせ。Windows / macOS どちらの流儀でも消せるよう両方を受ける。 */
 const DeleteShortcut: KeyShortcut = {
-  waitsFor: KeyTriggers.TypedCharacter,
+  kind: KeyTriggers.TypedCharacter,
   keys: ["Delete", "Backspace"],
   withCommandKey: false,
   withShiftKey: false,

@@ -112,6 +112,23 @@ test("収まる倍率が上限を超えるときは上限で止まる", () => {
   expect(fitted.scale).toBe(4);
 });
 
+test("上限で止まったあとも、対象は画面の中央に来る", () => {
+  /*
+   * 倍率だけを上限で止めて位置を止める前の倍率で出すと、対象が画面の外へ飛ぶ
+   * （ここでは 12 倍ぶんずらした位置になる）。倍率と位置は別々の判断なので、
+   * 倍率を見る 1 つ上のテストとは分けて置く。
+   */
+  const tiny: CanvasBounds = { left: 0, top: 0, width: 2, height: 2 };
+
+  const fitted = CanvasView.fitTo(ScaledView, {
+    target: drawnAs(ScaledView, tiny, Viewport),
+    viewport: Viewport,
+  });
+
+  // 余白込みの 50 × 50 を 4 倍で置くので、横は (800 - 200) / 2、縦は (600 - 200) / 2
+  expect(fitted.offset).toEqual({ x: 396, y: 296 });
+});
+
 test("収まる倍率が下限を下回るときは下限で止まる", () => {
   // 収めるだけなら 0.008 倍まで縮む
   const huge: CanvasBounds = { left: 0, top: 0, width: 100_000, height: 2 };
@@ -136,7 +153,8 @@ test("対象に面積が無ければ見え方は変わらない", () => {
 });
 
 test("収める先に面積が無ければ見え方は変わらない", () => {
-  // 土台がまだ大きさを持っていない一瞬（マウント直後）に当たる
+  // 土台が畳まれて面積を持たないときに当たる（押下はレイアウトの後なので、
+  // マウント直後には到達しない）
   const unlaidViewport: CanvasBounds = {
     left: 100,
     top: 50,

@@ -6,7 +6,7 @@ import {
 
 /** コピーに割り当てる組み合わせ（Windows は Ctrl+C / macOS は Cmd+C）。 */
 const CopyShortcut: KeyShortcut = {
-  waitsFor: KeyTriggers.TypedCharacter,
+  kind: KeyTriggers.TypedCharacter,
   keys: ["c"],
   withCommandKey: true,
   withShiftKey: false,

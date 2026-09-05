@@ -45,6 +45,18 @@ const ZoomFactor = 1.2;
  */
 const FitPadding = 24;
 
+/**
+ * 収める対象（`target`）と、収める先（`viewport`）。どちらも実測した画面上の矩形。
+ *
+ * 対で持つのは、**同じ型の位置引数が 2 つ並ぶと取り違えても型エラーにならない**ため
+ * （rules/coding.md「関数のシグネチャ」）。アクションへ載せる側も同じ対を運ぶので、
+ * 綴りを 2 箇所に持たないようここから export する。
+ */
+export type FitBounds = Readonly<{
+  target: CanvasBounds;
+  viewport: CanvasBounds;
+}>;
+
 /** 収める対象と収める先の大きさ。面積を持つかだけを見る。 */
 type FitExtent = Readonly<{ width: number; height: number }>;
 
@@ -161,10 +173,7 @@ export const CanvasView = {
    *   対象にも収める先にも面積が要るので、どちらかが潰れているときは今の見え方をそのまま返す
    *   （`dragTo` が掴んでいないときに何もしないのと同じ扱い）
    */
-  fitTo(
-    view: CanvasView,
-    bounds: Readonly<{ target: CanvasBounds; viewport: CanvasBounds }>,
-  ): CanvasView {
+  fitTo(view: CanvasView, bounds: FitBounds): CanvasView {
     const { target, viewport } = bounds;
     const drawn = CanvasBounds.relativeTo(target, viewport);
     /*
