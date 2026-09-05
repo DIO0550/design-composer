@@ -43,15 +43,81 @@ export const KeyShortcut = {
 } as const;
 
 /**
- * ページ全体のキーボードショートカット。指定した組み合わせが押されたら `onPress` を呼ぶ。
+ * 1 件の割り当て。待ち受ける組み合わせと、押されたときに呼ぶ手続きの対。
+ *
+ * 対で持つのは、同じ操作の別名（削除の Delete / Backspace）ではなく**別々の操作**を
+ * まとめて張るため。`KeyShortcut.keys` は前者しか表せないので、矢印 4 方向のように
+ * 押したキーで呼ぶ相手が変わるものは、こちらを並べて渡す。
+ */
+export type KeyShortcutPress = Readonly<{
+  shortcut: KeyShortcut;
+  onPress: () => void;
+}>;
+
+/**
+ * その割り当てが、フォーカスのある要素に食われるか。
+ *
+ * 文字を打ち込める場所では、どの割り当ても通さない。Backspace のような編集キーを
+ * 割り当てたときに入力欄の文字が消せなくなるため（修飾キーを伴う割り当ても、
+ * 打ち込んでいる最中に走ると驚きになるので同じ扱いにする）。
+ *
+ * 選択欄で通さないのは修飾キーを伴わない割り当てだけ。`<select>` は矢印で値が変わる
+ * ので素のキーは食われるが、`⌘Z` のような操作まで止めると、prop を選び直した直後に
+ * 戻せなくなる。
+ *
+ * @param shortcut 見ている割り当て
+ * @param target キー操作の発火元
+ * @returns フォーカスのある要素が受け取るなら `true`
+ */
+function isConsumedByTarget(
+  shortcut: KeyShortcut,
+  target: EventTarget | null,
+): boolean {
+  if (ElementEx.isTextEditable(target)) {
+    return true;
+  }
+  return !shortcut.withCommandKey && ElementEx.isOptionSelectable(target);
+}
+
+/**
+ * ページ全体のキーボードショートカットを、複数まとめて張る。
+ * 押されたキーに当たる割り当てが 1 件だけ呼ばれる。
  *
  * 押す対象が特定の要素ではなく画面のどこにフォーカスがあっても効く操作なので、
  * 要素の `onKeyDown` では受けられず `document` に張る（rules/hooks.md の
- * 「本質的にグローバルな関心事」）。
+ * 「本質的にグローバルな関心事」）。1 回の購読で複数を見るのは、割り当ての数だけ
+ * フックを呼ぶとフックの数が呼び出し側の表の長さで変わってしまうため。
  *
- * 文字を打ち込んでいる最中のキーは無視する。Backspace のような編集キーを
- * ショートカットに割り当てたとき、入力欄の文字が消せなくなるため。
- * この扱いはどのショートカットにも共通なので、割り当てるキーの側ではなくここが持つ。
+ * フォーカスのある要素がそのキーを自分で受け取る間は無視する（`isConsumedByTarget`）。
+ * この扱いはどの割り当てにも共通なので、割り当ての側ではなくここが持つ。
+ *
+ * 当たった押下では既定動作を止める。**割り当てに一致した時点でその押下はアプリの操作**
+ * なので、矢印のスクロールのようなブラウザ側の動きを重ねない。
+ *
+ * @param presses 待ち受ける割り当ての並び
+ */
+export function useKeyShortcuts(presses: readonly KeyShortcutPress[]): void {
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const pressed = presses.find(
+        ({ shortcut }) =>
+          KeyShortcut.matches(shortcut, event) &&
+          !isConsumedByTarget(shortcut, event.target),
+      );
+      if (pressed === undefined) {
+        return;
+      }
+      event.preventDefault();
+      pressed.onPress();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [presses]);
+}
+
+/**
+ * ページ全体のキーボードショートカット。指定した組み合わせが押されたら `onPress` を呼ぶ。
+ * 割り当てが 1 件だけの `useKeyShortcuts`。
  *
  * @param shortcut 待ち受けるキーの組み合わせ
  * @param onPress その組み合わせが押されたときに呼ぶ手続き
@@ -60,17 +126,5 @@ export function useKeyShortcut(
   shortcut: KeyShortcut,
   onPress: () => void,
 ): void {
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (!KeyShortcut.matches(shortcut, event)) {
-        return;
-      }
-      if (ElementEx.isTextEditable(event.target)) {
-        return;
-      }
-      onPress();
-    };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [shortcut, onPress]);
+  useKeyShortcuts([{ shortcut, onPress }]);
 }

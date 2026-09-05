@@ -28,6 +28,17 @@ export const ElementEx = {
   },
 
   /**
+   * その要素が選択肢から値を選ぶ場所か。
+   *
+   * 文字を打ち込める場所と分けているのは、受け取るキーの範囲が違うため。
+   * 選択欄が自分で受け取るのは矢印などの素のキーだけで、修飾キーを伴う操作
+   * （undo など）はそのまま画面全体へ通す。
+   */
+  isOptionSelectable(target: EventTarget | null): boolean {
+    return target instanceof HTMLSelectElement;
+  },
+
+  /**
    * 自身から根へ向かって辿り、その属性を持つ要素の値を通り道の順に並べる。
    *
    * 受け取るのが `EventTarget` なのは、イベントの発火元が要素とは限らないため
