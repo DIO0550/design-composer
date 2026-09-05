@@ -18,6 +18,7 @@ export {
   artboardFrameContainer,
   artboardHandle,
   canvasContent,
+  canvasSurface,
   highlightedNames,
   renderedElement,
   tokenReferrerNames,
@@ -28,3 +29,4 @@ export {
   pressPointer,
   releasePointer,
 } from "@/features/canvas/__tests__/canvas-gesture";
+export { stubBounds } from "@/features/canvas/__tests__/canvas-measure";

@@ -1,5 +1,6 @@
 import { Offset } from "@/domains/unit/offset";
 import { Px } from "@/domains/unit/px";
+import { CanvasBounds } from "@/features/canvas/domains/node-drop";
 import { NumberEx } from "@/utils/NumberEx";
 import { Option } from "@/utils/Option";
 
@@ -33,6 +34,30 @@ const MaxScale = 4;
 const ZoomFactor = 1.2;
 
 /**
+ * 収めるときに対象の四辺へ見込む余白（**ドキュメント上の px**）。
+ *
+ * 画面上の px ではなくドキュメント上の px で持つのは、覆いたいものが倍率と一緒に
+ * 拡大されるため。artboard の見出しは箱の上へドキュメント px で 22px 描かれ
+ * （`artboard-label` の高さ 18px + `pb-1` の 4px）、選択の枠も 3px ぶん外へ出る。
+ * 画面上の px で見込むと、倍率が上がるほど覆えなくなって見出しが切れる。
+ *
+ * 22px より広い最小の切りのいい値として 24 を採る。
+ */
+const FitPadding = 24;
+
+/**
+ * 収める対象（`target`）と、収める先（`viewport`）。どちらも実測した画面上の矩形。
+ *
+ * 対で持つのは、**同じ型の位置引数が 2 つ並ぶと取り違えても型エラーにならない**ため
+ * （rules/coding.md「関数のシグネチャ」）。アクションへ載せる側も同じ対を運ぶので、
+ * 綴りを 2 箇所に持たないようここから export する。
+ */
+export type FitBounds = Readonly<{
+  target: CanvasBounds;
+  viewport: CanvasBounds;
+}>;
+
+/**
  * 倍率を上下限の内側へ収める。
  *
  * @param scale 収めたい倍率
@@ -40,6 +65,47 @@ const ZoomFactor = 1.2;
  */
 function clampScale(scale: number): number {
   return NumberEx.clamp(scale, { min: MinScale, max: MaxScale });
+}
+
+/**
+ * 中身を画面の真ん中へ置いたときの原点（1 軸ぶん）。
+ *
+ * 画面上の位置は「ドキュメント座標 × 倍率 + 原点」で決まる（`transform` は translate が
+ * 先に効く / `panBy` の doc）。中身の左端をちょうど隙間の半分の位置へ置きたいので、
+ * 余った隙間の半分から、中身の左端が倍率のぶんだけ進む量を引く。
+ *
+ * @param available 収める先の長さ（画面上の px）
+ * @param scaledLength 収める中身の長さ（倍率を掛けたあとの画面上の px）
+ * @param scaledStart 中身の左端 / 上端（倍率を掛けたあとの画面上の px）
+ * @returns 中身が真ん中に来る原点（画面上の px）
+ */
+function centeredOrigin(
+  available: number,
+  scaledLength: number,
+  scaledStart: number,
+): number {
+  return (available - scaledLength) / 2 - scaledStart;
+}
+
+/**
+ * 描かれている矩形を、ドキュメント上の矩形へ割り戻して四辺へ余白を足したもの。
+ *
+ * @param view 割り戻しに使う今の見え方
+ * @param drawn 土台の左上を原点にした、描かれている矩形
+ * @returns ドキュメント上での、余白ぶん広げた矩形
+ */
+function paddedDocumentBounds(
+  view: CanvasView,
+  drawn: CanvasBounds,
+): CanvasBounds {
+  const toDocument = (screenLength: number): number =>
+    CanvasView.toDocumentLength(view, screenLength);
+  return {
+    left: toDocument(drawn.left - view.offset.x) - FitPadding,
+    top: toDocument(drawn.top - view.offset.y) - FitPadding,
+    width: toDocument(drawn.width) + FitPadding * 2,
+    height: toDocument(drawn.height) + FitPadding * 2,
+  };
 }
 
 /**
@@ -69,6 +135,64 @@ export const CanvasView = {
 
   zoomOut(view: CanvasView): CanvasView {
     return scaleBy(view, 1 / ZoomFactor);
+  },
+
+  /**
+   * 指した矩形が画面に収まる倍率と位置にする（Figma の Zoom to fit / Zoom to selection）。
+   *
+   * ここで言う「収める」は**指した矩形が画面の中に入る倍率と位置にすること**で、
+   * CSS の `fit-content` とは関係しない。
+   *
+   * 受け取るのはどちらも**実測した画面上の矩形**（client 座標）。`target` は倍率と位置が
+   * 効いた状態で描かれているので、今の見え方から割り戻してドキュメント上の矩形へ直す。
+   * そのため押した時点の倍率・位置に依らず同じ結果になる。
+   *
+   * `viewport` に渡すのは**キャンバスの土台**（`canvas-surface`）の矩形。その左上が
+   * `transform` の原点であることを前提にしている（中身の器はその唯一の通常フローの子で、
+   * padding も border も持たない）。この前提が崩れると絵だけがずれる。
+   *
+   * Why not: ドキュメント側の座標を受け取らない。ノードの大きさを決めるのはブラウザの
+   * レイアウトなので、選択に合わせる側の矩形はドキュメントからは出せない。
+   *
+   * @param view 割り戻しに使う今の見え方
+   * @param bounds 収めたい矩形（`target`）と、収める先の土台の矩形（`viewport`）
+   * @returns 対象が余白ぶんの隙間を空けて中央に収まる倍率と位置。倍率は上下限を超えない。
+   *   対象にも収める先にも面積が要るので、どちらかが潰れているときは今の見え方をそのまま返す
+   *   （`dragTo` が掴んでいないときに何もしないのと同じ扱い）
+   */
+  fitTo(view: CanvasView, bounds: FitBounds): CanvasView {
+    const { target, viewport } = bounds;
+    const drawn = CanvasBounds.relativeTo(target, viewport);
+    /*
+     * 面積を見るのは余白を足す前。足したあとだと、何も描かれていない（0 × 0 の）対象でも
+     * 余白ぶんの大きさを持ってしまい、空の範囲へ寄る倍率が決まってしまう。
+     */
+    if (!CanvasBounds.hasArea(drawn) || !CanvasBounds.hasArea(viewport)) {
+      return view;
+    }
+    const content = paddedDocumentBounds(view, drawn);
+    const scale = clampScale(
+      Math.min(
+        viewport.width / content.width,
+        viewport.height / content.height,
+      ),
+    );
+    return {
+      ...view,
+      scale,
+      offset: {
+        x: centeredOrigin(
+          viewport.width,
+          content.width * scale,
+          content.left * scale,
+        ),
+        y: centeredOrigin(
+          viewport.height,
+          content.height * scale,
+          content.top * scale,
+        ),
+      },
+    };
   },
 
   /**

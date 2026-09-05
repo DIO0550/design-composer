@@ -4,6 +4,7 @@ import {
 } from "@/features/editor/domains/reorder-step";
 import {
   type KeyShortcutBinding,
+  KeyTriggers,
   useKeyShortcuts,
 } from "@/hooks/use-key-shortcut";
 
@@ -27,7 +28,7 @@ const ReorderKeys = {
  * 入力中は無視することは `useKeyShortcuts` に任せる。
  *
  * 2 件をまとめて張るのは、押したキーで渡す向きが変わるため。
- * `KeyShortcut.keys` に 2 つ並べると同じ操作の別名になってしまい、区別できない。
+ * 1 つの割り当ての `keys` に 2 つ並べると同じ操作の別名になってしまい、区別できない。
  *
  * Why not: 表から割り当てを組み立てる形を `use-reposition-shortcut` と共有しない。
  * 畳むと渡す値の型を型引数で受けることになり、消費側 2 つのために型引数が 1 つ増える。
@@ -40,7 +41,12 @@ export function useReorderShortcut(
   const bindings: readonly KeyShortcutBinding[] = Object.entries(
     ReorderKeys,
   ).map(([key, step]) => ({
-    shortcut: { keys: [key], withCommandKey: true, withShiftKey: false },
+    shortcut: {
+      kind: KeyTriggers.TypedCharacter,
+      keys: [key],
+      withCommandKey: true,
+      withShiftKey: false,
+    },
     onPress: () => onReorder(step),
   }));
 
