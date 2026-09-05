@@ -317,3 +317,69 @@ test("当たらない押下では既定動作を止めない", () => {
 
   expect(event.defaultPrevented).toBe(false);
 });
+
+/*
+ * 物理キーで待つ割り当ての 3 件は `!`（= Shift+1）で押す。
+ * 実ブラウザは Shift を押している間の数字段で数字ではなく記号を打つので、
+ * `{Shift>}1{/Shift}` で書くと `event.key` が "1" のまま届き、打たれた文字で待つ
+ * 実装でも通ってしまう（rules/testing.md「その assert は落ちうるか」）。
+ */
+test("物理キーで待つ割り当ては、Shift で打たれる文字が変わっても呼ばれる", async () => {
+  const user = userEvent.setup();
+  const pressed: string[] = [];
+  render(
+    <KeyShortcutHarness
+      shortcut={{
+        waitsFor: KeyTriggers.PhysicalKey,
+        codes: ["Digit1"],
+        withCommandKey: false,
+        withShiftKey: true,
+      }}
+      onPress={() => pressed.push("押された")}
+    />,
+  );
+
+  await user.keyboard("{Shift>}!{/Shift}");
+
+  expect(pressed).toEqual(["押された"]);
+});
+
+test("物理キーで待つ割り当ては、別の物理キーでは呼ばれない", async () => {
+  const user = userEvent.setup();
+  const pressed: string[] = [];
+  render(
+    <KeyShortcutHarness
+      shortcut={{
+        waitsFor: KeyTriggers.PhysicalKey,
+        codes: ["Digit1"],
+        withCommandKey: false,
+        withShiftKey: true,
+      }}
+      onPress={() => pressed.push("押された")}
+    />,
+  );
+
+  await user.keyboard("{Shift>}@{/Shift}");
+
+  expect(pressed).toEqual([]);
+});
+
+test("物理キーで待つ割り当ても、Shift の有無が違えば呼ばれない", async () => {
+  const user = userEvent.setup();
+  const pressed: string[] = [];
+  render(
+    <KeyShortcutHarness
+      shortcut={{
+        waitsFor: KeyTriggers.PhysicalKey,
+        codes: ["Digit1"],
+        withCommandKey: false,
+        withShiftKey: true,
+      }}
+      onPress={() => pressed.push("押された")}
+    />,
+  );
+
+  await user.keyboard("1");
+
+  expect(pressed).toEqual([]);
+});
