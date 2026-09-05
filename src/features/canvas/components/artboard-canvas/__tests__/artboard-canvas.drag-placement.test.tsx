@@ -9,7 +9,10 @@ import {
 } from "@/features/canvas/__tests__/canvas-gesture";
 import { Option } from "@/utils/Option";
 import { nameSelector } from "../name-style-rule";
-import { repositionPreviewDeclarations } from "../reposition-preview-style";
+import {
+  CarriedNodeUnclipped,
+  repositionPreviewDeclarations,
+} from "../reposition-preview-style";
 import {
   artboardList,
   drawn,
@@ -363,6 +366,99 @@ test("運んでいる間、掴んだノードは当たり判定から外れる",
   carryBadge({ x: 30, y: -12 });
 
   expect(injectedStyles()).toContain("pointer-events:none");
+});
+
+/**
+ * 包んでいるものへ差し込まれる、切り取りを解く規則 1 本。
+ *
+ * `previewRule` と同じく**選択子込み**で組む。宣言だけを見ると、解く相手が
+ * 包んでいるものかどうかを取り違えても落ちない。
+ *
+ * @param name 切り取りを解かれるはずの artboard / ノードの名前
+ * @returns そこへ差し込まれる規則 1 本
+ */
+function unclippedRule(name: string): string {
+  return `${nameSelector(name)}{${CarriedNodeUnclipped}}`;
+}
+
+/**
+ * `home` の中の `card` に絶対配置の `badge` が入っている、未選択の対。
+ * 包んでいるものが 2 段あるので、artboard 1 枚だけを解く実装と区別できる。
+ */
+function setupNestedSelection(): DocumentSelection {
+  return selectionFromArtboards(
+    [
+      {
+        name: "home",
+        width: 360,
+        height: 240,
+        children: [
+          {
+            name: "card",
+            type: "Box",
+            props: {},
+            children: [
+              {
+                name: "badge",
+                type: "Text",
+                props: { content: "3", placement: "absolute", x: 40, y: 24 },
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    [],
+  );
+}
+
+test("運んでいる間、掴んだノードを包んでいる artboard は中身を切り取らなくなる", () => {
+  // 解かないと、artboard の外まで運んだ時点で運んでいるノードが見えなくなる
+  renderCanvas({ selection: setupSelection() });
+
+  carryBadge({ x: 30, y: -12 });
+
+  expect(injectedStyles()).toContain(unclippedRule("home"));
+});
+
+test("包んでいるものが入れ子のときは、間の Box も中身を切り取らなくなる", () => {
+  // Box も `overflow: clip` を持てるので、artboard 1 枚を解くだけでは足りない
+  renderCanvas({ selection: setupNestedSelection() });
+
+  carryBadge({ x: 30, y: -12 });
+
+  expect(injectedStyles()).toContain(unclippedRule("card"));
+});
+
+test("運んでいる間、掴んだノードは他の artboard より前に出る", () => {
+  /*
+   * artboard の枠は z-index を持たない兄弟なので、前に出さないと隣の artboard の
+   * 白い面の裏へ回る（happy-dom は重なりを解釈しないので、宣言でしか確かめられない）。
+   */
+  renderCanvas({ selection: setupSelection() });
+
+  carryBadge({ x: 30, y: -12 });
+
+  expect(injectedStyles()).toContain("z-index:1");
+});
+
+test("フローのノードを運んでいる間は、包んでいるものの切り取りを解かない", () => {
+  // 見た目を動かさないドラッグなので、切り取りの外へ出るものが無い
+  renderCanvas({ selection: setupSelection() });
+
+  pressPointer(drawn("title"), { x: 100, y: 100 });
+  movePointer(drawn("title"), { x: 130, y: 88 });
+
+  expect(injectedStyles()).not.toContain(CarriedNodeUnclipped);
+});
+
+test("離すと包んでいるものの切り取りは元に戻る", () => {
+  renderCanvas({ selection: setupSelection() });
+  carryBadge({ x: 30, y: -12 });
+
+  releasePointer(drawn("badge"), { x: 130, y: 88 });
+
+  expect(injectedStyles()).not.toContain(CarriedNodeUnclipped);
 });
 
 test("座標のドラッグでも、落とし先の親が枠で示される", () => {

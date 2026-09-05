@@ -671,6 +671,33 @@ export const DesignDocument = {
   },
 
   /**
+   * 名前で指したノードを包んでいるものの名前を、内側から外側へ並べたもの。
+   * 末尾は必ずその artboard になる。
+   *
+   * 親を 1 段ずつ辿るのは、木の走査を `findChildPosition` に任せて同じ探索を 2 つ
+   * 持たないため。artboard は誰の子でもない（`findChildPosition` が `none` を返す）ので、
+   * そこで辿るのが止まる。
+   *
+   * @param document 引き先になるドキュメント
+   * @param name 包んでいるものを知りたいノードの名前
+   * @returns 親から artboard までの名前。artboard 自身と、ドキュメントに無い名前は空
+   */
+  collectAncestorNames(
+    document: DesignDocument,
+    name: string,
+  ): readonly string[] {
+    const position = DesignDocument.findChildPosition(document, name);
+    if (!position.some) {
+      return [];
+    }
+    const parentName = position.value.parentName;
+    return [
+      parentName,
+      ...DesignDocument.collectAncestorNames(document, parentName),
+    ];
+  },
+
+  /**
    * 名前で指したノードが今どの親の中のどこに置かれているか。
    * **座標で動かせるものだけ**が答えを持つ。
    *

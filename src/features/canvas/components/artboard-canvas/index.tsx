@@ -229,7 +229,10 @@ export function ArtboardCanvas({
         </>
       ) : null}
       {/* 座標を動かすドラッグにはドロップ線が出ないので、代わりに実体を先に動かす */}
-      <RepositionPreviewStyle drag={nodeDrag.drag} />
+      <RepositionPreviewStyle
+        drag={nodeDrag.drag}
+        designDocument={designDocument}
+      />
       {textEdit.edit.some ? (
         <TextInlineEditor
           edit={textEdit.edit.value}
