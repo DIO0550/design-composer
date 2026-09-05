@@ -7,6 +7,7 @@ import {
 } from "@/domains/dcmp/design-document";
 import { PropEdit } from "@/domains/dcmp/node";
 import { stateWithThreeArtboards } from "@/features/editor/__tests__/artboard-fixtures";
+import { ReorderSteps } from "@/features/editor/domains/reorder-step";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 import { frozen } from "./frozen-state";
@@ -100,6 +101,78 @@ test("ファイルが不正でなければ、artboard を並べ替えられる",
 
   expect(
     EditorState.reorderArtboard(stateWithThreeArtboards(), move).some,
+  ).toBe(true);
+});
+
+/**
+ * 兄弟を持つ `home-title` と、絶対配置の `home-badge` を持つドキュメント。
+ *
+ * `openedState` と分けるのは、あちらが子を 1 つしか持たず、
+ * 並べ替えも座標の移動も**凍結と無関係に** `none` になるため（対照が置けない）。
+ */
+function openedStateWithMovableNode(): EditorState {
+  return EditorState.create(
+    DesignDocument.create({
+      artboards: [
+        Artboard.create({
+          name: "home",
+          width: 360,
+          height: 240,
+          children: [
+            { name: "home-title", type: "Text", props: { content: "ホーム" } },
+            {
+              name: "home-badge",
+              type: "Text",
+              props: { placement: "absolute", x: 40, y: 24 },
+            },
+          ],
+        }),
+      ],
+    }),
+  );
+}
+
+test("ファイルが不正な間は、選んでいるノードを並べ替えられない", () => {
+  const selected = EditorState.select(
+    openedStateWithMovableNode(),
+    "home-title",
+  );
+
+  expect(
+    EditorState.reorderSelectedNode(frozen(selected), ReorderSteps.TowardFront),
+  ).toStrictEqual(Option.none);
+});
+
+test("ファイルが不正でなければ、選んでいるノードを並べ替えられる", () => {
+  const selected = EditorState.select(
+    openedStateWithMovableNode(),
+    "home-title",
+  );
+
+  expect(
+    EditorState.reorderSelectedNode(selected, ReorderSteps.TowardFront).some,
+  ).toBe(true);
+});
+
+test("ファイルが不正な間は、選んでいるノードの座標を動かせない", () => {
+  const selected = EditorState.select(
+    openedStateWithMovableNode(),
+    "home-badge",
+  );
+
+  expect(
+    EditorState.repositionSelectedNodeBy(frozen(selected), { x: 1, y: 0 }),
+  ).toStrictEqual(Option.none);
+});
+
+test("ファイルが不正でなければ、選んでいるノードの座標を動かせる", () => {
+  const selected = EditorState.select(
+    openedStateWithMovableNode(),
+    "home-badge",
+  );
+
+  expect(
+    EditorState.repositionSelectedNodeBy(selected, { x: 1, y: 0 }).some,
   ).toBe(true);
 });
 

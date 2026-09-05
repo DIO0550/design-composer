@@ -6,6 +6,7 @@ import {
 } from "@/domains/dcmp/design-document";
 import { PropEdit } from "@/domains/dcmp/node";
 import { DocumentSelection } from "@/domains/session/document-selection";
+import { ReorderSteps } from "@/features/editor/domains/reorder-step";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 
@@ -96,6 +97,29 @@ test("複数選んでいる間は prop を編集できない", () => {
     false,
   );
 });
+
+test("複数選んでいる間は並べ替えられない", () => {
+  expect(
+    EditorState.reorderSelectedNode(
+      setupSingleSelected(),
+      ReorderSteps.TowardFront,
+    ).some,
+  ).toBe(true);
+  expect(
+    EditorState.reorderSelectedNode(
+      setupMultiSelected(),
+      ReorderSteps.TowardFront,
+    ).some,
+  ).toBe(false);
+});
+
+/*
+ * 座標の移動（`repositionSelectedNodeBy`）はここに置けない。まとめて選べるのは
+ * インスタンスだけで、インスタンスは props を持たないため座標をそもそも持てず、
+ * 単一選択の対照が `some` にならない（部品化・挿入位置と同じ理由）。
+ * 単一を前提にしていることは `EditorState.singleName` を通していることで担保され、
+ * 選択が無い側は `editor-state.reposition.test.ts` が押さえている。
+ */
 
 test("複数選んでいる間はリサイズできない", () => {
   expect(EditorState.resize(setupSingleSelected(), [Width]).some).toBe(true);

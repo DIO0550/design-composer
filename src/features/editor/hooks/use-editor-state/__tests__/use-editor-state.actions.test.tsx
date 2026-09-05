@@ -7,6 +7,7 @@ import { AxisLength } from "@/domains/dcmp/axis-length";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { Node } from "@/domains/dcmp/node";
 import { EditorState } from "@/features/editor/domains/editor-state";
+import { ReorderSteps } from "@/features/editor/domains/reorder-step";
 import { Option } from "@/utils/Option";
 import { useEditorState } from "../index";
 import { homeChildNames } from "./setup";
@@ -109,6 +110,12 @@ function EditorStateHarness() {
         onClick={() => dispatch({ type: "select", name: "home" })}
       >
         home を選ぶ
+      </button>
+      <button
+        type="button"
+        onClick={() => dispatch({ type: "select", name: "footer" })}
+      >
+        footer を選ぶ
       </button>
       <button
         type="button"
@@ -280,6 +287,25 @@ function EditorStateHarness() {
       >
         footer をキャンバス上の別の位置へ置き直す
       </button>
+      <button
+        type="button"
+        onClick={() =>
+          dispatch({
+            type: "reorder_selected_node",
+            step: ReorderSteps.TowardFront,
+          })
+        }
+      >
+        選択を前面へ動かす
+      </button>
+      <button
+        type="button"
+        onClick={() =>
+          dispatch({ type: "reposition_selected_node", delta: { x: 10, y: 0 } })
+        }
+      >
+        選択を横へずらす
+      </button>
     </>
   );
 }
@@ -381,6 +407,48 @@ test("並びの外を移動先にした並べ替えでは子の並びが変わ�
   await userEvent.click(screen.getByRole("button", { name: "並びの外へ" }));
 
   expect(children()).toBe("title,footer");
+});
+
+test("選択を前面へ動かすアクションを送ると子の並びが入れ替わる", async () => {
+  render(<EditorStateHarness />);
+  await userEvent.click(screen.getByRole("button", { name: "title を選ぶ" }));
+
+  await userEvent.click(
+    screen.getByRole("button", { name: "選択を前面へ動かす" }),
+  );
+
+  expect(children()).toBe("footer,title");
+});
+
+test("何も選ばずに前面へ動かすアクションを送っても子の並びは変わらない", async () => {
+  render(<EditorStateHarness />);
+
+  await userEvent.click(
+    screen.getByRole("button", { name: "選択を前面へ動かす" }),
+  );
+
+  expect(children()).toBe("title,footer");
+});
+
+test("選択を横へずらすアクションを送ると横の座標だけが動く", async () => {
+  render(<EditorStateHarness />);
+  await userEvent.click(screen.getByRole("button", { name: "footer を選ぶ" }));
+
+  await userEvent.click(
+    screen.getByRole("button", { name: "選択を横へずらす" }),
+  );
+
+  expect(footerCoordinatesText()).toBe("50,24");
+});
+
+test("何も選ばずにずらすアクションを送っても座標は変わらない", async () => {
+  render(<EditorStateHarness />);
+
+  await userEvent.click(
+    screen.getByRole("button", { name: "選択を横へずらす" }),
+  );
+
+  expect(footerCoordinatesText()).toBe("40,24");
 });
 
 test("移動のアクションを送ると、離した位置に応じて子の並びが変わる", async () => {
