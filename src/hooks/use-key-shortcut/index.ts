@@ -40,6 +40,32 @@ export const KeyShortcut = {
 
     return matchesKey && matchesCommandKey && matchesShiftKey;
   },
+
+  /**
+   * この割り当てが、フォーカスのある要素に食われるか。
+   *
+   * 文字を打ち込める場所では、どの割り当ても通さない。Backspace のような編集キーを
+   * 割り当てたときに入力欄の文字が消せなくなるため（修飾キーを伴う割り当ても、
+   * 打ち込んでいる最中に走ると驚きになるので同じ扱いにする）。
+   *
+   * 選択欄で通さないのは修飾キーを伴わない割り当てだけ。`<select>` は矢印で値が変わる
+   * ので素のキーは食われるが、`⌘Z` のような操作まで止めると、prop を選び直した直後に
+   * 戻せなくなる。
+   *
+   * Why not: `ElementEx` 側へ置かない。要素の性質（文字を打ち込めるか・選択欄か）は
+   * そちらが答えるが、**どちらを通すかは修飾キーの有無で決まる**ので、移すと `utils/` が
+   * 割り当ての語彙を持つことになる（rules/architecture.md「用途ではなく操作で名付ける」）。
+   *
+   * @param shortcut 見ている割り当て
+   * @param target キー操作の発火元
+   * @returns フォーカスのある要素が受け取るなら `true`
+   */
+  isConsumedBy(shortcut: KeyShortcut, target: EventTarget | null): boolean {
+    if (ElementEx.isTextEditable(target)) {
+      return true;
+    }
+    return !shortcut.withCommandKey && ElementEx.isSelectControl(target);
+  },
 } as const;
 
 /**
@@ -55,31 +81,6 @@ export type KeyShortcutBinding = Readonly<{
 }>;
 
 /**
- * その割り当てが、フォーカスのある要素に食われるか。
- *
- * 文字を打ち込める場所では、どの割り当ても通さない。Backspace のような編集キーを
- * 割り当てたときに入力欄の文字が消せなくなるため（修飾キーを伴う割り当ても、
- * 打ち込んでいる最中に走ると驚きになるので同じ扱いにする）。
- *
- * 選択欄で通さないのは修飾キーを伴わない割り当てだけ。`<select>` は矢印で値が変わる
- * ので素のキーは食われるが、`⌘Z` のような操作まで止めると、prop を選び直した直後に
- * 戻せなくなる。
- *
- * @param shortcut 見ている割り当て
- * @param target キー操作の発火元
- * @returns フォーカスのある要素が受け取るなら `true`
- */
-function isConsumedByTarget(
-  shortcut: KeyShortcut,
-  target: EventTarget | null,
-): boolean {
-  if (ElementEx.isTextEditable(target)) {
-    return true;
-  }
-  return !shortcut.withCommandKey && ElementEx.isSelectControl(target);
-}
-
-/**
  * ページ全体のキーボードショートカットを、複数まとめて張る。
  * 押されたキーに当たった割り当てのうち、先に並んでいる 1 件だけを呼ぶ。
  *
@@ -88,8 +89,8 @@ function isConsumedByTarget(
  * 「本質的にグローバルな関心事」）。1 回の購読で複数を見るのは、割り当ての数だけ
  * フックを呼ぶとフックの数が呼び出し側の表の長さで変わってしまうため。
  *
- * フォーカスのある要素がそのキーを自分で受け取る間は無視する（`isConsumedByTarget`）。
- * この扱いはどの割り当てにも共通なので、割り当ての側ではなくここが持つ。
+ * フォーカスのある要素がそのキーを自分で受け取る間は無視する（`KeyShortcut.isConsumedBy`）。
+ * この扱いはどの割り当てにも共通なので、割り当ての側ではなくここが呼ぶ。
  *
  * 当たった押下では既定動作を止める。**割り当てに一致した時点でその押下はアプリの操作**
  * なので、矢印のスクロールのようなブラウザ側の動きを重ねない。
@@ -109,7 +110,7 @@ export function useKeyShortcuts(bindings: readonly KeyShortcutBinding[]): void {
       const bound = bindings.find(
         ({ shortcut }) =>
           KeyShortcut.matches(shortcut, event) &&
-          !isConsumedByTarget(shortcut, event.target),
+          !KeyShortcut.isConsumedBy(shortcut, event.target),
       );
       if (bound === undefined) {
         return;
