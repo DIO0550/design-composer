@@ -8,13 +8,16 @@ import {
 } from "react";
 import type { Offset } from "@/domains/unit/offset";
 import { CanvasView } from "@/features/canvas/domains/canvas-view";
+import { CanvasBounds } from "@/features/canvas/domains/node-drop";
 import { CanvasPointer } from "@/features/canvas/utils/CanvasPointer";
+import { DrawnBounds } from "@/features/canvas/utils/DrawnBounds";
 
 /** キャンバスの見え方に対する操作（docs/06-ui.md「ズーム / パンは非永続の view state」）。 */
 export type CanvasViewAction =
   | Readonly<{ type: "zoom_in" }>
   | Readonly<{ type: "zoom_out" }>
   | Readonly<{ type: "reset" }>
+  | Readonly<{ type: "fit_to"; target: CanvasBounds; viewport: CanvasBounds }>
   | Readonly<{ type: "pan"; delta: Offset }>
   | Readonly<{ type: "drag_start"; pointer: Offset }>
   | Readonly<{ type: "drag_move"; pointer: Offset }>
@@ -38,6 +41,11 @@ function canvasViewReducer(
       return CanvasView.zoomOut(view);
     case "reset":
       return CanvasView.create();
+    case "fit_to":
+      return CanvasView.fitTo(view, {
+        target: action.target,
+        viewport: action.viewport,
+      });
     case "pan":
       return CanvasView.panBy(view, action.delta);
     case "drag_start":
@@ -107,6 +115,16 @@ export type CanvasViewControl = Readonly<{
   zoomIn: () => void;
   zoomOut: () => void;
   reset: () => void;
+  /**
+   * 名前で指したものが画面に収まる倍率と位置にする。
+   *
+   * 測るのは**押された瞬間だけ**なので、画面の大きさを状態としては持たない
+   * （rules/hooks.md「render で読むなら useState、event handler の内側だけで使うなら
+   * useRef」）。土台がまだマウントされていない / 1 つも描かれていないときは何もしない。
+   *
+   * @param names 収めたい artboard / ノードの名前。空なら何も起きない
+   */
+  fitTo: (names: readonly string[]) => void;
 }>;
 
 /**
@@ -146,5 +164,21 @@ export function useCanvasView(): CanvasViewControl {
     zoomIn: () => dispatch({ type: "zoom_in" }),
     zoomOut: () => dispatch({ type: "zoom_out" }),
     reset: () => dispatch({ type: "reset" }),
+    fitTo: (names) => {
+      const surface = surfaceRef.current;
+      if (surface === null) {
+        return;
+      }
+      const target = DrawnBounds.enclosing(names);
+      if (!target.some) {
+        return;
+      }
+      dispatch({
+        type: "fit_to",
+        target: target.value,
+        // 収める先は土台そのもの。その左上が中身の transform の原点になる
+        viewport: CanvasBounds.ofElement(surface),
+      });
+    },
   };
 }
