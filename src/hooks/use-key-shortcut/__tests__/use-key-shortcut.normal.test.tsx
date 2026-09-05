@@ -1,10 +1,16 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
-import { type KeyShortcut, useKeyShortcut, useKeyShortcuts } from "../index";
+import {
+  type KeyShortcut,
+  KeyTriggers,
+  useKeyShortcut,
+  useKeyShortcuts,
+} from "../index";
 
 /** 修飾キーを伴わない組み合わせ。テストごとに同じものを使う。 */
 const PlainShortcut: KeyShortcut = {
+  waitsFor: KeyTriggers.TypedCharacter,
   keys: ["Enter"],
   withCommandKey: false,
   withShiftKey: false,
@@ -80,7 +86,12 @@ test("Ctrl と組み合わせた割り当ては Ctrl を押しながらで呼ば
   const pressed: string[] = [];
   render(
     <KeyShortcutHarness
-      shortcut={{ keys: ["c"], withCommandKey: true, withShiftKey: false }}
+      shortcut={{
+        waitsFor: KeyTriggers.TypedCharacter,
+        keys: ["c"],
+        withCommandKey: true,
+        withShiftKey: false,
+      }}
       onPress={() => pressed.push("押された")}
     />,
   );
@@ -95,7 +106,12 @@ test("Command と組み合わせた割り当ては Command を押しながらで
   const pressed: string[] = [];
   render(
     <KeyShortcutHarness
-      shortcut={{ keys: ["c"], withCommandKey: true, withShiftKey: false }}
+      shortcut={{
+        waitsFor: KeyTriggers.TypedCharacter,
+        keys: ["c"],
+        withCommandKey: true,
+        withShiftKey: false,
+      }}
       onPress={() => pressed.push("押された")}
     />,
   );
@@ -110,7 +126,12 @@ test("修飾キーと組み合わせた割り当ては修飾キーなしでは�
   const pressed: string[] = [];
   render(
     <KeyShortcutHarness
-      shortcut={{ keys: ["c"], withCommandKey: true, withShiftKey: false }}
+      shortcut={{
+        waitsFor: KeyTriggers.TypedCharacter,
+        keys: ["c"],
+        withCommandKey: true,
+        withShiftKey: false,
+      }}
       onPress={() => pressed.push("押された")}
     />,
   );
@@ -135,7 +156,12 @@ test("Shift を伴う割り当ては Shift を押しながらで呼ばれる", a
   const pressed: string[] = [];
   render(
     <KeyShortcutHarness
-      shortcut={{ keys: ["z"], withCommandKey: true, withShiftKey: true }}
+      shortcut={{
+        waitsFor: KeyTriggers.TypedCharacter,
+        keys: ["z"],
+        withCommandKey: true,
+        withShiftKey: true,
+      }}
       onPress={() => pressed.push("押された")}
     />,
   );
@@ -150,7 +176,12 @@ test("Shift を伴わない割り当ては Shift を押しながらでは呼ば�
   const pressed: string[] = [];
   render(
     <KeyShortcutHarness
-      shortcut={{ keys: ["z"], withCommandKey: true, withShiftKey: false }}
+      shortcut={{
+        waitsFor: KeyTriggers.TypedCharacter,
+        keys: ["z"],
+        withCommandKey: true,
+        withShiftKey: false,
+      }}
       onPress={() => pressed.push("押された")}
     />,
   );
@@ -166,7 +197,12 @@ test("入力欄に文字を打ち込んでいる間は、修飾キーを伴う�
   const pressed: string[] = [];
   render(
     <KeyShortcutHarness
-      shortcut={{ keys: ["z"], withCommandKey: true, withShiftKey: false }}
+      shortcut={{
+        waitsFor: KeyTriggers.TypedCharacter,
+        keys: ["z"],
+        withCommandKey: true,
+        withShiftKey: false,
+      }}
       onPress={() => pressed.push("押された")}
     />,
   );
@@ -199,7 +235,12 @@ test("選択欄にフォーカスがあっても、修飾キーを伴う割り�
   const pressed: string[] = [];
   render(
     <KeyShortcutHarness
-      shortcut={{ keys: ["z"], withCommandKey: true, withShiftKey: false }}
+      shortcut={{
+        waitsFor: KeyTriggers.TypedCharacter,
+        keys: ["z"],
+        withCommandKey: true,
+        withShiftKey: false,
+      }}
       onPress={() => pressed.push("押された")}
     />,
   );
@@ -219,11 +260,21 @@ function KeyShortcutsHarness({
 }: Readonly<{ onPress: (label: string) => void }>) {
   useKeyShortcuts([
     {
-      shortcut: { keys: ["["], withCommandKey: true, withShiftKey: false },
+      shortcut: {
+        waitsFor: KeyTriggers.TypedCharacter,
+        keys: ["["],
+        withCommandKey: true,
+        withShiftKey: false,
+      },
       onPress: () => onPress("前"),
     },
     {
-      shortcut: { keys: ["]"], withCommandKey: true, withShiftKey: false },
+      shortcut: {
+        waitsFor: KeyTriggers.TypedCharacter,
+        keys: ["]"],
+        withCommandKey: true,
+        withShiftKey: false,
+      },
       onPress: () => onPress("後"),
     },
   ]);

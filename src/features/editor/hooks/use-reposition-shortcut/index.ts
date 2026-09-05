@@ -1,6 +1,7 @@
 import { Offset } from "@/domains/unit/offset";
 import {
   type KeyShortcutBinding,
+  KeyTriggers,
   useKeyShortcuts,
 } from "@/hooks/use-key-shortcut";
 
@@ -36,7 +37,7 @@ const MoveLengths = [
  * 入力中は無視することは `useKeyShortcuts` に任せる。
  *
  * 8 件をまとめて張るのは、押したキーで渡す移動量が変わるため。
- * `KeyShortcut.keys` に矢印を並べると同じ操作の別名になってしまい、向きを区別できない。
+ * 1 つの割り当ての `keys` に矢印を並べると同じ操作の別名になってしまい、向きを区別できない。
  *
  * キーの綴りと刻みの大きさはこの入力経路の事情なので、渡すのは解釈済みの移動量にする
  * （rules/architecture.md「入力欄の約束事をドメインへ持ち込まない」）。
@@ -49,7 +50,12 @@ export function useRepositionShortcut(
   const bindings: readonly KeyShortcutBinding[] = MoveLengths.flatMap(
     ({ withShiftKey, length }) =>
       Object.entries(ArrowDirections).map(([key, direction]) => ({
-        shortcut: { keys: [key], withCommandKey: false, withShiftKey },
+        shortcut: {
+          waitsFor: KeyTriggers.TypedCharacter,
+          keys: [key],
+          withCommandKey: false,
+          withShiftKey,
+        },
         onPress: () => onReposition(Offset.scale(direction, length)),
       })),
   );

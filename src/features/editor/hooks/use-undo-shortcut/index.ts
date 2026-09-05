@@ -1,7 +1,12 @@
-import { type KeyShortcut, useKeyShortcut } from "@/hooks/use-key-shortcut";
+import {
+  type KeyShortcut,
+  KeyTriggers,
+  useKeyShortcut,
+} from "@/hooks/use-key-shortcut";
 
 /** undo に割り当てる組み合わせ（Windows は Ctrl+Z / macOS は Cmd+Z）。 */
 const UndoShortcut: KeyShortcut = {
+  waitsFor: KeyTriggers.TypedCharacter,
   keys: ["z"],
   withCommandKey: true,
   withShiftKey: false,
