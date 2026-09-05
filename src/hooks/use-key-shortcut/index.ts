@@ -49,7 +49,7 @@ export const KeyShortcut = {
  * まとめて張るため。`KeyShortcut.keys` は前者しか表せないので、矢印 4 方向のように
  * 押したキーで呼ぶ相手が変わるものは、こちらを並べて渡す。
  */
-export type KeyShortcutPress = Readonly<{
+export type KeyShortcutBinding = Readonly<{
   shortcut: KeyShortcut;
   onPress: () => void;
 }>;
@@ -76,12 +76,12 @@ function isConsumedByTarget(
   if (ElementEx.isTextEditable(target)) {
     return true;
   }
-  return !shortcut.withCommandKey && ElementEx.isOptionSelectable(target);
+  return !shortcut.withCommandKey && ElementEx.isSelectControl(target);
 }
 
 /**
  * ページ全体のキーボードショートカットを、複数まとめて張る。
- * 押されたキーに当たる割り当てが 1 件だけ呼ばれる。
+ * 押されたキーに当たった割り当てのうち、先に並んでいる 1 件だけを呼ぶ。
  *
  * 押す対象が特定の要素ではなく画面のどこにフォーカスがあっても効く操作なので、
  * 要素の `onKeyDown` では受けられず `document` に張る（rules/hooks.md の
@@ -94,25 +94,32 @@ function isConsumedByTarget(
  * 当たった押下では既定動作を止める。**割り当てに一致した時点でその押下はアプリの操作**
  * なので、矢印のスクロールのようなブラウザ側の動きを重ねない。
  *
- * @param presses 待ち受ける割り当ての並び
+ * Why not: 矢印の割り当てだけを止める形にしない。デスクトップアプリなので、割り当て済みの
+ * キーにブラウザの既定動作（`⌘C` の選択文字のコピー等）を残す意味が薄く、割り当てごとに
+ * 出し分けると「どれが既定を止めるか」を各割り当てが覚えることになる。
+ *
+ * 購読は毎 render 張り直す。`bindings` を呼び出し側が毎回組み立てるためで、
+ * 安定させたいなら `useMemo` で受け渡す（`onPress` を `useCallback` で包むだけでは効かない）。
+ *
+ * @param bindings 待ち受ける割り当ての並び
  */
-export function useKeyShortcuts(presses: readonly KeyShortcutPress[]): void {
+export function useKeyShortcuts(bindings: readonly KeyShortcutBinding[]): void {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      const pressed = presses.find(
+      const bound = bindings.find(
         ({ shortcut }) =>
           KeyShortcut.matches(shortcut, event) &&
           !isConsumedByTarget(shortcut, event.target),
       );
-      if (pressed === undefined) {
+      if (bound === undefined) {
         return;
       }
       event.preventDefault();
-      pressed.onPress();
+      bound.onPress();
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [presses]);
+  }, [bindings]);
 }
 
 /**
