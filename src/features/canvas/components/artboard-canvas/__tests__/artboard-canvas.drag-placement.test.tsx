@@ -505,13 +505,34 @@ test("運んでいる途中でキャンバスの外へ出ると見た目も戻�
   expect(injectedStyles()).not.toContain("transform:translate(");
 });
 
-test("落とせる親が無い場所では、運んでいる間の見た目も戻る", () => {
+test("落とせる親が無い場所へ運んでいる間も、掴んだノードはずれたままになる", () => {
+  /*
+   * 落とせなくなるたびに元の位置へ戻すと、キャンバスの余白へ一瞬寄っただけで
+   * 運べているのか分からなくなる（PR #407 のレビュー指摘）。落とせないことは
+   * 落とし先の枠が出ないことで示す。
+   */
   renderCanvas({ selection: setupSelection() });
   carryBadge({ x: 30, y: -12 });
 
   movePointer(artboardList(), { x: 130, y: 88 });
 
-  expect(injectedStyles()).not.toContain("transform:translate(");
+  expect(injectedStyles()).toContain(previewRule("badge", { x: 30, y: -12 }));
+});
+
+test("落とせる親が無い場所を通っても、戻ってくれば置き直しが届く", () => {
+  const onRepositionNode = vi.fn();
+  renderCanvas({ selection: setupSelection(), onRepositionNode });
+  drawnApart();
+
+  pressPointer(drawn("badge"), { x: 100, y: 100 });
+  movePointer(artboardList(), { x: 200, y: 300 });
+  movePointer(drawn("settings"), { x: 130, y: 88 });
+  releasePointer(drawn("settings"), { x: 130, y: 88 });
+
+  expect(onRepositionNode).toHaveBeenCalledWith("badge", {
+    parentName: "settings",
+    placement: { mode: "absolute", x: -330, y: -28 },
+  });
 });
 
 test("離すと見た目のずれは消える（座標そのものが動くため）", () => {

@@ -53,3 +53,18 @@ test("割り切れない量を運んでも、見た目のずらし量は丸め�
 
   expect(dropped.offset).toEqual({ x: 28, y: -11 });
 });
+
+test("落とし先の親が決まっていなくても、運んだ分のずらし量は決まる", () => {
+  // 落とせる親がポインタの下に無い間も、掴んだノードはポインタへ追従する
+  expect(RepositionTarget.carriedOffset(Grabbed, { x: 30, y: -12 })).toEqual({
+    x: 30,
+    y: -12,
+  });
+});
+
+test("親を決めずに求めたずらし量も、丸めた行き先から逆算した整数になる", () => {
+  // 落とせる場所へ入った瞬間にずれ方が変わってはいけないので、`create` と同じ丸め方
+  expect(
+    RepositionTarget.carriedOffset(Grabbed, { x: 28.33, y: -10.83 }),
+  ).toEqual({ x: 28, y: -11 });
+});

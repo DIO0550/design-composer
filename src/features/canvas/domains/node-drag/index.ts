@@ -36,7 +36,7 @@ export type Grab = Readonly<{ dragged: DraggedNode; origin: Offset }>;
 export type NodeDrag =
   | Readonly<{ kind: "idle" }>
   | Readonly<{ kind: "held"; grab: Grab }>
-  | Readonly<{ kind: "dragging"; grab: Grab; drop: Option<DropEdit> }>
+  | Readonly<{ kind: "dragging"; grab: Grab; carrying: Carrying }>
   | Readonly<{ kind: "dropped" }>;
 
 /**
@@ -65,6 +65,83 @@ export type RepositionPreview = Readonly<{
   name: string;
   offset: Offset;
 }>;
+
+/**
+ * 運んでいる間、今のポインタで決まっていること。
+ *
+ * **落とせるかどうかと、掴んだノードが追従するかどうかは別に決まる。** 座標のドラッグは
+ * 落とせる親がポインタの下に無くてもポインタへ追従する（追従を止めると、キャンバスの
+ * 余白へ一瞬寄っただけで元の位置へ戻り、何を運んでいるのか分からなくなる）。
+ *
+ * 落とし方とずらし量を並べて持たず直和で列挙するのは、「落とせるのにずらし量が無い」
+ * 「ツリーへ落とすのにずらし量がある」を書けなくするため。
+ */
+export type Carrying =
+  | Readonly<{ kind: "nothing" }>
+  | Readonly<{ kind: "preview"; preview: RepositionPreview }>
+  | Readonly<{ kind: "droppable"; drop: DropEdit }>;
+
+export const Carrying = {
+  /** 落とせず、掴んだノードも動かない（ツリーのドラッグで落とし先が無いとき）。 */
+  nothing(): Carrying {
+    return { kind: "nothing" };
+  },
+
+  /**
+   * 落とせないが、掴んだノードはポインタへ追従する（座標のドラッグ）。
+   *
+   * @param preview ずらして見せる相手と量
+   * @returns 見た目だけが動く運び方
+   */
+  preview(preview: RepositionPreview): Carrying {
+    return { kind: "preview", preview };
+  },
+
+  /**
+   * 今離せば編集が届く運び方。
+   *
+   * @param drop 離したときに届く編集
+   * @returns 落とせる運び方
+   */
+  droppable(drop: DropEdit): Carrying {
+    return { kind: "droppable", drop };
+  },
+
+  /**
+   * 今離したら届く編集。
+   *
+   * @param carrying 今の運び方
+   * @returns 届く編集。落とせないなら `none`
+   */
+  drop(carrying: Carrying): Option<DropEdit> {
+    switch (carrying.kind) {
+      case "nothing":
+      case "preview":
+        return Option.none;
+      case "droppable":
+        return Option.some(carrying.drop);
+    }
+  },
+
+  /**
+   * 掴んだノードをずらして見せる相手と量。
+   * 落とせるときは、届く編集が同じ量を持っている（同じ 1 回のドラッグなので、
+   * 落とせる場所へ入った瞬間にずれ方が変わってはいけない）。
+   *
+   * @param carrying 今の運び方
+   * @returns ずらして見せる相手と量。ツリーのドラッグなら `none`
+   */
+  repositionPreview(carrying: Carrying): Option<RepositionPreview> {
+    switch (carrying.kind) {
+      case "nothing":
+        return Option.none;
+      case "preview":
+        return Option.some(carrying.preview);
+      case "droppable":
+        return DropEdit.repositionPreview(carrying.drop);
+    }
+  },
+} as const;
 
 export const DropEdit = {
   /**
@@ -242,16 +319,16 @@ export const NodeDrag = {
    * ポインタの移動を反映する。閾値を越えたところで初めて「動かしている」状態になる。
    * 掴んでいなければ何も起きない（ボタンを離したあとのマウス移動）。
    */
-  moveTo(drag: NodeDrag, pointer: Offset, drop: Option<DropEdit>): NodeDrag {
+  moveTo(drag: NodeDrag, pointer: Offset, carrying: Carrying): NodeDrag {
     if (drag.kind === "dragging") {
-      return { ...drag, drop };
+      return { ...drag, carrying };
     }
     if (drag.kind !== "held") {
       return drag;
     }
     return Offset.distance(drag.grab.origin, pointer) < DragThresholdPx
       ? drag
-      : { kind: "dragging", grab: drag.grab, drop };
+      : { kind: "dragging", grab: drag.grab, carrying };
   },
 
   /**
@@ -262,7 +339,9 @@ export const NodeDrag = {
    *   無いなら `none`
    */
   drop(drag: NodeDrag): Option<DropEdit> {
-    return drag.kind === "dragging" ? drag.drop : Option.none;
+    return drag.kind === "dragging"
+      ? Carrying.drop(drag.carrying)
+      : Option.none;
   },
 
   /**
@@ -279,17 +358,19 @@ export const NodeDrag = {
   },
 
   /**
-   * 今ドロップしたら、掴んだノードをどれだけずらして見せるか。
-   * 座標を動かすドラッグのときだけ答える。
+   * 掴んだノードを今どれだけずらして見せるか。座標を動かすドラッグのときだけ答え、
+   * **落とせる親がポインタの下に無くても答える**（`Carrying`）。
    *
-   * 掴んだだけ（閾値未満）では答えないのは、`drop` を経由しているため。
+   * 掴んだだけ（閾値未満）では答えないのは、運んでいる状態でしか運び方を持たないため。
    * 押しただけで見た目が動くと、クリックのたびにノードが一瞬ずれる。
    *
    * @param drag 今のドラッグの状態
    * @returns ずらして見せる相手と量。ツリーへの移動・挿入 / 動かしていないなら `none`
    */
   repositionPreview(drag: NodeDrag): Option<RepositionPreview> {
-    return Option.flatMap(NodeDrag.drop(drag), DropEdit.repositionPreview);
+    return drag.kind === "dragging"
+      ? Carrying.repositionPreview(drag.carrying)
+      : Option.none;
   },
 
   /**

@@ -7,6 +7,7 @@ import type { NodeTemplate } from "@/domains/session/node-template";
 import { Offset } from "@/domains/unit/offset";
 import { CanvasView } from "@/features/canvas/domains/canvas-view";
 import {
+  Carrying,
   DropEdit,
   type Grab,
   NodeDrag,
@@ -29,7 +30,7 @@ import { Option } from "@/utils/Option";
 /** ドラッグの進み方（docs/06-ui.md「キャンバス直接操作」の移動・座標の置き直しと、挿入）。 */
 type NodeDragAction =
   | Readonly<{ type: "grab"; grab: Grab }>
-  | Readonly<{ type: "move"; pointer: Offset; drop: Option<DropEdit> }>
+  | Readonly<{ type: "move"; pointer: Offset; carrying: Carrying }>
   | Readonly<{ type: "release" }>
   | Readonly<{ type: "cancel" }>
   | Readonly<{ type: "consume_click" }>;
@@ -46,7 +47,7 @@ function nodeDragReducer(drag: NodeDrag, action: NodeDragAction): NodeDrag {
     case "grab":
       return NodeDrag.grab(action.grab);
     case "move":
-      return NodeDrag.moveTo(drag, action.pointer, action.drop);
+      return NodeDrag.moveTo(drag, action.pointer, action.carrying);
     case "release":
       return NodeDrag.release(drag);
     case "cancel":
@@ -139,92 +140,122 @@ function parentShiftAt(
 }
 
 /**
- * 運んでいるものが今いる親と、その親から見た座標。
+ * 座標で運んでいるノードと、掴んだ時点でそれがいた親の中の座標。
  * **これがあることが「このドラッグは座標の置き直しになる」と同じ意味**になる
  * （パレットの雛形はまだ木に無く、フローのノードは座標を持たない）。
+ */
+type CarriedNode = Readonly<{ name: string; at: ChildPlacement }>;
+
+/**
+ * 今の掴みが座標のドラッグなら、運んでいるノードと今いる場所。
  *
  * @param document 配置の引き先になるドキュメント
  * @param dragged 運んでいるもの
- * @returns 今いる親と座標。雛形を運んでいる / 座標で動かせないノードを運んでいるなら `none`
+ * @returns 運んでいるノードと今いる場所。雛形を運んでいる / 座標で動かせないノードを
+ *   運んでいるなら `none`
  */
-function carriedPlacement(
+function carriedNode(
   document: DesignDocument,
   dragged: DraggedNode,
-): Option<ChildPlacement> {
-  return dragged.kind === "existing"
-    ? DesignDocument.childPlacementOf(document, dragged.name)
-    : Option.none;
+): Option<CarriedNode> {
+  if (dragged.kind !== "existing") {
+    return Option.none;
+  }
+  return Option.map(
+    DesignDocument.childPlacementOf(document, dragged.name),
+    (at) => ({ name: dragged.name, at }),
+  );
 }
 
 /**
- * 掴んでいる絶対配置のノードを、今のポインタで置き直したときの落とし方。
+ * 掴んでいる絶対配置のノードを、今のポインタまで運んだときの運び方。
  *
  * 運んだ量は画面上の移動量を倍率で割り戻したもので（倍率を変えても掴んだ点に追従する）、
  * そこから書かれる座標と見た目のずらし量を決めるのは `RepositionTarget`。
  *
+ * **落とせる親がポインタの下に無くても、見た目は追従させる**（ずらし量は原点の
+ * 付け替えを含まないので親が決まらなくても決まる）。追従を止めると、キャンバスの余白へ
+ * 一瞬寄っただけで元の位置へ戻り、運べているのか分からなくなる。
+ *
  * @param context 今の掴みと、倍率・ポインタ
- * @param carried 運んでいるものが今いる親と、その親から見た座標
+ * @param carried 運んでいるノードと、掴んだ時点の座標
  * @param parent ポインタの下で受け入れられる親
- * @returns 座標の置き直しの落とし方。**親の矩形を実測できなければ `none`**
- *   （そのときは落とせない。画面に描かれている親しか落とし先にならないので、
- *   画面の操作からここには到達しない）
+ * @returns 座標を置き直す運び方。親が無い / 親の矩形を実測できないときは見た目だけの運び方
  */
-function repositionAt(
+function repositionCarrying(
   context: DropContext,
-  carried: ChildPlacement,
-  parent: DropParent,
-): Option<DropEdit> {
+  carried: CarriedNode,
+  parent: Option<DropParent>,
+): Carrying {
   const moved = CanvasView.toDocumentOffset(
     context.view,
     Offset.delta(context.grab.origin, CanvasPointer.offsetOf(context.event)),
   );
-  return Option.map(
-    parentShiftAt(context.view, carried.parentName, parent.name),
-    (shift) =>
-      DropEdit.reposition(
-        context.grab.dragged.kind === "existing"
-          ? context.grab.dragged.name
-          : parent.name,
-        RepositionTarget.create(carried.placement, moved, shift),
-      ),
+  const shift = Option.flatMap(parent, (dropped) =>
+    parentShiftAt(context.view, carried.at.parentName, dropped.name),
+  );
+  if (!shift.some) {
+    return Carrying.preview({
+      name: carried.name,
+      offset: RepositionTarget.carriedOffset(carried.at.placement, moved),
+    });
+  }
+  return Carrying.droppable(
+    DropEdit.reposition(
+      carried.name,
+      RepositionTarget.create(carried.at.placement, moved, shift.value),
+    ),
   );
 }
 
 /**
- * 今の落とし方。
+ * 掴んでいるものを、今のポインタでツリーへ落とすときの運び方。
+ * 実体は動かさず、落ちる先はドロップ線で見せる。
+ *
+ * @param context 今の掴みと、落とし先を決めるための材料
+ * @param parent ポインタの下で受け入れられる親
+ * @returns ツリーへ落とす運び方。親が無い / 帯を実測できないなら何も起きない運び方
+ */
+function intoTreeCarrying(
+  context: DropContext,
+  parent: Option<DropParent>,
+): Carrying {
+  const target = Option.flatMap(parent, (accepted) =>
+    Option.map(measureZone(accepted), (zone) =>
+      DropZone.targetAt(zone, CanvasPointer.offsetOf(context.event)),
+    ),
+  );
+  return target.some
+    ? Carrying.droppable(DropEdit.intoTree(context.grab.dragged, target.value))
+    : Carrying.nothing();
+}
+
+/**
+ * 今の運び方。
  * 絶対配置のノードを運んでいるなら座標の置き直し、そうでなければツリーへの移動・挿入。
  *
- * 受け入れられる親を先に 1 回だけ解決して両方へ渡すのは、どちらの落とし方でも
+ * 受け入れられる親を先に 1 回だけ解決して両方へ渡すのは、どちらの運び方でも
  * 落ちる先の親が同じだから（2 回解決すると、同じ走査を 2 度行ううえに
  * 食い違う余地ができる）。
  *
- * **どちらの落とし方になるかは運んでいるものだけで決まり、実測の成否では変わらない。**
+ * **どちらの運び方になるかは運んでいるものだけで決まり、実測の成否では変わらない。**
  * 置き直しに決まったあとで実測に失敗したら、ツリーの移動へ落とさずそのまま
  * 「落とせない」にする（落とすと、座標を動かすつもりのドラッグが黙って木の並びを
  * 書き換える別の編集になる）。
  *
  * @param context 今の掴みと、落とし先を決めるための材料
- * @returns 今の落とし方。受け入れられる親が無ければ `none`
+ * @returns 今の運び方
  */
-function dropEditAt(context: DropContext): Option<DropEdit> {
+function carryingAt(context: DropContext): Carrying {
   const parent = DropParent.innermost(
     context.document,
     context.grab.dragged,
     namesToRoot(context.event.target),
   );
-  if (!parent.some) {
-    return Option.none;
-  }
-  const carried = carriedPlacement(context.document, context.grab.dragged);
-  if (carried.some) {
-    return repositionAt(context, carried.value, parent.value);
-  }
-  return Option.map(
-    Option.map(measureZone(parent.value), (zone) =>
-      DropZone.targetAt(zone, CanvasPointer.offsetOf(context.event)),
-    ),
-    (target) => DropEdit.intoTree(context.grab.dragged, target),
-  );
+  const carried = carriedNode(context.document, context.grab.dragged);
+  return carried.some
+    ? repositionCarrying(context, carried.value, parent)
+    : intoTreeCarrying(context, parent);
 }
 
 /** 運んでいる間のポインタを追う側（3 ペインの器）へ渡す props。 */
@@ -336,7 +367,7 @@ export function useNodeDrag(
     dispatch({
       type: "move",
       pointer: CanvasPointer.offsetOf(event),
-      drop: dropEditAt({
+      carrying: carryingAt({
         document: params.document,
         grab: grabbed.value,
         view: params.view,

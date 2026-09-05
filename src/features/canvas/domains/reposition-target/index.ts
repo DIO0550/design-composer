@@ -50,7 +50,22 @@ export const RepositionTarget = {
         parent.name,
         Placement.moveBy(moved, parent.shift),
       ),
-      offset: Placement.delta(from, moved),
+      offset: RepositionTarget.carriedOffset(from, carried),
     };
+  },
+
+  /**
+   * 運んでいる間のずらし量だけを、落とし先の親を決めずに求める。
+   *
+   * 原点の付け替えを含むのは**書かれる座標**だけなので、ずらし量は落とし先が
+   * 決まらなくても答えられる。落とせる親がポインタの下に無い間も掴んだノードを
+   * 追従させるために要る（`Carrying`）。
+   *
+   * @param from 掴んだ時点の配置（今の親から見た座標）
+   * @param carried 画面上で運んだ量（ドキュメント上の px）
+   * @returns 運んでいる間のずらし量（丸めた行き先から逆算した整数）
+   */
+  carriedOffset(from: AbsolutePlacement, carried: Offset): Offset {
+    return Placement.delta(from, Placement.moveBy(from, carried));
   },
 } as const;

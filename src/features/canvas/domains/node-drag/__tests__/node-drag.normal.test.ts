@@ -6,7 +6,7 @@ import type {
 } from "@/features/canvas/domains/node-drop";
 import type { RepositionTarget } from "@/features/canvas/domains/reposition-target";
 import { Option } from "@/utils/Option";
-import { DropEdit, NodeDrag } from "../index";
+import { Carrying, DropEdit, NodeDrag } from "../index";
 
 /** 木にある `title` を掴んでいる状態。 */
 const MovingTitle: DraggedNode = { kind: "existing", name: "title" };
@@ -55,7 +55,7 @@ test("押した位置から少ししか動かないうちはドラッグとし�
     origin: { x: 100, y: 100 },
   });
 
-  const moved = NodeDrag.moveTo(held, { x: 102, y: 100 }, Option.none);
+  const moved = NodeDrag.moveTo(held, { x: 102, y: 100 }, Carrying.nothing());
 
   expect(NodeDrag.isDragging(moved)).toBe(false);
 });
@@ -66,7 +66,7 @@ test("押した位置から離れるとドラッグとして扱われる", () =>
     origin: { x: 100, y: 100 },
   });
 
-  const moved = NodeDrag.moveTo(held, { x: 100, y: 140 }, Option.none);
+  const moved = NodeDrag.moveTo(held, { x: 100, y: 140 }, Carrying.nothing());
 
   expect(NodeDrag.isDragging(moved)).toBe(true);
 });
@@ -75,7 +75,7 @@ test("ドラッグ中は受け入れ先の上にいる間だけ落ちる位置�
   const dragging = NodeDrag.moveTo(
     NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
     { x: 100, y: 140 },
-    Option.some(SampleDrop),
+    Carrying.droppable(SampleDrop),
   );
 
   expect(Option.unwrap(NodeDrag.insertionTarget(dragging)).position).toEqual({
@@ -88,10 +88,14 @@ test("受け入れられない場所へ移ると落ちる位置は無くなる",
   const dragging = NodeDrag.moveTo(
     NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
     { x: 100, y: 140 },
-    Option.some(SampleDrop),
+    Carrying.droppable(SampleDrop),
   );
 
-  const outside = NodeDrag.moveTo(dragging, { x: 100, y: 180 }, Option.none);
+  const outside = NodeDrag.moveTo(
+    dragging,
+    { x: 100, y: 180 },
+    Carrying.nothing(),
+  );
 
   expect(NodeDrag.insertionTarget(outside).some).toBe(false);
 });
@@ -100,7 +104,7 @@ test("掴んでいないときのポインタ移動では何も起きない", ()
   const moved = NodeDrag.moveTo(
     NodeDrag.create(),
     { x: 100, y: 140 },
-    Option.some(SampleDrop),
+    Carrying.droppable(SampleDrop),
   );
 
   expect(NodeDrag.isDragging(moved)).toBe(false);
@@ -118,7 +122,7 @@ test("運んでから離したときは直後のクリックを選択に使わ�
   const dragging = NodeDrag.moveTo(
     NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
     { x: 100, y: 140 },
-    Option.some(SampleDrop),
+    Carrying.droppable(SampleDrop),
   );
 
   expect(NodeDrag.consumesClick(NodeDrag.release(dragging))).toBe(true);
@@ -128,7 +132,7 @@ test("離したあとは何も掴んでいない状態に戻る", () => {
   const dragging = NodeDrag.moveTo(
     NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
     { x: 100, y: 140 },
-    Option.some(SampleDrop),
+    Carrying.droppable(SampleDrop),
   );
 
   expect(NodeDrag.grabbed(NodeDrag.release(dragging)).some).toBe(false);
@@ -140,10 +144,14 @@ test("動かし続けても掴んだ位置は掴んだ時点のまま変わら�
   const dragging = NodeDrag.moveTo(
     NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
     { x: 100, y: 140 },
-    Option.none,
+    Carrying.nothing(),
   );
 
-  const further = NodeDrag.moveTo(dragging, { x: 100, y: 180 }, Option.none);
+  const further = NodeDrag.moveTo(
+    dragging,
+    { x: 100, y: 180 },
+    Carrying.nothing(),
+  );
 
   expect(Option.unwrap(NodeDrag.grabbed(further)).origin).toEqual({
     x: 100,
@@ -193,7 +201,7 @@ test("座標を置き直す落とし方のときだけ、ずらして見せる�
   const dragging = NodeDrag.moveTo(
     NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
     { x: 100, y: 140 },
-    Option.some(DropEdit.reposition("title", SampleRepositionTarget)),
+    Carrying.droppable(DropEdit.reposition("title", SampleRepositionTarget)),
   );
 
   expect(Option.unwrap(NodeDrag.repositionPreview(dragging))).toEqual({
@@ -207,7 +215,7 @@ test("ツリーへ落とす落とし方では、ずらして見せる相手と�
   const dragging = NodeDrag.moveTo(
     NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
     { x: 100, y: 140 },
-    Option.some(SampleDrop),
+    Carrying.droppable(SampleDrop),
   );
 
   expect(NodeDrag.repositionPreview(dragging).some).toBe(false);
@@ -223,12 +231,51 @@ test("押しただけでまだ動かしていない間は、ずらして見せ�
   expect(NodeDrag.repositionPreview(held).some).toBe(false);
 });
 
+test("落とせる先が無くても、座標のドラッグならずらして見せる相手と量を答える", () => {
+  /*
+   * 追従を止めると、キャンバスの余白へ一瞬寄っただけで掴んだノードが元の位置へ戻り、
+   * 運べているのか分からなくなる（PR #407 のレビュー指摘）。
+   */
+  const dragging = NodeDrag.moveTo(
+    NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
+    { x: 100, y: 140 },
+    Carrying.preview({ name: "title", offset: { x: 30, y: -12 } }),
+  );
+
+  expect(Option.unwrap(NodeDrag.repositionPreview(dragging))).toEqual({
+    name: "title",
+    offset: { x: 30, y: -12 },
+  });
+});
+
+test("見た目だけ動かしている間は、離しても届く編集を持たない", () => {
+  // 追従しているだけで落とせてはいない（離しても何も起きない）
+  const dragging = NodeDrag.moveTo(
+    NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
+    { x: 100, y: 140 },
+    Carrying.preview({ name: "title", offset: { x: 30, y: -12 } }),
+  );
+
+  expect(NodeDrag.drop(dragging).some).toBe(false);
+});
+
+test("見た目だけ動かしている間は、子になる親の名前を答えない", () => {
+  // 落とせないことは、落とし先の枠が出ないことで示す
+  const dragging = NodeDrag.moveTo(
+    NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
+    { x: 100, y: 140 },
+    Carrying.preview({ name: "title", offset: { x: 30, y: -12 } }),
+  );
+
+  expect(NodeDrag.dropParentName(dragging).some).toBe(false);
+});
+
 test("落とせる先が無い間は、子になる親の名前を答えない", () => {
   // 枠を出す相手が居ないので、受け入れ先の提示も出ない
   const dragging = NodeDrag.moveTo(
     NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
     { x: 100, y: 140 },
-    Option.none,
+    Carrying.nothing(),
   );
 
   expect(NodeDrag.dropParentName(dragging).some).toBe(false);
@@ -250,7 +297,7 @@ test("パレットの雛形を運んでから離したときは、直後のク�
   const dragging = NodeDrag.moveTo(
     NodeDrag.grab({ dragged: PlacingBox, origin: { x: 100, y: 100 } }),
     { x: 100, y: 140 },
-    Option.some(SampleDrop),
+    Carrying.droppable(SampleDrop),
   );
 
   /*
@@ -265,7 +312,7 @@ test("運んでいる最中だけ、何を運んでいるかを答える", () =>
   const dragging = NodeDrag.moveTo(
     NodeDrag.grab({ dragged: PlacingBox, origin: { x: 100, y: 100 } }),
     { x: 100, y: 140 },
-    Option.none,
+    Carrying.nothing(),
   );
 
   expect(Option.unwrap(NodeDrag.carriedNode(dragging))).toEqual(PlacingBox);
@@ -286,7 +333,7 @@ test("パレットの雛形を運んでいる最中は、その雛形を答え�
   const dragging = NodeDrag.moveTo(
     NodeDrag.grab({ dragged: PlacingBox, origin: { x: 100, y: 100 } }),
     { x: 100, y: 140 },
-    Option.none,
+    Carrying.nothing(),
   );
 
   expect(Option.unwrap(NodeDrag.carriedTemplate(dragging))).toEqual({
@@ -301,7 +348,7 @@ test("木にある既存ノードを運んでいる間は、雛形を答えな�
   const dragging = NodeDrag.moveTo(
     NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
     { x: 100, y: 140 },
-    Option.none,
+    Carrying.nothing(),
   );
 
   expect(NodeDrag.carriedTemplate(dragging).some).toBe(false);
