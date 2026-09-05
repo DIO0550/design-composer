@@ -76,6 +76,23 @@ test("別の矩形の左上から見たずれは、左上どうしの差にな�
   expect(shift).toEqual({ x: -20, y: 15 });
 });
 
+test("幅も高さも正なら面積を持つ", () => {
+  expect(CanvasBounds.hasArea(Bounds)).toBe(true);
+});
+
+test("幅か高さのどちらかが 0 なら面積を持たない", () => {
+  // 実測は描かれる前や器が畳まれているときに 0 を返すので、片方だけ 0 も起きる
+  const flattened = [
+    { ...Bounds, width: 0 },
+    { ...Bounds, height: 0 },
+  ];
+
+  expect(flattened.map((bounds) => CanvasBounds.hasArea(bounds))).toEqual([
+    false,
+    false,
+  ]);
+});
+
 test("並び全体を含む最小の矩形は、四辺のいちばん外側で決まる", () => {
   // 左端は 2 つ目、上端と右端は 1 つ目、下端は 2 つ目が決める（1 つの矩形からは決まらない）
   const spread: readonly CanvasBounds[] = [

@@ -87,6 +87,19 @@ export const CanvasBounds = {
     return direction === "row" ? bounds.left : bounds.top;
   },
 
+  /**
+   * 幅も高さも正か。
+   *
+   * 面積を持たない矩形は、そこへ何かを収める倍率も、中の位置も決められない。
+   * 実測は描かれる前や器が畳まれているときに 0 を返すので、割り算の前に見る。
+   *
+   * @param bounds 見る矩形
+   * @returns 幅と高さの両方が 0 より大きければ `true`
+   */
+  hasArea(bounds: CanvasBounds): boolean {
+    return bounds.width > 0 && bounds.height > 0;
+  },
+
   /** ポインタが矩形の内側にあるか。 */
   contains(bounds: CanvasBounds, pointer: Offset): boolean {
     return (

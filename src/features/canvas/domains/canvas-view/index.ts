@@ -57,19 +57,6 @@ export type FitBounds = Readonly<{
   viewport: CanvasBounds;
 }>;
 
-/** 収める対象と収める先の大きさ。面積を持つかだけを見る。 */
-type FitExtent = Readonly<{ width: number; height: number }>;
-
-/**
- * 幅も高さも正か。
- *
- * @param extent 見る大きさ
- * @returns 幅と高さの両方が 0 より大きければ `true`
- */
-function hasArea(extent: FitExtent): boolean {
-  return extent.width > 0 && extent.height > 0;
-}
-
 /**
  * 倍率を上下限の内側へ収める。
  *
@@ -180,7 +167,7 @@ export const CanvasView = {
      * 面積を見るのは余白を足す前。足したあとだと、何も描かれていない（0 × 0 の）対象でも
      * 余白ぶんの大きさを持ってしまい、空の範囲へ寄る倍率が決まってしまう。
      */
-    if (!hasArea(drawn) || !hasArea(viewport)) {
+    if (!CanvasBounds.hasArea(drawn) || !CanvasBounds.hasArea(viewport)) {
       return view;
     }
     const content = paddedDocumentBounds(view, drawn);
