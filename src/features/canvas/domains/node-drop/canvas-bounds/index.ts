@@ -65,6 +65,22 @@ export const CanvasBounds = {
     };
   },
 
+  /**
+   * 別の矩形の左上から見た、この矩形の左上のずれ。
+   *
+   * 絶対配置の座標の原点は親の左上なので、これが**親を付け替えたときに座標を直す量**に
+   * なる（画面上の位置を変えずに基準だけを移すため）。返るのは実測したままの画面上の
+   * px で、ドキュメント上の px にするのは倍率を知っている側（`CanvasView`）の役目。
+   *
+   * @param bounds ずれを知りたい矩形
+   * @param origin 原点にする矩形
+   * @returns `origin` の左上から見た `bounds` の左上のずれ
+   */
+  originShift(bounds: CanvasBounds, origin: CanvasBounds): Offset {
+    const relative = CanvasBounds.relativeTo(bounds, origin);
+    return { x: relative.left, y: relative.top };
+  },
+
   /** 子が並ぶ向きに沿った始点。 */
   start(bounds: CanvasBounds, direction: CssDirection): number {
     return direction === "row" ? bounds.left : bounds.top;

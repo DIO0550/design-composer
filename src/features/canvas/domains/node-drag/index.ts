@@ -1,11 +1,11 @@
 import { DesignDocument } from "@/domains/dcmp/design-document";
-import type { AbsolutePlacement } from "@/domains/dcmp/placement";
 import type { NodeTemplate } from "@/domains/session/node-template";
 import { Offset } from "@/domains/unit/offset";
 import {
   DraggedNode,
   type DropTarget,
 } from "@/features/canvas/domains/node-drop";
+import type { RepositionTarget } from "@/features/canvas/domains/reposition-target";
 import { Option } from "@/utils/Option";
 
 /**
@@ -36,12 +36,12 @@ export type Grab = Readonly<{ dragged: DraggedNode; origin: Offset }>;
 export type NodeDrag =
   | Readonly<{ kind: "idle" }>
   | Readonly<{ kind: "held"; grab: Grab }>
-  | Readonly<{ kind: "dragging"; grab: Grab; drop: Option<DropEdit> }>
+  | Readonly<{ kind: "dragging"; grab: Grab; carrying: Carrying }>
   | Readonly<{ kind: "dropped" }>;
 
 /**
- * 離したときに届く編集（docs/06-ui.md「キャンバス直接操作」の移動と、
- * 「編集操作の一覧」の挿入）。
+ * 今の落とし方（docs/06-ui.md「キャンバス直接操作」の移動と、
+ * 「編集操作の一覧」の挿入）。離したときに届く編集と、離す前の提示の両方を答える。
  *
  * ツリーへ挿すのと座標を置き直すのは**排他**なので直和で列挙する。
  * 並べて持つと「挿入位置と座標の両方がある」が型で書けてしまう。
@@ -53,20 +53,95 @@ export type NodeDrag =
 export type DropEdit =
   | Readonly<{ kind: "move"; name: string; target: DropTarget }>
   | Readonly<{ kind: "insert"; template: NodeTemplate; target: DropTarget }>
-  | Readonly<{
-      kind: "reposition";
-      name: string;
-      placement: AbsolutePlacement;
-    }>;
+  | Readonly<{ kind: "reposition"; name: string; target: RepositionTarget }>;
 
 /**
- * 置き直しの相手と行き先。
- * 掴んだノードを離す前に、その位置へ見せる（プレビュー）ために使う。
+ * 運んでいる間、掴んだノードをどれだけずらして見せるか。
+ *
+ * 書かれる座標ではなく画面上のずらし量を持つのは、親を付け替えると座標の原点が
+ * 変わる一方で、**見た目は動かない**ため（`RepositionTarget`）。
  */
-export type RepositionTarget = Readonly<{
+export type RepositionPreview = Readonly<{
   name: string;
-  placement: AbsolutePlacement;
+  offset: Offset;
 }>;
+
+/**
+ * 運んでいる間、今のポインタで決まっていること。
+ *
+ * **落とせるかどうかと、掴んだノードが追従するかどうかは別に決まる。** 座標のドラッグは
+ * 落とせる親がポインタの下に無くてもポインタへ追従する（追従を止めると、キャンバスの
+ * 余白へ一瞬寄っただけで元の位置へ戻り、何を運んでいるのか分からなくなる）。
+ *
+ * 落とし方とずらし量を並べて持たず直和で列挙するのは、「落とせるのにずらし量が無い」
+ * 「ツリーへ落とすのにずらし量がある」を書けなくするため。
+ */
+export type Carrying =
+  | Readonly<{ kind: "nothing" }>
+  | Readonly<{ kind: "preview"; preview: RepositionPreview }>
+  | Readonly<{ kind: "droppable"; drop: DropEdit }>;
+
+export const Carrying = {
+  /** 落とせず、掴んだノードも動かない（ツリーのドラッグで落とし先が無いとき）。 */
+  nothing(): Carrying {
+    return { kind: "nothing" };
+  },
+
+  /**
+   * 落とせないが、掴んだノードはポインタへ追従する（座標のドラッグ）。
+   *
+   * @param preview ずらして見せる相手と量
+   * @returns 見た目だけが動く運び方
+   */
+  preview(preview: RepositionPreview): Carrying {
+    return { kind: "preview", preview };
+  },
+
+  /**
+   * 今離せば編集が届く運び方。
+   *
+   * @param drop 離したときに届く編集
+   * @returns 落とせる運び方
+   */
+  droppable(drop: DropEdit): Carrying {
+    return { kind: "droppable", drop };
+  },
+
+  /**
+   * 今離したら届く編集。
+   *
+   * @param carrying 今の運び方
+   * @returns 届く編集。落とせないなら `none`
+   */
+  drop(carrying: Carrying): Option<DropEdit> {
+    switch (carrying.kind) {
+      case "nothing":
+      case "preview":
+        return Option.none;
+      case "droppable":
+        return Option.some(carrying.drop);
+    }
+  },
+
+  /**
+   * 掴んだノードをずらして見せる相手と量。
+   * 落とせるときは、届く編集が同じ量を持っている（同じ 1 回のドラッグなので、
+   * 落とせる場所へ入った瞬間にずれ方が変わってはいけない）。
+   *
+   * @param carrying 今の運び方
+   * @returns ずらして見せる相手と量。ツリーのドラッグなら `none`
+   */
+  repositionPreview(carrying: Carrying): Option<RepositionPreview> {
+    switch (carrying.kind) {
+      case "nothing":
+        return Option.none;
+      case "preview":
+        return Option.some(carrying.preview);
+      case "droppable":
+        return DropEdit.repositionPreview(carrying.drop);
+    }
+  },
+} as const;
 
 export const DropEdit = {
   /**
@@ -84,14 +159,14 @@ export const DropEdit = {
   },
 
   /**
-   * 親の中の座標を置き直す編集。既存ノードにしか起きない。
+   * 落とし先の親の中の座標へ置き直す編集。既存ノードにしか起きない。
    *
    * @param name 置き直すノードの名前
-   * @param placement 置き直したあとの配置
-   * @returns 座標の置き直しの編集
+   * @param target 落とし先の親から見た座標と、運んでいる間のずらし量
+   * @returns 座標の置き直しの落とし方
    */
-  reposition(name: string, placement: AbsolutePlacement): DropEdit {
-    return { kind: "reposition", name, placement };
+  reposition(name: string, target: RepositionTarget): DropEdit {
+    return { kind: "reposition", name, target };
   },
 
   /**
@@ -111,18 +186,36 @@ export const DropEdit = {
   },
 
   /**
-   * 置き直される相手と行き先。ツリーへ落とすときは持たない。
+   * 運んでいるノードをずらして見せる相手と量。ツリーへ落とすときは持たない
+   * （そちらは実体を動かさず、ドロップ線で落ちる先を見せる）。
    *
-   * @param edit 届く編集
-   * @returns 置き直しの相手と行き先。ツリーへの移動・挿入なら `none`
+   * @param edit 今の落とし方
+   * @returns ずらして見せる相手と量。ツリーへの移動・挿入なら `none`
    */
-  repositionTarget(edit: DropEdit): Option<RepositionTarget> {
+  repositionPreview(edit: DropEdit): Option<RepositionPreview> {
     switch (edit.kind) {
       case "move":
       case "insert":
         return Option.none;
       case "reposition":
-        return Option.some({ name: edit.name, placement: edit.placement });
+        return Option.some({ name: edit.name, offset: edit.target.offset });
+    }
+  },
+
+  /**
+   * 今ドロップしたら子になる親の名前。ツリーへ落とすときも座標を置き直すときも、
+   * 落ちる先の親は決まっている（枠で提示するのに使う）。
+   *
+   * @param edit 今の落とし方
+   * @returns 落ちる先の親の名前
+   */
+  dropParentName(edit: DropEdit): string {
+    switch (edit.kind) {
+      case "move":
+      case "insert":
+        return edit.target.position.parentName;
+      case "reposition":
+        return edit.target.to.parentName;
     }
   },
 } as const;
@@ -226,16 +319,16 @@ export const NodeDrag = {
    * ポインタの移動を反映する。閾値を越えたところで初めて「動かしている」状態になる。
    * 掴んでいなければ何も起きない（ボタンを離したあとのマウス移動）。
    */
-  moveTo(drag: NodeDrag, pointer: Offset, drop: Option<DropEdit>): NodeDrag {
+  moveTo(drag: NodeDrag, pointer: Offset, carrying: Carrying): NodeDrag {
     if (drag.kind === "dragging") {
-      return { ...drag, drop };
+      return { ...drag, carrying };
     }
     if (drag.kind !== "held") {
       return drag;
     }
     return Offset.distance(drag.grab.origin, pointer) < DragThresholdPx
       ? drag
-      : { kind: "dragging", grab: drag.grab, drop };
+      : { kind: "dragging", grab: drag.grab, carrying };
   },
 
   /**
@@ -246,7 +339,9 @@ export const NodeDrag = {
    *   無いなら `none`
    */
   drop(drag: NodeDrag): Option<DropEdit> {
-    return drag.kind === "dragging" ? drag.drop : Option.none;
+    return drag.kind === "dragging"
+      ? Carrying.drop(drag.carrying)
+      : Option.none;
   },
 
   /**
@@ -263,16 +358,30 @@ export const NodeDrag = {
   },
 
   /**
-   * 今ドロップしたら置き直される相手と行き先。座標を動かすドラッグのときだけ答える。
+   * 掴んだノードを今どれだけずらして見せるか。座標を動かすドラッグのときだけ答え、
+   * **落とせる親がポインタの下に無くても答える**（`Carrying`）。
    *
-   * 掴んだだけ（閾値未満）では答えないのは、`drop` を経由しているため。
+   * 掴んだだけ（閾値未満）では答えないのは、運んでいる状態でしか運び方を持たないため。
    * 押しただけで見た目が動くと、クリックのたびにノードが一瞬ずれる。
    *
    * @param drag 今のドラッグの状態
-   * @returns 置き直しの相手と行き先。ツリーへの移動・挿入 / 動かしていないなら `none`
+   * @returns ずらして見せる相手と量。ツリーへの移動・挿入 / 動かしていないなら `none`
    */
-  repositionTarget(drag: NodeDrag): Option<RepositionTarget> {
-    return Option.flatMap(NodeDrag.drop(drag), DropEdit.repositionTarget);
+  repositionPreview(drag: NodeDrag): Option<RepositionPreview> {
+    return drag.kind === "dragging"
+      ? Carrying.repositionPreview(drag.carrying)
+      : Option.none;
+  },
+
+  /**
+   * 今ドロップしたら子になる親の名前。落とし方に依らず答えるので、ツリーの移動でも
+   * 座標の置き直しでも同じ枠で提示できる。
+   *
+   * @param drag 今のドラッグの状態
+   * @returns 落ちる先の親の名前。落とせる先が無い / 動かしていないなら `none`
+   */
+  dropParentName(drag: NodeDrag): Option<string> {
+    return Option.map(NodeDrag.drop(drag), DropEdit.dropParentName);
   },
 
   /**

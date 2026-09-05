@@ -247,7 +247,10 @@ function EditorStateHarness() {
           dispatch({
             type: "reposition_node",
             name: "footer",
-            placement: { mode: "absolute", x: 70, y: 12 },
+            to: {
+              parentName: "home",
+              placement: { mode: "absolute", x: 70, y: 12 },
+            },
           })
         }
       >

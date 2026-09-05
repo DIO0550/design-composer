@@ -1,5 +1,6 @@
 import { Artboard } from "@/domains/dcmp/artboard";
 import { AxisLength, AxisResize } from "@/domains/dcmp/axis-length";
+import { ChildPlacement } from "@/domains/dcmp/child-placement";
 import type { ChildPosition } from "@/domains/dcmp/child-position";
 import {
   Component,
@@ -16,7 +17,7 @@ import {
 import { NameSpace } from "@/domains/dcmp/name-space";
 import { Node, type PropEdit, type RefNode } from "@/domains/dcmp/node";
 import { NodeTree, type NodeTreeUpdate } from "@/domains/dcmp/node-tree";
-import { type AbsolutePlacement, Placement } from "@/domains/dcmp/placement";
+import { Placement } from "@/domains/dcmp/placement";
 import { ResolvedProps } from "@/domains/dcmp/resolved-props";
 import { Size } from "@/domains/dcmp/size";
 import { type Token, type TokenRef, TokenSet } from "@/domains/dcmp/token";
@@ -670,31 +671,66 @@ export const DesignDocument = {
   },
 
   /**
-   * 名前で指したノードが今置かれている座標。**座標で動かせるものだけ**が答えを持つ。
+   * 名前で指したノードを包んでいるものの名前を、内側から外側へ並べたもの。
+   * 末尾は必ずその artboard になる。
    *
-   * 「置かれ方」ではなく絶対配置だけを答えるのは、消費側（キャンバスのドラッグと
-   * その見た目のプレビュー）が知りたいのが「このノードは座標で動かせるか、
-   * 動かせるなら今どこか」だから。`Placement.fromProps` が
-   * スキーマ違反に返す `undefined` をここで `none` へ潰せるのも、
-   * その区別が答えを変えないため（フローと同じく「動かせない」に落ちる）。
+   * 親を 1 段ずつ辿るのは、木の走査を `findChildPosition` に任せて同じ探索を 2 つ
+   * 持たないため。artboard は誰の子でもない（`findChildPosition` が `none` を返す）ので、
+   * そこで辿るのが止まる。
    *
    * @param document 引き先になるドキュメント
-   * @param name 座標を知りたいノードの名前
-   * @returns 今置かれている座標。木に無い名前 / 部品インスタンス（props を持たない）/
-   *   フロー / 座標が数値でないときは `none`
+   * @param name 包んでいるものを知りたいノードの名前
+   * @returns 親から artboard までの名前。artboard 自身と、ドキュメントに無い名前は空
    */
-  absolutePlacementOf(
+  collectAncestorNames(
     document: DesignDocument,
     name: string,
-  ): Option<AbsolutePlacement> {
+  ): readonly string[] {
+    const position = DesignDocument.findChildPosition(document, name);
+    if (!position.some) {
+      return [];
+    }
+    const parentName = position.value.parentName;
+    return [
+      parentName,
+      ...DesignDocument.collectAncestorNames(document, parentName),
+    ];
+  },
+
+  /**
+   * 名前で指したノードが今どの親の中のどこに置かれているか。
+   * **座標で動かせるものだけ**が答えを持つ。
+   *
+   * 「置かれ方」ではなく絶対配置だけを答えるのは、消費側（キャンバスのドラッグ）が
+   * 知りたいのが「このノードは座標で動かせるか、動かせるなら今どこか」だから。
+   * `Placement.fromProps` がスキーマ違反に返す `undefined` をここで `none` へ潰せるのも、
+   * その区別が答えを変えないため（フローと同じく「動かせない」に落ちる）。
+   *
+   * 座標と親を別々に答えないのは、座標が親の左上を原点とする値で、**片方だけでは
+   * 位置が決まらない**ため（`ChildPlacement`）。
+   *
+   * @param document 引き先になるドキュメント
+   * @param name 置かれている場所を知りたいノードの名前
+   * @returns 今いる親と、その親から見た座標。木に無い名前 / 部品インスタンス
+   *   （props を持たない）/ フロー / 座標が数値でないとき / 親を持たない artboard 自身は
+   *   `none`
+   */
+  childPlacementOf(
+    document: DesignDocument,
+    name: string,
+  ): Option<ChildPlacement> {
     const node = DesignDocument.findNode(document, name);
     if (!node.some || !Node.isPrimitive(node.value)) {
       return Option.none;
     }
     const placement = Placement.fromProps(ResolvedProps.forNode(node.value));
-    return Placement.isAbsolute(placement)
-      ? Option.some(placement)
-      : Option.none;
+    if (!Placement.isAbsolute(placement)) {
+      return Option.none;
+    }
+    return Option.map(
+      DesignDocument.findChildPosition(document, name),
+      (position) => ChildPlacement.create(position.parentName, placement),
+    );
   },
 
   /** 名前でノードを引く。artboard 直下だけでなく子孫も辿る。 */
@@ -810,25 +846,45 @@ export const DesignDocument = {
    *
    * artboard を相手にしないのは、artboard が親 Box の中ではなくキャンバスの
    * 並びに置かれるため（`Artboard.boxProps` が `placement` を `flow` に固定する）。
-   * `applyPropEdit` は名前で artboard を先に相手にするので、委譲する前に
-   * ノードとして在ることを確かめる（そうしないと artboard の props に効かない
-   * `x` / `y` が黙って書かれ、undo 履歴だけが 1 件増える）。
+   * 今いる位置（`findChildPosition`）で相手を確かめるので、どの親の子でもない
+   * artboard はここで弾かれる（`applyPropEdit` は名前で artboard を先に相手にするため、
+   * 素通しすると artboard の props に効かない `x` / `y` が黙って書かれる）。
+   *
+   * 指した親が今の親と違えば、**その親の末尾の子へ移してから**座標を書く（#388）。
+   * 末尾に置くのは、絶対配置の兄弟に並び順の意味が薄く、元の index を持ち込むと
+   * 落とし先の子の数によっては範囲外になるため。`ChildPosition.afterRemoving` が
+   * 要らないのは、移す先が今の親と必ず違う＝取り除いてもその親の子の数が変わらないため。
    *
    * @param document 書き換える対象を含むドキュメント
    * @param name 置き直すノードの名前
-   * @param placement 置き直したあとの配置
-   * @returns 座標を書き換えたドキュメント。その名前のノードが無ければ失敗
-   *   （artboard の名前もノードではないので失敗する）
+   * @param to 置き直したあとの親と、その親から見た座標
+   * @returns 親と座標を書き換えたドキュメント。その名前のノードが無い（artboard の
+   *   名前もノードではない）なら失敗。指した親が子を受け入れられない（無い名前・
+   *   Text・参照ノード）ときと、指した親が自分自身か自分の子孫のとき
+   *   （`moveNode` の `move-into-descendant`）も失敗
    */
   reposition(
     document: DesignDocument,
     name: string,
-    placement: AbsolutePlacement,
+    to: ChildPlacement,
   ): Result<DesignDocument, DesignDocumentEditError> {
-    if (!DesignDocument.findNode(document, name).some) {
+    const current = DesignDocument.findChildPosition(document, name);
+    if (!current.some) {
       return Result.err({ kind: "node-not-found", name });
     }
-    return applyPropEdits(document, name, Placement.toPropEdits(placement));
+    const write = (moved: DesignDocument) =>
+      applyPropEdits(moved, name, Placement.toPropEdits(to.placement));
+    if (ChildPlacement.hasParent(to, current.value.parentName)) {
+      return write(document);
+    }
+    const appended = DesignDocument.appendPositionOf(document, to.parentName);
+    if (!appended.some) {
+      return Result.err({ kind: "parent-not-found", name: to.parentName });
+    }
+    return Result.flatMap(
+      DesignDocument.moveNode(document, name, appended.value),
+      write,
+    );
   },
 
   /** 名前で指したノードを別のノードに差し替える。 */

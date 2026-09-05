@@ -1,7 +1,7 @@
 import type { AxisLength } from "@/domains/dcmp/axis-length";
+import type { ChildPlacement } from "@/domains/dcmp/child-placement";
 import type { ChildPosition } from "@/domains/dcmp/child-position";
 import type { PropEdit } from "@/domains/dcmp/node";
-import type { AbsolutePlacement } from "@/domains/dcmp/placement";
 import type { NodeTemplate } from "@/domains/session/node-template";
 import type { Offset } from "@/domains/unit/offset";
 import { useEditor } from "@/features/editor/components/editor-provider";
@@ -23,8 +23,8 @@ export type NodeActions = Readonly<{
   reveal: (nodeName: string) => void;
   reorder: (from: ChildPosition, toIndex: number) => void;
   move: (name: string, to: ChildPosition) => void;
-  /** 絶対配置のノードを親の中の別の座標へ置き直す（#381）。 */
-  reposition: (name: string, placement: AbsolutePlacement) => void;
+  /** 絶対配置のノードを、指した親の中の座標へ置き直す（#381 / 親の付け替えは #388）。 */
+  reposition: (name: string, to: ChildPlacement) => void;
   /** artboard をキャンバス上の別の位置へ置き直す（#390）。 */
   repositionArtboard: (name: string, canvasPosition: Offset) => void;
   resize: (sizes: readonly AxisLength[]) => void;
@@ -74,9 +74,9 @@ export function useNodeActions(): NodeActions {
     /**
      * 運んでいるノードが絶対配置なら、同じドラッグが座標の置き直しになる（#381）。
      * どちらになるかはキャンバス側が運んでいるノードの配置を見て決める。
+     * 落とし先の親も一緒に届くので、親をまたいで運べば付け替わる（#388）。
      */
-    reposition: (name, placement) =>
-      dispatch({ type: "reposition_node", name, placement }),
+    reposition: (name, to) => dispatch({ type: "reposition_node", name, to }),
     /**
      * artboard の見出し・背景を掴んだドラッグはキャンバス上の移動（#390 / #392）。
      * ノードの座標移動と別のアクションなのは、相手が artboard で座標系も違うため。

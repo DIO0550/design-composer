@@ -33,6 +33,9 @@ const SelectionOutline = `outline:2px solid ${SelectionColor};outline-offset:1px
 /**
  * ドロップ先の Box に描く枠。選択の枠と同時に出るので、色（Tailwind の
  * `emerald-500`）と破線で選択と見分けられるようにする。
+ *
+ * ツリーへ落とすときと座標を置き直すときの両方に出す。座標のドラッグでも
+ * 親は付け替わる（#388）ので、どこへ入るかを見せないと目隠しで運ぶことになる。
  */
 const DropParentOutline = "outline:2px dashed #10b981;outline-offset:1px";
 
@@ -80,7 +83,7 @@ export function ArtboardFrameList({
   nodeResize: NodeResizeControl;
   textEdit: TextEditControl;
 }>) {
-  const dropTarget = NodeDrag.insertionTarget(nodeDrag.drag);
+  const dropParentName = NodeDrag.dropParentName(nodeDrag.drag);
   const arranged = ArrangedArtboard.fromArtboards(compiled.artboards);
   const size = ArrangedArtboard.size(arranged);
 
@@ -111,9 +114,9 @@ export function ArtboardFrameList({
       {DocumentSelection.names(selection).map((name) => (
         <NameStyleRule key={name} name={name} declarations={SelectionOutline} />
       ))}
-      {dropTarget.some ? (
+      {dropParentName.some ? (
         <NameStyleRule
-          name={dropTarget.value.position.parentName}
+          name={dropParentName.value}
           declarations={DropParentOutline}
         />
       ) : null}

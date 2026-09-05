@@ -1,13 +1,13 @@
 import { render, screen } from "@testing-library/react";
 import { vi } from "vitest";
 import type { AxisLength } from "@/domains/dcmp/axis-length";
+import type { ChildPlacement } from "@/domains/dcmp/child-placement";
 import type { ChildPosition } from "@/domains/dcmp/child-position";
 import {
   DesignDocument,
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
 import type { PropEdit } from "@/domains/dcmp/node";
-import type { AbsolutePlacement } from "@/domains/dcmp/placement";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { TokenSelection } from "@/domains/session/token-selection";
 import type { Offset } from "@/domains/unit/offset";
@@ -15,7 +15,6 @@ import {
   canvasContent,
   renderedElement,
 } from "@/features/canvas/__tests__/canvas-elements";
-import { measuredAs } from "@/features/canvas/__tests__/canvas-measure";
 import { resizeAnchorIndexFor } from "@/features/canvas/__tests__/canvas-resize";
 import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
 import type { ResizeGrip } from "@/features/canvas/domains/node-resize";
@@ -60,7 +59,7 @@ type CanvasValues = Readonly<{
 type CanvasHandlers = Readonly<{
   onSelect: (names: readonly string[]) => void;
   onMoveNode: (name: string, to: ChildPosition) => void;
-  onRepositionNode: (name: string, placement: AbsolutePlacement) => void;
+  onRepositionNode: (name: string, to: ChildPlacement) => void;
   onRepositionArtboard: (name: string, canvasPosition: Offset) => void;
   onResize: (sizes: readonly AxisLength[]) => void;
   onEditProp: (edit: PropEdit) => void;
@@ -179,14 +178,30 @@ export function drawn(name: string): HTMLElement {
 }
 
 /**
+ * artboard の並び（`ul`）。キャンバスの中で、**名前を持たない場所**として使う。
+ * ここへ運んで離すと、落とせる親が 1 つも見つからない状態になる。
+ *
+ * @returns artboard の並びの要素。描かれていなければテストを落とす
+ */
+export function artboardList(): Element {
+  return Option.unwrap(
+    Option.fromNullable(canvasContent().querySelector("ul")),
+  );
+}
+
+/**
  * 描かれた位置と大きさをテスト用の値にする。
  *
  * happy-dom はレイアウトを行わず矩形をすべて 0 で返すため、そのままでは
  * **どこが掴める帯か**（リサイズ）も**入力欄を重ねる位置**（インライン編集）も
- * 決まらない。差し替えるのはブラウザが行う測定だけで、その矩形から何が決まるかは
- * 実物のドメインが答える（リサイズなら `node-resize`、インライン編集なら `text-edit`。
- * どちらも `CanvasBounds.ofElement` 経由でここを読む）
+ * **親どうしの左上のずれ**（親の付け替え）も決まらない。差し替えるのはブラウザが行う
+ * 測定だけで、その矩形から何が決まるかは実物のドメインが答える（リサイズなら
+ * `node-resize`、インライン編集なら `text-edit`、付け替えなら `reposition-target`。
+ * どれも `CanvasBounds.ofElement` 経由でここを読む）
  * （rules/testing.md「プロセス外・制御不能な境界」）。
+ *
+ * **2 つの親の矩形を差し替えていないテストでは、原点のずれが 0 になる。**
+ * 付け替えで座標が直ることを見たいテストは、必ず両方の親をここに通すこと。
  *
  * @param name 描かれているノードの名前
  * @param bounds そのノードが描かれていることにする位置と大きさ
@@ -197,17 +212,4 @@ export function drawnAt(name: string, bounds: CanvasBounds): HTMLElement {
   element.getBoundingClientRect = () =>
     new DOMRect(bounds.left, bounds.top, bounds.width, bounds.height);
   return element;
-}
-
-/**
- * 描かれた内側の大きさをテスト用の値にする（差し替える理由は `measuredAs` の doc）。
- *
- * @param name 描かれている artboard / ノードの名前
- * @param size そのノードが描かれていることにする内側の大きさ
- */
-export function drawnSized(
-  name: string,
-  size: Readonly<{ width: number; height: number }>,
-): void {
-  measuredAs(drawn(name), size);
 }

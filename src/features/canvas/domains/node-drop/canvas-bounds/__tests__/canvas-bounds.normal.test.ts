@@ -62,3 +62,15 @@ test("別の矩形の左上を原点に置き直すと、左上だけがその�
     height: 40,
   });
 });
+
+test("別の矩形の左上から見たずれは、左上どうしの差になる", () => {
+  // 縦横で符号を違える（取り違えても片方だけでは落ちないため）
+  const shift = CanvasBounds.originShift(Bounds, {
+    left: 30,
+    top: 5,
+    width: 200,
+    height: 80,
+  });
+
+  expect(shift).toEqual({ x: -20, y: 15 });
+});

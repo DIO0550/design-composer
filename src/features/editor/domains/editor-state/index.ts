@@ -1,9 +1,9 @@
 import { Artboard } from "@/domains/dcmp/artboard";
 import type { AxisLength } from "@/domains/dcmp/axis-length";
+import type { ChildPlacement } from "@/domains/dcmp/child-placement";
 import { ChildPosition } from "@/domains/dcmp/child-position";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import type { Node, PropEdit } from "@/domains/dcmp/node";
-import type { AbsolutePlacement } from "@/domains/dcmp/placement";
 import {
   Token,
   type TokenRef,
@@ -494,27 +494,35 @@ export const EditorState = {
   },
 
   /**
-   * 絶対配置のノードを親の中の別の座標へ置き直す
+   * 絶対配置のノードを、指した親の中の座標へ置き直す
    * （docs/06-ui.md「キャンバス直接操作」の移動のうち、座標が動く側）。
+   * 指した親が今の親と違えばそこへ付け替わるが、木の書き換えと座標の書き換えは
+   * `DesignDocument.reposition` が 1 つのドキュメントにするので、undo は 1 回で戻る。
    *
    * 対象を選択からではなく名前で受け取るのは、`moveNode` と同じくキャンバスの
    * ドラッグが選択を変えないため（選んでいないノードも運べる）。プロパティパネル
    * 経由の `applyPropEdit` が選択から決めているのとはここが違う。
    *
-   * 座標を持たないもの（ドキュメントに無い名前・artboard 自身）は「その編集が
-   * 存在しない」ことなので `none`。`moveNode` が今いる位置を持たないものを弾くのと
-   * 同じ形で、履歴も dirty も動かない。キャンバスは運んでいるノードの配置を見て
-   * 落とし方を決めるため、画面の操作からこの `none` には到達しない。
+   * 座標を持たないもの（ドキュメントに無い名前・artboard 自身）と、子を受け入れられない
+   * 親を指した指定は「その編集が存在しない」ことなので `none`。`moveNode` が今いる位置を
+   * 持たないものを弾くのと同じ形で、履歴も dirty も動かない。キャンバスは運んでいる
+   * ノードの配置と、受け入れられる落とし先だけを見て落とし方を決めるため、画面の操作から
+   * この `none` には到達しない。
+   *
+   * @param state 置き直す前の編集状態
+   * @param name 置き直すノードの名前
+   * @param to 置き直したあとの親と、その親から見た座標
+   * @returns 置き直したあとの編集状態。座標を持たない相手・受け入れられない親なら `none`
    */
   reposition(
     state: EditorState,
     name: string,
-    placement: AbsolutePlacement,
+    to: ChildPlacement,
   ): Option<EditorState> {
     const repositioned = DesignDocument.reposition(
       EditorState.document(state),
       name,
-      placement,
+      to,
     );
     return repositioned.ok ? withEdit(state, repositioned.value) : Option.none;
   },

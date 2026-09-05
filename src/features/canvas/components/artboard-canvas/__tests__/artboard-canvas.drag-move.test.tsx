@@ -6,8 +6,8 @@ import {
   pressPointer,
   releasePointer,
 } from "@/features/canvas/__tests__/canvas-gesture";
-import { Option } from "@/utils/Option";
 import {
+  artboardList,
   drawn,
   injectedStyles,
   renderCanvas,
@@ -34,11 +34,6 @@ function setupSelection(): DocumentSelection {
     ],
     [],
   );
-}
-
-/** artboard の並び。キャンバスの中で、名前を持たない場所として使う。 */
-function artboardList(): Element {
-  return Option.unwrap(Option.fromNullable(document.querySelector("ul")));
 }
 
 /** ノードを掴んで運び、離すまで。運ぶ距離はクリックと区別が付くだけ取る。 */
