@@ -22,29 +22,27 @@ const DocumentFields = [
 ] as const;
 
 /** この版の major。型にもデコードの検証にもこの1箇所から与える。 */
-const Major = 2;
+const Major = 1;
 
 /**
- * major 2 の仕様で書かれたドキュメント(docs/01-file-format.md)。
+ * major 1 の仕様で書かれたドキュメント(docs/01-file-format.md)。
  *
  * `formatVersion` の major が型に固定されているので、この型の値は
- * 2 以外の major を名乗れない（中身の形と名乗る版が食い違う状態を作れない）。
- * minor は後方互換な追加なので幅を持つ（2.0 のファイルも 2.3 のファイルもこの形）。
+ * 1 以外の major を名乗れない（中身の形と名乗る版が食い違う状態を作れない）。
+ * minor は後方互換な追加なので幅を持つ（1.0 のファイルも 1.3 のファイルもこの形）。
  *
- * 版を上げるときはこのフォルダを**改名**し、旧版の型は残さない。
- * Why not: 旧版の型を隣に残さない。マイグレーション（`libs/document-migration`）が
- * 受け渡すのはデコード前の `JsonRecord` なので、旧版のドメインの型は参照されず
- * 死んだモジュールになる（`MigrationStep` の doc「旧 major のファイルは今のドメインの
- * 型では表せない…デコード前の形で扱う」）。
+ * 版を上げるときはこのフォルダを残したまま隣に `v2/` を作る。
+ * 旧版の型が残ることで、マイグレーション（`libs/document-migration`）が
+ * 「どの形から どの形へ」を型で書けるようになる。
  */
-export type DesignDocumentV2 = Readonly<{
+export type DesignDocumentV1 = Readonly<{
   formatVersion: FormatVersionOf<typeof Major>;
   tokens: TokenSet;
   components: ComponentSet;
   artboards: readonly Artboard[];
 }>;
 
-export const DesignDocumentV2 = {
+export const DesignDocumentV1 = {
   /**
    * JSON のデータモデルからこの版のドキュメントを組み立てる。
    * 検証するのは形（必須フィールド・型・未知フィールド）だけで、
@@ -55,7 +53,7 @@ export const DesignDocumentV2 = {
    * 互換性判定とマイグレーション自体はデコードより前
    * （JSON のデータモデルの段階）で `libs/document-migration` が済ませている。
    */
-  fromJson(cursor: JsonCursor): JsonDecoded<DesignDocumentV2> {
+  fromJson(cursor: JsonCursor): JsonDecoded<DesignDocumentV1> {
     return Result.flatMap(Json.record(cursor), (record) =>
       Json.knownFields(
         Json.combine4(
@@ -85,7 +83,7 @@ export const DesignDocumentV2 = {
    * 明示的に設定された値だけを書き、スキーマのデフォルト値は書かない
    * （ドキュメントはそもそも明示的な props しか保持しない）。
    */
-  toJson(document: DesignDocumentV2): JsonObject {
+  toJson(document: DesignDocumentV1): JsonObject {
     return {
       formatVersion: FormatVersion.format(document.formatVersion),
       tokens: TokenSet.toJson(document.tokens),

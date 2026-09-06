@@ -30,7 +30,7 @@ import { Result } from "@/utils/Result";
 import type { DesignDocumentEditError } from "./edit-error";
 import type { DocumentTemplate } from "./template";
 import { TokenReferrer } from "./token-referrer";
-import { DesignDocumentV2 } from "./v2";
+import { DesignDocumentV1 } from "./v1";
 import {
   collectArtboardErrors,
   collectCircularRefErrors,
@@ -43,20 +43,23 @@ import {
 export { DesignDocumentEditError } from "./edit-error";
 export { DocumentTemplate } from "./template";
 export { TokenReferrer } from "./token-referrer";
-export type { DesignDocumentV2 } from "./v2";
+export type { DesignDocumentV1 } from "./v1";
 export type {
   DesignDocumentValidationError,
   DesignDocumentValidationErrorKind,
 } from "./validation";
 
 /**
- * アプリが読み書きするドキュメント。今は major 2 のみ。
+ * アプリが読み書きするドキュメント。今は major 1 のみ。
  *
- * 版ごとの型と JSON 表現は版のフォルダ（`v2/`）が持つ。
- * major を上げるときはそのフォルダを改名してここを差し替え、旧版の型は残さない
- * （理由は `v2/index.ts` の doc）。
+ * 版ごとの型と JSON 表現は版のフォルダ（`v1/`）が持つ。
+ * major を上げるときは隣に `v2/` を作ってここを差し替え、旧版のフォルダは残す。
+ * 旧版の型が残ることで、マイグレーション（`libs/document-migration`）が
+ * 「どの形から どの形へ」を型で書ける。
+ * アプリ本体が旧版の形を扱うことはないので、ここを版の直和にはしない
+ * （消費側に版の分岐を強いないため）。
  */
-export type DesignDocument = DesignDocumentV2;
+export type DesignDocument = DesignDocumentV1;
 
 /*
  * 以下の関数は「どの artboard を相手にするか」を選ぶためのもの。
@@ -442,12 +445,12 @@ function expandInstance(
 /**
  * ドキュメントのコンパニオンオブジェクト。
  * ツリーの探索・編集は `NodeTree`、名前の規則は `NameSpace`、
- * 部品への変換は `Component`、検証は `validation/`、版ごとの JSON 表現は `v2/` が持ち、
+ * 部品への変換は `Component`、検証は `validation/`、版ごとの JSON 表現は `v1/` が持ち、
  * ここは「どの artboard・どの部品を相手にするか」の調停に徹する。
  */
 export const DesignDocument = {
   create(params: {
-    formatVersion?: FormatVersionOf<2>;
+    formatVersion?: FormatVersionOf<1>;
     tokens?: TokenSet;
     components?: ComponentSet;
     artboards?: readonly Artboard[];
@@ -490,12 +493,12 @@ export const DesignDocument = {
    * どのフィールドをどう読むかは版ごとの知識なので、現在の版のモジュールが持つ。
    */
   fromJson(cursor: JsonCursor): JsonDecoded<DesignDocument> {
-    return DesignDocumentV2.fromJson(cursor);
+    return DesignDocumentV1.fromJson(cursor);
   },
 
   /** ドキュメントを JSON のデータモデルへ落とす。表現は現在の版のモジュールが持つ。 */
   toJson(document: DesignDocument): JsonObject {
-    return DesignDocumentV2.toJson(document);
+    return DesignDocumentV1.toJson(document);
   },
 
   /**

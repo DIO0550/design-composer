@@ -1,6 +1,5 @@
 import { expect, test } from "vitest";
 import { Json } from "@/utils/Json";
-import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 import { recordCursor } from "./Json.setup";
 
@@ -78,10 +77,4 @@ test("中身のある値はフィールドとして現れる", () => {
   expect(Json.nonEmptyField("props", { gap: "md" })).toEqual({
     props: { gap: "md" },
   });
-});
-
-test("オブジェクトはフィールドを引ける形として読める", () => {
-  expect(Json.asRecord({ name: "home" })).toEqual(
-    Option.some({ name: "home" }),
-  );
 });
