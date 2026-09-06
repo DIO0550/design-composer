@@ -15,6 +15,11 @@ import {
   canvasContent,
   renderedElement,
 } from "@/features/canvas/__tests__/canvas-elements";
+import {
+  movePointer,
+  pressPointer,
+  releasePointer,
+} from "@/features/canvas/__tests__/canvas-gesture";
 import { resizeAnchorIndexFor } from "@/features/canvas/__tests__/canvas-resize";
 import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
 import type { ResizeGrip } from "@/features/canvas/domains/node-resize";
@@ -22,6 +27,8 @@ import { useCanvasView } from "@/features/canvas/hooks/use-canvas-view";
 import { useNodeDrag } from "@/features/canvas/hooks/use-node-drag";
 import { Option } from "@/utils/Option";
 import { ArtboardCanvas } from "../index";
+import { nameSelector } from "../name-style-rule";
+import { repositionPreviewDeclarations } from "../reposition-preview-style";
 
 /**
  * artboard の並びだけを差し替えたドキュメントと、選択の対
@@ -212,4 +219,43 @@ export function drawnAt(name: string, bounds: CanvasBounds): HTMLElement {
   element.getBoundingClientRect = () =>
     new DOMRect(bounds.left, bounds.top, bounds.width, bounds.height);
   return element;
+}
+
+/**
+ * ノードを掴んで運び、離すまで。
+ * 移動量は縦横で違う値にすること（取り違えても落ちないため）。
+ *
+ * @param from 掴む要素
+ * @param by 画面上で運ぶ量
+ */
+export function dragNode(from: Element, by: Offset): void {
+  pressPointer(from, { x: 100, y: 100 });
+  movePointer(from, { x: 100 + by.x, y: 100 + by.y });
+  releasePointer(from, { x: 100 + by.x, y: 100 + by.y });
+}
+
+/**
+ * ノードを掴んだまま、まだ離していない状態にする。
+ * 離す前の見た目を見るので `releasePointer` は撃たない。
+ *
+ * @param name 掴むノードの名前
+ * @param by 画面上で運ぶ量
+ */
+export function carryNode(name: string, by: Offset): void {
+  pressPointer(drawn(name), { x: 100, y: 100 });
+  movePointer(drawn(name), { x: 100 + by.x, y: 100 + by.y });
+}
+
+/**
+ * 掴んだノードへ差し込まれる、ずらして見せる規則 1 本。
+ *
+ * 宣言だけでなく**選択子込み**で組むのは、付ける相手を取り違えても宣言だけの
+ * 突き合わせでは落ちないため（規則が別のノードへ付くと付け替えが丸ごと壊れる）。
+ *
+ * @param name ずれて見えるはずのノードの名前
+ * @param offset ドキュメント上の px で表した移動量
+ * @returns そのノードへ差し込まれる規則 1 本
+ */
+export function previewRule(name: string, offset: Offset): string {
+  return `${nameSelector(name)}{${repositionPreviewDeclarations(offset)}}`;
 }
