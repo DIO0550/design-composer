@@ -1,9 +1,7 @@
 import { expect, test } from "vitest";
 import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
 import { SideSnap } from "../index";
-
-/** 左 100・上 100 に置かれた、幅 40・高さ 20 の運んでいるもの（右辺 140・下辺 120）。 */
-const Moving: CanvasBounds = { left: 100, top: 100, width: 40, height: 20 };
+import { Moving } from "./moving-bounds";
 
 test("運んでいるものの左辺が揃える先の左辺の近くにあると、左辺が重なる位置まで寄る", () => {
   // 左辺どうしが 4 離れているだけで、他の辺の組は遠い
@@ -70,6 +68,47 @@ test("揃える先が複数あるときは、いちばん近い辺へ寄る", ()
 
   expect(SideSnap.toOffset(SideSnap.create(Moving, [far, near]))).toEqual({
     x: 2,
+    y: 0,
+  });
+});
+
+test("運んでいるものの右辺が揃える先の右辺の近くにあると、右辺が重なる位置まで寄る", () => {
+  // 右辺どうしが 3 離れている。左辺どうし（-60）は届かないので、決め手は右辺しかない
+  const stationary: CanvasBounds = {
+    left: 40,
+    top: 300,
+    width: 103,
+    height: 20,
+  };
+
+  expect(SideSnap.toOffset(SideSnap.create(Moving, [stationary]))).toEqual({
+    x: 3,
+    y: 0,
+  });
+});
+
+test("運んでいるものの下辺が揃える先の下辺の近くにあると、下辺が重なる位置まで寄る", () => {
+  // 下辺どうしが 4 離れている。上辺どうし（-40）は届かない
+  const stationary: CanvasBounds = {
+    left: 500,
+    top: 60,
+    width: 40,
+    height: 56,
+  };
+
+  expect(SideSnap.toOffset(SideSnap.create(Moving, [stationary]))).toEqual({
+    x: 0,
+    y: -4,
+  });
+});
+
+test("同じ距離の辺が 2 つあるときは、揃え先の並びで先にあるほうへ寄る", () => {
+  // 片側だけの入力では優先順位を反転しても答えが変わらないので、同距離を対で置く
+  const first: CanvasBounds = { left: 104, top: 300, width: 200, height: 20 };
+  const second: CanvasBounds = { left: 96, top: 340, width: 200, height: 20 };
+
+  expect(SideSnap.toOffset(SideSnap.create(Moving, [first, second]))).toEqual({
+    x: 4,
     y: 0,
   });
 });
