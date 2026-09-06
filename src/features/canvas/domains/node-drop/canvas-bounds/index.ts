@@ -1,6 +1,7 @@
 import { CssDirection } from "@/domains/dcmp/css-direction";
 import { Axes, type Axis } from "@/domains/unit/axis";
 import type { Offset } from "@/domains/unit/offset";
+import { type Side, Sides } from "@/domains/unit/side";
 import { Option } from "@/utils/Option";
 
 /**
@@ -82,9 +83,59 @@ export const CanvasBounds = {
     return { x: relative.left, y: relative.top };
   },
 
+  /**
+   * 4 辺のうち 1 辺の座標（左右なら x、上下なら y）。
+   *
+   * Why: 辺を名前で指す語彙は `unit/side` に既にあるので、そちらへ揃える。向きで引く
+   * `start` と軸で引く `edge` もここへ委譲し、**どの数値がどの辺かを 1 箇所に閉じる**。
+   *
+   * @param bounds 辺を知りたい矩形
+   * @param side 知りたい辺
+   * @returns その辺の座標（画面上の px）
+   */
+  side(bounds: CanvasBounds, side: Side): number {
+    switch (side) {
+      case Sides.Left:
+        return bounds.left;
+      case Sides.Right:
+        return bounds.left + bounds.width;
+      case Sides.Top:
+        return bounds.top;
+      case Sides.Bottom:
+        return bounds.top + bounds.height;
+    }
+  },
+
+  /**
+   * 親の矩形の中の、指定した位置に置いた矩形。
+   *
+   * 絶対配置の子の**行き先**を画面上の矩形として組み立てるのに使う。大きさを別の矩形から
+   * 取るのは、運んでも大きさは変わらないので運んでいるものの実測をそのまま使えるため。
+   *
+   * @param parent 原点になる親の矩形
+   * @param offset 親の左上から見た位置（画面上の px）
+   * @param size 大きさを取る矩形
+   * @returns 親の中のその位置に、その大きさで置かれた矩形
+   */
+  inside(
+    parent: CanvasBounds,
+    offset: Offset,
+    size: CanvasBounds,
+  ): CanvasBounds {
+    return {
+      left: parent.left + offset.x,
+      top: parent.top + offset.y,
+      width: size.width,
+      height: size.height,
+    };
+  },
+
   /** 子が並ぶ向きに沿った始点。 */
   start(bounds: CanvasBounds, direction: CssDirection): number {
-    return direction === "row" ? bounds.left : bounds.top;
+    return CanvasBounds.side(
+      bounds,
+      direction === "row" ? Sides.Left : Sides.Top,
+    );
   },
 
   /**
@@ -112,9 +163,10 @@ export const CanvasBounds = {
 
   /** 軸に沿った終端（右辺 / 下辺）。リサイズハンドルはこの辺に沿って並ぶ。 */
   edge(bounds: CanvasBounds, axis: Axis): number {
-    return axis === "width"
-      ? bounds.left + bounds.width
-      : bounds.top + bounds.height;
+    return CanvasBounds.side(
+      bounds,
+      axis === Axes.Width ? Sides.Right : Sides.Bottom,
+    );
   },
 
   /** 子が並ぶ向きに沿った終点。 */
