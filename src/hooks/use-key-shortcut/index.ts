@@ -2,23 +2,85 @@ import { useEffect } from "react";
 import { ElementEx } from "@/utils/ElementEx";
 
 /**
- * ページ全体で受けるキーの組み合わせ。
+ * 押下を割り当てへ結び付けるきっかけ。
  *
- * `keys` を並びで持つのは、同じ操作に複数のキーを割り当てる流儀があるため
- * （削除の Delete / Backspace）。
+ * `TypedCharacter` は**打たれた文字**（`event.key`）。文字キーはこちらで待つ。
+ * `PhysicalKey` は**押された物理キー**（`event.code`）。
+ *
+ * 2 つが要るのは、**Shift を押している間の数字段が打つのは数字ではなく記号**だから
+ * （US 配列で `!` `@`、JIS 配列で `!` `"`、AZERTY では逆に Shift 側が数字）。
+ * 数字のショートカットを打たれた文字で待つと、配列ごとの綴りを並べ続けることになる。
+ *
+ * Why not: 値の union（`ValueOf<typeof KeyTriggers>`）は作らない。`KeyShortcut` は枝ごとに
+ * リテラル型で判別するので、両方を許す型には使い道が無い（呼び出しが 0 件の型を置かない）。
+ */
+export const KeyTriggers = {
+  TypedCharacter: "typed-character",
+  PhysicalKey: "physical-key",
+} as const;
+
+/**
+ * どの割り当ても持つ修飾キーの条件。
+ *
  * `withCommandKey` は Windows の Ctrl と macOS の Command の両方を指す。
  * どちらの流儀でも同じ操作ができるよう、2 つを同じ修飾として扱う。
  * `withShiftKey` は Shift の有無で別の操作になる割り当て（undo と redo）を
  * 区別するために要る。
  *
- * 割り当てるキーとフックを分けているのは、押されたかの判定に React が要らないため
- * （フック側はページ全体で受けることと購読の解除だけを持つ）。
+ * 待ち受け方の直和とは別に切っているのは、枝ごとに書き写すと**片方の枝にだけ修飾を
+ * 足した状態**が型で表現できてしまうため（`matches` は両方を見るので嘘になる）。
  */
-export type KeyShortcut = Readonly<{
-  keys: readonly string[];
+type KeyModifiers = Readonly<{
   withCommandKey: boolean;
   withShiftKey: boolean;
 }>;
+
+/**
+ * ページ全体で受けるキーの組み合わせ。
+ *
+ * きっかけ（`kind`）で 2 つに分かれ、持つ並びがそれぞれ違う。`keys` は打たれた文字、
+ * `codes` は押された物理キーの綴り（`"Digit1"` など）。
+ * `keys` を**並び**で持つのは、同じ操作に複数のキーを割り当てる流儀があるため
+ * （削除の Delete / Backspace）。`codes` も同じ形にしてあるが、今のところどの割り当ても
+ * 1 件しか持たない。
+ *
+ * 割り当てるキーとフックを分けているのは、押されたかの判定に React が要らないため
+ * （フック側はページ全体で受けることと購読の解除だけを持つ）。
+ */
+export type KeyShortcut = KeyModifiers &
+  (
+    | Readonly<{
+        kind: typeof KeyTriggers.TypedCharacter;
+        keys: readonly string[];
+      }>
+    | Readonly<{
+        kind: typeof KeyTriggers.PhysicalKey;
+        codes: readonly string[];
+      }>
+  );
+
+/**
+ * 押されたキーそのものが、この割り当ての待ち受ける並びに入っているか。
+ * 修飾キーは見ない（見るのは `matches`）。
+ *
+ * @param shortcut きっかけと並びの出どころ
+ * @param event 突き合わせるキー操作
+ * @returns 待ち受けている並びに入っていれば `true`
+ */
+function pressesKeyOf(shortcut: KeyShortcut, event: KeyboardEvent): boolean {
+  switch (shortcut.kind) {
+    case KeyTriggers.TypedCharacter:
+      // 大小を無視して比べる。Shift を押している間 `event.key` は打たれる文字、
+      // つまり "z" ではなく "Z" になるため、そのまま比べると
+      // Cmd+Shift+Z がどの割り当てにも当たらない。
+      return shortcut.keys.some(
+        (key) => key.toLowerCase() === event.key.toLowerCase(),
+      );
+    case KeyTriggers.PhysicalKey:
+      // 物理キーの綴りは配列にも修飾キーにも依らないので、そのまま比べる。
+      return shortcut.codes.includes(event.code);
+  }
+}
 
 export const KeyShortcut = {
   /**
@@ -28,12 +90,7 @@ export const KeyShortcut = {
    * 「修飾なしの c」に割り当てたショートカットまで叩いてしまうため。
    */
   matches(shortcut: KeyShortcut, event: KeyboardEvent): boolean {
-    // 大小を無視して比べる。Shift を押している間 `event.key` は打たれる文字、
-    // つまり "z" ではなく "Z" になるため、そのまま比べると
-    // Cmd+Shift+Z がどの割り当てにも当たらない。
-    const matchesKey = shortcut.keys.some(
-      (key) => key.toLowerCase() === event.key.toLowerCase(),
-    );
+    const matchesKey = pressesKeyOf(shortcut, event);
     const matchesCommandKey =
       (event.ctrlKey || event.metaKey) === shortcut.withCommandKey;
     const matchesShiftKey = event.shiftKey === shortcut.withShiftKey;
@@ -72,8 +129,8 @@ export const KeyShortcut = {
  * 1 件の割り当て。待ち受ける組み合わせと、押されたときに呼ぶ手続きの対。
  *
  * 対で持つのは、同じ操作の別名（削除の Delete / Backspace）ではなく**別々の操作**を
- * まとめて張るため。`KeyShortcut.keys` は前者しか表せないので、矢印 4 方向のように
- * 押したキーで呼ぶ相手が変わるものは、こちらを並べて渡す。
+ * まとめて張るため。`KeyShortcut` が持つ並び（`keys` / `codes`）は前者しか表せないので、
+ * 矢印 4 方向のように押したキーで呼ぶ相手が変わるものは、こちらを並べて渡す。
  */
 export type KeyShortcutBinding = Readonly<{
   shortcut: KeyShortcut;

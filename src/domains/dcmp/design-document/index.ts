@@ -584,6 +584,19 @@ export const DesignDocument = {
     );
   },
 
+  /**
+   * 並んでいる artboard すべての名前。
+   *
+   * キャンバスに描かれているものを名前で引く側（文書全体を画面へ収めるズーム）が、
+   * artboard の中身に立ち入らずに「全体とはどれか」を受け取れるようにする。
+   *
+   * @param document 名前の出どころになるドキュメント
+   * @returns 配列順そのままの artboard 名。1 枚も無ければ空
+   */
+  collectArtboardNames(document: DesignDocument): readonly string[] {
+    return document.artboards.map((artboard) => artboard.name);
+  },
+
   /** 名前で artboard を引く。名前は単一名前空間なので artboard 名も一意に決まる。 */
   findArtboard(document: DesignDocument, name: string): Option<Artboard> {
     return Option.fromNullable(

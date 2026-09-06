@@ -20,4 +20,22 @@ export const DrawnBounds = {
   measure(name: string): Option<CanvasBounds> {
     return Option.map(CanvasDom.elementOf(name), CanvasBounds.ofElement);
   },
+
+  /**
+   * 名前で指したものすべてを含む矩形（client 座標）。
+   *
+   * 描かれていない名前は**飛ばして残りで囲む**。全部揃うまで何もしない形にすると、
+   * 名前が 1 つでも引けないときに操作そのものが起きなくなる。
+   *
+   * @param names 囲みたい artboard / ノードの名前
+   * @returns 描かれているものを含む最小の矩形。名前が空、または 1 つも描かれて
+   *   いなければ `none`
+   */
+  enclosing(names: readonly string[]): Option<CanvasBounds> {
+    const drawn = names.flatMap((name) => {
+      const measured = DrawnBounds.measure(name);
+      return measured.some ? [measured.value] : [];
+    });
+    return CanvasBounds.enclosing(drawn);
+  },
 } as const;

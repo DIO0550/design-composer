@@ -21,9 +21,17 @@ const HighlightedNamePattern = new RegExp(
   "g",
 );
 
-/** キャンバスの中身（コンパイル結果を流し込む器）。 */
+/** キャンバスの中身（コンパイル結果を流し込む器）。倍率と位置はここに載る。 */
 export function canvasContent(): HTMLElement {
   return screen.getByTestId("canvas-content");
+}
+
+/**
+ * キャンバスの土台（ズーム / パンを受ける面）。
+ * 中身の器はこの左上を原点に置かれるので、**収める先**として測る対象になる。
+ */
+export function canvasSurface(): HTMLElement {
+  return screen.getByTestId("canvas-surface");
 }
 
 /**

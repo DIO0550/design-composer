@@ -41,3 +41,24 @@ test("artboard 配下のノード名は artboard としては見つからない"
 
   expect(found.some).toBe(false);
 });
+
+test("並んでいる artboard の名前を配列順のまま返す", () => {
+  // 名前の綴りではなく配列順で返ることを見たいので、辞書順と逆に並べる
+  const document = DesignDocument.create({
+    artboards: [
+      { name: "settings", width: 375, height: 812, children: [] },
+      { name: "home", width: 375, height: 812, children: [] },
+    ],
+  });
+
+  expect(DesignDocument.collectArtboardNames(document)).toEqual([
+    "settings",
+    "home",
+  ]);
+});
+
+test("artboard が 1 枚も無ければ名前は 1 つも返らない", () => {
+  const document = DesignDocument.create({ artboards: [] });
+
+  expect(DesignDocument.collectArtboardNames(document)).toEqual([]);
+});

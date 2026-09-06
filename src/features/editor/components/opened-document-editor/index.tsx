@@ -1,8 +1,10 @@
 import { type ReactElement, type ReactNode, useMemo, useState } from "react";
 import { PaneBody } from "@/components/pane-body";
 import { PaneHeading } from "@/components/pane-heading";
+import { DesignDocument } from "@/domains/dcmp/design-document";
 import type { DocumentError } from "@/domains/session/document-error";
 import { DocumentSaveState } from "@/domains/session/document-save-state";
+import { DocumentSelection } from "@/domains/session/document-selection";
 import { FileValidity } from "@/domains/session/file-validity";
 import type { NodeTemplate } from "@/domains/session/node-template";
 import type { OpenedDocument } from "@/domains/session/opened-document";
@@ -41,6 +43,8 @@ import {
   useArtboardActions,
 } from "@/features/editor/hooks/use-artboard-actions";
 import { useEditShortcuts } from "@/features/editor/hooks/use-edit-shortcuts";
+import { useFitDocumentShortcut } from "@/features/editor/hooks/use-fit-document-shortcut";
+import { useFitSelectionShortcut } from "@/features/editor/hooks/use-fit-selection-shortcut";
 import {
   type NodeActions,
   useNodeActions,
@@ -303,6 +307,24 @@ function EditorPanes({
   const tokenSelection = useMemo(
     () => EditorState.tokenSelection(state),
     [state],
+  );
+
+  /*
+   * 収めるズームの 2 本は `useEditShortcuts` へは寄せない。あちらが張るのは
+   * ドキュメントと編集履歴に触れる操作で、`useEditor()` の dispatch しか持たない。
+   * ズームは表示だけの操作で、収める先を知っているのは `canvasView`（ここの props）。
+   *
+   * Why not: 上部バーの拡大 / 縮小の隣にボタンを置かない。UI 案
+   * （docs/Design Composer.html）に `zoom` / `fit` / 「ズーム」の綴りは 1 つも無く、
+   * 倍率の操作そのものが描かれていないため（`useEditShortcuts` と同じ線引き）。
+   */
+  useFitDocumentShortcut(() =>
+    canvasView.fitTo(
+      DesignDocument.collectArtboardNames(EditorState.document(state)),
+    ),
+  );
+  useFitSelectionShortcut(() =>
+    canvasView.fitTo(DocumentSelection.names(documentSelection)),
   );
 
   const isFrozen = EditorState.isFileInvalid(state);

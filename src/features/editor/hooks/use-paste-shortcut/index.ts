@@ -1,7 +1,12 @@
-import { type KeyShortcut, useKeyShortcut } from "@/hooks/use-key-shortcut";
+import {
+  type KeyShortcut,
+  KeyTriggers,
+  useKeyShortcut,
+} from "@/hooks/use-key-shortcut";
 
 /** ペーストに割り当てる組み合わせ（Windows は Ctrl+V / macOS は Cmd+V）。 */
 const PasteShortcut: KeyShortcut = {
+  kind: KeyTriggers.TypedCharacter,
   keys: ["v"],
   withCommandKey: true,
   withShiftKey: false,

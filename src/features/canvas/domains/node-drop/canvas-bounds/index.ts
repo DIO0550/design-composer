@@ -1,6 +1,7 @@
 import { CssDirection } from "@/domains/dcmp/css-direction";
-import type { Axis } from "@/domains/unit/axis";
+import { Axes, type Axis } from "@/domains/unit/axis";
 import type { Offset } from "@/domains/unit/offset";
+import { Option } from "@/utils/Option";
 
 /**
  * 画面上の矩形（client 座標・px）。
@@ -86,6 +87,19 @@ export const CanvasBounds = {
     return direction === "row" ? bounds.left : bounds.top;
   },
 
+  /**
+   * 幅も高さも正か。
+   *
+   * 面積を持たない矩形は、そこへ何かを収める倍率も、中の位置も決められない。
+   * 実測は描かれる前や器が畳まれているときに 0 を返すので、割り算の前に見る。
+   *
+   * @param bounds 見る矩形
+   * @returns 幅と高さの両方が 0 より大きければ `true`
+   */
+  hasArea(bounds: CanvasBounds): boolean {
+    return bounds.width > 0 && bounds.height > 0;
+  },
+
   /** ポインタが矩形の内側にあるか。 */
   contains(bounds: CanvasBounds, pointer: Offset): boolean {
     return (
@@ -106,6 +120,45 @@ export const CanvasBounds = {
   /** 子が並ぶ向きに沿った終点。 */
   end(bounds: CanvasBounds, direction: CssDirection): number {
     return CanvasBounds.edge(bounds, CssDirection.mainAxis(direction));
+  },
+
+  /**
+   * 並び全体を含む最小の矩形。
+   *
+   * まとめて 1 つの範囲として扱いたいとき（選択したものすべて / artboard すべてを
+   * 画面へ収める）に使う。
+   *
+   * Why: `create` / `from*` は材料から値を作る入口の語で、ここは矩形から矩形を導く操作。
+   * 同じモジュールの `relativeTo` / `originShift` と同じく結果そのものを表す語で名付ける。
+   *
+   * @param boundsList 含めたい矩形の並び
+   * @returns すべてを含む最小の矩形。並びが空なら `none`（囲む対象が無いと矩形が決まらない）
+   */
+  enclosing(boundsList: readonly CanvasBounds[]): Option<CanvasBounds> {
+    if (boundsList.length === 0) {
+      return Option.none;
+    }
+    // 空でないことは上で確かめてあるので、無限大の種は必ず 1 件目で置き換わる
+    const enclosed = boundsList.reduce(
+      (widest, bounds) => ({
+        left: Math.min(widest.left, bounds.left),
+        top: Math.min(widest.top, bounds.top),
+        right: Math.max(widest.right, CanvasBounds.edge(bounds, Axes.Width)),
+        bottom: Math.max(widest.bottom, CanvasBounds.edge(bounds, Axes.Height)),
+      }),
+      {
+        left: Number.POSITIVE_INFINITY,
+        top: Number.POSITIVE_INFINITY,
+        right: Number.NEGATIVE_INFINITY,
+        bottom: Number.NEGATIVE_INFINITY,
+      },
+    );
+    return Option.some({
+      left: enclosed.left,
+      top: enclosed.top,
+      width: enclosed.right - enclosed.left,
+      height: enclosed.bottom - enclosed.top,
+    });
   },
 
   /** 子が並ぶ向きに沿った中点。ポインタがここを越えたかで前後が決まる。 */

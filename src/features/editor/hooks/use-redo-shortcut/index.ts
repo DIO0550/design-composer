@@ -1,4 +1,8 @@
-import { type KeyShortcut, useKeyShortcut } from "@/hooks/use-key-shortcut";
+import {
+  type KeyShortcut,
+  KeyTriggers,
+  useKeyShortcut,
+} from "@/hooks/use-key-shortcut";
 
 /**
  * redo に割り当てる組み合わせ（Windows は Ctrl+Shift+Z / macOS は Cmd+Shift+Z）。
@@ -7,6 +11,7 @@ import { type KeyShortcut, useKeyShortcut } from "@/hooks/use-key-shortcut";
  * 仕様に無いキーを先回りで押さえると、後から別の操作へ割り当てにくくなるため。
  */
 const RedoShortcut: KeyShortcut = {
+  kind: KeyTriggers.TypedCharacter,
   keys: ["z"],
   withCommandKey: true,
   withShiftKey: true,

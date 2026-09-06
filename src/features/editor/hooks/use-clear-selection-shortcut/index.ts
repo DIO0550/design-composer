@@ -1,7 +1,12 @@
-import { type KeyShortcut, useKeyShortcut } from "@/hooks/use-key-shortcut";
+import {
+  type KeyShortcut,
+  KeyTriggers,
+  useKeyShortcut,
+} from "@/hooks/use-key-shortcut";
 
 /** 選択解除に割り当てる組み合わせ。修飾キーは伴わない。 */
 const ClearSelectionShortcut: KeyShortcut = {
+  kind: KeyTriggers.TypedCharacter,
   keys: ["Escape"],
   withCommandKey: false,
   withShiftKey: false,

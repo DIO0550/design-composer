@@ -1,7 +1,12 @@
-import { type KeyShortcut, useKeyShortcut } from "@/hooks/use-key-shortcut";
+import {
+  type KeyShortcut,
+  KeyTriggers,
+  useKeyShortcut,
+} from "@/hooks/use-key-shortcut";
 
 /** コピーに割り当てる組み合わせ（Windows は Ctrl+C / macOS は Cmd+C）。 */
 const CopyShortcut: KeyShortcut = {
+  kind: KeyTriggers.TypedCharacter,
   keys: ["c"],
   withCommandKey: true,
   withShiftKey: false,
