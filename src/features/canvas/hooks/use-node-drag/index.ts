@@ -3,11 +3,9 @@ import { ElementNameAttribute } from "@/domains/compiled/compiled-element";
 import type { ChildPlacement } from "@/domains/dcmp/child-placement";
 import type { ChildPosition } from "@/domains/dcmp/child-position";
 import { DesignDocument } from "@/domains/dcmp/design-document";
-import type { AbsolutePlacement } from "@/domains/dcmp/placement";
 import type { NodeTemplate } from "@/domains/session/node-template";
 import { Offset } from "@/domains/unit/offset";
 import { CanvasView } from "@/features/canvas/domains/canvas-view";
-import { EdgeSnap } from "@/features/canvas/domains/edge-snap";
 import {
   Carrying,
   DropEdit,
@@ -24,6 +22,7 @@ import {
   type ParentShift,
   RepositionTarget,
 } from "@/features/canvas/domains/reposition-target";
+import { SideSnap } from "@/features/canvas/domains/side-snap";
 import { CanvasPointer } from "@/features/canvas/utils/CanvasPointer";
 import { CanvasDom } from "@/libs/canvas-dom";
 import { ElementEx } from "@/utils/ElementEx";
@@ -118,7 +117,10 @@ function boundsOf(name: string): Option<CanvasBounds> {
 }
 
 /**
- * 座標の置き直しに要る実測。すべて画面上の px（`origin` / `stationary`）。
+ * 座標の置き直しに要る実測。
+ *
+ * 単位が 1 つだけ違う: `origin` / `dragged` / `stationary` は実測したままの**画面上の px**、
+ * `shift` だけは書かれる座標へ足す量なので**ドキュメント上の px**（倍率で割り戻し済み）。
  *
  * 落とし先の親を**1 回だけ**測ってここへまとめるのは、原点のずれと揃え先を別々に
  * 測ると同じ要素を 2 回測ることになり、2 つの経路が食い違う余地が残るため。
@@ -161,7 +163,9 @@ function measureReposition(
   const currentBounds = boundsOf(carried.at.parentName);
   const droppedElement = CanvasDom.elementOf(dropped.name);
   const dragged = boundsOf(carried.name);
-  if (!currentBounds.some || !droppedElement.some || !dragged.some) {
+  // 座標を書くにも揃え先を出すにも 3 つとも要るので、1 つでも欠けたら測れなかったとみなす
+  const measurable = currentBounds.some && droppedElement.some && dragged.some;
+  if (!measurable) {
     return Option.none;
   }
   const droppedBounds = CanvasBounds.ofElement(droppedElement.value);
@@ -185,42 +189,21 @@ function measureReposition(
 }
 
 /**
- * 掴んだ時点の座標から運んだ先の、今の親の左上から見た画面上の位置。
- *
- * 運んでいるノードを実測してこれを出せないのは、運んでいる間は `transform` でずらして
- * 見せており（`repositionPreviewDeclarations`）、実測値に**前回の移動分が既に乗っている**
- * ため。書かれている座標と画面上で運んだ量から組み立てれば、そのずれが入らない。
- *
- * @param view 座標を画面上の px へ直すための今の表示
- * @param placement 掴んだ時点の、今の親から見た座標
- * @param screenDelta 画面上で運んだ量
- * @returns 今の親の左上から見た画面上の位置
- */
-function screenPlacementOf(
-  view: CanvasView,
-  placement: AbsolutePlacement,
-  screenDelta: Offset,
-): Offset {
-  return Offset.add(
-    CanvasView.toScreenOffset(view, { x: placement.x, y: placement.y }),
-    screenDelta,
-  );
-}
-
-/**
  * 揃う位置へ寄せる量。
  *
  * 行き先の矩形は、今の親の左上へ運んだ先の位置を置き、大きさは運んでいるものの実測を
- * そのまま採って組み立てる（大きさは `translate` で変わらない）。
+ * そのまま採って組み立てる。運んでいるノードを実測して位置まで採れないのは、運んでいる
+ * 間は `transform` でずらして見せており（`repositionPreviewDeclarations`）、実測値に
+ * **前回の移動分が既に乗っている**ため。大きさは `translate` で変わらないので実測を使う。
  *
  * @param measured 落とし先の実測（寄せの原点・運んでいるものの大きさ・揃え先）
  * @param movedTo 今の親の左上から見た、運んだ先の画面上の位置
  * @returns 寄せ量（画面上の px）。閾値に届く辺が無ければ縦横とも 0
  */
 function snapOffset(measured: RepositionMeasure, movedTo: Offset): Offset {
-  return EdgeSnap.toOffset(
-    EdgeSnap.create(
-      CanvasBounds.inside(measured.origin, movedTo, measured.dragged),
+  return SideSnap.toOffset(
+    SideSnap.create(
+      CanvasBounds.placedAt(measured.origin, movedTo, measured.dragged),
       measured.stationary,
     ),
   );
@@ -267,7 +250,8 @@ function carriedNode(
  * @param context 今の掴みと、倍率・ポインタ
  * @param carried 運んでいるノードと、掴んだ時点の座標
  * @param parent ポインタの下で受け入れられる親
- * @returns 座標を置き直す運び方。親が無い / 親の矩形を実測できないときは見た目だけの運び方
+ * @returns 座標を置き直す運び方。親が無い / 親の矩形と運んでいるノードのどれかを
+ *   実測できないときは見た目だけの運び方
  */
 function repositionCarrying(
   context: DropContext,
@@ -295,7 +279,11 @@ function repositionCarrying(
     screenDelta,
     snapOffset(
       measured.value,
-      screenPlacementOf(context.view, carried.at.placement, screenDelta),
+      CanvasView.toScreenPoint(
+        context.view,
+        { x: carried.at.placement.x, y: carried.at.placement.y },
+        screenDelta,
+      ),
     ),
   );
   return Carrying.droppable(
@@ -405,7 +393,7 @@ export type NodeDragControl = Readonly<{
  * このフックが持つのは DOM の実測とイベントの仲介だけで、
  * 「どこへ落ちるか」「いつドラッグとみなすか」の判定は `node-drop` / `node-drag` に、
  * 「実測した親のずれからどの座標が書かれるか」は `reposition-target` に、
- * 「揃う辺があるならどれだけ寄せるか」は `edge-snap` にある。
+ * 「揃う辺があるならどれだけ寄せるか」は `side-snap` にある。
  *
  * ポインタキャプチャを使わないのは、捕捉すると以後のイベントの `target` が捕捉した要素に
  * 固定され、「今どのノードの上にいるか」を読めなくなるため。代わりに掴んだあとの

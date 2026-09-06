@@ -107,17 +107,23 @@ export const CanvasBounds = {
   },
 
   /**
-   * 親の矩形の中の、指定した位置に置いた矩形。
+   * 親の矩形の左上から測った位置に、指定した大きさで置いた矩形。
    *
    * 絶対配置の子の**行き先**を画面上の矩形として組み立てるのに使う。大きさを別の矩形から
    * 取るのは、運んでも大きさは変わらないので運んでいるものの実測をそのまま使えるため。
+   *
+   * **前提: 親の実測矩形（border box）の左上が、絶対配置の子の座標の原点と一致する。**
+   * CSS 上の原点は親の padding box なので、両者が一致しているのは `border` 系 prop が
+   * まだスキーマに無いからにすぎない（docs/03-schema.md「border 系は初期セットに
+   * 含めない」）。border が入ると吸い付く位置が border 幅だけずれるが、テストの実測は
+   * 差し替えなので**1 件も落ちずに通る**（気づく手段が無い）。
    *
    * @param parent 原点になる親の矩形
    * @param offset 親の左上から見た位置（画面上の px）
    * @param size 大きさを取る矩形
    * @returns 親の中のその位置に、その大きさで置かれた矩形
    */
-  inside(
+  placedAt(
     parent: CanvasBounds,
     offset: Offset,
     size: CanvasBounds,
@@ -154,10 +160,10 @@ export const CanvasBounds = {
   /** ポインタが矩形の内側にあるか。 */
   contains(bounds: CanvasBounds, pointer: Offset): boolean {
     return (
-      pointer.x >= bounds.left &&
-      pointer.x <= CanvasBounds.edge(bounds, "width") &&
-      pointer.y >= bounds.top &&
-      pointer.y <= CanvasBounds.edge(bounds, "height")
+      pointer.x >= CanvasBounds.side(bounds, Sides.Left) &&
+      pointer.x <= CanvasBounds.side(bounds, Sides.Right) &&
+      pointer.y >= CanvasBounds.side(bounds, Sides.Top) &&
+      pointer.y <= CanvasBounds.side(bounds, Sides.Bottom)
     );
   },
 

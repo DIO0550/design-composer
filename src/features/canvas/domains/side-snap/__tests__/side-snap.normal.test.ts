@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
-import { EdgeSnap } from "../index";
+import { SideSnap } from "../index";
 
 /** 左 100・上 100 に置かれた、幅 40・高さ 20 の運んでいるもの（右辺 140・下辺 120）。 */
 const Moving: CanvasBounds = { left: 100, top: 100, width: 40, height: 20 };
@@ -14,7 +14,7 @@ test("運んでいるものの左辺が揃える先の左辺の近くにある�
     height: 20,
   };
 
-  expect(EdgeSnap.toOffset(EdgeSnap.create(Moving, [stationary]))).toEqual({
+  expect(SideSnap.toOffset(SideSnap.create(Moving, [stationary]))).toEqual({
     x: 4,
     y: 0,
   });
@@ -28,7 +28,7 @@ test("運んでいるものの上辺が揃える先の上辺の近くにある�
     height: 200,
   };
 
-  expect(EdgeSnap.toOffset(EdgeSnap.create(Moving, [stationary]))).toEqual({
+  expect(SideSnap.toOffset(SideSnap.create(Moving, [stationary]))).toEqual({
     x: 0,
     y: -5,
   });
@@ -43,7 +43,7 @@ test("運んでいるものの左辺が揃える先の右辺の近くにある�
     height: 20,
   };
 
-  expect(EdgeSnap.toOffset(EdgeSnap.create(Moving, [stationary]))).toEqual({
+  expect(SideSnap.toOffset(SideSnap.create(Moving, [stationary]))).toEqual({
     x: -3,
     y: 0,
   });
@@ -58,7 +58,7 @@ test("横だけが近いときは、横だけが寄って縦は動かない", ()
     height: 20,
   };
 
-  expect(EdgeSnap.toOffset(EdgeSnap.create(Moving, [stationary]))).toEqual({
+  expect(SideSnap.toOffset(SideSnap.create(Moving, [stationary]))).toEqual({
     x: 3,
     y: 0,
   });
@@ -68,7 +68,7 @@ test("揃える先が複数あるときは、いちばん近い辺へ寄る", ()
   const far: CanvasBounds = { left: 105, top: 300, width: 300, height: 20 };
   const near: CanvasBounds = { left: 102, top: 340, width: 300, height: 20 };
 
-  expect(EdgeSnap.toOffset(EdgeSnap.create(Moving, [far, near]))).toEqual({
+  expect(SideSnap.toOffset(SideSnap.create(Moving, [far, near]))).toEqual({
     x: 2,
     y: 0,
   });

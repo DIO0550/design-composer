@@ -66,7 +66,7 @@ test("兄弟の辺の近くまで運んで離すと、その辺が揃う座標�
   drawnApart();
 
   // 左辺が `marker` の左辺の 3px 手前まで来る量。寄せが無ければ x は 153 になる
-  dragNode(drawn("badge"), { x: 113, y: -12 });
+  dragNode("badge", { x: 113, y: -12 });
 
   expect(onRepositionNode).toHaveBeenCalledWith("badge", {
     parentName: "home",
@@ -80,7 +80,7 @@ test("親の縁の近くまで運んで離すと、縁に揃う座標が書か�
   drawnApart();
 
   // 左辺が `home` の左の縁を 4px 越えた位置。寄せが無ければ x は -4 になる
-  dragNode(drawn("badge"), { x: -44, y: -12 });
+  dragNode("badge", { x: -44, y: -12 });
 
   expect(onRepositionNode).toHaveBeenCalledWith("badge", {
     parentName: "home",
@@ -98,7 +98,7 @@ test("運んでいるノード自身は揃える先にならない", () => {
    * 閾値の内側で運んでいる間は**どこへ運んでも寄せ量が打ち消して動かなくなる**。
    * そのとき届く座標は掴んだ時点の (40, 24) のままになる。
    */
-  dragNode(drawn("badge"), { x: 3, y: 4 });
+  dragNode("badge", { x: 3, y: 4 });
 
   expect(onRepositionNode).toHaveBeenCalledWith("badge", {
     parentName: "home",
@@ -111,7 +111,7 @@ test("どの辺からも遠ければ、運んだ量そのままの座標が書�
   renderCanvas({ selection: setupSiblings(), onRepositionNode });
   drawnApart();
 
-  dragNode(drawn("badge"), { x: 30, y: -12 });
+  dragNode("badge", { x: 30, y: -12 });
 
   expect(onRepositionNode).toHaveBeenCalledWith("badge", {
     parentName: "home",
@@ -140,7 +140,7 @@ test("倍率を上げても、画面上で同じだけ近づけば辺に吸い�
    * `marker` の左辺（250）の 3px 手前 — 等倍のときと同じ画面上の距離で吸い付く。
    * 寄せた画面上の量 102 はドキュメント上では 85 になる。
    */
-  dragNode(drawn("badge"), { x: 105, y: -12 });
+  dragNode("badge", { x: 105, y: -12 });
 
   expect(onRepositionNode).toHaveBeenCalledWith("badge", {
     parentName: "home",

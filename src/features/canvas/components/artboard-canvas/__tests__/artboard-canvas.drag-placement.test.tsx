@@ -14,6 +14,7 @@ import {
   artboardList,
   carryNode,
   dragNode,
+  dragNodeOnto,
   drawn,
   drawnAt,
   injectedStyles,
@@ -61,16 +62,9 @@ function setupSelection(
   );
 }
 
-/**
- * `badge` を掴んで別の要素の上まで運び、そこで離す。
- *
- * 離すのを運んだ先の要素へ撃つのは、ブラウザで起きるのがそれだから
- * （運んでいるノードは当たり判定から外れる / `repositionPreviewDeclarations`）。
- */
+/** `badge` を掴んで別の要素の上まで (30, -12) 運び、そこで離す。 */
 function dragBadgeOnto(to: Element): void {
-  pressPointer(drawn("badge"), { x: 100, y: 100 });
-  movePointer(to, { x: 130, y: 88 });
-  releasePointer(to, { x: 130, y: 88 });
+  dragNodeOnto("badge", to, { x: 30, y: -12 });
 }
 
 /**
@@ -86,7 +80,7 @@ test("絶対配置のノードを運んで離すと、掴んだ時点の座標�
   const onRepositionNode = vi.fn();
   renderCanvas({ selection: setupSelection(), onRepositionNode });
 
-  dragNode(drawn("badge"), { x: 30, y: -12 });
+  dragNode("badge", { x: 30, y: -12 });
 
   expect(onRepositionNode).toHaveBeenCalledWith("badge", {
     parentName: "home",
@@ -115,7 +109,7 @@ test("絶対配置のノードを同じ親の中で運んでもツリーの並�
   const onMoveNode = vi.fn();
   renderCanvas({ selection: setupSelection(), onMoveNode });
 
-  dragNode(drawn("badge"), { x: 30, y: -12 });
+  dragNode("badge", { x: 30, y: -12 });
 
   expect(onMoveNode).not.toHaveBeenCalled();
 });
@@ -125,7 +119,7 @@ test("フローのノードを運ぶと今までどおりツリー内の移動�
   const onRepositionNode = vi.fn();
   renderCanvas({ selection: setupSelection(), onMoveNode, onRepositionNode });
 
-  dragNode(drawn("title"), { x: 30, y: -12 });
+  dragNode("title", { x: 30, y: -12 });
 
   expect([
     onMoveNode.mock.calls.length,
@@ -171,7 +165,7 @@ test("倍率を上げても、動く量は画面上ではなくドキュメン�
    * (28.33…, -10.83…) にあたる。割り切れない量を選ぶのは、割り切れる量だと
    * 丸めの有無で答えが変わらず「丸めている」ことを確かめられないため。
    */
-  dragNode(drawn("badge"), { x: 34, y: -13 });
+  dragNode("badge", { x: 34, y: -13 });
 
   expect(onRepositionNode).toHaveBeenCalledWith("badge", {
     parentName: "home",
@@ -184,7 +178,7 @@ test("親の外へ出る位置で離すと、はみ出した座標がそのま�
   renderCanvas({ selection: setupSelection(), onRepositionNode });
 
   // 親（360×240）の右下より外へ出る量。収めると (316, 216) のような値で止まる
-  dragNode(drawn("badge"), { x: 400, y: 300 });
+  dragNode("badge", { x: 400, y: 300 });
 
   expect(onRepositionNode).toHaveBeenCalledWith("badge", {
     parentName: "home",
@@ -200,7 +194,7 @@ test("もともと親の外にあるノードを動かしても、親の内側�
     onRepositionNode,
   });
 
-  dragNode(drawn("badge"), { x: 8, y: 6 });
+  dragNode("badge", { x: 8, y: 6 });
 
   expect(onRepositionNode).toHaveBeenCalledWith("badge", {
     parentName: "home",
@@ -214,7 +208,7 @@ test("親が変わらなければ、2 つの親を実測していてもずれは
   renderCanvas({ selection: setupSelection(), onRepositionNode });
   drawnApart();
 
-  dragNode(drawn("badge"), { x: 30, y: -12 });
+  dragNode("badge", { x: 30, y: -12 });
 
   expect(onRepositionNode).toHaveBeenCalledWith("badge", {
     parentName: "home",

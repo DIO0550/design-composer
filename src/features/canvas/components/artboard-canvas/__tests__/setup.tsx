@@ -222,19 +222,6 @@ export function drawnAt(name: string, bounds: CanvasBounds): HTMLElement {
 }
 
 /**
- * ノードを掴んで運び、離すまで。
- * 移動量は縦横で違う値にすること（取り違えても落ちないため）。
- *
- * @param from 掴む要素
- * @param by 画面上で運ぶ量
- */
-export function dragNode(from: Element, by: Offset): void {
-  pressPointer(from, { x: 100, y: 100 });
-  movePointer(from, { x: 100 + by.x, y: 100 + by.y });
-  releasePointer(from, { x: 100 + by.x, y: 100 + by.y });
-}
-
-/**
  * ノードを掴んだまま、まだ離していない状態にする。
  * 離す前の見た目を見るので `releasePointer` は撃たない。
  *
@@ -244,6 +231,34 @@ export function dragNode(from: Element, by: Offset): void {
 export function carryNode(name: string, by: Offset): void {
   pressPointer(drawn(name), { x: 100, y: 100 });
   movePointer(drawn(name), { x: 100 + by.x, y: 100 + by.y });
+}
+
+/**
+ * ノードを掴んで運び、離すまで。
+ * 移動量は縦横で違う値にすること（取り違えても落ちないため）。
+ *
+ * @param name 掴むノードの名前
+ * @param by 画面上で運ぶ量
+ */
+export function dragNode(name: string, by: Offset): void {
+  carryNode(name, by);
+  releasePointer(drawn(name), { x: 100 + by.x, y: 100 + by.y });
+}
+
+/**
+ * ノードを掴んで別の要素の上まで運び、そこで離す。
+ *
+ * 離すのを運んだ先の要素へ撃つのは、ブラウザで起きるのがそれだから
+ * （運んでいるノードは当たり判定から外れる / `repositionPreviewDeclarations`）。
+ *
+ * @param name 掴むノードの名前
+ * @param to 運んだ先の要素（この要素が落とし先の親を決める）
+ * @param by 画面上で運ぶ量
+ */
+export function dragNodeOnto(name: string, to: Element, by: Offset): void {
+  pressPointer(drawn(name), { x: 100, y: 100 });
+  movePointer(to, { x: 100 + by.x, y: 100 + by.y });
+  releasePointer(to, { x: 100 + by.x, y: 100 + by.y });
 }
 
 /**
