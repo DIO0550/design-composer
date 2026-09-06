@@ -259,6 +259,20 @@ export const CanvasView = {
     };
   },
 
+  /**
+   * ドキュメント上の移動量を画面上の移動量へ直す。`toDocumentOffset` の逆向き。
+   *
+   * 長さ単位の入口を別に持たせないのは `toDocumentOffset` と同じ理由で、呼び出し側で
+   * x と y を別々に直すと**片方だけ倍率を忘れても動いてしまう**ため。
+   *
+   * @param view 掛ける倍率を持つ表示
+   * @param documentDelta ドキュメント上の移動量
+   * @returns 画面上の移動量
+   */
+  toScreenOffset(view: CanvasView, documentDelta: Offset): Offset {
+    return Offset.scale(documentDelta, view.scale);
+  },
+
   /** 表示用の倍率（%）。小数の倍率をそのまま出さないよう整数へ丸める。 */
   scalePercent(view: CanvasView): number {
     return Math.round(view.scale * 100);
