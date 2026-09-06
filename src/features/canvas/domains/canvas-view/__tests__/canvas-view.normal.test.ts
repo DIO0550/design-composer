@@ -131,3 +131,13 @@ test("拡大して見ているときは移動量も縦横とも割り戻され�
     y: -15,
   });
 });
+
+test("ドキュメント上の移動量は、縦横とも倍率を掛けた画面上の移動量になる", () => {
+  // 縦横で違う値にするのは、片方だけ倍率を忘れても落ちるようにするため
+  const zoomed = { ...CanvasView.create(), scale: 2 };
+
+  expect(CanvasView.toScreenOffset(zoomed, { x: 10, y: -7 })).toEqual({
+    x: 20,
+    y: -14,
+  });
+});

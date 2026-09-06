@@ -112,3 +112,12 @@ test("矩形が 1 つだけなら、その矩形がそのまま全体になる",
 test("囲む矩形が 1 つも無ければ全体は決まらない", () => {
   expect(CanvasBounds.enclosing([])).toEqual(Option.none);
 });
+
+test("4 辺のうち指定した辺の座標が返る", () => {
+  expect([
+    CanvasBounds.side(Bounds, "left"),
+    CanvasBounds.side(Bounds, "right"),
+    CanvasBounds.side(Bounds, "top"),
+    CanvasBounds.side(Bounds, "bottom"),
+  ]).toEqual([10, 110, 20, 60]);
+});
