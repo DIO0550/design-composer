@@ -5,6 +5,7 @@ import {
 import { Artboard } from "@/domains/dcmp/artboard";
 import type { TokenRefs } from "@/domains/dcmp/css-declaration";
 import type { Offset } from "@/domains/unit/offset";
+import { Option } from "@/utils/Option";
 
 /**
  * コンパイル済みの artboard 1 枚。描く中身と、宣言されている大きさ・キャンバス上の位置。
@@ -43,9 +44,9 @@ export const CompiledArtboard = {
   ): CompiledArtboard {
     const element = BoxElement.create(
       artboard.name,
-      // artboard は親を持たないが、サイズは常に fixed なので親の向きに依存しない
-      // (配置は `boxProps` が `flow` に固定するので、絶対配置の子の基準になる)
-      BoxElement.declarations(Artboard.boxProps(artboard), undefined, tokens),
+      // artboard は親を持たないので並べる向きも無い。サイズは常に fixed なので
+      // 向きに依存しない (配置は `boxProps` が `flow` に固定するので、絶対配置の子の基準になる)
+      BoxElement.declarations(Artboard.boxProps(artboard), Option.none, tokens),
       children,
     );
     return {

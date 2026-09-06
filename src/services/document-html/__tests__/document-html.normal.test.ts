@@ -52,7 +52,7 @@ test("artboard の props は Box のマッピングで CSS になる", () => {
         name: "login-screen",
         width: 375,
         height: 812,
-        props: { direction: "row", gap: "md", background: "primary" },
+        props: { layout: "row", gap: "md", background: "primary" },
         children: [],
       },
     ],
@@ -111,7 +111,7 @@ test("artboard の子の fill は artboard の並べる向きで決まる", () =
         name: "login-screen",
         width: 375,
         height: 812,
-        props: { direction: "row" },
+        props: { layout: "row" },
         children: [
           { name: "sidebar", type: "Box", props: { widthMode: "fill" } },
         ],
@@ -199,8 +199,8 @@ test("ドキュメント1つからレンダリング可能な HTML が得られ�
   ].join(";");
   const artboardStyle = [
     "display:flex",
-    "position:relative",
     "flex-direction:column",
+    "position:relative",
     "align-items:stretch",
     "justify-content:start",
     "width:375px",

@@ -33,7 +33,7 @@ test("enabledWhen の条件を満たさない props を渡すと isEnabled が f
     domain: "literal",
     literalType: "number",
     group: "size",
-    enabledWhen: { prop: "widthMode", equals: "fixed" },
+    enabledWhen: { kind: "equals", prop: "widthMode", equals: "fixed" },
   } as const;
   expect(PropDefinition.isEnabled(definition, { widthMode: "hug" })).toBe(
     false,
@@ -45,7 +45,27 @@ test("enabledWhen が参照する prop が props に存在しない場合 isEnab
     domain: "literal",
     literalType: "number",
     group: "size",
-    enabledWhen: { prop: "widthMode", equals: "fixed" },
+    enabledWhen: { kind: "equals", prop: "widthMode", equals: "fixed" },
   } as const;
   expect(PropDefinition.isEnabled(definition, {})).toBe(false);
+});
+
+test("不等値の条件と同じ値を渡すと isEnabled が false になる", () => {
+  const definition = {
+    domain: "token",
+    tokenKind: "spacing",
+    group: "layout",
+    enabledWhen: { kind: "notEquals", prop: "layout", notEquals: "free" },
+  } as const;
+  expect(PropDefinition.isEnabled(definition, { layout: "free" })).toBe(false);
+});
+
+test("不等値の条件は判定する prop が未設定でも満たされる", () => {
+  const definition = {
+    domain: "token",
+    tokenKind: "spacing",
+    group: "layout",
+    enabledWhen: { kind: "notEquals", prop: "layout", notEquals: "free" },
+  } as const;
+  expect(PropDefinition.isEnabled(definition, {})).toBe(true);
 });

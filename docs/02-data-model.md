@@ -17,7 +17,7 @@
 {
   "name": "login-form",
   "type": "Box",
-  "props": { "direction": "column", "gap": "md" },
+  "props": { "layout": "column", "gap": "md" },
   "children": [ ... ]
 }
 ```
@@ -43,7 +43,7 @@
 
 | ドメイン | 例 | 語彙を決めるのは |
 |---|---|---|
-| enum | `direction: "row" \| "column"` | スキーマ（固定） |
+| enum | `layout: "row" \| "column" \| "free"` | スキーマ（固定） |
 | トークン参照 | `gap: "md"`, `background: "primary"`, `shadow: "sm"` | ユーザー（tokens 定義から選ぶ） |
 | 生リテラル | `width: 375`, `label: "ログイン"` | 自由入力（number / string） |
 

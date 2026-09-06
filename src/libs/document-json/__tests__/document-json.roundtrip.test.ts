@@ -41,7 +41,7 @@ function setupDocument(): DesignDocument {
         name: "login-screen",
         width: 375,
         height: 812,
-        props: { direction: "column", gap: "md" },
+        props: { layout: "column", gap: "md" },
         children: [
           {
             name: "login-form",

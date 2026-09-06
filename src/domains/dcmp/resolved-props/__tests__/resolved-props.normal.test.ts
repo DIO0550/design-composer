@@ -2,20 +2,20 @@ import { expect, expectTypeOf, test } from "vitest";
 import type { PropValue } from "@/domains/dcmp/node";
 import { ResolvedProps } from "../index";
 
-test("未指定の direction はスキーマのデフォルト値 column に解決される", () => {
+test("未指定の layout はスキーマのデフォルト値 column に解決される", () => {
   const resolved = ResolvedProps.resolve("Box", {});
-  expect(resolved.direction).toBe("column");
+  expect(resolved.layout).toBe("column");
 });
 
-test("指定済みの direction は保存された値のまま解決される", () => {
-  const resolved = ResolvedProps.resolve("Box", { direction: "row" });
-  expect(resolved.direction).toBe("row");
+test("指定済みの layout は保存された値のまま解決される", () => {
+  const resolved = ResolvedProps.resolve("Box", { layout: "row" });
+  expect(resolved.layout).toBe("row");
 });
 
 test("複数の未指定 prop に一括でデフォルト値が補完される", () => {
   const resolved = ResolvedProps.resolve("Box", {});
   expect(resolved).toMatchObject({
-    direction: "column",
+    layout: "column",
     align: "stretch",
     justify: "start",
     widthMode: "hug",
@@ -43,17 +43,17 @@ test("forNode に渡した props が省略されたノードもデフォルト�
 test("解決済み props はデフォルトを持つ prop の存在が型レベルで保証される", () => {
   const resolved = ResolvedProps.resolve("Box", {});
   expectTypeOf(resolved).toExtend<
-    Readonly<Record<"direction" | "align" | "justify" | "overflow", PropValue>>
+    Readonly<Record<"layout" | "align" | "justify" | "overflow", PropValue>>
   >();
-  expect(resolved.direction).toBe("column");
+  expect(resolved.layout).toBe("column");
 });
 
 test("forNode は node.type のスキーマに基づいて解決する", () => {
   const node = {
     name: "box-1",
     type: "Box" as const,
-    props: { direction: "row" as const },
+    props: { layout: "row" as const },
   };
   const resolved = ResolvedProps.forNode(node);
-  expect(resolved).toMatchObject({ direction: "row", align: "stretch" });
+  expect(resolved).toMatchObject({ layout: "row", align: "stretch" });
 });

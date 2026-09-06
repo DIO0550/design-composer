@@ -22,14 +22,14 @@ test("スキーマに宣言の無い prop は解決済み props に含まれな�
 });
 
 test("resolve は渡された props オブジェクトを書き換えない", () => {
-  const original = { direction: "row" as const };
+  const original = { layout: "row" as const };
   const frozen = Object.freeze(original);
   ResolvedProps.resolve("Box", frozen);
-  expect(frozen).toEqual({ direction: "row" });
+  expect(frozen).toEqual({ layout: "row" });
 });
 
 test("resolve は呼び出しごとに新しいオブジェクトを返す", () => {
-  const props = { direction: "row" as const };
+  const props = { layout: "row" as const };
   const resolved = ResolvedProps.resolve("Box", props);
   expect(resolved).not.toBe(props);
 });

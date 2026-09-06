@@ -12,7 +12,7 @@ test("enum の prop に values に含まれる値を設定するとエラーに�
   expect(
     PropDefinition.collectErrors(
       definition,
-      { name: "direction", value: "row" },
+      { name: "layout", value: "row" },
       TokenSet.empty(),
     ),
   ).toEqual([]);
@@ -28,11 +28,11 @@ test("enum の prop に values に含まれない値を設定すると enum-viol
   expect(
     PropDefinition.collectErrors(
       definition,
-      { name: "direction", value: "diagonal" },
+      { name: "layout", value: "diagonal" },
       TokenSet.empty(),
     ),
   ).toEqual([
-    expect.objectContaining({ kind: "enum-violation", prop: "direction" }),
+    expect.objectContaining({ kind: "enum-violation", prop: "layout" }),
   ]);
 });
 
@@ -107,7 +107,7 @@ test("トークン参照の prop にトークンセットに存在しない名�
 
 test("スキーマに存在しない prop を設定すると unknown-prop になる", () => {
   const schema = {
-    direction: { domain: "enum", values: ["row", "column"], group: "layout" },
+    layout: { domain: "enum", values: ["row", "column"], group: "layout" },
   } satisfies Parameters<typeof PropDefinitionRecord.collectErrors>[0];
 
   expect(
@@ -123,13 +123,13 @@ test("スキーマに存在しない prop を設定すると unknown-prop にな
 
 test("複数の props に違反があると最初の1件で止まらず全件返る", () => {
   const schema = {
-    direction: { domain: "enum", values: ["row", "column"], group: "layout" },
+    layout: { domain: "enum", values: ["row", "column"], group: "layout" },
     width: { domain: "literal", literalType: "number", group: "size" },
   } satisfies Parameters<typeof PropDefinitionRecord.collectErrors>[0];
 
   const errors = PropDefinitionRecord.collectErrors(
     schema,
-    { direction: "diagonal", width: "100" },
+    { layout: "diagonal", width: "100" },
     TokenSet.empty(),
   );
 

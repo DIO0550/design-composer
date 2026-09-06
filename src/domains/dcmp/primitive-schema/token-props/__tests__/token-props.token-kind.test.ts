@@ -16,7 +16,7 @@ test("トークン参照 prop の名前はスキーマの宣言だけで決ま�
   expectTypeOf<"gap">().toExtend<TokenPropName>();
   expectTypeOf<"typography">().toExtend<TokenPropName>();
   // enum / literal で宣言された prop はトークンを引かない
-  expectTypeOf<"direction">().not.toExtend<TokenPropName>();
+  expectTypeOf<"layout">().not.toExtend<TokenPropName>();
   expectTypeOf<"width">().not.toExtend<TokenPropName>();
 });
 

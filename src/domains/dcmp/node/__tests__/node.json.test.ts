@@ -86,12 +86,12 @@ test("props は名前の昇順で書き出される", () => {
   const written = Node.toJson({
     name: "box",
     type: "Box",
-    props: { gap: "md", background: "primary", direction: "row" },
+    props: { gap: "md", background: "primary", layout: "row" },
   });
 
   expect(Object.keys(written.props as object)).toEqual([
     "background",
-    "direction",
     "gap",
+    "layout",
   ]);
 });

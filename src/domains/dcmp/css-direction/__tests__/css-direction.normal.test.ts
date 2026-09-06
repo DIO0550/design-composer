@@ -1,17 +1,8 @@
 import { expect, expectTypeOf, test } from "vitest";
 import { CssDirection } from "../index";
 
-test("CssDirection は Box スキーマの direction が取り得る値と一致する", () => {
+test("向きの語彙は row と column の 2 つに閉じている", () => {
   expectTypeOf<CssDirection>().toEqualTypeOf<"row" | "column">();
-});
-
-test("direction の値から向きが決まる", () => {
-  expect(CssDirection.from("row")).toBe("row");
-  expect(CssDirection.from("column")).toBe("column");
-});
-
-test("未指定のときはスキーマのデフォルトの向きになる", () => {
-  expect(CssDirection.from(undefined)).toBe("column");
 });
 
 test("横並びのとき幅は主軸・高さは交差軸になる", () => {

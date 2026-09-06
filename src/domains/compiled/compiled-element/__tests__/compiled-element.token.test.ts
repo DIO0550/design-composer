@@ -3,6 +3,7 @@ import type { TokenRefs } from "@/domains/dcmp/css-declaration";
 import { CssDeclarations } from "@/domains/dcmp/css-declaration";
 import type { Props } from "@/domains/dcmp/node";
 import { ResolvedProps } from "@/domains/dcmp/resolved-props";
+import { Option } from "@/utils/Option";
 import { BoxElement, TextElement } from "../index";
 
 /** カスタムプロパティ名の綴り方は出力層の知識なので、テストからも引数で渡す。 */
@@ -15,7 +16,7 @@ function setupBoxStyle(props: Props): CssDeclarations {
   return CssDeclarations.from(
     BoxElement.declarations(
       ResolvedProps.resolve("Box", props),
-      undefined,
+      Option.none,
       tokenRefs,
     ),
   );

@@ -189,7 +189,7 @@ test("props は名前の昇順で書き出される", () => {
         name: "screen",
         width: 100,
         height: 200,
-        props: { gap: "md", background: "primary", direction: "row" },
+        props: { gap: "md", background: "primary", layout: "row" },
         children: [],
       },
     ],
@@ -199,8 +199,8 @@ test("props は名前の昇順で書き出される", () => {
 
   expect(Object.keys(JSON.parse(text).artboards[0].props)).toEqual([
     "background",
-    "direction",
     "gap",
+    "layout",
   ]);
 });
 
@@ -211,7 +211,7 @@ test("同じ値のドキュメントは props を設定した順序が違って�
         name: "screen",
         width: 100,
         height: 200,
-        props: { direction: "row", gap: "md" },
+        props: { layout: "row", gap: "md" },
         children: [],
       },
     ],
@@ -222,7 +222,7 @@ test("同じ値のドキュメントは props を設定した順序が違って�
         name: "screen",
         width: 100,
         height: 200,
-        props: { gap: "md", direction: "row" },
+        props: { gap: "md", layout: "row" },
         children: [],
       },
     ],

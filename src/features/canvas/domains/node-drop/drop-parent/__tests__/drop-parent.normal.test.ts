@@ -42,7 +42,13 @@ function setupDocument(): DesignDocument {
           {
             name: "row",
             type: "Box",
-            props: { direction: "row" },
+            props: { layout: "row" },
+            children: [],
+          },
+          {
+            name: "free",
+            type: "Box",
+            props: { layout: "free" },
             children: [],
           },
           { name: "login", ref: "primary-button" },
@@ -126,7 +132,7 @@ test("ドキュメントに無いノードを運んでいるときは受け入�
   expect(parent.some).toBe(false);
 });
 
-test("direction を指定していない Box は縦に子が並ぶものとして扱われる", () => {
+test("layout を指定していない Box は縦に子が並ぶものとして扱われる", () => {
   const parent = DropParent.innermost(setupDocument(), moving("moved"), [
     "body",
   ]);
@@ -134,7 +140,7 @@ test("direction を指定していない Box は縦に子が並ぶものとし�
   expect(Option.unwrap(parent).direction).toBe("column");
 });
 
-test("direction が row の Box は横に子が並ぶものとして扱われる", () => {
+test("layout が row の Box は横に子が並ぶものとして扱われる", () => {
   const parent = DropParent.innermost(setupDocument(), moving("moved"), [
     "row",
   ]);
@@ -161,4 +167,31 @@ test("雛形を運んでいるときは、木のどのノードも受け入れ�
   ]);
 
   expect(Option.unwrap(parent).name).toBe("body");
+});
+
+test("子を並べない Box は受け入れ先にならず外側の親が選ばれる", () => {
+  const parent = DropParent.innermost(setupDocument(), moving("moved"), [
+    "free",
+    "home",
+  ]);
+
+  expect(Option.unwrap(parent).name).toBe("home");
+});
+
+test("子を並べない artboard は受け入れ先にならない", () => {
+  const document = DesignDocument.create({
+    artboards: [
+      {
+        name: "home",
+        width: 375,
+        height: 812,
+        props: { layout: "free" },
+        children: [{ name: "moved", type: "Text" }],
+      },
+    ],
+  });
+
+  const parent = DropParent.innermost(document, moving("moved"), ["home"]);
+
+  expect(parent.some).toBe(false);
 });

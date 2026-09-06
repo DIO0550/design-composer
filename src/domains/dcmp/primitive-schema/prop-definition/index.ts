@@ -12,11 +12,17 @@ import type { ValueOf } from "@/types/ValueOf";
  * その prop が編集可能になる条件。
  * 「別の prop が特定の値のときだけ意味を持つ」prop を表す
  * （`width` は `widthMode` が `fixed` のときだけ効く、など）。
+ *
+ * 等値と不等値を判別子付きの直和にしてあるのは、条件の種類を足したときに
+ * 判定側の網羅がコンパイルエラーになるようにするため
+ * （`rules/coding.md`「列挙した状態の網羅を型で強制する」）。
+ * 不等値が要るのは、**除きたい値が 1 つで、残りが増えうる**条件があるため
+ * （`gap` は `layout` が `free` でなければ効く。等値の列挙で書くと `layout` に値を
+ * 足すたびに追従が要る）。
  */
-export type EnabledWhen = Readonly<{
-  prop: string;
-  equals: PropValue;
-}>;
+export type EnabledWhen =
+  | Readonly<{ kind: "equals"; prop: string; equals: PropValue }>
+  | Readonly<{ kind: "notEquals"; prop: string; notEquals: PropValue }>;
 
 /** 4 辺の longhand をまとめて指す名前（CSS の shorthand と同じ語）。 */
 export const ShorthandNames = {
@@ -143,10 +149,17 @@ export const PropDefinition = {
     definition: PropDefinition,
     props: Readonly<Record<string, PropValue>>,
   ): boolean {
-    if (!definition.enabledWhen) {
+    const condition = definition.enabledWhen;
+    if (!condition) {
       return true;
     }
-    return props[definition.enabledWhen.prop] === definition.enabledWhen.equals;
+    const actual = props[condition.prop];
+    switch (condition.kind) {
+      case "equals":
+        return actual === condition.equals;
+      case "notEquals":
+        return actual !== condition.notEquals;
+    }
   },
 
   /**

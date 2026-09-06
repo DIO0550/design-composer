@@ -74,14 +74,14 @@ export const Size = {
    * @param size 宣言にするサイズ。サイズが決まらないときは `undefined`
    * @param axis どちらの軸のサイズか
    * @param flexParentDirection flex アイテムとして並ぶ親の向き。フローに参加して
-   *   いない位置（親を持たない / 自身が絶対配置）では `undefined`。そこでは `fill`
-   *   が意味を持たないので宣言を出さない
+   *   いない位置（親を持たない / 親が `layout: free` / 自身が絶対配置）では `none`。
+   *   そこでは `fill` が意味を持たないので宣言を出さない
    * @returns その軸の宣言。`fill` がフローの外にあるときだけ空
    */
   declarations(
     size: Size | undefined,
     axis: Axis,
-    flexParentDirection: CssDirection | undefined,
+    flexParentDirection: Option<CssDirection>,
   ): readonly CssDeclaration[] {
     if (size === undefined) {
       return [];
@@ -92,9 +92,9 @@ export const Size = {
     if (size.mode === "fixed") {
       return [CssDeclaration.create(axis, Px.create(size.length))];
     }
-    if (flexParentDirection === undefined) {
+    if (!flexParentDirection.some) {
       return [];
     }
-    return [CssDirection.fillDeclaration(flexParentDirection, axis)];
+    return [CssDirection.fillDeclaration(flexParentDirection.value, axis)];
   },
 } as const;

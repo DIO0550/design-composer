@@ -51,7 +51,7 @@ const InitialComponents: ComponentSet = {
     },
     type: "Box",
     props: {
-      direction: "row",
+      layout: "row",
       align: "center",
       justify: "center",
       paddingTop: "sm",
@@ -75,7 +75,7 @@ const InitialComponents: ComponentSet = {
     },
     type: "Box",
     props: {
-      direction: "row",
+      layout: "row",
       align: "center",
       justify: "center",
       paddingTop: "sm",
@@ -122,7 +122,7 @@ const InitialComponents: ComponentSet = {
     },
     type: "Box",
     props: {
-      direction: "column",
+      layout: "column",
       gap: "sm",
       paddingTop: "lg",
       paddingRight: "lg",

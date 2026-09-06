@@ -29,7 +29,7 @@ function setupText(): string {
       "name": "login-screen",
       "width": 375,
       "height": 812,
-      "props": { "direction": "column", "gap": "md" },
+      "props": { "layout": "column", "gap": "md" },
       "children": [
         { "name": "login-submit", "ref": "primary-button", "overrides": { "label": "ログイン" } }
       ]
@@ -71,7 +71,7 @@ test("ドキュメント全体を読み込むと仕様どおりのドメイン�
         name: "login-screen",
         width: 375,
         height: 812,
-        props: { direction: "column", gap: "md" },
+        props: { layout: "column", gap: "md" },
         children: [
           {
             name: "login-submit",

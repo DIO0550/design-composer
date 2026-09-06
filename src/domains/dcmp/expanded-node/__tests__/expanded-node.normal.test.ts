@@ -123,7 +123,7 @@ test("Box の子として ref ノードを含むツリーも子孫まで展開�
   const tree: PrimitiveNode = {
     name: "toolbar",
     type: "Box",
-    props: { direction: "row" },
+    props: { layout: "row" },
     children: [{ name: "save-button", ref: "primary-button" }],
   };
 

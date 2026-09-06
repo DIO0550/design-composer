@@ -7,7 +7,7 @@ import { ExpandedNode } from "../index";
 const components: ComponentSet = {
   "text-field": {
     type: "Box",
-    props: { direction: "column" },
+    props: { layout: "column" },
     children: [
       { name: "text-field-value", type: "Text", props: { content: "" } },
     ],
@@ -17,7 +17,7 @@ const components: ComponentSet = {
   },
   card: {
     type: "Box",
-    props: { direction: "column" },
+    props: { layout: "column" },
     children: [
       { name: "card-field", ref: "text-field" },
       { name: "card-title", type: "Text", props: { content: "Card" } },
@@ -36,7 +36,7 @@ test("部品内の ref (ネストした部品) も再帰的に展開される", 
   expect(expanded.children?.[0]).toEqual({
     name: "card-field",
     type: "Box",
-    props: { direction: "column" },
+    props: { layout: "column" },
     children: [
       { name: "text-field-value", type: "Text", props: { content: "" } },
     ],

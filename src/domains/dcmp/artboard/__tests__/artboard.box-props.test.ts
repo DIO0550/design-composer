@@ -72,12 +72,12 @@ test("artboard の props は Box の props としてそのまま扱われる", (
       name: "login-screen",
       width: 375,
       height: 812,
-      props: { direction: "row", gap: "md", background: "primary" },
+      props: { layout: "row", gap: "md", background: "primary" },
     }),
   );
 
   expect(props).toMatchObject({
-    direction: "row",
+    layout: "row",
     gap: "md",
     background: "primary",
   });
@@ -89,7 +89,7 @@ test("指定のない props は Box スキーマのデフォルトで補われ�
   );
 
   expect(props).toMatchObject({
-    direction: "column",
+    layout: "column",
     align: "stretch",
     justify: "start",
   });

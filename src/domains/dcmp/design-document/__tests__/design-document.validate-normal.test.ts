@@ -21,7 +21,7 @@ test("すべての props がスキーマに適合するドキュメントはエ�
           {
             name: "box-1",
             type: "Box",
-            props: { direction: "row", gap: "md", background: "gray-900" },
+            props: { layout: "row", gap: "md", background: "gray-900" },
             children: [
               {
                 name: "label",
@@ -79,7 +79,7 @@ test("複数の違反がある場合、最初の1件で止まらず全件報告�
         width: 375,
         height: 812,
         children: [
-          { name: "box-1", type: "Box", props: { direction: "diagonal" } },
+          { name: "box-1", type: "Box", props: { layout: "diagonal" } },
           { name: "label-1", type: "Text", props: { content: 42 } },
         ],
       },

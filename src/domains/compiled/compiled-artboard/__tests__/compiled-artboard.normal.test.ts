@@ -24,7 +24,7 @@ test("コンパイル結果の中身は、宣言元の artboard の props から
     name: "home",
     width: 360,
     height: 240,
-    props: { direction: "row", background: "primary" },
+    props: { layout: "row", background: "primary" },
   });
 
   const compiled = CompiledArtboard.fromArtboard(artboard, [], tokenRefs);

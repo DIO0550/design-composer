@@ -34,12 +34,12 @@ function setupDocument(): DesignDocument {
           { name: "home-title", type: "Text", props: { content: "ホーム" } },
           { name: "home-action", ref: "primary-button" },
           { name: "home-body", type: "Box", props: { widthMode: "fixed" } },
-          /* ファイル由来の不正な値。スキーマの `direction` に `diagonal` は無い。 */
+          /* ファイル由来の不正な値。スキーマの `layout` に `diagonal` は無い。 */
           {
             name: "home-odd",
             type: "Box",
             props: {
-              direction: "diagonal",
+              layout: "diagonal",
               background: "missing",
               /* 解決値が出ない側（dangling）と、同じ画面に出る側の対照。 */
               gap: "nope",
@@ -97,7 +97,7 @@ test("enum の prop は宣言された値ごとのセグメントになる", () 
 test("宣言に無い値が設定されている enum はその値もセグメントとして出る", () => {
   renderSelected("home-odd");
 
-  expect(pressedSegmentsOf("Direction")).toEqual(["diagonal"]);
+  expect(pressedSegmentsOf("Layout")).toEqual(["diagonal"]);
 });
 
 test("未指定の enum はどのセグメントも選ばれた状態にならない", () => {
@@ -114,7 +114,7 @@ test("未指定の enum には何が効いているかが行に出る", () => {
 
 test("値が入っている enum には未指定の注記が出ない", () => {
   /*
-   * `home-odd` の `direction` は `diagonal`（既定 `column` を持つので注記の綴り自体は作れる）。
+   * `home-odd` の `layout` は `diagonal`（既定 `column` を持つので注記の綴り自体は作れる）。
    * 未指定のときだけ出す、という出し分けを外すとここに注記が出て落ちる。
    */
   renderSelected("home-odd");

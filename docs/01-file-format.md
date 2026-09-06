@@ -44,7 +44,7 @@ design-composer のドキュメントは、単一の JSON ファイル（`.dcmp`
         {
           "name": "login-form",
           "type": "Box",
-          "props": { "direction": "column", "gap": "md" },
+          "props": { "layout": "column", "gap": "md" },
           "children": [
             { "name": "login-submit", "ref": "primary-button", "overrides": { "label": "ログイン" } }
           ]
@@ -80,7 +80,7 @@ design-composer のドキュメントは、単一の JSON ファイル（`.dcmp`
 | 版 | 加わったもの |
 |---|---|
 | 1.0 | 初期 |
-| 1.1 | ノードの `placement` / `x` / `y`（03-schema「配置の指定」。**親からの相対**）／ artboard の `x` / `y`（下記「artboards」。**キャンバス上の絶対位置**）／ ノードの `constraintX` / `constraintY`（03-schema「親のリサイズへの追従」） |
+| 1.1 | ノードの `placement` / `x` / `y`（03-schema「配置の指定」。**親からの相対**）／ artboard の `x` / `y`（下記「artboards」。**キャンバス上の絶対位置**）／ ノードの `constraintX` / `constraintY`（03-schema「親のリサイズへの追従」）／ Box の `layout`（03-schema「Box」。`direction` を吸収して置き換えた） |
 
 | 状況 | 挙動 |
 |---|---|
@@ -110,7 +110,7 @@ design-composer のドキュメントは、単一の JSON ファイル（`.dcmp`
 ```json
 "components": {
   "primary-button": { "type": "Button", "props": { "variant": "primary" } },
-  "search-field":   { "type": "Stack",  "props": { "direction": "row" }, "children": [ ... ] }
+  "search-field":   { "type": "Stack",  "props": { "layout": "row" }, "children": [ ... ] }
 }
 ```
 

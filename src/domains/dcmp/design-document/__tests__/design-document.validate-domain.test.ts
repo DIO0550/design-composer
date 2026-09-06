@@ -9,7 +9,7 @@ test("enum 外の値を指定すると enum-violation エラーになる", () =>
         width: 375,
         height: 812,
         children: [
-          { name: "box-1", type: "Box", props: { direction: "diagonal" } },
+          { name: "box-1", type: "Box", props: { layout: "diagonal" } },
         ],
       },
     ],
@@ -21,7 +21,7 @@ test("enum 外の値を指定すると enum-violation エラーになる", () =>
     expect.objectContaining({
       kind: "enum-violation",
       nodeName: "box-1",
-      prop: "direction",
+      prop: "layout",
     }),
   ]);
 });
@@ -87,7 +87,7 @@ test("存在しないトークン名を参照すると dangling-token エラー�
 test("components 内のノードもスキーマ検証の対象になる", () => {
   const document = DesignDocument.create({
     components: {
-      card: { type: "Box", props: { direction: "diagonal" } },
+      card: { type: "Box", props: { layout: "diagonal" } },
     },
   });
 

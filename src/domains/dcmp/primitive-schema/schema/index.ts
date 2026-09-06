@@ -1,6 +1,24 @@
 import { Constraints } from "@/domains/dcmp/constraint";
+import { Layout, Layouts } from "@/domains/dcmp/layout";
 import type { ValueOf } from "@/types/ValueOf";
-import { type PropDefinitionRecord, ShorthandNames } from "../prop-definition";
+import {
+  type EnabledWhen,
+  type PropDefinitionRecord,
+  ShorthandNames,
+} from "../prop-definition";
+
+/**
+ * 子を並べる Box でだけ効く、という条件（docs/03「Box」）。
+ * `free` は子を並べないので、間隔・揃えを指定しても意味を持たない。
+ *
+ * 不等値で書く理由は `EnabledWhen` の doc。ここが `Layout.direction` と同じ事実を
+ * 別に綴っていることは `domains/dcmp/layout/__tests__/layout.schema.test.ts` が固定する。
+ */
+const FlexOnly = {
+  kind: "notEquals",
+  prop: "layout",
+  notEquals: Layouts.Free,
+} as const satisfies EnabledWhen;
 
 /**
  * primitive の型を名前で指すための対応表。`PrimitiveType` はここから導出し、
@@ -47,28 +65,28 @@ const PlacementProps = {
     literalType: "number",
     default: 0,
     group: "layout",
-    enabledWhen: { prop: "placement", equals: "absolute" },
+    enabledWhen: { kind: "equals", prop: "placement", equals: "absolute" },
   },
   y: {
     domain: "literal",
     literalType: "number",
     default: 0,
     group: "layout",
-    enabledWhen: { prop: "placement", equals: "absolute" },
+    enabledWhen: { kind: "equals", prop: "placement", equals: "absolute" },
   },
   constraintX: {
     domain: "enum",
     values: Object.values(Constraints),
     default: Constraints.Min,
     group: "layout",
-    enabledWhen: { prop: "placement", equals: "absolute" },
+    enabledWhen: { kind: "equals", prop: "placement", equals: "absolute" },
   },
   constraintY: {
     domain: "enum",
     values: Object.values(Constraints),
     default: Constraints.Min,
     group: "layout",
-    enabledWhen: { prop: "placement", equals: "absolute" },
+    enabledWhen: { kind: "equals", prop: "placement", equals: "absolute" },
   },
 } as const satisfies PropDefinitionRecord;
 
@@ -82,13 +100,26 @@ export const BoxSchema = {
   allowsChildren: true,
   props: {
     ...PlacementProps,
-    direction: {
+    /*
+     * Why not: `arrangement` などへ改名しない。この prop も `group: "layout"` に属し、
+     * パネルの節見出しは group の綴りから作られるので、見出しと行に同じ語が並ぶ
+     * （UI 案 docs/Design Composer.html はここを `direction` と描いている）。
+     * それでも prop 名を docs/03 の綴りに揃えるのは、表示名を持たず prop 名の整形で
+     * 出す決まりだから（docs/03「表示名フィールドは持たない」）。見出しの語を変えるなら
+     * group の綴りごと変える話になり、この prop 単独の判断ではない。
+     */
+    layout: {
       domain: "enum",
-      values: ["row", "column"],
-      default: "column",
+      values: Object.values(Layouts),
+      default: Layout.Default,
       group: "layout",
     },
-    gap: { domain: "token", tokenKind: "spacing", group: "layout" },
+    gap: {
+      domain: "token",
+      tokenKind: "spacing",
+      group: "layout",
+      enabledWhen: FlexOnly,
+    },
     paddingTop: {
       domain: "token",
       tokenKind: "spacing",
@@ -118,12 +149,14 @@ export const BoxSchema = {
       values: ["start", "center", "end", "stretch"],
       default: "stretch",
       group: "layout",
+      enabledWhen: FlexOnly,
     },
     justify: {
       domain: "enum",
       values: ["start", "center", "end", "space-between"],
       default: "start",
       group: "layout",
+      enabledWhen: FlexOnly,
     },
     widthMode: {
       domain: "enum",
@@ -135,7 +168,7 @@ export const BoxSchema = {
       domain: "literal",
       literalType: "number",
       group: "size",
-      enabledWhen: { prop: "widthMode", equals: "fixed" },
+      enabledWhen: { kind: "equals", prop: "widthMode", equals: "fixed" },
     },
     heightMode: {
       domain: "enum",
@@ -147,7 +180,7 @@ export const BoxSchema = {
       domain: "literal",
       literalType: "number",
       group: "size",
-      enabledWhen: { prop: "heightMode", equals: "fixed" },
+      enabledWhen: { kind: "equals", prop: "heightMode", equals: "fixed" },
     },
     background: { domain: "token", tokenKind: "colors", group: "appearance" },
     radius: { domain: "token", tokenKind: "radius", group: "appearance" },

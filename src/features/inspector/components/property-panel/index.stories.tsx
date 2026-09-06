@@ -34,7 +34,7 @@ const SampleDocument = DesignDocument.create({
       width: 360,
       height: 240,
       props: {
-        direction: "column",
+        layout: "column",
         gap: "md",
         paddingTop: "lg",
         paddingRight: "lg",

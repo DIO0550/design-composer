@@ -24,7 +24,7 @@ export const SampleSidebarDocument = DesignDocument.create({
       name: "home",
       width: 360,
       height: 240,
-      props: { direction: "column", gap: "md", background: "white" },
+      props: { layout: "column", gap: "md", background: "white" },
       children: [
         {
           name: "home-title",
@@ -42,7 +42,7 @@ export const SampleSidebarDocument = DesignDocument.create({
       name: "settings",
       width: 360,
       height: 240,
-      props: { direction: "column", gap: "md", background: "gray-100" },
+      props: { layout: "column", gap: "md", background: "gray-100" },
       children: [
         {
           name: "settings-card",
