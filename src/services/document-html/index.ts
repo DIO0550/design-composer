@@ -7,7 +7,7 @@ import { Artboard } from "@/domains/dcmp/artboard";
 import { CssDeclarations } from "@/domains/dcmp/css-declaration";
 import type { DesignDocument } from "@/domains/dcmp/design-document";
 import { ExpandedNode, ExpandedNodeError } from "@/domains/dcmp/expanded-node";
-import { NodeHtml, type ParentContext } from "@/services/node-html";
+import { NodeHtml } from "@/services/node-html";
 import { type CssVariables, TokenCss } from "@/services/token-css";
 import { Html } from "@/utils/Html";
 import { Result } from "@/utils/Result";
@@ -42,16 +42,14 @@ function compileArtboard(
 ): Result<CompiledArtboard, Error> {
   // 子のコンパイルより先に要る（`fill` の出し分けが親の向きに依存する）ので、
   // 中身の組み立てを `CompiledArtboard` へ預けたあともここに残る
-  const childParent: ParentContext = {
-    direction: BoxElement.childDirection(Artboard.boxProps(artboard)),
-  };
+  const childDirection = BoxElement.childDirection(Artboard.boxProps(artboard));
   // 展開の失敗はドメインの直和で返るので、コンパイル側の語彙（`Error`）へ畳んでから繋ぐ
   const expanded = Result.mapErr(
     ExpandedNode.fromNodes(artboard.children, document.components),
     (error) => new Error(ExpandedNodeError.message(error)),
   );
   return Result.flatMap(expanded, (nodes) =>
-    Result.map(NodeHtml.compileAll(nodes, childParent), (children) =>
+    Result.map(NodeHtml.compileAll(nodes, childDirection), (children) =>
       CompiledArtboard.fromArtboard(artboard, children, TokenCss.refs),
     ),
   );

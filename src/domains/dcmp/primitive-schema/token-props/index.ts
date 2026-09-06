@@ -40,7 +40,7 @@ type TokenPropNameOf<T extends PrimitiveType> = {
  * `TokenPropNameOf` を primitive ごとに求めて union へまとめている。
  * 名前は primitive をまたいで重複しないため、型を問わず名前だけで引ける
  * （`gap` は Box にしか、`color` は Text にしか無い）。
- * トークンを引かない prop（`direction` などの enum、`width` などの literal）は
+ * トークンを引かない prop（`layout` などの enum、`width` などの literal）は
  * 含まれないので、この型で受ければ非トークン prop を渡せない。
  */
 export type TokenPropName = {

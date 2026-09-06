@@ -137,7 +137,7 @@ tokens セクションの体系を規定する。「見た目に関わる値は�
     },
     "type": "Box",
     "props": {
-      "direction": "row", "align": "center", "justify": "center",
+      "layout": "row", "align": "center", "justify": "center",
       "paddingTop": "sm", "paddingRight": "md", "paddingBottom": "sm", "paddingLeft": "md",
       "background": "primary", "radius": "md"
     },
@@ -152,7 +152,7 @@ tokens セクションの体系を規定する。「見た目に関わる値は�
     },
     "type": "Box",
     "props": {
-      "direction": "row", "align": "center", "justify": "center",
+      "layout": "row", "align": "center", "justify": "center",
       "paddingTop": "sm", "paddingRight": "md", "paddingBottom": "sm", "paddingLeft": "md",
       "background": "gray-100", "radius": "md"
     },
@@ -183,7 +183,7 @@ tokens セクションの体系を規定する。「見た目に関わる値は�
     },
     "type": "Box",
     "props": {
-      "direction": "column", "gap": "sm",
+      "layout": "column", "gap": "sm",
       "paddingTop": "lg", "paddingRight": "lg", "paddingBottom": "lg", "paddingLeft": "lg",
       "background": "white", "radius": "lg", "shadow": "sm"
     },

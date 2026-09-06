@@ -22,10 +22,10 @@ function setupControl(node: Node, prop: string): PropControl {
 }
 
 test("選択式に値を選ぶとその値を設定する編集になる", () => {
-  const control = setupControl({ name: "box", type: "Box" }, "direction");
+  const control = setupControl({ name: "box", type: "Box" }, "layout");
 
   expect(PropControl.editFrom(control, Option.some("row"))).toEqual({
-    names: ["direction"],
+    names: ["layout"],
     value: Option.some("row"),
   });
 });

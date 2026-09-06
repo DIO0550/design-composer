@@ -9,10 +9,10 @@ import { Option } from "@/utils/Option";
  * (docs/03「配置の指定」の追従の表)。Figma の `constraints` から借りた語で、
  * このリポジトリでは **`placement: absolute` の子が親のサイズ変更に追従する側**を指す。
  *
- * Why not: `CssDirection` のようにスキーマから union を導出する向きは採らない。
- * 追従の規則（どの値でどう動くか）を持つのがこのモジュールなので、値の出どころも
- * ここに置き、スキーマ側が `Object.values` で引く（代償として、スキーマの `values` は
- * 他の prop のような readonly タプルにならない）。
+ * Why not: スキーマの `values` から union を導出する向きは採らない。追従の規則
+ * （どの値でどう動くか）を持つのがこのモジュールなので、値の出どころもここに置き、
+ * スキーマ側が `Object.values` で引く（代償として、スキーマの `values` は他の prop の
+ * ような readonly タプルにならない）。`Layouts` / `CssDirections` も同じ向き。
  */
 export const Constraints = {
   Min: "min",

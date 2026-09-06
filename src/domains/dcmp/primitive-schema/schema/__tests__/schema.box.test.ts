@@ -6,14 +6,36 @@ test("Box は子を持てるスキーマとして定義されている", () => {
   expect(BoxSchema.allowsChildren).toBe(true);
 });
 
-test("Box の direction は row / column の enum でデフォルトが column", () => {
-  const definition = BoxSchema.props.direction;
+test("Box の layout は row / column / free の enum でデフォルトが column", () => {
+  const definition = BoxSchema.props.layout;
   expect(PropDefinition.isEnum(definition)).toBe(true);
   expect(definition).toMatchObject({
     domain: "enum",
-    values: ["row", "column"],
+    values: ["row", "column", "free"],
     default: "column",
   });
+});
+
+test("Box は向きの prop を layout に吸収して direction を宣言しない", () => {
+  expect(Object.keys(BoxSchema.props)).not.toContain("direction");
+});
+
+test("Box の間隔は layout が free のとき編集できない", () => {
+  expect(
+    PropDefinition.isEnabled(BoxSchema.props.gap, { layout: "free" }),
+  ).toBe(false);
+  expect(PropDefinition.isEnabled(BoxSchema.props.gap, { layout: "row" })).toBe(
+    true,
+  );
+});
+
+test("Box の揃えは layout が free のとき編集できない", () => {
+  expect(
+    PropDefinition.isEnabled(BoxSchema.props.align, { layout: "free" }),
+  ).toBe(false);
+  expect(
+    PropDefinition.isEnabled(BoxSchema.props.justify, { layout: "free" }),
+  ).toBe(false);
 });
 
 test("Box の placement は flow / absolute の enum でデフォルトが flow", () => {

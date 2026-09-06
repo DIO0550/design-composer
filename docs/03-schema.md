@@ -32,7 +32,7 @@
 | `literalType` | literal 時: `number` / `string` |
 | `default` | デフォルト値。省略時は「なし」 |
 | `group` | プロパティパネルのセクション（layout / size / appearance 等） |
-| `enabledWhen` | 条件付き有効。`{ prop: "...", equals: "..." }` の**単純等値のみ**（条件式言語は作らない） |
+| `enabledWhen` | 条件付き有効。`{ prop: "...", equals: "..." }` / `{ prop: "...", notEquals: "..." }` の**単純な等値・不等値のみ**（条件式言語は作らない）。見るのは**同じノードの** prop だけ |
 | `shorthand` | 4 辺の longhand であることの宣言。`{ name: "padding", edge: "top" }` |
 
 - パネルの表示順は定数の定義順をそのまま使う。order フィールドは持たない
@@ -94,14 +94,14 @@
 | prop | ドメイン | 値 | デフォルト |
 |---|---|---|---|
 | `placement` / `x` / `y` / `constraintX` / `constraintY` | | 上記「配置の指定」 | |
-| `direction` | enum | `row` / `column` | `column` |
-| `gap` | トークン (spacing) | | なし (0) |
+| `layout` | enum | `row` / `column` / `free` | `column` |
+| `gap` | トークン (spacing) | `layout` が `free` 以外のときのみ有効 | なし (0) |
 | `paddingTop` | トークン (spacing) | 上 | なし (0) |
 | `paddingRight` | トークン (spacing) | 右 | なし (0) |
 | `paddingBottom` | トークン (spacing) | 下 | なし (0) |
 | `paddingLeft` | トークン (spacing) | 左 | なし (0) |
-| `align` | enum | `start` / `center` / `end` / `stretch` | `stretch` |
-| `justify` | enum | `start` / `center` / `end` / `space-between` | `start` |
+| `align` | enum | `start` / `center` / `end` / `stretch`。`layout` が `free` 以外のときのみ有効 | `stretch` |
+| `justify` | enum | `start` / `center` / `end` / `space-between`。`layout` が `free` 以外のときのみ有効 | `start` |
 | `widthMode` | enum | `hug` / `fill` / `fixed` | `hug` |
 | `width` | 生リテラル (number, px) | `widthMode: fixed` 時のみ有効 | - |
 | `heightMode` | enum | `hug` / `fill` / `fixed` | `hug` |
@@ -111,6 +111,8 @@
 | `shadow` | トークン (shadows) | | なし |
 | `overflow` | enum | `visible` / `clip` | `visible` |
 
+- `layout: free` の Box は**子を並べない**。Figma の `layoutMode: NONE` にあたり、中身は `placement: absolute` の子を座標で置くための器になる。間隔・揃え（`gap` / `align` / `justify`）は並びが無いので効かない
+- **`widthMode` / `heightMode` の `fill` は、`layout` が `row` / `column` の親の子にだけ書ける。** `free` の親の子に書いたものはバリデーションエラー（下記「バリデーション仕様」）。親の prop を見る条件なので `enabledWhen` では表せない
 - padding は 4 方向個別。ドキュメントが持つのは4方向の値だけで、プロパティパネルでの畳み方（Figma と同じ垂直 / 水平への切り替え）は表示の都合なので持たない
   - ただし**「その prop がどの shorthand のどの辺の longhand か」はスキーマが `shorthand` で宣言する**。これは prop 自身の性質（`paddingTop` は padding の上辺である）であって、今そのパネルが畳んでいるかという画面の状態ではない。パネルはこの宣言を使って 4 prop を 1 行にまとめ、畳むかどうかは画面側だけで決める
 - border 系は初期セットに含めない（スキーマへの追加で対応可能）
@@ -137,15 +139,16 @@
 
 | prop | CSS |
 |---|---|
-| Box 自体 | `div` + `display: flex` + `position: relative`（絶対配置の子が位置を測る基準になるため。offset を伴わないので箱の位置は動かない。次の行と排他で、`placement: absolute` の Box では `absolute` に置き換わる） |
+| Box 自体 | `div` + `position: relative`（絶対配置の子が位置を測る基準になるため。offset を伴わないので箱の位置は動かない。次の行と排他で、`placement: absolute` の Box では `absolute` に置き換わる）。`display: flex` は下の `layout` の行が決める |
 | `placement: absolute` | `position: absolute` + `left: {x}px` + `top: {y}px` |
-| `direction` | `flex-direction` |
+| `layout: row` / `column` | `display: flex` + `flex-direction` |
+| `layout: free` | `display` を出さない（flex コンテナにしない）。`gap` / `align` / `justify` も出さない |
 | `gap` | `gap: var(--spacing-*)` |
 | `paddingTop` / `paddingRight` / `paddingBottom` / `paddingLeft` | `padding: var(--spacing-*)` （上 右 下 左 の順で4値に合成。未指定の辺は `0`） |
 | `align` | `align-items` |
 | `justify` | `justify-content` |
 | `widthMode: hug` | `width: fit-content` |
-| `widthMode: fill` | 親の主軸方向なら `flex-grow: 1`、交差軸方向なら `align-self: stretch`（親の `direction` を見て出し分け） |
+| `widthMode: fill` | 親の主軸方向なら `flex-grow: 1`、交差軸方向なら `align-self: stretch`（親の `layout` を見て出し分け） |
 | `widthMode: fixed` | `width: {n}px` |
 | `background` | `background: var(--colors-*)` |
 | `radius` | `border-radius: var(--radius-*)` |
@@ -155,7 +158,7 @@
 | Text `color` / `align` | `color` / `text-align` |
 
 - height 系は width 系と同じ規則を縦軸に適用する
-- `widthMode: fill` の出し分けだけが親コンテキストに依存するコンパイル。ただし親を見るのは**そのノードがフローに参加しているとき**に限る（`placement: absolute` のノードは flex アイテムではないので `fill` の宣言を出さない）
+- `widthMode: fill` の出し分けだけが親コンテキストに依存するコンパイル。ただし親を見るのは**そのノードがフローに参加しているとき**に限る（`placement: absolute` のノードは flex アイテムではないので `fill` の宣言を出さない）。親が `layout: free` のときも同じく宣言を出さない（並ぶ向きが無い）
 
 ## バリデーション仕様
 
@@ -167,6 +170,7 @@
 - ドメイン違反（enum 外の値・literalType 不一致・存在しないトークン名への参照）
 - dangling ref（存在しない部品名への参照）
 - **部品の循環参照**（ref の展開が自分自身に到達する）
+- **子を並べない親の下の `fill`**（`layout: free` の親の子に `widthMode` / `heightMode` の `fill` を書いている）
 - overrides の未宣言キー（部品の publicProps 宣言に無い名前の上書き）
 - binding の不整合（存在しない内部ノード名 / 存在しない prop への binding、ドメイン違反の上書き値）
 - 識別子規則違反（命名規則・予約文字）

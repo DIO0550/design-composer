@@ -1,28 +1,27 @@
 import { CssDeclaration } from "@/domains/dcmp/css-declaration";
-import type { PropValue } from "@/domains/dcmp/node";
-import { BoxSchema } from "@/domains/dcmp/primitive-schema";
 import type { Axis } from "@/domains/unit/axis";
+import type { ValueOf } from "@/types/ValueOf";
 
 /**
- * flex コンテナが子を並べる方向。
- * Box スキーマの `direction` から導出し二重管理しない。
+ * flex コンテナが子を並べる向きを名前で指すための対応表。
+ *
+ * 値の出どころをここに置き、スキーマ側（`BoxSchema.props.layout`）が `Layouts` 経由で
+ * 引く（`Constraints` と同じ向き）。スキーマから導出しないのは、`layout` の語彙に
+ * 「子を並べない」`free` が混ざるため。向きを持つ側だけを取り出す操作をスキーマの
+ * 綴りに依存させると、値の出どころが 2 つに割れる。
  */
-export type CssDirection =
-  (typeof BoxSchema)["props"]["direction"]["values"][number];
+export const CssDirections = {
+  Row: "row",
+  Column: "column",
+} as const;
+
+/** flex コンテナが子を並べる方向。 */
+export type CssDirection = ValueOf<typeof CssDirections>;
 
 export const CssDirection = {
-  /** `direction` prop の値から向きを決める。スキーマのデフォルトを既定とする。 */
-  from(value: PropValue | undefined): CssDirection {
-    return (
-      BoxSchema.props.direction.values.find(
-        (direction) => direction === value,
-      ) ?? BoxSchema.props.direction.default
-    );
-  },
-
   /** 子が並ぶ方向にあたる軸。 */
   mainAxis(direction: CssDirection): Axis {
-    return direction === "row" ? "width" : "height";
+    return direction === CssDirections.Row ? "width" : "height";
   },
 
   /** その軸が主軸(子が並ぶ方向)かどうか。 */

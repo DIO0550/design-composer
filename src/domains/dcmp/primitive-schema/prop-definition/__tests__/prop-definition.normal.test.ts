@@ -42,16 +42,26 @@ test("enabledWhen の条件を満たす props を渡すと isEnabled が true �
     domain: "literal",
     literalType: "number",
     group: "size",
-    enabledWhen: { prop: "widthMode", equals: "fixed" },
+    enabledWhen: { kind: "equals", prop: "widthMode", equals: "fixed" },
   } as const;
   expect(PropDefinition.isEnabled(definition, { widthMode: "fixed" })).toBe(
     true,
   );
 });
 
+test("不等値の条件と違う値を渡すと isEnabled が true になる", () => {
+  const definition = {
+    domain: "token",
+    tokenKind: "spacing",
+    group: "layout",
+    enabledWhen: { kind: "notEquals", prop: "layout", notEquals: "free" },
+  } as const;
+  expect(PropDefinition.isEnabled(definition, { layout: "row" })).toBe(true);
+});
+
 test("prop 定義1エントリを追加すると propNames にその prop が定義順で加わる", () => {
   const schema = {
-    direction: { domain: "enum", values: ["row", "column"], group: "layout" },
+    layout: { domain: "enum", values: ["row", "column"], group: "layout" },
     gap: { domain: "token", tokenKind: "spacing", group: "layout" },
   } satisfies PropDefinitionRecord;
 
@@ -65,7 +75,7 @@ test("prop 定義1エントリを追加すると propNames にその prop が定
   } satisfies PropDefinitionRecord;
 
   expect(PropDefinitionRecord.propNames(extended)).toEqual([
-    "direction",
+    "layout",
     "gap",
     "align",
   ]);

@@ -1,6 +1,24 @@
 import { Constraints } from "@/domains/dcmp/constraint";
+import { Layout, Layouts } from "@/domains/dcmp/layout";
 import type { ValueOf } from "@/types/ValueOf";
-import { type PropDefinitionRecord, ShorthandNames } from "../prop-definition";
+import {
+  type EnabledWhen,
+  type PropDefinitionRecord,
+  ShorthandNames,
+} from "../prop-definition";
+
+/**
+ * 子を並べる Box でだけ効く、という条件（docs/03「Box」）。
+ * `free` は子を並べないので、間隔・揃えを指定しても意味を持たない。
+ *
+ * Why not: `row` / `column` の等値を並べない。`layout` に値を足したとき
+ * （`GRID` など、子を並べる別のモード）に 3 prop すべてで追従が要る。
+ */
+const FlexOnly = {
+  kind: "notEquals",
+  prop: "layout",
+  notEquals: Layouts.Free,
+} as const satisfies EnabledWhen;
 
 /**
  * primitive の型を名前で指すための対応表。`PrimitiveType` はここから導出し、
@@ -47,28 +65,28 @@ const PlacementProps = {
     literalType: "number",
     default: 0,
     group: "layout",
-    enabledWhen: { prop: "placement", equals: "absolute" },
+    enabledWhen: { kind: "equals", prop: "placement", equals: "absolute" },
   },
   y: {
     domain: "literal",
     literalType: "number",
     default: 0,
     group: "layout",
-    enabledWhen: { prop: "placement", equals: "absolute" },
+    enabledWhen: { kind: "equals", prop: "placement", equals: "absolute" },
   },
   constraintX: {
     domain: "enum",
     values: Object.values(Constraints),
     default: Constraints.Min,
     group: "layout",
-    enabledWhen: { prop: "placement", equals: "absolute" },
+    enabledWhen: { kind: "equals", prop: "placement", equals: "absolute" },
   },
   constraintY: {
     domain: "enum",
     values: Object.values(Constraints),
     default: Constraints.Min,
     group: "layout",
-    enabledWhen: { prop: "placement", equals: "absolute" },
+    enabledWhen: { kind: "equals", prop: "placement", equals: "absolute" },
   },
 } as const satisfies PropDefinitionRecord;
 
@@ -82,13 +100,18 @@ export const BoxSchema = {
   allowsChildren: true,
   props: {
     ...PlacementProps,
-    direction: {
+    layout: {
       domain: "enum",
-      values: ["row", "column"],
-      default: "column",
+      values: Object.values(Layouts),
+      default: Layout.Default,
       group: "layout",
     },
-    gap: { domain: "token", tokenKind: "spacing", group: "layout" },
+    gap: {
+      domain: "token",
+      tokenKind: "spacing",
+      group: "layout",
+      enabledWhen: FlexOnly,
+    },
     paddingTop: {
       domain: "token",
       tokenKind: "spacing",
@@ -118,12 +141,14 @@ export const BoxSchema = {
       values: ["start", "center", "end", "stretch"],
       default: "stretch",
       group: "layout",
+      enabledWhen: FlexOnly,
     },
     justify: {
       domain: "enum",
       values: ["start", "center", "end", "space-between"],
       default: "start",
       group: "layout",
+      enabledWhen: FlexOnly,
     },
     widthMode: {
       domain: "enum",
@@ -135,7 +160,7 @@ export const BoxSchema = {
       domain: "literal",
       literalType: "number",
       group: "size",
-      enabledWhen: { prop: "widthMode", equals: "fixed" },
+      enabledWhen: { kind: "equals", prop: "widthMode", equals: "fixed" },
     },
     heightMode: {
       domain: "enum",
@@ -147,7 +172,7 @@ export const BoxSchema = {
       domain: "literal",
       literalType: "number",
       group: "size",
-      enabledWhen: { prop: "heightMode", equals: "fixed" },
+      enabledWhen: { kind: "equals", prop: "heightMode", equals: "fixed" },
     },
     background: { domain: "token", tokenKind: "colors", group: "appearance" },
     radius: { domain: "token", tokenKind: "radius", group: "appearance" },

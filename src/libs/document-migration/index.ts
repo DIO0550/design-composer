@@ -1,7 +1,8 @@
 import { FormatVersion } from "@/domains/dcmp/format-version";
-import type { JsonRecord } from "@/utils/Json";
+import { Json, type JsonRecord } from "@/utils/Json";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
+import { migrateV1ToV2 } from "./v1-to-v2";
 
 /**
  * major ひとつ分の変換。1つの major を次の major の形へ写す（v1 → v2 の変換1つ分）。
@@ -52,11 +53,11 @@ export const DocumentMigrationError = {
 } as const;
 
 /**
- * 登録済みの変換ステップ。破壊的変更がまだ無いため空。
+ * 登録済みの変換ステップ。
  * major を上げるときは変換元の major をキーにして1つ足す
- * (`1: migrateV1ToV2` のように、1つの major 分の変換を1つの塊として持つ)。
+ * (1つの major 分の変換を1つの塊として持つ)。
  */
-const RegisteredMigrationSteps: MigrationSteps = {};
+const RegisteredMigrationSteps: MigrationSteps = { 1: migrateV1ToV2 };
 
 /**
  * JSON のデータモデルから formatVersion を読む。
@@ -86,19 +87,6 @@ function withFormatVersion(
   version: FormatVersion,
 ): JsonRecord {
   return { ...document, formatVersion: FormatVersion.format(version) };
-}
-
-/**
- * 読み込んだ値をオブジェクトとして読む。配列と `null` は含めない。
- *
- * @param value 読み込んだ値
- * @returns オブジェクトとして読めれば `some`、配列・`null`・それ以外なら `none`
- */
-function asRecord(value: unknown): Option<JsonRecord> {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) {
-    return Option.none;
-  }
-  return Option.some(value as JsonRecord);
 }
 
 /**
@@ -166,7 +154,7 @@ export const DocumentMigration = {
     steps: MigrationSteps = RegisteredMigrationSteps,
     appVersion: FormatVersion = FormatVersion.Current,
   ): Result<unknown, DocumentMigrationError> {
-    const document = asRecord(value);
+    const document = Json.asRecord(value);
     if (!document.some) {
       return Result.ok(value);
     }

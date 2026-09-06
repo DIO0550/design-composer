@@ -18,11 +18,11 @@ test("Box は flex コンテナになり、未指定の prop はスキーマの�
   });
 });
 
-test("direction を row にすると横並びになる", () => {
+test("layout を row にすると横並びになる", () => {
   const style = styleOf({
     name: "row",
     type: "Box",
-    props: { direction: "row" },
+    props: { layout: "row" },
   });
 
   expect(style["flex-direction"]).toBe("row");
@@ -125,11 +125,11 @@ test("style は style 属性へ載せられる宣言の並びに直列化でき�
     NodeHtml.compile({
       name: "box",
       type: "Box",
-      props: { direction: "row", gap: "md" },
+      props: { layout: "row", gap: "md" },
     }),
   );
 
   expect(CompiledElement.styleText(compiled)).toBe(
-    "display:flex;position:relative;flex-direction:row;gap:var(--spacing-md);align-items:stretch;justify-content:start;width:fit-content;height:fit-content",
+    "display:flex;flex-direction:row;position:relative;gap:var(--spacing-md);align-items:stretch;justify-content:start;width:fit-content;height:fit-content",
   );
 });

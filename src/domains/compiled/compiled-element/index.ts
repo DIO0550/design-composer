@@ -7,7 +7,8 @@ import {
   CssDeclaration,
   CssDeclarations,
 } from "@/domains/dcmp/css-declaration";
-import { CssDirection } from "@/domains/dcmp/css-direction";
+import type { CssDirection } from "@/domains/dcmp/css-direction";
+import { Layout } from "@/domains/dcmp/layout";
 import type { PropValue } from "@/domains/dcmp/node";
 import { Padding } from "@/domains/dcmp/padding";
 import { Placement } from "@/domains/dcmp/placement";
@@ -19,6 +20,7 @@ import type { ResolvedProps } from "@/domains/dcmp/resolved-props";
 import { Size } from "@/domains/dcmp/size";
 import { TypographyField, TypographyToken } from "@/domains/dcmp/token";
 import { Html } from "@/utils/Html";
+import { Option } from "@/utils/Option";
 
 /**
  * トークン参照 prop → その prop が決める CSS プロパティ
@@ -170,24 +172,41 @@ export const BoxElement = {
 
   /**
    * Box の props を CSS の宣言へ写す (docs/03「HTML/CSS へのコンパイル規則」の表)。
-   * 各 prop の規則はそれぞれのドメイン (Padding / Size / CssDirection) が持ち、
+   * 各 prop の規則はそれぞれのドメイン (Layout / Padding / Size) が持ち、
    * ここはその並び順 = 宣言の出力順を決める。
+   *
+   * @param props デフォルト解決済みの Box の props
+   * @param parentDirection この Box を flex アイテムとして並べる親の向き。
+   *   親を持たない位置と、親が子を並べない (`layout: free`) ときは `none`
+   * @param tokens カスタムプロパティ名の綴り方
+   * @returns 出力順に並べた宣言
    */
   declarations(
     props: ResolvedProps<"Box">,
-    parentDirection: CssDirection | undefined,
+    parentDirection: Option<CssDirection>,
     tokens: TokenRefs,
   ): readonly CssDeclarationType[] {
     const placement = Placement.fromProps(props);
     // 絶対配置の子はフローから外れるので、flex アイテムとしての親を持たない
     const flexParentDirection = Placement.isAbsolute(placement)
-      ? undefined
+      ? Option.none
       : parentDirection;
+    const layout = Layout.fromProps(props);
+    // 子を並べない Box では間隔・揃えが意味を持たない (スキーマの `enabledWhen` と同じ規則)
+    const arrangesChildren = Layout.direction(layout).some;
+    const gap = arrangesChildren
+      ? tokenDeclarations("gap", props.gap, tokens)
+      : [];
+    const alignment = arrangesChildren
+      ? [
+          CssDeclaration.create("align-items", String(props.align)),
+          CssDeclaration.create("justify-content", String(props.justify)),
+        ]
+      : [];
     return [
-      CssDeclaration.create("display", "flex"),
+      ...Layout.declarations(layout),
       ...placementDeclarations(placement),
-      CssDeclaration.create("flex-direction", String(props.direction)),
-      ...tokenDeclarations("gap", props.gap, tokens),
+      ...gap,
       /*
        * prop 名と辺の対応は、スキーマの `shorthand` 宣言（`paddingTop` は padding の
        * 上辺、など）と同じ事実をここでも書いている。宣言から導くと CSS 出力が
@@ -202,8 +221,7 @@ export const BoxElement = {
         }),
         (token) => tokens.ref("spacing", token),
       ),
-      CssDeclaration.create("align-items", String(props.align)),
-      CssDeclaration.create("justify-content", String(props.justify)),
+      ...alignment,
       ...Size.declarations(
         Size.create(props.widthMode, props.width),
         "width",
@@ -221,9 +239,14 @@ export const BoxElement = {
     ];
   },
 
-  /** 子を並べる向き。子の `fill` の出し分けはこの向きに従う。 */
-  childDirection(props: ResolvedProps<"Box">): CssDirection {
-    return CssDirection.from(props.direction);
+  /**
+   * 子を並べる向き。子の `fill` の出し分けはこの向きに従う。
+   *
+   * @param props デフォルト解決済みの Box の props
+   * @returns 子が並ぶ向き。子を並べない (`layout: free`) Box では `none`
+   */
+  childDirection(props: ResolvedProps<"Box">): Option<CssDirection> {
+    return Layout.direction(Layout.fromProps(props));
   },
 } as const;
 

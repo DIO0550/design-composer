@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 import { NodeHtml } from "../index";
 import { styleOf } from "./setup";
@@ -46,7 +47,7 @@ test("fixed 以外のモードでは width の値は無視される", () => {
 test("横並びの親の中で widthMode を fill にすると主軸方向に伸びる", () => {
   const style = styleOf(
     { name: "box", type: "Box", props: { widthMode: "fill" } },
-    { direction: "row" },
+    Option.some("row"),
   );
 
   expect(style["flex-grow"]).toBe("1");
@@ -56,7 +57,7 @@ test("横並びの親の中で widthMode を fill にすると主軸方向に伸
 test("縦並びの親の中で widthMode を fill にすると交差軸方向に引き伸ばされる", () => {
   const style = styleOf(
     { name: "box", type: "Box", props: { widthMode: "fill" } },
-    { direction: "column" },
+    Option.some("column"),
   );
 
   expect(style["align-self"]).toBe("stretch");
@@ -65,7 +66,7 @@ test("縦並びの親の中で widthMode を fill にすると交差軸方向に
 test("縦並びの親の中で heightMode を fill にすると主軸方向に伸びる", () => {
   const style = styleOf(
     { name: "box", type: "Box", props: { heightMode: "fill" } },
-    { direction: "column" },
+    Option.some("column"),
   );
 
   expect(style["flex-grow"]).toBe("1");
@@ -74,18 +75,18 @@ test("縦並びの親の中で heightMode を fill にすると主軸方向に�
 test("横並びの親の中で heightMode を fill にすると交差軸方向に引き伸ばされる", () => {
   const style = styleOf(
     { name: "box", type: "Box", props: { heightMode: "fill" } },
-    { direction: "row" },
+    Option.some("row"),
   );
 
   expect(style["align-self"]).toBe("stretch");
 });
 
-test("子の fill は親ノードの direction に従って出し分けられる", () => {
+test("子の fill は親ノードの layout に従って出し分けられる", () => {
   const compiled = Result.unwrap(
     NodeHtml.compile({
       name: "row",
       type: "Box",
-      props: { direction: "row" },
+      props: { layout: "row" },
       children: [{ name: "child", type: "Box", props: { widthMode: "fill" } }],
     }),
   );
@@ -120,4 +121,38 @@ test("widthMode が fixed でも width が未指定なら幅の宣言を出力�
   });
 
   expect(style).not.toHaveProperty("width");
+});
+
+test("自由配置の親の中では子の fill が宣言を出さない", () => {
+  const compiled = Result.unwrap(
+    NodeHtml.compile({
+      name: "free",
+      type: "Box",
+      props: { layout: "free" },
+      children: [
+        { name: "child", type: "Box", props: { widthMode: "fill" } },
+        { name: "tall", type: "Box", props: { heightMode: "fill" } },
+      ],
+    }),
+  );
+
+  const children = compiled.kind === "box" ? compiled.children : [];
+  expect(children.map((child) => child.style)).toEqual([
+    expect.not.objectContaining({ "flex-grow": "1" }),
+    expect.not.objectContaining({ "flex-grow": "1" }),
+  ]);
+});
+
+test("横並びの親の中では子の fill が宣言を出す", () => {
+  const compiled = Result.unwrap(
+    NodeHtml.compile({
+      name: "row",
+      type: "Box",
+      props: { layout: "row" },
+      children: [{ name: "child", type: "Box", props: { widthMode: "fill" } }],
+    }),
+  );
+
+  const children = compiled.kind === "box" ? compiled.children : [];
+  expect(children[0].style["flex-grow"]).toBe("1");
 });

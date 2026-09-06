@@ -2,6 +2,7 @@ import { expect, test } from "vitest";
 import type { ComponentSet } from "@/domains/dcmp/component";
 import { ExpandedNode } from "@/domains/dcmp/expanded-node";
 import type { RefNode } from "@/domains/dcmp/node";
+import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 import { NodeHtml } from "../index";
 
@@ -57,7 +58,7 @@ test("同じノードをコンパイルすると常に同じ出力になる", ()
   const node = {
     name: "card",
     type: "Box",
-    props: { direction: "row", gap: "md", background: "primary" },
+    props: { layout: "row", gap: "md", background: "primary" },
     children: [{ name: "label", type: "Text", props: { content: "Hello" } }],
   } as const;
 
@@ -107,11 +108,11 @@ test("複数のノードをまとめてコンパイルすると並び順が保�
   expect(compiled.map((element) => element.name)).toEqual(["first", "second"]);
 });
 
-test("まとめてコンパイルするときも親の direction が子へ渡る", () => {
+test("まとめてコンパイルするときも親の向きが子へ渡る", () => {
   const compiled = Result.unwrap(
     NodeHtml.compileAll(
       [{ name: "child", type: "Box", props: { widthMode: "fill" } }],
-      { direction: "row" },
+      Option.some("row"),
     ),
   );
 

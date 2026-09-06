@@ -70,9 +70,9 @@ test("複数選んでいるときは編集欄を持たず選択件数だけを�
 test("enum の prop は宣言された値から選ぶコントロールになる", () => {
   const selection = setupSelection([{ name: "box", type: "Box" }], "box");
 
-  expect(controlOf(selection, "direction")?.input).toEqual({
+  expect(controlOf(selection, "layout")?.input).toEqual({
     kind: "enum",
-    values: ["row", "column"],
+    values: ["row", "column", "free"],
   });
 });
 
@@ -180,13 +180,13 @@ test("実在しないトークンを指す色の prop は色を持たない", ()
 
 test("宣言に無い値が設定されている enum はその値も選択肢に出る", () => {
   const selection = setupSelection(
-    [{ name: "box", type: "Box", props: { direction: "diagonal" } }],
+    [{ name: "box", type: "Box", props: { layout: "diagonal" } }],
     "box",
   );
 
-  expect(controlOf(selection, "direction")?.input).toEqual({
+  expect(controlOf(selection, "layout")?.input).toEqual({
     kind: "enum",
-    values: ["diagonal", "row", "column"],
+    values: ["diagonal", "row", "column", "free"],
   });
 });
 
@@ -229,7 +229,7 @@ test("設定されている prop はその値がコントロールに乗る", ()
 
 test("設定されていない prop は値を持たず、スキーマの既定だけがコントロールに乗る", () => {
   const selection = setupSelection([{ name: "box", type: "Box" }], "box");
-  const control = controlOf(selection, "direction");
+  const control = controlOf(selection, "layout");
 
   expect(control?.value.some).toBe(false);
   expect(control?.defaultValue).toEqual(Option.some("column"));
@@ -249,7 +249,7 @@ test("条件付きの prop は条件を出している prop の名前を持つ",
 test("条件を持たない prop は条件を出している prop の名前を持たない", () => {
   const selection = setupSelection([{ name: "box", type: "Box" }], "box");
 
-  expect(controlOf(selection, "direction")?.enabledBy).toEqual(Option.none);
+  expect(controlOf(selection, "layout")?.enabledBy).toEqual(Option.none);
 });
 
 test("座標の欄は絶対配置のときだけ出る", () => {

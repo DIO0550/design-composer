@@ -1,3 +1,4 @@
+import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
 /** JSON のデータモデルで表せる値。 */
@@ -122,6 +123,19 @@ export const Json = {
   /** テキストから読み込んだ値を、位置つきのカーソルにする。 */
   create(value: unknown, path = ""): JsonCursor {
     return { value, path };
+  },
+
+  /**
+   * 読み込んだ値をオブジェクトとして読む。配列と `null` は含めない。
+   *
+   * カーソルを取らないのは、位置を報告しない読み方（デコード前にキーを並べ替える
+   * 移行処理など）から使うため。位置つきで読むのは `Json.object`。
+   *
+   * @param value 読み込んだ値
+   * @returns オブジェクトとして読めれば `some`、配列・`null`・それ以外なら `none`
+   */
+  asRecord(value: unknown): Option<JsonRecord> {
+    return isJsonRecord(value) ? Option.some(value) : Option.none;
   },
 
   error(

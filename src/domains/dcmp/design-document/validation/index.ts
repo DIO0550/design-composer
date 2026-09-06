@@ -5,6 +5,7 @@ import {
   type PublicPropBinding,
 } from "@/domains/dcmp/component";
 import { ComponentBinding } from "@/domains/dcmp/component-binding";
+import { Layout } from "@/domains/dcmp/layout";
 import { NameSpace } from "@/domains/dcmp/name-space";
 import { Node, Props, type RefNode } from "@/domains/dcmp/node";
 import type { PropValidationError } from "@/domains/dcmp/primitive-schema";
@@ -14,8 +15,11 @@ import {
   PropDefinition,
   PropDefinitionRecord,
 } from "@/domains/dcmp/primitive-schema";
+import { Size } from "@/domains/dcmp/size";
 import { TokenSet } from "@/domains/dcmp/token";
-import type { DesignDocumentV1 as DesignDocument } from "../v1";
+import { Axes } from "@/domains/unit/axis";
+import { Option } from "@/utils/Option";
+import type { DesignDocumentV2 as DesignDocument } from "../v2";
 
 /** ドキュメントが不正になる理由（docs/03-schema.md「バリデーション仕様」）。 */
 export type DesignDocumentValidationErrorKind =
@@ -28,7 +32,8 @@ export type DesignDocumentValidationErrorKind =
   | "dangling-binding-prop"
   | "missing-name"
   | "invalid-identifier"
-  | "duplicate-name";
+  | "duplicate-name"
+  | "fill-in-free-parent";
 
 /** 不正 1 件。どのノードのどの prop かと、診断用のメッセージを持つ。 */
 export type DesignDocumentValidationError = Readonly<{
@@ -97,25 +102,69 @@ function collectTypedPropErrors(
 }
 
 /**
+ * 子を並べない親（`layout: free`）の下に `fill` を書いていないか
+ * （docs/03「Box」。Figma と同じく `fill` は子を並べる親の下でだけ意味を持つ）。
+ *
+ * スキーマの `enabledWhen` で閉じられないのは、条件が**親の** prop だから
+ * （docs/03「`enabledWhen` は単純な等値・不等値のみ」）。「向きを持たない」の判定は
+ * `Layout.direction` 1 つに寄せてあり、コンパイル側の `fill` の出し分けも同じ答えを引く。
+ *
+ * @param parentLayout その props を持つノードの親の配置モード。
+ *   親がいない位置（部品のルート）では `none`
+ * @param props 検査するノードの props
+ * @returns 軸ごとのエラーの並び。親が子を並べるときと、親がいないときは空
+ */
+function collectFillErrors(
+  parentLayout: Option<Layout>,
+  props: Props | undefined,
+): readonly UnlocatedError[] {
+  if (!parentLayout.some) {
+    return [];
+  }
+  if (Layout.direction(parentLayout.value).some) {
+    return [];
+  }
+  return Object.values(Axes).flatMap((axis): readonly UnlocatedError[] => {
+    const modeProp = Size.modeProp(axis);
+    if (props?.[modeProp] !== "fill") {
+      return [];
+    }
+    return [
+      {
+        kind: "fill-in-free-parent" as const,
+        prop: modeProp,
+        message: `prop "${modeProp}" cannot be "fill" inside a parent that does not arrange its children`,
+      },
+    ];
+  });
+}
+
+/**
  * ノードとその子孫の props をスキーマで照らす。部品インスタンスは対象外。
  *
  * @param node 起点のノード
  * @param tokens トークン参照の解決に使うトークン一式
+ * @param parentLayout 親の配置モード。親がいない位置（部品のルート）では `none`
  * @returns 自身と子孫の props のエラーの並び（部品インスタンスは空）
  */
 function collectNodeErrors(
   node: Node,
   tokens: TokenSet,
+  parentLayout: Option<Layout>,
 ): readonly DesignDocumentValidationError[] {
   if (Node.isRef(node)) {
     return [];
   }
-  const ownErrors = withLocation(
-    { nodeName: node.name },
-    collectTypedPropErrors(node.type, node.props, tokens),
-  );
+  const ownErrors = withLocation({ nodeName: node.name }, [
+    ...collectTypedPropErrors(node.type, node.props, tokens),
+    ...collectFillErrors(parentLayout, node.props),
+  ]);
   const childErrors = Node.children(node).flatMap((child) =>
-    collectNodeErrors(child, tokens),
+    collectNodeErrors(
+      child,
+      tokens,
+      Option.some(Layout.fromProps(node.props ?? {})),
+    ),
   );
   return [...ownErrors, ...childErrors];
 }
@@ -329,7 +378,11 @@ export function collectComponentErrors(
     collectTypedPropErrors(component.type, component.props, context.tokens),
   );
   const childErrors = children.flatMap((child) =>
-    collectNodeErrors(child, context.tokens),
+    collectNodeErrors(
+      child,
+      context.tokens,
+      Option.some(Layout.fromProps(component.props ?? {})),
+    ),
   );
   const bindingErrors = collectBindingErrors(context, name, component);
   const refErrors = children.flatMap((child) =>
@@ -363,7 +416,11 @@ export function collectArtboardErrors(
     ),
   );
   const childErrors = artboard.children.flatMap((child) =>
-    collectNodeErrors(child, context.tokens),
+    collectNodeErrors(
+      child,
+      context.tokens,
+      Option.some(Layout.fromProps(artboard.props ?? {})),
+    ),
   );
   const refErrors = artboard.children.flatMap((child) =>
     collectNodeRefErrors(context, child),

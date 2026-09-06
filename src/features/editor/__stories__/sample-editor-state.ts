@@ -23,7 +23,7 @@ export const SampleEditorState = EditorState.create(
         width: 360,
         height: 240,
         props: {
-          direction: "column",
+          layout: "column",
           gap: "md",
           paddingTop: "lg",
           paddingRight: "lg",
@@ -49,7 +49,7 @@ export const SampleEditorState = EditorState.create(
         width: 360,
         height: 240,
         props: {
-          direction: "column",
+          layout: "column",
           gap: "md",
           paddingTop: "lg",
           paddingRight: "lg",

@@ -65,7 +65,7 @@ test("セグメントコントロールで並びを変えるとキャンバス�
   await renderOpenedDocument();
   await selectArtboard("home");
 
-  await userEvent.click(segmentOf("Direction", "row"));
+  await userEvent.click(segmentOf("Layout", "row"));
 
   expect(renderedElement(canvasPane(), "home").style.flexDirection).toBe("row");
 });

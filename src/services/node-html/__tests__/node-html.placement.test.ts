@@ -66,7 +66,7 @@ test("fill が親いっぱいに広がるのはフローの子だけで、絶対
     {
       name: "row",
       type: "Box",
-      props: { direction: "row" },
+      props: { layout: "row" },
       children: [
         {
           name: "floating",

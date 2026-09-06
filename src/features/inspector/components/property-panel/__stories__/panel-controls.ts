@@ -19,7 +19,7 @@ import { Option } from "@/utils/Option";
 
 /** 未指定の enum。セグメントと「未指定（既定: …）」の注記が出る。 */
 export const DirectionControl: PropControl = {
-  prop: "direction",
+  prop: "layout",
   input: { kind: "enum", values: ["row", "column"] },
   value: Option.none,
   defaultValue: Option.some("column"),

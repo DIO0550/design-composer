@@ -17,6 +17,9 @@ const LabelClass = `${LabelWidthClass} truncate text-[11px] text-gray-500`;
  * 順が変われば離れた位置に字下げだけが残る。**この出し分けは class の違いにしかならないので、
  * 崩れに気づける手段は Storybook の視覚差分だけ**（happy-dom は Tailwind を解決しない）。
  *
+ * Why not: 「enum 以外」では畳みすぎる。条件付きのトークン欄（`layout` が `free` で
+ * なければ効く `gap`）まで巻き込み、条件を出している行と離れた位置でラベルだけが消える。
+ *
  * Why not: セグメント（enum）は条件付きでもラベルを出す。`placement: absolute` の下には
  * `x` / `y` / `constraintX` / `constraintY` の 4 行がぶら下がり、同じ選択肢を持つ
  * 追従の 2 行はラベルが無いと**目で見てどちらが横でどちらが縦か分からない**（読み上げ名は
@@ -41,7 +44,9 @@ export function PropRow({
   onEdit: (edit: PropEdit) => void;
 }>): ReactElement {
   const labelledBy = useId();
-  const hidesLabel = control.enabledBy.some && control.input.kind !== "enum";
+  const isLiteralField =
+    control.input.kind === "number" || control.input.kind === "text";
+  const hidesLabel = control.enabledBy.some && isLiteralField;
   const showsUnsetNote =
     control.input.kind === "enum" && !PropControl.hasValue(control);
 

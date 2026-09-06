@@ -59,7 +59,7 @@ const NestedSelection = DocumentSelection.fromNames(
         width: 360,
         height: 240,
         props: {
-          direction: "column",
+          layout: "column",
           gap: "md",
           paddingRight: "lg",
           paddingLeft: "lg",
@@ -73,7 +73,7 @@ const NestedSelection = DocumentSelection.fromNames(
           {
             name: "body",
             type: "Box",
-            props: { direction: "column", gap: "sm" },
+            props: { layout: "column", gap: "sm" },
             children: [
               { name: "body-text", type: "Text", props: { content: "本文" } },
               {

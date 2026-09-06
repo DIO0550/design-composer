@@ -23,7 +23,7 @@ design-composer のドキュメントは、単一の JSON ファイル（`.dcmp`
 
 ```json
 {
-  "formatVersion": "1.1",
+  "formatVersion": "2.0",
   "tokens": {
     "colors": { "primary": "#3b82f6" },
     "spacing": { "md": "16px" }
@@ -44,7 +44,7 @@ design-composer のドキュメントは、単一の JSON ファイル（`.dcmp`
         {
           "name": "login-form",
           "type": "Box",
-          "props": { "direction": "column", "gap": "md" },
+          "props": { "layout": "column", "gap": "md" },
           "children": [
             { "name": "login-submit", "ref": "primary-button", "overrides": { "label": "ログイン" } }
           ]
@@ -73,7 +73,7 @@ design-composer のドキュメントは、単一の JSON ファイル（`.dcmp`
 - **major**: 破壊的変更。読み込み時にマイグレーションが必要
 - **minor**: 追加的変更（新プリミティブ・新 prop・新トークン種別など）
 
-**アプリが書き出す現行版は `"1.1"`。** prop や artboard のフィールドを足すたびに minor を上げる（上げないと、新しい綴りを含むファイルが旧アプリで「読めるが未知のフィールド」として開かれ、どこまで解釈されたかが利用者から見えない）。
+**アプリが書き出す現行版は `"2.0"`。** prop や artboard のフィールドを足すたびに minor を上げる（上げないと、新しい綴りを含むファイルが旧アプリで「読めるが未知のフィールド」として開かれ、どこまで解釈されたかが利用者から見えない）。
 
 ただし**その版でまだ動作確認をしていない間は、追加のたびに上げ直さない**。旧アプリで開かれる心配が出るのは版を配ってからで、それまでに足したものは同じ版の中身として書き足す（版だけが増えると、どの版が実際に読み書きされたのかが表から読めなくなる）。
 
@@ -81,6 +81,7 @@ design-composer のドキュメントは、単一の JSON ファイル（`.dcmp`
 |---|---|
 | 1.0 | 初期 |
 | 1.1 | ノードの `placement` / `x` / `y`（03-schema「配置の指定」。**親からの相対**）／ artboard の `x` / `y`（下記「artboards」。**キャンバス上の絶対位置**）／ ノードの `constraintX` / `constraintY`（03-schema「親のリサイズへの追従」） |
+| 2.0 | Box の `direction` を `layout` が吸収し、値に `free` が加わった（03-schema「Box」）。**`direction` は読めなくなる**ので major を上げ、1.x のファイルは読み込み時に `layout` へ変換する |
 
 | 状況 | 挙動 |
 |---|---|
@@ -110,7 +111,7 @@ design-composer のドキュメントは、単一の JSON ファイル（`.dcmp`
 ```json
 "components": {
   "primary-button": { "type": "Button", "props": { "variant": "primary" } },
-  "search-field":   { "type": "Stack",  "props": { "direction": "row" }, "children": [ ... ] }
+  "search-field":   { "type": "Stack",  "props": { "layout": "row" }, "children": [ ... ] }
 }
 ```
 
