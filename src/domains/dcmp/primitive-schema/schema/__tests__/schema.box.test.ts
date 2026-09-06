@@ -34,8 +34,17 @@ test("Box の揃えは layout が free のとき編集できない", () => {
     PropDefinition.isEnabled(BoxSchema.props.align, { layout: "free" }),
   ).toBe(false);
   expect(
+    PropDefinition.isEnabled(BoxSchema.props.align, { layout: "row" }),
+  ).toBe(true);
+});
+
+test("Box の並べ方は layout が free のとき編集できない", () => {
+  expect(
     PropDefinition.isEnabled(BoxSchema.props.justify, { layout: "free" }),
   ).toBe(false);
+  expect(
+    PropDefinition.isEnabled(BoxSchema.props.justify, { layout: "row" }),
+  ).toBe(true);
 });
 
 test("Box の placement は flow / absolute の enum でデフォルトが flow", () => {

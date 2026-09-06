@@ -110,7 +110,7 @@ test("自由配置の Box の孫にあたるノードの fill もエラーにな
   ]);
 });
 
-test("部品のルートノードは親が決まらないので fill を書いてもエラーにならない", () => {
+test("部品のルート自身の fill は検査の対象外になる", () => {
   const document = DesignDocument.create({
     components: {
       card: { type: "Box", props: { widthMode: "fill" } },

@@ -11,8 +11,8 @@ import {
  * 子を並べる Box でだけ効く、という条件（docs/03「Box」）。
  * `free` は子を並べないので、間隔・揃えを指定しても意味を持たない。
  *
- * Why not: `row` / `column` の等値を並べない。`layout` に値を足したとき
- * （`GRID` など、子を並べる別のモード）に 3 prop すべてで追従が要る。
+ * 不等値で書く理由は `EnabledWhen` の doc。ここが `Layout.direction` と同じ事実を
+ * 別に綴っていることは `domains/dcmp/layout/__tests__/layout.schema.test.ts` が固定する。
  */
 const FlexOnly = {
   kind: "notEquals",
@@ -100,6 +100,14 @@ export const BoxSchema = {
   allowsChildren: true,
   props: {
     ...PlacementProps,
+    /*
+     * Why not: `arrangement` などへ改名しない。この prop も `group: "layout"` に属し、
+     * パネルの節見出しは group の綴りから作られるので、見出しと行に同じ語が並ぶ
+     * （UI 案 docs/Design Composer.html はここを `direction` と描いている）。
+     * それでも prop 名を docs/03 の綴りに揃えるのは、表示名を持たず prop 名の整形で
+     * 出す決まりだから（docs/03「表示名フィールドは持たない」）。見出しの語を変えるなら
+     * group の綴りごと変える話になり、この prop 単独の判断ではない。
+     */
     layout: {
       domain: "enum",
       values: Object.values(Layouts),

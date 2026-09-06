@@ -30,6 +30,15 @@ export const Layout = {
    * props から配置モードを読む。
    * `layout` prop の綴りを知っているのはここだけで、消費側は prop 名を持たない。
    *
+   * Why not: 語彙に無い綴りを `Option` の不在にしない（`Placement.fromProps` /
+   * `Size.create` は不在にする）。それらは**書いた値が使えない**ときに描画から落ちるが、
+   * 配置モードは落ちると箱の中身が並ばなくなる。吸収前の `CssDirection.from` も同じ
+   * 既定へ倒しており、綴りの誤り 1 つでレイアウトが崩れないほうを引き継いだ。
+   *
+   * 代償として、`layout` の綴りが不正な親の下では**子の `fill` も既定の親の下にある**
+   * ものとして検証される。ドキュメント自体は親の `enum-violation` で不正になるので、
+   * 直せば子の判定もやり直される。
+   *
    * @param props 読み取り元の props（デフォルト解決済みでなくてよい）
    * @returns 配置モード。未設定・語彙に無い綴りのときは既定（`Default`）
    *   （不正な値そのものは `DesignDocument.collectErrors` がエラー一覧に出す）
@@ -45,8 +54,10 @@ export const Layout = {
   /**
    * その配置モードが子を並べる向き。
    *
-   * 「向きを持たない」の唯一の出どころで、コンパイル（`fill` の出し分け）と
-   * バリデーション（`free` の親の子は `fill` を書けない）はどちらもここを引く。
+   * コンパイル（`fill` と間隔・揃えの出し分け）とバリデーション（`free` の親の子は
+   * `fill` を書けない）はどちらもここを引く。**スキーマの `enabledWhen` だけは
+   * 別に綴っている**（`BoxSchema` の `FlexOnly`）ので、両者が一致することは
+   * `__tests__/layout.schema.test.ts` が固定する。
    *
    * @param layout 向きを知りたい配置モード
    * @returns 子が並ぶ向き。`free` は子を並べないので `none`

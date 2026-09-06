@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import { Json, type JsonDecoded, type JsonDecodeError } from "@/utils/Json";
+import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 import { recordCursor } from "./Json.setup";
 
@@ -109,4 +110,16 @@ test("値の位置は入れ子をたどった形で示される", () => {
   expect(errorsOf(decoded).map((error) => error.path)).toEqual([
     "components.card.title",
   ]);
+});
+
+test("配列はオブジェクトとして読まない", () => {
+  expect(Json.asRecord([{ name: "home" }])).toEqual(Option.none);
+});
+
+test("null はオブジェクトとして読まない", () => {
+  expect(Json.asRecord(null)).toEqual(Option.none);
+});
+
+test("文字列はオブジェクトとして読まない", () => {
+  expect(Json.asRecord("home")).toEqual(Option.none);
 });

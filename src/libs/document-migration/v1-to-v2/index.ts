@@ -94,6 +94,12 @@ function findNode(
  * `direction` と名付けただけの別物になる（`collectBindingTargetErrors` が同じ 2 通りで
  * 分岐している）。
  *
+ * 判別子の綴り（`type` を持つ側がプリミティブ）はドメインの `Node.isPrimitive` と
+ * 同じ事実をここでも書いている。デコード前の `JsonRecord` を扱うのでドメインの型は
+ * 使えず、二重管理になる（片方を直したらもう片方も直す）。`ref` 側ではなく `type` 側で
+ * 判定するので、どちらも持たない壊れたノードの binding は移さず `direction` のまま残り、
+ * デコード後に `unknown-prop` として報告される。
+ *
  * @param component binding を持つ部品
  * @param componentName ルートノードの名前にあたる辞書のキー
  * @param binding 移し替える元の binding

@@ -6,7 +6,8 @@ import { DocumentMigration, type MigrationSteps } from "../index";
 /**
  * 枠組みの振る舞い（適用の順序・失敗の畳み方・版のスタンプ）は、登録済みのステップに
  * 依らないので、設計上の拡張点であるステップを渡して確かめる。
- * 登録済みのステップそのものは `document-migration.registered.test.ts` が確かめる。
+ * 登録済みのステップそのものは、読み込みの入口を通る
+ * `libs/document-json/__tests__/document-json.migration.test.ts` が確かめる。
  */
 function setupRenameSteps(): MigrationSteps {
   return {

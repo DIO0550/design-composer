@@ -58,7 +58,8 @@ test("direction を持たない props はそのまま残る", () => {
     migrateV1ToV2(setupDocument({ gap: "md", widthMode: "fill" })),
   );
 
-  expect(nodePropsOf(migrated)).toEqual({ gap: "md", widthMode: "fill" });
+  // toStrictEqual にするのは、`layout: undefined` を足す壊し方が toEqual では通るため
+  expect(nodePropsOf(migrated)).toStrictEqual({ gap: "md", widthMode: "fill" });
 });
 
 test("direction と layout の両方があるときは direction の値が残る", () => {
@@ -116,5 +117,27 @@ test("プリミティブを指す公開 prop の binding は layout を指すよ
   const card = components.card as JsonRecord;
   expect(card.publicProps).toEqual({
     flow: { node: "card-body", prop: "layout" },
+  });
+});
+
+test("部品のルートを指す公開 prop の binding も layout を指すようになる", () => {
+  const document: JsonRecord = {
+    formatVersion: "1.0",
+    tokens: {},
+    components: {
+      card: {
+        publicProps: { flow: { node: "card", prop: "direction" } },
+        type: "Box",
+      },
+    },
+    artboards: [],
+  };
+
+  const migrated = Result.unwrap(migrateV1ToV2(document));
+
+  const components = migrated.components as JsonRecord;
+  const card = components.card as JsonRecord;
+  expect(card.publicProps).toEqual({
+    flow: { node: "card", prop: "layout" },
   });
 });

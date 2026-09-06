@@ -16,9 +16,9 @@ import type { ValueOf } from "@/types/ValueOf";
  * 等値と不等値を判別子付きの直和にしてあるのは、条件の種類を足したときに
  * 判定側の網羅がコンパイルエラーになるようにするため
  * （`rules/coding.md`「列挙した状態の網羅を型で強制する」）。
- * 不等値が要るのは、「向きを持つレイアウトのときだけ効く」のように
- * **除いたい値が 1 つで、残りが増えうる**条件があるため（`gap` は `layout` が
- * `free` でなければ効く。等値の列挙で書くと `layout` に値を足すたびに追従が要る）。
+ * 不等値が要るのは、**除きたい値が 1 つで、残りが増えうる**条件があるため
+ * （`gap` は `layout` が `free` でなければ効く。等値の列挙で書くと `layout` に値を
+ * 足すたびに追従が要る）。
  */
 export type EnabledWhen =
   | Readonly<{ kind: "equals"; prop: string; equals: PropValue }>

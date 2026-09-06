@@ -32,7 +32,7 @@
 | `literalType` | literal 時: `number` / `string` |
 | `default` | デフォルト値。省略時は「なし」 |
 | `group` | プロパティパネルのセクション（layout / size / appearance 等） |
-| `enabledWhen` | 条件付き有効。`{ prop: "...", equals: "..." }` / `{ prop: "...", notEquals: "..." }` の**単純な等値・不等値のみ**（条件式言語は作らない）。見るのは**同じノードの** prop だけ |
+| `enabledWhen` | 条件付き有効。`{ kind: "equals", prop: "...", equals: "..." }` / `{ kind: "notEquals", prop: "...", notEquals: "..." }` の**単純な等値・不等値のみ**（条件式言語は作らない）。見るのは**同じノードの** prop だけ |
 | `shorthand` | 4 辺の longhand であることの宣言。`{ name: "padding", edge: "top" }` |
 
 - パネルの表示順は定数の定義順をそのまま使う。order フィールドは持たない

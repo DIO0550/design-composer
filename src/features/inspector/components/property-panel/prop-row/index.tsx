@@ -18,7 +18,8 @@ const LabelClass = `${LabelWidthClass} truncate text-[11px] text-gray-500`;
  * 崩れに気づける手段は Storybook の視覚差分だけ**（happy-dom は Tailwind を解決しない）。
  *
  * Why not: 「enum 以外」では畳みすぎる。条件付きのトークン欄（`layout` が `free` で
- * なければ効く `gap`）まで巻き込み、条件を出している行と離れた位置でラベルだけが消える。
+ * なければ効く `gap`）まで巻き込むが、**トークン欄はラベルを外すとトークン名
+ * （`md`）だけが残り、何の欄か分からなくなる**（数値欄が入る値で見分けが付くのと逆）。
  *
  * Why not: セグメント（enum）は条件付きでもラベルを出す。`placement: absolute` の下には
  * `x` / `y` / `constraintX` / `constraintY` の 4 行がぶら下がり、同じ選択肢を持つ
