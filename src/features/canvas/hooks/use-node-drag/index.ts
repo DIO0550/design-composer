@@ -3,9 +3,11 @@ import { ElementNameAttribute } from "@/domains/compiled/compiled-element";
 import type { ChildPlacement } from "@/domains/dcmp/child-placement";
 import type { ChildPosition } from "@/domains/dcmp/child-position";
 import { DesignDocument } from "@/domains/dcmp/design-document";
+import type { AbsolutePlacement } from "@/domains/dcmp/placement";
 import type { NodeTemplate } from "@/domains/session/node-template";
 import { Offset } from "@/domains/unit/offset";
 import { CanvasView } from "@/features/canvas/domains/canvas-view";
+import { EdgeSnap } from "@/features/canvas/domains/edge-snap";
 import {
   Carrying,
   DropEdit,
@@ -68,9 +70,21 @@ function namesToRoot(target: EventTarget): readonly string[] {
 }
 
 /**
+ * 名前を持つ直下の要素。
+ * コンパイル結果は子ノードを直下の `div` として並び順のまま出すので、DOM の順序が
+ * そのままドキュメント上の順序になる。
+ *
+ * @param element 子を集める親の要素
+ * @returns 名前を持つ直下の要素の並び（DOM の順）
+ */
+function namedChildrenOf(element: Element): readonly Element[] {
+  return Array.from(element.children).filter((child) =>
+    child.hasAttribute(ElementNameAttribute),
+  );
+}
+
+/**
  * 親と、その直下に並ぶ子の矩形を実測する。
- * 子は名前を持つ直下の要素だけを拾う（コンパイル結果は子ノードを直下の `div` として
- * 並び順のまま出すので、DOM の順序がそのままドキュメント上の順序になる）。
  *
  * @param parent 実測する落とし先の親
  * @returns 親と子の矩形を持つ落とし先の帯。親の要素が画面に無ければ `none`
@@ -80,9 +94,7 @@ function measureZone(parent: DropParent): Option<DropZone> {
     DropZone.create(
       parent,
       CanvasBounds.ofElement(element),
-      Array.from(element.children)
-        .filter((child) => child.hasAttribute(ElementNameAttribute))
-        .map(CanvasBounds.ofElement),
+      namedChildrenOf(element).map(CanvasBounds.ofElement),
     ),
   );
 }
@@ -106,37 +118,112 @@ function boundsOf(name: string): Option<CanvasBounds> {
 }
 
 /**
- * 落とし先の親と、今の親の左上から見たその左上のずれ。
+ * 座標の置き直しに要る実測。すべて画面上の px（`origin` / `stationary`）。
+ *
+ * 落とし先の親を**1 回だけ**測ってここへまとめるのは、原点のずれと揃え先を別々に
+ * 測ると同じ要素を 2 回測ることになり、2 つの経路が食い違う余地が残るため。
+ */
+type RepositionMeasure = Readonly<{
+  shift: ParentShift;
+  /** 今の親の矩形。掴んだ時点の座標はここを原点にしているので、行き先の組み立てに使う。 */
+  origin: CanvasBounds;
+  /** 運んでいるノードの矩形。使うのは大きさだけ（位置は運んでいる間ずれている）。 */
+  dragged: CanvasBounds;
+  /** 揃え先（落とし先の親の枠と、その直下にある運んでいるもの以外の子）。 */
+  stationary: readonly CanvasBounds[];
+}>;
+
+/**
+ * 座標の置き直しに要るものを、落とし先の親を 1 回だけ実測して揃える。
  *
  * 親の矩形はドキュメントに書かれていない（`hug` / `fill` があるので、大きさも位置も
  * レイアウトを通すまで決まらない）ため、実測でしか決められない。倍率は
- * `transform` で効いており実測値に乗るので、ドキュメント上の px へ割り戻す。
+ * `transform` で効いており実測値に乗るので、ずれはドキュメント上の px へ割り戻す。
  *
  * 落とし先が今の親と同じでも分岐しないのは、同じ要素を 2 回測ればずれが厳密に 0 に
  * なるため（＝親を付け替えない回は座標がそのまま書かれる）。
  *
- * @param view 実測値を割り戻すための今の表示
- * @param current 今の親の名前
- * @param dropped 落とし先の親の名前
- * @returns 落とし先の親と原点のずれ。どちらかが描かれていなければ `none`
+ * 揃え先から**運んでいるノード自身を外す**のは、運んでいる間はその要素も一緒にずれて
+ * 見えており、外さないと自分の辺との距離が常に最小になって**どこへ運んでも寄らなく
+ * なる**ため。孫を入れないのは、揃えたい相手が並んでいる兄弟だから。
+ *
+ * @param context 割り戻しに使う倍率を持つ今の掴み
+ * @param carried 運んでいるノードと、掴んだ時点の場所
+ * @param dropped 落とし先の親
+ * @returns 置き直しに要る実測。今の親・落とし先・運んでいるノードのどれかが
+ *   画面に無ければ `none`（測れないまま座標を書かない）
  */
-function parentShiftAt(
-  view: CanvasView,
-  current: string,
-  dropped: string,
-): Option<ParentShift> {
-  const currentBounds = boundsOf(current);
-  const droppedBounds = boundsOf(dropped);
-  if (!currentBounds.some || !droppedBounds.some) {
+function measureReposition(
+  context: DropContext,
+  carried: CarriedNode,
+  dropped: DropParent,
+): Option<RepositionMeasure> {
+  const currentBounds = boundsOf(carried.at.parentName);
+  const droppedElement = CanvasDom.elementOf(dropped.name);
+  const dragged = boundsOf(carried.name);
+  if (!currentBounds.some || !droppedElement.some || !dragged.some) {
     return Option.none;
   }
+  const droppedBounds = CanvasBounds.ofElement(droppedElement.value);
+  const siblings = namedChildrenOf(droppedElement.value)
+    .filter(
+      (child) => child.getAttribute(ElementNameAttribute) !== carried.name,
+    )
+    .map(CanvasBounds.ofElement);
   return Option.some({
-    name: dropped,
-    shift: CanvasView.toDocumentOffset(
-      view,
-      CanvasBounds.originShift(currentBounds.value, droppedBounds.value),
-    ),
+    shift: {
+      name: dropped.name,
+      shift: CanvasView.toDocumentOffset(
+        context.view,
+        CanvasBounds.originShift(currentBounds.value, droppedBounds),
+      ),
+    },
+    origin: currentBounds.value,
+    dragged: dragged.value,
+    stationary: [droppedBounds, ...siblings],
   });
+}
+
+/**
+ * 掴んだ時点の座標から運んだ先の、今の親の左上から見た画面上の位置。
+ *
+ * 運んでいるノードを実測してこれを出せないのは、運んでいる間は `transform` でずらして
+ * 見せており（`repositionPreviewDeclarations`）、実測値に**前回の移動分が既に乗っている**
+ * ため。書かれている座標と画面上で運んだ量から組み立てれば、そのずれが入らない。
+ *
+ * @param view 座標を画面上の px へ直すための今の表示
+ * @param placement 掴んだ時点の、今の親から見た座標
+ * @param screenDelta 画面上で運んだ量
+ * @returns 今の親の左上から見た画面上の位置
+ */
+function screenPlacementOf(
+  view: CanvasView,
+  placement: AbsolutePlacement,
+  screenDelta: Offset,
+): Offset {
+  return Offset.add(
+    CanvasView.toScreenOffset(view, { x: placement.x, y: placement.y }),
+    screenDelta,
+  );
+}
+
+/**
+ * 揃う位置へ寄せる量。
+ *
+ * 行き先の矩形は、今の親の左上へ運んだ先の位置を置き、大きさは運んでいるものの実測を
+ * そのまま採って組み立てる（大きさは `translate` で変わらない）。
+ *
+ * @param measured 落とし先の実測（寄せの原点・運んでいるものの大きさ・揃え先）
+ * @param movedTo 今の親の左上から見た、運んだ先の画面上の位置
+ * @returns 寄せ量（画面上の px）。閾値に届く辺が無ければ縦横とも 0
+ */
+function snapOffset(measured: RepositionMeasure, movedTo: Offset): Offset {
+  return EdgeSnap.toOffset(
+    EdgeSnap.create(
+      CanvasBounds.inside(measured.origin, movedTo, measured.dragged),
+      measured.stationary,
+    ),
+  );
 }
 
 /**
@@ -187,23 +274,38 @@ function repositionCarrying(
   carried: CarriedNode,
   parent: Option<DropParent>,
 ): Carrying {
-  const moved = CanvasView.toDocumentOffset(
-    context.view,
-    Offset.delta(context.grab.origin, CanvasPointer.offsetOf(context.event)),
+  const screenDelta = Offset.delta(
+    context.grab.origin,
+    CanvasPointer.offsetOf(context.event),
   );
-  const shift = Option.flatMap(parent, (dropped) =>
-    parentShiftAt(context.view, carried.at.parentName, dropped.name),
+  const measured = Option.flatMap(parent, (dropped) =>
+    measureReposition(context, carried, dropped),
   );
-  if (!shift.some) {
+  if (!measured.some) {
     return Carrying.preview({
       name: carried.name,
-      offset: RepositionTarget.carriedOffset(carried.at.placement, moved),
+      offset: RepositionTarget.carriedOffset(
+        carried.at.placement,
+        CanvasView.toDocumentOffset(context.view, screenDelta),
+      ),
     });
   }
+  // 寄せ量を運んだ量へ畳んでから渡すので、書かれる座標と見た目のずらし量が同じ材料から出る
+  const snapped = Offset.add(
+    screenDelta,
+    snapOffset(
+      measured.value,
+      screenPlacementOf(context.view, carried.at.placement, screenDelta),
+    ),
+  );
   return Carrying.droppable(
     DropEdit.reposition(
       carried.name,
-      RepositionTarget.create(carried.at.placement, moved, shift.value),
+      RepositionTarget.create(
+        carried.at.placement,
+        CanvasView.toDocumentOffset(context.view, snapped),
+        measured.value.shift,
+      ),
     ),
   );
 }
@@ -302,7 +404,8 @@ export type NodeDragControl = Readonly<{
  *
  * このフックが持つのは DOM の実測とイベントの仲介だけで、
  * 「どこへ落ちるか」「いつドラッグとみなすか」の判定は `node-drop` / `node-drag` に、
- * 「実測した親のずれからどの座標が書かれるか」は `reposition-target` にある。
+ * 「実測した親のずれからどの座標が書かれるか」は `reposition-target` に、
+ * 「揃う辺があるならどれだけ寄せるか」は `edge-snap` にある。
  *
  * ポインタキャプチャを使わないのは、捕捉すると以後のイベントの `target` が捕捉した要素に
  * 固定され、「今どのノードの上にいるか」を読めなくなるため。代わりに掴んだあとの
