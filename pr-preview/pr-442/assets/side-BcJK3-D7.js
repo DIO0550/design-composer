@@ -1,1 +1,0 @@
-import{n as e}from"./chunk-BneVvdWh.js";var t,n,r,i=e((()=>{t={Top:`top`,Right:`right`,Bottom:`bottom`,Left:`left`},n={Vertical:`vertical`,Horizontal:`horizontal`},r={sides(e){return e===n.Vertical?[t.Top,t.Bottom]:[t.Right,t.Left]}}}));export{i,n,t as r,r as t};
