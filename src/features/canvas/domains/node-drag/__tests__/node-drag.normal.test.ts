@@ -1,11 +1,11 @@
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import type {
-  CanvasBounds,
   DraggedNode,
   DropTarget,
 } from "@/features/canvas/domains/node-drop";
 import type { RepositionTarget } from "@/features/canvas/domains/reposition-target";
+import type { SnapGuides } from "@/features/canvas/domains/side-snap";
 import { Option } from "@/utils/Option";
 import { Carrying, DropEdit, NodeDrag } from "../index";
 
@@ -44,10 +44,14 @@ const SampleDropTarget: DropTarget = {
 /** ツリーへ挿す側の落とし方。座標の置き直しは別のファイルで見る。 */
 const SampleDrop = DropEdit.intoTree(MovingTitle, SampleDropTarget);
 
-/** 揃った辺に引く線 1 本（縦線）。運んでいる間だけの提示なので、届く編集とは別に見る。 */
-const SampleGuides: readonly CanvasBounds[] = [
-  { left: 249, top: 72, width: 2, height: 168 },
-];
+/** 左右の辺が揃って縦線が 1 本出ている状態。運んでいる間だけの提示。 */
+const SampleGuides: SnapGuides = {
+  horizontal: Option.some({ left: 249, top: 72, width: 2, height: 168 }),
+  vertical: Option.none,
+};
+
+/** 揃った辺が 1 つも無い状態。 */
+const NoGuides: SnapGuides = { horizontal: Option.none, vertical: Option.none };
 
 /** `body` の中の座標へ落ちる側の行き先。見た目のずらし量は行き先と別の値にする。 */
 const SampleRepositionTarget: RepositionTarget = {
@@ -223,7 +227,7 @@ test("座標を置き直す落とし方は、揃った辺に引く線をその�
 
 test("ツリーへ落とす落とし方では、揃った辺の線を引かない", () => {
   // 対照。1 つ上のテストと対で読む（辺の吸い付きは座標の置き直しでしか起きない）
-  expect(DropEdit.snapGuides(SampleDrop)).toEqual([]);
+  expect(DropEdit.snapGuides(SampleDrop)).toEqual(NoGuides);
 });
 
 test("運んでいる間は、揃った辺に引く線を答える", () => {
@@ -239,13 +243,12 @@ test("運んでいる間は、揃った辺に引く線を答える", () => {
 });
 
 test("押しただけでまだ動かしていない間は、揃った辺の線を引かない", () => {
-  // 押しただけで線が出ると、クリックのたびに一瞬線が走る
   const held = NodeDrag.grab({
     dragged: MovingTitle,
     origin: { x: 100, y: 100 },
   });
 
-  expect(NodeDrag.snapGuides(held)).toEqual([]);
+  expect(NodeDrag.snapGuides(held)).toEqual(NoGuides);
 });
 
 test("落とせる親が無いまま運んでいる間は、揃った辺の線を引かない", () => {
@@ -256,7 +259,7 @@ test("落とせる親が無いまま運んでいる間は、揃った辺の線�
     Carrying.preview({ name: "title", offset: { x: 30, y: -12 } }),
   );
 
-  expect(NodeDrag.snapGuides(dragging)).toEqual([]);
+  expect(NodeDrag.snapGuides(dragging)).toEqual(NoGuides);
 });
 
 test("座標を置き直す落とし方のときだけ、ずらして見せる相手と量を答える", () => {

@@ -1,28 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { OverlayStage } from "../__stories__/overlay-stage";
 import { DropMarker } from "./index";
 
-/**
- * ドロップ先を示す線。
- *
- * **キャンバスのストーリーには出てこない。** 運んでいる最中の姿を映すには
- * ポインタを押し下げたままにする必要があり、`ArtboardCanvas` のストーリーは
- * 静止した状態しか撮れないため。線の太さ・色を確かめる手段はここだけになる。
- *
- * 本番は `position: fixed` で実測した client 座標へ置くので、器は与えず
- * ビューポートの座標をそのまま使う。
- */
+/** ドロップ先を示す線（映し方は `OverlayStage` の doc を参照）。 */
 const meta = {
   title: "features/canvas/ArtboardCanvas/DropMarker",
   component: DropMarker,
   parameters: { layout: "fullscreen" },
-  decorators: [
-    // 線は白地だと見えるが、実画面はキャンバスの灰色の上に出る
-    (Story) => (
-      <div className="h-64 w-full bg-gray-100">
-        <Story />
-      </div>
-    ),
-  ],
+  decorators: [OverlayStage],
 } satisfies Meta<typeof DropMarker>;
 
 export default meta;

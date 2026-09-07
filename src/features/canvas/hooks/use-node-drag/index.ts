@@ -278,10 +278,8 @@ function repositionCarrying(
       ),
     });
   }
-  /*
-   * 寄せは 1 回だけ判定し、寄せ量とガイド線の両方をここから配る。2 回判定すると、
-   * 線を引く辺と実際に落ちる位置が食い違いうる（`DropEdit.reposition` の Why）。
-   */
+  // 寄せ量とガイド線は 1 回の判定から配る（理由は `DropEdit.reposition` の Why）
+
   const snap = snapAt(
     measured.value,
     CanvasView.toScreenPoint(

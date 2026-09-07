@@ -1,40 +1,51 @@
 import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
+import type { SnapGuides } from "@/features/canvas/domains/side-snap";
 
 /**
- * 揃った辺に引くガイド線（docs/06-ui.md「キャンバス直接操作」の辺のスナップ）。
- * 縦横それぞれ最大 1 本で、どこへ引くかは `side-snap` が実測から決める。
+ * ガイド線 1 本。
+ *
+ * `pointer-events-none` を外すと、線の下を通った `pointermove` の `target` が線になり、
+ * 落とし先の親を辿れなくなる（`useNodeDrag` は `event.target` から名前を辿る）。
+ * **外しても絵は変わらないので、テストでも視覚差分でも気づけない。**
  *
  * ズーム / パンの変形の**外側**に置き、実測した client 座標をそのまま `position: fixed`
  * で使う（`DropMarker` と同じ理由 — 変形の内側は React の管理外なので線を差し込めない）。
+ */
+function GuideLine({ bounds }: Readonly<{ bounds: CanvasBounds }>) {
+  return (
+    <div
+      data-testid="snap-guide"
+      aria-hidden
+      className="pointer-events-none fixed z-10 bg-[#d13438]"
+      style={{
+        left: `${bounds.left}px`,
+        top: `${bounds.top}px`,
+        width: `${bounds.width}px`,
+        height: `${bounds.height}px`,
+      }}
+    />
+  );
+}
+
+/**
+ * 揃った辺に引くガイド線（docs/06-ui.md「キャンバス直接操作」の辺のスナップ。
+ * 色・太さの選定理由もそちらにある）。どこへ引くかは `side-snap` が実測から決める。
  *
- * Why（色 `#d13438`）: 運んでいる間は選択の枠（青 `#3b82f6`）・落とし先の枠（緑
- * `#10b981`）・トークン参照（青 `#0d99ff`）が同時に出るので青系と緑系は取れない。
- * UI 案 docs/Design Composer.html が宣言している色のうち残るのがこの赤で、参考にしている
- * Figma のスマートガイドも赤系（#445）。
+ * 軸ごとに 1 本ずつ並べて出すのは、受け取る型がそう持っているから（`SnapGuides`）。
+ * 並びを `map` しないので、線の同一性を key で作る必要が無い。
  *
- * Why not（部品の紫 `#9747ff`）: UI 案ではキャンバス上のインスタンスの表示に使っており、
+ * Why not（紫 `#9747ff`）: UI 案ではキャンバス上のインスタンスの表示に使っており、
  * 運んでいる最中に同じ画面へ出るため意味が割れる。
  */
-export function SnapGuideOverlay({
-  guides,
-}: Readonly<{ guides: readonly CanvasBounds[] }>) {
+export function SnapGuideOverlay({ guides }: Readonly<{ guides: SnapGuides }>) {
   return (
     <>
-      {guides.map((guide) => (
-        <div
-          // 同じ辺に 2 本引くことは無いので、位置がそのまま線の識別になる
-          key={`${guide.left},${guide.top}`}
-          data-testid="snap-guide"
-          aria-hidden
-          className="pointer-events-none fixed z-10 bg-[#d13438]"
-          style={{
-            left: `${guide.left}px`,
-            top: `${guide.top}px`,
-            width: `${guide.width}px`,
-            height: `${guide.height}px`,
-          }}
-        />
-      ))}
+      {guides.horizontal.some ? (
+        <GuideLine bounds={guides.horizontal.value} />
+      ) : null}
+      {guides.vertical.some ? (
+        <GuideLine bounds={guides.vertical.value} />
+      ) : null}
     </>
   );
 }

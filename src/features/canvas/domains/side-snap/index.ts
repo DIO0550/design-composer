@@ -21,6 +21,17 @@ export type SideSnap = Readonly<{
 }>;
 
 /**
+ * 揃った辺に引くガイド線として描く矩形（画面上の px）。
+ *
+ * キーは**揃った辺の組**で、線の向きとは直交する（`horizontal` は左右の辺が揃った
+ * ことを指すので、線そのものは**縦**に伸びる）。
+ *
+ * 並びではなく組で持つのは、寄る先が軸ごとに 1 つに決まる（同じ距離なら先に見つけた
+ * ほうへ寄る）ため。並びにすると「同じ軸に 2 本」が型で書けてしまう。
+ */
+export type SnapGuides = Readonly<Record<SidePair, Option<CanvasBounds>>>;
+
+/**
  * 辺のスナップ 1 回分の答え（docs/06-ui.md「キャンバス直接操作」の辺のスナップ）。
  *
  * 寄せ量とガイド線を 1 つの型で返すのは、どちらも**同じ 1 回の総当たり**が決めるため。
@@ -29,8 +40,7 @@ export type SideSnap = Readonly<{
 export type SideSnapped = Readonly<{
   /** 寄せ量（画面上の px）。揃う辺が無ければ縦横とも 0 */
   offset: Offset;
-  /** 揃った辺に引くガイド線として描く矩形（画面上の px。軸ごとに 0 か 1 本） */
-  guides: readonly CanvasBounds[];
+  guides: SnapGuides;
 }>;
 
 /**
@@ -39,6 +49,11 @@ export type SideSnapped = Readonly<{
  * 挿入位置に引く線（`DropZone` の `MarkerThicknessPx`）と同じ太さ・同じ中心合わせにして、
  * キャンバスに出る線の流儀を割らない。2 つは排他（ツリーへの挿入と座標の置き直しは
  * 同時に起きない）なので、太さが同じでも混ざらない。
+ *
+ * Why not（`DropZone` と 1 つにまとめない）: あちらは線の向きを `CssDirection`（子が
+ * 並ぶ向き）で、こちらは `SidePair`（揃った辺の組）で決めており、まとめると片方に
+ * もう片方の語彙が入る。**揃えているのは値ではなく見せ方の約束**なので、拠り所は
+ * docs/06-ui.md 側に置いてある（片方だけ変えてもここは落ちない）。
  */
 const GuideThicknessPx = 2;
 
@@ -92,10 +107,13 @@ export const SideSnap = {
     const vertical = nearestAlong(snap, SidePairs.Vertical);
     const offset = { x: shiftOf(horizontal), y: shiftOf(vertical) };
     const moved = CanvasBounds.movedBy(snap.moving, offset);
-    const guides = [horizontal, vertical].flatMap((snapped) =>
-      snapped.some ? [guideBounds(snapped.value, moved)] : [],
-    );
-    return { offset, guides };
+    return {
+      offset,
+      guides: {
+        horizontal: Option.map(horizontal, (side) => guideBounds(side, moved)),
+        vertical: Option.map(vertical, (side) => guideBounds(side, moved)),
+      },
+    };
   },
 } as const;
 

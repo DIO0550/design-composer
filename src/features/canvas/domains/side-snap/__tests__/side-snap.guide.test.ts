@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
+import { Option } from "@/utils/Option";
 import { SideSnap } from "../index";
 import { Moving } from "./moving-bounds";
 
@@ -18,7 +19,10 @@ test("左辺どうしが揃うと、揃え先の左辺に中心を合わせた�
 
   expect(
     SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).guides,
-  ).toEqual([{ left: 103, top: 100, width: 2, height: 220 }]);
+  ).toEqual({
+    horizontal: Option.some({ left: 103, top: 100, width: 2, height: 220 }),
+    vertical: Option.none,
+  });
 });
 
 test("運んでいるものの左辺が揃え先の右辺と揃うときも、線は揃え先の辺に出る", () => {
@@ -31,7 +35,10 @@ test("運んでいるものの左辺が揃え先の右辺と揃うときも、�
   };
 
   expect(
-    SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).guides[0].left,
+    Option.unwrap(
+      SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).guides
+        .horizontal,
+    ).left,
   ).toBe(96);
 });
 
@@ -46,7 +53,10 @@ test("線の長さは、寄せたあとの運んでいるものと揃え先の�
 
   expect(
     SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).guides,
-  ).toEqual([{ left: 103, top: 20, width: 2, height: 100 }]);
+  ).toEqual({
+    horizontal: Option.some({ left: 103, top: 20, width: 2, height: 100 }),
+    vertical: Option.none,
+  });
 });
 
 test("既に辺が重なっているときも、揃った線は出る", () => {
@@ -60,7 +70,10 @@ test("既に辺が重なっているときも、揃った線は出る", () => {
 
   expect(
     SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).guides,
-  ).toEqual([{ left: 99, top: 100, width: 2, height: 220 }]);
+  ).toEqual({
+    horizontal: Option.some({ left: 99, top: 100, width: 2, height: 220 }),
+    vertical: Option.none,
+  });
 });
 
 test("同じ軸に届く辺が複数あっても、線は寄る先の 1 本だけ出る", () => {
@@ -69,7 +82,10 @@ test("同じ軸に届く辺が複数あっても、線は寄る先の 1 本だ�
 
   expect(
     SideSnap.toSnapped(SideSnap.create(Moving, [far, near])).guides,
-  ).toEqual([{ left: 101, top: 100, width: 2, height: 260 }]);
+  ).toEqual({
+    horizontal: Option.some({ left: 101, top: 100, width: 2, height: 260 }),
+    vertical: Option.none,
+  });
 });
 
 test("どの辺も届かない揃え先からは、線が出ない", () => {
@@ -84,16 +100,21 @@ test("どの辺も届かない揃え先からは、線が出ない", () => {
 
   expect(
     SideSnap.toSnapped(SideSnap.create(Moving, [far, reachable])).guides,
-  ).toEqual([{ left: 100, top: 94, width: 440, height: 2 }]);
+  ).toEqual({
+    horizontal: Option.none,
+    vertical: Option.some({ left: 100, top: 94, width: 440, height: 2 }),
+  });
 });
 
-test("縦横のどちらでも揃うときは、線が 2 本出る", () => {
+test("縦横のどちらでも揃うときは、軸ごとに線が 1 本ずつ出る", () => {
   const alongX: CanvasBounds = { left: 104, top: 300, width: 200, height: 20 };
   const alongY: CanvasBounds = { left: 500, top: 95, width: 40, height: 200 };
 
-  expect(
-    SideSnap.toSnapped(SideSnap.create(Moving, [alongX, alongY])).guides,
-  ).toHaveLength(2);
+  const guides = SideSnap.toSnapped(
+    SideSnap.create(Moving, [alongX, alongY]),
+  ).guides;
+
+  expect([guides.horizontal.some, guides.vertical.some]).toEqual([true, true]);
 });
 
 test("線の範囲は、もう一方の軸の寄せも畳んだ位置で決まる", () => {
@@ -106,8 +127,8 @@ test("線の範囲は、もう一方の軸の寄せも畳んだ位置で決ま�
    */
   expect(
     SideSnap.toSnapped(SideSnap.create(Moving, [alongX, alongY])).guides,
-  ).toEqual([
-    { left: 103, top: 95, width: 2, height: 225 },
-    { left: 104, top: 94, width: 436, height: 2 },
-  ]);
+  ).toEqual({
+    horizontal: Option.some({ left: 103, top: 95, width: 2, height: 225 }),
+    vertical: Option.some({ left: 104, top: 94, width: 436, height: 2 }),
+  });
 });
