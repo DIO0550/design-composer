@@ -156,6 +156,15 @@ export function resizeHandles(): readonly HTMLElement[] {
 }
 
 /**
+ * 出ている揃った辺のガイド線。
+ *
+ * @returns 出ている線の並び。出ていなければ空
+ */
+export function snapGuides(): readonly HTMLElement[] {
+  return screen.queryAllByTestId("snap-guide");
+}
+
+/**
  * その種類を掴めるハンドル。
  *
  * 並びの何番目かを数字で書かず `HandleAnchors` から引くのは、箇所と掴めるものの

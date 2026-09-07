@@ -12,7 +12,9 @@ test("運んでいるものの左辺が揃える先の左辺の近くにある�
     height: 20,
   };
 
-  expect(SideSnap.toOffset(SideSnap.create(Moving, [stationary]))).toEqual({
+  expect(
+    SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).offset,
+  ).toEqual({
     x: 4,
     y: 0,
   });
@@ -26,7 +28,9 @@ test("運んでいるものの上辺が揃える先の上辺の近くにある�
     height: 200,
   };
 
-  expect(SideSnap.toOffset(SideSnap.create(Moving, [stationary]))).toEqual({
+  expect(
+    SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).offset,
+  ).toEqual({
     x: 0,
     y: -5,
   });
@@ -41,7 +45,9 @@ test("運んでいるものの左辺が揃える先の右辺の近くにある�
     height: 20,
   };
 
-  expect(SideSnap.toOffset(SideSnap.create(Moving, [stationary]))).toEqual({
+  expect(
+    SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).offset,
+  ).toEqual({
     x: -3,
     y: 0,
   });
@@ -56,7 +62,9 @@ test("横だけが近いときは、横だけが寄って縦は動かない", ()
     height: 20,
   };
 
-  expect(SideSnap.toOffset(SideSnap.create(Moving, [stationary]))).toEqual({
+  expect(
+    SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).offset,
+  ).toEqual({
     x: 3,
     y: 0,
   });
@@ -66,7 +74,9 @@ test("揃える先が複数あるときは、いちばん近い辺へ寄る", ()
   const far: CanvasBounds = { left: 105, top: 300, width: 300, height: 20 };
   const near: CanvasBounds = { left: 102, top: 340, width: 300, height: 20 };
 
-  expect(SideSnap.toOffset(SideSnap.create(Moving, [far, near]))).toEqual({
+  expect(
+    SideSnap.toSnapped(SideSnap.create(Moving, [far, near])).offset,
+  ).toEqual({
     x: 2,
     y: 0,
   });
@@ -81,7 +91,9 @@ test("運んでいるものの右辺が揃える先の右辺の近くにある�
     height: 20,
   };
 
-  expect(SideSnap.toOffset(SideSnap.create(Moving, [stationary]))).toEqual({
+  expect(
+    SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).offset,
+  ).toEqual({
     x: 3,
     y: 0,
   });
@@ -96,7 +108,9 @@ test("運んでいるものの下辺が揃える先の下辺の近くにある�
     height: 56,
   };
 
-  expect(SideSnap.toOffset(SideSnap.create(Moving, [stationary]))).toEqual({
+  expect(
+    SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).offset,
+  ).toEqual({
     x: 0,
     y: -4,
   });
@@ -107,7 +121,9 @@ test("同じ距離の辺が 2 つあるときは、揃え先の並びで先に�
   const first: CanvasBounds = { left: 104, top: 300, width: 200, height: 20 };
   const second: CanvasBounds = { left: 96, top: 340, width: 200, height: 20 };
 
-  expect(SideSnap.toOffset(SideSnap.create(Moving, [first, second]))).toEqual({
+  expect(
+    SideSnap.toSnapped(SideSnap.create(Moving, [first, second])).offset,
+  ).toEqual({
     x: 4,
     y: 0,
   });

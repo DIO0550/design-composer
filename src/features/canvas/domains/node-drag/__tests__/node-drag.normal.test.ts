@@ -5,6 +5,7 @@ import type {
   DropTarget,
 } from "@/features/canvas/domains/node-drop";
 import type { RepositionTarget } from "@/features/canvas/domains/reposition-target";
+import type { SnapGuides } from "@/features/canvas/domains/side-snap";
 import { Option } from "@/utils/Option";
 import { Carrying, DropEdit, NodeDrag } from "../index";
 
@@ -42,6 +43,15 @@ const SampleDropTarget: DropTarget = {
 
 /** ツリーへ挿す側の落とし方。座標の置き直しは別のファイルで見る。 */
 const SampleDrop = DropEdit.intoTree(MovingTitle, SampleDropTarget);
+
+/** 左右の辺が揃って縦線が 1 本出ている状態。運んでいる間だけの提示。 */
+const SampleGuides: SnapGuides = {
+  horizontal: Option.some({ left: 249, top: 72, width: 2, height: 168 }),
+  vertical: Option.none,
+};
+
+/** 揃った辺が 1 つも無い状態。 */
+const NoGuides: SnapGuides = { horizontal: Option.none, vertical: Option.none };
 
 /** `body` の中の座標へ落ちる側の行き先。見た目のずらし量は行き先と別の値にする。 */
 const SampleRepositionTarget: RepositionTarget = {
@@ -181,14 +191,22 @@ test("パレットの雛形をツリーへ落とすと挿入になる", () => {
 
 test("座標を置き直す落とし方では挿さる位置を持たない", () => {
   // ドロップ線とラベルは「どの親の何番目の子になるか」の提示なので出さない
-  const edit = DropEdit.reposition("title", SampleRepositionTarget);
+  const edit = DropEdit.reposition(
+    "title",
+    SampleRepositionTarget,
+    SampleGuides,
+  );
 
   expect(DropEdit.insertionTarget(edit).some).toBe(false);
 });
 
 test("座標を置き直す落とし方でも、子になる親の名前は答える", () => {
   // 落とし先の枠は、ツリーの移動と同じ提示なので座標のドラッグでも出す
-  const edit = DropEdit.reposition("title", SampleRepositionTarget);
+  const edit = DropEdit.reposition(
+    "title",
+    SampleRepositionTarget,
+    SampleGuides,
+  );
 
   expect(DropEdit.dropParentName(edit)).toBe("body");
 });
@@ -197,11 +215,60 @@ test("ツリーへ落とす落とし方では、挿さる位置の親が子に�
   expect(DropEdit.dropParentName(SampleDrop)).toBe("body");
 });
 
+test("座標を置き直す落とし方は、揃った辺に引く線をそのまま答える", () => {
+  const edit = DropEdit.reposition(
+    "title",
+    SampleRepositionTarget,
+    SampleGuides,
+  );
+
+  expect(DropEdit.snapGuides(edit)).toEqual(SampleGuides);
+});
+
+test("ツリーへ落とす落とし方では、揃った辺の線を引かない", () => {
+  // 対照。1 つ上のテストと対で読む（辺の吸い付きは座標の置き直しでしか起きない）
+  expect(DropEdit.snapGuides(SampleDrop)).toEqual(NoGuides);
+});
+
+test("運んでいる間は、揃った辺に引く線を答える", () => {
+  const dragging = NodeDrag.moveTo(
+    NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
+    { x: 100, y: 140 },
+    Carrying.droppable(
+      DropEdit.reposition("title", SampleRepositionTarget, SampleGuides),
+    ),
+  );
+
+  expect(NodeDrag.snapGuides(dragging)).toEqual(SampleGuides);
+});
+
+test("押しただけでまだ動かしていない間は、揃った辺の線を引かない", () => {
+  const held = NodeDrag.grab({
+    dragged: MovingTitle,
+    origin: { x: 100, y: 100 },
+  });
+
+  expect(NodeDrag.snapGuides(held)).toEqual(NoGuides);
+});
+
+test("落とせる親が無いまま運んでいる間は、揃った辺の線を引かない", () => {
+  // 揃え先は落とし先の親とその子なので、親が決まらなければ吸い付きも起きない
+  const dragging = NodeDrag.moveTo(
+    NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
+    { x: 100, y: 140 },
+    Carrying.preview({ name: "title", offset: { x: 30, y: -12 } }),
+  );
+
+  expect(NodeDrag.snapGuides(dragging)).toEqual(NoGuides);
+});
+
 test("座標を置き直す落とし方のときだけ、ずらして見せる相手と量を答える", () => {
   const dragging = NodeDrag.moveTo(
     NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
     { x: 100, y: 140 },
-    Carrying.droppable(DropEdit.reposition("title", SampleRepositionTarget)),
+    Carrying.droppable(
+      DropEdit.reposition("title", SampleRepositionTarget, SampleGuides),
+    ),
   );
 
   expect(Option.unwrap(NodeDrag.repositionPreview(dragging))).toEqual({

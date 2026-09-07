@@ -11,14 +11,16 @@ test("どの辺も届かない距離にしかなければ、寄せ量は縦横�
     height: 20,
   };
 
-  expect(SideSnap.toOffset(SideSnap.create(Moving, [stationary]))).toEqual({
+  expect(
+    SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).offset,
+  ).toEqual({
     x: 0,
     y: 0,
   });
 });
 
 test("揃える先が 1 つも無ければ、寄せ量は縦横とも 0 になる", () => {
-  expect(SideSnap.toOffset(SideSnap.create(Moving, []))).toEqual({
+  expect(SideSnap.toSnapped(SideSnap.create(Moving, [])).offset).toEqual({
     x: 0,
     y: 0,
   });
@@ -32,7 +34,9 @@ test("揃うとみなす距離ちょうどでも寄る", () => {
     height: 20,
   };
 
-  expect(SideSnap.toOffset(SideSnap.create(Moving, [stationary]))).toEqual({
+  expect(
+    SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).offset,
+  ).toEqual({
     x: SideSnap.ThresholdPx,
     y: 0,
   });
