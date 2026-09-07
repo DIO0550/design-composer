@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { DocumentSelection } from "@/domains/session/document-selection";
+import type { SelectionDig } from "@/domains/session/selection-dig";
 import { TokenSelection } from "@/domains/session/token-selection";
 import { ArrangedArtboard } from "@/features/canvas/domains/arranged-artboard";
 import { NodeDrag } from "@/features/canvas/domains/node-drag";
@@ -77,7 +78,7 @@ export function ArtboardFrameList({
   compiled: CompiledDocument;
   selection: DocumentSelection;
   tokenSelection: TokenSelection;
-  onSelect: (names: readonly string[]) => void;
+  onSelect: (names: readonly string[], dig: SelectionDig) => void;
   artboardDrag: ArtboardDragControl;
   nodeDrag: NodeDragControl;
   nodeResize: NodeResizeControl;

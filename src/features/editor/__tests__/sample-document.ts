@@ -110,3 +110,42 @@ export const SampleDocumentWithMissingComponent = Result.unwrap(
     MissingComponentInstance,
   ),
 );
+
+/**
+ * `home` の中に 3 階層の枝（`outer-panel` > `inner-panel` > `deep-title`）を持つドキュメント。
+ * 掘る操作を通しで見るテストだけがこちらを開く。
+ *
+ * 3 階層にしている理由は `features/editor/domains/editor-state/__tests__/setup.ts` の
+ * `stateWithDeepBranch` の doc。
+ */
+export const SampleDocumentWithDeepBranch = DesignDocument.create({
+  tokens: DocumentTemplate.Default.tokens,
+  components: DocumentTemplate.Default.components,
+  artboards: [
+    Artboard.create({
+      name: "home",
+      width: 360,
+      height: 240,
+      props: { layout: "column", gap: "md", background: "white" },
+      children: [
+        {
+          name: "outer-panel",
+          type: "Box",
+          children: [
+            {
+              name: "inner-panel",
+              type: "Box",
+              children: [
+                {
+                  name: "deep-title",
+                  type: "Text",
+                  props: { content: "ふかい見出し" },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    }),
+  ],
+});

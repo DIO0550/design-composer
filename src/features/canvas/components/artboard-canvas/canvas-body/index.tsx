@@ -1,4 +1,5 @@
 import type { DocumentSelection } from "@/domains/session/document-selection";
+import type { SelectionDig } from "@/domains/session/selection-dig";
 import type { TokenSelection } from "@/domains/session/token-selection";
 import type { ArtboardDragControl } from "@/features/canvas/hooks/use-artboard-drag";
 import type { NodeDragControl } from "@/features/canvas/hooks/use-node-drag";
@@ -25,7 +26,7 @@ export function CanvasBody({
   compiled: Result<CompiledDocument, Error>;
   selection: DocumentSelection;
   tokenSelection: TokenSelection;
-  onSelect: (names: readonly string[]) => void;
+  onSelect: (names: readonly string[], dig: SelectionDig) => void;
   artboardDrag: ArtboardDragControl;
   nodeDrag: NodeDragControl;
   nodeResize: NodeResizeControl;
