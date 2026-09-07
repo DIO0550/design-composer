@@ -230,6 +230,16 @@
     "name": "幅だけ掴める"
   },
   {
+    "id": "features-canvas-artboardcanvas-snapguideoverlay--along-both-axes",
+    "title": "features/canvas/ArtboardCanvas/SnapGuideOverlay",
+    "name": "縦横の両方で揃った"
+  },
+  {
+    "id": "features-canvas-artboardcanvas-snapguideoverlay--along-side-edges",
+    "title": "features/canvas/ArtboardCanvas/SnapGuideOverlay",
+    "name": "左右の辺が揃った"
+  },
+  {
     "id": "features-canvas-artboardcanvas-stalecanvasoverlay--default",
     "title": "features/canvas/ArtboardCanvas/StaleCanvasOverlay",
     "name": "斜線とバッジ"
