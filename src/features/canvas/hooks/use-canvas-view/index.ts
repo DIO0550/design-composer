@@ -14,6 +14,7 @@ import {
 import { CanvasBounds } from "@/features/canvas/domains/node-drop";
 import { CanvasPointer } from "@/features/canvas/utils/CanvasPointer";
 import { DrawnBounds } from "@/features/canvas/utils/DrawnBounds";
+import { CommandKey } from "@/utils/CommandKey";
 
 /** キャンバスの見え方に対する操作（docs/06-ui.md「ズーム / パンは非永続の view state」）。 */
 export type CanvasViewAction =
@@ -66,7 +67,7 @@ function canvasViewReducer(
  * @returns ctrl / ⌘ が押されていればズーム、押されていなければパン
  */
 function wheelAction(event: WheelEvent): CanvasViewAction {
-  if (event.ctrlKey || event.metaKey) {
+  if (CommandKey.isHeld(event)) {
     return event.deltaY < 0 ? { type: "zoom_in" } : { type: "zoom_out" };
   }
   return { type: "pan", delta: { x: -event.deltaX, y: -event.deltaY } };

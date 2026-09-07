@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { CommandKey } from "@/utils/CommandKey";
 import { ElementEx } from "@/utils/ElementEx";
 
 /**
@@ -92,7 +93,7 @@ export const KeyShortcut = {
   matches(shortcut: KeyShortcut, event: KeyboardEvent): boolean {
     const matchesKey = pressesKeyOf(shortcut, event);
     const matchesCommandKey =
-      (event.ctrlKey || event.metaKey) === shortcut.withCommandKey;
+      CommandKey.isHeld(event) === shortcut.withCommandKey;
     const matchesShiftKey = event.shiftKey === shortcut.withShiftKey;
 
     return matchesKey && matchesCommandKey && matchesShiftKey;
