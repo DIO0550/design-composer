@@ -9,15 +9,16 @@ import {
 } from "@/features/canvas/__tests__/canvas-gesture";
 import { Option } from "@/utils/Option";
 import { nameSelector } from "../name-style-rule";
-import {
-  CarriedNodeUnclipped,
-  repositionPreviewDeclarations,
-} from "../reposition-preview-style";
+import { CarriedNodeUnclipped } from "../reposition-preview-style";
 import {
   artboardList,
+  carryNode,
+  dragNode,
+  dragNodeOnto,
   drawn,
   drawnAt,
   injectedStyles,
+  previewRule,
   renderCanvas,
   selectionFromArtboards,
 } from "./setup";
@@ -61,23 +62,9 @@ function setupSelection(
   );
 }
 
-/** ノードを掴んで運び、離すまで。移動量は縦横で違う値にする（取り違えを落とすため）。 */
-function dragNode(from: Element, by: Readonly<{ x: number; y: number }>): void {
-  pressPointer(from, { x: 100, y: 100 });
-  movePointer(from, { x: 100 + by.x, y: 100 + by.y });
-  releasePointer(from, { x: 100 + by.x, y: 100 + by.y });
-}
-
-/**
- * `badge` を掴んで別の要素の上まで運び、そこで離す。
- *
- * 離すのを運んだ先の要素へ撃つのは、ブラウザで起きるのがそれだから
- * （運んでいるノードは当たり判定から外れる / `repositionPreviewDeclarations`）。
- */
+/** `badge` を掴んで別の要素の上まで (30, -12) 運び、そこで離す。 */
 function dragBadgeOnto(to: Element): void {
-  pressPointer(drawn("badge"), { x: 100, y: 100 });
-  movePointer(to, { x: 130, y: 88 });
-  releasePointer(to, { x: 130, y: 88 });
+  dragNodeOnto("badge", to, { x: 30, y: -12 });
 }
 
 /**
@@ -93,7 +80,7 @@ test("絶対配置のノードを運んで離すと、掴んだ時点の座標�
   const onRepositionNode = vi.fn();
   renderCanvas({ selection: setupSelection(), onRepositionNode });
 
-  dragNode(drawn("badge"), { x: 30, y: -12 });
+  dragNode("badge", { x: 30, y: -12 });
 
   expect(onRepositionNode).toHaveBeenCalledWith("badge", {
     parentName: "home",
@@ -122,7 +109,7 @@ test("絶対配置のノードを同じ親の中で運んでもツリーの並�
   const onMoveNode = vi.fn();
   renderCanvas({ selection: setupSelection(), onMoveNode });
 
-  dragNode(drawn("badge"), { x: 30, y: -12 });
+  dragNode("badge", { x: 30, y: -12 });
 
   expect(onMoveNode).not.toHaveBeenCalled();
 });
@@ -132,7 +119,7 @@ test("フローのノードを運ぶと今までどおりツリー内の移動�
   const onRepositionNode = vi.fn();
   renderCanvas({ selection: setupSelection(), onMoveNode, onRepositionNode });
 
-  dragNode(drawn("title"), { x: 30, y: -12 });
+  dragNode("title", { x: 30, y: -12 });
 
   expect([
     onMoveNode.mock.calls.length,
@@ -178,7 +165,7 @@ test("倍率を上げても、動く量は画面上ではなくドキュメン�
    * (28.33…, -10.83…) にあたる。割り切れない量を選ぶのは、割り切れる量だと
    * 丸めの有無で答えが変わらず「丸めている」ことを確かめられないため。
    */
-  dragNode(drawn("badge"), { x: 34, y: -13 });
+  dragNode("badge", { x: 34, y: -13 });
 
   expect(onRepositionNode).toHaveBeenCalledWith("badge", {
     parentName: "home",
@@ -191,7 +178,7 @@ test("親の外へ出る位置で離すと、はみ出した座標がそのま�
   renderCanvas({ selection: setupSelection(), onRepositionNode });
 
   // 親（360×240）の右下より外へ出る量。収めると (316, 216) のような値で止まる
-  dragNode(drawn("badge"), { x: 400, y: 300 });
+  dragNode("badge", { x: 400, y: 300 });
 
   expect(onRepositionNode).toHaveBeenCalledWith("badge", {
     parentName: "home",
@@ -207,7 +194,7 @@ test("もともと親の外にあるノードを動かしても、親の内側�
     onRepositionNode,
   });
 
-  dragNode(drawn("badge"), { x: 8, y: 6 });
+  dragNode("badge", { x: 8, y: 6 });
 
   expect(onRepositionNode).toHaveBeenCalledWith("badge", {
     parentName: "home",
@@ -221,7 +208,7 @@ test("親が変わらなければ、2 つの親を実測していてもずれは
   renderCanvas({ selection: setupSelection(), onRepositionNode });
   drawnApart();
 
-  dragNode(drawn("badge"), { x: 30, y: -12 });
+  dragNode("badge", { x: 30, y: -12 });
 
   expect(onRepositionNode).toHaveBeenCalledWith("badge", {
     parentName: "home",
@@ -299,36 +286,10 @@ test("落とせる親が無い場所で離しても置き直しは届かない",
   expect(onRepositionNode).not.toHaveBeenCalled();
 });
 
-/**
- * 掴んだノードへ差し込まれる、ずらして見せる規則 1 本。
- *
- * 宣言だけでなく**選択子込み**で組むのは、付ける相手を取り違えても宣言だけの
- * 突き合わせでは落ちないため（規則が別のノードへ付くと付け替えが丸ごと壊れる）。
- *
- * @param name ずれて見えるはずのノードの名前
- * @param offset ドキュメント上の px で表した移動量
- * @returns そのノードへ差し込まれる規則 1 本
- */
-function previewRule(
-  name: string,
-  offset: Readonly<{ x: number; y: number }>,
-): string {
-  return `${nameSelector(name)}{${repositionPreviewDeclarations(offset)}}`;
-}
-
-/**
- * `badge` を掴んだまま、まだ離していない状態にする。
- * 離す前の見た目を見るので `releasePointer` は撃たない。
- */
-function carryBadge(by: Readonly<{ x: number; y: number }>): void {
-  pressPointer(drawn("badge"), { x: 100, y: 100 });
-  movePointer(drawn("badge"), { x: 100 + by.x, y: 100 + by.y });
-}
-
 test("運んでいる間、掴んだノードは離す位置まで見た目だけ先に動く", () => {
   renderCanvas({ selection: setupSelection() });
 
-  carryBadge({ x: 30, y: -12 });
+  carryNode("badge", { x: 30, y: -12 });
 
   expect(injectedStyles()).toContain(previewRule("badge", { x: 30, y: -12 }));
 });
@@ -339,7 +300,7 @@ test("倍率を上げても、見た目の移動量は画面上ではなくド�
 
   // 1.2 倍で見ているとき、画面上の (34, -13) はドキュメント上の (28.33…, -10.83…)。
   // 丸めた行き先から逆算するので、見た目のずれも確定後と同じ (28, -11) になる
-  carryBadge({ x: 34, y: -13 });
+  carryNode("badge", { x: 34, y: -13 });
 
   expect(injectedStyles()).toContain(previewRule("badge", { x: 28, y: -11 }));
 });
@@ -363,7 +324,7 @@ test("運んでいる間、掴んだノードは当たり判定から外れる",
    */
   renderCanvas({ selection: setupSelection() });
 
-  carryBadge({ x: 30, y: -12 });
+  carryNode("badge", { x: 30, y: -12 });
 
   expect(injectedStyles()).toContain("pointer-events:none");
 });
@@ -416,7 +377,7 @@ test("運んでいる間、掴んだノードを包んでいる artboard は中�
   // 解かないと、artboard の外まで運んだ時点で運んでいるノードが見えなくなる
   renderCanvas({ selection: setupSelection() });
 
-  carryBadge({ x: 30, y: -12 });
+  carryNode("badge", { x: 30, y: -12 });
 
   expect(injectedStyles()).toContain(unclippedRule("home"));
 });
@@ -425,7 +386,7 @@ test("包んでいるものが入れ子のときは、間の Box も中身を切
   // Box も `overflow: clip` を持てるので、artboard 1 枚を解くだけでは足りない
   renderCanvas({ selection: setupNestedSelection() });
 
-  carryBadge({ x: 30, y: -12 });
+  carryNode("badge", { x: 30, y: -12 });
 
   expect(injectedStyles()).toContain(unclippedRule("card"));
 });
@@ -437,7 +398,7 @@ test("運んでいる間、掴んだノードは他の artboard より前に出�
    */
   renderCanvas({ selection: setupSelection() });
 
-  carryBadge({ x: 30, y: -12 });
+  carryNode("badge", { x: 30, y: -12 });
 
   expect(injectedStyles()).toContain("z-index:1");
 });
@@ -454,7 +415,7 @@ test("フローのノードを運んでいる間は、包んでいるものの�
 
 test("離すと包んでいるものの切り取りは元に戻る", () => {
   renderCanvas({ selection: setupSelection() });
-  carryBadge({ x: 30, y: -12 });
+  carryNode("badge", { x: 30, y: -12 });
 
   releasePointer(drawn("badge"), { x: 130, y: 88 });
 
@@ -496,7 +457,7 @@ test("フローのノードを運んでいる間は、絶対配置のノード�
 
 test("運んでいる途中でキャンバスの外へ出ると見た目も戻る", () => {
   const { container } = renderCanvas({ selection: setupSelection() });
-  carryBadge({ x: 30, y: -12 });
+  carryNode("badge", { x: 30, y: -12 });
 
   fireEvent.pointerLeave(
     Option.unwrap(Option.fromNullable(container.firstElementChild)),
@@ -512,7 +473,7 @@ test("落とせる親が無い場所へ運んでいる間も、掴んだノー�
    * 落とし先の枠が出ないことで示す。
    */
   renderCanvas({ selection: setupSelection() });
-  carryBadge({ x: 30, y: -12 });
+  carryNode("badge", { x: 30, y: -12 });
 
   movePointer(artboardList(), { x: 130, y: 88 });
 
@@ -537,7 +498,7 @@ test("落とせる親が無い場所を通っても、戻ってくれば置き�
 
 test("離すと見た目のずれは消える（座標そのものが動くため）", () => {
   renderCanvas({ selection: setupSelection() });
-  carryBadge({ x: 30, y: -12 });
+  carryNode("badge", { x: 30, y: -12 });
 
   releasePointer(drawn("badge"), { x: 130, y: 88 });
 

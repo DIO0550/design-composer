@@ -1,6 +1,7 @@
 import { CssDirection } from "@/domains/dcmp/css-direction";
 import { Axes, type Axis } from "@/domains/unit/axis";
 import type { Offset } from "@/domains/unit/offset";
+import { type Side, Sides } from "@/domains/unit/side";
 import { Option } from "@/utils/Option";
 
 /**
@@ -82,9 +83,65 @@ export const CanvasBounds = {
     return { x: relative.left, y: relative.top };
   },
 
+  /**
+   * 4 辺のうち 1 辺の座標（左右なら x、上下なら y）。
+   *
+   * Why: 辺を名前で指す語彙は `unit/side` に既にあるので、そちらへ揃える。向きで引く
+   * `start` と軸で引く `edge` もここへ委譲し、**どの数値がどの辺かを 1 箇所に閉じる**。
+   *
+   * @param bounds 辺を知りたい矩形
+   * @param side 知りたい辺
+   * @returns その辺の座標（画面上の px）
+   */
+  side(bounds: CanvasBounds, side: Side): number {
+    switch (side) {
+      case Sides.Left:
+        return bounds.left;
+      case Sides.Right:
+        return bounds.left + bounds.width;
+      case Sides.Top:
+        return bounds.top;
+      case Sides.Bottom:
+        return bounds.top + bounds.height;
+    }
+  },
+
+  /**
+   * 親の矩形の左上から測った位置に、指定した大きさで置いた矩形。
+   *
+   * 絶対配置の子の**行き先**を画面上の矩形として組み立てるのに使う。大きさを別の矩形から
+   * 取るのは、運んでも大きさは変わらないので運んでいるものの実測をそのまま使えるため。
+   *
+   * **前提: 親の実測矩形（border box）の左上が、絶対配置の子の座標の原点と一致する。**
+   * CSS 上の原点は親の padding box なので、両者が一致しているのは `border` 系 prop が
+   * まだスキーマに無いからにすぎない（docs/03-schema.md「border 系は初期セットに
+   * 含めない」）。border が入ると吸い付く位置が border 幅だけずれるが、テストの実測は
+   * 差し替えなので**1 件も落ちずに通る**（気づく手段が無い）。
+   *
+   * @param parent 原点になる親の矩形
+   * @param offset 親の左上から見た位置（画面上の px）
+   * @param size 大きさを取る矩形
+   * @returns 親の中のその位置に、その大きさで置かれた矩形
+   */
+  placedAt(
+    parent: CanvasBounds,
+    offset: Offset,
+    size: CanvasBounds,
+  ): CanvasBounds {
+    return {
+      left: parent.left + offset.x,
+      top: parent.top + offset.y,
+      width: size.width,
+      height: size.height,
+    };
+  },
+
   /** 子が並ぶ向きに沿った始点。 */
   start(bounds: CanvasBounds, direction: CssDirection): number {
-    return direction === "row" ? bounds.left : bounds.top;
+    return CanvasBounds.side(
+      bounds,
+      direction === "row" ? Sides.Left : Sides.Top,
+    );
   },
 
   /**
@@ -103,18 +160,19 @@ export const CanvasBounds = {
   /** ポインタが矩形の内側にあるか。 */
   contains(bounds: CanvasBounds, pointer: Offset): boolean {
     return (
-      pointer.x >= bounds.left &&
-      pointer.x <= CanvasBounds.edge(bounds, "width") &&
-      pointer.y >= bounds.top &&
-      pointer.y <= CanvasBounds.edge(bounds, "height")
+      pointer.x >= CanvasBounds.side(bounds, Sides.Left) &&
+      pointer.x <= CanvasBounds.side(bounds, Sides.Right) &&
+      pointer.y >= CanvasBounds.side(bounds, Sides.Top) &&
+      pointer.y <= CanvasBounds.side(bounds, Sides.Bottom)
     );
   },
 
   /** 軸に沿った終端（右辺 / 下辺）。リサイズハンドルはこの辺に沿って並ぶ。 */
   edge(bounds: CanvasBounds, axis: Axis): number {
-    return axis === "width"
-      ? bounds.left + bounds.width
-      : bounds.top + bounds.height;
+    return CanvasBounds.side(
+      bounds,
+      axis === Axes.Width ? Sides.Right : Sides.Bottom,
+    );
   },
 
   /** 子が並ぶ向きに沿った終点。 */
