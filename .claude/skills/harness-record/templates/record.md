@@ -552,8 +552,9 @@ pr-407#6、pr-432#15・#21、pr-442#16・#17・#19・#20)は、**対になる入
 `implementation-reviewer` / `plan-reviewer` の 1 観点を追加する話で、新しい段取りが増える
 わけではない)。
 
-`分類: なし`(pr-301)・`plan-scope-verification`(pr-352)の分割時と同じく、この回は
-「`harness/records/` への書き込み」を避ける制約により、締めの `対策済` 行(`test-coverage-branch`
-本体 + `test-coverage-branch-asymmetry`)を `harness/records/pr-442.md`(`test-coverage-branch`
-が最後に出た記録)への追記として積み残す。後続の棚卸しルーティンが `harness/records/pr-442.md`
-へ 2 行を追記し、この積み残しを解消する。過去の記録の `分類: test-coverage-branch` は書き換えない。
+締めの `対策済` 行(`test-coverage-branch` 本体 + `test-coverage-branch-asymmetry`、計 2 行)は
+`harness/records/pr-442.md`(`test-coverage-branch` が最後に出た記録)へ、分割を行った
+この PR(pr-457)自身が追記した。`分類: なし`(pr-301)・`plan-scope-verification`(pr-352)の
+分割時は PR 番号が事前に分からず積み残しになったが、今回は PR 作成後に実際の番号を確認して
+同じ PR 内で追記したため積み残しは発生していない。過去の記録の `分類: test-coverage-branch`
+は書き換えない。
