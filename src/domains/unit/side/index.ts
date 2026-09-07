@@ -44,4 +44,19 @@ export const SidePair = {
       ? [Sides.Top, Sides.Bottom]
       : [Sides.Right, Sides.Left];
   },
+
+  /**
+   * その組と直交する組。
+   *
+   * 左右の辺（水平の組）を揃えたときに伸びる向きは上下（垂直の組）、というように
+   * 「その組の辺に沿って伸びる向き」を引くのに使う。
+   *
+   * @param pair 直交する相手を知りたい組
+   * @returns 垂直なら水平、水平なら垂直
+   */
+  perpendicular(pair: SidePair): SidePair {
+    return pair === SidePairs.Vertical
+      ? SidePairs.Horizontal
+      : SidePairs.Vertical;
+  },
 } as const;

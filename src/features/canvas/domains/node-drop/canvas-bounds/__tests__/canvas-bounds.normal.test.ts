@@ -113,6 +113,16 @@ test("囲む矩形が 1 つも無ければ全体は決まらない", () => {
   expect(CanvasBounds.enclosing([])).toEqual(Option.none);
 });
 
+test("矩形をずらすと、位置だけが動いて大きさは変わらない", () => {
+  // 縦横で違う量を渡す（取り違えても同じ値だと落ちないため）
+  expect(CanvasBounds.movedBy(Bounds, { x: 5, y: -3 })).toEqual({
+    left: 15,
+    top: 17,
+    width: 100,
+    height: 40,
+  });
+});
+
 test("4 辺のうち指定した辺の座標が返る", () => {
   expect([
     CanvasBounds.side(Bounds, "left"),

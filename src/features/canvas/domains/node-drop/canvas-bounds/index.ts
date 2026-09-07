@@ -136,6 +136,26 @@ export const CanvasBounds = {
     };
   },
 
+  /**
+   * その量だけずらした矩形。大きさは変わらない。
+   *
+   * Why（`moveBy` ではなく `movedBy`）: 同じモジュールの `placedAt` / `relativeTo` と
+   * 並んで読まれるので、結果を表す語形に揃える（`Placement.moveBy` とは型が違うので
+   * 混ざらない）。
+   *
+   * @param bounds ずらす矩形
+   * @param offset ずらす量
+   * @returns 左上をその量だけ動かした矩形
+   */
+  movedBy(bounds: CanvasBounds, offset: Offset): CanvasBounds {
+    return {
+      left: bounds.left + offset.x,
+      top: bounds.top + offset.y,
+      width: bounds.width,
+      height: bounds.height,
+    };
+  },
+
   /** 子が並ぶ向きに沿った始点。 */
   start(bounds: CanvasBounds, direction: CssDirection): number {
     return CanvasBounds.side(

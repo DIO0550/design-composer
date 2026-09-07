@@ -22,7 +22,10 @@ import {
   type ParentShift,
   RepositionTarget,
 } from "@/features/canvas/domains/reposition-target";
-import { SideSnap } from "@/features/canvas/domains/side-snap";
+import {
+  SideSnap,
+  type SideSnapped,
+} from "@/features/canvas/domains/side-snap";
 import { CanvasPointer } from "@/features/canvas/utils/CanvasPointer";
 import { CanvasDom } from "@/libs/canvas-dom";
 import { ElementEx } from "@/utils/ElementEx";
@@ -189,7 +192,7 @@ function measureReposition(
 }
 
 /**
- * 揃う位置へ寄せる量。
+ * 揃う位置へ寄せる量と、揃った辺に引くガイド線。
  *
  * 行き先の矩形は、今の親の左上へ運んだ先の位置を置き、大きさは運んでいるものの実測を
  * そのまま採って組み立てる。運んでいるノードを実測して位置まで採れないのは、運んでいる
@@ -198,10 +201,11 @@ function measureReposition(
  *
  * @param measured 落とし先の実測（寄せの原点・運んでいるものの大きさ・揃え先）
  * @param movedTo 今の親の左上から見た、運んだ先の画面上の位置
- * @returns 寄せ量（画面上の px）。閾値に届く辺が無ければ縦横とも 0
+ * @returns 寄せ量とガイド線（どちらも画面上の px。閾値に届く辺が無ければ寄せ量は
+ *   縦横とも 0・線は無し）
  */
-function snapOffset(measured: RepositionMeasure, movedTo: Offset): Offset {
-  return SideSnap.toOffset(
+function snapAt(measured: RepositionMeasure, movedTo: Offset): SideSnapped {
+  return SideSnap.toSnapped(
     SideSnap.create(
       CanvasBounds.placedAt(measured.origin, movedTo, measured.dragged),
       measured.stationary,
@@ -274,18 +278,20 @@ function repositionCarrying(
       ),
     });
   }
-  // 寄せ量を運んだ量へ畳んでから渡すので、書かれる座標と見た目のずらし量が同じ材料から出る
-  const snapped = Offset.add(
-    screenDelta,
-    snapOffset(
-      measured.value,
-      CanvasView.toScreenPoint(
-        context.view,
-        { x: carried.at.placement.x, y: carried.at.placement.y },
-        screenDelta,
-      ),
+  /*
+   * 寄せは 1 回だけ判定し、寄せ量とガイド線の両方をここから配る。2 回判定すると、
+   * 線を引く辺と実際に落ちる位置が食い違いうる（`DropEdit.reposition` の Why）。
+   */
+  const snap = snapAt(
+    measured.value,
+    CanvasView.toScreenPoint(
+      context.view,
+      { x: carried.at.placement.x, y: carried.at.placement.y },
+      screenDelta,
     ),
   );
+  // 寄せ量を運んだ量へ畳んでから渡すので、書かれる座標と見た目のずらし量が同じ材料から出る
+  const snapped = Offset.add(screenDelta, snap.offset);
   return Carrying.droppable(
     DropEdit.reposition(
       carried.name,
@@ -294,6 +300,7 @@ function repositionCarrying(
         CanvasView.toDocumentOffset(context.view, snapped),
         measured.value.shift,
       ),
+      snap.guides,
     ),
   );
 }
@@ -393,7 +400,7 @@ export type NodeDragControl = Readonly<{
  * このフックが持つのは DOM の実測とイベントの仲介だけで、
  * 「どこへ落ちるか」「いつドラッグとみなすか」の判定は `node-drop` / `node-drag` に、
  * 「実測した親のずれからどの座標が書かれるか」は `reposition-target` に、
- * 「揃う辺があるならどれだけ寄せるか」は `side-snap` にある。
+ * 「揃う辺があるならどれだけ寄せるか・どの辺で揃ったか」は `side-snap` にある。
  *
  * ポインタキャプチャを使わないのは、捕捉すると以後のイベントの `target` が捕捉した要素に
  * 固定され、「今どのノードの上にいるか」を読めなくなるため。代わりに掴んだあとの

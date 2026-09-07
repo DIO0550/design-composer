@@ -20,6 +20,7 @@ import { DropMarker } from "./drop-marker";
 import { DropPositionLabel } from "./drop-position-label";
 import { RepositionPreviewStyle } from "./reposition-preview-style";
 import { ResizeHandleOverlay, resizeCursor } from "./resize-handle-overlay";
+import { SnapGuideOverlay } from "./snap-guide-overlay";
 import { StaleCanvasOverlay } from "./stale-canvas-overlay";
 import { TextInlineEditor } from "./text-inline-editor";
 
@@ -228,6 +229,8 @@ export function ArtboardCanvas({
           <DropPositionLabel target={dropTarget.value} />
         </>
       ) : null}
+      {/* 吸い付いた辺は運んでいる間しか分からないので、離す前に線で見せる */}
+      <SnapGuideOverlay guides={NodeDrag.snapGuides(nodeDrag.drag)} />
       {/* 座標を動かすドラッグにはドロップ線が出ないので、代わりに実体を先に動かす */}
       <RepositionPreviewStyle
         drag={nodeDrag.drag}

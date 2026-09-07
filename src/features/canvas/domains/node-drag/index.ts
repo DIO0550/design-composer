@@ -2,6 +2,7 @@ import { DesignDocument } from "@/domains/dcmp/design-document";
 import type { NodeTemplate } from "@/domains/session/node-template";
 import { Offset } from "@/domains/unit/offset";
 import {
+  type CanvasBounds,
   DraggedNode,
   type DropTarget,
 } from "@/features/canvas/domains/node-drop";
@@ -53,7 +54,14 @@ export type NodeDrag =
 export type DropEdit =
   | Readonly<{ kind: "move"; name: string; target: DropTarget }>
   | Readonly<{ kind: "insert"; template: NodeTemplate; target: DropTarget }>
-  | Readonly<{ kind: "reposition"; name: string; target: RepositionTarget }>;
+  | Readonly<{
+      kind: "reposition";
+      name: string;
+      /** 書かれる座標と見た目のずらし量（**ドキュメント上の px**）。 */
+      target: RepositionTarget;
+      /** 揃った辺に引くガイド線（**画面上の px**。揃った辺が無ければ空）。 */
+      guides: readonly CanvasBounds[];
+    }>;
 
 /**
  * 運んでいる間、掴んだノードをどれだけずらして見せるか。
@@ -141,6 +149,25 @@ export const Carrying = {
         return DropEdit.repositionPreview(carrying.drop);
     }
   },
+
+  /**
+   * 揃った辺に引くガイド線。
+   *
+   * 落とせる親がポインタの下に無いとき（`preview`）に空を返すのは、揃え先が
+   * 落とし先の親とその子だから（親が決まらなければ吸い付きも起きない）。
+   *
+   * @param carrying 今の運び方
+   * @returns 引く線（画面上の px）。揃った辺が無ければ空
+   */
+  snapGuides(carrying: Carrying): readonly CanvasBounds[] {
+    switch (carrying.kind) {
+      case "nothing":
+      case "preview":
+        return [];
+      case "droppable":
+        return DropEdit.snapGuides(carrying.drop);
+    }
+  },
 } as const;
 
 export const DropEdit = {
@@ -161,12 +188,22 @@ export const DropEdit = {
   /**
    * 落とし先の親の中の座標へ置き直す編集。既存ノードにしか起きない。
    *
+   * Why（`target` と `guides` を並べて受ける）: どちらも同じ 1 回の寄せの判定
+   * （`SideSnap.toSnapped`）から作る。別々に組むと、線の位置と実際に落ちる位置が
+   * 食い違う。単位が違う（ドキュメント上 / 画面上）ので 1 つの型には畳めないため、
+   * 両方を作る場所を `useNodeDrag` の 1 箇所に閉じている。
+   *
    * @param name 置き直すノードの名前
    * @param target 落とし先の親から見た座標と、運んでいる間のずらし量
+   * @param guides 揃った辺に引くガイド線（画面上の px）
    * @returns 座標の置き直しの落とし方
    */
-  reposition(name: string, target: RepositionTarget): DropEdit {
-    return { kind: "reposition", name, target };
+  reposition(
+    name: string,
+    target: RepositionTarget,
+    guides: readonly CanvasBounds[],
+  ): DropEdit {
+    return { kind: "reposition", name, target, guides };
   },
 
   /**
@@ -199,6 +236,23 @@ export const DropEdit = {
         return Option.none;
       case "reposition":
         return Option.some({ name: edit.name, offset: edit.target.offset });
+    }
+  },
+
+  /**
+   * 揃った辺に引くガイド線。ツリーへ落とすときは引かない
+   * （辺の吸い付きが起きるのは座標の置き直しだけ / docs/06-ui.md）。
+   *
+   * @param edit 今の落とし方
+   * @returns 引く線（画面上の px）。ツリーへの移動・挿入なら空
+   */
+  snapGuides(edit: DropEdit): readonly CanvasBounds[] {
+    switch (edit.kind) {
+      case "move":
+      case "insert":
+        return [];
+      case "reposition":
+        return edit.guides;
     }
   },
 
@@ -371,6 +425,19 @@ export const NodeDrag = {
     return drag.kind === "dragging"
       ? Carrying.repositionPreview(drag.carrying)
       : Option.none;
+  },
+
+  /**
+   * 揃った辺に引くガイド線（docs/06-ui.md「キャンバス直接操作」の辺のスナップ）。
+   *
+   * 掴んだだけ（閾値未満）では答えないのは、運んでいる状態でしか運び方を持たないため。
+   * 押しただけで線が出ると、クリックのたびに一瞬線が走る。
+   *
+   * @param drag 今のドラッグの状態
+   * @returns 引く線（画面上の px）。動かしていない / 揃った辺が無いなら空
+   */
+  snapGuides(drag: NodeDrag): readonly CanvasBounds[] {
+    return drag.kind === "dragging" ? Carrying.snapGuides(drag.carrying) : [];
   },
 
   /**

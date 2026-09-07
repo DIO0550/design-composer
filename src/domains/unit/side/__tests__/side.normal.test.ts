@@ -12,6 +12,14 @@ test("水平の組の辺は右 左の順で得られる", () => {
   ]);
 });
 
+test("垂直の組に直交するのは水平の組", () => {
+  expect(SidePair.perpendicular(SidePairs.Vertical)).toBe(SidePairs.Horizontal);
+});
+
+test("水平の組に直交するのは垂直の組", () => {
+  expect(SidePair.perpendicular(SidePairs.Horizontal)).toBe(SidePairs.Vertical);
+});
+
 test("4 辺はどちらかの組にちょうど 1 度ずつ現れる", () => {
   const paired = Object.values(SidePairs).flatMap((pair) =>
     SidePair.sides(pair),
