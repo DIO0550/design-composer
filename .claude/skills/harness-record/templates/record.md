@@ -183,6 +183,7 @@ pr-317 以前の記録には `レビュー`(括弧なし)・`レビュー（人�
 | `ui-fidelity` | rules/ui-verification.md「UIの拠り所」 |
 | `ui-fidelity-misread` | rules/ui-verification.md「見るのはスクリーンショットではなくマークアップ」/ `implementation-review.md`「UI 要素の意味の観点」(マークアップを見たうえで、UI 要素が実際に何を表しているかを他の画面・状態・属性と突き合わせずに断定して読み違える形) |
 | `vrt-blind-spot` | rules/ui-verification.md「Storybook の視覚差分(VRT)」(story のファイル移動・`title` 変更で story id が変わり VRT が「変更」ではなく new+deleted として出る形 / 視覚差分でしか守れない部品に単体 story が無く、器と中身が混ざった story でしか退行を追えない形。VRT という検知手段自体の死角で、`ui-fidelity` `ui-fidelity-misread` が指す「UI 案の読み違い」とは別軸) |
+| `drag-feedback-incomplete` | rules/ui-verification.md「表示確認」(操作の**結果**だけを確認し、ドラッグ等の**操作の最中**の見え方(掴んだ要素が画面に映っているか・掴める範囲が実際に反応するか)を確認していない形。操作中の絵を撮っていても、そこに操作対象が映っているかを見落とす場合を含む) |
 | `over-guard` | 過剰なブロック / フォールバック(implementation-flow のフェーズ 6) |
 | `plan` | 計画の誤り・不足(implementation-flow のフェーズ 3〜4。下記の `plan-*` 語彙のどれにも当たらない形) |
 | `plan-scope-verification` | implementation-flow フェーズ 3(SKILL.md「計画」フェーズ 3 手順 2)(一括置換・複数箇所の書き換えを伴う計画で、立てた収集条件・件数・基数・判定基準(想定した接続先や条件が実例で成立するか、検証コマンド自体が意図した範囲を覆っているかを含む)を対象になる実例へ実際に当てて検算していない形。pr-352 で下 2 語彙へ分割した) |
@@ -194,12 +195,15 @@ pr-317 以前の記録には `レビュー`(括弧なし)・`レビュー（人�
 | `plan-comment-reference` | `plan-review.md`「ファイル表に挙がっているか」(移動・書き換えの対象を doc / Why コメント内でだけ名指ししているシンボルが、コードの参照だけを拾ったファイル表に挙がっていない形) |
 | `plan-migration-mapping` | `plan-review.md`「リファクタ・分割で消えるテストケースの移送先が計画に書かれているか」(既存テストファイルの分割・統合で、元のケース一覧と新しいファイルへの対応が計画に無く、観点が黙って抜け落ちる形) |
 | `plan-implicit-condition` | `plan-review.md`「既存のコードが前提にしている不変条件を、この計画が崩さないか」(述語の統合・参照方式の変更で、それまで暗黙に満たしていた条件・挙動が計画に書かれないまま変わる形) |
+| `plan-split-usability` | `plan-review.md`「タスクの分割は届く単位で見る」(AGENTS.md「タスクの分割」の「独立してマージできるか」だけを基準に分け、届けた PR 単体では動作確認できない・症状が直っていない状態のまま出す形。残りをどう束ねる/同じ PR へ畳むかの基準が計画に無い) |
+| `version-bump-unverified` | `plan-review.md`「版を上げる判断は実物の状態で検算する」(フォーマットバージョン等を上げる判断が規約の文面としては正しくても、判断が前提にする実物の状態(該当ファイルの実在・その版で動作確認済みか)を確かめていない形) |
 | `plan-rejection-reasoning` | implementation-flow フェーズ 3(SKILL.md「計画」フェーズ 3 手順 5)(却下案・据え置き判断の理由が、実際のコード・仕様・時系列に照らして成立しているかを検算していない形。理由が事実と違う/実際に起こりやすい向きと逆/一時的な事実に依っている/対象の一部しか覆っていない、を含む) |
 | `plan-rejection-coverage` | implementation-flow フェーズ 3(SKILL.md「計画」フェーズ 3 手順 6)(却下案の一覧に、実在するいちばん近い代替案が挙がっておらず、却下の検討そのものが閉じないまま計画が進む形) |
 | `rules-consistency` | AGENTS.md「規約の更新」/ `harness-growth`「Step 2a-1」(規約へ足した記述が、同じファイルの前の節と矛盾する / 規約自身が挙げている例で判定文が逆の答えを出す / 表の行が実在するケースを網羅していない / Why not の根拠が一時的な事実になっている形) |
 | `subagent-control` | `implementation-flow`「サブエージェントの使い方」(検証エージェントが指示に反して実装を書き換えた / バックグラウンド起動の結果を取り逃した形) |
 | `hook-environment` | `.claude/hooks/README.md`「強制力の序列」(`echo hook-canary` が deny されず、`.claude/hooks/` が発火しない実行環境だった形) |
 | `tooling-rule-scope-gap` | rules/coding.md「規約の適用範囲」(`rules/` の規律が `.claude/hooks/` `.github/scripts/` などハーネス自身のツールにも及ぶかどうかが宣言されていない形。ネスト段数・重複禁止等の判断基準はあっても対象範囲が書かれておらず、対象を harness 自身のスクリプトへ広げると気づかれない) |
+| `tool-behavior-unverified` | rules/coding.md「外部の挙動は動かして確かめる」(シェル・CLI・パーサ・外部フォーマットの実際の挙動を、小さく実行して確かめないまま前提にして書いた形。heredoc の並び・PR 本文中のプレースホルダの記法・`git status --porcelain` の状態記号・設定ファイルが許可するフィールド・シェルの実行モード・`grep` の抽出条件などを含む) |
 | `なし` | 既存の規約に対応が無い(＝規約の抜けの候補) |
 
 ---
