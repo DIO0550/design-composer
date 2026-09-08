@@ -72,6 +72,65 @@ export const SyncFailed: Story = {
 const Sample = EditorState.document(SampleEditorState);
 
 /*
+ * 3 階層の枝を持つドキュメント。掘る操作（docs/06-ui.md「キャンバスのクリックが選ぶ階層」）を
+ * 目で確かめるストーリーだけがこれを開く。`SampleEditorState` は直下しか持たないので使えない。
+ */
+const DocumentWithDeepBranch = DesignDocument.create({
+  tokens: Sample.tokens,
+  components: Sample.components,
+  artboards: [
+    {
+      name: "home",
+      width: 360,
+      height: 240,
+      props: {
+        layout: "column",
+        paddingTop: "lg",
+        paddingRight: "lg",
+        paddingBottom: "lg",
+        paddingLeft: "lg",
+        background: "white",
+      },
+      children: [
+        {
+          name: "outer-panel",
+          type: "Box",
+          props: {
+            paddingTop: "lg",
+            paddingRight: "lg",
+            paddingBottom: "lg",
+            paddingLeft: "lg",
+            background: "gray-100",
+            radius: "md",
+          },
+          children: [
+            {
+              name: "inner-panel",
+              type: "Box",
+              props: {
+                paddingTop: "md",
+                paddingRight: "md",
+                paddingBottom: "md",
+                paddingLeft: "md",
+                background: "white",
+                radius: "md",
+              },
+              children: [
+                {
+                  name: "deep-title",
+                  type: "Text",
+                  props: { content: "ふかい見出し" },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  ],
+});
+
+/*
  * 使用中トークンを消したあとのドキュメント。`home-title` が指す typography の
  * `heading` だけを外し、`subheading` は残す。
  * Why not: `DesignDocument.removeToken` は通さない。ストーリーには `Result` の失敗を
@@ -256,5 +315,22 @@ export const FileInvalid: Story = {
     await waitFor(() => {
       expect(screen.getByText("最後に正常だった表示")).toBeDefined();
     });
+  },
+};
+
+/**
+ * 入れ子が 3 階層あるドキュメントを開いた編集画面。
+ *
+ * キャンバスのクリックが選ぶ階層（docs/06-ui.md）を操作して確かめるためのストーリー。
+ * クリックで `outer-panel`、ダブルクリックを重ねて `inner-panel` → `deep-title`、
+ * ⌘ + クリックで一度に `deep-title`、掘りきったあとのダブルクリックで文言の編集に入る。
+ */
+export const DeepBranch: Story = {
+  name: "入れ子のあるドキュメントの編集画面",
+  args: {
+    ipc: DocumentIpcFake.create({
+      [SamplePath]: DocumentJson.serialize(DocumentWithDeepBranch),
+    }).ipc,
+    opened: { path: SamplePath, document: DocumentWithDeepBranch },
   },
 };

@@ -7,6 +7,7 @@ import type { PropEdit } from "@/domains/dcmp/node";
 import type { TokenRef, TokenValue } from "@/domains/dcmp/token";
 import type { DocumentReload } from "@/domains/session/document-reload";
 import type { NodeTemplate } from "@/domains/session/node-template";
+import type { SelectionDig } from "@/domains/session/selection-dig";
 import type { Instant } from "@/domains/unit/instant";
 import type { Offset } from "@/domains/unit/offset";
 import { EditorState } from "@/features/editor/domains/editor-state";
@@ -18,7 +19,12 @@ import { Option } from "@/utils/Option";
 /** エディタ画面で起きる状態遷移（docs/06-ui.md「選択」「編集操作の一覧」）。 */
 export type EditorAction =
   | Readonly<{ type: "select"; name: string }>
-  | Readonly<{ type: "select_innermost"; names: readonly string[] }>
+  /* キャンバスからの選択。押し方の解釈（掘る量）はキャンバス側が済ませて渡す（#412）。 */
+  | Readonly<{
+      type: "select_at";
+      names: readonly string[];
+      dig: SelectionDig;
+    }>
   | Readonly<{ type: "clear_selection" }>
   | Readonly<{ type: "reveal"; name: string }>
   /*
@@ -84,8 +90,8 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
   switch (action.type) {
     case "select":
       return EditorState.select(state, action.name);
-    case "select_innermost":
-      return EditorState.selectInnermost(state, action.names);
+    case "select_at":
+      return EditorState.selectAt(state, action.names, action.dig);
     case "clear_selection":
       return EditorState.clearSelection(state);
     case "reveal":

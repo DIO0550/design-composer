@@ -3,6 +3,7 @@ import type { ChildPlacement } from "@/domains/dcmp/child-placement";
 import type { ChildPosition } from "@/domains/dcmp/child-position";
 import type { PropEdit } from "@/domains/dcmp/node";
 import type { NodeTemplate } from "@/domains/session/node-template";
+import type { SelectionDig } from "@/domains/session/selection-dig";
 import type { Offset } from "@/domains/unit/offset";
 import { useEditor } from "@/features/editor/components/editor-provider";
 import { EditorState } from "@/features/editor/domains/editor-state";
@@ -17,7 +18,7 @@ import { EditorState } from "@/features/editor/domains/editor-state";
  */
 export type NodeActions = Readonly<{
   select: (name: string) => void;
-  selectAt: (names: readonly string[]) => void;
+  selectAt: (names: readonly string[], dig: SelectionDig) => void;
   clearSelection: () => void;
   /** エラー行から、そのエラーが指すノードを見せる（#136）。 */
   reveal: (nodeName: string) => void;
@@ -59,10 +60,10 @@ export function useNodeActions(): NodeActions {
   return {
     select: (name) => dispatch({ type: "select", name }),
     /**
-     * キャンバスは押された位置から外へ辿った名前を渡す。どれを選ぶかは状態側の判断
-     * （選択できる最も内側のもの / `EditorState.selectInnermost`）。
+     * キャンバスは押された位置から外へ辿った名前と、押し方から決まった掘る量を渡す。
+     * どこまで内側へ入るかは状態側の判断（`EditorState.selectAt`）。
      */
-    selectAt: (names) => dispatch({ type: "select_innermost", names }),
+    selectAt: (names, dig) => dispatch({ type: "select_at", names, dig }),
     clearSelection: () => dispatch({ type: "clear_selection" }),
     /*
      * `select` と分けているのは、エラーの飛び先が表示中のドキュメントに

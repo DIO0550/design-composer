@@ -1,5 +1,6 @@
 import { fireEvent, screen } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
+import { SelectionDigs } from "@/domains/session/selection-dig";
 import {
   artboardFrameContainer,
   artboardHandle,
@@ -155,7 +156,7 @@ test("背景を掴んで運んだ直後でも、次のクリックで選べる",
   drag(drawn("second"), { from: { x: 0, y: 0 }, to: { x: 60, y: 40 } });
   fireEvent.click(drawn("third"));
 
-  expect(onSelect).toHaveBeenCalledWith(["third"]);
+  expect(onSelect).toHaveBeenCalledWith(["third"], SelectionDigs.NoDeeper);
 });
 
 test("運んでいる間は、離す前から運び先に描かれる", () => {
@@ -204,5 +205,5 @@ test("見出しを掴んで運んだ直後でも、次のクリックで選べ�
   });
   screen.getByRole("button", { name: "third" }).click();
 
-  expect(onSelect).toHaveBeenCalledWith(["third"]);
+  expect(onSelect).toHaveBeenCalledWith(["third"], SelectionDigs.NoDeeper);
 });

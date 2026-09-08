@@ -71,6 +71,69 @@ export function stateWithComponentDefinitions(): EditorState {
 }
 
 /**
+ * `home` に 3 階層の枝（`outer-panel` > `inner-panel` > `deep-title`）と、
+ * その兄弟の `sibling-panel`、部品インスタンスの `home-login` が並ぶ状態。
+ *
+ * 3 階層あるのは、キャンバスのクリックが選ぶ階層（docs/06-ui.md）を確かめるのに
+ * **いちばん外側・1 つ内側・いちばん内側がすべて別の名前**でなければならないため。
+ * 2 階層だと「artboard 直下の子」と「いちばん内側」が同じ名前になり、掘る量を
+ * 取り違えた実装でも同じ答えが出る。
+ *
+ * @returns その並びを持つエディタの状態
+ */
+export function stateWithDeepBranch(): EditorState {
+  return EditorState.create(
+    DesignDocument.create({
+      tokens: DocumentTemplate.Default.tokens,
+      components: DocumentTemplate.Default.components,
+      artboards: [
+        {
+          name: "home",
+          width: 375,
+          height: 812,
+          children: [
+            {
+              name: "outer-panel",
+              type: "Box",
+              children: [
+                {
+                  name: "inner-panel",
+                  type: "Box",
+                  children: [{ name: "deep-title", type: "Text" }],
+                },
+              ],
+            },
+            { name: "sibling-panel", type: "Box", children: [] },
+            { name: "home-login", ref: "primary-button" },
+          ],
+        },
+      ],
+    }),
+  );
+}
+
+/**
+ * `stateWithDeepBranch` の `deep-title` を押したときにキャンバスから届く候補
+ * （押された要素から外へ辿った名前）。
+ */
+export const DeepTitleNames = [
+  "deep-title",
+  "inner-panel",
+  "outer-panel",
+  "home",
+] as const;
+
+/**
+ * `stateWithDeepBranch` の部品インスタンスの中身を押したときに届く候補。
+ * 先頭の `primary-button-label` は部品定義の中のノードなので選択の対象にならない。
+ */
+export const InstanceNames = [
+  "primary-button-label",
+  "home-login",
+  "home",
+] as const;
+
+/**
  * 名前で引いたノード。見つからなければテストを落とす。
  *
  * @param state 引き先のエディタの状態

@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
 import { ElementNameAttribute } from "@/domains/compiled/compiled-element";
 import type { DocumentSelection } from "@/domains/session/document-selection";
+import { SelectionDigs } from "@/domains/session/selection-dig";
 import {
   canvasContent,
   highlightedNames,
@@ -40,7 +41,10 @@ test("artboard の中のノードを押すと、そのノードを内側とす�
 
   await userEvent.click(renderedElement(canvasContent(), "home-title"));
 
-  expect(onSelect).toHaveBeenCalledWith(["home-title", "home"]);
+  expect(onSelect).toHaveBeenCalledWith(
+    ["home-title", "home"],
+    SelectionDigs.NoDeeper,
+  );
 });
 
 test("部品インスタンスの中身を押すと、内側の部品定義のノードより外にインスタンスが並ぶ", async () => {
@@ -49,11 +53,10 @@ test("部品インスタンスの中身を押すと、内側の部品定義の�
 
   await userEvent.click(screen.getByText("ログイン"));
 
-  expect(onSelect).toHaveBeenCalledWith([
-    "primary-button-label",
-    "home-login",
-    "home",
-  ]);
+  expect(onSelect).toHaveBeenCalledWith(
+    ["primary-button-label", "home-login", "home"],
+    SelectionDigs.NoDeeper,
+  );
 });
 
 test("artboard の枠を押すとその artboard だけが候補になる", async () => {
@@ -66,7 +69,7 @@ test("artboard の枠を押すとその artboard だけが候補になる", asyn
 
   await userEvent.click(screen.getByRole("button", { name: "settings" }));
 
-  expect(onSelect).toHaveBeenCalledWith(["settings"]);
+  expect(onSelect).toHaveBeenCalledWith(["settings"], SelectionDigs.NoDeeper);
 });
 
 test("キーボードで artboard を活性化するとその artboard だけが候補になる", async () => {
@@ -79,7 +82,42 @@ test("キーボードで artboard を活性化するとその artboard だけが
   screen.getByRole("button", { name: "home" }).focus();
   await userEvent.keyboard("{Enter}");
 
-  expect(onSelect).toHaveBeenCalledWith(["home"]);
+  expect(onSelect).toHaveBeenCalledWith(["home"], SelectionDigs.NoDeeper);
+});
+
+test("⌘ を押しながらクリックすると、掘れるだけ掘る指定で候補が通知される", async () => {
+  const onSelect = vi.fn();
+  renderCanvas({ selection: setupHomeArtboard(), onSelect });
+
+  /*
+   * 押しっぱなしの修飾キーを click まで持ち越すには、同じセッションから両方を呼ぶ
+   * （`userEvent.click` の直接呼び出しは毎回セッションを作り直すので ⌘ が届かない）。
+   */
+  const user = userEvent.setup();
+  await user.keyboard("{Meta>}");
+  await user.click(renderedElement(canvasContent(), "home-title"));
+  await user.keyboard("{/Meta}");
+
+  expect(onSelect).toHaveBeenCalledWith(
+    ["home-title", "home"],
+    SelectionDigs.Deepest,
+  );
+});
+
+/**
+ * ダブルクリックの前に click が 2 回届くので、最後の 1 回だけを見る
+ * （先の 2 回は掘らない指定で通知される）。
+ */
+test("ダブルクリックすると、1 階層だけ掘る指定で候補が通知される", async () => {
+  const onSelect = vi.fn();
+  renderCanvas({ selection: setupHomeArtboard(), onSelect });
+
+  await userEvent.dblClick(renderedElement(canvasContent(), "home-title"));
+
+  expect(onSelect).toHaveBeenLastCalledWith(
+    ["home-title", "home"],
+    SelectionDigs.OneDeeper,
+  );
 });
 
 test("選択中のノードはキャンバス上で強調される", () => {

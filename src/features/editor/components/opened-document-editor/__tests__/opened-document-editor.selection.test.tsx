@@ -4,6 +4,7 @@ import { expect, test } from "vitest";
 import { currentRowNames } from "@/components/__tests__/row-names";
 import { highlightedNames, renderedElement } from "@/features/canvas/__tests__";
 import { rightPaneHeading } from "@/features/editor/__tests__/right-pane-heading";
+import { SampleDocumentWithDeepBranch } from "@/features/editor/__tests__/sample-document";
 import {
   artboardList,
   canvasPane,
@@ -38,6 +39,43 @@ test("キャンバスで部品インスタンスの中身を押すとインス�
   await userEvent.click(within(canvasPane()).getByText("ログイン"));
 
   expect(currentRowNames(tree())).toEqual(["home-login"]);
+});
+
+/** 掘る操作を通しで見るテストは、3 階層の枝を持つドキュメントを開く。 */
+test("入れ子の中身をクリックしても、選ばれるのは artboard 直下の子", async () => {
+  await renderOpenedDocument(SampleDocumentWithDeepBranch);
+
+  await userEvent.click(renderedElement(canvasPane(), "deep-title"));
+
+  expect(currentRowNames(tree())).toEqual(["outer-panel"]);
+});
+
+test("ダブルクリック 1 回では 1 階層だけ内側へ進む", async () => {
+  await renderOpenedDocument(SampleDocumentWithDeepBranch);
+
+  await userEvent.dblClick(renderedElement(canvasPane(), "deep-title"));
+
+  expect(currentRowNames(tree())).toEqual(["inner-panel"]);
+});
+
+test("ダブルクリックを続けるとさらに 1 階層内側へ進む", async () => {
+  await renderOpenedDocument(SampleDocumentWithDeepBranch);
+  await userEvent.dblClick(renderedElement(canvasPane(), "deep-title"));
+
+  await userEvent.dblClick(renderedElement(canvasPane(), "deep-title"));
+
+  expect(currentRowNames(tree())).toEqual(["deep-title"]);
+});
+
+test("⌘ を押しながらクリックすると、押した位置のいちばん内側が選ばれる", async () => {
+  await renderOpenedDocument(SampleDocumentWithDeepBranch);
+
+  const user = userEvent.setup();
+  await user.keyboard("{Meta>}");
+  await user.click(renderedElement(canvasPane(), "deep-title"));
+  await user.keyboard("{/Meta}");
+
+  expect(currentRowNames(tree())).toEqual(["deep-title"]);
 });
 
 test("ツリービューでノードを選ぶとキャンバスのそのノードが強調される", async () => {

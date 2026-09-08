@@ -2,6 +2,7 @@ import { type CSSProperties, useMemo, useRef } from "react";
 import type { AxisLengths } from "@/domains/dcmp/axis-length";
 import type { PropEdit } from "@/domains/dcmp/node";
 import { DocumentSelection } from "@/domains/session/document-selection";
+import type { SelectionDig } from "@/domains/session/selection-dig";
 import type { TokenSelection } from "@/domains/session/token-selection";
 import type { Offset } from "@/domains/unit/offset";
 import { CanvasView } from "@/features/canvas/domains/canvas-view";
@@ -79,7 +80,7 @@ export function ArtboardCanvas({
   isFrozen: boolean;
   canvasView: CanvasViewControl;
   nodeDrag: NodeDragControl;
-  onSelect: (names: readonly string[]) => void;
+  onSelect: (names: readonly string[], dig: SelectionDig) => void;
   onResize: (sizes: AxisLengths) => void;
   onEditProp: (edit: PropEdit) => void;
   onRepositionArtboard: (name: string, canvasPosition: Offset) => void;

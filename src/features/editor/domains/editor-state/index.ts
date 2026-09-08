@@ -16,6 +16,7 @@ import type { DocumentReload } from "@/domains/session/document-reload";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { FileValidity } from "@/domains/session/file-validity";
 import { NodeTemplate } from "@/domains/session/node-template";
+import { SelectionDig } from "@/domains/session/selection-dig";
 import { SelectionState } from "@/domains/session/selection-state";
 import { TokenSelection } from "@/domains/session/token-selection";
 import type { Instant } from "@/domains/unit/instant";
@@ -24,6 +25,7 @@ import { EditHistory } from "@/features/editor/domains/edit-history";
 import { ReorderStep } from "@/features/editor/domains/reorder-step";
 import { TokenTemplate } from "@/features/editor/domains/token-template";
 import type { IndexMove } from "@/types/IndexMove";
+import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 
 /**
@@ -81,10 +83,46 @@ function selectableName(
   document: DesignDocument,
   name: string,
 ): Option<string> {
-  const isSelectable =
-    DesignDocument.findArtboard(document, name).some ||
-    DesignDocument.findNode(document, name).some;
-  return isSelectable ? Option.some(name) : Option.none;
+  return Option.or(
+    selectableNodeName(document, name),
+    selectableArtboardName(document, name),
+  );
+}
+
+/**
+ * 選択できる名前のうち、artboard の配下のノードにあたるもの。
+ *
+ * artboard 側と分けて持つのは、キャンバスのクリックが「artboard を除いた候補」を
+ * 要るため（`EditorState.selectAt`）。「選択できるのは何か」の定義を 1 箇所に保ったまま、
+ * その半分だけを使えるようにしている。
+ *
+ * @param document 選択先を引くドキュメント
+ * @param name 選択されている名前
+ * @returns 配下のノードとして残っていれば `some`、無ければ `none`
+ */
+function selectableNodeName(
+  document: DesignDocument,
+  name: string,
+): Option<string> {
+  return DesignDocument.findNode(document, name).some
+    ? Option.some(name)
+    : Option.none;
+}
+
+/**
+ * 選択できる名前のうち、artboard 自身にあたるもの。
+ *
+ * @param document 選択先を引くドキュメント
+ * @param name 選択されている名前
+ * @returns artboard として残っていれば `some`、無ければ `none`
+ */
+function selectableArtboardName(
+  document: DesignDocument,
+  name: string,
+): Option<string> {
+  return DesignDocument.findArtboard(document, name).some
+    ? Option.some(name)
+    : Option.none;
 }
 
 /**
@@ -311,20 +349,43 @@ export const EditorState = {
   },
 
   /**
-   * 内側から外へ並べた候補のうち、選択できる最も内側のものを選ぶ。
+   * キャンバスで押された位置から、掘る量ぶんだけ内側へ入ったものを選ぶ
+   * （docs/06-ui.md「選択」）。
    *
+   * ここが持つのは候補の絞り込みだけで、どれを選ぶかの規則は `SelectionDig` にある。
    * キャンバスは部品インスタンスの中身まで描くが、そこに出るのは部品定義側のノード名で、
-   * ドキュメントの木（artboard の配下）には無いため選択の対象にならない。
-   * 内側から順に見ることで、インスタンスの中を押したときはインスタンス自身が選ばれる。
-   * どれも選択できなければ選択は外れる（`select` と同じ）。
+   * ドキュメントの木（artboard の配下）には無いため候補に入らない。掘ってもインスタンス
+   * 自身で止まるのはこのため。
+   *
+   * artboard を候補から外して渡すのは、artboard が掘る対象の外側にある器だから
+   * （`SelectionDig.nameAt` の doc）。ノードが 1 つも選べないときの受け皿としてだけ使う。
+   * どれも選べなければ選択は外れる（`select` と同じ）。
+   *
+   * @param state 選択を移す前の状態
+   * @param names 押された位置から外へ辿った名前（内→外）
+   * @param dig 押し方から決まった掘る量
+   * @returns 掘った先を選んだ状態。選べる名前が 1 つも無ければ未選択
    */
-  selectInnermost(state: EditorState, names: readonly string[]): EditorState {
-    const innermost = names.find(
-      (name) => selectableName(EditorState.document(state), name).some,
+  selectAt(
+    state: EditorState,
+    names: readonly string[],
+    dig: SelectionDig,
+  ): EditorState {
+    const document = EditorState.document(state);
+    const nodeCandidates = names.filter(
+      (name) => selectableNodeName(document, name).some,
+    );
+    const artboardCandidate = ArrayEx.first(
+      names.filter((name) => selectableArtboardName(document, name).some),
+    );
+    const dug = SelectionDig.nameAt(
+      dig,
+      nodeCandidates,
+      EditorState.singleName(state),
     );
     return {
       ...state,
-      selection: SelectionState.fromName(Option.fromNullable(innermost)),
+      selection: SelectionState.fromName(Option.or(dug, artboardCandidate)),
     };
   },
 

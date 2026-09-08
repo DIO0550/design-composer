@@ -3,12 +3,17 @@ import {
   CompiledElement,
   ElementNameAttribute,
 } from "@/domains/compiled/compiled-element";
+import {
+  type SelectionDig,
+  SelectionDigs,
+} from "@/domains/session/selection-dig";
 import type { ArrangedArtboard } from "@/features/canvas/domains/arranged-artboard";
 import type { ArtboardDragControl } from "@/features/canvas/hooks/use-artboard-drag";
 import type { NodeDragControl } from "@/features/canvas/hooks/use-node-drag";
 import type { NodeResizeControl } from "@/features/canvas/hooks/use-node-resize";
 import type { TextEditControl } from "@/features/canvas/hooks/use-text-edit";
 import { ArrayEx } from "@/utils/ArrayEx";
+import { CommandKey } from "@/utils/CommandKey";
 import { ElementEx } from "@/utils/ElementEx";
 import { ArtboardLabel } from "../artboard-label";
 
@@ -37,7 +42,7 @@ export function ArtboardFrame({
   arranged: ArrangedArtboard;
   isSelected: boolean;
   isCurrent: boolean;
-  onSelect: (names: readonly string[]) => void;
+  onSelect: (names: readonly string[], dig: SelectionDig) => void;
   artboardDrag: ArtboardDragControl;
   nodeDrag: NodeDragControl;
   nodeResize: NodeResizeControl;
@@ -70,7 +75,7 @@ export function ArtboardFrame({
     }
     event.preventDefault();
     // キーボードで選べるのは枠にフォーカスしている artboard 自身（中身は指せない）。
-    onSelect([element.name]);
+    onSelect([element.name], SelectionDigs.NoDeeper);
   };
 
   /*
@@ -135,16 +140,31 @@ export function ArtboardFrame({
           if (afterDrag || afterResize) {
             return;
           }
-          onSelect(namesAt(event.target));
+          /*
+           * ⌘ / Ctrl を押しながらのクリックだけが、押された位置のいちばん内側まで
+           * 一度に掘る（docs/06-ui.md「選択」）。修飾キーの有無という入力の事情を
+           * 掘る量へ読み替えるのはここまでで、どれを選ぶかは状態側が決める。
+           */
+          const digsToDeepest = CommandKey.isHeld(event);
+          onSelect(
+            namesAt(event.target),
+            digsToDeepest ? SelectionDigs.Deepest : SelectionDigs.NoDeeper,
+          );
         }}
         /*
-         * ダブルクリックは押された Text の文言のその場編集（docs/06-ui.md）。
-         * 直前の click 2 回で対象は選択済みなので、始められるかは
-         * 押された位置と選択で決まる（`EditableText.at`）。
+         * ダブルクリックは 1 階層内側へ掘る操作で、掘りきった Text をさらに押したときだけ
+         * 文言のその場編集になる（docs/06-ui.md「選択」「Text のインライン編集」）。
+         *
+         * 2 つを同じハンドラで呼べるのは、`textEdit.start` が読む選択が**掘る前**の選択
+         * だから（`useTextEdit` はレンダー時の `selection` を見る）。始まるのは掘る前の
+         * 選択が押された位置の Text だったとき、つまり前回のダブルクリックで Text まで
+         * 掘りきっていたときだけになる（`EditableText.at`）。
          */
-        onDoubleClick={(event: MouseEvent<HTMLElement>) =>
-          textEdit.start(namesAt(event.target))
-        }
+        onDoubleClick={(event: MouseEvent<HTMLElement>) => {
+          const names = namesAt(event.target);
+          textEdit.start(names);
+          onSelect(names, SelectionDigs.OneDeeper);
+        }}
         onKeyDown={activate}
         onPointerDown={(event) => {
           // artboard の上で始めたドラッグはパンにしない（掴んだものが動かないと操作が読めなくなる）

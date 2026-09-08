@@ -1,6 +1,7 @@
 import { fireEvent } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
 import type { DocumentSelection } from "@/domains/session/document-selection";
+import { SelectionDigs } from "@/domains/session/selection-dig";
 import {
   movePointer,
   pressPointer,
@@ -148,5 +149,8 @@ test("ドラッグの外で押したクリックはそのまま選択に使わ�
   releasePointer(drawn("title"), { x: 100, y: 100 });
   fireEvent.click(drawn("title"));
 
-  expect(onSelect).toHaveBeenCalledWith(["title", "home"]);
+  expect(onSelect).toHaveBeenCalledWith(
+    ["title", "home"],
+    SelectionDigs.NoDeeper,
+  );
 });
