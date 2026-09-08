@@ -380,6 +380,11 @@
     "name": "コンパイルできないドキュメントの編集画面"
   },
   {
+    "id": "features-editor-openeddocumenteditor--deep-branch",
+    "title": "features/editor/OpenedDocumentEditor",
+    "name": "入れ子のあるドキュメントの編集画面"
+  },
+  {
     "id": "features-editor-openeddocumenteditor--default",
     "title": "features/editor/OpenedDocumentEditor",
     "name": "編集画面"
