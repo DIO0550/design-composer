@@ -17,9 +17,9 @@ test("中ボタンで押された操作は中ボタンの押下として扱う",
   expect(PointerButton.isMiddle({ button: PointerButtons.Middle })).toBe(true);
 });
 
-test("割り当てのない副ボタンはどちらの押下でもない", () => {
-  const secondaryButton = 2;
-
-  expect(PointerButton.isPrimary({ button: secondaryButton })).toBe(false);
-  expect(PointerButton.isMiddle({ button: secondaryButton })).toBe(false);
+test("副ボタンで押された操作は主ボタンでも中ボタンでもない", () => {
+  expect([
+    PointerButton.isPrimary({ button: PointerButtons.Secondary }),
+    PointerButton.isMiddle({ button: PointerButtons.Secondary }),
+  ]).toEqual([false, false]);
 });

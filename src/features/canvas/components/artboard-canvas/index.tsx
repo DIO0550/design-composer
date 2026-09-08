@@ -53,15 +53,19 @@ const ContentTransformOrigin: CSSProperties["transformOrigin"] = "0 0";
  * 常時「開いた手」にすると掴んで動かせるように見えて誤誘導になる。
  * **カーソルは happy-dom にも視覚差分にも出ない**ので、ここを間違えても気づく手段が無い。
  *
- * @param isDragging 今パンしている最中か
- * @param isSpaceHeld space を押している（パンの構えにある）か
+ * 真偽値をオブジェクトで受けるのは、位置引数だと取り違えても型が通るため
+ * （気づく手段が無い以上、取り違えを型で防ぐ / `rules/coding.md`「関数のシグネチャ」）。
+ *
+ * @param pan 今パンしている最中か・パンの構えにあるか
  * @returns その状態で出すカーソルのクラス
  */
-function canvasCursor(isDragging: boolean, isSpaceHeld: boolean): string {
-  if (isDragging) {
+function canvasCursor(
+  pan: Readonly<{ isDragging: boolean; isArmed: boolean }>,
+): string {
+  if (pan.isDragging) {
     return "cursor-grabbing";
   }
-  return isSpaceHeld ? "cursor-grab" : "cursor-default";
+  return pan.isArmed ? "cursor-grab" : "cursor-default";
 }
 
 /**
@@ -98,7 +102,7 @@ export function ArtboardCanvas({
   canvasView,
   nodeDrag,
   onSelect,
-  onSelectNodes,
+  onSelectInRange,
   onResize,
   onEditProp,
   onRepositionArtboard,
@@ -110,7 +114,7 @@ export function ArtboardCanvas({
   nodeDrag: NodeDragControl;
   onSelect: (names: readonly string[], dig: SelectionDig) => void;
   /** 範囲選択で、範囲に重なったものをまとめて選ぶ（#411）。 */
-  onSelectNodes: (names: readonly string[]) => void;
+  onSelectInRange: (names: readonly string[]) => void;
   onResize: (sizes: AxisLengths) => void;
   onEditProp: (edit: PropEdit) => void;
   onRepositionArtboard: (name: string, canvasPosition: Offset) => void;
@@ -124,8 +128,10 @@ export function ArtboardCanvas({
   const pansCanvas = (event: ReactPointerEvent<HTMLElement>): boolean =>
     isSpaceHeld || PointerButton.isMiddle(event);
   /*
-   * ハンドルを重ねる器。`canvas-surface` の中には置けない（土台は capture で
-   * `pointerdown` を先に見るので、ハンドルを押しても space 押下中ならパンが始まる）。
+   * ハンドルを重ねる器。`canvas-surface` の**外**にあるので、掴めるハンドルの上だけは
+   * `pointerdown` が土台へ届かず、space を押していてもパンが始まらない
+   * （docs/06-ui.md「キャンバス直接操作」がこの 3 箇所を例外として書いている）。
+   * 中へ移せば例外を消せるが、掴み口と土台の当たり判定の作り直しになるので #411 では触らない。
    */
   const canvasAreaRef = useRef<HTMLDivElement>(null);
   const designDocument = selection.document;
@@ -136,8 +142,8 @@ export function ArtboardCanvas({
   });
   const textEdit = useTextEdit({ selection, onEditProp });
   const rangeSelect = useRangeSelect({
-    document: designDocument,
-    onSelect: onSelectNodes,
+    designDocument,
+    onSelect: onSelectInRange,
   });
   /*
    * 凍結中はリサイズハンドルを出さない。`inert` の中にあって掴めないのに、
@@ -192,8 +198,9 @@ export function ArtboardCanvas({
         /*
          * パンだけ capture で取る。artboard の枠と見出しは `pointerdown` を止めるので
          * （`artboard-frame` / `artboard-label`）、bubble で待つと artboard の上から
-         * 始めたパンが届かない。捕捉したら子へは渡さないので、**パンと範囲選択の
-         * どちらが始まるかはこの 1 箇所だけで決まる**（2 つが同時に始まらない）。
+         * 始めたパンが届かない。捕捉したら子へは渡さないので、**パンが始まったなら
+         * 範囲選択は始まらない**（右ボタンのように「どちらも始まらない」入力があるかは
+         * 範囲選択の側が決める / `useRangeSelect`）。
          */
         onPointerDownCapture={(event) => {
           if (!pansCanvas(event)) {
@@ -224,10 +231,10 @@ export function ArtboardCanvas({
           panHandlers.onPointerUp(event);
           rangeSelect.dragHandlers.onPointerUp(event);
         }}
-        className={`flex-1 overflow-hidden ${canvasCursor(
-          CanvasView.isDragging(view),
-          isSpaceHeld,
-        )}`}
+        className={`flex-1 overflow-hidden ${canvasCursor({
+          isDragging: CanvasView.isDragging(view),
+          isArmed: isSpaceHeld,
+        })}`}
       >
         <div
           data-testid="canvas-content"

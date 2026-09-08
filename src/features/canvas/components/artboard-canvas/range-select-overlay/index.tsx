@@ -16,7 +16,10 @@ import { SelectionColor } from "../artboard-frame-list";
  * 直すにはレンダー中に器を実測する必要があり、実測を持つ `useDrawnBounds` は名前で引く
  * 形なので噛み合わない。引いている間だけの一過性の見え方なので、そのままにしている。
  *
- * `pointer-events-none` を外すと、矩形の下を通った `pointermove` の `target` が矩形になる。
+ * `pointer-events-none` は、この矩形が土台（`canvas-surface`）の**兄弟**として重なるため。
+ * 受けてしまうと、矩形に乗ったポインタのイベントが土台まで上がらない。引いている間は
+ * 土台がポインタを捕捉していて `target` が固定されるので**外してもテストも絵も変わらない**が、
+ * 捕捉が成立しない場面では矩形がイベントを飲み込む。
  *
  * @returns 引いている範囲を示す矩形
  */

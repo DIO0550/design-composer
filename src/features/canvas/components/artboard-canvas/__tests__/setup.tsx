@@ -65,7 +65,7 @@ type CanvasValues = Readonly<{
 /** キャンバスが外へ渡す操作。テストは見たいものだけを渡し、残りは呼ばれても何もしない。 */
 type CanvasHandlers = Readonly<{
   onSelect: (names: readonly string[]) => void;
-  onSelectNodes: (names: readonly string[]) => void;
+  onSelectInRange: (names: readonly string[]) => void;
   onMoveNode: (name: string, to: ChildPosition) => void;
   onRepositionNode: (name: string, to: ChildPlacement) => void;
   onRepositionArtboard: (name: string, canvasPosition: Offset) => void;
@@ -124,7 +124,7 @@ export function renderCanvas(
       )}
       isFrozen={false}
       onSelect={vi.fn()}
-      onSelectNodes={vi.fn()}
+      onSelectInRange={vi.fn()}
       onMoveNode={vi.fn()}
       onRepositionNode={vi.fn()}
       onRepositionArtboard={vi.fn()}

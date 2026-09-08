@@ -7,8 +7,19 @@ import {
   DesignDocument,
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
-import { highlightedNames } from "@/features/canvas/__tests__";
-import { canvasPane, propertyPane, renderOpenedDocument, tree } from "./setup";
+import {
+  canvasSurface,
+  drag,
+  highlightedNames,
+  stubBounds,
+} from "@/features/canvas/__tests__";
+import {
+  canvasPane,
+  drawn,
+  propertyPane,
+  renderOpenedDocument,
+  tree,
+} from "./setup";
 
 /**
  * 3 ペインを実物のまま組み立て、`Select all N instances` を押した結果が
@@ -85,6 +96,60 @@ test("まとめて選ぶと右ペインが選択数に切り替わる", async ()
       name: "Select all 2 instances",
     }),
   );
+
+  expect(
+    within(propertyPane()).getByRole("heading", { name: "2 selected" }),
+  ).toBeDefined();
+});
+
+test("キャンバスの空き領域から範囲を引くと、範囲に入ったノードがまとめて選ばれる", async () => {
+  /*
+   * ここでしか見られないのは配線そのもの。`EditorState.selectNodes` も
+   * `ArtboardCanvas` の通知も個別には緑にできるが、`useNodeActions` から reducer までの
+   * どこかが切れていれば範囲を引いても選択が変わらない（#411）。
+   */
+  await renderOpenedDocument(setupDocument());
+  stubBounds(drawn("home-title"), {
+    left: 140,
+    top: 84,
+    width: 60,
+    height: 20,
+  });
+  stubBounds(drawn("home-login"), {
+    left: 140,
+    top: 120,
+    width: 80,
+    height: 24,
+  });
+  // 3 つ目（`home-signup`）は範囲の外に置き、選びすぎても落ちるようにする
+  stubBounds(drawn("home-signup"), {
+    left: 140,
+    top: 400,
+    width: 80,
+    height: 24,
+  });
+
+  drag(canvasSurface(), { from: { x: 60, y: 40 }, to: { x: 260, y: 200 } });
+
+  expect(currentRowNames(tree())).toEqual(["home-title", "home-login"]);
+});
+
+test("範囲を引いてまとめて選ぶと右ペインが選択数に切り替わる", async () => {
+  await renderOpenedDocument(setupDocument());
+  stubBounds(drawn("home-title"), {
+    left: 140,
+    top: 84,
+    width: 60,
+    height: 20,
+  });
+  stubBounds(drawn("home-login"), {
+    left: 140,
+    top: 120,
+    width: 80,
+    height: 24,
+  });
+
+  drag(canvasSurface(), { from: { x: 60, y: 40 }, to: { x: 260, y: 200 } });
 
   expect(
     within(propertyPane()).getByRole("heading", { name: "2 selected" }),

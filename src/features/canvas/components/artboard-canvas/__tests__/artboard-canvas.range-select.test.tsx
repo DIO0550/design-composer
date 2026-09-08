@@ -35,48 +35,48 @@ function drawRange(to: Readonly<{ x: number; y: number }>): void {
 }
 
 test("範囲に重なったノードが選ばれる", () => {
-  const onSelectNodes = vi.fn();
-  renderCanvas({ selection: setupSiblings(), onSelectNodes });
+  const onSelectInRange = vi.fn();
+  renderCanvas({ selection: setupSiblings(), onSelectInRange });
   drawnApart();
 
   // `badge`（140-160 × 84-96）だけを含み、`card` / `marker` / `slot` には届かない範囲
   drawRange({ x: 170, y: 100 });
 
-  expect(onSelectNodes).toHaveBeenCalledWith(["badge"]);
+  expect(onSelectInRange).toHaveBeenCalledWith(["badge"]);
 });
 
 test("範囲に一部だけ重なったノードも選ばれる", () => {
-  const onSelectNodes = vi.fn();
-  renderCanvas({ selection: setupSiblings(), onSelectNodes });
+  const onSelectInRange = vi.fn();
+  renderCanvas({ selection: setupSiblings(), onSelectInRange });
   drawnApart();
 
   // `badge` の左半分（140-150 × 84-90）だけに掛かる範囲
   drawRange({ x: 150, y: 90 });
 
-  expect(onSelectNodes).toHaveBeenCalledWith(["badge"]);
+  expect(onSelectInRange).toHaveBeenCalledWith(["badge"]);
 });
 
 test("範囲が孫まで覆っても、選ばれるのは artboard 直下の子だけ", () => {
-  const onSelectNodes = vi.fn();
-  renderCanvas({ selection: setupSiblings(), onSelectNodes });
+  const onSelectInRange = vi.fn();
+  renderCanvas({ selection: setupSiblings(), onSelectInRange });
   drawnApart();
 
   // `card`（200-320 × 150-210）とその中の `label`（260-300 × 170-190）を覆い、
   // `marker`（上辺 200）には届かない範囲
   drawRange({ x: 310, y: 199 });
 
-  expect(onSelectNodes).toHaveBeenCalledWith(["badge", "card"]);
+  expect(onSelectInRange).toHaveBeenCalledWith(["badge", "card"]);
 });
 
 test("範囲が artboard をまたいでも、入ったものはすべて選ばれる", () => {
-  const onSelectNodes = vi.fn();
-  renderCanvas({ selection: setupSiblings(), onSelectNodes });
+  const onSelectInRange = vi.fn();
+  renderCanvas({ selection: setupSiblings(), onSelectInRange });
   drawnApart();
 
   // `home` の子 3 つと、隣の `settings` の子 `slot`（560-640 × 140-180）まで届く範囲
   drawRange({ x: 600, y: 250 });
 
-  expect(onSelectNodes).toHaveBeenCalledWith([
+  expect(onSelectInRange).toHaveBeenCalledWith([
     "badge",
     "marker",
     "card",
@@ -85,25 +85,25 @@ test("範囲が artboard をまたいでも、入ったものはすべて選ば�
 });
 
 test("artboard の枠だけを覆った範囲では何も選ばれない", () => {
-  const onSelectNodes = vi.fn();
-  renderCanvas({ selection: setupSiblings(), onSelectNodes });
+  const onSelectInRange = vi.fn();
+  renderCanvas({ selection: setupSiblings(), onSelectInRange });
   drawnApart();
 
   // `home`（100-460 × 60-300）の左上に掛かるが、どの子にも届かない範囲
   drawRange({ x: 130, y: 70 });
 
-  expect(onSelectNodes).toHaveBeenCalledWith([]);
+  expect(onSelectInRange).toHaveBeenCalledWith([]);
 });
 
 test("何も入らない範囲を引くと、選択を空にするために呼ばれる", () => {
-  const onSelectNodes = vi.fn();
-  renderCanvas({ selection: setupSiblings(), onSelectNodes });
+  const onSelectInRange = vi.fn();
+  renderCanvas({ selection: setupSiblings(), onSelectInRange });
   drawnApart();
 
   // どの artboard にも掛からない、下の余白の範囲
   drag(canvasSurface(), { from: { x: 60, y: 400 }, to: { x: 95, y: 430 } });
 
-  expect(onSelectNodes).toHaveBeenCalledWith([]);
+  expect(onSelectInRange).toHaveBeenCalledWith([]);
 });
 
 test("まだ描かれていないノードは、原点へ引いた範囲でも選ばれない", () => {
@@ -112,12 +112,12 @@ test("まだ描かれていないノードは、原点へ引いた範囲でも�
    * 画面の左上へ引いた範囲がそれらをまとめて拾う。
    * ここでは矩形を差し替えない（＝すべて 0×0 のまま）ことでその状態を作る。
    */
-  const onSelectNodes = vi.fn();
-  renderCanvas({ selection: setupSiblings(), onSelectNodes });
+  const onSelectInRange = vi.fn();
+  renderCanvas({ selection: setupSiblings(), onSelectInRange });
 
   drag(canvasSurface(), { from: { x: 0, y: 0 }, to: { x: 40, y: 30 } });
 
-  expect(onSelectNodes).toHaveBeenCalledWith([]);
+  expect(onSelectInRange).toHaveBeenCalledWith([]);
 });
 
 test("空き領域を押して離すだけでは選択に手を付けない", () => {
@@ -125,14 +125,14 @@ test("空き領域を押して離すだけでは選択に手を付けない", ()
    * 手ぶれで選択が外れると、クリックでは掘った状態から外へ戻らない
    * （docs/06-ui.md「キャンバスのクリックが選ぶ階層」）と食い違う。
    */
-  const onSelectNodes = vi.fn();
-  renderCanvas({ selection: setupSiblings(), onSelectNodes });
+  const onSelectInRange = vi.fn();
+  renderCanvas({ selection: setupSiblings(), onSelectInRange });
   drawnApart();
 
   pressPointer(canvasSurface(), { x: 60, y: 40 });
   releasePointer(canvasSurface(), { x: 61, y: 41 });
 
-  expect(onSelectNodes).not.toHaveBeenCalled();
+  expect(onSelectInRange).not.toHaveBeenCalled();
 });
 
 test("引いている間は範囲の枠が出る", () => {
@@ -143,6 +143,42 @@ test("引いている間は範囲の枠が出る", () => {
   movePointer(canvasSurface(), { x: 170, y: 100 });
 
   expect(rangeFrames()).toHaveLength(1);
+});
+
+test("範囲の枠は、引いた 2 点を対角にした位置と大きさで出る", () => {
+  /*
+   * 枠が出る / 消えるだけを見ていると、引いた 2 点が矩形になって画面へ届く配線が
+   * 守られない（固定の矩形を出す実装でも通ってしまう）。
+   */
+  renderCanvas({ selection: setupSiblings() });
+  drawnApart();
+
+  pressPointer(canvasSurface(), { x: 60, y: 40 });
+  movePointer(canvasSurface(), { x: 170, y: 100 });
+
+  const { style } = rangeFrames()[0];
+
+  expect([style.left, style.top, style.width, style.height]).toEqual([
+    "60px",
+    "40px",
+    "110px",
+    "60px",
+  ]);
+});
+
+test("右ボタンのドラッグでは範囲の枠が出ず、選択も変わらない", () => {
+  const onSelectInRange = vi.fn();
+  renderCanvas({ selection: setupSiblings(), onSelectInRange });
+  drawnApart();
+
+  drag(
+    canvasSurface(),
+    { from: { x: 60, y: 40 }, to: { x: 170, y: 100 } },
+    PointerButtons.Secondary,
+  );
+
+  expect(rangeFrames()).toHaveLength(0);
+  expect(onSelectInRange).not.toHaveBeenCalled();
 });
 
 test("引いたあと離すと範囲の枠が消える", () => {
@@ -165,8 +201,8 @@ test("押しただけで動かしていないうちは範囲の枠を出さな�
 });
 
 test("中ボタンのドラッグでは範囲の枠が出ず、選択も変わらない", () => {
-  const onSelectNodes = vi.fn();
-  renderCanvas({ selection: setupSiblings(), onSelectNodes });
+  const onSelectInRange = vi.fn();
+  renderCanvas({ selection: setupSiblings(), onSelectInRange });
   drawnApart();
 
   drag(
@@ -176,19 +212,19 @@ test("中ボタンのドラッグでは範囲の枠が出ず、選択も変わ�
   );
 
   expect(rangeFrames()).toHaveLength(0);
-  expect(onSelectNodes).not.toHaveBeenCalled();
+  expect(onSelectInRange).not.toHaveBeenCalled();
 });
 
 test("space を押しながらのドラッグでは範囲の枠が出ず、選択も変わらない", () => {
-  const onSelectNodes = vi.fn();
-  renderCanvas({ selection: setupSiblings(), onSelectNodes });
+  const onSelectInRange = vi.fn();
+  renderCanvas({ selection: setupSiblings(), onSelectInRange });
   drawnApart();
   holdSpace();
 
   drag(canvasSurface(), { from: { x: 60, y: 40 }, to: { x: 170, y: 100 } });
 
   expect(rangeFrames()).toHaveLength(0);
-  expect(onSelectNodes).not.toHaveBeenCalled();
+  expect(onSelectInRange).not.toHaveBeenCalled();
 });
 
 test("他所で始まったドラッグを土台の上で離しても選択は変わらない", () => {
@@ -197,13 +233,13 @@ test("他所で始まったドラッグを土台の上で離しても選択は�
    * （`opened-document-editor.asset-drag`）。始めていない操作の終わりで選択を
    * 空にすると、配置のたびに選択が消える。
    */
-  const onSelectNodes = vi.fn();
-  renderCanvas({ selection: setupSiblings(), onSelectNodes });
+  const onSelectInRange = vi.fn();
+  renderCanvas({ selection: setupSiblings(), onSelectInRange });
   drawnApart();
 
   releasePointer(canvasSurface(), { x: 170, y: 100 });
 
-  expect(onSelectNodes).not.toHaveBeenCalled();
+  expect(onSelectInRange).not.toHaveBeenCalled();
 });
 
 test("凍結中は範囲選択が始まらない", () => {
@@ -211,12 +247,12 @@ test("凍結中は範囲選択が始まらない", () => {
    * 映っているのは最後に正常だった表示なので、そこへ加えた選択は今のファイルと
    * 噛み合わない。`canvas-content` の `inert` は土台まで及ばないので、ここで止める。
    */
-  const onSelectNodes = vi.fn();
-  renderCanvas({ selection: setupSiblings(), isFrozen: true, onSelectNodes });
+  const onSelectInRange = vi.fn();
+  renderCanvas({ selection: setupSiblings(), isFrozen: true, onSelectInRange });
   drawnApart();
 
   drawRange({ x: 170, y: 100 });
 
   expect(rangeFrames()).toHaveLength(0);
-  expect(onSelectNodes).not.toHaveBeenCalled();
+  expect(onSelectInRange).not.toHaveBeenCalled();
 });

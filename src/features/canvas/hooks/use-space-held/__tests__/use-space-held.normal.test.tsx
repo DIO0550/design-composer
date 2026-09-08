@@ -39,6 +39,28 @@ test("space 以外のキーでは構えない", () => {
   expect(heldState()).toBe("released");
 });
 
+test("space を押したまま別のキーを離しても構えは解けない", () => {
+  /* 押下側だけ space を見ていると、別のキーの keyup で構えが落ちる。 */
+  render(<SpaceHeldProbe />);
+  fireEvent.keyDown(globalThis.document, { code: "Space" });
+
+  fireEvent.keyUp(globalThis.document, { code: "KeyA" });
+
+  expect(heldState()).toBe("held");
+});
+
+test("Shift を押しながらの space でも構える", () => {
+  /*
+   * 修飾キーの一致まで求めると、Shift を押したままの space で構えられず、
+   * keyup の時点で修飾が外れていると解けなくなる。
+   */
+  render(<SpaceHeldProbe />);
+
+  fireEvent.keyDown(globalThis.document, { code: "Space", shiftKey: true });
+
+  expect(heldState()).toBe("held");
+});
+
 test("文字を打ち込める要素にフォーカスがある間の space では構えない", () => {
   render(
     <>

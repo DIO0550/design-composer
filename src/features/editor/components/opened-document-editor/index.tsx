@@ -368,7 +368,7 @@ function EditorPanes({
           canvasView={canvasView}
           nodeDrag={nodeDrag}
           onSelect={node.selectAt}
-          onSelectNodes={node.selectNodes}
+          onSelectInRange={node.selectNodes}
           onResize={node.resize}
           onEditProp={node.editProp}
           onRepositionArtboard={node.repositionArtboard}

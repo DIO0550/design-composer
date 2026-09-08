@@ -1,14 +1,16 @@
 import type { ValueOf } from "@/types/ValueOf";
 
 /**
- * 押されたマウスのボタン（`PointerEvent.button` の値）。
+ * 押されたマウスのボタン（**`PointerEvent.button` の値**）。
  *
- * 並べるのは操作へ割り当てているものだけ。副ボタン（右）は数えない
- * （コンテキストメニューは未実装 / #418）。
+ * DOM の `PointerEvent.buttons`（複数形・押されているボタンのビットマスク。中ボタンは 4）
+ * とは別物なので取り違えないこと。語彙は DOM の主 / 中 / 副で閉じ、そのうちどれに操作を
+ * 割り当てるかは呼び出し側が決める。
  */
 export const PointerButtons = {
   Primary: 0,
   Middle: 1,
+  Secondary: 2,
 } as const;
 
 export type PointerButton = ValueOf<typeof PointerButtons>;

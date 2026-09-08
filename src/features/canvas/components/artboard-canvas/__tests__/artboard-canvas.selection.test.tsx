@@ -85,6 +85,23 @@ test("キーボードで artboard を活性化するとその artboard だけが
   expect(onSelect).toHaveBeenCalledWith(["home"], SelectionDigs.NoDeeper);
 });
 
+test("space を押しても artboard は活性化しない", async () => {
+  /*
+   * space はキャンバス全体でパンの修飾（docs/06-ui.md「キャンバス直接操作」）。
+   * `role="button"` の既定の流儀から意図的に外しているので、戻っていないか見る。
+   */
+  const onSelect = vi.fn();
+  const selection = selectionFromArtboards([
+    { name: "home", width: 360, height: 240, children: [] },
+  ]);
+  renderCanvas({ selection, onSelect });
+
+  screen.getByRole("button", { name: "home" }).focus();
+  await userEvent.keyboard("[Space]");
+
+  expect(onSelect).not.toHaveBeenCalled();
+});
+
 test("⌘ を押しながらクリックすると、掘れるだけ掘る指定で候補が通知される", async () => {
   const onSelect = vi.fn();
   renderCanvas({ selection: setupHomeArtboard(), onSelect });

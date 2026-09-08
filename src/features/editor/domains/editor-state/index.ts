@@ -110,6 +110,24 @@ function selectableNodeName(
 }
 
 /**
+ * 並びのうち、選択できるノードとして残っている名前だけ。
+ *
+ * キャンバスから届く名前は、押された位置から辿ったもの（`selectAt`）と範囲に重なった
+ * もの（`selectNodes`）の 2 通りあり、どちらも同じ絞り込みを通す。**綴りを揃えるだけでは
+ * 定義が 2 箇所に散る**ので、絞り込み自体をここへ 1 つ置く。
+ *
+ * @param document 選択先を引くドキュメント
+ * @param names 絞り込む名前の並び
+ * @returns 選択できるものだけを、渡された順のまま残した並び
+ */
+function selectableNodeNames(
+  document: DesignDocument,
+  names: readonly string[],
+): readonly string[] {
+  return names.filter((name) => selectableNodeName(document, name).some);
+}
+
+/**
  * 選択できる名前のうち、artboard 自身にあたるもの。
  *
  * @param document 選択先を引くドキュメント
@@ -372,9 +390,7 @@ export const EditorState = {
     dig: SelectionDig,
   ): EditorState {
     const document = EditorState.document(state);
-    const nodeCandidates = names.filter(
-      (name) => selectableNodeName(document, name).some,
-    );
+    const nodeCandidates = selectableNodeNames(document, names);
     const artboardCandidate = ArrayEx.first(
       names.filter((name) => selectableArtboardName(document, name).some),
     );
@@ -392,8 +408,8 @@ export const EditorState = {
   /**
    * 名前で指したものをまとめて選ぶ（キャンバスの範囲選択 / docs/06-ui.md「範囲選択」）。
    *
-   * 選べないもの（ドキュメントに無い名前・部品定義の中の参照ノード）は落とす。
-   * 絞り方を `selectAt` と揃えるのは、キャンバスから選べるものの定義を 1 つに保つため。
+   * 選べないもの（ドキュメントに無い名前・部品定義の中の参照ノード）は落とす。絞り込みは
+   * `selectAt` と同じ `selectableNodeNames` を通す（選べるものの定義を 1 箇所に保つ）。
    *
    * `selectAllInstances` へは寄せていない。あちらは**対象を状態から決める**
    * （選択中のインスタンスと同じ部品）のに対し、こちらは引数で受ける。共通なのは
@@ -405,11 +421,10 @@ export const EditorState = {
    *   （`SelectionState.create` が空を未選択へ落とす）
    */
   selectNodes(state: EditorState, names: readonly string[]): EditorState {
-    const document = EditorState.document(state);
     return {
       ...state,
       selection: SelectionState.create(
-        names.filter((name) => selectableNodeName(document, name).some),
+        selectableNodeNames(EditorState.document(state), names),
       ),
     };
   },

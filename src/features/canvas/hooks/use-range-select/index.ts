@@ -35,59 +35,57 @@ export type RangeSelectControl = Readonly<{
  */
 export function useRangeSelect(
   params: Readonly<{
-    document: DesignDocument;
+    designDocument: DesignDocument;
     onSelect: (names: readonly string[]) => void;
   }>,
 ): RangeSelectControl {
-  const { document, onSelect } = params;
-  const [range, setRange] = useState<Option<RangeSelect>>(Option.none);
+  const { designDocument, onSelect } = params;
+  const [drawing, setDrawing] = useState<Option<RangeSelect>>(Option.none);
 
   return {
     /*
-     * 枠を出すのは引かれてからにする。押した瞬間から出すと、選択のつもりの
-     * クリックのたびに 0 面積の枠が一瞬映る（選ぶ相手を決める閾値とも揃う）。
+     * 枠を出すのは引かれてからにする（判定は `RangeSelect.isDrawn`）。押した瞬間から
+     * 出すと、選択のつもりのクリックのたびに 0 面積の枠が一瞬映る。
      */
-    bounds: Option.flatMap(range, (drawing) =>
-      RangeSelect.isDrawn(drawing)
-        ? Option.some(RangeSelect.bounds(drawing))
+    bounds: Option.flatMap(drawing, (range) =>
+      RangeSelect.isDrawn(range)
+        ? Option.some(RangeSelect.bounds(range))
         : Option.none,
     ),
     dragHandlers: {
       onPointerDown: (event) => {
+        // 右ボタンのドラッグでは引き始めない（パンは capture 側が先に取る）
         if (!PointerButton.isPrimary(event)) {
           return;
         }
         // ポインタが土台の外へ出ても引き続けられるようにする（キャンバスは画面の端に接する）
         event.currentTarget.setPointerCapture(event.pointerId);
-        setRange(
+        setDrawing(
           Option.some(RangeSelect.create(CanvasPointer.offsetOf(event))),
         );
       },
       onPointerMove: (event) => {
         const pointer = CanvasPointer.offsetOf(event);
-        setRange((current) =>
-          Option.map(current, (drawing) =>
-            RangeSelect.extendedTo(drawing, pointer),
+        setDrawing((current) =>
+          Option.map(current, (range) =>
+            RangeSelect.extendedTo(range, pointer),
           ),
         );
       },
       onPointerUp: (event) => {
-        if (!range.some) {
+        if (!drawing.some) {
           return;
         }
         event.currentTarget.releasePointerCapture(event.pointerId);
-        setRange(Option.none);
-        /*
-         * 手ぶれ（閾値未満）では選択に手を付けない。空の並びを渡すと選択が外れるが、
-         * 空き領域のクリックで外れるのは docs/06-ui.md「選択」と食い違う。
-         */
-        if (!RangeSelect.isDrawn(range.value)) {
+        setDrawing(Option.none);
+        // 手ぶれでは選択に手を付けない（理由は `RangeSelect.isDrawn`）
+        if (!RangeSelect.isDrawn(drawing.value)) {
           return;
         }
         onSelect(
           DrawnBounds.collectOverlappingNames(
-            DesignDocument.collectArtboardChildNames(document),
-            RangeSelect.bounds(range.value),
+            DesignDocument.collectArtboardChildNames(designDocument),
+            RangeSelect.bounds(drawing.value),
           ),
         );
       },
