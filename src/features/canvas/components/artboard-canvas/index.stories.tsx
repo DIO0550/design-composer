@@ -55,6 +55,7 @@ const meta = {
     tokenSelection: TokenSelection.create(SampleCanvasDocument, Option.none),
     isFrozen: false,
     onSelect: fn(),
+    onSelectNodes: fn(),
     onResize: fn(),
     onEditProp: fn(),
     onRepositionArtboard: fn(),

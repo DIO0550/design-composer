@@ -68,3 +68,56 @@ test("選択中でない名前は選択状態ではない", () => {
 
   expect(EditorState.isSelected(state, "title")).toBe(false);
 });
+
+/** `home` の直下に `title` と `caption` が並ぶドキュメント。まとめて選ぶ相手にする。 */
+function setupSiblingDocument(): DesignDocument {
+  return DesignDocument.create({
+    artboards: [
+      {
+        name: "home",
+        width: 375,
+        height: 812,
+        children: [
+          { name: "title", type: "Text" },
+          { name: "caption", type: "Text" },
+        ],
+      },
+    ],
+  });
+}
+
+test("名前を指してまとめて選ぶと、そのすべてが選択状態になる", () => {
+  const state = EditorState.selectNodes(
+    EditorState.create(setupSiblingDocument()),
+    ["title", "caption"],
+  );
+
+  expect([
+    EditorState.isSelected(state, "title"),
+    EditorState.isSelected(state, "caption"),
+  ]).toEqual([true, true]);
+});
+
+test("まとめて選ぶとき、ドキュメントに無い名前は落とされる", () => {
+  // 選べる名前を 1 つ混ぜて対照にする（すべて落とす実装でも通らないようにする）
+  const state = EditorState.selectNodes(
+    EditorState.create(setupSiblingDocument()),
+    ["title", "missing"],
+  );
+
+  expect([
+    EditorState.isSelected(state, "title"),
+    EditorState.isSelected(state, "missing"),
+  ]).toEqual([true, false]);
+});
+
+test("まとめて選ぶ相手が 1 つも無ければ未選択に戻る", () => {
+  const selected = EditorState.select(
+    EditorState.create(setupSiblingDocument()),
+    "title",
+  );
+
+  const state = EditorState.selectNodes(selected, []);
+
+  expect(EditorState.isSelected(state, "title")).toBe(false);
+});

@@ -2,8 +2,8 @@
  * キャンバスの直接操作一式（docs/06-ui.md「画面構成」の中央ペインと
  * 「キャンバス直接操作」/ UI 案 docs/Design Composer.html の中央の面）。
  * artboard の並びを描く面（`ArtboardCanvas`）と、その下端に浮くツールバー
- * （`CanvasToolbar`）、ズーム / パン・移動 / 挿入のドラッグ・リサイズ・Text の
- * インライン編集が属する。
+ * （`CanvasToolbar`）、ズーム / パン・範囲選択・移動 / 挿入のドラッグ・リサイズ・
+ * Text のインライン編集が属する。
  *
  * 描くのに要るのは**ドキュメントと選択の対**（`DocumentSelection`）・**選ばれている
  * トークンの対**（`TokenSelection`）・**凍結しているか**の 3 つだけで、編集画面の状態

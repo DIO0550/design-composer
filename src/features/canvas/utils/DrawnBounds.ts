@@ -38,4 +38,29 @@ export const DrawnBounds = {
     });
     return CanvasBounds.enclosing(drawn);
   },
+
+  /**
+   * 名前で指したもののうち、その矩形に重なって描かれているもの（範囲選択が拾う相手）。
+   *
+   * 面積を持たないものは外す。要素が在っても**まだレイアウトされていない / 畳まれている**
+   * ときの実測は原点の 0×0 で返るため、外さないと画面の左上へ引いた範囲がそれらを
+   * まとめて拾う（`CanvasBounds.hasArea` の doc）。
+   *
+   * @param names 見る artboard / ノードの名前
+   * @param bounds 重なりを見る矩形（client 座標）
+   * @returns 重なって描かれているものの名前。渡された並びの順を保つ
+   */
+  collectOverlappingNames(
+    names: readonly string[],
+    bounds: CanvasBounds,
+  ): readonly string[] {
+    return names.filter((name) => {
+      const measured = DrawnBounds.measure(name);
+      return (
+        measured.some &&
+        CanvasBounds.hasArea(measured.value) &&
+        CanvasBounds.overlaps(measured.value, bounds)
+      );
+    });
+  },
 } as const;

@@ -18,6 +18,7 @@ import type { CanvasViewControl } from "@/features/canvas/hooks/use-canvas-view"
 import { useDrawnBounds } from "@/features/canvas/hooks/use-drawn-bounds";
 import type { NodeDragControl } from "@/features/canvas/hooks/use-node-drag";
 import { useNodeResize } from "@/features/canvas/hooks/use-node-resize";
+import { useRangeSelect } from "@/features/canvas/hooks/use-range-select";
 import { useSpaceHeld } from "@/features/canvas/hooks/use-space-held";
 import { useTextEdit } from "@/features/canvas/hooks/use-text-edit";
 import { DocumentHtml } from "@/services/document-html";
@@ -26,6 +27,7 @@ import { PointerButton } from "@/utils/PointerButton";
 import { CanvasBody } from "./canvas-body";
 import { DropMarker } from "./drop-marker";
 import { DropPositionLabel } from "./drop-position-label";
+import { RangeSelectOverlay } from "./range-select-overlay";
 import { RepositionPreviewStyle } from "./reposition-preview-style";
 import { ResizeHandleOverlay, resizeCursor } from "./resize-handle-overlay";
 import { SnapGuideOverlay } from "./snap-guide-overlay";
@@ -70,8 +72,8 @@ function canvasCursor(isDragging: boolean, isSpaceHeld: boolean): string {
  * 表示（倍率・位置）を自分で持たず受け取るのは、倍率の操作が上部バーへ移り、
  * キャンバスと上部バーが同じ 1 つの表示を見る必要があるため（#134）。
  *
- * props が 9 つあるが Composition へは割っていない。関心は「キャンバス」1 つで、
- * 前半 3 つは描くのに要る値、後半 6 つは表示とキャンバス上の操作を外へ渡す口。
+ * props が 10 個あるが Composition へは割っていない。関心は「キャンバス」1 つで、
+ * 前半 3 つは描くのに要る値、後半 7 つは表示とキャンバス上の操作を外へ渡す口。
  * 中身を子要素として受け取る形にはできない（描くものはコンパイル結果の HTML で、
  * 呼び出し側が組み立てられない）。`EditorState` を丸ごと受けると feature として
  * 切り出せない（#256）。
@@ -96,6 +98,7 @@ export function ArtboardCanvas({
   canvasView,
   nodeDrag,
   onSelect,
+  onSelectNodes,
   onResize,
   onEditProp,
   onRepositionArtboard,
@@ -106,6 +109,8 @@ export function ArtboardCanvas({
   canvasView: CanvasViewControl;
   nodeDrag: NodeDragControl;
   onSelect: (names: readonly string[], dig: SelectionDig) => void;
+  /** 範囲選択で、範囲に重なったものをまとめて選ぶ（#411）。 */
+  onSelectNodes: (names: readonly string[]) => void;
   onResize: (sizes: AxisLengths) => void;
   onEditProp: (edit: PropEdit) => void;
   onRepositionArtboard: (name: string, canvasPosition: Offset) => void;
@@ -130,6 +135,10 @@ export function ArtboardCanvas({
     onReposition: onRepositionArtboard,
   });
   const textEdit = useTextEdit({ selection, onEditProp });
+  const rangeSelect = useRangeSelect({
+    document: designDocument,
+    onSelect: onSelectNodes,
+  });
   /*
    * 凍結中はリサイズハンドルを出さない。`inert` の中にあって掴めないのに、
    * ハンドルだけが普段どおり見えることになるため。選択の枠そのものは残す
@@ -193,8 +202,28 @@ export function ArtboardCanvas({
           event.stopPropagation();
           panHandlers.onPointerDown(event);
         }}
-        onPointerMove={panHandlers.onPointerMove}
-        onPointerUp={panHandlers.onPointerUp}
+        /*
+         * 空き領域の左ドラッグは範囲選択。ここまで `pointerdown` が上がってくるのは
+         * artboard の外側の余白を押したときだけで、artboard の上は枠と見出しが止める
+         * （artboard の背景を範囲選択にするかは #465）。凍結中に始めないのは、
+         * 映っているのが最後に正常だった表示で、そこへ加えた選択が今のファイルと
+         * 噛み合わないため（`canvas-content` の `inert` はここまで及ばない）。
+         */
+        onPointerDown={(event) => {
+          if (isFrozen) {
+            return;
+          }
+          rangeSelect.dragHandlers.onPointerDown(event);
+        }}
+        /* パンと範囲選択のどちらが始まったかは自分の状態が知っているので、両方へ配る */
+        onPointerMove={(event) => {
+          panHandlers.onPointerMove(event);
+          rangeSelect.dragHandlers.onPointerMove(event);
+        }}
+        onPointerUp={(event) => {
+          panHandlers.onPointerUp(event);
+          rangeSelect.dragHandlers.onPointerUp(event);
+        }}
         className={`flex-1 overflow-hidden ${canvasCursor(
           CanvasView.isDragging(view),
           isSpaceHeld,
@@ -276,6 +305,9 @@ export function ArtboardCanvas({
           <DropMarker bounds={dropTarget.value.marker} />
           <DropPositionLabel target={dropTarget.value} />
         </>
+      ) : null}
+      {rangeSelect.bounds.some ? (
+        <RangeSelectOverlay bounds={rangeSelect.bounds.value} />
       ) : null}
       {/* 吸い付いた辺は運んでいる間しか分からないので、離す前に線で見せる */}
       <SnapGuideOverlay guides={NodeDrag.snapGuides(nodeDrag.drag)} />

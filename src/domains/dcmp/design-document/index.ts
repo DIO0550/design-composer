@@ -597,6 +597,26 @@ export const DesignDocument = {
     return document.artboards.map((artboard) => artboard.name);
   },
 
+  /**
+   * すべての artboard の**直下の子**の名前（範囲選択が選びうる相手）。
+   *
+   * 直下だけで止めるのは、キャンバスから選べる階層がそこだからで、掘るのは
+   * ダブルクリックの担当（docs/06-ui.md「キャンバスのクリックが選ぶ階層」）。
+   * 孫まで集めると、範囲で払ったときにクリックとは違う階層が選ばれる。
+   *
+   * 見るのが artboard の配下だけなのは `collectInstanceNames` と同じで、部品定義の
+   * 中にある参照ノードはキャンバスに描かれてもドキュメントの木には無く、選択の
+   * 対象にならないため。
+   *
+   * @param document 走査するドキュメント
+   * @returns artboard の並び順・子の並び順のままの名前。1 つも無ければ空
+   */
+  collectArtboardChildNames(document: DesignDocument): readonly string[] {
+    return document.artboards.flatMap((artboard) =>
+      artboard.children.map((child) => child.name),
+    );
+  },
+
   /** 名前で artboard を引く。名前は単一名前空間なので artboard 名も一意に決まる。 */
   findArtboard(document: DesignDocument, name: string): Option<Artboard> {
     return Option.fromNullable(

@@ -389,6 +389,31 @@ export const EditorState = {
     };
   },
 
+  /**
+   * 名前で指したものをまとめて選ぶ（キャンバスの範囲選択 / docs/06-ui.md「範囲選択」）。
+   *
+   * 選べないもの（ドキュメントに無い名前・部品定義の中の参照ノード）は落とす。
+   * 絞り方を `selectAt` と揃えるのは、キャンバスから選べるものの定義を 1 つに保つため。
+   *
+   * `selectAllInstances` へは寄せていない。あちらは**対象を状態から決める**
+   * （選択中のインスタンスと同じ部品）のに対し、こちらは引数で受ける。共通なのは
+   * `SelectionState.create` の 1 行だけで、そこは既に共有されている。
+   *
+   * @param state 選択を移す前の状態
+   * @param names 選びたいものの名前
+   * @returns 選べるものだけを選んだ状態。1 つも選べなければ未選択
+   *   （`SelectionState.create` が空を未選択へ落とす）
+   */
+  selectNodes(state: EditorState, names: readonly string[]): EditorState {
+    const document = EditorState.document(state);
+    return {
+      ...state,
+      selection: SelectionState.create(
+        names.filter((name) => selectableNodeName(document, name).some),
+      ),
+    };
+  },
+
   clearSelection(state: EditorState): EditorState {
     return { ...state, selection: SelectionState.None };
   },

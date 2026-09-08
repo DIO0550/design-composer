@@ -177,6 +177,48 @@ export const CanvasBounds = {
     return bounds.width > 0 && bounds.height > 0;
   },
 
+  /**
+   * 2 点を対角にした矩形。
+   *
+   * どちらの点が左上かは決まっていない（範囲選択は左上へ向かっても引ける）ので、
+   * 小さいほうを左上に取り直す。幅と高さは必ず 0 以上になる。
+   *
+   * @param from 対角の一方
+   * @param to 対角のもう一方
+   * @returns 2 点をちょうど囲む矩形
+   */
+  spanning(from: Offset, to: Offset): CanvasBounds {
+    return {
+      left: Math.min(from.x, to.x),
+      top: Math.min(from.y, to.y),
+      width: Math.abs(to.x - from.x),
+      height: Math.abs(to.y - from.y),
+    };
+  },
+
+  /**
+   * 2 つの矩形が重なっているか。
+   *
+   * 辺が接するだけでも重なりとみなす（境界を含む）。同じ型の `contains` が境界を
+   * 含んでいるので、2 つの判定で縁の扱いを割らないため。
+   *
+   * @param bounds 見る矩形
+   * @param other 重なりを見る相手の矩形
+   * @returns 少しでも重なっていれば `true`
+   */
+  overlaps(bounds: CanvasBounds, other: CanvasBounds): boolean {
+    const apart =
+      CanvasBounds.side(bounds, Sides.Right) <
+        CanvasBounds.side(other, Sides.Left) ||
+      CanvasBounds.side(other, Sides.Right) <
+        CanvasBounds.side(bounds, Sides.Left) ||
+      CanvasBounds.side(bounds, Sides.Bottom) <
+        CanvasBounds.side(other, Sides.Top) ||
+      CanvasBounds.side(other, Sides.Bottom) <
+        CanvasBounds.side(bounds, Sides.Top);
+    return !apart;
+  },
+
   /** ポインタが矩形の内側にあるか。 */
   contains(bounds: CanvasBounds, pointer: Offset): boolean {
     return (
