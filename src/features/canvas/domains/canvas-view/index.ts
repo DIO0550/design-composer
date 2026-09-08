@@ -1,6 +1,6 @@
 import { Offset } from "@/domains/unit/offset";
 import { Px } from "@/domains/unit/px";
-import { CanvasBounds } from "@/features/canvas/domains/node-drop";
+import { CanvasBounds } from "@/features/canvas/domains/canvas-bounds";
 import { NumberEx } from "@/utils/NumberEx";
 import { Option } from "@/utils/Option";
 

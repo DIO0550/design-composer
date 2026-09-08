@@ -1,6 +1,6 @@
 import type { Offset } from "@/domains/unit/offset";
 import { SidePair, SidePairs } from "@/domains/unit/side";
-import { CanvasBounds } from "@/features/canvas/domains/node-drop";
+import { CanvasBounds } from "@/features/canvas/domains/canvas-bounds";
 import { Option } from "@/utils/Option";
 
 /**

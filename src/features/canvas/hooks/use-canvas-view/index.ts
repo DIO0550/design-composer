@@ -7,11 +7,11 @@ import {
   useRef,
 } from "react";
 import type { Offset } from "@/domains/unit/offset";
+import { CanvasBounds } from "@/features/canvas/domains/canvas-bounds";
 import {
   CanvasView,
   type FitBounds,
 } from "@/features/canvas/domains/canvas-view";
-import { CanvasBounds } from "@/features/canvas/domains/node-drop";
 import { CanvasPointer } from "@/features/canvas/utils/CanvasPointer";
 import { DrawnBounds } from "@/features/canvas/utils/DrawnBounds";
 import { CommandKey } from "@/utils/CommandKey";

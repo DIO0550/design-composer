@@ -8,7 +8,7 @@ import {
   pressPointer,
   releasePointer,
 } from "@/features/canvas/__tests__/canvas-gesture";
-import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
+import type { CanvasBounds } from "@/features/canvas/domains/canvas-bounds";
 import {
   drawn,
   drawnAt,

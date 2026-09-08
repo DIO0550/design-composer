@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { AxisLength } from "@/domains/dcmp/axis-length";
-import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
+import type { CanvasBounds } from "@/features/canvas/domains/canvas-bounds";
 import { ResizeHandleOverlay } from "./index";
 
 /** 選択されている体の箱。器とハンドルの両方が同じ数値を使うので 1 つに置く。 */

@@ -1,4 +1,4 @@
-import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
+import type { CanvasBounds } from "@/features/canvas/domains/canvas-bounds";
 
 /**
  * 左 100・上 100 に置かれた、幅 40・高さ 20 の運んでいるもの。

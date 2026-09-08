@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { expect, test } from "vitest";
 import { AxisLength } from "@/domains/dcmp/axis-length";
-import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
+import type { CanvasBounds } from "@/features/canvas/domains/canvas-bounds";
 import { ResizeHandleOverlay } from "../index";
 
 /*

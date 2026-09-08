@@ -1,5 +1,5 @@
 import { ElementNameAttribute } from "@/domains/compiled/compiled-element";
-import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
+import type { CanvasBounds } from "@/features/canvas/domains/canvas-bounds";
 
 /**
  * キャンバスの実測を差し替える。

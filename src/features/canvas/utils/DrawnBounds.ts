@@ -1,4 +1,4 @@
-import { CanvasBounds } from "@/features/canvas/domains/node-drop";
+import { CanvasBounds } from "@/features/canvas/domains/canvas-bounds";
 import { CanvasDom } from "@/libs/canvas-dom";
 import { Option } from "@/utils/Option";
 

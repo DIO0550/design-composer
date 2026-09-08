@@ -1,8 +1,8 @@
 import { type PointerEvent as ReactPointerEvent, useReducer } from "react";
 import type { AxisLengths } from "@/domains/dcmp/axis-length";
 import { DocumentSelection } from "@/domains/session/document-selection";
+import type { CanvasBounds } from "@/features/canvas/domains/canvas-bounds";
 import type { CanvasView } from "@/features/canvas/domains/canvas-view";
-import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
 import {
   NodeResize,
   type ResizeGrip,

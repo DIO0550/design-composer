@@ -1,4 +1,4 @@
-import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
+import type { CanvasBounds } from "@/features/canvas/domains/canvas-bounds";
 import type { SnapGuides } from "@/features/canvas/domains/side-snap";
 
 /**

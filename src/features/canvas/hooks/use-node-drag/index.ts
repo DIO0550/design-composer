@@ -5,6 +5,7 @@ import type { ChildPosition } from "@/domains/dcmp/child-position";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import type { NodeTemplate } from "@/domains/session/node-template";
 import { Offset } from "@/domains/unit/offset";
+import { CanvasBounds } from "@/features/canvas/domains/canvas-bounds";
 import { CanvasView } from "@/features/canvas/domains/canvas-view";
 import {
   Carrying,
@@ -13,7 +14,6 @@ import {
   NodeDrag,
 } from "@/features/canvas/domains/node-drag";
 import {
-  CanvasBounds,
   type DraggedNode,
   DropParent,
   DropZone,

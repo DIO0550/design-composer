@@ -1,6 +1,6 @@
 import type { ChildPosition } from "@/domains/dcmp/child-position";
 import type { Offset } from "@/domains/unit/offset";
-import { CanvasBounds } from "../canvas-bounds";
+import { CanvasBounds } from "@/features/canvas/domains/canvas-bounds";
 import type { InsertionParent } from "../drop-parent";
 
 /**

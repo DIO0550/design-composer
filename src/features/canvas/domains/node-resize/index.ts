@@ -6,8 +6,8 @@ import { Size } from "@/domains/dcmp/size";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { Axes } from "@/domains/unit/axis";
 import { Offset } from "@/domains/unit/offset";
+import { CanvasBounds } from "@/features/canvas/domains/canvas-bounds";
 import { CanvasView } from "@/features/canvas/domains/canvas-view";
-import { CanvasBounds } from "@/features/canvas/domains/node-drop";
 import { Option } from "@/utils/Option";
 
 /**

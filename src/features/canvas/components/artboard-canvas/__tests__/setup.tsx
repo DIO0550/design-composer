@@ -21,7 +21,7 @@ import {
   releasePointer,
 } from "@/features/canvas/__tests__/canvas-gesture";
 import { resizeAnchorIndexFor } from "@/features/canvas/__tests__/canvas-resize";
-import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
+import type { CanvasBounds } from "@/features/canvas/domains/canvas-bounds";
 import type { ResizeGrip } from "@/features/canvas/domains/node-resize";
 import { useCanvasView } from "@/features/canvas/hooks/use-canvas-view";
 import { useNodeDrag } from "@/features/canvas/hooks/use-node-drag";
