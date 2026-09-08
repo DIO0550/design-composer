@@ -1,4 +1,5 @@
 import { fireEvent } from "@testing-library/react";
+import { type PointerButton, PointerButtons } from "@/utils/PointerButton";
 
 /**
  * ポインタ操作。キャンバスのドラッグ（`features/canvas`）と、左ペインの並べ替え
@@ -15,11 +16,28 @@ const PointerId = 1;
 /** 画面上の位置。 */
 export type PointerPoint = Readonly<{ x: number; y: number }>;
 
-export function pressPointer(element: Element, at: PointerPoint): void {
+/**
+ * ポインタを押す。
+ *
+ * ボタンを渡せるのは、押したボタンで操作が分かれるため（キャンバスは中ボタンだけを
+ * パンにする / docs/06-ui.md「キャンバス直接操作」）。**happy-dom の
+ * `fireEvent.pointerDown` は `button` をそのまま載せる**（実測）ので、ホイールの
+ * 修飾キーのように組み立て直す必要は無い。
+ *
+ * @param element 押す要素
+ * @param at 押した位置
+ * @param button 押したボタン。既定は主ボタン
+ */
+export function pressPointer(
+  element: Element,
+  at: PointerPoint,
+  button: PointerButton = PointerButtons.Primary,
+): void {
   fireEvent.pointerDown(element, {
     pointerId: PointerId,
     clientX: at.x,
     clientY: at.y,
+    button,
   });
 }
 
@@ -65,12 +83,19 @@ export function leavePointer(element: Element): void {
   fireEvent.pointerLeave(element, { pointerId: PointerId });
 }
 
-/** 掴んで運んで離す、までを 1 つの操作として起こす。 */
+/**
+ * 掴んで運んで離す、までを 1 つの操作として起こす。
+ *
+ * @param element 掴む要素
+ * @param movement 掴んだ位置と離す位置
+ * @param button 掴んだボタン。既定は主ボタン
+ */
 export function drag(
   element: Element,
   movement: Readonly<{ from: PointerPoint; to: PointerPoint }>,
+  button: PointerButton = PointerButtons.Primary,
 ): void {
-  pressPointer(element, movement.from);
+  pressPointer(element, movement.from, button);
   movePointer(element, movement.to);
   releasePointer(element, movement.to);
 }

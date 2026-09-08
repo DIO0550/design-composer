@@ -23,6 +23,20 @@ export {
   releasePointer,
 } from "@/components/__tests__/pointer-gesture";
 
+/**
+ * パンの修飾キーを押す / 離す。
+ *
+ * `document` へ撃つのは `useSpaceHeld` がそこで待っているため（ページ全体の関心事）。
+ * `code` で撃つのは、フックが打たれた文字ではなく物理キーで見ているのに合わせる。
+ */
+export function holdSpace(): void {
+  fireEvent.keyDown(globalThis.document, { code: "Space", key: " " });
+}
+
+export function releaseSpace(): void {
+  fireEvent.keyUp(globalThis.document, { code: "Space", key: " " });
+}
+
 /** ホイールと一緒に押されている修飾キー。 */
 export type WheelModifier = "none" | "ctrl" | "meta";
 

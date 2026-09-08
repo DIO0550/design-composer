@@ -1,4 +1,9 @@
-import { type CSSProperties, useMemo, useRef } from "react";
+import {
+  type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
+  useMemo,
+  useRef,
+} from "react";
 import type { AxisLengths } from "@/domains/dcmp/axis-length";
 import type { PropEdit } from "@/domains/dcmp/node";
 import { DocumentSelection } from "@/domains/session/document-selection";
@@ -13,9 +18,11 @@ import type { CanvasViewControl } from "@/features/canvas/hooks/use-canvas-view"
 import { useDrawnBounds } from "@/features/canvas/hooks/use-drawn-bounds";
 import type { NodeDragControl } from "@/features/canvas/hooks/use-node-drag";
 import { useNodeResize } from "@/features/canvas/hooks/use-node-resize";
+import { useSpaceHeld } from "@/features/canvas/hooks/use-space-held";
 import { useTextEdit } from "@/features/canvas/hooks/use-text-edit";
 import { DocumentHtml } from "@/services/document-html";
 import { Option } from "@/utils/Option";
+import { PointerButton } from "@/utils/PointerButton";
 import { CanvasBody } from "./canvas-body";
 import { DropMarker } from "./drop-marker";
 import { DropPositionLabel } from "./drop-position-label";
@@ -36,6 +43,24 @@ export { TokenReferrerOutline } from "./artboard-frame-list";
 
 /** 拡大の基準を左上に固定する（中央基準だと倍率を変えるたびに並びの原点が動く）。 */
 const ContentTransformOrigin: CSSProperties["transformOrigin"] = "0 0";
+
+/**
+ * キャンバスの土台に出すカーソル。
+ *
+ * 手を出すのは**パンできる入力のときだけ**。空き領域の左ドラッグは範囲選択になったので、
+ * 常時「開いた手」にすると掴んで動かせるように見えて誤誘導になる。
+ * **カーソルは happy-dom にも視覚差分にも出ない**ので、ここを間違えても気づく手段が無い。
+ *
+ * @param isDragging 今パンしている最中か
+ * @param isSpaceHeld space を押している（パンの構えにある）か
+ * @returns その状態で出すカーソルのクラス
+ */
+function canvasCursor(isDragging: boolean, isSpaceHeld: boolean): string {
+  if (isDragging) {
+    return "cursor-grabbing";
+  }
+  return isSpaceHeld ? "cursor-grab" : "cursor-default";
+}
 
 /**
  * キャンバス（docs/06-ui.md「画面構成」）。
@@ -86,9 +111,16 @@ export function ArtboardCanvas({
   onRepositionArtboard: (name: string, canvasPosition: Offset) => void;
 }>) {
   const { view, surfaceRef, panHandlers } = canvasView;
+  const isSpaceHeld = useSpaceHeld();
+  /**
+   * その `pointerdown` がパンを始めるか（docs/06-ui.md「キャンバス直接操作」）。
+   * space を押している間はどこを掴んでもパンで、中ボタンは単独でパン。
+   */
+  const pansCanvas = (event: ReactPointerEvent<HTMLElement>): boolean =>
+    isSpaceHeld || PointerButton.isMiddle(event);
   /*
-   * ハンドルを重ねる器。`canvas-surface` の中には置けない（パンのハンドラが
-   * どの `pointerdown` でもポインタを捕捉してしまい、ハンドルを押すとパンが始まる）。
+   * ハンドルを重ねる器。`canvas-surface` の中には置けない（土台は capture で
+   * `pointerdown` を先に見るので、ハンドルを押しても space 押下中ならパンが始まる）。
    */
   const canvasAreaRef = useRef<HTMLDivElement>(null);
   const designDocument = selection.document;
@@ -148,10 +180,25 @@ export function ArtboardCanvas({
       <div
         ref={surfaceRef}
         data-testid="canvas-surface"
-        {...panHandlers}
-        className={`flex-1 overflow-hidden ${
-          CanvasView.isDragging(view) ? "cursor-grabbing" : "cursor-grab"
-        }`}
+        /*
+         * パンだけ capture で取る。artboard の枠と見出しは `pointerdown` を止めるので
+         * （`artboard-frame` / `artboard-label`）、bubble で待つと artboard の上から
+         * 始めたパンが届かない。捕捉したら子へは渡さないので、**パンと範囲選択の
+         * どちらが始まるかはこの 1 箇所だけで決まる**（2 つが同時に始まらない）。
+         */
+        onPointerDownCapture={(event) => {
+          if (!pansCanvas(event)) {
+            return;
+          }
+          event.stopPropagation();
+          panHandlers.onPointerDown(event);
+        }}
+        onPointerMove={panHandlers.onPointerMove}
+        onPointerUp={panHandlers.onPointerUp}
+        className={`flex-1 overflow-hidden ${canvasCursor(
+          CanvasView.isDragging(view),
+          isSpaceHeld,
+        )}`}
       >
         <div
           data-testid="canvas-content"
