@@ -1,16 +1,18 @@
 import type { ChildPosition } from "@/domains/dcmp/child-position";
 import type { Offset } from "@/domains/unit/offset";
 import { CanvasBounds } from "../canvas-bounds";
-import type { DropParent } from "../drop-parent";
+import type { InsertionParent } from "../drop-parent";
 
 /**
- * 実測を通した `DropParent`。親と、その直下に並ぶ子が画面上のどこにあるかまで分かっている。
+ * 実測を通した `InsertionParent`。親と、その直下に並ぶ子が画面上のどこにあるかまで
+ * 分かっている。
  *
- * `DropParent` と別の型にするのは、計測していない親を挿入位置の計算へ渡せなくするため
- * （rules/coding.md「処理の通過を型に刻む」）。
+ * `InsertionParent` と別の型にするのは、計測していない親を挿入位置の計算へ渡せなく
+ * するため（rules/coding.md「処理の通過を型に刻む」）。**向きを持たない親**を渡せない
+ * ことは `InsertionParent` 自身が受け持つので、この型が足すのは計測の1段だけ。
  */
 export type DropZone = Readonly<{
-  parent: DropParent;
+  parent: InsertionParent;
   bounds: CanvasBounds;
   children: readonly CanvasBounds[];
 }>;
@@ -86,7 +88,7 @@ function markerBounds(zone: DropZone, coordinate: number): CanvasBounds {
 export const DropZone = {
   /** 子の矩形はドキュメント上の並び順で受け取る（描かれる順序がそのまま子の順序）。 */
   create(
-    parent: DropParent,
+    parent: InsertionParent,
     bounds: CanvasBounds,
     children: readonly CanvasBounds[],
   ): DropZone {

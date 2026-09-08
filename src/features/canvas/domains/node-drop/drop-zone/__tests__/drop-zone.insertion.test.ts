@@ -1,11 +1,11 @@
 import { expect, test } from "vitest";
 import type { CanvasBounds } from "../../canvas-bounds";
-import type { DropParent } from "../../drop-parent";
+import type { InsertionParent } from "../../drop-parent";
 import { DropZone } from "../index";
 
 /** 高さ 100 の子が縦に3つ並ぶ、高さ 300 の親。 */
 function setupColumnZone(): DropZone {
-  const parent: DropParent = { name: "body", direction: "column" };
+  const parent: InsertionParent = { name: "body", direction: "column" };
   const children: readonly CanvasBounds[] = [
     { left: 0, top: 0, width: 100, height: 100 },
     { left: 0, top: 100, width: 100, height: 100 },
@@ -20,7 +20,7 @@ function setupColumnZone(): DropZone {
 
 /** 幅 100 の子が横に3つ並ぶ、幅 300 の親。 */
 function setupRowZone(): DropZone {
-  const parent: DropParent = { name: "row", direction: "row" };
+  const parent: InsertionParent = { name: "row", direction: "row" };
   const children: readonly CanvasBounds[] = [
     { left: 0, top: 0, width: 100, height: 100 },
     { left: 100, top: 0, width: 100, height: 100 },

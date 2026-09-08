@@ -17,6 +17,7 @@ import {
   type DraggedNode,
   DropParent,
   DropZone,
+  InsertionParent,
 } from "@/features/canvas/domains/node-drop";
 import {
   type ParentShift,
@@ -91,7 +92,7 @@ function namedChildrenOf(element: Element): readonly Element[] {
  * @param parent 実測する落とし先の親
  * @returns 親と子の矩形を持つ落とし先の帯。親の要素が画面に無ければ `none`
  */
-function measureZone(parent: DropParent): Option<DropZone> {
+function measureZone(parent: InsertionParent): Option<DropZone> {
   return Option.map(CanvasDom.elementOf(parent.name), (element) =>
     DropZone.create(
       parent,
@@ -253,18 +254,21 @@ function carriedNode(
  *
  * @param context 今の掴みと、倍率・ポインタ
  * @param carried 運んでいるノードと、掴んだ時点の座標
- * @param parent ポインタの下で受け入れられる親
  * @returns 座標を置き直す運び方。親が無い / 親の矩形と運んでいるノードのどれかを
  *   実測できないときは見た目だけの運び方
  */
 function repositionCarrying(
   context: DropContext,
   carried: CarriedNode,
-  parent: Option<DropParent>,
 ): Carrying {
   const screenDelta = Offset.delta(
     context.grab.origin,
     CanvasPointer.offsetOf(context.event),
+  );
+  const parent = DropParent.innermost(
+    context.document,
+    context.grab.dragged,
+    namesToRoot(context.event.target),
   );
   const measured = Option.flatMap(parent, (dropped) =>
     measureReposition(context, carried, dropped),
@@ -308,13 +312,14 @@ function repositionCarrying(
  * 実体は動かさず、落ちる先はドロップ線で見せる。
  *
  * @param context 今の掴みと、落とし先を決めるための材料
- * @param parent ポインタの下で受け入れられる親
  * @returns ツリーへ落とす運び方。親が無い / 帯を実測できないなら何も起きない運び方
  */
-function intoTreeCarrying(
-  context: DropContext,
-  parent: Option<DropParent>,
-): Carrying {
+function intoTreeCarrying(context: DropContext): Carrying {
+  const parent = InsertionParent.innermost(
+    context.document,
+    context.grab.dragged,
+    namesToRoot(context.event.target),
+  );
   const target = Option.flatMap(parent, (accepted) =>
     Option.map(measureZone(accepted), (zone) =>
       DropZone.targetAt(zone, CanvasPointer.offsetOf(context.event)),
@@ -329,28 +334,23 @@ function intoTreeCarrying(
  * 今の運び方。
  * 絶対配置のノードを運んでいるなら座標の置き直し、そうでなければツリーへの移動・挿入。
  *
- * 受け入れられる親を先に 1 回だけ解決して両方へ渡すのは、どちらの運び方でも
- * 落ちる先の親が同じだから（2 回解決すると、同じ走査を 2 度行ううえに
- * 食い違う余地ができる）。
+ * 運び方を先に決めてから、その経路が要る親だけを解決する。落ちる先の親は 2 つの経路で
+ * 条件が違い（座標は名前だけで決まり、並びへ挿す先は子が並ぶ向きまで要る）、1 回の解決を
+ * 両方へ渡すと厳しいほうの条件が緩いほうまで塞ぐため（#440）。**走査は 1 回のまま** —
+ * どちらの運び方になるかは運んでいるものだけで決まり、親を解決するより先に分かる。
  *
- * **どちらの運び方になるかは運んでいるものだけで決まり、実測の成否では変わらない。**
- * 置き直しに決まったあとで実測に失敗したら、ツリーの移動へ落とさずそのまま
- * 「落とせない」にする（落とすと、座標を動かすつもりのドラッグが黙って木の並びを
- * 書き換える別の編集になる）。
+ * **その運び方は実測の成否では変わらない。** 置き直しに決まったあとで実測に失敗したら、
+ * ツリーの移動へ落とさずそのまま「落とせない」にする（落とすと、座標を動かすつもりの
+ * ドラッグが黙って木の並びを書き換える別の編集になる）。
  *
  * @param context 今の掴みと、落とし先を決めるための材料
  * @returns 今の運び方
  */
 function carryingAt(context: DropContext): Carrying {
-  const parent = DropParent.innermost(
-    context.document,
-    context.grab.dragged,
-    namesToRoot(context.event.target),
-  );
   const carried = carriedNode(context.document, context.grab.dragged);
   return carried.some
-    ? repositionCarrying(context, carried.value, parent)
-    : intoTreeCarrying(context, parent);
+    ? repositionCarrying(context, carried.value)
+    : intoTreeCarrying(context);
 }
 
 /** 運んでいる間のポインタを追う側（3 ペインの器）へ渡す props。 */
