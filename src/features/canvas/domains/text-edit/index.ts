@@ -6,7 +6,7 @@ import type {
 } from "@/domains/dcmp/primitive-schema";
 import { ResolvedProps } from "@/domains/dcmp/resolved-props";
 import { DocumentSelection } from "@/domains/session/document-selection";
-import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
+import type { CanvasBounds } from "@/features/canvas/domains/canvas-bounds";
 import { Option } from "@/utils/Option";
 
 /** その場で編集できる文言を持つのは Text だけ（docs/02-data-model.md の表）。 */

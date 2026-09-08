@@ -9,8 +9,8 @@ import {
   pressPointer,
   releasePointer,
 } from "@/features/canvas/__tests__/canvas-gesture";
+import type { CanvasBounds } from "@/features/canvas/domains/canvas-bounds";
 import { CanvasView } from "@/features/canvas/domains/canvas-view";
-import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
 import { useNodeResize } from "../index";
 
 /** 2 軸とも固定した `panel` を持つドキュメントと、選択の対。 */

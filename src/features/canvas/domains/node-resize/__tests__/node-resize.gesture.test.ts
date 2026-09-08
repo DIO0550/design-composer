@@ -2,8 +2,8 @@ import { expect, test } from "vitest";
 import { AxisLength } from "@/domains/dcmp/axis-length";
 import type { Offset } from "@/domains/unit/offset";
 import { resizeAnchorFor } from "@/features/canvas/__tests__/canvas-resize";
+import type { CanvasBounds } from "@/features/canvas/domains/canvas-bounds";
 import { CanvasView } from "@/features/canvas/domains/canvas-view";
-import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
 import { Option } from "@/utils/Option";
 import { NodeResize, type ResizeGrip } from "../index";
 

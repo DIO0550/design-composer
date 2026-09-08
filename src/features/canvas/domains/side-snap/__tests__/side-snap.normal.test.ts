@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
+import type { CanvasBounds } from "@/features/canvas/domains/canvas-bounds";
 import { SideSnap } from "../index";
 import { Moving } from "./moving-bounds";
 

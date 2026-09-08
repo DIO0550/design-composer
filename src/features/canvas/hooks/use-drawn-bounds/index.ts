@@ -1,5 +1,5 @@
 import { type RefObject, useLayoutEffect, useState } from "react";
-import { CanvasBounds } from "@/features/canvas/domains/node-drop";
+import { CanvasBounds } from "@/features/canvas/domains/canvas-bounds";
 import { DrawnBounds } from "@/features/canvas/utils/DrawnBounds";
 import { Option } from "@/utils/Option";
 

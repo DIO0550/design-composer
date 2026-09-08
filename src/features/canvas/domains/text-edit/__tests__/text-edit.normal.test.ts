@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { PropEdit } from "@/domains/dcmp/node";
 import { DocumentSelection } from "@/domains/session/document-selection";
-import type { CanvasBounds } from "@/features/canvas/domains/node-drop";
+import type { CanvasBounds } from "@/features/canvas/domains/canvas-bounds";
 import { EditableText, TextEdit } from "@/features/canvas/domains/text-edit";
 import { Option } from "@/utils/Option";
 

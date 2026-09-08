@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import type { CanvasBounds } from "../../canvas-bounds";
+import type { CanvasBounds } from "@/features/canvas/domains/canvas-bounds";
 import type { InsertionParent } from "../../drop-parent";
 import { DropZone } from "../index";
 
