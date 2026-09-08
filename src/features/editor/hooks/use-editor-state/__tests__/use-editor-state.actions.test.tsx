@@ -486,7 +486,7 @@ test("子を持てないノードを落とし先にした挿入のアクショ�
   render(<EditorStateHarness />);
 
   /*
-   * 画面の操作からは `DropParent.innermost` が受け入れられない親を外すのでここへ来ないが、
+   * 画面の操作からは `InsertionParent.innermost` が受け入れられない親を外すのでここへ来ないが、
    * アクションは誰でも送れるので、届いたときに何もしないことをここで固定する。
    */
   await userEvent.click(
