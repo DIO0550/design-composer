@@ -220,6 +220,16 @@
     "name": "トークンの参照元の破線"
   },
   {
+    "id": "features-canvas-artboardcanvas-rangeselectoverlay--drawing",
+    "title": "features/canvas/ArtboardCanvas/RangeSelectOverlay",
+    "name": "範囲を引いている"
+  },
+  {
+    "id": "features-canvas-artboardcanvas-rangeselectoverlay--narrow",
+    "title": "features/canvas/ArtboardCanvas/RangeSelectOverlay",
+    "name": "細く引いている"
+  },
+  {
     "id": "features-canvas-artboardcanvas-resizehandleoverlay--both-axes",
     "title": "features/canvas/ArtboardCanvas/ResizeHandleOverlay",
     "name": "2 軸とも掴める"
