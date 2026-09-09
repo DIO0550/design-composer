@@ -46,9 +46,7 @@ test("広げた先を動かしても、掴んだ点は動かない", () => {
 });
 
 test("押しただけで動かしていない範囲は引かれていない", () => {
-  expect(RangeSelect.isDrawn(RangeSelect.create({ x: 100, y: 60 }))).toBe(
-    false,
-  );
+  expect(RangeSelect.create({ x: 100, y: 60 }).isDrawn).toBe(false);
 });
 
 test("手ぶれの範囲に収まる動きでは引かれていない", () => {
@@ -58,7 +56,7 @@ test("手ぶれの範囲に収まる動きでは引かれていない", () => {
     y: 61,
   });
 
-  expect(RangeSelect.isDrawn(range)).toBe(false);
+  expect(range.isDrawn).toBe(false);
 });
 
 test("閾値を超えて動かした範囲は引かれている", () => {
@@ -67,5 +65,20 @@ test("閾値を超えて動かした範囲は引かれている", () => {
     y: 60,
   });
 
-  expect(RangeSelect.isDrawn(range)).toBe(true);
+  expect(range.isDrawn).toBe(true);
+});
+
+test("一度引いたあと掴んだ点まで縮めても、引かれたままになる", () => {
+  /*
+   * 引いている間は逐次選び直すので、ここで偽へ戻ると「縮めた結果 何も入らない」を
+   * 選択へ反映できず、広げたときの選択が残る。
+   */
+  const drawn = RangeSelect.extendedTo(RangeSelect.create({ x: 100, y: 60 }), {
+    x: 180,
+    y: 110,
+  });
+
+  const shrunk = RangeSelect.extendedTo(drawn, { x: 100, y: 60 });
+
+  expect(shrunk.isDrawn).toBe(true);
 });

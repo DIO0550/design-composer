@@ -11,6 +11,8 @@ import {
   canvasSurface,
   drag,
   highlightedNames,
+  movePointer,
+  pressPointer,
   stubBounds,
 } from "@/features/canvas/__tests__";
 import {
@@ -130,6 +132,31 @@ test("キャンバスの空き領域から範囲を引くと、範囲に入っ�
   });
 
   drag(canvasSurface(), { from: { x: 60, y: 40 }, to: { x: 260, y: 200 } });
+
+  expect(currentRowNames(tree())).toEqual(["home-title", "home-login"]);
+});
+
+test("範囲を引いている間、離す前からツリーの選択行が追随する", async () => {
+  /*
+   * 離してから選ぶ形だと、何が選ばれるのかを引きながら確かめられない（#467 のレビュー）。
+   * 配線の通しで見るのは、選択そのものを動かしているから（見た目だけの別経路ではない）。
+   */
+  await renderOpenedDocument(setupDocument());
+  stubBounds(drawn("home-title"), {
+    left: 140,
+    top: 84,
+    width: 60,
+    height: 20,
+  });
+  stubBounds(drawn("home-login"), {
+    left: 140,
+    top: 120,
+    width: 80,
+    height: 24,
+  });
+
+  pressPointer(canvasSurface(), { x: 60, y: 40 });
+  movePointer(canvasSurface(), { x: 260, y: 200 });
 
   expect(currentRowNames(tree())).toEqual(["home-title", "home-login"]);
 });

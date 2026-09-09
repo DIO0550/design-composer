@@ -45,6 +45,68 @@ test("範囲に重なったノードが選ばれる", () => {
   expect(onSelectInRange).toHaveBeenCalledWith(["badge"]);
 });
 
+test("引いている間、離す前から範囲に重なったノードが選ばれる", () => {
+  const onSelectInRange = vi.fn();
+  renderCanvas({ selection: setupSiblings(), onSelectInRange });
+  drawnApart();
+
+  pressPointer(canvasSurface(), { x: 60, y: 40 });
+  movePointer(canvasSurface(), { x: 170, y: 100 });
+
+  expect(onSelectInRange).toHaveBeenCalledWith(["badge"]);
+});
+
+test("引きながら範囲を広げると、あとから入ったノードも選ばれる", () => {
+  const onSelectInRange = vi.fn();
+  renderCanvas({ selection: setupSiblings(), onSelectInRange });
+  drawnApart();
+
+  pressPointer(canvasSurface(), { x: 60, y: 40 });
+  movePointer(canvasSurface(), { x: 170, y: 100 });
+  movePointer(canvasSurface(), { x: 310, y: 199 });
+
+  expect(onSelectInRange).toHaveBeenLastCalledWith(["badge", "card"]);
+});
+
+test("引きながら範囲を狭めると、外れたノードは選択から外れる", () => {
+  const onSelectInRange = vi.fn();
+  renderCanvas({ selection: setupSiblings(), onSelectInRange });
+  drawnApart();
+
+  pressPointer(canvasSurface(), { x: 60, y: 40 });
+  movePointer(canvasSurface(), { x: 310, y: 199 });
+  movePointer(canvasSurface(), { x: 170, y: 100 });
+
+  expect(onSelectInRange).toHaveBeenLastCalledWith(["badge"]);
+});
+
+test("一度引いたあと掴んだ点まで戻すと、選択が空になる", () => {
+  /*
+   * 閾値の内側へ戻った時点で選び直しをやめると、広げたときの選択が残る。
+   * 一度引かれたことを覚えているので、縮めた結果もそのまま反映される。
+   */
+  const onSelectInRange = vi.fn();
+  renderCanvas({ selection: setupSiblings(), onSelectInRange });
+  drawnApart();
+
+  pressPointer(canvasSurface(), { x: 60, y: 40 });
+  movePointer(canvasSurface(), { x: 310, y: 199 });
+  movePointer(canvasSurface(), { x: 60, y: 40 });
+
+  expect(onSelectInRange).toHaveBeenLastCalledWith([]);
+});
+
+test("閾値を超えるまでは、動かしても選択に手を付けない", () => {
+  const onSelectInRange = vi.fn();
+  renderCanvas({ selection: setupSiblings(), onSelectInRange });
+  drawnApart();
+
+  pressPointer(canvasSurface(), { x: 60, y: 40 });
+  movePointer(canvasSurface(), { x: 61, y: 41 });
+
+  expect(onSelectInRange).not.toHaveBeenCalled();
+});
+
 test("範囲に一部だけ重なったノードも選ばれる", () => {
   const onSelectInRange = vi.fn();
   renderCanvas({ selection: setupSiblings(), onSelectInRange });

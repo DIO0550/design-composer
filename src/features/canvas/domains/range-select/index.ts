@@ -15,6 +15,14 @@ import { DragThresholdPx } from "@/features/canvas/domains/node-drag";
 export type RangeSelect = Readonly<{
   from: Offset;
   to: Offset;
+  /**
+   * 一度でも閾値を超えたか（手ぶれと区別する / `extendedTo`）。
+   *
+   * 2 点から導かず持ち回るのは、**超えたあとに掴んだ点まで縮めても真のまま**に
+   * するため。引いている間は逐次選び直すので、縮めた結果の「何も入らない」も
+   * 選択へ反映しないと、広げたときの選択が残る。
+   */
+  isDrawn: boolean;
 }>;
 
 export const RangeSelect = {
@@ -22,21 +30,32 @@ export const RangeSelect = {
    * 押した位置から始まる、まだ広がっていない範囲。
    *
    * @param from 押した位置（client 座標）
-   * @returns 面積を持たない範囲
+   * @returns 面積を持たず、まだ引かれていない範囲
    */
   create(from: Offset): RangeSelect {
-    return { from, to: from };
+    return { from, to: from, isDrawn: false };
   },
 
   /**
    * 引いている先を今の位置へ伸ばした範囲。掴んだ点は動かない。
+   *
+   * 掴んだ点から閾値ぶん離れた時点で「引かれた」に変わる。閾値を置かないと、
+   * 空き領域を**クリックしただけ**で 0 面積の範囲が成立し、何も入らないので選択が
+   * 外れる。クリックで選択が外れるのは docs/06-ui.md「キャンバスのクリックが選ぶ階層」
+   * （外れるのは Esc など）と食い違う。閾値はノードと artboard のドラッグが使って
+   * いるものと同じ（`DragThresholdPx`）。
    *
    * @param range 伸ばす範囲
    * @param to 今のポインタの位置（client 座標）
    * @returns 掴んだ点はそのままに、反対の角が今の位置へ来た範囲
    */
   extendedTo(range: RangeSelect, to: Offset): RangeSelect {
-    return { from: range.from, to };
+    const reachesThreshold = Offset.distance(range.from, to) >= DragThresholdPx;
+    return {
+      from: range.from,
+      to,
+      isDrawn: range.isDrawn || reachesThreshold,
+    };
   },
 
   /**
@@ -47,20 +66,5 @@ export const RangeSelect = {
    */
   bounds(range: RangeSelect): CanvasBounds {
     return CanvasBounds.spanning(range.from, range.to);
-  },
-
-  /**
-   * 手ぶれではなく、実際に引かれたと言えるか。
-   *
-   * 閾値を置かないと、空き領域を**クリックしただけ**で 0 面積の範囲が成立し、
-   * 何も入らないので選択が外れる。クリックで選択が外れるのは
-   * docs/06-ui.md「キャンバスのクリックが選ぶ階層」（外れるのは Esc など）と食い違う。
-   * 閾値はノードと artboard のドラッグが使っているものと同じ（`DragThresholdPx`）。
-   *
-   * @param range 見る範囲
-   * @returns 掴んだ点から閾値ぶん以上離れていれば `true`
-   */
-  isDrawn(range: RangeSelect): boolean {
-    return Offset.distance(range.from, range.to) >= DragThresholdPx;
   },
 } as const;
