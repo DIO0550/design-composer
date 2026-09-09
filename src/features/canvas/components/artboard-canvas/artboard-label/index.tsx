@@ -46,7 +46,7 @@ export function ArtboardLabel({
        */
       className="flex h-[18px] cursor-grab select-none items-center gap-2 text-[11px]"
       onPointerDown={(event) => {
-        // 見出しの上で始めたドラッグはパンにしない（掴んだものが動かないと操作が読めない）
+        // 見出しの上で始めたドラッグは土台へ渡さない（掴んだものが動かないと操作が読めない）
         event.stopPropagation();
         onGrab(event);
       }}

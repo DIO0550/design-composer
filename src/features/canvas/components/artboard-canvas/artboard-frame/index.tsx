@@ -17,8 +17,14 @@ import { CommandKey } from "@/utils/CommandKey";
 import { ElementEx } from "@/utils/ElementEx";
 import { ArtboardLabel } from "../artboard-label";
 
-/** キーボードでも artboard を選べるようにする（role="button" は既定の活性化を持たない）。 */
-const ActivationKeys = ["Enter", " "];
+/**
+ * キーボードでも artboard を選べるようにする（role="button" は既定の活性化を持たない）。
+ *
+ * Why not（space）: `role="button"` の流儀では Enter と space の両方が活性化に当たるが、
+ * space はキャンバス全体でパンの修飾になった（docs/06-ui.md「キャンバス直接操作」）。
+ * 枠にフォーカスがあるときだけ意味が割れると、押した瞬間に artboard が選び直される。
+ */
+const ActivationKeys = ["Enter"];
 
 /**
  * 1 枚の artboard。中身はコンパイル結果の HTML をそのまま流し込む。
@@ -167,7 +173,7 @@ export function ArtboardFrame({
         }}
         onKeyDown={activate}
         onPointerDown={(event) => {
-          // artboard の上で始めたドラッグはパンにしない（掴んだものが動かないと操作が読めなくなる）
+          // artboard の上で始めたドラッグは土台へ渡さない（掴んだものが動かないと操作が読めなくなる）
           event.stopPropagation();
           /*
            * 内側から外へ向かって掴み手を決める。ハンドル → 中身のノード → artboard 自身の順で、

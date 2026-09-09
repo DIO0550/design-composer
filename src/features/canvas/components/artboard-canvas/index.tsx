@@ -1,4 +1,9 @@
-import { type CSSProperties, useMemo, useRef } from "react";
+import {
+  type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
+  useMemo,
+  useRef,
+} from "react";
 import type { AxisLengths } from "@/domains/dcmp/axis-length";
 import type { PropEdit } from "@/domains/dcmp/node";
 import { DocumentSelection } from "@/domains/session/document-selection";
@@ -13,12 +18,16 @@ import type { CanvasViewControl } from "@/features/canvas/hooks/use-canvas-view"
 import { useDrawnBounds } from "@/features/canvas/hooks/use-drawn-bounds";
 import type { NodeDragControl } from "@/features/canvas/hooks/use-node-drag";
 import { useNodeResize } from "@/features/canvas/hooks/use-node-resize";
+import { useRangeSelect } from "@/features/canvas/hooks/use-range-select";
+import { useSpaceHeld } from "@/features/canvas/hooks/use-space-held";
 import { useTextEdit } from "@/features/canvas/hooks/use-text-edit";
 import { DocumentHtml } from "@/services/document-html";
 import { Option } from "@/utils/Option";
+import { PointerButton } from "@/utils/PointerButton";
 import { CanvasBody } from "./canvas-body";
 import { DropMarker } from "./drop-marker";
 import { DropPositionLabel } from "./drop-position-label";
+import { RangeSelectOverlay } from "./range-select-overlay";
 import { RepositionPreviewStyle } from "./reposition-preview-style";
 import { ResizeHandleOverlay, resizeCursor } from "./resize-handle-overlay";
 import { SnapGuideOverlay } from "./snap-guide-overlay";
@@ -38,6 +47,28 @@ export { TokenReferrerOutline } from "./artboard-frame-list";
 const ContentTransformOrigin: CSSProperties["transformOrigin"] = "0 0";
 
 /**
+ * キャンバスの土台に出すカーソル。
+ *
+ * 手を出すのは**パンできる入力のときだけ**。空き領域の左ドラッグは範囲選択になったので、
+ * 常時「開いた手」にすると掴んで動かせるように見えて誤誘導になる。
+ * **カーソルは happy-dom にも視覚差分にも出ない**ので、ここを間違えても気づく手段が無い。
+ *
+ * 真偽値をオブジェクトで受けるのは、位置引数だと取り違えても型が通るため
+ * （気づく手段が無い以上、取り違えを型で防ぐ / `rules/coding.md`「関数のシグネチャ」）。
+ *
+ * @param pan 今パンしている最中か・パンの構えにあるか
+ * @returns その状態で出すカーソルのクラス
+ */
+function canvasCursor(
+  pan: Readonly<{ isDragging: boolean; isArmed: boolean }>,
+): string {
+  if (pan.isDragging) {
+    return "cursor-grabbing";
+  }
+  return pan.isArmed ? "cursor-grab" : "cursor-default";
+}
+
+/**
  * キャンバス（docs/06-ui.md「画面構成」）。
  * artboard をキャンバス上の座標へ置き、コンパイル結果（実 HTML / CSS）をレンダリングする。
  * ズーム / パンは非永続の view state で、ドキュメントには保存しない。
@@ -45,8 +76,8 @@ const ContentTransformOrigin: CSSProperties["transformOrigin"] = "0 0";
  * 表示（倍率・位置）を自分で持たず受け取るのは、倍率の操作が上部バーへ移り、
  * キャンバスと上部バーが同じ 1 つの表示を見る必要があるため（#134）。
  *
- * props が 9 つあるが Composition へは割っていない。関心は「キャンバス」1 つで、
- * 前半 3 つは描くのに要る値、後半 6 つは表示とキャンバス上の操作を外へ渡す口。
+ * props が 10 個あるが Composition へは割っていない。関心は「キャンバス」1 つで、
+ * 前半 3 つは描くのに要る値、後半 7 つは表示とキャンバス上の操作を外へ渡す口。
  * 中身を子要素として受け取る形にはできない（描くものはコンパイル結果の HTML で、
  * 呼び出し側が組み立てられない）。`EditorState` を丸ごと受けると feature として
  * 切り出せない（#256）。
@@ -71,6 +102,7 @@ export function ArtboardCanvas({
   canvasView,
   nodeDrag,
   onSelect,
+  onSelectInRange,
   onResize,
   onEditProp,
   onRepositionArtboard,
@@ -81,14 +113,25 @@ export function ArtboardCanvas({
   canvasView: CanvasViewControl;
   nodeDrag: NodeDragControl;
   onSelect: (names: readonly string[], dig: SelectionDig) => void;
+  /** 範囲選択で、範囲に重なったものをまとめて選ぶ（#411）。 */
+  onSelectInRange: (names: readonly string[]) => void;
   onResize: (sizes: AxisLengths) => void;
   onEditProp: (edit: PropEdit) => void;
   onRepositionArtboard: (name: string, canvasPosition: Offset) => void;
 }>) {
   const { view, surfaceRef, panHandlers } = canvasView;
+  const isSpaceHeld = useSpaceHeld();
+  /**
+   * その `pointerdown` がパンを始めるか（docs/06-ui.md「キャンバス直接操作」）。
+   * space を押している間はどこを掴んでもパンで、中ボタンは単独でパン。
+   */
+  const pansCanvas = (event: ReactPointerEvent<HTMLElement>): boolean =>
+    isSpaceHeld || PointerButton.isMiddle(event);
   /*
-   * ハンドルを重ねる器。`canvas-surface` の中には置けない（パンのハンドラが
-   * どの `pointerdown` でもポインタを捕捉してしまい、ハンドルを押すとパンが始まる）。
+   * ハンドルを重ねる器。`canvas-surface` の**外**にあるので、掴めるハンドルの上だけは
+   * `pointerdown` が土台へ届かず、space を押していてもパンが始まらない
+   * （docs/06-ui.md「キャンバス直接操作」がこの 3 箇所を例外として書いている）。
+   * 中へ移せば例外を消せるが、掴み口と土台の当たり判定の作り直しになるので #411 では触らない。
    */
   const canvasAreaRef = useRef<HTMLDivElement>(null);
   const designDocument = selection.document;
@@ -98,6 +141,10 @@ export function ArtboardCanvas({
     onReposition: onRepositionArtboard,
   });
   const textEdit = useTextEdit({ selection, onEditProp });
+  const rangeSelect = useRangeSelect({
+    designDocument,
+    onSelect: onSelectInRange,
+  });
   /*
    * 凍結中はリサイズハンドルを出さない。`inert` の中にあって掴めないのに、
    * ハンドルだけが普段どおり見えることになるため。選択の枠そのものは残す
@@ -148,10 +195,46 @@ export function ArtboardCanvas({
       <div
         ref={surfaceRef}
         data-testid="canvas-surface"
-        {...panHandlers}
-        className={`flex-1 overflow-hidden ${
-          CanvasView.isDragging(view) ? "cursor-grabbing" : "cursor-grab"
-        }`}
+        /*
+         * パンだけ capture で取る。artboard の枠と見出しは `pointerdown` を止めるので
+         * （`artboard-frame` / `artboard-label`）、bubble で待つと artboard の上から
+         * 始めたパンが届かない。捕捉したら子へは渡さないので、**パンが始まったなら
+         * 範囲選択は始まらない**（右ボタンのように「どちらも始まらない」入力があるかは
+         * 範囲選択の側が決める / `useRangeSelect`）。
+         */
+        onPointerDownCapture={(event) => {
+          if (!pansCanvas(event)) {
+            return;
+          }
+          event.stopPropagation();
+          panHandlers.onPointerDown(event);
+        }}
+        /*
+         * 空き領域の左ドラッグは範囲選択。ここまで `pointerdown` が上がってくるのは
+         * artboard の外側の余白を押したときだけで、artboard の上は枠と見出しが止める
+         * （artboard の背景を範囲選択にするかは #465）。凍結中に始めないのは、
+         * 映っているのが最後に正常だった表示で、そこへ加えた選択が今のファイルと
+         * 噛み合わないため（`canvas-content` の `inert` はここまで及ばない）。
+         */
+        onPointerDown={(event) => {
+          if (isFrozen) {
+            return;
+          }
+          rangeSelect.dragHandlers.onPointerDown(event);
+        }}
+        /* パンと範囲選択のどちらが始まったかは自分の状態が知っているので、両方へ配る */
+        onPointerMove={(event) => {
+          panHandlers.onPointerMove(event);
+          rangeSelect.dragHandlers.onPointerMove(event);
+        }}
+        onPointerUp={(event) => {
+          panHandlers.onPointerUp(event);
+          rangeSelect.dragHandlers.onPointerUp(event);
+        }}
+        className={`flex-1 overflow-hidden ${canvasCursor({
+          isDragging: CanvasView.isDragging(view),
+          isArmed: isSpaceHeld,
+        })}`}
       >
         <div
           data-testid="canvas-content"
@@ -229,6 +312,9 @@ export function ArtboardCanvas({
           <DropMarker bounds={dropTarget.value.marker} />
           <DropPositionLabel target={dropTarget.value} />
         </>
+      ) : null}
+      {rangeSelect.bounds.some ? (
+        <RangeSelectOverlay bounds={rangeSelect.bounds.value} />
       ) : null}
       {/* 吸い付いた辺は運んでいる間しか分からないので、離す前に線で見せる */}
       <SnapGuideOverlay guides={NodeDrag.snapGuides(nodeDrag.drag)} />

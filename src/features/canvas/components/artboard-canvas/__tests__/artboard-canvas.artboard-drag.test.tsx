@@ -8,6 +8,7 @@ import {
 } from "@/features/canvas/__tests__/canvas-elements";
 import {
   drag,
+  holdSpace,
   movePointer,
   pressPointer,
   releasePointer,
@@ -188,6 +189,25 @@ test("見出しを掴んでもキャンバスは動かない", () => {
   });
 
   expect(canvasContent().style.transform).toBe(before);
+});
+
+test("space を押しながら見出しを掴むと、artboard ではなくキャンバスが動く", () => {
+  /*
+   * 見出しは `pointerdown` を止めるので、土台が bubble で待っているとここから
+   * パンを始められない（capture で取っている理由）。artboard 自身が動いていない
+   * ことまで見るのは、両方が動くと何を掴んだのか読めなくなるため。
+   */
+  const onRepositionArtboard = vi.fn();
+  renderCanvas({ selection: setupSelection(), onRepositionArtboard });
+  holdSpace();
+
+  drag(artboardHandle("second"), {
+    from: { x: 0, y: 0 },
+    to: { x: 60, y: 40 },
+  });
+
+  expect(canvasContent().style.transform).toContain("translate(60px, 40px)");
+  expect(onRepositionArtboard).not.toHaveBeenCalled();
 });
 
 test("見出しを掴んで運んだ直後でも、次のクリックで選べる", () => {

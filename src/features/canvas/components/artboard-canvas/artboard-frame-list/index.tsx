@@ -16,8 +16,9 @@ import { NameStyleRule } from "../name-style-rule";
  * 選択を表す青。Tailwind の `outline-blue-500` と同じ色を綴り直している
  * （選択子を組み立てて流し込む規則なので、クラスでは書けない）。
  *
- * export しているのは、枠とリサイズハンドル（`resize-handle-overlay`）が同じ色でなければ
- * ならないため。別々に綴ると片方だけ変わって、同じ選択表示に青が 2 色出る。
+ * export しているのは、選択に属する表示が同じ色でなければならないため。借りているのは
+ * リサイズハンドル（`resize-handle-overlay`）と範囲選択の枠（`range-select-overlay`）の
+ * 2 つ。別々に綴ると片方だけ変わって、同じ選択表示に青が 2 色出る。
  */
 export const SelectionColor = "#3b82f6";
 
