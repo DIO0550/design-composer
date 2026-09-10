@@ -4,17 +4,13 @@ import type { DropTarget } from "@/features/canvas/domains/node-drop";
  * ドロップ先を「どの親の何個中どこか」として読ませるラベル（UI 案 docs/Design
  * Composer.html の `into login-form · child 3 of 5`）。
  *
- * 数え方は UI 案の図に合わせた。`login-form` は子を 5 つ持ち線はその 4 つ目の手前にある
- * ので、`N` は挿入位置（0 起点）、`M` は落とす前の子の数になる（先頭へ落とすと
- * `child 0 of 5` になり日本語としては硬いが、読みやすくすると UI 案の数字を再現できない）。
- *
- * 色は今のドロップ提示（緑の破線）に合わせる。UI 案はここも選択と同じ青にしているが、選
- * 択と見分けるために緑にしてあるので、寄せるのは #112 の担当。`DropMarker` と同じくズー
- * ム / パンの変形の**外側**へ置き、実測した client 座標を `position: fixed` で使う。
+ * 数え方は UI 案の図に合わせた（`N` は挿入位置の 0 起点、`M` は落とす前の子の数）。色は
+ * 今のドロップ提示（緑の破線）に合わせ、`DropMarker` と同じくズーム / パンの変形の**外
+ * 側**へ置いて実測した client 座標を `position: fixed` で使う。
  *
  * **置き方（`fixed` と持ち上げ量）を落としても気づく手段が無い。** happy-dom はレイアウ
- * トを解決せず、運んでいる最中のキャンバスを映すストーリーも無いので視覚差分にも出ない。
- * 落ちるのは「ラベルが出る」ところまで（`opened-document-editor.asset-drag`）。
+ * トを解決せず、運んでいる最中のキャンバスを映すストーリーも無いので視覚差分にも出ない
+ * （落ちるのは「ラベルが出る」ところまで）。
  */
 export function DropPositionLabel({
   target,

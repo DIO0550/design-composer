@@ -79,7 +79,7 @@ type RightPaneParts = Readonly<{ title: ReactNode; body: ReactElement }>;
  * を含まない）と書いているのは、行き先を足して `case` を足し忘れたときにコンパイルエラ
  * ーにするため。
  *
- *   @returns Tokens ならトークンの編集欄、Layers / Assets ならプロパティパネル
+ *         @returns Tokens ならトークンの編集欄、Layers / Assets ならプロパティパネル
  */
 function rightPaneParts({
   view,
@@ -155,8 +155,8 @@ type CanvasDock =
  * つの一覧を並べると、外部エディタでしか直せないファイルの一覧が、アプリ内で直せるドキ
  * ュメントの一覧の場所を奪う。
  *
- *   @param state エラーの出どころになるエディタの状態
- *   @returns ファイルが不正ならそのエラー、そうでなければ編集で作ったエラー
+ *         @param state エラーの出どころになるエディタの状態
+ *         @returns ファイルが不正ならそのエラー、そうでなければ編集で作ったエラー
  */
 function canvasDock(state: EditorState): CanvasDock {
   const fileValidity = state.fileValidity;
@@ -178,7 +178,7 @@ function canvasDock(state: EditorState): CanvasDock {
  * ドックだけのストーリーを立てないのは、積み方そのものがここの判断で、ストーリー側へ写
  * すと本物の積み方が壊れても気づけないため。
  *
- *   @returns 子を縦に積み、キャンバスの下端に寄せる器
+ *         @returns 子を縦に積み、キャンバスの下端に寄せる器
  */
 function CanvasDockStack({ children }: Readonly<{ children: ReactNode }>) {
   return (

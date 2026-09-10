@@ -9,7 +9,7 @@ import { Option } from "@/utils/Option";
  * `change` を飛ばさず矢印キーにも解除の経路が無いため、「押して未選択へ戻す」を持てない
  * から。器を `fieldset` にしているのは、`role="group"` を持つ意味づけの要素がこれだから。
  *
- *   @returns 選択肢ごとのトグルボタンを並べた器
+ *         @returns 選択肢ごとのトグルボタンを並べた器
  */
 export function SegmentedControl({
   labelledBy,

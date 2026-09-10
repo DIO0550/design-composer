@@ -42,7 +42,7 @@ function pressesSpace(event: KeyboardEvent): boolean {
  * ウィンドウのフォーカスが外れたときに構えを解くのは、そのあいだの keyup が届かないため。
  * 解かないと、戻ってきたときに押していない space で掴んだドラッグがパンになる。
  *
- *   @returns space を押している間だけ真
+ *         @returns space を押している間だけ真
  */
 export function useSpaceHeld(): boolean {
   const [isHeld, setIsHeld] = useState(false);

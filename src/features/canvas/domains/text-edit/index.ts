@@ -72,10 +72,10 @@ export const EditableText = {
    * artboard と部品インスタンスは対象にならない（文言を持つのは Text だけ）。インスタン
    * スの中身に見えている Text も、ドキュメントの木には無いため対象にならない。
    *
-   *   @param selection 選択とドキュメントの出どころになる対
-   *   @param names 押された位置から外へ辿ったノード名
-   *   @returns 編集できる Text。選択が Text でないとき、押された位置が選択中の Text か
-   *   ら  外れているときは `none`
+   *         @param selection 選択とドキュメントの出どころになる対
+   *         @param names 押された位置から外へ辿ったノード名
+   *         @returns 編集できる Text。選択が Text でないとき、押された位置が選択中の
+   *   Text   か  ら  外れているときは `none`
    */
   at(
     selection: DocumentSelection,

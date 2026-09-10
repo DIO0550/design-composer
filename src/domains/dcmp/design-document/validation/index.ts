@@ -111,9 +111,9 @@ function collectTypedPropErrors(
  * 親を引数で要求するので、親が決まらない位置（部品のルート）はそもそも呼ばれない。部品
  * インスタンスの中身も対象外で、検証が見るのは**定義時点の props** だけ。
  *
- *   @param parentLayout その props を持つノードの親の配置モード
- *   @param props 検査するノードの props
- *   @returns 軸ごとのエラーの並び。親が子を並べるときは空
+ *         @param parentLayout その props を持つノードの親の配置モード
+ *         @param props 検査するノードの props
+ *         @returns 軸ごとのエラーの並び。親が子を並べるときは空
  */
 function collectFillErrors(
   parentLayout: Layout,

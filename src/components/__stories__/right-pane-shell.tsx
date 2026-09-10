@@ -58,7 +58,7 @@ function heightClass(height: RightPaneShellHeight): string {
  * なので、左ペインのストーリーがこれを着ると 1rem ずれる（左ペインの枠は #304）。本物の
  * 殻を使えない理由は `left-pane-shell` と同じ。
  *
- *   @returns 受け取った中身を、右ペインと同じ幅の枠に入れたもの
+ *         @returns 受け取った中身を、右ペインと同じ幅の枠に入れたもの
  */
 export function RightPaneShell({
   height,

@@ -29,22 +29,18 @@ import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 
 /**
- * エディタ画面が保持する状態（docs/06-ui.md「画面構成」「選択」）。選択はファイルへ保存
- * しない実行時のみの状態だが、「どのドキュメントの中の名前か」でしか意味を持たないため
- * ドキュメントと同じ器に持つ。
- *
- * `copiedNode`（アプリ内クリップボード）も選択と同じく非永続・ドキュメント基準なのでこ
- * こに置く。
+ * エディタ画面が保持する状態（docs/06-ui.md「画面構成」「選択」）。選択はドキュメントの
+ * 中の名前でしか意味を持たないため同じ器に持ち、`copiedNode`（アプリ内クリップボード）
+ * も同じく非永続なのでここに置く。
  *
  * ドキュメントを裸で持たず `history` の現在地として持つのは、差し替える道を
- * `EditHistory.record` だけにして、履歴を積まずに書き換える経路を無くすため（#41）。表
- * 示に使うドキュメントは `EditorState.document`。
+ * `EditHistory.record` だけにして、履歴を積まずに書き換える経路を無くすため（#41。表示
+ * に使うのは `EditorState.document`）。ドキュメント自身の不正はここに持たず
+ * `EditorState.documentErrors` で導出する（#128）。
  *
  * 現在地は常に「最後に正常だったドキュメント」で、外部変更を拒んでも差し替えない。
  * `fileValidity` が `invalid` の間は編集を受け付けない（古い表示から作った内容を書き出
  * すと、より新しい外部の書き込みを潰すため / #155）。
- *
- * ドキュメント自身の不正はここに持たず `EditorState.documentErrors` で導出する（#128）。
  */
 export type EditorState = Readonly<{
   history: EditHistory;
@@ -166,9 +162,9 @@ function selectedNode(state: EditorState): Option<Node> {
  * クリップボードは引き継ぐ。切り離された複製であり、貼るときに必ず採番し直すので、ドキ
  * ュメントが差し替わっても貼れる状態が壊れないため。
  *
- *   @param state 反映元のエディタの状態
- *   @param history 新しい現在地を持つ履歴
- *   @returns 履歴が差し替わり、消えた選択が外れたエディタの状態
+ *         @param state 反映元のエディタの状態
+ *         @param history 新しい現在地を持つ履歴
+ *         @returns 履歴が差し替わり、消えた選択が外れたエディタの状態
  */
 function withHistory(state: EditorState, history: EditHistory): EditorState {
   return {
@@ -254,8 +250,8 @@ export const EditorState = {
    * を置くのは状態しか持っていない消費側が要る 3 つだけで、対を受け取る側が直接引けるも
    * のには置かない。
    *
-   *   @param state 選択とドキュメントの出どころ
-   *   @returns 今のドキュメントと選択の対
+   *         @param state 選択とドキュメントの出どころ
+   *         @returns 今のドキュメントと選択の対
    */
   documentSelection(state: EditorState): DocumentSelection {
     return DocumentSelection.create(
@@ -300,8 +296,8 @@ export const EditorState = {
    * 凍結するかだけを尋ねる側が `fileValidity` の直和を開かずに済むよう、判定はここに 1
    * つだけ置く。
    *
-   *   @param state ファイルの妥当性の出どころになるエディタの状態
-   *   @returns 外部変更を拒んだままなら `true`
+   *         @param state ファイルの妥当性の出どころになるエディタの状態
+   *         @returns 外部変更を拒んだままなら `true`
    */
   isFileInvalid(state: EditorState): boolean {
     return FileValidity.isInvalid(state.fileValidity);
@@ -344,9 +340,10 @@ export const EditorState = {
    * 枚しか映さないため、映っていない artboard のぶんはキャンバスにだけ枠が出る（docs/06-ui.md
    * 「選択」）。
    *
-   *   @param state 選択元のエディタの状態
-   *   @returns まとめて選んだ状態。選んでいるものが同じ部品のインスタンスで揃って  いな
-   *   いとき（未選択・artboard・プリミティブ・参照先が混ざった複数選択）は `none`
+   *         @param state 選択元のエディタの状態
+   *         @returns まとめて選んだ状態。選んでいるものが同じ部品のインスタンスで揃って
+   *    い  な  いとき（未選択・artboard・プリミティブ・参照先が混ざった複数選択）は
+   *   `none`
    */
   selectAllInstances(state: EditorState): Option<EditorState> {
     return Option.map(EditorState.sourceName(state), (componentName) => ({
@@ -372,10 +369,10 @@ export const EditorState = {
    * artboard を候補から外して渡すのは、artboard が掘る対象の外側にある器だから（`SelectionDig.nameAt`
    * の doc）。どれも選べなければ選択は外れる。
    *
-   *   @param state 選択を移す前の状態
-   *   @param names 押された位置から外へ辿った名前（内→外）
-   *   @param dig 押し方から決まった掘る量
-   *   @returns 掘った先を選んだ状態。選べる名前が 1 つも無ければ未選択
+   *         @param state 選択を移す前の状態
+   *         @param names 押された位置から外へ辿った名前（内→外）
+   *         @param dig 押し方から決まった掘る量
+   *         @returns 掘った先を選んだ状態。選べる名前が 1 つも無ければ未選択
    */
   selectAt(
     state: EditorState,
@@ -434,9 +431,10 @@ export const EditorState = {
    * `selectableName` の対象外）、`select` は選べない名前で選択を外すため、繋ぐと「押し
    * たら選択が消えた」になるから。
    *
-   *   @param state 選択を移す前の状態
-   *   @param name エラーが指しているノードの名前
-   *   @returns そのノードを選んだ状態。表示中のドキュメントで選べない名前なら `none`
+   *         @param state 選択を移す前の状態
+   *         @param name エラーが指しているノードの名前
+   *         @returns そのノードを選んだ状態。表示中のドキュメントで選べない名前なら
+   *   `none`
    */
   reveal(state: EditorState, name: string): Option<EditorState> {
     return Option.map(
@@ -461,12 +459,12 @@ export const EditorState = {
    * つの遷移を 1 つのメソッドで受けるのは、呼び出し側が「ドキュメントを差し替えたのにエ
    * ラーが残っている」ような組み合わせを作れないようにするため。
    *
-   *   @param state 取り込む前の状態
-   *   @param reload 外部変更を取り込んだ結果
-   *   @param at この取り込みを受け取った時刻（不正になった起点として `FileValidity` が
-   *   持つ）
-   *   @returns 取り込めたならドキュメントを差し替えた状態、拒んだなら妥当性だけを載せ替
-   *   えた状態
+   *         @param state 取り込む前の状態
+   *         @param reload 外部変更を取り込んだ結果
+   *         @param at この取り込みを受け取った時刻（不正になった起点として
+   *   `FileValidity`   が  持つ）
+   *         @returns 取り込めたならドキュメントを差し替えた状態、拒んだなら妥当性だけを
+   *   載  せ  替  えた状態
    */
   applyReload(
     state: EditorState,
@@ -494,8 +492,8 @@ export const EditorState = {
    * ないのは、`withDocument` を通るため中身が変わっていないのに履歴が 1 つ伸び、undo が
    * 「何も起きない 1 手」を挟むことになるから。
    *
-   *   @param state 書き戻す前の状態
-   *   @returns ファイル由来のエラーを畳んだ状態
+   *         @param state 書き戻す前の状態
+   *         @returns ファイル由来のエラーを畳んだ状態
    */
   applyRevert(state: EditorState): EditorState {
     return { ...state, fileValidity: FileValidity.valid };
@@ -627,11 +625,11 @@ export const EditorState = {
    * 親を指した指定は「その編集が存在しない」ことなので `none`。キャンバスは受け入れられ
    * る落とし先だけを見て落とし方を決めるため、画面の操作からこの `none` には到達しない。
    *
-   *   @param state 置き直す前の編集状態
-   *   @param name 置き直すノードの名前
-   *   @param to 置き直したあとの親と、その親から見た座標
-   *   @returns 置き直したあとの編集状態。座標を持たない相手・受け入れられない親なら
-   *   `none`
+   *         @param state 置き直す前の編集状態
+   *         @param name 置き直すノードの名前
+   *         @param to 置き直したあとの親と、その親から見た座標
+   *         @returns 置き直したあとの編集状態。座標を持たない相手・受け入れられない親な
+   *   ら   `none`
    */
   reposition(
     state: EditorState,
@@ -763,10 +761,11 @@ export const EditorState = {
    * らキャンバスへ落とす経路が落とした先へ挿すため（#203）。選択は動かさない（理由は
    * `insertNode` と同じ）。
    *
-   *   @param state 挿す前のエディタの状態
-   *   @param template 挿すものの指定
-   *   @param at 挿す位置
-   *   @returns 挿したあとの状態。居ない親・範囲外の位置と、ファイルが不正な間は `none`
+   *         @param state 挿す前のエディタの状態
+   *         @param template 挿すものの指定
+   *         @param at 挿す位置
+   *         @returns 挿したあとの状態。居ない親・範囲外の位置と、ファイルが不正な間は
+   *   `none`
    */
   insertNodeAt(
     state: EditorState,
@@ -826,9 +825,9 @@ export const EditorState = {
    * に揃えて選択を動かさない案を採らないのは、ノードが「選択位置の子」へ挿すのに対し
    * artboard は起点を持たないから。
    *
-   *   @param state 足す前のエディタの状態
-   *   @returns 1 枚増え、それを選んだ状態。ファイルが不正な間は `none`  （`insertArtboard`
-   *   の失敗は末尾を指す限り起こらないので、そちらでは `none` にならない）
+   *         @param state 足す前のエディタの状態
+   *         @returns 1 枚増え、それを選んだ状態。ファイルが不正な間は `none`  （`insertArtboard`
+   *      の失敗は末尾を指す限り起こらないので、そちらでは `none` にならない）
    */
   addArtboard(state: EditorState): Option<EditorState> {
     const document = EditorState.document(state);
@@ -854,20 +853,18 @@ export const EditorState = {
    * artboard の並び順を入れ替える（docs/06-ui.md「編集操作の一覧」の artboard 操作）。
    *
    * キャンバス上で動くのは**座標を持たない artboard だけ**（そちらは配列順に自動配置さ
-   * れるため）。座標を持つ artboard は書かれた位置に置かれるので、並べ替えても動かず、
-   * 変わるのは一覧とツリーの並びになる。
-   *
-   * 動かせない指定（移動先が並びの外）は「その移動が存在しない」ことと同じなので `none`。
-   * 一覧は隣がいない向きのボタンを出さないため、画面の操作からこの `none` には到達しな
-   * い（`reorderNode` と同じ扱い）。
+   * れるため）。座標を持つ artboard は書かれた位置に置かれるので、変わるのは一覧とツリ
+   * ーの並びになる。動かせない指定（移動先が並びの外）は `none` で、一覧は隣がいない向
+   * きのボタンを出さないため画面の操作からは到達しない。
    *
    * 選択は name で持つので並べ替えでは変わらないが、**何も選んでいないときはツリーが映
    * す 1 枚が入れ替わる**（未選択のとき先頭を映す規則によるもので、並びを変えた結果とし
    * て意図している）。
    *
-   *   @param state 並べ替える前のエディタの状態
-   *   @param move 動かす artboard の今の位置と、移す先の位置
-   *   @returns 並びが変わった状態。並びの外を指すときと、ファイルが不正な間は `none`
+   *       @param state 並べ替える前のエディタの状態
+   *       @param move 動かす artboard の今の位置と、移す先の位置
+   *       @returns 並びが変わった状態。並びの外を指すときと、ファイルが不正な間は
+   *   `none`
    */
   reorderArtboard(state: EditorState, move: IndexMove): Option<EditorState> {
     const reordered = DesignDocument.reorderArtboard(
@@ -887,9 +884,9 @@ export const EditorState = {
    * `removeSelected` と同じ理由で、解除の導線が「選択中のインスタンスを解除する」しか無
    * いため。
    *
-   *   @param state 解除元のエディタの状態
-   *   @returns 解除後のエディタの状態。インスタンスを選んでいないときと、  参照先が無い
-   *   ・循環している部品を指しているときは `none`
+   *         @param state 解除元のエディタの状態
+   *         @returns 解除後のエディタの状態。インスタンスを選んでいないときと、  参照先
+   *   が  無  い  ・循環している部品を指しているときは `none`
    */
   detachInstance(state: EditorState): Option<EditorState> {
     return Option.flatMap(EditorState.singleName(state), (name) => {
@@ -909,11 +906,11 @@ export const EditorState = {
    * 公開 prop は宣言しない。宣言の追加は AI / JSON 編集の担当で、部品化時にはゼロで作る
    * （docs/06-ui.md「部品化（Create Component）」）。
    *
-   *   @param state 部品化元のエディタの状態
-   *   @param componentName 新しく作る部品に付ける名前
-   *   @returns 部品化後のエディタの状態。何も選んでいないとき、artboard や  インスタン
-   *   スを選んでいるとき、名前が識別子の規則を満たさない・既に  使われているときは
-   *   `none`
+   *         @param state 部品化元のエディタの状態
+   *         @param componentName 新しく作る部品に付ける名前
+   *         @returns 部品化後のエディタの状態。何も選んでいないとき、artboard や  イン
+   *   ス  タ  ン  スを選んでいるとき、名前が識別子の規則を満たさない・既に  使われてい
+   *   ると  きは  `none`
    */
   createComponent(
     state: EditorState,

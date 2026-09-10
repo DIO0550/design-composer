@@ -41,7 +41,7 @@ const MoveLengths = [
  * 経路の事情なので、渡すのは解釈済みの移動量にする（rules/architecture.md「入力欄の約束
  * 事をドメインへ持ち込まない」）。
  *
- *   @param onReposition 割り当てが押されたときに、その移動量で呼ぶ手続き
+ *         @param onReposition 割り当てが押されたときに、その移動量で呼ぶ手続き
  */
 export function useRepositionShortcut(
   onReposition: (delta: Offset) => void,

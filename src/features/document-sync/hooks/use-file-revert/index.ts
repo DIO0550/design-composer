@@ -34,7 +34,7 @@ export type FileRevertControl = Readonly<{
  * 成功を `onReverted` で伝えるのは、アプリ自身の書き込みが外部変更として返ってこない（Rust
  * 側が自書き込みを識別して通知を止める / #27）ため。待っていてもエラー一覧が畳まれない。
  *
- *   @returns 書き戻しの操作と、その書き込みの状態
+ *         @returns 書き戻しの操作と、その書き込みの状態
  */
 export function useFileRevert({
   ipc,

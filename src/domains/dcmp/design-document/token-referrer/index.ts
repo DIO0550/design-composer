@@ -74,10 +74,10 @@ function collectSchemaRefProps(
  * の数だけ二重に数える）。参照先の部品が無い・公開 prop に無いときは prop 定義が決まら
  * ないので数えない（検証側が報告する）。
  *
- *   @param components 公開 prop の binding を辿るための部品一式
- *   @param refNode 上書きを持つインスタンスのノード
- *   @param ref 参照されているかを知りたいトークン
- *   @returns そのトークンを指している公開 prop 名の並び
+ *         @param components 公開 prop の binding を辿るための部品一式
+ *         @param refNode 上書きを持つインスタンスのノード
+ *         @param ref 参照されているかを知りたいトークン
+ *         @returns そのトークンを指している公開 prop 名の並び
  */
 function collectRefNodeRefProps(
   components: ComponentSet,

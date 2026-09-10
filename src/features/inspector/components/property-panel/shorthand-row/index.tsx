@@ -155,7 +155,7 @@ function ShorthandPairCell({
  * （Box 系を選び直す間）は残る**（この行を持たない Text を選ぶと行ごと消えるので、戻っ
  * たときは畳んだ状態から始まる）。
  *
- *   @returns ラベルと切り替えボタン、右に半幅セルのグリッドを並べた 1 行
+ *         @returns ラベルと切り替えボタン、右に半幅セルのグリッドを並べた 1 行
  */
 export function ShorthandRow({
   shorthand,

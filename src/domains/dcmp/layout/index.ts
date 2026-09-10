@@ -36,9 +36,9 @@ export const Layout = {
    * 下では**子の `fill` も既定の親の下にある**ものとして検証される（親の
    * `enum-violation` を直せばやり直される）。
    *
-   *   @param props 読み取り元の props（デフォルト解決済みでなくてよい）
-   *   @returns 配置モード。未設定・語彙に無い綴りのときは既定（`Default`）  （不正な値
-   *   そのものは `DesignDocument.collectErrors` がエラー一覧に出す）
+   *         @param props 読み取り元の props（デフォルト解決済みでなくてよい）
+   *         @returns 配置モード。未設定・語彙に無い綴りのときは既定（`Default`）  （不
+   *   正  な  値  そのものは `DesignDocument.collectErrors` がエラー一覧に出す）
    */
   fromProps(props: Props): Layout {
     const value = props.layout;

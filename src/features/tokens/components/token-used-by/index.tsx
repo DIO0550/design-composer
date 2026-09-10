@@ -20,8 +20,8 @@ const VisibleRowLimit = 3;
  * `switch` に `default` を置かず戻り値を `TypeGlyphKind`（`undefined` を含まない）にし
  * ているので、参照元の種類を足してここを足し忘れるとコンパイルエラーになる。
  *
- *   @param referrer アイコンを出したい参照元
- *   @returns その行に描くアイコンの種類
+ *         @param referrer アイコンを出したい参照元
+ *         @returns その行に描くアイコンの種類
  */
 function glyphKindOf(referrer: TokenReferrer): TypeGlyphKind {
   switch (referrer.target) {
@@ -60,18 +60,15 @@ function UsedByRow({
  * / #127）。
  *
  * 参照が 0 件でも見出しと件数は出す。使われていないことは削除の判断材料なので、節ごと消
- * すと「使われていない」と「まだ調べていない」が同じ見た目になる。枠は行があるときだけ
- * 出す（中身の無い枠を置かない）。
+ * すと「使われていない」と「まだ調べていない」が同じ見た目になる（枠は行があるときだけ
+ * 出す）。数えるのはデフォルト解決後の参照なので、0 件は「消してもエラーにならない」と
+ * 読んでよい（artboard だけに残る例外は `TokenReferrer.collectInArtboard` の doc が持つ）。
  *
- * 数えるのはデフォルト解決後の参照なので、0 件は「消してもエラーにならない」と読んでよ
- * い（artboard だけに残る例外は `TokenReferrer.collectInArtboard` の doc が持つ）。件数
- * は表示している行数ではなく参照元の総数で、`+ N more` はその差。
+ * 件数は表示している行数ではなく参照元の総数で、`+ N more` はその差。押せる形にしていな
+ * いのは UI 案がこれを灰色の文字として描き `cursor:pointer` を持たせていないためで、全
+ * 参照元をどこで見せるかはキャンバスとの連動（#147）が持つ。
  *
- * `+ N more` を押せる形にしていないのは、UI 案がこれを灰色の文字として描き
- * `cursor:pointer` を持たせていないため。全参照元をどこで見せるかは、キャンバスとの連動
- * （#147）が持つ。
- *
- *   @returns 見出しと件数、参照元の行（0 件なら枠を出さない）
+ *       @returns 見出しと件数、参照元の行（0 件なら枠を出さない）
  */
 export function TokenUsedBy({
   selection,

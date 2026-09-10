@@ -1,10 +1,8 @@
 /**
  * 挿せる部品のパレット一式（docs/06-ui.md「画面構成」の左ペインの `Assets` / UI 案
- * docs/Design Composer.html の `Assets` 画面）。パネル本体（`AssetsPanel`）と、パネル下
- * 端に固定する部品化のフッター（`CreateComponent`）が属する。
- *
- * どちらも**表示中のドキュメントと選ばれている名前**（および掴む口）だけで描け、編集画
- * 面の状態（`EditorState`）は受け取らない。
+ * docs/Design Composer.html の `Assets` 画面）。パネル本体（`AssetsPanel`）とパネル下端
+ * に固定する部品化のフッター（`CreateComponent`）が属し、どちらも**表示中のドキュメント
+ * と選ばれている名前**（および掴む口）だけで描ける。
  *
  * 掴む口（`AssetGrab`）はここが持つ。掴む側と落とす側（`features/editor` のキャンバス）
  * で対で意味を持つが、`Option<NodeTemplate>` を抱えるので `src/types/` には置けない（types

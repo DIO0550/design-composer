@@ -70,9 +70,9 @@ function fromDecodeErrors(
  * 位置をファイル全体にしているのは、投げられた例外からはテキストの何文字目かが分からな
  * いため。
  *
- *   @param text 読み込む JSON のテキスト
- *   @returns 読み込んだ値。`JSON.parse` が投げたら、ファイル全体を指す `syntax-error`
- *   の失敗
+ *         @param text 読み込む JSON のテキスト
+ *         @returns 読み込んだ値。`JSON.parse` が投げたら、ファイル全体を指す
+ *   `syntax-error`   の失敗
  */
 function parseJson(text: string): Result<unknown, readonly DocumentError[]> {
   try {

@@ -21,7 +21,7 @@ const ClearSelectionShortcut: KeyShortcut = {
  * 外れるのはノードの選択だけで、トークンの選択（Tokens タブ）は残る。巻き込むと、トーク
  * ンを選んだままキャンバスのノードを選び直すことができなくなる。
  *
- *   @param onClearSelection 組み合わせが押されたときに呼ぶ手続き
+ *         @param onClearSelection 組み合わせが押されたときに呼ぶ手続き
  */
 export function useClearSelectionShortcut(onClearSelection: () => void): void {
   useKeyShortcut(ClearSelectionShortcut, onClearSelection);

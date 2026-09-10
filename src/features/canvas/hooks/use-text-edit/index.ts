@@ -65,9 +65,9 @@ export type TextEditControl = Readonly<{
  * 確定した文言を `PropEdit` として渡すのは、プロパティパネルからの `content` の編集と同
  * じ経路（`apply_prop_edit`）に載せるため（自動保存もその経路に乗る）。
  *
- *   @param params 編集できる Text を引く `selection` と、確定した文言を渡す
+ *         @param params 編集できる Text を引く `selection` と、確定した文言を渡す
  *   `onEditProp`
- *   @returns 今の編集中の状態と、開始 / 下書きの更新 / 確定の手続き
+ *         @returns 今の編集中の状態と、開始 / 下書きの更新 / 確定の手続き
  */
 export function useTextEdit(
   params: Readonly<{

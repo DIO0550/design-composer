@@ -259,10 +259,10 @@ export const PropDefinitionRecord = {
    * `session/prop-control` の `effectiveProps` とも範囲が違う（あちらは binding 由来の
    * 既定も含む）。
    *
-   *   @param schema 効いている値の出どころになる prop 定義
-   *   @param props 実際に設定されている props
-   *   @returns 明示設定（props の並び順）を先に、デフォルトで補われた prop  （スキーマ
-   *   の宣言順）を後に並べた prop 設定の並び
+   *         @param schema 効いている値の出どころになる prop 定義
+   *         @param props 実際に設定されている props
+   *         @returns 明示設定（props の並び順）を先に、デフォルトで補われた prop  （ス
+   *   キ  ー  マ  の宣言順）を後に並べた prop 設定の並び
    */
   collectEffectiveAssignments(
     schema: PropDefinitionRecord,

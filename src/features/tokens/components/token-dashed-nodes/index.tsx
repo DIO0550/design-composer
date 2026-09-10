@@ -24,18 +24,14 @@ function nodeCountText(count: number): string {
  * で、破線が無いまま出しても指す相手がいない（0 件でも件数を出す `Used by` は、使われて
  * いないこと自体が削除の判断材料になる点が違う）。
  *
- * 左寄せ（`self-start`）を器ではなくここが持つのは、UI 案でツールバーが中央、この帯だけ
- * が左に寄っているため（器の既定を変えると他の 2 つまで動く）。見本を出すのは色だけで、
- * UI 案が描いているのも `#111827` の四角 1 例。
+ * 左寄せ（`self-start`）を器ではなくここが持つのは、UI 案でこの帯だけが左に寄っているた
+ * め。見本を出すのは色だけで（UI 案が描いているのも `#111827` の四角 1 例）、
+ * `token-control` の `TokenPreview` は使わない（使うと `token-list` の `PreviewSlot` と
+ * 4 枝すべてが重なる）。飛び先は破線の先頭で、並びは `collectCanvasReferrerNames` が決
+ * めている（#209）。
  *
- * `token-control` の `TokenPreview` を使わないのは、使うと `token-list` の
- * `PreviewSlot` と 4 枝すべてが重なるため。
- *
- * 飛び先は破線の先頭。UI 案がリンクを 1 本しか描いていないので複数ある参照元から 1 つ選
- * ぶことになり、並びは既に `collectCanvasReferrerNames` が決めている（#209）。
- *
- *   @returns トークン名・破線の本数・先頭へ飛ぶリンクを並べた帯。破線が 1 本も無いとき
- *   と、  選んでいるトークンがドキュメントから消えているときは何も出さない
+ *       @returns トークン名・破線の本数・先頭へ飛ぶリンクを並べた帯。破線が 1 本も無い
+ *   と  き  と、  選んでいるトークンがドキュメントから消えているときは何も出さない
  */
 export function TokenDashedNodes({
   selection,

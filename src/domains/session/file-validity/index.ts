@@ -43,10 +43,10 @@ export const FileValidity = {
    * 直すと、外部エディタで保存し直すたびに数字が 0 へ戻り、「いつから古いか」を答えなく
    * なる。
    *
-   *   @param previous 反映する前の妥当性
-   *   @param reload 外部変更を取り込んだ結果
-   *   @param at この取り込みを受け取った時刻
-   *   @returns 取り込めたなら妥当な状態、拒んだなら理由と起点を持つ不正な状態
+   *         @param previous 反映する前の妥当性
+   *         @param reload 外部変更を取り込んだ結果
+   *         @param at この取り込みを受け取った時刻
+   *         @returns 取り込めたなら妥当な状態、拒んだなら理由と起点を持つ不正な状態
    */
   withReload(
     previous: FileValidity,

@@ -17,8 +17,8 @@ import { NameStyleRule } from "../name-style-rule";
  * `z-index` が要るのは、artboard の枠が z-index を持たない兄弟で**DOM の順に重なる**た
  * め。前に出さないと、隣の artboard へ運んだノードがその白い面の裏へ回る。
  *
- *   @param offset ドキュメント上の px で表した移動量
- *   @returns ずらす宣言・当たり判定から外す宣言・前に出す宣言
+ *         @param offset ドキュメント上の px で表した移動量
+ *         @returns ずらす宣言・当たり判定から外す宣言・前に出す宣言
  */
 export function repositionPreviewDeclarations(offset: Offset): string {
   return `transform:translate(${Px.create(offset.x)},${Px.create(offset.y)});pointer-events:none;z-index:1`;
@@ -44,16 +44,12 @@ export const CarriedNodeUnclipped = "overflow:visible!important";
  * だけ undo が積まれる（ドラッグ 1 回 = undo 1 回が壊れる）。
  *
  * `left` / `top` ではなく `transform` を使うのは、コンパイル結果が座標を**インライン
- * style** に出しており、同じプロパティでは規則が勝てないため（`transform` はノードのイ
- * ンライン style に出ない語彙なので、`!important` 無しで重ねられる）。
+ * style** に出しており同じプロパティでは規則が勝てないため。ずらす量を `NodeDrag` から
+ * 受け取るのは、親を付け替えると原点が変わる一方で**画面上の位置は動かない**ため（包ん
+ * でいるものの切り取りも同時に解く）。
  *
- * ずらす量をドキュメントから逆算せず `NodeDrag` から受け取るのは、親を付け替えると書か
- * れる座標の原点が変わる一方で、**画面上の位置は動かない**ため（`RepositionTarget`）。
- * 包んでいるものの切り取りも同時に解く（解く相手を artboard 1 枚に決め打たないのは、途
- * 中の Box も `overflow: clip` を持てるため）。
- *
- *   @returns ずらす規則と、包んでいるものの切り取りを解く規則。座標を動かすドラッグを
- *   していなければ何も出さない
+ *       @returns ずらす規則と、包んでいるものの切り取りを解く規則。座標を動かすドラッグ
+ *   を   していなければ何も出さない
  */
 export function RepositionPreviewStyle({
   drag,

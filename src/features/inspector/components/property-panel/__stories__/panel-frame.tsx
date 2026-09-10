@@ -14,7 +14,7 @@ import { PaneBody } from "@/components/pane-body";
  * 字の大きさだけは本文の器ではなく**中身**が持っている（実画面では選択があるときの
  * `PropertyPanel.Body` が着せる）ので、ここでも本文の内側に着せる。
  *
- *   @returns 受け取った部品を右ペインの幅の枠に入れたもの
+ *         @returns 受け取った部品を右ペインの幅の枠に入れたもの
  */
 export function PanelFrame({
   children,

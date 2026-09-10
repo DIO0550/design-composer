@@ -151,11 +151,11 @@ type RepositionMeasure = Readonly<{
  * えており、外さないと自分の辺との距離が常に最小になって**どこへ運んでも寄らなくなる**
  * ため。孫を入れないのは、揃えたい相手が並んでいる兄弟だから。
  *
- *   @param context 割り戻しに使う倍率を持つ今の掴み
- *   @param carried 運んでいるノードと、掴んだ時点の場所
- *   @param dropped 落とし先の親
- *   @returns 置き直しに要る実測。今の親・落とし先・運んでいるノードのどれかが  画面に無
- *   ければ `none`（測れないまま座標を書かない）
+ *         @param context 割り戻しに使う倍率を持つ今の掴み
+ *         @param carried 運んでいるノードと、掴んだ時点の場所
+ *         @param dropped 落とし先の親
+ *         @returns 置き直しに要る実測。今の親・落とし先・運んでいるノードのどれかが  画
+ *   面  に  無  ければ `none`（測れないまま座標を書かない）
  */
 function measureReposition(
   context: DropContext,
@@ -334,15 +334,15 @@ function intoTreeCarrying(context: DropContext): Carrying {
  *
  * 運び方を先に決めてから、その経路が要る親だけを解決する。落ちる先の親は 2 つの経路で条
  * 件が違い（座標は名前だけで決まり、並びへ挿す先は子が並ぶ向きまで要る）、1 回の解決を
- * 両方へ渡すと厳しいほうの条件が緩いほうまで塞ぐため（#440）。**走査は 1 回のまま** —
- * どちらの運び方になるかは運んでいるものだけで決まる。
+ * 両方へ渡すと厳しいほうの条件が緩いほうまで塞ぐため（#440）。**走査は 1 回のまま** —ど
+ * ちらの運び方になるかは運んでいるものだけで決まる。
  *
  * **その運び方は実測の成否では変わらない。** 置き直しに決まったあとで実測に失敗したら、
  * ツリーの移動へ落とさずそのまま「落とせない」にする（落とすと、座標を動かすつもりのド
  * ラッグが黙って木の並びを書き換える別の編集になる）。
  *
- *   @param context 今の掴みと、落とし先を決めるための材料
- *   @returns 今の運び方
+ *         @param context 今の掴みと、落とし先を決めるための材料
+ *         @returns 今の運び方
  */
 function carryingAt(context: DropContext): Carrying {
   const carried = carriedNode(context.document, context.grab.dragged);
@@ -403,9 +403,9 @@ export type NodeDragControl = Readonly<{
  * ンタは 3 ペインの器全体で受ける（キャンバスの中だけで受けると、パレットの行で掴んで左
  * ペインの上で離したときに `pointerup` が届かない）。
  *
- *   @param params 落とし先を決める `document` / `view` と、確定したときに呼ぶ  `onMove`
- *   / `onInsertAt` / `onReposition`
- *   @returns 今のドラッグの状態と、画面の要素へ渡すハンドラ
+ *         @param params 落とし先を決める `document` / `view` と、確定したときに呼ぶ
+ *   `onMove`  / `onInsertAt` / `onReposition`
+ *         @returns 今のドラッグの状態と、画面の要素へ渡すハンドラ
  */
 export function useNodeDrag(
   params: Readonly<{

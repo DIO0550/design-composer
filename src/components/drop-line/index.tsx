@@ -17,7 +17,7 @@ export const DropLineTestId = "drop-line";
  * class にしか出ない形にすると happy-dom では読めないから（太さと色は class にしか出な
  * いので、確かめる手段は自分のストーリーの視覚差分だけ）。
  *
- *   @returns 落ちる先を示す 2px の線
+ *         @returns 落ちる先を示す 2px の線
  */
 export function DropLine({ side }: Readonly<{ side: DropSide }>): ReactElement {
   return (

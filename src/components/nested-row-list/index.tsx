@@ -192,7 +192,7 @@ function RowBranch({
  * んだ群だけが落ちる先を持ち、別の親の行の上で離しても移動が起きない（`onReorder` が並
  * びの外を指さない）。
  *
- *   @returns 行を 1 段ぶん並べた `<ul>`
+ *         @returns 行を 1 段ぶん並べた `<ul>`
  */
 function RowList({
   rows,
@@ -238,7 +238,7 @@ function RowList({
  * 畳んだ**側**の名前を持つので、初めて描いたときは全部が開いた状態になり、後から増えた
  * 行が畳まれた状態で現れることもない。
  *
- *   @returns 行の並び。行が 1 つも無ければ `null`（空の `<ul>` を作らない）
+ *         @returns 行の並び。行が 1 つも無ければ `null`（空の `<ul>` を作らない）
  */
 export function NestedRowList({
   rows,

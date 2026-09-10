@@ -48,9 +48,9 @@ export const Placement = {
    * い」を表す(出力は `flow` と同じで、不正そのものは `DesignDocument.collectErrors` が
    * エラー一覧に出す)。
    *
-   *   @param props 配置を読み取る props(デフォルト解決済みでなくてよい)
-   *   @returns 置かれ方。`absolute` なのに座標が数値でないなど、置き場所を  決められな
-   *   いときは `undefined`
+   *         @param props 配置を読み取る props(デフォルト解決済みでなくてよい)
+   *         @returns 置かれ方。`absolute` なのに座標が数値でないなど、置き場所を  決め
+   *   ら  れ  な  いときは `undefined`
    */
   fromProps(props: Props): Placement | undefined {
     const { placement, x, y } = props;

@@ -82,8 +82,8 @@ function locationLabel(location: DocumentError["location"]): string {
  * 開く前と開いた後のファイル由来が同じ見え方なのは、どちらも「ファイルが不正で、その一
  * 覧が下端に出ている」画面だから。
  *
- *   @param origin エラーの由来
- *   @returns 一覧の読み上げ名・見出しの相手・置かれ方
+ *         @param origin エラーの由来
+ *         @returns 一覧の読み上げ名・見出しの相手・置かれ方
  */
 function originPresentation(origin: DocumentErrorOrigin): Readonly<{
   listLabel: string;
@@ -164,7 +164,7 @@ function RevealButton({
  * 形へ変わるため。押しても飛び先が無い行では `EditorState.reveal` が `none` を返して何
  * も起きない。
  *
- *   @returns 場所・本文と、飛べるなら `Reveal` を並べた 1 行
+ *         @returns 場所・本文と、飛べるなら `Reveal` を並べた 1 行
  */
 function DocumentErrorRow({
   error,

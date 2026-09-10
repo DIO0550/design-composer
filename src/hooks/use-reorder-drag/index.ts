@@ -24,8 +24,8 @@ type GroupProps = Readonly<{
  * 位置は並びの中の index だけで扱い、「その並びが何の並びか」は呼び出し側が足す。ここが
  * 持つと位置の形が消費側ごとに違うぶんジェネリクスが要る。
  *
- *   @param onReorder 離したときに起きた移動を伝える先
- *   @returns 今の状態と、行・器へ配る props
+ *         @param onReorder 離したときに起きた移動を伝える先
+ *         @returns 今の状態と、行・器へ配る props
  */
 export function useReorderDrag(onReorder: (move: IndexMove) => void): {
   drag: ReorderDrag;

@@ -10,17 +10,14 @@ import { Option } from "@/utils/Option";
  * ドキュメントと、その中で選ばれているものの対（docs/06-ui.md「選択」）。
  *
  * 2 つを 1 つの型にまとめるのは、**片方だけでは答えが決まらない**ため。選ばれているのは
- * 名前だけで、それが artboard なのかノードなのか・どの artboard に載っているのかは、ど
- * のドキュメントの中の名前かが決まって初めて引ける。選ばれうるのは**artboard とその配下
- * のノード**で、部品の定義やトークンは入らない。
+ * 名前だけで、それが artboard なのかノードなのかは、どのドキュメントの中の名前かが決ま
+ * って初めて引ける（選ばれうるのは artboard とその配下のノードだけ）。`Selection`（選ん
+ * だ 1 つの正体）はドキュメントも件数も持たない別物で、トークン側の対は
+ * `TokenSelection`。
  *
- * `Selection`（選んだ 1 つの正体 = 名前と種別）とは別物で、あちらはドキュメントも件数も
- * 持たない。トークン側の対は `TokenSelection`。
- *
- * 名前がドキュメントに在ることは**検証しない**。生成時に弾くと、編集画面が選んでいるも
- * の（`EditorState` の選択）と対が答えるものが食い違いうるので、不変条件は選択を書き換
- * える側に 1 つだけ置く。ここは名前を引き直すので、在らない名前は行の強調にも
- * `currentArtboard` にも出ない。
+ * 名前がドキュメントに在ることは**検証しない**。生成時に弾くと編集画面の選択と対の答え
+ * が食い違いうるので、不変条件は選択を書き換える側に 1 つだけ置く（ここは名前を引き直す
+ * ので、在らない名前は行の強調にも `currentArtboard` にも出ない）。
  */
 export type DocumentSelection = Readonly<{
   document: DesignDocument;
@@ -149,9 +146,9 @@ export const DocumentSelection = {
    * 複数選択でも答えるのは、まとめて選べるのが「同じ部品のインスタンス」だけで出どころ
    * が 1 つに定まるため。
    *
-   *   @param selection 選択とドキュメントの出どころ
-   *   @returns 選択が空でなく、すべて同じ部品のインスタンスならその部品名。  1 つでもイ
-   *   ンスタンスでないもの・別の部品を指すものが混ざれば `none`
+   *         @param selection 選択とドキュメントの出どころ
+   *         @returns 選択が空でなく、すべて同じ部品のインスタンスならその部品名。  1 つ
+   *   で  も  イ  ンスタンスでないもの・別の部品を指すものが混ざれば `none`
    */
   sourceName(selection: DocumentSelection): Option<string> {
     const document = selection.document;
@@ -177,8 +174,8 @@ export const DocumentSelection = {
    * どれを見ているかを状態として持たずここで導出するのは、持つと「選択のどれもが今見て
    * いる artboard に無い」という食い違った状態が表現できてしまうため。
    *
-   *   @param selection 選択とドキュメントの出どころ
-   *   @returns 今見ている artboard。artboard が 1 枚も無ければ `none`
+   *         @param selection 選択とドキュメントの出どころ
+   *         @returns 今見ている artboard。artboard が 1 枚も無ければ `none`
    */
   currentArtboard(selection: DocumentSelection): Option<Artboard> {
     const document = selection.document;

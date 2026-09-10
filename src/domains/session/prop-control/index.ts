@@ -46,13 +46,10 @@ import { Option } from "@/utils/Option";
 /**
  * 入力欄の種類。値の決め方（`domain`）から決まる。
  *
- * enum とトークン参照はどちらも選択式だが、UI 案（docs/Design Composer.html）は enum を
- * セグメント、トークンを `▾` 付きの欄と描き分けているので枝を分ける（1 つに畳むと、パネ
- * ル側が選択肢の出どころを prop 名でしか判別できなくなる）。
- *
- * 色のトークンだけ別の枝にするのは、`gap`（spacing）が色を持つ状態を型で作れなくするた
- * め。数値のトークンをさらに分けるのも同じ理由で、`shadow` が解決値を持つ状態を作れなく
- * する。
+ * enum とトークン参照を分けるのは、UI 案（docs/Design Composer.html）が enum をセグメン
+ * ト、トークンを `▾` 付きの欄と描き分けているため（畳むと、パネル側が選択肢の出どころを
+ * prop 名でしか判別できない）。色と数値のトークンをさらに分けるのは、`gap` が色を持つ状
+ * 態・`shadow` が解決値を持つ状態を型で作れなくするため。
  */
 export type PropControlInput =
   | Readonly<{ kind: "enum"; values: readonly string[] }>
@@ -138,26 +135,18 @@ export type PropControlSection = Readonly<{
 }>;
 
 /**
- * 選択中のものに対して右ペインが出す編集欄。
+ * 選択中のものに対して右ペインが出す編集欄。インスタンスだけ形が違う（UI 案 docs/Design
+ * Composer.html の `Assets · Instance` は `group` ごとのセクションではなく
+ * `Public props` の 1 節と出どころの部品を出す）。
  *
- * インスタンスだけ形が違う（UI 案 docs/Design Composer.html の `Assets · Instance` は
- * `group` ごとのセクションではなく `Public props` の 1 節と出どころの部品を出す）。直和
- * にするのは、同じ型で表すと「インスタンスなのに出どころが無い」「プリミティブなのに出
- * どころがある」が作れてしまうため。
+ * 直和にするのは「インスタンスなのに出どころが無い」を作れなくするため。公開 prop に
+ * `group` を持たせないのは、その `group` が binding 先のプリミティブのもので、出すと部
+ * 品の内部構造が漏れるため。
  *
- * 公開 prop に `group` を持たせないのは、その `group` が binding 先のプリミティブのもの
- * で、出すと部品の内部構造が見出しに漏れるため。`isDetachable` を持つのは、参照先の部品
- * が無い・循環している間は解除できず、押しても何も起きないボタンになるため。不正なドキ
- * ュメントも画面には残るので、この状態は実際に出る（凍結中はボタンごと出ないのでここで
- * は見ない）。
- *
- * 複数選択（`multiple`）が件数だけを持つのは、編集欄を 1 つも出さず帯に件数を出すため（docs/06-ui.md
- * 「選択」）。件数をここに持たせるのは、帯と本文が同じ 1 つの値から出し分けるようにする
- * ため。`groups` の空セクションで表さず枝を分けるのは、「複数選んでいる」と「1 つ選んだ
- * が編集できる prop が無い」を混ぜないため。
- *
- * `sourceInstanceCount` を `instance` が持つのは、`Select all N instances` の N が「押
- * したときに選ばれる件数」と同じ出どころで決まる必要があるため。
+ * `isDetachable` を持つのは、参照先の部品が無い・循環している間は解除できず、押しても何
+ * も起きないボタンになるため（不正なドキュメントも画面には残るので実際に出る）。
+ * `multiple` が件数だけを持つのは、帯と本文が同じ 1 つの値から出し分けるようにするため
+ * で、`sourceInstanceCount` も `Select all N instances` の N と出どころを揃える。
  */
 export type SelectionControls =
   | Readonly<{ kind: "groups"; sections: readonly PropControlSection[] }>
@@ -755,12 +744,12 @@ export const SelectionControls = {
    * ・循環している）をここへ書き写すと解除そのもの（`DesignDocument.detach`）と二重管理
    * になり、片方だけ変わったときにボタンの出方と結果が食い違う。
    *
-   *   @param selection 選択とドキュメントの出どころ
-   *   @returns インスタンスを選んでいるなら出どころの部品つきの公開 prop、  複数選んで
-   *   いるなら編集欄を持たない `multiple`、  それ以外は `group` ごとのセクション。何も
-   *   選んでいないとき、および選んでいる  名前がドキュメントに無いときは `none`。  スキ
-   *   ーマの分からない `type`・解決できない部品では、選択はあるので `some` だが  セクシ
-   *   ョンが空になる
+   *         @param selection 選択とドキュメントの出どころ
+   *         @returns インスタンスを選んでいるなら出どころの部品つきの公開 prop、  複数
+   *   選  ん  で  いるなら編集欄を持たない `multiple`、  それ以外は `group` ごとのセク
+   *   ショ  ン。  何も  選んでいないとき、および選んでいる  名前がドキュメントに無いと
+   *   きは  `none`。   スキ  ーマの分からない `type`・解決できない部品では、選択はある
+   *   ので  `some` だが  セクシ  ョンが空になる
    */
   forSelection(selection: DocumentSelection): Option<SelectionControls> {
     const count = DocumentSelection.count(selection);

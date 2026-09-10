@@ -194,10 +194,10 @@ function followPropEdits(node: Node, resize: AxisResize): readonly PropEdit[] {
  * のは、`width` を消して `hug` へ戻す編集のように prop 名だけでは長さが変わったかを判定
  * できないため。
  *
- *   @param before 編集する前のドキュメント
- *   @param name 大きさが変わったかもしれない artboard / ノードの名前
- *   @param edited その編集の結果
- *   @returns 子を追従させたドキュメント。長さが変わっていなければ `edited` のまま
+ *         @param before 編集する前のドキュメント
+ *         @param name 大きさが変わったかもしれない artboard / ノードの名前
+ *         @param edited その編集の結果
+ *         @returns 子を追従させたドキュメント。長さが変わっていなければ `edited` のまま
  */
 function withResizeFollowUp(
   before: DesignDocument,
@@ -602,8 +602,8 @@ export const DesignDocument = {
    * 払ったときにクリックとは違う階層が選ばれる。部品定義の中にある参照ノードを見ないの
    * は、キャンバスに描かれてもドキュメントの木には無く、選択の対象にならないため。
    *
-   *   @param document 走査するドキュメント
-   *   @returns artboard の並び順・子の並び順のままの名前。1 つも無ければ空
+   *         @param document 走査するドキュメント
+   *         @returns artboard の並び順・子の並び順のままの名前。1 つも無ければ空
    */
   collectArtboardChildNames(document: DesignDocument): readonly string[] {
     return document.artboards.flatMap((artboard) =>
@@ -728,17 +728,15 @@ export const DesignDocument = {
    * 名前で指したノードが今どの親の中のどこに置かれているか。**座標で動かせるものだけ**
    * が答えを持つ。
    *
-   * 絶対配置だけを答えるのは、消費側（キャンバスのドラッグ）が知りたいのが「このノード
-   * は座標で動かせるか、動かせるなら今どこか」だから。`Placement.fromProps` がスキーマ
-   * 違反に返す `undefined` をここで `none` へ潰せるのも、その区別が答えを変えないため。
+   * 絶対配置だけを答えるのは、消費側（キャンバスのドラッグ）が知りたいのが「座標で動か
+   * せるか、動かせるなら今どこか」だから（`Placement.fromProps` がスキーマ違反に返す
+   * `undefined` をここで `none` へ潰せるのも同じ理由）。座標と親を別々に答えないのは、
+   * **片方だけでは位置が決まらない**ため（`ChildPlacement`）。
    *
-   * 座標と親を別々に答えないのは、座標が親の左上を原点とする値で、**片方だけでは位置が
-   * 決まらない**ため（`ChildPlacement`）。
-   *
-   *   @param document 引き先になるドキュメント
-   *   @param name 置かれている場所を知りたいノードの名前
-   *   @returns 今いる親と、その親から見た座標。木に無い名前 / 部品インスタンス（props
-   *   を持たない）/ フロー /  座標が数値でないとき / 親を持たない artboard 自身は
+   *       @param document 引き先になるドキュメント
+   *       @param name 置かれている場所を知りたいノードの名前
+   *       @returns 今いる親と、その親から見た座標。木に無い名前 / 部品インスタンス（props
+   *     を持たない）/  フロー / 座標が数値でないとき / 親を持たない artboard 自身は
    *   `none`
    */
   childPlacementOf(
@@ -860,28 +858,23 @@ export const DesignDocument = {
 
   /**
    * 名前で指したノードを、親の中の別の座標へ置き直す（docs/06-ui.md「キャンバス直接操作」
-   * の移動のうち、絶対配置のノードの分）。
-   *
-   * 座標の 2 prop を 1 回の呼び出しで書くのは、ドラッグ 1 回が undo 1 回で戻るようにす
-   * るため。
+   * の移動のうち、絶対配置のノードの分）。座標の 2 prop を 1 回で書くのは、ドラッグ 1
+   * 回が undo 1 回で戻るようにするため。
    *
    * artboard を相手にしないのは、artboard が親 Box の中ではなくキャンバスの並びに置かれ
-   * るため。今いる位置（`findChildPosition`）で相手を確かめるので、どの親の子でもない
-   * artboard はここで弾かれる（素通しすると artboard の props に効かない `x` / `y` が黙
-   * って書かれる）。
+   * るため。今いる位置で相手を確かめるので、どの親の子でもない artboard はここで弾かれ
+   * る（素通しすると artboard の props に効かない `x` / `y` が黙って書かれる）。
    *
    * 指した親が今の親と違えば、**その親の末尾の子へ移してから**座標を書く（#388）。絶対
-   * 配置の兄弟に並び順の意味が薄く、元の index を持ち込むと落とし先の子の数によっては範
-   * 囲外になるため。移す先が今の親と必ず違うので `ChildPosition.afterRemoving` は要らな
-   * い（取り除いてもその親の子の数が変わらない）。
+   * 配置の兄弟に並び順の意味が薄いためで、移す先が今の親と必ず違うので
+   * `ChildPosition.afterRemoving` は要らない。
    *
-   *   @param document 書き換える対象を含むドキュメント
-   *   @param name 置き直すノードの名前
-   *   @param to 置き直したあとの親と、その親から見た座標
-   *   @returns 親と座標を書き換えたドキュメント。その名前のノードが無い（artboard の名
-   *   前もノードではない）  なら失敗。指した親が子を受け入れられない（無い名前・Text・
-   *   参照ノード）ときと、指した親が自分自身か  自分の子孫のとき（`moveNode` の
-   *   `move-into-descendant`）も失敗
+   *       @param document 書き換える対象を含むドキュメント
+   *       @param name 置き直すノードの名前
+   *       @param to 置き直したあとの親と、その親から見た座標
+   *       @returns 親と座標を書き換えたドキュメント。その名前のノードが無い（artboard
+   *   の  名  前もノードでは  ない）なら失敗。指した親が子を受け入れられない（無い名前
+   *   ・  Text・  参照ノード）ときと、指した親が  自分自身か自分の子孫のときも失敗
    */
   reposition(
     document: DesignDocument,
@@ -1105,10 +1098,10 @@ export const DesignDocument = {
    * ントの中の名前かで初めて引けるため。呼び出し側で分けると「選んでいるものが artboard
    * か」の判定が features 層へ出る。
    *
-   *   @param document 取り除く先のドキュメント
-   *   @param name 取り除きたい artboard / ノードの名前
-   *   @returns 取り除いたドキュメント。どちらにも無い名前は `node-not-found`（artboard
-   *   でなければノードとして  扱うため）
+   *         @param document 取り除く先のドキュメント
+   *         @param name 取り除きたい artboard / ノードの名前
+   *         @returns 取り除いたドキュメント。どちらにも無い名前は `node-not-found`（artboard
+   *      でなければノードとして  扱うため）
    */
   remove(
     document: DesignDocument,
@@ -1190,13 +1183,11 @@ export const DesignDocument = {
    * そのトークンを参照している箇所をすべて集める（UI 案 docs/Design Composer.html の
    * `Used by` / #127）。
    *
-   * artboard の中（キャンバス上のもの）を先に、部品定義の中を後に並べる。一覧は先頭の数
-   * 件しか出さないので、選択やキャンバスから指し示せるものを先に見せる（UI 案は両者を交
-   * 互に並べているが、それを再現できる大域順序が無いため規則で決めている）。
+   * artboard の中を先に、部品定義の中を後に並べる。一覧は先頭の数件しか出さないので、選
+   * 択やキャンバスから指し示せるものを先に見せる（UI 案は両者を交互に並べているが、それ
+   * を再現できる大域順序が無い）。
    *
-   * トークンが実在するかは見ない。「その参照を指している prop はどれか」に答えるので、
-   * 宙に浮いた参照（dangling）も同じ関数で数えられる（存在の確認は `TokenSet.has` の担
-   * 当）。
+   * トークンが実在するかは見ないので、宙に浮いた参照（dangling）も同じ関数で数えられる。
    */
   collectTokenReferrers(
     document: DesignDocument,
@@ -1215,16 +1206,14 @@ export const DesignDocument = {
 
   /**
    * キャンバスに描かれているものの中から、そのトークンを参照している箇所を集める（#147）。
+   * 走るのは artboard とその配下だけで、インスタンスの先の部品定義へは降りない。
    *
-   * 走るのは artboard とその配下だけ。インスタンスは上書きしか持たず、その先の
-   * 部品定義へは降りないので、ここで集まるものはすべてキャンバスに描かれている。
+   * 全体（`collectTokenReferrers`）から絞り込むのではなく走る範囲を狭めているのは、集め
+   * たあとに名前でドキュメントを引き直すと、由来を捨ててから復元することになるため。
    *
-   * 全体（`collectTokenReferrers`）から絞り込むのではなく走る範囲を狭めているのは、
-   * 集めたあとに名前でドキュメントを引き直すと、由来を捨ててから復元することになるため。
-   *
-   * @param document 参照元を探すドキュメント
-   * @param ref 参照されているかを知りたいトークン
-   * @returns キャンバス上の参照元の並び。artboard 自身の props も含む
+   *       @param document 参照元を探すドキュメント
+   *       @param ref 参照されているかを知りたいトークン
+   *       @returns キャンバス上の参照元の並び。artboard 自身の props も含む
    */
   collectCanvasTokenReferrers(
     document: DesignDocument,

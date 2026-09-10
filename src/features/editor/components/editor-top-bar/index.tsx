@@ -82,15 +82,13 @@ function useEditorTopBarTone(): EditorTopBarTone {
  * 編集画面の上端の帯（UI 案 docs/Design Composer.html の Default 画面。高さ 38px）。
  *
  * `Document*` ではなく `Editor*` なのは、並ぶものがドキュメントの話に閉じないため（倍率
- * はキャンバスの見え方で、ドキュメントには保存しない）。`<header>`（banner）にしている
- * のは、画面の上端の帯がこれ 1 本だけだから（#374）。
+ * はキャンバスの見え方で保存しない）。`<header>`（banner）にしているのは、画面の上端の
+ * 帯がこれ 1 本だけだから（#374）。
  *
- * UI 案は左端に macOS の信号機ボタンを描いているが置いていない。
- * `src-tauri/tauri.conf.json` が `decorations` を指定しておらず既定（OS がウィンドウ装
- * 飾を描く）なので、装飾が二重になり、押しても閉じない偽の閉じるボタンが並ぶため。
- *
- * 高さ（`h-[38px]`）を落としても中身の分だけ縮むだけで**テストは 1 件も落ちない**。気づ
- * く手段は Storybook の視覚差分だけ。
+ * UI 案が左端に描く macOS の信号機ボタンは置いていない。`src-tauri/tauri.conf.json` が
+ * `decorations` を指定せず既定（OS が装飾を描く）なので、装飾が二重になり押しても閉じな
+ * い偽のボタンが並ぶため。高さ（`h-[38px]`）を落としても**テストは 1 件も落ちない**（気
+ * づく手段は視覚差分だけ）。
  */
 function EditorTopBarRoot({
   tone,
@@ -213,9 +211,9 @@ function DocumentSaveBadge({
  * は、同じ判断が `DocumentReload` で既に済んでおり、そこでの理由（起こらない空配列の分
  * 岐を書く羽目になる）がここでも変わらないため。
  *
- *   @param errors ファイルを取り込めなかった理由。件数だけを出す（中身はキャンバス下端
- *   の一覧が出す）
- *   @returns エラーの件数とファイルが不正であることを示すバッジ
+ *         @param errors ファイルを取り込めなかった理由。件数だけを出す（中身はキャンバ
+ *   ス  下  端  の一覧が出す）
+ *         @returns エラーの件数とファイルが不正であることを示すバッジ
  */
 function FileInvalidBadge({
   errors,
@@ -239,7 +237,7 @@ const ZoomStepButton = "rounded px-1.5 py-0.5 text-gray-600 hover:bg-gray-100";
  * のは、UI 案の倍率の並びが `−` / 倍率 / `+` の 3 つしか描いておらず、描かれていない操
  * 作は既存の流儀へ寄せるため（rules/ui-verification.md）。
  *
- *   @returns 縮小・倍率表示（クリックで等倍に戻す）・拡大を並べた操作列
+ *         @returns 縮小・倍率表示（クリックで等倍に戻す）・拡大を並べた操作列
  */
 function CanvasZoom({
   view,
