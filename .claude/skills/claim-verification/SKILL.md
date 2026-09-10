@@ -39,7 +39,7 @@ description: "コメント・doc・Issue/PR 本文に「◯◯だからこうし
    付き合わせる)で確かめる。崩れていたら前提の記述を新しい構造に合わせて書き直す
    (消すだけで済ませない)
 
-## Why not: 観点への追記のままにしない
+## 観点への追記のままにしない
 
 `comment-structure-claim` / `comment-behavior-claim` は pr-294 で
 `implementation-reviewer` の観点(層=観点)として対応済みだったが、その後も
