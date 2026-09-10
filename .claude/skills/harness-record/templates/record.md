@@ -202,7 +202,8 @@ pr-317 以前の記録には `レビュー`(括弧なし)・`レビュー（人�
 | `plan-rejection-coverage` | implementation-flow フェーズ 3(SKILL.md「計画」フェーズ 3 手順 6)(却下案の一覧に、実在するいちばん近い代替案が挙がっておらず、却下の検討そのものが閉じないまま計画が進む形) |
 | `rules-consistency` | AGENTS.md「規約の更新」/ `harness-growth`「Step 2a-1」(規約へ足した記述が、同じファイルの前の節と矛盾する / 規約自身が挙げている例で判定文が逆の答えを出す / 表の行が実在するケースを網羅していない / Why not の根拠が一時的な事実になっている形) |
 | `subagent-control` | `implementation-flow`「サブエージェントの使い方」(検証エージェントが指示に反して実装を書き換えた / バックグラウンド起動の結果を取り逃した形) |
-| `hook-environment` | `.claude/hooks/README.md`「強制力の序列」(`echo hook-canary` が deny されず、`.claude/hooks/` が発火しない実行環境だった形) |
+| `hook-environment` | `.claude/hooks/README.md`「強制力の序列」(`echo hook-canary` が deny されず、`.claude/hooks/` が発火しない実行環境だった形のうち、git hooks / CI の後工程が担保していて実害が無かった形。本来ブロック・検知するはずだった操作や欠陥が実際に素通りした形は `hook-environment-guard-miss`) |
+| `hook-environment-guard-miss` | `.claude/hooks/README.md`「強制力の序列」(同上のうち、PreToolUse / PostToolUse が発火しなかったことで、本来その場でブロック・検知するはずだった操作や欠陥が実際に素通りし、コミットへの混入・禁止コマンドの実行・レビューまでの検知漏れなど後工程まで残った形) |
 | `tooling-rule-scope-gap` | rules/coding.md「規約の適用範囲」(`rules/` の規律が `.claude/hooks/` `.github/scripts/` などハーネス自身のツールにも及ぶかどうかが宣言されていない形。ネスト段数・重複禁止等の判断基準はあっても対象範囲が書かれておらず、対象を harness 自身のスクリプトへ広げると気づかれない) |
 | `tool-behavior-unverified` | rules/coding.md「外部の挙動は動かして確かめる」(シェル・CLI・パーサ・外部フォーマットの実際の挙動を、小さく実行して確かめないまま前提にして書いた形。heredoc の並び・PR 本文中のプレースホルダの記法・`git status --porcelain` の状態記号・設定ファイルが許可するフィールド・シェルの実行モード・`grep` の抽出条件などを含む) |
 | `なし` | 既存の規約に対応が無い(＝規約の抜けの候補) |
@@ -558,3 +559,28 @@ pr-407#6、pr-432#15・#21、pr-442#16・#17・#19・#20)は、**対になる入
 分割時は PR 番号が事前に分からず積み残しになったが、今回は PR 作成後に実際の番号を確認して
 同じ PR 内で追記したため積み残しは発生していない。過去の記録の `分類: test-coverage-branch`
 は書き換えない。
+
+`hook-environment` は本ルーティン実行時点で `hook-environment-guard-miss` へ部分分割した
+(観点層まで介入済み(pr-272)なのに再発 41 件で飽和 — 「2c. 介入後 5 回以上」の閾値を 8 倍
+超えて突出)。通算 48 件のうち 3 件(pr-277#23、pr-402#2、pr-462#9)は、**`.claude/hooks/` の
+PreToolUse / PostToolUse が発火しなかったことで、本来その場でブロック・検知するはずだった
+操作や欠陥が実際に素通りした**という共通の形だった(pr-277 はテストヘルパーの重複が編集時に
+検知されずレビューまで残り、pr-402 は検証エージェントのミューテーションが並行コミットへ
+混入し、pr-462 は `no-git-add-all` が止めるはずの `git add -A` を実際に実行してしまい自分で
+気づいて `git reset` した)。残り 45 件は、canary(`echo hook-canary`)で非発火を確認した
+のみで、git hooks(`harness/githooks/`)または CI が後工程で担保し実害が無かった形で共通して
+おり、新語彙には割らず旧タグに残す。
+
+層は両語彙とも観点のまま据え置いた。**フック化は不成立**(「発火しなかったことで本来止まる
+はずの操作・欠陥が実際に素通りしたか」は、素通りした結果が後工程(レビュー・自己修正)で
+見つかって初めて分かる事後判断であり、文字列一致では偽陽性しか出ない)。**skill 化(新しい
+スキル)も不要**(この分類は実行環境の制約を確認・記録する行為そのものであり、新しい段取りが
+増えるわけではない)。
+
+締めの `対策済` 行(`hook-environment` 層=観点 at pr-467)は、`分類: なし`(pr-301)・
+`plan-scope-verification`(pr-352)の分割時と同じく、この回も棚卸しルーティンの制約
+(「やらないこと: harness/records/ への書き込み」。成果物の契約が変更対象を `rules/` `skills/`
+`hooks/` `templates/record.md` に限っており `harness/records/` を含まない)により、分割を
+行ったこの PR には含められず積み残しになった。**後続の棚卸しルーティンが
+`harness/records/pr-467.md`「規約への反映」へこの 1 行を追記し、積み残しを解消することを
+想定する。** 過去の記録の `分類: hook-environment` は書き換えない。
