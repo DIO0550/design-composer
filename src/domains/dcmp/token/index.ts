@@ -48,10 +48,9 @@ export type TokenSet = Readonly<{
  *
  * union と対で export するのは規約(rules/coding.md「値の集合から union を導出する」)。
  *
- * `satisfies` が見るのは**キーの過不足と綴り**だけで、キーに割り当てた値がずれてもここ
- * では落ちない。**値の網羅**は `__tests__/token.type.test.ts` (`TokenKind` ==
- * `keyof TokenSet`)で担保する。並びが要るときは `TokenSet.kinds()` を使い、
- * `Object.values` をそこ 1 箇所に閉じる。
+ * `satisfies` が見るのは**キーの過不足と綴り**だけで、値がずれてもここでは落ちない。
+ * **値の網羅**は `__tests__/token.type.test.ts` (`TokenKind` == `keyof TokenSet`)で担保
+ * する。並びが要るときは `TokenSet.kinds()` を使い、`Object.values` をそこ 1 箇所に閉じる。
  */
 export const TokenKinds = {
   Colors: "colors",
@@ -134,11 +133,12 @@ export const TokenValue = {
   /**
    * 数値の種別（spacing / radius）の値を作る。
    *
-   * どちらも px の長さなので負にはならない（docs/04-tokens.md「値の形式」）。
-   * typography / shadows のように値域付きの型で閉じられないのは、この 2 種別では
-   * 編集で渡る型が保存される値そのもの（`TokenValue`）だから。`value` を
-   * ブランド型にしても `TokenSet` が持つ入れ物は `number` のままなので、
-   * 型では弾けずこの入口の `Option` だけが境界になる。
+   * どちらも px の長さなので負にはならない（docs/04-tokens.md「値の形式」）。typography /
+   * shadows のように値域付きの型で閉じられないのは、この 2 種別では編集で渡る型が保存され
+   * る値そのもの（`TokenValue`）だから。
+   *
+   * `value` をブランド型にしても `TokenSet` が持つ入れ物は `number` のままなので、型では
+   * 弾けずこの入口の `Option` だけが境界になる。
    *
    * @param kind 書き込み先の種別
    * @param value 入力欄から数値として読めた値
@@ -497,9 +497,8 @@ export const TokenSet = {
    * トークンの名前を変える。値と並びの位置は保つ。
    *
    * 名前を変えると、その名前を指していた prop は宙に浮く。ここで参照を追随させないのは、
-   * 参照の解決はドキュメント全体の検証が持つ関心事であり、宙に浮いた参照は
-   * dangling 参照として通常のバリデーションエラーになるため(docs/04-tokens.md
-   * 「スキーマデフォルトとの関係」が削除について定めているのと同じ扱い)。
+   * 参照の解決はドキュメント全体の検証が持つ関心事で、宙に浮いた参照は dangling 参照とし
+   * て通常のバリデーションエラーになるため(docs/04-tokens.md「スキーマデフォルトとの関係」)。
    */
   rename(
     tokens: TokenSet,
@@ -519,9 +518,10 @@ export const TokenSet = {
   },
 
   /**
-   * トークンを削除する。
-   * 使用中かどうかは見ない。使用中トークンの削除を特別扱いせず、
-   * 残った参照を dangling 参照として検証で拾うのが仕様(docs/04-tokens.md)。
+   * トークンを削除する。使用中かどうかは見ない。
+   *
+   * 使用中トークンの削除を特別扱いせず、残った参照を dangling 参照として検証で拾うのが仕
+   * 様(docs/04-tokens.md)。
    */
   remove(tokens: TokenSet, ref: TokenRef): Result<TokenSet, TokenEditError> {
     if (!TokenSet.find(tokens, ref).some) {

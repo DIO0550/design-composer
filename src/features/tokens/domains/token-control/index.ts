@@ -52,11 +52,11 @@ export type TokenSection = Readonly<{
 }>;
 
 /**
- * 1行分の入力欄。値の形式（docs/04-tokens.md「値の形式」）から
- * 入力欄の種類が決まる。語彙は `PropControlInput` に揃える。
+ * 1行分の入力欄。値の形式（docs/04-tokens.md「値の形式」）から入力欄の種類が決まり、語彙
+ * は `PropControlInput` に揃える。
  *
- * 色が `ColorToken` ではなく `Rgb` を持つのは、`input[type=color]` が6桁しか
- * 扱えないため。alpha は `alphaPercent` の欄が別に持つ。
+ * 色が `ColorToken` ではなく `Rgb` を持つのは、`input[type=color]` が6桁しか扱えないため。
+ * alpha は `alphaPercent` の欄が別に持つ。
  */
 export type TokenControlInput =
   | Readonly<{ kind: "color"; value: Rgb }>
@@ -200,8 +200,9 @@ function valueTextOf(token: Token): string {
 
 export const TokenSection = {
   /**
-   * トークン一覧に出すセクションの並び。
-   * 種別は `TokenSet.kinds()` の順、種別内は TokenSet が持つ定義順を保つ。
+   * トークン一覧に出すセクションの並び。種別は `TokenSet.kinds()` の順、種別内は TokenSet
+   * が持つ定義順を保つ。
+   *
    * トークンが1つも無い種別も見出しだけ出す（足す先が画面から消えないため）。
    *
    * @param document トークンの出どころ
@@ -376,8 +377,9 @@ function fieldsOf(token: Token): readonly TokenControlField[] {
 }
 
 /**
- * 数値の入力欄に入った文字列を数値として読む。
- * 数値として読めない入力（空欄・途中まで打った符号）では値を変えない。
+ * 数値の入力欄に入った文字列を数値として読む。数値として読めない入力（空欄・途中まで打っ
+ * た符号）では値を変えない。
+ *
  * 読めない値を書き込むとその種別の値の形式が壊れるため（docs/04-tokens.md）。
  *
  * @param raw 入力欄に入っている文字列

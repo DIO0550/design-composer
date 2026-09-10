@@ -44,6 +44,7 @@ function contentNote(node: PrimitiveNode): Option<NodeNote> {
 
 /**
  * 名前の右に出す補助情報。文言を持つのは Text だけで、Box には補助情報が無い。
+ *
  * 参照ノードはインスタンスであること自体を出す。
  *
  * @param node 補助情報を出したいノード
@@ -179,7 +180,7 @@ function rowFromNode(
 }
 
 /**
- * 今見ている artboard の中身を出すツリービュー（docs/06-ui.md「画面構成」。UI 案
+ * 今見ている artboard の中身を出すツリービュー（docs/06-ui.md「画面構成」/ UI 案
  * docs/Design Composer.html の `Layers` パネル下段）。行の並べ替えは docs/06-ui.md「編
  * 集操作の一覧」の並べ替えにあたる。
  *

@@ -74,10 +74,9 @@ type RightPaneParts = Readonly<{ title: ReactNode; body: ReactElement }>;
  * けの場所で選択に触れないため（UI 案「Assets is browse-only — the inspector keeps the
  * previous selection」）。
  *
- * 器を返さず帯と本文に分けて返すのは、器を着せるところを 1 箇所にするため（行き先ごとに
- * 着せると、片方だけ器を落とした状態が書ける）。戻り値を `RightPaneParts`（`undefined`
- * を含まない）と書いているのは、行き先を足して `case` を足し忘れたときにコンパイルエラ
- * ーにするため。
+ * 器を返さず帯と本文に分けて返すのは、器を着せるところを 1 箇所にするため（行き先ごとに着
+ * せると、片方だけ器を落とした状態が書ける）。戻り値が `undefined` を含まない
+ * `RightPaneParts` なのは、`case` の足し忘れがコンパイルエラーになるため。
  *
  * @returns Tokens ならトークンの編集欄、Layers / Assets ならプロパティパネル
  */
@@ -170,10 +169,9 @@ function canvasDock(state: EditorState): CanvasDock {
  * 下端に積む器。エラー一覧とキャンバスのツールバーが同じ場所を取り合うため、順序と間隔
  * はここが持つ（各部品が浮くと重なる）。
  *
- * **この位置指定を落としてもテストは落ちない** — happy-dom はレイアウトを解決しない。気
- * づく手段は `OpenedDocumentEditor` のストーリーの視覚差分だけで、それが成り立つのは**
- * ストーリーが高さの決まった器に入っているとき**に限る（#322。器を外すとここが撮影範囲
- * の外へ出る）。
+ * **この位置指定を落としてもテストは落ちない** — happy-dom はレイアウトを解決しない。気づ
+ * く手段は `OpenedDocumentEditor` のストーリーの視覚差分だけで、それが成り立つのは**ストー
+ * リーが高さの決まった器に入っているとき**に限る（#322。器を外すと撮影範囲の外へ出る）。
  *
  * ドックだけのストーリーを立てないのは、積み方そのものがここの判断で、ストーリー側へ写
  * すと本物の積み方が壊れても気づけないため。
@@ -270,10 +268,11 @@ function EditorPanes({
   const token = useTokenActions();
   const artboard = useArtboardActions();
   /**
-   * 左ペインが何を映しているか（UI 案 docs/Design Composer.html のアイコンレール）。
-   * 右ペインに出すのもこれで決まる（Tokens ならトークン編集、それ以外はプロパティ）。
-   * 編集とは連動しない表示だけの状態なので `EditorState` には持たせず、
-   * 両ペインを組むここに置く。
+   * 左ペインが何を映しているか（UI 案 docs/Design Composer.html のアイコンレール）。右ペイ
+   * ンに出すのもこれで決まる（Tokens ならトークン編集、それ以外はプロパティ）。
+   *
+   * 編集とは連動しない表示だけの状態なので `EditorState` には持たせず、両ペインを組むここ
+   * に置く。
    */
   const [leftPaneView, setLeftPaneView] = useState<LeftPaneView>(
     LeftPaneViews.Layers,

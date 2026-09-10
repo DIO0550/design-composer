@@ -6,9 +6,11 @@ import type { ReactNode } from "react";
  * のパレット**で、`docs/06-ui.md` が挙げている「部品一覧」に当たる。
  *
  * 並びを**この配列**に持ちレールもここから作るのは、Storybook のビルドでは docgen が
- * export した定数へ `displayName` / `__docgenInfo` を列挙可能なプロパティとして足すこと
- * があり、`Object.values` で走査すると行き先ではない値まで行として並ぶため（配列の
- * `map` は添字だけを見る。vitest では docgen が走らずテストだけでは気付けない / #129）。
+ * export した定数へ `displayName` / `__docgenInfo` を列挙可能なプロパティとして足すことが
+ * あり、`Object.values` で走査すると行き先ではない値まで行として並ぶため（#129）。
+ *
+ * 配列の `map` は添字だけを見るので影響を受けない。vitest では docgen が走らないので、テス
+ * トだけでは気付けない。
  *
  * これが効くのは**`.tsx` で export しているもの**に限る。docgen の既定の対象は
  * `**\/*.tsx` なので、`.ts` で export した定数は `.tsx` から `Object.values` で走査して
@@ -37,6 +39,7 @@ export const LeftPaneViews = {
 
 /**
  * 行き先の名前。データモデルの語ではなく UI 案の綴りに合わせる。
+ *
  * レールのラベルと、その先に出るパネルの見出しの両方がこれを使う。
  */
 export const LeftPaneViewLabels = {

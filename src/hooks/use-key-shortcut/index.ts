@@ -130,10 +130,11 @@ export type KeyShortcutBinding = Readonly<{
  * 「本質的にグローバルな関心事」）。1 回の購読で複数を見るのは、割り当ての数だけフック
  * を呼ぶとフックの数が呼び出し側の表の長さで変わるため。
  *
- * 当たった押下は既定動作を止める。一致した時点でその押下はアプリの操作なので、ブラウザ
- * 側の動き（矢印のスクロール等）を重ねない。購読は毎 render 張り直すので、安定させたい
- * なら `bindings` を `useMemo` で渡す（`onPress` を `useCallback` で包むだけでは効かな
- * い）。
+ * 当たった押下は既定動作を止める。一致した時点でその押下はアプリの操作なので、ブラウザ側
+ * の動き（矢印のスクロール等）を重ねない。
+ *
+ * 購読は毎 render 張り直すので、安定させたいなら `bindings` を `useMemo` で渡す
+ * （`onPress` を `useCallback` で包むだけでは効かない）。
  *
  * @param bindings 待ち受ける割り当ての並び
  */
@@ -157,8 +158,8 @@ export function useKeyShortcuts(bindings: readonly KeyShortcutBinding[]): void {
 }
 
 /**
- * ページ全体のキーボードショートカット。指定した組み合わせが押されたら `onPress` を呼ぶ。
- * 割り当てが 1 件だけの `useKeyShortcuts`。
+ * ページ全体のキーボードショートカット。指定した組み合わせが押されたら `onPress` を呼ぶ
+ * （割り当てが 1 件だけの `useKeyShortcuts`）。
  *
  * @param shortcut 待ち受けるキーの組み合わせ
  * @param onPress その組み合わせが押されたときに呼ぶ手続き

@@ -209,8 +209,9 @@ export const Component = {
   },
 
   /**
-   * publicProps の binding に従って overrides を部品へ適用する。
-   * binding 先は部品のルート（`name`）と内部ノードの両方を取り得る。
+   * publicProps の binding に従って overrides を部品へ適用する。binding 先は部品のルート
+   * （`name`）と内部ノードの両方を取り得る。
+   *
    * 宣言されていない overrides のキーは無視する（検証側で報告される）。
    */
   applyOverrides(
@@ -401,8 +402,8 @@ function targetThroughRef(
 }
 
 /**
- * 公開 prop の繋ぎ先を、入れ子の部品を越えてたどる。
- * `remainingHops` が尽きたら `none`。循環参照でも止まらなくなるのを防ぐため。
+ * 公開 prop の繋ぎ先を、入れ子の部品を越えてたどる。`remainingHops` が尽きたら `none`
+ * （循環参照でも止まらなくなるのを防ぐため）。
  *
  * @param components 引き先の部品一式
  * @param ref たどり始める部品名と公開 prop 名
@@ -484,10 +485,11 @@ export const ComponentSet = {
    * ある参照ノードの両方**。部品 A が部品 B を含んでいれば B は使われているので、外側だ
    * けを見ると「どこからも使われていない」と読める部品が出てしまう。
    *
-   * `Node.collectRefs` は参照ノードで止まるため、部品同士が循環していても各定義を 1 回
-   * ずつ見るだけで終わる（定義の無い名前への参照はどの部品の数にも入らない）。名前で引
-   * き直さず `Object.entries` の 1 本で組むのは、辿る名前がすべて自分の持ち物で引きが失
-   * 敗しようがないため。
+   * `Node.collectRefs` は参照ノードで止まるため、部品同士が循環していても各定義を 1 回ず
+   * つ見るだけで終わる（定義の無い名前への参照はどの部品の数にも入らない）。
+   *
+   * 名前で引き直さず `Object.entries` の 1 本で組むのは、辿る名前がすべて自分の持ち物で引
+   * きが失敗しようがないため。
    */
   assets(
     components: ComponentSet,

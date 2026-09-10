@@ -8,10 +8,11 @@ import { Result } from "@/utils/Result";
 /**
  * 同じ親を共有するノードの並び。ツリーの一階層を表す。
  *
- * artboard の `children`・ノードの `children`・部品の `children` はいずれもこの形で、
- * 「並びの中を探す」「並びを編集する」規則は入れ物によらず同じなのでここに集める。
- * `Node` 自身にこれらを持たせられないのは、子を持てるかの判定に `PrimitiveSchema` が
- * 要るのに対し、`PrimitiveSchema` が `Node` を import しているため（循環になる）。
+ * artboard の `children`・ノードの `children`・部品の `children` はいずれもこの形で、「並
+ * びの中を探す」「並びを編集する」規則は入れ物によらず同じなのでここに集める。
+ *
+ * `Node` 自身にこれらを持たせられないのは、子を持てるかの判定に `PrimitiveSchema` が要る
+ * のに対し、`PrimitiveSchema` が `Node` を import しているため（循環になる）。
  */
 export type NodeTree = Readonly<{ nodes: readonly Node[] }>;
 
@@ -71,8 +72,9 @@ export const NodeTree = {
 
   /**
    * 名前でノードを探し、それが「どの親の何番目か」を返す。並びの子孫も辿る。
-   * 並び自体の入れ物（artboard / ノード）の名前は外から与える。
-   * `NodeTree` は自分が誰の子の並びなのかを知らないため。
+   *
+   * 並び自体の入れ物（artboard / ノード）の名前は外から与える。`NodeTree` は自分が誰の子
+   * の並びなのかを知らないため。
    */
   childPositionOf(
     tree: NodeTree,
@@ -126,8 +128,8 @@ export const NodeTree = {
   },
 
   /**
-   * 名前で指したノードを持つ並びを差し替える。
-   * 対象が子孫にある場合はその階層の並びだけを差し替える。見つからなければ `none`。
+   * 名前で指したノードを持つ並びを差し替える。対象が子孫にある場合はその階層の並びだけを
+   * 差し替え、見つからなければ `none`。
    */
   updateSiblingsOf(
     tree: NodeTree,
