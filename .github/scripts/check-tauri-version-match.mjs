@@ -6,7 +6,7 @@
 // release-desktop がタグで走るときだけだった(#366 で実際に Release がバイナリ無しになった)。
 // 突き合わせるのはバージョン文字列だけなので、防ぐのにビルドを回す必要は無い。
 //
-// Why not: プラグインの対(tauri-plugin-dialog ↔ @tauri-apps/plugin-dialog など)は見ない。
+// プラグインの対(tauri-plugin-dialog ↔ @tauri-apps/plugin-dialog など)は見ない。
 // tauri build が実際に弾くのは core のこの 1 対だけで、かつ tauri-plugin-fs のように
 // Rust 側にしか居ないものがあり対応付けが 1 対 1 にならない。
 import { readFileSync } from "node:fs";
