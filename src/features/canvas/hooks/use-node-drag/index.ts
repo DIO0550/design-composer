@@ -151,11 +151,11 @@ type RepositionMeasure = Readonly<{
  * えており、外さないと自分の辺との距離が常に最小になって**どこへ運んでも寄らなくなる**
  * ため。孫を入れないのは、揃えたい相手が並んでいる兄弟だから。
  *
- *         @param context 割り戻しに使う倍率を持つ今の掴み
- *         @param carried 運んでいるノードと、掴んだ時点の場所
- *         @param dropped 落とし先の親
- *         @returns 置き直しに要る実測。今の親・落とし先・運んでいるノードのどれかが  画
- *   面  に  無  ければ `none`（測れないまま座標を書かない）
+ * @param context 割り戻しに使う倍率を持つ今の掴み
+ * @param carried 運んでいるノードと、掴んだ時点の場所
+ * @param dropped 落とし先の親
+ * @returns 置き直しに要る実測。今の親・落とし先・運んでいるノードのどれかが画
+ *   面に無ければ `none`（測れないまま座標を書かない）
  */
 function measureReposition(
   context: DropContext,
@@ -341,8 +341,8 @@ function intoTreeCarrying(context: DropContext): Carrying {
  * ツリーの移動へ落とさずそのまま「落とせない」にする（落とすと、座標を動かすつもりのド
  * ラッグが黙って木の並びを書き換える別の編集になる）。
  *
- *         @param context 今の掴みと、落とし先を決めるための材料
- *         @returns 今の運び方
+ * @param context 今の掴みと、落とし先を決めるための材料
+ * @returns 今の運び方
  */
 function carryingAt(context: DropContext): Carrying {
   const carried = carriedNode(context.document, context.grab.dragged);
@@ -403,9 +403,9 @@ export type NodeDragControl = Readonly<{
  * ンタは 3 ペインの器全体で受ける（キャンバスの中だけで受けると、パレットの行で掴んで左
  * ペインの上で離したときに `pointerup` が届かない）。
  *
- *         @param params 落とし先を決める `document` / `view` と、確定したときに呼ぶ
- *   `onMove`  / `onInsertAt` / `onReposition`
- *         @returns 今のドラッグの状態と、画面の要素へ渡すハンドラ
+ * @param params 落とし先を決める `document` / `view` と、確定したときに呼ぶ
+ *   `onMove` / `onInsertAt` / `onReposition`
+ * @returns 今のドラッグの状態と、画面の要素へ渡すハンドラ
  */
 export function useNodeDrag(
   params: Readonly<{

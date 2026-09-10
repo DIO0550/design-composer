@@ -39,8 +39,8 @@ export type DocumentIpcError = Readonly<{
  *
  * 対応の一覧は `__tests__/document-ipc.document-access-failure.test.ts` にある。
  *
- *         @param error IPC が返した失敗
- *         @returns 同じ失敗を、ドメインの語彙と診断用の原文で表したもの
+ * @param error IPC が返した失敗
+ * @returns 同じ失敗を、ドメインの語彙と診断用の原文で表したもの
  */
 export function toDocumentAccessFailure(
   error: DocumentIpcError,

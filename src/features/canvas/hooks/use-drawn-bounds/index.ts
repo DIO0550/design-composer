@@ -53,9 +53,9 @@ function isSame(
  * 拾えないのは**再レンダーを伴わない位置変化**（Web フォントや画像の読み込み完了）。ウ
  * ィンドウの大きさの変化だけは再レンダーが起きないので明示的に購読する。
  *
- *         @param target 追いかける artboard / ノードの名前。未選択なら `none`
- *         @param container 座標の原点にする器（ハンドルを重ねる側の要素）
- *         @returns 器からの相対で表した矩形。測れなければ `none`
+ * @param target 追いかける artboard / ノードの名前。未選択なら `none`
+ * @param container 座標の原点にする器（ハンドルを重ねる側の要素）
+ * @returns 器からの相対で表した矩形。測れなければ `none`
  */
 export function useDrawnBounds(
   target: Option<string>,

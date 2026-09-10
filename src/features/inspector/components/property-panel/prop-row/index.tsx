@@ -26,7 +26,7 @@ const LabelClass = `${LabelWidthClass} truncate text-[11px] text-gray-500`;
  * `<label>` で指せないため。全行を `aria-labelledby` に揃える（代償として、ラベルを押し
  * ても入力欄へフォーカスが移らない）。
  *
- *       @returns ラベルと入力欄を並べた 1 行
+ * @returns ラベルと入力欄を並べた 1 行
  */
 export function PropRow({
   control,

@@ -26,8 +26,8 @@ const HandleBorderPx = 1.5;
  * `nwse-resize` に決まり、**どの入力でも同じ枝しか通らない**ため。右上・左下を掴めるよ
  * うにする回に持ち込む。
  *
- *       @param grip 掴めるもの
- *       @returns その掴み方で出すカーソル
+ * @param grip 掴めるもの
+ * @returns その掴み方で出すカーソル
  */
 export function resizeCursor(grip: ResizeGrip): CSSProperties["cursor"] {
   switch (grip.kind) {

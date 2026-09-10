@@ -39,8 +39,8 @@ export type AutoSaveTarget = Readonly<{
  * と**より新しい外部の書き込みを古い内容で潰す**ことになる（表示中の内容で潰す操作は
  * `revert file` が別に持つ）。
  *
- *         @returns 画面のドキュメントとファイルが一致しているか。書き出し待ち・書き出し
- *   中  は   `saving`、書き込みが拒まれている間は `failed`
+ * @returns 画面のドキュメントとファイルが一致しているか。書き出し待ち・書き出し
+ *   中は `saving`、書き込みが拒まれている間は `failed`
  */
 export function useAutoSave({
   ipc,

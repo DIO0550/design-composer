@@ -15,7 +15,7 @@ export const PaneHeadingTestId = "pane-heading";
  * **この class を落としてもテストは 1 件も落ちない**（高さ・下線・余白は happy-dom が解
  * 決しない） — 気づく手段は視覚差分だけ。
  *
- *       @returns 受け取った中身を横に並べた、下線付きの固定高の帯
+ * @returns 受け取った中身を横に並べた、下線付きの固定高の帯
  */
 export function PaneHeading({
   children,

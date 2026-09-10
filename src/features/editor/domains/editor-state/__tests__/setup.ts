@@ -49,7 +49,7 @@ export function stateWithNestedBox(): EditorState {
  * 全件が通る。飛び先にならないことを固定する assert が reveal 側に無いため）。呼び出し
  * 側がこの形に依存していると読まないこと。
  *
- *         @returns artboard 配下に Text を 2 つ、雛形の部品定義を持つエディタの状態
+ * @returns artboard 配下に Text を 2 つ、雛形の部品定義を持つエディタの状態
  */
 export function stateWithComponentDefinitions(): EditorState {
   return EditorState.create(

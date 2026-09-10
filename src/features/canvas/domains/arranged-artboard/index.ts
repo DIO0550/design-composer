@@ -47,8 +47,8 @@ export const ArrangedArtboard = {
    * 自動配置されたものが座標を持つものに重なることはある。Figma もフレーム同士の重なり
    * を禁じていないので、避けずに受け入れている。
    *
-   *         @param artboards コンパイル済みの artboard の並び（`.dcmp` の並び順）
-   *         @returns 元の並び順のまま、それぞれの置き場所を添えたもの
+   * @param artboards コンパイル済みの artboard の並び（`.dcmp` の並び順）
+   * @returns 元の並び順のまま、それぞれの置き場所を添えたもの
    */
   fromArtboards(
     artboards: readonly CompiledArtboard[],

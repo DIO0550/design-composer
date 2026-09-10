@@ -215,9 +215,9 @@ export function artboardList(): Element {
  * **2 つの親の矩形を差し替えていないテストでは、原点のずれが 0 になる。** 付け替えで座
  * 標が直ることを見たいテストは、必ず両方の親をここに通すこと。
  *
- *         @param name 描かれているノードの名前
- *         @param bounds そのノードが描かれていることにする位置と大きさ
- *         @returns 測定を差し替えたあとの要素
+ * @param name 描かれているノードの名前
+ * @param bounds そのノードが描かれていることにする位置と大きさ
+ * @returns 測定を差し替えたあとの要素
  */
 export function drawnAt(name: string, bounds: CanvasBounds): HTMLElement {
   const element = drawn(name);

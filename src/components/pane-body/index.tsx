@@ -13,7 +13,7 @@ import type { ReactElement, ReactNode } from "react";
  * れを着せている編集画面のテストが守っている（ここに `__tests__/` を置いていないのはそ
  * のため）。
  *
- *       @returns 受け取った中身を、余白付きで縦スクロールする枠に入れたもの
+ * @returns 受け取った中身を、余白付きで縦スクロールする枠に入れたもの
  */
 export function PaneBody({
   children,

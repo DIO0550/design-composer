@@ -26,10 +26,10 @@ export const DocumentReload = {
    * 証を走らせる相手がいない）。警告という中間区分は無い（docs/03-schema.md「バリデーシ
    * ョン仕様」）ので、検出できたエラーは 1 本の一覧にまとめて返す。
    *
-   *         @param parsed テキストを解釈した結果。成功ならドキュメント、失敗なら画面に
-   *   出  す  エラー一覧
-   *         @returns 解釈にもスキーマ検証にも通れば取り込んだ状態、どちらかで落ちれば
-   *   そ  の  理  由を持つ拒んだ状態
+   * @param parsed テキストを解釈した結果。成功ならドキュメント、失敗なら画面に
+   *   出すエラー一覧
+   * @returns 解釈にもスキーマ検証にも通れば取り込んだ状態、どちらかで落ちれば
+   *   その理由を持つ拒んだ状態
    */
   fromParsed(
     parsed: Result<DesignDocument, readonly DocumentError[]>,

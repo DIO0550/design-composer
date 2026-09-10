@@ -30,7 +30,7 @@ export type DocumentReloadTarget = Readonly<{
  * （rules/hooks.md）。失敗をドメインの語彙で返す理由は `toDocumentAccessFailure` の doc
  * にある。
  *
- *         @returns 直近の監視 / 読み込みの失敗。1 度も失敗していなければ `none`
+ * @returns 直近の監視 / 読み込みの失敗。1 度も失敗していなければ `none`
  */
 export function useDocumentReload({
   ipc,

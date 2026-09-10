@@ -99,9 +99,9 @@ const ArtboardUneditableProps: readonly string[] = [
  * `Offset` 側に置かないのは、`x` / `y` という綴りで**フラットな兄弟フィールドに**書くの
  * が `.dcmp` の artboard の都合であって、`Offset` の性質ではないため。
  *
- *         @param record 読み取り元の artboard のフィールド一式
- *         @returns 位置。`x` と `y` がどちらも無ければ不在を表す `undefined`。  片方だ
- *   け  の  と  き・数値でないときは失敗
+ * @param record 読み取り元の artboard のフィールド一式
+ * @returns 位置。`x` と `y` がどちらも無ければ不在を表す `undefined`。片方だ
+ *   けのとき・数値でないときは失敗
  */
 function canvasPositionFromJson(
   record: JsonRecordCursor,
@@ -230,11 +230,11 @@ export const Artboard = {
    * (Box)を兼ねる」/ docs/03「Box スキーマを流用する」）。Box スキーマと違う点は 3 つで、
    * それぞれ効き方が異なる。
    *
-   *   - `overflow` の既定が `clip`。**デフォルト**なので artboard 側の指定が勝つ  - サ
-   * イズは `fixed` **固定**で、長さは artboard の `width` / `height`。props では  変え
-   * られない  - 配置は `flow` **固定**。ここで固定しないと、持っていない親からの相対で
-   * 置かれた  artboard が描かれる  （props を照らす先は Box スキーマなのでファイルには
-   * 書けてし  まう）
+   * - `overflow` の既定が `clip`。**デフォルト**なので artboard 側の指定が勝つ
+   * - サイズは `fixed` **固定**で、長さは artboard の `width` / `height`。props では
+   *   変えられない
+   * - 配置は `flow` **固定**。ここで固定しないと、持っていない親からの相対で置かれた
+   *   artboard が描かれる（props を照らす先は Box スキーマなのでファイルには書けてしまう）
    */
   boxProps(artboard: Artboard): ArtboardBoxProps {
     return {

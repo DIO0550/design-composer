@@ -146,9 +146,9 @@ export const DocumentSelection = {
    * 複数選択でも答えるのは、まとめて選べるのが「同じ部品のインスタンス」だけで出どころ
    * が 1 つに定まるため。
    *
-   *         @param selection 選択とドキュメントの出どころ
-   *         @returns 選択が空でなく、すべて同じ部品のインスタンスならその部品名。  1 つ
-   *   で  も  イ  ンスタンスでないもの・別の部品を指すものが混ざれば `none`
+   * @param selection 選択とドキュメントの出どころ
+   * @returns 選択が空でなく、すべて同じ部品のインスタンスならその部品名。 1 つ
+   *   でもインスタンスでないもの・別の部品を指すものが混ざれば `none`
    */
   sourceName(selection: DocumentSelection): Option<string> {
     const document = selection.document;
@@ -174,8 +174,8 @@ export const DocumentSelection = {
    * どれを見ているかを状態として持たずここで導出するのは、持つと「選択のどれもが今見て
    * いる artboard に無い」という食い違った状態が表現できてしまうため。
    *
-   *         @param selection 選択とドキュメントの出どころ
-   *         @returns 今見ている artboard。artboard が 1 枚も無ければ `none`
+   * @param selection 選択とドキュメントの出どころ
+   * @returns 今見ている artboard。artboard が 1 枚も無ければ `none`
    */
   currentArtboard(selection: DocumentSelection): Option<Artboard> {
     const document = selection.document;

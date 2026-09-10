@@ -54,7 +54,7 @@ export type {
  *
  * 版ごとの型と JSON 表現は版のフォルダ（`v1/`）が持つ。major を上げるときは隣に `v2/`
  * を作ってここを差し替え、旧版のフォルダは残す（旧版の型が残ることで、マイグレーション
- * が「どの形から どの形へ」を型で書ける）。ここを版の直和にしないのは、消費側に版の分岐
+ * が「どの形からどの形へ」を型で書ける）。ここを版の直和にしないのは、消費側に版の分岐
  * を強いないため。
  */
 export type DesignDocument = DesignDocumentV1;
@@ -194,10 +194,10 @@ function followPropEdits(node: Node, resize: AxisResize): readonly PropEdit[] {
  * のは、`width` を消して `hug` へ戻す編集のように prop 名だけでは長さが変わったかを判定
  * できないため。
  *
- *         @param before 編集する前のドキュメント
- *         @param name 大きさが変わったかもしれない artboard / ノードの名前
- *         @param edited その編集の結果
- *         @returns 子を追従させたドキュメント。長さが変わっていなければ `edited` のまま
+ * @param before 編集する前のドキュメント
+ * @param name 大きさが変わったかもしれない artboard / ノードの名前
+ * @param edited その編集の結果
+ * @returns 子を追従させたドキュメント。長さが変わっていなければ `edited` のまま
  */
 function withResizeFollowUp(
   before: DesignDocument,
@@ -602,8 +602,8 @@ export const DesignDocument = {
    * 払ったときにクリックとは違う階層が選ばれる。部品定義の中にある参照ノードを見ないの
    * は、キャンバスに描かれてもドキュメントの木には無く、選択の対象にならないため。
    *
-   *         @param document 走査するドキュメント
-   *         @returns artboard の並び順・子の並び順のままの名前。1 つも無ければ空
+   * @param document 走査するドキュメント
+   * @returns artboard の並び順・子の並び順のままの名前。1 つも無ければ空
    */
   collectArtboardChildNames(document: DesignDocument): readonly string[] {
     return document.artboards.flatMap((artboard) =>
@@ -733,10 +733,10 @@ export const DesignDocument = {
    * `undefined` をここで `none` へ潰せるのも同じ理由）。座標と親を別々に答えないのは、
    * **片方だけでは位置が決まらない**ため（`ChildPlacement`）。
    *
-   *       @param document 引き先になるドキュメント
-   *       @param name 置かれている場所を知りたいノードの名前
-   *       @returns 今いる親と、その親から見た座標。木に無い名前 / 部品インスタンス（props
-   *     を持たない）/  フロー / 座標が数値でないとき / 親を持たない artboard 自身は
+   * @param document 引き先になるドキュメント
+   * @param name 置かれている場所を知りたいノードの名前
+   * @returns 今いる親と、その親から見た座標。木に無い名前 / 部品インスタンス（props
+   *   を持たない）/ フロー / 座標が数値でないとき / 親を持たない artboard 自身は
    *   `none`
    */
   childPlacementOf(
@@ -869,12 +869,12 @@ export const DesignDocument = {
    * 配置の兄弟に並び順の意味が薄いためで、移す先が今の親と必ず違うので
    * `ChildPosition.afterRemoving` は要らない。
    *
-   *       @param document 書き換える対象を含むドキュメント
-   *       @param name 置き直すノードの名前
-   *       @param to 置き直したあとの親と、その親から見た座標
-   *       @returns 親と座標を書き換えたドキュメント。その名前のノードが無い（artboard
-   *   の  名  前もノードでは  ない）なら失敗。指した親が子を受け入れられない（無い名前
-   *   ・  Text・  参照ノード）ときと、指した親が  自分自身か自分の子孫のときも失敗
+   * @param document 書き換える対象を含むドキュメント
+   * @param name 置き直すノードの名前
+   * @param to 置き直したあとの親と、その親から見た座標
+   * @returns 親と座標を書き換えたドキュメント。その名前のノードが無い（artboard
+   *   の名前もノードではない）なら失敗。指した親が子を受け入れられない（無い名前
+   *   ・ Text・参照ノード）ときと、指した親が自分自身か自分の子孫のときも失敗
    */
   reposition(
     document: DesignDocument,
@@ -1098,10 +1098,10 @@ export const DesignDocument = {
    * ントの中の名前かで初めて引けるため。呼び出し側で分けると「選んでいるものが artboard
    * か」の判定が features 層へ出る。
    *
-   *         @param document 取り除く先のドキュメント
-   *         @param name 取り除きたい artboard / ノードの名前
-   *         @returns 取り除いたドキュメント。どちらにも無い名前は `node-not-found`（artboard
-   *      でなければノードとして  扱うため）
+   * @param document 取り除く先のドキュメント
+   * @param name 取り除きたい artboard / ノードの名前
+   * @returns 取り除いたドキュメント。どちらにも無い名前は `node-not-found`（artboard
+   *   でなければノードとして扱うため）
    */
   remove(
     document: DesignDocument,
@@ -1211,9 +1211,9 @@ export const DesignDocument = {
    * 全体（`collectTokenReferrers`）から絞り込むのではなく走る範囲を狭めているのは、集め
    * たあとに名前でドキュメントを引き直すと、由来を捨ててから復元することになるため。
    *
-   *       @param document 参照元を探すドキュメント
-   *       @param ref 参照されているかを知りたいトークン
-   *       @returns キャンバス上の参照元の並び。artboard 自身の props も含む
+   * @param document 参照元を探すドキュメント
+   * @param ref 参照されているかを知りたいトークン
+   * @returns キャンバス上の参照元の並び。artboard 自身の props も含む
    */
   collectCanvasTokenReferrers(
     document: DesignDocument,

@@ -38,7 +38,7 @@ export type DocumentAccessFailureReason = ValueOf<
  * ル」/ docs/05-architecture.md「Tauri IPC」「保存モデル: 自動保存」「外部編集の検知」）。
  *
  * **この型を共有する経路の一覧はここを正とする**（他の doc はここを指すだけにする）: 開
- * く / 自動保存 /外部変更の監視 / ファイルへの書き戻し の 4 つ。
+ * く / 自動保存 / 外部変更の監視 / ファイルへの書き戻しの 4 つ。
  *
  * 届かなかった理由の語彙はどの経路でも同じで、**どの出来事で起きたか**は受け取る側が持
  * つ。
@@ -53,9 +53,9 @@ export const DocumentAccessFailure = {
    * 届かなかったことを、理由と原文の対にする。ドメインの語彙で組み立てる入口に名前を与
    * えるために置く（構造的型付けなのでリテラルでも同じ値は作れる）。
    *
-   *         @param reason ドキュメントの中身へ届かなかった理由
-   *         @param message 診断用の原文（外の世界がそのまま返した文言）
-   *         @returns その理由と原文を持つ失敗
+   * @param reason ドキュメントの中身へ届かなかった理由
+   * @param message 診断用の原文（外の世界がそのまま返した文言）
+   * @returns その理由と原文を持つ失敗
    */
   create(
     reason: DocumentAccessFailureReason,

@@ -17,8 +17,8 @@ import { NameStyleRule } from "../name-style-rule";
  * `z-index` が要るのは、artboard の枠が z-index を持たない兄弟で**DOM の順に重なる**た
  * め。前に出さないと、隣の artboard へ運んだノードがその白い面の裏へ回る。
  *
- *         @param offset ドキュメント上の px で表した移動量
- *         @returns ずらす宣言・当たり判定から外す宣言・前に出す宣言
+ * @param offset ドキュメント上の px で表した移動量
+ * @returns ずらす宣言・当たり判定から外す宣言・前に出す宣言
  */
 export function repositionPreviewDeclarations(offset: Offset): string {
   return `transform:translate(${Px.create(offset.x)},${Px.create(offset.y)});pointer-events:none;z-index:1`;
@@ -48,8 +48,8 @@ export const CarriedNodeUnclipped = "overflow:visible!important";
  * 受け取るのは、親を付け替えると原点が変わる一方で**画面上の位置は動かない**ため（包ん
  * でいるものの切り取りも同時に解く）。
  *
- *       @returns ずらす規則と、包んでいるものの切り取りを解く規則。座標を動かすドラッグ
- *   を   していなければ何も出さない
+ * @returns ずらす規則と、包んでいるものの切り取りを解く規則。座標を動かすドラッグ
+ *   をしていなければ何も出さない
  */
 export function RepositionPreviewStyle({
   drag,

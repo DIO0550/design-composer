@@ -20,7 +20,7 @@ export const ArtboardHandleTestId = "artboard-handle";
  * 見出しは artboard を動かす掴み口の 1 つ（docs/06-ui.md「キャンバス直接操作」。もう 1
  * つは枠の背景）。**子が全面を覆う artboard**では背景を押せないので残している。
  *
- *       @returns 名前と大きさを並べた見出しの 1 行
+ * @returns 名前と大きさを並べた見出しの 1 行
  */
 export function ArtboardLabel({
   artboard,

@@ -151,11 +151,11 @@ export const CanvasView = {
    * ドキュメント側の座標を受け取らないのは、ノードの大きさを決めるのがブラウザのレイア
    * ウトで、選択に合わせる側の矩形はドキュメントからは出せないため。
    *
-   *       @param view 割り戻しに使う今の見え方
-   *       @param bounds 収めたい矩形（`target`）と、収める先の土台の矩形（`viewport`）
-   *       @returns 対象が余白ぶんの隙間を空けて中央に収まる倍率と位置。倍率は上下限を超
-   *   え  な  い。  対象にも収める先にも面積が要るので、どちらかが潰れているときは今の
-   *   見え  方を  そのまま返す
+   * @param view 割り戻しに使う今の見え方
+   * @param bounds 収めたい矩形（`target`）と、収める先の土台の矩形（`viewport`）
+   * @returns 対象が余白ぶんの隙間を空けて中央に収まる倍率と位置。倍率は上下限を超
+   *   えない。対象にも収める先にも面積が要るので、どちらかが潰れているときは今の
+   *   見え方をそのまま返す
    */
   fitTo(view: CanvasView, bounds: FitBounds): CanvasView {
     const { target, viewport } = bounds;

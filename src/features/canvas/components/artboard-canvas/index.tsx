@@ -53,8 +53,8 @@ const ContentTransformOrigin: CSSProperties["transformOrigin"] = "0 0";
  * **カーソルは happy-dom にも視覚差分にも出ない**ので、間違えても気づく手段が無い。だか
  * ら真偽値もオブジェクトで受け、取り違えを型で防ぐ。
  *
- *       @param pan 今パンしている最中か・パンの構えにあるか
- *       @returns その状態で出すカーソルのクラス
+ * @param pan 今パンしている最中か・パンの構えにあるか
+ * @returns その状態で出すカーソルのクラス
  */
 function canvasCursor(
   pan: Readonly<{ isDragging: boolean; isArmed: boolean }>,

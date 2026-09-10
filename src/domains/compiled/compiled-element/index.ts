@@ -72,9 +72,9 @@ function tokenDeclarations(
  * 「絶対配置の子を持つ Box だけ `relative` を出す」を採らないのは、同じ props の Box が
  * 子によって違う宣言を持つことになり、この関数が props だけでは決まらなくなるため。
  *
- *         @param placement Box 自身の置かれ方。置き場所が決まらないときは `undefined`
- *         @returns 絶対配置なら座標込みの宣言、そうでなければ `position: relative` の 1
- *    件
+ * @param placement Box 自身の置かれ方。置き場所が決まらないときは `undefined`
+ * @returns 絶対配置なら座標込みの宣言、そうでなければ `position: relative` の 1
+ *   件
  */
 function placementDeclarations(
   placement: Placement | undefined,

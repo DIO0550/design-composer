@@ -194,11 +194,11 @@ export const DropEdit = {
    * 所（同じ `SideSnap.toSnapped` の戻り値）へ閉じている。線は丸める前の実測から引くの
    * で、書かれる座標との差は丸めのぶん（最大 0.5px / docs/06-ui.md）だけ残る。
    *
-   *         @param name 置き直すノードの名前
-   *         @param target 落とし先の親から見た座標と、運んでいる間のずらし量（ドキュメ
-   *   ン  ト  上  の px）
-   *         @param guides 揃った辺に引くガイド線（画面上の px）
-   *         @returns 座標の置き直しの落とし方
+   * @param name 置き直すノードの名前
+   * @param target 落とし先の親から見た座標と、運んでいる間のずらし量（ドキュメ
+   *   ント上の px）
+   * @param guides 揃った辺に引くガイド線（画面上の px）
+   * @returns 座標の置き直しの落とし方
    */
   reposition(
     name: string,
@@ -304,9 +304,9 @@ export const NodeDrag = {
    * も artboard が動かなくなる。部品インスタンスの中身は木に無いので、そこを押すとイン
    * スタンス自身が掴まれる（#35）。
    *
-   *         @param document 名前の引き先になるドキュメント
-   *         @param names 押された位置から根へ向かう順のノード名
-   *         @returns 最も内側の掴めるノードの名前。1つも掴めなければ `none`
+   * @param document 名前の引き先になるドキュメント
+   * @param names 押された位置から根へ向かう順のノード名
+   * @returns 最も内側の掴めるノードの名前。1つも掴めなければ `none`
    */
   grabbableName(
     document: DesignDocument,

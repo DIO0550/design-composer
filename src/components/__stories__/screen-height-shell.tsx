@@ -10,7 +10,7 @@ import type { ReactElement, ReactNode } from "react";
  * 本物の画面がこの器の上に積むもの（`EditorTopBar` 等）は写さない。入れると、その帯を触
  * っただけで使う側のストーリーの絵が動く。
  *
- *         @returns 画面の高さを持つ器に children を入れた要素
+ * @returns 画面の高さを持つ器に children を入れた要素
  */
 export function ScreenHeightShell({
   children,

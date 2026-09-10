@@ -54,7 +54,7 @@ export type NodeActions = Readonly<{
  * 居るため。キーボードからの入口は対象の決め方が違う（選択から決める）ので、同じ操作で
  * も別のアクションになる。
  *
- *         @returns 選択・prop の編集・挿入など、画面の部品から呼ぶ操作
+ * @returns 選択・prop の編集・挿入など、画面の部品から呼ぶ操作
  */
 export function useNodeActions(): NodeActions {
   const { state, dispatch } = useEditor();

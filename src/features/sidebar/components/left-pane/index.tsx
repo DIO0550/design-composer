@@ -99,7 +99,7 @@ function LeftPaneContent({
  * 不在を `undefined` ではなく `Option` にしているのは、行き先を足して `case` を足し忘れ
  * たときにコンパイルエラーにするため。
  *
- *         @returns Assets なら部品化のフッター、他の行き先では不在
+ * @returns Assets なら部品化のフッター、他の行き先では不在
  */
 function leftPaneFooter({
   view,

@@ -89,9 +89,9 @@ export const CanvasBounds = {
    * 辺を名前で指す語彙は `unit/side` に既にあるのでそちらへ揃える。向きで引く `start`
    * と軸で引く `edge` もここへ委譲し、**どの数値がどの辺かを 1 箇所に閉じる**。
    *
-   *         @param bounds 辺を知りたい矩形
-   *         @param side 知りたい辺
-   *         @returns その辺の座標（画面上の px）
+   * @param bounds 辺を知りたい矩形
+   * @param side 知りたい辺
+   * @returns その辺の座標（画面上の px）
    */
   side(bounds: CanvasBounds, side: Side): number {
     switch (side) {
@@ -118,10 +118,10 @@ export const CanvasBounds = {
    * ーマに無いからにすぎない（docs/03-schema.md）。border が入ると吸い付く位置がずれる
    * が、テストの実測は差し替えなので**1 件も落ちずに通る**（気づく手段が無い）。
    *
-   *         @param parent 原点になる親の矩形
-   *         @param offset 親の左上から見た位置（画面上の px）
-   *         @param size 大きさを取る矩形
-   *         @returns 親の中のその位置に、その大きさで置かれた矩形
+   * @param parent 原点になる親の矩形
+   * @param offset 親の左上から見た位置（画面上の px）
+   * @param size 大きさを取る矩形
+   * @returns 親の中のその位置に、その大きさで置かれた矩形
    */
   placedAt(
     parent: CanvasBounds,
@@ -143,9 +143,9 @@ export const CanvasBounds = {
    * んで読まれるので結果を表す語形に揃えるため（`Placement.moveBy` とは型が違うので混ざ
    * らない）。
    *
-   *         @param bounds ずらす矩形
-   *         @param offset ずらす量
-   *         @returns 左上をその量だけ動かした矩形
+   * @param bounds ずらす矩形
+   * @param offset ずらす量
+   * @returns 左上をその量だけ動かした矩形
    */
   movedBy(bounds: CanvasBounds, offset: Offset): CanvasBounds {
     return {
@@ -249,9 +249,9 @@ export const CanvasBounds = {
    * `create` / `from*` にしないのは、それらが材料から値を作る入口の語で、ここが矩形から
    * 矩形を導く操作だから（`relativeTo` / `originShift` と同じ語形）。
    *
-   *         @param boundsList 含めたい矩形の並び
-   *         @returns すべてを含む最小の矩形。並びが空なら `none`（囲む対象が無いと矩形
-   *   が  決  ま  らない）
+   * @param boundsList 含めたい矩形の並び
+   * @returns すべてを含む最小の矩形。並びが空なら `none`（囲む対象が無いと矩形
+   *   が決まらない）
    */
   enclosing(boundsList: readonly CanvasBounds[]): Option<CanvasBounds> {
     if (boundsList.length === 0) {

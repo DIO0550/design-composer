@@ -38,7 +38,7 @@ const AccentClasses = {
  * 掴んでいる間は掴んでいることを優先して出す。出どころは選択が変わらない限り残るので、
  * 両方出すとどちらの意味の色か読めなくなる。
  *
- *       @returns 型アイコン・名前・右端の余りを並べた 1 行
+ * @returns 型アイコン・名前・右端の余りを並べた 1 行
  */
 export function AssetRow({
   kind,

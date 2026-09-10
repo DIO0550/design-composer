@@ -211,9 +211,9 @@ function DocumentSaveBadge({
  * は、同じ判断が `DocumentReload` で既に済んでおり、そこでの理由（起こらない空配列の分
  * 岐を書く羽目になる）がここでも変わらないため。
  *
- *         @param errors ファイルを取り込めなかった理由。件数だけを出す（中身はキャンバ
- *   ス  下  端  の一覧が出す）
- *         @returns エラーの件数とファイルが不正であることを示すバッジ
+ * @param errors ファイルを取り込めなかった理由。件数だけを出す（中身はキャンバ
+ *   ス下端の一覧が出す）
+ * @returns エラーの件数とファイルが不正であることを示すバッジ
  */
 function FileInvalidBadge({
   errors,
@@ -237,7 +237,7 @@ const ZoomStepButton = "rounded px-1.5 py-0.5 text-gray-600 hover:bg-gray-100";
  * のは、UI 案の倍率の並びが `−` / 倍率 / `+` の 3 つしか描いておらず、描かれていない操
  * 作は既存の流儀へ寄せるため（rules/ui-verification.md）。
  *
- *         @returns 縮小・倍率表示（クリックで等倍に戻す）・拡大を並べた操作列
+ * @returns 縮小・倍率表示（クリックで等倍に戻す）・拡大を並べた操作列
  */
 function CanvasZoom({
   view,

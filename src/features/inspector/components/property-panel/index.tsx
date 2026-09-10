@@ -74,7 +74,7 @@ function SelectionBody({
  * 複数選んでいるときに件数を出すのは、1 つの名前も種別も決まらないため（docs/06-ui.md「選
  * 択」。本文は編集欄を出さないので、ここが唯一の手がかりになる）。
  *
- *         @returns 複数選択なら件数、1 つ選んでいれば名前と種別、何も選んでいなければ空
+ * @returns 複数選択なら件数、1 つ選んでいれば名前と種別、何も選んでいなければ空
  */
 function PropertyPanelTitle({
   selection,

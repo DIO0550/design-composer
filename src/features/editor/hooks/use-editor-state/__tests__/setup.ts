@@ -10,8 +10,8 @@ import { Option } from "@/utils/Option";
  * 解除前の参照ノード**で、`findChildren` は子を持てないノードに `none` を返すため（`NodeTree.allowsChildren`
  * はプリミティブのみ）、ここと同じ `unwrap` にすると落ちるから。
  *
- *         @param state 読み先のエディタの状態
- *         @returns `home` の子の名前を並び順のまま。`home` が居なければテストを落とす
+ * @param state 読み先のエディタの状態
+ * @returns `home` の子の名前を並び順のまま。`home` が居なければテストを落とす
  */
 export function homeChildNames(state: EditorState): readonly string[] {
   return Option.unwrap(

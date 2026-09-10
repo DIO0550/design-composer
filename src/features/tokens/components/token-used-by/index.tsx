@@ -20,8 +20,8 @@ const VisibleRowLimit = 3;
  * `switch` に `default` を置かず戻り値を `TypeGlyphKind`（`undefined` を含まない）にし
  * ているので、参照元の種類を足してここを足し忘れるとコンパイルエラーになる。
  *
- *         @param referrer アイコンを出したい参照元
- *         @returns その行に描くアイコンの種類
+ * @param referrer アイコンを出したい参照元
+ * @returns その行に描くアイコンの種類
  */
 function glyphKindOf(referrer: TokenReferrer): TypeGlyphKind {
   switch (referrer.target) {
@@ -68,7 +68,7 @@ function UsedByRow({
  * いのは UI 案がこれを灰色の文字として描き `cursor:pointer` を持たせていないためで、全
  * 参照元をどこで見せるかはキャンバスとの連動（#147）が持つ。
  *
- *       @returns 見出しと件数、参照元の行（0 件なら枠を出さない）
+ * @returns 見出しと件数、参照元の行（0 件なら枠を出さない）
  */
 export function TokenUsedBy({
   selection,

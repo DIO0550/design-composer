@@ -11,7 +11,7 @@ import { EditorState } from "@/features/editor/domains/editor-state";
  * `features/editor/__tests__` に置くのは、状態（`editor-state`）とフック（`use-editor-state`）
  * の両方が同じ並びを要るため。
  *
- *         @returns artboard が 3 枚並ぶドキュメント
+ * @returns artboard が 3 枚並ぶドキュメント
  */
 export function documentWithThreeArtboards(): DesignDocument {
   return DesignDocument.create({

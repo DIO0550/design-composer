@@ -180,7 +180,7 @@ const ResolvedValueLayouts = {
  * 添える位置は class の違いにしかならないので、**崩れに気づける手段は Storybook の視覚
  * 差分だけ**（happy-dom は Tailwind を解決しない）。
  *
- *         @returns 解決できたトークンならその値を添えた選択欄、解決できなければ選択欄だ
+ * @returns 解決できたトークンならその値を添えた選択欄、解決できなければ選択欄だ
  *   け
  */
 function NumericTokenField({
@@ -248,7 +248,7 @@ function LiteralInput({
  * `below`）が決める。取り違えても class の違いにしかならないので、**気づける手段は
  * Storybook の視覚差分だけ**（happy-dom は Tailwind を解決しない）。
  *
- *         @returns 値域に応じた入力欄
+ * @returns 値域に応じた入力欄
  */
 export function PropField({
   field,

@@ -15,7 +15,7 @@ import { SelectionColor } from "../artboard-frame-list";
  * く `useDrawnBounds` と噛み合わない）。`pointer-events-none` は土台の**兄弟**として重
  * なるためで、引いている間は土台が捕捉していて**外してもテストも絵も変わらない**。
  *
- *       @returns 引いている範囲を示す矩形
+ * @returns 引いている範囲を示す矩形
  */
 export function RangeSelectOverlay({
   bounds,

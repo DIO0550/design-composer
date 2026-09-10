@@ -98,9 +98,9 @@ export const KeyShortcut = {
    * `ElementEx` へ移さないのは、どちらを通すかが修飾キーの有無で決まるため。移すと
    * `utils/` が割り当ての語彙を持つ。
    *
-   *         @param shortcut 見ている割り当て
-   *         @param target キー操作の発火元
-   *         @returns フォーカスのある要素が受け取るなら `true`
+   * @param shortcut 見ている割り当て
+   * @param target キー操作の発火元
+   * @returns フォーカスのある要素が受け取るなら `true`
    */
   isConsumedBy(shortcut: KeyShortcut, target: EventTarget | null): boolean {
     if (ElementEx.isTextEditable(target)) {
@@ -135,7 +135,7 @@ export type KeyShortcutBinding = Readonly<{
  * なら `bindings` を `useMemo` で渡す（`onPress` を `useCallback` で包むだけでは効かな
  * い）。
  *
- *         @param bindings 待ち受ける割り当ての並び
+ * @param bindings 待ち受ける割り当ての並び
  */
 export function useKeyShortcuts(bindings: readonly KeyShortcutBinding[]): void {
   useEffect(() => {

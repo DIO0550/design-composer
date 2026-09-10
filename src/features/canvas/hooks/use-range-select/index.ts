@@ -50,9 +50,9 @@ export type RangeSelectControl = Readonly<{
  * レットの行など）で始まったドラッグの解放も届くため、始めていない操作の終わりで選択を
  * 空にすると、そのたびに選択が消える。
  *
- *         @param params 候補の出どころのドキュメントと、選ぶ相手が決まったときに呼ぶ手
- *   続  き
- *         @returns 引いている範囲と、土台へ渡すポインタのハンドラ
+ * @param params 候補の出どころのドキュメントと、選ぶ相手が決まったときに呼ぶ手
+ *   続き
+ * @returns 引いている範囲と、土台へ渡すポインタのハンドラ
  */
 export function useRangeSelect(
   params: Readonly<{

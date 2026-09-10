@@ -32,7 +32,7 @@ const ReorderKeys = {
  * `use-reposition-shortcut` と共有しないのは、畳むと渡す値の型を型引数で受けることにな
  * るため。
  *
- *         @param onReorder 割り当てが押されたときに、その向きで呼ぶ手続き
+ * @param onReorder 割り当てが押されたときに、その向きで呼ぶ手続き
  */
 export function useReorderShortcut(
   onReorder: (step: ReorderStep) => void,

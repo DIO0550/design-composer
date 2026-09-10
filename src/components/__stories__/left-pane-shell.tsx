@@ -28,7 +28,7 @@ const ShellClass = `${LeftPaneWidthClass} border border-gray-300 bg-white`;
  * 本物のパネルを使えないのは、幅を持っているのが親のグリッドとレールの引き算で単体では
  * 幅が出ないうえ、横断層から `features/` を import できないため。
  *
- *         @returns 受け取った中身を、左ペインのパネルと同じ幅の枠に入れたもの
+ * @returns 受け取った中身を、左ペインのパネルと同じ幅の枠に入れたもの
  */
 export function LeftPaneShell({
   children,

@@ -744,12 +744,12 @@ export const SelectionControls = {
    * ・循環している）をここへ書き写すと解除そのもの（`DesignDocument.detach`）と二重管理
    * になり、片方だけ変わったときにボタンの出方と結果が食い違う。
    *
-   *         @param selection 選択とドキュメントの出どころ
-   *         @returns インスタンスを選んでいるなら出どころの部品つきの公開 prop、  複数
-   *   選  ん  で  いるなら編集欄を持たない `multiple`、  それ以外は `group` ごとのセク
-   *   ショ  ン。  何も  選んでいないとき、および選んでいる  名前がドキュメントに無いと
-   *   きは  `none`。   スキ  ーマの分からない `type`・解決できない部品では、選択はある
-   *   ので  `some` だが  セクシ  ョンが空になる
+   * @param selection 選択とドキュメントの出どころ
+   * @returns インスタンスを選んでいるなら出どころの部品つきの公開 prop、複数
+   *   選んでいるなら編集欄を持たない `multiple`、それ以外は `group` ごとのセク
+   *   ション。何も選んでいないとき、および選んでいる名前がドキュメントに無いと
+   *   きは `none`。スキーマの分からない `type`・解決できない部品では、選択はある
+   *   ので `some` だがセクションが空になる
    */
   forSelection(selection: DocumentSelection): Option<SelectionControls> {
     const count = DocumentSelection.count(selection);

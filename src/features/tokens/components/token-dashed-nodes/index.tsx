@@ -30,8 +30,8 @@ function nodeCountText(count: number): string {
  * 4 枝すべてが重なる）。飛び先は破線の先頭で、並びは `collectCanvasReferrerNames` が決
  * めている（#209）。
  *
- *       @returns トークン名・破線の本数・先頭へ飛ぶリンクを並べた帯。破線が 1 本も無い
- *   と  き  と、  選んでいるトークンがドキュメントから消えているときは何も出さない
+ * @returns トークン名・破線の本数・先頭へ飛ぶリンクを並べた帯。破線が 1 本も無い
+ *   ときと、選んでいるトークンがドキュメントから消えているときは何も出さない
  */
 export function TokenDashedNodes({
   selection,
