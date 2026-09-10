@@ -15,11 +15,13 @@ const ClearSelectionShortcut: KeyShortcut = {
 /**
  * 選んでいるものを外す操作をキーボードから行えるようにする（docs/06-ui.md「選択」/ #414）。
  *
- * このフックが持つのは「選択解除に割り当てる組み合わせはどれか」だけで、ページ全体で受けることと入力中は無視することは `useKeyShortcut` に任せる。
+ * このフックが持つのは「選択解除に割り当てる組み合わせはどれか」だけで、ページ全体で受
+ * けることと入力中は無視することは `useKeyShortcut` に任せる。
  *
- * 外れるのはノードの選択だけで、トークンの選択（Tokens タブ）は残る。巻き込むと、トークンを選んだままキャンバスのノードを選び直すことができなくなる。
+ * 外れるのはノードの選択だけで、トークンの選択（Tokens タブ）は残る。巻き込むと、トーク
+ * ンを選んだままキャンバスのノードを選び直すことができなくなる。
  *
- * @param onClearSelection 組み合わせが押されたときに呼ぶ手続き
+ *   @param onClearSelection 組み合わせが押されたときに呼ぶ手続き
  */
 export function useClearSelectionShortcut(onClearSelection: () => void): void {
   useKeyShortcut(ClearSelectionShortcut, onClearSelection);

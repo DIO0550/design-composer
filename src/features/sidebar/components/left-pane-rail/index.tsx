@@ -1,15 +1,18 @@
 import type { ReactNode } from "react";
 
 /**
- * 左ペインが何を映しているか、レールに並ぶ順で（UI 案 docs/Design Composer.html は左端の縦アイコンレールでこれを切り替える /
- * #129）。`Assets` はバイナリ資産ではなく**部品のパレット**で、`docs/06-ui.md` が挙げている「部品一覧」に当たる。
+ * 左ペインが何を映しているか、レールに並ぶ順で（UI 案 docs/Design Composer.html は左端
+ * の縦アイコンレールでこれを切り替える / #129）。`Assets` はバイナリ資産ではなく**部品
+ * のパレット**で、`docs/06-ui.md` が挙げている「部品一覧」に当たる。
  *
- * 並びを**この配列**に持ちレールもここから作るのは、Storybook のビルドでは docgen が export した定数へ `displayName` /
- * `__docgenInfo` を列挙可能なプロパティとして足すことがあり、`Object.values` で走査すると行き先ではない値まで行として並ぶため
- * （配列の `map` は添字だけを見る。vitest では docgen が走らずテストだけでは気付けない / #129）。
+ * 並びを**この配列**に持ちレールもここから作るのは、Storybook のビルドでは docgen が
+ * export した定数へ `displayName` / `__docgenInfo` を列挙可能なプロパティとして足すこと
+ * があり、`Object.values` で走査すると行き先ではない値まで行として並ぶため（配列の
+ * `map` は添字だけを見る。vitest では docgen が走らずテストだけでは気付けない / #129）。
  *
- * これが効くのは**`.tsx` で export しているもの**に限る。docgen の既定の対象は `**\/*.tsx` なので、`.ts` で export した定数は
- * `.tsx` から `Object.values` で走査してよい（#105 で Storybook の実表示で確認）。
+ * これが効くのは**`.tsx` で export しているもの**に限る。docgen の既定の対象は
+ * `**\/*.tsx` なので、`.ts` で export した定数は `.tsx` から `Object.values` で走査して
+ * よい（#105 で Storybook の実表示で確認）。
  */
 const LeftPaneViewOrder = ["layers", "assets", "tokens"] as const;
 
@@ -17,11 +20,14 @@ const LeftPaneViewOrder = ["layers", "assets", "tokens"] as const;
 export type LeftPaneView = (typeof LeftPaneViewOrder)[number];
 
 /**
- * 行き先を名前で指すための対応表。消費側が綴りを直接書かずに済むよう置く（rules/coding.md「値の集合から union を導出する」）。
+ * 行き先を名前で指すための対応表。消費側が綴りを直接書かずに済むよう置く（rules/coding.md
+ * 「値の集合から union を導出する」）。
+ *
  * 過不足は `Record<Capitalize<LeftPaneView>, LeftPaneView>` がコンパイルエラーにする。
  *
- * キーの型を `LeftPaneView` のままにしないのは、行き先を PascalCase で指す形にすると `Capitalize` を通さないと `satisfies` が
- * 落ちるため。行き先の id にハイフンや複数語が入るとキーの綴りを別に持つことになる。
+ * キーの型を `LeftPaneView` のままにしないのは、行き先を PascalCase で指す形にすると
+ * `Capitalize` を通さないと `satisfies` が落ちるため。行き先の id にハイフンや複数語が
+ * 入るとキーの綴りを別に持つことになる。
  */
 export const LeftPaneViews = {
   Layers: "layers",

@@ -21,12 +21,16 @@ const FlexOnly = {
 } as const satisfies EnabledWhen;
 
 /**
- * primitive の型を名前で指すための対応表。`PrimitiveType` はここから導出し、二重管理しない。走査するときは
- * `Object.values(PrimitiveTypes)` で並びにする。
+ * primitive の型を名前で指すための対応表。`PrimitiveType` はここから導出し、二重管理し
+ * ない。
  *
- * `satisfies` を付けないのは、`PrimitiveType` を自身から導出しているので `Record<Capitalize<PrimitiveType>,
- * PrimitiveType>` が循環するため。代わりに**キーの綴りと過不足**は `__tests__/schema.type.test.ts` が、**値**が
- * 2 種類に閉じていることは `__tests__/schema.edge.test.ts` が押さえる。
+ * 走査するときは `Object.values(PrimitiveTypes)` で並びにする（`token/` の 3 定数と違い、
+ * 並びを返すコンパニオンの入口をここは持たないため）。
+ *
+ * `satisfies` を付けないのは、`PrimitiveType` を自身から導出しているので
+ * `Record<Capitalize<PrimitiveType>, PrimitiveType>` が循環するため。代わりに**キーの綴
+ * りと過不足**は `__tests__/schema.type.test.ts` が、**値**が 2 種類に閉じていることは
+ * `__tests__/schema.edge.test.ts` が押さえる。
  */
 export const PrimitiveTypes = {
   Box: "Box",
@@ -99,12 +103,12 @@ export const BoxSchema = {
   props: {
     ...PlacementProps,
     /*
-     * `arrangement` などへ改名しない。この prop も `group: "layout"` に属し、
-     * パネルの節見出しは group の綴りから作られるので、見出しと行に同じ語が並ぶ
-     * （UI 案 docs/Design Composer.html はここを `direction` と描いている）。
-     * それでも prop 名を docs/03 の綴りに揃えるのは、表示名を持たず prop 名の整形で
-     * 出す決まりだから（docs/03「表示名フィールドは持たない」）。見出しの語を変えるなら
-     * group の綴りごと変える話になり、この prop 単独の判断ではない。
+     * `arrangement` などへ改名しない。この prop も `group: "layout"` に属し、パネルの節
+     * 見出しは group の綴りから作られるので、見出しと行に同じ語が並ぶ（UI 案
+     * docs/Design Composer.html はここを `direction` と描いている）。それでも prop 名を
+     * docs/03 の綴りに揃えるのは、表示名を持たず prop 名の整形で出す決まりだから（docs/03
+     * 「表示名フィールドは持たない」）。見出しの語を変えるなら group の綴りごと変える話
+     * になり、この prop 単独の判断ではない。
      */
     layout: {
       domain: "enum",

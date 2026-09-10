@@ -9,16 +9,18 @@ import { Option } from "@/utils/Option";
 /**
  * ドキュメントと、その中で選ばれているものの対（docs/06-ui.md「選択」）。
  *
- * 2 つを 1 つの型にまとめるのは、**片方だけでは答えが決まらない**ため。選ばれているのは名前だけで、それが
- * artboard なのかノードなのか・どの artboard に載っているのかは、どのドキュメントの中の名前かが決まって初めて
- * 引ける。選ばれうるのは**artboard とその配下のノード**で、部品の定義やトークンは入らない。
+ * 2 つを 1 つの型にまとめるのは、**片方だけでは答えが決まらない**ため。選ばれているのは
+ * 名前だけで、それが artboard なのかノードなのか・どの artboard に載っているのかは、ど
+ * のドキュメントの中の名前かが決まって初めて引ける。選ばれうるのは**artboard とその配下
+ * のノード**で、部品の定義やトークンは入らない。
  *
- * `Selection`（選んだ 1 つの正体 = 名前と種別）とは別物で、あちらはドキュメントも件数も持たない。トークン側の
- * 対は `TokenSelection`。
+ * `Selection`（選んだ 1 つの正体 = 名前と種別）とは別物で、あちらはドキュメントも件数も
+ * 持たない。トークン側の対は `TokenSelection`。
  *
- * 名前がドキュメントに在ることは**検証しない**。生成時に弾くと、編集画面が選んでいるもの（`EditorState` の
- * 選択）と対が答えるものが食い違いうるので、不変条件は選択を書き換える側に 1 つだけ置く。ここは名前を引き直す
- * ので、在らない名前は行の強調にも `currentArtboard` にも出ない。
+ * 名前がドキュメントに在ることは**検証しない**。生成時に弾くと、編集画面が選んでいるも
+ * の（`EditorState` の選択）と対が答えるものが食い違いうるので、不変条件は選択を書き換
+ * える側に 1 つだけ置く。ここは名前を引き直すので、在らない名前は行の強調にも
+ * `currentArtboard` にも出ない。
  */
 export type DocumentSelection = Readonly<{
   document: DesignDocument;
@@ -138,16 +140,18 @@ export const DocumentSelection = {
   },
 
   /**
-   * 選んでいるものがすべて同じ部品のインスタンスであるときの、その部品の名前（UI 案 docs/Design Composer.html の
-   * `from ◆ primary-button` と `Assets` の `source of selection`）。
+   * 選んでいるものがすべて同じ部品のインスタンスであるときの、その部品の名前（UI 案
+   * docs/Design Composer.html の `from ◆ primary-button` と `Assets` の
+   * `source of selection`）。
    *
-   * 右ペインと `Assets` パネルが同じ答えを要るので、参照先を引く経路をここ 1 つにする（別々に導出すると「パネルは
-   * インスタンスなのに `Assets` はどこも光らない」が作れる）。複数選択でも答えるのは、まとめて選べるのが「同じ
-   * 部品のインスタンス」だけで出どころが 1 つに定まるため。
+   * 右ペインと `Assets` パネルが同じ答えを要るので、参照先を引く経路をここ 1 つにする（別
+   * 々に導出すると「パネルはインスタンスなのに `Assets` はどこも光らない」が作れる）。
+   * 複数選択でも答えるのは、まとめて選べるのが「同じ部品のインスタンス」だけで出どころ
+   * が 1 つに定まるため。
    *
-   * @param selection 選択とドキュメントの出どころ
-   * @returns 選択が空でなく、すべて同じ部品のインスタンスならその部品名。
-   *   1 つでもインスタンスでないもの・別の部品を指すものが混ざれば `none`
+   *   @param selection 選択とドキュメントの出どころ
+   *   @returns 選択が空でなく、すべて同じ部品のインスタンスならその部品名。  1 つでもイ
+   *   ンスタンスでないもの・別の部品を指すものが混ざれば `none`
    */
   sourceName(selection: DocumentSelection): Option<string> {
     const document = selection.document;
@@ -162,18 +166,19 @@ export const DocumentSelection = {
   },
 
   /**
-   * 今ツリーが中身を映している artboard（UI 案 docs/Design Composer.html の `Layers` 見出しの右に出る名前）。選んで
-   * いるのが artboard ならそれ自身、ノードならそれを載せている artboard、何も選んでいなければ先頭の 1 枚。
+   * 今ツリーが中身を映している artboard（UI 案 docs/Design Composer.html の `Layers` 見
+   * 出しの右に出る名前）。選んでいるのが artboard ならそれ自身、ノードならそれを載せて
+   * いる artboard、何も選んでいなければ先頭の 1 枚。
    *
-   * 複数選択のときは**先頭の名前**が載っている artboard を映す。まとめて選んだインスタンスは複数の artboard に
-   * 散らばりうるがツリーは 1 枚しか映せないためで、`none` にして先頭の 1 枚へ落とすと選んだ結果ツリーが無関係の
-   * artboard へ飛ぶ。
+   * 複数選択のときは**先頭の名前**が載っている artboard を映す。まとめて選んだインスタ
+   * ンスは複数の artboard に散らばりうるがツリーは 1 枚しか映せないためで、`none` にし
+   * て先頭の 1 枚へ落とすと選んだ結果ツリーが無関係の artboard へ飛ぶ。
    *
-   * どれを見ているかを状態として持たずここで導出するのは、持つと「選択のどれもが今見ている artboard に無い」と
-   * いう食い違った状態が表現できてしまうため。
+   * どれを見ているかを状態として持たずここで導出するのは、持つと「選択のどれもが今見て
+   * いる artboard に無い」という食い違った状態が表現できてしまうため。
    *
-   * @param selection 選択とドキュメントの出どころ
-   * @returns 今見ている artboard。artboard が 1 枚も無ければ `none`
+   *   @param selection 選択とドキュメントの出どころ
+   *   @returns 今見ている artboard。artboard が 1 枚も無ければ `none`
    */
   currentArtboard(selection: DocumentSelection): Option<Artboard> {
     const document = selection.document;

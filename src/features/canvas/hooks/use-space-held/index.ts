@@ -34,12 +34,15 @@ function pressesSpace(event: KeyboardEvent): boolean {
 /**
  * space を押している間だけ真を返す（docs/06-ui.md「キャンバス直接操作」のパン）。
  *
- * `useKeyShortcut` に載せていないのは、あれが**押下 1 回に手続きを結び付ける**形で当たった押下を `preventDefault` するため。ここが要るのは押している**間**の状態
- * （keyup まで見る）で、パンの修飾として既定動作を止める理由も無い（「文字を打ち込める場所と選択欄では素のキーを通さない」規則だけは `KeyShortcut.isConsumedBy` を共有）。
+ * `useKeyShortcut` に載せていないのは、あれが**押下 1 回に手続きを結び付ける**形で当た
+ * った押下を `preventDefault` するため。ここが要るのは押している**間**の状態（keyup ま
+ * で見る）で、パンの修飾として既定動作を止める理由も無い（「文字を打ち込める場所と選択
+ * 欄では素のキーを通さない」規則だけは `KeyShortcut.isConsumedBy` を共有）。
  *
- * ウィンドウのフォーカスが外れたときに構えを解くのは、そのあいだの keyup が届かないため。解かないと、戻ってきたときに押していない space で掴んだドラッグがパンになる。
+ * ウィンドウのフォーカスが外れたときに構えを解くのは、そのあいだの keyup が届かないため。
+ * 解かないと、戻ってきたときに押していない space で掴んだドラッグがパンになる。
  *
- * @returns space を押している間だけ真
+ *   @returns space を押している間だけ真
  */
 export function useSpaceHeld(): boolean {
   const [isHeld, setIsHeld] = useState(false);

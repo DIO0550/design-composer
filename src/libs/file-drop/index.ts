@@ -36,15 +36,15 @@ function toDroppedPaths(payload: unknown): Option<readonly string[]> {
 }
 
 /**
- * ウィンドウへのファイルのドロップ（docs/05-architecture.md「Tauri IPC」）。配るのは落と
- * されたパスの並びだけで、開けるファイルかどうかは見ない。
+ * ウィンドウへのファイルのドロップ（docs/05-architecture.md「Tauri IPC」）。配るのは落
+ * とされたパスの並びだけで、開けるファイルかどうかは見ない。
  *
  * 拡張子で絞らないのは、落としたのに何も起きないファイルができるため（開こうとして失敗
  * させれば理由が画面に出る）。`onDragDropEvent` ではなく `listen` で受けるのは、
  * `@tauri-apps/*` の import 先を `libs/tauri-ipc` の外へ増やさないため。
  *
- * ドロップを OS 側で受けるので、Windows では webview の HTML5 ドラッグ & ドロップが使えない
- * （今のところ使っている箇所は無い）。
+ * ドロップを OS 側で受けるので、Windows では webview の HTML5 ドラッグ & ドロップが使え
+ * ない（今のところ使っている箇所は無い）。
  */
 export type FileDrop = Readonly<{
   /**

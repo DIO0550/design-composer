@@ -97,11 +97,12 @@ export const FontWeight = {
 } as const;
 
 /**
- * フィールドを名前で指すための対応表。`TypographyField` はここから導出し、フィールドを二重管理しない。
+ * フィールドを名前で指すための対応表。`TypographyField` はここから導出し、フィールドを
+ * 二重管理しない。
  *
- * `satisfies` が見るのは**キーの過不足と綴り**だけで、キーに割り当てた値がずれてもここでは落ちない。
- * **値の網羅**は `__tests__/typography.type.test.ts`
- * (`TypographyField` == `keyof Required<TypographyToken>`)で担保する。並びが要るときは
+ * `satisfies` が見るのは**キーの過不足と綴り**だけで、キーに割り当てた値がずれてもここ
+ * では落ちない。**値の網羅**は `__tests__/typography.type.test.ts` (`TypographyField`
+ * == `keyof Required<TypographyToken>`)で担保する。並びが要るときは
  * `TypographyToken.fields()` を使い、`Object.values` をそこ 1 箇所に閉じる。
  */
 export const TypographyFields = {

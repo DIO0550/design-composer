@@ -37,12 +37,13 @@ export const DocumentErrorLocation = {
 /**
  * 画面に出すエラーの種別。テキストの解釈由来とスキーマ検証由来の両方を含む。
  *
- * 字句スキャン（`syntax-error` / `duplicate-key`）と版の解決（`unsupported-*` 以下 3 つ）の綴りを直接並べて
- * いるのは、それらを報告する `libs/` をドメインから import できないため。一致は `libs/document-json` 側の型
- * テスト（`document-json.type.test.ts`）が固定する。
+ * 字句スキャン（`syntax-error` / `duplicate-key`）と版の解決（`unsupported-*` 以下 3 つ）
+ * の綴りを直接並べているのは、それらを報告する `libs/` をドメインから import できないた
+ * め。一致は `libs/document-json` 側の型テスト（`document-json.type.test.ts`）が固定す
+ * る。
  *
- * 出どころから導出する（kind ごと `src/domains/` へ移す）ことはしない。libs の境界の掃除（#247）の範囲を
- * 超えるため。
+ * 出どころから導出する（kind ごと `src/domains/` へ移す）ことはしない。libs の境界の掃
+ * 除（#247）の範囲を超えるため。
  */
 export type DocumentErrorKind =
   | "syntax-error"

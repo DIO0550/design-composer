@@ -70,14 +70,16 @@ import type { Option } from "@/utils/Option";
 type RightPaneParts = Readonly<{ title: ReactNode; body: ReactElement }>;
 
 /**
- * 行き先ごとの右ペインの中身。`Assets` がプロパティパネルのままなのは、パレットが見るだけの場所で選択に触れないため
- * （UI 案「Assets is browse-only — the inspector keeps the previous selection」）。
+ * 行き先ごとの右ペインの中身。`Assets` がプロパティパネルのままなのは、パレットが見るだ
+ * けの場所で選択に触れないため（UI 案「Assets is browse-only — the inspector keeps the
+ * previous selection」）。
  *
- * 器を返さず帯と本文に分けて返すのは、器を着せるところを 1 箇所にするため（行き先ごとに着せると、片方だけ器を落とした状態が書ける）。
- * 戻り値を `RightPaneParts`（`undefined` を含まない）と書いているのは、行き先を足して `case` を足し忘れたときにコンパイルエラーに
- * するため。
+ * 器を返さず帯と本文に分けて返すのは、器を着せるところを 1 箇所にするため（行き先ごとに
+ * 着せると、片方だけ器を落とした状態が書ける）。戻り値を `RightPaneParts`（`undefined`
+ * を含まない）と書いているのは、行き先を足して `case` を足し忘れたときにコンパイルエラ
+ * ーにするため。
  *
- * @returns Tokens ならトークンの編集欄、Layers / Assets ならプロパティパネル
+ *   @returns Tokens ならトークンの編集欄、Layers / Assets ならプロパティパネル
  */
 function rightPaneParts({
   view,
@@ -149,11 +151,12 @@ type CanvasDock =
 /**
  * 今どちらの状態かと、そこで出すエラーを決める。
  *
- * ファイルが不正な間は表示自体がファイルと食い違っているので、そちらの一覧だけを出す。2 つの一覧を並べると、外部エディタでしか直せない
- * ファイルの一覧が、アプリ内で直せるドキュメントの一覧の場所を奪う。
+ * ファイルが不正な間は表示自体がファイルと食い違っているので、そちらの一覧だけを出す。2
+ * つの一覧を並べると、外部エディタでしか直せないファイルの一覧が、アプリ内で直せるドキ
+ * ュメントの一覧の場所を奪う。
  *
- * @param state エラーの出どころになるエディタの状態
- * @returns ファイルが不正ならそのエラー、そうでなければ編集で作ったエラー
+ *   @param state エラーの出どころになるエディタの状態
+ *   @returns ファイルが不正ならそのエラー、そうでなければ編集で作ったエラー
  */
 function canvasDock(state: EditorState): CanvasDock {
   const fileValidity = state.fileValidity;
@@ -164,14 +167,18 @@ function canvasDock(state: EditorState): CanvasDock {
 }
 
 /**
- * 下端に積む器。エラー一覧とキャンバスのツールバーが同じ場所を取り合うため、順序と間隔はここが持つ（各部品が浮くと重なる）。
+ * 下端に積む器。エラー一覧とキャンバスのツールバーが同じ場所を取り合うため、順序と間隔
+ * はここが持つ（各部品が浮くと重なる）。
  *
- * **この位置指定を落としてもテストは落ちない** — happy-dom はレイアウトを解決しない。気づく手段は `OpenedDocumentEditor` のストーリーの
- * 視覚差分だけで、それが成り立つのは**ストーリーが高さの決まった器に入っているとき**に限る（#322。器を外すとここが撮影範囲の外へ出る）。
+ * **この位置指定を落としてもテストは落ちない** — happy-dom はレイアウトを解決しない。気
+ * づく手段は `OpenedDocumentEditor` のストーリーの視覚差分だけで、それが成り立つのは**
+ * ストーリーが高さの決まった器に入っているとき**に限る（#322。器を外すとここが撮影範囲
+ * の外へ出る）。
  *
- * ドックだけのストーリーを立てないのは、積み方そのものがここの判断で、ストーリー側へ写すと本物の積み方が壊れても気づけないため。
+ * ドックだけのストーリーを立てないのは、積み方そのものがここの判断で、ストーリー側へ写
+ * すと本物の積み方が壊れても気づけないため。
  *
- * @returns 子を縦に積み、キャンバスの下端に寄せる器
+ *   @returns 子を縦に積み、キャンバスの下端に寄せる器
  */
 function CanvasDockStack({ children }: Readonly<{ children: ReactNode }>) {
   return (
@@ -301,13 +308,13 @@ function EditorPanes({
   );
 
   /*
-   * 収めるズームの 2 本は `useEditShortcuts` へは寄せない。あちらが張るのは
-   * ドキュメントと編集履歴に触れる操作で、`useEditor()` の dispatch しか持たない。
-   * ズームは表示だけの操作で、収める先を知っているのは `canvasView`（ここの props）。
+   * 収めるズームの 2 本は `useEditShortcuts` へは寄せない。あちらが張るのはドキュメント
+   * と編集履歴に触れる操作で、`useEditor()` の dispatch しか持たない。ズームは表示だけ
+   * の操作で、収める先を知っているのは `canvasView`（ここの props）。
    *
-   * 上部バーの拡大 / 縮小の隣にボタンを置かない。UI 案
-   * （docs/Design Composer.html）に `zoom` / `fit` / 「ズーム」の綴りは 1 つも無く、
-   * 倍率の操作そのものが描かれていないため（`useEditShortcuts` と同じ線引き）。
+   * 上部バーの拡大 / 縮小の隣にボタンを置かない。UI 案（docs/Design Composer.html）に
+   * `zoom` / `fit` / 「ズーム」の綴りは 1 つも無く、倍率の操作そのものが描かれていない
+   * ため（`useEditShortcuts` と同じ線引き）。
    */
   useFitDocumentShortcut(() =>
     canvasView.fitTo(

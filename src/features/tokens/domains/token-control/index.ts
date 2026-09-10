@@ -20,15 +20,15 @@ import { Px } from "@/domains/unit/px";
 import { Option } from "@/utils/Option";
 
 /*
- * トークン編集 UI はトークンの種別の走査だけで組み立てる（docs/06-ui.md
- * 「編集操作の一覧」の tokens 編集）。種別ごとの見せ方・入力欄の対応表をここに集め、
- * 一覧とエディタのコンポーネント側には種別で分岐するコードを書かない。
+ * トークン編集 UI はトークンの種別の走査だけで組み立てる（docs/06-ui.md「編集操作の一覧」
+ * の tokens 編集）。種別ごとの見せ方・入力欄の対応表をここに集め、一覧とエディタのコン
+ * ポーネント側には種別で分岐するコードを書かない。
  *
- * この導出は `src/domains/` ではなくこの feature に置く。`valueText` や
- * `TokenPreview` の `widthPx` のように**綴りと見せ方そのもの**を持っているため
- * （`rules/architecture.md`「表示のための綴りをドメインへ持ち込まない」）。
- * 同じ形に見える `src/domains/session/prop-control` は昇格させてある。あちらが
- * 持つのは値の種別までで、綴りはパネル側にあるという違いによる。
+ * この導出は `src/domains/` ではなくこの feature に置く。`valueText` や `TokenPreview`
+ * の `widthPx` のように**綴りと見せ方そのもの**を持っているため（`rules/architecture.md`
+ * 「表示のための綴りをドメインへ持ち込まない」）。同じ形に見える
+ * `src/domains/session/prop-control` は昇格させてある。あちらが持つのは値の種別までで、
+ * 綴りはパネル側にあるという違いによる。
  */
 
 /** 一覧の行に出す値の見せ方。種別ごとに何を見せられるかが違う。 */
@@ -65,14 +65,15 @@ export type TokenControlInput =
   | Readonly<{ kind: "text"; value: string }>;
 
 /**
- * その行が書き戻す先。書き換え前の値を持つのは、その行が値の一部だけを差し替えるため（色は RGB と不透明度、複合の種別は
- * フィールド）。
+ * その行が書き戻す先。書き換え前の値を持つのは、その行が値の一部だけを差し替えるため（色
+ * は RGB と不透明度、複合の種別はフィールド）。
  *
- * 種別で判別する直和にしているのは、「種別 + フィールド名」を並べて持つと shadows のトークンに fontSize を指す組み合わせが
- * 型で作れてしまうため。不透明度を `part: "rgb" | "alpha"` として平らに足さないのも同じ理由。
+ * 種別で判別する直和にしているのは、「種別 + フィールド名」を並べて持つと shadows のト
+ * ークンに fontSize を指す組み合わせが型で作れてしまうため。不透明度を
+ * `part: "rgb" | "alpha"` として平らに足さないのも同じ理由。
  *
- * `kind` は `TokenKind` と1対1ではない。不透明度の行は色の一部を差し替えるだけなので、`colorsAlpha` が書き戻すのは `colors`
- * の値になる。
+ * `kind` は `TokenKind` と1対1ではない。不透明度の行は色の一部を差し替えるだけなので、
+ * `colorsAlpha` が書き戻すのは `colors` の値になる。
  */
 export type TokenFieldTarget =
   | Readonly<{ kind: "colors"; color: ColorToken }>

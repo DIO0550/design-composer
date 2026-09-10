@@ -2,14 +2,15 @@ import type { ReactNode } from "react";
 import type { Option } from "@/utils/Option";
 
 /**
- * レールで選んだ行き先の中身を出すパネル（UI 案 docs/Design Composer.html の 248px のパネル。見出しを載せた帯が上に付く /
- * #129）。
+ * レールで選んだ行き先の中身を出すパネル（UI 案 docs/Design Composer.html の 248px のパ
+ * ネル。見出しを載せた帯が上に付く / #129）。
  *
- * 縦スクロールするのはこのパネルだけ。レールは常に全部見えていないと行き先を選べないので、器（`EditorLayout.LeftPane`）
- * ではなくここでスクロールを受ける。
+ * 縦スクロールするのはこのパネルだけ。レールは常に全部見えていないと行き先を選べないの
+ * で、器（`EditorLayout.LeftPane`）ではなくここでスクロールを受ける。
  *
- * `footer` をスクロールする本体の**外**へ置くのは、UI 案が `Create component` をパネル下端に固定しているため。不在を
- * `Option` で受けるのは、出し分ける側の `switch` から行き先の抜けをコンパイルエラーにするため。
+ * `footer` をスクロールする本体の**外**へ置くのは、UI 案が `Create component` をパネル
+ * 下端に固定しているため。不在を `Option` で受けるのは、出し分ける側の `switch` から行
+ * き先の抜けをコンパイルエラーにするため。
  */
 export function LeftPanePanel({
   title,

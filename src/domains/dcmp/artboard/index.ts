@@ -92,15 +92,16 @@ const ArtboardUneditableProps: readonly string[] = [
 /**
  * キャンバス上の位置を `x` / `y` の対として読む。
  *
- * 片方だけを不在として通さないのは、位置が対でしか決まらないため（`Json.optional` を 2 つ並べると
- * 「`x` だけがある」が読めてしまい、残りをどう埋めるかを呼び出し側が決めることになる）。
+ * 片方だけを不在として通さないのは、位置が対でしか決まらないため（`Json.optional` を 2
+ * つ並べると「`x` だけがある」が読めてしまい、残りをどう埋めるかを呼び出し側が決めるこ
+ * とになる）。
  *
- * `Offset` 側に置かないのは、`x` / `y` という綴りで**フラットな兄弟フィールドに**書くのが `.dcmp` の
- * artboard の都合であって、`Offset` の性質ではないため。
+ * `Offset` 側に置かないのは、`x` / `y` という綴りで**フラットな兄弟フィールドに**書くの
+ * が `.dcmp` の artboard の都合であって、`Offset` の性質ではないため。
  *
- * @param record 読み取り元の artboard のフィールド一式
- * @returns 位置。`x` と `y` がどちらも無ければ不在を表す `undefined`。
- *   片方だけのとき・数値でないときは失敗
+ *   @param record 読み取り元の artboard のフィールド一式
+ *   @returns 位置。`x` と `y` がどちらも無ければ不在を表す `undefined`。  片方だけのと
+ *   き・数値でないときは失敗
  */
 function canvasPositionFromJson(
   record: JsonRecordCursor,
@@ -225,13 +226,16 @@ export const Artboard = {
   },
 
   /**
-   * artboard の props を Box の props として解決する（docs/01「artboard は…ルートノード(Box)を兼ねる」/
-   * docs/03「Box スキーマを流用する」）。Box スキーマと違う点は 3 つで、それぞれ効き方が異なる。
+   * artboard の props を Box の props として解決する（docs/01「artboard は…ルートノード
+   * (Box)を兼ねる」/ docs/03「Box スキーマを流用する」）。Box スキーマと違う点は 3 つで、
+   * それぞれ効き方が異なる。
    *
-   * - `overflow` の既定が `clip`。**デフォルト**なので artboard 側の指定が勝つ
-   * - サイズは `fixed` **固定**で、長さは artboard の `width` / `height`。props では変えられない
-   * - 配置は `flow` **固定**。ここで固定しないと、持っていない親からの相対で置かれた artboard が描かれる
-   *   （props を照らす先は Box スキーマなのでファイルには書けてしまう）
+   *   - `overflow` の既定が `clip`。**デフォルト**なので artboard 側の指定が勝つ
+   *   - サイズは `fixed` **固定**で、長さは artboard の `width` / `height`。props では
+   *   変えられない
+   *   - 配置は `flow` **固定**。ここで固定しないと、持っていない親からの相対で置かれた
+   *   artboard が描かれる  （props を照らす先は Box スキーマなのでファイルには書けてし
+   *   まう）
    */
   boxProps(artboard: Artboard): ArtboardBoxProps {
     return {

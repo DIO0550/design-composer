@@ -6,8 +6,8 @@ import { ElementEx } from "@/utils/ElementEx";
  * 押下を割り当てへ結び付けるきっかけ。`TypedCharacter` は打たれた文字（`event.key`）、
  * `PhysicalKey` は押された物理キー（`event.code`）。
  *
- * 2 つ要るのは、Shift を押している間の数字段が打つのが数字ではなく記号だから（配列ごとに
- * 綴りが違う）。数字のショートカットは物理キーで待つ。
+ * 2 つ要るのは、Shift を押している間の数字段が打つのが数字ではなく記号だから（配列ごと
+ * に綴りが違う）。数字のショートカットは物理キーで待つ。
  */
 export const KeyTriggers = {
   TypedCharacter: "typed-character",
@@ -28,11 +28,14 @@ type KeyModifiers = Readonly<{
 }>;
 
 /**
- * ページ全体で受けるキーの組み合わせ。きっかけ（`kind`）で 2 つに分かれ、`keys` は打たれた
- * 文字、`codes` は押された物理キーの綴り（`"Digit1"` など）を持つ。
+ * ページ全体で受けるキーの組み合わせ。きっかけ（`kind`）で 2 つに分かれ、`keys` は打た
+ * れた文字、`codes` は押された物理キーの綴り（`"Digit1"` など）を持つ。
  *
- * どちらも並びで持つのは、同じ操作に複数のキーを割り当てる流儀があるため（削除の Delete /
- * Backspace）。割り当てとフックを分けているのは、押されたかの判定に React が要らないため。
+ * `keys` を並びで持つのは、同じ操作に複数のキーを割り当てる流儀があるため（削除の
+ * Delete / Backspace）。`codes` も同じ形にしてあるが、今のところどの割り当ても 1 件しか
+ * 持たない。
+ *
+ * 割り当てとフックを分けているのは、押されたかの判定に React が要らないため。
  */
 export type KeyShortcut = KeyModifiers &
   (
@@ -88,16 +91,16 @@ export const KeyShortcut = {
   /**
    * この割り当てが、フォーカスのある要素に食われるか。
    *
-   * 文字を打ち込める場所ではどの割り当ても通さない（Backspace を割り当てたときに入力欄の
-   * 文字が消せなくなる）。選択欄で通さないのは修飾キーを伴わない割り当てだけで、`⌘Z` まで
-   * 止めると prop を選び直した直後に戻せなくなる。
+   * 文字を打ち込める場所ではどの割り当ても通さない（Backspace を割り当てたときに入力欄
+   * の文字が消せなくなる）。選択欄で通さないのは修飾キーを伴わない割り当てだけで、`⌘Z`
+   * まで止めると prop を選び直した直後に戻せなくなる。
    *
-   * `ElementEx` へ移さないのは、どちらを通すかが修飾キーの有無で決まるため。移すと `utils/`
-   * が割り当ての語彙を持つ。
+   * `ElementEx` へ移さないのは、どちらを通すかが修飾キーの有無で決まるため。移すと
+   * `utils/` が割り当ての語彙を持つ。
    *
-   * @param shortcut 見ている割り当て
-   * @param target キー操作の発火元
-   * @returns フォーカスのある要素が受け取るなら `true`
+   *   @param shortcut 見ている割り当て
+   *   @param target キー操作の発火元
+   *   @returns フォーカスのある要素が受け取るなら `true`
    */
   isConsumedBy(shortcut: KeyShortcut, target: EventTarget | null): boolean {
     if (ElementEx.isTextEditable(target)) {
@@ -120,18 +123,19 @@ export type KeyShortcutBinding = Readonly<{
 }>;
 
 /**
- * ページ全体のキーボードショートカットを複数まとめて張り、当たった割り当てのうち先に
- * 並んでいる 1 件だけを呼ぶ。フォーカスのある要素が受け取る間は無視する（`isConsumedBy`）。
+ * ページ全体のキーボードショートカットを複数まとめて張り、当たった割り当てのうち先に並
+ * んでいる 1 件だけを呼ぶ。フォーカスのある要素が受け取る間は無視する（`isConsumedBy`）。
  *
  * `document` に張るのは、画面のどこにフォーカスがあっても効く操作だから（rules/hooks.md
- * 「本質的にグローバルな関心事」）。1 回の購読で複数を見るのは、割り当ての数だけフックを
- * 呼ぶとフックの数が呼び出し側の表の長さで変わるため。
+ * 「本質的にグローバルな関心事」）。1 回の購読で複数を見るのは、割り当ての数だけフック
+ * を呼ぶとフックの数が呼び出し側の表の長さで変わるため。
  *
- * 当たった押下は既定動作を止める。一致した時点でその押下はアプリの操作なので、ブラウザ側の
- * 動き（矢印のスクロール等）を重ねない。購読は毎 render 張り直すので、安定させたいなら
- * `bindings` を `useMemo` で渡す。
+ * 当たった押下は既定動作を止める。一致した時点でその押下はアプリの操作なので、ブラウザ
+ * 側の動き（矢印のスクロール等）を重ねない。購読は毎 render 張り直すので、安定させたい
+ * なら `bindings` を `useMemo` で渡す（`onPress` を `useCallback` で包むだけでは効かな
+ * い）。
  *
- * @param bindings 待ち受ける割り当ての並び
+ *   @param bindings 待ち受ける割り当ての並び
  */
 export function useKeyShortcuts(bindings: readonly KeyShortcutBinding[]): void {
   useEffect(() => {

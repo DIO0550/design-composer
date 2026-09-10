@@ -14,9 +14,9 @@ const DraftName = "info-panel";
 /**
  * 入力欄を開いて `DraftName` を打つところまで進める。
  *
- * `Labels` を公開して綴りを共有しないのは、7 個の綴りをまとめた内部の表で、公開すると撮影に要らない `instance` /
- * `artboard` まで外へ出るため（逆向きの先例 `ShorthandLabels` は、束ねた行が出す綴りそのものが通しテストの引き当てに
- * 要る点が違う）。
+ * `Labels` を公開して綴りを共有しないのは、7 個の綴りをまとめた内部の表で、公開すると撮
+ * 影に要らない `instance` / `artboard` まで外へ出るため（逆向きの先例 `ShorthandLabels`
+ * は、束ねた行が出す綴りそのものが通しテストの引き当てに要る点が違う）。
  */
 async function enterDraftName(): Promise<void> {
   await userEvent.click(
@@ -111,8 +111,8 @@ export const Naming: Story = {
  * パネルを見たときだけ。判定を守っているのは `__tests__/create-component.edge.test.tsx`
  * と、この絵の画素差（VRT）の 2 つ。
  *
- * 実画面の凍結の見え方はこれではない。淡色（`opacity-45 saturate-[0.4]`）と
- * `inert` は器（`EditorLayout.LeftPane`）が持つので、単体のこの絵には出ない。
+ * 実画面の凍結の見え方はこれではない。淡色（`opacity-45 saturate-[0.4]`）と `inert` は
+ * 器（`EditorLayout.LeftPane`）が持つので、単体のこの絵には出ない。
  */
 export const Frozen: Story = {
   name: "ファイルが不正な間に部品名を打っている",

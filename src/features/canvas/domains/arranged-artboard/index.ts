@@ -37,15 +37,18 @@ export type ArrangedSize = Readonly<{ width: number; height: number }>;
 
 export const ArrangedArtboard = {
   /**
-   * 並び全体の置き場所を決める。座標を持つ artboard はその座標へ置き、持たない artboard は**既定の位置**（自分より前の artboard の幅 + 間隔の累積）へ置く。
+   * 並び全体の置き場所を決める。座標を持つ artboard はその座標へ置き、持たない artboard
+   * は**既定の位置**（自分より前の artboard の幅 + 間隔の累積）へ置く。
    *
-   * 座標を持つ artboard も既定の枠を空けたままにするのは、**1 枚を動かしても他がずれない**ようにするため（空けずに詰めると、1 枚目を掴んで動かした瞬間に
-   * 2 枚目が原点へ飛ぶ）。
+   * 座標を持つ artboard も既定の枠を空けたままにするのは、**1 枚を動かしても他がずれな
+   * い**ようにするため（空けずに詰めると、1 枚目を掴んで動かした瞬間に 2 枚目が原点へ飛
+   * ぶ）。
    *
-   * 自動配置されたものが座標を持つものに重なることはある。Figma もフレーム同士の重なりを禁じていないので、避けずに受け入れている。
+   * 自動配置されたものが座標を持つものに重なることはある。Figma もフレーム同士の重なり
+   * を禁じていないので、避けずに受け入れている。
    *
-   * @param artboards コンパイル済みの artboard の並び（`.dcmp` の並び順）
-   * @returns 元の並び順のまま、それぞれの置き場所を添えたもの
+   *   @param artboards コンパイル済みの artboard の並び（`.dcmp` の並び順）
+   *   @returns 元の並び順のまま、それぞれの置き場所を添えたもの
    */
   fromArtboards(
     artboards: readonly CompiledArtboard[],

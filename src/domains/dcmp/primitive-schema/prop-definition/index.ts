@@ -9,12 +9,13 @@ import type { Side } from "@/domains/unit/side";
 import type { ValueOf } from "@/types/ValueOf";
 
 /**
- * その prop が編集可能になる条件。「別の prop が特定の値のときだけ意味を持つ」prop を表す（`width` は
- * `widthMode` が `fixed` のときだけ効く、など）。
+ * その prop が編集可能になる条件。「別の prop が特定の値のときだけ意味を持つ」prop を表
+ * す（`width` は `widthMode` が `fixed` のときだけ効く、など）。
  *
- * 等値と不等値を判別子付きの直和にしてあるのは、条件の種類を足したときに判定側の網羅がコンパイルエラーに
- * なるようにするため。不等値が要るのは、**除きたい値が 1 つで、残りが増えうる**条件があるため（`gap` は
- * `layout` が `free` でなければ効く。等値の列挙だと `layout` に値を足すたびに追従が要る）。
+ * 等値と不等値を判別子付きの直和にしてあるのは、条件の種類を足したときに判定側の網羅が
+ * コンパイルエラーになるようにするため。不等値が要るのは、**除きたい値が 1 つで、残りが
+ * 増えうる**条件があるため（`gap` は `layout` が `free` でなければ効く。等値の列挙だと
+ * `layout` に値を足すたびに追従が要る）。
  */
 export type EnabledWhen =
   | Readonly<{ kind: "equals"; prop: string; equals: PropValue }>
@@ -245,19 +246,23 @@ export const PropDefinitionRecord = {
   },
 
   /**
-   * その props の下で実際に効いている prop 設定の並び。明示設定に、未設定の prop のデフォルトを足したもの。
+   * その props の下で実際に効いている prop 設定の並び。明示設定に、未設定の prop のデフ
+   * ォルトを足したもの。
    *
-   * スキーマに帰属するのは、「どの値が効いているか」がスキーマの宣言で決まるため。この並びが
-   * `collectRefPropNames` と `collectErrors` の共通の走査対象で、片方だけがデフォルトを見る状態に戻ると、参照が
-   * 0 件のトークンを消して dangling が出るという食い違いが利用者に見える。
+   * スキーマに帰属するのは、「どの値が効いているか」がスキーマの宣言で決まるため。この
+   * 並びが `collectRefPropNames` と `collectErrors` の共通の走査対象で、片方だけがデフ
+   * ォルトを見る状態に戻ると、参照が 0 件のトークンを消して dangling が出るという食い違
+   * いが利用者に見える。
    *
-   * `ResolvedProps.resolve` を使えないのは、あちらが宣言済みの prop だけに絞ったレコードを返すのに対し、ここは
-   * `unknown-prop` を報告するために未宣言の prop も残すため。
+   * `ResolvedProps.resolve` を使えないのは、あちらが宣言済みの prop だけに絞ったレコー
+   * ドを返すのに対し、ここは `unknown-prop` を報告するために未宣言の prop も残すため。
+   * `session/prop-control` の `effectiveProps` とも範囲が違う（あちらは binding 由来の
+   * 既定も含む）。
    *
-   * @param schema 効いている値の出どころになる prop 定義
-   * @param props 実際に設定されている props
-   * @returns 明示設定（props の並び順）を先に、デフォルトで補われた prop
-   *   （スキーマの宣言順）を後に並べた prop 設定の並び
+   *   @param schema 効いている値の出どころになる prop 定義
+   *   @param props 実際に設定されている props
+   *   @returns 明示設定（props の並び順）を先に、デフォルトで補われた prop  （スキーマ
+   *   の宣言順）を後に並べた prop 設定の並び
    */
   collectEffectiveAssignments(
     schema: PropDefinitionRecord,

@@ -3,11 +3,14 @@ import { CanvasBounds } from "@/features/canvas/domains/canvas-bounds";
 import { DragThresholdPx } from "@/features/canvas/domains/node-drag";
 
 /**
- * 空き領域から引いている選択の範囲（docs/06-ui.md「範囲選択」）。掴んだ点と今の点の対を、画面上の client 座標で持つ（実測 `DrawnBounds` と揃える）。
+ * 空き領域から引いている選択の範囲（docs/06-ui.md「範囲選択」）。掴んだ点と今の点の対を、
+ * 画面上の client 座標で持つ（実測 `DrawnBounds` と揃える）。
  *
- * 矩形そのものではなく 2 点で持つのは、**どちらへ引いたか**が分からないと「まだ引いていない（手ぶれ）」を判定できないため。
+ * 矩形そのものではなく 2 点で持つのは、**どちらへ引いたか**が分からないと「まだ引いてい
+ * ない（手ぶれ）」を判定できないため。
  *
- * `utils/Range` の名前を借りないのは、あちらが数値の区間（`{ min, max }`）でトークンの値域が使っている別物だから。ここが指すのは画面上の 2 次元の範囲。
+ * `utils/Range` の名前を借りないのは、あちらが数値の区間（`{ min, max }`）でトークンの
+ * 値域が使っている別物だから。ここが指すのは画面上の 2 次元の範囲。
  */
 export type RangeSelect = Readonly<{
   from: Offset;

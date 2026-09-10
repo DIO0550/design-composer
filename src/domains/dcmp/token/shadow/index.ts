@@ -53,13 +53,13 @@ export const Blur = {
 } as const;
 
 /**
- * 影が持つフィールドを名前で指すための対応表(docs/04-tokens.md「shadows」)。`ShadowField` はここから導出し、
- * フィールドを二重管理しない。
+ * 影が持つフィールドを名前で指すための対応表(docs/04-tokens.md「shadows」)。
+ * `ShadowField` はここから導出し、フィールドを二重管理しない。
  *
- * `satisfies` が見るのは**キーの過不足と綴り**だけで、キーに割り当てた値がずれてもここでは落ちない。
- * **値の網羅**は `__tests__/shadow.type.test.ts`
- * (`ShadowField` == `keyof Required<ShadowToken>`)で担保する。並びが要るときは `ShadowToken.fields()` を使い、
- * `Object.values` をそこ 1 箇所に閉じる。
+ * `satisfies` が見るのは**キーの過不足と綴り**だけで、キーに割り当てた値がずれてもここ
+ * では落ちない。**値の網羅**は `__tests__/shadow.type.test.ts` (`ShadowField` ==
+ * `keyof Required<ShadowToken>`)で担保する。並びが要るときは `ShadowToken.fields()` を
+ * 使い、`Object.values` をそこ 1 箇所に閉じる。
  */
 export const ShadowFields = {
   X: "x",
@@ -136,10 +136,12 @@ export const ShadowToken = {
   },
 
   /**
-   * 値を正規形へ倒す。影が正規形を持つのは中の生 hex だけ(docs/04-tokens.md「shadows」の `color`)。
+   * 値を正規形へ倒す。影が正規形を持つのは中の生 hex だけ(docs/04-tokens.md「shadows」
+   * の `color`)。
    *
-   * `spread` の 0 は省略へ倒さない。docs が定めているのは「省略時 0」という既定値の解決規則で、「0 を省略で書く」
-   * という表記の規則ではないため(倒しても `cssValue` も一覧の表示も変わらず、書き出しからキーが 1 つ消えるだけ)。
+   * `spread` の 0 は省略へ倒さない。docs が定めているのは「省略時 0」という既定値の解決
+   * 規則で、「0 を省略で書く」という表記の規則ではないため(倒しても `cssValue` も一覧の
+   * 表示も変わらず、書き出しからキーが 1 つ消えるだけ)。
    *
    * 保存形式の規則なので、書き込みの境界(`Token.normalized`)からだけ通す。
    */

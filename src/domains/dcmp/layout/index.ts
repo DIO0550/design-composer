@@ -27,16 +27,18 @@ export const Layout = {
   Default: Layouts.Column,
 
   /**
-   * props から配置モードを読む。`layout` prop の綴りを知っているのはここだけで、消費側は prop 名を持たない。
+   * props から配置モードを読む。`layout` prop の綴りを知っているのはここだけで、消費側
+   * は prop 名を持たない。
    *
-   * 語彙に無い綴りを `Option` の不在にしない（`Placement.fromProps` / `Size.create` は不在にする）のは、それらが
-   * **書いた値が使えない**ときに描画から落ちるのに対し、配置モードは落ちると箱の中身が並ばなくなるため。代償と
-   * して、`layout` の綴りが不正な親の下では**子の `fill` も既定の親の下にある**ものとして検証される（親の
+   * 語彙に無い綴りを `Option` の不在にしない（`Placement.fromProps` / `Size.create` は
+   * 不在にする）のは、それらが**書いた値が使えない**ときに描画から落ちるのに対し、配置
+   * モードは落ちると箱の中身が並ばなくなるため。代償として、`layout` の綴りが不正な親の
+   * 下では**子の `fill` も既定の親の下にある**ものとして検証される（親の
    * `enum-violation` を直せばやり直される）。
    *
-   * @param props 読み取り元の props（デフォルト解決済みでなくてよい）
-   * @returns 配置モード。未設定・語彙に無い綴りのときは既定（`Default`）
-   *   （不正な値そのものは `DesignDocument.collectErrors` がエラー一覧に出す）
+   *   @param props 読み取り元の props（デフォルト解決済みでなくてよい）
+   *   @returns 配置モード。未設定・語彙に無い綴りのときは既定（`Default`）  （不正な値
+   *   そのものは `DesignDocument.collectErrors` がエラー一覧に出す）
    */
   fromProps(props: Props): Layout {
     const value = props.layout;

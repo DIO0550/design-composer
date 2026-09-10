@@ -8,11 +8,12 @@ const Gray900 = { kind: "colors", name: "gray-900" } as const;
 /**
  * `gray-900` を、参照のしかたが違う 6 通りから指すドキュメント。
  *
- * `TokenReferrer` の 4 つの target をすべて含めるためで、欠けるとその経路を丸ごと消しても一致テストが
- * 通ってしまう。`home-note` だけ `gray-500` を指しているのは、集めすぎ方向でも落ちるようにするため。
+ * `TokenReferrer` の 4 つの target をすべて含めるためで、欠けるとその経路を丸ごと消して
+ * も一致テストが通ってしまう。`home-note` だけ `gray-500` を指しているのは、集めすぎ方
+ * 向でも落ちるようにするため。
  *
- * `typography` の既定（`body`）が指す先も揃えてあるのは、揃えないと Text ごとに `typography` の dangling が
- * 出て、比べたい `gray-900` の分と混ざるため。
+ * `typography` の既定（`body`）が指す先も揃えてあるのは、揃えないと Text ごとに
+ * `typography` の dangling が出て、比べたい `gray-900` の分と混ざるため。
  */
 function setupDocument(): DesignDocument {
   return DesignDocument.create({

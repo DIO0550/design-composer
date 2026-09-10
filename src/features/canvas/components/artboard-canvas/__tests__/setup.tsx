@@ -76,13 +76,16 @@ type CanvasHandlers = Readonly<{
 /**
  * 表示（倍率・位置）とツリー内の移動 / 挿入のドラッグを自分で持つキャンバス。
  *
- * 本番はどちらも編集画面が持ち（`OpenedDocumentEditor`）、運んでいる間のポインタは 3 ペインの器が受ける（掴む場所がパレットにもあるため）。キャンバス
- * 単体の振る舞いはその共有相手に依らないので、ここでは器の役目まで自前で持たせる。
+ * 本番はどちらも編集画面が持ち（`OpenedDocumentEditor`）、運んでいる間のポインタは 3 ペ
+ * インの器が受ける（掴む場所がパレットにもあるため）。キャンバス単体の振る舞いはその共
+ * 有相手に依らないので、ここでは器の役目まで自前で持たせる。
  *
- * **パレットから運ぶ経路はここでは通らない**ので、そちらは編集画面のテスト（`opened-document-editor.asset-drag`）が見る。
+ * **パレットから運ぶ経路はここでは通らない**ので、そちらは編集画面のテスト（`opened-document-editor.asset-drag`）
+ * が見る。
  *
- * 同じ形が `index.stories.tsx` にもあるが 1 箇所へ寄せていないのは、このファイルが `vitest` の `vi` を import しており、story から読むと Storybook の
- * バンドルへ `vitest` が入るため（逆に story 側へ寄せるとテストが Storybook に依存する）。
+ * 同じ形が `index.stories.tsx` にもあるが 1 箇所へ寄せていないのは、このファイルが
+ * `vitest` の `vi` を import しており、story から読むと Storybook のバンドルへ `vitest`
+ * が入るため（逆に story 側へ寄せるとテストが Storybook に依存する）。
  */
 function CanvasWithView(props: CanvasValues & CanvasHandlers) {
   const canvasView = useCanvasView();
@@ -206,15 +209,17 @@ export function artboardList(): Element {
 /**
  * 描かれた位置と大きさをテスト用の値にする。
  *
- * happy-dom はレイアウトを行わず矩形をすべて 0 で返すため、そのままでは**どこが掴める帯か**（リサイズ）も**入力欄を重ねる位置**（インライン編集）も
- * **親どうしの左上のずれ**（親の付け替え）も決まらない。差し替えるのはブラウザが行う測定だけで、その矩形から何が決まるかは実物のドメインが答える
- * （rules/testing.md「プロセス外・制御不能な境界」）。
+ * happy-dom はレイアウトを行わず矩形をすべて 0 で返すため、そのままでは**どこが掴める帯
+ * か**（リサイズ）も**入力欄を重ねる位置**（インライン編集）も**親どうしの左上のずれ**
+ * （親の付け替え）も決まらない。差し替えるのはブラウザが行う測定だけで、その矩形から何
+ * が決まるかは実物のドメインが答える（rules/testing.md「プロセス外・制御不能な境界」）。
  *
- * **2 つの親の矩形を差し替えていないテストでは、原点のずれが 0 になる。** 付け替えで座標が直ることを見たいテストは、必ず両方の親をここに通すこと。
+ * **2 つの親の矩形を差し替えていないテストでは、原点のずれが 0 になる。** 付け替えで座
+ * 標が直ることを見たいテストは、必ず両方の親をここに通すこと。
  *
- * @param name 描かれているノードの名前
- * @param bounds そのノードが描かれていることにする位置と大きさ
- * @returns 測定を差し替えたあとの要素
+ *   @param name 描かれているノードの名前
+ *   @param bounds そのノードが描かれていることにする位置と大きさ
+ *   @returns 測定を差し替えたあとの要素
  */
 export function drawnAt(name: string, bounds: CanvasBounds): HTMLElement {
   const element = drawn(name);

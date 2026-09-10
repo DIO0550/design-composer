@@ -20,8 +20,10 @@ import { ArtboardLabel } from "../artboard-label";
 /**
  * キーボードでも artboard を選べるようにする（`role="button"` は既定の活性化を持たない）。
  *
- * space を含めないのは、`role="button"` の流儀では Enter と space の両方が活性化に当たるものの、space がキャンバス全体でパンの修飾になったため
- * （docs/06-ui.md「キャンバス直接操作」）。枠にフォーカスがあるときだけ意味が割れると、押した瞬間に artboard が選び直される。
+ * space を含めないのは、`role="button"` の流儀では Enter と space の両方が活性化に当た
+ * るものの、space がキャンバス全体でパンの修飾になったため（docs/06-ui.md「キャンバス直
+ * 接操作」）。枠にフォーカスがあるときだけ意味が割れると、押した瞬間に artboard が選び
+ * 直される。
  */
 const ActivationKeys = ["Enter"];
 

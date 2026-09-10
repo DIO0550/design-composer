@@ -86,12 +86,12 @@ export const CanvasBounds = {
   /**
    * 4 辺のうち 1 辺の座標（左右なら x、上下なら y）。
    *
-   * 辺を名前で指す語彙は `unit/side` に既にあるのでそちらへ揃える。向きで引く `start` と軸で引く `edge` もここへ委譲し、**どの数値がどの辺かを 1 箇所に
-   * 閉じる**。
+   * 辺を名前で指す語彙は `unit/side` に既にあるのでそちらへ揃える。向きで引く `start`
+   * と軸で引く `edge` もここへ委譲し、**どの数値がどの辺かを 1 箇所に閉じる**。
    *
-   * @param bounds 辺を知りたい矩形
-   * @param side 知りたい辺
-   * @returns その辺の座標（画面上の px）
+   *   @param bounds 辺を知りたい矩形
+   *   @param side 知りたい辺
+   *   @returns その辺の座標（画面上の px）
    */
   side(bounds: CanvasBounds, side: Side): number {
     switch (side) {
@@ -107,18 +107,21 @@ export const CanvasBounds = {
   },
 
   /**
-   * 親の矩形の左上から測った位置に、指定した大きさで置いた矩形。絶対配置の子の**行き先**を画面上の矩形として組み立てるのに使う。
+   * 親の矩形の左上から測った位置に、指定した大きさで置いた矩形。絶対配置の子の**行き先
+   * **を画面上の矩形として組み立てるのに使う。
    *
-   * 大きさを別の矩形から取るのは、運んでも大きさは変わらないので運んでいるものの実測をそのまま使えるため。
+   * 大きさを別の矩形から取るのは、運んでも大きさは変わらないので運んでいるものの実測を
+   * そのまま使えるため。
    *
-   * **前提: 親の実測矩形（border box）の左上が、絶対配置の子の座標の原点と一致する。** CSS 上の原点は親の padding box なので、一致しているのは `border` 系
-   * prop がまだスキーマに無いからにすぎない（docs/03-schema.md）。border が入ると吸い付く位置がずれるが、
-   * テストの実測は差し替えなので**1 件も落ちずに通る**（気づく手段が無い）。
+   * **前提: 親の実測矩形（border box）の左上が、絶対配置の子の座標の原点と一致する。**
+   * CSS 上の原点は親の padding box なので、一致しているのは `border` 系 prop がまだスキ
+   * ーマに無いからにすぎない（docs/03-schema.md）。border が入ると吸い付く位置がずれる
+   * が、テストの実測は差し替えなので**1 件も落ちずに通る**（気づく手段が無い）。
    *
-   * @param parent 原点になる親の矩形
-   * @param offset 親の左上から見た位置（画面上の px）
-   * @param size 大きさを取る矩形
-   * @returns 親の中のその位置に、その大きさで置かれた矩形
+   *   @param parent 原点になる親の矩形
+   *   @param offset 親の左上から見た位置（画面上の px）
+   *   @param size 大きさを取る矩形
+   *   @returns 親の中のその位置に、その大きさで置かれた矩形
    */
   placedAt(
     parent: CanvasBounds,
@@ -136,12 +139,13 @@ export const CanvasBounds = {
   /**
    * その量だけずらした矩形。大きさは変わらない。
    *
-   * `moveBy` ではなく `movedBy` なのは、同じモジュールの `placedAt` / `relativeTo` と並んで読まれるので結果を表す語形に揃えるため（`Placement.moveBy` とは型が
-   * 違うので混ざらない）。
+   * `moveBy` ではなく `movedBy` なのは、同じモジュールの `placedAt` / `relativeTo` と並
+   * んで読まれるので結果を表す語形に揃えるため（`Placement.moveBy` とは型が違うので混ざ
+   * らない）。
    *
-   * @param bounds ずらす矩形
-   * @param offset ずらす量
-   * @returns 左上をその量だけ動かした矩形
+   *   @param bounds ずらす矩形
+   *   @param offset ずらす量
+   *   @returns 左上をその量だけ動かした矩形
    */
   movedBy(bounds: CanvasBounds, offset: Offset): CanvasBounds {
     return {
@@ -239,12 +243,15 @@ export const CanvasBounds = {
   },
 
   /**
-   * 並び全体を含む最小の矩形。まとめて 1 つの範囲として扱いたいとき（選択したものすべて / artboard すべてを画面へ収める）に使う。
+   * 並び全体を含む最小の矩形。まとめて 1 つの範囲として扱いたいとき（選択したものすべて
+   * / artboard すべてを画面へ収める）に使う。
    *
-   * `create` / `from*` にしないのは、それらが材料から値を作る入口の語で、ここが矩形から矩形を導く操作だから（`relativeTo` / `originShift` と同じ語形）。
+   * `create` / `from*` にしないのは、それらが材料から値を作る入口の語で、ここが矩形から
+   * 矩形を導く操作だから（`relativeTo` / `originShift` と同じ語形）。
    *
-   * @param boundsList 含めたい矩形の並び
-   * @returns すべてを含む最小の矩形。並びが空なら `none`（囲む対象が無いと矩形が決まらない）
+   *   @param boundsList 含めたい矩形の並び
+   *   @returns すべてを含む最小の矩形。並びが空なら `none`（囲む対象が無いと矩形が決ま
+   *   らない）
    */
   enclosing(boundsList: readonly CanvasBounds[]): Option<CanvasBounds> {
     if (boundsList.length === 0) {

@@ -18,15 +18,17 @@ import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 
 /**
- * トークンを参照している箇所1件（UI 案 docs/Design Composer.html の `Used by` の行 / #127）。名前と prop 名は
- * 片方だけでは参照箇所が決まらないため対で持つ。
+ * トークンを参照している箇所1件（UI 案 docs/Design Composer.html の `Used by` の行 /
+ * #127）。名前と prop 名は片方だけでは参照箇所が決まらないため対で持つ。
  *
- * 何の prop かを `target` で判別する直和にしているのは、行に出すアイコンが「artboard / プリミティブ /
- * インスタンス / 部品定義」で変わるため。名前だけを持たせると表示側がドキュメントを引き直すことになり、
- * 集める側が「参照元として集めたのに引けない」という起こり得ない不在を表示側に作る。
+ * 何の prop かを `target` で判別する直和にしているのは、行に出すアイコンが「artboard /
+ * プリミティブ /インスタンス / 部品定義」で変わるため。名前だけを持たせると表示側がドキ
+ * ュメントを引き直すことになり、集める側が「参照元として集めたのに引けない」という起こ
+ * り得ない不在を表示側に作る。
  *
- * `prop` を union で閉じていないのは、インスタンスの上書きで使う公開 prop 名が部品ごとにユーザーが決める
- * もので、仕様（docs/01-file-format.md「publicProps」）が語彙を列挙していないため。
+ * `prop` を union で閉じていないのは、インスタンスの上書きで使う公開 prop 名が部品ごと
+ * にユーザーが決めるもので、仕様（docs/01-file-format.md「publicProps」）が語彙を列挙し
+ * ていないため。
  */
 export type TokenReferrer =
   | Readonly<{ target: "artboard"; name: string; prop: string }>
@@ -63,17 +65,19 @@ function collectSchemaRefProps(
 /**
  * インスタンスの上書きのうち、そのトークンを指しているものの公開 prop 名。
  *
- * 参照ノードが持つのは自分の props ではなく部品への上書きなので、その値が何の prop なのかは公開 prop の
- * binding を辿って初めて決まる（辿るのは `ComponentSet.publicPropTarget` の担当）。
+ * 参照ノードが持つのは自分の props ではなく部品への上書きなので、その値が何の prop なの
+ * かは公開 prop の binding を辿って初めて決まる（辿るのは
+ * `ComponentSet.publicPropTarget` の担当）。
  *
- * 他の経路と違いスキーマデフォルトを足さない。上書きしていない公開 prop に効いているのは部品定義側の値で、
- * その参照は `collectInComponents` が数えるため（足すとインスタンスの数だけ二重に数える）。参照先の部品が
- * 無い・公開 prop に無いときは prop 定義が決まらないので数えない（検証側が報告する）。
+ * 他の経路と違いスキーマデフォルトを足さない。上書きしていない公開 prop に効いているの
+ * は部品定義側の値で、その参照は `collectInComponents` が数えるため（足すとインスタンス
+ * の数だけ二重に数える）。参照先の部品が無い・公開 prop に無いときは prop 定義が決まら
+ * ないので数えない（検証側が報告する）。
  *
- * @param components 公開 prop の binding を辿るための部品一式
- * @param refNode 上書きを持つインスタンスのノード
- * @param ref 参照されているかを知りたいトークン
- * @returns そのトークンを指している公開 prop 名の並び
+ *   @param components 公開 prop の binding を辿るための部品一式
+ *   @param refNode 上書きを持つインスタンスのノード
+ *   @param ref 参照されているかを知りたいトークン
+ *   @returns そのトークンを指している公開 prop 名の並び
  */
 function collectRefNodeRefProps(
   components: ComponentSet,
@@ -224,15 +228,17 @@ export const TokenReferrer = {
   },
 
   /**
-   * artboard 1枚の中で、そのトークンを参照している箇所を集める。部品集合を受け取るのは、インスタンスの
-   * 上書きの prop 定義を解決するために要るため。
+   * artboard 1枚の中で、そのトークンを参照している箇所を集める。部品集合を受け取るのは、
+   * インスタンスの上書きの prop 定義を解決するために要るため。
    *
-   * artboard 自身の props も対象。受け付ける prop の定義は `Artboard.propDefinitions()` が持つので Box スキーマを
-   * 直に見ない（artboard が受け付ける prop の唯一の答えがそちらだから）。
+   * artboard 自身の props も対象。受け付ける prop の定義は `Artboard.propDefinitions()`
+   * が持つので Box スキーマを直に見ない（artboard が受け付ける prop の唯一の答えがそち
+   * らだから）。
    *
-   * ただし検証側（`validation` の `collectArtboardErrors`）は Box スキーマを照らしており、artboard だけ照らす先が
-   * 2 通りある。artboard 固有の既定がトークンを指した時点で参照元と dangling が食い違うが、**そうなっても
-   * 落ちるテストは無い**（寄せられない理由は `collectArtboardErrors` の中のコメントが持つ）。
+   * ただし検証側（`validation` の `collectArtboardErrors`）は Box スキーマを照らしてお
+   * り、artboard だけ照らす先が 2 通りある。artboard 固有の既定がトークンを指した時点で
+   * 参照元と dangling が食い違うが、**そうなっても落ちるテストは無い**（寄せられない理
+   * 由は `collectArtboardErrors` の中のコメントが持つ）。
    */
   collectInArtboard(
     components: ComponentSet,
@@ -254,12 +260,13 @@ export const TokenReferrer = {
   /**
    * 部品定義の中で、そのトークンを参照している箇所を集める。
    *
-   * 部品定義の中の参照も数えるのは、初期部品セットの見た目の prop がすべてデフォルトテーマのトークンを参照
-   * しており（docs/04-tokens.md「初期部品セット」）、外側だけを見ると新規ドキュメントのトークンがほとんど
-   * 「どこからも使われていない」と読めてしまうため。
+   * 部品定義の中の参照も数えるのは、初期部品セットの見た目の prop がすべてデフォルトテ
+   * ーマのトークンを参照しており（docs/04-tokens.md「初期部品セット」）、外側だけを見る
+   * と新規ドキュメントのトークンがほとんど「どこからも使われていない」と読めてしまうた
+   * め。
    *
-   * 部品集合をまとめて受け取るのは、名前で引き直すと「引けなかったとき」の分岐が生まれるが、辿る名前が
-   * すべて自分の持ち物なので引きが失敗しようがないため。
+   * 部品集合をまとめて受け取るのは、名前で引き直すと「引けなかったとき」の分岐が生まれ
+   * るが、辿る名前がすべて自分の持ち物なので引きが失敗しようがないため。
    */
   collectInComponents(
     components: ComponentSet,

@@ -39,16 +39,18 @@ export type Placement = Readonly<{ mode: "flow" }> | AbsolutePlacement;
 
 export const Placement = {
   /**
-   * props から置かれ方を組み立てる。座標で置かれるかを決める 3 prop の綴りを知っているのはここだけで、消費側は
-   * prop 名を持たない（追従の 2 prop は `Constraint` が読む。理由はそちらの doc）。
+   * props から置かれ方を組み立てる。座標で置かれるかを決める 3 prop の綴りを知っている
+   * のはここだけで、消費側は prop 名を持たない（追従の 2 prop は `Constraint` が読む。
+   * 理由はそちらの doc）。
    *
-   * 決められないときに `Option` ではなく `undefined` を返すのは、同じ形の `Size.create` と受け口を揃えるため。この
-   * `undefined` は「不在」ではなく「スキーマ違反で決められない」を表す(出力は `flow` と同じで、不正そのものは
-   * `DesignDocument.collectErrors` がエラー一覧に出す)。
+   * 決められないときに `Option` ではなく `undefined` を返すのは、同じ形の `Size.create`
+   * と受け口を揃えるため。この `undefined` は「不在」ではなく「スキーマ違反で決められな
+   * い」を表す(出力は `flow` と同じで、不正そのものは `DesignDocument.collectErrors` が
+   * エラー一覧に出す)。
    *
-   * @param props 配置を読み取る props(デフォルト解決済みでなくてよい)
-   * @returns 置かれ方。`absolute` なのに座標が数値でないなど、置き場所を
-   *   決められないときは `undefined`
+   *   @param props 配置を読み取る props(デフォルト解決済みでなくてよい)
+   *   @returns 置かれ方。`absolute` なのに座標が数値でないなど、置き場所を  決められな
+   *   いときは `undefined`
    */
   fromProps(props: Props): Placement | undefined {
     const { placement, x, y } = props;

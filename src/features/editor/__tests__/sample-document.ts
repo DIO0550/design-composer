@@ -86,12 +86,15 @@ export const SampleDocumentWithDanglingToken = Result.unwrap(
 export const MissingComponent = "居ない部品";
 
 /**
- * `home-login` が居ない部品を指している `SampleDocument`。`DocumentHtml.compile` が失敗するのでキャンバスが 1 枚も描けない。
+ * `home-login` が居ない部品を指している `SampleDocument`。`DocumentHtml.compile` が失敗
+ * するのでキャンバスが 1 枚も描けない。
  *
- * 開いた直後からこの状態になりうるようになったので（#158）、そこでも直せることを確かめる側が使う。
+ * 開いた直後からこの状態になりうるようになったので（#158）、そこでも直せることを確かめ
+ * る側が使う。
  *
- * 差し替える中身を `RefNode` と注釈した定数にしてから渡すのは、`Node` が直和で、注釈なしの literal だと `type` と `ref` を両方
- * 持つノードが型を通ってしまうため（`Node.isRef` は `"ref" in node` で先に真になる）。
+ * 差し替える中身を `RefNode` と注釈した定数にしてから渡すのは、`Node` が直和で、注釈な
+ * しの literal だと `type` と `ref` を両方持つノードが型を通ってしまうため（`Node.isRef`
+ * は `"ref" in node` で先に真になる）。
  */
 const MissingComponentInstance: RefNode = {
   name: "home-login",

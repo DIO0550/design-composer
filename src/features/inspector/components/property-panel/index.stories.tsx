@@ -17,11 +17,13 @@ const LongNodeName = "very-long-node-name-that-does-not-fit-in-the-heading";
 /**
  * このパネルのストーリー用のサンプルドキュメント。
  *
- * `features/editor/__stories__/sample-editor-state.ts` から、ストーリーが選ぶ 2 枚（`home` / `overflow`）を写している
- * （`EditorState` そのものなのでこの feature からは持ち込めない）。組み直さず写すのは、別のドキュメントに替えると 11 本すべての絵が
+ * `features/editor/__stories__/sample-editor-state.ts` から、ストーリーが選ぶ 2 枚
+ * （`home` / `overflow`）を写している（`EditorState` そのものなのでこの feature からは
+ * 持ち込めない）。組み直さず写すのは、別のドキュメントに替えると 11 本すべての絵が
  * 変わり、移設で変わったのか組み直しで変わったのかが視覚差分から読めなくなるため。
  *
- * `unset-box` / padding の 2 つの Box / 名前の長いノードは、このパネルにしか要らない状態なのでここで足している。
+ * `unset-box` / padding の 2 つの Box / 名前の長いノードは、このパネルにしか要らない
+ * 状態なのでここで足している。
  */
 const SampleDocument = DesignDocument.create({
   tokens: DocumentTemplate.Default.tokens,

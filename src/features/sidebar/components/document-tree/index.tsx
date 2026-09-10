@@ -179,14 +179,17 @@ function rowFromNode(
 }
 
 /**
- * 今見ている artboard の中身を出すツリービュー（docs/06-ui.md「画面構成」。UI 案 docs/Design Composer.html の `Layers`
- * パネル下段）。行の並べ替えは docs/06-ui.md「編集操作の一覧」の並べ替えにあたる。
+ * 今見ている artboard の中身を出すツリービュー（docs/06-ui.md「画面構成」。UI 案
+ * docs/Design Composer.html の `Layers` パネル下段）。行の並べ替えは docs/06-ui.md「編
+ * 集操作の一覧」の並べ替えにあたる。
  *
- * artboard 自身は行として出さない。UI 案は artboard を上段の `Artboards` に並べ、ツリーはそのうちの 1 枚の中身だけを映す
- * （どの 1 枚かは `DocumentSelection.currentArtboard` が決めるので、ここは持たない）。
+ * artboard 自身は行として出さない。UI 案は artboard を上段の `Artboards` に並べ、ツリー
+ * はそのうちの 1 枚の中身だけを映す（どの 1 枚かは `DocumentSelection.currentArtboard`
+ * が決めるので、ここは持たない）。
  *
- * どの枝を畳んでいるかは編集ではなく見え方なので、選択とドキュメントの対には持たず行を並べる器（`NestedRowList`）に閉じる。
- * 名前は使い回されるので、同じ名前でノードを作り直すと畳んだ状態で現れる（三角で状態は読める）。
+ * どの枝を畳んでいるかは編集ではなく見え方なので、選択とドキュメントの対には持たず行を
+ * 並べる器（`NestedRowList`）に閉じる。名前は使い回されるので、同じ名前でノードを作り直
+ * すと畳んだ状態で現れる（三角で状態は読める）。
  */
 export function DocumentTree({
   selection,

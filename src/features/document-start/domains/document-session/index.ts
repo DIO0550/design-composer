@@ -7,14 +7,14 @@ import { Option } from "@/utils/Option";
 /**
  * 開けなかった理由。
  *
- * 由来ごとに画面へ出すものが変わる（解釈できなかったファイルはエラー一覧、I/O とダイアログは 1 行のメッセージ）ため、
- * 1 つのメッセージへ潰さずに分けて持つ。
+ * 由来ごとに画面へ出すものが変わる（解釈できなかったファイルはエラー一覧、I/O とダイア
+ * ログは 1 行のメッセージ）ため、1 つのメッセージへ潰さずに分けて持つ。
  *
- * `unparsable` が運ぶのは `DocumentJson.parse` が返した失敗だけで、スキーマ検証で落ちるファイルはここへ来ずそのまま開く
- * （docs/03-schema.md「不正ファイル時の挙動」の「開く時」）。
+ * `unparsable` が運ぶのは `DocumentJson.parse` が返した失敗だけで、スキーマ検証で落ちる
+ * ファイルはここへ来ずそのまま開く（docs/03-schema.md「不正ファイル時の挙動」の「開く時」）。
  *
- * 枝が指すのは**どの段で失敗したか**（ダイアログ / I/O / 解釈）で、`io` が運ぶ理由の語彙は他の経路と共有する
- * （`DocumentAccessFailure`）。
+ * 枝が指すのは**どの段で失敗したか**（ダイアログ / I/O / 解釈）で、`io` が運ぶ理由の語
+ * 彙は他の経路と共有する（`DocumentAccessFailure`）。
  */
 export type DocumentOpenFailure =
   | Readonly<{ kind: "dialog"; error: DocumentDialogError }>

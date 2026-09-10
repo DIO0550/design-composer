@@ -16,10 +16,12 @@ import { ArtboardCanvas } from "./index";
 /**
  * 表示（倍率・位置）を自分で持つキャンバス。
  *
- * 本番は上部バーとドラッグの状態を編集画面と共有する（`OpenedDocumentEditor`）が、キャンバス単体の見た目は共有相手に依らない。ストーリーの
- * `component` をこちらにしているのは、フックの戻り値は args として書けないため。
+ * 本番は上部バーとドラッグの状態を編集画面と共有する（`OpenedDocumentEditor`）が、キャ
+ * ンバス単体の見た目は共有相手に依らない。ストーリーの `component` をこちらにしているの
+ * は、フックの戻り値は args として書けないため。
  *
- * 同じ形が `__tests__/setup.tsx` にもあるが 1 箇所へ寄せていない（理由はそちらのコメント。`vitest` と Storybook のどちらかが相手のバンドルへ入る）。
+ * 同じ形が `__tests__/setup.tsx` にもあるが 1 箇所へ寄せていない（理由はそちらのコメン
+ * ト。`vitest` と Storybook のどちらかが相手のバンドルへ入る）。
  */
 function CanvasWithView(
   props: Omit<ComponentProps<typeof ArtboardCanvas>, "canvasView" | "nodeDrag">,

@@ -129,9 +129,10 @@ function expandNodes(
 /**
  * 部品インスタンスを定義の中身へ展開する（docs/02-data-model.md「部品参照ノード」）。
  *
- * 生成規則をここに置くのは、`ExpandedNode` が「ref を含み得ない」ことを構造で保証した型で、その保証を成立
- * させる手続きが展開の走査そのものだから。`Node` 側に置けないのは、参照先を引く `ComponentSet` が既に
- * `node` を import していて循環になるため（`ComponentSet` 側は引き先であって走査の対象ではない）。
+ * 生成規則をここに置くのは、`ExpandedNode` が「ref を含み得ない」ことを構造で保証した型
+ * で、その保証を成立させる手続きが展開の走査そのものだから。`Node` 側に置けないのは、参
+ * 照先を引く `ComponentSet` が既に `node` を import していて循環になるため（`ComponentSet`
+ * 側は引き先であって走査の対象ではない）。
  */
 export const ExpandedNode = {
   /**

@@ -1,13 +1,15 @@
 import type { ChildPosition } from "@/domains/dcmp/child-position";
 
 /**
- * 左ペインから届くノード編集の受け口（docs/06-ui.md「編集操作の一覧」）。編集そのものは行わず、押された結果を呼び出し側
- * （`features/editor`）へ渡すだけ。
+ * 左ペインから届くノード編集の受け口（docs/06-ui.md「編集操作の一覧」）。編集そのものは
+ * 行わず、押された結果を呼び出し側（`features/editor`）へ渡すだけ。
  *
- * 書き込みが編集履歴（undo / redo）と自動保存に載る 1 つの経路に閉じていて、その入口が `features/editor` にあるため。
+ * 書き込みが編集履歴（undo / redo）と自動保存に載る 1 つの経路に閉じていて、その入口が
+ * `features/editor` にあるため。
  *
- * 呼び出し側の `NodeActions` をそのまま型として受け取らないのは、type だけでも import すると `sidebar -> editor` の辺ができて
- * 循環するため。左ペインが実際に呼ぶ 3 つだけを消費側で綴る。
+ * 呼び出し側の `NodeActions` をそのまま型として受け取らないのは、type だけでも import
+ * すると `sidebar -> editor` の辺ができて循環するため。左ペインが実際に呼ぶ 3 つだけを
+ * 消費側で綴る。
  */
 export type LeftPaneNodeActions = Readonly<{
   /** 行を押したときに、その名前を選択として伝える。 */
