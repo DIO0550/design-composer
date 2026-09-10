@@ -12,10 +12,9 @@ import { DraggedNode } from "../dragged-node";
  * ドロップ先の候補になれる親（docs/06-ui.md「キャンバス直接操作」の移動）。受け入れる条
  * 件は `DropParent.innermost`、絞り込んだ先は `InsertionParent`。
  *
- * 名前だけなので `{ name: string }` を持つ他の型（`CarriedNode` / `ParentShift`）も構造
- * 的に代入できるが、ブランドは付けない。取り違えは `artboard-canvas.drag-placement` の
- * 通しテストが受け持つ（rules/coding.md「防ぎたい誤用が実際にコード上へ現れてから導入す
- * る」）。
+ * 名前だけなので `{ name: string }` を持つ他の型（`CarriedNode` / `ParentShift`）も構造的
+ * に代入できるが、ブランドは付けない。取り違えは `artboard-canvas.drag-placement` の通し
+ * テストが受け持つ（rules/coding.md「防ぎたい誤用が実際にコード上へ現れてから導入する」）。
  */
 export type DropParent = Readonly<{
   name: string;
@@ -145,9 +144,10 @@ export const DropParent = {
    *
    * **子を並べない親（`layout: free`）はここでは外さない。** 座標の置き直しは親の左上を
    * 原点にするだけで子が並ぶ向きを必要とせず、`free` はそもそも絶対配置の子を座標で置く
-   * ための器（docs/03-schema.md）。外すと、いちばん使う操作が器の宣言によって塞がれる（#440）。
-   * 運んでいるノードの上を通ったときにその親が選ばれるのは外へ辿った結果で、既定値へ倒
-   * しているわけではない。
+   * ための器（docs/03-schema.md）。
+   *
+   * 外すと、いちばん使う操作が器の宣言によって塞がれる（#440）。運んでいるノードの上を通
+   * ったときにその親が選ばれるのは外へ辿った結果で、既定値へ倒しているわけではない。
    *
    * @param document 名前の引き先になるドキュメント
    * @param dragged 運んでいるもの

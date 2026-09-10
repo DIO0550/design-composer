@@ -20,21 +20,21 @@ import { ArtboardLabel } from "../artboard-label";
 /**
  * キーボードでも artboard を選べるようにする（`role="button"` は既定の活性化を持たない）。
  *
- * space を含めないのは、`role="button"` の流儀では Enter と space の両方が活性化に当た
- * るものの、space がキャンバス全体でパンの修飾になったため（docs/06-ui.md「キャンバス直
- * 接操作」）。枠にフォーカスがあるときだけ意味が割れると、押した瞬間に artboard が選び
- * 直される。
+ * space を含めないのは、`role="button"` の流儀では Enter と space の両方が活性化に当たるも
+ * のの、space がキャンバス全体でパンの修飾になったため（docs/06-ui.md「キャンバス直接操
+ * 作」）。枠にフォーカスがあるときだけ意味が割れると、押した瞬間に artboard が選び直される。
  */
 const ActivationKeys = ["Enter"];
 
 /**
  * 1 枚の artboard。中身はコンパイル結果の HTML をそのまま流し込む。
  *
- * React 要素へ組み替えないのは、コンパイル結果が `flex-direction` のような
- * kebab-case の CSS プロパティ名を持つのに対し、React の `style` は camelCase の
- * オブジェクトしか受け付けず、プロパティ名の変換表を UI 側へ二重に持つことになるため。
- * 書き出しと同じ文字列を描くことで、キャンバスの見た目と出力の一致も保たれる。
- * 埋め込む文字列のエスケープはコンパイラ側（`Html.escapeText` / `escapeAttribute`）に閉じている。
+ * React 要素へ組み替えないのは、コンパイル結果が `flex-direction` のような kebab-case の
+ * CSS プロパティ名を持つのに対し、React の `style` は camelCase のオブジェクトしか受け付け
+ * ず、プロパティ名の変換表を UI 側へ二重に持つことになるため。
+ *
+ * 書き出しと同じ文字列を描くことで、キャンバスの見た目と出力の一致も保たれる。埋め込む文字
+ * 列のエスケープはコンパイラ側（`Html.escapeText` / `escapeAttribute`）に閉じている。
  */
 export function ArtboardFrame({
   arranged,

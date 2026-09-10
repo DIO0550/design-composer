@@ -125,11 +125,12 @@ function commandSourceFailureLabel(source: CommandSource): string {
 /**
  * 押せる導線の共通の形。地・枠・文字だけを差し替える。
  *
- * 大きさ（高さ 30px / 角丸 5px / font-size 11px / 横 10px）と font-family は
- * UI 案（`docs/Design Composer.html`）の塗りのボタンに合わせている。共通の `Button`
- * にはしていない。UI 案のボタンはこのリポジトリの帯・パレット・ダイアログ等でも
- * 使われる作りだが、今の Issue（#374）の外まで塗り替えると差分が広がるため。
- * 共通化は乖離解消の一覧（#112）で別 Issue にする。
+ * 大きさ（高さ 30px / 角丸 5px / font-size 11px / 横 10px）と font-family は UI 案
+ * （`docs/Design Composer.html`）の塗りのボタンに合わせている。
+ *
+ * 共通の `Button` にはしていない。UI 案のボタンは帯・パレット・ダイアログ等でも使われる作
+ * りだが、今の Issue（#374）の外まで塗り替えると差分が広がるため（共通化は乖離解消の一覧
+ * #112 で別 Issue にする）。
  */
 const ActionButton =
   "flex h-[30px] items-center rounded-[5px] px-[10px] font-[inherit] text-[11px] disabled:cursor-default disabled:opacity-50";
@@ -262,9 +263,11 @@ function RecentFiles({
  *
  * UI 案（`docs/Design Composer.html`）は Default / Assets / Assets · Instance / Tokens /
  * Error の 5 画面で、開く前の画面を描いていない（`open` / `recent` / `welcome` はいずれも
- * 0 件）。そのため見せ方はここで決めているが、使う色と字の大きさは UI 案の語彙から採っている
- * （地 `#fafafa` と hover の `#f0f0f0`、文字 `#1e1e1e` / `#767676`、境界 `#e6e6e6`、
- * 強調 `#4db2ff` / `#0d99ff`）。組み合わせ方には UI 案に無いものを含む（`StartActions`）。
+ * 0 件）。そのため見せ方はここで決めている。
+ *
+ * 使う色と字の大きさは UI 案の語彙から採っている（地 `#fafafa` と hover の `#f0f0f0`、
+ * 文字 `#1e1e1e` / `#767676`、境界 `#e6e6e6`、強調 `#4db2ff` / `#0d99ff`）。組み合わせ方
+ * には UI 案に無いものを含む（`StartActions`）。
  *
  * @param session ドキュメントを開いていないセッション
  * @param actions 開く / 作るを始める手続き

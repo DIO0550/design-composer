@@ -5,9 +5,10 @@ import type { Offset } from "@/domains/unit/offset";
  * 自動配置する artboard を横に並べるときの間隔（px）。
  *
  * 32px なのは、座標を持つ前のキャンバスが `gap-8` で並べていた値をそのまま保つため。
- * UI 案（docs/Design Composer.html）は artboard を 400×500 に縮めて描いており、
- * 実測の間隔 30px は文書座標では約 54px にあたる。そこへ寄せるのは
- * `rules/ui-verification.md`「乖離の解消は個別の issue で行う」に従い別に扱う。
+ *
+ * UI 案（docs/Design Composer.html）は artboard を 400×500 に縮めて描いており、実測の間隔
+ * 30px は文書座標では約 54px にあたる。そこへ寄せるのは `rules/ui-verification.md`「乖離の
+ * 解消は個別の issue で行う」に従い別に扱う。
  */
 const AutoArrangeGap = 32;
 
@@ -24,8 +25,9 @@ const AutoArrangeTop = 0;
  *
  * `CompiledArtboard` の位置は省略されうる（ファイルに書かれていない artboard がある）が、
  * 描く側は必ずどこかへ置くので、**位置が決まったこと**を必須のフィールドで表す
- * (`rules/coding.md`「処理の通過を型に刻む」)。これがあると、置き場所を決めていない
- * artboard を描く関数へ渡せない。
+ * (`rules/coding.md`「処理の通過を型に刻む」)。
+ *
+ * これがあると、置き場所を決めていない artboard を描く関数へ渡せない。
  */
 export type ArrangedArtboard = Readonly<{
   artboard: CompiledArtboard;

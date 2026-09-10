@@ -17,8 +17,9 @@ export type AssetRowAccent = "source-of-selection" | "none";
  *
  * 掴んでいる青（`3a · ASSETS`）と、選択中のインスタンスの出どころを示す紫
  * （`3a · ASSETS · INSTANCE`）は別物で、UI 案も別の画面で描き分けている。
- * UI 案はプリミティブを掴んでいる画面を持たないが、同じパレットの行が種別ごとに
- * 違う掴まれ方をする理由が無いので、`Primitives` にも同じ青を使う。
+ *
+ * UI 案はプリミティブを掴んでいる画面を持たないが、同じパレットの行が種別ごとに違う掴まれ
+ * 方をする理由が無いので、`Primitives` にも同じ青を使う。
  */
 const AccentClasses = {
   grabbed: "bg-[#e5f4ff] shadow-[inset_2px_0_0_#0d99ff]",
@@ -27,9 +28,9 @@ const AccentClasses = {
 } as const;
 
 /**
- * パレット（`Assets`）の 1 行。型アイコンと名前を出し、掴んでキャンバスへ落とす起点にな
- * る。押しても何も挿さらない（UI 案は `Assets` を browse-only とし、挿入をドラッグだけ
- * の入口にしている / #203）。
+ * パレット（`Assets`）の 1 行。型アイコンと名前を出し、掴んでキャンバスへ落とす起点になる
+ * （押しても何も挿さらない / UI 案は `Assets` を browse-only とし、挿入をドラッグだけの入
+ * 口にしている / #203）。
  *
  * `Primitives` と `Components` の両方がこの形を使うのは、掴んでいるかの判定と見え方が同
  * じで片方だけ直ると食い違うため。違うのは右端に何を出すかだけなので `children` で受け

@@ -75,9 +75,10 @@ function wheelAction(event: WheelEvent): CanvasViewAction {
 
 /**
  * ホイールをキャンバスの操作として扱う。
- * React の `onWheel` は passive で登録されるため `preventDefault()` が効かず、
- * ctrl + ホイールがブラウザ側のページズームも同時に起こしてしまう。
- * 要素の props で受けられないのはこの 1 点のためで、対象は `surface` 自身に限る。
+ *
+ * React の `onWheel` は passive で登録されるため `preventDefault()` が効かず、ctrl + ホイ
+ * ールがブラウザ側のページズームも同時に起こしてしまう。要素の props で受けられないのはこ
+ * の 1 点のためで、対象は `surface` 自身に限る。
  *
  * @param surface ホイールの登録先になるキャンバスの土台
  * @param dispatch 読み替えたアクションの送り先
@@ -105,8 +106,9 @@ function useWheelControl(
  *
  * `onPointerDown` だけは spread せず、**パンを始める入力のときだけ**呼び分ける
  * （docs/06-ui.md「キャンバス直接操作」。空き領域の左ドラッグは範囲選択になった）。
- * どの入力でパンを始めるかを持たないのは、それが入力の事情で、ここが持つのは
- * 「パンを始める / 続ける / 終える」だけだから。
+ *
+ * どの入力でパンを始めるかを持たないのは、それが入力の事情で、ここが持つのは「パンを始め
+ * る / 続ける / 終える」だけだから。
  */
 export type PanHandlers = Readonly<{
   onPointerDown: (event: ReactPointerEvent<HTMLElement>) => void;
