@@ -23,12 +23,14 @@ import { Html } from "@/utils/Html";
 import { Option } from "@/utils/Option";
 
 /**
- * トークン参照 prop → その prop が決める CSS プロパティ
- * (docs/03「HTML/CSS へのコンパイル規則」の表。仕様と同じく prop 名で引く)。
+ * トークン参照 prop → その prop が決める CSS プロパティ (docs/03「HTML/CSS へのコンパイル
+ * 規則」の表。仕様と同じく prop 名で引く)。
+ *
  * 引くトークン種別はスキーマの `tokenKind` だけが宣言するため、ここには書かず
  * `TokenPropKinds.kindOf` から引く (`gap` を colors から引く組み合わせを書けない)。
- * `paddingTop` などの4方向は1つの `padding` へ合成するため `Padding` が、
- * `typography` は複数プロパティへ展開されるため下の関数が担当し、この表には含めない。
+ *
+ * `paddingTop` などの4方向は1つの `padding` へ合成するため `Padding` が、`typography` は
+ * 複数プロパティへ展開されるため下の関数が担当し、この表には含めない。
  */
 const TokenPropProperties = {
   gap: "gap",
@@ -132,6 +134,7 @@ export const ElementNameAttribute = "data-name";
 
 /**
  * コンパイル済みの Box。子を持ち、テキストは持たない。
+ *
  * 出力は `div` + インライン style であり (docs/03)、タグの区別は持たない。
  */
 export type BoxElement = Readonly<{

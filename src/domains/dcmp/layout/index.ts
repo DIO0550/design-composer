@@ -32,9 +32,10 @@ export const Layout = {
    *
    * 語彙に無い綴りを `Option` の不在にしない（`Placement.fromProps` / `Size.create` は
    * 不在にする）のは、それらが**書いた値が使えない**ときに描画から落ちるのに対し、配置
-   * モードは落ちると箱の中身が並ばなくなるため。代償として、`layout` の綴りが不正な親の
-   * 下では**子の `fill` も既定の親の下にある**ものとして検証される（親の
-   * `enum-violation` を直せばやり直される）。
+   * モードは落ちると箱の中身が並ばなくなるため。
+   *
+   * 代償として、`layout` の綴りが不正な親の下では**子の `fill` も既定の親の下にある**もの
+   * として検証される（親の `enum-violation` を直せばやり直される）。
    *
    * @param props 読み取り元の props（デフォルト解決済みでなくてよい）
    * @returns 配置モード。未設定・語彙に無い綴りのときは既定（`Default`）（不
@@ -51,10 +52,9 @@ export const Layout = {
   /**
    * その配置モードが子を並べる向き。
    *
-   * コンパイル（`fill` と間隔・揃えの出し分け）とバリデーション（`free` の親の子は
-   * `fill` を書けない）はどちらもここを引く。**スキーマの `enabledWhen` だけは
-   * 別に綴っている**（`BoxSchema` の `FlexOnly`）ので、両者が一致することは
-   * `__tests__/layout.schema.test.ts` が固定する。
+   * コンパイル（`fill` と間隔・揃えの出し分け）とバリデーション（`free` の親の子は `fill`
+   * を書けない）はどちらもここを引く。**スキーマの `enabledWhen` だけは別に綴っている**
+   * （`BoxSchema` の `FlexOnly`）ので、一致は `__tests__/layout.schema.test.ts` が固定する。
    *
    * @param layout 向きを知りたい配置モード
    * @returns 子が並ぶ向き。`free` は子を並べないので `none`

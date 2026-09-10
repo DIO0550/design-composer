@@ -67,10 +67,12 @@ const ArtboardFixedSizeProps: readonly string[] = [
 /**
  * artboard の props では変えられない配置の prop。
  *
- * artboard は親 Box を持たないので、親からの相対で置かれる `placement: "absolute"`
- * を書いても意味が決まらない。追従（`constraintX` / `constraintY`）も、変化する親の
- * 長さが無いので同じく決まらない。artboard 自身のキャンバス上の位置は**別の座標系**で、
- * props ではなく `canvasPosition` が持つ。
+ * artboard は親 Box を持たないので、親からの相対で置かれる `placement: "absolute"` を書い
+ * ても意味が決まらない。追従（`constraintX` / `constraintY`）も、変化する親の長さが無いの
+ * で同じく決まらない。
+ *
+ * artboard 自身のキャンバス上の位置は**別の座標系**で、props ではなく `canvasPosition` が
+ * 持つ。
  */
 const ArtboardFixedPlacementProps: readonly string[] = [
   "placement",
@@ -270,9 +272,10 @@ export const Artboard = {
   /**
    * 軸方向の長さを変えた artboard。
    *
-   * 書き込み先が props ではなく artboard 自身のフィールドなのは、artboard の
-   * サイズが `fixed` 固定で長さを `width` / `height` が持つため
-   * (docs/03「`widthMode` / `heightMode` は `fixed` に固定され、`width` / `height` が必須」)。
+   * 書き込み先が props ではなく artboard 自身のフィールドなのは、artboard のサイズが
+   * `fixed` 固定で長さを `width` / `height` が持つため(docs/03「`widthMode` /
+   * `heightMode` は `fixed` に固定され、`width` / `height` が必須」)。
+   *
    * props へ書いても `boxProps` が固定値で上書きするので効かない。
    */
   resize(artboard: Artboard, size: AxisLength): Artboard {

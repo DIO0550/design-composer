@@ -39,14 +39,13 @@ export type Placement = Readonly<{ mode: "flow" }> | AbsolutePlacement;
 
 export const Placement = {
   /**
-   * props から置かれ方を組み立てる。座標で置かれるかを決める 3 prop の綴りを知っている
-   * のはここだけで、消費側は prop 名を持たない（追従の 2 prop は `Constraint` が読む。
-   * 理由はそちらの doc）。
+   * props から置かれ方を組み立てる。座標で置かれるかを決める 3 prop の綴りを知っているの
+   * はここだけで、消費側は prop 名を持たない（追従の 2 prop は `Constraint` が読む / 理由
+   * はそちらの doc）。
    *
    * 決められないときに `Option` ではなく `undefined` を返すのは、同じ形の `Size.create`
    * と受け口を揃えるため。この `undefined` は「不在」ではなく「スキーマ違反で決められな
-   * い」を表す(出力は `flow` と同じで、不正そのものは `DesignDocument.collectErrors` が
-   * エラー一覧に出す)。
+   * い」を表す(出力は `flow` と同じ / 不正は `DesignDocument.collectErrors` が出す)。
    *
    * @param props 配置を読み取る props(デフォルト解決済みでなくてよい)
    * @returns 置かれ方。`absolute` なのに座標が数値でないなど、置き場所を決め
@@ -66,6 +65,7 @@ export const Placement = {
 
   /**
    * フローから外れて座標で置かれるか。flex アイテムとして並ばない。
+   *
    * 絞り込みを兼ねるのは、座標を動かす操作が絶対配置の枝しか受け取らないため。
    */
   isAbsolute(placement: Placement | undefined): placement is AbsolutePlacement {

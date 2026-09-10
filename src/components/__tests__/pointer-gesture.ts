@@ -19,10 +19,9 @@ export type PointerPoint = Readonly<{ x: number; y: number }>;
 /**
  * ポインタを押す。
  *
- * ボタンを渡せるのは、押したボタンで操作が分かれるため（キャンバスは中ボタンだけを
- * パンにする / docs/06-ui.md「キャンバス直接操作」）。**happy-dom の
- * `fireEvent.pointerDown` は `button` をそのまま載せる**（実測）ので、ホイールの
- * 修飾キーのように組み立て直す必要は無い。
+ * ボタンを渡せるのは、押したボタンで操作が分かれるため（キャンバスは中ボタンだけをパンに
+ * する / docs/06-ui.md「キャンバス直接操作」）。**happy-dom の `fireEvent.pointerDown` は
+ * `button` をそのまま載せる**（実測）ので、組み立て直す必要は無い。
  *
  * @param element 押す要素
  * @param at 押した位置
@@ -60,10 +59,11 @@ export function releasePointer(element: Element, at: PointerPoint): void {
 /**
  * ポインタがその要素へ入ったことにする。
  *
- * `pointerOver` ではなく `pointerEnter` を撃つ。`pointerOver` は `relatedTarget` を
- * 付けないと React が「文書の外から入った」と解釈して**祖先にも enter を配り**、
- * 付けると happy-dom では**どこにも届かなくなる**（実測）。`pointerEnter` は
- * 狙った要素にだけ正確に届く。
+ * `pointerOver` ではなく `pointerEnter` を撃つ。`pointerOver` は `relatedTarget` を付けな
+ * いと React が「文書の外から入った」と解釈して**祖先にも enter を配り**、付けると
+ * happy-dom では**どこにも届かなくなる**（実測）。
+ *
+ * `pointerEnter` は狙った要素にだけ正確に届く。
  *
  * @param element 入った先の要素
  */
