@@ -37,9 +37,9 @@ import { Option } from "@/utils/Option";
  * ラベル・不揃いの綴り・単位）と、空欄をどう読むかは持たず、パネル側に残す
  * （`rules/architecture.md`「表示のための綴りをドメインへ持ち込まない」
  * 「入力欄の約束事をドメインへ持ち込まない」）。
- * Why not: 同じ形の `features/tokens/domains/token-control` は feature に残る。
- * あちらは `valueText` や `TokenPreview` の `widthPx` のように**綴りと見せ方そのもの**
- * を持つため。
+ * 同じ形の `features/tokens/domains/token-control` が feature に残るのは、
+ * あちらが `valueText` や `TokenPreview` の `widthPx` のように**綴りと見せ方そのもの**を
+ * 持つため。
  *
  * 今の消費側は `features/editor` の 1 つだけで、「2 つ以上の feature が必要としたら
  * 昇格」の引き金は引かれていない。それでもここに置くのは帰属を根拠にしたためで、
@@ -49,13 +49,11 @@ import { Option } from "@/utils/Option";
 /**
  * 入力欄の種類。値の決め方（`domain`）から決まる。
  *
- * enum とトークン参照はどちらも選択式だが、UI 案（docs/Design Composer.html）は
- * enum をセグメント、トークンを `▾` 付きの欄と描き分けているので枝を分ける。
- * 1 つに畳むと、パネル側が「選択肢がスキーマ由来かトークン由来か」を prop 名でしか
- * 判別できなくなる。
+ * enum とトークン参照はどちらも選択式だが、UI 案（docs/Design Composer.html）は enum をセグメント、トークンを
+ * `▾` 付きの欄と描き分けているので枝を分ける（1 つに畳むと、パネル側が選択肢の出どころを prop 名でしか判別
+ * できなくなる）。
  *
- * 色のトークンだけ別の枝にするのは、`gap`（spacing）が色を持つ状態を型で作れなく
- * するため（`rules/coding.md`「正しい状態だけを列挙する」）。数値のトークンを
+ * 色のトークンだけ別の枝にするのは、`gap`（spacing）が色を持つ状態を型で作れなくするため。数値のトークンを
  * さらに分けるのも同じ理由で、`shadow` が解決値を持つ状態を作れなくする。
  */
 export type PropControlInput =
@@ -144,30 +142,20 @@ export type PropControlSection = Readonly<{
 /**
  * 選択中のものに対して右ペインが出す編集欄。
  *
- * インスタンスだけ形が違う（UI 案 docs/Design Composer.html の `Assets · Instance` は
- * `group` ごとのセクションではなく `Public props` の 1 節と出どころの部品を出す）。
- * 直和にするのは、同じ型で表すと「インスタンスなのに出どころが無い」
- * 「プリミティブなのに出どころがある」が作れてしまうため
- * （`rules/coding.md`「正しい状態だけを列挙する」）。
+ * インスタンスだけ形が違う（UI 案 docs/Design Composer.html の `Assets · Instance` は `group` ごとのセクションでは
+ * なく `Public props` の 1 節と出どころの部品を出す）。直和にするのは、同じ型で表すと「インスタンスなのに出どころが
+ * 無い」「プリミティブなのに出どころがある」が作れてしまうため。
  *
- * 公開 prop に `group` を持たせないのは、その `group` が binding 先のプリミティブの
- * ものだから。出すと部品の内部構造が見出しに漏れる。
+ * 公開 prop に `group` を持たせないのは、その `group` が binding 先のプリミティブのもので、出すと部品の内部構造が
+ * 見出しに漏れるため。`isDetachable` を持つのは、参照先の部品が無い・循環している間は解除できず、押しても何も
+ * 起きないボタンになるため（凍結中はボタンごと出ないのでここでは見ない）。
  *
- * `isDetachable` を持つのは、参照先の部品が無い・循環している間は解除できず
- * （`DesignDocument.detach` が失敗する）、押しても何も起きないボタンになるため。
- * 不正なドキュメントも画面には残る（docs/03-schema.md「不正ファイル時の挙動」）ので、
- * この状態は実際に出る。凍結中（#155）をここで見ないのは、凍結中は解除のボタンごと
- * 出ないため（`PropertyPanel.Body`）。重ねると同じ判断が 2 層に散る。
+ * 複数選択（`multiple`）が件数だけを持つのは、編集欄を 1 つも出さず帯に件数を出すため（docs/06-ui.md「選択」）。
+ * 件数をここに持たせるのは、帯と本文が同じ 1 つの値から出し分けるようにするため。`groups` の空セクションで表さず
+ * 枝を分けるのは、「複数選んでいる」と「1 つ選んだが編集できる prop が無い」を混ぜないため。
  *
- * 複数選択（`multiple`）が件数だけを持つのは、編集欄を 1 つも出さず帯に件数を出す
- * ため（docs/06-ui.md「選択」）。件数をここに持たせるのは、帯と本文が同じ 1 つの値から
- * 出し分けるようにするため。別々に導くと「帯は `2 selected` なのに本文はインスタンスの
- * 編集欄」という食い違いが作れる。
- * `groups` の空セクションで表さず枝を分けるのは、「複数選んでいる」と
- * 「1 つ選んだが編集できる prop が無い」を混ぜないため。
- *
- * `sourceInstanceCount` を `instance` が持つのは、`Select all N instances` の N が
- * 「押したときに選ばれる件数」と同じ出どころで決まる必要があるため。
+ * `sourceInstanceCount` を `instance` が持つのは、`Select all N instances` の N が「押したときに選ばれる件数」と同じ
+ * 出どころで決まる必要があるため。
  */
 export type SelectionControls =
   | Readonly<{ kind: "groups"; sections: readonly PropControlSection[] }>
@@ -758,13 +746,12 @@ export const PropPairControl = {
 
 export const SelectionControls = {
   /**
-   * 選択中のものを編集する欄（docs/06-ui.md「画面構成」）。
-   * 未選択を `none` で表すのは、同じ位置づけの `TokenControl.forSelection` に揃えるため。
+   * 選択中のものを編集する欄（docs/06-ui.md「画面構成」）。未選択を `none` で表すのは、同じ位置づけの
+   * `TokenControl.forSelection` に揃えるため。
    *
-   * 解除できるかは `DesignDocument.isDetachable` に答えさせる。
-   * Why not: 失敗の条件（参照先が無い・循環している）をここへ書き写す案は採らない。
-   * 解除そのもの（`DesignDocument.detach`）と二重管理になり、片方だけ変わったときに
-   * ボタンの出方と結果が食い違う。
+   * 解除できるかは `DesignDocument.isDetachable` に答えさせる。失敗の条件（参照先が無い・循環している）をここへ
+   * 書き写すと解除そのもの（`DesignDocument.detach`）と二重管理になり、片方だけ変わったときにボタンの出方と結果が
+   * 食い違う。
    *
    * @param selection 選択とドキュメントの出どころ
    * @returns インスタンスを選んでいるなら出どころの部品つきの公開 prop、

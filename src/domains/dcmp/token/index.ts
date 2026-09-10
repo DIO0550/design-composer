@@ -44,15 +44,13 @@ export type TokenSet = Readonly<{
 }>;
 
 /**
- * 種別を名前で指すための対応表。`TokenKind` はここから導出し、種別を二重管理しない。
- * union と対で export するのは規約(rules/coding.md「値の集合から union を導出する」)。
+ * 種別を名前で指すための対応表。`TokenKind` はここから導出し、種別を二重管理しない。union と対で export
+ * するのは規約(rules/coding.md「値の集合から union を導出する」)。
  *
- * `satisfies` が見るのは**キーの過不足と綴り**だけで、キーに割り当てた値がずれても
- * ここでは落ちない。**値の網羅**は `__tests__/token.type.test.ts` の型テスト
- * (`TokenKind` == `keyof TokenSet`)で担保する。
- *
- * 並びが要るときは `TokenSet.kinds()` を使う(このファイルの中も含む)。
- * `Object.values` をそこ 1 箇所に閉じ、並びを引く経路を 2 通りにしない。
+ * `satisfies` が見るのは**キーの過不足と綴り**だけで、キーに割り当てた値がずれてもここでは落ちない。
+ * **値の網羅**は `__tests__/token.type.test.ts`
+ * (`TokenKind` == `keyof TokenSet`)で担保する。並びが要るときは `TokenSet.kinds()` を使い、`Object.values` を
+ * そこ 1 箇所に閉じる。
  */
 export const TokenKinds = {
   Colors: "colors",

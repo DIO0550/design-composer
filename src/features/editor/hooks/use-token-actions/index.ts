@@ -2,15 +2,12 @@ import type { TokenKind, TokenRef, TokenValue } from "@/domains/dcmp/token";
 import { useEditor } from "@/features/editor/components/editor-provider";
 
 /**
- * トークン一覧・トークン編集欄から届く操作
- * （docs/06-ui.md「編集操作の一覧」の tokens 編集 / #42）。
+ * トークン一覧・トークン編集欄から届く操作（docs/06-ui.md「編集操作の一覧」の tokens 編集 / #42）。
  *
- * 値・名前・削除が対象を受け取らないのは、編集欄が出るのが選択中のトークンだけで、
- * 対象を選択から決めているため（`EditorState.setTokenValue` 等）。
+ * 値・名前・削除が対象を受け取らないのは、編集欄が出るのが選択中のトークンだけで、対象を選択から決めているため（`EditorState.setTokenValue` 等）。
  *
- * 追加が受け取るのは種別だけで、追加の指定（`TokenTemplate`）を組むのはここ。
- * 指定は書き込み側（`EditorState.addToken`）の語彙なので、押した見出しの種別しか
- * 知らない一覧へ持ち出さない。
+ * 追加が受け取るのは種別だけで、追加の指定（`TokenTemplate`）を組むのはここ。指定は書き込み側（`EditorState.addToken`）の語彙なので、押した見出しの
+ * 種別しか知らない一覧へ持ち出さない。
  */
 export type TokenActions = Readonly<{
   select: (ref: TokenRef) => void;

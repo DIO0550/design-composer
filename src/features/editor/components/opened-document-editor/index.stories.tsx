@@ -133,7 +133,7 @@ const DocumentWithDeepBranch = DesignDocument.create({
 /*
  * 使用中トークンを消したあとのドキュメント。`home-title` が指す typography の
  * `heading` だけを外し、`subheading` は残す。
- * Why not: `DesignDocument.removeToken` は通さない。ストーリーには `Result` の失敗を
+ * `DesignDocument.removeToken` は通さない。ストーリーには `Result` の失敗を
  * 伝える先が無く、既定値へ落として握りつぶすことになるため（rules/coding.md）。
  */
 const DocumentWithDanglingToken = DesignDocument.create({
@@ -242,7 +242,7 @@ const MissingComponentInstance: RefNode = {
 /*
  * 居ない部品を指すドキュメント。トークンの dangling と違い `DocumentHtml.compile` が
  * 失敗するので、キャンバスには artboard が 1 枚も出ない。
- * Why not: テスト側と揃えて `DesignDocument.replaceNode` は通さない。隣の
+ * テスト側と揃えて `DesignDocument.replaceNode` は通さない。隣の
  * `DocumentWithDanglingToken` と同じ理由で、ストーリーには `Result` の失敗を伝える先が無い。
  */
 const DocumentWithMissingComponent = DesignDocument.create({
@@ -285,17 +285,13 @@ const brokenFiles = DocumentIpcFake.create({
 });
 
 /**
- * 外部編集でファイルが壊れた編集画面（#135）。**このストーリーだけが 3 ペインの凍結を
- * 一度に映す**（帯の色 / 左ペインの淡色と `凍結中` / スクリムとバッジ /
- * 右ペインの「選択は凍結中」）。
+ * 外部編集でファイルが壊れた編集画面（#135）。**このストーリーだけが 3 ペインの凍結を一度に映す**（帯の色 / 左ペインの淡色と
+ * `凍結中` / スクリムとバッジ / 右ペインの「選択は凍結中」）。
  *
- * 開いてから壊すのは、取り込みが**変更の通知**でしか起きないため。壊れた中身で開き直しても
- * 凍結にはならない（解釈できなければ開始画面、スキーマ検証だけなら `DocumentErrors` の絵）。
+ * 開いてから壊すのは、取り込みが**変更の通知**でしか起きないため（壊れた中身で開き直しても凍結にはならない）。
  *
- * この `play` に凍結の見た目を預けている点は弱い。撮影は「同じフレームが 2 回続いたら
- * 採用」なので、`play` が間に合わなければ**通常表示がベースラインに焼き付き、しかも
- * 失敗が誰にも見えない**。色・淡色・スクリムはここでしか映らないので、判定そのものは
- * happy-dom 側（`opened-document-editor.frozen.test.tsx`）で確かめている。
+ * この `play` に凍結の見た目を預けている点は弱い。撮影は「同じフレームが 2 回続いたら採用」なので、`play` が間に合わなければ**通常
+ * 表示がベースラインに焼き付き、しかも失敗が誰にも見えない**。判定そのものは happy-dom 側で確かめている。
  */
 export const FileInvalid: Story = {
   name: "ファイルが不正になった編集画面",

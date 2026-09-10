@@ -6,18 +6,14 @@ import type { AssetGrab } from "@/features/assets/types/AssetGrab";
 const GrabHint = "drag";
 
 /**
- * パレットのプリミティブ（UI 案 docs/Design Composer.html の `Assets` > `Primitives`）。
+ * パレットのプリミティブ（UI 案 docs/Design Composer.html の `Assets` > `Primitives`）。行は掴んでキャンバスへ落とす
+ * 起点で、押しても何も挿さらない（#203）。
  *
- * 行は掴んでキャンバスへ落とす起点で、押しても何も挿さらない。UI 案の `Assets` は
- * browse-only で、挿入はドラッグだけが入口になっている（#203）。
+ * 出どころの強調を出さないのは、出どころになれるのが選択中のインスタンスの元になっている**部品**だけで、プリミティブは
+ * インスタンスの元にならないため。
  *
- * 出どころの強調を出さないのは、出どころになれるのが選択中のインスタンスの元になっている
- * **部品**だけで、プリミティブはインスタンスの元にならないため。
- *
- * 絞り込みはここでは行わない。何を出すかは検索欄を持つ `AssetsPanel` が決め、
- * ここは渡された並びを描くだけ（同じ絞り込みが 2 箇所に現れないようにする）。
- * 1 件も無いときも節は残す。`Components` 側と出方を揃えるためで、
- * 「一致するものが無い」は検索語を持つ `AssetsPanel` が 1 箇所で伝える。
+ * 絞り込みは行わない（何を出すかは検索欄を持つ `AssetsPanel` が決める）。1 件も無いときも節は残し、「一致するものが無い」は
+ * `AssetsPanel` が 1 箇所で伝える。
  */
 export function PrimitiveList({
   types,

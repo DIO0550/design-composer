@@ -39,14 +39,13 @@ export function stateWithNestedBox(): EditorState {
 }
 
 /**
- * `home` に Text を 2 つ持ち、部品定義は雛形のものをそのまま使う状態
- * （`primary-button-label` が部品定義の中のノードにあたる）。
+ * `home` に Text を 2 つ持ち、部品定義は雛形のものをそのまま使う状態（`primary-button-label` が部品定義の中のノードにあたる）。
  *
- * 部品定義まで持たせてあるのは、`DesignDocument.collectErrors` が部品定義も走査する
- * 一方で、選択の対象は artboard 配下だけ、という差を持つ状態が要るため（#136）。
- * **いま、その差を落としても落ちるテストは無い**（部品定義を外しても reveal / revert の
- * 全件が通る）。飛び先にならないことを固定する assert が reveal 側に無いためで、
- * 呼び出し側がこの形に依存していると読まないこと。
+ * 部品定義まで持たせてあるのは、`DesignDocument.collectErrors` が部品定義も走査する一方で、選択の対象は artboard 配下だけ、という差を
+ * 持つ状態が要るため（#136）。
+ *
+ * **いま、その差を落としても落ちるテストは無い**（部品定義を外しても reveal / revert の全件が通る。飛び先にならないことを固定する assert が
+ * reveal 側に無いため）。呼び出し側がこの形に依存していると読まないこと。
  *
  * @returns artboard 配下に Text を 2 つ、雛形の部品定義を持つエディタの状態
  */

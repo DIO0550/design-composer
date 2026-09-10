@@ -31,17 +31,13 @@ export type DocumentIpcError = Readonly<{
 
 /**
  * 外の失敗を、ドメインが持つ「中身へ届かなかった理由」として読み直す（腐敗防止層の詰め替え）。
+ * **`DocumentIpcError` が features へ出る入口はここだけ。**
  *
- * **`DocumentIpcError` が features へ出る入口はここだけ**で、`DocumentAccessFailure` を
- * 共有する経路はすべてここを通る（経路の一覧はその型の doc にある）。
- * ダイアログの失敗（`DocumentDialogError`）は別の境界で、詰め替えを通らずに features へ渡る。
+ * `notFound` 〜 `io` は Rust の都合、`ipcFailed` は Tauri の都合で決まる語彙なので、そのまま
+ * ドメインへ渡さずにここで寄せる。`default` を置かずに書いてあるので、Rust 側が種別を足すと
+ * コンパイルエラーになり、寄せ先の判断を必ず通る。
  *
- * `notFound` 〜 `io` は Rust の都合、`ipcFailed` は Tauri の都合で決まる語彙なので、
- * そのままドメインへ渡さずにここで寄せる。`default` を置かずに書いてあるので、
- * Rust 側が種別を足すとこの関数がコンパイルエラーになり、寄せ先の判断を必ず通る。
- *
- * 対応の一覧は `__tests__/document-ipc.document-access-failure.test.ts` にある
- * （走る表を 1 つだけ持ち、doc へ書き写さない）。
+ * 対応の一覧は `__tests__/document-ipc.document-access-failure.test.ts` にある。
  *
  * @param error IPC が返した失敗
  * @returns 同じ失敗を、ドメインの語彙と診断用の原文で表したもの

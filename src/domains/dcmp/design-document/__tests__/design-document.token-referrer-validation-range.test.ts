@@ -8,16 +8,11 @@ const Gray900 = { kind: "colors", name: "gray-900" } as const;
 /**
  * `gray-900` を、参照のしかたが違う 6 通りから指すドキュメント。
  *
- * artboard 自身の props / 明示設定した prop / 未設定でデフォルトが効く prop /
- * 部品定義のルート自身の props / 部品定義の中のデフォルト / インスタンスの上書き、を
- * 1 つずつ持たせる。`TokenReferrer` の 4 つの target をすべて含めるためで、欠けると
- * その経路を丸ごと消しても一致テストが通ってしまう。
+ * `TokenReferrer` の 4 つの target をすべて含めるためで、欠けるとその経路を丸ごと消しても一致テストが
+ * 通ってしまう。`home-note` だけ `gray-500` を指しているのは、集めすぎ方向でも落ちるようにするため。
  *
- * `home-note` だけ `gray-500` を指しているのは、集めすぎ方向でも落ちるようにするため。
- * 一致だけを見ると、両辺が同じように増えても通る。
- *
- * `typography` の既定（`body`）が指す先も揃えてあるのは、揃えないと Text ごとに
- * `typography` の dangling が出て、比べたい `gray-900` の分と混ざるため。
+ * `typography` の既定（`body`）が指す先も揃えてあるのは、揃えないと Text ごとに `typography` の dangling が
+ * 出て、比べたい `gray-900` の分と混ざるため。
  */
 function setupDocument(): DesignDocument {
   return DesignDocument.create({

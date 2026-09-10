@@ -51,15 +51,12 @@ function valueFrom(text: string): Option<string> {
 }
 
 /**
- * 入力欄が要るもの。
+ * 入力欄が要るもの。`PropControl` そのものではなく**解釈済みの値と編集を作る口**で受ける。
  *
- * `PropControl` そのものではなく**解釈済みの値と編集を作る口**で受ける。
- * 畳んだ欄は 1 つの prop に対応せず、不揃いという状態も `PropControl.value`
- * （`Option<PropValue>`）では表せないため、辺のコントロールを合成して
- * 偽のコントロールを作らずに済ませる。
+ * 畳んだ欄は 1 つの prop に対応せず、不揃いという状態も `PropControl.value`（`Option<PropValue>`）では表せないため、辺のコントロールを
+ * 合成して偽のコントロールを作らずに済ませる。
  *
- * 型はこのフォルダの外へ出さない。作る口を `fieldOf` / `pairFieldOf` の 2 つに揃えて
- * おくためで、型で閉じてはいない（`PropField` の props は構造的に到達できる）。
+ * 型はこのフォルダの外へ出さない。作る口を `fieldOf` / `pairFieldOf` の 2 つに揃えておくためで、型で閉じてはいない。
  */
 type FieldBinding = Readonly<{
   labelledBy: string;
@@ -173,15 +170,11 @@ const ResolvedValueLayouts = {
 /**
  * 数値のトークンを選ぶ入力欄。解決後の値を添える。
  *
- * 読み上げへ繋ぐのは、この数値が `<select>` の読み上げ（トークン名だけ）からは
- * 得られない情報だから。色の見本が `aria-hidden` なのは、何の色かを隣のトークン名が
- * 既に伝えているからで、こちらは事情が違う。
+ * 読み上げへ繋ぐのは、この数値が `<select>` の読み上げ（トークン名だけ）からは得られない情報だから（色の見本が `aria-hidden` なのは、
+ * 何の色かを隣のトークン名が既に伝えているためで事情が違う）。数値を欄の内側に置かないのは、ネイティブの `<select>` の中に要素を
+ * 描けないため。
  *
- * Why not: 数値を欄の内側に置かない。理由は色の見本と同じで、ネイティブの
- * `<select>` の中には要素を描けない。
- *
- * 添える位置は class の違いにしかならないので、**崩れに気づける手段は Storybook の
- * 視覚差分だけ**（happy-dom は Tailwind を解決しない）。
+ * 添える位置は class の違いにしかならないので、**崩れに気づける手段は Storybook の視覚差分だけ**（happy-dom は Tailwind を解決しない）。
  *
  * @returns 解決できたトークンならその値を添えた選択欄、解決できなければ選択欄だけ
  */
@@ -242,15 +235,11 @@ function LiteralInput({
 /**
  * 1 欄分の入力欄。入力の形は値域から決まる。
  *
- * 値と編集の作り方を `FieldBinding` で受けるので、1 prop の行と畳んだ欄の
- * どちらからも同じものを描ける（欄の見た目を 2 通りに割らない）。
+ * 値と編集の作り方を `FieldBinding` で受けるので、1 prop の行と畳んだ欄のどちらからも同じものを描ける（欄の見た目を 2 通りに割らない）。
+ * 戻り値を `ReactElement` と書いているのは、入力の種類を足して `case` を足し忘れたときにコンパイルエラーにするため。
  *
- * 戻り値を `ReactElement` と書いているのは、入力の種類を足して `case` を足し忘れた
- * ときにコンパイルエラーにするため（`rules/coding.md`「列挙した状態の網羅を型で強制する」）。
- *
- * `resolvedValuePlacement` は呼び出し側（`prop-row` は `beside`、`shorthand-row` は
- * `below`）が決める。取り違えても class の違いにしかならないので、**気づける手段は
- * Storybook の視覚差分だけ**（happy-dom は Tailwind を解決しない）。
+ * `resolvedValuePlacement` は呼び出し側（`prop-row` は `beside`、`shorthand-row` は `below`）が決める。取り違えても class の違いにしか
+ * ならないので、**気づける手段は Storybook の視覚差分だけ**（happy-dom は Tailwind を解決しない）。
  *
  * @returns 値域に応じた入力欄
  */
@@ -284,7 +273,7 @@ export function PropField({
         />
       );
     /*
-     * Why not: 見本を欄の内側に置かない（UI 案 docs/Design Composer.html は内側）。
+     * 見本を欄の内側に置かない（UI 案 docs/Design Composer.html は内側）。
      * ネイティブの `<select>` の中には要素を描けず、内側に置くには一覧そのものを
      * 自作することになる（キーボード操作と読み上げを自前で持つ）。
      */

@@ -4,17 +4,14 @@ import {
 } from "@/domains/dcmp/design-document";
 
 /**
- * ストーリー用のサンプルドキュメント。
+ * ストーリー用のサンプルドキュメント。選択の対象になりうる 3 つ（artboard・プリミティブのノード・インスタンス）を
+ * 1 枚に揃えてある。
  *
- * 選択の対象になりうる 3 つ（artboard・プリミティブのノード・インスタンス）を 1 枚に
- * 揃えて、部品化のパネルが 4 状態（`ready` / `instance` / `artboard` / `unselected`）
- * を出し分けるところを 1 つのドキュメントから見られるようにしている。トークンと部品は
- * 雛形（`DocumentTemplate.Default`）をそのまま使い、`primary-button` があるので既に
- * 使われている名前の重複判定もこの 1 枚で確かめられる。
+ * 部品化のパネルが 4 状態（`ready` / `instance` / `artboard` / `unselected`）を出し分けるところを 1 つのドキュメント
+ * から見るため。トークンと部品は雛形をそのまま使うので、`primary-button` との名前の重複判定もこの 1 枚で確かめられる。
  *
- * Why not: `features/editor` のサンプル状態（`SampleEditorState`）を持ってこない。
- * 3 枚の artboard を持つのはキャンバスの配置（はみ出し・部品の並び）を映すためで、
- * このパレット側で見たいものが違う。
+ * `features/editor` のサンプル状態（`SampleEditorState`）を持ってこないのは、あちらの 3 枚の artboard がキャンバスの
+ * 配置を映すためのもので、パレット側で見たいものと違うから。
  */
 export const SampleAssetsDocument = DesignDocument.create({
   tokens: DocumentTemplate.Default.tokens,

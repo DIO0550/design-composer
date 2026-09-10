@@ -2,15 +2,12 @@ import type { DocumentSelection } from "@/domains/session/document-selection";
 import { drawnAt, selectionFromArtboards } from "./setup";
 
 /**
- * `home` に絶対配置の `badge` / `marker` / `card`（その中に孫の `label`）が並び、
- * 隣に `slot` を持つ `settings` がある未選択の対。
+ * `home` に絶対配置の `badge` / `marker` / `card`（その中に孫の `label`）が並び、隣に `slot` を持つ `settings` がある未選択の対。
  *
- * 揃える相手を**絶対配置**にするのは、揃えたい場面がまさに自由配置どうしだから
- * （`layout: "free"` の親の中で端を合わせる / #441）。座標を持つので、期待値の
- * 「揃った」がドキュメント上の値どうしの一致として読める。
+ * 揃える相手を**絶対配置**にするのは、揃えたい場面がまさに自由配置どうしだから（`layout: "free"` の親の中で端を合わせる / #441）。座標を持つので、
+ * 期待値の「揃った」がドキュメント上の値どうしの一致として読める。
  *
- * 孫（`label`）と別の artboard（`settings`）を置いてあるのは、揃え先の範囲
- * （直下の子まで／落とし先の親の中）を確かめるため。
+ * 孫（`label`）と別の artboard（`settings`）を置いてあるのは、揃え先の範囲（直下の子まで／落とし先の親の中）を確かめるため。
  *
  * @returns スナップの範囲を確かめられるドキュメントと、未選択の対
  */

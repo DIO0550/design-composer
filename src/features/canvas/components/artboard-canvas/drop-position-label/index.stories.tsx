@@ -2,15 +2,12 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { DropPositionLabel } from "./index";
 
 /**
- * 落ちる位置を読ませるラベル（UI 案 docs/Design Composer.html の
- * `into login-form · child 3 of 5`）。
+ * 落ちる位置を読ませるラベル（UI 案 docs/Design Composer.html の `into login-form · child 3 of 5`）。
  *
- * **このストーリーが唯一の見た目の防壁。** happy-dom はレイアウトを解決しないので
- * 置き方（`fixed` と親の上へ持ち上げる量）はテストでは見えず、運んでいる最中の
- * キャンバスを映すストーリーも無い。
+ * **このストーリーが唯一の見た目の防壁。** happy-dom はレイアウトを解決しないので置き方（`fixed` と親の上へ持ち上げる量）はテストでは見えず、運んで
+ * いる最中のキャンバスを映すストーリーも無い。
  *
- * 親の矩形を `top: 60` に置いているので、ラベルはその 18px 上（`top: 42`）に出る。
- * 持ち上げ量を落とすと、ラベルが親の枠に載らず内側へ潜り込む。
+ * 親の矩形を `top: 60` に置いているので、ラベルはその 18px 上（`top: 42`）に出る。持ち上げ量を落とすと、ラベルが親の枠に載らず内側へ潜り込む。
  */
 const meta = {
   title: "features/canvas/ArtboardCanvas/DropPositionLabel",

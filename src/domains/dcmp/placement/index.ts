@@ -39,16 +39,12 @@ export type Placement = Readonly<{ mode: "flow" }> | AbsolutePlacement;
 
 export const Placement = {
   /**
-   * props から置かれ方を組み立てる。
-   * 座標で置かれるかを決める 3 prop の綴りを知っているのはここだけで、消費側は prop 名を
-   * 持たない（追従の 2 prop は `Constraint` が読む。理由はそちらの doc）。
+   * props から置かれ方を組み立てる。座標で置かれるかを決める 3 prop の綴りを知っているのはここだけで、消費側は
+   * prop 名を持たない（追従の 2 prop は `Constraint` が読む。理由はそちらの doc）。
    *
-   * 決められないときに `Option` ではなく `undefined` を返すのは、同じ形の
-   * `Size.create`(モードと値の 2 prop から直和を組む)と受け口を揃えるため。
-   *
-   * この `undefined` は「不在」ではなく「スキーマ違反で決められない」を表す。
-   * ただし**出力は `flow` と同じ**(座標の宣言を出さない)で、不正そのものは
-   * `DesignDocument.collectErrors` がエラー一覧に出す。
+   * 決められないときに `Option` ではなく `undefined` を返すのは、同じ形の `Size.create` と受け口を揃えるため。この
+   * `undefined` は「不在」ではなく「スキーマ違反で決められない」を表す(出力は `flow` と同じで、不正そのものは
+   * `DesignDocument.collectErrors` がエラー一覧に出す)。
    *
    * @param props 配置を読み取る props(デフォルト解決済みでなくてよい)
    * @returns 置かれ方。`absolute` なのに座標が数値でないなど、置き場所を

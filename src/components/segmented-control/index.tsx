@@ -2,13 +2,12 @@ import type { ReactElement } from "react";
 import { Option } from "@/utils/Option";
 
 /**
- * 選択肢を横に並べ、そのうち 1 つを選ばせるコントロール。
- * 選ばれているものをもう一度押すと未選択（`none`）に戻る。
+ * 選択肢を横に並べ、そのうち 1 つを選ばせるコントロール。選ばれているものをもう一度押すと
+ * 未選択（`none`）に戻る。
  *
- * Why not: `role="radiogroup"` + `role="radio"` にはしない。radio は選択済みを
- * 再クリックしても `change` が飛ばず、矢印キーにも解除の経路が無いため、
- * 「押して未選択へ戻す」を持てない（ARIA の radio パターン自体が解除を持たない）。
- * 器を `fieldset` にしているのは、`role="group"` を持つ意味づけの要素がこれだから。
+ * `role="radiogroup"` + `role="radio"` にしないのは、radio が選択済みの再クリックで `change` を
+ * 飛ばさず矢印キーにも解除の経路が無いため、「押して未選択へ戻す」を持てないから。器を
+ * `fieldset` にしているのは、`role="group"` を持つ意味づけの要素がこれだから。
  *
  * @returns 選択肢ごとのトグルボタンを並べた器
  */

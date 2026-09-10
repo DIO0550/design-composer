@@ -5,14 +5,11 @@ import type { ValueOf } from "@/types/ValueOf";
 import { Option } from "@/utils/Option";
 
 /**
- * 絶対配置の子が、親の長さの変化にどう追従するか
- * (docs/03「配置の指定」の追従の表)。Figma の `constraints` から借りた語で、
- * このリポジトリでは **`placement: absolute` の子が親のサイズ変更に追従する側**を指す。
+ * 絶対配置の子が、親の長さの変化にどう追従するか(docs/03「配置の指定」の追従の表)。Figma の
+ * `constraints` から借りた語で、このリポジトリでは **`placement: absolute` の子が親のサイズ変更に追従する側**を指す。
  *
- * Why not: スキーマの `values` から union を導出する向きは採らない。追従の規則
- * （どの値でどう動くか）を持つのがこのモジュールなので、値の出どころもここに置き、
- * スキーマ側が `Object.values` で引く（代償として、スキーマの `values` は他の prop の
- * ような readonly タプルにならない）。`Layouts` / `CssDirections` も同じ向き。
+ * スキーマの `values` から union を導出する向きを採らないのは、追従の規則を持つのがこのモジュールだから。
+ * 値の出どころもここに置き、スキーマ側が `Object.values` で引く（`Layouts` / `CssDirections` も同じ向き）。
  */
 export const Constraints = {
   Min: "min",

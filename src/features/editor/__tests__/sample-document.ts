@@ -86,16 +86,12 @@ export const SampleDocumentWithDanglingToken = Result.unwrap(
 export const MissingComponent = "居ない部品";
 
 /**
- * `home-login` が居ない部品を指している `SampleDocument`。
+ * `home-login` が居ない部品を指している `SampleDocument`。`DocumentHtml.compile` が失敗するのでキャンバスが 1 枚も描けない。
  *
- * こちらは `DocumentHtml.compile` が失敗するため、キャンバスが 1 枚も描けない
- * （`canvas-body` がコンパイルの失敗を 1 行で出す）。開いた直後からこの状態に
- * なりうるようになったので（#158）、そこでも直せることを確かめる側が使う。
+ * 開いた直後からこの状態になりうるようになったので（#158）、そこでも直せることを確かめる側が使う。
  *
- * Why: 差し替える中身を `RefNode` と注釈した定数にしてから渡す。`Node` は直和なので、
- * 注釈なしの literal（`{ ...node, ref }` を含む）だと `type` と `ref` を両方持つノードが
- * 型を通ってしまう（`Node.isRef` は `"ref" in node` で先に真になり、props を抱えたまま
- * ref ノード扱いになる）。`replaceNode` に通すだけでは閉じない。
+ * 差し替える中身を `RefNode` と注釈した定数にしてから渡すのは、`Node` が直和で、注釈なしの literal だと `type` と `ref` を両方
+ * 持つノードが型を通ってしまうため（`Node.isRef` は `"ref" in node` で先に真になる）。
  */
 const MissingComponentInstance: RefNode = {
   name: "home-login",

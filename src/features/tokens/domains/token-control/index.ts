@@ -27,7 +27,7 @@ import { Option } from "@/utils/Option";
  * この導出は `src/domains/` ではなくこの feature に置く。`valueText` や
  * `TokenPreview` の `widthPx` のように**綴りと見せ方そのもの**を持っているため
  * （`rules/architecture.md`「表示のための綴りをドメインへ持ち込まない」）。
- * Why not: 同じ形に見える `src/domains/session/prop-control` は昇格させてある。あちらが
+ * 同じ形に見える `src/domains/session/prop-control` は昇格させてある。あちらが
  * 持つのは値の種別までで、綴りはパネル側にあるという違いによる。
  */
 
@@ -65,16 +65,14 @@ export type TokenControlInput =
   | Readonly<{ kind: "text"; value: string }>;
 
 /**
- * その行が書き戻す先。書き換え前の値を持つのは、その行が値の一部だけを
- * 差し替えるため（色は RGB と不透明度、複合の種別はフィールド）。
+ * その行が書き戻す先。書き換え前の値を持つのは、その行が値の一部だけを差し替えるため（色は RGB と不透明度、複合の種別は
+ * フィールド）。
  *
- * 種別で判別する直和にしているのは、「種別 + フィールド名」を並べて持つと
- * shadows のトークンに fontSize を指す組み合わせが型で作れてしまうため。
- * 不透明度を `part: "rgb" | "alpha"` として平らに足さないのも同じ理由で、
- * そちらは影の `x` の不透明度という組み合わせが作れてしまう。
+ * 種別で判別する直和にしているのは、「種別 + フィールド名」を並べて持つと shadows のトークンに fontSize を指す組み合わせが
+ * 型で作れてしまうため。不透明度を `part: "rgb" | "alpha"` として平らに足さないのも同じ理由。
  *
- * `kind` は `TokenKind` と1対1ではない。不透明度の行は色の一部を差し替える
- * だけなので、`colorsAlpha` が書き戻すのは `colors` の値になる。
+ * `kind` は `TokenKind` と1対1ではない。不透明度の行は色の一部を差し替えるだけなので、`colorsAlpha` が書き戻すのは `colors`
+ * の値になる。
  */
 export type TokenFieldTarget =
   | Readonly<{ kind: "colors"; color: ColorToken }>

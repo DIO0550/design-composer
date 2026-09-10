@@ -42,29 +42,23 @@ const SelectionOutline = `outline:2px solid ${SelectionColor};outline-offset:1px
 const DropParentOutline = "outline:2px dashed #10b981;outline-offset:1px";
 
 /**
- * 選択中のトークンを参照しているノードに描く枠
- * （UI 案 docs/Design Composer.html の Tokens 画面）。
+ * 選択中のトークンを参照しているノードに描く枠（UI 案 docs/Design Composer.html の Tokens 画面）。
  *
- * UI 案は要素ごとに `outline-offset` を 2px と 3px で使い分けているが、名前で引く規則は
- * 1 本しか差し込めないので 2px に寄せた。
+ * UI 案は要素ごとに `outline-offset` を 2px と 3px で使い分けているが、名前で引く規則は 1 本しか差し込めないので 2px に寄せた。
  *
- * export しているのは、どの規則が破線かをテストが綴りを写さずに引けるようにするため
- * （`features/canvas/__tests__/canvas-elements`。`artboard-canvas` が再 export する）。
- * 写すと色を変えただけでテストが落ちる。
+ * export しているのは、どの規則が破線かをテストが綴りを写さずに引けるようにするため（写すと色を変えただけでテストが落ちる）。
  */
 export const TokenReferrerOutline =
   "outline:1.5px dashed #0d99ff;outline-offset:2px";
 
 /**
- * artboard の並び。`artboards` 配列の順序をそのまま DOM の順序にする。
- * 置き場所はキャンバス上の座標で、ファイルに座標を持たない artboard だけを
- * 配列順に横へ並べる（`ArrangedArtboard`）。
+ * artboard の並び。`artboards` 配列の順序をそのまま DOM の順序にし、置き場所はキャンバス上の座標（ファイルに座標を持たない artboard だけを配列順に
+ * 横へ並べる / `ArrangedArtboard`）。
  *
- * トークンはこの並びのルートへ載せる。artboard の出力は `var()` 参照だけを持つので、
- * トークンの編集は再コンパイルなしにここの差し替えだけで全 artboard へ波及する。
+ * トークンはこの並びのルートへ載せる。artboard の出力は `var()` 参照だけを持つので、トークンの編集は再コンパイルなしにここの差し替えだけで全 artboard へ
+ * 波及する。
  *
- * 名前が `ArtboardList` でないのは、左ペインの一覧（`features/sidebar` の `artboard-list`）と
- * 綴りがぶつかるため。並べているのは枠（`ArtboardFrame`）なのでそちらを名前に出す。
+ * 名前が `ArtboardList` でないのは、左ペインの一覧（`features/sidebar` の `artboard-list`）と綴りがぶつかるため。並べているのは枠なのでそちらを名前に出す。
  */
 export function ArtboardFrameList({
   compiled,

@@ -153,12 +153,8 @@ function migrateUpTo(
  * - ファイルの major > アプリ / minor > アプリ: エラー(アプリの更新を促す)
  * - それ以外: そのまま通す
  *
- * formatVersion が読めない入力も素通しする。バージョンが分からないものを既定値で
- * 補って進めるのではなく、形の検証を担うデコード側にそのまま報告させる。
- *
- * `steps` / `appVersion` は既定値を持つ（`FormatVersion.compatibility` と同じ形）。
- * 登録済みステップが空のままでも枠組み自体を確かめられるよう、変換手段と
- * 到達先の版を差し替えられるようにしてある。
+ * formatVersion が読めない入力も素通しする。既定値で補って進めるのではなく、形の検証を担う
+ * デコード側にそのまま報告させる。
  */
 export const DocumentMigration = {
   toCurrent(

@@ -36,21 +36,15 @@ function toDroppedPaths(payload: unknown): Option<readonly string[]> {
 }
 
 /**
- * ウィンドウへのファイルのドロップ（docs/05-architecture.md「Tauri IPC」）。
+ * ウィンドウへのファイルのドロップ（docs/05-architecture.md「Tauri IPC」）。配るのは落と
+ * されたパスの並びだけで、開けるファイルかどうかは見ない。
  *
- * 配るのは落とされたパスの並びだけで、開けるファイルかどうかは見ない。
- * Why not: 拡張子で絞ると、落としたのに何も起きないファイルができる
- * （`rules/coding.md`「失敗を握りつぶして既定値へフォールバックしない」）。
- * 開こうとして失敗させれば、理由が画面に出る。
+ * 拡張子で絞らないのは、落としたのに何も起きないファイルができるため（開こうとして失敗
+ * させれば理由が画面に出る）。`onDragDropEvent` ではなく `listen` で受けるのは、
+ * `@tauri-apps/*` の import 先を `libs/tauri-ipc` の外へ増やさないため。
  *
- * Why not: `@tauri-apps/api/webview` の `onDragDropEvent` は使わない。
- * `@tauri-apps/*` の import 先が `libs/tauri-ipc` の外へ増えるため
- * （同じイベントは `listen` で受けられる）。
- *
- * ドロップを OS 側で受けるので、Windows では webview の HTML5 ドラッグ & ドロップが
- * 使えなくなる（Tauri の `dragDropEnabled` は既定で有効）。今のところ HTML5 の
- * ドラッグ & ドロップを使っている箇所は無いので影響しないが、ツリーの並べ替えを
- * それで作るときはここと両立しない。
+ * ドロップを OS 側で受けるので、Windows では webview の HTML5 ドラッグ & ドロップが使えない
+ * （今のところ使っている箇所は無い）。
  */
 export type FileDrop = Readonly<{
   /**

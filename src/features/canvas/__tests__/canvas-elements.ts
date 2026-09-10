@@ -5,14 +5,11 @@ import { ArtboardHandleTestId } from "@/features/canvas/components/artboard-canv
 import { ArrayEx } from "@/utils/ArrayEx";
 
 /**
- * キャンバスに描かれたものを読む。
- * キャンバスの中身はコンパイル結果の HTML を文字列のまま流し込んだもので
- * React の管理下に無いため、要素も強調もノード名の属性を頼りに DOM から引く。
+ * キャンバスに描かれたものを読む。キャンバスの中身はコンパイル結果の HTML を文字列のまま流し込んだもので React の管理下に無いため、要素も強調も
+ * ノード名の属性を頼りに DOM から引く。
  *
- * キャンバス単体（`components/artboard-canvas`）と編集画面の通し
- * （`features/editor` の `opened-document-editor`）の両方が「何が描かれているか」を
- * 確かめるので、**持ち主であるこの feature に置く**。外の feature へはテスト用の
- * 公開口（`__tests__/index.ts`）から出し、そちらだけを読ませる。
+ * キャンバス単体（`components/artboard-canvas`）と編集画面の通し（`features/editor` の `opened-document-editor`）の両方が「何が描かれているか」を
+ * 確かめるので、**持ち主であるこの feature に置く**。外の feature へはテスト用の公開口（`__tests__/index.ts`）から出す。
  */
 
 /** 強調の規則が指している名前（規則の書式は components/artboard-canvas）。 */

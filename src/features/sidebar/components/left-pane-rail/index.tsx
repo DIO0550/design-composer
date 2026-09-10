@@ -1,20 +1,14 @@
 import type { ReactNode } from "react";
 
 /**
- * 左ペインが何を映しているか、レールに並ぶ順で（UI 案 docs/Design Composer.html は
- * 左端の縦アイコンレールでこれを切り替える / #129）。
+ * 左ペインが何を映しているか、レールに並ぶ順で（UI 案 docs/Design Composer.html は左端の縦アイコンレールでこれを切り替える /
+ * #129）。`Assets` はバイナリ資産ではなく**部品のパレット**で、`docs/06-ui.md` が挙げている「部品一覧」に当たる。
  *
- * `Assets` はバイナリ資産ではなく**部品のパレット**で、`docs/06-ui.md` が左ペインの内容と
- * して挙げている「部品一覧」に当たる。
+ * 並びを**この配列**に持ちレールもここから作るのは、Storybook のビルドでは docgen が export した定数へ `displayName` /
+ * `__docgenInfo` を列挙可能なプロパティとして足すことがあり、`Object.values` で走査すると行き先ではない値まで行として並ぶため
+ * （配列の `map` は添字だけを見る。vitest では docgen が走らずテストだけでは気付けない / #129）。
  *
- * 並びを**この配列**に持ち、レールもここから作る。オブジェクトを `Object.values` で
- * 走査しない理由は、Storybook のビルドでは docgen が export した定数へ `displayName` /
- * `__docgenInfo` を**列挙可能なプロパティとして**足すことがあり、走査すると行き先では
- * ない値まで行として並ぶため（配列の `map` は添字だけを見るので影響を受けない。
- * vitest では docgen が走らず、テストだけでは気付けない / #129）。
- *
- * これが効くのは**この定数のように `.tsx` で export しているもの**に限る。docgen の
- * 既定の対象は `**\/*.tsx` なので、`.ts` で export した定数（`PrimitiveTypes` 等）は
+ * これが効くのは**`.tsx` で export しているもの**に限る。docgen の既定の対象は `**\/*.tsx` なので、`.ts` で export した定数は
  * `.tsx` から `Object.values` で走査してよい（#105 で Storybook の実表示で確認）。
  */
 const LeftPaneViewOrder = ["layers", "assets", "tokens"] as const;
@@ -23,14 +17,11 @@ const LeftPaneViewOrder = ["layers", "assets", "tokens"] as const;
 export type LeftPaneView = (typeof LeftPaneViewOrder)[number];
 
 /**
- * 行き先を名前で指すための対応表。消費側が綴りを直接書かずに済むよう置く
- * （rules/coding.md「値の集合から union を導出する」）。
+ * 行き先を名前で指すための対応表。消費側が綴りを直接書かずに済むよう置く（rules/coding.md「値の集合から union を導出する」）。
  * 過不足は `Record<Capitalize<LeftPaneView>, LeftPaneView>` がコンパイルエラーにする。
  *
- * Why not: キーの型を `LeftPaneView` のままにしない。行き先を PascalCase で指す形に
- * すると、キーの型も `Capitalize` を通さないと `satisfies` が落ちる。ただし行き先の
- * id にハイフンや複数語が入ると `Capitalize<"left-pane">` = `"Left-pane"` を型が
- * 要求するので、そのときはキーの綴りを別に持つ。
+ * キーの型を `LeftPaneView` のままにしないのは、行き先を PascalCase で指す形にすると `Capitalize` を通さないと `satisfies` が
+ * 落ちるため。行き先の id にハイフンや複数語が入るとキーの綴りを別に持つことになる。
  */
 export const LeftPaneViews = {
   Layers: "layers",

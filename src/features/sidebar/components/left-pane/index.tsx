@@ -93,13 +93,10 @@ function LeftPaneContent({
 /**
  * 行き先ごとに、パネル下端へ固定するもの。
  *
- * 本体（`LeftPaneContent`）と分けているのは、UI 案が `Create component` を
- * スクロールしない帯として置いているため。中身と同じ `switch` に混ぜると
- * 一覧と一緒に流れる。
+ * 本体（`LeftPaneContent`）と分けているのは、UI 案が `Create component` をスクロールしない帯として置いているため
+ * （中身と同じ `switch` に混ぜると一覧と一緒に流れる）。
  *
- * 不在を `undefined` ではなく `Option` にしているのは、行き先を足して `case` を
- * 足し忘れたときにコンパイルエラーにするため（`ReactElement | undefined` だと
- * 抜けても通ってしまう）。
+ * 不在を `undefined` ではなく `Option` にしているのは、行き先を足して `case` を足し忘れたときにコンパイルエラーにするため。
  *
  * @returns Assets なら部品化のフッター、他の行き先では不在
  */
@@ -136,15 +133,13 @@ function leftPaneFooter({
 }
 
 /**
- * 左ペイン（UI 案 docs/Design Composer.html は 56px のレールと 248px の見出し付き
- * パネルを横に並べる / #129）。レールで選んだ行き先の中身をパネルへ出す。
+ * 左ペイン（UI 案 docs/Design Composer.html は 56px のレールと 248px の見出し付きパネルを横に並べる / #129）。レールで
+ * 選んだ行き先の中身をパネルへ出す。
  *
- * どこを見ているか（`view`）を自分で持たないのは、右ペインに何を出すかも同じ行き先で
- * 決まるため。ここが握ると右ペインから読めなくなるので、両ペインを組む側に置いて
- * もらう（`opened-document-editor`）。
+ * どこを見ているか（`view`）を自分で持たないのは、右ペインに何を出すかも同じ行き先で決まるため。ここが握ると右ペインから
+ * 読めなくなるので、両ペインを組む側（`opened-document-editor`）に置いてもらう。
  *
- * 編集画面の状態（`EditorState`）ではなく値で受け取るのは、この feature が編集画面を
- * 知らずに描けるようにするため（`features/sidebar/index.ts`）。
+ * 編集画面の状態（`EditorState`）ではなく値で受け取るのは、この feature が編集画面を知らずに描けるようにするため。
  */
 export function LeftPane({
   view,

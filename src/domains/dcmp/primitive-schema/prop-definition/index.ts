@@ -9,16 +9,12 @@ import type { Side } from "@/domains/unit/side";
 import type { ValueOf } from "@/types/ValueOf";
 
 /**
- * その prop が編集可能になる条件。
- * 「別の prop が特定の値のときだけ意味を持つ」prop を表す
- * （`width` は `widthMode` が `fixed` のときだけ効く、など）。
+ * その prop が編集可能になる条件。「別の prop が特定の値のときだけ意味を持つ」prop を表す（`width` は
+ * `widthMode` が `fixed` のときだけ効く、など）。
  *
- * 等値と不等値を判別子付きの直和にしてあるのは、条件の種類を足したときに
- * 判定側の網羅がコンパイルエラーになるようにするため
- * （`rules/coding.md`「列挙した状態の網羅を型で強制する」）。
- * 不等値が要るのは、**除きたい値が 1 つで、残りが増えうる**条件があるため
- * （`gap` は `layout` が `free` でなければ効く。等値の列挙で書くと `layout` に値を
- * 足すたびに追従が要る）。
+ * 等値と不等値を判別子付きの直和にしてあるのは、条件の種類を足したときに判定側の網羅がコンパイルエラーに
+ * なるようにするため。不等値が要るのは、**除きたい値が 1 つで、残りが増えうる**条件があるため（`gap` は
+ * `layout` が `free` でなければ効く。等値の列挙だと `layout` に値を足すたびに追従が要る）。
  */
 export type EnabledWhen =
   | Readonly<{ kind: "equals"; prop: string; equals: PropValue }>
@@ -249,20 +245,14 @@ export const PropDefinitionRecord = {
   },
 
   /**
-   * その props の下で実際に効いている prop 設定の並び。
-   * 明示設定に、未設定の prop のデフォルトを足したもの。
+   * その props の下で実際に効いている prop 設定の並び。明示設定に、未設定の prop のデフォルトを足したもの。
    *
-   * スキーマに帰属するのは、「どの値が効いているか」がスキーマの宣言で決まるため
-   * （`collectDefaultsIfAbsent` と同じ理由）。props だけでは未設定の prop に何が効くかが
-   * 決まらない。
+   * スキーマに帰属するのは、「どの値が効いているか」がスキーマの宣言で決まるため。この並びが
+   * `collectRefPropNames` と `collectErrors` の共通の走査対象で、片方だけがデフォルトを見る状態に戻ると、参照が
+   * 0 件のトークンを消して dangling が出るという食い違いが利用者に見える。
    *
-   * この並びが `collectRefPropNames` と `collectErrors` の共通の走査対象で、並びもここが決める。
-   * 走査を 1 つにしてあるのは、片方だけがデフォルトを見る状態に戻ると、参照が 0 件のトークンを
-   * 消して dangling が出る、という食い違いが利用者に見えるため。
-   *
-   * Why not: `ResolvedProps.resolve` は使えない。あちらは宣言済みの prop だけに絞った
-   * レコードを返すが、ここは `unknown-prop` を報告するために未宣言の prop も残す。
-   * `session/prop-control` の `effectiveProps` とも範囲が違う（あちらは binding 由来の既定も含む）。
+   * `ResolvedProps.resolve` を使えないのは、あちらが宣言済みの prop だけに絞ったレコードを返すのに対し、ここは
+   * `unknown-prop` を報告するために未宣言の prop も残すため。
    *
    * @param schema 効いている値の出どころになる prop 定義
    * @param props 実際に設定されている props

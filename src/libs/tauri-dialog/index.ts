@@ -8,15 +8,12 @@ export type FileFilter = Readonly<{
 }>;
 
 /**
- * ファイルを開く / 保存先を決めるダイアログ（docs/05-architecture.md
- * 「ファイルを開くダイアログ等は Tauri 標準プラグインを使用する」）。
+ * ファイルを開く / 保存先を決めるダイアログ（docs/05-architecture.md「ファイルを開く
+ * ダイアログ等は Tauri 標準プラグインを使用する」）。
  *
- * `@tauri-apps/plugin-dialog` を import するのはこのファイルだけに保つ。テストの
- * 差し替え口が 1 箇所に決まり、他の層が `@tauri-apps/*` へ直接依存する余地も無くなる
- * （`TauriIpc` と同じ理由 / #28）。
- *
- * 選ばずに閉じた場合をプラグインは `null` で返すが、境界を越えるのは `Option` にする。
- * 外部ライブラリの不在の表し方を他の層へ持ち込まないため。
+ * `@tauri-apps/plugin-dialog` を import するのはこのファイルだけに保つ（テストの差し替え口が
+ * 1 箇所に決まる / #28）。選ばずに閉じた場合をプラグインは `null` で返すが、境界を越えるのは
+ * `Option` にする。
  */
 export type TauriDialog = Readonly<{
   /** 既存のファイルを 1 つ選ばせる。 */

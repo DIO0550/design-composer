@@ -66,15 +66,11 @@ function tokenDeclarations(
 /**
  * Box 自身の置かれ方の宣言。
  *
- * フローの Box が `position: relative` を出すのは、**絶対配置の子が位置を測る
- * 基準になる**ため。子を持たない Text には要らないので `Placement` ではなく
- * Box 側が持つ。offset を伴わない `relative` は箱の位置を動かさないが、
- * positioned な要素は非 positioned な内容より上に描かれるので、重なりのある
- * 配置では描画順が変わる。
+ * フローの Box が `position: relative` を出すのは、**絶対配置の子が位置を測る基準になる**ため。子を
+ * 持たない Text には要らないので `Placement` ではなく Box 側が持つ。
  *
- * Why not: 「絶対配置の子を持つ Box だけ `relative` を出す」は採らない。
- * 同じ props の Box が子によって違う宣言を持つことになり、この関数が
- * props だけでは決まらなくなる。
+ * 「絶対配置の子を持つ Box だけ `relative` を出す」を採らないのは、同じ props の Box が子によって違う
+ * 宣言を持つことになり、この関数が props だけでは決まらなくなるため。
  *
  * @param placement Box 自身の置かれ方。置き場所が決まらないときは `undefined`
  * @returns 絶対配置なら座標込みの宣言、そうでなければ `position: relative` の 1 件

@@ -179,20 +179,14 @@ function rowFromNode(
 }
 
 /**
- * 今見ている artboard の中身を出すツリービュー（docs/06-ui.md「画面構成」。
- * UI 案 docs/Design Composer.html の `Layers` パネル下段）。行の並べ替えは
- * docs/06-ui.md「編集操作の一覧」の並べ替えにあたる。
+ * 今見ている artboard の中身を出すツリービュー（docs/06-ui.md「画面構成」。UI 案 docs/Design Composer.html の `Layers`
+ * パネル下段）。行の並べ替えは docs/06-ui.md「編集操作の一覧」の並べ替えにあたる。
  *
- * artboard 自身は行として出さない。UI 案は artboard を上段の `Artboards`
- * （`ArtboardList`）に並べ、ツリーはそのうちの 1 枚の中身だけを映す。どの 1 枚かは
- * 選択から決まる（`DocumentSelection.currentArtboard`）ので、ここは持たない。
+ * artboard 自身は行として出さない。UI 案は artboard を上段の `Artboards` に並べ、ツリーはそのうちの 1 枚の中身だけを映す
+ * （どの 1 枚かは `DocumentSelection.currentArtboard` が決めるので、ここは持たない）。
  *
- * どの枝を畳んでいるかは編集ではなく見え方なので、受け取った選択とドキュメントの対
- * には持たず、行を並べる器（`NestedRowList`）に閉じる。名前は
- * 使い回されるので、同じ名前でノードを作り直すと畳んだ状態で現れる
- * （三角で状態は読めるので許容している）。器は artboard があるときだけ描かれるため、
- * artboard が 0 枚になって戻ると畳んだ状態は消える（行が 1 つも無い状態を挟むので
- * 見え方は変わらない）。
+ * どの枝を畳んでいるかは編集ではなく見え方なので、選択とドキュメントの対には持たず行を並べる器（`NestedRowList`）に閉じる。
+ * 名前は使い回されるので、同じ名前でノードを作り直すと畳んだ状態で現れる（三角で状態は読める）。
  */
 export function DocumentTree({
   selection,

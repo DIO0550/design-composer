@@ -3,13 +3,11 @@ import { Node } from "@/domains/dcmp/node";
 import type { Option } from "@/utils/Option";
 
 /**
- * 今の選択に対する部品化（UI 案 docs/Design Composer.html の `Assets` 下部にある
- * `Create component`）。
+ * 今の選択に対する部品化（UI 案 docs/Design Composer.html の `Assets` 下部にある `Create component`）。
  *
- * できるかどうかを真偽値で持たず、できないときの**理由まで**を直和で列挙する。
- * UI 案がインスタンス選択時に `an instance can't be componentized` と理由を出しており、
- * 「できないが理由が無い」「できるのに元の名前が無い」という食い違った状態を
- * 表現できなくするため（rules/coding.md「不正な状態を型で表現できなくする」）。
+ * できるかどうかを真偽値で持たず、できないときの**理由まで**を直和で列挙する。UI 案がインスタンス選択時に
+ * `an instance can't be componentized` と理由を出しており、「できないが理由が無い」という食い違った状態を表現できなく
+ * するため。
  *
  * `sourceName` を `ready` だけが持つのがその境界で、`ready` 以外から元の名前は読めない。
  */

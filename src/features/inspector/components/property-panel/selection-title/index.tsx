@@ -2,16 +2,11 @@ import { TypeGlyph } from "@/components/type-glyph";
 import type { Selection, SelectionKind } from "@/domains/session/selection";
 
 /**
- * 帯の右端に出す種別の綴り。
+ * 帯の右端に出す種別の綴り。UI 案（docs/Design Composer.html）に実在するのは `Box` と `Instance` だけで、`Artboard` / `Text` はここで
+ * 決めた（型の綴りをそのまま出す形に揃えている）。
  *
- * UI 案（docs/Design Composer.html）に実在するのは `Box` と `Instance` だけ。
- * artboard を選んだ帯と Text を選んだ帯は UI 案に画面が無いので、`Artboard` /
- * `Text` はここで決めた（型の綴りをそのまま出す形に揃えている）。
- *
- * ドメインには置かない。ドメインが答えるのは「参照ノードか」「どの primitive か」で、
- * `Instance` はそれをこの画面でどう呼ぶかという表示の語彙。実際、同じ参照ノードを
- * ツリーは `inst`、ここは `Instance` と綴っている（`rules/architecture.md`
- * 「ドメインが出力形式を必要とする場合」と同じ線引き）。
+ * ドメインには置かない。ドメインが答えるのは「参照ノードか」「どの primitive か」で、`Instance` はそれをこの画面でどう呼ぶかという
+ * 表示の語彙（同じ参照ノードをツリーは `inst`、ここは `Instance` と綴っている）。
  *
  * 種別を足して綴りを足し忘れると、ここがコンパイルエラーになる。
  */

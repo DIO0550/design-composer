@@ -3,12 +3,10 @@ import { CanvasDom } from "@/libs/canvas-dom";
 import { Option } from "@/utils/Option";
 
 /**
- * キャンバスに描かれているものの実測。
- * ハンドルを重ねる位置（`use-drawn-bounds`）とリサイズの当たり判定（`use-node-resize`）が
- * 同じ測り方をするため 1 箇所に集める（`CanvasPointer` と同じ形）。
+ * キャンバスに描かれているものの実測。ハンドルを重ねる位置（`use-drawn-bounds`）とリサイズの当たり判定（`use-node-resize`）が同じ測り方をするため 1 箇所に集める
+ * （`CanvasPointer` と同じ形）。
  *
- * Why not: `CanvasBounds` のメソッドにしない。名前から要素を引くのは `libs/` が持つ I/O で、
- * ドメインへ持ち込むと `CanvasBounds` 自身が DOM に依存する（`ofElement` は要素を受け取るだけ）。
+ * `CanvasBounds` のメソッドにしないのは、名前から要素を引くのが `libs/` の持つ I/O で、ドメインへ持ち込むと `CanvasBounds` 自身が DOM に依存するため。
  */
 export const DrawnBounds = {
   /**

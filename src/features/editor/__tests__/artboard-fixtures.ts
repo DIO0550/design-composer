@@ -4,13 +4,10 @@ import { EditorState } from "@/features/editor/domains/editor-state";
 /**
  * artboard を 3 枚持ち、先頭の `home` だけが子を持つドキュメント。
  *
- * 3 枚あるのは、隣り合わない移動（`0 → 2`）を確かめるため。2 枚だと移動元と
- * 移動先を取り違えても同じ並びになり、受け渡しの取り違えを区別できない。
- * 子を持たせてあるのは、artboard の削除が配下ごと消すことを空の artboard では
- * 確かめられないため。
+ * 3 枚あるのは、隣り合わない移動（`0 → 2`）を確かめるため（2 枚だと移動元と移動先を取り違えても同じ並びになる）。子を持たせて
+ * あるのは、artboard の削除が配下ごと消すことを空の artboard では確かめられないため。
  *
- * `features/editor/__tests__` に置くのは、状態（`editor-state`）とフック
- * （`use-editor-state`）の両方が同じ並びを要るため（`sample-document` と同じ扱い）。
+ * `features/editor/__tests__` に置くのは、状態（`editor-state`）とフック（`use-editor-state`）の両方が同じ並びを要るため。
  *
  * @returns artboard が 3 枚並ぶドキュメント
  */

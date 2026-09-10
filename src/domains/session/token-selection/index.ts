@@ -3,18 +3,13 @@ import { type Token, type TokenRef, TokenSet } from "@/domains/dcmp/token";
 import { Option } from "@/utils/Option";
 
 /**
- * ドキュメントと、その中で選ばれているトークンの対
- * （docs/06-ui.md「編集操作の一覧」の tokens 編集）。
+ * ドキュメントと、その中で選ばれているトークンの対（docs/06-ui.md「編集操作の一覧」の tokens 編集）。
  *
- * 2 つを 1 つの型にまとめるのは、**片方だけでは答えが決まらない**ため。
- * 選ばれているのは種別と名前（`TokenRef`）だけで、その値も参照元も、どのドキュメントの
- * 中の名前かが決まって初めて引ける。
+ * 2 つを 1 つの型にまとめるのは、**片方だけでは答えが決まらない**ため。選ばれているのは種別と名前（`TokenRef`）
+ * だけで、その値も参照元も、どのドキュメントの中の名前かが決まって初めて引ける。
  *
- * 選択そのものではなく `TokenRef` を持つのは、値を持ち回すと編集・undo のあとに古い値が
- * 残るため。中身は引き直す（`TokenSelection.token`）。
- *
- * ノード側の対は `DocumentSelection`。`Selection`（選んだ 1 つの正体）とも別物で、
- * あちらはドキュメントを持たない。
+ * 選択そのものではなく `TokenRef` を持つのは、値を持ち回すと編集・undo のあとに古い値が残るため（中身は
+ * `TokenSelection.token` で引き直す）。ノード側の対は `DocumentSelection`。
  */
 export type TokenSelection = Readonly<{
   document: DesignDocument;
