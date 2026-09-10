@@ -54,8 +54,9 @@ export type {
  *
  * 版ごとの型と JSON 表現は版のフォルダ（`v1/`）が持つ。major を上げるときは隣に `v2/`
  * を作ってここを差し替え、旧版のフォルダは残す（旧版の型が残ることで、マイグレーション
- * が「どの形からどの形へ」を型で書ける）。ここを版の直和にしないのは、消費側に版の分岐
- * を強いないため。
+ * が「どの形からどの形へ」を型で書ける）。
+ *
+ * ここを版の直和にしないのは、消費側に版の分岐を強いないため。
  */
 export type DesignDocument = DesignDocumentV1;
 
@@ -190,9 +191,8 @@ function followPropEdits(node: Node, resize: AxisResize): readonly PropEdit[] {
  * 指定」）。
  *
  * 子への書き込みを `applyPropEdit` へ戻すので、**長さが変わった子は自分の子の追従を自分
- * で引き起こす**（明示的な再帰を書かない）。「どの prop を編集したか」で要否を決めない
- * のは、`width` を消して `hug` へ戻す編集のように prop 名だけでは長さが変わったかを判定
- * できないため。
+ * で引き起こす**（明示的な再帰を書かない）。「どの prop を編集したか」で要否を決めないの
+ * は、`width` を消して `hug` へ戻す編集のように prop 名だけでは判定できないため。
  *
  * @param before 編集する前のドキュメント
  * @param name 大きさが変わったかもしれない artboard / ノードの名前
@@ -440,10 +440,9 @@ function expandInstance(
 }
 
 /**
- * ドキュメントのコンパニオンオブジェクト。
- * ツリーの探索・編集は `NodeTree`、名前の規則は `NameSpace`、
- * 部品への変換は `Component`、検証は `validation/`、版ごとの JSON 表現は `v1/` が持ち、
- * ここは「どの artboard・どの部品を相手にするか」の調停に徹する。
+ * ドキュメントのコンパニオンオブジェクト。ツリーの探索・編集は `NodeTree`、名前の規則は
+ * `NameSpace`、部品への変換は `Component`、検証は `validation/`、版ごとの JSON 表現は
+ * `v1/` が持ち、ここは「どの artboard・どの部品を相手にするか」の調停に徹する。
  */
 export const DesignDocument = {
   create(params: {
@@ -463,6 +462,7 @@ export const DesignDocument = {
   /**
    * 雛形から新規ドキュメントを作る（docs/04-tokens.md「新規ドキュメントテンプレート」）。
    * artboards は空で始まる（描く対象はユーザーが足す）。
+   *
    * 雛形を引数で受け取るのは、既定を隠さず呼び出し側に選ばせるため。
    */
   createFromTemplate(template: DocumentTemplate): DesignDocument {
@@ -517,10 +517,9 @@ export const DesignDocument = {
    * ノードの複製をツリー上の位置へ挿入する（docs/06-ui.md「編集操作の一覧」の
    * コピー & ペースト）。
    *
-   * 名前はドキュメント全体で一意でなければならない（docs/01-file-format.md
-   * 「ノードの識別（name）」）ので、挿す前に部分木の名前をまとめて付け替える。
-   * 付け替えと挿入を呼び出し側に順番で守らせず 1 つの操作にするのは、
-   * 付け替え忘れが「重複した名前を持つドキュメント」として通ってしまうため。
+   * 名前はドキュメント全体で一意でなければならない（docs/01-file-format.md「ノードの識別
+   * （name）」）ので、挿す前に部分木の名前をまとめて付け替える。付け替えと挿入を 1 つの操
+   * 作にするのは、付け替え忘れが「重複した名前を持つドキュメント」として通ってしまうため。
    */
   insertNodeCopy(
     document: DesignDocument,
@@ -563,6 +562,7 @@ export const DesignDocument = {
    *
    * 見るのは artboard の配下だけ。部品定義の中にある参照ノードはキャンバスには描かれるが
    * ドキュメントの木には無いので選択の対象にならない（`EditorState.select` と同じ線引き）。
+   *
    * `componentAssets` の使用数が部品定義の中の参照も数えるのに対し、こちらが数えないのは
    * このため（同じ部品でも 2 つの数が食い違いうる / docs/06-ui.md「選択」）。
    *
@@ -598,9 +598,11 @@ export const DesignDocument = {
    * すべての artboard の**直下の子**の名前（範囲選択が選びうる相手）。
    *
    * 直下だけで止めるのは、キャンバスから選べる階層がそこだから（掘るのはダブルクリック
-   * の担当 / docs/06-ui.md「キャンバスのクリックが選ぶ階層」）。孫まで集めると、範囲で
-   * 払ったときにクリックとは違う階層が選ばれる。部品定義の中にある参照ノードを見ないの
-   * は、キャンバスに描かれてもドキュメントの木には無く、選択の対象にならないため。
+   * の担当 / docs/06-ui.md「キャンバスのクリックが選ぶ階層」）。孫まで集めると、範囲で払
+   * ったときにクリックとは違う階層が選ばれる。
+   *
+   * 部品定義の中にある参照ノードを見ないのは、キャンバスに描かれてもドキュメントの木には
+   * 無く、選択の対象にならないため。
    *
    * @param document 走査するドキュメント
    * @returns artboard の並び順・子の並び順のままの名前。1 つも無ければ空
@@ -619,8 +621,8 @@ export const DesignDocument = {
   },
 
   /**
-   * その名前のものが載っている artboard。artboard 自身の名前ならその artboard、
-   * ノードの名前ならそれを含む artboard（子孫まで辿る）。どちらでもなければ `none`。
+   * その名前のものが載っている artboard。artboard 自身の名前ならその artboard、ノードの
+   * 名前ならそれを含む artboard（子孫まで辿る）で、どちらでもなければ `none`。
    *
    * 名前 1 つから artboard へ辿る道をここに置くのは、「今どの artboard を見ているか」を
    * 選択から決める側（左ペイン）が、artboard とノードのどちらを選んでいるかで
@@ -730,8 +732,9 @@ export const DesignDocument = {
    *
    * 絶対配置だけを答えるのは、消費側（キャンバスのドラッグ）が知りたいのが「座標で動か
    * せるか、動かせるなら今どこか」だから（`Placement.fromProps` がスキーマ違反に返す
-   * `undefined` をここで `none` へ潰せるのも同じ理由）。座標と親を別々に答えないのは、
-   * **片方だけでは位置が決まらない**ため（`ChildPlacement`）。
+   * `undefined` をここで `none` へ潰せるのも同じ理由）。
+   *
+   * 座標と親を別々に答えないのは、**片方だけでは位置が決まらない**ため（`ChildPlacement`）。
    *
    * @param document 引き先になるドキュメント
    * @param name 置かれている場所を知りたいノードの名前
@@ -1038,10 +1041,9 @@ export const DesignDocument = {
   /**
    * その名前のノードを解除できるか（参照ノードで、参照先を辿りきれる）。
    *
-   * 展開までしか見ないのは、`detach` の残り（名前の付け替えと置き換え）が
-   * 失敗しないため。`DesignDocument.replaceNode` も `Result` を返すが、探索
-   * （`findNode`）と置き換えは同じ `Node.children` の走査を通るので、探索できた
-   * ノードの置き換えは必ず成功する。
+   * 展開までしか見ないのは、`detach` の残り（名前の付け替えと置き換え）が失敗しないため。
+   * `DesignDocument.replaceNode` も `Result` を返すが、探索（`findNode`）と置き換えは同じ
+   * `Node.children` の走査を通るので、探索できたノードの置き換えは必ず成功する。
    *
    * @param document 解除元のドキュメント
    * @param name 解除したいノードの名前
@@ -1270,10 +1272,11 @@ export const DesignDocument = {
   },
 
   /**
-   * ドキュメントが仕様に適合しない箇所をすべて集める。
-   * 最初の1件で止めないのは、不正なファイルのエラー一覧を出せるようにするため。
-   * 適合の規則そのものは `validation/` が関心ごとに持ち、
-   * ここは「どの部品・どの artboard を検証対象にするか」の取りまとめを行う。
+   * ドキュメントが仕様に適合しない箇所をすべて集める。最初の 1 件で止めないのは、不正な
+   * ファイルのエラー一覧を出せるようにするため。
+   *
+   * 適合の規則そのものは `validation/` が関心ごとに持ち、ここは「どの部品・どの artboard
+   * を検証対象にするか」の取りまとめを行う。
    */
   collectErrors(
     document: DesignDocument,

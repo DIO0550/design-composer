@@ -60,10 +60,11 @@ const EditorTopBarToneContext = createContext<Option<EditorTopBarTone>>(
  * 帯が配っている色味。
  *
  * 帯とパンくずは同じ色味から決まるので、**入口を 1 つにして食い違いを書けなくする**
- * （props で 2 箇所へ渡す形にすると「帯だけ赤い」組み合わせが作れてしまい、
- * それを禁じるのはコメント＝規律になる / rules/coding.md「前提をコメントで書くのは、
- * 型で閉じたことにならない」）。親が暗黙のスタイルを配り子が使う形なので
- * `rules/components.md` のコンパウンドコンポーネントに当たる。
+ * （props で 2 箇所へ渡すと「帯だけ赤い」組み合わせが作れ、禁じるのはコメント＝規律にな
+ * る / rules/coding.md「前提をコメントで書くのは、型で閉じたことにならない」）。
+ *
+ * 親が暗黙のスタイルを配り子が使う形なので、`rules/components.md` のコンパウンドコンポー
+ * ネントに当たる。
  *
  * @returns 囲っている `EditorTopBar` の色味
  * @throws `EditorTopBar` の外で呼ばれたとき（配置ミスなので隠さずに落とす）
@@ -86,9 +87,8 @@ function useEditorTopBarTone(): EditorTopBarTone {
  * 帯がこれ 1 本だけだから（#374）。
  *
  * UI 案が左端に描く macOS の信号機ボタンは置いていない。`src-tauri/tauri.conf.json` が
- * `decorations` を指定せず既定（OS が装飾を描く）なので、装飾が二重になり押しても閉じな
- * い偽のボタンが並ぶため。高さ（`h-[38px]`）を落としても**テストは 1 件も落ちない**（気
- * づく手段は視覚差分だけ）。
+ * `decorations` を指定せず既定（OS が装飾を描く）なので、押しても閉じない偽のボタンが二重
+ * に並ぶため。高さ（`h-[38px]`）を落としても**テストは 1 件も落ちない**（視覚差分だけ）。
  */
 function EditorTopBarRoot({
   tone,
@@ -167,10 +167,9 @@ function TopBarBadge({
 /**
  * 保存状態ごとの、バッジの字面と色。
  *
- * `satisfies Record<DocumentSaveState["kind"], …>` が網羅を強制する（状態を 1 つ足すと
- * ここがコンパイルエラーになる）。`rules/coding.md`「状態をキーにした対応表は網羅のためだけに
- * 選ばない」に触れるが、ここが持つのは props 一式を受ける関数ではなく**字面と色の 2 つ**で、
- * `switch` で書くと同じマークアップが 3 回並ぶだけになるため対応表にしている。
+ * `satisfies Record<DocumentSaveState["kind"], …>` が網羅を強制する（状態を 1 つ足すとコ
+ * ンパイルエラーになる）。`rules/coding.md`「状態をキーにした対応表は網羅のためだけに選
+ * ばない」に触れるが、持つのは**字面と色の 2 つ**で `switch` だと同じ綴りが 3 回並ぶため。
  */
 const SaveBadgeFaces = {
   saved: { label: "保存済み", className: "bg-green-50 text-green-700" },
@@ -186,10 +185,9 @@ const SaveBadgeFaces = {
 /**
  * 画面のドキュメントがファイルに載っているか（UI 案の `● saved`）。
  *
- * UI 案が保存状態として描いているのは `saved`（緑）だけ。書き出し待ちの `保存中` と
- * `保存に失敗` は案に無いが、`saved` 固定にすると書き込みが失敗している間も
- * 「保存済み」と名乗ることになるため、状態をそのまま出す
- * （Error 画面の赤いバッジは `2 errors · file invalid` で、保存状態ではなくエラー件数）。
+ * UI 案が保存状態として描いているのは `saved`（緑）だけ。書き出し待ちの `保存中` と `保存
+ * に失敗` は案に無いが、`saved` 固定にすると書き込みが失敗している間も「保存済み」と名乗
+ * るため、状態をそのまま出す（Error 画面の赤いバッジ `2 errors · file invalid` は件数）。
  *
  * @returns 保存状態に応じた字面と色のバッジ
  */
@@ -229,9 +227,9 @@ function FileInvalidBadge({
 const ZoomStepButton = "rounded px-1.5 py-0.5 text-gray-600 hover:bg-gray-100";
 
 /**
- * 倍率の操作（UI 案の `− 55% +`）。右端へ寄るのはこの並び自身の性質なので `ml-auto` を
- * 持つ（外すとパンくずの隣へ寄るが、**テストは 1 件も落ちない**。気づく手段は Storybook
- * の視覚差分だけ）。
+ * 倍率の操作（UI 案の `− 55% +`）。右端へ寄るのはこの並び自身の性質なので `ml-auto` を持
+ * つ（外すとパンくずの隣へ寄るが、**テストは 1 件も落ちない** — 気づく手段は Storybook の
+ * 視覚差分だけ）。
  *
  * 倍率の表示そのものを等倍へ戻すボタンにしている。`等倍に戻す` を 4 つ目として並べない
  * のは、UI 案の倍率の並びが `−` / 倍率 / `+` の 3 つしか描いておらず、描かれていない操

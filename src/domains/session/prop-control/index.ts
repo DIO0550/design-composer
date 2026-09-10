@@ -48,8 +48,10 @@ import { Option } from "@/utils/Option";
  *
  * enum とトークン参照を分けるのは、UI 案（docs/Design Composer.html）が enum をセグメン
  * ト、トークンを `▾` 付きの欄と描き分けているため（畳むと、パネル側が選択肢の出どころを
- * prop 名でしか判別できない）。色と数値のトークンをさらに分けるのは、`gap` が色を持つ状
- * 態・`shadow` が解決値を持つ状態を型で作れなくするため。
+ * prop 名でしか判別できない）。
+ *
+ * 色と数値のトークンをさらに分けるのは、`gap` が色を持つ状態・`shadow` が解決値を持つ状態
+ * を型で作れなくするため。
  */
 export type PropControlInput =
   | Readonly<{ kind: "enum"; values: readonly string[] }>
@@ -143,10 +145,9 @@ export type PropControlSection = Readonly<{
  * `group` を持たせないのは、その `group` が binding 先のプリミティブのもので、出すと部
  * 品の内部構造が漏れるため。
  *
- * `isDetachable` を持つのは、参照先の部品が無い・循環している間は解除できず、押しても何
- * も起きないボタンになるため（不正なドキュメントも画面には残るので実際に出る）。
- * `multiple` が件数だけを持つのは、帯と本文が同じ 1 つの値から出し分けるようにするため
- * で、`sourceInstanceCount` も `Select all N instances` の N と出どころを揃える。
+ * `isDetachable` を持つのは、参照先の部品が無い・循環している間は解除できず、押しても何も
+ * 起きないボタンになるため（不正なドキュメントも画面には残るので実際に出る）。件数だけを持
+ * つ `multiple` / `sourceInstanceCount` は、帯と本文を同じ 1 つの値から出し分けるため。
  */
 export type SelectionControls =
   | Readonly<{ kind: "groups"; sections: readonly PropControlSection[] }>
@@ -293,8 +294,9 @@ function declaredEditableProps(
 }
 
 /**
- * 部品が公開している prop（docs/06-ui.md「インスタンス」）。
- * binding 先が設定している値を既定にし、無ければスキーマの `default` に落とす。
+ * 部品が公開している prop（docs/06-ui.md「インスタンス」）。binding 先が設定している値を
+ * 既定にし、無ければスキーマの `default` に落とす。
+ *
  * 宣言が解決できない prop（部品が壊れている）はコントロールを出さない。
  *
  * @param components 参照先の部品を引くための部品一式
@@ -583,10 +585,9 @@ export const PropControl = {
    * 入力された値を、その prop への編集にする。
    * 値の作り方は入力欄の種類だけで決まるので、prop 名では分岐しない。
    *
-   * 受け取るのは**解釈済みの値**で、空欄を「値が無い」と読むのは
-   * `<select>` / `<input>` の約束事なので呼び出し側が済ませておく
-   * （文字列 prop にとって `""` はそれ自体が正当な値になりうるため、
-   * ここで `""` を未設定と決めるとその値にとっての意味が固定される）。
+   * 受け取るのは**解釈済みの値**で、空欄を「値が無い」と読むのは `<select>` / `<input>`
+   * の約束事なので呼び出し側が済ませておく（文字列 prop にとって `""` はそれ自体が正当な
+   * 値になりうるため、ここで `""` を未設定と決めるとその値にとっての意味が固定される）。
    *
    * @param control 編集したい prop の編集欄
    * @param value 入力された値。入力欄が空なら `none`

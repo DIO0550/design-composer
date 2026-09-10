@@ -93,10 +93,9 @@ export async function fixFileExternally(fake: DocumentIpcFake): Promise<void> {
 /**
  * 外部が「読めるが仕様に反する」内容を書いたことにする。
  *
- * `breakFileExternally` の壊し方（字句スキャンで落ちる）ではエラーの場所が
- * 文字位置になり、ノードを指す行が 1 つも出ない。エラー行から該当ノードへ飛ぶ
- * 経路を確かめるにはノードを指すエラーが要る（#136）ので、
- * `SampleDocumentWithDanglingToken` を書き込む。
+ * `breakFileExternally` の壊し方（字句スキャンで落ちる）ではエラーの場所が文字位置になり、
+ * ノードを指す行が 1 つも出ない。エラー行から該当ノードへ飛ぶ経路を確かめるにはノードを指
+ * すエラーが要る（#136）ので、`SampleDocumentWithDanglingToken` を書き込む。
  */
 export async function invalidateFileExternally(
   fake: DocumentIpcFake,
@@ -109,8 +108,10 @@ export async function invalidateFileExternally(
 }
 
 /**
- * キャンバス。同じ名前がツリーにも出るので絞るのに使う。キャンバスのツールバーもこの中に
- * あり、絞らないと左ペインへ置き戻す実装でも通ってしまう（#112）。
+ * キャンバス。同じ名前がツリーにも出るので絞るのに使う。
+ *
+ * キャンバスのツールバーもこの中にあり、絞らないと左ペインへ置き戻す実装でも通ってしまう
+ * （#112）。
  */
 export function canvasPane(): HTMLElement {
   return screen.getByRole("main", { name: "キャンバス" });
@@ -153,9 +154,10 @@ export function propertyPane(): HTMLElement {
 }
 
 /**
- * ツリーの領域。行を読む相手はここに絞る。左ペインにはレールの行き先ボタンも並び、
- * そちらも `aria-current` を持つため、ペイン全体を渡すと行き先が行として混ざる
- * （`row-names` の注意書きのとおり）。
+ * ツリーの領域。行を読む相手はここに絞る。
+ *
+ * 左ペインにはレールの行き先ボタンも並び、そちらも `aria-current` を持つため、ペイン全体
+ * を渡すと行き先が行として混ざる（`row-names` の注意書きのとおり）。
  */
 export function tree(): HTMLElement {
   return screen.getByRole("region", { name: "ツリー" });
@@ -181,6 +183,7 @@ export async function selectArtboard(name: string): Promise<void> {
 
 /**
  * レールの行き先のボタン。綴りではなく行き先で指す（取り違えを型で弾く）。
+ *
  * 今どこを映しているかはこのボタンの `aria-current` に出る。
  *
  * @param view 引きたい左ペインの行き先
