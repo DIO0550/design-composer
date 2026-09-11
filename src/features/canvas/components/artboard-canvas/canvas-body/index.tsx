@@ -1,3 +1,4 @@
+import type { MouseEvent as ReactMouseEvent } from "react";
 import type { DocumentSelection } from "@/domains/session/document-selection";
 import type { SelectionDig } from "@/domains/session/selection-dig";
 import type { TokenSelection } from "@/domains/session/token-selection";
@@ -18,6 +19,7 @@ export function CanvasBody({
   selection,
   tokenSelection,
   onSelect,
+  onContextMenu,
   artboardDrag,
   nodeDrag,
   nodeResize,
@@ -27,6 +29,10 @@ export function CanvasBody({
   selection: DocumentSelection;
   tokenSelection: TokenSelection;
   onSelect: (names: readonly string[], dig: SelectionDig) => void;
+  onContextMenu: (
+    event: ReactMouseEvent<HTMLElement>,
+    names: readonly string[],
+  ) => void;
   artboardDrag: ArtboardDragControl;
   nodeDrag: NodeDragControl;
   nodeResize: NodeResizeControl;
@@ -48,6 +54,7 @@ export function CanvasBody({
       selection={selection}
       tokenSelection={tokenSelection}
       onSelect={onSelect}
+      onContextMenu={onContextMenu}
       artboardDrag={artboardDrag}
       nodeDrag={nodeDrag}
       nodeResize={nodeResize}

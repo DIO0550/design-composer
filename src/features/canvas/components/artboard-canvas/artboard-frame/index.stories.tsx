@@ -44,6 +44,7 @@ function ArtboardFrameWithControls({
             isSelected={isSelected}
             isCurrent={isCurrent}
             onSelect={() => {}}
+            onContextMenu={() => {}}
             {...controls}
           />
         </ul>

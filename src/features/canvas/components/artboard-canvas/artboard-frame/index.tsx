@@ -15,6 +15,7 @@ import type { TextEditControl } from "@/features/canvas/hooks/use-text-edit";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { CommandKey } from "@/utils/CommandKey";
 import { ElementEx } from "@/utils/ElementEx";
+import { PointerButton } from "@/utils/PointerButton";
 import { ArtboardLabel } from "../artboard-label";
 
 /**
@@ -37,6 +38,7 @@ export function ArtboardFrame({
   isSelected,
   isCurrent,
   onSelect,
+  onContextMenu,
   artboardDrag,
   nodeDrag,
   nodeResize,
@@ -46,6 +48,10 @@ export function ArtboardFrame({
   isSelected: boolean;
   isCurrent: boolean;
   onSelect: (names: readonly string[], dig: SelectionDig) => void;
+  onContextMenu: (
+    event: MouseEvent<HTMLElement>,
+    names: readonly string[],
+  ) => void;
   artboardDrag: ArtboardDragControl;
   nodeDrag: NodeDragControl;
   nodeResize: NodeResizeControl;
@@ -112,7 +118,19 @@ export function ArtboardFrame({
         （実測: `w-fit` を戻しても 2639 件すべて緑）。掴める範囲が 85px へ戻っても
         気づく手段が無い。
       */}
-      <div className="absolute right-0 bottom-full left-0 pb-1">
+      {/*
+        見出しの右クリックは artboard のメニュー（docs/06-ui.md「コンテキストメニュー」）。
+        見出しは枠の**外**にあって `data-name` も持たないので、名前を辿らせず artboard 自身
+        を渡す。受けるのは包む器で、`ArtboardLabel` は掴み口のことだけを知っていればよい。
+      */}
+      {/* biome-ignore lint/a11y/noStaticElementInteractions: 見出しの掴み口は ArtboardLabel が持ち、ここは右クリックを artboard へ向けるだけの器 */}
+      <div
+        className="absolute right-0 bottom-full left-0 pb-1"
+        onContextMenu={(event) => {
+          event.stopPropagation();
+          onContextMenu(event, [element.name]);
+        }}
+      >
         <ArtboardLabel
           artboard={artboard}
           isCurrent={isCurrent}
@@ -167,7 +185,25 @@ export function ArtboardFrame({
           onSelect(names, SelectionDigs.OneDeeper);
         }}
         onKeyDown={activate}
+        /*
+         * 枠の中の右クリックは、押された位置から外へ辿った名前に対するメニュー
+         * （選ぶ規則は左クリックと同じ / docs/06-ui.md「コンテキストメニュー」）。
+         * 土台へ渡さないのは、そちらが空き領域として扱うため。
+         */
+        onContextMenu={(event: MouseEvent<HTMLElement>) => {
+          event.stopPropagation();
+          onContextMenu(event, namesAt(event.target));
+        }}
         onPointerDown={(event) => {
+          /*
+           * 主ボタン以外では掴まない。右クリックはメニューを出す操作で、ここで掴むと
+           * `useArtboardDrag.grab` がポインタを捕捉し、メニューを操作するあいだの動きが
+           * そのまま移動になる（離した時点で座標が確定してしまう）。
+           * 中ボタンは土台が capture で先に取るのでここへは届かない。
+           */
+          if (!PointerButton.isPrimary(event)) {
+            return;
+          }
           // artboard の上で始めたドラッグは土台へ渡さない（掴んだものが動かないと操作が読めなくなる）
           event.stopPropagation();
           /*

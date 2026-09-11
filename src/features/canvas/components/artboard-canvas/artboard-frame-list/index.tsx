@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { type MouseEvent as ReactMouseEvent, useMemo } from "react";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import type { SelectionDig } from "@/domains/session/selection-dig";
 import { TokenSelection } from "@/domains/session/token-selection";
@@ -63,6 +63,7 @@ export function ArtboardFrameList({
   selection,
   tokenSelection,
   onSelect,
+  onContextMenu,
   artboardDrag,
   nodeDrag,
   nodeResize,
@@ -72,6 +73,10 @@ export function ArtboardFrameList({
   selection: DocumentSelection;
   tokenSelection: TokenSelection;
   onSelect: (names: readonly string[], dig: SelectionDig) => void;
+  onContextMenu: (
+    event: ReactMouseEvent<HTMLElement>,
+    names: readonly string[],
+  ) => void;
   artboardDrag: ArtboardDragControl;
   nodeDrag: NodeDragControl;
   nodeResize: NodeResizeControl;
@@ -144,6 +149,7 @@ export function ArtboardFrameList({
                 placed.artboard.element.name,
               )}
               onSelect={onSelect}
+              onContextMenu={onContextMenu}
               artboardDrag={artboardDrag}
               nodeDrag={nodeDrag}
               nodeResize={nodeResize}

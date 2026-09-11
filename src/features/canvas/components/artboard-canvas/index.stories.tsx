@@ -55,6 +55,7 @@ const meta = {
     onResize: fn(),
     onEditProp: fn(),
     onRepositionArtboard: fn(),
+    onOpenContextMenu: fn(),
   },
 } satisfies Meta<typeof CanvasWithView>;
 

@@ -71,6 +71,7 @@ type CanvasHandlers = Readonly<{
   onRepositionArtboard: (name: string, canvasPosition: Offset) => void;
   onResize: (sizes: readonly AxisLength[]) => void;
   onEditProp: (edit: PropEdit) => void;
+  onOpenContextMenu: (names: readonly string[], at: Offset) => void;
 }>;
 
 /**
@@ -125,6 +126,7 @@ export function renderCanvas(
       onRepositionArtboard={vi.fn()}
       onResize={vi.fn()}
       onEditProp={vi.fn()}
+      onOpenContextMenu={vi.fn()}
       {...props}
     />,
   );
