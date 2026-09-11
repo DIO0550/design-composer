@@ -1,34 +1,22 @@
 import { render, screen, within } from "@testing-library/react";
 import type { ComponentProps, ReactElement, ReactNode } from "react";
-import { ContextMenu, ContextMenuTones } from "@/components/context-menu";
-import { Option } from "@/utils/Option";
+import { ContextMenu } from "@/components/context-menu";
+import {
+  list,
+  type RowProps,
+  row,
+} from "@/components/context-menu/__stories__/menu-content";
+
+/*
+ * `row` / `list` は `__stories__/menu-content.tsx` にも要るため、そちらに置いてここでは
+ * 再輸出だけ行う。同じ形（メニューの中身の組み立て方）が 2 箇所に現れないようにするため
+ * （`rules/coding.md`「同じ処理が 2 箇所に現れたら共通化する」）。
+ * `recordedRow` は押された綴りを積むテスト固有の用途なので、こちらだけに置く。
+ */
+export { list, row } from "@/components/context-menu/__stories__/menu-content";
 
 /** 押された行を綴りで積む器。どの行が呼ばれたかを 1 つの観点で見られる。 */
 export type SelectedRows = string[];
-
-/** 行に渡すもののうち、綴り以外。 */
-type RowProps = Partial<Omit<ComponentProps<typeof ContextMenu.Item>, "label">>;
-
-/**
- * 1 行。既定は「押せる・通常の色・割り当てなし」。
- *
- * @param label 行の綴り
- * @param props 確かめたい項目だけ。省いたものは既定で埋まる
- * @returns メニューへ入れる 1 行
- */
-export function row(label: string, props: RowProps = {}): ReactElement {
-  return (
-    <ContextMenu.Item
-      key={label}
-      label={label}
-      shortcut={Option.none}
-      tone={ContextMenuTones.Normal}
-      isEnabled={true}
-      onSelect={() => {}}
-      {...props}
-    />
-  );
-}
 
 /**
  * 押すと綴りを積む 1 行。
@@ -47,20 +35,6 @@ export function recordedRow(
 }
 
 /**
- * 行を 1 組にまとめる。組のあいだに区切りが入る。
- *
- * @param rows 並べる行
- * @returns メニューへ入れる 1 組
- */
-export function group(...rows: readonly ReactElement[]): ReactElement {
-  return (
-    <ContextMenu.Group key={rows.map((entry) => entry.key).join()}>
-      {rows}
-    </ContextMenu.Group>
-  );
-}
-
-/**
  * メニューを描く。既定は窓の左上（折り返しの起きない位置）に 1 行のメニュー。
  *
  * @param props 確かめたい prop だけ。`children` を省くと 1 行のメニューになる
@@ -71,7 +45,7 @@ export function renderMenu(
 ) {
   // `??` にはしない（`children: null` で「行が 1 つも無いメニュー」を渡せなくなる）
   const content: ReactNode =
-    "children" in props ? props.children : group(row("Copy"));
+    "children" in props ? props.children : list(row("Copy"));
   return render(
     <ContextMenu
       at={props.at ?? { x: 0, y: 0 }}

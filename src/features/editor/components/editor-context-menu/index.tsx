@@ -128,7 +128,7 @@ export function EditorContextMenu({
          * 組にも行にも id が無いので、並んでいる操作そのものを鍵にする（同じ操作は 1 つの
          * メニューに 2 度出ない）。
          */
-        <ContextMenu.Group key={group.map((row) => row.operation).join()}>
+        <ContextMenu.List key={group.map((row) => row.operation).join()}>
           {group.map((row) => (
             <ContextMenu.Item
               key={row.operation}
@@ -137,7 +137,7 @@ export function EditorContextMenu({
               onSelect={handlers[row.operation]}
             />
           ))}
-        </ContextMenu.Group>
+        </ContextMenu.List>
       ))}
     </ContextMenu>
   );

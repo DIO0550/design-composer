@@ -1,10 +1,11 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
+import { ContextMenu } from "@/components/context-menu";
 import { Option } from "@/utils/Option";
 import {
-  group,
   inMenu,
+  list,
   menu,
   recordedRow,
   renderMenu,
@@ -23,7 +24,7 @@ import {
 
 test("渡した組の順に行が並ぶ", () => {
   renderMenu({
-    children: [group(row("Copy"), row("Paste")), group(row("Delete"))],
+    children: [list(row("Copy"), row("Paste")), list(row("Delete"))],
   });
 
   expect(
@@ -36,9 +37,9 @@ test("渡した組の順に行が並ぶ", () => {
 test("組の数より 1 つ少ない区切りが出る", () => {
   renderMenu({
     children: [
-      group(row("Copy"), row("Paste")),
-      group(row("Bring forward")),
-      group(row("Delete")),
+      list(row("Copy"), row("Paste")),
+      list(row("Bring forward")),
+      list(row("Delete")),
     ],
   });
 
@@ -48,7 +49,7 @@ test("組の数より 1 つ少ない区切りが出る", () => {
 test("行を押すとその行の手続きが呼ばれる", async () => {
   const selected: SelectedRows = [];
   renderMenu({
-    children: group(recordedRow("Copy", selected), row("Paste")),
+    children: list(recordedRow("Copy", selected), row("Paste")),
   });
 
   await userEvent.click(inMenu().getByRole("menuitem", { name: "Copy" }));
@@ -59,7 +60,7 @@ test("行を押すとその行の手続きが呼ばれる", async () => {
 test("押せない行を押しても手続きは呼ばれない", async () => {
   const selected: SelectedRows = [];
   renderMenu({
-    children: group(recordedRow("Paste", selected, { isEnabled: false })),
+    children: list(recordedRow("Paste", selected, { isEnabled: false })),
   });
 
   await userEvent.click(inMenu().getByRole("menuitem", { name: "Paste" }));
@@ -70,7 +71,7 @@ test("押せない行を押しても手続きは呼ばれない", async () => {
 test("行を実行するとメニューが閉じる", async () => {
   const closed: string[] = [];
   renderMenu({
-    children: group(row("Copy")),
+    children: list(row("Copy")),
     onClose: () => closed.push("closed"),
   });
 
@@ -81,7 +82,7 @@ test("行を実行するとメニューが閉じる", async () => {
 
 test("割り当てを持つ行にはその綴りが併記される", () => {
   renderMenu({
-    children: group(row("Copy", { shortcut: Option.some("⌘C") })),
+    children: list(row("Copy", { shortcut: Option.some("⌘C") })),
   });
 
   expect(inMenu().getByRole("menuitem", { name: "Copy ⌘C" })).toBeDefined();
@@ -89,7 +90,7 @@ test("割り当てを持つ行にはその綴りが併記される", () => {
 
 test("割り当てを持たない行では割り当ての欄そのものが出ない", () => {
   renderMenu({
-    children: group(
+    children: list(
       row("Copy", { shortcut: Option.some("⌘C") }),
       row("Detach instance"),
     ),
@@ -108,7 +109,37 @@ test("割り当てを持たない行では割り当ての欄そのものが出�
 });
 
 test("開いた時点ではどの行にもフォーカスが当たっていない", () => {
-  renderMenu({ children: group(row("Copy"), row("Paste")) });
+  renderMenu({ children: list(row("Copy"), row("Paste")) });
 
   expect(globalThis.document.activeElement).toBe(menu());
+});
+
+/*
+ * 組と行は器が型で照合して集める。集めた並びをそのまま描くので、器が知らないものは並ばない
+ * （高さだけが合わない状態を作らないため / `placement` が高さの側を見る）。
+ */
+test("組の中に行でないものを置いても並ばない", () => {
+  renderMenu({
+    children: (
+      <ContextMenu.List>
+        <button type="button">行ではないもの</button>
+        {row("Copy")}
+      </ContextMenu.List>
+    ),
+  });
+
+  // 器の中に居ないことを見る（器そのものは出ているので、無いのは描かれなかったから）
+  expect(inMenu().queryByText("行ではないもの")).toBeNull();
+});
+
+test("組でないものを混ぜても区切りは増えない", () => {
+  renderMenu({
+    children: [
+      list(row("Copy")),
+      <div key="組ではないもの" />,
+      list(row("Delete")),
+    ],
+  });
+
+  expect(inMenu().getAllByRole("separator")).toHaveLength(1);
 });

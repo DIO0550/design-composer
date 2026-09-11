@@ -23,7 +23,7 @@ export const ContextMenuTones = {
 } as const;
 
 /** 行の色味。 */
-export type ContextMenuTone = ValueOf<typeof ContextMenuTones>;
+type ContextMenuTone = ValueOf<typeof ContextMenuTones>;
 
 /*
  * UI 案 docs/Design Composer.html の `Context menu` が持つ寸法（px）。
@@ -111,8 +111,7 @@ function collectElements(
       return [];
     }
     if (child.type === Fragment) {
-      const fragment = child as ReactElement<{ children?: ReactNode }>;
-      return collectElements(fragment.props.children, type);
+      return collectElements(childrenOf(child), type);
     }
     return child.type === type ? [child] : [];
   });
@@ -129,19 +128,31 @@ function childrenOf(element: ReactElement): ReactNode {
 }
 
 /**
+ * 組に並ぶ行の綴りをつないだもの。
+ *
+ * @param list 組
+ * @returns その組に並ぶ行の綴り。行が無ければ空
+ */
+function rowLabels(list: ReactElement): string {
+  return collectElements(childrenOf(list), ContextMenuItem)
+    .map((item) => (item as ReactElement<{ label: string }>).props.label)
+    .join();
+}
+
+/**
  * 並んだ組ぜんたいの高さ。
  *
- * @param groups 器が描く組（`collectElements` が集めたもの）
+ * @param lists 器が描く組（`collectElements` が集めたもの）
  * @returns 枠線と余白を含めた高さ（px）
  */
-function menuHeight(groups: readonly ReactElement[]): number {
-  const rowCount = groups.reduce(
-    (count, group) =>
-      count + collectElements(childrenOf(group), ContextMenuItem).length,
+function menuHeight(lists: readonly ReactElement[]): number {
+  const rowCount = lists.reduce(
+    (count, list) =>
+      count + collectElements(childrenOf(list), ContextMenuItem).length,
     0,
   );
   // 組が 0 でも区切りは負にならない（子を条件で出すと空のメニューが実際に作れる）
-  const separatorCount = Math.max(groups.length - 1, 0);
+  const separatorCount = Math.max(lists.length - 1, 0);
   const edges = (MenuPadding + MenuBorderWidth) * 2;
   const separators = separatorCount * (SeparatorLineHeight + SeparatorGap * 2);
   return edges + rowCount * RowHeight + separators;
@@ -196,15 +207,12 @@ function nextFocusIndex(rows: readonly Element[], step: FocusStep): number {
  * 投げるが、React がハンドラの例外を非同期に報告するため vitest は失敗として拾わない** —
  * 落ちるテストは 1 件も無い。
  *
- * 引くのは `menuitem` に絞る。`button` で引くと、行の中に置かれた別のボタンが ↑↓ の順路へ
- * 混ざる（中身は呼び出し側が決めるので、器は行そのものだけを見る）。
- *
  * @param menu 行を持つ器
  * @param step 動かす向き
  */
 function moveFocus(menu: HTMLElement, step: FocusStep): void {
   const rows = Array.from(
-    menu.querySelectorAll<HTMLElement>('[role="menuitem"]:not([disabled])'),
+    menu.querySelectorAll<HTMLButtonElement>("button:not([disabled])"),
   );
   const index = nextFocusIndex(rows, step);
   if (!ArrayEx.isIndexInRange(rows, index)) {
@@ -223,17 +231,21 @@ const EnabledRowClasses = {
 } as const satisfies Readonly<Record<ContextMenuTone, string>>;
 
 /**
- * 区切りで区切られる 1 組。中身に `ContextMenu.Item` を並べる。
+ * 区切りで区切られる 1 組の行。中身に `ContextMenu.Item` を並べる。
  *
  * 自分では DOM を持たない。区切りを差し込むのは器で、UI 案 `Context menu` のマークアップも
  * 組ごとの器を持たず行と区切りを並列に置いている。
  *
- * @returns 受け取った行そのもの
+ * 並べるのは**器が高さに数えるのと同じ並び**（`collectElements` の結果）。素通しにすると、
+ * 呼び出し側の部品で包んだ行が「出るのに高さへ入らない」状態になり、下端で 1 行ぶんずつ
+ * はみ出したまま静かに狂う（テストも視覚差分も気づけない）。
+ *
+ * @returns 受け取った中身のうち行だけ
  */
-function ContextMenuGroup({
+function ContextMenuList({
   children,
 }: Readonly<{ children: ReactNode }>): ReactElement {
-  return <>{children}</>;
+  return <>{collectElements(children, ContextMenuItem)}</>;
 }
 
 /**
@@ -287,7 +299,7 @@ function ContextMenuItem({
 
 /**
  * ポインタの位置に開くメニュー（docs/06-ui.md「コンテキストメニュー」）。中身は呼び出し側が
- * `ContextMenu.Group` と `ContextMenu.Item` で組む。
+ * `ContextMenu.List` と `ContextMenu.Item` で組む。
  *
  * 開いた時点ではどの行にもフォーカスを当てず器が受け取る（UI 案にも強調された行は無い）。
  *
@@ -336,12 +348,12 @@ function ContextMenuRoot({
   }, [onClose]);
 
   /*
-   * 高さに使う組と、描く組は**同じ 1 本の並び**から採る。別々に辿ると、器が見つけられない
-   * 組（呼び出し側の部品で包んだもの）が高さにだけ入らず、位置が静かに狂う。ここを 1 本に
-   * すると同じ間違いが「行が出ない」という形で表に出る。
+   * 高さに数えるものと描くものを、組も行も `collectElements` の同じ判定で採る（行は
+   * `ContextMenu.List` が同じ関数を通す）。別々に辿ると、器が見つけられない組や行が高さに
+   * だけ入らず**出る位置が静かに狂う**ので、見つけられなければ出ない側へ揃えた。
    */
-  const groups = collectElements(children, ContextMenuGroup);
-  const placement = menuPlacement(at, menuHeight(groups));
+  const lists = collectElements(children, ContextMenuList);
+  const placement = menuPlacement(at, menuHeight(lists));
 
   return (
     <div
@@ -396,9 +408,15 @@ function ContextMenuRoot({
       <ContextMenuControlContext.Provider
         value={Option.some({ close: onClose })}
       >
-        {groups.map((group, index) => (
-          // 鍵は `Children.toArray` が振ったもの（呼び出し側が付けていればそれ）
-          <Fragment key={group.key}>
+        {lists.map((list, index) => (
+          /*
+           * 鍵は組に並ぶ行の綴りから作る（同じ綴りは 1 つのメニューに 2 度出ない）。
+           * `Children.toArray` が振る鍵を使わないのは、それがその階層の中でだけ一意で、
+           * `Fragment` を降りて集めると兄弟の `Fragment` から同じ鍵の組が来るため。
+           * **落としてもテストは 1 件も落ちない**（重なっても描画は通り、React が
+           * `console.error` で警告するだけ）。
+           */
+          <Fragment key={rowLabels(list)}>
             {/* 線は hr で出す（既定の枠線を消して、UI 案の 1px の面にする） */}
             {index > 0 ? (
               <hr
@@ -409,7 +427,7 @@ function ContextMenuRoot({
                 className="border-0 bg-[#f0f0f0]"
               />
             ) : null}
-            {group}
+            {list}
           </Fragment>
         ))}
       </ContextMenuControlContext.Provider>
@@ -419,6 +437,6 @@ function ContextMenuRoot({
 
 /** ポインタの位置に開くメニュー。中身は呼び出し側が children で組む。 */
 export const ContextMenu = Object.assign(ContextMenuRoot, {
-  Group: ContextMenuGroup,
+  List: ContextMenuList,
   Item: ContextMenuItem,
 });

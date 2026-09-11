@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { ComponentProps, ReactElement } from "react";
+import { ContextMenuTones } from "@/components/context-menu";
 import { Option } from "@/utils/Option";
-import { ContextMenu, ContextMenuTones } from "./index";
+import { list, row } from "./__stories__/menu-content";
+import { ContextMenu } from "./index";
 
 /**
  * 右クリックで開くメニュー。
@@ -32,44 +33,6 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 /**
- * 1 行。既定は「押せる・通常の色・割り当てなし」。
- *
- * テスト側の `row` と同じ形だが寄せていない。`__tests__/` と `__stories__/` は互いに
- * import しない置き方（rules/architecture.md）なので、寄せるには production 側へ出すことに
- * なり、本番では 1 度も呼ばれない組み立てが公開 API に並ぶ。
- */
-function row(
-  label: string,
-  props: Partial<Omit<ComponentProps<typeof ContextMenu.Item>, "label">> = {},
-): ReactElement {
-  return (
-    <ContextMenu.Item
-      key={label}
-      label={label}
-      shortcut={Option.none}
-      tone={ContextMenuTones.Normal}
-      isEnabled={true}
-      onSelect={() => {}}
-      {...props}
-    />
-  );
-}
-
-/**
- * 行を 1 組にまとめる。組のあいだに区切りが入る。
- *
- * @param rows 並べる行
- * @returns メニューへ入れる 1 組
- */
-function group(...rows: readonly ReactElement[]): ReactElement {
-  return (
-    <ContextMenu.Group key={rows.map((entry) => entry.key).join()}>
-      {rows}
-    </ContextMenu.Group>
-  );
-}
-
-/**
  * ノードを右クリックしたときの並び（docs/06-ui.md「コンテキストメニュー」）。
  *
  * UI 案 docs/Design Composer.html の `Context menu` と同じ状態にしてある。artboard 直下に
@@ -79,19 +42,19 @@ export const SelectedNode: Story = {
   name: "ノードを選んでいるとき",
   args: {
     children: [
-      group(
+      list(
         row("Copy", { shortcut: Option.some("⌘C") }),
         row("Paste", { shortcut: Option.some("⌘V") }),
       ),
-      group(
+      list(
         row("Bring forward", {
           shortcut: Option.some("⌘]"),
           isEnabled: false,
         }),
         row("Send backward", { shortcut: Option.some("⌘["), isEnabled: false }),
       ),
-      group(row("Detach instance", { isEnabled: false })),
-      group(
+      list(row("Detach instance", { isEnabled: false })),
+      list(
         row("Delete", {
           shortcut: Option.some("Delete"),
           tone: ContextMenuTones.Danger,
@@ -105,7 +68,7 @@ export const SelectedNode: Story = {
 export const SelectedArtboard: Story = {
   name: "artboard を選んでいるとき",
   args: {
-    children: group(
+    children: list(
       row("Delete", {
         shortcut: Option.some("Delete"),
         tone: ContextMenuTones.Danger,
@@ -119,8 +82,8 @@ export const EmptyArea: Story = {
   name: "空き領域を右クリックしたとき",
   args: {
     children: [
-      group(row("Paste", { shortcut: Option.some("⌘V"), isEnabled: false })),
-      group(
+      list(row("Paste", { shortcut: Option.some("⌘V"), isEnabled: false })),
+      list(
         row("Undo", { shortcut: Option.some("⌘Z") }),
         row("Redo", { shortcut: Option.some("Shift+⌘Z") }),
       ),
