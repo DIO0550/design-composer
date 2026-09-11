@@ -4,7 +4,7 @@ import type { ReactElement, ReactNode } from "react";
  * 左ペインのパネル部の幅。編集画面のグリッド（`EditorLayout` の
  * `grid-cols-[19rem_1fr_18rem]`）の 1 列目 `19rem` から、常に左隣に立つレール
  * （`LeftPaneRail` の `w-14` = 56px）を引いた残り（`19rem − 3.5rem = 15.5rem` = 248px）。
- * UI 案（docs/Design Composer.html は左パネルを 5 画面とも 248px と描く）とも一致する。
+ * UI 案（docs/Design Composer.html は左パネルを 6 画面とも 248px と描く）とも一致する。
  * 両者が揃っていることは
  * `features/editor/components/editor-layout/__tests__/editor-layout.pane-width.test.tsx`
  * が固定する。

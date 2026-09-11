@@ -13,7 +13,7 @@ import type { ReactElement, ReactNode } from "react";
  * Why not: グリッドの列指定から組み立てない。Tailwind の JIT はソース中のリテラルしか
  * 拾わないので、変数から組んだ class 名は CSS が生成されない。
  *
- * この 18rem は UI 案（docs/Design Composer.html は右ペインを 5 画面とも 264px と描く）
+ * この 18rem は UI 案（docs/Design Composer.html は右ペインを 6 画面とも 264px と描く）
  * とずれているが、それは編集画面のグリッド側に元からある乖離で、ここはその写し。
  */
 const RightPaneWidthClass = "w-[18rem]";
