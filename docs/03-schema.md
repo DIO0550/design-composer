@@ -5,7 +5,7 @@
 ## 前提（他仕様からの制約）
 
 - props はフラットなスカラーのみ。1 prop = 1 ドメイン（enum / トークン参照 / 生リテラル）
-- 見た目に関わる prop は必ずトークン参照（生リテラル禁止）
+- 見た目に関わる prop のうち、トークン種別を持つものは必ずトークン参照（生リテラル禁止）。種別を持たない見た目の値（不透明度）は生リテラル（02-data-model「値のドメイン: 3種類」）
 - スキーマからプロパティパネルを自動生成する
 - artboard は Box のスキーマを流用する（例外を作らない）
 
@@ -30,6 +30,7 @@
 | `values` | enum 時: 許可される値のリスト |
 | `tokenKind` | token 時: 参照するトークン種別（spacing / colors 等） |
 | `literalType` | literal 時: `number` / `string` |
+| `range` | `literalType: number` 時: 取りうる値の範囲（両端を含む）。`{ min: 0, max: 1 }`。宣言しない prop は範囲では弾かれない |
 | `default` | デフォルト値。省略時は「なし」 |
 | `group` | プロパティパネルのセクション（layout / size / appearance 等） |
 | `enabledWhen` | 条件付き有効。`{ kind: "equals", prop: "...", equals: "..." }` / `{ kind: "notEquals", prop: "...", notEquals: "..." }` の**単純な等値・不等値のみ**（条件式言語は作らない）。見るのは**同じノードの** prop だけ |
@@ -110,7 +111,11 @@
 | `radius` | トークン (radius) | | なし (0) |
 | `shadow` | トークン (shadows) | | なし |
 | `overflow` | enum | `visible` / `clip` | `visible` |
+| `opacity` | 生リテラル (number, 0〜1) | 0 が完全に透明、1 が不透明 | `1` |
 
+- **`opacity` は見た目の値だが生リテラルにする。** 対応するトークン種別が無く（04-tokens の 5 種）、種別を増やすかはこの prop だけの判断にできないため（02-data-model「値のドメイン: 3種類」）
+  - **トークンが持つ色の不透明度（`#rrggbbaa` の alpha。トークン編集では 0〜100 の % で出す）とは別の値。** こちらはノードの prop としてファイルに載る値なので、CSS の `opacity` と同じ 0〜1 で持つ
+  - 取りうる範囲は `range` で宣言し、外れた値はバリデーションエラーにする（下記「バリデーション仕様」）
 - `layout: free` の Box は**子を並べない**。Figma の `layoutMode: NONE` にあたり、中身は `placement: absolute` の子を座標で置くための器になる。間隔・揃え（`gap` / `align` / `justify`）は並びが無いので効かない
 - **`widthMode` / `heightMode` の `fill` は、`layout` が `row` / `column` の親の子にだけ書ける。** `free` の親の子に書いたものはバリデーションエラー（下記「バリデーション仕様」）。親の prop を見る条件なので `enabledWhen` では表せない
 - padding は 4 方向個別。ドキュメントが持つのは4方向の値だけで、プロパティパネルでの畳み方（Figma と同じ垂直 / 水平への切り替え）は表示の都合なので持たない
@@ -154,6 +159,7 @@
 | `radius` | `border-radius: var(--radius-*)` |
 | `shadow` | `box-shadow: var(--shadows-*)` |
 | `overflow: clip` | `overflow: hidden` |
+| `opacity` | `opacity: {n}`（既定の `1` では出力しない。範囲を外れた値も丸めずそのまま出す — 範囲の判定はバリデーションが持ち、ブラウザが両端へ寄せる） |
 | Text 自体 | `div` + typography トークン展開（`font-size` / `line-height` / `font-weight`） |
 | Text `color` / `align` | `color` / `text-align` |
 
@@ -167,7 +173,7 @@
 - JSON としてパース不能
 - オブジェクトキーの重複（パース前の字句スキャン。01-file-format 参照）
 - 未知の `type` / 未知の prop
-- ドメイン違反（enum 外の値・literalType 不一致・存在しないトークン名への参照）
+- ドメイン違反（enum 外の値・literalType 不一致・`range` を宣言した prop の範囲外・存在しないトークン名への参照）
 - dangling ref（存在しない部品名への参照）
 - **部品の循環参照**（ref の展開が自分自身に到達する）
 - **子を並べない親の下の `fill`**（`layout: free` の親の子に `widthMode` / `heightMode` の `fill` を書いている）
