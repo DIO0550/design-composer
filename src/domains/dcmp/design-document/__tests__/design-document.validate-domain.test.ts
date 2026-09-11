@@ -55,6 +55,29 @@ test("literalType と異なる型の値を指定すると literal-type-mismatch 
   ]);
 });
 
+test("宣言された範囲を外れた値を指定すると range-violation エラーになる", () => {
+  const document = DesignDocument.create({
+    artboards: [
+      {
+        name: "screen",
+        width: 375,
+        height: 812,
+        children: [{ name: "box-1", type: "Box", props: { opacity: 1.5 } }],
+      },
+    ],
+  });
+
+  const errors = DesignDocument.collectErrors(document);
+
+  expect(errors).toEqual([
+    expect.objectContaining({
+      kind: "range-violation",
+      nodeName: "box-1",
+      prop: "opacity",
+    }),
+  ]);
+});
+
 test("存在しないトークン名を参照すると dangling-token エラーになる", () => {
   const document = DesignDocument.create({
     artboards: [
