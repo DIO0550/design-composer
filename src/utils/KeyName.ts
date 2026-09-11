@@ -1,12 +1,10 @@
 import type { ValueOf } from "@/types/ValueOf";
 
 /**
- * 押されたキーの綴り（**`KeyboardEvent.key` の値**）。
+ * 押されたキーの綴り（`KeyboardEvent.key` の値）。並ぶのは名前を持つキーだけ。
  *
- * 並ぶのは名前を持つキーだけで、文字キー（`⌘C` の `"c"`、`⌘]` の `"]"` など）は入れない。
- * `event.key` は Shift や配列で綴りが変わる（`"z"` が `"Z"` になる）ので、文字で待ち受ける
- * 割り当ては大小を無視した突き合わせか物理キー（`event.code`）を使う側の話になる
- * （`hooks/use-key-shortcut`）。space は綴りが 1 文字だが名前で呼ぶので入れる。
+ * 文字キー（`⌘C` の `"c"` など）を入れないのは、`event.key` が Shift や配列で綴りを変える
+ * （`"z"` が `"Z"` になる）ため。文字で待ち受ける側は物理キー（`event.code`）を使う。
  */
 export const KeyNames = {
   Escape: "Escape",

@@ -274,10 +274,8 @@ function EditorPanes({
     LeftPaneViews.Layers,
   );
   /**
-   * 開いているコンテキストメニュー（docs/06-ui.md「コンテキストメニュー」）。
-   *
-   * 左ペインの行き先と同じく、編集とは連動しない表示だけの状態なので `EditorState` には持
-   * たせない（開閉が undo / redo と自動保存に載る意味が無い）。
+   * 開いているコンテキストメニュー。左ペインの行き先と同じく表示だけの状態なので
+   * `EditorState` には持たせない（開閉が undo / redo と自動保存に載る意味が無い）。
    */
   const [contextMenu, setContextMenu] = useState<Option<OpenedContextMenu>>(
     Option.none,
@@ -377,12 +375,7 @@ function EditorPanes({
             onRepositionArtboard={node.repositionArtboard}
             onOpenContextMenu={(names, at) => {
               const target = EditMenuTarget.fromNames(names);
-              /*
-               * 空き領域では選択に手を付けない（左クリックが押して離すだけでは選択を
-               * 変えないのと同じ / docs/06-ui.md「コンテキストメニュー」）。ノードと
-               * artboard では押された位置から選び直すが、掘る量は左クリックと同じ扱いなので
-               * 既に選んでいる枝の中を押したときは選択が動かない。
-               */
+              // 空き領域では選択に手を付けない（docs/06-ui.md「コンテキストメニュー」）
               if (target !== EditMenuTargets.EmptyArea) {
                 node.selectAt(names, SelectionDigs.NoDeeper);
               }
@@ -421,12 +414,9 @@ function EditorPanes({
         </EditorLayout.RightPane>
       </EditorLayout>
       {/*
-        メニューは 3 ペインの器の**外**に置く。ペインの中に置くと、凍結中に付く
+        メニューは 3 ペインの器の**外**に置く。中に置くと、凍結中に付く
         `filter: saturate(0.4)`（`EditorLayout`）がそのペインを `position: fixed` の
-        基準にしてしまい、窓の座標で置けなくなる（実測: `filter` を持つ祖先の中の
-        `fixed` は祖先の左上を原点にする。`overflow-hidden` では切られず、グリッドの
-        子にもならない）。ここへ置けるのは、この経路の祖先が `transform` も `filter` も
-        持たないため。
+        基準にしてしまい、窓の座標で置けなくなる。
       */}
       {contextMenu.some ? (
         <EditorContextMenu

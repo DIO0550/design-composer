@@ -29,10 +29,9 @@ type ContextMenuTone = ValueOf<typeof ContextMenuTones>;
 /*
  * UI 案 docs/Design Composer.html の `Context menu` が持つ寸法（px）。
  *
- * 高さを実測せず行数から計算するために定数で持つ。**実測（`getBoundingClientRect`）にすると
- * happy-dom が 0 を返す**ので、はみ出す辺での折り返しを確かめる手段が視覚差分だけになる。
- * 下の要素へは class ではなく `style` で渡す — class で書くと同じ数値が 2 箇所になり、
- * 片方だけ変えても計算側は古い値のまま全件緑で出す位置だけが狂う。
+ * 高さは実測せず行数から出す。`getBoundingClientRect` は happy-dom が 0 を返すので、実測に
+ * すると折り返しを確かめる手段が視覚差分だけになる。要素へは class ではなく `style` で渡す
+ * — class に書くと同じ数値が 2 箇所になり、片方だけ変えても全件緑のまま位置が狂う。
  */
 
 /** 器の幅。 */
@@ -65,9 +64,7 @@ type FocusStep = ValueOf<typeof FocusSteps>;
 /**
  * メニューが自分で受けるキー。ここに無いキーはページ全体の割り当てへ渡す。
  *
- * space が入るのは、押している間パンの構えになる（`use-space-held` が `document` で拾う）
- * ため。行の活性化そのものは `button` の既定に任せるので、既定動作までは止めない。
- * Enter を入れないのは、ページ全体に Enter の割り当てが無く、渡しても何も起きないから。
+ * Enter を入れないのは、ページ全体に Enter の割り当てが無く渡しても何も起きないため。
  */
 const MenuKeys: readonly KeyName[] = [
   KeyNames.Escape,
@@ -84,10 +81,8 @@ const ContextMenuControlContext = createContext<Option<ContextMenuControl>>(
 );
 
 /**
- * 囲っている器。
- *
- * 行が押されたら閉じる、という結び付きを器の側に置くために context で配る（`onSelect` と
- * 並べて `onClose` も行ごとに渡させると、片方だけ書き忘れた行が作れる）。
+ * 囲っている器。閉じる手を context で配るのは、`onClose` を行ごとに渡させると片方だけ
+ * 書き忘れた行が作れるため。
  *
  * @returns 囲っている `ContextMenu`
  * @throws `ContextMenu` の外で呼ばれたとき（配置ミスなので隠さずに落とす）
@@ -157,7 +152,6 @@ function menuHeight(lists: readonly ReactElement[]): number {
       count + collectElements(childrenOf(list), ContextMenuItem).length,
     0,
   );
-  // 組が 0 でも区切りは負にならない（子を条件で出すと空のメニューが実際に作れる）
   const separatorCount = Math.max(lists.length - 1, 0);
   const edges = (MenuPadding + MenuBorderWidth) * 2;
   const separators = separatorCount * (SeparatorLineHeight + SeparatorGap * 2);
@@ -168,9 +162,8 @@ function menuHeight(lists: readonly ReactElement[]): number {
  * 窓の中へ収めたメニューの左上。ポインタの位置に合わせ、はみ出す辺ではポインタの反対側へ
  * 折り返す。
  *
- * 折り返した先へ入るかは見ない。幅 212px・高さは最も長い並びでも 200px 弱なので、両側へ
- * 折り返しても入らないには窓が 424×390 より小さい必要があり、窓の既定は 800×600
- * （src-tauri/tauri.conf.json。下限は設けていない）。
+ * 折り返した先へ入るかは見ない。両側へ折り返しても入らないのは窓が 424×390 より小さいとき
+ * で、既定は 800×600（src-tauri/tauri.conf.json。下限は設けていない）。
  *
  * @param at ポインタの位置（窓の左上を原点にした座標）
  * @param height 収めるメニューの高さ
@@ -208,10 +201,8 @@ function nextFocusIndex(rows: readonly Element[], step: FocusStep): number {
 /**
  * 押せる行のあいだでフォーカスを動かす。押せる行が 1 つも無ければ何も起きない。
  *
- * 押せる行が 0 件のメニューは実際に出る（空き領域を開いた直後は Paste / Undo / Redo の
- * 3 行がどれも押せない）。**この範囲の判定を落とすと `focus()` が undefined に対して
- * 投げるが、React がハンドラの例外を非同期に報告するため vitest は失敗として拾わない** —
- * 落ちるテストは 1 件も無い。
+ * 範囲の判定を落とすと `focus()` が undefined に対して投げるが、React がハンドラの例外を
+ * 非同期に報告するため**落ちるテストは 1 件も無い**。
  *
  * @param menu 行を持つ器
  * @param step 動かす向き
@@ -237,14 +228,11 @@ const EnabledRowClasses = {
 } as const satisfies Readonly<Record<ContextMenuTone, string>>;
 
 /**
- * 区切りで区切られる 1 組の行。中身に `ContextMenu.Item` を並べる。
+ * 区切りで区切られる 1 組の行。中身に `ContextMenu.Item` を並べる。自分では DOM を持たない
+ * （UI 案 `Context menu` も組ごとの器を持たず、行と区切りを並列に置いている）。
  *
- * 自分では DOM を持たない。区切りを差し込むのは器で、UI 案 `Context menu` のマークアップも
- * 組ごとの器を持たず行と区切りを並列に置いている。
- *
- * 並べるのは**器が高さに数えるのと同じ並び**（`collectElements` の結果）。素通しにすると、
- * 呼び出し側の部品で包んだ行が「出るのに高さへ入らない」状態になり、下端で 1 行ぶんずつ
- * はみ出したまま静かに狂う（テストも視覚差分も気づけない）。
+ * 並べるのは器が高さに数えるのと同じ並び（`collectElements` の結果）。素通しにすると、器が
+ * 見つけられない行が「出るのに高さへ入らない」状態になる。
  *
  * @returns 受け取った中身のうち行だけ
  */
@@ -331,10 +319,6 @@ function ContextMenuRoot({
     menuRef.current?.focus();
   }, []);
 
-  /*
-   * 外側の押下だけは `document` で待つ（rules/hooks.md が「要素外クリックの検知」を
-   * グローバルな関心事として挙げている）。右クリックの受け口そのものは要素の props で受ける。
-   */
   useEffect(() => {
     const closeOnOutside = (event: PointerEvent) => {
       const menu = menuRef.current;
@@ -353,11 +337,6 @@ function ContextMenuRoot({
       globalThis.document.removeEventListener("pointerdown", closeOnOutside);
   }, [onClose]);
 
-  /*
-   * 高さに数えるものと描くものを、組も行も `collectElements` の同じ判定で採る（行は
-   * `ContextMenu.List` が同じ関数を通す）。別々に辿ると、器が見つけられない組や行が高さに
-   * だけ入らず**出る位置が静かに狂う**ので、見つけられなければ出ない側へ揃えた。
-   */
   const lists = collectElements(children, ContextMenuList);
   const placement = menuPlacement(at, menuHeight(lists));
 
@@ -366,18 +345,12 @@ function ContextMenuRoot({
       ref={menuRef}
       role="menu"
       aria-label="コンテキストメニュー"
-      // 開いた時点のフォーカスの受け皿。Tab の順路には入れない
       tabIndex={-1}
       onKeyDown={(event) => {
         if (!KeyName.isOneOf(MenuKeys, event)) {
           return;
         }
-        /*
-         * 受けたキーはページ全体の割り当てへ渡さない。Esc は選択解除、↑↓ は選んでいる
-         * ノードの座標の移動に割り当ててあり（`use-clear-selection-shortcut` /
-         * `use-reposition-shortcut`）、漏らすとメニューを操作しただけでドキュメントが動く。
-         * React はルート要素で待つので、ここで止めれば `document` の購読まで上がらない。
-         */
+        // 漏らすとメニューを操作しただけで、同じキーの割り当てがドキュメントを動かす
         event.stopPropagation();
         if (event.key === KeyNames.Escape) {
           onClose();
@@ -403,13 +376,12 @@ function ContextMenuRoot({
         paddingBlock: MenuPadding,
       }}
       /*
-       * 器のフォーカスの輪を消す。ここへフォーカスを当てるのはキーを受けるためだけで、
-       * UI 案（docs/Design Composer.html）はメニューの枠を `1px #e6e6e6` としか描いて
-       * いない。押せる行へ移ったことは行側の輪が示す。
+       * `outline-none` は器のフォーカスの輪を消すため（UI 案 docs/Design Composer.html は
+       * メニューの枠を `1px #e6e6e6` としか描いていない）。
        *
        * **`fixed` と `z-20` を落としてもテストは 1 件も落ちない。** インラインの
-       * `left` / `top` は `position: static` でも読めるので出す位置のテストが通り続け、
-       * happy-dom は重なりも解決しない。気づく手段はストーリーの視覚差分だけ。
+       * `left` / `top` は `position: static` でも読めるうえ、happy-dom は重なりも解決
+       * しないため。気づく手段は視覚差分だけ。
        */
       className="fixed z-20 rounded-md border border-[#e6e6e6] bg-white shadow-[0_5px_18px_rgba(0,0,0,0.18),0_0_0_0.5px_rgba(0,0,0,0.06)] outline-none"
     >
@@ -418,14 +390,11 @@ function ContextMenuRoot({
       >
         {lists.map((list, index) => (
           /*
-           * 鍵は組に並ぶ行の綴りから作る（同じ綴りは 1 つのメニューに 2 度出ない）。
-           * `Children.toArray` が振る鍵を使わないのは、それがその階層の中でだけ一意で、
-           * `Fragment` を降りて集めると兄弟の `Fragment` から同じ鍵の組が来るため。
-           * **落としてもテストは 1 件も落ちない**（重なっても描画は通り、React が
-           * `console.error` で警告するだけ）。
+           * 鍵は組に並ぶ行の綴りから作る。`Children.toArray` が振る鍵はその階層の中でだけ
+           * 一意で、`Fragment` を降りて集めると兄弟から同じ鍵の組が来る。**重なっても
+           * 落ちるテストは 1 件も無い**（React が `console.error` で警告するだけ）。
            */
           <Fragment key={rowLabels(list)}>
-            {/* 線は hr で出す（既定の枠線を消して、UI 案の 1px の面にする） */}
             {index > 0 ? (
               <hr
                 style={{

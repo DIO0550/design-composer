@@ -25,14 +25,7 @@ type OperationPresentation = Omit<
 
 /**
  * 操作ごとの綴り・併記する割り当て・色味（UI 案 docs/Design Composer.html の
- * `Context menu`）。
- *
- * 出すのは macOS の綴りだけで、Windows の `Ctrl` 側へは出し分けていない。割り当てを持た
- * ない操作では欄ごと出さない（空欄にすると「割り当てが無い」と「載せないと決めた」が読み
- * 分けられなくなる / docs/06-ui.md）。
- *
- * キーは操作を引く見出しで、値は表示の綴りなので据え置く
- * （rules/naming.md「対応表のキーを PascalCase にするのは「キーが値の別名」のときだけ」）。
+ * `Context menu`）。出すのは macOS の綴りだけで、動いている OS には合わせていない。
  */
 const OperationPresentations = {
   copy: {
@@ -101,10 +94,8 @@ function operationHandlers(
 }
 
 /**
- * 編集画面のコンテキストメニュー（docs/06-ui.md「コンテキストメニュー」）。
- *
- * 並ぶものと押せるかどうかは `EditMenu` が状態から決め、ここは綴り・割り当て・色味を着せて
- * 器へ渡す。
+ * 編集画面のコンテキストメニュー（docs/06-ui.md「コンテキストメニュー」）。並ぶものと押せる
+ * かどうかは `EditMenu` が状態から決め、ここは綴り・割り当て・色味を着せて器へ渡す。
  *
  * @returns 対象に対してできる操作を並べたメニュー
  */
@@ -124,10 +115,7 @@ export function EditorContextMenu({
   return (
     <ContextMenu at={opened.at} onClose={onClose}>
       {menu.groups.map((group) => (
-        /*
-         * 組にも行にも id が無いので、並んでいる操作そのものを鍵にする（同じ操作は 1 つの
-         * メニューに 2 度出ない）。
-         */
+        // 組に id が無いので操作を鍵にする（同じ操作は 1 つのメニューに 2 度出ない）
         <ContextMenu.List key={group.map((row) => row.operation).join()}>
           {group.map((row) => (
             <ContextMenu.Item

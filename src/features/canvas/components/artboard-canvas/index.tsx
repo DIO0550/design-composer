@@ -103,10 +103,7 @@ export function ArtboardCanvas({
   onResize: (sizes: AxisLengths) => void;
   onEditProp: (edit: PropEdit) => void;
   onRepositionArtboard: (name: string, canvasPosition: Offset) => void;
-  /**
-   * 右クリックされたことを、押された位置から外へ辿った名前と窓の座標で伝える。
-   * 空き領域では名前が空になる。
-   */
+  /** 右クリックを、辿った名前（空き領域では空）と窓の座標で伝える。 */
   onOpenContextMenu: (names: readonly string[], at: Offset) => void;
 }>) {
   const { view, surfaceRef, panHandlers } = canvasView;
@@ -127,13 +124,7 @@ export function ArtboardCanvas({
   /**
    * 右クリックの受け口。枠・見出し・キャンバスの器のどこで受けても同じ手を通す。
    *
-   * 既定のメニューは止める（一致した押下はアプリの操作という `useKeyShortcuts` と同じ流
-   * 儀）。ただし**文言のその場編集の入力欄では既定のメニューを残す** — 切り取り / 貼り付け
-   * はブラウザのものが要る。入力欄は掴める範囲と同じくキャンバスの器の直下にあるので、
-   * 器で受ける以上ここを通る。
-   *
-   * **凍結中はここで止める。** 開く前に選択を移すので、メニューを出さないだけでは凍結中の
-   * 右クリックが選択を動かしてしまう（`inert` は `contextmenu` を止めない）。
+   * 入力欄だけ既定のメニューを残すのは、切り取り / 貼り付けにブラウザのものが要るため。
    */
   const openContextMenu = (
     event: ReactMouseEvent<HTMLElement>,
@@ -206,15 +197,8 @@ export function ArtboardCanvas({
       aria-label="キャンバスの面"
       ref={canvasAreaRef}
       /*
-       * ここまで上がってくる右クリックは空き領域を押したとき（artboard の枠と見出しは
-       * 自分で受けて止める / `artboard-frame`）。選択には手を付けないので名前を渡さない。
-       *
-       * **土台（`canvas-surface`）ではなくこの器で受ける。** 掴めるリサイズハンドルと文言
-       * の入力欄は土台の外にあり、土台で受けると**そこだけアプリのメニューが出ずブラウザ
-       * の既定メニューが出る**（ハンドルは選択の枠の辺に重なるので普通に踏む）。
-       *
-       * `div` ではなく名前付きの `section` にしているのは、マウス操作を受ける器に役割が
-       * 要るため（左ペインの `ツリー` / `artboard 一覧` と同じ形の領域）。
+       * 土台（`canvas-surface`）ではなくこの器で受ける。掴めるリサイズハンドルと文言の
+       * 入力欄は土台の外にあり、土台で受けるとその上だけブラウザの既定メニューが出る。
        */
       onContextMenu={(event) => openContextMenu(event, [])}
       className="relative flex h-full flex-col overflow-hidden"

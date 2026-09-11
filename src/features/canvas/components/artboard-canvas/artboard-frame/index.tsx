@@ -111,9 +111,8 @@ export function ArtboardFrame({
       className="absolute"
       style={{ left: drawnAt.x, top: drawnAt.y }}
       /*
-       * ここまで上がってくる右クリックは見出しを押したとき（枠は自分で受けて止める）。
-       * 見出しは枠の**外**にあって `data-name` も持たないので、名前を辿らせず artboard
-       * 自身を渡す（docs/06-ui.md「コンテキストメニュー」）。
+       * ここまで上がるのは見出しを押したとき（枠は自分で受けて止める）。見出しは枠の外に
+       * あって `data-name` を持たないので、辿らせず artboard 自身を渡す。
        */
       onContextMenu={(event) => {
         event.stopPropagation();
@@ -186,21 +185,15 @@ export function ArtboardFrame({
           onSelect(names, SelectionDigs.OneDeeper);
         }}
         onKeyDown={activate}
-        /*
-         * 枠の中の右クリックは、押された位置から外へ辿った名前に対するメニュー
-         * （選ぶ規則は左クリックと同じ / docs/06-ui.md「コンテキストメニュー」）。
-         * 土台へ渡さないのは、そちらが空き領域として扱うため。
-         */
+        // 土台へ渡さないのは、そちらが空き領域として扱うため
         onContextMenu={(event: MouseEvent<HTMLElement>) => {
           event.stopPropagation();
           onContextMenu(event, namesAt(event.target));
         }}
         onPointerDown={(event) => {
           /*
-           * 主ボタン以外では掴まない。右クリックはメニューを出す操作で、ここで掴むと
-           * `useArtboardDrag.grab` がポインタを捕捉し、メニューを操作するあいだの動きが
-           * そのまま移動になる（離した時点で座標が確定してしまう）。
-           * 中ボタンは土台が capture で先に取るのでここへは届かない。
+           * 右ボタンで掴むと `useArtboardDrag.grab` がポインタを捕捉し、メニューを操作する
+           * あいだの動きがそのまま移動になる（離した時点で座標が確定する）。
            */
           if (!PointerButton.isPrimary(event)) {
             return;
