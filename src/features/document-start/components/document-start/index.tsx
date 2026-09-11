@@ -31,9 +31,6 @@ type RenderDocumentErrors = (errors: readonly DocumentError[]) => ReactNode;
 /**
  * I/O の失敗を利用者向けの言い方にする。診断用の原文は後ろに添える。
  *
- * 綴りを表示側に置くのは、ドメインが持つのが理由の**種別**までだから
- * （rules/architecture.md「表示のための綴りをドメインへ持ち込まない」）。
- *
  * @param reason ドキュメントの中身へ届かなかった理由
  * @returns 利用者向けの 1 行
  */
@@ -107,9 +104,6 @@ function OpenFailure({
 /**
  * 開く指示を受け取れない経路を、利用者向けの言い方にする。
  *
- * 経路ごとに出し分けるのは、片方だけ使えないときに、生きている側まで壊れていると
- * 読める文言にしないため（`switch` に `default` を置かず、経路を足したらここで気づく）。
- *
  * @param source 受け取れなかった経路
  * @returns 利用者向けの 1 行
  */
@@ -128,9 +122,7 @@ function commandSourceFailureLabel(source: CommandSource): string {
  * 大きさ（高さ 30px / 角丸 5px / font-size 11px / 横 10px）と font-family は UI 案
  * （`docs/Design Composer.html`）の塗りのボタンに合わせている。
  *
- * 共通の `Button` にはしていない。UI 案のボタンは帯・パレット・ダイアログ等でも使われる作
- * りだが、今の Issue（#374）の外まで塗り替えると差分が広がるため（共通化は乖離解消の一覧
- * #112 で別 Issue にする）。
+ * 共通の `Button` にはしていない。
  */
 const ActionButton =
   "flex h-[30px] items-center rounded-[5px] px-[10px] font-[inherit] text-[11px] disabled:cursor-default disabled:opacity-50";
@@ -185,8 +177,7 @@ function StartActions({
 /**
  * 最近開いたファイルの 1 件。
  *
- * フォルダ名を添えるのは、ファイル名だけでは同名のファイルを別フォルダで開いたときに
- * 区別できないため（`EditorTopBar.Breadcrumb` と同じ理由）。フルパスは `title` に持たせる。
+ * フルパスは `title` に持たせる。
  *
  * 名前を持たないパス（`/` だけなど）では字を出さずに `title` だけが残る。
  * 出せない名前を綴り直す既定値を置かないのは、`EditorTopBar.Breadcrumb` と同じ扱い。

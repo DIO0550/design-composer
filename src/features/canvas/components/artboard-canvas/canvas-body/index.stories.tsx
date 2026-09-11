@@ -15,8 +15,7 @@ import { CanvasBody } from "./index";
 /**
  * キャンバスに出す中身の 3 通り（並び / artboard が 0 枚 / コンパイル失敗）。
  *
- * **コンパイル失敗の姿はここにしかストーリーが無い。** `ArtboardCanvas` から作るには
- * コンパイルを壊す必要があり、編集画面の経路では作れない状態のため。
+ * **コンパイル失敗の姿はここにしかストーリーが無い。
  */
 function CanvasBodyWithControls({
   selection,

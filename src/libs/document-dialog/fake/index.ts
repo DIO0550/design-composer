@@ -36,9 +36,8 @@ export type DialogChoices = Readonly<{
 /**
  * ダイアログの代役。利用者の操作をテストごとに決め打ちする。
  *
- * 差し込む先は `TauriDialog` の位置なので、`dialog` を通した呼び出しでは
- * `DocumentDialog` 本体（フィルタ・キャンセルと失敗の解釈）がそのまま動く。
- * モックライブラリを使わないのはテスト規約に従うため。
+ * 差し込む先は `TauriDialog` の位置なので、`dialog` を通した呼び出しでは `DocumentDialog`
+ * 本体（フィルタ・キャンセルと失敗の解釈）がそのまま動く。
  */
 export type DocumentDialogFake = Readonly<{ dialog: DocumentDialog }>;
 

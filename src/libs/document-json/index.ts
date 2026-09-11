@@ -67,9 +67,6 @@ function fromDecodeErrors(
  * 字句スキャンを通っていれば `JSON.parse` は成功するが、「例外を散らさない」ために失敗
  * も値として扱う（外部 API を境界で握る保険）。
  *
- * 位置をファイル全体にしているのは、投げられた例外からはテキストの何文字目かが分からな
- * いため。
- *
  * @param text 読み込む JSON のテキスト
  * @returns 読み込んだ値。`JSON.parse` が投げたら、ファイル全体を指す
  *   `syntax-error` の失敗
@@ -95,9 +92,8 @@ const IndentWidth = 2;
  * ドキュメントと JSON テキストの相互変換。持つのは「テキスト ⇄ JSON のデータモデル」と、
  * その解釈が失敗したときの `DocumentError` への変換だけ。
  *
- * 「データモデル ⇄ ドメインオブジェクト」は各ドメインオブジェクトの `fromJson` /
- * `toJson` が持つ（表現の規則はその値自身の知識）。失敗の変換をここに置くのは、これが外
- * 部世界とドメインの間の変換そのものだから。
+ * 「データモデル ⇄ ドメインオブジェクト」は各ドメインオブジェクトの `fromJson` / `toJson`
+ * が持つ（表現の規則はその値自身の知識）。
  */
 export const DocumentJson = {
   /**
@@ -105,8 +101,6 @@ export const DocumentJson = {
    * 不正入力はエラーの一覧として返し、例外は投げない。
    *
    * 読み込みは「テキストの検証 → 版の解決 → 形の検証」の順で進む。
-   * 版の解決をデコードより前に置くのは、旧 major のファイルが今のデコーダでは
-   * 読めない形になっている（それが major の定義）ため。
    */
   parse(text: string): Parsed {
     const scanErrors = JsonLexicalScanner.scan(text);

@@ -11,10 +11,6 @@ import type { ValueOf } from "@/types/ValueOf";
 /**
  * その prop が編集可能になる条件。「別の prop が特定の値のときだけ意味を持つ」prop を表
  * す（`width` は `widthMode` が `fixed` のときだけ効く、など）。
- *
- * 等値と不等値を判別子付きの直和にしてあるのは、条件の種類を足したときに判定側の網羅がコ
- * ンパイルエラーになるようにするため。不等値が要るのは、**除きたい値が 1 つで残りが増えう
- * る**条件があるから（`gap` は `layout` が `free` でなければ効き、等値だと追従が要る）。
  */
 export type EnabledWhen =
   | Readonly<{ kind: "equals"; prop: string; equals: PropValue }>
@@ -247,12 +243,9 @@ export const PropDefinitionRecord = {
    * その props の下で実際に効いている prop 設定の並び。明示設定に、未設定の prop のデフ
    * ォルトを足したもの。
    *
-   * スキーマに帰属するのは、「どの値が効いているか」がスキーマの宣言で決まるため。この並
-   * びが `collectRefPropNames` と `collectErrors` の共通の走査対象で、片方だけがデフォル
-   * トを見る状態に戻ると、参照 0 件のトークンを消して dangling が出る食い違いが表に出る。
+   * この並びが `collectRefPropNames` と `collectErrors` の共通の走査対象で、片方だけがデフォ
+   * ルトを見る状態に戻ると、参照 0 件のトークンを消して dangling が出る食い違いが表に出る。
    *
-   * `ResolvedProps.resolve` を使えないのは、あちらが宣言済みの prop だけに絞ったレコード
-   * を返すのに対し、ここは `unknown-prop` を報告するため未宣言の prop も残すから。
    * `session/prop-control` の `effectiveProps` とも範囲が違う（binding 由来の既定も含む）。
    *
    * @param schema 効いている値の出どころになる prop 定義

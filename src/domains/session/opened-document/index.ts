@@ -27,8 +27,6 @@ export type OpenedDocument = Readonly<{
 export const OpenedDocument = {
   /**
    * 新規作成のドキュメント（docs/04-tokens.md「新規ドキュメントテンプレート」）。
-   * 空のドキュメントから始めないのは、トークンが無いと見た目の prop を 1 つも
-   * 設定できないため（雛形の同梱理由は `DocumentTemplate` を参照）。
    */
   createFromTemplate(path: string): OpenedDocument {
     return {
@@ -45,12 +43,6 @@ export const OpenedDocument = {
    *
    * 自動保存は画面の内容をそのまま書き出すのでアプリ内の編集で作った不正はファイルにも載
    * り、ここで落とすと直す手段が外部エディタにしか無くなる（#158）。
-   *
-   * 取り込みと同じ `DocumentReload` へ委ねないのは、開いている最中の外部変更が「最後に正常
-   * だった状態を保つ」という別の規定に従うため。
-   *
-   * `create(path, document)` を公開しないのは、「解釈できたならそのまま開く」という線引きが
-   * 呼び出し側へ移り、開く経路が増えるたびにそこで決め直すことになるため。
    *
    * @param path このドキュメントの保存先
    * @param parsed 読み込んだ中身を解釈した結果

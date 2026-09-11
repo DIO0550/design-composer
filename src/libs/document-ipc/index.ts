@@ -54,9 +54,6 @@ export function toDocumentAccessFailure(
 /**
  * 失敗の種別だけを詰め替える。
  *
- * 戻り値を明示するのは、case が抜けたときに TS2366 をこの関数自身で出すため
- * （注釈が無いと、エラーは戻り値を使う側へずれる）。
- *
  * @param kind IPC が返した失敗の種別
  * @returns 対応するドメインの語彙
  */
@@ -109,9 +106,6 @@ export type DocumentIpc = Readonly<{
   unwatch(path: string): Promise<Result<void, DocumentIpcError>>;
   /**
    * 外部変更の購読を始め、解除関数を返す。
-   *
-   * 解除関数を `Promise` 越しに返すのは、`listen` の完了を待たないと購読が成立せず、
-   * 同期の解除関数を返す形にすると `listen` 自体の失敗を握りつぶすことになるため。
    */
   subscribeChanged(
     listener: (changed: DocumentChanged) => void,

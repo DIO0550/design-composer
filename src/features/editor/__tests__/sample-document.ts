@@ -91,10 +91,6 @@ export const MissingComponent = "居ない部品";
  *
  * 開いた直後からこの状態になりうるようになったので（#158）、そこでも直せることを確かめ
  * る側が使う。
- *
- * 差し替える中身を `RefNode` と注釈した定数にしてから渡すのは、`Node` が直和で、注釈な
- * しの literal だと `type` と `ref` を両方持つノードが型を通ってしまうため（`Node.isRef`
- * は `"ref" in node` で先に真になる）。
  */
 const MissingComponentInstance: RefNode = {
   name: "home-login",
@@ -113,9 +109,6 @@ export const SampleDocumentWithMissingComponent = Result.unwrap(
 /**
  * `home` の中に 3 階層の枝（`outer-panel` > `inner-panel` > `deep-title`）を持つドキュメント。
  * 掘る操作を通しで見るテストだけがこちらを開く。
- *
- * 3 階層にしている理由は `features/editor/domains/editor-state/__tests__/setup.ts` の
- * `stateWithDeepBranch` の doc。
  */
 export const SampleDocumentWithDeepBranch = DesignDocument.create({
   tokens: DocumentTemplate.Default.tokens,

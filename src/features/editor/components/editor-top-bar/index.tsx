@@ -15,9 +15,6 @@ import { Option } from "@/utils/Option";
 /**
  * 帯全体の色味。ファイルが不正な間は帯ごと赤へ振れる（UI 案 docs/Design Composer.html の
  * Error 画面は帯の地を `#fff6f6`、下線を `#f5d5d5`、パンくずまで赤系にする / #135）。
- *
- * 名前で指せるようにするのは、消費側が `"Error"` を綴り直さずに済ませるため
- * （rules/coding.md「値の集合から union を導出する」）。
  */
 export const EditorTopBarTones = {
   Normal: "Normal",
@@ -82,13 +79,8 @@ function useEditorTopBarTone(): EditorTopBarTone {
 /**
  * 編集画面の上端の帯（UI 案 docs/Design Composer.html の Default 画面。高さ 38px）。
  *
- * `Document*` ではなく `Editor*` なのは、並ぶものがドキュメントの話に閉じないため（倍率
- * はキャンバスの見え方で保存しない）。`<header>`（banner）にしているのは、画面の上端の
- * 帯がこれ 1 本だけだから（#374）。
- *
- * UI 案が左端に描く macOS の信号機ボタンは置いていない。`src-tauri/tauri.conf.json` が
- * `decorations` を指定せず既定（OS が装飾を描く）なので、押しても閉じない偽のボタンが二重
- * に並ぶため。高さ（`h-[38px]`）を落としても**テストは 1 件も落ちない**（視覚差分だけ）。
+ * UI 案が左端に描く macOS の信号機ボタンは置いていない。高さ（`h-[38px]`）を落としても**テ
+ * ストは 1 件も落ちない**（視覚差分だけ）。
  */
 function EditorTopBarRoot({
   tone,
@@ -111,9 +103,6 @@ function EditorTopBarRoot({
  * 親フォルダを持たないパス（相対パスのファイル名だけ・ルート直下）では区切りごと出さない。
  * 綴り（`/` で繋ぐ・ファイル名を強調する）はここが持ち、ドメインは名前だけを答える
  * （rules/architecture.md「表示のための綴りをドメインへ持ち込まない」）。
- *
- * フルパスを `title` に持たせるのは、末尾 2 つだけでは同名のファイルを別フォルダで
- * 開いたときに区別できないため。
  *
  * @returns 親フォルダ名（あれば）と区切り、ファイル名を並べたパンくず
  */
@@ -167,9 +156,8 @@ function TopBarBadge({
 /**
  * 保存状態ごとの、バッジの字面と色。
  *
- * `satisfies Record<DocumentSaveState["kind"], …>` が網羅を強制する（状態を 1 つ足すとコ
- * ンパイルエラーになる）。`rules/coding.md`「状態をキーにした対応表は網羅のためだけに選
- * ばない」に触れるが、持つのは**字面と色の 2 つ**で `switch` だと同じ綴りが 3 回並ぶため。
+ * `satisfies Record<DocumentSaveState["kind"], …>` が網羅を強制する（状態を 1 つ足すとコン
+ * パイルエラーになる）。
  */
 const SaveBadgeFaces = {
   saved: { label: "保存済み", className: "bg-green-50 text-green-700" },
@@ -201,14 +189,6 @@ function DocumentSaveBadge({
 /**
  * ファイルが不正な間、保存状態の代わりに出るもの（UI 案の `● 2 errors · file invalid`）。
  *
- * 保存状態と入れ替えるのは、ファイルが不正な間に「保存済み」と名乗ると、映っているもの
- * がファイルに載っていると読めてしまうため（映っているのは最後に正常だった表示で、ファ
- * イルの現在の中身とは違う / #135）。
- *
- * 「凍結中なら必ず 1 件以上」を型で縛る（`Option<非空の一覧>` を受ける）形を採らないの
- * は、同じ判断が `DocumentReload` で既に済んでおり、そこでの理由（起こらない空配列の分
- * 岐を書く羽目になる）がここでも変わらないため。
- *
  * @param errors ファイルを取り込めなかった理由。件数だけを出す（中身はキャンバ
  *   ス下端の一覧が出す）
  * @returns エラーの件数とファイルが不正であることを示すバッジ
@@ -231,9 +211,7 @@ const ZoomStepButton = "rounded px-1.5 py-0.5 text-gray-600 hover:bg-gray-100";
  * つ（外すとパンくずの隣へ寄るが、**テストは 1 件も落ちない** — 気づく手段は Storybook の
  * 視覚差分だけ）。
  *
- * 倍率の表示そのものを等倍へ戻すボタンにしている。`等倍に戻す` を 4 つ目として並べない
- * のは、UI 案の倍率の並びが `−` / 倍率 / `+` の 3 つしか描いておらず、描かれていない操
- * 作は既存の流儀へ寄せるため（rules/ui-verification.md）。
+ * 倍率の表示そのものを等倍へ戻すボタンにしている。
  *
  * @returns 縮小・倍率表示（クリックで等倍に戻す）・拡大を並べた操作列
  */
@@ -298,12 +276,8 @@ const ElapsedUnitSuffixes = {
  * 今映っているのが最後に正常だった表示で、それがどれだけ古いか
  * （UI 案 docs/Design Composer.html の Error 画面の `showing last valid render · 4s ago`）。
  *
- * 単位の綴り（`s` / `m` / `h`）と `ago` をここが持つのは、ドメイン（`Elapsed`）が持つのが
- * 単位と数までだから（rules/architecture.md「表示のための綴りをドメインへ持ち込まない」）。
- *
- * `ml-auto` を持たないのは、右端へ寄せる役目を隣の `CanvasZoom` が既に持っているため。
- * 2 つ置くと余白が 2 つの auto マージンへ等分され、`CanvasZoom` が帯の中ほどへ落ちる
- * （**テストでは落ちない** — happy-dom は Tailwind を解決しない。気づく手段は視覚差分だけ）。
+ * 2 つ置くと余白が 2 つの auto マージンへ等分され、`CanvasZoom` が帯の中ほどへ落ちる（**テ
+ * ストでは落ちない** — happy-dom は Tailwind を解決しない。気づく手段は視覚差分だけ）。
  *
  * @returns 最後に正常だった表示からの経過時間を添えた 1 行
  */

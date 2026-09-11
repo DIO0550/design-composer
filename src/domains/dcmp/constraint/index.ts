@@ -9,9 +9,8 @@ import { Option } from "@/utils/Option";
  * Figma の `constraints` から借りた語で、このリポジトリでは **`placement: absolute` の
  * 子が親のサイズ変更に追従する側**を指す。
  *
- * スキーマの `values` から union を導出する向きを採らないのは、追従の規則を持つのがこの
- * モジュールだから。値の出どころもここに置き、スキーマ側が `Object.values` で引く（`Layouts`
- * / `CssDirections` も同じ向き）。
+ * 値の出どころもここに置き、スキーマ側が `Object.values` で引く（`Layouts` /
+ * `CssDirections` も同じ向き）。
  */
 export const Constraints = {
   Min: "min",
@@ -37,9 +36,7 @@ export const Constraint = {
   /**
    * props から 1 軸ぶんを読む。
    *
-   * `Placement` ではなくこちらが読むのは、追従が**編集のときにしか効かない**規則で、
-   * 描画には出ないため。`Placement.fromProps` の可否に混ぜると、綴りが 1 つ不正な
-   * だけで座標ごと描画を失う。
+   * `Placement.fromProps` の可否に混ぜると、綴りが 1 つ不正なだけで座標ごと描画を失う。
    *
    * @param props 読み取り元の props (デフォルト解決済みでなくてよい)
    * @param axis どちらの軸の追従を読むか
@@ -57,11 +54,7 @@ export const Constraint = {
   /**
    * 親の長さが変わったあとの、子のその軸方向の位置。
    *
-   * 位置が子の長さに依らないのは、`max` / `center` が保つのが**辺どうしの距離**で、
-   * それが親の増分だけで決まるため (`max` は増分ぶん、`center` は増分の半分)。
-   *
-   * 丸めをここでしないのは、位置と長さで丸め方が違う (位置は負を許し、長さは 0 で
-   * 下限を切る) ため。書き戻す側 (`Placement` / `AxisLength`) が自分の規則で丸める。
+   * 書き戻す側 (`Placement` / `AxisLength`) が自分の規則で丸める。
    *
    * @param constraint その軸の追従の仕方
    * @param offset 変更前の位置 (親の始点からの距離)

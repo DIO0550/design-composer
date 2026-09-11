@@ -12,9 +12,8 @@ import { EditorState } from "@/features/editor/domains/editor-state";
  * ツリー・キャンバス・プロパティパネルから届くノード編集の操作
  * （docs/06-ui.md「編集操作の一覧」「キャンバス直接操作」）。
  *
- * 押せるかどうか（`isInsertEnabled`）まで一緒に返すのは、出す / 出さないの判断が
- * 同じ選択から決まるため。判断そのものは `EditorState` が持ち、
- * ここは読み出して渡すだけ（rules/hooks.md「hooks はドメインロジックを持たない」）。
+ * 判断そのものは `EditorState` が持ち、ここは読み出して渡すだけ（rules/hooks.md「hooks は
+ * ドメインロジックを持たない」）。
  */
 export type NodeActions = Readonly<{
   select: (name: string) => void;
@@ -45,13 +44,11 @@ export type NodeActions = Readonly<{
 /**
  * ノード編集の操作をエディタの状態へ仲介する。
  *
- * キーボードだけの操作（削除・コピー & ペースト・undo / redo・選択解除や並べ替え・座標の
- * 移動の割り当て）はここに含めない。画面の部品から呼ぶ相手がおらず、`useEditShortcuts` が
- * 張るためだけに戻り値へ並べることになるため（削除は #112 でボタンを失ってこちら側）。
+ * キーボードだけの操作（削除・コピー & ペースト・undo / redo・選択解除や並べ替え・座標の移
+ * 動の割り当て）はここに含めない。
  *
- * `clearSelection` / `reorder` がここに在るのは、ツリーとインスペクタから呼ぶ相手が別に
- * 居るため。キーボードからの入口は対象の決め方が違う（選択から決める）ので、同じ操作で
- * も別のアクションになる。
+ * キーボードからの入口は対象の決め方が違う（選択から決める）ので、同じ操作でも別のアクショ
+ * ンになる。
  *
  * @returns 選択・prop の編集・挿入など、画面の部品から呼ぶ操作
  */
@@ -93,7 +90,6 @@ export function useNodeActions(): NodeActions {
     reposition: (name, to) => dispatch({ type: "reposition_node", name, to }),
     /**
      * artboard の見出し・背景を掴んだドラッグはキャンバス上の移動（#390 / #392）。
-     * ノードの座標移動と別のアクションなのは、相手が artboard で座標系も違うため。
      */
     repositionArtboard: (name, canvasPosition) =>
       dispatch({ type: "reposition_artboard", name, canvasPosition }),

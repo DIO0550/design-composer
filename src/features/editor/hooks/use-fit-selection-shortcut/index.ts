@@ -6,8 +6,6 @@ import {
 
 /**
  * 選んでいるものに合わせるズームに割り当てる組み合わせ（Shift+2）。
- *
- * 押された物理キーで待つ理由は `KeyTriggers` の doc にある。
  */
 const FitSelectionShortcut: KeyShortcut = {
   kind: KeyTriggers.PhysicalKey,

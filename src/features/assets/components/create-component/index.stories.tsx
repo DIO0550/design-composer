@@ -6,17 +6,12 @@ import { Option } from "@/utils/Option";
 import { CreateComponent } from "./index";
 
 /**
- * 入力欄に打つ名前。`SampleAssetsDocument` のどの名前とも衝突しないので、
- * **名前を理由には**押せなくならない（凍結中は別の理由で押せない）。
+ * 入力欄に打つ名前。
  */
 const DraftName = "info-panel";
 
 /**
  * 入力欄を開いて `DraftName` を打つところまで進める。
- *
- * `Labels` を公開して綴りを共有しないのは、7 個の綴りをまとめた内部の表で、公開すると撮
- * 影に要らない `instance` / `artboard` まで外へ出るため（逆向きの先例 `ShorthandLabels`
- * は、束ねた行が出す綴りそのものが通しテストの引き当てに要る点が違う）。
  */
 async function enterDraftName(): Promise<void> {
   await userEvent.click(

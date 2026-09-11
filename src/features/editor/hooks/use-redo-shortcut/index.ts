@@ -7,8 +7,7 @@ import {
 /**
  * redo に割り当てる組み合わせ（Windows は Ctrl+Shift+Z / macOS は Cmd+Shift+Z）。
  *
- * Windows の流儀にある Ctrl+Y は割り当てない。#41 が挙げているのは Shift+Z だけで、
- * 仕様に無いキーを先回りで押さえると、後から別の操作へ割り当てにくくなるため。
+ * Windows の流儀にある Ctrl+Y は割り当てない。
  */
 const RedoShortcut: KeyShortcut = {
   kind: KeyTriggers.TypedCharacter,

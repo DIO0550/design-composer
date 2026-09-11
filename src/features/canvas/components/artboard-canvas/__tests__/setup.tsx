@@ -82,10 +82,6 @@ type CanvasHandlers = Readonly<{
  *
  * **パレットから運ぶ経路はここでは通らない**ので、そちらは編集画面のテスト
  * （`opened-document-editor.asset-drag`）が見る。
- *
- * 同じ形が `index.stories.tsx` にもあるが 1 箇所へ寄せていないのは、このファイルが
- * `vitest` の `vi` を import しており、story から読むと Storybook のバンドルへ `vitest`
- * が入るため。
  */
 function CanvasWithView(props: CanvasValues & CanvasHandlers) {
   const canvasView = useCanvasView();
@@ -167,9 +163,6 @@ export function snapGuides(): readonly HTMLElement[] {
 
 /**
  * その種類を掴めるハンドル。
- *
- * 並びの何番目かを数字で書かず `HandleAnchors` から引くのは、箇所と掴めるものの
- * 対応を決めているのがそちらだから（テスト側に写すと片方だけ変えられる）。
  *
  * @param kind 掴める種類（`width` / `height` / `both`）
  * @returns その種類を掴める箇所のハンドル
@@ -257,9 +250,6 @@ export function dragNode(name: string, by: Offset): void {
 
 /**
  * ノードを掴んで別の要素の上まで運び、そこで離す。
- *
- * 離すのを運んだ先の要素へ撃つのは、ブラウザで起きるのがそれだから
- * （運んでいるノードは当たり判定から外れる / `repositionPreviewDeclarations`）。
  *
  * @param name 掴むノードの名前
  * @param to 運んだ先の要素（この要素が落とし先の親を決める）

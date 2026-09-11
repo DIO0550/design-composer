@@ -6,9 +6,8 @@ import { DocumentIpc } from "../index";
  * Rust 側の代役。インメモリのファイル表に対して `docs/05-architecture.md`「Tauri IPC」の
  * 4コマンドと `document-changed` を再現する。
  *
- * 差し込む先は `TauriIpc` の位置なので、`ipc` を通した呼び出しでは `DocumentIpc` 本体
- * （コマンド名・引数・エラーの解釈）がそのまま動く。モックライブラリを使わないのは
- * テスト規約に従うため。
+ * 差し込む先は `TauriIpc` の位置なので、`ipc` を通した呼び出しでは `DocumentIpc` 本体（コ
+ * マンド名・引数・エラーの解釈）がそのまま動く。
  */
 export type DocumentIpcFake = Readonly<{
   /** インメモリのファイル表に向いた `DocumentIpc`。 */

@@ -7,9 +7,6 @@ import { Option } from "@/utils/Option";
  *
  * 3 つとも「今いる深さからどれだけ深くするか」という 1 本の軸に載せている（深くしない /
  * 1 階層だけ / 掘れるだけ）。
- *
- * 押し方そのものを値にしないのは、それが入力の事情であって選択の規則ではないため
- * （rules/architecture.md「解釈はコントロール側に置き、ドメインには解釈済みの値を渡す」）。
  */
 export const SelectionDigs = {
   NoDeeper: "no-deeper",
@@ -68,9 +65,8 @@ export const SelectionDig = {
   /**
    * 掘る量から、選ぶ名前を決める。
    *
-   * `candidates` に artboard を含めないのは、artboard が掘る対象の外側にある器で、据え置き
-   * （`NoDeeper`）や 1 階層（`OneDeeper`）の起点にならないため。混ぜると「artboard を選ん
-   * でいるときも据え置く」が成立し、中身を押しても選択が動かなくなる。
+   * 混ぜると「artboard を選んでいるときも据え置く」が成立し、中身を押しても選択が動かなくな
+   * る。
    *
    * 決まらなかったときに artboard へ倒すかどうかは呼び出し側が決める。
    *

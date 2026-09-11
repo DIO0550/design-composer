@@ -28,9 +28,8 @@ export type OpenedDocumentFakes = Readonly<{
  * 監視と購読は非同期に成立するので、操作を始める前にここで待ち合わせる
  * （待たずに操作すると、成立したときの状態更新が act の外で起きる）。
  *
- * 時計まで返すのは、経過時間（#183）を確かめるテストが時計を進める必要があるため。
- * 時計を要らないテストのほうが圧倒的に多いので、口を 1 つだけ返す
- * `renderOpenedDocument` を別に置いている。
+ * 時計を要らないテストのほうが圧倒的に多いので、口を 1 つだけ返す `renderOpenedDocument`
+ * を別に置いている。
  *
  * @param document 開くドキュメント。`SampleDocument` に無い形（同じ部品を指す
  *   インスタンスが 2 つ以上あるなど）を要るテストだけが渡す
@@ -56,8 +55,6 @@ export async function renderOpenedDocumentWithClock(
 
 /**
  * サンプルのドキュメントを開いた編集画面を描画する。
- *
- * 代役を返すのは、外部変更を起こすテストが同じものを必要とするため。
  *
  * @param document 開くドキュメント。省略すると `SampleDocument`
  */

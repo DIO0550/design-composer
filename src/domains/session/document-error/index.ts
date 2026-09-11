@@ -37,12 +37,7 @@ export const DocumentErrorLocation = {
 /**
  * 画面に出すエラーの種別。テキストの解釈由来とスキーマ検証由来の両方を含む。
  *
- * 字句スキャン（`syntax-error` / `duplicate-key`）と版の解決（`unsupported-*` 以下 3 つ）
- * の綴りを直接並べているのは、それらを報告する `libs/` をドメインから import できないため。
- * 一致は `libs/document-json` の `document-json.type.test.ts` が固定する。
- *
- * 出どころから導出する（kind ごと `src/domains/` へ移す）ことはしない。libs の境界の掃
- * 除（#247）の範囲を超えるため。
+ * 出どころから導出する（kind ごと `src/domains/` へ移す）ことはしない。
  */
 export type DocumentErrorKind =
   | "syntax-error"
@@ -93,9 +88,8 @@ export const DocumentError = {
   /**
    * 組み立て済みのドキュメント自身の不正を集める。
    *
-   * テキストの解釈を挟まないので、ファイルから読んだ内容にも、アプリ内の編集で
-   * 作ったドキュメントにも同じように使える（#128）。
-   * `from*` ではなく `collect*` なのは、変換ではなく走査して集めるため。
+   * テキストの解釈を挟まないので、ファイルから読んだ内容にも、アプリ内の編集で作ったドキュメ
+   * ントにも同じように使える（#128）。
    *
    * @param document 不正を集める対象のドキュメント
    * @returns 見つかった不正の並び。不正が無ければ空

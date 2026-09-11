@@ -10,9 +10,6 @@ import { Option } from "@/utils/Option";
  *
  * `unparsable` が運ぶのは `DocumentJson.parse` が返した失敗だけで、スキーマ検証で落ちる
  * ファイルはここへ来ずそのまま開く（docs/03-schema.md「不正ファイル時の挙動」の「開く時」）。
- *
- * 枝が指すのは**どの段で失敗したか**（ダイアログ / I/O / 解釈）で、`io` が運ぶ理由の語
- * 彙は他の経路と共有する（`DocumentAccessFailure`）。
  */
 export type DocumentOpenFailure =
   | Readonly<{ kind: "dialog"; error: DocumentDialogError }>
@@ -22,9 +19,6 @@ export type DocumentOpenFailure =
 /**
  * アプリがどのドキュメントを開いているか（docs/01-file-format.md「ファイル」/
  * docs/05-architecture.md「Tauri IPC」）。
- *
- * 「開いているのに開けなかった理由がある」「読み込み中なのにドキュメントもある」といった
- * 組み合わせを作れないよう、取りうる状態を直和で列挙する。
  */
 export type DocumentSession =
   | Readonly<{ kind: "closed" }>

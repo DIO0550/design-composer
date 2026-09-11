@@ -20,8 +20,6 @@ export type ExpandedNode = Readonly<{
  * 展開が失敗する理由。
  * 呼び出し側が種類で分岐できるよう、メッセージ文字列ではなく直和で列挙する。
  *
- * 引けなかった部品名を `ref` ではなく `component` で持つのは、この直和を取り込む
- * `DesignDocumentEditError` の中に `ref`（`TokenRef`）を持つメンバが既にあるため。
  * 同じ綴りで別の型を指すと、フィールド名での絞り込みが型を広げてしまう。
  */
 export type ExpandedNodeError =
@@ -128,11 +126,6 @@ function expandNodes(
 
 /**
  * 部品インスタンスを定義の中身へ展開する（docs/02-data-model.md「部品参照ノード」）。
- *
- * 生成規則をここに置くのは、`ExpandedNode` が「ref を含み得ない」ことを構造で保証した型
- * で、その保証を成立させる手続きが展開の走査そのものだから。`Node` 側に置けないのは、参
- * 照先を引く `ComponentSet` が既に `node` を import していて循環になるため（`ComponentSet`
- * 側は引き先であって走査の対象ではない）。
  */
 export const ExpandedNode = {
   /**

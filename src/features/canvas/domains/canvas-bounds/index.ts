@@ -139,10 +139,6 @@ export const CanvasBounds = {
   /**
    * その量だけずらした矩形。大きさは変わらない。
    *
-   * `moveBy` ではなく `movedBy` なのは、同じモジュールの `placedAt` / `relativeTo` と並
-   * んで読まれるので結果を表す語形に揃えるため（`Placement.moveBy` とは型が違うので混ざ
-   * らない）。
-   *
    * @param bounds ずらす矩形
    * @param offset ずらす量
    * @returns 左上をその量だけ動かした矩形
@@ -199,8 +195,7 @@ export const CanvasBounds = {
   /**
    * 2 つの矩形が重なっているか。
    *
-   * 辺が接するだけでも重なりとみなす（境界を含む）。同じ型の `contains` が境界を
-   * 含んでいるので、2 つの判定で縁の扱いを割らないため。
+   * 辺が接するだけでも重なりとみなす（境界を含む）。
    *
    * @param bounds 見る矩形
    * @param other 重なりを見る相手の矩形
@@ -245,9 +240,6 @@ export const CanvasBounds = {
   /**
    * 並び全体を含む最小の矩形。まとめて 1 つの範囲として扱いたいとき（選択したものすべて
    * / artboard すべてを画面へ収める）に使う。
-   *
-   * `create` / `from*` にしないのは、それらが材料から値を作る入口の語で、ここが矩形から
-   * 矩形を導く操作だから（`relativeTo` / `originShift` と同じ語形）。
    *
    * @param boundsList 含めたい矩形の並び
    * @returns すべてを含む最小の矩形。並びが空なら `none`（囲む対象が無いと矩形

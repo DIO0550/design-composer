@@ -106,9 +106,6 @@ function useWheelControl(
  *
  * `onPointerDown` だけは spread せず、**パンを始める入力のときだけ**呼び分ける
  * （docs/06-ui.md「キャンバス直接操作」。空き領域の左ドラッグは範囲選択になった）。
- *
- * どの入力でパンを始めるかを持たないのは、それが入力の事情で、ここが持つのは「パンを始め
- * る / 続ける / 終える」だけだから。
  */
 export type PanHandlers = Readonly<{
   onPointerDown: (event: ReactPointerEvent<HTMLElement>) => void;

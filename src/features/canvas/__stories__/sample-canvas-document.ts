@@ -11,9 +11,6 @@ import { DocumentSelection } from "@/domains/session/document-selection";
  * 1 枚目に部品インスタンス（`home-login`）とトークンを参照するノード（`home-title`）、3
  * 枚目に**中身が artboard より大きい**ノードを置いて、はみ出しがデフォルトで clip され
  * ることを目で確認できるようにしている（docs/01「はみ出し: …デフォルトで clip」）。
- *
- * `features/editor` のサンプル状態を持ってこないのは、この feature が編集画面を知らず
- * import できないため（`canvas -> editor` の辺を作ると循環する）。
  */
 export const SampleCanvasDocument = DesignDocument.create({
   tokens: DocumentTemplate.Default.tokens,

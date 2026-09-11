@@ -22,9 +22,6 @@ export type DropParent = Readonly<{
 
 /**
  * 子が並ぶ向きまで分かる親。外す条件は `InsertionParent.innermost`。
- *
- * `DropParent` と別の型にするのは、**向きを持たない親を挿入位置の計算へ渡せなくする**ため
- * （rules/coding.md「処理の通過を型に刻む」）。
  */
 export type InsertionParent = Readonly<{
   name: string;

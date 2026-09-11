@@ -29,9 +29,6 @@ import {
  *
  * ここでしか見られないのは配線そのもの。ドメイン・reducer・単体 UI を個別に揃えても、
  * `useNodeActions` から `PropertyPanel` までのどこかが切れていれば全部緑になる。
- *
- * `SampleDocument` を使わないのは、同じ部品を指すインスタンスが 1 つしか無く、
- * ボタンが押せる状態を作れないため。
  */
 function setupDocument(): DesignDocument {
   return DesignDocument.create({

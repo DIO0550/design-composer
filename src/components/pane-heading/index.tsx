@@ -8,9 +8,8 @@ export const PaneHeadingTestId = "pane-heading";
  * 中身は並べる側が決めるので children で受け、**省略可能にしない**（渡し忘れと意図した
  * 空が書き分けられなくなる）。
  *
- * 横断層に置くのは、右ペインの中身を持つ feature のストーリーが綴りを写さずに済むように
- * するため（#297）。左ペインのパネルの帯（`LeftPanePanel`）はこれではなく、本文（`PaneBody`）
- * と 1 つの名前空間にもまとめない（親の殻が `features/editor` に残る）。
+ * 左ペインのパネルの帯（`LeftPanePanel`）はこれではなく、本文（`PaneBody`）と 1 つの名前空
+ * 間にもまとめない（親の殻が `features/editor` に残る）。
  *
  * **この class を落としてもテストは 1 件も落ちない**（高さ・下線・余白は happy-dom が解
  * 決しない） — 気づく手段は視覚差分だけ。

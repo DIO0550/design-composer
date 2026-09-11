@@ -20,9 +20,7 @@ export type { InstanceActions } from "./instance-body";
 export { ShorthandLabels } from "./shorthand-row";
 
 /**
- * 帯に出す綴り。英語のままにするのは、1 つ選んでいるときに同じ帯が出す種別
- * （`selection-title` の `KindLabels`）が UI 案の綴りのままで、件数だけ訳すと
- * 選択の状態をまたいで帯の綴りが和洋に割れるため。
+ * 帯に出す綴り。
  */
 const SelectionLabels = {
   /** 複数選んでいるときに帯へ出す綴り。UI 案に該当の画面が無いので最小の 1 行にする。 */
@@ -31,10 +29,6 @@ const SelectionLabels = {
 
 /**
  * 選択の種類ごとの本文。
- *
- * 戻り値を `ReactElement`（`ReactNode` ではない）と書いているのは、種類を足して
- * `case` を足し忘れたときにコンパイルエラーにするため（`rules/coding.md`
- * 「列挙した状態の網羅を型で強制する」）。
  *
  * @returns 選択の種類に応じた本文
  */
@@ -97,9 +91,7 @@ function PropertyPanelTitle({
  *
  * 器（`PaneBody`）は帯と同じく呼び出し側が着せる。
  *
- * 凍結を最初に見るのは、ファイルが不正な間は選択の有無によらず編集させないため
- * （#135。映っているのは最後に正常だった表示で、そこへ加えた編集は今のファイルとは
- * 噛み合わない）。見出しの選択名は残すので、何を選んでいたかは分かる。
+ * 見出しの選択名は残すので、何を選んでいたかは分かる。
  *
  * @returns 凍結中はその旨、選択があれば入力欄、無ければ選択を促す 1 行
  */
@@ -147,9 +139,7 @@ function PropertyPanelBody({
  * プロパティパネル（docs/06-ui.md「画面構成」。UI 案 docs/Design Composer.html のインス
  * ペクタ）。右ペインの帯に出す見出しと、その下の本文の 2 つに分かれる。
  *
- * 1 つの部品にまとめて器（`EditorLayout.RightPane`）ごと返さないのは、器が編集画面の組
- * み立てに属していてこの feature からは import できないため。呼び出し側が帯と本文それぞ
- * れの器に入れる。
+ * 呼び出し側が帯と本文それぞれの器に入れる。
  *
  * 帯と本文は**呼び出し側が同じ 1 つの `selection` を両方へ渡す前提**で、同じ純粋関数（`SelectionControls.forSelection`）
  * を通す（別々の選択を渡せば「帯は件数なのに本文はインスタンスの編集欄」が作れるので、

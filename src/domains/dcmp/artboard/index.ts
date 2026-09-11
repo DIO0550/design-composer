@@ -22,8 +22,7 @@ import { Result } from "@/utils/Result";
  * キャンバスに置かれる 1 枚の画面。大きさを必ず持ち、配下にノードを並べる。
  *
  * `canvasPosition` は無限キャンバス上の位置で、指すのは**枠の左上**
- * (docs/01-file-format.md「artboards」)。省略できるのは、この版より前に書かれた
- * ドキュメントが座標を持たないため。持たないものをどこへ置くかは描く側が決める。
+ * (docs/01-file-format.md「artboards」)。持たないものをどこへ置くかは描く側が決める。
  */
 export type Artboard = Readonly<{
   name: string;
@@ -84,7 +83,6 @@ const ArtboardFixedPlacementProps: readonly string[] = [
 
 /**
  * artboard の props では変えられない prop の全体。
- * 落とす理由が 2 通りあるので、定数を分けたまま結合する。
  */
 const ArtboardUneditableProps: readonly string[] = [
   ...ArtboardFixedSizeProps,
@@ -93,13 +91,6 @@ const ArtboardUneditableProps: readonly string[] = [
 
 /**
  * キャンバス上の位置を `x` / `y` の対として読む。
- *
- * 片方だけを不在として通さないのは、位置が対でしか決まらないため（`Json.optional` を 2
- * つ並べると「`x` だけがある」が読めてしまい、残りをどう埋めるかを呼び出し側が決めるこ
- * とになる）。
- *
- * `Offset` 側に置かないのは、`x` / `y` という綴りで**フラットな兄弟フィールドに**書くの
- * が `.dcmp` の artboard の都合であって、`Offset` の性質ではないため。
  *
  * @param record 読み取り元の artboard のフィールド一式
  * @returns 位置。`x` と `y` がどちらも無ければ不在を表す `undefined`。片方だ
@@ -198,9 +189,7 @@ export const Artboard = {
   /**
    * 追加直後の artboard（docs/06-ui.md「編集操作の一覧」の artboard 操作の追加）。
    *
-   * 名前だけを受け取るのは、一意な名前が**どのドキュメントへ足すか**を見ないと
-   * 決まらないため（採番は名前空間を持つ `DesignDocument` の担当）。大きさと
-   * 空の子はこの型自身の性質なのでここが持つ。
+   * 大きさと空の子はこの型自身の性質なのでここが持つ。
    *
    * @param name 採番済みの名前
    * @returns 既定の大きさを持ち、子を持たない artboard
@@ -254,8 +243,6 @@ export const Artboard = {
 
   /**
    * artboard が props として受け付ける prop の定義（docs/03「Box スキーマを流用する」）。
-   * サイズ系と配置系を落とすのは、`boxProps` が固定値を与えるため、props に書いても
-   * 効かないから（それぞれの理由は定数の doc）。
    */
   propDefinitions(): PropDefinitionRecord {
     const editable = Object.entries(BoxSchema.props).filter(
@@ -284,12 +271,6 @@ export const Artboard = {
 
   /**
    * キャンバス上の位置を置き直した artboard。
-   *
-   * 書き込み先が props ではなく artboard 自身のフィールドなのは、キャンバス上の位置が
-   * props の `placement` / `x` / `y`（親の中での置かれ方）とは**別の座標系**のため
-   * (`ArtboardFixedPlacementProps` の doc)。
-   *
-   * 整数へ丸めるのは `Placement.moveBy`（ノード側の座標移動）と同じ理由による。
    *
    * @param artboard 置き直す元の artboard
    * @param canvasPosition 置き直したあとの位置。枠の左上を指す

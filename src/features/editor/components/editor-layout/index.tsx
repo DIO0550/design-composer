@@ -10,13 +10,11 @@ type PaneProps = Readonly<{ children: ReactNode }>;
 type FreezablePaneProps = PaneProps & Readonly<{ isFrozen: boolean }>;
 
 /**
- * 凍結中のペインの見え方（UI 案 docs/Design Composer.html の Error 画面はパネルと右ペイ
- * ンが `opacity:0.45` + `filter:saturate(0.4)`）。彩度も落とすのは、色が付いているもの
- * だけが凍結中も普段どおりの強さで目に入るのを避けるため。
+ * 凍結中のペインの見え方（UI 案 docs/Design Composer.html の Error 画面はパネルと右ペイン
+ * が `opacity:0.45` + `filter:saturate(0.4)`）。
  *
- * UI 案でアイコンレールだけは `saturate` を持たないが、実装ではレールを含む `<aside>`
- * へまとめて掛けている。レールは白地に灰色の図形しか持たず、彩度を落としても見た目が変
- * わらないため。
+ * UI 案でアイコンレールだけは `saturate` を持たないが、実装ではレールを含む `<aside>` へま
+ * とめて掛けている。
  *
  * **この class を落としても凍結の判定は動いたままで、テストは 1 件も落ちない。** 気づく
  * 手段は `OpenedDocumentEditor / ファイルが不正になった編集画面` の視覚差分だけ（#344
@@ -34,9 +32,8 @@ const FrozenPaneClass = "opacity-45 saturate-[0.4]";
  * 高さは画面ではなく親に合わせる。ファイル操作のツールバーと同期の失敗表示が上に並ぶた
  * め、画面の高さを取ると 3 ペインがその分はみ出す。
  *
- * 運んでいる間のポインタをここで受けるのは、掴む場所（左ペインのパレット）と落とす場所
- * （キャンバス）がこの器の別の枝にあるため。キャンバスの中だけで受けると、パレットで掴
- * んで左ペインの上で離したときに `pointerup` が届かず、掴んだまま戻らなくなる。
+ * キャンバスの中だけで受けると、パレットで掴んで左ペインの上で離したときに `pointerup` が
+ * 届かず、掴んだまま戻らなくなる。
  */
 function EditorLayoutRoot({
   dragHandlers,
@@ -59,9 +56,8 @@ function EditorLayoutRoot({
  * 器はスクロールを持たず、中身（パネル）が自分でスクロールする（ここで受けると常に見え
  * ている必要のあるレールまで一緒に流れる）。
  *
- * 凍結中に `inert` を付けるのは、UI 案がレールもパネルも淡色にして行き先の切り替えまで
- * 止めているため。**happy-dom が強制するのはフォーカスまでで、click は届く**ので、押せ
- * ないこと自体はブラウザでしか確かめられない。
+ * **happy-dom が強制するのはフォーカスまでで、click は届く**ので、押せないこと自体はブラウ
+ * ザでしか確かめられない。
  */
 function LeftPane({ isFrozen, children }: FreezablePaneProps) {
   return (
@@ -98,10 +94,6 @@ function CenterPane({ children }: PaneProps) {
  *
  * 器はスクロールも余白も持たず、見出しの帯（`PaneHeading`）と本文（`PaneBody`）がそれぞ
  * れ内側に持つ（帯の下線をペインの両端まで届かせるため。左ペインと同じ形）。
- *
- * 凍結中に淡色だけで `inert` を付けないのは、そのとき本文が「選択は凍結中」に差し替わっ
- * ていて、押せるものが 1 つも残らないため（左ペインはツリーをそのまま描き続けるので
- * `inert` が要る）。
  */
 function RightPane({ isFrozen, children }: FreezablePaneProps) {
   return (

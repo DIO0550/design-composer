@@ -4,8 +4,6 @@ import type { CompiledArtboard } from "@/domains/compiled/compiled-artboard";
 /**
  * 掴み口を指す目印。掴めることは `onPointerDown` にしか出ないので、テストから引く手掛かり
  * が他に無い（見た目の class で引くと Tailwind の綴りに縛られる）。
- *
- * 名前を付けるのは、1 枚のキャンバスに artboard の枚数だけ並ぶため。
  */
 export const ArtboardHandleTestId = "artboard-handle";
 
@@ -15,9 +13,6 @@ export const ArtboardHandleTestId = "artboard-handle";
  * 名前が青く太くなるのは「今ツリーが映している 1 枚」のとき（#184）。UI 案で色が付いている
  * のは 10 行中 1 行だけで、その画面では artboard 自身ではなく配下のノードが選択されている
  * のに `Artboards` 一覧は `login` を光らせるので、青が指すのは選択ではないと読んだ。
- *
- * 大きさの綴りを `artboard-list` と共通化しないのは、UI 案が空白の有無を変えているため
- * （ツリー側 `720×900` / キャンバス側 `720 × 900`）。
  *
  * 見出しは artboard を動かす掴み口の 1 つ（docs/06-ui.md「キャンバス直接操作」/ もう 1 つ
  * は枠の背景）。**子が全面を覆う artboard**では背景を押せないので残している。

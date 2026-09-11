@@ -10,9 +10,6 @@ import { Result } from "@/utils/Result";
  *
  * artboard の `children`・ノードの `children`・部品の `children` はいずれもこの形で、「並
  * びの中を探す」「並びを編集する」規則は入れ物によらず同じなのでここに集める。
- *
- * `Node` 自身にこれらを持たせられないのは、子を持てるかの判定に `PrimitiveSchema` が要る
- * のに対し、`PrimitiveSchema` が `Node` を import しているため（循環になる）。
  */
 export type NodeTree = Readonly<{ nodes: readonly Node[] }>;
 
@@ -55,7 +52,6 @@ function toTreeResult(
 export const NodeTree = {
   /**
    * そのノードが子を持てるか（プリミティブで、かつスキーマが子を認めているか）。
-   * `Node` ではなくここに置く理由は、このファイル冒頭のコメント（循環）と同じ。
    */
   allowsChildren(node: Node): boolean {
     return Node.isPrimitive(node) && PrimitiveSchema.allowsChildren(node.type);
@@ -73,8 +69,7 @@ export const NodeTree = {
   /**
    * 名前でノードを探し、それが「どの親の何番目か」を返す。並びの子孫も辿る。
    *
-   * 並び自体の入れ物（artboard / ノード）の名前は外から与える。`NodeTree` は自分が誰の子
-   * の並びなのかを知らないため。
+   * 並び自体の入れ物（artboard / ノード）の名前は外から与える。
    */
   childPositionOf(
     tree: NodeTree,

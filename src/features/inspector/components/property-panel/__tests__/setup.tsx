@@ -71,9 +71,6 @@ export function renderFrozenPanel(selection: DocumentSelection) {
 /**
  * その選択の帯の中身だけを描画する。
  *
- * 本文を描かないのは、同じ綴りが本文にも出る種別（`Instance` は公開 prop の節の
- * 見出しにもある）を、器で絞らずに引けるようにするため。
- *
  * @param selection 選択とドキュメントの出どころ
  */
 export function renderTitle(selection: DocumentSelection) {

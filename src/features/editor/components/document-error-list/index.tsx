@@ -12,9 +12,8 @@ import type { ValueOf } from "@/types/ValueOf";
  *   - `opened-file`: 開いているファイルが不正で、映っているのは最後に正常だった表示（docs/03-schema.md）
  *   - `document`: 映っているものは最新で、その中身が不正
  *
- * 前の 2 つを分けているのは**できる操作が違う**ため。開けていない側には飛び先のノードも
- * 書き戻す表示中の内容も存在しないので、`Reveal` も `revert file` も渡せない（props の
- * 直和がそれを型で示す）。
+ * 開けていない側には飛び先のノードも書き戻す表示中の内容も存在しないので、`Reveal` も
+ * `revert file` も渡せない（props の直和がそれを型で示す）。
  */
 export const DocumentErrorOrigins = {
   UnopenedFile: "unopened-file",
@@ -78,9 +77,6 @@ function locationLabel(location: DocumentError["location"]): string {
  * 浮くので枠を閉じて影を付ける。ドキュメント由来にも `absolute` を持たせて上へずらす案を
  * 採らないのは、寸法を写すことになり、happy-dom では気づけないため（#128）。
  *
- * 開く前と開いた後のファイル由来が同じ見え方なのは、どちらも「ファイルが不正で、その一
- * 覧が下端に出ている」画面だから。
- *
  * @param origin エラーの由来
  * @returns 一覧の読み上げ名・見出しの相手・置かれ方
  */
@@ -110,9 +106,6 @@ function originPresentation(origin: DocumentErrorOrigin): Readonly<{
  * 外部変更を捨てて、表示中の内容でファイルを上書きする操作
  * （UI 案 docs/Design Composer.html の Error 画面。見出しの右端に置かれる）。
  *
- * 綴りを UI 案の英語のまま使うのは、UI 案が名指ししている操作名だから
- * （`token-used-by` の `Used by` と同じ扱い）。
- *
  * @returns 見出しの右端に寄せる書き戻しのボタン
  */
 function RevertFileButton({
@@ -135,8 +128,6 @@ function RevertFileButton({
 /**
  * エラーが指すノードをツリー / キャンバスで見せる操作（UI 案の Error 画面）。
  *
- * 読み上げ名にノード名を入れるのは、同じ `Reveal` が行の数だけ並ぶため。
- *
  * @returns その行のノードへ飛ぶボタン
  */
 function RevealButton({
@@ -157,10 +148,6 @@ function RevealButton({
 
 /**
  * エラー 1 件の行。飛び先のノードを持つ行にだけ `Reveal` を出す。
- *
- * 「表示中のドキュメントに在るか」までを条件にしないのは、行ごとに可否を配ると「行 + 飛べ
- * るか」の対の型が要り、`errors` を渡すだけで描けるこの部品がエディタの状態に依存する形へ
- * 変わるため。
  *
  * 押しても飛び先が無い行では `EditorState.reveal` が `none` を返して何も起きない。
  *
@@ -221,9 +208,6 @@ function DocumentErrorRows({
 /**
  * 一覧の器。読み上げ名・見出し・置かれ方は由来で決まり、由来で変わるのは
  * 見出しの飾りと行から飛べるかだけなので、器をここに 1 つだけ持つ。
- *
- * 件数を受け取らず `errors` から数えるのは、見出しの件数と並んだ行数が
- * 食い違う状態を作れないようにするため。
  *
  * @returns エラーの件数を見出しに持つ器と、その中の行
  */
@@ -296,8 +280,6 @@ function originOperations(props: DocumentErrorListProps): Readonly<{
 /**
  * エラーを 1 件ずつ並べる一覧（docs/03-schema.md「不正ファイル時の挙動」）。0 件なら何も
  * 出さない（由来ごとの見え方は `originPresentation` が持つ）。
- *
- * キャンバスを覆い切らないのは、エラーの原因になった箇所の周辺を見ながら直せるようにするため。
  *
  * @param props 由来（`DocumentErrorOrigins`）ごとに使える操作が変わる、一覧に渡すもの
  * @returns 由来に応じた操作つきのエラー一覧。エラーが 0 件なら `null`

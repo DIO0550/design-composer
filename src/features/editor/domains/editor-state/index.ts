@@ -33,8 +33,6 @@ import { Option } from "@/utils/Option";
  * 中の名前でしか意味を持たないため同じ器に持ち、`copiedNode`（アプリ内クリップボード）
  * も同じく非永続なのでここに置く。
  *
- * ドキュメントを裸で持たず `history` の現在地として持つのは、差し替える道を
- * `EditHistory.record` だけにして、履歴を積まずに書き換える経路を無くすため（#41）。
  * ドキュメント自身の不正は持たず `EditorState.documentErrors` で導出する（#128）。
  *
  * 現在地は常に「最後に正常だったドキュメント」で、外部変更を拒んでも差し替えない。
@@ -88,9 +86,7 @@ function selectableName(
 /**
  * 選択できる名前のうち、artboard の配下のノードにあたるもの。
  *
- * artboard 側と分けて持つのは、キャンバスのクリックが「artboard を除いた候補」を
- * 要るため（`EditorState.selectAt`）。「選択できるのは何か」の定義を 1 箇所に保ったまま、
- * その半分だけを使えるようにしている。
+ * 「選択できるのは何か」の定義を 1 箇所に保ったまま、その半分だけを使えるようにしている。
  *
  * @param document 選択先を引くドキュメント
  * @param name 選択されている名前
@@ -159,8 +155,7 @@ function selectedNode(state: EditorState): Option<Node> {
  * 集・undo・外部変更の取り込みで共通の扱いなので、「存在しないものが選択されている」状
  * 態をここ 1 箇所で潰す（複数選択も残った名前だけで作り直す / docs/06-ui.md「選択」）。
  *
- * クリップボードは引き継ぐ。切り離された複製であり、貼るときに必ず採番し直すので、ドキ
- * ュメントが差し替わっても貼れる状態が壊れないため。
+ * クリップボードは引き継ぐ。
  *
  * @param state 反映元のエディタの状態
  * @param history 新しい現在地を持つ履歴
@@ -184,9 +179,8 @@ function withHistory(state: EditorState, history: EditHistory): EditorState {
 /**
  * 新しいドキュメントを履歴へ積んで現在地にする。凍結を見ない。
  *
- * `withEdit` と分けているのは、外部変更の取り込みが**凍結を解く側**だから。
- * 取り込みを `withEdit` に通すと、渡す時点で妥当性を `valid` へ差し替えてあるために
- * 必ず `some` になり、呼び出し側に永久に届かない `none` の分岐が増える。
+ * 取り込みを `withEdit` に通すと、渡す時点で妥当性を `valid` へ差し替えてあるために必ず
+ * `some` になり、呼び出し側に永久に届かない `none` の分岐が増える。
  *
  * @param state 積む先のエディタの状態
  * @param document 現在地にするドキュメント
@@ -277,9 +271,6 @@ export const EditorState = {
   /**
    * 画面に映っているドキュメント自身の不正（#128）。使用中トークンの削除で作った
    * dangling 参照も、開いた時点で既にファイルに載っていた不正（#158）も、ここに出る。
-   *
-   * 状態として持たないのは、ドキュメントと食い違ったエラー一覧を表現できなく
-   * するため（rules/hooks.md「導出可能な値の state 化禁止」）。
    */
   documentErrors(state: EditorState): readonly DocumentError[] {
     return DocumentError.collectFrom(EditorState.document(state));
@@ -304,8 +295,7 @@ export const EditorState = {
   /**
    * 選択を切り替える。複数選んでいたときは、この 1 つだけの選択に戻る。
    *
-   * ドキュメントに存在しない名前では選択が外れる。「存在しないものが選択されている」状態
-   * を作らないため。
+   * ドキュメントに存在しない名前では選択が外れる。
    */
   select(state: EditorState, name: string): EditorState {
     return {
@@ -331,9 +321,8 @@ export const EditorState = {
    * 選択中のインスタンスと同じ部品を指すインスタンスをまとめて選ぶ（UI 案 docs/Design
    * Composer.html の `Select all N instances`）。
    *
-   * 集めるのは `DesignDocument.collectInstanceNames` が持ち、ここは対象の部品を選択から
-   * 決めて選択へ入れるだけ。対象を引数で受け取らないのは `detachInstance` と同じ理由で、
-   * 導線が「選択中のインスタンスと同じものを選ぶ」しか無いため。
+   * 集めるのは `DesignDocument.collectInstanceNames` が持ち、ここは対象の部品を選択から決め
+   * て選択へ入れるだけ。
    *
    * 集まるのは artboard 配下だけなので選択が複数の artboard にまたがりうる。ツリーは 1
    * 枚しか映さないため、映っていない artboard のぶんはキャンバスにだけ枠が出る（docs/06-ui.md
@@ -364,8 +353,7 @@ export const EditorState = {
    * ンバスは部品インスタンスの中身まで描くが、そこに出るのは部品定義側のノード名でドキュ
    * メントの木には無いため候補に入らない（掘ってもインスタンス自身で止まる）。
    *
-   * artboard を候補から外して渡すのは、artboard が掘る対象の外側にある器だから
-   * （`SelectionDig.nameAt` の doc）。どれも選べなければ選択は外れる。
+   * どれも選べなければ選択は外れる。
    *
    * @param state 選択を移す前の状態
    * @param names 押された位置から外へ辿った名前（内→外）
@@ -424,9 +412,9 @@ export const EditorState = {
   /**
    * エラーが指すノードを選ぶ（#136 のエラー行の `Reveal`）。
    *
-   * `select` に繋がないのは、`select` が選べない名前で選択を外すため。エラーの飛び先は表
-   * 示中のドキュメントに無いことがあり（不正な間は最後に正常だった内容が映り、部品定義の
-   * 中のノードも `selectableName` の対象外）、繋ぐと「押したら選択が消えた」になる。
+   * エラーの飛び先は表示中のドキュメントに無いことがあり（不正な間は最後に正常だった内容が映
+   * り、部品定義の中のノードも `selectableName` の対象外）、繋ぐと「押したら選択が消えた」に
+   * なる。
    *
    * @param state 選択を移す前の状態
    * @param name エラーが指しているノードの名前
@@ -452,9 +440,7 @@ export const EditorState = {
    * きしたとき、undo で直前のドキュメントへ戻せることが「GUI 側の失われた変更は undo バ
    * ッファから復元できる」の中身だから（docs/05-architecture.md「競合の解決」）。
    *
-   * 拒んだときはドキュメントも選択もそのままにし、ファイルの妥当性だけを載せ替える。2
-   * つの遷移を 1 つのメソッドで受けるのは、呼び出し側が「ドキュメントを差し替えたのにエ
-   * ラーが残っている」ような組み合わせを作れないようにするため。
+   * 拒んだときはドキュメントも選択もそのままにし、ファイルの妥当性だけを載せ替える。
    *
    * @param state 取り込む前の状態
    * @param reload 外部変更を取り込んだ結果
@@ -485,9 +471,7 @@ export const EditorState = {
    * 表示中の内容をファイルへ書き戻した後の状態（#136 の `revert file`）。ファイルの中身
    * が表示中のドキュメントと一致したので、ファイル由来のエラーは無くなる。
    *
-   * ドキュメントには触れないので履歴も伸びない。`applyReload` の `reloaded` として表さ
-   * ないのは、`withDocument` を通るため中身が変わっていないのに履歴が 1 つ伸び、undo が
-   * 「何も起きない 1 手」を挟むことになるから。
+   * ドキュメントには触れないので履歴も伸びない。
    *
    * @param state 書き戻す前の状態
    * @returns ファイル由来のエラーを畳んだ状態
@@ -517,7 +501,6 @@ export const EditorState = {
    * undo で戻る前のドキュメントへ進める（docs/06-ui.md「編集操作の一覧」の redo / #41）。
    *
    * 進む先が無ければ `none`。ファイルが不正な間も `none`。
-   * 到達しうる理由は `undo` と同じ。
    */
   redo(state: EditorState): Option<EditorState> {
     if (EditorState.isFileInvalid(state)) {
@@ -554,7 +537,6 @@ export const EditorState = {
    * 選択中のノードを、兄弟の並びの中で 1 つぶん動かす
    * （docs/06-ui.md「編集操作の一覧」の並べ替え）。
    *
-   * 対象を選択から決めるのは、キーボードからの操作が今の位置を知らないため。
    * ツリーのドラッグは掴んだ位置を持っているので `reorderNode` を直に呼ぶ。
    *
    * @param state 動かす前の編集状態
@@ -612,9 +594,6 @@ export const EditorState = {
    * の移動のうち、座標が動く側）。指した親が今の親と違えばそこへ付け替わるが、木と座標の
    * 書き換えを `DesignDocument.reposition` が 1 つにするので undo は 1 回で戻る。
    *
-   * 対象を選択からではなく名前で受け取るのは、`moveNode` と同じくキャンバスのドラッグが
-   * 選択を変えないため（選んでいないノードも運べる）。
-   *
    * 座標を持たないもの（ドキュメントに無い名前・artboard 自身）と、子を受け入れられない
    * 親を指した指定は「その編集が存在しない」ことなので `none`。キャンバスは受け入れられ
    * る落とし先だけを見て落とし方を決めるため、画面の操作からは到達しない。
@@ -642,9 +621,8 @@ export const EditorState = {
    * 選択中の絶対配置のノードを、今の座標からずらす
    * （docs/06-ui.md「キャンバス直接操作」の移動のうち、座標が動く側）。
    *
-   * 行き先ではなく移動量で受けるのは、キーボードからの操作が今の座標を知らないため。
-   * 親は変えない（ずらした先が別の親に重なっても付け替えない）。付け替えが起きるのは
-   * 落とし先の親が一緒に届くドラッグだけで、キーからは落とし先が決まらない。
+   * 親は変えない（ずらした先が別の親に重なっても付け替えない）。付け替えが起きるのは落とし先
+   * の親が一緒に届くドラッグだけで、キーからは落とし先が決まらない。
    *
    * @param state ずらす前の編集状態
    * @param delta 動かす量。ドキュメント上の px
@@ -732,8 +710,7 @@ export const EditorState = {
    * 名前の付け替えは `DesignDocument.insertNodeCopy` が挿入と一体で行うため、ここでは順
    * 序を組み立てない。
    *
-   * 選択は動かさない。挿入と同じ導線なので、続けて貼ったときの結果が挿入と食い違わないよ
-   * うにするため（`insertNode` と同じ理由）。
+   * 選択は動かさない。
    */
   pasteNode(state: EditorState): Option<EditorState> {
     return Option.flatMap(state.copiedNode, (node) =>
@@ -751,11 +728,8 @@ export const EditorState = {
   /**
    * ツリー上の指した位置へノードを挿す（docs/06-ui.md「編集操作の一覧」の挿入）。
    *
-   * 名前の採番に要るのはドキュメント全体の名前なので、ノードの組み立ては挿入先を受け取
-   * ってから行う（`NodeTemplate` は名前を持たない）。位置を引数で受けるのは、パレットか
-   * らキャンバスへ落とす経路が落とした先へ挿すため（#203）。
-   *
-   * 選択は動かさない（理由は `insertNode` と同じ）。
+   * 名前の採番に要るのはドキュメント全体の名前なので、ノードの組み立ては挿入先を受け取ってか
+   * ら行う（`NodeTemplate` は名前を持たない）。
    *
    * @param state 挿す前のエディタの状態
    * @param template 挿すものの指定
@@ -780,8 +754,7 @@ export const EditorState = {
   /**
    * 選択位置の子としてノードを挿す（docs/06-ui.md「編集操作の一覧」の挿入）。
    *
-   * 選択は動かさない。続けて挿したときに兄弟が並ぶのが「選択位置の子として追加」の素直な
-   * 繰り返しで、挿すたびに選択が内側へ移ると Box を足しただけで入れ子が深くなるため。
+   * 選択は動かさない。
    */
   insertNode(state: EditorState, template: NodeTemplate): Option<EditorState> {
     return Option.flatMap(EditorState.insertPosition(state), (at) =>
@@ -793,13 +766,7 @@ export const EditorState = {
    * 選んでいるものを削除する（docs/06-ui.md「編集操作の一覧」の削除と artboard 操作）。
    * ノードならサブツリーごと、artboard ならその 1 枚を配下ごと消す。
    *
-   * 対象を引数で受け取らず選択から決めるのは、削除の導線がキーボード（Delete /
-   * Backspace）1 つしかなく、どちらを消すかは押した時点の選択でしか決まらないため（振り
-   * 分けそのものは `DesignDocument.remove` が持つ）。
-   *
-   * 消したものは新しいドキュメントに無いので、選択は `withHistory` で外れる。artboard
-   * を消したときにツリーが映す 1 枚が先頭へ落ちるのは、選択が外れた結果
-   * `DocumentSelection.currentArtboard` が導出し直すため。
+   * 消したものは新しいドキュメントに無いので、選択は `withHistory` で外れる。
    */
   removeSelected(state: EditorState): Option<EditorState> {
     return Option.flatMap(EditorState.singleName(state), (name) => {
@@ -815,10 +782,6 @@ export const EditorState = {
    * 名前は呼び出し側が決めず、ドキュメントの中で衝突しない名前をここで採る（名前の一意
    * 性はドキュメントを見ないと決まらない）。足す先は並びの末尾で、UI 案が並べ替えの入口
    * を `Artboards` の一覧に置いている以上、どこへ足すかは後から動かせる。
-   *
-   * 選択まで動かすのは、`DocumentSelection.currentArtboard` が未選択のとき**先頭**へ落ち
-   * るため（選択しないと、末尾に足した 1 枚をツリーが映さない）。挿入（`insertNode`）に揃
-   * えないのは、ノードが「選択位置の子」へ挿すのに対し artboard は起点を持たないから。
    *
    * @param state 足す前のエディタの状態
    * @returns 1 枚増え、それを選んだ状態。ファイルが不正な間は `none` （`insertArtboard`
@@ -872,9 +835,8 @@ export const EditorState = {
    * 選択中のインスタンスを実体の木へ置き換える（UI 案 docs/Design Composer.html の
    * `Detach instance`）。
    *
-   * 展開・overrides の焼き込み・内側のノードの改名は `DesignDocument.detach` が持ち、ここ
-   * は対象を選択から決めて履歴へ積むだけ。対象を引数で受け取らないのは `removeSelected`
-   * と同じ理由で、解除の導線が「選択中のインスタンスを解除する」しか無いため。
+   * 展開・overrides の焼き込み・内側のノードの改名は `DesignDocument.detach` が持ち、ここは
+   * 対象を選択から決めて履歴へ積むだけ。
    *
    * @param state 解除元のエディタの状態
    * @returns 解除後のエディタの状態。インスタンスを選んでいないときと、参照先
@@ -891,9 +853,8 @@ export const EditorState = {
    * 選択中のノードを部品として切り出し、元の位置をその部品のインスタンスにする（docs/06-ui.md
    * 「部品化・解除」/ UI 案 docs/Design Composer.html の `Create component`）。
    *
-   * 切り出しと差し替えは `DesignDocument.createComponent` が持ち、ここは対象を選択から
-   * 決めて履歴へ積むだけ。対象を引数で受け取らないのは `detachInstance` と同じ理由で、
-   * 部品化の導線が「選択中のものを部品にする」しか無いため（部品名だけを受け取る）。
+   * 切り出しと差し替えは `DesignDocument.createComponent` が持ち、ここは対象を選択から決めて
+   * 履歴へ積むだけ。
    *
    * 公開 prop は宣言しない。宣言の追加は AI / JSON 編集の担当で、部品化時にはゼロで作る
    * （docs/06-ui.md「部品化（Create Component）」）。
@@ -921,10 +882,6 @@ export const EditorState = {
   /**
    * 選択中の artboard / ノードの prop を書き換える（docs/06-ui.md「編集操作の一覧」）。
    *
-   * 対象を引数で受け取らず選択から決めるのは、props 編集の導線がプロパティパネル、つまり
-   * 選択中のものを編集する画面しか無いため（名前を受け取れる形にすると「選択していないも
-   * のを編集する」状態を呼び出し側が作れてしまう）。
-   *
    * 選択が無い・書き換えられない指定は「その編集が存在しない」ことなので `none`。
    */
   applyPropEdit(state: EditorState, edit: PropEdit): Option<EditorState> {
@@ -942,13 +899,11 @@ export const EditorState = {
    * 選択中の artboard / ノードの大きさを変える（docs/06-ui.md「キャンバス直接操作」のリ
    * サイズハンドル）。
    *
-   * 対象を引数で受け取らず選択から決めるのは `applyPropEdit` と同じ理由で、ハンドルが出
-   * るのが選択中のものだけだから。選択が無い・大きさを持たない指定は「そのリサイズが存
-   * 在しない」ことなので `none`（選択は name で持つのでリサイズでは変わらない）。
+   * 選択が無い・大きさを持たない指定は「そのリサイズが存在しない」ことなので `none`（選択は
+   * name で持つのでリサイズでは変わらない）。
    *
-   * 長さを並びで受けるのは、角のハンドルが幅と高さを同時に変えるため。**まとめて受ける
-   * ことで 1 回の編集になる**（軸ごとに呼ぶと Undo 1 回で片方しか戻らない）。ドラッグ全
-   * 体が Undo 1 回で戻るわけではない（ポインタが動くたびに 1 件積む）。
+   * **まとめて受けることで 1 回の編集になる**（軸ごとに呼ぶと Undo 1 回で片方しか戻らない）。
+   * ドラッグ全体が Undo 1 回で戻るわけではない（ポインタが動くたびに 1 件積む）。
    */
   resize(
     state: EditorState,
@@ -973,8 +928,6 @@ export const EditorState = {
 
   /**
    * 編集するトークンを選ぶ（docs/06-ui.md「編集操作の一覧」の tokens 編集）。
-   * ドキュメントに無いトークンは選択状態にしない（`select` と同じ理由で、
-   * 「存在しないものが選択されている」状態を作らない）。
    */
   selectToken(state: EditorState, ref: TokenRef): EditorState {
     return {
@@ -1029,9 +982,7 @@ export const EditorState = {
   /**
    * 選択中のトークンの値を差し替える。
    *
-   * 対象を引数で受け取らず選択から決めるのは `applyPropEdit` と同じ理由で、トークンの編集
-   * 欄が出るのが選択中のトークンだけだから。値だけを受け取るので、「選択していないトーク
-   * ンを編集する」状態を呼び出し側が作れない。
+   * 値だけを受け取るので、「選択していないトークンを編集する」状態を呼び出し側が作れない。
    */
   setTokenValue(state: EditorState, value: TokenValue): Option<EditorState> {
     return Option.flatMap(EditorState.selectedToken(state), (token) => {
@@ -1046,9 +997,8 @@ export const EditorState = {
   /**
    * 選択中のトークンの名前を変える。
    *
-   * 選択は新しい名前へ移す。`withEdit` は消えた名前の選択を落とすので、
-   * そのままだと改名のたびに編集欄が閉じてしまうため。
-   * 名前が規則を満たさない・種別の中で重複するときは `none`（画面は前の名前のまま）。
+   * 選択は新しい名前へ移す。名前が規則を満たさない・種別の中で重複するときは `none`（画面は
+   * 前の名前のまま）。
    */
   renameToken(state: EditorState, newName: string): Option<EditorState> {
     return Option.flatMap(state.selectedToken, (ref) => {

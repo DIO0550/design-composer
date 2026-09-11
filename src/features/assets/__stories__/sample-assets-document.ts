@@ -7,12 +7,8 @@ import {
  * ストーリー用のサンプルドキュメント。選択の対象になりうる 3 つ（artboard・プリミティブ
  * のノード・インスタンス）を 1 枚に揃えてある。
  *
- * 部品化のパネルが 4 状態（`ready` / `instance` / `artboard` / `unselected`）を出し分け
- * るところを 1 つのドキュメントから見るため。トークンと部品は雛形をそのまま使うので、
- * `primary-button` との名前の重複判定もこの 1 枚で確かめられる。
- *
- * `features/editor` のサンプル状態（`SampleEditorState`）を持ってこないのは、あちらの 3
- * 枚の artboard がキャンバスの配置を映すためのもので、パレット側で見たいものと違うから。
+ * トークンと部品は雛形をそのまま使うので、`primary-button` との名前の重複判定もこの 1 枚で
+ * 確かめられる。
  */
 export const SampleAssetsDocument = DesignDocument.create({
   tokens: DocumentTemplate.Default.tokens,

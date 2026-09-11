@@ -38,9 +38,8 @@ const ZoomFactor = 1.2;
 /**
  * 収めるときに対象の四辺へ見込む余白（**ドキュメント上の px**）。
  *
- * 画面上の px ではなくドキュメント上の px で持つのは、覆いたいものが倍率と一緒に拡大され
- * るため。artboard の見出しは箱の上へドキュメント px で 22px 描かれ（`artboard-label` の
- * 高さ 18px + `pb-1` の 4px）、選択の枠も 3px ぶん外へ出る。
+ * artboard の見出しは箱の上へドキュメント px で 22px 描かれ（`artboard-label` の高さ 18px
+ * + `pb-1` の 4px）、選択の枠も 3px ぶん外へ出る。
  *
  * 画面上の px で見込むと、倍率が上がるほど覆えなくなって見出しが切れる。22px より広い最小
  * の切りのいい値として 24 を採る。
@@ -50,9 +49,7 @@ const FitPadding = 24;
 /**
  * 収める対象（`target`）と、収める先（`viewport`）。どちらも実測した画面上の矩形。
  *
- * 対で持つのは、**同じ型の位置引数が 2 つ並ぶと取り違えても型エラーにならない**ため
- * （rules/coding.md「関数のシグネチャ」）。アクションへ載せる側も同じ対を運ぶので、
- * 綴りを 2 箇所に持たないようここから export する。
+ * アクションへ載せる側も同じ対を運ぶので、綴りを 2 箇所に持たないようここから export する。
  */
 export type FitBounds = Readonly<{
   target: CanvasBounds;
@@ -147,9 +144,6 @@ export const CanvasView = {
    * 効いた状態で描かれているので今の見え方から割り戻す（押した時点の倍率・位置に依らず同
    * じ結果になる）。`viewport` は土台（`canvas-surface`）の左上が原点である前提。
    *
-   * ドキュメント側の座標を受け取らないのは、ノードの大きさを決めるのがブラウザのレイア
-   * ウトで、選択に合わせる側の矩形はドキュメントからは出せないため。
-   *
    * @param view 割り戻しに使う今の見え方
    * @param bounds 収めたい矩形（`target`）と、収める先の土台の矩形（`viewport`）
    * @returns 対象が余白ぶんの隙間を空けて中央に収まる倍率と位置。倍率は上下限を超
@@ -209,8 +203,6 @@ export const CanvasView = {
   /**
    * ドラッグ中のポインタ移動を反映する。ドラッグしていないときのポインタ移動（ボタンを離
    * したあとのマウス移動）では何も起きない。
-   *
-   * 基準となる位置が無く、移動量が決まらないため。
    */
   dragTo(view: CanvasView, pointer: Offset): CanvasView {
     if (!view.dragFrom.some) {
@@ -259,9 +251,6 @@ export const CanvasView = {
 
   /**
    * ドキュメント上の移動量を画面上の移動量へ直す。`toDocumentOffset` の逆向き。
-   *
-   * 長さ単位の入口を別に持たせないのは `toDocumentOffset` と同じ理由で、呼び出し側で
-   * x と y を別々に直すと**片方だけ倍率を忘れても動いてしまう**ため。
    *
    * @param view 掛ける倍率を持つ表示
    * @param documentDelta ドキュメント上の移動量

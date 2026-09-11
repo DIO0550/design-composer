@@ -3,7 +3,7 @@ import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 import { DesignDocument } from "../index";
 
-/** artboard を 2 枚持つドキュメント。片方だけを動かしたことを見るため。 */
+/** artboard を 2 枚持つドキュメント。 */
 function setupDocument(): DesignDocument {
   return DesignDocument.create({
     artboards: [

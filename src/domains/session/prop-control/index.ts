@@ -49,9 +49,6 @@ import { Option } from "@/utils/Option";
  * enum とトークン参照を分けるのは、UI 案（docs/Design Composer.html）が enum をセグメン
  * ト、トークンを `▾` 付きの欄と描き分けているため（畳むと、パネル側が選択肢の出どころを
  * prop 名でしか判別できない）。
- *
- * 色と数値のトークンをさらに分けるのは、`gap` が色を持つ状態・`shadow` が解決値を持つ状態
- * を型で作れなくするため。
  */
 export type PropControlInput =
   | Readonly<{ kind: "enum"; values: readonly string[] }>
@@ -74,9 +71,8 @@ export type PropControlInput =
  * `value`（明示的に設定されている値）と `defaultValue`（設定が無いときに効く値）を
  * 別々に持つのは、パネルが両者を区別して見せるため（docs/06-ui.md）。
  *
- * `enabledBy` は、その prop が編集できる条件を出している prop の名前
- * （スキーマの `enabledWhen.prop`）。真偽ではなく名前を持つのは、どの行にぶら下がる
- * 欄なのかがコントロールから読めるようにするため。
+ * `enabledBy` は、その prop が編集できる条件を出している prop の名前（スキーマの
+ * `enabledWhen.prop`）。
  */
 export type PropControl = Readonly<{
   prop: string;
@@ -95,9 +91,7 @@ export type PropSideControl = Readonly<{
 /**
  * 4 辺を 1 行にまとめた編集欄（UI 案 docs/Design Composer.html の `padding` 行）。
  *
- * 辺で引ける対応として持つのは、4 辺が揃っていることを型で表すため
- * （`Record<Side, _>` は 4 キーすべてを要求する）。揃わない並びからは作れない
- * （`create` が `none`）ので、「3 辺しか無い束ね」が流通しない。
+ * 揃わない並びからは作れない（`create` が `none`）ので、「3 辺しか無い束ね」が流通しない。
  */
 export type PropShorthandControl = Readonly<{
   name: ShorthandName;
@@ -106,9 +100,6 @@ export type PropShorthandControl = Readonly<{
 
 /**
  * 向かい合う 2 辺を畳んだ 1 欄（Figma と同じ垂直 / 水平）。
- *
- * 揃っているか不揃いかをフィールドで持たず `value` で導出するのは、
- * 「不揃いと書いてあるのに 2 辺の値が同じ」を作れなくするため。
  */
 export type PropPairControl = Readonly<{
   pair: SidePair;
@@ -122,9 +113,6 @@ export type PropPairValue =
 
 /**
  * セクションに並ぶ 1 行。1 prop の行と、4 辺を束ねた行の 2 種。
- *
- * 直和にするのは、束ねた行が 1 prop 分の `PropControl` を持てないため
- * （持たせると「束ねているのに prop が 1 つ」が作れる）。
  */
 export type PropControlRow =
   | Readonly<{ kind: "prop"; control: PropControl }>
@@ -140,14 +128,6 @@ export type PropControlSection = Readonly<{
  * 選択中のものに対して右ペインが出す編集欄。インスタンスだけ形が違う（UI 案 docs/Design
  * Composer.html の `Assets · Instance` は `group` ごとのセクションではなく
  * `Public props` の 1 節と出どころの部品を出す）。
- *
- * 直和にするのは「インスタンスなのに出どころが無い」を作れなくするため。公開 prop に
- * `group` を持たせないのは、その `group` が binding 先のプリミティブのもので、出すと部
- * 品の内部構造が漏れるため。
- *
- * `isDetachable` を持つのは、参照先の部品が無い・循環している間は解除できず、押しても何も
- * 起きないボタンになるため（不正なドキュメントも画面には残るので実際に出る）。件数だけを持
- * つ `multiple` / `sourceInstanceCount` は、帯と本文を同じ 1 つの値から出し分けるため。
  */
 export type SelectionControls =
   | Readonly<{ kind: "groups"; sections: readonly PropControlSection[] }>
@@ -161,8 +141,7 @@ export type SelectionControls =
   | Readonly<{ kind: "multiple"; count: number }>;
 
 /**
- * パネルに出す prop 1件の素材。定義と既定値を別々に持つのは、参照ノードでは
- * 既定がスキーマではなく部品定義側にあるため（`PublicPropTarget.declared`）。
+ * パネルに出す prop 1件の素材。
  */
 type EditableProp = Readonly<{
   name: string;
@@ -228,10 +207,6 @@ function numberOf(
 
 /**
  * 入力欄の形。値域（`domain`）と、今設定されている値から決まる。
- *
- * トークン参照を最後に置いて `switch` を関数の末尾にしているのは、種別を足して
- * `case` を足し忘れたときに「返さない経路がある」としてここがコンパイルエラーに
- * なるようにするため（`rules/coding.md`「列挙した状態の網羅を型で強制する」）。
  *
  * @param editable 入力の形を決める prop
  * @param value 今その prop に設定されている値
@@ -570,9 +545,7 @@ export const PropControl = {
   /**
    * その prop に値が明示的に設定されているか（既定のままではないか）。
    *
-   * インスタンスの公開 prop ではこれが「上書き済み」に当たるが、`overridden` とは
-   * 名付けない。artboard やプリミティブのコントロールにも同じ判定が要り、
-   * そちらには上書きの相手がいないため（`rules/naming.md`「名前と実体を一致させる」）。
+   * インスタンスの公開 prop ではこれが「上書き済み」に当たるが、`overridden` とは名付けない。
    *
    * @param control 見たい編集欄
    * @returns 明示的に値が設定されていれば `true`、既定のままなら `false`
@@ -653,9 +626,6 @@ export const PropShorthandControl = {
   /**
    * 向かい合う 2 辺を畳んだ欄。並びは垂直・水平の順。
    *
-   * フィールドではなくここで導くのは、4 辺と 2 欄の両方を持たせると
-   * 片方だけ古い状態が作れるため。
-   *
    * @param shorthand 畳みたい束ねた行
    * @returns 垂直・水平の順に並べた畳んだ欄
    */
@@ -699,9 +669,6 @@ export const PropPairControl = {
    * 畳んだ欄の入力の形。2 辺が同じ形の定義を持つことを前提に、片方の形を使う
    * （`paddingTop` と `paddingBottom` は別々の定義だが、同じ `tokenKind` を宣言している）。
    *
-   * 不揃いのときだけ解決値を落とすのは、欄が値を出していないのに
-   * 片方の辺の数値だけが残ると、それがどちらの辺のものか読めないため。
-   *
    * @param pair 入力の形を知りたい畳んだ欄
    * @returns 辺と同じ入力の形。不揃いなら解決値を持たない
    */
@@ -719,9 +686,7 @@ export const PropPairControl = {
   /**
    * 入力された値を、2 辺への 1 件の編集にする。
    *
-   * 1 件にまとめるのは、辺ごとに分けて適用すると履歴も 2 段になり、
-   * 1 回の undo で片側しか戻らないため。受け取るのが解釈済みの値なのは
-   * `PropControl.editFrom` と同じ。
+   * 受け取るのが解釈済みの値なのは `PropControl.editFrom` と同じ。
    *
    * @param pair 編集したい畳んだ欄
    * @param value 入力された値。入力欄が空なら `none`
@@ -738,8 +703,7 @@ export const PropPairControl = {
 
 export const SelectionControls = {
   /**
-   * 選択中のものを編集する欄（docs/06-ui.md「画面構成」）。未選択を `none` で表すのは、
-   * 同じ位置づけの `TokenControl.forSelection` に揃えるため。
+   * 選択中のものを編集する欄（docs/06-ui.md「画面構成」）。
    *
    * 解除できるかは `DesignDocument.isDetachable` に答えさせる。失敗の条件（参照先が無い
    * ・循環している）をここへ書き写すと解除そのもの（`DesignDocument.detach`）と二重管理

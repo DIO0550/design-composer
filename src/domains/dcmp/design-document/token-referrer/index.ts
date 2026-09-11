@@ -21,9 +21,8 @@ import { Option } from "@/utils/Option";
  * トークンを参照している箇所1件（UI 案 docs/Design Composer.html の `Used by` の行 /
  * #127）。名前と prop 名は片方だけでは参照箇所が決まらないため対で持つ。
  *
- * 何の prop かを `target` で判別する直和にしているのは、行に出すアイコンが「artboard /
- * プリミティブ / インスタンス / 部品定義」で変わるため。名前だけを持たせると表示側がドキ
- * ュメントを引き直し、「参照元として集めたのに引けない」起こり得ない不在が表示側に生じる。
+ * 名前だけを持たせると表示側がドキュメントを引き直し、「参照元として集めたのに引けない」起
+ * こり得ない不在が表示側に生じる。
  *
  * `prop` を union で閉じていないのは、インスタンスの上書きで使う公開 prop 名が部品ごと
  * にユーザーが決めるもので、仕様（docs/01-file-format.md「publicProps」）が語彙を列挙し
@@ -68,9 +67,8 @@ function collectSchemaRefProps(
  * かは公開 prop の binding を辿って初めて決まる（辿るのは
  * `ComponentSet.publicPropTarget` の担当）。
  *
- * 他の経路と違いスキーマデフォルトを足さない。上書きしていない公開 prop に効いているのは
- * 部品定義側の値で、その参照は `collectInComponents` が数えるため（足すとインスタンスの数
- * だけ二重に数える）。参照先の部品や公開 prop が無いときは prop 定義が決まらず数えない。
+ * 他の経路と違いスキーマデフォルトを足さない。参照先の部品や公開 prop が無いときは prop 定
+ * 義が決まらず数えない。
  *
  * @param components 公開 prop の binding を辿るための部品一式
  * @param refNode 上書きを持つインスタンスのノード
@@ -125,7 +123,6 @@ function collectPrimitiveReferrers(
 
 /**
  * 部品定義自身（ルートノードを兼ねる）の参照元。
- * 未知の type を空にする理由は `collectPrimitiveReferrers` と同じ。
  *
  * @param name 参照元として出す部品名
  * @param component 参照元になりうる部品
@@ -199,9 +196,6 @@ export const TokenReferrer = {
   /**
    * 参照元のうちノードを指しているものの名前。重複は落とす。
    *
-   * 落とすのは、1 つのノードが 2 つの prop から同じトークンを指しうるため
-   * （`Used by` の件数が参照箇所の総数なのに対し、こちらはノードの数になる）。
-   *
    * ここで外れるのは artboard と部品定義のルートまで。部品定義の**中の**ノードは
    * `primitive` / `instance` として集まるので、この並びに残る（キャンバスに出ているかは
    * ドキュメントを引かないと決まらないため、絞るのは受け取った側の仕事）。
@@ -226,8 +220,7 @@ export const TokenReferrer = {
   },
 
   /**
-   * artboard 1枚の中で、そのトークンを参照している箇所を集める。部品集合を受け取るのは、
-   * インスタンスの上書きの prop 定義を解決するために要るため。
+   * artboard 1枚の中で、そのトークンを参照している箇所を集める。
    *
    * artboard 自身の props も対象。受け付ける prop の定義は `Artboard.propDefinitions()`
    * が持つので Box スキーマを直に見ない（artboard が受け付ける prop の唯一の答えがそち
@@ -260,9 +253,6 @@ export const TokenReferrer = {
    * 部品定義の中の参照も数えるのは、初期部品セットの見た目の prop がすべてデフォルトテー
    * マのトークンを参照しており（docs/04-tokens.md「初期部品セット」）、外側だけを見ると新
    * 規ドキュメントのトークンがほとんど「どこからも使われていない」と読めてしまうため。
-   *
-   * 部品集合をまとめて受け取るのは、名前で引き直すと「引けなかったとき」の分岐が生まれ
-   * るが、辿る名前がすべて自分の持ち物なので引きが失敗しようがないため。
    */
   collectInComponents(
     components: ComponentSet,

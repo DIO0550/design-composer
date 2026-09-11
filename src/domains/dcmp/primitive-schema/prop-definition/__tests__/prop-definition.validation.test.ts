@@ -141,7 +141,6 @@ test("複数の props に違反があると最初の1件で止まらず全件返
 
 /**
  * デフォルトがトークンを指す prop を持つスキーマ（Text の `typography` / `color` と同じ形）。
- * 種別を 2 つに分けているのは、片方のデフォルトだけが宙に浮く入力を作れるようにするため。
  */
 function schemaWithTokenDefaults() {
   return {

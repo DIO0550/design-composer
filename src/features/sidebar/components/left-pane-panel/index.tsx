@@ -7,10 +7,6 @@ import type { Option } from "@/utils/Option";
  *
  * 縦スクロールするのはこのパネルだけ。レールは常に全部見えていないと行き先を選べないの
  * で、器（`EditorLayout.LeftPane`）ではなくここでスクロールを受ける。
- *
- * `footer` をスクロールする本体の**外**へ置くのは、UI 案が `Create component` をパネル
- * 下端に固定しているため。不在を `Option` で受けるのは、出し分ける側の `switch` から行
- * き先の抜けをコンパイルエラーにするため。
  */
 export function LeftPanePanel({
   title,

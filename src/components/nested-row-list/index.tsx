@@ -30,10 +30,6 @@ export type NestedRow = Readonly<{
   name: string;
   /**
    * 三角と並べ替えの間に置く中身。何を描くかは呼び出し側が決める。
-   *
-   * `children` や render prop ではなく行データに JSX を積むのは、木が再帰するので
-   * `children` では入れ子を表せず、render prop にすると呼び出し側が名前から元を引き直す
-   * 対応表を持つため。
    */
   content: ReactNode;
   /**
@@ -49,10 +45,6 @@ export type NestedRow = Readonly<{
 /**
  * 同じ親の中での位置。親の名前と index は片方だけでは位置が決まらないため 1 つの型にま
  * とめる。
- *
- * 同じ構造の `ChildPosition`（`src/domains/dcmp/child-position`）を綴り直しているのは、
- * 横断層から `domains/` を import できないため。渡せることは
- * `document-tree.type.test.ts` が型で固定している。
  */
 export type NestedRowPosition = Readonly<{
   parentName: string;
@@ -73,11 +65,9 @@ type BranchControl = Readonly<{
 /**
  * 枝を開閉する三角（UI 案 docs/Design Composer.html の `▾` / `▸`）。
  *
- * 行の中身とは別のボタンにする。中身が既に `button` のことがあって入れ子にできないことと、
- * 1 つのボタンに「中身を押す」と「開閉する」の 2 つの結果を持たせないため。
+ * 行の中身とは別のボタンにする。
  *
- * ラベルを状態で変えないのは、押した瞬間に読み上げ名が変わって何を押したのかが
- * 分からなくなるため。開いているかどうかは `aria-expanded` が伝える。
+ * 開いているかどうかは `aria-expanded` が伝える。
  *
  * @returns 押すと開閉が入れ替わる三角のボタン
  */

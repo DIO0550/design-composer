@@ -7,9 +7,6 @@
  * 掴む口（`AssetGrab`）はここが持つ。掴む側と落とす側（`features/editor` のキャンバス）
  * で対で意味を持つが、`Option<NodeTemplate>` を抱えるので `src/types/` には置けない（types
  * は domains を import できない）。
- *
- * 部品化のロジック（`Componentization`）を export しないのは、使うのが
- * `CreateComponent` の内側だけで、これを並べる側に consumer が居ないため。
  */
 export { AssetsPanel } from "@/features/assets/components/assets-panel";
 export { CreateComponent } from "@/features/assets/components/create-component";

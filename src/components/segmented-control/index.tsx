@@ -5,10 +5,6 @@ import { Option } from "@/utils/Option";
  * 選択肢を横に並べ、そのうち 1 つを選ばせるコントロール。選ばれているものをもう一度押す
  * と未選択（`none`）に戻る。
  *
- * `role="radiogroup"` + `role="radio"` にしないのは、radio が選択済みの再クリックで
- * `change` を飛ばさず矢印キーにも解除の経路が無いため、「押して未選択へ戻す」を持てない
- * から。器を `fieldset` にしているのは、`role="group"` を持つ意味づけの要素がこれだから。
- *
  * @returns 選択肢ごとのトグルボタンを並べた器
  */
 export function SegmentedControl({

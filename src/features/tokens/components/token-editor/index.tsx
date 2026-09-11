@@ -16,9 +16,7 @@ const NoSelectionMessage = "トークンが選択されていません";
 /**
  * 帯の右端に出す種別の綴り。
  *
- * UI 案（docs/Design Composer.html）に実在するのは `Color` だけで、残る 4 つは
- * ここで決めた。単数形に揃えているのは、帯が指すのが**その 1 件**だから
- * （一覧側の見出しが複数形なのは集合を指すため）。
+ * UI 案（docs/Design Composer.html）に実在するのは `Color` だけで、残る 4 つはここで決めた。
  *
  * 種別を足して綴りを足し忘れると、ここがコンパイルエラーになる。
  */
@@ -35,10 +33,6 @@ const KindLabels = {
  *
  * 先頭の見本を出すのは色だけ。UI 案が描いているのも色の 14×14 のチップだけで、無い絵を
  * 思いつきで足さない（rules/ui-verification.md）。
- *
- * UI 案に無い枠線を足しているのは、白や薄い色のトークンが白い帯に溶けて見本が消えるため。
- * `components/color-swatch` を使わないのは、UI 案が一覧の 12px の四角とこの帯の 14px の
- * 角丸チップを描き分けており、寄せるとどちらかが UI 案から離れるため。
  */
 function TokenTitle({ token }: Readonly<{ token: Token }>) {
   return (
@@ -65,9 +59,8 @@ function TokenTitle({ token }: Readonly<{ token: Token }>) {
  * 右ペインの帯に出す、いま編集しているトークン
  * （UI 案 docs/Design Composer.html の Tokens 画面）。
  *
- * 帯そのもの（`PaneHeading`）は呼び出し側が置く。どのペインへ着せるかは 3 ペインの
- * 組み立ての判断で、この feature は持たないため。選んでいないときに中身だけを
- * 空にするのはそのためで、帯ごと消すと選択のたびに本文の位置が帯のぶん動く。
+ * 帯そのもの（`PaneHeading`）は呼び出し側が置く。選んでいないときに中身だけを空にするのは
+ * そのためで、帯ごと消すと選択のたびに本文の位置が帯のぶん動く。
  *
  * @returns 見本・名前・種別の綴り。トークンを選んでいなければ何も出さない
  */
@@ -298,8 +291,6 @@ function TokenEditorBody({
 /**
  * トークンの編集欄。右ペインの帯に出す見出しと、その下の本文の 2 つに分かれる。
  *
- * 1 つの部品にまとめて器（`EditorLayout.RightPane`）ごと返さないのは、器が編集画面の
- * 組み立て（`features/editor`）に属していて、この feature からは import できないため。
  * 呼び出し側が帯と本文それぞれの器に入れる。
  */
 export const TokenEditor = {

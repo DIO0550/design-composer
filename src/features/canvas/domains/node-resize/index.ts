@@ -32,8 +32,7 @@ type AnchorRatio = 0 | 0.5 | 1;
 /**
  * 掴んだハンドルが変える大きさ。
  *
- * 軸の並びではなく直和で列挙するのは、並びだと「同じ軸が 2 回」「0 軸」が書けてしまい、
- * 実際に取りうる 3 通りより広くなるため。出し分ける側も `switch` で網羅を強制できる。
+ * 出し分ける側も `switch` で網羅を強制できる。
  */
 export type ResizeGrip =
   | Readonly<{ kind: "width"; width: AxisLength }>
@@ -74,12 +73,7 @@ export const ResizeGrip = {
 /**
  * ハンドルを留める 1 箇所（docs/06-ui.md「リサイズハンドル」）。
  *
- * `Placement` と呼ばないのは、このリポジトリの `placement` が「ノードが親の中でどう置か
- * れるか」（`flow` / `absolute`。`domains/dcmp/placement`）を既に指しているため。
- *
- * `grip` はその箇所で何を変えられるかで、掴めない箇所では `none`。右下の角だけが `both`
- * なのは、**原点（左上）が動かない**ので幅と高さを増やすだけで済むため（残る 3 隅と左辺・
- * 上辺は反対側の辺を留める補正が要り、`placement: "flow"` は座標を持たない / #371）。
+ * `grip` はその箇所で何を変えられるかで、掴めない箇所では `none`。
  */
 export type ResizeHandleAnchor = Readonly<{
   x: AnchorRatio;
@@ -89,9 +83,6 @@ export type ResizeHandleAnchor = Readonly<{
 
 /**
  * 掴んでいるもの。何を変えるかと、どこから測るか。
- *
- * `Grab` と呼ばないのは、`features/assets` の `AssetGrab`（掴み口の props 束）が
- * 同じ語幹を別の意味で使っているため。
  */
 export type ResizeHold = Readonly<{
   grip: ResizeGrip;
@@ -129,8 +120,7 @@ function artboardHandles(artboard: Artboard): readonly AxisLength[] {
 /**
  * `fixed` の軸だけを掴める（docs/06-ui.md「`hug` / `fill` ではハンドルを出さない」）。
  *
- * モードが `fixed` でも長さが未設定なら出さない。掴んだ時点の長さが無いと
- * ドラッグの基準が決まらないため（長さはプロパティパネルから入れる）。
+ * モードが `fixed` でも長さが未設定なら出さない。
  *
  * @param props ハンドルの出し分けに使う props
  * @returns `fixed` で長さも設定されている軸のハンドルだけの並び
@@ -221,7 +211,6 @@ export const NodeResize = {
    * その箇所で今つかめるもの。
    *
    * 角（`both`）でも片方の軸しか固定されていなければ、その 1 軸だけを掴む。
-   * 固定されていない軸まで変えると `hug` / `fill` の指定を黙って壊すため。
    *
    * @param handles 選択中のものが持つ、掴める軸のハンドル
    * @param anchor 見ている箇所
@@ -250,8 +239,6 @@ export const NodeResize = {
   /**
    * 今まさに掴んで動かしているもの。
    *
-   * 真偽値ではなく掴んだものを返すのは、掴んでいる間のカーソルを器が出すのに
-   * 「どこを掴んだか（向き）」と「何軸か（自由度）」の両方が要るため。
    * ハンドル自身はそのあいだポインタを通すので出せない。
    *
    * @param resize 今のリサイズの状態
@@ -264,10 +251,6 @@ export const NodeResize = {
   /**
    * 選択中の artboard / ノードに出すハンドルと、掴んだ時点の長さ
    * （docs/06-ui.md「リサイズハンドル」）。
-   *
-   * 対象を選択から決めるのは、キャンバスがハンドルを描くのが選択中のものだけであり、
-   * 名前で受け取れる形にすると「選択していないものにハンドルが出る」状態を
-   * 呼び出し側が作れてしまうため。
    *
    * @param selection ハンドルを出す対象を決める、ドキュメントと選択の対
    * @returns 掴める軸のハンドルと、掴んだ時点の長さ。単一選択でなければ空
@@ -328,9 +311,6 @@ export const NodeResize = {
   /**
    * 今のポインタ位置での長さ。掴んでいなければ長さは決まらない
    * （ボタンを離したあとのマウス移動）。
-   *
-   * 毎回「掴んだ時点の長さ + 掴んでからの移動量」で出すのは、1 回の移動ごとに
-   * 前回の長さへ足していくと丸め（`AxisLength.create`）の誤差が積み上がるため。
    */
   lengthsAt(
     resize: NodeResize,

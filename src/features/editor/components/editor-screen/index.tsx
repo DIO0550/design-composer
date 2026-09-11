@@ -20,7 +20,6 @@ const RecentPaths: readonly string[] = [];
  * アプリの画面。開いているドキュメントが決まるまでは開始画面を、決まったら編集画面を出す
  * （docs/05-architecture.md「Tauri IPC」/ docs/06-ui.md「画面構成」）。
  *
- * 外部世界への口を props で受け取るのは、テストで代役に差し替えるため。
  * 実物の組み立ては `app/` が持つ（rules/architecture.md）。
  */
 export function EditorScreen({

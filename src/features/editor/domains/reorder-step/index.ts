@@ -3,10 +3,6 @@ import type { ValueOf } from "@/types/ValueOf";
 
 /**
  * 兄弟の並びの中で 1 つぶん動かす向き（docs/06-ui.md「編集操作の一覧」の並べ替え）。
- *
- * 「どこへ動かすか」ではなく「どちらへ 1 つか」で持つのは、キーボードからの操作が
- * 今の位置を知らないため（ツリーのドラッグは掴んだ位置を持っているので `IndexMove`
- * で足りる）。
  */
 export const ReorderSteps = {
   TowardFront: "toward-front",

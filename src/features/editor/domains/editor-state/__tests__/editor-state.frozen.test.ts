@@ -106,9 +106,6 @@ test("ファイルが不正でなければ、artboard を並べ替えられる",
 
 /**
  * 兄弟を持つ `home-title` と、絶対配置の `home-badge` を持つドキュメント。
- *
- * `openedState` と分けるのは、あちらが子を 1 つしか持たず、
- * 並べ替えも座標の移動も**凍結と無関係に** `none` になるため（対照が置けない）。
  */
 function openedStateWithMovableNode(): EditorState {
   return EditorState.create(

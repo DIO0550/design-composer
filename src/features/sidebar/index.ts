@@ -9,10 +9,9 @@
  * と追加・artboard の追加と並べ替え）もここに置かない**（受け取った受け口へ渡すだけ。編
  * 集の入口は `features/editor`）。
  *
- * パレット（`AssetsPanel` / `CreateComponent`）とトークン一覧（`TokenList`）をここへ移
- * さないのは、どちらも自分の feature に属していてここは**並べる**側だから。器（`EditorLayout.LeftPane`）
- * を呼ばないのも 3 ペインの組み立ての一部だからで、「今どの行き先か」の状態も両ペインを
- * 組む `opened-document-editor` が持つ（ここは語彙 `LeftPaneView` だけを公開する）。
+ * 器（`EditorLayout.LeftPane`）を呼ばないのも 3 ペインの組み立ての一部だからで、「今どの行
+ * き先か」の状態も両ペインを組む `opened-document-editor` が持つ（ここは語彙
+ * `LeftPaneView` だけを公開する）。
  */
 export { LeftPane } from "@/features/sidebar/components/left-pane";
 export {

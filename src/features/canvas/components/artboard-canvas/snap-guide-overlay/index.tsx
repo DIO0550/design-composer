@@ -31,11 +31,7 @@ function GuideLine({ bounds }: Readonly<{ bounds: CanvasBounds }>) {
  * 揃った辺に引くガイド線（docs/06-ui.md「キャンバス直接操作」の辺のスナップ。色・太さの
  * 選定理由もそちらにある）。どこへ引くかは `side-snap` が実測から決める。
  *
- * 軸ごとに 1 本ずつ並べて出すのは、受け取る型がそう持っているから（`SnapGuides`）。並び
- * を `map` しないので、線の同一性を key で作る必要が無い。
- *
- * 紫（`#9747ff`）にしないのは、UI 案がキャンバス上のインスタンスの表示に使っており、運
- * んでいる最中に同じ画面へ出ると意味が割れるため。
+ * 並びを `map` しないので、線の同一性を key で作る必要が無い。
  */
 export function SnapGuideOverlay({ guides }: Readonly<{ guides: SnapGuides }>) {
   return (

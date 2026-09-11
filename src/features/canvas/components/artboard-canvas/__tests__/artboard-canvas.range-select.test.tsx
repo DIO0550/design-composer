@@ -26,9 +26,6 @@ function rangeFrames(): readonly HTMLElement[] {
 
 /**
  * 空き領域から範囲を引いて離す。
- *
- * 起点を artboard の外（`home` の左上より外側）に取るのは、実際にそこからしか
- * 始められないため（`drawnApart` では `home` が (100, 60) から始まる）。
  */
 function drawRange(to: Readonly<{ x: number; y: number }>): void {
   drag(canvasSurface(), { from: { x: 60, y: 40 }, to });

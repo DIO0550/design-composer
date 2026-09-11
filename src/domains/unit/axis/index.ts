@@ -15,8 +15,7 @@ export const Axes = {
 /**
  * 大きさを測る向き。
  *
- * 同名のコンパニオンオブジェクトを持たないのは、軸そのものに対する生成・判定・変換が
- * 無いため。軸で引く操作は引かれる側（`Offset.along` / `AxisLength`）が持つ
- * （`unit/side` の `Side` も同じ形）。
+ * 軸で引く操作は引かれる側（`Offset.along` / `AxisLength`）が持つ（`unit/side` の `Side`
+ * も同じ形）。
  */
 export type Axis = ValueOf<typeof Axes>;

@@ -7,9 +7,6 @@ import { InstanceBody } from "./index";
 /**
  * インスタンスを選んだときの本文（UI 案 docs/Design Composer.html の
  * `Assets · Instance` の右ペイン）。
- *
- * 押せないボタンを 2 通り並べるのは、`disabled` の見た目と `title` の理由が
- * 出どころ違いの 2 つの条件で決まるため。
  */
 const meta = {
   title: "features/inspector/PropertyPanel/InstanceBody",

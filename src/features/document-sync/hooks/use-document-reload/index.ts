@@ -26,9 +26,7 @@ export type DocumentReloadTarget = Readonly<{
  * る。
  *
  * テキストの解釈は `libs/document-json`、「取り込めたか / 拒んだか」の判断は
- * `DocumentReload` が持ち、ここは外部システム（file watch）との同期と受け渡しだけを行う
- * （rules/hooks.md）。失敗をドメインの語彙で返す理由は `toDocumentAccessFailure` の doc
- * にある。
+ * `DocumentReload` が持ち、ここは外部システム（file watch）との同期と受け渡しだけを行う（rules/hooks.md）。
  *
  * @returns 直近の監視 / 読み込みの失敗。1 度も失敗していなければ `none`
  */

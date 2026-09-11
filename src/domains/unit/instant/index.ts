@@ -1,12 +1,9 @@
 /**
  * ある瞬間（UNIX epoch からのミリ秒）。
  *
- * 素の `number` にしないのは、秒とミリ秒・時刻と経過時間を取り違えても型が何も言わない
- * ため（rules/coding.md「値の語彙を型で閉じる」）。record にしているので素の `number`
- * は代入できない。
+ * record にしているので素の `number` は代入できない。
  *
- * `src/domains/` に置いているのは、`libs/clock` が戻り値に使うため。`libs/` は
- * `features/` を import できないので `features/editor/domains/` には置けない（#183）。
+ * `libs/` は `features/` を import できないので `features/editor/domains/` には置けない（#183）。
  */
 export type Instant = Readonly<{ epochMs: number }>;
 

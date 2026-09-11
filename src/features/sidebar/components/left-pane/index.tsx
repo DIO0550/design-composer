@@ -25,10 +25,8 @@ import { Option } from "@/utils/Option";
 /**
  * 行き先ごとのパネルの中身。
  *
- * 戻り値を `ReactElement`（`ReactNode` ではない）と書いているのは、行き先を足して
- * `case` を足し忘れたときに「返さない経路がある」としてコンパイルエラーにするため。
- * `ReactNode` は `undefined` を含むので、抜けても通ってしまい、足し忘れた行き先が
- * 黙って空のパネルになる。
+ * `ReactNode` は `undefined` を含むので、抜けても通ってしまい、足し忘れた行き先が黙って空
+ * のパネルになる。
  *
  * @returns Layers ならツリー、Assets ならパレット、Tokens ならトークン一覧
  */
@@ -93,12 +91,6 @@ function LeftPaneContent({
 /**
  * 行き先ごとに、パネル下端へ固定するもの。
  *
- * 本体（`LeftPaneContent`）と分けているのは、UI 案が `Create component` をスクロールし
- * ない帯として置いているため（中身と同じ `switch` に混ぜると一覧と一緒に流れる）。
- *
- * 不在を `undefined` ではなく `Option` にしているのは、行き先を足して `case` を足し忘れ
- * たときにコンパイルエラーにするため。
- *
  * @returns Assets なら部品化のフッター、他の行き先では不在
  */
 function leftPaneFooter({
@@ -137,12 +129,8 @@ function leftPaneFooter({
  * 左ペイン（UI 案 docs/Design Composer.html は 56px のレールと 248px の見出し付きパネル
  * を横に並べる / #129）。レールで選んだ行き先の中身をパネルへ出す。
  *
- * どこを見ているか（`view`）を自分で持たないのは、右ペインに何を出すかも同じ行き先で決
- * まるため。ここが握ると右ペインから読めなくなるので、両ペインを組む側（`opened-document-editor`）
- * に置いてもらう。
- *
- * 編集画面の状態（`EditorState`）ではなく値で受け取るのは、この feature が編集画面を知
- * らずに描けるようにするため。
+ * ここが握ると右ペインから読めなくなるので、両ペインを組む側（`opened-document-editor`）に
+ * 置いてもらう。
  */
 export function LeftPane({
   view,

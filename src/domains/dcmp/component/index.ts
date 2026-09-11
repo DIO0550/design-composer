@@ -487,9 +487,6 @@ export const ComponentSet = {
    *
    * `Node.collectRefs` は参照ノードで止まるため、部品同士が循環していても各定義を 1 回ず
    * つ見るだけで終わる（定義の無い名前への参照はどの部品の数にも入らない）。
-   *
-   * 名前で引き直さず `Object.entries` の 1 本で組むのは、辿る名前がすべて自分の持ち物で引
-   * きが失敗しようがないため。
    */
   assets(
     components: ComponentSet,

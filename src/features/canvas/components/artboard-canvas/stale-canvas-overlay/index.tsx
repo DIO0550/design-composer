@@ -14,9 +14,6 @@ const StaleScrimClass =
  * ファイルが不正な間、キャンバスへ重ねるもの（#135）。斜線のスクリムと、
  * 映っているのが最後に正常だった表示であることを名乗るバッジ。
  *
- * スクリムが `pointer-events-none` なのは、下のキャンバスを掴んで動かせるようにするため
- * （凍らせるのは編集で、どこを見るかは変えられてよい）。
- *
  * @returns キャンバス全面の斜線と、右上のバッジ
  */
 export function StaleCanvasOverlay(): ReactElement {

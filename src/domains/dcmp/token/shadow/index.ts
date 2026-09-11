@@ -22,8 +22,7 @@ declare const BlurBrand: unique symbol;
 /**
  * 影のトークン（docs/04-tokens.md「shadows」）。`spread` だけ省略できる。
  *
- * `blur` が値域付きの型ではなく素の `number` なのは、既にファイルに入っている値を
- * そのまま読むため（#143 の決定 D）。値域を課すのは編集で受け取る側（`ShadowFieldEdit`）。
+ * 値域を課すのは編集で受け取る側（`ShadowFieldEdit`）。
  */
 export type ShadowToken = Readonly<{
   x: number;
@@ -35,8 +34,6 @@ export type ShadowToken = Readonly<{
 
 /**
  * ぼかしの大きさ（docs/04-tokens.md「shadows」の `blur`）。単位は px。
- *
- * 素の `number` と構造が変わらないのでブランドで隔てている（`FontSize` と同じ理由）。
  */
 export type Blur = Brand<number, typeof BlurBrand>;
 
@@ -56,10 +53,9 @@ export const Blur = {
  * 影が持つフィールドを名前で指すための対応表(docs/04-tokens.md「shadows」)。
  * `ShadowField` はここから導出し、フィールドを二重管理しない。
  *
- * `satisfies` が見るのは**キーの過不足と綴り**だけで、キーに割り当てた値がずれてもここ
- * では落ちない。**値の網羅**は `__tests__/shadow.type.test.ts` (`ShadowField` ==
- * `keyof Required<ShadowToken>`)で担保する。並びが要るときは `ShadowToken.fields()` を
- * 使い、`Object.values` をそこ 1 箇所に閉じる。
+ * `satisfies` が見るのは**キーの過不足と綴り**だけで、キーに割り当てた値がずれてもここでは
+ * 落ちない。並びが要るときは `ShadowToken.fields()` を使い、`Object.values` をそこ 1 箇所
+ * に閉じる。
  */
 export const ShadowFields = {
   X: "x",
@@ -79,7 +75,6 @@ export type ShadowField = ValueOf<typeof ShadowFields>;
  * フィールドごとに値の型が違うので直和にして、「x に hex」「color に数値」を
  * 型で表現できなくする。
  *
- * `blur` だけを別のメンバへ割るのは、値域を持つのが `blur` だけだから。
  * ずれと広がりはマイナスが正当なので素の `number` のまま。
  */
 export type ShadowFieldEdit =
@@ -93,9 +88,6 @@ export type ShadowNumberField = Exclude<ShadowField, "color">;
 export const ShadowFieldEdit = {
   /**
    * 数値のフィールドの書き換えを作る。
-   *
-   * フィールドごとの値域の対応をここが持つのは、それがドメインの知識だから
-   * （`TypographyFieldEdit.createNumeric` と同じ理由）。
    *
    * @param field 書き換えるフィールド
    * @param value 入力欄から数値として読めた値
@@ -139,9 +131,7 @@ export const ShadowToken = {
    * 値を正規形へ倒す。影が正規形を持つのは中の生 hex だけ(docs/04-tokens.md「shadows」
    * の `color`)。
    *
-   * `spread` の 0 は省略へ倒さない。docs が定めているのは「省略時 0」という既定値の解決
-   * 規則で、「0 を省略で書く」という表記の規則ではないため(倒しても `cssValue` も一覧の
-   * 表示も変わらず、書き出しからキーが 1 つ消えるだけ)。
+   * `spread` の 0 は省略へ倒さない。
    *
    * 保存形式の規則なので、書き込みの境界(`Token.normalized`)からだけ通す。
    */

@@ -115,8 +115,6 @@ export function highlightedNames(canvas: HTMLElement): readonly string[] {
 /**
  * トークンの参照元として破線が掛かっている名前。
  *
- * `highlightedNames` と分けているのは、あちらがすべての規則から名前を抜くため、
- * 選択の枠・ドロップ先の枠と区別できないから。
  * 「参照元だけが破線になる」を確かめるには、破線の規則に絞る必要がある。
  *
  * 綴りを写さず実装の定数で引くので、色や太さを UI 案へ寄せ直しても落ちない。

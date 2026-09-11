@@ -5,9 +5,7 @@ import { renderToolbar, toolbar } from "./setup";
 /**
  * 全部を見る。1 つだけだと、押せるかどうかを片方にしか渡していない実装が通る。
  *
- * 実装と同じ `PrimitiveTypes` から引くのは、綴りを固定するとプリミティブが増えたときに
- * 黙って片方を見なくなるため。artboard の `#` は押せる条件が違う（選択に依らない）ので
- * この並びには入らない。
+ * artboard の `#` は押せる条件が違う（選択に依らない）のでこの並びには入らない。
  */
 function primitiveInsertButtons(): readonly HTMLElement[] {
   return Object.values(PrimitiveTypes).map((type) =>

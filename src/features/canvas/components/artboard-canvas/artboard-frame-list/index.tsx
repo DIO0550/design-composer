@@ -16,19 +16,16 @@ import { NameStyleRule } from "../name-style-rule";
  * 選択を表す青。Tailwind の `outline-blue-500` と同じ色を綴り直している
  * （選択子を組み立てて流し込む規則なので、クラスでは書けない）。
  *
- * export しているのは、選択に属する表示が同じ色でなければならないため。借りているのは
- * リサイズハンドル（`resize-handle-overlay`）と範囲選択の枠（`range-select-overlay`）の
- * 2 つ。別々に綴ると片方だけ変わって、同じ選択表示に青が 2 色出る。
+ * 借りているのはリサイズハンドル（`resize-handle-overlay`）と範囲選択の枠（`range-select-overlay`）
+ * の 2 つ。別々に綴ると片方だけ変わって、同じ選択表示に青が 2 色出る。
  */
 export const SelectionColor = "#3b82f6";
 
 /**
  * 選択中の要素に描く枠。
  *
- * 要素の外側に描くのは、雛形の `primary` が同じ青（`#3b82f6`）で、内側に描くと
- * その色を背景に持つ要素（ボタンなど）の上で枠が見えなくなるため。
- * 枠に使えるのは `outline` だけで、`box-shadow` はノードの `shadow` prop が
- * インライン style で使う（docs/03 の対応表）ため奪えない。
+ * 枠に使えるのは `outline` だけで、`box-shadow` はノードの `shadow` prop がインライン
+ * style で使う（docs/03 の対応表）ため奪えない。
  */
 const SelectionOutline = `outline:2px solid ${SelectionColor};outline-offset:1px`;
 
@@ -47,9 +44,6 @@ const DropParentOutline = "outline:2px dashed #10b981;outline-offset:1px";
  *
  * UI 案は要素ごとに `outline-offset` を 2px と 3px で使い分けているが、名前で引く規則は
  * 1 本しか差し込めないので 2px に寄せた。
- *
- * export しているのは、どの規則が破線かをテストが綴りを写さずに引けるようにするため（写
- * すと色を変えただけでテストが落ちる）。
  */
 export const TokenReferrerOutline =
   "outline:1.5px dashed #0d99ff;outline-offset:2px";
@@ -62,8 +56,7 @@ export const TokenReferrerOutline =
  * トークンはこの並びのルートへ載せる。artboard の出力は `var()` 参照だけを持つので、ト
  * ークンの編集は再コンパイルなしにここの差し替えだけで全 artboard へ波及する。
  *
- * 名前が `ArtboardList` でないのは、左ペインの一覧（`features/sidebar` の
- * `artboard-list`）と綴りがぶつかるため。並べているのは枠なのでそちらを名前に出す。
+ * 並べているのは枠なのでそちらを名前に出す。
  */
 export function ArtboardFrameList({
   compiled,

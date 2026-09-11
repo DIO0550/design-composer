@@ -63,20 +63,11 @@ import type { Option } from "@/utils/Option";
 /**
  * 右ペインの帯と本文に出すもの。器（`PaneHeading` / `PaneBody`）は呼び出し側が
  * 着せるので、ここが持つのは中身だけ。
- *
- * 帯を `ReactNode` にしているのは、選んでいないときに中身が空になるため
- * （`PropertyPanel.Title` / `TokenEditor.Title` は `null` を返す）。
  */
 type RightPaneParts = Readonly<{ title: ReactNode; body: ReactElement }>;
 
 /**
- * 行き先ごとの右ペインの中身。`Assets` がプロパティパネルのままなのは、パレットが見るだ
- * けの場所で選択に触れないため（UI 案「Assets is browse-only — the inspector keeps the
- * previous selection」）。
- *
- * 器を返さず帯と本文に分けて返すのは、器を着せるところを 1 箇所にするため（行き先ごとに着
- * せると、片方だけ器を落とした状態が書ける）。戻り値が `undefined` を含まない
- * `RightPaneParts` なのは、`case` の足し忘れがコンパイルエラーになるため。
+ * 行き先ごとの右ペインの中身。
  *
  * @returns Tokens ならトークンの編集欄、Layers / Assets ならプロパティパネル
  */
@@ -187,11 +178,9 @@ function CanvasDockStack({ children }: Readonly<{ children: ReactNode }>) {
 }
 
 /**
- * 下端の出し分け。戻り値を `ReactElement` と書いているのは、状態を足して `case` を
- * 足し忘れたときにコンパイルエラーにするため（`rightPaneParts` と同じ）。
+ * 下端の出し分け。
  *
- * ドキュメント由来のときにツールバーを消さないのは、表示がファイルと一致していて
- * 古くないから。編集を続けたまま直せる（#128）。一覧は 0 件なら何も出さない。
+ * 編集を続けたまま直せる（#128）。一覧は 0 件なら何も出さない。
  *
  * @returns ファイルが不正ならエラー一覧だけ、そうでなければエラー一覧とキャンバスのツールバー
  */
@@ -408,9 +397,6 @@ function EditorPanes({
  * 開いているファイルとの同期（自動保存と外部変更の取り込み）を張り、3 ペインと
  * その失敗の表示を組み立てる（docs/05-architecture.md「保存モデル: 自動保存」
  * 「外部編集の検知」）。
- *
- * 器（Provider）の中に置くのは、同期の相手が「今表示しているドキュメント」であり、
- * それを読めるのが Provider の内側だけだから。
  */
 function EditorBody({
   clock,

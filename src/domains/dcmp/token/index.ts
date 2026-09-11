@@ -48,9 +48,8 @@ export type TokenSet = Readonly<{
  *
  * union と対で export するのは規約(rules/coding.md「値の集合から union を導出する」)。
  *
- * `satisfies` が見るのは**キーの過不足と綴り**だけで、値がずれてもここでは落ちない。
- * **値の網羅**は `__tests__/token.type.test.ts` (`TokenKind` == `keyof TokenSet`)で担保
- * する。並びが要るときは `TokenSet.kinds()` を使い、`Object.values` をそこ 1 箇所に閉じる。
+ * `satisfies` が見るのは**キーの過不足と綴り**だけで、値がずれてもここでは落ちない。並びが
+ * 要るときは `TokenSet.kinds()` を使い、`Object.values` をそこ 1 箇所に閉じる。
  */
 export const TokenKinds = {
   Colors: "colors",
@@ -73,7 +72,6 @@ type TokenValueOf = { [K in TokenKind]: TokenSet[K][string] };
 
 /**
  * 値がそのまま数値になる種別(docs/04-tokens.md「値の形式」の spacing / radius)。
- * 種別を書き並べず値の形から導出するのは、種別と値の対応を二重管理しないため。
  */
 export type NumericTokenKind = {
   [K in TokenKind]: TokenValueOf[K] extends number ? K : never;
@@ -133,9 +131,7 @@ export const TokenValue = {
   /**
    * 数値の種別（spacing / radius）の値を作る。
    *
-   * どちらも px の長さなので負にはならない（docs/04-tokens.md「値の形式」）。typography /
-   * shadows のように値域付きの型で閉じられないのは、この 2 種別では編集で渡る型が保存され
-   * る値そのもの（`TokenValue`）だから。
+   * どちらも px の長さなので負にはならない（docs/04-tokens.md「値の形式」）。
    *
    * `value` をブランド型にしても `TokenSet` が持つ入れ物は `number` のままなので、型では
    * 弾けずこの入口の `Option` だけが境界になる。
@@ -432,9 +428,7 @@ export const TokenSet = {
   /**
    * 名前で色を引く。
    *
-   * `find` と分けているのは、`find` の戻り値が種別ごとの直和（`Token`）で、
-   * 色を取り出すには呼び出し側で種別を絞り直すことになるため。引く種別が
-   * 決まっている呼び出しに、取られることのない分岐を書かせない。
+   * 引く種別が決まっている呼び出しに、取られることのない分岐を書かせない。
    *
    * @param tokens 引き先のトークン一式
    * @param name 引きたい色の名前
@@ -447,8 +441,7 @@ export const TokenSet = {
   /**
    * 名前で数値のトークンを引く。
    *
-   * `findColor` と同じ理由で `find` と分けている。引く種別が決まっている呼び出しに、
-   * `Token` の直和を絞り直す分岐を書かせない。
+   * 引く種別が決まっている呼び出しに、`Token` の直和を絞り直す分岐を書かせない。
    *
    * @param tokens 引き先のトークン一式
    * @param kind 引きたい種別

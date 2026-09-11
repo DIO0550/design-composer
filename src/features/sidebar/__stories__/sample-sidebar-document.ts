@@ -11,10 +11,6 @@ import { DocumentSelection } from "@/domains/session/document-selection";
  * 3 つの行き先が 1 つのドキュメントで揃うようにしていて、Layers は 2 枚の artboard とそ
  * の中身、Assets は雛形の部品、Tokens は雛形のトークンを映す。ツリー都合の構造（入れ子
  * の深さ・並べ替えボタンの出方）はそれを見たいストーリーの側に置く。
- *
- * `features/editor` のサンプル状態（`SampleEditorState`）を持ってこないのは、この
- * feature が編集画面を知らず import できないうえ、あちらがキャンバスの配置を映すための
- * ドキュメントで目的が違うため。
  */
 export const SampleSidebarDocument = DesignDocument.create({
   tokens: DocumentTemplate.Default.tokens,

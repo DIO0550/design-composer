@@ -28,9 +28,6 @@ type NodeMarks = Readonly<{
  * Text の行に出す文言。空の文言では引用符だけが残るので出さない
  * （UI 案でも文言を持たない Text の行には補助情報が無い）。
  *
- * 既定値の解決を挟まないのは、`content` の既定が空文字で、解決しても
- * 出るものが変わらないため。
- *
  * @param node 文言を読む対象の Text ノード
  * @returns 文言を持つなら `some`。未設定と空文字なら `none`
  */
@@ -60,9 +57,7 @@ function noteOf(node: Node): Option<NodeNote> {
 /**
  * 行が名前の左右に出すもの。
  *
- * 種別は `Selection` から引く。「そのノードが何であるか」は行が選ばれているかに
- * よらない性質で、インスペクタの見出しと同じ判定になるため（同じ分岐を 2 箇所に
- * 置かない / rules/coding.md「同じ処理が2箇所に現れたら共通化する」）。
+ * 種別は `Selection` から引く。
  *
  * @param node 行に出したいノード
  * @returns 名前の左に出す種別の印と、右に出す補助情報
@@ -73,10 +68,6 @@ function nodeMarks(node: Node): NodeMarks {
 
 /**
  * 行の右端に出る補助情報（大きさ・文言・インスタンスの印）。
- *
- * 戻り値を `ReactElement` と書くのは、`default` の無い `switch` で
- * 種別の網羅をコンパイラに強制するため（`ReactNode` は `undefined` を含むので
- * case が抜けても通ってしまう）。
  *
  * @returns 種別に応じた 1 行ぶんの補助情報
  */
@@ -146,9 +137,6 @@ function SelectableName({
 
 /**
  * ノードを、ツリービューが並べる 1 行へ作り直す。子も同じ形で作り直す。
- *
- * 選択されているかを 1 度だけ引いて行の器と名前のボタンの両方へ配るのは、
- * 同じ判定を 2 箇所で書かないため。
  *
  * @param node 行にしたいノード
  * @param selection 選択を読む対

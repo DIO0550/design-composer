@@ -6,15 +6,9 @@ export type DropSide = "before" | "after";
 
 /**
  * 並べ替えのために掴んでから離すまでの状態（docs/06-ui.md「編集操作の一覧」の並べ替え）。
- * `src/utils/` に置くのは、ドメイン知識を持たず React も要らない値だから。
  *
- * 掴んだ位置しか持たない状態と、落ちる先まで決まった状態を分けて列挙するのは、「動かし
- * ていないのに落ちる先がある」を書けなくするため（`features/canvas` の `NodeDrag` と同
- * じ形）。
- *
- * `dropped`（離した直後）を持たないのは、行をまたいで離すと行の `onClick` が発火しない
- * ため（`click` は共通の祖先へ飛ぶので群の器が受ける）。同じ行へ戻って離した場合は移動
- * 先が元の位置なので並べ替えが起きず、押した行が選ばれるだけになる。
+ * 同じ行へ戻って離した場合は移動先が元の位置なので並べ替えが起きず、押した行が選ばれるだけ
+ * になる。
  */
 export type ReorderDrag =
   | Readonly<{ kind: "idle" }>
@@ -65,10 +59,8 @@ export const ReorderDrag = {
   /**
    * 離したときに起きる移動。
    *
-   * 名前に戻り値を出しているのは、`NodeDrag.release` / `NodeResize.release` が
-   * 「離した後の**状態**」を返すのに対し、ここが返すのは「起きた**移動**」だから
-   * （状態を戻すのは `create()`）。同じ `release` にすると、同じ綴りが同じ層で
-   * 2 つの意味を持つ（rules/naming.md「戻り値を名前に出す」）。
+   * 同じ `release` にすると、同じ綴りが同じ層で 2 つの意味を持つ（rules/naming.md「戻り値を
+   * 名前に出す」）。
    *
    * @param drag 離す前の状態
    * @returns 動かしていたならその移動。掴んだだけ・掴んでいないなら `none`
@@ -82,7 +74,7 @@ export const ReorderDrag = {
   /**
    * その位置の行が今掴まれているか。掴んでいる行を淡く見せるのに使う。
    *
-   * 動かしている間も真。運んでいる最中こそ「どれを運んでいるか」が要るため。
+   * 動かしている間も真。
    *
    * @param drag 今の状態
    * @param index 見たい行の位置
@@ -98,9 +90,8 @@ export const ReorderDrag = {
    * 前へ動かすと入った行の手前に、後ろへ動かすと入った行の後ろに落ちる
    * （`ArrayEx.moveWithin` が間を詰めるため）。
    *
-   * 「落ちる先か」と「どちら側か」を 1 つのメソッドで返すのは、消費側が必ず対で
-   * 要るため。分けると `isDropTarget(drag, index) ? dropSide(drag) : none` を
-   * 各消費側が書くことになる（rules/coding.md「同じ処理が2箇所に現れたら共通化する」）。
+   * 分けると `isDropTarget(drag, index) ? dropSide(drag) : none` を各消費側が書くことになる
+   * （rules/coding.md「同じ処理が2箇所に現れたら共通化する」）。
    *
    * @param drag 今の状態
    * @param index 見たい行の位置

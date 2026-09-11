@@ -5,10 +5,9 @@ import type { ValueOf } from "@/types/ValueOf";
 /**
  * flex コンテナが子を並べる向きを名前で指すための対応表。
  *
- * 値の出どころをここに置き、スキーマ側（`BoxSchema.props.layout`）が `Layouts` 経由で
- * 引く（`Constraints` と同じ向き）。スキーマから導出しないのは、`layout` の語彙に
- * 「子を並べない」`free` が混ざるため。向きを持つ側だけを取り出す操作をスキーマの
- * 綴りに依存させると、値の出どころが 2 つに割れる。
+ * 値の出どころをここに置き、スキーマ側（`BoxSchema.props.layout`）が `Layouts` 経由で引く
+ * （`Constraints` と同じ向き）。向きを持つ側だけを取り出す操作をスキーマの綴りに依存させる
+ * と、値の出どころが 2 つに割れる。
  */
 export const CssDirections = {
   Row: "row",

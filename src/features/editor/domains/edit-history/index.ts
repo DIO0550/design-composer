@@ -11,9 +11,7 @@ import { Option } from "@/utils/Option";
  * き換えた経路以外の枝は前のスナップショットと同じ参照が残るため、1 編集で増えるのは書
  * き換えた経路ぶん。
  *
- * 今表示しているドキュメント（`present`）を履歴の中に持つのは、undo が「今のドキュメン
- * ト」と「積んである並び」が揃って初めて結果が決まるため。これにより履歴を積まずにドキ
- * ュメントだけ差し替える経路が無くなる。
+ * これにより履歴を積まずにドキュメントだけ差し替える経路が無くなる。
  */
 export type EditHistory = Readonly<{
   past: readonly DesignDocument[];
@@ -30,8 +28,7 @@ export const EditHistory = {
   /**
    * 新しいドキュメントを現在地にし、それまでの現在地を戻る先として積む。
    *
-   * `future` は捨てる。戻ったあとに別の編集をしたら、それまで進める先だった並びは
-   * もう今の現在地から続いていないため。
+   * `future` は捨てる。
    */
   record(history: EditHistory, document: DesignDocument): EditHistory {
     return {

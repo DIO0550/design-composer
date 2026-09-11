@@ -7,9 +7,7 @@ import type { Offset } from "@/domains/unit/offset";
  * から出す）。
  *
  * ポインタそのものの操作は左ペインの並べ替えでも同じものが要るので、横断層（`components/__tests__/pointer-gesture`）
- * へ移して**そのまま再輸出**する。包み直さないのは、`Offset` が `PointerPoint` と構造的
- * に同じで型の上でも何も足せないため。ここが自前で持つのはホイール（キャンバス固有）だ
- * け。
+ * へ移して**そのまま再輸出**する。ここが自前で持つのはホイール（キャンバス固有）だけ。
  */
 
 export {
@@ -22,7 +20,6 @@ export {
 /**
  * パンの修飾キーを押す / 離す。
  *
- * `document` へ撃つのは `useSpaceHeld` がそこで待っているため（ページ全体の関心事）。
  * `code` で撃つのは、フックが打たれた文字ではなく物理キーで見ているのに合わせる。
  */
 export function holdSpace(): void {

@@ -7,9 +7,8 @@ import type { InsertionParent } from "../drop-parent";
  * 実測を通した `InsertionParent`。親と、その直下に並ぶ子が画面上のどこにあるかまで
  * 分かっている。
  *
- * `InsertionParent` と別の型にするのは、計測していない親を挿入位置の計算へ渡せなく
- * するため（rules/coding.md「処理の通過を型に刻む」）。**向きを持たない親**を渡せない
- * ことは `InsertionParent` 自身が受け持つので、この型が足すのは計測の1段だけ。
+ * **向きを持たない親**を渡せないことは `InsertionParent` 自身が受け持つので、この型が足す
+ * のは計測の1段だけ。
  */
 export type DropZone = Readonly<{
   parent: InsertionParent;

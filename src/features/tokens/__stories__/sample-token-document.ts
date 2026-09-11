@@ -10,10 +10,6 @@ import { Option } from "@/utils/Option";
  * ストーリー用のサンプルドキュメント。トークンと部品は雛形のものをそのまま使い、
  * artboard は**参照元の見え方**だけを狙って組んでいる（`primary` はキャンバス上 1 件、
  * `gray-900` は 2 件、`danger` は 0 件、`md` は上限を超える件数）。
- *
- * `features/editor` のサンプル状態（`SampleEditorState`）を持ってこないのは、あちらの 3
- * 枚の artboard がキャンバスの配置を映すためのもので見たいものが違い、写すと片方だけ直
- * る形になるため。
  */
 export const SampleTokenDocument = DesignDocument.create({
   tokens: DocumentTemplate.Default.tokens,

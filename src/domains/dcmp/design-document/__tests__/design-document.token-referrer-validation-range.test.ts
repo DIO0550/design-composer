@@ -8,12 +8,8 @@ const Gray900 = { kind: "colors", name: "gray-900" } as const;
 /**
  * `gray-900` を、参照のしかたが違う 6 通りから指すドキュメント。
  *
- * `TokenReferrer` の 4 つの target をすべて含めるためで、欠けるとその経路を丸ごと消して
- * も一致テストが通ってしまう。`home-note` だけ `gray-500` を指しているのは、集めすぎ方
- * 向でも落ちるようにするため。
- *
- * `typography` の既定（`body`）が指す先も揃えてあるのは、揃えないと Text ごとに
- * `typography` の dangling が出て、比べたい `gray-900` の分と混ざるため。
+ * `TokenReferrer` の 4 つの target をすべて含めるためで、欠けるとその経路を丸ごと消しても
+ * 一致テストが通ってしまう。
  */
 function setupDocument(): DesignDocument {
   return DesignDocument.create({
@@ -54,8 +50,7 @@ function setupDocument(): DesignDocument {
  * 並べ替えて、出どころによる順序の違いを落とす。
  *
  * 参照元はキャンバスが先・部品定義が後、検証は部品定義が先・artboard が後、と並びの規則が
- * 違う。ここで見たいのは集合が一致することなので、順序は落として比べる
- * （順序そのものは `design-document.token-referrer.test.ts` が固定している）。
+ * 違う。
  */
 function sortedTexts(texts: readonly string[]): readonly string[] {
   return [...texts].sort();

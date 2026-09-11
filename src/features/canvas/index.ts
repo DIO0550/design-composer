@@ -9,10 +9,9 @@
  * import せず、**書き込みもここに置かない**（編集は undo / redo と自動保存に載る 1 つの
  * 経路に閉じており、入口は `features/editor`）。
  *
- * ズーム / パンとドラッグの状態も持たない。倍率の操作は上部バーにあり掴む場所はパレット
- * にもあるので、持ち主は両方の親（`opened-document-editor`）になり、ここはフックと表示
- * の語彙（`CanvasView`）を公開するだけ。`NodeDrag` / `DraggedNode` を公開しないのは、外
- * から要るのが「今パレットから何を運んでいるか」だけだから。
+ * ズーム / パンとドラッグの状態も持たない。倍率の操作は上部バーにあり掴む場所はパレットに
+ * もあるので、持ち主は両方の親（`opened-document-editor`）になり、ここはフックと表示の語彙
+ * （`CanvasView`）を公開するだけ。
  */
 export { ArtboardCanvas } from "@/features/canvas/components/artboard-canvas";
 export { CanvasToolbar } from "@/features/canvas/components/canvas-toolbar";

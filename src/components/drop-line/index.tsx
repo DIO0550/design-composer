@@ -12,10 +12,9 @@ export const DropLineTestId = "drop-line";
  * らへ合わせた（キャンバスの `DropMarker` の緑は選択の枠と同時に出るための色で、左ペイ
  * ンでは要らない）。
  *
- * UI 案は docs/Design Composer.html。読み上げから外すのは、掴んで運ぶ操作がポインタ専用
- * でこの線を読む相手が居ないため。代わりに `data-testid` / `data-side` を持たせるのは、
- * class にしか出ない形にすると happy-dom では読めないから（太さと色は class にしか出な
- * いので、確かめる手段は自分のストーリーの視覚差分だけ）。
+ * UI 案は docs/Design Composer.html。代わりに `data-testid` / `data-side` を持たせるのは、
+ * class にしか出ない形にすると happy-dom では読めないから（太さと色は class にしか出ないの
+ * で、確かめる手段は自分のストーリーの視覚差分だけ）。
  *
  * @returns 落ちる先を示す 2px の線
  */

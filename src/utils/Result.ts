@@ -4,7 +4,7 @@ export type Ok<T> = Readonly<{
   value: T;
 }>;
 
-/** 失敗した結果。失敗の理由を持つ。 */
+/** 失敗した結果。 */
 export type Err<E> = Readonly<{
   ok: false;
   error: E;

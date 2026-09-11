@@ -13,9 +13,8 @@ import { TokenEditor } from "./index";
 /**
  * 帯と本文を実画面と同じ並びで見る。
  *
- * 帯と本文は編集画面が着せるのと同じもの（`PaneHeading` / `PaneBody`）。真似ずに
- * 呼べるのは、どちらも横断層にあるため（#297）。ペインの殻も横断層の代わり
- * （`RightPaneShell`）をデコレータで着せる（#300）。
+ * 帯と本文は編集画面が着せるのと同じもの（`PaneHeading` / `PaneBody`）。ペインの殻も横断層
+ * の代わり（`RightPaneShell`）をデコレータで着せる（#300）。
  */
 function TokenEditorPanel(
   props: ComponentProps<typeof TokenEditor.Body>,

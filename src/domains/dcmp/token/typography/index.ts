@@ -25,9 +25,8 @@ declare const FontWeightBrand: unique symbol;
 /**
  * 書体のトークン（docs/04-tokens.md「typography」）。`fontFamily` だけ省略できる。
  *
- * 数値のフィールドが値域付きの型（`FontSize` 等）ではなく素の `number` なのは、既にファイ
- * ルに入っている値をそのまま読むため（#143 の決定 D）。値域付きにすると `fromJson` が範囲
- * 外を読んだときに、読み込みを失敗させるか `as` で嘘をつくかのどちらかになる。
+ * 値域付きにすると `fromJson` が範囲外を読んだときに、読み込みを失敗させるか `as` で嘘をつ
+ * くかのどちらかになる。
  *
  * 値域を課すのは編集で受け取る側（`TypographyFieldEdit`）。
  */
@@ -101,9 +100,8 @@ export const FontWeight = {
  * フィールドを名前で指すための対応表。`TypographyField` はここから導出し、フィールドを
  * 二重管理しない。
  *
- * `satisfies` が見るのは**キーの過不足と綴り**だけで、キーに割り当てた値がずれてもここで
- * は落ちない。**値の網羅**は `__tests__/typography.type.test.ts` (`TypographyField`
- * == `keyof Required<TypographyToken>`)で担保する。
+ * `satisfies` が見るのは**キーの過不足と綴り**だけで、キーに割り当てた値がずれてもここでは
+ * 落ちない。
  *
  * 並びが要るときは `TypographyToken.fields()` を使い、`Object.values` をそこ 1 箇所に閉じる。
  */
@@ -145,7 +143,6 @@ export const TypographyFieldEdit = {
   /**
    * 数値のフィールドの書き換えを作る。
    *
-   * フィールドごとの値域の対応をここが持つのは、それがドメインの知識だから。
    * 入力欄側が `FontWeight.create` を直に呼ぶ形にすると、対応表が feature へ漏れる。
    *
    * @param field 書き換えるフィールド

@@ -27,11 +27,6 @@ const ReorderKeys = {
  * このフックが持つのは「どのキーがどちらの向きか」だけで、ページ全体で受けることと入力
  * 中は無視することは `useKeyShortcuts` に任せる。
  *
- * 2 件をまとめて張るのは、押したキーで渡す向きが変わるため（1 つの割り当ての `keys` に
- * 2 つ並べると同じ操作の別名になって区別できない）。表から割り当てを組み立てる形を
- * `use-reposition-shortcut` と共有しないのは、畳むと渡す値の型を型引数で受けることにな
- * るため。
- *
  * @param onReorder 割り当てが押されたときに、その向きで呼ぶ手続き
  */
 export function useReorderShortcut(

@@ -11,8 +11,6 @@ export const Path = "/work/login.dcmp";
 /**
  * 自動保存を張る。
  *
- * `fileValidity` を省略できるようにしているのは、ファイルが妥当であることが
- * 自動保存そのものを見るテストの前提で、そこに毎回書くと本題が埋もれるため。
  * 不正な間の振る舞いを見るテストだけが明示的に渡す。
  */
 export function renderAutoSave(initialProps: {

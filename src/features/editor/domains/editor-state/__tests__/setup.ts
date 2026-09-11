@@ -9,9 +9,7 @@ import { EditorState } from "../index";
 /**
  * `home` に Text の `title` と、`body-text` を抱えた Box の `body` が並ぶ状態。
  *
- * 入れ子を 1 段持たせているのは、削除がサブツリーごと消すことを平らな並びでは
- * 確かめられないため（`body` を消すと `body-text` も消える）。履歴のテストも
- * この状態を使うが、そちらが動かすのは葉なので入れ子には依らない。
+ * 履歴のテストもこの状態を使うが、そちらが動かすのは葉なので入れ子には依らない。
  *
  * @returns その並びを持つエディタの状態
  */
@@ -41,9 +39,6 @@ export function stateWithNestedBox(): EditorState {
 /**
  * `home` に Text を 2 つ持ち、部品定義は雛形のものをそのまま使う状態（`primary-button-label`
  * が部品定義の中のノードにあたる）。
- *
- * 部品定義まで持たせてあるのは、`DesignDocument.collectErrors` が部品定義も走査する一方
- * で、選択の対象は artboard 配下だけ、という差を持つ状態が要るため（#136）。
  *
  * **いま、その差を落としても落ちるテストは無い**（部品定義を外しても reveal / revert の
  * 全件が通る。飛び先にならないことを固定する assert が reveal 側に無いため）。呼び出し

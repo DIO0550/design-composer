@@ -14,8 +14,7 @@ export const ElementEx = {
   /**
    * その要素が文字を打ち込める場所か（入力欄・複数行入力欄・編集可能な要素）。
    *
-   * 受け取るのが `EventTarget` なのは `attributeValuesToRoot` と同じ理由で、
-   * イベントの発火元が要素とは限らないため。要素でなければ打ち込めないので偽になる。
+   * 要素でなければ打ち込めないので偽になる。
    */
   isTextEditable(target: EventTarget | null): boolean {
     if (target instanceof HTMLInputElement) {
@@ -30,7 +29,6 @@ export const ElementEx = {
   /**
    * その要素が選択肢から値を選ぶ場所（選択欄）か。
    *
-   * 文字を打ち込める場所と分けているのは、自分で受け取るキーの範囲が違うため。
    * どこまでを通すかを決めるのは呼び出し側で、ここは要素の性質だけを答える。
    */
   isSelectControl(target: EventTarget | null): boolean {
@@ -40,8 +38,7 @@ export const ElementEx = {
   /**
    * 自身から根へ向かって辿り、その属性を持つ要素の値を通り道の順に並べる。
    *
-   * 受け取るのが `EventTarget` なのは、イベントの発火元が要素とは限らないため
-   * （document / window も同じ型で届く）。要素でなければ通り道が無いので空になる。
+   * 要素でなければ通り道が無いので空になる。
    */
   attributeValuesToRoot(
     target: EventTarget,

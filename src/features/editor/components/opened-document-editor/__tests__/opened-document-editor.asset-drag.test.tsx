@@ -36,8 +36,7 @@ import {
 /**
  * `home` に Text・空の Box・Text がこの順で並ぶドキュメント。
  *
- * `home-panel` を真ん中に置くのは、落とし先が `home-panel` なのか `home`（末尾へ追加）
- * なのかを行の並びで見分けられるようにするため。末尾に置くとどちらでも同じ並びになる。
+ * 末尾に置くとどちらでも同じ並びになる。
  */
 function setupDocument(): DesignDocument {
   return DesignDocument.create({

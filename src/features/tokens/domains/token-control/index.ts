@@ -55,7 +55,6 @@ export type TokenSection = Readonly<{
  * 1行分の入力欄。値の形式（docs/04-tokens.md「値の形式」）から入力欄の種類が決まり、語彙
  * は `PropControlInput` に揃える。
  *
- * 色が `ColorToken` ではなく `Rgb` を持つのは、`input[type=color]` が6桁しか扱えないため。
  * alpha は `alphaPercent` の欄が別に持つ。
  */
 export type TokenControlInput =
@@ -65,12 +64,7 @@ export type TokenControlInput =
   | Readonly<{ kind: "text"; value: string }>;
 
 /**
- * その行が書き戻す先。書き換え前の値を持つのは、その行が値の一部だけを差し替えるため（色
- * は RGB と不透明度、複合の種別はフィールド）。
- *
- * 種別で判別する直和にしているのは、「種別 + フィールド名」を並べて持つと shadows のト
- * ークンに fontSize を指す組み合わせが型で作れてしまうため。不透明度を
- * `part: "rgb" | "alpha"` として平らに足さないのも同じ理由。
+ * その行が書き戻す先。
  *
  * `kind` は `TokenKind` と1対1ではない。不透明度の行は色の一部を差し替えるだけなので、
  * `colorsAlpha` が書き戻すのは `colors` の値になる。
@@ -92,8 +86,6 @@ export type TokenFieldTarget =
  * 編集欄の1行。色は2行（RGB と不透明度）、複合の種別はフィールドの数だけ並ぶ。
  *
  * `name` は行の識別子で、1つのトークンの中で一意（複合の種別はフィールド名）。
- * 見出しの文字列とは別に持つのは、表示の文言が偶然衝突しても行の同一性が
- * 壊れないようにするため。
  */
 export type TokenControlField = Readonly<{
   name: string;
@@ -481,8 +473,7 @@ export const TokenControl = {
   /**
    * 入力欄に入った文字列を、そのトークンの新しい値にする。
    *
-   * 書き戻し先は行が持つ `target` から決める。入力欄の種類（色 / 数値）で決めると
-   * 数値の欄が `spacing` と `radius` を区別できず、書き込み先を取り違えるため。
+   * 書き戻し先は行が持つ `target` から決める。
    *
    * @param target 書き戻し先の種別と、複合の種別ではどのフィールドか
    * @param raw 入力欄に入っている文字列

@@ -6,8 +6,6 @@ import {
 
 /**
  * 文書全体を収めるズームに割り当てる組み合わせ（Shift+1）。
- *
- * 押された物理キーで待つ理由は `KeyTriggers` の doc にある。
  */
 const FitDocumentShortcut: KeyShortcut = {
   kind: KeyTriggers.PhysicalKey,
