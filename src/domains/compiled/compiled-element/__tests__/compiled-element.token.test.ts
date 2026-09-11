@@ -1,32 +1,5 @@
 import { expect, test } from "vitest";
-import type { TokenRefs } from "@/domains/dcmp/css-declaration";
-import { CssDeclarations } from "@/domains/dcmp/css-declaration";
-import type { Props } from "@/domains/dcmp/node";
-import { ResolvedProps } from "@/domains/dcmp/resolved-props";
-import { Option } from "@/utils/Option";
-import { BoxElement, TextElement } from "../index";
-
-/** カスタムプロパティ名の綴り方は出力層の知識なので、テストからも引数で渡す。 */
-const tokenRefs = {
-  ref: (kind, name) => `var(--${kind}-${name})`,
-  typographyRef: (name, property) => `var(--typography-${name}-${property})`,
-} satisfies TokenRefs;
-
-function setupBoxStyle(props: Props): CssDeclarations {
-  return CssDeclarations.from(
-    BoxElement.declarations(
-      ResolvedProps.resolve("Box", props),
-      Option.none,
-      tokenRefs,
-    ),
-  );
-}
-
-function setupTextStyle(props: Props): CssDeclarations {
-  return CssDeclarations.from(
-    TextElement.declarations(ResolvedProps.resolve("Text", props), tokenRefs),
-  );
-}
+import { setupBoxStyle, setupTextStyle } from "./element-style-setup";
 
 test("トークン参照 prop はトークンの値ではなく var() 参照になる", () => {
   expect(setupBoxStyle({ gap: "md" }).gap).toBe("var(--spacing-md)");

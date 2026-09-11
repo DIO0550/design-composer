@@ -1,26 +1,8 @@
 import { expect, test } from "vitest";
-import type { TokenRefs } from "@/domains/dcmp/css-declaration";
-import { CssDeclarations } from "@/domains/dcmp/css-declaration";
-import type { Props } from "@/domains/dcmp/node";
 import { ResolvedProps } from "@/domains/dcmp/resolved-props";
 import { Option } from "@/utils/Option";
 import { BoxElement } from "../index";
-
-/** カスタムプロパティ名の綴り方は出力層の知識なので、テストからも引数で渡す。 */
-const tokenRefs = {
-  ref: (kind, name) => `var(--${kind}-${name})`,
-  typographyRef: (name, property) => `var(--typography-${name}-${property})`,
-} satisfies TokenRefs;
-
-function setupBoxStyle(props: Props): CssDeclarations {
-  return CssDeclarations.from(
-    BoxElement.declarations(
-      ResolvedProps.resolve("Box", props),
-      Option.none,
-      tokenRefs,
-    ),
-  );
-}
+import { setupBoxStyle } from "./element-style-setup";
 
 test("自由配置の Box は flex コンテナにならない", () => {
   const style = setupBoxStyle({ layout: "free" });
