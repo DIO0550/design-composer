@@ -192,8 +192,8 @@ function valueTextOf(token: Token): string {
 
 export const TokenSection = {
   /**
-   * トークン一覧に出すセクションの並び。種別は `TokenSet.kinds()` の順、種別内は TokenSet
-   * が持つ定義順を保つ。
+   * トークン一覧に出すセクションの並び。種別は `TokenSet.kinds` の順、種別内は TokenSet が持
+   * つ定義順を保つ。
    *
    * トークンが1つも無い種別も見出しだけ出す（足す先が画面から消えないため）。
    *

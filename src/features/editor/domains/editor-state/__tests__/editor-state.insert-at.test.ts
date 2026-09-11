@@ -6,7 +6,7 @@ import { EditorState } from "../index";
 import { childNames } from "./setup";
 
 /*
- * ツリー上の位置を指した挿入（キャンバスへ落とす経路 / #203）。
+ * ツリー上の位置を指した挿入（キャンバスへ落とす経路）。
  * 選択位置へ挿す `insertNode` とは挿し先の決まり方が違うので観点を分ける。
  */
 

@@ -34,7 +34,7 @@ export function repositionPreviewDeclarations(offset: Offset): string {
 export const CarriedNodeUnclipped = "overflow:visible!important";
 
 /**
- * 離したらどこへ置かれるかを、掴んだノード自身を動かして見せる（#381）。
+ * 離したらどこへ置かれるかを、掴んだノード自身を動かして見せる。
  *
  * ドキュメントは書き換えない。書き換えると `EditHistory` が合体せず、ポインタ移動の刻み
  * だけ undo が積まれる（ドラッグ 1 回 = undo 1 回が壊れる）。

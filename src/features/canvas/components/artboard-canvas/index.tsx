@@ -66,17 +66,16 @@ function canvasCursor(
 }
 
 /**
- * キャンバス（docs/06-ui.md「画面構成」）。artboard をキャンバス上の座標へ置き、コンパ
- * イル結果（実 HTML / CSS）をレンダリングする。ズーム / パンは非永続の view state で、
- * ドキュメントには保存しない。
+ * キャンバス（docs/06-ui.md「画面構成」）。artboard をキャンバス上の座標へ置き、コンパイル
+ * 結果（実 HTML / CSS）をレンダリングする。ズーム / パンは非永続の view state で、ドキュメ
+ * ントには保存しない。
  *
  * どちらも両方の親が状態を持つ。
  *
- * props が 10 個あるが Composition へは割っていない（描くものはコンパイル結果の HTML で
- * 呼び出し側が組み立てられず、`EditorState` を丸ごと受けると feature として切り出せない
- * / #256。`selection` と `tokenSelection` を束ねる型も作らない）。中央ペインの凍結（ハ
- * ンドルの抑止・`inert`・スクリム）はここが自分で出す — 左右と違い器は中央に淡色も
- * `inert` も付けない。
+ * props が 10 個あるが Composition へは割っていない（描くものはコンパイル結果の HTML で呼
+ * び出し側が組み立てられず、`EditorState` を丸ごと受けると feature として切り出せない。
+ * `selection` と `tokenSelection` を束ねる型も作らない）。中央ペインの凍結（ハンドルの抑止
+ * ・`inert`・スクリム）はここが自分で出す — 左右と違い器は中央に淡色も `inert` も付けない。
  */
 export function ArtboardCanvas({
   selection,
@@ -96,7 +95,7 @@ export function ArtboardCanvas({
   canvasView: CanvasViewControl;
   nodeDrag: NodeDragControl;
   onSelect: (names: readonly string[], dig: SelectionDig) => void;
-  /** 範囲選択で、範囲に重なったものをまとめて選ぶ（#411）。 */
+  /** 範囲選択で、範囲に重なったものをまとめて選ぶ。 */
   onSelectInRange: (names: readonly string[]) => void;
   onResize: (sizes: AxisLengths) => void;
   onEditProp: (edit: PropEdit) => void;
@@ -114,7 +113,7 @@ export function ArtboardCanvas({
    * ハンドルを重ねる器。`canvas-surface` の**外**にあるので、掴めるハンドルの上だけは
    * `pointerdown` が土台へ届かず、space を押していてもパンが始まらない
    * （docs/06-ui.md「キャンバス直接操作」がこの 3 箇所を例外として書いている）。
-   * 中へ移せば例外を消せるが、掴み口と土台の当たり判定の作り直しになるので #411 では触らない。
+   * 中へ移せば例外を消せるが、掴み口と土台の当たり判定の作り直しになるので今は触らない。
    */
   const canvasAreaRef = useRef<HTMLDivElement>(null);
   const designDocument = selection.document;
@@ -195,7 +194,7 @@ export function ArtboardCanvas({
         /*
          * 空き領域の左ドラッグは範囲選択。ここまで `pointerdown` が上がってくるのは
          * artboard の外側の余白を押したときだけで、artboard の上は枠と見出しが止める
-         * （artboard の背景を範囲選択にするかは #465）。凍結中に始めないのは、
+         * （artboard の背景を範囲選択にするかは）。凍結中に始めないのは、
          * 映っているのが最後に正常だった表示で、そこへ加えた選択が今のファイルと
          * 噛み合わないため（`canvas-content` の `inert` はここまで及ばない）。
          */

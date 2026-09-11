@@ -4,7 +4,7 @@ import { DocumentSelection } from "@/domains/session/document-selection";
 import { Option } from "@/utils/Option";
 
 /**
- * 今見ている artboard は選択から導かれる（docs/06-ui.md「選択」/ #112）。
+ * 今見ている artboard は選択から導かれる（docs/06-ui.md「選択」）。
  *
  * ノードはすべて 2 枚目（`settings`）にぶら下げる。
  */

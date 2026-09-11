@@ -136,15 +136,15 @@ function PropertyPanelBody({
 }
 
 /**
- * プロパティパネル（docs/06-ui.md「画面構成」。UI 案 docs/Design Composer.html のインス
- * ペクタ）。右ペインの帯に出す見出しと、その下の本文の 2 つに分かれる。
+ * プロパティパネル（docs/06-ui.md「画面構成」。UI 案 docs/Design Composer.html のインスペ
+ * クタ）。右ペインの帯に出す見出しと、その下の本文の 2 つに分かれる。
  *
  * 呼び出し側が帯と本文それぞれの器に入れる。
  *
- * 帯と本文は**呼び出し側が同じ 1 つの `selection` を両方へ渡す前提**で、同じ純粋関数（`SelectionControls.forSelection`）
- * を通す（別々の選択を渡せば「帯は件数なのに本文はインスタンスの編集欄」が作れるので、
- * 器を着せる側で 1 つの値を作って配る）。入力欄はスキーマ定数の走査だけで決まるため、こ
- * こには prop 名で分岐するコードを置かない。
+ * 帯と本文は**呼び出し側が同じ 1 つの `selection` を両方へ渡す前提**で、同じ純粋関数
+ * （`SelectionControls.forSelection`）を通す（別々の選択を渡せば「帯は件数なのに本文はイン
+ * スタンスの編集欄」が作れるので、器を着せる側で 1 つの値を作って配る）。入力欄はスキーマ
+ * 定数の走査だけで決まるため、ここには prop 名で分岐するコードを置かない。
  */
 export const PropertyPanel = {
   Title: PropertyPanelTitle,

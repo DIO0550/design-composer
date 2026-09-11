@@ -105,7 +105,7 @@ function rightPaneParts({
 
   /*
    * 凍結は行き先より先に見る。ファイルが不正な間はトークンも編集できないので、
-   * Tokens を開いたまま壊れたときに編集欄が残らないようにする（#135）。
+   * Tokens を開いたまま壊れたときに編集欄が残らないようにする。
    * プロパティパネルが凍結時の中身（「選択は凍結中」）を持つ。
    */
   if (isFrozen) {
@@ -133,7 +133,7 @@ function rightPaneParts({
   }
 }
 
-/** キャンバス下端に出すもの。ファイルが不正な状態と、編集を続けられる状態の 2 つ（#128）。 */
+/** キャンバス下端に出すもの。ファイルが不正な状態と、編集を続けられる状態の 2 つ。 */
 type CanvasDock =
   | Readonly<{ kind: "file-invalid"; errors: readonly DocumentError[] }>
   | Readonly<{ kind: "editable"; errors: readonly DocumentError[] }>;
@@ -162,7 +162,7 @@ function canvasDock(state: EditorState): CanvasDock {
  *
  * **この位置指定を落としてもテストは落ちない** — happy-dom はレイアウトを解決しない。気づ
  * く手段は `OpenedDocumentEditor` のストーリーの視覚差分だけで、それが成り立つのは**ストー
- * リーが高さの決まった器に入っているとき**に限る（#322。器を外すと撮影範囲の外へ出る）。
+ * リーが高さの決まった器に入っているとき**に限る（器を外すと撮影範囲の外へ出る）。
  *
  * ドックだけのストーリーを立てないのは、積み方そのものがここの判断で、ストーリー側へ写
  * すと本物の積み方が壊れても気づけないため。
@@ -180,7 +180,7 @@ function CanvasDockStack({ children }: Readonly<{ children: ReactNode }>) {
 /**
  * 下端の出し分け。
  *
- * 編集を続けたまま直せる（#128）。一覧は 0 件なら何も出さない。
+ * 編集を続けたまま直せる。一覧は 0 件なら何も出さない。
  *
  * @returns ファイルが不正ならエラー一覧だけ、そうでなければエラー一覧とキャンバスのツールバー
  */
@@ -213,7 +213,7 @@ function CanvasDockContent({
             isReverting={DocumentSaveState.isSaving(fileRevert.saveState)}
           />
           {/*
-            ファイルが不正な間は左ペインが凍る（#135）ので選び直しはできないが、
+            ファイルが不正な間は左ペインが凍るので選び直しはできないが、
             壊れる前に選んでいたトークンの破線はキャンバスに残る。ここへ出さないと、
             破線だけが出て何を指しているか読めない状態が画面に残る。
           */}
@@ -271,7 +271,7 @@ function EditorPanes({
   /*
    * 掴む場所（左ペインのパレット）と落とす場所（キャンバス）が別のペインにあるので、
    * ドラッグの状態は両方の親であるここが持つ。運んでいるものが既存ノードなら移動、
-   * パレットの雛形なら落とした先への挿入になる（#203）。
+   * パレットの雛形なら落とした先への挿入になる。
    */
   const nodeDrag = useNodeDrag({
     document: EditorState.document(state),
@@ -366,7 +366,7 @@ function EditorPanes({
           artboard={artboard}
           dragged={nodeDrag.carriedTemplate}
           /*
-           * 選ぶだけでなく行き先も Layers へ戻す。エラー行からも帯（#209）からも、
+           * 選ぶだけでなく行き先も Layers へ戻す。エラー行からも帯からも、
            * Tokens を見たまま飛ぶことがあり、そのときは選んでもツリーにも
            * プロパティにも出ない（`Go to source component` が Assets へ移すのと同じ形）。
            */
@@ -408,7 +408,7 @@ function EditorBody({
   /*
    * ズーム / パンをここで持つのは、倍率の操作（上部バー）と操作の対象（キャンバス）が
    * 兄弟として並ぶため。パンのたびに 3 ペインまで再レンダーが広がるが、Context へ
-   * 移しても state の位置は変わらないので同じ（#134）。
+   * 移しても state の位置は変わらないので同じ。
    */
   const canvasView = useCanvasView();
 
@@ -449,7 +449,7 @@ function EditorBody({
         <EditorTopBar.Breadcrumb opened={opened} />
         {/*
           ファイルが不正な間は保存状態を出さない。映っているのは最後に正常だった
-          表示で、それがファイルに載っているかどうかは今の関心ではないため（#135）。
+          表示で、それがファイルに載っているかどうかは今の関心ではないため。
         */}
         {FileValidity.isInvalid(fileValidity) ? (
           <EditorTopBar.FileInvalidBadge errors={fileValidity.errors} />
@@ -459,7 +459,7 @@ function EditorBody({
         {/*
           UI 案の Error 画面は倍率の枠を古さの行へ置き換えて倍率を落として
           いるが、倍率は表示の操作でファイルにも編集履歴にも触れないので凍結中も残す
-          （最後に正常だった表示を確かめるのに使える）。古さの行（#183）は右隣に並ぶ。
+          （最後に正常だった表示を確かめるのに使える）。古さの行は右隣に並ぶ。
         */}
         <EditorTopBar.Zoom
           view={canvasView.view}

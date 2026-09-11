@@ -14,7 +14,7 @@ import {
 
 /*
  * 左ペインの行き先の切り替えを、編集画面の配線ごと確かめる
- * （UI 案 docs/Design Composer.html のアイコンレール / #129）。
+ * （UI 案 docs/Design Composer.html のアイコンレール）。
  *
  * レール単体のテストは「押した行き先が伝わる」ところまでしか見ないので、
  * 行き先ごとに左ペインと右ペインへ何が出るかはここでしか通らない。
@@ -59,7 +59,7 @@ test("Assets の行は押しても挿さらない", async () => {
   await goTo(LeftPaneViews.Assets);
 
   /*
-   * UI 案は `Assets` を browse-only とし、挿入をドラッグだけの入口にしている（#203）。
+   * UI 案は `Assets` を browse-only とし、挿入をドラッグだけの入口にしている。
    * 運ぶところまで含めた挿入は `opened-document-editor.asset-drag` が見る。
    */
   await userEvent.click(within(leftPane()).getByText("card"));

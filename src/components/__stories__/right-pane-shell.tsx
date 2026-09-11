@@ -50,7 +50,7 @@ function heightClass(height: RightPaneShellHeight): string {
  * ことを視覚差分に載せるため。
  *
  * 持っている幅は 3 列目（18rem）なので、左ペインのストーリーがこれを着ると 1rem ずれる（左
- * ペインの枠は #304）。
+ * ペインの枠は）。
  *
  * @returns 受け取った中身を、右ペインと同じ幅の枠に入れたもの
  */

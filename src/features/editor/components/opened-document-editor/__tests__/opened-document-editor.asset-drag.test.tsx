@@ -26,7 +26,7 @@ import {
 /*
  * パレット（`Assets`）からキャンバスへ運んで挿す経路を、編集画面の配線ごと確かめる
  * （UI 案 docs/Design Composer.html「Assets is browse-only … Insertion is drag-only and
- * the drop reads as a tree position」/ #203）。
+ * the drop reads as a tree position」）。
  *
  * ここでしか通らないのは、掴む場所（左ペイン）と落とす場所（キャンバス）が別のペインに
  * あり、運んでいる間のポインタを 3 ペインの器が受けるため。キャンバス単体・パレット単体の

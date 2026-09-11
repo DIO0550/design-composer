@@ -103,7 +103,7 @@ export const FontWeight = {
  * `satisfies` が見るのは**キーの過不足と綴り**だけで、キーに割り当てた値がずれてもここでは
  * 落ちない。
  *
- * 並びが要るときは `TypographyToken.fields()` を使い、`Object.values` をそこ 1 箇所に閉じる。
+ * 並びが要るときは `TypographyToken.fields` を使い、`Object.values` をそこ 1 箇所に閉じる。
  */
 export const TypographyFields = {
   FontSize: "fontSize",
@@ -190,8 +190,8 @@ export type TypographyCssProperty = (typeof CssProperties)[TypographyField];
 /** フィールドと CSS プロパティ名の対応。 */
 export const TypographyField = {
   /**
-   * 展開先の CSS プロパティ名。トークンの値には依存しないため、
-   * 参照だけを組み立てる用途(`var()` 参照の生成)ではトークンを持たずに引ける。
+   * 展開先の CSS プロパティ名。トークンの値には依存しないため、参照だけを組み立てる用途
+   * (`var` 参照の生成)ではトークンを持たずに引ける。
    */
   cssProperty(field: TypographyField): TypographyCssProperty {
     return CssProperties[field];

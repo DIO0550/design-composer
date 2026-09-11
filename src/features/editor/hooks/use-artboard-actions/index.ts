@@ -4,8 +4,8 @@ import type { IndexMove } from "@/types/IndexMove";
 /**
  * artboard の操作（docs/06-ui.md「編集操作の一覧」の artboard 操作）。
  *
- * 入口は同じではない。`add` は `Artboards` の一覧の `+` とキャンバスのツールバーの
- * `#` の 2 つから届き（#316）、`reorder` は一覧の行を運ぶ操作しか持たない。
+ * 入口は同じではない。`add` は `Artboards` の一覧の `+` とキャンバスのツールバーの `#` の
+ * 2 つから届き、`reorder` は一覧の行を運ぶ操作しか持たない。
  */
 export type ArtboardActions = Readonly<{
   /** 末尾に 1 枚足して、そのまま見られるよう選択する。 */

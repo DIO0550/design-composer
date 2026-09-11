@@ -49,7 +49,7 @@ export type TokenSet = Readonly<{
  * union と対で export するのは規約(rules/coding.md「値の集合から union を導出する」)。
  *
  * `satisfies` が見るのは**キーの過不足と綴り**だけで、値がずれてもここでは落ちない。並びが
- * 要るときは `TokenSet.kinds()` を使い、`Object.values` をそこ 1 箇所に閉じる。
+ * 要るときは `TokenSet.kinds` を使い、`Object.values` をそこ 1 箇所に閉じる。
  */
 export const TokenKinds = {
   Colors: "colors",

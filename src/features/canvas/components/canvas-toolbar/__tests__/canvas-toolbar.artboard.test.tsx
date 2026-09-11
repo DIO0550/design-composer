@@ -4,7 +4,7 @@ import { expect, test } from "vitest";
 import { renderToolbar, toolbar } from "./setup";
 
 /*
- * artboard を足すスロット（UI 案 docs/Design Composer.html の `#` / #316）。
+ * artboard を足すスロット（UI 案 docs/Design Composer.html の `#`）。
  * プリミティブの挿入とは押せる条件が違うので、観点を分けて見る。
  */
 

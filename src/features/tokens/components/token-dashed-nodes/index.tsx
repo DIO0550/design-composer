@@ -26,7 +26,7 @@ function nodeCountText(count: number): string {
  *
  * 見本を出すのは色だけで（UI 案が描いているのも `#111827` の四角 1 例）、`token-control`
  * の `TokenPreview` は使わない（使うと `token-list` の `PreviewSlot` と 4 枝すべてが重なる）。
- * 飛び先は破線の先頭で、並びは `collectCanvasReferrerNames` が決めている（#209）。
+ * 飛び先は破線の先頭で、並びは `collectCanvasReferrerNames` が決めている。
  *
  * @returns トークン名・破線の本数・先頭へ飛ぶリンクを並べた帯。破線が 1 本も無い
  *   ときと、選んでいるトークンがドキュメントから消えているときは何も出さない
@@ -86,7 +86,7 @@ export function TokenDashedNodes({
         文字サイズを指定しないのは、UI 案の綴りも font-size を持たず帯の 11px を継ぐため。
 
         **この見た目を守るものは無い** — happy-dom はレイアウトを解決せず、視覚差分も
-        リンク 1 本ぶんはしきい値（`--max-diff-ratio 0.002`）未満で通る（#209 で実測）。
+        リンク 1 本ぶんはしきい値（`--max-diff-ratio 0.002`）未満で通る（実測）。
       */}
       <button
         type="button"

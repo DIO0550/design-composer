@@ -651,8 +651,8 @@ export const DesignDocument = {
   /**
    * その名前のものの子として足すときの位置（並びの末尾）。
    *
-   * 足せるかどうかは子の並びを持つかどうかと同じなので `findChildren` に乗せる。
-   * 挿入の可否は木の形で決まるためここが答え、UI が `allowsChildren` を見に行かない（#39）。
+   * 足せるかどうかは子の並びを持つかどうかと同じなので `findChildren` に乗せる。挿入の可否は
+   * 木の形で決まるためここが答え、UI が `allowsChildren` を見に行かない。
    */
   appendPositionOf(
     document: DesignDocument,
@@ -840,9 +840,9 @@ export const DesignDocument = {
    * 今いる位置で相手を確かめるので、どの親の子でもない artboard はここで弾かれる（素通しする
    * と artboard の props に効かない `x` / `y` が黙って書かれる）。
    *
-   * 指した親が今の親と違えば、**その親の末尾の子へ移してから**座標を書く（#388）。絶対
-   * 配置の兄弟に並び順の意味が薄いためで、移す先が今の親と必ず違うので
-   * `ChildPosition.afterRemoving` は要らない。
+   * 指した親が今の親と違えば、**その親の末尾の子へ移してから**座標を書く。絶対配置の兄弟に並
+   * び順の意味が薄いためで、移す先が今の親と必ず違うので `ChildPosition.afterRemoving` は要
+   * らない。
    *
    * @param document 書き換える対象を含むドキュメント
    * @param name 置き直すノードの名前
@@ -1152,7 +1152,7 @@ export const DesignDocument = {
 
   /**
    * そのトークンを参照している箇所をすべて集める（UI 案 docs/Design Composer.html の
-   * `Used by` / #127）。
+   * `Used by`）。
    *
    * artboard の中を先に、部品定義の中を後に並べる。一覧は先頭の数件しか出さないので、選
    * 択やキャンバスから指し示せるものを先に見せる（UI 案は両者を交互に並べているが、それ
@@ -1176,8 +1176,8 @@ export const DesignDocument = {
   },
 
   /**
-   * キャンバスに描かれているものの中から、そのトークンを参照している箇所を集める（#147）。
-   * 走るのは artboard とその配下だけで、インスタンスの先の部品定義へは降りない。
+   * キャンバスに描かれているものの中から、そのトークンを参照している箇所を集める。走るのは
+   * artboard とその配下だけで、インスタンスの先の部品定義へは降りない。
    *
    * @param document 参照元を探すドキュメント
    * @param ref 参照されているかを知りたいトークン

@@ -2,8 +2,8 @@ import type { ReactNode } from "react";
 import type { Option } from "@/utils/Option";
 
 /**
- * レールで選んだ行き先の中身を出すパネル（UI 案 docs/Design Composer.html の 248px のパ
- * ネル。見出しを載せた帯が上に付く / #129）。
+ * レールで選んだ行き先の中身を出すパネル（UI 案 docs/Design Composer.html の 248px のパネ
+ * ル。見出しを載せた帯が上に付く）。
  *
  * 縦スクロールするのはこのパネルだけ。レールは常に全部見えていないと行き先を選べないの
  * で、器（`EditorLayout.LeftPane`）ではなくここでスクロールを受ける。

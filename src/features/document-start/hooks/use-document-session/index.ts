@@ -223,7 +223,7 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
   });
 
   const openDropped = useEffectEvent((paths: readonly string[]) => {
-    // 同時に複数を開くのは #375 でスコープ外なので、先頭だけを開く。
+    // 同時に複数を開くのはスコープ外なので、先頭だけを開く。
     const first = ArrayEx.first(paths);
     if (first.some) {
       openDocumentAt(first.value);

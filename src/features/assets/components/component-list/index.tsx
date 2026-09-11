@@ -45,9 +45,8 @@ function ComponentName({
 }
 
 /**
- * パレットの部品（UI 案 docs/Design Composer.html の `Assets` > `Components`）。各行を
- * 掴んでキャンバスへ落とすとインスタンス（参照ノード）が挿さる（docs/06-ui.md「編集操作
- * の一覧」/ #203）。
+ * パレットの部品（UI 案 docs/Design Composer.html の `Assets` > `Components`）。各行を掴ん
+ * でキャンバスへ落とすとインスタンス（参照ノード）が挿さる（docs/06-ui.md「編集操作の一覧」）。
  *
  * 使用数の綴りだけをここで決める（「使われていない」かどうかは部品の性質なので
  * `ComponentAsset.isUnused` が答える）。絞り込みは行わず、何を出すかは検索欄を持つ

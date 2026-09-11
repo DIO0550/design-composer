@@ -11,9 +11,9 @@ export type FileFilter = Readonly<{
  * ファイルを開く / 保存先を決めるダイアログ（docs/05-architecture.md「ファイルを開くダ
  * イアログ等は Tauri 標準プラグインを使用する」）。
  *
- * `@tauri-apps/plugin-dialog` を import するのはこのファイルだけに保つ（テストの差し替
- * え口が 1 箇所に決まる / #28）。選ばずに閉じた場合をプラグインは `null` で返すが、境界
- * を越えるのは `Option` にする。
+ * `@tauri-apps/plugin-dialog` を import するのはこのファイルだけに保つ（テストの差し替え口
+ * が 1 箇所に決まる）。選ばずに閉じた場合をプラグインは `null` で返すが、境界を越えるのは
+ * `Option` にする。
  */
 export type TauriDialog = Readonly<{
   /** 既存のファイルを 1 つ選ばせる。 */

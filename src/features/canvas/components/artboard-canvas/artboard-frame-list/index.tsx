@@ -33,8 +33,8 @@ const SelectionOutline = `outline:2px solid ${SelectionColor};outline-offset:1px
  * ドロップ先の Box に描く枠。選択の枠と同時に出るので、色（Tailwind の
  * `emerald-500`）と破線で選択と見分けられるようにする。
  *
- * ツリーへ落とすときと座標を置き直すときの両方に出す。座標のドラッグでも
- * 親は付け替わる（#388）ので、どこへ入るかを見せないと目隠しで運ぶことになる。
+ * ツリーへ落とすときと座標を置き直すときの両方に出す。座標のドラッグでも親は付け替わるので、
+ * どこへ入るかを見せないと目隠しで運ぶことになる。
  */
 const DropParentOutline = "outline:2px dashed #10b981;outline-offset:1px";
 
@@ -53,8 +53,8 @@ export const TokenReferrerOutline =
  * ス上の座標（ファイルに座標を持たない artboard だけを配列順に横へ並べる /
  * `ArrangedArtboard`）。
  *
- * トークンはこの並びのルートへ載せる。artboard の出力は `var()` 参照だけを持つので、ト
- * ークンの編集は再コンパイルなしにここの差し替えだけで全 artboard へ波及する。
+ * トークンはこの並びのルートへ載せる。artboard の出力は `var` 参照だけを持つので、トークン
+ * の編集は再コンパイルなしにここの差し替えだけで全 artboard へ波及する。
  *
  * 並べているのは枠なのでそちらを名前に出す。
  */

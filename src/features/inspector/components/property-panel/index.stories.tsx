@@ -160,7 +160,7 @@ const LongNameDocument = DesignDocument.create({
  * 帯と本文を実画面と同じ並びで見る。
  *
  * 帯と本文は編集画面が着せるのと同じもの（`PaneHeading` / `PaneBody`）。ペインの殻も横断層
- * の代わり（`RightPaneShell`）をデコレータで着せる（#300）。
+ * の代わり（`RightPaneShell`）をデコレータで着せる。
  */
 function PropertyPanelPane(
   props: ComponentProps<typeof PropertyPanel.Body>,
@@ -247,8 +247,8 @@ export const LongName: Story = {
 };
 
 /**
- * 外部編集でファイルが壊れているとき（#135）。見出しは選んでいたものを保ったまま、
- * 本文だけが「選択は凍結中」になる（何を選んでいたかは消さない）。
+ * 外部編集でファイルが壊れているとき。見出しは選んでいたものを保ったまま、本文だけが「選択
+ * は凍結中」になる（何を選んでいたかは消さない）。
  */
 export const Frozen: Story = {
   name: "凍結中",

@@ -70,17 +70,16 @@ const AlphaPercentRange: Range = { min: 0, max: 100 };
 /**
  * 保存形式の 2 桁と行き来しても値が変わらない、% の刻み。
  *
- * 0.1% 刻みにすると 256 通りの alpha すべてが同じ 2 桁へ戻る。整数 % だと
- * 155 通りが別の値になり（`#rrggbb01` は 0% を経由して完全な透明になる）、
- * 往復で値が変わらないという仕様（#142）を満たせない。
+ * 0.1% 刻みにすると 256 通りの alpha すべてが同じ 2 桁へ戻る。整数 % だと 155 通りが別の値
+ * になり（`#rrggbb01` は 0% を経由して完全な透明になる）、往復で値が変わらないという仕様を
+ * 満たせない。
  */
 const PercentStepsPerUnit = 10;
 
 export const ColorToken = {
   /**
-   * 正規形は小文字の hex のみ。
-   * CSS 色文字列(`rgb()` / 名前色)を許さないのは、同値異表記の併存を
-   * 構造的に排除するため(docs/04-tokens.md「値の形式」)。
+   * 正規形は小文字の hex のみ。CSS 色文字列(`rgb` / 名前色)を許さないのは、同値異表記の併存
+   * を構造的に排除するため(docs/04-tokens.md「値の形式」)。
    */
   isValid(value: string): boolean {
     return HexColorPattern.test(value);

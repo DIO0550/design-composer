@@ -1,16 +1,16 @@
 import type { ReactNode } from "react";
 
 /**
- * 左ペインが何を映しているか、レールに並ぶ順で（UI 案 docs/Design Composer.html は左端
- * の縦アイコンレールでこれを切り替える / #129）。`Assets` はバイナリ資産ではなく**部品
- * のパレット**で、`docs/06-ui.md` が挙げている「部品一覧」に当たる。
+ * 左ペインが何を映しているか、レールに並ぶ順で（UI 案 docs/Design Composer.html は左端の縦
+ * アイコンレールでこれを切り替える）。`Assets` はバイナリ資産ではなく**部品のパレット**で、
+ * `docs/06-ui.md` が挙げている「部品一覧」に当たる。
  *
  * 配列の `map` は添字だけを見るので影響を受けない。vitest では docgen が走らないので、テス
  * トだけでは気付けない。
  *
  * これが効くのは**`.tsx` で export しているもの**に限る。docgen の既定の対象は
  * `**\/*.tsx` なので、`.ts` で export した定数は `.tsx` から `Object.values` で走査して
- * よい（#105 で Storybook の実表示で確認）。
+ * よい（Storybook の実表示で確認した）。
  */
 const LeftPaneViewOrder = ["layers", "assets", "tokens"] as const;
 

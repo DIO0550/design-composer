@@ -10,7 +10,7 @@ import { AutoSaveDebounceMs } from "../index";
 import { Path, renderAutoSave, waitDebounce } from "./setup";
 
 /*
- * 外部編集でファイルが不正になっている間は書き出さないこと（#155）。
+ * 外部編集でファイルが不正になっている間は書き出さないこと。
  *
  * 映っているのは最後に正常だった表示なので、書き出すと**より新しい外部の書き込みを
  * 古い内容で潰す**（docs/05-architecture.md「競合の解決」の last-write-wins から外れる）。

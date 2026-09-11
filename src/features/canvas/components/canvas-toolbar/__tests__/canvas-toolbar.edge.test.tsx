@@ -25,7 +25,7 @@ test("押せないときはどのプリミティブの追加ボタンからも�
   renderToolbar({ isInsertEnabled: false });
 
   // `component-list` は「挿入できます」。揺れているのはボタンの動詞のほうで、
-  // 揃えるなら両方の入口の語彙を決め直す別の単位になる（#112）。
+  // 揃えるなら両方の入口の語彙を決め直す別の単位になる。
   expect(
     primitiveInsertButtons().map((button) => button.getAttribute("title")),
   ).toEqual([

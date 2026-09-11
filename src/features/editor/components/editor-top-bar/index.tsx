@@ -14,7 +14,7 @@ import { Option } from "@/utils/Option";
 
 /**
  * 帯全体の色味。ファイルが不正な間は帯ごと赤へ振れる（UI 案 docs/Design Composer.html の
- * Error 画面は帯の地を `#fff6f6`、下線を `#f5d5d5`、パンくずまで赤系にする / #135）。
+ * Error 画面は帯の地を `#fff6f6`、下線を `#f5d5d5`、パンくずまで赤系にする）。
  */
 export const EditorTopBarTones = {
   Normal: "Normal",

@@ -16,9 +16,9 @@ export type NodeTemplate =
  * 挿入直後のプリミティブに入れる props。
  *
  * スキーマの既定値（Box は widthMode / heightMode が `hug`、Text は `content` が空文字）に
- * 委ねると、中身の無いノードは矩形が潰れてキャンバス上に現れない。掴めないノードは
- * 選択もダブルクリックによるインライン編集もできず、挿入した結果を確かめられないため、
- * 挿入時に限って初期値を与える（#39）。
+ * 委ねると、中身の無いノードは矩形が潰れてキャンバス上に現れない。掴めないノードは選択もダ
+ * ブルクリックによるインライン編集もできず、挿入した結果を確かめられないため、挿入時に限っ
+ * て初期値を与える。
  */
 const InitialProps = {
   Box: { widthMode: "fixed", width: 120, heightMode: "fixed", height: 80 },
@@ -29,9 +29,9 @@ export const NodeTemplate = {
   /**
    * 採番の元になる名前。
    *
-   * プリミティブは型名を小文字にしたもの（`Box` → `box`）。インスタンスは部品名そのもの。
-   * どちらも名前空間の識別子の規則（kebab-case）を満たす形で、
-   * 衝突したときの連番は `DesignDocument.uniqueName` が付ける（#12）。
+   * プリミティブは型名を小文字にしたもの（`Box` → `box`）。インスタンスは部品名そのもの。ど
+   * ちらも名前空間の識別子の規則（kebab-case）を満たす形で、衝突したときの連番は
+   * `DesignDocument.uniqueName` が付ける。
    */
   baseName(template: NodeTemplate): string {
     return template.kind === "primitive"

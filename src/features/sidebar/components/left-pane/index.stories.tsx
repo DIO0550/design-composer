@@ -79,8 +79,7 @@ export const Tokens: Story = {
 };
 
 /**
- * パレットの行を掴んでキャンバスへ運んでいる `Assets`（#203）。
- * 掴んでいる行だけが青くなる。
+ * パレットの行を掴んでキャンバスへ運んでいる `Assets`。掴んでいる行だけが青くなる。
  */
 export const AssetsGrabbed: Story = {
   name: "Assets（行を掴んで運んでいる）",
@@ -102,8 +101,8 @@ export const LayersSelected: Story = {
 };
 
 /**
- * 外部編集でファイルが壊れているときの `Layers`（#135）。見出しの右端が `凍結中` に
- * なる。淡色と操作不可は器（`EditorLayout.LeftPane`）が持つので、ここには出ない。
+ * 外部編集でファイルが壊れているときの `Layers`。見出しの右端が `凍結中` になる。淡色と操
+ * 作不可は器（`EditorLayout.LeftPane`）が持つので、ここには出ない。
  */
 export const LayersFrozen: Story = {
   name: "Layers（凍結中）",

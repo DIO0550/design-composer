@@ -4,7 +4,7 @@ import type { Instant } from "@/domains/unit/instant";
 import { Option } from "@/utils/Option";
 
 /**
- * 開いているファイルが、今画面に映っているドキュメントとして読めるか（docs/03-schema.md 「不
+ * 開いているファイルが、今画面に映っているドキュメントとして読めるか（docs/03-schema.md「不
  * 正ファイル時の挙動」）。
  */
 export type FileValidity = Readonly<{ kind: "valid" }> | InvalidFileValidity;

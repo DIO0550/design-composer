@@ -6,9 +6,8 @@ import { type DocumentIpc, toDocumentAccessFailure } from "@/libs/document-ipc";
 import { DocumentJson } from "@/libs/document-json";
 
 /**
- * 編集が止まってからファイルへ書き出すまでの待ち時間
- * （docs/05-architecture.md「保存モデル: 自動保存」）。
- * 自動保存の間隔はこの 1 箇所で決める（#29）。
+ * 編集が止まってからファイルへ書き出すまでの待ち時間（docs/05-architecture.md「保存モデル:
+ * 自動保存」）。自動保存の間隔はこの 1 箇所で決める。
  */
 export const AutoSaveDebounceMs = 500;
 

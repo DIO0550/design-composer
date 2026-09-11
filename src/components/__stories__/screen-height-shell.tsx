@@ -3,9 +3,9 @@ import type { ReactElement, ReactNode } from "react";
 /**
  * ストーリーの中で、高さを親に合わせる画面の器に画面の高さを与える殻。
  *
- * 画面いっぱいに広がる器（`EditorLayout` / `OpenedDocumentEditor` / `DocumentStart`）は
- * 高さを親に合わせるが、ストーリーは素の `#storybook-root`（高さ auto）へ描くため、これ
- * を被せないと `h-full` が中身の高さに解決されて実画面と違う絵になる（#322 / #344）。
+ * 画面いっぱいに広がる器（`EditorLayout` / `OpenedDocumentEditor` / `DocumentStart`）は高
+ * さを親に合わせるが、ストーリーは素の `#storybook-root`（高さ auto）へ描くため、これを被
+ * せないと `h-full` が中身の高さに解決されて実画面と違う絵になる。
  *
  * 本物の画面がこの器の上に積むもの（`EditorTopBar` 等）は写さない。入れると、その帯を触
  * っただけで使う側のストーリーの絵が動く。

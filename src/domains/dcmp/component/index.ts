@@ -84,8 +84,8 @@ export type Component = Readonly<{
 export type ComponentSet = Readonly<Record<string, Component>>;
 
 /**
- * パレットに 1 件として並ぶ部品（UI 案 docs/Design Composer.html の `Assets`。
- * ここでの `Assets` はバイナリ資産ではなく**部品のパレット**を指す / #129）。
+ * パレットに 1 件として並ぶ部品（UI 案 docs/Design Composer.html の `Assets`。ここでの
+ * `Assets` はバイナリ資産ではなく**部品のパレット**を指す）。
  *
  * 1 件が答えるのは「どの部品を・何を差し替えられて・どれだけ使われているか」。
  * 名前だけでも、公開 prop だけでも、回数だけでも答えにならないため 3 つで 1 つの値にする。

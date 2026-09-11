@@ -3,7 +3,7 @@
  *
  * record にしているので素の `number` は代入できない。
  *
- * `libs/` は `features/` を import できないので `features/editor/domains/` には置けない（#183）。
+ * `libs/` は `features/` を import できないので `features/editor/domains/` には置けない。
  */
 export type Instant = Readonly<{ epochMs: number }>;
 

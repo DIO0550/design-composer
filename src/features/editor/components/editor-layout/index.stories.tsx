@@ -14,7 +14,7 @@ const meta = {
   title: "features/editor/EditorLayout",
   component: EditorLayout,
   parameters: { layout: "fullscreen" },
-  // 殻が無いと 3 ペインが中身の高さ（24px）まで潰れ、本物の画面と違うものが映る（#344）。
+  // 殻が無いと 3 ペインが中身の高さ（24px）まで潰れ、本物の画面と違うものが映る。
   decorators: [
     (Story) => (
       <ScreenHeightShell>
@@ -47,11 +47,11 @@ export const Default: Story = {
 };
 
 /**
- * ファイルが不正で表示を凍結した 3 ペイン（#135）。凍結が掛かるのは左右のペインだけで、
- * キャンバスは自前でスクリムを持つ。
+ * ファイルが不正で表示を凍結した 3 ペイン。凍結が掛かるのは左右のペインだけで、キャンバス
+ * は自前でスクリムを持つ。
  *
  * 淡色そのものはここでは比べられない。ペインの中身が白地の文字だけなので、
- * `FrozenPaneClass` を落としても視覚差分が閾値に届かない（実測 0.0004 / 閾値 0.002。#346）。
+ * `FrozenPaneClass` を落としても視覚差分が閾値に届かない（実測 0.0004 / 閾値 0.002）。
  */
 export const Frozen: Story = {
   name: "凍結した3ペイン",

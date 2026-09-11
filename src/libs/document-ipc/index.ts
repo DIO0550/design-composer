@@ -10,10 +10,10 @@ import { Result } from "@/utils/Result";
 /**
  * 失敗の種類。
  *
- * `notFound` 〜 `io` は Rust の `DocumentIoError`（`src-tauri/src/document/io/error.rs`）と
- * 対の語彙。`ipcFailed` だけは TS 側の追加で、Rust のコマンドに届く前後で起きた失敗を指す
- * （コマンド未登録・引数のデシリアライズ失敗・想定外の戻り値）。これらを `io` に丸めると
- * 「ファイル I/O が失敗した」という別の意味になるため分けている（#28）。
+ * `notFound` 〜 `io` は Rust の `DocumentIoError`（`src-tauri/src/document/io/error.rs`）
+ * と対の語彙。`ipcFailed` だけは TS 側の追加で、Rust のコマンドに届く前後で起きた失敗を指
+ * す（コマンド未登録・引数のデシリアライズ失敗・想定外の戻り値）。これらを `io` に丸めると
+ * 「ファイル I/O が失敗した」という別の意味になるため分けている。
  */
 export type DocumentIpcErrorKind =
   | "notFound"
@@ -254,7 +254,7 @@ export const DocumentIpc = {
             DocumentChangedEvent,
             (payload) => {
               // 形が合わない値は配らない。ドキュメント変更として渡せる中身が無く、
-              // イベントのコールバックには失敗を返す相手もいないため（#28）。
+              // イベントのコールバックには失敗を返す相手もいないため。
               const changed = toDocumentChanged(payload);
               if (changed.some) {
                 listener(changed.value);

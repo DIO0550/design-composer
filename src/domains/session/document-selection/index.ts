@@ -114,8 +114,8 @@ export const DocumentSelection = {
   /**
    * 1 つだけ選んでいるときの、その正体（名前と種別）。
    *
-   * 名前を渡して種別を引き直させると、artboard かノードかの場合分けが features 層へ出る（`rules/coding.md`
-   * 「features 層にドメイン知識を書かない」）。
+   * 名前を渡して種別を引き直させると、artboard かノードかの場合分けが features 層へ出る
+   * （`rules/coding.md`「features 層にドメイン知識を書かない」）。
    *
    * @param selection 選択とドキュメントの出どころ
    * @returns 単一選択ならその名前と種別。未選択・複数選択のとき、および名前が

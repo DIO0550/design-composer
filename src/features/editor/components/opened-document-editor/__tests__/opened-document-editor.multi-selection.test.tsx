@@ -105,7 +105,7 @@ test("キャンバスの空き領域から範囲を引くと、範囲に入っ�
   /*
    * ここでしか見られないのは配線そのもの。`EditorState.selectNodes` も
    * `ArtboardCanvas` の通知も個別には緑にできるが、`useNodeActions` から reducer までの
-   * どこかが切れていれば範囲を引いても選択が変わらない（#411）。
+   * どこかが切れていれば範囲を引いても選択が変わらない。
    */
   await renderOpenedDocument(setupDocument());
   stubBounds(drawn("home-title"), {
@@ -135,7 +135,7 @@ test("キャンバスの空き領域から範囲を引くと、範囲に入っ�
 
 test("範囲を引いている間、離す前からツリーの選択行が追随する", async () => {
   /*
-   * 離してから選ぶ形だと、何が選ばれるのかを引きながら確かめられない（#467 のレビュー）。
+   * 離してから選ぶ形だと、何が選ばれるのかを引きながら確かめられない（レビュー指摘）。
    * 配線の通しで見るのは、選択そのものを動かしているから（見た目だけの別経路ではない）。
    */
   await renderOpenedDocument(setupDocument());

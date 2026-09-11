@@ -12,7 +12,7 @@ import type { Clock } from "@/libs/clock";
 
 /**
  * 最近開いたファイル。保存先が決まるまでは常に空
- * （どこに残すかは #376 の担当で、この画面は受け取った一覧を並べるだけ）。
+ * （どこに残すかは別の担当で、この画面は受け取った一覧を並べるだけ）。
  */
 const RecentPaths: readonly string[] = [];
 

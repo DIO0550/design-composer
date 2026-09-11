@@ -13,7 +13,7 @@ export type ElapsedUnit = ValueOf<typeof ElapsedUnits>;
 
 /**
  * 経過時間を 1 つの単位で読んだもの（UI 案 docs/Design Composer.html の Error 画面の
- * `4s ago` / #183）。
+ * `4s ago`）。
  *
  * 綴りは表示側（上部バー）が持つ。
  */

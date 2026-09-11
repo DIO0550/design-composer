@@ -6,8 +6,8 @@ import type { AssetGrab } from "@/features/assets/types/AssetGrab";
 const GrabHint = "drag";
 
 /**
- * パレットのプリミティブ（UI 案 docs/Design Composer.html の `Assets` > `Primitives`）。
- * 行は掴んでキャンバスへ落とす起点で、押しても何も挿さらない（#203）。
+ * パレットのプリミティブ（UI 案 docs/Design Composer.html の `Assets` > `Primitives`）。行
+ * は掴んでキャンバスへ落とす起点で、押しても何も挿さらない。
  *
  * 絞り込みは行わない（何を出すかは検索欄を持つ `AssetsPanel` が決める）。1 件も無いとき
  * も節は残し、「一致するものが無い」は `AssetsPanel` が 1 箇所で伝える。

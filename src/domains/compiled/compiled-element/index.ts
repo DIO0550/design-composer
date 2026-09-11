@@ -44,8 +44,8 @@ const TokenPropProperties = {
 type TokenBackedProp = keyof typeof TokenPropProperties;
 
 /**
- * トークン参照 prop を `var()` 参照の宣言にする。未指定の prop は宣言を出力しない
- * (トークンの値は参照しないため、トークン編集は再コンパイルなしに CSS 経由で波及する)。
+ * トークン参照 prop を `var` 参照の宣言にする。未指定の prop は宣言を出力しない (トークン
+ * の値は参照しないため、トークン編集は再コンパイルなしに CSS 経由で波及する)。
  *
  * @param prop 宣言にする prop 名
  * @param value その prop に設定されている値。未設定なら宣言を出さない
@@ -97,8 +97,8 @@ function overflowDeclarations(
 }
 
 /**
- * typography は複合トークンなので、フィールドごとの CSS プロパティへ展開する。
- * 走査対象は `TypographyToken.fields()` に従うため、トークンのフィールドが増えても追従漏れが出ない。
+ * typography は複合トークンなので、フィールドごとの CSS プロパティへ展開する。走査対象は
+ * `TypographyToken.fields` に従うため、トークンのフィールドが増えても追従漏れが出ない。
  *
  * @param typography `typography` prop に設定されているトークン名。未設定なら宣言を出さない
  * @param tokens カスタムプロパティ名の綴り方

@@ -18,21 +18,21 @@ import { EditorState } from "@/features/editor/domains/editor-state";
 export type NodeActions = Readonly<{
   select: (name: string) => void;
   selectAt: (names: readonly string[], dig: SelectionDig) => void;
-  /** キャンバスの範囲選択で、範囲に重なったものをまとめて選ぶ（#411）。 */
+  /** キャンバスの範囲選択で、範囲に重なったものをまとめて選ぶ。 */
   selectNodes: (names: readonly string[]) => void;
   clearSelection: () => void;
-  /** エラー行から、そのエラーが指すノードを見せる（#136）。 */
+  /** エラー行から、そのエラーが指すノードを見せる。 */
   reveal: (nodeName: string) => void;
   reorder: (from: ChildPosition, toIndex: number) => void;
   move: (name: string, to: ChildPosition) => void;
-  /** 絶対配置のノードを、指した親の中の座標へ置き直す（#381 / 親の付け替えは #388）。 */
+  /** 絶対配置のノードを、指した親の中の座標へ置き直す（親の付け替えは）。 */
   reposition: (name: string, to: ChildPlacement) => void;
-  /** artboard をキャンバス上の別の位置へ置き直す（#390）。 */
+  /** artboard をキャンバス上の別の位置へ置き直す。 */
   repositionArtboard: (name: string, canvasPosition: Offset) => void;
   resize: (sizes: readonly AxisLength[]) => void;
   editProp: (edit: PropEdit) => void;
   insert: (template: NodeTemplate) => void;
-  /** パレットから運んできたものを、落とした先のツリー位置へ挿す（#203）。 */
+  /** パレットから運んできたものを、落とした先のツリー位置へ挿す。 */
   insertAt: (template: NodeTemplate, at: ChildPosition) => void;
   detachInstance: () => void;
   /** 同じ部品を指すインスタンスをまとめて選ぶ（`Select all N instances`）。 */
@@ -82,14 +82,14 @@ export function useNodeActions(): NodeActions {
      */
     move: (name, to) => dispatch({ type: "move_node", name, to }),
     /**
-     * 運んでいるノードが絶対配置なら、同じドラッグが座標の置き直しになる（#381）。どちら
-     * になるかはキャンバス側が運んでいるノードの配置を見て決める。
+     * 運んでいるノードが絶対配置なら、同じドラッグが座標の置き直しになる。どちらになるかはキャ
+     * ンバス側が運んでいるノードの配置を見て決める。
      *
-     * 落とし先の親も一緒に届くので、親をまたいで運べば付け替わる（#388）。
+     * 落とし先の親も一緒に届くので、親をまたいで運べば付け替わる。
      */
     reposition: (name, to) => dispatch({ type: "reposition_node", name, to }),
     /**
-     * artboard の見出し・背景を掴んだドラッグはキャンバス上の移動（#390 / #392）。
+     * artboard の見出し・背景を掴んだドラッグはキャンバス上の移動。
      */
     repositionArtboard: (name, canvasPosition) =>
       dispatch({ type: "reposition_artboard", name, canvasPosition }),

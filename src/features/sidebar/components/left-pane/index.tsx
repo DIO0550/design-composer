@@ -54,7 +54,7 @@ function LeftPaneContent({
           {/*
             UI 案（docs/Design Composer.html）の `Layers` パネルは、artboard の一覧を
             上段に、選んだ 1 枚の中身を下段に置く。プリミティブを挿す入口はキャンバスに
-            浮かぶツールバーが持ち（#112）、部品はパレットの行を掴んで落とす（#203）ので、
+            浮かぶツールバーが持ち、部品はパレットの行を掴んで落とすので、
             どちらもここには並べない。
           */}
           <ArtboardList
@@ -126,8 +126,8 @@ function leftPaneFooter({
 }
 
 /**
- * 左ペイン（UI 案 docs/Design Composer.html は 56px のレールと 248px の見出し付きパネル
- * を横に並べる / #129）。レールで選んだ行き先の中身をパネルへ出す。
+ * 左ペイン（UI 案 docs/Design Composer.html は 56px のレールと 248px の見出し付きパネルを
+ * 横に並べる）。レールで選んだ行き先の中身をパネルへ出す。
  *
  * ここが握ると右ペインから読めなくなるので、両ペインを組む側（`opened-document-editor`）に
  * 置いてもらう。

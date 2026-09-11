@@ -4,8 +4,8 @@ import type { NodeDragHandlers } from "@/features/canvas";
 type PaneProps = Readonly<{ children: ReactNode }>;
 
 /**
- * ファイルが不正な間、映っているものはファイルの現在の中身ではない（#135）。
- * 左右のペインはその表示を凍結したことを見た目で示す。
+ * ファイルが不正な間、映っているものはファイルの現在の中身ではない。左右のペインはその表示
+ * を凍結したことを見た目で示す。
  */
 type FreezablePaneProps = PaneProps & Readonly<{ isFrozen: boolean }>;
 
@@ -16,11 +16,10 @@ type FreezablePaneProps = PaneProps & Readonly<{ isFrozen: boolean }>;
  * UI 案でアイコンレールだけは `saturate` を持たないが、実装ではレールを含む `<aside>` へま
  * とめて掛けている。
  *
- * **この class を落としても凍結の判定は動いたままで、テストは 1 件も落ちない。** 気づく
- * 手段は `OpenedDocumentEditor / ファイルが不正になった編集画面` の視覚差分だけ（#344
- * で実測 0.0031。閾値 0.002 に対して 1.5 倍しか余裕が無い）。
- * `EditorLayout / 凍結した3ペイン` は数えない（中身が白地の文字だけで差が 0.0004 にしか
- * ならない / #346）。
+ * **この class を落としても凍結の判定は動いたままで、テストは 1 件も落ちない。** 気づく手
+ * 段は `OpenedDocumentEditor / ファイルが不正になった編集画面` の視覚差分だけ（実測 0.0031。
+ * 閾値 0.002 に対して 1.5 倍しか余裕が無い）。`EditorLayout / 凍結した3ペイン` は
+ * 数えない（中身が白地の文字だけで差が 0.0004 にしかならない）。
  */
 const FrozenPaneClass = "opacity-45 saturate-[0.4]";
 
@@ -50,8 +49,8 @@ function EditorLayoutRoot({
 }
 
 /**
- * 左ペイン（UI 案 docs/Design Composer.html は 56px のレールと 248px のパネルを横に並べ
- * る。あわせて 19rem / #129）。
+ * 左ペイン（UI 案 docs/Design Composer.html は 56px のレールと 248px のパネルを横に並べる。
+ * あわせて 19rem）。
  *
  * 器はスクロールを持たず、中身（パネル）が自分でスクロールする（ここで受けると常に見え
  * ている必要のあるレールまで一緒に流れる）。

@@ -54,8 +54,8 @@ export const Blur = {
  * `ShadowField` はここから導出し、フィールドを二重管理しない。
  *
  * `satisfies` が見るのは**キーの過不足と綴り**だけで、キーに割り当てた値がずれてもここでは
- * 落ちない。並びが要るときは `ShadowToken.fields()` を使い、`Object.values` をそこ 1 箇所
- * に閉じる。
+ * 落ちない。並びが要るときは `ShadowToken.fields` を使い、`Object.values` をそこ 1 箇所に
+ * 閉じる。
  */
 export const ShadowFields = {
   X: "x",

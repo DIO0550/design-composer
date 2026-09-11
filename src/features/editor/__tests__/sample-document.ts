@@ -70,9 +70,9 @@ export const SampleDocument = DesignDocument.create({
 /**
  * `home-title` が居ないトークンを指している `SampleDocument`。
  *
- * パースは通り、スキーマ検証だけが落ちる。指す先が `SampleDocument` にも在るので、
- * エラー行から該当ノードへ飛ぶ経路が成立する（#136）。
- * トークン参照は `var()` に落ちるだけなのでコンパイルは通り、キャンバスも普通に描ける。
+ * パースは通り、スキーマ検証だけが落ちる。指す先が `SampleDocument` にも在るので、エラー行
+ * から該当ノードへ飛ぶ経路が成立する。トークン参照は `var` に落ちるだけなのでコンパイルは
+ * 通り、キャンバスも普通に描ける。
  */
 export const SampleDocumentWithDanglingToken = Result.unwrap(
   DesignDocument.applyPropEdit(
@@ -89,8 +89,7 @@ export const MissingComponent = "居ない部品";
  * `home-login` が居ない部品を指している `SampleDocument`。`DocumentHtml.compile` が失敗
  * するのでキャンバスが 1 枚も描けない。
  *
- * 開いた直後からこの状態になりうるようになったので（#158）、そこでも直せることを確かめ
- * る側が使う。
+ * 開いた直後からこの状態になりうるようになったので、そこでも直せることを確かめる側が使う。
  */
 const MissingComponentInstance: RefNode = {
   name: "home-login",

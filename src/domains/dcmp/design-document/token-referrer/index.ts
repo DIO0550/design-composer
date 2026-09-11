@@ -18,8 +18,8 @@ import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 
 /**
- * トークンを参照している箇所1件（UI 案 docs/Design Composer.html の `Used by` の行 /
- * #127）。名前と prop 名は片方だけでは参照箇所が決まらないため対で持つ。
+ * トークンを参照している箇所1件（UI 案 docs/Design Composer.html の `Used by` の行）。名前
+ * と prop 名は片方だけでは参照箇所が決まらないため対で持つ。
  *
  * 名前だけを持たせると表示側がドキュメントを引き直し、「参照元として集めたのに引けない」起
  * こり得ない不在が表示側に生じる。
@@ -222,9 +222,8 @@ export const TokenReferrer = {
   /**
    * artboard 1枚の中で、そのトークンを参照している箇所を集める。
    *
-   * artboard 自身の props も対象。受け付ける prop の定義は `Artboard.propDefinitions()`
-   * が持つので Box スキーマを直に見ない（artboard が受け付ける prop の唯一の答えがそち
-   * らだから）。
+   * artboard 自身の props も対象。受け付ける prop の定義は `Artboard.propDefinitions` が持つ
+   * ので Box スキーマを直に見ない（artboard が受け付ける prop の唯一の答えがそちらだから）。
    *
    * ただし検証側（`validation` の `collectArtboardErrors`）は Box スキーマを照らしており、
    * artboard だけ照らす先が 2 通りある。artboard 固有の既定がトークンを指した時点で参照元

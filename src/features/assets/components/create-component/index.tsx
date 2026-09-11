@@ -4,9 +4,9 @@ import { Componentization } from "@/features/assets/domains/componentization";
 import { Option } from "@/utils/Option";
 
 /**
- * フッターの綴りは UI 案 docs/Design Composer.html の `Assets` / `Assets · Instance`
- * 画面から採る。`artboard` と `unselected` の 2 行は UI 案が描いていない状態なので、
- * インスタンスの行と同じ言い回しに揃えてここで決めた（#131）。
+ * フッターの綴りは UI 案 docs/Design Composer.html の `Assets` / `Assets · Instance` 画面
+ * から採る。`artboard` と `unselected` の 2 行は UI 案が描いていない状態なので、インスタン
+ * スの行と同じ言い回しに揃えてここで決めた。
  */
 const Labels = {
   create: "Create component",
@@ -140,7 +140,7 @@ function ReadyBody({
     componentName,
   );
   /*
-   * 凍結中（#155）を重ねるのは、左ペインが `inert` のまま描かれ続けるため。
+   * 凍結中を重ねるのは、左ペインが `inert` のまま描かれ続けるため。
    * ここで見ないと、押せない状態のボタンが押せる見た目で残る。
    */
   const isCreatable = !isFrozen && isUsableName;
@@ -191,7 +191,9 @@ export function CreateComponent({
   document: DesignDocument;
   /** 選ばれている 1 つの名前。何も選んでいない・複数選んでいるなら不在 */
   singleName: Option<string>;
-  /** ファイルが不正な間の凍結（#155）。左ペインが `inert` のまま描かれ続けるので UI 側でも見る */
+  /**
+   * ファイルが不正な間の凍結。左ペインが `inert` のまま描かれ続けるので UI 側でも見る
+   */
   isFrozen: boolean;
   onCreate: (componentName: string) => void;
 }>) {

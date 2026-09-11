@@ -18,7 +18,7 @@ import { drawn, renderOpenedDocument, tree } from "./setup";
 
 /*
  * キャンバスで運んだ結果がドキュメントへ届き、描き直されるまでを編集画面の配線ごと
- * 確かめる（#381）。
+ * 確かめる。
  *
  * ここでしか通らないのは、`onReposition` → `reposition_node` → 再コンパイルまでを
  * 通して CSS の `left` / `top` が動くところを見るため。キャンバス単体
@@ -33,7 +33,7 @@ import { drawn, renderOpenedDocument, tree } from "./setup";
  * 末尾のノードを末尾へ移す木の移動は元と同じ並びになるので、座標の置き直しを丸ごと壊しても
  * テストが通ってしまう。
  *
- * `settings` は親の付け替え先（#388）。
+ * `settings` は親の付け替え先。
  */
 function setupDocument(): DesignDocument {
   return DesignDocument.create({

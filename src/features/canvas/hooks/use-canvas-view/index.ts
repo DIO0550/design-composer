@@ -76,9 +76,9 @@ function wheelAction(event: WheelEvent): CanvasViewAction {
 /**
  * ホイールをキャンバスの操作として扱う。
  *
- * React の `onWheel` は passive で登録されるため `preventDefault()` が効かず、ctrl + ホイ
- * ールがブラウザ側のページズームも同時に起こしてしまう。要素の props で受けられないのはこ
- * の 1 点のためで、対象は `surface` 自身に限る。
+ * React の `onWheel` は passive で登録されるため `preventDefault` が効かず、ctrl + ホイー
+ * ルがブラウザ側のページズームも同時に起こしてしまう。要素の props で受けられないのはこの
+ * 1 点のためで、対象は `surface` 自身に限る。
  *
  * @param surface ホイールの登録先になるキャンバスの土台
  * @param dispatch 読み替えたアクションの送り先

@@ -12,8 +12,8 @@ import type { Offset } from "@/domains/unit/offset";
 export type ParentShift = Readonly<{ name: string; shift: Offset }>;
 
 /**
- * 絶対配置のノードを運んで離したときの行き先（#388）。
- * ツリーへ落とすときの `DropTarget` と対になる、座標で動かすときの落とし先。
+ * 絶対配置のノードを運んで離したときの行き先。ツリーへ落とすときの `DropTarget` と対になる、
+ * 座標で動かすときの落とし先。
  *
  * 書かれる座標（`to`）と、運んでいる間に見た目をずらす量（`offset`）を対で持つ。
  * 親を付け替えると座標の原点が変わるので、**画面上の位置を変えない**ために

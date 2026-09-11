@@ -92,7 +92,7 @@ export async function fixFileExternally(fake: DocumentIpcFake): Promise<void> {
  *
  * `breakFileExternally` の壊し方（字句スキャンで落ちる）ではエラーの場所が文字位置になり、
  * ノードを指す行が 1 つも出ない。エラー行から該当ノードへ飛ぶ経路を確かめるにはノードを指
- * すエラーが要る（#136）ので、`SampleDocumentWithDanglingToken` を書き込む。
+ * すエラーが要るので、`SampleDocumentWithDanglingToken` を書き込む。
  */
 export async function invalidateFileExternally(
   fake: DocumentIpcFake,
@@ -107,8 +107,7 @@ export async function invalidateFileExternally(
 /**
  * キャンバス。同じ名前がツリーにも出るので絞るのに使う。
  *
- * キャンバスのツールバーもこの中にあり、絞らないと左ペインへ置き戻す実装でも通ってしまう
- * （#112）。
+ * キャンバスのツールバーもこの中にあり、絞らないと左ペインへ置き戻す実装でも通ってしまう。
  */
 export function canvasPane(): HTMLElement {
   return screen.getByRole("main", { name: "キャンバス" });
@@ -133,8 +132,8 @@ export function fileErrorList(): HTMLElement {
 }
 
 /**
- * 下端に出ている、ドキュメント自身の不正の一覧。編集で作ったものと、開いた時点で
- * 既にあったもの（#158）の両方がここに出る。
+ * 下端に出ている、ドキュメント自身の不正の一覧。編集で作ったものと、開いた時点で既にあった
+ * ものの両方がここに出る。
  */
 export function documentErrorList(): HTMLElement {
   return screen.getByRole("alert", { name: "ドキュメントのエラー一覧" });
@@ -161,8 +160,8 @@ export function tree(): HTMLElement {
 }
 
 /**
- * artboard の一覧の領域。artboard はツリーの行ではなく上段の一覧に並ぶので（#112）、
- * 選ぶのも今どれを見ているかを読むのもこちらから行う。
+ * artboard の一覧の領域。artboard はツリーの行ではなく上段の一覧に並ぶので、選ぶのも今どれ
+ * を見ているかを読むのもこちらから行う。
  */
 export function artboardList(): HTMLElement {
   return screen.getByRole("region", { name: "artboard 一覧" });

@@ -6,7 +6,7 @@ import { DocumentSelection } from "@/domains/session/document-selection";
 import { injectedStyles, renderCanvas, resizeHandles } from "./setup";
 
 /*
- * 外部編集でファイルが壊れている間のキャンバス（#135）。
+ * 外部編集でファイルが壊れている間のキャンバス。
  *
  * ハンドルを出さないことと、選択の枠を残すことは対で決めた判断なので、
  * 片方だけを見ると（枠まで消す実装 / ハンドルを出したままの実装のどちらかが）通ってしまう。

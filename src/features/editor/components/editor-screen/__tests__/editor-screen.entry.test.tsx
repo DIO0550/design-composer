@@ -64,7 +64,7 @@ test("ファイルを開くと、上端の帯で開いているファイルが�
 });
 
 /*
- * #374 の症状。以前は常設のツールバーと上端の帯が並んで banner が 2 つあった。
+ * 以前は常設のツールバーと上端の帯が並んで banner が 2 つあった。
  * 開いた後にしか起きないので、開いてから数える。
  */
 test("ファイルを開いても、上端の帯は 1 つだけ", async () => {
@@ -86,7 +86,7 @@ test("新規作成すると、雛形の部品を持つドキュメントが開�
 
   await startCreate(observer);
 
-  // 雛形の部品はパレットに出るので、左ペインを Assets へ切り替えてから見る（#129）。
+  // 雛形の部品はパレットに出るので、左ペインを Assets へ切り替えてから見る。
   await userEvent.click(screen.getByRole("button", { name: "Assets" }));
 
   const leftPane = screen.getByRole("complementary", { name: "左ペイン" });
