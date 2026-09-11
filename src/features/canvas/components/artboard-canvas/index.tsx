@@ -202,8 +202,8 @@ export function ArtboardCanvas({
     // これを落とすとスクリムが中央ペインいっぱいに広がるが、テストは 1 件も落ちない。
     // overflow-hidden はハンドルを切るため。パンで選択中のものを画面外へ出したときに、
     // 左右のペインの上へハンドルが残らないようにする。
-    // biome-ignore lint/a11y/noStaticElementInteractions: 器は空き領域の右クリックを受けるだけで、活性化できるものではない（キーボードから選べるのは artboard の枠 / `artboard-frame`）
-    <div
+    <section
+      aria-label="キャンバスの面"
       ref={canvasAreaRef}
       /*
        * ここまで上がってくる右クリックは空き領域を押したとき（artboard の枠と見出しは
@@ -212,6 +212,9 @@ export function ArtboardCanvas({
        * **土台（`canvas-surface`）ではなくこの器で受ける。** 掴めるリサイズハンドルと文言
        * の入力欄は土台の外にあり、土台で受けると**そこだけアプリのメニューが出ずブラウザ
        * の既定メニューが出る**（ハンドルは選択の枠の辺に重なるので普通に踏む）。
+       *
+       * `div` ではなく名前付きの `section` にしているのは、マウス操作を受ける器に役割が
+       * 要るため（左ペインの `ツリー` / `artboard 一覧` と同じ形の領域）。
        */
       onContextMenu={(event) => openContextMenu(event, [])}
       className="relative flex h-full flex-col overflow-hidden"
@@ -356,6 +359,6 @@ export function ArtboardCanvas({
           onCancel={textEdit.cancel}
         />
       ) : null}
-    </div>
+    </section>
   );
 }

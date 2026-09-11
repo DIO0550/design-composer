@@ -106,7 +106,19 @@ export function ArtboardFrame({
      * **テストは 1 件も落ちない**（happy-dom はレイアウトしないため）。
      * 気づく手段は視覚差分だけ。
      */
-    <li className="absolute" style={{ left: drawnAt.x, top: drawnAt.y }}>
+    <li
+      className="absolute"
+      style={{ left: drawnAt.x, top: drawnAt.y }}
+      /*
+       * ここまで上がってくる右クリックは見出しを押したとき（枠は自分で受けて止める）。
+       * 見出しは枠の**外**にあって `data-name` も持たないので、名前を辿らせず artboard
+       * 自身を渡す（docs/06-ui.md「コンテキストメニュー」）。
+       */
+      onContextMenu={(event) => {
+        event.stopPropagation();
+        onContextMenu(event, [element.name]);
+      }}
+    >
       {/*
         `right-0` で枠の幅いっぱいに広げるのは、見出しが掴み口だから（`ArtboardLabel`）。
         中身ぶんだと `home 360 × 240` で 85px しか無く、枠の 360px に対して狙いづらい。
@@ -118,19 +130,7 @@ export function ArtboardFrame({
         （実測: `w-fit` を戻しても 2639 件すべて緑）。掴める範囲が 85px へ戻っても
         気づく手段が無い。
       */}
-      {/*
-        見出しの右クリックは artboard のメニュー（docs/06-ui.md「コンテキストメニュー」）。
-        見出しは枠の**外**にあって `data-name` も持たないので、名前を辿らせず artboard 自身
-        を渡す。受けるのは包む器で、`ArtboardLabel` は掴み口のことだけを知っていればよい。
-      */}
-      {/* biome-ignore lint/a11y/noStaticElementInteractions: 見出しの掴み口は ArtboardLabel が持ち、ここは右クリックを artboard へ向けるだけの器 */}
-      <div
-        className="absolute right-0 bottom-full left-0 pb-1"
-        onContextMenu={(event) => {
-          event.stopPropagation();
-          onContextMenu(event, [element.name]);
-        }}
-      >
+      <div className="absolute right-0 bottom-full left-0 pb-1">
         <ArtboardLabel
           artboard={artboard}
           isCurrent={isCurrent}
