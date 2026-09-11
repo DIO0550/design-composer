@@ -25,10 +25,8 @@ import { Option } from "@/utils/Option";
 /**
  * 行き先ごとのパネルの中身。
  *
- * 戻り値を `ReactElement`（`ReactNode` ではない）と書いているのは、行き先を足して
- * `case` を足し忘れたときに「返さない経路がある」としてコンパイルエラーにするため。
- * `ReactNode` は `undefined` を含むので、抜けても通ってしまい、足し忘れた行き先が
- * 黙って空のパネルになる。
+ * `ReactNode` は `undefined` を含むので、抜けても通ってしまい、足し忘れた行き先が黙って空
+ * のパネルになる。
  *
  * @returns Layers ならツリー、Assets ならパレット、Tokens ならトークン一覧
  */
@@ -56,7 +54,7 @@ function LeftPaneContent({
           {/*
             UI 案（docs/Design Composer.html）の `Layers` パネルは、artboard の一覧を
             上段に、選んだ 1 枚の中身を下段に置く。プリミティブを挿す入口はキャンバスに
-            浮かぶツールバーが持ち（#112）、部品はパレットの行を掴んで落とす（#203）ので、
+            浮かぶツールバーが持ち、部品はパレットの行を掴んで落とすので、
             どちらもここには並べない。
           */}
           <ArtboardList
@@ -93,14 +91,6 @@ function LeftPaneContent({
 /**
  * 行き先ごとに、パネル下端へ固定するもの。
  *
- * 本体（`LeftPaneContent`）と分けているのは、UI 案が `Create component` を
- * スクロールしない帯として置いているため。中身と同じ `switch` に混ぜると
- * 一覧と一緒に流れる。
- *
- * 不在を `undefined` ではなく `Option` にしているのは、行き先を足して `case` を
- * 足し忘れたときにコンパイルエラーにするため（`ReactElement | undefined` だと
- * 抜けても通ってしまう）。
- *
  * @returns Assets なら部品化のフッター、他の行き先では不在
  */
 function leftPaneFooter({
@@ -136,15 +126,11 @@ function leftPaneFooter({
 }
 
 /**
- * 左ペイン（UI 案 docs/Design Composer.html は 56px のレールと 248px の見出し付き
- * パネルを横に並べる / #129）。レールで選んだ行き先の中身をパネルへ出す。
+ * 左ペイン（UI 案 docs/Design Composer.html は 56px のレールと 248px の見出し付きパネルを
+ * 横に並べる）。レールで選んだ行き先の中身をパネルへ出す。
  *
- * どこを見ているか（`view`）を自分で持たないのは、右ペインに何を出すかも同じ行き先で
- * 決まるため。ここが握ると右ペインから読めなくなるので、両ペインを組む側に置いて
- * もらう（`opened-document-editor`）。
- *
- * 編集画面の状態（`EditorState`）ではなく値で受け取るのは、この feature が編集画面を
- * 知らずに描けるようにするため（`features/sidebar/index.ts`）。
+ * ここが握ると右ペインから読めなくなるので、両ペインを組む側（`opened-document-editor`）に
+ * 置いてもらう。
  */
 export function LeftPane({
   view,

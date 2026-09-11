@@ -5,9 +5,8 @@ import { TextInlineEditor } from "./index";
 /**
  * 編集中の Text に重ねる入力欄（docs/06-ui.md「Text のインライン編集」）。
  *
- * **キャンバスのストーリーには出てこない。** 開くにはダブルクリックが要り、
- * `ArtboardCanvas` のストーリーは静止した状態しか撮れないため。枠の色・最小の大きさを
- * 確かめる手段はここだけになる。
+ * **キャンバスのストーリーには出てこない。枠の色・最小の大きさを確かめる手段はここだけにな
+ * る。
  */
 const meta = {
   title: "features/canvas/ArtboardCanvas/TextInlineEditor",

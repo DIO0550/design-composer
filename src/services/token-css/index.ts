@@ -16,7 +16,7 @@ import { Px } from "@/domains/unit/px";
 
 export type { CssVariableName, SingleVariableTokenKind };
 
-/** `var()` によるカスタムプロパティ参照。 */
+/** `var` によるカスタムプロパティ参照。 */
 export type CssVariableReference = `var(${CssVariableName})`;
 
 /**
@@ -71,7 +71,7 @@ function entriesOfKind(
   }
 }
 
-/** トークンを CSS カスタムプロパティの名前・宣言・`var()` 参照へ変換する。 */
+/** トークンを CSS カスタムプロパティの名前・宣言・`var` 参照へ変換する。 */
 export const TokenCss = {
   variableName(kind: SingleVariableTokenKind, name: string): CssVariableName {
     return `--${kind}-${name}`;
@@ -96,9 +96,8 @@ export const TokenCss = {
   },
 
   /**
-   * トークン全体を CSS カスタムプロパティへ変換する。
-   * 種別は `TokenSet.kinds()` の順、種別内は TokenSet が持つ定義順を保つ
-   * (同じ入力からは常に同じ出力になる)。
+   * トークン全体を CSS カスタムプロパティへ変換する。種別は `TokenSet.kinds` の順、種別内は
+   * TokenSet が持つ定義順を保つ (同じ入力からは常に同じ出力になる)。
    */
   variables(tokens: TokenSet): CssVariables {
     return Object.fromEntries(

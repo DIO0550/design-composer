@@ -64,7 +64,7 @@ export const Default: Story = {
   name: "パレット",
 };
 
-/** パレットの行を掴んでキャンバスへ運んでいる状態（#203）。 */
+/** パレットの行を掴んでキャンバスへ運んでいる状態。 */
 export const Grabbed: Story = {
   name: "行を掴んで運んでいる",
   args: { grab: grabbingComponent("primary-button") },

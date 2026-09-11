@@ -5,14 +5,16 @@ import { NumberEx } from "@/utils/NumberEx";
 import { Option } from "@/utils/Option";
 
 /**
- * キャンバスの見え方（docs/06-ui.md「中央 | キャンバス…ズーム / パンは非永続の view state」）。
- * ドキュメント（source of truth）には含めない実行時だけの状態なので、
- * 編集画面の状態ではなくキャンバスの中に閉じて持つ（docs/01「作業スペースの
- * 見た目（配置・ズーム等）は source of truth に含めない」）。
+ * キャンバスの見え方（docs/06-ui.md「中央 | キャンバス…ズーム / パンは非永続の view
+ * state」）。
  *
- * `dragFrom` はドラッグ中だけ意味を持つ**直前のポインタ位置**で、移動量はここからの
- * 差分で決まる。ドラッグしていない状態で開始位置だけが残る、という矛盾した状態を
- * 作れないよう `Option` で表す。
+ * ドキュメント（source of truth）には含めない実行時だけの状態なので、編集画面の状態では
+ * なくキャンバスの中に閉じて持つ（docs/01「作業スペースの見た目（配置・ズーム等）は
+ * source of truth に含めない」）。
+ *
+ * `dragFrom` はドラッグ中だけ意味を持つ**直前のポインタ位置**で、移動量はここからの差分
+ * で決まる。ドラッグしていないのに開始位置だけが残る矛盾した状態を作れないよう `Option`
+ * で表す。
  */
 export type CanvasView = Readonly<{
   scale: number;
@@ -36,21 +38,18 @@ const ZoomFactor = 1.2;
 /**
  * 収めるときに対象の四辺へ見込む余白（**ドキュメント上の px**）。
  *
- * 画面上の px ではなくドキュメント上の px で持つのは、覆いたいものが倍率と一緒に
- * 拡大されるため。artboard の見出しは箱の上へドキュメント px で 22px 描かれ
- * （`artboard-label` の高さ 18px + `pb-1` の 4px）、選択の枠も 3px ぶん外へ出る。
- * 画面上の px で見込むと、倍率が上がるほど覆えなくなって見出しが切れる。
+ * artboard の見出しは箱の上へドキュメント px で 22px 描かれ（`artboard-label` の高さ 18px
+ * + `pb-1` の 4px）、選択の枠も 3px ぶん外へ出る。
  *
- * 22px より広い最小の切りのいい値として 24 を採る。
+ * 画面上の px で見込むと、倍率が上がるほど覆えなくなって見出しが切れる。22px より広い最小
+ * の切りのいい値として 24 を採る。
  */
 const FitPadding = 24;
 
 /**
  * 収める対象（`target`）と、収める先（`viewport`）。どちらも実測した画面上の矩形。
  *
- * 対で持つのは、**同じ型の位置引数が 2 つ並ぶと取り違えても型エラーにならない**ため
- * （rules/coding.md「関数のシグネチャ」）。アクションへ載せる側も同じ対を運ぶので、
- * 綴りを 2 箇所に持たないようここから export する。
+ * アクションへ載せる側も同じ対を運ぶので、綴りを 2 箇所に持たないようここから export する。
  */
 export type FitBounds = Readonly<{
   target: CanvasBounds;
@@ -139,26 +138,17 @@ export const CanvasView = {
 
   /**
    * 指した矩形が画面に収まる倍率と位置にする（Figma の Zoom to fit / Zoom to selection）。
-   *
-   * ここで言う「収める」は**指した矩形が画面の中に入る倍率と位置にすること**で、
    * CSS の `fit-content` とは関係しない。
    *
    * 受け取るのはどちらも**実測した画面上の矩形**（client 座標）。`target` は倍率と位置が
-   * 効いた状態で描かれているので、今の見え方から割り戻してドキュメント上の矩形へ直す。
-   * そのため押した時点の倍率・位置に依らず同じ結果になる。
-   *
-   * `viewport` に渡すのは**キャンバスの土台**（`canvas-surface`）の矩形。その左上が
-   * `transform` の原点であることを前提にしている（中身の器はその唯一の通常フローの子で、
-   * padding も border も持たない）。この前提が崩れると絵だけがずれる。
-   *
-   * Why not: ドキュメント側の座標を受け取らない。ノードの大きさを決めるのはブラウザの
-   * レイアウトなので、選択に合わせる側の矩形はドキュメントからは出せない。
+   * 効いた状態で描かれているので今の見え方から割り戻す（押した時点の倍率・位置に依らず同
+   * じ結果になる）。`viewport` は土台（`canvas-surface`）の左上が原点である前提。
    *
    * @param view 割り戻しに使う今の見え方
    * @param bounds 収めたい矩形（`target`）と、収める先の土台の矩形（`viewport`）
-   * @returns 対象が余白ぶんの隙間を空けて中央に収まる倍率と位置。倍率は上下限を超えない。
-   *   対象にも収める先にも面積が要るので、どちらかが潰れているときは今の見え方をそのまま返す
-   *   （`dragTo` が掴んでいないときに何もしないのと同じ扱い）
+   * @returns 対象が余白ぶんの隙間を空けて中央に収まる倍率と位置。倍率は上下限を超
+   *   えない。対象にも収める先にも面積が要るので、どちらかが潰れているときは今の
+   *   見え方をそのまま返す
    */
   fitTo(view: CanvasView, bounds: FitBounds): CanvasView {
     const { target, viewport } = bounds;
@@ -196,9 +186,10 @@ export const CanvasView = {
   },
 
   /**
-   * 移動量を現在の位置へ足す。
-   * 移動量は画面上の px のまま足す。`transform` では translate が scale より先に
-   * 適用され、translate は拡大前の座標系で効くため、倍率で割る必要はない。
+   * 移動量を現在の位置へ足す。移動量は画面上の px のまま足す。
+   *
+   * `transform` では translate が scale より先に適用され、translate は拡大前の座標系で効
+   * くため、倍率で割る必要はない。
    */
   panBy(view: CanvasView, delta: Offset): CanvasView {
     return { ...view, offset: Offset.add(view.offset, delta) };
@@ -210,9 +201,8 @@ export const CanvasView = {
   },
 
   /**
-   * ドラッグ中のポインタ移動を反映する。
-   * ドラッグしていないときのポインタ移動（ボタンを離したあとのマウス移動）では
-   * 何も起きない。基準となる位置が無く、移動量が決まらないため。
+   * ドラッグ中のポインタ移動を反映する。ドラッグしていないときのポインタ移動（ボタンを離
+   * したあとのマウス移動）では何も起きない。
    */
   dragTo(view: CanvasView, pointer: Offset): CanvasView {
     if (!view.dragFrom.some) {
@@ -261,9 +251,6 @@ export const CanvasView = {
 
   /**
    * ドキュメント上の移動量を画面上の移動量へ直す。`toDocumentOffset` の逆向き。
-   *
-   * 長さ単位の入口を別に持たせないのは `toDocumentOffset` と同じ理由で、呼び出し側で
-   * x と y を別々に直すと**片方だけ倍率を忘れても動いてしまう**ため。
    *
    * @param view 掛ける倍率を持つ表示
    * @param documentDelta ドキュメント上の移動量

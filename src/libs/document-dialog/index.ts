@@ -5,8 +5,6 @@ import { Result } from "@/utils/Result";
 /**
  * ダイアログを出せなかった失敗。
  *
- * `DocumentIpcError` と違って `kind` を持たないのは、この境界で起きうる失敗が
- * 「ダイアログを出せなかった」の 1 種類しかなく、呼び出し側が分岐する語彙にならないため。
  * 分岐すべき失敗が増えたらそのときに直和へ広げる。
  */
 export type DocumentDialogError = Readonly<{ message: string }>;

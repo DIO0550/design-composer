@@ -24,9 +24,8 @@ function twoColors(): TokenSet {
  * `tone` はトークン参照 prop（Box の `background`）へ、`label` は生の値の prop
  * （Text の `content`）へ binding してある。
  *
- * `badge-label` に `color` を明示するのは、この土台を使うテストが見るのが
- * **インスタンスの上書き**だけだから。書かないと Text の既定色（`gray-900`）が
- * 参照元として並び、観点と関係のない行が期待値に混ざる。
+ * 書かないと Text の既定色（`gray-900`）が参照元として並び、観点と関係のない行が期待値に混
+ * ざる。
  */
 function setupInstanceDocument(
   overrides: Readonly<Record<string, string>>,

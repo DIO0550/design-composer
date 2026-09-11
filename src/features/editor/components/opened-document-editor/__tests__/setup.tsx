@@ -28,9 +28,8 @@ export type OpenedDocumentFakes = Readonly<{
  * 監視と購読は非同期に成立するので、操作を始める前にここで待ち合わせる
  * （待たずに操作すると、成立したときの状態更新が act の外で起きる）。
  *
- * 時計まで返すのは、経過時間（#183）を確かめるテストが時計を進める必要があるため。
- * 時計を要らないテストのほうが圧倒的に多いので、口を 1 つだけ返す
- * `renderOpenedDocument` を別に置いている。
+ * 時計を要らないテストのほうが圧倒的に多いので、口を 1 つだけ返す `renderOpenedDocument`
+ * を別に置いている。
  *
  * @param document 開くドキュメント。`SampleDocument` に無い形（同じ部品を指す
  *   インスタンスが 2 つ以上あるなど）を要るテストだけが渡す
@@ -56,8 +55,6 @@ export async function renderOpenedDocumentWithClock(
 
 /**
  * サンプルのドキュメントを開いた編集画面を描画する。
- *
- * 代役を返すのは、外部変更を起こすテストが同じものを必要とするため。
  *
  * @param document 開くドキュメント。省略すると `SampleDocument`
  */
@@ -93,10 +90,9 @@ export async function fixFileExternally(fake: DocumentIpcFake): Promise<void> {
 /**
  * 外部が「読めるが仕様に反する」内容を書いたことにする。
  *
- * `breakFileExternally` の壊し方（字句スキャンで落ちる）ではエラーの場所が
- * 文字位置になり、ノードを指す行が 1 つも出ない。エラー行から該当ノードへ飛ぶ
- * 経路を確かめるにはノードを指すエラーが要る（#136）ので、
- * `SampleDocumentWithDanglingToken` を書き込む。
+ * `breakFileExternally` の壊し方（字句スキャンで落ちる）ではエラーの場所が文字位置になり、
+ * ノードを指す行が 1 つも出ない。エラー行から該当ノードへ飛ぶ経路を確かめるにはノードを指
+ * すエラーが要るので、`SampleDocumentWithDanglingToken` を書き込む。
  */
 export async function invalidateFileExternally(
   fake: DocumentIpcFake,
@@ -109,8 +105,9 @@ export async function invalidateFileExternally(
 }
 
 /**
- * キャンバス。同じ名前がツリーにも出るので絞るのに使う。キャンバスのツールバーもこの中に
- * あり、絞らないと左ペインへ置き戻す実装でも通ってしまう（#112）。
+ * キャンバス。同じ名前がツリーにも出るので絞るのに使う。
+ *
+ * キャンバスのツールバーもこの中にあり、絞らないと左ペインへ置き戻す実装でも通ってしまう。
  */
 export function canvasPane(): HTMLElement {
   return screen.getByRole("main", { name: "キャンバス" });
@@ -135,8 +132,8 @@ export function fileErrorList(): HTMLElement {
 }
 
 /**
- * 下端に出ている、ドキュメント自身の不正の一覧。編集で作ったものと、開いた時点で
- * 既にあったもの（#158）の両方がここに出る。
+ * 下端に出ている、ドキュメント自身の不正の一覧。編集で作ったものと、開いた時点で既にあった
+ * ものの両方がここに出る。
  */
 export function documentErrorList(): HTMLElement {
   return screen.getByRole("alert", { name: "ドキュメントのエラー一覧" });
@@ -153,17 +150,18 @@ export function propertyPane(): HTMLElement {
 }
 
 /**
- * ツリーの領域。行を読む相手はここに絞る。左ペインにはレールの行き先ボタンも並び、
- * そちらも `aria-current` を持つため、ペイン全体を渡すと行き先が行として混ざる
- * （`row-names` の注意書きのとおり）。
+ * ツリーの領域。行を読む相手はここに絞る。
+ *
+ * 左ペインにはレールの行き先ボタンも並び、そちらも `aria-current` を持つため、ペイン全体
+ * を渡すと行き先が行として混ざる（`row-names` の注意書きのとおり）。
  */
 export function tree(): HTMLElement {
   return screen.getByRole("region", { name: "ツリー" });
 }
 
 /**
- * artboard の一覧の領域。artboard はツリーの行ではなく上段の一覧に並ぶので（#112）、
- * 選ぶのも今どれを見ているかを読むのもこちらから行う。
+ * artboard の一覧の領域。artboard はツリーの行ではなく上段の一覧に並ぶので、選ぶのも今どれ
+ * を見ているかを読むのもこちらから行う。
  */
 export function artboardList(): HTMLElement {
   return screen.getByRole("region", { name: "artboard 一覧" });
@@ -181,6 +179,7 @@ export async function selectArtboard(name: string): Promise<void> {
 
 /**
  * レールの行き先のボタン。綴りではなく行き先で指す（取り違えを型で弾く）。
+ *
  * 今どこを映しているかはこのボタンの `aria-current` に出る。
  *
  * @param view 引きたい左ペインの行き先

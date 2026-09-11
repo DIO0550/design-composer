@@ -148,16 +148,15 @@ const InitialComponents: ComponentSet = {
 };
 
 /**
- * 新規ドキュメントに同梱する雛形（docs/04-tokens.md「新規ドキュメントテンプレート」）。
+ * 新規ドキュメントに同梱する雛形(docs/04-tokens.md「新規ドキュメントテンプレート」)。
  *
- * デフォルトテーマと初期部品セットは片方だけでは成立しない
- * （部品の見た目の prop はテーマのトークンを参照する）ため1つの型にまとめる。
+ * デフォルトテーマと初期部品セットは片方だけでは成立しない（部品の見た目の prop はテー
+ * マのトークンを参照する）ため1つの型にまとめる。
  *
- * 部品が参照するトークンが揃っているか（スキーマの prop デフォルトが指す
- * Text の `typography` / `color` を含む）は型では縛らない。
- * 参照の整合はドキュメント全体の規則なので `DesignDocument.collectErrors` が
- * dangling-token として報告する担当で、docs/04-tokens.md も
- * 「通常のバリデーションエラーとして検出される（特別扱いしない）」としている。
+ * 部品が参照するトークンが揃っているかは型では縛らない。参照の整合はドキュメント全体の
+ * 規則なので `DesignDocument.collectErrors` が dangling-token として報告する担当で、
+ * docs/04-tokens.md も「通常のバリデーションエラーとして検出される（特別扱いしない）」
+ * としている。
  */
 export type DocumentTemplate = Readonly<{
   tokens: TokenSet;

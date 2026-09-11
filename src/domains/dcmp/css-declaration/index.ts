@@ -2,8 +2,10 @@ import type { TokenKind, TypographyCssProperty } from "@/domains/dcmp/token";
 
 /**
  * 出力し得る CSS プロパティ名。
- * プリミティブの語彙が閉じている (docs/03) ため、そこから出力されるプロパティも
- * 閉じた集合として型で表し、任意の文字列を宣言にできないようにする。
+ *
+ * プリミティブの語彙が閉じている (docs/03) ため、そこから出力されるプロパティも閉じた集合
+ * として型で表し、任意の文字列を宣言にできないようにする。
+ *
  * typography 由来のプロパティはトークン側の対応表から取り込み二重管理しない。
  */
 export type CssProperty =
@@ -81,6 +83,7 @@ export const CssDeclaration = {
 
 /**
  * CSS プロパティ名 → 値の対応。style 属性へそのまま展開できる形で持つ。
+ *
  * 同じプロパティは1度しか現れないことと、宣言の順序を同時に表す。
  */
 export type CssDeclarations = Readonly<Record<string, string>>;

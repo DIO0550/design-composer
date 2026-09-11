@@ -52,12 +52,9 @@ export type {
 /**
  * アプリが読み書きするドキュメント。今は major 1 のみ。
  *
- * 版ごとの型と JSON 表現は版のフォルダ（`v1/`）が持つ。
- * major を上げるときは隣に `v2/` を作ってここを差し替え、旧版のフォルダは残す。
- * 旧版の型が残ることで、マイグレーション（`libs/document-migration`）が
- * 「どの形から どの形へ」を型で書ける。
- * アプリ本体が旧版の形を扱うことはないので、ここを版の直和にはしない
- * （消費側に版の分岐を強いないため）。
+ * 版ごとの型と JSON 表現は版のフォルダ（`v1/`）が持つ。major を上げるときは隣に `v2/`
+ * を作ってここを差し替え、旧版のフォルダは残す（旧版の型が残ることで、マイグレーション
+ * が「どの形からどの形へ」を型で書ける）。
  */
 export type DesignDocument = DesignDocumentV1;
 
@@ -117,9 +114,6 @@ function applyPropEdits(
 
 /**
  * 名前で指した artboard / ノードが今持っている、軸ごとの長さ。
- *
- * artboard を先に見るのは、長さの持ち主が artboard 自身のフィールドで、
- * `boxProps` が props の側を固定値で上書きするため（`Artboard.resize` の doc）。
  *
  * @param document 引き先になるドキュメント
  * @param name 長さを知りたい artboard / ノードの名前
@@ -188,14 +182,11 @@ function followPropEdits(node: Node, resize: AxisResize): readonly PropEdit[] {
 }
 
 /**
- * 大きさが変わった artboard / ノードの、直下の絶対配置の子を追従させる
- * （docs/03「配置の指定」）。
+ * 大きさが変わった artboard / ノードの、直下の絶対配置の子を追従させる（docs/03「配置の
+ * 指定」）。
  *
- * 子への書き込みを `applyPropEdit` へ戻すので、**長さが変わった子は自分の子の追従を
- * 自分で引き起こす**（明示的な再帰を書かない）。
- *
- * Why not: 「どの prop を編集したか」で追従の要否を決めない。`width` を消して `hug`
- * へ戻す編集のように、prop 名だけでは長さが変わったかを判定できないため。
+ * 子への書き込みを `applyPropEdit` へ戻すので、**長さが変わった子は自分の子の追従を自分で
+ * 引き起こす**（明示的な再帰を書かない）。
  *
  * @param before 編集する前のドキュメント
  * @param name 大きさが変わったかもしれない artboard / ノードの名前
@@ -443,10 +434,9 @@ function expandInstance(
 }
 
 /**
- * ドキュメントのコンパニオンオブジェクト。
- * ツリーの探索・編集は `NodeTree`、名前の規則は `NameSpace`、
- * 部品への変換は `Component`、検証は `validation/`、版ごとの JSON 表現は `v1/` が持ち、
- * ここは「どの artboard・どの部品を相手にするか」の調停に徹する。
+ * ドキュメントのコンパニオンオブジェクト。ツリーの探索・編集は `NodeTree`、名前の規則は
+ * `NameSpace`、部品への変換は `Component`、検証は `validation/`、版ごとの JSON 表現は
+ * `v1/` が持ち、ここは「どの artboard・どの部品を相手にするか」の調停に徹する。
  */
 export const DesignDocument = {
   create(params: {
@@ -466,7 +456,6 @@ export const DesignDocument = {
   /**
    * 雛形から新規ドキュメントを作る（docs/04-tokens.md「新規ドキュメントテンプレート」）。
    * artboards は空で始まる（描く対象はユーザーが足す）。
-   * 雛形を引数で受け取るのは、既定を隠さず呼び出し側に選ばせるため。
    */
   createFromTemplate(template: DocumentTemplate): DesignDocument {
     return DesignDocument.create({
@@ -520,10 +509,8 @@ export const DesignDocument = {
    * ノードの複製をツリー上の位置へ挿入する（docs/06-ui.md「編集操作の一覧」の
    * コピー & ペースト）。
    *
-   * 名前はドキュメント全体で一意でなければならない（docs/01-file-format.md
-   * 「ノードの識別（name）」）ので、挿す前に部分木の名前をまとめて付け替える。
-   * 付け替えと挿入を呼び出し側に順番で守らせず 1 つの操作にするのは、
-   * 付け替え忘れが「重複した名前を持つドキュメント」として通ってしまうため。
+   * 名前はドキュメント全体で一意でなければならない（docs/01-file-format.md「ノードの識別（name）」）
+   * ので、挿す前に部分木の名前をまとめて付け替える。
    */
   insertNodeCopy(
     document: DesignDocument,
@@ -566,6 +553,7 @@ export const DesignDocument = {
    *
    * 見るのは artboard の配下だけ。部品定義の中にある参照ノードはキャンバスには描かれるが
    * ドキュメントの木には無いので選択の対象にならない（`EditorState.select` と同じ線引き）。
+   *
    * `componentAssets` の使用数が部品定義の中の参照も数えるのに対し、こちらが数えないのは
    * このため（同じ部品でも 2 つの数が食い違いうる / docs/06-ui.md「選択」）。
    *
@@ -600,13 +588,9 @@ export const DesignDocument = {
   /**
    * すべての artboard の**直下の子**の名前（範囲選択が選びうる相手）。
    *
-   * 直下だけで止めるのは、キャンバスから選べる階層がそこだからで、掘るのは
-   * ダブルクリックの担当（docs/06-ui.md「キャンバスのクリックが選ぶ階層」）。
-   * 孫まで集めると、範囲で払ったときにクリックとは違う階層が選ばれる。
-   *
-   * 見るのが artboard の配下だけなのは `collectInstanceNames` と同じで、部品定義の
-   * 中にある参照ノードはキャンバスに描かれてもドキュメントの木には無く、選択の
-   * 対象にならないため。
+   * 直下だけで止めるのは、キャンバスから選べる階層がそこだから（掘るのはダブルクリック
+   * の担当 / docs/06-ui.md「キャンバスのクリックが選ぶ階層」）。孫まで集めると、範囲で払
+   * ったときにクリックとは違う階層が選ばれる。
    *
    * @param document 走査するドキュメント
    * @returns artboard の並び順・子の並び順のままの名前。1 つも無ければ空
@@ -625,12 +609,10 @@ export const DesignDocument = {
   },
 
   /**
-   * その名前のものが載っている artboard。artboard 自身の名前ならその artboard、
-   * ノードの名前ならそれを含む artboard（子孫まで辿る）。どちらでもなければ `none`。
+   * その名前のものが載っている artboard。artboard 自身の名前ならその artboard、ノードの
+   * 名前ならそれを含む artboard（子孫まで辿る）で、どちらでもなければ `none`。
    *
-   * 名前 1 つから artboard へ辿る道をここに置くのは、「今どの artboard を見ているか」を
-   * 選択から決める側（左ペイン）が、artboard とノードのどちらを選んでいるかで
-   * 場合分けせずに済むようにするため。名前は単一名前空間なので答えは一意に決まる。
+   * 名前は単一名前空間なので答えは一意に決まる。
    */
   findOwningArtboard(document: DesignDocument, name: string): Option<Artboard> {
     const named = DesignDocument.findArtboard(document, name);
@@ -669,8 +651,8 @@ export const DesignDocument = {
   /**
    * その名前のものの子として足すときの位置（並びの末尾）。
    *
-   * 足せるかどうかは子の並びを持つかどうかと同じなので `findChildren` に乗せる。
-   * 挿入の可否は木の形で決まるためここが答え、UI が `allowsChildren` を見に行かない（#39）。
+   * 足せるかどうかは子の並びを持つかどうかと同じなので `findChildren` に乗せる。挿入の可否は
+   * 木の形で決まるためここが答え、UI が `allowsChildren` を見に行かない。
    */
   appendPositionOf(
     document: DesignDocument,
@@ -707,9 +689,8 @@ export const DesignDocument = {
    * 名前で指したノードを包んでいるものの名前を、内側から外側へ並べたもの。
    * 末尾は必ずその artboard になる。
    *
-   * 親を 1 段ずつ辿るのは、木の走査を `findChildPosition` に任せて同じ探索を 2 つ
-   * 持たないため。artboard は誰の子でもない（`findChildPosition` が `none` を返す）ので、
-   * そこで辿るのが止まる。
+   * artboard は誰の子でもない（`findChildPosition` が `none` を返す）ので、そこで辿るのが止
+   * まる。
    *
    * @param document 引き先になるドキュメント
    * @param name 包んでいるものを知りたいノードの名前
@@ -731,21 +712,13 @@ export const DesignDocument = {
   },
 
   /**
-   * 名前で指したノードが今どの親の中のどこに置かれているか。
-   * **座標で動かせるものだけ**が答えを持つ。
-   *
-   * 「置かれ方」ではなく絶対配置だけを答えるのは、消費側（キャンバスのドラッグ）が
-   * 知りたいのが「このノードは座標で動かせるか、動かせるなら今どこか」だから。
-   * `Placement.fromProps` がスキーマ違反に返す `undefined` をここで `none` へ潰せるのも、
-   * その区別が答えを変えないため（フローと同じく「動かせない」に落ちる）。
-   *
-   * 座標と親を別々に答えないのは、座標が親の左上を原点とする値で、**片方だけでは
-   * 位置が決まらない**ため（`ChildPlacement`）。
+   * 名前で指したノードが今どの親の中のどこに置かれているか。**座標で動かせるものだけ**
+   * が答えを持つ。
    *
    * @param document 引き先になるドキュメント
    * @param name 置かれている場所を知りたいノードの名前
-   * @returns 今いる親と、その親から見た座標。木に無い名前 / 部品インスタンス
-   *   （props を持たない）/ フロー / 座標が数値でないとき / 親を持たない artboard 自身は
+   * @returns 今いる親と、その親から見た座標。木に無い名前 / 部品インスタンス（props
+   *   を持たない）/ フロー / 座標が数値でないとき / 親を持たない artboard 自身は
    *   `none`
    */
   childPlacementOf(
@@ -778,14 +751,11 @@ export const DesignDocument = {
   },
 
   /**
-   * 名前で指した artboard またはノードの prop を書き換える
-   * （docs/06-ui.md「編集操作の一覧」の props 編集）。
-   * 名前は単一名前空間なので、artboard とノードのどちらを相手にするかは名前で決まる。
+   * 名前で指した artboard またはノードの prop を書き換える（docs/06-ui.md「編集操作の一
+   * 覧」の props 編集）。名前は単一名前空間なので、artboard とノードのどちらを相手にす
+   * るかは名前で決まる。
    *
-   * 大きさが変わったときは、直下の絶対配置の子をここで追従させる
-   * （`withResizeFollowUp`）。`resize` の**ノード経路**にフックを置かないのは、
-   * そこがこの入口を通るため（両方に置くと子が 2 度動く）。artboard 経路だけは
-   * ここを通らないので `resize` 側が持つ。
+   * 大きさが変わったときは、直下の絶対配置の子をここで追従させる（`withResizeFollowUp`）。
    */
   applyPropEdit(
     document: DesignDocument,
@@ -814,16 +784,13 @@ export const DesignDocument = {
   },
 
   /**
-   * 名前で指した artboard またはノードの大きさを変える
-   * （docs/06-ui.md「キャンバス直接操作」のリサイズハンドル）。
+   * 名前で指した artboard またはノードの大きさを変える（docs/06-ui.md「キャンバス直接操
+   * 作」のリサイズハンドル）。長さの持ち主が artboard とノードで違うため、名前で相手を
+   * 決めてから書き込み先を分ける。
    *
-   * 長さの持ち主が artboard とノードで違う（artboard は自身のフィールド、
-   * ノードは `width` / `height` prop）ため、名前で相手を決めてから書き込み先を分ける。
-   * ノード側でモードが `fixed` かどうかは見ない。ハンドルを出す軸を決めるのは
-   * キャンバス側の役目で、ここは指定された長さを書くところ。
-   *
-   * 絶対配置の子の追従は、artboard の経路だけここで起こす。ノードの経路は
-   * `applyPropEdit` を通るのでそちらが起こす（`applyPropEdit` の doc）。
+   * ノード側でモードが `fixed` かどうかは見ない（ハンドルを出す軸を決めるのはキャンバス
+   * 側の役目）。絶対配置の子の追従は artboard の経路だけここで起こす。ノードの経路は
+   * `applyPropEdit` を通る。
    */
   resize(
     document: DesignDocument,
@@ -847,9 +814,6 @@ export const DesignDocument = {
    * 名前で指した artboard を、キャンバス上の別の位置へ置き直す
    * （docs/06-ui.md「キャンバス直接操作」の移動のうち、artboard の分）。
    *
-   * ノードを相手にしないのは、キャンバス上の位置を持つのが artboard だけのため
-   * （ノードの座標は親からの相対で、そちらは `reposition` が受ける）。
-   *
    * @param document 書き換える対象を含むドキュメント
    * @param name 置き直す artboard の名前
    * @param canvasPosition 置き直したあとの位置。枠の左上を指す
@@ -870,31 +834,22 @@ export const DesignDocument = {
   },
 
   /**
-   * 名前で指したノードを、親の中の別の座標へ置き直す
-   * （docs/06-ui.md「キャンバス直接操作」の移動のうち、絶対配置のノードの分）。
+   * 名前で指したノードを、親の中の別の座標へ置き直す（docs/06-ui.md「キャンバス直接操作」の
+   * 移動のうち、絶対配置のノードの分）。
    *
-   * 座標の 2 prop を 1 回の呼び出しで書くのは、ドラッグ 1 回が undo 1 回で戻る
-   * ようにするため。`PropEdit` は同じ値を複数の prop へ入れる形なので、
-   * `x` と `y` は 1 件では表せない。
+   * 今いる位置で相手を確かめるので、どの親の子でもない artboard はここで弾かれる（素通しする
+   * と artboard の props に効かない `x` / `y` が黙って書かれる）。
    *
-   * artboard を相手にしないのは、artboard が親 Box の中ではなくキャンバスの
-   * 並びに置かれるため（`Artboard.boxProps` が `placement` を `flow` に固定する）。
-   * 今いる位置（`findChildPosition`）で相手を確かめるので、どの親の子でもない
-   * artboard はここで弾かれる（`applyPropEdit` は名前で artboard を先に相手にするため、
-   * 素通しすると artboard の props に効かない `x` / `y` が黙って書かれる）。
-   *
-   * 指した親が今の親と違えば、**その親の末尾の子へ移してから**座標を書く（#388）。
-   * 末尾に置くのは、絶対配置の兄弟に並び順の意味が薄く、元の index を持ち込むと
-   * 落とし先の子の数によっては範囲外になるため。`ChildPosition.afterRemoving` が
-   * 要らないのは、移す先が今の親と必ず違う＝取り除いてもその親の子の数が変わらないため。
+   * 指した親が今の親と違えば、**その親の末尾の子へ移してから**座標を書く。絶対配置の兄弟に並
+   * び順の意味が薄いためで、移す先が今の親と必ず違うので `ChildPosition.afterRemoving` は要
+   * らない。
    *
    * @param document 書き換える対象を含むドキュメント
    * @param name 置き直すノードの名前
    * @param to 置き直したあとの親と、その親から見た座標
-   * @returns 親と座標を書き換えたドキュメント。その名前のノードが無い（artboard の
-   *   名前もノードではない）なら失敗。指した親が子を受け入れられない（無い名前・
-   *   Text・参照ノード）ときと、指した親が自分自身か自分の子孫のとき
-   *   （`moveNode` の `move-into-descendant`）も失敗
+   * @returns 親と座標を書き換えたドキュメント。その名前のノードが無い（artboard
+   *   の名前もノードではない）なら失敗。指した親が子を受け入れられない（無い名前
+   *   ・ Text・参照ノード）ときと、指した親が自分自身か自分の子孫のときも失敗
    */
   reposition(
     document: DesignDocument,
@@ -1058,10 +1013,8 @@ export const DesignDocument = {
   /**
    * その名前のノードを解除できるか（参照ノードで、参照先を辿りきれる）。
    *
-   * 展開までしか見ないのは、`detach` の残り（名前の付け替えと置き換え）が
-   * 失敗しないため。`DesignDocument.replaceNode` も `Result` を返すが、探索
-   * （`findNode`）と置き換えは同じ `Node.children` の走査を通るので、探索できた
-   * ノードの置き換えは必ず成功する。
+   * `DesignDocument.replaceNode` も `Result` を返すが、探索（`findNode`）と置き換えは同じ
+   * `Node.children` の走査を通るので、探索できたノードの置き換えは必ず成功する。
    *
    * @param document 解除元のドキュメント
    * @param name 解除したいノードの名前
@@ -1110,19 +1063,16 @@ export const DesignDocument = {
   },
 
   /**
-   * 単一名前空間の名前で指したものを取り除く（docs/06-ui.md「編集操作の一覧」の
-   * 削除と artboard 操作）。artboard ならその 1 枚を配下ごと、そうでなければ
-   * ノードをサブツリーごと取り除く。
+   * 単一名前空間の名前で指したものを取り除く（docs/06-ui.md「編集操作の一覧」の削除と
+   * artboard 操作）。artboard ならその 1 枚を配下ごと、そうでなければノードをサブツリー
+   * ごと取り除く。
    *
-   * 振り分けをここに置くのは、名前だけでは artboard かノードかが決まらず、
-   * どのドキュメントの中の名前かで初めて引けるため（`applyPropEdit` / `resize` が
-   * 同じ理由で名前から振り分けているのと同じ形）。呼び出し側で分けると
-   * 「選んでいるものが artboard か」の判定が features 層へ出る。
+   * 呼び出し側で分けると「選んでいるものが artboard か」の判定が features 層へ出る。
    *
    * @param document 取り除く先のドキュメント
    * @param name 取り除きたい artboard / ノードの名前
-   * @returns 取り除いたドキュメント。どちらにも無い名前は `node-not-found`
-   *   （artboard でなければノードとして扱うため）
+   * @returns 取り除いたドキュメント。どちらにも無い名前は `node-not-found`（artboard
+   *   でなければノードとして扱うため）
    */
   remove(
     document: DesignDocument,
@@ -1201,19 +1151,14 @@ export const DesignDocument = {
   },
 
   /**
-   * そのトークンを参照している箇所をすべて集める
-   * （UI 案 docs/Design Composer.html の `Used by` / #127）。
+   * そのトークンを参照している箇所をすべて集める（UI 案 docs/Design Composer.html の
+   * `Used by`）。
    *
-   * artboard の中（キャンバス上のもの）を先に、部品定義の中を後に並べる。
-   * 一覧は先頭の数件しか出さないので、選択やキャンバスから指し示せるものを先に見せる
-   * （`collectErrors` は部品を先に並べるが、あちらは全件を読む一覧なので順序の意味が違う）。
+   * artboard の中を先に、部品定義の中を後に並べる。一覧は先頭の数件しか出さないので、選
+   * 択やキャンバスから指し示せるものを先に見せる（UI 案は両者を交互に並べているが、それ
+   * を再現できる大域順序が無い）。
    *
-   * UI 案（docs/Design Composer.html）の `Used by` はキャンバスの行と部品定義の行を
-   * 交互に並べているが、それを再現できる大域順序が無いため規則で決めている
-   * （先頭3件しか出ないので、どちらを先にするかは見える差になる）。
-   *
-   * トークンが実在するかは見ない。「その参照を指している prop はどれか」に答えるので、
-   * 宙に浮いた参照（dangling）も同じ関数で数えられる（存在の確認は `TokenSet.has` の担当）。
+   * トークンが実在するかは見ないので、宙に浮いた参照（dangling）も同じ関数で数えられる。
    */
   collectTokenReferrers(
     document: DesignDocument,
@@ -1231,13 +1176,8 @@ export const DesignDocument = {
   },
 
   /**
-   * キャンバスに描かれているものの中から、そのトークンを参照している箇所を集める（#147）。
-   *
-   * 走るのは artboard とその配下だけ。インスタンスは上書きしか持たず、その先の
-   * 部品定義へは降りないので、ここで集まるものはすべてキャンバスに描かれている。
-   *
-   * 全体（`collectTokenReferrers`）から絞り込むのではなく走る範囲を狭めているのは、
-   * 集めたあとに名前でドキュメントを引き直すと、由来を捨ててから復元することになるため。
+   * キャンバスに描かれているものの中から、そのトークンを参照している箇所を集める。走るのは
+   * artboard とその配下だけで、インスタンスの先の部品定義へは降りない。
    *
    * @param document 参照元を探すドキュメント
    * @param ref 参照されているかを知りたいトークン
@@ -1299,9 +1239,9 @@ export const DesignDocument = {
 
   /**
    * ドキュメントが仕様に適合しない箇所をすべて集める。
-   * 最初の1件で止めないのは、不正なファイルのエラー一覧を出せるようにするため。
-   * 適合の規則そのものは `validation/` が関心ごとに持ち、
-   * ここは「どの部品・どの artboard を検証対象にするか」の取りまとめを行う。
+   *
+   * 適合の規則そのものは `validation/` が関心ごとに持ち、ここは「どの部品・どの artboard
+   * を検証対象にするか」の取りまとめを行う。
    */
   collectErrors(
     document: DesignDocument,

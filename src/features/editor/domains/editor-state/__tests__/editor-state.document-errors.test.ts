@@ -12,9 +12,6 @@ import { EditorState } from "../index";
 
 /**
  * typography の `heading` を指す Text と `subheading` を指す Text を 1 つずつ持つ状態。
- *
- * 対照（`subheading` 側）を同じドキュメントに置くのは、`heading` を消したときの
- * 期待値を「1 件だけの並び」にするため（rules/testing.md）。
  */
 function openedState(): EditorState {
   return EditorState.create(
@@ -93,7 +90,7 @@ test("外部変更を拒んでいても、表示中のドキュメントが正�
 });
 
 /*
- * 拒んだ後に編集する順序では書けない。凍結中は編集そのものが起きないため（#155）。
+ * 拒んだ後に編集する順序では書けない。凍結中は編集そのものが起きないため。
  */
 test("編集で作った不正は、外部変更を拒んだ後もファイルのエラーとは別に残る", () => {
   const removed = removeToken(openedState(), "heading");

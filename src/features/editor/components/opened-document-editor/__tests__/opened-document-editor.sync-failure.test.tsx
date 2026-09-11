@@ -7,7 +7,7 @@ import { OpenedDocumentEditor } from "../index";
 import { canvasPane, Path } from "./setup";
 
 test("開いているファイルを監視できないと、その失敗が画面に出る", async () => {
-  // 監視の開始は現在の内容の読み込みを伴うため、実体の無いパスでは張れない（#30）。
+  // 監視の開始は現在の内容の読み込みを伴うため、実体の無いパスでは張れない。
   const fake = DocumentIpcFake.create({});
 
   render(

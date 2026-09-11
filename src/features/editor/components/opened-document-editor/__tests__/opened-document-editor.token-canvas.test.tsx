@@ -44,7 +44,7 @@ function dashedNodes(): HTMLElement {
   return within(canvasPane()).getByRole("region", { name: "キャンバスの破線" });
 }
 
-/** 帯のリンクを押す（#209）。 */
+/** 帯のリンクを押す。 */
 async function revealInTree(): Promise<void> {
   await userEvent.click(
     within(dashedNodes()).getByRole("button", { name: "reveal in tree" }),
@@ -92,7 +92,7 @@ test("部品定義の中からしか参照されていないトークンを選�
 });
 
 /*
- * 以下 2 本は帯のリンク（#209）。飛び先が「先頭」であることは単体
+ * 以下 2 本は帯のリンク。飛び先が「先頭」であることは単体
  * （`token-dashed-nodes.reveal.test.tsx`）が守る。`SampleDocument` の `heading` を
  * 指すのは `home-title` の 1 件だけなので、ここでは先頭の規則を確かめられない。
  */

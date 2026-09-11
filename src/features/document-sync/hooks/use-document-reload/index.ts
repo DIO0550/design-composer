@@ -25,11 +25,8 @@ export type DocumentReloadTarget = Readonly<{
  * 監視は表示している間だけ張り、直近の IPC の失敗を返して呼び出し側が表示を決める。
  *
  * テキストの解釈は `libs/document-json`、「取り込めたか / 拒んだか」の判断は
- * `DocumentReload` が持ち、ここは外部システム（file watch）との同期と、
- * その 2 つへの受け渡しだけを行う（rules/hooks.md）。
- *
- * 失敗をドメインの語彙で返す理由は `toDocumentAccessFailure` の doc にある
- * （残る 2 つの経路は `DocumentSaveState.failure()` 経由で届く）。
+ * `DocumentReload` が持ち、ここは外部システム（file watch）との同期と受け渡しだけを行う
+ * （rules/hooks.md）。
  *
  * @returns 直近の監視 / 読み込みの失敗。1 度も失敗していなければ `none`
  */
@@ -53,7 +50,7 @@ export function useDocumentReload({
       return;
     }
     // 届いた内容をそのまま解釈する。`load_document` で読み直すと、その間に挟まった
-    // 自アプリの保存を読んでしまい、Rust 側の自己ループ防止が崩れる（#27）。
+    // 自アプリの保存を読んでしまい、Rust 側の自己ループ防止が崩れる。
     onReload(DocumentReload.fromParsed(DocumentJson.parse(changed.content)));
   });
 

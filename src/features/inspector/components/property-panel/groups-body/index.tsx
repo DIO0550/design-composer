@@ -12,9 +12,6 @@ import { ShorthandRow } from "../shorthand-row";
 /**
  * セクションに並ぶ 1 行。
  *
- * 戻り値を `ReactElement`（`ReactNode` ではない）と書いているのは、行の種類を
- * 足して `case` を足し忘れたときにコンパイルエラーにするため。
- *
  * @returns 行の種類に応じた 1 行
  */
 function SectionRow({
@@ -44,10 +41,6 @@ function rowKey(row: PropControlRow): string {
 
 /**
  * 見出しでまとめた prop の並び（Layout / Size / Appearance）。UI 案は罫線で区切る。
- *
- * Why not: UI 案が見出しの右端に描く `⋯` は置かない。開いた先のメニューがどこにも
- * 描かれておらず、まとめて未指定へ戻す操作も各 prop の導線（セグメントの再押下・
- * `未指定（既定: …）`・テキストを空にする）で足りているため。
  */
 function GroupSection({
   section,

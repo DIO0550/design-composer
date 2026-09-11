@@ -31,9 +31,6 @@ type RenderDocumentErrors = (errors: readonly DocumentError[]) => ReactNode;
 /**
  * I/O の失敗を利用者向けの言い方にする。診断用の原文は後ろに添える。
  *
- * 綴りを表示側に置くのは、ドメインが持つのが理由の**種別**までだから
- * （rules/architecture.md「表示のための綴りをドメインへ持ち込まない」）。
- *
  * @param reason ドキュメントの中身へ届かなかった理由
  * @returns 利用者向けの 1 行
  */
@@ -107,9 +104,6 @@ function OpenFailure({
 /**
  * 開く指示を受け取れない経路を、利用者向けの言い方にする。
  *
- * 経路ごとに出し分けるのは、片方だけ使えないときに、生きている側まで壊れていると
- * 読める文言にしないため（`switch` に `default` を置かず、経路を足したらここで気づく）。
- *
  * @param source 受け取れなかった経路
  * @returns 利用者向けの 1 行
  */
@@ -125,11 +119,10 @@ function commandSourceFailureLabel(source: CommandSource): string {
 /**
  * 押せる導線の共通の形。地・枠・文字だけを差し替える。
  *
- * 大きさ（高さ 30px / 角丸 5px / font-size 11px / 横 10px）と font-family は
- * UI 案（`docs/Design Composer.html`）の塗りのボタンに合わせている。共通の `Button`
- * にはしていない。UI 案のボタンはこのリポジトリの帯・パレット・ダイアログ等でも
- * 使われる作りだが、今の Issue（#374）の外まで塗り替えると差分が広がるため。
- * 共通化は乖離解消の一覧（#112）で別 Issue にする。
+ * 大きさ（高さ 30px / 角丸 5px / font-size 11px / 横 10px）と font-family は UI 案
+ * （`docs/Design Composer.html`）の塗りのボタンに合わせている。
+ *
+ * 共通の `Button` にはしていない。
  */
 const ActionButton =
   "flex h-[30px] items-center rounded-[5px] px-[10px] font-[inherit] text-[11px] disabled:cursor-default disabled:opacity-50";
@@ -138,7 +131,7 @@ const ActionButton =
  * ドキュメントを開く / 作る導線。
  *
  * 開いた後はメニュー（⌘O / ⌘N）へ移るので、ボタンとして出るのはこの画面だけ
- * （#374 / `src-tauri/src/menu.rs`）。
+ * （`src-tauri/src/menu.rs`）。
  *
  * @param actions 開く / 作るを始める手続き
  * @param disabled 既に開く操作が始まっていて、押させたくないか
@@ -184,8 +177,7 @@ function StartActions({
 /**
  * 最近開いたファイルの 1 件。
  *
- * フォルダ名を添えるのは、ファイル名だけでは同名のファイルを別フォルダで開いたときに
- * 区別できないため（`EditorTopBar.Breadcrumb` と同じ理由）。フルパスは `title` に持たせる。
+ * フルパスは `title` に持たせる。
  *
  * 名前を持たないパス（`/` だけなど）では字を出さずに `title` だけが残る。
  * 出せない名前を綴り直す既定値を置かないのは、`EditorTopBar.Breadcrumb` と同じ扱い。
@@ -227,8 +219,8 @@ function RecentFileButton({
 /**
  * 最近開いたファイルの一覧。
  *
- * 並べ替えも重複の除去もしない。どの順で何件持つかは一覧を供給する側の決め事で、
- * 保存先が決まるまでは空のまま（#376）。
+ * 並べ替えも重複の除去もしない。どの順で何件持つかは一覧を供給する側の決め事で、保存先が決
+ * まるまでは空のまま。
  *
  * @param paths 新しい順に並んだパス
  * @param onOpen そのパスを開く手続き
@@ -261,10 +253,12 @@ function RecentFiles({
  * ドキュメントを開いていないときの画面。
  *
  * UI 案（`docs/Design Composer.html`）が持つ画面はどれもドキュメントを開いた後のもので、
- * 開く前の画面を描いていない（`open` / `recent` / `welcome` はいずれも 0 件）。
- * 画面の数と名前は `rules/ui-verification.md` が持つので、ここでは数えない。そのため見せ方はここで決めているが、使う色と字の大きさは UI 案の語彙から採っている
- * （地 `#fafafa` と hover の `#f0f0f0`、文字 `#1e1e1e` / `#767676`、境界 `#e6e6e6`、
- * 強調 `#4db2ff` / `#0d99ff`）。組み合わせ方には UI 案に無いものを含む（`StartActions`）。
+ * 開く前の画面を描いていない（`open` / `recent` / `welcome` はいずれも 0 件）。そのため見せ
+ * 方はここで決めている。画面の数と名前は `rules/ui-verification.md` が持つ。
+ *
+ * 使う色と字の大きさは UI 案の語彙から採っている（地 `#fafafa` と hover の `#f0f0f0`、
+ * 文字 `#1e1e1e` / `#767676`、境界 `#e6e6e6`、強調 `#4db2ff` / `#0d99ff`）。組み合わせ方
+ * には UI 案に無いものを含む（`StartActions`）。
  *
  * @param session ドキュメントを開いていないセッション
  * @param actions 開く / 作るを始める手続き

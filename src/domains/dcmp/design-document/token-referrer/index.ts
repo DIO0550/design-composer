@@ -18,20 +18,15 @@ import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 
 /**
- * トークンを参照している箇所1件（UI 案 docs/Design Composer.html の `Used by` の行 / #127）。
+ * トークンを参照している箇所1件（UI 案 docs/Design Composer.html の `Used by` の行）。名前
+ * と prop 名は片方だけでは参照箇所が決まらないため対で持つ。
  *
- * 名前と prop 名を対で持つのは、片方だけでは参照箇所が決まらないため
- * （名前だけではどの prop が指しているか分からず、prop 名だけではどこの prop か分からない）。
+ * 名前だけを持たせると表示側がドキュメントを引き直し、「参照元として集めたのに引けない」起
+ * こり得ない不在が表示側に生じる。
  *
- * 何の prop かを `target` で判別する直和にしているのは、行に出すアイコンが
- * 「artboard / プリミティブ / インスタンス / 部品定義」で変わるため。名前だけを持たせると
- * 表示側がドキュメントを引き直して artboard かノードかを場合分けすることになり、
- * 集める側が「参照元として集めたのに引けない」という起こり得ない不在を表示側に作る。
- *
- * `prop` を union で閉じていないのは、プリミティブ側は `TokenPropName` で閉じられるが、
- * インスタンスの上書きで使う公開 prop 名は部品ごとにユーザーが決めるもので、
- * 仕様（docs/01-file-format.md「publicProps」）が語彙を列挙していないため
- * （`rules/coding.md`「対で縛るコストが釣り合わない場合は無理に縛らない」）。
+ * `prop` を union で閉じていないのは、インスタンスの上書きで使う公開 prop 名が部品ごと
+ * にユーザーが決めるもので、仕様（docs/01-file-format.md「publicProps」）が語彙を列挙し
+ * ていないため。
  */
 export type TokenReferrer =
   | Readonly<{ target: "artboard"; name: string; prop: string }>
@@ -68,15 +63,12 @@ function collectSchemaRefProps(
 /**
  * インスタンスの上書きのうち、そのトークンを指しているものの公開 prop 名。
  *
- * 参照ノードが持つのは自分の props ではなく部品への上書きなので、その値が何の prop なのかは
- * 公開 prop の binding を辿って初めて決まる。辿るのは `ComponentSet.publicPropTarget` の担当。
+ * 参照ノードが持つのは自分の props ではなく部品への上書きなので、その値が何の prop なの
+ * かは公開 prop の binding を辿って初めて決まる（辿るのは
+ * `ComponentSet.publicPropTarget` の担当）。
  *
- * Why not: 他の経路と違い、ここはスキーマデフォルトを足さない。上書きしていない公開 prop に
- * 効いているのは部品定義側の値で、その参照は `collectInComponents` が数えるため。
- * 足すとインスタンスの数だけ二重に数える。
- * 参照先の部品が無い・公開 prop に無い・連鎖が途切れているときは prop 定義が決まらないので
- * 数えない（それぞれ `dangling-ref` / `undeclared-override` / binding の不整合として
- * 検証側が報告する）。
+ * 他の経路と違いスキーマデフォルトを足さない。参照先の部品や公開 prop が無いときは prop 定
+ * 義が決まらず数えない。
  *
  * @param components 公開 prop の binding を辿るための部品一式
  * @param refNode 上書きを持つインスタンスのノード
@@ -131,7 +123,6 @@ function collectPrimitiveReferrers(
 
 /**
  * 部品定義自身（ルートノードを兼ねる）の参照元。
- * 未知の type を空にする理由は `collectPrimitiveReferrers` と同じ。
  *
  * @param name 参照元として出す部品名
  * @param component 参照元になりうる部品
@@ -205,9 +196,6 @@ export const TokenReferrer = {
   /**
    * 参照元のうちノードを指しているものの名前。重複は落とす。
    *
-   * 落とすのは、1 つのノードが 2 つの prop から同じトークンを指しうるため
-   * （`Used by` の件数が参照箇所の総数なのに対し、こちらはノードの数になる）。
-   *
    * ここで外れるのは artboard と部品定義のルートまで。部品定義の**中の**ノードは
    * `primitive` / `instance` として集まるので、この並びに残る（キャンバスに出ているかは
    * ドキュメントを引かないと決まらないため、絞るのは受け取った側の仕事）。
@@ -234,17 +222,12 @@ export const TokenReferrer = {
   /**
    * artboard 1枚の中で、そのトークンを参照している箇所を集める。
    *
-   * artboard 自身の props も対象。受け付ける prop の定義は `Artboard.propDefinitions()`
-   * （Box スキーマからサイズ系を落として `overflow` の既定を差し替えたもの）が持つので、
-   * Box スキーマを直に見ない。artboard が受け付ける prop の唯一の答えがそちらだから。
+   * artboard 自身の props も対象。受け付ける prop の定義は `Artboard.propDefinitions` が持つ
+   * ので Box スキーマを直に見ない（artboard が受け付ける prop の唯一の答えがそちらだから）。
    *
    * ただし検証側（`validation` の `collectArtboardErrors`）は Box スキーマを照らしており、
-   * artboard だけ照らす先が 2 通りある。artboard 固有の既定がトークンを指した時点で
-   * 参照元と dangling が食い違うが、**そうなっても落ちるテストは無い**（今は Box の既定が
-   * すべて enum なので差が出ず、差を作らないと再現できない）。寄せられない理由は
-   * `collectArtboardErrors` の Why not が持つ。
-   *
-   * 部品集合を受け取るのは、インスタンスの上書きの prop 定義を解決するために要るため。
+   * artboard だけ照らす先が 2 通りある。artboard 固有の既定がトークンを指した時点で参照元
+   * と dangling が食い違うが、**そうなっても落ちるテストは無い**（理由はあちらのコメント）。
    */
   collectInArtboard(
     components: ComponentSet,
@@ -266,15 +249,9 @@ export const TokenReferrer = {
   /**
    * 部品定義の中で、そのトークンを参照している箇所を集める。
    *
-   * 部品定義の中の参照も数えるのは、初期部品セットの見た目の prop がすべてデフォルトテーマの
-   * トークンを参照しており（docs/04-tokens.md「初期部品セット」）、外側だけを見ると
-   * 新規ドキュメントのトークンがほとんど「どこからも使われていない」と読めてしまうため。
-   * 部品の使用数を数える `ComponentSet.assets` が定義の中の参照を足しているのと同じ理由。
-   *
-   * 1件ずつではなく部品集合をまとめて受け取るのは、名前で部品を引き直す形にすると
-   * 「引けなかったとき」の分岐が生まれるが、辿る名前がすべて自分の持ち物なので
-   * 引きが失敗しようがないため（`ComponentSet.assets` が `Object.entries` の1本で
-   * 組んでいるのと同じ理由）。
+   * 部品定義の中の参照も数えるのは、初期部品セットの見た目の prop がすべてデフォルトテー
+   * マのトークンを参照しており（docs/04-tokens.md「初期部品セット」）、外側だけを見ると新
+   * 規ドキュメントのトークンがほとんど「どこからも使われていない」と読めてしまうため。
    */
   collectInComponents(
     components: ComponentSet,

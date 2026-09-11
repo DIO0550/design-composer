@@ -5,17 +5,11 @@ import type { DocumentDialogError } from "@/libs/document-dialog";
 import { Option } from "@/utils/Option";
 
 /**
- * 開けなかった理由。
+ * 開けなかった理由。由来ごとに画面へ出すものが変わる（解釈できなかったファイルはエラー
+ * 一覧、I/O とダイアログは 1 行のメッセージ）ため、1 つのメッセージへ潰さずに分けて持つ。
  *
- * 由来ごとに画面へ出すものが変わる（解釈できなかったファイルはエラー一覧、I/O と
- * ダイアログは 1 行のメッセージ）ため、1 つのメッセージへ潰さずに分けて持つ。
- *
- * `unparsable` が運ぶのは `DocumentJson.parse` が返した失敗だけ（字句スキャン・
- * `JSON.parse`・版の解決・構造のデコード）。スキーマ検証で落ちるファイルはここへ来ず、
- * そのまま開く（docs/03-schema.md「不正ファイル時の挙動」の「開く時」）。
- *
- * 枝が指すのは**どの段で失敗したか**（ダイアログ / I/O / 解釈）で、`io` が運ぶ理由の
- * 語彙は他の経路と共有する（`DocumentAccessFailure`）。
+ * `unparsable` が運ぶのは `DocumentJson.parse` が返した失敗だけで、スキーマ検証で落ちる
+ * ファイルはここへ来ずそのまま開く（docs/03-schema.md「不正ファイル時の挙動」の「開く時」）。
  */
 export type DocumentOpenFailure =
   | Readonly<{ kind: "dialog"; error: DocumentDialogError }>
@@ -25,9 +19,6 @@ export type DocumentOpenFailure =
 /**
  * アプリがどのドキュメントを開いているか（docs/01-file-format.md「ファイル」/
  * docs/05-architecture.md「Tauri IPC」）。
- *
- * 「開いているのに開けなかった理由がある」「読み込み中なのにドキュメントもある」といった
- * 組み合わせを作れないよう、取りうる状態を直和で列挙する。
  */
 export type DocumentSession =
   | Readonly<{ kind: "closed" }>

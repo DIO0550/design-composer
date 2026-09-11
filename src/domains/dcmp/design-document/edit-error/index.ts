@@ -3,14 +3,12 @@ import type { NodeTreeEditError } from "@/domains/dcmp/node-tree";
 import { TokenEditError } from "@/domains/dcmp/token";
 
 /**
- * ドキュメントの編集操作（挿入・削除・並べ替え・移動・部品化・解除・tokens 編集）が
- * 失敗する理由。
- * 呼び出し側が種類で分岐できるよう、メッセージ文字列ではなく直和で列挙する。
+ * ドキュメントの編集操作（挿入・削除・並べ替え・移動・部品化・解除・tokens 編集）が失敗
+ * する理由。呼び出し側が種類で分岐できるよう、メッセージ文字列ではなく直和で列挙する。
  *
- * `NodeTreeEditError`（ツリー1階層の編集失敗）と `TokenEditError`（トークンの
- * 編集失敗）と `ExpandedNodeError`（部品の展開失敗）をそのまま含む。いずれの失敗も
- * ドキュメントの失敗でもあるので、部分型として受け取れるよう同じ形のメンバを
- * 並べている（変換を挟まずに伝播できる）。
+ * `NodeTreeEditError` / `TokenEditError` / `ExpandedNodeError` をそのまま含む。いずれの
+ * 失敗もドキュメントの失敗でもあるので、部分型として受け取れるよう同じ形のメンバを並べ
+ * ている（変換を挟まずに伝播できる）。
  */
 export type DesignDocumentEditError =
   | NodeTreeEditError

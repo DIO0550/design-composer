@@ -1,20 +1,10 @@
 import type { ReactElement, ReactNode } from "react";
 
 /**
- * 右ペインの幅。編集画面のグリッド（`EditorLayout` の `grid-cols-[19rem_1fr_18rem]`）の
- * 3 列目の写しで、両者が揃っていることは
- * `features/editor/components/editor-layout/__tests__/editor-layout.pane-width.test.tsx`
- * が固定する。
- *
- * Tailwind のスケール値ではなく任意値で書くのは、グリッドの列と同じ綴りにしておくと
- * テストが文字列として突き合わせられるため（スケール値で書いても同じ 18rem なので、
- * 見た目は動かない）。
- *
- * Why not: グリッドの列指定から組み立てない。Tailwind の JIT はソース中のリテラルしか
- * 拾わないので、変数から組んだ class 名は CSS が生成されない。
+ * 右ペインの幅。
  *
  * この 18rem は UI 案（docs/Design Composer.html は右ペインを 6 画面とも 264px と描く）
- * とずれているが、それは編集画面のグリッド側に元からある乖離で、ここはその写し。
+ * とずれているが、それはグリッド側に元からある乖離で、ここはその写し。
  */
 const RightPaneWidthClass = "w-[18rem]";
 
@@ -53,27 +43,14 @@ function heightClass(height: RightPaneShellHeight): string {
 
 /**
  * ストーリーの中で右ペインの殻（`EditorLayout.RightPane` とそれを載せるグリッドの列）の
- * 代わりに置く枠。帯（`PaneHeading`）・本文（`PaneBody`）・その中に並ぶ部品を、
- * 実画面と同じ幅で見るために使う。
+ * 代わりに置く枠。帯・本文・その中に並ぶ部品を、実画面と同じ幅で見るために使う。
  *
- * 殻は余白を持たない。帯の下線がペインの両端まで届くことを絵に載せるため、余白は
- * 本文が内側に持つ（実画面と同じ形）。
+ * 殻は余白を持たない（帯の下線がペインの両端まで届くことを絵に載せるため、余白は本文が
+ * 内側に持つ）。`pane` の高さを 32rem に固定しているのは、本文がスクロールを受けている
+ * ことを視覚差分に載せるため。
  *
- * `pane` の高さを 32rem に固定しているのは、**本文がスクロールを受けていることを
- * 視覚差分に載せるため**。`features/inspector` の `artboard を選択中` はこの高さに
- * 収まらずスクロールバーが絵に出る（`features/tokens` はどれも収まる）。
- *
- * 横断層に置いているのは、右ペインの殻を真似ているストーリーが `src/components/` と
- * 2 つの feature（`inspector` / `tokens`）に散っていて、幅の綴りが 7 箇所へ写されて
- * いたため（#300）。
- *
- * 名前に `RightPane` を付けているのは、帯や本文（`PaneHeading` / `PaneBody`）と違って
- * **どのペインにも使える部品ではない**ため。持っている幅は 3 列目（18rem）で、左ペイン
- * （19rem）のストーリーがこれを着ると 1rem ずれる（左ペインの枠は #304）。
- *
- * Why not: 本物の殻（`EditorLayout.RightPane`）は使えない。幅を持っているのは親の
- * グリッドの列で `RightPane` 単体では幅が出ないうえ、横断層から `features/` は
- * import できない（.oxlintrc.json）。
+ * 持っている幅は 3 列目（18rem）なので、左ペインのストーリーがこれを着ると 1rem ずれる（左
+ * ペインの枠は）。
  *
  * @returns 受け取った中身を、右ペインと同じ幅の枠に入れたもの
  */

@@ -27,13 +27,9 @@ const Major = 1;
 /**
  * major 1 の仕様で書かれたドキュメント(docs/01-file-format.md)。
  *
- * `formatVersion` の major が型に固定されているので、この型の値は
- * 1 以外の major を名乗れない（中身の形と名乗る版が食い違う状態を作れない）。
- * minor は後方互換な追加なので幅を持つ（1.0 のファイルも 1.3 のファイルもこの形）。
- *
- * 版を上げるときはこのフォルダを残したまま隣に `v2/` を作る。
- * 旧版の型が残ることで、マイグレーション（`libs/document-migration`）が
- * 「どの形から どの形へ」を型で書けるようになる。
+ * `formatVersion` の major が型に固定されているので、この型の値は 1 以外の major を名乗
+ * れない（中身の形と名乗る版が食い違う状態を作れない）。minor は後方互換な追加なので幅
+ * を持つ（1.0 のファイルも 1.3 のファイルもこの形）。
  */
 export type DesignDocumentV1 = Readonly<{
   formatVersion: FormatVersionOf<typeof Major>;
@@ -44,14 +40,13 @@ export type DesignDocumentV1 = Readonly<{
 
 export const DesignDocumentV1 = {
   /**
-   * JSON のデータモデルからこの版のドキュメントを組み立てる。
-   * 検証するのは形（必須フィールド・型・未知フィールド）だけで、
-   * スキーマ検証は `DesignDocument.collectErrors` の担当。
+   * JSON のデータモデルからこの版のドキュメントを組み立てる。検証するのは形（必須フィー
+   * ルド・型・未知フィールド）だけで、スキーマ検証は `DesignDocument.collectErrors` の
+   * 担当。
    *
-   * `formatVersion` はこの版の major を名乗っているかまで見る。
-   * 違う major のテキストをこの型の値にしないための境界で、
-   * 互換性判定とマイグレーション自体はデコードより前
-   * （JSON のデータモデルの段階）で `libs/document-migration` が済ませている。
+   * `formatVersion` はこの版の major を名乗っているかまで見る（違う major のテキストを
+   * この型の値にしないための境界）。互換性判定とマイグレーション自体はデコードより前に
+   * `libs/document-migration` が済ませている。
    */
   fromJson(cursor: JsonCursor): JsonDecoded<DesignDocumentV1> {
     return Result.flatMap(Json.record(cursor), (record) =>

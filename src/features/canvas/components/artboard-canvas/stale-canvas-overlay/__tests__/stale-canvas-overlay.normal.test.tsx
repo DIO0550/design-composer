@@ -3,7 +3,7 @@ import { expect, test } from "vitest";
 import { StaleCanvasOverlay } from "../index";
 
 /*
- * ファイルが不正な間の重ね（#135）。映っているのが最後に正常だった表示であることを
+ * ファイルが不正な間の重ね。映っているのが最後に正常だった表示であることを
  * 名乗るバッジと、編集できないことを表す斜線。
  */
 

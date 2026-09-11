@@ -177,9 +177,6 @@ test("インスタンス以外を選んでいるときは group の見出しが�
 
 /**
  * 同じ部品を指すインスタンスが 2 つあるドキュメント。
- *
- * `setupDocument` を使い回さないのは、あちらの `primary-button` が 1 件しか無く、
- * ボタンが押せる側の見え方を確かめられないため。
  */
 function setupMultiInstanceDocument(): DesignDocument {
   return DesignDocument.create({

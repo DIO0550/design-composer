@@ -10,9 +10,6 @@ import {
 /**
  * 子を並べる Box でだけ効く、という条件（docs/03「Box」）。
  * `free` は子を並べないので、間隔・揃えを指定しても意味を持たない。
- *
- * 不等値で書く理由は `EnabledWhen` の doc。ここが `Layout.direction` と同じ事実を
- * 別に綴っていることは `domains/dcmp/layout/__tests__/layout.schema.test.ts` が固定する。
  */
 const FlexOnly = {
   kind: "notEquals",
@@ -21,14 +18,11 @@ const FlexOnly = {
 } as const satisfies EnabledWhen;
 
 /**
- * primitive の型を名前で指すための対応表。`PrimitiveType` はここから導出し、
- * 二重管理しない。走査するときは `Object.values(PrimitiveTypes)` で並びにする
- * (`token/` の 3 定数と違い、並びを返すコンパニオンの入口をここは持たないため)。
+ * primitive の型を名前で指すための対応表。`PrimitiveType` はここから導出し、二重管理し
+ * ない。
  *
- * Why not: `satisfies` を付けない。`PrimitiveType` を自身から導出しているので
- * `Record<Capitalize<PrimitiveType>, PrimitiveType>` が循環する。代わりに
- * **キーの綴りと過不足**は `__tests__/schema.type.test.ts` の型テストが、
- * **値**が 2 種類に閉じていることは `__tests__/schema.edge.test.ts` が押さえる。
+ * 走査するときは `Object.values(PrimitiveTypes)` で並びにする（`token/` の 3 定数と違い、
+ * 並びを返すコンパニオンの入口をここは持たないため）。
  */
 export const PrimitiveTypes = {
   Box: "Box",
@@ -48,10 +42,11 @@ export type PrimitiveSchema = Readonly<{
  * 親の中でのノードの置かれ方を決める props（docs/03「配置の指定」）。
  * Box と Text のどちらも親の中に置かれるので、同じ 5 prop を両方が持つ。
  *
- * 座標に既定 `0` を置くのは、「絶対配置なのに座標が無い」を作れなくするため。
- * 既定はファイルに書き出されない（docs/02「明示的に設定した props のみを保存する」）
- * ので、書いていないノードの diff には現れない。追従の既定を `min`（左上固定）に
- * するのも同じで、書いていないノードは親をリサイズしても動かない。
+ * 既定はファイルに書き出されない（docs/02「明示的に設定した props のみを保存する」）ので、
+ * 書いていないノードの diff には現れない。
+ *
+ * 追従の既定を `min`（左上固定）にするのも同じで、書いていないノードは親をリサイズしても
+ * 動かない。
  */
 const PlacementProps = {
   placement: {
@@ -92,21 +87,18 @@ const PlacementProps = {
 
 /**
  * Box の仕様（docs/02「プリミティブ」の表）。
- * `as const satisfies` で書くのは、`PrimitiveSchema` への適合を検査しつつ
- * prop 名・`tokenKind`・デフォルト値をリテラル型のまま残すため
- * （`token-props/` の型レベルの導出がこの情報に依存している）。
  */
 export const BoxSchema = {
   allowsChildren: true,
   props: {
     ...PlacementProps,
     /*
-     * Why not: `arrangement` などへ改名しない。この prop も `group: "layout"` に属し、
-     * パネルの節見出しは group の綴りから作られるので、見出しと行に同じ語が並ぶ
-     * （UI 案 docs/Design Composer.html はここを `direction` と描いている）。
-     * それでも prop 名を docs/03 の綴りに揃えるのは、表示名を持たず prop 名の整形で
-     * 出す決まりだから（docs/03「表示名フィールドは持たない」）。見出しの語を変えるなら
-     * group の綴りごと変える話になり、この prop 単独の判断ではない。
+     * `arrangement` などへ改名しない。この prop も `group: "layout"` に属し、パネルの節
+     * 見出しは group の綴りから作られるので、見出しと行に同じ語が並ぶ（UI 案
+     * docs/Design Composer.html はここを `direction` と描いている）。それでも prop 名を
+     * docs/03 の綴りに揃えるのは、表示名を持たず prop 名の整形で出す決まりだから（docs/03
+     * 「表示名フィールドは持たない」）。見出しの語を変えるなら group の綴りごと変える話
+     * になり、この prop 単独の判断ではない。
      */
     layout: {
       domain: "enum",
@@ -235,8 +227,6 @@ export const PrimitiveSchemas = {
 export const PrimitiveSchema = {
   /**
    * その primitive のスキーマ。
-   * 戻り値を `PrimitiveSchema` へ広げず型引数で受けるのは、
-   * 呼び出し側が prop 名やデフォルト値をリテラル型のまま扱えるようにするため。
    */
   forType<T extends PrimitiveType>(type: T): (typeof PrimitiveSchemas)[T] {
     return PrimitiveSchemas[type];

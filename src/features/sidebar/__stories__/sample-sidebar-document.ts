@@ -5,16 +5,12 @@ import {
 import { DocumentSelection } from "@/domains/session/document-selection";
 
 /**
- * 左ペインのストーリー用のサンプルドキュメント。
+ * 左ペインのストーリー用のサンプルドキュメント。雛形のトークン・部品に artboard を 2 枚
+ * 足してある。
  *
- * 雛形のトークン・部品に artboard を 2 枚足してある。3 つの行き先が 1 つのドキュメントで
- * 揃うようにしていて、Layers は 2 枚の artboard とその中身、Assets は雛形の部品、
- * Tokens は雛形のトークンを映す。ツリー都合の構造（入れ子の深さ・並べ替えボタンの出方）は
- * それを見たいストーリーの側に置く。
- *
- * Why not: `features/editor` のサンプル状態（`SampleEditorState`）は持ってこない。
- * この feature は編集画面を知らないので import できず、あちらはキャンバスの配置
- * （はみ出しの clip など）を映すためのドキュメントで目的が違う。
+ * 3 つの行き先が 1 つのドキュメントで揃うようにしていて、Layers は 2 枚の artboard とそ
+ * の中身、Assets は雛形の部品、Tokens は雛形のトークンを映す。ツリー都合の構造（入れ子
+ * の深さ・並べ替えボタンの出方）はそれを見たいストーリーの側に置く。
  */
 export const SampleSidebarDocument = DesignDocument.create({
   tokens: DocumentTemplate.Default.tokens,

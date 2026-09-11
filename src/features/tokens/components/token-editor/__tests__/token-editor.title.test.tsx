@@ -7,9 +7,9 @@ import { Option } from "@/utils/Option";
 import { TokenEditor } from "../index";
 
 /**
- * 見出しが「どのトークンを編集しているか」を伝えることを見る
- * （UI 案 docs/Design Composer.html の `gray-900` / `Color` / #112）。
- * 5 種すべてのトークンを 1 つのドキュメントに置いて、種別ごとの綴りを見比べる。
+ * 見出しが「どのトークンを編集しているか」を伝えることを見る（UI 案 docs/Design
+ * Composer.html の `gray-900` / `Color`）。5 種すべてのトークンを 1 つのドキュメントに置い
+ * て、種別ごとの綴りを見比べる。
  */
 function setupDocument(): DesignDocument {
   return DesignDocument.create({

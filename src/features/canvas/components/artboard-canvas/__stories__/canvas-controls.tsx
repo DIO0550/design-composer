@@ -35,9 +35,6 @@ export type CanvasControls = Readonly<{
 /**
  * 4 つの口を本物のフックから組み立てて子へ渡す。
  *
- * story のためにフックを差し替えないのは、差し替えると story が確かめているものが
- * 本番の配線から離れるため（VRT が見ているのは本番と同じ組み立ての結果であってほしい）。
- *
  * @param selection 落とし先の解決とリサイズハンドルの算出に使う、ドキュメントと選択の対
  * @param children 組み立てた 3 つの口を受け取って中身を返す関数
  * @returns `children` が組んだ中身

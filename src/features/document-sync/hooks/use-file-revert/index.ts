@@ -23,19 +23,11 @@ export type FileRevertControl = Readonly<{
 }>;
 
 /**
- * 外部変更で不正になったファイルを、表示中の内容で上書きして捨てる
- * （UI 案 docs/Design Composer.html の Error 画面 `revert file`）。
+ * 外部変更で不正になったファイルを、表示中の内容で上書きして捨てる（UI 案 docs/Design
+ * Composer.html の Error 画面 `revert file`）。書き込みはボタンの押下から始めるので
+ * `useEffect` には置かない。
  *
- * 書き込みはボタンの押下から始めるので `useEffect` には置かない
- * （rules/hooks.md「イベント起因の処理を Effect に書かない」）。
- *
- * Why not: `useAutoSave` に任せない。あちらの書き込みの契機は
- * 「表示中のドキュメントが最後に書き出したものと違うこと」で、書き戻しは
- * 表示中のドキュメントを変えないため一度も条件に当たらない。
- *
- * 成功を `onReverted` で伝えるのは、アプリ自身の書き込みが外部変更として
- * 返ってこないため（Rust 側の `known_content` が自書き込みを識別して通知を止める / #27）。
- * 待っていてもエラー一覧が畳まれないので、書けたことをここから伝える。
+ * 待っていてもエラー一覧が畳まれない。
  *
  * @returns 書き戻しの操作と、その書き込みの状態
  */

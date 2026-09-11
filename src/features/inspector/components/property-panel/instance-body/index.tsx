@@ -85,9 +85,6 @@ function PublicPropRow({
 /**
  * インスタンスを選んだときの本文（UI 案 docs/Design Composer.html の
  * `Assets · Instance` の右ペイン）。
- *
- * `group` の見出しを出さないのは、公開 prop の `group` が binding 先の
- * プリミティブのものだから（出すと部品の内部構造が漏れる）。
  */
 export function InstanceBody({
   controls,

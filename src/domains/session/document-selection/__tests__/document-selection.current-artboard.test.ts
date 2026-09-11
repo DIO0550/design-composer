@@ -4,11 +4,9 @@ import { DocumentSelection } from "@/domains/session/document-selection";
 import { Option } from "@/utils/Option";
 
 /**
- * 今見ている artboard は選択から導かれる（docs/06-ui.md「選択」/ #112）。
+ * 今見ている artboard は選択から導かれる（docs/06-ui.md「選択」）。
  *
- * ノードはすべて 2 枚目（`settings`）にぶら下げる。先頭の `home` に置くと、
- * 「ノードから artboard を辿る」規則を壊しても「選択なしは先頭」の既定で
- * 同じ答えになり、テストが落ちなくなるため。
+ * ノードはすべて 2 枚目（`settings`）にぶら下げる。
  */
 function setupDocument(): DesignDocument {
   return DesignDocument.create({

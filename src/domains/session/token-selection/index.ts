@@ -3,18 +3,13 @@ import { type Token, type TokenRef, TokenSet } from "@/domains/dcmp/token";
 import { Option } from "@/utils/Option";
 
 /**
- * ドキュメントと、その中で選ばれているトークンの対
- * （docs/06-ui.md「編集操作の一覧」の tokens 編集）。
+ * ドキュメントと、その中で選ばれているトークンの対（docs/06-ui.md「編集操作の一覧」の
+ * tokens 編集）。
  *
- * 2 つを 1 つの型にまとめるのは、**片方だけでは答えが決まらない**ため。
- * 選ばれているのは種別と名前（`TokenRef`）だけで、その値も参照元も、どのドキュメントの
- * 中の名前かが決まって初めて引ける。
+ * 選ばれているのは種別と名前（`TokenRef`）だけで、その値も参照元も、どのドキュメントの中の
+ * 名前かが決まって初めて引ける。
  *
- * 選択そのものではなく `TokenRef` を持つのは、値を持ち回すと編集・undo のあとに古い値が
- * 残るため。中身は引き直す（`TokenSelection.token`）。
- *
- * ノード側の対は `DocumentSelection`。`Selection`（選んだ 1 つの正体）とも別物で、
- * あちらはドキュメントを持たない。
+ * ノード側の対は `DocumentSelection`。
  */
 export type TokenSelection = Readonly<{
   document: DesignDocument;
@@ -25,7 +20,7 @@ export type TokenSelection = Readonly<{
  * 選ばれているトークンの参照元を、渡された集め方で集める。
  *
  * 選択が無いときも空を返し、参照が 0 件であることと区別しない。消費側の見え方が
- * どちらでも同じ（`Used by` の枠も #147 の破線も出ない）ため、`Option` で区別しても
+ * どちらでも同じ（`Used by` の枠もキャンバスの破線も出ない）ため、`Option` で区別しても
  * 分岐が増えるだけになる。区別が要る消費側が現れたら、選択を引数で受け取る形
  * （未選択の状態を渡せない形）にする。
  *
@@ -88,8 +83,7 @@ export const TokenSelection = {
   },
 
   /**
-   * 選ばれているトークンを参照している箇所
-   * （UI 案 docs/Design Composer.html の `Used by` / #127）。
+   * 選ばれているトークンを参照している箇所（UI 案 docs/Design Composer.html の `Used by`）。
    *
    * @param selection 選択とドキュメントの出どころ
    * @returns 参照元の並び。トークンを選んでいなければ空
@@ -99,7 +93,7 @@ export const TokenSelection = {
   },
 
   /**
-   * 選ばれているトークンを参照している、キャンバス上のノードの名前（#147 の破線の相手）。
+   * 選ばれているトークンを参照している、キャンバス上のノードの名前（破線の相手）。
    *
    * artboard 自身の参照が落ちるのは `TokenReferrer.nodeNames` の担当で、
    * 部品定義の中の参照はそもそも集める範囲に入っていない。

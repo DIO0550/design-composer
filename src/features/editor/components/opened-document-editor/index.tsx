@@ -63,22 +63,11 @@ import type { Option } from "@/utils/Option";
 /**
  * 右ペインの帯と本文に出すもの。器（`PaneHeading` / `PaneBody`）は呼び出し側が
  * 着せるので、ここが持つのは中身だけ。
- *
- * 帯を `ReactNode` にしているのは、選んでいないときに中身が空になるため
- * （`PropertyPanel.Title` / `TokenEditor.Title` は `null` を返す）。
  */
 type RightPaneParts = Readonly<{ title: ReactNode; body: ReactElement }>;
 
 /**
- * 行き先ごとの右ペインの中身。`Assets` がプロパティパネルのままなのは、パレットは
- * 見るだけの場所で選択に触れないため
- * （UI 案「Assets is browse-only — the inspector keeps the previous selection」）。
- *
- * 器を返さず帯と本文に分けて返すのは、器を着せるところを 1 箇所にするため
- * （行き先ごとに着せると、片方だけ器を落とした状態が書ける）。
- *
- * 戻り値を `RightPaneParts`（`undefined` を含まない）と書いているのは、行き先を足して
- * `case` を足し忘れたときにコンパイルエラーにするため。
+ * 行き先ごとの右ペインの中身。
  *
  * @returns Tokens ならトークンの編集欄、Layers / Assets ならプロパティパネル
  */
@@ -116,7 +105,7 @@ function rightPaneParts({
 
   /*
    * 凍結は行き先より先に見る。ファイルが不正な間はトークンも編集できないので、
-   * Tokens を開いたまま壊れたときに編集欄が残らないようにする（#135）。
+   * Tokens を開いたまま壊れたときに編集欄が残らないようにする。
    * プロパティパネルが凍結時の中身（「選択は凍結中」）を持つ。
    */
   if (isFrozen) {
@@ -144,7 +133,7 @@ function rightPaneParts({
   }
 }
 
-/** キャンバス下端に出すもの。ファイルが不正な状態と、編集を続けられる状態の 2 つ（#128）。 */
+/** キャンバス下端に出すもの。ファイルが不正な状態と、編集を続けられる状態の 2 つ。 */
 type CanvasDock =
   | Readonly<{ kind: "file-invalid"; errors: readonly DocumentError[] }>
   | Readonly<{ kind: "editable"; errors: readonly DocumentError[] }>;
@@ -152,9 +141,9 @@ type CanvasDock =
 /**
  * 今どちらの状態かと、そこで出すエラーを決める。
  *
- * ファイルが不正な間は表示自体がファイルと食い違っているので、そちらの一覧だけを出す。
- * Why not: 2 つの一覧を並べると、外部エディタでしか直せないファイルの一覧が、
- * アプリ内で直せるドキュメントの一覧の場所を奪う。
+ * ファイルが不正な間は表示自体がファイルと食い違っているので、そちらの一覧だけを出す。2
+ * つの一覧を並べると、外部エディタでしか直せないファイルの一覧が、アプリ内で直せるドキ
+ * ュメントの一覧の場所を奪う。
  *
  * @param state エラーの出どころになるエディタの状態
  * @returns ファイルが不正ならそのエラー、そうでなければ編集で作ったエラー
@@ -168,17 +157,15 @@ function canvasDock(state: EditorState): CanvasDock {
 }
 
 /**
- * 下端に積む器。エラー一覧とキャンバスのツールバーが同じ場所を取り合うため、
- * 順序と間隔はここが持つ（各部品が浮くと重なる）。
+ * 下端に積む器。エラー一覧とキャンバスのツールバーが同じ場所を取り合うため、順序と間隔
+ * はここが持つ（各部品が浮くと重なる）。
  *
- * **この位置指定を落としてもテストは落ちない** — happy-dom はレイアウトを解決しない。
- * 気づく手段は `OpenedDocumentEditor` のストーリーの視覚差分だけで（間隔は子が 2 つ並ぶ
- * `ドキュメント自身が不正な編集画面` と `コンパイルできないドキュメントの編集画面` にしか
- * 出ない）、それが成り立つのは**ストーリーが高さの決まった器に入っているとき**に限る
- * （#322）。器を外すとここが撮影範囲の外へ出る。
+ * **この位置指定を落としてもテストは落ちない** — happy-dom はレイアウトを解決しない。気づ
+ * く手段は `OpenedDocumentEditor` のストーリーの視覚差分だけで、それが成り立つのは**ストー
+ * リーが高さの決まった器に入っているとき**に限る（器を外すと撮影範囲の外へ出る）。
  *
- * Why not: ドックだけのストーリーは立てない。積み方そのものがここの判断なので、
- * ストーリー側へ写すと本物の積み方が壊れても気づけない。
+ * ドックだけのストーリーを立てないのは、積み方そのものがここの判断で、ストーリー側へ写
+ * すと本物の積み方が壊れても気づけないため。
  *
  * @returns 子を縦に積み、キャンバスの下端に寄せる器
  */
@@ -191,11 +178,9 @@ function CanvasDockStack({ children }: Readonly<{ children: ReactNode }>) {
 }
 
 /**
- * 下端の出し分け。戻り値を `ReactElement` と書いているのは、状態を足して `case` を
- * 足し忘れたときにコンパイルエラーにするため（`rightPaneParts` と同じ）。
+ * 下端の出し分け。
  *
- * ドキュメント由来のときにツールバーを消さないのは、表示がファイルと一致していて
- * 古くないから。編集を続けたまま直せる（#128）。一覧は 0 件なら何も出さない。
+ * 編集を続けたまま直せる。一覧は 0 件なら何も出さない。
  *
  * @returns ファイルが不正ならエラー一覧だけ、そうでなければエラー一覧とキャンバスのツールバー
  */
@@ -228,7 +213,7 @@ function CanvasDockContent({
             isReverting={DocumentSaveState.isSaving(fileRevert.saveState)}
           />
           {/*
-            ファイルが不正な間は左ペインが凍る（#135）ので選び直しはできないが、
+            ファイルが不正な間は左ペインが凍るので選び直しはできないが、
             壊れる前に選んでいたトークンの破線はキャンバスに残る。ここへ出さないと、
             破線だけが出て何を指しているか読めない状態が画面に残る。
           */}
@@ -272,10 +257,11 @@ function EditorPanes({
   const token = useTokenActions();
   const artboard = useArtboardActions();
   /**
-   * 左ペインが何を映しているか（UI 案 docs/Design Composer.html のアイコンレール）。
-   * 右ペインに出すのもこれで決まる（Tokens ならトークン編集、それ以外はプロパティ）。
-   * 編集とは連動しない表示だけの状態なので `EditorState` には持たせず、
-   * 両ペインを組むここに置く。
+   * 左ペインが何を映しているか（UI 案 docs/Design Composer.html のアイコンレール）。右ペイ
+   * ンに出すのもこれで決まる（Tokens ならトークン編集、それ以外はプロパティ）。
+   *
+   * 編集とは連動しない表示だけの状態なので `EditorState` には持たせず、両ペインを組むここ
+   * に置く。
    */
   const [leftPaneView, setLeftPaneView] = useState<LeftPaneView>(
     LeftPaneViews.Layers,
@@ -285,7 +271,7 @@ function EditorPanes({
   /*
    * 掴む場所（左ペインのパレット）と落とす場所（キャンバス）が別のペインにあるので、
    * ドラッグの状態は両方の親であるここが持つ。運んでいるものが既存ノードなら移動、
-   * パレットの雛形なら落とした先への挿入になる（#203）。
+   * パレットの雛形なら落とした先への挿入になる。
    */
   const nodeDrag = useNodeDrag({
     document: EditorState.document(state),
@@ -310,13 +296,13 @@ function EditorPanes({
   );
 
   /*
-   * 収めるズームの 2 本は `useEditShortcuts` へは寄せない。あちらが張るのは
-   * ドキュメントと編集履歴に触れる操作で、`useEditor()` の dispatch しか持たない。
-   * ズームは表示だけの操作で、収める先を知っているのは `canvasView`（ここの props）。
+   * 収めるズームの 2 本は `useEditShortcuts` へは寄せない。あちらが張るのはドキュメント
+   * と編集履歴に触れる操作で、`useEditor()` の dispatch しか持たない。ズームは表示だけ
+   * の操作で、収める先を知っているのは `canvasView`（ここの props）。
    *
-   * Why not: 上部バーの拡大 / 縮小の隣にボタンを置かない。UI 案
-   * （docs/Design Composer.html）に `zoom` / `fit` / 「ズーム」の綴りは 1 つも無く、
-   * 倍率の操作そのものが描かれていないため（`useEditShortcuts` と同じ線引き）。
+   * 上部バーの拡大 / 縮小の隣にボタンを置かない。UI 案（docs/Design Composer.html）に
+   * `zoom` / `fit` / 「ズーム」の綴りは 1 つも無く、倍率の操作そのものが描かれていない
+   * ため（`useEditShortcuts` と同じ線引き）。
    */
   useFitDocumentShortcut(() =>
     canvasView.fitTo(
@@ -380,7 +366,7 @@ function EditorPanes({
           artboard={artboard}
           dragged={nodeDrag.carriedTemplate}
           /*
-           * 選ぶだけでなく行き先も Layers へ戻す。エラー行からも帯（#209）からも、
+           * 選ぶだけでなく行き先も Layers へ戻す。エラー行からも帯からも、
            * Tokens を見たまま飛ぶことがあり、そのときは選んでもツリーにも
            * プロパティにも出ない（`Go to source component` が Assets へ移すのと同じ形）。
            */
@@ -395,7 +381,7 @@ function EditorPanes({
         {/*
           帯と本文の器はどちらの行き先でもここで着せる。どのペインに何を着せるかは
           3 ペインの組み立ての判断で、中身を持つ feature は持たない
-          （`features/inspector/index.ts` / `features/tokens/index.ts` の Why not）。
+          （`features/inspector/index.ts` / `features/tokens/index.ts` の doc）。
 
           選んでいなくても帯は残すので、中身が空でも `PaneHeading` ごと外さない。
           外すと選択のたびに本文の位置が帯のぶん動く。
@@ -411,9 +397,6 @@ function EditorPanes({
  * 開いているファイルとの同期（自動保存と外部変更の取り込み）を張り、3 ペインと
  * その失敗の表示を組み立てる（docs/05-architecture.md「保存モデル: 自動保存」
  * 「外部編集の検知」）。
- *
- * 器（Provider）の中に置くのは、同期の相手が「今表示しているドキュメント」であり、
- * それを読めるのが Provider の内側だけだから。
  */
 function EditorBody({
   clock,
@@ -425,7 +408,7 @@ function EditorBody({
   /*
    * ズーム / パンをここで持つのは、倍率の操作（上部バー）と操作の対象（キャンバス）が
    * 兄弟として並ぶため。パンのたびに 3 ペインまで再レンダーが広がるが、Context へ
-   * 移しても state の位置は変わらないので同じ（#134）。
+   * 移しても state の位置は変わらないので同じ。
    */
   const canvasView = useCanvasView();
 
@@ -466,7 +449,7 @@ function EditorBody({
         <EditorTopBar.Breadcrumb opened={opened} />
         {/*
           ファイルが不正な間は保存状態を出さない。映っているのは最後に正常だった
-          表示で、それがファイルに載っているかどうかは今の関心ではないため（#135）。
+          表示で、それがファイルに載っているかどうかは今の関心ではないため。
         */}
         {FileValidity.isInvalid(fileValidity) ? (
           <EditorTopBar.FileInvalidBadge errors={fileValidity.errors} />
@@ -474,9 +457,9 @@ function EditorBody({
           <EditorTopBar.SaveBadge state={saveState} />
         )}
         {/*
-          Why not: UI 案の Error 画面は倍率の枠を古さの行へ置き換えて倍率を落として
+          UI 案の Error 画面は倍率の枠を古さの行へ置き換えて倍率を落として
           いるが、倍率は表示の操作でファイルにも編集履歴にも触れないので凍結中も残す
-          （最後に正常だった表示を確かめるのに使える）。古さの行（#183）は右隣に並ぶ。
+          （最後に正常だった表示を確かめるのに使える）。古さの行は右隣に並ぶ。
         */}
         <EditorTopBar.Zoom
           view={canvasView.view}

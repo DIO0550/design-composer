@@ -25,10 +25,10 @@ declare const FontWeightBrand: unique symbol;
 /**
  * 書体のトークン（docs/04-tokens.md「typography」）。`fontFamily` だけ省略できる。
  *
- * 数値のフィールドが値域付きの型（`FontSize` 等）ではなく素の `number` なのは、
- * 既にファイルに入っている値をそのまま読むため（#143 の決定 D）。値域付きにすると
- * `fromJson` が範囲外を読んだときに、読み込みを失敗させるか `as` で嘘をつくかの
- * どちらかになる。値域を課すのは編集で受け取る側（`TypographyFieldEdit`）。
+ * 値域付きにすると `fromJson` が範囲外を読んだときに、読み込みを失敗させるか `as` で嘘をつ
+ * くかのどちらかになる。
+ *
+ * 値域を課すのは編集で受け取る側（`TypographyFieldEdit`）。
  */
 export type TypographyToken = Readonly<{
   fontSize: number;
@@ -97,15 +97,13 @@ export const FontWeight = {
 } as const;
 
 /**
- * フィールドを名前で指すための対応表。`TypographyField` はここから導出し、
- * フィールドを二重管理しない。
+ * フィールドを名前で指すための対応表。`TypographyField` はここから導出し、フィールドを
+ * 二重管理しない。
  *
- * `satisfies` が見るのは**キーの過不足と綴り**だけで、キーに割り当てた値がずれても
- * ここでは落ちない。**値の網羅**は `__tests__/typography.type.test.ts` の型テスト
- * (`TypographyField` == `keyof Required<TypographyToken>`)で担保する。
+ * `satisfies` が見るのは**キーの過不足と綴り**だけで、キーに割り当てた値がずれてもここでは
+ * 落ちない。
  *
- * 並びが要るときは `TypographyToken.fields()` を使う(このファイルの中も含む)。
- * `Object.values` をそこ 1 箇所に閉じ、並びを引く経路を 2 通りにしない。
+ * 並びが要るときは `TypographyToken.fields` を使い、`Object.values` をそこ 1 箇所に閉じる。
  */
 export const TypographyFields = {
   FontSize: "fontSize",
@@ -123,10 +121,11 @@ export const TypographyFields = {
 export type TypographyField = ValueOf<typeof TypographyFields>;
 
 /**
- * 書体の1フィールドの書き換え。
- * フィールドごとに値の型が違うので直和にして、「fontSize に文字列」を
- * 型で表現できなくする。`fontFamily` の不在は `Option` で受ける
- * (空文字を不在と読むのは入力欄の約束事なので、ドメインには持たせない)。
+ * 書体の1フィールドの書き換え。フィールドごとに値の型が違うので直和にして、「fontSize に
+ * 文字列」を型で表現できなくする。
+ *
+ * `fontFamily` の不在は `Option` で受ける(空文字を不在と読むのは入力欄の約束事なので、ド
+ * メインには持たせない)。
  *
  * 数値の3フィールドを1つのメンバにまとめない。まとめると値の型も union になり、
  * 「fontSize の値を fontWeight として渡す」が型で通ってしまう。
@@ -144,7 +143,6 @@ export const TypographyFieldEdit = {
   /**
    * 数値のフィールドの書き換えを作る。
    *
-   * フィールドごとの値域の対応をここが持つのは、それがドメインの知識だから。
    * 入力欄側が `FontWeight.create` を直に呼ぶ形にすると、対応表が feature へ漏れる。
    *
    * @param field 書き換えるフィールド
@@ -192,8 +190,8 @@ export type TypographyCssProperty = (typeof CssProperties)[TypographyField];
 /** フィールドと CSS プロパティ名の対応。 */
 export const TypographyField = {
   /**
-   * 展開先の CSS プロパティ名。トークンの値には依存しないため、
-   * 参照だけを組み立てる用途(`var()` 参照の生成)ではトークンを持たずに引ける。
+   * 展開先の CSS プロパティ名。トークンの値には依存しないため、参照だけを組み立てる用途
+   * (`var` 参照の生成)ではトークンを持たずに引ける。
    */
   cssProperty(field: TypographyField): TypographyCssProperty {
     return CssProperties[field];
@@ -287,8 +285,9 @@ export const TypographyToken = {
 } as const;
 
 /**
- * typography トークンの1フィールドを指す。
- * 「どのトークンの」「どのフィールドか」は常に対で意味を持つため1つの型にまとめる。
+ * typography トークンの1フィールドを指す。「どのトークンの」「どのフィールドか」は常に対
+ * で意味を持つため1つの型にまとめる。
+ *
  * どの CSS プロパティになるか・どんな値になるかは、この対が決まって初めて定まる。
  */
 export type TypographyFieldRef = Readonly<{

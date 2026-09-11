@@ -10,11 +10,9 @@ import { Option } from "@/utils/Option";
 /**
  * コンパイル済みの artboard 1 枚。描く中身と、宣言されている大きさ・キャンバス上の位置。
  *
- * 大きさを別に持つのは、キャンバスのラベルが `720 × 900` を出すため（#184）。
- * `element.style` にも `width` / `height` は載っているが、そちらは CSS 出力の綴り
- * （`"720px"`）なので、読み戻すと表示側が出力形式に依存する。
+ * `element.style` にも `width` / `height` は載っているが、そちらは CSS 出力の綴り（`"720px"`）
+ * なので、読み戻すと表示側が出力形式に依存する。
  *
- * 位置が省略されうるのは、ファイルに書かれていない artboard があるため。
  * 書かれていないものをどこへ置くかは描く側が決める（`ArrangedArtboard`）。
  */
 export type CompiledArtboard = Readonly<{
@@ -28,8 +26,7 @@ export const CompiledArtboard = {
   /**
    * artboard と、コンパイル済みの子から 1 枚ぶんのコンパイル結果を作る。
    *
-   * 中身を組み立てずに受け取らないのは、`element.style` と食い違う大きさを持つ値を
-   * 作れなくするため。大きさも style も同じ `Artboard` から引くので、2 つが割れない。
+   * 大きさも style も同じ `Artboard` から引くので、2 つが割れない。
    *
    * @param artboard 中身と大きさの出どころになる、コンパイル前の artboard
    * @param children ref 展開とコンパイルを終えた子の並び

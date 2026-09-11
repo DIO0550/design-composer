@@ -8,8 +8,8 @@ import { DocumentSelection } from "@/domains/session/document-selection";
 import { renderTitle } from "./setup";
 
 /**
- * 見出しの帯が「何を選んでいるか」を伝えることを見る
- * （UI 案 docs/Design Composer.html のインスペクタの 44px の帯 / #112）。
+ * 見出しの帯が「何を選んでいるか」を伝えることを見る（UI 案 docs/Design Composer.html のイ
+ * ンスペクタの 44px の帯）。
  *
  * `mystery` はスキーマに無い `type` のノード。不正なドキュメントでも描画は残るので
  * （docs/03-schema.md「不正ファイル時の挙動」）、選択されることがある。

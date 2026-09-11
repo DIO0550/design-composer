@@ -42,9 +42,6 @@ export function EditorProvider({
 
 /**
  * Provider の外で呼ばれたら例外にする。
- * これは実行時に起こりうる失敗ではなくコンポーネントの配置ミスであり、
- * 既定のエディタ状態を返して隠すと付け忘れが画面に出ないまま残るため
- * （rules/coding.md「エラーと不在の表現」の例外）。
  *
  * @returns Provider が配っている状態と dispatch
  * @throws EditorProvider の外で呼ばれたとき

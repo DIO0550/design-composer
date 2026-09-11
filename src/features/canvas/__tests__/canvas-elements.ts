@@ -5,14 +5,14 @@ import { ArtboardHandleTestId } from "@/features/canvas/components/artboard-canv
 import { ArrayEx } from "@/utils/ArrayEx";
 
 /**
- * キャンバスに描かれたものを読む。
- * キャンバスの中身はコンパイル結果の HTML を文字列のまま流し込んだもので
- * React の管理下に無いため、要素も強調もノード名の属性を頼りに DOM から引く。
+ * キャンバスに描かれたものを読む。キャンバスの中身はコンパイル結果の HTML を文字列のま
+ * ま流し込んだもので React の管理下に無いため、要素も強調もノード名の属性を頼りに DOM
+ * から引く。
  *
- * キャンバス単体（`components/artboard-canvas`）と編集画面の通し
- * （`features/editor` の `opened-document-editor`）の両方が「何が描かれているか」を
- * 確かめるので、**持ち主であるこの feature に置く**。外の feature へはテスト用の
- * 公開口（`__tests__/index.ts`）から出し、そちらだけを読ませる。
+ * キャンバス単体（`components/artboard-canvas`）と編集画面の通し（`features/editor` の
+ * `opened-document-editor`）の両方が「何が描かれているか」を確かめるので、**持ち主であ
+ * るこの feature に置く**。外の feature へはテスト用の公開口（`__tests__/index.ts`）か
+ * ら出す。
  */
 
 /** 強調の規則が指している名前（規則の書式は components/artboard-canvas）。 */
@@ -115,8 +115,6 @@ export function highlightedNames(canvas: HTMLElement): readonly string[] {
 /**
  * トークンの参照元として破線が掛かっている名前。
  *
- * `highlightedNames` と分けているのは、あちらがすべての規則から名前を抜くため、
- * 選択の枠・ドロップ先の枠と区別できないから。
  * 「参照元だけが破線になる」を確かめるには、破線の規則に絞る必要がある。
  *
  * 綴りを写さず実装の定数で引くので、色や太さを UI 案へ寄せ直しても落ちない。

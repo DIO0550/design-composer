@@ -10,7 +10,7 @@ import { ComponentList } from "../index";
 
 /*
  * `Assets` は browse-only で、挿入の入口はキャンバスへのドラッグだけ
- * （UI 案 docs/Design Composer.html「Insertion is drag-only」/ #203）。
+ * （UI 案 docs/Design Composer.html「Insertion is drag-only」）。
  */
 
 test("部品の行を押すとその部品の雛形を掴んだことが伝わる", () => {

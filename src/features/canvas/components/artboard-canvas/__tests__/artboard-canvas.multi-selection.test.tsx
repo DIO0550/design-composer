@@ -10,8 +10,6 @@ import { injectedStyles, renderCanvas } from "./setup";
  * 複数選んでいるときのキャンバス（docs/06-ui.md「選択」）。
  *
  * 枠は選んだぶんだけ出すが、リサイズハンドルは 1 つだけ選んでいるときにしか出さない。
- * artboard を 2 枚置くのは、まとめた選択が 1 枚に閉じないことを確かめるため
- * （ツリーは 1 枚しか映さないので、またいだぶんはキャンバスにしか出ない）。
  */
 function setupDocument(): DesignDocument {
   return DesignDocument.create({
@@ -36,10 +34,6 @@ function setupDocument(): DesignDocument {
 
 /**
  * 2 枚の artboard にまたがる 2 つのインスタンスを選んだ対。
- *
- * 名前を並べて作るのは、この 2 つが「同じ部品のインスタンス」であることを決めるのが
- * 編集画面側（まとめて選択）で、キャンバスは渡された名前の並びしか見ないため
- * （まとめ方そのものは `editor-state.instance-selection.test.ts` が固定している）。
  */
 function setupMultiSelected(): DocumentSelection {
   return DocumentSelection.fromNames(setupDocument(), [

@@ -2,13 +2,6 @@ import { Option } from "@/utils/Option";
 
 /**
  * エディタ画面で今どれが選ばれているか（docs/06-ui.md「選択」）。
- *
- * 名前の並び 1 本ではなく 3 つの状態を直和で列挙するのは、「未選択」「1 つ選択」
- * 「複数選択」を並びの長さで表すと、長さを見ずに扱うコードが書けてしまうため
- * （rules/coding.md「正しい状態だけを列挙する」）。
- *
- * `multiple` の名前をタプルにして 2 件以上を型で要求するのは、`readonly string[]`
- * のままだと 0 件・1 件の `multiple` が作れて `none` / `single` と重なるため。
  */
 export type SelectionState =
   | Readonly<{ kind: "none" }>
@@ -25,10 +18,7 @@ export const SelectionState = {
   /**
    * 選ばれている名前の並びから状態を作る。
    *
-   * 生成をここ 1 つに閉じるのは、`multiple` のタプルを成立させているのが
-   * 長さの分岐だけだから（`noUncheckedIndexedAccess` が無いため、分割代入した
-   * 要素は空の並びからでも `string` に見える）。外から `multiple` を直接組み立てると
-   * この分岐を通らずに 1 件の `multiple` が作れてしまう。
+   * 外から `multiple` を直接組み立てるとこの分岐を通らずに 1 件の `multiple` が作れてしまう。
    *
    * @param names 選ばれているものの名前。並びはそのまま保つ
    * @returns 0 件なら未選択、1 件なら単一選択、2 件以上なら複数選択

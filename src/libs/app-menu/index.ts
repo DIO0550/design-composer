@@ -6,9 +6,7 @@ import { Result } from "@/utils/Result";
 /**
  * OS のメニューから届く指示。
  *
- * 名前で指せるようにするのは、消費側が `"open"` を綴り直さずに済ませるため
- * （rules/coding.md「値の集合から union を導出する」）。Rust 側のメニュー項目の id
- * （`src-tauri/src/menu.rs`）と対で保つ。
+ * Rust 側のメニュー項目の id （`src-tauri/src/menu.rs`）と対で保つ。
  */
 export const AppMenuCommands = {
   Open: "open",
@@ -20,9 +18,6 @@ export type AppMenuCommand = ValueOf<typeof AppMenuCommands>;
 
 /**
  * メニューの選択を知らせるイベント名（Rust 側の `MENU_COMMAND_EVENT` と対）。
- *
- * export しているのは、テストの代役が同じ名前で配れるようにするため
- * （代役側で綴り直すと、名前を変えたときに片方だけが古くなる）。
  */
 export const MenuCommandEvent = "document-menu";
 
@@ -48,17 +43,12 @@ function toAppMenuCommand(payload: unknown): Option<AppMenuCommand> {
 /**
  * OS のメニュー（docs/05-architecture.md「Tauri IPC」）。
  *
- * ドキュメントを開く / 作る指示は、開いている間はメニューからしか来ない
- * （画面の帯には置かない / #374）。ここが知っているのは指示の語彙までで、
- * それを受けて何をするかは呼び出し側が決める。
+ * ドキュメントを開く / 作る指示は、開いている間はメニューからしか来ない（画面の帯には置か
+ * ない）。ここが知っているのは指示の語彙までで、それを受けて何をするかは呼び出し側が決める。
  */
 export type AppMenu = Readonly<{
   /**
    * メニューの選択の購読を始め、解除関数を返す。
-   *
-   * 解除関数を `Promise` 越しに返すのは、`listen` の完了を待たないと購読が成立せず、
-   * 同期の解除関数を返す形にすると `listen` 自体の失敗を握りつぶすことになるため
-   * （`DocumentIpc.subscribeChanged` と同じ）。
    */
   subscribeCommand(
     listener: (command: AppMenuCommand) => void,

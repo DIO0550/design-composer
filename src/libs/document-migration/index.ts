@@ -53,15 +53,17 @@ export const DocumentMigrationError = {
 
 /**
  * 登録済みの変換ステップ。破壊的変更がまだ無いため空。
- * major を上げるときは変換元の major をキーにして1つ足す
- * (`1: migrateV1ToV2` のように、1つの major 分の変換を1つの塊として持つ)。
+ *
+ * major を上げるときは変換元の major をキーにして1つ足す(`1: migrateV1ToV2` のように、
+ * 1つの major 分の変換を1つの塊として持つ)。
  */
 const RegisteredMigrationSteps: MigrationSteps = {};
 
 /**
  * JSON のデータモデルから formatVersion を読む。
- * デコード前なので、フィールドの欠落・型違いはここでは報告せず「読めない」として扱う
- * (形の検証は `DesignDocument.fromJson` の担当。同じ不備を別の語彙で二重に報告しない)。
+ *
+ * デコード前なので、フィールドの欠落・型違いはここでは報告せず「読めない」として扱う(形の
+ * 検証は `DesignDocument.fromJson` の担当。同じ不備を別の語彙で二重に報告しない)。
  *
  * @param document 読み出し元の JSON のデータモデル
  * @returns 読めた版。フィールドが無い・文字列でない・形式が違うなら `none`
@@ -153,12 +155,8 @@ function migrateUpTo(
  * - ファイルの major > アプリ / minor > アプリ: エラー(アプリの更新を促す)
  * - それ以外: そのまま通す
  *
- * formatVersion が読めない入力も素通しする。バージョンが分からないものを既定値で
- * 補って進めるのではなく、形の検証を担うデコード側にそのまま報告させる。
- *
- * `steps` / `appVersion` は既定値を持つ（`FormatVersion.compatibility` と同じ形）。
- * 登録済みステップが空のままでも枠組み自体を確かめられるよう、変換手段と
- * 到達先の版を差し替えられるようにしてある。
+ * formatVersion が読めない入力も素通しする。既定値で補って進めるのではなく、形の検証を
+ * 担うデコード側にそのまま報告させる。
  */
 export const DocumentMigration = {
   toCurrent(

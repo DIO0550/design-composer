@@ -9,13 +9,12 @@ import { Option } from "@/utils/Option";
 import { DraggedNode } from "../dragged-node";
 
 /**
- * ドロップ先の候補になれる親（docs/06-ui.md「キャンバス直接操作」の移動）。
- * 受け入れる条件は `DropParent.innermost`、絞り込んだ先は `InsertionParent`。
+ * ドロップ先の候補になれる親（docs/06-ui.md「キャンバス直接操作」の移動）。受け入れる条
+ * 件は `DropParent.innermost`、絞り込んだ先は `InsertionParent`。
  *
- * Why not: 名前だけなので `{ name: string }` を持つ他の型（`CarriedNode` /
- * `ParentShift`）も構造的に代入できる。ブランドは付けず、取り違えは
- * `artboard-canvas.drag-placement` の通しテストが受け持つ
- * （rules/coding.md「防ぎたい誤用が実際にコード上へ現れてから導入する」）。
+ * 名前だけなので `{ name: string }` を持つ他の型（`CarriedNode` / `ParentShift`）も構造的
+ * に代入できるが、ブランドは付けない。取り違えは `artboard-canvas.drag-placement` の通し
+ * テストが受け持つ（rules/coding.md「防ぎたい誤用が実際にコード上へ現れてから導入する」）。
  */
 export type DropParent = Readonly<{
   name: string;
@@ -23,9 +22,6 @@ export type DropParent = Readonly<{
 
 /**
  * 子が並ぶ向きまで分かる親。外す条件は `InsertionParent.innermost`。
- *
- * `DropParent` と別の型にするのは、**向きを持たない親を挿入位置の計算へ渡せなくする**ため
- * （rules/coding.md「処理の通過を型に刻む」）。
  */
 export type InsertionParent = Readonly<{
   name: string;
@@ -136,27 +132,25 @@ function insertionParentOf(
 export const DropParent = {
   /**
    * 内側から外へ並べた候補のうち、運んでいるものを受け入れられる最も内側のものを選ぶ。
+   * 受け入れられないのは次の 3 つで、いずれも候補から外して外側を見に行く。
    *
-   * 受け入れられないのは次の3つで、いずれも候補から外して外側を見に行く。
    * - ドキュメントに無い名前（部品インスタンスの中身は定義側のノード名で描かれる）
    * - 子を持てないノード（Text・参照ノード）
-   * - 運んでいるものが占めている名前（入れるとツリーが壊れる。`DesignDocument.moveNode`
-   *   も `move-into-descendant` として拒む）。占めている名前は運んでいるものの種別で
-   *   変わるので `DraggedNode` が答える（パレットの雛形はまだ木に無いので何も占めない）
+   * - 運んでいるものが占めている名前（入れるとツリーが壊れる。占めている名前は
+   *   `DraggedNode` が答える）
    *
    * **子を並べない親（`layout: free`）はここでは外さない。** 座標の置き直しは親の左上を
-   * 原点にするだけで子が並ぶ向きを必要とせず、`free` はそもそも絶対配置の子を座標で
-   * 置くための器（docs/03-schema.md）。外すと、いちばん使う操作が器の宣言によって
-   * 塞がれる（#440）。
+   * 原点にするだけで子が並ぶ向きを必要とせず、`free` はそもそも絶対配置の子を座標で置く
+   * ための器（docs/03-schema.md）。
    *
-   * 運んでいるノードの上を通ったときにその親が選ばれるのは、外へ辿った結果であって
-   * 既定値へ倒しているわけではない（元の位置へ戻すのは正当な移動）。
+   * 外すと、いちばん使う操作が器の宣言によって塞がれる。運んでいるノードの上を通ったときにそ
+   * の親が選ばれるのは外へ辿った結果で、既定値へ倒しているわけではない。
    *
    * @param document 名前の引き先になるドキュメント
    * @param dragged 運んでいるもの
    * @param names ポインタの下から根へ向かう順の候補
-   * @returns 受け入れられる最も内側の親。候補が1つも受け入れられない場合と、
-   *   木に無いノードを運んでいる場合は `none`
+   * @returns 受け入れられる最も内側の親。候補が1つも受け入れられない場合と、木に
+   *   無いノードを運んでいる場合は `none`
    */
   innermost(
     document: DesignDocument,

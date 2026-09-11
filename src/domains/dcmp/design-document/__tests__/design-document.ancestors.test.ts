@@ -3,9 +3,6 @@ import { DesignDocument } from "../index";
 
 /**
  * `home` の直下に `badge` があり、`card` の中に `card-badge` が入っているドキュメント。
- *
- * 深さの違う 2 つを同じ木に置くのは、答えが「artboard 1 つ」で固定されていないことを
- * 1 つの前提で見られるようにするため。
  */
 function setupDocument(): DesignDocument {
   return DesignDocument.create({

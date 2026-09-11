@@ -17,26 +17,19 @@ function nodeCountText(count: number): string {
 }
 
 /**
- * キャンバスの破線が何を指しているかを示す帯
- * （UI 案 docs/Design Composer.html の Tokens 画面。キャンバス下部に浮く）。
+ * キャンバスの破線が何を指しているかを示す帯（UI 案 docs/Design Composer.html の Tokens
+ * 画面。キャンバス下部に浮く）。
  *
- * 破線が 1 本も無いときは出さない。この帯が伝えるのは「今どれが破線になっているか」なので、
- * 破線が無いまま出しても指す相手がいない（`Used by` が 0 件でも件数を出すのとは役割が違う。
- * あちらは「使われていない」こと自体が削除の判断材料になる）。
+ * 破線が 1 本も無いときは出さない。この帯が伝えるのは「今どれが破線になっているか」なの
+ * で、破線が無いまま出しても指す相手がいない（0 件でも件数を出す `Used by` は、使われて
+ * いないこと自体が削除の判断材料になる点が違う）。
  *
- * 左寄せ（`self-start`）を器ではなくここが持つのは、UI 案でツールバーが中央、
- * この帯だけが左に寄っているため。器の既定を変えると他の 2 つまで動く。
+ * 見本を出すのは色だけで（UI 案が描いているのも `#111827` の四角 1 例）、`token-control`
+ * の `TokenPreview` は使わない（使うと `token-list` の `PreviewSlot` と 4 枝すべてが重なる）。
+ * 飛び先は破線の先頭で、並びは `collectCanvasReferrerNames` が決めている。
  *
- * 見本を出すのは色だけ。UI 案が描いているのも `#111827` の四角 1 例で、他の種別の絵は無い
- * （`token-editor` の見出しと同じ判断）。
- * Why not: `token-control` の `TokenPreview` は使わない。使うと `token-list` の
- * `PreviewSlot` と 4 枝すべてが重なる。
- *
- * 飛び先は破線の先頭。UI 案がリンクを 1 本しか描いていないので、複数ある参照元から
- * 1 つ選ぶことになり、並びは既に `collectCanvasReferrerNames` が決めている（#209）。
- *
- * @returns トークン名・破線の本数・先頭へ飛ぶリンクを並べた帯。破線が 1 本も無いときと、
- *   選んでいるトークンがドキュメントから消えているときは何も出さない
+ * @returns トークン名・破線の本数・先頭へ飛ぶリンクを並べた帯。破線が 1 本も無い
+ *   ときと、選んでいるトークンがドキュメントから消えているときは何も出さない
  */
 export function TokenDashedNodes({
   selection,
@@ -48,10 +41,9 @@ export function TokenDashedNodes({
   const token = TokenSelection.token(selection);
   /*
    * キャンバス側と同じ走査をここでも行う。パン / ズームでこの帯まで再レンダーされるので、
-   * 覚えないと数え直しがキャンバスと二重に走る（覚えたものが効くよう、呼び出し側は
-   * 対を `state` ごとに 1 つだけ作る）。
-   * Why not: 数え終えた名前を props で受け取らない。受け取ると、名前とトークンが
-   * 食い違う組み合わせを呼び出し側が作れてしまう（対で受ければ作れない）。
+   * 覚えないと数え直しがキャンバスと二重に走る（覚えたものが効くよう、呼び出し側は対を
+   * `state` ごとに 1 つだけ作る）。数え終えた名前を props で受け取らない。受け取ると、
+   * 名前とトークンが食い違う組み合わせを呼び出し側が作れてしまう（対で受ければ作れない）。
    */
   const nodeNames = useMemo(
     () => TokenSelection.collectCanvasReferrerNames(selection),
@@ -94,7 +86,7 @@ export function TokenDashedNodes({
         文字サイズを指定しないのは、UI 案の綴りも font-size を持たず帯の 11px を継ぐため。
 
         **この見た目を守るものは無い** — happy-dom はレイアウトを解決せず、視覚差分も
-        リンク 1 本ぶんはしきい値（`--max-diff-ratio 0.002`）未満で通る（#209 で実測）。
+        リンク 1 本ぶんはしきい値（`--max-diff-ratio 0.002`）未満で通る（実測）。
       */}
       <button
         type="button"

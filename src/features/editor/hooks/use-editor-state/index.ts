@@ -19,7 +19,7 @@ import { Option } from "@/utils/Option";
 /** エディタ画面で起きる状態遷移（docs/06-ui.md「選択」「編集操作の一覧」）。 */
 export type EditorAction =
   | Readonly<{ type: "select"; name: string }>
-  /* キャンバスからの選択。押し方の解釈（掘る量）はキャンバス側が済ませて渡す（#412）。 */
+  /* キャンバスからの選択。押し方の解釈（掘る量）はキャンバス側が済ませて渡す。 */
   | Readonly<{
       type: "select_at";
       names: readonly string[];
@@ -40,7 +40,7 @@ export type EditorAction =
       from: ChildPosition;
       toIndex: number;
     }>
-  /* 選択から向きだけで並べ替える経路（#417）。今の位置を持たないキーボードのための入口。 */
+  /* 選択から向きだけで並べ替える経路。今の位置を持たないキーボードのための入口。 */
   | Readonly<{ type: "reorder_selected_node"; step: ReorderStep }>
   | Readonly<{ type: "move_node"; name: string; to: ChildPosition }>
   | Readonly<{
@@ -48,16 +48,16 @@ export type EditorAction =
       name: string;
       to: ChildPlacement;
     }>
-  /* 選択を移動量だけで動かす経路（#413）。今の座標を持たないキーボードのための入口。 */
+  /* 選択を移動量だけで動かす経路。今の座標を持たないキーボードのための入口。 */
   | Readonly<{ type: "reposition_selected_node"; delta: Offset }>
-  /* artboard をキャンバス上の別の位置へ置き直す経路（#390）。ノードの座標とは別の座標系。 */
+  /* artboard をキャンバス上の別の位置へ置き直す経路。ノードの座標とは別の座標系。 */
   | Readonly<{
       type: "reposition_artboard";
       name: string;
       canvasPosition: Offset;
     }>
   | Readonly<{ type: "insert_node"; template: NodeTemplate }>
-  /* 落とした先へ挿す経路。挿す位置が選択ではなくドロップ位置で決まる（#203）。 */
+  /* 落とした先へ挿す経路。挿す位置が選択ではなくドロップ位置で決まる。 */
   | Readonly<{
       type: "insert_node_at";
       template: NodeTemplate;
@@ -180,7 +180,7 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
        * 消せる対象が無ければドキュメントは変わらない（EditorState.removeSelected の
        * `none`）。Delete キーは何も選んでいなくても押せるため、この `none` には
        * 画面の操作から到達する。ファイルが不正な間も `none`
-       * （凍結は `inert` で作るが、キーは `document` に張るので素通りする / #155）。
+       * （凍結は `inert` で作るが、キーは `document` に張るので素通りする）。
        */
       return Option.unwrapOr(EditorState.removeSelected(state), state);
     case "add_artboard":
@@ -238,7 +238,7 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
        * クリップボードが空・挿せる位置が無ければ木は変わらない
        * （EditorState.pasteNode の `none`）。到達しうる理由は copy_node と同じ。
        * ファイルが不正な間も `none`。コピーは通るが貼り付けは止まる
-       * （クリップボードはドキュメントを変えない / #155）。
+       * （クリップボードはドキュメントを変えない）。
        */
       return Option.unwrapOr(EditorState.pasteNode(state), state);
     case "apply_prop_edit":
@@ -254,7 +254,7 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
       /*
        * 戻る先が無ければ何も変わらない（EditorState.undo の `none`）。
        * ショートカットは履歴が空でも押せるため、この `none` には画面の操作から到達する。
-       * ファイルが不正な間も `none`（戻した内容が自動保存へ流れるため / #155）。
+       * ファイルが不正な間も `none`（戻した内容が自動保存へ流れるため）。
        */
       return Option.unwrapOr(EditorState.undo(state), state);
     case "redo":

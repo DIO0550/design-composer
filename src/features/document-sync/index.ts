@@ -1,22 +1,10 @@
 /**
- * 編集中のドキュメントとファイルを一致させ続ける一式
- * （docs/05-architecture.md「保存モデル: 自動保存」「外部編集の検知」「競合の解決」）。
+ * 編集中のドキュメントとファイルを一致させ続ける一式（docs/05-architecture.md「保存モデ
+ * ル: 自動保存」「外部編集の検知」「競合の解決」）。自動で書き出す（`useAutoSave`）・外
+ * から届いた変更を取り込む（`useDocumentReload`）・表示中の内容でファイルを潰す（`useFileRevert`）
+ * の 3 つと、そのどれが失敗しても同じ意味を伝える一覧が属する。
  *
- * 自動で書き出す（`useAutoSave`）・外から届いた変更を取り込む（`useDocumentReload`）・
- * 表示中の内容でファイルを潰す（`useFileRevert`）の 3 つと、そのどれが失敗しても同じ
- * 意味（画面とファイルがずれているかもしれない）を伝える一覧（`DocumentSyncFailureList`）が
- * ここに属する。
- *
- * `useElapsed` もここに置く。数え始める起点が「外部編集でファイルが不正になった時刻」
- * （`FileValidity.since`）で、数えているのは**今映っているものがファイルからどれだけ
- * 古いか**だから。追従が失敗している側の状態そのものなので、経過時間は一般の計時ではなく
- * この feature の関心事になる。
- *
- * Why not: 上部バー（`editor-top-bar`）はここに置かない。バーが映すのはファイルとの
- * ずれ（保存状態・古さ）だけでなくズームや開いているファイル名でもあり、移すとこの
- * feature が編集画面の状態（`editor-state`）まで import することになる（他 feature の
- * domains への直接 import で規約違反）。`editor` に残し、両方を知ってよい組み立て点を
- * `editor` 側に置いて一方向にする。
+ * `useElapsed` もここに置く。
  */
 export { DocumentSyncFailureList } from "@/features/document-sync/components/document-sync-failure-list";
 export { useAutoSave } from "@/features/document-sync/hooks/use-auto-save";

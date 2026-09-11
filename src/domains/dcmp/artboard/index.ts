@@ -22,8 +22,7 @@ import { Result } from "@/utils/Result";
  * キャンバスに置かれる 1 枚の画面。大きさを必ず持ち、配下にノードを並べる。
  *
  * `canvasPosition` は無限キャンバス上の位置で、指すのは**枠の左上**
- * (docs/01-file-format.md「artboards」)。省略できるのは、この版より前に書かれた
- * ドキュメントが座標を持たないため。持たないものをどこへ置くかは描く側が決める。
+ * (docs/01-file-format.md「artboards」)。持たないものをどこへ置くかは描く側が決める。
  */
 export type Artboard = Readonly<{
   name: string;
@@ -67,10 +66,12 @@ const ArtboardFixedSizeProps: readonly string[] = [
 /**
  * artboard の props では変えられない配置の prop。
  *
- * artboard は親 Box を持たないので、親からの相対で置かれる `placement: "absolute"`
- * を書いても意味が決まらない。追従（`constraintX` / `constraintY`）も、変化する親の
- * 長さが無いので同じく決まらない。artboard 自身のキャンバス上の位置は**別の座標系**で、
- * props ではなく `canvasPosition` が持つ。
+ * artboard は親 Box を持たないので、親からの相対で置かれる `placement: "absolute"` を書い
+ * ても意味が決まらない。追従（`constraintX` / `constraintY`）も、変化する親の長さが無いの
+ * で同じく決まらない。
+ *
+ * artboard 自身のキャンバス上の位置は**別の座標系**で、props ではなく `canvasPosition` が
+ * 持つ。
  */
 const ArtboardFixedPlacementProps: readonly string[] = [
   "placement",
@@ -82,7 +83,6 @@ const ArtboardFixedPlacementProps: readonly string[] = [
 
 /**
  * artboard の props では変えられない prop の全体。
- * 落とす理由が 2 通りあるので、定数を分けたまま結合する。
  */
 const ArtboardUneditableProps: readonly string[] = [
   ...ArtboardFixedSizeProps,
@@ -92,17 +92,9 @@ const ArtboardUneditableProps: readonly string[] = [
 /**
  * キャンバス上の位置を `x` / `y` の対として読む。
  *
- * 片方だけを不在として通さないのは、位置が対でしか決まらないため
- * (`Offset` の doc)。`Json.optional` を 2 つ並べると「`x` だけがある」が
- * 読めてしまい、残りをどう埋めるかを呼び出し側が決めることになる。
- *
- * `Offset` 側に置かないのは、`x` / `y` という綴りで**フラットな兄弟フィールドに**
- * 書くのが `.dcmp` の artboard の都合であって、`Offset` の性質ではないため
- * (`unit/` は外部フォーマットを知らない層でもある)。
- *
  * @param record 読み取り元の artboard のフィールド一式
- * @returns 位置。`x` と `y` がどちらも無ければ不在を表す `undefined`。
- *   片方だけのとき・数値でないときは失敗
+ * @returns 位置。`x` と `y` がどちらも無ければ不在を表す `undefined`。片方だ
+ *   けのとき・数値でないときは失敗
  */
 function canvasPositionFromJson(
   record: JsonRecordCursor,
@@ -197,9 +189,7 @@ export const Artboard = {
   /**
    * 追加直後の artboard（docs/06-ui.md「編集操作の一覧」の artboard 操作の追加）。
    *
-   * 名前だけを受け取るのは、一意な名前が**どのドキュメントへ足すか**を見ないと
-   * 決まらないため（採番は名前空間を持つ `DesignDocument` の担当）。大きさと
-   * 空の子はこの型自身の性質なのでここが持つ。
+   * 大きさと空の子はこの型自身の性質なのでここが持つ。
    *
    * @param name 採番済みの名前
    * @returns 既定の大きさを持ち、子を持たない artboard
@@ -227,16 +217,15 @@ export const Artboard = {
   },
 
   /**
-   * artboard の props を Box の props として解決する
-   * (docs/01「artboard は…ルートノード(Box)を兼ねる」/ docs/03「Box スキーマを流用する」)。
+   * artboard の props を Box の props として解決する（docs/01「artboard は…ルートノード
+   * (Box)を兼ねる」/ docs/03「Box スキーマを流用する」）。Box スキーマと違う点は 3 つで、
+   * それぞれ効き方が異なる。
    *
-   * Box スキーマと違う点は3つで、それぞれ効き方が異なる:
    * - `overflow` の既定が `clip`。**デフォルト**なので artboard 側の指定が勝つ
-   * - サイズは `fixed` **固定**で、長さは artboard の `width` / `height`。props では変えられない
-   * - 配置は `flow` **固定**。`propDefinitions()` から落としても、artboard の props を
-   *   照らす先は Box スキーマなので（`design-document/validation`）ファイルには書けてしまう。
-   *   ここで固定しないと、持っていない親からの相対で置かれた artboard が描かれる
-   *   （キャンバス上の位置は `canvasPosition` が別に持つ）
+   * - サイズは `fixed` **固定**で、長さは artboard の `width` / `height`。props では
+   *   変えられない
+   * - 配置は `flow` **固定**。ここで固定しないと、持っていない親からの相対で置かれた
+   *   artboard が描かれる（props を照らす先は Box スキーマなのでファイルには書けてしまう）
    */
   boxProps(artboard: Artboard): ArtboardBoxProps {
     return {
@@ -254,8 +243,6 @@ export const Artboard = {
 
   /**
    * artboard が props として受け付ける prop の定義（docs/03「Box スキーマを流用する」）。
-   * サイズ系と配置系を落とすのは、`boxProps` が固定値を与えるため、props に書いても
-   * 効かないから（それぞれの理由は定数の doc）。
    */
   propDefinitions(): PropDefinitionRecord {
     const editable = Object.entries(BoxSchema.props).filter(
@@ -272,9 +259,10 @@ export const Artboard = {
   /**
    * 軸方向の長さを変えた artboard。
    *
-   * 書き込み先が props ではなく artboard 自身のフィールドなのは、artboard の
-   * サイズが `fixed` 固定で長さを `width` / `height` が持つため
-   * (docs/03「`widthMode` / `heightMode` は `fixed` に固定され、`width` / `height` が必須」)。
+   * 書き込み先が props ではなく artboard 自身のフィールドなのは、artboard のサイズが
+   * `fixed` 固定で長さを `width` / `height` が持つため(docs/03「`widthMode` /
+   * `heightMode` は `fixed` に固定され、`width` / `height` が必須」)。
+   *
    * props へ書いても `boxProps` が固定値で上書きするので効かない。
    */
   resize(artboard: Artboard, size: AxisLength): Artboard {
@@ -283,12 +271,6 @@ export const Artboard = {
 
   /**
    * キャンバス上の位置を置き直した artboard。
-   *
-   * 書き込み先が props ではなく artboard 自身のフィールドなのは、キャンバス上の位置が
-   * props の `placement` / `x` / `y`（親の中での置かれ方）とは**別の座標系**のため
-   * (`ArtboardFixedPlacementProps` の doc)。
-   *
-   * 整数へ丸めるのは `Placement.moveBy`（ノード側の座標移動）と同じ理由による。
    *
    * @param artboard 置き直す元の artboard
    * @param canvasPosition 置き直したあとの位置。枠の左上を指す

@@ -13,10 +13,10 @@ import { EditorState } from "../index";
 import { frozen } from "./frozen-state";
 
 /*
- * 外部編集でファイルが壊れている間、編集が起こらないこと（#155）。
+ * 外部編集でファイルが壊れている間、編集が起こらないこと。
  *
  * 編集が通ると `document-sync` の `useAutoSave` がその内容をファイルへ書き出し、
- * **より新しい外部の書き込みを古い内容で潰す**。凍結の見た目（#135）は `inert` で
+ * **より新しい外部の書き込みを古い内容で潰す**。凍結の見た目は `inert` で
  * 作られているが、ショートカットは `document` に張るので `inert` を素通りする。
  * 止まるのは状態の側。
  *
@@ -106,9 +106,6 @@ test("ファイルが不正でなければ、artboard を並べ替えられる",
 
 /**
  * 兄弟を持つ `home-title` と、絶対配置の `home-badge` を持つドキュメント。
- *
- * `openedState` と分けるのは、あちらが子を 1 つしか持たず、
- * 並べ替えも座標の移動も**凍結と無関係に** `none` になるため（対照が置けない）。
  */
 function openedStateWithMovableNode(): EditorState {
   return EditorState.create(
