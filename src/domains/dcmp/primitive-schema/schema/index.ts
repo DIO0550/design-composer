@@ -183,6 +183,17 @@ export const BoxSchema = {
       default: "visible",
       group: "appearance",
     },
+    /*
+     * 見た目の値だが対応するトークン種別が無いので生リテラルにする（docs/02「値のドメイン:
+     * 3種類」/ docs/03「Box」）。トークンが持つ色の不透明度（0〜100 の %）とは別の値。
+     */
+    opacity: {
+      domain: "literal",
+      literalType: "number",
+      range: { min: 0, max: 1 },
+      default: 1,
+      group: "appearance",
+    },
   },
 } as const satisfies PrimitiveSchema;
 

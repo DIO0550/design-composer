@@ -26,6 +26,7 @@ export type CssProperty =
   | "border-radius"
   | "box-shadow"
   | "overflow"
+  | "opacity"
   | "color"
   | "text-align"
   | TypographyCssProperty;

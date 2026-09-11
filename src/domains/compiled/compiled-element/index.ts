@@ -96,6 +96,30 @@ function overflowDeclarations(
     : [];
 }
 
+/** 出力しても効果の無い、CSS の初期値と同じ完全な不透明。 */
+const FullyOpaque = 1;
+
+/**
+ * 初期値と同じ完全な不透明は宣言を出力しない (docs/03 の表)。
+ *
+ * 取りうる範囲（0〜1）の外を丸めないのは、範囲の判定を `DesignDocument.collectErrors` と
+ * 2 箇所に持たないため。書かれた値をそのまま出しても、範囲外はブラウザが両端へ寄せる。
+ *
+ * @param opacity `opacity` prop に設定されている値
+ * @returns 完全な不透明でないときだけ宣言 1 件。数値でない値（ファイル由来の不正な綴り）
+ *   では空
+ */
+function opacityDeclarations(
+  opacity: PropValue | undefined,
+): readonly CssDeclarationType[] {
+  if (typeof opacity !== "number") {
+    return [];
+  }
+  return opacity === FullyOpaque
+    ? []
+    : [CssDeclaration.create("opacity", String(opacity))];
+}
+
 /**
  * typography は複合トークンなので、フィールドごとの CSS プロパティへ展開する。走査対象は
  * `TypographyToken.fields` に従うため、トークンのフィールドが増えても追従漏れが出ない。
@@ -232,6 +256,7 @@ export const BoxElement = {
       ...tokenDeclarations("radius", props.radius, tokens),
       ...tokenDeclarations("shadow", props.shadow, tokens),
       ...overflowDeclarations(props.overflow),
+      ...opacityDeclarations(props.opacity),
     ];
   },
 
