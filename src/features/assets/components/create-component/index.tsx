@@ -4,9 +4,9 @@ import { Componentization } from "@/features/assets/domains/componentization";
 import { Option } from "@/utils/Option";
 
 /**
- * フッターの綴りは UI 案 docs/Design Composer.html の `Assets` / `Assets · Instance`
- * 画面から採る。`artboard` と `unselected` の 2 行は UI 案が描いていない状態なので、
- * インスタンスの行と同じ言い回しに揃えてここで決めた（#131）。
+ * フッターの綴りは UI 案 docs/Design Composer.html の `Assets` / `Assets · Instance` 画面
+ * から採る。`artboard` と `unselected` の 2 行は UI 案が描いていない状態なので、インスタン
+ * スの行と同じ言い回しに揃えてここで決めた。
  */
 const Labels = {
   create: "Create component",
@@ -21,10 +21,9 @@ const Labels = {
 /**
  * 打った名前では作れないときに、ボタンの `title` へ出す理由（挿入・解除のボタンと同じ扱い）。
  *
- * 規則違反と重複を書き分けないのは、`DesignDocument.isUsableName` が可否だけを
- * 返すため。ドメイン側は理由（`invalid-name` / `duplicate-name`）を持っているが、
- * 書き分けるにはそれを UI まで運ぶことになり、仕様（docs/06-ui.md「部品化」）が
- * 求めていない中間状態のエラー表示を発明することになる。
+ * ドメイン側は理由（`invalid-name` / `duplicate-name`）を持っているが、書き分けるにはそれ
+ * を UI まで運ぶことになり、仕様（docs/06-ui.md「部品化」）が求めていない中間状態のエラー
+ * 表示を発明することになる。
  */
 const UnusableNameReason = "使える部品名を入れると作成できます";
 
@@ -33,9 +32,6 @@ const UnavailableCaptionClass = "text-center text-[#c4c4c4] text-xs";
 
 /**
  * 部品にできない理由の 1 行。
- *
- * 戻り値を素の `string` にしているのは、状態を足して `case` を足し忘れたときに
- * 「返さない経路がある」としてコンパイルエラーにするため。
  *
  * @param componentization 部品にできないと分かっている今の状態
  * @returns その状態で部品にできない理由
@@ -82,8 +78,6 @@ function Caption({
 /**
  * 部品化のボタン。
  *
- * `◆` に `TypeGlyph` を使わないのは、UI 案がこのボタンだけ `#c9a6ff` を置いているため
- * （`TypeGlyph` の `component` は `#9747ff` で、`#1e1e1e` の黒地に沈む）。
  * 無効時の配色も、他のボタンの `opacity-50` ではなく UI 案がここだけ明示している値を使う。
  */
 function CreateButton({
@@ -111,15 +105,13 @@ function CreateButton({
  * 部品にできる選択のときの中身。名前を打って作るところまでを持つ。
  *
  * 押す前と打っている最中を `Option<string>` 1 つで持つ（`none` = まだ押していない /
- * `some` = 下書き）。真偽値と文字列に分けると「打っていないのに下書きがある」が
- * 表現できてしまい、取り消しのたびに setter が 2 つ並ぶ（rules/hooks.md）。
+ * `some` = 下書き）。真偽値と文字列に分けると「打っていないのに下書きがある」が表現でき
+ * てしまう。
  *
- * 作れたあとに下書きを捨てる処理を持たないのは、作れた時点で選択がインスタンスに変わり
- * この部品ごと消えるため。選択を別のものへ移したときの取り直しは、呼び出し側が
- * `key` に元の名前を混ぜて行う（rules/hooks.md「state リセット目的の Effect 禁止」）。
+ * 選択を別のものへ移したときの取り直しは、呼び出し側が `key` に元の名前を混ぜて行う。
  *
- * @returns まだ押していないなら作成ボタンだけ、押したあとは名前の入力欄と作成ボタン。
- *   作れない名前を打っている間、作成ボタンは理由付きで押せない
+ * @returns まだ押していないなら作成ボタンだけ、押したあとは名前の入力欄と作成ボ
+ *   タン。作れない名前を打っている間、作成ボタンは理由付きで押せない
  */
 function ReadyBody({
   designDocument,
@@ -148,7 +140,7 @@ function ReadyBody({
     componentName,
   );
   /*
-   * 凍結中（#155）を重ねるのは、左ペインが `inert` のまま描かれ続けるため。
+   * 凍結中を重ねるのは、左ペインが `inert` のまま描かれ続けるため。
    * ここで見ないと、押せない状態のボタンが押せる見た目で残る。
    */
   const isCreatable = !isFrozen && isUsableName;
@@ -199,7 +191,9 @@ export function CreateComponent({
   document: DesignDocument;
   /** 選ばれている 1 つの名前。何も選んでいない・複数選んでいるなら不在 */
   singleName: Option<string>;
-  /** ファイルが不正な間の凍結（#155）。左ペインが `inert` のまま描かれ続けるので UI 側でも見る */
+  /**
+   * ファイルが不正な間の凍結。左ペインが `inert` のまま描かれ続けるので UI 側でも見る
+   */
   isFrozen: boolean;
   onCreate: (componentName: string) => void;
 }>) {

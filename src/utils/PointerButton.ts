@@ -22,9 +22,6 @@ type ButtonBearingEvent = Readonly<{
 
 /**
  * どのボタンで始まった操作かを答える。
- *
- * `event.button` の綴りをここへ閉じるのは `CommandKey` と同じ形で、割り当てを読む側が
- * 数値を書かずに済むようにするため。
  */
 export const PointerButton = {
   /**

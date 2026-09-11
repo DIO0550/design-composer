@@ -26,7 +26,7 @@ import {
 /*
  * パレット（`Assets`）からキャンバスへ運んで挿す経路を、編集画面の配線ごと確かめる
  * （UI 案 docs/Design Composer.html「Assets is browse-only … Insertion is drag-only and
- * the drop reads as a tree position」/ #203）。
+ * the drop reads as a tree position」）。
  *
  * ここでしか通らないのは、掴む場所（左ペイン）と落とす場所（キャンバス）が別のペインに
  * あり、運んでいる間のポインタを 3 ペインの器が受けるため。キャンバス単体・パレット単体の
@@ -36,8 +36,7 @@ import {
 /**
  * `home` に Text・空の Box・Text がこの順で並ぶドキュメント。
  *
- * `home-panel` を真ん中に置くのは、落とし先が `home-panel` なのか `home`（末尾へ追加）
- * なのかを行の並びで見分けられるようにするため。末尾に置くとどちらでも同じ並びになる。
+ * 末尾に置くとどちらでも同じ並びになる。
  */
 function setupDocument(): DesignDocument {
   return DesignDocument.create({

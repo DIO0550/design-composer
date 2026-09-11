@@ -9,16 +9,8 @@ import type { Side } from "@/domains/unit/side";
 import type { ValueOf } from "@/types/ValueOf";
 
 /**
- * その prop が編集可能になる条件。
- * 「別の prop が特定の値のときだけ意味を持つ」prop を表す
- * （`width` は `widthMode` が `fixed` のときだけ効く、など）。
- *
- * 等値と不等値を判別子付きの直和にしてあるのは、条件の種類を足したときに
- * 判定側の網羅がコンパイルエラーになるようにするため
- * （`rules/coding.md`「列挙した状態の網羅を型で強制する」）。
- * 不等値が要るのは、**除きたい値が 1 つで、残りが増えうる**条件があるため
- * （`gap` は `layout` が `free` でなければ効く。等値の列挙で書くと `layout` に値を
- * 足すたびに追従が要る）。
+ * その prop が編集可能になる条件。「別の prop が特定の値のときだけ意味を持つ」prop を表
+ * す（`width` は `widthMode` が `fixed` のときだけ効く、など）。
  */
 export type EnabledWhen =
   | Readonly<{ kind: "equals"; prop: string; equals: PropValue }>
@@ -63,8 +55,8 @@ export type EnumPropDefinition = PropDefinitionBase &
   }>;
 
 /**
- * トークンを名前で参照する prop。どの種別のトークンから引くかを `tokenKind` が持つ。
- * この宣言が種別の唯一の情報源で、検証も CSS 出力もここを見る。
+ * トークンを名前で参照する prop。どの種別のトークンから引くかを `tokenKind` が持ち、この
+ * 宣言が種別の唯一の情報源で検証も CSS 出力もここを見る。
  */
 export type TokenPropDefinition = PropDefinitionBase &
   Readonly<{
@@ -163,10 +155,10 @@ export const PropDefinition = {
   },
 
   /**
-   * 1件の prop 設定がこの定義に適合しないときのエラーを集める。
-   * 適合していれば空配列。何を見るかは `domain` ごとに違う
-   * （enum は値が `values` に含まれるか、literal は型が一致するか、
-   * token はその種別のトークンが存在するか）。
+   * 1 件の prop 設定がこの定義に適合しないときのエラーを集める。適合していれば空配列。
+   *
+   * 何を見るかは `domain` ごとに違う（enum は値が `values` に含まれるか、literal は型が
+   * 一致するか、token はその種別のトークンが存在するか）。
    */
   collectErrors(
     definition: PropDefinition,
@@ -226,10 +218,9 @@ export const PropDefinitionRecord = {
   /**
    * 設定されていない prop に効くデフォルト。並びはスキーマの宣言順。
    *
-   * 「未設定ならどの値が効くか」はスキーマ自身の性質なので、デフォルト解決を要する側
-   * がそれぞれ走査を持たずここを呼ぶ（今の呼び出しは `collectEffectiveAssignments` と
-   * `ResolvedProps.resolve`。`session/prop-control` は既定の出どころが binding にも
-   * またがるので寄せていない）。
+   * 「未設定ならどの値が効くか」はスキーマ自身の性質なので、解決を要する側がそれぞれ走査
+   * を持たずここを呼ぶ（`collectEffectiveAssignments` と `ResolvedProps.resolve`。
+   * `session/prop-control` は既定の出どころが binding にもまたがるので寄せていない）。
    *
    * @param schema 補いの出どころになる prop 定義
    * @param props 実際に設定されている props
@@ -249,25 +240,18 @@ export const PropDefinitionRecord = {
   },
 
   /**
-   * その props の下で実際に効いている prop 設定の並び。
-   * 明示設定に、未設定の prop のデフォルトを足したもの。
+   * その props の下で実際に効いている prop 設定の並び。明示設定に、未設定の prop のデフ
+   * ォルトを足したもの。
    *
-   * スキーマに帰属するのは、「どの値が効いているか」がスキーマの宣言で決まるため
-   * （`collectDefaultsIfAbsent` と同じ理由）。props だけでは未設定の prop に何が効くかが
-   * 決まらない。
+   * この並びが `collectRefPropNames` と `collectErrors` の共通の走査対象で、片方だけがデフォ
+   * ルトを見る状態に戻ると、参照 0 件のトークンを消して dangling が出る食い違いが表に出る。
    *
-   * この並びが `collectRefPropNames` と `collectErrors` の共通の走査対象で、並びもここが決める。
-   * 走査を 1 つにしてあるのは、片方だけがデフォルトを見る状態に戻ると、参照が 0 件のトークンを
-   * 消して dangling が出る、という食い違いが利用者に見えるため。
-   *
-   * Why not: `ResolvedProps.resolve` は使えない。あちらは宣言済みの prop だけに絞った
-   * レコードを返すが、ここは `unknown-prop` を報告するために未宣言の prop も残す。
-   * `session/prop-control` の `effectiveProps` とも範囲が違う（あちらは binding 由来の既定も含む）。
+   * `session/prop-control` の `effectiveProps` とも範囲が違う（binding 由来の既定も含む）。
    *
    * @param schema 効いている値の出どころになる prop 定義
    * @param props 実際に設定されている props
-   * @returns 明示設定（props の並び順）を先に、デフォルトで補われた prop
-   *   （スキーマの宣言順）を後に並べた prop 設定の並び
+   * @returns 明示設定（props の並び順）を先に、デフォルトで補われた prop （ス
+   *   キーマの宣言順）を後に並べた prop 設定の並び
    */
   collectEffectiveAssignments(
     schema: PropDefinitionRecord,

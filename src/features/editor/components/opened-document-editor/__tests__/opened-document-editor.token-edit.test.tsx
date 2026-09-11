@@ -33,9 +33,7 @@ const EditedDocument = DesignDocument.create({
 /**
  * トークンの一覧と編集欄を出した編集画面。
  *
- * 画面から行き先を切り替えるところを通すのは、**一覧が左ペイン・編集欄が右ペインという
- * 別の枝に組まれている**ため。片方だけを描くと、器へ入れる配線（帯と本文）が切れていても
- * 気づけない。
+ * 片方だけを描くと、器へ入れる配線（帯と本文）が切れていても気づけない。
  */
 async function renderTokensView(): Promise<void> {
   await renderOpenedDocument(EditedDocument);

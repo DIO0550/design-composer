@@ -7,8 +7,6 @@ import { Result } from "@/utils/Result";
  *
  * Tauri 自身が webview へ配る（`tauri` クレートの `DRAG_DROP_EVENT`）ので、
  * こちらの Rust 側には対になるコードが無い。
- *
- * export しているのは、テストの代役が同じ名前で配れるようにするため。
  */
 export const DragDropEvent = "tauri://drag-drop";
 
@@ -36,27 +34,15 @@ function toDroppedPaths(payload: unknown): Option<readonly string[]> {
 }
 
 /**
- * ウィンドウへのファイルのドロップ（docs/05-architecture.md「Tauri IPC」）。
+ * ウィンドウへのファイルのドロップ（docs/05-architecture.md「Tauri IPC」）。配るのは落
+ * とされたパスの並びだけで、開けるファイルかどうかは見ない。
  *
- * 配るのは落とされたパスの並びだけで、開けるファイルかどうかは見ない。
- * Why not: 拡張子で絞ると、落としたのに何も起きないファイルができる
- * （`rules/coding.md`「失敗を握りつぶして既定値へフォールバックしない」）。
- * 開こうとして失敗させれば、理由が画面に出る。
- *
- * Why not: `@tauri-apps/api/webview` の `onDragDropEvent` は使わない。
- * `@tauri-apps/*` の import 先が `libs/tauri-ipc` の外へ増えるため
- * （同じイベントは `listen` で受けられる）。
- *
- * ドロップを OS 側で受けるので、Windows では webview の HTML5 ドラッグ & ドロップが
- * 使えなくなる（Tauri の `dragDropEnabled` は既定で有効）。今のところ HTML5 の
- * ドラッグ & ドロップを使っている箇所は無いので影響しないが、ツリーの並べ替えを
- * それで作るときはここと両立しない。
+ * ドロップを OS 側で受けるので、Windows では webview の HTML5 ドラッグ & ドロップが使え
+ * ない（今のところ使っている箇所は無い）。
  */
 export type FileDrop = Readonly<{
   /**
    * ドロップの購読を始め、解除関数を返す。
-   *
-   * 解除関数を `Promise` 越しに返す理由は `AppMenu.subscribeCommand` と同じ。
    */
   subscribeDropped(
     listener: (paths: readonly string[]) => void,

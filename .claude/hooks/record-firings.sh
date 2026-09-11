@@ -20,7 +20,7 @@
 # 精度が変わる状態を作らないため、判定は bash の組み込みだけで完結させる
 # (session-url-notice.sh と同じ理由)。
 #
-# Why not リポジトリ内へのログ: 作業ツリーが汚れて git status・pre-push 検査の
+# リポジトリ内へログを置かないのは、作業ツリーが汚れて git status・pre-push 検査の
 # ノイズになる。ログはセッションと同じ寿命でよい(別セッションからの復元は
 # harness-record が「不明」と書く既存の扱いのまま)ので tmp に置く。
 set -uo pipefail

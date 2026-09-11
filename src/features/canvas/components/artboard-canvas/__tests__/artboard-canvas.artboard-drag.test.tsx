@@ -18,8 +18,7 @@ import { drawn, renderCanvas, selectionFromArtboards } from "./setup";
 /**
  * 幅 200 の artboard を 3 枚並べた、未選択の対。
  *
- * 3 枚並べるのは、掴む相手を**先頭以外**にできるようにするため。先頭は既定の位置が
- * 原点なので、掴んだ時点の位置を無視する実装でも同じ答えになる。
+ * 先頭は既定の位置が原点なので、掴んだ時点の位置を無視する実装でも同じ答えになる。
  *
  * @param options `withChild` で `second` に子（Text の `title`）を 1 つ置く
  * @returns 3 枚の artboard を持つドキュメントと、未選択の対

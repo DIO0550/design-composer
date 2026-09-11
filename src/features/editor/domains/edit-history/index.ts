@@ -3,20 +3,15 @@ import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 
 /**
- * 編集の履歴（docs/06-ui.md「編集操作の一覧」の undo / redo、
- * docs/05-architecture.md「保存モデル」のメモリ内管理）。
+ * 編集の履歴（docs/06-ui.md「編集操作の一覧」の undo / redo、docs/05-architecture.md「保
+ * 存モデル」のメモリ内管理）。どちらの並びも時系列（古い → 新しい）で持ち、`past` の末
+ * 尾が 1 つ前、`future` の先頭が 1 つ先になる。
  *
- * ドキュメントは不変なので、差分ではなくスナップショットを並べるだけで戻せる（#41）。
- * 書き換えた経路以外の枝は前のスナップショットと同じ参照が残るため、
- * 1 編集で増えるのは書き換えた経路ぶんになる。
+ * ドキュメントは不変なので、差分ではなくスナップショットを並べるだけで戻せる。書き換えた経
+ * 路以外の枝は前のスナップショットと同じ参照が残るため、1 編集で増えるのは書き換えた経路ぶ
+ * ん。
  *
- * 今表示しているドキュメント（`present`）を履歴の外に置かず中に持つ。
- * undo は「今のドキュメント」と「積んである並び」が揃って初めて結果が決まる
- * （rules/architecture.md「2つ以上の値が常に対で渡っていないか」）ためで、
  * これにより履歴を積まずにドキュメントだけ差し替える経路が無くなる。
- *
- * どちらの並びも時系列（古い → 新しい）で持つ。`past` の末尾が 1 つ前、
- * `future` の先頭が 1 つ先になる。
  */
 export type EditHistory = Readonly<{
   past: readonly DesignDocument[];
@@ -33,8 +28,7 @@ export const EditHistory = {
   /**
    * 新しいドキュメントを現在地にし、それまでの現在地を戻る先として積む。
    *
-   * `future` は捨てる。戻ったあとに別の編集をしたら、それまで進める先だった並びは
-   * もう今の現在地から続いていないため。
+   * `future` は捨てる。
    */
   record(history: EditHistory, document: DesignDocument): EditHistory {
     return {

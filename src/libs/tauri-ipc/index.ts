@@ -7,9 +7,9 @@ export type Unsubscribe = () => void;
 /**
  * Tauri のコマンド呼び出しとイベント購読。
  *
- * `@tauri-apps/api` を import するのはこのファイルだけに保つ。Tauri ランタイムの
- * 有無で振る舞いが変わる箇所をここ1つに集めることで、テストの差し替え口が
- * 1箇所に決まり、他の層が `@tauri-apps/*` へ直接依存する余地も無くなる（#28）。
+ * `@tauri-apps/api` を import するのはこのファイルだけに保つ。Tauri ランタイムの有無で振る
+ * 舞いが変わる箇所をここ1つに集めることで、テストの差し替え口が 1箇所に決まり、他の層が
+ * `@tauri-apps/*` へ直接依存する余地も無くなる。
  */
 export type TauriIpc = Readonly<{
   /** コマンドを呼ぶ。Rust 側が `Err` を返した場合はその値で reject される。 */

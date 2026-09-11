@@ -47,14 +47,11 @@ export { TokenReferrerOutline } from "./artboard-frame-list";
 const ContentTransformOrigin: CSSProperties["transformOrigin"] = "0 0";
 
 /**
- * キャンバスの土台に出すカーソル。
+ * キャンバスの土台に出すカーソル。手を出すのは**パンできる入力のときだけ**（空き領域の
+ * 左ドラッグは範囲選択なので、常時「開いた手」にすると掴んで動かせるように見える）。
  *
- * 手を出すのは**パンできる入力のときだけ**。空き領域の左ドラッグは範囲選択になったので、
- * 常時「開いた手」にすると掴んで動かせるように見えて誤誘導になる。
- * **カーソルは happy-dom にも視覚差分にも出ない**ので、ここを間違えても気づく手段が無い。
- *
- * 真偽値をオブジェクトで受けるのは、位置引数だと取り違えても型が通るため
- * （気づく手段が無い以上、取り違えを型で防ぐ / `rules/coding.md`「関数のシグネチャ」）。
+ * **カーソルは happy-dom にも視覚差分にも出ない**ので、間違えても気づく手段が無い。だか
+ * ら真偽値もオブジェクトで受け、取り違えを型で防ぐ。
  *
  * @param pan 今パンしている最中か・パンの構えにあるか
  * @returns その状態で出すカーソルのクラス
@@ -69,31 +66,16 @@ function canvasCursor(
 }
 
 /**
- * キャンバス（docs/06-ui.md「画面構成」）。
- * artboard をキャンバス上の座標へ置き、コンパイル結果（実 HTML / CSS）をレンダリングする。
- * ズーム / パンは非永続の view state で、ドキュメントには保存しない。
+ * キャンバス（docs/06-ui.md「画面構成」）。artboard をキャンバス上の座標へ置き、コンパイル
+ * 結果（実 HTML / CSS）をレンダリングする。ズーム / パンは非永続の view state で、ドキュメ
+ * ントには保存しない。
  *
- * 表示（倍率・位置）を自分で持たず受け取るのは、倍率の操作が上部バーへ移り、
- * キャンバスと上部バーが同じ 1 つの表示を見る必要があるため（#134）。
+ * どちらも両方の親が状態を持つ。
  *
- * props が 10 個あるが Composition へは割っていない。関心は「キャンバス」1 つで、
- * 前半 3 つは描くのに要る値、後半 7 つは表示とキャンバス上の操作を外へ渡す口。
- * 中身を子要素として受け取る形にはできない（描くものはコンパイル結果の HTML で、
- * 呼び出し側が組み立てられない）。`EditorState` を丸ごと受けると feature として
- * 切り出せない（#256）。
- *
- * `isFrozen` を真偽値のまま受けるのは、凍結の取りうる状態が 2 つしかないため。
- * 中央ペインの凍結（ハンドルの抑止・`inert`・スクリム）はここが自分で出す
- * （左右のペインと違い、器の `EditorLayout` は中央に淡色も `inert` も付けない。
- * 映っているものは最後に正常だった表示なので、見る操作だけは残す）。
- *
- * `selection` と `tokenSelection` がそれぞれドキュメントを持つが、束ねる型は作らない。
- * トークンの対を単独で受けている `TokenList` / `TokenEditor` と流儀が割れるため。
- * 同じドキュメントを指すことは、両方を 1 つの状態から作る呼び出し側が保つ。
- *
- * ツリー内の移動 / 挿入のドラッグを自分で持たず受け取るのは、掴む場所がキャンバスだけで
- * なくなったため。パレット（左ペイン）からも掴めるので、状態は両方の親が持つ
- * （`opened-document-editor`）。
+ * props が 10 個あるが Composition へは割っていない（描くものはコンパイル結果の HTML で呼
+ * び出し側が組み立てられず、`EditorState` を丸ごと受けると feature として切り出せない。
+ * `selection` と `tokenSelection` を束ねる型も作らない）。中央ペインの凍結（ハンドルの抑止
+ * ・`inert`・スクリム）はここが自分で出す — 左右と違い器は中央に淡色も `inert` も付けない。
  */
 export function ArtboardCanvas({
   selection,
@@ -113,7 +95,7 @@ export function ArtboardCanvas({
   canvasView: CanvasViewControl;
   nodeDrag: NodeDragControl;
   onSelect: (names: readonly string[], dig: SelectionDig) => void;
-  /** 範囲選択で、範囲に重なったものをまとめて選ぶ（#411）。 */
+  /** 範囲選択で、範囲に重なったものをまとめて選ぶ。 */
   onSelectInRange: (names: readonly string[]) => void;
   onResize: (sizes: AxisLengths) => void;
   onEditProp: (edit: PropEdit) => void;
@@ -131,7 +113,7 @@ export function ArtboardCanvas({
    * ハンドルを重ねる器。`canvas-surface` の**外**にあるので、掴めるハンドルの上だけは
    * `pointerdown` が土台へ届かず、space を押していてもパンが始まらない
    * （docs/06-ui.md「キャンバス直接操作」がこの 3 箇所を例外として書いている）。
-   * 中へ移せば例外を消せるが、掴み口と土台の当たり判定の作り直しになるので #411 では触らない。
+   * 中へ移せば例外を消せるが、掴み口と土台の当たり判定の作り直しになるので今は触らない。
    */
   const canvasAreaRef = useRef<HTMLDivElement>(null);
   const designDocument = selection.document;
@@ -212,7 +194,7 @@ export function ArtboardCanvas({
         /*
          * 空き領域の左ドラッグは範囲選択。ここまで `pointerdown` が上がってくるのは
          * artboard の外側の余白を押したときだけで、artboard の上は枠と見出しが止める
-         * （artboard の背景を範囲選択にするかは #465）。凍結中に始めないのは、
+         * （artboard の背景を範囲選択にするかは）。凍結中に始めないのは、
          * 映っているのが最後に正常だった表示で、そこへ加えた選択が今のファイルと
          * 噛み合わないため（`canvas-content` の `inert` はここまで及ばない）。
          */

@@ -28,9 +28,6 @@ type NodeMarks = Readonly<{
  * Text の行に出す文言。空の文言では引用符だけが残るので出さない
  * （UI 案でも文言を持たない Text の行には補助情報が無い）。
  *
- * 既定値の解決を挟まないのは、`content` の既定が空文字で、解決しても
- * 出るものが変わらないため。
- *
  * @param node 文言を読む対象の Text ノード
  * @returns 文言を持つなら `some`。未設定と空文字なら `none`
  */
@@ -44,6 +41,7 @@ function contentNote(node: PrimitiveNode): Option<NodeNote> {
 
 /**
  * 名前の右に出す補助情報。文言を持つのは Text だけで、Box には補助情報が無い。
+ *
  * 参照ノードはインスタンスであること自体を出す。
  *
  * @param node 補助情報を出したいノード
@@ -59,9 +57,7 @@ function noteOf(node: Node): Option<NodeNote> {
 /**
  * 行が名前の左右に出すもの。
  *
- * 種別は `Selection` から引く。「そのノードが何であるか」は行が選ばれているかに
- * よらない性質で、インスペクタの見出しと同じ判定になるため（同じ分岐を 2 箇所に
- * 置かない / rules/coding.md「同じ処理が2箇所に現れたら共通化する」）。
+ * 種別は `Selection` から引く。
  *
  * @param node 行に出したいノード
  * @returns 名前の左に出す種別の印と、右に出す補助情報
@@ -72,10 +68,6 @@ function nodeMarks(node: Node): NodeMarks {
 
 /**
  * 行の右端に出る補助情報（大きさ・文言・インスタンスの印）。
- *
- * 戻り値を `ReactElement` と書くのは、`default` の無い `switch` で
- * 種別の網羅をコンパイラに強制するため（`ReactNode` は `undefined` を含むので
- * case が抜けても通ってしまう）。
  *
  * @returns 種別に応じた 1 行ぶんの補助情報
  */
@@ -146,9 +138,6 @@ function SelectableName({
 /**
  * ノードを、ツリービューが並べる 1 行へ作り直す。子も同じ形で作り直す。
  *
- * 選択されているかを 1 度だけ引いて行の器と名前のボタンの両方へ配るのは、
- * 同じ判定を 2 箇所で書かないため。
- *
  * @param node 行にしたいノード
  * @param selection 選択を読む対
  * @param onSelect 行が押されたときに名前を伝える先
@@ -179,20 +168,17 @@ function rowFromNode(
 }
 
 /**
- * 今見ている artboard の中身を出すツリービュー（docs/06-ui.md「画面構成」。
- * UI 案 docs/Design Composer.html の `Layers` パネル下段）。行の並べ替えは
- * docs/06-ui.md「編集操作の一覧」の並べ替えにあたる。
+ * 今見ている artboard の中身を出すツリービュー（docs/06-ui.md「画面構成」/ UI 案
+ * docs/Design Composer.html の `Layers` パネル下段）。行の並べ替えは docs/06-ui.md「編
+ * 集操作の一覧」の並べ替えにあたる。
  *
- * artboard 自身は行として出さない。UI 案は artboard を上段の `Artboards`
- * （`ArtboardList`）に並べ、ツリーはそのうちの 1 枚の中身だけを映す。どの 1 枚かは
- * 選択から決まる（`DocumentSelection.currentArtboard`）ので、ここは持たない。
+ * artboard 自身は行として出さない。UI 案は artboard を上段の `Artboards` に並べ、ツリー
+ * はそのうちの 1 枚の中身だけを映す（どの 1 枚かは `DocumentSelection.currentArtboard`
+ * が決めるので、ここは持たない）。
  *
- * どの枝を畳んでいるかは編集ではなく見え方なので、受け取った選択とドキュメントの対
- * には持たず、行を並べる器（`NestedRowList`）に閉じる。名前は
- * 使い回されるので、同じ名前でノードを作り直すと畳んだ状態で現れる
- * （三角で状態は読めるので許容している）。器は artboard があるときだけ描かれるため、
- * artboard が 0 枚になって戻ると畳んだ状態は消える（行が 1 つも無い状態を挟むので
- * 見え方は変わらない）。
+ * どの枝を畳んでいるかは編集ではなく見え方なので、選択とドキュメントの対には持たず行を
+ * 並べる器（`NestedRowList`）に閉じる。名前は使い回されるので、同じ名前でノードを作り直
+ * すと畳んだ状態で現れる（三角で状態は読める）。
  */
 export function DocumentTree({
   selection,
@@ -218,7 +204,7 @@ export function DocumentTree({
   return (
     /*
      * 左ペインには artboard の一覧とレールの行き先も並ぶため、ツリーの行だけを
-     * 指せるよう領域として名前を持たせる（#39）。見出しの綴りは UI 案に合わせて
+     * 指せるよう領域として名前を持たせる。見出しの綴りは UI 案に合わせて
      * `Layers` だが、読み上げ名は他の領域と同じく日本語のまま置く
      * （パネルの見出しも `Layers` なので、そのまま名前にすると 2 つが同じ名前になる）。
      */

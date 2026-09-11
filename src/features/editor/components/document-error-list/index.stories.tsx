@@ -9,7 +9,7 @@ import {
 /*
  * `StoryObj<typeof meta>` ではなく `StoryObj<typeof DocumentErrorList>` を使う。
  * props が由来ごとの直和なので、meta 経由だと args が全変種の交差になり
- * どの変種の args も渡せなくなる（#136）。
+ * どの変種の args も渡せなくなる。
  *
  * ただしこちらは args が `Partial` になり、必須の args を落としても `tsc` が通る。
  * 各 story の args に `satisfies DocumentErrorListProps` を付けて欠落を弾く。
@@ -51,8 +51,8 @@ export const BrokenJson: Story = {
 };
 
 /**
- * 場所の持ち方が 4 種類そろう。`Reveal` が出るのはノードを指す 2 件だけで、
- * 出し分けがそのまま見える（#136）。
+ * 場所の持ち方が 4 種類そろう。`Reveal` が出るのはノードを指す 2 件だけで、出し分けがその
+ * まま見える。
  */
 export const SchemaErrors: Story = {
   name: "スキーマ違反が複数",
@@ -106,8 +106,8 @@ export const Reverting: Story = {
 };
 
 /**
- * まだ何も開けていない画面（開始画面）。飛び先のノードも書き戻す表示中の内容も
- * 無いので、`Reveal` も `revert file` も出ない（#136）。
+ * まだ何も開けていない画面（開始画面）。飛び先のノードも書き戻す表示中の内容も無いので、
+ * `Reveal` も `revert file` も出ない。
  */
 export const UnopenedFile: Story = {
   name: "開けなかったファイル",
@@ -132,8 +132,8 @@ export const NoErrors: Story = {
 };
 
 /**
- * ドキュメント自身の不正（#128）。ファイル由来と見出し・読み上げ名が分かれ、
- * 下端へ密着せず、キャンバスのツールバーと積み重なる形で出る。
+ * ドキュメント自身の不正。ファイル由来と見出し・読み上げ名が分かれ、下端へ密着せず、キャン
+ * バスのツールバーと積み重なる形で出る。
  */
 export const DocumentOrigin: Story = {
   name: "ドキュメント自身の不正",

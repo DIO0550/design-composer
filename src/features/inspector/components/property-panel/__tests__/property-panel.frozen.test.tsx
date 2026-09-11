@@ -5,8 +5,8 @@ import { DocumentSelection } from "@/domains/session/document-selection";
 import { renderFrozenPanel, renderPanel } from "./setup";
 
 /**
- * 外部編集でファイルが壊れている間の本文（#135）。映っているのは最後に正常だった
- * 表示なので、そこへ編集を加えさせない。
+ * 外部編集でファイルが壊れている間の本文。映っているのは最後に正常だった表示なので、そこへ
+ * 編集を加えさせない。
  *
  * 見出しが選んでいたものを保つことはここでは見ない。帯の中身（`PropertyPanel.Title`）は
  * `isFrozen` を受け取らないので、この単位ではその主張を破る実装を書けない。

@@ -7,9 +7,7 @@ import { DocumentSelection } from "@/domains/session/document-selection";
 import { ArtboardList } from "../index";
 
 /**
- * artboard 2 枚。ノードは 2 枚目（`settings`）だけに置く。先頭の `home` に置くと、
- * 「ノードから artboard を辿る」規則を壊しても「選択なしは先頭」の既定で同じ答えになり、
- * ノードを選んだときのテストが落ちなくなるため。
+ * artboard 2 枚。ノードは 2 枚目（`settings`）だけに置く。
  */
 function setupDocument(): DesignDocument {
   return DesignDocument.create({

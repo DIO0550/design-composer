@@ -8,7 +8,6 @@ import { Option } from "@/utils/Option";
  * Box が子をどう置くかを名前で指すための対応表（docs/03「Box」）。
  * Figma の `layoutMode`（`NONE` / `HORIZONTAL` / `VERTICAL`）にあたる。
  *
- * 並びが `row` / `column` / `free` なのは、パネルのセグメントがこの順で出るため。
  * UI 案（docs/Design Composer.html）が描く 2 択の並びを保ったまま右端に 1 つ増える。
  */
 export const Layouts = {
@@ -27,21 +26,15 @@ export const Layout = {
   Default: Layouts.Column,
 
   /**
-   * props から配置モードを読む。
-   * `layout` prop の綴りを知っているのはここだけで、消費側は prop 名を持たない。
+   * props から配置モードを読む。`layout` prop の綴りを知っているのはここだけで、消費側
+   * は prop 名を持たない。
    *
-   * Why not: 語彙に無い綴りを `Option` の不在にしない（`Placement.fromProps` /
-   * `Size.create` は不在にする）。それらは**書いた値が使えない**ときに描画から落ちるが、
-   * 配置モードは落ちると箱の中身が並ばなくなる。吸収前の `CssDirection.from` も同じ
-   * 既定へ倒しており、綴りの誤り 1 つでレイアウトが崩れないほうを引き継いだ。
-   *
-   * 代償として、`layout` の綴りが不正な親の下では**子の `fill` も既定の親の下にある**
-   * ものとして検証される。ドキュメント自体は親の `enum-violation` で不正になるので、
-   * 直せば子の判定もやり直される。
+   * 代償として、`layout` の綴りが不正な親の下では**子の `fill` も既定の親の下にある**もの
+   * として検証される（親の `enum-violation` を直せばやり直される）。
    *
    * @param props 読み取り元の props（デフォルト解決済みでなくてよい）
-   * @returns 配置モード。未設定・語彙に無い綴りのときは既定（`Default`）
-   *   （不正な値そのものは `DesignDocument.collectErrors` がエラー一覧に出す）
+   * @returns 配置モード。未設定・語彙に無い綴りのときは既定（`Default`）（不
+   *   正な値そのものは `DesignDocument.collectErrors` がエラー一覧に出す）
    */
   fromProps(props: Props): Layout {
     const value = props.layout;
@@ -54,10 +47,8 @@ export const Layout = {
   /**
    * その配置モードが子を並べる向き。
    *
-   * コンパイル（`fill` と間隔・揃えの出し分け）とバリデーション（`free` の親の子は
-   * `fill` を書けない）はどちらもここを引く。**スキーマの `enabledWhen` だけは
-   * 別に綴っている**（`BoxSchema` の `FlexOnly`）ので、両者が一致することは
-   * `__tests__/layout.schema.test.ts` が固定する。
+   * コンパイル（`fill` と間隔・揃えの出し分け）とバリデーション（`free` の親の子は `fill` を
+   * 書けない）はどちらもここを引く。
    *
    * @param layout 向きを知りたい配置モード
    * @returns 子が並ぶ向き。`free` は子を並べないので `none`
@@ -69,9 +60,8 @@ export const Layout = {
   /**
    * 配置モードを CSS の宣言にする（docs/03「HTML/CSS へのコンパイル規則」）。
    *
-   * `free` が空なのは、flex コンテナにしないため。絶対配置の子の基準になる
-   * `position: relative` は `free` でも要るが、それは Box 自身の性質なので
-   * `BoxElement` が出す。
+   * 絶対配置の子の基準になる `position: relative` は `free` でも要るが、それは Box 自身の性
+   * 質なので `BoxElement` が出す。
    *
    * @param layout 宣言にする配置モード
    * @returns `display: flex` と `flex-direction` の 2 件。`free` なら空

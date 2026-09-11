@@ -23,10 +23,11 @@ type SchemaPropsOf<T extends PrimitiveType> =
 /**
  * ある primitive のうち `domain: "token"` と宣言された prop の名前。
  *
- * props の各キーを走査し、トークン参照でないものを `never` に潰してから
- * `[keyof ...]` で値側を union として取り出す（`never` は union から消える）。
- * 例: Box なら `"gap" | "paddingTop" | "paddingRight" | "paddingBottom" |
- * "paddingLeft" | "background" | "radius" | "shadow"`。
+ * props の各キーを走査し、トークン参照でないものを `never` に潰してから `[keyof ...]` で
+ * 値側を union として取り出す（`never` は union から消える）。
+ *
+ * 例: Box なら `"gap" | "paddingTop" | "paddingRight" | "paddingBottom" | "paddingLeft" |
+ * "background" | "radius" | "shadow"`。
  */
 type TokenPropNameOf<T extends PrimitiveType> = {
   [K in keyof SchemaPropsOf<T>]: SchemaPropsOf<T>[K] extends { domain: "token" }
@@ -37,11 +38,12 @@ type TokenPropNameOf<T extends PrimitiveType> = {
 /**
  * スキーマが `domain: "token"` と宣言した prop の名前（全 primitive 分）。
  *
- * `TokenPropNameOf` を primitive ごとに求めて union へまとめている。
- * 名前は primitive をまたいで重複しないため、型を問わず名前だけで引ける
- * （`gap` は Box にしか、`color` は Text にしか無い）。
- * トークンを引かない prop（`layout` などの enum、`width` などの literal）は
- * 含まれないので、この型で受ければ非トークン prop を渡せない。
+ * `TokenPropNameOf` を primitive ごとに求めて union へまとめている。名前は primitive をま
+ * たいで重複しないため、型を問わず名前だけで引ける（`gap` は Box にしか、`color` は Text
+ * にしか無い）。
+ *
+ * トークンを引かない prop（`layout` などの enum、`width` などの literal）は含まれないので、
+ * この型で受ければ非トークン prop を渡せない。
  */
 export type TokenPropName = {
   [T in PrimitiveType]: TokenPropNameOf<T>;

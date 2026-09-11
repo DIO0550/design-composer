@@ -5,7 +5,7 @@ import { renderToolbar, toolbar } from "./setup";
 
 /*
  * パレットから運んでいることの表示（UI 案 docs/Design Composer.html の `3a · ASSETS` は
- * `◆` に `background:#f3ebff` を付ける / #203）。
+ * `◆` に `background:#f3ebff` を付ける）。
  */
 
 /** 運んでいるものを変えてツールバーを描き、`◆` を返す。 */
@@ -24,7 +24,7 @@ test("何も運んでいないときもツールバーにインスタンスの�
 });
 
 test("インスタンスの印は押せない", () => {
-  // 挿入の入口はドラッグだけで、これは状態表示（#198）
+  // 挿入の入口はドラッグだけで、これは状態表示
   renderToolbar({
     dragged: Option.some<NodeTemplate>({
       kind: "instance",

@@ -6,11 +6,6 @@ import type { Option } from "@/utils/Option";
  * 今の選択に対する部品化（UI 案 docs/Design Composer.html の `Assets` 下部にある
  * `Create component`）。
  *
- * できるかどうかを真偽値で持たず、できないときの**理由まで**を直和で列挙する。
- * UI 案がインスタンス選択時に `an instance can't be componentized` と理由を出しており、
- * 「できないが理由が無い」「できるのに元の名前が無い」という食い違った状態を
- * 表現できなくするため（rules/coding.md「不正な状態を型で表現できなくする」）。
- *
  * `sourceName` を `ready` だけが持つのがその境界で、`ready` 以外から元の名前は読めない。
  */
 export type Componentization =
@@ -23,10 +18,7 @@ export const Componentization = {
   /**
    * 選択から、部品化できるかとできない理由を決める。
    *
-   * 部品にできるかの判定を `Selection` の種別ではなく `Node.isRef` で行うのは、
-   * 部品化を受理する条件（`Component.fromNode`）が「参照ノードでないこと」だけで、
-   * `type` がスキーマに知られているかを見ないため。種別で判定すると、不正な
-   * ドキュメントに残る未知の `type` のノードだけ部品にできなくなり、
+   * 種別で判定すると、不正なドキュメントに残る未知の `type` のノードだけ部品にできなくなり、
    * ドメイン側の受理条件と静かにずれる。
    *
    * @param document 選択先を引くドキュメント

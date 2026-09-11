@@ -40,19 +40,13 @@ export type Placement = Readonly<{ mode: "flow" }> | AbsolutePlacement;
 export const Placement = {
   /**
    * props から置かれ方を組み立てる。
-   * 座標で置かれるかを決める 3 prop の綴りを知っているのはここだけで、消費側は prop 名を
-   * 持たない（追従の 2 prop は `Constraint` が読む。理由はそちらの doc）。
    *
-   * 決められないときに `Option` ではなく `undefined` を返すのは、同じ形の
-   * `Size.create`(モードと値の 2 prop から直和を組む)と受け口を揃えるため。
-   *
-   * この `undefined` は「不在」ではなく「スキーマ違反で決められない」を表す。
-   * ただし**出力は `flow` と同じ**(座標の宣言を出さない)で、不正そのものは
-   * `DesignDocument.collectErrors` がエラー一覧に出す。
+   * この `undefined` は「不在」ではなく「スキーマ違反で決められない」を表す(出力は `flow` と
+   * 同じ / 不正は `DesignDocument.collectErrors` が出す)。
    *
    * @param props 配置を読み取る props(デフォルト解決済みでなくてよい)
-   * @returns 置かれ方。`absolute` なのに座標が数値でないなど、置き場所を
-   *   決められないときは `undefined`
+   * @returns 置かれ方。`absolute` なのに座標が数値でないなど、置き場所を決め
+   *   られないときは `undefined`
    */
   fromProps(props: Props): Placement | undefined {
     const { placement, x, y } = props;
@@ -68,7 +62,6 @@ export const Placement = {
 
   /**
    * フローから外れて座標で置かれるか。flex アイテムとして並ばない。
-   * 絞り込みを兼ねるのは、座標を動かす操作が絶対配置の枝しか受け取らないため。
    */
   isAbsolute(placement: Placement | undefined): placement is AbsolutePlacement {
     return placement?.mode === "absolute";
@@ -76,13 +69,6 @@ export const Placement = {
 
   /**
    * 座標をずらした配置。
-   *
-   * 整数へ丸めるのは、画面上の 1px 未満の差(倍率の割り戻しで出る)をドキュメントへ
-   * 残さないため。長さを `AxisLength.create` が丸めているのと同じ理由で、同じ操作
-   * (ドラッグ)から来る値がサイズと座標で違う粒度になるのを避ける。
-   *
-   * `AxisLength` と違って 0 で下限を切らないのは、負の座標が親からはみ出した位置と
-   * して成立するため(長さの負は存在しない)。
    *
    * @param placement ずらす前の配置
    * @param delta 動かす量。ドキュメント上の px（画面上の量なら倍率で割り戻してから渡す）
@@ -115,11 +101,6 @@ export const Placement = {
    * 親の軸方向の長さが変わったときに、追従した座標を書く編集
    * （docs/03「配置の指定」の追従の表のうち、位置の列）。
    *
-   * 長さ側の編集を返さないのは、`Placement` が持つのが座標だけのため
-   * （長さの prop は `AxisLength.toPropEdit` が書く）。
-   *
-   * 整数へ丸めるのは `moveBy` と同じ理由による。
-   *
    * @param placement 追従する子の今の配置
    * @param constraint その軸の追従の仕方
    * @param resize 親のその軸の長さの変化
@@ -143,9 +124,8 @@ export const Placement = {
   /**
    * 配置を props の編集へ戻す（`fromProps` の逆向きのうち、座標の 2 prop）。
    *
-   * `placement` prop を含まないのは、動かす相手が既に絶対配置だから
-   * （フローのノードを絶対配置へ変える操作はまだ無い）。prop 名を知っているのが
-   * このモジュールだけ、という状態を保つために編集の側もここが組み立てる。
+   * prop 名を知っているのがこのモジュールだけ、という状態を保つために編集の側もここが組み立
+   * てる。
    *
    * @param placement 書き戻す配置
    * @returns 横と縦の座標を設定する編集 2 件
@@ -159,9 +139,8 @@ export const Placement = {
   /**
    * 置かれ方を CSS の宣言にする。
    *
-   * フローの側が宣言を持たないのは、`position` の初期値がフローそのもの
-   * (`static`) だから。フローの Box が出す `position: relative` は
-   * 「子の基準になれる」という Box の性質なので `BoxElement` が持つ。
+   * フローの Box が出す `position: relative` は「子の基準になれる」という Box の性質なので
+   * `BoxElement` が持つ。
    *
    * @param placement 宣言にする置かれ方。置き場所が決まらないときは `undefined`
    * @returns 絶対配置なら `position` と座標の 3 件。それ以外は空

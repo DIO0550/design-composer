@@ -5,9 +5,6 @@ import { DesignDocument } from "../index";
 /**
  * artboard 直下に Box を 2 つ持つドキュメント。
  *
- * 対照を必ず 1 つ置くのは、`fill` を集める側と集めすぎる側のどちらを壊しても
- * 落ちるようにするため（`rules/testing.md`「assert は落ちうるか」）。
- *
  * @param artboardProps artboard に設定する props。親の配置モードをここで変える
  * @param childProps 1 つ目の Box に設定する props
  * @returns その 2 つの Box を持つドキュメント

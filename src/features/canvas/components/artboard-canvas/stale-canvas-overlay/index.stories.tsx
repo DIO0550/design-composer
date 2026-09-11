@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { StaleCanvasOverlay } from "./index";
 
 /**
- * ファイルが不正な間キャンバスへ重ねるもの（#135）。
+ * ファイルが不正な間キャンバスへ重ねるもの。
  *
  * `ArtboardCanvas` の「ファイルが不正」ストーリーにも出るが、そちらでは artboard の
  * 上に薄く掛かるだけで斜線の間隔・角度を読み取れない。**斜線を落としてもバッジは残り、

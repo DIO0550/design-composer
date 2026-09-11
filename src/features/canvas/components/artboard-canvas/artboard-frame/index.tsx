@@ -18,22 +18,19 @@ import { ElementEx } from "@/utils/ElementEx";
 import { ArtboardLabel } from "../artboard-label";
 
 /**
- * キーボードでも artboard を選べるようにする（role="button" は既定の活性化を持たない）。
+ * キーボードでも artboard を選べるようにする（`role="button"` は既定の活性化を持たない）。
  *
- * Why not（space）: `role="button"` の流儀では Enter と space の両方が活性化に当たるが、
- * space はキャンバス全体でパンの修飾になった（docs/06-ui.md「キャンバス直接操作」）。
- * 枠にフォーカスがあるときだけ意味が割れると、押した瞬間に artboard が選び直される。
+ * space を含めないのは、`role="button"` の流儀では Enter と space の両方が活性化に当たるも
+ * のの、space がキャンバス全体でパンの修飾になったため（docs/06-ui.md「キャンバス直接操
+ * 作」）。枠にフォーカスがあるときだけ意味が割れると、押した瞬間に artboard が選び直される。
  */
 const ActivationKeys = ["Enter"];
 
 /**
  * 1 枚の artboard。中身はコンパイル結果の HTML をそのまま流し込む。
  *
- * React 要素へ組み替えないのは、コンパイル結果が `flex-direction` のような
- * kebab-case の CSS プロパティ名を持つのに対し、React の `style` は camelCase の
- * オブジェクトしか受け付けず、プロパティ名の変換表を UI 側へ二重に持つことになるため。
- * 書き出しと同じ文字列を描くことで、キャンバスの見た目と出力の一致も保たれる。
- * 埋め込む文字列のエスケープはコンパイラ側（`Html.escapeText` / `escapeAttribute`）に閉じている。
+ * 書き出しと同じ文字列を描くことで、キャンバスの見た目と出力の一致も保たれる。埋め込む文字
+ * 列のエスケープはコンパイラ側（`Html.escapeText` / `escapeAttribute`）に閉じている。
  */
 export function ArtboardFrame({
   arranged,
@@ -64,9 +61,7 @@ export function ArtboardFrame({
     preview.some && preview.value.name === artboard.element.name;
   const drawnAt = isDragged ? preview.value.canvasPosition : canvasPosition;
   /**
-   * 押された位置から外へ辿った名前。最後に artboard 自身を置くのは、
-   * 中身の外側（枠の上）を押したときにも artboard が選ばれるようにするため
-   * （中身を押したときは辿った先に同じ名前が既にあるので、重複を落とす）。
+   * 押された位置から外へ辿った名前。
    */
   const element = artboard.element;
   const namesAt = (target: EventTarget): readonly string[] =>

@@ -15,9 +15,9 @@ import { Result } from "@/utils/Result";
 export type { CssVariables };
 
 /**
- * ドキュメント全体のコンパイル結果。
- * トークンはルート要素のカスタムプロパティ、artboard はその下に並ぶ要素になる
- * (docs/03「ルート要素に `--{種別}-{名前}: 値` を出力し、ノード側は `var()` で参照する」)。
+ * ドキュメント全体のコンパイル結果。トークンはルート要素のカスタムプロパティ、artboard は
+ * その下に並ぶ要素になる (docs/03「ルート要素に `--{種別}-{名前}: 値` を出力し、ノード側は
+ * `var` で参照する」)。
  *
  * artboard のキャンバス上の位置は各 `CompiledArtboard` が持つ (docs/01)。ただし
  * ファイルに座標を持たない artboard もあるので、**並び全体の置き場所は決まっていない**。
@@ -78,9 +78,9 @@ function compileArtboards(
 /** ドキュメント全体を、トークンの値に依存しない描画可能な形へコンパイルする。 */
 export const DocumentHtml = {
   /**
-   * ドキュメントをレンダリング可能な形へコンパイルする。
-   * 出力はトークンの値に依存せず `var()` 参照だけを持つため、
-   * トークンの編集はルート要素の変数の差し替えだけで全 artboard へ波及する。
+   * ドキュメントをレンダリング可能な形へコンパイルする。出力はトークンの値に依存せず `var`
+   * 参照だけを持つため、トークンの編集はルート要素の変数の差し替えだけで全 artboard へ波及す
+   * る。
    */
   compile(document: DesignDocument): Result<CompiledDocument, Error> {
     return Result.map(compileArtboards(document), (artboards) => ({

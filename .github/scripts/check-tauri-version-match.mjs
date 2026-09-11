@@ -3,10 +3,10 @@
 //
 // tauri build はこの 2 つの major/minor 一致を要求し、違うとコンパイルへ入る前に落ちる。
 // ところが cargo を走らせる CI が 1 つも無いため、ずれても気づけるのは
-// release-desktop がタグで走るときだけだった(#366 で実際に Release がバイナリ無しになった)。
+// release-desktop がタグで走るときだけだった(実際に Release がバイナリ無しになったことがある)。
 // 突き合わせるのはバージョン文字列だけなので、防ぐのにビルドを回す必要は無い。
 //
-// Why not: プラグインの対(tauri-plugin-dialog ↔ @tauri-apps/plugin-dialog など)は見ない。
+// プラグインの対(tauri-plugin-dialog ↔ @tauri-apps/plugin-dialog など)は見ない。
 // tauri build が実際に弾くのは core のこの 1 対だけで、かつ tauri-plugin-fs のように
 // Rust 側にしか居ないものがあり対応付けが 1 対 1 にならない。
 import { readFileSync } from "node:fs";

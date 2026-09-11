@@ -25,38 +25,30 @@ import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 
 /*
- * プロパティパネルはスキーマ定数の走査だけで組み立てる（docs/03-schema.md
- * 「スキーマからプロパティパネルを自動生成する」）。prop の追加がスキーマへの
- * 1エントリ追加で完結する状態を保つため、prop 名で分岐するコードをここにも
- * パネル側にも書かない。
+ * プロパティパネルはスキーマ定数の走査だけで組み立てる（docs/03-schema.md「スキーマから
+ * プロパティパネルを自動生成する」）。prop の追加がスキーマへの 1エントリ追加で完結する
+ * 状態を保つため、prop 名で分岐するコードをここにもパネル側にも書かない。
  *
- * ここが持つのは props の編集規則（値域・既定・`enabledWhen`・`group`・`shorthand`）
- * で、いずれもスキーマの性質なので `src/domains/` に置く。カテゴリが `dcmp` ではなく
- * `session` なのは、**今の選択に対して**何を出すかを決める側で、`document-selection`
- * を引くため（`rules/architecture.md`「domains のカテゴリ」）。人が読む綴り（未設定の
- * ラベル・不揃いの綴り・単位）と、空欄をどう読むかは持たず、パネル側に残す
- * （`rules/architecture.md`「表示のための綴りをドメインへ持ち込まない」
- * 「入力欄の約束事をドメインへ持ち込まない」）。
- * Why not: 同じ形の `features/tokens/domains/token-control` は feature に残る。
- * あちらは `valueText` や `TokenPreview` の `widthPx` のように**綴りと見せ方そのもの**
- * を持つため。
+ * ここが持つのは props の編集規則（値域・既定・`enabledWhen`・`group`・`shorthand`）で、
+ * いずれもスキーマの性質なので `src/domains/` に置く。カテゴリが `dcmp` ではなく
+ * `session` なのは、**今の選択に対して**何を出すかを決める側で、`document-selection` を
+ * 引くため（`rules/architecture.md`「domains のカテゴリ」）。人が読む綴り（未設定のラベ
+ * ル・不揃いの綴り・単位）と、空欄をどう読むかは持たず、パネル側に残す（`rules/architecture.md`
+ * 「表示のための綴りをドメインへ持ち込まない」「入力欄の約束事をドメインへ持ち込まない」）。
+ * 同じ形の `features/tokens/domains/token-control` が feature に残るのは、あちらが
+ * `valueText` や `TokenPreview` の `widthPx` のように**綴りと見せ方そのもの**を持つため。
  *
- * 今の消費側は `features/editor` の 1 つだけで、「2 つ以上の feature が必要としたら
- * 昇格」の引き金は引かれていない。それでもここに置くのは帰属を根拠にしたためで、
- * 判断は #174 の feature 分割の決定にある（#254 で分離）。
+ * 今の消費側は `features/editor` の 1 つだけで、「2 つ以上の feature が必要としたら昇格」
+ * の引き金は引かれていない。それでもここに置くのは帰属を根拠にしたためで、判断は
+ * feature 分割の決定にある。
  */
 
 /**
  * 入力欄の種類。値の決め方（`domain`）から決まる。
  *
- * enum とトークン参照はどちらも選択式だが、UI 案（docs/Design Composer.html）は
- * enum をセグメント、トークンを `▾` 付きの欄と描き分けているので枝を分ける。
- * 1 つに畳むと、パネル側が「選択肢がスキーマ由来かトークン由来か」を prop 名でしか
- * 判別できなくなる。
- *
- * 色のトークンだけ別の枝にするのは、`gap`（spacing）が色を持つ状態を型で作れなく
- * するため（`rules/coding.md`「正しい状態だけを列挙する」）。数値のトークンを
- * さらに分けるのも同じ理由で、`shadow` が解決値を持つ状態を作れなくする。
+ * enum とトークン参照を分けるのは、UI 案（docs/Design Composer.html）が enum をセグメン
+ * ト、トークンを `▾` 付きの欄と描き分けているため（畳むと、パネル側が選択肢の出どころを
+ * prop 名でしか判別できない）。
  */
 export type PropControlInput =
   | Readonly<{ kind: "enum"; values: readonly string[] }>
@@ -79,9 +71,8 @@ export type PropControlInput =
  * `value`（明示的に設定されている値）と `defaultValue`（設定が無いときに効く値）を
  * 別々に持つのは、パネルが両者を区別して見せるため（docs/06-ui.md）。
  *
- * `enabledBy` は、その prop が編集できる条件を出している prop の名前
- * （スキーマの `enabledWhen.prop`）。真偽ではなく名前を持つのは、どの行にぶら下がる
- * 欄なのかがコントロールから読めるようにするため。
+ * `enabledBy` は、その prop が編集できる条件を出している prop の名前（スキーマの
+ * `enabledWhen.prop`）。
  */
 export type PropControl = Readonly<{
   prop: string;
@@ -100,9 +91,7 @@ export type PropSideControl = Readonly<{
 /**
  * 4 辺を 1 行にまとめた編集欄（UI 案 docs/Design Composer.html の `padding` 行）。
  *
- * 辺で引ける対応として持つのは、4 辺が揃っていることを型で表すため
- * （`Record<Side, _>` は 4 キーすべてを要求する）。揃わない並びからは作れない
- * （`create` が `none`）ので、「3 辺しか無い束ね」が流通しない。
+ * 揃わない並びからは作れない（`create` が `none`）ので、「3 辺しか無い束ね」が流通しない。
  */
 export type PropShorthandControl = Readonly<{
   name: ShorthandName;
@@ -111,9 +100,6 @@ export type PropShorthandControl = Readonly<{
 
 /**
  * 向かい合う 2 辺を畳んだ 1 欄（Figma と同じ垂直 / 水平）。
- *
- * 揃っているか不揃いかをフィールドで持たず `value` で導出するのは、
- * 「不揃いと書いてあるのに 2 辺の値が同じ」を作れなくするため。
  */
 export type PropPairControl = Readonly<{
   pair: SidePair;
@@ -127,9 +113,6 @@ export type PropPairValue =
 
 /**
  * セクションに並ぶ 1 行。1 prop の行と、4 辺を束ねた行の 2 種。
- *
- * 直和にするのは、束ねた行が 1 prop 分の `PropControl` を持てないため
- * （持たせると「束ねているのに prop が 1 つ」が作れる）。
  */
 export type PropControlRow =
   | Readonly<{ kind: "prop"; control: PropControl }>
@@ -142,32 +125,9 @@ export type PropControlSection = Readonly<{
 }>;
 
 /**
- * 選択中のものに対して右ペインが出す編集欄。
- *
- * インスタンスだけ形が違う（UI 案 docs/Design Composer.html の `Assets · Instance` は
- * `group` ごとのセクションではなく `Public props` の 1 節と出どころの部品を出す）。
- * 直和にするのは、同じ型で表すと「インスタンスなのに出どころが無い」
- * 「プリミティブなのに出どころがある」が作れてしまうため
- * （`rules/coding.md`「正しい状態だけを列挙する」）。
- *
- * 公開 prop に `group` を持たせないのは、その `group` が binding 先のプリミティブの
- * ものだから。出すと部品の内部構造が見出しに漏れる。
- *
- * `isDetachable` を持つのは、参照先の部品が無い・循環している間は解除できず
- * （`DesignDocument.detach` が失敗する）、押しても何も起きないボタンになるため。
- * 不正なドキュメントも画面には残る（docs/03-schema.md「不正ファイル時の挙動」）ので、
- * この状態は実際に出る。凍結中（#155）をここで見ないのは、凍結中は解除のボタンごと
- * 出ないため（`PropertyPanel.Body`）。重ねると同じ判断が 2 層に散る。
- *
- * 複数選択（`multiple`）が件数だけを持つのは、編集欄を 1 つも出さず帯に件数を出す
- * ため（docs/06-ui.md「選択」）。件数をここに持たせるのは、帯と本文が同じ 1 つの値から
- * 出し分けるようにするため。別々に導くと「帯は `2 selected` なのに本文はインスタンスの
- * 編集欄」という食い違いが作れる。
- * `groups` の空セクションで表さず枝を分けるのは、「複数選んでいる」と
- * 「1 つ選んだが編集できる prop が無い」を混ぜないため。
- *
- * `sourceInstanceCount` を `instance` が持つのは、`Select all N instances` の N が
- * 「押したときに選ばれる件数」と同じ出どころで決まる必要があるため。
+ * 選択中のものに対して右ペインが出す編集欄。インスタンスだけ形が違う（UI 案 docs/Design
+ * Composer.html の `Assets · Instance` は `group` ごとのセクションではなく
+ * `Public props` の 1 節と出どころの部品を出す）。
  */
 export type SelectionControls =
   | Readonly<{ kind: "groups"; sections: readonly PropControlSection[] }>
@@ -181,8 +141,7 @@ export type SelectionControls =
   | Readonly<{ kind: "multiple"; count: number }>;
 
 /**
- * パネルに出す prop 1件の素材。定義と既定値を別々に持つのは、参照ノードでは
- * 既定がスキーマではなく部品定義側にあるため（`PublicPropTarget.declared`）。
+ * パネルに出す prop 1件の素材。
  */
 type EditableProp = Readonly<{
   name: string;
@@ -249,10 +208,6 @@ function numberOf(
 /**
  * 入力欄の形。値域（`domain`）と、今設定されている値から決まる。
  *
- * トークン参照を最後に置いて `switch` を関数の末尾にしているのは、種別を足して
- * `case` を足し忘れたときに「返さない経路がある」としてここがコンパイルエラーに
- * なるようにするため（`rules/coding.md`「列挙した状態の網羅を型で強制する」）。
- *
  * @param editable 入力の形を決める prop
  * @param value 今その prop に設定されている値
  * @param tokens トークン参照の選択肢と解決値の出どころ
@@ -314,8 +269,9 @@ function declaredEditableProps(
 }
 
 /**
- * 部品が公開している prop（docs/06-ui.md「インスタンス」）。
- * binding 先が設定している値を既定にし、無ければスキーマの `default` に落とす。
+ * 部品が公開している prop（docs/06-ui.md「インスタンス」）。binding 先が設定している値を
+ * 既定にし、無ければスキーマの `default` に落とす。
+ *
  * 宣言が解決できない prop（部品が壊れている）はコントロールを出さない。
  *
  * @param components 参照先の部品を引くための部品一式
@@ -589,9 +545,7 @@ export const PropControl = {
   /**
    * その prop に値が明示的に設定されているか（既定のままではないか）。
    *
-   * インスタンスの公開 prop ではこれが「上書き済み」に当たるが、`overridden` とは
-   * 名付けない。artboard やプリミティブのコントロールにも同じ判定が要り、
-   * そちらには上書きの相手がいないため（`rules/naming.md`「名前と実体を一致させる」）。
+   * インスタンスの公開 prop ではこれが「上書き済み」に当たるが、`overridden` とは名付けない。
    *
    * @param control 見たい編集欄
    * @returns 明示的に値が設定されていれば `true`、既定のままなら `false`
@@ -604,10 +558,9 @@ export const PropControl = {
    * 入力された値を、その prop への編集にする。
    * 値の作り方は入力欄の種類だけで決まるので、prop 名では分岐しない。
    *
-   * 受け取るのは**解釈済みの値**で、空欄を「値が無い」と読むのは
-   * `<select>` / `<input>` の約束事なので呼び出し側が済ませておく
-   * （文字列 prop にとって `""` はそれ自体が正当な値になりうるため、
-   * ここで `""` を未設定と決めるとその値にとっての意味が固定される）。
+   * 受け取るのは**解釈済みの値**で、空欄を「値が無い」と読むのは `<select>` / `<input>`
+   * の約束事なので呼び出し側が済ませておく（文字列 prop にとって `""` はそれ自体が正当な
+   * 値になりうるため、ここで `""` を未設定と決めるとその値にとっての意味が固定される）。
    *
    * @param control 編集したい prop の編集欄
    * @param value 入力された値。入力欄が空なら `none`
@@ -673,9 +626,6 @@ export const PropShorthandControl = {
   /**
    * 向かい合う 2 辺を畳んだ欄。並びは垂直・水平の順。
    *
-   * フィールドではなくここで導くのは、4 辺と 2 欄の両方を持たせると
-   * 片方だけ古い状態が作れるため。
-   *
    * @param shorthand 畳みたい束ねた行
    * @returns 垂直・水平の順に並べた畳んだ欄
    */
@@ -719,9 +669,6 @@ export const PropPairControl = {
    * 畳んだ欄の入力の形。2 辺が同じ形の定義を持つことを前提に、片方の形を使う
    * （`paddingTop` と `paddingBottom` は別々の定義だが、同じ `tokenKind` を宣言している）。
    *
-   * 不揃いのときだけ解決値を落とすのは、欄が値を出していないのに
-   * 片方の辺の数値だけが残ると、それがどちらの辺のものか読めないため。
-   *
    * @param pair 入力の形を知りたい畳んだ欄
    * @returns 辺と同じ入力の形。不揃いなら解決値を持たない
    */
@@ -739,9 +686,7 @@ export const PropPairControl = {
   /**
    * 入力された値を、2 辺への 1 件の編集にする。
    *
-   * 1 件にまとめるのは、辺ごとに分けて適用すると履歴も 2 段になり、
-   * 1 回の undo で片側しか戻らないため。受け取るのが解釈済みの値なのは
-   * `PropControl.editFrom` と同じ。
+   * 受け取るのが解釈済みの値なのは `PropControl.editFrom` と同じ。
    *
    * @param pair 編集したい畳んだ欄
    * @param value 入力された値。入力欄が空なら `none`
@@ -759,20 +704,17 @@ export const PropPairControl = {
 export const SelectionControls = {
   /**
    * 選択中のものを編集する欄（docs/06-ui.md「画面構成」）。
-   * 未選択を `none` で表すのは、同じ位置づけの `TokenControl.forSelection` に揃えるため。
    *
-   * 解除できるかは `DesignDocument.isDetachable` に答えさせる。
-   * Why not: 失敗の条件（参照先が無い・循環している）をここへ書き写す案は採らない。
-   * 解除そのもの（`DesignDocument.detach`）と二重管理になり、片方だけ変わったときに
-   * ボタンの出方と結果が食い違う。
+   * 解除できるかは `DesignDocument.isDetachable` に答えさせる。失敗の条件（参照先が無い
+   * ・循環している）をここへ書き写すと解除そのもの（`DesignDocument.detach`）と二重管理
+   * になり、片方だけ変わったときにボタンの出方と結果が食い違う。
    *
    * @param selection 選択とドキュメントの出どころ
-   * @returns インスタンスを選んでいるなら出どころの部品つきの公開 prop、
-   *   複数選んでいるなら編集欄を持たない `multiple`、
-   *   それ以外は `group` ごとのセクション。何も選んでいないとき、および選んでいる
-   *   名前がドキュメントに無いときは `none`。
-   *   スキーマの分からない `type`・解決できない部品では、選択はあるので `some` だが
-   *   セクションが空になる
+   * @returns インスタンスを選んでいるなら出どころの部品つきの公開 prop、複数
+   *   選んでいるなら編集欄を持たない `multiple`、それ以外は `group` ごとのセク
+   *   ション。何も選んでいないとき、および選んでいる名前がドキュメントに無いと
+   *   きは `none`。スキーマの分からない `type`・解決できない部品では、選択はある
+   *   ので `some` だがセクションが空になる
    */
   forSelection(selection: DocumentSelection): Option<SelectionControls> {
     const count = DocumentSelection.count(selection);

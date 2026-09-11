@@ -13,7 +13,7 @@ import { canvasPane, renderOpenedDocument } from "./setup";
 
 /*
  * 見出しを掴んで運んだ結果がドキュメントへ届き、描き直されるまでを編集画面の配線ごと
- * 確かめる（#390）。
+ * 確かめる。
  *
  * ここでしか通らないのは、`onRepositionArtboard` → `reposition_artboard` →
  * 再コンパイルまでを通して `li` の `left` / `top` が動くところを見るため。

@@ -19,8 +19,10 @@ const LongNodeName = "very-long-node-name-that-does-not-fit-in-the-heading";
  *
  * `features/editor/__stories__/sample-editor-state.ts` から、ストーリーが選ぶ 2 枚
  * （`home` / `overflow`）を写している（`EditorState` そのものなのでこの feature からは
- * 持ち込めない）。組み直さず写すのは、別のドキュメントに替えると 11 本すべての絵が
- * 変わり、移設で変わったのか組み直しで変わったのかが視覚差分から読めなくなるため。
+ * 持ち込めない）。
+ *
+ * 組み直さず写すのは、別のドキュメントに替えると 11 本すべての絵が変わり、移設で変わった
+ * のか組み直しで変わったのかが視覚差分から読めなくなるため。
  *
  * `unset-box` / padding の 2 つの Box / 名前の長いノードは、このパネルにしか要らない
  * 状態なのでここで足している。
@@ -105,9 +107,10 @@ const UnsetDocument = DesignDocument.create({
 
 /**
  * padding の 4 辺が揃っている Box と、揃っていない Box。
- * 束ねた行は畳んだ 2 欄・4 辺の欄・不揃いで見え方が変わるので、
- * 3 つとも視覚差分に載せる（happy-dom は Tailwind を解決しないので、
- * 半幅セルの崩れに気づける手段が視覚差分しか無い）。
+ *
+ * 束ねた行は畳んだ 2 欄・4 辺の欄・不揃いで見え方が変わるので、3 つとも視覚差分に載せる
+ * （happy-dom は Tailwind を解決しないので、半幅セルの崩れに気づける手段が視覚差分しか
+ * 無い）。
  */
 const PaddingDocument = DesignDocument.create({
   tokens: DocumentTemplate.Default.tokens,
@@ -156,9 +159,8 @@ const LongNameDocument = DesignDocument.create({
 /**
  * 帯と本文を実画面と同じ並びで見る。
  *
- * 帯と本文は編集画面が着せるのと同じもの（`PaneHeading` / `PaneBody`）。真似ずに
- * 呼べるのは、どちらも横断層にあるため（#297）。ペインの殻も横断層の代わり
- * （`RightPaneShell`）をデコレータで着せる（#300）。
+ * 帯と本文は編集画面が着せるのと同じもの（`PaneHeading` / `PaneBody`）。ペインの殻も横断層
+ * の代わり（`RightPaneShell`）をデコレータで着せる。
  */
 function PropertyPanelPane(
   props: ComponentProps<typeof PropertyPanel.Body>,
@@ -245,8 +247,8 @@ export const LongName: Story = {
 };
 
 /**
- * 外部編集でファイルが壊れているとき（#135）。見出しは選んでいたものを保ったまま、
- * 本文だけが「選択は凍結中」になる（何を選んでいたかは消さない）。
+ * 外部編集でファイルが壊れているとき。見出しは選んでいたものを保ったまま、本文だけが「選択
+ * は凍結中」になる（何を選んでいたかは消さない）。
  */
 export const Frozen: Story = {
   name: "凍結中",

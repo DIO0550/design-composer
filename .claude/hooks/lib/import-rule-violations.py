@@ -47,7 +47,7 @@ DOMAINS_ROOT = f"{ALIAS_ROOT}/domains"
 
 # `import ... from "X"` / `export ... from "X"` / `import("X")` の X を、行番号付きで拾う。
 #
-# Why: 型だけの import も一緒に拾う。循環で困るのは実行時のロード順ではなく設計の向きで
+# 型だけの import も一緒に拾う。循環で困るのは実行時のロード順ではなく設計の向きで
 # （`features/canvas/index.ts` の doc が「canvas -> editor の辺を作ると循環する」という
 # 不変条件を書いている）、型だけの import でもその向きは逆転するため。
 SPECIFIER = re.compile(r'(?:from|import)\s*\(?\s*"([^"]+)"')
@@ -83,7 +83,7 @@ def source_files(root: Path) -> list[str]:
 def module_folders(files: list[str]) -> set[str]:
     """`index.ts` / `index.tsx` を持つフォルダ（= 公開 API を持つモジュール）を集める。
 
-    Why not: `__tests__/` / `__stories__/` は `index.ts` を置いてもモジュールとして数えない。
+    `__tests__/` / `__stories__/` は `index.ts` を置いてもモジュールとして数えない。
     `rules/architecture.md`「モジュールフォルダの基本形は `index.ts` + `__tests__/`」が言う
     モジュールは**それを内包するフォルダ**であって `__tests__/` 自身ではない。ここへ置く
     `index.ts` は外の feature 向けの入口を足すためのもので、持ち主の feature が自分の
@@ -139,7 +139,7 @@ def imports_of(path: str, files: set[str]) -> list[tuple[int, str]]:
 def feature_of(path: str) -> str | None:
     """そのファイルが属する feature の名前を求める。
 
-    Why not: 「`index.ts` を持つフォルダだけを feature と数える」形にはしない。公開 API を
+    「`index.ts` を持つフォルダだけを feature と数える」形にはしない。公開 API を
     持たないフォルダを feature 層の直下に作ったときに、そこだけ検査から外れるため
     （外れると、そこを踏み台にして他 feature の内部を読めてしまう）。
 
@@ -191,7 +191,7 @@ def uncategorized_domains(modules: set[str]) -> list[str]:
     と決めている。どちらの破り方も `src/domains/` 直下のフォルダが `index.ts` を持つ形に
     なるので、1 つの条件で拾える。
 
-    Why: カテゴリ**間の向き**は `.oxlintrc.json` が見るが、そちらはカテゴリのフォルダ名で
+    カテゴリ**間の向き**は `.oxlintrc.json` が見るが、そちらはカテゴリのフォルダ名で
     対象を絞るため、直下に作られたモジュールにはどの override も当たらない。規約に沿った
     モジュールだけが縛られ、外れたモジュールが素通りになるのを防ぐ。
 
@@ -228,7 +228,7 @@ def bypassed_module(importer: str, target: str, modules: set[str]) -> str | None
 def classify(importer: str, target: str, modules: set[str]) -> tuple[str, str]:
     """1 本の import を種別に分ける。
 
-    Why: feature へ入る辺かどうかを**呼び出し元ではなく行き先**で決める。呼び出し元が
+    feature へ入る辺かどうかを**呼び出し元ではなく行き先**で決める。呼び出し元が
     feature のときだけ狭めると、`app/` から feature の内部モジュールへ直行する経路が
     どの層からも見えなくなる（`app -> features` は依存方向としては許されているため、
     oxlint も止めない）。

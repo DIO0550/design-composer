@@ -120,9 +120,8 @@ async function openWithDialog(
 /**
  * 雛形から新しいドキュメントを作り、選ばれた保存先に置く。
  *
- * 開く前に書き出すのは、Rust 側の `watch_document` が監視開始時に現在の内容を読むため
- * （実体の無いパスでは監視を張れない / #30）。自動保存も「ファイルに載っている内容」を
- * 基準に差分を見るので、最初の 1 回はここで載せておく。
+ * 自動保存も「ファイルに載っている内容」を基準に差分を見るので、最初の 1 回はここで載せて
+ * おく。
  *
  * @param ports ダイアログと I/O の相手
  * @param canceled 選ばずに閉じたときに戻す状態。
@@ -180,9 +179,7 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
   /**
    * 開く操作を 1 つ始める。
    *
-   * 既に始まっているなら捨てる。ネイティブメニューとドロップには押せなくする手段が
-   * 無く、`Opening` 中に始めると、その時点の状態（`Opening`）が「選ばずに閉じた」
-   * ときの戻り先になって読み込み中から戻れなくなるため。
+   * 既に始まっているなら捨てる。
    *
    * @param start 今の状態を受け取り、次の状態を返す開く手続き
    */
@@ -226,7 +223,7 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
   });
 
   const openDropped = useEffectEvent((paths: readonly string[]) => {
-    // 同時に複数を開くのは #375 でスコープ外なので、先頭だけを開く。
+    // 同時に複数を開くのはスコープ外なので、先頭だけを開く。
     const first = ArrayEx.first(paths);
     if (first.some) {
       openDocumentAt(first.value);

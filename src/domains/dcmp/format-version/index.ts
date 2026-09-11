@@ -3,9 +3,9 @@ import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
 /**
- * major を特定の版に固定した形式版。
- * 「この値はこの major の仕様で書かれている」を型に出すために使う
- * （版ごとに型を持つドキュメントが、自分の版以外を名乗れないようにするため）。
+ * major を特定の版に固定した形式版。「この値はこの major の仕様で書かれている」を型に出す
+ * ために使う（版ごとに型を持つドキュメントが、自分の版以外を名乗れないようにするため）。
+ *
  * minor は後方互換な追加なので、同じ major の中で幅を持つ。
  */
 export type FormatVersionOf<Major extends number> = Readonly<{
@@ -29,10 +29,10 @@ export type FormatVersionCompatibility =
 const CurrentMajor = 1;
 
 /**
- * アプリが書き出す版。
- * minor は後方互換な追加のたびに上げる。ただし**その版でまだ動作確認をしていない間は
- * 上げ直さない**(docs/01-file-format.md「formatVersion」。どの版で何が加わったかの
- * 内訳もそこの表が持つ)。
+ * アプリが書き出す版。minor は後方互換な追加のたびに上げる。
+ *
+ * ただし**その版でまだ動作確認をしていない間は上げ直さない**(docs/01-file-format.md
+ * 「formatVersion」。どの版で何が加わったかの内訳もそこの表が持つ)。
  */
 const Current: FormatVersionOf<typeof CurrentMajor> = {
   major: CurrentMajor,
@@ -70,8 +70,9 @@ export const FormatVersion = {
 
   /**
    * 指定した major の版として読む。違う major を名乗る値は読み込みエラーにする。
-   * 版ごとに型を持つドキュメントのデコード境界で使い、
-   * 「その型の値は必ずその major を名乗る」を成立させる。
+   *
+   * 版ごとに型を持つドキュメントのデコード境界で使い、「その型の値は必ずその major を名乗
+   * る」を成立させる。
    */
   fromJsonOf<Major extends number>(
     cursor: JsonCursor,

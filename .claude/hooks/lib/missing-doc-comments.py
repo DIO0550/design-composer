@@ -25,8 +25,8 @@ doc がある関数については、`rules/coding.md`「doc に書く項目」�
     missing-doc-comments.py --missing-only <検査するファイル>  # doc の有無だけ
     missing-doc-comments.py --all [ルート]                   # 全体（既定のルートは src）
 
-`--missing-only` は doc の有無だけを見たいときに使う。#159 で項目の抜けを 0 件に
-したので、push 前の検査は項目まで見ている（`.claude/hooks/README.md`
+`--missing-only` は doc の有無だけを見たいときに使う。項目の抜けは 0 件にしたので、
+push 前の検査は項目まで見ている（`.claude/hooks/README.md`
 「例外(エスケープハッチ)」）。
 
 見つかれば標準出力へ報告して終了コード 1、無ければ何も出さず 0。
@@ -37,7 +37,7 @@ import sys
 from pathlib import Path
 
 # ファイル直下の関数宣言（export の有無を問わない）。
-# レビュー指摘（PR #157）の `canvasDock` は export されていないので、export だけでは届かない。
+# レビュー指摘のあった `canvasDock` は export されていないので、export だけでは届かない。
 TOP_LEVEL_FUNCTION = re.compile(r"^(?:export\s+)?(?:async\s+)?function\s+([A-Za-z_$][\w$]*)")
 
 # 公開 API。型・コンパニオンオブジェクト・定数を含む。

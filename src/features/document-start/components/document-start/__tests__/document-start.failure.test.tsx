@@ -4,7 +4,7 @@ import type { DocumentAccessFailureReason } from "@/domains/session/document-acc
 import type { DocumentError } from "@/domains/session/document-error";
 import { renderDocumentStart } from "./setup";
 
-/** 読み書きに失敗した状態。届かなかった理由ごとに言い方が変わる。 */
+/** 読み書きに失敗した状態。 */
 function ioFailure(reason: DocumentAccessFailureReason) {
   return {
     kind: "failed",

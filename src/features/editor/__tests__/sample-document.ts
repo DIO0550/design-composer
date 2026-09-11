@@ -70,9 +70,9 @@ export const SampleDocument = DesignDocument.create({
 /**
  * `home-title` が居ないトークンを指している `SampleDocument`。
  *
- * パースは通り、スキーマ検証だけが落ちる。指す先が `SampleDocument` にも在るので、
- * エラー行から該当ノードへ飛ぶ経路が成立する（#136）。
- * トークン参照は `var()` に落ちるだけなのでコンパイルは通り、キャンバスも普通に描ける。
+ * パースは通り、スキーマ検証だけが落ちる。指す先が `SampleDocument` にも在るので、エラー行
+ * から該当ノードへ飛ぶ経路が成立する。トークン参照は `var` に落ちるだけなのでコンパイルは
+ * 通り、キャンバスも普通に描ける。
  */
 export const SampleDocumentWithDanglingToken = Result.unwrap(
   DesignDocument.applyPropEdit(
@@ -86,16 +86,10 @@ export const SampleDocumentWithDanglingToken = Result.unwrap(
 export const MissingComponent = "居ない部品";
 
 /**
- * `home-login` が居ない部品を指している `SampleDocument`。
+ * `home-login` が居ない部品を指している `SampleDocument`。`DocumentHtml.compile` が失敗
+ * するのでキャンバスが 1 枚も描けない。
  *
- * こちらは `DocumentHtml.compile` が失敗するため、キャンバスが 1 枚も描けない
- * （`canvas-body` がコンパイルの失敗を 1 行で出す）。開いた直後からこの状態に
- * なりうるようになったので（#158）、そこでも直せることを確かめる側が使う。
- *
- * Why: 差し替える中身を `RefNode` と注釈した定数にしてから渡す。`Node` は直和なので、
- * 注釈なしの literal（`{ ...node, ref }` を含む）だと `type` と `ref` を両方持つノードが
- * 型を通ってしまう（`Node.isRef` は `"ref" in node` で先に真になり、props を抱えたまま
- * ref ノード扱いになる）。`replaceNode` に通すだけでは閉じない。
+ * 開いた直後からこの状態になりうるようになったので、そこでも直せることを確かめる側が使う。
  */
 const MissingComponentInstance: RefNode = {
   name: "home-login",
@@ -114,9 +108,6 @@ export const SampleDocumentWithMissingComponent = Result.unwrap(
 /**
  * `home` の中に 3 階層の枝（`outer-panel` > `inner-panel` > `deep-title`）を持つドキュメント。
  * 掘る操作を通しで見るテストだけがこちらを開く。
- *
- * 3 階層にしている理由は `features/editor/domains/editor-state/__tests__/setup.ts` の
- * `stateWithDeepBranch` の doc。
  */
 export const SampleDocumentWithDeepBranch = DesignDocument.create({
   tokens: DocumentTemplate.Default.tokens,

@@ -11,12 +11,12 @@
 # (harness/records/pr-391.md)。呼び出し側が git 操作と Task を並列で呼ぶこと自体は
 # 通常のツール利用として推奨されているため、規約だけでは防げない。
 #
-# Why not 呼び出し単位の相関: PreToolUse/PostToolUse の JSON に呼び出しを一意に
+# 呼び出し単位では相関を取らない。PreToolUse/PostToolUse の JSON に呼び出しを一意に
 # 結び付ける ID が無い(record-firings.sh も session_id 単位でしか束ねていない)。
 # 個々の呼び出しへ対応付けず、マーカーファイルの数だけで「現在何件実行中か」を見る
 # (FIFO: 開始で1つ作り、終了で最も古い1つを消す。どれを消すかを問わなくても総数は合う)。
 #
-# Why not 常時稼働の全 Task/Agent 対象: Explore や harness-counter のような
+# 全 Task/Agent を常時対象にはしない。Explore や harness-counter のような
 # 読み取り専用のサブエージェントは作業ツリーを書き換えないため、対象を広げても
 # 実害が防げないまま誤検知だけが増える(README「誤検知で止まるフックは全体が
 # 信用されなくなる」)。対象は実際にミューテーションを当てる 2 エージェントに絞る。

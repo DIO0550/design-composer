@@ -23,12 +23,14 @@ import { Html } from "@/utils/Html";
 import { Option } from "@/utils/Option";
 
 /**
- * トークン参照 prop → その prop が決める CSS プロパティ
- * (docs/03「HTML/CSS へのコンパイル規則」の表。仕様と同じく prop 名で引く)。
+ * トークン参照 prop → その prop が決める CSS プロパティ (docs/03「HTML/CSS へのコンパイル
+ * 規則」の表。仕様と同じく prop 名で引く)。
+ *
  * 引くトークン種別はスキーマの `tokenKind` だけが宣言するため、ここには書かず
  * `TokenPropKinds.kindOf` から引く (`gap` を colors から引く組み合わせを書けない)。
- * `paddingTop` などの4方向は1つの `padding` へ合成するため `Padding` が、
- * `typography` は複数プロパティへ展開されるため下の関数が担当し、この表には含めない。
+ *
+ * `paddingTop` などの4方向は1つの `padding` へ合成するため `Padding` が、`typography` は
+ * 複数プロパティへ展開されるため下の関数が担当し、この表には含めない。
  */
 const TokenPropProperties = {
   gap: "gap",
@@ -42,8 +44,8 @@ const TokenPropProperties = {
 type TokenBackedProp = keyof typeof TokenPropProperties;
 
 /**
- * トークン参照 prop を `var()` 参照の宣言にする。未指定の prop は宣言を出力しない
- * (トークンの値は参照しないため、トークン編集は再コンパイルなしに CSS 経由で波及する)。
+ * トークン参照 prop を `var` 参照の宣言にする。未指定の prop は宣言を出力しない (トークン
+ * の値は参照しないため、トークン編集は再コンパイルなしに CSS 経由で波及する)。
  *
  * @param prop 宣言にする prop 名
  * @param value その prop に設定されている値。未設定なら宣言を出さない
@@ -66,18 +68,11 @@ function tokenDeclarations(
 /**
  * Box 自身の置かれ方の宣言。
  *
- * フローの Box が `position: relative` を出すのは、**絶対配置の子が位置を測る
- * 基準になる**ため。子を持たない Text には要らないので `Placement` ではなく
- * Box 側が持つ。offset を伴わない `relative` は箱の位置を動かさないが、
- * positioned な要素は非 positioned な内容より上に描かれるので、重なりのある
- * 配置では描画順が変わる。
- *
- * Why not: 「絶対配置の子を持つ Box だけ `relative` を出す」は採らない。
- * 同じ props の Box が子によって違う宣言を持つことになり、この関数が
- * props だけでは決まらなくなる。
+ * 子を持たない Text には要らないので `Placement` ではなく Box 側が持つ。
  *
  * @param placement Box 自身の置かれ方。置き場所が決まらないときは `undefined`
- * @returns 絶対配置なら座標込みの宣言、そうでなければ `position: relative` の 1 件
+ * @returns 絶対配置なら座標込みの宣言、そうでなければ `position: relative` の 1
+ *   件
  */
 function placementDeclarations(
   placement: Placement | undefined,
@@ -102,8 +97,8 @@ function overflowDeclarations(
 }
 
 /**
- * typography は複合トークンなので、フィールドごとの CSS プロパティへ展開する。
- * 走査対象は `TypographyToken.fields()` に従うため、トークンのフィールドが増えても追従漏れが出ない。
+ * typography は複合トークンなので、フィールドごとの CSS プロパティへ展開する。走査対象は
+ * `TypographyToken.fields` に従うため、トークンのフィールドが増えても追従漏れが出ない。
  *
  * @param typography `typography` prop に設定されているトークン名。未設定なら宣言を出さない
  * @param tokens カスタムプロパティ名の綴り方
@@ -135,6 +130,7 @@ export const ElementNameAttribute = "data-name";
 
 /**
  * コンパイル済みの Box。子を持ち、テキストは持たない。
+ *
  * 出力は `div` + インライン style であり (docs/03)、タグの区別は持たない。
  */
 export type BoxElement = Readonly<{

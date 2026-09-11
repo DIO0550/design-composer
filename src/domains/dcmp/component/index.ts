@@ -84,8 +84,8 @@ export type Component = Readonly<{
 export type ComponentSet = Readonly<Record<string, Component>>;
 
 /**
- * パレットに 1 件として並ぶ部品（UI 案 docs/Design Composer.html の `Assets`。
- * ここでの `Assets` はバイナリ資産ではなく**部品のパレット**を指す / #129）。
+ * パレットに 1 件として並ぶ部品（UI 案 docs/Design Composer.html の `Assets`。ここでの
+ * `Assets` はバイナリ資産ではなく**部品のパレット**を指す）。
  *
  * 1 件が答えるのは「どの部品を・何を差し替えられて・どれだけ使われているか」。
  * 名前だけでも、公開 prop だけでも、回数だけでも答えにならないため 3 つで 1 つの値にする。
@@ -209,8 +209,9 @@ export const Component = {
   },
 
   /**
-   * publicProps の binding に従って overrides を部品へ適用する。
-   * binding 先は部品のルート（`name`）と内部ノードの両方を取り得る。
+   * publicProps の binding に従って overrides を部品へ適用する。binding 先は部品のルート
+   * （`name`）と内部ノードの両方を取り得る。
+   *
    * 宣言されていない overrides のキーは無視する（検証側で報告される）。
    */
   applyOverrides(
@@ -401,8 +402,8 @@ function targetThroughRef(
 }
 
 /**
- * 公開 prop の繋ぎ先を、入れ子の部品を越えてたどる。
- * `remainingHops` が尽きたら `none`。循環参照でも止まらなくなるのを防ぐため。
+ * 公開 prop の繋ぎ先を、入れ子の部品を越えてたどる。`remainingHops` が尽きたら `none`
+ * （循環参照でも止まらなくなるのを防ぐため）。
  *
  * @param components 引き先の部品一式
  * @param ref たどり始める部品名と公開 prop 名
@@ -480,20 +481,12 @@ export const ComponentSet = {
   /**
    * パレットに並べる部品の一覧。並びは部品の定義順で、使われていない部品も必ず含む。
    *
-   * `outsideNodes` は部品の外側にある木（artboard の子など）。数えるのはそこにある
-   * 参照ノードと、**部品定義の中にある参照ノードの両方**。部品 A が部品 B を含んで
-   * いれば B は使われているので、外側だけを見ると「どこからも使われていない」と
-   * 読める部品が出てしまう。
+   * 数えるのは `outsideNodes`（部品の外側にある木）にある参照ノードと、**部品定義の中に
+   * ある参照ノードの両方**。部品 A が部品 B を含んでいれば B は使われているので、外側だ
+   * けを見ると「どこからも使われていない」と読める部品が出てしまう。
    *
-   * `Node.collectRefs` は参照ノードで止まり参照先を展開しないため、部品同士が
-   * 循環していても各定義を 1 回ずつ見るだけで終わる（ホップ上限は要らない）。
-   *
-   * 定義の無い名前への参照（dangling）はどの部品の数にも入らない
-   * （不正な参照は検証エラーとして別に出る）。
-   *
-   * 名前で部品を引き直さず `Object.entries` の 1 本で組むのは、ここで辿る名前が
-   * すべて自分の持ち物で、引きが失敗しようがないため（`directRefs` が持つ
-   * 「定義が無かったとき」の分岐は、dangling を辿りうる `reachableRefs` の都合）。
+   * `Node.collectRefs` は参照ノードで止まるため、部品同士が循環していても各定義を 1 回ず
+   * つ見るだけで終わる（定義の無い名前への参照はどの部品の数にも入らない）。
    */
   assets(
     components: ComponentSet,

@@ -3,9 +3,6 @@ import type { Clock } from "../index";
 
 /**
  * 時計の代役。進めるのは呼び出し側で、勝手には進まない。
- *
- * `vi.useFakeTimers()` ではなく代役を差し込むのは、テスト規約がモックライブラリより
- * テスト用の単純な実装を優先すると定めているため（rules/testing.md）。
  */
 export type ClockFake = Readonly<{
   /** 手で進める時計。 */
@@ -13,8 +10,7 @@ export type ClockFake = Readonly<{
   /**
    * 時計を進め、購読者へ知らせる。
    *
-   * 何秒進めても知らせるのは 1 度だけ。購読側が見ているのは「進んだこと」で、
-   * 何回呼ばれたかではないため（3600 秒進めるたびに 3600 回配ると遅くなるだけ）。
+   * 何秒進めても知らせるのは 1 度だけ。
    */
   advanceSeconds(seconds: number): void;
   /**

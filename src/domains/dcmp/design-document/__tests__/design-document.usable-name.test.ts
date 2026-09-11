@@ -3,7 +3,7 @@ import { DesignDocument } from "../index";
 
 /*
  * 名前の可否は部品化のボタンが読む（`create-component`）。`createComponent` を
- * 空撃ちして `ok` を見ていたものを述語へ置き換えた（#246）。
+ * 空撃ちして `ok` を見ていたものを述語へ置き換えた。
  *
  * 両者は同じ私有ヘルパーを通るので条件はずれない。ずれうるのは `createComponent` が
  * そのヘルパーを参照しなくなったときで、それを 5 番目のテストで留めている

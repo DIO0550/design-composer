@@ -11,7 +11,7 @@ import { Option } from "@/utils/Option";
 import { Path, renderAutoSave, waitDebounce } from "./setup";
 
 /*
- * ドキュメント自身が不正でも書き出すこと（#158）。ファイルは常に画面と一致する、が
+ * ドキュメント自身が不正でも書き出すこと。ファイルは常に画面と一致する、が
  * 保存モデルの前提（docs/05-architecture.md「保存モデル: 自動保存」）で、書かずに
  * 止めると「画面にあってファイルに無い」状態が生まれる。
  *

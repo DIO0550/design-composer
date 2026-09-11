@@ -8,7 +8,7 @@ import { AssetsPanel } from "../index";
 
 /*
  * 検索欄はプリミティブと部品の両方を絞る（UI 案 docs/Design Composer.html の
- * `Search assets` / #129）。絞り込みを担うのはこのパネルだけなので、
+ * `Search assets`）。絞り込みを担うのはこのパネルだけなので、
  * 絞り込みの振る舞いはここでまとめて見る。
  */
 

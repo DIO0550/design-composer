@@ -61,7 +61,7 @@ test("部品が1件も無くてもプリミティブは出る", () => {
 });
 
 test("部品の行にもプリミティブの行にも押せるものが無い", () => {
-  // `Assets` は browse-only（UI 案「Insertion is drag-only」/ #203）。
+  // `Assets` は browse-only（UI 案「Insertion is drag-only」）。
   // 検索欄は `searchbox` なので、ここで数える `button` は行の操作だけになる
   render(
     <AssetsPanel

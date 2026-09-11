@@ -12,8 +12,7 @@ import { EditorScreen } from "./index";
 const SamplePath = "/work/sample.dcmp";
 
 /**
- * ファイルへの口はインメモリの代役に差し替える。Storybook には Tauri が無く、
- * 実物の口では「開く」を押した先が動かないため。
+ * ファイルへの口はインメモリの代役に差し替える。
  */
 const files = DocumentIpcFake.create({
   [SamplePath]: DocumentJson.serialize(EditorState.document(SampleEditorState)),

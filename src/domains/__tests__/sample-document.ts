@@ -21,9 +21,6 @@ export function artboardDocument(name: string): DesignDocument {
 /**
  * ファイルに載っている状態の `artboardDocument`。
  *
- * `libs/` に触れているのは「ファイルに載っている綴り」を作るため
- * （`rules/architecture.md`「依存方向のルール」が `__tests__/` にだけ認めている例外）。
- *
  * @param name 収める artboard の名前
  * @returns そのドキュメントを保存したときのファイルの中身
  */
@@ -35,8 +32,8 @@ export function artboardContent(name: string): string {
  * どのトークン一式にも入っていない typography トークンの名前。
  *
  * 不正の作り方を**部品**ではなく**トークン**の dangling に揃えるための綴り。部品の
- * dangling は `DocumentHtml.compile` が失敗してキャンバスが 1 枚も描けなくなるので、
- * 「開けて、見えて、直せる」を確かめる側からは外れる（トークン参照は `var()` に落ちるだけ）。
+ * dangling は `DocumentHtml.compile` が失敗してキャンバスが 1 枚も描けなくなるので、「開け
+ * て、見えて、直せる」を確かめる側からは外れる（トークン参照は `var` に落ちるだけ）。
  */
 export const MissingTypography = "居ないタイポグラフィ";
 

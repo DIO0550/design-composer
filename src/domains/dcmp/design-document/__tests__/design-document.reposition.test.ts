@@ -8,9 +8,6 @@ import { DesignDocument } from "../index";
 /**
  * 絶対配置の `badge`（子を 1 つ持つ）と、付け替え先になる `panel`（子が 2 つ）、
  * 子を持てない `title` が `home` に並ぶドキュメント。座標は既定と違う値から始める。
- *
- * `panel` に子を 2 つ置くのは、末尾へ入ることを先頭と区別するため。
- * `badge` に子を持たせるのは、自分の子孫を親に指す経路を確かめるため。
  */
 function setupDocument(): DesignDocument {
   return DesignDocument.create({

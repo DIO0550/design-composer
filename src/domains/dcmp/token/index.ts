@@ -45,14 +45,11 @@ export type TokenSet = Readonly<{
 
 /**
  * 種別を名前で指すための対応表。`TokenKind` はここから導出し、種別を二重管理しない。
+ *
  * union と対で export するのは規約(rules/coding.md「値の集合から union を導出する」)。
  *
- * `satisfies` が見るのは**キーの過不足と綴り**だけで、キーに割り当てた値がずれても
- * ここでは落ちない。**値の網羅**は `__tests__/token.type.test.ts` の型テスト
- * (`TokenKind` == `keyof TokenSet`)で担保する。
- *
- * 並びが要るときは `TokenSet.kinds()` を使う(このファイルの中も含む)。
- * `Object.values` をそこ 1 箇所に閉じ、並びを引く経路を 2 通りにしない。
+ * `satisfies` が見るのは**キーの過不足と綴り**だけで、値がずれてもここでは落ちない。並びが
+ * 要るときは `TokenSet.kinds` を使い、`Object.values` をそこ 1 箇所に閉じる。
  */
 export const TokenKinds = {
   Colors: "colors",
@@ -75,7 +72,6 @@ type TokenValueOf = { [K in TokenKind]: TokenSet[K][string] };
 
 /**
  * 値がそのまま数値になる種別(docs/04-tokens.md「値の形式」の spacing / radius)。
- * 種別を書き並べず値の形から導出するのは、種別と値の対応を二重管理しないため。
  */
 export type NumericTokenKind = {
   [K in TokenKind]: TokenValueOf[K] extends number ? K : never;
@@ -136,10 +132,9 @@ export const TokenValue = {
    * 数値の種別（spacing / radius）の値を作る。
    *
    * どちらも px の長さなので負にはならない（docs/04-tokens.md「値の形式」）。
-   * typography / shadows のように値域付きの型で閉じられないのは、この 2 種別では
-   * 編集で渡る型が保存される値そのもの（`TokenValue`）だから。`value` を
-   * ブランド型にしても `TokenSet` が持つ入れ物は `number` のままなので、
-   * 型では弾けずこの入口の `Option` だけが境界になる。
+   *
+   * `value` をブランド型にしても `TokenSet` が持つ入れ物は `number` のままなので、型では
+   * 弾けずこの入口の `Option` だけが境界になる。
    *
    * @param kind 書き込み先の種別
    * @param value 入力欄から数値として読めた値
@@ -433,9 +428,7 @@ export const TokenSet = {
   /**
    * 名前で色を引く。
    *
-   * `find` と分けているのは、`find` の戻り値が種別ごとの直和（`Token`）で、
-   * 色を取り出すには呼び出し側で種別を絞り直すことになるため。引く種別が
-   * 決まっている呼び出しに、取られることのない分岐を書かせない。
+   * 引く種別が決まっている呼び出しに、取られることのない分岐を書かせない。
    *
    * @param tokens 引き先のトークン一式
    * @param name 引きたい色の名前
@@ -448,8 +441,7 @@ export const TokenSet = {
   /**
    * 名前で数値のトークンを引く。
    *
-   * `findColor` と同じ理由で `find` と分けている。引く種別が決まっている呼び出しに、
-   * `Token` の直和を絞り直す分岐を書かせない。
+   * 引く種別が決まっている呼び出しに、`Token` の直和を絞り直す分岐を書かせない。
    *
    * @param tokens 引き先のトークン一式
    * @param kind 引きたい種別
@@ -498,9 +490,8 @@ export const TokenSet = {
    * トークンの名前を変える。値と並びの位置は保つ。
    *
    * 名前を変えると、その名前を指していた prop は宙に浮く。ここで参照を追随させないのは、
-   * 参照の解決はドキュメント全体の検証が持つ関心事であり、宙に浮いた参照は
-   * dangling 参照として通常のバリデーションエラーになるため(docs/04-tokens.md
-   * 「スキーマデフォルトとの関係」が削除について定めているのと同じ扱い)。
+   * 参照の解決はドキュメント全体の検証が持つ関心事で、宙に浮いた参照は dangling 参照とし
+   * て通常のバリデーションエラーになるため(docs/04-tokens.md「スキーマデフォルトとの関係」)。
    */
   rename(
     tokens: TokenSet,
@@ -520,9 +511,10 @@ export const TokenSet = {
   },
 
   /**
-   * トークンを削除する。
-   * 使用中かどうかは見ない。使用中トークンの削除を特別扱いせず、
-   * 残った参照を dangling 参照として検証で拾うのが仕様(docs/04-tokens.md)。
+   * トークンを削除する。使用中かどうかは見ない。
+   *
+   * 使用中トークンの削除を特別扱いせず、残った参照を dangling 参照として検証で拾うのが仕
+   * 様(docs/04-tokens.md)。
    */
   remove(tokens: TokenSet, ref: TokenRef): Result<TokenSet, TokenEditError> {
     if (!TokenSet.find(tokens, ref).some) {

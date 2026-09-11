@@ -5,17 +5,12 @@ import {
 import { DocumentSelection } from "@/domains/session/document-selection";
 
 /**
- * キャンバスのストーリー用のサンプルドキュメント。
+ * キャンバスのストーリー用のサンプルドキュメント。雛形のトークン・部品に artboard を 3
+ * 枚足してあり、キャンバスが映すものが 1 つのドキュメントで揃う。
  *
- * 雛形のトークン・部品に artboard を 3 枚足してあり、キャンバスが映すものが
- * 1 つのドキュメントで揃う。1 枚目に部品インスタンス（`home-login`）と
- * トークンを参照するノード（`home-title`）、3 枚目に**中身が artboard より大きい**
- * ノードを置いて、はみ出しがデフォルトで clip されることを目で確認できるようにしている
- * （docs/01「はみ出し: …デフォルトで clip」）。
- *
- * Why not: `features/editor` のサンプル状態（`SampleEditorState`）は持ってこない。
- * この feature は編集画面を知らないので import できない（`canvas -> editor` の辺を
- * 作ると循環する）。
+ * 1 枚目に部品インスタンス（`home-login`）とトークンを参照するノード（`home-title`）、3
+ * 枚目に**中身が artboard より大きい**ノードを置いて、はみ出しがデフォルトで clip され
+ * ることを目で確認できるようにしている（docs/01「はみ出し: …デフォルトで clip」）。
  */
 export const SampleCanvasDocument = DesignDocument.create({
   tokens: DocumentTemplate.Default.tokens,

@@ -11,9 +11,8 @@ import { EditorState } from "../index";
  * 同じ部品を指すインスタンスをまとめて選ぶ
  * （UI 案 docs/Design Composer.html の `Select all N instances`）。
  *
- * artboard を 2 枚置くのは、まとめた選択が 1 枚に閉じないことを確かめるため。
- * 部品定義の中にも `primary-button` を指すノードを 1 つ足してあり、
- * これが選択に入らないことが「集めるのは artboard 配下だけ」の対照になる。
+ * 部品定義の中にも `primary-button` を指すノードを 1 つ足してあり、これが選択に入らないこ
+ * とが「集めるのは artboard 配下だけ」の対照になる。
  */
 function setupState(): EditorState {
   return EditorState.create(
