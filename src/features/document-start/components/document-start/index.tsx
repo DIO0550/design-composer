@@ -252,9 +252,9 @@ function RecentFiles({
 /**
  * ドキュメントを開いていないときの画面。
  *
- * UI 案（`docs/Design Composer.html`）は Default / Assets / Assets · Instance / Tokens /
- * Error の 5 画面で、開く前の画面を描いていない（`open` / `recent` / `welcome` はいずれも
- * 0 件）。そのため見せ方はここで決めている。
+ * UI 案（`docs/Design Composer.html`）が持つ画面はどれもドキュメントを開いた後のもので、
+ * 開く前の画面を描いていない（`open` / `recent` / `welcome` はいずれも 0 件）。そのため見せ
+ * 方はここで決めている。画面の数と名前は `rules/ui-verification.md` が持つ。
  *
  * 使う色と字の大きさは UI 案の語彙から採っている（地 `#fafafa` と hover の `#f0f0f0`、
  * 文字 `#1e1e1e` / `#767676`、境界 `#e6e6e6`、強調 `#4db2ff` / `#0d99ff`）。組み合わせ方

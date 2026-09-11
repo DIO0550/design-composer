@@ -3,7 +3,7 @@ import type { ReactElement, ReactNode } from "react";
 /**
  * 右ペインの幅。
  *
- * この 18rem は UI 案（docs/Design Composer.html は右ペインを 5 画面とも 264px と描く）
+ * この 18rem は UI 案（docs/Design Composer.html は右ペインを 6 画面とも 264px と描く）
  * とずれているが、それはグリッド側に元からある乖離で、ここはその写し。
  */
 const RightPaneWidthClass = "w-[18rem]";

@@ -6,7 +6,7 @@ import type { ReactElement, ReactNode } from "react";
  * の `w-14`）を引いた残り。
  *
  * 両者が揃っていることは `editor-layout.pane-width.test.tsx` が固定し、UI 案（docs/Design
- * Composer.html も左パネルを 5 画面とも 248px と描く）とも一致する。
+ * Composer.html も左パネルを 6 画面とも 248px と描く）とも一致する。
  */
 const LeftPaneWidthClass = "w-[15.5rem]";
 

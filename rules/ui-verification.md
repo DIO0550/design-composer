@@ -5,7 +5,7 @@
 
 ## UIの拠り所は `docs/Design Composer.html`
 
-画面の見た目・構成は **`docs/Design Composer.html`(UI案。Default / Assets / Assets · Instance / Tokens / Error の5画面)に従う**。仕様書(`docs/06-ui.md`)が文章で規定するのは何ができるかで、それをどう見せるかはこのプロトタイプが持つ。
+画面の見た目・構成は **`docs/Design Composer.html`(UI案。Default / Assets / Assets · Instance / Tokens / Error / Context menu の6画面)に従う**。仕様書(`docs/06-ui.md`)が文章で規定するのは何ができるかで、それをどう見せるかはこのプロトタイプが持つ。
 
 - **UIを実装・変更する前に必ずこのファイルを開いて該当箇所を見る。** JS で描画されるので、ブラウザか playwright-cli で開くこと(ソースを読むだけでは分からない)
 - **見るのはスクリーンショットではなくマークアップ。** 画像からは色・余白・字面の実測値が取れず、「開いたのに読めていない」状態になる。マークアップは `<script type="__bundler/template">` の**JSON 文字列**に入っているので、次のように展開してから該当箇所を切り出す
