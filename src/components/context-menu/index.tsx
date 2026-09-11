@@ -12,6 +12,7 @@ import {
 } from "react";
 import type { ValueOf } from "@/types/ValueOf";
 import { ArrayEx } from "@/utils/ArrayEx";
+import { KeyName, KeyNames } from "@/utils/KeyName";
 import { Option } from "@/utils/Option";
 
 /**
@@ -68,7 +69,12 @@ type FocusStep = ValueOf<typeof FocusSteps>;
  * ため。行の活性化そのものは `button` の既定に任せるので、既定動作までは止めない。
  * Enter を入れないのは、ページ全体に Enter の割り当てが無く、渡しても何も起きないから。
  */
-const MenuKeys = ["Escape", "ArrowDown", "ArrowUp", " "];
+const MenuKeys: readonly KeyName[] = [
+  KeyNames.Escape,
+  KeyNames.ArrowDown,
+  KeyNames.ArrowUp,
+  KeyNames.Space,
+];
 
 /** 行から器へ触れるもの。 */
 type ContextMenuControl = Readonly<{ close: () => void }>;
@@ -363,7 +369,7 @@ function ContextMenuRoot({
       // 開いた時点のフォーカスの受け皿。Tab の順路には入れない
       tabIndex={-1}
       onKeyDown={(event) => {
-        if (!MenuKeys.includes(event.key)) {
+        if (!KeyName.isOneOf(MenuKeys, event)) {
           return;
         }
         /*
@@ -373,19 +379,21 @@ function ContextMenuRoot({
          * React はルート要素で待つので、ここで止めれば `document` の購読まで上がらない。
          */
         event.stopPropagation();
-        if (event.key === "Escape") {
+        if (event.key === KeyNames.Escape) {
           onClose();
           return;
         }
         // space は行の button が既定の活性化で受けるので、渡さないことだけを行う
-        if (event.key === " ") {
+        if (event.key === KeyNames.Space) {
           return;
         }
         // 矢印でのスクロールを重ねない
         event.preventDefault();
         moveFocus(
           event.currentTarget,
-          event.key === "ArrowDown" ? FocusSteps.Next : FocusSteps.Previous,
+          event.key === KeyNames.ArrowDown
+            ? FocusSteps.Next
+            : FocusSteps.Previous,
         );
       }}
       style={{

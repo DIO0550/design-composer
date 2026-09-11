@@ -1,9 +1,10 @@
 import type { KeyboardEvent } from "react";
 import type { TextEdit } from "@/features/canvas/domains/text-edit";
+import { KeyNames } from "@/utils/KeyName";
 
 /** 編集を終えるキー（docs/06-ui.md「確定（Enter / フォーカス外し）」「キャンセル（Escape）」）。 */
-const CommitKey = "Enter";
-const CancelKey = "Escape";
+const CommitKey = KeyNames.Enter;
+const CancelKey = KeyNames.Escape;
 
 /**
  * 編集中の Text に重ねる入力欄（docs/06-ui.md「Text のインライン編集」）。

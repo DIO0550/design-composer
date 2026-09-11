@@ -15,6 +15,7 @@ import type { TextEditControl } from "@/features/canvas/hooks/use-text-edit";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { CommandKey } from "@/utils/CommandKey";
 import { ElementEx } from "@/utils/ElementEx";
+import { KeyName, KeyNames } from "@/utils/KeyName";
 import { PointerButton } from "@/utils/PointerButton";
 import { ArtboardLabel } from "../artboard-label";
 
@@ -25,7 +26,7 @@ import { ArtboardLabel } from "../artboard-label";
  * のの、space がキャンバス全体でパンの修飾になったため（docs/06-ui.md「キャンバス直接操
  * 作」）。枠にフォーカスがあるときだけ意味が割れると、押した瞬間に artboard が選び直される。
  */
-const ActivationKeys = ["Enter"];
+const ActivationKeys: readonly KeyName[] = [KeyNames.Enter];
 
 /**
  * 1 枚の artboard。中身はコンパイル結果の HTML をそのまま流し込む。
@@ -77,7 +78,7 @@ export function ArtboardFrame({
     ]);
 
   const activate = (event: KeyboardEvent<HTMLElement>) => {
-    if (!ActivationKeys.includes(event.key)) {
+    if (!KeyName.isOneOf(ActivationKeys, event)) {
       return;
     }
     event.preventDefault();
