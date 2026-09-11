@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { ComponentProps, ReactElement } from "react";
 import { Option } from "@/utils/Option";
-import { ContextMenu, type ContextMenuRow, ContextMenuTones } from "./index";
+import { ContextMenu, ContextMenuTones } from "./index";
 
 /**
  * 右クリックで開くメニュー。
@@ -31,24 +32,41 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 /**
- * 1 行を組み立てる。既定は「押せる・通常の色・割り当てなし」。
+ * 1 行。既定は「押せる・通常の色・割り当てなし」。
  *
- * テスト側の `setupRow` と同じ形だが寄せていない。`__tests__/` と `__stories__/` は
- * 互いに import しない置き方（rules/architecture.md）なので、寄せるには production 側へ
- * 出すことになり、本番では 1 度も呼ばれない組み立てが公開 API に並ぶ。
+ * テスト側の `row` と同じ形だが寄せていない。`__tests__/` と `__stories__/` は互いに
+ * import しない置き方（rules/architecture.md）なので、寄せるには production 側へ出すことに
+ * なり、本番では 1 度も呼ばれない組み立てが公開 API に並ぶ。
  */
 function row(
   label: string,
-  props: Partial<Omit<ContextMenuRow, "label">> = {},
-): ContextMenuRow {
-  return {
-    label,
-    shortcut: Option.none,
-    tone: ContextMenuTones.Normal,
-    isEnabled: true,
-    onSelect: () => {},
-    ...props,
-  };
+  props: Partial<Omit<ComponentProps<typeof ContextMenu.Item>, "label">> = {},
+): ReactElement {
+  return (
+    <ContextMenu.Item
+      key={label}
+      label={label}
+      shortcut={Option.none}
+      tone={ContextMenuTones.Normal}
+      isEnabled={true}
+      onSelect={() => {}}
+      {...props}
+    />
+  );
+}
+
+/**
+ * 行を 1 組にまとめる。組のあいだに区切りが入る。
+ *
+ * @param rows 並べる行
+ * @returns メニューへ入れる 1 組
+ */
+function group(...rows: readonly ReactElement[]): ReactElement {
+  return (
+    <ContextMenu.Group key={rows.map((entry) => entry.key).join()}>
+      {rows}
+    </ContextMenu.Group>
+  );
 }
 
 /**
@@ -60,25 +78,25 @@ function row(
 export const SelectedNode: Story = {
   name: "ノードを選んでいるとき",
   args: {
-    groups: [
-      [
+    children: [
+      group(
         row("Copy", { shortcut: Option.some("⌘C") }),
         row("Paste", { shortcut: Option.some("⌘V") }),
-      ],
-      [
+      ),
+      group(
         row("Bring forward", {
           shortcut: Option.some("⌘]"),
           isEnabled: false,
         }),
         row("Send backward", { shortcut: Option.some("⌘["), isEnabled: false }),
-      ],
-      [row("Detach instance", { isEnabled: false })],
-      [
+      ),
+      group(row("Detach instance", { isEnabled: false })),
+      group(
         row("Delete", {
           shortcut: Option.some("Delete"),
           tone: ContextMenuTones.Danger,
         }),
-      ],
+      ),
     ],
   },
 };
@@ -87,14 +105,12 @@ export const SelectedNode: Story = {
 export const SelectedArtboard: Story = {
   name: "artboard を選んでいるとき",
   args: {
-    groups: [
-      [
-        row("Delete", {
-          shortcut: Option.some("Delete"),
-          tone: ContextMenuTones.Danger,
-        }),
-      ],
-    ],
+    children: group(
+      row("Delete", {
+        shortcut: Option.some("Delete"),
+        tone: ContextMenuTones.Danger,
+      }),
+    ),
   },
 };
 
@@ -102,12 +118,12 @@ export const SelectedArtboard: Story = {
 export const EmptyArea: Story = {
   name: "空き領域を右クリックしたとき",
   args: {
-    groups: [
-      [row("Paste", { shortcut: Option.some("⌘V"), isEnabled: false })],
-      [
+    children: [
+      group(row("Paste", { shortcut: Option.some("⌘V"), isEnabled: false })),
+      group(
         row("Undo", { shortcut: Option.some("⌘Z") }),
         row("Redo", { shortcut: Option.some("Shift+⌘Z") }),
-      ],
+      ),
     ],
   },
 };

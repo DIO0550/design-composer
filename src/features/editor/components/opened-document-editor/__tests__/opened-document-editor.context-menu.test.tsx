@@ -47,9 +47,13 @@ function menuRow(label: string): HTMLElement {
  * キャンバスに描かれたものを右クリックする。
  *
  * @param target 押す要素
+ * @param at 押した窓の座標。省くと折り返しの起きない位置
  */
-function rightClick(target: Element): void {
-  fireEvent.contextMenu(target, { clientX: 120, clientY: 80 });
+function rightClick(
+  target: Element,
+  at: Readonly<{ x: number; y: number }> = { x: 120, y: 80 },
+): void {
+  fireEvent.contextMenu(target, { clientX: at.x, clientY: at.y });
 }
 
 test("キャンバスのノードを右クリックするとメニューが出る", async () => {
@@ -233,4 +237,20 @@ test("別の場所を右クリックすると、メニューがそこへ開き�
 
   // artboard でもノードでもない空き領域のメニューに入れ替わる
   expect(menuRow("Undo")).toBeDefined();
+});
+
+/*
+ * 器は高さを children に並ぶ組と行の数から出す（実測は happy-dom が 0 を返す）。器の層の
+ * テストは手で組んだ children で見ているので、**呼び出し側が `map` で組んだ並びでも同じ
+ * ように数えられること**はここで見る。数え損なうと行は正しく出たまま位置だけが狂うので、
+ * 器の層では気づけない。
+ */
+test("下端の近くでノードを右クリックすると、並ぶ行のぶんだけメニューが上へ折り返す", async () => {
+  await renderOpenedDocument();
+
+  // 窓の高さは happy-dom の既定（768）
+  rightClick(drawn("home-title"), { x: 120, y: 760 });
+
+  // ノードのメニューは 4 組 6 行 = 6 + 26 × 6 + 9 × 3 + 6 = 195px
+  expect(contextMenu().style.top).toBe("565px");
 });

@@ -8,11 +8,12 @@ import {
 } from "@/hooks/use-key-shortcut";
 import { ContextMenu } from "../index";
 import {
+  group,
   menu,
+  recordedRow,
   renderMenu,
+  row,
   type SelectedRows,
-  setupRecordedRow,
-  setupRow,
 } from "./setup";
 
 /*
@@ -62,17 +63,15 @@ function renderMenuUnderShortcut(
   render(
     <>
       <ShortcutProbe />
-      <ContextMenu
-        at={{ x: 0, y: 0 }}
-        groups={[[setupRow("Copy"), setupRow("Paste")]]}
-        onClose={() => {}}
-      />
+      <ContextMenu at={{ x: 0, y: 0 }} onClose={() => {}}>
+        {group(row("Copy"), row("Paste"))}
+      </ContextMenu>
     </>,
   );
 }
 
 test("↓ で先頭の押せる行へフォーカスが移る", async () => {
-  renderMenu({ groups: [[setupRow("Copy"), setupRow("Paste")]] });
+  renderMenu({ children: group(row("Copy"), row("Paste")) });
 
   await userEvent.keyboard("{ArrowDown}");
 
@@ -81,7 +80,7 @@ test("↓ で先頭の押せる行へフォーカスが移る", async () => {
 
 test("↓ は押せない行を飛ばす", async () => {
   renderMenu({
-    groups: [[setupRow("Copy", { isEnabled: false }), setupRow("Paste")]],
+    children: group(row("Copy", { isEnabled: false }), row("Paste")),
   });
 
   await userEvent.keyboard("{ArrowDown}");
@@ -90,7 +89,7 @@ test("↓ は押せない行を飛ばす", async () => {
 });
 
 test("末尾の押せる行から ↓ を押すと先頭へ戻る", async () => {
-  renderMenu({ groups: [[setupRow("Copy"), setupRow("Paste")]] });
+  renderMenu({ children: group(row("Copy"), row("Paste")) });
 
   await userEvent.keyboard("{ArrowDown}{ArrowDown}{ArrowDown}");
 
@@ -99,7 +98,7 @@ test("末尾の押せる行から ↓ を押すと先頭へ戻る", async () => 
 
 test("↑ で 1 つ前の押せる行へ移る", async () => {
   renderMenu({
-    groups: [[setupRow("Copy"), setupRow("Paste"), setupRow("Delete")]],
+    children: group(row("Copy"), row("Paste"), row("Delete")),
   });
 
   await userEvent.keyboard("{ArrowDown}{ArrowDown}{ArrowUp}");
@@ -109,7 +108,7 @@ test("↑ で 1 つ前の押せる行へ移る", async () => {
 
 test("器にフォーカスがある状態から ↑ を押すと末尾の押せる行へ入る", async () => {
   renderMenu({
-    groups: [[setupRow("Copy"), setupRow("Delete", { isEnabled: false })]],
+    children: group(row("Copy"), row("Delete", { isEnabled: false })),
   });
 
   await userEvent.keyboard("{ArrowUp}");
@@ -120,9 +119,10 @@ test("器にフォーカスがある状態から ↑ を押すと末尾の押せ
 test("Enter でフォーカスしている行の手続きが呼ばれる", async () => {
   const selected: SelectedRows = [];
   renderMenu({
-    groups: [
-      [setupRecordedRow("Copy", selected), setupRecordedRow("Paste", selected)],
-    ],
+    children: group(
+      recordedRow("Copy", selected),
+      recordedRow("Paste", selected),
+    ),
   });
 
   await userEvent.keyboard("{ArrowDown}{ArrowDown}{Enter}");
@@ -187,14 +187,31 @@ test("space の押下はメニューの外へ漏れない", async () => {
   expect(pressed).toEqual([]);
 });
 
+/*
+ * ↑↓ が動くのは行のあいだ（ARIA の menu パターン）。中身は呼び出し側が決めるので、組に
+ * 行ではないものが入っても順路は変わらない。
+ */
+test("行ではないボタンを組に入れても ↑↓ の順路には混ざらない", async () => {
+  renderMenu({
+    children: (
+      <ContextMenu.Group>
+        <button type="button">行ではないもの</button>
+        {row("Copy")}
+      </ContextMenu.Group>
+    ),
+  });
+
+  await userEvent.keyboard("{ArrowDown}");
+
+  expect(focusedRow()).toBe("Copy");
+});
+
 test("押せる行が 1 つも無いメニューでは ↓ を押してもフォーカスが器から動かない", async () => {
   renderMenu({
-    groups: [
-      [
-        setupRow("Copy", { isEnabled: false }),
-        setupRow("Paste", { isEnabled: false }),
-      ],
-    ],
+    children: group(
+      row("Copy", { isEnabled: false }),
+      row("Paste", { isEnabled: false }),
+    ),
   });
 
   await userEvent.keyboard("{ArrowDown}");

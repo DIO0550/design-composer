@@ -1,7 +1,18 @@
-import { Fragment, type ReactElement, useEffect, useRef } from "react";
+import {
+  Children,
+  createContext,
+  type ElementType,
+  Fragment,
+  isValidElement,
+  type ReactElement,
+  type ReactNode,
+  useContext,
+  useEffect,
+  useRef,
+} from "react";
 import type { ValueOf } from "@/types/ValueOf";
 import { ArrayEx } from "@/utils/ArrayEx";
-import type { Option } from "@/utils/Option";
+import { Option } from "@/utils/Option";
 
 /**
  * 行の色味。取り消せない操作だけ赤くする（UI 案 docs/Design Composer.html の `Delete`）。
@@ -13,19 +24,6 @@ export const ContextMenuTones = {
 
 /** 行の色味。 */
 export type ContextMenuTone = ValueOf<typeof ContextMenuTones>;
-
-/**
- * メニューの 1 行。
- */
-export type ContextMenuRow = Readonly<{
-  label: string;
-  /** 併記するキーボードの割り当て。持たない操作では欄ごと出さない。 */
-  shortcut: Option<string>;
-  tone: ContextMenuTone;
-  /** 今その操作ができるか。できない行は消さずに押せない状態で並べる。 */
-  isEnabled: boolean;
-  onSelect: () => void;
-}>;
 
 /*
  * UI 案 docs/Design Composer.html の `Context menu` が持つ寸法（px）。
@@ -72,15 +70,78 @@ type FocusStep = ValueOf<typeof FocusSteps>;
  */
 const MenuKeys = ["Escape", "ArrowDown", "ArrowUp", " "];
 
+/** 行から器へ触れるもの。 */
+type ContextMenuControl = Readonly<{ close: () => void }>;
+
+const ContextMenuControlContext = createContext<Option<ContextMenuControl>>(
+  Option.none,
+);
+
 /**
- * 並んだ行ぜんたいの高さ。
+ * 囲っている器。
  *
- * @param groups 区切りで分かれた行の組
+ * 行が押されたら閉じる、という結び付きを器の側に置くために context で配る（`onSelect` と
+ * 並べて `onClose` も行ごとに渡させると、片方だけ書き忘れた行が作れる）。
+ *
+ * @returns 囲っている `ContextMenu`
+ * @throws `ContextMenu` の外で呼ばれたとき（配置ミスなので隠さずに落とす）
+ */
+function useContextMenuControl(): ContextMenuControl {
+  const control = useContext(ContextMenuControlContext);
+  if (!control.some) {
+    throw new Error("ContextMenu.Item は ContextMenu の内側でのみ使える");
+  }
+  return control.value;
+}
+
+/**
+ * `children` の中から、その階層に並んでいる `type` の要素だけを集める。`Fragment` と配列は
+ * 中へ降りる。
+ *
+ * @param children 集める対象
+ * @param type 集めたい要素の型
+ * @returns 見つかった要素。1 つも無ければ空
+ */
+function collectElements(
+  children: ReactNode,
+  type: ElementType,
+): readonly ReactElement[] {
+  return Children.toArray(children).flatMap((child) => {
+    if (!isValidElement(child)) {
+      return [];
+    }
+    if (child.type === Fragment) {
+      const fragment = child as ReactElement<{ children?: ReactNode }>;
+      return collectElements(fragment.props.children, type);
+    }
+    return child.type === type ? [child] : [];
+  });
+}
+
+/**
+ * 要素が抱えている中身。
+ *
+ * @param element 中身を取り出す要素
+ * @returns その要素の `children`。持っていなければ `undefined`
+ */
+function childrenOf(element: ReactElement): ReactNode {
+  return (element as ReactElement<{ children?: ReactNode }>).props.children;
+}
+
+/**
+ * 並んだ組ぜんたいの高さ。
+ *
+ * @param groups 器が描く組（`collectElements` が集めたもの）
  * @returns 枠線と余白を含めた高さ（px）
  */
-function menuHeight(groups: readonly (readonly ContextMenuRow[])[]): number {
-  const rowCount = groups.reduce((count, group) => count + group.length, 0);
-  const separatorCount = groups.length - 1;
+function menuHeight(groups: readonly ReactElement[]): number {
+  const rowCount = groups.reduce(
+    (count, group) =>
+      count + collectElements(childrenOf(group), ContextMenuItem).length,
+    0,
+  );
+  // 組が 0 でも区切りは負にならない（子を条件で出すと空のメニューが実際に作れる）
+  const separatorCount = Math.max(groups.length - 1, 0);
   const edges = (MenuPadding + MenuBorderWidth) * 2;
   const separators = separatorCount * (SeparatorLineHeight + SeparatorGap * 2);
   return edges + rowCount * RowHeight + separators;
@@ -135,12 +196,15 @@ function nextFocusIndex(rows: readonly Element[], step: FocusStep): number {
  * 投げるが、React がハンドラの例外を非同期に報告するため vitest は失敗として拾わない** —
  * 落ちるテストは 1 件も無い。
  *
+ * 引くのは `menuitem` に絞る。`button` で引くと、行の中に置かれた別のボタンが ↑↓ の順路へ
+ * 混ざる（中身は呼び出し側が決めるので、器は行そのものだけを見る）。
+ *
  * @param menu 行を持つ器
  * @param step 動かす向き
  */
 function moveFocus(menu: HTMLElement, step: FocusStep): void {
   const rows = Array.from(
-    menu.querySelectorAll<HTMLButtonElement>("button:not([disabled])"),
+    menu.querySelectorAll<HTMLElement>('[role="menuitem"]:not([disabled])'),
   );
   const index = nextFocusIndex(rows, step);
   if (!ArrayEx.isIndexInRange(rows, index)) {
@@ -159,20 +223,83 @@ const EnabledRowClasses = {
 } as const satisfies Readonly<Record<ContextMenuTone, string>>;
 
 /**
- * ポインタの位置に開くメニュー（docs/06-ui.md「コンテキストメニュー」）。並ぶものと押せるか
- * どうかは呼び出し側が決め、ここは見せ方・キーボード操作・閉じるきっかけだけを持つ。
+ * 区切りで区切られる 1 組。中身に `ContextMenu.Item` を並べる。
+ *
+ * 自分では DOM を持たない。区切りを差し込むのは器で、UI 案 `Context menu` のマークアップも
+ * 組ごとの器を持たず行と区切りを並列に置いている。
+ *
+ * @returns 受け取った行そのもの
+ */
+function ContextMenuGroup({
+  children,
+}: Readonly<{ children: ReactNode }>): ReactElement {
+  return <>{children}</>;
+}
+
+/**
+ * メニューの 1 行。押すと `onSelect` を呼んでから器を閉じる。
+ *
+ * @returns 綴りと、持っていれば併記する割り当てを並べた行
+ */
+function ContextMenuItem({
+  label,
+  shortcut,
+  tone,
+  isEnabled,
+  onSelect,
+}: Readonly<{
+  label: string;
+  /** 併記するキーボードの割り当て。持たない操作では欄ごと出さない。 */
+  shortcut: Option<string>;
+  tone: ContextMenuTone;
+  /** 今その操作ができるか。できない行は消さずに押せない状態で並べる。 */
+  isEnabled: boolean;
+  onSelect: () => void;
+}>): ReactElement {
+  const { close } = useContextMenuControl();
+
+  return (
+    <button
+      type="button"
+      role="menuitem"
+      disabled={!isEnabled}
+      // 行のあいだを動かすのは ↑↓ なので、Tab の順路には入れない
+      tabIndex={-1}
+      onClick={() => {
+        onSelect();
+        close();
+      }}
+      style={{ height: RowHeight }}
+      className={`flex w-full items-center gap-6 px-[10px] text-[11px] ${
+        isEnabled ? EnabledRowClasses[tone] : DisabledRowClass
+      }`}
+    >
+      <span className="flex-1 text-left">{label}</span>
+      {shortcut.some ? (
+        // 割り当ては行の色に従わない（押せる行でも淡いまま / UI 案）
+        <span className="font-mono text-[#c4c4c4] text-[10px]">
+          {shortcut.value}
+        </span>
+      ) : null}
+    </button>
+  );
+}
+
+/**
+ * ポインタの位置に開くメニュー（docs/06-ui.md「コンテキストメニュー」）。中身は呼び出し側が
+ * `ContextMenu.Group` と `ContextMenu.Item` で組む。
  *
  * 開いた時点ではどの行にもフォーカスを当てず器が受け取る（UI 案にも強調された行は無い）。
  *
- * @returns 区切りで分かれた行を縦に並べた器
+ * @returns 組のあいだに区切りを挟んで縦に並べた器
  */
-export function ContextMenu({
+function ContextMenuRoot({
   at,
-  groups,
+  children,
   onClose,
 }: Readonly<{
   at: Readonly<{ x: number; y: number }>;
-  groups: readonly (readonly ContextMenuRow[])[];
+  children: ReactNode;
   onClose: () => void;
 }>): ReactElement {
   const menuRef = useRef<HTMLDivElement>(null);
@@ -208,6 +335,12 @@ export function ContextMenu({
       globalThis.document.removeEventListener("pointerdown", closeOnOutside);
   }, [onClose]);
 
+  /*
+   * 高さに使う組と、描く組は**同じ 1 本の並び**から採る。別々に辿ると、器が見つけられない
+   * 組（呼び出し側の部品で包んだもの）が高さにだけ入らず、位置が静かに狂う。ここを 1 本に
+   * すると同じ間違いが「行が出ない」という形で表に出る。
+   */
+  const groups = collectElements(children, ContextMenuGroup);
   const placement = menuPlacement(at, menuHeight(groups));
 
   return (
@@ -260,47 +393,32 @@ export function ContextMenu({
        */
       className="fixed z-20 rounded-md border border-[#e6e6e6] bg-white shadow-[0_5px_18px_rgba(0,0,0,0.18),0_0_0_0.5px_rgba(0,0,0,0.06)] outline-none"
     >
-      {groups.map((group, groupIndex) => (
-        // 組に id が無いので、その組に並ぶ綴りを鍵にする（同じ綴りは 1 つのメニューに 2 度出ない）
-        <Fragment key={group.map((row) => row.label).join()}>
-          {/* 線は hr で出す（既定の枠線を消して、UI 案の 1px の面にする） */}
-          {groupIndex > 0 ? (
-            <hr
-              style={{
-                height: SeparatorLineHeight,
-                marginBlock: SeparatorGap,
-              }}
-              className="border-0 bg-[#f0f0f0]"
-            />
-          ) : null}
-          {group.map((row) => (
-            <button
-              key={row.label}
-              type="button"
-              role="menuitem"
-              disabled={!row.isEnabled}
-              // 行のあいだを動かすのは ↑↓ なので、Tab の順路には入れない
-              tabIndex={-1}
-              onClick={() => {
-                row.onSelect();
-                onClose();
-              }}
-              style={{ height: RowHeight }}
-              className={`flex w-full items-center gap-6 px-[10px] text-[11px] ${
-                row.isEnabled ? EnabledRowClasses[row.tone] : DisabledRowClass
-              }`}
-            >
-              <span className="flex-1 text-left">{row.label}</span>
-              {row.shortcut.some ? (
-                // 割り当ては行の色に従わない（押せる行でも淡いまま / UI 案）
-                <span className="font-mono text-[#c4c4c4] text-[10px]">
-                  {row.shortcut.value}
-                </span>
-              ) : null}
-            </button>
-          ))}
-        </Fragment>
-      ))}
+      <ContextMenuControlContext.Provider
+        value={Option.some({ close: onClose })}
+      >
+        {groups.map((group, index) => (
+          // 鍵は `Children.toArray` が振ったもの（呼び出し側が付けていればそれ）
+          <Fragment key={group.key}>
+            {/* 線は hr で出す（既定の枠線を消して、UI 案の 1px の面にする） */}
+            {index > 0 ? (
+              <hr
+                style={{
+                  height: SeparatorLineHeight,
+                  marginBlock: SeparatorGap,
+                }}
+                className="border-0 bg-[#f0f0f0]"
+              />
+            ) : null}
+            {group}
+          </Fragment>
+        ))}
+      </ContextMenuControlContext.Provider>
     </div>
   );
 }
+
+/** ポインタの位置に開くメニュー。中身は呼び出し側が children で組む。 */
+export const ContextMenu = Object.assign(ContextMenuRoot, {
+  Group: ContextMenuGroup,
+  Item: ContextMenuItem,
+});

@@ -1,30 +1,33 @@
 import { render, screen, within } from "@testing-library/react";
-import type { ComponentProps } from "react";
+import type { ComponentProps, ReactElement, ReactNode } from "react";
+import { ContextMenu, ContextMenuTones } from "@/components/context-menu";
 import { Option } from "@/utils/Option";
-import { ContextMenu, type ContextMenuRow, ContextMenuTones } from "../index";
 
 /** 押された行を綴りで積む器。どの行が呼ばれたかを 1 つの観点で見られる。 */
 export type SelectedRows = string[];
 
+/** 行に渡すもののうち、綴り以外。 */
+type RowProps = Partial<Omit<ComponentProps<typeof ContextMenu.Item>, "label">>;
+
 /**
- * 1 行を組み立てる。既定は「押せる・通常の色・割り当てなし」。
+ * 1 行。既定は「押せる・通常の色・割り当てなし」。
  *
  * @param label 行の綴り
  * @param props 確かめたい項目だけ。省いたものは既定で埋まる
- * @returns メニューへ渡す 1 行
+ * @returns メニューへ入れる 1 行
  */
-export function setupRow(
-  label: string,
-  props: Partial<Omit<ContextMenuRow, "label">> = {},
-): ContextMenuRow {
-  return {
-    label,
-    shortcut: Option.none,
-    tone: ContextMenuTones.Normal,
-    isEnabled: true,
-    onSelect: () => {},
-    ...props,
-  };
+export function row(label: string, props: RowProps = {}): ReactElement {
+  return (
+    <ContextMenu.Item
+      key={label}
+      label={label}
+      shortcut={Option.none}
+      tone={ContextMenuTones.Normal}
+      isEnabled={true}
+      onSelect={() => {}}
+      {...props}
+    />
+  );
 }
 
 /**
@@ -33,32 +36,49 @@ export function setupRow(
  * @param label 行の綴り
  * @param selected 押された綴りを積む先
  * @param props 確かめたい項目だけ
- * @returns メニューへ渡す 1 行
+ * @returns メニューへ入れる 1 行
  */
-export function setupRecordedRow(
+export function recordedRow(
   label: string,
   selected: SelectedRows,
-  props: Partial<Omit<ContextMenuRow, "label" | "onSelect">> = {},
-): ContextMenuRow {
-  return setupRow(label, { ...props, onSelect: () => selected.push(label) });
+  props: Omit<RowProps, "onSelect"> = {},
+): ReactElement {
+  return row(label, { ...props, onSelect: () => selected.push(label) });
 }
 
 /**
- * メニューを描く。既定は窓の左上（折り返しの起きない位置）。
+ * 行を 1 組にまとめる。組のあいだに区切りが入る。
  *
- * @param props 確かめたい prop だけ。省いたものは既定で埋まる
+ * @param rows 並べる行
+ * @returns メニューへ入れる 1 組
+ */
+export function group(...rows: readonly ReactElement[]): ReactElement {
+  return (
+    <ContextMenu.Group key={rows.map((entry) => entry.key).join()}>
+      {rows}
+    </ContextMenu.Group>
+  );
+}
+
+/**
+ * メニューを描く。既定は窓の左上（折り返しの起きない位置）に 1 行のメニュー。
+ *
+ * @param props 確かめたい prop だけ。`children` を省くと 1 行のメニューになる
  * @returns `render` の戻り値
  */
 export function renderMenu(
   props: Partial<ComponentProps<typeof ContextMenu>> = {},
 ) {
+  // `??` にはしない（`children: null` で「行が 1 つも無いメニュー」を渡せなくなる）
+  const content: ReactNode =
+    "children" in props ? props.children : group(row("Copy"));
   return render(
     <ContextMenu
-      at={{ x: 0, y: 0 }}
-      groups={[[setupRow("Copy")]]}
-      onClose={() => {}}
-      {...props}
-    />,
+      at={props.at ?? { x: 0, y: 0 }}
+      onClose={props.onClose ?? (() => {})}
+    >
+      {content}
+    </ContextMenu>,
   );
 }
 

@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { ContextMenu } from "../index";
-import { menu, setupRow } from "./setup";
+import { group, menu, row } from "./setup";
 
 /*
  * 外側を押したときに閉じることを確かめる（docs/06-ui.md「コンテキストメニュー」）。
@@ -19,11 +19,9 @@ function renderMenuBesideOutside(onClose: () => void): void {
   render(
     <>
       <button type="button">外側</button>
-      <ContextMenu
-        at={{ x: 0, y: 0 }}
-        groups={[[setupRow("Copy")]]}
-        onClose={onClose}
-      />
+      <ContextMenu at={{ x: 0, y: 0 }} onClose={onClose}>
+        {group(row("Copy"))}
+      </ContextMenu>
     </>,
   );
 }

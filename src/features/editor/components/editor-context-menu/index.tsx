@@ -1,9 +1,5 @@
-import type { ReactElement } from "react";
-import {
-  ContextMenu,
-  type ContextMenuRow,
-  ContextMenuTones,
-} from "@/components/context-menu";
+import type { ComponentProps, ReactElement } from "react";
+import { ContextMenu, ContextMenuTones } from "@/components/context-menu";
 import { useEditor } from "@/features/editor/components/editor-provider";
 import {
   EditMenu,
@@ -22,7 +18,10 @@ import type { OpenedContextMenu } from "@/features/editor/types/OpenedContextMen
 import { Option } from "@/utils/Option";
 
 /** 表示のための綴りだけを持つ部分（押せるかどうかと押したときの手続きは状態から決まる）。 */
-type OperationPresentation = Omit<ContextMenuRow, "isEnabled" | "onSelect">;
+type OperationPresentation = Omit<
+  ComponentProps<typeof ContextMenu.Item>,
+  "isEnabled" | "onSelect"
+>;
 
 /**
  * 操作ごとの綴り・併記する割り当て・色味（UI 案 docs/Design Composer.html の
@@ -123,16 +122,23 @@ export function EditorContextMenu({
   const menu = EditMenu.create(state, opened.target);
 
   return (
-    <ContextMenu
-      at={opened.at}
-      groups={menu.groups.map((group) =>
-        group.map((row) => ({
-          ...OperationPresentations[row.operation],
-          isEnabled: row.isEnabled,
-          onSelect: handlers[row.operation],
-        })),
-      )}
-      onClose={onClose}
-    />
+    <ContextMenu at={opened.at} onClose={onClose}>
+      {menu.groups.map((group) => (
+        /*
+         * 組にも行にも id が無いので、並んでいる操作そのものを鍵にする（同じ操作は 1 つの
+         * メニューに 2 度出ない）。
+         */
+        <ContextMenu.Group key={group.map((row) => row.operation).join()}>
+          {group.map((row) => (
+            <ContextMenu.Item
+              key={row.operation}
+              {...OperationPresentations[row.operation]}
+              isEnabled={row.isEnabled}
+              onSelect={handlers[row.operation]}
+            />
+          ))}
+        </ContextMenu.Group>
+      ))}
+    </ContextMenu>
   );
 }
