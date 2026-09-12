@@ -9,11 +9,42 @@ import { type RowProps, useReorderDrag } from "@/hooks/use-reorder-drag";
 import { Option } from "@/utils/Option";
 import { type DropSide, ReorderDrag } from "@/utils/ReorderDrag";
 
-/** artboard が 1 枚も無いときの知らせ。 */
-const NoArtboardMessage = "artboard がありません";
-
 /** 追加のボタンの読み上げ名。UI 案の字面は `+` だけなので、名前は別に与える。 */
 const AddArtboardLabel = "artboard を追加";
+
+/**
+ * 一覧に出す内容一式。
+ *
+ * 何を出すか・1 つも無いときに何と言うか・掴んで並べ替えられるかは**絞り込みで一緒に
+ * 決まる**ので対で渡す（片方だけ差し替えると、絞った並びを掴めるといった食い違いが作れる）。
+ */
+export type ArtboardListing = Readonly<{
+  artboards: readonly Artboard[];
+  /** 1 つも無いときに出す知らせ。artboard が無いのか一致が無いのかで文言が変わる */
+  emptyNotice: string;
+  /** 掴んで並べ替えられるか。絞った並びの index は元の並びを指さないので絞り込み中は止める */
+  isReorderable: boolean;
+}>;
+
+/** artboard が 1 枚も無いときの知らせ。 */
+export const NoArtboardMessage = "artboard がありません";
+
+/** 一覧に出す内容の組み立て。 */
+export const ArtboardListing = {
+  /**
+   * 絞っていないときの内容。
+   *
+   * @param artboards ドキュメントが持つ並び
+   * @returns 全部を出し、掴んで並べ替えられる内容
+   */
+  full(artboards: readonly Artboard[]): ArtboardListing {
+    return {
+      artboards,
+      emptyNotice: NoArtboardMessage,
+      isReorderable: true,
+    };
+  },
+} as const;
 
 /**
  * artboard 1 枚の行（UI 案 docs/Design Composer.html の `# login 720×900`）。押すとその
@@ -43,7 +74,7 @@ function ArtboardRow({
   isRenaming: boolean;
   /** 落ちる先ならどちら側に線を引くか。落ちる先でなければ不在 */
   dropSide: Option<DropSide>;
-  rowProps: RowProps;
+  rowProps: Partial<RowProps>;
   onSelect: (name: string) => void;
   renameActions: LeftPaneRenameActions;
 }>) {
@@ -96,21 +127,27 @@ function ArtboardRow({
  * ル上段の `Artboards`）。ここで選んだ 1 枚の中身をツリーが映し、見出しの右の `+` は UI
  * 案そのもの（押すと末尾に 1 枚増えてそのまま選択になる）。
  *
+ * **何を出すかは決めない**（`listing` を受け取るだけ）。絞り込みを持つのはパネル側で、
+ * `Artboards` の一覧とツリーを同じ条件で絞るため。
+ *
  * 並べ替えは行を掴んで運ぶ。docs/06-ui.md がドラッグと定めているのは**ノードの同一親内
  * の並べ替え**で artboard の入口は定めておらず UI 案も描いていないので、新しい形を発明
  * せず同じ左ペインのツリーと同じ機構（`useReorderDrag`）に載せている。並びが 1 つしか無
  * いので、落ちる先が並びの外を指すことは構造上ありえない。
  *
- * artboard が 1 枚も無いことを伝えるのはここ（ツリー側は「今見ている 1 枚の中身」を映す
- * 場所だから）。そのときも `+` は残す — 1 枚目を足す導線がここにしか無い。
+ * 出すものが 1 つも無いことを伝えるのはここ（ツリー側は「今見ている 1 枚の中身」を映す
+ * 場所だから）。そのときも `+` は残す — `+` は絞り込みの対象ではないので、語の有無で
+ * 出たり消えたりしない。
  */
 export function ArtboardList({
+  listing,
   selection,
   renaming,
   onSelect,
   artboardActions,
   renameActions,
 }: Readonly<{
+  listing: ArtboardListing;
   selection: DocumentSelection;
   /** 今その名前を編集しているもの。編集していなければ不在 */
   renaming: Option<string>;
@@ -118,7 +155,7 @@ export function ArtboardList({
   artboardActions: LeftPaneArtboardActions;
   renameActions: LeftPaneRenameActions;
 }>) {
-  const artboards = selection.document.artboards;
+  const { artboards, emptyNotice, isReorderable } = listing;
   const { drag, rowProps, groupProps } = useReorderDrag(
     artboardActions.reorder,
   );
@@ -139,9 +176,9 @@ export function ArtboardList({
         </button>
       </div>
       {artboards.length === 0 ? (
-        <p className="text-gray-500">{NoArtboardMessage}</p>
+        <p className="text-gray-500">{emptyNotice}</p>
       ) : (
-        <ul {...groupProps()}>
+        <ul {...(isReorderable ? groupProps() : {})}>
           {artboards.map((artboard, index) => (
             <ArtboardRow
               key={artboard.name}
@@ -153,7 +190,7 @@ export function ArtboardList({
               isHeld={ReorderDrag.isHeld(drag, index)}
               isRenaming={Option.contains(renaming, artboard.name)}
               dropSide={ReorderDrag.dropSideAt(drag, index)}
-              rowProps={rowProps(index)}
+              rowProps={isReorderable ? rowProps(index) : {}}
               onSelect={onSelect}
               renameActions={renameActions}
             />

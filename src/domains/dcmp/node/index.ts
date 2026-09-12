@@ -146,6 +146,20 @@ export const Node = {
     return [node.name, ...Node.children(node).flatMap(Node.collectNames)];
   },
 
+  /**
+   * 自分か子孫のどれかの名前が条件に合うか（docs/06-ui.md「絞り込み」）。
+   *
+   * 条件を述語で受け取るのは、絞り込みの語彙が編集中の状態の側（`session`）にあり、
+   * ここからは import できないため（rules/architecture.md「依存方向のルール」）。
+   *
+   * @param node 走査の起点になるノード
+   * @param matches 名前を判定する条件
+   * @returns 自分か子孫に 1 つでも合う名前があれば true
+   */
+  hasMatchingName(node: Node, matches: (name: string) => boolean): boolean {
+    return Node.collectNames(node).some(matches);
+  },
+
   collectRefs(node: Node): readonly string[] {
     if (Node.isRef(node)) {
       return [node.ref];

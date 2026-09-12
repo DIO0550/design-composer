@@ -40,6 +40,7 @@ function renderTree(): ReturnType<typeof vi.fn> {
   const onSelect = vi.fn();
   render(
     <DocumentTree
+      filter={Option.none}
       selection={setupSelection()}
       onSelect={onSelect}
       onReorder={vi.fn()}

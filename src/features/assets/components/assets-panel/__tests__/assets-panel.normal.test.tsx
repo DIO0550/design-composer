@@ -13,6 +13,7 @@ const Assets: readonly ComponentAsset[] = [
 test("プリミティブと部品の両方が並ぶ", () => {
   render(
     <AssetsPanel
+      query=""
       sourceName={Option.none}
       assets={Assets}
       grab={setupAssetGrab()}
@@ -26,6 +27,7 @@ test("プリミティブと部品の両方が並ぶ", () => {
 test("組み込みのプリミティブが行として出る", () => {
   render(
     <AssetsPanel
+      query=""
       sourceName={Option.none}
       assets={Assets}
       grab={setupAssetGrab()}
@@ -39,6 +41,7 @@ test("組み込みのプリミティブが行として出る", () => {
 test("渡された部品が行として出る", () => {
   render(
     <AssetsPanel
+      query=""
       sourceName={Option.none}
       assets={Assets}
       grab={setupAssetGrab()}
@@ -51,6 +54,7 @@ test("渡された部品が行として出る", () => {
 test("部品が1件も無くてもプリミティブは出る", () => {
   render(
     <AssetsPanel
+      query=""
       sourceName={Option.none}
       assets={[]}
       grab={setupAssetGrab()}
@@ -65,6 +69,7 @@ test("部品の行にもプリミティブの行にも押せるものが無い",
   // 検索欄は `searchbox` なので、ここで数える `button` は行の操作だけになる
   render(
     <AssetsPanel
+      query=""
       sourceName={Option.none}
       assets={Assets}
       grab={setupAssetGrab()}

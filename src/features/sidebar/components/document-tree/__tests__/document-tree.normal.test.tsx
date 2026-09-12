@@ -51,6 +51,7 @@ function renderTree(selection: DocumentSelection): {
   const { container } = render(
     <DocumentTree
       selection={selection}
+      filter={Option.none}
       onSelect={onSelect}
       onReorder={vi.fn()}
       renaming={Option.none}

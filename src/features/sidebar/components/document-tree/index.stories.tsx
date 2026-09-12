@@ -6,6 +6,7 @@ import {
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
 import { DocumentSelection } from "@/domains/session/document-selection";
+import { NameFilter } from "@/domains/session/name-filter";
 import { sampleRenameActions } from "@/features/sidebar/__stories__/sample-rename-actions";
 import { sampleSidebarSelection } from "@/features/sidebar/__stories__/sample-sidebar-document";
 import { Option } from "@/utils/Option";
@@ -28,6 +29,7 @@ const meta = {
     onSelect: fn(),
     onReorder: fn(),
     renaming: Option.none,
+    filter: Option.none,
     renameActions: sampleRenameActions(),
   },
 } satisfies Meta<typeof DocumentTree>;
@@ -49,6 +51,18 @@ export const OtherArtboard: Story = {
 export const NodeSelected: Story = {
   name: "artboard 配下のノードを選択中",
   args: { selection: sampleSidebarSelection("home-title") },
+};
+
+/**
+ * 絞り込みで一致した行とその祖先だけが残った状態（docs/06-ui.md「絞り込み」）。
+ * 祖先の行は通常の行のままで、絞り込みのための見た目は持たない。
+ */
+export const Filtered: Story = {
+  name: "絞り込みで一致した行だけが出ている",
+  args: {
+    selection: sampleSidebarSelection(),
+    filter: NameFilter.create("title"),
+  },
 };
 
 /**

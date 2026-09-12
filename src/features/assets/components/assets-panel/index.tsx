@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { NoMatchMessage } from "@/components/search-field";
 import type { ComponentAsset } from "@/domains/dcmp/component";
 import { PrimitiveTypes } from "@/domains/dcmp/primitive-schema";
 import { ComponentList } from "@/features/assets/components/component-list";
@@ -7,39 +7,28 @@ import type { AssetGrab } from "@/features/assets/types/AssetGrab";
 import type { Option } from "@/utils/Option";
 import { StringEx } from "@/utils/StringEx";
 
-/** 検索欄に出す案内（UI 案 docs/Design Composer.html の綴り）。 */
-const SearchPlaceholder = "Search assets";
-
-/**
- * 検索して何も残らなかったときの知らせ。
- *
- * 各リストに言わせない。リストは絞り込みを知らないので、そこで「ありません」と書くと
- * ドキュメントに部品があるのに無いと言うことになる（絞り込みで 0 件になっただけ）。
- * 検索語を持っているのはここだけなので、ここで 1 度だけ伝える。
- */
-const NoMatchMessage = "一致するものがありません";
-
 /**
  * 挿せる部品のパレット（UI 案 docs/Design Composer.html の `Assets` パネル）。
  *
- * 絞り込みを担うのはここだけ。プリミティブと部品のどちらも同じ語で絞るので、
- * それぞれのリストに検索語を配ると同じ判定が 2 箇所に出る（rules/coding.md）。
+ * このパネルの中で絞り込みを担うのはここだけ。プリミティブと部品のどちらも同じ語で絞る
+ * ので、それぞれのリストに検索語を配ると同じ判定が 2 箇所に出る（rules/coding.md）。
  * リストには絞り込み済みの並びだけを渡す。
  *
- * 検索語は 1 つの独立した値で、1 回の入力が他の状態を動かさないので `useState`
- * （rules/hooks.md「useState / useReducer の使い分け」）。
+ * 検索欄そのものは見出しの直下に留まる器（`LeftPanePanel`）が持ち、ここへは打たれた語だ
+ * けが届く（docs/06-ui.md「絞り込み」）。
  */
 export function AssetsPanel({
+  query,
   assets,
   sourceName,
   grab,
 }: Readonly<{
+  /** 検索欄に打たれた語。空なら絞っていない */
+  query: string;
   assets: readonly ComponentAsset[];
   sourceName: Option<string>;
   grab: AssetGrab;
 }>) {
-  const [query, setQuery] = useState("");
-
   const matchedTypes = Object.values(PrimitiveTypes).filter((type) =>
     StringEx.includesIgnoreCase(type, query),
   );
@@ -52,14 +41,6 @@ export function AssetsPanel({
 
   return (
     <>
-      <input
-        type="search"
-        aria-label={SearchPlaceholder}
-        placeholder={SearchPlaceholder}
-        value={query}
-        onChange={(event) => setQuery(event.target.value)}
-        className="rounded border border-gray-300 px-2 py-1 text-sm placeholder:text-gray-400"
-      />
       {/*
        * どちらにも残らなかったときは、節ごと知らせに置き換える。空の `Primitives` と
        * `Components 0` を残したうえで知らせも出すと、同じ「無い」を 3 箇所で言うことに

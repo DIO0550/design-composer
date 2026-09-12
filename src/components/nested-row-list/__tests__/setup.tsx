@@ -1,6 +1,6 @@
 import { render, within } from "@testing-library/react";
 import { vi } from "vitest";
-import { type NestedRow, NestedRowList } from "../index";
+import { type NestedRow, NestedRowList, NestedRowListings } from "../index";
 
 /**
  * 器に渡す 1 行。中身には名前を出すボタンだけを置く
@@ -68,6 +68,7 @@ export function renderRowList(): RenderedRowList {
   const onReorder = vi.fn();
   const { container } = render(
     <NestedRowList
+      listing={NestedRowListings.Full}
       rows={sampleRows(onSelect)}
       parentName="root"
       onReorder={onReorder}

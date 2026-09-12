@@ -63,6 +63,7 @@ function renderTreeWithReorder(renaming: Option<string>): {
   const onReorder = vi.fn();
   const { container } = render(
     <DocumentTree
+      filter={Option.none}
       selection={setupSelection()}
       renaming={renaming}
       onSelect={vi.fn()}

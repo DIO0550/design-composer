@@ -241,6 +241,32 @@ export const Artboard = {
    * - 表示は `visible` **固定**。artboard を隠すとは枠の見出しとリサイズハンドルごと隠す
    *   ことで、それを出すかどうかがまだ決まっていない（docs/03「表示 / 非表示」）
    */
+  /**
+   * 自分と配下のノードの名前（単一名前空間に属するぶん）。
+   *
+   * @param artboard 名前を集める artboard
+   * @returns artboard 自身の名前を先頭に、配下のノードの名前が続く並び
+   */
+  collectNames(artboard: Artboard): readonly string[] {
+    return [artboard.name, ...artboard.children.flatMap(Node.collectNames)];
+  },
+
+  /**
+   * 自分か配下のノードの名前が条件に合うか（docs/06-ui.md「絞り込み」）。
+   *
+   * 条件を述語で受け取る理由は `Node.hasMatchingName` と同じ。
+   *
+   * @param artboard 走査の起点になる artboard
+   * @param matches 名前を判定する条件
+   * @returns 自分か配下に 1 つでも合う名前があれば true
+   */
+  hasMatchingName(
+    artboard: Artboard,
+    matches: (name: string) => boolean,
+  ): boolean {
+    return Artboard.collectNames(artboard).some(matches);
+  },
+
   boxProps(artboard: Artboard): ArtboardBoxProps {
     return {
       ...ResolvedProps.resolve("Box", {

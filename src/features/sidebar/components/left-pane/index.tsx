@@ -7,8 +7,7 @@ import {
   AssetsPanel,
   CreateComponent,
 } from "@/features/assets";
-import { ArtboardList } from "@/features/sidebar/components/artboard-list";
-import { DocumentTree } from "@/features/sidebar/components/document-tree";
+import { LayersPanel } from "@/features/sidebar/components/layers-panel";
 import { LeftPanePanel } from "@/features/sidebar/components/left-pane-panel";
 import {
   LeftPaneRail,
@@ -33,6 +32,7 @@ import { Option } from "@/utils/Option";
  */
 function LeftPaneContent({
   view,
+  query,
   selection,
   renaming,
   tokenSelection,
@@ -43,6 +43,8 @@ function LeftPaneContent({
   grab,
 }: Readonly<{
   view: LeftPaneView;
+  /** 検索欄に打たれた語。欄を持たない行き先では空 */
+  query: string;
   selection: DocumentSelection;
   renaming: Option<string>;
   tokenSelection: TokenSelection;
@@ -55,32 +57,25 @@ function LeftPaneContent({
   switch (view) {
     case LeftPaneViews.Layers:
       return (
-        <>
-          {/*
-            UI 案（docs/Design Composer.html）の `Layers` パネルは、artboard の一覧を
-            上段に、選んだ 1 枚の中身を下段に置く。プリミティブを挿す入口はキャンバスに
-            浮かぶツールバーが持ち、部品はパレットの行を掴んで落とすので、
-            どちらもここには並べない。
-          */}
-          <ArtboardList
-            selection={selection}
-            renaming={renaming}
-            onSelect={node.select}
-            artboardActions={artboard}
-            renameActions={rename}
-          />
-          <DocumentTree
-            selection={selection}
-            renaming={renaming}
-            onSelect={node.select}
-            onReorder={node.reorder}
-            renameActions={rename}
-          />
-        </>
+        /*
+          UI 案（docs/Design Composer.html）の `Layers` パネルは、見出しの直下に検索欄を
+          置き、その下に artboard の一覧と、選んだ 1 枚の中身を並べる。プリミティブを挿す
+          入口はキャンバスに浮かぶツールバーが持ち、部品はパレットの行を掴んで落とすので、
+          どちらもここには並べない。
+        */
+        <LayersPanel
+          query={query}
+          selection={selection}
+          renaming={renaming}
+          artboard={artboard}
+          node={node}
+          rename={rename}
+        />
       );
     case LeftPaneViews.Assets:
       return (
         <AssetsPanel
+          query={query}
           assets={DesignDocument.componentAssets(selection.document)}
           sourceName={DocumentSelection.sourceName(selection)}
           grab={grab}
@@ -94,6 +89,23 @@ function LeftPaneContent({
           onAddToken={token.add}
         />
       );
+  }
+}
+
+/**
+ * 行き先ごとの検索欄の案内文（UI 案 docs/Design Composer.html の綴り）。
+ *
+ * @param view 今の行き先
+ * @returns 中身を絞れる行き先なら案内文。絞れない行き先では不在
+ */
+function searchLabelOf(view: LeftPaneView): Option<string> {
+  switch (view) {
+    case LeftPaneViews.Layers:
+      return Option.some("Search layers");
+    case LeftPaneViews.Assets:
+      return Option.some("Search assets");
+    case LeftPaneViews.Tokens:
+      return Option.none;
   }
 }
 
@@ -170,26 +182,35 @@ export function LeftPane({
   return (
     <>
       <LeftPaneRail current={view} onSelect={onSelectView} />
+      {/*
+        行き先を `key` にして器ごと付け替える。検索語は非永続で、行き先を変えると空へ戻る
+        （docs/06-ui.md「絞り込み」）。
+      */}
       <LeftPanePanel
+        key={view}
         title={LeftPaneViewLabels[view]}
         /*
          * ファイルが不正な間は操作を受け付けない（器の `EditorLayout.LeftPane` が
          * `inert` にする）ので、見出しでその旨を名乗る。UI 案 Error 画面の `frozen`。
          */
         note={isFrozen ? Option.some("凍結中") : Option.none}
+        search={searchLabelOf(view)}
         footer={leftPaneFooter({ view, selection, isFrozen, node })}
       >
-        <LeftPaneContent
-          view={view}
-          selection={selection}
-          renaming={renaming}
-          tokenSelection={tokenSelection}
-          artboard={artboard}
-          node={node}
-          rename={rename}
-          token={token}
-          grab={grab}
-        />
+        {(query) => (
+          <LeftPaneContent
+            view={view}
+            query={query}
+            selection={selection}
+            renaming={renaming}
+            tokenSelection={tokenSelection}
+            artboard={artboard}
+            node={node}
+            rename={rename}
+            token={token}
+            grab={grab}
+          />
+        )}
       </LeftPanePanel>
     </>
   );

@@ -7,7 +7,7 @@ import { nameField } from "@/features/sidebar/__tests__/name-field";
 import { spyRenameActions } from "@/features/sidebar/__tests__/rename-actions";
 import type { LeftPaneRenameActions } from "@/features/sidebar/types/LeftPaneRenameActions";
 import { Option } from "@/utils/Option";
-import { ArtboardList } from "../index";
+import { ArtboardList, ArtboardListing } from "../index";
 
 /*
  * artboard の行でその場で名前を打ち替える（docs/06-ui.md「名前の変更」）。
@@ -33,9 +33,11 @@ function setupSelection(): DocumentSelection {
  */
 function renderList(renaming: Option<string>): LeftPaneRenameActions {
   const renameActions = spyRenameActions();
+  const selection = setupSelection();
   render(
     <ArtboardList
-      selection={setupSelection()}
+      listing={ArtboardListing.full(selection.document.artboards)}
+      selection={selection}
       renaming={renaming}
       onSelect={vi.fn()}
       artboardActions={{ add: vi.fn(), reorder: vi.fn() }}

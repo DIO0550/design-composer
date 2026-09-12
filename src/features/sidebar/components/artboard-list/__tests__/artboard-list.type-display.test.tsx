@@ -4,7 +4,7 @@ import { DesignDocument } from "@/domains/dcmp/design-document";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { spyRenameActions } from "@/features/sidebar/__tests__/rename-actions";
 import { Option } from "@/utils/Option";
-import { ArtboardList } from "../index";
+import { ArtboardList, ArtboardListing } from "../index";
 
 function setupSelection(): DocumentSelection {
   return DocumentSelection.fromNames(
@@ -16,9 +16,11 @@ function setupSelection(): DocumentSelection {
 }
 
 function renderList(): void {
+  const selection = setupSelection();
   render(
     <ArtboardList
-      selection={setupSelection()}
+      listing={ArtboardListing.full(selection.document.artboards)}
+      selection={selection}
       onSelect={vi.fn()}
       artboardActions={{ add: vi.fn(), reorder: vi.fn() }}
       renaming={Option.none}

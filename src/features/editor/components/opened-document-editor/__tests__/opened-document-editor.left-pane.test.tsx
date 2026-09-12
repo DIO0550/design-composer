@@ -10,6 +10,7 @@ import {
   renderOpenedDocument,
   selectArtboard,
   selectInTree,
+  tree,
 } from "./setup";
 
 /*
@@ -49,6 +50,37 @@ test("Assets から Layers に戻すとツリーが出る", async () => {
   await goTo(LeftPaneViews.Layers);
 
   expect(screen.getByRole("region", { name: "ツリー" })).toBeDefined();
+});
+
+/*
+ * 検索欄は器（`LeftPanePanel`）が持ち、語は中身へ渡って一覧とツリーを絞る
+ * （docs/06-ui.md「絞り込み」）。欄と絞り込みが別のモジュールに分かれたので、
+ * 打って絞られるまでが通るのはここだけ。
+ */
+test("Layers の検索欄に打つと、一致しないツリーの行が消える", async () => {
+  await renderOpenedDocument();
+
+  await userEvent.type(
+    screen.getByRole("searchbox", { name: "Search layers" }),
+    "home-title",
+  );
+
+  expect(rowNames(tree())).toEqual(["home-title"]);
+});
+
+test("Assets へ行って Layers に戻ると検索語が空に戻る", async () => {
+  await renderOpenedDocument();
+  await userEvent.type(
+    screen.getByRole("searchbox", { name: "Search layers" }),
+    "home-title",
+  );
+
+  await goTo(LeftPaneViews.Assets);
+  await goTo(LeftPaneViews.Layers);
+
+  expect(
+    screen.getByRole("searchbox", { name: "Search layers" }),
+  ).toHaveProperty("value", "");
 });
 
 test("Assets の行は押しても挿さらない", async () => {
