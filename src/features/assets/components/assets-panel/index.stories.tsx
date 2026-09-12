@@ -38,6 +38,7 @@ const meta = {
   component: AssetsPanel,
   parameters: { layout: "padded" },
   args: {
+    query: "",
     assets: DesignDocument.componentAssets(UsedComponentsDocument),
     sourceName: Option.none,
     grab: setupAssetGrab(),

@@ -229,6 +229,32 @@ export const Artboard = {
   },
 
   /**
+   * 自分と配下のノードの名前（単一名前空間に属するぶん）。
+   *
+   * @param artboard 名前を集める artboard
+   * @returns artboard 自身の名前を先頭に、配下のノードの名前が続く並び
+   */
+  collectNames(artboard: Artboard): readonly string[] {
+    return [artboard.name, ...artboard.children.flatMap(Node.collectNames)];
+  },
+
+  /**
+   * 自分か配下のノードの名前が条件に合うか（docs/06-ui.md「絞り込み」）。
+   *
+   * 条件を述語で受け取る理由は `Node.hasMatchingName` と同じ。
+   *
+   * @param artboard 走査の起点になる artboard
+   * @param matches 名前を判定する条件
+   * @returns 自分か配下に 1 つでも合う名前があれば true
+   */
+  hasMatchingName(
+    artboard: Artboard,
+    matches: (name: string) => boolean,
+  ): boolean {
+    return Artboard.collectNames(artboard).some(matches);
+  },
+
+  /**
    * artboard の props を Box の props として解決する（docs/01「artboard は…ルートノード
    * (Box)を兼ねる」/ docs/03「Box スキーマを流用する」）。Box スキーマと違う点は 4 つで、
    * それぞれ効き方が異なる。

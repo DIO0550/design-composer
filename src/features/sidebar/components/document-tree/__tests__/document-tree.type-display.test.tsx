@@ -38,6 +38,7 @@ function setupSelection(): DocumentSelection {
 function renderTree(selection: DocumentSelection): void {
   render(
     <DocumentTree
+      filter={Option.none}
       selection={selection}
       onSelect={vi.fn()}
       onReorder={vi.fn()}

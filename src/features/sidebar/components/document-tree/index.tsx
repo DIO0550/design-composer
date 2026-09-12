@@ -1,10 +1,16 @@
 import type { ReactElement } from "react";
-import { type NestedRow, NestedRowList } from "@/components/nested-row-list";
+import {
+  type NestedRow,
+  NestedRowList,
+  type NestedRowMode,
+  NestedRowModes,
+} from "@/components/nested-row-list";
 import { TypeGlyph } from "@/components/type-glyph";
 import type { ChildPosition } from "@/domains/dcmp/child-position";
 import { Node, type PrimitiveNode } from "@/domains/dcmp/node";
 import type { TextSchema } from "@/domains/dcmp/primitive-schema";
 import { DocumentSelection } from "@/domains/session/document-selection";
+import { NameFilter } from "@/domains/session/name-filter";
 import { Selection, type SelectionKind } from "@/domains/session/selection";
 import { RowNameField } from "@/features/sidebar/components/row-name-field";
 import type { LeftPaneRenameActions } from "@/features/sidebar/types/LeftPaneRenameActions";
@@ -27,6 +33,17 @@ type NodeNote =
 type TreeRename = Readonly<{
   renaming: Option<string>;
   actions: LeftPaneRenameActions;
+}>;
+
+/**
+ * 行を作るのに要るもの一式。どの行でも同じ値なので 1 つにまとめて持ち回る。
+ */
+type RowContext = Readonly<{
+  selection: DocumentSelection;
+  /** 名前を絞る条件。絞っていなければ不在 */
+  filter: Option<NameFilter>;
+  onSelect: (name: string) => void;
+  rename: TreeRename;
 }>;
 
 /** 行が名前の左右に出すもの（左に型アイコン、右に補助情報）。 */
@@ -150,20 +167,41 @@ function SelectableName({
 }
 
 /**
+ * 絞り込みに残るノードだけを、ツリービューが並べる行にする。
+ *
+ * 残すのは**一致したノードとその祖先**（自分か子孫に一致があるもの）。一致だけを平らに
+ * 並べると字下げが深さを表さなくなるため（docs/06-ui.md「絞り込み」）。
+ *
+ * @param nodes 同じ親を持つノードの並び
+ * @param context 行を作るのに要るもの一式
+ * @returns 絞り込みに残ったノードの行。絞っていなければ全部
+ */
+function rowsFromNodes(
+  nodes: readonly Node[],
+  context: RowContext,
+): readonly NestedRow[] {
+  const filter = context.filter;
+  if (!filter.some) {
+    return nodes.map((node) => rowFromNode(node, context));
+  }
+  return nodes
+    .filter((node) =>
+      Node.hasMatchingName(node, (name) =>
+        NameFilter.isMatch(filter.value, name),
+      ),
+    )
+    .map((node) => rowFromNode(node, context));
+}
+
+/**
  * ノードを、ツリービューが並べる 1 行へ作り直す。子も同じ形で作り直す。
  *
  * @param node 行にしたいノード
- * @param selection 選択を読む対
- * @param onSelect 行が押されたときに名前を伝える先
- * @param rename 名前を編集中のものと、その受け口
- * @returns そのノードと、その子孫を映した行
+ * @param context 行を作るのに要るもの一式
+ * @returns そのノードと、絞り込みに残った子孫を映した行
  */
-function rowFromNode(
-  node: Node,
-  selection: DocumentSelection,
-  onSelect: (name: string) => void,
-  rename: TreeRename,
-): NestedRow {
+function rowFromNode(node: Node, context: RowContext): NestedRow {
+  const { selection, onSelect, rename } = context;
   const isSelected = DocumentSelection.isSelected(selection, node.name);
   const isRenaming = Option.contains(rename.renaming, node.name);
   const marks = nodeMarks(node);
@@ -191,10 +229,18 @@ function rowFromNode(
         onStartRenaming={rename.actions.startAt}
       />
     ),
-    children: Node.children(node).map((child) =>
-      rowFromNode(child, selection, onSelect, rename),
-    ),
+    children: rowsFromNodes(Node.children(node), context),
   };
+}
+
+/**
+ * 並びが何を映しているか。絞り込んでいる間は器が畳みを見ず、三角と掴む口も出さない。
+ *
+ * @param filter 名前を絞る条件
+ * @returns 絞っていれば `Filtered`、絞っていなければ `Full`
+ */
+function rowModeOf(filter: Option<NameFilter>): NestedRowMode {
+  return filter.some ? NestedRowModes.Filtered : NestedRowModes.Full;
 }
 
 /**
@@ -209,10 +255,14 @@ function rowFromNode(
  * どの枝を畳んでいるかは編集ではなく見え方なので、選択とドキュメントの対には持たず行を
  * 並べる器（`NestedRowList`）に閉じる。名前は使い回されるので、同じ名前でノードを作り直
  * すと畳んだ状態で現れる（三角で状態は読める）。
+ *
+ * 絞り込んでいる間に出すのは一致したノードとその祖先で、今見ている 1 枚の中に一致が無け
+ * れば行が 0 になる（節の見出しと artboard 名は残る / docs/06-ui.md「絞り込み」）。
  */
 export function DocumentTree({
   selection,
   renaming,
+  filter,
   onSelect,
   onReorder,
   renameActions,
@@ -220,6 +270,8 @@ export function DocumentTree({
   selection: DocumentSelection;
   /** 今その名前を編集しているもの。編集していなければ不在 */
   renaming: Option<string>;
+  /** 名前を絞る条件。絞っていなければ不在 */
+  filter: Option<NameFilter>;
   onSelect: (name: string) => void;
   onReorder: (from: ChildPosition, toIndex: number) => void;
   renameActions: LeftPaneRenameActions;
@@ -254,13 +306,14 @@ export function DocumentTree({
         </span>
       </div>
       <NestedRowList
-        rows={artboard.children.map((child) =>
-          rowFromNode(child, selection, onSelect, {
-            renaming,
-            actions: renameActions,
-          }),
-        )}
+        rows={rowsFromNodes(artboard.children, {
+          selection,
+          filter,
+          onSelect,
+          rename: { renaming, actions: renameActions },
+        })}
         parentName={artboard.name}
+        mode={rowModeOf(filter)}
         onReorder={onReorder}
       />
     </section>
