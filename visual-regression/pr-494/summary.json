@@ -1,5 +1,5 @@
 {
-  "reportVersion": "d02e1a058acfa1985b72637fa87838dacf4ab52c",
+  "reportVersion": "5c4d92b1c0b05340a1949e02dd7f4cdca31a5894",
   "maxDiffRatio": 0.002,
   "changed": 0,
   "new": 0,
@@ -234,12 +234,12 @@
       "title": "features/assets/CreateComponent",
       "name": "ファイルが不正な間に部品名を打っている",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
+      "reason": "within-threshold",
+      "diffPixels": 5,
       "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-assets-createcomponent--instance-selected",
@@ -260,12 +260,12 @@
       "title": "features/assets/CreateComponent",
       "name": "部品名を打っている",
       "status": "passed",
-      "reason": "within-threshold",
-      "diffPixels": 5,
+      "reason": "match",
+      "diffPixels": 0,
       "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": true
+      "hasDiff": false
     },
     {
       "story": "features-assets-createcomponent--ready",
