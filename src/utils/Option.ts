@@ -55,6 +55,17 @@ export const Option = {
   },
 
   /**
+   * その値を持っているか。
+   *
+   * @param option 中身を見る `Option`
+   * @param value 持っていてほしい値
+   * @returns 値を持っていて、それが `value` と等しければ `true`。`none` なら `false`
+   */
+  contains<T>(option: Option<T>, value: T): boolean {
+    return option.some && option.value === value;
+  },
+
+  /**
    * Some の値を取り出す。None の場合は例外を投げる。
    * 分岐せず値を前提にしてよいのは、失敗をそのままテストの失敗にしたいテストコードだけ
    * （`Result.unwrap` と同じ位置づけ / rules/coding.md）。

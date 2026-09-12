@@ -1,7 +1,7 @@
 import { ComponentAsset } from "@/domains/dcmp/component";
 import { AssetRow } from "@/features/assets/components/asset-row";
 import type { AssetGrab } from "@/features/assets/types/AssetGrab";
-import type { Option } from "@/utils/Option";
+import { Option } from "@/utils/Option";
 
 /** 使われていない部品の右端に出す語（UI 案は `×0` ではなくこの語を出す）。 */
 const UnusedLabel = "unused";
@@ -76,8 +76,7 @@ export function ComponentList({
       </div>
       <ul>
         {assets.map((asset) => {
-          const isSourceOfSelection =
-            sourceName.some && sourceName.value === asset.name;
+          const isSourceOfSelection = Option.contains(sourceName, asset.name);
 
           return (
             <AssetRow

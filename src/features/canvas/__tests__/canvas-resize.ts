@@ -4,7 +4,7 @@ import {
   type ResizeHandleAnchor,
 } from "@/features/canvas/domains/node-resize";
 import { ArrayEx } from "@/utils/ArrayEx";
-import type { Option } from "@/utils/Option";
+import { Option } from "@/utils/Option";
 
 /*
  * リサイズハンドルの箇所をテストから引く口。
@@ -22,7 +22,7 @@ import type { Option } from "@/utils/Option";
  * @returns その種類を掴めるなら `true`
  */
 function grips(anchor: ResizeHandleAnchor, kind: ResizeGrip["kind"]): boolean {
-  return anchor.grip.some && anchor.grip.value === kind;
+  return Option.contains(anchor.grip, kind);
 }
 
 /**
