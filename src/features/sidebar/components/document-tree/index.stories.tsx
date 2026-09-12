@@ -6,7 +6,9 @@ import {
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
 import { DocumentSelection } from "@/domains/session/document-selection";
+import { sampleRenameActions } from "@/features/sidebar/__stories__/sample-rename-actions";
 import { sampleSidebarSelection } from "@/features/sidebar/__stories__/sample-sidebar-document";
+import { Option } from "@/utils/Option";
 import { DocumentTree } from "./index";
 
 const meta = {
@@ -22,7 +24,12 @@ const meta = {
       </LeftPaneShell>
     ),
   ],
-  args: { onSelect: fn(), onReorder: fn() },
+  args: {
+    onSelect: fn(),
+    onReorder: fn(),
+    renaming: Option.none,
+    renameActions: sampleRenameActions(),
+  },
 } satisfies Meta<typeof DocumentTree>;
 
 export default meta;
@@ -94,4 +101,16 @@ const NestedSelection = DocumentSelection.fromNames(
 export const Nested: Story = {
   name: "入れ子のノードと並べ替え",
   args: { selection: NestedSelection },
+};
+
+/**
+ * 行の名前を編集中の状態（docs/06-ui.md「名前の変更」）。入力欄の見た目は UI 案が描いて
+ * いないので、行の高さと名前の左端が編集前と変わらないことを視覚差分で見るために置く。
+ */
+export const Renaming: Story = {
+  name: "行の名前を編集中",
+  args: {
+    selection: sampleSidebarSelection("home-title"),
+    renaming: Option.some("home-title"),
+  },
 };

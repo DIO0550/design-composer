@@ -4,6 +4,7 @@ import { TokenSelection } from "@/domains/session/token-selection";
 // 掴む口のサンプルは掴まれる側（features/assets）が持つ。ストーリー専用の値なので
 // features/assets/index.ts（本番の公開 API）には出さず、ストーリー用の公開口から読む。
 import { grabbingComponent, IdleGrab } from "@/features/assets/__stories__";
+import { sampleRenameActions } from "@/features/sidebar/__stories__/sample-rename-actions";
 import {
   SampleSidebarDocument,
   sampleSidebarSelection,
@@ -44,8 +45,10 @@ const meta = {
     selection: sampleSidebarSelection(),
     tokenSelection: TokenSelection.create(SampleSidebarDocument, Option.none),
     isFrozen: false,
+    renaming: Option.none,
     artboard: SampleArtboardActions,
     node: SampleNodeActions,
+    rename: sampleRenameActions(),
     token: SampleTokenActions,
     grab: IdleGrab,
   },

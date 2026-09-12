@@ -73,3 +73,15 @@ test("or は値を持つほうをそのまま返す", () => {
 test("or は値を持たないとき代わりの Option を返す", () => {
   expect(Option.or(Option.none, Option.some(2))).toEqual(Option.some(2));
 });
+
+test("contains は同じ値を持っていれば true", () => {
+  expect(Option.contains(Option.some("a"), "a")).toBe(true);
+});
+
+test("contains は違う値を持っていれば false", () => {
+  expect(Option.contains(Option.some("a"), "b")).toBe(false);
+});
+
+test("contains は値を持たなければ false", () => {
+  expect(Option.contains(Option.none, "a")).toBe(false);
+});

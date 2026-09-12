@@ -29,10 +29,11 @@ function nodeOperations(state: EditorState): readonly EditOperation[] {
   return operationsIn(EditMenu.create(state, EditMenuTargets.Node));
 }
 
-test("ノードを選んでいるときはコピー・ペースト・前面へ・背面へ・インスタンスを解除・削除が並ぶ", () => {
+test("ノードを選んでいるときはコピー・ペースト・名前を変更・前面へ・背面へ・インスタンスを解除・削除が並ぶ", () => {
   expect(nodeOperations(stateSelecting("panel"))).toEqual([
     EditOperations.Copy,
     EditOperations.Paste,
+    EditOperations.Rename,
     EditOperations.BringForward,
     EditOperations.SendBackward,
     EditOperations.DetachInstance,
@@ -40,10 +41,22 @@ test("ノードを選んでいるときはコピー・ペースト・前面へ�
   ]);
 });
 
-test("並びは 4 つの組に分かれる", () => {
+test("並びは 5 つの組に分かれる", () => {
   expect(
     EditMenu.create(stateSelecting("panel"), EditMenuTargets.Node).groups,
-  ).toHaveLength(4);
+  ).toHaveLength(5);
+});
+
+test("1 つだけ選んでいるときは名前を変更が押せる", () => {
+  const menu = EditMenu.create(stateSelecting("panel"), EditMenuTargets.Node);
+
+  expect(isRowEnabled(menu, EditOperations.Rename)).toBe(true);
+});
+
+test("何も選んでいないときは名前を変更が押せない", () => {
+  const menu = EditMenu.create(setupState(), EditMenuTargets.Node);
+
+  expect(isRowEnabled(menu, EditOperations.Rename)).toBe(false);
 });
 
 test("いちばん背面にあるノードでは背面へが押せない", () => {
@@ -111,6 +124,7 @@ test("複数選択中はどの行も押せない", () => {
   );
 
   expect(menu.groups.flat().map((row) => row.isEnabled)).toEqual([
+    false,
     false,
     false,
     false,

@@ -6,6 +6,8 @@ import { Node, type PrimitiveNode } from "@/domains/dcmp/node";
 import type { TextSchema } from "@/domains/dcmp/primitive-schema";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { Selection, type SelectionKind } from "@/domains/session/selection";
+import { RowNameField } from "@/features/sidebar/components/row-name-field";
+import type { LeftPaneRenameActions } from "@/features/sidebar/types/LeftPaneRenameActions";
 import { Option } from "@/utils/Option";
 
 /** 文言を読む prop。Text のスキーマが宣言している名前に限る。 */
@@ -17,6 +19,15 @@ const ContentProp = "content" satisfies keyof typeof TextSchema.props;
 type NodeNote =
   | Readonly<{ kind: "content"; text: string }>
   | Readonly<{ kind: "instance" }>;
+
+/**
+ * 名前を編集中のものと、その受け口。どの行が入力欄になるかは対で決まるので 1 つにまとめる
+ * （片方だけでは、どの行を入力欄にするかも打った名前の行き先も決まらない）。
+ */
+type TreeRename = Readonly<{
+  renaming: Option<string>;
+  actions: LeftPaneRenameActions;
+}>;
 
 /** 行が名前の左右に出すもの（左に型アイコン、右に補助情報）。 */
 type NodeMarks = Readonly<{
@@ -110,11 +121,13 @@ function SelectableName({
   marks,
   isSelected,
   onSelect,
+  onStartRenaming,
 }: Readonly<{
   name: string;
   marks: NodeMarks;
   isSelected: boolean;
   onSelect: (name: string) => void;
+  onStartRenaming: (name: string) => void;
 }>) {
   return (
     <button
@@ -122,6 +135,7 @@ function SelectableName({
       aria-label={name}
       aria-current={isSelected}
       onClick={() => onSelect(name)}
+      onDoubleClick={() => onStartRenaming(name)}
       className="flex min-w-0 flex-1 items-center gap-1.5 pr-2 text-left"
     >
       {marks.glyph.some ? <TypeGlyph kind={marks.glyph.value} /> : null}
@@ -141,28 +155,44 @@ function SelectableName({
  * @param node 行にしたいノード
  * @param selection 選択を読む対
  * @param onSelect 行が押されたときに名前を伝える先
+ * @param rename 名前を編集中のものと、その受け口
  * @returns そのノードと、その子孫を映した行
  */
 function rowFromNode(
   node: Node,
   selection: DocumentSelection,
   onSelect: (name: string) => void,
+  rename: TreeRename,
 ): NestedRow {
   const isSelected = DocumentSelection.isSelected(selection, node.name);
+  const isRenaming = Option.contains(rename.renaming, node.name);
+  const marks = nodeMarks(node);
 
   return {
     name: node.name,
     isSelected,
-    content: (
+    content: isRenaming ? (
+      <RowNameField
+        name={node.name}
+        glyph={Option.unwrapOr<SelectionKind | undefined>(
+          marks.glyph,
+          undefined,
+        )}
+        onCommit={rename.actions.commit}
+        onFinish={rename.actions.finish}
+        onCancel={rename.actions.cancel}
+      />
+    ) : (
       <SelectableName
         name={node.name}
-        marks={nodeMarks(node)}
+        marks={marks}
         isSelected={isSelected}
         onSelect={onSelect}
+        onStartRenaming={rename.actions.startAt}
       />
     ),
     children: Node.children(node).map((child) =>
-      rowFromNode(child, selection, onSelect),
+      rowFromNode(child, selection, onSelect, rename),
     ),
   };
 }
@@ -182,12 +212,17 @@ function rowFromNode(
  */
 export function DocumentTree({
   selection,
+  renaming,
   onSelect,
   onReorder,
+  renameActions,
 }: Readonly<{
   selection: DocumentSelection;
+  /** 今その名前を編集しているもの。編集していなければ不在 */
+  renaming: Option<string>;
   onSelect: (name: string) => void;
   onReorder: (from: ChildPosition, toIndex: number) => void;
+  renameActions: LeftPaneRenameActions;
 }>) {
   const current = DocumentSelection.currentArtboard(selection);
 
@@ -220,7 +255,10 @@ export function DocumentTree({
       </div>
       <NestedRowList
         rows={artboard.children.map((child) =>
-          rowFromNode(child, selection, onSelect),
+          rowFromNode(child, selection, onSelect, {
+            renaming,
+            actions: renameActions,
+          }),
         )}
         parentName={artboard.name}
         onReorder={onReorder}

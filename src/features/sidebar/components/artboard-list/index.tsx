@@ -2,9 +2,11 @@ import { DropLine } from "@/components/drop-line";
 import { TypeGlyph } from "@/components/type-glyph";
 import type { Artboard } from "@/domains/dcmp/artboard";
 import { DocumentSelection } from "@/domains/session/document-selection";
+import { RowNameField } from "@/features/sidebar/components/row-name-field";
 import type { LeftPaneArtboardActions } from "@/features/sidebar/types/LeftPaneArtboardActions";
+import type { LeftPaneRenameActions } from "@/features/sidebar/types/LeftPaneRenameActions";
 import { type RowProps, useReorderDrag } from "@/hooks/use-reorder-drag";
-import type { Option } from "@/utils/Option";
+import { Option } from "@/utils/Option";
 import { type DropSide, ReorderDrag } from "@/utils/ReorderDrag";
 
 /** artboard が 1 枚も無いときの知らせ。 */
@@ -27,19 +29,39 @@ function ArtboardRow({
   artboard,
   isCurrent,
   isHeld,
+  isRenaming,
   dropSide,
   rowProps,
   onSelect,
+  renameActions,
 }: Readonly<{
   artboard: Artboard;
   isCurrent: boolean;
   /** 今掴まれている行か。掴んでいる間は淡くする */
   isHeld: boolean;
+  /** この行が名前を編集中か */
+  isRenaming: boolean;
   /** 落ちる先ならどちら側に線を引くか。落ちる先でなければ不在 */
   dropSide: Option<DropSide>;
   rowProps: RowProps;
   onSelect: (name: string) => void;
+  renameActions: LeftPaneRenameActions;
 }>) {
+  if (isRenaming) {
+    return (
+      // 余白は行のボタンと揃える。変えると編集に入った瞬間に行の高さと名前の左端が動く
+      <li className="relative flex items-center px-2 py-1">
+        <RowNameField
+          name={artboard.name}
+          glyph="artboard"
+          onCommit={renameActions.commit}
+          onFinish={renameActions.finish}
+          onCancel={renameActions.cancel}
+        />
+      </li>
+    );
+  }
+
   return (
     <li
       // 落ちる先の線を行の縁へ重ねるので、行を位置の基準にする
@@ -51,6 +73,7 @@ function ArtboardRow({
         aria-label={artboard.name}
         aria-current={isCurrent}
         onClick={() => onSelect(artboard.name)}
+        onDoubleClick={() => renameActions.startAt(artboard.name)}
         className={`flex min-w-0 flex-1 items-center gap-1.5 rounded px-2 py-1 text-left ${
           // 押せる範囲を示す hover と、今の 1 枚を示す色を重ねない
           isCurrent ? "bg-blue-100 text-blue-900" : "hover:bg-gray-100"
@@ -83,12 +106,17 @@ function ArtboardRow({
  */
 export function ArtboardList({
   selection,
+  renaming,
   onSelect,
   artboardActions,
+  renameActions,
 }: Readonly<{
   selection: DocumentSelection;
+  /** 今その名前を編集しているもの。編集していなければ不在 */
+  renaming: Option<string>;
   onSelect: (name: string) => void;
   artboardActions: LeftPaneArtboardActions;
+  renameActions: LeftPaneRenameActions;
 }>) {
   const artboards = selection.document.artboards;
   const { drag, rowProps, groupProps } = useReorderDrag(
@@ -123,9 +151,11 @@ export function ArtboardList({
                 artboard.name,
               )}
               isHeld={ReorderDrag.isHeld(drag, index)}
+              isRenaming={Option.contains(renaming, artboard.name)}
               dropSide={ReorderDrag.dropSideAt(drag, index)}
               rowProps={rowProps(index)}
               onSelect={onSelect}
+              renameActions={renameActions}
             />
           ))}
         </ul>

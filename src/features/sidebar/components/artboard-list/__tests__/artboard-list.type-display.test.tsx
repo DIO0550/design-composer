@@ -2,6 +2,8 @@ import { render, screen } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { DocumentSelection } from "@/domains/session/document-selection";
+import { spyRenameActions } from "@/features/sidebar/__tests__/rename-actions";
+import { Option } from "@/utils/Option";
 import { ArtboardList } from "../index";
 
 function setupSelection(): DocumentSelection {
@@ -19,6 +21,8 @@ function renderList(): void {
       selection={setupSelection()}
       onSelect={vi.fn()}
       artboardActions={{ add: vi.fn(), reorder: vi.fn() }}
+      renaming={Option.none}
+      renameActions={spyRenameActions()}
     />,
   );
 }

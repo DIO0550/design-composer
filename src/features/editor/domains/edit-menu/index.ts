@@ -35,6 +35,7 @@ export const EditMenuTarget = {
 export const EditOperations = {
   Copy: "copy",
   Paste: "paste",
+  Rename: "rename",
   BringForward: "bring-forward",
   SendBackward: "send-backward",
   DetachInstance: "detach-instance",
@@ -61,17 +62,18 @@ export type EditMenu = Readonly<{
 /**
  * 対象ごとに並ぶ操作と、その組の分かれ目（docs/06-ui.md「コンテキストメニュー」の表）。
  *
- * docs が挙げる並びのうち、実装が無い操作（複製・名前を変更・グループ化・解除）と部品化は
- * 並べない。状態に依らず永久に押せない行は入口として働かないため。
+ * docs が挙げる並びのうち、実装が無い操作（複製・グループ化・解除）と部品化は並べない。
+ * 状態に依らず永久に押せない行は入口として働かないため。
  */
 const OperationGroups = {
   node: [
     [EditOperations.Copy, EditOperations.Paste],
+    [EditOperations.Rename],
     [EditOperations.BringForward, EditOperations.SendBackward],
     [EditOperations.DetachInstance],
     [EditOperations.Delete],
   ],
-  artboard: [[EditOperations.Delete]],
+  artboard: [[EditOperations.Rename], [EditOperations.Delete]],
   "empty-area": [
     [EditOperations.Paste],
     [EditOperations.Undo, EditOperations.Redo],
@@ -94,6 +96,8 @@ function isEnabled(state: EditorState, operation: EditOperation): boolean {
       return EditorState.copyNode(state).some;
     case "paste":
       return EditorState.pasteNode(state).some;
+    case "rename":
+      return EditorState.startRenaming(state).some;
     case "bring-forward":
       return EditorState.reorderSelectedNode(state, ReorderSteps.TowardFront)
         .some;

@@ -4,6 +4,8 @@ import { expect, test, vi } from "vitest";
 import { rowNames } from "@/components/__tests__/row-names";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { DocumentSelection } from "@/domains/session/document-selection";
+import { spyRenameActions } from "@/features/sidebar/__tests__/rename-actions";
+import { Option } from "@/utils/Option";
 import { DocumentTree } from "../index";
 
 /**
@@ -51,6 +53,8 @@ function renderTree(selection: DocumentSelection): {
       selection={selection}
       onSelect={onSelect}
       onReorder={vi.fn()}
+      renaming={Option.none}
+      renameActions={spyRenameActions()}
     />,
   );
   return { tree: container, onSelect };

@@ -18,6 +18,7 @@ import {
 } from "@/features/sidebar/components/left-pane-rail";
 import type { LeftPaneArtboardActions } from "@/features/sidebar/types/LeftPaneArtboardActions";
 import type { LeftPaneNodeActions } from "@/features/sidebar/types/LeftPaneNodeActions";
+import type { LeftPaneRenameActions } from "@/features/sidebar/types/LeftPaneRenameActions";
 import type { LeftPaneTokenActions } from "@/features/sidebar/types/LeftPaneTokenActions";
 import { TokenList } from "@/features/tokens";
 import { Option } from "@/utils/Option";
@@ -33,17 +34,21 @@ import { Option } from "@/utils/Option";
 function LeftPaneContent({
   view,
   selection,
+  renaming,
   tokenSelection,
   artboard,
   node,
+  rename,
   token,
   grab,
 }: Readonly<{
   view: LeftPaneView;
   selection: DocumentSelection;
+  renaming: Option<string>;
   tokenSelection: TokenSelection;
   artboard: LeftPaneArtboardActions;
   node: LeftPaneNodeActions;
+  rename: LeftPaneRenameActions;
   token: LeftPaneTokenActions;
   grab: AssetGrab;
 }>): ReactElement {
@@ -59,13 +64,17 @@ function LeftPaneContent({
           */}
           <ArtboardList
             selection={selection}
+            renaming={renaming}
             onSelect={node.select}
             artboardActions={artboard}
+            renameActions={rename}
           />
           <DocumentTree
             selection={selection}
+            renaming={renaming}
             onSelect={node.select}
             onReorder={node.reorder}
+            renameActions={rename}
           />
         </>
       );
@@ -136,20 +145,25 @@ export function LeftPane({
   view,
   onSelectView,
   selection,
+  renaming,
   tokenSelection,
   isFrozen,
   artboard,
   node,
+  rename,
   token,
   grab,
 }: Readonly<{
   view: LeftPaneView;
   onSelectView: (view: LeftPaneView) => void;
   selection: DocumentSelection;
+  /** 今その名前を編集しているもの。編集していなければ不在 */
+  renaming: Option<string>;
   tokenSelection: TokenSelection;
   isFrozen: boolean;
   artboard: LeftPaneArtboardActions;
   node: LeftPaneNodeActions;
+  rename: LeftPaneRenameActions;
   token: LeftPaneTokenActions;
   grab: AssetGrab;
 }>) {
@@ -168,9 +182,11 @@ export function LeftPane({
         <LeftPaneContent
           view={view}
           selection={selection}
+          renaming={renaming}
           tokenSelection={tokenSelection}
           artboard={artboard}
           node={node}
+          rename={rename}
           token={token}
           grab={grab}
         />

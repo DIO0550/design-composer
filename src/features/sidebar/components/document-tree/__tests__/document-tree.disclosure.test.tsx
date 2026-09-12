@@ -3,6 +3,8 @@ import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { DocumentSelection } from "@/domains/session/document-selection";
+import { spyRenameActions } from "@/features/sidebar/__tests__/rename-actions";
+import { Option } from "@/utils/Option";
 import { DocumentTree } from "../index";
 
 /**
@@ -41,6 +43,8 @@ function renderTree(): ReturnType<typeof vi.fn> {
       selection={setupSelection()}
       onSelect={onSelect}
       onReorder={vi.fn()}
+      renaming={Option.none}
+      renameActions={spyRenameActions()}
     />,
   );
   return onSelect;

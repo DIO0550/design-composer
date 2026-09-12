@@ -25,7 +25,7 @@ export function SegmentedControl({
       className="flex w-full min-w-0 flex-wrap gap-0.5 rounded-md bg-gray-100 p-0.5"
     >
       {options.map((option) => {
-        const isSelected = value.some && value.value === option;
+        const isSelected = Option.contains(value, option);
 
         return (
           <button
