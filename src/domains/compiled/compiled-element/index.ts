@@ -19,6 +19,7 @@ import {
 import type { ResolvedProps } from "@/domains/dcmp/resolved-props";
 import { Size } from "@/domains/dcmp/size";
 import { TypographyField, TypographyToken } from "@/domains/dcmp/token";
+import { Visibility } from "@/domains/dcmp/visibility";
 import { Html } from "@/utils/Html";
 import { Option } from "@/utils/Option";
 
@@ -192,7 +193,8 @@ export const BoxElement = {
 
   /**
    * Box の props を CSS の宣言へ写す (docs/03「HTML/CSS へのコンパイル規則」の表)。
-   * 各 prop の規則はそれぞれのドメイン (Layout / Padding / Size) が持ち、
+   * 各 prop の規則はそれぞれのドメイン (Layout / Placement / Padding / Size / Visibility)
+   * が持ち、
    * ここはその並び順 = 宣言の出力順を決める。
    *
    * @param props デフォルト解決済みの Box の props
@@ -257,6 +259,7 @@ export const BoxElement = {
       ...tokenDeclarations("shadow", props.shadow, tokens),
       ...overflowDeclarations(props.overflow),
       ...opacityDeclarations(props.opacity),
+      ...Visibility.declarations(Visibility.fromProps(props)),
     ];
   },
 
@@ -296,6 +299,7 @@ export const TextElement = {
       ...typographyDeclarations(props.typography, tokens),
       ...tokenDeclarations("color", props.color, tokens),
       CssDeclaration.create("text-align", String(props.align)),
+      ...Visibility.declarations(Visibility.fromProps(props)),
     ];
   },
 } as const;

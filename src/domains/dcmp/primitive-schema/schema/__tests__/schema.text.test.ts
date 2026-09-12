@@ -55,3 +55,13 @@ test("Text の align は left / center / right の enum でデフォルトが le
 test("Text を指定するとその仕様が得られる", () => {
   expect(PrimitiveSchema.forType("Text")).toBe(TextSchema);
 });
+
+test("Text の表示 / 非表示は visible / hidden の enum でデフォルトが visible", () => {
+  const definition = TextSchema.props.visibility;
+  expect(PropDefinition.isEnum(definition)).toBe(true);
+  expect(definition).toMatchObject({
+    domain: "enum",
+    values: ["visible", "hidden"],
+    default: "visible",
+  });
+});

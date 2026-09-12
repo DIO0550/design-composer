@@ -1,5 +1,6 @@
 import { Constraints } from "@/domains/dcmp/constraint";
 import { Layout, Layouts } from "@/domains/dcmp/layout";
+import { Visibilities, Visibility } from "@/domains/dcmp/visibility";
 import type { ValueOf } from "@/types/ValueOf";
 import {
   type EnabledWhen,
@@ -82,6 +83,26 @@ const PlacementProps = {
     default: Constraints.Min,
     group: "layout",
     enabledWhen: { kind: "equals", prop: "placement", equals: "absolute" },
+  },
+} as const satisfies PropDefinitionRecord;
+
+/**
+ * ノードを描くかどうかの props（docs/03「表示 / 非表示」）。
+ * Box と Text のどちらも描かれる対象なので、同じ 1 prop を両方が持つ。
+ *
+ * `group` を `appearance` にするのは、この節が「どう描かれるか」を集めた場所で、0 にすると
+ * 見えなくなる `opacity` も同じ節にあるため。節を 1 つ増やすと、UI 案
+ * （docs/Design Composer.html）に無い見出しがパネルへ出る。
+ *
+ * spread する位置を各スキーマの末尾にするのは、パネルの節の並びが `group` の初出順で決まる
+ * ため（先頭へ置くと Box / Text のどちらでも `appearance` が最初の節になる）。
+ */
+const VisibilityProps = {
+  visibility: {
+    domain: "enum",
+    values: Object.values(Visibilities),
+    default: Visibility.Default,
+    group: "appearance",
   },
 } as const satisfies PropDefinitionRecord;
 
@@ -194,6 +215,7 @@ export const BoxSchema = {
       default: 1,
       group: "appearance",
     },
+    ...VisibilityProps,
   },
 } as const satisfies PrimitiveSchema;
 
@@ -226,6 +248,7 @@ export const TextSchema = {
       default: "left",
       group: "appearance",
     },
+    ...VisibilityProps,
   },
 } as const satisfies PrimitiveSchema;
 

@@ -150,3 +150,11 @@ test("prependIfAbsent は既に含まれている値の位置を動かさない"
     "c",
   ]);
 });
+
+test("findEqual は並びの中の等しい要素を返す", () => {
+  expect(ArrayEx.findEqual(["a", "b", "c"], "b")).toEqual(Option.some("b"));
+});
+
+test("findEqual は等しい要素が無ければ none を返す", () => {
+  expect(ArrayEx.findEqual(["a", "b", "c"], "z")).toEqual(Option.none);
+});

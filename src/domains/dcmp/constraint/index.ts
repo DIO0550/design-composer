@@ -2,7 +2,8 @@ import type { AxisResize } from "@/domains/dcmp/axis-length";
 import type { Props } from "@/domains/dcmp/node";
 import type { Axis } from "@/domains/unit/axis";
 import type { ValueOf } from "@/types/ValueOf";
-import { Option } from "@/utils/Option";
+import { ArrayEx } from "@/utils/ArrayEx";
+import type { Option } from "@/utils/Option";
 
 /**
  * 絶対配置の子が、親の長さの変化にどう追従するか(docs/03「配置の指定」の追従の表)。
@@ -44,11 +45,10 @@ export const Constraint = {
    *   (不正な値そのものは `DesignDocument.collectErrors` がエラー一覧に出す)
    */
   fromProps(props: Props, axis: Axis): Option<Constraint> {
-    const value = props[ConstraintProps[axis]];
-    const known = Object.values(Constraints).find(
-      (constraint): boolean => constraint === value,
+    return ArrayEx.findEqual(
+      Object.values(Constraints),
+      props[ConstraintProps[axis]],
     );
-    return Option.fromNullable(known);
   },
 
   /**

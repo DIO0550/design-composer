@@ -139,3 +139,13 @@ test("Box の opacity は 0〜1 の生リテラルでデフォルトが 1", () =
 test("Box を指定するとその仕様が得られる", () => {
   expect(PrimitiveSchema.forType("Box")).toBe(BoxSchema);
 });
+
+test("Box の表示 / 非表示は visible / hidden の enum でデフォルトが visible", () => {
+  const definition = BoxSchema.props.visibility;
+  expect(PropDefinition.isEnum(definition)).toBe(true);
+  expect(definition).toMatchObject({
+    domain: "enum",
+    values: ["visible", "hidden"],
+    default: "visible",
+  });
+});

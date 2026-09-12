@@ -94,3 +94,16 @@ test("指定のない props は Box スキーマのデフォルトで補われ�
     justify: "start",
   });
 });
+
+test("props で非表示を指定しても artboard は表示のまま", () => {
+  const props = Artboard.boxProps(
+    Artboard.create({
+      name: "login-screen",
+      width: 375,
+      height: 812,
+      props: { visibility: "hidden" },
+    }),
+  );
+
+  expect(props.visibility).toBe("visible");
+});
