@@ -118,6 +118,17 @@ export function drawn(name: string): HTMLElement {
   return renderedElement(canvasPane(), name);
 }
 
+/**
+ * 下端に積む器（エラー一覧・破線の帯・キャンバスのツールバーが並ぶところ）。
+ *
+ * 見出しも役割も持たない器なので `data-testid` で指す。中身の親から辿らないのは、常に
+ * 出ている子が 1 つも無いため（一覧は 0 件なら出ず、ツールバーはファイルが不正な間は出ず、
+ * 破線の帯は選んでいるトークン次第）。
+ */
+export function canvasDockStack(): HTMLElement {
+  return within(canvasPane()).getByTestId("canvas-dock-stack");
+}
+
 /** 倍率の操作が並ぶところ。 */
 export function zoomToolbar(): HTMLElement {
   return screen.getByRole("toolbar", { name: "表示倍率" });
