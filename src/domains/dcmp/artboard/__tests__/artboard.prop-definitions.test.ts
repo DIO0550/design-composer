@@ -5,6 +5,10 @@ test("artboard は Box の props をそのまま受け付ける", () => {
   expect(Object.keys(Artboard.propDefinitions())).toContain("background");
 });
 
+test("artboard も opacity を受け付ける", () => {
+  expect(Object.keys(Artboard.propDefinitions())).toContain("opacity");
+});
+
 test("サイズのモードは artboard の props では変えられないので受け付けない", () => {
   const names = Object.keys(Artboard.propDefinitions());
 

@@ -70,6 +70,91 @@ test("生リテラルの prop に literalType と異なる型の値を設定す�
   ]);
 });
 
+/** 取りうる範囲を宣言した生リテラルの prop 定義（Box の `opacity` と同じ形）。 */
+function definitionWithRange() {
+  return {
+    domain: "literal",
+    literalType: "number",
+    range: { min: 0, max: 1 },
+    group: "appearance",
+  } as const;
+}
+
+test("範囲を宣言した prop に下端そのものの値を設定するとエラーにならない", () => {
+  expect(
+    PropDefinition.collectErrors(
+      definitionWithRange(),
+      { name: "opacity", value: 0 },
+      TokenSet.empty(),
+    ),
+  ).toEqual([]);
+});
+
+test("範囲を宣言した prop に上端そのものの値を設定するとエラーにならない", () => {
+  expect(
+    PropDefinition.collectErrors(
+      definitionWithRange(),
+      { name: "opacity", value: 1 },
+      TokenSet.empty(),
+    ),
+  ).toEqual([]);
+});
+
+test("範囲を宣言した prop に上端を超える値を設定すると range-violation になる", () => {
+  expect(
+    PropDefinition.collectErrors(
+      definitionWithRange(),
+      { name: "opacity", value: 1.5 },
+      TokenSet.empty(),
+    ),
+  ).toEqual([
+    expect.objectContaining({ kind: "range-violation", prop: "opacity" }),
+  ]);
+});
+
+test("範囲を宣言した prop に下端を下回る値を設定すると range-violation になる", () => {
+  expect(
+    PropDefinition.collectErrors(
+      definitionWithRange(),
+      { name: "opacity", value: -0.5 },
+      TokenSet.empty(),
+    ),
+  ).toEqual([
+    expect.objectContaining({ kind: "range-violation", prop: "opacity" }),
+  ]);
+});
+
+test("範囲を宣言した prop に数値でない値を設定すると literal-type-mismatch になる", () => {
+  expect(
+    PropDefinition.collectErrors(
+      definitionWithRange(),
+      { name: "opacity", value: "0.5" },
+      TokenSet.empty(),
+    ),
+  ).toEqual([
+    expect.objectContaining({
+      kind: "literal-type-mismatch",
+      prop: "opacity",
+    }),
+  ]);
+});
+
+test("範囲を宣言していない prop は、範囲では弾かれない", () => {
+  const definition = {
+    domain: "literal",
+    literalType: "number",
+    group: "size",
+  } as const;
+
+  expect(
+    PropDefinition.collectErrors(
+      definition,
+      { name: "width", value: 100000 },
+      TokenSet.empty(),
+    ),
+  ).toEqual([]);
+});
+
 test("トークン参照の prop にトークンセットに存在する名前を設定するとエラーにならない", () => {
   const definition = {
     domain: "token",

@@ -291,6 +291,12 @@ test("セクション内のコントロールはスキーマの宣言順に並�
   ).toEqual(["typography", "color", "align"]);
 });
 
+test("Box の opacity は数値の欄として出る", () => {
+  const selection = setupSelection([{ name: "box", type: "Box" }], "box");
+
+  expect(controlOf(selection, "opacity")?.input.kind).toBe("number");
+});
+
 test("artboard を選ぶと Box の prop を編集するコントロールが出る", () => {
   const selection = setupSelection([], "home");
 

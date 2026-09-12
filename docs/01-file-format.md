@@ -80,7 +80,7 @@ design-composer のドキュメントは、単一の JSON ファイル（`.dcmp`
 | 版 | 加わったもの |
 |---|---|
 | 1.0 | 初期 |
-| 1.1 | ノードの `placement` / `x` / `y`（03-schema「配置の指定」。**親からの相対**）／ artboard の `x` / `y`（下記「artboards」。**キャンバス上の絶対位置**）／ ノードの `constraintX` / `constraintY`（03-schema「親のリサイズへの追従」）／ Box の `layout`（03-schema「Box」。`direction` を吸収して置き換えた） |
+| 1.1 | ノードの `placement` / `x` / `y`（03-schema「配置の指定」。**親からの相対**）／ artboard の `x` / `y`（下記「artboards」。**キャンバス上の絶対位置**）／ ノードの `constraintX` / `constraintY`（03-schema「親のリサイズへの追従」）／ Box の `layout`（03-schema「Box」。`direction` を吸収して置き換えた）／ Box の `opacity`（03-schema「Box」。0〜1 の生リテラル） |
 
 | 状況 | 挙動 |
 |---|---|

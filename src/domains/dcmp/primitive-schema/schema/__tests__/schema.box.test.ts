@@ -125,6 +125,17 @@ test("Box の overflow は visible / clip の enum でデフォルトが visible
   });
 });
 
+test("Box の opacity は 0〜1 の生リテラルでデフォルトが 1", () => {
+  const definition = BoxSchema.props.opacity;
+  expect(PropDefinition.isLiteral(definition)).toBe(true);
+  expect(definition).toMatchObject({
+    domain: "literal",
+    literalType: "number",
+    range: { min: 0, max: 1 },
+    default: 1,
+  });
+});
+
 test("Box を指定するとその仕様が得られる", () => {
   expect(PrimitiveSchema.forType("Box")).toBe(BoxSchema);
 });

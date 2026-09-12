@@ -7,6 +7,7 @@ import type { TokenKind, TokenRef } from "@/domains/dcmp/token";
 import { TokenSet } from "@/domains/dcmp/token";
 import type { Side } from "@/domains/unit/side";
 import type { ValueOf } from "@/types/ValueOf";
+import { Range } from "@/utils/Range";
 
 /**
  * その prop が編集可能になる条件。「別の prop が特定の値のときだけ意味を持つ」prop を表
@@ -64,12 +65,33 @@ export type TokenPropDefinition = PropDefinitionBase &
     tokenKind: TokenKind;
   }>;
 
-/** 生の値をそのまま持つ prop。受け付ける型を `literalType` が持つ。 */
-export type LiteralPropDefinition = PropDefinitionBase &
+/**
+ * 生の数値をそのまま持つ prop。取りうる値が範囲で決まっているものは `range` で宣言する
+ * （宣言しなければ範囲では弾かれない）。
+ */
+type NumberLiteralPropDefinition = PropDefinitionBase &
   Readonly<{
     domain: "literal";
-    literalType: "number" | "string";
+    literalType: "number";
+    range?: Range;
   }>;
+
+/** 生の文字列をそのまま持つ prop。 */
+type StringLiteralPropDefinition = PropDefinitionBase &
+  Readonly<{
+    domain: "literal";
+    literalType: "string";
+  }>;
+
+/**
+ * 生の値をそのまま持つ prop。受け付ける型を `literalType` が持つ。
+ *
+ * 数値と文字列で持てるフィールドが違うため直和で表す（文字列の prop に値域を宣言できる
+ * 状態を作らない）。
+ */
+export type LiteralPropDefinition =
+  | NumberLiteralPropDefinition
+  | StringLiteralPropDefinition;
 
 /**
  * prop 1つ分の定義。値の決め方ごとに持つフィールドが違うため直和で表す
@@ -88,6 +110,7 @@ export type PropValidationErrorKind =
   | "unknown-prop"
   | "enum-violation"
   | "literal-type-mismatch"
+  | "range-violation"
   | "dangling-token";
 
 /** 適合しない prop 1件分の報告。どの prop かは `prop` が持つ。 */
@@ -96,6 +119,75 @@ export type PropValidationError = Readonly<{
   prop: string;
   message: string;
 }>;
+
+/**
+ * 型が定義と食い違う生リテラルの報告。
+ *
+ * @param name 報告する prop 名
+ * @param literalType その prop が受け付ける型
+ * @returns 型の食い違い 1 件
+ */
+function literalTypeMismatch(
+  name: string,
+  literalType: LiteralPropDefinition["literalType"],
+): PropValidationError {
+  return {
+    kind: "literal-type-mismatch",
+    prop: name,
+    message: `prop "${name}" must be of type ${literalType}`,
+  };
+}
+
+/**
+ * 範囲を宣言した prop に、その外の値を設定しているときの報告。
+ *
+ * @param name 報告する prop 名
+ * @param value その prop に設定されている数値
+ * @param range その prop が取りうる範囲。宣言していない prop では `undefined`
+ * @returns 範囲から外れているときだけ 1 件。範囲を宣言していない prop では空
+ */
+function collectRangeErrors(
+  name: string,
+  value: number,
+  range: Range | undefined,
+): readonly PropValidationError[] {
+  if (range === undefined) {
+    return [];
+  }
+  if (Range.contains(range, value)) {
+    return [];
+  }
+  return [
+    {
+      kind: "range-violation",
+      prop: name,
+      message: `prop "${name}" must be between ${range.min} and ${range.max}`,
+    },
+  ];
+}
+
+/**
+ * 1 件の生リテラルの prop 設定が定義に適合しないときのエラーを集める。
+ *
+ * @param definition 照らす先の prop 定義
+ * @param assignment 照らす prop 設定
+ * @returns 型が違えば型の食い違い、宣言した範囲を外れていれば範囲違反。適合していれば空
+ */
+function collectLiteralErrors(
+  definition: LiteralPropDefinition,
+  assignment: PropAssignment,
+): readonly PropValidationError[] {
+  const { name, value } = assignment;
+  if (definition.literalType === "string") {
+    return typeof value === "string"
+      ? []
+      : [literalTypeMismatch(name, definition.literalType)];
+  }
+  if (typeof value !== "number") {
+    return [literalTypeMismatch(name, definition.literalType)];
+  }
+  return collectRangeErrors(name, value, definition.range);
+}
 
 export const PropDefinition = {
   /** 値を列挙から選ぶ prop か。 */
@@ -158,7 +250,7 @@ export const PropDefinition = {
    * 1 件の prop 設定がこの定義に適合しないときのエラーを集める。適合していれば空配列。
    *
    * 何を見るかは `domain` ごとに違う（enum は値が `values` に含まれるか、literal は型が
-   * 一致するか、token はその種別のトークンが存在するか）。
+   * 一致するかと宣言した範囲に収まっているか、token はその種別のトークンが存在するか）。
    */
   collectErrors(
     definition: PropDefinition,
@@ -181,16 +273,7 @@ export const PropDefinition = {
     }
 
     if (PropDefinition.isLiteral(definition)) {
-      if (typeof value === definition.literalType) {
-        return [];
-      }
-      return [
-        {
-          kind: "literal-type-mismatch",
-          prop: name,
-          message: `prop "${name}" must be of type ${definition.literalType}`,
-        },
-      ];
+      return collectLiteralErrors(definition, assignment);
     }
 
     if (
