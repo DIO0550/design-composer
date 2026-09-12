@@ -38,6 +38,14 @@ export type NodeActions = Readonly<{
   /** 同じ部品を指すインスタンスをまとめて選ぶ（`Select all N instances`）。 */
   selectAllInstances: () => void;
   createComponent: (componentName: string) => void;
+  /** 行のダブルクリックで、その行のものを選んで名前の編集に入る。 */
+  startRenamingAt: (name: string) => void;
+  /** 名前の入力欄で打たれた名前を確定する。使えない名前なら編集は閉じない。 */
+  rename: (newName: string) => void;
+  /** 入力欄がフォーカスを失ったときに編集を終える。使えない名前なら取り消して閉じる。 */
+  finishRenaming: (newName: string) => void;
+  /** 名前の編集をやめる。 */
+  cancelRenaming: () => void;
   isInsertEnabled: boolean;
 }>;
 
@@ -45,7 +53,7 @@ export type NodeActions = Readonly<{
  * ノード編集の操作をエディタの状態へ仲介する。
  *
  * 削除・コピー & ペースト・undo / redo と、向きだけを指定する並べ替え・移動量だけを指定す
- * る座標の移動はここに含めない（`useEditActions`）。
+ * る座標の移動、対象を渡さない名前の編集の開始はここに含めない（`useEditActions`）。
  *
  * そちらはキーボードの割り当てとコンテキストメニューが共有する操作で、対象を渡さず状態から
  * 決めるので、同じ操作でも別のアクションになる。
@@ -120,6 +128,15 @@ export function useNodeActions(): NodeActions {
      */
     createComponent: (componentName) =>
       dispatch({ type: "create_component", componentName }),
+    /*
+     * 行のダブルクリックは押された行を対象にするので、名前を渡す。対象を渡さない
+     * `startRenaming`（メニューと ⌘R）とは別のアクションになる。
+     */
+    startRenamingAt: (name) => dispatch({ type: "start_renaming_at", name }),
+    rename: (newName) => dispatch({ type: "rename_selected", name: newName }),
+    finishRenaming: (newName) =>
+      dispatch({ type: "finish_renaming", name: newName }),
+    cancelRenaming: () => dispatch({ type: "cancel_renaming" }),
     /**
      * 挿入は選択中のものを起点にするため、押せるかどうかも選択から決まる
      * （docs/06-ui.md「編集操作の一覧」）。

@@ -79,7 +79,12 @@ export type EditorAction =
   | Readonly<{ type: "add_token"; template: TokenTemplate }>
   | Readonly<{ type: "set_token_value"; value: TokenValue }>
   | Readonly<{ type: "rename_token"; name: string }>
-  | Readonly<{ type: "remove_token" }>;
+  | Readonly<{ type: "remove_token" }>
+  | Readonly<{ type: "start_renaming" }>
+  | Readonly<{ type: "start_renaming_at"; name: string }>
+  | Readonly<{ type: "cancel_renaming" }>
+  | Readonly<{ type: "rename_selected"; name: string }>
+  | Readonly<{ type: "finish_renaming"; name: string }>;
 
 /**
  * アクションの解釈だけを行い、状態の組み立ては EditorState に委ねる。
@@ -290,6 +295,33 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
     case "remove_token":
       // 選択が無ければ削除は存在しない（EditorState.removeToken の `none`）。
       return Option.unwrapOr(EditorState.removeToken(state), state);
+    case "start_renaming":
+      /*
+       * 1 つも選んでいない・複数選んでいる・ファイルが不正な間は編集が始まらない
+       * （EditorState.startRenaming の `none`）。⌘R は何も選んでいなくても押せるため、
+       * この `none` には画面の操作から到達する。
+       */
+      return Option.unwrapOr(EditorState.startRenaming(state), state);
+    case "start_renaming_at":
+      // 行が消えた直後に届いた名前では編集が始まらない（`none`）。
+      return Option.unwrapOr(
+        EditorState.startRenamingAt(state, action.name),
+        state,
+      );
+    case "cancel_renaming":
+      return EditorState.cancelRenaming(state);
+    case "rename_selected":
+      /*
+       * 規則を満たさない名前・単一名前空間で重複する名前では改名しない
+       * （EditorState.renameSelected の `none`）。名前の入力欄はどんな文字列も打てるため、
+       * この `none` には画面の操作から到達する。
+       */
+      return Option.unwrapOr(
+        EditorState.renameSelected(state, action.name),
+        state,
+      );
+    case "finish_renaming":
+      return EditorState.finishRenaming(state, action.name);
   }
 }
 

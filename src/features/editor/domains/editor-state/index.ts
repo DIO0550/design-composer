@@ -30,8 +30,8 @@ import { Option } from "@/utils/Option";
 
 /**
  * エディタ画面が保持する状態（docs/06-ui.md「画面構成」「選択」）。選択はドキュメントの
- * 中の名前でしか意味を持たないため同じ器に持ち、`copiedNode`（アプリ内クリップボード）
- * も同じく非永続なのでここに置く。
+ * 中の名前でしか意味を持たないため同じ器に持ち、`copiedNode`（アプリ内クリップボード）と
+ * `isRenaming`（名前を編集中か）も同じく非永続なのでここに置く。
  *
  * ドキュメント自身の不正は持たず `EditorState.documentErrors` で導出する。
  *
@@ -44,6 +44,13 @@ export type EditorState = Readonly<{
   selection: SelectionState;
   selectedToken: Option<TokenRef>;
   copiedNode: Option<Node>;
+  /**
+   * 選んでいるものの名前を編集中か（docs/06-ui.md「名前の変更」）。
+   *
+   * 対象そのものは持たない。持つと `selection` と食い違った対象を編集できてしまうので、
+   * 対象は `EditorState.renamingName` が選択から引く。
+   */
+  isRenaming: boolean;
   fileValidity: FileValidity;
 }>;
 
@@ -155,16 +162,20 @@ function selectedNode(state: EditorState): Option<Node> {
  * 集・undo・外部変更の取り込みで共通の扱いなので、「存在しないものが選択されている」状
  * 態をここ 1 箇所で潰す（複数選択も残った名前だけで作り直す / docs/06-ui.md「選択」）。
  *
+ * 名前の編集は、対象が残っているかに依らず閉じる。ドキュメントが変わった時点で打ちかけの
+ * 下書きは古い名前を元にしているため。
+ *
  * クリップボードは引き継ぐ。
  *
  * @param state 反映元のエディタの状態
  * @param history 新しい現在地を持つ履歴
- * @returns 履歴が差し替わり、消えた選択が外れたエディタの状態
+ * @returns 履歴が差し替わり、消えた選択が外れ、名前の編集が閉じたエディタの状態
  */
 function withHistory(state: EditorState, history: EditHistory): EditorState {
   return {
     ...state,
     history,
+    isRenaming: false,
     selection: SelectionState.create(
       SelectionState.names(state.selection).filter(
         (name) => selectableName(history.present, name).some,
@@ -219,7 +230,7 @@ function withEdit(
 export const EditorState = {
   /**
    * 選択なしの状態から始める（選択は非永続なので開いた直後は何も選ばれていない）。
-   * クリップボードも同じく実行時のみの状態なので空で始まる。
+   * クリップボードと名前の編集も同じく実行時のみの状態なので、空 / 編集していないで始まる。
    */
   create(document: DesignDocument): EditorState {
     return {
@@ -227,6 +238,7 @@ export const EditorState = {
       selection: SelectionState.None,
       selectedToken: Option.none,
       copiedNode: Option.none,
+      isRenaming: false,
       fileValidity: FileValidity.valid,
     };
   },
@@ -266,6 +278,94 @@ export const EditorState = {
    */
   singleName(state: EditorState): Option<string> {
     return DocumentSelection.singleName(EditorState.documentSelection(state));
+  },
+
+  /**
+   * 今その名前を編集している対象（docs/06-ui.md「名前の変更」）。
+   *
+   * 編集中かどうかだけを状態に持ち、対象は選択から引く。表示する側と書き換える側で対象
+   * の出どころが割れないようにするため。
+   *
+   * @param state 編集中かと選択の出どころになるエディタの状態
+   * @returns 名前を編集中なら、その対象の名前。編集していなければ `none`
+   */
+  renamingName(state: EditorState): Option<string> {
+    return state.isRenaming ? EditorState.singleName(state) : Option.none;
+  },
+
+  /**
+   * 選んでいるものの名前の編集を始める（docs/06-ui.md「名前の変更」）。
+   *
+   * @param state 選択の出どころになるエディタの状態
+   * @returns 編集を始めた状態。1 つも選んでいない・複数選んでいる・ファイルが不正な間は
+   *   `none`
+   */
+  startRenaming(state: EditorState): Option<EditorState> {
+    if (EditorState.isFileInvalid(state)) {
+      return Option.none;
+    }
+    return Option.map(EditorState.singleName(state), () => ({
+      ...state,
+      isRenaming: true,
+    }));
+  },
+
+  /**
+   * 名前で指したものを選んでから、その名前の編集を始める（ツリーと artboard 一覧の行の
+   * ダブルクリック）。
+   *
+   * @param state 選び直す元のエディタの状態
+   * @param name 編集を始めたい artboard / ノードの名前
+   * @returns それを選んで編集を始めた状態。選べない名前と、ファイルが不正な間は `none`
+   */
+  startRenamingAt(state: EditorState, name: string): Option<EditorState> {
+    return EditorState.startRenaming(EditorState.select(state, name));
+  },
+
+  /** 名前の編集をやめる。名前は変わらない。 */
+  cancelRenaming(state: EditorState): EditorState {
+    return { ...state, isRenaming: false };
+  },
+
+  /**
+   * 名前の編集を終える。使える名前なら確定し、使えなければ取り消す
+   * （docs/06-ui.md「名前の変更」のフォーカス外し）。
+   *
+   * @param state 編集中の対象を持つ状態
+   * @param newName 付けたい名前
+   * @returns 名前が変わった状態。使えない名前なら、名前は変わらず編集だけ閉じた状態
+   */
+  finishRenaming(state: EditorState, newName: string): EditorState {
+    return Option.unwrapOr(
+      EditorState.renameSelected(state, newName),
+      EditorState.cancelRenaming(state),
+    );
+  },
+
+  /**
+   * 編集中の名前を新しい名前にする（docs/06-ui.md「名前の変更」）。
+   *
+   * 選択は新しい名前へ移り、編集は閉じる。使えない名前（識別子の規則を満たさない・単一
+   * 名前空間で重複する）では `none` を返し、画面は前の名前のまま編集も閉じない。
+   *
+   * @param state 編集中の対象と、書き換える先のドキュメントを持つ状態
+   * @param newName 付けたい名前
+   * @returns 名前が変わり編集が閉じた状態。名前を編集していない・使えない名前・ファイル
+   *   が不正な間は `none`
+   */
+  renameSelected(state: EditorState, newName: string): Option<EditorState> {
+    return Option.flatMap(EditorState.renamingName(state), (from) => {
+      const renamed = DesignDocument.rename(EditorState.document(state), {
+        from,
+        to: newName,
+      });
+      if (!renamed.ok) {
+        return Option.none;
+      }
+      return Option.map(withEdit(state, renamed.value), (edited) =>
+        EditorState.select(edited, newName),
+      );
+    });
   },
 
   /**
