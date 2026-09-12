@@ -380,10 +380,17 @@ function EditorPanes({
             view={leftPaneView}
             onSelectView={setLeftPaneView}
             selection={documentSelection}
+            renaming={EditorState.renamingName(state)}
             tokenSelection={tokenSelection}
             isFrozen={isFrozen}
             artboard={artboard}
             node={node}
+            rename={{
+              startAt: node.startRenamingAt,
+              commit: node.rename,
+              finish: node.finishRenaming,
+              cancel: node.cancelRenaming,
+            }}
             token={token}
             grab={{
               dragged: nodeDrag.carriedTemplate,
