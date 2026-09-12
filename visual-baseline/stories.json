@@ -635,6 +635,11 @@
     "name": "artboard 配下のノードを選択中"
   },
   {
+    "id": "features-sidebar-artboardlist--renaming",
+    "title": "features/sidebar/ArtboardList",
+    "name": "行の名前を編集中"
+  },
+  {
     "id": "features-sidebar-artboardlist--selected",
     "title": "features/sidebar/ArtboardList",
     "name": "別の artboard を選択中"
@@ -658,6 +663,11 @@
     "id": "features-sidebar-documenttree--other-artboard",
     "title": "features/sidebar/DocumentTree",
     "name": "別の artboard を選択中"
+  },
+  {
+    "id": "features-sidebar-documenttree--renaming",
+    "title": "features/sidebar/DocumentTree",
+    "name": "行の名前を編集中"
   },
   {
     "id": "features-sidebar-leftpane--assets",
