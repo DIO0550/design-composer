@@ -7,7 +7,7 @@ import { DesignDocument } from "@/domains/dcmp/design-document";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { spyRenameActions } from "@/features/sidebar/__tests__/rename-actions";
 import { Option } from "@/utils/Option";
-import { ArtboardList, type ArtboardListing } from "../index";
+import { ArtboardList, ArtboardListing } from "../index";
 
 /**
  * 絞った並びを渡されたときの出方を見る（docs/06-ui.md「絞り込み」）。
@@ -44,21 +44,17 @@ function renderList(listing: ArtboardListing): {
 }
 
 test("渡された並びの行だけが出る", () => {
-  const { container } = renderList({
-    artboards: setupSelection().document.artboards.slice(0, 1),
-    emptyNotice: NoMatchMessage,
-    isReorderable: false,
-  });
+  const { container } = renderList(
+    ArtboardListing.filtered(setupSelection().document.artboards.slice(0, 1)),
+  );
 
   expect(rowNames(container)).toEqual(["login"]);
 });
 
 test("絞り込んでいる間は行を掴んでも並べ替わらない", () => {
-  const { container, reorder } = renderList({
-    artboards: setupSelection().document.artboards,
-    emptyNotice: NoMatchMessage,
-    isReorderable: false,
-  });
+  const { container, reorder } = renderList(
+    ArtboardListing.filtered(setupSelection().document.artboards),
+  );
 
   dragRowNamed(container, { from: "settings", to: "login" });
 
@@ -66,11 +62,7 @@ test("絞り込んでいる間は行を掴んでも並べ替わらない", () =>
 });
 
 test("1 つも無いときは渡された知らせが出る", () => {
-  const { container } = renderList({
-    artboards: [],
-    emptyNotice: NoMatchMessage,
-    isReorderable: false,
-  });
+  const { container } = renderList(ArtboardListing.filtered([]));
 
   expect(container.textContent).toContain(NoMatchMessage);
 });

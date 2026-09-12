@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
 import { LeftPaneShell } from "@/components/__stories__/left-pane-shell";
-import { NoMatchMessage } from "@/components/search-field";
 import type { DocumentSelection } from "@/domains/session/document-selection";
 import { sampleRenameActions } from "@/features/sidebar/__stories__/sample-rename-actions";
 import {
@@ -93,11 +92,9 @@ export const Filtered: Story = {
   name: "絞り込みで 1 枚だけ残っている",
   args: {
     selection: DefaultSelection,
-    listing: {
-      artboards: DefaultSelection.document.artboards.slice(0, 1),
-      emptyNotice: NoMatchMessage,
-      isReorderable: false,
-    },
+    listing: ArtboardListing.filtered(
+      DefaultSelection.document.artboards.slice(0, 1),
+    ),
   },
 };
 
@@ -106,11 +103,7 @@ export const NoMatch: Story = {
   name: "一致するものがない",
   args: {
     selection: DefaultSelection,
-    listing: {
-      artboards: [],
-      emptyNotice: NoMatchMessage,
-      isReorderable: false,
-    },
+    listing: ArtboardListing.filtered([]),
   },
 };
 

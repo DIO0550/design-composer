@@ -83,6 +83,14 @@ test("Assets へ行って Layers に戻ると検索語が空に戻る", async ()
   ).toHaveProperty("value", "");
 });
 
+test("Tokens に切り替えると検索欄は出なくなる", async () => {
+  await renderOpenedDocument();
+
+  await goTo(LeftPaneViews.Tokens);
+
+  expect(screen.queryByRole("searchbox")).toBeNull();
+});
+
 test("Assets の行は押しても挿さらない", async () => {
   await renderOpenedDocument();
   await selectArtboard("home");

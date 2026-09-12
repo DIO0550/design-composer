@@ -2,8 +2,8 @@ import type { ReactElement } from "react";
 import {
   type NestedRow,
   NestedRowList,
-  type NestedRowListing,
-  NestedRowListings,
+  type NestedRowMode,
+  NestedRowModes,
 } from "@/components/nested-row-list";
 import { TypeGlyph } from "@/components/type-glyph";
 import type { ChildPosition } from "@/domains/dcmp/child-position";
@@ -234,13 +234,13 @@ function rowFromNode(node: Node, context: RowContext): NestedRow {
 }
 
 /**
- * 並びが何を映しているか。絞り込んでいる間は器が畳みを見ず、並べ替えの口も配らない。
+ * 並びが何を映しているか。絞り込んでいる間は器が畳みを見ず、三角と掴む口も出さない。
  *
  * @param filter 名前を絞る条件
  * @returns 絞っていれば `Filtered`、絞っていなければ `Full`
  */
-function listingOf(filter: Option<NameFilter>): NestedRowListing {
-  return filter.some ? NestedRowListings.Filtered : NestedRowListings.Full;
+function rowModeOf(filter: Option<NameFilter>): NestedRowMode {
+  return filter.some ? NestedRowModes.Filtered : NestedRowModes.Full;
 }
 
 /**
@@ -313,7 +313,7 @@ export function DocumentTree({
           rename: { renaming, actions: renameActions },
         })}
         parentName={artboard.name}
-        listing={listingOf(filter)}
+        mode={rowModeOf(filter)}
         onReorder={onReorder}
       />
     </section>

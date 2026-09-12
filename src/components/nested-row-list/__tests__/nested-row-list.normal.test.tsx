@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
-import { NestedRowList, NestedRowListings } from "../index";
+import { NestedRowList, NestedRowModes } from "../index";
 import { contentTexts, renderRowList } from "./setup";
 
 test("行の中身は呼び出し側が渡したものがそのまま出る", () => {
@@ -54,7 +54,7 @@ test("行が1つも無いときは並びの枠が出ない", () => {
     <NestedRowList
       rows={[]}
       parentName="root"
-      listing={NestedRowListings.Full}
+      mode={NestedRowModes.Full}
       onReorder={vi.fn()}
     />,
   );

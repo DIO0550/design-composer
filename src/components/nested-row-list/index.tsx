@@ -2,7 +2,7 @@ import { type ReactElement, type ReactNode, useState } from "react";
 import { DropLine } from "@/components/drop-line";
 import { type RowProps, useReorderDrag } from "@/hooks/use-reorder-drag";
 import type { ValueOf } from "@/types/ValueOf";
-import type { Option } from "@/utils/Option";
+import { Option } from "@/utils/Option";
 import { type DropSide, ReorderDrag } from "@/utils/ReorderDrag";
 import { SetEx } from "@/utils/SetEx";
 
@@ -47,16 +47,16 @@ export type NestedRow = Readonly<{
  * 並びが何を映しているか。
  *
  * `Filtered` は「条件で絞った後の並び」で、器の振る舞いが 2 つ変わる — 畳みを見ないことと、
- * 並べ替えの口を配らないこと。1 つの事実から決まるので真偽値 2 つに割らない
+ * 掴む口を配らないこと。1 つの事実から決まるので真偽値 2 つに割らない
  * （rules/components.md「真偽値 props よりも状態を表す列挙を優先する」）。
  */
-export const NestedRowListings = {
+export const NestedRowModes = {
   Full: "full",
   Filtered: "filtered",
 } as const;
 
 /** 並びが何を映しているか。 */
-export type NestedRowListing = ValueOf<typeof NestedRowListings>;
+export type NestedRowMode = ValueOf<typeof NestedRowModes>;
 
 /**
  * 同じ親の中での位置。親の名前と index は片方だけでは位置が決まらないため 1 つの型にま
@@ -74,7 +74,7 @@ export type NestedRowPosition = Readonly<{
 type BranchControl = Readonly<{
   /** 畳んでいる枝の名前。畳んだ側を持つので、初めて描いたときは空になる。 */
   collapsedNames: ReadonlySet<string>;
-  listing: NestedRowListing;
+  mode: NestedRowMode;
   onReorder: (from: NestedRowPosition, toIndex: number) => void;
   onToggleBranch: (name: string) => void;
 }>;
@@ -133,8 +133,8 @@ function RowBranch({
 }: Readonly<{
   row: NestedRow;
   depth: number;
-  /** 掴む口と、ポインタが入ったことを伝える口。絞った並びでは配られないので空になる */
-  rowProps: Partial<RowProps>;
+  /** 掴む口と、ポインタが入ったことを伝える口。絞った並びでは配られないので不在 */
+  rowProps: Option<RowProps>;
   /** 今掴まれている行か。掴んでいる間は淡くする */
   isHeld: boolean;
   /** 落ちる先ならどちら側に線を引くか。落ちる先でなければ不在 */
@@ -145,12 +145,16 @@ function RowBranch({
   /*
    * 絞った並びでは畳みを見ない。畳んだ枝の中の一致が出ないと、絞り込みが
    * 「見えている範囲の絞り込み」になって探す操作として働かないため
-   * （docs/06-ui.md「絞り込み」）。畳んだ側の名前は書き換えないので、
-   * 絞り込みを解くと元の畳み方に戻る。
+   * （docs/06-ui.md「絞り込み」）。
    */
-  const isExpanded =
-    control.listing === NestedRowListings.Filtered ||
-    !control.collapsedNames.has(row.name);
+  const isFiltered = control.mode === NestedRowModes.Filtered;
+  const isExpanded = isFiltered || !control.collapsedNames.has(row.name);
+  /*
+   * 絞っている間は三角を出さない。出すと、押しても見た目が変わらないまま畳んだ側の名前
+   * だけが書き換わり、絞り込みを解いたときに元と違う畳み方で現れる（docs/06-ui.md
+   * 「絞り込み」は畳んだ状態そのものは書き換えないと定めている）。
+   */
+  const showsToggle = hasChildren && !isFiltered;
   /*
    * 子の並びを出す条件。子がいない行は畳めないので常に「開いている」側に倒れるが、
    * 出すものが無いので空の <ul> を作らないよう子の有無も見る。
@@ -168,16 +172,16 @@ function RowBranch({
           // 押せる範囲を示す hover と、選択の色を重ねない（選択中はホバーで灰にしない）
           row.isSelected ? "bg-blue-100 text-blue-900" : "hover:bg-gray-100"
         } ${isHeld ? "opacity-40" : ""}`}
-        {...rowProps}
+        {...(rowProps.some ? rowProps.value : {})}
       >
-        {hasChildren ? (
+        {showsToggle ? (
           <BranchToggle
             name={row.name}
             isExpanded={isExpanded}
             onToggle={() => control.onToggleBranch(row.name)}
           />
         ) : (
-          // 子を持たない行にも同じ幅を空け、中身の左端を兄弟と揃える
+          // 三角の出ない行にも同じ幅を空け、中身の左端を兄弟と揃える
           // （これを消しても落ちるテストは無く、視覚差分でしか気づけない）
           <span
             aria-hidden="true"
@@ -228,17 +232,22 @@ function RowList({
    * なので、絞った並びの index をそのまま送ると**別のノードが動く**（型は通り、
    * 絞り込み中に掴むケースが無ければテストも緑のまま壊れる）。
    * docs/06-ui.md「絞り込み」がドラッグを止めると定めているのもこのため。
+   *
+   * 止めるのは掴む口だけでよい。掴んでいなければ `groupProps` が受ける離しも並びの外へ
+   * 出たことも移動を起こさないので、器の側では止めない。
    */
-  const isReorderable = control.listing === NestedRowListings.Full;
+  const isReorderable = control.mode === NestedRowModes.Full;
 
   return (
-    <ul {...(isReorderable ? groupProps() : {})}>
+    <ul {...groupProps()}>
       {rows.map((row, index) => (
         <li key={row.name}>
           <RowBranch
             row={row}
             depth={depth}
-            rowProps={isReorderable ? rowProps(index) : {}}
+            rowProps={
+              isReorderable ? Option.some(rowProps(index)) : Option.none
+            }
             isHeld={ReorderDrag.isHeld(drag, index)}
             dropSide={ReorderDrag.dropSideAt(drag, index)}
             control={control}
@@ -258,21 +267,21 @@ function RowList({
  * け。
  *
  * 畳んだ**側**の名前を持つので、初めて描いたときは全部が開いた状態になり、後から増えた
- * 行が畳まれた状態で現れることもない。絞った並び（`listing`）では畳みを見ず、並べ替えの
- * 口も配らない。
+ * 行が畳まれた状態で現れることもない。絞った並び（`mode`）では畳みを見ず、三角と掴む口も
+ * 出さない。
  *
  * @returns 行の並び。行が 1 つも無ければ `null`（空の `<ul>` を作らない）
  */
 export function NestedRowList({
   rows,
   parentName,
-  listing,
+  mode,
   onReorder,
 }: Readonly<{
   rows: readonly NestedRow[];
   /** 最上段の行の親の名前。その行自体は描かず、並べ替えの位置にだけ出る。 */
   parentName: string;
-  listing: NestedRowListing;
+  mode: NestedRowMode;
   onReorder: (from: NestedRowPosition, toIndex: number) => void;
 }>): ReactElement | null {
   const [collapsedNames, setCollapsedNames] = useState<ReadonlySet<string>>(
@@ -285,7 +294,7 @@ export function NestedRowList({
 
   const control: BranchControl = {
     collapsedNames,
-    listing,
+    mode,
     onReorder,
     onToggleBranch: (name) =>
       setCollapsedNames((current) => SetEx.toggle(current, name)),

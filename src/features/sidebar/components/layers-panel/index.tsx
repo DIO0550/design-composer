@@ -1,11 +1,9 @@
-import { NoMatchMessage } from "@/components/search-field";
 import { Artboard } from "@/domains/dcmp/artboard";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { NameFilter } from "@/domains/session/name-filter";
 import {
   ArtboardList,
   ArtboardListing,
-  NoArtboardMessage,
 } from "@/features/sidebar/components/artboard-list";
 import { DocumentTree } from "@/features/sidebar/components/document-tree";
 import type { LeftPaneArtboardActions } from "@/features/sidebar/types/LeftPaneArtboardActions";
@@ -85,21 +83,18 @@ export function LayersPanel({
   const artboards = selection.document.artboards;
   const matched = matchedArtboards(artboards, filter);
   /*
-   * 絞り込んだ結果が 1 つも残らなかったか。artboard が 1 枚も無いのは絞り込みの結果では
-   * ないので、そのときは一覧が元から持つ知らせのままにする（docs/06-ui.md「絞り込み」）。
+   * artboard が 1 枚も無いときは、語が入っていても絞り込んでいない扱いにする。絞る対象
+   * そのものが無いので、出るのは「一致するものがありません」ではなく一覧が元から持つ
+   * 知らせのほう（docs/06-ui.md「絞り込み」）。
    */
-  const hasNoMatch =
-    filter.some && artboards.length > 0 && matched.length === 0;
+  const isFiltering = filter.some && artboards.length > 0;
+  const hasNoMatch = isFiltering && matched.length === 0;
 
-  const listing: ArtboardListing = filter.some
-    ? {
+  const listing = isFiltering
+    ? ArtboardListing.filtered(
         // 置き換えが勝つので、どこにも一致が無いときは今見ている 1 枚も残さない
-        artboards: hasNoMatch
-          ? []
-          : withCurrentArtboard(artboards, matched, selection),
-        emptyNotice: hasNoMatch ? NoMatchMessage : NoArtboardMessage,
-        isReorderable: false,
-      }
+        hasNoMatch ? [] : withCurrentArtboard(artboards, matched, selection),
+      )
     : ArtboardListing.full(artboards);
 
   return (

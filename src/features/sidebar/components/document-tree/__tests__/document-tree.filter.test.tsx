@@ -134,3 +134,16 @@ test("絞り込んでいる間は行を掴んでも並べ替わらない", () =>
 
   expect(onReorder).not.toHaveBeenCalled();
 });
+
+/*
+ * 三角を出したままにすると、押しても見た目が変わらないのに畳んだ側の名前だけが書き換わり、
+ * 絞り込みを解いたときに元と違う畳み方で現れる（docs/06-ui.md「絞り込み」は畳んだ状態
+ * そのものは書き換えないと定めている）。
+ */
+test("絞り込んでいる間は枝の開閉の三角が出ない", () => {
+  renderTree("email-label");
+
+  expect(
+    screen.queryByRole("button", { name: "login-form の開閉" }),
+  ).toBeNull();
+});

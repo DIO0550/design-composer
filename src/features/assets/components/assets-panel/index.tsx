@@ -1,11 +1,11 @@
 import { NoMatchMessage } from "@/components/search-field";
 import type { ComponentAsset } from "@/domains/dcmp/component";
 import { PrimitiveTypes } from "@/domains/dcmp/primitive-schema";
+import { NameFilter } from "@/domains/session/name-filter";
 import { ComponentList } from "@/features/assets/components/component-list";
 import { PrimitiveList } from "@/features/assets/components/primitive-list";
 import type { AssetGrab } from "@/features/assets/types/AssetGrab";
 import type { Option } from "@/utils/Option";
-import { StringEx } from "@/utils/StringEx";
 
 /**
  * 挿せる部品のパレット（UI 案 docs/Design Composer.html の `Assets` パネル）。
@@ -29,15 +29,14 @@ export function AssetsPanel({
   sourceName: Option<string>;
   grab: AssetGrab;
 }>) {
-  const matchedTypes = Object.values(PrimitiveTypes).filter((type) =>
-    StringEx.includesIgnoreCase(type, query),
-  );
-  const matchedAssets = assets.filter((asset) =>
-    StringEx.includesIgnoreCase(asset.name, query),
-  );
+  const filter = NameFilter.create(query);
+  const isMatch = (name: string) =>
+    !filter.some || NameFilter.isMatch(filter.value, name);
+  const matchedTypes = Object.values(PrimitiveTypes).filter(isMatch);
+  const matchedAssets = assets.filter((asset) => isMatch(asset.name));
   // 検索語が空のときの 0 件は「まだ何も無い」なので、絞り込みの結果とは分けて扱う
   const hasNoMatch =
-    query !== "" && matchedTypes.length === 0 && matchedAssets.length === 0;
+    filter.some && matchedTypes.length === 0 && matchedAssets.length === 0;
 
   return (
     <>

@@ -28,7 +28,7 @@ import { Option } from "@/utils/Option";
  * `ReactNode` は `undefined` を含むので、抜けても通ってしまい、足し忘れた行き先が黙って空
  * のパネルになる。
  *
- * @returns Layers ならツリー、Assets ならパレット、Tokens ならトークン一覧
+ * @returns Layers なら artboard の一覧とツリー、Assets ならパレット、Tokens ならトークン一覧
  */
 function LeftPaneContent({
   view,

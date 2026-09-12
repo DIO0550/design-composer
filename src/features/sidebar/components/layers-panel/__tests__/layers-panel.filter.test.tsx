@@ -1,5 +1,6 @@
 import { render, screen, within } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
+import { dragRowNamed } from "@/components/__tests__/row-drag";
 import { rowNames } from "@/components/__tests__/row-names";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { DocumentSelection } from "@/domains/session/document-selection";
@@ -38,13 +39,14 @@ function setupSelection(...names: readonly string[]): DocumentSelection {
 function renderPanel(
   query: string,
   selection: DocumentSelection = setupSelection(),
+  reorder: () => void = vi.fn(),
 ): void {
   render(
     <LayersPanel
       query={query}
       selection={selection}
       renaming={Option.none}
-      artboard={{ add: vi.fn(), reorder: vi.fn() }}
+      artboard={{ add: vi.fn(), reorder }}
       node={{
         select: vi.fn(),
         reorder: vi.fn(),
@@ -135,4 +137,17 @@ test("絞り込みで落ちた行が選ばれていても、選択は残る", ()
       .getByRole("button", { name: "login" })
       .getAttribute("aria-current"),
   ).toBe("true");
+});
+
+test("絞り込んでいる間は artboard の行を掴んでも並べ替わらない", () => {
+  const reorder = vi.fn();
+  // 2 枚とも残る語で絞る（行が 1 つだと掴む先が無く、止まっているのか確かめられない）
+  renderPanel("t", setupSelection(), reorder);
+
+  dragRowNamed(screen.getByRole("region", { name: "artboard 一覧" }), {
+    from: "settings",
+    to: "login",
+  });
+
+  expect(reorder).not.toHaveBeenCalled();
 });
