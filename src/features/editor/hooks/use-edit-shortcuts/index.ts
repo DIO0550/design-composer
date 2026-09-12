@@ -5,6 +5,7 @@ import { useEditActions } from "@/features/editor/hooks/use-edit-actions";
 import { useNodeActions } from "@/features/editor/hooks/use-node-actions";
 import { usePasteShortcut } from "@/features/editor/hooks/use-paste-shortcut";
 import { useRedoShortcut } from "@/features/editor/hooks/use-redo-shortcut";
+import { useRenameShortcut } from "@/features/editor/hooks/use-rename-shortcut";
 import { useReorderShortcut } from "@/features/editor/hooks/use-reorder-shortcut";
 import { useRepositionShortcut } from "@/features/editor/hooks/use-reposition-shortcut";
 import { useUndoShortcut } from "@/features/editor/hooks/use-undo-shortcut";
@@ -13,7 +14,7 @@ import { useUndoShortcut } from "@/features/editor/hooks/use-undo-shortcut";
  * 編集操作のキーボードショートカットをまとめて張る（docs/06-ui.md「編集操作の一覧」）。
  *
  * 削除（artboard の削除もこの導線）・コピー & ペースト・undo / redo・選択解除・並べ替
- * え・座標の移動を張る。
+ * え・座標の移動・名前の変更を張る。
  *
  * 呼ぶ先は `useEditActions`（選択解除だけは `useNodeActions`）。同じ操作をコンテキストメニ
  * ューの行からも呼ぶので、割り当てから dispatch までを 2 箇所に書かない。
@@ -33,4 +34,5 @@ export function useEditShortcuts(): void {
   useClearSelectionShortcut(node.clearSelection);
   useReorderShortcut(edit.reorderSelected);
   useRepositionShortcut(edit.repositionSelectedBy);
+  useRenameShortcut(edit.startRenaming);
 }

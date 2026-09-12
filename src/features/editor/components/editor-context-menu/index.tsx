@@ -38,6 +38,11 @@ const OperationPresentations = {
     shortcut: Option.some("⌘V"),
     tone: ContextMenuTones.Normal,
   },
+  rename: {
+    label: "Rename",
+    shortcut: Option.some("⌘R"),
+    tone: ContextMenuTones.Normal,
+  },
   "bring-forward": {
     label: "Bring forward",
     shortcut: Option.some("⌘]"),
@@ -84,6 +89,7 @@ function operationHandlers(
   return {
     copy: edit.copy,
     paste: edit.paste,
+    rename: edit.startRenaming,
     "bring-forward": () => edit.reorderSelected(ReorderSteps.TowardFront),
     "send-backward": () => edit.reorderSelected(ReorderSteps.TowardBack),
     "detach-instance": node.detachInstance,

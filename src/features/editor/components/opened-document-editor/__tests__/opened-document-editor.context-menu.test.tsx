@@ -131,12 +131,13 @@ test("行を押すとメニューが閉じる", async () => {
   ).toBeNull();
 });
 
-test("artboard の枠を右クリックすると、並ぶのは削除だけになる", async () => {
+test("artboard の枠を右クリックすると、並ぶのは名前を変更と削除になる", async () => {
   await renderOpenedDocument();
 
   rightClick(drawn("home"));
 
-  expect(within(contextMenu()).getAllByRole("menuitem")).toHaveLength(1);
+  expect(within(contextMenu()).getAllByRole("menuitem")).toHaveLength(2);
+  expect(menuRow("Rename")).toBeDefined();
   expect(menuRow("Delete")).toBeDefined();
 });
 
@@ -145,7 +146,7 @@ test("artboard の見出しを右クリックしても artboard のメニュー�
 
   rightClick(artboardHandle("home"));
 
-  expect(within(contextMenu()).getAllByRole("menuitem")).toHaveLength(1);
+  expect(within(contextMenu()).getAllByRole("menuitem")).toHaveLength(2);
 });
 
 test("空き領域を右クリックすると取り消す・やり直すが並ぶ", async () => {
@@ -251,6 +252,6 @@ test("下端の近くでノードを右クリックすると、並ぶ行のぶ�
   // 窓の高さは happy-dom の既定（768）
   rightClick(drawn("home-title"), { x: 120, y: 760 });
 
-  // ノードのメニューは 4 組 6 行 = 6 + 26 × 6 + 9 × 3 + 6 = 195px
-  expect(contextMenu().style.top).toBe("565px");
+  // ノードのメニューは 5 組 7 行 = 6 + 26 × 7 + 9 × 4 + 6 = 230px
+  expect(contextMenu().style.top).toBe("530px");
 });
