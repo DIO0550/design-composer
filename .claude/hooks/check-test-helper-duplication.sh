@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 #
-# テストヘルパーの重複検出: 編集された `__tests__/` のファイルが、同じフォルダの
+# テストヘルパーの重複検出: 編集された `__tests__/` のファイルが、プロジェクト内の
 # 別のファイルと**本体が一字一句同じ**ヘルパーを持っていないかを検証し、
-# AI にフィードバックする PostToolUse フック。
+# AI にフィードバックする PostToolUse フック。push 前の無条件の検査は
+# `.github/scripts/check-added-test-helper-duplication.sh`(git hooks / CI)が担う。
 #
 # 対応する規約: rules/testing.md「テスト用ヘルパーの置き場所」
 #   「同じヘルパーを2つ以上のテストファイルに書いたら、その時点で共通化する」
