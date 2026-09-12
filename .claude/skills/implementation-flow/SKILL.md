@@ -147,6 +147,9 @@ description: "design-composer の実装を ゴールの確定 → タスクの�
 
 ```bash
 echo hook-canary          # 必ず deny されるカナリア(.claude/hooks/hook-canary.sh)
+```
+
+```bash
 pnpm run typecheck        # tsc -b
 pnpm run lint             # oxlint
 pnpm exec biome check     # Biome（oxlint とは別のステップ。format 差分もここで出る）
@@ -159,15 +162,20 @@ bash .claude/hooks/lib/test-rules-scan.sh src                # テスト規約
   (`frontend.yml` の `rules-check`)だけが走らせるので、上の 2 行を省くと手元の確認が
   ゲートより狭くなる。**この 2 つが CI へ上げられたのは、層 2 と層 3 が同じ環境で同時に
   抜けたため**(`.claude/hooks/README.md`「カバー範囲と残る穴」)
-- **カナリアが通ってしまったらフック不発環境**(`分類: hook-environment`)。その旨を PR 本文と
-  記録に残す。ゲートは git hooks と CI にあるので、通ってしまっても以降の手順は変わらない
-- **カナリアが通ったら、このセッションで禁止コマンドを既に実行していないかも見直す。**
+- **カナリアが通っても、それだけでは不発と決まらない。** カナリアは自分の取りこぼしと本当の
+  不発を区別できない。`.claude/hooks/README.md`「発火しているかを確かめる(カナリア)」の表で
+  PreToolUse の痕跡を見て切り分ける。`分類: hook-environment` を付けてよいのは痕跡が無い枝だけ
+- **不発と分かったら**、その旨を PR 本文と記録に残す。ゲートは git hooks と CI にあるので、
+  通ってしまっても以降の手順は変わらない
+- **不発と分かったら、このセッションで禁止コマンドを既に実行していないかも見直す**
+  (取りこぼしの枝では要らない。フックは発火しているので止まっているはず)。
   `block-npx.sh` / `git add -A` の抑止など、**セッション中の行為そのものを止める**フックは
   git hooks(層 2)・CI(層 1)に移せず(`.claude/hooks/README.md`「カバー範囲と残る穴」)、
   不発環境ではこの層でしか止まらない。Bash の実行履歴を見直し、該当があれば取り消す
   (`git add -A` を打ってしまったら `git reset` して個別に add し直す)
 - **`&&` で 1 本に連ねない。** 連ねると途中の出力が流れて末尾しか見えず、「全部通った」と
-  読み違える(実際に 2 回、format 差分のまま push して CI を落としている)
+  読み違える(実際に 2 回、format 差分のまま push して CI を落としている)。**カナリアを
+  混ぜた場合はさらに、deny でコマンド全体が止まり、後ろの検査が 1 つも走らない**
 - **oxlint と biome は別物。** 片方が 0 件でももう片方は落ちうる
 - **フックは保険ではなく確認。** push 前検査の enforcement は git hooks(`harness/githooks/`)が
   担う。`.claude/hooks/` の `pre-push-*` は同じスクリプトを走らせる即時フィードバック層
