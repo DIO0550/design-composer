@@ -2,6 +2,7 @@ import { CssDeclaration } from "@/domains/dcmp/css-declaration";
 import { type CssDirection, CssDirections } from "@/domains/dcmp/css-direction";
 import type { Props } from "@/domains/dcmp/node";
 import type { ValueOf } from "@/types/ValueOf";
+import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 
 /**
@@ -37,10 +38,9 @@ export const Layout = {
    *   正な値そのものは `DesignDocument.collectErrors` がエラー一覧に出す）
    */
   fromProps(props: Props): Layout {
-    const value = props.layout;
-    return (
-      Object.values(Layouts).find((layout): boolean => layout === value) ??
-      Layout.Default
+    return Option.unwrapOr(
+      ArrayEx.findEqual(Object.values(Layouts), props.layout),
+      Layout.Default,
     );
   },
 

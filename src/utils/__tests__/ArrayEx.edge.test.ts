@@ -63,3 +63,7 @@ test("空の並びから末尾を除いても空のまま", () => {
 test("要素が 1 つの並びから末尾を除くと空になる", () => {
   expect(ArrayEx.dropLast(["a"])).toEqual([]);
 });
+
+test("findEqual は空の並びでは none を返す", () => {
+  expect(ArrayEx.findEqual([], "a")).toEqual(Option.none);
+});

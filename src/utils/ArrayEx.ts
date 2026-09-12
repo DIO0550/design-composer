@@ -72,6 +72,17 @@ export const ArrayEx = {
     return array.filter((item, index) => array.indexOf(item) === index);
   },
 
+  /**
+   * 並びの中で、その値と等しい要素。
+   *
+   * @param array 探す先の並び
+   * @param value 等しい要素を探したい値
+   * @returns 等しい要素があればそれ、無ければ `none`
+   */
+  findEqual<T>(array: readonly T[], value: unknown): Option<NonNullable<T>> {
+    return Option.fromNullable(array.find((item): boolean => item === value));
+  },
+
   insertAt<T>(
     array: readonly T[],
     index: number,
