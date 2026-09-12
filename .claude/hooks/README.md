@@ -20,7 +20,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `pre-push-doc-comments.sh` | `PreToolUse` (Bash)     | **push 前の doc コメント検査**。`src/` に doc の無い宣言、または `@param` / `@returns` / `@throws` の欠けた doc があれば push をブロック |
 | `pre-push-import-rules.sh` | `PreToolUse` (Bash)     | **push 前の import 規約検査**(rules/architecture.md「モジュールの公開API」「依存方向のルール」)。公開 API を迂回する import・循環参照・カテゴリの外に置かれた domains のモジュールがあれば push をブロック |
 | `post-merge-review.sh`   | `PostToolUse` (Bash/MCP)  | **マージ後の振り返りの提示**。PR のマージを検知し、Issue への追記と評価の記録を促す       |
-| `hook-canary.sh`         | `PreToolUse` (Bash)       | **カナリア**。`echo hook-canary` を必ず deny する。通ってしまったらフックが発火しない実行環境（後述） |
+| `hook-canary.sh`         | `PreToolUse` (Bash)       | **カナリア**。`echo hook-canary` を必ず deny する。連ねたコマンドの中にあっても切り出して見る。通ってしまったときの読み方は後述（**通った = 不発、ではない**） |
 | `session-url-notice.sh`  | `SessionStart`            | **セッション URL の提示**（AGENTS.md「Issue に紐づいて起動したら、セッションの URL を Issue に残す」）。URL を組み立てて渡す。ブランチが `claude/issue-<N>-...` なら対象の番号も添える |
 | `record-firings.sh`      | `SessionStart` + `PostToolUse` (Skill/Task/Agent) | **スキル・サブエージェントの発火ログ**。tmp のセッション別ログへ追記し、`harness-record` が記録を書くときに読む。SessionStart のセッション見出しで「起動しなかった」と「フック不発」を切り分ける |
 | `track-verification-agent-activity.sh` | `PreToolUse` + `PostToolUse` (Task/Agent) | **検証エージェントの実行中フラグ**(`分類: subagent-control`)。`plan-reviewer` / `implementation-reviewer` の開始・終了をセッション別のマーカーで数える。`block-git-during-verification-agent.sh` が読む |
@@ -41,7 +41,8 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 [`.claude/settings.json`](../settings.json) の `hooks.PreToolUse` / `hooks.PostToolUse` から参照。
 パスは `$CLAUDE_PROJECT_DIR` 基準。
 
-`lib/` はフック本体からのみ読む共有部品の置き場。`settings.json` からは参照しない。
+`lib/` はフック本体から読む共有部品と、フックの判定を手で確かめるための表の置き場。
+`settings.json` からは参照しない。
 
 | ファイル | 使う側 | 内容 |
 | --- | --- | --- |
@@ -51,6 +52,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `lib/test-rules-scan.sh` | `pre-push-test-rules.sh` / `harness/githooks/pre-push` | 指定したルート配下の `*.test.ts(x)` をすべて検査する。違反があれば exit 1 |
 | `lib/lint-suppressions.py` | `block-lint-suppress.sh` / `.github/scripts/check-added-lint-suppressions.sh` | 許可されていない lint 抑制コメントの行を報告する。例外の判定もここが持つ |
 | `lib/import-rule-violations.py` | `pre-push-import-rules.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | 公開 API を迂回する import（`feature-public-api` / `module-public-api`）・循環（`import-cycle` / `feature-cycle`）・カテゴリの外に置かれた domains のモジュール（`domains-category`）を報告する |
+| `lib/canary-cases.sh` | 手で実行する（「動作確認」） | `hook-canary.sh` へ判定表を流し、deny / pass / miss が期待どおりかを報告する。食い違いがあれば exit 1 |
 
 ## 強制力の序列 — フックが発火しない実行環境がある
 
@@ -105,9 +107,36 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 `hook-canary.sh` は `echo hook-canary` を必ず deny する。push の前にこれを 1 度実行すると、
 silent だったフックの不発が detected に変わる。
 
-- **deny される** → このセッションではフックが発火している
-- **通ってしまう** → フック不発環境。その旨を PR 本文と `harness/records/` の記録に残す
-  (実行環境ごとの統計が記録に溜まる)
+**通った = 不発、ではない。** カナリアは自分の取りこぼしと本当の不発を区別できないので、
+通ったときは PreToolUse の痕跡を見て決める。
+
+| カナリア | 検証エージェントのマーカー | 発火ログの見出し | 読み方 |
+| --- | --- | --- | --- |
+| deny された | — | — | **発火している** |
+| 通った | ある | — | **カナリアの取りこぼし**。Task/Agent のフックは発火している(不発と書かない) |
+| 通った | 無い | ある | SessionStart は発火している。PreToolUse は不明 |
+| 通った | 無い | 無い | **本当に不発**(`分類: hook-environment`) |
+
+```bash
+ls -d "${TMPDIR:-/tmp}/design-composer-verification-agents-${CLAUDE_CODE_SESSION_ID:-}"
+grep -c $'\tsession\t' "${TMPDIR:-/tmp}/design-composer-firings-${CLAUDE_CODE_SESSION_ID:-}.log"
+```
+
+**マーカーは `plan-reviewer` / `implementation-reviewer` を 1 度でも通した後にしか現れない。**
+`track-verification-agent-activity.sh` がこの 2 つの Task/Agent でしか作らないため、着手直後に
+カナリアを実行した回は 2 行目に当たらず、マーカー無しの枝へ落ちる。2 行目で読めるのは
+`implementation-flow` フェーズ 7(`plan-reviewer` を通した後)以降。
+
+マーカーが言えるのは **`Task|Agent` の PreToolUse か PostToolUse のどちらかが発火した**まで。
+`mkdir -p` が `hook_event_name` の分岐より手前にあるので、PostToolUse だけでも作られる
+(実測)。それでも見出し(SessionStart)より近いので枝を分けてある。
+
+見出しのほうは `record-firings.sh` が **SessionStart** で書く。ログファイル自体は PostToolUse の
+追記でも作られるので、**ファイルの有無ではなく見出し行を数える**(見出しの無いログは
+`harness-record` が計測対象外として扱う)。
+
+`CLAUDE_CODE_SESSION_ID` が無い環境では、`…-*` の glob で出たものが**別セッションの残骸**で
+ないかを見出しの時刻で確かめる(tmp はコンテナに残る)。
 
 実測は割れている。**同じ「リモート実行環境」でも発火する場合としない場合がある**ので、
 不発を前提に設計しつつ、発火する側を捨てない(層 3 に置く価値はある)。
@@ -116,6 +145,11 @@ silent だったフックの不発が detected に変わる。
 | --- | --- | --- |
 | PR #192(2026-08-11) | webhook 起動 | **通ってしまった** = 不発 |
 | 2026-08-14 | claude.ai/code から起動 | **deny された** = 発火 |
+| 2026-09-12 | claude.ai/code から起動 | `echo hook-canary` は **deny され**、同じセッションの `echo hook-canary && echo done` は**通った** = カナリアの取りこぼし |
+
+**2026-09-12 の行が、この表の読み方を変えた実測。** ただし**連ねて実行した回に限る**。
+素の `echo hook-canary` は修正前の実装でも deny されるので(旧実装で実測)、素で実行して
+通った回の結論は今も有効。#192 はその形で、不発のまま。
 
 **カナリアだけは外部コマンドに依存しない。** PreToolUse は exit 2 以外の異常終了を
 「非ブロックのエラー」として素通りさせるので、`jq` の無い環境では他のフックと同様に
@@ -221,8 +255,8 @@ rm -rf "${TMPDIR}/design-composer-verification-agents-probe"
 ```
 
 ```bash
-# カナリアが deny を返すこと(セッションで実行して通ってしまったらフック不発環境)
-echo '{"tool_input":{"command":"echo hook-canary"}}' | bash .claude/hooks/hook-canary.sh
+# カナリアの判定表(`ok` だけなら期待どおり・`NG` が出たら判定が変わっている)
+bash .claude/hooks/lib/canary-cases.sh; echo "exit=$?"
 
 # テスト規約の全体検査(git hooks と共有。違反があれば exit 1)
 bash .claude/hooks/lib/test-rules-scan.sh src
@@ -246,6 +280,13 @@ echo '{"session_id":"probe","tool_name":"Bash","tool_input":{"command":"ls"}}' |
 **終了コードまで見る。** 層 1(CI の `run:`)と層 2(`pre-push` の `set -e`)は**終了コードだけが配線**なので、
 標準出力の文字列しか確かめないと「無条件に落ちる」というゴールの本体が守られない。
 `; echo "exit=$?"` を必ず付ける。
+
+**カナリアだけは例外で、判定は標準出力に出る。** PreToolUse の deny は JSON を返して
+`exit 0` で終わるので、終了コードでは deny と pass が区別できない。`canary-cases.sh` が
+見ているのも出力の有無で、そちらの終了コードは「ケース表と食い違ったか」を表す。
+
+**カナリアのケースはコマンドへ直接書かずファイルに置く。** `cd /tmp && echo hook-canary` の
+ような行は本物の呼び出しとして切り出されるので、表を書いたコマンド自体が deny される(実測)。
 
 **probe は `.tsx` でも置く。** 解消した既存違反 8 件はすべて `.test.tsx` / `.stories.tsx` で、
 `src` には `index.tsx` を持つモジュールが 40 個ある。`.ts` だけで確かめると、
