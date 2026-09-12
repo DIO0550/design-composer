@@ -1,5 +1,20 @@
 [
   {
+    "id": "components-contextmenu--empty-area",
+    "title": "components/ContextMenu",
+    "name": "空き領域を右クリックしたとき"
+  },
+  {
+    "id": "components-contextmenu--selected-artboard",
+    "title": "components/ContextMenu",
+    "name": "artboard を選んでいるとき"
+  },
+  {
+    "id": "components-contextmenu--selected-node",
+    "title": "components/ContextMenu",
+    "name": "ノードを選んでいるとき"
+  },
+  {
     "id": "components-dropline--after",
     "title": "components/DropLine",
     "name": "後ろへ動かしている"
