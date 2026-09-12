@@ -83,6 +83,18 @@
 - 追従で長さが変わった子は、その子の絶対配置の子も追従する（親のサイズが変わったことに変わりはないため）
 - **これは編集時の規則で、コンパイル結果には出ない。** ファイルに載るのは追従後の `x` / `y` / `width` / `height` そのもので、CSS は下の表のとおり `left` / `top` を出すだけ（親のリサイズのたびに全体をコンパイルし直すので、CSS 側で追従を表現しても同じ `x` から作り直されて `min` と区別が付かない）
 
+### 表示 / 非表示
+
+すべてのノード（Box / Text）が、描かれるかどうかを 1 prop で持つ。Figma のレイヤーごとの表示 / 非表示にあたる。
+
+| prop | ドメイン | 値 | デフォルト |
+|---|---|---|---|
+| `visibility` | enum | `visible` / `hidden` | `visible` |
+
+- **非表示のノードは並びからも外れる。** 隠した子の分の隙間は残らないので、コンパイル規則は場所を残す CSS の `visibility: hidden` ではなく `display: none` を出す（下記「HTML/CSS へのコンパイル規則」）
+- 非表示にしても子は消えない。親を非表示にすれば子孫もまとめて描かれなくなる
+- artboard は Box スキーマを流用するが、**この prop は受け付けない**。artboard を隠すとは、要素の外側にキャンバスが描く見出しとリサイズハンドル（06-ui「キャンバス直接操作」）ごと隠すことで、それを出すかどうかは**まだ決めていない**。決まるまでは書けても効かない状態を作らず、受け付けない側に倒す
+
 ### サイズ指定の原則
 
 - Figma の Hug / Fill / 固定値 に相当するサイズ指定は、**モード（enum）と値（number）の2 prop に分離**する
@@ -112,6 +124,7 @@
 | `shadow` | トークン (shadows) | | なし |
 | `overflow` | enum | `visible` / `clip` | `visible` |
 | `opacity` | 生リテラル (number, 0〜1) | 0 が完全に透明、1 が不透明 | `1` |
+| `visibility` | | 上記「表示 / 非表示」 | |
 
 - **`opacity` は見た目の値だが生リテラルにする。** 対応するトークン種別が無く（04-tokens の 5 種）、種別を増やすかはこの prop だけの判断にできないため（02-data-model「値のドメイン: 3種類」）
   - **トークンが持つ色の不透明度（`#rrggbbaa` の alpha。トークン編集では 0〜100 の % で出す）とは別の値。** こちらはノードの prop としてファイルに載る値なので、CSS の `opacity` と同じ 0〜1 で持つ
@@ -134,6 +147,7 @@
 | `typography` | トークン (typography) | サイズ・行間・ウェイトの複合トークン | デフォルトトークン |
 | `color` | トークン (colors) | | デフォルトトークン |
 | `align` | enum | `left` / `center` / `right` | `left` |
+| `visibility` | | 上記「表示 / 非表示」 | |
 
 - typography は複合トークン（04-tokens で定義）。fontSize / fontWeight を個別 prop にはしない
 
@@ -144,10 +158,10 @@
 
 | prop | CSS |
 |---|---|
-| Box 自体 | `div` + `position: relative`（絶対配置の子が位置を測る基準になるため。offset を伴わないので箱の位置は動かない。次の行と排他で、`placement: absolute` の Box では `absolute` に置き換わる）。`display: flex` は下の `layout` の行が決める |
+| Box 自体 | `div` + `position: relative`（絶対配置の子が位置を測る基準になるため。offset を伴わないので箱の位置は動かない。次の行と排他で、`placement: absolute` の Box では `absolute` に置き換わる）。`display: flex` は下の `layout` の行が決める（`visibility` の行が優先する） |
 | `placement: absolute` | `position: absolute` + `left: {x}px` + `top: {y}px` |
 | `layout: row` / `column` | `display: flex` + `flex-direction` |
-| `layout: free` | `display` を出さない（flex コンテナにしない）。`gap` / `align` / `justify` も出さない |
+| `layout: free` | `display` を出さない（flex コンテナにしない）。`gap` / `align` / `justify` も出さない（`visibility` の行が優先する） |
 | `gap` | `gap: var(--spacing-*)` |
 | `paddingTop` / `paddingRight` / `paddingBottom` / `paddingLeft` | `padding: var(--spacing-*)` （上 右 下 左 の順で4値に合成。未指定の辺は `0`） |
 | `align` | `align-items` |
@@ -162,6 +176,7 @@
 | `opacity` | `opacity: {n}`（既定の `1` では出力しない。範囲を外れた値も丸めずそのまま出す — 範囲の判定はバリデーションが持ち、ブラウザが両端へ寄せる） |
 | Text 自体 | `div` + typography トークン展開（`font-size` / `line-height` / `font-weight`） |
 | Text `color` / `align` | `color` / `text-align` |
+| `visibility: hidden` | `display: none`（既定の `visible` では出力しない。`layout` の行が出す `display` より優先する）。理由は上記「表示 / 非表示」 |
 
 - height 系は width 系と同じ規則を縦軸に適用する
 - `widthMode: fill` の出し分けだけが親コンテキストに依存するコンパイル。ただし親を見るのは**そのノードがフローに参加しているとき**に限る（`placement: absolute` のノードは flex アイテムではないので `fill` の宣言を出さない）。親が `layout: free` のときも同じく宣言を出さない（並ぶ向きが無い）

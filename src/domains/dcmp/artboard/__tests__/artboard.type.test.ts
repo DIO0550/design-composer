@@ -10,3 +10,11 @@ test("artboard は長さを必ず数値で持つ", () => {
   expectTypeOf<ArtboardBoxProps["width"]>().toEqualTypeOf<number>();
   expectTypeOf<ArtboardBoxProps["height"]>().toEqualTypeOf<number>();
 });
+
+test("artboard の配置は型でも flow に絞られている", () => {
+  expectTypeOf<ArtboardBoxProps["placement"]>().toEqualTypeOf<"flow">();
+});
+
+test("artboard の表示 / 非表示は型でも visible に絞られている", () => {
+  expectTypeOf<ArtboardBoxProps["visibility"]>().toEqualTypeOf<"visible">();
+});

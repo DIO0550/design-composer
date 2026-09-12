@@ -120,6 +120,16 @@ test("overflow が visible のときは overflow 宣言を出力しない", () =
   expect(style).not.toHaveProperty("overflow");
 });
 
+test("非表示にした Box は描画から外れる", () => {
+  const style = styleOf({
+    name: "box",
+    type: "Box",
+    props: { visibility: "hidden" },
+  });
+
+  expect(style.display).toBe("none");
+});
+
 test("style は style 属性へ載せられる宣言の並びに直列化できる", () => {
   const compiled = Result.unwrap(
     NodeHtml.compile({

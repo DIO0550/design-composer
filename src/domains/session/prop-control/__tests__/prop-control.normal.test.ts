@@ -288,7 +288,7 @@ test("セクション内のコントロールはスキーマの宣言順に並�
     appearance === undefined
       ? undefined
       : controlsIn(appearance).map((control) => control.prop),
-  ).toEqual(["typography", "color", "align"]);
+  ).toEqual(["typography", "color", "align", "visibility"]);
 });
 
 test("Box の opacity は数値の欄として出る", () => {
