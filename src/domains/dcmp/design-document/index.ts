@@ -1083,6 +1083,49 @@ export const DesignDocument = {
       : DesignDocument.removeNode(document, name);
   },
 
+  /**
+   * 単一名前空間の名前で指したものに別の名前を付ける（docs/06-ui.md「編集操作の一覧」の
+   * 名前を変更）。artboard ならその 1 枚、そうでなければノードの名前を付け替える。
+   *
+   * 参照（`ref` と部品の `publicProps` の binding）は書き換えない。`ref` が指すのは
+   * `components` のキー、binding が指すのは部品**内部**のノード名で、どちらもここで指せる
+   * 名前（artboard と その配下のノード）にはならないため。
+   *
+   * 呼び出し側で分けると「選んでいるものが artboard か」の判定が features 層へ出る
+   * （`remove` と同じ）。
+   *
+   * @param document 名前を変える先のドキュメント
+   * @param names 今の名前と、新しい名前
+   * @returns 名前を変えたドキュメント。新しい名前が識別子の規則を満たさなければ
+   *   `invalid-name`、単一名前空間で既に使われていれば `duplicate-name`、今の名前が
+   *   artboard にもノードにも無ければ `node-not-found`
+   */
+  rename(
+    document: DesignDocument,
+    { from, to }: Readonly<{ from: string; to: string }>,
+  ): Result<DesignDocument, DesignDocumentEditError> {
+    const unusable = unusableNameError(document, to);
+    if (unusable.some) {
+      return Result.err(unusable.value);
+    }
+    const renamedArtboard = updateArtboardNamed(document, from, (artboard) => ({
+      ...artboard,
+      name: to,
+    }));
+    if (renamedArtboard.some) {
+      return Result.ok(renamedArtboard.value);
+    }
+    const node = DesignDocument.findNode(document, from);
+    if (!node.some) {
+      return Result.err({ kind: "node-not-found", name: from });
+    }
+    return DesignDocument.replaceNode(
+      document,
+      from,
+      Node.rename(node.value, { [from]: to }),
+    );
+  },
+
   /** artboard の並び順を入れ替える。 */
   reorderArtboard(
     document: DesignDocument,
