@@ -165,11 +165,21 @@ function canvasDock(state: EditorState): CanvasDock {
 
 /**
  * 下端に積む器。エラー一覧とキャンバスのツールバーが同じ場所を取り合うため、順序と間隔
- * はここが持つ（各部品が浮くと重なる）。
+ * はここが持つ（各部品が浮くと重なる）。帯はキャンバスの幅いっぱいに広がるので、ポイン
+ * タを受け取るのは積んだものだけにして、透明な余白はキャンバスへ通す。
  *
  * **この位置指定を落としてもテストは落ちない** — happy-dom はレイアウトを解決しない。気づ
  * く手段は `OpenedDocumentEditor` のストーリーの視覚差分だけで、それが成り立つのは**ストー
  * リーが高さの決まった器に入っているとき**に限る（器を外すと撮影範囲の外へ出る）。
+ *
+ * 当たり判定のほうは、テストが見られるのはクラスの綴りまで。happy-dom は Tailwind を読ま
+ * ず（`user-event` が見るのは計算済みの `pointer-events`）、色も変わらないので視覚差分に
+ * も映らない。実際の当たり先はブラウザで測るしかない。
+ *
+ * 受け取り直す指定を部品ごとではなく直下の子すべてに掛けるのは、あとから積む部品が何も
+ * 書かずに受け取れるようにするため。**子が全面に広がる透明なラッパーになると症状は黙って
+ * 戻る**。ラッパーを 1 枚挟んで配る形は採らない（空のラッパーが `gap-3` を食い、`self-start`
+ * も効かなくなる）。
  *
  * ドックだけのストーリーを立てないのは、積み方そのものがここの判断で、ストーリー側へ写
  * すと本物の積み方が壊れても気づけないため。
@@ -178,28 +188,17 @@ function canvasDock(state: EditorState): CanvasDock {
  */
 function CanvasDockStack({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <div className="absolute inset-x-0 bottom-4 flex flex-col items-center gap-3 px-4">
+    <div
+      data-testid="canvas-dock-stack"
+      className="pointer-events-none absolute inset-x-0 bottom-4 flex flex-col items-center gap-3 px-4 [&>*]:pointer-events-auto"
+    >
       {children}
     </div>
   );
 }
 
-/**
- * 下端の出し分け。
- *
- * 編集を続けたまま直せる。一覧は 0 件なら何も出さない。
- *
- * @returns ファイルが不正ならエラー一覧だけ、そうでなければエラー一覧とキャンバスのツールバー
- */
-function CanvasDockContent({
-  dock,
-  tokenSelection,
-  node,
-  artboard,
-  dragged,
-  onReveal,
-  fileRevert,
-}: Readonly<{
+/** 下端に並べるものを決めるのに要るもの。 */
+type CanvasDockContentProps = Readonly<{
   dock: CanvasDock;
   tokenSelection: TokenSelection;
   node: NodeActions;
@@ -207,11 +206,29 @@ function CanvasDockContent({
   dragged: Option<NodeTemplate>;
   onReveal: (nodeName: string) => void;
   fileRevert: FileRevertControl;
-}>): ReactElement {
+}>;
+
+/**
+ * 下端の出し分け。
+ *
+ * 編集を続けたまま直せる。一覧は 0 件なら何も出さない。
+ *
+ * @returns ファイルが不正ならエラー一覧と破線の帯、そうでなければそれにキャンバスの
+ *   ツールバーを足したもの
+ */
+function canvasDockParts({
+  dock,
+  tokenSelection,
+  node,
+  artboard,
+  dragged,
+  onReveal,
+  fileRevert,
+}: CanvasDockContentProps): ReactElement {
   switch (dock.kind) {
     case "file-invalid":
       return (
-        <CanvasDockStack>
+        <>
           <DocumentErrorList
             errors={dock.errors}
             origin={DocumentErrorOrigins.OpenedFile}
@@ -225,11 +242,11 @@ function CanvasDockContent({
             破線だけが出て何を指しているか読めない状態が画面に残る。
           */}
           <TokenDashedNodes selection={tokenSelection} onReveal={onReveal} />
-        </CanvasDockStack>
+        </>
       );
     case "editable":
       return (
-        <CanvasDockStack>
+        <>
           <DocumentErrorList
             errors={dock.errors}
             origin={DocumentErrorOrigins.Document}
@@ -242,9 +259,22 @@ function CanvasDockContent({
             onAddArtboard={artboard.add}
             onInsert={node.insert}
           />
-        </CanvasDockStack>
+        </>
       );
   }
+}
+
+/**
+ * 下端に積んだもの一式。
+ *
+ * 器を出し分けの外に置くのは、どちらの状態でも積み方（順序・間隔・当たり判定）が同じで、
+ * 枝ごとに書くと片方だけ器を失っても誰も気づかないため。
+ *
+ * @param props 中身の出し分けへそのまま渡すもの
+ * @returns 状態に応じた中身を積んだ、キャンバス下端の器
+ */
+function CanvasDockContent(props: CanvasDockContentProps): ReactElement {
+  return <CanvasDockStack>{canvasDockParts(props)}</CanvasDockStack>;
 }
 
 /**
