@@ -71,6 +71,9 @@ jobs:
           retention-days: 1
 
   lint-suppress:
+    # ジョブ名は最初の検査(lint 抑制コメント)のまま据え置く。ジョブ名を変えると
+    # GitHub 側のブランチ保護に設定された「必須チェック」の対応が外れるため
+    # (この設定はリポジトリ側にあり、ここからは変更できない)。
     name: lint 抑制コメントの追加チェック
     runs-on: ubuntu-24.04
     timeout-minutes: 5
@@ -87,6 +90,12 @@ jobs:
       # 実行環境でも通す（.claude/hooks/README.md「強制力の序列」）
       - name: Check added lint suppressions
         run: bash .github/scripts/check-added-lint-suppressions.sh "${{ github.event.pull_request.base.sha }}"
+
+      # .claude/hooks/check-test-helper-duplication.sh はブロックせず、フックが発火しない
+      # 実行環境もある（.claude/hooks/README.md「強制力の序列」）。既存の重複が `src` に
+      # 残っているため、それらを落とさないようこのPRで追加された行だけを対象にする
+      - name: Check added test helper duplication
+        run: bash .github/scripts/check-added-test-helper-duplication.sh "${{ github.event.pull_request.base.sha }}"
 
   rules-check:
     name: doc コメント / テスト規約 / import 規約のチェック

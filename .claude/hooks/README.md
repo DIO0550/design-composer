@@ -15,7 +15,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `pre-push-typecheck.sh`  | `PreToolUse` (Bash)       | **push 前の型チェック**。`pnpm run typecheck`(tsc -b)でエラーがあれば push をブロック    |
 | `pre-push-lint.sh`       | `PreToolUse` (Bash)       | **push 前の全体 lint**。oxlint / Biome のエラーがあれば push をブロック                   |
 | `pre-push-test-rules.sh` | `PreToolUse` (Bash)       | **push 前の全体テスト規約検査**。全 `*.test.ts(x)` を検査し違反があれば push をブロック   |
-| `check-test-helper-duplication.sh` | `PostToolUse` (Edit/Write) | **テストヘルパーの重複検出**(rules/testing.md「テスト用ヘルパーの置き場所」)。同じ `__tests__/` に本体が一字一句同じヘルパーが 2 つ以上あれば知らせる |
+| `check-test-helper-duplication.sh` | `PostToolUse` (Edit/Write) | **テストヘルパーの重複検出**(rules/testing.md「テスト用ヘルパーの置き場所」)。プロジェクト全体の `__tests__/` を横断し、本体が一字一句同じヘルパーが 2 つ以上あれば知らせる |
 | `check-doc-comments.sh`  | `PostToolUse` (Edit/Write) | **doc コメントの検証**(rules/coding.md「コメントは doc と Why / Why not に絞る」)。doc の無い宣言と、`@param` / `@returns` / `@throws` が欠けた doc を知らせる |
 | `pre-push-doc-comments.sh` | `PreToolUse` (Bash)     | **push 前の doc コメント検査**。`src/` に doc の無い宣言、または `@param` / `@returns` / `@throws` の欠けた doc があれば push をブロック |
 | `pre-push-import-rules.sh` | `PreToolUse` (Bash)     | **push 前の import 規約検査**(rules/architecture.md「モジュールの公開API」「依存方向のルール」)。公開 API を迂回する import・循環参照・カテゴリの外に置かれた domains のモジュールがあれば push をブロック |
@@ -47,7 +47,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | ファイル | 使う側 | 内容 |
 | --- | --- | --- |
 | `lib/test-conditionals.awk` | `check-test-rules.sh` / `pre-push-test-rules.sh` | `test()` / `it()` ブロック内の `if` / `else` / `switch` を行番号付きで出力する |
-| `lib/duplicate-test-helpers.py` | `check-test-helper-duplication.sh` | `__tests__/` の中で本体が完全に一致するヘルパーを探す。`--all` で全体を検査できる |
+| `lib/duplicate-test-helpers.py` | `check-test-helper-duplication.sh` / `.github/scripts/check-added-test-helper-duplication.sh` | プロジェクト全体の `__tests__/` を横断して本体が完全に一致するヘルパーを探す。`--all` で全体、`--lines` で 1 ファイルの重複行を `<行番号>:<名前>` で機械可読に出力できる |
 | `lib/missing-doc-comments.py` | `check-doc-comments.sh` / `pre-push-doc-comments.sh` / `harness/githooks/pre-push` | `src/` のファイル直下の宣言のうち doc コメントの無いものを探す。`--all` で全体を検査できる |
 | `lib/test-rules-scan.sh` | `pre-push-test-rules.sh` / `harness/githooks/pre-push` | 指定したルート配下の `*.test.ts(x)` をすべて検査する。違反があれば exit 1 |
 | `lib/lint-suppressions.py` | `block-lint-suppress.sh` / `.github/scripts/check-added-lint-suppressions.sh` | 許可されていない lint 抑制コメントの行を報告する。例外の判定もここが持つ |
@@ -90,7 +90,8 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 | `block-npx.sh`(セッション中の行為の禁止) | **無し**。push の時点で痕跡が残らないため代替不能 |
 | `block-git-during-verification-agent.sh`(セッション中の行為の禁止) | **無し**。この競合はセッションの実行タイミングだけが原因で、コミット後のリポジトリの状態には痕跡が残らない |
 | `session-url-notice.sh`(セッション URL の提示) | **無し**。URL はセッションの中にしか無く、残す先も GitHub のコメントなので、push の時点で痕跡が残らない。落ちても穴は開かない(規約が AGENTS.md に残り、失っても情報が 1 つ足りないだけでガードは破れない) |
-| `post-edit-lint.sh` / `check-test-rules.sh` / `check-doc-comments.sh` / `check-test-helper-duplication.sh`(即時フィードバック) | 結果は push 前の検査(git hooks)と CI が拾う。**即時性だけが失われる** |
+| `post-edit-lint.sh` / `check-test-rules.sh` / `check-doc-comments.sh`(即時フィードバック) | 結果は push 前の検査(git hooks)と CI が拾う。**即時性だけが失われる** |
+| `check-test-helper-duplication.sh`(即時フィードバック) | **部分的にあり**。`.github/scripts/check-added-test-helper-duplication.sh` が CI(層 1)で拾うが、既存の重複が `src` に残っているため**このブランチで追加された行だけ**が対象(git hooks には無い)。触っていない既存分は push 時点では拾えない |
 | `record-firings.sh`(発火ログ) | **無し**。ただし失敗しても穴は開かない(セッション見出しが無いログは `harness-record` が「計測対象外」と書く設計で、誤ったゼロにはならない)。カナリアと同じ「失敗してもガードが破れない」検出系 |
 
 **doc コメント・テスト規約・import 規約は CI(層 1)へ上げた**(`frontend.yml` の `rules-check`)。
@@ -180,12 +181,14 @@ deny のメッセージは、`jq` / `python3` が欠けていればその名前�
 - テスト規約チェックの `test-location`(テストは対象モジュールの `__tests__/` 直下に置く)は、`分類: test-placement` が未介入のまま 5 回出たため #233 で足した
   - 判定は「親フォルダ名が `__tests__` か」だけ。`rules/testing.md`「配置と命名」のうち機械判定できるのはここまでで、「実装を `index.ts` に直接書く」「分割はサブフォルダで」は判定できない
   - 導入時点で `src/` の 321 件すべてが既に `__tests__/` 直下にあり、偽陽性 0 件で入れられた(絞る理由が無い)
-- `check-test-helper-duplication.sh` は**ブロックしない**(`additionalContext` を返すだけ)。また、見るのは**編集したファイルが絡む重複だけ**
+- `check-test-helper-duplication.sh`(層 3・PostToolUse)は**ブロックしない**(`additionalContext` を返すだけ)。見るのは**編集したファイルが絡む重複だけ**だが、探す範囲はプロジェクト全体の `__tests__/`(同じフォルダに限らない)
   - 判定は「本体が一字一句同じ」に限る。似ているだけのものは見ない(偽陽性で止めない)
-  - push ブロックにしなかったのは、導入時点でリポジトリに既存の重複が 13 組あったため。触っていない分まで止めると、直す気の無い違反を避けるためのエスケープハッチが増える
-  - **その 13 組は #153 で 0 組にしたので、絞る理由のうち「既存分がある」は消えた。** ただし格上げは #309 で改めて判断する。検出器には引数の型注釈を本体と読み違える偽陽性が残っており(#179)、偽陽性で push が止まると同じくエスケープハッチが増えるため、#179 を先に潰す
-  - **「0 組」は検出器が見える範囲での 0 組**。見えていないものが 2 つある。(1) フォルダをまたぐ重複(#179 のもう 1 つの穴)。(2) `f(props: T = {})` のように**既定引数の `{}` が宣言中で最初に現れる関数** — `body_after` がそこを本体の始まりと読むため本体が `"{}"` になり、`MIN_BODY_CHARS`(20) 未満として捨てられる。#153 で足した `renderToolbar` がこの形にあたる。どちらも #309 の判断材料
+  - 導入時点でリポジトリに既存の重複が 13 組あり、#153 で一旦 0 組にした。**ただしそれは検出器が見える範囲での 0 組**で、フォルダをまたぐ重複(#179)は検出器自体が見ておらず数に入っていなかった。探索範囲をプロジェクト全体へ広げたところ、フォルダをまたぐ重複が新たに 11 組見つかっている(個別の解消は別 Issue)
+  - `f(props: T = {})` のように**既定引数の `{}` が宣言中で最初に現れる関数**は、本体が `"{}"` と読まれて `MIN_BODY_CHARS`(20)未満で捨てられ、重複があっても見えない(#153 で足した `renderToolbar` がこの形にあたる。未解消)
+  - 引数の型注釈が `Readonly<{ x: number }>` のように `{}` を含む場合に本体と読み違える偽陽性(#179)は、引数リストの閉じ括弧より後ろから本体を探すよう直して解消した(`duplicate-test-helpers.py` の `params_end`)
   - ファイル単位で無効化: `// @duplicate-helpers-ok`
+- `.github/scripts/check-added-test-helper-duplication.sh`(層 1・CI、`frontend.yml` の `lint-suppress` ジョブ)は、push 前検査(層 2 の git hooks)・Claude Code hook(層 3)のどちらも発火しない実行環境向けの無条件の代替。**既存の 11 組を理由に `--all` を無条件でブロックにはしない**(`check-added-lint-suppressions.sh` と同じ考え方)。`duplicate-test-helpers.py --lines` で対象ファイルの重複行を機械可読に出し、**このブランチで新しく追加された行に載っているものだけ**を違反にする。既存の 11 組を 0 組にすれば `--all` を無条件のブロックへ格上げできる(その時点でこの限定は不要になる)
+  - `check-added-lint-suppressions.sh` と違い、**base に同じ本体を持つファイルがあっても除外しない**。ファイル分割でヘルパーが新しいファイルへ移ると、移った側は全行が追加行になり、既存の重複が「新規」として引っかかる余地が残っている(pr-240 で lint 抑制コメントが踏んだのと同じ形)。単純な `git mv` はリネーム検出で diff に載らないため踏まないが、**分割**は対象
 - `check-doc-comments.sh` は**ブロックしない**(`additionalContext` を返すだけ)。また、見るのは**編集したファイルの分だけ**
   - 対象は `src/` の実装ファイルのみ(`__tests__/` / `*.stories.*` / `__stories__/` は見ない)
   - 見るのは**ファイル直下の宣言**だけ(入れ子の関数・オブジェクトのメソッドは対象外)
@@ -263,6 +266,9 @@ bash .claude/hooks/lib/test-rules-scan.sh src
 
 # この PR で追加された lint 抑制コメントを数える(CI と同じ判定)
 bash .github/scripts/check-added-lint-suppressions.sh origin/main
+
+# この PR で追加されたテストヘルパーの重複を数える(CI と同じ判定)
+bash .github/scripts/check-added-test-helper-duplication.sh origin/main
 ```
 
 ```bash
