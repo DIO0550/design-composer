@@ -38,6 +38,7 @@ function ArtboardFrameListWithControls({
             Option.none,
           )}
           onSelect={() => {}}
+          onContextMenu={() => {}}
           {...controls}
         />
       )}

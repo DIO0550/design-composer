@@ -8,6 +8,7 @@ import { DocumentSelection } from "@/domains/session/document-selection";
 import { FileValidity } from "@/domains/session/file-validity";
 import type { NodeTemplate } from "@/domains/session/node-template";
 import type { OpenedDocument } from "@/domains/session/opened-document";
+import { SelectionDigs } from "@/domains/session/selection-dig";
 import type { TokenSelection } from "@/domains/session/token-selection";
 import {
   ArtboardCanvas,
@@ -28,6 +29,7 @@ import {
   DocumentErrorList,
   DocumentErrorOrigins,
 } from "@/features/editor/components/document-error-list";
+import { EditorContextMenu } from "@/features/editor/components/editor-context-menu";
 import { EditorLayout } from "@/features/editor/components/editor-layout";
 import {
   EditorProvider,
@@ -37,6 +39,10 @@ import {
   EditorTopBar,
   EditorTopBarTones,
 } from "@/features/editor/components/editor-top-bar";
+import {
+  EditMenuTarget,
+  EditMenuTargets,
+} from "@/features/editor/domains/edit-menu";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import {
   type ArtboardActions,
@@ -53,12 +59,13 @@ import {
   type TokenActions,
   useTokenActions,
 } from "@/features/editor/hooks/use-token-actions";
+import type { OpenedContextMenu } from "@/features/editor/types/OpenedContextMenu";
 import { PropertyPanel } from "@/features/inspector";
 import { LeftPane, type LeftPaneView, LeftPaneViews } from "@/features/sidebar";
 import { TokenDashedNodes, TokenEditor } from "@/features/tokens";
 import type { Clock } from "@/libs/clock";
 import type { DocumentIpc } from "@/libs/document-ipc";
-import type { Option } from "@/utils/Option";
+import { Option } from "@/utils/Option";
 
 /**
  * 右ペインの帯と本文に出すもの。器（`PaneHeading` / `PaneBody`）は呼び出し側が
@@ -266,6 +273,13 @@ function EditorPanes({
   const [leftPaneView, setLeftPaneView] = useState<LeftPaneView>(
     LeftPaneViews.Layers,
   );
+  /**
+   * 開いているコンテキストメニュー。左ペインの行き先と同じく表示だけの状態なので
+   * `EditorState` には持たせない（開閉が undo / redo と自動保存に載る意味が無い）。
+   */
+  const [contextMenu, setContextMenu] = useState<Option<OpenedContextMenu>>(
+    Option.none,
+  );
   useEditShortcuts();
 
   /*
@@ -329,56 +343,65 @@ function EditorPanes({
   });
 
   return (
-    <EditorLayout dragHandlers={nodeDrag.dragHandlers}>
-      <EditorLayout.LeftPane isFrozen={isFrozen}>
-        <LeftPane
-          view={leftPaneView}
-          onSelectView={setLeftPaneView}
-          selection={documentSelection}
-          tokenSelection={tokenSelection}
-          isFrozen={isFrozen}
-          artboard={artboard}
-          node={node}
-          token={token}
-          grab={{
-            dragged: nodeDrag.carriedTemplate,
-            onGrab: nodeDrag.grabTemplate,
-          }}
-        />
-      </EditorLayout.LeftPane>
-      <EditorLayout.CenterPane>
-        <ArtboardCanvas
-          selection={documentSelection}
-          tokenSelection={tokenSelection}
-          isFrozen={isFrozen}
-          canvasView={canvasView}
-          nodeDrag={nodeDrag}
-          onSelect={node.selectAt}
-          onSelectInRange={node.selectNodes}
-          onResize={node.resize}
-          onEditProp={node.editProp}
-          onRepositionArtboard={node.repositionArtboard}
-        />
-        <CanvasDockContent
-          dock={canvasDock(state)}
-          tokenSelection={tokenSelection}
-          node={node}
-          artboard={artboard}
-          dragged={nodeDrag.carriedTemplate}
-          /*
-           * 選ぶだけでなく行き先も Layers へ戻す。エラー行からも帯からも、
-           * Tokens を見たまま飛ぶことがあり、そのときは選んでもツリーにも
-           * プロパティにも出ない（`Go to source component` が Assets へ移すのと同じ形）。
-           */
-          onReveal={(nodeName) => {
-            node.reveal(nodeName);
-            setLeftPaneView(LeftPaneViews.Layers);
-          }}
-          fileRevert={fileRevert}
-        />
-      </EditorLayout.CenterPane>
-      <EditorLayout.RightPane isFrozen={isFrozen}>
-        {/*
+    <>
+      <EditorLayout dragHandlers={nodeDrag.dragHandlers}>
+        <EditorLayout.LeftPane isFrozen={isFrozen}>
+          <LeftPane
+            view={leftPaneView}
+            onSelectView={setLeftPaneView}
+            selection={documentSelection}
+            tokenSelection={tokenSelection}
+            isFrozen={isFrozen}
+            artboard={artboard}
+            node={node}
+            token={token}
+            grab={{
+              dragged: nodeDrag.carriedTemplate,
+              onGrab: nodeDrag.grabTemplate,
+            }}
+          />
+        </EditorLayout.LeftPane>
+        <EditorLayout.CenterPane>
+          <ArtboardCanvas
+            selection={documentSelection}
+            tokenSelection={tokenSelection}
+            isFrozen={isFrozen}
+            canvasView={canvasView}
+            nodeDrag={nodeDrag}
+            onSelect={node.selectAt}
+            onSelectInRange={node.selectNodes}
+            onResize={node.resize}
+            onEditProp={node.editProp}
+            onRepositionArtboard={node.repositionArtboard}
+            onOpenContextMenu={(names, at) => {
+              const target = EditMenuTarget.fromNames(names);
+              // 空き領域では選択に手を付けない（docs/06-ui.md「コンテキストメニュー」）
+              if (target !== EditMenuTargets.EmptyArea) {
+                node.selectAt(names, SelectionDigs.NoDeeper);
+              }
+              setContextMenu(Option.some({ at, target }));
+            }}
+          />
+          <CanvasDockContent
+            dock={canvasDock(state)}
+            tokenSelection={tokenSelection}
+            node={node}
+            artboard={artboard}
+            dragged={nodeDrag.carriedTemplate}
+            /*
+             * 選ぶだけでなく行き先も Layers へ戻す。エラー行からも帯からも、
+             * Tokens を見たまま飛ぶことがあり、そのときは選んでもツリーにも
+             * プロパティにも出ない（`Go to source component` が Assets へ移すのと同じ形）。
+             */
+            onReveal={(nodeName) => {
+              node.reveal(nodeName);
+              setLeftPaneView(LeftPaneViews.Layers);
+            }}
+            fileRevert={fileRevert}
+          />
+        </EditorLayout.CenterPane>
+        <EditorLayout.RightPane isFrozen={isFrozen}>
+          {/*
           帯と本文の器はどちらの行き先でもここで着せる。どのペインに何を着せるかは
           3 ペインの組み立ての判断で、中身を持つ feature は持たない
           （`features/inspector/index.ts` / `features/tokens/index.ts` の doc）。
@@ -386,10 +409,22 @@ function EditorPanes({
           選んでいなくても帯は残すので、中身が空でも `PaneHeading` ごと外さない。
           外すと選択のたびに本文の位置が帯のぶん動く。
         */}
-        <PaneHeading>{rightPane.title}</PaneHeading>
-        <PaneBody>{rightPane.body}</PaneBody>
-      </EditorLayout.RightPane>
-    </EditorLayout>
+          <PaneHeading>{rightPane.title}</PaneHeading>
+          <PaneBody>{rightPane.body}</PaneBody>
+        </EditorLayout.RightPane>
+      </EditorLayout>
+      {/*
+        メニューは 3 ペインの器の**外**に置く。中に置くと、凍結中に付く
+        `filter: saturate(0.4)`（`EditorLayout`）がそのペインを `position: fixed` の
+        基準にしてしまい、窓の座標で置けなくなる。
+      */}
+      {contextMenu.some ? (
+        <EditorContextMenu
+          opened={contextMenu.value}
+          onClose={() => setContextMenu(Option.none)}
+        />
+      ) : null}
+    </>
   );
 }
 

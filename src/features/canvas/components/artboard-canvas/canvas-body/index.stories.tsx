@@ -35,6 +35,7 @@ function CanvasBodyWithControls({
             Option.none,
           )}
           onSelect={() => {}}
+          onContextMenu={() => {}}
           {...controls}
         />
       )}

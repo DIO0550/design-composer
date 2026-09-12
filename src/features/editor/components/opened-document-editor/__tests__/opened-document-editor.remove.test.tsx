@@ -5,8 +5,8 @@ import { renderOpenedDocument, selectInTree, tree } from "./setup";
 
 /*
  * 削除を編集画面の配線ごと確かめる（docs/06-ui.md「編集操作の一覧」）。
- * 入口がキーボードだけになったので、ここを通さないと「押すと実際に消える」を
- * 守るテストが無くなる（`use-delete-shortcut` 側は受け口へ届くところまでしか見ない）。
+ * ここが見るのはキーボードの割り当てからの経路で、`use-delete-shortcut` 側は受け口へ届く
+ * ところまでしか見ない。メニューの行からの経路は `opened-document-editor.context-menu`。
  */
 
 test("選択して Delete を押すとツリーからそのノードが消える", async () => {

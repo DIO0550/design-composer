@@ -15,6 +15,8 @@ import type { TextEditControl } from "@/features/canvas/hooks/use-text-edit";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { CommandKey } from "@/utils/CommandKey";
 import { ElementEx } from "@/utils/ElementEx";
+import { KeyName, KeyNames } from "@/utils/KeyName";
+import { PointerButton } from "@/utils/PointerButton";
 import { ArtboardLabel } from "../artboard-label";
 
 /**
@@ -24,7 +26,7 @@ import { ArtboardLabel } from "../artboard-label";
  * のの、space がキャンバス全体でパンの修飾になったため（docs/06-ui.md「キャンバス直接操
  * 作」）。枠にフォーカスがあるときだけ意味が割れると、押した瞬間に artboard が選び直される。
  */
-const ActivationKeys = ["Enter"];
+const ActivationKeys: readonly KeyName[] = [KeyNames.Enter];
 
 /**
  * 1 枚の artboard。中身はコンパイル結果の HTML をそのまま流し込む。
@@ -37,6 +39,7 @@ export function ArtboardFrame({
   isSelected,
   isCurrent,
   onSelect,
+  onContextMenu,
   artboardDrag,
   nodeDrag,
   nodeResize,
@@ -46,6 +49,10 @@ export function ArtboardFrame({
   isSelected: boolean;
   isCurrent: boolean;
   onSelect: (names: readonly string[], dig: SelectionDig) => void;
+  onContextMenu: (
+    event: MouseEvent<HTMLElement>,
+    names: readonly string[],
+  ) => void;
   artboardDrag: ArtboardDragControl;
   nodeDrag: NodeDragControl;
   nodeResize: NodeResizeControl;
@@ -71,7 +78,7 @@ export function ArtboardFrame({
     ]);
 
   const activate = (event: KeyboardEvent<HTMLElement>) => {
-    if (!ActivationKeys.includes(event.key)) {
+    if (!KeyName.isOneOf(ActivationKeys, event)) {
       return;
     }
     event.preventDefault();
@@ -100,7 +107,18 @@ export function ArtboardFrame({
      * **テストは 1 件も落ちない**（happy-dom はレイアウトしないため）。
      * 気づく手段は視覚差分だけ。
      */
-    <li className="absolute" style={{ left: drawnAt.x, top: drawnAt.y }}>
+    <li
+      className="absolute"
+      style={{ left: drawnAt.x, top: drawnAt.y }}
+      /*
+       * ここまで上がるのは見出しを押したとき（枠は自分で受けて止める）。見出しは枠の外に
+       * あって `data-name` を持たないので、辿らせず artboard 自身を渡す。
+       */
+      onContextMenu={(event) => {
+        event.stopPropagation();
+        onContextMenu(event, [element.name]);
+      }}
+    >
       {/*
         `right-0` で枠の幅いっぱいに広げるのは、見出しが掴み口だから（`ArtboardLabel`）。
         中身ぶんだと `home 360 × 240` で 85px しか無く、枠の 360px に対して狙いづらい。
@@ -167,7 +185,19 @@ export function ArtboardFrame({
           onSelect(names, SelectionDigs.OneDeeper);
         }}
         onKeyDown={activate}
+        // 土台へ渡さないのは、そちらが空き領域として扱うため
+        onContextMenu={(event: MouseEvent<HTMLElement>) => {
+          event.stopPropagation();
+          onContextMenu(event, namesAt(event.target));
+        }}
         onPointerDown={(event) => {
+          /*
+           * 右ボタンで掴むと `useArtboardDrag.grab` がポインタを捕捉し、メニューを操作する
+           * あいだの動きがそのまま移動になる（離した時点で座標が確定する）。
+           */
+          if (!PointerButton.isPrimary(event)) {
+            return;
+          }
           // artboard の上で始めたドラッグは土台へ渡さない（掴んだものが動かないと操作が読めなくなる）
           event.stopPropagation();
           /*

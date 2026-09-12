@@ -40,7 +40,7 @@ export type EditorAction =
       from: ChildPosition;
       toIndex: number;
     }>
-  /* 選択から向きだけで並べ替える経路。今の位置を持たないキーボードのための入口。 */
+  /* 選択から向きだけで並べ替える経路。今の位置を持たない入口のためにある。 */
   | Readonly<{ type: "reorder_selected_node"; step: ReorderStep }>
   | Readonly<{ type: "move_node"; name: string; to: ChildPosition }>
   | Readonly<{
