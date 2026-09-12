@@ -184,22 +184,8 @@ function CanvasDockStack({ children }: Readonly<{ children: ReactNode }>) {
   );
 }
 
-/**
- * 下端の出し分け。
- *
- * 編集を続けたまま直せる。一覧は 0 件なら何も出さない。
- *
- * @returns ファイルが不正ならエラー一覧だけ、そうでなければエラー一覧とキャンバスのツールバー
- */
-function CanvasDockContent({
-  dock,
-  tokenSelection,
-  node,
-  artboard,
-  dragged,
-  onReveal,
-  fileRevert,
-}: Readonly<{
+/** 下端に並べるものを決めるのに要るもの。 */
+type CanvasDockContentProps = Readonly<{
   dock: CanvasDock;
   tokenSelection: TokenSelection;
   node: NodeActions;
@@ -207,11 +193,29 @@ function CanvasDockContent({
   dragged: Option<NodeTemplate>;
   onReveal: (nodeName: string) => void;
   fileRevert: FileRevertControl;
-}>): ReactElement {
+}>;
+
+/**
+ * 下端の出し分け。
+ *
+ * 編集を続けたまま直せる。一覧は 0 件なら何も出さない。
+ *
+ * @returns ファイルが不正ならエラー一覧と破線の帯、そうでなければそれにキャンバスの
+ *   ツールバーを足したもの
+ */
+function canvasDockParts({
+  dock,
+  tokenSelection,
+  node,
+  artboard,
+  dragged,
+  onReveal,
+  fileRevert,
+}: CanvasDockContentProps): ReactElement {
   switch (dock.kind) {
     case "file-invalid":
       return (
-        <CanvasDockStack>
+        <>
           <DocumentErrorList
             errors={dock.errors}
             origin={DocumentErrorOrigins.OpenedFile}
@@ -225,11 +229,11 @@ function CanvasDockContent({
             破線だけが出て何を指しているか読めない状態が画面に残る。
           */}
           <TokenDashedNodes selection={tokenSelection} onReveal={onReveal} />
-        </CanvasDockStack>
+        </>
       );
     case "editable":
       return (
-        <CanvasDockStack>
+        <>
           <DocumentErrorList
             errors={dock.errors}
             origin={DocumentErrorOrigins.Document}
@@ -242,9 +246,22 @@ function CanvasDockContent({
             onAddArtboard={artboard.add}
             onInsert={node.insert}
           />
-        </CanvasDockStack>
+        </>
       );
   }
+}
+
+/**
+ * 下端に積んだもの一式。
+ *
+ * 器を出し分けの外に置くのは、どちらの状態でも積み方（順序・間隔・当たり判定）が同じで、
+ * 枝ごとに書くと片方だけ器を失っても誰も気づかないため。
+ *
+ * @param props 中身の出し分けへそのまま渡すもの
+ * @returns 状態に応じた中身を積んだ、キャンバス下端の器
+ */
+function CanvasDockContent(props: CanvasDockContentProps): ReactElement {
+  return <CanvasDockStack>{canvasDockParts(props)}</CanvasDockStack>;
 }
 
 /**
