@@ -20,7 +20,9 @@ test("名前で描かれている要素を引ける", () => {
 
   const found = CanvasDom.elementOf("panel");
 
-  expect(found.some && found.value.getAttribute("data-name")).toBe("panel");
+  expect(Option.isSome(found) && found.value.getAttribute("data-name")).toBe(
+    "panel",
+  );
 });
 
 test("入れ子の外側にある要素も名前で引ける", () => {
@@ -28,7 +30,9 @@ test("入れ子の外側にある要素も名前で引ける", () => {
 
   const found = CanvasDom.elementOf("home");
 
-  expect(found.some && found.value.getAttribute("data-name")).toBe("home");
+  expect(Option.isSome(found) && found.value.getAttribute("data-name")).toBe(
+    "home",
+  );
 });
 
 test("描かれていない名前を指すと要素は無い", () => {

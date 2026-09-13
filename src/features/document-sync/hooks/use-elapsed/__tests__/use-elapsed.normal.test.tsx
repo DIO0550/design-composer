@@ -24,7 +24,7 @@ function ElapsedHarness({
   return (
     <>
       <p data-testid="elapsed">
-        {elapsed.some
+        {Option.isSome(elapsed)
           ? `${elapsed.value.count}:${elapsed.value.unit}`
           : "起点なし"}
       </p>

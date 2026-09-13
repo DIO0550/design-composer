@@ -54,11 +54,15 @@ test("文字入力に入れた文字列はそのまま設定される", () => {
 test("文字を受ける prop で値が無いときは未設定へ戻す編集になる", () => {
   const control = setupControl({ name: "label", type: "Text" }, "content");
 
-  expect(PropControl.editFrom(control, Option.none).value.some).toBe(false);
+  expect(Option.isSome(PropControl.editFrom(control, Option.none).value)).toBe(
+    false,
+  );
 });
 
 test("選択式の prop で値が無いときは未設定へ戻す編集になる", () => {
   const control = setupControl({ name: "box", type: "Box" }, "gap");
 
-  expect(PropControl.editFrom(control, Option.none).value.some).toBe(false);
+  expect(Option.isSome(PropControl.editFrom(control, Option.none).value)).toBe(
+    false,
+  );
 });

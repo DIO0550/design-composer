@@ -25,7 +25,7 @@ test("表示中のドキュメントに無いノードを指しても、選択�
 
   const revealed = EditorState.reveal(selected, "home-signup");
 
-  expect(revealed.some).toBe(false);
+  expect(Option.isSome(revealed)).toBe(false);
 });
 
 test("部品定義の中のノードは飛び先にならない", () => {
@@ -36,5 +36,5 @@ test("部品定義の中のノードは飛び先にならない", () => {
 
   const revealed = EditorState.reveal(selected, "primary-button-label");
 
-  expect(revealed.some).toBe(false);
+  expect(Option.isSome(revealed)).toBe(false);
 });

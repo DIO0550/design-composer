@@ -64,7 +64,7 @@ function propOf(
   prop: string,
 ): Option<number | string | boolean> {
   const node = DesignDocument.findNode(document, name);
-  if (!node.some || !Node.isPrimitive(node.value)) {
+  if (!Option.isSome(node) || !Node.isPrimitive(node.value)) {
     return Option.none;
   }
   return Option.fromNullable(node.value.props?.[prop]);
@@ -232,7 +232,7 @@ test("長さを持たない子は scale でも位置だけが追従する", () =
 
   expect([
     Option.unwrap(propOf(widened, "hugging", "x")),
-    propOf(widened, "hugging", "width").some,
+    Option.isSome(propOf(widened, "hugging", "width")),
   ]).toEqual([60, false]);
 });
 
@@ -501,7 +501,7 @@ test("フローの子は親を広げても座標を持たない", () => {
 
   const widened = widen(document, "home");
 
-  expect(propOf(widened, "title", "x").some).toBe(false);
+  expect(Option.isSome(propOf(widened, "title", "x"))).toBe(false);
 });
 
 test("語彙にない追従を書いた子は動かない", () => {

@@ -88,7 +88,7 @@ test("居ない親を指すと挿さらない", () => {
     { parentName: "居ない親", index: 0 },
   );
 
-  expect(inserted.some).toBe(false);
+  expect(Option.isSome(inserted)).toBe(false);
 });
 
 test("子の数を越える位置を指すと挿さらない", () => {
@@ -98,7 +98,7 @@ test("子の数を越える位置を指すと挿さらない", () => {
     { parentName: "body", index: 1 },
   );
 
-  expect(inserted.some).toBe(false);
+  expect(Option.isSome(inserted)).toBe(false);
 });
 
 test("挿したあとに戻すと挿す前の並びに戻る", () => {

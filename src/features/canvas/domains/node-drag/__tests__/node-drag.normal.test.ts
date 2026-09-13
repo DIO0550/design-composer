@@ -107,7 +107,7 @@ test("受け入れられない場所へ移ると落ちる位置は無くなる",
     Carrying.nothing(),
   );
 
-  expect(NodeDrag.insertionTarget(outside).some).toBe(false);
+  expect(Option.isSome(NodeDrag.insertionTarget(outside))).toBe(false);
 });
 
 test("掴んでいないときのポインタ移動では何も起きない", () => {
@@ -145,7 +145,9 @@ test("離したあとは何も掴んでいない状態に戻る", () => {
     Carrying.droppable(SampleDrop),
   );
 
-  expect(NodeDrag.grabbed(NodeDrag.release(dragging)).some).toBe(false);
+  expect(Option.isSome(NodeDrag.grabbed(NodeDrag.release(dragging)))).toBe(
+    false,
+  );
 });
 
 test("動かし続けても掴んだ位置は掴んだ時点のまま変わらない", () => {
@@ -197,7 +199,7 @@ test("座標を置き直す落とし方では挿さる位置を持たない", ()
     SampleGuides,
   );
 
-  expect(DropEdit.insertionTarget(edit).some).toBe(false);
+  expect(Option.isSome(DropEdit.insertionTarget(edit))).toBe(false);
 });
 
 test("座標を置き直す落とし方でも、子になる親の名前は答える", () => {
@@ -285,7 +287,7 @@ test("ツリーへ落とす落とし方では、ずらして見せる相手と�
     Carrying.droppable(SampleDrop),
   );
 
-  expect(NodeDrag.repositionPreview(dragging).some).toBe(false);
+  expect(Option.isSome(NodeDrag.repositionPreview(dragging))).toBe(false);
 });
 
 test("押しただけでまだ動かしていない間は、ずらして見せる相手と量を答えない", () => {
@@ -295,7 +297,7 @@ test("押しただけでまだ動かしていない間は、ずらして見せ�
     origin: { x: 100, y: 100 },
   });
 
-  expect(NodeDrag.repositionPreview(held).some).toBe(false);
+  expect(Option.isSome(NodeDrag.repositionPreview(held))).toBe(false);
 });
 
 test("落とせる先が無くても、座標のドラッグならずらして見せる相手と量を答える", () => {
@@ -323,7 +325,7 @@ test("見た目だけ動かしている間は、離しても届く編集を持�
     Carrying.preview({ name: "title", offset: { x: 30, y: -12 } }),
   );
 
-  expect(NodeDrag.drop(dragging).some).toBe(false);
+  expect(Option.isSome(NodeDrag.drop(dragging))).toBe(false);
 });
 
 test("見た目だけ動かしている間は、子になる親の名前を答えない", () => {
@@ -334,7 +336,7 @@ test("見た目だけ動かしている間は、子になる親の名前を答�
     Carrying.preview({ name: "title", offset: { x: 30, y: -12 } }),
   );
 
-  expect(NodeDrag.dropParentName(dragging).some).toBe(false);
+  expect(Option.isSome(NodeDrag.dropParentName(dragging))).toBe(false);
 });
 
 test("落とせる先が無い間は、子になる親の名前を答えない", () => {
@@ -345,7 +347,7 @@ test("落とせる先が無い間は、子になる親の名前を答えない",
     Carrying.nothing(),
   );
 
-  expect(NodeDrag.dropParentName(dragging).some).toBe(false);
+  expect(Option.isSome(NodeDrag.dropParentName(dragging))).toBe(false);
 });
 
 test("押された位置から外へ辿った名前のうち最も内側のノードを掴む", () => {
@@ -357,7 +359,7 @@ test("押された位置から外へ辿った名前のうち最も内側のノ�
 test("artboard の枠だけを押したときは掴めるノードが無い", () => {
   const name = NodeDrag.grabbableName(setupDocument(), ["home"]);
 
-  expect(name.some).toBe(false);
+  expect(Option.isSome(name)).toBe(false);
 });
 
 test("パレットの雛形を運んでから離したときは、直後のクリックを飲み込まない", () => {
@@ -393,7 +395,7 @@ test("押しただけでまだ動かしていない間は、何を運んでい�
     origin: { x: 100, y: 100 },
   });
 
-  expect(NodeDrag.carriedNode(held).some).toBe(false);
+  expect(Option.isSome(NodeDrag.carriedNode(held))).toBe(false);
 });
 
 test("パレットの雛形を運んでいる最中は、その雛形を答える", () => {
@@ -418,7 +420,7 @@ test("木にある既存ノードを運んでいる間は、雛形を答えな�
     Carrying.nothing(),
   );
 
-  expect(NodeDrag.carriedTemplate(dragging).some).toBe(false);
+  expect(Option.isSome(NodeDrag.carriedTemplate(dragging))).toBe(false);
 });
 
 test("雛形を押しただけでまだ動かしていない間は、雛形を答えない", () => {
@@ -427,5 +429,5 @@ test("雛形を押しただけでまだ動かしていない間は、雛形を�
     origin: { x: 100, y: 100 },
   });
 
-  expect(NodeDrag.carriedTemplate(held).some).toBe(false);
+  expect(Option.isSome(NodeDrag.carriedTemplate(held))).toBe(false);
 });

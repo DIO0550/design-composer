@@ -101,7 +101,7 @@ test("不正な状態から取り込めた内容を反映すると食い違い�
 
   const validity = FileValidity.withReload(rejected, Reloaded, SecondAt);
 
-  expect(FileValidity.since(validity).some).toBe(false);
+  expect(Option.isSome(FileValidity.since(validity))).toBe(false);
 });
 
 test("一度直ってから再び壊れると、食い違いの起点は新しい時刻になる", () => {

@@ -114,7 +114,10 @@ test("縦横のどちらでも揃うときは、軸ごとに線が 1 本ずつ�
     SideSnap.create(Moving, [alongX, alongY]),
   ).guides;
 
-  expect([guides.horizontal.some, guides.vertical.some]).toEqual([true, true]);
+  expect([
+    Option.isSome(guides.horizontal),
+    Option.isSome(guides.vertical),
+  ]).toEqual([true, true]);
 });
 
 test("線の範囲は、もう一方の軸の寄せも畳んだ位置で決まる", () => {

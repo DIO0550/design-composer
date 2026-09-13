@@ -57,5 +57,5 @@ test("何も選択していなければ prop の編集は起きない", () => {
     value: Option.some("ホーム"),
   });
 
-  expect(edited.some).toBe(false);
+  expect(Option.isSome(edited)).toBe(false);
 });

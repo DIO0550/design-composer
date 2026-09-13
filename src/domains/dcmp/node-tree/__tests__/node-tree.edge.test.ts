@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import type { Node } from "@/domains/dcmp/node";
+import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 import { NodeTree } from "../index";
 
@@ -13,11 +14,13 @@ function setupTree(): NodeTree {
 }
 
 test("並びに存在しない名前を引くと見つからない", () => {
-  expect(NodeTree.find(setupTree(), "missing").some).toBe(false);
+  expect(Option.isSome(NodeTree.find(setupTree(), "missing"))).toBe(false);
 });
 
 test("存在しない名前のノードは取り除けない", () => {
-  expect(NodeTree.removeByName(setupTree(), "missing").some).toBe(false);
+  expect(Option.isSome(NodeTree.removeByName(setupTree(), "missing"))).toBe(
+    false,
+  );
 });
 
 test("存在しない名前のノードは差し替えられない", () => {
@@ -26,7 +29,7 @@ test("存在しない名前のノードは差し替えられない", () => {
     type: "Text",
   });
 
-  expect(replaced.some).toBe(false);
+  expect(Option.isSome(replaced)).toBe(false);
 });
 
 test("子を持てないノードを親に指定すると children-not-allowed になる", () => {
@@ -58,7 +61,7 @@ test("並びに存在しない親を指定すると親が見つからない結�
     (children) => Result.ok(children),
   );
 
-  expect(Result.unwrap(updated).some).toBe(false);
+  expect(Option.isSome(Result.unwrap(updated))).toBe(false);
 });
 
 test("範囲外の位置へ挿入すると index-out-of-range になる", () => {

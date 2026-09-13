@@ -40,7 +40,7 @@ test("子を並べない artboard は並びへ挿す先にならない", () => {
     ["home"],
   );
 
-  expect(parent.some).toBe(false);
+  expect(Option.isSome(parent)).toBe(false);
 });
 
 /*
@@ -96,5 +96,5 @@ test("ドキュメントに無いノードを運んでいるときは挿す先�
     "home",
   ]);
 
-  expect(parent.some).toBe(false);
+  expect(Option.isSome(parent)).toBe(false);
 });

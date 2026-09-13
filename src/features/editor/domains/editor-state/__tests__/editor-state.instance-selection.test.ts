@@ -83,11 +83,13 @@ test("同じ部品のインスタンスが1つしか無いときにまとめて�
 test("インスタンス以外を選んでいるときはまとめて選べない", () => {
   const selected = EditorState.select(setupState(), "home-title");
 
-  expect(EditorState.selectAllInstances(selected).some).toBe(false);
+  expect(Option.isSome(EditorState.selectAllInstances(selected))).toBe(false);
 });
 
 test("何も選んでいないときはまとめて選べない", () => {
-  expect(EditorState.selectAllInstances(setupState()).some).toBe(false);
+  expect(Option.isSome(EditorState.selectAllInstances(setupState()))).toBe(
+    false,
+  );
 });
 
 test("参照先の部品が無いインスタンスでも、同じ参照を持つものをまとめて選べる", () => {

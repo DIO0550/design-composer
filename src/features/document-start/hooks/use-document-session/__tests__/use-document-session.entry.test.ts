@@ -30,7 +30,7 @@ test("メニューから新規作成すると、選んだ保存先にドキュ�
 
   await observer.chooseMenu(AppMenuCommands.Create);
 
-  expect(observer.files.contentOf(NewPath).some).toBe(true);
+  expect(Option.isSome(observer.files.contentOf(NewPath))).toBe(true);
 });
 
 /*
@@ -104,7 +104,9 @@ test("メニューの購読を張れないと、メニューの経路の失敗�
   await observer.settle();
 
   const failure = observer.commandFailure();
-  expect(failure.some && failure.value.source).toBe(CommandSources.Menu);
+  expect(Option.isSome(failure) && failure.value.source).toBe(
+    CommandSources.Menu,
+  );
 });
 
 test("ドロップの購読を張れないと、ドロップの経路の失敗が残る", async () => {
@@ -117,7 +119,9 @@ test("ドロップの購読を張れないと、ドロップの経路の失敗�
   await observer.settle();
 
   const failure = observer.commandFailure();
-  expect(failure.some && failure.value.source).toBe(CommandSources.Drop);
+  expect(Option.isSome(failure) && failure.value.source).toBe(
+    CommandSources.Drop,
+  );
 });
 
 test("購読が張れていれば、受け取れない理由は残らない", async () => {

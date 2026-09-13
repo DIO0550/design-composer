@@ -61,7 +61,7 @@ test("binding 先が値を設定していなければ既定は無い", () => {
     }),
   );
 
-  expect(target.declared.some).toBe(false);
+  expect(Option.isSome(target.declared)).toBe(false);
 });
 
 test("binding 先が部品のルート自身なら、そのルートの prop に解決される", () => {

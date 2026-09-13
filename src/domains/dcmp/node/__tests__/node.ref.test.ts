@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { Option } from "@/utils/Option";
 import { Node } from "../index";
 
 test("ref ノードは参照先の部品名を1件返す", () => {
@@ -65,5 +66,5 @@ test("存在しない名前でノードを探すと見つからない", () => {
     "no-such-node",
   );
 
-  expect(found.some).toBe(false);
+  expect(Option.isSome(found)).toBe(false);
 });

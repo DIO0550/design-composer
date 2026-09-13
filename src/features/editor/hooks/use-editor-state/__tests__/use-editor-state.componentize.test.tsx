@@ -39,7 +39,7 @@ function setupDocument(): DesignDocument {
 /** 名前で引いたノードが参照ノードか。引けなければ `false`。 */
 function isRefNamed(state: EditorState, name: string): boolean {
   const node = DesignDocument.findNode(EditorState.document(state), name);
-  return node.some && Node.isRef(node.value);
+  return Option.isSome(node) && Node.isRef(node.value);
 }
 
 /**

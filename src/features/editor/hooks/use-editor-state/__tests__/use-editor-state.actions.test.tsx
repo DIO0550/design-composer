@@ -73,7 +73,7 @@ function artboardWidth(state: EditorState): number {
  */
 function footerCoordinates(state: EditorState): string {
   const found = DesignDocument.findNode(EditorState.document(state), "footer");
-  if (!found.some) {
+  if (!Option.isSome(found)) {
     return "無し";
   }
   const props = Node.isPrimitive(found.value) ? (found.value.props ?? {}) : {};

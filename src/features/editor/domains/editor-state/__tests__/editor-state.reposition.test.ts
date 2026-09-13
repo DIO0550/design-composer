@@ -69,9 +69,9 @@ test("選んでいないノードでも座標を置き直せる（キャンバ�
 
   // 選択が無い（= プロパティパネル経由の編集は成立しない）ことを前提に置く
   expect(EditorState.singleName(state)).toEqual(Option.none);
-  expect(EditorState.reposition(state, "badge", toHome(70, 12)).some).toBe(
-    true,
-  );
+  expect(
+    Option.isSome(EditorState.reposition(state, "badge", toHome(70, 12))),
+  ).toBe(true);
 });
 
 test("置き直したあと 1 回戻すと縦横とも元の座標に戻る", () => {

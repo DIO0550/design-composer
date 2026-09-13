@@ -27,7 +27,7 @@ test("単一選択のときは選ばれている1つの名前を取り出せる"
 test("複数選択のときは選ばれている1つの名前を取り出せない", () => {
   const selection = SelectionState.create(["home-login", "settings-login"]);
 
-  expect(SelectionState.singleName(selection).some).toBe(false);
+  expect(Option.isSome(SelectionState.singleName(selection))).toBe(false);
 });
 
 test("複数選択には渡した名前がすべて渡した順で入っている", () => {

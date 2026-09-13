@@ -219,5 +219,7 @@ test("4 辺が揃った並びからは束ねた行を作れる", () => {
     paddingRow(boxSelection(UniformSides)),
   );
 
-  expect(PropShorthandControl.create("padding", sides).some).toBe(true);
+  expect(Option.isSome(PropShorthandControl.create("padding", sides))).toBe(
+    true,
+  );
 });

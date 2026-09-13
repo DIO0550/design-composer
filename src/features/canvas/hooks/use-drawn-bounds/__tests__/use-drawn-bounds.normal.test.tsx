@@ -39,7 +39,7 @@ function BoundsProbe({ target }: Readonly<{ target: Option<string> }>) {
       }}
     >
       <output data-testid="bounds">
-        {bounds.some
+        {Option.isSome(bounds)
           ? `${bounds.value.left},${bounds.value.top},${bounds.value.width},${bounds.value.height}`
           : "測れていない"}
       </output>

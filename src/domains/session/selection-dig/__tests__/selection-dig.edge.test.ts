@@ -22,7 +22,7 @@ test("候補が空なら、掘らない指定でも名前は決まらない", ()
     Option.some("deep-title"),
   );
 
-  expect(name.some).toBe(false);
+  expect(Option.isSome(name)).toBe(false);
 });
 
 test("候補が空なら、1 階層だけ掘る指定でも名前は決まらない", () => {
@@ -32,11 +32,11 @@ test("候補が空なら、1 階層だけ掘る指定でも名前は決まらな
     Option.some("deep-title"),
   );
 
-  expect(name.some).toBe(false);
+  expect(Option.isSome(name)).toBe(false);
 });
 
 test("候補が空なら、掘れるだけ掘る指定でも名前は決まらない", () => {
   const name = SelectionDig.nameAt(SelectionDigs.Deepest, [], Option.none);
 
-  expect(name.some).toBe(false);
+  expect(Option.isSome(name)).toBe(false);
 });

@@ -39,13 +39,13 @@ test("子孫にあるノードはその直接の親を親とする位置で返�
 });
 
 test("artboard 自身は誰の子でもないため位置を持たない", () => {
-  expect(DesignDocument.findChildPosition(setupDocument(), "home").some).toBe(
-    false,
-  );
+  expect(
+    Option.isSome(DesignDocument.findChildPosition(setupDocument(), "home")),
+  ).toBe(false);
 });
 
 test("ドキュメントに無い名前は位置を持たない", () => {
   expect(
-    DesignDocument.findChildPosition(setupDocument(), "unknown").some,
+    Option.isSome(DesignDocument.findChildPosition(setupDocument(), "unknown")),
   ).toBe(false);
 });

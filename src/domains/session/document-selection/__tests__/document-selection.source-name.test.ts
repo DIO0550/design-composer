@@ -48,7 +48,7 @@ test("インスタンス以外を選んでいるときは元の部品が無い",
     "home-title",
   ]);
 
-  expect(DocumentSelection.sourceName(selection).some).toBe(false);
+  expect(Option.isSome(DocumentSelection.sourceName(selection))).toBe(false);
 });
 
 test("同じ部品のインスタンスを複数選んでいるときも元の部品の名前が読める", () => {
@@ -68,7 +68,7 @@ test("別々の部品のインスタンスを選んでいるときは元の部�
     "home-cancel",
   ]);
 
-  expect(DocumentSelection.sourceName(selection).some).toBe(false);
+  expect(Option.isSome(DocumentSelection.sourceName(selection))).toBe(false);
 });
 
 test("インスタンスでないものが混ざっているときは元の部品が無い", () => {
@@ -77,11 +77,11 @@ test("インスタンスでないものが混ざっているときは元の部�
     "home-title",
   ]);
 
-  expect(DocumentSelection.sourceName(selection).some).toBe(false);
+  expect(Option.isSome(DocumentSelection.sourceName(selection))).toBe(false);
 });
 
 test("何も選んでいないときは元の部品が無い", () => {
   const selection = DocumentSelection.fromNames(setupDocument(), []);
 
-  expect(DocumentSelection.sourceName(selection).some).toBe(false);
+  expect(Option.isSome(DocumentSelection.sourceName(selection))).toBe(false);
 });

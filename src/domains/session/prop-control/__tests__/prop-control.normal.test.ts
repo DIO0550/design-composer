@@ -231,7 +231,7 @@ test("設定されていない prop は値を持たず、スキーマの既定�
   const selection = setupSelection([{ name: "box", type: "Box" }], "box");
   const control = controlOf(selection, "layout");
 
-  expect(control?.value.some).toBe(false);
+  expect(control?.value).toEqual(Option.none);
   expect(control?.defaultValue).toEqual(Option.some("column"));
 });
 

@@ -65,7 +65,7 @@ test("受け入れられる候補が1つも無ければ受け入れ先は決ま�
     "title",
   ]);
 
-  expect(parent.some).toBe(false);
+  expect(Option.isSome(parent)).toBe(false);
 });
 
 test("子を並べない Box も座標の受け入れ先になる", () => {

@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/dcmp/design-document";
+import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 
 function setupDocument(): DesignDocument {
@@ -19,7 +20,7 @@ function setupDocument(): DesignDocument {
 test("ドキュメントを開いた直後は何も選択されていない", () => {
   const state = EditorState.create(setupDocument());
 
-  expect(EditorState.singleName(state).some).toBe(false);
+  expect(Option.isSome(EditorState.singleName(state))).toBe(false);
 });
 
 test("artboard を選ぶとその artboard が選択状態になる", () => {
@@ -43,13 +44,13 @@ test("ドキュメントに存在しない名前を選ぼうとしても選択�
     "unknown",
   );
 
-  expect(EditorState.singleName(state).some).toBe(false);
+  expect(Option.isSome(EditorState.singleName(state))).toBe(false);
 });
 
 test("キャンバスに描かれない部品定義の名前は選択状態にならない", () => {
   const state = EditorState.select(EditorState.create(setupDocument()), "card");
 
-  expect(EditorState.singleName(state).some).toBe(false);
+  expect(Option.isSome(EditorState.singleName(state))).toBe(false);
 });
 
 test("選択を解除すると何も選択されていない状態に戻る", () => {
@@ -59,7 +60,7 @@ test("選択を解除すると何も選択されていない状態に戻る", ()
   );
 
   expect(
-    EditorState.singleName(EditorState.clearSelection(selected)).some,
+    Option.isSome(EditorState.singleName(EditorState.clearSelection(selected))),
   ).toBe(false);
 });
 

@@ -35,11 +35,13 @@ test("縦の追従は y の編集になる", () => {
 
 test("位置が変わらない追従では編集を出さない", () => {
   expect(
-    Placement.followPropEdit(setupPlacement(), Constraints.Min, {
-      axis: Axes.Width,
-      before: 200,
-      after: 300,
-    }).some,
+    Option.isSome(
+      Placement.followPropEdit(setupPlacement(), Constraints.Min, {
+        axis: Axes.Width,
+        before: 200,
+        after: 300,
+      }),
+    ),
   ).toBe(false);
 });
 
