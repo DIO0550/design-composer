@@ -1,6 +1,6 @@
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { Node } from "@/domains/dcmp/node";
-import type { Option } from "@/utils/Option";
+import { Option } from "@/utils/Option";
 
 /**
  * 今の選択に対する部品化（UI 案 docs/Design Composer.html の `Assets` 下部にある
@@ -30,12 +30,12 @@ export const Componentization = {
     document: DesignDocument,
     singleName: Option<string>,
   ): Componentization {
-    if (!singleName.some) {
+    if (!Option.isSome(singleName)) {
       return { kind: "unselected" };
     }
     const name = singleName.value;
     const node = DesignDocument.findNode(document, name);
-    if (node.some) {
+    if (Option.isSome(node)) {
       return Node.isRef(node.value)
         ? { kind: "instance" }
         : { kind: "ready", sourceName: name };
@@ -45,7 +45,7 @@ export const Componentization = {
      * ドキュメントに無い名前（消えたノードを指したままの選択など）が黙って artboard として
      * 扱われる。どちらでも無い名前は何も選んでいないのと同じなので `unselected` に落とす。
      */
-    return DesignDocument.findArtboard(document, name).some
+    return Option.isSome(DesignDocument.findArtboard(document, name))
       ? { kind: "artboard" }
       : { kind: "unselected" };
   },

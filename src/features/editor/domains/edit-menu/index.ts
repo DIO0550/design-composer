@@ -1,6 +1,7 @@
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { ReorderSteps } from "@/features/editor/domains/reorder-step";
 import type { ValueOf } from "@/types/ValueOf";
+import { Option } from "@/utils/Option";
 
 /**
  * 右クリックの対象（docs/06-ui.md「コンテキストメニュー」の 3 つ）。押された場所が決める
@@ -93,25 +94,27 @@ const OperationGroups = {
 function isEnabled(state: EditorState, operation: EditOperation): boolean {
   switch (operation) {
     case "copy":
-      return EditorState.copyNode(state).some;
+      return Option.isSome(EditorState.copyNode(state));
     case "paste":
-      return EditorState.pasteNode(state).some;
+      return Option.isSome(EditorState.pasteNode(state));
     case "rename":
-      return EditorState.startRenaming(state).some;
+      return Option.isSome(EditorState.startRenaming(state));
     case "bring-forward":
-      return EditorState.reorderSelectedNode(state, ReorderSteps.TowardFront)
-        .some;
+      return Option.isSome(
+        EditorState.reorderSelectedNode(state, ReorderSteps.TowardFront),
+      );
     case "send-backward":
-      return EditorState.reorderSelectedNode(state, ReorderSteps.TowardBack)
-        .some;
+      return Option.isSome(
+        EditorState.reorderSelectedNode(state, ReorderSteps.TowardBack),
+      );
     case "detach-instance":
-      return EditorState.detachInstance(state).some;
+      return Option.isSome(EditorState.detachInstance(state));
     case "delete":
-      return EditorState.removeSelected(state).some;
+      return Option.isSome(EditorState.removeSelected(state));
     case "undo":
-      return EditorState.undo(state).some;
+      return Option.isSome(EditorState.undo(state));
     case "redo":
-      return EditorState.redo(state).some;
+      return Option.isSome(EditorState.redo(state));
   }
 }
 

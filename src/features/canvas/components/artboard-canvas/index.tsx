@@ -261,7 +261,9 @@ export function ArtboardCanvas({
           style={{
             transform: CanvasView.transform(view),
             transformOrigin: ContentTransformOrigin,
-            cursor: grabbedCursor.some ? grabbedCursor.value : undefined,
+            cursor: Option.isSome(grabbedCursor)
+              ? grabbedCursor.value
+              : undefined,
           }}
           /*
            * リサイズと artboard の移動のポインタはこの器で受ける。artboard の枠ごとや
@@ -311,21 +313,21 @@ export function ArtboardCanvas({
         （単一選択でなければ空を返す）ので、ここで数え直してはいない。矩形が無いのは
         まだ描かれていないときで、そのときは置く場所が決まらないので出さない。
       */}
-      {handleBounds.some ? (
+      {Option.isSome(handleBounds) ? (
         <ResizeHandleOverlay
           bounds={handleBounds.value}
           handles={resizeHandles}
-          isGrabbing={nodeResize.grabbed.some}
+          isGrabbing={Option.isSome(nodeResize.grabbed)}
           onGrab={nodeResize.grab}
         />
       ) : null}
-      {dropTarget.some ? (
+      {Option.isSome(dropTarget) ? (
         <>
           <DropMarker bounds={dropTarget.value.marker} />
           <DropPositionLabel target={dropTarget.value} />
         </>
       ) : null}
-      {rangeSelect.bounds.some ? (
+      {Option.isSome(rangeSelect.bounds) ? (
         <RangeSelectOverlay bounds={rangeSelect.bounds.value} />
       ) : null}
       {/* 吸い付いた辺は運んでいる間しか分からないので、離す前に線で見せる */}
@@ -335,7 +337,7 @@ export function ArtboardCanvas({
         drag={nodeDrag.drag}
         designDocument={designDocument}
       />
-      {textEdit.edit.some ? (
+      {Option.isSome(textEdit.edit) ? (
         <TextInlineEditor
           edit={textEdit.edit.value}
           onChange={textEdit.change}

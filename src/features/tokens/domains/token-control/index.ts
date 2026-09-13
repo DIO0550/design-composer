@@ -255,7 +255,7 @@ function colorFields(
   alphaRow: TokenControlRow,
 ): readonly TokenControlField[] {
   const rgb = ColorToken.rgbOf(color);
-  if (!rgb.some) {
+  if (!Option.isSome(rgb)) {
     return [{ ...rgbRow, input: { kind: "text", value: color } }];
   }
   return [

@@ -16,6 +16,7 @@ import { ArrayEx } from "@/utils/ArrayEx";
 import { CommandKey } from "@/utils/CommandKey";
 import { ElementEx } from "@/utils/ElementEx";
 import { KeyName, KeyNames } from "@/utils/KeyName";
+import { Option } from "@/utils/Option";
 import { PointerButton } from "@/utils/PointerButton";
 import { ArtboardLabel } from "../artboard-label";
 
@@ -65,7 +66,7 @@ export function ArtboardFrame({
    */
   const preview = artboardDrag.preview;
   const isDragged =
-    preview.some && preview.value.name === artboard.element.name;
+    Option.isSome(preview) && preview.value.name === artboard.element.name;
   const drawnAt = isDragged ? preview.value.canvasPosition : canvasPosition;
   /**
    * 押された位置から外へ辿った名前。

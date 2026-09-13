@@ -2,6 +2,7 @@ import { type ReactElement, useId } from "react";
 import type { PropEdit } from "@/domains/dcmp/node";
 import { PropControl } from "@/domains/session/prop-control";
 import { CaseStyle } from "@/utils/CaseStyle";
+import { Option } from "@/utils/Option";
 import { ControlOffsetClass, LabelWidthClass } from "../label-width";
 import { fieldOf, PropField, unsetLabel } from "../prop-field";
 
@@ -31,7 +32,7 @@ export function PropRow({
   const labelledBy = useId();
   const isLiteralField =
     control.input.kind === "number" || control.input.kind === "text";
-  const hidesLabel = control.enabledBy.some && isLiteralField;
+  const hidesLabel = Option.isSome(control.enabledBy) && isLiteralField;
   const showsUnsetNote =
     control.input.kind === "enum" && !PropControl.hasValue(control);
 

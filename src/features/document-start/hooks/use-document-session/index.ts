@@ -111,7 +111,7 @@ async function openWithDialog(
   if (!chosen.ok) {
     return DocumentSession.failed({ kind: "dialog", error: chosen.error });
   }
-  if (!chosen.value.some) {
+  if (!Option.isSome(chosen.value)) {
     return canceled;
   }
   return openAtPath(ipc, chosen.value.value);
@@ -136,7 +136,7 @@ async function createWithDialog(
   if (!chosen.ok) {
     return DocumentSession.failed({ kind: "dialog", error: chosen.error });
   }
-  if (!chosen.value.some) {
+  if (!Option.isSome(chosen.value)) {
     return canceled;
   }
 
@@ -225,7 +225,7 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
   const openDropped = useEffectEvent((paths: readonly string[]) => {
     // 同時に複数を開くのはスコープ外なので、先頭だけを開く。
     const first = ArrayEx.first(paths);
-    if (first.some) {
+    if (Option.isSome(first)) {
       openDocumentAt(first.value);
     }
   });
@@ -266,7 +266,7 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
         await ports.drop.subscribeDropped(openDropped),
       );
       // 両方落ちたらメニュー側を出す。1 行に 2 つ並べても、直せることは変わらない。
-      setCommandFailure(menu.some ? menu : drop);
+      setCommandFailure(Option.isSome(menu) ? menu : drop);
     };
     void start();
 

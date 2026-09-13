@@ -1,5 +1,5 @@
 import type { DocumentAccessFailure } from "@/domains/session/document-access-failure";
-import type { Option } from "@/utils/Option";
+import { Option } from "@/utils/Option";
 
 /**
  * 開いているファイルとの同期に失敗していることを伝える一覧（docs/05-architecture.md「保
@@ -25,7 +25,7 @@ export function DocumentSyncFailureList({
     { label: "ファイルへの書き戻しに失敗しました", failure: revert },
   ];
   const rows = syncKinds.flatMap(({ label, failure }) =>
-    failure.some ? [{ label, failure: failure.value }] : [],
+    Option.isSome(failure) ? [{ label, failure: failure.value }] : [],
   );
 
   if (rows.length === 0) {

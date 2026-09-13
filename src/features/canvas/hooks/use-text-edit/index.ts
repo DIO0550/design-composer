@@ -76,11 +76,11 @@ export function useTextEdit(
 
   const start = (names: readonly string[]) => {
     const text = EditableText.at(params.selection, names);
-    if (!text.some) {
+    if (!Option.isSome(text)) {
       return;
     }
     const element = CanvasDom.elementOf(text.value.name);
-    if (!element.some) {
+    if (!Option.isSome(element)) {
       return;
     }
     dispatch({
@@ -96,7 +96,7 @@ export function useTextEdit(
    * 別のものを選んだまま下書きが残ることはない。
    */
   const commit = () => {
-    if (!edit.some) {
+    if (!Option.isSome(edit)) {
       return;
     }
     params.onEditProp(TextEdit.toPropEdit(edit.value));

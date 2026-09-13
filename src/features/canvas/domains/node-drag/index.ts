@@ -302,7 +302,9 @@ export const NodeDrag = {
     names: readonly string[],
   ): Option<string> {
     return Option.fromNullable(
-      names.find((name) => DesignDocument.findNode(document, name).some),
+      names.find((name) =>
+        Option.isSome(DesignDocument.findNode(document, name)),
+      ),
     );
   },
 

@@ -13,7 +13,7 @@ import {
   type DocumentSessionActions,
 } from "@/features/document-start/hooks/use-document-session";
 import { FilePath } from "@/utils/FilePath";
-import type { Option } from "@/utils/Option";
+import { Option } from "@/utils/Option";
 
 /**
  * エラーを画面に並べる手段。
@@ -201,12 +201,12 @@ function RecentFileButton({
         onClick={() => onOpen(path)}
         className="flex w-full items-baseline gap-2 rounded px-2 py-1.5 text-left hover:bg-[#f0f0f0]"
       >
-        {fileName.some && (
+        {Option.isSome(fileName) && (
           <span className="truncate font-medium text-[#1e1e1e] text-sm">
             {fileName.value}
           </span>
         )}
-        {folderName.some && (
+        {Option.isSome(folderName) && (
           <span className="truncate text-[#767676] text-xs">
             {folderName.value}
           </span>
@@ -303,7 +303,7 @@ export function DocumentStart({
         <p className="rounded border border-[#e6e6e6] border-dashed px-3 py-2 text-[#767676] text-xs">
           .dcmp ファイルをウィンドウに落としても開けます
         </p>
-        {commandFailure.some && (
+        {Option.isSome(commandFailure) && (
           <FailureLine
             label={commandSourceFailureLabel(commandFailure.value.source)}
             message={commandFailure.value.message}

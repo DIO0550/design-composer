@@ -2,6 +2,7 @@ import { type ReactElement, useMemo } from "react";
 import { ColorSwatch } from "@/components/color-swatch";
 import { TokenSelection } from "@/domains/session/token-selection";
 import { ArrayEx } from "@/utils/ArrayEx";
+import { Option } from "@/utils/Option";
 
 /**
  * 破線が掛かっているノードの数の綴り。
@@ -58,7 +59,8 @@ export function TokenDashedNodes({
   const firstDashedNodeName = ArrayEx.first(nodeNames);
   // トークンの実在も見る。参照元の収集はトークンが在るかを見ないので、消されたトークンを
   // 選んだままでも名前だけは集まる（`Used by` が dangling を出せるのと同じ理由）。
-  const canShowBand = token.some && firstDashedNodeName.some;
+  const canShowBand =
+    Option.isSome(token) && Option.isSome(firstDashedNodeName);
 
   if (!canShowBand) {
     return null;

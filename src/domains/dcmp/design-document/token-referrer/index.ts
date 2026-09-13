@@ -89,7 +89,7 @@ function collectRefNodeRefProps(
       (target) => target.definition,
     );
     const isRefTo =
-      definition.some &&
+      Option.isSome(definition) &&
       PropDefinition.isRefTo(definition.value, assignment, ref);
     return isRefTo ? [assignment.name] : [];
   });

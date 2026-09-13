@@ -35,8 +35,8 @@ function isSame(
   previous: Option<CanvasBounds>,
   next: Option<CanvasBounds>,
 ): boolean {
-  if (!previous.some || !next.some) {
-    return previous.some === next.some;
+  if (!Option.isSome(previous) || !Option.isSome(next)) {
+    return Option.isSome(previous) === Option.isSome(next);
   }
   return CanvasBounds.equals(previous.value, next.value);
 }

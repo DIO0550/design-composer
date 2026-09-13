@@ -124,7 +124,7 @@ function ReadyBody({
 }>): ReactElement {
   const [draft, setDraft] = useState<Option<string>>(Option.none);
 
-  if (!draft.some) {
+  if (!Option.isSome(draft)) {
     return <CreateButton isEnabled onClick={() => setDraft(Option.some(""))} />;
   }
 

@@ -103,7 +103,7 @@ function selectableNodeName(
   document: DesignDocument,
   name: string,
 ): Option<string> {
-  return DesignDocument.findNode(document, name).some
+  return Option.isSome(DesignDocument.findNode(document, name))
     ? Option.some(name)
     : Option.none;
 }
@@ -123,7 +123,9 @@ function selectableNodeNames(
   document: DesignDocument,
   names: readonly string[],
 ): readonly string[] {
-  return names.filter((name) => selectableNodeName(document, name).some);
+  return names.filter((name) =>
+    Option.isSome(selectableNodeName(document, name)),
+  );
 }
 
 /**
@@ -137,7 +139,7 @@ function selectableArtboardName(
   document: DesignDocument,
   name: string,
 ): Option<string> {
-  return DesignDocument.findArtboard(document, name).some
+  return Option.isSome(DesignDocument.findArtboard(document, name))
     ? Option.some(name)
     : Option.none;
 }
@@ -177,8 +179,8 @@ function withHistory(state: EditorState, history: EditHistory): EditorState {
     history,
     isRenaming: false,
     selection: SelectionState.create(
-      SelectionState.names(state.selection).filter(
-        (name) => selectableName(history.present, name).some,
+      SelectionState.names(state.selection).filter((name) =>
+        Option.isSome(selectableName(history.present, name)),
       ),
     ),
     selectedToken: Option.flatMap(state.selectedToken, (ref) =>
@@ -468,7 +470,9 @@ export const EditorState = {
     const document = EditorState.document(state);
     const nodeCandidates = selectableNodeNames(document, names);
     const artboardCandidate = ArrayEx.first(
-      names.filter((name) => selectableArtboardName(document, name).some),
+      names.filter((name) =>
+        Option.isSome(selectableArtboardName(document, name)),
+      ),
     );
     const dug = SelectionDig.nameAt(
       dig,
@@ -678,7 +682,7 @@ export const EditorState = {
   ): Option<EditorState> {
     const document = EditorState.document(state);
     const current = DesignDocument.findChildPosition(document, name);
-    if (!current.some) {
+    if (!Option.isSome(current)) {
       return Option.none;
     }
     const moved = DesignDocument.moveNode(

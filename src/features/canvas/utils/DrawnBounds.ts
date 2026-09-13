@@ -31,7 +31,7 @@ export const DrawnBounds = {
   enclosing(names: readonly string[]): Option<CanvasBounds> {
     const drawn = names.flatMap((name) => {
       const measured = DrawnBounds.measure(name);
-      return measured.some ? [measured.value] : [];
+      return Option.isSome(measured) ? [measured.value] : [];
     });
     return CanvasBounds.enclosing(drawn);
   },
@@ -54,7 +54,7 @@ export const DrawnBounds = {
     return names.filter((name) => {
       const measured = DrawnBounds.measure(name);
       return (
-        measured.some &&
+        Option.isSome(measured) &&
         CanvasBounds.hasArea(measured.value) &&
         CanvasBounds.overlaps(measured.value, bounds)
       );

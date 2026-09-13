@@ -205,7 +205,7 @@ export const CanvasView = {
    * したあとのマウス移動）では何も起きない。
    */
   dragTo(view: CanvasView, pointer: Offset): CanvasView {
-    if (!view.dragFrom.some) {
+    if (!Option.isSome(view.dragFrom)) {
       return view;
     }
     const moved = CanvasView.panBy(
@@ -220,7 +220,7 @@ export const CanvasView = {
   },
 
   isDragging(view: CanvasView): boolean {
-    return view.dragFrom.some;
+    return Option.isSome(view.dragFrom);
   },
 
   /**

@@ -2,6 +2,7 @@ import { DesignDocument } from "@/domains/dcmp/design-document";
 import type { Offset } from "@/domains/unit/offset";
 import { Px } from "@/domains/unit/px";
 import { NodeDrag } from "@/features/canvas/domains/node-drag";
+import { Option } from "@/utils/Option";
 import { NameStyleRule } from "../name-style-rule";
 
 /**
@@ -47,7 +48,7 @@ export function RepositionPreviewStyle({
   designDocument,
 }: Readonly<{ drag: NodeDrag; designDocument: DesignDocument }>) {
   const preview = NodeDrag.repositionPreview(drag);
-  if (!preview.some) {
+  if (!Option.isSome(preview)) {
     return null;
   }
   const wrappingNames = DesignDocument.collectAncestorNames(

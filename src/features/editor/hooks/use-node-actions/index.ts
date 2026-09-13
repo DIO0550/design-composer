@@ -7,6 +7,7 @@ import type { SelectionDig } from "@/domains/session/selection-dig";
 import type { Offset } from "@/domains/unit/offset";
 import { useEditor } from "@/features/editor/components/editor-provider";
 import { EditorState } from "@/features/editor/domains/editor-state";
+import { Option } from "@/utils/Option";
 
 /**
  * ツリー・キャンバス・プロパティパネルから届くノード編集の操作
@@ -141,6 +142,6 @@ export function useNodeActions(): NodeActions {
      * 挿入は選択中のものを起点にするため、押せるかどうかも選択から決まる
      * （docs/06-ui.md「編集操作の一覧」）。
      */
-    isInsertEnabled: EditorState.insertPosition(state).some,
+    isInsertEnabled: Option.isSome(EditorState.insertPosition(state)),
   };
 }

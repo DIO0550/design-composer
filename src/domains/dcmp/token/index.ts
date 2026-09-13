@@ -480,7 +480,7 @@ export const TokenSet = {
    */
   replace(tokens: TokenSet, token: Token): Result<TokenSet, TokenEditError> {
     const ref = Token.ref(token);
-    if (!TokenSet.find(tokens, ref).some) {
+    if (!Option.isSome(TokenSet.find(tokens, ref))) {
       return Result.err({ kind: "token-not-found", ref });
     }
     return Result.ok(withToken(tokens, Token.normalized(token)));
@@ -498,7 +498,7 @@ export const TokenSet = {
     ref: TokenRef,
     newName: string,
   ): Result<TokenSet, TokenEditError> {
-    if (!TokenSet.find(tokens, ref).some) {
+    if (!Option.isSome(TokenSet.find(tokens, ref))) {
       return Result.err({ kind: "token-not-found", ref });
     }
     if (newName === ref.name) {
@@ -517,7 +517,7 @@ export const TokenSet = {
    * 様(docs/04-tokens.md)。
    */
   remove(tokens: TokenSet, ref: TokenRef): Result<TokenSet, TokenEditError> {
-    if (!TokenSet.find(tokens, ref).some) {
+    if (!Option.isSome(TokenSet.find(tokens, ref))) {
       return Result.err({ kind: "token-not-found", ref });
     }
     return Result.ok(withoutToken(tokens, ref));

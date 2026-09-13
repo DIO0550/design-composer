@@ -1,5 +1,6 @@
 import { TypeGlyph } from "@/components/type-glyph";
 import type { Selection, SelectionKind } from "@/domains/session/selection";
+import { Option } from "@/utils/Option";
 
 /**
  * 帯の右端に出す種別の綴り。UI 案（docs/Design Composer.html）に実在するのは `Box` と
@@ -33,12 +34,12 @@ export function SelectionTitle({
 
   return (
     <>
-      {kind.some ? <TypeGlyph kind={kind.value} /> : null}
+      {Option.isSome(kind) ? <TypeGlyph kind={kind.value} /> : null}
       {/* 名前が余りを占める。flex の子は既定で内容幅より縮まないため省略には min-w-0 が要る */}
       <h2 className="min-w-0 flex-1 truncate font-semibold text-gray-900 text-sm">
         {selection.name}
       </h2>
-      {kind.some ? (
+      {Option.isSome(kind) ? (
         <span className="shrink-0 text-gray-400 text-xs">
           {KindLabels[kind.value]}
         </span>

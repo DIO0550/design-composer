@@ -15,6 +15,7 @@ import {
 import { CanvasPointer } from "@/features/canvas/utils/CanvasPointer";
 import { DrawnBounds } from "@/features/canvas/utils/DrawnBounds";
 import { CommandKey } from "@/utils/CommandKey";
+import { Option } from "@/utils/Option";
 
 /** キャンバスの見え方に対する操作（docs/06-ui.md「ズーム / パンは非永続の view state」）。 */
 export type CanvasViewAction =
@@ -177,7 +178,7 @@ export function useCanvasView(): CanvasViewControl {
         return;
       }
       const target = DrawnBounds.enclosing(names);
-      if (!target.some) {
+      if (!Option.isSome(target)) {
         return;
       }
       dispatch({

@@ -11,6 +11,6 @@ export const Interop = {
   },
 
   toResult<T, E>(option: Option<T>, error: E): Result<T, E> {
-    return option.some ? Result.ok(option.value) : Result.err(error);
+    return Option.isSome(option) ? Result.ok(option.value) : Result.err(error);
   },
 } as const;

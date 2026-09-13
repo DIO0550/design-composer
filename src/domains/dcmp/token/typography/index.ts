@@ -215,7 +215,7 @@ function withFontFamily(
     fontSize: token.fontSize,
     lineHeight: token.lineHeight,
     fontWeight: token.fontWeight,
-    ...(fontFamily.some ? { fontFamily: fontFamily.value } : {}),
+    ...(Option.isSome(fontFamily) ? { fontFamily: fontFamily.value } : {}),
   };
 }
 

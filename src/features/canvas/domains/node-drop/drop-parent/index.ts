@@ -52,7 +52,7 @@ function parentBoxProps(
   name: string,
 ): Option<ResolvedProps<"Box">> {
   const artboard = DesignDocument.findArtboard(document, name);
-  if (artboard.some) {
+  if (Option.isSome(artboard)) {
     return Option.some(Artboard.boxProps(artboard.value));
   }
   return Option.flatMap(DesignDocument.findNode(document, name), (node) => {
@@ -80,7 +80,7 @@ function innermostAccepted<T>(
   resolve: (document: DesignDocument, name: string) => Option<T>,
 ): Option<T> {
   const occupied = DraggedNode.collectNames(search.dragged, search.document);
-  if (!occupied.some) {
+  if (!Option.isSome(occupied)) {
     return Option.none;
   }
   for (const name of search.names) {
@@ -88,7 +88,7 @@ function innermostAccepted<T>(
       continue;
     }
     const parent = resolve(search.document, name);
-    if (parent.some) {
+    if (Option.isSome(parent)) {
       return parent;
     }
   }
