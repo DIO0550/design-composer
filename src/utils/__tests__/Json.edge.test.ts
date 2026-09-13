@@ -1,14 +1,12 @@
 import { expect, test } from "vitest";
-import { Json, type JsonDecoded, type JsonDecodeError } from "@/utils/Json";
+import { Json } from "@/utils/Json";
 import { Result } from "@/utils/Result";
 import { recordCursor } from "./Json.setup";
 
-function errorsOf(result: JsonDecoded<unknown>): readonly JsonDecodeError[] {
-  return Result.isOk(result) ? [] : result.error;
-}
-
 test("期待と違う型の値は位置つきで報告される", () => {
-  expect(errorsOf(Json.string(Json.create(16, "artboards[0].name")))).toEqual([
+  expect(
+    Json.errorsOf(Json.string(Json.create(16, "artboards[0].name"))),
+  ).toEqual([
     {
       kind: "invalid-type",
       path: "artboards[0].name",
@@ -18,7 +16,7 @@ test("期待と違う型の値は位置つきで報告される", () => {
 });
 
 test("null は型が違う値として報告される", () => {
-  expect(errorsOf(Json.number(Json.create(null, "width")))).toEqual([
+  expect(Json.errorsOf(Json.number(Json.create(null, "width")))).toEqual([
     {
       kind: "invalid-type",
       path: "width",
@@ -28,7 +26,7 @@ test("null は型が違う値として報告される", () => {
 });
 
 test("配列をオブジェクトとして読もうとすると型が違う値として報告される", () => {
-  expect(errorsOf(Json.record(Json.create([], "tokens")))).toEqual([
+  expect(Json.errorsOf(Json.record(Json.create([], "tokens")))).toEqual([
     {
       kind: "invalid-type",
       path: "tokens",
@@ -40,7 +38,7 @@ test("配列をオブジェクトとして読もうとすると型が違う値�
 test("必須フィールドが無いと欠落として報告される", () => {
   const record = recordCursor({}, "artboards[0]");
 
-  expect(errorsOf(Json.required(record, "name", Json.string))).toEqual([
+  expect(Json.errorsOf(Json.required(record, "name", Json.string))).toEqual([
     {
       kind: "missing-field",
       path: "artboards[0].name",
@@ -52,21 +50,25 @@ test("必須フィールドが無いと欠落として報告される", () => {
 test("知らないフィールドは未知のフィールドとして報告される", () => {
   const record = recordCursor({ name: "screen", zoom: 1.5 });
 
-  expect(errorsOf(Json.knownFields(Result.ok("ok"), record, ["name"]))).toEqual(
-    [{ kind: "unknown-field", path: "zoom", message: 'unknown field "zoom"' }],
-  );
+  expect(
+    Json.errorsOf(Json.knownFields(Result.ok("ok"), record, ["name"])),
+  ).toEqual([
+    { kind: "unknown-field", path: "zoom", message: 'unknown field "zoom"' },
+  ]);
 });
 
 test("プロトタイプ由来のキーはフィールドとして存在しない扱いになる", () => {
   const record = recordCursor({});
 
-  expect(errorsOf(Json.required(record, "toString", Json.string))).toEqual([
-    {
-      kind: "missing-field",
-      path: "toString",
-      message: '"toString" is required',
-    },
-  ]);
+  expect(Json.errorsOf(Json.required(record, "toString", Json.string))).toEqual(
+    [
+      {
+        kind: "missing-field",
+        path: "toString",
+        message: '"toString" is required',
+      },
+    ],
+  );
 });
 
 test("複数の値をまとめるとき失敗した分のエラーがすべて集まる", () => {
@@ -76,7 +78,10 @@ test("複数の値をまとめるとき失敗した分のエラーがすべて�
     (a, b) => `${a}${b}`,
   );
 
-  expect(errorsOf(combined).map((error) => error.path)).toEqual(["a", "b"]);
+  expect(Json.errorsOf(combined).map((error) => error.path)).toEqual([
+    "a",
+    "b",
+  ]);
 });
 
 test("辞書の中の複数の不正はまとめて報告される", () => {
@@ -85,7 +90,7 @@ test("辞書の中の複数の不正はまとめて報告される", () => {
     Json.number,
   );
 
-  expect(errorsOf(decoded).map((error) => error.path)).toEqual([
+  expect(Json.errorsOf(decoded).map((error) => error.path)).toEqual([
     "spacing.sm",
     "spacing.md",
   ]);
@@ -94,7 +99,7 @@ test("辞書の中の複数の不正はまとめて報告される", () => {
 test("配列の中の複数の不正は位置つきでまとめて報告される", () => {
   const decoded = Json.arrayOf(Json.create([1, 2], "names"), Json.string);
 
-  expect(errorsOf(decoded).map((error) => error.path)).toEqual([
+  expect(Json.errorsOf(decoded).map((error) => error.path)).toEqual([
     "names[0]",
     "names[1]",
   ]);
@@ -106,7 +111,7 @@ test("値の位置は入れ子をたどった形で示される", () => {
     (cursor) => Json.mapOf(cursor, Json.string),
   );
 
-  expect(errorsOf(decoded).map((error) => error.path)).toEqual([
+  expect(Json.errorsOf(decoded).map((error) => error.path)).toEqual([
     "components.card.title",
   ]);
 });
