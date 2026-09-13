@@ -8,6 +8,7 @@ import { TokenSelection } from "@/domains/session/token-selection";
 import { sampleCanvasSelection } from "@/features/canvas/__stories__/sample-canvas-document";
 import { DocumentHtml } from "@/services/document-html";
 import { Option } from "@/utils/Option";
+import { Result } from "@/utils/Result";
 import { WithCanvasControls } from "../__stories__/canvas-controls";
 import { ArtboardFrameList } from "./index";
 
@@ -23,7 +24,7 @@ function ArtboardFrameListWithControls({
   selection: DocumentSelection;
 }>) {
   const compiled = DocumentHtml.compile(selection.document);
-  if (!compiled.ok) {
+  if (!Result.isOk(compiled)) {
     // ストーリーの入力は固定なので、ここへは来ない（来たら組み立てが壊れている）
     return <p>コンパイルに失敗しました: {compiled.error.message}</p>;
   }

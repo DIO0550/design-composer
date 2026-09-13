@@ -1021,7 +1021,7 @@ export const DesignDocument = {
    * @returns 解除できるなら true
    */
   isDetachable(document: DesignDocument, name: string): boolean {
-    return expandInstance(document, name).ok;
+    return Result.isOk(expandInstance(document, name));
   },
 
   /** artboard をドキュメントの指定位置へ挿入する。 */

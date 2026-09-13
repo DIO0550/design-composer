@@ -92,7 +92,7 @@ function compileNodes(
   const compiled: CompiledElement[] = [];
   for (const node of nodes) {
     const result = compileNode(node, parentDirection);
-    if (!result.ok) {
+    if (!Result.isOk(result)) {
       return result;
     }
     compiled.push(result.value);

@@ -4,6 +4,7 @@ import { DocumentSaveState } from "@/domains/session/document-save-state";
 import { FileValidity } from "@/domains/session/file-validity";
 import { type DocumentIpc, toDocumentAccessFailure } from "@/libs/document-ipc";
 import { DocumentJson } from "@/libs/document-json";
+import { Result } from "@/utils/Result";
 
 /**
  * 編集が止まってからファイルへ書き出すまでの待ち時間（docs/05-architecture.md「保存モデル:
@@ -80,7 +81,7 @@ export function useAutoSave({
       if (ignore) {
         return;
       }
-      if (!saved.ok) {
+      if (!Result.isOk(saved)) {
         setSaveState(
           DocumentSaveState.failed(toDocumentAccessFailure(saved.error)),
         );

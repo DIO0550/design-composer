@@ -116,7 +116,7 @@ function expandNodes(
   const expanded: ExpandedNode[] = [];
   for (const node of nodes) {
     const result = expandNode(node, components, expanding);
-    if (!result.ok) {
+    if (!Result.isOk(result)) {
       return result;
     }
     expanded.push(result.value);

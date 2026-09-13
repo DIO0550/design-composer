@@ -40,7 +40,7 @@ test("影の色も読み込んだ時点で小文字の hex に正規化される
 test("知らない種別は読み込めない", () => {
   const result = TokenSet.fromJson(Json.create({ gradients: {} }, "tokens"));
 
-  expect(result.ok).toBe(false);
+  expect(Result.isOk(result)).toBe(false);
 });
 
 test("種別は仕様の定義順で書き出される", () => {

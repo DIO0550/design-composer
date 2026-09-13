@@ -11,6 +11,7 @@ import {
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
 import { DocumentSelection } from "@/domains/session/document-selection";
+import { Result } from "@/utils/Result";
 import { PropertyPanel } from "../index";
 
 const EditedDocument = DesignDocument.create({
@@ -59,7 +60,7 @@ function EditablePanel({ selected }: Readonly<{ selected: string }>) {
             selected,
             edit,
           );
-          return edited.ok
+          return Result.isOk(edited)
             ? DocumentSelection.fromNames(edited.value, [selected])
             : current;
         })

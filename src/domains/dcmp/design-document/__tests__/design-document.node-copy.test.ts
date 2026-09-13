@@ -138,7 +138,7 @@ test("子を持てないノードの下へ複製を挿そうとすると失敗�
     { name: "label", type: "Text" },
   );
 
-  expect(result.ok).toBe(false);
+  expect(Result.isOk(result)).toBe(false);
 });
 
 test("insertNodeCopy は元のドキュメントを変更しない", () => {

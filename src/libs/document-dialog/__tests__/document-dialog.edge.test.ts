@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { Result } from "@/utils/Result";
 import { DialogChoice, DocumentDialogFake } from "../fake";
 
 test("ダイアログを出せなかったときは失敗として返り、例外にはならない", async () => {
@@ -9,7 +10,7 @@ test("ダイアログを出せなかったときは失敗として返り、例�
 
   const chosen = await fake.dialog.chooseOpenPath();
 
-  expect(chosen.ok).toBe(false);
+  expect(Result.isOk(chosen)).toBe(false);
 });
 
 test("ダイアログを出せなかった理由がメッセージに残る", async () => {
@@ -20,7 +21,7 @@ test("ダイアログを出せなかった理由がメッセージに残る", as
 
   const chosen = await fake.dialog.chooseSavePath();
 
-  expect(chosen.ok ? "" : chosen.error.message).toContain(
+  expect(Result.isOk(chosen) ? "" : chosen.error.message).toContain(
     "dialog.save not allowed",
   );
 });

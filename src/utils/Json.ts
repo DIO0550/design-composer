@@ -133,7 +133,7 @@ export const Json = {
   },
 
   errorsOf(result: JsonDecoded<unknown>): readonly JsonDecodeError[] {
-    return result.ok ? [] : result.error;
+    return Result.isOk(result) ? [] : result.error;
   },
 
   string(cursor: JsonCursor): JsonDecoded<string> {
@@ -277,7 +277,7 @@ export const Json = {
       return Result.err(errors);
     }
     return Result.ok(
-      results.flatMap((result) => (result.ok ? [result.value] : [])),
+      results.flatMap((result) => (Result.isOk(result) ? [result.value] : [])),
     );
   },
 
@@ -295,7 +295,8 @@ export const Json = {
     b: JsonDecoded<B>,
     build: (a: A, b: B) => R,
   ): JsonDecoded<R> {
-    if (a.ok && b.ok) {
+    const allDecoded = Result.isOk(a) && Result.isOk(b);
+    if (allDecoded) {
       return Result.ok(build(a.value, b.value));
     }
     return Result.err([...Json.errorsOf(a), ...Json.errorsOf(b)]);
@@ -307,7 +308,8 @@ export const Json = {
     c: JsonDecoded<C>,
     build: (a: A, b: B, c: C) => R,
   ): JsonDecoded<R> {
-    if (a.ok && b.ok && c.ok) {
+    const allDecoded = Result.isOk(a) && Result.isOk(b) && Result.isOk(c);
+    if (allDecoded) {
       return Result.ok(build(a.value, b.value, c.value));
     }
     return Result.err([
@@ -324,7 +326,9 @@ export const Json = {
     d: JsonDecoded<D>,
     build: (a: A, b: B, c: C, d: D) => R,
   ): JsonDecoded<R> {
-    if (a.ok && b.ok && c.ok && d.ok) {
+    const allDecoded =
+      Result.isOk(a) && Result.isOk(b) && Result.isOk(c) && Result.isOk(d);
+    if (allDecoded) {
       return Result.ok(build(a.value, b.value, c.value, d.value));
     }
     return Result.err([
@@ -343,7 +347,13 @@ export const Json = {
     e: JsonDecoded<E>,
     build: (a: A, b: B, c: C, d: D, e: E) => R,
   ): JsonDecoded<R> {
-    if (a.ok && b.ok && c.ok && d.ok && e.ok) {
+    const allDecoded =
+      Result.isOk(a) &&
+      Result.isOk(b) &&
+      Result.isOk(c) &&
+      Result.isOk(d) &&
+      Result.isOk(e);
+    if (allDecoded) {
       return Result.ok(build(a.value, b.value, c.value, d.value, e.value));
     }
     return Result.err([
@@ -364,7 +374,14 @@ export const Json = {
     f: JsonDecoded<F>,
     build: (a: A, b: B, c: C, d: D, e: E, f: F) => R,
   ): JsonDecoded<R> {
-    if (a.ok && b.ok && c.ok && d.ok && e.ok && f.ok) {
+    const allDecoded =
+      Result.isOk(a) &&
+      Result.isOk(b) &&
+      Result.isOk(c) &&
+      Result.isOk(d) &&
+      Result.isOk(e) &&
+      Result.isOk(f);
+    if (allDecoded) {
       return Result.ok(
         build(a.value, b.value, c.value, d.value, e.value, f.value),
       );

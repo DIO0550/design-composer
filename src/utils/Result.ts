@@ -12,7 +12,7 @@ export type Err<E> = Readonly<{
 
 /**
  * 失敗しうる処理の戻り値（rules/coding.md「エラーと不在の表現」）。
- * `ok` で分岐すると、成功なら `value`、失敗なら `error` だけが読める。
+ * `Result.isOk` で分岐すると、成功なら `value`、失敗なら `error` だけが読める。
  */
 export type Result<T, E> = Ok<T> | Err<E>;
 
@@ -43,6 +43,19 @@ export const Result = {
 
   unwrapOr<T, E>(result: Result<T, E>, defaultValue: T): T {
     return result.ok ? result.value : defaultValue;
+  },
+
+  /**
+   * 成功しているか。
+   *
+   * 成否の判定はすべてここを通す。判別子（`ok`）を直接読むのはこのファイルの中だけに
+   * して、`Result` がどう表現されているかを知る場所を定義元 1 つに閉じている。
+   *
+   * @param result 中身を見る `Result`
+   * @returns 成功していれば `true`。失敗なら `false`
+   */
+  isOk<T, E>(result: Result<T, E>): result is Ok<T> {
+    return result.ok;
   },
 
   /** Ok の値を取り出す。Err の場合は例外を投げる。 */

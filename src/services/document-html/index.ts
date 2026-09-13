@@ -67,7 +67,7 @@ function compileArtboards(
   const compiled: CompiledArtboard[] = [];
   for (const artboard of document.artboards) {
     const result = compileArtboard(artboard, document);
-    if (!result.ok) {
+    if (!Result.isOk(result)) {
       return result;
     }
     compiled.push(result.value);

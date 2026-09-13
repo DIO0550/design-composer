@@ -1,6 +1,6 @@
 import type { DesignDocument } from "@/domains/dcmp/design-document";
 import { DocumentError } from "@/domains/session/document-error";
-import type { Result } from "@/utils/Result";
+import { Result } from "@/utils/Result";
 
 /**
  * 外部変更で届いた内容を取り込んだ結果（docs/05-architecture.md「外部編集の検知」）。取
@@ -29,7 +29,7 @@ export const DocumentReload = {
   fromParsed(
     parsed: Result<DesignDocument, readonly DocumentError[]>,
   ): DocumentReload {
-    if (!parsed.ok) {
+    if (!Result.isOk(parsed)) {
       return { kind: "rejected", errors: parsed.error };
     }
 

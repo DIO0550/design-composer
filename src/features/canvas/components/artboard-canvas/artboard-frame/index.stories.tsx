@@ -3,6 +3,7 @@ import type { DocumentSelection } from "@/domains/session/document-selection";
 import { Offset } from "@/domains/unit/offset";
 import { sampleCanvasSelection } from "@/features/canvas/__stories__/sample-canvas-document";
 import { DocumentHtml } from "@/services/document-html";
+import { Result } from "@/utils/Result";
 import { WithCanvasControls } from "../__stories__/canvas-controls";
 import { ArtboardFrame } from "./index";
 
@@ -24,12 +25,13 @@ function ArtboardFrameWithControls({
   isCurrent: boolean;
 }>) {
   const compiled = DocumentHtml.compile(selection.document);
-  const artboard = compiled.ok
+  const artboard = Result.isOk(compiled)
     ? compiled.value.artboards.find(
         (candidate) => candidate.element.name === artboardName,
       )
     : undefined;
-  if (compiled.ok === false || artboard === undefined) {
+  const isFrameMissing = !Result.isOk(compiled) || artboard === undefined;
+  if (isFrameMissing) {
     // ストーリーの入力は固定なので、ここへは来ない（来たら組み立てが壊れている）
     return <p>{artboardName} を組み立てられませんでした</p>;
   }

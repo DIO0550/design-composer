@@ -10,7 +10,7 @@ test("存在しないノード名を指定して解除しようとすると Err 
 
   const result = DesignDocument.detach(document, "missing");
 
-  expect(result.ok).toBe(false);
+  expect(Result.isOk(result)).toBe(false);
 });
 
 test("ref ノードでないノードを指定して解除しようとすると Err が返る", () => {
@@ -27,7 +27,7 @@ test("ref ノードでないノードを指定して解除しようとすると 
 
   const result = DesignDocument.detach(document, "box-1");
 
-  expect(result.ok).toBe(false);
+  expect(Result.isOk(result)).toBe(false);
 });
 
 test("存在しない部品を参照する ref ノードを解除しようとすると Err が返る", () => {
@@ -44,7 +44,7 @@ test("存在しない部品を参照する ref ノードを解除しようとす
 
   const result = DesignDocument.detach(document, "save-button");
 
-  expect(result.ok).toBe(false);
+  expect(Result.isOk(result)).toBe(false);
 });
 
 test("ネストした部品参照を持つ ref ノードを解除すると子孫まですべて実ノードに展開される", () => {

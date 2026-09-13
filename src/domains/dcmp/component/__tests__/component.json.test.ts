@@ -27,7 +27,7 @@ test("部品のルートは name を持たない", () => {
     Json.create({ name: "card", type: "Box" }, "components.card"),
   );
 
-  expect(result.ok).toBe(false);
+  expect(Result.isOk(result)).toBe(false);
 });
 
 test("binding に node と prop が揃っていない部品は読み込めない", () => {
@@ -38,7 +38,7 @@ test("binding に node と prop が揃っていない部品は読み込めない
     ),
   );
 
-  expect(result.ok).toBe(false);
+  expect(Result.isOk(result)).toBe(false);
 });
 
 test("部品は publicProps・type・props・children の順で書き出される", () => {

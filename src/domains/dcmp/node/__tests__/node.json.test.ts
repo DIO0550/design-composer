@@ -24,7 +24,7 @@ test("ref を持つノードは参照ノードとして読み込まれる", () =
 test("type も ref も持たないノードは読み込めない", () => {
   const result = Node.fromJson(Json.create({ name: "orphan" }, "node"));
 
-  expect(result.ok).toBe(false);
+  expect(Result.isOk(result)).toBe(false);
 });
 
 test("子ノードは階層のまま読み込まれる", () => {

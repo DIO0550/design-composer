@@ -7,7 +7,7 @@ import type { NodeDragControl } from "@/features/canvas/hooks/use-node-drag";
 import type { NodeResizeControl } from "@/features/canvas/hooks/use-node-resize";
 import type { TextEditControl } from "@/features/canvas/hooks/use-text-edit";
 import type { CompiledDocument } from "@/services/document-html";
-import type { Result } from "@/utils/Result";
+import { Result } from "@/utils/Result";
 import { ArtboardFrameList } from "../artboard-frame-list";
 
 /**
@@ -38,7 +38,7 @@ export function CanvasBody({
   nodeResize: NodeResizeControl;
   textEdit: TextEditControl;
 }>) {
-  if (!compiled.ok) {
+  if (!Result.isOk(compiled)) {
     return (
       <p className="p-8 text-red-700 text-sm">
         コンパイルに失敗しました: {compiled.error.message}

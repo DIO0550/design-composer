@@ -27,5 +27,5 @@ test("購読を張れなければ失敗が返る", async () => {
 
   const subscribed = await fake.drop.subscribeDropped(() => {});
 
-  expect(subscribed.ok).toBe(false);
+  expect(Result.isOk(subscribed)).toBe(false);
 });

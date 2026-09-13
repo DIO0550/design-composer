@@ -10,7 +10,7 @@ import type { Unsubscribe } from "@/libs/tauri-ipc";
 import type { ValueOf } from "@/types/ValueOf";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
-import type { Result } from "@/utils/Result";
+import { Result } from "@/utils/Result";
 
 /**
  * 開く / 新規作成に必要な外部世界の口。
@@ -64,7 +64,7 @@ export type DocumentSessionActions = Readonly<{
  */
 function toOpenedSession(path: string, content: string): DocumentSession {
   const opened = OpenedDocument.fromParsed(path, DocumentJson.parse(content));
-  return opened.ok
+  return Result.isOk(opened)
     ? DocumentSession.opened(opened.value)
     : DocumentSession.failed({ kind: "unparsable", errors: opened.error });
 }
@@ -81,7 +81,7 @@ async function openAtPath(
   path: string,
 ): Promise<DocumentSession> {
   const loaded = await ipc.load(path);
-  if (!loaded.ok) {
+  if (!Result.isOk(loaded)) {
     return DocumentSession.failed({
       kind: "io",
       error: toDocumentAccessFailure(loaded.error),
@@ -108,7 +108,7 @@ async function openWithDialog(
   canceled: DocumentSession,
 ): Promise<DocumentSession> {
   const chosen = await dialog.chooseOpenPath();
-  if (!chosen.ok) {
+  if (!Result.isOk(chosen)) {
     return DocumentSession.failed({ kind: "dialog", error: chosen.error });
   }
   if (!Option.isSome(chosen.value)) {
@@ -133,7 +133,7 @@ async function createWithDialog(
   canceled: DocumentSession,
 ): Promise<DocumentSession> {
   const chosen = await dialog.chooseSavePath();
-  if (!chosen.ok) {
+  if (!Result.isOk(chosen)) {
     return DocumentSession.failed({ kind: "dialog", error: chosen.error });
   }
   if (!Option.isSome(chosen.value)) {
@@ -145,7 +145,7 @@ async function createWithDialog(
     created.path,
     DocumentJson.serialize(created.document),
   );
-  if (!saved.ok) {
+  if (!Result.isOk(saved)) {
     return DocumentSession.failed({
       kind: "io",
       error: toDocumentAccessFailure(saved.error),
@@ -245,7 +245,7 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
       source: CommandSource,
       subscribed: Result<Unsubscribe, Readonly<{ message: string }>>,
     ): Option<CommandSourceFailure> => {
-      if (!subscribed.ok) {
+      if (!Result.isOk(subscribed)) {
         return Option.some({ source, message: subscribed.error.message });
       }
       if (stopped) {

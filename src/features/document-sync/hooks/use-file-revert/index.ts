@@ -3,6 +3,7 @@ import type { DesignDocument } from "@/domains/dcmp/design-document";
 import { DocumentSaveState } from "@/domains/session/document-save-state";
 import { type DocumentIpc, toDocumentAccessFailure } from "@/libs/document-ipc";
 import { DocumentJson } from "@/libs/document-json";
+import { Result } from "@/utils/Result";
 
 /**
  * 書き戻す先と中身、および書き戻せたことの伝え先。
@@ -49,7 +50,7 @@ export function useFileRevert({
   const revert = () => {
     setSaveState(DocumentSaveState.Saving);
     void ipc.save(path, DocumentJson.serialize(document)).then((saved) => {
-      if (!saved.ok) {
+      if (!Result.isOk(saved)) {
         setSaveState(
           DocumentSaveState.failed(toDocumentAccessFailure(saved.error)),
         );

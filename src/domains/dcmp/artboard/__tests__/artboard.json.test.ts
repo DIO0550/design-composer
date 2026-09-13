@@ -26,7 +26,7 @@ test("children が欠けている artboard は読み込めない", () => {
     Json.create({ name: "screen", width: 375, height: 812 }, "artboards[0]"),
   );
 
-  expect(result.ok).toBe(false);
+  expect(Result.isOk(result)).toBe(false);
 });
 
 test("artboard は仕様の定義順で書き出される", () => {

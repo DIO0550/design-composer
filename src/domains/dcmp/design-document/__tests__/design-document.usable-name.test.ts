@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { Result } from "@/utils/Result";
 import { DesignDocument } from "../index";
 
 /*
@@ -54,7 +55,7 @@ test("使えないと判定した名前では部品化が失敗する", () => {
   const document = setupDocument();
 
   expect(DesignDocument.isUsableName(document, "card")).toBe(false);
-  expect(DesignDocument.createComponent(document, "box-1", "card").ok).toBe(
-    false,
-  );
+  expect(
+    Result.isOk(DesignDocument.createComponent(document, "box-1", "card")),
+  ).toBe(false);
 });
