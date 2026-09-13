@@ -128,6 +128,7 @@ wc -l AGENTS.md rules/*.md | tail -1
 - 迷ったら**既存のフックが何を見ているか**を読む。`check-test-rules.sh` のように「`test()` ブロックの中だけ」と対象を絞れるなら成立する。絞れないなら成立しない
 - **弱める(報告に留める / 追加行だけに絞る)前に、`--all` 相当で件数を数えて、埋められるなら埋める。** 埋めれば絞る理由そのものが消える。弱めるなら、その理由といつ強められるかを `.claude/hooks/README.md` へ書く
 - 足したら配線も更新する。git hooks は `harness/githooks/`、Claude Code のフックは `.claude/settings.json` と `.claude/hooks/README.md` の表
+- **配線には「人が踏む手順」も含める**(`分類: harness-process-drift`)。CI(`.github/`)だけが走らせる検査は、`implementation-flow` フェーズ 7 の push 前コマンド一覧へも足す。足さないと CI で落ちて初めて存在を知る。手順そのものを書き換えたら、**その手順を呼ぶ側**(ルーティンの起動プロンプト等)が古い段取り・古いフラグを指していないかも確かめる
 
 ### 新しいスキルを作る / 作らない
 
