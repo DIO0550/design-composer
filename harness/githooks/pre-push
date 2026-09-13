@@ -35,6 +35,9 @@ if command -v python3 >/dev/null 2>&1; then
 
   echo "pre-push: import 規約"
   python3 .claude/hooks/lib/import-rule-violations.py src
+
+  echo "pre-push: 判別子の直読み"
+  python3 .claude/hooks/lib/result-option-read-violations.py src
 fi
 
 echo "pre-push: テスト規約"

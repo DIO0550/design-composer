@@ -35,6 +35,7 @@ export const Money = {
 
 - `throw` / `try-catch` は使わない。「見つからない」「不正な入力」「循環参照」などはすべて `Result.err` / `Option.none` で表現する
 - 戻り値の `T | undefined` / `T | null` を不在の表現に使わない。不在は `Option` で表す
+- 在／不在・成否の**判定**は `Option.isSome` / `Result.isOk` を通す。判別子(`some` / `ok`)を直接読んでよいのは、その判別子を型宣言で定義しているファイルの中だけ
 - 失敗を握りつぶして既定値へフォールバックしない。呼び出し側が分岐できるよう、そのまま伝播させる(`Result.map` / `Result.flatMap` で連鎖する)
 - **同じモジュール内で throw ベースと Result ベースを混在させない。** 公開APIの一部だけを `Result` 化して残りを throw のままにしない
 - 例外に変換してよいのは、外部ライブラリの境界(`libs/`)と、失敗したらテストを落としたいテストコード(`Result.unwrap`)だけ

@@ -19,6 +19,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `check-doc-comments.sh`  | `PostToolUse` (Edit/Write) | **doc コメントの検証**(rules/coding.md「コメントは doc と Why / Why not に絞る」)。doc の無い宣言と、`@param` / `@returns` / `@throws` が欠けた doc を知らせる |
 | `pre-push-doc-comments.sh` | `PreToolUse` (Bash)     | **push 前の doc コメント検査**。`src/` に doc の無い宣言、または `@param` / `@returns` / `@throws` の欠けた doc があれば push をブロック |
 | `pre-push-import-rules.sh` | `PreToolUse` (Bash)     | **push 前の import 規約検査**(rules/architecture.md「モジュールの公開API」「依存方向のルール」)。公開 API を迂回する import・循環参照・カテゴリの外に置かれた domains のモジュールがあれば push をブロック |
+| `pre-push-result-option-reads.sh` | `PreToolUse` (Bash) | **push 前の判別子の直読み検査**(rules/coding.md「エラーと不在の表現」)。`Result` / `Option` の判別子(`ok` / `some`)を、その判別子を型宣言で定義していないファイルで直読みしていれば push をブロック |
 | `post-merge-review.sh`   | `PostToolUse` (Bash/MCP)  | **マージ後の振り返りの提示**。PR のマージを検知し、Issue への追記・続きの Issue・評価の記録を促す       |
 | `hook-canary.sh`         | `PreToolUse` (Bash)       | **カナリア**。`echo hook-canary` を必ず deny する。連ねたコマンドの中にあっても切り出して見る。通ってしまったときの読み方は後述（**通った = 不発、ではない**） |
 | `session-url-notice.sh`  | `SessionStart`            | **セッション URL の提示**（AGENTS.md「Issue に紐づいて起動したら、セッションの URL を Issue に残す」）。URL を組み立てて渡す。ブランチが `claude/issue-<N>-...` なら対象の番号も添える |
@@ -52,7 +53,11 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `lib/test-rules-scan.sh` | `pre-push-test-rules.sh` / `harness/githooks/pre-push` | 指定したルート配下の `*.test.ts(x)` をすべて検査する。違反があれば exit 1 |
 | `lib/lint-suppressions.py` | `block-lint-suppress.sh` / `.github/scripts/check-added-lint-suppressions.sh` | 許可されていない lint 抑制コメントの行を報告する。例外の判定もここが持つ |
 | `lib/import-rule-violations.py` | `pre-push-import-rules.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | 公開 API を迂回する import（`feature-public-api` / `module-public-api`）・循環（`import-cycle` / `feature-cycle`）・カテゴリの外に置かれた domains のモジュール（`domains-category`）を報告する |
+| `lib/ts_sources.py` | `lib/import-rule-violations.py` / `lib/result-option-read-violations.py` | `src/` の走査対象の集め方・報告の形・コマンドラインの受け方。ファイル名だけアンダースコアなのは、ハイフンを含む名前が Python の import 名にならないため |
+| `lib/pre-push-detector.sh` | `pre-push-import-rules.sh` / `pre-push-result-option-reads.sh` | `git push` のときだけ検出器を走らせ、違反があれば deny の JSON を返す（`deny_on_violations <検出器> <検査の名前> <直し方の一文>`） |
+| `lib/result-option-read-violations.py` | `pre-push-result-option-reads.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `Result` / `Option` の判別子（`ok` / `some`）を、その判別子を型宣言で定義していないファイルで直読みしている箇所（`result-option-read`）を報告する |
 | `lib/canary-cases.sh` | 手で実行する（「動作確認」） | `hook-canary.sh` へ判定表を流し、deny / pass / miss が期待どおりかを報告する。食い違いがあれば exit 1 |
+| `lib/result-option-read-cases.sh` | 手で実行する（「動作確認」） | `result-option-read-violations.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードで報告する。食い違いがあれば exit 1 |
 
 ## 強制力の序列 — フックが発火しない実行環境がある
 
@@ -110,7 +115,7 @@ pr-500 は `block-npx.sh` 不発で任意の `npx` 実行が素通りした)。
 `session-url-notice.sh` の不発は対応不要(上の表のとおり、失っても情報が 1 つ
 足りないだけでガードは破れない)。
 
-**doc コメント・テスト規約・import 規約は CI(層 1)へ上げた**(`frontend.yml` の `rules-check`)。
+**doc コメント・テスト規約・import 規約・判別子の直読みは CI(層 1)へ上げた**(`frontend.yml` の `rules-check`)。
 **doc コメントとテスト規約の 2 つ**は層 2・層 3 にしか無かったが、**層 2 と層 3 は同じ環境で同時に抜ける**。
 リモート実行環境はクローンからやり直すので `core.hooksPath` が未設定のまま
 (`postCreateCommand` は DevContainer でしか走らない)で、そこは `.claude/settings.json` の
@@ -224,6 +229,13 @@ deny のメッセージは、`jq` / `python3` が欠けていればその名前�
   - **ゴール 6 の実効範囲は現状ほぼ fixture 専用。** 入れ子モジュールの index を許すため、`module-public-api` に当たるのは「モジュールフォルダ配下の非 index ファイルを外から読む」形だけで、実測するとテスト・ストーリーを除いた該当ファイルは 4 件しか無い(このリポジトリが「実装は `index.ts` に直接書く」を守っているため)。**将来の退行を止める枠であって、いま何かを剥がす検査ではない**
   - **エスケープハッチは置かない。** 他の push ブロック系(`@doc-comments-ok` / `@test-rules-disable`)と違い、この検査は「その import を書いてよいか」の判定で、**ファイル単位で例外にできる性質のものではない**(例外にした瞬間そのファイルからは何でも読める)。偽陽性を避ける側で手当てしてある — コメント行は数えない・入れ子の index は通す
   - 導入時点の既存違反は 8 件(feature をまたぐ fixture の直接 import)で、テスト用の公開口を置いて 0 件にしてから `error` 相当(exit 1)で入れた
+- **判別子の直読み**(`lib/result-option-read-violations.py`。#523)は **push をブロックする**。見るのは `src/` 全体で、`rules/coding.md`「エラーと不在の表現」の「判定は `Option.isSome` / `Result.isOk` を通す」に対応する
+  - **エスケープハッチは置かない。** この検査は**ファイル単位の免除を規則として持っている**(その判別子を型宣言で定義しているファイルの中は許す)ので、逃げ道は既に規則の側にある。導入時点の違反 0 件・偽陽性 0 件で、呼び出しの無い逃げ道を先回りで足さない
+  - 導入時点の違反は 0 件。読み側の移行は #423 / #502 / #504 / #509 で終わっており、`src/` に残る直読みは `src/utils/Result.ts` / `src/utils/Option.ts` / `src/libs/json-lexical-scanner/index.ts`(`ok` を判別子にした別の直和を 2 つ持つ)の中だけ
+  - **構築側・比較側のリテラル**(`toEqual({ ok: false, error: e })`)は対象外。読み側だけで 0 件になるので無条件のブロックで入れられる(→ #524)
+  - **外の語彙が同じ綴りを持つ形**(Fetch API の `response.ok` など)は、いま `src/` に無いのでそのまま違反になる。出てきたら `libs/` の境界で詰め替えるか、検出器の表を見直す
+  - 判定の仕組み(型宣言の領域の見分け方・意図した取りこぼし)はスクリプトの docstring が持つ。判定表は `lib/result-option-read-cases.sh`
+  - oxlint にも Biome にも置けなかった(理由は `frontend.yml` の `rules-check` にある「判別子の直読み」ステップのコメント)
 
 ## 動作確認
 
@@ -372,6 +384,34 @@ rm src/app/probe.ts
 # 通ること(違反 0 のとき。出力なし・exit 0)
 echo '{"tool_input":{"command":"git push"}}' \
   | bash .claude/hooks/pre-push-import-rules.sh; echo "exit=$?"
+```
+
+```bash
+# 判別子の直読みの判定表(`ok` だけなら期待どおり・`NG` が出たら判定が変わっている)
+bash .claude/hooks/lib/result-option-read-cases.sh; echo "exit=$?"
+
+# 判別子の直読みの全体検査(git hooks・CI と共有)
+python3 .claude/hooks/lib/result-option-read-violations.py src; echo "exit=$?"   # → 違反 0 件・exit=0
+
+# 定義元の外で直読みすると落ちること(probe が .tsx でも拾えること)。
+# **probe は doc 付き・整形済みで、モジュールフォルダの外に置く。** 層 2 はこの検査より
+# 前に typecheck / oxlint / biome / doc コメント / import 規約を走らせるので、素の 1 行を
+# 置くと未定義の識別子で typecheck が先に落ち、この検査まで届かない
+printf '/**\n * 判別子の直読み検査の probe。\n *\n * @param result 成否を持つ値\n * @returns 成否に応じた表示\n */\nexport const Probe = (result: { ok: boolean }) =>\n  result.ok ? <p>y</p> : <p>n</p>;\n' \
+  > src/features/editor/probe.tsx
+python3 .claude/hooks/lib/result-option-read-violations.py src; echo "exit=$?"   # → [result-option-read] 1 件・exit=1
+
+# 層 2(git hooks)が止めること。set -e なので検査の exit 1 でそのまま落ちる
+bash harness/githooks/pre-push; echo "exit=$?"                                   # → exit=1
+
+# 層 3(Claude Code の PreToolUse)が deny を返すこと
+echo '{"tool_input":{"command":"git push"}}' \
+  | bash .claude/hooks/pre-push-result-option-reads.sh
+rm src/features/editor/probe.tsx
+
+# 通ること(違反 0 のとき。出力なし・exit 0)
+echo '{"tool_input":{"command":"git push"}}' \
+  | bash .claude/hooks/pre-push-result-option-reads.sh; echo "exit=$?"
 ```
 
 ```bash

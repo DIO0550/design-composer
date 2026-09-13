@@ -98,6 +98,7 @@ jobs:
         run: bash .github/scripts/check-added-test-helper-duplication.sh "${{ github.event.pull_request.base.sha }}"
 
   rules-check:
+    # ジョブ名は検査が増えても据え置く(理由は lint-suppress ジョブのコメント)。
     name: doc コメント / テスト規約 / import 規約のチェック
     runs-on: ubuntu-24.04
     timeout-minutes: 5
@@ -126,6 +127,13 @@ jobs:
       # import グラフを組まないと判定できないものだけ。
       - name: import 規約
         run: python3 .claude/hooks/lib/import-rule-violations.py src
+
+      # Result / Option の判別子を定義元の外で直読みしている箇所（#523）。
+      # oxlint には no-restricted-syntax が無く、Biome の GritQL プラグインでは
+      # 呼び出し位置（list.some(fn)）と引数の中の読み（expect(option.some)）を
+      # 区別できないため、ここでスクリプトとして持つ。
+      - name: 判別子の直読み
+        run: python3 .claude/hooks/lib/result-option-read-violations.py src
 
   report-comment:
     name: post ci report comment

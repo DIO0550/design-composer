@@ -35,6 +35,8 @@ import re
 import sys
 from pathlib import Path
 
+from ts_sources import report, run, source_files
+
 # tsconfig.json / vite.config.ts のパスエイリアス（`@/*` → `src/*`）。
 ALIAS = "@/"
 ALIAS_ROOT = "src"
@@ -55,29 +57,11 @@ SPECIFIER = re.compile(r'(?:from|import)\s*\(?\s*"([^"]+)"')
 # コメント行の始まり。doc に import のパスを書く箇所があるので、実 import と数えない。
 COMMENT_LINE = re.compile(r"^\s*(?://|\*|/\*)")
 
-SOURCE_SUFFIXES = (".ts", ".tsx")
-
 # フォルダを指す import の解決先。
 INDEX_NAMES = ("index.ts", "index.tsx")
 
 # feature がテスト用の公開口を置けるフォルダ。
 TEST_ENTRY_FOLDERS = ("__tests__", "__stories__")
-
-# 報告が長くなると読まれないので、種別ごとに先頭からこの件数までを出す。
-MAX_REPORTED = 10
-
-
-def source_files(root: Path) -> list[str]:
-    """走査の対象になるファイルを集める。
-
-    @param root 走査を始めるフォルダ
-    @returns `/` 区切りに正規化したパスの並び。型宣言（`*.d.ts`）は実装を持たないので除く
-    """
-    return [
-        path.as_posix()
-        for path in sorted(root.rglob("*"))
-        if path.suffix in SOURCE_SUFFIXES and not path.name.endswith(".d.ts")
-    ]
 
 
 def module_folders(files: list[str]) -> set[str]:
@@ -284,19 +268,6 @@ def cycles_in(graph: dict[str, list[str]]) -> list[list[str]]:
     return found
 
 
-def report(kind: str, lines: list[str]) -> None:
-    """違反を種別ごとにまとめて出力する。
-
-    @param kind 違反の種別
-    @param lines 違反 1 件ごとの説明
-    """
-    print(f"[{kind}] {len(lines)} 件")
-    for line in lines[:MAX_REPORTED]:
-        print(f"  {line}")
-    if len(lines) > MAX_REPORTED:
-        print(f"  ... 他 {len(lines) - MAX_REPORTED} 件")
-
-
 def scan(root: Path) -> int:
     """ルート配下の import を走査して違反を報告する。
 
@@ -342,18 +313,5 @@ def scan(root: Path) -> int:
     return 1 if total else 0
 
 
-def main() -> int:
-    """コマンドラインから走査を始める。
-
-    @returns 終了コード。違反があれば 1、ルートが無ければ 2、それ以外は 0
-    """
-    args = sys.argv[1:]
-    root = Path(args[0]) if args else Path(ALIAS_ROOT)
-    if not root.is_dir():
-        print(__doc__)
-        return 2
-    return scan(root)
-
-
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(run(scan, __doc__))
