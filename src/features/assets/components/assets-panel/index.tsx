@@ -5,7 +5,7 @@ import { NameFilter } from "@/domains/session/name-filter";
 import { ComponentList } from "@/features/assets/components/component-list";
 import { PrimitiveList } from "@/features/assets/components/primitive-list";
 import type { AssetGrab } from "@/features/assets/types/AssetGrab";
-import type { Option } from "@/utils/Option";
+import { Option } from "@/utils/Option";
 
 /**
  * 挿せる部品のパレット（UI 案 docs/Design Composer.html の `Assets` パネル）。
@@ -31,12 +31,14 @@ export function AssetsPanel({
 }>) {
   const filter = NameFilter.create(query);
   const isMatch = (name: string) =>
-    !filter.some || NameFilter.isMatch(filter.value, name);
+    !Option.isSome(filter) || NameFilter.isMatch(filter.value, name);
   const matchedTypes = Object.values(PrimitiveTypes).filter(isMatch);
   const matchedAssets = assets.filter((asset) => isMatch(asset.name));
   // 検索語が空のときの 0 件は「まだ何も無い」なので、絞り込みの結果とは分けて扱う
   const hasNoMatch =
-    filter.some && matchedTypes.length === 0 && matchedAssets.length === 0;
+    Option.isSome(filter) &&
+    matchedTypes.length === 0 &&
+    matchedAssets.length === 0;
 
   return (
     <>

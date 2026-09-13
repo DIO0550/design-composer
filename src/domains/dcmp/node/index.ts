@@ -95,7 +95,7 @@ export const Props = {
    * 指した prop はすべて同じ値になる。
    */
   apply(props: Props, edit: PropEdit): Props {
-    if (edit.value.some) {
+    if (Option.isSome(edit.value)) {
       const value = edit.value.value;
       const written = edit.names.map((name) => [name, value] as const);
       return { ...props, ...Object.fromEntries(written) };
@@ -189,7 +189,7 @@ export const Node = {
     }
     for (const child of Node.children(node)) {
       const found = Node.find(child, name);
-      if (found.some) {
+      if (Option.isSome(found)) {
         return found;
       }
     }

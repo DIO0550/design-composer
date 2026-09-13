@@ -9,7 +9,7 @@ import { DocumentTree } from "@/features/sidebar/components/document-tree";
 import type { LeftPaneArtboardActions } from "@/features/sidebar/types/LeftPaneArtboardActions";
 import type { LeftPaneNodeActions } from "@/features/sidebar/types/LeftPaneNodeActions";
 import type { LeftPaneRenameActions } from "@/features/sidebar/types/LeftPaneRenameActions";
-import type { Option } from "@/utils/Option";
+import { Option } from "@/utils/Option";
 
 /**
  * 絞り込みに残った artboard。
@@ -22,7 +22,7 @@ function matchedArtboards(
   artboards: readonly Artboard[],
   filter: Option<NameFilter>,
 ): readonly Artboard[] {
-  if (!filter.some) {
+  if (!Option.isSome(filter)) {
     return artboards;
   }
   return artboards.filter((artboard) =>
@@ -87,7 +87,7 @@ export function LayersPanel({
    * そのものが無いので、出るのは「一致するものがありません」ではなく一覧が元から持つ
    * 知らせのほう（docs/06-ui.md「絞り込み」）。
    */
-  const isFiltering = filter.some && artboards.length > 0;
+  const isFiltering = Option.isSome(filter) && artboards.length > 0;
   const hasNoMatch = isFiltering && matched.length === 0;
 
   const listing = isFiltering

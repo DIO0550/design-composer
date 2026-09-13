@@ -118,7 +118,7 @@ function ArtboardRow({
     <li
       // 落ちる先の線を行の縁へ重ねるので、行を位置の基準にする
       className={`relative flex items-center ${isHeld ? "opacity-40" : ""}`}
-      {...(rowProps.some ? rowProps.value : {})}
+      {...(Option.isSome(rowProps) ? rowProps.value : {})}
     >
       <button
         type="button"
@@ -138,7 +138,7 @@ function ArtboardRow({
           {artboard.width}×{artboard.height}
         </span>
       </button>
-      {dropSide.some ? <DropLine side={dropSide.value} /> : null}
+      {Option.isSome(dropSide) ? <DropLine side={dropSide.value} /> : null}
     </li>
   );
 }

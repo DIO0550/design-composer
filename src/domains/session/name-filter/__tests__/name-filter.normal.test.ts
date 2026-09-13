@@ -7,7 +7,7 @@ test("空の語からは絞り込みが作られない", () => {
 });
 
 test("1 文字でもあれば絞り込みが作られる", () => {
-  expect(NameFilter.create("a").some).toBe(true);
+  expect(Option.isSome(NameFilter.create("a"))).toBe(true);
 });
 
 test("名前の途中に語を含んでいれば一致する", () => {

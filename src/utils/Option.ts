@@ -55,6 +55,16 @@ export const Option = {
   },
 
   /**
+   * 値を持っているか。
+   *
+   * @param option 中身を見る `Option`
+   * @returns 値を持っていれば `true`。`none` なら `false`
+   */
+  isSome<T>(option: Option<T>): option is Some<T> {
+    return option.some;
+  },
+
+  /**
    * その値を持っているか。
    *
    * @param option 中身を見る `Option`

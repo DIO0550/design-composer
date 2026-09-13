@@ -1,6 +1,6 @@
 import { type ReactNode, useState } from "react";
 import { SearchField } from "@/components/search-field";
-import type { Option } from "@/utils/Option";
+import { Option } from "@/utils/Option";
 
 /**
  * レールで選んだ行き先の中身を出すパネル（UI 案 docs/Design Composer.html の 248px のパネ
@@ -37,13 +37,13 @@ export function LeftPanePanel({
     <div className="flex min-w-0 flex-1 flex-col overflow-hidden bg-white">
       <div className="flex h-11 shrink-0 items-center border-gray-300 border-b px-3">
         <h2 className="font-semibold text-gray-900 text-sm">{title}</h2>
-        {note.some ? (
+        {Option.isSome(note) ? (
           <span className="ml-auto text-[10px] text-gray-400">
             {note.value}
           </span>
         ) : null}
       </div>
-      {search.some ? (
+      {Option.isSome(search) ? (
         <div className="shrink-0 px-3 pt-3">
           <SearchField label={search.value} value={query} onChange={setQuery} />
         </div>
@@ -59,7 +59,7 @@ export function LeftPanePanel({
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-auto p-3 [scrollbar-gutter:stable]">
         {children(query)}
       </div>
-      {footer.some ? footer.value : null}
+      {Option.isSome(footer) ? footer.value : null}
     </div>
   );
 }

@@ -172,7 +172,7 @@ function RowBranch({
           // 押せる範囲を示す hover と、選択の色を重ねない（選択中はホバーで灰にしない）
           row.isSelected ? "bg-blue-100 text-blue-900" : "hover:bg-gray-100"
         } ${isHeld ? "opacity-40" : ""}`}
-        {...(rowProps.some ? rowProps.value : {})}
+        {...(Option.isSome(rowProps) ? rowProps.value : {})}
       >
         {showsToggle ? (
           <BranchToggle
@@ -190,7 +190,7 @@ function RowBranch({
           />
         )}
         {row.content}
-        {dropSide.some ? <DropLine side={dropSide.value} /> : null}
+        {Option.isSome(dropSide) ? <DropLine side={dropSide.value} /> : null}
       </div>
       {showsChildren ? (
         <RowList

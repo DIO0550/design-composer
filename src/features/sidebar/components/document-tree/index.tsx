@@ -155,13 +155,15 @@ function SelectableName({
       onDoubleClick={() => onStartRenaming(name)}
       className="flex min-w-0 flex-1 items-center gap-1.5 pr-2 text-left"
     >
-      {marks.glyph.some ? <TypeGlyph kind={marks.glyph.value} /> : null}
+      {Option.isSome(marks.glyph) ? (
+        <TypeGlyph kind={marks.glyph.value} />
+      ) : null}
       {/*
         名前が余りを占め、補助情報はその右に出る。flex の子は既定で内容幅より
         縮まないため、省略には min-w-0 が要る。
       */}
       <span className="min-w-0 flex-1 truncate">{name}</span>
-      {marks.note.some ? <NoteText note={marks.note.value} /> : null}
+      {Option.isSome(marks.note) ? <NoteText note={marks.note.value} /> : null}
     </button>
   );
 }
@@ -181,7 +183,7 @@ function rowsFromNodes(
   context: RowContext,
 ): readonly NestedRow[] {
   const filter = context.filter;
-  if (!filter.some) {
+  if (!Option.isSome(filter)) {
     return nodes.map((node) => rowFromNode(node, context));
   }
   return nodes
@@ -240,7 +242,7 @@ function rowFromNode(node: Node, context: RowContext): NestedRow {
  * @returns 絞っていれば `Filtered`、絞っていなければ `Full`
  */
 function rowModeOf(filter: Option<NameFilter>): NestedRowMode {
-  return filter.some ? NestedRowModes.Filtered : NestedRowModes.Full;
+  return Option.isSome(filter) ? NestedRowModes.Filtered : NestedRowModes.Full;
 }
 
 /**
@@ -282,7 +284,7 @@ export function DocumentTree({
    * 映す artboard が無いのは artboard が 1 枚も無いときだけで、それは
    * `ArtboardList` が伝える。ここで見出しだけを出すと、同じ「無い」を 2 箇所で言う。
    */
-  if (!current.some) {
+  if (!Option.isSome(current)) {
     return null;
   }
 

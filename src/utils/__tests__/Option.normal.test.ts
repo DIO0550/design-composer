@@ -74,6 +74,14 @@ test("or は値を持たないとき代わりの Option を返す", () => {
   expect(Option.or(Option.none, Option.some(2))).toEqual(Option.some(2));
 });
 
+test("isSome は値を持っていれば true", () => {
+  expect(Option.isSome(Option.some(42))).toBe(true);
+});
+
+test("isSome は値を持たなければ false", () => {
+  expect(Option.isSome(Option.none)).toBe(false);
+});
+
 test("contains は同じ値を持っていれば true", () => {
   expect(Option.contains(Option.some("a"), "a")).toBe(true);
 });
