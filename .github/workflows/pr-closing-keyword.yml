@@ -1,0 +1,43 @@
+# PR 本文が Issue を閉じるようになっているかを見る。着手した Issue はその回の PR の
+# マージで閉じる(AGENTS.md「着手した Issue はその回で閉じる」)ので、閉じる側を
+# GitHub のマージに担わせ、書き忘れをここで落とす。
+#
+# - **`types` に `edited` が要る。** 既定(`opened / synchronize / reopened`)では本文を
+#   直しても再実行されず、赤いまま直せない
+# - **`types` に `synchronize` も要る。** 必須チェックは head SHA ごとに run を要求するので、
+#   push のたびに走らせないと新しい SHA でいつまでも pending になる
+# - **`frontend.yml` へ相乗りさせない。** あちらは `types:` 未指定で `pnpm install` から
+#   始まるので、`edited` を足すと本文を直すたびにフル CI が回る
+name: pr-closing-keyword
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-closing-keyword-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  closing-keyword:
+    name: PR 本文が Issue を閉じるか
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 1
+
+      # 判定表を先に走らせる。検査自体が壊れていたら、本文検査の結果は読めない
+      - name: 判定表
+        run: bash .github/scripts/pr-closing-keyword-cases.sh
+
+      # 本文は外部入力なので env 経由で渡す(`${{ }}` を run へ直書きしない)
+      - name: PR 本文の検査
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: printf '%s' "$PR_BODY" | bash .github/scripts/check-pr-closing-keyword.sh
