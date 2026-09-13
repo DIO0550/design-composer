@@ -11,7 +11,7 @@ export type None = Readonly<{
 
 /**
  * 値が無いことがありうる処理の戻り値（rules/coding.md「エラーと不在の表現」）。
- * `some` で分岐すると、ある場合だけ `value` が読める。
+ * `Option.isSome` で分岐すると、ある場合だけ `value` が読める。
  */
 export type Option<T> = Some<T> | None;
 
@@ -56,6 +56,9 @@ export const Option = {
 
   /**
    * 値を持っているか。
+   *
+   * 在／不在の判定はすべてここを通す。判別子（`some`）を直接読むのはこのファイルの中
+   * だけにして、`Option` がどう表現されているかを知る場所を定義元 1 つに閉じている。
    *
    * @param option 中身を見る `Option`
    * @returns 値を持っていれば `true`。`none` なら `false`
