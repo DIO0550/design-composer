@@ -17,7 +17,7 @@ description: "design-composer の実装を ゴールの確定 → タスクの�
 | 5 | 実装 | コードとテスト |
 | 6 | 実装の検証 | `implementation-reviewer` の指摘と、それへの対応 |
 | 7 | PR | 差分を説明する PR |
-| 8 | マージ後の追記 | 該当 Issue へのコメント |
+| 8 | マージ後の追記 | 閉じた Issue へのコメントと、続きの Issue |
 
 **検証の観点はこのファイルに書かない。** `.claude/agents/plan-reviewer.md` と
 `.claude/agents/implementation-reviewer.md` が持つ。観点を親のコンテキストへ通さないための分割。
@@ -139,7 +139,8 @@ description: "design-composer の実装を ゴールの確定 → タスクの�
 ## フェーズ 7: PR
 
 - **PR 本文は差分の説明に絞る。** 判断の履歴は Issue 側にある
-- 関連 Issue を本文からリンクする
+- **本文に `Closes #<Issue 番号>` を書く**(`AGENTS.md`「着手した Issue は、その回で閉じる」)。
+  `.github/workflows/pr-closing-issue.yml` が、閉じる Issue を持たない PR を落とす
 - CI(lint / typecheck / test / 視覚差分)を通す
 
 **push の前に、まずフックが発火する環境かを確かめ、続けて CI と同じ検査を 1 つずつ
@@ -182,12 +183,16 @@ bash .claude/hooks/lib/test-rules-scan.sh src                # テスト規約
 
 ## フェーズ 8: マージ後の追記
 
-マージされたら次の 2 つを行う(マージは `.claude/hooks/post-merge-review.sh` が検知して提示する)。
+マージされたら次の 3 つを行う(マージは `.claude/hooks/post-merge-review.sh` が検知して提示する)。
 
 1. **意思決定が変わったところがあれば、該当 Issue にコメントする**(計画では A に置くとしたが
    レビューで B に移した / 却下していた案を採用した / ゴールの範囲が変わった)。
-   変わっていないなら書かない
-2. **`harness-record` スキルでその回の評価を記録する**。記録を残すところまでで、集計と規約の
+   変わっていないなら書かない。**Issue は `Closes` で閉じているが、閉じたままコメントは残せる。
+   開け直さない**
+2. **続きの作業が要るものは、新しい Issue を立てて元の Issue からリンクする**
+   (`AGENTS.md`「着手した Issue は、その回で閉じる」)。スコープ外にしたもの・
+   決定が変わって作り直しになったものが該当する
+3. **`harness-record` スキルでその回の評価を記録する**。記録を残すところまでで、集計と規約の
    見直しは行わない(→ `harness-growth`)
 
 ---
