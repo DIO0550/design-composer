@@ -45,6 +45,16 @@
     "name": "中身が空"
   },
   {
+    "id": "components-searchfield--empty",
+    "title": "components/SearchField",
+    "name": "語が入っていない"
+  },
+  {
+    "id": "components-searchfield--filled",
+    "title": "components/SearchField",
+    "name": "語が入っている"
+  },
+  {
     "id": "features-assets-assetspanel--default",
     "title": "features/assets/AssetsPanel",
     "name": "パレット"
@@ -630,6 +640,16 @@
     "name": "artboard がない"
   },
   {
+    "id": "features-sidebar-artboardlist--filtered",
+    "title": "features/sidebar/ArtboardList",
+    "name": "絞り込みで 1 枚だけ残っている"
+  },
+  {
+    "id": "features-sidebar-artboardlist--no-match",
+    "title": "features/sidebar/ArtboardList",
+    "name": "一致するものがない"
+  },
+  {
     "id": "features-sidebar-artboardlist--node-selected",
     "title": "features/sidebar/ArtboardList",
     "name": "artboard 配下のノードを選択中"
@@ -650,6 +670,11 @@
     "name": "選択なし"
   },
   {
+    "id": "features-sidebar-documenttree--filtered",
+    "title": "features/sidebar/DocumentTree",
+    "name": "絞り込みで一致した行だけが出ている"
+  },
+  {
     "id": "features-sidebar-documenttree--nested",
     "title": "features/sidebar/DocumentTree",
     "name": "入れ子のノードと並べ替え"
@@ -668,6 +693,21 @@
     "id": "features-sidebar-documenttree--renaming",
     "title": "features/sidebar/DocumentTree",
     "name": "行の名前を編集中"
+  },
+  {
+    "id": "features-sidebar-layerspanel--default",
+    "title": "features/sidebar/LayersPanel",
+    "name": "絞り込んでいない"
+  },
+  {
+    "id": "features-sidebar-layerspanel--filtered",
+    "title": "features/sidebar/LayersPanel",
+    "name": "絞り込んでいる"
+  },
+  {
+    "id": "features-sidebar-layerspanel--no-match",
+    "title": "features/sidebar/LayersPanel",
+    "name": "一致するものがない"
   },
   {
     "id": "features-sidebar-leftpane--assets",
