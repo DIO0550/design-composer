@@ -1,6 +1,7 @@
 import { fireEvent, screen } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
 import type { DocumentSelection } from "@/domains/session/document-selection";
+import { SelectionDigs } from "@/domains/session/selection-dig";
 import {
   movePointer,
   pressPointer,
@@ -282,6 +283,25 @@ test("落とせる親が無い場所で離しても置き直しは届かない",
   dragBadgeOnto(artboardList());
 
   expect(onRepositionNode).not.toHaveBeenCalled();
+});
+
+test("落とせる親が無い場所で離しても、次のクリックは選択に使われる", () => {
+  const onSelect = vi.fn();
+  renderCanvas({ selection: setupSelection(), onSelect });
+
+  dragBadgeOnto(artboardList());
+  /*
+   * 離した直後の `click` は、押した場所（枠の中）と離した場所（枠の外）の共通の祖先＝
+   * artboard の並びに出るので、枠は受け取らない。飲み込む状態がそこで解けないと、
+   * この次のクリックが食べられる。
+   */
+  fireEvent.click(artboardList());
+  fireEvent.click(drawn("badge"));
+
+  expect(onSelect).toHaveBeenCalledWith(
+    ["badge", "home"],
+    SelectionDigs.NoDeeper,
+  );
 });
 
 test("運んでいる間、掴んだノードは離す位置まで見た目だけ先に動く", () => {

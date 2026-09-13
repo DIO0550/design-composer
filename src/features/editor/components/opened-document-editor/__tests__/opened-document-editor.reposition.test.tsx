@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { rowNames } from "@/components/__tests__/row-names";
@@ -14,7 +14,13 @@ import {
   releasePointer,
 } from "@/features/canvas/__tests__";
 import { Option } from "@/utils/Option";
-import { drawn, renderOpenedDocument, tree } from "./setup";
+import {
+  drawn,
+  leftPane,
+  propertyPane,
+  renderOpenedDocument,
+  tree,
+} from "./setup";
 
 /*
  * キャンバスで運んだ結果がドキュメントへ届き、描き直されるまでを編集画面の配線ごと
@@ -143,6 +149,25 @@ test("絶対配置のノードを別の artboard の上へ運ぶと、その art
   releasePointer(drawn("settings"), { x: 70, y: 112 });
 
   expect(badgeParentName()).toBe("settings");
+});
+
+test("キャンバスで掴んだノードを左ペインの上で離しても、直後のクリックは選択に使われない", async () => {
+  await renderOpenedDocument(setupDocument());
+  await userEvent.click(screen.getByRole("button", { name: "home-panel" }));
+
+  /*
+   * 離した直後の `click` は、押した場所（キャンバス）と離した場所（左ペイン）の共通の祖先＝
+   * 3 ペインの器に出る。枠にもキャンバスの土台にも届かないので、器で受けていないと飲み込めない。
+   *
+   * `userEvent.click` を使わないのは、あれが自前の `pointerup` を伴い、それが器の `release`
+   * を通って飲み込む状態を先に消してしまうため。
+   */
+  pressPointer(drawn("home-badge"), { x: 100, y: 100 });
+  movePointer(leftPane(), { x: 70, y: 112 });
+  releasePointer(leftPane(), { x: 70, y: 112 });
+  fireEvent.click(drawn("home-title"));
+
+  expect(within(propertyPane()).getByText("home-panel")).toBeDefined();
 });
 
 test("同じ親の中で運んだときは、包んでいる artboard が変わらない", async () => {
