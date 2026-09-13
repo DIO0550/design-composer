@@ -162,3 +162,6 @@ src-tauri/gen/
 
 # vitest json レポーター出力(CI 計測用)
 vitest-report.json
+
+# 検査スクリプト(.claude/hooks/lib/)が共有モジュールを import したときの中間ファイル
+__pycache__/
