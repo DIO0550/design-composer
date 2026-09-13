@@ -94,6 +94,22 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 | `check-test-helper-duplication.sh`(即時フィードバック) | **部分的にあり**。`.github/scripts/check-added-test-helper-duplication.sh` が CI(層 1)で拾うが、既存の重複が `src` に残っているため**このブランチで追加された行だけ**が対象(git hooks には無い)。触っていない既存分は push 時点では拾えない |
 | `record-firings.sh`(発火ログ) | **無し**。ただし失敗しても穴は開かない(セッション見出しが無いログは `harness-record` が「計測対象外」と書く設計で、誤ったゼロにはならない)。カナリアと同じ「失敗してもガードが破れない」検出系 |
 
+### 「代替不能」が実際に不発だったとき、手動で肩代わりする
+
+`block-npx.sh` / `block-git-during-verification-agent.sh` は上の表のとおり CI の代替が
+**無し**。カナリア(次項)で不発が確定したら、「記録のみ」で終わらせず、そのフックが
+止めるはずだった操作を手動で確認する(`分類: hook-environment-guard-miss`。pr-482 は
+`block-git-during-verification-agent.sh` 不発でミューテーションがコミットへ混入し、
+pr-500 は `block-npx.sh` 不発で任意の `npx` 実行が素通りした)。
+
+| 不発したフック | 手動で確認すること |
+| --- | --- |
+| `block-npx.sh` | 実行した `npx` コマンドがリポジトリへ何か書き込んでいないか `git status` で確認する |
+| `block-git-during-verification-agent.sh` | 検証エージェント実行中に作られたコミットの diff を、そのエージェントが直したはずの内容とだけ照合する(意図しない変更が紛れていないか) |
+
+`session-url-notice.sh` の不発は対応不要(上の表のとおり、失っても情報が 1 つ
+足りないだけでガードは破れない)。
+
 **doc コメント・テスト規約・import 規約は CI(層 1)へ上げた**(`frontend.yml` の `rules-check`)。
 **doc コメントとテスト規約の 2 つ**は層 2・層 3 にしか無かったが、**層 2 と層 3 は同じ環境で同時に抜ける**。
 リモート実行環境はクローンからやり直すので `core.hooksPath` が未設定のまま
