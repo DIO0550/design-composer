@@ -11,7 +11,8 @@
 # 切り出されるので、表を書いたコマンドがそのまま deny される(実測)。ファイルの
 # 中身はコマンド本文ではないので切り出されない。
 #
-# 表は `期待|コマンド` の 1 行 1 ケース。コマンド中の `@@` は改行に置き換わる
+# 表は `期待|コマンド` の 1 行 1 ケース(ランナーは `lib/case-table.sh` と共有)。
+# コマンド中の `@@` は改行に置き換わる
 # (1 行に収めるため。改行区切りで連ねた形も 1 ケースとして書ける)。期待は 3 つ。
 #
 # | 期待 | 意味 |
@@ -33,11 +34,14 @@ if ! command -v jq >/dev/null 2>&1; then
 fi
 
 hook_path="$(dirname "$0")/../hook-canary.sh"
-failed=0
+source "$(dirname "$0")/case-table.sh"
 
-while IFS='|' read -r expected case_command; do
-  [ -n "$case_command" ] || continue
-  case_command="${case_command//@@/$'\n'}"
+# @param 1 期待
+# @param 2 流すコマンド(`@@` は改行)
+# @returns `<deny|pass|miss>` とコマンドをタブ区切りで返す
+canary_decide() {
+  local case_command="${2//@@/$'\n'}"
+  local payload output decision
   payload="$(python3 -c 'import json,sys; print(json.dumps({"tool_input":{"command":sys.argv[1]}}))' "$case_command")"
   output="$(printf '%s' "$payload" | bash "$hook_path")"
   if [ -n "$output" ]; then
@@ -46,16 +50,14 @@ while IFS='|' read -r expected case_command; do
     decision="pass"
   fi
   # 意図した取りこぼしは pass になるのが正解。
-  if [ "$expected" = "miss" ] && [ "$decision" = "pass" ]; then
+  if [ "$1" = "miss" ] && [ "$decision" = "pass" ]; then
     decision="miss"
   fi
-  if [ "$decision" = "$expected" ]; then
-    printf 'ok   %-4s %s\n' "$expected" "$case_command"
-    continue
-  fi
-  printf 'NG   expected=%s got=%s  %s\n' "$expected" "$decision" "$case_command"
-  failed=1
-done <<'CASES'
+  printf '%s\t%s' "$decision" "$case_command"
+}
+
+failed=0
+case_table_run canary_decide <<'CASES' || failed=1
 deny|echo hook-canary
 deny|echo hook-canary && echo done
 deny|cd /tmp && echo hook-canary
@@ -92,10 +94,10 @@ printf -v padding '%*s' 2100 ''
 long_command="${padding// /x} && echo hook-canary"
 long_payload="$(python3 -c 'import json,sys; print(json.dumps({"tool_input":{"command":sys.argv[1]}}))' "$long_command")"
 if [ -z "$(printf '%s' "$long_payload" | bash "$hook_path")" ]; then
-  printf 'ok   %-4s %s\n' "miss" "2100 字のコマンドに連ねた形(走査の上限を超える)"
+  long_decision="miss"
 else
-  printf 'NG   expected=%s got=%s  %s\n' "miss" "deny" "2100 字のコマンドに連ねた形"
-  failed=1
+  long_decision="deny"
 fi
+case_table_report "miss" "$long_decision" "2100 字のコマンドに連ねた形(走査の上限を超える)" || failed=1
 
 exit "$failed"
