@@ -155,14 +155,16 @@ pnpm run typecheck        # tsc -b
 pnpm run lint             # oxlint
 pnpm exec biome check     # Biome（oxlint とは別のステップ。format 差分もここで出る）
 pnpm run test:run         # vitest
-python3 .claude/hooks/lib/missing-doc-comments.py --all src  # doc コメント
-bash .claude/hooks/lib/test-rules-scan.sh src                # テスト規約
+python3 .claude/hooks/lib/missing-doc-comments.py --all src     # doc コメント
+bash .claude/hooks/lib/test-rules-scan.sh src                   # テスト規約
+python3 .claude/hooks/lib/import-rule-violations.py src         # import 規約
+python3 .claude/hooks/lib/result-option-read-violations.py src  # 判別子の直読み
 ```
 
-- **doc コメントとテスト規約は `pnpm` のスクリプトに無い。** この 2 つは git hooks と CI
-  (`frontend.yml` の `rules-check`)だけが走らせるので、上の 2 行を省くと手元の確認が
-  ゲートより狭くなる。**この 2 つが CI へ上げられたのは、層 2 と層 3 が同じ環境で同時に
-  抜けたため**(`.claude/hooks/README.md`「カバー範囲と残る穴」)
+- **`rules-check` の 4 つは `pnpm` のスクリプトに無い。** git hooks と CI
+  (`frontend.yml` の `rules-check`)だけが走らせるので、上の 4 行を省くと手元の確認が
+  ゲートより狭くなる。**doc コメントとテスト規約が CI へ上げられたのは、層 2 と層 3 が
+  同じ環境で同時に抜けたため**(`.claude/hooks/README.md`「カバー範囲と残る穴」)
 - **カナリアが通っても、それだけでは不発と決まらない。** カナリアは自分の取りこぼしと本当の
   不発を区別できない。`.claude/hooks/README.md`「発火しているかを確かめる(カナリア)」の表で
   PreToolUse の痕跡を見て切り分ける。`分類: hook-environment` を付けてよいのは痕跡が無い枝だけ
