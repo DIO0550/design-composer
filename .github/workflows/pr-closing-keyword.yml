@@ -23,6 +23,8 @@ concurrency:
 
 jobs:
   closing-keyword:
+    # ジョブ名はブランチ保護の「必須チェック」の識別子になる。変えると対応が外れるが、
+    # その設定はリポジトリ側にあってここからは変更できない(frontend.yml も同じ)。
     name: PR 本文が Issue を閉じるか
     runs-on: ubuntu-24.04
     timeout-minutes: 5

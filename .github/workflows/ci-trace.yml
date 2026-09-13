@@ -16,6 +16,8 @@ on:
       - Storybook PR Preview
       - Storybook Visual Regression
     types: [completed]
+    # 列挙するのは所要時間が意味を持つワークフローだけ。checkout と数ステップで終わる
+    # ものは、ウォーターフォールを描いてもボトルネックが読めないので入れない。
 
 permissions:
   actions: read

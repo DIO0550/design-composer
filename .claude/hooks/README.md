@@ -289,8 +289,11 @@ bash .github/scripts/check-added-test-helper-duplication.sh origin/main
 # PR 本文が Issue を閉じるかの判定表(`ok` だけなら期待どおり。CI が同じものを走らせる)
 bash .github/scripts/pr-closing-keyword-cases.sh; echo "exit=$?"
 
-# 本文を直接与えて確かめる(通れば exit 0・落ちれば exit 1 と直し方が出る)
+# 本文を直接与えて確かめる(通る側)
 printf 'Closes #517' | bash .github/scripts/check-pr-closing-keyword.sh; echo "exit=$?"
+
+# 落ちる側(exit 1 と、本文に何を書けば通るかが出る)
+printf 'Refs #517' | bash .github/scripts/check-pr-closing-keyword.sh; echo "exit=$?"
 ```
 
 ```bash
