@@ -83,3 +83,11 @@ test("mapErr は成功の結果をそのまま返す", () => {
     value: 42,
   });
 });
+
+test("isOk は成功なら true", () => {
+  expect(Result.isOk(Result.ok(42))).toBe(true);
+});
+
+test("isOk は失敗なら false", () => {
+  expect(Result.isOk(Result.err("fail"))).toBe(false);
+});
