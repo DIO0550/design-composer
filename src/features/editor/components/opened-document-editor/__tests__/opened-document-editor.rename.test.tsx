@@ -1,4 +1,4 @@
-import { fireEvent, screen, within } from "@testing-library/react";
+import { fireEvent, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { rowNames } from "@/components/__tests__/row-names";
@@ -7,6 +7,7 @@ import { hasNoNameField, nameField } from "@/features/sidebar/__tests__";
 import {
   artboardList,
   drawn,
+  menuRow,
   renderOpenedDocument,
   selectArtboard,
   selectInTree,
@@ -47,11 +48,7 @@ test("コンテキストメニューの Rename からも入力欄が開く", asy
   await renderOpenedDocument();
 
   fireEvent.contextMenu(drawn("home-title"), { clientX: 120, clientY: 80 });
-  await userEvent.click(
-    within(
-      screen.getByRole("menu", { name: "コンテキストメニュー" }),
-    ).getByRole("menuitem", { name: /^Rename/ }),
-  );
+  await userEvent.click(menuRow("Rename"));
 
   expect(nameField().value).toBe("home-title");
 });

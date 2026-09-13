@@ -150,6 +150,23 @@ export function documentErrorList(): HTMLElement {
   return screen.getByRole("alert", { name: "ドキュメントのエラー一覧" });
 }
 
+/** 開いているコンテキストメニュー。出ていなければテストを落とす。 */
+export function contextMenu(): HTMLElement {
+  return screen.getByRole("menu", { name: "コンテキストメニュー" });
+}
+
+/**
+ * コンテキストメニューの行。
+ *
+ * @param label 行の綴り。読み上げ名は綴りのうしろに割り当てが並ぶので前方一致で引く
+ * @returns その行のボタン
+ */
+export function menuRow(label: string): HTMLElement {
+  return within(contextMenu()).getByRole("menuitem", {
+    name: new RegExp(`^${label}`),
+  });
+}
+
 /** 左ペイン。 */
 export function leftPane(): HTMLElement {
   return screen.getByRole("complementary", { name: "左ペイン" });

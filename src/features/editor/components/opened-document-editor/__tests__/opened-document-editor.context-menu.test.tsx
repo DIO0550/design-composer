@@ -7,7 +7,9 @@ import { rightPaneHeading } from "@/features/editor/__tests__/right-pane-heading
 import { SampleDocumentWithDeepBranch } from "@/features/editor/__tests__/sample-document";
 import {
   breakFileExternally,
+  contextMenu,
   drawn,
+  menuRow,
   renderOpenedDocument,
   selectArtboard,
   selectInTree,
@@ -25,23 +27,6 @@ import {
  * `useKeyShortcut` で見る。ここで同じことを見るには絶対配置のノードのフィクスチャが要り、
  * `opened-document-editor.reposition` と同じものを 2 つ持つことになる。
  */
-
-/** 開いているメニュー。出ていなければテストを落とす。 */
-function contextMenu(): HTMLElement {
-  return screen.getByRole("menu", { name: "コンテキストメニュー" });
-}
-
-/**
- * メニューの行。
- *
- * @param label 行の綴り。読み上げ名は綴りのうしろに割り当てが並ぶので前方一致で引く
- * @returns その行のボタン
- */
-function menuRow(label: string): HTMLElement {
-  return within(contextMenu()).getByRole("menuitem", {
-    name: new RegExp(`^${label}`),
-  });
-}
 
 /**
  * キャンバスに描かれたものを右クリックする。
@@ -252,6 +237,6 @@ test("下端の近くでノードを右クリックすると、並ぶ行のぶ�
   // 窓の高さは happy-dom の既定（768）
   rightClick(drawn("home-title"), { x: 120, y: 760 });
 
-  // ノードのメニューは 5 組 7 行 = 6 + 26 × 7 + 9 × 4 + 6 = 230px
-  expect(contextMenu().style.top).toBe("530px");
+  // ノードのメニューは 5 組 9 行 = 6 + 26 × 9 + 9 × 4 + 6 = 282px
+  expect(contextMenu().style.top).toBe("478px");
 });
