@@ -37,6 +37,8 @@ export const EditOperations = {
   Copy: "copy",
   Paste: "paste",
   Rename: "rename",
+  Group: "group",
+  Ungroup: "ungroup",
   BringForward: "bring-forward",
   SendBackward: "send-backward",
   DetachInstance: "detach-instance",
@@ -55,21 +57,21 @@ export type EditMenuRow = Readonly<{
   isEnabled: boolean;
 }>;
 
-/** 対象ごとのメニュー。組のあいだに区切りが入る。 */
+/** 対象ごとのメニュー。節のあいだに区切りが入る。 */
 export type EditMenu = Readonly<{
-  groups: readonly (readonly EditMenuRow[])[];
+  sections: readonly (readonly EditMenuRow[])[];
 }>;
 
 /**
- * 対象ごとに並ぶ操作と、その組の分かれ目（docs/06-ui.md「コンテキストメニュー」の表）。
+ * 対象ごとに並ぶ操作と、その節の分かれ目（docs/06-ui.md「コンテキストメニュー」の表）。
  *
- * docs が挙げる並びのうち、実装が無い操作（複製・グループ化・解除）と部品化は並べない。
+ * docs が挙げる並びのうち、実装が無い操作（複製）と部品化は並べない。
  * 状態に依らず永久に押せない行は入口として働かないため。
  */
-const OperationGroups = {
+const OperationSections = {
   node: [
     [EditOperations.Copy, EditOperations.Paste],
-    [EditOperations.Rename],
+    [EditOperations.Rename, EditOperations.Group, EditOperations.Ungroup],
     [EditOperations.BringForward, EditOperations.SendBackward],
     [EditOperations.DetachInstance],
     [EditOperations.Delete],
@@ -99,6 +101,10 @@ function isEnabled(state: EditorState, operation: EditOperation): boolean {
       return Option.isSome(EditorState.pasteNode(state));
     case "rename":
       return Option.isSome(EditorState.startRenaming(state));
+    case "group":
+      return Option.isSome(EditorState.groupSelected(state));
+    case "ungroup":
+      return Option.isSome(EditorState.ungroupSelected(state));
     case "bring-forward":
       return Option.isSome(
         EditorState.reorderSelectedNode(state, ReorderSteps.TowardFront),
@@ -124,12 +130,12 @@ export const EditMenu = {
    *
    * @param state 押せるかどうかの出どころになる編集状態
    * @param target 押された場所が決めた対象
-   * @returns 区切りで分かれた行の組
+   * @returns 区切りで分かれた行の節
    */
   create(state: EditorState, target: EditMenuTarget): EditMenu {
     return {
-      groups: OperationGroups[target].map((group) =>
-        group.map((operation) => ({
+      sections: OperationSections[target].map((section) =>
+        section.map((operation) => ({
           operation,
           isEnabled: isEnabled(state, operation),
         })),
