@@ -49,7 +49,7 @@ test("x だけを持つ artboard は読み込めない", () => {
     Json.create(artboardJson({ x: 900 }), "a[0]"),
   );
 
-  expect(result.ok).toBe(false);
+  expect(Result.isOk(result)).toBe(false);
 });
 
 test("y だけを持つ artboard は読み込めない", () => {
@@ -57,7 +57,7 @@ test("y だけを持つ artboard は読み込めない", () => {
     Json.create(artboardJson({ y: 300 }), "a[0]"),
   );
 
-  expect(result.ok).toBe(false);
+  expect(Result.isOk(result)).toBe(false);
 });
 
 test("x が数値でない artboard は読み込めない", () => {
@@ -65,7 +65,7 @@ test("x が数値でない artboard は読み込めない", () => {
     Json.create({ ...artboardJson(), x: "900", y: 300 }, "a[0]"),
   );
 
-  expect(result.ok).toBe(false);
+  expect(Result.isOk(result)).toBe(false);
 });
 
 test("キャンバス上の位置を持つ artboard は x と y を書き出す", () => {

@@ -41,7 +41,7 @@ test("新しすぎるファイルのメッセージはアプリの更新を促�
   const result = DocumentMigration.toCurrent({ formatVersion: "2.0" });
 
   expect(
-    result.ok ? "" : DocumentMigrationError.message(result.error),
+    Result.isOk(result) ? "" : DocumentMigrationError.message(result.error),
   ).toContain("update the app");
 });
 

@@ -1,13 +1,13 @@
 import { expect, test } from "vitest";
 import type { DesignDocument } from "@/domains/dcmp/design-document";
 import type { DocumentError } from "@/domains/session/document-error";
-import type { Result } from "@/utils/Result";
+import { Result } from "@/utils/Result";
 import { DocumentJson } from "../index";
 
 function errorsOf(
   result: Result<DesignDocument, readonly DocumentError[]>,
 ): readonly DocumentError[] {
-  return result.ok ? [] : result.error;
+  return Result.isOk(result) ? [] : result.error;
 }
 
 function kindsOf(

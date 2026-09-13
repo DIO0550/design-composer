@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import type { ComponentSet } from "@/domains/dcmp/component";
+import { Result } from "@/utils/Result";
 import { DesignDocument } from "../index";
 
 /*
@@ -69,5 +70,5 @@ test("解除できないと判定したインスタンスは解除しようと�
   const document = setupCircularDocument();
 
   expect(DesignDocument.isDetachable(document, "summary")).toBe(false);
-  expect(DesignDocument.detach(document, "summary").ok).toBe(false);
+  expect(Result.isOk(DesignDocument.detach(document, "summary"))).toBe(false);
 });

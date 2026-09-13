@@ -47,7 +47,7 @@ test("同じ名前が別の種別にあっても追加できる", () => {
     value: 4,
   });
 
-  expect(added.ok).toBe(true);
+  expect(Result.isOk(added)).toBe(true);
 });
 
 test("同じ種別に既にある名前では追加できない", () => {
@@ -179,7 +179,7 @@ test("使用中かどうかに関わらず削除できる", () => {
     name: "primary",
   });
 
-  expect(removed.ok).toBe(true);
+  expect(Result.isOk(removed)).toBe(true);
 });
 
 test("その種別に無いトークンは削除できない", () => {

@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { Result } from "@/utils/Result";
 import { DesignDocument } from "../index";
 
 test("存在するノード名を指定して置き換えると新しいノードで置き換わった DesignDocument が Ok で返る", () => {
@@ -35,7 +36,7 @@ test("存在しないノード名を指定して置き換えようとすると E
     type: "Box",
   });
 
-  expect(result.ok).toBe(false);
+  expect(Result.isOk(result)).toBe(false);
 });
 
 test("replaceNode は元のドキュメントを変更しない", () => {

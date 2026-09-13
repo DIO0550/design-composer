@@ -15,7 +15,7 @@ test("自分自身を参照する部品を展開すると無限再帰になら�
 
   const result = ExpandedNode.fromNode(instance, components);
 
-  expect(result.ok).toBe(false);
+  expect(Result.isOk(result)).toBe(false);
 });
 
 test("互いに参照し合う部品同士を展開すると無限再帰にならずエラーになる", () => {
@@ -33,7 +33,7 @@ test("互いに参照し合う部品同士を展開すると無限再帰にな�
 
   const result = ExpandedNode.fromNode(instance, components);
 
-  expect(result.ok).toBe(false);
+  expect(Result.isOk(result)).toBe(false);
 });
 
 test("同じ部品を兄弟として複数回インスタンス化しても循環とはみなさずどちらも展開される", () => {
@@ -60,7 +60,7 @@ test("存在しない部品への参照を展開しようとするとエラー�
 
   const result = ExpandedNode.fromNode(instance, components);
 
-  expect(result.ok).toBe(false);
+  expect(Result.isOk(result)).toBe(false);
 });
 
 test("publicProps 宣言に無いキーへの overrides は無視され定義値のまま展開される", () => {

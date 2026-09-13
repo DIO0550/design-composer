@@ -9,7 +9,7 @@ import { NodeHtml } from "../index";
 test("未知の type のノードはコンパイルできずエラーになる", () => {
   const result = NodeHtml.compile({ name: "unknown", type: "Image" });
 
-  expect(result.ok).toBe(false);
+  expect(Result.isOk(result)).toBe(false);
 });
 
 test("子孫に未知の type があればツリー全体のコンパイルが失敗する", () => {
@@ -19,7 +19,7 @@ test("子孫に未知の type があればツリー全体のコンパイルが�
     children: [{ name: "broken", type: "Image" }],
   });
 
-  expect(result.ok).toBe(false);
+  expect(Result.isOk(result)).toBe(false);
 });
 
 test("入れ子のノードは階層を保ったままコンパイルされる", () => {

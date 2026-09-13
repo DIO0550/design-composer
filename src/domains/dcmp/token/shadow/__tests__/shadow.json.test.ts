@@ -40,9 +40,9 @@ test("0 と書かれた spread は書き出しでもそのまま残る", () => {
 });
 
 test("必須フィールドが欠けている影は読み込めない", () => {
-  expect(ShadowToken.fromJson(Json.create({ x: 0, y: 1 }, "sm")).ok).toBe(
-    false,
-  );
+  expect(
+    Result.isOk(ShadowToken.fromJson(Json.create({ x: 0, y: 1 }, "sm"))),
+  ).toBe(false);
 });
 
 test("影は仕様の定義順で書き出される", () => {

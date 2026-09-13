@@ -18,7 +18,7 @@ test("テキストが JSON として壊れているファイルは開けず、�
     DocumentJson.parse('{ "formatVersion": '),
   );
 
-  expect(opened.ok ? [] : opened.error).toStrictEqual([
+  expect(Result.isOk(opened) ? [] : opened.error).toStrictEqual([
     {
       kind: "syntax-error",
       message: expect.any(String),

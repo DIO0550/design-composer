@@ -36,7 +36,7 @@ test("存在しない部品を参照しているとコンパイルできない",
 
   const result = DocumentHtml.compile(document);
 
-  expect(result.ok).toBe(false);
+  expect(Result.isOk(result)).toBe(false);
 });
 
 test("未知の type のノードがあるとコンパイルできない", () => {
@@ -53,7 +53,7 @@ test("未知の type のノードがあるとコンパイルできない", () =>
 
   const result = DocumentHtml.compile(document);
 
-  expect(result.ok).toBe(false);
+  expect(Result.isOk(result)).toBe(false);
 });
 
 test("後ろの artboard にエラーがあるとドキュメント全体がコンパイルできない", () => {
@@ -71,7 +71,7 @@ test("後ろの artboard にエラーがあるとドキュメント全体がコ�
 
   const result = DocumentHtml.compile(document);
 
-  expect(result.ok).toBe(false);
+  expect(Result.isOk(result)).toBe(false);
 });
 
 test("同じドキュメントからは常に同じ HTML が得られる", () => {

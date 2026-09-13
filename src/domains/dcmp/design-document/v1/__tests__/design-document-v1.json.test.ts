@@ -31,7 +31,7 @@ test("同じ major であれば新しい minor を名乗るデータモデルも
 test("違う major を名乗るデータモデルはこの版として読み込めない", () => {
   const decoded = DesignDocumentV1.fromJson(Json.create(setupRecord("0.9")));
 
-  expect(decoded.ok ? [] : decoded.error).toEqual([
+  expect(Result.isOk(decoded) ? [] : decoded.error).toEqual([
     expect.objectContaining({ kind: "invalid-type", path: "formatVersion" }),
   ]);
 });

@@ -28,7 +28,7 @@ test("必須フィールドが欠けている typography は読み込めない",
     Json.create({ fontSize: 16 }, "body"),
   );
 
-  expect(result.ok).toBe(false);
+  expect(Result.isOk(result)).toBe(false);
 });
 
 test("typography は仕様の定義順で書き出される", () => {

@@ -4,7 +4,7 @@ import { Result } from "@/utils/Result";
 import { recordCursor } from "./Json.setup";
 
 function errorsOf(result: JsonDecoded<unknown>): readonly JsonDecodeError[] {
-  return result.ok ? [] : result.error;
+  return Result.isOk(result) ? [] : result.error;
 }
 
 test("期待と違う型の値は位置つきで報告される", () => {
