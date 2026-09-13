@@ -11,7 +11,7 @@ import { DesignDocument } from "@/domains/dcmp/design-document";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { spyRenameActions } from "@/features/sidebar/__tests__/rename-actions";
 import { Option } from "@/utils/Option";
-import { ArtboardList } from "../index";
+import { ArtboardList, ArtboardListing } from "../index";
 
 /** artboard 3 枚。両端と中ほどで並べ替えのボタンの出方が変わるので 3 枚要る。 */
 function setupDocument(): DesignDocument {
@@ -34,6 +34,7 @@ function renderList(document: DesignDocument = setupDocument()): {
   const reorder = vi.fn();
   const { container } = render(
     <ArtboardList
+      listing={ArtboardListing.full(document.artboards)}
       selection={DocumentSelection.fromNames(document, [])}
       onSelect={vi.fn()}
       artboardActions={{ add, reorder }}

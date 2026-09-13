@@ -95,7 +95,7 @@ export const Props = {
    * 指した prop はすべて同じ値になる。
    */
   apply(props: Props, edit: PropEdit): Props {
-    if (edit.value.some) {
+    if (Option.isSome(edit.value)) {
       const value = edit.value.value;
       const written = edit.names.map((name) => [name, value] as const);
       return { ...props, ...Object.fromEntries(written) };
@@ -146,6 +146,20 @@ export const Node = {
     return [node.name, ...Node.children(node).flatMap(Node.collectNames)];
   },
 
+  /**
+   * 自分か子孫のどれかの名前が条件に合うか（docs/06-ui.md「絞り込み」）。
+   *
+   * 条件を述語で受け取るのは、絞り込みの語彙が編集中の状態の側（`session`）にあり、
+   * ここからは import できないため（rules/architecture.md「依存方向のルール」）。
+   *
+   * @param node 走査の起点になるノード
+   * @param matches 名前を判定する条件
+   * @returns 自分か子孫に 1 つでも合う名前があれば true
+   */
+  hasMatchingName(node: Node, matches: (name: string) => boolean): boolean {
+    return Node.collectNames(node).some(matches);
+  },
+
   collectRefs(node: Node): readonly string[] {
     if (Node.isRef(node)) {
       return [node.ref];
@@ -175,7 +189,7 @@ export const Node = {
     }
     for (const child of Node.children(node)) {
       const found = Node.find(child, name);
-      if (found.some) {
+      if (Option.isSome(found)) {
         return found;
       }
     }

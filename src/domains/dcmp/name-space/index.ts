@@ -1,4 +1,4 @@
-import type { Artboard } from "@/domains/dcmp/artboard";
+import { Artboard } from "@/domains/dcmp/artboard";
 import { ComponentSet } from "@/domains/dcmp/component";
 import { Node } from "@/domains/dcmp/node";
 import { CaseStyle } from "@/utils/CaseStyle";
@@ -57,10 +57,7 @@ export const NameSpace = {
         ];
       },
     );
-    const artboardNames = artboards.flatMap((artboard): readonly string[] => [
-      artboard.name,
-      ...artboard.children.flatMap(Node.collectNames),
-    ]);
+    const artboardNames = artboards.flatMap(Artboard.collectNames);
     return [...componentNames, ...artboardNames];
   },
 

@@ -6,7 +6,7 @@ import { DesignDocument } from "@/domains/dcmp/design-document";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { spyRenameActions } from "@/features/sidebar/__tests__/rename-actions";
 import { Option } from "@/utils/Option";
-import { ArtboardList } from "../index";
+import { ArtboardList, ArtboardListing } from "../index";
 
 /**
  * artboard 2 枚。ノードは 2 枚目（`settings`）だけに置く。
@@ -32,6 +32,7 @@ function renderList(selection: DocumentSelection): {
   const onSelect = vi.fn();
   const { container } = render(
     <ArtboardList
+      listing={ArtboardListing.full(selection.document.artboards)}
       selection={selection}
       onSelect={onSelect}
       artboardActions={{ add: vi.fn(), reorder: vi.fn() }}
