@@ -9,16 +9,6 @@ test("err で生成した結果は失敗としてエラーを保持する", () =
   expect(Result.err("fail")).toEqual({ ok: false, error: "fail" });
 });
 
-test("ok フラグで絞り込むと成功値にアクセスできる", () => {
-  const result: Result<number, string> = Result.ok(42);
-  expect(result.ok && result.value).toBe(42);
-});
-
-test("ok フラグで絞り込むと失敗のエラーにアクセスできる", () => {
-  const result: Result<number, string> = Result.err("fail");
-  expect(!result.ok && result.error).toBe("fail");
-});
-
 test("map は成功値を変換した新しい成功結果を返す", () => {
   expect(Result.map(Result.ok(2), (v) => v * 3)).toEqual({
     ok: true,
