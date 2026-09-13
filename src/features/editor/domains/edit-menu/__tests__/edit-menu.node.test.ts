@@ -29,11 +29,13 @@ function nodeOperations(state: EditorState): readonly EditOperation[] {
   return operationsIn(EditMenu.create(state, EditMenuTargets.Node));
 }
 
-test("ノードを選んでいるときはコピー・ペースト・名前を変更・前面へ・背面へ・インスタンスを解除・削除が並ぶ", () => {
+test("ノードを選んでいるときはコピー・ペースト・名前を変更・グループ化・グループ解除・前面へ・背面へ・インスタンスを解除・削除が並ぶ", () => {
   expect(nodeOperations(stateSelecting("panel"))).toEqual([
     EditOperations.Copy,
     EditOperations.Paste,
     EditOperations.Rename,
+    EditOperations.Group,
+    EditOperations.Ungroup,
     EditOperations.BringForward,
     EditOperations.SendBackward,
     EditOperations.DetachInstance,
@@ -43,8 +45,20 @@ test("ノードを選んでいるときはコピー・ペースト・名前を�
 
 test("並びは 5 つの組に分かれる", () => {
   expect(
-    EditMenu.create(stateSelecting("panel"), EditMenuTargets.Node).groups,
+    EditMenu.create(stateSelecting("panel"), EditMenuTargets.Node).sections,
   ).toHaveLength(5);
+});
+
+test("名前を変更・グループ化・グループ解除は同じ組に並ぶ", () => {
+  const menu = EditMenu.create(stateSelecting("panel"), EditMenuTargets.Node);
+
+  expect(
+    menu.sections.map((section) => section.map((row) => row.operation)),
+  ).toContainEqual([
+    EditOperations.Rename,
+    EditOperations.Group,
+    EditOperations.Ungroup,
+  ]);
 });
 
 test("1 つだけ選んでいるときは名前を変更が押せる", () => {
@@ -57,6 +71,42 @@ test("何も選んでいないときは名前を変更が押せない", () => {
   const menu = EditMenu.create(setupState(), EditMenuTargets.Node);
 
   expect(isRowEnabled(menu, EditOperations.Rename)).toBe(false);
+});
+
+test("Box を選んでいるときはグループ化が押せる", () => {
+  const menu = EditMenu.create(stateSelecting("panel"), EditMenuTargets.Node);
+
+  expect(isRowEnabled(menu, EditOperations.Group)).toBe(true);
+});
+
+test("Text を選んでいてもグループ化は押せる", () => {
+  const menu = EditMenu.create(stateSelecting("title"), EditMenuTargets.Node);
+
+  expect(isRowEnabled(menu, EditOperations.Group)).toBe(true);
+});
+
+test("何も選んでいないときはグループ化が押せない", () => {
+  const menu = EditMenu.create(setupState(), EditMenuTargets.Node);
+
+  expect(isRowEnabled(menu, EditOperations.Group)).toBe(false);
+});
+
+test("Box を選んでいるときはグループ解除が押せる", () => {
+  const menu = EditMenu.create(stateSelecting("panel"), EditMenuTargets.Node);
+
+  expect(isRowEnabled(menu, EditOperations.Ungroup)).toBe(true);
+});
+
+test("Text を選んでいるときはグループ解除が押せない", () => {
+  const menu = EditMenu.create(stateSelecting("title"), EditMenuTargets.Node);
+
+  expect(isRowEnabled(menu, EditOperations.Ungroup)).toBe(false);
+});
+
+test("何も選んでいないときはグループ解除が押せない", () => {
+  const menu = EditMenu.create(setupState(), EditMenuTargets.Node);
+
+  expect(isRowEnabled(menu, EditOperations.Ungroup)).toBe(false);
 });
 
 test("いちばん背面にあるノードでは背面へが押せない", () => {
@@ -123,7 +173,9 @@ test("複数選択中はどの行も押せない", () => {
     EditMenuTargets.Node,
   );
 
-  expect(menu.groups.flat().map((row) => row.isEnabled)).toEqual([
+  expect(menu.sections.flat().map((row) => row.isEnabled)).toEqual([
+    false,
+    false,
     false,
     false,
     false,

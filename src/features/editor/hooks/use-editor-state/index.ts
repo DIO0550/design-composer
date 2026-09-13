@@ -69,6 +69,8 @@ export type EditorAction =
   | Readonly<{ type: "detach_instance" }>
   | Readonly<{ type: "select_all_instances" }>
   | Readonly<{ type: "create_component"; componentName: string }>
+  | Readonly<{ type: "group_selected" }>
+  | Readonly<{ type: "ungroup_selected" }>
   | Readonly<{ type: "copy_node" }>
   | Readonly<{ type: "paste_node" }>
   | Readonly<{ type: "apply_prop_edit"; edit: PropEdit }>
@@ -231,6 +233,20 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
         EditorState.createComponent(state, action.componentName),
         state,
       );
+    case "group_selected":
+      /*
+       * 1 つだけ選んでいないとき・選んでいるのが artboard のとき・ファイルが不正な間は
+       * 木は変わらない（EditorState.groupSelected の `none`）。⌘G は何も選んでいなくても
+       * 押せるため、この `none` には画面の操作から到達する。
+       */
+      return Option.unwrapOr(EditorState.groupSelected(state), state);
+    case "ungroup_selected":
+      /*
+       * 1 つだけ選んでいないとき・選んでいるのが artboard / Text / 部品インスタンスの
+       * とき・ファイルが不正な間は木は変わらない（EditorState.ungroupSelected の `none`）。
+       * 到達しうる理由は group_selected と同じ。
+       */
+      return Option.unwrapOr(EditorState.ungroupSelected(state), state);
     case "copy_node":
       /*
        * コピーできる対象が無ければクリップボードは変わらない

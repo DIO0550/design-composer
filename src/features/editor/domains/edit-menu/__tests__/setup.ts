@@ -55,7 +55,7 @@ export function stateSelecting(name: string): EditorState {
  * @returns 並ぶ順の操作
  */
 export function operationsIn(menu: EditMenu): readonly EditOperation[] {
-  return menu.groups.flat().map((row) => row.operation);
+  return menu.sections.flat().map((row) => row.operation);
 }
 
 /**
@@ -69,7 +69,9 @@ export function isRowEnabled(
   menu: EditMenu,
   operation: EditOperation,
 ): boolean {
-  const rows = menu.groups.flat().filter((row) => row.operation === operation);
+  const rows = menu.sections
+    .flat()
+    .filter((row) => row.operation === operation);
 
   expect(rows).toHaveLength(1);
   return rows[0].isEnabled;

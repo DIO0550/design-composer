@@ -43,6 +43,16 @@ const OperationPresentations = {
     shortcut: Option.some("⌘R"),
     tone: ContextMenuTones.Normal,
   },
+  group: {
+    label: "Group",
+    shortcut: Option.some("⌘G"),
+    tone: ContextMenuTones.Normal,
+  },
+  ungroup: {
+    label: "Ungroup",
+    shortcut: Option.some("Shift+⌘G"),
+    tone: ContextMenuTones.Normal,
+  },
   "bring-forward": {
     label: "Bring forward",
     shortcut: Option.some("⌘]"),
@@ -90,6 +100,8 @@ function operationHandlers(
     copy: edit.copy,
     paste: edit.paste,
     rename: edit.startRenaming,
+    group: edit.groupSelected,
+    ungroup: edit.ungroupSelected,
     "bring-forward": () => edit.reorderSelected(ReorderSteps.TowardFront),
     "send-backward": () => edit.reorderSelected(ReorderSteps.TowardBack),
     "detach-instance": node.detachInstance,
@@ -120,10 +132,10 @@ export function EditorContextMenu({
 
   return (
     <ContextMenu at={opened.at} onClose={onClose}>
-      {menu.groups.map((group) => (
-        // 組に id が無いので操作を鍵にする（同じ操作は 1 つのメニューに 2 度出ない）
-        <ContextMenu.List key={group.map((row) => row.operation).join()}>
-          {group.map((row) => (
+      {menu.sections.map((section) => (
+        // 節に id が無いので操作を鍵にする（同じ操作は 1 つのメニューに 2 度出ない）
+        <ContextMenu.List key={section.map((row) => row.operation).join()}>
+          {section.map((row) => (
             <ContextMenu.Item
               key={row.operation}
               {...OperationPresentations[row.operation]}

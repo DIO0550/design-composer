@@ -32,6 +32,12 @@ function setupState(): EditorState {
             { name: "home-signup", ref: "primary-button" },
             // 部品化と挿入の単一側の対照（インスタンスはどちらも元々できない）
             { name: "home-panel", type: "Box" },
+            // 座標の移動の単一側の対照（座標を持つのは絶対配置のノードだけ）
+            {
+              name: "home-badge",
+              type: "Box",
+              props: { placement: "absolute", x: 8, y: 8 },
+            },
           ],
         },
       ],
@@ -46,6 +52,11 @@ function setupMultiSelected(): EditorState {
       EditorState.select(setupState(), "home-login"),
     ),
   );
+}
+
+/** Box と部品インスタンスをまとめて選んだ状態（キャンバスの範囲選択で作れる並び）。 */
+function setupMultiSelectedWithBox(): EditorState {
+  return EditorState.selectNodes(setupState(), ["home-panel", "home-login"]);
 }
 
 /** 1 つだけ選んだ状態（同じドキュメントの対照）。 */
@@ -78,14 +89,6 @@ test("複数選んでいる間はインスタンスを解除できない", () =>
   );
 });
 
-/*
- * 部品化と挿入位置の 2 件は、複数選択のゲートを外しても答えが変わらない。
- * まとめて選べるのはインスタンスだけで、インスタンスはもともと部品化も
- * 追加位置も持てないため（`createComponent` / `insertPosition` の doc）。
- * Box を含む複数選択は `selectAllInstances` からは作れないので、この 2 件は
- * 「複数だから不可」ではなく「今の画面でこの操作が成立しない」ことの記録として置く。
- * ゲートそのものを守っているのは、上の削除・コピー・解除・prop 編集・リサイズの 5 件。
- */
 test("複数選んでいる間は部品化できない", () => {
   const single = EditorState.select(setupState(), "home-panel");
 
@@ -94,7 +97,7 @@ test("複数選んでいる間は部品化できない", () => {
   ).toBe(true);
   expect(
     Option.isSome(
-      EditorState.createComponent(setupMultiSelected(), "created-panel"),
+      EditorState.createComponent(setupMultiSelectedWithBox(), "created-panel"),
     ),
   ).toBe(false);
 });
@@ -129,13 +132,21 @@ test("複数選んでいる間は並べ替えられない", () => {
   ).toBe(false);
 });
 
-/*
- * 座標の移動（`repositionSelectedNodeBy`）はここに置けない。まとめて選べるのは
- * インスタンスだけで、インスタンスは props を持たないため座標をそもそも持てず、
- * 単一選択の対照が `some` にならない（部品化・挿入位置と同じ理由）。
- * 単一を前提にしていることは `EditorState.singleName` を通していることで担保され、
- * 選択が無い側は `editor-state.reposition.test.ts` が押さえている。
- */
+test("複数選んでいる間は座標を動かせない", () => {
+  const single = EditorState.select(setupState(), "home-badge");
+  const multi = EditorState.selectNodes(setupState(), [
+    "home-badge",
+    "home-login",
+  ]);
+  const delta = { x: 1, y: 0 };
+
+  expect(
+    Option.isSome(EditorState.repositionSelectedNodeBy(single, delta)),
+  ).toBe(true);
+  expect(
+    Option.isSome(EditorState.repositionSelectedNodeBy(multi, delta)),
+  ).toBe(false);
+});
 
 test("複数選んでいる間はリサイズできない", () => {
   expect(
@@ -150,9 +161,27 @@ test("複数選んでいる間は挿入位置が決まらない", () => {
   const single = EditorState.select(setupState(), "home-panel");
 
   expect(Option.isSome(EditorState.insertPosition(single))).toBe(true);
-  expect(Option.isSome(EditorState.insertPosition(setupMultiSelected()))).toBe(
+  expect(
+    Option.isSome(EditorState.insertPosition(setupMultiSelectedWithBox())),
+  ).toBe(false);
+});
+
+test("複数選んでいる間は Box で包めない", () => {
+  expect(Option.isSome(EditorState.groupSelected(setupSingleSelected()))).toBe(
+    true,
+  );
+  expect(Option.isSome(EditorState.groupSelected(setupMultiSelected()))).toBe(
     false,
   );
+});
+
+test("複数選んでいる間は Box を外せない", () => {
+  const single = EditorState.select(setupState(), "home-panel");
+
+  expect(Option.isSome(EditorState.ungroupSelected(single))).toBe(true);
+  expect(
+    Option.isSome(EditorState.ungroupSelected(setupMultiSelectedWithBox())),
+  ).toBe(false);
 });
 
 test("複数選んでいると選択数がその件数になる", () => {

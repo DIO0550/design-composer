@@ -1,5 +1,6 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, within } from "@testing-library/react";
 import type { ComponentProps, ReactElement, ReactNode } from "react";
+import { contextMenu } from "@/components/__tests__/context-menu";
 import { ContextMenu } from "@/components/context-menu";
 import {
   list,
@@ -56,12 +57,9 @@ export function renderMenu(
   );
 }
 
-/** 器を起点に探す。行を直接引くと、器が読み上げ名を失っても気づけない。 */
-export function menu() {
-  return screen.getByRole("menu", { name: "コンテキストメニュー" });
-}
+export { contextMenu as menu } from "@/components/__tests__/context-menu";
 
 /** 器に絞った検索の入口。 */
 export function inMenu() {
-  return within(menu());
+  return within(contextMenu());
 }

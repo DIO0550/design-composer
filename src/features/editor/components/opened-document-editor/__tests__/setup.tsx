@@ -1,5 +1,6 @@
 import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { contextMenu } from "@/components/__tests__/context-menu";
 import type { DesignDocument } from "@/domains/dcmp/design-document";
 import { renderedElement } from "@/features/canvas/__tests__";
 import {
@@ -148,6 +149,20 @@ export function fileErrorList(): HTMLElement {
  */
 export function documentErrorList(): HTMLElement {
   return screen.getByRole("alert", { name: "ドキュメントのエラー一覧" });
+}
+
+export { contextMenu };
+
+/**
+ * コンテキストメニューの行。
+ *
+ * @param label 行の綴り。読み上げ名は綴りのうしろに割り当てが並ぶので前方一致で引く
+ * @returns その行のボタン
+ */
+export function menuRow(label: string): HTMLElement {
+  return within(contextMenu()).getByRole("menuitem", {
+    name: new RegExp(`^${label}`),
+  });
 }
 
 /** 左ペイン。 */

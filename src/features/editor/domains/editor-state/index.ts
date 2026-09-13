@@ -5,6 +5,7 @@ import { ChildPosition } from "@/domains/dcmp/child-position";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import type { Node, PropEdit } from "@/domains/dcmp/node";
 import { Placement } from "@/domains/dcmp/placement";
+import { PrimitiveTypes } from "@/domains/dcmp/primitive-schema";
 import {
   Token,
   type TokenRef,
@@ -272,9 +273,9 @@ export const EditorState = {
   /**
    * 1 つだけ選んでいるときの、その名前。
    *
-   * 単一選択を前提とする操作（削除・コピー・prop 編集・リサイズ・部品化・解除・テキスト
-   * 編集）はすべてこれを通す。複数選択で `none` になるので、「複数選んでいる間は単一前提
-   * の操作が成立しない」（docs/06-ui.md「選択」）が消費側ごとの分岐ではなくここで決まる。
+   * 単一選択を前提とする操作はすべてこれを通す。複数選択で `none` になるので、「複数選んで
+   * いる間は単一前提の操作が成立しない」（docs/06-ui.md「選択」）が消費側ごとの分岐では
+   * なくここで決まる。
    *
    * @param state 選択の出どころになるエディタの状態
    * @returns 単一選択ならその名前。未選択と複数選択では `none`
@@ -999,6 +1000,62 @@ export const EditorState = {
       return Result.isOk(created)
         ? withEdit(state, created.value)
         : Option.none;
+    });
+  },
+
+  /**
+   * 選んでいるノードを新しい Box の中へ入れ、その Box を選び直す（docs/06-ui.md「編集操作
+   * の一覧」のグループ化）。
+   *
+   * 木の付け替えは `DesignDocument.groupIntoBox` が持ち、ここは対象を選択から決め、Box の
+   * 名前を採り、履歴へ積んで選択を移すところまで。
+   *
+   * 選択を新しい Box へ移すのは、続けて `ungroupSelected` を呼んだときに押し戻しになるよう
+   * にするため。包まれた側を選んだままにすると、次の解除の対象が Box ではなくなる。
+   *
+   * @param state 包む前のエディタの状態
+   * @returns 包んだあとのエディタの状態。1 つだけ選んでいるのでないとき、artboard を選んで
+   *   いるとき、ファイルが不正な間は `none`
+   */
+  groupSelected(state: EditorState): Option<EditorState> {
+    return Option.flatMap(EditorState.singleName(state), (name) => {
+      const document = EditorState.document(state);
+      const boxName = DesignDocument.uniqueName(
+        NodeTemplate.baseName({ kind: "primitive", type: PrimitiveTypes.Box }),
+        DesignDocument.usedNames(document),
+      );
+      const grouped = DesignDocument.groupIntoBox(document, name, boxName);
+      return Result.isOk(grouped)
+        ? Option.map(withEdit(state, grouped.value), (edited) =>
+            EditorState.select(edited, boxName),
+          )
+        : Option.none;
+    });
+  },
+
+  /**
+   * 選んでいる Box を外して、その子を Box が居た位置へ戻し、戻った子を選び直す
+   * （docs/06-ui.md「編集操作の一覧」のグループ解除。`groupSelected` の逆向き）。
+   *
+   * 戻った子を選ぶのは ⌘G → ⌘⇧G が押し戻しになるようにするため。
+   *
+   * @param state 外す前のエディタの状態
+   * @returns 外したあとのエディタの状態。1 つだけ選んでいるのでないとき、artboard・Text・
+   *   部品インスタンスを選んでいるとき、ファイルが不正な間は `none`
+   */
+  ungroupSelected(state: EditorState): Option<EditorState> {
+    return Option.flatMap(EditorState.singleName(state), (name) => {
+      const ungrouped = DesignDocument.ungroupBox(
+        EditorState.document(state),
+        name,
+      );
+      if (!Result.isOk(ungrouped)) {
+        return Option.none;
+      }
+      const { document, freedNames } = ungrouped.value;
+      return Option.map(withEdit(state, document), (edited) =>
+        EditorState.selectNodes(edited, freedNames),
+      );
     });
   },
 
