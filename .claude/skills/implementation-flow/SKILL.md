@@ -139,7 +139,9 @@ description: "design-composer の実装を ゴールの確定 → タスクの�
 ## フェーズ 7: PR
 
 - **PR 本文は差分の説明に絞る。** 判断の履歴は Issue 側にある
-- 関連 Issue を本文からリンクする
+- **本文に `Closes #<Issue番号>` を書く。** リンクを貼るだけでは閉じない。書き忘れは CI が
+  落とす(`.github/workflows/pr-closing-keyword.yml`)。Issue を持たない PR は
+  `Issue 無し: <理由>` の 1 行を書く(`AGENTS.md`「着手した Issue はその回で閉じる」)
 - CI(lint / typecheck / test / 視覚差分)を通す
 
 **push の前に、まずフックが発火する環境かを確かめ、続けて CI と同じ検査を 1 つずつ
@@ -182,12 +184,16 @@ bash .claude/hooks/lib/test-rules-scan.sh src                # テスト規約
 
 ## フェーズ 8: マージ後の追記
 
-マージされたら次の 2 つを行う(マージは `.claude/hooks/post-merge-review.sh` が検知して提示する)。
+マージされたら次の 3 つを行う(マージは `.claude/hooks/post-merge-review.sh` が検知して提示する)。
 
-1. **意思決定が変わったところがあれば、該当 Issue にコメントする**(計画では A に置くとしたが
+1. **Issue が閉じたことを確認する。** 閉じていなければ `Closes` が効いていないので、手で閉じる
+   前に理由を見る(番号違い / base が `main` でない — GitHub が閉じるのは既定ブランチへの
+   マージのときだけ)。**スコープ外が残っていたら、その Issue を開け直さず新しい Issue を立てる**
+   (`AGENTS.md`「着手した Issue はその回で閉じる」)
+2. **意思決定が変わったところがあれば、該当 Issue にコメントする**(計画では A に置くとしたが
    レビューで B に移した / 却下していた案を採用した / ゴールの範囲が変わった)。
    変わっていないなら書かない
-2. **`harness-record` スキルでその回の評価を記録する**。記録を残すところまでで、集計と規約の
+3. **`harness-record` スキルでその回の評価を記録する**。記録を残すところまでで、集計と規約の
    見直しは行わない(→ `harness-growth`)
 
 ---
