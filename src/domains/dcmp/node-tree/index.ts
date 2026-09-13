@@ -222,23 +222,41 @@ export const NodeTree = {
     );
   },
 
+  /**
+   * 並びの中の 1 件を、別の 0 件以上のノードに置き換える。子孫は辿らず、渡された並びの
+   * 中だけを見る。
+   *
+   * 取り除く（0 件）・差し替える（1 件）・包みを外して子を出す（子の件数）はどれもこの形
+   * なので、走査と名前の突き合わせをここ 1 つにまとめている。
+   *
+   * @param siblings 置き換える対象を含む並び
+   * @param name 置き換えるノードの名前
+   * @param replacements その位置へ置く並び。空なら取り除く
+   * @returns 置き換えたあとの並び。名前が並びに無ければそのまま
+   */
+  spliceByName(
+    siblings: NodeTree,
+    name: string,
+    replacements: readonly Node[],
+  ): NodeTree {
+    return NodeTree.create(
+      siblings.nodes.flatMap((sibling) =>
+        sibling.name === name ? replacements : [sibling],
+      ),
+    );
+  },
+
   /** 名前で指したノードを並びから取り除く。見つからなければ `none`。 */
   removeByName(tree: NodeTree, name: string): Option<NodeTree> {
     return NodeTree.updateSiblingsOf(tree, name, (siblings) =>
-      NodeTree.create(
-        siblings.nodes.filter((sibling) => sibling.name !== name),
-      ),
+      NodeTree.spliceByName(siblings, name, []),
     );
   },
 
   /** 名前で指したノードを別のノードに差し替える。見つからなければ `none`。 */
   replaceByName(tree: NodeTree, name: string, node: Node): Option<NodeTree> {
     return NodeTree.updateSiblingsOf(tree, name, (siblings) =>
-      NodeTree.create(
-        siblings.nodes.map((sibling) =>
-          sibling.name === name ? node : sibling,
-        ),
-      ),
+      NodeTree.spliceByName(siblings, name, [node]),
     );
   },
 } as const;
