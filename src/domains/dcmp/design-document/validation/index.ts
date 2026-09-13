@@ -102,7 +102,7 @@ function collectTypedPropErrors(
 }
 
 /**
- * 子を並べない親（`layout: free`）の下に `fill` を書いていないか（docs/03「Box」。Figma
+ * 子を並べない親（`layout: free`）の下に `fill` を書いていないか（docs/03「サイズ指定の原則」。Figma
  * と同じく `fill` は子を並べる親の下でだけ意味を持つ）。
  *
  * スキーマの `enabledWhen` で閉じられないのは、条件が**親の** prop だから（docs/03「`enabledWhen`
