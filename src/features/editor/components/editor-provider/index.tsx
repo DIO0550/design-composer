@@ -48,7 +48,7 @@ export function EditorProvider({
  */
 export function useEditor(): Editor {
   const editor = useContext(EditorContext);
-  if (!editor.some) {
+  if (!Option.isSome(editor)) {
     throw new Error("useEditor は EditorProvider の内側でのみ使える");
   }
   return editor.value;

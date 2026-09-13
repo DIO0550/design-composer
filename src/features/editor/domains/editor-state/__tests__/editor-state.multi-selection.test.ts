@@ -56,18 +56,26 @@ function setupSingleSelected(): EditorState {
 const Width: AxisLength = { axis: "width", length: 120 };
 
 test("複数選んでいる間は削除できない", () => {
-  expect(EditorState.removeSelected(setupSingleSelected()).some).toBe(true);
-  expect(EditorState.removeSelected(setupMultiSelected()).some).toBe(false);
+  expect(Option.isSome(EditorState.removeSelected(setupSingleSelected()))).toBe(
+    true,
+  );
+  expect(Option.isSome(EditorState.removeSelected(setupMultiSelected()))).toBe(
+    false,
+  );
 });
 
 test("複数選んでいる間はコピーできない", () => {
-  expect(EditorState.copyNode(setupSingleSelected()).some).toBe(true);
-  expect(EditorState.copyNode(setupMultiSelected()).some).toBe(false);
+  expect(Option.isSome(EditorState.copyNode(setupSingleSelected()))).toBe(true);
+  expect(Option.isSome(EditorState.copyNode(setupMultiSelected()))).toBe(false);
 });
 
 test("複数選んでいる間はインスタンスを解除できない", () => {
-  expect(EditorState.detachInstance(setupSingleSelected()).some).toBe(true);
-  expect(EditorState.detachInstance(setupMultiSelected()).some).toBe(false);
+  expect(Option.isSome(EditorState.detachInstance(setupSingleSelected()))).toBe(
+    true,
+  );
+  expect(Option.isSome(EditorState.detachInstance(setupMultiSelected()))).toBe(
+    false,
+  );
 });
 
 /*
@@ -81,35 +89,43 @@ test("複数選んでいる間はインスタンスを解除できない", () =>
 test("複数選んでいる間は部品化できない", () => {
   const single = EditorState.select(setupState(), "home-panel");
 
-  expect(EditorState.createComponent(single, "created-panel").some).toBe(true);
   expect(
-    EditorState.createComponent(setupMultiSelected(), "created-panel").some,
+    Option.isSome(EditorState.createComponent(single, "created-panel")),
+  ).toBe(true);
+  expect(
+    Option.isSome(
+      EditorState.createComponent(setupMultiSelected(), "created-panel"),
+    ),
   ).toBe(false);
 });
 
 test("複数選んでいる間は prop を編集できない", () => {
   const edit = PropEdit.set(["label"], "送信");
 
-  expect(EditorState.applyPropEdit(setupSingleSelected(), edit).some).toBe(
-    true,
-  );
-  expect(EditorState.applyPropEdit(setupMultiSelected(), edit).some).toBe(
-    false,
-  );
+  expect(
+    Option.isSome(EditorState.applyPropEdit(setupSingleSelected(), edit)),
+  ).toBe(true);
+  expect(
+    Option.isSome(EditorState.applyPropEdit(setupMultiSelected(), edit)),
+  ).toBe(false);
 });
 
 test("複数選んでいる間は並べ替えられない", () => {
   expect(
-    EditorState.reorderSelectedNode(
-      setupSingleSelected(),
-      ReorderSteps.TowardFront,
-    ).some,
+    Option.isSome(
+      EditorState.reorderSelectedNode(
+        setupSingleSelected(),
+        ReorderSteps.TowardFront,
+      ),
+    ),
   ).toBe(true);
   expect(
-    EditorState.reorderSelectedNode(
-      setupMultiSelected(),
-      ReorderSteps.TowardFront,
-    ).some,
+    Option.isSome(
+      EditorState.reorderSelectedNode(
+        setupMultiSelected(),
+        ReorderSteps.TowardFront,
+      ),
+    ),
   ).toBe(false);
 });
 
@@ -122,15 +138,21 @@ test("複数選んでいる間は並べ替えられない", () => {
  */
 
 test("複数選んでいる間はリサイズできない", () => {
-  expect(EditorState.resize(setupSingleSelected(), [Width]).some).toBe(true);
-  expect(EditorState.resize(setupMultiSelected(), [Width]).some).toBe(false);
+  expect(
+    Option.isSome(EditorState.resize(setupSingleSelected(), [Width])),
+  ).toBe(true);
+  expect(Option.isSome(EditorState.resize(setupMultiSelected(), [Width]))).toBe(
+    false,
+  );
 });
 
 test("複数選んでいる間は挿入位置が決まらない", () => {
   const single = EditorState.select(setupState(), "home-panel");
 
-  expect(EditorState.insertPosition(single).some).toBe(true);
-  expect(EditorState.insertPosition(setupMultiSelected()).some).toBe(false);
+  expect(Option.isSome(EditorState.insertPosition(single))).toBe(true);
+  expect(Option.isSome(EditorState.insertPosition(setupMultiSelected()))).toBe(
+    false,
+  );
 });
 
 test("複数選んでいると選択数がその件数になる", () => {
@@ -218,11 +240,13 @@ test("選んだものの参照先が混ざると出どころの部品は決ま�
   expect(EditorState.sourceName(setupMultiSelected())).toEqual(
     Option.some("primary-button"),
   );
-  expect(EditorState.sourceName(mixed).some).toBe(false);
+  expect(Option.isSome(EditorState.sourceName(mixed))).toBe(false);
 });
 
 test("参照先が混ざった複数選択からはまとめて選び直せない", () => {
   expect(
-    EditorState.selectAllInstances(setupMultiSelectedWithMixedSource()).some,
+    Option.isSome(
+      EditorState.selectAllInstances(setupMultiSelectedWithMixedSource()),
+    ),
   ).toBe(false);
 });

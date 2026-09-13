@@ -140,7 +140,7 @@ test("自分の子孫の下へは移せない", () => {
     index: 0,
   });
 
-  expect(moved.some).toBe(false);
+  expect(Option.isSome(moved)).toBe(false);
 });
 
 test("ドキュメントに無いノードは移せない", () => {
@@ -149,5 +149,5 @@ test("ドキュメントに無いノードは移せない", () => {
     index: 0,
   });
 
-  expect(moved.some).toBe(false);
+  expect(Option.isSome(moved)).toBe(false);
 });

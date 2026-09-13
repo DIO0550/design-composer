@@ -125,7 +125,7 @@ export const DocumentSelection = {
     return Option.flatMap(DocumentSelection.singleName(selection), (name) => {
       const document = selection.document;
       const artboard = DesignDocument.findArtboard(document, name);
-      if (artboard.some) {
+      if (Option.isSome(artboard)) {
         return Option.some(Selection.fromArtboard(artboard.value));
       }
       return Option.map(
@@ -152,7 +152,9 @@ export const DocumentSelection = {
     const names = DocumentSelection.names(selection);
     const refs = names.flatMap((name) => {
       const found = DesignDocument.findNode(document, name);
-      return found.some && Node.isRef(found.value) ? [found.value.ref] : [];
+      return Option.isSome(found) && Node.isRef(found.value)
+        ? [found.value.ref]
+        : [];
     });
     const isSameSource =
       refs.length === names.length && ArrayEx.distinct(refs).length === 1;
@@ -177,7 +179,7 @@ export const DocumentSelection = {
       ArrayEx.first(DocumentSelection.names(selection)),
       (name) => DesignDocument.findOwningArtboard(document, name),
     );
-    if (owning.some) {
+    if (Option.isSome(owning)) {
       return owning;
     }
     return ArrayEx.first(document.artboards);
@@ -192,6 +194,6 @@ export const DocumentSelection = {
    */
   isCurrentArtboard(selection: DocumentSelection, name: string): boolean {
     const current = DocumentSelection.currentArtboard(selection);
-    return current.some && current.value.name === name;
+    return Option.isSome(current) && current.value.name === name;
   },
 } as const;

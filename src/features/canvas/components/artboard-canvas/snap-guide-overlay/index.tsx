@@ -1,5 +1,6 @@
 import type { CanvasBounds } from "@/features/canvas/domains/canvas-bounds";
 import type { SnapGuides } from "@/features/canvas/domains/side-snap";
+import { Option } from "@/utils/Option";
 
 /**
  * ガイド線 1 本。
@@ -36,10 +37,10 @@ function GuideLine({ bounds }: Readonly<{ bounds: CanvasBounds }>) {
 export function SnapGuideOverlay({ guides }: Readonly<{ guides: SnapGuides }>) {
   return (
     <>
-      {guides.horizontal.some ? (
+      {Option.isSome(guides.horizontal) ? (
         <GuideLine bounds={guides.horizontal.value} />
       ) : null}
-      {guides.vertical.some ? (
+      {Option.isSome(guides.vertical) ? (
         <GuideLine bounds={guides.vertical.value} />
       ) : null}
     </>

@@ -256,7 +256,7 @@ export const DocumentIpc = {
               // 形が合わない値は配らない。ドキュメント変更として渡せる中身が無く、
               // イベントのコールバックには失敗を返す相手もいないため。
               const changed = toDocumentChanged(payload);
-              if (changed.some) {
+              if (Option.isSome(changed)) {
                 listener(changed.value);
               }
             },

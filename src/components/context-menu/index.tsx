@@ -89,7 +89,7 @@ const ContextMenuControlContext = createContext<Option<ContextMenuControl>>(
  */
 function useContextMenuControl(): ContextMenuControl {
   const control = useContext(ContextMenuControlContext);
-  if (!control.some) {
+  if (!Option.isSome(control)) {
     throw new Error("ContextMenu.Item は ContextMenu の内側でのみ使える");
   }
   return control.value;
@@ -281,7 +281,7 @@ function ContextMenuItem({
       }`}
     >
       <span className="flex-1 text-left">{label}</span>
-      {shortcut.some ? (
+      {Option.isSome(shortcut) ? (
         // 割り当ては行の色に従わない（押せる行でも淡いまま / UI 案）
         <span className="font-mono text-[#c4c4c4] text-[10px]">
           {shortcut.value}

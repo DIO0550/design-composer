@@ -397,7 +397,7 @@ function targetThroughRef(
   );
   return Option.map(inner, (target) => {
     const override = Option.fromNullable(node.overrides?.[prop]);
-    return override.some ? { ...target, declared: override } : target;
+    return Option.isSome(override) ? { ...target, declared: override } : target;
   });
 }
 
@@ -424,7 +424,7 @@ function publicPropTargetWithin(
     return Option.none;
   }
   const binding = Component.binding(component, ref.prop);
-  if (!binding.some) {
+  if (!Option.isSome(binding)) {
     return Option.none;
   }
   const target = Component.findNode(
@@ -432,7 +432,7 @@ function publicPropTargetWithin(
     ref.component,
     binding.value.node,
   );
-  if (!target.some) {
+  if (!Option.isSome(target)) {
     return Option.none;
   }
   return Node.isRef(target.value)

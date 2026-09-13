@@ -3,6 +3,7 @@ import { TypeGlyph } from "@/components/type-glyph";
 import type { PrimitiveType } from "@/domains/dcmp/primitive-schema";
 import { NodeTemplate } from "@/domains/session/node-template";
 import type { AssetGrab } from "@/features/assets/types/AssetGrab";
+import { Option } from "@/utils/Option";
 
 /**
  * 掴んでいないときに行へ付く強調。
@@ -55,7 +56,8 @@ export function AssetRow({
   children: ReactNode;
 }>) {
   const isGrabbed =
-    grab.dragged.some && NodeTemplate.isSame(grab.dragged.value, template);
+    Option.isSome(grab.dragged) &&
+    NodeTemplate.isSame(grab.dragged.value, template);
 
   return (
     <li

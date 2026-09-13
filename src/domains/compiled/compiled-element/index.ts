@@ -215,7 +215,7 @@ export const BoxElement = {
       : parentDirection;
     const layout = Layout.fromProps(props);
     // 子を並べない Box では間隔・揃えが意味を持たない (スキーマの `enabledWhen` と同じ規則)
-    const arrangesChildren = Layout.direction(layout).some;
+    const arrangesChildren = Option.isSome(Layout.direction(layout));
     const gap = arrangesChildren
       ? tokenDeclarations("gap", props.gap, tokens)
       : [];

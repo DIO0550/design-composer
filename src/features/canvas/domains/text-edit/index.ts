@@ -44,7 +44,7 @@ function contentOf(node: PrimitiveNode): string {
 function forSelection(selection: DocumentSelection): Option<EditableText> {
   return Option.flatMap(DocumentSelection.singleName(selection), (name) => {
     const found = DesignDocument.findNode(selection.document, name);
-    if (!found.some) {
+    if (!Option.isSome(found)) {
       return Option.none;
     }
     const node = found.value;

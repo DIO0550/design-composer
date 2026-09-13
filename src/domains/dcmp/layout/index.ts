@@ -68,7 +68,7 @@ export const Layout = {
    */
   declarations(layout: Layout): readonly CssDeclaration[] {
     const direction = Layout.direction(layout);
-    if (!direction.some) {
+    if (!Option.isSome(direction)) {
       return [];
     }
     return [

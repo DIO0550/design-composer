@@ -51,7 +51,9 @@ test("スキーマに無い型のノードを選んでいるときは種別が�
   ]);
 
   expect(
-    Option.unwrap(DocumentSelection.singleSelection(selection)).kind.some,
+    Option.isSome(
+      Option.unwrap(DocumentSelection.singleSelection(selection)).kind,
+    ),
   ).toBe(false);
 });
 
@@ -59,7 +61,9 @@ test("選んでいる名前がドキュメントに無いときは正体が読�
   // 対は選択を映すだけで名前の実在を検証しない（型の doc）ので、引けないことになる
   const selection = DocumentSelection.fromNames(setupDocument(), ["ghost"]);
 
-  expect(DocumentSelection.singleSelection(selection).some).toBe(false);
+  expect(Option.isSome(DocumentSelection.singleSelection(selection))).toBe(
+    false,
+  );
 });
 
 test("複数選んでいるときは正体が読めない", () => {
@@ -68,5 +72,7 @@ test("複数選んでいるときは正体が読めない", () => {
     "home-unknown",
   ]);
 
-  expect(DocumentSelection.singleSelection(selection).some).toBe(false);
+  expect(Option.isSome(DocumentSelection.singleSelection(selection))).toBe(
+    false,
+  );
 });

@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { Option } from "@/utils/Option";
 import { DocumentErrorLocation } from "../index";
 
 test("ノードを指す場所からは、そのノードの名前が読める", () => {
@@ -17,7 +18,7 @@ test("テキストの文字位置を指す場所からは、ノードの名前�
     position: 42,
   });
 
-  expect(nodeName.some).toBe(false);
+  expect(Option.isSome(nodeName)).toBe(false);
 });
 
 test("ドキュメント内のパスを指す場所からは、ノードの名前が読めない", () => {
@@ -26,11 +27,11 @@ test("ドキュメント内のパスを指す場所からは、ノードの名�
     path: "artboards[0].width",
   });
 
-  expect(nodeName.some).toBe(false);
+  expect(Option.isSome(nodeName)).toBe(false);
 });
 
 test("ファイル全体を指す場所からは、ノードの名前が読めない", () => {
   const nodeName = DocumentErrorLocation.nodeName({ kind: "whole-document" });
 
-  expect(nodeName.some).toBe(false);
+  expect(Option.isSome(nodeName)).toBe(false);
 });

@@ -90,9 +90,9 @@ export const SelectionDig = {
     const outermost = ArrayEx.last(candidates);
     switch (dig) {
       case "no-deeper":
-        return selectedIndex.some ? selected : outermost;
+        return Option.isSome(selectedIndex) ? selected : outermost;
       case "one-deeper":
-        return selectedIndex.some
+        return Option.isSome(selectedIndex)
           ? Option.or(insideOf(candidates, selectedIndex.value), selected)
           : outermost;
       case "deepest":

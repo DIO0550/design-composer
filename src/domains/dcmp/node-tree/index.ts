@@ -86,7 +86,7 @@ export const NodeTree = {
         node.name,
         name,
       );
-      if (found.some) {
+      if (Option.isSome(found)) {
         return found;
       }
     }
@@ -97,7 +97,7 @@ export const NodeTree = {
   find(tree: NodeTree, name: string): Option<Node> {
     for (const node of tree.nodes) {
       const found = Node.find(node, name);
-      if (found.some) {
+      if (Option.isSome(found)) {
         return found;
       }
     }
@@ -134,8 +134,8 @@ export const NodeTree = {
     if (tree.nodes.some((node) => node.name === name)) {
       return Option.some(update(tree));
     }
-    const hostIndex = tree.nodes.findIndex(
-      (node) => NodeTree.find(NodeTree.create(Node.children(node)), name).some,
+    const hostIndex = tree.nodes.findIndex((node) =>
+      Option.isSome(NodeTree.find(NodeTree.create(Node.children(node)), name)),
     );
     if (hostIndex === -1) {
       return Option.none;
@@ -146,7 +146,7 @@ export const NodeTree = {
       name,
       update,
     );
-    if (!updated.some) {
+    if (!Option.isSome(updated)) {
       return Option.none;
     }
     return Option.some(
@@ -192,9 +192,10 @@ export const NodeTree = {
       );
     }
 
-    const hostIndex = tree.nodes.findIndex(
-      (node) =>
-        NodeTree.find(NodeTree.create(Node.children(node)), parentName).some,
+    const hostIndex = tree.nodes.findIndex((node) =>
+      Option.isSome(
+        NodeTree.find(NodeTree.create(Node.children(node)), parentName),
+      ),
     );
     if (hostIndex === -1) {
       return Result.ok(Option.none);
@@ -207,7 +208,7 @@ export const NodeTree = {
         update,
       ),
       (updated) =>
-        updated.some
+        Option.isSome(updated)
           ? Option.some(
               NodeTree.create(
                 tree.nodes.map((node, index) =>

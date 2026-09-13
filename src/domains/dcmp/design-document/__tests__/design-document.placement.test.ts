@@ -45,32 +45,32 @@ test("絶対配置のノードは今いる親と、その親から見た座標�
 });
 
 test("フローのノードは座標で動かせないので答えない", () => {
-  expect(DesignDocument.childPlacementOf(setupDocument(), "title").some).toBe(
-    false,
-  );
+  expect(
+    Option.isSome(DesignDocument.childPlacementOf(setupDocument(), "title")),
+  ).toBe(false);
 });
 
 test("絶対配置でも座標が数値でなければ答えない", () => {
   // 手で壊した `.dcmp`。`Placement.fromProps` の `undefined` はここで `none` に潰れる
-  expect(DesignDocument.childPlacementOf(setupDocument(), "broken").some).toBe(
-    false,
-  );
+  expect(
+    Option.isSome(DesignDocument.childPlacementOf(setupDocument(), "broken")),
+  ).toBe(false);
 });
 
 test("部品インスタンスは props を持たないので答えない", () => {
-  expect(DesignDocument.childPlacementOf(setupDocument(), "login").some).toBe(
-    false,
-  );
+  expect(
+    Option.isSome(DesignDocument.childPlacementOf(setupDocument(), "login")),
+  ).toBe(false);
 });
 
 test("ドキュメントに無い名前は答えない", () => {
-  expect(DesignDocument.childPlacementOf(setupDocument(), "居ない").some).toBe(
-    false,
-  );
+  expect(
+    Option.isSome(DesignDocument.childPlacementOf(setupDocument(), "居ない")),
+  ).toBe(false);
 });
 
 test("artboard 自身は親の中の座標を持たないので答えない", () => {
-  expect(DesignDocument.childPlacementOf(setupDocument(), "home").some).toBe(
-    false,
-  );
+  expect(
+    Option.isSome(DesignDocument.childPlacementOf(setupDocument(), "home")),
+  ).toBe(false);
 });

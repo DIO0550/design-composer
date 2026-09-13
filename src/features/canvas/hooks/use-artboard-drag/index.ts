@@ -6,7 +6,7 @@ import {
 } from "@/features/canvas/domains/artboard-drag";
 import type { CanvasView } from "@/features/canvas/domains/canvas-view";
 import { CanvasPointer } from "@/features/canvas/utils/CanvasPointer";
-import type { Option } from "@/utils/Option";
+import { Option } from "@/utils/Option";
 
 /** ドラッグの状態を進める指示。 */
 type ArtboardDragAction =
@@ -104,7 +104,7 @@ export function useArtboardDrag(
         dispatch({ type: "move", pointer: CanvasPointer.offsetOf(event) });
       },
       onPointerUp: () => {
-        if (preview.some) {
+        if (Option.isSome(preview)) {
           params.onReposition(preview.value.name, preview.value.canvasPosition);
         }
         dispatch({ type: "release" });

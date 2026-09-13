@@ -82,5 +82,7 @@ test("artboard が1枚も無いときは見ている artboard が無い", () => 
     [],
   );
 
-  expect(DocumentSelection.currentArtboard(selection).some).toBe(false);
+  expect(Option.isSome(DocumentSelection.currentArtboard(selection))).toBe(
+    false,
+  );
 });

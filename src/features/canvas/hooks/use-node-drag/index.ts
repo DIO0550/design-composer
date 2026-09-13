@@ -158,7 +158,10 @@ function measureReposition(
   const droppedElement = CanvasDom.elementOf(dropped.name);
   const dragged = boundsOf(carried.name);
   // 座標を書くにも揃え先を出すにも 3 つとも要るので、1 つでも欠けたら測れなかったとみなす
-  const measurable = currentBounds.some && droppedElement.some && dragged.some;
+  const measurable =
+    Option.isSome(currentBounds) &&
+    Option.isSome(droppedElement) &&
+    Option.isSome(dragged);
   if (!measurable) {
     return Option.none;
   }
@@ -264,7 +267,7 @@ function repositionCarrying(
   const measured = Option.flatMap(parent, (dropped) =>
     measureReposition(context, carried, dropped),
   );
-  if (!measured.some) {
+  if (!Option.isSome(measured)) {
     return Carrying.preview({
       name: carried.name,
       offset: RepositionTarget.carriedOffset(
@@ -316,7 +319,7 @@ function intoTreeCarrying(context: DropContext): Carrying {
       DropZone.targetAt(zone, CanvasPointer.offsetOf(context.event)),
     ),
   );
-  return target.some
+  return Option.isSome(target)
     ? Carrying.droppable(DropEdit.intoTree(context.grab.dragged, target.value))
     : Carrying.nothing();
 }
@@ -336,7 +339,7 @@ function intoTreeCarrying(context: DropContext): Carrying {
  */
 function carryingAt(context: DropContext): Carrying {
   const carried = carriedNode(context.document, context.grab.dragged);
-  return carried.some
+  return Option.isSome(carried)
     ? repositionCarrying(context, carried.value)
     : intoTreeCarrying(context);
 }
@@ -411,7 +414,7 @@ export function useNodeDrag(
       params.document,
       namesToRoot(event.target),
     );
-    if (!name.some) {
+    if (!Option.isSome(name)) {
       return false;
     }
     dispatch({
@@ -439,7 +442,7 @@ export function useNodeDrag(
 
   const trackPointer = (event: ReactPointerEvent<HTMLElement>) => {
     const grabbed = NodeDrag.grabbed(drag);
-    if (!grabbed.some) {
+    if (!Option.isSome(grabbed)) {
       return;
     }
     dispatch({
@@ -475,7 +478,7 @@ export function useNodeDrag(
    */
   const release = () => {
     const drop = NodeDrag.drop(drag);
-    if (drop.some) {
+    if (Option.isSome(drop)) {
       applyDrop(drop.value);
     }
     dispatch({ type: "release" });

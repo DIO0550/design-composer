@@ -49,7 +49,7 @@ test("木に無い名前のノードを運んでいるときは占めている�
     setupDocument(),
   );
 
-  expect(occupied.some).toBe(false);
+  expect(Option.isSome(occupied)).toBe(false);
 });
 
 test("パレットの雛形を運んでいるときは、その雛形を答える", () => {
@@ -68,5 +68,5 @@ test("木にあるノードを運んでいるときは雛形を答えない", ()
   // 掴んだ行の強調とツールバーの点灯は、パレットから運んでいるときだけの表示
   const template = DraggedNode.template({ kind: "existing", name: "body" });
 
-  expect(template.some).toBe(false);
+  expect(Option.isSome(template)).toBe(false);
 });

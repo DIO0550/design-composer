@@ -121,7 +121,10 @@ function migrateUpTo(
   steps: MigrationSteps,
 ): Result<JsonRecord, DocumentMigrationError> {
   const fileVersion = readFormatVersion(document);
-  if (!fileVersion.some || fileVersion.value.major >= appVersion.major) {
+  if (
+    !Option.isSome(fileVersion) ||
+    fileVersion.value.major >= appVersion.major
+  ) {
     return Result.ok(document);
   }
 
@@ -165,11 +168,11 @@ export const DocumentMigration = {
     appVersion: FormatVersion = FormatVersion.Current,
   ): Result<unknown, DocumentMigrationError> {
     const document = asRecord(value);
-    if (!document.some) {
+    if (!Option.isSome(document)) {
       return Result.ok(value);
     }
     const fileVersion = readFormatVersion(document.value);
-    if (!fileVersion.some) {
+    if (!Option.isSome(fileVersion)) {
       return Result.ok(value);
     }
 

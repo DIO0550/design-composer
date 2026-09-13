@@ -84,7 +84,7 @@ export function useRangeSelect(
         );
       },
       onPointerMove: (event) => {
-        if (!drawing.some) {
+        if (!Option.isSome(drawing)) {
           return;
         }
         const extended = RangeSelect.extendedTo(
@@ -103,7 +103,7 @@ export function useRangeSelect(
         }
       },
       onPointerUp: (event) => {
-        if (!drawing.some) {
+        if (!Option.isSome(drawing)) {
           return;
         }
         event.currentTarget.releasePointerCapture(event.pointerId);

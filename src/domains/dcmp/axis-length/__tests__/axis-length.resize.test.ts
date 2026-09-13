@@ -13,6 +13,8 @@ test("前後の長さが違えば長さの変化になる", () => {
 
 test("前後の長さが同じなら長さは変わっていない", () => {
   expect(
-    AxisResize.create({ axis: Axes.Height, before: 200, after: 200 }).some,
+    Option.isSome(
+      AxisResize.create({ axis: Axes.Height, before: 200, after: 200 }),
+    ),
   ).toBe(false);
 });

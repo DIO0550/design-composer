@@ -122,7 +122,7 @@ test("上書きしていない公開 prop は部品が設定している値が�
   });
   const control = controlNamed(instanceOf(selection).publicProps, "label");
 
-  expect(control.value.some).toBe(false);
+  expect(Option.isSome(control.value)).toBe(false);
   expect(control.defaultValue).toEqual(Option.some("Button"));
 });
 

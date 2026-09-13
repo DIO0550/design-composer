@@ -92,7 +92,7 @@ export const Size = {
     if (size.mode === "fixed") {
       return [CssDeclaration.create(axis, Px.create(size.length))];
     }
-    if (!flexParentDirection.some) {
+    if (!Option.isSome(flexParentDirection)) {
       return [];
     }
     return [CssDirection.fillDeclaration(flexParentDirection.value, axis)];

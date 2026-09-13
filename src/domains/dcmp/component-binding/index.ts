@@ -39,7 +39,7 @@ function next(
     return Option.none;
   }
   const binding = Component.binding(nested, prop);
-  if (!binding.some) {
+  if (!Option.isSome(binding)) {
     return Option.none;
   }
   return Option.some(ComponentBinding.create(ref, binding.value));
@@ -68,7 +68,7 @@ function resolveThroughRefs(
     source.componentName,
     source.binding.node,
   );
-  if (!found.some) {
+  if (!Option.isSome(found)) {
     return Option.none;
   }
   const target = found.value;
@@ -83,7 +83,7 @@ function resolveThroughRefs(
     return Option.none;
   }
   const nested = next(components, target.ref, source.binding.prop);
-  if (!nested.some) {
+  if (!Option.isSome(nested)) {
     return Option.none;
   }
   return resolveThroughRefs(

@@ -2,6 +2,7 @@ import type { ReactElement } from "react";
 import type { PropEdit } from "@/domains/dcmp/node";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { SelectionControls } from "@/domains/session/prop-control";
+import { Option } from "@/utils/Option";
 import { GroupsBody } from "./groups-body";
 import { type InstanceActions, InstanceBody } from "./instance-body";
 import { SelectionTitle } from "./selection-title";
@@ -75,7 +76,7 @@ function PropertyPanelTitle({
 }: Readonly<{ selection: DocumentSelection }>): ReactElement | null {
   const controls = SelectionControls.forSelection(selection);
 
-  if (controls.some && controls.value.kind === "multiple") {
+  if (Option.isSome(controls) && controls.value.kind === "multiple") {
     return (
       <h2 className="min-w-0 flex-1 truncate font-semibold text-gray-900 text-sm">
         {SelectionLabels.multiple(controls.value.count)}
@@ -83,7 +84,9 @@ function PropertyPanelTitle({
     );
   }
   const single = DocumentSelection.singleSelection(selection);
-  return single.some ? <SelectionTitle selection={single.value} /> : null;
+  return Option.isSome(single) ? (
+    <SelectionTitle selection={single.value} />
+  ) : null;
 }
 
 /**
@@ -113,7 +116,7 @@ function PropertyPanelBody({
   }
 
   const controls = SelectionControls.forSelection(selection);
-  if (!controls.some) {
+  if (!Option.isSome(controls)) {
     return <p className="text-gray-500 text-sm">選択されていません</p>;
   }
 

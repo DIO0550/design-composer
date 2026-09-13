@@ -69,7 +69,7 @@ function TokenEditorTitle({
 }: Readonly<{ selection: TokenSelection }>): ReactElement | null {
   const token = TokenSelection.token(selection);
 
-  if (!token.some) {
+  if (!Option.isSome(token)) {
     return null;
   }
   return <TokenTitle token={token.value} />;
@@ -211,7 +211,7 @@ function TokenEditorBody({
   const valueId = useId();
   const control = TokenControl.forSelection(selection);
 
-  if (!control.some) {
+  if (!Option.isSome(control)) {
     return <p className="text-gray-500 text-sm">{NoSelectionMessage}</p>;
   }
 

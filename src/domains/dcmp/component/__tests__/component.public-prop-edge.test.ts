@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { Option } from "@/utils/Option";
 import { ComponentSet } from "../index";
 
 test("存在しない部品の公開 prop は解決できない", () => {
@@ -7,7 +8,7 @@ test("存在しない部品の公開 prop は解決できない", () => {
     { component: "missing", prop: "title" },
   );
 
-  expect(target.some).toBe(false);
+  expect(Option.isSome(target)).toBe(false);
 });
 
 test("宣言されていない公開 prop は解決できない", () => {
@@ -24,7 +25,7 @@ test("宣言されていない公開 prop は解決できない", () => {
     prop: "body",
   });
 
-  expect(target.some).toBe(false);
+  expect(Option.isSome(target)).toBe(false);
 });
 
 test("binding 先のノードが部品の中に無ければ解決できない", () => {
@@ -41,7 +42,7 @@ test("binding 先のノードが部品の中に無ければ解決できない", 
     prop: "title",
   });
 
-  expect(target.some).toBe(false);
+  expect(Option.isSome(target)).toBe(false);
 });
 
 test("binding 先の prop がスキーマに無ければ解決できない", () => {
@@ -58,7 +59,7 @@ test("binding 先の prop がスキーマに無ければ解決できない", () 
     prop: "title",
   });
 
-  expect(target.some).toBe(false);
+  expect(Option.isSome(target)).toBe(false);
 });
 
 test("binding 先が primitive でない type なら解決できない", () => {
@@ -75,7 +76,7 @@ test("binding 先が primitive でない type なら解決できない", () => {
     prop: "title",
   });
 
-  expect(target.some).toBe(false);
+  expect(Option.isSome(target)).toBe(false);
 });
 
 test("参照が循環していても解決は停止し、解決できないものとして返る", () => {
@@ -92,5 +93,5 @@ test("参照が循環していても解決は停止し、解決できないも�
     prop: "title",
   });
 
-  expect(target.some).toBe(false);
+  expect(Option.isSome(target)).toBe(false);
 });

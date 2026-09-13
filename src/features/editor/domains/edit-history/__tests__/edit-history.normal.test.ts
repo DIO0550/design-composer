@@ -60,7 +60,7 @@ test("戻したあとに別の編集をするとやり直す先は無くなる",
 
   const branched = EditHistory.record(undone, documentOfWidth(768));
 
-  expect(EditHistory.redo(branched).some).toBe(false);
+  expect(Option.isSome(EditHistory.redo(branched))).toBe(false);
 });
 
 test("戻したあと別の編集をしても、その 1 つ前へは戻れる", () => {

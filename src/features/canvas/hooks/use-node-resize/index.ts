@@ -120,7 +120,7 @@ export function useNodeResize(
 
   const grabAt = (event: ReactPointerEvent<HTMLElement>): boolean => {
     const bounds = selectionBounds(params.selection);
-    if (!bounds.some) {
+    if (!Option.isSome(bounds)) {
       return false;
     }
     const grabbed = NodeResize.grabAt(
@@ -128,7 +128,7 @@ export function useNodeResize(
       bounds.value,
       CanvasPointer.offsetOf(event),
     );
-    if (!grabbed.some) {
+    if (!Option.isSome(grabbed)) {
       return false;
     }
     dispatch({ type: "grab", held: grabbed.value });
@@ -145,7 +145,7 @@ export function useNodeResize(
       CanvasPointer.offsetOf(event),
       params.view,
     );
-    if (!lengths.some) {
+    if (!Option.isSome(lengths)) {
       return;
     }
     params.onResize(lengths.value);

@@ -59,7 +59,7 @@ test("ファイルが不正な間は、選んでいるノードを削除でき�
 test("ファイルが不正でなければ、選んでいるノードを削除できる", () => {
   const selected = EditorState.select(openedState(), "home-title");
 
-  expect(EditorState.removeSelected(selected).some).toBe(true);
+  expect(Option.isSome(EditorState.removeSelected(selected))).toBe(true);
 });
 
 test("ファイルが不正な間は、artboard を追加できない", () => {
@@ -69,7 +69,7 @@ test("ファイルが不正な間は、artboard を追加できない", () => {
 });
 
 test("ファイルが不正でなければ、artboard を追加できる", () => {
-  expect(EditorState.addArtboard(openedState()).some).toBe(true);
+  expect(Option.isSome(EditorState.addArtboard(openedState()))).toBe(true);
 });
 
 test("ファイルが不正な間は、選んでいる artboard を削除できない", () => {
@@ -100,7 +100,7 @@ test("ファイルが不正でなければ、artboard を並べ替えられる",
   const move = { fromIndex: 0, toIndex: 1 };
 
   expect(
-    EditorState.reorderArtboard(stateWithThreeArtboards(), move).some,
+    Option.isSome(EditorState.reorderArtboard(stateWithThreeArtboards(), move)),
   ).toBe(true);
 });
 
@@ -147,7 +147,9 @@ test("ファイルが不正でなければ、選んでいるノードを並べ�
   );
 
   expect(
-    EditorState.reorderSelectedNode(selected, ReorderSteps.TowardFront).some,
+    Option.isSome(
+      EditorState.reorderSelectedNode(selected, ReorderSteps.TowardFront),
+    ),
   ).toBe(true);
 });
 
@@ -169,7 +171,9 @@ test("ファイルが不正でなければ、選んでいるノードの座標�
   );
 
   expect(
-    EditorState.repositionSelectedNodeBy(selected, { x: 1, y: 0 }).some,
+    Option.isSome(
+      EditorState.repositionSelectedNodeBy(selected, { x: 1, y: 0 }),
+    ),
   ).toBe(true);
 });
 
@@ -225,7 +229,7 @@ test("ファイルが不正でなければ、コピーしたノードを貼り�
   const copied = Option.unwrap(EditorState.copyNode(selected));
   const atInsertable = EditorState.select(copied, "home");
 
-  expect(EditorState.pasteNode(atInsertable).some).toBe(true);
+  expect(Option.isSome(EditorState.pasteNode(atInsertable))).toBe(true);
 });
 
 test("ファイルが不正な間は、選んでいるトークンを削除できない", () => {
@@ -240,7 +244,7 @@ test("ファイルが不正な間は、選んでいるトークンを削除で�
 test("ファイルが不正な間でも、ノードのコピーはできる", () => {
   const selected = EditorState.select(openedState(), "home-title");
 
-  expect(EditorState.copyNode(frozen(selected)).some).toBe(true);
+  expect(Option.isSome(EditorState.copyNode(frozen(selected)))).toBe(true);
 });
 
 test("ファイルが不正な間でも、選択は変えられる", () => {
@@ -288,7 +292,7 @@ test("書き戻すと、凍結中は止まっていた編集が再びできる�
 
   const reverted = EditorState.applyRevert(frozen(selected));
 
-  expect(EditorState.removeSelected(reverted).some).toBe(true);
+  expect(Option.isSome(EditorState.removeSelected(reverted))).toBe(true);
 });
 
 test("ファイルが不正な間は、落とし先を指しても挿さらない", () => {
@@ -307,10 +311,12 @@ test("ファイルが不正でなければ、落とし先を指して挿せる",
   const opened = openedState();
 
   expect(
-    EditorState.insertNodeAt(
-      opened,
-      { kind: "primitive", type: "Box" },
-      { parentName: "home", index: 0 },
-    ).some,
+    Option.isSome(
+      EditorState.insertNodeAt(
+        opened,
+        { kind: "primitive", type: "Box" },
+        { parentName: "home", index: 0 },
+      ),
+    ),
   ).toBe(true);
 });

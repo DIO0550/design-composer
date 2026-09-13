@@ -59,7 +59,7 @@ export const FileDrop = {
             (payload) => {
               // パスの並びを持たない通知（ドラッグ中の通過など）は配らない。
               const paths = toDroppedPaths(payload);
-              if (paths.some) {
+              if (Option.isSome(paths)) {
                 listener(paths.value);
               }
             },

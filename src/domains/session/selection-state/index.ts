@@ -41,7 +41,7 @@ export const SelectionState = {
    * @returns 名前があれば単一選択、無ければ未選択
    */
   fromName(name: Option<string>): SelectionState {
-    return SelectionState.create(name.some ? [name.value] : []);
+    return SelectionState.create(Option.isSome(name) ? [name.value] : []);
   },
 
   /**

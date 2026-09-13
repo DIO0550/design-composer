@@ -40,7 +40,9 @@ function setupDocument(): DesignDocument {
 /** 名前で引いたノードの子の名前。引けなければ空。 */
 function childNamesOf(state: EditorState, name: string): readonly string[] {
   const node = DesignDocument.findNode(EditorState.document(state), name);
-  return node.some ? Node.children(node.value).map((child) => child.name) : [];
+  return Option.isSome(node)
+    ? Node.children(node.value).map((child) => child.name)
+    : [];
 }
 
 /**

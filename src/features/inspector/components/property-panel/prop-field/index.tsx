@@ -26,7 +26,7 @@ const FieldClass =
  * @returns 既定値を持つなら既定値を添えた「未指定」、持たなければ「未指定」
  */
 export function unsetLabel(control: PropControl): string {
-  return control.defaultValue.some
+  return Option.isSome(control.defaultValue)
     ? `未指定（既定: ${control.defaultValue.value}）`
     : "未指定";
 }
@@ -187,7 +187,7 @@ function NumericTokenField({
   const describedBy = useId();
   const resolvedValue = input.resolvedValue;
 
-  if (!resolvedValue.some) {
+  if (!Option.isSome(resolvedValue)) {
     return <TokenSelect field={field} names={input.names} />;
   }
   return (
@@ -278,7 +278,9 @@ export function PropField({
     case "colorToken":
       return (
         <div className="flex min-w-0 items-center gap-2">
-          {input.color.some ? <ColorSwatch color={input.color.value} /> : null}
+          {Option.isSome(input.color) ? (
+            <ColorSwatch color={input.color.value} />
+          ) : null}
           <TokenSelect field={field} names={input.names} />
         </div>
       );

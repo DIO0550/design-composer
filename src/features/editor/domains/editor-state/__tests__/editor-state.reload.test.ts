@@ -60,7 +60,7 @@ test("取り込んだドキュメントから選択中の名前が消えてい�
     ReceivedAt,
   );
 
-  expect(EditorState.singleName(state).some).toBe(false);
+  expect(Option.isSome(EditorState.singleName(state))).toBe(false);
 });
 
 test("外部変更を拒んだときは表示中のドキュメントがそのまま残る", () => {
@@ -150,7 +150,7 @@ test("ファイルが直ると食い違いの起点も消える", () => {
     Instant.create(1_700_000_004_000),
   );
 
-  expect(FileValidity.since(state.fileValidity).some).toBe(false);
+  expect(Option.isSome(FileValidity.since(state.fileValidity))).toBe(false);
 });
 
 test("外部変更を拒むと、ファイルが不正なままだと答える", () => {

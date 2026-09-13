@@ -128,7 +128,7 @@ function artboardHandles(artboard: Artboard): readonly AxisLength[] {
 function propsHandles(props: Props): readonly AxisLength[] {
   return Object.values(Axes).flatMap((axis) => {
     const length = Size.fixedLengthFromProps(props, axis);
-    return length.some ? [AxisLength.create(axis, length.value)] : [];
+    return Option.isSome(length) ? [AxisLength.create(axis, length.value)] : [];
   });
 }
 
@@ -157,7 +157,7 @@ function cornerGrip(
   height: Option<AxisLength>,
 ): Option<ResizeGrip> {
   // 名前を付けた変数にすると narrowing が効かないので、条件はここへ直に書く
-  if (width.some && height.some) {
+  if (Option.isSome(width) && Option.isSome(height)) {
     return Option.some({
       kind: "both",
       width: width.value,
@@ -221,7 +221,7 @@ export const NodeResize = {
     handles: readonly AxisLength[],
     anchor: ResizeHandleAnchor,
   ): Option<ResizeGrip> {
-    if (!anchor.grip.some) {
+    if (!Option.isSome(anchor.grip)) {
       return Option.none;
     }
     const width = AxisLength.find(handles, Axes.Width);
@@ -257,16 +257,16 @@ export const NodeResize = {
    */
   handles(selection: DocumentSelection): readonly AxisLength[] {
     const selected = DocumentSelection.singleName(selection);
-    if (!selected.some) {
+    if (!Option.isSome(selected)) {
       return [];
     }
     const name = selected.value;
     const artboard = DesignDocument.findArtboard(selection.document, name);
-    if (artboard.some) {
+    if (Option.isSome(artboard)) {
       return artboardHandles(artboard.value);
     }
     const node = DesignDocument.findNode(selection.document, name);
-    return node.some ? nodeHandles(node.value) : [];
+    return Option.isSome(node) ? nodeHandles(node.value) : [];
   },
 
   /**

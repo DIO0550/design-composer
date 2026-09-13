@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import { Axes } from "@/domains/unit/axis";
+import { Option } from "@/utils/Option";
 import { Constraint, Constraints } from "../index";
 
 test("親が縮むと max の子は縮んだ分だけ戻る", () => {
@@ -53,13 +54,13 @@ test("変更前の長さが 0 の親では scale の子の長さが変わらな�
 });
 
 test("語彙にない綴りは追従の仕方として読めない", () => {
-  expect(Constraint.fromProps({ constraintX: "left" }, Axes.Width).some).toBe(
-    false,
-  );
+  expect(
+    Option.isSome(Constraint.fromProps({ constraintX: "left" }, Axes.Width)),
+  ).toBe(false);
 });
 
 test("追従の指定が無い props からは追従の仕方を読めない", () => {
-  expect(Constraint.fromProps({ placement: "absolute" }, Axes.Width).some).toBe(
-    false,
-  );
+  expect(
+    Option.isSome(Constraint.fromProps({ placement: "absolute" }, Axes.Width)),
+  ).toBe(false);
 });

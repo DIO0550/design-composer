@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import { SelectionDigs } from "@/domains/session/selection-dig";
+import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 import { DeepTitleNames, InstanceNames, stateWithDeepBranch } from "./setup";
 
@@ -98,7 +99,7 @@ test("どれも選択できない候補しか無ければ選択は外れる", ()
     SelectionDigs.NoDeeper,
   );
 
-  expect(EditorState.singleName(state).some).toBe(false);
+  expect(Option.isSome(EditorState.singleName(state))).toBe(false);
 });
 
 test("候補が1つも無ければ選択は外れる", () => {
@@ -106,7 +107,7 @@ test("候補が1つも無ければ選択は外れる", () => {
 
   const state = EditorState.selectAt(selected, [], SelectionDigs.NoDeeper);
 
-  expect(EditorState.singleName(state).some).toBe(false);
+  expect(Option.isSome(EditorState.singleName(state))).toBe(false);
 });
 
 test("押した場所を変えても元の状態は変わらない", () => {

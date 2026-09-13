@@ -111,7 +111,7 @@ export const SideSnap = {
  * @returns 寄せ量（画面上の px）。揃う辺が無ければ 0
  */
 function shiftOf(snapped: Option<SnappedSide>): number {
-  return snapped.some ? snapped.value.shift : 0;
+  return Option.isSome(snapped) ? snapped.value.shift : 0;
 }
 
 /**

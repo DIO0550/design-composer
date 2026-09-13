@@ -9,6 +9,7 @@ import type { NodeDragControl } from "@/features/canvas/hooks/use-node-drag";
 import type { NodeResizeControl } from "@/features/canvas/hooks/use-node-resize";
 import type { TextEditControl } from "@/features/canvas/hooks/use-text-edit";
 import type { CompiledDocument } from "@/services/document-html";
+import { Option } from "@/utils/Option";
 import { ArtboardFrame } from "../artboard-frame";
 import { NameStyleRule } from "../name-style-rule";
 
@@ -113,7 +114,7 @@ export function ArtboardFrameList({
       {DocumentSelection.names(selection).map((name) => (
         <NameStyleRule key={name} name={name} declarations={SelectionOutline} />
       ))}
-      {dropParentName.some ? (
+      {Option.isSome(dropParentName) ? (
         <NameStyleRule
           name={dropParentName.value}
           declarations={DropParentOutline}

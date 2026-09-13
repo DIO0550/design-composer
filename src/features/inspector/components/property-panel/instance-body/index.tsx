@@ -4,6 +4,7 @@ import {
   PropControl,
   type SelectionControls,
 } from "@/domains/session/prop-control";
+import { Option } from "@/utils/Option";
 import { ControlOffsetClass } from "../label-width";
 import { PropRow } from "../prop-row";
 import { SectionHeading } from "../section-heading";
@@ -54,7 +55,7 @@ function OverriddenNote({ control }: Readonly<{ control: PropControl }>) {
   return (
     <p className={`text-gray-400 text-xs ${ControlOffsetClass}`}>
       {InstanceLabels.overridden}
-      {defaultValue.some ? (
+      {Option.isSome(defaultValue) ? (
         <>
           {" · default "}
           {/* 値そのものと地の文を見分けられるよう、UI 案と同じく等幅で出す */}

@@ -35,7 +35,7 @@ function referrersOf(
     ref: TokenRef,
   ) => readonly TokenReferrer[],
 ): readonly TokenReferrer[] {
-  if (!selection.ref.some) {
+  if (!Option.isSome(selection.ref)) {
     return [];
   }
   return collect(selection.document, selection.ref.value);
@@ -76,7 +76,7 @@ export const TokenSelection = {
   isSelected(selection: TokenSelection, ref: TokenRef): boolean {
     const selected = selection.ref;
     return (
-      selected.some &&
+      Option.isSome(selected) &&
       selected.value.kind === ref.kind &&
       selected.value.name === ref.name
     );

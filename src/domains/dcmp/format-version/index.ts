@@ -57,7 +57,7 @@ export const FormatVersion = {
   fromJson(cursor: JsonCursor): JsonDecoded<FormatVersion> {
     return Result.flatMap(Json.string(cursor), (text) => {
       const parsed = FormatVersion.parse(text);
-      if (!parsed.some) {
+      if (!Option.isSome(parsed)) {
         return Json.error(
           "invalid-type",
           cursor.path,

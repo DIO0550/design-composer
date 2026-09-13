@@ -18,6 +18,7 @@ import {
 import { Size } from "@/domains/dcmp/size";
 import { TokenSet } from "@/domains/dcmp/token";
 import { Axes } from "@/domains/unit/axis";
+import { Option } from "@/utils/Option";
 import type { DesignDocumentV1 as DesignDocument } from "../v1";
 
 /** ドキュメントが不正になる理由（docs/03-schema.md「バリデーション仕様」）。 */
@@ -119,7 +120,7 @@ function collectFillErrors(
   parentLayout: Layout,
   props: Props | undefined,
 ): readonly UnlocatedError[] {
-  if (Layout.direction(parentLayout).some) {
+  if (Option.isSome(Layout.direction(parentLayout))) {
     return [];
   }
   return Object.values(Axes).flatMap((axis): readonly UnlocatedError[] => {
@@ -186,7 +187,7 @@ function collectOverrideErrors(
   return Props.toAssignments(refNode.overrides ?? {}).flatMap(
     (assignment): readonly UnlocatedError[] => {
       const binding = Component.binding(component, assignment.name);
-      if (!binding.some) {
+      if (!Option.isSome(binding)) {
         return [
           {
             kind: "undeclared-override" as const,
@@ -199,7 +200,7 @@ function collectOverrideErrors(
         context.components,
         ComponentBinding.create(refNode.ref, binding.value),
       );
-      if (!definition.some) {
+      if (!Option.isSome(definition)) {
         return [];
       }
       return PropDefinition.collectErrors(
@@ -311,7 +312,7 @@ function collectBindingErrors(
 ): readonly DesignDocumentValidationError[] {
   return Component.publicPropNames(component).flatMap((publicPropName) => {
     const binding = Component.binding(component, publicPropName);
-    if (!binding.some) {
+    if (!Option.isSome(binding)) {
       return [];
     }
     const location: ErrorLocation = {
@@ -323,7 +324,7 @@ function collectBindingErrors(
       componentName,
       binding.value.node,
     );
-    if (!found.some) {
+    if (!Option.isSome(found)) {
       return withLocation(location, [
         {
           kind: "dangling-binding-node",

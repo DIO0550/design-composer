@@ -455,7 +455,7 @@ function EditorPanes({
         `filter: saturate(0.4)`（`EditorLayout`）がそのペインを `position: fixed` の
         基準にしてしまい、窓の座標で置けなくなる。
       */}
-      {contextMenu.some ? (
+      {Option.isSome(contextMenu) ? (
         <EditorContextMenu
           opened={contextMenu.value}
           onClose={() => setContextMenu(Option.none)}
@@ -539,7 +539,7 @@ function EditorBody({
           onZoomOut={canvasView.zoomOut}
           onReset={canvasView.reset}
         />
-        {elapsed.some ? (
+        {Option.isSome(elapsed) ? (
           <EditorTopBar.LastValidRender elapsed={elapsed.value} />
         ) : null}
       </EditorTopBar>

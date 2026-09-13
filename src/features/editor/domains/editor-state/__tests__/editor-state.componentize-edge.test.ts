@@ -86,5 +86,7 @@ test("スキーマに無い型のノードでも部品にできる", () => {
   );
   const selected = EditorState.select(state, "home-unknown");
 
-  expect(EditorState.createComponent(selected, "unknown-part").some).toBe(true);
+  expect(
+    Option.isSome(EditorState.createComponent(selected, "unknown-part")),
+  ).toBe(true);
 });

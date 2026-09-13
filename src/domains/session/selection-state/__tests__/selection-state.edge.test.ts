@@ -1,8 +1,11 @@
 import { expect, test } from "vitest";
+import { Option } from "@/utils/Option";
 import { SelectionState } from "../index";
 
 test("何も選ばれていないときは1つの名前を取り出せない", () => {
-  expect(SelectionState.singleName(SelectionState.None).some).toBe(false);
+  expect(Option.isSome(SelectionState.singleName(SelectionState.None))).toBe(
+    false,
+  );
 });
 
 test("何も選ばれていないときの名前の並びは空になる", () => {

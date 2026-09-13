@@ -2,6 +2,7 @@ import type { ReactElement, ReactNode } from "react";
 import type { DocumentError } from "@/domains/session/document-error";
 import { DocumentErrorLocation } from "@/domains/session/document-error";
 import type { ValueOf } from "@/types/ValueOf";
+import { Option } from "@/utils/Option";
 
 /**
  * エラーがどこの不正を指しているかと、そこで何ができるか。由来ごとに画面での意味が違うので、
@@ -164,7 +165,7 @@ function DocumentErrorRow({
 }>) {
   const nodeName = DocumentErrorLocation.nodeName(error.location);
   // 飛べる先を持つ行でも、飛ばせない画面（開始画面）では出さない
-  const showsReveal = nodeName.some && onReveal !== undefined;
+  const showsReveal = Option.isSome(nodeName) && onReveal !== undefined;
 
   return (
     <li className="flex items-center gap-2">

@@ -68,7 +68,7 @@ const EditorTopBarToneContext = createContext<Option<EditorTopBarTone>>(
  */
 function useEditorTopBarTone(): EditorTopBarTone {
   const tone = useContext(EditorTopBarToneContext);
-  if (!tone.some) {
+  if (!Option.isSome(tone)) {
     throw new Error(
       "EditorTopBar.Breadcrumb は EditorTopBar の内側でのみ使える",
     );
@@ -115,13 +115,13 @@ function DocumentBreadcrumb({
 
   return (
     <nav aria-label="ファイルの場所" title={opened.path}>
-      {folderName.some ? (
+      {Option.isSome(folderName) ? (
         <>
           <span className={face.folder}>{folderName.value}</span>
           <span className={`px-1.5 ${face.separator}`}>/</span>
         </>
       ) : null}
-      {fileName.some ? (
+      {Option.isSome(fileName) ? (
         <span className={`font-medium ${face.file}`}>{fileName.value}</span>
       ) : null}
     </nav>

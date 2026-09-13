@@ -31,7 +31,7 @@ test("プリミティブを渡すとその type が種別になる", () => {
 test("スキーマに無い type のノードは種別が決まらない", () => {
   const node: Node = { name: "mystery", type: "Widget" };
 
-  expect(Selection.fromNode(node).kind.some).toBe(false);
+  expect(Option.isSome(Selection.fromNode(node).kind)).toBe(false);
 });
 
 test("スキーマに無い type のノードでも名前は決まる", () => {

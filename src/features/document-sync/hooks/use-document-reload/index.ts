@@ -83,7 +83,7 @@ export function useDocumentReload({
 
     return () => {
       stopped = true;
-      if (unsubscribe.some) {
+      if (Option.isSome(unsubscribe)) {
         unsubscribe.value();
       }
       void ipc.unwatch(path);

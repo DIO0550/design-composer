@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { IndexMove } from "@/types/IndexMove";
+import { Option } from "@/utils/Option";
 import { ReorderDrag } from "@/utils/ReorderDrag";
 
 /** 行に配る props。掴む口と、ポインタが入ったことを伝える口。 */
@@ -44,7 +45,7 @@ export function useReorderDrag(onReorder: (move: IndexMove) => void): {
     groupProps: () => ({
       onPointerUp: () => {
         const move = ReorderDrag.releasedMove(drag);
-        if (move.some) {
+        if (Option.isSome(move)) {
           onReorder(move.value);
         }
         setDrag(ReorderDrag.create());

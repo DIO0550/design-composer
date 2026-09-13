@@ -79,8 +79,8 @@ function artboardIndexOfNode(
   document: DesignDocument,
   name: string,
 ): Option<number> {
-  const index = document.artboards.findIndex(
-    (artboard) => Artboard.findNode(artboard, name).some,
+  const index = document.artboards.findIndex((artboard) =>
+    Option.isSome(Artboard.findNode(artboard, name)),
   );
   return index === -1 ? Option.none : Option.some(index);
 }
@@ -126,11 +126,11 @@ function axisLengthOf(
   axis: Axis,
 ): Option<number> {
   const artboard = DesignDocument.findArtboard(document, name);
-  if (artboard.some) {
+  if (Option.isSome(artboard)) {
     return Option.some(artboard.value[axis]);
   }
   const node = DesignDocument.findNode(document, name);
-  if (!node.some || !Node.isPrimitive(node.value)) {
+  if (!Option.isSome(node) || !Node.isPrimitive(node.value)) {
     return Option.none;
   }
   return Size.fixedLengthFromProps(ResolvedProps.forNode(node.value), axis);
@@ -152,7 +152,7 @@ function followPropEdits(node: Node, resize: AxisResize): readonly PropEdit[] {
   const props = ResolvedProps.forNode(node);
   const placement = Placement.fromProps(props);
   const constraint = Constraint.fromProps(props, resize.axis);
-  if (!Placement.isAbsolute(placement) || !constraint.some) {
+  if (!Placement.isAbsolute(placement) || !Option.isSome(constraint)) {
     return [];
   }
   const offsetEdit = Placement.followPropEdit(
@@ -178,7 +178,7 @@ function followPropEdits(node: Node, resize: AxisResize): readonly PropEdit[] {
     ),
   );
   const edits = [offsetEdit, lengthEdit];
-  return edits.flatMap((edit) => (edit.some ? [edit.value] : []));
+  return edits.flatMap((edit) => (Option.isSome(edit) ? [edit.value] : []));
 }
 
 /**
@@ -205,11 +205,11 @@ function withResizeFollowUp(
           AxisResize.create({ axis, before: from, after: to }),
         ),
       );
-      return resize.some ? [resize.value] : [];
+      return Option.isSome(resize) ? [resize.value] : [];
     });
     const children = DesignDocument.findChildren(after, name);
     // 大きさと無関係な prop の編集（大半がそれ）で子の走査まで進まないための打ち切り
-    if (resizes.length === 0 || !children.some) {
+    if (resizes.length === 0 || !Option.isSome(children)) {
       return Result.ok(after);
     }
     return followChildren(after, children.value, resizes);
@@ -258,7 +258,7 @@ function updateArtboardNamed(
   name: string,
   update: (artboard: Artboard) => Artboard,
 ): Option<DesignDocument> {
-  if (!DesignDocument.findArtboard(document, name).some) {
+  if (!Option.isSome(DesignDocument.findArtboard(document, name))) {
     return Option.none;
   }
   return Option.some({
@@ -305,7 +305,7 @@ function updateSiblingsOfNode(
   update: (siblings: NodeTree) => NodeTree,
 ): Result<DesignDocument, DesignDocumentEditError> {
   const found = artboardIndexOfNode(document, name);
-  if (!found.some) {
+  if (!Option.isSome(found)) {
     return Result.err({ kind: "node-not-found", name });
   }
   const updated = NodeTree.updateSiblingsOf(
@@ -313,7 +313,7 @@ function updateSiblingsOfNode(
     name,
     update,
   );
-  if (!updated.some) {
+  if (!Option.isSome(updated)) {
     return Result.err({ kind: "node-not-found", name });
   }
   return Result.ok(withArtboardTree(document, found.value, updated.value));
@@ -345,8 +345,8 @@ function updateChildrenOfParent(
     );
   }
 
-  const hostIndex = document.artboards.findIndex(
-    (artboard) => Artboard.findNode(artboard, parentName).some,
+  const hostIndex = document.artboards.findIndex((artboard) =>
+    Option.isSome(Artboard.findNode(artboard, parentName)),
   );
   if (hostIndex === -1) {
     return Result.err({ kind: "parent-not-found", name: parentName });
@@ -364,7 +364,7 @@ function updateChildrenOfParent(
     update,
   );
   return Result.flatMap(updated, (tree) =>
-    tree.some
+    Option.isSome(tree)
       ? Result.ok(withArtboardTree(document, hostIndex, tree.value))
       : Result.err({ kind: "parent-not-found", name: parentName }),
   );
@@ -423,7 +423,7 @@ function expandInstance(
   name: string,
 ): Result<ExpandedNode, DesignDocumentEditError> {
   const found = DesignDocument.findNode(document, name);
-  if (!found.some) {
+  if (!Option.isSome(found)) {
     return Result.err({ kind: "node-not-found", name });
   }
   const node = found.value;
@@ -616,7 +616,7 @@ export const DesignDocument = {
    */
   findOwningArtboard(document: DesignDocument, name: string): Option<Artboard> {
     const named = DesignDocument.findArtboard(document, name);
-    if (named.some) {
+    if (Option.isSome(named)) {
       return named;
     }
     // 走査そのものは `artboardIndexOfNode` が持つ（同じ探索を 2 つ書かない）
@@ -638,7 +638,7 @@ export const DesignDocument = {
     name: string,
   ): Option<readonly Node[]> {
     const artboard = DesignDocument.findArtboard(document, name);
-    if (artboard.some) {
+    if (Option.isSome(artboard)) {
       return Option.some(artboard.value.children);
     }
     return Option.flatMap(DesignDocument.findNode(document, name), (node) =>
@@ -678,7 +678,7 @@ export const DesignDocument = {
         artboard.name,
         name,
       );
-      if (found.some) {
+      if (Option.isSome(found)) {
         return found;
       }
     }
@@ -701,7 +701,7 @@ export const DesignDocument = {
     name: string,
   ): readonly string[] {
     const position = DesignDocument.findChildPosition(document, name);
-    if (!position.some) {
+    if (!Option.isSome(position)) {
       return [];
     }
     const parentName = position.value.parentName;
@@ -726,7 +726,7 @@ export const DesignDocument = {
     name: string,
   ): Option<ChildPlacement> {
     const node = DesignDocument.findNode(document, name);
-    if (!node.some || !Node.isPrimitive(node.value)) {
+    if (!Option.isSome(node) || !Node.isPrimitive(node.value)) {
       return Option.none;
     }
     const placement = Placement.fromProps(ResolvedProps.forNode(node.value));
@@ -743,7 +743,7 @@ export const DesignDocument = {
   findNode(document: DesignDocument, name: string): Option<Node> {
     for (const artboard of document.artboards) {
       const found = Artboard.findNode(artboard, name);
-      if (found.some) {
+      if (Option.isSome(found)) {
         return found;
       }
     }
@@ -765,11 +765,11 @@ export const DesignDocument = {
     const editedArtboard = updateArtboardNamed(document, name, (artboard) =>
       Artboard.applyPropEdit(artboard, edit),
     );
-    if (editedArtboard.some) {
+    if (Option.isSome(editedArtboard)) {
       return Result.ok(editedArtboard.value);
     }
     const found = DesignDocument.findNode(document, name);
-    if (!found.some) {
+    if (!Option.isSome(found)) {
       return Result.err({ kind: "node-not-found", name });
     }
     return withResizeFollowUp(
@@ -800,7 +800,7 @@ export const DesignDocument = {
     const resizedArtboard = updateArtboardNamed(document, name, (artboard) =>
       sizes.reduce(Artboard.resize, artboard),
     );
-    if (resizedArtboard.some) {
+    if (Option.isSome(resizedArtboard)) {
       return withResizeFollowUp(
         document,
         name,
@@ -828,7 +828,7 @@ export const DesignDocument = {
     const repositioned = updateArtboardNamed(document, name, (artboard) =>
       Artboard.withCanvasPosition(artboard, canvasPosition),
     );
-    return repositioned.some
+    return Option.isSome(repositioned)
       ? Result.ok(repositioned.value)
       : Result.err({ kind: "node-not-found", name });
   },
@@ -857,7 +857,7 @@ export const DesignDocument = {
     to: ChildPlacement,
   ): Result<DesignDocument, DesignDocumentEditError> {
     const current = DesignDocument.findChildPosition(document, name);
-    if (!current.some) {
+    if (!Option.isSome(current)) {
       return Result.err({ kind: "node-not-found", name });
     }
     const write = (moved: DesignDocument) =>
@@ -866,7 +866,7 @@ export const DesignDocument = {
       return write(document);
     }
     const appended = DesignDocument.appendPositionOf(document, to.parentName);
-    if (!appended.some) {
+    if (!Option.isSome(appended)) {
       return Result.err({ kind: "parent-not-found", name: to.parentName });
     }
     return Result.flatMap(
@@ -915,7 +915,7 @@ export const DesignDocument = {
     to: ChildPosition,
   ): Result<DesignDocument, DesignDocumentEditError> {
     const found = DesignDocument.findNode(document, name);
-    if (!found.some) {
+    if (!Option.isSome(found)) {
       return Result.err({ kind: "node-not-found", name });
     }
     const node = found.value;
@@ -949,15 +949,15 @@ export const DesignDocument = {
     componentName: string,
   ): Result<DesignDocument, DesignDocumentEditError> {
     const found = DesignDocument.findNode(document, name);
-    if (!found.some) {
+    if (!Option.isSome(found)) {
       return Result.err({ kind: "node-not-found", name });
     }
     const unavailable = unusableNameError(document, componentName);
-    if (unavailable.some) {
+    if (Option.isSome(unavailable)) {
       return Result.err(unavailable.value);
     }
     const component = Component.fromNode(found.value);
-    if (!component.some) {
+    if (!Option.isSome(component)) {
       return Result.err({ kind: "ref-node-not-supported", name });
     }
     const refNode: RefNode = { name, ref: componentName };
@@ -1078,7 +1078,7 @@ export const DesignDocument = {
     document: DesignDocument,
     name: string,
   ): Result<DesignDocument, DesignDocumentEditError> {
-    return DesignDocument.findArtboard(document, name).some
+    return Option.isSome(DesignDocument.findArtboard(document, name))
       ? DesignDocument.removeArtboard(document, name)
       : DesignDocument.removeNode(document, name);
   },
@@ -1105,18 +1105,18 @@ export const DesignDocument = {
     { from, to }: Readonly<{ from: string; to: string }>,
   ): Result<DesignDocument, DesignDocumentEditError> {
     const unusable = unusableNameError(document, to);
-    if (unusable.some) {
+    if (Option.isSome(unusable)) {
       return Result.err(unusable.value);
     }
     const renamedArtboard = updateArtboardNamed(document, from, (artboard) => ({
       ...artboard,
       name: to,
     }));
-    if (renamedArtboard.some) {
+    if (Option.isSome(renamedArtboard)) {
       return Result.ok(renamedArtboard.value);
     }
     const node = DesignDocument.findNode(document, from);
-    if (!node.some) {
+    if (!Option.isSome(node)) {
       return Result.err({ kind: "node-not-found", name: from });
     }
     return DesignDocument.replaceNode(
@@ -1257,7 +1257,7 @@ export const DesignDocument = {
    * @returns 加えられるなら true
    */
   isUsableName(document: DesignDocument, name: string): boolean {
-    return !unusableNameError(document, name).some;
+    return !Option.isSome(unusableNameError(document, name));
   },
 
   /** 使用済みの名前と衝突しない名前。衝突する場合は連番を付ける。 */

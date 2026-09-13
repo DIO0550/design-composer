@@ -3,22 +3,26 @@ import { Option } from "@/utils/Option";
 import { TokenValue } from "../index";
 
 test("余白は 0 を受け付ける", () => {
-  expect(TokenValue.createNumeric("spacing", 0).some).toBe(true);
+  expect(Option.isSome(TokenValue.createNumeric("spacing", 0))).toBe(true);
 });
 
 test("余白は負の数を受け付けない", () => {
-  expect(TokenValue.createNumeric("spacing", -1).some).toBe(false);
+  expect(Option.isSome(TokenValue.createNumeric("spacing", -1))).toBe(false);
 });
 
 test("角丸は負の数を受け付けない", () => {
-  expect(TokenValue.createNumeric("radius", -1).some).toBe(false);
+  expect(Option.isSome(TokenValue.createNumeric("radius", -1))).toBe(false);
 });
 
 test("有限でない長さは受け付けない", () => {
   expect(
-    TokenValue.createNumeric("spacing", Number.POSITIVE_INFINITY).some,
+    Option.isSome(
+      TokenValue.createNumeric("spacing", Number.POSITIVE_INFINITY),
+    ),
   ).toBe(false);
-  expect(TokenValue.createNumeric("radius", Number.NaN).some).toBe(false);
+  expect(Option.isSome(TokenValue.createNumeric("radius", Number.NaN))).toBe(
+    false,
+  );
 });
 
 test("受け付けた長さはその種別の値になる", () => {

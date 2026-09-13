@@ -5,6 +5,7 @@ import { artboardContent } from "@/domains/__tests__/sample-document";
 import { SampleDocument } from "@/features/editor/__tests__/sample-document";
 import { DialogChoice } from "@/libs/document-dialog/fake";
 import { DocumentJson } from "@/libs/document-json";
+import { Option } from "@/utils/Option";
 import {
   OtherPath,
   Path,
@@ -101,7 +102,7 @@ test("新規作成すると、選んだ保存先にファイルが作られる",
 
   await startCreate(observer);
 
-  expect(observer.files.contentOf(OtherPath).some).toBe(true);
+  expect(Option.isSome(observer.files.contentOf(OtherPath))).toBe(true);
 });
 
 test("解釈できないファイルを開くと、開けない理由が表示される", async () => {

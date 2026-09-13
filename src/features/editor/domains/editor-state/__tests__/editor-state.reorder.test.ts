@@ -71,7 +71,7 @@ test("並びの外を移動先に指定すると移動が無かったことに�
     3,
   );
 
-  expect(reordered.some).toBe(false);
+  expect(Option.isSome(reordered)).toBe(false);
 });
 
 test("存在しない親の中の子を動かそうとしても移動が無かったことになる", () => {
@@ -81,7 +81,7 @@ test("存在しない親の中の子を動かそうとしても移動が無か�
     1,
   );
 
-  expect(reordered.some).toBe(false);
+  expect(Option.isSome(reordered)).toBe(false);
 });
 
 /*

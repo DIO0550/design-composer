@@ -69,7 +69,7 @@ test("名前を変えると、元の名前ではもう引けなくなる", () =>
     DesignDocument.rename(setupDocument(), { from: "label", to: "caption" }),
   );
 
-  expect(DesignDocument.findNode(renamed, "label").some).toBe(false);
+  expect(Option.isSome(DesignDocument.findNode(renamed, "label"))).toBe(false);
 });
 
 test("同じ artboard にある別のノードの名前へは変えられない", () => {

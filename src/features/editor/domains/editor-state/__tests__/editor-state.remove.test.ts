@@ -38,7 +38,9 @@ test("削除しても兄弟は残る", () => {
   const removed = Option.unwrap(EditorState.removeSelected(state));
 
   expect(
-    DesignDocument.findNode(EditorState.document(removed), "body").some,
+    Option.isSome(
+      DesignDocument.findNode(EditorState.document(removed), "body"),
+    ),
   ).toBe(true);
 });
 

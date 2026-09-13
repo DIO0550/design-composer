@@ -61,9 +61,9 @@ function handleStyle(
     background: "#fff",
     border: `${HandleBorderPx}px solid ${SelectionColor}`,
     borderRadius: "1px",
-    cursor: grab.some ? resizeCursor(grab.value) : undefined,
+    cursor: Option.isSome(grab) ? resizeCursor(grab.value) : undefined,
     // 掴めない位置は透明にして、下にあるノードをクリックで選べるままにする
-    pointerEvents: grab.some ? "auto" : "none",
+    pointerEvents: Option.isSome(grab) ? "auto" : "none",
   };
 }
 
@@ -108,7 +108,9 @@ export function ResizeHandleOverlay({
             data-testid="resize-handle"
             style={handleStyle(anchor, bounds, grab)}
             onPointerDown={
-              grab.some ? (event) => onGrab(grab.value, event) : undefined
+              Option.isSome(grab)
+                ? (event) => onGrab(grab.value, event)
+                : undefined
             }
           />
         );

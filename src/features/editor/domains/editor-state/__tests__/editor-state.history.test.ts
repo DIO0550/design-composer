@@ -15,7 +15,9 @@ test("削除を戻すと消したノードがツリーに返ってくる", () =>
   const undone = Option.unwrap(EditorState.undo(removed));
 
   expect(
-    DesignDocument.findNode(EditorState.document(undone), "title").some,
+    Option.isSome(
+      DesignDocument.findNode(EditorState.document(undone), "title"),
+    ),
   ).toBe(true);
 });
 
@@ -69,7 +71,7 @@ test("戻した編集はやり直すと再び反映される", () => {
 });
 
 test("何も編集していなければ戻せない", () => {
-  expect(EditorState.undo(stateWithNestedBox()).some).toBe(false);
+  expect(Option.isSome(EditorState.undo(stateWithNestedBox()))).toBe(false);
 });
 
 test("戻していなければやり直せない", () => {
@@ -79,13 +81,13 @@ test("戻していなければやり直せない", () => {
     ),
   );
 
-  expect(EditorState.redo(removed).some).toBe(false);
+  expect(Option.isSome(EditorState.redo(removed))).toBe(false);
 });
 
 test("選択の切り替えは履歴に積まれない", () => {
   const selected = EditorState.select(stateWithNestedBox(), "title");
 
-  expect(EditorState.undo(selected).some).toBe(false);
+  expect(Option.isSome(EditorState.undo(selected))).toBe(false);
 });
 
 test("コピーは履歴に積まれない", () => {
@@ -93,7 +95,7 @@ test("コピーは履歴に積まれない", () => {
     EditorState.copyNode(EditorState.select(stateWithNestedBox(), "title")),
   );
 
-  expect(EditorState.undo(copied).some).toBe(false);
+  expect(Option.isSome(EditorState.undo(copied))).toBe(false);
 });
 
 test("戻した結果に選択中のノードが無ければ選択は外れる", () => {
@@ -108,7 +110,7 @@ test("戻した結果に選択中のノードが無ければ選択は外れる",
     EditorState.undo(EditorState.select(inserted, "text")),
   );
 
-  expect(EditorState.singleName(undone).some).toBe(false);
+  expect(Option.isSome(EditorState.singleName(undone))).toBe(false);
 });
 
 test("戻した結果にも選択中のノードがあれば選択は引き継がれる", () => {
@@ -159,7 +161,7 @@ test("取り込みを拒んだときは履歴に積まれない", () => {
     ReceivedAt,
   );
 
-  expect(EditorState.undo(rejected).some).toBe(false);
+  expect(Option.isSome(EditorState.undo(rejected))).toBe(false);
 });
 
 test("戻したあとに別の編集をするとやり直せなくなる", () => {
@@ -174,5 +176,5 @@ test("戻したあとに別の編集をするとやり直せなくなる", () =>
     EditorState.removeSelected(EditorState.select(undone, "body")),
   );
 
-  expect(EditorState.redo(branched).some).toBe(false);
+  expect(Option.isSome(EditorState.redo(branched))).toBe(false);
 });

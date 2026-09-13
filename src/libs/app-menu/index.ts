@@ -66,7 +66,7 @@ export const AppMenu = {
               // 語彙に無い値は配らない。指示として渡せる中身が無く、イベントの
               // コールバックには失敗を返す相手もいないため。
               const command = toAppMenuCommand(payload);
-              if (command.some) {
+              if (Option.isSome(command)) {
                 listener(command.value);
               }
             },

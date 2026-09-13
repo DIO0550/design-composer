@@ -164,7 +164,7 @@ function withCurrentValue(
   options: readonly string[],
   value: Option<PropValue>,
 ): readonly string[] {
-  return value.some
+  return Option.isSome(value)
     ? ArrayEx.prependIfAbsent(options, String(value.value))
     : options;
 }
@@ -291,7 +291,7 @@ function publicEditableProps(
       component: node.ref,
       prop: name,
     });
-    if (!target.some) {
+    if (!Option.isSome(target)) {
       return [];
     }
     const { definition, declared } = target.value;
@@ -322,7 +322,7 @@ function effectiveProps(
   props: Props,
 ): Props {
   const defaults = editables.flatMap((editable) =>
-    editable.defaultValue.some
+    Option.isSome(editable.defaultValue)
       ? [[editable.name, editable.defaultValue.value] as const]
       : [],
   );
@@ -420,7 +420,7 @@ function shorthandControlsOf(
         : [];
     });
     const control = PropShorthandControl.create(name, sides);
-    return control.some ? [control.value] : [];
+    return Option.isSome(control) ? [control.value] : [];
   });
 }
 
@@ -551,7 +551,7 @@ export const PropControl = {
    * @returns 明示的に値が設定されていれば `true`、既定のままなら `false`
    */
   hasValue(control: PropControl): boolean {
-    return control.value.some;
+    return Option.isSome(control.value);
   },
 
   /**
@@ -567,7 +567,7 @@ export const PropControl = {
    * @returns 値が無いなら未設定へ戻す編集、あれば設定する編集
    */
   editFrom(control: PropControl, value: Option<string>): PropEdit {
-    return value.some
+    return Option.isSome(value)
       ? PropEdit.set(
           [control.prop],
           parseInputValue(control.input, value.value),
@@ -655,8 +655,9 @@ export const PropPairControl = {
    */
   value(pair: PropPairControl): PropPairValue {
     const [first, second] = pair.sides;
-    const isBothSet = first.value.some && second.value.some;
-    const isBothUnset = !first.value.some && !second.value.some;
+    const isBothSet = Option.isSome(first.value) && Option.isSome(second.value);
+    const isBothUnset =
+      !Option.isSome(first.value) && !Option.isSome(second.value);
     const isUniform =
       isBothUnset ||
       (isBothSet && String(first.value.value) === String(second.value.value));
@@ -695,7 +696,7 @@ export const PropPairControl = {
   editFrom(pair: PropPairControl, value: Option<string>): PropEdit {
     const [first, second] = pair.sides;
     const names: readonly [string, ...string[]] = [first.prop, second.prop];
-    return value.some
+    return Option.isSome(value)
       ? PropEdit.set(names, parseInputValue(first.input, value.value))
       : PropEdit.clear(names);
   },
@@ -722,13 +723,13 @@ export const SelectionControls = {
       return Option.some({ kind: "multiple", count });
     }
     const selected = DocumentSelection.singleName(selection);
-    if (!selected.some) {
+    if (!Option.isSome(selected)) {
       return Option.none;
     }
     const document = selection.document;
     const name = selected.value;
     const artboard = DesignDocument.findArtboard(document, name);
-    if (artboard.some) {
+    if (Option.isSome(artboard)) {
       return Option.some({
         kind: "groups",
         sections: sectionsOf(

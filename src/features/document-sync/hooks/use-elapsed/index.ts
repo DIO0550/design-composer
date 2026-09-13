@@ -25,7 +25,7 @@ export function useElapsed(
    * レンダーのたびに購読が張り直されて数字が進まなくなる（テストでは落ちない。
    * 代役は張り直された購読にも配るため / ClockFake.subscribedCount で見る）。
    */
-  const sinceEpochMs = since.some ? since.value.epochMs : undefined;
+  const sinceEpochMs = Option.isSome(since) ? since.value.epochMs : undefined;
 
   useEffect(() => {
     if (sinceEpochMs === undefined) {
