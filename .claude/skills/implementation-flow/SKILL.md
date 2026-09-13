@@ -140,8 +140,9 @@ description: "design-composer の実装を ゴールの確定 → タスクの�
 
 - **PR 本文は差分の説明に絞る。** 判断の履歴は Issue 側にある
 - **本文に `Closes #<Issue番号>` を書く。** リンクを貼るだけでは閉じない。書き忘れは CI が
-  落とす(`.github/workflows/pr-closing-keyword.yml`)。Issue を持たない PR は
-  `Issue 無し: <理由>` の 1 行を書く(`AGENTS.md`「着手した Issue はその回で閉じる」)
+  落とす(`.github/workflows/pr-closing-keyword.yml`)。**記録・棚卸しのように実装を伴わず
+  閉じる Issue を持たない PR に限り**、`Issue 無し: <理由>` の 1 行を行頭から書く
+  (このフローで実装を始める以上、対応する Issue は必ずある → フェーズ 1)
 - CI(lint / typecheck / test / 視覚差分)を通す
 
 **push の前に、まずフックが発火する環境かを確かめ、続けて CI と同じ検査を 1 つずつ
