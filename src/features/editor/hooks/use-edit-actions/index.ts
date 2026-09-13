@@ -22,6 +22,10 @@ export type EditActions = Readonly<{
   repositionSelectedBy: (delta: Offset) => void;
   /** 選んでいるものの名前の編集に入る。 */
   startRenaming: () => void;
+  /** 選んでいるノードを新しい Box の中へ入れる。 */
+  groupSelected: () => void;
+  /** 選んでいる Box を外して、その子を親へ戻す。 */
+  ungroupSelected: () => void;
 }>;
 
 /**
@@ -30,7 +34,8 @@ export type EditActions = Readonly<{
  * 対象が無いときは状態側が「その操作は存在しない」と答える（各アクションの `none`）ので、
  * 押せるかどうかはここで判定しない。
  *
- * @returns コピー & ペースト・undo / redo・削除・並べ替え・座標の移動・名前の編集の開始
+ * @returns コピー & ペースト・undo / redo・削除・並べ替え・座標の移動・名前の編集の開始・
+ *   グループ化・グループ解除
  */
 export function useEditActions(): EditActions {
   const { dispatch } = useEditor();
@@ -46,5 +51,7 @@ export function useEditActions(): EditActions {
     repositionSelectedBy: (delta) =>
       dispatch({ type: "reposition_selected_node", delta }),
     startRenaming: () => dispatch({ type: "start_renaming" }),
+    groupSelected: () => dispatch({ type: "group_selected" }),
+    ungroupSelected: () => dispatch({ type: "ungroup_selected" }),
   };
 }
