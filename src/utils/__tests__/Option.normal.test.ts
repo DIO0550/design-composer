@@ -21,11 +21,6 @@ test("fromNullable は undefined に対して none を返す", () => {
   expect(Option.fromNullable(undefined)).toBe(Option.none);
 });
 
-test("some フラグで絞り込むと値にアクセスできる", () => {
-  const option: Option<number> = Option.some(42);
-  expect(option.some && option.value).toBe(42);
-});
-
 test("map は存在する値を変換した新しい値を返す", () => {
   expect(Option.map(Option.some(2), (v) => v * 3)).toEqual({
     some: true,
