@@ -18,6 +18,7 @@ import { NameSpace } from "@/domains/dcmp/name-space";
 import { Node, type PropEdit, type RefNode } from "@/domains/dcmp/node";
 import { NodeTree, type NodeTreeUpdate } from "@/domains/dcmp/node-tree";
 import { Placement } from "@/domains/dcmp/placement";
+import { PrimitiveTypes } from "@/domains/dcmp/primitive-schema";
 import { ResolvedProps } from "@/domains/dcmp/resolved-props";
 import { Size } from "@/domains/dcmp/size";
 import { type Token, type TokenRef, TokenSet } from "@/domains/dcmp/token";
@@ -57,6 +58,19 @@ export type {
  * が「どの形からどの形へ」を型で書ける）。
  */
 export type DesignDocument = DesignDocumentV1;
+
+/**
+ * Box を外した結果（`DesignDocument.ungroupBox`）。
+ *
+ * 外したあとのドキュメントから「どれが親へ戻ったか」は引けない（戻った子は元からの兄弟と
+ * 同じ並びに混ざる）ので、対で返す。呼び出し側が同じ導出をやり直すと、戻した子と選んだ子
+ * が食い違う組み合わせを作れてしまう。
+ */
+export type UngroupedBox = Readonly<{
+  document: DesignDocument;
+  /** 親へ戻った子の名前。並びは Box の中にあった順のまま。 */
+  freedNames: readonly string[];
+}>;
 
 /*
  * 以下の関数は「どの artboard を相手にするか」を選ぶためのもの。
@@ -530,9 +544,7 @@ export const DesignDocument = {
     name: string,
   ): Result<DesignDocument, DesignDocumentEditError> {
     return updateSiblingsOfNode(document, name, (siblings) =>
-      NodeTree.create(
-        NodeTree.nodes(siblings).filter((sibling) => sibling.name !== name),
-      ),
+      NodeTree.spliceByName(siblings, name, []),
     );
   },
 
@@ -882,11 +894,7 @@ export const DesignDocument = {
     node: Node,
   ): Result<DesignDocument, DesignDocumentEditError> {
     return updateSiblingsOfNode(document, name, (siblings) =>
-      NodeTree.create(
-        NodeTree.nodes(siblings).map((sibling) =>
-          sibling.name === name ? node : sibling,
-        ),
-      ),
+      NodeTree.spliceByName(siblings, name, [node]),
     );
   },
 
@@ -1022,6 +1030,75 @@ export const DesignDocument = {
    */
   isDetachable(document: DesignDocument, name: string): boolean {
     return Result.isOk(expandInstance(document, name));
+  },
+
+  /**
+   * ノードを新しい Box の中へ入れる（docs/06-ui.md「編集操作の一覧」のグループ化）。
+   *
+   * 新しい Box は元のノードが居た位置へ入り、そのノードを唯一の子にする。props は持たせ
+   * ない（スキーマ既定の `hug` が包んだ中身に合う）。
+   *
+   * @param document 包む先のドキュメント
+   * @param name 包むノードの名前
+   * @param boxName 新しく作る Box に付ける名前
+   * @returns 元の位置が新しい Box に変わり、その子が元のノードになったドキュメント。
+   *   ノードが無い・artboard を指しているときは `node-not-found`、Box 名が識別子の規則を
+   *   満たさなければ `invalid-name`、既に使われていれば `duplicate-name`
+   */
+  groupIntoBox(
+    document: DesignDocument,
+    name: string,
+    boxName: string,
+  ): Result<DesignDocument, DesignDocumentEditError> {
+    const found = DesignDocument.findNode(document, name);
+    if (!Option.isSome(found)) {
+      return Result.err({ kind: "node-not-found", name });
+    }
+    const unusable = unusableNameError(document, boxName);
+    if (Option.isSome(unusable)) {
+      return Result.err(unusable.value);
+    }
+    const box: Node = {
+      name: boxName,
+      type: PrimitiveTypes.Box,
+      children: [found.value],
+    };
+    return DesignDocument.replaceNode(document, name, box);
+  },
+
+  /**
+   * Box を外して、その子を Box が居た位置へ戻す（docs/06-ui.md「編集操作の一覧」のグルー
+   * プ解除。`groupIntoBox` の逆向き）。
+   *
+   * 子の名前は単一名前空間で既に一意なので付け替えない。子が 0 件なら Box だけが消える。
+   *
+   * @param document 外す先のドキュメント
+   * @param name 外したい Box の名前
+   * @returns Box が居た位置へその子が同じ順で並んだドキュメントと、親へ戻った子の名前。
+   *   ノードが無い・artboard を指しているときは `node-not-found`、子を持てないノード
+   *   （Text・部品インスタンス）は `children-not-allowed`
+   */
+  ungroupBox(
+    document: DesignDocument,
+    name: string,
+  ): Result<UngroupedBox, DesignDocumentEditError> {
+    const found = DesignDocument.findNode(document, name);
+    if (!Option.isSome(found)) {
+      return Result.err({ kind: "node-not-found", name });
+    }
+    if (!NodeTree.allowsChildren(found.value)) {
+      return Result.err({ kind: "children-not-allowed", name });
+    }
+    const freed = Node.children(found.value);
+    return Result.map(
+      updateSiblingsOfNode(document, name, (siblings) =>
+        NodeTree.spliceByName(siblings, name, freed),
+      ),
+      (ungrouped) => ({
+        document: ungrouped,
+        freedNames: freed.map((child) => child.name),
+      }),
+    );
   },
 
   /** artboard をドキュメントの指定位置へ挿入する。 */
