@@ -11,6 +11,7 @@ import { ReorderSteps } from "@/features/editor/domains/reorder-step";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 import { frozen } from "./frozen-state";
+import { stateWithDeepBranch } from "./setup";
 
 /*
  * 外部編集でファイルが壊れている間、編集が起こらないこと。
@@ -197,6 +198,34 @@ test("ファイルが不正な間は、選んでいる位置へノードを挿�
       type: "Box",
     }),
   ).toStrictEqual(Option.none);
+});
+
+test("ファイルが不正な間は、選んでいるノードを Box で包めない", () => {
+  const selected = EditorState.select(openedState(), "home-title");
+
+  expect(EditorState.groupSelected(frozen(selected))).toStrictEqual(
+    Option.none,
+  );
+});
+
+test("ファイルが不正でなければ、選んでいるノードを Box で包める", () => {
+  const selected = EditorState.select(openedState(), "home-title");
+
+  expect(Option.isSome(EditorState.groupSelected(selected))).toBe(true);
+});
+
+test("ファイルが不正な間は、選んでいる Box を外せない", () => {
+  const selected = EditorState.select(stateWithDeepBranch(), "inner-panel");
+
+  expect(EditorState.ungroupSelected(frozen(selected))).toStrictEqual(
+    Option.none,
+  );
+});
+
+test("ファイルが不正でなければ、選んでいる Box を外せる", () => {
+  const selected = EditorState.select(stateWithDeepBranch(), "inner-panel");
+
+  expect(Option.isSome(EditorState.ungroupSelected(selected))).toBe(true);
 });
 
 test("ファイルが不正な間は、積んである編集を undo できない", () => {
