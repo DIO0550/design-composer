@@ -38,6 +38,6 @@ test("artboard を選んでいるときの削除は押せる", () => {
 
 test("artboard の並びは名前を変更と削除の 2 つの組に分かれる", () => {
   expect(
-    EditMenu.create(stateSelecting("home"), EditMenuTargets.Artboard).groups,
+    EditMenu.create(stateSelecting("home"), EditMenuTargets.Artboard).sections,
   ).toHaveLength(2);
 });
