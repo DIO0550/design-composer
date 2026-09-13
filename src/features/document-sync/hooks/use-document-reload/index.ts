@@ -9,6 +9,7 @@ import {
 import { DocumentJson } from "@/libs/document-json";
 import type { Unsubscribe } from "@/libs/tauri-ipc";
 import { Option } from "@/utils/Option";
+import { Result } from "@/utils/Result";
 
 /**
  * 監視する対象と、取り込み結果の渡し先。
@@ -62,7 +63,7 @@ export function useDocumentReload({
       // 購読を先に張る。監視の開始を先にすると、購読が成立するまでの間に届いた
       // 変更を受け取れない。
       const subscribed = await ipc.subscribeChanged(reload);
-      if (!subscribed.ok) {
+      if (!Result.isOk(subscribed)) {
         setFailure(Option.some(toDocumentAccessFailure(subscribed.error)));
         return;
       }
@@ -73,7 +74,7 @@ export function useDocumentReload({
       unsubscribe = Option.some(subscribed.value);
 
       const watched = await ipc.watch(path);
-      if (!watched.ok) {
+      if (!Result.isOk(watched)) {
         setFailure(Option.some(toDocumentAccessFailure(watched.error)));
         return;
       }

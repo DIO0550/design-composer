@@ -27,6 +27,7 @@ import { TokenTemplate } from "@/features/editor/domains/token-template";
 import type { IndexMove } from "@/types/IndexMove";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
+import { Result } from "@/utils/Result";
 
 /**
  * エディタ画面が保持する状態（docs/06-ui.md「画面構成」「選択」）。選択はドキュメントの
@@ -361,7 +362,7 @@ export const EditorState = {
         from,
         to: newName,
       });
-      if (!renamed.ok) {
+      if (!Result.isOk(renamed)) {
         return Option.none;
       }
       return Option.map(withEdit(state, renamed.value), (edited) =>
@@ -634,7 +635,9 @@ export const EditorState = {
       from,
       toIndex,
     );
-    return reordered.ok ? withEdit(state, reordered.value) : Option.none;
+    return Result.isOk(reordered)
+      ? withEdit(state, reordered.value)
+      : Option.none;
   },
 
   /**
@@ -690,7 +693,7 @@ export const EditorState = {
       name,
       ChildPosition.afterRemoving(to, current.value),
     );
-    return moved.ok ? withEdit(state, moved.value) : Option.none;
+    return Result.isOk(moved) ? withEdit(state, moved.value) : Option.none;
   },
 
   /**
@@ -718,7 +721,9 @@ export const EditorState = {
       name,
       to,
     );
-    return repositioned.ok ? withEdit(state, repositioned.value) : Option.none;
+    return Result.isOk(repositioned)
+      ? withEdit(state, repositioned.value)
+      : Option.none;
   },
 
   /**
@@ -776,7 +781,9 @@ export const EditorState = {
       name,
       canvasPosition,
     );
-    return repositioned.ok ? withEdit(state, repositioned.value) : Option.none;
+    return Result.isOk(repositioned)
+      ? withEdit(state, repositioned.value)
+      : Option.none;
   },
 
   /**
@@ -824,7 +831,9 @@ export const EditorState = {
           at,
           node,
         );
-        return pasted.ok ? withEdit(state, pasted.value) : Option.none;
+        return Result.isOk(pasted)
+          ? withEdit(state, pasted.value)
+          : Option.none;
       }),
     );
   },
@@ -852,7 +861,9 @@ export const EditorState = {
       DesignDocument.usedNames(document),
     );
     const inserted = DesignDocument.insertNode(document, at, node);
-    return inserted.ok ? withEdit(state, inserted.value) : Option.none;
+    return Result.isOk(inserted)
+      ? withEdit(state, inserted.value)
+      : Option.none;
   },
 
   /**
@@ -875,7 +886,9 @@ export const EditorState = {
   removeSelected(state: EditorState): Option<EditorState> {
     return Option.flatMap(EditorState.singleName(state), (name) => {
       const removed = DesignDocument.remove(EditorState.document(state), name);
-      return removed.ok ? withEdit(state, removed.value) : Option.none;
+      return Result.isOk(removed)
+        ? withEdit(state, removed.value)
+        : Option.none;
     });
   },
 
@@ -904,7 +917,7 @@ export const EditorState = {
       document.artboards.length,
       artboard,
     );
-    return added.ok
+    return Result.isOk(added)
       ? Option.map(withEdit(state, added.value), (edited) =>
           EditorState.select(edited, artboard.name),
         )
@@ -932,7 +945,9 @@ export const EditorState = {
       move.fromIndex,
       move.toIndex,
     );
-    return reordered.ok ? withEdit(state, reordered.value) : Option.none;
+    return Result.isOk(reordered)
+      ? withEdit(state, reordered.value)
+      : Option.none;
   },
 
   /**
@@ -949,7 +964,9 @@ export const EditorState = {
   detachInstance(state: EditorState): Option<EditorState> {
     return Option.flatMap(EditorState.singleName(state), (name) => {
       const detached = DesignDocument.detach(EditorState.document(state), name);
-      return detached.ok ? withEdit(state, detached.value) : Option.none;
+      return Result.isOk(detached)
+        ? withEdit(state, detached.value)
+        : Option.none;
     });
   },
 
@@ -979,7 +996,9 @@ export const EditorState = {
         name,
         componentName,
       );
-      return created.ok ? withEdit(state, created.value) : Option.none;
+      return Result.isOk(created)
+        ? withEdit(state, created.value)
+        : Option.none;
     });
   },
 
@@ -995,7 +1014,7 @@ export const EditorState = {
         name,
         edit,
       );
-      return edited.ok ? withEdit(state, edited.value) : Option.none;
+      return Result.isOk(edited) ? withEdit(state, edited.value) : Option.none;
     });
   },
 
@@ -1019,7 +1038,9 @@ export const EditorState = {
         name,
         sizes,
       );
-      return resized.ok ? withEdit(state, resized.value) : Option.none;
+      return Result.isOk(resized)
+        ? withEdit(state, resized.value)
+        : Option.none;
     });
   },
 
@@ -1076,7 +1097,7 @@ export const EditorState = {
       new Set(TokenSet.names(document.tokens, template.kind)),
     );
     const added = DesignDocument.addToken(document, token);
-    return added.ok
+    return Result.isOk(added)
       ? Option.map(withEdit(state, added.value), (edited) =>
           EditorState.selectToken(edited, Token.ref(token)),
         )
@@ -1094,7 +1115,9 @@ export const EditorState = {
         EditorState.document(state),
         TokenValue.toToken(value, token.name),
       );
-      return replaced.ok ? withEdit(state, replaced.value) : Option.none;
+      return Result.isOk(replaced)
+        ? withEdit(state, replaced.value)
+        : Option.none;
     });
   },
 
@@ -1111,7 +1134,7 @@ export const EditorState = {
         ref,
         newName,
       );
-      if (!renamed.ok) {
+      if (!Result.isOk(renamed)) {
         return Option.none;
       }
       return Option.map(withEdit(state, renamed.value), (edited) =>
@@ -1133,7 +1156,9 @@ export const EditorState = {
         EditorState.document(state),
         ref,
       );
-      return removed.ok ? withEdit(state, removed.value) : Option.none;
+      return Result.isOk(removed)
+        ? withEdit(state, removed.value)
+        : Option.none;
     });
   },
 } as const;
