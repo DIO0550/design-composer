@@ -1,5 +1,6 @@
 import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { contextMenu } from "@/components/__tests__/context-menu";
 import type { DesignDocument } from "@/domains/dcmp/design-document";
 import { renderedElement } from "@/features/canvas/__tests__";
 import {
@@ -150,10 +151,7 @@ export function documentErrorList(): HTMLElement {
   return screen.getByRole("alert", { name: "ドキュメントのエラー一覧" });
 }
 
-/** 開いているコンテキストメニュー。出ていなければテストを落とす。 */
-export function contextMenu(): HTMLElement {
-  return screen.getByRole("menu", { name: "コンテキストメニュー" });
-}
+export { contextMenu };
 
 /**
  * コンテキストメニューの行。
