@@ -1,4 +1,8 @@
-import { type PointerEvent as ReactPointerEvent, useReducer } from "react";
+import {
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
+  useReducer,
+} from "react";
 import { ElementNameAttribute } from "@/domains/compiled/compiled-element";
 import type { ChildPlacement } from "@/domains/dcmp/child-placement";
 import type { ChildPosition } from "@/domains/dcmp/child-position";
@@ -344,11 +348,13 @@ function carryingAt(context: DropContext): Carrying {
     : intoTreeCarrying(context);
 }
 
-/** 運んでいる間のポインタを追う側（3 ペインの器）へ渡す props。 */
+/** 運んでいる間のポインタと、離した直後の `click` を受ける側（3 ペインの器）へ渡す props。 */
 export type NodeDragHandlers = Readonly<{
   onPointerMove: (event: ReactPointerEvent<HTMLElement>) => void;
   onPointerUp: () => void;
   onPointerLeave: () => void;
+  /** 運んだ直後の `click` を飲み込む（選択に使わせない / `NodeDrag` の `dropped`）。 */
+  onClickCapture: (event: ReactMouseEvent<HTMLElement>) => void;
 }>;
 
 /** ドラッグ中の状態と、画面の要素へ渡すハンドラ。 */
@@ -377,8 +383,6 @@ export type NodeDragControl = Readonly<{
     template: NodeTemplate,
     event: ReactPointerEvent<HTMLElement>,
   ) => void;
-  /** ドラッグ直後の `click` を飲み込む。飲み込んだ（＝選択に使わない）なら `true`。 */
-  consumeClick: () => boolean;
 }>;
 
 /**
@@ -493,13 +497,21 @@ export function useNodeDrag(
       onPointerMove: trackPointer,
       onPointerUp: release,
       onPointerLeave: () => dispatch({ type: "cancel" }),
-    },
-    consumeClick: () => {
-      if (!NodeDrag.consumesClick(drag)) {
-        return false;
-      }
-      dispatch({ type: "consume_click" });
-      return true;
+      /*
+       * 離した直後の `click` は、押した場所と離した場所の最も近い共通の祖先に出る
+       * （Chromium で実測）。離した場所によって枠の中にもキャンバスの土台にもなり、左ペイン
+       * まで運べばこの器そのものになるので、いちばん外側のここで受ける。枠で受けると、枠の
+       * 外で離した回は飲み込めないまま状態が次の `click` まで残る。
+       *
+       * capture で取るのは、bubble では先に枠の `onClick` が選択に使ってしまうため。
+       */
+      onClickCapture: (event) => {
+        if (!NodeDrag.consumesClick(drag)) {
+          return;
+        }
+        event.stopPropagation();
+        dispatch({ type: "consume_click" });
+      },
     },
   };
 }

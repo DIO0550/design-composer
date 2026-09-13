@@ -8,4 +8,5 @@ export const IdleDragHandlers: NodeDragHandlers = {
   onPointerMove: () => {},
   onPointerUp: () => {},
   onPointerLeave: () => {},
+  onClickCapture: () => {},
 };
