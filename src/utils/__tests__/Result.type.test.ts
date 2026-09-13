@@ -5,10 +5,16 @@ import { Result } from "../Result";
  * 絞り込みが効くことを固定する（`rules/coding.md`「型レベルの保証が仕様の一部であるとき
  * は `expectTypeOf` で退行を検知する」）。効かなくなると `isOk` は真偽を答えるだけの関数に
  * なり、通した先で `value` も `error` も読めなくなる。
+ *
+ * 結果を関数越しに受けるのは、`const result: Result<number, string> = Result.ok(42);` と
+ * 書くと初期化子の型で絞り込まれてしまい、`isOk` が絞り込まなくても `value` が読めるため。
  */
+function decoded(succeeds: boolean): Result<number, string> {
+  return succeeds ? Result.ok(42) : Result.err("fail");
+}
 
 test("isOk が真の側では成功値を読める型に絞られる", () => {
-  const result: Result<number, string> = Result.ok(42);
+  const result = decoded(true);
 
   const value = Result.isOk(result) ? result.value : 0;
 
@@ -17,7 +23,7 @@ test("isOk が真の側では成功値を読める型に絞られる", () => {
 });
 
 test("isOk が偽の側では失敗のエラーを読める型に絞られる", () => {
-  const result: Result<number, string> = Result.err("fail");
+  const result = decoded(false);
 
   const error = Result.isOk(result) ? "" : result.error;
 
