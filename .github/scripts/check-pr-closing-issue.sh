@@ -21,27 +21,44 @@
 #   bash .github/scripts/check-pr-closing-issue.sh              # GitHub へ問い合わせる(CI)
 #   bash .github/scripts/check-pr-closing-issue.sh <file.json>  # 問い合わせ結果を差し替える(動作確認)
 #
-# **問い合わせの側は CI でしか動かせない。** `gh` はローカルの検証環境に無く、判定表
-# (`check-pr-closing-issue-cases.sh`)が覆うのは「問い合わせ結果 → 終了コード」だけなので、
-# クエリのフィールド名・`permissions` の過不足が最初に分かるのは CI の 1 回目になる。
+# **クエリ本体は CI でしか動かせない。** 判定表(`check-pr-closing-issue-cases.sh`)は
+# 「問い合わせ結果 → 終了コード」と「5xx のときの再試行」を `gh` の差し替えで覆うが、
+# クエリのフィールド名・`permissions` の過不足が分かるのは CI で実際に叩いたときだけ。
 set -euo pipefail
 
 # PR が閉じる Issue と、変更したファイルを 1 度の問い合わせで取る。
-# ファイルの件数は `totalCount` が正確に返すので、`nodes` は 1 件目の中身を見るためだけに取る
+# ファイルの件数は `totalCount` が正確に返すので、`nodes` は 1 件目の中身を見るためだけに取る。
+#
+# **間を空けて 3 回まで試す。** GitHub の API は一時的に 5xx を返す(この検査を入れた回に、
+# PR の作成・更新が 500 / 502 で 5 回落ち、この検査自身も 502 で 1 度赤くなった)。
+# 問い合わせが通らなかっただけで赤くすると、**閉じ忘れと区別が付かない赤**になり、
+# 検査そのものが信用されなくなる。3 回とも駄目なら赤にする(握りつぶさない)。
+# 失敗の種類では分けない。権限エラーのように再試行で変わらないものも結局赤になるので、
+# 分けても結果が変わらず、`gh` のエラーは毎回ログに出る。
 fetch_pull_request() {
-  gh api graphql \
-    -F owner="${GITHUB_REPOSITORY%%/*}" \
-    -F repo="${GITHUB_REPOSITORY##*/}" \
-    -F number="${PR_NUMBER}" \
-    -f query='
-      query($owner: String!, $repo: String!, $number: Int!) {
-        repository(owner: $owner, name: $repo) {
-          pullRequest(number: $number) {
-            closingIssuesReferences(first: 10) { nodes { number } }
-            files(first: 1) { totalCount nodes { path changeType } }
+  local attempt response
+  for attempt in 1 2 3; do
+    if response="$(gh api graphql \
+      -F owner="${GITHUB_REPOSITORY%%/*}" \
+      -F repo="${GITHUB_REPOSITORY##*/}" \
+      -F number="${PR_NUMBER}" \
+      -f query='
+        query($owner: String!, $repo: String!, $number: Int!) {
+          repository(owner: $owner, name: $repo) {
+            pullRequest(number: $number) {
+              closingIssuesReferences(first: 10) { nodes { number } }
+              files(first: 1) { totalCount nodes { path changeType } }
+            }
           }
-        }
-      }'
+        }')"; then
+      printf '%s' "$response"
+      return 0
+    fi
+    [ "$attempt" = 3 ] && break
+    printf '問い合わせに失敗した(%s 回目)。待って再試行する\n' "$attempt" >&2
+    sleep $((attempt * 5))
+  done
+  return 1
 }
 
 result_file="${1:-}"
