@@ -1,6 +1,19 @@
 import type { TauriIpc } from "@/libs/tauri-ipc";
 
 /**
+ * Tauri 自身が失敗したときと同じく、文字列で reject する。
+ *
+ * コマンドを持たない代役も、境界を包む代役も、この形で拒む必要があるのでここに置く。
+ *
+ * @param message 失敗として伝える文言
+ * @returns 決して解決しない Promise
+ * @throws 必ず。文字列で reject する
+ */
+export function ipcFailure(message: string): Promise<never> {
+  return Promise.reject(message);
+}
+
+/**
  * イベントを 1 種類だけ配る `TauriIpc` の代役。コマンドは持たない（呼ばれたら本物と同じ
  * く「そのコマンドは無い」で reject する）。
  *
@@ -30,15 +43,15 @@ export const SingleEventIpcFake = {
 
     const ipc: TauriIpc = {
       invoke(command) {
-        return Promise.reject(`Command ${command} not found`);
+        return ipcFailure(`Command ${command} not found`);
       },
 
       listen(listened, handler) {
         if (listened !== event) {
-          return Promise.reject(`Event ${listened} not emitted`);
+          return ipcFailure(`Event ${listened} not emitted`);
         }
         if (subscribeDenied) {
-          return Promise.reject(`${listened}: 購読を開始できない`);
+          return ipcFailure(`${listened}: 購読を開始できない`);
         }
         listeners.add(handler);
         return Promise.resolve(() => {

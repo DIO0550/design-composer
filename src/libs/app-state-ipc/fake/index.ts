@@ -1,4 +1,5 @@
 import type { TauriIpc } from "@/libs/tauri-ipc";
+import { ipcFailure } from "@/libs/tauri-ipc/fake";
 import { Option } from "@/utils/Option";
 import { AppStateIpc } from "../index";
 
@@ -19,17 +20,6 @@ export type AppStateIpcFake = Readonly<{
   /** 書き出しを拒むようにする。 */
   denySave(): void;
 }>;
-
-/**
- * Tauri 自身が失敗したときと同じく、文字列で reject する。
- *
- * @param message 失敗として伝える文言
- * @returns 決して解決しない Promise
- * @throws 必ず。文字列で reject する
- */
-function ipcFailure(message: string): Promise<never> {
-  return Promise.reject(message);
-}
 
 /**
  * 本物と同じ形（文言つき）で拒否を返す。
