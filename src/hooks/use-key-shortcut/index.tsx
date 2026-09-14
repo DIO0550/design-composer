@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { createContext, type ReactNode, useContext, useEffect } from "react";
+import type { ValueOf } from "@/types/ValueOf";
 import { CommandKey } from "@/utils/CommandKey";
 import { ElementEx } from "@/utils/ElementEx";
 
@@ -112,6 +113,50 @@ export type KeyShortcutBinding = Readonly<{
 }>;
 
 /**
+ * この節でページ全体のショートカットを張るか。
+ *
+ * 同じドキュメントを複数開いて前後に重ねる画面では、背面の節が張ったままだと 1 回の押下
+ * が開いている数だけ実行される（`document` に張るので、見えているかは関係ない）。
+ */
+export const KeyShortcutScopes = {
+  /** 張る。 */
+  Listening: "Listening",
+  /** 張らない。 */
+  Suspended: "Suspended",
+} as const;
+
+/** この節でページ全体のショートカットを張るか。 */
+export type KeyShortcutScope = ValueOf<typeof KeyShortcutScopes>;
+
+/*
+ * 囲われていない節は張る。ここだけは `rules/coding.md`「既定値を返して埋めるのは禁止」
+ * の例外で、Provider が無いことは付け忘れではなく**止める理由が無い**という意味になる
+ * （アプリのほとんどの節は重ならないので囲わない）。落とす形にすると、ショートカットを
+ * 持つすべての節が Provider を要求することになる。
+ */
+const KeyShortcutScopeContext = createContext<KeyShortcutScope>(
+  KeyShortcutScopes.Listening,
+);
+
+/**
+ * 囲った節のショートカットを張るかどうかを配る。
+ *
+ * 入口を `useKeyShortcuts` の 1 箇所にしてあるので、節の中で新しいショートカットを足して
+ * も配り直しは要らない（真偽値を各フックへ通す形にすると、足した側が受け取り忘れても
+ * 黙って全部の節で発火する）。
+ *
+ * @returns 子へ `scope` を配る器
+ */
+export function KeyShortcutScopeProvider({
+  scope,
+  children,
+}: Readonly<{ scope: KeyShortcutScope; children: ReactNode }>) {
+  return (
+    <KeyShortcutScopeContext value={scope}>{children}</KeyShortcutScopeContext>
+  );
+}
+
+/**
  * ページ全体のキーボードショートカットを複数まとめて張り、当たった割り当てのうち先に並
  * んでいる 1 件だけを呼ぶ。フォーカスのある要素が受け取る間は無視する（`isConsumedBy`）。
  *
@@ -121,10 +166,17 @@ export type KeyShortcutBinding = Readonly<{
  * 購読は毎 render 張り直すので、安定させたいなら `bindings` を `useMemo` で渡す
  * （`onPress` を `useCallback` で包むだけでは効かない）。
  *
+ * `KeyShortcutScopeProvider` が `Suspended` を配っている節では張らない。
+ *
  * @param bindings 待ち受ける割り当ての並び
  */
 export function useKeyShortcuts(bindings: readonly KeyShortcutBinding[]): void {
+  const scope = useContext(KeyShortcutScopeContext);
+
   useEffect(() => {
+    if (scope === KeyShortcutScopes.Suspended) {
+      return;
+    }
     const handleKeyDown = (event: KeyboardEvent) => {
       const bound = bindings.find(
         ({ shortcut }) =>
@@ -139,7 +191,7 @@ export function useKeyShortcuts(bindings: readonly KeyShortcutBinding[]): void {
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [bindings]);
+  }, [bindings, scope]);
 }
 
 /**
