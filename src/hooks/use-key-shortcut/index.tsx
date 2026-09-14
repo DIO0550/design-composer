@@ -120,9 +120,9 @@ export type KeyShortcutBinding = Readonly<{
  */
 export const KeyShortcutScopes = {
   /** 張る。 */
-  Listening: "Listening",
+  Listening: "listening",
   /** 張らない。 */
-  Suspended: "Suspended",
+  Suspended: "suspended",
 } as const;
 
 /** この節でページ全体のショートカットを張るか。 */
@@ -140,6 +140,10 @@ const KeyShortcutScopeContext = createContext<KeyShortcutScope>(
 
 /**
  * 囲った節のショートカットを張るかどうかを配る。
+ *
+ * Context と Provider をこのモジュールへ置くのは、読む相手が `useKeyShortcuts` だけで、
+ * 外へ出すと「配る側」と「読む側」が離れるため（このリポジトリの他の Provider は
+ * `components/` にあるが、それらは配った値を子コンポーネントが読む形）。
  *
  * 入口を `useKeyShortcuts` の 1 箇所にしてあるので、節の中で新しいショートカットを足して
  * も配り直しは要らない（真偽値を各フックへ通す形にすると、足した側が受け取り忘れても

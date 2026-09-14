@@ -1,6 +1,12 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { changeFileExternally } from "@/libs/__tests__/document-change";
+
+export {
+  artboardList,
+  tree,
+} from "@/features/editor/__tests__/pane-regions";
+
 import { type AppMenuCommand, AppMenuCommands } from "@/libs/app-menu";
 import { AppMenuFake } from "@/libs/app-menu/fake";
 import { ClockFake } from "@/libs/clock/fake";
@@ -99,6 +105,35 @@ export async function startCreate(observer: ScreenObserver): Promise<void> {
     return;
   }
   await userEvent.click(button);
+  await act(async () => {});
+}
+
+/** 開いているドキュメントを並べた帯。 */
+export function tabBar(): HTMLElement {
+  return screen.getByRole("navigation", { name: "開いているドキュメント" });
+}
+
+/**
+ * タブを押して、そのドキュメントを見ている状態にする。
+ *
+ * 帯の中から引くのは、上端のパンくずも同じパスを `title` に持つため。
+ *
+ * @param path 見たいドキュメントのパス
+ */
+export async function selectTab(path: string): Promise<void> {
+  await userEvent.click(within(tabBar()).getByTitle(path));
+  await act(async () => {});
+}
+
+/**
+ * タブの閉じるボタンを押す。
+ *
+ * @param path 閉じたいドキュメントのパス
+ */
+export async function closeTab(path: string): Promise<void> {
+  await userEvent.click(
+    screen.getByRole("button", { name: `${path} を閉じる` }),
+  );
   await act(async () => {});
 }
 
