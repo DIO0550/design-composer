@@ -1,5 +1,6 @@
 pub mod app_state;
 pub mod document;
+pub mod file_io;
 pub mod menu;
 
 // 対象のモジュールをまたいで使うテスト支援。
@@ -28,8 +29,8 @@ pub fn run() {
             document::io::save_document,
             document::watch::watch_document,
             document::watch::unwatch_document,
-            app_state::io::load_app_state,
-            app_state::io::save_app_state
+            app_state::load_app_state,
+            app_state::save_app_state
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
