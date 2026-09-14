@@ -2,6 +2,7 @@ import type { AxisLength } from "@/domains/dcmp/axis-length";
 import type { ChildPlacement } from "@/domains/dcmp/child-placement";
 import type { ChildPosition } from "@/domains/dcmp/child-position";
 import type { PropEdit } from "@/domains/dcmp/node";
+import type { EditContinuity } from "@/domains/session/edit-continuity";
 import type { NodeTemplate } from "@/domains/session/node-template";
 import type { SelectionDig } from "@/domains/session/selection-dig";
 import type { Offset } from "@/domains/unit/offset";
@@ -30,7 +31,7 @@ export type NodeActions = Readonly<{
   reposition: (name: string, to: ChildPlacement) => void;
   /** artboard をキャンバス上の別の位置へ置き直す。 */
   repositionArtboard: (name: string, canvasPosition: Offset) => void;
-  resize: (sizes: readonly AxisLength[]) => void;
+  resize: (sizes: readonly AxisLength[], continuity: EditContinuity) => void;
   editProp: (edit: PropEdit) => void;
   insert: (template: NodeTemplate) => void;
   /** パレットから運んできたものを、落とした先のツリー位置へ挿す。 */
@@ -104,7 +105,8 @@ export function useNodeActions(): NodeActions {
     repositionArtboard: (name, canvasPosition) =>
       dispatch({ type: "reposition_artboard", name, canvasPosition }),
     /** リサイズハンドルのドラッグは選択中のものの大きさの変更（docs/06-ui.md）。 */
-    resize: (sizes) => dispatch({ type: "resize", sizes }),
+    resize: (sizes, continuity) =>
+      dispatch({ type: "resize", sizes, continuity }),
     /**
      * prop の編集はプロパティパネルとキャンバスのインライン編集の両方から届く
      * （どちらも選択中のものへの編集なので同じアクションで受ける）。
