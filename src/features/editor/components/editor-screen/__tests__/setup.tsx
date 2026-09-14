@@ -22,6 +22,8 @@ export const OtherPath = "/work/settings.dcmp";
 export type ScreenPortOptions = Readonly<{
   /** 既に保存されているアプリ自身の状態の生のテキスト。 */
   storedAppState?: string;
+  /** アプリ自身の状態の読み込みを拒むようにするか。 */
+  denyAppStateLoad?: boolean;
   /** メニューの購読を張れないようにするか。 */
   denyMenu?: boolean;
 }>;
@@ -55,6 +57,9 @@ export function renderEditorScreen(
   const menuFake = AppMenuFake.create();
   const dropFake = FileDropFake.create();
   const appStateFake = AppStateIpcFake.create(options.storedAppState);
+  if (options.denyAppStateLoad === true) {
+    appStateFake.denyLoad();
+  }
   if (options.denyMenu === true) {
     menuFake.denySubscribe();
   }

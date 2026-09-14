@@ -34,7 +34,7 @@ test("上限を超える並びから作ると古いものが落ちる", () => {
 test("上限まで並んでいる一覧へ開くと、いちばん古いものが落ちる", () => {
   const recents = RecentFiles.create(elevenPaths().slice(0, 10));
 
-  expect(RecentFiles.withOpened(recents, "/work/new.dcmp").paths).toStrictEqual(
-    ["/work/new.dcmp", ...elevenPaths().slice(0, 9)],
-  );
+  expect(
+    RecentFiles.withOpenedPath(recents, "/work/new.dcmp").paths,
+  ).toStrictEqual(["/work/new.dcmp", ...elevenPaths().slice(0, 9)]);
 });

@@ -16,11 +16,11 @@ import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
 /**
- * 開く / 新規作成に必要な外部世界の口。
+ * どのドキュメントを開くかが決まるまでに要る、外部世界の口。
  *
- * どの口も「利用者がどのファイルを開くかを決める」経路なので、常に対で必要になる。
- * ダイアログとファイルの読み書きは操作の中身、メニューとドロップは操作の起こり方、
- * アプリ自身の状態は前回開いていたものの出どころ。
+ * ダイアログとファイルの読み書きは開く操作の中身、メニューとドロップは操作の起こり方、
+ * アプリ自身の状態は操作を待たずに開く相手（前回開いていたファイル）の出どころ。
+ * どれが欠けても開く経路のどれかが成立しないので、常に対で必要になる。
  */
 export type DocumentSessionPorts = Readonly<{
   ipc: DocumentIpc;
@@ -64,6 +64,8 @@ export type DocumentSessionActions = Readonly<{
 type DocumentSessionState = Readonly<{
   session: DocumentSession;
   recents: RecentFiles;
+  /** 保存されている一覧を読み取れなかった理由（診断用の原文）。読めていれば `none`。 */
+  recentFilesFailure: Option<string>;
 }>;
 
 /** 状態を動かす指示。 */
@@ -73,6 +75,7 @@ type DocumentSessionAction =
       type: "restored";
       session: DocumentSession;
       recents: RecentFiles;
+      recentFilesFailure: Option<string>;
     }>
   | Readonly<{
       type: "settled";
@@ -83,6 +86,7 @@ type DocumentSessionAction =
 const InitialState: DocumentSessionState = {
   session: DocumentSession.Closed,
   recents: RecentFiles.Empty,
+  recentFilesFailure: Option.none,
 };
 
 /**
@@ -106,10 +110,14 @@ function reduce(
        * 取り込むと画面の一覧とファイルの中身が食い違う。
        */
       return DocumentSession.isClosed(state.session)
-        ? { session: action.session, recents: action.recents }
+        ? {
+            session: action.session,
+            recents: action.recents,
+            recentFilesFailure: action.recentFilesFailure,
+          }
         : state;
     case "settled":
-      return { session: action.session, recents: action.recents };
+      return { ...state, session: action.session, recents: action.recents };
   }
 }
 
@@ -216,25 +224,23 @@ async function createWithDialog(
  * 保存されている最近使ったファイルの一覧を読む。
  *
  * @param appState 読み込み元
- * @returns 保存されていた一覧。まだ保存が無いときと、読めない / 解釈できないときは空の一覧
+ * @returns 保存されていた一覧。まだ一度も保存していなければ空の一覧。読み出せない /
+ *   解釈できないときは、診断用の原文を持つ失敗
  */
-async function loadRecentFiles(appState: AppStateIpc): Promise<RecentFiles> {
+async function loadRecentFiles(
+  appState: AppStateIpc,
+): Promise<Result<RecentFiles, string>> {
   const loaded = await appState.load();
-  /*
-   * 読めなかったときも空の一覧にする。復元する対象が分からないという点でまだ保存が
-   * 無いときと結果が変わらず、開始画面から開き直せる。ここでは書き出さないので、
-   * 読めなかった中身をこの経路が上書きすることもない。
-   */
   if (!Result.isOk(loaded)) {
-    return RecentFiles.Empty;
+    return Result.err(loaded.error.message);
   }
   if (!Option.isSome(loaded.value)) {
-    return RecentFiles.Empty;
+    return Result.ok(RecentFiles.Empty);
   }
   const parsed = AppStateJson.parse(loaded.value.value);
   return Result.isOk(parsed)
-    ? RecentFiles.create(parsed.value.recentPaths)
-    : RecentFiles.Empty;
+    ? Result.ok(RecentFiles.create(parsed.value.recentPaths))
+    : Result.err(parsed.error.message);
 }
 
 /**
@@ -254,7 +260,7 @@ function rememberOpened(
   if (!Option.isSome(path)) {
     return recents;
   }
-  const opened = RecentFiles.withOpened(recents, path.value);
+  const opened = RecentFiles.withOpenedPath(recents, path.value);
   /*
    * 書き出せなくても画面には出さない。開く操作そのものは成立していて、失われるのは
    * 次の起動で並ぶ一覧だけなので、今の操作を止める理由にならない。
@@ -271,12 +277,14 @@ function rememberOpened(
  * 購読の Effect だけが更新する独立した値なので `useState` のまま持つ。
  *
  * @param ports ダイアログ・I/O・メニュー・ドロップ・アプリ自身の状態の相手
- * @returns 今のセッション、最近開いたファイルのパス（新しい順）、開く / 新規作成を
- *   始める手続き、指示を受け取れなかった経路とその理由（どちらも受け取れていれば `none`）
+ * @returns 今のセッション、最近開いたファイルのパス（新しい順）、その一覧を読み取れ
+ *   なかった理由（読めていれば `none`）、開く / 新規作成を始める手続き、指示を受け
+ *   取れなかった経路とその理由（どちらも受け取れていれば `none`）
  */
 export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
   session: DocumentSession;
   recentPaths: readonly string[];
+  recentFilesFailure: Option<string>;
   actions: DocumentSessionActions;
   commandFailure: Option<CommandSourceFailure>;
 }> {
@@ -349,11 +357,17 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
     /**
      * 保存されている一覧を読み、前回開いていたファイルがあれば開く。
      *
-     * 復元では一覧を書き出さない。開く対象は一覧の先頭なので並びが変わらず、
-     * 読めなかったときに空の一覧で上書きしてしまうこともない。
+     * 読み取れなかったときは空の一覧から始め、その理由を開始画面へ出す。次に開いた
+     * ファイルで保存されている中身は書き直されるので、読めない状態は持ち越さない。
+     *
+     * 復元そのものでは一覧を書き出さない。開く対象は一覧の先頭なので並びが変わらない。
      */
     const restore = async (): Promise<void> => {
-      const recents = await loadRecentFiles(ports.appState);
+      const loaded = await loadRecentFiles(ports.appState);
+      const recents = Result.isOk(loaded) ? loaded.value : RecentFiles.Empty;
+      const recentFilesFailure = Result.isOk(loaded)
+        ? Option.none
+        : Option.some(loaded.error);
       const latest = RecentFiles.latest(recents);
       const session = Option.isSome(latest)
         ? await openAtPath(ports.ipc, latest.value)
@@ -361,7 +375,7 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
       if (ignore) {
         return;
       }
-      dispatch({ type: "restored", session, recents });
+      dispatch({ type: "restored", session, recents, recentFilesFailure });
     };
     void restore();
 
@@ -421,6 +435,7 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
   return {
     session: state.session,
     recentPaths: state.recents.paths,
+    recentFilesFailure: state.recentFilesFailure,
     actions: { openDocument, createDocument, openDocumentAt },
     commandFailure,
   };

@@ -4,6 +4,7 @@ import type { CommandSourceFailure } from "@/features/document-start/hooks/use-d
 import type { AppMenuCommand } from "@/libs/app-menu";
 import { AppMenuFake } from "@/libs/app-menu/fake";
 import { AppStateIpcFake } from "@/libs/app-state-ipc/fake";
+import { AppStateJson } from "@/libs/app-state-json";
 import {
   type DialogChoices,
   DocumentDialogFake,
@@ -12,6 +13,16 @@ import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { FileDropFake } from "@/libs/file-drop/fake";
 import type { Option } from "@/utils/Option";
 import { useDocumentSession } from "../index";
+
+/**
+ * 保存されているアプリ自身の状態のテキストを組み立てる。
+ *
+ * @param recentPaths 保存されている一覧（新しい順）
+ * @returns `app-state.json` に置かれているテキスト
+ */
+export function storedRecentPaths(recentPaths: readonly string[]): string {
+  return AppStateJson.serialize({ recentPaths });
+}
 
 /** 既に置いてあるファイル。テストの中で開いているファイルは常に 1 つ。 */
 export const Path = "/work/login.dcmp";
@@ -25,6 +36,8 @@ export type SessionObserver = Readonly<{
   appState: AppStateIpcFake;
   /** 現在のセッション。 */
   session: () => DocumentSession;
+  /** 保存されている一覧を読み取れなかった理由。読めていれば `none`。 */
+  recentFilesFailure: () => Option<string>;
   /** 最近開いたファイルのパス（新しい順）。 */
   recentPaths: () => readonly string[];
   /** 開く指示を受け取れなかった経路とその理由。 */
@@ -102,6 +115,7 @@ export function renderDocumentSession(
     files: ipcFake,
     appState: appStateFake,
     session: () => result.current.session,
+    recentFilesFailure: () => result.current.recentFilesFailure,
     recentPaths: () => result.current.recentPaths,
     commandFailure: () => result.current.commandFailure,
     settle,

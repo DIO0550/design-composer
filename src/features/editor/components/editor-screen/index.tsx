@@ -20,7 +20,7 @@ export function EditorScreen({
   clock,
   ports,
 }: Readonly<{ clock: Clock; ports: DocumentSessionPorts }>) {
-  const { session, recentPaths, actions, commandFailure } =
+  const { session, recentPaths, recentFilesFailure, actions, commandFailure } =
     useDocumentSession(ports);
 
   return (
@@ -44,6 +44,7 @@ export function EditorScreen({
             session={session}
             actions={actions}
             recentPaths={recentPaths}
+            recentFilesFailure={recentFilesFailure}
             commandFailure={commandFailure}
             renderErrors={(errors) => (
               <DocumentErrorList

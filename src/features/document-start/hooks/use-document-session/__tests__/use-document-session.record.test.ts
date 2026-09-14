@@ -1,29 +1,23 @@
 import { expect, test } from "vitest";
 import { artboardContent } from "@/domains/__tests__/sample-document";
 import { DocumentSession } from "@/features/document-start/domains/document-session";
-import { AppStateJson } from "@/libs/app-state-json";
 import { DialogChoice } from "@/libs/document-dialog/fake";
 import { Option } from "@/utils/Option";
-import { NewPath, Path, renderDocumentSession } from "./setup";
+import {
+  NewPath,
+  Path,
+  renderDocumentSession,
+  storedRecentPaths,
+} from "./setup";
 
 /** 既に一覧に載っているもう 1 つのファイル。 */
 const OtherPath = "/work/shop/app.dcmp";
-
-/**
- * 保存されているアプリ自身の状態のテキストを組み立てる。
- *
- * @param recentPaths 保存されている一覧（新しい順）
- * @returns `app-state.json` に置かれているテキスト
- */
-function storedState(recentPaths: readonly string[]): string {
-  return AppStateJson.serialize({ recentPaths });
-}
 
 test("ダイアログで開いたファイルが一覧の先頭に来る", async () => {
   const observer = renderDocumentSession(
     { [Path]: artboardContent("home") },
     { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
-    { storedAppState: storedState([OtherPath]) },
+    { storedAppState: storedRecentPaths([OtherPath]) },
   );
   await observer.settle();
 
@@ -36,14 +30,14 @@ test("開いたファイルを載せた一覧が書き出される", async () =>
   const observer = renderDocumentSession(
     { [Path]: artboardContent("home") },
     { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
-    { storedAppState: storedState([OtherPath]) },
+    { storedAppState: storedRecentPaths([OtherPath]) },
   );
   await observer.settle();
 
   await observer.openDocument();
 
   expect(observer.appState.storedContent()).toStrictEqual(
-    Option.some(storedState([Path, OtherPath])),
+    Option.some(storedRecentPaths([Path, OtherPath])),
   );
 });
 
@@ -51,7 +45,7 @@ test("新規作成したファイルも一覧の先頭に来る", async () => {
   const observer = renderDocumentSession(
     {},
     { open: DialogChoice.Canceled, save: DialogChoice.chosen(NewPath) },
-    { storedAppState: storedState([OtherPath]) },
+    { storedAppState: storedRecentPaths([OtherPath]) },
   );
   await observer.settle();
 
@@ -64,7 +58,7 @@ test("ドロップで開いたファイルも一覧の先頭に来る", async ()
   const observer = renderDocumentSession(
     { [Path]: artboardContent("home") },
     { open: DialogChoice.Canceled, save: DialogChoice.Canceled },
-    { storedAppState: storedState([OtherPath]) },
+    { storedAppState: storedRecentPaths([OtherPath]) },
   );
 
   await observer.dropFiles([Path]);
@@ -76,7 +70,7 @@ test("同じファイルを開き直しても一覧は増えない", async () =>
   const observer = renderDocumentSession(
     { [Path]: artboardContent("home") },
     { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
-    { storedAppState: storedState([OtherPath, Path]) },
+    { storedAppState: storedRecentPaths([OtherPath, Path]) },
   );
   await observer.settle();
 
@@ -89,7 +83,7 @@ test("開けなかったファイルは一覧に載らない", async () => {
   const observer = renderDocumentSession(
     {},
     { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
-    { storedAppState: storedState([OtherPath]) },
+    { storedAppState: storedRecentPaths([OtherPath]) },
   );
   await observer.settle();
 

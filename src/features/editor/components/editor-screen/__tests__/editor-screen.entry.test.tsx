@@ -229,3 +229,22 @@ test("前回開いていたファイルが消えていても、最近使った�
   });
   expect(within(recents).getByTitle(Path)).toBeDefined();
 });
+
+/*
+ * フック（読み取れなかったことを持つ）と画面（それを出す）の配線。
+ * 一覧が空になるだけでは、まだ何も保存していない状態と見分けがつかない。
+ */
+test("最近使ったファイルを読み取れないと、その旨が開始画面に出る", async () => {
+  const observer = renderEditorScreen(
+    {},
+    { open: DialogChoice.Canceled, save: DialogChoice.Canceled },
+    {
+      storedAppState: AppStateJson.serialize({ recentPaths: [Path] }),
+      denyAppStateLoad: true,
+    },
+  );
+
+  await observer.settle();
+
+  expect(screen.getByText("最近使ったファイルを読み込めません")).toBeDefined();
+});

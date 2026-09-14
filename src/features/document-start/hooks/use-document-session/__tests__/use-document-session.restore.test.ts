@@ -2,10 +2,9 @@ import { expect, test } from "vitest";
 import { artboardContent } from "@/domains/__tests__/sample-document";
 import { DocumentAccessFailure } from "@/domains/session/document-access-failure";
 import { DocumentSession } from "@/features/document-start/domains/document-session";
-import { AppStateJson } from "@/libs/app-state-json";
 import { DialogChoice } from "@/libs/document-dialog/fake";
 import { Option } from "@/utils/Option";
-import { Path, renderDocumentSession } from "./setup";
+import { Path, renderDocumentSession, storedRecentPaths } from "./setup";
 
 /** 開かない選択だけを並べたダイアログ。復元は利用者の操作を挟まない。 */
 const NoDialogChoices = {
@@ -16,21 +15,11 @@ const NoDialogChoices = {
 /** 一覧の 2 番目に置く、開けるファイル。先頭だけが開くことを確かめるために使う。 */
 const SecondPath = "/work/shop/app.dcmp";
 
-/**
- * 保存されているアプリ自身の状態のテキストを組み立てる。
- *
- * @param recentPaths 保存されている一覧（新しい順）
- * @returns `app-state.json` に置かれているテキスト
- */
-function storedState(recentPaths: readonly string[]): string {
-  return AppStateJson.serialize({ recentPaths });
-}
-
 test("保存された一覧の先頭のファイルが起動時に開かれる", async () => {
   const observer = renderDocumentSession(
     { [Path]: artboardContent("home"), [SecondPath]: artboardContent("shop") },
     NoDialogChoices,
-    { storedAppState: storedState([Path, SecondPath]) },
+    { storedAppState: storedRecentPaths([Path, SecondPath]) },
   );
 
   await observer.settle();
@@ -44,7 +33,7 @@ test("保存された一覧が起動時にそのまま並ぶ", async () => {
   const observer = renderDocumentSession(
     { [Path]: artboardContent("home"), [SecondPath]: artboardContent("shop") },
     NoDialogChoices,
-    { storedAppState: storedState([Path, SecondPath]) },
+    { storedAppState: storedRecentPaths([Path, SecondPath]) },
   );
 
   await observer.settle();
@@ -56,7 +45,7 @@ test("前回開いていたファイルが消えていたら理由を持つ失�
   const observer = renderDocumentSession(
     { [SecondPath]: artboardContent("shop") },
     NoDialogChoices,
-    { storedAppState: storedState([Path, SecondPath]) },
+    { storedAppState: storedRecentPaths([Path, SecondPath]) },
   );
 
   await observer.settle();
@@ -76,7 +65,7 @@ test("前回開いていたファイルが開けなくても一覧から外れ�
   const observer = renderDocumentSession(
     { [SecondPath]: artboardContent("shop") },
     NoDialogChoices,
-    { storedAppState: storedState([Path, SecondPath]) },
+    { storedAppState: storedRecentPaths([Path, SecondPath]) },
   );
 
   await observer.settle();
@@ -88,7 +77,7 @@ test("一覧が 1 件も無ければ何も開かない", async () => {
   const observer = renderDocumentSession(
     { [Path]: artboardContent("home") },
     NoDialogChoices,
-    { storedAppState: storedState([]) },
+    { storedAppState: storedRecentPaths([]) },
   );
 
   await observer.settle();
@@ -107,6 +96,61 @@ test("まだ一度も保存していなければ何も開かない", async () =>
   expect(observer.session()).toStrictEqual(DocumentSession.Closed);
 });
 
+/*
+ * 保存されている並びを、読み込み時に畳まれる形（同じパスが 2 回）にしてある。
+ * 復元が一覧を書き出すと畳まれた並びで上書きされるので、書き出した瞬間に落ちる。
+ */
+test("復元では一覧を書き出さない", async () => {
+  const stored = storedRecentPaths([Path, SecondPath, Path]);
+  const observer = renderDocumentSession(
+    { [Path]: artboardContent("home"), [SecondPath]: artboardContent("shop") },
+    NoDialogChoices,
+    { storedAppState: stored },
+  );
+
+  await observer.settle();
+
+  expect(observer.appState.storedContent()).toStrictEqual(Option.some(stored));
+});
+
+test("保存された一覧を読み取れなければ空の一覧から始まる", async () => {
+  const observer = renderDocumentSession(
+    { [Path]: artboardContent("home") },
+    NoDialogChoices,
+    { storedAppState: storedRecentPaths([Path]), denyAppStateLoad: true },
+  );
+
+  await observer.settle();
+
+  expect(observer.recentPaths()).toStrictEqual([]);
+});
+
+test("保存された一覧を読み取れなければ、その理由が残る", async () => {
+  const observer = renderDocumentSession(
+    { [Path]: artboardContent("home") },
+    NoDialogChoices,
+    { storedAppState: storedRecentPaths([Path]), denyAppStateLoad: true },
+  );
+
+  await observer.settle();
+
+  expect(observer.recentFilesFailure()).toStrictEqual(
+    Option.some("app-state.json: 読み込みが拒まれた"),
+  );
+});
+
+test("保存された一覧を解釈できなければ、その理由が残る", async () => {
+  const observer = renderDocumentSession(
+    { [Path]: artboardContent("home") },
+    NoDialogChoices,
+    { storedAppState: '{"recentPaths":"/work/login.dcmp"}' },
+  );
+
+  await observer.settle();
+
+  expect(Option.isSome(observer.recentFilesFailure())).toBe(true);
+});
+
 test("保存された一覧を解釈できなければ何も開かない", async () => {
   const observer = renderDocumentSession(
     { [Path]: artboardContent("home") },
@@ -119,41 +163,29 @@ test("保存された一覧を解釈できなければ何も開かない", async
   expect(observer.session()).toStrictEqual(DocumentSession.Closed);
 });
 
-test("保存された一覧を解釈できなくても、保存されている中身は書き換えない", async () => {
-  const broken = '{"recentPaths":"/work/login.dcmp"}';
+test("読み取れた一覧には理由が残らない", async () => {
   const observer = renderDocumentSession(
     { [Path]: artboardContent("home") },
     NoDialogChoices,
-    { storedAppState: broken },
+    { storedAppState: storedRecentPaths([SecondPath]) },
   );
 
   await observer.settle();
 
-  expect(observer.appState.storedContent()).toStrictEqual(Option.some(broken));
+  expect(observer.recentFilesFailure()).toStrictEqual(Option.none);
 });
 
-test("保存された一覧を読めなくても、保存されている中身は書き換えない", async () => {
-  const stored = storedState([Path]);
+test("解釈できなかった一覧は、次に開いたファイルで書き直される", async () => {
   const observer = renderDocumentSession(
     { [Path]: artboardContent("home") },
-    NoDialogChoices,
-    { storedAppState: stored, denyAppStateLoad: true },
+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
+    { storedAppState: '{"recentPaths":"/work/login.dcmp"}' },
   );
-
   await observer.settle();
 
-  expect(observer.appState.storedContent()).toStrictEqual(Option.some(stored));
-});
+  await observer.openDocument();
 
-test("復元で開いたファイルは、保存されている一覧をそのまま残す", async () => {
-  const stored = storedState([Path, SecondPath]);
-  const observer = renderDocumentSession(
-    { [Path]: artboardContent("home"), [SecondPath]: artboardContent("shop") },
-    NoDialogChoices,
-    { storedAppState: stored },
+  expect(observer.appState.storedContent()).toStrictEqual(
+    Option.some(storedRecentPaths([Path])),
   );
-
-  await observer.settle();
-
-  expect(observer.appState.storedContent()).toStrictEqual(Option.some(stored));
 });

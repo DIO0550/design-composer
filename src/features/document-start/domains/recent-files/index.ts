@@ -33,7 +33,7 @@ export const RecentFiles = {
    * @param path 開いたファイルのパス
    * @returns そのパスを先頭に持つ一覧。既に含まれていれば重複させず先頭へ移す
    */
-  withOpened(recents: RecentFiles, path: string): RecentFiles {
+  withOpenedPath(recents: RecentFiles, path: string): RecentFiles {
     return RecentFiles.create([path, ...recents.paths]);
   },
 

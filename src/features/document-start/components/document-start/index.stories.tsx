@@ -27,6 +27,7 @@ const meta = {
     session: { kind: "closed" },
     actions: Actions,
     recentPaths: [],
+    recentFilesFailure: Option.none,
     commandFailure: Option.none,
     renderErrors: () => null,
   },
@@ -75,6 +76,14 @@ export const OpenFailed: Story = {
         ),
       },
     },
+  },
+};
+
+/** 保存されている最近使ったファイルを読み取れなかった状態。 */
+export const RecentFilesUnreadable: Story = {
+  name: "最近使ったファイルを読み込めない",
+  args: {
+    recentFilesFailure: Option.some("app-state.json: 読み込みが拒まれた"),
   },
 };
 

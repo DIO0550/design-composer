@@ -262,6 +262,7 @@ function RecentFileList({
  * @param session ドキュメントを開いていないセッション
  * @param actions 開く / 作るを始める手続き
  * @param recentPaths 最近開いたファイルのパス（新しい順）
+ * @param recentFilesFailure その一覧を読み取れなかった理由。読めていれば `none`
  * @param commandFailure 開く指示を受け取れなかった経路とその理由。両方受け取れていれば `none`
  * @param renderErrors 解釈できなかったファイルのエラー一覧の描き方
  */
@@ -269,12 +270,14 @@ export function DocumentStart({
   session,
   actions,
   recentPaths,
+  recentFilesFailure,
   commandFailure,
   renderErrors,
 }: Readonly<{
   session: UnopenedSession;
   actions: DocumentSessionActions;
   recentPaths: readonly string[];
+  recentFilesFailure: Option<string>;
   commandFailure: Option<CommandSourceFailure>;
   renderErrors: RenderDocumentErrors;
 }>) {
@@ -302,6 +305,12 @@ export function DocumentStart({
         <p className="rounded border border-[#e6e6e6] border-dashed px-3 py-2 text-[#767676] text-xs">
           .dcmp ファイルをウィンドウに落としても開けます
         </p>
+        {Option.isSome(recentFilesFailure) && (
+          <FailureLine
+            label="最近使ったファイルを読み込めません"
+            message={recentFilesFailure.value}
+          />
+        )}
         {Option.isSome(commandFailure) && (
           <FailureLine
             label={commandSourceFailureLabel(commandFailure.value.source)}
