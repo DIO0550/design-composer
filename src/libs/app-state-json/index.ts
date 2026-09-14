@@ -1,3 +1,4 @@
+import { Json, type JsonDecodeError } from "@/utils/Json";
 import { Result } from "@/utils/Result";
 
 /**
@@ -13,65 +14,38 @@ export type AppState = Readonly<{
 export type AppStateJsonError = Readonly<{ message: string }>;
 
 /**
- * テキストを JSON の値として読む。
+ * 位置つきのデコードの失敗を、1 行の原文にまとめる。
  *
- * @param text 読み込んだテキスト
- * @returns 読み込んだ値。`JSON.parse` が投げたらその文言を持つ失敗
+ * @param errors 読み取れなかった箇所
+ * @returns 位置と文言を連ねた 1 行を持つ失敗
  */
-function parseJson(text: string): Result<unknown, AppStateJsonError> {
-  try {
-    const value: unknown = JSON.parse(text);
-    return Result.ok(value);
-  } catch (error) {
-    return Result.err({
-      message: error instanceof Error ? error.message : String(error),
-    });
-  }
-}
-
-/**
- * 値がオブジェクトか（配列と `null` は含めない）。
- *
- * @param value 判定する値
- * @returns フィールドを引けるオブジェクトなら true
- */
-function isJsonObject(
-  value: unknown,
-): value is Readonly<Record<string, unknown>> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-/**
- * 値が文字列だけの並びか。
- *
- * @param value 判定する値
- * @returns すべての要素が文字列の配列なら true
- */
-function isStringArray(value: unknown): value is readonly string[] {
-  return (
-    Array.isArray(value) &&
-    value.every((item: unknown) => typeof item === "string")
-  );
+function toAppStateJsonError(
+  errors: readonly JsonDecodeError[],
+): AppStateJsonError {
+  return {
+    message: errors
+      .map((error) => `${error.path}: ${error.message}`)
+      .join(" / "),
+  };
 }
 
 /**
  * JSON の値をアプリ自身の状態として読む。
  *
- * @param value `JSON.parse` が返した値
+ * @param value `Json.parseText` が返した値
  * @returns 読み取れた状態。オブジェクトでない / `recentPaths` が文字列の並びでない
- *   ときは、その理由を持つ失敗
+ *   ときは、その位置と理由を持つ失敗
  */
 function toAppState(value: unknown): Result<AppState, AppStateJsonError> {
-  if (!isJsonObject(value)) {
-    return Result.err({ message: `オブジェクトではない: ${String(value)}` });
-  }
-  const { recentPaths } = value;
-  if (!isStringArray(recentPaths)) {
-    return Result.err({
-      message: `recentPaths が文字列の並びではない: ${JSON.stringify(recentPaths)}`,
-    });
-  }
-  return Result.ok({ recentPaths });
+  const decoded = Result.flatMap(Json.record(Json.create(value)), (cursor) =>
+    Result.map(
+      Json.required(cursor, "recentPaths", (field) =>
+        Json.arrayOf(field, Json.string),
+      ),
+      (recentPaths): AppState => ({ recentPaths }),
+    ),
+  );
+  return Result.mapErr(decoded, toAppStateJsonError);
 }
 
 /** アプリ自身の状態と、保存するテキストの相互変換。 */
@@ -83,7 +57,10 @@ export const AppStateJson = {
    * @returns 読み取れた状態。JSON として読めない / 形が合わないときは、その理由を持つ失敗
    */
   parse(text: string): Result<AppState, AppStateJsonError> {
-    return Result.flatMap(parseJson(text), toAppState);
+    return Result.flatMap(
+      Result.mapErr(Json.parseText(text), (message) => ({ message })),
+      toAppState,
+    );
   },
 
   /**

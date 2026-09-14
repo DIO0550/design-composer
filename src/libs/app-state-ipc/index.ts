@@ -25,7 +25,7 @@ export type AppStateIpc = Readonly<{
  * @param reason reject された値
  * @returns 文言を持つ失敗として読めれば true
  */
-function isAppStateIoError(reason: unknown): reason is AppStateIpcError {
+function hasMessage(reason: unknown): reason is AppStateIpcError {
   if (typeof reason !== "object" || reason === null) {
     return false;
   }
@@ -43,7 +43,7 @@ function isAppStateIoError(reason: unknown): reason is AppStateIpcError {
  * @returns 診断用の原文を持つ失敗
  */
 function toAppStateIpcError(reason: unknown): AppStateIpcError {
-  if (isAppStateIoError(reason)) {
+  if (hasMessage(reason)) {
     return reason;
   }
   return { message: String(reason) };
