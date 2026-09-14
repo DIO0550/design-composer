@@ -1,6 +1,14 @@
-import { type PointerEvent as ReactPointerEvent, useReducer } from "react";
+import {
+  type PointerEvent as ReactPointerEvent,
+  useReducer,
+  useRef,
+} from "react";
 import type { AxisLengths } from "@/domains/dcmp/axis-length";
 import { DocumentSelection } from "@/domains/session/document-selection";
+import {
+  EditContinuities,
+  type EditContinuity,
+} from "@/domains/session/edit-continuity";
 import type { CanvasBounds } from "@/features/canvas/domains/canvas-bounds";
 import type { CanvasView } from "@/features/canvas/domains/canvas-view";
 import {
@@ -99,7 +107,7 @@ export function useNodeResize(
   params: Readonly<{
     selection: DocumentSelection;
     view: CanvasView;
-    onResize: (sizes: AxisLengths) => void;
+    onResize: (sizes: AxisLengths, continuity: EditContinuity) => void;
   }>,
 ): NodeResizeControl {
   const [resize, dispatch] = useReducer(
@@ -107,11 +115,25 @@ export function useNodeResize(
     undefined,
     NodeResize.create,
   );
+  /*
+   * この掴みで既に 1 回反映したか。掴むたびに戻す。
+   *
+   * reducer の状態に持たないのは、`trackPointer` が読むのが**今のレンダーの値**だから。
+   * pointermove は同期フラッシュが保証されず、続けて 2 回処理されると 2 回とも「まだ
+   * 反映していない」と読んで undo が 2 回に割れる（happy-dom は毎回フラッシュするので
+   * テストには出ない）。render では読まずハンドラの中だけで読み書きするので ref に置く
+   * （rules/hooks.md「useRef の使い分け」）。
+   *
+   * 立てるのは通知した時点で、履歴へ入ったかは見ない。1 件目が上流で落ちると 2 件目が
+   * 続きとして届く（`EditHistory.amend` の doc が書いている「戻る先が無いまま」と同じ形）。
+   */
+  const hasResized = useRef(false);
 
   const grab = (
     grip: ResizeGrip,
     event: ReactPointerEvent<HTMLElement>,
   ): void => {
+    hasResized.current = false;
     dispatch({
       type: "grab",
       held: { grip, origin: CanvasPointer.offsetOf(event) },
@@ -131,6 +153,7 @@ export function useNodeResize(
     if (!Option.isSome(grabbed)) {
       return false;
     }
+    hasResized.current = false;
     dispatch({ type: "grab", held: grabbed.value });
     return true;
   };
@@ -138,6 +161,9 @@ export function useNodeResize(
   /*
    * 掴んでいる間はポインタが動くたびにドキュメントへ反映する。長さは常に
    * 「掴んだ時点の長さ + 掴んでからの移動量」なので、反映が 1 回落ちても値はずれない。
+   *
+   * 2 件目以降を続きとして渡すことで、掴んでから離すまでが undo 1 回ぶんになる
+   * （docs/06-ui.md「リサイズハンドル」）。
    */
   const trackPointer = (event: ReactPointerEvent<HTMLElement>) => {
     const lengths = NodeResize.lengthsAt(
@@ -148,7 +174,11 @@ export function useNodeResize(
     if (!Option.isSome(lengths)) {
       return;
     }
-    params.onResize(lengths.value);
+    const continuity = hasResized.current
+      ? EditContinuities.Continued
+      : EditContinuities.Separate;
+    hasResized.current = true;
+    params.onResize(lengths.value, continuity);
   };
 
   return {
