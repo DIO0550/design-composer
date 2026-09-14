@@ -8,6 +8,7 @@ const IdleDragHandlers: NodeDragHandlers = {
   onPointerMove: () => {},
   onPointerUp: () => {},
   onPointerLeave: () => {},
+  onClickCapture: () => {},
 };
 
 const meta = {

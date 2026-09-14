@@ -1,3 +1,4 @@
+import { fireEvent } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
 import type { DocumentSelection } from "@/domains/session/document-selection";
 import {
@@ -62,7 +63,14 @@ function setupFreeBoxSelection(): DocumentSelection {
   );
 }
 
-/** 子を並べない artboard の中に、絶対配置の `badge` だけがいる未選択の対。 */
+/**
+ * 子を並べない artboard の中に、絶対配置の `badge` とフローの `title` がいる未選択の対。
+ *
+ * `title` は**どこへ運んでも落とせない側**の対照（並びへ挿す落とし先にならない器で、
+ * 外側に受け入れる親も無い / docs/06-ui.md「キャンバス直接操作」）。
+ *
+ * @returns そのドキュメントと未選択の対
+ */
 function setupFreeArtboardSelection(): DocumentSelection {
   return selectionFromArtboards(
     [
@@ -77,6 +85,7 @@ function setupFreeArtboardSelection(): DocumentSelection {
             type: "Text",
             props: { content: "3", placement: "absolute", x: 40, y: 24 },
           },
+          { name: "title", type: "Text", props: { content: "ホーム" } },
         ],
       },
     ],
@@ -120,6 +129,31 @@ test("free の artboard の中の絶対配置の子も、運んで離せる", ()
     parentName: "home",
     placement: { mode: "absolute", x: 70, y: 12 },
   });
+});
+
+test("free の artboard の直下ではフローのノードを運んでも落とせない", () => {
+  const onMoveNode = vi.fn();
+  renderCanvas({ selection: setupFreeArtboardSelection(), onMoveNode });
+
+  dragNode("title", { x: 30, y: -12 });
+
+  expect(onMoveNode).not.toHaveBeenCalled();
+});
+
+test("落とせないまま離したときも、直後のクリックは選択に使われない", () => {
+  const onSelect = vi.fn();
+  renderCanvas({ selection: setupFreeArtboardSelection(), onSelect });
+
+  /*
+   * 落とせなくても運んだ以上クリックではない（`NodeDrag.release` の doc）。**落とせないまま
+   * 枠の中で離せる経路はここだけ**（`free` の artboard の直下は落とし先にならず、外側に
+   * 受け入れる親も無い / docs/06-ui.md「キャンバス直接操作」）なので、ここを通すと
+   * 「落とせたときだけ飲み込む」実装との差が消える。
+   */
+  dragNode("title", { x: 30, y: -12 });
+  fireEvent.click(drawn("title"));
+
+  expect(onSelect).not.toHaveBeenCalled();
 });
 
 test("絶対配置の子を free の Box の上で離すと、その Box へ親が付け替わる", () => {
