@@ -1,4 +1,4 @@
-import { type ReactElement, useId } from "react";
+import { type ReactElement, useId, useRef } from "react";
 import { ColorSwatch } from "@/components/color-swatch";
 import { SegmentedControl } from "@/components/segmented-control";
 import type { PropEdit } from "@/domains/dcmp/node";
@@ -212,7 +212,8 @@ function NumericTokenField({
 }
 
 /**
- * 値域が数値・文字列で決まっている prop の入力欄。
+ * 値域が数値・文字列で決まっている prop の入力欄。フォーカスを得てから離すまでの打鍵を
+ * 1 つのまとまりとして送る（docs/06-ui.md「編集操作の一覧」の props 編集）。
  *
  * @param inputType 数値を受けるか文字を受けるか
  * @returns 生の値を打ち込む入力欄
@@ -224,6 +225,16 @@ function LiteralInput({
   field: FieldBinding;
   inputType: "number" | "text";
 }>): ReactElement {
+  /*
+   * このフォーカスで既に 1 件送ったか。フォーカスを得るたびに戻す。
+   *
+   * render では読まずハンドラの中だけで読み書きするので ref に置く（rules/hooks.md
+   * 「useRef の使い分け」）。立てるのは送った時点で、履歴へ入ったかは見ない。1 件目が
+   * 上流で落ちると 2 件目が続きとして届く（`EditHistory.amend` の doc が書いている
+   * 「戻る先が無いまま」と同じ形）。
+   */
+  const hasEdited = useRef(false);
+
   return (
     <input
       aria-labelledby={field.labelledBy}
@@ -231,9 +242,18 @@ function LiteralInput({
       className={FieldClass}
       value={field.value}
       placeholder={field.unsetLabel}
-      onChange={(event) =>
-        field.onChangeRaw(event.target.value, EditContinuities.Separate)
-      }
+      onFocus={() => {
+        hasEdited.current = false;
+      }}
+      onChange={(event) => {
+        field.onChangeRaw(
+          event.target.value,
+          hasEdited.current
+            ? EditContinuities.Continued
+            : EditContinuities.Separate,
+        );
+        hasEdited.current = true;
+      }}
     />
   );
 }
