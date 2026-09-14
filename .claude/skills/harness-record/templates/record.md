@@ -169,7 +169,7 @@ pr-317 以前の記録には `レビュー`(括弧なし)・`レビュー（人�
 | `comment-missing-issue-only` | 同上(却下案・スコープ外の判断・非自明な選択の理由が Issue やコミットメッセージにしか書かれておらず、コードには転記されていない形) |
 | `comment-missing-divergence` | 同上(既存のパターン・先例・仕様(UI 案等)から意図的に外れた判断や、隣接する要素との非対称を選んだ理由がどこにも書かれていない形) |
 | `comment-missing-detection-limit` | 同上(テストにも視覚差分にも守られていないこと自体が書かれていない形。「気づく手段が無い」という開示の欠落) |
-| `comment-excess` | rules/coding.md「コメントは doc と Why / Why not に絞る」(型・テスト・lint が守っている理由・`rules/` の写し・What の言い換え・経緯を削らずコメント / doc に書き残した形と、理由 1 つが 1〜2 行を超えて実測の数字・経緯まで書かれている形。他の `comment-*` が食い違い・追随漏れ・欠落を指すのに対し、**書きすぎ**の側を指す) |
+| `comment-excess` | rules/coding.md「コメントはdocとWhy/Why notに絞る」(型・テスト・lintが守っている理由、規約(`rules/`)の文面の写し、What の言い換えを削らず書き残した形。`comment-missing-*` 系が指す「書くべきものが無い」とは逆向きで、書くべきでないものが残っている形) |
 | `test-placement` | rules/testing.md「配置と命名」 |
 | `test-default-input` | rules/testing.md「既定値・フォールバックがある処理では、既定値と違う答えになる入力を選ぶ」(確かめた入力が既定値と一致しており、規則を壊すミューテーションでも既定値側で通ってしまう形) |
 | `test-coverage-branch` | rules/testing.md「古典学派のテスト」/ `implementation-reviewer`「テストが守っているかの観点」(分岐・出し分けそのものを参照するテストが 1 件も無く、枝を消しても全件通る形) |
@@ -182,7 +182,7 @@ pr-317 以前の記録には `レビュー`(括弧なし)・`レビュー（人�
 | `state-management` | rules/hooks.md「useState / useReducer の使い分け」 |
 | `ref-guard` | rules/hooks.md「useRef の使い分け」 |
 | `composition` | rules/components.md「Composition パターン」 |
-| `nested-interactive-event-boundary` | `implementation-reviewer`「重なり・入れ子のイベント境界の観点」(器の側に置いたイベントの受け口が、器の外に重なって描かれる兄弟要素へ届かない形 / 器の中の対話可能な子要素(入力欄等)で始まった操作がバブルして器側の操作を暴発させる形。同じ役割を持つ兄弟実装との挙動の食い違いを含む) |
+| `nested-interactive-event-boundary` | rules/hooks.md / rules/components.md(親(器・土台)側に張ったイベント受け口(`preventDefault` / `stopPropagation` / ドラッグ開始等)の適用範囲が、視覚的に重なる/構造的に入れ子になった対話可能な子要素(入力欄・リサイズハンドル等)の意図と衝突していない形) |
 | `ui-fidelity` | rules/ui-verification.md「UIの拠り所」 |
 | `ui-fidelity-misread` | rules/ui-verification.md「見るのはスクリーンショットではなくマークアップ」/ `implementation-review.md`「UI 要素の意味の観点」(マークアップを見たうえで、UI 要素が実際に何を表しているかを他の画面・状態・属性と突き合わせずに断定して読み違える形) |
 | `vrt-blind-spot` | rules/ui-verification.md「Storybook の視覚差分(VRT)」(story のファイル移動・`title` 変更で story id が変わり VRT が「変更」ではなく new+deleted として出る形 / 視覚差分でしか守れない部品に単体 story が無く、器と中身が混ざった story でしか退行を追えない形。VRT という検知手段自体の死角で、`ui-fidelity` `ui-fidelity-misread` が指す「UI 案の読み違い」とは別軸) |
@@ -203,12 +203,12 @@ pr-317 以前の記録には `レビュー`(括弧なし)・`レビュー（人�
 | `plan-rejection-reasoning` | implementation-flow フェーズ 3(SKILL.md「計画」フェーズ 3 手順 5)(却下案・据え置き判断の理由が、実際のコード・仕様・時系列に照らして成立しているかを検算していない形。理由が事実と違う/実際に起こりやすい向きと逆/一時的な事実に依っている/対象の一部しか覆っていない、を含む) |
 | `plan-rejection-coverage` | implementation-flow フェーズ 3(SKILL.md「計画」フェーズ 3 手順 6)(却下案の一覧に、実在するいちばん近い代替案が挙がっておらず、却下の検討そのものが閉じないまま計画が進む形) |
 | `rules-consistency` | AGENTS.md「規約の更新」/ `harness-growth`「Step 2a-1」(規約へ足した記述が、同じファイルの前の節と矛盾する / 規約自身が挙げている例で判定文が逆の答えを出す / 表の行が実在するケースを網羅していない / Why not の根拠が一時的な事実になっている形) |
-| `docs-consistency` | `implementation-reviewer`「仕様書(`docs/`)への追記の観点」(`docs/` へ足した記述が、同じファイルの既存の節と噛み合わない / 判定文を既存の規定へ当てると逆の答えを出す / 列挙が根拠に引いた節より広い・狭い / 相互参照の指し方が他の箇所と揃っていない形。`rules-consistency` は `rules/` を対象にした分類で、`docs/` は含まない) |
+| `docs-consistency` | AGENTS.md「規約の更新」/ `rules-consistency` の docs 版(`docs/` へ新設・追記した記述が、同じファイルの既存の記述・参照形式と矛盾する / 両方が同時に成立する入力が実在する形。`rules-consistency` は `rules/` への追記のみが対象で `docs/` を含まない) |
 | `subagent-control` | `implementation-flow`「サブエージェントの使い方」(検証エージェントが指示に反して実装を書き換えた / バックグラウンド起動の結果を取り逃した形) |
 | `hook-environment` | `.claude/hooks/README.md`「強制力の序列」(`echo hook-canary` が deny されず、`.claude/hooks/` が発火しない実行環境だった形のうち、git hooks / CI の後工程が担保していて実害が無かった形。本来ブロック・検知するはずだった操作や欠陥が実際に素通りした形は `hook-environment-guard-miss`) |
 | `hook-environment-guard-miss` | `.claude/hooks/README.md`「強制力の序列」(同上のうち、PreToolUse / PostToolUse が発火しなかったことで、本来その場でブロック・検知するはずだった操作や欠陥が実際に素通りし、コミットへの混入・禁止コマンドの実行・レビューまでの検知漏れなど後工程まで残った形) |
 | `tooling-rule-scope-gap` | rules/coding.md「規約の適用範囲」(`rules/` の規律が `.claude/hooks/` `.github/scripts/` などハーネス自身のツールにも及ぶかどうかが宣言されていない形。ネスト段数・重複禁止等の判断基準はあっても対象範囲が書かれておらず、対象を harness 自身のスクリプトへ広げると気づかれない) |
-| `harness-process-drift` | `harness-growth`「フックにする / しない」/ `implementation-flow` フェーズ 7(ハーネスの構成要素どうしが同期していない形。CI だけが走らせる検査の存在・判定内容が push 前コマンド一覧や `harness/githooks/` へ反映されていない形と、ルーティンの起動プロンプトがスキルの手順・フラグと食い違っている形を含む) |
+| `harness-process-drift` | `implementation-flow`「push 前に確認するコマンド」/ rules/coding.md「規約の適用範囲」(`.github/scripts/` や `.claude/hooks/` へ新設・変更した検査内容が、対応する `rules/` の規範・`implementation-flow` の push 前コマンド一覧のどちらにも反映されず、CI でしか気づけない形。`tooling-rule-scope-gap` は「対象範囲の宣言」自体の欠落を指し、こちらは宣言済みの範囲内で**実際に新設した検査が手順書へ反映されていない**形) |
 | `tool-behavior-unverified` | rules/coding.md「外部の挙動は動かして確かめる」(シェル・CLI・パーサ・外部フォーマットの実際の挙動を、小さく実行して確かめないまま前提にして書いた形。heredoc の並び・PR 本文中のプレースホルダの記法・`git status --porcelain` の状態記号・設定ファイルが許可するフィールド・シェルの実行モード・`grep` の抽出条件などを含む) |
 | `なし` | 既存の規約に対応が無い(＝規約の抜けの候補) |
 
@@ -586,41 +586,5 @@ PreToolUse / PostToolUse が発火しなかったことで、本来その場で�
 (「やらないこと: harness/records/ への書き込み」。成果物の契約が変更対象を `rules/` `skills/`
 `hooks/` `templates/record.md` に限っており `harness/records/` を含まない)により、分割を
 行ったこの PR には含められず積み残しになった。**後続の棚卸しルーティンが
-`harness/records/pr-467.md`「規約への反映」へこの 1 行を追記し、積み残しを解消した。**
-過去の記録の `分類: hook-environment` は書き換えない。
-
-`なし` は pr-444 の分割後さらに 22 件溜まり、`comment-excess` / `docs-consistency` /
-`nested-interactive-event-boundary` / `harness-process-drift` へ昇格した(逃し弁の閾値
-(10 件)を超えた — `harness-growth` の SKILL.md「`なし` の逃し弁」)。22 件の内訳は、型・
-テスト・lint が守っている理由や `rules/` の写しを削らず書き残した / 理由 1 つが 1〜2 行を
-超えて経緯まで書かれた形が 3 件(pr-482#31・pr-482#32・pr-487#11)、`docs/` へ足した記述が
-同じファイルの既存の節・参照の指し方と噛み合わない形が 3 件(pr-476#20・pr-500#11・
-pr-516#23)、器の側に置いたイベントの受け口が重なる兄弟要素へ届かない / 入れ子の入力欄から
-バブルして暴発する形が 2 件(pr-482#22・pr-497#26)、ハーネスの構成要素どうしが同期して
-いない形が 4 件(pr-478#2・pr-478#3・pr-482#40・pr-502#17)。残り 10 件(pr-459#23・#24、
-pr-467#28・#46・#53・#56、pr-473#9・#10、pr-483#18、pr-502#18)はそれぞれ単発の指摘のため、
-新語彙には割らず `harness/case-law/process.md`「単発」へ書き出して次を待つ(1 件しか出て
-いない分類は何もしない)。
-
-`harness-process-drift` は**層 1(hook)で置いた**。CI だけが走らせていた
-`.github/scripts/check-added-lint-suppressions.sh` /
-`check-added-test-helper-duplication.sh` は、どちらも引数なしで `origin/main` を base に
-走ることを実測したので、`harness/githooks/pre-push` と `implementation-flow` の push 前
-コマンド一覧へ足して原因ごと消した。一般形(手順書・起動プロンプトのずれ)は
-`harness-growth`「フックにする / しない」の配線の行へ同期対象として書いた。
-`.claude/hooks/` へ 3 本目の `pre-push-*` は足していない(同じ検査が CI と git hooks の
-2 層で担保され、増えるのは `settings.json` と README の表の配線だけになる)。
-
-残り 3 語彙は観点で置き、`.claude/agents/implementation-reviewer.md` へ 3 つの節を新設した
-(「過剰なコメントの観点」「仕様書(`docs/`)への追記の観点」「重なり・入れ子のイベント境界の
-観点」)。**フック化は不成立**(「その理由は型・テストが守っているか」「足した節が既存の節と
-噛み合うか」「重なる要素の上で受け口が走るか」はいずれも意味理解が要り、文字列一致では
-偽陽性しか出ない)。**skill 化(新しいスキル)も不要**(既存の `implementation-reviewer` へ
-観点を足す話で、新しい段取りが増えるわけではない)。`docs-consistency` と
-`nested-interactive-event-boundary` は**すり抜けが 0**(全件 `implementation-reviewer` 由来)
-なので、観点を足す目的は再発を減らすことではなく、捕まえ方を偶然から手順へ移して数えられる
-ようにすること。`comment-excess` はすり抜け 2 なので、次に再発したら 2b で層を上げる候補になる。
-
-締めの `対策済` 行(`なし` 本体 + 新 4 語彙、計 5 行)は `harness/records/pr-516.md`
-(`分類: なし` が最後に出た記録)へ、昇格を行ったこの PR 自身が追記した。過去の記録の
-`分類: なし` は書き換えない。
+`harness/records/pr-467.md`「規約への反映」へこの 1 行を追記し、積み残しを解消することを
+想定する。** 過去の記録の `分類: hook-environment` は書き換えない。
