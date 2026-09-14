@@ -219,14 +219,13 @@ function RecentFileButton({
 /**
  * 最近開いたファイルの一覧。
  *
- * 並べ替えも重複の除去もしない。どの順で何件持つかは一覧を供給する側の決め事で、保存先が決
- * まるまでは空のまま。
+ * 並べ替えも重複の除去もしない。どの順で何件持つかは一覧を供給する側の決め事。
  *
  * @param paths 新しい順に並んだパス
  * @param onOpen そのパスを開く手続き
  * @returns 一覧。1 件も無ければ枠ごと出さない（見出しだけが残らないようにするため）
  */
-function RecentFiles({
+function RecentFileList({
   paths,
   onOpen,
 }: Readonly<{
@@ -299,7 +298,7 @@ export function DocumentStart({
             : "ドキュメントを開くか、新しく作成してください。"}
         </p>
         <StartActions actions={actions} disabled={isOpening} />
-        <RecentFiles paths={recentPaths} onOpen={actions.openDocumentAt} />
+        <RecentFileList paths={recentPaths} onOpen={actions.openDocumentAt} />
         <p className="rounded border border-[#e6e6e6] border-dashed px-3 py-2 text-[#767676] text-xs">
           .dcmp ファイルをウィンドウに落としても開けます
         </p>

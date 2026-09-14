@@ -12,7 +12,7 @@ const Actions = {
   openDocumentAt: () => {},
 };
 
-/** 保存先が決まるまで実物では空だが、一覧の見え方はここで確かめる。 */
+/** 一覧の見え方を確かめるための並び。実物は `useDocumentSession` が渡す。 */
 const RecentPaths = [
   "/work/settings-ui/app.dcmp",
   "/work/shop/app.dcmp",
