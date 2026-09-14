@@ -3,6 +3,10 @@ import { ColorSwatch } from "@/components/color-swatch";
 import { SegmentedControl } from "@/components/segmented-control";
 import type { PropEdit } from "@/domains/dcmp/node";
 import {
+  EditContinuities,
+  type EditContinuity,
+} from "@/domains/session/edit-continuity";
+import {
   PropControl,
   type PropControlInput,
   PropPairControl,
@@ -64,7 +68,7 @@ type FieldBinding = Readonly<{
   value: string;
   /** 値が入っていないときに欄へ出す綴り。 */
   unsetLabel: string;
-  onChangeRaw: (raw: string) => void;
+  onChangeRaw: (raw: string, continuity: EditContinuity) => void;
 }>;
 
 /**
@@ -78,13 +82,14 @@ type FieldBinding = Readonly<{
 export function fieldOf(
   labelledBy: string,
   control: PropControl,
-  onEdit: (edit: PropEdit) => void,
+  onEdit: (edit: PropEdit, continuity: EditContinuity) => void,
 ): FieldBinding {
   return {
     labelledBy,
     value: Option.unwrapOr(Option.map(control.value, String), ""),
     unsetLabel: unsetLabel(control),
-    onChangeRaw: (raw) => onEdit(PropControl.editFrom(control, valueFrom(raw))),
+    onChangeRaw: (raw, continuity) =>
+      onEdit(PropControl.editFrom(control, valueFrom(raw)), continuity),
   };
 }
 
@@ -101,7 +106,7 @@ export function fieldOf(
 export function pairFieldOf(
   labelledBy: string,
   pair: PropPairControl,
-  onEdit: (edit: PropEdit) => void,
+  onEdit: (edit: PropEdit, continuity: EditContinuity) => void,
 ): FieldBinding {
   const value = PropPairControl.value(pair);
   const [first] = pair.sides;
@@ -113,8 +118,8 @@ export function pairFieldOf(
         ? Option.unwrapOr(Option.map(value.value, String), "")
         : "",
     unsetLabel: value.kind === "uniform" ? unsetLabel(first) : MixedLabel,
-    onChangeRaw: (raw) =>
-      onEdit(PropPairControl.editFrom(pair, valueFrom(raw))),
+    onChangeRaw: (raw, continuity) =>
+      onEdit(PropPairControl.editFrom(pair, valueFrom(raw)), continuity),
   };
 }
 
@@ -140,7 +145,9 @@ function TokenSelect({
       aria-describedby={describedBy}
       className={FieldClass}
       value={field.value}
-      onChange={(event) => field.onChangeRaw(event.target.value)}
+      onChange={(event) =>
+        field.onChangeRaw(event.target.value, EditContinuities.Separate)
+      }
     >
       <option value="">{field.unsetLabel}</option>
       {names.map((name) => (
@@ -224,7 +231,9 @@ function LiteralInput({
       className={FieldClass}
       value={field.value}
       placeholder={field.unsetLabel}
-      onChange={(event) => field.onChangeRaw(event.target.value)}
+      onChange={(event) =>
+        field.onChangeRaw(event.target.value, EditContinuities.Separate)
+      }
     />
   );
 }
@@ -257,7 +266,12 @@ export function PropField({
           labelledBy={field.labelledBy}
           options={input.values}
           value={valueFrom(field.value)}
-          onChange={(next) => field.onChangeRaw(Option.unwrapOr(next, ""))}
+          onChange={(next) =>
+            field.onChangeRaw(
+              Option.unwrapOr(next, ""),
+              EditContinuities.Separate,
+            )
+          }
         />
       );
     case "token":

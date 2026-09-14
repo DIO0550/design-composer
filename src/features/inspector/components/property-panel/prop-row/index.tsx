@@ -1,5 +1,6 @@
 import { type ReactElement, useId } from "react";
 import type { PropEdit } from "@/domains/dcmp/node";
+import type { EditContinuity } from "@/domains/session/edit-continuity";
 import { PropControl } from "@/domains/session/prop-control";
 import { CaseStyle } from "@/utils/CaseStyle";
 import { Option } from "@/utils/Option";
@@ -27,7 +28,7 @@ export function PropRow({
   onEdit,
 }: Readonly<{
   control: PropControl;
-  onEdit: (edit: PropEdit) => void;
+  onEdit: (edit: PropEdit, continuity: EditContinuity) => void;
 }>): ReactElement {
   const labelledBy = useId();
   const isLiteralField =

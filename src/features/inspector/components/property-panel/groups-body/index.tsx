@@ -1,5 +1,6 @@
 import type { ReactElement } from "react";
 import type { PropEdit } from "@/domains/dcmp/node";
+import type { EditContinuity } from "@/domains/session/edit-continuity";
 import type {
   PropControlRow,
   PropControlSection,
@@ -19,7 +20,7 @@ function SectionRow({
   onEdit,
 }: Readonly<{
   row: PropControlRow;
-  onEdit: (edit: PropEdit) => void;
+  onEdit: (edit: PropEdit, continuity: EditContinuity) => void;
 }>): ReactElement {
   switch (row.kind) {
     case "prop":
@@ -47,7 +48,7 @@ function GroupSection({
   onEdit,
 }: Readonly<{
   section: PropControlSection;
-  onEdit: (edit: PropEdit) => void;
+  onEdit: (edit: PropEdit, continuity: EditContinuity) => void;
 }>) {
   return (
     <div className="flex flex-col gap-2 border-gray-200 border-t pt-3 first:border-t-0 first:pt-0">
@@ -65,7 +66,7 @@ export function GroupsBody({
   onEdit,
 }: Readonly<{
   sections: readonly PropControlSection[];
-  onEdit: (edit: PropEdit) => void;
+  onEdit: (edit: PropEdit, continuity: EditContinuity) => void;
 }>) {
   if (sections.length === 0) {
     return <p className="text-gray-500">編集できる prop がありません</p>;

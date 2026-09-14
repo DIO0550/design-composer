@@ -4,8 +4,9 @@ import type { ValueOf } from "@/types/ValueOf";
  * 1 つの編集を、履歴の上で直前の編集とどう扱うか
  * （docs/06-ui.md「編集操作の一覧」の undo / redo）。
  *
- * ドラッグのように 1 回の操作が何度も編集を送る経路があるため、編集の側では決められない。
- * 送る側（どこで操作が始まってどこで終わるかを知っているのは UI だけ）が指定する。
+ * ドラッグや入力欄への打鍵のように、1 回の操作が何度も編集を送る経路があるため、編集の側
+ * では決められない。送る側（どこで操作が始まってどこで終わるかを知っているのは UI だけ）が
+ * 指定する。
  */
 export const EditContinuities = {
   /** 直前の編集とは別のまとまり。 */
@@ -21,8 +22,8 @@ export const EditContinuities = {
  * ため。積むか差し替えるかを決めるのは履歴の側（`EditHistory`）で、ここは語彙だけを持つ
  * （先例は `unit/axis` の `Axis`）。
  *
- * `features/editor/domains/edit-history` と並べないのは、指定する側が `features/canvas`
- * ・受け取る側が `features/editor` と 2 つの feature にまたがるため
+ * `features/editor/domains/edit-history` と並べないのは、指定する側が `features/canvas` と
+ * `features/inspector`・受け取る側が `features/editor` と 3 つの feature にまたがるため
  * （`rules/architecture.md`「配置の判断基準」の昇格）。
  */
 export type EditContinuity = ValueOf<typeof EditContinuities>;

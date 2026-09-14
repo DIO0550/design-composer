@@ -1,6 +1,7 @@
 import type { ReactElement } from "react";
 import type { PropEdit } from "@/domains/dcmp/node";
 import { DocumentSelection } from "@/domains/session/document-selection";
+import type { EditContinuity } from "@/domains/session/edit-continuity";
 import { SelectionControls } from "@/domains/session/prop-control";
 import { Option } from "@/utils/Option";
 import { GroupsBody } from "./groups-body";
@@ -39,7 +40,7 @@ function SelectionBody({
   instance,
 }: Readonly<{
   controls: SelectionControls;
-  onEdit: (edit: PropEdit) => void;
+  onEdit: (edit: PropEdit, continuity: EditContinuity) => void;
   instance: InstanceActions;
 }>): ReactElement | null {
   switch (controls.kind) {
@@ -107,7 +108,7 @@ function PropertyPanelBody({
 }: Readonly<{
   selection: DocumentSelection;
   isFrozen: boolean;
-  onEditProp: (edit: PropEdit) => void;
+  onEditProp: (edit: PropEdit, continuity: EditContinuity) => void;
   onClearSelection: () => void;
   instance: InstanceActions;
 }>): ReactElement {

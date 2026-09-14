@@ -5,6 +5,7 @@ import { DesignDocument } from "@/domains/dcmp/design-document";
 import type { DocumentError } from "@/domains/session/document-error";
 import { DocumentSaveState } from "@/domains/session/document-save-state";
 import { DocumentSelection } from "@/domains/session/document-selection";
+import { EditContinuities } from "@/domains/session/edit-continuity";
 import { FileValidity } from "@/domains/session/file-validity";
 import type { NodeTemplate } from "@/domains/session/node-template";
 import type { OpenedDocument } from "@/domains/session/opened-document";
@@ -408,7 +409,13 @@ function EditorPanes({
             onSelect={node.selectAt}
             onSelectInRange={node.selectNodes}
             onResize={node.resize}
-            onEditProp={node.editProp}
+            /*
+             * キャンバスのインライン編集は確定の 1 件だけを送るので、常に別のまとまり
+             * （続きになるのは、1 つの操作が何度も編集を送るパネルの入力欄だけ）。
+             */
+            onEditProp={(edit) =>
+              node.editProp(edit, EditContinuities.Separate)
+            }
             onRepositionArtboard={node.repositionArtboard}
             onOpenContextMenu={(names, at) => {
               const target = EditMenuTarget.fromNames(names);
