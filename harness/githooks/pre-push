@@ -42,3 +42,12 @@ fi
 
 echo "pre-push: テスト規約"
 bash .claude/hooks/lib/test-rules-scan.sh src
+
+# CI (frontend.yml の lint-suppress ジョブ) と同じ判定を、push の前にも通す。
+# 引数を省くと origin/main を base に比べる。ここへ下ろした経緯は
+# .claude/skills/harness-growth/SKILL.md「フックにする / しない」。
+echo "pre-push: 追加された lint 抑制"
+bash .github/scripts/check-added-lint-suppressions.sh
+
+echo "pre-push: 追加されたテストヘルパーの重複"
+bash .github/scripts/check-added-test-helper-duplication.sh

@@ -159,12 +159,18 @@ python3 .claude/hooks/lib/missing-doc-comments.py --all src     # doc コメン�
 bash .claude/hooks/lib/test-rules-scan.sh src                   # テスト規約
 python3 .claude/hooks/lib/import-rule-violations.py src         # import 規約
 python3 .claude/hooks/lib/result-option-read-violations.py src  # 判別子の直読み
+bash .github/scripts/check-added-lint-suppressions.sh           # 追加された lint 抑制
+bash .github/scripts/check-added-test-helper-duplication.sh     # 追加されたテストヘルパーの重複
 ```
 
-- **`rules-check` の 4 つは `pnpm` のスクリプトに無い。** git hooks と CI
-  (`frontend.yml` の `rules-check`)だけが走らせるので、上の 4 行を省くと手元の確認が
-  ゲートより狭くなる。**doc コメントとテスト規約が CI へ上げられたのは、層 2 と層 3 が
+- **下の 6 つは `pnpm` のスクリプトに無い。** `rules-check` の 4 つは git hooks と CI
+  (`frontend.yml` の `rules-check`)が、`check-added-*` の 2 つは git hooks と CI の
+  `lint-suppress` ジョブだけが走らせるので、この 6 行を省くと手元の確認がゲートより
+  狭くなる。**doc コメントとテスト規約が CI へ上げられたのは、層 2 と層 3 が
   同じ環境で同時に抜けたため**(`.claude/hooks/README.md`「カバー範囲と残る穴」)
+- **`check-added-*` の 2 つは base との差分で判定する。** 引数を省くと `origin/main` と
+  比べるので、手元では引数なしで走る。CI だけが走らせていて push 前の一覧に無かった間に、
+  CI で落ちて初めて気づく形が 2 回出ている(`分類: harness-process-drift`)
 - **カナリアが通っても、それだけでは不発と決まらない。** カナリアは自分の取りこぼしと本当の
   不発を区別できない。`.claude/hooks/README.md`「発火しているかを確かめる(カナリア)」の表で
   PreToolUse の痕跡を見て切り分ける。`分類: hook-environment` を付けてよいのは痕跡が無い枝だけ
