@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { artboardContent } from "@/domains/__tests__/sample-document";
 import { SampleDocument } from "@/features/editor/__tests__/sample-document";
+import { AppStateJson } from "@/libs/app-state-json";
 import { DialogChoice } from "@/libs/document-dialog/fake";
 import { DocumentJson } from "@/libs/document-json";
 import { Option } from "@/utils/Option";
@@ -183,4 +184,48 @@ test("メニューの購読を張れないと、その旨が画面に出る", as
   await observer.dropFiles([]);
 
   expect(screen.getByText("メニューからの操作を受け取れません")).toBeDefined();
+});
+
+/*
+ * 復元（アプリ自身の状態を読む）と、開く（ドキュメントを読む）と、画面の出し分けが
+ * EditorScreen で実際に繋がっていること。
+ */
+test("前回開いていたファイルが起動時に開かれる", async () => {
+  const observer = renderEditorScreen(
+    { [Path]: DocumentJson.serialize(SampleDocument) },
+    { open: DialogChoice.Canceled, save: DialogChoice.Canceled },
+    { storedAppState: AppStateJson.serialize({ recentPaths: [Path] }) },
+  );
+
+  await observer.settle();
+
+  const canvas = screen.getByRole("main", { name: "キャンバス" });
+  expect(within(canvas).getByRole("button", { name: /home/ })).toBeDefined();
+});
+
+test("前回開いていたファイルが消えていると、開始画面にその理由が出る", async () => {
+  const observer = renderEditorScreen(
+    {},
+    { open: DialogChoice.Canceled, save: DialogChoice.Canceled },
+    { storedAppState: AppStateJson.serialize({ recentPaths: [Path] }) },
+  );
+
+  await observer.settle();
+
+  expect(screen.getByText("ファイルが見つかりません")).toBeDefined();
+});
+
+test("前回開いていたファイルが消えていても、最近使ったファイルに並ぶ", async () => {
+  const observer = renderEditorScreen(
+    {},
+    { open: DialogChoice.Canceled, save: DialogChoice.Canceled },
+    { storedAppState: AppStateJson.serialize({ recentPaths: [Path] }) },
+  );
+
+  await observer.settle();
+
+  const recents = screen.getByRole("navigation", {
+    name: "最近使ったファイル",
+  });
+  expect(within(recents).getByTitle(Path)).toBeDefined();
 });

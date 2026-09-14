@@ -1,7 +1,10 @@
-import { useEffect, useEffectEvent, useState } from "react";
+import { useEffect, useEffectEvent, useReducer, useState } from "react";
 import { OpenedDocument } from "@/domains/session/opened-document";
 import { DocumentSession } from "@/features/document-start/domains/document-session";
+import { RecentFiles } from "@/features/document-start/domains/recent-files";
 import type { AppMenu, AppMenuCommand } from "@/libs/app-menu";
+import type { AppStateIpc } from "@/libs/app-state-ipc";
+import { AppStateJson } from "@/libs/app-state-json";
 import type { DocumentDialog } from "@/libs/document-dialog";
 import { type DocumentIpc, toDocumentAccessFailure } from "@/libs/document-ipc";
 import { DocumentJson } from "@/libs/document-json";
@@ -16,13 +19,15 @@ import { Result } from "@/utils/Result";
  * 開く / 新規作成に必要な外部世界の口。
  *
  * どの口も「利用者がどのファイルを開くかを決める」経路なので、常に対で必要になる。
- * ダイアログとファイルの読み書きは操作の中身、メニューとドロップは操作の起こり方。
+ * ダイアログとファイルの読み書きは操作の中身、メニューとドロップは操作の起こり方、
+ * アプリ自身の状態は前回開いていたものの出どころ。
  */
 export type DocumentSessionPorts = Readonly<{
   ipc: DocumentIpc;
   dialog: DocumentDialog;
   menu: AppMenu;
   drop: FileDrop;
+  appState: AppStateIpc;
 }>;
 
 /**
@@ -54,6 +59,59 @@ export type DocumentSessionActions = Readonly<{
   /** パスが既に決まっているものを開く（ドロップ・最近使ったファイル）。 */
   openDocumentAt: (path: string) => void;
 }>;
+
+/** 開いているドキュメントと、最近開いたファイルの一覧。 */
+type DocumentSessionState = Readonly<{
+  session: DocumentSession;
+  recents: RecentFiles;
+}>;
+
+/** 状態を動かす指示。 */
+type DocumentSessionAction =
+  | Readonly<{ type: "opening" }>
+  | Readonly<{
+      type: "restored";
+      session: DocumentSession;
+      recents: RecentFiles;
+    }>
+  | Readonly<{
+      type: "settled";
+      session: DocumentSession;
+      recents: RecentFiles;
+    }>;
+
+const InitialState: DocumentSessionState = {
+  session: DocumentSession.Closed,
+  recents: RecentFiles.Empty,
+};
+
+/**
+ * 指示を状態へ反映する。
+ *
+ * @param state 今の状態
+ * @param action 反映する指示
+ * @returns 反映後の状態
+ */
+function reduce(
+  state: DocumentSessionState,
+  action: DocumentSessionAction,
+): DocumentSessionState {
+  switch (action.type) {
+    case "opening":
+      return { ...state, session: DocumentSession.Opening };
+    case "restored":
+      /*
+       * 保存されている状態を読んでいる間に、利用者が別のファイルを開き始めていることが
+       * ある。そのときは復元の結果を丸ごと捨てる。そちらの操作は一覧を書き出し済みで、
+       * 取り込むと画面の一覧とファイルの中身が食い違う。
+       */
+      return DocumentSession.isClosed(state.session)
+        ? { session: action.session, recents: action.recents }
+        : state;
+    case "settled":
+      return { session: action.session, recents: action.recents };
+  }
+}
 
 /**
  * 読み込んだテキストを解釈して、開いている状態にする。
@@ -155,23 +213,74 @@ async function createWithDialog(
 }
 
 /**
- * どのドキュメントを開いているかを持ち、開く / 新規作成の導線を返す。
+ * 保存されている最近使ったファイルの一覧を読む。
  *
- * 開く操作は「ダイアログ → I/O → 解釈」と外部世界を渡り歩くが、状態は 1 つ
- * （`DocumentSession`）にまとまっているので `useReducer` にはしない（rules/hooks.md）。
+ * @param appState 読み込み元
+ * @returns 保存されていた一覧。まだ保存が無いときと、読めない / 解釈できないときは空の一覧
+ */
+async function loadRecentFiles(appState: AppStateIpc): Promise<RecentFiles> {
+  const loaded = await appState.load();
+  /*
+   * 読めなかったときも空の一覧にする。復元する対象が分からないという点でまだ保存が
+   * 無いときと結果が変わらず、開始画面から開き直せる。ここでは書き出さないので、
+   * 読めなかった中身をこの経路が上書きすることもない。
+   */
+  if (!Result.isOk(loaded)) {
+    return RecentFiles.Empty;
+  }
+  if (!Option.isSome(loaded.value)) {
+    return RecentFiles.Empty;
+  }
+  const parsed = AppStateJson.parse(loaded.value.value);
+  return Result.isOk(parsed)
+    ? RecentFiles.create(parsed.value.recentPaths)
+    : RecentFiles.Empty;
+}
+
+/**
+ * 開けたファイルを一覧の先頭へ記録して書き出す。
  *
- * @param ports ダイアログ・I/O・メニュー・ドロップの相手
- * @returns 今のセッション、開く / 新規作成を始める手続き、指示を受け取れなかった
- *   経路とその理由（どちらも受け取れていれば `none`）
+ * @param appState 書き出し先
+ * @param recents 開く前の一覧
+ * @param session 開く操作の結果
+ * @returns 開けていればそのパスを先頭に持つ一覧。開けていなければ元の一覧のまま
+ */
+function rememberOpened(
+  appState: AppStateIpc,
+  recents: RecentFiles,
+  session: DocumentSession,
+): RecentFiles {
+  const path = DocumentSession.openedPath(session);
+  if (!Option.isSome(path)) {
+    return recents;
+  }
+  const opened = RecentFiles.withOpened(recents, path.value);
+  /*
+   * 書き出せなくても画面には出さない。開く操作そのものは成立していて、失われるのは
+   * 次の起動で並ぶ一覧だけなので、今の操作を止める理由にならない。
+   */
+  void appState.save(AppStateJson.serialize({ recentPaths: opened.paths }));
+  return opened;
+}
+
+/**
+ * どのドキュメントを開いているかと最近使ったファイルを持ち、開く / 新規作成の導線を返す。
+ *
+ * 開く操作が終わると、開いているドキュメントと最近使ったファイルの一覧が一緒に動くので
+ * `useReducer` で 1 つの状態にまとめる（rules/hooks.md）。指示を受け取れなかった経路は
+ * 購読の Effect だけが更新する独立した値なので `useState` のまま持つ。
+ *
+ * @param ports ダイアログ・I/O・メニュー・ドロップ・アプリ自身の状態の相手
+ * @returns 今のセッション、最近開いたファイルのパス（新しい順）、開く / 新規作成を
+ *   始める手続き、指示を受け取れなかった経路とその理由（どちらも受け取れていれば `none`）
  */
 export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
   session: DocumentSession;
+  recentPaths: readonly string[];
   actions: DocumentSessionActions;
   commandFailure: Option<CommandSourceFailure>;
 }> {
-  const [session, setSession] = useState<DocumentSession>(
-    DocumentSession.Closed,
-  );
+  const [state, dispatch] = useReducer(reduce, InitialState);
   const [commandFailure, setCommandFailure] = useState<
     Option<CommandSourceFailure>
   >(Option.none);
@@ -186,12 +295,16 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
   const begin = (
     start: (canceled: DocumentSession) => Promise<DocumentSession>,
   ): void => {
-    if (DocumentSession.isOpening(session)) {
+    if (DocumentSession.isOpening(state.session)) {
       return;
     }
-    const canceled = session;
-    setSession(DocumentSession.Opening);
-    void start(canceled).then(setSession);
+    const canceled = state.session;
+    const opening = state.recents;
+    dispatch({ type: "opening" });
+    void start(canceled).then((session) => {
+      const recents = rememberOpened(ports.appState, opening, session);
+      dispatch({ type: "settled", session, recents });
+    });
   };
 
   const openDocument = (): void => {
@@ -229,6 +342,33 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
       openDocumentAt(first.value);
     }
   });
+
+  useEffect(() => {
+    let ignore = false;
+
+    /**
+     * 保存されている一覧を読み、前回開いていたファイルがあれば開く。
+     *
+     * 復元では一覧を書き出さない。開く対象は一覧の先頭なので並びが変わらず、
+     * 読めなかったときに空の一覧で上書きしてしまうこともない。
+     */
+    const restore = async (): Promise<void> => {
+      const recents = await loadRecentFiles(ports.appState);
+      const latest = RecentFiles.latest(recents);
+      const session = Option.isSome(latest)
+        ? await openAtPath(ports.ipc, latest.value)
+        : DocumentSession.Closed;
+      if (ignore) {
+        return;
+      }
+      dispatch({ type: "restored", session, recents });
+    };
+    void restore();
+
+    return () => {
+      ignore = true;
+    };
+  }, [ports.appState, ports.ipc]);
 
   useEffect(() => {
     let stopped = false;
@@ -279,7 +419,8 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
   }, [ports.menu, ports.drop]);
 
   return {
-    session,
+    session: state.session,
+    recentPaths: state.recents.paths,
     actions: { openDocument, createDocument, openDocumentAt },
     commandFailure,
   };

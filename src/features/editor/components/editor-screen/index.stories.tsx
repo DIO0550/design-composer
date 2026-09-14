@@ -2,6 +2,8 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { SampleEditorState } from "@/features/editor/__stories__/sample-editor-state";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { AppMenuFake } from "@/libs/app-menu/fake";
+import { AppStateIpcFake } from "@/libs/app-state-ipc/fake";
+import { AppStateJson } from "@/libs/app-state-json";
 import { ClockFake } from "@/libs/clock/fake";
 import { DialogChoice, DocumentDialogFake } from "@/libs/document-dialog/fake";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
@@ -34,18 +36,32 @@ const clock = ClockFake.create();
 const menu = AppMenuFake.create();
 const drop = FileDropFake.create();
 
+/*
+ * アプリ自身の状態も Storybook には無いので代役にする。何も保存されていない代役を
+ * 既定に置くのは、起動時の復元が走らず開始画面のまま止まるようにするため。
+ */
+const appState = AppStateIpcFake.create();
+
+/** 前回 `SamplePath` を開いていた状態。起動時の復元の結果を見るために持つ。 */
+const restoredAppState = AppStateIpcFake.create(
+  AppStateJson.serialize({ recentPaths: [SamplePath] }),
+);
+
+const ports = {
+  ipc: files.ipc,
+  dialog: dialog.dialog,
+  menu: menu.menu,
+  drop: drop.drop,
+  appState: appState.ipc,
+};
+
 const meta = {
   title: "features/editor/EditorScreen",
   component: EditorScreen,
   parameters: { layout: "fullscreen" },
   args: {
     clock: clock.clock,
-    ports: {
-      ipc: files.ipc,
-      dialog: dialog.dialog,
-      menu: menu.menu,
-      drop: drop.drop,
-    },
+    ports,
   },
 } satisfies Meta<typeof EditorScreen>;
 
@@ -59,4 +75,10 @@ type Story = StoryObj<typeof meta>;
  */
 export const Default: Story = {
   name: "開始画面",
+};
+
+/** 前回開いていたファイルが起動時にそのまま開いた状態。 */
+export const RestoredDocument: Story = {
+  name: "前回のファイルを開いた直後",
+  args: { ports: { ...ports, appState: restoredAppState.ipc } },
 };

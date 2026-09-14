@@ -11,12 +11,6 @@ import { OpenedDocumentEditor } from "@/features/editor/components/opened-docume
 import type { Clock } from "@/libs/clock";
 
 /**
- * 最近開いたファイル。保存先が決まるまでは常に空
- * （どこに残すかは別の担当で、この画面は受け取った一覧を並べるだけ）。
- */
-const RecentPaths: readonly string[] = [];
-
-/**
  * アプリの画面。開いているドキュメントが決まるまでは開始画面を、決まったら編集画面を出す
  * （docs/05-architecture.md「Tauri IPC」/ docs/06-ui.md「画面構成」）。
  *
@@ -26,7 +20,8 @@ export function EditorScreen({
   clock,
   ports,
 }: Readonly<{ clock: Clock; ports: DocumentSessionPorts }>) {
-  const { session, actions, commandFailure } = useDocumentSession(ports);
+  const { session, recentPaths, actions, commandFailure } =
+    useDocumentSession(ports);
 
   return (
     // 中身の高さを画面に収める器。帯が無くなっても、編集画面と開始画面はどちらも
@@ -48,7 +43,7 @@ export function EditorScreen({
           <DocumentStart
             session={session}
             actions={actions}
-            recentPaths={RecentPaths}
+            recentPaths={recentPaths}
             commandFailure={commandFailure}
             renderErrors={(errors) => (
               <DocumentErrorList

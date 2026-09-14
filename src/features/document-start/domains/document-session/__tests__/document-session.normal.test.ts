@@ -32,3 +32,25 @@ test("開けずに終わった後は、次の操作を受け付ける状態に�
 
   expect(DocumentSession.isOpening(session)).toBe(false);
 });
+
+test("何も開いていない間は、まだ何も起きていない状態になる", () => {
+  expect(DocumentSession.isClosed(DocumentSession.Closed)).toBe(true);
+});
+
+test("開けずに終わった後は、まだ何も起きていない状態ではなくなる", () => {
+  const session = DocumentSession.failed({
+    kind: "dialog",
+    error: { message: "dialog.open not allowed" },
+  });
+
+  expect(DocumentSession.isClosed(session)).toBe(false);
+});
+
+test("ドキュメントを開いた後は、まだ何も起きていない状態ではなくなる", () => {
+  const session = DocumentSession.opened({
+    path: Path,
+    document: artboardDocument("home"),
+  });
+
+  expect(DocumentSession.isClosed(session)).toBe(false);
+});
