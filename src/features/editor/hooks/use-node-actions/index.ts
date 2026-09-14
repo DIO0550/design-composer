@@ -109,8 +109,7 @@ export function useNodeActions(): NodeActions {
       dispatch({ type: "resize", sizes, continuity }),
     /**
      * prop の編集はプロパティパネルとキャンバスのインライン編集の両方から届く
-     * （どちらも選択中のものへの編集なので同じアクションで受ける）。続き方は、
-     * 1 つの操作が何度も編集を送る側（入力欄への打鍵）が指定する。
+     * （どちらも選択中のものへの編集なので同じアクションで受ける）。続き方は送る側が指定する。
      */
     editProp: (edit, continuity) =>
       dispatch({ type: "apply_prop_edit", edit, continuity }),

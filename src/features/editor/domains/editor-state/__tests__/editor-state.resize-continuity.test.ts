@@ -6,6 +6,11 @@ import { artboardWidth } from "@/features/editor/__tests__/artboard-fixtures";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 
+/*
+ * 入力欄への打ち込みを同じ形で見るのは `editor-state.prop-edit-continuity.test.ts`。
+ * 通る経路（`withEdit` → `historyWith`）は同じで、続き方を渡す入口だけが違う。
+ */
+
 /** 幅 360 の `home` を選んだ状態。ドラッグはこの幅から始まる。 */
 function setupSelected(): EditorState {
   return EditorState.select(

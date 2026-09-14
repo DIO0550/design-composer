@@ -409,10 +409,7 @@ function EditorPanes({
             onSelect={node.selectAt}
             onSelectInRange={node.selectNodes}
             onResize={node.resize}
-            /*
-             * キャンバスのインライン編集は確定の 1 件だけを送るので、常に別のまとまり
-             * （続きになるのは、1 つの操作が何度も編集を送るパネルの入力欄だけ）。
-             */
+            /* インライン編集は確定の 1 件だけを送るので、常に別のまとまり。 */
             onEditProp={(edit) =>
               node.editProp(edit, EditContinuities.Separate)
             }

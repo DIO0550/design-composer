@@ -8,8 +8,7 @@ import { EditorState } from "../index";
 /*
  * `editor-state.resize-continuity.test.ts` と主張は同じに見えるが、そちらが固定するのは
  * `resize` が受けた続き方を履歴へ渡すことで、`applyPropEdit` を `Separate` 固定に壊しても
- * 落ちない。2 件置くのは、受けた値を無視して `Separate` へ倒す壊し方と `Continued` へ倒す
- * 壊し方の両方で落とすため。
+ * 落ちない。
  */
 
 /** 幅 200 の `panel` を選んだ状態。打ち込みはこの幅から始まる。 */
@@ -65,13 +64,17 @@ function typeWidths(
  * その状態の `panel` の幅。
  *
  * @param state 幅を読むエディタの状態
- * @returns `panel` に設定されている `width`。設定が無ければ `undefined`
+ * @returns `panel` に設定されている `width`
  */
-function panelWidth(state: EditorState): PropValue | undefined {
+function panelWidth(state: EditorState): PropValue {
   const panel = Option.unwrap(
     DesignDocument.findNode(EditorState.document(state), "panel"),
   );
-  return Node.isPrimitive(panel) ? panel.props?.width : undefined;
+  return Option.unwrap(
+    Node.isPrimitive(panel)
+      ? Option.fromNullable(panel.props?.width)
+      : Option.none,
+  );
 }
 
 test("1 つの欄へ何度打ち込んでも、1 回戻せば打ち始める前の値に戻る", () => {
@@ -83,6 +86,11 @@ test("1 つの欄へ何度打ち込んでも、1 回戻せば打ち始める前�
   expect([panelWidth(typed), panelWidth(undone)]).toEqual([120, 200]);
 });
 
+/*
+ * 1 件目とは別の仕様（打ち込みを続けても、まとまりをまたいでは畳まれない）を固定する。
+ * 1 件目は続き方を無視する壊し方のどちらでも落ちるが、まとまりが 2 つに分かれることまでは
+ * 見ていない。
+ */
 test("続けて 2 回打ち込んだら、1 回戻るのは直前の打ち込みの前まで", () => {
   const first = typeWidths(setupSelected(), [1, 12]);
   const second = typeWidths(first, [3, 34]);

@@ -126,10 +126,10 @@ const EditedDocument = DesignDocument.create({
  */
 function EditablePanel({
   selected,
-  onContinuity,
+  recordContinuity,
 }: Readonly<{
   selected: string;
-  onContinuity: (continuity: EditContinuity) => void;
+  recordContinuity: (continuity: EditContinuity) => void;
 }>) {
   const [selection, setSelection] = useState(() =>
     DocumentSelection.fromNames(EditedDocument, [selected]),
@@ -139,13 +139,9 @@ function EditablePanel({
     <PropertyPanel.Body
       selection={selection}
       isFrozen={false}
-      instance={{
-        goToSource: vi.fn(),
-        selectAllInstances: vi.fn(),
-        detach: vi.fn(),
-      }}
+      instance={noopInstanceActions()}
       onEditProp={(edit, continuity) => {
-        onContinuity(continuity);
+        recordContinuity(continuity);
         setSelection((current) => {
           const edited = DesignDocument.applyPropEdit(
             current.document,
@@ -176,7 +172,7 @@ export function setupEditablePanel(selected: string): Readonly<{
   render(
     <EditablePanel
       selected={selected}
-      onContinuity={(continuity) => continuities.push(continuity)}
+      recordContinuity={(continuity) => continuities.push(continuity)}
     />,
   );
   return { user: userEvent.setup(), continuities };

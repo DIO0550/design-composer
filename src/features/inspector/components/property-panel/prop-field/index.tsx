@@ -226,12 +226,12 @@ function LiteralInput({
   inputType: "number" | "text";
 }>): ReactElement {
   /*
-   * このフォーカスで既に 1 件送ったか。フォーカスを得るたびに戻す。
+   * 立てるのは送った時点で、履歴へ入ったかは見ない。1 件目が上流で落ちると 2 件目が
+   * 続きとして届く（`EditHistory.amend` の doc が書いている「戻る先が無いまま」と同じ形）。
    *
-   * render では読まずハンドラの中だけで読み書きするので ref に置く（rules/hooks.md
-   * 「useRef の使い分け」）。立てるのは送った時点で、履歴へ入ったかは見ない。1 件目が
-   * 上流で落ちると 2 件目が続きとして届く（`EditHistory.amend` の doc が書いている
-   * 「戻る先が無いまま」と同じ形）。
+   * 同じ形の ref が `features/canvas` の `use-node-resize` にもある。畳む先が
+   * `src/hooks/` にも `domains/` にも置けず（前者は domains を、後者は React を
+   * import できない）、寄せるには両 feature の外に層が要るので分けたままにしている。
    */
   const hasEdited = useRef(false);
 
