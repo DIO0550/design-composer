@@ -9,6 +9,7 @@ import {
 } from "@/domains/dcmp/design-document";
 import type { PropEdit } from "@/domains/dcmp/node";
 import { DocumentSelection } from "@/domains/session/document-selection";
+import type { EditContinuity } from "@/domains/session/edit-continuity";
 import { TokenSelection } from "@/domains/session/token-selection";
 import type { Offset } from "@/domains/unit/offset";
 import {
@@ -69,7 +70,7 @@ type CanvasHandlers = Readonly<{
   onMoveNode: (name: string, to: ChildPosition) => void;
   onRepositionNode: (name: string, to: ChildPlacement) => void;
   onRepositionArtboard: (name: string, canvasPosition: Offset) => void;
-  onResize: (sizes: readonly AxisLength[]) => void;
+  onResize: (sizes: readonly AxisLength[], continuity: EditContinuity) => void;
   onEditProp: (edit: PropEdit) => void;
   onOpenContextMenu: (names: readonly string[], at: Offset) => void;
 }>;

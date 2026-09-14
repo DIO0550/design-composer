@@ -6,6 +6,7 @@ import {
 } from "@/domains/dcmp/design-document";
 import { PropEdit } from "@/domains/dcmp/node";
 import { DocumentSelection } from "@/domains/session/document-selection";
+import { EditContinuities } from "@/domains/session/edit-continuity";
 import { ReorderSteps } from "@/features/editor/domains/reorder-step";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
@@ -150,11 +151,23 @@ test("複数選んでいる間は座標を動かせない", () => {
 
 test("複数選んでいる間はリサイズできない", () => {
   expect(
-    Option.isSome(EditorState.resize(setupSingleSelected(), [Width])),
+    Option.isSome(
+      EditorState.resize(
+        setupSingleSelected(),
+        [Width],
+        EditContinuities.Separate,
+      ),
+    ),
   ).toBe(true);
-  expect(Option.isSome(EditorState.resize(setupMultiSelected(), [Width]))).toBe(
-    false,
-  );
+  expect(
+    Option.isSome(
+      EditorState.resize(
+        setupMultiSelected(),
+        [Width],
+        EditContinuities.Separate,
+      ),
+    ),
+  ).toBe(false);
 });
 
 test("複数選んでいる間は挿入位置が決まらない", () => {

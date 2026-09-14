@@ -1,5 +1,6 @@
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { EditorState } from "@/features/editor/domains/editor-state";
+import { Option } from "@/utils/Option";
 
 /**
  * artboard を 3 枚持ち、先頭の `home` だけが子を持つドキュメント。
@@ -38,4 +39,17 @@ export function stateWithThreeArtboards(): EditorState {
  */
 export function artboardNames(document: DesignDocument): readonly string[] {
   return document.artboards.map((artboard) => artboard.name);
+}
+
+/**
+ * 名前で指した artboard の幅。
+ *
+ * @param state 幅を引くエディタの状態
+ * @param name 幅を読む artboard の名前
+ * @returns その artboard の幅
+ */
+export function artboardWidth(state: EditorState, name: string): number {
+  return Option.unwrap(
+    DesignDocument.findArtboard(EditorState.document(state), name),
+  ).width;
 }

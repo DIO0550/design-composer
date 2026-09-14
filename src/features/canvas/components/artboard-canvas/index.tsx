@@ -8,6 +8,7 @@ import {
 import type { AxisLengths } from "@/domains/dcmp/axis-length";
 import type { PropEdit } from "@/domains/dcmp/node";
 import { DocumentSelection } from "@/domains/session/document-selection";
+import type { EditContinuity } from "@/domains/session/edit-continuity";
 import type { SelectionDig } from "@/domains/session/selection-dig";
 import type { TokenSelection } from "@/domains/session/token-selection";
 import type { Offset } from "@/domains/unit/offset";
@@ -100,7 +101,7 @@ export function ArtboardCanvas({
   onSelect: (names: readonly string[], dig: SelectionDig) => void;
   /** 範囲選択で、範囲に重なったものをまとめて選ぶ。 */
   onSelectInRange: (names: readonly string[]) => void;
-  onResize: (sizes: AxisLengths) => void;
+  onResize: (sizes: AxisLengths, continuity: EditContinuity) => void;
   onEditProp: (edit: PropEdit) => void;
   onRepositionArtboard: (name: string, canvasPosition: Offset) => void;
   /** 右クリックを、辿った名前（空き領域では空）と窓の座標で伝える。 */

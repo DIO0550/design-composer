@@ -2,6 +2,7 @@ import { fireEvent } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { DocumentSelection } from "@/domains/session/document-selection";
+import { EditContinuities } from "@/domains/session/edit-continuity";
 import { canvasContent } from "@/features/canvas/__tests__/canvas-elements";
 import {
   movePointer,
@@ -116,7 +117,10 @@ test("右辺を掴んで右へ運ぶと、動かした分だけ幅が伸びた�
   movePointer(panel, { x: 338, y: 100 });
   releasePointer(panel, { x: 338, y: 100 });
 
-  expect(onResize).toHaveBeenLastCalledWith([{ axis: "width", length: 240 }]);
+  expect(onResize).toHaveBeenLastCalledWith(
+    [{ axis: "width", length: 240 }],
+    expect.anything(),
+  );
 });
 
 test("下辺を掴んで下へ運ぶと、動かした分だけ高さが伸びた大きさが通知される", () => {
@@ -128,7 +132,10 @@ test("下辺を掴んで下へ運ぶと、動かした分だけ高さが伸び�
   movePointer(panel, { x: 200, y: 178 });
   releasePointer(panel, { x: 200, y: 178 });
 
-  expect(onResize).toHaveBeenLastCalledWith([{ axis: "height", length: 130 }]);
+  expect(onResize).toHaveBeenLastCalledWith(
+    [{ axis: "height", length: 130 }],
+    expect.anything(),
+  );
 });
 
 test("ハンドルから離れたところを掴んで運んでも大きさは変わらない", () => {
@@ -193,7 +200,10 @@ test("幅のハンドルを掴んで右へ運ぶと、動かした分だけ幅�
   movePointer(panel, { x: 340, y: 100 });
   releasePointer(panel, { x: 340, y: 100 });
 
-  expect(onResize).toHaveBeenLastCalledWith([{ axis: "width", length: 240 }]);
+  expect(onResize).toHaveBeenLastCalledWith(
+    [{ axis: "width", length: 240 }],
+    expect.anything(),
+  );
 });
 
 test("測り直すと、幅のハンドルは要素の右辺の上へ置かれる", () => {
@@ -220,7 +230,10 @@ test("高さのハンドルを掴んで下へ運ぶと、動かした分だけ�
   movePointer(panel, { x: 200, y: 180 });
   releasePointer(panel, { x: 200, y: 180 });
 
-  expect(onResize).toHaveBeenLastCalledWith([{ axis: "height", length: 130 }]);
+  expect(onResize).toHaveBeenLastCalledWith(
+    [{ axis: "height", length: 130 }],
+    expect.anything(),
+  );
 });
 
 test("ハンドルを掴んでいる間は、どのハンドルもポインタを受け取らない", () => {
@@ -268,10 +281,13 @@ test("右下の角を掴んで斜めに運ぶと、幅と高さが同時に通�
   movePointer(panel, { x: 340, y: 175 });
   releasePointer(panel, { x: 340, y: 175 });
 
-  expect(onResize).toHaveBeenLastCalledWith([
-    { axis: "width", length: 240 },
-    { axis: "height", length: 125 },
-  ]);
+  expect(onResize).toHaveBeenLastCalledWith(
+    [
+      { axis: "width", length: 240 },
+      { axis: "height", length: 125 },
+    ],
+    expect.anything(),
+  );
 });
 
 test("角を掴んでいる間は、器が斜めのカーソルを出す", () => {
@@ -285,4 +301,29 @@ test("角を掴んでいる間は、器が斜めのカーソルを出す", () =>
   pressPointer(resizeHandleFor("both"), { x: 300, y: 150 });
 
   expect(canvasContent().style.cursor).toBe("nwse-resize");
+});
+
+test("ハンドルを掴み直すと、そこからまた別のまとまりとして届く", () => {
+  /*
+   * 掴み口は帯（`grabAt`）とハンドル（`grab`）の 2 経路あり、まとまりの始まりは
+   * どちらでも戻す必要がある。帯の側は `use-node-resize.normal.test.tsx` が見ているが、
+   * ハンドルを掴めるのはこちらだけ。戻し忘れると 2 回目のドラッグが 1 回目の続きとして
+   * 届き、undo 1 回で 2 回分戻る。
+   */
+  const onResize = vi.fn();
+  renderCanvas({ selection: setupSelection(["panel"]), onResize });
+  const panel = drawnAt("panel", PanelBounds);
+
+  pressPointer(resizeHandleFor("width"), { x: 300, y: 100 });
+  movePointer(panel, { x: 320, y: 100 });
+  movePointer(panel, { x: 340, y: 100 });
+  releasePointer(panel, { x: 340, y: 100 });
+  pressPointer(resizeHandleFor("width"), { x: 340, y: 100 });
+  movePointer(panel, { x: 360, y: 100 });
+
+  expect(onResize.mock.calls.map(([, continuity]) => continuity)).toEqual([
+    EditContinuities.Separate,
+    EditContinuities.Continued,
+    EditContinuities.Separate,
+  ]);
 });

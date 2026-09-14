@@ -15,6 +15,10 @@ import {
 import { DocumentError } from "@/domains/session/document-error";
 import type { DocumentReload } from "@/domains/session/document-reload";
 import { DocumentSelection } from "@/domains/session/document-selection";
+import {
+  EditContinuities,
+  type EditContinuity,
+} from "@/domains/session/edit-continuity";
 import { FileValidity } from "@/domains/session/file-validity";
 import { NodeTemplate } from "@/domains/session/node-template";
 import { SelectionDig } from "@/domains/session/selection-dig";
@@ -192,24 +196,47 @@ function withHistory(state: EditorState, history: EditHistory): EditorState {
 }
 
 /**
- * 新しいドキュメントを履歴へ積んで現在地にする。凍結を見ない。
+ * ドキュメントを続き方に応じて履歴へ入れる。
+ *
+ * @param history 入れる先の履歴
+ * @param document 現在地にするドキュメント
+ * @param continuity 直前の編集との続き方
+ * @returns 積んだ、または直前を差し替えた履歴
+ */
+function historyWith(
+  history: EditHistory,
+  document: DesignDocument,
+  continuity: EditContinuity,
+): EditHistory {
+  switch (continuity) {
+    case EditContinuities.Separate:
+      return EditHistory.record(history, document);
+    case EditContinuities.Continued:
+      return EditHistory.amend(history, document);
+  }
+}
+
+/**
+ * 新しいドキュメントを履歴へ入れて現在地にする。凍結を見ない。
  *
  * 取り込みを `withEdit` に通すと、渡す時点で妥当性を `valid` へ差し替えてあるために必ず
  * `some` になり、呼び出し側に永久に届かない `none` の分岐が増える。
  *
- * @param state 積む先のエディタの状態
+ * @param state 入れる先のエディタの状態
  * @param document 現在地にするドキュメント
- * @returns 履歴に 1 件積まれ、それを現在地にしたエディタの状態
+ * @param continuity 直前の編集との続き方。続きなら戻る先は増えない
+ * @returns そのドキュメントを現在地にしたエディタの状態
  */
 function withDocument(
   state: EditorState,
   document: DesignDocument,
+  continuity: EditContinuity = EditContinuities.Separate,
 ): EditorState {
-  return withHistory(state, EditHistory.record(state.history, document));
+  return withHistory(state, historyWith(state.history, document, continuity));
 }
 
 /**
- * 編集の結果を履歴へ積んで現在地にする。
+ * 編集の結果を履歴へ入れて現在地にする。
  *
  * ファイルが不正な間は編集そのものが存在しないので `none`。映っているのは最後に正常だっ
  * た表示で、そこへ加えた編集を書き出すと外部の書き込みを上書きしてしまうため（UI 案
@@ -217,18 +244,19 @@ function withDocument(
  *
  * ドキュメントが変わる経路をここ 1 箇所に絞っているので、編集を足しても凍結から漏れない。
  *
- * @param state 積む先のエディタの状態
+ * @param state 入れる先のエディタの状態
  * @param document 編集後のドキュメント
- * @returns 履歴に 1 件積まれ、それを現在地にしたエディタの状態。
- *   ファイルが不正な間は `none`
+ * @param continuity 直前の編集との続き方。続きなら戻る先は増えない
+ * @returns その編集を現在地にしたエディタの状態。ファイルが不正な間は `none`
  */
 function withEdit(
   state: EditorState,
   document: DesignDocument,
+  continuity: EditContinuity = EditContinuities.Separate,
 ): Option<EditorState> {
   return EditorState.isFileInvalid(state)
     ? Option.none
-    : Option.some(withDocument(state, document));
+    : Option.some(withDocument(state, document, continuity));
 }
 
 export const EditorState = {
@@ -1083,11 +1111,19 @@ export const EditorState = {
    * name で持つのでリサイズでは変わらない）。
    *
    * **まとめて受けることで 1 回の編集になる**（軸ごとに呼ぶと Undo 1 回で片方しか戻らない）。
-   * ドラッグ全体が Undo 1 回で戻るわけではない（ポインタが動くたびに 1 件積む）。
+   * ドラッグ全体を Undo 1 回で戻すのは `continuity` の担当で、ポインタが動くたびに届く
+   * 2 件目以降を続きとして受けると戻る先が増えない。
+   *
+   * @param state 大きさを変えるエディタの状態
+   * @param sizes 変える軸ぶんの長さ
+   * @param continuity 直前の編集との続き方（1 回のドラッグの 2 件目以降は続き）
+   * @returns 大きさを変えたエディタの状態。選択が無い・単一選択でない・大きさを持たない
+   *   指定と、ファイルが不正な間は `none`
    */
   resize(
     state: EditorState,
     sizes: readonly AxisLength[],
+    continuity: EditContinuity,
   ): Option<EditorState> {
     return Option.flatMap(EditorState.singleName(state), (name) => {
       const resized = DesignDocument.resize(
@@ -1096,7 +1132,7 @@ export const EditorState = {
         sizes,
       );
       return Result.isOk(resized)
-        ? withEdit(state, resized.value)
+        ? withEdit(state, resized.value, continuity)
         : Option.none;
     });
   },
