@@ -620,5 +620,8 @@ pr-317#43・pr-435#16 等)という既存定義どおりの形のため、新語
 棚卸しルーティンの制約(「やらないこと: harness/records/ への書き込み」。成果物の契約が
 変更対象を `rules/` `skills/` `hooks/` `templates/record.md` に限っており `harness/records/`
 を含まない)により、分割を行ったこの PR には含められず積み残しになった。**後続の棚卸し
-ルーティンが `harness/records/pr-530.md`「規約への反映」へこの 1 行を追記し、積み残しを
-解消することを想定する。** 過去の記録の `分類: duplication-uncovered-shape` は書き換えない。
+ルーティンが `harness/records/pr-530.md`「規約への反映」へこの行を追記し、積み残しを解消した。**
+そのとき `duplication-rationale` 層=観点 at pr-530 の行も併せて足してある。分割の回に
+`.claude/agents/implementation-reviewer.md`「重複の観点」へ観点を実際に置いた以上、新語彙も
+介入済みであり、行が無いと `count.sh` が永久に「未介入」と読み続けるため、この行も足した。
+過去の記録の `分類: duplication-uncovered-shape` は書き換えない。
