@@ -1,8 +1,8 @@
 {
-  "reportVersion": "29a6e0b2f724e48a995c83ebcea93b11eea53742",
+  "reportVersion": "03bcebbfe6dce1ff5e57f8bcf6e9b67a300a1940",
   "maxDiffRatio": 0.002,
   "changed": 0,
-  "new": 7,
+  "new": 9,
   "deleted": 0,
   "passed": 165,
   "failed": 0,
@@ -151,6 +151,32 @@
       "hasDiff": false
     },
     {
+      "story": "components-tabbar--multiple",
+      "id": "components-tabbar--multiple",
+      "title": "components/TabBar",
+      "name": "複数並んでいる",
+      "status": "new",
+      "reason": "no-baseline",
+      "diffPixels": 0,
+      "diffRatio": 0,
+      "hasExpected": false,
+      "hasActual": true,
+      "hasDiff": false
+    },
+    {
+      "story": "components-tabbar--single",
+      "id": "components-tabbar--single",
+      "title": "components/TabBar",
+      "name": "1 枚だけ",
+      "status": "new",
+      "reason": "no-baseline",
+      "diffPixels": 0,
+      "diffRatio": 0,
+      "hasExpected": false,
+      "hasActual": true,
+      "hasDiff": false
+    },
+    {
       "story": "features-assets-assetspanel--default",
       "id": "features-assets-assetspanel--default",
       "title": "features/assets/AssetsPanel",
@@ -260,12 +286,12 @@
       "title": "features/assets/CreateComponent",
       "name": "ファイルが不正な間に部品名を打っている",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
+      "reason": "within-threshold",
+      "diffPixels": 5,
       "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-assets-createcomponent--instance-selected",
@@ -286,12 +312,12 @@
       "title": "features/assets/CreateComponent",
       "name": "部品名を打っている",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
+      "reason": "within-threshold",
+      "diffPixels": 5,
       "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-assets-createcomponent--ready",
