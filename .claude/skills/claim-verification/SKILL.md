@@ -84,5 +84,5 @@ pr-313〜pr-530 の間の 19 件を再発として数え続けていた。**こ�
 書き込み」。成果物の契約が変更対象を `rules/` `skills/` `hooks/` `templates/record.md` に限って
 おり `harness/records/` を含まない)により、この PR には含められず積み残しになった。**後続の
 (制約のない)harness-growth セッションが `harness/records/pr-530.md`「規約への反映」へ
-`- 対策済: comment-enumeration-drift 層=skill at pr-<この回のPR番号>` を追記し、積み残しを
-解消することを想定する。**
+`- 対策済: comment-enumeration-drift 層=skill at pr-560` を追記し、積み残しを解消することを
+想定する。**
