@@ -74,7 +74,11 @@ export type EditorAction =
   | Readonly<{ type: "ungroup_selected" }>
   | Readonly<{ type: "copy_node" }>
   | Readonly<{ type: "paste_node" }>
-  | Readonly<{ type: "apply_prop_edit"; edit: PropEdit }>
+  | Readonly<{
+      type: "apply_prop_edit";
+      edit: PropEdit;
+      continuity: EditContinuity;
+    }>
   | Readonly<{
       type: "resize";
       sizes: readonly AxisLength[];
@@ -270,7 +274,7 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
     case "apply_prop_edit":
       // 選択が無ければ編集は存在しない（EditorState.applyPropEdit の `none`）。
       return Option.unwrapOr(
-        EditorState.applyPropEdit(state, action.edit),
+        EditorState.applyPropEdit(state, action.edit, action.continuity),
         state,
       );
     case "resize":

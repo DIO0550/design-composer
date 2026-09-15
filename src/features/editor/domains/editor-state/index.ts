@@ -1091,15 +1091,31 @@ export const EditorState = {
    * 選択中の artboard / ノードの prop を書き換える（docs/06-ui.md「編集操作の一覧」）。
    *
    * 選択が無い・書き換えられない指定は「その編集が存在しない」ことなので `none`。
+   *
+   * **1 つの欄への打ち込みを Undo 1 回で戻すのは `continuity` の担当**で、打鍵のたびに
+   * 届く 2 件目以降を続きとして受けると戻る先が増えない（docs/06-ui.md「編集操作の一覧」
+   * の props 編集）。
+   *
+   * @param state prop を書き換えるエディタの状態
+   * @param edit 書き換える prop と値
+   * @param continuity 直前の編集との続き方（1 つの欄へ続けて打った 2 打鍵目以降は続き）
+   * @returns prop を書き換えたエディタの状態。選択が無い・単一選択でない・書き換えられない
+   *   指定と、ファイルが不正な間は `none`
    */
-  applyPropEdit(state: EditorState, edit: PropEdit): Option<EditorState> {
+  applyPropEdit(
+    state: EditorState,
+    edit: PropEdit,
+    continuity: EditContinuity,
+  ): Option<EditorState> {
     return Option.flatMap(EditorState.singleName(state), (name) => {
       const edited = DesignDocument.applyPropEdit(
         EditorState.document(state),
         name,
         edit,
       );
-      return Result.isOk(edited) ? withEdit(state, edited.value) : Option.none;
+      return Result.isOk(edited)
+        ? withEdit(state, edited.value, continuity)
+        : Option.none;
     });
   },
 

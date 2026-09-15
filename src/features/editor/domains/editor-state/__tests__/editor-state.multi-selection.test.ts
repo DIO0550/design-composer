@@ -107,10 +107,22 @@ test("複数選んでいる間は prop を編集できない", () => {
   const edit = PropEdit.set(["label"], "送信");
 
   expect(
-    Option.isSome(EditorState.applyPropEdit(setupSingleSelected(), edit)),
+    Option.isSome(
+      EditorState.applyPropEdit(
+        setupSingleSelected(),
+        edit,
+        EditContinuities.Separate,
+      ),
+    ),
   ).toBe(true);
   expect(
-    Option.isSome(EditorState.applyPropEdit(setupMultiSelected(), edit)),
+    Option.isSome(
+      EditorState.applyPropEdit(
+        setupMultiSelected(),
+        edit,
+        EditContinuities.Separate,
+      ),
+    ),
   ).toBe(false);
 });
 

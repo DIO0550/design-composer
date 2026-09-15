@@ -1,5 +1,6 @@
 import { TypeGlyph } from "@/components/type-glyph";
 import type { PropEdit } from "@/domains/dcmp/node";
+import type { EditContinuity } from "@/domains/session/edit-continuity";
 import {
   PropControl,
   type SelectionControls,
@@ -72,7 +73,10 @@ function OverriddenNote({ control }: Readonly<{ control: PropControl }>) {
 function PublicPropRow({
   control,
   onEdit,
-}: Readonly<{ control: PropControl; onEdit: (edit: PropEdit) => void }>) {
+}: Readonly<{
+  control: PropControl;
+  onEdit: (edit: PropEdit, continuity: EditContinuity) => void;
+}>) {
   return (
     <div className="flex flex-col gap-1">
       <PropRow control={control} onEdit={onEdit} />
@@ -93,7 +97,7 @@ export function InstanceBody({
   actions,
 }: Readonly<{
   controls: Extract<SelectionControls, { kind: "instance" }>;
-  onEdit: (edit: PropEdit) => void;
+  onEdit: (edit: PropEdit, continuity: EditContinuity) => void;
   actions: InstanceActions;
 }>) {
   const { source, publicProps } = controls;

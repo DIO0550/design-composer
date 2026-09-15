@@ -116,3 +116,39 @@ test("畳んだ padding の欄を変えたあと Ctrl+Z を 1 回押すと両辺
     ),
   ).toEqual(["lg", "lg"]);
 });
+
+/**
+ * `home-title` の文言欄へ打ってから、欄を離れる。
+ *
+ * 欄を離れるのは、入力欄にフォーカスがある間はどの割り当ても通らないため
+ * （docs/06-ui.md「編集操作の一覧」。⌘Z も届かない）。
+ *
+ * @param text 打ち込む文言
+ */
+async function typeContent(text: string): Promise<void> {
+  await userEvent.type(screen.getByRole("textbox", { name: "Content" }), text);
+  await userEvent.tab();
+}
+
+test("文言を打ち替えて欄を離れてから 1 回戻すと、打ち始める前の文言に戻る", async () => {
+  await renderOpenedDocument();
+  await selectInTree("home-title");
+  await typeContent("abc");
+
+  await userEvent.keyboard("{Control>}z{/Control}");
+
+  // 打ち始める前の「ホーム」。「ホームab」に戻るなら、打鍵ごとに履歴が積まれている
+  expect(screen.getByText("ホーム")).toBeDefined();
+});
+
+test("続けて 2 回打ち替えると、1 回戻るのは直前の打ち替えの前まで", async () => {
+  await renderOpenedDocument();
+  await selectInTree("home-title");
+  await typeContent("ab");
+  await typeContent("cd");
+
+  await userEvent.keyboard("{Control>}z{/Control}");
+
+  // 2 回の打ち替えが 1 件に畳まれるなら「ホーム」まで戻ってしまう
+  expect(screen.getByText("ホームab")).toBeDefined();
+});

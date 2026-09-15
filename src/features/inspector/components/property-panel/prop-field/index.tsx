@@ -1,7 +1,11 @@
-import { type ReactElement, useId } from "react";
+import { type ReactElement, useId, useRef } from "react";
 import { ColorSwatch } from "@/components/color-swatch";
 import { SegmentedControl } from "@/components/segmented-control";
 import type { PropEdit } from "@/domains/dcmp/node";
+import {
+  EditContinuities,
+  type EditContinuity,
+} from "@/domains/session/edit-continuity";
 import {
   PropControl,
   type PropControlInput,
@@ -64,7 +68,7 @@ type FieldBinding = Readonly<{
   value: string;
   /** 値が入っていないときに欄へ出す綴り。 */
   unsetLabel: string;
-  onChangeRaw: (raw: string) => void;
+  onChangeRaw: (raw: string, continuity: EditContinuity) => void;
 }>;
 
 /**
@@ -78,13 +82,14 @@ type FieldBinding = Readonly<{
 export function fieldOf(
   labelledBy: string,
   control: PropControl,
-  onEdit: (edit: PropEdit) => void,
+  onEdit: (edit: PropEdit, continuity: EditContinuity) => void,
 ): FieldBinding {
   return {
     labelledBy,
     value: Option.unwrapOr(Option.map(control.value, String), ""),
     unsetLabel: unsetLabel(control),
-    onChangeRaw: (raw) => onEdit(PropControl.editFrom(control, valueFrom(raw))),
+    onChangeRaw: (raw, continuity) =>
+      onEdit(PropControl.editFrom(control, valueFrom(raw)), continuity),
   };
 }
 
@@ -101,7 +106,7 @@ export function fieldOf(
 export function pairFieldOf(
   labelledBy: string,
   pair: PropPairControl,
-  onEdit: (edit: PropEdit) => void,
+  onEdit: (edit: PropEdit, continuity: EditContinuity) => void,
 ): FieldBinding {
   const value = PropPairControl.value(pair);
   const [first] = pair.sides;
@@ -113,8 +118,8 @@ export function pairFieldOf(
         ? Option.unwrapOr(Option.map(value.value, String), "")
         : "",
     unsetLabel: value.kind === "uniform" ? unsetLabel(first) : MixedLabel,
-    onChangeRaw: (raw) =>
-      onEdit(PropPairControl.editFrom(pair, valueFrom(raw))),
+    onChangeRaw: (raw, continuity) =>
+      onEdit(PropPairControl.editFrom(pair, valueFrom(raw)), continuity),
   };
 }
 
@@ -140,7 +145,9 @@ function TokenSelect({
       aria-describedby={describedBy}
       className={FieldClass}
       value={field.value}
-      onChange={(event) => field.onChangeRaw(event.target.value)}
+      onChange={(event) =>
+        field.onChangeRaw(event.target.value, EditContinuities.Separate)
+      }
     >
       <option value="">{field.unsetLabel}</option>
       {names.map((name) => (
@@ -205,7 +212,8 @@ function NumericTokenField({
 }
 
 /**
- * 値域が数値・文字列で決まっている prop の入力欄。
+ * 値域が数値・文字列で決まっている prop の入力欄。フォーカスを得てから離すまでの打鍵を
+ * 1 つのまとまりとして送る（docs/06-ui.md「編集操作の一覧」の props 編集）。
  *
  * @param inputType 数値を受けるか文字を受けるか
  * @returns 生の値を打ち込む入力欄
@@ -217,6 +225,16 @@ function LiteralInput({
   field: FieldBinding;
   inputType: "number" | "text";
 }>): ReactElement {
+  /*
+   * 立てるのは送った時点で、履歴へ入ったかは見ない。1 件目が上流で落ちると 2 件目が
+   * 続きとして届く（`EditHistory.amend` の doc が書いている「戻る先が無いまま」と同じ形）。
+   *
+   * 同じ形の ref が `features/canvas` の `use-node-resize` にもある。畳む先が
+   * `src/hooks/` にも `domains/` にも置けず（前者は domains を、後者は React を
+   * import できない）、寄せるには両 feature の外に層が要るので分けたままにしている。
+   */
+  const hasEdited = useRef(false);
+
   return (
     <input
       aria-labelledby={field.labelledBy}
@@ -224,7 +242,18 @@ function LiteralInput({
       className={FieldClass}
       value={field.value}
       placeholder={field.unsetLabel}
-      onChange={(event) => field.onChangeRaw(event.target.value)}
+      onFocus={() => {
+        hasEdited.current = false;
+      }}
+      onChange={(event) => {
+        field.onChangeRaw(
+          event.target.value,
+          hasEdited.current
+            ? EditContinuities.Continued
+            : EditContinuities.Separate,
+        );
+        hasEdited.current = true;
+      }}
     />
   );
 }
@@ -257,7 +286,12 @@ export function PropField({
           labelledBy={field.labelledBy}
           options={input.values}
           value={valueFrom(field.value)}
-          onChange={(next) => field.onChangeRaw(Option.unwrapOr(next, ""))}
+          onChange={(next) =>
+            field.onChangeRaw(
+              Option.unwrapOr(next, ""),
+              EditContinuities.Separate,
+            )
+          }
         />
       );
     case "token":

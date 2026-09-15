@@ -32,7 +32,7 @@ export type NodeActions = Readonly<{
   /** artboard をキャンバス上の別の位置へ置き直す。 */
   repositionArtboard: (name: string, canvasPosition: Offset) => void;
   resize: (sizes: readonly AxisLength[], continuity: EditContinuity) => void;
-  editProp: (edit: PropEdit) => void;
+  editProp: (edit: PropEdit, continuity: EditContinuity) => void;
   insert: (template: NodeTemplate) => void;
   /** パレットから運んできたものを、落とした先のツリー位置へ挿す。 */
   insertAt: (template: NodeTemplate, at: ChildPosition) => void;
@@ -109,9 +109,10 @@ export function useNodeActions(): NodeActions {
       dispatch({ type: "resize", sizes, continuity }),
     /**
      * prop の編集はプロパティパネルとキャンバスのインライン編集の両方から届く
-     * （どちらも選択中のものへの編集なので同じアクションで受ける）。
+     * （どちらも選択中のものへの編集なので同じアクションで受ける）。続き方は送る側が指定する。
      */
-    editProp: (edit) => dispatch({ type: "apply_prop_edit", edit }),
+    editProp: (edit, continuity) =>
+      dispatch({ type: "apply_prop_edit", edit, continuity }),
     insert: (template) => dispatch({ type: "insert_node", template }),
     /**
      * パレットからのドラッグは、落とした先へ挿すこと（UI 案 docs/Design Composer.html は
