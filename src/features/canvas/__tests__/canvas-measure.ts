@@ -39,7 +39,12 @@ export function drawNamed(name: string, bounds: CanvasBounds): HTMLElement {
   return target;
 }
 
-/** `drawNamed` で置いたものを片付ける。テストをまたいで名前が残らないようにする。 */
+/**
+ * `drawNamed` で置いたものを片付ける。テストをまたいで名前が残らないようにする。
+ *
+ * `drawNamed` は器の外（`document.body`）へ直に足すので、Testing Library の
+ * `afterEach(cleanup)` では外れない。使う側は自分で `afterEach(clearDrawn)` を置く。
+ */
 export function clearDrawn(): void {
   for (const element of globalThis.document.querySelectorAll(
     `[${ElementNameAttribute}]`,
