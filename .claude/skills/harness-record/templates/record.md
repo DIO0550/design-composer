@@ -162,7 +162,7 @@ pr-317 以前の記録には `レビュー`(括弧なし)・`レビュー（人�
 | `comment-structure-claim` | rules/coding.md「コメントは実装と一致させる」(コード・外部ドキュメント(UI 案・仕様書等)の構造や中身についての主張を、読んで確認しないまま書き、最初から事実と食い違っていた形) |
 | `comment-stale-edit` | rules/coding.md「実装を変えたらコメントも同時に直す」(同じ差分内の別の変更に、コメント・doc の記述の一部だけが追随しなかった形のうち、下 4 語彙のどれにも当たらない単発の形) |
 | `comment-referent-drift` | rules/coding.md「実装を変えたらコメントも同時に直す」(コメント・doc が名指ししているシンボル名・型名・引数名・パスが、同じ差分内の改名・型変更・層移動に追随しなかった形) |
-| `comment-enumeration-drift` | rules/coding.md「実装を変えたらコメントも同時に直す」(コメント・doc が挙げる列挙・件数が、同じ差分内の項目の増減に追随しなかった形) |
+| `comment-enumeration-drift` | rules/coding.md「実装を変えたらコメントも同時に直す」(コメント・doc が挙げる列挙・件数が、同じ差分内の項目の増減に追随しなかった形と、書いた列挙が最初から実体を網羅していなかった形) |
 | `comment-premise-drift` | rules/coding.md「実装を変えたらコメントも同時に直す」(Why / Why not が前提にした構造が同じ差分内の別の変更で崩れ、理由や注記が古い前提・古い置き場所のまま残った形) |
 | `comment-block-placement` | rules/coding.md「実装を変えたらコメントも同時に直す」(doc コメントの物理的な付着先・行幅が、隣接する宣言や周囲の書式に対して機械的にずれた形) |
 | `comment-missing` | rules/coding.md「コメントは doc と Why / Why not に絞る」(書くべき Why / Why not がコードに無い形。読み手が『なぜこれではないのか』を聞くまで気づかれない。下 4 語彙のどれにも当たらない単発の形) |
