@@ -1,11 +1,12 @@
 import { screen } from "@testing-library/react";
 import { expect, test } from "vitest";
+import { OpenAttempt } from "@/features/document-start/domains/document-session";
 import { CommandSources } from "@/features/document-start/hooks/use-document-session";
 import { Option } from "@/utils/Option";
 import { renderDocumentStart } from "./setup";
 
 test("開く操作の最中は、開くボタンを押せない", () => {
-  renderDocumentStart({ session: { kind: "opening" } });
+  renderDocumentStart({ attempt: OpenAttempt.Opening });
 
   expect(
     screen.getByRole("button", { name: "開く" }).hasAttribute("disabled"),
@@ -13,7 +14,7 @@ test("開く操作の最中は、開くボタンを押せない", () => {
 });
 
 test("開く操作の最中は、新規作成ボタンも押せない", () => {
-  renderDocumentStart({ session: { kind: "opening" } });
+  renderDocumentStart({ attempt: OpenAttempt.Opening });
 
   expect(
     screen.getByRole("button", { name: "新規作成" }).hasAttribute("disabled"),

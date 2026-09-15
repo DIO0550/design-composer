@@ -8,21 +8,17 @@ import { DialogChoice } from "@/libs/document-dialog/fake";
 import { DocumentJson } from "@/libs/document-json";
 import { Option } from "@/utils/Option";
 import {
+  artboardList,
   changeExternally,
+  closeTab,
   OtherPath,
   Path,
   renderEditorScreen,
+  selectTab,
   startCreate,
   startOpen,
+  tree,
 } from "./setup";
-
-function tree(): HTMLElement {
-  return screen.getByRole("region", { name: "ツリー" });
-}
-
-function artboardList(): HTMLElement {
-  return screen.getByRole("region", { name: "artboard 一覧" });
-}
 
 test("編集した内容が自動保存され、開き直すとその状態が読み戻る", async () => {
   const opened = DocumentJson.serialize(SampleDocument);
@@ -44,9 +40,9 @@ test("編集した内容が自動保存され、開き直すとその状態が�
     },
     { timeout: 3000 },
   );
-  // 別のファイルへ移ってから開き直す。同じファイルを続けて開いても
-  // 画面は作り直されないため、ファイルから読み戻したことにならない。
-  await startCreate(observer);
+  // いったん閉じてから開き直す。開いたままのタブへ移るだけでは画面が作り直されず、
+  // ファイルから読み戻したことにならない。
+  await closeTab(Path);
   await startOpen(observer);
 
   expect(rowNames(tree())).toEqual(["home-login", "home-title"]);
@@ -66,7 +62,7 @@ test("開いているファイルが外部から書き換わると、その内�
   ).toBeDefined();
 });
 
-test("別のファイルを開くと、前に開いていたファイルの監視が止まる", async () => {
+test("別のファイルを開いても、前に開いたファイルの監視は続く", async () => {
   const observer = renderEditorScreen(
     { [Path]: artboardContent("home") },
     { open: DialogChoice.chosen(Path), save: DialogChoice.chosen(OtherPath) },
@@ -74,6 +70,19 @@ test("別のファイルを開くと、前に開いていたファイルの監�
   await startOpen(observer);
 
   await startCreate(observer);
+
+  expect(observer.files.isWatching(Path)).toBe(true);
+});
+
+test("タブを閉じると、そのファイルの監視が止まる", async () => {
+  const observer = renderEditorScreen(
+    { [Path]: artboardContent("home") },
+    { open: DialogChoice.chosen(Path), save: DialogChoice.chosen(OtherPath) },
+  );
+  await startOpen(observer);
+  await startCreate(observer);
+
+  await closeTab(Path);
 
   expect(observer.files.isWatching(Path)).toBe(false);
 });
@@ -90,7 +99,7 @@ test("別のファイルを開くと、そのファイルの監視が始まる",
   expect(observer.files.isWatching(OtherPath)).toBe(true);
 });
 
-test("別のファイルを開いた後は、前のファイルが書き換わっても画面は変わらない", async () => {
+test("背面のタブのファイルが書き換わっても、見ている画面は変わらない", async () => {
   const observer = renderEditorScreen(
     { [Path]: artboardContent("home") },
     { open: DialogChoice.chosen(Path), save: DialogChoice.chosen(OtherPath) },
@@ -100,5 +109,50 @@ test("別のファイルを開いた後は、前のファイルが書き換わ�
 
   await changeExternally(observer.files, Path, artboardContent("profile"));
 
-  expect(screen.queryByRole("button", { name: "profile" })).toBeNull();
+  // 見ているのは新規作成した側。artboard 一覧を引いてから、届いていないことを見る
+  // （画面全体から探すと、背面のタブに隠れているだけでも null になる）。
+  expect(
+    within(artboardList()).queryByRole("button", { name: "profile" }),
+  ).toBeNull();
+});
+
+test("背面のタブのファイルが書き換わると、そのタブへ移ったとき取り込まれている", async () => {
+  const observer = renderEditorScreen(
+    { [Path]: artboardContent("home") },
+    { open: DialogChoice.chosen(Path), save: DialogChoice.chosen(OtherPath) },
+  );
+  await startOpen(observer);
+  await startCreate(observer);
+
+  await changeExternally(observer.files, Path, artboardContent("profile"));
+  await selectTab(Path);
+
+  expect(
+    within(artboardList()).getByRole("button", { name: "profile" }),
+  ).toBeDefined();
+});
+
+/*
+ * 背面になったタブの書き出し待ちが生きていること。背面を描くのをやめると cleanup で
+ * デバウンスのタイマーが消え、編集した内容がファイルへ届かないまま失われる。
+ */
+test("背面になったタブで編集した内容も、戻らずにファイルへ書き出される", async () => {
+  const opened = DocumentJson.serialize(SampleDocument);
+  const observer = renderEditorScreen(
+    { [Path]: opened, [OtherPath]: artboardContent("settings") },
+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
+  );
+  await startOpen(observer);
+
+  dragRowNamed(tree(), { from: "home-title", to: "home-login" });
+  await observer.dropFiles([OtherPath]);
+
+  await waitFor(
+    () => {
+      expect(observer.files.contentOf(Path)).not.toStrictEqual(
+        Option.some(opened),
+      );
+    },
+    { timeout: 3000 },
+  );
 });
