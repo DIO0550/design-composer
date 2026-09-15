@@ -57,6 +57,11 @@ export const DocumentSession = {
     return session.kind === "opening";
   },
 
+  /** まだ何も起きていない（開く操作が一度も始まっていない）か。 */
+  isClosed(session: DocumentSession): boolean {
+    return session.kind === "closed";
+  },
+
   /** 開いているファイルのパス。開いていなければ `none`。 */
   openedPath(session: DocumentSession): Option<string> {
     return session.kind === "opened"

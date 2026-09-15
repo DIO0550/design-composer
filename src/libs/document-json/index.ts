@@ -72,18 +72,13 @@ function fromDecodeErrors(
  *   `syntax-error` の失敗
  */
 function parseJson(text: string): Result<unknown, readonly DocumentError[]> {
-  try {
-    const value: unknown = JSON.parse(text);
-    return Result.ok(value);
-  } catch (error) {
-    return Result.err([
-      {
-        kind: "syntax-error",
-        message: error instanceof Error ? error.message : String(error),
-        location: { kind: "whole-document" },
-      },
-    ]);
-  }
+  return Result.mapErr(Json.parseText(text), (message) => [
+    {
+      kind: "syntax-error",
+      message,
+      location: { kind: "whole-document" },
+    },
+  ]);
 }
 
 const IndentWidth = 2;
