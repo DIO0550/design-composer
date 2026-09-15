@@ -18,6 +18,7 @@ import {
   KeyShortcutScopes,
 } from "@/hooks/use-key-shortcut";
 import type { Clock } from "@/libs/clock";
+import type { DocumentIpc } from "@/libs/document-ipc";
 import { Option } from "@/utils/Option";
 
 /**
@@ -46,7 +47,7 @@ function OpenedDocumentEditors({
 }: Readonly<{
   opened: OpenedDocuments;
   clock: Clock;
-  ipc: DocumentSessionPorts["ipc"];
+  ipc: DocumentIpc;
 }>): ReactElement {
   const activePath = OpenedDocuments.activePath(opened);
 
