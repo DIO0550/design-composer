@@ -82,8 +82,13 @@ function ShorthandCell({
   label: string;
   children: ReactElement;
 }>): ReactElement {
+  /*
+   * 読み上げ名の器を `relative` にするのは、`sr-only` が `position: absolute` なので、
+   * 位置の基準が無いと本文のスクロール枠を抜けて文書そのものを伸ばすため
+   * （見えない 1px だが、撮影が枠に収まらず視覚差分が比較まで進まなくなる）。
+   */
   return (
-    <div className="flex min-w-0 items-center gap-1.5">
+    <div className="relative flex min-w-0 items-center gap-1.5">
       <span aria-hidden className="shrink-0 text-[10px] text-gray-400">
         {glyph}
       </span>
