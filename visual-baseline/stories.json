@@ -330,6 +330,11 @@
     "name": "読み込み中"
   },
   {
+    "id": "features-documentstart-documentstart--recent-files-unreadable",
+    "title": "features/documentStart/DocumentStart",
+    "name": "最近使ったファイルを読み込めない"
+  },
+  {
     "id": "features-documentstart-documentstart--with-recent-documents",
     "title": "features/documentStart/DocumentStart",
     "name": "最近使ったファイルがある"
@@ -378,6 +383,11 @@
     "id": "features-editor-editorscreen--default",
     "title": "features/editor/EditorScreen",
     "name": "開始画面"
+  },
+  {
+    "id": "features-editor-editorscreen--restored-document",
+    "title": "features/editor/EditorScreen",
+    "name": "前回のファイルを開いた直後"
   },
   {
     "id": "features-editor-editortopbar--failed",
