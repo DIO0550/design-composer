@@ -12,7 +12,9 @@ import {
   PrimitiveSchema,
   PropDefinition,
   type PropDefinitionRecord,
+  type PropShorthand,
   type ShorthandName,
+  ShorthandNames,
 } from "@/domains/dcmp/primitive-schema";
 import {
   type ColorToken,
@@ -20,6 +22,7 @@ import {
   TokenSet,
 } from "@/domains/dcmp/token";
 import { DocumentSelection } from "@/domains/session/document-selection";
+import { type Corner, Corners } from "@/domains/unit/corner";
 import { type Side, SidePair, SidePairs, Sides } from "@/domains/unit/side";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
@@ -82,37 +85,53 @@ export type PropControl = Readonly<{
   enabledBy: Option<string>;
 }>;
 
-/** 束ねた行の 1 辺。どの辺かはキーではなく値が持つ（並びのまま扱えるようにするため）。 */
-export type PropSideControl = Readonly<{
-  side: Side;
-  control: PropControl;
-}>;
-
 /**
- * 4 辺を 1 行にまとめた編集欄（UI 案 docs/Design Composer.html の `padding` 行）。
+ * 束ねた行の 1 longhand。どの位置かはキーではなく値が持つ（並びのまま扱えるようにするため）。
  *
- * 揃わない並びからは作れない（`create` が `none`）ので、「3 辺しか無い束ね」が流通しない。
+ * 位置の語彙は shorthand ごとに違う（padding は 4 辺、radius は 4 隅）。
  */
-export type PropShorthandControl = Readonly<{
-  name: ShorthandName;
-  bySide: Readonly<Record<Side, PropControl>>;
-}>;
+export type PropLonghandControl =
+  | Readonly<{ kind: "side"; side: Side; control: PropControl }>
+  | Readonly<{ kind: "corner"; corner: Corner; control: PropControl }>;
 
 /**
- * 向かい合う 2 辺を畳んだ 1 欄（Figma と同じ垂直 / 水平）。
+ * 4 つの longhand を 1 行にまとめた編集欄（UI 案 docs/Design Composer.html の `padding` 行 /
+ * `radius` 行）。
+ *
+ * 揃わない並びからは作れない（`create` が `none`）ので、「3 つしか無い束ね」が流通しない。
  */
-export type PropPairControl = Readonly<{
-  pair: SidePair;
-  sides: readonly [PropControl, PropControl];
-}>;
+export type PropShorthandControl =
+  | Readonly<{
+      name: typeof ShorthandNames.Padding;
+      bySide: Readonly<Record<Side, PropControl>>;
+    }>
+  | Readonly<{
+      name: typeof ShorthandNames.Radius;
+      byCorner: Readonly<Record<Corner, PropControl>>;
+    }>;
 
-/** 畳んだ欄が今出す値。2 辺が食い違っていれば値は決まらない。 */
-export type PropPairValue =
+/**
+ * まとめて書き換える 1 欄。padding は向かい合う 2 辺（Figma と同じ垂直 / 水平）、radius は
+ * 4 隅すべてを 1 欄で書く（畳み方が違う理由は docs/03「Box」の padding の節）。
+ */
+export type PropCollapsedControl =
+  | Readonly<{
+      kind: "sidePair";
+      pair: SidePair;
+      controls: readonly [PropControl, PropControl];
+    }>
+  | Readonly<{
+      kind: "allCorners";
+      controls: readonly [PropControl, PropControl, PropControl, PropControl];
+    }>;
+
+/** 畳んだ欄が今出す値。書き込み先が食い違っていれば値は決まらない。 */
+export type PropCollapsedValue =
   | Readonly<{ kind: "uniform"; value: Option<PropValue> }>
   | Readonly<{ kind: "mixed" }>;
 
 /**
- * セクションに並ぶ 1 行。1 prop の行と、4 辺を束ねた行の 2 種。
+ * セクションに並ぶ 1 行。1 prop の行と、4 つの longhand を束ねた行の 2 種。
  */
 export type PropControlRow =
   | Readonly<{ kind: "prop"; control: PropControl }>
@@ -390,12 +409,31 @@ function controlsOf(
 }
 
 /**
- * 4 辺が揃っている shorthand の束ねた行。揃っていない shorthand は含まない。
+ * `shorthand` の宣言が指す位置を、編集欄と対にする。
+ *
+ * @param shorthand その prop の `shorthand` 宣言
+ * @param control その prop の編集欄
+ * @returns 位置つきの longhand の編集欄
+ */
+function longhandControlOf(
+  shorthand: PropShorthand,
+  control: PropControl,
+): PropLonghandControl {
+  switch (shorthand.name) {
+    case ShorthandNames.Padding:
+      return { kind: "side", side: shorthand.side, control };
+    case ShorthandNames.Radius:
+      return { kind: "corner", corner: shorthand.corner, control };
+  }
+}
+
+/**
+ * 4 つの longhand が揃っている shorthand の束ねた行。揃っていない shorthand は含まない。
  *
  * @param editables 束ねる候補になる、編集できる prop の並び
  * @param props 今の値の出どころ
  * @param tokens トークン参照の選択肢の出どころ
- * @returns 束ねられた行の並び。`enabledWhen` で辺が欠けた shorthand は入らない
+ * @returns 束ねられた行の並び。`enabledWhen` で longhand が欠けた shorthand は入らない
  */
 function shorthandControlsOf(
   editables: readonly EditableProp[],
@@ -408,24 +446,19 @@ function shorthandControlsOf(
     ),
   );
   return names.flatMap((name) => {
-    const sides = editables.flatMap((editable) => {
+    const longhands = editables.flatMap((editable) => {
       const shorthand = editable.definition.shorthand;
       return shorthand?.name === name
-        ? [
-            {
-              side: shorthand.side,
-              control: controlOf(editable, props, tokens),
-            },
-          ]
+        ? [longhandControlOf(shorthand, controlOf(editable, props, tokens))]
         : [];
     });
-    const control = PropShorthandControl.create(name, sides);
+    const control = PropShorthandControl.create(name, longhands);
     return Option.isSome(control) ? [control.value] : [];
   });
 }
 
 /**
- * セクションに並ぶ行。束ねた行はその shorthand の最初の辺の位置に出る
+ * セクションに並ぶ行。束ねた行はその shorthand の最初の longhand の位置に出る
  * （docs/03「パネルの表示順は定数の定義順」）。
  *
  * @param enabled 条件を満たす、編集できる prop の並び（`enabledWhen` の判定は済んでいる）
@@ -447,7 +480,7 @@ function rowsOf(
     if (shorthand === undefined || clustered === undefined) {
       return [{ kind: "prop", control: controlOf(editable, props, tokens) }];
     }
-    /* 束ねた行は 1 度だけ出す。2 度目以降の辺は行を作らずに飛ばす。 */
+    /* 束ねた行は 1 度だけ出す。2 度目以降の longhand は行を作らずに飛ばす。 */
     const isAlreadyPlaced = enabled
       .slice(0, index)
       .some(
@@ -576,107 +609,182 @@ export const PropControl = {
   },
 } as const;
 
+/**
+ * 位置ごとの編集欄を、欠けも重複もなく引ける対応にする。
+ *
+ * 渡された並びそのものを受けて件数を内側で数えるのは、位置の数と件数が別々に渡ると
+ * 重複の検査を黙って無効にできてしまうため。
+ *
+ * @param slots その shorthand が持つ位置の並び
+ * @param longhands 束ねる候補の longhand ごとの編集欄
+ * @param controlOfSlot 位置に当たる編集欄を並びから引く手段
+ * @returns 全位置が 1 つずつ揃っていれば対応、欠け・重複・位置の語彙違いがあれば `none`
+ */
+function slotRecordOf<Slot extends string>(
+  slots: readonly Slot[],
+  longhands: readonly PropLonghandControl[],
+  controlOfSlot: (slot: Slot) => Option<PropControl>,
+): Option<Readonly<Record<Slot, PropControl>>> {
+  const found = slots.map((slot) => [slot, controlOfSlot(slot)] as const);
+  /* 同じ位置が 2 つ来ると後から来た側が捨てられるので、件数でも見る。 */
+  const isComplete =
+    longhands.length === slots.length &&
+    found.every(([, control]) => Option.isSome(control));
+  return isComplete
+    ? Option.some(
+        Object.fromEntries(
+          found.map(([slot, control]) => [slot, Option.unwrap(control)]),
+        ) as Readonly<Record<Slot, PropControl>>,
+      )
+    : Option.none;
+}
+
 export const PropShorthandControl = {
   /**
-   * 辺ごとの編集欄から束ねた行を作る。
+   * longhand ごとの編集欄から束ねた行を作る。
    *
-   * 4 辺が 1 つずつ揃っていなければ作らない。畳んだ欄は向かい合う 2 辺が
-   * 揃って初めて決まるので、欠けた並びから作れてしまうと出し分けが破れる。
+   * 4 つの位置が 1 つずつ揃っていなければ作らない。畳んだ欄は書き込み先が揃って初めて
+   * 決まるので、欠けた並びから作れてしまうと出し分けが破れる。
    *
    * @param name この行がまとめる shorthand の名前
-   * @param sides 辺ごとの編集欄。順不同
-   * @returns 4 辺が 1 つずつ揃っていれば束ねた行、欠け・重複があれば `none`
+   * @param longhands longhand ごとの編集欄。順不同
+   * @returns 4 つの位置が 1 つずつ揃っていれば束ねた行、欠け・重複・位置の語彙違いが
+   *   あれば `none`
    */
   create(
     name: ShorthandName,
-    sides: readonly PropSideControl[],
+    longhands: readonly PropLonghandControl[],
   ): Option<PropShorthandControl> {
-    const controlOfSide = (side: Side) =>
-      sides.find((candidate) => candidate.side === side)?.control;
-    const top = controlOfSide(Sides.Top);
-    const right = controlOfSide(Sides.Right);
-    const bottom = controlOfSide(Sides.Bottom);
-    const left = controlOfSide(Sides.Left);
-    /* 同じ辺が 2 つ来ると `find` が後から来た側を捨てるので、件数でも見る。 */
-    const isComplete =
-      sides.length === Object.values(Sides).length &&
-      top !== undefined &&
-      right !== undefined &&
-      bottom !== undefined &&
-      left !== undefined;
-    return isComplete
-      ? Option.some({ name, bySide: { top, right, bottom, left } })
-      : Option.none;
+    switch (name) {
+      case ShorthandNames.Padding: {
+        const bySide = slotRecordOf(Object.values(Sides), longhands, (side) =>
+          Option.map(
+            Option.fromNullable(
+              longhands.find(
+                (candidate) =>
+                  candidate.kind === "side" && candidate.side === side,
+              ),
+            ),
+            (longhand) => longhand.control,
+          ),
+        );
+        return Option.map(bySide, (record) => ({ name, bySide: record }));
+      }
+      case ShorthandNames.Radius: {
+        const byCorner = slotRecordOf(
+          Object.values(Corners),
+          longhands,
+          (corner) =>
+            Option.map(
+              Option.fromNullable(
+                longhands.find(
+                  (candidate) =>
+                    candidate.kind === "corner" && candidate.corner === corner,
+                ),
+              ),
+              (longhand) => longhand.control,
+            ),
+        );
+        return Option.map(byCorner, (record) => ({ name, byCorner: record }));
+      }
+    }
   },
 
   /**
-   * 辺ごとの編集欄。並びは `Sides` の宣言順（上 右 下 左）で、
-   * UI 案 docs/Design Composer.html の 4 セルの並びと同じ。
+   * longhand ごとの編集欄。並びは `Sides` / `Corners` の宣言順（上 右 下 左 / 左上 右上
+   * 右下 左下）で、UI 案 docs/Design Composer.html の 4 セルの並びと同じ。
    *
-   * @param shorthand 辺を取り出したい束ねた行
-   * @returns 上 右 下 左の順に並べた辺ごとの編集欄
+   * @param shorthand longhand を取り出したい束ねた行
+   * @returns 宣言順に並べた longhand ごとの編集欄
    */
-  sides(shorthand: PropShorthandControl): readonly PropSideControl[] {
-    return Object.values(Sides).map((side) => ({
-      side,
-      control: shorthand.bySide[side],
-    }));
+  longhands(shorthand: PropShorthandControl): readonly PropLonghandControl[] {
+    switch (shorthand.name) {
+      case ShorthandNames.Padding:
+        return Object.values(Sides).map((side) => ({
+          kind: "side",
+          side,
+          control: shorthand.bySide[side],
+        }));
+      case ShorthandNames.Radius:
+        return Object.values(Corners).map((corner) => ({
+          kind: "corner",
+          corner,
+          control: shorthand.byCorner[corner],
+        }));
+    }
   },
 
   /**
-   * 向かい合う 2 辺を畳んだ欄。並びは垂直・水平の順。
+   * 畳んだ欄。padding は向かい合う 2 辺を垂直・水平の順に 2 欄、radius は 4 隅を 1 欄。
    *
    * @param shorthand 畳みたい束ねた行
-   * @returns 垂直・水平の順に並べた畳んだ欄
+   * @returns 畳んだ欄の並び
    */
-  pairs(
-    shorthand: PropShorthandControl,
-  ): readonly [PropPairControl, PropPairControl] {
-    const pairOf = (pair: SidePair): PropPairControl => {
-      const [first, second] = SidePair.sides(pair);
-      return {
-        pair,
-        sides: [shorthand.bySide[first], shorthand.bySide[second]],
-      };
-    };
-    return [pairOf(SidePairs.Vertical), pairOf(SidePairs.Horizontal)];
+  collapsed(shorthand: PropShorthandControl): readonly PropCollapsedControl[] {
+    switch (shorthand.name) {
+      case ShorthandNames.Padding:
+        return [SidePairs.Vertical, SidePairs.Horizontal].map((pair) => {
+          const [first, second] = SidePair.sides(pair);
+          return {
+            kind: "sidePair",
+            pair,
+            controls: [shorthand.bySide[first], shorthand.bySide[second]],
+          };
+        });
+      case ShorthandNames.Radius:
+        return [
+          {
+            kind: "allCorners",
+            controls: [
+              shorthand.byCorner[Corners.TopLeft],
+              shorthand.byCorner[Corners.TopRight],
+              shorthand.byCorner[Corners.BottomRight],
+              shorthand.byCorner[Corners.BottomLeft],
+            ],
+          },
+        ];
+    }
   },
 } as const;
 
-export const PropPairControl = {
+export const PropCollapsedControl = {
   /**
    * 畳んだ欄が今出す値。
    *
-   * 2 辺とも未設定なら「不揃い」ではなく未設定（`uniform` の `none`）。
-   * どちらも既定が効いている状態で、辺ごとに違う値が入っているわけではない。
+   * 書き込み先がどれも未設定なら「不揃い」ではなく未設定（`uniform` の `none`）。
+   * どれも既定が効いている状態で、位置ごとに違う値が入っているわけではない。
    *
-   * @param pair 値を知りたい畳んだ欄
-   * @returns 2 辺が同じなら `uniform`、食い違っていれば `mixed`
+   * @param collapsed 値を知りたい畳んだ欄
+   * @returns 書き込み先が全部同じなら `uniform`、食い違っていれば `mixed`
    */
-  value(pair: PropPairControl): PropPairValue {
-    const [first, second] = pair.sides;
-    const isBothSet = Option.isSome(first.value) && Option.isSome(second.value);
-    const isBothUnset =
-      !Option.isSome(first.value) && !Option.isSome(second.value);
-    const isUniform =
-      isBothUnset ||
-      (isBothSet && String(first.value.value) === String(second.value.value));
+  value(collapsed: PropCollapsedControl): PropCollapsedValue {
+    const [first, ...rest] = collapsed.controls;
+    const isUniform = rest.every((control) => {
+      const isBothSet =
+        Option.isSome(first.value) && Option.isSome(control.value);
+      const isBothUnset =
+        !Option.isSome(first.value) && !Option.isSome(control.value);
+      return isBothSet
+        ? String(Option.unwrap(first.value)) ===
+            String(Option.unwrap(control.value))
+        : isBothUnset;
+    });
     return isUniform
       ? { kind: "uniform", value: first.value }
       : { kind: "mixed" };
   },
 
   /**
-   * 畳んだ欄の入力の形。2 辺が同じ形の定義を持つことを前提に、片方の形を使う
+   * 畳んだ欄の入力の形。書き込み先が同じ形の定義を持つことを前提に、先頭の形を使う
    * （`paddingTop` と `paddingBottom` は別々の定義だが、同じ `tokenKind` を宣言している）。
    *
-   * @param pair 入力の形を知りたい畳んだ欄
-   * @returns 辺と同じ入力の形。不揃いなら解決値を持たない
+   * @param collapsed 入力の形を知りたい畳んだ欄
+   * @returns longhand と同じ入力の形。不揃いなら解決値を持たない
    */
-  input(pair: PropPairControl): PropControlInput {
-    const [first] = pair.sides;
+  input(collapsed: PropCollapsedControl): PropControlInput {
+    const [first] = collapsed.controls;
     const input = first.input;
-    if (PropPairControl.value(pair).kind === "uniform") {
+    if (PropCollapsedControl.value(collapsed).kind === "uniform") {
       return input;
     }
     return input.kind === "numericToken"
@@ -685,17 +793,20 @@ export const PropPairControl = {
   },
 
   /**
-   * 入力された値を、2 辺への 1 件の編集にする。
+   * 入力された値を、書き込み先すべてへの 1 件の編集にする。
    *
    * 受け取るのが解釈済みの値なのは `PropControl.editFrom` と同じ。
    *
-   * @param pair 編集したい畳んだ欄
+   * @param collapsed 編集したい畳んだ欄
    * @param value 入力された値。入力欄が空なら `none`
-   * @returns 値が無いなら 2 辺を未設定へ戻す編集、あれば 2 辺を同じ値にする編集
+   * @returns 値が無いなら書き込み先を未設定へ戻す編集、あれば全部を同じ値にする編集
    */
-  editFrom(pair: PropPairControl, value: Option<string>): PropEdit {
-    const [first, second] = pair.sides;
-    const names: readonly [string, ...string[]] = [first.prop, second.prop];
+  editFrom(collapsed: PropCollapsedControl, value: Option<string>): PropEdit {
+    const [first, ...rest] = collapsed.controls;
+    const names: readonly [string, ...string[]] = [
+      first.prop,
+      ...rest.map((control) => control.prop),
+    ];
     return Option.isSome(value)
       ? PropEdit.set(names, parseInputValue(first.input, value.value))
       : PropEdit.clear(names);

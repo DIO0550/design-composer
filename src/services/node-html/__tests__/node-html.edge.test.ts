@@ -72,7 +72,7 @@ test("部品インスタンスは展開してからコンパイルすると部�
   const components: ComponentSet = {
     "primary-button": {
       type: "Box",
-      props: { background: "primary", radius: "md" },
+      props: { background: "primary", radiusTopLeft: "md" },
       children: [
         {
           name: "primary-button-label",
@@ -89,7 +89,7 @@ test("部品インスタンスは展開してからコンパイルすると部�
 
   expect(compiled.name).toBe("save-button");
   expect(compiled.style.background).toBe("var(--colors-primary)");
-  expect(compiled.style["border-radius"]).toBe("var(--radius-md)");
+  expect(compiled.style["border-radius"]).toBe("var(--radius-md) 0 0 0");
   expect(
     compiled.kind === "box" &&
       compiled.children[0].kind === "text" &&

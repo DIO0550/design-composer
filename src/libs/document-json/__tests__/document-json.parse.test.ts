@@ -18,7 +18,7 @@ function setupText(): string {
     "primary-button": {
       "publicProps": { "label": { "node": "primary-button-label", "prop": "content" } },
       "type": "Box",
-      "props": { "background": "primary", "radius": "md" },
+      "props": { "background": "primary", "radiusTopLeft": "md" },
       "children": [
         { "name": "primary-button-label", "type": "Text", "props": { "content": "Button", "color": "white" } }
       ]
@@ -53,7 +53,7 @@ test("ドキュメント全体を読み込むと仕様どおりのドメイン�
     components: {
       "primary-button": {
         type: "Box",
-        props: { background: "primary", radius: "md" },
+        props: { background: "primary", radiusTopLeft: "md" },
         children: [
           {
             name: "primary-button-label",

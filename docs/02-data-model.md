@@ -87,7 +87,7 @@
       "label": { "node": "primary-button-label", "prop": "content" }
     },
     "type": "Box",
-    "props": { "background": "primary", "radius": "md" },
+    "props": { "background": "primary", "radiusTopLeft": "md", "radiusTopRight": "md", "radiusBottomRight": "md", "radiusBottomLeft": "md" },
     "children": [
       { "name": "primary-button-label", "type": "Text", "props": { "content": "Button" } }
     ]

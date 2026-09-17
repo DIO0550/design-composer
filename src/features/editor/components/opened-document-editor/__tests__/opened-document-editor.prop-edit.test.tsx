@@ -79,7 +79,7 @@ test("畳んだ padding の欄を変えると向かい合う 2 辺がまとめ�
     "sm",
   );
   await userEvent.click(
-    screen.getByRole("button", { name: ShorthandLabels.perEdge }),
+    screen.getByRole("button", { name: ShorthandLabels.perLonghand.padding }),
   );
 
   expect(
@@ -87,6 +87,30 @@ test("畳んだ padding の欄を変えると向かい合う 2 辺がまとめ�
       (name) => screen.getByRole<HTMLSelectElement>("combobox", { name }).value,
     ),
   ).toEqual(["sm", "sm", "lg"]);
+});
+
+test("畳んだ radius の欄を変えると 4 隅がまとめて変わる", async () => {
+  await renderOpenedDocument();
+  await selectArtboard("home");
+
+  await userEvent.selectOptions(
+    screen.getByRole("combobox", { name: "Radius" }),
+    "sm",
+  );
+  await userEvent.click(
+    screen.getByRole("button", { name: ShorthandLabels.perLonghand.radius }),
+  );
+
+  expect(
+    [
+      "Radius Top Left",
+      "Radius Top Right",
+      "Radius Bottom Right",
+      "Radius Bottom Left",
+    ].map(
+      (name) => screen.getByRole<HTMLSelectElement>("combobox", { name }).value,
+    ),
+  ).toEqual(["sm", "sm", "sm", "sm"]);
 });
 
 test("畳んだ padding の欄を変えたあと Ctrl+Z を 1 回押すと両辺が戻る", async () => {
@@ -107,7 +131,7 @@ test("畳んだ padding の欄を変えたあと Ctrl+Z を 1 回押すと両辺
 
   await userEvent.keyboard("{Control>}z{/Control}");
   await userEvent.click(
-    screen.getByRole("button", { name: ShorthandLabels.perEdge }),
+    screen.getByRole("button", { name: ShorthandLabels.perLonghand.padding }),
   );
 
   expect(

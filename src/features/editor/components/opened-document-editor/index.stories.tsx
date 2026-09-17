@@ -101,7 +101,10 @@ const DocumentWithDeepBranch = DesignDocument.create({
             paddingBottom: "lg",
             paddingLeft: "lg",
             background: "gray-100",
-            radius: "md",
+            radiusTopLeft: "md",
+            radiusTopRight: "md",
+            radiusBottomRight: "md",
+            radiusBottomLeft: "md",
           },
           children: [
             {
@@ -113,7 +116,10 @@ const DocumentWithDeepBranch = DesignDocument.create({
                 paddingBottom: "md",
                 paddingLeft: "md",
                 background: "white",
-                radius: "md",
+                radiusTopLeft: "md",
+                radiusTopRight: "md",
+                radiusBottomRight: "md",
+                radiusBottomLeft: "md",
               },
               children: [
                 {
@@ -196,7 +202,10 @@ const DocumentWithAbsoluteNode = DesignDocument.create({
                 heightMode: "fixed",
                 height: 24,
                 background: "primary",
-                radius: "md",
+                radiusTopLeft: "md",
+                radiusTopRight: "md",
+                radiusBottomRight: "md",
+                radiusBottomLeft: "md",
               },
               children: [],
             },

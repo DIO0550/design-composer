@@ -5,6 +5,7 @@ import {
 } from "@/domains/dcmp/node";
 import type { TokenKind, TokenRef } from "@/domains/dcmp/token";
 import { TokenSet } from "@/domains/dcmp/token";
+import type { Corner } from "@/domains/unit/corner";
 import type { Side } from "@/domains/unit/side";
 import type { ValueOf } from "@/types/ValueOf";
 import { Range } from "@/utils/Range";
@@ -17,28 +18,36 @@ export type EnabledWhen =
   | Readonly<{ kind: "equals"; prop: string; equals: PropValue }>
   | Readonly<{ kind: "notEquals"; prop: string; notEquals: PropValue }>;
 
-/** 4 辺の longhand をまとめて指す名前（CSS の shorthand と同じ語）。 */
+/**
+ * 4 つの longhand をまとめて指す名前（docs/03「Box」の prop 表の綴り。UI 案
+ * docs/Design Composer.html の行ラベルも同じ）。CSS の shorthand 名とは揃っていない
+ * （radius が出すのは `border-radius`）。
+ *
+ * 何で 4 つに割れるかは名前ごとに違う（padding は 4 辺、radius は 4 隅）。その対応は下の
+ * `PropShorthand` が型で持つ。
+ */
 export const ShorthandNames = {
   Padding: "padding",
+  Radius: "radius",
 } as const;
 
 /** shorthand の名前。 */
 export type ShorthandName = ValueOf<typeof ShorthandNames>;
 
 /**
- * その prop が、どの shorthand のどの辺にあたるか。
+ * その prop が、どの shorthand のどの位置にあたるか。
  *
  * 宣言するのは prop 自身の性質（`paddingTop` は padding の上辺の longhand である）で、
  * パネルがそれを畳んで見せているかどうかは持たない
  * （docs/03「畳み方は表示の都合なので持たない」）。
  *
- * 名前を素の `string` にしないのは、4 辺のうち 1 つだけ綴りを間違えても型では落ちず、
- * 行が 2 つに割れて画面に出るまで気づけないため。
+ * 名前ごとに位置の語彙を分けているので、padding に隅を、radius に辺を宣言できない。
+ * 素の `string` にすると 4 つのうち 1 つだけ綴りを間違えても型では落ちず、行が 2 つに割れて
+ * 画面に出るまで気づけない。
  */
-export type PropShorthand = Readonly<{
-  name: ShorthandName;
-  side: Side;
-}>;
+export type PropShorthand =
+  | Readonly<{ name: typeof ShorthandNames.Padding; side: Side }>
+  | Readonly<{ name: typeof ShorthandNames.Radius; corner: Corner }>;
 
 /** prop 定義のうち、値の決め方（`domain`）によらず共通の部分。 */
 type PropDefinitionBase = Readonly<{

@@ -5,6 +5,7 @@ import type {
   PropShorthandControl,
   SelectionControls,
 } from "@/domains/session/prop-control";
+import type { Corner } from "@/domains/unit/corner";
 import type { Side } from "@/domains/unit/side";
 import { Option } from "@/utils/Option";
 
@@ -124,15 +125,20 @@ export const VariantControl: PropControl = {
 };
 
 /**
- * 1 辺分の padding の欄。
+ * 束ねた行の 1 欄分。
  *
- * @param side どの辺か
- * @param token その辺に設定されているトークン名。未設定なら `none`
- * @returns その辺の編集欄
+ * @param prefix prop 名の接頭辞（`padding` / `radius`）
+ * @param slot どの位置か（辺なら `top`、隅なら `topLeft`）
+ * @param token その位置に設定されているトークン名。未設定なら `none`
+ * @returns その位置の編集欄
  */
-function paddingSide(side: Side, token: Option<string>): PropControl {
+function longhandControl(
+  prefix: string,
+  slot: Side | Corner,
+  token: Option<string>,
+): PropControl {
   return {
-    prop: `padding${side.charAt(0).toUpperCase()}${side.slice(1)}`,
+    prop: `${prefix}${slot.charAt(0).toUpperCase()}${slot.slice(1)}`,
     input: {
       kind: "numericToken",
       names: ["sm", "md", "lg"],
@@ -148,10 +154,10 @@ function paddingSide(side: Side, token: Option<string>): PropControl {
 export const UniformPadding: PropShorthandControl = {
   name: ShorthandNames.Padding,
   bySide: {
-    top: paddingSide("top", Option.some("md")),
-    right: paddingSide("right", Option.some("md")),
-    bottom: paddingSide("bottom", Option.some("md")),
-    left: paddingSide("left", Option.some("md")),
+    top: longhandControl("padding", "top", Option.some("md")),
+    right: longhandControl("padding", "right", Option.some("md")),
+    bottom: longhandControl("padding", "bottom", Option.some("md")),
+    left: longhandControl("padding", "left", Option.some("md")),
   },
 };
 
@@ -159,10 +165,32 @@ export const UniformPadding: PropShorthandControl = {
 export const MixedPadding: PropShorthandControl = {
   name: ShorthandNames.Padding,
   bySide: {
-    top: paddingSide("top", Option.some("sm")),
-    right: paddingSide("right", Option.some("lg")),
-    bottom: paddingSide("bottom", Option.some("md")),
-    left: paddingSide("left", Option.some("lg")),
+    top: longhandControl("padding", "top", Option.some("sm")),
+    right: longhandControl("padding", "right", Option.some("lg")),
+    bottom: longhandControl("padding", "bottom", Option.some("md")),
+    left: longhandControl("padding", "left", Option.some("lg")),
+  },
+};
+
+/** 4 隅が揃っている radius。畳んだ 1 欄に同じ値が出る。 */
+export const UniformRadius: PropShorthandControl = {
+  name: ShorthandNames.Radius,
+  byCorner: {
+    topLeft: longhandControl("radius", "topLeft", Option.some("md")),
+    topRight: longhandControl("radius", "topRight", Option.some("md")),
+    bottomRight: longhandControl("radius", "bottomRight", Option.some("md")),
+    bottomLeft: longhandControl("radius", "bottomLeft", Option.some("md")),
+  },
+};
+
+/** 4 隅が揃っていない radius。畳んだ欄は `不揃い` になる。 */
+export const MixedRadius: PropShorthandControl = {
+  name: ShorthandNames.Radius,
+  byCorner: {
+    topLeft: longhandControl("radius", "topLeft", Option.some("sm")),
+    topRight: longhandControl("radius", "topRight", Option.some("lg")),
+    bottomRight: longhandControl("radius", "bottomRight", Option.some("md")),
+    bottomLeft: longhandControl("radius", "bottomLeft", Option.some("lg")),
   },
 };
 

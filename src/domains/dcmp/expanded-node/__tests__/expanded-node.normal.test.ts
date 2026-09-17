@@ -7,7 +7,7 @@ import { ExpandedNode } from "../index";
 const components: ComponentSet = {
   "primary-button": {
     type: "Box",
-    props: { background: "primary", radius: "md" },
+    props: { background: "primary", radiusTopLeft: "md" },
     children: [
       {
         name: "primary-button-label",
@@ -29,7 +29,7 @@ test("ref ノードを展開すると部品定義の type と props を継承し
   expect(expanded).toEqual({
     name: "save-button",
     type: "Box",
-    props: { background: "primary", radius: "md" },
+    props: { background: "primary", radiusTopLeft: "md" },
     children: [
       {
         name: "primary-button-label",

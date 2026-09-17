@@ -44,7 +44,7 @@ test("binding に node と prop が揃っていない部品は読み込めない
 test("部品は publicProps・type・props・children の順で書き出される", () => {
   const written = Component.toJson({
     type: "Box",
-    props: { radius: "md" },
+    props: { radiusTopLeft: "md" },
     children: [{ name: "card-title", type: "Text" }],
     publicProps: { title: { node: "card-title", prop: "content" } },
   });

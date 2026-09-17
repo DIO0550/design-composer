@@ -27,7 +27,8 @@ type SchemaPropsOf<T extends PrimitiveType> =
  * 値側を union として取り出す（`never` は union から消える）。
  *
  * 例: Box なら `"gap" | "paddingTop" | "paddingRight" | "paddingBottom" | "paddingLeft" |
- * "background" | "radius" | "shadow"`。
+ * "background" | "radiusTopLeft" | "radiusTopRight" | "radiusBottomRight" |
+ * "radiusBottomLeft" | "shadow"`。
  */
 type TokenPropNameOf<T extends PrimitiveType> = {
   [K in keyof SchemaPropsOf<T>]: SchemaPropsOf<T>[K] extends { domain: "token" }

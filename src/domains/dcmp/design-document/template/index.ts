@@ -60,7 +60,10 @@ const InitialComponents: ComponentSet = {
       paddingBottom: "sm",
       paddingLeft: "md",
       background: "primary",
-      radius: "md",
+      radiusTopLeft: "md",
+      radiusTopRight: "md",
+      radiusBottomRight: "md",
+      radiusBottomLeft: "md",
     },
     children: [
       {
@@ -84,7 +87,10 @@ const InitialComponents: ComponentSet = {
       paddingBottom: "sm",
       paddingLeft: "md",
       background: "gray-100",
-      radius: "md",
+      radiusTopLeft: "md",
+      radiusTopRight: "md",
+      radiusBottomRight: "md",
+      radiusBottomLeft: "md",
     },
     children: [
       {
@@ -105,7 +111,10 @@ const InitialComponents: ComponentSet = {
       paddingBottom: "sm",
       paddingLeft: "md",
       background: "gray-100",
-      radius: "md",
+      radiusTopLeft: "md",
+      radiusTopRight: "md",
+      radiusBottomRight: "md",
+      radiusBottomLeft: "md",
       widthMode: "fill",
     },
     children: [
@@ -130,7 +139,10 @@ const InitialComponents: ComponentSet = {
       paddingBottom: "lg",
       paddingLeft: "lg",
       background: "white",
-      radius: "lg",
+      radiusTopLeft: "lg",
+      radiusTopRight: "lg",
+      radiusBottomRight: "lg",
+      radiusBottomLeft: "lg",
       shadow: "sm",
     },
     children: [

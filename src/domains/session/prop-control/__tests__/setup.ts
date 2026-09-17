@@ -80,10 +80,10 @@ export function instanceOf(
 }
 
 /**
- * セクション内の編集欄を、束ねた行を辺ごとにほどいて並べる。
+ * セクション内の編集欄を、束ねた行を longhand ごとにほどいて並べる。
  *
  * @param section ほどきたいセクション
- * @returns 行の順・束ねた行の中は上 右 下 左の順に並んだ編集欄
+ * @returns 行の順・束ねた行の中は宣言順に並んだ編集欄
  */
 export function controlsIn(
   section: PropControlSection,
@@ -91,7 +91,9 @@ export function controlsIn(
   return section.rows.flatMap((row) =>
     row.kind === "prop"
       ? [row.control]
-      : PropShorthandControl.sides(row.shorthand).map((side) => side.control),
+      : PropShorthandControl.longhands(row.shorthand).map(
+          (longhand) => longhand.control,
+        ),
   );
 }
 

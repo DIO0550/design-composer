@@ -3,7 +3,7 @@ import { TokenPropKinds, type TokenPropName } from "../index";
 
 test("トークン参照 prop はスキーマで宣言されたトークン種別を答える", () => {
   expect(TokenPropKinds.kindOf("gap")).toBe("spacing");
-  expect(TokenPropKinds.kindOf("radius")).toBe("radius");
+  expect(TokenPropKinds.kindOf("radiusTopLeft")).toBe("radius");
   expect(TokenPropKinds.kindOf("shadow")).toBe("shadows");
 });
 
