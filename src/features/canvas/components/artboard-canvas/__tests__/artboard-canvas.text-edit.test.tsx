@@ -56,7 +56,13 @@ test("入力欄は文言が描かれている位置に重なる", () => {
 
   fireEvent.doubleClick(drawnAt("title", TitleBounds));
 
-  expect(editor().getAttribute("style")).toContain("left: 100px");
+  const { left, top, width, height } = editor().style;
+  expect({ left, top, width, height }).toEqual({
+    left: "100px",
+    top: "50px",
+    width: "80px",
+    height: "20px",
+  });
 });
 
 test("文言を設定していない Text をダブルクリックすると空の入力欄が出る", () => {
