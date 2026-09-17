@@ -55,6 +55,16 @@
     "name": "語が入っている"
   },
   {
+    "id": "components-tabbar--multiple",
+    "title": "components/TabBar",
+    "name": "複数並んでいる"
+  },
+  {
+    "id": "components-tabbar--single",
+    "title": "components/TabBar",
+    "name": "1 枚だけ"
+  },
+  {
     "id": "features-assets-assetspanel--default",
     "title": "features/assets/AssetsPanel",
     "name": "パレット"
@@ -310,6 +320,21 @@
     "name": "部品を運んでいる"
   },
   {
+    "id": "features-documentstart-documentopenfailurebanner--dialog-failed",
+    "title": "features/documentStart/DocumentOpenFailureBanner",
+    "name": "ファイルを選べなかった"
+  },
+  {
+    "id": "features-documentstart-documentopenfailurebanner--unparsable",
+    "title": "features/documentStart/DocumentOpenFailureBanner",
+    "name": "ドキュメントとして読み取れない"
+  },
+  {
+    "id": "features-documentstart-documentopenfailurebanner--unreachable",
+    "title": "features/documentStart/DocumentOpenFailureBanner",
+    "name": "ファイルが見つからない"
+  },
+  {
     "id": "features-documentstart-documentstart--default",
     "title": "features/documentStart/DocumentStart",
     "name": "開始画面"
@@ -338,6 +363,16 @@
     "id": "features-documentstart-documentstart--with-recent-documents",
     "title": "features/documentStart/DocumentStart",
     "name": "最近使ったファイルがある"
+  },
+  {
+    "id": "features-documentstart-documenttabbar--multiple",
+    "title": "features/documentStart/DocumentTabBar",
+    "name": "複数開いている"
+  },
+  {
+    "id": "features-documentstart-documenttabbar--single",
+    "title": "features/documentStart/DocumentTabBar",
+    "name": "1 つだけ開いている"
   },
   {
     "id": "features-editor-documenterrorlist--broken-json",
@@ -383,6 +418,16 @@
     "id": "features-editor-editorscreen--default",
     "title": "features/editor/EditorScreen",
     "name": "開始画面"
+  },
+  {
+    "id": "features-editor-editorscreen--multiple-documents",
+    "title": "features/editor/EditorScreen",
+    "name": "複数開いている"
+  },
+  {
+    "id": "features-editor-editorscreen--open-failed-while-opened",
+    "title": "features/editor/EditorScreen",
+    "name": "開いたまま開けなかった"
   },
   {
     "id": "features-editor-editorscreen--restored-document",
