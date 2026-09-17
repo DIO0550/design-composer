@@ -7,7 +7,13 @@ import {
 import { DocumentSession } from "@/features/document-start/domains/document-session";
 import { DialogChoice } from "@/libs/document-dialog/fake";
 import { Option } from "@/utils/Option";
-import { NewPath, Path, renderDocumentSession } from "./setup";
+import {
+  activeDocument,
+  NewPath,
+  openedPaths,
+  Path,
+  renderDocumentSession,
+} from "./setup";
 
 test("ファイルを選ばずにダイアログを閉じると、何も開かれない", async () => {
   const observer = renderDocumentSession(
@@ -29,9 +35,7 @@ test("開いている最中にダイアログを閉じても、開いていた�
 
   await observer.openDocument();
 
-  expect(DocumentSession.openedPath(observer.session())).toStrictEqual(
-    Option.some(NewPath),
-  );
+  expect(openedPaths(observer.session())).toStrictEqual([NewPath]);
 });
 
 test("読み込めないファイルを選ぶと、その失敗が残る", async () => {
@@ -42,12 +46,24 @@ test("読み込めないファイルを選ぶと、その失敗が残る", async
 
   await observer.openDocument();
 
-  expect(observer.session()).toStrictEqual(
-    DocumentSession.failed({
+  expect(DocumentSession.failure(observer.session())).toStrictEqual(
+    Option.some({
       kind: "io",
       error: { reason: "missing", message: `${Path}: ファイルが存在しない` },
     }),
   );
+});
+
+test("読み込めないファイルを選んでも、開いているドキュメントは閉じない", async () => {
+  const observer = renderDocumentSession(
+    { [NewPath]: artboardContent("home") },
+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
+  );
+  await observer.dropFiles([NewPath]);
+
+  await observer.openDocument();
+
+  expect(openedPaths(observer.session())).toStrictEqual([NewPath]);
 });
 
 test("新規作成の保存先へ書けないときは、その失敗が残る", async () => {
@@ -59,8 +75,8 @@ test("新規作成の保存先へ書けないときは、その失敗が残る",
 
   await observer.createDocument();
 
-  expect(observer.session()).toStrictEqual(
-    DocumentSession.failed({
+  expect(DocumentSession.failure(observer.session())).toStrictEqual(
+    Option.some({
       kind: "io",
       error: {
         reason: "notPermitted",
@@ -78,8 +94,8 @@ test("解釈できないファイルを選ぶと、エラー一覧が残る", as
 
   await observer.openDocument();
 
-  expect(observer.session()).toStrictEqual(
-    DocumentSession.failed({
+  expect(DocumentSession.failure(observer.session())).toStrictEqual(
+    Option.some({
       kind: "unparsable",
       errors: [
         {
@@ -90,6 +106,17 @@ test("解釈できないファイルを選ぶと、エラー一覧が残る", as
       ],
     }),
   );
+});
+
+test("解釈できないファイルを選んでも、タブは増えない", async () => {
+  const observer = renderDocumentSession(
+    { [Path]: '{ "formatVersion": ' },
+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
+  );
+
+  await observer.openDocument();
+
+  expect(openedPaths(observer.session())).toStrictEqual([]);
 });
 
 /*
@@ -105,11 +132,8 @@ test("スキーマ検証にだけ落ちるファイルを選ぶと、そのま�
   await observer.openDocument();
 
   // JSON を経由すると省略可能なキーが落ちるため、キーの有無ではなく値で比べる。
-  expect(observer.session()).toEqual(
-    DocumentSession.opened({
-      path: Path,
-      document: danglingTokenDocument("home"),
-    }),
+  expect(activeDocument(observer.session())).toEqual(
+    Option.some(danglingTokenDocument("home")),
   );
 });
 
@@ -124,8 +148,8 @@ test("ダイアログを出せなかったときは、その失敗が残る", as
 
   await observer.openDocument();
 
-  expect(observer.session()).toStrictEqual(
-    DocumentSession.failed({
+  expect(DocumentSession.failure(observer.session())).toStrictEqual(
+    Option.some({
       kind: "dialog",
       error: { message: "Error: dialog.open not allowed" },
     }),

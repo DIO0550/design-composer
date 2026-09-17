@@ -1,11 +1,10 @@
 import type { ReactElement, ReactNode } from "react";
-import type { DocumentAccessFailureReason } from "@/domains/session/document-access-failure";
-import type { DocumentError } from "@/domains/session/document-error";
-import type {
-  DocumentOpenFailure,
-  UnopenedSession,
-} from "@/features/document-start/domains/document-session";
-import { DocumentSession } from "@/features/document-start/domains/document-session";
+import {
+  DocumentOpenFailureNotice,
+  FailureLine,
+  type RenderDocumentErrors,
+} from "@/features/document-start/components/document-open-failure";
+import { OpenAttempt } from "@/features/document-start/domains/document-session";
 import {
   type CommandSource,
   type CommandSourceFailure,
@@ -14,92 +13,6 @@ import {
 } from "@/features/document-start/hooks/use-document-session";
 import { FilePath } from "@/utils/FilePath";
 import { Option } from "@/utils/Option";
-
-/**
- * エラーを画面に並べる手段。
- *
- * 開始画面が持つのは「どの失敗のときに一覧を出すか」までで、その一覧をどう綴るかは
- * 呼び出し側が決める。ここが知っているのは一覧の部品ではなく、返るものが
- * 絶対位置で下端に重なるという置かれ方だけ。
- *
- * @param errors 開こうとしたファイルを解釈できなかった理由
- * @returns この節の中で絶対位置に置かれる、エラーの一覧。位置を持たないものを返すと
- *   案内の文と一緒に中央へ流れ込む（型でもテストでも縛れないので、視覚差分で見る）
- */
-type RenderDocumentErrors = (errors: readonly DocumentError[]) => ReactNode;
-
-/**
- * I/O の失敗を利用者向けの言い方にする。診断用の原文は後ろに添える。
- *
- * @param reason ドキュメントの中身へ届かなかった理由
- * @returns 利用者向けの 1 行
- */
-function ioFailureLabel(reason: DocumentAccessFailureReason): string {
-  switch (reason) {
-    case "missing":
-      return "ファイルが見つかりません";
-    case "notPermitted":
-      return "ファイルを読み書きする権限がありません";
-    case "unusablePath":
-      return "パスが正しくありません";
-    case "undecodableText":
-      return "UTF-8 のテキストとして読めません";
-    case "storageFailed":
-      return "ファイルの読み書きに失敗しました";
-    case "undelivered":
-      return "アプリ内部の呼び出しに失敗しました";
-  }
-}
-
-/**
- * 失敗の理由と、その原文を並べた 1 行。
- *
- * @param label 利用者向けの言い方
- * @param message 診断用の原文
- * @returns 読み上げの対象になる 1 行
- */
-function FailureLine({
-  label,
-  message,
-}: Readonly<{ label: string; message: string }>): ReactElement {
-  return (
-    <p role="alert" className="text-red-700">
-      {label}
-      <span className="ml-2 font-mono text-red-900/70 text-xs">{message}</span>
-    </p>
-  );
-}
-
-/**
- * 開けなかった理由。
- * 解釈できなかったファイルだけは件数分の一覧になるため、1 行のメッセージとは
- * 別の見せ方をする（docs/03-schema.md「不正ファイル時の挙動」の「開く時」）。
- */
-function OpenFailure({
-  failure,
-  renderErrors,
-}: Readonly<{
-  failure: DocumentOpenFailure;
-  renderErrors: RenderDocumentErrors;
-}>) {
-  if (failure.kind === "unparsable") {
-    return (
-      <>
-        <p role="alert" className="text-red-700">
-          ファイルをドキュメントとして読み取れなかったため開けませんでした
-        </p>
-        {renderErrors(failure.errors)}
-      </>
-    );
-  }
-
-  const label =
-    failure.kind === "dialog"
-      ? "ファイルの選択に失敗しました"
-      : ioFailureLabel(failure.error.reason);
-
-  return <FailureLine label={label} message={failure.error.message} />;
-}
 
 /**
  * 開く指示を受け取れない経路を、利用者向けの言い方にする。
@@ -259,7 +172,7 @@ function RecentFileList({
  * 文字 `#1e1e1e` / `#767676`、境界 `#e6e6e6`、強調 `#4db2ff` / `#0d99ff`）。組み合わせ方
  * には UI 案に無いものを含む（`StartActions`）。
  *
- * @param session ドキュメントを開いていないセッション
+ * @param attempt 直近の開く操作がどこまで進んだか
  * @param actions 開く / 作るを始める手続き
  * @param recentPaths 最近開いたファイルのパス（新しい順）
  * @param recentFilesFailure その一覧を読み取れなかった理由。読めていれば `none`
@@ -267,21 +180,22 @@ function RecentFileList({
  * @param renderErrors 解釈できなかったファイルのエラー一覧の描き方
  */
 export function DocumentStart({
-  session,
+  attempt,
   actions,
   recentPaths,
   recentFilesFailure,
   commandFailure,
   renderErrors,
 }: Readonly<{
-  session: UnopenedSession;
+  attempt: OpenAttempt;
   actions: DocumentSessionActions;
   recentPaths: readonly string[];
   recentFilesFailure: Option<string>;
   commandFailure: Option<CommandSourceFailure>;
   renderErrors: RenderDocumentErrors;
 }>) {
-  const isOpening = DocumentSession.isOpening(session);
+  const isOpening = OpenAttempt.isOpening(attempt);
+  const failure = OpenAttempt.failure(attempt);
 
   return (
     // relative は renderErrors が返すものの包含ブロック。外すと基準がビューポートへ移り、
@@ -301,24 +215,30 @@ export function DocumentStart({
             : "ドキュメントを開くか、新しく作成してください。"}
         </p>
         <StartActions actions={actions} disabled={isOpening} />
-        <RecentFileList paths={recentPaths} onOpen={actions.openDocumentAt} />
+        <RecentFileList
+          paths={recentPaths}
+          onOpen={(path) => actions.openDocumentsAt([path])}
+        />
         <p className="rounded border border-[#e6e6e6] border-dashed px-3 py-2 text-[#767676] text-xs">
           .dcmp ファイルをウィンドウに落としても開けます
         </p>
         {Option.isSome(recentFilesFailure) && (
           <FailureLine
             label="最近使ったファイルを読み込めません"
-            message={recentFilesFailure.value}
+            message={Option.some(recentFilesFailure.value)}
           />
         )}
         {Option.isSome(commandFailure) && (
           <FailureLine
             label={commandSourceFailureLabel(commandFailure.value.source)}
-            message={commandFailure.value.message}
+            message={Option.some(commandFailure.value.message)}
           />
         )}
-        {session.kind === "failed" && (
-          <OpenFailure failure={session.failure} renderErrors={renderErrors} />
+        {Option.isSome(failure) && (
+          <DocumentOpenFailureNotice
+            failure={failure.value}
+            renderErrors={renderErrors}
+          />
         )}
       </div>
     </section>

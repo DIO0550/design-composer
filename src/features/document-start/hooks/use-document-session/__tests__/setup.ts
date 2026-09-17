@@ -1,4 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
+import type { DesignDocument } from "@/domains/dcmp/design-document";
+import { OpenedDocuments } from "@/domains/session/opened-documents";
 import type { DocumentSession } from "@/features/document-start/domains/document-session";
 import type { CommandSourceFailure } from "@/features/document-start/hooks/use-document-session";
 import type { AppMenuCommand } from "@/libs/app-menu";
@@ -11,7 +13,7 @@ import {
 } from "@/libs/document-dialog/fake";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { FileDropFake } from "@/libs/file-drop/fake";
-import type { Option } from "@/utils/Option";
+import { Option } from "@/utils/Option";
 import { useDocumentSession } from "../index";
 
 /**
@@ -24,10 +26,38 @@ export function storedRecentPaths(recentPaths: readonly string[]): string {
   return AppStateJson.serialize({ recentPaths });
 }
 
-/** 既に置いてあるファイル。テストの中で開いているファイルは常に 1 つ。 */
+/** 既に置いてあるファイル。 */
 export const Path = "/work/login.dcmp";
+/** もう 1 つ置いてあるファイル。複数開いた状態を作るのに使う。 */
+export const OtherPath = "/work/settings.dcmp";
 /** 新規作成の保存先。まだ置かれていないパス。 */
 export const NewPath = "/work/untitled.dcmp";
+
+/**
+ * 開いているドキュメントのパスを並び順に読む。
+ *
+ * @param session 読む相手
+ * @returns 開いた順に並んだパス。1 つも開いていなければ空
+ */
+export function openedPaths(session: DocumentSession): readonly string[] {
+  return Option.isSome(session.documents)
+    ? OpenedDocuments.documents(session.documents.value).map(
+        (document) => document.path,
+      )
+    : [];
+}
+
+/**
+ * 今見ているドキュメントの中身。
+ *
+ * @param session 読む相手
+ * @returns 見ているドキュメント。1 つも開いていなければ `none`
+ */
+export function activeDocument(
+  session: DocumentSession,
+): Option<DesignDocument> {
+  return Option.map(session.documents, (opened) => opened.active.document);
+}
 
 export type SessionObserver = Readonly<{
   /** インメモリのファイル表。書き出された内容の確認に使う。 */
@@ -55,6 +85,10 @@ export type SessionObserver = Readonly<{
   chooseMenu: (command: AppMenuCommand) => Promise<void>;
   /** ウィンドウへファイルを落とし、開く操作が終わるまで待つ。 */
   dropFiles: (paths: readonly string[]) => Promise<void>;
+  /** そのパスのタブへ移る。 */
+  activateTab: (path: string) => Promise<void>;
+  /** そのパスのタブを閉じる。 */
+  closeTab: (path: string) => Promise<void>;
 }>;
 
 /** 代役の口を用意するときの追加の指定。 */
@@ -139,5 +173,13 @@ export function renderDocumentSession(
         dropFake.dropFiles(paths);
       });
     },
+    activateTab: (path) =>
+      act(async () => {
+        result.current.tabActions.activate(path);
+      }),
+    closeTab: (path) =>
+      act(async () => {
+        result.current.tabActions.close(path);
+      }),
   };
 }

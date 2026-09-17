@@ -24,7 +24,7 @@ test("保存された一覧の先頭のファイルが起動時に開かれる",
 
   await observer.settle();
 
-  expect(DocumentSession.openedPath(observer.session())).toStrictEqual(
+  expect(DocumentSession.activePath(observer.session())).toStrictEqual(
     Option.some(Path),
   );
 });
@@ -50,8 +50,8 @@ test("前回開いていたファイルが消えていたら理由を持つ失�
 
   await observer.settle();
 
-  expect(observer.session()).toStrictEqual(
-    DocumentSession.failed({
+  expect(DocumentSession.failure(observer.session())).toStrictEqual(
+    Option.some({
       kind: "io",
       error: DocumentAccessFailure.create(
         "missing",

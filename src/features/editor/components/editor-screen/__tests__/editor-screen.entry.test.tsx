@@ -8,11 +8,14 @@ import { DialogChoice } from "@/libs/document-dialog/fake";
 import { DocumentJson } from "@/libs/document-json";
 import { Option } from "@/utils/Option";
 import {
+  closeTab,
   OtherPath,
   Path,
   renderEditorScreen,
+  selectTab,
   startCreate,
   startOpen,
+  tabBar,
 } from "./setup";
 
 test("起動直後はドキュメントを開くよう案内される", () => {
@@ -66,8 +69,8 @@ test("ファイルを開くと、上端の帯で開いているファイルが�
 });
 
 /*
- * 以前は常設のツールバーと上端の帯が並んで banner が 2 つあった。
- * 開いた後にしか起きないので、開いてから数える。
+ * 見えている編集画面は 1 つだけ、を帯の数で見る。背面のタブも描いたまま残すので、
+ * 隠し方を落とすとここで帯が開いている数だけ現れる。
  */
 test("ファイルを開いても、上端の帯は 1 つだけ", async () => {
   const observer = renderEditorScreen(
@@ -247,4 +250,115 @@ test("最近使ったファイルを読み取れないと、その旨が開始�
   await observer.settle();
 
   expect(screen.getByText("最近使ったファイルを読み込めません")).toBeDefined();
+});
+
+test("2 つ開くと、開いている両方がタブに並ぶ", async () => {
+  const observer = renderEditorScreen(
+    {
+      [Path]: DocumentJson.serialize(SampleDocument),
+      [OtherPath]: artboardContent("settings"),
+    },
+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
+  );
+  await startOpen(observer);
+
+  await observer.dropFiles([OtherPath]);
+
+  expect(within(tabBar()).getByTitle(Path)).toBeDefined();
+  expect(within(tabBar()).getByTitle(OtherPath)).toBeDefined();
+});
+
+test("2 つ開くと、見ているタブの編集画面だけが見える", async () => {
+  const observer = renderEditorScreen(
+    {
+      [Path]: DocumentJson.serialize(SampleDocument),
+      [OtherPath]: artboardContent("settings"),
+    },
+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
+  );
+  await startOpen(observer);
+
+  await observer.dropFiles([OtherPath]);
+
+  const topBar = screen.getByRole("banner");
+  expect(
+    within(topBar).getByTitle(OtherPath).textContent?.includes("settings.dcmp"),
+  ).toBe(true);
+});
+
+test("別のタブへ移ると、そちらの編集画面が見える", async () => {
+  const observer = renderEditorScreen(
+    {
+      [Path]: DocumentJson.serialize(SampleDocument),
+      [OtherPath]: artboardContent("settings"),
+    },
+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
+  );
+  await startOpen(observer);
+  await observer.dropFiles([OtherPath]);
+
+  await selectTab(Path);
+
+  const topBar = screen.getByRole("banner");
+  expect(
+    within(topBar).getByTitle(Path).textContent?.includes("login.dcmp"),
+  ).toBe(true);
+});
+
+/*
+ * タブを「開き直し」ではなく「残したまま隠す」ことの意味が、ここにしか出ない。
+ * 背面を外すと選択も undo 履歴もズームも作り直しになる。
+ */
+test("別のタブへ移って戻っても、選んでいたものは選ばれたまま", async () => {
+  const observer = renderEditorScreen(
+    {
+      [Path]: DocumentJson.serialize(SampleDocument),
+      [OtherPath]: artboardContent("settings"),
+    },
+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
+  );
+  await startOpen(observer);
+  await userEvent.click(
+    within(screen.getByRole("region", { name: "ツリー" })).getByRole("button", {
+      name: "home-title",
+    }),
+  );
+
+  await observer.dropFiles([OtherPath]);
+  await selectTab(Path);
+
+  expect(
+    within(
+      screen.getByRole("complementary", { name: "プロパティパネル" }),
+    ).getByText("home-title"),
+  ).toBeDefined();
+});
+
+test("開いているタブがあるときに開けないファイルを選ぶと、タブは残ったまま理由が出る", async () => {
+  const observer = renderEditorScreen(
+    { [Path]: DocumentJson.serialize(SampleDocument) },
+    { open: DialogChoice.chosen(OtherPath), save: DialogChoice.Canceled },
+  );
+  await observer.dropFiles([Path]);
+
+  await startOpen(observer);
+
+  expect(within(tabBar()).getByTitle(Path)).toBeDefined();
+  expect(
+    screen.getByRole("alert", { name: "ファイルを開けませんでした" }),
+  ).toBeDefined();
+});
+
+test("最後のタブを閉じると、開始画面へ戻る", async () => {
+  const observer = renderEditorScreen(
+    { [Path]: DocumentJson.serialize(SampleDocument) },
+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
+  );
+  await startOpen(observer);
+
+  await closeTab(Path);
+
+  expect(
+    screen.getByText("ドキュメントを開くか、新しく作成してください。"),
+  ).toBeDefined();
 });

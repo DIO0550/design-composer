@@ -5,9 +5,13 @@ import { CommandSources } from "@/features/document-start/hooks/use-document-ses
 import { AppMenuCommands } from "@/libs/app-menu";
 import { DialogChoice } from "@/libs/document-dialog/fake";
 import { Option } from "@/utils/Option";
-import { NewPath, Path, renderDocumentSession } from "./setup";
-
-const OtherPath = "/work/settings.dcmp";
+import {
+  NewPath,
+  OtherPath,
+  openedPaths,
+  Path,
+  renderDocumentSession,
+} from "./setup";
 
 test("メニューから開くと、ダイアログで選んだファイルが開かれる", async () => {
   const observer = renderDocumentSession(
@@ -17,7 +21,7 @@ test("メニューから開くと、ダイアログで選んだファイルが�
 
   await observer.chooseMenu(AppMenuCommands.Open);
 
-  expect(DocumentSession.openedPath(observer.session())).toStrictEqual(
+  expect(DocumentSession.activePath(observer.session())).toStrictEqual(
     Option.some(Path),
   );
 });
@@ -45,12 +49,12 @@ test("ファイルを落とすと、ダイアログを出さずにそのファ�
 
   await observer.dropFiles([Path]);
 
-  expect(DocumentSession.openedPath(observer.session())).toStrictEqual(
+  expect(DocumentSession.activePath(observer.session())).toStrictEqual(
     Option.some(Path),
   );
 });
 
-test("複数のファイルを落とすと、先頭のファイルだけが開かれる", async () => {
+test("複数のファイルを落とすと、落とした数だけ開かれる", async () => {
   const observer = renderDocumentSession(
     {
       [Path]: artboardContent("home"),
@@ -61,12 +65,25 @@ test("複数のファイルを落とすと、先頭のファイルだけが開�
 
   await observer.dropFiles([Path, OtherPath]);
 
-  expect(DocumentSession.openedPath(observer.session())).toStrictEqual(
-    Option.some(Path),
-  );
+  expect(openedPaths(observer.session())).toStrictEqual([Path, OtherPath]);
 });
 
-test("開いた後に別のファイルを落とすと、そちらへ切り替わる", async () => {
+test("落としたファイルのうち、既に開いているものは増えない", async () => {
+  const observer = renderDocumentSession(
+    {
+      [Path]: artboardContent("home"),
+      [OtherPath]: artboardContent("settings"),
+    },
+    { open: DialogChoice.Canceled, save: DialogChoice.Canceled },
+  );
+  await observer.dropFiles([Path]);
+
+  await observer.dropFiles([Path, OtherPath]);
+
+  expect(openedPaths(observer.session())).toStrictEqual([Path, OtherPath]);
+});
+
+test("開いた後に別のファイルを落とすと、そちらを見ている状態になる", async () => {
   const observer = renderDocumentSession(
     {
       [Path]: artboardContent("home"),
@@ -78,7 +95,7 @@ test("開いた後に別のファイルを落とすと、そちらへ切り替�
 
   await observer.dropFiles([OtherPath]);
 
-  expect(DocumentSession.openedPath(observer.session())).toStrictEqual(
+  expect(DocumentSession.activePath(observer.session())).toStrictEqual(
     Option.some(OtherPath),
   );
 });
@@ -91,7 +108,7 @@ test("解釈できないファイルを落とすと、開けない理由が残�
 
   await observer.dropFiles([Path]);
 
-  expect(observer.session().kind).toBe("failed");
+  expect(Option.isSome(DocumentSession.failure(observer.session()))).toBe(true);
 });
 
 test("メニューの購読を張れないと、メニューの経路の失敗が残る", async () => {
@@ -152,6 +169,26 @@ test("開く操作の最中に落とされた指示は捨てられる", async ()
   await observer.dropFiles([Path]);
 
   // 落とした Path は開かれず、新規作成の読み込み中のまま。
-  expect(observer.session().kind).toBe("opening");
+  expect(DocumentSession.isOpening(observer.session())).toBe(true);
   release();
+});
+
+/*
+ * 2 つとも読めないファイルを落とす。どちらの失敗もパスを原文に持つので、
+ * 「最初の失敗を残す」を後ろのものと取り違えると落ちる。
+ */
+test("複数が読めなかったときは、最初の失敗が残る", async () => {
+  const observer = renderDocumentSession(
+    {},
+    { open: DialogChoice.Canceled, save: DialogChoice.Canceled },
+  );
+
+  await observer.dropFiles([Path, OtherPath]);
+
+  expect(DocumentSession.failure(observer.session())).toStrictEqual(
+    Option.some({
+      kind: "io",
+      error: { reason: "missing", message: `${Path}: ファイルが存在しない` },
+    }),
+  );
 });

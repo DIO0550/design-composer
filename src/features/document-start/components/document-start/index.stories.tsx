@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { ScreenHeightShell } from "@/components/__stories__/screen-height-shell";
 import { DocumentAccessFailure } from "@/domains/session/document-access-failure";
+import { OpenAttempt } from "@/features/document-start/domains/document-session";
 import { CommandSources } from "@/features/document-start/hooks/use-document-session";
 import { Option } from "@/utils/Option";
 import { DocumentStart } from "./index";
@@ -9,7 +10,7 @@ import { DocumentStart } from "./index";
 const Actions = {
   openDocument: () => {},
   createDocument: () => {},
-  openDocumentAt: () => {},
+  openDocumentsAt: () => {},
 };
 
 /** 一覧の見え方を確かめるための並び。実物は `useDocumentSession` が渡す。 */
@@ -24,7 +25,7 @@ const meta = {
   component: DocumentStart,
   parameters: { layout: "fullscreen" },
   args: {
-    session: { kind: "closed" },
+    attempt: OpenAttempt.Idle,
     actions: Actions,
     recentPaths: [],
     recentFilesFailure: Option.none,
@@ -59,23 +60,20 @@ export const WithRecentDocuments: Story = {
 /** 選んだファイルを読み込んでいる間。開く / 新規作成は押せない。 */
 export const Opening: Story = {
   name: "読み込み中",
-  args: { session: { kind: "opening" } },
+  args: { attempt: OpenAttempt.Opening },
 };
 
 /** 開こうとしたファイルが読めなかった状態。 */
 export const OpenFailed: Story = {
   name: "開けなかった",
   args: {
-    session: {
-      kind: "failed",
-      failure: {
-        kind: "io",
-        error: DocumentAccessFailure.create(
-          "missing",
-          "/work/settings-ui/app.dcmp",
-        ),
-      },
-    },
+    attempt: OpenAttempt.failed({
+      kind: "io",
+      error: DocumentAccessFailure.create(
+        "missing",
+        "/work/settings-ui/app.dcmp",
+      ),
+    }),
   },
 };
 

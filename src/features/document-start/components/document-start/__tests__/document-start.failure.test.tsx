@@ -2,17 +2,15 @@ import { screen } from "@testing-library/react";
 import { expect, test } from "vitest";
 import type { DocumentAccessFailureReason } from "@/domains/session/document-access-failure";
 import type { DocumentError } from "@/domains/session/document-error";
+import { OpenAttempt } from "@/features/document-start/domains/document-session";
 import { renderDocumentStart } from "./setup";
 
-/** 読み書きに失敗した状態。 */
-function ioFailure(reason: DocumentAccessFailureReason) {
-  return {
-    kind: "failed",
-    failure: {
-      kind: "io",
-      error: { reason, message: "/work/login.dcmp" },
-    },
-  } as const;
+/** 読み書きに失敗して開けなかった状態。 */
+function ioFailure(reason: DocumentAccessFailureReason): OpenAttempt {
+  return OpenAttempt.failed({
+    kind: "io",
+    error: { reason, message: "/work/login.dcmp" },
+  });
 }
 
 /**
@@ -34,7 +32,7 @@ function renderMessages(errors: readonly DocumentError[]) {
 
 test("ファイルが無いときは、見つからないことが伝わる", () => {
   renderDocumentStart({
-    session: ioFailure("missing"),
+    attempt: ioFailure("missing"),
     renderErrors: renderPlaceholder,
   });
 
@@ -43,7 +41,7 @@ test("ファイルが無いときは、見つからないことが伝わる", ()
 
 test("読み書きが許されていないときは、権限の問題だと伝わる", () => {
   renderDocumentStart({
-    session: ioFailure("notPermitted"),
+    attempt: ioFailure("notPermitted"),
     renderErrors: renderPlaceholder,
   });
 
@@ -54,7 +52,7 @@ test("読み書きが許されていないときは、権限の問題だと伝�
 
 test("パスとして扱えない指定のときは、パスの問題だと伝わる", () => {
   renderDocumentStart({
-    session: ioFailure("unusablePath"),
+    attempt: ioFailure("unusablePath"),
     renderErrors: renderPlaceholder,
   });
 
@@ -63,7 +61,7 @@ test("パスとして扱えない指定のときは、パスの問題だと伝�
 
 test("UTF-8 として読めないファイルのときは、文字コードの問題だと伝わる", () => {
   renderDocumentStart({
-    session: ioFailure("undecodableText"),
+    attempt: ioFailure("undecodableText"),
     renderErrors: renderPlaceholder,
   });
 
@@ -72,7 +70,7 @@ test("UTF-8 として読めないファイルのときは、文字コードの�
 
 test("読み書き自体が失敗したときは、その旨が伝わる", () => {
   renderDocumentStart({
-    session: ioFailure("storageFailed"),
+    attempt: ioFailure("storageFailed"),
     renderErrors: renderPlaceholder,
   });
 
@@ -81,7 +79,7 @@ test("読み書き自体が失敗したときは、その旨が伝わる", () =>
 
 test("コマンドを呼べなかったときは、アプリ内部の問題だと伝わる", () => {
   renderDocumentStart({
-    session: ioFailure("undelivered"),
+    attempt: ioFailure("undelivered"),
     renderErrors: renderPlaceholder,
   });
 
@@ -90,7 +88,7 @@ test("コマンドを呼べなかったときは、アプリ内部の問題だ�
 
 test("読み書きに失敗したときは、診断用のメッセージも添えられる", () => {
   renderDocumentStart({
-    session: ioFailure("missing"),
+    attempt: ioFailure("missing"),
     renderErrors: renderPlaceholder,
   });
 
@@ -99,7 +97,7 @@ test("読み書きに失敗したときは、診断用のメッセージも添�
 
 test("読み書きに失敗したときは、エラーの一覧を出さない", () => {
   renderDocumentStart({
-    session: ioFailure("missing"),
+    attempt: ioFailure("missing"),
     renderErrors: renderPlaceholder,
   });
 
@@ -108,10 +106,10 @@ test("読み書きに失敗したときは、エラーの一覧を出さない",
 
 test("ダイアログを出せなかったときは、ファイルの選択に失敗したと伝わる", () => {
   renderDocumentStart({
-    session: {
-      kind: "failed",
-      failure: { kind: "dialog", error: { message: "not allowed" } },
-    },
+    attempt: OpenAttempt.failed({
+      kind: "dialog",
+      error: { message: "not allowed" },
+    }),
     renderErrors: renderPlaceholder,
   });
 
@@ -120,19 +118,16 @@ test("ダイアログを出せなかったときは、ファイルの選択に�
 
 test("解釈できなかったファイルのときは、そのエラーが一覧に渡される", () => {
   renderDocumentStart({
-    session: {
-      kind: "failed",
-      failure: {
-        kind: "unparsable",
-        errors: [
-          {
-            kind: "syntax-error",
-            message: "unexpected end of JSON input",
-            location: { kind: "text-position", position: 19 },
-          },
-        ],
-      },
-    },
+    attempt: OpenAttempt.failed({
+      kind: "unparsable",
+      errors: [
+        {
+          kind: "syntax-error",
+          message: "unexpected end of JSON input",
+          location: { kind: "text-position", position: 19 },
+        },
+      ],
+    }),
     renderErrors: renderMessages,
   });
 
@@ -141,7 +136,7 @@ test("解釈できなかったファイルのときは、そのエラーが一�
 
 test("読み込んでいる間は、その最中であることが分かる", () => {
   renderDocumentStart({
-    session: { kind: "opening" },
+    attempt: OpenAttempt.Opening,
     renderErrors: renderPlaceholder,
   });
 

@@ -102,7 +102,7 @@ test("一覧を書き出せなくてもファイルは開かれる", async () =>
 
   await observer.openDocument();
 
-  expect(DocumentSession.openedPath(observer.session())).toStrictEqual(
+  expect(DocumentSession.activePath(observer.session())).toStrictEqual(
     Option.some(Path),
   );
 });

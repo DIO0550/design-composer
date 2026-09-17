@@ -1,6 +1,10 @@
 import { useEffect, useEffectEvent, useReducer, useState } from "react";
 import { OpenedDocument } from "@/domains/session/opened-document";
-import { DocumentSession } from "@/features/document-start/domains/document-session";
+import {
+  type DocumentOpenFailure,
+  DocumentSession,
+  type OpenOutcome,
+} from "@/features/document-start/domains/document-session";
 import { RecentFiles } from "@/features/document-start/domains/recent-files";
 import type { AppMenu, AppMenuCommand } from "@/libs/app-menu";
 import type { AppStateIpc } from "@/libs/app-state-ipc";
@@ -57,7 +61,20 @@ export type DocumentSessionActions = Readonly<{
   /** ダイアログで保存先を選ばせて、雛形から作る。 */
   createDocument: () => void;
   /** パスが既に決まっているものを開く（ドロップ・最近使ったファイル）。 */
-  openDocumentAt: (path: string) => void;
+  openDocumentsAt: (paths: readonly string[]) => void;
+}>;
+
+/**
+ * 開いているドキュメントを行き来する手続き。
+ *
+ * 開く / 新規作成と分けて返すのは、開始画面が受け取るのが前者だけだから
+ * （rules/components.md「props は必要最小限に絞る」）。
+ */
+export type DocumentTabActions = Readonly<{
+  /** そのパスのドキュメントを見ている状態にする。 */
+  activate: (path: string) => void;
+  /** そのパスのドキュメントを閉じる。 */
+  close: (path: string) => void;
 }>;
 
 /** 開いているドキュメントと、最近開いたファイルの一覧。 */
@@ -73,15 +90,13 @@ type DocumentSessionAction =
   | Readonly<{ type: "opening" }>
   | Readonly<{
       type: "restored";
-      session: DocumentSession;
+      outcome: OpenOutcome;
       recents: RecentFiles;
       recentFilesFailure: Option<string>;
     }>
-  | Readonly<{
-      type: "settled";
-      session: DocumentSession;
-      recents: RecentFiles;
-    }>;
+  | Readonly<{ type: "settled"; outcome: OpenOutcome; recents: RecentFiles }>
+  | Readonly<{ type: "activate"; path: string }>
+  | Readonly<{ type: "close"; path: string }>;
 
 const InitialState: DocumentSessionState = {
   session: DocumentSession.Closed,
@@ -90,7 +105,7 @@ const InitialState: DocumentSessionState = {
 };
 
 /**
- * 指示を状態へ反映する。
+ * 指示を状態へ反映する。`DocumentSession` を呼ぶだけで、判断は持たない（rules/hooks.md）。
  *
  * @param state 今の状態
  * @param action 反映する指示
@@ -102,7 +117,7 @@ function reduce(
 ): DocumentSessionState {
   switch (action.type) {
     case "opening":
-      return { ...state, session: DocumentSession.Opening };
+      return { ...state, session: DocumentSession.beginOpening(state.session) };
     case "restored":
       /*
        * 保存されている状態を読んでいる間に、利用者が別のファイルを開き始めていることが
@@ -111,76 +126,122 @@ function reduce(
        */
       return DocumentSession.isClosed(state.session)
         ? {
-            session: action.session,
+            session: DocumentSession.finishOpening(
+              DocumentSession.Closed,
+              action.outcome,
+            ),
             recents: action.recents,
             recentFilesFailure: action.recentFilesFailure,
           }
         : state;
     case "settled":
-      return { ...state, session: action.session, recents: action.recents };
+      return {
+        ...state,
+        session: DocumentSession.finishOpening(state.session, action.outcome),
+        recents: action.recents,
+      };
+    case "activate":
+      return {
+        ...state,
+        session: DocumentSession.activate(state.session, action.path),
+      };
+    case "close":
+      return {
+        ...state,
+        session: DocumentSession.close(state.session, action.path),
+      };
   }
 }
 
+/** 何も開かずに終わった結末。選ばずにダイアログを閉じたときに使う。 */
+const NothingOpened: OpenOutcome = { documents: [], failure: Option.none };
+
 /**
- * 読み込んだテキストを解釈して、開いている状態にする。
+ * 開けずに終わったことだけを伝える結末。
  *
- * @param path 読んだ先のパス
- * @param content 読み取ったテキスト
- * @returns 解釈できたら開いている状態、できなければその理由を持つ失敗の状態
+ * @param failure 開けなかった理由
+ * @returns 1 つも読めなかったことと、その理由を運ぶ結末
  */
-function toOpenedSession(path: string, content: string): DocumentSession {
-  const opened = OpenedDocument.fromParsed(path, DocumentJson.parse(content));
-  return Result.isOk(opened)
-    ? DocumentSession.opened(opened.value)
-    : DocumentSession.failed({ kind: "unparsable", errors: opened.error });
+function failedWith(failure: DocumentOpenFailure): OpenOutcome {
+  return { documents: [], failure: Option.some(failure) };
 }
 
 /**
- * 決まったパスのファイルを開く。
+ * 1 つのファイルを読んで、開ける形にする。
+ *
+ * テキストの解釈（マイグレーション判定・パース）は `DocumentJson.parse`、その結果に保存先
+ * を添えるのは `OpenedDocument.fromParsed` の担当で、ここは順序だけを持つ。
  *
  * @param ipc 読み込みに使う口
  * @param path 開く先のパス
- * @returns 開けたら開いている状態。読み込み / 解釈が失敗すればその理由を持つ失敗の状態
+ * @returns 読めて解釈できたドキュメント。読み込み / 解釈が失敗すればその理由
  */
-async function openAtPath(
+async function loadDocument(
   ipc: DocumentIpc,
   path: string,
-): Promise<DocumentSession> {
+): Promise<Result<OpenedDocument, DocumentOpenFailure>> {
   const loaded = await ipc.load(path);
   if (!Result.isOk(loaded)) {
-    return DocumentSession.failed({
+    return Result.err({
       kind: "io",
       error: toDocumentAccessFailure(loaded.error),
     });
   }
-  return toOpenedSession(path, loaded.value);
+  const opened = OpenedDocument.fromParsed(
+    path,
+    DocumentJson.parse(loaded.value),
+  );
+  return Result.isOk(opened)
+    ? Result.ok(opened.value)
+    : Result.err({ kind: "unparsable", errors: opened.error });
 }
 
 /**
- * 既存のファイルを開く（docs/01-file-format.md の表 / docs/05-architecture.md「Tauri IPC」）。
+ * 決まったパスのファイルをまとめて開く（docs/01-file-format.md の表 /
+ * docs/05-architecture.md「Tauri IPC」）。
  *
- * テキストの解釈（マイグレーション判定・パース）は `DocumentJson.parse`、その結果に
- * 保存先を添えるのは `OpenedDocument.fromParsed` の担当で、ここは「選ばせて、読んで、
- * 解釈へ渡す」順序だけを持つ。
+ * 1 件ずつ開いて呼び出し側で繰り返すのではなく、まとまりで受け取る
+ * （rules/coding.md「反復を関数の内側へ移す」）。1 件ずつ状態を更新すると、後から解決した
+ * 読み込みが先に解決したものを載せていない並びで上書きする。
+ *
+ * @param ipc 読み込みに使う口
+ * @param paths 開く先のパス
+ * @returns 読めたものと、最初の失敗
+ */
+async function openAtPaths(
+  ipc: DocumentIpc,
+  paths: readonly string[],
+): Promise<OpenOutcome> {
+  const loaded = await Promise.all(
+    paths.map((path) => loadDocument(ipc, path)),
+  );
+  const documents = loaded.flatMap((result) =>
+    Result.isOk(result) ? [result.value] : [],
+  );
+  const failures = loaded.flatMap((result) =>
+    Result.isOk(result) ? [] : [result.error],
+  );
+  return { documents, failure: ArrayEx.first(failures) };
+}
+
+/**
+ * 既存のファイルを選ばせて開く。
  *
  * @param ports ダイアログと I/O の相手
- * @param canceled 選ばずに閉じたときに戻す状態。開く操作が無かったことにするため、
- *   既に開いているドキュメントを閉じてしまわない。
- * @returns 開けたら開いている状態。ダイアログ / 読み込み / 解釈のどれかが失敗すれば
- *   その理由を持つ失敗の状態。選ばずに閉じたら `canceled`
+ * @returns 開けた結末。選ばずに閉じたら何も開かずに終わった結末
  */
-async function openWithDialog(
-  { ipc, dialog }: DocumentSessionPorts,
-  canceled: DocumentSession,
-): Promise<DocumentSession> {
+async function openWithDialog({
+  ipc,
+  dialog,
+}: DocumentSessionPorts): Promise<OpenOutcome> {
   const chosen = await dialog.chooseOpenPath();
   if (!Result.isOk(chosen)) {
-    return DocumentSession.failed({ kind: "dialog", error: chosen.error });
+    return failedWith({ kind: "dialog", error: chosen.error });
   }
   if (!Option.isSome(chosen.value)) {
-    return canceled;
+    return NothingOpened;
   }
-  return openAtPath(ipc, chosen.value.value);
+  return openAtPaths(ipc, [chosen.value.value]);
 }
 
 /**
@@ -190,20 +251,18 @@ async function openWithDialog(
  * おく。
  *
  * @param ports ダイアログと I/O の相手
- * @param canceled 選ばずに閉じたときに戻す状態。
- * @returns 作れたら開いている状態。ダイアログ / 書き出しが失敗すればその理由を持つ
- *   失敗の状態。選ばずに閉じたら `canceled`
+ * @returns 作れた結末。選ばずに閉じたら何も開かずに終わった結末
  */
-async function createWithDialog(
-  { ipc, dialog }: DocumentSessionPorts,
-  canceled: DocumentSession,
-): Promise<DocumentSession> {
+async function createWithDialog({
+  ipc,
+  dialog,
+}: DocumentSessionPorts): Promise<OpenOutcome> {
   const chosen = await dialog.chooseSavePath();
   if (!Result.isOk(chosen)) {
-    return DocumentSession.failed({ kind: "dialog", error: chosen.error });
+    return failedWith({ kind: "dialog", error: chosen.error });
   }
   if (!Option.isSome(chosen.value)) {
-    return canceled;
+    return NothingOpened;
   }
 
   const created = OpenedDocument.createFromTemplate(chosen.value.value);
@@ -212,12 +271,12 @@ async function createWithDialog(
     DocumentJson.serialize(created.document),
   );
   if (!Result.isOk(saved)) {
-    return DocumentSession.failed({
+    return failedWith({
       kind: "io",
       error: toDocumentAccessFailure(saved.error),
     });
   }
-  return DocumentSession.opened(created);
+  return { documents: [created], failure: Option.none };
 }
 
 /**
@@ -246,21 +305,25 @@ async function loadRecentFiles(
 /**
  * 開けたファイルを一覧の先頭へ記録して書き出す。
  *
+ * 一度に複数開いたときは開いた順に記録するので、最後に開いたものが先頭に来る。
+ *
  * @param appState 書き出し先
  * @param recents 開く前の一覧
- * @param session 開く操作の結果
- * @returns 開けていればそのパスを先頭に持つ一覧。開けていなければ元の一覧のまま
+ * @param documents 開けたドキュメント
+ * @returns 開けたパスを先頭に持つ一覧。1 つも開けていなければ元の一覧のまま
  */
 function rememberOpened(
   appState: AppStateIpc,
   recents: RecentFiles,
-  session: DocumentSession,
+  documents: readonly OpenedDocument[],
 ): RecentFiles {
-  const path = DocumentSession.openedPath(session);
-  if (!Option.isSome(path)) {
+  if (documents.length === 0) {
     return recents;
   }
-  const opened = RecentFiles.withOpenedPath(recents, path.value);
+  const opened = documents.reduce(
+    (carried, document) => RecentFiles.withOpenedPath(carried, document.path),
+    recents,
+  );
   /*
    * 書き出せなくても画面には出さない。開く操作そのものは成立していて、失われるのは
    * 次の起動で並ぶ一覧だけなので、今の操作を止める理由にならない。
@@ -270,22 +333,25 @@ function rememberOpened(
 }
 
 /**
- * どのドキュメントを開いているかと最近使ったファイルを持ち、開く / 新規作成の導線を返す。
+ * どのドキュメントを開いているかと最近使ったファイルを持ち、開く / 新規作成とタブの行き来
+ * の導線を返す。
  *
- * 開く操作が終わると、開いているドキュメントと最近使ったファイルの一覧が一緒に動くので
- * `useReducer` で 1 つの状態にまとめる（rules/hooks.md）。指示を受け取れなかった経路は
- * 購読の Effect だけが更新する独立した値なので `useState` のまま持つ。
+ * 開く操作が終わると開いているドキュメントと最近使ったファイルの一覧が一緒に動き、更新の
+ * 型も複数あるので `useReducer` で 1 つの状態にまとめる（rules/hooks.md）。指示を受け取れ
+ * なかった経路は購読の Effect だけが更新する独立した値なので `useState` のまま持つ。
  *
  * @param ports ダイアログ・I/O・メニュー・ドロップ・アプリ自身の状態の相手
  * @returns 今のセッション、最近開いたファイルのパス（新しい順）、その一覧を読み取れ
- *   なかった理由（読めていれば `none`）、開く / 新規作成を始める手続き、指示を受け
- *   取れなかった経路とその理由（どちらも受け取れていれば `none`）
+ *   なかった理由（読めていれば `none`）、開く / 新規作成を始める手続き、開いているものを
+ *   行き来する手続き、指示を受け取れなかった経路とその理由（どちらも受け取れていれば
+ *   `none`）
  */
 export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
   session: DocumentSession;
   recentPaths: readonly string[];
   recentFilesFailure: Option<string>;
   actions: DocumentSessionActions;
+  tabActions: DocumentTabActions;
   commandFailure: Option<CommandSourceFailure>;
 }> {
   const [state, dispatch] = useReducer(reduce, InitialState);
@@ -298,31 +364,32 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
    *
    * 既に始まっているなら捨てる。
    *
-   * @param start 今の状態を受け取り、次の状態を返す開く手続き
+   * @param start 開く手続き
    */
-  const begin = (
-    start: (canceled: DocumentSession) => Promise<DocumentSession>,
-  ): void => {
+  const begin = (start: () => Promise<OpenOutcome>): void => {
     if (DocumentSession.isOpening(state.session)) {
       return;
     }
-    const canceled = state.session;
     const opening = state.recents;
     dispatch({ type: "opening" });
-    void start(canceled).then((session) => {
-      const recents = rememberOpened(ports.appState, opening, session);
-      dispatch({ type: "settled", session, recents });
+    void start().then((outcome) => {
+      const recents = rememberOpened(
+        ports.appState,
+        opening,
+        outcome.documents,
+      );
+      dispatch({ type: "settled", outcome, recents });
     });
   };
 
   const openDocument = (): void => {
-    begin((canceled) => openWithDialog(ports, canceled));
+    begin(() => openWithDialog(ports));
   };
   const createDocument = (): void => {
-    begin((canceled) => createWithDialog(ports, canceled));
+    begin(() => createWithDialog(ports));
   };
-  const openDocumentAt = (path: string): void => {
-    begin(() => openAtPath(ports.ipc, path));
+  const openDocumentsAt = (paths: readonly string[]): void => {
+    begin(() => openAtPaths(ports.ipc, paths));
   };
 
   /*
@@ -344,11 +411,7 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
   });
 
   const openDropped = useEffectEvent((paths: readonly string[]) => {
-    // 同時に複数を開くのはスコープ外なので、先頭だけを開く。
-    const first = ArrayEx.first(paths);
-    if (Option.isSome(first)) {
-      openDocumentAt(first.value);
-    }
+    openDocumentsAt(paths);
   });
 
   useEffect(() => {
@@ -369,13 +432,13 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
         ? Option.none
         : Option.some(loaded.error);
       const latest = RecentFiles.latest(recents);
-      const session = Option.isSome(latest)
-        ? await openAtPath(ports.ipc, latest.value)
-        : DocumentSession.Closed;
+      const outcome = Option.isSome(latest)
+        ? await openAtPaths(ports.ipc, [latest.value])
+        : NothingOpened;
       if (ignore) {
         return;
       }
-      dispatch({ type: "restored", session, recents, recentFilesFailure });
+      dispatch({ type: "restored", outcome, recents, recentFilesFailure });
     };
     void restore();
 
@@ -436,7 +499,11 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
     session: state.session,
     recentPaths: state.recents.paths,
     recentFilesFailure: state.recentFilesFailure,
-    actions: { openDocument, createDocument, openDocumentAt },
+    actions: { openDocument, createDocument, openDocumentsAt },
+    tabActions: {
+      activate: (path) => dispatch({ type: "activate", path }),
+      close: (path) => dispatch({ type: "close", path }),
+    },
     commandFailure,
   };
 }

@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { contextMenu } from "@/components/__tests__/context-menu";
 import type { DesignDocument } from "@/domains/dcmp/design-document";
 import { renderedElement } from "@/features/canvas/__tests__";
+import { artboardList, tree } from "@/features/editor/__tests__/pane-regions";
 import {
   SampleDocument,
   SampleDocumentWithDanglingToken,
@@ -175,23 +176,7 @@ export function propertyPane(): HTMLElement {
   return screen.getByRole("complementary", { name: "プロパティパネル" });
 }
 
-/**
- * ツリーの領域。行を読む相手はここに絞る。
- *
- * 左ペインにはレールの行き先ボタンも並び、そちらも `aria-current` を持つため、ペイン全体
- * を渡すと行き先が行として混ざる（`row-names` の注意書きのとおり）。
- */
-export function tree(): HTMLElement {
-  return screen.getByRole("region", { name: "ツリー" });
-}
-
-/**
- * artboard の一覧の領域。artboard はツリーの行ではなく上段の一覧に並ぶので、選ぶのも今どれ
- * を見ているかを読むのもこちらから行う。
- */
-export function artboardList(): HTMLElement {
-  return screen.getByRole("region", { name: "artboard 一覧" });
-}
+export { artboardList, tree };
 
 /** ツリーの行を名前で押して選ぶ。同じ名前はキャンバスにも出るのでツリーに絞る。 */
 export async function selectInTree(name: string): Promise<void> {

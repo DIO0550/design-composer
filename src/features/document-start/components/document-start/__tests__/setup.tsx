@@ -2,7 +2,7 @@ import { render } from "@testing-library/react";
 import type { ReactNode } from "react";
 import type { DocumentError } from "@/domains/session/document-error";
 import { DocumentStart } from "@/features/document-start/components/document-start";
-import type { UnopenedSession } from "@/features/document-start/domains/document-session";
+import { OpenAttempt } from "@/features/document-start/domains/document-session";
 import type {
   CommandSourceFailure,
   DocumentSessionActions,
@@ -17,7 +17,7 @@ function renderNothing(): ReactNode {
 /** 押した先を記録するだけの導線。 */
 export type RecordedActions = Readonly<{
   actions: DocumentSessionActions;
-  /** `openDocumentAt` に渡されたパス。 */
+  /** `openDocumentsAt` に渡されたパス。 */
   openedPaths: string[];
   /** `openDocument` が呼ばれた回数。 */
   openCount: () => number;
@@ -38,8 +38,8 @@ export function recordActions(): RecordedActions {
         opened += 1;
       },
       createDocument: () => {},
-      openDocumentAt: (path) => {
-        openedPaths.push(path);
+      openDocumentsAt: (paths) => {
+        openedPaths.push(...paths);
       },
     },
     openedPaths,
@@ -49,7 +49,7 @@ export function recordActions(): RecordedActions {
 
 /** 開始画面を描くときに、既定から変えたいもの。 */
 export type StartOverrides = Readonly<{
-  session?: UnopenedSession;
+  attempt?: OpenAttempt;
   actions?: DocumentSessionActions;
   recentPaths?: readonly string[];
   recentFilesFailure?: Option<string>;
@@ -65,7 +65,7 @@ export type StartOverrides = Readonly<{
 export function renderDocumentStart(overrides: StartOverrides = {}): void {
   render(
     <DocumentStart
-      session={overrides.session ?? { kind: "closed" }}
+      attempt={overrides.attempt ?? OpenAttempt.Idle}
       actions={overrides.actions ?? recordActions().actions}
       recentPaths={overrides.recentPaths ?? []}
       recentFilesFailure={overrides.recentFilesFailure ?? Option.none}
