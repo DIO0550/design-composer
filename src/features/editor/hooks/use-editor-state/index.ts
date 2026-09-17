@@ -6,6 +6,7 @@ import type { DesignDocument } from "@/domains/dcmp/design-document";
 import type { PropEdit } from "@/domains/dcmp/node";
 import type { TokenRef, TokenValue } from "@/domains/dcmp/token";
 import type { DocumentReload } from "@/domains/session/document-reload";
+import type { EditContinuity } from "@/domains/session/edit-continuity";
 import type { NodeTemplate } from "@/domains/session/node-template";
 import type { SelectionDig } from "@/domains/session/selection-dig";
 import type { Instant } from "@/domains/unit/instant";
@@ -73,8 +74,16 @@ export type EditorAction =
   | Readonly<{ type: "ungroup_selected" }>
   | Readonly<{ type: "copy_node" }>
   | Readonly<{ type: "paste_node" }>
-  | Readonly<{ type: "apply_prop_edit"; edit: PropEdit }>
-  | Readonly<{ type: "resize"; sizes: readonly AxisLength[] }>
+  | Readonly<{
+      type: "apply_prop_edit";
+      edit: PropEdit;
+      continuity: EditContinuity;
+    }>
+  | Readonly<{
+      type: "resize";
+      sizes: readonly AxisLength[];
+      continuity: EditContinuity;
+    }>
   | Readonly<{ type: "undo" }>
   | Readonly<{ type: "redo" }>
   | Readonly<{ type: "select_token"; ref: TokenRef }>
@@ -265,12 +274,16 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
     case "apply_prop_edit":
       // 選択が無ければ編集は存在しない（EditorState.applyPropEdit の `none`）。
       return Option.unwrapOr(
-        EditorState.applyPropEdit(state, action.edit),
+        EditorState.applyPropEdit(state, action.edit, action.continuity),
         state,
       );
     case "resize":
-      // 選択が無ければリサイズは存在しない（EditorState.resize の `none`）。
-      return Option.unwrapOr(EditorState.resize(state, action.sizes), state);
+      // 選択が無い・単一選択でない・ファイルが不正な間はリサイズが存在しない
+      // （EditorState.resize の `none`）。
+      return Option.unwrapOr(
+        EditorState.resize(state, action.sizes, action.continuity),
+        state,
+      );
     case "undo":
       /*
        * 戻る先が無ければ何も変わらない（EditorState.undo の `none`）。

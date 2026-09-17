@@ -52,6 +52,7 @@ export type StartOverrides = Readonly<{
   attempt?: OpenAttempt;
   actions?: DocumentSessionActions;
   recentPaths?: readonly string[];
+  recentFilesFailure?: Option<string>;
   commandFailure?: Option<CommandSourceFailure>;
   renderErrors?: (errors: readonly DocumentError[]) => ReactNode;
 }>;
@@ -67,6 +68,7 @@ export function renderDocumentStart(overrides: StartOverrides = {}): void {
       attempt={overrides.attempt ?? OpenAttempt.Idle}
       actions={overrides.actions ?? recordActions().actions}
       recentPaths={overrides.recentPaths ?? []}
+      recentFilesFailure={overrides.recentFilesFailure ?? Option.none}
       commandFailure={overrides.commandFailure ?? Option.none}
       renderErrors={overrides.renderErrors ?? renderNothing}
     />,

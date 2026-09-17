@@ -117,9 +117,14 @@ export const DocumentSession = {
     return { documents, attempt };
   },
 
-  /** 開かずに操作をやめる。直前の失敗も含めて、開く前の見え方へ戻す。 */
-  cancelOpening(session: DocumentSession): DocumentSession {
-    return { documents: session.documents, attempt: Idle };
+  /**
+   * まだ何も起きていないか（1 つも開いておらず、開く操作も一度も始まっていない）。
+   *
+   * 保存されている状態の復元を取り込んでよいかの判断に使う。利用者が先に開き始めていた
+   * ら、復元の結果は捨てる。
+   */
+  isClosed(session: DocumentSession): boolean {
+    return !Option.isSome(session.documents) && session.attempt.kind === "idle";
   },
 
   /** 見ている先をそのパスへ移す。開いていないパスなら何も変わらない。 */

@@ -6,6 +6,8 @@ import { ReceivedAt } from "@/domains/__tests__/instants";
 import { AxisLength } from "@/domains/dcmp/axis-length";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { Node } from "@/domains/dcmp/node";
+import { EditContinuities } from "@/domains/session/edit-continuity";
+import { artboardWidth } from "@/features/editor/__tests__/artboard-fixtures";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { ReorderSteps } from "@/features/editor/domains/reorder-step";
 import { Option } from "@/utils/Option";
@@ -61,12 +63,6 @@ function artboardCanvasPosition(state: EditorState): string {
   return position === undefined ? "無し" : `${position.x},${position.y}`;
 }
 
-function artboardWidth(state: EditorState): number {
-  return Option.unwrap(
-    DesignDocument.findArtboard(EditorState.document(state), "home"),
-  ).width;
-}
-
 /**
  * `footer` が今置かれている座標。縦横を続けて読み、片方だけの書き換えも見える形にする。
  * 読み直しで `footer` ごと消える器なので、居ないときは座標の代わりに「無し」を出す。
@@ -93,7 +89,7 @@ function EditorStateHarness() {
         {Option.unwrapOr(EditorState.singleName(state), "選択なし")}
       </p>
       <p data-testid="children">{homeChildNames(state).join(",")}</p>
-      <p data-testid="artboard-width">{artboardWidth(state)}</p>
+      <p data-testid="artboard-width">{artboardWidth(state, "home")}</p>
       <p data-testid="footer-coordinates">{footerCoordinates(state)}</p>
       <p data-testid="artboard-canvas-position">
         {artboardCanvasPosition(state)}
@@ -243,7 +239,11 @@ function EditorStateHarness() {
       <button
         type="button"
         onClick={() =>
-          dispatch({ type: "resize", sizes: [AxisLength.create("width", 500)] })
+          dispatch({
+            type: "resize",
+            sizes: [AxisLength.create("width", 500)],
+            continuity: EditContinuities.Separate,
+          })
         }
       >
         幅を 500 にする

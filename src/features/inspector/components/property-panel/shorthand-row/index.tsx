@@ -1,5 +1,6 @@
 import { type ReactElement, useId, useState } from "react";
 import type { PropEdit } from "@/domains/dcmp/node";
+import type { EditContinuity } from "@/domains/session/edit-continuity";
 import {
   type PropControl,
   PropPairControl,
@@ -93,7 +94,7 @@ function ShorthandSideCell({
   side: Side;
   rowLabelId: string;
   control: PropControl;
-  onEdit: (edit: PropEdit) => void;
+  onEdit: (edit: PropEdit, continuity: EditContinuity) => void;
 }>): ReactElement {
   const labelId = useId();
 
@@ -124,7 +125,7 @@ function ShorthandPairCell({
 }: Readonly<{
   pair: PropPairControl;
   rowLabelId: string;
-  onEdit: (edit: PropEdit) => void;
+  onEdit: (edit: PropEdit, continuity: EditContinuity) => void;
 }>): ReactElement {
   const labelId = useId();
 
@@ -160,7 +161,7 @@ export function ShorthandRow({
   onEdit,
 }: Readonly<{
   shorthand: PropShorthandControl;
-  onEdit: (edit: PropEdit) => void;
+  onEdit: (edit: PropEdit, continuity: EditContinuity) => void;
 }>): ReactElement {
   const rowLabelId = useId();
   const [isPerEdge, setIsPerEdge] = useState(false);

@@ -6,6 +6,7 @@ import {
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
 import { PropEdit } from "@/domains/dcmp/node";
+import { EditContinuities } from "@/domains/session/edit-continuity";
 import { stateWithThreeArtboards } from "@/features/editor/__tests__/artboard-fixtures";
 import { ReorderSteps } from "@/features/editor/domains/reorder-step";
 import { Option } from "@/utils/Option";
@@ -185,6 +186,7 @@ test("ファイルが不正な間は、選んでいるノードの prop を編�
     EditorState.applyPropEdit(
       frozen(selected),
       PropEdit.set(["content"], "書き換え"),
+      EditContinuities.Separate,
     ),
   ).toStrictEqual(Option.none);
 });

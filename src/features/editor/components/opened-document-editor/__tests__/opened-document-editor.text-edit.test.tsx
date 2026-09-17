@@ -74,3 +74,20 @@ test("掘りきる前のダブルクリックでは入力欄は出ない", async
 
   expect(screen.queryByRole("textbox", { name: "文言を編集" })).toBeNull();
 });
+
+test("確定したあと 1 回戻すと、確定する前の文言に戻る", async () => {
+  /*
+   * インライン編集は確定の 1 件だけを送るので、続きとして送ると `EditHistory.amend`
+   * に落ちて確定前のドキュメントへ戻れなくなる（戻る先が無いまま差し替わる）。
+   */
+  await renderOpenedDocument();
+  await userEvent.dblClick(renderedElement(canvasPane(), "home-title"));
+  await userEvent.clear(editor());
+  await userEvent.type(editor(), "トップ{Enter}");
+
+  await userEvent.keyboard("{Control>}z{/Control}");
+
+  expect(renderedElement(canvasPane(), "home-title").textContent).toBe(
+    "ホーム",
+  );
+});

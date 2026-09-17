@@ -5,6 +5,8 @@ import type { DocumentSessionPorts } from "@/features/document-start";
 import { SampleEditorState } from "@/features/editor/__stories__/sample-editor-state";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { AppMenuFake } from "@/libs/app-menu/fake";
+import { AppStateIpcFake } from "@/libs/app-state-ipc/fake";
+import { AppStateJson } from "@/libs/app-state-json";
 import { ClockFake } from "@/libs/clock/fake";
 import { DialogChoice, DocumentDialogFake } from "@/libs/document-dialog/fake";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
@@ -24,23 +26,33 @@ type Harness = Readonly<{
 }>;
 
 /**
- * ファイル・ダイアログ・メニュー・ドロップの口を代役で用意する。
+ * ファイル・ダイアログ・メニュー・ドロップ・アプリ自身の状態の口を代役で用意する。
  *
  * ストーリーごとに作り直すのは、開いた結果が口の中に残るため（1 つを使い回すと、先に
- * 撮ったストーリーの操作が後のストーリーの絵に出る）。メニューとドロップまで代役にする
- * のは、実物だと購読が張れず「メニューやドロップからの操作を受け取れません」が出て、
- * 開始画面の絵が実物と変わるため。
+ * 撮ったストーリーの操作が後のストーリーの絵に出る。とくにアプリ自身の状態は、開いた
+ * 記録が残ると次の読み込みで復元が走って開始画面が出なくなる）。メニューとドロップまで
+ * 代役にするのは、実物だと購読が張れず「メニューやドロップからの操作を受け取れません」が
+ * 出て、開始画面の絵が実物と変わるため。
  *
  * @param files 置いてあるファイル
+ * @param storedRecentPaths 保存されている最近使ったファイル。省略すると何も保存していない
  * @returns 画面へ渡す口と、ドロップを起こす手がかり
  */
-function createHarness(files: Readonly<Record<string, string>>): Harness {
+function createHarness(
+  files: Readonly<Record<string, string>>,
+  storedRecentPaths?: readonly string[],
+): Harness {
   const ipc = DocumentIpcFake.create(files);
   const dialog = DocumentDialogFake.create({
     open: DialogChoice.chosen(SamplePath),
     save: DialogChoice.chosen("/work/untitled.dcmp"),
   });
   const drop = FileDropFake.create();
+  const appState = AppStateIpcFake.create(
+    storedRecentPaths === undefined
+      ? undefined
+      : AppStateJson.serialize({ recentPaths: storedRecentPaths }),
+  );
 
   return {
     ports: {
@@ -48,6 +60,7 @@ function createHarness(files: Readonly<Record<string, string>>): Harness {
       dialog: dialog.dialog,
       menu: AppMenuFake.create().menu,
       drop: drop.drop,
+      appState: appState.ipc,
     },
     drop,
   };
@@ -62,6 +75,7 @@ const SampleFiles = {
 const started = createHarness(SampleFiles);
 const twoOpened = createHarness(SampleFiles);
 const openFailed = createHarness(SampleFiles);
+const restored = createHarness(SampleFiles, [SamplePath]);
 
 /** 時計も Storybook には無いので代役にする。 */
 const clock = ClockFake.create();
@@ -83,6 +97,12 @@ type Story = StoryObj<typeof meta>;
  */
 export const Default: Story = {
   name: "開始画面",
+};
+
+/** 前回開いていたファイルが起動時にそのまま開いた状態。 */
+export const RestoredDocument: Story = {
+  name: "前回のファイルを開いた直後",
+  args: { ports: restored.ports },
 };
 
 /**

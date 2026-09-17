@@ -5,6 +5,10 @@ import type { AxisLength } from "@/domains/dcmp/axis-length";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import {
+  EditContinuities,
+  type EditContinuity,
+} from "@/domains/session/edit-continuity";
+import {
   movePointer,
   pressPointer,
   releasePointer,
@@ -62,7 +66,7 @@ function NodeResizeHarness({
   onResize,
 }: Readonly<{
   selection: DocumentSelection;
-  onResize: (sizes: readonly AxisLength[]) => void;
+  onResize: (sizes: readonly AxisLength[], continuity: EditContinuity) => void;
 }>) {
   const [grabbed, setGrabbed] = useState("押していない");
   const [clicked, setClicked] = useState("click は届いていない");
@@ -166,7 +170,11 @@ test("掴んだままポインタを動かすと動かした分の大きさが�
   pressPointer(panel(), { x: 298, y: 100 });
   movePointer(surface(), { x: 338, y: 100 });
 
-  expect(onResize).toHaveBeenCalledWith([{ axis: "width", length: 240 }]);
+  // まとまりの扱いは continuity の 3 件が専任で見るので、ここでは巻き込まない
+  expect(onResize).toHaveBeenCalledWith(
+    [{ axis: "width", length: 240 }],
+    expect.anything(),
+  );
 });
 
 test("掴んでいなければポインタを動かしても大きさは通知されない", () => {
@@ -242,4 +250,61 @@ test("リサイズしていないときの click はそのまま選択に使え�
   fireEvent.click(panel());
 
   expect(clicked()).toBe("選択に使う");
+});
+
+test("掴んでから最初の通知は、直前の編集とは別のまとまりとして届く", () => {
+  const onResize = vi.fn();
+  render(
+    <NodeResizeHarness
+      selection={setupSelection(["panel"])}
+      onResize={onResize}
+    />,
+  );
+
+  pressPointer(panel(), { x: 298, y: 100 });
+  movePointer(surface(), { x: 318, y: 100 });
+
+  expect(onResize.mock.calls.map(([, continuity]) => continuity)).toEqual([
+    EditContinuities.Separate,
+  ]);
+});
+
+test("続けてポインタを動かした通知は、同じまとまりの続きとして届く", () => {
+  const onResize = vi.fn();
+  render(
+    <NodeResizeHarness
+      selection={setupSelection(["panel"])}
+      onResize={onResize}
+    />,
+  );
+
+  pressPointer(panel(), { x: 298, y: 100 });
+  movePointer(surface(), { x: 318, y: 100 });
+  movePointer(surface(), { x: 338, y: 100 });
+
+  expect(onResize.mock.calls.map(([, continuity]) => continuity)).toEqual([
+    EditContinuities.Separate,
+    EditContinuities.Continued,
+  ]);
+});
+
+test("離して掴み直すと、そこからまた別のまとまりとして届く", () => {
+  const onResize = vi.fn();
+  render(
+    <NodeResizeHarness
+      selection={setupSelection(["panel"])}
+      onResize={onResize}
+    />,
+  );
+
+  pressPointer(panel(), { x: 298, y: 100 });
+  movePointer(surface(), { x: 318, y: 100 });
+  releasePointer(surface(), { x: 318, y: 100 });
+  pressPointer(panel(), { x: 298, y: 100 });
+  movePointer(surface(), { x: 338, y: 100 });
+
+  expect(onResize.mock.calls.map(([, continuity]) => continuity)).toEqual([
+    EditContinuities.Separate,
+    EditContinuities.Separate,
+  ]);
 });

@@ -22,12 +22,6 @@ import type { DocumentIpc } from "@/libs/document-ipc";
 import { Option } from "@/utils/Option";
 
 /**
- * 最近開いたファイル。保存先が決まるまでは常に空
- * （どこに残すかは別の担当で、この画面は受け取った一覧を並べるだけ）。
- */
-const RecentPaths: readonly string[] = [];
-
-/**
  * 開いているドキュメントを重ねて出す。見えるのは今見ているものだけ。
  *
  * 見えていないものも**描いたまま残す**。外すと編集状態（選択・undo 履歴・ズーム）が消え、
@@ -90,8 +84,14 @@ export function EditorScreen({
   clock,
   ports,
 }: Readonly<{ clock: Clock; ports: DocumentSessionPorts }>) {
-  const { session, actions, tabActions, commandFailure } =
-    useDocumentSession(ports);
+  const {
+    session,
+    recentPaths,
+    recentFilesFailure,
+    actions,
+    tabActions,
+    commandFailure,
+  } = useDocumentSession(ports);
   const failure = DocumentSession.failure(session);
 
   if (!Option.isSome(session.documents)) {
@@ -103,7 +103,8 @@ export function EditorScreen({
           <DocumentStart
             attempt={session.attempt}
             actions={actions}
-            recentPaths={RecentPaths}
+            recentPaths={recentPaths}
+            recentFilesFailure={recentFilesFailure}
             commandFailure={commandFailure}
             renderErrors={(errors) => (
               // 解釈できずに開けなかったファイルなので、由来は unopened-file で固定になる

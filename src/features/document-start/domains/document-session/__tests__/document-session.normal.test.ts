@@ -93,15 +93,18 @@ test("一部だけ読めたときは、読めた分を開いてその失敗も�
   );
 });
 
-test("開かずにやめると、直前の失敗も消える", () => {
+test("何も開かずに終わると、直前の失敗も消える", () => {
   const failed = DocumentSession.finishOpening(DocumentSession.Closed, {
     documents: [],
     failure: Option.some(DialogFailure),
   });
 
-  expect(
-    DocumentSession.failure(DocumentSession.cancelOpening(failed)),
-  ).toStrictEqual(Option.none);
+  const session = DocumentSession.finishOpening(failed, {
+    documents: [],
+    failure: Option.none,
+  });
+
+  expect(DocumentSession.failure(session)).toStrictEqual(Option.none);
 });
 
 test("最後のドキュメントを閉じると、何も開いていない状態へ戻る", () => {
@@ -135,4 +138,32 @@ test("開けなかった後に開けると、直前の失敗は消える", () =>
   const session = DocumentSession.finishOpening(failed, opened(Path));
 
   expect(DocumentSession.failure(session)).toStrictEqual(Option.none);
+});
+
+test("何も開いていない間は、まだ何も起きていない状態になる", () => {
+  expect(DocumentSession.isClosed(DocumentSession.Closed)).toBe(true);
+});
+
+test("開く操作を始めた後は、まだ何も起きていない状態ではなくなる", () => {
+  const session = DocumentSession.beginOpening(DocumentSession.Closed);
+
+  expect(DocumentSession.isClosed(session)).toBe(false);
+});
+
+test("開けずに終わった後は、まだ何も起きていない状態ではなくなる", () => {
+  const session = DocumentSession.finishOpening(DocumentSession.Closed, {
+    documents: [],
+    failure: Option.some(DialogFailure),
+  });
+
+  expect(DocumentSession.isClosed(session)).toBe(false);
+});
+
+test("ドキュメントを開いた後は、まだ何も起きていない状態ではなくなる", () => {
+  const session = DocumentSession.finishOpening(
+    DocumentSession.Closed,
+    opened(Path),
+  );
+
+  expect(DocumentSession.isClosed(session)).toBe(false);
 });

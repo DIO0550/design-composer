@@ -11,7 +11,8 @@ import { Option } from "@/utils/Option";
  * 路以外の枝は前のスナップショットと同じ参照が残るため、1 編集で増えるのは書き換えた経路ぶ
  * ん。
  *
- * これにより履歴を積まずにドキュメントだけ差し替える経路が無くなる。
+ * ドキュメントだけを差し替える経路は `amend` だけで、そこは**直前に積んだものと同じまと
+ * まりの続き**に限られる。
  */
 export type EditHistory = Readonly<{
   past: readonly DesignDocument[];
@@ -36,6 +37,22 @@ export const EditHistory = {
       present: document,
       future: [],
     };
+  },
+
+  /**
+   * 直前に積んだものと同じまとまりの続きとして、戻る先を増やさずに現在地だけを差し替える。
+   *
+   * 1 回の操作が何度もドキュメントを書き換えるため、その連続を 1 件に畳むのに使う。どの
+   * 操作が 1 件になるかは docs/06-ui.md「キャンバス直接操作」「編集操作の一覧」。
+   *
+   * まとまりの 1 件目は `record` が積む。戻る先が無いまま呼ぶと、**そのとき現在地にあった
+   * ドキュメントへは戻れなくなる**（まとまりの始まりを知っているのは操作を受けている側
+   * だけなので、ここでは `record` へ倒さない）。
+   *
+   * `future` は `record` と同じく捨てる。
+   */
+  amend(history: EditHistory, document: DesignDocument): EditHistory {
+    return { past: history.past, present: document, future: [] };
   },
 
   /** 1 つ前へ戻る。戻る先が無ければ `none`。 */
