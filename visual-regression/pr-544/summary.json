@@ -1,11 +1,11 @@
 {
-  "reportVersion": "48eace416d73bd1770197ffc218edfdb1c9ff862",
+  "reportVersion": "b82650f0a602369e64eefdcf1df491da877e4dc4",
   "maxDiffRatio": 0.002,
-  "changed": 0,
+  "changed": 1,
   "new": 9,
   "deleted": 0,
-  "passed": 165,
-  "failed": 0,
+  "passed": 166,
+  "failed": 1,
   "results": [
     {
       "story": "components-contextmenu--empty-area",
@@ -312,12 +312,12 @@
       "title": "features/assets/CreateComponent",
       "name": "部品名を打っている",
       "status": "passed",
-      "reason": "within-threshold",
-      "diffPixels": 5,
+      "reason": "match",
+      "diffPixels": 0,
       "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": true
+      "hasDiff": false
     },
     {
       "story": "features-assets-createcomponent--ready",
@@ -931,6 +931,19 @@
       "hasDiff": false
     },
     {
+      "story": "features-documentstart-documentstart--recent-files-unreadable",
+      "id": "features-documentstart-documentstart--recent-files-unreadable",
+      "title": "features/documentStart/DocumentStart",
+      "name": "最近使ったファイルを読み込めない",
+      "status": "passed",
+      "reason": "match",
+      "diffPixels": 0,
+      "diffRatio": 0,
+      "hasExpected": true,
+      "hasActual": true,
+      "hasDiff": false
+    },
+    {
       "story": "features-documentstart-documentstart--with-recent-documents",
       "id": "features-documentstart-documentstart--with-recent-documents",
       "title": "features/documentStart/DocumentStart",
@@ -1111,6 +1124,19 @@
       "hasExpected": false,
       "hasActual": true,
       "hasDiff": false
+    },
+    {
+      "story": "features-editor-editorscreen--restored-document",
+      "id": "features-editor-editorscreen--restored-document",
+      "title": "features/editor/EditorScreen",
+      "name": "前回のファイルを開いた直後",
+      "status": "changed",
+      "reason": "pixel-diff",
+      "diffPixels": 25827,
+      "diffRatio": 0.027999999999999997,
+      "hasExpected": true,
+      "hasActual": true,
+      "hasDiff": true
     },
     {
       "story": "features-editor-editortopbar--failed",
