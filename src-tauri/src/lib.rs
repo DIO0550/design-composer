@@ -1,5 +1,11 @@
+pub mod app_state;
 pub mod document;
+pub mod file_io;
 pub mod menu;
+
+// 対象のモジュールをまたいで使うテスト支援。
+#[cfg(test)]
+mod test_support;
 
 use std::sync::Arc;
 
@@ -22,7 +28,9 @@ pub fn run() {
             document::io::load_document,
             document::io::save_document,
             document::watch::watch_document,
-            document::watch::unwatch_document
+            document::watch::unwatch_document,
+            app_state::load_app_state,
+            app_state::save_app_state
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

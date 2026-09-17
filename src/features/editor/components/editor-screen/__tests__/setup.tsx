@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { changeFileExternally } from "@/libs/__tests__/document-change";
 import { type AppMenuCommand, AppMenuCommands } from "@/libs/app-menu";
 import { AppMenuFake } from "@/libs/app-menu/fake";
+import { AppStateIpcFake } from "@/libs/app-state-ipc/fake";
 import { ClockFake } from "@/libs/clock/fake";
 import {
   type DialogChoices,
@@ -17,10 +18,25 @@ export const Path = "/work/login.dcmp";
 /** 新規作成やファイルの切り替えで使うもう 1 つのパス。 */
 export const OtherPath = "/work/settings.dcmp";
 
+/** 画面を描くときに、既定から変えたいもの。 */
+export type ScreenPortOptions = Readonly<{
+  /** 既に保存されているアプリ自身の状態の生のテキスト。 */
+  storedAppState?: string;
+  /** アプリ自身の状態の読み込みを拒むようにするか。 */
+  denyAppStateLoad?: boolean;
+  /** メニューの購読を張れないようにするか。 */
+  denyMenu?: boolean;
+}>;
+
 /** 画面と、その外側の口を動かす手段。 */
 export type ScreenObserver = Readonly<{
   /** インメモリのファイル表。書き出された内容の確認と外部変更の再現に使う。 */
   files: DocumentIpcFake;
+  /**
+   * 起動時の復元と購読の成立を待ち合わせる。
+   * どちらも描画のあとに非同期で進むので、状態を見る前にここで待つ。
+   */
+  settle: () => Promise<void>;
   /** OS のメニューから項目を選ぶ。 */
   chooseMenu: (command: AppMenuCommand) => Promise<void>;
   /** ウィンドウへファイルを落とす。 */
@@ -34,13 +50,17 @@ export type ScreenObserver = Readonly<{
 export function renderEditorScreen(
   files: Readonly<Record<string, string>>,
   choices: DialogChoices,
-  faults: Readonly<{ denyMenu?: boolean }> = {},
+  options: ScreenPortOptions = {},
 ): ScreenObserver {
   const ipcFake = DocumentIpcFake.create(files);
   const dialogFake = DocumentDialogFake.create(choices);
   const menuFake = AppMenuFake.create();
   const dropFake = FileDropFake.create();
-  if (faults.denyMenu === true) {
+  const appStateFake = AppStateIpcFake.create(options.storedAppState);
+  if (options.denyAppStateLoad === true) {
+    appStateFake.denyLoad();
+  }
+  if (options.denyMenu === true) {
     menuFake.denySubscribe();
   }
 
@@ -52,6 +72,7 @@ export function renderEditorScreen(
         dialog: dialogFake.dialog,
         menu: menuFake.menu,
         drop: dropFake.drop,
+        appState: appStateFake.ipc,
       }}
     />,
   );
@@ -61,6 +82,7 @@ export function renderEditorScreen(
 
   return {
     files: ipcFake,
+    settle,
     chooseMenu: async (command) => {
       await settle();
       await act(async () => {

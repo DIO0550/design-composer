@@ -3,7 +3,7 @@ import {
   type DocumentAccessFailureReason,
   DocumentAccessFailureReasons,
 } from "@/domains/session/document-access-failure";
-import type { TauriIpc, Unsubscribe } from "@/libs/tauri-ipc";
+import { TauriIpc, type Unsubscribe } from "@/libs/tauri-ipc";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
@@ -82,10 +82,7 @@ export type DocumentChanged = Readonly<{
   content: string;
 }>;
 
-/**
- * `docs/05-architecture.md`「Tauri IPC」のコマンド名。Rust 側の関数名がそのまま
- * コマンド名になるため、`src-tauri/src/lib.rs` の `generate_handler!` と対で保つ。
- */
+/** `docs/05-architecture.md`「Tauri IPC」が挙げているドキュメントのコマンド名。 */
 export type DocumentCommand =
   | "load_document"
   | "save_document"
@@ -171,29 +168,6 @@ function toDocumentChanged(payload: unknown): Option<DocumentChanged> {
 }
 
 /**
- * コマンドを呼び、失敗を値として返す。
- *
- * ここが例外と `Result` の境界。`libs/` の外へ例外を出さないため、
- * このモジュールの公開 API はすべて `Result` を返す。
- *
- * @param tauriIpc 呼び出しに使う IPC
- * @param command 呼ぶコマンド名
- * @param args コマンドへ渡す引数
- * @returns コマンドの戻り値。reject されたら失敗として返す（例外にはしない）
- */
-async function call(
-  tauriIpc: TauriIpc,
-  command: DocumentCommand,
-  args: Readonly<Record<string, unknown>>,
-): Promise<Result<unknown, DocumentIpcError>> {
-  try {
-    return Result.ok(await tauriIpc.invoke(command, args));
-  } catch (reason) {
-    return Result.err(toDocumentIpcError(reason));
-  }
-}
-
-/**
  * 戻り値を持たないコマンドの結果。
  *
  * @param result コマンドの呼び出し結果
@@ -226,26 +200,26 @@ function toContent(value: unknown): Result<string, DocumentIpcError> {
 
 export const DocumentIpc = {
   create(tauriIpc: TauriIpc): DocumentIpc {
+    const call = TauriIpc.caller<DocumentCommand, DocumentIpcError>(
+      tauriIpc,
+      toDocumentIpcError,
+    );
+
     return {
       async load(path) {
-        return Result.flatMap(
-          await call(tauriIpc, "load_document", { path }),
-          toContent,
-        );
+        return Result.flatMap(await call("load_document", { path }), toContent);
       },
 
       async save(path, content) {
-        return toCompletion(
-          await call(tauriIpc, "save_document", { path, content }),
-        );
+        return toCompletion(await call("save_document", { path, content }));
       },
 
       async watch(path) {
-        return toCompletion(await call(tauriIpc, "watch_document", { path }));
+        return toCompletion(await call("watch_document", { path }));
       },
 
       async unwatch(path) {
-        return toCompletion(await call(tauriIpc, "unwatch_document", { path }));
+        return toCompletion(await call("unwatch_document", { path }));
       },
 
       async subscribeChanged(listener) {
