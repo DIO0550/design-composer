@@ -19,3 +19,21 @@ export const Axes = {
  * も同じ形）。
  */
 export type Axis = ValueOf<typeof Axes>;
+
+/**
+ * 軸の 2 つの端。走査するときは `Object.values(AxisEnds)` で並びにする。
+ *
+ * 軸が決まったあとの残りだけを表す。軸と組み合わせて初めて 4 辺のどれか（`unit/side` の
+ * `Side`）になるので、軸が既に分かっている文脈では端だけを持てば足りる。
+ */
+export const AxisEnds = {
+  Start: "start",
+  End: "end",
+} as const;
+
+/**
+ * 軸の始点側か終点側か。横なら左 / 右、縦なら上 / 下に当たる。
+ *
+ * どの辺を指すかは軸と対にして引く（`CanvasBounds.edgeAt`）。
+ */
+export type AxisEnd = ValueOf<typeof AxisEnds>;
