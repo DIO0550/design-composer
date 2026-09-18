@@ -27,6 +27,7 @@ export type CssProperty =
   | "box-shadow"
   | "overflow"
   | "opacity"
+  | "transform"
   | "color"
   | "text-align"
   | TypographyCssProperty;

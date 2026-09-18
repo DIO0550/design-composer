@@ -85,6 +85,31 @@ function placementDeclarations(
     : [CssDeclaration.create("position", "relative")];
 }
 
+/** 向きを変えない、回っていない状態。 */
+const Unrotated = 0;
+
+/**
+ * 回っていないノードは宣言を出力しない (docs/03 の表)。
+ *
+ * `rotate(0deg)` でも `transform` が `none` でなくなり、そのノードが**新しい stacking
+ * context** になる。出すと、中の子を運んでいる間に前へ出す `z-index`
+ * (`repositionPreviewDeclarations`) が回っていないノードでも効かなくなる (実測)。
+ *
+ * `opacityDeclarations` と形は似ているが、既定を出さない理由が別 (あちらは初期値と同じで
+ * 効果が無い) なので畳まない。畳むと呼び出しからどちらの理由かが読めなくなる。
+ *
+ * @param rotation `rotation` prop に設定されている値
+ * @returns 回っているときだけ宣言 1 件。数値でない値（ファイル由来の不正な綴り）では空
+ */
+function rotationDeclarations(
+  rotation: PropValue | undefined,
+): readonly CssDeclarationType[] {
+  if (typeof rotation !== "number" || rotation === Unrotated) {
+    return [];
+  }
+  return [CssDeclaration.create("transform", `rotate(${rotation}deg)`)];
+}
+
 /**
  * 初期値と同じ `visible` は宣言を出力しない (docs/03 の表は clip のみを規定)。
  *
@@ -253,6 +278,7 @@ export const BoxElement = {
     return [
       ...Layout.declarations(layout),
       ...placementDeclarations(placement),
+      ...rotationDeclarations(props.rotation),
       ...gap,
       ...padding,
       ...alignment,
@@ -308,6 +334,7 @@ export const TextElement = {
   ): readonly CssDeclarationType[] {
     return [
       ...Placement.declarations(Placement.fromProps(props)),
+      ...rotationDeclarations(props.rotation),
       ...typographyDeclarations(props.typography, tokens),
       ...tokenDeclarations("color", props.color, tokens),
       CssDeclaration.create("text-align", String(props.align)),

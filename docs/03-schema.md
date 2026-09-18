@@ -49,7 +49,7 @@
 - **Image は保留**。どちらの条件にも当たらない（部品では作れず、参照は相対パスの文字列1つ）が、画像資産の参照は1ファイル自己完結の原則と衝突するため、資産管理の問題として 01-file-format の未定義項目に積む
 - **Ellipse はプリミティブにする**。どちらの条件にも当たらない。矩形は Box で代用でき、正円も幅 = 高さの Box の 4 隅に大きな角丸を与えれば作れるが、**幅 ≠ 高さの楕円は Box では作れない**（角丸が指す radius トークンの値は px の number なので `50%` を表せない / 04-tokens「値の形式」）。楕円は幅と高さだけで形が決まるので、既存のサイズ指定の語彙のまま持てる
 - **Vector は持たない**。2つ目に当たる。頂点の並び＝配列を props に載せることになる
-- **Line も持たない**。こちらはどちらの条件にも当たらない（線の形は位置・長さ・角度で決まり、角度も number 1 つ）。持たないのは、**既存の語彙に角度が無く、この仕様はノードの回転を持たない**ため。Ellipse が既存のサイズ指定の語彙のまま持てるのと対になる個別の判断（水平・垂直に限れば薄い Box で代用できる）
+- **Line も持たない**。こちらはどちらの条件にも当たらない（線の形は位置・長さ・角度で決まり、角度も number 1 つ）。持たないのは、**薄い Box に `rotation` を書けば任意の向きの線になる**ため（下記「回転」）。Box では作れない幅 ≠ 高さの楕円を持つ Ellipse と対になる個別の判断
 
 ### 配置の指定
 
@@ -111,6 +111,20 @@ Box と Ellipse が、透け具合を 1 prop で持つ（Text は持たない）
 - 取りうる範囲は `range` で宣言し、外れた値はバリデーションエラーにする（下記「バリデーション仕様」）
 - artboard は Box スキーマを流用するので**この prop を受け付ける**（受け付けないと決めた「配置の指定」の 5 prop・「表示 / 非表示」と違い、除く理由が無い）
 
+### 回転
+
+すべてのノードが、自分がどれだけ回るかを 1 prop で持つ。Figma の `relativeTransform` が含む回転にあたる。
+
+| prop | ドメイン | 値 | デフォルト |
+|---|---|---|---|
+| `rotation` | 生リテラル (number, 度) | 時計回りの角度。中心を軸に回る | `0` |
+
+- **`placement` に依らず効く。** フローの子に書いた座標は読み捨てられる（上記「配置の指定」）が、回転は並びの中の子でも効くので、絶対配置の子だけが持つ形にはしない
+- **回転はノードの占める領域を変えない。** 並びの中での場所も、親の `hug` が決める長さも、回る前の矩形のまま決まる（CSS の `transform` がレイアウトに影響しないのと同じ）
+- **取りうる範囲は宣言しない。** 1 周を超える角度も「1 周と◯度」として意味が決まるため（上記「prop 定義のフィールド」の `range` は宣言しない prop を範囲では弾かない）
+- **見た目の値ではなく構造値なので生リテラルでよい**（02-data-model「値のドメイン: 3種類」）。対応するトークン種別が無いのは `opacity` と同じだが、こちらは幅・高さと同じ幾何の値
+- artboard は Box スキーマを流用するが、**この prop は受け付けない**。枠の見出しとリサイズハンドルは枠の外側に描かれる（06-ui「キャンバス直接操作」）ので、枠だけが回るとそれらとずれる。`opacity` を受け付けるのと違うのは、回転が幾何を動かすため
+
 ### サイズ指定の原則
 
 - Figma の Hug / Fill / 固定値 に相当するサイズ指定は、**モード（enum）と値（number）の2 prop に分離**する
@@ -125,6 +139,7 @@ Box と Ellipse が、透け具合を 1 prop で持つ（Text は持たない）
 | prop | ドメイン | 値 | デフォルト |
 |---|---|---|---|
 | `placement` / `x` / `y` / `constraintX` / `constraintY` | | 上記「配置の指定」 | |
+| `rotation` | | 上記「回転」 | |
 | `layout` | enum | `row` / `column` / `free` | `column` |
 | `gap` | トークン (spacing) | `layout` が `free` 以外のときのみ有効 | なし (0) |
 | `paddingTop` | トークン (spacing) | 上 | なし (0) |
@@ -161,6 +176,7 @@ Box と Ellipse が、透け具合を 1 prop で持つ（Text は持たない）
 | prop | ドメイン | 値 | デフォルト |
 |---|---|---|---|
 | `placement` / `x` / `y` / `constraintX` / `constraintY` | | 上記「配置の指定」 | |
+| `rotation` | | 上記「回転」 | |
 | `content` | 生リテラル (string) | | `""` |
 | `typography` | トークン (typography) | サイズ・行間・ウェイトの複合トークン | デフォルトトークン |
 | `color` | トークン (colors) | | デフォルトトークン |
@@ -176,6 +192,7 @@ Box と Ellipse が、透け具合を 1 prop で持つ（Text は持たない）
 | prop | ドメイン | 値 | デフォルト |
 |---|---|---|---|
 | `placement` / `x` / `y` / `constraintX` / `constraintY` | | 上記「配置の指定」 | |
+| `rotation` | | 上記「回転」 | |
 | `widthMode` | enum | `fill` / `fixed` | `fixed` |
 | `width` | 生リテラル (number, px) | `widthMode: fixed` 時のみ有効 | `100` |
 | `heightMode` | enum | `fill` / `fixed` | `fixed` |
@@ -202,6 +219,7 @@ Box と Ellipse が、透け具合を 1 prop で持つ（Text は持たない）
 |---|---|
 | Box 自体 | `div` + `position: relative`（絶対配置の子が位置を測る基準になるため。offset を伴わないので箱の位置は動かない。次の行と排他で、`placement: absolute` の Box では `absolute` に置き換わる）。`display: flex` は下の `layout` の行が決める（`visibility` の行が優先する） |
 | `placement: absolute` | `position: absolute` + `left: {x}px` + `top: {y}px` |
+| `rotation` | `transform: rotate({n}deg)`（既定の `0` では出力しない。`rotate(0deg)` でも `transform` が `none` でなくなり、そのノードが新しい stacking context になるため） |
 | `layout: row` / `column` | `display: flex` + `flex-direction` |
 | `layout: free` | `display` を出さない（flex コンテナにしない）。`gap` / `align` / `justify` も出さない（`visibility` の行が優先する） |
 | `gap` | `gap: var(--spacing-*)` |

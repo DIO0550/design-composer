@@ -18,3 +18,7 @@ test("artboard の配置は型でも flow に絞られている", () => {
 test("artboard の表示 / 非表示は型でも visible に絞られている", () => {
   expectTypeOf<ArtboardBoxProps["visibility"]>().toEqualTypeOf<"visible">();
 });
+
+test("artboard の回転は型でも回らない値に絞られている", () => {
+  expectTypeOf<ArtboardBoxProps["rotation"]>().toEqualTypeOf<0>();
+});

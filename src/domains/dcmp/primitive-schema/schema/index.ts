@@ -87,6 +87,28 @@ const PlacementProps = {
 } as const satisfies PropDefinitionRecord;
 
 /**
+ * ノード自身の回転の props（docs/03「回転」）。
+ * Box と Text のどちらも回せるので、同じ 1 prop を両方が持つ。
+ *
+ * `enabledWhen` を付けないのは、回転が置かれ方に依らず効くため。フローの子に書いた座標は
+ * 読み捨てられるが（docs/03「配置の指定」）、回転はフローの子でも効く。
+ *
+ * `range` を宣言しないのは、1 周を超える角度も「1 周と◯度」として意味が決まるため。
+ *
+ * `group` を `layout` にするのは、親の中での据わり方を集めた節がそこで、Text にも
+ * `PlacementProps` で既にその節があるため。`appearance`（どう描かれるか）へ置くと
+ * `opacity` と並んで見た目の値に見える。
+ */
+const RotationProps = {
+  rotation: {
+    domain: "literal",
+    literalType: "number",
+    default: 0,
+    group: "layout",
+  },
+} as const satisfies PropDefinitionRecord;
+
+/**
  * ノードを描くかどうかの props（docs/03「表示 / 非表示」）。
  * Box と Text のどちらも描かれる対象なので、同じ 1 prop を両方が持つ。
  *
@@ -113,6 +135,7 @@ export const BoxSchema = {
   allowsChildren: true,
   props: {
     ...PlacementProps,
+    ...RotationProps,
     /*
      * `arrangement` などへ改名しない。この prop も `group: "layout"` に属し、パネルの節
      * 見出しは group の綴りから作られるので、見出しと行に同じ語が並ぶ（UI 案
@@ -247,6 +270,7 @@ export const TextSchema = {
   allowsChildren: false,
   props: {
     ...PlacementProps,
+    ...RotationProps,
     content: {
       domain: "literal",
       literalType: "string",

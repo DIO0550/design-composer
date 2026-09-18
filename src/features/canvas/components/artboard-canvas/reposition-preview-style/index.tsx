@@ -6,6 +6,20 @@ import { Option } from "@/utils/Option";
 import { NameStyleRule } from "../name-style-rule";
 
 /**
+ * ずらして見せるのに使う CSS プロパティ。
+ *
+ * `transform` の関数（`translate(...)`）ではなく**個別プロパティ**にするのは、ノードの回転が
+ * コンパイル結果の**インライン** `transform` に出るため（docs/03「回転」）。同じ
+ * `transform` を使うとインライン側が勝ち、回転したノードが運んでも動かなくなる（実測）。
+ * 個別プロパティなら奪い合わず、合成順も `translate` が先なので移動量は親の座標系のまま
+ * 効く（`transform` の側に書くと移動量が回転した座標系で効いて向きがずれる）。
+ *
+ * 下の `CarriedNodeUnclipped` と同じく `!important` で勝たせる形にはしない。勝たせると
+ * 運んでいる間だけ回転ごと打ち消されて、掴んだノードの向きが変わって見える。
+ */
+export const RepositionPreviewProperty = "translate";
+
+/**
  * 運んでいるノードを**見た目だけの存在**にする宣言（ずらして見せる・当たり判定から外す
  * ・他の artboard より前に出す）。テストが綴りを写さずに済むよう、組み立てをここから出
  * す。
@@ -19,7 +33,7 @@ import { NameStyleRule } from "../name-style-rule";
  * @returns ずらす宣言・当たり判定から外す宣言・前に出す宣言
  */
 export function repositionPreviewDeclarations(offset: Offset): string {
-  return `transform:translate(${Px.create(offset.x)},${Px.create(offset.y)});pointer-events:none;z-index:1`;
+  return `${RepositionPreviewProperty}:${Px.create(offset.x)} ${Px.create(offset.y)};pointer-events:none;z-index:1`;
 }
 
 /**

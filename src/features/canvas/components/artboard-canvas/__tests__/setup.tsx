@@ -29,7 +29,10 @@ import { useNodeDrag } from "@/features/canvas/hooks/use-node-drag";
 import { Option } from "@/utils/Option";
 import { ArtboardCanvas } from "../index";
 import { nameSelector } from "../name-style-rule";
-import { repositionPreviewDeclarations } from "../reposition-preview-style";
+import {
+  RepositionPreviewProperty,
+  repositionPreviewDeclarations,
+} from "../reposition-preview-style";
 
 /**
  * artboard の並びだけを差し替えたドキュメントと、選択の対
@@ -265,6 +268,14 @@ export function dragNodeOnto(name: string, to: Element, by: Offset): void {
   movePointer(to, { x: 100 + by.x, y: 100 + by.y });
   releasePointer(to, { x: 100 + by.x, y: 100 + by.y });
 }
+
+/**
+ * ずらして見せる規則が差し込まれているかを見るための、宣言の先頭。
+ *
+ * 綴りを実装から引くのは、`transform` から個別プロパティへ替えたときに直書きの否定 assert
+ * が**二度と落ちない**形になったため。
+ */
+export const PreviewDeclarationPrefix = `${RepositionPreviewProperty}:`;
 
 /**
  * 掴んだノードへ差し込まれる、ずらして見せる規則 1 本。

@@ -88,6 +88,30 @@ test("Box の追従は placement が absolute のときのみ有効になる", (
   );
 });
 
+test("Box の回転は生リテラルの number でデフォルトが 0", () => {
+  const definition = BoxSchema.props.rotation;
+  expect(PropDefinition.isLiteral(definition)).toBe(true);
+  expect(definition).toMatchObject({
+    domain: "literal",
+    literalType: "number",
+    default: 0,
+  });
+});
+
+test("Box の回転は絶対配置でもフローでも有効になる", () => {
+  const definition = BoxSchema.props.rotation;
+  expect(PropDefinition.isEnabled(definition, { placement: "absolute" })).toBe(
+    true,
+  );
+  expect(PropDefinition.isEnabled(definition, { placement: "flow" })).toBe(
+    true,
+  );
+});
+
+test("Box の回転は取りうる範囲を宣言しない", () => {
+  expect("range" in BoxSchema.props.rotation).toBe(false);
+});
+
 test("Box の gap は spacing トークン参照でデフォルトを持たない", () => {
   const definition = BoxSchema.props.gap;
   expect(PropDefinition.isToken(definition)).toBe(true);

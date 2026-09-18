@@ -77,7 +77,7 @@ test("辺を宣言した prop は束ねた行にまとまり、辺ごとの行�
 
   expect(
     rows.flatMap((row) => (row.kind === "prop" ? [row.control.prop] : [])),
-  ).toEqual(["placement", "layout", "gap", "align", "justify"]);
+  ).toEqual(["placement", "rotation", "layout", "gap", "align", "justify"]);
 });
 
 test("隅を宣言した prop は束ねた行にまとまり、隅ごとの行としては出ない", () => {
@@ -95,7 +95,15 @@ test("束ねた行はセクション内で最初の辺の位置に出る", () =>
     rows.map((row) =>
       row.kind === "prop" ? row.control.prop : row.shorthand.name,
     ),
-  ).toEqual(["placement", "layout", "gap", "padding", "align", "justify"]);
+  ).toEqual([
+    "placement",
+    "rotation",
+    "layout",
+    "gap",
+    "padding",
+    "align",
+    "justify",
+  ]);
 });
 
 test("束ねた行はセクション内で最初の隅の位置に出る", () => {
