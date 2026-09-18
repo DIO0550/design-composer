@@ -61,6 +61,16 @@ export const Placement = {
   },
 
   /**
+   * 座標だけを平面上の位置として取り出す。
+   *
+   * @param placement 座標を読む配置
+   * @returns 親の左上から見た位置
+   */
+  offset(placement: AbsolutePlacement): Offset {
+    return { x: placement.x, y: placement.y };
+  },
+
+  /**
    * フローから外れて座標で置かれるか。flex アイテムとして並ばない。
    */
   isAbsolute(placement: Placement | undefined): placement is AbsolutePlacement {
@@ -119,6 +129,20 @@ export const Placement = {
     return followed === offset
       ? Option.none
       : Option.some(PropEdit.set([prop], followed));
+  },
+
+  /**
+   * その軸の座標だけを置き直す編集。
+   *
+   * リサイズで始点側の辺を掴んだ軸だけが動くので、動いていない軸の prop を巻き込まない
+   * ために軸ごとに 1 件で返す。
+   *
+   * @param axis 置き直す軸
+   * @param offset 置き直したあとの座標
+   * @returns その軸の座標を設定する編集 1 件。座標は整数
+   */
+  positionPropEdit(axis: Axis, offset: number): PropEdit {
+    return PropEdit.set([OffsetProps[axis]], Math.round(offset));
   },
 
   /**
