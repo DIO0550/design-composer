@@ -32,6 +32,7 @@ import {
   type SideSnapped,
 } from "@/features/canvas/domains/side-snap";
 import { CanvasPointer } from "@/features/canvas/utils/CanvasPointer";
+import { DrawnBounds } from "@/features/canvas/utils/DrawnBounds";
 import { CanvasDom } from "@/libs/canvas-dom";
 import { ElementEx } from "@/utils/ElementEx";
 import { Option } from "@/utils/Option";
@@ -115,16 +116,6 @@ type DropContext = Readonly<{
 }>;
 
 /**
- * 描かれている要素の矩形。
- *
- * @param name 描かれている artboard / ノードの名前
- * @returns その矩形。画面に無ければ `none`
- */
-function boundsOf(name: string): Option<CanvasBounds> {
-  return Option.map(CanvasDom.elementOf(name), CanvasBounds.ofElement);
-}
-
-/**
  * 座標の置き直しに要る実測。
  *
  * 単位が 1 つだけ違う: `origin` / `dragged` / `stationary` は実測したままの**画面上の px**、
@@ -158,9 +149,10 @@ function measureReposition(
   carried: CarriedNode,
   dropped: DropParent,
 ): Option<RepositionMeasure> {
-  const currentBounds = boundsOf(carried.at.parentName);
+  const currentBounds = DrawnBounds.measure(carried.at.parentName);
+  // 落とし先だけ `DrawnBounds.measure` に寄せない。直下の子の矩形を集めるのに要素が要る
   const droppedElement = CanvasDom.elementOf(dropped.name);
-  const dragged = boundsOf(carried.name);
+  const dragged = DrawnBounds.measure(carried.name);
   // 座標を書くにも揃え先を出すにも 3 つとも要るので、1 つでも欠けたら測れなかったとみなす
   const measurable =
     Option.isSome(currentBounds) &&
