@@ -107,3 +107,16 @@ test("props で非表示を指定しても artboard は表示のまま", () => {
 
   expect(props.visibility).toBe("visible");
 });
+
+test("props で回転を指定しても artboard は回らない", () => {
+  const props = Artboard.boxProps(
+    Artboard.create({
+      name: "login-screen",
+      width: 375,
+      height: 812,
+      props: { rotation: 30 },
+    }),
+  );
+
+  expect(props.rotation).toBe(0);
+});

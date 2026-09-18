@@ -92,12 +92,25 @@ const ArtboardFixedPlacementProps: readonly string[] = [
 const ArtboardFixedVisibilityProps: readonly string[] = ["visibility"];
 
 /**
+ * artboard の props では変えられない回転の prop。
+ *
+ * 枠の見出しとリサイズハンドルは枠の**外側に別の要素として**描かれるので、要素だけが回ると
+ * 枠と見出し・ハンドルが目に見えてずれる（`opacity` は幾何を動かさないのでずれない）。
+ *
+ * 回転した**ノード**の枠とハンドルがずれるのとは別で、そちらは中身が回っただけ。artboard は
+ * キャンバスに置かれた器そのもので、子の座標の原点でもあるので、回ると中身の位置が全部
+ * 変わる。
+ */
+const ArtboardFixedRotationProps: readonly string[] = ["rotation"];
+
+/**
  * artboard の props では変えられない prop の全体。
  */
 const ArtboardUneditableProps: readonly string[] = [
   ...ArtboardFixedSizeProps,
   ...ArtboardFixedPlacementProps,
   ...ArtboardFixedVisibilityProps,
+  ...ArtboardFixedRotationProps,
 ];
 
 /**
@@ -161,6 +174,7 @@ export type ArtboardBoxProps = ResolvedProps<"Box"> &
     height: number;
     placement: "flow";
     visibility: "visible";
+    rotation: 0;
   }>;
 
 /**
@@ -256,7 +270,7 @@ export const Artboard = {
 
   /**
    * artboard の props を Box の props として解決する（docs/01「artboard は…ルートノード
-   * (Box)を兼ねる」/ docs/03「Box スキーマを流用する」）。Box スキーマと違う点は 4 つで、
+   * (Box)を兼ねる」/ docs/03「Box スキーマを流用する」）。Box スキーマと違う点は 5 つで、
    * それぞれ効き方が異なる。
    *
    * - `overflow` の既定が `clip`。**デフォルト**なので artboard 側の指定が勝つ
@@ -266,6 +280,8 @@ export const Artboard = {
    *   artboard が描かれる（props を照らす先は Box スキーマなのでファイルには書けてしまう）
    * - 表示は `visible` **固定**。artboard を隠すとは枠の見出しとリサイズハンドルごと隠す
    *   ことで、それを出すかどうかがまだ決まっていない（docs/03「表示 / 非表示」）
+   * - 回転は**固定**で回らない。artboard は子の座標の原点になる器なので、回ると中身の位置が
+   *   全部変わり、枠の外側に描かれる見出しとリサイズハンドルもずれる（docs/03「回転」）
    */
   boxProps(artboard: Artboard): ArtboardBoxProps {
     return {
@@ -279,6 +295,7 @@ export const Artboard = {
       height: artboard.height,
       placement: "flow",
       visibility: Visibilities.Visible,
+      rotation: 0,
     };
   },
 

@@ -14,6 +14,10 @@ test("Text も Box と同じ配置の指定を持つ", () => {
   expect(TextSchema.props.constraintY).toEqual(BoxSchema.props.constraintY);
 });
 
+test("Text も Box と同じ回転を持つ", () => {
+  expect(TextSchema.props.rotation).toEqual(BoxSchema.props.rotation);
+});
+
 test("Text の content は生リテラル文字列でデフォルトが空文字", () => {
   const definition = TextSchema.props.content;
   expect(PropDefinition.isLiteral(definition)).toBe(true);
