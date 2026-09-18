@@ -8,8 +8,8 @@ import type { CanvasBounds } from "@/features/canvas/domains/canvas-bounds";
  * 実装を何に壊しても通る**（rules/testing.md「その assert は落ちうるか」）。
  * ここで差し替えるのはブラウザが行う測定だけで、そこから何が決まるかは実物が答える。
  *
- * 収める倍率（`use-canvas-view`）・ハンドルを重ねる位置（`use-drawn-bounds`）・編集画面の
- * 通しがどれも同じ差し替えを要るので、キャンバス自身の `__tests__/` に集める。
+ * キャンバスの実測の差し替えなので、外の feature から使う場合も持ち主であるこの feature
+ * に置き、テスト用の公開口（`__tests__/index.ts`）から出す。
  */
 
 /**

@@ -3,7 +3,7 @@ import type { Offset } from "@/domains/unit/offset";
 
 /**
  * キャンバス上のポインタイベントの読み取り。
- * ズーム / パン・移動・リサイズの各フックが同じ読み方をするため 1 箇所に集める。
+ * 1 箇所に集めるのは、`event.clientX` を直に読んでも型・テスト・lint のどれも止めないため。
  */
 export const CanvasPointer = {
   /**
