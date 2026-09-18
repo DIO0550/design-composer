@@ -88,16 +88,48 @@ test("align と justify はそれぞれ align-items と justify-content にな�
   expect(style["justify-content"]).toBe("space-between");
 });
 
-test("background・radius・shadow はそれぞれの種別のトークン参照になる", () => {
+test("background・shadow はそれぞれの種別のトークン参照になる", () => {
   const style = styleOf({
     name: "card",
     type: "Box",
-    props: { background: "primary", radius: "md", shadow: "lg" },
+    props: { background: "primary", shadow: "lg" },
   });
 
   expect(style.background).toBe("var(--colors-primary)");
-  expect(style["border-radius"]).toBe("var(--radius-md)");
   expect(style["box-shadow"]).toBe("var(--shadows-lg)");
+});
+
+test("4隅の角丸は 左上 右上 右下 左下 の順で border-radius 1宣言に合成される", () => {
+  const style = styleOf({
+    name: "box",
+    type: "Box",
+    props: {
+      radiusTopLeft: "sm",
+      radiusTopRight: "md",
+      radiusBottomRight: "lg",
+      radiusBottomLeft: "full",
+    },
+  });
+
+  expect(style["border-radius"]).toBe(
+    "var(--radius-sm) var(--radius-md) var(--radius-lg) var(--radius-full)",
+  );
+});
+
+test("左上だけを指定すると残りの3隅は 0 になる", () => {
+  const style = styleOf({
+    name: "box",
+    type: "Box",
+    props: { radiusTopLeft: "md" },
+  });
+
+  expect(style["border-radius"]).toBe("var(--radius-md) 0 0 0");
+});
+
+test("角丸を指定しなければ border-radius 宣言は出力されない", () => {
+  const style = styleOf({ name: "box", type: "Box" });
+
+  expect(style).not.toHaveProperty("border-radius");
 });
 
 test("overflow を clip にするとはみ出しが隠れる", () => {

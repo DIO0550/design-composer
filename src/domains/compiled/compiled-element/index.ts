@@ -1,3 +1,4 @@
+import { CornerRadius } from "@/domains/dcmp/corner-radius";
 import type {
   CssDeclaration as CssDeclarationType,
   CssProperty,
@@ -9,6 +10,7 @@ import {
 } from "@/domains/dcmp/css-declaration";
 import type { CssDirection } from "@/domains/dcmp/css-direction";
 import { Layout } from "@/domains/dcmp/layout";
+import { LengthShorthand } from "@/domains/dcmp/length-shorthand";
 import type { PropValue } from "@/domains/dcmp/node";
 import { Padding } from "@/domains/dcmp/padding";
 import { Placement } from "@/domains/dcmp/placement";
@@ -30,13 +32,13 @@ import { Option } from "@/utils/Option";
  * 引くトークン種別はスキーマの `tokenKind` だけが宣言するため、ここには書かず
  * `TokenPropKinds.kindOf` から引く (`gap` を colors から引く組み合わせを書けない)。
  *
- * `paddingTop` などの4方向は1つの `padding` へ合成するため `Padding` が、`typography` は
- * 複数プロパティへ展開されるため下の関数が担当し、この表には含めない。
+ * 4 つの longhand を 1 本の shorthand へ合成する prop（padding の 4 辺・radius の 4 隅）は
+ * `Padding` / `CornerRadius` が、`typography` は複数プロパティへ展開されるため下の関数が
+ * 担当し、この表には含めない。
  */
 const TokenPropProperties = {
   gap: "gap",
   background: "background",
-  radius: "border-radius",
   shadow: "box-shadow",
   color: "color",
 } as const satisfies Readonly<Partial<Record<TokenPropName, CssProperty>>>;
@@ -193,9 +195,8 @@ export const BoxElement = {
 
   /**
    * Box の props を CSS の宣言へ写す (docs/03「HTML/CSS へのコンパイル規則」の表)。
-   * 各 prop の規則はそれぞれのドメイン (Layout / Placement / Padding / Size / Visibility)
-   * が持ち、
-   * ここはその並び順 = 宣言の出力順を決める。
+   * 各 prop の規則はそれぞれのドメイン (Layout / Placement / Padding / CornerRadius /
+   * LengthShorthand / Size / Visibility) が持ち、ここはその並び順 = 宣言の出力順を決める。
    *
    * @param props デフォルト解決済みの Box の props
    * @param parentDirection この Box を flex アイテムとして並べる親の向き。
@@ -225,24 +226,35 @@ export const BoxElement = {
           CssDeclaration.create("justify-content", String(props.justify)),
         ]
       : [];
+    /*
+     * prop 名と位置の対応は、スキーマの `shorthand` 宣言（`paddingTop` は padding の
+     * 上辺、`radiusTopLeft` は radius の左上、など）と同じ事実をここでも書いている。
+     * 宣言から導くと CSS 出力がスキーマ走査に依存するので今は分けてある
+     * （片方を直したらもう片方も直す）。
+     */
+    const padding = LengthShorthand.declarations(
+      Padding.toLengthShorthand({
+        top: props.paddingTop,
+        right: props.paddingRight,
+        bottom: props.paddingBottom,
+        left: props.paddingLeft,
+      }),
+      (token) => tokens.ref("spacing", token),
+    );
+    const cornerRadius = LengthShorthand.declarations(
+      CornerRadius.toLengthShorthand({
+        topLeft: props.radiusTopLeft,
+        topRight: props.radiusTopRight,
+        bottomRight: props.radiusBottomRight,
+        bottomLeft: props.radiusBottomLeft,
+      }),
+      (token) => tokens.ref("radius", token),
+    );
     return [
       ...Layout.declarations(layout),
       ...placementDeclarations(placement),
       ...gap,
-      /*
-       * prop 名と辺の対応は、スキーマの `shorthand` 宣言（`paddingTop` は padding の
-       * 上辺、など）と同じ事実をここでも書いている。宣言から導くと CSS 出力が
-       * スキーマ走査に依存するので今は分けてある（片方を直したらもう片方も直す）。
-       */
-      ...Padding.declarations(
-        Padding.create({
-          top: props.paddingTop,
-          right: props.paddingRight,
-          bottom: props.paddingBottom,
-          left: props.paddingLeft,
-        }),
-        (token) => tokens.ref("spacing", token),
-      ),
+      ...padding,
       ...alignment,
       ...Size.declarations(
         Size.create(props.widthMode, props.width),
@@ -255,7 +267,7 @@ export const BoxElement = {
         flexParentDirection,
       ),
       ...tokenDeclarations("background", props.background, tokens),
-      ...tokenDeclarations("radius", props.radius, tokens),
+      ...cornerRadius,
       ...tokenDeclarations("shadow", props.shadow, tokens),
       ...overflowDeclarations(props.overflow),
       ...opacityDeclarations(props.opacity),

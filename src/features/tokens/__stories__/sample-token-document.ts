@@ -46,7 +46,7 @@ export const SampleTokenDocument = DesignDocument.create({
         {
           name: "home-panel",
           type: "Box",
-          props: { background: "primary", radius: "md" },
+          props: { background: "primary", radiusTopLeft: "md" },
           children: [],
         },
       ],

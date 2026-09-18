@@ -12,13 +12,13 @@ test("未指定のトークン参照 prop は宣言を出力しない", () => {
 test("トークン参照 prop の値は仕様で定めたトークン種別から引かれる", () => {
   const style = setupBoxStyle({
     background: "primary",
-    radius: "lg",
+    radiusTopLeft: "lg",
     shadow: "sm",
   });
 
   expect(style).toMatchObject({
     background: "var(--colors-primary)",
-    "border-radius": "var(--radius-lg)",
+    "border-radius": "var(--radius-lg) 0 0 0",
     "box-shadow": "var(--shadows-sm)",
   });
 });

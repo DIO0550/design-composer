@@ -196,7 +196,30 @@ export const BoxSchema = {
       enabledWhen: { kind: "equals", prop: "heightMode", equals: "fixed" },
     },
     background: { domain: "token", tokenKind: "colors", group: "appearance" },
-    radius: { domain: "token", tokenKind: "radius", group: "appearance" },
+    radiusTopLeft: {
+      domain: "token",
+      tokenKind: "radius",
+      group: "appearance",
+      shorthand: { name: ShorthandNames.Radius, corner: "topLeft" },
+    },
+    radiusTopRight: {
+      domain: "token",
+      tokenKind: "radius",
+      group: "appearance",
+      shorthand: { name: ShorthandNames.Radius, corner: "topRight" },
+    },
+    radiusBottomRight: {
+      domain: "token",
+      tokenKind: "radius",
+      group: "appearance",
+      shorthand: { name: ShorthandNames.Radius, corner: "bottomRight" },
+    },
+    radiusBottomLeft: {
+      domain: "token",
+      tokenKind: "radius",
+      group: "appearance",
+      shorthand: { name: ShorthandNames.Radius, corner: "bottomLeft" },
+    },
     shadow: { domain: "token", tokenKind: "shadows", group: "appearance" },
     overflow: {
       domain: "enum",

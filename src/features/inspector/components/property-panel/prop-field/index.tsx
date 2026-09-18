@@ -7,9 +7,9 @@ import {
   type EditContinuity,
 } from "@/domains/session/edit-continuity";
 import {
+  PropCollapsedControl,
   PropControl,
   type PropControlInput,
-  PropPairControl,
 } from "@/domains/session/prop-control";
 import { Option } from "@/utils/Option";
 
@@ -35,7 +35,7 @@ export function unsetLabel(control: PropControl): string {
     : "未指定";
 }
 
-/** 2 辺が食い違っているときに、値の代わりに欄へ出す綴り。 */
+/** 書き込み先が食い違っているときに、値の代わりに欄へ出す綴り。 */
 const MixedLabel = "不揃い";
 
 /**
@@ -57,10 +57,10 @@ function valueFrom(text: string): Option<string> {
  * る。
  *
  * 畳んだ欄は 1 つの prop に対応せず、不揃いという状態も `PropControl.value`（`Option<PropValue>`）
- * では表せないため、辺のコントロールを合成して偽のコントロールを作らずに済ませる。
+ * では表せないため、longhand のコントロールを合成して偽のコントロールを作らずに済ませる。
  *
- * 型はこのフォルダの外へ出さない。作る口を `fieldOf` / `pairFieldOf` の 2 つに揃えてお
- * くためで、型で閉じてはいない。
+ * 型はこのフォルダの外へ出さない。作る口を `fieldOf` / `collapsedFieldOf` の 2 つに揃えて
+ * おくためで、型で閉じてはいない。
  */
 type FieldBinding = Readonly<{
   labelledBy: string;
@@ -94,22 +94,22 @@ export function fieldOf(
 }
 
 /**
- * 畳んだ欄が要るもの。編集は 2 辺への 1 件になる。
+ * 畳んだ欄が要るもの。編集は書き込み先すべてへの 1 件になる。
  *
  * 代わりに未選択スロットの綴りを差し替える。
  *
  * @param labelledBy ラベルと欄を結び付ける識別子
- * @param pair 編集したい畳んだ欄
+ * @param collapsed 編集したい畳んだ欄
  * @param onEdit 作った編集の渡し先
- * @returns 2 辺へまとめて書く入力欄の口
+ * @returns 書き込み先へまとめて書く入力欄の口
  */
-export function pairFieldOf(
+export function collapsedFieldOf(
   labelledBy: string,
-  pair: PropPairControl,
+  collapsed: PropCollapsedControl,
   onEdit: (edit: PropEdit, continuity: EditContinuity) => void,
 ): FieldBinding {
-  const value = PropPairControl.value(pair);
-  const [first] = pair.sides;
+  const value = PropCollapsedControl.value(collapsed);
+  const [first] = collapsed.controls;
 
   return {
     labelledBy,
@@ -119,7 +119,10 @@ export function pairFieldOf(
         : "",
     unsetLabel: value.kind === "uniform" ? unsetLabel(first) : MixedLabel,
     onChangeRaw: (raw, continuity) =>
-      onEdit(PropPairControl.editFrom(pair, valueFrom(raw)), continuity),
+      onEdit(
+        PropCollapsedControl.editFrom(collapsed, valueFrom(raw)),
+        continuity,
+      ),
   };
 }
 

@@ -138,7 +138,7 @@ test("部品は publicProps・type・props・children の順で書き出され�
     components: {
       card: {
         type: "Box",
-        props: { radius: "md" },
+        props: { radiusTopLeft: "md" },
         children: [{ name: "card-title", type: "Text" }],
         publicProps: { title: { node: "card-title", prop: "content" } },
       },

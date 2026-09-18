@@ -78,7 +78,10 @@ const SampleDocument = DesignDocument.create({
             heightMode: "fixed",
             height: 320,
             background: "primary",
-            radius: "md",
+            radiusTopLeft: "md",
+            radiusTopRight: "md",
+            radiusBottomRight: "md",
+            radiusBottomLeft: "md",
           },
           children: [],
         },
@@ -106,11 +109,11 @@ const UnsetDocument = DesignDocument.create({
 });
 
 /**
- * padding の 4 辺が揃っている Box と、揃っていない Box。
+ * padding の 4 辺が揃っている Box、揃っていない Box、radius の 4 隅が揃っていない Box。
  *
- * 束ねた行は畳んだ 2 欄・4 辺の欄・不揃いで見え方が変わるので、3 つとも視覚差分に載せる
- * （happy-dom は Tailwind を解決しないので、半幅セルの崩れに気づける手段が視覚差分しか
- * 無い）。
+ * 束ねた行は畳んだ欄・4 つの欄・不揃いで見え方が変わるので、どれも視覚差分に載せる
+ * （happy-dom は Tailwind を解決しないので、半幅セルの崩れと radius の全幅セルに
+ * 気づける手段が視覚差分しか無い）。
  */
 const PaddingDocument = DesignDocument.create({
   tokens: DocumentTemplate.Default.tokens,
@@ -138,6 +141,16 @@ const PaddingDocument = DesignDocument.create({
             paddingRight: "lg",
             paddingBottom: "md",
             paddingLeft: "lg",
+          },
+        },
+        {
+          name: "mixed-radius-box",
+          type: "Box",
+          props: {
+            radiusTopLeft: "sm",
+            radiusTopRight: "lg",
+            radiusBottomRight: "md",
+            radiusBottomLeft: "lg",
           },
         },
       ],
@@ -291,10 +304,31 @@ export const PaddingPerEdge: Story = {
   },
   play: async () => {
     await userEvent.click(
-      screen.getByRole("button", { name: ShorthandLabels.perEdge }),
+      screen.getByRole("button", { name: ShorthandLabels.perLonghand.padding }),
     );
     await expect(
       screen.getByRole("combobox", { name: "Padding Top" }),
+    ).toBeDefined();
+  },
+};
+
+/**
+ * 4 隅を個別に出したとき。切り替えは `useState` なので、押した後の
+ * 半幅セル 2×2 は `play` を通さないと視覚差分に載らない。
+ */
+export const RadiusPerCorner: Story = {
+  name: "radius を隅ごとに出した Box を選択中",
+  args: {
+    selection: DocumentSelection.fromNames(PaddingDocument, [
+      "mixed-radius-box",
+    ]),
+  },
+  play: async () => {
+    await userEvent.click(
+      screen.getByRole("button", { name: ShorthandLabels.perLonghand.radius }),
+    );
+    await expect(
+      screen.getByRole("combobox", { name: "Radius Top Left" }),
     ).toBeDefined();
   },
 };

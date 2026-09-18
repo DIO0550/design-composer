@@ -32,7 +32,7 @@ test("ルートへの上書きは binding されていない prop を保持す�
   const components: ComponentSet = {
     card: {
       type: "Box",
-      props: { background: "primary", radius: "md" },
+      props: { background: "primary", radiusTopLeft: "md" },
       publicProps: { surface: { node: "card", prop: "background" } },
     },
   };
@@ -46,7 +46,7 @@ test("ルートへの上書きは binding されていない prop を保持す�
 
   expect(expanded.props).toEqual({
     background: "secondary",
-    radius: "md",
+    radiusTopLeft: "md",
   });
 });
 

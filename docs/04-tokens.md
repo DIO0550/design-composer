@@ -139,7 +139,8 @@ tokens セクションの体系を規定する。「見た目に関わる値の�
     "props": {
       "layout": "row", "align": "center", "justify": "center",
       "paddingTop": "sm", "paddingRight": "md", "paddingBottom": "sm", "paddingLeft": "md",
-      "background": "primary", "radius": "md"
+      "background": "primary",
+      "radiusTopLeft": "md", "radiusTopRight": "md", "radiusBottomRight": "md", "radiusBottomLeft": "md"
     },
     "children": [
       { "name": "primary-button-label", "type": "Text",
@@ -154,7 +155,8 @@ tokens セクションの体系を規定する。「見た目に関わる値の�
     "props": {
       "layout": "row", "align": "center", "justify": "center",
       "paddingTop": "sm", "paddingRight": "md", "paddingBottom": "sm", "paddingLeft": "md",
-      "background": "gray-100", "radius": "md"
+      "background": "gray-100",
+      "radiusTopLeft": "md", "radiusTopRight": "md", "radiusBottomRight": "md", "radiusBottomLeft": "md"
     },
     "children": [
       { "name": "secondary-button-label", "type": "Text",
@@ -168,7 +170,8 @@ tokens セクションの体系を規定する。「見た目に関わる値の�
     "type": "Box",
     "props": {
       "paddingTop": "sm", "paddingRight": "md", "paddingBottom": "sm", "paddingLeft": "md",
-      "background": "gray-100", "radius": "md",
+      "background": "gray-100",
+      "radiusTopLeft": "md", "radiusTopRight": "md", "radiusBottomRight": "md", "radiusBottomLeft": "md",
       "widthMode": "fill"
     },
     "children": [
@@ -185,7 +188,8 @@ tokens セクションの体系を規定する。「見た目に関わる値の�
     "props": {
       "layout": "column", "gap": "sm",
       "paddingTop": "lg", "paddingRight": "lg", "paddingBottom": "lg", "paddingLeft": "lg",
-      "background": "white", "radius": "lg", "shadow": "sm"
+      "background": "white", "shadow": "sm",
+      "radiusTopLeft": "lg", "radiusTopRight": "lg", "radiusBottomRight": "lg", "radiusBottomLeft": "lg"
     },
     "children": [
       { "name": "card-title", "type": "Text",

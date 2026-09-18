@@ -11,7 +11,18 @@ import { ShorthandLabels } from "../index";
 import { renderPanel } from "./setup";
 
 /** 切り替えボタンの綴り。押されている間は 4 辺が出る。 */
-const PerEdgeToggle = ShorthandLabels.perEdge;
+const PerEdgeToggle = ShorthandLabels.perLonghand.padding;
+
+/** 切り替えボタンの綴り。押されている間は 4 隅が出る。 */
+const PerCornerToggle = ShorthandLabels.perLonghand.radius;
+
+/** 4 隅とも同じ値。畳んだ欄が揃っている状態。 */
+const UniformCorners = {
+  radiusTopLeft: "sm",
+  radiusTopRight: "sm",
+  radiusBottomRight: "sm",
+  radiusBottomLeft: "sm",
+} as const;
 
 /** 4 辺とも同じ値。畳んだ欄が揃っている状態。 */
 const UniformSides = {
@@ -152,10 +163,85 @@ test("切り替えボタンをもう一度押すと畳んだ 2 欄へ戻る", as
   ).toBeDefined();
 });
 
-test("辺の欄の読み上げ名は prop 名から作られる", async () => {
+test("辺の欄の読み上げ名は行の見出しと辺の綴りを繋いだものになる", async () => {
   const user = renderBoxPanel(UniformSides);
 
   await user.click(screen.getByRole("button", { name: PerEdgeToggle }));
 
   expect(screen.getByRole("combobox", { name: "Padding Right" })).toBeDefined();
+});
+
+test("radius は隅ごとの行ではなく 1 つの行にまとまる", () => {
+  renderBoxPanel(UniformCorners);
+
+  /*
+   * 畳んだ 1 欄が出て隅の欄が出ないことを 1 つの並びで見る。片方だけを見ると、
+   * 束ねずに 4 行のまま出す実装でも「畳んだ欄が無い」側だけで通ってしまう。
+   */
+  expect(
+    ["Radius", "Radius Top Left"].map(
+      (name) => screen.queryAllByRole("combobox", { name }).length,
+    ),
+  ).toEqual([1, 0]);
+});
+
+test("radius の畳んだ欄には 4 隅に効いている値が出る", () => {
+  /* padding は違う値（`sm`）で揃えておく。行を取り違えれば落ちる。 */
+  renderBoxPanel({
+    ...UniformSides,
+    radiusTopLeft: "md",
+    radiusTopRight: "md",
+    radiusBottomRight: "md",
+    radiusBottomLeft: "md",
+  });
+
+  expect(screen.getByRole("combobox", { name: "Radius" })).toHaveProperty(
+    "value",
+    "md",
+  );
+});
+
+test("4 隅の値が違うと radius の畳んだ欄は不揃いと出る", () => {
+  /* padding は揃えておく。揃っている側にも不揃いが出れば落ちる。 */
+  renderBoxPanel({
+    ...UniformSides,
+    ...UniformCorners,
+    radiusBottomLeft: "md",
+  });
+
+  expect(screen.getAllByRole("option", { name: "不揃い" })).toHaveLength(1);
+});
+
+test("radius の切り替えボタンを押すと 4 隅の欄が出る", async () => {
+  const user = renderBoxPanel(UniformCorners);
+
+  await user.click(screen.getByRole("button", { name: PerCornerToggle }));
+
+  const corners = [
+    "Radius Top Left",
+    "Radius Top Right",
+    "Radius Bottom Right",
+    "Radius Bottom Left",
+  ];
+  expect(
+    corners.filter((name) => screen.queryByRole("combobox", { name }) !== null),
+  ).toEqual(corners);
+});
+
+test("4 隅の欄を出すと畳んだ欄は出なくなる", async () => {
+  const user = renderBoxPanel(UniformCorners);
+
+  await user.click(screen.getByRole("button", { name: PerCornerToggle }));
+
+  expect(screen.queryByRole("combobox", { name: "Radius" })).toBeNull();
+});
+
+test("隅の欄の読み上げ名は行の見出しと隅の綴りを繋いだものになる", async () => {
+  const user = renderBoxPanel(UniformCorners);
+
+  await user.click(screen.getByRole("button", { name: PerCornerToggle }));
+
+  expect(
+    screen.getByRole("combobox", { name: "Radius Bottom Right" }),
+  ).toBeDefined();
 });

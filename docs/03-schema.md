@@ -34,7 +34,7 @@
 | `default` | デフォルト値。省略時は「なし」 |
 | `group` | プロパティパネルのセクション（layout / size / appearance 等） |
 | `enabledWhen` | 条件付き有効。`{ kind: "equals", prop: "...", equals: "..." }` / `{ kind: "notEquals", prop: "...", notEquals: "..." }` の**単純な等値・不等値のみ**（条件式言語は作らない）。見るのは**同じノードの** prop だけ |
-| `shorthand` | 4 辺の longhand であることの宣言。`{ name: "padding", edge: "top" }` |
+| `shorthand` | 4 つの longhand の 1 つであることの宣言。padding は辺で `{ name: "padding", side: "top" }`、radius は隅で `{ name: "radius", corner: "topLeft" }` |
 
 - パネルの表示順は定数の定義順をそのまま使う。order フィールドは持たない
 - 表示名フィールドは持たない。prop 名をパネル側で機械的に整形して表示する
@@ -47,7 +47,7 @@
 
 - **Button / Input はプリミティブではなく部品**。1つ目に当たる。初期テンプレートに部品として同梱する
 - **Image は保留**。どちらの条件にも当たらない（部品では作れず、参照は相対パスの文字列1つ）が、画像資産の参照は1ファイル自己完結の原則と衝突するため、資産管理の問題として 01-file-format の未定義項目に積む
-- **Ellipse はプリミティブにする**。どちらの条件にも当たらない。矩形は Box で代用でき、正円も幅 = 高さの Box に大きな `radius` を与えれば作れるが、**幅 ≠ 高さの楕円は Box では作れない**（`radius` が指す radius トークンの値は px の number なので `50%` を表せない / 04-tokens「値の形式」）。楕円は幅と高さだけで形が決まるので、既存のサイズ指定の語彙のまま持てる
+- **Ellipse はプリミティブにする**。どちらの条件にも当たらない。矩形は Box で代用でき、正円も幅 = 高さの Box の 4 隅に大きな角丸を与えれば作れるが、**幅 ≠ 高さの楕円は Box では作れない**（角丸が指す radius トークンの値は px の number なので `50%` を表せない / 04-tokens「値の形式」）。楕円は幅と高さだけで形が決まるので、既存のサイズ指定の語彙のまま持てる
 - **Vector は持たない**。2つ目に当たる。頂点の並び＝配列を props に載せることになる
 - **Line も持たない**。こちらはどちらの条件にも当たらない（線の形は位置・長さ・角度で決まり、角度も number 1 つ）。持たないのは、**既存の語彙に角度が無く、この仕様はノードの回転を持たない**ため。Ellipse が既存のサイズ指定の語彙のまま持てるのと対になる個別の判断（水平・垂直に限れば薄い Box で代用できる）
 
@@ -138,15 +138,19 @@ Box と Ellipse が、透け具合を 1 prop で持つ（Text は持たない）
 | `heightMode` | enum | `hug` / `fill` / `fixed` | `hug` |
 | `height` | 生リテラル (number, px) | `heightMode: fixed` 時のみ有効 | - |
 | `background` | トークン (colors) | | なし (透明) |
-| `radius` | トークン (radius) | | なし (0) |
+| `radiusTopLeft` | トークン (radius) | 左上 | なし (0) |
+| `radiusTopRight` | トークン (radius) | 右上 | なし (0) |
+| `radiusBottomRight` | トークン (radius) | 右下 | なし (0) |
+| `radiusBottomLeft` | トークン (radius) | 左下 | なし (0) |
 | `shadow` | トークン (shadows) | | なし |
 | `overflow` | enum | `visible` / `clip` | `visible` |
 | `opacity` | | 上記「不透明度」 | |
 | `visibility` | | 上記「表示 / 非表示」 | |
 
 - `layout: free` の Box は**子を並べない**。Figma の `layoutMode: NONE` にあたり、中身は `placement: absolute` の子を座標で置くための器になる。間隔・揃え（`gap` / `align` / `justify`）は並びが無いので効かない
-- padding は 4 方向個別。ドキュメントが持つのは4方向の値だけで、プロパティパネルでの畳み方（Figma と同じ垂直 / 水平への切り替え）は表示の都合なので持たない
-  - ただし**「その prop がどの shorthand のどの辺の longhand か」はスキーマが `shorthand` で宣言する**。これは prop 自身の性質（`paddingTop` は padding の上辺である）であって、今そのパネルが畳んでいるかという画面の状態ではない。パネルはこの宣言を使って 4 prop を 1 行にまとめ、畳むかどうかは画面側だけで決める
+- padding は 4 方向個別、角丸は 4 隅個別。ドキュメントが持つのは 4 つの値だけで、プロパティパネルでの畳み方（padding は Figma と同じ垂直 / 水平、角丸は 4 隅まとめて 1 欄）は表示の都合なので持たない
+  - ただし**「その prop がどの shorthand のどの位置の longhand か」はスキーマが `shorthand` で宣言する**。これは prop 自身の性質（`paddingTop` は padding の上辺、`radiusTopLeft` は radius の左上である）であって、今そのパネルが畳んでいるかという画面の状態ではない。パネルはこの宣言を使って 4 prop を 1 行にまとめ、畳むかどうかは画面側だけで決める
+  - **畳んだ欄の単位が padding と角丸で違う**のは、`border-radius` の 2 値が対角（左上 + 右下 / 右上 + 左下）を指し、垂直 / 水平にあたる組が隅には無いため
 - border 系は初期セットに含めない（スキーマへの追加で対応可能）
 - artboard は Box スキーマを流用するが、`widthMode` / `heightMode` は `fixed` に固定され、`width` / `height` が必須、`overflow` のデフォルトは `clip`
 
@@ -182,7 +186,7 @@ Box と Ellipse が、透け具合を 1 prop で持つ（Text は持たない）
 | `visibility` | | 上記「表示 / 非表示」 | |
 
 - **`hug` を持たないのが Box との差**（上記「サイズ指定の原則」）。子を持たないので中身から決まる長さが無く、`hug` は常に 0 になる
-- **`radius` を持たない。** 楕円の丸みは形そのものであって設定値ではない。持たせると「楕円なのに角丸 4px」という、形と設定値が食い違う組み合わせが書けてしまう
+- **角丸の prop を持たない。** 楕円の丸みは形そのものであって設定値ではない。持たせると「楕円なのに角丸 4px」という、形と設定値が食い違う組み合わせが書けてしまう
 - **`layout` / `gap` / padding 4 辺 / `align` / `justify` / `overflow` を持たない。** 子を持たないので、並べる対象も切り取る対象も無い
 - **`background` の既定だけ Box と違う**（Box は「なし（透明）」）。Box は中身を入れる器なので透明が既定でよいが、Ellipse は形そのものなので、既定で塗りが無いと挿入しても画面に何も出ない。既定がトークン名を指すのは Text の `typography` / `color` と同じで、その名前は初期テンプレートが保証する（04-tokens「スキーマデフォルトとの関係」）
 - **`width` / `height` の既定 `100` は、Figma が楕円を作るときの既定（幅・高さとも 100）に揃えた。** 型でもテストでも守れない値なので、変えるときはこの行ごと変える
@@ -208,7 +212,7 @@ Box と Ellipse が、透け具合を 1 prop で持つ（Text は持たない）
 | `widthMode: fill` | 親の主軸方向なら `flex-grow: 1`、交差軸方向なら `align-self: stretch`（親の `layout` を見て出し分け） |
 | `widthMode: fixed` | `width: {n}px` |
 | `background` | `background: var(--colors-*)` |
-| `radius` | `border-radius: var(--radius-*)` |
+| `radiusTopLeft` / `radiusTopRight` / `radiusBottomRight` / `radiusBottomLeft` | `border-radius: var(--radius-*)` （左上 右上 右下 左下 の順で4値に合成。未指定の隅は `0`） |
 | `shadow` | `box-shadow: var(--shadows-*)` |
 | `overflow: clip` | `overflow: hidden` |
 | `opacity` | `opacity: {n}`（既定の `1` では出力しない。範囲を外れた値も丸めずそのまま出す — 範囲の判定はバリデーションが持ち、ブラウザが両端へ寄せる） |
