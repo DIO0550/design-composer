@@ -1,11 +1,11 @@
 {
   "reportVersion": "7db3e657589819f03b7c424e1cab8d972f99f04f",
   "maxDiffRatio": 0.002,
-  "changed": 1,
-  "new": 4,
+  "changed": 0,
+  "new": 0,
   "deleted": 0,
-  "passed": 175,
-  "failed": 1,
+  "passed": 180,
+  "failed": 0,
   "results": [
     {
       "story": "components-contextmenu--empty-area",
@@ -286,12 +286,12 @@
       "title": "features/assets/CreateComponent",
       "name": "ファイルが不正な間に部品名を打っている",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
+      "reason": "within-threshold",
+      "diffPixels": 5,
       "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-assets-createcomponent--instance-selected",
@@ -1300,12 +1300,12 @@
       "title": "features/inspector/PropertyPanel",
       "name": "Box ノードを選択中",
       "status": "passed",
-      "reason": "within-threshold",
-      "diffPixels": 30,
+      "reason": "match",
+      "diffPixels": 0,
       "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": true
+      "hasDiff": false
     },
     {
       "story": "features-inspector-propertypanel--default",
@@ -1352,12 +1352,12 @@
       "title": "features/inspector/PropertyPanel",
       "name": "名前が長いノードを選択中",
       "status": "passed",
-      "reason": "within-threshold",
-      "diffPixels": 12,
+      "reason": "match",
+      "diffPixels": 0,
       "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": true
+      "hasDiff": false
     },
     {
       "story": "features-inspector-propertypanel--padding-mixed",
@@ -1365,12 +1365,12 @@
       "title": "features/inspector/PropertyPanel",
       "name": "padding が不揃いな Box を選択中",
       "status": "passed",
-      "reason": "within-threshold",
-      "diffPixels": 12,
+      "reason": "match",
+      "diffPixels": 0,
       "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": true
+      "hasDiff": false
     },
     {
       "story": "features-inspector-propertypanel--padding-per-edge",
@@ -1378,12 +1378,12 @@
       "title": "features/inspector/PropertyPanel",
       "name": "padding を辺ごとに出した Box を選択中",
       "status": "passed",
-      "reason": "within-threshold",
-      "diffPixels": 12,
+      "reason": "match",
+      "diffPixels": 0,
       "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": true
+      "hasDiff": false
     },
     {
       "story": "features-inspector-propertypanel--padding-uniform",
@@ -1391,23 +1391,23 @@
       "title": "features/inspector/PropertyPanel",
       "name": "padding が揃っている Box を選択中",
       "status": "passed",
-      "reason": "within-threshold",
-      "diffPixels": 12,
+      "reason": "match",
+      "diffPixels": 0,
       "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": true
+      "hasDiff": false
     },
     {
       "story": "features-inspector-propertypanel--radius-per-corner",
       "id": "features-inspector-propertypanel--radius-per-corner",
       "title": "features/inspector/PropertyPanel",
       "name": "radius を隅ごとに出した Box を選択中",
-      "status": "new",
-      "reason": "no-baseline",
+      "status": "passed",
+      "reason": "match",
       "diffPixels": 0,
       "diffRatio": 0,
-      "hasExpected": false,
+      "hasExpected": true,
       "hasActual": true,
       "hasDiff": false
     },
@@ -1416,13 +1416,13 @@
       "id": "features-inspector-propertypanel--selected",
       "title": "features/inspector/PropertyPanel",
       "name": "artboard を選択中",
-      "status": "changed",
-      "reason": "pixel-diff",
-      "diffPixels": 2116,
-      "diffRatio": 0.0023,
+      "status": "passed",
+      "reason": "match",
+      "diffPixels": 0,
+      "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": true
+      "hasDiff": false
     },
     {
       "story": "features-inspector-propertypanel--text-selected",
@@ -1443,12 +1443,12 @@
       "title": "features/inspector/PropertyPanel",
       "name": "未指定の prop だけの Box を選択中",
       "status": "passed",
-      "reason": "within-threshold",
-      "diffPixels": 12,
+      "reason": "match",
+      "diffPixels": 0,
       "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": true
+      "hasDiff": false
     },
     {
       "story": "features-inspector-propertypanel-groupsbody--default",
@@ -1767,11 +1767,11 @@
       "id": "features-inspector-propertypanel-shorthandrow--mixed-corners",
       "title": "features/inspector/PropertyPanel/ShorthandRow",
       "name": "4 隅が揃っていない",
-      "status": "new",
-      "reason": "no-baseline",
+      "status": "passed",
+      "reason": "match",
       "diffPixels": 0,
       "diffRatio": 0,
-      "hasExpected": false,
+      "hasExpected": true,
       "hasActual": true,
       "hasDiff": false
     },
@@ -1793,11 +1793,11 @@
       "id": "features-inspector-propertypanel-shorthandrow--per-corner",
       "title": "features/inspector/PropertyPanel/ShorthandRow",
       "name": "隅ごとに出したとき",
-      "status": "new",
-      "reason": "no-baseline",
+      "status": "passed",
+      "reason": "match",
       "diffPixels": 0,
       "diffRatio": 0,
-      "hasExpected": false,
+      "hasExpected": true,
       "hasActual": true,
       "hasDiff": false
     },
@@ -1819,11 +1819,11 @@
       "id": "features-inspector-propertypanel-shorthandrow--uniform-corners",
       "title": "features/inspector/PropertyPanel/ShorthandRow",
       "name": "4 隅が揃っている",
-      "status": "new",
-      "reason": "no-baseline",
+      "status": "passed",
+      "reason": "match",
       "diffPixels": 0,
       "diffRatio": 0,
-      "hasExpected": false,
+      "hasExpected": true,
       "hasActual": true,
       "hasDiff": false
     },
@@ -2236,12 +2236,12 @@
       "title": "features/tokens/TokenEditor",
       "name": "角丸トークンを選択中",
       "status": "passed",
-      "reason": "within-threshold",
-      "diffPixels": 1248,
-      "diffRatio": 0.0014000000000000002,
+      "reason": "match",
+      "diffPixels": 0,
+      "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": true
+      "hasDiff": false
     },
     {
       "story": "features-tokens-tokeneditor--shadow-selected",
