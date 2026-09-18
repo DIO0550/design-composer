@@ -1,0 +1,1 @@
+import{n as e}from"./chunk-BneVvdWh.js";var t,n,r=e((()=>{t={Escape:`Escape`,Enter:`Enter`,Space:` `,ArrowUp:`ArrowUp`,ArrowDown:`ArrowDown`,ArrowLeft:`ArrowLeft`,ArrowRight:`ArrowRight`,Delete:`Delete`,Backspace:`Backspace`},n={isOneOf(e,t){return e.some(e=>e===t.key)}}}));export{t as n,r,n as t};
