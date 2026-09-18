@@ -6,6 +6,7 @@ import { ReceivedAt } from "@/domains/__tests__/instants";
 import { AxisLength } from "@/domains/dcmp/axis-length";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { Node } from "@/domains/dcmp/node";
+import { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import { EditContinuities } from "@/domains/session/edit-continuity";
 import { artboardWidth } from "@/features/editor/__tests__/artboard-fixtures";
 import { EditorState } from "@/features/editor/domains/editor-state";
@@ -241,7 +242,7 @@ function EditorStateHarness() {
         onClick={() =>
           dispatch({
             type: "resize",
-            sizes: [AxisLength.create("width", 500)],
+            edit: ResizeEdit.create([AxisLength.create("width", 500)]),
             continuity: EditContinuities.Separate,
           })
         }

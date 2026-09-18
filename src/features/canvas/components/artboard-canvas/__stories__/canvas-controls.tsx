@@ -1,6 +1,7 @@
 import type { ReactElement } from "react";
 import type { DocumentSelection } from "@/domains/session/document-selection";
 import { CanvasView } from "@/features/canvas/domains/canvas-view";
+import { NodeResize } from "@/features/canvas/domains/node-resize";
 import {
   type ArtboardDragControl,
   useArtboardDrag,
@@ -58,6 +59,7 @@ export function WithCanvasControls({
     onReposition: () => {},
   });
   const nodeResize = useNodeResize({
+    resizable: NodeResize.resizable(selection),
     selection,
     view: CanvasView.create(),
     onResize: () => {},

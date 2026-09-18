@@ -1,8 +1,8 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { useState } from "react";
 import { expect, test, vi } from "vitest";
-import type { AxisLength } from "@/domains/dcmp/axis-length";
 import { DesignDocument } from "@/domains/dcmp/design-document";
+import { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import {
   EditContinuities,
@@ -15,6 +15,7 @@ import {
 } from "@/features/canvas/__tests__/canvas-gesture";
 import type { CanvasBounds } from "@/features/canvas/domains/canvas-bounds";
 import { CanvasView } from "@/features/canvas/domains/canvas-view";
+import { NodeResize } from "@/features/canvas/domains/node-resize";
 import { useNodeResize } from "../index";
 
 /** 2 軸とも固定した `panel` を持つドキュメントと、選択の対。 */
@@ -66,11 +67,12 @@ function NodeResizeHarness({
   onResize,
 }: Readonly<{
   selection: DocumentSelection;
-  onResize: (sizes: readonly AxisLength[], continuity: EditContinuity) => void;
+  onResize: (edit: ResizeEdit, continuity: EditContinuity) => void;
 }>) {
   const [grabbed, setGrabbed] = useState("押していない");
   const [clicked, setClicked] = useState("click は届いていない");
   const nodeResize = useNodeResize({
+    resizable: NodeResize.resizable(selection),
     selection,
     view: CanvasView.create(),
     onResize,
@@ -172,7 +174,7 @@ test("掴んだままポインタを動かすと動かした分の大きさが�
 
   // まとまりの扱いは continuity の 3 件が専任で見るので、ここでは巻き込まない
   expect(onResize).toHaveBeenCalledWith(
-    [{ axis: "width", length: 240 }],
+    ResizeEdit.create([{ axis: "width", length: 240 }]),
     expect.anything(),
   );
 });

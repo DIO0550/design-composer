@@ -26,7 +26,7 @@ import { drawn, renderOpenedDocument, selectInTree } from "./setup";
 /** 画面の (100, 50) に 200x100 で描かれている、という前提。右辺 x=300。 */
 const PanelBounds = { left: 100, top: 50, width: 200, height: 100 };
 
-/** 2 軸とも固定の `panel` を 1 つだけ持つドキュメント。 */
+/** 2 軸とも固定の `panel` と、そこへ座標も持たせた `badge` を持つドキュメント。 */
 function setupDocument(): DesignDocument {
   return DesignDocument.create({
     tokens: DocumentTemplate.Default.tokens,
@@ -45,6 +45,20 @@ function setupDocument(): DesignDocument {
               width: 200,
               heightMode: "fixed",
               height: 100,
+            },
+            children: [],
+          },
+          {
+            name: "badge",
+            type: "Box",
+            props: {
+              widthMode: "fixed",
+              width: 200,
+              heightMode: "fixed",
+              height: 100,
+              placement: "absolute",
+              x: 25,
+              y: 10,
             },
             children: [],
           },
@@ -102,4 +116,46 @@ test("続けて 2 回運ぶと、1 回戻るのは直前のドラッグの前ま
 
   // 2 回のドラッグが 1 件に畳まれるなら 200px まで戻ってしまう
   expect(drawn("panel").style.width).toBe("240px");
+});
+
+/**
+ * `badge` の左辺を掴んで、**途中で 2 回以上動かして**から離す。
+ *
+ * 右辺のドラッグと同じ理由で 2 回動かす（1 回だと刻みごとに履歴を積む実装でも通る）。
+ */
+function dragLeftEdge(): void {
+  stubBounds(drawn("badge"), PanelBounds);
+  pressPointer(drawn("badge"), { x: 103, y: 100 });
+  movePointer(canvasContent(), { x: 118, y: 100 });
+  movePointer(canvasContent(), { x: 133, y: 100 });
+  releasePointer(canvasContent(), { x: 133, y: 100 });
+}
+
+test("キャンバスで左辺を運ぶと、描かれる幅と左端が同時に動く", async () => {
+  await renderOpenedDocument(setupDocument());
+  await selectInTree("badge");
+
+  dragLeftEdge();
+
+  expect([drawn("badge").style.width, drawn("badge").style.left]).toEqual([
+    "170px",
+    "55px",
+  ]);
+});
+
+test("左辺を運んだあと 1 回戻すと、幅も左端も掴む前に戻る", async () => {
+  /*
+   * 長さと位置を別々の編集として流すと、ここで片方だけが戻る
+   * （docs/06-ui.md「キャンバス直接操作」のリサイズハンドル）。
+   */
+  await renderOpenedDocument(setupDocument());
+  await selectInTree("badge");
+  dragLeftEdge();
+
+  await userEvent.keyboard("{Control>}z{/Control}");
+
+  expect([drawn("badge").style.width, drawn("badge").style.left]).toEqual([
+    "200px",
+    "25px",
+  ]);
 });

@@ -1,11 +1,11 @@
 import { Artboard } from "@/domains/dcmp/artboard";
-import type { AxisLength } from "@/domains/dcmp/axis-length";
 import { ChildPlacement } from "@/domains/dcmp/child-placement";
 import { ChildPosition } from "@/domains/dcmp/child-position";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import type { Node, PropEdit } from "@/domains/dcmp/node";
 import { Placement } from "@/domains/dcmp/placement";
 import { PrimitiveTypes } from "@/domains/dcmp/primitive-schema";
+import type { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import {
   Token,
   type TokenRef,
@@ -1120,32 +1120,32 @@ export const EditorState = {
   },
 
   /**
-   * 選択中の artboard / ノードの大きさを変える（docs/06-ui.md「キャンバス直接操作」のリ
-   * サイズハンドル）。
+   * 選択中の artboard / ノードの大きさと位置を変える（docs/06-ui.md「キャンバス直接操作」
+   * のリサイズハンドル）。
    *
    * 選択が無い・大きさを持たない指定は「そのリサイズが存在しない」ことなので `none`（選択は
    * name で持つのでリサイズでは変わらない）。
    *
-   * **まとめて受けることで 1 回の編集になる**（軸ごとに呼ぶと Undo 1 回で片方しか戻らない）。
-   * ドラッグ全体を Undo 1 回で戻すのは `continuity` の担当で、ポインタが動くたびに届く
-   * 2 件目以降を続きとして受けると戻る先が増えない。
+   * **長さと位置をまとめて受けることで 1 回の編集になる**（別々に呼ぶと Undo 1 回で片方
+   * しか戻らない）。ドラッグ全体を Undo 1 回で戻すのは `continuity` の担当で、ポインタが
+   * 動くたびに届く 2 件目以降を続きとして受けると戻る先が増えない。
    *
    * @param state 大きさを変えるエディタの状態
-   * @param sizes 変える軸ぶんの長さ
+   * @param edit 書き込む長さと、置き直したあとの位置
    * @param continuity 直前の編集との続き方（1 回のドラッグの 2 件目以降は続き）
    * @returns 大きさを変えたエディタの状態。選択が無い・単一選択でない・大きさを持たない
    *   指定と、ファイルが不正な間は `none`
    */
   resize(
     state: EditorState,
-    sizes: readonly AxisLength[],
+    edit: ResizeEdit,
     continuity: EditContinuity,
   ): Option<EditorState> {
     return Option.flatMap(EditorState.singleName(state), (name) => {
       const resized = DesignDocument.resize(
         EditorState.document(state),
         name,
-        sizes,
+        edit,
       );
       return Result.isOk(resized)
         ? withEdit(state, resized.value, continuity)

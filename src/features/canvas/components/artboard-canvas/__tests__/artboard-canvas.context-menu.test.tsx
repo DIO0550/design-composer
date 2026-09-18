@@ -7,7 +7,7 @@ import {
 import {
   drawn,
   renderCanvas,
-  resizeHandleFor,
+  resizeHandleAt,
   selectionFromArtboards,
 } from "./setup";
 
@@ -136,7 +136,7 @@ test("掴めるリサイズハンドルの上で右クリックしても受け�
    * ハンドルは土台（`canvas-surface`）の外に重なる。土台で受けていると、ここだけ
    * アプリのメニューが出ずブラウザの既定メニューが出る。
    */
-  fireEvent.contextMenu(resizeHandleFor("both"), {
+  fireEvent.contextMenu(resizeHandleAt({ x: 1, y: 1 }), {
     clientX: 200,
     clientY: 200,
   });

@@ -2,6 +2,7 @@ import { expect, test } from "vitest";
 import { AxisLength } from "@/domains/dcmp/axis-length";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { Node } from "@/domains/dcmp/node";
+import { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import { EditContinuities } from "@/domains/session/edit-continuity";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
@@ -34,7 +35,7 @@ test("選択中のノードの大きさを変えられる", () => {
   const resized = Option.unwrap(
     EditorState.resize(
       state,
-      [AxisLength.create("width", 200)],
+      ResizeEdit.create([AxisLength.create("width", 200)]),
       EditContinuities.Separate,
     ),
   );
@@ -54,7 +55,7 @@ test("選択中の artboard の大きさを変えられる", () => {
   const resized = Option.unwrap(
     EditorState.resize(
       state,
-      [AxisLength.create("height", 480)],
+      ResizeEdit.create([AxisLength.create("height", 480)]),
       EditContinuities.Separate,
     ),
   );
@@ -71,7 +72,7 @@ test("大きさを変えても選択は動かない", () => {
   const resized = Option.unwrap(
     EditorState.resize(
       state,
-      [AxisLength.create("width", 200)],
+      ResizeEdit.create([AxisLength.create("width", 200)]),
       EditContinuities.Separate,
     ),
   );
@@ -83,8 +84,30 @@ test("何も選んでいなければ大きさは変えられない", () => {
   expect(
     EditorState.resize(
       setupState(),
-      [AxisLength.create("width", 200)],
+      ResizeEdit.create([AxisLength.create("width", 200)]),
       EditContinuities.Separate,
     ),
   ).toEqual(Option.none);
+});
+
+test("位置も変わるリサイズを Undo すると、大きさと位置の両方が 1 回で戻る", () => {
+  /*
+   * 長さと位置を別々の編集として流すと、Undo 1 回で片方しか戻らない
+   * （docs/06-ui.md「キャンバス直接操作」のリサイズハンドル）。
+   */
+  const state = EditorState.select(setupState(), "home");
+  const resized = Option.unwrap(
+    EditorState.resize(
+      state,
+      ResizeEdit.placedAt([AxisLength.create("width", 300)], { x: 60, y: 0 }),
+      EditContinuities.Separate,
+    ),
+  );
+
+  const undone = Option.unwrap(EditorState.undo(resized));
+
+  const artboard = Option.unwrap(
+    DesignDocument.findArtboard(EditorState.document(undone), "home"),
+  );
+  expect([artboard.width, artboard.canvasPosition]).toEqual([360, undefined]);
 });

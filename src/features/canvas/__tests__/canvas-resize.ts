@@ -1,52 +1,55 @@
 import {
   NodeResize,
-  type ResizeGrip,
   type ResizeHandleAnchor,
 } from "@/features/canvas/domains/node-resize";
-import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 
 /*
  * リサイズハンドルの箇所をテストから引く口。
  *
- * 並びの何番目かをテストへ写さないのは、箇所と掴めるものの対応を決めているのが
- * `HandleAnchors` の側だから（写すと片方だけ変えられる）。ドメイン側の口にせず
- * ここに置くのは、production からの呼び出しが 1 つも無いため。
+ * 並びの何番目かをテストへ写さないのは、箇所の並びを決めているのが `HandleAnchors` の
+ * 側だから（写すと片方だけ変えられる）。ドメイン側の口にせずここに置くのは、
+ * production からの呼び出しが 1 つも無いため。
  */
 
 /**
- * その種類を掴める箇所かどうか。
+ * 同じ箇所を指しているか。
  *
  * @param anchor 見ている箇所
- * @param kind 掴める種類
- * @returns その種類を掴めるなら `true`
+ * @param other 探している箇所
+ * @returns 縦横どちらの比率も等しければ `true`
  */
-function grips(anchor: ResizeHandleAnchor, kind: ResizeGrip["kind"]): boolean {
-  return Option.contains(anchor.grip, kind);
+function isSameAnchor(
+  anchor: ResizeHandleAnchor,
+  other: ResizeHandleAnchor,
+): boolean {
+  return anchor.x === other.x && anchor.y === other.y;
 }
 
 /**
- * その種類を掴める箇所。
+ * その箇所が `HandleAnchors` にあるか確かめて返す。
  *
- * @param kind 掴める種類（`width` / `height` / `both`）
- * @returns その種類を掴める箇所。並びに無ければ `none`
+ * @param anchor 探している箇所
+ * @returns その箇所。並びに無ければ `none`
  */
-export function resizeAnchorFor(
-  kind: ResizeGrip["kind"],
+export function resizeAnchorAt(
+  anchor: ResizeHandleAnchor,
 ): Option<ResizeHandleAnchor> {
-  return ArrayEx.first(
-    NodeResize.HandleAnchors.filter((anchor) => grips(anchor, kind)),
+  return Option.fromNullable(
+    NodeResize.HandleAnchors.find((each) => isSameAnchor(each, anchor)),
   );
 }
 
 /**
- * その種類を掴める箇所が、左上から時計回りの並びの何番目か。
+ * その箇所が、左上から時計回りの並びの何番目か。
  *
  * 出ているハンドルの並びと同じ順序なので、そのまま添字として使える。
  *
- * @param kind 掴める種類
+ * @param anchor 探している箇所
  * @returns 並びの中の位置。並びに無ければ `-1`
  */
-export function resizeAnchorIndexFor(kind: ResizeGrip["kind"]): number {
-  return NodeResize.HandleAnchors.findIndex((anchor) => grips(anchor, kind));
+export function resizeAnchorIndexAt(anchor: ResizeHandleAnchor): number {
+  return NodeResize.HandleAnchors.findIndex((each) =>
+    isSameAnchor(each, anchor),
+  );
 }
