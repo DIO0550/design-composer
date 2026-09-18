@@ -15,8 +15,8 @@ export type AxisLength = Readonly<{
  * 1 回のリサイズで書き換える長さ。**空にはならない。**
  *
  * 素の配列にすると「0 軸のリサイズ」が書けてしまい、書き込む側が 1 度も編集を
- * 通らずに成功を返す（`DesignDocument.resize`）。掴んだものを直和で閉じているのに
- * 境界で緩めないよう、先頭が必ずある形にする。
+ * 通らずに成功を返す（`ResizeEdit` を受ける `DesignDocument.resize`）。掴んだものを
+ * 直和で閉じているのに境界で緩めないよう、先頭が必ずある形にする。
  */
 export type AxisLengths = readonly [AxisLength, ...AxisLength[]];
 

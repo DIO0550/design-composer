@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
 import { AxisLength } from "@/domains/dcmp/axis-length";
 import { DesignDocument } from "@/domains/dcmp/design-document";
+import { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import { EditContinuities } from "@/domains/session/edit-continuity";
 import { artboardWidth } from "@/features/editor/__tests__/artboard-fixtures";
 import { Option } from "@/utils/Option";
@@ -39,7 +40,7 @@ function dragWidths(
       Option.unwrap(
         EditorState.resize(
           current,
-          [AxisLength.create("width", width)],
+          ResizeEdit.create([AxisLength.create("width", width)]),
           index === 0 ? EditContinuities.Separate : EditContinuities.Continued,
         ),
       ),

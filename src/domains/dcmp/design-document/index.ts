@@ -19,11 +19,12 @@ import { Node, type PropEdit, type RefNode } from "@/domains/dcmp/node";
 import { NodeTree, type NodeTreeUpdate } from "@/domains/dcmp/node-tree";
 import { Placement } from "@/domains/dcmp/placement";
 import { PrimitiveTypes } from "@/domains/dcmp/primitive-schema";
+import type { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import { ResolvedProps } from "@/domains/dcmp/resolved-props";
 import { Size } from "@/domains/dcmp/size";
 import { type Token, type TokenRef, TokenSet } from "@/domains/dcmp/token";
 import { Axes, type Axis } from "@/domains/unit/axis";
-import type { Offset } from "@/domains/unit/offset";
+import { Offset } from "@/domains/unit/offset";
 import { ArrayEx } from "@/utils/ArrayEx";
 import type { JsonCursor, JsonDecoded, JsonObject } from "@/utils/Json";
 import { Option } from "@/utils/Option";
@@ -227,6 +228,50 @@ function withResizeFollowUp(
       return Result.ok(after);
     }
     return followChildren(after, children.value, resizes);
+  });
+}
+
+/**
+ * 位置も書き換えるリサイズなら置き直した artboard。
+ *
+ * `canvasPosition` は片方の軸だけでは持てない（`x` があって `y` が無いファイルは
+ * `Artboard.fromJson` が弾く）ので、artboard の経路は常に両軸を書く。
+ *
+ * @param artboard 大きさを変え終えた artboard
+ * @param edit 書き込む長さと、置き直したあとの位置
+ * @returns 位置も書くリサイズなら置き直した artboard。位置を書かないならそのまま
+ */
+function repositionResized(artboard: Artboard, edit: ResizeEdit): Artboard {
+  return Option.isSome(edit.position)
+    ? Artboard.withCanvasPosition(artboard, edit.position.value)
+    : artboard;
+}
+
+/**
+ * ノードの座標を置き直す編集。
+ *
+ * **今の座標と値が変わる軸だけ**を編集にする（理由は `followPropEdits` と同じ）。
+ *
+ * @param document 今の座標の出どころになるドキュメント
+ * @param name 置き直すノードの名前
+ * @param position 置き直したあとの位置。位置を書かないリサイズなら `none`
+ * @returns 値が変わる軸ぶんの編集。位置を書かないとき・そのノードが座標を持たない
+ *   ときは空
+ */
+function nodePositionPropEdits(
+  document: DesignDocument,
+  name: string,
+  position: Option<Offset>,
+): readonly PropEdit[] {
+  const current = DesignDocument.childPlacementOf(document, name);
+  if (!Option.isSome(position) || !Option.isSome(current)) {
+    return [];
+  }
+  const stayedAt = Placement.offset(current.value.placement);
+  return Object.values(Axes).flatMap((axis) => {
+    const moved = Offset.along(position.value, axis);
+    const stayed = Offset.along(stayedAt, axis);
+    return moved === stayed ? [] : [Placement.positionPropEdit(axis, moved)];
   });
 }
 
@@ -796,21 +841,27 @@ export const DesignDocument = {
   },
 
   /**
-   * 名前で指した artboard またはノードの大きさを変える（docs/06-ui.md「キャンバス直接操
-   * 作」のリサイズハンドル）。長さの持ち主が artboard とノードで違うため、名前で相手を
-   * 決めてから書き込み先を分ける。
+   * 名前で指した artboard またはノードの大きさと位置を変える（docs/06-ui.md「キャンバス
+   * 直接操作」のリサイズハンドル）。長さと位置の持ち主が artboard とノードで違うため、
+   * 名前で相手を決めてから書き込み先を分ける。
    *
-   * ノード側でモードが `fixed` かどうかは見ない（ハンドルを出す軸を決めるのはキャンバス
-   * 側の役目）。絶対配置の子の追従は artboard の経路だけここで起こす。ノードの経路は
-   * `applyPropEdit` を通る。
+   * ノード側でモードが `fixed` かどうか・座標を持つかどうかは見ない（ハンドルを出す箇所
+   * を決めるのはキャンバス側の役目）。絶対配置の子の追従は artboard の経路だけここで起こ
+   * す。ノードの経路は `applyPropEdit` を通る。
+   *
+   * @param document 書き換える対象を含むドキュメント
+   * @param name 大きさを変える artboard / ノードの名前
+   * @param edit 書き込む長さと、置き直したあとの位置
+   * @returns 書き換えたドキュメント。その名前のものが無ければ失敗。位置が書かれるのは
+   *   artboard と座標を持つノードだけで、フロー配置のノードには長さだけが書かれる
    */
   resize(
     document: DesignDocument,
     name: string,
-    sizes: readonly AxisLength[],
+    edit: ResizeEdit,
   ): Result<DesignDocument, DesignDocumentEditError> {
     const resizedArtboard = updateArtboardNamed(document, name, (artboard) =>
-      sizes.reduce(Artboard.resize, artboard),
+      repositionResized(edit.lengths.reduce(Artboard.resize, artboard), edit),
     );
     if (Option.isSome(resizedArtboard)) {
       return withResizeFollowUp(
@@ -819,7 +870,9 @@ export const DesignDocument = {
         Result.ok(resizedArtboard.value),
       );
     }
-    return applyPropEdits(document, name, sizes.map(AxisLength.toPropEdit));
+    const sizeEdits = edit.lengths.map(AxisLength.toPropEdit);
+    const positionEdits = nodePositionPropEdits(document, name, edit.position);
+    return applyPropEdits(document, name, [...sizeEdits, ...positionEdits]);
   },
 
   /**

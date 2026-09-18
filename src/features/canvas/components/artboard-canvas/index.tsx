@@ -5,8 +5,8 @@ import {
   useMemo,
   useRef,
 } from "react";
-import type { AxisLengths } from "@/domains/dcmp/axis-length";
 import type { PropEdit } from "@/domains/dcmp/node";
+import type { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import type { EditContinuity } from "@/domains/session/edit-continuity";
 import type { SelectionDig } from "@/domains/session/selection-dig";
@@ -101,7 +101,7 @@ export function ArtboardCanvas({
   onSelect: (names: readonly string[], dig: SelectionDig) => void;
   /** 範囲選択で、範囲に重なったものをまとめて選ぶ。 */
   onSelectInRange: (names: readonly string[]) => void;
-  onResize: (sizes: AxisLengths, continuity: EditContinuity) => void;
+  onResize: (edit: ResizeEdit, continuity: EditContinuity) => void;
   onEditProp: (edit: PropEdit) => void;
   onRepositionArtboard: (name: string, canvasPosition: Offset) => void;
   /** 右クリックを、辿った名前（空き領域では空）と窓の座標で伝える。 */
@@ -118,7 +118,7 @@ export function ArtboardCanvas({
   /*
    * ハンドルを重ねる器。`canvas-surface` の**外**にあるので、掴めるハンドルの上だけは
    * `pointerdown` が土台へ届かず、space を押していてもパンが始まらない
-   * （docs/06-ui.md「キャンバス直接操作」がこの 3 箇所を例外として書いている）。
+   * （docs/06-ui.md「キャンバス直接操作」が描いてあるハンドルを例外として書いている）。
    * 中へ移せば例外を消せるが、掴み口と土台の当たり判定の作り直しになるので今は触らない。
    */
   const canvasAreaRef = useRef<HTMLDivElement>(null);
@@ -141,7 +141,15 @@ export function ArtboardCanvas({
     onOpenContextMenu(names, { x: event.clientX, y: event.clientY });
   };
   const designDocument = selection.document;
-  const nodeResize = useNodeResize({ selection, view, onResize });
+  /*
+   * 凍結中はリサイズを丸ごと無効にする。`inert` の中にあって掴めないのに、ハンドルだけが
+   * 普段どおり見えることになるため。選択の枠そのものは残す（何を選んでいたかは右ペインの
+   * 見出しと揃えて保つ）。
+   */
+  const resizable = isFrozen
+    ? NodeResize.Unresizable
+    : NodeResize.resizable(selection);
+  const nodeResize = useNodeResize({ resizable, selection, view, onResize });
   const artboardDrag = useArtboardDrag({
     view,
     onReposition: onRepositionArtboard,
@@ -151,12 +159,6 @@ export function ArtboardCanvas({
     designDocument,
     onSelect: onSelectInRange,
   });
-  /*
-   * 凍結中はリサイズハンドルを出さない。`inert` の中にあって掴めないのに、
-   * ハンドルだけが普段どおり見えることになるため。選択の枠そのものは残す
-   * （何を選んでいたかは右ペインの見出しと揃えて保つ）。
-   */
-  const resizeHandles = isFrozen ? [] : NodeResize.handles(selection);
   const singleName = DocumentSelection.singleName(selection);
   /*
    * ハンドルは選択中のものの辺へ重ねるので、描かれている位置を実測して追いかける。
@@ -179,7 +181,7 @@ export function ArtboardCanvas({
    * ハンドルを置く矩形。掴める軸が無ければ出さないので、そのときは矩形も持たない。
    * 矩形そのものが無いのはまだ描かれていない一瞬で、そこで出すと原点へ 8 個固まる。
    */
-  const handleBounds = resizeHandles.length > 0 ? drawnBounds : Option.none;
+  const handleBounds = resizable.lengths.length > 0 ? drawnBounds : Option.none;
   /*
    * 掴んでいる間のカーソルは器が出す。ハンドルはそのあいだポインタを通すので、
    * 何も出さないと下にある `cursor-grab`（開いた手）に戻ってしまう。
@@ -310,14 +312,14 @@ export function ArtboardCanvas({
       </div>
       {isFrozen ? <StaleCanvasOverlay /> : null}
       {/*
-        複数選択でハンドルを出さないことは `NodeResize.handles` が既に決めている
+        複数選択でハンドルを出さないことは `NodeResize.resizable` が既に決めている
         （単一選択でなければ空を返す）ので、ここで数え直してはいない。矩形が無いのは
         まだ描かれていないときで、そのときは置く場所が決まらないので出さない。
       */}
       {Option.isSome(handleBounds) ? (
         <ResizeHandleOverlay
           bounds={handleBounds.value}
-          handles={resizeHandles}
+          resizable={resizable}
           isGrabbing={Option.isSome(nodeResize.grabbed)}
           onGrab={nodeResize.grab}
         />

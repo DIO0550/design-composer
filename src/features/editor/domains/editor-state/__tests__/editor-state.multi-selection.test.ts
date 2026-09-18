@@ -5,6 +5,7 @@ import {
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
 import { PropEdit } from "@/domains/dcmp/node";
+import { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { EditContinuities } from "@/domains/session/edit-continuity";
 import { ReorderSteps } from "@/features/editor/domains/reorder-step";
@@ -166,7 +167,7 @@ test("複数選んでいる間はリサイズできない", () => {
     Option.isSome(
       EditorState.resize(
         setupSingleSelected(),
-        [Width],
+        ResizeEdit.create([Width]),
         EditContinuities.Separate,
       ),
     ),
@@ -175,7 +176,7 @@ test("複数選んでいる間はリサイズできない", () => {
     Option.isSome(
       EditorState.resize(
         setupMultiSelected(),
-        [Width],
+        ResizeEdit.create([Width]),
         EditContinuities.Separate,
       ),
     ),

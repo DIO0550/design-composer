@@ -1,5 +1,5 @@
 import { CssDirection } from "@/domains/dcmp/css-direction";
-import { Axes, type Axis } from "@/domains/unit/axis";
+import { Axes, type Axis, type AxisEnd, AxisEnds } from "@/domains/unit/axis";
 import type { Offset } from "@/domains/unit/offset";
 import { type Side, Sides } from "@/domains/unit/side";
 import { Option } from "@/utils/Option";
@@ -16,6 +16,14 @@ export type CanvasBounds = Readonly<{
   width: number;
   height: number;
 }>;
+
+/**
+ * 軸の端が指す辺。
+ */
+const EdgeSides = {
+  width: { start: Sides.Left, end: Sides.Right },
+  height: { start: Sides.Top, end: Sides.Bottom },
+} as const satisfies Readonly<Record<Axis, Readonly<Record<AxisEnd, Side>>>>;
 
 export const CanvasBounds = {
   /** 描かれている要素の矩形。レイアウトはブラウザが行うので実測で取る。 */
@@ -154,9 +162,10 @@ export const CanvasBounds = {
 
   /** 子が並ぶ向きに沿った始点。 */
   start(bounds: CanvasBounds, direction: CssDirection): number {
-    return CanvasBounds.side(
+    return CanvasBounds.edgeAt(
       bounds,
-      direction === "row" ? Sides.Left : Sides.Top,
+      CssDirection.mainAxis(direction),
+      AxisEnds.Start,
     );
   },
 
@@ -224,12 +233,24 @@ export const CanvasBounds = {
     );
   },
 
+  /**
+   * 軸の指定した端の辺の座標。始点側は左辺 / 上辺、終点側は右辺 / 下辺。
+   *
+   * 軸と端から辺を引く対応はここ 1 箇所だけに置く。`start` / `edge` / `end` も
+   * ここへ委譲するので、どの軸のどちらの端がどの辺かが割れない。
+   *
+   * @param bounds 辺を知りたい矩形
+   * @param axis 見る軸
+   * @param end その軸のどちらの端か
+   * @returns その辺の座標（画面上の px）
+   */
+  edgeAt(bounds: CanvasBounds, axis: Axis, end: AxisEnd): number {
+    return CanvasBounds.side(bounds, EdgeSides[axis][end]);
+  },
+
   /** 軸に沿った終端（右辺 / 下辺）。リサイズハンドルはこの辺に沿って並ぶ。 */
   edge(bounds: CanvasBounds, axis: Axis): number {
-    return CanvasBounds.side(
-      bounds,
-      axis === Axes.Width ? Sides.Right : Sides.Bottom,
-    );
+    return CanvasBounds.edgeAt(bounds, axis, AxisEnds.End);
   },
 
   /** 子が並ぶ向きに沿った終点。 */

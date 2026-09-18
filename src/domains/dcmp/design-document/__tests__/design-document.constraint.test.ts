@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
 import { AxisLength } from "@/domains/dcmp/axis-length";
 import { Node, PropEdit } from "@/domains/dcmp/node";
+import { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import { Axes } from "@/domains/unit/axis";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
@@ -72,7 +73,11 @@ function propOf(
 
 function widen(document: DesignDocument, name: string): DesignDocument {
   return Result.unwrap(
-    DesignDocument.resize(document, name, [AxisLength.create(Axes.Width, 300)]),
+    DesignDocument.resize(
+      document,
+      name,
+      ResizeEdit.create([AxisLength.create(Axes.Width, 300)]),
+    ),
   );
 }
 
@@ -96,9 +101,11 @@ test("artboard の幅を広げても min の子は動かない", () => {
 
 test("artboard の高さだけを変えると横の追従は起きない", () => {
   const taller = Result.unwrap(
-    DesignDocument.resize(setupDocument(), "home", [
-      AxisLength.create(Axes.Height, 200),
-    ]),
+    DesignDocument.resize(
+      setupDocument(),
+      "home",
+      ResizeEdit.create([AxisLength.create(Axes.Height, 200)]),
+    ),
   );
 
   expect(Option.unwrap(propOf(taller, "right-badge", "x"))).toBe(150);
@@ -130,10 +137,14 @@ test("2 軸を同時に変えると縦横の両方で追従する", () => {
   });
 
   const resized = Result.unwrap(
-    DesignDocument.resize(document, "home", [
-      AxisLength.create(Axes.Width, 300),
-      AxisLength.create(Axes.Height, 150),
-    ]),
+    DesignDocument.resize(
+      document,
+      "home",
+      ResizeEdit.create([
+        AxisLength.create(Axes.Width, 300),
+        AxisLength.create(Axes.Height, 150),
+      ]),
+    ),
   );
 
   expect([
@@ -531,4 +542,27 @@ test("語彙にない追従を書いた子は動かない", () => {
   const widened = widen(document, "home");
 
   expect(Option.unwrap(propOf(widened, "broken", "x"))).toBe(150);
+});
+
+test("artboard を左辺から縮めても max の子は画面上の位置が変わらない", () => {
+  /*
+   * 左辺から縮めると幅が減るぶん artboard 自身が右へ動く。右辺へ付いた子は artboard の
+   * 中で左へ 50 動き、artboard が右へ 50 動くので、画面上では元の位置に留まる。
+   */
+  const narrowed = Result.unwrap(
+    DesignDocument.resize(
+      setupDocument(),
+      "home",
+      ResizeEdit.placedAt([AxisLength.create(Axes.Width, 150)], {
+        x: 50,
+        y: 0,
+      }),
+    ),
+  );
+
+  const artboard = Option.unwrap(DesignDocument.findArtboard(narrowed, "home"));
+  expect([
+    artboard.canvasPosition?.x,
+    Option.unwrap(propOf(narrowed, "right-badge", "x")),
+  ]).toEqual([50, 100]);
 });

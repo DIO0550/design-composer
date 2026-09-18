@@ -1,8 +1,8 @@
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
-import type { AxisLength } from "@/domains/dcmp/axis-length";
 import type { CanvasBounds } from "@/features/canvas/domains/canvas-bounds";
 import {
   NodeResize,
+  type ResizableSelection,
   type ResizeGrip,
   type ResizeHandleAnchor,
 } from "@/features/canvas/domains/node-resize";
@@ -18,7 +18,9 @@ const HandleBorderPx = 1.5;
 /**
  * 掴めるものに出すカーソル。
  *
- * 右上・左下を掴めるようにする回に持ち込む。
+ * 2 軸の角は、掴んだ 2 つの端が同じ側（左上・右下）なら左上 - 右下の斜め、違う側
+ * （右上・左下）なら右上 - 左下の斜めになる。掴んだ箇所そのものは受け取らない
+ * （向きは掴んだ端から決まるので、渡すとカーソルの出どころが 2 つに割れる）。
  *
  * @param grip 掴めるもの
  * @returns その掴み方で出すカーソル
@@ -30,7 +32,7 @@ export function resizeCursor(grip: ResizeGrip): CSSProperties["cursor"] {
     case "height":
       return "ns-resize";
     case "both":
-      return "nwse-resize";
+      return grip.width.end === grip.height.end ? "nwse-resize" : "nesw-resize";
   }
 }
 
@@ -77,12 +79,12 @@ function handleStyle(
  */
 export function ResizeHandleOverlay({
   bounds,
-  handles,
+  resizable,
   isGrabbing,
   onGrab,
 }: Readonly<{
   bounds: CanvasBounds;
-  handles: readonly AxisLength[];
+  resizable: ResizableSelection;
   isGrabbing: boolean;
   onGrab: (grip: ResizeGrip, event: ReactPointerEvent<HTMLElement>) => void;
 }>) {
@@ -101,7 +103,7 @@ export function ResizeHandleOverlay({
          */
         const grab = isGrabbing
           ? Option.none
-          : NodeResize.gripFor(handles, anchor);
+          : NodeResize.gripFor(resizable, anchor);
         return (
           <div
             key={`${anchor.x},${anchor.y}`}

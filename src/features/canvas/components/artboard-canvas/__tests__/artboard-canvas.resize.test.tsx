@@ -1,6 +1,7 @@
 import { fireEvent } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
 import { DesignDocument } from "@/domains/dcmp/design-document";
+import { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { EditContinuities } from "@/domains/session/edit-continuity";
 import { canvasContent } from "@/features/canvas/__tests__/canvas-elements";
@@ -14,13 +15,14 @@ import {
   drawn,
   drawnAt,
   renderCanvas,
-  resizeHandleFor,
+  resizeHandleAt,
   resizeHandles,
 } from "./setup";
 
 /**
  * `home` に、2 軸とも固定の `panel`、幅だけ固定の `banner`、
- * モードを指定していない `title`、部品インスタンスの `action` が並ぶ状態。
+ * モードを指定していない `title`、部品インスタンスの `action`、
+ * 2 軸とも固定で親から見た座標を持つ `badge` が並ぶ状態。
  */
 function setupSelection(
   selectedNames: readonly string[] = [],
@@ -52,6 +54,20 @@ function setupSelection(
           },
           { name: "title", type: "Text", props: { content: "ホーム" } },
           { name: "action", ref: "card" },
+          {
+            name: "badge",
+            type: "Box",
+            props: {
+              widthMode: "fixed",
+              width: 200,
+              heightMode: "fixed",
+              height: 100,
+              placement: "absolute",
+              x: 25,
+              y: 10,
+            },
+            children: [],
+          },
         ],
       },
     ],
@@ -118,7 +134,7 @@ test("右辺を掴んで右へ運ぶと、動かした分だけ幅が伸びた�
   releasePointer(panel, { x: 338, y: 100 });
 
   expect(onResize).toHaveBeenLastCalledWith(
-    [{ axis: "width", length: 240 }],
+    ResizeEdit.create([{ axis: "width", length: 240 }]),
     expect.anything(),
   );
 });
@@ -133,7 +149,7 @@ test("下辺を掴んで下へ運ぶと、動かした分だけ高さが伸び�
   releasePointer(panel, { x: 200, y: 178 });
 
   expect(onResize).toHaveBeenLastCalledWith(
-    [{ axis: "height", length: 130 }],
+    ResizeEdit.create([{ axis: "height", length: 130 }]),
     expect.anything(),
   );
 });
@@ -196,12 +212,12 @@ test("幅のハンドルを掴んで右へ運ぶと、動かした分だけ幅�
   renderCanvas({ selection: setupSelection(["panel"]), onResize });
   const panel = drawnAt("panel", PanelBounds);
 
-  pressPointer(resizeHandleFor("width"), { x: 300, y: 100 });
+  pressPointer(resizeHandleAt({ x: 1, y: 0.5 }), { x: 300, y: 100 });
   movePointer(panel, { x: 340, y: 100 });
   releasePointer(panel, { x: 340, y: 100 });
 
   expect(onResize).toHaveBeenLastCalledWith(
-    [{ axis: "width", length: 240 }],
+    ResizeEdit.create([{ axis: "width", length: 240 }]),
     expect.anything(),
   );
 });
@@ -217,7 +233,7 @@ test("測り直すと、幅のハンドルは要素の右辺の上へ置かれ�
 
   fireEvent(globalThis.window, new Event("resize"));
 
-  expect(resizeHandleFor("width").style.left).toBe("295px");
+  expect(resizeHandleAt({ x: 1, y: 0.5 }).style.left).toBe("295px");
 });
 
 test("高さのハンドルを掴んで下へ運ぶと、動かした分だけ高さが伸びた大きさが通知される", () => {
@@ -226,12 +242,12 @@ test("高さのハンドルを掴んで下へ運ぶと、動かした分だけ�
   renderCanvas({ selection: setupSelection(["panel"]), onResize });
   const panel = drawnAt("panel", PanelBounds);
 
-  pressPointer(resizeHandleFor("height"), { x: 200, y: 150 });
+  pressPointer(resizeHandleAt({ x: 0.5, y: 1 }), { x: 200, y: 150 });
   movePointer(panel, { x: 200, y: 180 });
   releasePointer(panel, { x: 200, y: 180 });
 
   expect(onResize).toHaveBeenLastCalledWith(
-    [{ axis: "height", length: 130 }],
+    ResizeEdit.create([{ axis: "height", length: 130 }]),
     expect.anything(),
   );
 });
@@ -246,7 +262,7 @@ test("ハンドルを掴んでいる間は、どのハンドルもポインタ�
   renderCanvas({ selection: setupSelection(["panel"]) });
   drawnAt("panel", PanelBounds);
 
-  pressPointer(resizeHandleFor("width"), { x: 300, y: 100 });
+  pressPointer(resizeHandleAt({ x: 1, y: 0.5 }), { x: 300, y: 100 });
 
   expect(resizeHandles().map((handle) => handle.style.pointerEvents)).toEqual(
     Array(8).fill("none"),
@@ -260,7 +276,7 @@ test("ハンドルを覆う層はポインタを受け取らず、支援技術�
    */
   renderCanvas({ selection: setupSelection(["panel"]) });
 
-  const overlay = resizeHandleFor("width").parentElement;
+  const overlay = resizeHandleAt({ x: 1, y: 0.5 }).parentElement;
   expect([
     overlay?.classList.contains("pointer-events-none"),
     overlay?.getAttribute("aria-hidden"),
@@ -277,15 +293,15 @@ test("右下の角を掴んで斜めに運ぶと、幅と高さが同時に通�
   renderCanvas({ selection: setupSelection(["panel"]), onResize });
   const panel = drawnAt("panel", PanelBounds);
 
-  pressPointer(resizeHandleFor("both"), { x: 300, y: 150 });
+  pressPointer(resizeHandleAt({ x: 1, y: 1 }), { x: 300, y: 150 });
   movePointer(panel, { x: 340, y: 175 });
   releasePointer(panel, { x: 340, y: 175 });
 
   expect(onResize).toHaveBeenLastCalledWith(
-    [
+    ResizeEdit.create([
       { axis: "width", length: 240 },
       { axis: "height", length: 125 },
-    ],
+    ]),
     expect.anything(),
   );
 });
@@ -298,7 +314,7 @@ test("角を掴んでいる間は、器が斜めのカーソルを出す", () =>
   renderCanvas({ selection: setupSelection(["panel"]) });
   drawnAt("panel", PanelBounds);
 
-  pressPointer(resizeHandleFor("both"), { x: 300, y: 150 });
+  pressPointer(resizeHandleAt({ x: 1, y: 1 }), { x: 300, y: 150 });
 
   expect(canvasContent().style.cursor).toBe("nwse-resize");
 });
@@ -314,11 +330,11 @@ test("ハンドルを掴み直すと、そこからまた別のまとまりと�
   renderCanvas({ selection: setupSelection(["panel"]), onResize });
   const panel = drawnAt("panel", PanelBounds);
 
-  pressPointer(resizeHandleFor("width"), { x: 300, y: 100 });
+  pressPointer(resizeHandleAt({ x: 1, y: 0.5 }), { x: 300, y: 100 });
   movePointer(panel, { x: 320, y: 100 });
   movePointer(panel, { x: 340, y: 100 });
   releasePointer(panel, { x: 340, y: 100 });
-  pressPointer(resizeHandleFor("width"), { x: 340, y: 100 });
+  pressPointer(resizeHandleAt({ x: 1, y: 0.5 }), { x: 340, y: 100 });
   movePointer(panel, { x: 360, y: 100 });
 
   expect(onResize.mock.calls.map(([, continuity]) => continuity)).toEqual([
@@ -326,4 +342,79 @@ test("ハンドルを掴み直すと、そこからまた別のまとまりと�
     EditContinuities.Continued,
     EditContinuities.Separate,
   ]);
+});
+
+test("左辺のハンドルを掴んで右へ運ぶと、幅と位置が同時に通知される", () => {
+  /*
+   * 始点側の辺から縮めるので、反対の右辺をその場に留めるために位置も動く。
+   * 位置を持つ `badge` で見る（フロー配置の `panel` では掴めない）。
+   */
+  const onResize = vi.fn();
+  renderCanvas({ selection: setupSelection(["badge"]), onResize });
+  const badge = drawnAt("badge", PanelBounds);
+
+  pressPointer(resizeHandleAt({ x: 0, y: 0.5 }), { x: 100, y: 100 });
+  movePointer(badge, { x: 130, y: 100 });
+  releasePointer(badge, { x: 130, y: 100 });
+
+  expect(onResize).toHaveBeenLastCalledWith(
+    ResizeEdit.placedAt([{ axis: "width", length: 170 }], { x: 55, y: 10 }),
+    expect.anything(),
+  );
+});
+
+test("左上の角のハンドルを掴んで運ぶと、幅・高さ・位置が同時に通知される", () => {
+  // 縦横で違う動きにするのは、両軸へ同じ差分を流す実装でも通ってしまわないようにするため
+  const onResize = vi.fn();
+  renderCanvas({ selection: setupSelection(["badge"]), onResize });
+  const badge = drawnAt("badge", PanelBounds);
+
+  pressPointer(resizeHandleAt({ x: 0, y: 0 }), { x: 100, y: 50 });
+  movePointer(badge, { x: 140, y: 75 });
+  releasePointer(badge, { x: 140, y: 75 });
+
+  expect(onResize).toHaveBeenLastCalledWith(
+    ResizeEdit.placedAt(
+      [
+        { axis: "width", length: 160 },
+        { axis: "height", length: 75 },
+      ],
+      { x: 65, y: 35 },
+    ),
+    expect.anything(),
+  );
+});
+
+test("フロー配置のノードでは左辺のハンドルが掴めない", () => {
+  /*
+   * 反対の辺を留める座標を持たないので掴めない。右辺のハンドルは掴めるので、
+   * ハンドルを丸ごと出さない実装では「幅のハンドルを掴んで…」が落ちる。
+   */
+  const onResize = vi.fn();
+  renderCanvas({ selection: setupSelection(["panel"]), onResize });
+  const panel = drawnAt("panel", PanelBounds);
+
+  pressPointer(resizeHandleAt({ x: 0, y: 0.5 }), { x: 100, y: 100 });
+  movePointer(panel, { x: 130, y: 100 });
+
+  expect(onResize).not.toHaveBeenCalled();
+});
+
+test("座標を書いていない artboard の左辺を掴むと、自動配置の位置を起点に置き直す", () => {
+  /*
+   * artboard は掴んだ時点で描かれている位置が起点になる（docs/06-ui.md「キャンバス直接
+   * 操作」）。以後その artboard は座標を持つので、並べ替えでは動かなくなる。
+   */
+  const onResize = vi.fn();
+  renderCanvas({ selection: setupSelection(["home"]), onResize });
+  const home = drawnAt("home", PanelBounds);
+
+  pressPointer(resizeHandleAt({ x: 0, y: 0.5 }), { x: 100, y: 100 });
+  movePointer(home, { x: 130, y: 100 });
+  releasePointer(home, { x: 130, y: 100 });
+
+  expect(onResize).toHaveBeenLastCalledWith(
+    ResizeEdit.placedAt([{ axis: "width", length: 330 }], { x: 30, y: 0 }),
+    expect.anything(),
+  );
 });

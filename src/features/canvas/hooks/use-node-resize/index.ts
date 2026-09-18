@@ -3,7 +3,7 @@ import {
   useReducer,
   useRef,
 } from "react";
-import type { AxisLengths } from "@/domains/dcmp/axis-length";
+import type { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import {
   EditContinuities,
@@ -13,6 +13,7 @@ import type { CanvasBounds } from "@/features/canvas/domains/canvas-bounds";
 import type { CanvasView } from "@/features/canvas/domains/canvas-view";
 import {
   NodeResize,
+  type ResizableSelection,
   type ResizeGrip,
   type ResizeHold,
 } from "@/features/canvas/domains/node-resize";
@@ -99,15 +100,16 @@ export type NodeResizeControl = Readonly<{
  * このフックが持つのは DOM の実測とイベントの仲介だけで、
  * 「どこを掴めるか」「どれだけの長さになるか」の判定は `node-resize` にある。
  *
- * @param params ハンドルの位置を決める `selection` と `view`、
+ * @param params 掴める軸と位置を持つ `resizable`、実測に使う `selection`、倍率の `view`、
  *   大きさが確定したときに呼ぶ `onResize`
  * @returns ハンドルを掴む手続きと、ポインタを追うハンドラ・`click` を飲み込む手続き
  */
 export function useNodeResize(
   params: Readonly<{
+    resizable: ResizableSelection;
     selection: DocumentSelection;
     view: CanvasView;
-    onResize: (sizes: AxisLengths, continuity: EditContinuity) => void;
+    onResize: (edit: ResizeEdit, continuity: EditContinuity) => void;
   }>,
 ): NodeResizeControl {
   const [resize, dispatch] = useReducer(
@@ -136,7 +138,11 @@ export function useNodeResize(
     hasResized.current = false;
     dispatch({
       type: "grab",
-      held: { grip, origin: CanvasPointer.offsetOf(event) },
+      held: NodeResize.hold(
+        params.resizable,
+        grip,
+        CanvasPointer.offsetOf(event),
+      ),
     });
   };
 
@@ -146,7 +152,7 @@ export function useNodeResize(
       return false;
     }
     const grabbed = NodeResize.grabAt(
-      NodeResize.handles(params.selection),
+      params.resizable,
       bounds.value,
       CanvasPointer.offsetOf(event),
     );
@@ -159,26 +165,26 @@ export function useNodeResize(
   };
 
   /*
-   * 掴んでいる間はポインタが動くたびにドキュメントへ反映する。長さは常に
-   * 「掴んだ時点の長さ + 掴んでからの移動量」なので、反映が 1 回落ちても値はずれない。
+   * 掴んでいる間はポインタが動くたびにドキュメントへ反映する。長さも位置も常に
+   * 「掴んだ時点の値 + 掴んでからの移動量」なので、反映が 1 回落ちても値はずれない。
    *
    * 2 件目以降を続きとして渡すことで、掴んでから離すまでが undo 1 回ぶんになる
    * （docs/06-ui.md「リサイズハンドル」）。
    */
   const trackPointer = (event: ReactPointerEvent<HTMLElement>) => {
-    const lengths = NodeResize.lengthsAt(
+    const edit = NodeResize.editAt(
       resize,
       CanvasPointer.offsetOf(event),
       params.view,
     );
-    if (!Option.isSome(lengths)) {
+    if (!Option.isSome(edit)) {
       return;
     }
     const continuity = hasResized.current
       ? EditContinuities.Continued
       : EditContinuities.Separate;
     hasResized.current = true;
-    params.onResize(lengths.value, continuity);
+    params.onResize(edit.value, continuity);
   };
 
   return {

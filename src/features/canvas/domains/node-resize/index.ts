@@ -2,24 +2,27 @@ import type { Artboard } from "@/domains/dcmp/artboard";
 import { AxisLength, type AxisLengths } from "@/domains/dcmp/axis-length";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { Node, type Props } from "@/domains/dcmp/node";
+import { Placement } from "@/domains/dcmp/placement";
+import { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import { Size } from "@/domains/dcmp/size";
 import { DocumentSelection } from "@/domains/session/document-selection";
-import { Axes } from "@/domains/unit/axis";
+import { Axes, type Axis, type AxisEnd, AxisEnds } from "@/domains/unit/axis";
 import { Offset } from "@/domains/unit/offset";
+import { ArrangedArtboard } from "@/features/canvas/domains/arranged-artboard";
 import { CanvasBounds } from "@/features/canvas/domains/canvas-bounds";
 import { CanvasView } from "@/features/canvas/domains/canvas-view";
 import { Option } from "@/utils/Option";
 
 /**
- * 掴める帯の太さ（画面上の px）。終端からこの幅までが `grabAt` の当たり判定に入る。
+ * 掴める帯の太さ（画面上の px）。辺からこの幅までが `grabAt` の当たり判定に入る。
  *
- * ハンドルの四角（`HandleAnchors`）とは別に、**右辺・下辺の全長が掴める**。描かれている
+ * ハンドルの四角（`HandleAnchors`）とは別に、**掴める辺の全長が掴める**。描かれている
  * 四角だけを掴み口にすると、辺のどこでも掴めていたものが 10px の的になって操作性が落ち
  * るので、四角の掴み口をこの帯に上乗せしている。
  *
- * **帯は角でも 1 軸のまま。** 2 本の帯が重なる角では `handles` の並び順で先にある軸（幅
- * が固定なら幅）を掴む。角の付近を 2 軸にするには**どこからを角とみなすか**の設計が要る
- * ので見送っている（角の四角の外側・帯の内側を押すと 1 軸しか変わらない）。
+ * **帯は角でも 1 軸のまま。** 2 本の帯が重なる角では `ResizableSelection.lengths` の並び順で
+ * 先にある軸（幅が固定なら幅）を掴む。角の付近を 2 軸にするには**どこからを角とみなすか
+ * **の設計が要るので見送っている（角の四角の外側・帯の内側を押すと 1 軸しか変わらない）。
  */
 const ResizeHandleThicknessPx = 8;
 
@@ -30,35 +33,46 @@ const ResizeHandleThicknessPx = 8;
 type AnchorRatio = 0 | 0.5 | 1;
 
 /**
+ * 掴んだ 1 軸ぶん。掴んだ時点の長さと、掴んだのがどちらの端か。
+ *
+ * 端を `unit/side` の `Side` で持たないのは、枝が既に軸で分かれているため。辺で持つと軸が
+ * 2 箇所に載り、「幅の枝に上辺が入っている」が書けてしまう。
+ */
+type AxisGrab = Readonly<{
+  length: AxisLength;
+  end: AxisEnd;
+}>;
+
+/**
  * 掴んだハンドルが変える大きさ。
  *
  * 出し分ける側も `switch` で網羅を強制できる。
  */
 export type ResizeGrip =
-  | Readonly<{ kind: "width"; width: AxisLength }>
-  | Readonly<{ kind: "height"; height: AxisLength }>
-  | Readonly<{ kind: "both"; width: AxisLength; height: AxisLength }>;
+  | Readonly<{ kind: "width"; width: AxisGrab }>
+  | Readonly<{ kind: "height"; height: AxisGrab }>
+  | Readonly<{ kind: "both"; width: AxisGrab; height: AxisGrab }>;
 
 export const ResizeGrip = {
   /**
    * 1 軸だけを掴む。軸は長さ自身が持っているので、どちらの枝になるかもそこで決まる。
    *
-   * @param length 掴んだ軸とその時点の長さ
+   * @param grab 掴んだ軸とその時点の長さ・端
    * @returns その軸だけを変える掴み方
    */
-  create(length: AxisLength): ResizeGrip {
-    return length.axis === Axes.Width
-      ? { kind: "width", width: length }
-      : { kind: "height", height: length };
+  create(grab: AxisGrab): ResizeGrip {
+    return grab.length.axis === Axes.Width
+      ? { kind: "width", width: grab }
+      : { kind: "height", height: grab };
   },
 
   /**
-   * 掴んだものが変える長さ。
+   * 掴んだものが変える軸ぶんの掴み。
    *
    * @param grip 掴んだもの
-   * @returns 変える軸ぶんの長さ。2 軸なら幅・高さの順
+   * @returns 変える軸ぶんの掴み。2 軸なら幅・高さの順
    */
-  lengths(grip: ResizeGrip): AxisLengths {
+  grabs(grip: ResizeGrip): readonly [AxisGrab, ...AxisGrab[]] {
     switch (grip.kind) {
       case "width":
         return [grip.width];
@@ -73,20 +87,34 @@ export const ResizeGrip = {
 /**
  * ハンドルを留める 1 箇所（docs/06-ui.md「リサイズハンドル」）。
  *
- * `grip` はその箇所で何を変えられるかで、掴めない箇所では `none`。
+ * どの軸のどちらの端を掴む箇所かは比率そのものが表す（0 が始点側、1 が終点側、0.5 は
+ * その軸を掴まない）ので、掴めるものを別のフィールドには持たない。
  */
 export type ResizeHandleAnchor = Readonly<{
   x: AnchorRatio;
   y: AnchorRatio;
-  grip: Option<ResizeGrip["kind"]>;
 }>;
 
 /**
- * 掴んでいるもの。何を変えるかと、どこから測るか。
+ * リサイズの観点から見た選択。掴める軸の長さと、ドキュメントへ書ける今の位置。
+ *
+ * 始点側の辺を掴めるかは「その軸が固定か」だけでは決まらず、反対の辺を留めるための位置を
+ * 書けるかにも依るので、対で 1 つの型にする。
+ */
+export type ResizableSelection = Readonly<{
+  lengths: readonly AxisLength[];
+  /** 掴んだ時点の位置。ドキュメントへ位置を書けない対象（フロー配置）なら `none`。 */
+  origin: Option<Offset>;
+}>;
+
+/**
+ * 掴んでいるもの。何を変えるか、ポインタをどこから測るか、位置をどこから動かすか。
  */
 export type ResizeHold = Readonly<{
   grip: ResizeGrip;
-  origin: Offset;
+  pointerOrigin: Offset;
+  /** 掴んだ時点の対象の位置。位置を書けない対象なら `none`。 */
+  grabbedAt: Option<Offset>;
 }>;
 
 /**
@@ -103,6 +131,12 @@ export type NodeResize =
   | Readonly<{ kind: "idle" }>
   | (Readonly<{ kind: "resizing" }> & ResizeHold)
   | Readonly<{ kind: "resized" }>;
+
+/** 掴める軸も位置も無い選択。未選択・掴めない対象・凍結中に使う。 */
+const UnresizableSelection: ResizableSelection = {
+  lengths: [],
+  origin: Option.none,
+};
 
 /**
  * artboard は 2 軸とも `fixed` 固定なので、常にどちらの辺も掴める（docs/03）。
@@ -146,15 +180,72 @@ function nodeHandles(node: Node): readonly AxisLength[] {
 }
 
 /**
- * 角で掴めるもの。両軸が固定なら 2 軸、片方だけならその 1 軸。
+ * その比率が指す端。
  *
- * @param width 幅のハンドル。幅が固定でなければ `none`
- * @param height 高さのハンドル。高さが固定でなければ `none`
- * @returns 変えられるもの。どちらも固定でなければ `none`
+ * @param ratio 箇所の比率
+ * @returns 指している端。中央（その軸を掴まない箇所）なら `none`
  */
-function cornerGrip(
-  width: Option<AxisLength>,
-  height: Option<AxisLength>,
+function endAt(ratio: AnchorRatio): Option<AxisEnd> {
+  if (ratio === 0.5) {
+    return Option.none;
+  }
+  return Option.some(ratio === 0 ? AxisEnds.Start : AxisEnds.End);
+}
+
+/**
+ * その軸をその端から掴めるか。
+ *
+ * @param resizable 選択中のものの掴める軸と位置
+ * @param axis 見る軸
+ * @param ratio 箇所のその軸ぶんの比率
+ * @returns 掴めるならその掴み。その軸が固定でない・箇所が中央・始点側なのに位置を
+ *   書けないときは `none`
+ */
+function axisGrabAt(
+  resizable: ResizableSelection,
+  axis: Axis,
+  ratio: AnchorRatio,
+): Option<AxisGrab> {
+  const end = endAt(ratio);
+  if (!Option.isSome(end)) {
+    return Option.none;
+  }
+  return Option.flatMap(AxisLength.find(resizable.lengths, axis), (length) =>
+    grabFor(resizable, length, end.value),
+  );
+}
+
+/**
+ * その軸をその端から掴む掴み。始点側から縮めるには、反対の辺をその場に留めるための位置が
+ * 要る（フロー配置のノードは持たない）。
+ *
+ * 箇所から引くときも帯から引くときもここを通すので、始点側の可否が 1 箇所で決まる。
+ *
+ * @param resizable 選択中のものの掴める軸と位置
+ * @param length 掴む軸と、その時点の長さ
+ * @param end 掴もうとしている端
+ * @returns その掴み。始点側なのに位置を書けないときは `none`
+ */
+function grabFor(
+  resizable: ResizableSelection,
+  length: AxisLength,
+  end: AxisEnd,
+): Option<AxisGrab> {
+  const grabbable = end === AxisEnds.End || Option.isSome(resizable.origin);
+  return grabbable ? Option.some({ length, end }) : Option.none;
+}
+
+/**
+ * 掴める軸の掴みからひとまとまりの掴み方を組む。両軸が掴めるなら 2 軸、片方だけならその
+ * 1 軸。
+ *
+ * @param width 幅の掴み。幅を掴めなければ `none`
+ * @param height 高さの掴み。高さを掴めなければ `none`
+ * @returns 変えられるもの。どちらも掴めなければ `none`
+ */
+function combinedGrip(
+  width: Option<AxisGrab>,
+  height: Option<AxisGrab>,
 ): Option<ResizeGrip> {
   // 名前を付けた変数にすると narrowing が効かないので、条件はここへ直に書く
   if (Option.isSome(width) && Option.isSome(height)) {
@@ -167,24 +258,36 @@ function cornerGrip(
   return Option.map(Option.or(width, height), ResizeGrip.create);
 }
 
-/** 右辺の中央。幅だけを変える。帯（右辺の全長）で掴んだときもここを掴んだものとして扱う。 */
-const RightAnchor = {
-  x: 1,
-  y: 0.5,
-  grip: Option.some("width"),
-} as const satisfies ResizeHandleAnchor;
-
-/** 下辺の中央。高さだけを変える。下辺の帯で掴んだときもここになる。 */
-const BottomAnchor = {
-  x: 0.5,
-  y: 1,
-  grip: Option.some("height"),
-} as const satisfies ResizeHandleAnchor;
-
-/** 掴めない箇所（残る 3 隅と左辺・上辺）。位置だけが違うので `grip` は共通。 */
-const DecorativeGrip = Option.none;
+/**
+ * ポインタがその軸の帯に入っているなら、掴んだ端。
+ *
+ * 両方の帯に入る（長さが帯 2 本ぶん未満）ときは**近いほうの辺**を取る。
+ *
+ * @param bounds 選択中のものが描かれている矩形
+ * @param pointer 押された位置
+ * @param axis 見る軸
+ * @returns 入っている帯の端。どちらの帯にも入っていなければ `none`
+ */
+function bandEndAt(
+  bounds: CanvasBounds,
+  pointer: Offset,
+  axis: Axis,
+): Option<AxisEnd> {
+  const along = Offset.along(pointer, axis);
+  const distanceTo = (end: AxisEnd): number =>
+    Math.abs(CanvasBounds.edgeAt(bounds, axis, end) - along);
+  const nearest = Object.values(AxisEnds).reduce((nearer, end) =>
+    distanceTo(end) < distanceTo(nearer) ? end : nearer,
+  );
+  return distanceTo(nearest) <= ResizeHandleThicknessPx
+    ? Option.some(nearest)
+    : Option.none;
+}
 
 export const NodeResize = {
+  /** 掴める軸も位置も無い選択（未選択・掴めない対象・凍結中）。 */
+  Unresizable: UnresizableSelection,
+
   /**
    * ハンドルを留める 8 箇所（四隅と各辺の中間）。左上から時計回り。
    *
@@ -192,14 +295,14 @@ export const NodeResize = {
    * 片方だけ変えたときに「カーソルが出る場所」と「掴める場所」が黙って割れる。
    */
   HandleAnchors: [
-    { x: 0, y: 0, grip: DecorativeGrip },
-    { x: 0.5, y: 0, grip: DecorativeGrip },
-    { x: 1, y: 0, grip: DecorativeGrip },
-    RightAnchor,
-    { x: 1, y: 1, grip: Option.some("both") },
-    BottomAnchor,
-    { x: 0, y: 1, grip: DecorativeGrip },
-    { x: 0, y: 0.5, grip: DecorativeGrip },
+    { x: 0, y: 0 },
+    { x: 0.5, y: 0 },
+    { x: 1, y: 0 },
+    { x: 1, y: 0.5 },
+    { x: 1, y: 1 },
+    { x: 0.5, y: 1 },
+    { x: 0, y: 1 },
+    { x: 0, y: 0.5 },
   ] as const satisfies readonly ResizeHandleAnchor[],
 
   /** 何も掴んでいない状態から始める。 */
@@ -210,30 +313,20 @@ export const NodeResize = {
   /**
    * その箇所で今つかめるもの。
    *
-   * 角（`both`）でも片方の軸しか固定されていなければ、その 1 軸だけを掴む。
+   * 角でも片方の軸しか掴めなければ、その 1 軸だけを掴む。
    *
-   * @param handles 選択中のものが持つ、掴める軸のハンドル
+   * @param resizable 選択中のものの掴める軸と位置
    * @param anchor 見ている箇所
-   * @returns その箇所で変えられるもの。箇所が掴めない側か、対応する軸が 1 つも
-   *   固定されていなければ `none`
+   * @returns その箇所で変えられるもの。対応する軸が 1 つも掴めなければ `none`
    */
   gripFor(
-    handles: readonly AxisLength[],
+    resizable: ResizableSelection,
     anchor: ResizeHandleAnchor,
   ): Option<ResizeGrip> {
-    if (!Option.isSome(anchor.grip)) {
-      return Option.none;
-    }
-    const width = AxisLength.find(handles, Axes.Width);
-    const height = AxisLength.find(handles, Axes.Height);
-    switch (anchor.grip.value) {
-      case "width":
-        return Option.map(width, ResizeGrip.create);
-      case "height":
-        return Option.map(height, ResizeGrip.create);
-      case "both":
-        return cornerGrip(width, height);
-    }
+    return combinedGrip(
+      axisGrabAt(resizable, Axes.Width, anchor.x),
+      axisGrabAt(resizable, Axes.Height, anchor.y),
+    );
   },
 
   /**
@@ -249,58 +342,90 @@ export const NodeResize = {
   },
 
   /**
-   * 選択中の artboard / ノードに出すハンドルと、掴んだ時点の長さ
+   * 選択中の artboard / ノードの、掴める軸のハンドルと掴んだ時点の位置
    * （docs/06-ui.md「リサイズハンドル」）。
    *
    * @param selection ハンドルを出す対象を決める、ドキュメントと選択の対
-   * @returns 掴める軸のハンドルと、掴んだ時点の長さ。単一選択でなければ空
+   * @returns 掴める軸のハンドルと、ドキュメントへ書ける今の位置。単一選択でなければ
+   *   掴める軸が空
    */
-  handles(selection: DocumentSelection): readonly AxisLength[] {
+  resizable(selection: DocumentSelection): ResizableSelection {
     const selected = DocumentSelection.singleName(selection);
     if (!Option.isSome(selected)) {
-      return [];
+      return UnresizableSelection;
     }
     const name = selected.value;
-    const artboard = DesignDocument.findArtboard(selection.document, name);
-    if (Option.isSome(artboard)) {
-      return artboardHandles(artboard.value);
+    const artboards = selection.document.artboards;
+    const index = artboards.findIndex((artboard) => artboard.name === name);
+    if (index >= 0) {
+      return {
+        lengths: artboardHandles(artboards[index]),
+        origin: Option.some(ArrangedArtboard.positionAt(artboards, index)),
+      };
     }
     const node = DesignDocument.findNode(selection.document, name);
-    return Option.isSome(node) ? nodeHandles(node.value) : [];
+    if (!Option.isSome(node)) {
+      return UnresizableSelection;
+    }
+    const placement = DesignDocument.childPlacementOf(selection.document, name);
+    return {
+      lengths: nodeHandles(node.value),
+      origin: Option.map(placement, (child) =>
+        Placement.offset(child.placement),
+      ),
+    };
   },
 
   /**
-   * ポインタが乗っている帯で掴めるもの。終端から内側へ `ResizeHandleThicknessPx` までを
+   * 掴んだものを、ポインタの起点と対象の位置と対にする。
+   *
+   * ハンドルを直に押した経路も帯の経路もここを通すので、掴んだ時点の位置の取り方が
+   * 2 箇所へ散らない。
+   *
+   * @param resizable 選択中のものの掴める軸と位置
+   * @param grip 掴んだもの
+   * @param pointerOrigin 押された位置
+   * @returns 掴んでいるもの
+   */
+  hold(
+    resizable: ResizableSelection,
+    grip: ResizeGrip,
+    pointerOrigin: Offset,
+  ): ResizeHold {
+    return { grip, pointerOrigin, grabbedAt: resizable.origin };
+  },
+
+  /**
+   * ポインタが乗っている帯で掴めるもの。辺から内側へ `ResizeHandleThicknessPx` までを
    * 掴める帯とする（描かれている四角より広い / 上の定数を参照）。
    *
-   * 角では 2 本の帯が重なるので、先にある方（`handles` の並び順）を掴む。
+   * 角では 2 本の帯が重なるので、先にある方（`resizable.lengths` の並び順）を掴む。
    * **帯は角でも 1 軸**なので、順序を決めておけば足りる（上の定数を参照）。
    *
-   * @param handles 選択中のものが持つ、掴める軸のハンドル
+   * @param resizable 選択中のものの掴める軸と位置
    * @param bounds 選択中のものが描かれている矩形
    * @param pointer 押された位置
-   * @returns その位置で掴めるもの。矩形の外か、どの帯にも入っていなければ `none`
+   * @returns その位置で掴めるもの。矩形の外か、どの帯にも入っていないか、入っている
+   *   帯が始点側なのに位置を書けないときは `none`
    */
   grabAt(
-    handles: readonly AxisLength[],
+    resizable: ResizableSelection,
     bounds: CanvasBounds,
     pointer: Offset,
   ): Option<ResizeHold> {
     if (!CanvasBounds.contains(bounds, pointer)) {
       return Option.none;
     }
-    const onBand = Option.fromNullable(
-      handles.find(
-        (handle) =>
-          CanvasBounds.edge(bounds, handle.axis) -
-            Offset.along(pointer, handle.axis) <=
-          ResizeHandleThicknessPx,
-      ),
+    const onBand = resizable.lengths.flatMap((handle) => {
+      const end = bandEndAt(bounds, pointer, handle.axis);
+      const grab = Option.flatMap(end, (side) =>
+        grabFor(resizable, handle, side),
+      );
+      return Option.isSome(grab) ? [grab.value] : [];
+    });
+    return Option.map(Option.fromNullable(onBand[0]), (grab) =>
+      NodeResize.hold(resizable, ResizeGrip.create(grab), pointer),
     );
-    return Option.map(onBand, (handle) => ({
-      grip: ResizeGrip.create(handle),
-      origin: pointer,
-    }));
   },
 
   /** 掴む。以後の長さは掴んだ位置と長さからの差分で決まる。 */
@@ -309,27 +434,39 @@ export const NodeResize = {
   },
 
   /**
-   * 今のポインタ位置での長さ。掴んでいなければ長さは決まらない
+   * 今のポインタ位置で書き込む長さと位置。掴んでいなければ決まらない
    * （ボタンを離したあとのマウス移動）。
+   *
+   * @param resize 今のリサイズの状態
+   * @param pointer 今のポインタの位置
+   * @param view 画面上の量をドキュメント上の量へ直す倍率
+   * @returns 書き込む編集。掴んでいなければ `none`
    */
-  lengthsAt(
+  editAt(
     resize: NodeResize,
     pointer: Offset,
     view: CanvasView,
-  ): Option<AxisLengths> {
+  ): Option<ResizeEdit> {
     if (resize.kind !== "resizing") {
       return Option.none;
     }
-    const moved = Offset.delta(resize.origin, pointer);
-    const movedTo = (length: AxisLength): AxisLength =>
-      AxisLength.create(
-        length.axis,
-        length.length +
-          CanvasView.toDocumentLength(view, Offset.along(moved, length.axis)),
-      );
+    const moved = Offset.delta(resize.pointerOrigin, pointer);
     // 先頭を分けて組み立てるのは、`map` だと並びが空になりうる型へ落ちるため
-    const [first, ...rest] = ResizeGrip.lengths(resize.grip);
-    return Option.some([movedTo(first), ...rest.map(movedTo)]);
+    const [first, ...rest] = ResizeGrip.grabs(resize.grip);
+    const resized: readonly [ResizedLength, ...ResizedLength[]] = [
+      resizedLength(first, moved, view),
+      ...rest.map((grab) => resizedLength(grab, moved, view)),
+    ];
+    const lengths: AxisLengths = [
+      resized[0].length,
+      ...resized.slice(1).map((each) => each.length),
+    ];
+    const position = placedPosition(resize.grabbedAt, resized);
+    return Option.some(
+      Option.isSome(position)
+        ? ResizeEdit.placedAt(lengths, position.value)
+        : ResizeEdit.create(lengths),
+    );
   },
 
   /** 指を離す。掴んでいたなら直後の `click` を飲み込む状態へ。 */
@@ -344,3 +481,69 @@ export const NodeResize = {
     return resize.kind === "resized";
   },
 } as const;
+
+/** 掴んだ 1 軸ぶんの結果。新しい長さと、そのために辺が動いた量。 */
+type ResizedLength = Readonly<{
+  length: AxisLength;
+  /** 始点側の辺が動いた量（ドキュメント上の px）。終点側を掴んだ軸は 0。 */
+  shift: number;
+}>;
+
+/**
+ * 掴んだ軸を、ポインタの移動量ぶんだけ伸び縮みさせた結果。
+ *
+ * 始点側を掴んだ軸は、**丸めたあとの長さから**動いた量を逆算する。長さが 0 で止まると
+ * 辺もそこで止まり、反対側の辺がその場に留まる。
+ *
+ * @param grab 掴んだ軸とその時点の長さ・端
+ * @param moved 掴んでからのポインタの移動量（画面上の px）
+ * @param view 画面上の量をドキュメント上の量へ直す倍率
+ * @returns 新しい長さと、始点側の辺が動いた量
+ */
+function resizedLength(
+  grab: AxisGrab,
+  moved: Offset,
+  view: CanvasView,
+): ResizedLength {
+  const axis = grab.length.axis;
+  const along = CanvasView.toDocumentLength(view, Offset.along(moved, axis));
+  const before = grab.length.length;
+  const isStart = grab.end === AxisEnds.Start;
+  const length = AxisLength.create(
+    axis,
+    isStart ? before - along : before + along,
+  );
+  return { length, shift: isStart ? before - length.length : 0 };
+}
+
+/**
+ * 反対側の辺をその場に留めるための、置き直したあとの位置。
+ *
+ * @param grabbedAt 掴んだ時点の対象の位置。位置を書けない対象なら `none`
+ * @param resized 掴んだ軸ぶんの結果
+ * @returns 置き直したあとの位置。始点側を掴んだ軸が無いか、位置を書けない対象なら `none`
+ */
+function placedPosition(
+  grabbedAt: Option<Offset>,
+  resized: readonly ResizedLength[],
+): Option<Offset> {
+  const shifts = resized.filter((each) => each.shift !== 0);
+  if (shifts.length === 0) {
+    return Option.none;
+  }
+  return Option.map(grabbedAt, (from) =>
+    shifts.reduce((moved, each) => Offset.add(moved, shiftOffset(each)), from),
+  );
+}
+
+/**
+ * 1 軸ぶんの辺の動きを平面の差にする。
+ *
+ * @param resized 掴んだ 1 軸ぶんの結果
+ * @returns その軸だけが動く差
+ */
+function shiftOffset(resized: ResizedLength): Offset {
+  return resized.length.axis === Axes.Width
+    ? { x: resized.shift, y: 0 }
+    : { x: 0, y: resized.shift };
+}

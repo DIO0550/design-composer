@@ -1,6 +1,5 @@
 import { render, screen } from "@testing-library/react";
 import { vi } from "vitest";
-import type { AxisLength } from "@/domains/dcmp/axis-length";
 import type { ChildPlacement } from "@/domains/dcmp/child-placement";
 import type { ChildPosition } from "@/domains/dcmp/child-position";
 import {
@@ -8,6 +7,7 @@ import {
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
 import type { PropEdit } from "@/domains/dcmp/node";
+import type { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import type { EditContinuity } from "@/domains/session/edit-continuity";
 import { TokenSelection } from "@/domains/session/token-selection";
@@ -21,9 +21,9 @@ import {
   pressPointer,
   releasePointer,
 } from "@/features/canvas/__tests__/canvas-gesture";
-import { resizeAnchorIndexFor } from "@/features/canvas/__tests__/canvas-resize";
+import { resizeAnchorIndexAt } from "@/features/canvas/__tests__/canvas-resize";
 import type { CanvasBounds } from "@/features/canvas/domains/canvas-bounds";
-import type { ResizeGrip } from "@/features/canvas/domains/node-resize";
+import type { ResizeHandleAnchor } from "@/features/canvas/domains/node-resize";
 import { useCanvasView } from "@/features/canvas/hooks/use-canvas-view";
 import { useNodeDrag } from "@/features/canvas/hooks/use-node-drag";
 import { Option } from "@/utils/Option";
@@ -70,7 +70,7 @@ type CanvasHandlers = Readonly<{
   onMoveNode: (name: string, to: ChildPosition) => void;
   onRepositionNode: (name: string, to: ChildPlacement) => void;
   onRepositionArtboard: (name: string, canvasPosition: Offset) => void;
-  onResize: (sizes: readonly AxisLength[], continuity: EditContinuity) => void;
+  onResize: (edit: ResizeEdit, continuity: EditContinuity) => void;
   onEditProp: (edit: PropEdit) => void;
   onOpenContextMenu: (names: readonly string[], at: Offset) => void;
 }>;
@@ -165,17 +165,19 @@ export function snapGuides(): readonly HTMLElement[] {
 }
 
 /**
- * その種類を掴めるハンドル。
+ * その箇所に出ているハンドル。
  *
- * @param kind 掴める種類（`width` / `height` / `both`）
- * @returns その種類を掴める箇所のハンドル
- * @throws その種類を掴める箇所が `HandleAnchors` に無いとき。ハンドルが 1 つも
- *   出ていない場合は `getAllByTestId` がテストを落とす
+ * @param anchor 引きたい箇所（`0` が始点側、`1` が終点側、`0.5` が辺の中央）
+ * @returns その箇所のハンドル
+ * @throws その箇所が `HandleAnchors` に無いとき。ハンドルが 1 つも出ていない場合は
+ *   `getAllByTestId` がテストを落とす
  */
-export function resizeHandleFor(kind: ResizeGrip["kind"]): HTMLElement {
-  const index = resizeAnchorIndexFor(kind);
+export function resizeHandleAt(anchor: ResizeHandleAnchor): HTMLElement {
+  const index = resizeAnchorIndexAt(anchor);
   if (index < 0) {
-    throw new Error(`${kind} を掴める箇所が HandleAnchors にありません`);
+    throw new Error(
+      `(${anchor.x}, ${anchor.y}) の箇所が HandleAnchors にありません`,
+    );
   }
   return screen.getAllByTestId("resize-handle")[index];
 }

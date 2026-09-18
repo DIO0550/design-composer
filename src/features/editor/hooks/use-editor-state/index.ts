@@ -1,9 +1,9 @@
 import { type ActionDispatch, useReducer } from "react";
-import type { AxisLength } from "@/domains/dcmp/axis-length";
 import type { ChildPlacement } from "@/domains/dcmp/child-placement";
 import type { ChildPosition } from "@/domains/dcmp/child-position";
 import type { DesignDocument } from "@/domains/dcmp/design-document";
 import type { PropEdit } from "@/domains/dcmp/node";
+import type { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import type { TokenRef, TokenValue } from "@/domains/dcmp/token";
 import type { DocumentReload } from "@/domains/session/document-reload";
 import type { EditContinuity } from "@/domains/session/edit-continuity";
@@ -81,7 +81,7 @@ export type EditorAction =
     }>
   | Readonly<{
       type: "resize";
-      sizes: readonly AxisLength[];
+      edit: ResizeEdit;
       continuity: EditContinuity;
     }>
   | Readonly<{ type: "undo" }>
@@ -281,7 +281,7 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
       // 選択が無い・単一選択でない・ファイルが不正な間はリサイズが存在しない
       // （EditorState.resize の `none`）。
       return Option.unwrapOr(
-        EditorState.resize(state, action.sizes, action.continuity),
+        EditorState.resize(state, action.edit, action.continuity),
         state,
       );
     case "undo":
