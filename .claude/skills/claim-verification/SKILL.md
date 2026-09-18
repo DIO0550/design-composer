@@ -1,6 +1,6 @@
 ---
 name: claim-verification
-description: "コメント・doc・Issue/PR 本文に「◯◯だからこうしている」「この参照先は◯◯だ」「この件数は◯◯だ」のような事実の主張を書いたら、implementation-flow のフェーズ3(計画)とフェーズ5(実装)の中で、書き終えるたびに呼んで実物と照合する。読んで確認する主張(comment-structure-claim)と動かして確認する主張(comment-behavior-claim)、加えて条件・仕組み・置き場所などの構造を変更したら、その構造を前提にしている既存の Why / Why not が差分の他の箇所で崩れていないかも確認する(comment-premise-drift)。列挙・件数の記述が同じ差分内の項目の増減に追随しているかも同じ向きで確認する(comment-enumeration-drift)。implementation-reviewer / plan-reviewer の観点(層=観点)に留めたまま pr-294 以降 26 件・10 件、pr-352 以降 7 件(plan-scope-premise-verification)、pr-305 以降 13 件(comment-premise-drift)、pr-313 以降 19 件(comment-enumeration-drift)が再発し、レビューはすべて捕まえていた(すり抜け0)が差分・計画を出し直す手戻りが続いたため、書く時点で確かめる層へ上げた(harness-growth の 2b)。"
+description: "コメント・doc・Issue/PR 本文に「◯◯だからこうしている」「この参照先は◯◯だ」「この件数は◯◯だ」のような事実の主張を書いたら、implementation-flow のフェーズ3(計画)とフェーズ5(実装)の中で、書き終えるたびに呼んで実物と照合する。読んで確認する主張(comment-structure-claim)と動かして確認する主張(comment-behavior-claim)、加えて条件・仕組み・置き場所などの構造を変更したら、その構造を前提にしている既存の Why / Why not が差分の他の箇所で崩れていないかも確認する(comment-premise-drift)。列挙・件数の記述が同じ差分内の項目の増減に追随しているかも同じ向きで確認する(comment-enumeration-drift)。ドメインオブジェクトへロジックを帰属させる理由が、対象の型に固有の性質を指しているかも同じフェーズ3で反証する(ownership-reasoning)。implementation-reviewer / plan-reviewer の観点(層=観点)に留めたまま pr-294 以降 26 件・10 件、pr-352 以降 7 件(plan-scope-premise-verification)、pr-305 以降 13 件(comment-premise-drift)、pr-313 以降 19 件(comment-enumeration-drift)、pr-235 以降 28 件・うちすり抜け 4 件(ownership-reasoning)が再発し、書く時点で確かめる層へ上げた(harness-growth の 2b)。"
 ---
 
 # 主張を書く前に確かめる
@@ -46,6 +46,15 @@ description: "コメント・doc・Issue/PR 本文に「◯◯だからこうし
    ヒットしたら `.claude/agents/implementation-reviewer.md`「記述の組」表の
    `comment-enumeration-drift` 行の確かめ方(列挙・件数が指す実体を今の差分の最終形で数え直し、
    書かれた数と付き合わせる)で確かめる。崩れていたら列挙・件数の記述を実体に合わせて直す
+8. **`implementation-flow` フェーズ3で、ドメインオブジェクトへロジックを帰属させる理由を
+   書いたら、その理由が対象の型に固有の性質を指しているかを反証する**(`分類: ownership-reasoning`)。
+   手順1〜5が「書いた1文が事実と合っているか」を確かめるのに対し、これは向きが違い、
+   「書いた理由が、他の型には成り立たない理由になっているか」を確かめる。「第 1 引数の型が
+   ◯◯だから」で終わっている理由を見つけたら、その理由を実際に他の候補の型(同じ値を
+   受け取りうる別のドメインオブジェクト)へ当てはめてみる。当てはめても同じように
+   成り立ってしまうなら、その理由はまだ理由になっていない。対象の型だけが持つ生成規則・
+   不変条件・値の意味を挙げ直す(`harness/case-law/architecture.md`「`ownership-reasoning`」
+   に実例がある)
 
 ## 観点への追記のままにしない
 
@@ -86,3 +95,14 @@ pr-313〜pr-530 の間の 19 件を再発として数え続けていた。**こ�
 (制約のない)harness-growth セッションが `harness/records/pr-530.md`「規約への反映」へ
 `- 対策済: comment-enumeration-drift 層=skill at pr-560` を追記し、積み残しを解消することを
 想定する。**
+
+`ownership-reasoning`(帰属の理由が、その型に固有の性質を指しているか)も同じ形だった。
+pr-192 で `層=観点` に対策済としたのち、pr-235 で `.claude/agents/plan-reviewer.md` へ移し
+`harness/case-law/architecture.md` に実例を足したが、そこでも `層=観点` のまま据え置いた
+(`harness/records/pr-227.md`「後続の介入」: 機械判定できないため層 1・2 を見送った経緯)。
+その後 pr-235 以降 28 件が再発し、**うち 4 件は `plan-reviewer` でも捕まらず人のレビューまで
+届いた**(`分類: ownership-reasoning` の出どころが「レビュー(人)」になっている
+`harness/records/pr-359.md` `pr-432.md` `pr-435.md` `pr-543.md`)。ここまでの comment-structure-claim
+等はすり抜け 0 件(観点は毎回捕まえていたが手戻りが続いた形)だったのに対し、こちらは観点自体が
+時々すり抜けている。「すり抜けが 2 以上なら、前回の層が観点でも同じ扱いにする」(2b)により、
+同じ層への追記は選ばず、計画を書く時点(フェーズ3)で反証する手順(手順8)へ引き上げた。

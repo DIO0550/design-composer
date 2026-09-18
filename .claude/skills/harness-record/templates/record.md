@@ -134,7 +134,7 @@ pr-317 以前の記録には `レビュー`(括弧なし)・`レビュー（人�
 
 | 分類 | 対応する規約 |
 | --- | --- |
-| `ownership-reasoning` | rules/architecture.md「ロジックの帰属先」(帰属先の判断・理由付け。第1引数の型を見る、という判断の起点を実際に適用できていない形。置き場所自体は合っていても理由が間違っている場合を含む) |
+| `ownership-reasoning` | rules/architecture.md「ロジックの帰属先」(`implementation-flow` フェーズ3手順8。pr-544 で `claim-verification` スキルの呼び出しへ層を上げた)(帰属先の判断・理由付け。第1引数の型を見る、という判断の起点を実際に適用できていない形。置き場所自体は合っていても理由が間違っている場合を含む) |
 | `domain-input-convention` | rules/architecture.md「逆向きも見る: 入力欄の約束事をドメインへ持ち込まない」 |
 | `domain-scope-promotion` | rules/architecture.md「配置の判断基準」(`features/<x>/domains/` か `src/domains/` かの昇格判断) |
 | `service-placement` | rules/architecture.md「services はドメインを探してから使う」 |
