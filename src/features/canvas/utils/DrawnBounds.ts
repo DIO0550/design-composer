@@ -3,13 +3,14 @@ import { CanvasDom } from "@/libs/canvas-dom";
 import { Option } from "@/utils/Option";
 
 /**
- * キャンバスに描かれているものの実測。ハンドルを重ねる位置（`use-drawn-bounds`）とリサ
- * イズの当たり判定（`use-node-resize`）が同じ測り方をするため 1 箇所に集める（`CanvasPointer`
- * と同じ形）。
+ * キャンバスに描かれているものの実測を 1 箇所に集める（`CanvasPointer` と同じ形）。
  */
 export const DrawnBounds = {
   /**
    * 名前で指した要素が今どこにどれだけの大きさで描かれているか（client 座標）。
+   *
+   * ハンドルを重ねる位置（`use-drawn-bounds`）・リサイズの当たり判定（`use-node-resize`）・
+   * 文言のその場編集で入力欄を重ねる位置（`use-text-edit`）が同じ測り方をする。
    *
    * @param name 描かれている artboard / ノードの名前
    * @returns 描かれている矩形。その名前の要素がまだ画面に出ていなければ `none`
