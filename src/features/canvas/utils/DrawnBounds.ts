@@ -9,10 +9,6 @@ export const DrawnBounds = {
   /**
    * 名前で指した要素が今どこにどれだけの大きさで描かれているか（client 座標）。
    *
-   * ハンドルを重ねる位置（`use-drawn-bounds`）・リサイズの当たり判定（`use-node-resize`）・
-   * 文言のその場編集で入力欄を重ねる位置（`use-text-edit`）・座標の置き直しで寄せの原点に
-   * する今の親と、運んでいるものの大きさ（`use-node-drag`）が同じ測り方をする。
-   *
    * @param name 描かれている artboard / ノードの名前
    * @returns 描かれている矩形。その名前の要素がまだ画面に出ていなければ `none`
    */
