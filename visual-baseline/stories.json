@@ -535,6 +535,11 @@
     "name": "padding が揃っている Box を選択中"
   },
   {
+    "id": "features-inspector-propertypanel--radius-per-corner",
+    "title": "features/inspector/PropertyPanel",
+    "name": "radius を隅ごとに出した Box を選択中"
+  },
+  {
     "id": "features-inspector-propertypanel--selected",
     "title": "features/inspector/PropertyPanel",
     "name": "artboard を選択中"
@@ -675,6 +680,16 @@
     "name": "4 辺が揃っていない"
   },
   {
+    "id": "features-inspector-propertypanel-shorthandrow--mixed-corners",
+    "title": "features/inspector/PropertyPanel/ShorthandRow",
+    "name": "4 隅が揃っていない"
+  },
+  {
+    "id": "features-inspector-propertypanel-shorthandrow--per-corner",
+    "title": "features/inspector/PropertyPanel/ShorthandRow",
+    "name": "隅ごとに出したとき"
+  },
+  {
     "id": "features-inspector-propertypanel-shorthandrow--per-edge",
     "title": "features/inspector/PropertyPanel/ShorthandRow",
     "name": "辺ごとに出したとき"
@@ -683,6 +698,11 @@
     "id": "features-inspector-propertypanel-shorthandrow--uniform",
     "title": "features/inspector/PropertyPanel/ShorthandRow",
     "name": "4 辺が揃っている"
+  },
+  {
+    "id": "features-inspector-propertypanel-shorthandrow--uniform-corners",
+    "title": "features/inspector/PropertyPanel/ShorthandRow",
+    "name": "4 隅が揃っている"
   },
   {
     "id": "features-sidebar-artboardlist--default",
