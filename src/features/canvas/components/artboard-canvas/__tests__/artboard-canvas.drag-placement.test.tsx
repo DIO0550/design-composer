@@ -10,7 +10,10 @@ import {
 } from "@/features/canvas/__tests__/canvas-gesture";
 import { Option } from "@/utils/Option";
 import { nameSelector } from "../name-style-rule";
-import { CarriedNodeUnclipped } from "../reposition-preview-style";
+import {
+  CarriedNodeUnclipped,
+  repositionPreviewDeclarations,
+} from "../reposition-preview-style";
 import {
   artboardList,
   carryNode,
@@ -19,6 +22,7 @@ import {
   drawn,
   drawnAt,
   injectedStyles,
+  PreviewDeclarationPrefix,
   previewRule,
   renderCanvas,
   selectionFromArtboards,
@@ -470,7 +474,7 @@ test("フローのノードを運んでいる間は、絶対配置のノード�
 
   // `badge` が動いていないことを見る（規則が 1 本も無いことではなく、
   // 動かす側を壊しても動かしすぎる側を壊しても落ちる形にする）
-  expect(injectedStyles()).not.toContain("transform:translate(");
+  expect(injectedStyles()).not.toContain(PreviewDeclarationPrefix);
 });
 
 test("運んでいる途中でキャンバスの外へ出ると見た目も戻る", () => {
@@ -481,7 +485,7 @@ test("運んでいる途中でキャンバスの外へ出ると見た目も戻�
     Option.unwrap(Option.fromNullable(container.firstElementChild)),
   );
 
-  expect(injectedStyles()).not.toContain("transform:translate(");
+  expect(injectedStyles()).not.toContain(PreviewDeclarationPrefix);
 });
 
 test("落とせる親が無い場所へ運んでいる間も、掴んだノードはずれたままになる", () => {
@@ -520,5 +524,42 @@ test("離すと見た目のずれは消える（座標そのものが動くた�
 
   releasePointer(drawn("badge"), { x: 130, y: 88 });
 
-  expect(injectedStyles()).not.toContain("transform:translate(");
+  expect(injectedStyles()).not.toContain(PreviewDeclarationPrefix);
+});
+
+test("回転したノードを運んでいる間も、ずらして見せる規則は回転と同じプロパティを使わない", () => {
+  const selection = selectionFromArtboards(
+    [
+      {
+        name: "home",
+        width: 360,
+        height: 240,
+        children: [
+          {
+            name: "badge",
+            type: "Text",
+            props: {
+              content: "3",
+              placement: "absolute",
+              x: 40,
+              y: 24,
+              rotation: 30,
+            },
+          },
+        ],
+      },
+    ],
+    [],
+  );
+  renderCanvas({ selection });
+
+  carryNode("badge", { x: 30, y: -12 });
+
+  // 回転はコンパイル結果のインライン style に出る（docs/03「回転」）
+  expect(drawn("badge").getAttribute("style")).toContain("transform:rotate(");
+  // 差し込む側が同じプロパティを使うと、インライン側が勝って運んでも動かなくなる
+  expect(injectedStyles()).toContain(previewRule("badge", { x: 30, y: -12 }));
+  expect(repositionPreviewDeclarations({ x: 30, y: -12 })).not.toContain(
+    "transform",
+  );
 });
