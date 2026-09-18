@@ -35,6 +35,18 @@ export type ArrangedArtboard = Readonly<{
 /** 並び全体が占める大きさ。器に大きさを与えるために使う。 */
 export type ArrangedSize = Readonly<{ width: number; height: number }>;
 
+/**
+ * 置き場所を決めるのに要る大きさと座標だけを持つ artboard。
+ *
+ * `Artboard` と `CompiledArtboard` の両方が満たす。コンパイルは並び順を保ち、1 枚でも
+ * 失敗したら全体が失敗する（`DocumentHtml.compile`）ので、どちらの並びで数えても同じ
+ * index が同じ artboard を指す。
+ */
+type PlaceableArtboard = Readonly<{
+  width: number;
+  canvasPosition?: Offset;
+}>;
+
 export const ArrangedArtboard = {
   /**
    * 並び全体の置き場所を決める。座標を持つ artboard はその座標へ置き、持たない artboard
@@ -49,17 +61,34 @@ export const ArrangedArtboard = {
   fromArtboards(
     artboards: readonly CompiledArtboard[],
   ): readonly ArrangedArtboard[] {
-    const defaultLeft = (index: number): number =>
-      artboards
-        .slice(0, index)
-        .reduce((left, before) => left + before.width + AutoArrangeGap, 0);
     return artboards.map((artboard, index) => ({
       artboard,
-      canvasPosition: artboard.canvasPosition ?? {
-        x: defaultLeft(index),
-        y: AutoArrangeTop,
-      },
+      canvasPosition: ArrangedArtboard.positionAt(artboards, index),
     }));
+  },
+
+  /**
+   * 並びの中の 1 枚が置かれる位置。座標を持つならその座標、持たないなら既定の位置
+   * （自分より前の artboard の幅 + 間隔の累積）。
+   *
+   * `fromArtboards` もここを通すので、座標を持たないときの既定が 2 箇所へ散らない。
+   *
+   * @param artboards 大きさと座標を持つ artboard の並び（`.dcmp` の並び順）
+   * @param index 位置を知りたい artboard が並びの何番目か
+   * @returns その artboard が置かれる位置
+   */
+  positionAt(artboards: readonly PlaceableArtboard[], index: number): Offset {
+    const placed = artboards[index].canvasPosition;
+    if (placed !== undefined) {
+      return placed;
+    }
+    const left = artboards
+      .slice(0, index)
+      .reduce(
+        (accumulated, before) => accumulated + before.width + AutoArrangeGap,
+        0,
+      );
+    return { x: left, y: AutoArrangeTop };
   },
 
   /**
