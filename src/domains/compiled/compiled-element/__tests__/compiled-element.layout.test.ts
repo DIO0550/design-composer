@@ -34,6 +34,22 @@ test("自由配置の Box は揃えの宣言を出さない", () => {
   expect(column["align-items"]).toBe("center");
 });
 
+test("折り返すと書いた Box だけが折り返しの宣言を出す", () => {
+  const nowrap = setupBoxStyle({ layout: "row", wrap: "nowrap" });
+  const wrap = setupBoxStyle({ layout: "row", wrap: "wrap" });
+
+  expect(nowrap).not.toHaveProperty("flex-wrap");
+  expect(wrap["flex-wrap"]).toBe("wrap");
+});
+
+test("自由配置の Box は折り返しの宣言を出さない", () => {
+  const free = setupBoxStyle({ layout: "free", wrap: "wrap" });
+  const column = setupBoxStyle({ layout: "column", wrap: "wrap" });
+
+  expect(free).not.toHaveProperty("flex-wrap");
+  expect(column["flex-wrap"]).toBe("wrap");
+});
+
 test("自由配置の Box でも余白と装飾の宣言は出る", () => {
   const style = setupBoxStyle({
     layout: "free",

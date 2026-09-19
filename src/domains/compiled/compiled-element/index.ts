@@ -124,6 +124,18 @@ function overflowDeclarations(
     : [];
 }
 
+/**
+ * 折り返さない既定は宣言を出力しない (docs/03 の表は `wrap` のみを規定)。
+ *
+ * @param wrap `wrap` prop に設定されている値
+ * @returns 折り返すときだけ `flex-wrap: wrap` の宣言 1 件。それ以外は空
+ */
+function wrapDeclarations(
+  wrap: PropValue | undefined,
+): readonly CssDeclarationType[] {
+  return wrap === "wrap" ? [CssDeclaration.create("flex-wrap", "wrap")] : [];
+}
+
 /** 出力しても効果の無い、CSS の初期値と同じ完全な不透明。 */
 const FullyOpaque = 1;
 
@@ -221,7 +233,8 @@ export const BoxElement = {
   /**
    * Box の props を CSS の宣言へ写す (docs/03「HTML/CSS へのコンパイル規則」の表)。
    * 各 prop の規則はそれぞれのドメイン (Layout / Placement / Padding / CornerRadius /
-   * LengthShorthand / Size / Visibility) が持ち、ここはその並び順 = 宣言の出力順を決める。
+   * LengthShorthand / Size / Visibility) と、このファイルのローカル関数 (回転・折り返し・
+   * `overflow`・不透明度) が持ち、ここはその並び順 = 宣言の出力順を決める。
    *
    * @param props デフォルト解決済みの Box の props
    * @param parentDirection この Box を flex アイテムとして並べる親の向き。
@@ -240,8 +253,10 @@ export const BoxElement = {
       ? Option.none
       : parentDirection;
     const layout = Layout.fromProps(props);
-    // 子を並べない Box では間隔・揃えが意味を持たない (スキーマの `enabledWhen` と同じ規則)
+    // 子を並べない Box では間隔・揃え・折り返しが意味を持たない (スキーマの `enabledWhen`
+    // と同じ規則)
     const arrangesChildren = Option.isSome(Layout.direction(layout));
+    const wrap = arrangesChildren ? wrapDeclarations(props.wrap) : [];
     const gap = arrangesChildren
       ? tokenDeclarations("gap", props.gap, tokens)
       : [];
@@ -297,6 +312,7 @@ export const BoxElement = {
       ...tokenDeclarations("shadow", props.shadow, tokens),
       ...overflowDeclarations(props.overflow),
       ...opacityDeclarations(props.opacity),
+      ...wrap,
       ...Visibility.declarations(Visibility.fromProps(props)),
     ];
   },
