@@ -1,9 +1,5 @@
 # Hooks 規約
 
-> **この規約は記録 32 本で 1 件も引かれていない**(`effect` / `state-management` / `ref-guard` の
-> 通算がいずれも 0〜2 件)。フック・CI・型のどれでも強制していないので「効いているから 0」とは
-> 言えず、`harness-growth` の棚卸しで縮めてある。指摘が出たら、その回に必要な分だけ書き戻す。
-
 ## useEffect: 最終手段として扱う
 
 useEffect は「外部システムとの同期」専用。React 公式 "You Might Not Need an Effect" に従い、外部システムが関与しない useEffect は禁止する。

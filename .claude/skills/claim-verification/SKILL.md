@@ -1,6 +1,6 @@
 ---
 name: claim-verification
-description: "コメント・doc・Issue/PR 本文に「◯◯だからこうしている」「この参照先は◯◯だ」「この件数は◯◯だ」のような事実の主張を書いたら、implementation-flow のフェーズ3(計画)とフェーズ5(実装)の中で、書き終えるたびに呼んで実物と照合する。読んで確認する主張(comment-structure-claim)と動かして確認する主張(comment-behavior-claim)、加えて条件・仕組み・置き場所などの構造を変更したら、その構造を前提にしている既存の Why / Why not が差分の他の箇所で崩れていないかも確認する(comment-premise-drift)。列挙・件数の記述が同じ差分内の項目の増減に追随しているかも同じ向きで確認する(comment-enumeration-drift)。ドメインオブジェクトへロジックを帰属させる理由が、対象の型に固有の性質を指しているかも同じフェーズ3で反証する(ownership-reasoning)。implementation-reviewer / plan-reviewer の観点(層=観点)に留めたまま pr-294 以降 26 件・10 件、pr-352 以降 7 件(plan-scope-premise-verification)、pr-305 以降 13 件(comment-premise-drift)、pr-313 以降 19 件(comment-enumeration-drift)、pr-235 以降 28 件・うちすり抜け 4 件(ownership-reasoning)が再発し、書く時点で確かめる層へ上げた(harness-growth の 2b)。"
+description: "コメント・doc・Issue/PR 本文に「◯◯だからこうしている」「この参照先は◯◯だ」「この件数は◯◯だ」のような事実の主張を書いたら、implementation-flow のフェーズ3(計画)とフェーズ5(実装)の中で、書き終えるたびに呼んで実物と照合する。読んで確認する主張(comment-structure-claim)と動かして確認する主張(comment-behavior-claim)、加えて条件・仕組み・置き場所などの構造を変更したら、その構造を前提にしている既存の Why / Why not が差分の他の箇所で崩れていないかも確認する(comment-premise-drift)。列挙・件数の記述が同じ差分内の項目の増減に追随しているかも同じ向きで確認する(comment-enumeration-drift)。ドメインオブジェクトへロジックを帰属させる理由が、対象の型に固有の性質を指しているかも同じフェーズ3で反証する(ownership-reasoning)。検証エージェントの観点に留めると、差分を出したあとに直して出し直す手戻りが続くため、書く時点で確かめる層に置いている。"
 ---
 
 # 主張を書く前に確かめる
@@ -58,51 +58,7 @@ description: "コメント・doc・Issue/PR 本文に「◯◯だからこうし
 
 ## 観点への追記のままにしない
 
-`comment-structure-claim` / `comment-behavior-claim` は pr-294 で
-`implementation-reviewer` の観点(層=観点)として対応済みだったが、その後も
-26 件・10 件が再発した(`harness/records/pr-294.md`「対策済」)。**いずれもレビュー時点では
-100% 捕まっており(すり抜け0)**、観点自体が読まれていないわけではない。しかし捕まる位置が
-「実装済みの差分をレビューに出したあと」のままだと、直すたびに差分を出し直す手戻りが
-繰り返される。観点への追記を繰り返しても再発は止まらなかった(2b「前回と同じ層への追記は
-選択肢に入れない」)ため、実装時点で確かめる層(スキル)へ上げた。
-
-同じ形が計画側にもあった。`plan-scope-premise-verification`(想定した接続先・前提・検証手段が
-実例で成立するかの主張)は pr-352 で `implementation-flow` フェーズ3の手順(層=観点)として
-分割されたが、その後も pr-359〜pr-394 の間に 7 件再発した(`harness/records/pr-352.md`
-「対策済」)。**こちらもすり抜け0**で、`plan-reviewer` が毎回捕まえているのに計画の書き直しが
-繰り返された。捕まる位置が「計画を `plan-reviewer` に渡したあと」のままだったことが原因なので、
-comment 側と同じ理由でこのスキルへ寄せた(フェーズ3の呼び出しを追加)。
-
-`comment-premise-drift`(Why / Why not が前提にした構造が同じ差分内の別の変更で崩れる形)も
-同じ形だった。`comment-stale-edit` の4語彙分割(pr-305)で `implementation-reviewer` の観点
-(層=観点)として対応済みだったが、締めの `対策済` 行が積み残しになっており「未介入」に
-見えていた(`harness/records/pr-305.md`「対策済」に機械可読な再掲として追記済み)。積み残しを
-解消すると、観点まで介入済みのまま 13 件再発しておりすり抜けは 0 件。comment-structure-claim /
-comment-behavior-claim・plan-scope-premise-verification と同じく、レビュー時点でしか捕まらず
-差分を出し直す手戻りが続いていたため、このスキルへ寄せた(手順6)。
-
-`comment-enumeration-drift`(列挙・件数の記述が同じ差分内の項目の増減に追随しない形)も同じ
-理由でこのスキルへ寄せた(手順7)。`.claude/agents/implementation-reviewer.md`「記述の組」表に
-最初から `comment-enumeration-drift` 行があり観点(層=観点)としては存在していたが、締めの
-`対策済` 行が一度も書かれておらず、`harness/records/count.sh` は「未介入」のまま
-pr-313〜pr-530 の間の 19 件を再発として数え続けていた。**こちらもすり抜けは 0 件**で、観点
-自体は毎回捕まえていたが、捕まる位置が「実装済みの差分をレビューに出したあと」のままだったため
-列挙を直しては出し直す手戻りが続いていた。締めの `対策済` 行(`comment-enumeration-drift`
-層=skill)は、`harness/records/pr-530.md`(このタグが最後に出た記録)「規約への反映」への
-追記が必要だが、この回はハーネス棚卸しルーティンの制約(「やらないこと: harness/records/ への
-書き込み」。成果物の契約が変更対象を `rules/` `skills/` `hooks/` `templates/record.md` に限って
-おり `harness/records/` を含まない)により、この PR には含められず積み残しになった。**後続の
-(制約のない)harness-growth セッションが `harness/records/pr-530.md`「規約への反映」へ
-`- 対策済: comment-enumeration-drift 層=skill at pr-560` を追記し、積み残しを解消することを
-想定する。**
-
-`ownership-reasoning`(帰属の理由が、その型に固有の性質を指しているか)も同じ形だった。
-pr-192 で `層=観点` に対策済としたのち、pr-235 で `.claude/agents/plan-reviewer.md` へ移し
-`harness/case-law/architecture.md` に実例を足したが、そこでも `層=観点` のまま据え置いた
-(`harness/records/pr-227.md`「後続の介入」: 機械判定できないため層 1・2 を見送った経緯)。
-その後 pr-235 以降 28 件が再発し、**うち 4 件は `plan-reviewer` でも捕まらず人のレビューまで
-届いた**(`分類: ownership-reasoning` の出どころが「レビュー(人)」になっている
-`harness/records/pr-359.md` `pr-432.md` `pr-435.md` `pr-543.md`)。ここまでの comment-structure-claim
-等はすり抜け 0 件(観点は毎回捕まえていたが手戻りが続いた形)だったのに対し、こちらは観点自体が
-時々すり抜けている。「すり抜けが 2 以上なら、前回の層が観点でも同じ扱いにする」(2b)により、
-同じ層への追記は選ばず、計画を書く時点(フェーズ3)で反証する手順(手順8)へ引き上げた。
+これらは以前 `implementation-reviewer` / `plan-reviewer` の観点として置かれていた。観点は毎回
+捕まえていたが、捕まる位置が「差分・計画を検証に出したあと」なので、直しては出し直す手戻りが
+繰り返された。帰属の理由(手順 8)は観点でも時々すり抜けて人のレビューまで届いていた。
+そのため、書く時点で確かめる位置(このスキル)へ寄せた。

@@ -2,11 +2,10 @@
 #
 # plan-reviewer / implementation-reviewer が作業ツリーを検証中(ミューテーション実測)の
 # あいだ、git add / commit / push を拒否する PreToolUse フック(matcher: Bash)。
-# 分類 `subagent-control`。マーカーは track-verification-agent-activity.sh が置く。
+# マーカーは track-verification-agent-activity.sh が置く。
 #
-# pr-391 #18: implementation-reviewer がミューテーションを当てている最中に git add が
-# 走り、その瞬間の書き換え(nodeDrag.grabNode の枝を外す形)をコミットへ取り込んで
-# CI が 4 ファイル 19 件落ちた(harness/records/pr-391.md)。
+# implementation-reviewer がミューテーションを当てている最中に git add が走ると、
+# その瞬間の書き換えをコミットへ取り込んで CI が落ちる。
 # implementation-flow「サブエージェントの使い方」の「返ってきたら git status を見る」は
 # 戻ってきた**後**の話で、**実行中**にコミットするなとは書かれていなかった穴を塞ぐ。
 #

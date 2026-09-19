@@ -143,8 +143,8 @@ tools: Read, Grep, Glob, Bash
 
 ## 仕様書(docs/)の整合性の観点
 
-`分類: docs-consistency`。`rules-consistency`(`harness-growth`「Step 2a-1」)は `rules/` への
-追記だけを対象にしており、`docs/` への追記は対象外(rules-consistency の docs 版)。
+`AGENTS.md`「規約の更新」の突き合わせは `rules/` への追記だけを対象にしており、`docs/` への
+追記は対象外。ここはその docs 版。
 
 - **`docs/` へ新設・追記した記述が、同じファイルの既存の記述・参照形式と矛盾していないかを
   実際に付き合わせる**
