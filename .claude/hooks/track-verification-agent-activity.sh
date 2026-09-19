@@ -5,11 +5,10 @@
 # 記録する PreToolUse + PostToolUse フック(matcher: Task|Agent)。
 # block-git-during-verification-agent.sh がこのマーカーを読む。
 #
-# 対応する規約: implementation-flow「サブエージェントの使い方」/ 分類 `subagent-control`。
-# pr-391 #18 は、implementation-reviewer がミューテーションを当てている最中に
-# git add が走り、その瞬間の書き換えをコミットへ取り込んで CI を落とした
-# (harness/records/pr-391.md)。呼び出し側が git 操作と Task を並列で呼ぶこと自体は
-# 通常のツール利用として推奨されているため、規約だけでは防げない。
+# 対応する規範: implementation-flow「サブエージェントの使い方」。
+# 検証エージェントがミューテーションを当てている最中に git add が走ると、その瞬間の
+# 書き換えをコミットへ取り込んで CI を落とす。呼び出し側が git 操作と Task を並列で
+# 呼ぶこと自体は通常のツール利用として推奨されているため、規範だけでは防げない。
 #
 # 呼び出し単位では相関を取らない。PreToolUse/PostToolUse の JSON に呼び出しを一意に
 # 結び付ける ID が無い(record-firings.sh も session_id 単位でしか束ねていない)。

@@ -2,18 +2,17 @@
 #
 # plan-reviewer / implementation-reviewer が作業ツリーを検証中(ミューテーション実測)の
 # あいだ、git add / commit / push を拒否する PreToolUse フック(matcher: Bash)。
-# 分類 `subagent-control`。マーカーは track-verification-agent-activity.sh が置く。
+# マーカーは track-verification-agent-activity.sh が置く。
 #
-# pr-391 #18: implementation-reviewer がミューテーションを当てている最中に git add が
-# 走り、その瞬間の書き換え(nodeDrag.grabNode の枝を外す形)をコミットへ取り込んで
-# CI が 4 ファイル 19 件落ちた(harness/records/pr-391.md)。
+# 検証エージェントがミューテーションを当てている最中に git add が走ると、その瞬間の
+# 書き換えをコミットへ取り込んで CI を落とす。
 # implementation-flow「サブエージェントの使い方」の「返ってきたら git status を見る」は
 # 戻ってきた**後**の話で、**実行中**にコミットするなとは書かれていなかった穴を塞ぐ。
 #
-# CI / git hooks(層1・2)では代替できない。この競合はセッションの実行タイミングだけが原因で、
+# CI / git hooks では代替できない。この競合はセッションの実行タイミングだけが原因で、
 # コミット後のリポジトリの状態には痕跡が残らない。block-npx.sh と同じ「セッション中の
 # 行為の禁止」であり、push の時点では代替できない
-# (.claude/hooks/README.md「カバー範囲と残る穴」)。層3(ここ)止まりで、発火しない
+# (.claude/hooks/README.md「カバー範囲と残る穴」)。ここ止まりで、発火しない
 # 実行環境では効かないことを許容する(block-npx.sh と同じ扱い)。
 #
 # 外部コマンドに依存しない(hook-canary.sh と同じ理由: jq の無い環境で
@@ -53,7 +52,7 @@ cat <<'JSON'
   "hookSpecificOutput": {
     "hookEventName": "PreToolUse",
     "permissionDecision": "deny",
-    "permissionDecisionReason": "plan-reviewer / implementation-reviewer が作業ツリーを検証中です(分類: subagent-control。pr-391 #18 で同じ形が CI を落としています)。ミューテーション実測の途中でコミットすると、その瞬間の書き換えが取り込まれます。サブエージェントの完了を待ってから git add / commit / push を実行してください。"
+    "permissionDecisionReason": "plan-reviewer / implementation-reviewer が作業ツリーを検証中です。ミューテーション実測の途中でコミットすると、その瞬間の書き換えが取り込まれます。サブエージェントの完了を待ってから git add / commit / push を実行してください。"
   }
 }
 JSON

@@ -24,8 +24,8 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `hook-canary.sh`         | `PreToolUse` (Bash)       | **カナリア**。`echo hook-canary` を必ず deny する。連ねたコマンドの中にあっても切り出して見る。通ってしまったときの読み方は後述（**通った = 不発、ではない**） |
 | `session-url-notice.sh`  | `SessionStart`            | **セッション URL の提示**（AGENTS.md「Issue に紐づいて起動したら、セッションの URL を Issue に残す」）。URL を組み立てて渡す。ブランチが `claude/issue-<N>-...` なら対象の番号も添える |
 | `record-firings.sh`      | `SessionStart` + `PostToolUse` (Skill/Task/Agent) | **スキル・サブエージェントの発火ログ**。tmp のセッション別ログへ追記し、`harness-record` が記録を書くときに読む。SessionStart のセッション見出しで「起動しなかった」と「フック不発」を切り分ける |
-| `track-verification-agent-activity.sh` | `PreToolUse` + `PostToolUse` (Task/Agent) | **検証エージェントの実行中フラグ**(`分類: subagent-control`)。`plan-reviewer` / `implementation-reviewer` の開始・終了をセッション別のマーカーで数える。`block-git-during-verification-agent.sh` が読む |
-| `block-git-during-verification-agent.sh` | `PreToolUse` (Bash)   | **検証エージェント実行中の git 操作を拒否**(`分類: subagent-control`)。マーカーが立っている間は `git add` / `commit` / `push` を deny する。ミューテーション実測の途中の書き換えをコミットへ取り込む事故(pr-391 #18)を防ぐ |
+| `track-verification-agent-activity.sh` | `PreToolUse` + `PostToolUse` (Task/Agent) | **検証エージェントの実行中フラグ**。`plan-reviewer` / `implementation-reviewer` の開始・終了をセッション別のマーカーで数える。`block-git-during-verification-agent.sh` が読む |
+| `block-git-during-verification-agent.sh` | `PreToolUse` (Bash)   | **検証エージェント実行中の git 操作を拒否**。マーカーが立っている間は `git add` / `commit` / `push` を deny する。ミューテーション実測の途中の書き換えをコミットへ取り込む事故を防ぐ |
 
 ## 移植元から見送ったもの
 
@@ -33,7 +33,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 
 ### 見送りを取り消したもの
 
-- `check-jsdoc-rules.sh` / `pre-push-jsdoc.sh` — 「JSDoc 必須ルールはこのリポジトリの規約に存在しない」を理由に見送っていたが、**その前提は PR #152 で `rules/coding.md`「コメントは doc と Why / Why not に絞る」が入った時点で消えていた**。見送りの判断が更新されないまま残り、PR #157 で doc の無い関数がレビューまで残った(#157 のレビュー / `harness/records/pr-157.md`)。移植元をそのまま戻すのではなく、このリポジトリの形(型とコンパニオンオブジェクトが doc を共有する)に合わせた `check-doc-comments.sh` を書いた
+- `check-jsdoc-rules.sh` / `pre-push-jsdoc.sh` — 「JSDoc 必須ルールはこのリポジトリの規約に存在しない」を理由に見送っていたが、**その前提は PR #152 で `rules/coding.md`「コメントは doc と Why / Why not に絞る」が入った時点で消えていた**。見送りの判断が更新されないまま残り、PR #157 で doc の無い関数がレビューまで残った(#157 のレビュー)。移植元をそのまま戻すのではなく、このリポジトリの形(型とコンパニオンオブジェクトが doc を共有する)に合わせた `check-doc-comments.sh` を書いた
 - `record-skill-fired.sh` — 「plugin 固有のスキルに依存する」を理由に見送っていたが、その理由は**特定スキルへのゲート**にしか当てはまらず、発火を記録すること自体は汎用だった。`harness-record` の材料のうち発火だけが記憶(自己申告)からしか取れない穴が残っていたため、汎用版を `record-firings.sh` として書いた
 - **規約が増えたら、それを理由に見送ったフックを見直す。** 見送りの理由は「今の規約に無いから」であることが多く、規約が変わると理由ごと消える
 
@@ -81,7 +81,7 @@ PR #168 では、biome の format 差分を含む状態で push が通り、CI �
 
 **push 前検査の enforcement は git hooks が担う。** ここにある `pre-push-*` は、同じ
 スクリプト(`lib/`)を編集中に走らせる**最速フィードバック層**という位置づけになる。
-`harness-growth` が「層 1(`hook`)に置く」と判断したときは、`harness/githooks/` か CI の
+`harness-growth` が介入先を `hook` に決めたときは、`harness/githooks/` か CI の
 どちらかに置き、Claude Code 側はその共有版として足す。
 
 ### カバー範囲と残る穴
@@ -103,9 +103,9 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 
 `block-npx.sh` / `block-git-during-verification-agent.sh` は上の表のとおり CI の代替が
 **無し**。カナリア(次項)で不発が確定したら、「記録のみ」で終わらせず、そのフックが
-止めるはずだった操作を手動で確認する(`分類: hook-environment-guard-miss`。pr-482 は
-`block-git-during-verification-agent.sh` 不発でミューテーションがコミットへ混入し、
-pr-500 は `block-npx.sh` 不発で任意の `npx` 実行が素通りした)。
+止めるはずだった操作を手動で確認する(実際に `block-git-during-verification-agent.sh` 不発で
+ミューテーションがコミットへ混入した回と、`block-npx.sh` 不発で任意の `npx` 実行が
+素通りした回がある)。
 
 | 不発したフック | 手動で確認すること |
 | --- | --- |
@@ -115,14 +115,14 @@ pr-500 は `block-npx.sh` 不発で任意の `npx` 実行が素通りした)。
 `session-url-notice.sh` の不発は対応不要(上の表のとおり、失っても情報が 1 つ
 足りないだけでガードは破れない)。
 
-**doc コメント・テスト規約・import 規約・判別子の直読みは CI(層 1)へ上げた**(`frontend.yml` の `rules-check`)。
+**doc コメント・テスト規約・import 規約・判別子の直読み・常時ロードのラチェットは CI(層 1)へ
+上げた**(`frontend.yml` の `rules-check`)。
 **doc コメントとテスト規約の 2 つ**は層 2・層 3 にしか無かったが、**層 2 と層 3 は同じ環境で同時に抜ける**。
 リモート実行環境はクローンからやり直すので `core.hooksPath` が未設定のまま
 (`postCreateCommand` は DevContainer でしか走らない)で、そこは `.claude/settings.json` の
 配線が読まれないことがある環境と同じだった。実際に doc の無い宣言が main へ入っている
 (`src/domains/unit/elapsed`)。層 2 の配線は `pnpm install` の `prepare` が
-自動でやるようにしたが、**同じ層で再発したら層を 1 つ上げる**に従い、検査そのものも
-無条件に効く層へ置いた。
+自動でやるようにしたが、同じ形で再発したため、検査そのものも無条件に効く層へ置いた。
 
 ### 発火しているかを確かめる(カナリア)
 
@@ -137,7 +137,7 @@ silent だったフックの不発が detected に変わる。
 | deny された | — | — | **発火している** |
 | 通った | ある | — | **カナリアの取りこぼし**。Task/Agent のフックは発火している(不発と書かない) |
 | 通った | 無い | ある | SessionStart は発火している。PreToolUse は不明 |
-| 通った | 無い | 無い | **本当に不発**(`分類: hook-environment`) |
+| 通った | 無い | 無い | **本当に不発** |
 
 ```bash
 ls -d "${TMPDIR:-/tmp}/design-composer-verification-agents-${CLAUDE_CODE_SESSION_ID:-}"
@@ -199,7 +199,7 @@ deny のメッセージは、`jq` / `python3` が欠けていればその名前�
 - テスト規約チェック(`check-test-rules.sh` / `pre-push-test-rules.sh`)は以下で個別に無効化できる:
   - ファイル単位: `// @test-rules-disable [no-describe|no-conditional|file-naming|test-location ...]`(引数なしで全ルール無効化)
   - プロジェクト単位: 最寄りの `.test-rules.yml` に `<ルール名>: false` を記載
-- テスト規約チェックの `test-location`(テストは対象モジュールの `__tests__/` 直下に置く)は、`分類: test-placement` が未介入のまま 5 回出たため #233 で足した
+- テスト規約チェックの `test-location`(テストは対象モジュールの `__tests__/` 直下に置く)は、テストの置き場所の指摘が繰り返し出たため #233 で足した
   - 判定は「親フォルダ名が `__tests__` か」だけ。`rules/testing.md`「配置と命名」のうち機械判定できるのはここまでで、「実装を `index.ts` に直接書く」「分割はサブフォルダで」は判定できない
   - 導入時点で `src/` の 321 件すべてが既に `__tests__/` 直下にあり、偽陽性 0 件で入れられた(絞る理由が無い)
 - `check-test-helper-duplication.sh`(層 3・PostToolUse)は**ブロックしない**(`additionalContext` を返すだけ)。見るのは**編集したファイルが絡む重複だけ**だが、探す範囲はプロジェクト全体の `__tests__/`(同じフォルダに限らない)
@@ -209,7 +209,7 @@ deny のメッセージは、`jq` / `python3` が欠けていればその名前�
   - 引数の型注釈が `Readonly<{ x: number }>` のように `{}` を含む場合に本体と読み違える偽陽性(#179)は、引数リストの閉じ括弧より後ろから本体を探すよう直して解消した(`duplicate-test-helpers.py` の `params_end`)
   - ファイル単位で無効化: `// @duplicate-helpers-ok`
 - `.github/scripts/check-added-test-helper-duplication.sh`(層 1・CI、`frontend.yml` の `lint-suppress` ジョブ。同じスクリプトを `harness/githooks/pre-push` も引数なしで呼び、base を `origin/main` として push 前にも通す)は、Claude Code hook(層 3)が発火しない実行環境向けの無条件の代替。**既存の 11 組を理由に `--all` を無条件でブロックにはしない**(`check-added-lint-suppressions.sh` と同じ考え方)。`duplicate-test-helpers.py --lines` で対象ファイルの重複行を機械可読に出し、**このブランチで新しく追加された行に載っているものだけ**を違反にする。既存の 11 組を 0 組にすれば `--all` を無条件のブロックへ格上げできる(その時点でこの限定は不要になる)
-  - `check-added-lint-suppressions.sh` と違い、**base に同じ本体を持つファイルがあっても除外しない**。ファイル分割でヘルパーが新しいファイルへ移ると、移った側は全行が追加行になり、既存の重複が「新規」として引っかかる余地が残っている(pr-240 で lint 抑制コメントが踏んだのと同じ形)。単純な `git mv` はリネーム検出で diff に載らないため踏まないが、**分割**は対象
+  - `check-added-lint-suppressions.sh` と違い、**base に同じ本体を持つファイルがあっても除外しない**。ファイル分割でヘルパーが新しいファイルへ移ると、移った側は全行が追加行になり、既存の重複が「新規」として引っかかる余地が残っている(lint 抑制コメントが同じ形を踏んでいる)。単純な `git mv` はリネーム検出で diff に載らないため踏まないが、**分割**は対象
 - `check-doc-comments.sh` は**ブロックしない**(`additionalContext` を返すだけ)。また、見るのは**編集したファイルの分だけ**
   - 対象は `src/` の実装ファイルのみ(`__tests__/` / `*.stories.*` / `__stories__/` は見ない)
   - 見るのは**ファイル直下の宣言**だけ(入れ子の関数・オブジェクトのメソッドは対象外)
@@ -222,9 +222,9 @@ deny のメッセージは、`jq` / `python3` が欠けていればその名前�
 - `pre-push-typecheck.sh` / `pre-push-lint.sh` は node_modules 未インストール時(ツールが実行不能な場合)は黙ってスキップする
 - `post-merge-review.sh` はマージを**ブロックしない**(`additionalContext` を返すだけ)。マージは人の判断で行われるので、記録が無いことを理由に止めても記録の質は上がらないため
   - 検知対象は `mcp__github__merge_pull_request` と `gh pr merge` のみ。素の `git merge` は見ない(ベースブランチの取り込みで日常的に走るため、拾うと誤発火のほうが多くなる)
-- `.oxlintrc.json` の `overrides`(`rules/architecture.md`「依存方向のルール」の強制。`分類: layer-dependency`、#257)は、`domains/` → `libs/` の辺だけ `warn`(**ブロックしない**)。導入時点で `@/libs/document-ipc`(型のみ)・`@/libs/document-json` への import が計 5 件既に存在しており(`document-save-state` は pr-261/#257 で申し送りと決めた既知の債務、残り 3 件はテストの `DocumentJson` fixture 利用)、どちらもドメインの型・モジュール再配置を伴う判断(CLAUDE.md「設計判断の確認」)のため、この回では移動を行わない。`services/` → `features/libs/components/hooks`・`components/hooks/utils/types/` → `domains/services/features`・`libs/` → `services/features/components/hooks` の 3 方向は既存違反 0 件だったため `error` でそのまま導入した
+- `.oxlintrc.json` の `overrides`(`rules/architecture.md`「依存方向のルール」の強制。#257)は、`domains/` → `libs/` の辺だけ `warn`(**ブロックしない**)。導入時点で `@/libs/document-ipc`(型のみ)・`@/libs/document-json` への import が計 5 件既に存在しており(`document-save-state` は #257 で申し送りと決めた既知の債務、残り 3 件はテストの `DocumentJson` fixture 利用)、どちらもドメインの型・モジュール再配置を伴う判断(CLAUDE.md「設計判断の確認」)のため、この回では移動を行わない。`services/` → `features/libs/components/hooks`・`components/hooks/utils/types/` → `domains/services/features`・`libs/` → `services/features/components/hooks` の 3 方向は既存違反 0 件だったため `error` でそのまま導入した
   - `features/<x>/domains/` への同種の適用は未実装
-- `.oxlintrc.json` の `overrides`(`rules/architecture.md`「モジュールの公開API」の「複数ファイルへの分割が必要になったら」の閾値。`分類: module-api`、#600 / pr-601)は、`src/**/*.tsx` に `max-lines: 600` を `error` で置く。捕まえたいのは pr-240 の `artboard-canvas/index.tsx`(716 行・11 コンポーネント)の形
+- `.oxlintrc.json` の `overrides`(`rules/architecture.md`「モジュールの公開API」の「複数ファイルへの分割が必要になったら」の閾値。#600)は、`src/**/*.tsx` に `max-lines: 600` を `error` で置く。捕まえたいのは `artboard-canvas/index.tsx`(716 行・11 コンポーネント)の形
   - **数えるのは空行とコメントを除いた行**(`skipBlankLines` / `skipComments` を `true` にしている。既定はどちらも false で、素の `wc -l` と同じ数え方になる)。この 2 つがあるため `__tests__/` を対象から外さずに導入時点の違反 0 件が成立している。生の行数では 620 行ある `use-editor-state.actions.test.tsx` が、空行 96 行を引いて閾値の内側に収まる
   - **対象は `src/` の `.tsx` すべて**で、`__tests__/` も `.stories.tsx` も `__stories__/` の共有の器も入る(実測: 実行行 601 行のファイルは `__tests__/` 配下でも発火する)。`.ts` は対象外で、`design-document/index.ts` が 1449 行、`editor-state/index.ts` が 1273 行あり違反 0 件では入れられない
   - **`.ts` が対象外なので、中身を兄弟の `.ts` へ逃がす経路は開いたまま。** 止めているのは `rules/architecture.md`「実装は `index.ts` に直接書く」という観点だけで、`import-rule-violations.py` が見るのは「外から非 index ファイルを読む」形なので、`index.tsx` からだけ読む兄弟 `.ts` は検出しない(probe を置いて実測。該当する兄弟実装ファイルは現状 0 件)
@@ -436,6 +436,6 @@ echo '{"tool_name":"Bash","tool_input":{"command":"git merge origin/main"},"tool
 | ------------------------------------- | ---------------------------------------------------------------------- |
 | `.claude/skills/implementation-flow/` | 実装の手順(計画・サブエージェントによる検証・Issue への記録・マージ後の追記) |
 | `.claude/skills/harness-record/`      | マージ後の評価記録(`harness/records/` へ 1 ファイル)            |
-| `.claude/skills/harness-growth/`      | 記録の集計と、規約 / フックの改善                               |
+| `.claude/skills/harness-growth/`      | 記録の集計と、フック / 判例への介入                             |
 
 `post-merge-review.sh` はこの2つのスキルへの入口として働く。

@@ -73,9 +73,8 @@ message="${target} がマージされました。マージ後の 3 つを行っ�
    指摘が 0 件の回も記録は残す。
    手順: .claude/skills/harness-record/SKILL.md
 
-   記録を残すところまでで、集計(count.sh)と rules/ / .claude/skills/ /
-   .claude/hooks/ の改善はここでは行わない。それは harness-growth スキルの管轄で、
-   棚卸しの機会にまとめて行う。"
+   記録を残すところまでで、集計(count.sh)とフック・判例への介入はここでは行わない。
+   それは harness-growth スキルの管轄で、棚卸しの機会にまとめて行う。"
 
 jq -Rn --arg msg "$message" '{
   hookSpecificOutput: {
