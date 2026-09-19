@@ -1,4 +1,4 @@
-"""lint 抑制コメント（biome-ignore / eslint-disable）の検出。
+"""lint 抑制コメント（biome-ignore / eslint-disable / oxlint-disable）の検出。
 
 rules は「lint エラーは抑制ではなくコードの修正で解決する」と定めている。
 ここはその判定だけを持ち、どこへ報告するかは呼ぶ側が決める。
@@ -23,12 +23,17 @@ import re
 import sys
 from pathlib import Path
 
-SUPPRESSION = re.compile(r"biome-ignore|eslint-disable(-next-line|-line)?")
+# oxlint は `eslint-disable` に加えて `oxlint-disable` の綴りも読む（実測）。
+# 片方だけを見ていると、もう片方の綴りで書いた 1 行がここも
+# `block-lint-suppress.sh` も素通りして lint ルールを無効化できる。
+SUPPRESSION = re.compile(
+    r"biome-ignore|(es|ox)lint-disable(-next-line|-line)?"
+)
 EXHAUSTIVE_DEPS = re.compile(
     r"biome-ignore lint/correctness/useExhaustiveDependencies|react-hooks/exhaustive-deps"
 )
 UNUSED_VARIABLES = re.compile(
-    r"biome-ignore.*noUnusedVariables|eslint-disable\S*.*no-unused-vars"
+    r"biome-ignore.*noUnusedVariables|(es|ox)lint-disable\S*.*no-unused-vars"
 )
 BRAND_DECLARATION = re.compile(r"declare\s+const.*unique\s+symbol")
 
