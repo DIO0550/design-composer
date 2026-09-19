@@ -50,3 +50,25 @@ services に置かれたロジックの多くは、`rules/architecture.md` の 1
 
 1 feature でしか使わないのに `src/domains/` へ置く / 2 つ以上の feature が必要なのに
 `features/<x>/domains/` に留める。どちらの向きにも出る。
+
+## `module-api` — 「いつ分割が必要か」は書けても、機械には拾えない形がある
+
+pr-235 で観点(`implementation-reviewer`「モジュールの公開 API の観点」)へ介入した後も
+28 件再発し、うち 2 件が人のレビューまで届いた(すり抜け)。内訳は**未使用 export の放置**
+(16 件・全件すり抜け 0)が大半で、これは既存の観点(「`index.ts` の export が増えていないか」)
+が既に捕まえている。すり抜けた 2 件だけが観点の範囲外だった。
+
+- **1 件目(pr-240): `.tsx` に部品が積み上がっても分割の閾値が無かった。** `artboard-canvas/index.tsx`
+  が 716 行・11 コンポーネントになるまで誰も気づけなかった。**行数はフックにできる**
+  (`.oxlintrc.json` の `overrides` に `src/**/*.tsx` 向け `max-lines: 600` を追加。現行の最大は
+  `opened-document-editor/index.tsx` の 575 行で、追加時点では違反 0)
+- **2 件目(pr-544#22): 「他 feature の束オブジェクトへ添字でアクセスする」と「直接 import する」の
+  流儀不統一は、フックにしなかった。** 汎用化すると TypeScript の正当な indexed access 型
+  (`CSSProperties["cursor"]` 等、`src/` に実例が複数ある)まで誤検知する。「直接 import できる
+  型が既にあるのに束の添字経由で書いているか」は型情報と消費者側の実態を読まないと判定できず、
+  文字列一致では偽陽性しか出ない(`harness-growth`「フックにする/しない」)。件数も 1 件のみで
+  一般化する材料が無いため、今回は語彙を割らず単発として残す(再発したら候補にする)
+
+| NG(汎用化するとこう誤検知する) | OK(実際に指摘された形) |
+|---|---|
+| `Type["key"]` の indexed access 型はすべて警告 | `resizeCursor(grip): CSSProperties["cursor"]` は正当。問題は `DocumentSessionPorts["ipc"]` のように**直接 import できる名前付きの型(`DocumentIpc`)が既にあるのに** 束から添字で引く形だけ |
