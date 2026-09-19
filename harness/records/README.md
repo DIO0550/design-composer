@@ -18,7 +18,8 @@
 bash harness/records/count.sh              # 分類ごとの再発(人・bot・CI)・内部・通算・以降・起点
 bash harness/records/count.sh --shrink     # 縮める側(行数のラチェット・判例へ落とす候補・装置の発火)
 bash harness/records/count.sh --list <分類> # 窓が開いてからの指摘を 1 件 1 行で
-bash harness/records/count.sh --ratchet    # 常時ロードの行数を予算と突き合わせる(pre-push と CI が呼ぶ)
+bash harness/records/count.sh --ratchet    # 常時ロードと harness-growth スキルの行数を予算と突き合わせる(pre-push と CI が呼ぶ)
+bash harness/records/count-cases.sh        # 上の数え方・--list・--ratchet・--shrink の判定表(pre-push と CI が呼ぶ)
 ```
 
 **通算ではなく「窓が開いてから」で数える**(通算は単調増加するので、介入が効いたかを表さない)。
