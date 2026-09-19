@@ -140,6 +140,12 @@ jobs:
       - name: 行数のラチェット
         run: bash harness/records/count.sh --ratchet
 
+      # count.sh の窓の数え方と --ratchet の終了コードの判定表。
+      # 合成した記録と合成した常時ロードを一時ツリーへ置いて当てるので、
+      # 実データ（harness/records/pr-*.md）が増えても期待値は動かない。
+      - name: 数え方の判定表
+        run: bash harness/records/count-cases.sh
+
   report-comment:
     name: post ci report comment
     needs: check
