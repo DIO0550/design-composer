@@ -28,7 +28,7 @@
 |---|---|
 | `domain` | `enum` / `token` / `literal` |
 | `values` | enum 時: 許可される値のリスト |
-| `tokenKind` | token 時: 参照するトークン種別（spacing / colors 等） |
+| `tokenKind` | token 時: 参照できるトークン種別の並び。1 つだけでも並びで書く（読む側の出し分けを 1 通りにするため）。2 つ持つのは `background` だけ（下記「塗り」） |
 | `literalType` | literal 時: `number` / `string` |
 | `range` | `literalType: number` 時: 取りうる値の範囲（両端を含む）。`{ min: 0, max: 1 }`。宣言しない prop は範囲では弾かれない |
 | `default` | デフォルト値。省略時は「なし」 |
@@ -106,7 +106,7 @@ Box と Ellipse が、透け具合を 1 prop で持つ（Text は持たない）
 |---|---|---|---|
 | `opacity` | 生リテラル (number, 0〜1) | 0 が完全に透明、1 が不透明 | `1` |
 
-- **見た目の値だが生リテラルにする。** 対応するトークン種別が無く（04-tokens の 5 種）、種別を増やすかはこの prop だけの判断にできないため（02-data-model「値のドメイン: 3種類」）
+- **見た目の値だが生リテラルにする。** 対応するトークン種別が無く（04-tokens の 6 種）、種別を増やすかはこの prop だけの判断にできないため（02-data-model「値のドメイン: 3種類」）
 - **トークンが持つ色の不透明度（`#rrggbbaa` の alpha。トークン編集では 0〜100 の % で出す）とは別の値。** こちらはノードの prop としてファイルに載る値なので、CSS の `opacity` と同じ 0〜1 で持つ
 - 取りうる範囲は `range` で宣言し、外れた値はバリデーションエラーにする（下記「バリデーション仕様」）
 - artboard は Box スキーマを流用するので**この prop を受け付ける**（受け付けないと決めた「配置の指定」の 5 prop・「表示 / 非表示」と違い、除く理由が無い）
@@ -124,6 +124,22 @@ Box と Ellipse が、透け具合を 1 prop で持つ（Text は持たない）
 - **取りうる範囲は宣言しない。** 1 周を超える角度も「1 周と◯度」として意味が決まるため（上記「prop 定義のフィールド」の `range` は宣言しない prop を範囲では弾かない）
 - **見た目の値ではなく構造値なので生リテラルでよい**（02-data-model「値のドメイン: 3種類」）。対応するトークン種別が無いのは `opacity` と同じだが、こちらは幅・高さと同じ幾何の値
 - artboard は Box スキーマを流用するが、**この prop は受け付けない**。枠の見出しとリサイズハンドルは枠の外側に描かれる（06-ui「キャンバス直接操作」）ので、枠だけが回るとそれらとずれる。`opacity` を受け付けるのと違うのは、回転が幾何を動かすため
+
+### 塗り
+
+Box と Ellipse が、面をどう塗るかを 1 prop で持つ（Text が持つのは文字色の `color` で、下記「Text」が定義する）。
+
+| prop | ドメイン | 値 | デフォルト |
+|---|---|---|---|
+| `background` | トークン (colors / gradients) | 単色（04-tokens「colors」）か直線グラデーション（04-tokens「gradients」） | プリミティブごとに違う（下記「Box」「Ellipse」） |
+
+- **2 つの種別を指せるのは `background` だけ。** 1 prop = 1 ドメインは変わらず（02-data-model「値のドメイン: 3種類」）、変わるのは指せる種別が 1 つから 2 つになることだけ。スキーマは指せる種別を並びで宣言する（上記「prop 定義のフィールド」）
+- **どちらの種別を指しているかは、その名前を持っている種別で決まる。** 参照の構文は裸の名前のまま（02-data-model「トークン参照の構文: 裸の名前」）で、これが一意に決まるのは塗り用の 2 種別に同名を許さないため（04-tokens「命名規則」）
+- **同名衝突を抱えたまま開いたドキュメント**（下記「開く時」）では名前がどちらとも解決できないので、その `background` の宣言を出さない。片方の種別を優先して選びはしない（どちらが勝つかがファイルから読めなくなる）
+- **Text の `color` は colors だけを指す。** 文字をグラデーションで塗るには CSS の `background-clip: text` が要り、塗る対象が面ではなく字面になる
+- 1 つのノードに複数の塗りを重ねることは持たない（塗りは高々 1 件）。将来拡張として予約する
+- **`background` の欄がどちらの種別の一覧から選ばせるかは 06-ui「編集操作の一覧」が持つ**（まだ決めていない）
+- artboard は Box スキーマを流用するので**この prop を受け付ける**（01-file-format「artboards」が `"props": { "background": "primary" }` を例示している）
 
 ### サイズ指定の原則
 
@@ -153,7 +169,7 @@ Box と Ellipse が、透け具合を 1 prop で持つ（Text は持たない）
 | `width` | 生リテラル (number, px) | `widthMode: fixed` 時のみ有効 | - |
 | `heightMode` | enum | `hug` / `fill` / `fixed` | `hug` |
 | `height` | 生リテラル (number, px) | `heightMode: fixed` 時のみ有効 | - |
-| `background` | トークン (colors) | | なし (透明) |
+| `background` | | 上記「塗り」 | なし (透明) |
 | `radiusTopLeft` | トークン (radius) | 左上 | なし (0) |
 | `radiusTopRight` | トークン (radius) | 右上 | なし (0) |
 | `radiusBottomRight` | トークン (radius) | 右下 | なし (0) |
@@ -180,7 +196,7 @@ Box と Ellipse が、透け具合を 1 prop で持つ（Text は持たない）
 | `rotation` | | 上記「回転」 | |
 | `content` | 生リテラル (string) | | `""` |
 | `typography` | トークン (typography) | サイズ・行間・ウェイトの複合トークン | デフォルトトークン |
-| `color` | トークン (colors) | | デフォルトトークン |
+| `color` | トークン (colors) | 文字色。グラデーションは指せない（上記「塗り」） | デフォルトトークン |
 | `align` | enum | `left` / `center` / `right` | `left` |
 | `visibility` | | 上記「表示 / 非表示」 | |
 
@@ -198,7 +214,7 @@ Box と Ellipse が、透け具合を 1 prop で持つ（Text は持たない）
 | `width` | 生リテラル (number, px) | `widthMode: fixed` 時のみ有効 | `100` |
 | `heightMode` | enum | `fill` / `fixed` | `fixed` |
 | `height` | 生リテラル (number, px) | `heightMode: fixed` 時のみ有効 | `100` |
-| `background` | トークン (colors) | | `gray-300` |
+| `background` | | 上記「塗り」 | `gray-300` |
 | `shadow` | トークン (shadows) | | なし |
 | `opacity` | | 上記「不透明度」 | |
 | `visibility` | | 上記「表示 / 非表示」 | |
@@ -231,7 +247,7 @@ Box と Ellipse が、透け具合を 1 prop で持つ（Text は持たない）
 | `widthMode: hug` | `width: fit-content` |
 | `widthMode: fill` | 親の主軸方向なら `flex-grow: 1`、交差軸方向なら `align-self: stretch`（親の `layout` を見て出し分け） |
 | `widthMode: fixed` | `width: {n}px` |
-| `background` | `background: var(--colors-*)` |
+| `background` | `background: var(--colors-*)` / `var(--gradients-*)`（その名前が属する種別の var を出す。上記「塗り」） |
 | `radiusTopLeft` / `radiusTopRight` / `radiusBottomRight` / `radiusBottomLeft` | `border-radius: var(--radius-*)` （左上 右上 右下 左下 の順で4値に合成。未指定の隅は `0`） |
 | `shadow` | `box-shadow: var(--shadows-*)` |
 | `overflow: clip` | `overflow: hidden` |
@@ -262,6 +278,7 @@ Box と Ellipse が、透け具合を 1 prop で持つ（Text は持たない）
 - 識別子規則違反（命名規則・予約文字）
 - ノードの `name` 欠落
 - 名前の一意性違反（components キー・artboard 名・全ノード name の単一名前空間内での重複）
+- **塗り用の 2 種別での名前衝突**（colors と gradients に同じトークン名がある。参照の有無は見ない / 04-tokens「命名規則」）
 
 ### 不正ファイル時の挙動
 
@@ -277,7 +294,7 @@ Box と Ellipse が、透け具合を 1 prop で持つ（Text は持たない）
 | 検出した不正 | 開くか |
 |---|---|
 | JSON としてパース不能 / オブジェクトキーの重複 / 版を解決できない / 構造がスキーマの形に合わない | **開けない**。エラー一覧だけを開始画面に出す |
-| 上記を通ったうえでのバリデーション違反（未知の `type` / 未知の prop / ドメイン違反 / dangling ref / 循環参照 / 未宣言の overrides / binding の不整合 / 識別子規則違反 / `name` 欠落 / 名前の一意性違反） | **開く**。エラー一覧を重ねて表示し、編集は続けられる |
+| 上記を通ったうえでのバリデーション違反（未知の `type` / 未知の prop / ドメイン違反 / dangling ref / 循環参照 / 未宣言の overrides / binding の不整合 / 識別子規則違反 / `name` 欠落 / 名前の一意性違反 / 塗り用の 2 種別での名前衝突） | **開く**。エラー一覧を重ねて表示し、編集は続けられる |
 
 - 開けるようにするのは、**自動保存が書き出した不正なドキュメントを GUI から直せるようにする**ため。保存モデル（05-architecture「保存モデル: 自動保存」）は画面の内容をそのまま書き出すので、アプリ内の編集で作った不正はファイルにも載る。これを開けないままにすると、直す手段が外部エディタにしか無くなる
 - 開いたあとの扱いはアプリ内の編集で作った不正と同じ（キャンバスは凍らせない）
