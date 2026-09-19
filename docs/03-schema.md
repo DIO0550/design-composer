@@ -100,11 +100,16 @@
 
 ### 塗り
 
-Box と Ellipse が面の塗りを `background` で持つ。値は colors か gradients のトークン参照で、**この節が決めるのは塗りを何件・どの種別で持てるかで**、既定は各プリミティブの節（下記「Box」「Ellipse」）が持つ。
+Box と Ellipse が面の塗りを 1 prop で持つ（Text は面を持たず、文字の塗りを `color` で持つ）。
 
-- **塗りは高々 1 件。** 複数のフィルを重ねることは持たない。フィルの枚数が可変なので `props` の値をスカラーに限る規定（02-data-model「値の形: フラットなスカラーのみ」）に収まらず、重ねる順序とブレンドモードも持たないため重なりの見た目が決まらない
-- **単色は colors、階調は gradients を参照する**（04-tokens「値の形式」）。同じ prop が 2 種別を指せるのは塗りだけで、曖昧にならないのはその 2 種別の間で同名を許さないから（04-tokens「命名規則」）
-- **Text の `color` は含まない。** 文字の塗りは CSS の `color` に出る（下記「HTML/CSS へのコンパイル規則」）ので出力の経路が違い、階調にするには別の仕組みが要る。文字色は colors だけを参照する
+| prop | ドメイン | 値 | デフォルト |
+|---|---|---|---|
+| `background` | トークン (colors / gradients) | 単色またはグラデーション | 各プリミティブの節（下記「Box」「Ellipse」） |
+
+- **塗りは高々 1 件。** `background` が持てるのはトークン名 1 つなので、指せる塗りも 1 件になる。複数のフィルを重ねるには別の種別か prop の形そのものの変更が要るので、持たない
+- **単色は colors、グラデーションは gradients を参照する**（04-tokens「値の形式」）。2 種別を指せる prop は今はこれだけ
+- **名前は `background` が指せる種別の中から解決する。** その集合の中では同名を許さない（04-tokens「命名規則」）ので、解決の結果は 1 つに決まる。`tokenKind` の並び順に意味は無い
+- **Text の `color` は含まない。** 文字の塗りは CSS の `color` に出る（下記「HTML/CSS へのコンパイル規則」）ので出力の経路が違い、グラデーションにするには別の仕組みが要る。文字色は colors だけを参照する
 - 画像を塗りとして持つかは Image プリミティブに従属するので、ここでは決めない（上記「プリミティブの初期セット」の「Image は保留」）
 - artboard は Box スキーマを流用するので**`background` を受け付ける**（01-file-format「artboards」が `"props": { "background": "primary" }` を例示している）
 
@@ -162,7 +167,7 @@ Box と Ellipse が、透け具合を 1 prop で持つ（Text は持たない）
 | `width` | 生リテラル (number, px) | `widthMode: fixed` 時のみ有効 | - |
 | `heightMode` | enum | `hug` / `fill` / `fixed` | `hug` |
 | `height` | 生リテラル (number, px) | `heightMode: fixed` 時のみ有効 | - |
-| `background` | トークン (colors / gradients) | 上記「塗り」 | なし (透明) |
+| `background` | | 上記「塗り」 | なし (透明) |
 | `radiusTopLeft` | トークン (radius) | 左上 | なし (0) |
 | `radiusTopRight` | トークン (radius) | 右上 | なし (0) |
 | `radiusBottomRight` | トークン (radius) | 右下 | なし (0) |
@@ -207,7 +212,7 @@ Box と Ellipse が、透け具合を 1 prop で持つ（Text は持たない）
 | `width` | 生リテラル (number, px) | `widthMode: fixed` 時のみ有効 | `100` |
 | `heightMode` | enum | `fill` / `fixed` | `fixed` |
 | `height` | 生リテラル (number, px) | `heightMode: fixed` 時のみ有効 | `100` |
-| `background` | トークン (colors / gradients) | 上記「塗り」 | `gray-300` |
+| `background` | | 上記「塗り」 | `gray-300` |
 | `shadow` | トークン (shadows) | | なし |
 | `opacity` | | 上記「不透明度」 | |
 | `visibility` | | 上記「表示 / 非表示」 | |
@@ -223,7 +228,8 @@ Box と Ellipse が、透け具合を 1 prop で持つ（Text は持たない）
 ## HTML/CSS へのコンパイル規則
 
 - **トークンは CSS カスタムプロパティにコンパイル**する。ルート要素に `--{種別}-{名前}: 値` を出力し、ノード側は `var()` で参照する。トークン編集が全ノードへ CSS レベルで波及する
-  - 塗りは 2 種別を指せるので、`background` の値は**名前をその 2 種別から解決してから**どちらの変数を出すかが決まる（同名を許さないので一意 / 04-tokens「命名規則」）。`--gradients-{名前}` の値は `linear-gradient(...)` 1 本に畳む
+  - `--gradients-{名前}` の値は `linear-gradient(...)` 1 本に畳む。`angle` は `deg` を付け、`stops` の `position`（0〜1）は **% へ換算**して出す（`0.5` → `50%`）
+  - どちらの変数を出すかは、`background` が指せる種別から名前を解決して決まる（上記「塗り」）
 - **ノードはすべて `div` ＋インライン style** で出力する。プレビュー用レンダリングであり production HTML ではないため、セマンティクス・クラス設計は持たない。決定的で診断しやすい出力を優先する
 
 | prop | CSS |
@@ -272,7 +278,7 @@ Box と Ellipse が、透け具合を 1 prop で持つ（Text は持たない）
 - ノードの `name` 欠落
 - 名前の一意性違反（components キー・artboard 名・全ノード name の単一名前空間内での重複）
 - **塗りが参照する 2 種別の間でのトークン名の重複**（colors と gradients に同名。`background` の参照先が決まらない。04-tokens「命名規則」）
-- **グラデーショントークンの `stops` が 2 件未満**（階調として描けない。04-tokens「値の形式」）
+- **グラデーショントークンの `stops` が 2 件未満**（色の変わり目が無く、グラデーションとして描けない。04-tokens「値の形式」）
 
 ### 不正ファイル時の挙動
 
@@ -288,7 +294,7 @@ Box と Ellipse が、透け具合を 1 prop で持つ（Text は持たない）
 | 検出した不正 | 開くか |
 |---|---|
 | JSON としてパース不能 / オブジェクトキーの重複 / 版を解決できない / 構造がスキーマの形に合わない | **開けない**。エラー一覧だけを開始画面に出す |
-| 上記を通ったうえでのバリデーション違反（未知の `type` / 未知の prop / ドメイン違反 / dangling ref / 循環参照 / 未宣言の overrides / binding の不整合 / 識別子規則違反 / `name` 欠落 / 名前の一意性違反） | **開く**。エラー一覧を重ねて表示し、編集は続けられる |
+| 上記を通ったうえでのバリデーション違反（未知の `type` / 未知の prop / ドメイン違反 / dangling ref / 循環参照 / 未宣言の overrides / binding の不整合 / 識別子規則違反 / `name` 欠落 / 名前の一意性違反 / トークン名の重複 / `stops` の不足） | **開く**。エラー一覧を重ねて表示し、編集は続けられる |
 
 - 開けるようにするのは、**自動保存が書き出した不正なドキュメントを GUI から直せるようにする**ため。保存モデル（05-architecture「保存モデル: 自動保存」）は画面の内容をそのまま書き出すので、アプリ内の編集で作った不正はファイルにも載る。これを開けないままにすると、直す手段が外部エディタにしか無くなる
 - 開いたあとの扱いはアプリ内の編集で作った不正と同じ（キャンバスは凍らせない）
