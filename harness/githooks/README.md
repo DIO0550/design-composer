@@ -25,7 +25,7 @@ DevContainer の `postCreateCommand` も走らない。そこは Claude Code の
 
 | フック | 検査 | 呼んでいるもの |
 | --- | --- | --- |
-| `pre-push` | 型 / lint / format / doc コメント / テスト規約 / import 規約 / 判別子の直読み / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 行数のラチェット / 数え方の判定表 | `pnpm run typecheck`・`pnpm run lint`・`pnpm exec biome check`・`.claude/hooks/lib/missing-doc-comments.py`・`.claude/hooks/lib/test-rules-scan.sh`・`.claude/hooks/lib/import-rule-violations.py`・`.claude/hooks/lib/result-option-read-violations.py`・`.github/scripts/check-added-lint-suppressions.sh`・`.github/scripts/check-added-test-helper-duplication.sh`・`harness/records/count.sh --ratchet`・`harness/records/count-cases.sh` |
+| `pre-push` | 型 / lint / format / doc コメント / テスト規約 / import 規約 / 判別子の直読み / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 行数のラチェット / 集計の判定表 | `pnpm run typecheck`・`pnpm run lint`・`pnpm exec biome check`・`.claude/hooks/lib/missing-doc-comments.py`・`.claude/hooks/lib/test-rules-scan.sh`・`.claude/hooks/lib/import-rule-violations.py`・`.claude/hooks/lib/result-option-read-violations.py`・`.github/scripts/check-added-lint-suppressions.sh`・`.github/scripts/check-added-test-helper-duplication.sh`・`harness/records/count.sh --ratchet`・`harness/records/count-cases.sh` |
 
 | スクリプト | 呼ばれ方 | 内容 |
 | --- | --- | --- |
@@ -33,25 +33,19 @@ DevContainer の `postCreateCommand` も走らない。そこは Claude Code の
 
 **検査そのものは `.claude/hooks/lib/` と共有している。** Claude Code のフックはこれと
 同じスクリプトを走らせる即時フィードバック版で、内容が二重管理にならないようにしている。
-`lib/` の外にあるのは 2 系統。`check-added-*` の 2 つは `.github/scripts/` にあり、CI と同じ
-スクリプトをそのまま呼ぶ(base との差分で判定するので、判定を `lib/` へ移しても呼び出し側は
-同じになる)。行数のラチェットとその判定表は `harness/records/` にあり、数える対象(記録と
-常時ロード)の隣に置いている。
+`check-added-*` の 2 つだけは `.github/scripts/` にあり、CI と同じスクリプトをそのまま呼ぶ
+(base との差分で判定するので、判定を `lib/` へ移しても呼び出し側は同じになる)。
+**行数のラチェットと集計の判定表**(`harness/records/count.sh --ratchet` /
+`harness/records/count-cases.sh`)も `.claude/hooks/` 側に対応物を持たない。ここと CI の
+両方へ置くので、層 3 を足しても守る範囲が増えないため。
 
-**飛ばすのは、そのツールを使う検査だけ。** 既存の `pre-push-*` と同じ扱いで、検査できない
-ことを理由に push を止めても検査の質は上がらないため。
+`pnpm` または `node_modules` が無い環境では、型 / lint / format だけを飛ばす（残りは
+`python3` と bash だけで走る）。既存の `pre-push-*` と同じ扱いで、検査できないことを
+理由に push を止めても検査の質は上がらないため。
 
-| 無い環境 | 検査されなくなるもの |
-| --- | --- |
-| `pnpm` または `node_modules` | 型 / lint / format の 3 つ(`pre-push` が分岐で飛ばす) |
-| `python3` | doc コメント / import 規約 / 判別子の直読みの 3 つ(`pre-push` が分岐で飛ばす)と、追加された lint 抑制 / 追加されたテストヘルパーの重複の 2 つ |
-
-**`check-added-*` の 2 つは飛ばない。走るが、何も見ずに 0 件として通る**(検出器の呼び出しが
-`|| true` なので、`python3` が無くても緑になる。実測)。飛ばした検査は出力に「飛ばします」が
+**`python3` が無い環境では、`check-added-*` の 2 つは飛ばずに走り、何も見ずに 0 件として
+通る**（検出器の呼び出しが `|| true` のため。実測）。飛ばした検査は出力に「飛ばします」が
 残るが、こちらは通常の「ありません」が出るので、**通ったことが検査された証拠にならない**。
-
-残り(テスト規約・行数のラチェット・数え方の判定表)は `pnpm` も `python3` も要らないので、
-どちらが無くても検査される。
 
 ## なぜ git 側にも置くのか
 

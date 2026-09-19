@@ -164,7 +164,7 @@ python3 .claude/hooks/lib/result-option-read-violations.py src  # 判別子の�
 bash .github/scripts/check-added-lint-suppressions.sh           # 追加された lint 抑制
 bash .github/scripts/check-added-test-helper-duplication.sh     # 追加されたテストヘルパーの重複
 bash harness/records/count.sh --ratchet                         # 行数のラチェット
-bash harness/records/count-cases.sh                             # 数え方の判定表
+bash harness/records/count-cases.sh                             # 集計の判定表
 ```
 
 - **下の 8 つは `pnpm` のスクリプトに無い。** `rules-check` の 6 つは git hooks と CI
