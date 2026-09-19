@@ -41,7 +41,7 @@
 放っておくと削る側は発火しない(数字で候補を出すまで、`rules/` が正味マイナスになったコミットは
 全履歴で 0 件だった)ので、上限は固定の閾値ではなく下げるだけのラチェットにする。
 
-- 数え方: `bash harness/records/count.sh --shrink`(節 1)
+- 検査: `bash harness/records/count.sh --ratchet`(pre-push と CI が走らせ、ずれていれば落ちる)
 - 削り先が出せないなら、その追加は `rules/` ではなく判例かフックに置く
 
 ## 実装の進め方

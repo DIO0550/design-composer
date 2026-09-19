@@ -135,6 +135,11 @@ jobs:
       - name: 判別子の直読み
         run: python3 .claude/hooks/lib/result-option-read-violations.py src
 
+      # 常時ロードと harness-growth スキルの行数の予算（AGENTS.md「常時ロードは増やさない」）。
+      # 実測と予算がずれていれば落ちる（超過なら削る、下回ったら予算を下げる）。
+      - name: 行数のラチェット
+        run: bash harness/records/count.sh --ratchet
+
   report-comment:
     name: post ci report comment
     needs: check
