@@ -2,7 +2,8 @@
 #
 # push 前の検査（git ネイティブのフック）。Claude Code の配線に依存しない最終網。
 #
-# .claude/hooks/ の pre-push-* と同じ検査を、同じスクリプトを呼んで走らせる。
+# .claude/hooks/ の pre-push-* と同じ検査を、同じスクリプトを呼んで走らせる
+# （対応物を持たない検査は README.md「何が走るか」に挙げてある）。
 # 違いは発火条件だけで、こちらは CLI・IDE・素の git のどれから push しても必ず走る
 # （.claude/hooks/README.md「強制力の序列」）。
 #
@@ -51,3 +52,10 @@ bash .github/scripts/check-added-lint-suppressions.sh
 
 echo "pre-push: 追加されたテストヘルパーの重複"
 bash .github/scripts/check-added-test-helper-duplication.sh
+
+# 常時ロード（AGENTS.md + rules/）と harness-growth スキルの行数、およびその数え方の判定表。
+echo "pre-push: 行数のラチェット"
+bash harness/records/count.sh --ratchet
+
+echo "pre-push: 集計の判定表"
+bash harness/records/count-cases.sh

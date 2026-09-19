@@ -123,6 +123,10 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 自動でやるようにしたが、**同じ層で再発したら層を 1 つ上げる**に従い、検査そのものも
 無条件に効く層へ置いた。
 
+**行数のラチェットと集計の判定表**(`harness/records/count.sh --ratchet` /
+`harness/records/count-cases.sh`)は、上げたのではなく**新設時から層 1 と層 2 に置いた**
+(同じ `rules-check` ジョブと `harness/githooks/pre-push`)。層 3 に対応物は無い。
+
 ### 発火しているかを確かめる(カナリア)
 
 `hook-canary.sh` は `echo hook-canary` を必ず deny する。push の前にこれを 1 度実行すると、
@@ -305,6 +309,9 @@ bash .github/scripts/check-added-test-helper-duplication.sh origin/main
 
 # PR が閉じる Issue の検査の判定表(`ok` だけなら期待どおり)
 bash .github/scripts/check-pr-closing-issue-cases.sh; echo "exit=$?"
+
+# 記録の集計(窓の数え方・--ratchet の終了コード)の判定表。pre-push と CI も走らせる
+bash harness/records/count-cases.sh; echo "exit=$?"
 ```
 
 ```bash

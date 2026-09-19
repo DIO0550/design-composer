@@ -25,7 +25,7 @@ DevContainer の `postCreateCommand` も走らない。そこは Claude Code の
 
 | フック | 検査 | 呼んでいるもの |
 | --- | --- | --- |
-| `pre-push` | 型 / lint / format / doc コメント / テスト規約 / import 規約 / 判別子の直読み / 追加された lint 抑制 / 追加されたテストヘルパーの重複 | `pnpm run typecheck`・`pnpm run lint`・`pnpm exec biome check`・`.claude/hooks/lib/missing-doc-comments.py`・`.claude/hooks/lib/test-rules-scan.sh`・`.claude/hooks/lib/import-rule-violations.py`・`.claude/hooks/lib/result-option-read-violations.py`・`.github/scripts/check-added-lint-suppressions.sh`・`.github/scripts/check-added-test-helper-duplication.sh` |
+| `pre-push` | 型 / lint / format / doc コメント / テスト規約 / import 規約 / 判別子の直読み / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 行数のラチェット / 集計の判定表 | `pnpm run typecheck`・`pnpm run lint`・`pnpm exec biome check`・`.claude/hooks/lib/missing-doc-comments.py`・`.claude/hooks/lib/test-rules-scan.sh`・`.claude/hooks/lib/import-rule-violations.py`・`.claude/hooks/lib/result-option-read-violations.py`・`.github/scripts/check-added-lint-suppressions.sh`・`.github/scripts/check-added-test-helper-duplication.sh`・`harness/records/count.sh --ratchet`・`harness/records/count-cases.sh` |
 
 | スクリプト | 呼ばれ方 | 内容 |
 | --- | --- | --- |
@@ -35,9 +35,13 @@ DevContainer の `postCreateCommand` も走らない。そこは Claude Code の
 同じスクリプトを走らせる即時フィードバック版で、内容が二重管理にならないようにしている。
 `check-added-*` の 2 つだけは `.github/scripts/` にあり、CI と同じスクリプトをそのまま呼ぶ
 (base との差分で判定するので、判定を `lib/` へ移しても呼び出し側は同じになる)。
+**行数のラチェットと集計の判定表**(`harness/records/count.sh --ratchet` /
+`harness/records/count-cases.sh`)も `.claude/hooks/` 側に対応物を持たない。ここと CI の
+両方へ置くので、層 3 を足しても守る範囲が増えないため。
 
-`pnpm` または `node_modules` が無い環境では、何も検査せずに通す。既存の `pre-push-*` と
-同じ扱いで、検査できないことを理由に push を止めても検査の質は上がらないため。
+`pnpm` または `node_modules` が無い環境では、型 / lint / format だけを飛ばす（残りは
+`python3` と bash だけで走る）。既存の `pre-push-*` と同じ扱いで、検査できないことを
+理由に push を止めても検査の質は上がらないため。
 
 ## なぜ git 側にも置くのか
 

@@ -135,6 +135,17 @@ jobs:
       - name: 判別子の直読み
         run: python3 .claude/hooks/lib/result-option-read-violations.py src
 
+      # 常時ロード（AGENTS.md + rules/）と harness-growth スキルの行数。
+      # 予算とずれていれば落ちる（超過なら削る、下回りなら予算を下げる）。
+      - name: 行数のラチェット
+        run: bash harness/records/count.sh --ratchet
+
+      # count.sh の窓の数え方と --ratchet の終了コードの判定表。
+      # 既存の *-cases.sh は手で走らせる形だが、count.sh の判定は直前のステップと
+      # pre-push がゲートとして呼ぶので、その判定表もゲートに載せる。
+      - name: 集計の判定表
+        run: bash harness/records/count-cases.sh
+
   report-comment:
     name: post ci report comment
     needs: check
