@@ -141,6 +141,7 @@ Box と Ellipse が、透け具合を 1 prop で持つ（Text は持たない）
 | `placement` / `x` / `y` / `constraintX` / `constraintY` | | 上記「配置の指定」 | |
 | `rotation` | | 上記「回転」 | |
 | `layout` | enum | `row` / `column` / `free` | `column` |
+| `wrap` | enum | `nowrap` / `wrap`。`layout` が `free` 以外のときのみ有効 | `nowrap` |
 | `gap` | トークン (spacing) | `layout` が `free` 以外のときのみ有効 | なし (0) |
 | `paddingTop` | トークン (spacing) | 上 | なし (0) |
 | `paddingRight` | トークン (spacing) | 右 | なし (0) |
@@ -162,7 +163,7 @@ Box と Ellipse が、透け具合を 1 prop で持つ（Text は持たない）
 | `opacity` | | 上記「不透明度」 | |
 | `visibility` | | 上記「表示 / 非表示」 | |
 
-- `layout: free` の Box は**子を並べない**。Figma の `layoutMode: NONE` にあたり、中身は `placement: absolute` の子を座標で置くための器になる。間隔・揃え（`gap` / `align` / `justify`）は並びが無いので効かない
+- `layout: free` の Box は**子を並べない**。Figma の `layoutMode: NONE` にあたり、中身は `placement: absolute` の子を座標で置くための器になる。折り返し・間隔・揃え（`wrap` / `gap` / `align` / `justify`）は並びが無いので効かない
 - padding は 4 方向個別、角丸は 4 隅個別。ドキュメントが持つのは 4 つの値だけで、プロパティパネルでの畳み方（padding は Figma と同じ垂直 / 水平、角丸は 4 隅まとめて 1 欄）は表示の都合なので持たない
   - ただし**「その prop がどの shorthand のどの位置の longhand か」はスキーマが `shorthand` で宣言する**。これは prop 自身の性質（`paddingTop` は padding の上辺、`radiusTopLeft` は radius の左上である）であって、今そのパネルが畳んでいるかという画面の状態ではない。パネルはこの宣言を使って 4 prop を 1 行にまとめ、畳むかどうかは画面側だけで決める
   - **畳んだ欄の単位が padding と角丸で違う**のは、`border-radius` の 2 値が対角（左上 + 右下 / 右上 + 左下）を指し、垂直 / 水平にあたる組が隅には無いため
@@ -204,7 +205,7 @@ Box と Ellipse が、透け具合を 1 prop で持つ（Text は持たない）
 
 - **`hug` を持たないのが Box との差**（上記「サイズ指定の原則」）。子を持たないので中身から決まる長さが無く、`hug` は常に 0 になる
 - **角丸の prop を持たない。** 楕円の丸みは形そのものであって設定値ではない。持たせると「楕円なのに角丸 4px」という、形と設定値が食い違う組み合わせが書けてしまう
-- **`layout` / `gap` / padding 4 辺 / `align` / `justify` / `overflow` を持たない。** 子を持たないので、並べる対象も切り取る対象も無い
+- **`layout` / `wrap` / `gap` / padding 4 辺 / `align` / `justify` / `overflow` を持たない。** 子を持たないので、並べる対象も切り取る対象も無い
 - **`background` の既定だけ Box と違う**（Box は「なし（透明）」）。Box は中身を入れる器なので透明が既定でよいが、Ellipse は形そのものなので、既定で塗りが無いと挿入しても画面に何も出ない。既定がトークン名を指すのは Text の `typography` / `color` と同じで、その名前は初期テンプレートが保証する（04-tokens「スキーマデフォルトとの関係」）
 - **`width` / `height` の既定 `100` は、Figma が楕円を作るときの既定（幅・高さとも 100）に揃えた。** 型でもテストでも守れない値なので、変えるときはこの行ごと変える
 - **どの版から読み書きできるかは 01-file-format「formatVersion」の表が持つ。** 新プリミティブは minor の追加的変更にあたるが、アプリが Ellipse を読み書きできるようになった時点で表へ足す（まだ足していない）
@@ -221,7 +222,8 @@ Box と Ellipse が、透け具合を 1 prop で持つ（Text は持たない）
 | `placement: absolute` | `position: absolute` + `left: {x}px` + `top: {y}px` |
 | `rotation` | `transform: rotate({n}deg)`（既定の `0` では出力しない。`rotate(0deg)` でも `transform` が `none` でなくなり、そのノードが新しい stacking context になるため） |
 | `layout: row` / `column` | `display: flex` + `flex-direction` |
-| `layout: free` | `display` を出さない（flex コンテナにしない）。`gap` / `align` / `justify` も出さない（`visibility` の行が優先する） |
+| `layout: free` | `display` を出さない（flex コンテナにしない）。`wrap` / `gap` / `align` / `justify` も出さない（`visibility` の行が優先する） |
+| `wrap: wrap` | `flex-wrap: wrap`（既定の `nowrap` では出力しない） |
 | `gap` | `gap: var(--spacing-*)` |
 | `paddingTop` / `paddingRight` / `paddingBottom` / `paddingLeft` | `padding: var(--spacing-*)` （上 右 下 左 の順で4値に合成。未指定の辺は `0`） |
 | `align` | `align-items` |

@@ -15,6 +15,14 @@ test("サイズのモードが未指定なら既定の hug として扱われ、
   expect(propNamesOf(boxSelection({}))).not.toContain("width");
 });
 
+test("子を並べる Box では折り返しのコントロールが出る", () => {
+  expect(propNamesOf(boxSelection({ layout: "row" }))).toContain("wrap");
+});
+
+test("子を並べない Box では折り返しのコントロールは出ない", () => {
+  expect(propNamesOf(boxSelection({ layout: "free" }))).not.toContain("wrap");
+});
+
 test("条件を満たす prop だけが出るので、縦のサイズは横のモードに影響されない", () => {
   const names = propNamesOf(boxSelection({ widthMode: "fixed" }));
 

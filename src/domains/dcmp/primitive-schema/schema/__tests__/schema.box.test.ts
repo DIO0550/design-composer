@@ -20,6 +20,25 @@ test("Box は向きの prop を layout に吸収して direction を宣言しな
   expect(Object.keys(BoxSchema.props)).not.toContain("direction");
 });
 
+test("Box の折り返しは nowrap / wrap の enum でデフォルトが nowrap", () => {
+  const definition = BoxSchema.props.wrap;
+  expect(PropDefinition.isEnum(definition)).toBe(true);
+  expect(definition).toMatchObject({
+    domain: "enum",
+    values: ["nowrap", "wrap"],
+    default: "nowrap",
+  });
+});
+
+test("Box の折り返しは layout が free のとき編集できない", () => {
+  expect(
+    PropDefinition.isEnabled(BoxSchema.props.wrap, { layout: "free" }),
+  ).toBe(false);
+  expect(
+    PropDefinition.isEnabled(BoxSchema.props.wrap, { layout: "row" }),
+  ).toBe(true);
+});
+
 test("Box の間隔は layout が free のとき編集できない", () => {
   expect(
     PropDefinition.isEnabled(BoxSchema.props.gap, { layout: "free" }),
