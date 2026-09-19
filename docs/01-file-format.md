@@ -80,7 +80,7 @@ design-composer のドキュメントは、単一の JSON ファイル（`.dcmp`
 | 版 | 加わったもの |
 |---|---|
 | 1.0 | 初期 |
-| 1.1 | ノードの `placement` / `x` / `y`（03-schema「配置の指定」。**親からの相対**）／ artboard の `x` / `y`（下記「artboards」。**キャンバス上の絶対位置**）／ ノードの `constraintX` / `constraintY`（03-schema「親のリサイズへの追従」）／ Box の `layout`（03-schema「Box」。`direction` を吸収して置き換えた）／ Box の `opacity`（03-schema「不透明度」。0〜1 の生リテラル）／ ノードの `visibility`（03-schema「表示 / 非表示」。artboard が受け付けるかは未定）／ Box の `radiusTopLeft` / `radiusTopRight` / `radiusBottomRight` / `radiusBottomLeft`（03-schema「Box」。`radius` を 4 隅へ割って置き換えた）／ ノードの `rotation`（03-schema「回転」。度の生リテラル。artboard は受け付けない） |
+| 1.1 | ノードの `placement` / `x` / `y`（03-schema「配置の指定」。**親からの相対**）／ artboard の `x` / `y`（下記「artboards」。**キャンバス上の絶対位置**）／ ノードの `constraintX` / `constraintY`（03-schema「親のリサイズへの追従」）／ Box の `layout`（03-schema「Box」。`direction` を吸収して置き換えた）／ Box の `opacity`（03-schema「不透明度」。0〜1 の生リテラル）／ ノードの `visibility`（03-schema「表示 / 非表示」。artboard が受け付けるかは未定）／ Box の `radiusTopLeft` / `radiusTopRight` / `radiusBottomRight` / `radiusBottomLeft`（03-schema「Box」。`radius` を 4 隅へ割って置き換えた）／ ノードの `rotation`（03-schema「回転」。度の生リテラル。artboard は受け付けない）／ Box の `wrap`（03-schema「Box」。`layout` が `free` 以外のときの折り返し） |
 
 | 状況 | 挙動 |
 |---|---|

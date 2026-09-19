@@ -22,6 +22,7 @@ import type { ResolvedProps } from "@/domains/dcmp/resolved-props";
 import { Size } from "@/domains/dcmp/size";
 import { TypographyField, TypographyToken } from "@/domains/dcmp/token";
 import { Visibility } from "@/domains/dcmp/visibility";
+import { Wrap } from "@/domains/dcmp/wrap";
 import { Html } from "@/utils/Html";
 import { Option } from "@/utils/Option";
 
@@ -220,8 +221,8 @@ export const BoxElement = {
 
   /**
    * Box の props を CSS の宣言へ写す (docs/03「HTML/CSS へのコンパイル規則」の表)。
-   * 各 prop の規則はそれぞれのドメイン (Layout / Placement / Padding / CornerRadius /
-   * LengthShorthand / Size / Visibility) が持ち、ここはその並び順 = 宣言の出力順を決める。
+   * 各 prop の規則は prop ごとのドメインとこのファイルのローカル関数が持ち、ここはその
+   * 並び順 = 宣言の出力順を決める。
    *
    * @param props デフォルト解決済みの Box の props
    * @param parentDirection この Box を flex アイテムとして並べる親の向き。
@@ -240,8 +241,12 @@ export const BoxElement = {
       ? Option.none
       : parentDirection;
     const layout = Layout.fromProps(props);
-    // 子を並べない Box では間隔・揃えが意味を持たない (スキーマの `enabledWhen` と同じ規則)
+    // 子を並べない Box では間隔・揃え・折り返しが意味を持たない
+    // (スキーマの `enabledWhen` と同じ規則)
     const arrangesChildren = Option.isSome(Layout.direction(layout));
+    const wrap = arrangesChildren
+      ? Wrap.declarations(Wrap.fromProps(props))
+      : [];
     const gap = arrangesChildren
       ? tokenDeclarations("gap", props.gap, tokens)
       : [];
@@ -277,6 +282,7 @@ export const BoxElement = {
     );
     return [
       ...Layout.declarations(layout),
+      ...wrap,
       ...placementDeclarations(placement),
       ...rotationDeclarations(props.rotation),
       ...gap,

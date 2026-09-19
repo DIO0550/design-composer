@@ -10,26 +10,20 @@ import { Layout, Layouts, type Layout as LayoutType } from "../index";
  */
 const allLayouts: readonly LayoutType[] = Object.values(Layouts);
 
-test.each(
-  allLayouts,
-)("%s では間隔の編集可否と、子を並べる向きの有無が一致する", (layout) => {
-  expect(PropDefinition.isEnabled(BoxSchema.props.gap, { layout })).toBe(
-    Option.isSome(Layout.direction(layout)),
-  );
-});
+/** 子を並べる Box でだけ編集できる prop と、仕様の文に出す呼び名。 */
+const flexOnlyProps = [
+  ["間隔", BoxSchema.props.gap],
+  ["揃え", BoxSchema.props.align],
+  ["並べ方", BoxSchema.props.justify],
+  ["折り返し", BoxSchema.props.wrap],
+] as const;
 
 test.each(
-  allLayouts,
-)("%s では揃えの編集可否と、子を並べる向きの有無が一致する", (layout) => {
-  expect(PropDefinition.isEnabled(BoxSchema.props.align, { layout })).toBe(
-    Option.isSome(Layout.direction(layout)),
-  );
-});
-
-test.each(
-  allLayouts,
-)("%s では並べ方の編集可否と、子を並べる向きの有無が一致する", (layout) => {
-  expect(PropDefinition.isEnabled(BoxSchema.props.justify, { layout })).toBe(
+  flexOnlyProps.flatMap(([label, definition]) =>
+    allLayouts.map((layout) => [layout, label, definition] as const),
+  ),
+)("%s では%sの編集可否と、子を並べる向きの有無が一致する", (layout, _label, definition) => {
+  expect(PropDefinition.isEnabled(definition, { layout })).toBe(
     Option.isSome(Layout.direction(layout)),
   );
 });

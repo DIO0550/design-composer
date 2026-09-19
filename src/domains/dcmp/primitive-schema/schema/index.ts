@@ -1,6 +1,7 @@
 import { Constraints } from "@/domains/dcmp/constraint";
 import { Layout, Layouts } from "@/domains/dcmp/layout";
 import { Visibilities, Visibility } from "@/domains/dcmp/visibility";
+import { Wrap, Wraps } from "@/domains/dcmp/wrap";
 import type { ValueOf } from "@/types/ValueOf";
 import {
   type EnabledWhen,
@@ -10,7 +11,7 @@ import {
 
 /**
  * 子を並べる Box でだけ効く、という条件（docs/03「Box」）。
- * `free` は子を並べないので、間隔・揃えを指定しても意味を持たない。
+ * `free` は子を並べないので、間隔・揃え・折り返しを指定しても意味を持たない。
  */
 const FlexOnly = {
   kind: "notEquals",
@@ -149,6 +150,13 @@ export const BoxSchema = {
       values: Object.values(Layouts),
       default: Layout.Default,
       group: "layout",
+    },
+    wrap: {
+      domain: "enum",
+      values: Object.values(Wraps),
+      default: Wrap.Default,
+      group: "layout",
+      enabledWhen: FlexOnly,
     },
     gap: {
       domain: "token",

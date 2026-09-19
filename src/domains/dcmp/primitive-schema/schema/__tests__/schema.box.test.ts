@@ -47,6 +47,16 @@ test("Box の並べ方は layout が free のとき編集できない", () => {
   ).toBe(true);
 });
 
+test("Box の wrap は nowrap / wrap の enum でデフォルトが nowrap", () => {
+  const definition = BoxSchema.props.wrap;
+  expect(PropDefinition.isEnum(definition)).toBe(true);
+  expect(definition).toMatchObject({
+    domain: "enum",
+    values: ["nowrap", "wrap"],
+    default: "nowrap",
+  });
+});
+
 test("Box の placement は flow / absolute の enum でデフォルトが flow", () => {
   const definition = BoxSchema.props.placement;
   expect(PropDefinition.isEnum(definition)).toBe(true);
