@@ -105,6 +105,7 @@ features/<feature-name>/
 
 - モジュールフォルダ(domains のカテゴリ配下 / services・features の各サブフォルダ、およびその中で分割したサブフォルダ)は `index.ts` を公開APIとする
 - モジュールフォルダの基本形は「`index.ts` + `__tests__/`」。**実装は `index.ts` に直接書く**。複数ファイルへの分割が必要になったら、実装ファイルを1つだけ切り出すのではなく、その時点で**サブフォルダに分割**する(サブフォルダも同じ形を保つ)
+- `.tsx` は**600行まで**(lint の `max-lines` で強制。数えるのは空行とコメントを除いた行。閾値の根拠は `.claude/hooks/README.md`)
 - フォルダ外部からの import は必ず `index.ts` 経由とし、**内部ファイルへの deep import は禁止**
 - `index.ts` から export するのは外部に公開する必要があるものだけに絞る
 
