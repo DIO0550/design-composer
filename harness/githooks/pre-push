@@ -55,3 +55,7 @@ bash .github/scripts/check-added-test-helper-duplication.sh
 # 行数の予算(AGENTS.md「常時ロードは増やさない」)。実測と予算がずれていれば落ちる。
 echo "pre-push: 行数のラチェット"
 bash harness/records/count.sh --ratchet
+
+# 上の 2 つが読んでいる数え方そのものの判定表。
+echo "pre-push: 集計の判定表"
+bash harness/records/count-cases.sh

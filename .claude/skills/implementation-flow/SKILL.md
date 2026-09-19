@@ -164,11 +164,12 @@ python3 .claude/hooks/lib/result-option-read-violations.py src  # 判別子の�
 bash .github/scripts/check-added-lint-suppressions.sh           # 追加された lint 抑制
 bash .github/scripts/check-added-test-helper-duplication.sh     # 追加されたテストヘルパーの重複
 bash harness/records/count.sh --ratchet                         # 行数のラチェット
+bash harness/records/count-cases.sh                             # 集計の判定表
 ```
 
-- **下の 6 つは `pnpm` のスクリプトに無い。** `rules-check` の 4 つは git hooks と CI
+- **下の 8 つは `pnpm` のスクリプトに無い。** `rules-check` の 6 つは git hooks と CI
   (`frontend.yml` の `rules-check`)が、`check-added-*` の 2 つは git hooks と CI の
-  `lint-suppress` ジョブだけが走らせるので、この 6 行を省くと手元の確認がゲートより
+  `lint-suppress` ジョブだけが走らせるので、この 8 行を省くと手元の確認がゲートより
   狭くなる。**doc コメントとテスト規約が CI へ上げられたのは、層 2 と層 3 が
   同じ環境で同時に抜けたため**(`.claude/hooks/README.md`「カバー範囲と残る穴」)
 - **`check-added-*` の 2 つは base との差分で判定する。** 引数を省くと `origin/main` と

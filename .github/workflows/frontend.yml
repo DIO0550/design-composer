@@ -140,6 +140,12 @@ jobs:
       - name: 行数のラチェット
         run: bash harness/records/count.sh --ratchet
 
+      # count.sh の窓の数え方と --ratchet の終了コードの判定表。
+      # 既存の *-cases.sh は手で走らせる形だが、count.sh の判定は直前のステップと
+      # pre-push がゲートとして呼ぶので、その判定表もゲートに載せる。
+      - name: 集計の判定表
+        run: bash harness/records/count-cases.sh
+
   report-comment:
     name: post ci report comment
     needs: check
