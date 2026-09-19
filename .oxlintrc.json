@@ -144,6 +144,18 @@
           { "group": ["**/hooks/**", "@/hooks/**", "@/hooks"], "message": "libs は hooks を import できません" }
         ] }]
       }
+    },
+    {
+      "files": ["src/**/*.tsx"],
+      "rules": {
+        "max-lines": ["error", { "max": 600 }]
+      }
+    },
+    {
+      "files": ["src/**/__tests__/**/*.tsx"],
+      "rules": {
+        "max-lines": "off"
+      }
     }
   ]
 }
