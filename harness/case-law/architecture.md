@@ -63,10 +63,15 @@ services に置かれたロジックの多くは、`rules/architecture.md` の 1
 | NG | OK |
 |---|---|
 | `export type AxisGrab` を置くが、overlay は `grip.width.end` と値で触るだけで型名を使わない | `export` を外す |
-| `RepositionPreviewProperty` を、`__tests__/setup.tsx` が綴りを写さずに済むよう export する | 否定 assert を実装から引くこと自体は正しいので現状のまま入れたが、公開 API は広がっている |
+| `DocumentError.fromJsonErrors` を消して `fromValidationErrors` の外部呼び出しが 0 件になるのに、公開のまま残す | 同じコンパニオン内からしか呼ばれなくなった時点で公開を外す |
 
-**この形は `implementation-reviewer` の観点（`index.ts` の export が増えていないか）が
-毎回捕まえている。** pr-235 以降の再発のうち過半数がこの形で、人・bot まで届いた件数は 0。
+- `RepositionPreviewProperty` のように、**テストが綴りを写さずに済むよう export する**形は
+  判断が割れる（否定 assert を実装から引くこと自体は正しい）。現状のまま入れた例がある
+
+**この形は計画検証・実装検証の観点（`index.ts` の export が増えていないか）が捕まえている。**
+pr-235 以降の再発のうち過半数がこの形で、**人・bot まで届いた件数は 0**。
+`plan-reviewer`（計画の「消すもの」の欄が空）と `implementation-reviewer`（差分の export）の
+**両方**が出どころに現れるので、片方だけを当てにしない。
 
 ### 2. 部品が積み上がって分割の起点を失う（層 1 = oxlint `max-lines` で止める）
 
@@ -76,13 +81,9 @@ services に置かれたロジックの多くは、`rules/architecture.md` の 1
 足す側は毎回「まだ必要ではない」と判断できてしまう。
 
 `.oxlintrc.json` の `src/**/*.tsx` → `max-lines: 600` がこの形を機械的に止める。
-`src/**/__tests__/**/*.tsx` は対象外（テストの肥大化は `rules/testing.md`
-「1ファイルが肥大化したらカテゴリを分けること」が別の軸で持つ）。
-
-**`.ts` は対象外なので、中身を兄弟の `.ts` へ逃がす経路は開いたままになる。**
-`rules/architecture.md`「実装は `index.ts` に直接書く」が禁じているが、機械的に止めているのは
-`import-rule-violations.py` の「外から非 index ファイルを読む」形だけで、
-**`index.tsx` からだけ読む兄弟 `.ts` は検出されない**。
+**何を対象にし、何を外し、どの迂回路が開いたままかは
+[`.claude/hooks/README.md`](../../.claude/hooks/README.md)「例外(エスケープハッチ)」が持つ**
+（閾値を動かすときに開くのはそちら）。
 
 ### 3. 他 feature の公開口への触り方が割れる（機械化できなかった形）
 
@@ -93,5 +94,6 @@ services に置かれたロジックの多くは、`rules/architecture.md` の 1
 
 **この形はフックにしていない。** 「束オブジェクトへの添字アクセス」を一律に禁じると、
 TypeScript の正当な indexed access 型まで誤検知する（`src/` に 21 件・うち非テスト 8 件。
-`CSSProperties["cursor"]` / `DocumentSaveState["kind"]` / `ArtboardBoxProps["rotation"]` など）。
+非テスト側は `CSSProperties["cursor"]` / `DocumentSaveState["kind"]` /
+`PropValidationError["kind"]` / `DocumentError["location"]` など）。
 1 件しか出ていないので一般化の材料も無い。**再発したらフック化の候補に戻す。**
