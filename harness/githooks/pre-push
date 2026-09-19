@@ -51,3 +51,7 @@ bash .github/scripts/check-added-lint-suppressions.sh
 
 echo "pre-push: 追加されたテストヘルパーの重複"
 bash .github/scripts/check-added-test-helper-duplication.sh
+
+# 行数の予算（AGENTS.md「常時ロードはラチェットで縮める」）。
+echo "pre-push: 行数のラチェット"
+bash harness/records/count.sh --ratchet

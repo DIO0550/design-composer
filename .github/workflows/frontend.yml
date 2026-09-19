@@ -99,7 +99,7 @@ jobs:
 
   rules-check:
     # ジョブ名は検査が増えても据え置く(理由は lint-suppress ジョブのコメント)。
-    name: doc コメント / テスト規約 / import 規約のチェック
+    name: doc コメント / テスト規約 / import 規約 / 判別子 / ラチェットのチェック
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:
@@ -127,6 +127,10 @@ jobs:
       # import グラフを組まないと判定できないものだけ。
       - name: import 規約
         run: python3 .claude/hooks/lib/import-rule-violations.py src
+
+      # 行数の予算（AGENTS.md「常時ロードはラチェットで縮める」）。ずれていれば落ちる。
+      - name: 行数のラチェット
+        run: bash harness/records/count.sh --ratchet
 
       # Result / Option の判別子を定義元の外で直読みしている箇所（#523）。
       # oxlint には no-restricted-syntax が無く、Biome の GritQL プラグインでは
