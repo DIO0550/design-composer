@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# 分類ごとの「最後の介入以降の再発数」を数える。
-# harness-growth スキル（.claude/skills/harness-growth/SKILL.md）の Step 1 / Step 3 の入力。
+# 分類ごとの「最後の介入以降に、人・bot・CI まで届いた件数」を数える。
+# harness-growth スキル（.claude/skills/harness-growth/SKILL.md）の Step 1 / Step 5 の入力。
 #
 # 読むのは記録の次の 4 種類の行:
 #   - 分類: `<分類>`                       … 指摘 1 件
@@ -10,162 +10,268 @@
 #   - 見送り: `<分類>` at pr-<番号>        … 縮める候補を見送ったこと（--shrink が数える）
 #
 # 使い方:
-#   count.sh            分類ごとの再発数・すり抜け・通算・以降・最終介入を出す（増やす側）
-#   count.sh --shrink   縮める側の条件を数字で出す（Step 3 の棚卸し。--unused を含む）
-#   count.sh --unused   語彙表にあるが記録に 1 件も出ていない分類だけを出す
+#   count.sh            分類ごとの再発・内部・通算・以降・起点を出す
+#   count.sh --shrink   縮める側の条件を数字で出す
+#   count.sh --ratchet  常時ロードの行数を予算と突き合わせる（ずれていれば exit 1）
 #
 # 出力の列:
-#   再発      最後の介入より後の記録に出た件数。2a / 2b / 2c の判断はこれで行う
-#   すり抜け  再発のうち出どころが人・bot だった件数。plan-reviewer も
-#             implementation-reviewer も捕まえられなかった＝ハーネスが効かなかった証拠。
-#             サブエージェントが捕まえた分は逆に効いた証拠なので、混ぜて数えない
-#   通算      全記録での件数。語彙が飽和していないかを目視するときの参考
-#   以降      最後の介入より後の記録の本数（「介入後 N 本再発ゼロ」の N）
-#   最終介入  最後に置いた層と、その回の PR 番号。無ければ「未介入」
+#   再発  **人・bot・CI に届いた**件数。綴りごとに、その綴りの窓が開いてからの分を数える
+#   内部  同じ区間で、サブエージェント・自己修正・フックが捕まえた件数。分岐には使わない
+#         （理由は templates/record.md「なぜ外部だけで分岐するのか」）
+#   通算  全記録での件数（再発・内部の合計）
+#   以降  起点より後の記録の本数。**その分類でいちばん長く開いている窓の長さ**
+#   起点  その分類でいちばん古い、まだ開いている窓。未介入の綴りが 1 つでもあれば「未介入」
+#
+# **再発は畳む前の綴りごとに数える。** 1 つの綴りへ介入しても、同じ分類へ畳まれる別の綴りの
+# 窓までは閉じない（閉じると、いちばん外へ漏れている形が畳んだ瞬間に見えなくなる）。分類名
+# そのもので書かれた `対策済` は、その分類へ畳まれる綴りすべての窓を閉じる。
+#
+# **この数え方を固定する検査は無い。** 境界の取り方を変えても落ちるものが無いので、変えるなら
+# 出力を独立に数え直して突き合わせること（rules/coding.md「外部の挙動は動かして確かめる」）。
 set -euo pipefail
 
 cd "$(dirname "$0")"
 
-vocabulary="../../.claude/skills/harness-record/templates/record.md"
+# 常時ロード（AGENTS.md + rules/）と harness-growth スキルの行数の予算。
+# **ラチェット: 下げるだけで、上げない**（AGENTS.md「常時ロードはラチェットで縮める」）。
+LoadedBudget=845
+GrowthSkillBudget=124
 
-# 語彙表にあるのに記録へ 1 件も出ていない分類を 1 行 1 件で返す。
-# 「効いているから 0」と「読まれていないから 0」は記録では区別できないので、
-# 強制の有無での切り分けは harness-growth の Step 3 が行う。
-unused_tags() {
-  used="$(grep -h '^- 分類: `' pr-*.md | sed 's/^- 分類: `\([^`]*\)`.*/\1/' | sort -u)"
-  # 「分類の語彙」の表だけを読む（同じ書式の「層の語彙」の表を拾わないため）
-  awk '/^## 分類の語彙/{inside=1; next} /^## /{inside=0} inside' "$vocabulary" \
-    | sed -n 's/^| `\([a-z-]*\)` | .*/\1/p' | sort -u | while read -r tag; do
-    printf '%s\n' "$used" | grep -qx "$tag" || printf '%s\n' "$tag"
-  done
-}
+# 記録に書かれた分類を、いまの語彙へ畳む対応表（`<旧> <新>`。末尾の `*` は前方一致）。
+# **過去の記録は書き換えない**規約なので、読む側がここで畳む
+# （.claude/skills/harness-record/templates/record.md「分類の語彙」）。
+TagFolds='
+naming* naming
+duplication* duplication
+comment* comment
+test* test
+plan* plan
+ui* ui
+domain* placement
+hook-environment* harness
+version-bump-unverified plan
+vrt-blind-spot ui
+drag-feedback-incomplete ui
+ownership-reasoning placement
+logic-ownership placement
+service-placement placement
+layer-dependency placement
+module-api placement
+utils-form placement
+companion-object typing
+immutability typing
+result-option typing
+signature typing
+type-vocabulary typing
+illegal-state typing
+effect state
+state-management state
+ref-guard state
+composition component
+nested-interactive-event-boundary component
+rules-consistency harness
+docs-consistency harness
+tooling-rule-scope-gap harness
+harness-process-drift harness
+subagent-control harness
+tool-behavior-unverified harness
+'
 
-# 1 つの記録の中で「分類」行と、その次に現れる「出どころ」行が指摘 1 件の対になる。
-# 指定した分類の件数と、そのうち出どころが人・bot だった件数を "<件数> <すり抜け>" で返す。
-#
-# pr-317 以前は出どころの綴りが割れている（`レビュー` / `レビュー（人間）` /
-# `レビュー（human）` / `レビュー（オーナー）` / `レビュー（Copilot）`）。過去の記録は
-# 書き換えない規約なので、読む側が古い綴りも人・bot として扱う
-# （.claude/skills/harness-record/templates/record.md「出どころの語彙」）。
-count_tag() {
-  awk -v want="$2" '
+# 分類ごとの集計行を返す。列は「再発 内部 通算 以降 見送り 分類 起点」で、整形は呼び出し側。
+# 既定の表と --shrink の両方が読むので、数え方をここ 1 箇所に持つ。
+summary_rows() {
+  awk -v folds="$TagFolds" '
+    BEGIN {
+      lineCount = split(folds, lines, "\n")
+      for (i = 1; i <= lineCount; i++) {
+        if (lines[i] == "") continue
+        split(lines[i], pair, " ")
+        foldCount++
+        foldFrom[foldCount] = pair[1]
+        foldTo[foldCount] = pair[2]
+      }
+    }
+
+    # 旧い綴りを対応表で畳む。表に無い綴りはそのまま返すので、語彙から外れた綴りは行として出る。
+    function fold(tag,   i, pattern) {
+      for (i = 1; i <= foldCount; i++) {
+        pattern = foldFrom[i]
+        if (pattern ~ /\*$/) {
+          if (index(tag, substr(pattern, 1, length(pattern) - 1)) == 1) return foldTo[i]
+        } else if (tag == pattern) {
+          return foldTo[i]
+        }
+      }
+      return tag
+    }
+
+    # 人・bot・CI に届いた指摘か。行頭の語で決める（`自己修正（CI の結果）` は自己修正）。
+    # pr-317 以前は綴りが割れている（`レビュー` / `レビュー（人間）` / `レビュー（human）` /
+    # `レビュー（オーナー）` / `レビュー（Copilot）`）ので、古い綴りも外部として読む。
+    function isExternal(line) {
+      if (line ~ /^- 出どころ: *`?レビュー`? *$/) return 1
+      if (line ~ /^- 出どころ: *`?レビュー（(人間|人|human|オーナー|owner|Copilot|bot)）/) return 1
+      if (line ~ /^- 出どころ: *`?CI[`（]/) return 1
+      if (line ~ /^- 出どころ: *`?CI`? *$/) return 1
+      return 0
+    }
+
+    # その綴りの窓が開いた記録番号。自分への介入と、畳み先の分類名そのものへの介入の新しいほう。
+    function boundary(tag,   own, basket) {
+      own = lastPr[tag]
+      basket = lastPr[fold(tag)]
+      return (own > basket) ? own : basket
+    }
+
+    FNR == 1 {
+      number = FILENAME
+      sub(/^pr-/, "", number)
+      sub(/\.md$/, "", number)
+      number = number + 0
+      records[number] = 1
+      pendingTag = ""
+    }
+
     /^- 分類: `/ {
-      tag = $0
-      sub(/^- 分類: `/, "", tag)
-      sub(/`.*/, "", tag)
-      pending = (tag == want)
+      pendingTag = $0
+      sub(/^- 分類: `/, "", pendingTag)
+      sub(/`.*/, "", pendingTag)
       next
     }
+
     /^- 出どころ:/ {
-      if (pending) {
-        found++
-        # 括弧なしの `レビュー` は pr-317 以前に人のレビューを指していた綴り。
-        byBareReview = ($0 ~ /^- 出どころ: *`?レビュー`? *$/)
-        # 語彙表の `レビュー（人）` `レビュー（bot）` と、それ以前の綴り。
-        byHumanOrBot = ($0 ~ /^- 出どころ: *`?レビュー（(人間|人|human|オーナー|owner|Copilot|bot)）/)
-        if (byBareReview || byHumanOrBot) {
-          escaped++
-        }
-        pending = 0
+      if (pendingTag != "") {
+        if (isExternal($0)) external[pendingTag, number]++
+        else internal[pendingTag, number]++
+        spelling[pendingTag] = 1
+        pendingTag = ""
       }
       next
     }
-    END { printf "%d %d\n", found, escaped }
-  ' "$1"
+
+    /^- 対策済: `/ {
+      tag = $0; sub(/^- 対策済: `/, "", tag); sub(/`.*/, "", tag)
+      layer = $0; sub(/.*層=/, "", layer); sub(/ .*/, "", layer)
+      at = $0; sub(/.*at pr-/, "", at); sub(/[^0-9].*/, "", at); at = at + 0
+      # 介入の層は hook / case-law の 2 つ。古い記録の `観点` は `skill` に畳んで読む
+      # （.claude/skills/harness-record/templates/record.md「層の語彙」）。
+      if (layer == "観点") layer = "skill"
+      if (at >= lastPr[tag]) { lastPr[tag] = at; lastLayer[tag] = layer }
+      intervened[tag] = 1
+      next
+    }
+
+    /^- 見送り: `/ {
+      tag = $0; sub(/^- 見送り: `/, "", tag); sub(/`.*/, "", tag)
+      deferrals[fold(tag)]++
+      next
+    }
+
+    END {
+      for (tag in spelling) seen[fold(tag)] = 1
+      for (tag in intervened) seen[fold(tag)] = 1
+
+      for (key in external) { split(key, part, SUBSEP); total[fold(part[1])] += external[key] }
+      for (key in internal) { split(key, part, SUBSEP); total[fold(part[1])] += internal[key] }
+
+      # 起点はその分類でいちばん古い、まだ開いている窓（未介入の綴りが 1 つでもあれば 0）。
+      for (tag in spelling) {
+        basket = fold(tag)
+        if (!(basket in oldest) || boundary(tag) < oldest[basket]) {
+          oldest[basket] = boundary(tag)
+          oldestLayer[basket] = (boundary(tag) == lastPr[tag]) ? lastLayer[tag] : lastLayer[basket]
+        }
+      }
+
+      for (key in external) {
+        split(key, part, SUBSEP)
+        if (part[2] + 0 > boundary(part[1])) recurrence[fold(part[1])] += external[key]
+      }
+      for (key in internal) {
+        split(key, part, SUBSEP)
+        if (part[2] + 0 > boundary(part[1])) inside[fold(part[1])] += internal[key]
+      }
+
+      for (tag in seen) {
+        after = 0
+        # for (k in array) のキーは文字列なので、比較の前に両辺を数値へ寄せる
+        # （文字列比較だと PR 番号が 4 桁になった瞬間に "1000" < "199" になる）
+        for (number in records) if (number + 0 > oldest[tag] + 0) after++
+        origin = (oldest[tag] > 0) \
+          ? sprintf("pr-%d（層=%s）", oldest[tag], oldestLayer[tag]) : "未介入"
+        # 起点の数値（6 列目）は並べ替え用。未介入を最優先にするので 0 のまま出す
+        printf "%d %d %d %d %d %d %s %s\n", \
+          recurrence[tag], inside[tag], total[tag], after, deferrals[tag], \
+          oldest[tag], tag, origin
+      }
+    }
+  ' pr-*.md
 }
 
-# 分類ごとの集計行を返す（列は「出力の列」のとおり・並べ替えは呼び出し側で行う）。
-# 既定の表と --shrink の両方が読むので、数え方をここ 1 箇所に持つ。
-summary_rows() {
-tags="$(grep -h '^- 分類: `' pr-*.md | sed 's/^- 分類: `\([^`]*\)`.*/\1/' | sort -u)"
+# 常時ロード（AGENTS.md + rules/）の実測行数。
+loaded_lines() {
+  (cd ../.. && wc -l AGENTS.md rules/*.md | tail -1 | awk '{print $1}')
+}
 
-body=""
-for tag in $tags; do
-  # 同じ分類の対策済が複数あれば、PR 番号が最大のものが最後の介入
-  last="$( { grep -hoE "^- 対策済: \`$tag\` 層=[^ ]+ at pr-[0-9]+" pr-*.md || true; } \
-    | sed 's/.*層=\([^ ]*\) at pr-\([0-9]*\)/\2 \1/' | sort -n | tail -1)"
-  if [ -n "$last" ]; then
-    last_pr="${last%% *}"
-    intervention="pr-${last_pr}（層=${last##* }）"
-  else
-    last_pr=0
-    intervention="未介入"
+# 予算と実測を突き合わせて 1 行出し、ずれていれば 1 を返す。
+# 引数: <対象名> <実測> <予算> <予算を持つ変数名>
+check_budget() {
+  if [ "$2" -gt "$3" ]; then
+    printf '%s が予算を超えています: %s / %s 行 — 足した分と同量を削るか、判例・フックへ移す\n' \
+      "$1" "$2" "$3"
+    return 1
   fi
-
-  recurrence=0
-  escape=0
-  total=0
-  after=0
-  for record in pr-*.md; do
-    number="${record#pr-}"
-    number="${number%.md}"
-    read -r count escaped <<EOF
-$(count_tag "$record" "$tag")
-EOF
-    total=$((total + count))
-    [ "$number" -gt "$last_pr" ] || continue
-    recurrence=$((recurrence + count))
-    escape=$((escape + escaped))
-    after=$((after + 1))
-  done
-
-  body="${body}$(printf '%4d  %8d  %4d  %4d  %-22s %s' \
-    "$recurrence" "$escape" "$total" "$after" "$tag" "$intervention")
-"
-done
-printf '%s' "$body"
+  if [ "$2" -lt "$3" ]; then
+    printf '%s が予算を下回りました: %s / %s 行 — count.sh の %s を %s へ下げる（上げない）\n' \
+      "$1" "$2" "$3" "$4" "$2"
+    return 1
+  fi
+  printf '%s: %s / %s 行\n' "$1" "$2" "$3"
+  return 0
 }
 
-# --unused: 語彙表にあるのに記録へ 1 件も出ていない分類。
-if [ "${1:-}" = "--unused" ]; then
-  printf '%s\n' "記録に 1 件も出ていない分類（語彙表: ${vocabulary}）"
-  unused_tags | sed 's/^/  /'
-  exit 0
+# --ratchet: 実測と予算が一致していなければ落とす。git hooks と CI が呼ぶ。
+# 提案の文字列を出すだけでは、目で確かめる形と同じで一度も発火しない。
+if [ "${1:-}" = "--ratchet" ]; then
+  status=0
+  check_budget "常時ロード（AGENTS.md + rules/）" "$(loaded_lines)" "$LoadedBudget" \
+    "LoadedBudget" || status=1
+  check_budget "harness-growth/SKILL.md" \
+    "$(wc -l < ../../.claude/skills/harness-growth/SKILL.md)" "$GrowthSkillBudget" \
+    "GrowthSkillBudget" || status=1
+  exit "$status"
 fi
 
-# --shrink: 縮める側の条件を数字で出す（harness-growth の SKILL.md「Step 3」）。
-#
-# 増やす側は count.sh が数字を出して 2a / 2b / 2c が分岐するのに対し、縮める側は
-# 条件が満たされているかを目で確かめる形だったため、一度も発火していなかった
-# （rules/ と AGENTS.md が正味マイナスになったコミットは全履歴で 0 件）。
-# 同じように数字で出して、判断の入力を揃える。
+# --shrink: 縮める側の条件を数字で出す（harness-growth の SKILL.md「Step 5」）。
 if [ "${1:-}" = "--shrink" ]; then
-  printf '%s\n\n' "縮める候補（harness-growth の SKILL.md「Step 3」）"
+  printf '%s\n\n' "縮める候補（harness-growth の SKILL.md「Step 5」）"
 
-  # 効いている対策は、その層より下に同内容の記述を二重に持つ理由が無い。
-  # 層=rules は最下層で「下の層」が無いので、削るのではなく実例・経緯を判例へ落とせるかを見る。
-  # 見送り回数は「- 見送り: `<分類>` at pr-<番号>」の行（harness-growth だけが書く）から数える。
-  # 見送りを PR 本文にしか書かないと、同じ候補を何回見送ったかが数えられない。
-  printf '%s\n' "1. 効いている対策（以降 10 本以上・再発 0）— その対策より下の層の記述を削る"
-  printf '%s\n' "   ※ 層=rules は下の層が無い。実例・経緯を判例へ落とせるかを見る"
-  proven="$(summary_rows | awk '$1 == 0 && $4 >= 10 {print $5, $4, $6}' \
-    | while read -r tag after intervention; do
-      deferrals="$( { grep -hoE "^- 見送り: \`$tag\` at pr-[0-9]+" pr-*.md || true; } | wc -l | tr -d ' ')"
-      note=""
-      [ "$deferrals" -gt 0 ] && note="  見送り=${deferrals}回"
-      printf '     %-28s 以降=%-4s 最終介入=%s%s\n' "$tag" "$after" "$intervention" "$note"
-    done)"
+  printf '%s\n' "1. 効いている介入（介入済み・以降 10 本以上・再発 0）— 対応する rules/ の記述を"
+  printf '%s\n' "   フック・判例への参照 1 行へ縮める"
+  proven="$(summary_rows | sort -k4,4rn | awk '$1 == 0 && $4 >= 10 && $6 > 0 {
+    note = ($5 > 0) ? sprintf("  見送り=%d回", $5) : ""
+    printf "     %-14s 以降=%-4s 起点=%s%s\n", $7, $4, $8, note
+  }')"
   printf '%s\n\n' "${proven:-     該当なし}"
 
-  # 足したばかりの語彙は必ずここに出るので、割った回の分を除いてから読む。
-  printf '%s\n' "2. 未使用の分類 — 対応する rules/ の節を縮める候補"
-  printf '%s\n' "   ※ 2c / 逃し弁で語彙を割った回に足した分は必ずここに出る。除いてから読む"
-  unused="$(unused_tags | sed 's/^/     /')"
-  printf '%s\n\n' "${unused:-     該当なし}"
+  # 未介入で再発 0 は「効いている」ではない。強制の有無で読み分けるため別の節に出す。
+  printf '%s\n' "1b. 未介入のまま再発 0 — 「効いているから 0」とは言えない。強制の有無で読み分ける"
+  untouched="$(summary_rows | sort -k3,3rn | awk '$1 == 0 && $6 == 0 {
+    printf "     %-14s 通算=%-5s 内部=%s\n", $7, $3, $2
+  }')"
+  printf '%s\n\n' "${untouched:-     該当なし}"
 
-  printf '%s\n' "3. 常時ロードの行数"
-  loaded="$(cd ../.. && wc -l AGENTS.md rules/*.md | tail -1 | awk '{print $1}')"
-  growth="$(wc -l < ../../.claude/skills/harness-growth/SKILL.md)"
-  printf '     %-34s %4s / %s 行%s\n' "AGENTS.md + rules/" "$loaded" 900 \
-    "$([ "$loaded" -gt 900 ] && printf ' ← 超過' || true)"
-  printf '     %-34s %4s / %s 行%s\n\n' "harness-growth/SKILL.md" "$growth" 200 \
-    "$([ "$growth" -gt 200 ] && printf ' ← 超過' || true)"
+  printf '%s\n' "2. 行数のラチェット（予算は下げるだけ。上げない）"
+  check_budget "常時ロード（AGENTS.md + rules/）" "$(loaded_lines)" "$LoadedBudget" \
+    "LoadedBudget" | sed 's/^/     /' || true
+  check_budget "harness-growth/SKILL.md" \
+    "$(wc -l < ../../.claude/skills/harness-growth/SKILL.md)" "$GrowthSkillBudget" \
+    "GrowthSkillBudget" | sed 's/^/     /' || true
+  printf '\n'
 
-  # 装置(スキル・エージェント)の間引き候補。記録の「## 発火」の行から数える。
-  # フックはここでは数えない(予防装置は発火 0 が「効いている」でありうるため。
-  # フックの重複は節 1 と層上げの側で削る)。プラグインのスキルは発火した分しか
-  # 表に出ない(リポジトリからは一覧を数えられない)。
-  printf '%s\n' "4. 装置の間引き候補（発火を計測できた記録 10 本から判断）"
+  # 装置（スキル・エージェント）の間引き候補。記録の「## 発火」の行から数える。
+  # フックはここでは数えない（予防装置は発火 0 が「効いている」でありうるため）。
+  printf '%s\n' "3. 装置の間引き候補（発火を計測できた記録 10 本から判断）"
   measured=0
   for record in pr-*.md; do
     grep -qE '^- 発火: (`|無し)' "$record" && measured=$((measured + 1))
@@ -188,6 +294,9 @@ if [ "${1:-}" = "--shrink" ]; then
   exit 0
 fi
 
-printf '%s\n' "再発  すり抜け  通算  以降  分類                   最終介入"
-# 再発が同数なら、すり抜けが出ている分類を上に出す（効いていない側が分かっているため）
-summary_rows | sort -k1,1rn -k2,2rn
+printf '%s\n' "再発  内部  通算  以降  分類           起点"
+# 再発が同数なら、起点が古い（長く開いている）ほうを上に出す。並べ替えは表示文字列ではなく
+# 6 列目の数値で行う（`未介入` は 0 なので最優先に来る）。通算・内部は分岐に使わない性質なので、
+# 並べ替えの決め手にもしない
+summary_rows | sort -k1,1rn -k6,6n \
+  | awk '{ printf "%4d  %4d  %4d  %4d  %-14s %s\n", $1, $2, $3, $4, $7, $8 }'
