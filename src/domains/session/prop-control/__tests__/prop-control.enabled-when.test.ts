@@ -29,3 +29,31 @@ test("条件を満たす prop だけが出るので、縦のサイズは横の�
   expect(names).toContain("width");
   expect(names).not.toContain("height");
 });
+
+test("サイズのモードが hug なら最小 / 最大のコントロールが出る", () => {
+  const names = propNamesOf(boxSelection({ widthMode: "hug" }));
+
+  expect(names).toContain("minWidth");
+  expect(names).toContain("maxWidth");
+});
+
+test("サイズのモードが fixed なら最小 / 最大のコントロールは出ない", () => {
+  const names = propNamesOf(boxSelection({ widthMode: "fixed" }));
+
+  expect(names).not.toContain("minWidth");
+  expect(names).not.toContain("maxWidth");
+});
+
+test("縦のサイズのモードが hug なら高さの最小 / 最大のコントロールが出る", () => {
+  const names = propNamesOf(boxSelection({ heightMode: "hug" }));
+
+  expect(names).toContain("minHeight");
+  expect(names).toContain("maxHeight");
+});
+
+test("縦のサイズのモードが fixed なら高さの最小 / 最大のコントロールは出ない", () => {
+  const names = propNamesOf(boxSelection({ heightMode: "fixed" }));
+
+  expect(names).not.toContain("minHeight");
+  expect(names).not.toContain("maxHeight");
+});
