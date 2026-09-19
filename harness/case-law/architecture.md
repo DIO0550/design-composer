@@ -51,49 +51,24 @@ services に置かれたロジックの多くは、`rules/architecture.md` の 1
 1 feature でしか使わないのに `src/domains/` へ置く / 2 つ以上の feature が必要なのに
 `features/<x>/domains/` に留める。どちらの向きにも出る。
 
-## `module-api` — 公開 API が広がる / 分割の閾値が無い
+## `module-api` — 「いつ分割が必要か」は書けても、機械には拾えない形がある
 
-`rules/architecture.md`「モジュールの公開API」に対する再発は 3 つの形に分かれる。
-**どれも「何を外へ出すか」の話だが、止まる場所が違う。**
+pr-235 で観点(`implementation-reviewer`「モジュールの公開 API の観点」)へ介入した後も
+28 件再発し、うち 2 件が人のレビューまで届いた(すり抜け)。内訳は**未使用 export の放置**
+(16 件・全件すり抜け 0)が大半で、これは既存の観点(「`index.ts` の export が増えていないか」)
+が既に捕まえている。すり抜けた 2 件だけが観点の範囲外だった。
 
-### 1. 未使用・過剰な export（いちばん多い形・層 3 で止まっている）
+- **1 件目(pr-240): `.tsx` に部品が積み上がっても分割の閾値が無かった。** `artboard-canvas/index.tsx`
+  が 716 行・11 コンポーネントになるまで誰も気づけなかった。**行数はフックにできる**
+  (`.oxlintrc.json` の `overrides` に `src/**/*.tsx` 向け `max-lines: 600` を追加。現行の最大は
+  `opened-document-editor/index.tsx` の 575 行で、追加時点では違反 0)
+- **2 件目(pr-544#22): 「他 feature の束オブジェクトへ添字でアクセスする」と「直接 import する」の
+  流儀不統一は、フックにしなかった。** 汎用化すると TypeScript の正当な indexed access 型
+  (`CSSProperties["cursor"]` 等、`src/` に実例が複数ある)まで誤検知する。「直接 import できる
+  型が既にあるのに束の添字経由で書いているか」は型情報と消費者側の実態を読まないと判定できず、
+  文字列一致では偽陽性しか出ない(`harness-growth`「フックにする/しない」)。件数も 1 件のみで
+  一般化する材料が無いため、今回は語彙を割らず単発として残す(再発したら候補にする)
 
-`export` を付けたが、production 側の消費者が同一ファイル内にしかない。
-
-| NG | OK |
+| NG(汎用化するとこう誤検知する) | OK(実際に指摘された形) |
 |---|---|
-| `export type AxisGrab` を置くが、overlay は `grip.width.end` と値で触るだけで型名を使わない | `export` を外す |
-| `DocumentError.fromJsonErrors` を消して `fromValidationErrors` の外部呼び出しが 0 件になるのに、公開のまま残す | 同じコンパニオン内からしか呼ばれなくなった時点で公開を外す |
-
-- `RepositionPreviewProperty` のように、**テストが綴りを写さずに済むよう export する**形は
-  判断が割れる（否定 assert を実装から引くこと自体は正しい）。現状のまま入れた例がある
-
-**この形は計画検証・実装検証の観点（`index.ts` の export が増えていないか）が捕まえている。**
-pr-235 以降の再発のうち過半数がこの形で、**人・bot まで届いた件数は 0**。
-`plan-reviewer`（計画の「消すもの」の欄が空）と `implementation-reviewer`（差分の export）の
-**両方**が出どころに現れるので、片方だけを当てにしない。
-
-### 2. 部品が積み上がって分割の起点を失う（層 1 = oxlint `max-lines` で止める）
-
-`artboard-canvas/index.tsx` が 716 行・11 コンポーネントになるまで誰も気づかなかった。
-足した差分は `DropPositionLabel` 1 つで、残りは以前から積み上がっていた分。
-規範は分け方（サブフォルダへ）を書いているが**「必要になった」の判定基準を持たない**ので、
-足す側は毎回「まだ必要ではない」と判断できてしまう。
-
-`.oxlintrc.json` の `src/**/*.tsx` → `max-lines: 600` がこの形を機械的に止める。
-**何を対象にし、何を外し、どの迂回路が開いたままかは
-[`.claude/hooks/README.md`](../../.claude/hooks/README.md)「例外(エスケープハッチ)」が持つ**
-（閾値を動かすときに開くのはそちら）。
-
-### 3. 他 feature の公開口への触り方が割れる（機械化できなかった形）
-
-`EditorScreen` だけが `ipc: DocumentSessionPorts["ipc"]` と**他 feature の口の束へ添字で**
-書いており、他の 5 箇所（`opened-document-editor` / `use-document-session` / `use-auto-save` /
-`use-document-reload` / `use-file-revert`）はすべて `DocumentIpc` を直接 import していた。
-依存方向としては規約どおりで、割れていたのは流儀だけ。
-
-**この形はフックにしていない。** 「束オブジェクトへの添字アクセス」を一律に禁じると、
-TypeScript の正当な indexed access 型まで誤検知する（`src/` に 21 件・うち非テスト 8 件。
-非テスト側は `CSSProperties["cursor"]` / `DocumentSaveState["kind"]` /
-`PropValidationError["kind"]` / `DocumentError["location"]` など）。
-1 件しか出ていないので一般化の材料も無い。**再発したらフック化の候補に戻す。**
+| `Type["key"]` の indexed access 型はすべて警告 | `resizeCursor(grip): CSSProperties["cursor"]` は正当。問題は `DocumentSessionPorts["ipc"]` のように**直接 import できる名前付きの型(`DocumentIpc`)が既にあるのに** 束から添字で引く形だけ |

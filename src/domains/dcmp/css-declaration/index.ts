@@ -14,6 +14,7 @@ export type CssProperty =
   | "left"
   | "top"
   | "flex-direction"
+  | "flex-wrap"
   | "flex-grow"
   | "align-self"
   | "align-items"

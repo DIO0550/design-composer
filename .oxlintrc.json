@@ -148,13 +148,7 @@
     {
       "files": ["src/**/*.tsx"],
       "rules": {
-        "max-lines": ["error", { "max": 600 }]
-      }
-    },
-    {
-      "files": ["src/**/__tests__/**/*.tsx"],
-      "rules": {
-        "max-lines": "off"
+        "max-lines": ["error", { "max": 600, "skipBlankLines": true, "skipComments": true }]
       }
     }
   ]

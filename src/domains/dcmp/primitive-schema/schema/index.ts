@@ -10,7 +10,7 @@ import {
 
 /**
  * 子を並べる Box でだけ効く、という条件（docs/03「Box」）。
- * `free` は子を並べないので、間隔・揃えを指定しても意味を持たない。
+ * `free` は子を並べないので、間隔・揃え・折り返しを指定しても意味を持たない。
  */
 const FlexOnly = {
   kind: "notEquals",
@@ -149,6 +149,20 @@ export const BoxSchema = {
       values: Object.values(Layouts),
       default: Layout.Default,
       group: "layout",
+    },
+    /*
+     * 値は CSS の `flex-wrap` の綴りをそのまま採る。パネルは enum の値をそのままセグメント
+     * へ出すので、別の語彙にすると CSS への対応表が要る。
+     *
+     * `layout` の直後へ置くのはパネルの行の並びが宣言順で決まるためで、UI 案
+     * （docs/Design Composer.html）はこの行を描いていない。
+     */
+    wrap: {
+      domain: "enum",
+      values: ["nowrap", "wrap"],
+      default: "nowrap",
+      group: "layout",
+      enabledWhen: FlexOnly,
     },
     gap: {
       domain: "token",

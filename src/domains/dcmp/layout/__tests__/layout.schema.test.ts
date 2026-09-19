@@ -33,3 +33,11 @@ test.each(
     Option.isSome(Layout.direction(layout)),
   );
 });
+
+test.each(
+  allLayouts,
+)("%s では折り返しの編集可否と、子を並べる向きの有無が一致する", (layout) => {
+  expect(PropDefinition.isEnabled(BoxSchema.props.wrap, { layout })).toBe(
+    Option.isSome(Layout.direction(layout)),
+  );
+});

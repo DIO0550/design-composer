@@ -167,11 +167,11 @@ test("style は style 属性へ載せられる宣言の並びに直列化でき�
     NodeHtml.compile({
       name: "box",
       type: "Box",
-      props: { layout: "row", gap: "md" },
+      props: { layout: "row", gap: "md", wrap: "wrap" },
     }),
   );
 
   expect(CompiledElement.styleText(compiled)).toBe(
-    "display:flex;flex-direction:row;position:relative;gap:var(--spacing-md);align-items:stretch;justify-content:start;width:fit-content;height:fit-content",
+    "display:flex;flex-direction:row;flex-wrap:wrap;position:relative;gap:var(--spacing-md);align-items:stretch;justify-content:start;width:fit-content;height:fit-content",
   );
 });
