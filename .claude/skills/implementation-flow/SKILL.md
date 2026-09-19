@@ -163,6 +163,7 @@ python3 .claude/hooks/lib/import-rule-violations.py src         # import 規約
 python3 .claude/hooks/lib/result-option-read-violations.py src  # 判別子の直読み
 bash .github/scripts/check-added-lint-suppressions.sh           # 追加された lint 抑制
 bash .github/scripts/check-added-test-helper-duplication.sh     # 追加されたテストヘルパーの重複
+bash harness/records/count.sh --ratchet                         # 行数のラチェット
 ```
 
 - **下の 6 つは `pnpm` のスクリプトに無い。** `rules-check` の 4 つは git hooks と CI
