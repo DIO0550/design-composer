@@ -28,7 +28,7 @@
 |---|---|
 | `domain` | `enum` / `token` / `literal` |
 | `values` | enum 時: 許可される値のリスト |
-| `tokenKind` | token 時: 参照するトークン種別（spacing / colors 等） |
+| `tokenKind` | token 時: 参照するトークン種別の並び（`["spacing"]` / `["colors", "gradients"]` 等）。**1 つだけでも並びで書く**（単数と並びの 2 通りにすると、読む側が両方を捌くことになる） |
 | `literalType` | literal 時: `number` / `string` |
 | `range` | `literalType: number` 時: 取りうる値の範囲（両端を含む）。`{ min: 0, max: 1 }`。宣言しない prop は範囲では弾かれない |
 | `default` | デフォルト値。省略時は「なし」 |
@@ -98,6 +98,16 @@
 - 非表示にしても子は消えない。親を非表示にすれば子孫もまとめて描かれなくなる
 - artboard は Box スキーマを流用するが、**この prop は受け付けない**。artboard を隠すとは、要素の外側にキャンバスが描く見出しとリサイズハンドル（06-ui「キャンバス直接操作」）ごと隠すことで、それを出すかどうかは**まだ決めていない**。決まるまでは書けても効かない状態を作らず、受け付けない側に倒す
 
+### 塗り
+
+Box と Ellipse が面の塗りを `background` で持つ。値は colors か gradients のトークン参照で、**この節が決めるのは塗りを何件・どの種別で持てるかで**、既定は各プリミティブの節（下記「Box」「Ellipse」）が持つ。
+
+- **塗りは高々 1 件。** 複数のフィルを重ねることは持たない。フィルの枚数が可変なので `props` の値をスカラーに限る規定（02-data-model「値の形: フラットなスカラーのみ」）に収まらず、重ねる順序とブレンドモードも持たないため重なりの見た目が決まらない
+- **単色は colors、階調は gradients を参照する**（04-tokens「値の形式」）。同じ prop が 2 種別を指せるのは塗りだけで、曖昧にならないのはその 2 種別の間で同名を許さないから（04-tokens「命名規則」）
+- **Text の `color` は含まない。** 文字の塗りは CSS の `color` に出る（下記「HTML/CSS へのコンパイル規則」）ので出力の経路が違い、階調にするには別の仕組みが要る。文字色は colors だけを参照する
+- 画像を塗りとして持つかは Image プリミティブに従属するので、ここでは決めない（上記「プリミティブの初期セット」の「Image は保留」）
+- artboard は Box スキーマを流用するので**`background` を受け付ける**（01-file-format「artboards」が `"props": { "background": "primary" }` を例示している）
+
 ### 不透明度
 
 Box と Ellipse が、透け具合を 1 prop で持つ（Text は持たない）。
@@ -106,7 +116,7 @@ Box と Ellipse が、透け具合を 1 prop で持つ（Text は持たない）
 |---|---|---|---|
 | `opacity` | 生リテラル (number, 0〜1) | 0 が完全に透明、1 が不透明 | `1` |
 
-- **見た目の値だが生リテラルにする。** 対応するトークン種別が無く（04-tokens の 5 種）、種別を増やすかはこの prop だけの判断にできないため（02-data-model「値のドメイン: 3種類」）
+- **見た目の値だが生リテラルにする。** 対応するトークン種別が無く（04-tokens の 6 種）、種別を増やすかはこの prop だけの判断にできないため（02-data-model「値のドメイン: 3種類」）
 - **トークンが持つ色の不透明度（`#rrggbbaa` の alpha。トークン編集では 0〜100 の % で出す）とは別の値。** こちらはノードの prop としてファイルに載る値なので、CSS の `opacity` と同じ 0〜1 で持つ
 - 取りうる範囲は `range` で宣言し、外れた値はバリデーションエラーにする（下記「バリデーション仕様」）
 - artboard は Box スキーマを流用するので**この prop を受け付ける**（受け付けないと決めた「配置の指定」の 5 prop・「表示 / 非表示」と違い、除く理由が無い）
@@ -152,7 +162,7 @@ Box と Ellipse が、透け具合を 1 prop で持つ（Text は持たない）
 | `width` | 生リテラル (number, px) | `widthMode: fixed` 時のみ有効 | - |
 | `heightMode` | enum | `hug` / `fill` / `fixed` | `hug` |
 | `height` | 生リテラル (number, px) | `heightMode: fixed` 時のみ有効 | - |
-| `background` | トークン (colors) | | なし (透明) |
+| `background` | トークン (colors / gradients) | 上記「塗り」 | なし (透明) |
 | `radiusTopLeft` | トークン (radius) | 左上 | なし (0) |
 | `radiusTopRight` | トークン (radius) | 右上 | なし (0) |
 | `radiusBottomRight` | トークン (radius) | 右下 | なし (0) |
@@ -197,7 +207,7 @@ Box と Ellipse が、透け具合を 1 prop で持つ（Text は持たない）
 | `width` | 生リテラル (number, px) | `widthMode: fixed` 時のみ有効 | `100` |
 | `heightMode` | enum | `fill` / `fixed` | `fixed` |
 | `height` | 生リテラル (number, px) | `heightMode: fixed` 時のみ有効 | `100` |
-| `background` | トークン (colors) | | `gray-300` |
+| `background` | トークン (colors / gradients) | 上記「塗り」 | `gray-300` |
 | `shadow` | トークン (shadows) | | なし |
 | `opacity` | | 上記「不透明度」 | |
 | `visibility` | | 上記「表示 / 非表示」 | |
@@ -213,6 +223,7 @@ Box と Ellipse が、透け具合を 1 prop で持つ（Text は持たない）
 ## HTML/CSS へのコンパイル規則
 
 - **トークンは CSS カスタムプロパティにコンパイル**する。ルート要素に `--{種別}-{名前}: 値` を出力し、ノード側は `var()` で参照する。トークン編集が全ノードへ CSS レベルで波及する
+  - 塗りは 2 種別を指せるので、`background` の値は**名前をその 2 種別から解決してから**どちらの変数を出すかが決まる（同名を許さないので一意 / 04-tokens「命名規則」）。`--gradients-{名前}` の値は `linear-gradient(...)` 1 本に畳む
 - **ノードはすべて `div` ＋インライン style** で出力する。プレビュー用レンダリングであり production HTML ではないため、セマンティクス・クラス設計は持たない。決定的で診断しやすい出力を優先する
 
 | prop | CSS |
@@ -229,7 +240,7 @@ Box と Ellipse が、透け具合を 1 prop で持つ（Text は持たない）
 | `widthMode: hug` | `width: fit-content` |
 | `widthMode: fill` | 親の主軸方向なら `flex-grow: 1`、交差軸方向なら `align-self: stretch`（親の `layout` を見て出し分け） |
 | `widthMode: fixed` | `width: {n}px` |
-| `background` | `background: var(--colors-*)` |
+| `background` | `background: var(--colors-*)`（colors を指すとき） / `background: var(--gradients-*)`（gradients を指すとき） |
 | `radiusTopLeft` / `radiusTopRight` / `radiusBottomRight` / `radiusBottomLeft` | `border-radius: var(--radius-*)` （左上 右上 右下 左下 の順で4値に合成。未指定の隅は `0`） |
 | `shadow` | `box-shadow: var(--shadows-*)` |
 | `overflow: clip` | `overflow: hidden` |
@@ -260,6 +271,8 @@ Box と Ellipse が、透け具合を 1 prop で持つ（Text は持たない）
 - 識別子規則違反（命名規則・予約文字）
 - ノードの `name` 欠落
 - 名前の一意性違反（components キー・artboard 名・全ノード name の単一名前空間内での重複）
+- **塗りが参照する 2 種別の間でのトークン名の重複**（colors と gradients に同名。`background` の参照先が決まらない。04-tokens「命名規則」）
+- **グラデーショントークンの `stops` が 2 件未満**（階調として描けない。04-tokens「値の形式」）
 
 ### 不正ファイル時の挙動
 
