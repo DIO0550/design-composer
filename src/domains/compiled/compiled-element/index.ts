@@ -292,6 +292,7 @@ export const BoxElement = {
     );
     return [
       ...Layout.declarations(layout),
+      ...wrap,
       ...placementDeclarations(placement),
       ...rotationDeclarations(props.rotation),
       ...gap,
@@ -312,7 +313,6 @@ export const BoxElement = {
       ...tokenDeclarations("shadow", props.shadow, tokens),
       ...overflowDeclarations(props.overflow),
       ...opacityDeclarations(props.opacity),
-      ...wrap,
       ...Visibility.declarations(Visibility.fromProps(props)),
     ];
   },
