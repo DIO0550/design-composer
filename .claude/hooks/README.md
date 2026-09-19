@@ -24,8 +24,8 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `hook-canary.sh`         | `PreToolUse` (Bash)       | **カナリア**。`echo hook-canary` を必ず deny する。連ねたコマンドの中にあっても切り出して見る。通ってしまったときの読み方は後述（**通った = 不発、ではない**） |
 | `session-url-notice.sh`  | `SessionStart`            | **セッション URL の提示**（AGENTS.md「Issue に紐づいて起動したら、セッションの URL を Issue に残す」）。URL を組み立てて渡す。ブランチが `claude/issue-<N>-...` なら対象の番号も添える |
 | `record-firings.sh`      | `SessionStart` + `PostToolUse` (Skill/Task/Agent) | **スキル・サブエージェントの発火ログ**。tmp のセッション別ログへ追記し、`harness-record` が記録を書くときに読む。SessionStart のセッション見出しで「起動しなかった」と「フック不発」を切り分ける |
-| `track-verification-agent-activity.sh` | `PreToolUse` + `PostToolUse` (Task/Agent) | **検証エージェントの実行中フラグ**(`分類: subagent-control`)。`plan-reviewer` / `implementation-reviewer` の開始・終了をセッション別のマーカーで数える。`block-git-during-verification-agent.sh` が読む |
-| `block-git-during-verification-agent.sh` | `PreToolUse` (Bash)   | **検証エージェント実行中の git 操作を拒否**(`分類: subagent-control`)。マーカーが立っている間は `git add` / `commit` / `push` を deny する。ミューテーション実測の途中の書き換えをコミットへ取り込む事故(pr-391 #18)を防ぐ |
+| `track-verification-agent-activity.sh` | `PreToolUse` + `PostToolUse` (Task/Agent) | **検証エージェントの実行中フラグ**。`plan-reviewer` / `implementation-reviewer` の開始・終了をセッション別のマーカーで数える。`block-git-during-verification-agent.sh` が読む |
+| `block-git-during-verification-agent.sh` | `PreToolUse` (Bash)   | **検証エージェント実行中の git 操作を拒否**。マーカーが立っている間は `git add` / `commit` / `push` を deny する。ミューテーション実測の途中の書き換えをコミットへ取り込む事故を防ぐ |
 
 ## 移植元から見送ったもの
 
@@ -61,7 +61,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 
 ## 強制力の序列 — フックが発火しない実行環境がある
 
-PR #168 では、biome の format 差分を含む状態で push が通り、CI で落ちた。
+biome の format 差分を含む状態で push が通り、CI で落ちた回がある。
 **`pre-push-lint.sh` 単体は正しく動く**(一時ファイルを置いてフックへ直接 JSON を流し、
 `&&` で連結した push コマンドにマッチすること・format 差分を検出して deny を返すことを実測)。
 それでも push は通り、同じセッションでは `post-edit-lint.sh` による編集後の自動整形も
@@ -103,9 +103,8 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 
 `block-npx.sh` / `block-git-during-verification-agent.sh` は上の表のとおり CI の代替が
 **無し**。カナリア(次項)で不発が確定したら、「記録のみ」で終わらせず、そのフックが
-止めるはずだった操作を手動で確認する(`分類: hook-environment-guard-miss`。pr-482 は
-`block-git-during-verification-agent.sh` 不発でミューテーションがコミットへ混入し、
-pr-500 は `block-npx.sh` 不発で任意の `npx` 実行が素通りした)。
+止めるはずだった操作を手動で確認する(不発のままミューテーションがコミットへ混入した回と、
+任意の `npx` 実行が素通りした回がある)。
 
 | 不発したフック | 手動で確認すること |
 | --- | --- |
@@ -222,9 +221,9 @@ deny のメッセージは、`jq` / `python3` が欠けていればその名前�
 - `pre-push-typecheck.sh` / `pre-push-lint.sh` は node_modules 未インストール時(ツールが実行不能な場合)は黙ってスキップする
 - `post-merge-review.sh` はマージを**ブロックしない**(`additionalContext` を返すだけ)。マージは人の判断で行われるので、記録が無いことを理由に止めても記録の質は上がらないため
   - 検知対象は `mcp__github__merge_pull_request` と `gh pr merge` のみ。素の `git merge` は見ない(ベースブランチの取り込みで日常的に走るため、拾うと誤発火のほうが多くなる)
-- `.oxlintrc.json` の `overrides`(`rules/architecture.md`「依存方向のルール」の強制。`分類: layer-dependency`、#257)は、`domains/` → `libs/` の辺だけ `warn`(**ブロックしない**)。導入時点で `@/libs/document-ipc`(型のみ)・`@/libs/document-json` への import が計 5 件既に存在しており(`document-save-state` は pr-261/#257 で申し送りと決めた既知の債務、残り 3 件はテストの `DocumentJson` fixture 利用)、どちらもドメインの型・モジュール再配置を伴う判断(CLAUDE.md「設計判断の確認」)のため、この回では移動を行わない。`services/` → `features/libs/components/hooks`・`components/hooks/utils/types/` → `domains/services/features`・`libs/` → `services/features/components/hooks` の 3 方向は既存違反 0 件だったため `error` でそのまま導入した
+- `.oxlintrc.json` の `overrides`(`rules/architecture.md`「依存方向のルール」の強制)は、`domains/` → `libs/` の辺だけ `warn`(**ブロックしない**)。導入時点で `@/libs/document-ipc`(型のみ)・`@/libs/document-json` への import が計 5 件既に存在しており(`document-save-state` は申し送りと決めた既知の債務、残り 3 件はテストの `DocumentJson` fixture 利用)、どちらもドメインの型・モジュール再配置を伴う判断(CLAUDE.md「設計判断の確認」)のため、この回では移動を行わない。`services/` → `features/libs/components/hooks`・`components/hooks/utils/types/` → `domains/services/features`・`libs/` → `services/features/components/hooks` の 3 方向は既存違反 0 件だったため `error` でそのまま導入した
   - `features/<x>/domains/` への同種の適用は未実装
-- `.oxlintrc.json` の `overrides`(`rules/architecture.md`「モジュールの公開API」の「複数ファイルへの分割が必要になったら」の閾値。`分類: module-api`、#600 / pr-601)は、`src/**/*.tsx` に `max-lines: 600` を `error` で置く。捕まえたいのは pr-240 の `artboard-canvas/index.tsx`(716 行・11 コンポーネント)の形
+- `.oxlintrc.json` の `overrides`(`rules/architecture.md`「モジュールの公開API」の「複数ファイルへの分割が必要になったら」の閾値)は、`src/**/*.tsx` に `max-lines: 600` を `error` で置く。捕まえたいのは 1 ファイルに 11 コンポーネント・716 行が同居した形
   - **数えるのは空行とコメントを除いた行**(`skipBlankLines` / `skipComments` を `true` にしている。既定はどちらも false で、素の `wc -l` と同じ数え方になる)。この 2 つがあるため `__tests__/` を対象から外さずに導入時点の違反 0 件が成立している。生の行数では 620 行ある `use-editor-state.actions.test.tsx` が、空行 96 行を引いて閾値の内側に収まる
   - **対象は `src/` の `.tsx` すべて**で、`__tests__/` も `.stories.tsx` も `__stories__/` の共有の器も入る(実測: 実行行 601 行のファイルは `__tests__/` 配下でも発火する)。`.ts` は対象外で、`design-document/index.ts` が 1449 行、`editor-state/index.ts` が 1273 行あり違反 0 件では入れられない
   - **`.ts` が対象外なので、中身を兄弟の `.ts` へ逃がす経路は開いたまま。** 止めているのは `rules/architecture.md`「実装は `index.ts` に直接書く」という観点だけで、`import-rule-violations.py` が見るのは「外から非 index ファイルを読む」形なので、`index.tsx` からだけ読む兄弟 `.ts` は検出しない(probe を置いて実測。該当する兄弟実装ファイルは現状 0 件)
