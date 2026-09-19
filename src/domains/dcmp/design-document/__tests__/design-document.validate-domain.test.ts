@@ -120,3 +120,37 @@ test("components 内のノードもスキーマ検証の対象になる", () => 
     expect.objectContaining({ kind: "enum-violation", nodeName: "card" }),
   ]);
 });
+
+test("fixed のノードに書いた最小 / 最大はエラーにならず読み捨てられる", () => {
+  const document = DesignDocument.create({
+    artboards: [
+      {
+        name: "screen",
+        width: 375,
+        height: 812,
+        children: [
+          {
+            name: "box-1",
+            type: "Box",
+            props: { widthMode: "fixed", width: 100, minWidth: 50 },
+          },
+          {
+            name: "box-2",
+            type: "Box",
+            props: { widthMode: "fixed", width: 100, unknownLimit: 50 },
+          },
+        ],
+      },
+    ],
+  });
+
+  const errors = DesignDocument.collectErrors(document);
+
+  expect(errors).toEqual([
+    expect.objectContaining({
+      kind: "unknown-prop",
+      nodeName: "box-2",
+      prop: "unknownLimit",
+    }),
+  ]);
+});

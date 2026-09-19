@@ -156,3 +156,24 @@ test("横並びの親の中では子の fill が宣言を出す", () => {
   const children = compiled.kind === "box" ? compiled.children : [];
   expect(children[0].style["flex-grow"]).toBe("1");
 });
+
+test("hug の Box に最小の幅を書くと min-width が出力される", () => {
+  const style = styleOf({
+    name: "box",
+    type: "Box",
+    props: { widthMode: "hug", minWidth: 120 },
+  });
+
+  expect(style["min-width"]).toBe("120px");
+});
+
+test("fixed の Box に書いた最小の幅は出力されない", () => {
+  const style = styleOf({
+    name: "box",
+    type: "Box",
+    props: { widthMode: "fixed", width: 320, minWidth: 120 },
+  });
+
+  expect(style.width).toBe("320px");
+  expect(style).not.toHaveProperty("min-width");
+});

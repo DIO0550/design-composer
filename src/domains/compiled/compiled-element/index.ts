@@ -302,12 +302,12 @@ export const BoxElement = {
       ...padding,
       ...alignment,
       ...Size.declarations(
-        Size.create(props.widthMode, props.width),
+        Size.fromProps(props, "width"),
         "width",
         flexParentDirection,
       ),
       ...Size.declarations(
-        Size.create(props.heightMode, props.height),
+        Size.fromProps(props, "height"),
         "height",
         flexParentDirection,
       ),
