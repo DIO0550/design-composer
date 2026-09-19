@@ -42,6 +42,14 @@ test("折り返すと書いた Box だけが折り返しの宣言を出す", () 
   expect(wrap["flex-wrap"]).toBe("wrap");
 });
 
+test("語彙に無い綴りの折り返しを書いた Box は折り返しの宣言を出さない", () => {
+  const unknown = setupBoxStyle({ layout: "row", wrap: "wrap-reverse" });
+  const wrap = setupBoxStyle({ layout: "row", wrap: "wrap" });
+
+  expect(unknown).not.toHaveProperty("flex-wrap");
+  expect(wrap["flex-wrap"]).toBe("wrap");
+});
+
 test("自由配置の Box は折り返しの宣言を出さない", () => {
   const free = setupBoxStyle({ layout: "free", wrap: "wrap" });
   const column = setupBoxStyle({ layout: "column", wrap: "wrap" });

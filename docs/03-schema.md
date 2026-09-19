@@ -163,7 +163,7 @@ Box と Ellipse が、透け具合を 1 prop で持つ（Text は持たない）
 | `opacity` | | 上記「不透明度」 | |
 | `visibility` | | 上記「表示 / 非表示」 | |
 
-- `layout: free` の Box は**子を並べない**。Figma の `layoutMode: NONE` にあたり、中身は `placement: absolute` の子を座標で置くための器になる。間隔・揃え・折り返し（`gap` / `align` / `justify` / `wrap`）は並びが無いので効かない
+- `layout: free` の Box は**子を並べない**。Figma の `layoutMode: NONE` にあたり、中身は `placement: absolute` の子を座標で置くための器になる。折り返し・間隔・揃え（`wrap` / `gap` / `align` / `justify`）は並びが無いので効かない
 - padding は 4 方向個別、角丸は 4 隅個別。ドキュメントが持つのは 4 つの値だけで、プロパティパネルでの畳み方（padding は Figma と同じ垂直 / 水平、角丸は 4 隅まとめて 1 欄）は表示の都合なので持たない
   - ただし**「その prop がどの shorthand のどの位置の longhand か」はスキーマが `shorthand` で宣言する**。これは prop 自身の性質（`paddingTop` は padding の上辺、`radiusTopLeft` は radius の左上である）であって、今そのパネルが畳んでいるかという画面の状態ではない。パネルはこの宣言を使って 4 prop を 1 行にまとめ、畳むかどうかは画面側だけで決める
   - **畳んだ欄の単位が padding と角丸で違う**のは、`border-radius` の 2 値が対角（左上 + 右下 / 右上 + 左下）を指し、垂直 / 水平にあたる組が隅には無いため
