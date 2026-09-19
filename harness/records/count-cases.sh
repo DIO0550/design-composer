@@ -42,8 +42,8 @@ build_tree() {
   mkdir -p "$work/rules" "$work/.claude/skills/harness-growth" "$work/harness/records"
   cp "$records_dir/count.sh" "$work/harness/records/count.sh"
 
-  loaded_budget="$(sed -n 's/^always_loaded_budget=\([0-9]*\).*/\1/p' "$records_dir/count.sh")"
-  skill_budget="$(sed -n 's/^growth_skill_budget=\([0-9]*\).*/\1/p' "$records_dir/count.sh")"
+  loaded_budget="$(sed -n 's/^always_loaded_cap=\([0-9]*\).*/\1/p' "$records_dir/count.sh")"
+  skill_budget="$(sed -n 's/^growth_skill_cap=\([0-9]*\).*/\1/p' "$records_dir/count.sh")"
 
   # 常時ロードは AGENTS.md + rules/*.md の合計。rules/ に 1 行置き、残りを AGENTS.md に置く
   printf 'rule\n' > "$work/rules/sample.md"
@@ -67,22 +67,22 @@ write_record() {
 # 通算・以降まで返すのは、窓の外の件数と窓の長さを壊しても気づけるようにするため。
 comment_row() {
   bash "$work/harness/records/count.sh" | awk '$5 == "comment" {
-    printf "再発=%s 内部=%s 通算=%s 以降=%s 窓の開始=%s 最終介入=%s", $1, $2, $3, $4, $6, $7
+    printf "再発=%s 内部=%s 通算=%s 以降=%s 起点=%s", $1, $2, $3, $4, $6
   }'
 }
 
 # 窓の数え方。表は `期待|ケース名|記録の指定` で、記録の指定は
 # `<番号>:指摘:<綴り>:<出どころ>` または `<番号>:対策済:<綴り>:<層>` の並び。
 window_cases='
-再発=1 内部=0 通算=1 以降=3 窓の開始=未介入 最終介入=pr-20（層=hook）|亜種への対策済は同じ分類の別の亜種の窓を閉じない|10:指摘:comment-beta:レビュー（人） 20:対策済:comment-alpha:hook 30:空:空:空
-再発=0 内部=0 通算=1 以降=1 窓の開始=pr-20 最終介入=pr-20（層=hook）|分類名そのものへの対策済は全部の窓を閉じる|10:指摘:comment-beta:レビュー（人） 20:対策済:comment:hook 30:空:空:空
-再発=1 内部=0 通算=1 以降=2 窓の開始=pr-10 最終介入=pr-30（層=skill）|窓の開始と最終介入は別の綴りから決まる|10:対策済:comment-beta:hook 20:指摘:comment-beta:レビュー（人） 30:対策済:comment-alpha:skill
-再発=1 内部=0 通算=1 以降=1 窓の開始=pr-20 最終介入=pr-20（層=hook）|対策済にしか出ない綴りは窓の計算に入らない|10:対策済:comment-gamma:hook 20:対策済:comment-beta:hook 30:指摘:comment-beta:レビュー（人）
-再発=2 内部=0 通算=2 以降=3 窓の開始=未介入 最終介入=未介入|介入が無ければ全部の指摘が再発に入る|10:指摘:comment-alpha:レビュー（人） 20:指摘:comment-beta:レビュー（人） 30:空:空:空
-再発=2 内部=0 通算=2 以降=3 窓の開始=未介入 最終介入=pr-10（層=hook）|窓が食い違う綴りが並ぶと、いちばん古いほうが起点になる|10:対策済:comment-alpha:hook 20:指摘:comment-alpha:レビュー（人） 30:指摘:comment-beta:レビュー（人）
-再発=1 内部=1 通算=1 以降=3 窓の開始=未介入 最終介入=未介入|サブエージェントの指摘は内部に入り、再発にも通算にも入らない|10:指摘:comment-alpha:レビュー（人） 20:指摘:comment-beta:サブエージェント 30:空:空:空
-再発=0 内部=0 通算=1 以降=0 窓の開始=pr-30 最終介入=pr-30（層=hook）|窓より前の指摘は通算にだけ残る|10:指摘:comment-alpha:レビュー（人） 20:空:空:空 30:対策済:comment:hook
-再発=1 内部=0 通算=1 以降=1 窓の開始=pr-199 最終介入=pr-199（層=hook）|PR 番号の桁が増えても窓の前後を取り違えない|199:対策済:comment:hook 1000:指摘:comment-alpha:レビュー（人）
+再発=1 内部=0 通算=1 以降=3 起点=未介入|亜種への対策済は同じ分類の別の亜種の窓を閉じない|10:指摘:comment-beta:レビュー（人） 20:対策済:comment-alpha:hook 30:空:空:空
+再発=0 内部=0 通算=1 以降=1 起点=pr-20（層=hook）|分類名そのものへの対策済は全部の窓を閉じる|10:指摘:comment-beta:レビュー（人） 20:対策済:comment:hook 30:空:空:空
+再発=1 内部=0 通算=1 以降=2 起点=pr-10（層=hook）|新しい介入が別の綴りにあっても、起点は古いほうの窓とその層になる|10:対策済:comment-beta:hook 20:指摘:comment-beta:レビュー（人） 30:対策済:comment-alpha:skill
+再発=1 内部=0 通算=1 以降=2 起点=pr-10（層=hook）|対策済にしか出ない綴りの窓も起点に数える|10:対策済:comment-gamma:hook 20:対策済:comment-beta:hook 30:指摘:comment-beta:レビュー（人）
+再発=2 内部=0 通算=2 以降=3 起点=未介入|介入が無ければ全部の指摘が再発に入る|10:指摘:comment-alpha:レビュー（人） 20:指摘:comment-beta:レビュー（人） 30:空:空:空
+再発=2 内部=0 通算=2 以降=3 起点=未介入|窓が食い違う綴りが並ぶと、いちばん古いほうが起点になる|10:対策済:comment-alpha:hook 20:指摘:comment-alpha:レビュー（人） 30:指摘:comment-beta:レビュー（人）
+再発=1 内部=1 通算=1 以降=3 起点=未介入|サブエージェントの指摘は内部に入り、再発にも通算にも入らない|10:指摘:comment-alpha:レビュー（人） 20:指摘:comment-beta:サブエージェント 30:空:空:空
+再発=0 内部=0 通算=1 以降=0 起点=pr-30（層=hook）|窓より前の指摘は通算にだけ残る|10:指摘:comment-alpha:レビュー（人） 20:空:空:空 30:対策済:comment:hook
+再発=1 内部=0 通算=1 以降=1 起点=pr-199（層=hook）|PR 番号の桁が増えても窓の前後を取り違えない|199:対策済:comment:hook 1000:指摘:comment-alpha:レビュー（人）
 '
 
 printf '%s\n' "窓の数え方"
@@ -139,7 +139,7 @@ build_tree 1 0
 over="$(bash "$work/harness/records/count.sh" --ratchet 2>&1 | grep -c '予算を超えています')"
 report 1 "$over" "超過では削るよう促す"
 build_tree -1 0
-under="$(bash "$work/harness/records/count.sh" --ratchet 2>&1 | grep -c 'always_loaded_budget')"
+under="$(bash "$work/harness/records/count.sh" --ratchet 2>&1 | grep -c 'always_loaded_cap')"
 report 1 "$under" "下回りでは予算を下げるよう促す"
 
 # --shrink は予算がずれていても止まらない。ずれている回こそ節 2・3 を読みたい。
