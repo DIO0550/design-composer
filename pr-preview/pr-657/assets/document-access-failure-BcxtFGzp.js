@@ -1,1 +1,0 @@
-import{n as e}from"./chunk-BneVvdWh.js";var t,n,r=e((()=>{t={Missing:`missing`,NotPermitted:`notPermitted`,UnusablePath:`unusablePath`,UndecodableText:`undecodableText`,StorageFailed:`storageFailed`,Undelivered:`undelivered`},n={create(e,t){return{reason:e,message:t}}}}));export{t as n,r,n as t};
