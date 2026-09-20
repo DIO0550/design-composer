@@ -1,4 +1,5 @@
 import { type ReactElement, useId, useState } from "react";
+import { SegmentedControl } from "@/components/segmented-control";
 import type { PropEdit } from "@/domains/dcmp/node";
 import type { ShorthandName } from "@/domains/dcmp/primitive-schema";
 import type { EditContinuity } from "@/domains/session/edit-continuity";
@@ -9,8 +10,9 @@ import {
 } from "@/domains/session/prop-control";
 import type { Corner } from "@/domains/unit/corner";
 import type { Side, SidePair } from "@/domains/unit/side";
+import type { ValueOf } from "@/types/ValueOf";
 import { CaseStyle } from "@/utils/CaseStyle";
-import { LabelWidthClass } from "../label-width";
+import { ControlOffsetClass, LabelClass } from "../label-width";
 import { collapsedFieldOf, fieldOf, PropField } from "../prop-field";
 
 /**
@@ -51,18 +53,31 @@ const SidePairGlyphs = {
   horizontal: "H",
 } as const satisfies Readonly<Record<SidePair, string>>;
 
+/** 束ねた行が欄を出す粒度。畳んだ欄 1 つにまとめるか、longhand ごとに出すか。 */
+const ShorthandGranularities = {
+  Collapsed: "collapsed",
+  PerLonghand: "perLonghand",
+} as const;
+
+/** 束ねた行が今どちらの欄を出しているか。 */
+type ShorthandGranularity = ValueOf<typeof ShorthandGranularities>;
+
 /** 束ねた行が出す綴り。テストとストーリーが同じ綴りを書き写さずに済むよう公開する。 */
 export const ShorthandLabels = {
   /**
-   * longhand を個別に出すかを切り替えるボタン。押されている間は 4 つの欄が出る。
-   *
-   * 綴りが shorthand ごとに違うのは、束ねているものが辺と隅で違うため。
+   * 畳んだ欄を出すセグメント。畳んだ先は padding が向かい合う 2 辺、radius が 4 隅と違うが、
+   * まとめて書く欄である点は同じなので綴りも同じにしている
+   * （docs/03-schema.md「角丸は 4 隅まとめて 1 欄」）。
    */
-  perLonghand: {
-    padding: "辺ごと",
-    radius: "隅ごと",
-  } as const satisfies Readonly<Record<ShorthandName, string>>,
-} as const;
+  collapsed: { padding: "まとめて", radius: "まとめて" },
+  /**
+   * longhand を位置ごとに出すセグメント。綴りが shorthand ごとに違うのは、束ねている
+   * ものが辺と隅で違うため。
+   */
+  perLonghand: { padding: "辺ごと", radius: "隅ごと" },
+} as const satisfies Readonly<
+  Record<ShorthandGranularity, Readonly<Record<ShorthandName, string>>>
+>;
 
 /**
  * 束ねた行の半幅セル 1 つ分の器。
@@ -263,18 +278,72 @@ function collapsedKeyOf(collapsed: PropCollapsedControl): string {
 }
 
 /**
+ * 束ねた行が出す欄の並び。
+ *
+ * 2 つの枝を 1 つの `map` へ寄せない。取り出す並びもセルが受け取る props も型が違い、
+ * 寄せると `as` でどちらかへ狭める必要が出るため。
+ *
+ * @returns 畳んだ粒度なら畳んだ欄、longhand の粒度なら位置ごとの欄
+ */
+function ShorthandCells({
+  granularity,
+  shorthand,
+  rowLabelId,
+  onEdit,
+}: Readonly<{
+  granularity: ShorthandGranularity;
+  shorthand: PropShorthandControl;
+  rowLabelId: string;
+  onEdit: (edit: PropEdit, continuity: EditContinuity) => void;
+}>): ReactElement {
+  switch (granularity) {
+    case "collapsed":
+      return (
+        <>
+          {PropShorthandControl.collapsed(shorthand).map((collapsed) => (
+            <ShorthandCollapsedCell
+              key={collapsedKeyOf(collapsed)}
+              collapsed={collapsed}
+              rowLabelId={rowLabelId}
+              onEdit={onEdit}
+            />
+          ))}
+        </>
+      );
+    case "perLonghand":
+      return (
+        <>
+          {PropShorthandControl.longhands(shorthand).map((longhand) => (
+            <ShorthandLonghandCell
+              key={longhandKeyOf(longhand)}
+              longhand={longhand}
+              rowLabelId={rowLabelId}
+              onEdit={onEdit}
+            />
+          ))}
+        </>
+      );
+  }
+}
+
+/**
  * 4 つの longhand を 1 行にまとめた行（UI 案 docs/Design Composer.html の `padding` /
  * `radius`）。
  *
  * UI 案が描いているのは **padding の 4 辺（半幅セルを 2 列のグリッドに詰めた形）と
- * radius の畳んだ全幅 1 欄**だけで、padding の畳んだ状態・radius の隅ごとの状態・切り替え
- * ボタンは描かれていない。そこの見た目はここで決めている。
+ * radius の畳んだ全幅 1 欄**だけで、padding の畳んだ状態・radius の隅ごとの状態・粒度の
+ * セグメントは描かれていない。ラベルの右にセグメントを置いて欄を下段へ字下げするのは、
+ * UI 案で唯一択一と値の欄が縦に並ぶ `width` 行に合わせたため。
  *
- * 切り替えを `useState` で持つのは、畳んでいるかがドキュメントではなく画面の状態だから
+ * 上下段の左端を `ControlOffsetClass` で揃えていることと、セグメントの並び（畳んだ側が
+ * 左）は、どちらも class と並び順の違いにしかならないので**テストは 1 件も落ちない**。
+ * 気づける手段は Storybook の視覚差分だけ（`SideGlyphs` と同じ）。
+ *
+ * 粒度を `useState` で持つのは、どちらを出しているかがドキュメントではなく画面の状態だから
  * （docs/03「畳み方は表示の都合なので持たない」）。道具の状態なので**同じ行が出続ける間
- * （Box 系を選び直す間）は残る**（Text を選ぶと行ごと消え、戻ると畳んだ状態から始まる）。
+ * （Box 系を選び直す間）は残る**（Text を選ぶと行ごと消え、戻ると畳んだ粒度から始まる）。
  *
- * @returns ラベルと切り替えボタン、右にセルのグリッドを並べた 1 行
+ * @returns ラベルとセグメントを並べた上段と、欄のグリッドを字下げした下段
  */
 export function ShorthandRow({
   shorthand,
@@ -284,43 +353,37 @@ export function ShorthandRow({
   onEdit: (edit: PropEdit, continuity: EditContinuity) => void;
 }>): ReactElement {
   const rowLabelId = useId();
-  const [isPerLonghand, setIsPerLonghand] = useState(false);
+  const [granularity, setGranularity] = useState<ShorthandGranularity>(
+    ShorthandGranularities.Collapsed,
+  );
 
   return (
-    <div className="flex items-start gap-2">
-      <div
-        className={`${LabelWidthClass} flex flex-col items-start gap-1 text-[11px] text-gray-500`}
-      >
-        <span id={rowLabelId} className="max-w-full truncate">
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center gap-2">
+        <span id={rowLabelId} className={LabelClass}>
           {CaseStyle.toCapitalCase(shorthand.name)}
         </span>
-        <button
-          type="button"
-          aria-pressed={isPerLonghand}
-          onClick={() => setIsPerLonghand((current) => !current)}
-          className="rounded border border-gray-300 px-1 py-0.5 text-[10px] text-gray-500 aria-pressed:border-gray-400 aria-pressed:bg-gray-100 aria-pressed:text-gray-900"
-        >
-          {ShorthandLabels.perLonghand[shorthand.name]}
-        </button>
-      </div>
-      <div className="grid min-w-0 flex-1 grid-cols-2 gap-1.5">
-        {isPerLonghand
-          ? PropShorthandControl.longhands(shorthand).map((longhand) => (
-              <ShorthandLonghandCell
-                key={longhandKeyOf(longhand)}
-                longhand={longhand}
-                rowLabelId={rowLabelId}
-                onEdit={onEdit}
-              />
-            ))
-          : PropShorthandControl.collapsed(shorthand).map((collapsed) => (
-              <ShorthandCollapsedCell
-                key={collapsedKeyOf(collapsed)}
-                collapsed={collapsed}
-                rowLabelId={rowLabelId}
-                onEdit={onEdit}
-              />
+        <div className="min-w-0 flex-1">
+          <SegmentedControl labelledBy={rowLabelId}>
+            {Object.values(ShorthandGranularities).map((option) => (
+              <SegmentedControl.Segment
+                key={option}
+                isSelected={option === granularity}
+                onSelect={() => setGranularity(option)}
+              >
+                {ShorthandLabels[option][shorthand.name]}
+              </SegmentedControl.Segment>
             ))}
+          </SegmentedControl>
+        </div>
+      </div>
+      <div className={`grid min-w-0 grid-cols-2 gap-1.5 ${ControlOffsetClass}`}>
+        <ShorthandCells
+          granularity={granularity}
+          shorthand={shorthand}
+          rowLabelId={rowLabelId}
+          onEdit={onEdit}
+        />
       </div>
     </div>
   );

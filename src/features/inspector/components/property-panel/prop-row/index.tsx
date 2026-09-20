@@ -4,10 +4,8 @@ import type { EditContinuity } from "@/domains/session/edit-continuity";
 import { PropControl } from "@/domains/session/prop-control";
 import { CaseStyle } from "@/utils/CaseStyle";
 import { Option } from "@/utils/Option";
-import { ControlOffsetClass, LabelWidthClass } from "../label-width";
+import { ControlOffsetClass, LabelClass } from "../label-width";
 import { fieldOf, PropField, unsetLabel } from "../prop-field";
-
-const LabelClass = `${LabelWidthClass} truncate text-[11px] text-gray-500`;
 
 /**
  * 1 prop 分の行。UI 案（docs/Design Composer.html）はラベル左・コントロール右で並べ、表
