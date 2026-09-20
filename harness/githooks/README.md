@@ -39,9 +39,10 @@ DevContainer の `postCreateCommand` も走らない。そこは Claude Code の
 `harness/records/count-cases.sh`)も `.claude/hooks/` 側に対応物を持たない。ここと CI の
 両方へ置くので、層 3 を足しても守る範囲が増えないため。
 
-`pnpm` または `node_modules` が無い環境では、型 / lint / format だけを飛ばす（残りは
-`python3` と bash だけで走る）。既存の `pre-push-*` と同じ扱いで、検査できないことを
-理由に push を止めても検査の質は上がらないため。
+道具の揃っていない環境では、その道具を使う検査だけを飛ばす。`pnpm` または
+`node_modules` が無ければ型 / lint / format を、`python3` が無ければ doc コメント /
+import 規約 / 判別子の直読みを飛ばす（残りは bash だけで走る）。既存の `pre-push-*` と
+同じ扱いで、検査できないことを理由に push を止めても検査の質は上がらないため。
 
 **`python3` が無い環境では、`check-added-*` の 2 つは飛ばずに走り、何も見ずに 0 件として
 通る**（検出器の呼び出しが `|| true` のため。実測）。飛ばした検査は出力に「飛ばします」が

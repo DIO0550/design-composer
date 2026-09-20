@@ -38,6 +38,8 @@ if command -v python3 >/dev/null 2>&1; then
 
   echo "pre-push: 判別子の直読み"
   python3 .claude/hooks/lib/result-option-read-violations.py src
+else
+  echo "pre-push: python3 が無いため doc コメント / import 規約 / 判別子の直読みは飛ばします"
 fi
 
 echo "pre-push: テスト規約"
