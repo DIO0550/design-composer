@@ -6,6 +6,9 @@
 # 使い方: bash .github/scripts/check-pr-closing-issue-cases.sh
 # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。
 #
+# 配線は CI(`frontend.yml` の `rules-check`)だけで、層 2(`pre-push`)には無い
+# (理由は `.claude/hooks/README.md`「カバー範囲と残る穴」)。判定は終了コードで見る。
+#
 # **表をここへ置くのは、CI の run が流れると判定の根拠が残らないため。** 覆うのは
 # 「問い合わせ結果 → 終了コード」と「5xx のときの再試行」の 2 つ。GraphQL のクエリ本体
 # (フィールド名)とワークフローの配線は覆えないので、そこは CI で実際に叩いて確かめる。
