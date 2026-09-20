@@ -96,4 +96,5 @@
 | `over-guard` | 過剰なブロック / フォールバック(`implementation-reviewer`) | — |
 | `plan` | `implementation-flow` フェーズ 3〜4 / `plan-reviewer` | `plan-*` `version-bump-unverified` |
 | `harness` | ハーネス自身(規約の矛盾・フック環境・サブエージェント制御・検査スクリプト・外部の挙動の未確認) | `rules-consistency` `docs-consistency` `subagent-control` `hook-environment*` `tooling-rule-scope-gap` `harness-process-drift` `tool-behavior-unverified` |
+| `parallel-issue-work` | 同じ Issue を 2 つ以上の PR / セッションが並行して進める形（検査は `.github/workflows/pr-closing-issue.yml` の `parallel-issue-pr`） | — |
 | `なし` | 対応する規範が無い | — |
