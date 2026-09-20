@@ -25,7 +25,7 @@ DevContainer の `postCreateCommand` も走らない。そこは Claude Code の
 
 | フック | 検査 | 呼んでいるもの |
 | --- | --- | --- |
-| `pre-push` | 型 / lint / format / doc コメント / テスト規約 / import 規約 / 判別子の直読み / 判別子の直読みの判定表 / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 行数のラチェット / 集計の判定表 / カナリアの判定表 | `pnpm run typecheck`・`pnpm run lint`・`pnpm exec biome check`・`.claude/hooks/lib/missing-doc-comments.py`・`.claude/hooks/lib/test-rules-scan.sh`・`.claude/hooks/lib/import-rule-violations.py`・`.claude/hooks/lib/result-option-read-violations.py`・`.claude/hooks/lib/result-option-read-cases.sh`・`.github/scripts/check-added-lint-suppressions.sh`・`.github/scripts/check-added-test-helper-duplication.sh`・`harness/records/count.sh --ratchet`・`harness/records/count-cases.sh`・`.claude/hooks/lib/canary-cases.sh` |
+| `pre-push` | 型 / lint / format / doc コメント / テスト規約 / import 規約 / 判別子の直読み / 判別子の直読みの判定表 / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加された分の検査の判定表 / 行数のラチェット / 集計の判定表 / カナリアの判定表 | `pnpm run typecheck`・`pnpm run lint`・`pnpm exec biome check`・`.claude/hooks/lib/missing-doc-comments.py`・`.claude/hooks/lib/test-rules-scan.sh`・`.claude/hooks/lib/import-rule-violations.py`・`.claude/hooks/lib/result-option-read-violations.py`・`.claude/hooks/lib/result-option-read-cases.sh`・`.github/scripts/check-added-lint-suppressions.sh`・`.github/scripts/check-added-test-helper-duplication.sh`・`.github/scripts/check-added-cases.sh`・`harness/records/count.sh --ratchet`・`harness/records/count-cases.sh`・`.claude/hooks/lib/canary-cases.sh` |
 
 | スクリプト | 呼ばれ方 | 内容 |
 | --- | --- | --- |
@@ -35,21 +35,31 @@ DevContainer の `postCreateCommand` も走らない。そこは Claude Code の
 同じスクリプトを走らせる即時フィードバック版で、内容が二重管理にならないようにしている。
 `check-added-*` の 2 つだけは `.github/scripts/` にあり、CI と同じスクリプトをそのまま呼ぶ
 (base との差分で判定するので、判定を `lib/` へ移しても呼び出し側は同じになる)。
+[その判定表](../../.github/scripts/check-added-cases.sh)と、2 つが共有する前提チェック
+(`.github/scripts/lib/detector-precondition.sh`)も同じ場所に置く。`.claude/hooks/lib/` は
+**検査そのもの**の共有場所なので、当てる先と一緒にしておく。
 **行数のラチェットと判定表 3 本**(`harness/records/count.sh --ratchet` /
 `harness/records/count-cases.sh` / `.claude/hooks/lib/result-option-read-cases.sh` /
 `.claude/hooks/lib/canary-cases.sh`)も `.claude/hooks/` 側のフック(`pre-push-*.sh`)に
 対応物を持たない。判定表をどの層へ置くかと、層 3 へ足さない理由は
 `.claude/hooks/README.md`「カバー範囲と残る穴」。
 
-道具の揃っていない環境では、その道具を使う検査だけを飛ばす。`pnpm` または
-`node_modules` が無ければ型 / lint / format を、`python3` が無ければ doc コメント /
-import 規約 / 判別子の直読みとその判定表を、`python3` と `jq` のどちらかが欠けていれば
-カナリアの判定表を飛ばす（残りは bash だけで走る）。既存の `pre-push-*` と同じ扱いで、
-検査できないことを理由に push を止めても検査の質は上がらないため。
+**道具が無い環境では、その道具を使う検査だけを飛ばす。** 既存の `pre-push-*` と同じ扱いで、
+検査できないことを理由に push を止めても検査の質は上がらないため。飛ばす単位は 3 つある。
 
-**`python3` が無い環境では、`check-added-*` の 2 つは飛ばずに走り、何も見ずに 0 件として
-通る**（検出器の呼び出しが `|| true` のため。実測）。飛ばした検査は出力に「飛ばします」が
-残るが、こちらは通常の「ありません」が出るので、**通ったことが検査された証拠にならない**。
+| 無いもの | 飛ぶ検査 |
+| --- | --- |
+| `pnpm` または `node_modules` | 型 / lint / format |
+| `python3`（起動できないものが PATH に居る場合を含む） | doc コメント / import 規約 / 判別子の直読み（と判定表） / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加された分の検査の判定表 |
+| `python3`（同上）または `jq` | カナリアの判定表 |
+
+**どちらも飛ばしたことを出力に「飛ばします」と残す。** 通常の成功と綴りが同じだと、
+通ったことが検査された証拠にならないため。`check-added-*` は以前この形で、`python3` が
+無い環境でも飛ばずに走り、何も見ずに「ありません」と出して通っていた（検出器の呼び出しが
+`|| true` で、検出器が走らなくても出力が空になるため）。いまは
+[`lib/detector-precondition.sh`](../../.github/scripts/lib/detector-precondition.sh) が
+その場合に exit 2 を返すので、**層 1（CI）は落ちる**。層 2 はそれを受け取らず、上の表の
+とおり呼ぶ前に飛ばす（止めない方針のため）。
 
 ## なぜ git 側にも置くのか
 
@@ -72,6 +82,12 @@ web など）では `.claude/settings.json` の配線が読み込まれないこ
 
 ```bash
 bash harness/githooks/pre-push
+
+# python3 が使えない環境で、飛ばしたことが出力に残るか。
+# 起動すると 127 で落ちる python3 を PATH の先頭へ置いて走らせる
+dir="$(mktemp -d)"
+printf '#!/usr/bin/env bash\nexit 127\n' >"$dir/python3" && chmod +x "$dir/python3"
+PATH="$dir:$PATH" bash harness/githooks/pre-push; echo "exit=$?"   # 飛ばして exit 0
 ```
 
 `core.hooksPath` を設定したうえで push すると、失敗した検査の出力がそのまま出て

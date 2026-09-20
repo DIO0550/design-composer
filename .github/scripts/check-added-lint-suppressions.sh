@@ -13,8 +13,14 @@
 # すべて「追加」に見える。base に同じ綴りの行があるものは移動として除く。
 set -euo pipefail
 
+# `cd` の前に解決する(`cd` したあとの `$0` は元の作業ディレクトリからの相対になる)
+script_dir="$(cd "$(dirname "$0")" && pwd)"
 base="${1:-${BASE_SHA:-origin/main}}"
 cd "$(git rev-parse --show-toplevel)"
+
+. "$script_dir/lib/detector-precondition.sh"
+detector=.claude/hooks/lib/lint-suppressions.py
+require_runnable_detector "追加された lint 抑制" "$detector"
 
 # base に既にあった抑制コメントの綴り。ファイルをまたぐ移動を「追加」と読まないために使う
 # (新しいファイルは全行が追加行になるので、行番号だけでは移動と新設を見分けられない)。
@@ -50,7 +56,9 @@ while IFS= read -r file; do
   added="$(added_line_numbers "$file")"
   [ -z "$added" ] && continue
 
-  reported="$(python3 .claude/hooks/lib/lint-suppressions.py "$file" || true)"
+  # `|| true` は外せない。検出器は**違反を見つけたときに exit 1** を返すので、
+  # set -e の下では違反を見つけた瞬間に、下のメッセージを出さないまま止まる。
+  reported="$(python3 "$detector" "$file" || true)"
   [ -z "$reported" ] && continue
 
   while IFS= read -r entry; do
