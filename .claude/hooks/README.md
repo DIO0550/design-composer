@@ -91,12 +91,12 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 
 | 効かなくなるもの | CI の代替 |
 | --- | --- |
-| `block-lint-suppress.sh`(編集時のブロック) | **あり**。抑制コメントは diff に残るので、`.github/scripts/check-added-lint-suppressions.sh` が**追加行の分だけ**同じ判定で落とす(許可される例外も `lib/lint-suppressions.py` で共有)。CI と push 前(git hooks)の両方が走らせる |
+| `block-lint-suppress.sh`(編集時のブロック) | **あり**。抑制コメントは diff に残るので、`.github/scripts/check-added-lint-suppressions.sh` が**追加行の分だけ**同じ判定で落とす(許可される例外も `lib/lint-suppressions.py` で共有)。CI と push 前(git hooks)の両方が走らせる。**push 前は `python3` が使える環境だけ**(無ければ「飛ばします」と出して飛ぶ。CI は落とす → `.github/scripts/lib/detector-precondition.sh`) |
 | `block-npx.sh`(セッション中の行為の禁止) | **無し**。push の時点で痕跡が残らないため代替不能 |
 | `block-git-during-verification-agent.sh`(セッション中の行為の禁止) | **無し**。この競合はセッションの実行タイミングだけが原因で、コミット後のリポジトリの状態には痕跡が残らない |
 | `session-url-notice.sh`(セッション URL の提示) | **無し**。URL はセッションの中にしか無く、残す先も GitHub のコメントなので、push の時点で痕跡が残らない。落ちても穴は開かない(規約が AGENTS.md に残り、失っても情報が 1 つ足りないだけでガードは破れない) |
 | `post-edit-lint.sh` / `check-test-rules.sh` / `check-doc-comments.sh`(即時フィードバック) | 結果は push 前の検査(git hooks)と CI が拾う。**即時性だけが失われる** |
-| `check-test-helper-duplication.sh`(即時フィードバック) | **部分的にあり**。`.github/scripts/check-added-test-helper-duplication.sh` が CI(層 1)と push 前(層 2 の git hooks)で拾うが、既存の重複が `src` に残っているため**このブランチで追加された行だけ**が対象。触っていない既存分は push 時点でも拾えない |
+| `check-test-helper-duplication.sh`(即時フィードバック) | **部分的にあり**。`.github/scripts/check-added-test-helper-duplication.sh` が CI(層 1)と push 前(層 2 の git hooks。`python3` が使える環境だけ)で拾うが、既存の重複が `src` に残っているため**このブランチで追加された行だけ**が対象。触っていない既存分は push 時点でも拾えない |
 | `record-firings.sh`(発火ログ) | **無し**。ただし失敗しても穴は開かない(セッション見出しが無いログは `harness-record` が「計測対象外」と書く設計で、誤ったゼロにはならない)。カナリアと同じ「失敗してもガードが破れない」検出系 |
 
 ### 「代替不能」が実際に不発だったとき、手動で肩代わりする
@@ -126,6 +126,8 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 **行数のラチェットと集計の判定表**(`harness/records/count.sh --ratchet` /
 `harness/records/count-cases.sh`)は、上げたのではなく**新設時から層 1 と層 2 に置いた**
 (同じ `rules-check` ジョブと `harness/githooks/pre-push`)。層 3 に対応物は無い。
+**追加された分の検査の判定表**(`.github/scripts/check-added-cases.sh`)も同じ理由で層 1 と
+層 2 に置いた。ただしジョブは `rules-check` ではなく、当てる 2 本と同じ `lint-suppress`。
 
 ### 発火しているかを確かめる(カナリア)
 
@@ -211,7 +213,7 @@ deny のメッセージは、`jq` / `python3` が欠けていればその名前�
   - `f(props: T = {})` のように**既定引数の `{}` が宣言中で最初に現れる関数**は、本体が `"{}"` と読まれて `MIN_BODY_CHARS`(20)未満で捨てられ、重複があっても見えない(#153 で足した `renderToolbar` がこの形にあたる。未解消)
   - 引数の型注釈が `Readonly<{ x: number }>` のように `{}` を含む場合に本体と読み違える偽陽性(#179)は、引数リストの閉じ括弧より後ろから本体を探すよう直して解消した(`duplicate-test-helpers.py` の `params_end`)
   - ファイル単位で無効化: `// @duplicate-helpers-ok`
-- `.github/scripts/check-added-test-helper-duplication.sh`(層 1・CI、`frontend.yml` の `lint-suppress` ジョブ。同じスクリプトを `harness/githooks/pre-push` も引数なしで呼び、base を `origin/main` として push 前にも通す)は、Claude Code hook(層 3)が発火しない実行環境向けの無条件の代替。**既存の 11 組を理由に `--all` を無条件でブロックにはしない**(`check-added-lint-suppressions.sh` と同じ考え方)。`duplicate-test-helpers.py --lines` で対象ファイルの重複行を機械可読に出し、**このブランチで新しく追加された行に載っているものだけ**を違反にする。既存の 11 組を 0 組にすれば `--all` を無条件のブロックへ格上げできる(その時点でこの限定は不要になる)
+- `.github/scripts/check-added-test-helper-duplication.sh`(層 1・CI、`frontend.yml` の `lint-suppress` ジョブ。同じスクリプトを `harness/githooks/pre-push` も引数なしで呼び、base を `origin/main` として push 前にも通す。**検出器を走らせられなければ exit 2** → `.github/scripts/lib/detector-precondition.sh`)は、Claude Code hook(層 3)が発火しない実行環境向けの無条件の代替。**既存の 11 組を理由に `--all` を無条件でブロックにはしない**(`check-added-lint-suppressions.sh` と同じ考え方)。`duplicate-test-helpers.py --lines` で対象ファイルの重複行を機械可読に出し、**このブランチで新しく追加された行に載っているものだけ**を違反にする。既存の 11 組を 0 組にすれば `--all` を無条件のブロックへ格上げできる(その時点でこの限定は不要になる)
   - `check-added-lint-suppressions.sh` と違い、**base に同じ本体を持つファイルがあっても除外しない**。ファイル分割でヘルパーが新しいファイルへ移ると、移った側は全行が追加行になり、既存の重複が「新規」として引っかかる余地が残っている(pr-240 で lint 抑制コメントが踏んだのと同じ形)。単純な `git mv` はリネーム検出で diff に載らないため踏まないが、**分割**は対象
 - `check-doc-comments.sh` は**ブロックしない**(`additionalContext` を返すだけ)。また、見るのは**編集したファイルの分だけ**
   - 対象は `src/` の実装ファイルのみ(`__tests__/` / `*.stories.*` / `__stories__/` は見ない)
@@ -306,6 +308,9 @@ bash .github/scripts/check-added-lint-suppressions.sh origin/main
 
 # この PR で追加されたテストヘルパーの重複を数える(CI と同じ判定)
 bash .github/scripts/check-added-test-helper-duplication.sh origin/main
+
+# 上の 2 つの判定表(`ok` だけなら期待どおり)。exit 2 = 検査できなかった、も覆う
+bash .github/scripts/check-added-cases.sh; echo "exit=$?"
 
 # PR が閉じる Issue の検査の判定表(`ok` だけなら期待どおり)
 bash .github/scripts/check-pr-closing-issue-cases.sh; echo "exit=$?"
