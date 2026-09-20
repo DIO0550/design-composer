@@ -21,9 +21,10 @@
 #   bash check-duplicate-issue-pr.sh              # GitHub へ問い合わせる(CI)
 #   bash check-duplicate-issue-pr.sh <file.json>  # 問い合わせ結果を差し替える(動作確認)
 #
-# **`repository.pullRequests(states: OPEN)` は先頭 100 件までしか見ない。** このリポジトリの
-# 同時に開いている PR 数が 100 を超えたら取りこぼす(`check-duplicate-issue-pr-cases.sh` の
-# 先頭コメントに実測件数を書く)。
+# **`repository.pullRequests(states: OPEN)` は先頭 100 件までしか見ない。** 並びを更新の
+# 新しい順にしてあるので、100 件で切れたときに落ちるのは更新の止まった古い PR になる
+# (並行して実装している相手は、更新が新しい側にいる)。切れたときは `totalCount` と
+# 見た件数を注記に出し、黙って見落とさないようにする。
 #
 # 問い合わせ・再試行・`gh` の差し替えは `check-pr-closing-issue.sh` に倣う(同じ
 # `closingIssuesReferences` を読む検査で、5xx の再試行が要ることは実測済み)。
@@ -42,7 +43,8 @@ fetch() {
             pullRequest(number: $number) {
               closingIssuesReferences(first: 10) { nodes { number } }
             }
-            pullRequests(states: OPEN, first: 100) {
+            pullRequests(states: OPEN, first: 100, orderBy: { field: UPDATED_AT, direction: DESC }) {
+              totalCount
               nodes {
                 number
                 closingIssuesReferences(first: 10) { nodes { number } }
@@ -85,8 +87,24 @@ duplicates="$(
     ]' <<<"$result"
 )"
 
-# 差し替え JSON での動作確認では GitHub へは投げない
-[ -n "$result_file" ] && { echo "$duplicates"; exit 0; }
+echo "$duplicates"
+
+# 見た範囲が open な PR の全部でなければ、その旨を出す
+truncation_note="$(
+  jq -r '
+    .data.repository.pullRequests
+    | select(.totalCount > (.nodes | length))
+    | "注記: open な PR は \(.totalCount) 件あり、更新の新しい \(.nodes | length) 件だけを見た"
+  ' <<<"$result"
+)"
+if [ -n "$truncation_note" ]; then echo "$truncation_note"; fi
+
+# **コメントの投げ先が分かっているときだけ投げる。** 差し替え JSON を手で流す動作確認では
+# 環境変数を置かないのでここで終わる。判定表は `gh` を差し替えたうえで投げ先を渡し、
+# 貼る / 差し替える / 貼らないの分岐を実際に踏ませる
+if [ -z "${GITHUB_REPOSITORY:-}" ] || [ -z "${PR_NUMBER:-}" ]; then
+  exit 0
+fi
 
 marker="<!-- sticky-comment: duplicate-issue-pr -->"
 if [ "$(jq 'length' <<<"$duplicates")" -gt 0 ]; then
@@ -98,10 +116,27 @@ fi
 
 has_duplicates="$([ "$(jq 'length' <<<"$duplicates")" -gt 0 ] && echo true || echo false)"
 
-existing="$(gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
-  --jq "[.[] | select(.body | startswith(\"$marker\"))][0].id // empty")"
+# **ページを送って全部見る。** 一覧は作成の古い順で、1 ページに収まらないことがある
+# (実測: `per_page=1` で `rel="next"` の Link が返る)。このコメントは重複が出たときにしか
+# 貼らないので、コメントが積もった後に貼られると 1 ページ目に載らない。見失うと二重に貼る。
+# 先頭行だけを採るのは、`--paginate` がページごとに `--jq` の結果を返す場合に 2 行以上
+# 返るため(`head` で切ると `gh` が SIGPIPE で落ちて `pipefail` に引っかかる)。
+#
+# **コメント側の失敗では赤にしない。** 赤はこのジョブでは「問い合わせが 3 回とも
+# 通らなかった」だけを意味する(ステップに `continue-on-error` を置くと、その問い合わせの
+# 失敗まで緑になるので使わない)。
+if ! comment_ids="$(gh api --paginate \
+  "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments?per_page=100" \
+  --jq "[.[] | select(.body | startswith(\"$marker\"))][0].id // empty")"; then
+  echo 'コメントの一覧を取れなかった。コメントは触らない' >&2
+  exit 0
+fi
+existing="${comment_ids%%$'\n'*}"
+
 if [ -n "$existing" ]; then
-  gh api -X PATCH "repos/${GITHUB_REPOSITORY}/issues/comments/${existing}" -f body="$body"
+  gh api -X PATCH "repos/${GITHUB_REPOSITORY}/issues/comments/${existing}" -f body="$body" \
+    >/dev/null || echo 'コメントの差し替えに失敗した' >&2
 elif [ "$has_duplicates" = true ]; then
-  gh api -X POST "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" -f body="$body"
+  gh api -X POST "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" -f body="$body" \
+    >/dev/null || echo 'コメントの投稿に失敗した' >&2
 fi
