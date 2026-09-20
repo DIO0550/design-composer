@@ -97,6 +97,11 @@ jobs:
       - name: Check added test helper duplication
         run: bash .github/scripts/check-added-test-helper-duplication.sh "${{ github.event.pull_request.base.sha }}"
 
+      # 上の 2 つの判定（追加行の違反の有無 × 検査を走らせられるか）の判定表。
+      # ゲートに載せる理由は rules-check ジョブの「集計の判定表」ステップと同じ。
+      - name: 追加された分の検査の判定表
+        run: bash .github/scripts/check-added-cases.sh
+
   rules-check:
     # ジョブ名は検査が増えても据え置く(理由は lint-suppress ジョブのコメント)。
     name: doc コメント / テスト規約 / import 規約のチェック
