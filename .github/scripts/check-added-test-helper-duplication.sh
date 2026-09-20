@@ -12,8 +12,14 @@
 # 既存の重複で落とさないよう、**追加された行に載っているヘルパーだけ**を違反とする。
 set -euo pipefail
 
+# `cd` の前に解決する(`cd` したあとの `$0` は元の作業ディレクトリからの相対になる)
+script_dir="$(cd "$(dirname "$0")" && pwd)"
 base="${1:-${BASE_SHA:-origin/main}}"
 cd "$(git rev-parse --show-toplevel)"
+
+. "$script_dir/lib/detector-precondition.sh"
+detector=.claude/hooks/lib/duplicate-test-helpers.py
+require_runnable_detector "追加されたテストヘルパーの重複" "$detector"
 
 # 追加・変更された行の行番号を、統一 diff のハンク見出しから取り出す
 # (check-added-lint-suppressions.sh と同じ)
@@ -40,7 +46,8 @@ while IFS= read -r file; do
   added="$(added_line_numbers "$file")"
   [ -z "$added" ] && continue
 
-  reported="$(python3 .claude/hooks/lib/duplicate-test-helpers.py --lines "$file" || true)"
+  # `|| true` は外せない(理由は check-added-lint-suppressions.sh の同じ行)。
+  reported="$(python3 "$detector" --lines "$file" || true)"
   [ -z "$reported" ] && continue
 
   while IFS= read -r entry; do
