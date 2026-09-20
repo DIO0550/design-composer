@@ -35,6 +35,7 @@ report() {
 
 # 一時ツリーを作り直す。常時ロードとスキルの行数は count.sh が持つ予算ちょうどに合わせ、
 # ずれを作るケースだけが引数で増減させる。
+# 記録は追記で育てるので、**どのケースもここから始める**(作り直さないと前のケースの記録が残る)。
 # 引数: <常時ロードの増減> <スキルの増減>
 build_tree() {
   local loaded_delta="$1" skill_delta="$2" loaded_budget skill_budget
@@ -51,22 +52,45 @@ build_tree() {
   seq "$((skill_budget + skill_delta))" > "$work/.claude/skills/harness-growth/SKILL.md"
 }
 
-# 記録を 1 本書く。指摘は `<出どころ>` を、対策済は `<層>` を 4 番目の引数で受ける。
-# 引数: <番号> <指摘|対策済> <綴り> <出どころ|層>
-write_record() {
+# 記録を見出しだけで作る。既にあれば何もしない。
+# 引数: <番号>
+open_record() {
   local path="$work/harness/records/pr-$1.md"
-  printf '### pr-%s の記録\n\n' "$1" > "$path"
-  if [ "$2" = "指摘" ]; then
-    printf -- '- 分類: `%s`\n- 出どころ: `%s`\n' "$3" "$4" >> "$path"
-  else
-    printf -- '- 対策済: `%s` 層=%s at pr-%s\n' "$3" "$4" "$1" >> "$path"
-  fi
+  [ -f "$path" ] || printf '### pr-%s の記録\n\n' "$1" > "$path"
 }
 
-# 合成した記録へ count.sh を当て、comment の行を 1 行にして返す。
+# 記録へ 1 行足す。記録が無ければ見出しから作る。
+# 行をそのまま受けるのは、バッククォートの無い出どころ・分類の行を伴わない出どころなど、
+# 下の 2 つの形に収まらない記録を作るため。
+# 引数: <番号> <行>
+append_line() {
+  open_record "$1"
+  printf -- '%s\n' "$2" >> "$work/harness/records/pr-$1.md"
+}
+
+# 記録へ指摘を 1 件足す。
+# 引数: <番号> <綴り> <出どころ>
+write_finding() {
+  append_line "$1" "- 分類: \`$2\`"
+  append_line "$1" "- 出どころ: \`$3\`"
+}
+
+# 記録へ対策済を 1 件足す(その綴りの窓を閉じる)。
+# 引数: <番号> <綴り> <層>
+write_intervention() {
+  append_line "$1" "- 対策済: \`$2\` 層=$3 at pr-$1"
+}
+
+# 合成したツリーの count.sh を走らせる。
+# 引数: count.sh へそのまま渡す引数
+run_count() {
+  bash "$work/harness/records/count.sh" "$@"
+}
+
+# 既定の表の comment の行を 1 行にして返す。
 # 通算・以降まで返すのは、窓の外の件数と窓の長さを壊しても気づけるようにするため。
 comment_row() {
-  bash "$work/harness/records/count.sh" | awk '$5 == "comment" {
+  run_count | awk '$5 == "comment" {
     printf "再発=%s 内部=%s 通算=%s 以降=%s 起点=%s", $1, $2, $3, $4, $6
   }'
 }
@@ -92,11 +116,11 @@ while IFS='|' read -r expected label spec; do
   for entry in $spec; do
     IFS=':' read -r number kind tag source <<< "$entry"
     # `空` の番号は記録だけを 1 本増やす（以降の本数を数える対象にする）
-    if [ "$kind" = "空" ]; then
-      printf '### pr-%s の記録\n' "$number" > "$work/harness/records/pr-$number.md"
-    else
-      write_record "$number" "$kind" "$tag" "$source"
-    fi
+    case "$kind" in
+      空) open_record "$number" ;;
+      指摘) write_finding "$number" "$tag" "$source" ;;
+      *) write_intervention "$number" "$tag" "$source" ;;
+    esac
   done
   report "$expected" "$(comment_row)" "$label"
 done <<< "$window_cases"
@@ -104,16 +128,16 @@ done <<< "$window_cases"
 # --list は summary_rows と別に窓を計算するので、片方だけ壊れても表からは分からない。
 printf '\n%s\n' "--list"
 build_tree 0 0
-write_record 10 対策済 comment-alpha hook
-write_record 20 指摘 comment-alpha "レビュー（人）"
-write_record 30 指摘 comment-beta "レビュー（人）"
-write_record 40 指摘 comment-alpha サブエージェント
-listed="$(bash "$work/harness/records/count.sh" --list comment | wc -l | tr -d ' ')"
+write_intervention 10 comment-alpha hook
+write_finding 20 comment-alpha "レビュー（人）"
+write_finding 30 comment-beta "レビュー（人）"
+write_finding 40 comment-alpha サブエージェント
+listed="$(run_count --list comment | wc -l | tr -d ' ')"
 report 3 "$listed" "窓の外の指摘を落とし、窓の中は外部も内部も出す"
 build_tree 0 0
-write_record 10 指摘 comment-alpha "レビュー（人）"
-write_record 20 対策済 comment hook
-closed="$(bash "$work/harness/records/count.sh" --list comment | wc -l | tr -d ' ')"
+write_finding 10 comment-alpha "レビュー（人）"
+write_intervention 20 comment hook
+closed="$(run_count --list comment | wc -l | tr -d ' ')"
 report 0 "$closed" "分類名への対策済で閉じた窓の指摘は出さない"
 
 # --ratchet の終了コード。表は `期待|ケース名|常時ロードの増減|スキルの増減`。
@@ -129,24 +153,24 @@ printf '\n%s\n' "--ratchet の終了コード"
 while IFS='|' read -r expected label loaded_delta skill_delta; do
   [ -n "$expected" ] || continue
   build_tree "$loaded_delta" "$skill_delta"
-  bash "$work/harness/records/count.sh" --ratchet >/dev/null 2>&1 && status=0 || status=$?
+  run_count --ratchet >/dev/null 2>&1 && status=0 || status=$?
   report "$expected" "$status" "$label"
 done <<< "$ratchet_cases"
 
 # --ratchet が出す文言。超過と下回りで直し方が逆なので、終了コードだけでは取り違えを拾えない。
 printf '\n%s\n' "--ratchet の文言"
 build_tree 1 0
-over="$(bash "$work/harness/records/count.sh" --ratchet 2>&1 | grep -c '予算を超えています')"
+over="$(run_count --ratchet 2>&1 | grep -c '予算を超えています')"
 report 1 "$over" "超過では削るよう促す"
 build_tree -1 0
-under="$(bash "$work/harness/records/count.sh" --ratchet 2>&1 | grep -c 'always_loaded_cap')"
+under="$(run_count --ratchet 2>&1 | grep -c 'always_loaded_cap')"
 report 1 "$under" "下回りでは予算を下げるよう促す"
 
 # --shrink は予算がずれていても止まらない。ずれている回こそ節 2・3 を読みたい。
 printf '\n%s\n' "--shrink"
 build_tree 1 0
-write_record 10 指摘 comment "レビュー（人）"
-sections="$(bash "$work/harness/records/count.sh" --shrink 2>&1 | grep -cE '^[0-9]+\. ')"
+write_finding 10 comment "レビュー（人）"
+sections="$(run_count --shrink 2>&1 | grep -cE '^[0-9]+\. ')"
 report 3 "$sections" "予算がずれていても節 1〜3 がすべて出る"
 
 exit "$failed"
