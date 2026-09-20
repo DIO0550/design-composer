@@ -1,26 +1,24 @@
-# PR が閉じる Issue を見る 2 つの検査。どちらも `closingIssuesReferences` を読む。
-#
-# - `closing-issue`: 閉じる Issue を持っているか（AGENTS.md「着手した Issue は、その回で閉じる」）
-# - `parallel-issue-pr`: 同じ Issue を閉じる他の open な PR が無いか（コメントで知らせるだけ）
+# PR がマージ時に閉じる Issue を持っているかの検査（AGENTS.md「着手した Issue は、その回で閉じる」）。
 #
 # frontend.yml とは別のワークフローにしてあるのは、**本文の編集（`edited`）で再実行する
 # 必要がある**ため。frontend.yml へ `edited` を足すと、本文を直しただけで
-# lint / typecheck / test が丸ごと走り直す。`Closes #<番号>` は後から本文へ書き足される
-# ことがあり、どちらの検査もそこを読むので、2 つとも同じ `on:` に載せる。
+# lint / typecheck / test が丸ごと走り直す。
 #
 # `GH_TOKEN: ${{ github.token }}` を env に置いて `gh api` を呼ぶ形は、frontend.yml の
 # `report-comment` ジョブと ci-trace.yml に倣う（どちらも REST。`gh api graphql` はここが初）。
 # ci-trace.yml の `workflows:` には載せない。トレースの目的は実行時間の可視化で、
-# どちらのジョブも短時間で終わるため（`parallel-issue-pr` は問い合わせを再試行しても 20 秒強）。
+# このジョブは数秒しかかからないため。
+#
+# `duplicate-issue-pr` ジョブは同じ `closingIssuesReferences` を読むが別ジョブにしてある。
+# 閉じ忘れ(`closing-issue`)はマージを止めたい検査だが、重複はこの検査だけでは
+# どちらが正しいか判定できない情報提供にとどまるため、失敗させても意味が無い
+# （`harness/records/pr-604.md` 指摘 1 / `pr-605.md` 指摘 1）。
 name: pr-closing-issue
 
 on:
   pull_request:
     types: [opened, edited, synchronize, reopened]
 
-# group はワークフロー単位なので、2 つのジョブは同じ PR の連続したイベントでまとめて
-# 打ち切られる。ただし打ち切りは投稿済みのコメントを戻さないので、重ね貼りを防いでいるのは
-# marker で探して差し替える `parallel-issue-pr` 側（古い実行が走る回数が減るだけ）
 concurrency:
   group: pr-closing-issue-${{ github.event.pull_request.number }}
   cancel-in-progress: true
@@ -58,16 +56,10 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: bash .github/scripts/check-pr-closing-issue.sh
 
-  parallel-issue-pr:
-    # **このジョブは必須チェックにしない。** 判定では赤にならない設計なので、必須に
-    # しても止まるものが無い（赤 = 問い合わせが 3 回とも通らなかった、だけを意味する。
-    # 理由は `.github/scripts/check-parallel-issue-pr.sh` の冒頭）。
+  duplicate-issue-pr:
     name: 同じ Issue を閉じる他の PR のチェック
     runs-on: ubuntu-24.04
     timeout-minutes: 5
-    # コメントを貼る・差し替えるので `pull-requests` は write。
-    # `closingIssuesReferences` が返すのは Issue なので `issues: read` も要る
-    # （`permissions:` を書いた時点で、書かなかったスコープは none になる）
     permissions:
       contents: read
       pull-requests: write
@@ -78,8 +70,9 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: 同じ Issue を閉じる他の open な PR
+      - name: 重複を確認してコメントする
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: bash .github/scripts/check-parallel-issue-pr.sh
+        run: bash .github/scripts/check-duplicate-issue-pr.sh

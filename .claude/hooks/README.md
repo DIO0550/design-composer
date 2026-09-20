@@ -114,7 +114,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 `session-url-notice.sh` の不発は対応不要(上の表のとおり、失っても情報が 1 つ
 足りないだけでガードは破れない)。
 
-**doc コメント・テスト規約・import 規約・判別子の直読みは CI(層 1)へ上げた**(`frontend.yml` の `rules-check`)。
+**doc コメント・テスト規約・import 規約・判別子の直読み・行数のラチェット・集計の判定表は CI(層 1)へ上げた**(`frontend.yml` の `rules-check`)。
 **doc コメントとテスト規約の 2 つ**は層 2・層 3 にしか無かったが、**層 2 と層 3 は同じ環境で同時に抜ける**。
 リモート実行環境はクローンからやり直すので `core.hooksPath` が未設定のまま
 (`postCreateCommand` は DevContainer でしか走らない)で、そこは `.claude/settings.json` の
@@ -310,8 +310,8 @@ bash .github/scripts/check-added-test-helper-duplication.sh origin/main
 # PR が閉じる Issue の検査の判定表(`ok` だけなら期待どおり)
 bash .github/scripts/check-pr-closing-issue-cases.sh; echo "exit=$?"
 
-# 同じ Issue を閉じる他の open な PR の検査の判定表(判定行・コメントの投稿・再試行)
-bash .github/scripts/check-parallel-issue-pr-cases.sh; echo "exit=$?"
+# 同じ Issue を閉じる他の PR の検査の判定表(`ok` だけなら期待どおり)
+bash .github/scripts/check-duplicate-issue-pr-cases.sh; echo "exit=$?"
 
 # 記録の集計(窓の数え方・--ratchet の終了コード)の判定表。pre-push と CI も走らせる
 bash harness/records/count-cases.sh; echo "exit=$?"

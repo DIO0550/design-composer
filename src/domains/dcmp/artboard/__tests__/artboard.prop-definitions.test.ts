@@ -53,3 +53,12 @@ test("表示 / 非表示は artboard の props では受け付けない", () => 
 test("回転は artboard の props では受け付けない", () => {
   expect(Object.keys(Artboard.propDefinitions())).not.toContain("rotation");
 });
+
+test("artboard は最小 / 最大のサイズを受け付けない", () => {
+  const names = Object.keys(Artboard.propDefinitions());
+
+  expect(names).not.toContain("minWidth");
+  expect(names).not.toContain("maxWidth");
+  expect(names).not.toContain("minHeight");
+  expect(names).not.toContain("maxHeight");
+});

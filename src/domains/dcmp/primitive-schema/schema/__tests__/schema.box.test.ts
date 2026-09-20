@@ -159,6 +159,79 @@ test("Box の height は heightMode が fixed のときのみ有効になる", (
   );
 });
 
+test("Box の最小 / 最大は 4 つとも生リテラルの number でデフォルトを持たない", () => {
+  const definitions = [
+    BoxSchema.props.minWidth,
+    BoxSchema.props.maxWidth,
+    BoxSchema.props.minHeight,
+    BoxSchema.props.maxHeight,
+  ];
+
+  for (const definition of definitions) {
+    expect(PropDefinition.isLiteral(definition)).toBe(true);
+    expect(definition).toMatchObject({
+      domain: "literal",
+      literalType: "number",
+    });
+    expect("default" in definition).toBe(false);
+  }
+});
+
+test("Box の最小の幅は widthMode が fixed のときだけ編集できない", () => {
+  const definition = BoxSchema.props.minWidth;
+  expect(PropDefinition.isEnabled(definition, { widthMode: "fixed" })).toBe(
+    false,
+  );
+  expect(PropDefinition.isEnabled(definition, { widthMode: "hug" })).toBe(true);
+  expect(PropDefinition.isEnabled(definition, { widthMode: "fill" })).toBe(
+    true,
+  );
+});
+
+test("Box の最小の高さは heightMode が fixed のときだけ編集できない", () => {
+  const definition = BoxSchema.props.minHeight;
+  expect(PropDefinition.isEnabled(definition, { heightMode: "fixed" })).toBe(
+    false,
+  );
+  expect(PropDefinition.isEnabled(definition, { heightMode: "hug" })).toBe(
+    true,
+  );
+  expect(PropDefinition.isEnabled(definition, { heightMode: "fill" })).toBe(
+    true,
+  );
+});
+
+test("Box の最大の幅は widthMode が fixed のときだけ編集できない", () => {
+  const definition = BoxSchema.props.maxWidth;
+  expect(PropDefinition.isEnabled(definition, { widthMode: "fixed" })).toBe(
+    false,
+  );
+  expect(PropDefinition.isEnabled(definition, { widthMode: "hug" })).toBe(true);
+  expect(PropDefinition.isEnabled(definition, { widthMode: "fill" })).toBe(
+    true,
+  );
+});
+
+test("Box の最大の高さは heightMode が fixed のときだけ編集できない", () => {
+  const definition = BoxSchema.props.maxHeight;
+  expect(PropDefinition.isEnabled(definition, { heightMode: "fixed" })).toBe(
+    false,
+  );
+  expect(PropDefinition.isEnabled(definition, { heightMode: "hug" })).toBe(
+    true,
+  );
+  expect(PropDefinition.isEnabled(definition, { heightMode: "fill" })).toBe(
+    true,
+  );
+});
+
+test("Box の最小 / 最大は取りうる範囲を宣言しない", () => {
+  expect("range" in BoxSchema.props.minWidth).toBe(false);
+  expect("range" in BoxSchema.props.maxWidth).toBe(false);
+  expect("range" in BoxSchema.props.minHeight).toBe(false);
+  expect("range" in BoxSchema.props.maxHeight).toBe(false);
+});
+
 test("Box の overflow は visible / clip の enum でデフォルトが visible", () => {
   const definition = BoxSchema.props.overflow;
   expect(definition).toMatchObject({
