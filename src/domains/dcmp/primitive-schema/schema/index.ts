@@ -220,6 +220,33 @@ export const BoxSchema = {
       group: "size",
       enabledWhen: { kind: "equals", prop: "widthMode", equals: "fixed" },
     },
+    /*
+     * 最小 / 最大が効くのは `fixed` 以外のモードのときなので、`width` の `enabledWhen` と
+     * 向きが逆になる（docs/03「サイズ指定の原則」）。
+     *
+     * UI 案（docs/Design Composer.html）はこの 4 行を描いていない。パネルは UI 案の写し
+     * ではなくスキーマ走査で組み立てる（docs/03）ので、Size 節は 4 行から 8 行になる。
+     */
+    minWidth: {
+      domain: "literal",
+      literalType: "number",
+      group: "size",
+      enabledWhen: {
+        kind: "notEquals",
+        prop: "widthMode",
+        notEquals: "fixed",
+      },
+    },
+    maxWidth: {
+      domain: "literal",
+      literalType: "number",
+      group: "size",
+      enabledWhen: {
+        kind: "notEquals",
+        prop: "widthMode",
+        notEquals: "fixed",
+      },
+    },
     heightMode: {
       domain: "enum",
       values: ["hug", "fill", "fixed"],
@@ -231,6 +258,26 @@ export const BoxSchema = {
       literalType: "number",
       group: "size",
       enabledWhen: { kind: "equals", prop: "heightMode", equals: "fixed" },
+    },
+    minHeight: {
+      domain: "literal",
+      literalType: "number",
+      group: "size",
+      enabledWhen: {
+        kind: "notEquals",
+        prop: "heightMode",
+        notEquals: "fixed",
+      },
+    },
+    maxHeight: {
+      domain: "literal",
+      literalType: "number",
+      group: "size",
+      enabledWhen: {
+        kind: "notEquals",
+        prop: "heightMode",
+        notEquals: "fixed",
+      },
     },
     background: { domain: "token", tokenKind: "colors", group: "appearance" },
     radiusTopLeft: {

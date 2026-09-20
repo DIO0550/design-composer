@@ -147,6 +147,8 @@ Box と Ellipse が、面をどう塗るかを 1 prop で持つ（Text が持つ
 - `width` / `height` は `widthMode` / `heightMode` が `fixed` のときのみ有効（`enabledWhen`）
 - **`widthMode` / `heightMode` の `fill` は、`layout` が `row` / `column` の親の子にだけ書ける。** `free` の親の子に書いたものはバリデーションエラー（下記「バリデーション仕様」）。親の prop を見る条件なので `enabledWhen` では表せない
 - **モードとして `hug` を持つかはプリミティブごとに違う。** 子を持たないプリミティブは中身から決まる長さが無いので `hug` を持たない
+- **最小 / 最大（`minWidth` / `maxWidth` / `minHeight` / `maxHeight`）は、そのモードが `fixed` 以外のときだけ効く。** `fixed` は「その軸の長さがその値で決まっている」ことを意味するので、クランプでその長さが別の値になると意味自体が崩れる（リサイズハンドルも親のリサイズへの追従も、`fixed` の長さを画面上の長さとして読む）。`fixed` のノードに書いた最小 / 最大は**読み捨てる**（バリデーションエラーにはしない。フローの子に書いた座標と同じ扱い）
+- **最小 / 最大は取りうる範囲を宣言しない。** `width` / `height` と同じで、値域はブラウザの解釈に委ねる（上記「prop 定義のフィールド」の `range` は宣言しない prop を範囲では弾かない）。前後関係（`minWidth` が `maxWidth` より大きい）も検出しない — 1 prop の値域ではなく 2 prop の関係なので、`range` では表せない
 
 ### Box
 
@@ -167,8 +169,12 @@ Box と Ellipse が、面をどう塗るかを 1 prop で持つ（Text が持つ
 | `justify` | enum | `start` / `center` / `end` / `space-between`。`layout` が `free` 以外のときのみ有効 | `start` |
 | `widthMode` | enum | `hug` / `fill` / `fixed` | `hug` |
 | `width` | 生リテラル (number, px) | `widthMode: fixed` 時のみ有効 | - |
+| `minWidth` | 生リテラル (number, px) | 幅の下限。`widthMode: fixed` 以外のときのみ有効 | - |
+| `maxWidth` | 生リテラル (number, px) | 幅の上限。`widthMode: fixed` 以外のときのみ有効 | - |
 | `heightMode` | enum | `hug` / `fill` / `fixed` | `hug` |
 | `height` | 生リテラル (number, px) | `heightMode: fixed` 時のみ有効 | - |
+| `minHeight` | 生リテラル (number, px) | 高さの下限。`heightMode: fixed` 以外のときのみ有効 | - |
+| `maxHeight` | 生リテラル (number, px) | 高さの上限。`heightMode: fixed` 以外のときのみ有効 | - |
 | `background` | | 上記「塗り」 | なし (透明) |
 | `radiusTopLeft` | トークン (radius) | 左上 | なし (0) |
 | `radiusTopRight` | トークン (radius) | 右上 | なし (0) |
@@ -184,7 +190,7 @@ Box と Ellipse が、面をどう塗るかを 1 prop で持つ（Text が持つ
   - ただし**「その prop がどの shorthand のどの位置の longhand か」はスキーマが `shorthand` で宣言する**。これは prop 自身の性質（`paddingTop` は padding の上辺、`radiusTopLeft` は radius の左上である）であって、今そのパネルが畳んでいるかという画面の状態ではない。パネルはこの宣言を使って 4 prop を 1 行にまとめ、畳むかどうかは画面側だけで決める
   - **畳んだ欄の単位が padding と角丸で違う**のは、`border-radius` の 2 値が対角（左上 + 右下 / 右上 + 左下）を指し、垂直 / 水平にあたる組が隅には無いため
 - border 系は初期セットに含めない（スキーマへの追加で対応可能）
-- artboard は Box スキーマを流用するが、`widthMode` / `heightMode` は `fixed` に固定され、`width` / `height` が必須、`overflow` のデフォルトは `clip`
+- artboard は Box スキーマを流用するが、`widthMode` / `heightMode` は `fixed` に固定され、`width` / `height` が必須、`overflow` のデフォルトは `clip`。**最小 / 最大は受け付けない**（モードが `fixed` 固定なので書けても効かない）
 
 ### Text
 
@@ -222,6 +228,7 @@ Box と Ellipse が、面をどう塗るかを 1 prop で持つ（Text が持つ
 - **`hug` を持たないのが Box との差**（上記「サイズ指定の原則」）。子を持たないので中身から決まる長さが無く、`hug` は常に 0 になる
 - **角丸の prop を持たない。** 楕円の丸みは形そのものであって設定値ではない。持たせると「楕円なのに角丸 4px」という、形と設定値が食い違う組み合わせが書けてしまう
 - **`layout` / `wrap` / `gap` / padding 4 辺 / `align` / `justify` / `overflow` を持たない。** 子を持たないので、並べる対象も切り取る対象も無い
+- **最小 / 最大のサイズを持つかはまだ決めていない。** `fill` を持つので意味は持ちうるが、Box と同じ 4 prop を足すかは Ellipse を読み書きできるようになった時点で決める（まだ足していない）
 - **`background` の既定だけ Box と違う**（Box は「なし（透明）」）。Box は中身を入れる器なので透明が既定でよいが、Ellipse は形そのものなので、既定で塗りが無いと挿入しても画面に何も出ない。既定がトークン名を指すのは Text の `typography` / `color` と同じで、その名前は初期テンプレートが保証する（04-tokens「スキーマデフォルトとの関係」）
 - **`width` / `height` の既定 `100` は、Figma が楕円を作るときの既定（幅・高さとも 100）に揃えた。** 型でもテストでも守れない値なので、変えるときはこの行ごと変える
 - **どの版から読み書きできるかは 01-file-format「formatVersion」の表が持つ。** 新プリミティブは minor の追加的変更にあたるが、アプリが Ellipse を読み書きできるようになった時点で表へ足す（まだ足していない）
@@ -247,6 +254,7 @@ Box と Ellipse が、面をどう塗るかを 1 prop で持つ（Text が持つ
 | `widthMode: hug` | `width: fit-content` |
 | `widthMode: fill` | 親の主軸方向なら `flex-grow: 1`、交差軸方向なら `align-self: stretch`（親の `layout` を見て出し分け） |
 | `widthMode: fixed` | `width: {n}px` |
+| `minWidth` / `maxWidth` | `min-width: {n}px` / `max-width: {n}px`（`widthMode: fixed` では出力しない。`fill` がフローの外にあって伸長の宣言を出さないときも、親の向きに依らないのでこちらは出す） |
 | `background` | `background: var(--colors-*)` / `var(--gradients-*)`（その名前が属する種別の var を出す。上記「塗り」） |
 | `radiusTopLeft` / `radiusTopRight` / `radiusBottomRight` / `radiusBottomLeft` | `border-radius: var(--radius-*)` （左上 右上 右下 左下 の順で4値に合成。未指定の隅は `0`） |
 | `shadow` | `box-shadow: var(--shadows-*)` |
