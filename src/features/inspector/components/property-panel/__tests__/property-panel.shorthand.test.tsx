@@ -2,6 +2,10 @@ import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import {
+  pressedSegmentsOf,
+  segmentOf,
+} from "@/components/__tests__/segmented-controls";
+import {
   DesignDocument,
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
@@ -10,11 +14,20 @@ import { DocumentSelection } from "@/domains/session/document-selection";
 import { ShorthandLabels } from "../index";
 import { renderPanel } from "./setup";
 
-/** 切り替えボタンの綴り。押されている間は 4 辺が出る。 */
-const PerEdgeToggle = ShorthandLabels.perLonghand.padding;
+/** padding の行の読み上げ名。セグメントも欄もこの器の中から引く。 */
+const PaddingRow = "Padding";
 
-/** 切り替えボタンの綴り。押されている間は 4 隅が出る。 */
-const PerCornerToggle = ShorthandLabels.perLonghand.radius;
+/** radius の行の読み上げ名。 */
+const RadiusRow = "Radius";
+
+/** 畳んだ欄を出すセグメントの綴り。padding と radius で同じなので、器で絞らないと引けない。 */
+const CollapsedSegment = ShorthandLabels.collapsed.padding;
+
+/** padding の行で 4 辺を出すセグメントの綴り。 */
+const PerEdgeSegment = ShorthandLabels.perLonghand.padding;
+
+/** radius の行で 4 隅を出すセグメントの綴り。 */
+const PerCornerSegment = ShorthandLabels.perLonghand.radius;
 
 /** 4 隅とも同じ値。畳んだ欄が揃っている状態。 */
 const UniformCorners = {
@@ -79,6 +92,12 @@ test("既定では垂直と水平の 2 欄が出る", () => {
   ).toBeDefined();
 });
 
+test("既定では畳んだ欄のセグメントが選ばれた状態で出る", () => {
+  renderBoxPanel(UniformSides);
+
+  expect(pressedSegmentsOf(PaddingRow)).toEqual([CollapsedSegment]);
+});
+
 test("畳んだ欄には向かい合う 2 辺に効いている値が出る", () => {
   renderBoxPanel(UniformSides);
 
@@ -107,16 +126,12 @@ test("向かい合う 2 辺の値が違うと畳んだ欄には解決値が添�
   ).toBeDefined();
 });
 
-test("切り替えボタンは 4 辺を出しているかを押下状態で示す", async () => {
+test("辺ごとのセグメントを選ぶとそのセグメントだけが選ばれた状態になる", async () => {
   const user = renderBoxPanel(UniformSides);
 
-  await user.click(screen.getByRole("button", { name: PerEdgeToggle }));
+  await user.click(segmentOf(PaddingRow, PerEdgeSegment));
 
-  expect(
-    screen
-      .getByRole("button", { name: PerEdgeToggle })
-      .getAttribute("aria-pressed"),
-  ).toBe("true");
+  expect(pressedSegmentsOf(PaddingRow)).toEqual([PerEdgeSegment]);
 });
 
 test("向かい合う 2 辺の値が違うと畳んだ欄は不揃いと出る", () => {
@@ -126,10 +141,10 @@ test("向かい合う 2 辺の値が違うと畳んだ欄は不揃いと出る",
   expect(screen.getAllByRole("option", { name: "不揃い" })).toHaveLength(1);
 });
 
-test("切り替えボタンを押すと 4 辺の欄が出る", async () => {
+test("辺ごとのセグメントを選ぶと 4 辺の欄が出る", async () => {
   const user = renderBoxPanel(UniformSides);
 
-  await user.click(screen.getByRole("button", { name: PerEdgeToggle }));
+  await user.click(segmentOf(PaddingRow, PerEdgeSegment));
 
   const edges = [
     "Padding Top",
@@ -145,28 +160,48 @@ test("切り替えボタンを押すと 4 辺の欄が出る", async () => {
 test("4 辺の欄を出すと畳んだ欄は出なくなる", async () => {
   const user = renderBoxPanel(UniformSides);
 
-  await user.click(screen.getByRole("button", { name: PerEdgeToggle }));
+  await user.click(segmentOf(PaddingRow, PerEdgeSegment));
 
   expect(
     screen.queryByRole("combobox", { name: "Padding Vertical" }),
   ).toBeNull();
 });
 
-test("切り替えボタンをもう一度押すと畳んだ 2 欄へ戻る", async () => {
+test("選んでいる辺ごとのセグメントをもう一度押しても 4 辺の欄が出たままになる", async () => {
+  /* トグルとの違い。押し直しで未選択へ落ちると畳んだ欄へ戻って落ちる。 */
   const user = renderBoxPanel(UniformSides);
-  await user.click(screen.getByRole("button", { name: PerEdgeToggle }));
+  await user.click(segmentOf(PaddingRow, PerEdgeSegment));
 
-  await user.click(screen.getByRole("button", { name: PerEdgeToggle }));
+  await user.click(segmentOf(PaddingRow, PerEdgeSegment));
+
+  expect(screen.getByRole("combobox", { name: "Padding Top" })).toBeDefined();
+});
+
+test("畳んだ欄のセグメントを選ぶと畳んだ 2 欄へ戻る", async () => {
+  const user = renderBoxPanel(UniformSides);
+  await user.click(segmentOf(PaddingRow, PerEdgeSegment));
+
+  await user.click(segmentOf(PaddingRow, CollapsedSegment));
 
   expect(
     screen.getByRole("combobox", { name: "Padding Vertical" }),
   ).toBeDefined();
 });
 
+test("選んでいるセグメントは padding と radius で別々に決まる", async () => {
+  const user = renderBoxPanel({ ...UniformSides, ...UniformCorners });
+
+  await user.click(segmentOf(PaddingRow, PerEdgeSegment));
+
+  expect([pressedSegmentsOf(PaddingRow), pressedSegmentsOf(RadiusRow)]).toEqual(
+    [[PerEdgeSegment], [ShorthandLabels.collapsed.radius]],
+  );
+});
+
 test("辺の欄の読み上げ名は行の見出しと辺の綴りを繋いだものになる", async () => {
   const user = renderBoxPanel(UniformSides);
 
-  await user.click(screen.getByRole("button", { name: PerEdgeToggle }));
+  await user.click(segmentOf(PaddingRow, PerEdgeSegment));
 
   expect(screen.getByRole("combobox", { name: "Padding Right" })).toBeDefined();
 });
@@ -212,10 +247,10 @@ test("4 隅の値が違うと radius の畳んだ欄は不揃いと出る", () =
   expect(screen.getAllByRole("option", { name: "不揃い" })).toHaveLength(1);
 });
 
-test("radius の切り替えボタンを押すと 4 隅の欄が出る", async () => {
+test("隅ごとのセグメントを選ぶと 4 隅の欄が出る", async () => {
   const user = renderBoxPanel(UniformCorners);
 
-  await user.click(screen.getByRole("button", { name: PerCornerToggle }));
+  await user.click(segmentOf(RadiusRow, PerCornerSegment));
 
   const corners = [
     "Radius Top Left",
@@ -231,7 +266,7 @@ test("radius の切り替えボタンを押すと 4 隅の欄が出る", async (
 test("4 隅の欄を出すと畳んだ欄は出なくなる", async () => {
   const user = renderBoxPanel(UniformCorners);
 
-  await user.click(screen.getByRole("button", { name: PerCornerToggle }));
+  await user.click(segmentOf(RadiusRow, PerCornerSegment));
 
   expect(screen.queryByRole("combobox", { name: "Radius" })).toBeNull();
 });
@@ -239,7 +274,7 @@ test("4 隅の欄を出すと畳んだ欄は出なくなる", async () => {
 test("隅の欄の読み上げ名は行の見出しと隅の綴りを繋いだものになる", async () => {
   const user = renderBoxPanel(UniformCorners);
 
-  await user.click(screen.getByRole("button", { name: PerCornerToggle }));
+  await user.click(segmentOf(RadiusRow, PerCornerSegment));
 
   expect(
     screen.getByRole("combobox", { name: "Radius Bottom Right" }),

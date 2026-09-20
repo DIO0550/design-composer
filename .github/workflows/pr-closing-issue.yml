@@ -11,8 +11,9 @@
 #
 # `duplicate-issue-pr` ジョブは同じ `closingIssuesReferences` を読むが別ジョブにしてある。
 # 閉じ忘れ(`closing-issue`)はマージを止めたい検査だが、重複はこの検査だけでは
-# どちらが正しいか判定できない情報提供にとどまるため、失敗させても意味が無い
+# どちらが正しいか判定できない情報提供にとどまるため、**判定では赤にしない**
 # （`harness/records/pr-604.md` 指摘 1 / `pr-605.md` 指摘 1）。
+# そのぶん、このジョブの赤は「問い合わせが 3 回とも通らなかった」だけを意味する。
 name: pr-closing-issue
 
 on:
@@ -70,8 +71,11 @@ jobs:
         with:
           fetch-depth: 1
 
+      # `continue-on-error` は置かない。判定では赤にしない設計だが、それをステップ側で
+      # 実現すると、クエリのフィールド名・`permissions` の破損や GraphQL の 3 回失敗まで
+      # 緑になり、検査が動いていないことに誰も気づけない。コメントの投稿・差し替えの
+      # 失敗だけをスクリプトの中で握る（このジョブの赤 = 問い合わせが通らなかった）
       - name: 重複を確認してコメントする
-        continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
