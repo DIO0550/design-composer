@@ -66,15 +66,14 @@ type ShorthandGranularity = ValueOf<typeof ShorthandGranularities>;
 export const ShorthandLabels = {
   /**
    * 畳んだ欄を出すセグメント。畳んだ先は padding が向かい合う 2 辺、radius が 4 隅と違うが、
-   * まとめて書く欄である点は同じなので綴りも同じにしている
-   * （docs/03-schema.md「角丸は 4 隅まとめて 1 欄」）。
+   * どちらも 1 回の指定がすべての位置へ効くので綴りも同じにしている。
    */
-  collapsed: { padding: "まとめて", radius: "まとめて" },
+  collapsed: { padding: "all", radius: "all" },
   /**
    * longhand を位置ごとに出すセグメント。綴りが shorthand ごとに違うのは、束ねている
    * ものが辺と隅で違うため。
    */
-  perLonghand: { padding: "辺ごと", radius: "隅ごと" },
+  perLonghand: { padding: "sides", radius: "corners" },
 } as const satisfies Readonly<
   Record<ShorthandGranularity, Readonly<Record<ShorthandName, string>>>
 >;
