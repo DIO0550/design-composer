@@ -8,6 +8,12 @@
 # `report-comment` ジョブと ci-trace.yml に倣う（どちらも REST。`gh api graphql` はここが初）。
 # ci-trace.yml の `workflows:` には載せない。トレースの目的は実行時間の可視化で、
 # このジョブは数秒しかかからないため。
+#
+# `duplicate-issue-pr` ジョブは同じ `closingIssuesReferences` を読むが別ジョブにしてある。
+# 閉じ忘れ(`closing-issue`)はマージを止めたい検査だが、重複はこの検査だけでは
+# どちらが正しいか判定できない情報提供にとどまるため、**判定では赤にしない**
+# （`harness/records/pr-604.md` 指摘 1 / `pr-605.md` 指摘 1）。
+# そのぶん、このジョブの赤は「問い合わせが 3 回とも通らなかった」だけを意味する。
 name: pr-closing-issue
 
 on:
@@ -50,3 +56,27 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: bash .github/scripts/check-pr-closing-issue.sh
+
+  duplicate-issue-pr:
+    name: 同じ Issue を閉じる他の PR のチェック
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 1
+
+      # `continue-on-error` は置かない。判定では赤にしない設計だが、それをステップ側で
+      # 実現すると、クエリのフィールド名・`permissions` の破損や GraphQL の 3 回失敗まで
+      # 緑になり、検査が動いていないことに誰も気づけない。コメントの投稿・差し替えの
+      # 失敗だけをスクリプトの中で握る（このジョブの赤 = 問い合わせが通らなかった）
+      - name: 重複を確認してコメントする
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: bash .github/scripts/check-duplicate-issue-pr.sh

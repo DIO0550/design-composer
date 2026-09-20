@@ -25,7 +25,7 @@ DevContainer の `postCreateCommand` も走らない。そこは Claude Code の
 
 | フック | 検査 | 呼んでいるもの |
 | --- | --- | --- |
-| `pre-push` | 型 / lint / format / doc コメント / テスト規約 / import 規約 / 判別子の直読み / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加された分の検査の判定表 / 行数のラチェット / 集計の判定表 | `pnpm run typecheck`・`pnpm run lint`・`pnpm exec biome check`・`.claude/hooks/lib/missing-doc-comments.py`・`.claude/hooks/lib/test-rules-scan.sh`・`.claude/hooks/lib/import-rule-violations.py`・`.claude/hooks/lib/result-option-read-violations.py`・`.github/scripts/check-added-lint-suppressions.sh`・`.github/scripts/check-added-test-helper-duplication.sh`・`.github/scripts/check-added-cases.sh`・`harness/records/count.sh --ratchet`・`harness/records/count-cases.sh` |
+| `pre-push` | 型 / lint / format / doc コメント / テスト規約 / import 規約 / 判別子の直読み / 判別子の直読みの判定表 / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加された分の検査の判定表 / 行数のラチェット / 集計の判定表 / カナリアの判定表 | `pnpm run typecheck`・`pnpm run lint`・`pnpm exec biome check`・`.claude/hooks/lib/missing-doc-comments.py`・`.claude/hooks/lib/test-rules-scan.sh`・`.claude/hooks/lib/import-rule-violations.py`・`.claude/hooks/lib/result-option-read-violations.py`・`.claude/hooks/lib/result-option-read-cases.sh`・`.github/scripts/check-added-lint-suppressions.sh`・`.github/scripts/check-added-test-helper-duplication.sh`・`.github/scripts/check-added-cases.sh`・`harness/records/count.sh --ratchet`・`harness/records/count-cases.sh`・`.claude/hooks/lib/canary-cases.sh` |
 
 | スクリプト | 呼ばれ方 | 内容 |
 | --- | --- | --- |
@@ -38,17 +38,20 @@ DevContainer の `postCreateCommand` も走らない。そこは Claude Code の
 [その判定表](../../.github/scripts/check-added-cases.sh)と、2 つが共有する前提チェック
 (`.github/scripts/lib/detector-precondition.sh`)も同じ場所に置く。`.claude/hooks/lib/` は
 **検査そのもの**の共有場所なので、当てる先と一緒にしておく。
-**行数のラチェットと集計の判定表**(`harness/records/count.sh --ratchet` /
-`harness/records/count-cases.sh`)も `.claude/hooks/` 側に対応物を持たない。ここと CI の
-両方へ置くので、層 3 を足しても守る範囲が増えないため。
+**行数のラチェットと判定表 3 本**(`harness/records/count.sh --ratchet` /
+`harness/records/count-cases.sh` / `.claude/hooks/lib/result-option-read-cases.sh` /
+`.claude/hooks/lib/canary-cases.sh`)も `.claude/hooks/` 側のフック(`pre-push-*.sh`)に
+対応物を持たない。判定表をどの層へ置くかと、層 3 へ足さない理由は
+`.claude/hooks/README.md`「カバー範囲と残る穴」。
 
 **道具が無い環境では、その道具を使う検査だけを飛ばす。** 既存の `pre-push-*` と同じ扱いで、
-検査できないことを理由に push を止めても検査の質は上がらないため。飛ばす単位は 2 つある。
+検査できないことを理由に push を止めても検査の質は上がらないため。飛ばす単位は 3 つある。
 
 | 無いもの | 飛ぶ検査 |
 | --- | --- |
 | `pnpm` または `node_modules` | 型 / lint / format |
-| `python3`（起動できないものが PATH に居る場合を含む） | doc コメント / import 規約 / 判別子の直読み / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加された分の検査の判定表 |
+| `python3`（起動できないものが PATH に居る場合を含む） | doc コメント / import 規約 / 判別子の直読み（と判定表） / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加された分の検査の判定表 |
+| `python3`（同上）または `jq` | カナリアの判定表 |
 
 **どちらも飛ばしたことを出力に「飛ばします」と残す。** 通常の成功と綴りが同じだと、
 通ったことが検査された証拠にならないため。`check-added-*` は以前この形で、`python3` が

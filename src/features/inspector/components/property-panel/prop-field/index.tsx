@@ -283,20 +283,33 @@ export function PropField({
   resolvedValuePlacement: ResolvedValuePlacement;
 }>): ReactElement {
   switch (input.kind) {
-    case "enum":
+    case "enum": {
+      const selected = valueFrom(field.value);
+
       return (
-        <SegmentedControl
-          labelledBy={field.labelledBy}
-          options={input.values}
-          value={valueFrom(field.value)}
-          onChange={(next) =>
-            field.onChangeRaw(
-              Option.unwrapOr(next, ""),
-              EditContinuities.Separate,
-            )
-          }
-        />
+        <SegmentedControl labelledBy={field.labelledBy}>
+          {input.values.map((value) => {
+            const isSelected = Option.contains(selected, value);
+
+            return (
+              <SegmentedControl.Segment
+                key={value}
+                isSelected={isSelected}
+                /* 選ばれているものを押したら未設定へ戻す。戻せるのは enum の欄の事情なので器ではなくここが持つ。 */
+                onSelect={() =>
+                  field.onChangeRaw(
+                    isSelected ? "" : value,
+                    EditContinuities.Separate,
+                  )
+                }
+              >
+                {value}
+              </SegmentedControl.Segment>
+            );
+          })}
+        </SegmentedControl>
       );
+    }
     case "token":
       return <TokenSelect field={field} names={input.names} />;
     case "numericToken":

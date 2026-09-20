@@ -47,6 +47,11 @@ if python3_usable; then
   echo "pre-push: 判別子の直読み"
   python3 .claude/hooks/lib/result-option-read-violations.py src
 
+  # 直前のステップと同じ検出器の判定表。判定表をどの層へ置くかと、その理由は
+  # .claude/hooks/README.md「カバー範囲と残る穴」。
+  echo "pre-push: 判別子の直読みの判定表"
+  bash .claude/hooks/lib/result-option-read-cases.sh
+
   # CI (frontend.yml の lint-suppress ジョブ) と同じ判定を、push の前にも通す。
   # 引数を省くと origin/main を base に比べる。ここへ下ろした経緯は
   # .claude/skills/harness-growth/SKILL.md「3. フックにする」。
@@ -60,7 +65,7 @@ if python3_usable; then
   echo "pre-push: 追加された分の検査の判定表"
   bash .github/scripts/check-added-cases.sh
 else
-  echo "pre-push: python3 が使えないため doc コメント / import 規約 / 判別子の直読み / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加された分の検査の判定表 は飛ばします"
+  echo "pre-push: python3 が使えないため doc コメント / import 規約 / 判別子の直読み(と判定表) / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加された分の検査の判定表 は飛ばします"
 fi
 
 # 行数の予算(AGENTS.md「常時ロードは増やさない」)。実測と予算がずれていれば落ちる。
@@ -70,3 +75,16 @@ bash harness/records/count.sh --ratchet
 # 上の 2 つが読んでいる数え方そのものの判定表。
 echo "pre-push: 集計の判定表"
 bash harness/records/count-cases.sh
+
+# カナリア(層 3 の部品)の判定表。ここへ置く理由は
+# .claude/hooks/README.md「カバー範囲と残る穴」。
+#
+# python3 と jq のどちらかが欠けると、判定が変わっていなくてもこの表は NG を出す
+# (どのケースが NG になるかは lib/canary-cases.sh の冒頭)。判定できないことを理由に
+# push を止めても検査の質は上がらないので、型 / lint / format と同じく飛ばす。
+if python3_usable && command -v jq >/dev/null 2>&1; then
+  echo "pre-push: カナリアの判定表"
+  bash .claude/hooks/lib/canary-cases.sh
+else
+  echo "pre-push: python3 が使えない / jq が無いためカナリアの判定表は飛ばします"
+fi

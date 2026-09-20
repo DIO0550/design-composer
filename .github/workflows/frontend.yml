@@ -145,11 +145,26 @@ jobs:
       - name: 行数のラチェット
         run: bash harness/records/count.sh --ratchet
 
-      # count.sh の窓の数え方と --ratchet の終了コードの判定表。
-      # 既存の *-cases.sh は手で走らせる形だが、count.sh の判定は直前のステップと
-      # pre-push がゲートとして呼ぶので、その判定表もゲートに載せる。
+      # ここから下は判定表。どの判定表をどの層へ置くかと、その理由は
+      # .claude/hooks/README.md「カバー範囲と残る穴」。
       - name: 集計の判定表
         run: bash harness/records/count-cases.sh
+
+      - name: 判別子の直読みの判定表
+        run: bash .claude/hooks/lib/result-option-read-cases.sh
+
+      # pre-push は jq の無い環境で飛ばすが、ランナーの image には jq がある
+      # (ci-trace.yml も素の jq を呼ぶ)ので、ここは無条件に走らせる。
+      - name: カナリアの判定表
+        run: bash .claude/hooks/lib/canary-cases.sh
+
+      # pr-closing-issue.yml が呼ぶ検査の判定表。**検査対象と別のワークフローに置く。**
+      # あちらは本文の編集(`edited`)でも再実行するので、20 秒かかるこのステップを
+      # 本文の手直しのたびに走らせることになる(`on: pull_request` を既定のまま使う
+      # このワークフローは `edited` を含まない)。同じ 20 秒が pre-push に無い理由は
+      # 上と同じ README の段落。
+      - name: PR が閉じる Issue の検査の判定表
+        run: bash .github/scripts/check-pr-closing-issue-cases.sh
 
   report-comment:
     name: post ci report comment

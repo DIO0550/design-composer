@@ -46,7 +46,7 @@ export const Mixed: Story = {
   args: { shorthand: MixedPadding },
 };
 
-/** 切り替えは `useState` なので、押した後の 2×2 は `play` を通さないと視覚差分に載らない。 */
+/** セグメントの選び直しは `useState` なので、選んだ後の 2×2 は `play` を通さないと視覚差分に載らない。 */
 export const PerEdge: Story = {
   name: "辺ごとに出したとき",
   args: { shorthand: MixedPadding },
@@ -72,7 +72,7 @@ export const MixedCorners: Story = {
   args: { shorthand: MixedRadius },
 };
 
-/** 切り替えは `useState` なので、押した後の 2×2 は `play` を通さないと視覚差分に載らない。 */
+/** セグメントの選び直しは `useState` なので、選んだ後の 2×2 は `play` を通さないと視覚差分に載らない。 */
 export const PerCorner: Story = {
   name: "隅ごとに出したとき",
   args: { shorthand: MixedRadius },

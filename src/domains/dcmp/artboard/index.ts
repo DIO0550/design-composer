@@ -65,6 +65,20 @@ const ArtboardFixedSizeProps: readonly string[] = [
 ];
 
 /**
+ * artboard の props では変えられない最小 / 最大の prop。
+ *
+ * サイズが `fixed` 固定である以上、最小 / 最大は宣言として出力されない
+ * (docs/03「サイズ指定の原則」)。書けても効かないものを受け付けない側に倒すのは
+ * `visibility` と同じ。
+ */
+const ArtboardFixedSizeLimitProps: readonly string[] = [
+  "minWidth",
+  "maxWidth",
+  "minHeight",
+  "maxHeight",
+];
+
+/**
  * artboard の props では変えられない配置の prop。
  *
  * artboard は親 Box を持たないので、親からの相対で置かれる `placement: "absolute"` を書い
@@ -108,6 +122,7 @@ const ArtboardFixedRotationProps: readonly string[] = ["rotation"];
  */
 const ArtboardUneditableProps: readonly string[] = [
   ...ArtboardFixedSizeProps,
+  ...ArtboardFixedSizeLimitProps,
   ...ArtboardFixedPlacementProps,
   ...ArtboardFixedVisibilityProps,
   ...ArtboardFixedRotationProps,

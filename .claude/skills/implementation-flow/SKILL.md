@@ -161,18 +161,24 @@ python3 .claude/hooks/lib/missing-doc-comments.py --all src     # doc コメン�
 bash .claude/hooks/lib/test-rules-scan.sh src                   # テスト規約
 python3 .claude/hooks/lib/import-rule-violations.py src         # import 規約
 python3 .claude/hooks/lib/result-option-read-violations.py src  # 判別子の直読み
+bash .claude/hooks/lib/result-option-read-cases.sh              # 判別子の直読みの判定表
 bash .github/scripts/check-added-lint-suppressions.sh           # 追加された lint 抑制
 bash .github/scripts/check-added-test-helper-duplication.sh     # 追加されたテストヘルパーの重複
 bash .github/scripts/check-added-cases.sh                       # 追加された分の検査の判定表
 bash harness/records/count.sh --ratchet                         # 行数のラチェット
 bash harness/records/count-cases.sh                             # 集計の判定表
+bash .claude/hooks/lib/canary-cases.sh                          # カナリアの判定表
 ```
 
-- **下の 9 つは `pnpm` のスクリプトに無い。** `rules-check` の 6 つは git hooks と CI
-  (`frontend.yml` の `rules-check`)が、`check-added-*` とその判定表の 3 つは git hooks と
-  CI の `lint-suppress` ジョブだけが走らせるので、この 9 行を省くと手元の確認がゲートより
+- **下の 11 個は `pnpm` のスクリプトに無い。** `rules-check` と同じ 8 つは git hooks
+  (道具が揃わない環境では飛ぶ)と CI が、`check-added-*` とその判定表の 3 つは git hooks と
+  CI の `lint-suppress` ジョブだけが走らせるので、この 11 行を省くと手元の確認がゲートより
   狭くなる。**doc コメントとテスト規約が CI へ上げられたのは、層 2 と層 3 が
   同じ環境で同時に抜けたため**(`.claude/hooks/README.md`「カバー範囲と残る穴」)
+- **`rules-check` にはもう 1 つ、CI だけが走らせる検査がある。**
+  `.github/scripts/check-pr-closing-issue-cases.sh` は `pre-push` に無いので、
+  `check-pr-closing-issue.sh` を触ったときだけ手元でも走らせる
+  (層 2 へ置かない理由と所要時間は `.claude/hooks/README.md`「カバー範囲と残る穴」)
 - **`check-added-*` の 2 つは base との差分で判定する。** 引数を省くと `origin/main` と
   比べるので、手元では引数なしで走る(判定表は一時リポジトリを自分で組むので引数を取らない)。
   CI だけが走らせていて push 前の一覧に無かった間に、CI で落ちて初めて気づく形が 2 回

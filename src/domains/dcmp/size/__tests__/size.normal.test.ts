@@ -5,7 +5,7 @@ import { Size } from "../index";
 test("hug のサイズは内容に合わせて縮む", () => {
   expect(
     Size.declarations(
-      Size.create("hug", undefined),
+      Size.fromProps({ widthMode: "hug" }, "width"),
       "width",
       Option.some("row"),
     ),
@@ -14,16 +14,23 @@ test("hug のサイズは内容に合わせて縮む", () => {
 
 test("fixed のサイズは指定した px の長さになる", () => {
   expect(
-    Size.declarations(Size.create("fixed", 320), "width", Option.some("row")),
+    Size.declarations(
+      Size.fromProps({ widthMode: "fixed", width: 320 }, "width"),
+      "width",
+      Option.some("row"),
+    ),
   ).toEqual([{ property: "width", value: "320px" }]);
 });
 
 test("fixed 以外のモードでは長さの指定が無視される", () => {
-  expect(Size.create("hug", 320)).toEqual({ mode: "hug" });
+  expect(Size.fromProps({ widthMode: "hug", width: 320 }, "width")).toEqual({
+    mode: "hug",
+    limits: { min: Option.none, max: Option.none },
+  });
 });
 
 test("fixed なのに長さが無いときはサイズを決められない", () => {
-  expect(Size.create("fixed", undefined)).toBeUndefined();
+  expect(Size.fromProps({ widthMode: "fixed" }, "width")).toBeUndefined();
 });
 
 test("サイズを決められないときは宣言を出力しない", () => {
@@ -33,7 +40,7 @@ test("サイズを決められないときは宣言を出力しない", () => {
 test("主軸方向に fill を指定すると伸長する", () => {
   expect(
     Size.declarations(
-      Size.create("fill", undefined),
+      Size.fromProps({ widthMode: "fill" }, "width"),
       "width",
       Option.some("row"),
     ),
@@ -43,7 +50,7 @@ test("主軸方向に fill を指定すると伸長する", () => {
 test("交差軸方向に fill を指定すると引き伸ばされる", () => {
   expect(
     Size.declarations(
-      Size.create("fill", undefined),
+      Size.fromProps({ widthMode: "fill" }, "width"),
       "width",
       Option.some("column"),
     ),
@@ -52,18 +59,28 @@ test("交差軸方向に fill を指定すると引き伸ばされる", () => {
 
 test("並べる親を持たない位置の fill は宣言を出力しない", () => {
   expect(
-    Size.declarations(Size.create("fill", undefined), "width", Option.none),
+    Size.declarations(
+      Size.fromProps({ widthMode: "fill" }, "width"),
+      "width",
+      Option.none,
+    ),
   ).toEqual([]);
 });
 
 test("並べる親を持たない位置でも fill 以外のサイズは宣言を出力する", () => {
   expect(
-    Size.declarations(Size.create("fixed", 240), "height", Option.none),
+    Size.declarations(
+      Size.fromProps({ heightMode: "fixed", height: 240 }, "height"),
+      "height",
+      Option.none,
+    ),
   ).toEqual([{ property: "height", value: "240px" }]);
 });
 
 test("未知のモードはサイズを決められない", () => {
-  expect(Size.create("unknown", 320)).toBeUndefined();
+  expect(
+    Size.fromProps({ widthMode: "unknown", width: 320 }, "width"),
+  ).toBeUndefined();
 });
 
 test("幅の軸のモードは widthMode prop が持つ", () => {
@@ -75,11 +92,17 @@ test("高さの軸のモードは heightMode prop が持つ", () => {
 });
 
 test("fixed のサイズからは指定した長さを取り出せる", () => {
-  expect(Size.fixedLength(Size.create("fixed", 320))).toEqual(Option.some(320));
+  expect(
+    Size.fixedLength(
+      Size.fromProps({ widthMode: "fixed", width: 320 }, "width"),
+    ),
+  ).toEqual(Option.some(320));
 });
 
 test("hug のサイズは固定の長さを持たない", () => {
-  expect(Size.fixedLength(Size.create("hug", undefined))).toEqual(Option.none);
+  expect(
+    Size.fixedLength(Size.fromProps({ widthMode: "hug" }, "width")),
+  ).toEqual(Option.none);
 });
 
 test("サイズが決まらないときは固定の長さも持たない", () => {

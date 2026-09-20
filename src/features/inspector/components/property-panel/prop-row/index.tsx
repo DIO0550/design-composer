@@ -4,10 +4,8 @@ import type { EditContinuity } from "@/domains/session/edit-continuity";
 import { PropControl } from "@/domains/session/prop-control";
 import { CaseStyle } from "@/utils/CaseStyle";
 import { Option } from "@/utils/Option";
-import { ControlOffsetClass, LabelWidthClass } from "../label-width";
+import { ControlOffsetClass, LabelClass } from "../label-width";
 import { fieldOf, PropField, unsetLabel } from "../prop-field";
-
-const LabelClass = `${LabelWidthClass} truncate text-[11px] text-gray-500`;
 
 /**
  * 1 prop 分の行。UI 案（docs/Design Composer.html）はラベル左・コントロール右で並べ、表
@@ -39,10 +37,15 @@ export function PropRow({
 
   return (
     <div className="flex flex-col gap-1">
+      {/*
+       * ラベルを読み上げ専用にする行だけ器を `relative` にする。`sr-only` は
+       * `position: absolute` なので、位置の基準が無いと本文のスクロール枠を抜けて文書
+       * そのものを伸ばす（`shorthand-row` の `ShorthandCell` と同じ形）。
+       */}
       <div
         className={
           hidesLabel
-            ? `flex items-center ${ControlOffsetClass}`
+            ? `relative flex items-center ${ControlOffsetClass}`
             : "flex items-center gap-2"
         }
       >
