@@ -37,10 +37,15 @@ export function PropRow({
 
   return (
     <div className="flex flex-col gap-1">
+      {/*
+       * ラベルを読み上げ専用にする行だけ器を `relative` にする。`sr-only` は
+       * `position: absolute` なので、位置の基準が無いと本文のスクロール枠を抜けて文書
+       * そのものを伸ばす（`shorthand-row` の `ShorthandCell` と同じ形）。
+       */}
       <div
         className={
           hidesLabel
-            ? `flex items-center ${ControlOffsetClass}`
+            ? `relative flex items-center ${ControlOffsetClass}`
             : "flex items-center gap-2"
         }
       >
