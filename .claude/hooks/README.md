@@ -310,6 +310,9 @@ bash .github/scripts/check-added-test-helper-duplication.sh origin/main
 # PR が閉じる Issue の検査の判定表(`ok` だけなら期待どおり)
 bash .github/scripts/check-pr-closing-issue-cases.sh; echo "exit=$?"
 
+# 同じ Issue を閉じる他の open な PR の検査の判定表(判定行・コメントの投稿・再試行)
+bash .github/scripts/check-parallel-issue-pr-cases.sh; echo "exit=$?"
+
 # 記録の集計(窓の数え方・--ratchet の終了コード)の判定表。pre-push と CI も走らせる
 bash harness/records/count-cases.sh; echo "exit=$?"
 ```
