@@ -42,7 +42,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 [`.claude/settings.json`](../settings.json) の `hooks.PreToolUse` / `hooks.PostToolUse` から参照。
 パスは `$CLAUDE_PROJECT_DIR` 基準。
 
-`lib/` はフック本体から読む共有部品と、フックの判定を手で確かめるための表の置き場。
+`lib/` はフック本体から読む共有部品と、フックの判定を固定する判定表(`*-cases.sh`)の置き場。
 `settings.json` からは参照しない。
 
 | ファイル | 使う側 | 内容 |
@@ -56,8 +56,8 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `lib/ts_sources.py` | `lib/import-rule-violations.py` / `lib/result-option-read-violations.py` | `src/` の走査対象の集め方・報告の形・コマンドラインの受け方。ファイル名だけアンダースコアなのは、ハイフンを含む名前が Python の import 名にならないため |
 | `lib/pre-push-detector.sh` | `pre-push-import-rules.sh` / `pre-push-result-option-reads.sh` | `git push` のときだけ検出器を走らせ、違反があれば deny の JSON を返す（`deny_on_violations <検出器> <検査の名前> <直し方の一文>`） |
 | `lib/result-option-read-violations.py` | `pre-push-result-option-reads.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `Result` / `Option` の判別子（`ok` / `some`）を、その判別子を型宣言で定義していないファイルで直読みしている箇所（`result-option-read`）を報告する |
-| `lib/canary-cases.sh` | 手で実行する（「動作確認」） | `hook-canary.sh` へ判定表を流し、deny / pass / miss が期待どおりかを報告する。食い違いがあれば exit 1 |
-| `lib/result-option-read-cases.sh` | 手で実行する（「動作確認」） | `result-option-read-violations.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードで報告する。食い違いがあれば exit 1 |
+| `lib/canary-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `hook-canary.sh` へ判定表を流し、deny / pass / miss が期待どおりかを報告する。食い違いがあれば exit 1 |
+| `lib/result-option-read-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `result-option-read-violations.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードで報告する。食い違いがあれば exit 1 |
 
 ## 強制力の序列 — フックが発火しない実行環境がある
 
@@ -114,7 +114,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 `session-url-notice.sh` の不発は対応不要(上の表のとおり、失っても情報が 1 つ
 足りないだけでガードは破れない)。
 
-**doc コメント・テスト規約・import 規約・判別子の直読み・行数のラチェット・集計の判定表は CI(層 1)へ上げた**(`frontend.yml` の `rules-check`)。
+**`frontend.yml` の `rules-check` は、git hooks(層 2)にしか無かった検査を CI(層 1)へ上げるために作った**(いま何を持っているかは下の「判定表をどの層へ置くか」と `harness/githooks/README.md`)。
 **doc コメントとテスト規約の 2 つ**は層 2・層 3 にしか無かったが、**層 2 と層 3 は同じ環境で同時に抜ける**。
 リモート実行環境はクローンからやり直すので `core.hooksPath` が未設定のまま
 (`postCreateCommand` は DevContainer でしか走らない)で、そこは `.claude/settings.json` の
@@ -123,9 +123,31 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 自動でやるようにしたが、**同じ層で再発したら層を 1 つ上げる**に従い、検査そのものも
 無条件に効く層へ置いた。
 
-**行数のラチェットと集計の判定表**(`harness/records/count.sh --ratchet` /
-`harness/records/count-cases.sh`)は、上げたのではなく**新設時から層 1 と層 2 に置いた**
-(同じ `rules-check` ジョブと `harness/githooks/pre-push`)。層 3 に対応物は無い。
+**行数のラチェット**(`harness/records/count.sh --ratchet`)は、上げたのではなく
+**新設時から層 1 と層 2 に置いた**(同じ `rules-check` ジョブと `harness/githooks/pre-push`)。
+
+#### 判定表をどの層へ置くか
+
+**判定表(`*-cases.sh`)の置き場は、ここが持つ。** 検出器そのものをゲートが呼んで
+いても、そちらは `src` や記録に違反が無い限り緑のままなので、**取りこぼす向きの退行**
+(意図した取りこぼしの広がり・走査対象の抜け・報告の切り詰め)は判定表でしか捕まらない。
+
+| 判定表 | 層 1(CI) | 層 2(`pre-push`) |
+| --- | --- | --- |
+| `harness/records/count-cases.sh` | あり | あり |
+| `lib/result-option-read-cases.sh` | あり | あり(`python3` がある環境だけ) |
+| `lib/canary-cases.sh` | あり | あり(`python3` と `jq` が揃う環境だけ) |
+| `.github/scripts/check-pr-closing-issue-cases.sh` | あり | **無し(残る穴)** |
+
+- **`canary-cases.sh` だけは層 3 の部品(`hook-canary.sh`)を層 2・層 1 で検査する。**
+  ゲートが見ているのは「リポジトリに入っているスクリプトの判定が変わっていないか」で、
+  その部品がどの層で使われるかとは別。push 前手順(`implementation-flow` フェーズ 7)は
+  カナリアの出力を読んで不発かどうかを決めるので、判定が黙って変わると手順の読みが嘘になる
+- **`check-pr-closing-issue-cases.sh` は層 1 だけ。** 再試行の待ち時間だけで 20.3 秒かかる
+  (実測)。`pre-push` 全体は 35.9 秒(実測・`node_modules` のある環境)で、載せると 1.5 倍を
+  超える。ここへ載せた 2 本は合わせて 2.2 秒。**この穴は残したままなので、
+  `check-pr-closing-issue.sh` を触ったときは手で走らせる**(「動作確認」)
+- 層 3(`pre-push-*.sh`)には足さない。層 1 と層 2 の両方に置く以上、守る範囲が増えない
 
 ### 発火しているかを確かめる(カナリア)
 
@@ -295,7 +317,7 @@ rm -rf "${TMPDIR}/design-composer-verification-agents-probe"
 ```
 
 ```bash
-# カナリアの判定表(`ok` だけなら期待どおり・`NG` が出たら判定が変わっている)
+# カナリアの判定表(`ok` だけなら期待どおり・`NG` が出たら判定が変わっている)。pre-push と CI も走らせる
 bash .claude/hooks/lib/canary-cases.sh; echo "exit=$?"
 
 # テスト規約の全体検査(git hooks と共有。違反があれば exit 1)
@@ -307,7 +329,8 @@ bash .github/scripts/check-added-lint-suppressions.sh origin/main
 # この PR で追加されたテストヘルパーの重複を数える(CI と同じ判定)
 bash .github/scripts/check-added-test-helper-duplication.sh origin/main
 
-# PR が閉じる Issue の検査の判定表(`ok` だけなら期待どおり)
+# PR が閉じる Issue の検査の判定表(`ok` だけなら期待どおり)。CI だけが走らせるので、
+# check-pr-closing-issue.sh を触ったときはここで走らせる(20 秒かかる)
 bash .github/scripts/check-pr-closing-issue-cases.sh; echo "exit=$?"
 
 # 記録の集計(窓の数え方・--ratchet の終了コード)の判定表。pre-push と CI も走らせる
@@ -399,7 +422,7 @@ echo '{"tool_input":{"command":"git push"}}' \
 ```
 
 ```bash
-# 判別子の直読みの判定表(`ok` だけなら期待どおり・`NG` が出たら判定が変わっている)
+# 判別子の直読みの判定表(`ok` だけなら期待どおり・`NG` が出たら判定が変わっている)。pre-push と CI も走らせる
 bash .claude/hooks/lib/result-option-read-cases.sh; echo "exit=$?"
 
 # 判別子の直読みの全体検査(git hooks・CI と共有)
