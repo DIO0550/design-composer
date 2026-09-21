@@ -23,7 +23,7 @@ const meta = {
     selection: sampleSidebarSelection(),
     renaming: Option.none,
     artboard: { add: fn(), reorder: fn() },
-    node: { select: fn(), reorder: fn(), createComponent: fn() },
+    node: { select: fn(), reorder: fn() },
     rename: sampleRenameActions(),
   },
 } satisfies Meta<typeof LayersPanel>;
