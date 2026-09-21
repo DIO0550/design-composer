@@ -2,9 +2,9 @@ import { fireEvent, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { rowNames } from "@/components/__tests__/row-names";
-import { artboardHandle } from "@/features/canvas/__tests__";
 import { rightPaneHeading } from "@/features/editor/__tests__/right-pane-heading";
 import { SampleDocumentWithDeepBranch } from "@/features/editor/__tests__/sample-document";
+import { artboardHandle } from "@/features/editor/features/canvas/__tests__";
 import {
   breakFileExternally,
   contextMenu,

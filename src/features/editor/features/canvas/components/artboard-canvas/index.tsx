@@ -1,0 +1,353 @@
+import {
+  type CSSProperties,
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
+  useMemo,
+  useRef,
+} from "react";
+import type { PropEdit } from "@/domains/dcmp/node";
+import type { ResizeEdit } from "@/domains/dcmp/resize-edit";
+import { DocumentSelection } from "@/domains/session/document-selection";
+import type { EditContinuity } from "@/domains/session/edit-continuity";
+import type { SelectionDig } from "@/domains/session/selection-dig";
+import type { TokenSelection } from "@/domains/session/token-selection";
+import type { Offset } from "@/domains/unit/offset";
+import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
+import { NodeDrag } from "@/features/editor/features/canvas/domains/node-drag";
+import { NodeResize } from "@/features/editor/features/canvas/domains/node-resize";
+import { useArtboardDrag } from "@/features/editor/features/canvas/hooks/use-artboard-drag";
+import type { CanvasViewControl } from "@/features/editor/features/canvas/hooks/use-canvas-view";
+import { useDrawnBounds } from "@/features/editor/features/canvas/hooks/use-drawn-bounds";
+import type { NodeDragControl } from "@/features/editor/features/canvas/hooks/use-node-drag";
+import { useNodeResize } from "@/features/editor/features/canvas/hooks/use-node-resize";
+import { useRangeSelect } from "@/features/editor/features/canvas/hooks/use-range-select";
+import { useSpaceHeld } from "@/features/editor/features/canvas/hooks/use-space-held";
+import { useTextEdit } from "@/features/editor/features/canvas/hooks/use-text-edit";
+import { DocumentHtml } from "@/services/document-html";
+import { ElementEx } from "@/utils/ElementEx";
+import { Option } from "@/utils/Option";
+import { PointerButton } from "@/utils/PointerButton";
+import { CanvasBody } from "./canvas-body";
+import { DropMarker } from "./drop-marker";
+import { DropPositionLabel } from "./drop-position-label";
+import { RangeSelectOverlay } from "./range-select-overlay";
+import { RepositionPreviewStyle } from "./reposition-preview-style";
+import { ResizeHandleOverlay, resizeCursor } from "./resize-handle-overlay";
+import { SnapGuideOverlay } from "./snap-guide-overlay";
+import { StaleCanvasOverlay } from "./stale-canvas-overlay";
+import { TextInlineEditor } from "./text-inline-editor";
+
+/*
+ * 中身は部品ごとにサブフォルダへ分けてある（`rules/architecture.md`
+ * 「複数ファイルへの分割が必要になったら…サブフォルダに分割する」）。
+ * ここに残すのはキャンバスそのものの組み立てだけ。
+ */
+
+/** キャンバスの強調規則の綴りを、テストが写さずに引けるようにする（定義側の doc を参照）。 */
+export { TokenReferrerOutline } from "./artboard-frame-list";
+
+/** 拡大の基準を左上に固定する（中央基準だと倍率を変えるたびに並びの原点が動く）。 */
+const ContentTransformOrigin: CSSProperties["transformOrigin"] = "0 0";
+
+/**
+ * キャンバスの土台に出すカーソル。手を出すのは**パンできる入力のときだけ**（空き領域の
+ * 左ドラッグは範囲選択なので、常時「開いた手」にすると掴んで動かせるように見える）。
+ *
+ * **カーソルは happy-dom にも視覚差分にも出ない**ので、間違えても気づく手段が無い。だか
+ * ら真偽値もオブジェクトで受け、取り違えを型で防ぐ。
+ *
+ * @param pan 今パンしている最中か・パンの構えにあるか
+ * @returns その状態で出すカーソルのクラス
+ */
+function canvasCursor(
+  pan: Readonly<{ isDragging: boolean; isArmed: boolean }>,
+): string {
+  if (pan.isDragging) {
+    return "cursor-grabbing";
+  }
+  return pan.isArmed ? "cursor-grab" : "cursor-default";
+}
+
+/**
+ * キャンバス（docs/06-ui.md「画面構成」）。artboard をキャンバス上の座標へ置き、コンパイル
+ * 結果（実 HTML / CSS）をレンダリングする。ズーム / パンは非永続の view state で、ドキュメ
+ * ントには保存しない。
+ *
+ * どちらも両方の親が状態を持つ。
+ *
+ * props が 11 個あるが Composition へは割っていない（描くものはコンパイル結果の HTML で呼
+ * び出し側が組み立てられず、`EditorState` を丸ごと受けると feature として切り出せない。
+ * `selection` と `tokenSelection` を束ねる型も作らない）。中央ペインの凍結（ハンドルの抑止
+ * ・`inert`・スクリム）はここが自分で出す — 左右と違い器は中央に淡色も `inert` も付けない。
+ */
+export function ArtboardCanvas({
+  selection,
+  tokenSelection,
+  isFrozen,
+  canvasView,
+  nodeDrag,
+  onSelect,
+  onSelectInRange,
+  onResize,
+  onEditProp,
+  onRepositionArtboard,
+  onOpenContextMenu,
+}: Readonly<{
+  selection: DocumentSelection;
+  tokenSelection: TokenSelection;
+  isFrozen: boolean;
+  canvasView: CanvasViewControl;
+  nodeDrag: NodeDragControl;
+  onSelect: (names: readonly string[], dig: SelectionDig) => void;
+  /** 範囲選択で、範囲に重なったものをまとめて選ぶ。 */
+  onSelectInRange: (names: readonly string[]) => void;
+  onResize: (edit: ResizeEdit, continuity: EditContinuity) => void;
+  onEditProp: (edit: PropEdit) => void;
+  onRepositionArtboard: (name: string, canvasPosition: Offset) => void;
+  /** 右クリックを、辿った名前（空き領域では空）と窓の座標で伝える。 */
+  onOpenContextMenu: (names: readonly string[], at: Offset) => void;
+}>) {
+  const { view, surfaceRef, panHandlers } = canvasView;
+  const isSpaceHeld = useSpaceHeld();
+  /**
+   * その `pointerdown` がパンを始めるか（docs/06-ui.md「キャンバス直接操作」）。
+   * space を押している間はどこを掴んでもパンで、中ボタンは単独でパン。
+   */
+  const pansCanvas = (event: ReactPointerEvent<HTMLElement>): boolean =>
+    isSpaceHeld || PointerButton.isMiddle(event);
+  /*
+   * ハンドルを重ねる器。`canvas-surface` の**外**にあるので、掴めるハンドルの上だけは
+   * `pointerdown` が土台へ届かず、space を押していてもパンが始まらない
+   * （docs/06-ui.md「キャンバス直接操作」が描いてあるハンドルを例外として書いている）。
+   * 中へ移せば例外を消せるが、掴み口と土台の当たり判定の作り直しになるので今は触らない。
+   */
+  const canvasAreaRef = useRef<HTMLDivElement>(null);
+  /**
+   * 右クリックの受け口。枠・見出し・キャンバスの器のどこで受けても同じ手を通す。
+   *
+   * 入力欄だけ既定のメニューを残すのは、切り取り / 貼り付けにブラウザのものが要るため。
+   */
+  const openContextMenu = (
+    event: ReactMouseEvent<HTMLElement>,
+    names: readonly string[],
+  ) => {
+    if (ElementEx.isTextEditable(event.target)) {
+      return;
+    }
+    event.preventDefault();
+    if (isFrozen) {
+      return;
+    }
+    onOpenContextMenu(names, { x: event.clientX, y: event.clientY });
+  };
+  const designDocument = selection.document;
+  /*
+   * 凍結中はリサイズを丸ごと無効にする。`inert` の中にあって掴めないのに、ハンドルだけが
+   * 普段どおり見えることになるため。選択の枠そのものは残す（何を選んでいたかは右ペインの
+   * 見出しと揃えて保つ）。
+   */
+  const resizable = isFrozen
+    ? NodeResize.Unresizable
+    : NodeResize.resizable(selection);
+  const nodeResize = useNodeResize({ resizable, selection, view, onResize });
+  const artboardDrag = useArtboardDrag({
+    view,
+    onReposition: onRepositionArtboard,
+  });
+  const textEdit = useTextEdit({ selection, onEditProp });
+  const rangeSelect = useRangeSelect({
+    designDocument,
+    onSelect: onSelectInRange,
+  });
+  const singleName = DocumentSelection.singleName(selection);
+  /*
+   * ハンドルは選択中のものの辺へ重ねるので、描かれている位置を実測して追いかける。
+   * 選択していない間も呼ぶのは、フックを条件付きで呼べないため（`none` を渡すと
+   * 測らずに `none` を返す）。
+   */
+  const drawnBounds = useDrawnBounds(singleName, canvasAreaRef);
+  /*
+   * 覚える相手はドキュメントであって対ではない。`selection` を deps にすると
+   * **選択のたびに**コンパイルし直して中身の HTML を入れ直すので、`click` 2 回の
+   * あとのダブルクリックが入れ替わった木へ飛んで届かなくなる
+   * （`opened-document-editor.text-edit` が 3 件落ちる）。性能ではなく振る舞いの話。
+   */
+  const compiled = useMemo(
+    () => DocumentHtml.compile(designDocument),
+    [designDocument],
+  );
+  const dropTarget = NodeDrag.insertionTarget(nodeDrag.drag);
+  /*
+   * ハンドルを置く矩形。掴める軸が無ければ出さないので、そのときは矩形も持たない。
+   * 矩形そのものが無いのはまだ描かれていない一瞬で、そこで出すと原点へ 8 個固まる。
+   */
+  const handleBounds = resizable.lengths.length > 0 ? drawnBounds : Option.none;
+  /*
+   * 掴んでいる間のカーソルは器が出す。ハンドルはそのあいだポインタを通すので、
+   * 何も出さないと下にある `cursor-grab`（開いた手）に戻ってしまう。
+   */
+  const grabbedCursor = Option.map(nodeResize.grabbed, (held) =>
+    resizeCursor(held.grip),
+  );
+
+  return (
+    // relative はスクリムとバッジとリサイズハンドルの基準。中央ペインも relative だが、
+    // そちらはキャンバスの外（下端に積むエラー一覧）の基準なので、覆う範囲がここより広い。
+    // これを落とすとスクリムが中央ペインいっぱいに広がるが、テストは 1 件も落ちない。
+    // overflow-hidden はハンドルを切るため。パンで選択中のものを画面外へ出したときに、
+    // 左右のペインの上へハンドルが残らないようにする。
+    <section
+      aria-label="キャンバスの面"
+      ref={canvasAreaRef}
+      /*
+       * 土台（`canvas-surface`）ではなくこの器で受ける。掴めるリサイズハンドルと文言の
+       * 入力欄は土台の外にあり、土台で受けるとその上だけブラウザの既定メニューが出る。
+       */
+      onContextMenu={(event) => openContextMenu(event, [])}
+      className="relative flex h-full flex-col overflow-hidden"
+    >
+      <div
+        ref={surfaceRef}
+        data-testid="canvas-surface"
+        /*
+         * パンだけ capture で取る。artboard の枠と見出しは `pointerdown` を止めるので
+         * （`artboard-frame` / `artboard-label`）、bubble で待つと artboard の上から
+         * 始めたパンが届かない。捕捉したら子へは渡さないので、**パンが始まったなら
+         * 範囲選択は始まらない**（右ボタンのように「どちらも始まらない」入力があるかは
+         * 範囲選択の側が決める / `useRangeSelect`）。
+         */
+        onPointerDownCapture={(event) => {
+          if (!pansCanvas(event)) {
+            return;
+          }
+          event.stopPropagation();
+          panHandlers.onPointerDown(event);
+        }}
+        /*
+         * 空き領域の左ドラッグは範囲選択。ここまで `pointerdown` が上がってくるのは
+         * artboard の外側の余白を押したときだけで、artboard の上は枠と見出しが止める
+         * （artboard の背景を範囲選択にするかは）。凍結中に始めないのは、
+         * 映っているのが最後に正常だった表示で、そこへ加えた選択が今のファイルと
+         * 噛み合わないため（`canvas-content` の `inert` はここまで及ばない）。
+         */
+        onPointerDown={(event) => {
+          if (isFrozen) {
+            return;
+          }
+          rangeSelect.dragHandlers.onPointerDown(event);
+        }}
+        /* パンと範囲選択のどちらが始まったかは自分の状態が知っているので、両方へ配る */
+        onPointerMove={(event) => {
+          panHandlers.onPointerMove(event);
+          rangeSelect.dragHandlers.onPointerMove(event);
+        }}
+        onPointerUp={(event) => {
+          panHandlers.onPointerUp(event);
+          rangeSelect.dragHandlers.onPointerUp(event);
+        }}
+        className={`flex-1 overflow-hidden ${canvasCursor({
+          isDragging: CanvasView.isDragging(view),
+          isArmed: isSpaceHeld,
+        })}`}
+      >
+        <div
+          data-testid="canvas-content"
+          /*
+           * ファイルが不正な間は選択もドラッグもさせない（映っているのは最後に
+           * 正常だった表示なので、そこへ加えた編集は今のファイルと噛み合わない）。
+           * 掴んで動かす操作は外側の surface が持つので、`inert` を中身に付けても
+           * 見る位置は変えられる。**happy-dom が強制するのはフォーカスまでで、
+           * click は届く**（キーボードからの活性化が止まることは
+           * `artboard-canvas.frozen.test.tsx` が確かめている）。
+           */
+          inert={isFrozen}
+          style={{
+            transform: CanvasView.transform(view),
+            transformOrigin: ContentTransformOrigin,
+            cursor: Option.isSome(grabbedCursor)
+              ? grabbedCursor.value
+              : undefined,
+          }}
+          /*
+           * リサイズと artboard の移動のポインタはこの器で受ける。artboard の枠ごとや
+           * 座標平面（`ul`）で受けると、枠の外まで引っ張ったときに追従が切れる
+           * （リサイズは `onPointerLeave` で取り消すため）。余白を持つのはこの器なので、
+           * 外へ引いてもポインタが残る。ツリー内の移動 / 挿入のポインタは
+           * 3 ペインの器が受ける（掴む場所が左ペインにもあるため）。
+           *
+           * 2 つを 1 つのハンドラで束ねるのは、同じ器に別々には載せられないため。
+           * 掴んでいないほうは自分の状態を見て何もしないので、両方へ配って問題ない。
+           *
+           * **ハンドル（`ResizeHandleOverlay`）から掴んだときもここが受ける。**
+           * ハンドルは器の外にあるが、掴んでいる間はポインタに対して透明になるので
+           * 移動と解放がここまで届く。経路を 1 本にしておかないと、掴み方によって
+           * 追従と取り消しの挙動が割れる。
+           *
+           * 取り消し（`onPointerLeave`）を受けるのはリサイズだけ。artboard の移動は
+           * 掴んだ時点でポインタを捕捉するので、この器の外へ出ても届き続ける
+           * （`useArtboardDrag` の `grab`）。
+           */
+          onPointerMove={(event) => {
+            nodeResize.dragHandlers.onPointerMove(event);
+            artboardDrag.dragHandlers.onPointerMove(event);
+          }}
+          onPointerUp={() => {
+            nodeResize.dragHandlers.onPointerUp();
+            artboardDrag.dragHandlers.onPointerUp();
+          }}
+          onPointerLeave={() => nodeResize.dragHandlers.onPointerLeave()}
+        >
+          <CanvasBody
+            compiled={compiled}
+            artboardDrag={artboardDrag}
+            selection={selection}
+            tokenSelection={tokenSelection}
+            onSelect={onSelect}
+            onContextMenu={openContextMenu}
+            nodeDrag={nodeDrag}
+            nodeResize={nodeResize}
+            textEdit={textEdit}
+          />
+        </div>
+      </div>
+      {isFrozen ? <StaleCanvasOverlay /> : null}
+      {/*
+        複数選択でハンドルを出さないことは `NodeResize.resizable` が既に決めている
+        （単一選択でなければ空を返す）ので、ここで数え直してはいない。矩形が無いのは
+        まだ描かれていないときで、そのときは置く場所が決まらないので出さない。
+      */}
+      {Option.isSome(handleBounds) ? (
+        <ResizeHandleOverlay
+          bounds={handleBounds.value}
+          resizable={resizable}
+          isGrabbing={Option.isSome(nodeResize.grabbed)}
+          onGrab={nodeResize.grab}
+        />
+      ) : null}
+      {Option.isSome(dropTarget) ? (
+        <>
+          <DropMarker bounds={dropTarget.value.marker} />
+          <DropPositionLabel target={dropTarget.value} />
+        </>
+      ) : null}
+      {Option.isSome(rangeSelect.bounds) ? (
+        <RangeSelectOverlay bounds={rangeSelect.bounds.value} />
+      ) : null}
+      {/* 吸い付いた辺は運んでいる間しか分からないので、離す前に線で見せる */}
+      <SnapGuideOverlay guides={NodeDrag.snapGuides(nodeDrag.drag)} />
+      {/* 座標を動かすドラッグにはドロップ線が出ないので、代わりに実体を先に動かす */}
+      <RepositionPreviewStyle
+        drag={nodeDrag.drag}
+        designDocument={designDocument}
+      />
+      {Option.isSome(textEdit.edit) ? (
+        <TextInlineEditor
+          edit={textEdit.edit.value}
+          onChange={textEdit.change}
+          onCommit={textEdit.commit}
+          onCancel={textEdit.cancel}
+        />
+      ) : null}
+    </section>
+  );
+}

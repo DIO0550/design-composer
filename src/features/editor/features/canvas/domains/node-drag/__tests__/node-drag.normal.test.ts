@@ -1,0 +1,433 @@
+import { expect, test } from "vitest";
+import { DesignDocument } from "@/domains/dcmp/design-document";
+import type {
+  DraggedNode,
+  DropTarget,
+} from "@/features/editor/features/canvas/domains/node-drop";
+import type { RepositionTarget } from "@/features/editor/features/canvas/domains/reposition-target";
+import type { SnapGuides } from "@/features/editor/features/canvas/domains/side-snap";
+import { Option } from "@/utils/Option";
+import { Carrying, DropEdit, NodeDrag } from "../index";
+
+/** 木にある `title` を掴んでいる状態。 */
+const MovingTitle: DraggedNode = { kind: "existing", name: "title" };
+
+/** パレットの Box を掴んでいる状態。 */
+const PlacingBox: DraggedNode = {
+  kind: "new",
+  template: { kind: "primitive", type: "Box" },
+};
+
+function setupDocument(): DesignDocument {
+  return DesignDocument.create({
+    artboards: [
+      {
+        name: "home",
+        width: 375,
+        height: 812,
+        children: [
+          { name: "title", type: "Text" },
+          { name: "body", type: "Box", children: [] },
+        ],
+      },
+    ],
+  });
+}
+
+const SampleDropTarget: DropTarget = {
+  position: { parentName: "body", index: 0 },
+  marker: { left: 0, top: 0, width: 100, height: 2 },
+  childCount: 0,
+  parentBounds: { left: 0, top: 0, width: 100, height: 100 },
+};
+
+/** ツリーへ挿す側の落とし方。座標の置き直しは別のファイルで見る。 */
+const SampleDrop = DropEdit.intoTree(MovingTitle, SampleDropTarget);
+
+/** 左右の辺が揃って縦線が 1 本出ている状態。運んでいる間だけの提示。 */
+const SampleGuides: SnapGuides = {
+  horizontal: Option.some({ left: 249, top: 72, width: 2, height: 168 }),
+  vertical: Option.none,
+};
+
+/** 揃った辺が 1 つも無い状態。 */
+const NoGuides: SnapGuides = { horizontal: Option.none, vertical: Option.none };
+
+/** `body` の中の座標へ落ちる側の行き先。見た目のずらし量は行き先と別の値にする。 */
+const SampleRepositionTarget: RepositionTarget = {
+  to: { parentName: "body", placement: { mode: "absolute", x: 40, y: 24 } },
+  offset: { x: 30, y: -12 },
+};
+
+test("押した位置から少ししか動かないうちはドラッグとして扱われない", () => {
+  const held = NodeDrag.grab({
+    dragged: MovingTitle,
+    origin: { x: 100, y: 100 },
+  });
+
+  const moved = NodeDrag.moveTo(held, { x: 102, y: 100 }, Carrying.nothing());
+
+  expect(NodeDrag.isDragging(moved)).toBe(false);
+});
+
+test("押した位置から離れるとドラッグとして扱われる", () => {
+  const held = NodeDrag.grab({
+    dragged: MovingTitle,
+    origin: { x: 100, y: 100 },
+  });
+
+  const moved = NodeDrag.moveTo(held, { x: 100, y: 140 }, Carrying.nothing());
+
+  expect(NodeDrag.isDragging(moved)).toBe(true);
+});
+
+test("ドラッグ中は受け入れ先の上にいる間だけ落ちる位置が決まる", () => {
+  const dragging = NodeDrag.moveTo(
+    NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
+    { x: 100, y: 140 },
+    Carrying.droppable(SampleDrop),
+  );
+
+  expect(Option.unwrap(NodeDrag.insertionTarget(dragging)).position).toEqual({
+    parentName: "body",
+    index: 0,
+  });
+});
+
+test("受け入れられない場所へ移ると落ちる位置は無くなる", () => {
+  const dragging = NodeDrag.moveTo(
+    NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
+    { x: 100, y: 140 },
+    Carrying.droppable(SampleDrop),
+  );
+
+  const outside = NodeDrag.moveTo(
+    dragging,
+    { x: 100, y: 180 },
+    Carrying.nothing(),
+  );
+
+  expect(Option.isSome(NodeDrag.insertionTarget(outside))).toBe(false);
+});
+
+test("掴んでいないときのポインタ移動では何も起きない", () => {
+  const moved = NodeDrag.moveTo(
+    NodeDrag.create(),
+    { x: 100, y: 140 },
+    Carrying.droppable(SampleDrop),
+  );
+
+  expect(NodeDrag.isDragging(moved)).toBe(false);
+});
+
+test("動かさずに離したときは直後のクリックを選択に使う", () => {
+  const released = NodeDrag.release(
+    NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
+  );
+
+  expect(NodeDrag.consumesClick(released)).toBe(false);
+});
+
+test("運んでから離したときは直後のクリックを選択に使わない", () => {
+  const dragging = NodeDrag.moveTo(
+    NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
+    { x: 100, y: 140 },
+    Carrying.droppable(SampleDrop),
+  );
+
+  expect(NodeDrag.consumesClick(NodeDrag.release(dragging))).toBe(true);
+});
+
+test("離したあとは何も掴んでいない状態に戻る", () => {
+  const dragging = NodeDrag.moveTo(
+    NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
+    { x: 100, y: 140 },
+    Carrying.droppable(SampleDrop),
+  );
+
+  expect(Option.isSome(NodeDrag.grabbed(NodeDrag.release(dragging)))).toBe(
+    false,
+  );
+});
+
+test("動かし続けても掴んだ位置は掴んだ時点のまま変わらない", () => {
+  // 座標の移動量はここからの差で決まるので、途中のポインタ位置で上書きすると
+  // 1 回の移動分しか動かなくなる
+  const dragging = NodeDrag.moveTo(
+    NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
+    { x: 100, y: 140 },
+    Carrying.nothing(),
+  );
+
+  const further = NodeDrag.moveTo(
+    dragging,
+    { x: 100, y: 180 },
+    Carrying.nothing(),
+  );
+
+  expect(Option.unwrap(NodeDrag.grabbed(further)).origin).toEqual({
+    x: 100,
+    y: 100,
+  });
+});
+
+test("木にある既存ノードをツリーへ落とすと移動になる", () => {
+  const edit = DropEdit.intoTree(MovingTitle, SampleDropTarget);
+
+  expect(edit).toEqual({
+    kind: "move",
+    name: "title",
+    target: SampleDropTarget,
+  });
+});
+
+test("パレットの雛形をツリーへ落とすと挿入になる", () => {
+  const edit = DropEdit.intoTree(PlacingBox, SampleDropTarget);
+
+  expect(edit).toEqual({
+    kind: "insert",
+    template: { kind: "primitive", type: "Box" },
+    target: SampleDropTarget,
+  });
+});
+
+test("座標を置き直す落とし方では挿さる位置を持たない", () => {
+  // ドロップ線とラベルは「どの親の何番目の子になるか」の提示なので出さない
+  const edit = DropEdit.reposition(
+    "title",
+    SampleRepositionTarget,
+    SampleGuides,
+  );
+
+  expect(Option.isSome(DropEdit.insertionTarget(edit))).toBe(false);
+});
+
+test("座標を置き直す落とし方でも、子になる親の名前は答える", () => {
+  // 落とし先の枠は、ツリーの移動と同じ提示なので座標のドラッグでも出す
+  const edit = DropEdit.reposition(
+    "title",
+    SampleRepositionTarget,
+    SampleGuides,
+  );
+
+  expect(DropEdit.dropParentName(edit)).toBe("body");
+});
+
+test("ツリーへ落とす落とし方では、挿さる位置の親が子になる親になる", () => {
+  expect(DropEdit.dropParentName(SampleDrop)).toBe("body");
+});
+
+test("座標を置き直す落とし方は、揃った辺に引く線をそのまま答える", () => {
+  const edit = DropEdit.reposition(
+    "title",
+    SampleRepositionTarget,
+    SampleGuides,
+  );
+
+  expect(DropEdit.snapGuides(edit)).toEqual(SampleGuides);
+});
+
+test("ツリーへ落とす落とし方では、揃った辺の線を引かない", () => {
+  // 対照。1 つ上のテストと対で読む（辺の吸い付きは座標の置き直しでしか起きない）
+  expect(DropEdit.snapGuides(SampleDrop)).toEqual(NoGuides);
+});
+
+test("運んでいる間は、揃った辺に引く線を答える", () => {
+  const dragging = NodeDrag.moveTo(
+    NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
+    { x: 100, y: 140 },
+    Carrying.droppable(
+      DropEdit.reposition("title", SampleRepositionTarget, SampleGuides),
+    ),
+  );
+
+  expect(NodeDrag.snapGuides(dragging)).toEqual(SampleGuides);
+});
+
+test("押しただけでまだ動かしていない間は、揃った辺の線を引かない", () => {
+  const held = NodeDrag.grab({
+    dragged: MovingTitle,
+    origin: { x: 100, y: 100 },
+  });
+
+  expect(NodeDrag.snapGuides(held)).toEqual(NoGuides);
+});
+
+test("落とせる親が無いまま運んでいる間は、揃った辺の線を引かない", () => {
+  // 揃え先は落とし先の親とその子なので、親が決まらなければ吸い付きも起きない
+  const dragging = NodeDrag.moveTo(
+    NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
+    { x: 100, y: 140 },
+    Carrying.preview({ name: "title", offset: { x: 30, y: -12 } }),
+  );
+
+  expect(NodeDrag.snapGuides(dragging)).toEqual(NoGuides);
+});
+
+test("座標を置き直す落とし方のときだけ、ずらして見せる相手と量を答える", () => {
+  const dragging = NodeDrag.moveTo(
+    NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
+    { x: 100, y: 140 },
+    Carrying.droppable(
+      DropEdit.reposition("title", SampleRepositionTarget, SampleGuides),
+    ),
+  );
+
+  expect(Option.unwrap(NodeDrag.repositionPreview(dragging))).toEqual({
+    name: "title",
+    offset: { x: 30, y: -12 },
+  });
+});
+
+test("ツリーへ落とす落とし方では、ずらして見せる相手と量を答えない", () => {
+  // 対照。ドロップ線が出る側では実体を動かさない
+  const dragging = NodeDrag.moveTo(
+    NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
+    { x: 100, y: 140 },
+    Carrying.droppable(SampleDrop),
+  );
+
+  expect(Option.isSome(NodeDrag.repositionPreview(dragging))).toBe(false);
+});
+
+test("押しただけでまだ動かしていない間は、ずらして見せる相手と量を答えない", () => {
+  // 閾値未満で答えると、クリックのたびにノードが一瞬ずれる
+  const held = NodeDrag.grab({
+    dragged: MovingTitle,
+    origin: { x: 100, y: 100 },
+  });
+
+  expect(Option.isSome(NodeDrag.repositionPreview(held))).toBe(false);
+});
+
+test("落とせる先が無くても、座標のドラッグならずらして見せる相手と量を答える", () => {
+  /*
+   * 追従を止めると、キャンバスの余白へ一瞬寄っただけで掴んだノードが元の位置へ戻り、
+   * 運べているのか分からなくなる（レビュー指摘）。
+   */
+  const dragging = NodeDrag.moveTo(
+    NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
+    { x: 100, y: 140 },
+    Carrying.preview({ name: "title", offset: { x: 30, y: -12 } }),
+  );
+
+  expect(Option.unwrap(NodeDrag.repositionPreview(dragging))).toEqual({
+    name: "title",
+    offset: { x: 30, y: -12 },
+  });
+});
+
+test("見た目だけ動かしている間は、離しても届く編集を持たない", () => {
+  // 追従しているだけで落とせてはいない（離しても何も起きない）
+  const dragging = NodeDrag.moveTo(
+    NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
+    { x: 100, y: 140 },
+    Carrying.preview({ name: "title", offset: { x: 30, y: -12 } }),
+  );
+
+  expect(Option.isSome(NodeDrag.drop(dragging))).toBe(false);
+});
+
+test("見た目だけ動かしている間は、子になる親の名前を答えない", () => {
+  // 落とせないことは、落とし先の枠が出ないことで示す
+  const dragging = NodeDrag.moveTo(
+    NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
+    { x: 100, y: 140 },
+    Carrying.preview({ name: "title", offset: { x: 30, y: -12 } }),
+  );
+
+  expect(Option.isSome(NodeDrag.dropParentName(dragging))).toBe(false);
+});
+
+test("落とせる先が無い間は、子になる親の名前を答えない", () => {
+  // 枠を出す相手が居ないので、受け入れ先の提示も出ない
+  const dragging = NodeDrag.moveTo(
+    NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
+    { x: 100, y: 140 },
+    Carrying.nothing(),
+  );
+
+  expect(Option.isSome(NodeDrag.dropParentName(dragging))).toBe(false);
+});
+
+test("押された位置から外へ辿った名前のうち最も内側のノードを掴む", () => {
+  const name = NodeDrag.grabbableName(setupDocument(), ["title", "home"]);
+
+  expect(Option.unwrap(name)).toBe("title");
+});
+
+test("artboard の枠だけを押したときは掴めるノードが無い", () => {
+  const name = NodeDrag.grabbableName(setupDocument(), ["home"]);
+
+  expect(Option.isSome(name)).toBe(false);
+});
+
+test("パレットの雛形を運んでから離したときは、直後のクリックを飲み込まない", () => {
+  const dragging = NodeDrag.moveTo(
+    NodeDrag.grab({ dragged: PlacingBox, origin: { x: 100, y: 100 } }),
+    { x: 100, y: 140 },
+    Carrying.droppable(SampleDrop),
+  );
+
+  /*
+   * 押した場所（パレットの行）と離した場所（キャンバス）が別の枝にあるので、
+   * `click` はキャンバスの枠まで上がってこない。飲み込む状態に入ると、
+   * 次にキャンバスを押したときの選択が消える。
+   */
+  expect(NodeDrag.consumesClick(NodeDrag.release(dragging))).toBe(false);
+});
+
+test("運んでいる最中だけ、何を運んでいるかを答える", () => {
+  const dragging = NodeDrag.moveTo(
+    NodeDrag.grab({ dragged: PlacingBox, origin: { x: 100, y: 100 } }),
+    { x: 100, y: 140 },
+    Carrying.nothing(),
+  );
+
+  expect(Option.unwrap(NodeDrag.carriedNode(dragging))).toEqual(PlacingBox);
+});
+
+test("押しただけでまだ動かしていない間は、何を運んでいるかを答えない", () => {
+  // 掴んだ行の強調とツールバーの点灯がこれで決まるので、押しただけで点くと
+  // クリックのたびに一瞬光る
+  const held = NodeDrag.grab({
+    dragged: PlacingBox,
+    origin: { x: 100, y: 100 },
+  });
+
+  expect(Option.isSome(NodeDrag.carriedNode(held))).toBe(false);
+});
+
+test("パレットの雛形を運んでいる最中は、その雛形を答える", () => {
+  const dragging = NodeDrag.moveTo(
+    NodeDrag.grab({ dragged: PlacingBox, origin: { x: 100, y: 100 } }),
+    { x: 100, y: 140 },
+    Carrying.nothing(),
+  );
+
+  expect(Option.unwrap(NodeDrag.carriedTemplate(dragging))).toEqual({
+    kind: "primitive",
+    type: "Box",
+  });
+});
+
+test("木にある既存ノードを運んでいる間は、雛形を答えない", () => {
+  // 掴んだ行の強調とツールバーの点灯はパレットから運んでいるときだけの表示で、
+  // 木の中の移動では点かない
+  const dragging = NodeDrag.moveTo(
+    NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
+    { x: 100, y: 140 },
+    Carrying.nothing(),
+  );
+
+  expect(Option.isSome(NodeDrag.carriedTemplate(dragging))).toBe(false);
+});
+
+test("雛形を押しただけでまだ動かしていない間は、雛形を答えない", () => {
+  const held = NodeDrag.grab({
+    dragged: PlacingBox,
+    origin: { x: 100, y: 100 },
+  });
+
+  expect(Option.isSome(NodeDrag.carriedTemplate(held))).toBe(false);
+});

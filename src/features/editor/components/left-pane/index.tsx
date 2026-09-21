@@ -6,7 +6,7 @@ import {
   type AssetGrab,
   AssetsPanel,
   CreateComponent,
-} from "@/features/assets";
+} from "@/features/editor/features/assets";
 import {
   LayersPanel,
   type LeftPaneArtboardActions,
@@ -18,8 +18,8 @@ import {
   type LeftPaneView,
   LeftPaneViewLabels,
   LeftPaneViews,
-} from "@/features/sidebar";
-import { TokenList } from "@/features/tokens";
+} from "@/features/editor/features/sidebar";
+import { TokenList } from "@/features/editor/features/tokens";
 import { Option } from "@/utils/Option";
 
 /**

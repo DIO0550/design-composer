@@ -10,8 +10,8 @@ import {
 import type { DocumentError } from "@/domains/session/document-error";
 import { DocumentSaveState } from "@/domains/session/document-save-state";
 import { type Elapsed, ElapsedUnits } from "@/domains/unit/elapsed";
-import { CanvasView } from "@/features/canvas";
 import { SampleFileErrors } from "@/features/editor/__stories__/sample-editor-state";
+import { CanvasView } from "@/features/editor/features/canvas";
 import {
   EditorTopBar,
   type EditorTopBarTone,

@@ -1,4 +1,4 @@
-import type { NodeDragHandlers } from "@/features/canvas";
+import type { NodeDragHandlers } from "@/features/editor/features/canvas";
 
 /**
  * 何も掴んでいない状態のポインタの受け口。

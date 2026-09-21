@@ -3,18 +3,21 @@ import { fn } from "storybook/test";
 import { TokenSelection } from "@/domains/session/token-selection";
 // 掴む口のサンプルは掴まれる側（features/assets）が持つ。ストーリー専用の値なので
 // features/assets/index.ts（本番の公開 API）には出さず、ストーリー用の公開口から読む。
-import { grabbingComponent, IdleGrab } from "@/features/assets/__stories__";
+import {
+  grabbingComponent,
+  IdleGrab,
+} from "@/features/editor/features/assets/__stories__";
 import {
   type LeftPaneArtboardActions,
   type LeftPaneNodeActions,
   type LeftPaneTokenActions,
   LeftPaneViews,
-} from "@/features/sidebar";
+} from "@/features/editor/features/sidebar";
 import {
   SampleSidebarDocument,
   sampleRenameActions,
   sampleSidebarSelection,
-} from "@/features/sidebar/__stories__";
+} from "@/features/editor/features/sidebar/__stories__";
 import { Option } from "@/utils/Option";
 import { LeftPane } from "./index";
 
