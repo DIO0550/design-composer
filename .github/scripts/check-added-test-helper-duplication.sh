@@ -9,6 +9,8 @@
 #
 # 判定そのものは `.claude/hooks/lib/duplicate-test-helpers.py --lines` で共有している
 # (`<行番号>:<名前>` を返す。`lint-suppressions.py` と同じ出力形式)。
+# 追加行の行番号は `.github/scripts/lib/added-lines.sh` が数える(`check-added-lint-suppressions.sh`
+# と共有。移動は rename として追跡するので、動かしただけのファイルは追加行を持たない)。
 # 既存の重複で落とさないよう、**追加された行に載っているヘルパーだけ**を違反とする。
 set -euo pipefail
 
@@ -18,22 +20,15 @@ base="${1:-${BASE_SHA:-origin/main}}"
 cd "$(git rev-parse --show-toplevel)"
 
 . "$script_dir/lib/detector-precondition.sh"
+. "$script_dir/lib/added-lines.sh"
 detector=.claude/hooks/lib/duplicate-test-helpers.py
 require_runnable_detector "追加されたテストヘルパーの重複" "$detector"
 
-# 追加・変更された行の行番号を、統一 diff のハンク見出しから取り出す
-# (check-added-lint-suppressions.sh と同じ)
-added_line_numbers() {
-  git diff -U0 "$base"...HEAD -- "$1" | awk '
-    /^@@/ {
-      match($0, /\+[0-9]+(,[0-9]+)?/)
-      spec = substr($0, RSTART + 1, RLENGTH - 1)
-      split(spec, parts, ",")
-      count = (2 in parts) ? parts[2] : 1
-      for (i = 0; i < count; i++) print parts[1] + i
-    }
-  '
-}
+# 検査対象の拡張子。**追加行を数える diff と、数えるファイルの一覧の両方へ同じものを渡す**
+# (diff 側が狭いと rename の対になる側が pathspec から外れ、移動が「追加」に戻る)。
+sources=('*.ts' '*.tsx')
+
+added_lines="$(collect_added_lines "$base" "${sources[@]}")"
 
 violations=""
 while IFS= read -r file; do
@@ -43,7 +38,7 @@ while IFS= read -r file; do
     *) continue ;;
   esac
 
-  added="$(added_line_numbers "$file")"
+  added="$(added_line_numbers "$added_lines" "$file")"
   [ -z "$added" ] && continue
 
   # `|| true` は外せない(理由は check-added-lint-suppressions.sh の同じ行)。
@@ -56,7 +51,7 @@ while IFS= read -r file; do
     violations="${violations}${file}:${entry}
 "
   done <<< "$reported"
-done < <(git diff --name-only --diff-filter=d "$base"...HEAD -- '*.ts' '*.tsx')
+done < <(git diff --name-only --diff-filter=d "$base"...HEAD -- "${sources[@]}")
 
 if [ -z "$violations" ]; then
   echo "追加されたテストヘルパーの重複はありません"
