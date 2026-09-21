@@ -85,7 +85,7 @@ broken_python3_dir() {
 # 中へコピーしないと、python3 が動いていても検出器が見つからない。
 setup_repo() {
   local input="$1" path mate_path="" mate_content="" added_content
-  local dir
+  local base_extra="" rename_to="" dir
   dir="$(mktemp -d --tmpdir="$work")"
 
   case "$input" in
@@ -100,13 +100,20 @@ setup_repo() {
     no-diff) added_content="" ;;
     *) added_content="$plain_ts" ;;
   esac
+  # base の時点で重複しているヘルパーを持たせ、HEAD ではフォルダを移すだけにする。
+  # リネームを検出させないと全行が追加行になり、前からある重複が「追加された重複」に
+  # 見える（実測でそうなって CI が赤になった形）。
+  if [ "$input" = duplication-renamed ]; then
+    base_extra="$added_helper_ts"
+    rename_to=src/moved/__tests__/a.test.ts
+  fi
 
   mkdir -p "$dir/.claude/hooks/lib" "$dir/$(dirname "$path")"
   cp "$repo_root/.claude/hooks/lib/$lint_detector" \
     "$repo_root/.claude/hooks/lib/$duplication_detector" "$dir/.claude/hooks/lib/"
 
   git -C "$dir" init -q
-  printf '%s' "$base_ts" >"$dir/$path"
+  printf '%s' "$base_ts$base_extra" >"$dir/$path"
   git -C "$dir" add "$path" ".claude/hooks/lib/$lint_detector" \
     ".claude/hooks/lib/$duplication_detector"
   if [ -n "$mate_path" ]; then
@@ -116,7 +123,11 @@ setup_repo() {
   fi
   commit_in "$dir" -m base
 
-  if [ -n "$added_content" ]; then
+  if [ -n "$rename_to" ]; then
+    mkdir -p "$dir/$(dirname "$rename_to")"
+    git -C "$dir" mv "$path" "$rename_to"
+    commit_in "$dir" -m head
+  elif [ -n "$added_content" ]; then
     printf '%s' "$added_content" >>"$dir/$path"
     git -C "$dir" add "$path"
     commit_in "$dir" -m head
@@ -166,6 +177,7 @@ cases="\
 0||$duplication_script|ok|present|duplication-clean|追加行に重複したテストヘルパーが無い
 2|$duplication_check_name|$duplication_script|broken|present|duplication-violation|python3 が起動できない / 追加行に重複したテストヘルパーがある
 2||$duplication_script|broken|present|duplication-clean|python3 が起動できない / 追加行に重複したテストヘルパーが無い
+0||$duplication_script|ok|present|duplication-renamed|前からある重複したヘルパーを、フォルダを移すだけで追加と数えない
 2|$duplication_check_name|$duplication_script|ok|missing|duplication-violation|検出器が見つからない / 追加行に重複したテストヘルパーがある"
 
 while IFS='|' read -r expected expected_text script python3_state detector_state input label; do

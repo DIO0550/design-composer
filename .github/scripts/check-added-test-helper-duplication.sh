@@ -18,22 +18,11 @@ base="${1:-${BASE_SHA:-origin/main}}"
 cd "$(git rev-parse --show-toplevel)"
 
 . "$script_dir/lib/detector-precondition.sh"
+. "$script_dir/lib/added-lines.sh"
 detector=.claude/hooks/lib/duplicate-test-helpers.py
 require_runnable_detector "追加されたテストヘルパーの重複" "$detector"
 
-# 追加・変更された行の行番号を、統一 diff のハンク見出しから取り出す
-# (check-added-lint-suppressions.sh と同じ)
-added_line_numbers() {
-  git diff -U0 "$base"...HEAD -- "$1" | awk '
-    /^@@/ {
-      match($0, /\+[0-9]+(,[0-9]+)?/)
-      spec = substr($0, RSTART + 1, RLENGTH - 1)
-      split(spec, parts, ",")
-      count = (2 in parts) ? parts[2] : 1
-      for (i = 0; i < count; i++) print parts[1] + i
-    }
-  '
-}
+added_lines="$(added_lines_of "$base" '*.ts' '*.tsx')"
 
 violations=""
 while IFS= read -r file; do
@@ -43,7 +32,7 @@ while IFS= read -r file; do
     *) continue ;;
   esac
 
-  added="$(added_line_numbers "$file")"
+  added="$(printf '%s\n' "$added_lines" | sed -n "s|^${file}:||p")"
   [ -z "$added" ] && continue
 
   # `|| true` は外せない(理由は check-added-lint-suppressions.sh の同じ行)。
@@ -56,7 +45,7 @@ while IFS= read -r file; do
     violations="${violations}${file}:${entry}
 "
   done <<< "$reported"
-done < <(git diff --name-only --diff-filter=d "$base"...HEAD -- '*.ts' '*.tsx')
+done < <(changed_files_of "$added_lines")
 
 if [ -z "$violations" ]; then
   echo "追加されたテストヘルパーの重複はありません"
