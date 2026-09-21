@@ -50,7 +50,6 @@ function renderPanel(
       node={{
         select: vi.fn(),
         reorder: vi.fn(),
-        createComponent: vi.fn(),
       }}
       rename={spyRenameActions()}
     />,
@@ -118,7 +117,6 @@ test("artboard が 1 枚も無いときは、検索語を打っても artboard �
       node={{
         select: vi.fn(),
         reorder: vi.fn(),
-        createComponent: vi.fn(),
       }}
       rename={spyRenameActions()}
     />,

@@ -20,7 +20,6 @@ import { LeftPane } from "./index";
 const SampleNodeActions: LeftPaneNodeActions = {
   select: fn(),
   reorder: fn(),
-  createComponent: fn(),
 };
 
 const SampleArtboardActions: LeftPaneArtboardActions = {
