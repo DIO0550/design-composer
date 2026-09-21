@@ -8,11 +8,10 @@ import { DocumentSelection } from "@/domains/session/document-selection";
  * 左ペインのストーリー用のサンプルドキュメント。雛形のトークン・部品に artboard を 2 枚
  * 足してある。
  *
- * 3 つの行き先が 1 つのドキュメントで揃うようにしていて、Layers は 2 枚の artboard とそ
- * の中身、Assets は雛形の部品、Tokens は雛形のトークンを映す。ツリー都合の構造（入れ子
- * の深さ・並べ替えボタンの出方）はそれを見たいストーリーの側に置く。
+ * 映すのは Layers の行き先（artboard の一覧とツリー）。ツリー都合の構造（入れ子の深さ・
+ * 並べ替えボタンの出方）はそれを見たいストーリーの側に置く。
  */
-export const SampleSidebarDocument = DesignDocument.create({
+const SampleSidebarDocument = DesignDocument.create({
   tokens: DocumentTemplate.Default.tokens,
   components: DocumentTemplate.Default.components,
   artboards: [
