@@ -83,6 +83,16 @@ test("Assets へ行って Layers に戻ると検索語が空に戻る", async ()
   ).toHaveProperty("value", "");
 });
 
+test("Assets に切り替えると検索欄の案内文が Assets 向けになる", async () => {
+  await renderOpenedDocument();
+
+  await goTo(LeftPaneViews.Assets);
+
+  expect(
+    screen.getByRole("searchbox", { name: "Search assets" }),
+  ).toBeDefined();
+});
+
 test("Tokens に切り替えると検索欄は出なくなる", async () => {
   await renderOpenedDocument();
 

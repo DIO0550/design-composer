@@ -7,18 +7,18 @@ import {
   AssetsPanel,
   CreateComponent,
 } from "@/features/assets";
-import { LayersPanel } from "@/features/sidebar/components/layers-panel";
-import { LeftPanePanel } from "@/features/sidebar/components/left-pane-panel";
 import {
+  LayersPanel,
+  type LeftPaneArtboardActions,
+  type LeftPaneNodeActions,
+  LeftPanePanel,
   LeftPaneRail,
+  type LeftPaneRenameActions,
+  type LeftPaneTokenActions,
   type LeftPaneView,
   LeftPaneViewLabels,
   LeftPaneViews,
-} from "@/features/sidebar/components/left-pane-rail";
-import type { LeftPaneArtboardActions } from "@/features/sidebar/types/LeftPaneArtboardActions";
-import type { LeftPaneNodeActions } from "@/features/sidebar/types/LeftPaneNodeActions";
-import type { LeftPaneRenameActions } from "@/features/sidebar/types/LeftPaneRenameActions";
-import type { LeftPaneTokenActions } from "@/features/sidebar/types/LeftPaneTokenActions";
+} from "@/features/sidebar";
 import { TokenList } from "@/features/tokens";
 import { Option } from "@/utils/Option";
 

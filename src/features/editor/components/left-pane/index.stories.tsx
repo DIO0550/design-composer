@@ -4,15 +4,17 @@ import { TokenSelection } from "@/domains/session/token-selection";
 // 掴む口のサンプルは掴まれる側（features/assets）が持つ。ストーリー専用の値なので
 // features/assets/index.ts（本番の公開 API）には出さず、ストーリー用の公開口から読む。
 import { grabbingComponent, IdleGrab } from "@/features/assets/__stories__";
-import { sampleRenameActions } from "@/features/sidebar/__stories__/sample-rename-actions";
+import {
+  type LeftPaneArtboardActions,
+  type LeftPaneNodeActions,
+  type LeftPaneTokenActions,
+  LeftPaneViews,
+} from "@/features/sidebar";
 import {
   SampleSidebarDocument,
+  sampleRenameActions,
   sampleSidebarSelection,
-} from "@/features/sidebar/__stories__/sample-sidebar-document";
-import { LeftPaneViews } from "@/features/sidebar/components/left-pane-rail";
-import type { LeftPaneArtboardActions } from "@/features/sidebar/types/LeftPaneArtboardActions";
-import type { LeftPaneNodeActions } from "@/features/sidebar/types/LeftPaneNodeActions";
-import type { LeftPaneTokenActions } from "@/features/sidebar/types/LeftPaneTokenActions";
+} from "@/features/sidebar/__stories__";
 import { Option } from "@/utils/Option";
 import { LeftPane } from "./index";
 
@@ -37,7 +39,7 @@ const SampleTokenActions: LeftPaneTokenActions = {
 };
 
 const meta = {
-  title: "features/sidebar/LeftPane",
+  title: "features/editor/LeftPane",
   component: LeftPane,
   parameters: { layout: "fullscreen" },
   args: {

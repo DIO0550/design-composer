@@ -40,6 +40,7 @@ import {
   EditorTopBar,
   EditorTopBarTones,
 } from "@/features/editor/components/editor-top-bar";
+import { LeftPane } from "@/features/editor/components/left-pane";
 import {
   EditMenuTarget,
   EditMenuTargets,
@@ -62,7 +63,7 @@ import {
 } from "@/features/editor/hooks/use-token-actions";
 import type { OpenedContextMenu } from "@/features/editor/types/OpenedContextMenu";
 import { PropertyPanel } from "@/features/inspector";
-import { LeftPane, type LeftPaneView, LeftPaneViews } from "@/features/sidebar";
+import { type LeftPaneView, LeftPaneViews } from "@/features/sidebar";
 import { TokenDashedNodes, TokenEditor } from "@/features/tokens";
 import type { Clock } from "@/libs/clock";
 import type { DocumentIpc } from "@/libs/document-ipc";
