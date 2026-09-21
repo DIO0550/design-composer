@@ -47,11 +47,7 @@ function renderPanel(
       selection={selection}
       renaming={Option.none}
       artboard={{ add: vi.fn(), reorder }}
-      node={{
-        select: vi.fn(),
-        reorder: vi.fn(),
-        createComponent: vi.fn(),
-      }}
+      node={{ select: vi.fn(), reorder: vi.fn() }}
       rename={spyRenameActions()}
     />,
   );
@@ -115,11 +111,7 @@ test("artboard が 1 枚も無いときは、検索語を打っても artboard �
       )}
       renaming={Option.none}
       artboard={{ add: vi.fn(), reorder: vi.fn() }}
-      node={{
-        select: vi.fn(),
-        reorder: vi.fn(),
-        createComponent: vi.fn(),
-      }}
+      node={{ select: vi.fn(), reorder: vi.fn() }}
       rename={spyRenameActions()}
     />,
   );
