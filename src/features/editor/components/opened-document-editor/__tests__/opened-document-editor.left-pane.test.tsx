@@ -68,6 +68,19 @@ test("Layers の検索欄に打つと、一致しないツリーの行が消え�
   expect(rowNames(tree())).toEqual(["home-title"]);
 });
 
+test("Assets の検索欄に打つと、一致しない部品の行が消える", async () => {
+  await renderOpenedDocument();
+  await goTo(LeftPaneViews.Assets);
+
+  await userEvent.type(
+    screen.getByRole("searchbox", { name: "Search assets" }),
+    "primary-button",
+  );
+
+  // 届いていなければ全部残り、絞りすぎれば 0 行になる
+  expect(within(leftPane()).getAllByRole("listitem")).toHaveLength(1);
+});
+
 test("Assets へ行って Layers に戻ると検索語が空に戻る", async () => {
   await renderOpenedDocument();
   await userEvent.type(
