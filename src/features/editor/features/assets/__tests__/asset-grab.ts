@@ -1,14 +1,18 @@
 import type { AssetGrab } from "@/features/editor/features/assets/types/AssetGrab";
 import { Option } from "@/utils/Option";
 
-/*
- * `grabbingComponent` は `__stories__/asset-grab.ts` にも要るため、そちらに置いて
- * ここでは再輸出だけ行う。同じ形（`AssetGrab` の組み立て方）が 2 箇所に現れないよう
- * にするため（`rules/coding.md`「同じ処理が 2 箇所に現れたら共通化する」）。
- * `setupAssetGrab` はテスト固有のオーバーライド用途で、ストーリー側は要らないので
- * こちらだけに置く。
+/**
+ * その部品を掴んで運んでいる状態。
+ *
+ * @param componentName 掴んで運んでいる部品の名前
+ * @returns その部品を運んでいる掴む口
  */
-export { grabbingComponent } from "@/features/editor/features/assets/__stories__/asset-grab";
+export function grabbingComponent(componentName: string): AssetGrab {
+  return {
+    dragged: Option.some({ kind: "instance", componentName }),
+    onGrab: () => {},
+  };
+}
 
 /**
  * パレットの行へ渡す掴む口を、既定に上書きを足して組み立てる。
