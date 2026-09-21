@@ -97,6 +97,7 @@ setup_repo() {
   case "$input" in
     lint-violation) added_content="$suppressed_ts" ;;
     duplication-violation) added_content="$added_helper_ts" ;;
+    duplication-renamed) added_content="" ;;
     no-diff) added_content="" ;;
     *) added_content="$plain_ts" ;;
   esac
@@ -107,6 +108,8 @@ setup_repo() {
 
   git -C "$dir" init -q
   printf '%s' "$base_ts" >"$dir/$path"
+  # 移動の検査では、重複そのものは base の時点で既にある
+  [ "$input" = duplication-renamed ] && printf '%s' "$added_helper_ts" >>"$dir/$path"
   git -C "$dir" add "$path" ".claude/hooks/lib/$lint_detector" \
     ".claude/hooks/lib/$duplication_detector"
   if [ -n "$mate_path" ]; then
@@ -116,7 +119,13 @@ setup_repo() {
   fi
   commit_in "$dir" -m base
 
-  if [ -n "$added_content" ]; then
+  if [ "$input" = duplication-renamed ]; then
+    # 移動しただけのファイルが全行「追加」に見えると、既存の重複が新規として報告される
+    local moved=src/moved/__tests__/a.test.ts
+    mkdir -p "$dir/$(dirname "$moved")"
+    git -C "$dir" mv "$path" "$moved"
+    commit_in "$dir" -m head
+  elif [ -n "$added_content" ]; then
     printf '%s' "$added_content" >>"$dir/$path"
     git -C "$dir" add "$path"
     commit_in "$dir" -m head
@@ -166,7 +175,8 @@ cases="\
 0||$duplication_script|ok|present|duplication-clean|追加行に重複したテストヘルパーが無い
 2|$duplication_check_name|$duplication_script|broken|present|duplication-violation|python3 が起動できない / 追加行に重複したテストヘルパーがある
 2||$duplication_script|broken|present|duplication-clean|python3 が起動できない / 追加行に重複したテストヘルパーが無い
-2|$duplication_check_name|$duplication_script|ok|missing|duplication-violation|検出器が見つからない / 追加行に重複したテストヘルパーがある"
+2|$duplication_check_name|$duplication_script|ok|missing|duplication-violation|検出器が見つからない / 追加行に重複したテストヘルパーがある
+0||$duplication_script|ok|present|duplication-renamed|既にある重複をフォルダごと移しただけ"
 
 while IFS='|' read -r expected expected_text script python3_state detector_state input label; do
   run_case "$expected" "$expected_text" "$script" "$python3_state" "$detector_state" \
