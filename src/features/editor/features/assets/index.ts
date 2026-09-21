@@ -1,0 +1,13 @@
+/**
+ * 挿せる部品のパレット一式（docs/06-ui.md「画面構成」の左ペインの `Assets` / UI 案
+ * docs/Design Composer.html の `Assets` 画面）。パネル本体（`AssetsPanel`）とパネル下端
+ * に固定する部品化のフッター（`CreateComponent`）が属し、どちらも**表示中のドキュメント
+ * と選ばれている名前**（および掴む口）だけで描ける。
+ *
+ * 掴む口（`AssetGrab`）はここが持つ。掴む側と落とす側（`features/editor` のキャンバス）
+ * で対で意味を持つが、`Option<NodeTemplate>` を抱えるので `src/types/` には置けない（types
+ * は domains を import できない）。
+ */
+export { AssetsPanel } from "@/features/editor/features/assets/components/assets-panel";
+export { CreateComponent } from "@/features/editor/features/assets/components/create-component";
+export type { AssetGrab } from "@/features/editor/features/assets/types/AssetGrab";

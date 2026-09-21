@@ -10,8 +10,8 @@ import {
   movePointer,
   pressPointer,
   releasePointer,
-} from "@/features/canvas/__tests__";
-import { LeftPaneViews } from "@/features/sidebar";
+} from "@/features/editor/features/canvas/__tests__";
+import { LeftPaneViews } from "@/features/editor/features/sidebar";
 import { Option } from "@/utils/Option";
 import {
   drawn,

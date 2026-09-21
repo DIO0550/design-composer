@@ -15,6 +15,7 @@
 ## 規約一覧(常時ロード)
 
 - @rules/architecture.md — フォルダ構造・依存方向・ロジックの帰属先・services / utils の責務
+- @rules/consistency.md — 整合性境界・更新の入口・導出・feature の構成とネスト
 - @rules/coding.md — コンパニオンオブジェクトパターン・イミュータブル・Result / Option・型による境界・禁止事項
 - @rules/naming.md — 命名(名前と実体の一致・汎用語の禁止・ファイル名)
 - @rules/testing.md — テスト配置・テストの書き方(ネスト禁止)

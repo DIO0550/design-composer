@@ -31,6 +31,7 @@ NG・OK の実例 / このリポジトリ固有のシンボル名 / PR 番号)�
 | [architecture.md](architecture.md) | `rules/architecture.md` |
 | [coding.md](coding.md) | `rules/coding.md` |
 | [naming.md](naming.md) | `rules/naming.md` |
+| [consistency.md](consistency.md) | `rules/consistency.md` |
 | [testing.md](testing.md) | `rules/testing.md` |
 | [ui.md](ui.md) | `rules/ui-verification.md` |
 | [planning.md](planning.md) | `implementation-flow` フェーズ 3〜4(規範は `.claude/agents/plan-reviewer.md`) |

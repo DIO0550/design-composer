@@ -2,8 +2,11 @@ import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { currentRowNames } from "@/components/__tests__/row-names";
-import { canvasContent, tokenReferrerNames } from "@/features/canvas/__tests__";
-import { LeftPaneViews } from "@/features/sidebar";
+import {
+  canvasContent,
+  tokenReferrerNames,
+} from "@/features/editor/features/canvas/__tests__";
+import { LeftPaneViews } from "@/features/editor/features/sidebar";
 import {
   breakFileExternally,
   canvasPane,

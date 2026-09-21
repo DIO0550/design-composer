@@ -22,6 +22,7 @@ src/
 
 ```
 features/<feature-name>/
+  features/    # この feature からしか使われない子 feature(深さは 2 段まで)
   domains/     # この feature 固有のドメインオブジェクト
   components/  # この feature 固有のUI
   hooks/       # この feature 固有のフック
@@ -83,8 +84,7 @@ features/<feature-name>/
 - 汎用ユーティリティ同士も重複させない
 - ドメイン概念になった時点で `utils/` から `domains/` へ移す。判断軸は「その値に生成・判定・変換の規則が付いてくるか」
 - **用途ではなく操作で名付ける。** 名前が呼び出し側での用途を指していると、処理自体は汎用でも UI やドメインの語彙が `utils/` に入り込む。操作そのもので名付けられるなら `utils/` に置いてよく、用途を外すと名前が付けられないなら、それは呼び出し側の関心事なので呼び出し側へ置く
-- 汎用の操作が1つだけでも、`<型名>Ex` に押し込めず**まとまりを表すモジュール**を立てる。ただし呼び出しの無い操作を「揃っているから」と先回りで足さない(過度な抽象化)
-- 型で閉じた対応表(`as const satisfies` でリテラル型を保つもの)を汎用変換に置き換えない
+- 汎用の操作が1つだけでも、`<型名>Ex` に押し込めず**まとまりを表すモジュール**を立てる(ただし呼び出しの無い操作を先回りで足さない)。型で閉じた対応表(`as const satisfies` でリテラル型を保つもの)を汎用変換に置き換えない
 
 ## domains のカテゴリ
 
@@ -118,7 +118,7 @@ app → features → services → domains
 - `src/domains/<カテゴリ>/<x>/` は他の domain を import してよい(カテゴリの向きに従う・一方向のみ・循環禁止)。services / features / React / Tauri API への依存は禁止
 - **domains から libs への import は `__tests__/` の中だけ許す。** ファイルに載っている綴りを作るのに外部フォーマットの解釈が要り、そこを差し替えるとテストが実物で確かめられなくなるため(`rules/testing.md`「代替してよいのはプロセス外の境界のみ」)。**production 側は 0 件**で、外の語彙が要るなら境界(`libs/`)で詰め替えてドメインの語彙にする
 - `src/services/` は `src/domains/` と `src/types/` と `src/utils/` のみ import 可。React / Tauri API への依存は禁止
-- `features/<x>/` は自分の内部、`src/services/`、`src/domains/`、横断層(`components/` `hooks/` `libs/` `utils/` `types/`)を import 可。**他 feature の import も可**(ただし公開API = その feature の `index.ts` 経由のみ・feature 間の循環参照は禁止)
+- `features/<x>/` は自分の内部、`src/services/`、`src/domains/`、横断層(`components/` `hooks/` `libs/` `utils/` `types/`)を import 可。他 feature は**公開API = その feature の `index.ts` 経由のみ**で、向きは**親から直下の子だけ**(子 feature 同士・子から親は禁止。繋ぐのは親 → `rules/consistency.md`「feature の構成とネスト」)
 - `features/<x>/domains/` は `src/domains/` を import してよいが、他 feature の domains への直接 import は不可(2つ以上の feature が必要とするドメインオブジェクトは昇格させる → 「配置の判断基準」)
 - `app/` はロジックを持たない。`features/` の呼び出しとルーティング・Provider の組み立てのみ
 - `components/` `hooks/` `utils/` `types/` は domains / services / features を import してはならない(ドメイン知識の流入禁止)

@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, screen, waitFor } from "storybook/test";
 import { artboardContent } from "@/domains/__tests__/sample-document";
-import type { DocumentSessionPorts } from "@/features/document-start";
 import { SampleEditorState } from "@/features/editor/__stories__/sample-editor-state";
 import { EditorState } from "@/features/editor/domains/editor-state";
+import type { DocumentSessionPorts } from "@/features/editor/features/document-start";
 import { AppMenuFake } from "@/libs/app-menu/fake";
 import { AppStateIpcFake } from "@/libs/app-state-ipc/fake";
 import { AppStateJson } from "@/libs/app-state-json";
