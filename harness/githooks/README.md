@@ -35,8 +35,9 @@ DevContainer の `postCreateCommand` も走らない。そこは Claude Code の
 同じスクリプトを走らせる即時フィードバック版で、内容が二重管理にならないようにしている。
 `check-added-*` の 2 つだけは `.github/scripts/` にあり、CI と同じスクリプトをそのまま呼ぶ
 (base との差分で判定するので、判定を `lib/` へ移しても呼び出し側は同じになる)。
-[その判定表](../../.github/scripts/check-added-cases.sh)と、2 つが共有する前提チェック
-(`.github/scripts/lib/detector-precondition.sh`)も同じ場所に置く。`.claude/hooks/lib/` は
+[その判定表](../../.github/scripts/check-added-cases.sh)と、2 つが共有する部品
+(前提チェックの `.github/scripts/lib/detector-precondition.sh`、追加行の行番号を数える
+`.github/scripts/lib/added-lines.sh`)も同じ場所に置く。`.claude/hooks/lib/` は
 **検査そのもの**の共有場所なので、当てる先と一緒にしておく。
 **行数のラチェットと判定表 3 本**(`harness/records/count.sh --ratchet` /
 `harness/records/count-cases.sh` / `.claude/hooks/lib/result-option-read-cases.sh` /

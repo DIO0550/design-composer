@@ -237,7 +237,7 @@ deny のメッセージは、`jq` / `python3` が欠けていればその名前�
   - 引数の型注釈が `Readonly<{ x: number }>` のように `{}` を含む場合に本体と読み違える偽陽性(#179)は、引数リストの閉じ括弧より後ろから本体を探すよう直して解消した(`duplicate-test-helpers.py` の `params_end`)
   - ファイル単位で無効化: `// @duplicate-helpers-ok`
 - `.github/scripts/check-added-test-helper-duplication.sh`(層 1・CI、`frontend.yml` の `lint-suppress` ジョブ。同じスクリプトを `harness/githooks/pre-push` も引数なしで呼び、base を `origin/main` として push 前にも通す。**検出器を走らせられなければ exit 2** → `.github/scripts/lib/detector-precondition.sh`)は、Claude Code hook(層 3)が発火しない実行環境向けの無条件の代替。**既存の 11 組を理由に `--all` を無条件でブロックにはしない**(`check-added-lint-suppressions.sh` と同じ考え方)。`duplicate-test-helpers.py --lines` で対象ファイルの重複行を機械可読に出し、**このブランチで新しく追加された行に載っているものだけ**を違反にする。既存の 11 組を 0 組にすれば `--all` を無条件のブロックへ格上げできる(その時点でこの限定は不要になる)
-  - `check-added-lint-suppressions.sh` と違い、**base に同じ本体を持つファイルがあっても除外しない**。ファイル分割でヘルパーが新しいファイルへ移ると、移った側は全行が追加行になり、既存の重複が「新規」として引っかかる余地が残っている(pr-240 で lint 抑制コメントが踏んだのと同じ形)。単純な `git mv` はリネーム検出で diff に載らないため踏まないが、**分割**は対象
+  - `check-added-lint-suppressions.sh` と違い、**base に同じ本体を持つファイルがあっても除外しない**。ファイル分割でヘルパーが新しいファイルへ移ると、移った側は全行が追加行になり、既存の重複が「新規」として引っかかる余地が残っている(pr-240 で lint 抑制コメントが踏んだのと同じ形)。追加行を数えるのは `.github/scripts/lib/added-lines.sh` で、**移動が rename として追跡されるのは「元のファイルが消える」かつ「類似度が git の閾値(既定 50%)以上」のときだけ**。**分割**(元が残る)と、**移動しつつ大きく足した場合**(閾値未満)は対象
 - `check-doc-comments.sh` は**ブロックしない**(`additionalContext` を返すだけ)。また、見るのは**編集したファイルの分だけ**
   - 対象は `src/` の実装ファイルのみ(`__tests__/` / `*.stories.*` / `__stories__/` は見ない)
   - 見るのは**ファイル直下の宣言**だけ(入れ子の関数・オブジェクトのメソッドは対象外)
