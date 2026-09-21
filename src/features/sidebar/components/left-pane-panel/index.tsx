@@ -1,6 +1,26 @@
-import { type ReactNode, useState } from "react";
+import { type ReactElement, type ReactNode, useState } from "react";
 import { SearchField } from "@/components/search-field";
+import type { LeftPaneViewContent } from "@/features/sidebar/types/LeftPaneViewContent";
 import { Option } from "@/utils/Option";
+
+/**
+ * 行き先の中身を、その行き先が要る分だけの引数で組み立てる。
+ *
+ * @param content 出す行き先の中身
+ * @param query 検索欄に打たれた語
+ * @returns 欄を持つ行き先なら語で絞った中身、持たない行き先ならそのままの中身
+ */
+function renderViewContent(
+  content: LeftPaneViewContent,
+  query: string,
+): ReactElement {
+  switch (content.kind) {
+    case "plain":
+      return content.render();
+    case "searchable":
+      return content.render(query);
+  }
+}
 
 /**
  * レールで選んだ行き先の中身を出すパネル（UI 案 docs/Design Composer.html の 248px のパネ
@@ -18,18 +38,12 @@ import { Option } from "@/utils/Option";
 export function LeftPanePanel({
   title,
   note,
-  search,
-  footer,
-  children,
+  content,
 }: Readonly<{
   title: string;
   /** 見出しの右端に添える補助情報（UI 案の Error 画面の `frozen`）。 */
   note: Option<ReactNode>;
-  /** 検索欄の案内文。中身を絞れない行き先では不在。 */
-  search: Option<string>;
-  footer: Option<ReactNode>;
-  /** 今の検索語を受け取って中身を組み立てる。欄を持たない行き先では空の語が渡る。 */
-  children: (query: string) => ReactNode;
+  content: LeftPaneViewContent;
 }>) {
   const [query, setQuery] = useState("");
 
@@ -43,9 +57,13 @@ export function LeftPanePanel({
           </span>
         ) : null}
       </div>
-      {Option.isSome(search) ? (
+      {content.kind === "searchable" ? (
         <div className="shrink-0 px-3 pt-3">
-          <SearchField label={search.value} value={query} onChange={setQuery} />
+          <SearchField
+            label={content.searchLabel}
+            value={query}
+            onChange={setQuery}
+          />
         </div>
       ) : null}
       {/*
@@ -57,9 +75,9 @@ export function LeftPanePanel({
         たびに中身が横へ跳ねないようにする）。
       */}
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-auto p-3 [scrollbar-gutter:stable]">
-        {children(query)}
+        {renderViewContent(content, query)}
       </div>
-      {Option.isSome(footer) ? footer.value : null}
+      {Option.isSome(content.footer) ? content.footer.value : null}
     </div>
   );
 }

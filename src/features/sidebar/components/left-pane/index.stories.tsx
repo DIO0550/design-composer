@@ -1,18 +1,15 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
-import { TokenSelection } from "@/domains/session/token-selection";
-// 掴む口のサンプルは掴まれる側（features/assets）が持つ。ストーリー専用の値なので
-// features/assets/index.ts（本番の公開 API）には出さず、ストーリー用の公開口から読む。
-import { grabbingComponent, IdleGrab } from "@/features/assets/__stories__";
 import { sampleRenameActions } from "@/features/sidebar/__stories__/sample-rename-actions";
+import { sampleSidebarSelection } from "@/features/sidebar/__stories__/sample-sidebar-document";
+import { LayersPanel } from "@/features/sidebar/components/layers-panel";
 import {
-  SampleSidebarDocument,
-  sampleSidebarSelection,
-} from "@/features/sidebar/__stories__/sample-sidebar-document";
-import { LeftPaneViews } from "@/features/sidebar/components/left-pane-rail";
+  type LeftPaneView,
+  LeftPaneViews,
+} from "@/features/sidebar/components/left-pane-rail";
 import type { LeftPaneArtboardActions } from "@/features/sidebar/types/LeftPaneArtboardActions";
 import type { LeftPaneNodeActions } from "@/features/sidebar/types/LeftPaneNodeActions";
-import type { LeftPaneTokenActions } from "@/features/sidebar/types/LeftPaneTokenActions";
+import type { LeftPaneViewContent } from "@/features/sidebar/types/LeftPaneViewContent";
 import { Option } from "@/utils/Option";
 import { LeftPane } from "./index";
 
@@ -31,26 +28,72 @@ const SampleArtboardActions: LeftPaneArtboardActions = {
   reorder: fn(),
 };
 
-const SampleTokenActions: LeftPaneTokenActions = {
-  select: fn(),
-  add: fn(),
-};
+/**
+ * `Layers` の行き先。選んでいるノードだけを差し替えられるようにして、ストーリーごとに
+ * 同じ組み立てを書き写さない。
+ *
+ * @param selected 選択させるノードの名前。省くと何も選んでいない状態
+ * @returns レールで `Layers` を選んだときに出す中身
+ */
+function layersView(...selected: readonly string[]): LeftPaneViewContent {
+  return {
+    kind: "searchable",
+    searchLabel: "Search layers",
+    footer: Option.none,
+    render: (query) => (
+      <LayersPanel
+        query={query}
+        selection={sampleSidebarSelection(...selected)}
+        renaming={Option.none}
+        artboard={SampleArtboardActions}
+        node={SampleNodeActions}
+        rename={sampleRenameActions()}
+      />
+    ),
+  };
+}
+
+/**
+ * 差し込まれる側の見本。**器が出し分けるもの**（見出し・検索欄の有無・フッターの有無）が
+ * 分かればよいので、他の子 feature の部品は持ち込まない
+ * （器と中身の結合をほどくため）。Assets / Tokens の実物を組み合わせ
+ * た様子は `OpenedDocumentEditor` のストーリーが見せる。
+ */
+function sampleViews(): Readonly<Record<LeftPaneView, LeftPaneViewContent>> {
+  return {
+    [LeftPaneViews.Layers]: layersView(),
+    [LeftPaneViews.Assets]: {
+      kind: "searchable",
+      searchLabel: "Search assets",
+      footer: Option.some(
+        <p className="border-gray-300 border-t p-3 text-gray-400 text-xs">
+          差し込まれたフッター
+        </p>,
+      ),
+      render: (query) => (
+        <p className="text-gray-400 text-xs">
+          差し込まれた中身（検索語: {query === "" ? "なし" : query}）
+        </p>
+      ),
+    },
+    [LeftPaneViews.Tokens]: {
+      kind: "plain",
+      footer: Option.none,
+      render: () => (
+        <p className="text-gray-400 text-xs">検索欄を持たない行き先</p>
+      ),
+    },
+  };
+}
 
 const meta = {
-  title: "features/sidebar/LeftPane",
+  title: "features/editor/features/sidebar/LeftPane",
   component: LeftPane,
   parameters: { layout: "fullscreen" },
   args: {
     onSelectView: fn(),
-    selection: sampleSidebarSelection(),
-    tokenSelection: TokenSelection.create(SampleSidebarDocument, Option.none),
+    views: sampleViews(),
     isFrozen: false,
-    renaming: Option.none,
-    artboard: SampleArtboardActions,
-    node: SampleNodeActions,
-    rename: sampleRenameActions(),
-    token: SampleTokenActions,
-    grab: IdleGrab,
   },
   // 実際の幅（レール 56px + パネル 248px）と高さで見ないと、行の詰まり方が分からない。
   decorators: [
@@ -71,25 +114,16 @@ export const Layers: Story = {
   args: { view: LeftPaneViews.Layers },
 };
 
+/** フッターを持つ行き先。パネルの下端に差し込まれたものが固定される。 */
 export const Assets: Story = {
-  name: "Assets（部品のパレット）",
+  name: "Assets（フッターを持つ行き先）",
   args: { view: LeftPaneViews.Assets },
 };
 
+/** 検索欄を持たない行き先。見出しの直下に欄が出ない。 */
 export const Tokens: Story = {
-  name: "Tokens（トークン一覧）",
+  name: "Tokens（検索欄を持たない行き先）",
   args: { view: LeftPaneViews.Tokens },
-};
-
-/**
- * パレットの行を掴んでキャンバスへ運んでいる `Assets`。掴んでいる行だけが青くなる。
- */
-export const AssetsGrabbed: Story = {
-  name: "Assets（行を掴んで運んでいる）",
-  args: {
-    view: LeftPaneViews.Assets,
-    grab: grabbingComponent("primary-button"),
-  },
 };
 
 /**
@@ -99,7 +133,10 @@ export const LayersSelected: Story = {
   name: "Layers（ノードを選択中）",
   args: {
     view: LeftPaneViews.Layers,
-    selection: sampleSidebarSelection("home-title"),
+    views: {
+      ...sampleViews(),
+      [LeftPaneViews.Layers]: layersView("home-title"),
+    },
   },
 };
 
