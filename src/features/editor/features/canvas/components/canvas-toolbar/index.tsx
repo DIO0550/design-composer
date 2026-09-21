@@ -12,7 +12,7 @@ const PrimitiveInsertDisabledReason = "子を持てるものを選ぶと追加�
 /**
  * artboard を足すボタンの読み上げ名。UI 案の字面は `#` だけなので、名前は別に与える。
  *
- * `features/sidebar` の `artboard-list` が `+` に与える名前と**同じ綴りにしてある**（同じ
+ * `features/editor/features/sidebar` の `artboard-list` が `+` に与える名前と**同じ綴りにしてある**（同じ
  * 操作に別の名前を与えない）。
  */
 const AddArtboardLabel = "artboard を追加";

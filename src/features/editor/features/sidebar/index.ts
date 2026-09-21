@@ -9,7 +9,6 @@
  * `features/editor`）。
  *
  * **3 つの行き先を並べて左ペインに組むのは親の `features/editor` で、ここではない。**
- * `Assets` と `Tokens` の中身は兄弟の feature が持っており、兄弟を読めるのは親だけ。
  */
 export { LayersPanel } from "@/features/editor/features/sidebar/components/layers-panel";
 export { LeftPanePanel } from "@/features/editor/features/sidebar/components/left-pane-panel";

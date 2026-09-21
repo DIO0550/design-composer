@@ -21,7 +21,7 @@ export type { CssVariables };
  *
  * artboard のキャンバス上の位置は各 `CompiledArtboard` が持つ (docs/01)。ただし
  * ファイルに座標を持たない artboard もあるので、**並び全体の置き場所は決まっていない**。
- * 決めるのは描く側 (`features/canvas` の `ArrangedArtboard`)。
+ * 決めるのは描く側 (`features/editor/features/canvas` の `ArrangedArtboard`)。
  */
 export type CompiledDocument = Readonly<{
   variables: CssVariables;

@@ -452,7 +452,7 @@ function EditorPanes({
           {/*
           帯と本文の器はどちらの行き先でもここで着せる。どのペインに何を着せるかは
           3 ペインの組み立ての判断で、中身を持つ feature は持たない
-          （`features/inspector/index.ts` / `features/tokens/index.ts` の doc）。
+          （`features/editor/features/inspector/index.ts` / `features/editor/features/tokens/index.ts` の doc）。
 
           選んでいなくても帯は残すので、中身が空でも `PaneHeading` ごと外さない。
           外すと選択のたびに本文の位置が帯のぶん動く。

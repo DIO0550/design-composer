@@ -38,7 +38,7 @@ import { Option } from "@/utils/Option";
  * 引くため（`rules/architecture.md`「domains のカテゴリ」）。人が読む綴り（未設定のラベ
  * ル・不揃いの綴り・単位）と、空欄をどう読むかは持たず、パネル側に残す（`rules/architecture.md`
  * 「表示のための綴りをドメインへ持ち込まない」「入力欄の約束事をドメインへ持ち込まない」）。
- * 同じ形の `features/tokens/domains/token-control` が feature に残るのは、あちらが
+ * 同じ形の `features/editor/features/tokens/domains/token-control` が feature に残るのは、あちらが
  * `valueText` や `TokenPreview` の `widthPx` のように**綴りと見せ方そのもの**を持つため。
  *
  * 今の消費側は `features/editor` の 1 つだけで、「2 つ以上の feature が必要としたら昇格」
