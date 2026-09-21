@@ -31,12 +31,16 @@ build_tree() {
   mkdir -p "$work/src/app" \
     "$editor/features/sidebar/__stories__" \
     "$editor/features/sidebar/components/layers-panel" \
+    "$editor/features/sidebar/features/tree" \
+    "$editor/components/features/toolbar" \
     "$editor/features/assets/__tests__"
   printf 'export const App = 1;\n' > "$work/src/app/App.ts"
   printf 'export const EditorScreen = 1;\n' > "$editor/index.ts"
   printf 'export const LayersPanel = 1;\n' > "$editor/features/sidebar/index.ts"
   printf 'export const SampleDocument = 1;\n' > "$editor/features/sidebar/__stories__/index.ts"
   printf 'export const LayersPanel = 1;\n' > "$editor/features/sidebar/components/layers-panel/index.ts"
+  printf 'export const Tree = 1;\n' > "$editor/features/sidebar/features/tree/index.ts"
+  printf 'export const Toolbar = 1;\n' > "$editor/components/features/toolbar/index.ts"
   printf 'export const AssetsPanel = 1;\n' > "$editor/features/assets/index.ts"
   printf 'export const setupAssetGrab = 1;\n' > "$editor/features/assets/__tests__/index.ts"
 }
@@ -60,15 +64,8 @@ verdict() {
   printf '%s' "$output" | sed -n 's/^\[\([a-z-]*\)\].*/\1/p' | paste -sd '+' -
 }
 
-report() {
-  local expected="$1" decision="$2" label="$3"
-  if [ "$decision" = "$expected" ]; then
-    printf 'ok   %-38s %s\n' "$expected" "$label"
-    return 0
-  fi
-  printf 'NG   expected=%s got=%s  %s\n' "$expected" "$decision" "$label"
-  failed=1
-}
+verdict_width=38
+. "$lib_dir/cases-report.sh"
 
 build_tree
 report "pass" "$(verdict)" "probe を置かないツリーそのものは違反 0 件"
@@ -85,6 +82,9 @@ pass|親 feature が子 feature の __stories__ 公開口を読む|features/edit
 pass|feature が自分の中のモジュールを読む|features/editor/features/sidebar/probe.ts|@/features/editor/features/sidebar/components/layers-panel
 pass|feature の外がトップレベル feature の公開口を読む|app/probe.ts|@/features/editor
 pass|feature 層の直下に置いたファイルは feature と数えない|features/editor/features/probe.ts|@/features/editor/features/sidebar
+pass|feature が自分の直接の子を読む（孫を持つ子でも同じ）|features/editor/features/sidebar/probe.ts|@/features/editor/features/sidebar/features/tree
+pass|feature の中の features という名前の普通のフォルダは feature 層と数えない|features/editor/components/features/toolbar/probe.ts|@/features/editor
+feature-direction|祖父 feature が孫 feature を読む|features/editor/probe.ts|@/features/editor/features/sidebar/features/tree
 feature-direction|兄弟 feature の公開口を読む|features/editor/features/sidebar/probe.ts|@/features/editor/features/assets
 feature-direction|兄弟 feature の __tests__ 公開口を読む|features/editor/features/sidebar/probe.ts|@/features/editor/features/assets/__tests__
 feature-direction|兄弟 feature の __stories__ 公開口を読む|features/editor/features/assets/probe.ts|@/features/editor/features/sidebar/__stories__
@@ -93,6 +93,25 @@ feature-direction|兄弟 feature の内部は、公開口ではなく向きで�
 feature-direction|子 feature が親 feature を読む|features/editor/features/sidebar/probe.ts|@/features/editor
 feature-public-api|親 feature が子 feature の内部を読む|features/editor/probe.ts|@/features/editor/features/sidebar/components/layers-panel
 CASES
+
+# 表が動かすのは feature をまたぐ向きと公開口だけ。残る 3 種別も、この表が緑なら検出器が
+# 無事だと読まれるので 1 件ずつ見る（報告の並びから 1 行落とすミューテーションで、どれも
+# 素通りしていた）。
+mkdir -p "$work/src/components/type-glyph" "$work/src/domains/loose-thing" "$work/src/utils"
+printf 'export const Inner = 1;\n' > "$work/src/components/type-glyph/inner.ts"
+printf 'export const TypeGlyph = 1;\n' > "$work/src/components/type-glyph/index.ts"
+printf 'export { Inner } from "@/components/type-glyph/inner";\n' > "$work/src/components/probe.ts"
+report "module-public-api" "$(verdict)" "モジュールの内部を、そのフォルダの外から読む"
+rm -f "$work/src/components/probe.ts"
+
+printf 'export const Loose = 1;\n' > "$work/src/domains/loose-thing/index.ts"
+report "domains-category" "$(verdict)" "domains のモジュールがカテゴリのフォルダの下にいない"
+rm -rf "$work/src/domains"
+
+printf 'import "./probe-b";\nexport const A = 1;\n' > "$work/src/utils/probe-a.ts"
+printf 'import "./probe-a";\nexport const B = 1;\n' > "$work/src/utils/probe-b.ts"
+report "import-cycle" "$(verdict)" "ファイル単位の閉路を拾う"
+rm -f "$work/src/utils/probe-a.ts" "$work/src/utils/probe-b.ts"
 
 # 親が子を読んでいるところへ子から親への辺が増えると、向きの違反に feature 単位の閉路が
 # 重なる。表は 1 ケース 1 ファイルなので、2 本の辺が要るこの形はここで見る。

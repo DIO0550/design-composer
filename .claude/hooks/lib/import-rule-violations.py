@@ -138,6 +138,11 @@ def feature_of(path: str) -> str | None:
     （`features/<親>/features/foo.ts`）なら、それは feature ではなく親の持ち物なので
     数えない。
 
+    **`features` という名前のフォルダなら何でも feature 層と数えるわけではない。**
+    feature 層は `src/features/` から 2 段ごとにしか現れない（`src/features/<x>/features/`）
+    ので、その位置にあるものだけを見る。見ないと `components/features/` のような普通の
+    フォルダ名が feature 層になり、そのモジュールが自分の feature の公開口を読めなくなる。
+
     @param path 対象のファイルのパス
     @returns 属する feature のフォルダのパス。feature の外なら `None`
     """
@@ -145,7 +150,7 @@ def feature_of(path: str) -> str | None:
         return None
     parts = path.split("/")
     for index in range(len(parts) - 3, 0, -1):
-        if parts[index] == FEATURES_FOLDER:
+        if parts[index] == FEATURES_FOLDER and index % 2 == 1:
             return "/".join(parts[: index + 2])
     return None
 
@@ -155,9 +160,24 @@ def nests(outer: str, inner: str) -> bool:
 
     @param outer 外側の feature のフォルダのパス
     @param inner 内側にいるか確かめる feature のフォルダのパス
-    @returns `inner` が `outer` の中にあれば真
+    @returns `inner` が `outer` の中にあれば真（孫より下も含む）
     """
     return inner.startswith(f"{outer}/")
+
+
+def is_child(parent: str, child: str) -> bool:
+    """その feature が、もう一方の feature の**直接の**子かを答える。
+
+    孫まで通すと、間の feature の公開 API を飛び越えて名指しできてしまう。
+
+    @param parent 親の feature のフォルダのパス
+    @param child 直接の子か確かめる feature のフォルダのパス
+    @returns `child` が `parent/features/<名前>` なら真
+    """
+    if not child.startswith(f"{parent}/"):
+        return False
+    rest = child[len(parent) + 1 :].split("/")
+    return len(rest) == 2 and rest[0] == FEATURES_FOLDER
 
 
 def is_top_level(feature: str) -> bool:
@@ -172,7 +192,7 @@ def is_top_level(feature: str) -> bool:
 def wrong_direction(owner: str | None, reached: str) -> str:
     """feature をまたぐ import の向きが規約どおりかを答える。
 
-    読んでよいのは**親から子**だけ（`rules/architecture.md`「依存方向のルール」）。
+    読んでよいのは**親から直接の子**だけ（`rules/architecture.md`「依存方向のルール」）。
     feature の外（`app/` など）からは、入れ子になっていない feature だけを名指しできる。
 
     @param owner import を書いているファイルが属する feature。feature の外なら `None`
@@ -183,10 +203,12 @@ def wrong_direction(owner: str | None, reached: str) -> str:
         if is_top_level(reached):
             return ""
         return f"{reached} は入れ子の feature（読めるのは親だけ）"
-    if nests(owner, reached):
+    if is_child(owner, reached):
         return ""
     if nests(reached, owner):
         return f"{reached} は親の feature（向きは親 → 子の一方向）"
+    if nests(owner, reached):
+        return f"{reached} は孫より下の feature（間の feature の公開口を通す）"
     return f"{reached} は兄弟の feature（兄弟を組めるのは親だけ）"
 
 

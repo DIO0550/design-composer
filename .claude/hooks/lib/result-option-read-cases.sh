@@ -50,15 +50,8 @@ verdict() {
   fi
 }
 
-report() {
-  local expected="$1" decision="$2" label="$3"
-  if [ "$decision" = "$expected" ]; then
-    printf 'ok   %-4s %s\n' "$expected" "$label"
-    return 0
-  fi
-  printf 'NG   expected=%s got=%s  %s\n' "$expected" "$decision" "$label"
-  failed=1
-}
+verdict_width=4
+. "$lib_dir/cases-report.sh"
 
 while IFS='|' read -r expected label source; do
   [ -n "$source" ] || continue
