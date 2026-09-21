@@ -171,7 +171,7 @@ bash harness/records/count-cases.sh                             # 集計の判�
 bash .claude/hooks/lib/canary-cases.sh                          # カナリアの判定表
 ```
 
-- **下の 12 個は `pnpm` のスクリプトに無い。** `rules-check` と同じ 8 つは git hooks
+- **下の 12 個は `pnpm` のスクリプトに無い。** `rules-check` と同じ 9 つは git hooks
   (道具が揃わない環境では飛ぶ)と CI が、`check-added-*` とその判定表の 3 つは git hooks と
   CI の `lint-suppress` ジョブだけが走らせるので、この 12 行を省くと手元の確認がゲートより
   狭くなる。**doc コメントとテスト規約が CI へ上げられたのは、層 2 と層 3 が
