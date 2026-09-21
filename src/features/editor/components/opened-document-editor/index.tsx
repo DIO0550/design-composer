@@ -12,6 +12,11 @@ import type { OpenedDocument } from "@/domains/session/opened-document";
 import { SelectionDigs } from "@/domains/session/selection-dig";
 import type { TokenSelection } from "@/domains/session/token-selection";
 import {
+  type AssetGrab,
+  AssetsPanel,
+  CreateComponent,
+} from "@/features/assets";
+import {
   ArtboardCanvas,
   CanvasToolbar,
   type CanvasViewControl,
@@ -62,8 +67,14 @@ import {
 } from "@/features/editor/hooks/use-token-actions";
 import type { OpenedContextMenu } from "@/features/editor/types/OpenedContextMenu";
 import { PropertyPanel } from "@/features/inspector";
-import { LeftPane, type LeftPaneView, LeftPaneViews } from "@/features/sidebar";
-import { TokenDashedNodes, TokenEditor } from "@/features/tokens";
+import {
+  LayersPanel,
+  LeftPane,
+  type LeftPaneView,
+  type LeftPaneViewContent,
+  LeftPaneViews,
+} from "@/features/sidebar";
+import { TokenDashedNodes, TokenEditor, TokenList } from "@/features/tokens";
 import type { Clock } from "@/libs/clock";
 import type { DocumentIpc } from "@/libs/document-ipc";
 import { Option } from "@/utils/Option";
@@ -139,6 +150,97 @@ function rightPaneParts({
     case LeftPaneViews.Assets:
       return inspector;
   }
+}
+
+/**
+ * 左ペインの行き先ごとの中身（器は `features/sidebar` の `LeftPane`）。
+ *
+ * 器ではなくここで組むのは、中身が `features/assets` / `features/tokens` に属しており、
+ * 器に持たせると器がそれらへ依存するため。
+ *
+ * @returns 行き先ごとの中身。Layers なら artboard の一覧とツリー、Assets ならパレットと
+ *   部品化のフッター、Tokens ならトークン一覧。検索欄を持つのは Layers と Assets
+ */
+function leftPaneContents({
+  selection,
+  tokenSelection,
+  renaming,
+  isFrozen,
+  node,
+  artboard,
+  token,
+  grab,
+}: Readonly<{
+  selection: DocumentSelection;
+  tokenSelection: TokenSelection;
+  /** 今その名前を編集しているもの。編集していなければ不在 */
+  renaming: Option<string>;
+  /** ファイルが不正で編集を受け付けないか */
+  isFrozen: boolean;
+  node: NodeActions;
+  artboard: ArtboardActions;
+  token: TokenActions;
+  grab: AssetGrab;
+}>): Readonly<Record<LeftPaneView, LeftPaneViewContent>> {
+  return {
+    [LeftPaneViews.Layers]: {
+      kind: "searchable",
+      search: "Search layers",
+      /*
+        UI 案（docs/Design Composer.html）の `Layers` パネルは、見出しの直下に検索欄を
+        置き、その下に artboard の一覧と、選んだ 1 枚の中身を並べる。プリミティブを挿す
+        入口はキャンバスに浮かぶツールバーが持ち、部品はパレットの行を掴んで落とすので、
+        どちらもここには並べない。
+      */
+      body: (query) => (
+        <LayersPanel
+          query={query}
+          selection={selection}
+          renaming={renaming}
+          artboard={artboard}
+          node={node}
+          rename={{
+            startAt: node.startRenamingAt,
+            commit: node.rename,
+            finish: node.finishRenaming,
+            cancel: node.cancelRenaming,
+          }}
+        />
+      ),
+      footer: Option.none,
+    },
+    [LeftPaneViews.Assets]: {
+      kind: "searchable",
+      search: "Search assets",
+      body: (query) => (
+        <AssetsPanel
+          query={query}
+          assets={DesignDocument.componentAssets(selection.document)}
+          sourceName={DocumentSelection.sourceName(selection)}
+          grab={grab}
+        />
+      ),
+      footer: Option.some(
+        <CreateComponent
+          document={selection.document}
+          singleName={DocumentSelection.singleName(selection)}
+          isFrozen={isFrozen}
+          onCreate={node.createComponent}
+        />,
+      ),
+    },
+    [LeftPaneViews.Tokens]: {
+      kind: "unsearchable",
+      body: (
+        <TokenList
+          selection={tokenSelection}
+          onSelectToken={token.select}
+          onAddToken={token.add}
+        />
+      ),
+      footer: Option.none,
+    },
+  };
 }
 
 /** キャンバス下端に出すもの。ファイルが不正な状態と、編集を続けられる状態の 2 つ。 */
@@ -380,23 +482,20 @@ function EditorPanes({
           <LeftPane
             view={leftPaneView}
             onSelectView={setLeftPaneView}
-            selection={documentSelection}
-            renaming={EditorState.renamingName(state)}
-            tokenSelection={tokenSelection}
             isFrozen={isFrozen}
-            artboard={artboard}
-            node={node}
-            rename={{
-              startAt: node.startRenamingAt,
-              commit: node.rename,
-              finish: node.finishRenaming,
-              cancel: node.cancelRenaming,
-            }}
-            token={token}
-            grab={{
-              dragged: nodeDrag.carriedTemplate,
-              onGrab: nodeDrag.grabTemplate,
-            }}
+            contents={leftPaneContents({
+              selection: documentSelection,
+              tokenSelection,
+              renaming: EditorState.renamingName(state),
+              isFrozen,
+              node,
+              artboard,
+              token,
+              grab: {
+                dragged: nodeDrag.carriedTemplate,
+                onGrab: nodeDrag.grabTemplate,
+              },
+            })}
           />
         </EditorLayout.LeftPane>
         <EditorLayout.CenterPane>
