@@ -6,13 +6,18 @@
 層と方向の対（`services/` → `features/` のように、呼び出し元と禁止パターンが静的に決まる
 もの）は `.oxlintrc.json` の `no-restricted-imports` が見るので、ここでは扱わない。
 
-報告する違反は 5 つ。
+報告する違反は 6 つ。
 
+- `feature-direction` — feature をまたぐ import の向きが親 → 子になっていない
 - `feature-public-api` — feature の外から、その feature の公開口以外を読んでいる
 - `module-public-api` — `index.ts` を持つフォルダの内部を、そのフォルダの外から読んでいる
 - `domains-category` — `src/domains/` のモジュールがカテゴリのフォルダの下にいない
 - `import-cycle` — ファイル単位の循環
 - `feature-cycle` — feature 単位の循環
+
+**feature は入れ子にできる。** `features/<親>/features/<子>/` に置いた子 feature を読んで
+よいのは親だけで、兄弟同士・子から親・feature の外から子への名指しはすべて
+`feature-direction` になる（`rules/architecture.md`「依存方向のルール」）。
 
 **入れ子のモジュールフォルダは、それ自体が公開 API を持つ。** `index.ts` に解決される
 import は `module-public-api` の違反にしない。`libs/<x>/fake/index.ts`（`rules/testing.md`
@@ -41,17 +46,19 @@ from ts_sources import report, run, source_files
 ALIAS = "@/"
 ALIAS_ROOT = "src"
 
-# feature 層の位置。この直下で `index.ts` を持つフォルダを 1 つの feature として数える。
+# feature 層の位置。この直下のフォルダを 1 つの feature として数える。
 FEATURES_ROOT = f"{ALIAS_ROOT}/features"
+
+# feature を並べるフォルダの名前。feature の中にもう 1 段置くと、そこが子 feature になる。
+FEATURES_FOLDER = "features"
 
 # ドメイン層の位置。この直下はカテゴリのフォルダで、モジュールはその下に置く。
 DOMAINS_ROOT = f"{ALIAS_ROOT}/domains"
 
 # `import ... from "X"` / `export ... from "X"` / `import("X")` の X を、行番号付きで拾う。
 #
-# 型だけの import も一緒に拾う。循環で困るのは実行時のロード順ではなく設計の向きで
-# （`features/canvas/index.ts` の doc が「canvas -> editor の辺を作ると循環する」という
-# 不変条件を書いている）、型だけの import でもその向きは逆転するため。
+# 型だけの import も一緒に拾う。困るのは実行時のロード順ではなく設計の向き（子 feature が
+# 親を読んでいないか・兄弟を読んでいないか）で、型だけの import でもその向きは逆転するため。
 SPECIFIER = re.compile(r'(?:from|import)\s*\(?\s*"([^"]+)"')
 
 # コメント行の始まり。doc に import のパスを書く箇所があるので、実 import と数えない。
@@ -121,35 +128,79 @@ def imports_of(path: str, files: set[str]) -> list[tuple[int, str]]:
 
 
 def feature_of(path: str) -> str | None:
-    """そのファイルが属する feature の名前を求める。
+    """そのファイルが属する feature のフォルダを求める。
 
     「`index.ts` を持つフォルダだけを feature と数える」形にはしない。公開 API を
     持たないフォルダを feature 層の直下に作ったときに、そこだけ検査から外れるため
     （外れると、そこを踏み台にして他 feature の内部を読めてしまう）。
 
+    入れ子のときは**いちばん深い** feature を返す。`features/` の次がファイルそのもの
+    （`features/<親>/features/foo.ts`）なら、それは feature ではなく親の持ち物なので
+    数えない。
+
     @param path 対象のファイルのパス
-    @returns 属する feature の名前。feature の外なら `None`
+    @returns 属する feature のフォルダのパス。feature の外なら `None`
     """
+    if not path.startswith(f"{FEATURES_ROOT}/"):
+        return None
     parts = path.split("/")
-    if len(parts) > 3 and f"{parts[0]}/{parts[1]}" == FEATURES_ROOT:
-        return parts[2]
+    for index in range(len(parts) - 3, 0, -1):
+        if parts[index] == FEATURES_FOLDER:
+            return "/".join(parts[: index + 2])
     return None
 
 
-def is_feature_entry(target: str, name: str) -> bool:
+def nests(outer: str, inner: str) -> bool:
+    """その feature が、もう一方の feature を内側に持つかを答える。
+
+    @param outer 外側の feature のフォルダのパス
+    @param inner 内側にいるか確かめる feature のフォルダのパス
+    @returns `inner` が `outer` の中にあれば真
+    """
+    return inner.startswith(f"{outer}/")
+
+
+def is_top_level(feature: str) -> bool:
+    """その feature が feature 層の直下にいるかを答える。
+
+    @param feature feature のフォルダのパス
+    @returns 入れ子になっていなければ真
+    """
+    return "/" not in feature[len(FEATURES_ROOT) + 1 :]
+
+
+def wrong_direction(owner: str | None, reached: str) -> str:
+    """feature をまたぐ import の向きが規約どおりかを答える。
+
+    読んでよいのは**親から子**だけ（`rules/architecture.md`「依存方向のルール」）。
+    feature の外（`app/` など）からは、入れ子になっていない feature だけを名指しできる。
+
+    @param owner import を書いているファイルが属する feature。feature の外なら `None`
+    @param reached import 先が属する feature
+    @returns 向きが規約に反する理由。規約どおりなら空文字
+    """
+    if owner is None:
+        if is_top_level(reached):
+            return ""
+        return f"{reached} は入れ子の feature（読めるのは親だけ）"
+    if nests(owner, reached):
+        return ""
+    if nests(reached, owner):
+        return f"{reached} は親の feature（向きは親 → 子の一方向）"
+    return f"{reached} は兄弟の feature（兄弟を組めるのは親だけ）"
+
+
+def is_feature_entry(target: str, feature: str) -> bool:
     """その import 先が feature の公開口かを答える。
 
     @param target import 先のファイルのパス
-    @param name その feature の名前
+    @param feature その feature のフォルダのパス
     @returns 本番の `index.ts` か、テスト用の公開口なら真
     """
     if os.path.basename(target) not in INDEX_NAMES:
         return False
     folder = os.path.dirname(target)
-    entries = (
-        f"{FEATURES_ROOT}/{name}",
-        *(f"{FEATURES_ROOT}/{name}/{sub}" for sub in TEST_ENTRY_FOLDERS),
-    )
+    entries = (feature, *(f"{feature}/{sub}" for sub in TEST_ENTRY_FOLDERS))
     return folder in entries
 
 
@@ -224,9 +275,13 @@ def classify(importer: str, target: str, modules: set[str]) -> tuple[str, str]:
     """
     owner = feature_of(importer)
     reached = feature_of(target)
-    # 自分の feature の中は素通り。外から入る辺だけを、その feature の公開口に絞る。
+    # 自分の feature の中は素通り。外から入る辺だけを、向きと公開口の 2 段で絞る。
     enters_other_feature = reached is not None and owner != reached
     if enters_other_feature:
+        # 向きを先に見る。向きが規約に反しているなら、公開口かどうかは問題にならない。
+        misdirected = wrong_direction(owner, reached)
+        if misdirected:
+            return ("feature-direction", misdirected)
         if is_feature_entry(target, reached):
             return ("", "")
         # 他 feature の内部への import は module-public-api にも当たるが、feature の
@@ -279,6 +334,7 @@ def scan(root: Path) -> int:
     modules = module_folders(paths)
     graph = {path: imports_of(path, files) for path in paths}
 
+    misdirected: list[str] = []
     crossing: list[str] = []
     bypassing: list[str] = []
     feature_edges: dict[str, list[str]] = {}
@@ -289,10 +345,13 @@ def scan(root: Path) -> int:
             if owner is not None and reached is not None and owner != reached:
                 feature_edges.setdefault(owner, []).append(reached)
             kind, reason = classify(importer, target, modules)
-            if kind == "feature-public-api":
-                crossing.append(f"{importer}:{number} -> {target}（{reason}）")
-            elif kind == "module-public-api":
-                bypassing.append(f"{importer}:{number} -> {target}（{reason}）")
+            found = {
+                "feature-direction": misdirected,
+                "feature-public-api": crossing,
+                "module-public-api": bypassing,
+            }.get(kind)
+            if found is not None:
+                found.append(f"{importer}:{number} -> {target}（{reason}）")
 
     file_cycles = [" -> ".join(c) for c in cycles_in({k: [t for _, t in v] for k, v in graph.items()})]
     feature_cycles = [" -> ".join(c) for c in cycles_in(feature_edges)]
@@ -300,6 +359,7 @@ def scan(root: Path) -> int:
     uncategorized = uncategorized_domains(modules)
 
     for kind, lines in (
+        ("feature-direction", misdirected),
         ("feature-public-api", crossing),
         ("module-public-api", bypassing),
         ("domains-category", uncategorized),
@@ -308,7 +368,14 @@ def scan(root: Path) -> int:
     ):
         if lines:
             report(kind, lines)
-    total = len(crossing) + len(bypassing) + len(uncategorized) + len(file_cycles) + len(feature_cycles)
+    total = (
+        len(misdirected)
+        + len(crossing)
+        + len(bypassing)
+        + len(uncategorized)
+        + len(file_cycles)
+        + len(feature_cycles)
+    )
     print(f"import 規約の違反 {total} 件 / {len(paths)} ファイル")
     return 1 if total else 0
 

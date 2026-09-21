@@ -44,6 +44,9 @@ if python3_usable; then
   echo "pre-push: import 規約"
   python3 .claude/hooks/lib/import-rule-violations.py src
 
+  echo "pre-push: import 規約の判定表"
+  bash .claude/hooks/lib/import-rule-cases.sh
+
   echo "pre-push: 判別子の直読み"
   python3 .claude/hooks/lib/result-option-read-violations.py src
 
@@ -65,7 +68,7 @@ if python3_usable; then
   echo "pre-push: 追加された分の検査の判定表"
   bash .github/scripts/check-added-cases.sh
 else
-  echo "pre-push: python3 が使えないため doc コメント / import 規約 / 判別子の直読み(と判定表) / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加された分の検査の判定表 は飛ばします"
+  echo "pre-push: python3 が使えないため doc コメント / import 規約(と判定表) / 判別子の直読み(と判定表) / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加された分の検査の判定表 は飛ばします"
 fi
 
 # 行数の予算(AGENTS.md「常時ロードは増やさない」)。実測と予算がずれていれば落ちる。

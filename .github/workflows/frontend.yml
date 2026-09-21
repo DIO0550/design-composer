@@ -150,6 +150,9 @@ jobs:
       - name: 集計の判定表
         run: bash harness/records/count-cases.sh
 
+      - name: import 規約の判定表
+        run: bash .claude/hooks/lib/import-rule-cases.sh
+
       - name: 判別子の直読みの判定表
         run: bash .claude/hooks/lib/result-option-read-cases.sh
 
