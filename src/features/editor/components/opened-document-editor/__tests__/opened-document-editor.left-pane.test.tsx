@@ -53,7 +53,7 @@ test("Assets から Layers に戻すとツリーが出る", async () => {
 });
 
 /*
- * 検索欄は器（`LeftPanePanel`）が持ち、語は中身へ渡って一覧とツリーを絞る
+ * 検索欄は器（`LeftPanePanel`）が持ち、語は中身へ渡って一覧・ツリーとパレットを絞る
  * （docs/06-ui.md「絞り込み」）。欄と絞り込みが別のモジュールに分かれたので、
  * 打って絞られるまでが通るのはここだけ。
  */
@@ -66,6 +66,20 @@ test("Layers の検索欄に打つと、一致しないツリーの行が消え�
   );
 
   expect(rowNames(tree())).toEqual(["home-title"]);
+});
+
+test("Assets の検索欄に打つと、一致しない部品の行が消える", async () => {
+  await renderOpenedDocument();
+  await goTo(LeftPaneViews.Assets);
+
+  await userEvent.type(
+    screen.getByRole("searchbox", { name: "Search assets" }),
+    "primary-button",
+  );
+
+  // 残る側を先に見る。パレットごと消えても通る assert にしない
+  expect(within(leftPane()).getByText("primary-button")).toBeDefined();
+  expect(within(leftPane()).queryByText("card")).toBeNull();
 });
 
 test("Assets へ行って Layers に戻ると検索語が空に戻る", async () => {
