@@ -1,0 +1,1 @@
+import{n as e}from"./chunk-BneVvdWh.js";import{n as t,t as n}from"./Option-CPpfsGoD.js";function r(e){return{dragged:n.some({kind:`instance`,componentName:e}),onGrab:()=>{}}}var i=e((()=>{t()}));function a(e={}){return{dragged:n.none,onGrab:()=>{},...e}}var o=e((()=>{t(),i()}));export{a as n,r,o as t};
