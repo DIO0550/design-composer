@@ -460,6 +460,31 @@
     "name": "保存中"
   },
   {
+    "id": "features-editor-features-sidebar-leftpane--assets",
+    "title": "features/editor/features/sidebar/LeftPane",
+    "name": "Assets（フッターを持つ行き先）"
+  },
+  {
+    "id": "features-editor-features-sidebar-leftpane--layers",
+    "title": "features/editor/features/sidebar/LeftPane",
+    "name": "Layers（ツリー）"
+  },
+  {
+    "id": "features-editor-features-sidebar-leftpane--layers-frozen",
+    "title": "features/editor/features/sidebar/LeftPane",
+    "name": "Layers（凍結中）"
+  },
+  {
+    "id": "features-editor-features-sidebar-leftpane--layers-selected",
+    "title": "features/editor/features/sidebar/LeftPane",
+    "name": "Layers（ノードを選択中）"
+  },
+  {
+    "id": "features-editor-features-sidebar-leftpane--tokens",
+    "title": "features/editor/features/sidebar/LeftPane",
+    "name": "Tokens（検索欄を持たない行き先）"
+  },
+  {
     "id": "features-editor-openeddocumenteditor--absolute-node",
     "title": "features/editor/OpenedDocumentEditor",
     "name": "絶対配置のノードがある編集画面"
@@ -783,36 +808,6 @@
     "id": "features-sidebar-layerspanel--no-match",
     "title": "features/sidebar/LayersPanel",
     "name": "一致するものがない"
-  },
-  {
-    "id": "features-sidebar-leftpane--assets",
-    "title": "features/sidebar/LeftPane",
-    "name": "Assets（部品のパレット）"
-  },
-  {
-    "id": "features-sidebar-leftpane--assets-grabbed",
-    "title": "features/sidebar/LeftPane",
-    "name": "Assets（行を掴んで運んでいる）"
-  },
-  {
-    "id": "features-sidebar-leftpane--layers",
-    "title": "features/sidebar/LeftPane",
-    "name": "Layers（ツリー）"
-  },
-  {
-    "id": "features-sidebar-leftpane--layers-frozen",
-    "title": "features/sidebar/LeftPane",
-    "name": "Layers（凍結中）"
-  },
-  {
-    "id": "features-sidebar-leftpane--layers-selected",
-    "title": "features/sidebar/LeftPane",
-    "name": "Layers（ノードを選択中）"
-  },
-  {
-    "id": "features-sidebar-leftpane--tokens",
-    "title": "features/sidebar/LeftPane",
-    "name": "Tokens（トークン一覧）"
   },
   {
     "id": "features-sidebar-leftpanerail--assets",
