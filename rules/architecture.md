@@ -32,10 +32,10 @@ features/<feature-name>/
 
 ## 配置の判断基準
 
-- ドメインオブジェクトはまず `features/<x>/domains/` に置き、**2つ以上の feature が必要としたら昇格**させる(重複実装は禁止)。昇格先は**それを使う feature すべてを含むいちばん内側**で、子 feature どうしなら親の `features/<親>/domains/`、トップレベルの feature をまたぐなら `src/domains/<カテゴリ>/`
+- ドメインオブジェクトはまず `features/<x>/domains/` に置き、**2つ以上の feature が必要としたら `src/domains/<カテゴリ>/` に昇格**させる(重複実装は禁止)。子 feature どうしで共有するものも同じで、**親の `domains/` へは上げない**(子から親は import できない → 「依存方向のルール」)
 - ロジックを持たない純粋な型定義は `types/`(汎用は `src/types/`、feature 固有は `features/<x>/types/`)に置く。`domains/` に置いてよいのは型 + 同名コンパニオンオブジェクトが揃ったものだけ(→ `rules/coding.md`「ルール」)
 - I/O(Tauri API・localStorage・fetch・外部ライブラリ)・外部フォーマットの解釈は必ず `src/libs/` 経由
-- ストーリー専用の共有物(器・サンプルデータ)は、**使う範囲がいちばん狭いフォルダの `__stories__/`** に置く(1モジュールの中なら `<モジュール>/__stories__/`、1 feature の中なら `features/<x>/__stories__/`、2つ以上の子 feature が使うなら親の `features/<親>/__stories__/`、トップレベルの feature をまたぐなら `src/components/__stories__/`)。テスト専用の共有ヘルパーを `__tests__/` に置くのと同じ形
+- ストーリー専用の共有物(器・サンプルデータ)は、**使う範囲がいちばん狭いフォルダの `__stories__/`** に置く(1モジュールの中なら `<モジュール>/__stories__/`、1 feature の中なら `features/<x>/__stories__/`、2つ以上の feature が使うなら `src/components/__stories__/`)。**親は子の `__stories__/` を読んでよく、逆は不可**なので、親子で共有するものは子側に置く。テスト専用の共有ヘルパーを `__tests__/` に置くのと同じ形
 - 複数ドメインを組み合わせるロジックで、UIにもI/Oにも依存しないものは `src/services/`。ただし置く前に**帰属先のドメインオブジェクトが無いかを確認する**(後述)
 
 ## ロジックの帰属先
