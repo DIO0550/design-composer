@@ -43,6 +43,32 @@ export type Axis = ValueOf<typeof Axes>;
 Object.values(Axes).flatMap((axis) => /* ... */);
 ```
 
+## `type` — ジェネリクスを入れるか、列挙するか
+
+判断軸は「型が似ているか」ではなく **「誰が型を決めるか」**。**呼び出し件数は判定材料にしない**
+（件数は結果であって理由ではない）。実測（本番コードの `type` / `interface` / トップレベル
+`function` の宣言に限って数えた 21 件）では、この基準に外れるものは無かった。
+
+| 形 | 判断 | なぜ |
+|---|---|---|
+| `ResolvedProps<T extends PrimitiveType>` / `FormatVersionOf<Major extends number>` | **型引数でよい** | 閉じた union に束縛されているが、**どれを入れるかは呼び出し側が決める**。「列挙できる＝直和にせよ」を字義どおり当てると正当なこれらが違反に見える |
+| `DefaultedKeys<P>` / `TokenPropNameOf<T>` / `TokenKindOfProp<P>` | **型引数でよい** | `T` の中を見ているが**型レベルの導出**で、`rules/coding.md`「不正な状態を型で表現できなくする」が推奨している形そのもの。禁じているのは**実行時に** `T` の中身で振り分けること |
+| `IpcCaller<C extends string, E>` | **型引数でよい**（ターボフィッシュが要っても） | `C` は戻り値の関数の引数位置にしか現れず `caller()` の引数から推論できないので、呼び出し 2 箇所とも `TauriIpc.caller<DocumentCommand, DocumentIpcError>` と書く。外すと `command: string` に戻り、コマンドの語彙が開く |
+| `Json.combine6<A, B, C, D, E, F, R>` / `FormatVersion.fromJsonOf<Major>` | **型引数でよい**（呼び出しが 1 箇所でも） | どちらも production の呼び出しは 1 箇所だが、実装は `T` の違いで振る舞いを変えていない。**件数で裁くと正しい型引数が違反に読める**ので、判定材料にしない |
+
+「**穴が 1 つ**」は条件にしない。`Result<T, E>` / `Brand<T, Tag>` / `IpcCaller<C, E>` / `Option.map<T, U>` と、
+穴が複数のものが既に並んでいる。条件になるのは**穴の中身を実行時に見ないこと**だけ。
+
+### `interface` は使わない
+
+TS 公式は形状の継承に `interface extends` を薦めている（衝突を即エラーにできる / 型チェックが速い /
+表示が良い）。**このリポジトリでは採らない。** 対象は `FreezablePaneProps` ほか数件しか無く、
+`interface` の使用は 0 件で、型とコンパニオンオブジェクトを同名で並べる形に揃っているため。
+
+代償は把握しておく。**交差型は衝突すると黙って `never` になり、値を作った時点で初めて気づく。**
+`resolved-props/index.ts` の `Props & Readonly<Record<DefaultedKeys<SchemaPropsOf<T>>, PropValue>>` は
+インデックスシグネチャを持つ型との交差で、この形にいちばん近い。
+
 ## `illegal-state` — 不正な状態が型で作れてしまう
 
 計画検証・実装検証で 1 つずつ当てる形。繰り返し出ている。
