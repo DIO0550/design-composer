@@ -1,8 +1,8 @@
 import { within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
-import { renderedElement } from "@/features/canvas/__tests__";
-import { LeftPaneViews } from "@/features/sidebar";
+import { renderedElement } from "@/features/editor/features/canvas/__tests__";
+import { LeftPaneViews } from "@/features/editor/features/sidebar";
 import {
   canvasPane,
   goTo,

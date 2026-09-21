@@ -1,0 +1,511 @@
+import {
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
+  useReducer,
+} from "react";
+import { ElementNameAttribute } from "@/domains/compiled/compiled-element";
+import type { ChildPlacement } from "@/domains/dcmp/child-placement";
+import type { ChildPosition } from "@/domains/dcmp/child-position";
+import { DesignDocument } from "@/domains/dcmp/design-document";
+import type { NodeTemplate } from "@/domains/session/node-template";
+import { Offset } from "@/domains/unit/offset";
+import { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
+import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
+import {
+  Carrying,
+  DropEdit,
+  type Grab,
+  NodeDrag,
+} from "@/features/editor/features/canvas/domains/node-drag";
+import {
+  type DraggedNode,
+  DropParent,
+  DropZone,
+  InsertionParent,
+} from "@/features/editor/features/canvas/domains/node-drop";
+import {
+  type ParentShift,
+  RepositionTarget,
+} from "@/features/editor/features/canvas/domains/reposition-target";
+import {
+  SideSnap,
+  type SideSnapped,
+} from "@/features/editor/features/canvas/domains/side-snap";
+import { CanvasPointer } from "@/features/editor/features/canvas/utils/CanvasPointer";
+import { DrawnBounds } from "@/features/editor/features/canvas/utils/DrawnBounds";
+import { CanvasDom } from "@/libs/canvas-dom";
+import { ElementEx } from "@/utils/ElementEx";
+import { Option } from "@/utils/Option";
+
+/** ドラッグの進み方（docs/06-ui.md「キャンバス直接操作」の移動・座標の置き直しと、挿入）。 */
+type NodeDragAction =
+  | Readonly<{ type: "grab"; grab: Grab }>
+  | Readonly<{ type: "move"; pointer: Offset; carrying: Carrying }>
+  | Readonly<{ type: "release" }>
+  | Readonly<{ type: "cancel" }>
+  | Readonly<{ type: "consume_click" }>;
+
+/**
+ * アクションの解釈だけを行い、状態の組み立ては NodeDrag に委ねる。
+ *
+ * @param drag 今のドラッグの状態
+ * @param action 解釈するアクション
+ * @returns 遷移後のドラッグの状態
+ */
+function nodeDragReducer(drag: NodeDrag, action: NodeDragAction): NodeDrag {
+  switch (action.type) {
+    case "grab":
+      return NodeDrag.grab(action.grab);
+    case "move":
+      return NodeDrag.moveTo(drag, action.pointer, action.carrying);
+    case "release":
+      return NodeDrag.release(drag);
+    case "cancel":
+    case "consume_click":
+      // 掴んだものを手放して最初の状態へ戻す（取り消しも、click を飲み込んだあとも同じ）。
+      return NodeDrag.create();
+  }
+}
+
+/**
+ * 押された位置から外へ辿ったノード名（キャンバスは名前を属性として残している）。
+ *
+ * @param target イベントが起きた要素
+ * @returns 内側から根へ向かう順のノード名の並び
+ */
+function namesToRoot(target: EventTarget): readonly string[] {
+  return ElementEx.attributeValuesToRoot(target, ElementNameAttribute);
+}
+
+/**
+ * 名前を持つ直下の要素。
+ * コンパイル結果は子ノードを直下の `div` として並び順のまま出すので、DOM の順序が
+ * そのままドキュメント上の順序になる。
+ *
+ * @param element 子を集める親の要素
+ * @returns 名前を持つ直下の要素の並び（DOM の順）
+ */
+function namedChildrenOf(element: Element): readonly Element[] {
+  return Array.from(element.children).filter((child) =>
+    child.hasAttribute(ElementNameAttribute),
+  );
+}
+
+/**
+ * 親と、その直下に並ぶ子の矩形を実測する。
+ *
+ * @param parent 実測する落とし先の親
+ * @returns 親と子の矩形を持つ落とし先の帯。親の要素が画面に無ければ `none`
+ */
+function measureZone(parent: InsertionParent): Option<DropZone> {
+  return Option.map(CanvasDom.elementOf(parent.name), (element) =>
+    DropZone.create(
+      parent,
+      CanvasBounds.ofElement(element),
+      namedChildrenOf(element).map(CanvasBounds.ofElement),
+    ),
+  );
+}
+
+/** 落とし方を決めるのに要るもの（今の掴みと、それを解釈するための材料）。 */
+type DropContext = Readonly<{
+  document: DesignDocument;
+  grab: Grab;
+  view: CanvasView;
+  event: ReactPointerEvent<HTMLElement>;
+}>;
+
+/**
+ * 座標の置き直しに要る実測。
+ *
+ * 単位が 1 つだけ違う: `origin` / `dragged` / `stationary` は実測したままの**画面上の px**、
+ * `shift` だけは書かれる座標へ足す量なので**ドキュメント上の px**（倍率で割り戻し済み）。
+ */
+type RepositionMeasure = Readonly<{
+  shift: ParentShift;
+  /** 今の親の矩形。掴んだ時点の座標はここを原点にしているので、行き先の組み立てに使う。 */
+  origin: CanvasBounds;
+  /** 運んでいるノードの矩形。使うのは大きさだけ（位置は運んでいる間ずれている）。 */
+  dragged: CanvasBounds;
+  /** 揃え先（落とし先の親の枠と、その直下にある運んでいるもの以外の子）。 */
+  stationary: readonly CanvasBounds[];
+}>;
+
+/**
+ * 座標の置き直しに要るものを、落とし先の親を 1 回だけ実測して揃える。
+ *
+ * 親の矩形はドキュメントに書かれていない（`hug` / `fill` があるので大きさも位置もレイア
+ * ウトを通すまで決まらない）ため実測でしか決められない。倍率は実測値に乗るのでドキュメン
+ * ト上の px へ割り戻し、落とし先が今の親と同じでも分岐しない（2 回測ればずれは 0）。
+ *
+ * @param context 割り戻しに使う倍率を持つ今の掴み
+ * @param carried 運んでいるノードと、掴んだ時点の場所
+ * @param dropped 落とし先の親
+ * @returns 置き直しに要る実測。今の親・落とし先・運んでいるノードのどれかが画
+ *   面に無ければ `none`（測れないまま座標を書かない）
+ */
+function measureReposition(
+  context: DropContext,
+  carried: CarriedNode,
+  dropped: DropParent,
+): Option<RepositionMeasure> {
+  const currentBounds = DrawnBounds.measure(carried.at.parentName);
+  // 落とし先だけ `DrawnBounds.measure` に寄せない。直下の子の矩形を集めるのに要素が要る
+  const droppedElement = CanvasDom.elementOf(dropped.name);
+  const dragged = DrawnBounds.measure(carried.name);
+  // 座標を書くにも揃え先を出すにも 3 つとも要るので、1 つでも欠けたら測れなかったとみなす
+  const measurable =
+    Option.isSome(currentBounds) &&
+    Option.isSome(droppedElement) &&
+    Option.isSome(dragged);
+  if (!measurable) {
+    return Option.none;
+  }
+  const droppedBounds = CanvasBounds.ofElement(droppedElement.value);
+  const siblings = namedChildrenOf(droppedElement.value)
+    .filter(
+      (child) => child.getAttribute(ElementNameAttribute) !== carried.name,
+    )
+    .map(CanvasBounds.ofElement);
+  return Option.some({
+    shift: {
+      name: dropped.name,
+      shift: CanvasView.toDocumentOffset(
+        context.view,
+        CanvasBounds.originShift(currentBounds.value, droppedBounds),
+      ),
+    },
+    origin: currentBounds.value,
+    dragged: dragged.value,
+    stationary: [droppedBounds, ...siblings],
+  });
+}
+
+/**
+ * 揃う位置へ寄せる量と、揃った辺に引くガイド線。
+ *
+ * 行き先の矩形は、今の親の左上へ運んだ先の位置を置き、大きさは運んでいるものの実測をその
+ * まま採って組み立てる。位置まで実測から採れないのは、運んでいる間は `translate` でずら
+ * して見せており（`repositionPreviewDeclarations`）**前回の移動分が既に乗っている**ため。
+ *
+ * ずらしても大きさは変わらないので、そちらは実測を使う。ただし回転したノードでは実測が軸に
+ * 平行な外接矩形になるため、寄せの当たりが回る前の形とは変わる。happy-dom はレイアウトを
+ * 持たないのでテストには出ない。
+ *
+ * @param measured 落とし先の実測（寄せの原点・運んでいるものの大きさ・揃え先）
+ * @param movedTo 今の親の左上から見た、運んだ先の画面上の位置
+ * @returns 寄せ量とガイド線（どちらも画面上の px。閾値に届く辺が無ければ寄せ量は
+ *   縦横とも 0・線は無し）
+ */
+function snapAt(measured: RepositionMeasure, movedTo: Offset): SideSnapped {
+  return SideSnap.toSnapped(
+    SideSnap.create(
+      CanvasBounds.placedAt(measured.origin, movedTo, measured.dragged),
+      measured.stationary,
+    ),
+  );
+}
+
+/**
+ * 座標で運んでいるノードと、掴んだ時点でそれがいた親の中の座標。
+ * **これがあることが「このドラッグは座標の置き直しになる」と同じ意味**になる
+ * （パレットの雛形はまだ木に無く、フローのノードは座標を持たない）。
+ */
+type CarriedNode = Readonly<{ name: string; at: ChildPlacement }>;
+
+/**
+ * 今の掴みが座標のドラッグなら、運んでいるノードと今いる場所。
+ *
+ * @param document 配置の引き先になるドキュメント
+ * @param dragged 運んでいるもの
+ * @returns 運んでいるノードと今いる場所。雛形を運んでいる / 座標で動かせないノードを
+ *   運んでいるなら `none`
+ */
+function carriedNode(
+  document: DesignDocument,
+  dragged: DraggedNode,
+): Option<CarriedNode> {
+  if (dragged.kind !== "existing") {
+    return Option.none;
+  }
+  return Option.map(
+    DesignDocument.childPlacementOf(document, dragged.name),
+    (at) => ({ name: dragged.name, at }),
+  );
+}
+
+/**
+ * 掴んでいる絶対配置のノードを、今のポインタまで運んだときの運び方。
+ *
+ * 運んだ量は画面上の移動量を倍率で割り戻したもので（倍率を変えても掴んだ点に追従する）、
+ * そこから書かれる座標と見た目のずらし量を決めるのは `RepositionTarget`。
+ *
+ * **落とせる親がポインタの下に無くても、見た目は追従させる**（ずらし量は原点の
+ * 付け替えを含まないので親が決まらなくても決まる）。追従を止めると、キャンバスの余白へ
+ * 一瞬寄っただけで元の位置へ戻り、運べているのか分からなくなる。
+ *
+ * @param context 今の掴みと、倍率・ポインタ
+ * @param carried 運んでいるノードと、掴んだ時点の座標
+ * @returns 座標を置き直す運び方。親が無い / 親の矩形と運んでいるノードのどれかを
+ *   実測できないときは見た目だけの運び方
+ */
+function repositionCarrying(
+  context: DropContext,
+  carried: CarriedNode,
+): Carrying {
+  const screenDelta = Offset.delta(
+    context.grab.origin,
+    CanvasPointer.offsetOf(context.event),
+  );
+  const parent = DropParent.innermost(
+    context.document,
+    context.grab.dragged,
+    namesToRoot(context.event.target),
+  );
+  const measured = Option.flatMap(parent, (dropped) =>
+    measureReposition(context, carried, dropped),
+  );
+  if (!Option.isSome(measured)) {
+    return Carrying.preview({
+      name: carried.name,
+      offset: RepositionTarget.carriedOffset(
+        carried.at.placement,
+        CanvasView.toDocumentOffset(context.view, screenDelta),
+      ),
+    });
+  }
+  // 寄せ量とガイド線は 1 回の判定から配る（理由は `DropEdit.reposition` の doc）
+
+  const snap = snapAt(
+    measured.value,
+    CanvasView.toScreenPoint(
+      context.view,
+      { x: carried.at.placement.x, y: carried.at.placement.y },
+      screenDelta,
+    ),
+  );
+  // 寄せ量を運んだ量へ畳んでから渡すので、書かれる座標と見た目のずらし量が同じ材料から出る
+  const snapped = Offset.add(screenDelta, snap.offset);
+  return Carrying.droppable(
+    DropEdit.reposition(
+      carried.name,
+      RepositionTarget.create(
+        carried.at.placement,
+        CanvasView.toDocumentOffset(context.view, snapped),
+        measured.value.shift,
+      ),
+      snap.guides,
+    ),
+  );
+}
+
+/**
+ * 掴んでいるものを、今のポインタでツリーへ落とすときの運び方。
+ * 実体は動かさず、落ちる先はドロップ線で見せる。
+ *
+ * @param context 今の掴みと、落とし先を決めるための材料
+ * @returns ツリーへ落とす運び方。親が無い / 帯を実測できないなら何も起きない運び方
+ */
+function intoTreeCarrying(context: DropContext): Carrying {
+  const parent = InsertionParent.innermost(
+    context.document,
+    context.grab.dragged,
+    namesToRoot(context.event.target),
+  );
+  const target = Option.flatMap(parent, (accepted) =>
+    Option.map(measureZone(accepted), (zone) =>
+      DropZone.targetAt(zone, CanvasPointer.offsetOf(context.event)),
+    ),
+  );
+  return Option.isSome(target)
+    ? Carrying.droppable(DropEdit.intoTree(context.grab.dragged, target.value))
+    : Carrying.nothing();
+}
+
+/**
+ * 今の運び方。絶対配置のノードを運んでいるなら座標の置き直し、そうでなければツリーへの
+ * 移動・挿入。
+ *
+ * 運び方を先に決めてから、その経路が要る親だけを解決する。
+ *
+ * **その運び方は実測の成否では変わらない。** 置き直しに決まったあとで実測に失敗したら、
+ * ツリーの移動へ落とさずそのまま「落とせない」にする（落とすと、座標を動かすつもりのド
+ * ラッグが黙って木の並びを書き換える別の編集になる）。
+ *
+ * @param context 今の掴みと、落とし先を決めるための材料
+ * @returns 今の運び方
+ */
+function carryingAt(context: DropContext): Carrying {
+  const carried = carriedNode(context.document, context.grab.dragged);
+  return Option.isSome(carried)
+    ? repositionCarrying(context, carried.value)
+    : intoTreeCarrying(context);
+}
+
+/** 運んでいる間のポインタと、離した直後の `click` を受ける側（3 ペインの器）へ渡す props。 */
+export type NodeDragHandlers = Readonly<{
+  onPointerMove: (event: ReactPointerEvent<HTMLElement>) => void;
+  onPointerUp: () => void;
+  onPointerLeave: () => void;
+  /** 運んだ直後の `click` を飲み込む（選択に使わせない / `NodeDrag` の `dropped`）。 */
+  onClickCapture: (event: ReactMouseEvent<HTMLElement>) => void;
+}>;
+
+/** ドラッグ中の状態と、画面の要素へ渡すハンドラ。 */
+export type NodeDragControl = Readonly<{
+  drag: NodeDrag;
+  /**
+   * 今パレットから運んでいる雛形。掴んだ行の強調とキャンバスのツールバーの点灯がこれで決
+   * まり、運んでいない / 既存ノードを運んでいるなら `none`。
+   *
+   * **この配線を外してもテストは 1 件も落ちない** — 届く先はどちらも class の差し替えだけ
+   * （`asset-row` の強調 / `canvas-toolbar` の `◆` の背景）で、happy-dom では見えない。
+   * 気づく手段は Storybook の視覚差分だけ。
+   */
+  carriedTemplate: Option<NodeTemplate>;
+  /**
+   * 押された位置にある既存ノードを掴む。
+   *
+   * @param event artboard の枠で受けた `pointerdown`
+   * @returns 掴んだ（＝この先の判定へ渡さない）なら `true`。押された位置から根までに
+   *   ドキュメントのノードが 1 つも無ければ `false`（artboard の背景を押したとき）
+   */
+  grabNode: (event: ReactPointerEvent<HTMLElement>) => boolean;
+  dragHandlers: NodeDragHandlers;
+  /** パレットの行から掴む。掴めるものは行が知っているので指定を受け取る。 */
+  grabTemplate: (
+    template: NodeTemplate,
+    event: ReactPointerEvent<HTMLElement>,
+  ) => void;
+}>;
+
+/**
+ * 掴んでキャンバスへ落とす操作を、ツリー上の位置への移動・挿入か、絶対配置のノードの座標
+ * の置き直し（親をまたげば付け替え）として解釈する（docs/06-ui.md「キャンバス直接操作」/
+ * docs/02-data-model.md「基本原則」）。
+ *
+ * このフックが持つのは DOM の実測とイベントの仲介だけ。「どこへ落ちるか」「いつドラッグ
+ * とみなすか」は `node-drop` / `node-drag`、「実測した親のずれからどの座標が書かれるか」
+ * は `reposition-target`、「揃う辺があるならどれだけ寄せるか」は `side-snap` にある。
+ *
+ * @param params 落とし先を決める `document` / `view` と、確定したときに呼ぶ
+ *   `onMove` / `onInsertAt` / `onReposition`
+ * @returns 今のドラッグの状態と、画面の要素へ渡すハンドラ
+ */
+export function useNodeDrag(
+  params: Readonly<{
+    document: DesignDocument;
+    view: CanvasView;
+    onMove: (name: string, to: ChildPosition) => void;
+    onInsertAt: (template: NodeTemplate, at: ChildPosition) => void;
+    onReposition: (name: string, to: ChildPlacement) => void;
+  }>,
+): NodeDragControl {
+  const [drag, dispatch] = useReducer(
+    nodeDragReducer,
+    undefined,
+    NodeDrag.create,
+  );
+
+  const grabNode = (event: ReactPointerEvent<HTMLElement>): boolean => {
+    const name = NodeDrag.grabbableName(
+      params.document,
+      namesToRoot(event.target),
+    );
+    if (!Option.isSome(name)) {
+      return false;
+    }
+    dispatch({
+      type: "grab",
+      grab: {
+        dragged: { kind: "existing", name: name.value },
+        origin: CanvasPointer.offsetOf(event),
+      },
+    });
+    return true;
+  };
+
+  const grabTemplate = (
+    template: NodeTemplate,
+    event: ReactPointerEvent<HTMLElement>,
+  ) => {
+    dispatch({
+      type: "grab",
+      grab: {
+        dragged: { kind: "new", template },
+        origin: CanvasPointer.offsetOf(event),
+      },
+    });
+  };
+
+  const trackPointer = (event: ReactPointerEvent<HTMLElement>) => {
+    const grabbed = NodeDrag.grabbed(drag);
+    if (!Option.isSome(grabbed)) {
+      return;
+    }
+    dispatch({
+      type: "move",
+      pointer: CanvasPointer.offsetOf(event),
+      carrying: carryingAt({
+        document: params.document,
+        grab: grabbed.value,
+        view: params.view,
+        event,
+      }),
+    });
+  };
+
+  /** 届いた編集を、それぞれの受け口へ流す。 */
+  const applyDrop = (edit: DropEdit) => {
+    switch (edit.kind) {
+      case "move":
+        params.onMove(edit.name, edit.target.position);
+        return;
+      case "insert":
+        params.onInsertAt(edit.template, edit.target.position);
+        return;
+      case "reposition":
+        params.onReposition(edit.name, edit.target.to);
+        return;
+    }
+  };
+
+  /**
+   * 離した時点で提示していた落とし方で落とす（最後に届いた移動が決めた編集）。
+   * 誰をどう動かすかは `DropEdit` が持っているので、ここでは運んでいたものを見ない。
+   */
+  const release = () => {
+    const drop = NodeDrag.drop(drag);
+    if (Option.isSome(drop)) {
+      applyDrop(drop.value);
+    }
+    dispatch({ type: "release" });
+  };
+
+  return {
+    drag,
+    carriedTemplate: NodeDrag.carriedTemplate(drag),
+    grabNode,
+    grabTemplate,
+    dragHandlers: {
+      onPointerMove: trackPointer,
+      onPointerUp: release,
+      onPointerLeave: () => dispatch({ type: "cancel" }),
+      /*
+       * 離した直後の `click` は、押した場所と離した場所の最も近い共通の祖先に出る
+       * （Chromium で実測）。離した場所によって枠の中にもキャンバスの土台にもなり、左ペイン
+       * まで運べばこの器そのものになるので、いちばん外側のここで受ける。枠で受けると、枠の
+       * 外で離した回は飲み込めないまま状態が次の `click` まで残る。
+       *
+       * capture で取るのは、bubble では先に枠の `onClick` が選択に使ってしまうため。
+       */
+      onClickCapture: (event) => {
+        if (!NodeDrag.consumesClick(drag)) {
+          return;
+        }
+        event.stopPropagation();
+        dispatch({ type: "consume_click" });
+      },
+    },
+  };
+}

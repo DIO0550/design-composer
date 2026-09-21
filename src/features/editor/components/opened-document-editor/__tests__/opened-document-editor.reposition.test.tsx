@@ -12,7 +12,7 @@ import {
   movePointer,
   pressPointer,
   releasePointer,
-} from "@/features/canvas/__tests__";
+} from "@/features/editor/features/canvas/__tests__";
 import { Option } from "@/utils/Option";
 import {
   drawn,

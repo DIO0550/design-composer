@@ -378,7 +378,7 @@ echo '{"session_id":"probe","tool_name":"Bash","tool_input":{"command":"ls"}}' |
 python3 .claude/hooks/lib/import-rule-violations.py src; echo "exit=$?"   # → 違反 0 件・exit=0
 
 # 他 feature の内部を読むと落ちること(feature-public-api。importer が .tsx)
-printf 'import { CanvasView } from "@/features/canvas/domains/canvas-view";\nexport const Probe = () => <p>{String(CanvasView)}</p>;\n' \
+printf 'import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";\nexport const Probe = () => <p>{String(CanvasView)}</p>;\n' \
   > src/features/editor/probe.tsx
 python3 .claude/hooks/lib/import-rule-violations.py src; echo "exit=$?"   # → [feature-public-api] 1 件・exit=1
 rm src/features/editor/probe.tsx
@@ -407,14 +407,31 @@ printf 'import "./probe-a";\nexport const C = 1;\n' > src/utils/probe-c.ts
 python3 .claude/hooks/lib/import-rule-violations.py src; echo "exit=$?"   # → [import-cycle] 1 件・exit=1
 rm src/utils/probe-a.ts src/utils/probe-b.ts src/utils/probe-c.ts
 
-# feature 単位の閉路が拾えること(feature-cycle。index 経由なので import-cycle には出ない)
-printf 'export { ArtboardCanvas } from "@/features/canvas";\n' > src/features/tokens/probe.ts
-printf 'export { TokensPanel } from "@/features/tokens";\n' > src/features/canvas/probe.ts
-python3 .claude/hooks/lib/import-rule-violations.py src; echo "exit=$?"   # → [feature-cycle] 1 件・exit=1
-rm src/features/tokens/probe.ts src/features/canvas/probe.ts
+# 子 feature 同士が読み合うと落ちること(feature-sibling。公開口を通っていても通さない)
+printf 'export { TokenList } from "@/features/editor/features/tokens";\n' > src/features/editor/features/sidebar/probe.ts
+python3 .claude/hooks/lib/import-rule-violations.py src; echo "exit=$?"   # → [feature-sibling] 1 件・exit=1
+rm src/features/editor/features/sidebar/probe.ts
+
+# 子が親を読むと落ちること(feature-ancestor)
+# 親がその子を読んでいる間は feature-cycle も一緒に出るが、**親が import をやめると
+# cycle は消える**。子から祖先への向きを押さえているのは feature-ancestor のほう。
+printf 'export { EditorScreen } from "@/features/editor";\n' > src/features/editor/features/canvas/probe.ts
+python3 .claude/hooks/lib/import-rule-violations.py src; echo "exit=$?"   # → [feature-ancestor] 1 件 + [feature-cycle] 1 件・exit=1
+rm src/features/editor/features/canvas/probe.ts
+
+# 親から直下の子は通ること(繋ぐのは親、の向き)
+printf 'export { TokenList } from "@/features/editor/features/tokens";\n' > src/features/editor/probe.ts
+python3 .claude/hooks/lib/import-rule-violations.py src; echo "exit=$?"   # → 違反 0 件・exit=0
+rm src/features/editor/probe.ts
+
+# 入れ子が 3 段目になると落ちること(feature-nest-depth。import が 1 つも無くても出る)
+mkdir -p src/features/editor/features/canvas/features/deep
+printf 'export const Probe = 1;\n' > src/features/editor/features/canvas/features/deep/index.ts
+python3 .claude/hooks/lib/import-rule-violations.py src; echo "exit=$?"   # → [feature-nest-depth] 1 件・exit=1
+rm -rf src/features/editor/features/canvas/features
 
 # コメントに書いた import のパスで止まらないこと(doc に綴りを書く箇所があるため)
-printf '// かつては import { CanvasView } from "@/features/canvas/domains/canvas-view"; と書いていた\nexport const Probe = 1;\n' \
+printf '// かつては import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view"; と書いていた\nexport const Probe = 1;\n' \
   > src/features/editor/probe.ts
 python3 .claude/hooks/lib/import-rule-violations.py src; echo "exit=$?"   # → 違反 0 件・exit=0
 rm src/features/editor/probe.ts

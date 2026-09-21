@@ -12,21 +12,6 @@ import type { OpenedDocument } from "@/domains/session/opened-document";
 import { SelectionDigs } from "@/domains/session/selection-dig";
 import type { TokenSelection } from "@/domains/session/token-selection";
 import {
-  ArtboardCanvas,
-  CanvasToolbar,
-  type CanvasViewControl,
-  useCanvasView,
-  useNodeDrag,
-} from "@/features/canvas";
-import {
-  DocumentSyncFailureList,
-  type FileRevertControl,
-  useAutoSave,
-  useDocumentReload,
-  useElapsed,
-  useFileRevert,
-} from "@/features/document-sync";
-import {
   DocumentErrorList,
   DocumentErrorOrigins,
 } from "@/features/editor/components/document-error-list";
@@ -46,6 +31,39 @@ import {
 } from "@/features/editor/domains/edit-menu";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import {
+  type AssetGrab,
+  AssetsPanel,
+  CreateComponent,
+} from "@/features/editor/features/assets";
+import {
+  ArtboardCanvas,
+  CanvasToolbar,
+  type CanvasViewControl,
+  useCanvasView,
+  useNodeDrag,
+} from "@/features/editor/features/canvas";
+import {
+  DocumentSyncFailureList,
+  type FileRevertControl,
+  useAutoSave,
+  useDocumentReload,
+  useElapsed,
+  useFileRevert,
+} from "@/features/editor/features/document-sync";
+import { PropertyPanel } from "@/features/editor/features/inspector";
+import {
+  LayersPanel,
+  LeftPane,
+  type LeftPaneView,
+  type LeftPaneViewContent,
+  LeftPaneViews,
+} from "@/features/editor/features/sidebar";
+import {
+  TokenDashedNodes,
+  TokenEditor,
+  TokenList,
+} from "@/features/editor/features/tokens";
+import {
   type ArtboardActions,
   useArtboardActions,
 } from "@/features/editor/hooks/use-artboard-actions";
@@ -61,9 +79,6 @@ import {
   useTokenActions,
 } from "@/features/editor/hooks/use-token-actions";
 import type { OpenedContextMenu } from "@/features/editor/types/OpenedContextMenu";
-import { PropertyPanel } from "@/features/inspector";
-import { LeftPane, type LeftPaneView, LeftPaneViews } from "@/features/sidebar";
-import { TokenDashedNodes, TokenEditor } from "@/features/tokens";
 import type { Clock } from "@/libs/clock";
 import type { DocumentIpc } from "@/libs/document-ipc";
 import { Option } from "@/utils/Option";
@@ -359,6 +374,76 @@ function EditorPanes({
   );
 
   const isFrozen = EditorState.isFileInvalid(state);
+  /*
+   * 左ペインの行き先ごとの中身。器（`features/sidebar`）は引いて出すだけなので、どの
+   * 子 feature の部品をどの行き先へ出すかはここが決める（`rules/consistency.md`
+   * 「子 feature を繋ぐ方法」）。行き先を 1 つ足すと `Record` が漏れをコンパイル
+   * エラーにする。
+   */
+  /* 掴む側（パレット）と落とす側（キャンバス）の対。`features/assets` が持つ契約。 */
+  const assetGrab: AssetGrab = {
+    dragged: nodeDrag.carriedTemplate,
+    onGrab: nodeDrag.grabTemplate,
+  };
+  const leftPaneViews: Readonly<Record<LeftPaneView, LeftPaneViewContent>> = {
+    [LeftPaneViews.Layers]: {
+      kind: "searchable",
+      searchLabel: "Search layers",
+      footer: Option.none,
+      /*
+        UI 案（docs/Design Composer.html）の `Layers` パネルは、見出しの直下に検索欄を
+        置き、その下に artboard の一覧と、選んだ 1 枚の中身を並べる。プリミティブを挿す
+        入口はキャンバスに浮かぶツールバーが持ち、部品はパレットの行を掴んで落とすので、
+        どちらもここには並べない。
+      */
+      render: (query) => (
+        <LayersPanel
+          query={query}
+          selection={documentSelection}
+          renaming={EditorState.renamingName(state)}
+          artboard={artboard}
+          node={node}
+          rename={{
+            startAt: node.startRenamingAt,
+            commit: node.rename,
+            finish: node.finishRenaming,
+            cancel: node.cancelRenaming,
+          }}
+        />
+      ),
+    },
+    [LeftPaneViews.Assets]: {
+      kind: "searchable",
+      searchLabel: "Search assets",
+      footer: Option.some(
+        <CreateComponent
+          document={documentSelection.document}
+          singleName={DocumentSelection.singleName(documentSelection)}
+          isFrozen={isFrozen}
+          onCreate={node.createComponent}
+        />,
+      ),
+      render: (query) => (
+        <AssetsPanel
+          query={query}
+          assets={DesignDocument.componentAssets(documentSelection.document)}
+          sourceName={DocumentSelection.sourceName(documentSelection)}
+          grab={assetGrab}
+        />
+      ),
+    },
+    [LeftPaneViews.Tokens]: {
+      kind: "plain",
+      footer: Option.none,
+      render: () => (
+        <TokenList
+          selection={tokenSelection}
+          onSelectToken={token.select}
+          onAddToken={token.add}
+        />
+      ),
+    },
+  };
   const rightPane = rightPaneParts({
     view: leftPaneView,
     state,
@@ -380,23 +465,8 @@ function EditorPanes({
           <LeftPane
             view={leftPaneView}
             onSelectView={setLeftPaneView}
-            selection={documentSelection}
-            renaming={EditorState.renamingName(state)}
-            tokenSelection={tokenSelection}
+            views={leftPaneViews}
             isFrozen={isFrozen}
-            artboard={artboard}
-            node={node}
-            rename={{
-              startAt: node.startRenamingAt,
-              commit: node.rename,
-              finish: node.finishRenaming,
-              cancel: node.cancelRenaming,
-            }}
-            token={token}
-            grab={{
-              dragged: nodeDrag.carriedTemplate,
-              onGrab: nodeDrag.grabTemplate,
-            }}
           />
         </EditorLayout.LeftPane>
         <EditorLayout.CenterPane>

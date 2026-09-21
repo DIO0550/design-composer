@@ -4,7 +4,7 @@ import {
   canvasContent,
   canvasSurface,
   stubBounds,
-} from "@/features/canvas/__tests__";
+} from "@/features/editor/features/canvas/__tests__";
 import { drawn, renderOpenedDocument } from "./setup";
 
 /*
