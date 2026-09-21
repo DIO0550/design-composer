@@ -22,6 +22,7 @@ src/
 
 ```
 features/<feature-name>/
+  features/    # この feature の下でだけ使う子 feature(組めるのは親だけ・兄弟は互いを知らない)
   domains/     # この feature 固有のドメインオブジェクト
   components/  # この feature 固有のUI
   hooks/       # この feature 固有のフック
@@ -31,10 +32,10 @@ features/<feature-name>/
 
 ## 配置の判断基準
 
-- ドメインオブジェクトはまず `features/<x>/domains/` に置き、**2つ以上の feature が必要としたら `src/domains/<カテゴリ>/` に昇格**させる(重複実装は禁止)
+- ドメインオブジェクトはまず `features/<x>/domains/` に置き、**2つ以上の feature が必要としたら昇格**させる(重複実装は禁止)。昇格先は**それを使う feature すべてを含むいちばん内側**で、子 feature どうしなら親の `features/<親>/domains/`、トップレベルの feature をまたぐなら `src/domains/<カテゴリ>/`
 - ロジックを持たない純粋な型定義は `types/`(汎用は `src/types/`、feature 固有は `features/<x>/types/`)に置く。`domains/` に置いてよいのは型 + 同名コンパニオンオブジェクトが揃ったものだけ(→ `rules/coding.md`「ルール」)
 - I/O(Tauri API・localStorage・fetch・外部ライブラリ)・外部フォーマットの解釈は必ず `src/libs/` 経由
-- ストーリー専用の共有物(器・サンプルデータ)は、**使う範囲がいちばん狭いフォルダの `__stories__/`** に置く(1モジュールの中なら `<モジュール>/__stories__/`、1 feature の中なら `features/<x>/__stories__/`、2つ以上の feature が使うなら `src/components/__stories__/`)。テスト専用の共有ヘルパーを `__tests__/` に置くのと同じ形
+- ストーリー専用の共有物(器・サンプルデータ)は、**使う範囲がいちばん狭いフォルダの `__stories__/`** に置く(1モジュールの中なら `<モジュール>/__stories__/`、1 feature の中なら `features/<x>/__stories__/`、2つ以上の子 feature が使うなら親の `features/<親>/__stories__/`、トップレベルの feature をまたぐなら `src/components/__stories__/`)。テスト専用の共有ヘルパーを `__tests__/` に置くのと同じ形
 - 複数ドメインを組み合わせるロジックで、UIにもI/Oにも依存しないものは `src/services/`。ただし置く前に**帰属先のドメインオブジェクトが無いかを確認する**(後述)
 
 ## ロジックの帰属先
@@ -106,8 +107,7 @@ features/<feature-name>/
 - モジュールフォルダ(domains のカテゴリ配下 / services・features の各サブフォルダ、およびその中で分割したサブフォルダ)は `index.ts` を公開APIとする
 - モジュールフォルダの基本形は「`index.ts` + `__tests__/`」。**実装は `index.ts` に直接書く**。複数ファイルへの分割が必要になったら、実装ファイルを1つだけ切り出すのではなく、その時点で**サブフォルダに分割**する(サブフォルダも同じ形を保つ)
 - `.tsx` は**600行まで**(lint の `max-lines` で強制。数えるのは空行とコメントを除いた行。閾値の根拠は `.claude/hooks/README.md`)
-- フォルダ外部からの import は必ず `index.ts` 経由とし、**内部ファイルへの deep import は禁止**
-- `index.ts` から export するのは外部に公開する必要があるものだけに絞る
+- フォルダ外部からの import は必ず `index.ts` 経由とし、**内部ファイルへの deep import は禁止**。`index.ts` から export するのは外部に公開する必要があるものだけに絞る
 
 ## 依存方向のルール(必須要件)
 
@@ -118,8 +118,8 @@ app → features → services → domains
 - `src/domains/<カテゴリ>/<x>/` は他の domain を import してよい(カテゴリの向きに従う・一方向のみ・循環禁止)。services / features / React / Tauri API への依存は禁止
 - **domains から libs への import は `__tests__/` の中だけ許す。** ファイルに載っている綴りを作るのに外部フォーマットの解釈が要り、そこを差し替えるとテストが実物で確かめられなくなるため(`rules/testing.md`「代替してよいのはプロセス外の境界のみ」)。**production 側は 0 件**で、外の語彙が要るなら境界(`libs/`)で詰め替えてドメインの語彙にする
 - `src/services/` は `src/domains/` と `src/types/` と `src/utils/` のみ import 可。React / Tauri API への依存は禁止
-- `features/<x>/` は自分の内部、`src/services/`、`src/domains/`、横断層(`components/` `hooks/` `libs/` `utils/` `types/`)を import 可。**他 feature の import も可**(ただし公開API = その feature の `index.ts` 経由のみ・feature 間の循環参照は禁止)
-- `features/<x>/domains/` は `src/domains/` を import してよいが、他 feature の domains への直接 import は不可(2つ以上の feature が必要とするドメインオブジェクトは昇格させる → 「配置の判断基準」)
+- `features/<x>/` は自分の内部、`src/services/`、`src/domains/`、横断層(`components/` `hooks/` `libs/` `utils/` `types/`)を import 可。**他 feature は自分の子(`features/<x>/features/<y>/`)だけ**を、公開API = その feature の `index.ts` 経由で import 可。**兄弟 feature と親 feature の import は禁止**(兄弟を組み合わせるのは親の仕事。feature の外から入れ子の子を名指しするのも不可)
+- `features/<x>/domains/` は `src/domains/` を import してよいが、親を含む他 feature の domains への直接 import は不可(2つ以上の feature が必要とするドメインオブジェクトは昇格させる → 「配置の判断基準」)
 - `app/` はロジックを持たない。`features/` の呼び出しとルーティング・Provider の組み立てのみ
 - `components/` `hooks/` `utils/` `types/` は domains / services / features を import してはならない(ドメイン知識の流入禁止)
 - `libs/` は外部ライブラリ(`@tauri-apps/*` 等)・`src/types/`・`src/utils/`・`src/domains/` を import 可。`services/` `features/` `components/` `hooks/` への依存は禁止(外部世界とドメインの間の変換に閉じる)。オーケストレーション(複数ドメインを組み合わせる手順)は `libs/` に置かない — それは `services/` の責務
