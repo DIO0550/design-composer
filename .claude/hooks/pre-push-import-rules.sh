@@ -18,4 +18,4 @@ source "$hook_dir/lib/pre-push-detector.sh"
 deny_on_violations \
   "$hook_dir/lib/import-rule-violations.py" \
   "import 規約" \
-  "フォルダ外部からの import は index.ts 経由にし、他 feature は公開口（features/<x>/index.ts、テストは __tests__/index.ts）だけを読んでください（rules/architecture.md「モジュールの公開API」「依存方向のルール」）。"
+  "フォルダ外部からの import は index.ts 経由にし、他 feature は公開口（その feature の index.ts、テストは __tests__/index.ts）だけを読んでください。子 feature を繋ぐのは親だけです（rules/architecture.md「モジュールの公開API」「依存方向のルール」/ rules/consistency.md「feature の構成とネスト」）。"

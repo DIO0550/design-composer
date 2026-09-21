@@ -14,7 +14,7 @@ import {
   movePointer,
   pressPointer,
   stubBounds,
-} from "@/features/canvas/__tests__";
+} from "@/features/editor/features/canvas/__tests__";
 import {
   canvasPane,
   drawn,

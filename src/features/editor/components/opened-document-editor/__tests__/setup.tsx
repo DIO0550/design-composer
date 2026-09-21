@@ -2,13 +2,16 @@ import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { contextMenu } from "@/components/__tests__/context-menu";
 import type { DesignDocument } from "@/domains/dcmp/design-document";
-import { renderedElement } from "@/features/canvas/__tests__";
 import { artboardList, tree } from "@/features/editor/__tests__/pane-regions";
 import {
   SampleDocument,
   SampleDocumentWithDanglingToken,
 } from "@/features/editor/__tests__/sample-document";
-import { type LeftPaneView, LeftPaneViewLabels } from "@/features/sidebar";
+import { renderedElement } from "@/features/editor/features/canvas/__tests__";
+import {
+  type LeftPaneView,
+  LeftPaneViewLabels,
+} from "@/features/editor/features/sidebar";
 import { changeFileExternally } from "@/libs/__tests__/document-change";
 import { ClockFake } from "@/libs/clock/fake";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";

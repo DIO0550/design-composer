@@ -12,26 +12,6 @@ import type { OpenedDocument } from "@/domains/session/opened-document";
 import { SelectionDigs } from "@/domains/session/selection-dig";
 import type { TokenSelection } from "@/domains/session/token-selection";
 import {
-  type AssetGrab,
-  AssetsPanel,
-  CreateComponent,
-} from "@/features/assets";
-import {
-  ArtboardCanvas,
-  CanvasToolbar,
-  type CanvasViewControl,
-  useCanvasView,
-  useNodeDrag,
-} from "@/features/canvas";
-import {
-  DocumentSyncFailureList,
-  type FileRevertControl,
-  useAutoSave,
-  useDocumentReload,
-  useElapsed,
-  useFileRevert,
-} from "@/features/document-sync";
-import {
   DocumentErrorList,
   DocumentErrorOrigins,
 } from "@/features/editor/components/document-error-list";
@@ -51,6 +31,39 @@ import {
 } from "@/features/editor/domains/edit-menu";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import {
+  type AssetGrab,
+  AssetsPanel,
+  CreateComponent,
+} from "@/features/editor/features/assets";
+import {
+  ArtboardCanvas,
+  CanvasToolbar,
+  type CanvasViewControl,
+  useCanvasView,
+  useNodeDrag,
+} from "@/features/editor/features/canvas";
+import {
+  DocumentSyncFailureList,
+  type FileRevertControl,
+  useAutoSave,
+  useDocumentReload,
+  useElapsed,
+  useFileRevert,
+} from "@/features/editor/features/document-sync";
+import { PropertyPanel } from "@/features/editor/features/inspector";
+import {
+  LayersPanel,
+  LeftPane,
+  type LeftPaneView,
+  type LeftPaneViewContent,
+  LeftPaneViews,
+} from "@/features/editor/features/sidebar";
+import {
+  TokenDashedNodes,
+  TokenEditor,
+  TokenList,
+} from "@/features/editor/features/tokens";
+import {
   type ArtboardActions,
   useArtboardActions,
 } from "@/features/editor/hooks/use-artboard-actions";
@@ -66,15 +79,6 @@ import {
   useTokenActions,
 } from "@/features/editor/hooks/use-token-actions";
 import type { OpenedContextMenu } from "@/features/editor/types/OpenedContextMenu";
-import { PropertyPanel } from "@/features/inspector";
-import {
-  LayersPanel,
-  LeftPane,
-  type LeftPaneView,
-  type LeftPaneViewContent,
-  LeftPaneViews,
-} from "@/features/sidebar";
-import { TokenDashedNodes, TokenEditor, TokenList } from "@/features/tokens";
 import type { Clock } from "@/libs/clock";
 import type { DocumentIpc } from "@/libs/document-ipc";
 import { Option } from "@/utils/Option";

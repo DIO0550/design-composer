@@ -3,7 +3,10 @@ import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { rowNames } from "@/components/__tests__/row-names";
 import { SampleDocumentWithDeepBranch } from "@/features/editor/__tests__/sample-document";
-import { hasNoNameField, nameField } from "@/features/sidebar/__tests__";
+import {
+  hasNoNameField,
+  nameField,
+} from "@/features/editor/features/sidebar/__tests__";
 import {
   artboardList,
   drawn,

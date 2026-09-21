@@ -1,8 +1,8 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
-import { renderedElement } from "@/features/canvas/__tests__";
 import { SampleDocumentWithDeepBranch } from "@/features/editor/__tests__/sample-document";
+import { renderedElement } from "@/features/editor/features/canvas/__tests__";
 import { canvasPane, propertyPane, renderOpenedDocument } from "./setup";
 
 /**

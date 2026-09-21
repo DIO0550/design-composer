@@ -1,18 +1,18 @@
 import type { ReactElement } from "react";
 import { OpenedDocuments } from "@/domains/session/opened-documents";
 import {
+  DocumentErrorList,
+  DocumentErrorOrigins,
+} from "@/features/editor/components/document-error-list";
+import { OpenedDocumentEditor } from "@/features/editor/components/opened-document-editor";
+import {
   DocumentOpenFailureBanner,
   DocumentSession,
   type DocumentSessionPorts,
   DocumentStart,
   DocumentTabBar,
   useDocumentSession,
-} from "@/features/document-start";
-import {
-  DocumentErrorList,
-  DocumentErrorOrigins,
-} from "@/features/editor/components/document-error-list";
-import { OpenedDocumentEditor } from "@/features/editor/components/opened-document-editor";
+} from "@/features/editor/features/document-start";
 import {
   KeyShortcutScopeProvider,
   KeyShortcutScopes,

@@ -2,8 +2,8 @@ import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { segmentOf } from "@/components/__tests__/segmented-controls";
-import { renderedElement } from "@/features/canvas/__tests__";
-import { ShorthandLabels } from "@/features/inspector";
+import { renderedElement } from "@/features/editor/features/canvas/__tests__";
+import { ShorthandLabels } from "@/features/editor/features/inspector";
 import {
   canvasPane,
   renderOpenedDocument,

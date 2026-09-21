@@ -23,6 +23,26 @@
 - 既存の `TokenKinds` / `TypographyFields` / `PrimitiveTypes` は配列 + `(typeof X)[number]` の
   まま（#105 で寄せる）
 
+### 語彙と単位を型に出した形
+
+```typescript
+// NG: 任意の文字列が通る
+function create(property: string, value: string): CssDeclaration { /* ... */ }
+
+// OK: 語彙と単位が型に出る
+export type CssProperty = "display" | "flex-direction" | "gap" | "padding" /* ... */;
+export type Px = `${number}px`; // "16" / "16rem" は代入不可
+```
+
+値の集合から union を導出する形（`src/types/ValueOf.ts`）。
+
+```typescript
+export const Axes = { Width: "width", Height: "height" } as const;
+export type Axis = ValueOf<typeof Axes>;
+
+Object.values(Axes).flatMap((axis) => /* ... */);
+```
+
 ## `illegal-state` — 不正な状態が型で作れてしまう
 
 計画検証・実装検証で 1 つずつ当てる形。繰り返し出ている。
@@ -42,6 +62,19 @@
   隣の型と揃っているかを見る
 - **1 つの型に、本来直交する状態が同居する。** ある枝でしか意味を持たないフィールド
   （色トークンにしか無い swatch 等）を共通の親に持たせない
+
+### 状態ごとに持つフィールドを変える
+
+```typescript
+// NG: 「hug なのに長さがある」「fixed なのに長さが無い」が表現できてしまう
+type Size = Readonly<{ mode: "hug" | "fill" | "fixed"; length?: number }>;
+
+// OK: 長さを持つのは fixed のときだけ、が構造に出る
+export type Size =
+  | Readonly<{ mode: "hug" }>
+  | Readonly<{ mode: "fill" }>
+  | Readonly<{ mode: "fixed"; length: number }>;
+```
 
 ### ブランド型
 
@@ -183,3 +216,20 @@ return [...propErrors, ...childErrors, ...refErrors];
 
 **消してはいけない Why**: 型やテストで表現できず、外すと壊れるのに壊れたことに気づけないもの
 （「この `relative` を外すと浮くものが全部ずれるが、テストでは落ちない」）。
+
+## コンパニオンオブジェクトの形
+
+型と同名の const オブジェクトに、生成・判定・変換を集める。
+
+```typescript
+export type Money = Readonly<{
+  amount: number;
+  currency: "JPY" | "USD";
+}>;
+
+export const Money = {
+  create(amount: number, currency: Money["currency"]): Money { /* バリデーション込み */ },
+  add(a: Money, b: Money): Money { /* ... */ },
+  isNegative(money: Money): boolean { /* ... */ },
+} as const;
+```
