@@ -36,7 +36,7 @@ props のバケツリレーが長くなり、中間コンポーネントが自�
 
 ## hooks と UI の分離(headless 原則)
 
-**カスタムフックは JSX を返さない。** state・派生値・ハンドラ・(必要なら DOM に spread する) props オブジェクトだけを返し、JSX の組み立ては呼び出し側コンポーネントが行う。React Aria / TanStack Table / React Hook Form 等が採る "headless" の方針に従う。
+**カスタムフックは UI を認識しない。** JSX・コンポーネント・className・文言・アイコン・レイアウト都合を返さず、state・派生値・ハンドラ・(必要なら DOM に spread する) props オブジェクトだけを返す。JSX の組み立ては呼び出し側コンポーネントが行う。React Aria / TanStack Table / React Hook Form 等が採る "headless" の方針に従う。
 
 - 公開する(再利用される)カスタムフックは必ず headless で書く。UI ライブラリ・マークアップを hook 側で固定しない
 - 例外: **同一コンポーネント内の private な整理**目的で、外に export しない hook が JSX を返すのは許容(ただし `features/<x>/` の外には公開しない)

@@ -58,7 +58,7 @@ React 公式 `useRef` リファレンス("Information that's used for rendering 
 - features/コンポーネント内で同じ hook ロジックが2箇所に現れたらカスタムフックに抽出する
 - **過度な抽象化は禁止**: 1箇所でしか使わない単純な state / handler を「何となく整理するため」だけに公開カスタムフックへ切り出さない
 - カスタムフックは stateful UI ロジックの再利用単位であり、状態そのものの共有手段ではない。複数コンポーネントで同じ状態を共有したい場合は state を lift up し、props または Provider で渡す
-- **UIを認識しない**: JSX、コンポーネント、className、文言、アイコン、レイアウト都合を返さない(`rules/components.md`「headless 原則」)
+- **UIを認識しない**(`rules/components.md`「hooks と UI の分離(headless 原則)」)
 - 配置: `src/hooks/` は汎用のみ。feature 固有のものは `features/<x>/hooks/`
 - 戻り値は使う側が必要とする最小限に絞る
 
