@@ -8,7 +8,7 @@ import {
 import {
   grabbingComponent,
   setupAssetGrab,
-} from "@/features/editor/features/assets/__tests__/asset-grab";
+} from "@/features/editor/features/assets/__stories__/asset-grab";
 import { Option } from "@/utils/Option";
 import { AssetsPanel } from "./index";
 
