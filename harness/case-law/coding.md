@@ -82,6 +82,84 @@ export type ResolvedProps<T extends PrimitiveType> = Props &
 function compile(props: ResolvedProps<"Box">): Style { /* ... */ }
 ```
 
+### 交差型(`&`)の衝突は宣言時に落ちない
+
+同名プロパティの型が両側で食い違うと、その交差型は**黙って `never` になる**。宣言では落ちず、
+代入の時点で初めて落ちる。`interface B extends A` なら同じ衝突が宣言の時点で落ちるが、
+このリポジトリは `src/` の `interface` 宣言が 0 件で、形状の継承は交差型に揃っている。
+
+| | `A & B` | `interface B extends A` |
+|---|---|---|
+| 同名プロパティの型が衝突したとき | 黙って `never`。代入の時点で初めて落ちる | 宣言の時点でエラー(TS2430) |
+| union を継承する | 書ける | できない(TS2312) |
+| 同名の宣言が 2 つあるとき | 重複エラー(TS2300) | 宣言がマージされる |
+
+`interface` へ寄せられないのは **union を継承できない**ため。`KeyShortcut`
+(`KeyModifiers &` きっかけ 2 種の直和)と `DocumentErrorListProps`(由来 3 種の直和)は
+`interface` では書けず、揃えようとするとそこだけ例外になる。
+
+**プロパティ名が重なる位置で書くときは、その名前の型が両側で同じかを見る。** 形状を継承する
+交差型は `PropDefinitionBase & …`・`ArtboardBoxProps`・`ResolvedProps`・`FreezablePaneProps`・
+`Brand<T, Tag> = T & { readonly __brand: Tag }` と複数ある。
+`ArtboardBoxProps = ResolvedProps<"Box"> & Readonly<{ widthMode: "fixed"; … }>` は実際に
+名前が重なっており、左側の `PropValue` が `string | number | boolean` なので今は `never` に
+ならずに済んでいる。
+
+## `signature`
+
+規範は `rules/coding.md`「関数のシグネチャ」。引数の数・同じ型の位置引数・型引数を含む分類で、
+下はそのうち**型引数**の形。
+
+### ジェネリクス: 誰が型を決めるか
+
+(規範の旧い呼び名は「意味のないジェネリクスを付けない」。記録から引くときはこの綴り)
+
+型引数を入れるかどうかは「型が似ているか」では決まらない。**その型を誰が決め、実装がその
+違いで振る舞いを変えるか**で決まる。規範が書いていないのは**見る順番**で、次の順に見る。
+
+1. **実装が `T` の違いで振る舞いを変えるか。** 変えるなら型引数ではない。振る舞いを変えられる
+   ということは、取りうる型を実装側が既に知っている
+2. **呼び出し側がその型を決めているか。** 決めていないなら具体型で書く
+3. **穴が 1 つで、実装が中を見ないか。** そこまで来たものが型引数を入れてよい形
+
+3 を先に見ると、中を見ている型引数が「穴が 1 つ」に見えて通る。枝 1 の直和と「型を 2 つに
+分ける」の境目は**出し分けが要るか**で、1 つの入口が両方を受けて出し分けるなら直和、入口ごと
+に前提が違って出し分けが要らないなら型を 2 つ。
+
+| | 実例 |
+|---|---|
+| NG: 呼び出し側が決めていない | ツリーの `parentName` をフックに持たせると、型引数か 4 つ目の引数が要った。`RowList` が受け取った `index` に自分の `parentName` を足して `onReorder` へ渡す形にすると、フックは index だけを扱えばよくなり型引数が消えた(pr-317 の 25) |
+| OK: 呼び出し側が決める | `slotRecordOf<Slot extends string>(slots: readonly Slot[], …)` — 実装は `Slot` をキーとしてしか触らない。`Sides` と `Corners` のどちらを渡すかは呼び出し側が決める |
+| OK: 渡した手続きが決める | `innermostAccepted<T>(search, resolve: (…) => Option<T>)` — 走査は `T` を運ぶだけ。`dropParentOf` と `insertionParentOf` で `T` が変わる |
+| OK: 実装が中を見ない穴だけで出来ている | `Option<T>` / `Result<T, E>` / `JsonDecoder<T>` |
+
+### 列挙できることは、型引数をやめる理由にならない
+
+枝 1 が見るのは**実装の振る舞い**であって、その型が有限かどうかではない。有限の union を
+境界にした型引数は、**型レベルで対応表を引くための境界**として実在する(次の 3 件はどれも
+実装が `T` で分岐していない)。
+
+- `ResolvedProps<T extends PrimitiveType>` / `ResolvedProps.resolve<T>`
+- `PrimitiveSchema.forType<T extends PrimitiveType>(type: T): (typeof PrimitiveSchemas)[T]`
+- `TokenPropKinds.kindOf<P extends TokenPropName>(prop: P): TokenPropKinds[P]`
+
+この 3 件が `T` の中身を読むこと自体は、`illegal-state` の「処理の通過を型に刻む」にある
+`DefaultedKeys` / `ResolvedProps` と同じ形で、読んでいるのは `as const satisfies` で保存した
+リテラル型。**分岐しているのが型の導出なら型引数のまま、実装の振る舞いなら直和**。
+
+**境界が有限でなくてもよい。** `FormatVersion.fromJsonOf<Major extends number>` の境界は
+`number` で、対応表も引いていない。呼び出し側が決めたリテラルを戻り値
+`JsonDecoded<FormatVersionOf<Major>>` へ運ぶだけなので、型引数のままでよい。呼び出しが
+production で 1 箇所・`Major` が `1` だけでも変わらない。**裁くのは件数ではなく、
+呼び出し側が決めているか**。
+
+### 明示が要る型引数は、無駄な型引数ではない
+
+`IpcCaller<C extends string, E>` は呼び出し 2 箇所(`TauriIpc.caller<DocumentCommand,
+DocumentIpcError>` / `<AppStateCommand, AppStateIpcError>`)とも型引数の明示が要る。`C` は
+戻り値の関数の引数にしか現れないので推論されない。**推論されない = 無駄ではない。** 外すと
+`C` が制約の `string` へ落ち、コマンド名のタイポが型で止まらなくなる。
+
 ## `comment-false-claim` — 主張を確かめずに書いた
 
 書いた時点では**もっともらしく読める**ので、確かめない限り残る。
