@@ -1,7 +1,6 @@
 # アーキテクチャ規約
 
 実例（NG/OK・過去に踏んだ形）は [`harness/case-law/architecture.md`](../harness/case-law/architecture.md)。
-迷ったときと、指摘を受けたときに読む。
 
 ## フォルダ構造(ドメイン + Feature ベース)
 

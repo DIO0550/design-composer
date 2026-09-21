@@ -1,7 +1,6 @@
 # UI表示確認規約
 
 実例（過去に読み違えた形）は [`harness/case-law/ui.md`](../harness/case-law/ui.md)。
-迷ったときと、指摘を受けたときに読む。
 
 ## UIの拠り所は `docs/Design Composer.html`
 

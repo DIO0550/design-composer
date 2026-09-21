@@ -1,7 +1,6 @@
 # コーディング規約
 
 実例（NG/OK・過去に踏んだ形）は [`harness/case-law/coding.md`](../harness/case-law/coding.md)。
-迷ったときと、指摘を受けたときに読む。
 
 ## コンパニオンオブジェクトパターン
 

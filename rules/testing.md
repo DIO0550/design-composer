@@ -3,17 +3,14 @@
 **基本方針: 古典学派(Classicist / Detroit School)でテストを書く。**
 
 実例（NG/OK・過去に踏んだ形）は [`harness/case-law/testing.md`](../harness/case-law/testing.md)。
-迷ったときと、指摘を受けたときに読む。
 
 ## 配置と命名
 
-モジュールフォルダは `index.ts` を公開APIとし、テストは同フォルダ内の `__tests__/` に置く。
-
-**基本形: 1フォルダ = `index.ts` + `__tests__/`。**(詳細は `rules/architecture.md`「モジュールの公開API」。実装は `index.ts` に直接書く)
+テストはモジュールフォルダ内の `__tests__/` に置く(モジュールの形は `rules/architecture.md`「モジュールの公開API」)。
 
 ```
 <モジュールフォルダ>/
-  index.ts                          # 公開API(外部はここからのみ import する)。実装もここに書く
+  index.ts
   __tests__/
     <対象ドメイン名>.<カテゴリ>.test.ts
 ```
