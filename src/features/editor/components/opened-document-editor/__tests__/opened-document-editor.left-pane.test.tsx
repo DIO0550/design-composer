@@ -68,6 +68,23 @@ test("Layers の検索欄に打つと、一致しないツリーの行が消え�
   expect(rowNames(tree())).toEqual(["home-title"]);
 });
 
+/*
+ * `Layers` の対。`AssetsPanel` 自身の絞り込みは `assets-panel.search` が見るので、
+ * ここが見るのは欄からパネルまで語が渡っていること。
+ */
+test("Assets の検索欄に打つと、一致しない部品の行が消える", async () => {
+  await renderOpenedDocument();
+  await goTo(LeftPaneViews.Assets);
+
+  await userEvent.type(
+    screen.getByRole("searchbox", { name: "Search assets" }),
+    "card",
+  );
+
+  expect(within(leftPane()).getByText("card")).toBeDefined();
+  expect(within(leftPane()).queryByText("primary-button")).toBeNull();
+});
+
 test("Assets へ行って Layers に戻ると検索語が空に戻る", async () => {
   await renderOpenedDocument();
   await userEvent.type(
