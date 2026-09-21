@@ -67,7 +67,7 @@ export const Filtered: Story = {
 
 /**
  * 入れ子の深さと並べ替えボタンの出方（先頭には「上へ」、末尾には「下へ」が出ない）を
- * 1 枚で見るための対。共有のサンプルは 3 つの行き先を揃えるためのものなので、
+ * 1 枚で見るための対。共有のサンプルは一覧とツリーの両方から使うものなので、
  * ツリー都合の構造はここに閉じる。
  */
 const NestedSelection = DocumentSelection.fromNames(

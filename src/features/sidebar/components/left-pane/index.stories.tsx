@@ -1,40 +1,89 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { ReactElement } from "react";
 import { fn } from "storybook/test";
-import { TokenSelection } from "@/domains/session/token-selection";
-// 掴む口のサンプルは掴まれる側（features/assets）が持つ。ストーリー専用の値なので
-// features/assets/index.ts（本番の公開 API）には出さず、ストーリー用の公開口から読む。
-import { grabbingComponent, IdleGrab } from "@/features/assets/__stories__";
-import { sampleRenameActions } from "@/features/sidebar/__stories__/sample-rename-actions";
 import {
-  SampleSidebarDocument,
-  sampleSidebarSelection,
-} from "@/features/sidebar/__stories__/sample-sidebar-document";
-import { LeftPaneViews } from "@/features/sidebar/components/left-pane-rail";
-import type { LeftPaneArtboardActions } from "@/features/sidebar/types/LeftPaneArtboardActions";
-import type { LeftPaneNodeActions } from "@/features/sidebar/types/LeftPaneNodeActions";
-import type { LeftPaneTokenActions } from "@/features/sidebar/types/LeftPaneTokenActions";
+  type LeftPaneView,
+  LeftPaneViews,
+} from "@/features/sidebar/components/left-pane-rail";
+import type { LeftPaneViewContent } from "@/features/sidebar/types/LeftPaneViewContent";
 import { Option } from "@/utils/Option";
 import { LeftPane } from "./index";
 
 /**
- * 操作の受け口。ここでは押せることだけ分かればよいので、届いた先での編集は行わない
- * （編集まで通した様子は `OpenedDocumentEditor` のストーリーで見る）。
+ * 中身の代役に並べる行。
+ *
+ * @param label 行の頭に付ける語
+ * @param count 並べる本数
+ * @returns 1 から数えた行の名前の並び
  */
-const SampleNodeActions: LeftPaneNodeActions = {
-  select: fn(),
-  reorder: fn(),
-  createComponent: fn(),
-};
+function sampleRows(label: string, count: number): readonly string[] {
+  return Array.from({ length: count }, (_, index) => `${label} ${index + 1}`);
+}
 
-const SampleArtboardActions: LeftPaneArtboardActions = {
-  add: fn(),
-  reorder: fn(),
-};
+/** 中身の代役。器が出すもの（帯・検索欄・本体・フッター）だけを見たいので行を並べるだけ。 */
+function SampleBody({
+  rows,
+}: Readonly<{ rows: readonly string[] }>): ReactElement {
+  return (
+    <ul className="flex flex-col gap-1 text-gray-700 text-xs">
+      {rows.map((row) => (
+        <li key={row}>{row}</li>
+      ))}
+    </ul>
+  );
+}
 
-const SampleTokenActions: LeftPaneTokenActions = {
-  select: fn(),
-  add: fn(),
-};
+/** フッターの代役。下端に固定されていることが分かればよいので境界線だけ実物に合わせる。 */
+function SampleFooter(): ReactElement {
+  return (
+    <div className="shrink-0 border-[#f0f0f0] border-t p-3 text-gray-700 text-xs">
+      下端に固定するもの
+    </div>
+  );
+}
+
+/**
+ * 行き先ごとの中身の代役。
+ *
+ * 実物（`LayersPanel` / `AssetsPanel` / `TokenList`）は差さない。組み立ては
+ * `opened-document-editor` が持っており、ここへ写すと同じ組み立てが 2 箇所に出る。行き先
+ * ごとの絵は各パネルのストーリーが持つ。
+ *
+ * フッターを持つ行き先の本体だけは、パネルをスクロールさせる長さにしてある。スクロールする
+ * 本体と下端のフッターが同じ絵に載るのはここだけで、実物のパネルのストーリーは殻
+ * （`LeftPaneShell`）に入っていて帯もフッターも持たない。
+ *
+ * @returns 検索欄を持つ行き先・持つうえでフッターも持つ行き先・持たない行き先の 3 つ
+ */
+function sampleContents(): Readonly<Record<LeftPaneView, LeftPaneViewContent>> {
+  return {
+    [LeftPaneViews.Layers]: {
+      kind: "searchable",
+      search: "Search layers",
+      body: (query) => (
+        <SampleBody
+          rows={sampleRows("layer", 6).filter((row) => row.includes(query))}
+        />
+      ),
+      footer: Option.none,
+    },
+    [LeftPaneViews.Assets]: {
+      kind: "searchable",
+      search: "Search assets",
+      body: (query) => (
+        <SampleBody
+          rows={sampleRows("asset", 40).filter((row) => row.includes(query))}
+        />
+      ),
+      footer: Option.some(<SampleFooter />),
+    },
+    [LeftPaneViews.Tokens]: {
+      kind: "unsearchable",
+      body: <SampleBody rows={sampleRows("token", 6)} />,
+      footer: Option.none,
+    },
+  };
+}
 
 const meta = {
   title: "features/sidebar/LeftPane",
@@ -42,15 +91,8 @@ const meta = {
   parameters: { layout: "fullscreen" },
   args: {
     onSelectView: fn(),
-    selection: sampleSidebarSelection(),
-    tokenSelection: TokenSelection.create(SampleSidebarDocument, Option.none),
+    contents: sampleContents(),
     isFrozen: false,
-    renaming: Option.none,
-    artboard: SampleArtboardActions,
-    node: SampleNodeActions,
-    rename: sampleRenameActions(),
-    token: SampleTokenActions,
-    grab: IdleGrab,
   },
   // 実際の幅（レール 56px + パネル 248px）と高さで見ないと、行の詰まり方が分からない。
   decorators: [
@@ -66,49 +108,28 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-export const Layers: Story = {
-  name: "Layers（ツリー）",
+export const Searchable: Story = {
+  name: "検索欄を持つ行き先",
   args: { view: LeftPaneViews.Layers },
 };
 
-export const Assets: Story = {
-  name: "Assets（部品のパレット）",
+/** 検索欄とフッターの両方を持つ行き先。本体がパネルより長く、フッターは下端に残る。 */
+export const SearchableWithFooter: Story = {
+  name: "検索欄とフッターを持つ行き先",
   args: { view: LeftPaneViews.Assets },
 };
 
-export const Tokens: Story = {
-  name: "Tokens（トークン一覧）",
+export const Unsearchable: Story = {
+  name: "検索欄を持たない行き先",
   args: { view: LeftPaneViews.Tokens },
 };
 
 /**
- * パレットの行を掴んでキャンバスへ運んでいる `Assets`。掴んでいる行だけが青くなる。
+ * 外部編集でファイルが壊れているとき。見出しの右端が `凍結中` になる。淡色と操作不可は器
+ * （`EditorLayout.LeftPane`）が持つので、ここには出ない。
  */
-export const AssetsGrabbed: Story = {
-  name: "Assets（行を掴んで運んでいる）",
-  args: {
-    view: LeftPaneViews.Assets,
-    grab: grabbingComponent("primary-button"),
-  },
-};
-
-/**
- * ノードを選んだ状態の `Layers`。行の選択が見える。
- */
-export const LayersSelected: Story = {
-  name: "Layers（ノードを選択中）",
-  args: {
-    view: LeftPaneViews.Layers,
-    selection: sampleSidebarSelection("home-title"),
-  },
-};
-
-/**
- * 外部編集でファイルが壊れているときの `Layers`。見出しの右端が `凍結中` になる。淡色と操
- * 作不可は器（`EditorLayout.LeftPane`）が持つので、ここには出ない。
- */
-export const LayersFrozen: Story = {
-  name: "Layers（凍結中）",
+export const Frozen: Story = {
+  name: "凍結中",
   args: {
     view: LeftPaneViews.Layers,
     isFrozen: true,

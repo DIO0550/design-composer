@@ -5,14 +5,15 @@ import {
 import { DocumentSelection } from "@/domains/session/document-selection";
 
 /**
- * 左ペインのストーリー用のサンプルドキュメント。雛形のトークン・部品に artboard を 2 枚
- * 足してある。
+ * 左ペインの `Layers`（一覧とツリー）のストーリー用のサンプルドキュメント。雛形のトークン
+ * ・部品に artboard を 2 枚足してある。
  *
- * 3 つの行き先が 1 つのドキュメントで揃うようにしていて、Layers は 2 枚の artboard とそ
- * の中身、Assets は雛形の部品、Tokens は雛形のトークンを映す。ツリー都合の構造（入れ子
- * の深さ・並べ替えボタンの出方）はそれを見たいストーリーの側に置く。
+ * artboard を 2 枚にしているのは、一覧の選択とツリーが映す 1 枚の対応を見るため。雛形の
+ * トークンと部品を外さないのは、artboard の props（`gap` / `background` / `typography`）と
+ * 雛形の部品がそれを参照しており、外すと dangling になるため。ツリー都合の構造（入れ子の
+ * 深さ・並べ替えボタンの出方）はそれを見たいストーリーの側に置く。
  */
-export const SampleSidebarDocument = DesignDocument.create({
+const SampleSidebarDocument = DesignDocument.create({
   tokens: DocumentTemplate.Default.tokens,
   components: DocumentTemplate.Default.components,
   artboards: [
