@@ -2,7 +2,8 @@
 """`src/` の TypeScript を走査する検査スクリプトの共通部分。
 
 走査の対象の集め方・報告の形・コマンドラインの受け方は、どの検査でも同じものが要る。
-`import-rule-violations.py` と `result-option-read-violations.py` がこれを読む。
+`import-rule-violations.py` と `result-option-read-violations.py` と
+`story-title-violations.py` がこれを読む。
 
 **ファイル名だけアンダースコア。** `lib/` の綴りはケバブケースだが、ハイフンを含む名前は
 Python のモジュールとして import できない。直接実行されるスクリプトの隣に置いてあるので、
@@ -13,10 +14,14 @@ import re
 import sys
 from pathlib import Path
 
-# 既定の走査ルート。
+# ソースの置き場。走査ルートを省いたときの既定でもあり、`src/` から始まる固定パス
+# （`FEATURES_ROOT` / `import-rule-violations.py` の `ALIAS_ROOT`）の出どころでもある。
 DEFAULT_ROOT = "src"
 
 SOURCE_SUFFIXES = (".ts", ".tsx")
+
+# feature 層の位置。この下で `features/` が続く限り、子 feature として辿る。
+FEATURES_ROOT = f"{DEFAULT_ROOT}/features"
 
 # コメント行の始まり。doc に綴りを書く箇所があるので、実コードと数えない。
 COMMENT_LINE = re.compile(r"^\s*(?://|\*|/\*)")
@@ -36,6 +41,33 @@ def source_files(root: Path) -> list[str]:
         for path in sorted(root.rglob("*"))
         if path.suffix in SOURCE_SUFFIXES and not path.name.endswith(".d.ts")
     ]
+
+
+def feature_of(path: str) -> str | None:
+    """そのファイルが属する、いちばん深い feature のパスを求める。
+
+    「`index.ts` を持つフォルダだけを feature と数える」形にはしない。公開 API を
+    持たないフォルダを feature 層の直下に作ったときに、そこだけ検査から外れるため
+    （外れると、そこを踏み台にして他 feature の内部を読めてしまう）。
+
+    辿るのは `src/features/<x>` から続く `features/<y>` のつながりだけで、パス中の
+    最後の `features/` は見ない。`components/features/` のような偶然のフォルダ名を
+    feature 層と取り違えると、そこから先の検査が丸ごとずれる。
+
+    @param path 対象のファイルのパス
+    @returns 属する feature のパス（`editor` / `editor/features/canvas`）。
+        feature の外なら `None`
+    """
+    parts = path.split("/")
+    if len(parts) <= 3 or f"{parts[0]}/{parts[1]}" != FEATURES_ROOT:
+        return None
+    name = parts[2]
+    rest = parts[3:]
+    # 子 feature は親の直下の `features/` にだけ置ける。
+    while len(rest) > 2 and rest[0] == "features":
+        name = f"{name}/features/{rest[1]}"
+        rest = rest[2:]
+    return name
 
 
 def report(kind: str, lines: list[str]) -> None:

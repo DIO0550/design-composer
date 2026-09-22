@@ -20,6 +20,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `pre-push-doc-comments.sh` | `PreToolUse` (Bash)     | **push 前の doc コメント検査**。`src/` に doc の無い宣言、または `@param` / `@returns` / `@throws` の欠けた doc があれば push をブロック |
 | `pre-push-import-rules.sh` | `PreToolUse` (Bash)     | **push 前の import 規約検査**(rules/architecture.md「モジュールの公開API」「依存方向のルール」)。公開 API を迂回する import・循環参照・カテゴリの外に置かれた domains のモジュールがあれば push をブロック |
 | `pre-push-result-option-reads.sh` | `PreToolUse` (Bash) | **push 前の判別子の直読み検査**(rules/coding.md「エラーと不在の表現」)。`Result` / `Option` の判別子(`ok` / `some`)を、その判別子を型宣言で定義していないファイルで直読みしていれば push をブロック |
+| `pre-push-story-titles.sh` | `PreToolUse` (Bash)     | **push 前の story の title 検査**(対応する規範は `rules/` に無く、フックだけが持つ)。story の `title` が、最後のセグメント(葉に出る表示名)を除いてフォルダ階層と食い違っていれば push をブロック |
 | `post-merge-review.sh`   | `PostToolUse` (Bash/MCP)  | **マージ後の振り返りの提示**。PR のマージを検知し、Issue への追記・続きの Issue・評価の記録を促す       |
 | `hook-canary.sh`         | `PreToolUse` (Bash)       | **カナリア**。`echo hook-canary` を必ず deny する。連ねたコマンドの中にあっても切り出して見る。通ってしまったときの読み方は後述（**通った = 不発、ではない**） |
 | `session-url-notice.sh`  | `SessionStart`            | **セッション URL の提示**（AGENTS.md「Issue に紐づいて起動したら、セッションの URL を Issue に残す」）。URL を組み立てて渡す。ブランチが `claude/issue-<N>-...` なら対象の番号も添える |
@@ -53,11 +54,14 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `lib/test-rules-scan.sh` | `pre-push-test-rules.sh` / `harness/githooks/pre-push` | 指定したルート配下の `*.test.ts(x)` をすべて検査する。違反があれば exit 1 |
 | `lib/lint-suppressions.py` | `block-lint-suppress.sh` / `.github/scripts/check-added-lint-suppressions.sh`(CI と `harness/githooks/pre-push`) | 許可されていない lint 抑制コメントの行を報告する。例外の判定もここが持つ |
 | `lib/import-rule-violations.py` | `pre-push-import-rules.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | 公開 API を迂回する import（`feature-public-api` / `module-public-api`）・循環（`import-cycle` / `feature-cycle`）・カテゴリの外に置かれた domains のモジュール（`domains-category`）を報告する |
-| `lib/ts_sources.py` | `lib/import-rule-violations.py` / `lib/result-option-read-violations.py` | `src/` の走査対象の集め方・報告の形・コマンドラインの受け方。ファイル名だけアンダースコアなのは、ハイフンを含む名前が Python の import 名にならないため |
-| `lib/pre-push-detector.sh` | `pre-push-import-rules.sh` / `pre-push-result-option-reads.sh` | `git push` のときだけ検出器を走らせ、違反があれば deny の JSON を返す（`deny_on_violations <検出器> <検査の名前> <直し方の一文>`） |
+| `lib/ts_sources.py` | `lib/import-rule-violations.py` / `lib/result-option-read-violations.py` / `lib/story-title-violations.py` | `src/` の走査対象の集め方・報告の形・コマンドラインの受け方と、feature の連なりの辿り方（`feature_of()`）。ファイル名だけアンダースコアなのは、ハイフンを含む名前が Python の import 名にならないため |
+| `lib/pre-push-detector.sh` | `pre-push-import-rules.sh` / `pre-push-result-option-reads.sh` / `pre-push-story-titles.sh` | `git push` のときだけ検出器を走らせ、違反があれば deny の JSON を返す（`deny_on_violations <検出器> <検査の名前> <直し方の一文>`） |
+| `lib/story-title-violations.py` | `pre-push-story-titles.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | story の `title` が、最後のセグメント（葉に出る表示名）を除いてフォルダ階層から導出した綴りと違うもの（`story-title-tree`）と、`title` をリテラル 1 行として取れないもの（`story-title-missing`）を報告する |
 | `lib/result-option-read-violations.py` | `pre-push-result-option-reads.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `Result` / `Option` の判別子（`ok` / `some`）を、その判別子を型宣言で定義していないファイルで直読みしている箇所（`result-option-read`）を報告する |
+| `lib/cases-report.sh` | `lib/result-option-read-cases.sh` / `lib/story-title-cases.sh` | 判定表が共有する、判定の読み取り（`decide` / `normalize_miss`）と報告（`report` / `cases_failed`）。ケースの並べ方と検出器の呼び方は判定表ごとに違うので、そこは各判定表が持つ |
 | `lib/canary-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `hook-canary.sh` へ判定表を流し、deny / pass / miss が期待どおりかを報告する。食い違いがあれば exit 1 |
 | `lib/result-option-read-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `result-option-read-violations.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードで報告する。食い違いがあれば exit 1 |
+| `lib/story-title-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `story-title-violations.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードで報告する。食い違いがあれば exit 1 |
 
 ## 強制力の序列 — フックが発火しない実行環境がある
 
@@ -136,6 +140,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 | --- | --- | --- |
 | `harness/records/count-cases.sh` | あり | あり |
 | `lib/result-option-read-cases.sh` | あり | あり(`python3` がある環境だけ) |
+| `lib/story-title-cases.sh` | あり | あり(`python3` がある環境だけ) |
 | `lib/canary-cases.sh` | あり | あり(`python3` と `jq` が揃う環境だけ) |
 | `.github/scripts/check-added-cases.sh` | あり(`lint-suppress` ジョブ) | あり(`python3` がある環境だけ) |
 | `.github/scripts/check-pr-closing-issue-cases.sh` | あり | **無し(残る穴)** |
@@ -270,6 +275,11 @@ deny のメッセージは、`jq` / `python3` が欠けていればその名前�
   - **外の語彙が同じ綴りを持つ形**(Fetch API の `response.ok` など)は、いま `src/` に無いのでそのまま違反になる。出てきたら `libs/` の境界で詰め替えるか、検出器の表を見直す
   - 判定の仕組み(型宣言の領域の見分け方・意図した取りこぼし)はスクリプトの docstring が持つ。判定表は `lib/result-option-read-cases.sh`
   - oxlint にも Biome にも置けなかった(理由は `frontend.yml` の `rules-check` にある「判別子の直読み」ステップのコメント)
+- **story の title**(`lib/story-title-violations.py`)は **push をブロックする**。見るのは `src/` 全体。**対応する規範は `rules/` に無い**(機械で判定できるのでフックだけが持つ → `AGENTS.md`「規約の更新」の「ルールに書くくらいならフックにする」)
+  - **エスケープハッチは置かない。** 免除は既に規則の側にある(葉 = ツリーに出る表示名は見ない)ので、`title` の綴りが実装の都合で必要になる余地はそこで吸収される。導入時点の違反 0 件・偽陽性 0 件で、呼び出しの無い逃げ道を先回りで足さない
+  - 導入時点の違反は 0 件・49 本。綴りを揃えたのは PR #679 で、この検査はその状態が剥がれないようにするもの
+  - **`title` は story の id でもある。** この検査に合わせてフォルダを動かすと、VRT のベースラインと `iframe.html?id=` の参照が**全部**変わる(同じ形の実例は `harness/case-law/process.md`)。揃えるための移動は、その入れ替わりを織り込んで計画する
+  - 判定の仕組み(導出の 3 手・葉を見ない意図した取りこぼし)はスクリプトの docstring が持つ。判定表は `lib/story-title-cases.sh`
 
 ## 動作確認
 
@@ -473,6 +483,36 @@ rm src/features/editor/probe.tsx
 # 通ること(違反 0 のとき。出力なし・exit 0)
 echo '{"tool_input":{"command":"git push"}}' \
   | bash .claude/hooks/pre-push-result-option-reads.sh; echo "exit=$?"
+```
+
+```bash
+# story の title の判定表(`ok` だけなら期待どおり)。pre-push と CI も走らせる
+bash .claude/hooks/lib/story-title-cases.sh; echo "exit=$?"
+
+# story の title の全体検査(git hooks・CI と共有)
+python3 .claude/hooks/lib/story-title-violations.py src; echo "exit=$?"   # → 違反 0 件・exit=0
+
+# 親を飛ばした title が落ちること(story-title-tree)。**probe の置き場所が期待出力を決める**
+# ので、パスと title は対で書く。導出は `features/editor/features/canvas/<表示名>`。
+# doc コメントは要らない(missing-doc-comments.py が `*.stories.*` を対象外にしている)
+mkdir -p src/features/editor/features/canvas/components/probe
+printf 'export default {\n  title: "features/canvas/Probe",\n};\n' \
+  > src/features/editor/features/canvas/components/probe/index.stories.tsx
+python3 .claude/hooks/lib/story-title-violations.py src; echo "exit=$?"   # → [story-title-tree] 1 件・exit=1
+
+# 層 3(Claude Code の PreToolUse)が deny を返すこと
+echo '{"tool_input":{"command":"git push"}}' \
+  | bash .claude/hooks/pre-push-story-titles.sh
+
+# 導出どおりなら通ること(同じ置き場所で title だけを変える)
+printf 'export default {\n  title: "features/editor/features/canvas/Probe",\n};\n' \
+  > src/features/editor/features/canvas/components/probe/index.stories.tsx
+python3 .claude/hooks/lib/story-title-violations.py src; echo "exit=$?"   # → 違反 0 件・exit=0
+
+# title を書かないと落ちること(story-title-missing。検査できないものを通さない根拠)
+printf 'export default {};\n' > src/features/editor/features/canvas/components/probe/index.stories.tsx
+python3 .claude/hooks/lib/story-title-violations.py src; echo "exit=$?"   # → [story-title-missing] 1 件・exit=1
+rm -rf src/features/editor/features/canvas/components/probe
 ```
 
 ```bash

@@ -10,10 +10,8 @@
 # この検査の中心で、手で 1 回動かすだけでは退行を検知できないため。** 同じ形の前例は
 # 同じフォルダの `canary-cases.sh`。
 #
-# **判定は終了コードで見る。** 層 1(CI の `run:`)と層 2(`pre-push` の `set -e`)は
-# 終了コードだけが配線なので、標準出力の文字列を見ても止まることを確かめたことに
-# ならない(`.claude/hooks/README.md`「終了コードまで見る」)。deny の行はさらに報告の
-# 見出しが出ることも見る。
+# 判定を終了コードで見る理由は `.claude/hooks/README.md`「終了コードまで見る」。deny の行は
+# さらに報告の見出しが出ることも見る。
 #
 # 表は `期待|ケース名|ソース` の 1 行 1 ケース。ソース中の `@@` は改行に置き換わる。
 # 期待は 3 つ。
@@ -32,44 +30,22 @@ detector="$lib_dir/result-option-read-violations.py"
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 mkdir -p "$work/src"
-failed=0
+
+# 判定の読み取りと報告は判定表どうしで共有する（`cases_failed` / `decide` / `report`）。
+source "$lib_dir/cases-report.sh"
 
 # 検出器を 1 度走らせ、終了コードから deny / pass を決める。
 verdict() {
   local output status
   output="$(python3 "$detector" "$work/src")" && status=0 || status=$?
-  if [ "$status" -ne 1 ]; then
-    echo "pass"
-    return 0
-  fi
-  # exit 1 は違反あり。報告の見出しが無いなら判定が壊れている。
-  if printf '%s' "$output" | grep -q '^\[result-option-read\]'; then
-    echo "deny"
-  else
-    echo "broken"
-  fi
-}
-
-report() {
-  local expected="$1" decision="$2" label="$3"
-  if [ "$decision" = "$expected" ]; then
-    printf 'ok   %-4s %s\n' "$expected" "$label"
-    return 0
-  fi
-  printf 'NG   expected=%s got=%s  %s\n' "$expected" "$decision" "$label"
-  failed=1
+  decide "$output" "$status" '^\[result-option-read\]'
 }
 
 while IFS='|' read -r expected label source; do
   [ -n "$source" ] || continue
   rm -f "$work/src"/*
   printf '%s\n' "${source//@@/$'\n'}" > "$work/src/case.ts"
-  decision="$(verdict)"
-  # 意図した取りこぼしは pass になるのが正解。
-  if [ "$expected" = "miss" ] && [ "$decision" = "pass" ]; then
-    decision="miss"
-  fi
-  report "$expected" "$decision" "$label"
+  report "$expected" "$(normalize_miss "$expected" "$(verdict)")" "$label"
 done <<'CASES'
 deny|定義元の外で result.ok を読む|const label = result.ok ? "y" : "n";
 deny|定義元の外で option.some を読む|const has = option.some;
@@ -123,7 +99,7 @@ if printf '%s' "$truncated" | grep -q '^  \.\.\. 他 1 件$'; then
   printf 'ok   %-4s %s\n' "deny" "11 件出たら先頭 10 件で切り、残りを件数で示す"
 else
   printf 'NG   expected=%s got=%s  %s\n' "deny" "切り詰めの行が出ない" "11 件出たら先頭 10 件で切り、残りを件数で示す"
-  failed=1
+  cases_failed=1
 fi
 
-exit "$failed"
+exit "$cases_failed"

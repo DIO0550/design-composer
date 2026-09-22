@@ -3,6 +3,9 @@ import type { StorybookConfig } from "@storybook/react-vite";
 import { mergeConfig } from "vite";
 
 const config: StorybookConfig = {
+  // ここが拾う綴りは `.claude/hooks/lib/story-title-violations.py` が写している（title が
+  // フォルダ階層と揃っているかの検査）。設定を Python から読み解く処理そのものが検査の
+  // 外になるので導出はしない。増やすときは向こうも増やす。
   stories: ["../src/**/*.stories.@(ts|tsx)"],
   addons: ["@storybook/addon-a11y", "@storybook/addon-themes"],
   framework: { name: "@storybook/react-vite", options: {} },
