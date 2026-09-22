@@ -6,13 +6,17 @@
 # 使う側:
 #   - .claude/hooks/pre-push-import-rules.sh
 #   - .claude/hooks/pre-push-result-option-reads.sh
+#   - .claude/hooks/pre-push-story-titles.sh
+#   - .claude/hooks/pre-push-named-paths.sh
 #
 # 使い方: source したうえで `deny_on_violations <検出器> <検査の名前> <直し方の一文>`。
 # 標準入力（フックへ渡される JSON）はこの関数が読む。
 
 # 違反があれば deny の JSON を標準出力へ書く。
 #
-# $1 検出器のパス（`src` を引数に取り、違反があれば `[種別]` で始まる行を出すもの）
+# $1 検出器のパス（引数なしで走らせたとき、違反があれば `[種別]` で始まる行を出すもの。
+#    走査ルートは検出器が自分で決める: src/ の TypeScript を見るものは `src`、説明の中の
+#    綴りを見るものはリポジトリルート）
 # $2 検査の名前（deny のメッセージに入る）
 # $3 直し方の一文（deny のメッセージの末尾に付ける）
 deny_on_violations() {
@@ -29,7 +33,7 @@ deny_on_violations() {
 
   cd "${CLAUDE_PROJECT_DIR:-$PWD}" || return 0
 
-  violations="$(python3 "$detector" src || true)"
+  violations="$(python3 "$detector" || true)"
   echo "$violations" | grep -q '^\[' || return 0
 
   jq -Rn --arg msg "$violations" --arg label "$label" --arg guidance "$guidance" '{

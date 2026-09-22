@@ -13,7 +13,8 @@ import { useCanvasView } from "../index";
 /**
  * フックを DOM へ繋いだだけの器。
  * ホイールの登録先とポインタの受け口を与え、フックが返す view を読めるようにする
- * （キャンバスの見た目はここでは扱わない。それは components/artboard-canvas の責務）。
+ * （キャンバスの見た目はここでは扱わない。それは
+ * features/editor/features/canvas/components/artboard-canvas の責務）。
  */
 function CanvasViewHarness() {
   const { view, surfaceRef, panHandlers, zoomIn, zoomOut, reset } =

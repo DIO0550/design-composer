@@ -9,13 +9,16 @@ import { ArrayEx } from "@/utils/ArrayEx";
  * ま流し込んだもので React の管理下に無いため、要素も強調もノード名の属性を頼りに DOM
  * から引く。
  *
- * キャンバス単体（`components/artboard-canvas`）と編集画面の通し（`features/editor` の
- * `opened-document-editor`）の両方が「何が描かれているか」を確かめるので、**持ち主であ
- * るこの feature に置く**。外の feature へはテスト用の公開口（`__tests__/index.ts`）か
- * ら出す。
+ * キャンバス単体（`features/editor/features/canvas/components/artboard-canvas`）と編集
+ * 画面の通し（`features/editor` の `opened-document-editor`）の両方が「何が描かれている
+ * か」を確かめるので、**持ち主であるこの feature に置く**。外の feature へはテスト用の
+ * 公開口（`__tests__/index.ts`）から出す。
  */
 
-/** 強調の規則が指している名前（規則の書式は components/artboard-canvas）。 */
+/**
+ * 強調の規則が指している名前（規則の書式は
+ * features/editor/features/canvas/components/artboard-canvas）。
+ */
 const HighlightedNamePattern = new RegExp(
   `\\[${ElementNameAttribute}="(.*?)"\\]`,
   "g",

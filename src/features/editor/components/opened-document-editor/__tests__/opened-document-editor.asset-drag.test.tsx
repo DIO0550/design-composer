@@ -141,7 +141,8 @@ test("運んでいる間は落ちる先がどの親のどこかとして示さ�
 
   /*
    * 綴り全体で比べるのは、どちらの数をどの語に入れるかがここにしか無いため
-   * （`domains/node-drop` が固定するのは `index` と `childCount` の値まで）。
+   * （`features/editor/features/canvas/domains/node-drop` が固定するのは `index` と
+   * `childCount` の値まで）。
    * `home-panel` は空の Box なので、矩形を返さない happy-dom でも数が決まる。
    */
   expect(screen.getByText("into home-panel · child 0 of 0")).toBeDefined();

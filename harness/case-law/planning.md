@@ -63,7 +63,7 @@
 | props を変える対象のストーリー・テストの入口 | `EditorState` を直に組む 4 本のストーリーと、移動する 33 テストすべての入口だった `__tests__/setup.tsx` |
 | 更新が要る `docs/` | スキーマを変える計画で `docs/03-schema.md` の更新が抜けていた |
 | 必ず触ることになる private 型 | 公開 API の変更に伴って書き換えが要る非公開の型が計画に出てこなかった |
-| 移動で使わなくなるテストヘルパー | `features/editor/__tests__/frozen-state.ts` を移動後も `artboard-canvas.frozen.test.tsx` が import しており、却下したはずの deep import 形が残る経路になっていた |
+| 移動で使わなくなるテストヘルパー | `features/editor/domains/editor-state/__tests__/frozen-state.ts` を移動後も `artboard-canvas.frozen.test.tsx` が import しており、却下したはずの deep import 形が残る経路になっていた |
 | コメント内でだけ名指しされた移動対象 | `分類: plan-comment-reference` を参照(同じ「ファイル表が import しか見ていない」原因の別の現れ) |
 
 ## `plan-comment-reference` — コメント内でだけ名指しされた移動対象がファイル表に無い

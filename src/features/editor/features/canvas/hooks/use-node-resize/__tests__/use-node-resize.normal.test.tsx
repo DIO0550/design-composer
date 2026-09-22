@@ -60,7 +60,8 @@ const PanelBounds: CanvasBounds = {
  *
  * キャンバスは中身を文字列の HTML で流し込むので、フックは名前の属性で要素を引く。
  * ここでも同じ属性を持つ要素を 1 つ置き、掴めたか / click を飲み込んだかを読めるようにする
- * （ハンドルの見た目は components/artboard-canvas の責務なのでここでは扱わない）。
+ * （ハンドルの見た目は features/editor/features/canvas/components/artboard-canvas の
+ * 責務なのでここでは扱わない）。
  */
 function NodeResizeHarness({
   selection,
