@@ -146,6 +146,11 @@ jobs:
       - name: story の title
         run: python3 .claude/hooks/lib/story-title-violations.py src
 
+      # コメント・doc が名指ししているパスと実体の食い違い（#690 / #699）。フォルダを
+      # 動かしても書き換わるのは import だけで、説明の中の綴りは古い位置を指したまま残る。
+      - name: 名指ししたパス
+        run: python3 .claude/hooks/lib/named-path-violations.py
+
       # 常時ロードと harness-growth スキルの行数の予算（AGENTS.md「常時ロードは増やさない」）。
       # 実測と予算がずれていれば落ちる（超過なら削る、下回ったら予算を下げる）。
       - name: 行数のラチェット
@@ -161,6 +166,9 @@ jobs:
 
       - name: story の title の判定表
         run: bash .claude/hooks/lib/story-title-cases.sh
+
+      - name: 名指ししたパスの判定表
+        run: bash .claude/hooks/lib/named-path-cases.sh
 
       # pre-push は jq の無い環境で飛ばすが、ランナーの image には jq がある
       # (ci-trace.yml も素の jq を呼ぶ)ので、ここは無条件に走らせる。

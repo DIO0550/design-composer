@@ -164,6 +164,8 @@ python3 .claude/hooks/lib/result-option-read-violations.py src  # 判別子の�
 bash .claude/hooks/lib/result-option-read-cases.sh              # 判別子の直読みの判定表
 python3 .claude/hooks/lib/story-title-violations.py src         # story の title
 bash .claude/hooks/lib/story-title-cases.sh                     # story の title の判定表
+python3 .claude/hooks/lib/named-path-violations.py              # 名指ししたパス
+bash .claude/hooks/lib/named-path-cases.sh                      # 名指ししたパスの判定表
 bash .github/scripts/check-added-lint-suppressions.sh           # 追加された lint 抑制
 bash .github/scripts/check-added-test-helper-duplication.sh     # 追加されたテストヘルパーの重複
 bash .github/scripts/check-added-cases.sh                       # 追加された分の検査の判定表
@@ -172,9 +174,9 @@ bash harness/records/count-cases.sh                             # 集計の判�
 bash .claude/hooks/lib/canary-cases.sh                          # カナリアの判定表
 ```
 
-- **下の 13 個は `pnpm` のスクリプトに無い。** `rules-check` と同じ 10 個は git hooks
+- **下の 15 個は `pnpm` のスクリプトに無い。** `rules-check` と同じ 12 個は git hooks
   (道具が揃わない環境では飛ぶ)と CI が、`check-added-*` とその判定表の 3 つは git hooks と
-  CI の `lint-suppress` ジョブだけが走らせるので、この 13 行を省くと手元の確認がゲートより
+  CI の `lint-suppress` ジョブだけが走らせるので、この 15 行を省くと手元の確認がゲートより
   狭くなる。**doc コメントとテスト規約が CI へ上げられたのは、層 2 と層 3 が
   同じ環境で同時に抜けたため**(`.claude/hooks/README.md`「カバー範囲と残る穴」)
 - **`rules-check` にはもう 1 つ、CI だけが走らせる検査がある。**
