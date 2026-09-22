@@ -44,8 +44,7 @@ services に置かれたロジックの多くは、`rules/architecture.md` の 1
   戻り値が `string` へ広がり、網羅性の保証が失われる（`TypographyField.cssProperty` を
   `toKebabCase()` にしない）
 - ドメイン概念になった時点で `utils/` から `domains/` へ移す。規則を持つ `Px` は
-  `domains/unit/px/`、
-  文字列定数だけの `Font` は `utils/`
+  `domains/unit/px/`、文字列定数だけの `Font` は `utils/`
 
 ## `domain-scope-promotion` — 置き場所を消費する feature の数で決めていない
 

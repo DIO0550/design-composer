@@ -55,12 +55,12 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `lib/test-rules-scan.sh` | `pre-push-test-rules.sh` / `harness/githooks/pre-push` | 指定したルート配下の `*.test.ts(x)` をすべて検査する。違反があれば exit 1 |
 | `lib/lint-suppressions.py` | `block-lint-suppress.sh` / `.github/scripts/check-added-lint-suppressions.sh`(CI と `harness/githooks/pre-push`) | 許可されていない lint 抑制コメントの行を報告する。例外の判定もここが持つ |
 | `lib/import-rule-violations.py` | `pre-push-import-rules.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | 公開 API を迂回する import（`feature-public-api` / `module-public-api`）・循環（`import-cycle` / `feature-cycle`）・カテゴリの外に置かれた domains のモジュール（`domains-category`）を報告する |
-| `lib/ts_sources.py` | `lib/import-rule-violations.py` / `lib/result-option-read-violations.py` / `lib/story-title-violations.py` | `src/` の走査対象の集め方・報告の形・コマンドラインの受け方と、feature の連なりの辿り方（`feature_of()`）。ファイル名だけアンダースコアなのは、ハイフンを含む名前が Python の import 名にならないため |
+| `lib/ts_sources.py` | `lib/import-rule-violations.py` / `lib/result-option-read-violations.py` / `lib/story-title-violations.py` / `lib/named-path-violations.py`（報告の形だけ） | `src/` の走査対象の集め方・報告の形・コマンドラインの受け方と、feature の連なりの辿り方（`feature_of()`）。ファイル名だけアンダースコアなのは、ハイフンを含む名前が Python の import 名にならないため |
 | `lib/named-path-violations.py` | `pre-push-named-paths.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | コメント（`.ts` / `.tsx`）と Markdown の全文が名指ししているパスのうち、実体を持たないもの（`named-path-missing`）を報告する |
 | `lib/pre-push-detector.sh` | `pre-push-import-rules.sh` / `pre-push-result-option-reads.sh` / `pre-push-story-titles.sh` / `pre-push-named-paths.sh` | `git push` のときだけ検出器を走らせ、違反があれば deny の JSON を返す（`deny_on_violations <検出器> <検査の名前> <直し方の一文>`）。**走査ルートは渡さない**（検出器が自分の既定で決める） |
 | `lib/story-title-violations.py` | `pre-push-story-titles.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | story の `title` が、最後のセグメント（葉に出る表示名）を除いてフォルダ階層から導出した綴りと違うもの（`story-title-tree`）と、`title` をリテラル 1 行として取れないもの（`story-title-missing`）を報告する |
 | `lib/result-option-read-violations.py` | `pre-push-result-option-reads.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `Result` / `Option` の判別子（`ok` / `some`）を、その判別子を型宣言で定義していないファイルで直読みしている箇所（`result-option-read`）を報告する |
-| `lib/cases-report.sh` | `lib/result-option-read-cases.sh` / `lib/story-title-cases.sh` | 判定表が共有する、判定の読み取り（`decide` / `normalize_miss`）と報告（`report` / `cases_failed`）。ケースの並べ方と検出器の呼び方は判定表ごとに違うので、そこは各判定表が持つ |
+| `lib/cases-report.sh` | `lib/result-option-read-cases.sh` / `lib/story-title-cases.sh` / `lib/named-path-cases.sh` | 判定表が共有する、判定の読み取り（`decide` / `normalize_miss`）と報告（`report` / `cases_failed`）。ケースの並べ方と検出器の呼び方は判定表ごとに違うので、そこは各判定表が持つ |
 | `lib/named-path-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `named-path-violations.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードで報告する。食い違いがあれば exit 1 |
 | `lib/canary-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `hook-canary.sh` へ判定表を流し、deny / pass / miss が期待どおりかを報告する。食い違いがあれば exit 1 |
 | `lib/result-option-read-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `result-option-read-violations.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードで報告する。食い違いがあれば exit 1 |
@@ -144,7 +144,6 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 | `harness/records/count-cases.sh` | あり | あり |
 | `lib/result-option-read-cases.sh` | あり | あり(`python3` がある環境だけ) |
 | `lib/story-title-cases.sh` | あり | あり(`python3` がある環境だけ) |
-| `lib/named-path-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `named-path-violations.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードで報告する。食い違いがあれば exit 1 |
 | `lib/named-path-cases.sh` | あり | あり(`python3` がある環境だけ) |
 | `lib/canary-cases.sh` | あり | あり(`python3` と `jq` が揃う環境だけ) |
 | `.github/scripts/check-added-cases.sh` | あり(`lint-suppress` ジョブ) | あり(`python3` がある環境だけ) |
@@ -286,12 +285,12 @@ deny のメッセージは、`jq` / `python3` が欠けていればその名前�
   - **`title` は story の id でもある。** この検査に合わせてフォルダを動かすと、VRT のベースラインと `iframe.html?id=` の参照が**全部**変わる(同じ形の実例は `harness/case-law/process.md`)。揃えるための移動は、その入れ替わりを織り込んで計画する
   - 判定の仕組み(導出の 3 手・葉を見ない意図した取りこぼし)はスクリプトの docstring が持つ。判定表は `lib/story-title-cases.sh`
 - **名指ししたパス**(`lib/named-path-violations.py`)は **push をブロックする**。見るのはリポジトリ全体の `.ts` / `.tsx`(コメントの中だけ)と `.md`(全文)。**対応する規範は `rules/` に無い**(story の title と同じ扱い)
-  - **エスケープハッチは置かない。** 免除は既に規則の側にある(PascalCase の名前・`-` で終わる切れたプレースホルダ・相対の綴り・走査しない 2 つ)。導入時点の違反 0 件・偽陽性 0 件で、呼び出しの無い逃げ道を先回りで足さない
+  - **エスケープハッチは置かない。** 免除は既に規則の側にある(拡張子の無い PascalCase の名前・`-` で終わる切れたプレースホルダ・相対の綴り・走査しない 2 つ)。導入時点の違反 0 件・偽陽性 0 件で、呼び出しの無い逃げ道を先回りで足さない
   - 導入時点の違反は **15 件**(`src/` の 6 件と `harness/case-law/` の 9 件)で、同じ PR で 0 件にしてから入れた。#690 のマージ前の木へ当てると、#690 が直した **14 箇所を 14/14** 報告する(`harness-growth`「採用前の再生」)
   - **`.claude/hooks/README.md`(このファイル)は走査しない。** 上の probe レシピが実在しないファイル(`src/app/probe.ts` 等)を意図して名指しし、`/` 区切りの層の列挙(`components/hooks/utils/types` → `domains/services/features`)もパスと同じ綴りになる。**この 2 つは偽陽性のクラスとして判定表に `miss` の行で残してある**
   - **`harness/records/` も走査しない**(`harness/records/README.md`「過去の記録は書き換えない」。この検出器を当てると 206 件出るが、どれも当時の綴りとして正しい)。`harness/case-law/` は走査する — あちらが禁じているのは**判断**の書き換えで、実体を指さなくなった綴りは直す側(判例自身が `pr-330`「判例が古いパスを指したまま残る」で指摘を受けている)
   - **走査対象は git が追跡しているファイル**。フォルダを歩くと `.gitignore` 済みの生成物(`storybook-static/` 等)まで対象になり、手元に成果物が残っている環境だけで push が止まる。コミット前の新しいファイルは見えないが、push の時点では差分がコミットされているのでゲートに穴は開かない
-  - 判定の仕組み(解決の 2 手・意図した取りこぼし 6 つ)はスクリプトの docstring が持つ。判定表は `lib/named-path-cases.sh`
+  - 判定の仕組み(解決の 2 手・意図した取りこぼし 7 つ)はスクリプトの docstring が持つ。判定表は `lib/named-path-cases.sh`
 
 ## 動作確認
 
@@ -305,7 +304,7 @@ echo '{"tool_input":{"command":"pnpm run lint"}}' | bash .claude/hooks/block-npx
 
 ```bash
 # 重複が報告されること(additionalContext が出力される)
-echo '{"tool_input":{"file_path":"src/features/editor/components/property-panel/__tests__/property-panel.heading.test.tsx"}}' \
+echo '{"tool_input":{"file_path":"src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.heading.test.tsx"}}' \
   | bash .claude/hooks/check-test-helper-duplication.sh
 
 # 全体の重複を数える

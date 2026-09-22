@@ -3,7 +3,8 @@
 
 走査の対象の集め方・報告の形・コマンドラインの受け方は、どの検査でも同じものが要る。
 `import-rule-violations.py` と `result-option-read-violations.py` と
-`story-title-violations.py` がこれを読む。
+`story-title-violations.py` がこれを読む。`named-path-violations.py` は走査の範囲が
+`src/` に収まらないので、報告の形（`report`）と `src/` の綴り（`DEFAULT_ROOT`）だけを読む。
 
 **ファイル名だけアンダースコア。** `lib/` の綴りはケバブケースだが、ハイフンを含む名前は
 Python のモジュールとして import できない。直接実行されるスクリプトの隣に置いてあるので、

@@ -25,9 +25,12 @@
 # | `trailing` | コードの後ろに続く `//` コメント |
 # | `block` | 単一行の `/* ... */`（綴りはバッククォートで囲む） |
 # | `doc` | 複数行の `/** ... */` |
-# | `str` | 文字列リテラル（コメントではない） |
-# | `slash` | `//` を含む文字列リテラル（コメントの始まりと取り違えないか） |
-# | `template` | 複数行のテンプレートリテラル（後ろに実在する綴りのコメントを 1 行置く） |
+# | `single` | `//` で始まるコメントを丸ごと入れた `'...'` の文字列リテラル |
+# | `slash` | 同じものを `"..."` で書いたもの |
+# | `template` | 同じものを複数行のテンプレートリテラルへ入れたもの |
+#
+# 文字列の 3 種はどれも**中身がコメントの形をしている**。状態機械が引用符を追えていないと
+# 中身がコメントとして読まれて deny に転ぶので、pass のままであることが引用符の追跡を守る。
 # | `md` | Markdown の 1 行 |
 #
 # 期待は 3 つ。
@@ -59,10 +62,11 @@ build_tree() {
     "$work/src/features/editor/features/tokens" \
     "$work/src/components/context-menu" \
     "$work/src/domains/unit/px" \
-    "$work/src/types" \
+    "$work/src/types" "$work/src/utils" \
     "$work/docs" "$work/rules" "$work/harness/records" "$work/.claude/hooks"
   : > "$work/src/test-setup.ts"
   : > "$work/src/types/IndexMove.ts"
+  : > "$work/src/utils/ArrayEx.ts"
   : > "$work/docs/01-file-format.md"
   : > "$work/rules/coding.md"
   for file in "${case_files[@]}"; do : > "$work/$file"; done
@@ -79,9 +83,9 @@ write_case() {
     trailing) printf 'export const Probe = 1; // 参照: %s\n' "$spelling" ;;
     block)    printf '/* 掴む側と落とす側の対。`%s` が持つ契約。 */\nexport const Probe = 1;\n' "$spelling" ;;
     doc)      printf '/**\n * 器ごと落としても、\n * %s のテストは 1 件も落ちない。\n */\nexport const Probe = 1;\n' "$spelling" ;;
-    str)      printf 'export const Probe = "%s";\n' "$spelling" ;;
-    slash)    printf 'export const Probe = "//%s";\n' "$spelling" ;;
-    template) printf 'export const Probe = `\n%s\n`;\n// 参照: features/editor/features/canvas\n' "$spelling" ;;
+    single)   printf "export const Probe = '// 参照: %s';\n" "$spelling" ;;
+    slash)    printf 'export const Probe = "// 参照: %s";\n' "$spelling" ;;
+    template) printf 'export const Probe = `\n// 参照: %s\n`;\n// 参照: features/editor/features/canvas\n' "$spelling" ;;
     md)       printf '# probe\n\n参照: %s\n' "$spelling" ;;
   esac > "$work/$file"
 }
@@ -107,17 +111,21 @@ deny|コードの後ろに続く行コメントの中の綴り|src/probe.ts|trai
 deny|子 feature の移動に追随していない綴り(#679 の再発形)|src/probe.ts|line|features/canvas
 deny|エイリアスの綴りが src/ から解決できない|src/probe.ts|line|@/features/sidebar
 deny|末尾が区切りでない接頭辞は実在と見なさない|src/probe.ts|line|features/editor/features/token
-deny|末尾に / を付けて書かれた綴り(判例にある形)|src/probe.ts|line|domains/px/
+deny|カテゴリを挟む前の綴り(末尾に / が付いた判例の形)|src/probe.ts|line|domains/px/
 deny|Markdown の行の中の綴り|docs/probe.md|md|features/sidebar
 deny|Markdown のリンクの中の、上へ辿る綴り|docs/probe.md|md|[規約](../rules/nonexistent.md)
+deny|エイリアスはリポジトリルートからは解決しない|src/probe.ts|line|@/docs/01-file-format.md
+deny|PascalCase でも拡張子を持つ末尾は綴りとして見る|src/probe.ts|line|utils/Nonexistent.ts
+deny|先頭の . を落とさないので .claude/ 以下も検査される|src/probe.ts|line|.claude/hooks/nonexistent.sh
 pass|実在するフォルダを名指しした行コメント|src/probe.ts|line|features/editor/features/canvas
 pass|拡張子を省いて実在するファイルを指す綴り(接頭辞一致で当たる)|src/probe.ts|line|src/test-setup
 pass|末尾セグメントが区切りまでの接頭辞になっている綴り|src/probe.ts|line|docs/01
 pass|前後の . と / を落とすので、途中で切れたプレースホルダも通る|src/probe.ts|line|docs/...
 pass|エイリアスの綴りが src/ から解決できる|src/probe.ts|line|@/features/editor/features/tokens
-pass|文字列リテラルの中の綴りは見ない|src/probe.ts|str|features/sidebar
-pass|文字列リテラルの中の // をコメントの始まりと取り違えない|src/probe.ts|slash|features/sidebar
-pass|複数行のテンプレートリテラルの中の綴りも見ない|src/probe.ts|template|features/sidebar
+pass|'...' の中のコメントの形をした綴りは見ない|src/probe.ts|single|features/sidebar
+pass|src/utils/ の PascalCase 1 ファイルは実在すれば通る|src/probe.ts|line|utils/ArrayEx.ts
+pass|"..." の中のコメントの形をした綴りは見ない|src/probe.ts|slash|features/sidebar
+pass|テンプレートリテラルの中のコメントの形をした綴りは見ない|src/probe.ts|template|features/sidebar
 pass|URL はホスト名が第 1 セグメントになるので見ない|src/probe.ts|line|https://example.com/src/features/sidebar
 pass|/ で区切った 2 語(NG/OK)はパスと数えない|src/probe.ts|line|NG/OK
 miss|PascalCase を含む綴りは名前(story の title・コンポーネント名)なので見ない|src/probe.ts|line|components/ContextMenu
@@ -125,6 +133,7 @@ miss|- で終わる綴りは、切れたプレースホルダなので見ない|
 miss|相対の綴り(第 1 セグメントがフォルダ名でない)は見ない|src/probe.ts|line|__tests__/canvas-elements.ts
 miss|.claude/hooks/README.md は走査しない(probe レシピと / 区切りの層の列挙)|.claude/hooks/README.md|md|features/sidebar
 miss|harness/records/ は走査しない(当時の綴りとして正しい)|harness/records/pr-999.md|md|features/sidebar
+miss|相対リンクの段数は見ない(行き先が実在すれば通る)|docs/probe.md|md|[規約](../../../../rules/coding.md)
 miss|git が追跡していないファイルは走査しない|untracked.md|md|features/sidebar
 CASES
 
