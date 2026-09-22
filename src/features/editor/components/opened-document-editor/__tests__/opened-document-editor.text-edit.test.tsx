@@ -5,7 +5,7 @@ import { SampleDocumentWithDeepBranch } from "@/features/editor/__tests__/sample
 import { renderedElement } from "@/features/editor/features/canvas/__tests__";
 import { canvasPane, propertyPane, renderOpenedDocument } from "./setup";
 
-/**
+/*
  * 3 ペインを実物のまま組み立て、キャンバス上のダブルクリックから
  * 文言がドキュメントへ反映されるまでを確かめる
  * （docs/06-ui.md「キャンバス直接操作」の「Text のインライン編集」）。
