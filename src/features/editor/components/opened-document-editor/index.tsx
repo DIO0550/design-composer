@@ -135,7 +135,8 @@ function EditorPanes({
   );
 
   const isFrozen = EditorState.isFileInvalid(state);
-  /* 掴む側（パレット）と落とす側（キャンバス）の対。`features/assets` が持つ契約。 */
+  /* 掴む側（パレット）と落とす側（キャンバス）の対。
+     `features/editor/features/assets` が持つ契約。 */
   const assetGrab: AssetGrab = {
     dragged: nodeDrag.carriedTemplate,
     onGrab: nodeDrag.grabTemplate,

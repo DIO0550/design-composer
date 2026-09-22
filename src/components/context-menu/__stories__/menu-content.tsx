@@ -6,7 +6,7 @@ import { Option } from "@/utils/Option";
  * メニューの中身を組み立てる。ストーリーとテストのどちらも同じ形で要るので、
  * `rules/architecture.md`「ストーリー専用の共有物は使う範囲がいちばん狭いフォルダの
  * `__stories__/` に置く」に従ってここへ置き、`__tests__/setup.tsx` が再輸出する
- * （`features/assets/__tests__/asset-grab.ts` と同じ形）。
+ * （`features/editor/features/assets/__tests__/asset-grab.ts` と同じ形）。
  */
 
 /** 行に渡すもののうち、綴り以外。 */

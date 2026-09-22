@@ -3,8 +3,8 @@ import { dragRow } from "@/components/__tests__/pointer-gesture";
 
 /**
  * 並べ替えの行を掴む操作。ツリー（`components/nested-row-list`）・artboard の一覧
- * （`features/sidebar`）・編集画面の通し（`features/editor`）のどれもが同じ引き方を
- * するため、横断層に置いて共有する。
+ * （`features/editor/features/sidebar`）・編集画面の通し（`features/editor`）のどれもが
+ * 同じ引き方をするため、横断層に置いて共有する。
  *
  * 持っているのは「行は名前を読み上げるボタンを含む枠」という汎用 UI の知識だけで、
  * ドメインは知らない（`row-names.ts` と同じ形）。
