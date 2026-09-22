@@ -77,7 +77,8 @@ test("子を持てない Text の上で離すと、外側の Box の子になる
   /*
    * 何番目になるかは描かれた大きさで決まるが、happy-dom は矩形を返さない。
    * ここで確かめるのは「どの Box の子になるか」だけで、index の決まり方は
-   * domains/node-drop のテストが持つ（rules/testing.md）。
+   * features/editor/features/canvas/domains/node-drop のテストが持つ
+   * （rules/testing.md）。
    */
   expect(onMoveNode).toHaveBeenCalledWith(
     "panel",

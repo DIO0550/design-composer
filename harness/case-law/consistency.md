@@ -4,11 +4,12 @@
 
 ## `dependency` — 器が中身を知っていた（sidebar → assets / tokens）
 
-`features/sidebar` の `LeftPane` が、行き先ごとの中身を自分で `import` して描いていた。
+`features/editor/features/sidebar` の `LeftPane` が、行き先ごとの中身を自分で `import` して
+描いていた。
 
 | | 形 |
 |---|---|
-| NG | `left-pane/index.tsx` が `@/features/assets` の `AssetsPanel` / `CreateComponent` と `@/features/tokens` の `TokenList` を読み、`switch` 3 つ（`LeftPaneContent` / `searchLabelOf` / `leftPaneFooter`）で出し分ける |
+| NG | `left-pane/index.tsx` が `@/features/editor/features/assets` の `AssetsPanel` / `CreateComponent` と `@/features/editor/features/tokens` の `TokenList` を読み、`switch` 3 つ（`LeftPaneContent` / `searchLabelOf` / `leftPaneFooter`）で出し分ける |
 | OK | `LeftPane` は `Record<LeftPaneView, LeftPaneViewContent>` を受け取って引くだけにし、中身は親（`features/editor` の `opened-document-editor`）が差し込む |
 
 見分け方は **props の中身**。`sidebar` は `grab` / `tokenSelection` / `token` を editor から預かって
@@ -36,11 +37,11 @@
 UI 案の展開後で 1 回（`rail` は 8 回）。既存の型は `LeftPaneView` / `LeftPaneViews` /
 `LeftPaneViewLabels` で、doc の語彙は「レール」「行き先」。**`LeftPaneViewContent`** に揃えた。
 
-## `dependency` — ネストしないもの（`features/tokens`）
+## `dependency` — ネストしないもの（`features/editor/features/tokens`）
 
 `TokenList`（左ペイン）・`TokenEditor`（右ペイン）・`TokenDashedNodes`（キャンバス）は表示される
-場所が 3 つに分かれているが、**同じ `TokenSelection` に反応し、`domains/token-control` の見せ方を
-共有している**。使われ方で 3 つに割ると凝集が壊れるので、1 つのまとまりのまま editor 直下に置く。
+場所が 3 つに分かれているが、**同じ `TokenSelection` に反応し、
+`features/editor/features/tokens/domains/token-control` の見せ方を共有している**。使われ方で 3 つに割ると凝集が壊れるので、1 つのまとまりのまま editor 直下に置く。
 
 **参照元が 2 つ以上ある feature は、共通の親の直下に置き、親が両方へ差し込む。**
 
@@ -69,6 +70,6 @@ bulletproof-react は提案レベル、明確に禁止しているのは FSD の
 ## `harness` — 検出器の判定表は移動で静かに嘘になる
 
 `import-rule-violations.py` に pytest は無く、判定表は `.claude/hooks/README.md` の probe レシピ。
-probe が書いている綴り（`@/features/canvas/domains/canvas-view` 等）はフォルダを動かすと解決
-できなくなり、**違反が出なくなって probe が静かに緑になる**。フォルダを動かす変更では、
+probe が書いている綴り（`@/features/editor/features/canvas/domains/canvas-view` 等）は
+フォルダを動かすと解決できなくなり、**違反が出なくなって probe が静かに緑になる**。フォルダを動かす変更では、
 README の probe も同じ差分で直す。
