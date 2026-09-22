@@ -8,7 +8,9 @@ import { Option } from "../Option";
  */
 
 test("isSome が真の側では値を読める型に絞られる", () => {
-  const option: Option<number> = Option.some(42);
+  // `Option.some(42)` を直に入れると初期化子の型で絞られ、`isSome` が絞り込まなくても
+  // `value` が読めてしまう。`fromNullable` は union を返すのでそれが起きない。
+  const option = Option.fromNullable<number>(42);
 
   const value = Option.isSome(option) ? option.value : 0;
 

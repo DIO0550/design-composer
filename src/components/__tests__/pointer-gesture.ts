@@ -2,9 +2,9 @@ import { fireEvent } from "@testing-library/react";
 import { type PointerButton, PointerButtons } from "@/utils/PointerButton";
 
 /**
- * ポインタ操作。キャンバスのドラッグ（`features/canvas`）と、左ペインの並べ替え
- * （`components/nested-row-list` / `features/sidebar`）の両方が同じ操作を要るため、
- * 横断層に置いて共有する。
+ * ポインタ操作。キャンバスのドラッグ（`features/editor/features/canvas`）と、左ペインの
+ * 並べ替え（`components/nested-row-list` / `features/editor/features/sidebar`）の両方が
+ * 同じ操作を要るため、横断層に置いて共有する。
  *
  * どこを押した・どこへ入った、という DOM の話しか持たない（座標の意味づけは
  * 呼び出し側が持つ）。

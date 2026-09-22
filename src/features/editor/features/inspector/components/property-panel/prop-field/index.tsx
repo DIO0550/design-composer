@@ -232,8 +232,8 @@ function LiteralInput({
    * 立てるのは送った時点で、履歴へ入ったかは見ない。1 件目が上流で落ちると 2 件目が
    * 続きとして届く（`EditHistory.amend` の doc が書いている「戻る先が無いまま」と同じ形）。
    *
-   * 同じ形の ref が `features/canvas` の `use-node-resize` にもある。畳む先が
-   * `src/hooks/` にも `domains/` にも置けず（前者は domains を、後者は React を
+   * 同じ形の ref が `features/editor/features/canvas` の `use-node-resize` にもある。
+   * 畳む先が `src/hooks/` にも `domains/` にも置けず（前者は domains を、後者は React を
    * import できない）、寄せるには両 feature の外に層が要るので分けたままにしている。
    */
   const hasEdited = useRef(false);
