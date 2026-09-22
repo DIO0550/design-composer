@@ -38,14 +38,11 @@ import re
 import sys
 from pathlib import Path
 
-from ts_sources import report, run, source_files
+from ts_sources import DEFAULT_ROOT, FEATURES_ROOT, feature_of, report, run, source_files
 
 # tsconfig.json / vite.config.ts のパスエイリアス（`@/*` → `src/*`）。
 ALIAS = "@/"
-ALIAS_ROOT = "src"
-
-# feature 層の位置。この直下で `index.ts` を持つフォルダを 1 つの feature として数える。
-FEATURES_ROOT = f"{ALIAS_ROOT}/features"
+ALIAS_ROOT = DEFAULT_ROOT
 
 # ドメイン層の位置。この直下はカテゴリのフォルダで、モジュールはその下に置く。
 DOMAINS_ROOT = f"{ALIAS_ROOT}/domains"
@@ -124,33 +121,6 @@ def imports_of(path: str, files: set[str]) -> list[tuple[int, str]]:
             if target is not None and target != path:
                 found.append((number, target))
     return found
-
-
-def feature_of(path: str) -> str | None:
-    """そのファイルが属する、いちばん深い feature のパスを求める。
-
-    「`index.ts` を持つフォルダだけを feature と数える」形にはしない。公開 API を
-    持たないフォルダを feature 層の直下に作ったときに、そこだけ検査から外れるため
-    （外れると、そこを踏み台にして他 feature の内部を読めてしまう）。
-
-    辿るのは `src/features/<x>` から続く `features/<y>` のつながりだけで、パス中の
-    最後の `features/` は見ない。`components/features/` のような偶然のフォルダ名を
-    feature 層と取り違えると、そこから先の検査が丸ごとずれる。
-
-    @param path 対象のファイルのパス
-    @returns 属する feature のパス（`editor` / `editor/features/canvas`）。
-        feature の外なら `None`
-    """
-    parts = path.split("/")
-    if len(parts) <= 3 or f"{parts[0]}/{parts[1]}" != FEATURES_ROOT:
-        return None
-    name = parts[2]
-    rest = parts[3:]
-    # 子 feature は親の直下の `features/` にだけ置ける。
-    while len(rest) > 2 and rest[0] == "features":
-        name = f"{name}/features/{rest[1]}"
-        rest = rest[2:]
-    return name
 
 
 def parent_feature_of(name: str) -> str | None:
