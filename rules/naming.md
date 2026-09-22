@@ -1,7 +1,6 @@
 # 命名規約
 
 実例（NG/OK・過去に踏んだ形）は [`harness/case-law/naming.md`](../harness/case-law/naming.md)。
-迷ったときと、指摘を受けたときに読む。
 
 ## 名前と実体を一致させる
 

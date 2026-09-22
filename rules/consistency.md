@@ -1,6 +1,6 @@
 # 整合性規約
 
-実例（NG/OK・過去に踏んだ形）は [`harness/case-law/consistency.md`](../harness/case-law/consistency.md)。迷ったときと、指摘を受けたときに読む。
+実例（NG/OK・過去に踏んだ形）は [`harness/case-law/consistency.md`](../harness/case-law/consistency.md)。
 
 `rules/architecture.md` が **依存してよい向き**を規定するのに対して、この規約は **同時に正しくなければならない範囲**と、**その範囲を壊さない更新経路**を規定する。2 つは別の軸で、両方を満たす必要がある(ロジックの帰属先と import してよい向きは `rules/architecture.md`、何をモックしてよいかは `rules/testing.md`)。
 
@@ -49,6 +49,6 @@
 
 子が別の子の中身を必要とするとき、直接 import せず**親が差し込む**。違反は `import-rule-violations.py` が `feature-public-api` / `feature-sibling` / `feature-ancestor` / `feature-nest-depth` として報告する。
 
-- 中身を `ReactElement` として親から渡す。`ReactNode` は `undefined` を含んで抜けが黙って通る
+- 中身を `ReactElement` として親から渡す(`ReactNode` を避ける理由は `rules/coding.md`「列挙した状態の網羅を型で強制する」)
 - 行き先が複数あるなら `Record<行き先, 定義>` で受け取り、**全行き先が揃っていることを型で保証する**
 - 共有したいのが UI ではなく型やロジックなら、それは `src/domains/` へ上げる対象
