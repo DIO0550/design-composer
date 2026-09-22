@@ -161,6 +161,40 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
   `check-pr-closing-issue.sh` を触ったときは手で走らせる**(「動作確認」)
 - 層 3(`pre-push-*.sh`)には足さない。層 1 と層 2 の両方に置く以上、守る範囲が増えない
 
+#### 撮影範囲の検査は層 1 と層 4 にしかない
+
+`Storybook Visual Regression` は、視覚差分を取る前に**ストーリーが撮影のビューポートに
+収まっているか**を見る。この検査は CI(層 1)と push 前手順(層 4。`implementation-flow`
+フェーズ 7)にだけあり、**層 2 にも層 3 にも置いていない。**
+
+| 計測したもの | 実測(ストーリー 179 本・`node_modules` のある環境) |
+| --- | --- |
+| `pnpm build-storybook` | 10.7 秒 |
+| `pnpm visual:capture` | 3 分 26.7 秒 |
+| 合計 | 3 分 37 秒 |
+
+- **層 2 へ載せない理由は所要時間。** `pre-push` 全体の 6 倍かかり、上の
+  `check-pr-closing-issue-cases.sh` を層 1 だけに置いた物差しに載らない
+- **層 3 へも置かない。** かかる時間は同じで、3 分半の検査は「編集中に走らせる最速
+  フィードバック層」という位置づけと合わない
+- **層 4 が止めるのは、はみ出しを入れる側の PR。** `harness/records/pr-634.md` 指摘 25 が
+  その形で、PropertyPanel の 6 ストーリーが枠の外へ出たまま main へ入った
+
+**層 4 に残る穴は 5 つ。** ゲートは層 1 が持つので、どれも踏んだ先で CI が落とす。
+
+| 残る穴 | 内容 |
+| --- | --- |
+| 走らせ忘れ | 層 4 は指示ベースなので飛ばせる |
+| フォントの差 | **手元で通っても CI と等価ではない。** CI は `fonts-noto-cjk` を入れてから撮るので、書体が違う環境では折り返しが変わって高さが出ない(`harness/records/pr-651.md` 指摘 20。手元で 180 本すべて撮れたのに CI では 6 本が枠外)。撮影前のフォント検査は日本語が豆腐になっていないかしか見ないので、**書体違いは素通りして偽の成功になる** |
+| Chrome | PATH に無ければ走らない(devDependencies に無く、`CHROME_BIN` で与える) |
+| 踏む側は止まらない | main が壊れている間は、自分の差分と無関係な PR が赤を踏む(`pr-639.md` 指摘 19 / `pr-654.md` 指摘 21 はどちらも `src/` を 1 行も触っていない)。手順の条件にも当たらない |
+| 比較は含まない | 手順が走らせるのは撮影まで。`visual:compare` は baseline を gh-pages から取る手間があるので入れていない。**撮影が通っても視覚差分が緑とは限らない** |
+
+検査が読むのは `documentElement` の実寸(`scrollWidth` / `scrollHeight`)だけ。
+[`.github/scripts/storybook-visual-regression.mjs`](../../.github/scripts/storybook-visual-regression.mjs)
+の doc はこれに加えて「クリップされた中身は数に入らない」と書くが、その前提が崩れていることは
+`harness/records/pr-634.md` 指摘 26 が実測している(#645)。
+
 ### 発火しているかを確かめる(カナリア)
 
 `hook-canary.sh` は `echo hook-canary` を必ず deny する。push の前にこれを 1 度実行すると、

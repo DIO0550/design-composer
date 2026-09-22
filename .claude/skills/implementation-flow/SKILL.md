@@ -174,7 +174,7 @@ bash harness/records/count-cases.sh                             # 集計の判�
 bash .claude/hooks/lib/canary-cases.sh                          # カナリアの判定表
 ```
 
-- **下の 15 個は `pnpm` のスクリプトに無い。** `rules-check` と同じ 12 個は git hooks
+- **一覧の下 15 個は `pnpm` のスクリプトに無い。** `rules-check` と同じ 12 個は git hooks
   (道具が揃わない環境では飛ぶ)と CI が、`check-added-*` とその判定表の 3 つは git hooks と
   CI の `lint-suppress` ジョブだけが走らせるので、この 15 行を省くと手元の確認がゲートより
   狭くなる。**doc コメントとテスト規約が CI へ上げられたのは、層 2 と層 3 が
@@ -204,6 +204,23 @@ bash .claude/hooks/lib/canary-cases.sh                          # カナリア�
 - **oxlint と biome は別物。** 片方が 0 件でももう片方は落ちうる
 - **フックは保険ではなく確認。** push 前検査の enforcement は git hooks(`harness/githooks/`)が
   担う。`.claude/hooks/` の `pre-push-*` は同じスクリプトを走らせる即時フィードバック層
+
+**`src/` か `.storybook/` に差分があるときは、撮影範囲も確かめる。** 上の一覧とは別で、
+ゲートは CI(`Storybook Visual Regression`)だけが持つ検査。
+
+```bash
+pnpm build-storybook                                                         # Storybook のビルド
+pnpm visual:capture -- --storybook-dir storybook-static --out visual-actual  # 撮影範囲
+```
+
+- **見るのは視覚差分ではなく、ストーリーが撮影のビューポートに収まっているか**
+  (`rules/ui-verification.md`「差分ではなく撮影で落ちることがある」)。層の置き方と残る穴は
+  `.claude/hooks/README.md`「カバー範囲と残る穴」
+- **拡張子で絞らない。** ストーリーの高さはスキーマの `.ts` だけを変えた差分でも動く
+- **通っても CI と等価ではない。** 日本語の書体が CI(`fonts-noto-cjk`)と違うと折り返しが
+  変わって高さが出ないので、「手元で収まった」を PR 本文に事実として書かない
+- 撮影には Chrome が要る。PATH に `google-chrome` / `chromium` が無ければ
+  `CHROME_BIN=<実行ファイル>` を与える。走らせられなかったときは、その旨を PR 本文に書く
 
 ## フェーズ 8: マージ後の追記
 
