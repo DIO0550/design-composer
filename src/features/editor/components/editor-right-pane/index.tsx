@@ -17,11 +17,6 @@ import type { TokenActions } from "@/features/editor/hooks/use-token-actions";
  */
 type RightPaneParts = Readonly<{ title: ReactNode; body: ReactElement }>;
 
-/**
- * 行き先ごとの右ペインの中身。
- *
- * @returns Tokens ならトークンの編集欄、Layers / Assets ならプロパティパネル
- */
 /** 右ペインの中身を決めるのに要るもの。 */
 type RightPaneSource = Readonly<{
   view: LeftPaneView;
