@@ -17,7 +17,13 @@ function escapeText(value: string): string {
 export const Html = {
   escapeText,
 
-  /** 二重引用符で囲む属性値として安全な形にする。 */
+  /**
+   * 二重引用符で囲む属性値として安全な形にする。
+   *
+   * @param value 埋め込みたい生の値
+   * @returns `escapeText` の置き換えに加えて `"` を `&quot;` にした値。`'` は変換しないので、
+   *   単引用符で囲む属性値には使えない
+   */
   escapeAttribute(value: string): string {
     return escapeText(value).replace(/"/g, "&quot;");
   },
