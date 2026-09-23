@@ -5,6 +5,7 @@ import {
   type JsonDecoded,
   type JsonObject,
 } from "@/utils/Json";
+import { NumberEx } from "@/utils/NumberEx";
 import { Option } from "@/utils/Option";
 import { Range } from "@/utils/Range";
 import { Result } from "@/utils/Result";
@@ -38,6 +39,9 @@ export type GradientToken = Readonly<{
   stops: readonly GradientStop[];
 }>;
 
+/** `background` に渡せる直線グラデーションの値。 */
+export type LinearGradientValue = `linear-gradient(${number}deg, ${string})`;
+
 /** 色の変わり目が持つフィールドの名前。型から導出し、綴りを二重管理しない。 */
 const GradientStopFieldNames = Object.values({
   Color: "color",
@@ -60,6 +64,14 @@ const RatioRange = { min: 0, max: 1 } as const satisfies Range;
 
 /** 色の変わり目として成立する最小の件数。これを下回ると色が変わらない。 */
 const MinStopCount = 2;
+
+/**
+ * 始点からの比率を % にしたときに残す小数の桁数(docs/04-tokens.md「gradients」)。
+ *
+ * 丸めないと `0.007` が `0.7000000000000001%` になる。二進小数で表せない比率は
+ * 100 倍した時点で端数が出るため、綴る側で落とす。
+ */
+const RatioPercentDecimals = 4;
 
 /**
  * 形を読む。`"linear"` 以外は読めない。
@@ -129,6 +141,19 @@ export const GradientStop = {
    */
   toJson(stop: GradientStop): JsonObject {
     return { color: ColorToken.toJson(stop.color), ratio: stop.ratio };
+  },
+
+  /**
+   * `linear-gradient` の 1 stop の綴り。比率は 100 倍して % にする
+   * (docs/04-tokens.md「gradients」)。
+   *
+   * @param stop 綴る色の変わり目
+   * @returns 色と % を空白で繋いだもの。0〜1 の外の比率もそのまま % になる
+   *   (docs/04-tokens.md「値域の扱い」)
+   */
+  cssValue(stop: GradientStop): string {
+    const percent = NumberEx.round(stop.ratio * 100, RatioPercentDecimals);
+    return `${stop.color} ${percent}%`;
   },
 } as const;
 
@@ -211,5 +236,23 @@ export const GradientToken = {
       angle: gradient.angle,
       stops: gradient.stops.map(GradientStop.toJson),
     };
+  },
+
+  /**
+   * CSS の `background` に渡せる綴り。色の変わり目は持っている並びのまま並べる
+   * (docs/04-tokens.md「gradients」)。
+   *
+   * @param gradient 綴るグラデーション
+   * @returns 角度と色の変わり目を並べた `linear-gradient(...)`。色の変わり目が
+   *   2 件に満たなくても綴りは作り、解釈はブラウザに委ねる
+   *   (docs/04-tokens.md「値域の扱い」)
+   */
+  cssValue(gradient: GradientToken): LinearGradientValue {
+    switch (gradient.shape) {
+      case "linear":
+        return `linear-gradient(${gradient.angle}deg, ${gradient.stops
+          .map(GradientStop.cssValue)
+          .join(", ")})`;
+    }
   },
 } as const;
