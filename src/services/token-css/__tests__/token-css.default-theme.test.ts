@@ -83,6 +83,8 @@ test("初期トークンセット全体が CSS カスタムプロパティへ変
     "--typography-caption-line-height": "1.4",
     "--typography-caption-font-weight": "400",
     "--typography-caption-font-family": Font.systemStack(),
+    "--gradients-brand":
+      "linear-gradient(90deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%)",
   });
 });
 
