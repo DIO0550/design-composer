@@ -32,6 +32,14 @@ const ComponentFields = ["publicProps", "type", "props", "children"] as const;
 
 /** binding の JSON 表現との相互変換。 */
 export const PublicPropBinding = {
+  /**
+   * JSON 上の binding を読む。
+   *
+   * @param cursor 読む値と、その位置
+   * @returns 読めたら binding。オブジェクトでなければ `invalid-type`、`node` / `prop` が無ければ
+   *   `missing-field`、文字列でなければ `invalid-type`、ほかのフィールドがあれば
+   *   `unknown-field` の `err`（フィールドの失敗は 1 件で打ち切らずすべて集める）
+   */
   fromJson(cursor: JsonCursor): JsonDecoded<PublicPropBinding> {
     return Result.flatMap(Json.record(cursor), (record) =>
       Json.knownFields(
@@ -46,6 +54,12 @@ export const PublicPropBinding = {
     );
   },
 
+  /**
+   * binding を JSON の値にする。
+   *
+   * @param binding 書き出す binding
+   * @returns `node` と `prop` をこの順に持つオブジェクト
+   */
   toJson(binding: PublicPropBinding): JsonObject {
     return { node: binding.node, prop: binding.prop };
   },
@@ -97,7 +111,13 @@ export type ComponentAsset = Readonly<{
 }>;
 
 export const ComponentAsset = {
-  /** どこからも参照されていない部品か。 */
+  /**
+   * どこからも参照されていない部品か。
+   *
+   * @param asset パレットの 1 件
+   * @returns 部品の外側にも、どの部品定義（自分自身を含む）の中にもこの部品を指す参照ノードが
+   *   無ければ `true`
+   */
   isUnused(asset: ComponentAsset): boolean {
     return asset.refCount === 0;
   },
@@ -149,14 +169,35 @@ function resolveOverrides(
 
 /** 部品定義の判定・展開・binding の解決と、JSON 表現との相互変換。 */
 export const Component = {
+  /**
+   * その名前の prop を部品が外へ公開しているか。
+   *
+   * @param component 見る部品定義
+   * @param name インスタンスから見た公開 prop 名
+   * @returns `publicProps` にその名前が宣言されていれば `true`
+   */
   isPublicProp(component: Component, name: string): boolean {
     return component.publicProps !== undefined && name in component.publicProps;
   },
 
+  /**
+   * 部品が外へ公開している prop 名の一覧。
+   *
+   * @param component 見る部品定義
+   * @returns `publicProps` に書かれた順の並び（数字だけの名前の扱いは `ComponentSet.names` と
+   *   同じ）。`publicProps` が無ければ空
+   */
   publicPropNames(component: Component): readonly string[] {
     return Object.keys(component.publicProps ?? {});
   },
 
+  /**
+   * 公開 prop の繋ぎ先を引く。
+   *
+   * @param component 見る部品定義
+   * @param name インスタンスから見た公開 prop 名
+   * @returns その名前の binding。`publicProps` に宣言されていなければ `none`
+   */
   binding(component: Component, name: string): Option<PublicPropBinding> {
     return Option.fromNullable(component.publicProps?.[name]);
   },
@@ -164,6 +205,10 @@ export const Component = {
   /**
    * 定義の中に直接置かれている参照ノードの参照先。
    * `Node.collectRefs` は参照ノードで止まるため、参照先の定義までは辿らない。
+   *
+   * @param component 見る部品定義
+   * @returns 定義の中の参照ノードが指す部品名を、木の出現順に並べたもの。同じ部品を何度指して
+   *   いればその回数だけ並ぶ。参照ノードが無ければ空
    */
   collectRefs(component: Component): readonly string[] {
     return (component.children ?? []).flatMap(Node.collectRefs);
@@ -172,6 +217,10 @@ export const Component = {
   /**
    * 部品のルートをノードとして表現する。
    * ルートの `name` は components の辞書キーが兼ねるため、外から名前を受け取る。
+   *
+   * @param component ノードにする部品定義
+   * @param name その部品の名前（`components` のキー）。ルートノードの名前になる
+   * @returns `name` を持ち、部品の `type` / `props` / `children` をそのまま持つプリミティブノード
    */
   toNode(component: Component, name: string): Node {
     return {
@@ -187,6 +236,10 @@ export const Component = {
   /**
    * ノードを部品の中身にする（`toNode` の逆向き）。
    * 参照ノードは自身の実体を持たない（既に他の部品を指している）ので部品にできず `none`。
+   *
+   * @param node 部品の中身にするノード
+   * @returns ノードの `type` / `props` / `children` を持つ部品定義（ノードの名前は捨てる）。
+   *   参照ノードなら `none`
    */
   fromNode(node: Node): Option<Component> {
     if (!Node.isPrimitive(node)) {
@@ -199,7 +252,16 @@ export const Component = {
     });
   },
 
-  /** ルートを含む部品内部のノードを名前で探す。 */
+  /**
+   * ルートを含む部品内部のノードを名前で探す。
+   *
+   * @param component 探す先の部品定義
+   * @param componentName その部品の名前（`components` のキー）。ルートの名前として扱う
+   * @param nodeName 探すノードの名前
+   * @returns `nodeName` が `componentName` と同じならルート、それ以外は深さ優先の行きがけ順で
+   *   最初に見つかった内部ノード（名前が重複した不正なドキュメントでも先に見つかった方）。
+   *   見つからなければ `none`
+   */
   findNode(
     component: Component,
     componentName: string,
@@ -213,6 +275,14 @@ export const Component = {
    * （`name`）と内部ノードの両方を取り得る。
    *
    * 宣言されていない overrides のキーは無視する（検証側で報告される）。
+   *
+   * @param component 上書きを適用する部品定義
+   * @param name その部品の名前（`components` のキー）。binding の `node` がこれならルートを指す
+   * @param overrides インスタンスが設定している上書き。キーは公開 prop 名
+   * @returns binding 先の prop を上書きの値に差し替えた部品定義。binding 先が参照ノードなら
+   *   その `overrides` に書き込む。binding 先のノードが無ければその上書きは捨て、名前が重複した
+   *   不正なドキュメントでは同名のノードすべてに書き込む（書き込んだノードの子孫は除く）。
+   *   `publicProps` が無ければ `component` そのもの
    */
   applyOverrides(
     component: Component,
@@ -252,7 +322,16 @@ export const Component = {
     };
   },
 
-  /** ルートの `name` は辞書キーが兼ねるため、値側は `name` を持たない(docs/01-file-format.md)。 */
+  /**
+   * JSON 上の部品定義を読む。
+   *
+   * ルートの `name` は辞書キーが兼ねるため、値側は `name` を持たない(docs/01-file-format.md)。
+   *
+   * @param cursor 読む値と、その位置
+   * @returns 読めたら部品定義。オブジェクトでなければ `invalid-type`、`type` が無ければ
+   *   `missing-field`、フィールドの型が違えば `invalid-type`、`name` を含むほかのフィールドが
+   *   あれば `unknown-field` の `err`（1 件で打ち切らずすべて集める）
+   */
   fromJson(cursor: JsonCursor): JsonDecoded<Component> {
     return Result.flatMap(Json.record(cursor), (record) =>
       Json.knownFields(
@@ -276,7 +355,15 @@ export const Component = {
     );
   },
 
-  /** 公開インターフェース(publicProps)を先に書く(docs/04-tokens.md の並び)。 */
+  /**
+   * 部品定義を JSON の値にする。
+   *
+   * 公開インターフェース(publicProps)を先に書く(docs/04-tokens.md の並び)。
+   *
+   * @param component 書き出す部品定義
+   * @returns `publicProps`（`Json.sortedMap` の並び）・`type`・`props`・`children` の順に持つ
+   *   オブジェクト。未設定か空の `publicProps` / `props` / `children` は書き出さない
+   */
   toJson(component: Component): JsonObject {
     return {
       ...Json.nonEmptyField(
@@ -296,6 +383,14 @@ export const Component = {
     };
   },
 
+  /**
+   * binding が指す内部ノードの名前を付け替える。
+   *
+   * @param publicProps 付け替える部品の公開 prop の宣言
+   * @param renameMap 部品内部の今のノード名から新しい名前への対応
+   * @returns `renameMap` にある名前を指す binding の `node` だけを新しい名前にした宣言。
+   *   公開 prop 名と binding の `prop` は変えない
+   */
   renameBindings(
     publicProps: PublicProps,
     renameMap: Readonly<Record<string, string>>,
@@ -445,15 +540,37 @@ function publicPropTargetWithin(
     : targetInPrimitive(target.value, binding.value.prop);
 }
 
+/** 部品定義の一覧に対する引き当て・部品をまたぐ解決と、JSON 表現との相互変換。 */
 export const ComponentSet = {
+  /**
+   * 定義されている部品名の一覧。
+   *
+   * @param components 見る部品一式
+   * @returns 部品名を定義順（キーの挿入順）に並べたもの。ただし配列の添字として正規な綴りの
+   *   名前（`2` / `10`。識別子の規則を満たしうる）は `Object.keys` の規則で先頭へ数値順に並ぶ
+   */
   names(components: ComponentSet): readonly string[] {
     return Object.keys(components);
   },
 
+  /**
+   * 部品定義を名前で引く。
+   *
+   * @param components 引き先の部品一式
+   * @param name 部品名（`components` のキー）
+   * @returns その名前の部品定義。無ければ `undefined`
+   */
   get(components: ComponentSet, name: string): Component | undefined {
     return components[name];
   },
 
+  /**
+   * その名前の部品が定義されているか。
+   *
+   * @param components 見る部品一式
+   * @param name 部品名（`components` のキー）
+   * @returns 定義されていれば `true`
+   */
   has(components: ComponentSet, name: string): boolean {
     return name in components;
   },
@@ -466,6 +583,12 @@ export const ComponentSet = {
    * binding 先が参照ノードなら相手の部品へ辿り直す。循環参照は検証エラーとして
    * 検出されるが、不正なドキュメントも画面には残る（docs/03「不正ファイル時の挙動」）
    * ため、部品数をホップ上限にして必ず停止させる。
+   *
+   * @param components 引き先の部品一式
+   * @param ref たどり始める部品名と公開 prop 名
+   * @returns binding 先の prop 定義と、部品定義がそこに設定している値（途中の参照ノードが上書き
+   *   していればその値）。部品・binding・binding 先のノードが無いとき、binding 先のノードの型が
+   *   未知かその prop がスキーマに無いとき、循環してホップ上限に達したときは `none`
    */
   publicPropTarget(
     components: ComponentSet,
@@ -487,6 +610,10 @@ export const ComponentSet = {
    *
    * `Node.collectRefs` は参照ノードで止まるため、部品同士が循環していても各定義を 1 回ず
    * つ見るだけで終わる（定義の無い名前への参照はどの部品の数にも入らない）。
+   *
+   * @param components パレットに並べる部品一式
+   * @param outsideNodes 部品の外側にある木の根の並び
+   * @returns 部品 1 つにつき 1 件。参照回数には自分自身の定義の中の参照も入る
    */
   assets(
     components: ComponentSet,
@@ -508,6 +635,10 @@ export const ComponentSet = {
 
   /**
    * ref の展開が自分自身に到達する部品の名前を返す（自己参照・相互参照を含む）。
+   *
+   * @param components 見る部品一式
+   * @returns 循環の輪に入っている部品名を `names` の順に並べたもの。輪を指しているだけで自分は
+   *   輪に入っていない部品は含まない。循環が無ければ空
    */
   circularNames(components: ComponentSet): readonly string[] {
     return ComponentSet.names(components).filter((name) =>
@@ -515,11 +646,24 @@ export const ComponentSet = {
     );
   },
 
-  /** 部品名をキー、ノードを値とする辞書(docs/01-file-format.md「components」)。 */
+  /**
+   * JSON 上の部品一式を読む。部品名をキー、ノードを値とする辞書(docs/01-file-format.md
+   * 「components」)。
+   *
+   * @param cursor 読む値と、その位置
+   * @returns 読めたら部品一式。オブジェクトでなければ `invalid-type` の `err`、部品ごとの失敗は
+   *   `Component.fromJson` の条件で、1 件で打ち切らずすべて集めた `err`
+   */
   fromJson(cursor: JsonCursor): JsonDecoded<ComponentSet> {
     return Json.mapOf(cursor, Component.fromJson);
   },
 
+  /**
+   * 部品一式を JSON の値にする。
+   *
+   * @param components 書き出す部品一式
+   * @returns `Json.sortedMap` の並びで、値を `Component.toJson` で書き出したオブジェクト
+   */
   toJson(components: ComponentSet): JsonObject {
     return Json.sortedMap(components, Component.toJson);
   },
