@@ -12,6 +12,9 @@
  */
 const KebabCasePattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
+/** 先頭を除いた位置にある大文字。camelCase / PascalCase ではそこが語の始まり。 */
+const InnerUpperCasePattern = /(?!^)([A-Z])/g;
+
 /** 綴りの流儀どうしの変換と判定。 */
 export const CaseStyle = {
   /**
@@ -29,16 +32,16 @@ export const CaseStyle = {
   },
 
   /**
-   * camelCase を Capital Case にする(`positionX` → `Position X`)。
-   * camelCase では大文字が語の始まりなので、そこへ空白を入れて先頭を大文字にする
-   * (2語目以降は元から大文字なので改めて変換しない)。
+   * camelCase / PascalCase を Capital Case にする(`positionX` / `PositionX` → `Position X`)。
+   * 先頭以外の大文字の前へ空白を入れ、先頭を大文字にする。
    *
-   * @param camelCase 先頭が小文字の camelCase の綴り。PascalCase を渡すと先頭に空白が付く
-   * @returns 語を空白で区切り、先頭を大文字にした綴り。連続する大文字は 1 字ずつ区切られる
-   *   (`fooURL` → `Foo U R L`)
+   * @param value 変換する綴り
+   * @returns 先頭以外の大文字ごとに空白で区切り、先頭を大文字にした綴り。連続する大文字は
+   *   1 字ずつ区切られ(`fooURL` → `Foo U R L`)、`-` `_` は区切りとして扱わない
+   *   (`width-mode` → `Width-mode`)
    */
-  toCapitalCase(camelCase: string): string {
-    const words = camelCase.replace(/([A-Z])/g, " $1");
+  toCapitalCase(value: string): string {
+    const words = value.replace(InnerUpperCasePattern, " $1");
     return words.charAt(0).toUpperCase() + words.slice(1);
   },
 } as const;
