@@ -73,9 +73,10 @@ tools: Read, Grep, Glob, Bash
   `findIndex` のように戻り値だけが違う形も含む。片方をもう片方に乗せて走査を 1 箇所にする
 - **組み込み型への操作を直書きしていないか。** `array[0]` を書く前に `src/utils/` を読む
 - **形の検証・変換を自前で書く前に、既存のユーティリティモジュールを検索したか**
-  （`分類: duplication-traversal`）。JSON の型ガード(`isXxxObject` 等)や `JSON.parse` の
-  try/catch は `src/utils/Json.ts` の `Json.record` / `Json.arrayOf` / `Json.parseText` 等が
-  既に持つ。同じ形を検証する既存モジュールが無いか `src/utils/` を先に確認する
+  （`分類: duplication-traversal`）。JSON の型ガード(`isXxxObject` 等)は `src/utils/Json.ts` の
+  `Json.record` / `Json.arrayOf` 等が、`JSON.parse` の try/catch は `src/libs/json-text` の
+  `JsonText.parse` が既に持つ。同じ形を検証する既存モジュールが無いか `src/utils/` と `src/libs/` を
+  先に確認する
 - **同じ値を 2 箇所で計算していないか。** 親と子の両方で同じ判定を求めているなら 1 箇所で
 - **同じ事実を、別々のドメインオブジェクトや別々の道筋から独立に導いていないか**
   （`分類: duplication-derivation`）。「両者が食い違う組み合わせ」が型で作れるなら、
