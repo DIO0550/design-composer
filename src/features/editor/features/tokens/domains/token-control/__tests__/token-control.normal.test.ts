@@ -17,7 +17,7 @@ function sectionOf(document: DesignDocument, kind: TokenKind): TokenSection {
   );
 }
 
-test("一覧には5種別すべてのセクションが仕様の順で並ぶ", () => {
+test("一覧にはパネルが描ける5種別のセクションが仕様の順で並ぶ", () => {
   const sections = TokenSection.forDocument(setupDocument());
 
   expect(sections.map((section) => section.kind)).toEqual([
@@ -27,6 +27,23 @@ test("一覧には5種別すべてのセクションが仕様の順で並ぶ", (
     "shadows",
     "typography",
   ]);
+});
+
+test("グラデーションを持つドキュメントでもグラデーションのセクションは出ない", () => {
+  const sections = TokenSection.forDocument(setupDocument());
+
+  /* 対照。同じドキュメントの色は出ているので、一覧そのものが空なのではない。 */
+  expect(sections.map((section) => section.kind)).toContain("colors");
+  expect(sections.map((section) => section.kind)).not.toContain("gradients");
+});
+
+test("グラデーションを選んでも編集欄は出ない", () => {
+  const selection = TokenSelection.create(
+    setupDocument(),
+    Option.some({ kind: "gradients", name: "brand" } as const),
+  );
+
+  expect(TokenControl.forSelection(selection)).toEqual(Option.none);
 });
 
 test("トークンを1つも持たない種別も見出しだけ並ぶ", () => {

@@ -30,6 +30,17 @@ function setupDefaultTheme(): TokenSet {
       body: { fontSize: 16, lineHeight: 1.6, fontWeight: 400 },
       caption: { fontSize: 12, lineHeight: 1.4, fontWeight: 400 },
     },
+    gradients: {
+      brand: {
+        shape: "linear",
+        angle: 90,
+        stops: [
+          { color: "#3b82f6", ratio: 0 },
+          { color: "#2563eb", ratio: 0.5 },
+          { color: "#1d4ed8", ratio: 1 },
+        ],
+      },
+    },
   };
 }
 

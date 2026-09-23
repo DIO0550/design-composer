@@ -1,8 +1,10 @@
 import { type ReactElement, useId, useState } from "react";
-import type { Token, TokenKind, TokenValue } from "@/domains/dcmp/token";
-import { TokenSelection } from "@/domains/session/token-selection";
+import type { TokenValue } from "@/domains/dcmp/token";
+import type { TokenSelection } from "@/domains/session/token-selection";
 import { TokenUsedBy } from "@/features/editor/features/tokens/components/token-used-by";
 import {
+  type EditableToken,
+  type EditableTokenKind,
   TokenControl,
   type TokenControlInput,
 } from "@/features/editor/features/tokens/domains/token-control";
@@ -26,7 +28,7 @@ const KindLabels = {
   radius: "Radius",
   shadows: "Shadow",
   typography: "Typography",
-} as const satisfies Readonly<Record<TokenKind, string>>;
+} as const satisfies Readonly<Record<EditableTokenKind, string>>;
 
 /**
  * 編集しているトークンの見出し（先頭の色見本 + 名前 + 右端に種別）。
@@ -34,7 +36,7 @@ const KindLabels = {
  * 先頭の見本を出すのは色だけ。UI 案が描いているのも色の 14×14 のチップだけで、無い絵を
  * 思いつきで足さない（rules/ui-verification.md）。
  */
-function TokenTitle({ token }: Readonly<{ token: Token }>) {
+function TokenTitle({ token }: Readonly<{ token: EditableToken }>) {
   return (
     <>
       {token.kind === "colors" ? (
@@ -62,17 +64,19 @@ function TokenTitle({ token }: Readonly<{ token: Token }>) {
  * 帯そのもの（`PaneHeading`）は呼び出し側が置く。選んでいないときに中身だけを空にするのは
  * そのためで、帯ごと消すと選択のたびに本文の位置が帯のぶん動く。
  *
- * @returns 見本・名前・種別の綴り。トークンを選んでいなければ何も出さない
+ * @returns 見本・名前・種別の綴り。トークンを選んでいないとき、およびパネルが編集欄を
+ *   持っていない種別を選んでいるときは何も出さない
  */
 function TokenEditorTitle({
   selection,
 }: Readonly<{ selection: TokenSelection }>): ReactElement | null {
-  const token = TokenSelection.token(selection);
+  /* 選択そのものではなく編集欄から引くのは、帯と本文で出る / 出ないを揃えるため。 */
+  const control = TokenControl.forSelection(selection);
 
-  if (!Option.isSome(token)) {
+  if (!Option.isSome(control)) {
     return null;
   }
-  return <TokenTitle token={token.value} />;
+  return <TokenTitle token={control.value.token} />;
 }
 
 /**

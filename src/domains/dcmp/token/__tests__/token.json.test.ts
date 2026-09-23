@@ -14,6 +14,7 @@ test("書かれていない種別は空として読み込まれる", () => {
     radius: {},
     shadows: {},
     typography: {},
+    gradients: {},
   });
 });
 
@@ -38,7 +39,8 @@ test("影の色も読み込んだ時点で小文字の hex に正規化される
 });
 
 test("知らない種別は読み込めない", () => {
-  const result = TokenSet.fromJson(Json.create({ gradients: {} }, "tokens"));
+  /* 実在する 6 種別のどれとも一致せず、かつ紛れやすい綴りを未知の例に選んでいる。 */
+  const result = TokenSet.fromJson(Json.create({ gradient: {} }, "tokens"));
 
   expect(Result.isOk(result)).toBe(false);
 });
@@ -50,6 +52,16 @@ test("種別は仕様の定義順で書き出される", () => {
     radius: { md: 8 },
     shadows: { sm: { x: 0, y: 1, blur: 3, color: "#0000001a" } },
     typography: { body: { fontSize: 16, lineHeight: 1.6, fontWeight: 400 } },
+    gradients: {
+      brand: {
+        shape: "linear",
+        angle: 90,
+        stops: [
+          { color: "#3b82f6", ratio: 0 },
+          { color: "#1d4ed8", ratio: 1 },
+        ],
+      },
+    },
   });
 
   expect(Object.keys(written)).toEqual([
@@ -58,6 +70,7 @@ test("種別は仕様の定義順で書き出される", () => {
     "radius",
     "shadows",
     "typography",
+    "gradients",
   ]);
 });
 
@@ -68,6 +81,25 @@ test("トークンを1つも持たない種別は書き出されない", () => {
   });
 
   expect(written).toEqual({ colors: { primary: "#3b82f6" } });
+});
+
+test("グラデーションを読み書きすると値がそのまま往復する", () => {
+  const gradients = {
+    brand: {
+      shape: "linear",
+      angle: 90,
+      stops: [
+        { color: "#3b82f6", ratio: 0 },
+        { color: "#1d4ed8", ratio: 1 },
+      ],
+    },
+  };
+
+  const tokens = Result.unwrap(
+    TokenSet.fromJson(Json.create({ gradients }, "tokens")),
+  );
+
+  expect(TokenSet.toJson(tokens)).toEqual({ gradients });
 });
 
 test("トークンは名前の昇順で書き出される", () => {

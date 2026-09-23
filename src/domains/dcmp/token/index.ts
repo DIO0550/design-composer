@@ -10,10 +10,12 @@ import { NumberEx } from "@/utils/NumberEx";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 import { ColorToken } from "./color";
+import { GradientToken } from "./gradient";
 import { ShadowToken } from "./shadow";
 import { TypographyToken } from "./typography";
 
 export { ColorToken, Rgb } from "./color";
+export { GradientToken } from "./gradient";
 export {
   type BoxShadowValue,
   type ShadowField,
@@ -41,6 +43,7 @@ export type TokenSet = Readonly<{
   radius: Readonly<Record<string, RadiusToken>>;
   shadows: Readonly<Record<string, ShadowToken>>;
   typography: Readonly<Record<string, TypographyToken>>;
+  gradients: Readonly<Record<string, GradientToken>>;
 }>;
 
 /**
@@ -57,6 +60,7 @@ export const TokenKinds = {
   Radius: "radius",
   Shadows: "shadows",
   Typography: "typography",
+  Gradients: "gradients",
 } as const satisfies Readonly<
   Record<Capitalize<keyof TokenSet>, keyof TokenSet>
 >;
@@ -157,8 +161,8 @@ export const Token = {
    * 値を正規形へ倒す(docs/04-tokens.md「値の形式」)。
    * 保存形式の規則なので、入力 UI ではなく値を受け取る側で通す。
    *
-   * 影も通すのは、影が中に生 hex を持つため(docs/04-tokens.md「shadows」)。
-   * 色の種別だけを通すと、影の中の hex が大文字のまま保存される。
+   * 影とグラデーションも通すのは、どちらも中に生 hex を持つため(docs/04-tokens.md
+   * 「shadows」「gradients」)。色の種別だけを通すと、中の hex が大文字のまま保存される。
    */
   normalized(token: Token): Token {
     switch (token.kind) {
@@ -166,6 +170,8 @@ export const Token = {
         return { ...token, value: ColorToken.normalize(token.value) };
       case "shadows":
         return { ...token, value: ShadowToken.normalized(token.value) };
+      case "gradients":
+        return { ...token, value: GradientToken.normalized(token.value) };
       case "spacing":
       case "radius":
       case "typography":
@@ -207,6 +213,11 @@ function withToken(tokens: TokenSet, token: Token): TokenSet {
       return {
         ...tokens,
         typography: { ...tokens.typography, [token.name]: token.value },
+      };
+    case "gradients":
+      return {
+        ...tokens,
+        gradients: { ...tokens.gradients, [token.name]: token.value },
       };
   }
 }
@@ -269,6 +280,11 @@ function withoutToken(tokens: TokenSet, ref: TokenRef): TokenSet {
         ...tokens,
         typography: withoutName(tokens.typography, ref.name),
       };
+    case "gradients":
+      return {
+        ...tokens,
+        gradients: withoutName(tokens.gradients, ref.name),
+      };
   }
 }
 
@@ -311,6 +327,11 @@ function withRenamedToken(
         ...tokens,
         typography: withRenamedKey(tokens.typography, ref.name, newName),
       };
+    case "gradients":
+      return {
+        ...tokens,
+        gradients: withRenamedKey(tokens.gradients, ref.name, newName),
+      };
   }
 }
 
@@ -349,6 +370,12 @@ function tokensOfKind(tokens: TokenSet, kind: TokenKind): readonly Token[] {
       }));
     case "typography":
       return Object.entries(tokens.typography).map(([name, value]) => ({
+        kind,
+        name,
+        value,
+      }));
+    case "gradients":
+      return Object.entries(tokens.gradients).map(([name, value]) => ({
         kind,
         name,
         value,
@@ -399,13 +426,22 @@ function tokenKindToJson(tokens: TokenSet, kind: TokenKind): JsonObject {
       return Json.sortedMap(tokens.shadows, ShadowToken.toJson);
     case "typography":
       return Json.sortedMap(tokens.typography, TypographyToken.toJson);
+    case "gradients":
+      return Json.sortedMap(tokens.gradients, GradientToken.toJson);
   }
 }
 
 /** トークン一式の生成・検索・編集（追加・改名・削除）と JSON 表現との相互変換。 */
 export const TokenSet = {
   empty(): TokenSet {
-    return { colors: {}, spacing: {}, radius: {}, shadows: {}, typography: {} };
+    return {
+      colors: {},
+      spacing: {},
+      radius: {},
+      shadows: {},
+      typography: {},
+      gradients: {},
+    };
   },
 
   has(tokens: TokenSet, kind: TokenKind, name: string): boolean {
@@ -530,18 +566,20 @@ export const TokenSet = {
   fromJson(cursor: JsonCursor): JsonDecoded<TokenSet> {
     return Result.flatMap(Json.record(cursor), (record) =>
       Json.knownFields(
-        Json.combine5(
+        Json.combine6(
           Json.optionalMap(record, "colors", ColorToken.fromJson),
           Json.optionalMap(record, "spacing", Json.number),
           Json.optionalMap(record, "radius", Json.number),
           Json.optionalMap(record, "shadows", ShadowToken.fromJson),
           Json.optionalMap(record, "typography", TypographyToken.fromJson),
-          (colors, spacing, radius, shadows, typography) => ({
+          Json.optionalMap(record, "gradients", GradientToken.fromJson),
+          (colors, spacing, radius, shadows, typography, gradients) => ({
             colors,
             spacing,
             radius,
             shadows,
             typography,
+            gradients,
           }),
         ),
         record,

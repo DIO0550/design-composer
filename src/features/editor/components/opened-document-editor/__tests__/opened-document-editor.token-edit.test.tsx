@@ -17,6 +17,7 @@ const EditedDocument = DesignDocument.create({
     radius: {},
     shadows: { sm: { x: 0, y: 1, blur: 3, color: "#0000001a" } },
     typography: { body: { fontSize: 16, lineHeight: 1.6, fontWeight: 400 } },
+    gradients: {},
   },
   artboards: [
     {

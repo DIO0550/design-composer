@@ -55,6 +55,12 @@ function entriesOfKind(
         TokenCss.variableName(kind, name),
         ShadowToken.cssValue(shadow),
       ]);
+    /*
+     * グラデーションは出さない。docs/03-schema.md「HTML/CSS へのコンパイル規則」が
+     * 決めているのは `--{種別}-{名前}: 値` の形までで、階調の値の綴りをまだ持たない。
+     */
+    case "gradients":
+      return [];
     case "typography":
       return Object.entries(tokens.typography).flatMap(([name, token]) =>
         TypographyToken.fields().map((field): CssVariableEntry => {

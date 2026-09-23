@@ -82,6 +82,7 @@ test("同じドキュメントからは常に同じ HTML が得られる", () =>
       radius: {},
       shadows: {},
       typography: {},
+      gradients: {},
     },
     artboards: [
       {

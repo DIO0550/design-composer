@@ -4,8 +4,8 @@ import type { TokenSet } from "@/domains/dcmp/token";
 /**
  * デフォルトテーマ（docs/04-tokens.md「初期トークンセット」）。
  *
- * トークン縛り切りのため、tokens が空のドキュメントでは色・余白・角丸・フォント・影を
- * 一切設定できない。そのため新規ドキュメントに必ず同梱する。
+ * トークン縛り切りのため、tokens が空のドキュメントでは色・余白・角丸・フォント・影・
+ * グラデーションを一切設定できない。そのため新規ドキュメントに必ず同梱する。
  */
 const DefaultTheme: TokenSet = {
   colors: {
@@ -31,6 +31,17 @@ const DefaultTheme: TokenSet = {
     subheading: { fontSize: 18, lineHeight: 1.5, fontWeight: 600 },
     body: { fontSize: 16, lineHeight: 1.6, fontWeight: 400 },
     caption: { fontSize: 12, lineHeight: 1.4, fontWeight: 400 },
+  },
+  gradients: {
+    brand: {
+      shape: "linear",
+      angle: 90,
+      stops: [
+        { color: "#3b82f6", ratio: 0 },
+        { color: "#2563eb", ratio: 0.5 },
+        { color: "#1d4ed8", ratio: 1 },
+      ],
+    },
   },
 };
 
