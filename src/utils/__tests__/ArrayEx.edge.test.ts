@@ -67,3 +67,27 @@ test("要素が 1 つの並びから末尾を除くと空になる", () => {
 test("findEqual は空の並びでは none を返す", () => {
   expect(ArrayEx.findEqual([], "a")).toEqual(Option.none);
 });
+
+test("distinct は NaN どうしを等しいとみなし、NaN を 1 つ残す", () => {
+  expect(ArrayEx.distinct([Number.NaN, 1, Number.NaN])).toEqual([
+    Number.NaN,
+    1,
+  ]);
+});
+
+test("prependIfAbsent は NaN が既にあれば NaN を足さない", () => {
+  expect(ArrayEx.prependIfAbsent([1, Number.NaN], Number.NaN)).toEqual([
+    1,
+    Number.NaN,
+  ]);
+});
+
+test("findEqual は NaN を探すと並びの中の NaN を見つける", () => {
+  expect(ArrayEx.findEqual([1, Number.NaN], Number.NaN)).toEqual(
+    Option.some(Number.NaN),
+  );
+});
+
+test("distinct は 0 と -0 を等しいとみなし、先に現れた 0 だけを残す", () => {
+  expect(ArrayEx.distinct([0, -0])).toEqual([0]);
+});
