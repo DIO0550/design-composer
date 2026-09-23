@@ -53,7 +53,7 @@ if python3_usable; then
   echo "pre-push: 名指ししたパス"
   python3 .claude/hooks/lib/named-path-violations.py
 
-  # 上の 3 つの検出器の判定表。判定表をどの層へ置くかと、その理由は
+  # 上の検出器の判定表。判定表をどの層へ置くかと、その理由は
   # .claude/hooks/README.md「カバー範囲と残る穴」。
   echo "pre-push: 判別子の直読みの判定表"
   bash .claude/hooks/lib/result-option-read-cases.sh
@@ -64,6 +64,9 @@ if python3_usable; then
   echo "pre-push: 名指ししたパスの判定表"
   bash .claude/hooks/lib/named-path-cases.sh
 
+  echo "pre-push: doc コメントの判定表"
+  bash .claude/hooks/lib/missing-doc-comments-cases.sh
+
   # CI (frontend.yml の lint-suppress ジョブ) と同じ判定を、push の前にも通す。
   # 引数を省くと origin/main を base に比べる。ここへ下ろした経緯は
   # .claude/skills/harness-growth/SKILL.md「3. フックにする」。
@@ -73,11 +76,14 @@ if python3_usable; then
   echo "pre-push: 追加されたテストヘルパーの重複"
   bash .github/scripts/check-added-test-helper-duplication.sh
 
-  # 上の 2 つが読んでいる判定そのものの判定表。
+  echo "pre-push: 追加された宣言の doc コメント"
+  bash .github/scripts/check-added-doc-comments.sh
+
+  # 上の 3 つが読んでいる判定そのものの判定表。
   echo "pre-push: 追加された分の検査の判定表"
   bash .github/scripts/check-added-cases.sh
 else
-  echo "pre-push: python3 が使えないため doc コメント / import 規約 / 判別子の直読み(と判定表) / story の title(と判定表) / 名指ししたパス(と判定表) / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加された分の検査の判定表 は飛ばします"
+  echo "pre-push: python3 が使えないため doc コメント(と判定表) / import 規約 / 判別子の直読み(と判定表) / story の title(と判定表) / 名指ししたパス(と判定表) / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加された宣言の doc コメント / 追加された分の検査の判定表 は飛ばします"
 fi
 
 # 行数の予算(AGENTS.md「常時ロードは増やさない」)。実測と予算がずれていれば落ちる。
