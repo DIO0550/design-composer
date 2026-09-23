@@ -27,30 +27,64 @@ function outOfRange<T>(
 
 /** 配列に対する汎用操作。 */
 export const ArrayEx = {
+  /**
+   * 既にある要素を指す位置か。
+   *
+   * @param array 位置を当てる並び
+   * @param index 調べたい位置
+   * @returns 0 以上の整数で `array.length` 未満なら true。負数・小数・`NaN` は false
+   */
   isIndexInRange<T>(array: readonly T[], index: number): boolean {
     return NumberEx.isNatural(index) && index < array.length;
   },
 
+  /**
+   * 要素を差し込める位置か。末尾の直後（`array.length`）も差し込める。
+   *
+   * @param array 差し込む先の並び
+   * @param index 調べたい位置
+   * @returns 0 以上の整数で `array.length` 以下なら true。負数・小数・`NaN` は false
+   */
   isInsertionIndexInRange<T>(array: readonly T[], index: number): boolean {
     return NumberEx.isNatural(index) && index <= array.length;
   },
 
-  /** 先頭の要素。空の並びには先頭が無いので `none`。 */
+  /**
+   * 先頭の要素。
+   *
+   * @param array 取り出す並び
+   * @returns 先頭の要素。空の並びと、先頭が `null` / `undefined` の並びは `none`
+   */
   first<T>(array: readonly T[]): Option<NonNullable<T>> {
     return Option.fromNullable(array[0]);
   },
 
-  /** 末尾の要素。空の並びには末尾が無いので `none`。 */
+  /**
+   * 末尾の要素。
+   *
+   * @param array 取り出す並び
+   * @returns 末尾の要素。空の並びと、末尾が `null` / `undefined` の並びは `none`
+   */
   last<T>(array: readonly T[]): Option<NonNullable<T>> {
     return Option.fromNullable(array[array.length - 1]);
   },
 
-  /** 先頭を除いた並び。空の並びは空のまま。 */
+  /**
+   * 先頭を除いた並び。
+   *
+   * @param array 除く前の並び
+   * @returns 先頭を除いた新しい並び。空の並びは空のまま
+   */
   dropFirst<T>(array: readonly T[]): readonly T[] {
     return array.slice(1);
   },
 
-  /** 末尾を除いた並び。空の並びは空のまま。 */
+  /**
+   * 末尾を除いた並び。
+   *
+   * @param array 除く前の並び
+   * @returns 末尾を除いた新しい並び。空の並びは空のまま
+   */
   dropLast<T>(array: readonly T[]): readonly T[] {
     return array.slice(0, -1);
   },
@@ -67,7 +101,13 @@ export const ArrayEx = {
     return array.includes(item) ? array : [item, ...array];
   },
 
-  /** 重複を取り除いた並び。残るのは各値が最初に現れた位置。 */
+  /**
+   * 重複を取り除いた並び。
+   *
+   * @param array 重複を含みうる並び
+   * @returns 各値を最初に現れた位置に 1 つずつ残した新しい並び。等しさは `===` で見るので、
+   *   `NaN` は残らない
+   */
   distinct<T>(array: readonly T[]): readonly T[] {
     return array.filter((item, index) => array.indexOf(item) === index);
   },
@@ -83,6 +123,15 @@ export const ArrayEx = {
     return Option.fromNullable(array.find((item): boolean => item === value));
   },
 
+  /**
+   * その位置へ要素を差し込んだ並び。
+   *
+   * @param array 差し込む前の並び
+   * @param index 差し込む位置。`array.length` なら末尾へ足す
+   * @param item 差し込む要素
+   * @returns 差し込んだ新しい並び。`index` が 0 以上 `array.length` 以下の整数でなければ
+   *   `err`
+   */
   insertAt<T>(
     array: readonly T[],
     index: number,
@@ -94,6 +143,14 @@ export const ArrayEx = {
     return Result.ok([...array.slice(0, index), item, ...array.slice(index)]);
   },
 
+  /**
+   * その位置の要素を置き換えた並び。
+   *
+   * @param array 置き換える前の並び
+   * @param index 置き換える要素の位置
+   * @param item 新しく置く要素
+   * @returns 置き換えた新しい並び。`index` が既にある要素を指していなければ `err`
+   */
   replaceAt<T>(
     array: readonly T[],
     index: number,
@@ -109,6 +166,15 @@ export const ArrayEx = {
     ]);
   },
 
+  /**
+   * 要素を並びの中の別の位置へ動かした並び。
+   *
+   * @param array 動かす前の並び
+   * @param fromIndex 動かす要素の、動かす前の位置
+   * @param toIndex 動かした後にその要素が来る位置
+   * @returns 動かした新しい並び。どちらかの位置が既にある要素を指していなければ `err`
+   *   （両方とも外れていれば `fromIndex` を報告する）
+   */
   moveWithin<T>(
     array: readonly T[],
     fromIndex: number,
