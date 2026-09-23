@@ -103,6 +103,26 @@ test("typography の参照は CSS プロパティ単位の var() になる", () 
   );
 });
 
+test("gradients トークンは角度と stop を並べた linear-gradient 値に合成される", () => {
+  const tokens = {
+    ...TokenSet.empty(),
+    gradients: {
+      brand: {
+        shape: "linear",
+        angle: 90,
+        stops: [
+          { color: "#3b82f6", ratio: 0 },
+          { color: "#1d4ed8", ratio: 1 },
+        ],
+      },
+    },
+  } as const;
+
+  expect(TokenCss.variables(tokens)).toEqual({
+    "--gradients-brand": "linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%)",
+  });
+});
+
 test("style 属性向けの文字列は宣言をセミコロン区切りで並べたものになる", () => {
   const tokens = {
     ...TokenSet.empty(),
@@ -123,7 +143,14 @@ test("出力される種別の順序は TokenSet の種別順に従う", () => {
     radius: { sm: 4 },
     shadows: { sm: { x: 0, y: 1, blur: 3, color: "#0000001a" } },
     typography: { body: { fontSize: 16, lineHeight: 1.6, fontWeight: 400 } },
-  };
+    gradients: {
+      brand: {
+        shape: "linear",
+        angle: 90,
+        stops: [{ color: "#3b82f6", ratio: 0 }],
+      },
+    },
+  } as const;
 
   expect(Object.keys(TokenCss.variables(tokens))).toEqual([
     "--colors-white",
@@ -134,6 +161,7 @@ test("出力される種別の順序は TokenSet の種別順に従う", () => {
     "--typography-body-line-height",
     "--typography-body-font-weight",
     "--typography-body-font-family",
+    "--gradients-brand",
   ]);
 });
 

@@ -17,7 +17,7 @@ function sectionOf(document: DesignDocument, kind: TokenKind): TokenSection {
   );
 }
 
-test("一覧には5種別すべてのセクションが仕様の順で並ぶ", () => {
+test("一覧には6種別すべてのセクションが仕様の順で並ぶ", () => {
   const sections = TokenSection.forDocument(setupDocument());
 
   expect(sections.map((section) => section.kind)).toEqual([
@@ -26,13 +26,14 @@ test("一覧には5種別すべてのセクションが仕様の順で並ぶ", (
     "radius",
     "shadows",
     "typography",
+    "gradients",
   ]);
 });
 
 test("トークンを1つも持たない種別も見出しだけ並ぶ", () => {
   const document = DesignDocument.create({});
 
-  expect(TokenSection.forDocument(document)).toHaveLength(5);
+  expect(TokenSection.forDocument(document)).toHaveLength(6);
 });
 
 test("色の行には色見本と hex が出る", () => {
@@ -79,6 +80,28 @@ test("書体の行の見本は太さと解決済みのフォントを持つ", ()
     fontWeight: 400,
     fontFamily: Font.systemStack(),
   });
+});
+
+test("グラデーションの行にはグラデーションそのものの見本が出る", () => {
+  const [row] = sectionOf(setupDocument(), "gradients").rows;
+
+  expect(row.preview).toEqual({
+    kind: "gradient",
+    value: "linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%)",
+  });
+});
+
+test("グラデーションの行の値には CSS の綴りが出る", () => {
+  const [row] = sectionOf(setupDocument(), "gradients").rows;
+
+  expect(row.valueText).toBe(
+    "linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%)",
+  );
+});
+
+/* 値の編集欄は #611 で足す。ここが空でなくなったらこのテストを消す。 */
+test("グラデーションの編集欄は値の行を持たない", () => {
+  expect(fieldsOf("gradients", "brand")).toEqual([]);
 });
 
 test("色を選ぶとカラーピッカーと不透明度の入力欄が並ぶ", () => {

@@ -9,7 +9,7 @@ import { TokenList } from "../index";
 
 const Noop = () => {};
 
-/** 5 種別すべてに 1 件ずつ持つドキュメント。 */
+/** 6 種別すべてに 1 件ずつ持つドキュメント。 */
 function setupDocument(): DesignDocument {
   return DesignDocument.create({
     tokens: {
@@ -19,6 +19,16 @@ function setupDocument(): DesignDocument {
       shadows: { sm: { x: 0, y: 1, blur: 3, color: "#0000001a" } },
       typography: {
         body: { fontSize: 16, lineHeight: 1.6, fontWeight: 400 },
+      },
+      gradients: {
+        brand: {
+          shape: "linear",
+          angle: 90,
+          stops: [
+            { color: "#3b82f6", ratio: 0 },
+            { color: "#1d4ed8", ratio: 1 },
+          ],
+        },
       },
     },
   });
@@ -40,10 +50,17 @@ function renderList(
   );
 }
 
-test("5種別すべての見出しが件数付きで並ぶ", () => {
+test("6種別すべての見出しが件数付きで並ぶ", () => {
   renderList();
 
-  for (const kind of ["colors", "spacing", "radius", "shadows", "typography"]) {
+  for (const kind of [
+    "colors",
+    "spacing",
+    "radius",
+    "shadows",
+    "typography",
+    "gradients",
+  ]) {
     expect(
       screen.getByRole("button", { name: new RegExp(`^${kind} 1$`) }),
     ).toBeDefined();

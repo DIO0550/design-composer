@@ -166,6 +166,7 @@ test("トークン名が識別子規則に違反していると invalid-identifi
       radius: {},
       shadows: {},
       typography: {},
+      gradients: {},
     },
   });
 
@@ -187,6 +188,7 @@ test("kebab-case の名前とトークン名だけのドキュメントはエラ
       radius: {},
       shadows: {},
       typography: { body: { fontSize: 16, lineHeight: 1.6, fontWeight: 400 } },
+      gradients: {},
     },
     components: {
       "primary-button": {

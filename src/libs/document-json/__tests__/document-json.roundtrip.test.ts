@@ -19,6 +19,17 @@ function setupDocument(): DesignDocument {
           fontFamily: "Inter",
         },
       },
+      gradients: {
+        brand: {
+          shape: "linear",
+          angle: 90,
+          stops: [
+            { color: "#3b82f6", ratio: 0 },
+            { color: "#2563eb", ratio: 0.5 },
+            { color: "#1d4ed8", ratio: 1 },
+          ],
+        },
+      },
     },
     components: {
       "primary-button": {
@@ -142,4 +153,38 @@ test("読み書きを繰り返してもドキュメントの意味は変わら�
   const twice = Result.unwrap(DocumentJson.parse(DocumentJson.serialize(once)));
 
   expect(twice).toEqual(document);
+});
+
+test("グラデーションを持つドキュメントは stops の並びを保った正規形で書き出される", () => {
+  /* ratio を降順にしておく。昇順だと ratio で並べ替える実装と区別が付かない。 */
+  const messy = `{"artboards":[],"components":{},"formatVersion":"1.0","tokens":{"gradients":{"brand":{"angle":90,"shape":"linear","stops":[{"color":"#3B82F6","ratio":1},{"color":"#1D4ED8","ratio":0}]}}}}`;
+
+  const normalized = DocumentJson.serialize(
+    Result.unwrap(DocumentJson.parse(messy)),
+  );
+
+  expect(normalized).toBe(`{
+  "formatVersion": "1.1",
+  "tokens": {
+    "gradients": {
+      "brand": {
+        "shape": "linear",
+        "angle": 90,
+        "stops": [
+          {
+            "color": "#3b82f6",
+            "ratio": 1
+          },
+          {
+            "color": "#1d4ed8",
+            "ratio": 0
+          }
+        ]
+      }
+    }
+  },
+  "components": {},
+  "artboards": []
+}
+`);
 });

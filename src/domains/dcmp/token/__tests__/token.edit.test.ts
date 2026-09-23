@@ -203,6 +203,28 @@ test("種別のトークンを持っている定義順で引ける", () => {
   ]);
 });
 
+test("グラデーションを足すと stop の色は小文字の hex で保持される", () => {
+  const added = Result.unwrap(
+    TokenSet.add(TokenSet.empty(), {
+      kind: "gradients",
+      name: "brand",
+      value: {
+        shape: "linear",
+        angle: 90,
+        stops: [
+          { color: "#3B82F6", ratio: 0 },
+          { color: "#1D4ED8", ratio: 1 },
+        ],
+      },
+    }),
+  );
+
+  expect(added.gradients.brand.stops.map((stop) => stop.color)).toEqual([
+    "#3b82f6",
+    "#1d4ed8",
+  ]);
+});
+
 test("影を足すと中の色は小文字の hex で保持される", () => {
   const added = Result.unwrap(
     TokenSet.add(TokenSet.empty(), {

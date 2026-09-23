@@ -21,7 +21,7 @@ type OpenKinds = ReadonlySet<TokenKind>;
 /**
  * 値の見本。値そのものは行の文字として出ているので、飾りとして読み上げから外す。
  *
- * @returns 種別に応じた見本（色見本 / 長さの帯 / 影 / 書体の見本）
+ * @returns 種別に応じた見本（色見本 / 長さの帯 / 影 / 書体の見本 / グラデーション）
  */
 function PreviewSlot({
   preview,
@@ -53,6 +53,20 @@ function PreviewSlot({
           <span
             style={{ boxShadow: preview.value }}
             className="inline-block size-2.5 rounded-[2px] bg-white"
+          />
+        </span>
+      );
+    case "gradient":
+      return (
+        <span
+          aria-hidden="true"
+          style={{ width: `${PreviewWidthPx}px` }}
+          className="inline-flex h-3 shrink-0 items-center justify-center"
+        >
+          {/* グラデーションそのものが値なのでクラス名に固定できない。影の見本と同じ枠に収める。 */}
+          <span
+            style={{ background: preview.value }}
+            className="inline-block size-2.5 rounded-[2px]"
           />
         </span>
       );
@@ -95,10 +109,14 @@ function TokenRowItem({
       className="flex w-full items-center gap-2 rounded py-1 pr-3 pl-6 text-xs hover:bg-gray-100 aria-[current=true]:bg-blue-100 aria-[current=true]:text-blue-900"
     >
       <PreviewSlot preview={row.preview} />
-      <span className="min-w-0 flex-1 truncate text-left">
-        {row.token.name}
-      </span>
-      <span className="shrink-0 text-[10px] text-gray-400">
+      {/*
+        余りを取るのは名前ではなく値のほう。グラデーションの値は
+        `linear-gradient(...)` の綴り 1 本で他の種別の 2 倍以上あり、名前に余りを取らせると
+        （`flex-1` は `flex-basis:0` なので伸びる余地が負のとき grow が効かず）名前が幅 0 まで
+        潰れて消える。名前へ上限を置くのは、長い名前が値を追い出さないため。
+      */}
+      <span className="max-w-[60%] truncate text-left">{row.token.name}</span>
+      <span className="min-w-0 flex-1 truncate text-right text-[10px] text-gray-400">
         {row.valueText}
       </span>
     </button>

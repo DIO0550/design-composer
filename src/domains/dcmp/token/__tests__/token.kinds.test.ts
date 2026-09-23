@@ -1,13 +1,14 @@
 import { expect, test } from "vitest";
 import { TokenSet } from "../index";
 
-test("トークンの種別を列挙すると 04-tokens で定義された5種別が返る", () => {
+test("トークンの種別を列挙すると 04-tokens で定義された6種別が返る", () => {
   expect(TokenSet.kinds()).toEqual([
     "colors",
     "spacing",
     "radius",
     "shadows",
     "typography",
+    "gradients",
   ]);
 });
 

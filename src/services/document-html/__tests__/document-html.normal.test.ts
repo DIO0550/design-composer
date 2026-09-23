@@ -13,6 +13,7 @@ function setupTokens(): TokenSet {
     typography: {
       body: { fontSize: 16, lineHeight: 1.6, fontWeight: 400 },
     },
+    gradients: {},
   };
 }
 

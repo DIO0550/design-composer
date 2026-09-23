@@ -9,6 +9,7 @@ test("空の TokenSet を作成すると全種別が空オブジェクトにな�
     radius: {},
     shadows: {},
     typography: {},
+    gradients: {},
   });
 });
 

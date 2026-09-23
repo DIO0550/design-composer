@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { fn } from "storybook/test";
+import { expect, fn, screen, userEvent } from "storybook/test";
 import { LeftPaneShell } from "@/components/__stories__/left-pane-shell";
 import {
   NoTokenSelection,
@@ -34,5 +34,20 @@ export const ColorSelected: Story = {
   name: "色トークンを選択中",
   args: {
     selection: sampleTokenSelection({ kind: "colors", name: "primary" }),
+  },
+};
+
+/**
+ * 開いた直後は colors しか開かないので、グラデーションの見本と、値が名前を押し出さない
+ * ことは `play` を通さないと視覚差分に載らない。
+ */
+export const GradientsOpen: Story = {
+  name: "gradients を開いている",
+  args: { selection: NoTokenSelection },
+  play: async () => {
+    await userEvent.click(
+      screen.getByRole("button", { name: /gradients/, expanded: false }),
+    );
+    await expect(screen.getByRole("button", { name: /brand/ })).toBeDefined();
   },
 };

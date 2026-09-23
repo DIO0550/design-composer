@@ -49,6 +49,7 @@ test("ドキュメント全体を読み込むと仕様どおりのドメイン�
       radius: { md: 8 },
       shadows: { sm: { x: 0, y: 1, blur: 3, color: "#0000001a" } },
       typography: { body: { fontSize: 16, lineHeight: 1.6, fontWeight: 400 } },
+      gradients: {},
     },
     components: {
       "primary-button": {
@@ -125,6 +126,7 @@ test("トークンを1つも持たない種別は空として読み込まれる"
     radius: {},
     shadows: {},
     typography: {},
+    gradients: {},
   });
 });
 

@@ -16,7 +16,7 @@ const NoSelectionMessage = "トークンが選択されていません";
 /**
  * 帯の右端に出す種別の綴り。
  *
- * UI 案（docs/Design Composer.html）に実在するのは `Color` だけで、残る 4 つはここで決めた。
+ * UI 案（docs/Design Composer.html）に実在するのは `Color` だけで、残る 5 つはここで決めた。
  *
  * 種別を足して綴りを足し忘れると、ここがコンパイルエラーになる。
  */
@@ -26,6 +26,7 @@ const KindLabels = {
   radius: "Radius",
   shadows: "Shadow",
   typography: "Typography",
+  gradients: "Gradient",
 } as const satisfies Readonly<Record<TokenKind, string>>;
 
 /**
@@ -190,8 +191,8 @@ function ValueField({
  * UI 案 docs/Design Composer.html の右ペイン）。
  *
  * 何の入力欄を何行出すかは `TokenControl.forSelection` が決めるため、ここには種別名で分岐
- * するコードを置かない。複合オブジェクトの種別（shadows / typography）はフィールドの数だけ
- * 行が並ぶ。
+ * するコードを置かない。shadows / typography はフィールドの数だけ行が並び、gradients は
+ * 値の欄を 1 行も持たない。
  *
  * @returns 名前の欄・値の入力欄・削除のボタンと、参照元の一覧。
  *   トークンを選んでいなければ、選ばれていないことの知らせ

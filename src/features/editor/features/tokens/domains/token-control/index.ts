@@ -2,6 +2,8 @@ import type { DesignDocument } from "@/domains/dcmp/design-document";
 import {
   type BoxShadowValue,
   ColorToken,
+  GradientToken,
+  type LinearGradientValue,
   Rgb,
   type ShadowField,
   ShadowFieldEdit,
@@ -36,7 +38,8 @@ export type TokenPreview =
   | Readonly<{ kind: "swatch"; color: ColorToken }>
   | Readonly<{ kind: "bar"; widthPx: number }>
   | Readonly<{ kind: "shadow"; value: BoxShadowValue }>
-  | Readonly<{ kind: "letters"; fontWeight: number; fontFamily: string }>;
+  | Readonly<{ kind: "letters"; fontWeight: number; fontFamily: string }>
+  | Readonly<{ kind: "gradient"; value: LinearGradientValue }>;
 
 /** 一覧の1行。 */
 export type TokenRow = Readonly<{
@@ -83,7 +86,7 @@ export type TokenFieldTarget =
     }>;
 
 /**
- * 編集欄の1行。色は2行（RGB と不透明度）、複合の種別はフィールドの数だけ並ぶ。
+ * 編集欄の1行。色は2行（RGB と不透明度）、shadows / typography はフィールドの数だけ並ぶ。
  *
  * `name` は行の識別子で、1つのトークンの中で一意（複合の種別はフィールド名）。
  */
@@ -139,10 +142,10 @@ const TypographyLabels = {
 } as const satisfies Readonly<Record<TypographyField, string>>;
 
 /**
- * 一覧の行に出す見本。種別によって色見本・大きさ・書体と形が変わる。
+ * 一覧の行に出す見本。種別によって形が変わる。
  *
  * @param token 見本を出したいトークン
- * @returns 種別に応じた見本（色見本 / 長さの帯 / 影 / 書体の見本）
+ * @returns 種別に応じた見本（色見本 / 長さの帯 / 影 / 書体の見本 / グラデーション）
  */
 function previewOf(token: Token): TokenPreview {
   switch (token.kind) {
@@ -156,6 +159,8 @@ function previewOf(token: Token): TokenPreview {
       };
     case "shadows":
       return { kind: "shadow", value: ShadowToken.cssValue(token.value) };
+    case "gradients":
+      return { kind: "gradient", value: GradientToken.cssValue(token.value) };
     /*
      * 書体の見本は太さと書体だけを見せる。fontSize / lineHeight を効かせると
      * 行の高さが値で伸び縮みするため（長さの見本を頭打ちにしているのと同じ理由）。
@@ -185,6 +190,8 @@ function valueTextOf(token: Token): string {
       return Px.create(token.value);
     case "shadows":
       return ShadowToken.cssValue(token.value);
+    case "gradients":
+      return GradientToken.cssValue(token.value);
     case "typography":
       return `${Px.create(token.value.fontSize)} / ${token.value.lineHeight} / ${token.value.fontWeight}`;
   }
@@ -301,7 +308,7 @@ function typographyInput(
  * その種別の編集欄の並び。複合の種別はフィールドの定義順を保つ。
  *
  * @param token 編集したいトークン
- * @returns 上から並べる編集欄。単一値の種別は 1 件
+ * @returns 上から並べる編集欄。単一値の種別は 1 件、gradients は 0 件
  */
 function fieldsOf(token: Token): readonly TokenControlField[] {
   switch (token.kind) {
@@ -365,6 +372,13 @@ function fieldsOf(token: Token): readonly TokenControlField[] {
         input: typographyInput(token.value, field),
         target: { kind: "typography", typography: token.value, field },
       }));
+    /*
+     * 可変長の `stops` を編集する欄は、行を足す・減らす操作まで含めて設計しないと
+     * 値域（docs/04-tokens.md「値域の扱い」の 2 件以上）を保てない。欄を先に出すと
+     * stop を 1 件へ減らせる経路だけが先にできるので、揃うまで出さない。
+     */
+    case "gradients":
+      return [];
   }
 }
 

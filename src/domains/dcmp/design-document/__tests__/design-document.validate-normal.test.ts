@@ -11,6 +11,7 @@ test("すべての props がスキーマに適合するドキュメントはエ�
       typography: {
         body: { fontSize: 14, lineHeight: 20, fontWeight: 400 },
       },
+      gradients: {},
     },
     artboards: [
       {

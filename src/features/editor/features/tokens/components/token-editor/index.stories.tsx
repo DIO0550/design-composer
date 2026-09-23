@@ -86,3 +86,11 @@ export const RadiusSelected: Story = {
   name: "角丸トークンを選択中",
   args: { selection: sampleTokenSelection({ kind: "radius", name: "md" }) },
 };
+
+/** 値の入力欄を 1 行も持たない唯一の種別。名前欄と削除だけが並ぶ。 */
+export const GradientSelected: Story = {
+  name: "グラデーショントークンを選択中",
+  args: {
+    selection: sampleTokenSelection({ kind: "gradients", name: "brand" }),
+  },
+};

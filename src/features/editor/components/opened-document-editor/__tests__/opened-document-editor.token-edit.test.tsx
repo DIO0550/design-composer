@@ -6,7 +6,7 @@ import { rightPaneHeading } from "@/features/editor/__tests__/right-pane-heading
 import { leftPane, propertyPane, renderOpenedDocument } from "./setup";
 
 /**
- * 5 種別すべてに 1 件以上のトークンを持ち、そのうち 1 つ（`primary`）が
+ * 色を 2 件、長さ・影・書体を 1 件ずつ持ち、そのうち 1 つ（`primary`）が
  * キャンバス上のノードから使われているドキュメント。
  * 使用中でも消せること（docs/04-tokens.md「スキーマデフォルトとの関係」）まで見られる。
  */
@@ -17,6 +17,7 @@ const EditedDocument = DesignDocument.create({
     radius: {},
     shadows: { sm: { x: 0, y: 1, blur: 3, color: "#0000001a" } },
     typography: { body: { fontSize: 16, lineHeight: 1.6, fontWeight: 400 } },
+    gradients: {},
   },
   artboards: [
     {

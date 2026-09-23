@@ -5,6 +5,7 @@ import type {
 } from "@/domains/dcmp/css-declaration";
 import { CssDeclarations } from "@/domains/dcmp/css-declaration";
 import {
+  GradientToken,
   ShadowToken,
   type TokenKind,
   TokenSet,
@@ -28,6 +29,25 @@ export type CssVariables = Readonly<Record<CssVariableName, string>>;
 type CssVariableEntry = readonly [CssVariableName, string];
 
 /**
+ * 1 トークンが 1 つのカスタムプロパティになる種別を、名前と値の対の並びにする。
+ *
+ * @param kind 書き出す種別
+ * @param tokens その種別の、名前で引ける入れ物
+ * @param cssValue 値を CSS の値の綴りにする手段
+ * @returns カスタムプロパティ名と値の対の並び
+ */
+function singleVariableEntries<T>(
+  kind: SingleVariableTokenKind,
+  tokens: Readonly<Record<string, T>>,
+  cssValue: (value: T) => string,
+): readonly CssVariableEntry[] {
+  return Object.entries(tokens).map(([name, value]) => [
+    TokenCss.variableName(kind, name),
+    cssValue(value),
+  ]);
+}
+
+/**
  * その種別のトークンを、カスタムプロパティ名と値の対の並びにする。
  *
  * @param tokens 書き出し元のトークン一式
@@ -40,21 +60,18 @@ function entriesOfKind(
 ): readonly CssVariableEntry[] {
   switch (kind) {
     case "colors":
-      return Object.entries(tokens.colors).map(([name, value]) => [
-        TokenCss.variableName(kind, name),
-        value,
-      ]);
+      return singleVariableEntries(kind, tokens.colors, (color) => color);
     case "spacing":
     case "radius":
-      return Object.entries(tokens[kind]).map(([name, value]) => [
-        TokenCss.variableName(kind, name),
-        Px.create(value),
-      ]);
+      return singleVariableEntries(kind, tokens[kind], Px.create);
     case "shadows":
-      return Object.entries(tokens.shadows).map(([name, shadow]) => [
-        TokenCss.variableName(kind, name),
-        ShadowToken.cssValue(shadow),
-      ]);
+      return singleVariableEntries(kind, tokens.shadows, ShadowToken.cssValue);
+    case "gradients":
+      return singleVariableEntries(
+        kind,
+        tokens.gradients,
+        GradientToken.cssValue,
+      );
     case "typography":
       return Object.entries(tokens.typography).flatMap(([name, token]) =>
         TypographyToken.fields().map((field): CssVariableEntry => {

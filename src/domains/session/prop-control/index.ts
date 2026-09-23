@@ -268,6 +268,7 @@ function inputOf(
       };
     case "shadows":
     case "typography":
+    case "gradients":
       return { kind: "token", names };
   }
 }

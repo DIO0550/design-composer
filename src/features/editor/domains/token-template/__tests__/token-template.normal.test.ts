@@ -49,3 +49,18 @@ test("書体を足すと本文の書体から始まる", () => {
     value: { fontSize: 16, lineHeight: 1.6, fontWeight: 400 },
   });
 });
+
+test("グラデーションを足すと 2 色の直線グラデーションから始まる", () => {
+  expect(TokenTemplate.toToken({ kind: "gradients" }, new Set())).toEqual({
+    kind: "gradients",
+    name: "gradient",
+    value: {
+      shape: "linear",
+      angle: 90,
+      stops: [
+        { color: "#3b82f6", ratio: 0 },
+        { color: "#1d4ed8", ratio: 1 },
+      ],
+    },
+  });
+});
