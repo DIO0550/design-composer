@@ -8,6 +8,7 @@ import {
   JsonLexicalScanner,
   type JsonScanError,
 } from "@/libs/json-lexical-scanner";
+import { JsonText } from "@/libs/json-text";
 import { Json, type JsonDecodeError, type JsonValue } from "@/utils/Json";
 import { Result } from "@/utils/Result";
 
@@ -72,7 +73,7 @@ function fromDecodeErrors(
  *   `syntax-error` の失敗
  */
 function parseJson(text: string): Result<unknown, readonly DocumentError[]> {
-  return Result.mapErr(Json.parseText(text), (message) => [
+  return Result.mapErr(JsonText.parse(text), (message) => [
     {
       kind: "syntax-error",
       message,
