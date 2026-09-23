@@ -55,6 +55,14 @@ function entriesOfKind(
         TokenCss.variableName(kind, name),
         ShadowToken.cssValue(shadow),
       ]);
+    /*
+     * グラデーションはカスタムプロパティを出さない。docs/03-schema.md「HTML/CSS へのコン
+     * パイル規則」が決めているのは `--{種別}-{名前}: 値` の形までで、階調の「値」をどう綴
+     * るか（`linear-gradient()` の組み立て・角度の単位・比率の書き方）は仕様がまだ持って
+     * いない。綴りをここで決めると、仕様が決まったときに出力が黙って変わる。
+     */
+    case "gradients":
+      return [];
     case "typography":
       return Object.entries(tokens.typography).flatMap(([name, token]) =>
         TypographyToken.fields().map((field): CssVariableEntry => {

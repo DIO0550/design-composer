@@ -1,6 +1,6 @@
 import { type ReactElement, useId, useState } from "react";
 import type { Token, TokenKind, TokenValue } from "@/domains/dcmp/token";
-import { TokenSelection } from "@/domains/session/token-selection";
+import type { TokenSelection } from "@/domains/session/token-selection";
 import { TokenUsedBy } from "@/features/editor/features/tokens/components/token-used-by";
 import {
   TokenControl,
@@ -16,7 +16,7 @@ const NoSelectionMessage = "トークンが選択されていません";
 /**
  * 帯の右端に出す種別の綴り。
  *
- * UI 案（docs/Design Composer.html）に実在するのは `Color` だけで、残る 4 つはここで決めた。
+ * UI 案（docs/Design Composer.html）に実在するのは `Color` だけで、残る 5 つはここで決めた。
  *
  * 種別を足して綴りを足し忘れると、ここがコンパイルエラーになる。
  */
@@ -26,6 +26,7 @@ const KindLabels = {
   radius: "Radius",
   shadows: "Shadow",
   typography: "Typography",
+  gradients: "Gradient",
 } as const satisfies Readonly<Record<TokenKind, string>>;
 
 /**
@@ -62,17 +63,22 @@ function TokenTitle({ token }: Readonly<{ token: Token }>) {
  * 帯そのもの（`PaneHeading`）は呼び出し側が置く。選んでいないときに中身だけを空にするのは
  * そのためで、帯ごと消すと選択のたびに本文の位置が帯のぶん動く。
  *
- * @returns 見本・名前・種別の綴り。トークンを選んでいなければ何も出さない
+ * @returns 見本・名前・種別の綴り。トークンを選んでいないとき、およびパネルが編集欄を
+ *   持っていない種別を選んでいるときは何も出さない
  */
 function TokenEditorTitle({
   selection,
 }: Readonly<{ selection: TokenSelection }>): ReactElement | null {
-  const token = TokenSelection.token(selection);
+  /*
+   * 選択そのものではなく編集欄から引くのは、帯と本文で出る / 出ないが割れないため
+   * （`TokenControl.forSelection` はパネルが編集欄を持たない種別でも `none` を返す）。
+   */
+  const control = TokenControl.forSelection(selection);
 
-  if (!Option.isSome(token)) {
+  if (!Option.isSome(control)) {
     return null;
   }
-  return <TokenTitle token={token.value} />;
+  return <TokenTitle token={control.value.token} />;
 }
 
 /**

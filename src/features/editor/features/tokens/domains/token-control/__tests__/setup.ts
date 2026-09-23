@@ -8,7 +8,7 @@ import {
 import { Option } from "@/utils/Option";
 
 /**
- * 5 種別すべてに 1 件ずつ持つドキュメント。
+ * 6 種別すべてに 1 件以上持つドキュメント。
  *
  * 色は 3 通りを持たせている。`primary` は alpha 無し、`veil` は alpha 付きで
  * 不透明度の既定（100%）と違う答えになるもの、`broken` は hex として読めない値
@@ -23,6 +23,16 @@ export function setupDocument(): DesignDocument {
       shadows: { sm: { x: 0, y: 1, blur: 3, color: "#0000001a" } },
       typography: {
         body: { fontSize: 16, lineHeight: 1.6, fontWeight: 400 },
+      },
+      gradients: {
+        brand: {
+          shape: "linear",
+          angle: 90,
+          stops: [
+            { color: "#3b82f6", ratio: 0 },
+            { color: "#1d4ed8", ratio: 1 },
+          ],
+        },
       },
     },
   });

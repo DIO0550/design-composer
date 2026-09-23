@@ -21,6 +21,7 @@ function setupDocument(): DesignDocument {
       typography: {
         body: { fontSize: 16, lineHeight: 1.6, fontWeight: 400 },
       },
+      gradients: {},
     },
     artboards: [{ name: "home", width: 360, height: 240, children: [] }],
   });

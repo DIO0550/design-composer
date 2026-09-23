@@ -172,6 +172,7 @@ test("種別の違うトークンに同名があってもエラーにならな�
       radius: { md: 4 },
       shadows: {},
       typography: {},
+      gradients: {},
     },
   });
 
@@ -186,6 +187,7 @@ test("トークン名とノード名が同じでもエラーにならない", ()
       radius: {},
       shadows: {},
       typography: { body: { fontSize: 16, lineHeight: 1.6, fontWeight: 400 } },
+      gradients: {},
     },
     artboards: [
       {

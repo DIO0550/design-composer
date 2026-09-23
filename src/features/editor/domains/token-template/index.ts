@@ -11,10 +11,11 @@ export type TokenTemplate = Readonly<{ kind: TokenKind }>;
 /**
  * 追加直後のトークンに入れる値。
  *
- * 影と書体だけは 0 や空から始めない（影を 0/0/0 にすると一覧の見本にもキャンバスにも何
- * も出ない）。どちらも docs/04-tokens.md「初期トークンセット」が挙げている値（`shadows.sm`
- * / `typography.body`）を選んだ。デフォルトテーマとは値が一致するだけで参照はしていない
- * （追加直後の見え方はこちらの関心事）。
+ * 影・書体・グラデーションは 0 や空から始めない（影を 0/0/0 にすると一覧の見本にもキャン
+ * バスにも何も出ず、色の変わり目が 2 件に満たないグラデーションは階調にならない）。いずれ
+ * も docs/04-tokens.md「初期トークンセット」が挙げている値（`shadows.sm` /
+ * `typography.body` / `gradients.brand`）を選んだ。デフォルトテーマとは値が一致するだけで
+ * 参照はしていない（追加直後の見え方はこちらの関心事）。
  */
 const InitialValues = {
   colors: { kind: "colors", value: "#000000" },
@@ -27,6 +28,17 @@ const InitialValues = {
   typography: {
     kind: "typography",
     value: { fontSize: 16, lineHeight: 1.6, fontWeight: 400 },
+  },
+  gradients: {
+    kind: "gradients",
+    value: {
+      shape: "linear",
+      angle: 90,
+      stops: [
+        { color: "#3b82f6", ratio: 0 },
+        { color: "#1d4ed8", ratio: 1 },
+      ],
+    },
   },
 } as const satisfies Readonly<Record<TokenKind, TokenValue>>;
 
@@ -43,6 +55,7 @@ const BaseNames = {
   radius: "radius",
   shadows: "shadow",
   typography: "typography",
+  gradients: "gradient",
 } as const satisfies Readonly<Record<TokenKind, string>>;
 
 export const TokenTemplate = {

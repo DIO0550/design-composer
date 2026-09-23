@@ -24,6 +24,7 @@ test("トークンは名前の昇順で書き出される", () => {
       radius: {},
       shadows: {},
       typography: {},
+      gradients: {},
     },
   });
 
@@ -44,6 +45,7 @@ test("トークンを1つも持たない種別は書き出されない", () => {
       radius: {},
       shadows: {},
       typography: {},
+      gradients: {},
     },
   });
 
@@ -60,6 +62,7 @@ test("色は小文字の hex に正規化されて書き出される", () => {
       radius: {},
       shadows: { sm: { x: 0, y: 1, blur: 3, color: "#0000001A" } },
       typography: {},
+      gradients: {},
     },
   });
 

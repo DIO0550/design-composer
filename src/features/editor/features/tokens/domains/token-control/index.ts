@@ -31,6 +31,39 @@ import { Option } from "@/utils/Option";
  * 綴りはパネル側にあるという違いによる。
  */
 
+/**
+ * トークンパネルが一覧の見本と編集欄を持っている種別。
+ *
+ * グラデーションだけ外れるのは、見本の絵も可変長の色の変わり目を編集する欄も UI 案
+ * （docs/Design Composer.html）に無く、docs/06-ui.md も見せ方を持っていないため。
+ * 無い絵を思いつきで足さない（rules/ui-verification.md）。
+ */
+type PanelTokenKind = Exclude<TokenKind, "gradients">;
+
+/** パネルが一覧と編集欄を出せるトークン。 */
+type PanelToken = Extract<Token, { kind: PanelTokenKind }>;
+
+/**
+ * パネルがその種別の見本と編集欄を持っているか。
+ *
+ * @param kind 見たい種別
+ * @returns 見本と編集欄があれば真
+ */
+function isPanelKind(kind: TokenKind): kind is PanelTokenKind {
+  return kind !== "gradients";
+}
+
+/**
+ * パネルがそのトークンの見本と編集欄を持っているか。
+ * 判定の規則は種別だけで決まるので `isPanelKind` に任せる。
+ *
+ * @param token 見たいトークン
+ * @returns 見本と編集欄があれば真
+ */
+function isPanelToken(token: Token): token is PanelToken {
+  return isPanelKind(token.kind);
+}
+
 /** 一覧の行に出す値の見せ方。種別ごとに何を見せられるかが違う。 */
 export type TokenPreview =
   | Readonly<{ kind: "swatch"; color: ColorToken }>
@@ -144,7 +177,7 @@ const TypographyLabels = {
  * @param token 見本を出したいトークン
  * @returns 種別に応じた見本（色見本 / 長さの帯 / 影 / 書体の見本）
  */
-function previewOf(token: Token): TokenPreview {
+function previewOf(token: PanelToken): TokenPreview {
   switch (token.kind) {
     case "colors":
       return { kind: "swatch", color: token.value };
@@ -176,7 +209,7 @@ function previewOf(token: Token): TokenPreview {
  * @param token 値を読みたいトークン
  * @returns 1行で読める値の文字列
  */
-function valueTextOf(token: Token): string {
+function valueTextOf(token: PanelToken): string {
   switch (token.kind) {
     case "colors":
       return token.value;
@@ -195,21 +228,26 @@ export const TokenSection = {
    * トークン一覧に出すセクションの並び。種別は `TokenSet.kinds` の順、種別内は TokenSet が持
    * つ定義順を保つ。
    *
-   * トークンが1つも無い種別も見出しだけ出す（足す先が画面から消えないため）。
+   * トークンが1つも無い種別も見出しだけ出す（足す先が画面から消えないため）。ただしパネル
+   * が見本と編集欄を持っていない種別は見出しごと出さない（`PanelTokenKind`）。
    *
    * @param document トークンの出どころ
-   * @returns 種別ごとのセクションの並び。トークンが無い種別も 1 つ並ぶ
+   * @returns パネルが描ける種別のセクションの並び。トークンが無い種別も 1 つ並ぶ
    */
   forDocument(document: DesignDocument): readonly TokenSection[] {
     const tokens = document.tokens;
-    return TokenSet.kinds().map((kind) => ({
-      kind,
-      rows: TokenSet.tokensOf(tokens, kind).map((token) => ({
-        token,
-        preview: previewOf(token),
-        valueText: valueTextOf(token),
-      })),
-    }));
+    return TokenSet.kinds()
+      .filter(isPanelKind)
+      .map((kind) => ({
+        kind,
+        rows: TokenSet.tokensOf(tokens, kind)
+          .filter(isPanelToken)
+          .map((token) => ({
+            token,
+            preview: previewOf(token),
+            valueText: valueTextOf(token),
+          })),
+      }));
   },
 } as const;
 
@@ -303,7 +341,7 @@ function typographyInput(
  * @param token 編集したいトークン
  * @returns 上から並べる編集欄。単一値の種別は 1 件
  */
-function fieldsOf(token: Token): readonly TokenControlField[] {
+function fieldsOf(token: PanelToken): readonly TokenControlField[] {
   switch (token.kind) {
     case "colors":
       return colorFields(
@@ -461,13 +499,15 @@ export const TokenControl = {
    * 選択中のトークンの編集欄（docs/06-ui.md「編集操作の一覧」の tokens 編集）。
    *
    * @param selection ドキュメントと、その中で選ばれているトークン
-   * @returns 編集欄一式。トークンを選んでいなければ `none`
+   * @returns 編集欄一式。トークンを選んでいないとき、およびパネルが編集欄を持っていない
+   *   種別を選んでいるときは `none`
    */
   forSelection(selection: TokenSelection): Option<TokenControl> {
-    return Option.map(TokenSelection.token(selection), (token) => ({
-      token,
-      fields: fieldsOf(token),
-    }));
+    return Option.flatMap(TokenSelection.token(selection), (token) =>
+      isPanelToken(token)
+        ? Option.some({ token, fields: fieldsOf(token) })
+        : Option.none,
+    );
   },
 
   /**

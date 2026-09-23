@@ -19,6 +19,7 @@ function setupDocument(): DesignDocument {
           fontFamily: "Inter",
         },
       },
+      gradients: {},
     },
     components: {
       "primary-button": {

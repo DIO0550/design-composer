@@ -3,7 +3,12 @@ import type { TokenSet } from "@/domains/dcmp/token";
 import { Font } from "@/utils/Font";
 import { TokenCss } from "../index";
 
-/** docs/04-tokens.md「初期トークンセット(デフォルトテーマ)」の全体。 */
+/**
+ * docs/04-tokens.md「初期トークンセット(デフォルトテーマ)」のうち、カスタムプロパティへ
+ * 出る種別。グラデーションを空にしてあるのは、階調の値の綴りを仕様がまだ持っておらず
+ * (docs/03-schema.md「HTML/CSS へのコンパイル規則」)、出ないことをここで固定すると
+ * 綴りが決まったときにこのテストが仕様と逆を向くため。
+ */
 function setupDefaultTheme(): TokenSet {
   return {
     colors: {
@@ -30,6 +35,7 @@ function setupDefaultTheme(): TokenSet {
       body: { fontSize: 16, lineHeight: 1.6, fontWeight: 400 },
       caption: { fontSize: 12, lineHeight: 1.4, fontWeight: 400 },
     },
+    gradients: {},
   };
 }
 

@@ -62,6 +62,20 @@ test("デフォルトテーマは heading / subheading / body / caption の4種�
   });
 });
 
+test("デフォルトテーマは brand の1件の gradients を持つ", () => {
+  expect(DocumentTemplate.Default.tokens.gradients).toEqual({
+    brand: {
+      shape: "linear",
+      angle: 90,
+      stops: [
+        { color: "#3b82f6", ratio: 0 },
+        { color: "#2563eb", ratio: 0.5 },
+        { color: "#1d4ed8", ratio: 1 },
+      ],
+    },
+  });
+});
+
 test("デフォルトテーマはトークン種別を1つも空にしない", () => {
   const { tokens } = DocumentTemplate.Default;
 
