@@ -1,4 +1,5 @@
 import { Json, type JsonCursor, type JsonDecoded } from "@/utils/Json";
+import { NumberEx } from "@/utils/NumberEx";
 import { Option } from "@/utils/Option";
 import { Range } from "@/utils/Range";
 import { Result } from "@/utils/Result";
@@ -68,13 +69,13 @@ const RgbLength = 7;
 const AlphaPercentRange: Range = { min: 0, max: 100 };
 
 /**
- * 保存形式の 2 桁と行き来しても値が変わらない、% の刻み。
+ * 保存形式の 2 桁と行き来しても値が変わらない、% に残す小数の桁数。
  *
- * 0.1% 刻みにすると 256 通りの alpha すべてが同じ 2 桁へ戻る。整数 % だと 155 通りが別の値
+ * 小数第1位まで残すと 256 通りの alpha すべてが同じ 2 桁へ戻る。整数 % だと 155 通りが別の値
  * になり（`#rrggbb01` は 0% を経由して完全な透明になる）、往復で値が変わらないという仕様を
  * 満たせない。
  */
-const PercentStepsPerUnit = 10;
+const AlphaPercentDecimals = 1;
 
 export const ColorToken = {
   /**
@@ -127,10 +128,7 @@ export const ColorToken = {
   alphaPercentOf(color: ColorToken): number {
     const alpha = alphaOf(color);
     const byte = alpha === "" ? OpaqueAlphaByte : Number.parseInt(alpha, 16);
-    return (
-      Math.round((byte / OpaqueAlphaByte) * 100 * PercentStepsPerUnit) /
-      PercentStepsPerUnit
-    );
+    return NumberEx.round((byte / OpaqueAlphaByte) * 100, AlphaPercentDecimals);
   },
 
   /**
