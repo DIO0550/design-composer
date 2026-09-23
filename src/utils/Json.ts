@@ -119,7 +119,13 @@ function isEmpty(value: JsonValue): boolean {
 
 /** JSON の値を位置つきで読み進めるためのカーソル操作。 */
 export const Json = {
-  /** テキストから読み込んだ値を、位置つきのカーソルにする。 */
+  /**
+   * テキストから読み込んだ値を、位置つきのカーソルにする。
+   *
+   * @param value テキストから読み込んだ値
+   * @param path その値の位置。省くとルート（空文字）で、子の位置は先頭に `.` を付けずに継ぐ
+   * @returns `value` と `path` を持つカーソル
+   */
   create(value: unknown, path = ""): JsonCursor {
     return { value, path };
   },
@@ -142,6 +148,14 @@ export const Json = {
     }
   },
 
+  /**
+   * 失敗 1 件のデコード結果を作る。
+   *
+   * @param kind 失敗の種類
+   * @param path 失敗した値の位置
+   * @param message 人が読む説明
+   * @returns その 1 件だけを並びに持つ `err`。失敗は並びで持つので、他の失敗と連結できる
+   */
   error(
     kind: JsonDecodeErrorKind,
     path: string,
@@ -150,10 +164,22 @@ export const Json = {
     return Result.err([{ kind, path, message }]);
   },
 
+  /**
+   * デコード結果が持つ失敗。
+   *
+   * @param result 失敗を取り出す結果
+   * @returns 失敗ならその一覧。成功なら空の並び
+   */
   errorsOf(result: JsonDecoded<unknown>): readonly JsonDecodeError[] {
     return Result.isOk(result) ? [] : result.error;
   },
 
+  /**
+   * カーソルの位置の値を文字列として読む。
+   *
+   * @param cursor 読む値と、その位置
+   * @returns 文字列ならその値。それ以外なら `cursor` の位置を持つ `invalid-type` の `err`
+   */
   string(cursor: JsonCursor): JsonDecoded<string> {
     if (typeof cursor.value === "string") {
       return Result.ok(cursor.value);
@@ -165,6 +191,12 @@ export const Json = {
     );
   },
 
+  /**
+   * カーソルの位置の値を数値として読む。
+   *
+   * @param cursor 読む値と、その位置
+   * @returns 数値ならその値。それ以外なら `cursor` の位置を持つ `invalid-type` の `err`
+   */
   number(cursor: JsonCursor): JsonDecoded<number> {
     if (typeof cursor.value === "number") {
       return Result.ok(cursor.value);
@@ -176,7 +208,13 @@ export const Json = {
     );
   },
 
-  /** オブジェクトであることを確かめ、フィールドを引けるカーソルにする。 */
+  /**
+   * オブジェクトであることを確かめ、フィールドを引けるカーソルにする。
+   *
+   * @param cursor 読む値と、その位置
+   * @returns 同じ位置を持つオブジェクトのカーソル。配列・`null`・それ以外の値なら
+   *   `invalid-type` の `err`
+   */
   record(cursor: JsonCursor): JsonDecoded<JsonRecordCursor> {
     if (isJsonRecord(cursor.value)) {
       return Result.ok({ record: cursor.value, path: cursor.path });
@@ -188,6 +226,12 @@ export const Json = {
     );
   },
 
+  /**
+   * カーソルの位置の値を配列として読む。要素はまだ読まない。
+   *
+   * @param cursor 読む値と、その位置
+   * @returns 配列ならその値。それ以外なら `cursor` の位置を持つ `invalid-type` の `err`
+   */
   array(cursor: JsonCursor): JsonDecoded<readonly unknown[]> {
     if (Array.isArray(cursor.value)) {
       return Result.ok(cursor.value);
@@ -199,6 +243,14 @@ export const Json = {
     );
   },
 
+  /**
+   * 必須のフィールドを読む。
+   *
+   * @param cursor フィールドを引くオブジェクト
+   * @param key 読むフィールドの名前
+   * @param decode フィールドの値を読む手続き
+   * @returns `decode` の結果。フィールドがオブジェクト自身に無ければ `missing-field` の `err`
+   */
   required<T>(
     cursor: JsonRecordCursor,
     key: string,
@@ -211,6 +263,14 @@ export const Json = {
     return decode(field);
   },
 
+  /**
+   * 省略できるフィールドを読む。
+   *
+   * @param cursor フィールドを引くオブジェクト
+   * @param key 読むフィールドの名前
+   * @param decode フィールドの値を読む手続き
+   * @returns フィールドがオブジェクト自身に無ければ `undefined` の `ok`。あれば `decode` の結果
+   */
   optional<T>(
     cursor: JsonRecordCursor,
     key: string,
@@ -222,7 +282,14 @@ export const Json = {
     return decode(fieldCursor(cursor, key));
   },
 
-  /** 省略されたときに空として扱うフィールド。 */
+  /**
+   * 省略されたときに空として扱う、名前をキーとする辞書のフィールドを読む。
+   *
+   * @param cursor フィールドを引くオブジェクト
+   * @param key 読むフィールドの名前
+   * @param decodeValue 辞書の値 1 つを読む手続き
+   * @returns フィールドがオブジェクト自身に無ければ空の辞書の `ok`。あれば `mapOf` の結果
+   */
   optionalMap<T>(
     cursor: JsonRecordCursor,
     key: string,
@@ -234,7 +301,14 @@ export const Json = {
     return Json.mapOf(fieldCursor(cursor, key), decodeValue);
   },
 
-  /** 名前をキーとする辞書をデコードする。 */
+  /**
+   * 名前をキーとする辞書をデコードする。
+   *
+   * @param cursor 読む値と、その位置
+   * @param decodeValue 辞書の値 1 つを読む手続き
+   * @returns すべての値を読めたらキーと読んだ値の辞書。オブジェクトでなければ
+   *   `invalid-type` の `err`、値の失敗は 1 件で打ち切らずすべて集めた `err`
+   */
   mapOf<T>(
     cursor: JsonCursor,
     decodeValue: JsonDecoder<T>,
@@ -252,6 +326,14 @@ export const Json = {
     });
   },
 
+  /**
+   * 配列と、その要素をデコードする。
+   *
+   * @param cursor 読む値と、その位置
+   * @param decodeItem 要素 1 つを読む手続き
+   * @returns すべての要素を読めたら並び。配列でなければ `invalid-type` の `err`、要素の失敗は
+   *   `path[i]` の位置を付けて 1 件で打ち切らずすべて集めた `err`
+   */
   arrayOf<T>(
     cursor: JsonCursor,
     decodeItem: JsonDecoder<T>,
@@ -268,6 +350,12 @@ export const Json = {
   /**
    * 知らないフィールドをエラーとして加える。
    * 黙って捨てると無警告のデータ消失になるため、読み手が気付ける形で報告する。
+   *
+   * @param result 同じオブジェクトの既知のフィールドを読んだ結果
+   * @param cursor 読んだオブジェクト
+   * @param knownFields 読むことになっているフィールドの名前
+   * @returns 知らないフィールドが 1 つ以上あれば、`result` が成功でも失敗にし、`result` の
+   *   エラーの後ろに `unknown-field` を足した `err`。無ければ `result` のまま
    */
   knownFields<T>(
     result: JsonDecoded<T>,
@@ -289,6 +377,13 @@ export const Json = {
     return Result.err([...Json.errorsOf(result), ...errors]);
   },
 
+  /**
+   * デコード結果の並びを、並びのデコード結果にまとめる。
+   *
+   * @param results まとめる結果
+   * @returns すべて成功なら値を同じ順に並べた `ok`。1 つでも失敗なら、失敗した結果のエラーを
+   *   順に連ねた `err`
+   */
   collect<T>(results: readonly JsonDecoded<T>[]): JsonDecoded<readonly T[]> {
     const errors = results.flatMap(Json.errorsOf);
     if (errors.length > 0) {
@@ -307,6 +402,12 @@ export const Json = {
    * 引数を3つまでに抑える規約(`rules/coding.md`)の例外として個数ごとに用意する。
    * 各引数は型が異なるため1つの型にまとめられず、可変長にすると
    * タプル型を通すために `as` が必要になる(こちらも規約違反になる)。
+   *
+   * @param a `build` の 1 つ目の引数になる結果
+   * @param b `build` の 2 つ目の引数になる結果
+   * @param build すべて成功したときに値を組み立てる
+   * @returns すべて成功なら `build` の戻り値の `ok`。1 つでも失敗なら、失敗した結果のエラーを
+   *   引数の順に連ねた `err`
    */
   combine2<A, B, R>(
     a: JsonDecoded<A>,
@@ -320,6 +421,16 @@ export const Json = {
     return Result.err([...Json.errorsOf(a), ...Json.errorsOf(b)]);
   },
 
+  /**
+   * 3 つのデコード結果をまとめる（打ち切らない理由と個数ごとに用意する理由は `combine2`）。
+   *
+   * @param a `build` の 1 つ目の引数になる結果
+   * @param b `build` の 2 つ目の引数になる結果
+   * @param c `build` の 3 つ目の引数になる結果
+   * @param build すべて成功したときに値を組み立てる
+   * @returns すべて成功なら `build` の戻り値の `ok`。1 つでも失敗なら、失敗した結果のエラーを
+   *   引数の順に連ねた `err`
+   */
   combine3<A, B, C, R>(
     a: JsonDecoded<A>,
     b: JsonDecoded<B>,
@@ -337,6 +448,17 @@ export const Json = {
     ]);
   },
 
+  /**
+   * 4 つのデコード結果をまとめる（打ち切らない理由と個数ごとに用意する理由は `combine2`）。
+   *
+   * @param a `build` の 1 つ目の引数になる結果
+   * @param b `build` の 2 つ目の引数になる結果
+   * @param c `build` の 3 つ目の引数になる結果
+   * @param d `build` の 4 つ目の引数になる結果
+   * @param build すべて成功したときに値を組み立てる
+   * @returns すべて成功なら `build` の戻り値の `ok`。1 つでも失敗なら、失敗した結果のエラーを
+   *   引数の順に連ねた `err`
+   */
   combine4<A, B, C, D, R>(
     a: JsonDecoded<A>,
     b: JsonDecoded<B>,
@@ -357,6 +479,18 @@ export const Json = {
     ]);
   },
 
+  /**
+   * 5 つのデコード結果をまとめる（打ち切らない理由と個数ごとに用意する理由は `combine2`）。
+   *
+   * @param a `build` の 1 つ目の引数になる結果
+   * @param b `build` の 2 つ目の引数になる結果
+   * @param c `build` の 3 つ目の引数になる結果
+   * @param d `build` の 4 つ目の引数になる結果
+   * @param e `build` の 5 つ目の引数になる結果
+   * @param build すべて成功したときに値を組み立てる
+   * @returns すべて成功なら `build` の戻り値の `ok`。1 つでも失敗なら、失敗した結果のエラーを
+   *   引数の順に連ねた `err`
+   */
   combine5<A, B, C, D, E, R>(
     a: JsonDecoded<A>,
     b: JsonDecoded<B>,
@@ -383,6 +517,19 @@ export const Json = {
     ]);
   },
 
+  /**
+   * 6 つのデコード結果をまとめる（打ち切らない理由と個数ごとに用意する理由は `combine2`）。
+   *
+   * @param a `build` の 1 つ目の引数になる結果
+   * @param b `build` の 2 つ目の引数になる結果
+   * @param c `build` の 3 つ目の引数になる結果
+   * @param d `build` の 4 つ目の引数になる結果
+   * @param e `build` の 5 つ目の引数になる結果
+   * @param f `build` の 6 つ目の引数になる結果
+   * @param build すべて成功したときに値を組み立てる
+   * @returns すべて成功なら `build` の戻り値の `ok`。1 つでも失敗なら、失敗した結果のエラーを
+   *   引数の順に連ねた `err`
+   */
   combine6<A, B, C, D, E, F, R>(
     a: JsonDecoded<A>,
     b: JsonDecoded<B>,
@@ -418,6 +565,10 @@ export const Json = {
    * 名前をキーとする辞書を名前の昇順で書き出す。
    * キー順を値だけから決めることで、同じ値からは
    * 構築の経緯によらず常に同じ出力になる。
+   *
+   * @param record 書き出す辞書
+   * @param serializeValue 辞書の値 1 つを JSON の値にする手続き
+   * @returns キーを昇順に並べ、値を `serializeValue` で書き出したオブジェクト
    */
   sortedMap<T>(
     record: Readonly<Record<string, T>>,
@@ -430,12 +581,25 @@ export const Json = {
     );
   },
 
-  /** 値が未設定なら現れないフィールド。 */
+  /**
+   * 値が未設定なら現れないフィールド。
+   *
+   * @param key フィールドの名前
+   * @param value フィールドの値。`undefined` は未設定
+   * @returns `{ [key]: value }`。未設定なら空のオブジェクト（スプレッドで結合すると何も足さない）
+   */
   definedField(key: string, value: JsonValue | undefined): JsonObject {
     return value === undefined ? {} : { [key]: value };
   },
 
-  /** 値が未設定または空なら現れないフィールド。 */
+  /**
+   * 値が未設定または空なら現れないフィールド。
+   *
+   * @param key フィールドの名前
+   * @param value フィールドの値。`undefined` は未設定
+   * @returns `{ [key]: value }`。未設定か、要素・フィールドが 0 個の配列・オブジェクトなら
+   *   空のオブジェクト（空文字・`0`・`false` は空とみなさず出す）
+   */
   nonEmptyField(key: string, value: JsonValue | undefined): JsonObject {
     if (value === undefined || isEmpty(value)) {
       return {};

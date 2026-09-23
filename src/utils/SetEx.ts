@@ -1,9 +1,11 @@
 /** 集合に対する汎用操作。 */
 export const SetEx = {
   /**
-   * 値の出入りを反転した新しい集合。入っていれば取り除き、入っていなければ足す。
+   * 値の出入りを反転した新しい集合。
    *
-   * 元の集合は変えない（rules/coding.md「引数で受け取った値を変更しない」）。
+   * @param set 反転する前の集合。変えない
+   * @param value 出入りを反転する値
+   * @returns `value` が入っていれば取り除き、入っていなければ足した新しい集合
    */
   toggle<T>(set: ReadonlySet<T>, value: T): ReadonlySet<T> {
     const next = new Set(set);

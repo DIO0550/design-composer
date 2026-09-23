@@ -7,6 +7,11 @@ const SystemStack =
 
 /** フォントファミリの指定に使う文字列。 */
 export const Font = {
+  /**
+   * OS 標準フォントへ順にフォールバックするフォントスタック。
+   *
+   * @returns `font-family` にそのまま書ける値。呼ぶたびに同じ文字列
+   */
   systemStack(): string {
     return SystemStack;
   },
