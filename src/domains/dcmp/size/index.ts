@@ -151,7 +151,7 @@ export const Size = {
    * 長さ側の prop 名は軸の名前そのもの (`width` / `height`)。
    *
    * @param axis どちらの軸のモードか
-   * @returns `width` なら `widthMode`、`height` なら `heightMode`
+   * @returns `axis` の側のモードを持つ prop の名前
    */
   modeProp(axis: Axis): "widthMode" | "heightMode" {
     return axis === "width" ? "widthMode" : "heightMode";

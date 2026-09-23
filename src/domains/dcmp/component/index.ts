@@ -115,8 +115,7 @@ export const ComponentAsset = {
    * どこからも参照されていない部品か。
    *
    * @param asset パレットの 1 件
-   * @returns 部品の外側にも、どの部品定義（自分自身を含む）の中にもこの部品を指す参照ノードが
-   *   無ければ `true`
+   * @returns 参照回数が 0 なら `true`（数え方は `ComponentSet.assets`）
    */
   isUnused(asset: ComponentAsset): boolean {
     return asset.refCount === 0;
@@ -184,8 +183,7 @@ export const Component = {
    * 部品が外へ公開している prop 名の一覧。
    *
    * @param component 見る部品定義
-   * @returns `publicProps` に書かれた順の並び（数字だけの名前の扱いは `ComponentSet.names` と
-   *   同じ）。`publicProps` が無ければ空
+   * @returns `publicProps` の `Object.keys` の列挙順の並び。`publicProps` が無ければ空
    */
   publicPropNames(component: Component): readonly string[] {
     return Object.keys(component.publicProps ?? {});
@@ -546,8 +544,7 @@ export const ComponentSet = {
    * 定義されている部品名の一覧。
    *
    * @param components 見る部品一式
-   * @returns 部品名を定義順（キーの挿入順）に並べたもの。ただし配列の添字として正規な綴りの
-   *   名前（`2` / `10`。識別子の規則を満たしうる）は `Object.keys` の規則で先頭へ数値順に並ぶ
+   * @returns 部品名を `Object.keys` の列挙順で並べたもの
    */
   names(components: ComponentSet): readonly string[] {
     return Object.keys(components);

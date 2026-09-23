@@ -54,8 +54,7 @@ export const AxisLength = {
    *
    * @param axis 長さを測る軸
    * @param length その軸方向の長さ(px)。小数・負数を含んでよい
-   * @returns 四捨五入して(`.5` は大きい側へ)負を 0 にした長さを持つ対。`NaN` と
-   *   `Infinity` は丸められずそのまま残る
+   * @returns 四捨五入して(`.5` は大きい側へ)負を 0 にした長さを持つ対
    */
   create(axis: Axis, length: number): AxisLength {
     return { axis, length: Math.max(0, Math.round(length)) };

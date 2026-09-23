@@ -53,9 +53,9 @@ export const ResolvedProps = {
   /**
    * プリミティブのノードの props を、そのノードの型のスキーマで解決する。
    *
-   * @param node 解決するノード。`type` がスキーマにある primitive であること（未知の `type`
-   *   ではスキーマを引けず `TypeError` になる）
+   * @param node 解決するノード
    * @returns `resolve` にノードの型と props（未設定なら空）を渡した結果
+   * @throws `type` がスキーマに無い primitive の型のとき（スキーマを引けず `TypeError`）
    */
   forNode(node: PrimitiveNode): ResolvedProps<PrimitiveType> {
     return ResolvedProps.resolve(node.type as PrimitiveType, node.props ?? {});

@@ -115,8 +115,7 @@ export const Props = {
    * 1件ずつ扱う消費側のために、設定されている prop を並びへ展開する。
    *
    * @param props 展開する props
-   * @returns 設定されている prop ごとの名前と値。並びは `Object.entries` の列挙順(配列の添字と
-   *   して正規な綴りの名前が先に数値順で並び、残りは設定した順)
+   * @returns 設定されている prop ごとの名前と値。並びは `Object.entries` の列挙順
    */
   toAssignments(props: Props): readonly PropAssignment[] {
     return Object.entries(props).map(([name, value]) => ({ name, value }));

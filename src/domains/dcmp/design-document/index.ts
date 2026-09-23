@@ -591,8 +591,8 @@ export const DesignDocument = {
    * @param node 挿入するノード。名前の一意性は見ないので、既にある名前もそのまま入る
    *   （複製を挿すなら `insertNodeCopy`）
    * @returns 挿入したドキュメント。親の名前が artboard にも artboard 配下のノードにも無い
-   *   （部品定義の中のノードも含む）なら `parent-not-found`、親が子を持てない（Text・参照
-   *   ノード）なら `children-not-allowed`、`index` が 0 以上子の数以下の整数でなければ
+   *   （部品定義の中のノードも含む）なら `parent-not-found`、親が参照ノードか、スキーマが
+   *   子を認めていないプリミティブなら `children-not-allowed`、`index` が 0 以上子の数以下の整数でなければ
    *   `index-out-of-range`。名前が重複した不正なドキュメントでは artboard の名前を先に当て、
    *   ノードは並びで先にある artboard の中で、各階層の直下の並びを子孫より先に見て当てる
    */

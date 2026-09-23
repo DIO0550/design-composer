@@ -22,7 +22,7 @@ export const CssDirection = {
    * 子が並ぶ方向にあたる軸。
    *
    * @param direction flex コンテナの向き
-   * @returns `row` なら `width`、`column` なら `height`
+   * @returns 子が横に並ぶなら幅の軸、縦に並ぶなら高さの軸
    */
   mainAxis(direction: CssDirection): Axis {
     return direction === CssDirections.Row ? "width" : "height";
@@ -45,7 +45,7 @@ export const CssDirection = {
    *
    * @param direction `fill` の子を並べる親の向き
    * @param axis `fill` を指定した軸
-   * @returns 主軸なら `flex-grow: 1`、交差軸なら `align-self: stretch` の 1 宣言
+   * @returns 主軸なら残りの長さへ伸ばす宣言、交差軸なら親いっぱいへ引き伸ばす宣言
    */
   fillDeclaration(direction: CssDirection, axis: Axis): CssDeclaration {
     return CssDirection.isMainAxis(direction, axis)

@@ -32,7 +32,7 @@ export const Selection = {
    * artboard を選ばれているものにする。種別は常に `artboard`。
    *
    * @param artboard 選ばれた artboard
-   * @returns artboard の名前と種別 `artboard` の対
+   * @returns artboard の名前を持つ選択
    */
   fromArtboard(artboard: Artboard): Selection {
     return { name: artboard.name, kind: Option.some("artboard") };

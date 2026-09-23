@@ -32,9 +32,8 @@ export const Rgb = {
    *
    * 「生成された = 6桁の小文字 hex である」を成立させるための唯一の入口。
    *
-   * @param value `#` から始まる 6 桁の hex。大文字も受ける
-   * @returns 小文字へ倒した RGB。3 桁・alpha 込みの 8 桁・前後の空白を含むなど、
-   *   `#` と 6 桁の hex だけでできていなければ `none`
+   * @param value RGB として読みたい色の綴り
+   * @returns 小文字へ倒した RGB。`AnyCaseRgbPattern` に合わなければ `none`
    */
   create(value: string): Option<Rgb> {
     return AnyCaseRgbPattern.test(value)

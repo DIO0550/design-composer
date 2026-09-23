@@ -50,7 +50,7 @@ export const Offset = {
    *
    * @param offset 成分を取り出す位置または差
    * @param axis 見る軸
-   * @returns `width` なら x、`height` なら y
+   * @returns `axis` の向きに沿った成分（幅なら横、高さなら縦）
    */
   along(offset: Offset, axis: Axis): number {
     return axis === "width" ? offset.x : offset.y;

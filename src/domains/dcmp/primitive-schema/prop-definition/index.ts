@@ -284,9 +284,6 @@ export const PropDefinition = {
   /**
    * 1 件の prop 設定がこの定義に適合しないときのエラーを集める。適合していれば空配列。
    *
-   * 何を見るかは `domain` ごとに違う（enum は値が `values` に含まれるか、literal は型が
-   * 一致するかと宣言した範囲に収まっているか、token はその種別のトークンが存在するか）。
-   *
    * @param definition 照らす先の prop 定義。`assignment` の prop のもの
    * @param assignment 照らす prop 設定
    * @param tokens token の prop が指す名前を引く先のトークン一式

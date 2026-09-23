@@ -494,8 +494,7 @@ export const TokenSet = {
    *
    * @param tokens 読み出し元のトークン一式
    * @param kind 読み出す種別
-   * @returns その種別の名前を、追加・読み込みした定義順で並べたもの。配列の添字として
-   *   正規な綴りの名前（`"3"` など）だけは定義順によらず先頭へ数値順で並ぶ
+   * @returns その種別の名前を、その種別の辞書の `Object.keys` の列挙順で並べたもの
    */
   names(tokens: TokenSet, kind: TokenKind): readonly string[] {
     return Object.keys(tokens[kind]);
@@ -603,8 +602,7 @@ export const TokenSet = {
    * @param ref 改名するトークンの種別と、今の名前
    * @param newName 付け替え後の名前。一意性は `ref` と同じ種別の中で見る
    * @returns 名前だけが入れ替わった一式（`newName` が今の名前と同じなら `tokens` のまま）。
-   *   位置は `TokenSet.names` の並びの規則に従うので、`newName` が配列の添字として正規な
-   *   綴りだと動く。
+   *   並びの中の位置は `TokenSet.names` の並びに従う。
    *   `ref` の種別にその名前が無ければ `ref` を指す `token-not-found`（`newName` より先に
    *   見る）。`newName` がケバブケースでなければ `invalid-token-name`、同じ種別に使われて
    *   いれば `duplicate-token-name` で、どちらも `ref` は `newName` の側を指す
