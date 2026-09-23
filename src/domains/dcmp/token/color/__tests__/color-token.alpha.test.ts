@@ -14,6 +14,10 @@ test("不透明度は小数第1位まで読める", () => {
   expect(ColorToken.alphaPercentOf("#0000001a")).toBe(10.2);
 });
 
+test("不透明度は小数第2位で四捨五入される", () => {
+  expect(ColorToken.alphaPercentOf("#00000001")).toBe(0.4);
+});
+
 test("不透明度を 50% にすると alpha は 80 になる", () => {
   expect(ColorToken.withAlphaPercent("#3b82f6", 50)).toEqual(
     Option.some("#3b82f680"),
