@@ -22,6 +22,8 @@ export const ReorderDrag = {
   /**
    * 掴んでいない状態。始点であり、離した後・並びの外へ出た後に戻る先でもある（`NodeDrag` が
    * `release` の中で `create` へ戻すのと同じ形）。
+   *
+   * @returns 呼ぶたびに同じ値
    */
   create(): ReorderDrag {
     return Idle;
