@@ -1,4 +1,4 @@
-/** 数値の性質を答える汎用操作。 */
+/** 数値の性質を答える・形を整える汎用操作。 */
 export const NumberEx = {
   isNatural(value: number): boolean {
     return Number.isInteger(value) && value >= 0;
@@ -36,5 +36,18 @@ export const NumberEx = {
    */
   clamp(value: number, range: Readonly<{ min: number; max: number }>): number {
     return Math.min(range.max, Math.max(range.min, value));
+  },
+
+  /**
+   * 指定した小数の桁で四捨五入した値。
+   *
+   * @param value 丸める値
+   * @param decimals 残す小数の桁数
+   * @returns その桁で四捨五入した値。半端値は +∞ の側へ寄るので、負の値は
+   *   0 に近い側へ丸まる（`-0.15` を小数第1位で丸めると `-0.1`）
+   */
+  round(value: number, decimals: number): number {
+    const scale = 10 ** decimals;
+    return Math.round(value * scale) / scale;
   },
 } as const;
