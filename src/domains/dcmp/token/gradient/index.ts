@@ -5,6 +5,7 @@ import {
   type JsonDecoded,
   type JsonObject,
 } from "@/utils/Json";
+import { NumberEx } from "@/utils/NumberEx";
 import { Option } from "@/utils/Option";
 import { Range } from "@/utils/Range";
 import { Result } from "@/utils/Result";
@@ -60,6 +61,20 @@ const RatioRange = { min: 0, max: 1 } as const satisfies Range;
 
 /** 色の変わり目として成立する最小の件数。これを下回ると色が変わらない。 */
 const MinStopCount = 2;
+
+/**
+ * 比率を % で綴るときの小数点以下の桁数(docs/04-tokens.md「gradients」)。
+ *
+ * 4 桁(比率の 6 桁)なら、丸めで残るずれはグラデーション線の長さ 1px あたり 1e-6px に
+ * 満たず描画に出ない。
+ */
+const RatioPercentDigits = { fractionDigits: 4 } as const;
+
+/** CSS の color stop 1 件の綴り。色と、始点からの位置（%）。 */
+type ColorStopValue = `${ColorToken} ${number}%`;
+
+/** `linear-gradient()` の綴り。角度（deg）と、color stop の並び。 */
+type LinearGradientValue = `linear-gradient(${number}deg, ${string})`;
 
 /**
  * 形を読む。`"linear"` 以外は読めない。
@@ -122,6 +137,17 @@ export const GradientStop = {
   },
 
   /**
+   * CSS の color stop として綴る。比率は 0〜1 の外でも範囲へ収めずそのまま % にする
+   * (docs/04-tokens.md「gradients」)。
+   *
+   * @param stop 綴る色の変わり目
+   * @returns 色と、比率を % にして小数 4 桁で丸めた位置
+   */
+  cssValue(stop: GradientStop): ColorStopValue {
+    return `${stop.color} ${NumberEx.round(stop.ratio * 100, RatioPercentDigits)}%`;
+  },
+
+  /**
    * 色は正規形で書き出す。
    *
    * @param stop 書き出す色の変わり目
@@ -169,6 +195,23 @@ export const GradientToken = {
         color: ColorToken.normalize(stop.color),
       })),
     };
+  },
+
+  /**
+   * CSS の `background` に置ける値として綴る（docs/04-tokens.md「gradients」）。
+   *
+   * 色の変わり目は書かれた順のまま並べ、2 件に満たなくてもそのまま綴る。
+   *
+   * @param gradient 綴るグラデーション
+   * @returns 角度を deg、色の変わり目を color stop にした `linear-gradient()`
+   */
+  cssValue(gradient: GradientToken): LinearGradientValue {
+    switch (gradient.shape) {
+      case GradientShapes.Linear:
+        return `linear-gradient(${gradient.angle}deg, ${gradient.stops
+          .map(GradientStop.cssValue)
+          .join(", ")})`;
+    }
   },
 
   /**

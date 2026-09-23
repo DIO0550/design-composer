@@ -5,6 +5,7 @@ import type {
 } from "@/domains/dcmp/css-declaration";
 import { CssDeclarations } from "@/domains/dcmp/css-declaration";
 import {
+  GradientToken,
   ShadowToken,
   type TokenKind,
   TokenSet,
@@ -28,6 +29,25 @@ export type CssVariables = Readonly<Record<CssVariableName, string>>;
 type CssVariableEntry = readonly [CssVariableName, string];
 
 /**
+ * 1 トークン 1 変数の種別を、カスタムプロパティ名と値の対の並びにする。
+ *
+ * @param kind 書き出す種別
+ * @param tokensOfKind その種別のトークンを名前で引ける一式
+ * @param toValue トークン 1 つを CSS の値へ綴る手段
+ * @returns カスタムプロパティ名と値の対の並び。種別内の定義順を保つ
+ */
+function singleVariableEntries<T>(
+  kind: SingleVariableTokenKind,
+  tokensOfKind: Readonly<Record<string, T>>,
+  toValue: (token: T) => string,
+): readonly CssVariableEntry[] {
+  return Object.entries(tokensOfKind).map(([name, token]) => [
+    TokenCss.variableName(kind, name),
+    toValue(token),
+  ]);
+}
+
+/**
  * その種別のトークンを、カスタムプロパティ名と値の対の並びにする。
  *
  * @param tokens 書き出し元のトークン一式
@@ -40,27 +60,18 @@ function entriesOfKind(
 ): readonly CssVariableEntry[] {
   switch (kind) {
     case "colors":
-      return Object.entries(tokens.colors).map(([name, value]) => [
-        TokenCss.variableName(kind, name),
-        value,
-      ]);
+      return singleVariableEntries(kind, tokens.colors, (color) => color);
     case "spacing":
     case "radius":
-      return Object.entries(tokens[kind]).map(([name, value]) => [
-        TokenCss.variableName(kind, name),
-        Px.create(value),
-      ]);
+      return singleVariableEntries(kind, tokens[kind], Px.create);
     case "shadows":
-      return Object.entries(tokens.shadows).map(([name, shadow]) => [
-        TokenCss.variableName(kind, name),
-        ShadowToken.cssValue(shadow),
-      ]);
-    /*
-     * グラデーションは出さない。docs/03-schema.md「HTML/CSS へのコンパイル規則」が
-     * 決めているのは `--{種別}-{名前}: 値` の形までで、階調の値の綴りをまだ持たない。
-     */
+      return singleVariableEntries(kind, tokens.shadows, ShadowToken.cssValue);
     case "gradients":
-      return [];
+      return singleVariableEntries(
+        kind,
+        tokens.gradients,
+        GradientToken.cssValue,
+      );
     case "typography":
       return Object.entries(tokens.typography).flatMap(([name, token]) =>
         TypographyToken.fields().map((field): CssVariableEntry => {

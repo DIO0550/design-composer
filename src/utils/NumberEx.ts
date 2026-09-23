@@ -1,4 +1,4 @@
-/** 数値の性質を答える汎用操作。 */
+/** 数値の性質の判定と、範囲・桁への丸め。 */
 export const NumberEx = {
   isNatural(value: number): boolean {
     return Number.isInteger(value) && value >= 0;
@@ -36,5 +36,20 @@ export const NumberEx = {
    */
   clamp(value: number, range: Readonly<{ min: number; max: number }>): number {
     return Math.min(range.max, Math.max(range.min, value));
+  },
+
+  /**
+   * 小数点以下を指定の桁数で四捨五入した値。
+   *
+   * 桁数をオブジェクトで受けるのは、値と桁数を取り違えても型では落ちないため（どちらも
+   * `number`）。
+   *
+   * @param value 丸める値
+   * @param digits 小数点以下に残す桁数
+   * @returns 小数点以下 `fractionDigits` 桁に四捨五入した値
+   */
+  round(value: number, digits: Readonly<{ fractionDigits: number }>): number {
+    const scale = 10 ** digits.fractionDigits;
+    return Math.round(value * scale) / scale;
   },
 } as const;
