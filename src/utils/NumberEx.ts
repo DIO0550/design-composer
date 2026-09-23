@@ -37,4 +37,19 @@ export const NumberEx = {
   clamp(value: number, range: Readonly<{ min: number; max: number }>): number {
     return Math.min(range.max, Math.max(range.min, value));
   },
+
+  /**
+   * 小数を指定の桁で丸めた値。
+   *
+   * 二進小数で表せない値どうしの計算がそのまま綴りに出る(`0.007 * 100` は
+   * `0.7000000000000001`)ので、文字列にする前にここを通す。
+   *
+   * @param value 丸める値
+   * @param decimals 残す小数の桁数
+   * @returns その桁で四捨五入した値
+   */
+  round(value: number, decimals: number): number {
+    const scale = 10 ** decimals;
+    return Math.round(value * scale) / scale;
+  },
 } as const;

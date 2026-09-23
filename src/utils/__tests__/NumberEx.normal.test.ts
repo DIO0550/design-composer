@@ -74,3 +74,16 @@ test("下限が上限を上回る範囲では上限が勝つ", () => {
   // 渡す側が壊れたときの答えがここで決まるので、消費側の有無に依らず固定する
   expect(NumberEx.clamp(24, { min: 100, max: 10 })).toBe(10);
 });
+
+test("指定した桁で丸めると二進小数の誤差が落ちる", () => {
+  expect(NumberEx.round(0.007 * 100, 4)).toBe(0.7);
+});
+
+test("指定した桁より下がある値は四捨五入される", () => {
+  expect(NumberEx.round(1.23456, 2)).toBe(1.23);
+  expect(NumberEx.round(1.23556, 2)).toBe(1.24);
+});
+
+test("指定した桁より上しか持たない値は変わらない", () => {
+  expect(NumberEx.round(12.5, 4)).toBe(12.5);
+});
