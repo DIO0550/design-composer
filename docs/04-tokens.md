@@ -98,6 +98,7 @@ tokens セクションの体系を規定する。「見た目に関わる値の�
 - `stops` の色は colors トークンへの参照ではなく生 hex で持つ。参照は下記「トークン間参照（alias）」に当たり、階調のための中間色を colors パレット（背景・文字用の色一覧）に混ぜないのは `shadows` の `color` と同じ
 - **`ratio` に `position` は使わない。** 03-schema「配置の指定」が prop 名を CSS の `position` に揃えなかったのと同じで、この仕様は既に「位置」の語を別の意味に使っている
 - **`shape` は取りうる値が `"linear"` の 1 つでもフィールドとして置く。** radial / conic を足すときに「未指定なら linear」の特例を作らないため。`type` は `.dcmp` でノードのプリミティブ名を指し（02-data-model「ノード」）、`kind` は 03-schema「prop 定義のフィールド」の `enabledWhen` が条件の種類に使っているので、どちらも避ける
+- CSS へは `--gradients-{名前}: linear-gradient({angle}deg, {color} {ratio×100}%, …)` として出す。`angle` は CSS と同じ向きなので変換しない。`ratio×100` は小数 4 桁で丸める（二進小数の誤差が綴りに出るのを防ぐ。`0.007` は `0.7%`）
 - **`ratio` が 0〜1 の外にある / `stops` が 2 件に満たないファイルも、読み込みでは弾かない**（下記「値域の扱い」）。そのまま CSS へ出して解釈はブラウザに委ねる（03-schema「HTML/CSS へのコンパイル規則」が `opacity` の範囲外で採っているのと同じ）。編集で受け取るところでは `ratio` を 0〜1、`stops` を 2 件以上に保つ
 - **トークンの値が可変長の並びを持つのは gradients だけ。** 02-data-model「値の形: フラットなスカラーのみ」が配列を許さないのは props の制約で、トークンの値にはかからない
 - どの版から読み書きできるかは 01-file-format「formatVersion」の表が持つ。新しい種別は minor の追加的変更にあたる
