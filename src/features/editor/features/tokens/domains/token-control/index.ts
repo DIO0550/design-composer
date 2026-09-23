@@ -35,9 +35,8 @@ import { Option } from "@/utils/Option";
 /**
  * トークン編集 UI が一覧の見本と編集欄を持っている種別。
  *
- * グラデーションだけ外れるのは、見本の絵も可変長の色の変わり目を編集する欄も UI 案
- * （docs/Design Composer.html）に無く、docs/06-ui.md も見せ方を持っていないため。
- * 無い絵を思いつきで足さない（rules/ui-verification.md）。
+ * グラデーションだけ外れるのは、見本の絵も編集欄も UI 案（docs/Design Composer.html）
+ * に無く、docs/06-ui.md も見せ方を持っていないため（rules/ui-verification.md）。
  */
 export type EditableTokenKind = Exclude<TokenKind, typeof TokenKinds.Gradients>;
 
@@ -55,8 +54,7 @@ function isEditableKind(kind: TokenKind): kind is EditableTokenKind {
 }
 
 /**
- * そのトークンの見本と編集欄を持っているか。
- * 判定の規則は種別だけで決まるので `isEditableKind` に任せる。
+ * そのトークンの見本と編集欄を持っているか。規則は種別だけで決まる。
  *
  * @param token 見たいトークン
  * @returns 見本と編集欄があれば真
@@ -242,9 +240,8 @@ export const TokenSection = {
       .map((kind) => ({
         kind,
         /*
-         * 種別は上で絞れているので、この絞りは実行時には 1 件も落とさない。
-         * `TokenSet.tokensOf` の戻りが種別で狭まらず `Token` のままなので、
-         * 見本と値の綴りへ渡す型をここで得ている。
+         * 種別は上で絞れているので実行時には 1 件も落ちない。`TokenSet.tokensOf` の
+         * 戻りが `Token` のままなので、見本と値の綴りへ渡す型をここで得ている。
          */
         rows: TokenSet.tokensOf(tokens, kind)
           .filter(isEditableToken)

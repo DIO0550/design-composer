@@ -70,10 +70,7 @@ function TokenTitle({ token }: Readonly<{ token: EditableToken }>) {
 function TokenEditorTitle({
   selection,
 }: Readonly<{ selection: TokenSelection }>): ReactElement | null {
-  /*
-   * 選択そのものではなく編集欄から引くのは、帯と本文で出る / 出ないが割れないため
-   * （`TokenControl.forSelection` はパネルが編集欄を持たない種別でも `none` を返す）。
-   */
+  /* 選択そのものではなく編集欄から引くのは、帯と本文で出る / 出ないを揃えるため。 */
   const control = TokenControl.forSelection(selection);
 
   if (!Option.isSome(control)) {
