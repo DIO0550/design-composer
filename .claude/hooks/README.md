@@ -51,7 +51,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | --- | --- | --- |
 | `lib/test-conditionals.awk` | `check-test-rules.sh` / `pre-push-test-rules.sh` | `test()` / `it()` ブロック内の `if` / `else` / `switch` を行番号付きで出力する |
 | `lib/duplicate-test-helpers.py` | `check-test-helper-duplication.sh` / `.github/scripts/check-added-test-helper-duplication.sh`(CI と `harness/githooks/pre-push`) | プロジェクト全体の `__tests__/` を横断して本体が完全に一致するヘルパーを探す。`--all` で全体、`--lines` で 1 ファイルの重複行を `<行番号>:<名前>` で機械可読に出力できる |
-| `lib/missing-doc-comments.py` | `check-doc-comments.sh` / `pre-push-doc-comments.sh` / `harness/githooks/pre-push` | `src/` のファイル直下の宣言のうち doc コメントの無いものを探す。`--all` で全体を検査できる |
+| `lib/missing-doc-comments.py` | `check-doc-comments.sh` / `pre-push-doc-comments.sh` / `harness/githooks/pre-push` / `.github/scripts/check-added-doc-comments.sh`(CI と `harness/githooks/pre-push`) | `src/` のファイル直下の宣言のうち doc コメントの無いもの・項目の欠けたものを探す。`--include-methods` でコンパニオンオブジェクトの直下のメソッドも見る。`--all` で全体、`--lines` で 1 ファイルの分を `<行番号>:<名前>` で機械可読に出力できる |
 | `lib/test-rules-scan.sh` | `pre-push-test-rules.sh` / `harness/githooks/pre-push` | 指定したルート配下の `*.test.ts(x)` をすべて検査する。違反があれば exit 1 |
 | `lib/lint-suppressions.py` | `block-lint-suppress.sh` / `.github/scripts/check-added-lint-suppressions.sh`(CI と `harness/githooks/pre-push`) | 許可されていない lint 抑制コメントの行を報告する。例外の判定もここが持つ |
 | `lib/import-rule-violations.py` | `pre-push-import-rules.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | 公開 API を迂回する import（`feature-public-api` / `module-public-api`）・循環（`import-cycle` / `feature-cycle`）・カテゴリの外に置かれた domains のモジュール（`domains-category`）を報告する |
@@ -60,11 +60,12 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `lib/pre-push-detector.sh` | `pre-push-import-rules.sh` / `pre-push-result-option-reads.sh` / `pre-push-story-titles.sh` / `pre-push-named-paths.sh` | `git push` のときだけ検出器を走らせ、違反があれば deny の JSON を返す（`deny_on_violations <検出器> <検査の名前> <直し方の一文>`）。**走査ルートは渡さない**（検出器が自分の既定で決める） |
 | `lib/story-title-violations.py` | `pre-push-story-titles.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | story の `title` が、最後のセグメント（葉に出る表示名）を除いてフォルダ階層から導出した綴りと違うもの（`story-title-tree`）と、`title` をリテラル 1 行として取れないもの（`story-title-missing`）を報告する |
 | `lib/result-option-read-violations.py` | `pre-push-result-option-reads.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `Result` / `Option` の判別子（`ok` / `some`）を、その判別子を型宣言で定義していないファイルで直読みしている箇所（`result-option-read`）を報告する |
-| `lib/cases-report.sh` | `lib/result-option-read-cases.sh` / `lib/story-title-cases.sh` / `lib/named-path-cases.sh` | 判定表が共有する、判定の読み取り（`decide` / `normalize_miss`）と報告（`report` / `cases_failed`）。ケースの並べ方と検出器の呼び方は判定表ごとに違うので、そこは各判定表が持つ |
+| `lib/cases-report.sh` | `lib/result-option-read-cases.sh` / `lib/story-title-cases.sh` / `lib/named-path-cases.sh` / `lib/missing-doc-comments-cases.sh` | 判定表が共有する、判定の読み取り（`decide` / `normalize_miss`）と報告（`report` / `cases_failed`）。ケースの並べ方と検出器の呼び方は判定表ごとに違うので、そこは各判定表が持つ |
 | `lib/named-path-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `named-path-violations.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードで報告する。食い違いがあれば exit 1 |
 | `lib/canary-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `hook-canary.sh` へ判定表を流し、deny / pass / miss が期待どおりかを報告する。食い違いがあれば exit 1 |
 | `lib/result-option-read-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `result-option-read-violations.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードで報告する。食い違いがあれば exit 1 |
 | `lib/story-title-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `story-title-violations.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードで報告する。食い違いがあれば exit 1 |
+| `lib/missing-doc-comments-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `missing-doc-comments.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードで報告する。食い違いがあれば exit 1 |
 
 ## 強制力の序列 — フックが発火しない実行環境がある
 
@@ -102,7 +103,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 | `block-npx.sh`(セッション中の行為の禁止) | **無し**。push の時点で痕跡が残らないため代替不能 |
 | `block-git-during-verification-agent.sh`(セッション中の行為の禁止) | **無し**。この競合はセッションの実行タイミングだけが原因で、コミット後のリポジトリの状態には痕跡が残らない |
 | `session-url-notice.sh`(セッション URL の提示) | **無し**。URL はセッションの中にしか無く、残す先も GitHub のコメントなので、push の時点で痕跡が残らない。落ちても穴は開かない(規約が AGENTS.md に残り、失っても情報が 1 つ足りないだけでガードは破れない) |
-| `post-edit-lint.sh` / `check-test-rules.sh` / `check-doc-comments.sh`(即時フィードバック) | 結果は push 前の検査(git hooks)と CI が拾う。**即時性だけが失われる** |
+| `post-edit-lint.sh` / `check-test-rules.sh` / `check-doc-comments.sh`(即時フィードバック) | 結果は push 前の検査(git hooks)と CI が拾う。**即時性だけが失われる**。コンパニオンオブジェクトのメソッドは `check-doc-comments.sh` も見ておらず、`.github/scripts/check-added-doc-comments.sh` が**このブランチで追加された行だけ**を拾う |
 | `check-test-helper-duplication.sh`(即時フィードバック) | **部分的にあり**。`.github/scripts/check-added-test-helper-duplication.sh` が CI(層 1)と push 前(層 2 の git hooks。`python3` が使える環境だけ)で拾うが、既存の重複が `src` に残っているため**このブランチで追加された行だけ**が対象。触っていない既存分は push 時点でも拾えない |
 | `record-firings.sh`(発火ログ) | **無し**。ただし失敗しても穴は開かない(セッション見出しが無いログは `harness-record` が「計測対象外」と書く設計で、誤ったゼロにはならない)。カナリアと同じ「失敗してもガードが破れない」検出系 |
 
@@ -145,6 +146,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 | `lib/result-option-read-cases.sh` | あり | あり(`python3` がある環境だけ) |
 | `lib/story-title-cases.sh` | あり | あり(`python3` がある環境だけ) |
 | `lib/named-path-cases.sh` | あり | あり(`python3` がある環境だけ) |
+| `lib/missing-doc-comments-cases.sh` | あり | あり(`python3` がある環境だけ) |
 | `lib/canary-cases.sh` | あり | あり(`python3` と `jq` が揃う環境だけ) |
 | `.github/scripts/check-added-cases.sh` | あり(`lint-suppress` ジョブ) | あり(`python3` がある環境だけ) |
 | `.github/scripts/check-pr-closing-issue-cases.sh` | あり | **無し(残る穴)** |
@@ -154,7 +156,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
   その部品がどの層で使われるかとは別。push 前手順(`implementation-flow` フェーズ 7)は
   カナリアの出力を読んで不発かどうかを決めるので、判定が黙って変わると手順の読みが嘘になる
 - **`check-added-cases.sh` だけは層 1 のジョブが `rules-check` ではなく `lint-suppress`。**
-  当てる 2 本(`check-added-*`)と同じジョブに置き、`python3` と git だけで完結する
+  当てる 3 本(`check-added-*`)と同じジョブに置き、`python3` と git だけで完結する
 - **`check-pr-closing-issue-cases.sh` は層 1 だけ。** 再試行の待ち時間だけで 20.3 秒かかる
   (実測)。`pre-push` 全体は 35.9 秒(実測・`node_modules` のある環境)で、載せると 1.5 倍を
   超える。ここへ載せた 2 本は合わせて 2.2 秒。**この穴は残したままなので、
@@ -283,13 +285,20 @@ deny のメッセージは、`jq` / `python3` が欠けていればその名前�
   - `check-added-lint-suppressions.sh` と違い、**base に同じ本体を持つファイルがあっても除外しない**。ファイル分割でヘルパーが新しいファイルへ移ると、移った側は全行が追加行になり、既存の重複が「新規」として引っかかる余地が残っている(pr-240 で lint 抑制コメントが踏んだのと同じ形)。単純な `git mv` はリネーム検出で diff に載らないため踏まないが、**分割**は対象
 - `check-doc-comments.sh` は**ブロックしない**(`additionalContext` を返すだけ)。また、見るのは**編集したファイルの分だけ**
   - 対象は `src/` の実装ファイルのみ(`__tests__/` / `*.stories.*` / `__stories__/` は見ない)
-  - 見るのは**ファイル直下の宣言**だけ(入れ子の関数・オブジェクトのメソッドは対象外)
+  - 見るのは**ファイル直下の宣言**だけ(入れ子の関数・オブジェクトのメソッドは対象外)。コンパニオンオブジェクトのメソッドは `--include-methods` を付けた `.github/scripts/check-added-doc-comments.sh` だけが見る(下記)
   - **同じファイルに同名の宣言があってそちらに doc があれば対象外**。型とコンパニオンオブジェクトが doc を共有する形(`export type Size` の下に `export const Size = {`)を偽陽性にしないため
   - ファイル単位で無効化: `// @doc-comments-ok`
 - `pre-push-doc-comments.sh` は **push をブロックする**。見るのは `src/` 全体
   - 導入時点では既存の抜けが 149 件あったため「このブランチで追加した行」だけに絞っていたが、#159 でその 149 件を埋めて 0 件にしたので絞る理由が無くなった(触っていない分で止まることがなく、「止まる理由が自分の変更ではない」状態にならない)
   - **doc の有無と項目(`@param` / `@returns` / `@throws`)の両方を見る**。導入時点では項目を満たさない doc が 190 件あったため `--missing-only` で有無だけに絞っていたが、#159 でその 190 件を埋めて 0 件にしたので絞る理由が無くなった
   - ファイル単位で無効化: `// @doc-comments-ok`(PostToolUse 版と共通)
+  - **コンパニオンオブジェクトのメソッドは見ない**(`--include-methods` を付けない。`frontend.yml` の `rules-check` と `harness/githooks/pre-push` の `--all` も同じ)。付けると既存のメソッドの抜け(導入時点で doc の無いもの 110 件・項目の欠けたもの 260 件)で触っていない分まで止まる。#720 がこれを 0 件にしたら、`--all` にも `--include-methods` を付けて(既定を反転して)`check-added-doc-comments.sh` の限定を外す
+- `.github/scripts/check-added-doc-comments.sh`(層 1・CI、`frontend.yml` の `lint-suppress` ジョブ。同じスクリプトを `harness/githooks/pre-push` も引数なしで呼ぶ。**検出器を走らせられなければ exit 2**)は、`missing-doc-comments.py --include-methods --lines` の報告のうち**このブランチで追加された行に載っているものだけ**を違反にする(`check-added-test-helper-duplication.sh` と同じ形)
+  - メソッドと読むのは `const` で始まるオブジェクトの直下にあって、引数の括弧の後ろに本体(`{` か `=>`)が続くものだけ。判定の仕組みと意図した取りこぼし(入れ子のオブジェクトのメソッド)は検出器の docstring、判定表は `lib/missing-doc-comments-cases.sh`
+  - **既存の doc の無いメソッドの宣言の行を触ると違反になる。** 追加行かどうかは行番号でしか見えないので、触った = 書いた側に数える
+  - **改行したシグネチャの引数の行だけを足した場合は通る。** 報告の行番号は宣言の始まりの行で、そこが追加行に入らないため
+  - **ファイル分割で移ったメソッドは「追加」に見える。** `check-added-lint-suppressions.sh` のように base の綴りで移動を除かないのは、`  toJson(): X {` のような宣言の行が別のオブジェクトにも同じ綴りで現れ、同一性を言えないため。`git mv` は `.github/scripts/lib/added-lines.sh` が rename を追跡するので踏まない
+  - ファイル単位で無効化: `// @doc-comments-ok`(スクリプト側で見る。検出器は見ない)
 - `pre-push-typecheck.sh` / `pre-push-lint.sh` は node_modules 未インストール時(ツールが実行不能な場合)は黙ってスキップする
 - `post-merge-review.sh` はマージを**ブロックしない**(`additionalContext` を返すだけ)。マージは人の判断で行われるので、記録が無いことを理由に止めても記録の質は上がらないため
   - 検知対象は `mcp__github__merge_pull_request` と `gh pr merge` のみ。素の `git merge` は見ない(ベースブランチの取り込みで日常的に走るため、拾うと誤発火のほうが多くなる)
@@ -350,8 +359,12 @@ python3 .claude/hooks/lib/duplicate-test-helpers.py --all src
 echo '{"tool_input":{"file_path":"src/domains/dcmp/token/index.ts"}}' \
   | bash .claude/hooks/check-doc-comments.sh
 
-# 全体の doc 抜けを数える
+# 全体の doc 抜けを数える(`--include-methods` を付けるとコンパニオンオブジェクトのメソッドも数える)
 python3 .claude/hooks/lib/missing-doc-comments.py --all src
+python3 .claude/hooks/lib/missing-doc-comments.py --include-methods --all src
+
+# doc コメントの判定表(`ok` だけなら期待どおり・`NG` が出たら判定が変わっている)。pre-push と CI も走らせる
+bash .claude/hooks/lib/missing-doc-comments-cases.sh; echo "exit=$?"
 
 # push がブロックされること(deny が出力される。doc 無しの宣言があるとき)
 echo '{"tool_input":{"command":"git push"}}' \
@@ -387,7 +400,10 @@ bash .github/scripts/check-added-lint-suppressions.sh origin/main
 # この PR で追加されたテストヘルパーの重複を数える(CI と同じ判定)
 bash .github/scripts/check-added-test-helper-duplication.sh origin/main
 
-# 上の 2 つの判定表(`ok` だけなら期待どおり)。exit 2 = 検査できなかった、も覆う
+# この PR で追加された宣言(メソッドを含む)の doc の抜けを数える(CI と同じ判定)
+bash .github/scripts/check-added-doc-comments.sh origin/main
+
+# 上の 3 つの判定表(`ok` だけなら期待どおり)。exit 2 = 検査できなかった、も覆う
 bash .github/scripts/check-added-cases.sh; echo "exit=$?"
 
 # PR が閉じる Issue の検査の判定表(`ok` だけなら期待どおり)。CI だけが走らせるので、
