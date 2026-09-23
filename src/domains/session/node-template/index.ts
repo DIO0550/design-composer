@@ -32,6 +32,9 @@ export const NodeTemplate = {
    * プリミティブは型名を小文字にしたもの（`Box` → `box`）。インスタンスは部品名そのもの。ど
    * ちらも名前空間の識別子の規則（kebab-case）を満たす形で、衝突したときの連番は
    * `DesignDocument.uniqueName` が付ける。
+   *
+   * @param template 名前の元になる指定
+   * @returns プリミティブなら型名の小文字、インスタンスなら部品名
    */
   baseName(template: NodeTemplate): string {
     return template.kind === "primitive"
@@ -73,6 +76,11 @@ export const NodeTemplate = {
    * 指定を、そのドキュメントへ挿せるノードにする。
    * `usedNames` と衝突しない名前を採番するため、生成されたノードは
    * そのまま挿しても単一名前空間の一意性を壊さない。
+   *
+   * @param template ノードにする指定
+   * @param usedNames 挿し先のドキュメントの単一名前空間で使用済みの名前
+   * @returns `baseName` を `DesignDocument.uniqueName` で採番した名前を持つノード。
+   *   プリミティブは挿入時の初期 props を持ち、インスタンスは props を持たない参照ノード
    */
   toNode(template: NodeTemplate, usedNames: ReadonlySet<string>): Node {
     const name = DesignDocument.uniqueName(
