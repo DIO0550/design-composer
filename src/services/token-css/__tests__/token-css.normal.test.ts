@@ -51,6 +51,26 @@ test("shadows トークンは x / y / blur / spread / color を並べた box-sha
   });
 });
 
+test("gradients トークンは角度と色の変わり目を並べた linear-gradient 値になる", () => {
+  const tokens = {
+    ...TokenSet.empty(),
+    gradients: {
+      brand: {
+        shape: "linear",
+        angle: 90,
+        stops: [
+          { color: "#3b82f6", ratio: 0 },
+          { color: "#1d4ed8", ratio: 1 },
+        ],
+      },
+    },
+  } as const;
+
+  expect(TokenCss.variables(tokens)).toEqual({
+    "--gradients-brand": "linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%)",
+  });
+});
+
 test("typography トークンはフィールドごとの CSS カスタムプロパティへ展開される", () => {
   const tokens = {
     ...TokenSet.empty(),
