@@ -9,9 +9,21 @@
 「例外(エスケープハッチ)」が記録している、誤検知でフックが信用を失う失敗を避ける）。
 
 - `src/` の実装ファイルだけ（`__tests__/` / `*.stories.*` / `__stories__/` は対象外）
-- **ファイル直下の宣言だけ**（入れ子の関数・オブジェクトのメソッドは見ない）
+- **ファイル直下の宣言だけ**（入れ子の関数・オブジェクトのメソッドは見ない）。
+  `--include-methods` を付けたときだけ、コンパニオンオブジェクトの直下のメソッドも見る
+  （それより深い入れ子は見ない）
 - 同じファイルに**同名の宣言があってそちらに doc があれば対象外**
   （型とコンパニオンオブジェクトが doc を共有する、このリポジトリの形を弾かないため）
+
+コンパニオンオブジェクトのメソッドを見るのは、ロジックがそこに集まる形をこのリポジトリが
+採っている（`rules/coding.md`「コンパニオンオブジェクトパターン」）ため。ファイル直下だけを
+見ていた頃は、`Foo.fromJson` のような公開 API が doc 無しのままレビューまで残った。
+既定で見ない理由と外す条件は `.claude/hooks/README.md`「例外(エスケープハッチ)」。
+
+**メソッドと読むのは、`const` で始まるオブジェクトの直下（行頭の空白が 2 つ）にあって、
+引数の括弧の後ろに本体（`{` か `=>`）が続くものだけ。** `type` / `interface` の型リテラルは
+オブジェクトとして読まないのでメンバが外れ、対応表（`{ colors: "Color" }`）は引数の括弧が
+無いので外れる。Biome の整形（字下げ 2・1 列目の `}` で閉じる）を前提にしている。
 
 doc がある関数については、`rules/coding.md`「doc に書く項目」も見る。
 
@@ -24,6 +36,11 @@ doc がある関数については、`rules/coding.md`「doc に書く項目」�
     missing-doc-comments.py <検査するファイル>              # doc の有無と項目の両方
     missing-doc-comments.py --missing-only <検査するファイル>  # doc の有無だけ
     missing-doc-comments.py --all [ルート]                   # 全体（既定のルートは src）
+    missing-doc-comments.py --lines <検査するファイル>         # `<行番号>:<名前>` で 1 件 1 行
+
+どの形にも `--include-methods` を足せる（コンパニオンオブジェクトのメソッドも見る。位置は問わない）。
+`--lines` は CI が diff の追加行と突き合わせるための機械可読な出力で、doc の有無と項目の
+両方を出す（`duplicate-test-helpers.py --lines` と同じ形式。追加行かどうかは呼ぶ側が見る）。
 
 `--missing-only` は doc の有無だけを見たいときに使う。項目の抜けは 0 件にしたので、
 push 前の検査は項目まで見ている（`.claude/hooks/README.md`
@@ -47,6 +64,20 @@ EXPORTED_DECLARATION = re.compile(
 
 # 対象にする宣言。狭めたいときはここから外す（README.md の表と揃えること）。
 PATTERNS = (TOP_LEVEL_FUNCTION, EXPORTED_DECLARATION)
+
+# コンパニオンオブジェクトの始まり（`export const Foo = {` / `const Foo: T = {`）。
+COMPANION_START = re.compile(
+    r"^(?:export\s+)?const\s+([A-Za-z_$][\w$]*)\s*(?::[^=]+)?=\s*\{\s*$"
+)
+
+# その閉じ。Biome が整形したオブジェクトは 1 列目の `}` で閉じる。波括弧を数えないのは、
+# 文字列・テンプレートリテラルの中の `{` `}` で深さがずれ、閉じた後ろまで取りこぼすため。
+COMPANION_END = re.compile(r"^\}")
+
+# その直下のメソッド(行頭がちょうど 2 つの空白。それより深い入れ子は外れる)。`name(` のメソッド記法と、`name: (` の関数プロパティの両方。
+COMPANION_METHOD = re.compile(
+    r"^  (?:async\s+)?([A-Za-z_$][\w$]*)\s*(?:[(<]|:\s*(?:async\s*)?[(<])"
+)
 
 # 引数の並びと戻り値の型を取り出すための、宣言の始まり。
 FUNCTION_SIGNATURE = re.compile(r"^(?:export\s+)?(?:async\s+)?function\s+[A-Za-z_$][\w$]*")
@@ -73,22 +104,84 @@ def preceding_line(lines: list[str], index: int) -> str:
     return ""
 
 
-def undocumented(path: Path) -> list[tuple[int, str]]:
-    """doc の付いていない宣言を (行番号, 名前) で返す。"""
+def declarations(lines: list[str], include_methods: bool) -> list[tuple[int, str]]:
+    """doc を求める宣言を (行番号(0 始まり), 名前) で返す。
+
+    `undocumented` と `incomplete` が同じ列挙を見るよう、対象の定義はここ 1 箇所に置く。
+
+    @param lines ファイル全体の行
+    @param include_methods コンパニオンオブジェクトの直下のメソッドも含めるか
+    @returns 宣言の行番号と名前。メソッドは `Owner.method` の綴りで返す
+    """
+    found: list[tuple[int, str]] = []
+    owner: str | None = None
+    for i, line in enumerate(lines):
+        if owner is None:
+            matched = next((m for m in (p.match(line) for p in PATTERNS) if m), None)
+            if matched:
+                found.append((i, matched.group(1)))
+            start = COMPANION_START.match(line) if include_methods else None
+            if start:
+                owner = start.group(1)
+            continue
+        if COMPANION_END.match(line):
+            owner = None
+            continue
+        method = COMPANION_METHOD.match(line)
+        if method and has_body(lines, i):
+            found.append((i, f"{owner}.{method.group(1)}"))
+    return found
+
+
+def has_body(lines: list[str], index: int) -> bool:
+    """引数を閉じる `)` の後ろに本体(`{` か `=>`)が続くか。
+
+    行末の `{` で見ないのは、改行されたシグネチャ(`  create(` で行が終わる形)と
+    式本体のアロー関数(`  bar: (x) => x + 1,`)を取りこぼすため。
+
+    @param lines ファイル全体の行
+    @param index メソッドの始まりの行番号(0 始まり)
+    @returns 本体を持つなら True。値が括弧で始まるだけのプロパティ(`a: (b + c) * 2,`)は False
+    """
+    signature = signature_of(lines, index)
+    rest = signature[closing_paren(signature) + 1 :]
+    return "{" in rest or "=>" in rest
+
+
+def closing_paren(signature: str) -> int:
+    """先頭の `(` に対応する `)` の位置。
+
+    最後の `)` で見ないのは、本体の中の括弧(`=> Math.abs(x)`)の後ろを見てしまうため。
+
+    @param signature `(` で始まるシグネチャ(`signature_of` の戻り値)
+    @returns 対応する `)` の位置。閉じていなければ末尾の位置
+    """
+    depth = 0
+    for position, ch in enumerate(signature):
+        depth += {"(": 1, ")": -1}.get(ch, 0)
+        if depth == 0:
+            return position
+    return len(signature) - 1
+
+
+def undocumented(path: Path, include_methods: bool = False) -> list[tuple[int, str]]:
+    """doc の付いていない宣言を (行番号, 名前) で返す。
+
+    @param path 検査するファイル
+    @param include_methods コンパニオンオブジェクトの直下のメソッドも見るか
+    @returns doc の無い宣言の行番号(1 始まり)と名前。同名の宣言に doc があれば含めない
+    """
     lines = path.read_text(encoding="utf-8").split("\n")
     documented: set[str] = set()
     candidates: list[tuple[int, str]] = []
 
-    for i, line in enumerate(lines):
-        matched = next((m for m in (p.match(line) for p in PATTERNS) if m), None)
-        if not matched:
-            continue
-        previous = preceding_line(lines, i)
+    for index, name in declarations(lines, include_methods):
+        previous = preceding_line(lines, index)
         # `*/` は JSDoc / ブロックコメントの終わり、`//` は行コメント。
         if previous.endswith("*/") or previous.startswith("//"):
-            documented.add(matched.group(1))
+            documented.add(name)
         else:
-            candidates.append((i + 1, matched.group(1)))
+            candidates.append((index + 1, name))
 
     return [(line_no, name) for line_no, name in candidates if name not in documented]
 
@@ -167,20 +260,25 @@ def body_of(lines: list[str], index: int) -> str:
     return "\n".join(collected)
 
 
-def incomplete(path: Path) -> list[tuple[int, str]]:
-    """doc はあるが「doc に書く項目」が欠けている関数を (行番号, 説明) で返す。"""
+def incomplete(path: Path, include_methods: bool = False) -> list[tuple[int, str]]:
+    """doc はあるが「doc に書く項目」が欠けている関数を (行番号, 説明) で返す。
+
+    @param path 検査するファイル
+    @param include_methods コンパニオンオブジェクトの直下のメソッドも見るか
+    @returns 項目の欠けた関数の行番号(1 始まり)と、名前・欠けた項目の説明
+    """
     lines = path.read_text(encoding="utf-8").split("\n")
     found: list[tuple[int, str]] = []
-    for i, line in enumerate(lines):
-        if not FUNCTION_SIGNATURE.match(line):
+    for index, name in declarations(lines, include_methods):
+        # 型・定数には引数も戻り値も無いので、項目を求めるのは関数とメソッドだけ。
+        if not FUNCTION_SIGNATURE.match(lines[index]) and "." not in name:
             continue
-        doc = doc_block_above(lines, i)
+        doc = doc_block_above(lines, index)
         if doc is None:
             continue
-        missing = missing_doc_items(lines, i, doc)
+        missing = missing_doc_items(lines, index, doc)
         if missing:
-            name = line.split("function", 1)[1].split("(")[0].strip()
-            found.append((i + 1, f"{name} — {' / '.join(missing)} が無い"))
+            found.append((index + 1, f"{name} — {' / '.join(missing)} が無い"))
     return found
 
 
@@ -205,11 +303,11 @@ def report(path: Path, found: list[tuple[int, str]]) -> str:
     return body
 
 
-def check_one(path: Path, missing_only: bool = False) -> int:
+def check_one(path: Path, missing_only: bool = False, include_methods: bool = False) -> int:
     if not is_target(path):
         return 0
-    missing = undocumented(path)
-    partial = [] if missing_only else incomplete(path)
+    missing = undocumented(path, include_methods)
+    partial = [] if missing_only else incomplete(path, include_methods)
     if not missing and not partial:
         return 0
     print("doc が規約を満たしていません（rules/coding.md「コメントは doc と Why / Why not に絞る」）:")
@@ -222,15 +320,30 @@ def check_one(path: Path, missing_only: bool = False) -> int:
     return 1
 
 
-def check_all(root: Path) -> int:
+def check_lines(path: Path, include_methods: bool = False) -> int:
+    """doc の無い宣言と項目の欠けた doc を、`<行番号>:<名前>` で 1 件 1 行に出す。
+
+    @param path 検査するファイル
+    @param include_methods コンパニオンオブジェクトの直下のメソッドも見るか
+    @returns 1 件でもあれば 1、無ければ 0(対象外のファイルも 0)
+    """
+    if not is_target(path):
+        return 0
+    found = undocumented(path, include_methods) + incomplete(path, include_methods)
+    for line_no, name in sorted(found):
+        print(f"{line_no}:{name}")
+    return 1 if found else 0
+
+
+def check_all(root: Path, include_methods: bool = False) -> int:
     missing_total = 0
     partial_total = 0
     files = 0
     for path in sorted(root.rglob("*.ts*")):
         if not is_target(path):
             continue
-        missing = undocumented(path)
-        partial = incomplete(path)
+        missing = undocumented(path, include_methods)
+        partial = incomplete(path, include_methods)
         if not missing and not partial:
             continue
         files += 1
@@ -248,17 +361,21 @@ def check_all(root: Path) -> int:
 
 def main() -> int:
     args = sys.argv[1:]
+    include_methods = "--include-methods" in args
+    args = [a for a in args if a != "--include-methods"]
     if not args:
         print(__doc__)
         return 2
     if args[0] == "--all":
-        return check_all(Path(args[1]) if len(args) > 1 else Path("src"))
-    if args[0] == "--missing-only":
+        return check_all(Path(args[1]) if len(args) > 1 else Path("src"), include_methods)
+    if args[0] in ("--missing-only", "--lines"):
         if len(args) < 2:
             print(__doc__)
             return 2
-        return check_one(Path(args[1]), missing_only=True)
-    return check_one(Path(args[0]))
+        if args[0] == "--lines":
+            return check_lines(Path(args[1]), include_methods)
+        return check_one(Path(args[1]), missing_only=True, include_methods=include_methods)
+    return check_one(Path(args[0]), include_methods=include_methods)
 
 
 if __name__ == "__main__":

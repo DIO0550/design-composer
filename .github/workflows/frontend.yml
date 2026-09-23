@@ -97,7 +97,12 @@ jobs:
       - name: Check added test helper duplication
         run: bash .github/scripts/check-added-test-helper-duplication.sh "${{ github.event.pull_request.base.sha }}"
 
-      # 上の 2 つの判定（追加行の違反の有無 × 検査を走らせられるか）の判定表。
+      # rules-check の doc コメント(`--all`)が見ないコンパニオンオブジェクトのメソッドを、
+      # この PR で追加された行だけ見る(理由は .claude/hooks/README.md「例外(エスケープハッチ)」)
+      - name: Check added doc comments
+        run: bash .github/scripts/check-added-doc-comments.sh "${{ github.event.pull_request.base.sha }}"
+
+      # 上の 3 つの判定（追加行の違反の有無 × 検査を走らせられるか）の判定表。
       # ゲートに載せる理由は rules-check ジョブの「集計の判定表」ステップと同じ。
       - name: 追加された分の検査の判定表
         run: bash .github/scripts/check-added-cases.sh
@@ -169,6 +174,9 @@ jobs:
 
       - name: 名指ししたパスの判定表
         run: bash .claude/hooks/lib/named-path-cases.sh
+
+      - name: doc コメントの判定表
+        run: bash .claude/hooks/lib/missing-doc-comments-cases.sh
 
       # pre-push は jq の無い環境で飛ばすが、ランナーの image には jq がある
       # (ci-trace.yml も素の jq を呼ぶ)ので、ここは無条件に走らせる。

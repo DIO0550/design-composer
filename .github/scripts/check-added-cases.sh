@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #
 # 追加された分の検査の判定表。`check-added-lint-suppressions.sh` と
-# `check-added-test-helper-duplication.sh` へ一時リポジトリを流し、終了コードと出力が
-# 期待どおりかを 1 コマンドで確かめる。
+# `check-added-test-helper-duplication.sh` と `check-added-doc-comments.sh` へ一時リポジトリを
+# 流し、終了コードと出力が期待どおりかを 1 コマンドで確かめる。
 #
 # 使い方: bash .github/scripts/check-added-cases.sh
 # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。
@@ -15,7 +15,7 @@
 # 消す形にすると、前提チェックが `command -v python3` で書かれていても同じ終了コードに
 # なり、採らなかったその実装を表が素通りさせる。
 #
-# 一時リポジトリを組むのは、この 2 本が base と HEAD の差分で判定するため。base との
+# 一時リポジトリを組むのは、この 3 本が base と HEAD の差分で判定するため。base との
 # 差分が無いブランチではループ本体が 1 度も回らず、検出器が 1 回も呼ばれないまま
 # 「ありません」が出る。「base と差分が無い」のケースがそこを分けている。
 #
@@ -43,6 +43,10 @@ duplication_script=check-added-test-helper-duplication.sh
 duplication_check_name="追加されたテストヘルパーの重複"
 duplication_detector=duplicate-test-helpers.py
 
+doc_script=check-added-doc-comments.sh
+doc_check_name="追加された宣言の doc コメント"
+doc_detector=missing-doc-comments.py
+
 # 抑制コメントをそのまま置ける。`check-added-lint-suppressions.sh` も
 # `block-lint-suppress.sh` も見るのは `*.ts` `*.tsx` `*.js` `*.jsx` だけで、`.sh` は対象外。
 suppressed_ts="// biome-ignore lint/suspicious/noExplicitAny: 判定表のための行
@@ -61,6 +65,41 @@ mate_ts="export const artboard = () => {
 ${helper_body}"
 added_helper_ts="export const board = () => {
 ${helper_body}"
+# コンパニオンオブジェクトの始まりと閉じは base に置き、HEAD でメソッドだけを足す
+# (追加行に載るのがメソッドの行だけになり、オブジェクトの doc の有無が結果に混ざらない)。
+doc_base_ts='/** 値 */
+export const Foo = {
+'
+doc_base_close_ts='};
+'
+undocumented_method_ts='  bar(x: number): number {
+    return x;
+  },
+'
+documented_method_ts='  /**
+   * 足す
+   * @param x 元の値
+   * @returns 足した値
+   */
+  bar(x: number): number {
+    return x;
+  },
+'
+# doc はあるが `@param` / `@returns` が無い(有無ではなく項目の検査だけが拾う)
+items_missing_method_ts='  /** 足す */
+  bar(x: number): number {
+    return x;
+  },
+'
+documented_other_method_ts='  /**
+   * 引く
+   * @param x 元の値
+   * @returns 引いた値
+   */
+  baz(x: number): number {
+    return x;
+  },
+'
 
 # 一時リポジトリの中でコミットする。CI のランナーには既定の user.email が無いので
 # `-c` で毎回渡す(手元は global の設定で通ってしまい、CI だけが落ちる)。
@@ -89,7 +128,7 @@ setup_repo() {
   dir="$(mktemp -d --tmpdir="$work")"
 
   case "$input" in
-    lint-*) path=src/sample.ts ;;
+    lint-*|doc-*) path=src/sample.ts ;;
     *) path=src/a/__tests__/a.test.ts
        mate_path=src/b/__tests__/b.test.ts
        mate_content="$mate_ts" ;;
@@ -104,14 +143,21 @@ setup_repo() {
 
   mkdir -p "$dir/.claude/hooks/lib" "$dir/$(dirname "$path")"
   cp "$repo_root/.claude/hooks/lib/$lint_detector" \
-    "$repo_root/.claude/hooks/lib/$duplication_detector" "$dir/.claude/hooks/lib/"
+    "$repo_root/.claude/hooks/lib/$duplication_detector" \
+    "$repo_root/.claude/hooks/lib/$doc_detector" "$dir/.claude/hooks/lib/"
 
   git -C "$dir" init -q
   printf '%s' "$base_ts" >"$dir/$path"
   # 移動の検査では、重複そのものは base の時点で既にある
   [ "$input" = duplication-renamed ] && printf '%s' "$added_helper_ts" >>"$dir/$path"
+  case "$input" in
+    # doc の無いメソッドは base の時点で既にある
+    doc-existing) printf '%s%s%s' "$doc_base_ts" "$undocumented_method_ts" \
+      "$doc_base_close_ts" >"$dir/$path" ;;
+    doc-*) printf '%s%s' "$doc_base_ts" "$doc_base_close_ts" >"$dir/$path" ;;
+  esac
   git -C "$dir" add "$path" ".claude/hooks/lib/$lint_detector" \
-    ".claude/hooks/lib/$duplication_detector"
+    ".claude/hooks/lib/$duplication_detector" ".claude/hooks/lib/$doc_detector"
   if [ -n "$mate_path" ]; then
     mkdir -p "$dir/$(dirname "$mate_path")"
     printf '%s' "$mate_content" >"$dir/$mate_path"
@@ -125,6 +171,10 @@ setup_repo() {
     mkdir -p "$dir/$(dirname "$moved")"
     git -C "$dir" mv "$path" "$moved"
     commit_in "$dir" -m head
+  elif [ "${input#doc-}" != "$input" ]; then
+    write_doc_head "$input" "$dir/$path"
+    git -C "$dir" add "$path"
+    commit_in "$dir" -m head
   elif [ -n "$added_content" ]; then
     printf '%s' "$added_content" >>"$dir/$path"
     git -C "$dir" add "$path"
@@ -133,6 +183,24 @@ setup_repo() {
     commit_in "$dir" --allow-empty -m head
   fi
   printf '%s' "$dir"
+}
+
+# doc の検査の HEAD を書く。どれもオブジェクトの閉じより前にメソッドを足す。
+#
+# `doc-existing` は base の doc の無いメソッドを触らず、doc のある別のメソッドを足す。
+# `doc-escaped` は `doc-violation` と同じ違反を足したうえで、ファイルにハッチを置く
+# (違反の無い入力にすると、ハッチを読む処理を消しても 0 のまま通る)。
+write_doc_head() {
+  local input="$1" file="$2" method
+  case "$input" in
+    doc-violation|doc-escaped) method="$undocumented_method_ts" ;;
+    doc-clean) method="$documented_method_ts" ;;
+    doc-items-missing) method="$items_missing_method_ts" ;;
+    doc-existing) method="${undocumented_method_ts}${documented_other_method_ts}" ;;
+  esac
+  printf '%s%s%s' "$doc_base_ts" "$method" "$doc_base_close_ts" >"$file"
+  [ "$input" = doc-escaped ] && printf '// @doc-comments-ok\n' >>"$file"
+  return 0
 }
 
 # 表の 1 行を走らせて、終了コードと(綴りが指定されていれば)出力を確かめる。
@@ -144,7 +212,7 @@ run_case() {
   dir="$(setup_repo "$input")"
   [ "$python3_state" = broken ] && path_prefix="$(broken_python3_dir "$dir"):"
   [ "$detector_state" = missing ] && rm -f "$dir/.claude/hooks/lib/$lint_detector" \
-    "$dir/.claude/hooks/lib/$duplication_detector"
+    "$dir/.claude/hooks/lib/$duplication_detector" "$dir/.claude/hooks/lib/$doc_detector"
   output="$(cd "$dir" && PATH="${path_prefix}${PATH}" \
     bash "$scripts_dir/$script" "$(git -C "$dir" rev-parse HEAD~1)" 2>&1)" || actual=$?
 
@@ -176,7 +244,14 @@ cases="\
 2|$duplication_check_name|$duplication_script|broken|present|duplication-violation|python3 が起動できない / 追加行に重複したテストヘルパーがある
 2||$duplication_script|broken|present|duplication-clean|python3 が起動できない / 追加行に重複したテストヘルパーが無い
 2|$duplication_check_name|$duplication_script|ok|missing|duplication-violation|検出器が見つからない / 追加行に重複したテストヘルパーがある
-0||$duplication_script|ok|present|duplication-renamed|既にある重複をフォルダごと移しただけ"
+0||$duplication_script|ok|present|duplication-renamed|既にある重複をフォルダごと移しただけ
+1|検出された行:|$doc_script|ok|present|doc-violation|追加行に doc の無いメソッドがある
+1|検出された行:|$doc_script|ok|present|doc-items-missing|追加行のメソッドの doc に @param / @returns が無い
+0||$doc_script|ok|present|doc-clean|追加行のメソッドに doc がある
+0||$doc_script|ok|present|doc-existing|doc の無いメソッドが base に既にあり、その行を触っていない
+0||$doc_script|ok|present|doc-escaped|追加行に doc の無いメソッドがあるが、ファイルに @doc-comments-ok がある
+2|$doc_check_name|$doc_script|broken|present|doc-violation|python3 が起動できない / 追加行に doc の無いメソッドがある
+2|$doc_check_name|$doc_script|ok|missing|doc-violation|検出器が見つからない / 追加行に doc の無いメソッドがある"
 
 while IFS='|' read -r expected expected_text script python3_state detector_state input label; do
   run_case "$expected" "$expected_text" "$script" "$python3_state" "$detector_state" \

@@ -41,10 +41,9 @@ while IFS= read -r file; do
 
   while IFS= read -r entry; do
     [ -z "$entry" ] && continue
-    echo "$added" | grep -qx "${entry%%:*}" || continue
     violations="${violations}${file}:${entry}
 "
-  done <<< "$reported"
+  done < <(entries_on_added_lines "$added" "$reported")
 done < <(git diff --name-only --diff-filter=d "$base"...HEAD -- '*.ts' '*.tsx')
 
 if [ -z "$violations" ]; then
