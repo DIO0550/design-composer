@@ -39,7 +39,7 @@ export type GradientToken = Readonly<{
   stops: readonly GradientStop[];
 }>;
 
-/** `background` に渡せる直線グラデーションの値。 */
+/** `linear-gradient` 形式で綴ったグラデーションの値。 */
 export type LinearGradientValue = `linear-gradient(${number}deg, ${string})`;
 
 /** 色の変わり目が持つフィールドの名前。型から導出し、綴りを二重管理しない。 */
@@ -65,13 +65,8 @@ const RatioRange = { min: 0, max: 1 } as const satisfies Range;
 /** 色の変わり目として成立する最小の件数。これを下回ると色が変わらない。 */
 const MinStopCount = 2;
 
-/**
- * 始点からの比率を % にしたときに残す小数の桁数(docs/04-tokens.md「gradients」)。
- *
- * 丸めないと `0.007` が `0.7000000000000001%` になる。二進小数で表せない比率は
- * 100 倍した時点で端数が出るため、綴る側で落とす。
- */
-const RatioPercentDecimals = 4;
+/** 始点からの比率を % にしたときに残す小数の桁数(docs/04-tokens.md「gradients」)。 */
+const RatioPercentPrecision = { decimals: 4 } as const;
 
 /**
  * 形を読む。`"linear"` 以外は読めない。
@@ -91,6 +86,18 @@ function shapeFromJson(cursor: JsonCursor): JsonDecoded<GradientShape> {
           `expected "${GradientShapes.Linear}" but got "${value}"`,
         ),
   );
+}
+
+/**
+ * `linear-gradient` の中に並ぶ色の変わり目 1 件の綴り。比率は 100 倍して % にする
+ * (docs/04-tokens.md「gradients」)。
+ *
+ * @param stop 綴る色の変わり目
+ * @returns 色と % を空白で繋いだもの
+ */
+function colorStopText(stop: GradientStop): string {
+  const percent = NumberEx.round(stop.ratio * 100, RatioPercentPrecision);
+  return `${stop.color} ${percent}%`;
 }
 
 /** 色の変わり目の生成と、JSON 表現との相互変換。 */
@@ -141,19 +148,6 @@ export const GradientStop = {
    */
   toJson(stop: GradientStop): JsonObject {
     return { color: ColorToken.toJson(stop.color), ratio: stop.ratio };
-  },
-
-  /**
-   * `linear-gradient` の 1 stop の綴り。比率は 100 倍して % にする
-   * (docs/04-tokens.md「gradients」)。
-   *
-   * @param stop 綴る色の変わり目
-   * @returns 色と % を空白で繋いだもの。0〜1 の外の比率もそのまま % になる
-   *   (docs/04-tokens.md「値域の扱い」)
-   */
-  cssValue(stop: GradientStop): string {
-    const percent = NumberEx.round(stop.ratio * 100, RatioPercentDecimals);
-    return `${stop.color} ${percent}%`;
   },
 } as const;
 
@@ -243,15 +237,14 @@ export const GradientToken = {
    * (docs/04-tokens.md「gradients」)。
    *
    * @param gradient 綴るグラデーション
-   * @returns 角度と色の変わり目を並べた `linear-gradient(...)`。色の変わり目が
-   *   2 件に満たなくても綴りは作り、解釈はブラウザに委ねる
-   *   (docs/04-tokens.md「値域の扱い」)
+   * @returns 角度と色の変わり目を並べた `linear-gradient(...)`。比率が 0〜1 の外でも、
+   *   色の変わり目が 2 件に満たなくても綴りは作る(docs/04-tokens.md「値域の扱い」)
    */
   cssValue(gradient: GradientToken): LinearGradientValue {
     switch (gradient.shape) {
       case "linear":
         return `linear-gradient(${gradient.angle}deg, ${gradient.stops
-          .map(GradientStop.cssValue)
+          .map(colorStopText)
           .join(", ")})`;
     }
   },

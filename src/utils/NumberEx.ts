@@ -41,13 +41,16 @@ export const NumberEx = {
   /**
    * 指定した小数の桁で四捨五入した値。
    *
+   * 桁数を素の数値で受けず 1 つの引数にしているのは、丸める値と取り違えても
+   * 型では落ちないため（どちらも `number`）。
+   *
    * @param value 丸める値
-   * @param decimals 残す小数の桁数
+   * @param precision 残す小数の桁数
    * @returns その桁で四捨五入した値。半端値は +∞ の側へ寄るので、負の値は
    *   0 に近い側へ丸まる（`-0.15` を小数第1位で丸めると `-0.1`）
    */
-  round(value: number, decimals: number): number {
-    const scale = 10 ** decimals;
+  round(value: number, precision: Readonly<{ decimals: number }>): number {
+    const scale = 10 ** precision.decimals;
     return Math.round(value * scale) / scale;
   },
 } as const;

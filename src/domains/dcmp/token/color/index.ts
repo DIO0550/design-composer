@@ -75,7 +75,7 @@ const AlphaPercentRange: Range = { min: 0, max: 100 };
  * になり（`#rrggbb01` は 0% を経由して完全な透明になる）、往復で値が変わらないという仕様を
  * 満たせない。
  */
-const AlphaPercentDecimals = 1;
+const AlphaPercentPrecision = { decimals: 1 } as const;
 
 export const ColorToken = {
   /**
@@ -128,7 +128,10 @@ export const ColorToken = {
   alphaPercentOf(color: ColorToken): number {
     const alpha = alphaOf(color);
     const byte = alpha === "" ? OpaqueAlphaByte : Number.parseInt(alpha, 16);
-    return NumberEx.round((byte / OpaqueAlphaByte) * 100, AlphaPercentDecimals);
+    return NumberEx.round(
+      (byte / OpaqueAlphaByte) * 100,
+      AlphaPercentPrecision,
+    );
   },
 
   /**
