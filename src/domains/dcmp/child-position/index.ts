@@ -16,6 +16,11 @@ export const ChildPosition = {
    * 自分が抜けたぶんだけ挿入位置が1つ手前になる
    * （`[A,B,C,D]` の `B` を `C` と `D` の間へ → 見た目は 3 だが、
    * `B` を抜いた `[A,C,D]` では 2）。
+   *
+   * @param position 取り除く前の並びで見た位置
+   * @param removed 取り除くノードがいた位置
+   * @returns 同じ親の中で `removed` が `position` より前なら 1 つ手前の位置、それ以外は
+   *   `position` のまま
    */
   afterRemoving(
     position: ChildPosition,
