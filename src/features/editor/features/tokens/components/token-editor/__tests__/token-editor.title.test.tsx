@@ -8,7 +8,7 @@ import { TokenEditor } from "../index";
 
 /**
  * 見出しが「どのトークンを編集しているか」を伝えることを見る（UI 案 docs/Design
- * Composer.html の `gray-900` / `Color`）。5 種すべてのトークンを 1 つのドキュメントに置い
+ * Composer.html の `gray-900` / `Color`）。6 種すべてのトークンを 1 つのドキュメントに置い
  * て、種別ごとの綴りを見比べる。
  */
 function setupDocument(): DesignDocument {
@@ -21,7 +21,16 @@ function setupDocument(): DesignDocument {
       typography: {
         body: { fontSize: 16, lineHeight: 1.6, fontWeight: 400 },
       },
-      gradients: {},
+      gradients: {
+        brand: {
+          shape: "linear",
+          angle: 90,
+          stops: [
+            { color: "#3b82f6", ratio: 0 },
+            { color: "#1d4ed8", ratio: 1 },
+          ],
+        },
+      },
     },
     artboards: [{ name: "home", width: 360, height: 240, children: [] }],
   });
@@ -49,6 +58,19 @@ test("編集中のトークンの名前が見出しに出る", () => {
   renderTitle({ kind: "colors", name: "primary" });
 
   expect(screen.getByRole("heading", { level: 2 }).textContent).toBe("primary");
+});
+
+test("グラデーションを選んでも見出しに名前が出ない", () => {
+  /*
+   * 同じドキュメントで色を選べば名前が出る。見出しが常に空なのではなく、
+   * 編集欄を持たない種別だけが出ないことを見る。
+   */
+  renderTitle({ kind: "colors", name: "primary" });
+  expect(screen.getByRole("heading", { level: 2 })).toBeDefined();
+
+  renderTitle({ kind: "gradients", name: "brand" });
+
+  expect(screen.getAllByRole("heading", { level: 2 })).toHaveLength(1);
 });
 
 test("色トークンの見出しには色見本が出る", () => {

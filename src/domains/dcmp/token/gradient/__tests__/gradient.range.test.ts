@@ -51,7 +51,7 @@ test("角度が数値として読めないグラデーションは作れない",
 });
 
 test("1周を超える角度のグラデーションは作れる", () => {
-  /* 角度に値域は無い（docs/04-tokens.md「gradients」）。450 度は「1 周と 90 度」。 */
+  /* docs/04-tokens.md「gradients」は角度に値域を置いていない。450 度は「1 周と 90 度」。 */
   const stops = setupStops();
 
   expect(GradientToken.create("linear", 450, stops)).toEqual(

@@ -1,8 +1,10 @@
 import { type ReactElement, useId, useState } from "react";
-import type { Token, TokenKind, TokenValue } from "@/domains/dcmp/token";
+import type { TokenValue } from "@/domains/dcmp/token";
 import type { TokenSelection } from "@/domains/session/token-selection";
 import { TokenUsedBy } from "@/features/editor/features/tokens/components/token-used-by";
 import {
+  type EditableToken,
+  type EditableTokenKind,
   TokenControl,
   type TokenControlInput,
 } from "@/features/editor/features/tokens/domains/token-control";
@@ -16,7 +18,7 @@ const NoSelectionMessage = "トークンが選択されていません";
 /**
  * 帯の右端に出す種別の綴り。
  *
- * UI 案（docs/Design Composer.html）に実在するのは `Color` だけで、残る 5 つはここで決めた。
+ * UI 案（docs/Design Composer.html）に実在するのは `Color` だけで、残る 4 つはここで決めた。
  *
  * 種別を足して綴りを足し忘れると、ここがコンパイルエラーになる。
  */
@@ -26,8 +28,7 @@ const KindLabels = {
   radius: "Radius",
   shadows: "Shadow",
   typography: "Typography",
-  gradients: "Gradient",
-} as const satisfies Readonly<Record<TokenKind, string>>;
+} as const satisfies Readonly<Record<EditableTokenKind, string>>;
 
 /**
  * 編集しているトークンの見出し（先頭の色見本 + 名前 + 右端に種別）。
@@ -35,7 +36,7 @@ const KindLabels = {
  * 先頭の見本を出すのは色だけ。UI 案が描いているのも色の 14×14 のチップだけで、無い絵を
  * 思いつきで足さない（rules/ui-verification.md）。
  */
-function TokenTitle({ token }: Readonly<{ token: Token }>) {
+function TokenTitle({ token }: Readonly<{ token: EditableToken }>) {
   return (
     <>
       {token.kind === "colors" ? (

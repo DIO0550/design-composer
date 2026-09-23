@@ -9,6 +9,7 @@ import {
   ShadowToken,
   type Token,
   type TokenKind,
+  TokenKinds,
   TokenSet,
   TokenValue,
   type TypographyField,
@@ -32,36 +33,36 @@ import { Option } from "@/utils/Option";
  */
 
 /**
- * トークンパネルが一覧の見本と編集欄を持っている種別。
+ * トークン編集 UI が一覧の見本と編集欄を持っている種別。
  *
  * グラデーションだけ外れるのは、見本の絵も可変長の色の変わり目を編集する欄も UI 案
  * （docs/Design Composer.html）に無く、docs/06-ui.md も見せ方を持っていないため。
  * 無い絵を思いつきで足さない（rules/ui-verification.md）。
  */
-type PanelTokenKind = Exclude<TokenKind, "gradients">;
+export type EditableTokenKind = Exclude<TokenKind, typeof TokenKinds.Gradients>;
 
-/** パネルが一覧と編集欄を出せるトークン。 */
-type PanelToken = Extract<Token, { kind: PanelTokenKind }>;
+/** 一覧と編集欄を出せるトークン。 */
+export type EditableToken = Extract<Token, { kind: EditableTokenKind }>;
 
 /**
- * パネルがその種別の見本と編集欄を持っているか。
+ * その種別の見本と編集欄を持っているか。
  *
  * @param kind 見たい種別
  * @returns 見本と編集欄があれば真
  */
-function isPanelKind(kind: TokenKind): kind is PanelTokenKind {
-  return kind !== "gradients";
+function isEditableKind(kind: TokenKind): kind is EditableTokenKind {
+  return kind !== TokenKinds.Gradients;
 }
 
 /**
- * パネルがそのトークンの見本と編集欄を持っているか。
- * 判定の規則は種別だけで決まるので `isPanelKind` に任せる。
+ * そのトークンの見本と編集欄を持っているか。
+ * 判定の規則は種別だけで決まるので `isEditableKind` に任せる。
  *
  * @param token 見たいトークン
  * @returns 見本と編集欄があれば真
  */
-function isPanelToken(token: Token): token is PanelToken {
-  return isPanelKind(token.kind);
+function isEditableToken(token: Token): token is EditableToken {
+  return isEditableKind(token.kind);
 }
 
 /** 一覧の行に出す値の見せ方。種別ごとに何を見せられるかが違う。 */
@@ -73,7 +74,7 @@ export type TokenPreview =
 
 /** 一覧の1行。 */
 export type TokenRow = Readonly<{
-  token: Token;
+  token: EditableToken;
   preview: TokenPreview;
   valueText: string;
 }>;
@@ -135,7 +136,7 @@ type TokenControlRow = Omit<TokenControlField, "input">;
 
 /** 1 つのトークンを編集する画面の中身。並べる欄は種別で決まる。 */
 export type TokenControl = Readonly<{
-  token: Token;
+  token: EditableToken;
   fields: readonly TokenControlField[];
 }>;
 
@@ -177,7 +178,7 @@ const TypographyLabels = {
  * @param token 見本を出したいトークン
  * @returns 種別に応じた見本（色見本 / 長さの帯 / 影 / 書体の見本）
  */
-function previewOf(token: PanelToken): TokenPreview {
+function previewOf(token: EditableToken): TokenPreview {
   switch (token.kind) {
     case "colors":
       return { kind: "swatch", color: token.value };
@@ -209,7 +210,7 @@ function previewOf(token: PanelToken): TokenPreview {
  * @param token 値を読みたいトークン
  * @returns 1行で読める値の文字列
  */
-function valueTextOf(token: PanelToken): string {
+function valueTextOf(token: EditableToken): string {
   switch (token.kind) {
     case "colors":
       return token.value;
@@ -228,20 +229,25 @@ export const TokenSection = {
    * トークン一覧に出すセクションの並び。種別は `TokenSet.kinds` の順、種別内は TokenSet が持
    * つ定義順を保つ。
    *
-   * トークンが1つも無い種別も見出しだけ出す（足す先が画面から消えないため）。ただしパネル
-   * が見本と編集欄を持っていない種別は見出しごと出さない（`PanelTokenKind`）。
+   * トークンが1つも無い種別も見出しだけ出す（足す先が画面から消えないため）。ただし見本と
+   * 編集欄を持っていない種別は見出しごと出さない（`EditableTokenKind`）。
    *
    * @param document トークンの出どころ
-   * @returns パネルが描ける種別のセクションの並び。トークンが無い種別も 1 つ並ぶ
+   * @returns 編集できる種別のセクションの並び。トークンが無い種別も 1 つ並ぶ
    */
   forDocument(document: DesignDocument): readonly TokenSection[] {
     const tokens = document.tokens;
     return TokenSet.kinds()
-      .filter(isPanelKind)
+      .filter(isEditableKind)
       .map((kind) => ({
         kind,
+        /*
+         * 種別は上で絞れているので、この絞りは実行時には 1 件も落とさない。
+         * `TokenSet.tokensOf` の戻りが種別で狭まらず `Token` のままなので、
+         * 見本と値の綴りへ渡す型をここで得ている。
+         */
         rows: TokenSet.tokensOf(tokens, kind)
-          .filter(isPanelToken)
+          .filter(isEditableToken)
           .map((token) => ({
             token,
             preview: previewOf(token),
@@ -341,7 +347,7 @@ function typographyInput(
  * @param token 編集したいトークン
  * @returns 上から並べる編集欄。単一値の種別は 1 件
  */
-function fieldsOf(token: PanelToken): readonly TokenControlField[] {
+function fieldsOf(token: EditableToken): readonly TokenControlField[] {
   switch (token.kind) {
     case "colors":
       return colorFields(
@@ -499,12 +505,12 @@ export const TokenControl = {
    * 選択中のトークンの編集欄（docs/06-ui.md「編集操作の一覧」の tokens 編集）。
    *
    * @param selection ドキュメントと、その中で選ばれているトークン
-   * @returns 編集欄一式。トークンを選んでいないとき、およびパネルが編集欄を持っていない
-   *   種別を選んでいるときは `none`
+   * @returns 編集欄一式。トークンを選んでいないとき、および編集欄を持っていない種別を
+   *   選んでいるときは `none`
    */
   forSelection(selection: TokenSelection): Option<TokenControl> {
     return Option.flatMap(TokenSelection.token(selection), (token) =>
-      isPanelToken(token)
+      isEditableToken(token)
         ? Option.some({ token, fields: fieldsOf(token) })
         : Option.none,
     );

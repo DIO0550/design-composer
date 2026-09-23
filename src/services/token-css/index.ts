@@ -56,10 +56,8 @@ function entriesOfKind(
         ShadowToken.cssValue(shadow),
       ]);
     /*
-     * グラデーションはカスタムプロパティを出さない。docs/03-schema.md「HTML/CSS へのコン
-     * パイル規則」が決めているのは `--{種別}-{名前}: 値` の形までで、階調の「値」をどう綴
-     * るか（`linear-gradient()` の組み立て・角度の単位・比率の書き方）は仕様がまだ持って
-     * いない。綴りをここで決めると、仕様が決まったときに出力が黙って変わる。
+     * グラデーションは出さない。docs/03-schema.md「HTML/CSS へのコンパイル規則」が
+     * 決めているのは `--{種別}-{名前}: 値` の形までで、階調の値の綴りをまだ持たない。
      */
     case "gradients":
       return [];

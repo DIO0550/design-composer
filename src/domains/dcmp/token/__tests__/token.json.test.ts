@@ -39,10 +39,7 @@ test("影の色も読み込んだ時点で小文字の hex に正規化される
 });
 
 test("知らない種別は読み込めない", () => {
-  /*
-   * 単数形を例にするのは、種別が 6 つになったいちばん起きやすい未知の綴りが
-   * `gradients` の単数形のタイポだから。
-   */
+  /* 実在する 6 種別のどれとも一致せず、かつ紛れやすい綴りを未知の例に選んでいる。 */
   const result = TokenSet.fromJson(Json.create({ gradient: {} }, "tokens"));
 
   expect(Result.isOk(result)).toBe(false);

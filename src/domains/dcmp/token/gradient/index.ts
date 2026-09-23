@@ -38,34 +38,22 @@ export type GradientToken = Readonly<{
   stops: readonly GradientStop[];
 }>;
 
-/**
- * 色の変わり目が持つフィールドの対応表。
- *
- * `satisfies` が見るのは**キーの過不足と綴り**だけで、キーに割り当てた値がずれてもここでは
- * 落ちない。並びが要るときは `GradientStop.fields` を使い、`Object.values` をそこ 1 箇所に
- * 閉じる。
- */
-const GradientStopFields = {
+/** 色の変わり目が持つフィールドの名前。型から導出し、綴りを二重管理しない。 */
+const GradientStopFieldNames = Object.values({
   Color: "color",
   Ratio: "ratio",
 } as const satisfies Readonly<
-  Record<Capitalize<keyof Required<GradientStop>>, keyof Required<GradientStop>>
->;
+  Record<Capitalize<keyof GradientStop>, keyof GradientStop>
+>);
 
-/**
- * グラデーションが持つフィールドの対応表。
- * 見方は `GradientStopFields` と同じ。
- */
-const GradientFields = {
+/** グラデーションが持つフィールドの名前。 */
+const GradientFieldNames = Object.values({
   Shape: "shape",
   Angle: "angle",
   Stops: "stops",
 } as const satisfies Readonly<
-  Record<
-    Capitalize<keyof Required<GradientToken>>,
-    keyof Required<GradientToken>
-  >
->;
+  Record<Capitalize<keyof GradientToken>, keyof GradientToken>
+>);
 
 /** 始点からの比率が取りうる範囲。0 が始点、1 が終点。 */
 const RatioRange = { min: 0, max: 1 } as const satisfies Range;
@@ -96,16 +84,15 @@ function shapeFromJson(cursor: JsonCursor): JsonDecoded<GradientShape> {
 
 /** 色の変わり目の生成と、JSON 表現との相互変換。 */
 export const GradientStop = {
-  fields(): readonly string[] {
-    return Object.values(GradientStopFields);
-  },
-
   /**
    * 色の変わり目を作る。
    *
    * `ratio` をブランド型にしても `GradientToken` が持つ並びは `number` のままで、読み込み
    * は値域を見ない(docs/04-tokens.md「値域の扱い」)。型では弾けないので、この入口の
    * `Option` だけが境界になる。
+   *
+   * 通るのは編集で値を受け取る経路だけで、その入口はまだ無い（読み込みは
+   * `fromJson` が値域を見ずに通す）。ここを通っていない値も同じ型で流通する。
    *
    * @param color その位置に置く色
    * @param ratio 始点からの比率
@@ -126,7 +113,7 @@ export const GradientStop = {
           (color, ratio) => ({ color, ratio }),
         ),
         record,
-        GradientStop.fields(),
+        GradientStopFieldNames,
       ),
     );
   },
@@ -138,15 +125,12 @@ export const GradientStop = {
 
 /** グラデーションの生成・正規化と、JSON 表現との相互変換。 */
 export const GradientToken = {
-  fields(): readonly string[] {
-    return Object.values(GradientFields);
-  },
-
   /**
    * グラデーションを作る。
    *
    * @param shape 色を並べる形
-   * @param angle 色が変わっていく向き。度、時計回り
+   * @param angle 色が変わっていく向き。度、時計回りで、`0` は下から上
+   *   （03-schema「回転」の `rotation` と違い `0` は無回転ではない）
    * @param stops 色の変わり目の並び。書いた順がそのまま使われる
    * @returns 角度が有限で、色の変わり目が 2 件以上あるときだけ some。
    *   角度に値域を課さないのは、1 周を超える角度も「1 周と◯度」で意味が決まるため
@@ -193,7 +177,7 @@ export const GradientToken = {
           (shape, angle, stops) => ({ shape, angle, stops }),
         ),
         record,
-        GradientToken.fields(),
+        GradientFieldNames,
       ),
     );
   },

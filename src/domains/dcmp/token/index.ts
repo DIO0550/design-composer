@@ -15,12 +15,7 @@ import { ShadowToken } from "./shadow";
 import { TypographyToken } from "./typography";
 
 export { ColorToken, Rgb } from "./color";
-export {
-  type GradientShape,
-  GradientShapes,
-  GradientStop,
-  GradientToken,
-} from "./gradient";
+export { GradientToken } from "./gradient";
 export {
   type BoxShadowValue,
   type ShadowField,
