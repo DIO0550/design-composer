@@ -1,5 +1,11 @@
 /** 数値の性質の判定と、範囲・桁への丸め。 */
 export const NumberEx = {
+  /**
+   * 0 以上の整数か。
+   *
+   * @param value 見たい数値
+   * @returns 0 以上の整数なら true。負・小数・`NaN`・`±Infinity` は false
+   */
   isNatural(value: number): boolean {
     return Number.isInteger(value) && value >= 0;
   },
