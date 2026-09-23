@@ -119,7 +119,13 @@ function isEmpty(value: JsonValue): boolean {
 
 /** JSON の値を位置つきで読み進めるためのカーソル操作。 */
 export const Json = {
-  /** テキストから読み込んだ値を、位置つきのカーソルにする。 */
+  /**
+   * テキストから読み込んだ値を、位置つきのカーソルにする。
+   *
+   * @param value 読み込んだ値。型はまだ確かめていない
+   * @param path その値のドキュメント内の位置。省略するとドキュメントの根（空文字）
+   * @returns まだ型を確かめていない、その位置のカーソル
+   */
   create(value: unknown, path = ""): JsonCursor {
     return { value, path };
   },
@@ -142,6 +148,14 @@ export const Json = {
     }
   },
 
+  /**
+   * 1 件だけのデコードの失敗。
+   *
+   * @param kind 呼び出し側が分岐に使う、失敗の種類
+   * @param path 失敗した値の位置
+   * @param message 人が読むための説明
+   * @returns その 1 件だけを一覧に持つ `err`
+   */
   error(
     kind: JsonDecodeErrorKind,
     path: string,
@@ -150,10 +164,22 @@ export const Json = {
     return Result.err([{ kind, path, message }]);
   },
 
+  /**
+   * デコード結果が持つエラーの一覧。
+   *
+   * @param result エラーを集めたいデコード結果
+   * @returns 失敗ならそのエラーの一覧。成功なら空
+   */
   errorsOf(result: JsonDecoded<unknown>): readonly JsonDecodeError[] {
     return Result.isOk(result) ? [] : result.error;
   },
 
+  /**
+   * カーソルの位置の値を文字列として読む。
+   *
+   * @param cursor 読む値とその位置
+   * @returns その文字列。文字列でなければ `invalid-type` の `err`
+   */
   string(cursor: JsonCursor): JsonDecoded<string> {
     if (typeof cursor.value === "string") {
       return Result.ok(cursor.value);
@@ -165,6 +191,12 @@ export const Json = {
     );
   },
 
+  /**
+   * カーソルの位置の値を数値として読む。
+   *
+   * @param cursor 読む値とその位置
+   * @returns その数値。数値でなければ `invalid-type` の `err`
+   */
   number(cursor: JsonCursor): JsonDecoded<number> {
     if (typeof cursor.value === "number") {
       return Result.ok(cursor.value);
@@ -176,7 +208,13 @@ export const Json = {
     );
   },
 
-  /** オブジェクトであることを確かめ、フィールドを引けるカーソルにする。 */
+  /**
+   * オブジェクトであることを確かめ、フィールドを引けるカーソルにする。
+   *
+   * @param cursor 確かめる値とその位置
+   * @returns 同じ位置を指すオブジェクトのカーソル。配列・`null` を含め、オブジェクトでなければ
+   *   `invalid-type` の `err`
+   */
   record(cursor: JsonCursor): JsonDecoded<JsonRecordCursor> {
     if (isJsonRecord(cursor.value)) {
       return Result.ok({ record: cursor.value, path: cursor.path });
@@ -188,6 +226,12 @@ export const Json = {
     );
   },
 
+  /**
+   * カーソルの位置の値を配列として読む。要素はまだ確かめない（要素まで読むのは `arrayOf`）。
+   *
+   * @param cursor 読む値とその位置
+   * @returns その配列。配列でなければ `invalid-type` の `err`
+   */
   array(cursor: JsonCursor): JsonDecoded<readonly unknown[]> {
     if (Array.isArray(cursor.value)) {
       return Result.ok(cursor.value);
@@ -199,6 +243,15 @@ export const Json = {
     );
   },
 
+  /**
+   * 必ずあるはずのフィールドを読む。
+   *
+   * @param cursor フィールドを引くオブジェクト
+   * @param key 読むフィールド名
+   * @param decode フィールドの値の読み方
+   * @returns `decode` の結果。フィールドが無ければ `missing-field` の `err`（位置は、親が根なら
+   *   `key`、それ以外は `親のパス.key`）
+   */
   required<T>(
     cursor: JsonRecordCursor,
     key: string,
@@ -211,6 +264,15 @@ export const Json = {
     return decode(field);
   },
 
+  /**
+   * 省略してよいフィールドを読む。
+   *
+   * @param cursor フィールドを引くオブジェクト
+   * @param key 読むフィールド名
+   * @param decode フィールドの値の読み方
+   * @returns フィールドが無ければ `undefined` を持つ `ok`。あれば値が `null` でも省略とは扱わず、
+   *   `decode` の結果をそのまま返す
+   */
   optional<T>(
     cursor: JsonRecordCursor,
     key: string,
@@ -222,7 +284,14 @@ export const Json = {
     return decode(fieldCursor(cursor, key));
   },
 
-  /** 省略されたときに空として扱うフィールド。 */
+  /**
+   * 省略されたときに空として扱う、名前をキーとする辞書のフィールド。
+   *
+   * @param cursor フィールドを引くオブジェクト
+   * @param key 読むフィールド名
+   * @param decodeValue 辞書の値 1 つの読み方
+   * @returns フィールドが無ければ空の辞書を持つ `ok`。あれば `mapOf` の結果
+   */
   optionalMap<T>(
     cursor: JsonRecordCursor,
     key: string,
@@ -234,7 +303,14 @@ export const Json = {
     return Json.mapOf(fieldCursor(cursor, key), decodeValue);
   },
 
-  /** 名前をキーとする辞書をデコードする。 */
+  /**
+   * 名前をキーとする辞書をデコードする。
+   *
+   * @param cursor 辞書を指すカーソル
+   * @param decodeValue 辞書の値 1 つの読み方
+   * @returns 値をすべて読めた辞書。オブジェクトでなければ `invalid-type` の `err`、
+   *   読めない値があれば、その全件のエラーを持つ `err`
+   */
   mapOf<T>(
     cursor: JsonCursor,
     decodeValue: JsonDecoder<T>,
@@ -252,6 +328,14 @@ export const Json = {
     });
   },
 
+  /**
+   * 配列を要素ごとにデコードする。
+   *
+   * @param cursor 配列を指すカーソル
+   * @param decodeItem 要素 1 つの読み方。要素の位置は `親のパス[添字]` になる
+   * @returns 要素をすべて読めた並び。配列でなければ `invalid-type` の `err`、
+   *   読めない要素があれば、その全件のエラーを持つ `err`
+   */
   arrayOf<T>(
     cursor: JsonCursor,
     decodeItem: JsonDecoder<T>,
@@ -268,6 +352,12 @@ export const Json = {
   /**
    * 知らないフィールドをエラーとして加える。
    * 黙って捨てると無警告のデータ消失になるため、読み手が気付ける形で報告する。
+   *
+   * @param result そのオブジェクトを読んだ結果
+   * @param cursor 知らないフィールドを探すオブジェクト
+   * @param knownFields そのオブジェクトが持ってよいフィールド名
+   * @returns 知らないフィールドが無ければ `result` のまま。あれば `result` が成功でも `err` に
+   *   なり、`result` のエラーの後ろへ `unknown-field` を 1 件ずつ足す
    */
   knownFields<T>(
     result: JsonDecoded<T>,
@@ -289,6 +379,13 @@ export const Json = {
     return Result.err([...Json.errorsOf(result), ...errors]);
   },
 
+  /**
+   * デコード結果の並びを 1 つの結果にまとめる。最初の失敗で打ち切らない。
+   *
+   * @param results まとめる結果の並び
+   * @returns 成功した値を元の順に並べた `ok`。1 つでも失敗していれば、失敗した結果の
+   *   エラーを元の順に連ねた `err`
+   */
   collect<T>(results: readonly JsonDecoded<T>[]): JsonDecoded<readonly T[]> {
     const errors = results.flatMap(Json.errorsOf);
     if (errors.length > 0) {
@@ -307,6 +404,12 @@ export const Json = {
    * 引数を3つまでに抑える規約(`rules/coding.md`)の例外として個数ごとに用意する。
    * 各引数は型が異なるため1つの型にまとめられず、可変長にすると
    * タプル型を通すために `as` が必要になる(こちらも規約違反になる)。
+   *
+   * @param a まとめる 1 つ目の結果
+   * @param b まとめる 2 つ目の結果
+   * @param build すべて成功したときだけ呼び、成功した値から結果を組み立てる
+   * @returns `build` の戻り値を持つ `ok`。1 つでも失敗していれば、失敗した結果のエラーを
+   *   引数の順に連ねた `err`
    */
   combine2<A, B, R>(
     a: JsonDecoded<A>,
@@ -320,6 +423,15 @@ export const Json = {
     return Result.err([...Json.errorsOf(a), ...Json.errorsOf(b)]);
   },
 
+  /**
+   * 3 つのデコード結果をまとめる。集め方は `combine2` と同じ。
+   *
+   * @param a まとめる 1 つ目の結果
+   * @param b まとめる 2 つ目の結果
+   * @param c まとめる 3 つ目の結果
+   * @param build `combine2` と同じ
+   * @returns `combine2` と同じ
+   */
   combine3<A, B, C, R>(
     a: JsonDecoded<A>,
     b: JsonDecoded<B>,
@@ -337,6 +449,16 @@ export const Json = {
     ]);
   },
 
+  /**
+   * 4 つのデコード結果をまとめる。集め方は `combine2` と同じ。
+   *
+   * @param a まとめる 1 つ目の結果
+   * @param b まとめる 2 つ目の結果
+   * @param c まとめる 3 つ目の結果
+   * @param d まとめる 4 つ目の結果
+   * @param build `combine2` と同じ
+   * @returns `combine2` と同じ
+   */
   combine4<A, B, C, D, R>(
     a: JsonDecoded<A>,
     b: JsonDecoded<B>,
@@ -357,6 +479,17 @@ export const Json = {
     ]);
   },
 
+  /**
+   * 5 つのデコード結果をまとめる。集め方は `combine2` と同じ。
+   *
+   * @param a まとめる 1 つ目の結果
+   * @param b まとめる 2 つ目の結果
+   * @param c まとめる 3 つ目の結果
+   * @param d まとめる 4 つ目の結果
+   * @param e まとめる 5 つ目の結果
+   * @param build `combine2` と同じ
+   * @returns `combine2` と同じ
+   */
   combine5<A, B, C, D, E, R>(
     a: JsonDecoded<A>,
     b: JsonDecoded<B>,
@@ -383,6 +516,18 @@ export const Json = {
     ]);
   },
 
+  /**
+   * 6 つのデコード結果をまとめる。集め方は `combine2` と同じ。
+   *
+   * @param a まとめる 1 つ目の結果
+   * @param b まとめる 2 つ目の結果
+   * @param c まとめる 3 つ目の結果
+   * @param d まとめる 4 つ目の結果
+   * @param e まとめる 5 つ目の結果
+   * @param f まとめる 6 つ目の結果
+   * @param build `combine2` と同じ
+   * @returns `combine2` と同じ
+   */
   combine6<A, B, C, D, E, F, R>(
     a: JsonDecoded<A>,
     b: JsonDecoded<B>,
@@ -415,9 +560,14 @@ export const Json = {
   },
 
   /**
-   * 名前をキーとする辞書を名前の昇順で書き出す。
+   * 名前をキーとする辞書を、キーを `sort()` の既定順に並べて書き出す。
    * キー順を値だけから決めることで、同じ値からは
    * 構築の経緯によらず常に同じ出力になる。
+   *
+   * @param record 書き出す辞書。元の辞書のキー順は出力に影響しない
+   * @param serializeValue 辞書の値 1 つの書き出し方
+   * @returns 値を書き出した JSON のオブジェクト。配列の添字として正規な綴りのキー
+   *   （`9` / `10`。`01` や `-1` は含まない）だけは、JS のオブジェクトの規則で数値順に先頭へ来る
    */
   sortedMap<T>(
     record: Readonly<Record<string, T>>,
@@ -430,12 +580,25 @@ export const Json = {
     );
   },
 
-  /** 値が未設定なら現れないフィールド。 */
+  /**
+   * 値が未設定なら現れないフィールド。
+   *
+   * @param key 書き出すフィールド名
+   * @param value フィールドの値。未設定なら `undefined`
+   * @returns `key` だけを持つオブジェクト。`value` が `undefined` なら空のオブジェクト
+   */
   definedField(key: string, value: JsonValue | undefined): JsonObject {
     return value === undefined ? {} : { [key]: value };
   },
 
-  /** 値が未設定または空なら現れないフィールド。 */
+  /**
+   * 値が未設定または空なら現れないフィールド。
+   *
+   * @param key 書き出すフィールド名
+   * @param value フィールドの値。未設定なら `undefined`
+   * @returns `key` だけを持つオブジェクト。`value` が `undefined` か、要素・フィールドが 0 個の
+   *   配列 / オブジェクトなら空のオブジェクト（文字列・数値・真偽値は中身によらず出す）
+   */
   nonEmptyField(key: string, value: JsonValue | undefined): JsonObject {
     if (value === undefined || isEmpty(value)) {
       return {};
