@@ -199,17 +199,32 @@ function collectLiteralErrors(
 }
 
 export const PropDefinition = {
-  /** 値を列挙から選ぶ prop か。 */
+  /**
+   * 値を列挙から選ぶ prop か。
+   *
+   * @param definition 見る prop 定義
+   * @returns `values` に列挙した選択肢から選ぶ prop なら `true`
+   */
   isEnum(definition: PropDefinition): definition is EnumPropDefinition {
     return definition.domain === "enum";
   },
 
-  /** 値をトークン名で指す prop か。 */
+  /**
+   * 値をトークン名で指す prop か。
+   *
+   * @param definition 見る prop 定義
+   * @returns `tokenKind` の種別のトークンを名前で指す prop なら `true`
+   */
   isToken(definition: PropDefinition): definition is TokenPropDefinition {
     return definition.domain === "token";
   },
 
-  /** 値を生のリテラル（数値・文字列）で持つ prop か。 */
+  /**
+   * 値を生のリテラル（数値・文字列）で持つ prop か。
+   *
+   * @param definition 見る prop 定義
+   * @returns 値をトークンにも選択肢にも照らさずそのまま持つ prop なら `true`
+   */
   isLiteral(definition: PropDefinition): definition is LiteralPropDefinition {
     return definition.domain === "literal";
   },
@@ -223,6 +238,12 @@ export const PropDefinition = {
    *
    * トークンが実在するかは見ない（`collectErrors` の担当）。この判定が答えるのは
    * 「この設定はその参照を指しているか」だけなので、宙に浮いた参照にも同じ答えを返す。
+   *
+   * @param definition `assignment` の prop の定義
+   * @param assignment 見る prop 設定
+   * @param ref 指しているかを知りたいトークン
+   * @returns 定義がトークン参照 prop で、その種別が `ref` と同じで、値が `ref` の名前と一致
+   *   すれば `true`。値が数値・真偽値なら、名前と同じ綴りでも `false`
    */
   isRefTo(
     definition: PropDefinition,
@@ -237,6 +258,11 @@ export const PropDefinition = {
   /**
    * その prop が今の props の下で編集可能か（`enabledWhen` の条件を満たすか）。
    * 条件を持たない prop は常に編集可能。
+   *
+   * @param definition 見る prop の定義
+   * @param props 条件が参照する prop を引く先の props
+   * @returns 条件が無いか、条件を満たせば `true`。条件の prop が `props` に無いときは
+   *   値が無いものとして比べる（`equals` なら `false`、`notEquals` なら `true`）
    */
   isEnabled(
     definition: PropDefinition,
@@ -260,6 +286,14 @@ export const PropDefinition = {
    *
    * 何を見るかは `domain` ごとに違う（enum は値が `values` に含まれるか、literal は型が
    * 一致するかと宣言した範囲に収まっているか、token はその種別のトークンが存在するか）。
+   *
+   * @param definition 照らす先の prop 定義。`assignment` の prop のもの
+   * @param assignment 照らす prop 設定
+   * @param tokens token の prop が指す名前を引く先のトークン一式
+   * @returns 適合しない理由の並び（多くて 1 件）。`enum-violation` は値が文字列でないか
+   *   `values` に無いとき。`literal-type-mismatch` / `range-violation` は literal の型が
+   *   違うときと、数値が宣言した範囲の外にあるとき。`dangling-token` は値が文字列でない
+   *   か、その名前のトークンが `tokenKind` の種別に無いとき（判定は `TokenSet.has`）
    */
   collectErrors(
     definition: PropDefinition,
@@ -302,7 +336,12 @@ export const PropDefinition = {
 } as const;
 
 export const PropDefinitionRecord = {
-  /** スキーマが宣言している prop の名前。宣言順で返る。 */
+  /**
+   * スキーマが宣言している prop の名前。
+   *
+   * @param schema 名前を取り出す prop 定義
+   * @returns prop 名の並び。並びはスキーマの宣言順
+   */
   propNames(schema: PropDefinitionRecord): readonly string[] {
     return Object.keys(schema);
   },

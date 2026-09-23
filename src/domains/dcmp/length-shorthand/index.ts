@@ -51,7 +51,13 @@ export const LengthShorthand = {
     return { property, lengths: [first, second, third, fourth] };
   },
 
-  /** 4 つとも未指定。その shorthand を持たないことを表す。 */
+  /**
+   * 4 つとも未指定。その shorthand を持たないことを表す。
+   *
+   * @param shorthand 見る shorthand
+   * @returns 4 つの位置のどれにも値が無ければ `true`。空文字や `0` も値があるものとして
+   *   数える
+   */
   isEmpty(shorthand: LengthShorthand): boolean {
     return !shorthand.lengths.some((length) => Option.isSome(length));
   },

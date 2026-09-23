@@ -78,11 +78,23 @@ function declarationText(property: string, value: string): string {
 }
 
 export const CssDeclaration = {
+  /**
+   * 1 宣言を組み立てる。
+   *
+   * @param property 宣言の左辺。CSS プロパティか、カスタムプロパティの名前
+   * @param value 右辺にそのまま書く値。エスケープはしない
+   * @returns `property` と `value` の対
+   */
   create(property: CssDeclarationName, value: string): CssDeclaration {
     return { property, value };
   },
 
-  /** style 属性へ載せる形の1宣言。 */
+  /**
+   * style 属性へ載せる形の1宣言。
+   *
+   * @param declaration 書き出す宣言
+   * @returns `プロパティ:値` の 1 行。末尾の `;` は付けない
+   */
   text(declaration: CssDeclaration): string {
     return declarationText(declaration.property, declaration.value);
   },
@@ -96,7 +108,13 @@ export const CssDeclaration = {
 export type CssDeclarations = Readonly<Record<string, string>>;
 
 export const CssDeclarations = {
-  /** 宣言の並びをまとめる。同じプロパティが複数あるときは後の宣言が優先される。 */
+  /**
+   * 宣言の並びをまとめる。同じプロパティが複数あるときは後の宣言が優先される。
+   *
+   * @param declarations 優先度の低い順に並べた宣言
+   * @returns プロパティごとに値を 1 つ持つ対応。並びは各プロパティが最初に現れた位置の
+   *   順（後の宣言が勝っても位置は動かない）
+   */
   from(declarations: readonly CssDeclaration[]): CssDeclarations {
     return Object.fromEntries(
       declarations.map((declaration) => [
@@ -106,7 +124,13 @@ export const CssDeclarations = {
     );
   },
 
-  /** style 属性へ載せられる宣言の並びに直列化する。 */
+  /**
+   * style 属性へ載せられる宣言の並びに直列化する。
+   *
+   * @param declarations 直列化する宣言の対応
+   * @returns `プロパティ:値` を持っている順に `;` で連ねた文字列。末尾に `;` は付けず、
+   *   宣言が無ければ空文字
+   */
   toStyleText(declarations: CssDeclarations): string {
     return Object.entries(declarations)
       .map(([property, value]) => declarationText(property, value))

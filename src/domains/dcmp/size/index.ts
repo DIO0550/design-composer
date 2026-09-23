@@ -149,12 +149,20 @@ export const Size = {
    * その軸のモードを持つ prop 名
    * (docs/03「モード(enum)と値(number)の2 prop に分離」)。
    * 長さ側の prop 名は軸の名前そのもの (`width` / `height`)。
+   *
+   * @param axis どちらの軸のモードか
+   * @returns `width` なら `widthMode`、`height` なら `heightMode`
    */
   modeProp(axis: Axis): "widthMode" | "heightMode" {
     return axis === "width" ? "widthMode" : "heightMode";
   },
 
-  /** 固定された長さ。`hug` / `fill` と、長さの決まらないサイズは持たない。 */
+  /**
+   * 固定された長さ。`hug` / `fill` と、長さの決まらないサイズは持たない。
+   *
+   * @param size 見るサイズ。`undefined` の意味は `fromProps` のとおり
+   * @returns `fixed` ならその長さ。`hug` / `fill` と `undefined` なら `none`
+   */
   fixedLength(size: Size | undefined): Option<number> {
     return size?.mode === "fixed" ? Option.some(size.length) : Option.none;
   },
