@@ -100,7 +100,13 @@ export const GradientStop = {
       : Option.none;
   },
 
-  /** 色は読み込んだ時点で正規形(小文字の hex)へ倒れる。 */
+  /**
+   * 色は読み込んだ時点で正規形(小文字の hex)へ倒れる。
+   *
+   * @param cursor 読む位置の値
+   * @returns 読めた色の変わり目。オブジェクトでない・`color` / `ratio` が欠ける・
+   *   知らないフィールドがあるときは `err`
+   */
   fromJson(cursor: JsonCursor): JsonDecoded<GradientStop> {
     return Result.flatMap(Json.record(cursor), (record) =>
       Json.knownFields(
@@ -115,7 +121,12 @@ export const GradientStop = {
     );
   },
 
-  /** 色は正規形で書き出す。 */
+  /**
+   * 色は正規形で書き出す。
+   *
+   * @param stop 書き出す色の変わり目
+   * @returns 正規形の色と、始点からの比率
+   */
   toJson(stop: GradientStop): JsonObject {
     return { color: ColorToken.toJson(stop.color), ratio: stop.ratio };
   },
@@ -146,6 +157,9 @@ export const GradientToken = {
    * (docs/04-tokens.md「gradients」の `color`)。
    *
    * 保存形式の規則なので、書き込みの境界(`Token.normalized`)からだけ通す。
+   *
+   * @param gradient 倒す元のグラデーション
+   * @returns 色の変わり目の色だけを正規形へ倒したもの。形・角度・並びは変わらない
    */
   normalized(gradient: GradientToken): GradientToken {
     return {
@@ -163,6 +177,10 @@ export const GradientToken = {
    *
    * 比率の昇順へ倒すと、開いて別のトークンを直しただけで触っていないグラデーションの
    * 書き出しが変わる。
+   *
+   * @param cursor 読む位置の値
+   * @returns 読めたグラデーション。`shape` / `angle` / `stops` が欠ける・`shape` が
+   *   `linear` でない・知らないフィールドがあるときは `err`
    */
   fromJson(cursor: JsonCursor): JsonDecoded<GradientToken> {
     return Result.flatMap(Json.record(cursor), (record) =>
@@ -181,7 +199,12 @@ export const GradientToken = {
     );
   },
 
-  /** 色の変わり目は持っている並びのまま書き出す。 */
+  /**
+   * 色の変わり目は持っている並びのまま書き出す。
+   *
+   * @param gradient 書き出すグラデーション
+   * @returns 形・角度・色の変わり目の並びを仕様の順で並べたもの
+   */
   toJson(gradient: GradientToken): JsonObject {
     return {
       shape: gradient.shape,
