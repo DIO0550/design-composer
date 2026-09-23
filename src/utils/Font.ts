@@ -7,6 +7,11 @@ const SystemStack =
 
 /** フォントファミリの指定に使う文字列。 */
 export const Font = {
+  /**
+   * OS 標準フォントへ順にフォールバックするフォントスタック。
+   *
+   * @returns CSS の `font-family` にそのまま書ける、フォント名をカンマで区切った並び
+   */
   systemStack(): string {
     return SystemStack;
   },

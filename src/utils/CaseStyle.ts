@@ -20,6 +20,10 @@ export const CaseStyle = {
    * ドキュメント内の名前（部品名・artboard 名・ノード名・トークン名）はすべて
    * この流儀に従うが、「どの名前がこの規則に縛られるか」は綴りの流儀ではなく
    * 名前の側の知識なので、判定だけをここに置いて意味づけは呼び出し側で与える。
+   *
+   * @param value 見たい綴り
+   * @returns `[a-z0-9]` の語をハイフン 1 つで繋いだ綴りなら true。空文字・大文字・先頭や末尾の
+   *   ハイフン・連続したハイフンは false
    */
   isKebabCase(value: string): boolean {
     return KebabCasePattern.test(value);
@@ -29,6 +33,10 @@ export const CaseStyle = {
    * camelCase を Capital Case にする(`positionX` → `Position X`)。
    * camelCase では大文字が語の始まりなので、そこへ空白を入れて先頭を大文字にする
    * (2語目以降は元から大文字なので改めて変換しない)。
+   *
+   * @param camelCase camelCase で綴られた識別子
+   * @returns 大文字の前に空白を入れ、先頭を大文字にした綴り。大文字が続くとその 1 文字ずつが
+   *   語になる（`aURL` → `A U R L`）
    */
   toCapitalCase(camelCase: string): string {
     const words = camelCase.replace(/([A-Z])/g, " $1");
