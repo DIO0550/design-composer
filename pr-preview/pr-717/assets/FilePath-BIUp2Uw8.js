@@ -1,0 +1,1 @@
+import{n as e}from"./chunk-BneVvdWh.js";import{n as t,t as n}from"./ArrayEx-BwsFAHSz.js";function r(e){return e.split(i).filter(e=>e.length>0)}var i,a,o=e((()=>{t(),i=/[\\/]/,a={fileName(e){return n.last(r(e))},folderName(e){return n.last(n.dropLast(r(e)))}}}));export{o as n,a as t};
