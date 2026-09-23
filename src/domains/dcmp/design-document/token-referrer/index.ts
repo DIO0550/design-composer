@@ -214,6 +214,9 @@ export const TokenReferrer = {
    * 同じ綴りを `document-error-list` の `locationLabel` も作っているが、あちらが受けるのは
    * エラーの発生位置（`DocumentErrorLocation`。prop を持たない位置や文字位置も含む直和）で、
    * 型も分岐も違うため共通化しない。
+   *
+   * @param referrer 表記にする参照元
+   * @returns 参照元の名前と prop 名を `.` で繋いだ文字列。`target` は綴りに出ない
    */
   toText(referrer: TokenReferrer): string {
     return `${referrer.name}.${referrer.prop}`;
@@ -228,6 +231,12 @@ export const TokenReferrer = {
    * ただし検証側（`validation` の `collectArtboardErrors`）は Box スキーマを照らしており、
    * artboard だけ照らす先が 2 通りある。artboard 固有の既定がトークンを指した時点で参照元
    * と dangling が食い違うが、**そうなっても落ちるテストは無い**（理由はあちらのコメント）。
+   *
+   * @param components インスタンスの上書きが何の prop かを辿るための部品一式
+   * @param artboard 参照元を探す artboard
+   * @param ref 参照されているかを知りたいトークン
+   * @returns artboard 自身の参照元の後に、配下のノードの参照元を深さ優先（自分 → 子 →
+   *   次の兄弟）で並べたもの。インスタンスの先の部品定義の中へは降りない。1 件も無ければ空
    */
   collectInArtboard(
     components: ComponentSet,
@@ -252,6 +261,11 @@ export const TokenReferrer = {
    * 部品定義の中の参照も数えるのは、初期部品セットの見た目の prop がすべてデフォルトテー
    * マのトークンを参照しており（docs/04-tokens.md「初期部品セット」）、外側だけを見ると新
    * 規ドキュメントのトークンがほとんど「どこからも使われていない」と読めてしまうため。
+   *
+   * @param components 参照元を探す部品一式。インスタンスの上書きを辿る先も兼ねる
+   * @param ref 参照されているかを知りたいトークン
+   * @returns `components` のキーの順に、部品定義自身（ルート）の参照元の後にその中の
+   *   ノードの参照元を深さ優先で並べたもの。1 件も無ければ空
    */
   collectInComponents(
     components: ComponentSet,
