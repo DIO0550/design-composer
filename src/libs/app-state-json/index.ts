@@ -1,3 +1,4 @@
+import { JsonText } from "@/libs/json-text";
 import { Json, type JsonDecodeError } from "@/utils/Json";
 import { Result } from "@/utils/Result";
 
@@ -32,7 +33,7 @@ function toAppStateJsonError(
 /**
  * JSON の値をアプリ自身の状態として読む。
  *
- * @param value `Json.parseText` が返した値
+ * @param value `JsonText.parse` が返した値
  * @returns 読み取れた状態。オブジェクトでない / `recentPaths` が文字列の並びでない
  *   ときは、その位置と理由を持つ失敗
  */
@@ -58,7 +59,7 @@ export const AppStateJson = {
    */
   parse(text: string): Result<AppState, AppStateJsonError> {
     return Result.flatMap(
-      Result.mapErr(Json.parseText(text), (message) => ({ message })),
+      Result.mapErr(JsonText.parse(text), (message) => ({ message })),
       toAppState,
     );
   },

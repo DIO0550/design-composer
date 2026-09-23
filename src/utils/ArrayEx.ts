@@ -25,6 +25,33 @@ function outOfRange<T>(
   return Result.err({ index, length: array.length });
 }
 
+/**
+ * 2 つの値を等しいとみなすか。`ArrayEx` の「等しい」はすべてここで決める。
+ *
+ * 基準は `includes` / `Set` と同じ SameValueZero(`NaN` どうしは等しく、`0` と `-0` も等しい)。
+ * 組み込みの `includes` と `indexOf` を操作ごとに使い分けると基準が 2 通りに割れ、
+ * コードからはそれが読めないので、判定を 1 つにして全操作から通す。
+ *
+ * @param a 比べる値
+ * @param b 比べる値
+ * @returns `===` で等しいか、どちらも `NaN` なら true
+ */
+function isSameValueZero(a: unknown, b: unknown): boolean {
+  const bothNaN = Number.isNaN(a) && Number.isNaN(b);
+  return a === b || bothNaN;
+}
+
+/**
+ * 並びの中で、その値と等しい最初の要素の位置。
+ *
+ * @param array 探す先の並び
+ * @param value 等しい要素を探したい値
+ * @returns 等しい要素の最初の位置。無ければ `-1`
+ */
+function indexOfEqual<T>(array: readonly T[], value: unknown): number {
+  return array.findIndex((item) => isSameValueZero(item, value));
+}
+
 /** 配列に対する汎用操作。 */
 export const ArrayEx = {
   /**
@@ -95,21 +122,22 @@ export const ArrayEx = {
    * @param array 足す前の並び
    * @param item 先頭へ足したい値
    * @returns 含まれていなければ先頭へ足した新しい並び。既に含まれていれば元の並びのまま
-   *   （`distinct` と違い、既にある値の位置を動かさない）
+   *   （`distinct` と違い、既にある値の位置を動かさない）。等しさは SameValueZero で見るので、
+   *   `NaN` が既にあれば足さない
    */
   prependIfAbsent<T>(array: readonly T[], item: T): readonly T[] {
-    return array.includes(item) ? array : [item, ...array];
+    return indexOfEqual(array, item) === -1 ? [item, ...array] : array;
   },
 
   /**
    * 重複を取り除いた並び。
    *
    * @param array 重複を含みうる並び
-   * @returns 各値を最初に現れた位置に 1 つずつ残した新しい並び。等しさは `===` で見るので、
-   *   `NaN` は残らない
+   * @returns 各値を最初に現れた位置に 1 つずつ残した新しい並び。等しさは SameValueZero で
+   *   見るので、`NaN` も 1 つ残る
    */
   distinct<T>(array: readonly T[]): readonly T[] {
-    return array.filter((item, index) => array.indexOf(item) === index);
+    return array.filter((item, index) => indexOfEqual(array, item) === index);
   },
 
   /**
@@ -117,10 +145,13 @@ export const ArrayEx = {
    *
    * @param array 探す先の並び
    * @param value 等しい要素を探したい値
-   * @returns 等しい要素があればそれ、無ければ `none`
+   * @returns 等しい要素があればそれ、無ければ `none`。等しさは SameValueZero で見るので、
+   *   `NaN` も見つかる。`Option` は `null` / `undefined` を持てないので、それらは見つかっても
+   *   `none`
    */
   findEqual<T>(array: readonly T[], value: unknown): Option<NonNullable<T>> {
-    return Option.fromNullable(array.find((item): boolean => item === value));
+    const index = indexOfEqual(array, value);
+    return index === -1 ? Option.none : Option.fromNullable(array[index]);
   },
 
   /**

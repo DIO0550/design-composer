@@ -22,3 +22,7 @@ test("切れ目の無い識別子は先頭が大文字になるだけ", () => {
 test("空文字は空文字のまま", () => {
   expect(CaseStyle.toCapitalCase("")).toBe("");
 });
+
+test("先頭が大文字の PascalCase も、先頭に空白を付けずに語の切れ目で分かれる", () => {
+  expect(CaseStyle.toCapitalCase("PositionX")).toBe("Position X");
+});
