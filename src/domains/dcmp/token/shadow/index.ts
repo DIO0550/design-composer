@@ -118,11 +118,21 @@ export type BoxShadowValue = `${Px} ${Px} ${Px} ${Px} ${string}`;
 
 /** 影の値の読み書き・`box-shadow` への展開と、JSON 表現との相互変換。 */
 export const ShadowToken = {
+  /**
+   * 影が持つフィールドの一覧。
+   *
+   * @returns `ShadowFields` に書いた順のフィールド
+   */
   fields(): readonly ShadowField[] {
     return Object.values(ShadowFields);
   },
 
-  /** 省略された spread は 0 とみなす(docs/04-tokens.md)。 */
+  /**
+   * 影の広がり。省略された spread は 0 とみなす(docs/04-tokens.md)。
+   *
+   * @param shadow 広がりを読む影
+   * @returns 書かれた広がり。省略されていれば 0
+   */
   spreadOf(shadow: ShadowToken): number {
     return shadow.spread ?? 0;
   },
@@ -134,6 +144,9 @@ export const ShadowToken = {
    * `spread` の 0 は省略へ倒さない。
    *
    * 保存形式の規則なので、書き込みの境界(`Token.normalized`)からだけ通す。
+   *
+   * @param shadow 倒す元の影
+   * @returns 色だけを `ColorToken.normalize` で倒したもの。ずれ・ぼかし・広がりは変わらない
    */
   normalized(shadow: ShadowToken): ShadowToken {
     return { ...shadow, color: ColorToken.normalize(shadow.color) };
@@ -147,6 +160,11 @@ export const ShadowToken = {
    *
    * 値域の検査もここには無い。ぼかしの値が `Blur` なので、マイナスのぼかしは
    * そもそも組み立てられない(ずれと広がりはマイナスが正当なので素の `number`)。
+   *
+   * @param shadow 差し替える前の影
+   * @param edit 差し替えるフィールドと、その値
+   * @returns `edit` のフィールドだけが入れ替わった影。省略されていた spread も書き換えれば
+   *   持つようになる
    */
   withField(shadow: ShadowToken, edit: ShadowFieldEdit): ShadowToken {
     switch (edit.field) {
@@ -163,12 +181,28 @@ export const ShadowToken = {
     }
   },
 
+  /**
+   * `box-shadow` に渡す値へ展開する。
+   *
+   * @param shadow 展開する影
+   * @returns `x y blur spread color` の並び。長さは px を付け、省略された spread は `0px`、
+   *   色は正規化せず持っている綴りのまま
+   */
   cssValue(shadow: ShadowToken): BoxShadowValue {
     return `${Px.create(shadow.x)} ${Px.create(shadow.y)} ${Px.create(shadow.blur)} ${Px.create(
       ShadowToken.spreadOf(shadow),
     )} ${shadow.color}`;
   },
 
+  /**
+   * JSON 上の影のオブジェクトを読む。
+   *
+   * @param cursor 影の値と、その位置
+   * @returns 読んだ影。色は `ColorToken.fromJson` で倒し、数値の範囲（負のぼかしなど）は
+   *   見ない。オブジェクトでなければ `invalid-type`、spread 以外のフィールドが無ければ
+   *   `missing-field`、値の型が違えば `invalid-type`、知らないフィールドがあれば
+   *   `unknown-field` で、1 件で打ち切らずすべて集めた `err`
+   */
   fromJson(cursor: JsonCursor): JsonDecoded<ShadowToken> {
     return Result.flatMap(Json.record(cursor), (record) =>
       Json.knownFields(
@@ -198,7 +232,13 @@ export const ShadowToken = {
     );
   },
 
-  /** 省略された spread は書き戻さない(既定値の書き出しを避ける)。 */
+  /**
+   * 省略された spread は書き戻さない(既定値の書き出しを避ける)。
+   *
+   * @param shadow 書き出す影
+   * @returns x / y / blur / spread / color の順の JSON オブジェクト。spread は書かれていれば
+   *   0 でも書き、色は `ColorToken.toJson` で正規形へ倒す
+   */
   toJson(shadow: ShadowToken): JsonObject {
     return {
       x: shadow.x,

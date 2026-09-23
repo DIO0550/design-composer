@@ -28,9 +28,13 @@ export type Rgb = `#${string}`;
 
 export const Rgb = {
   /**
-   * 6桁の hex として読める文字列だけを RGB にする。読めなければ `none`。
+   * 6桁の hex として読める文字列だけを RGB にする。
    *
    * 「生成された = 6桁の小文字 hex である」を成立させるための唯一の入口。
+   *
+   * @param value `#` から始まる 6 桁の hex。大文字も受ける
+   * @returns 小文字へ倒した RGB。3 桁・alpha 込みの 8 桁・前後の空白を含むなど、
+   *   `#` と 6 桁の hex だけでできていなければ `none`
    */
   create(value: string): Option<Rgb> {
     return AnyCaseRgbPattern.test(value)
@@ -79,8 +83,12 @@ const AlphaPercentDigits = { fractionDigits: 1 } as const;
 
 export const ColorToken = {
   /**
-   * 正規形は小文字の hex のみ。CSS 色文字列(`rgb` / 名前色)を許さないのは、同値異表記の併存
-   * を構造的に排除するため(docs/04-tokens.md「値の形式」)。
+   * 小文字の hex として綴られた色か。CSS 色文字列(`rgb` / 名前色)を許さないのは、同値異表記
+   * の併存を構造的に排除するため(docs/04-tokens.md「値の形式」)。
+   *
+   * @param value 判定する綴り
+   * @returns `#` と小文字の 6 桁、または alpha 込みの 8 桁なら true。`normalize` が 6 桁へ
+   *   倒す `#rrggbbff` も true。大文字を含む・3 桁・CSS 色文字列は false
    */
   isValid(value: string): boolean {
     return HexColorPattern.test(value);
@@ -92,6 +100,10 @@ export const ColorToken = {
    *
    * `ff` を落とすのは、`#111827` と `#111827ff` が同値異表記で、docs/04-tokens.md「値の
    * 形式」が正規形を 1 つに保つと明文で決めているため。
+   *
+   * @param value 倒す元の色の綴り
+   * @returns 6 桁か 8 桁の hex（大文字も可）なら小文字にし、alpha が `ff` なら 6 桁へ
+   *   落としたもの。3 桁・CSS 色文字列・前後に空白を含むなど、それ以外は `value` のまま
    */
   normalize(value: string): ColorToken {
     if (!AnyCaseHexColorPattern.test(value)) {
@@ -165,11 +177,23 @@ export const ColorToken = {
     });
   },
 
-  /** JSON 上の表現は hex 文字列。読み込んだ時点で正規形へ倒す。 */
+  /**
+   * JSON 上の表現は hex 文字列。読み込んだ時点で正規形へ倒す。
+   *
+   * @param cursor 色の値と、その位置
+   * @returns `normalize` で倒した色。hex でない文字列も `ok`（`normalize` がそのまま返す）。
+   *   文字列でなければ `invalid-type` の `err`
+   */
   fromJson(cursor: JsonCursor): JsonDecoded<ColorToken> {
     return Result.map(Json.string(cursor), ColorToken.normalize);
   },
 
+  /**
+   * JSON へ書き出す綴り。
+   *
+   * @param color 書き出す色
+   * @returns `normalize` で正規形へ倒した綴り
+   */
   toJson(color: ColorToken): string {
     return ColorToken.normalize(color);
   },

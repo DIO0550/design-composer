@@ -192,6 +192,9 @@ export const TypographyField = {
   /**
    * 展開先の CSS プロパティ名。トークンの値には依存しないため、参照だけを組み立てる用途
    * (`var` 参照の生成)ではトークンを持たずに引ける。
+   *
+   * @param field 展開するフィールド
+   * @returns ケバブケースのプロパティ名（`fontSize` なら `font-size`）
    */
   cssProperty(field: TypographyField): TypographyCssProperty {
     return CssProperties[field];
@@ -221,11 +224,23 @@ function withFontFamily(
 
 /** 書体の値の読み書き・CSS 宣言への展開と、JSON 表現との相互変換。 */
 export const TypographyToken = {
+  /**
+   * 書体が持つフィールドの一覧。
+   *
+   * @returns `TypographyFields` に書いた順のフィールド
+   */
   fields(): readonly TypographyField[] {
     return Object.values(TypographyFields);
   },
 
-  /** フォントファミリ省略時はシステムフォントスタックを既定値とする(docs/04-tokens.md)。 */
+  /**
+   * 書体のフォントファミリ。省略時はシステムフォントスタックを既定値とする
+   * (docs/04-tokens.md)。
+   *
+   * @param token フォントファミリを読む書体
+   * @returns 書かれたフォントファミリ。省略されていれば `Font.systemStack()`。
+   *   空文字が書かれていれば空文字のまま
+   */
   fontFamilyOf(token: TypographyToken): string {
     return token.fontFamily ?? Font.systemStack();
   },
@@ -235,6 +250,11 @@ export const TypographyToken = {
    *
    * 値域の検査はここには無い。数値の3フィールドの値が `FontSize` / `LineHeight` /
    * `FontWeight` なので、範囲外の書き換えはそもそも組み立てられない。
+   *
+   * @param token 差し替える前の書体
+   * @param edit 差し替えるフィールドと、その値
+   * @returns `edit` のフィールドだけが入れ替わった書体。fontFamily を `none` にすると
+   *   キーごと落ちる
    */
   withField(
     token: TypographyToken,
@@ -252,6 +272,15 @@ export const TypographyToken = {
     }
   },
 
+  /**
+   * JSON 上の書体のオブジェクトを読む。
+   *
+   * @param cursor 書体の値と、その位置
+   * @returns 読んだ書体。数値の範囲（0 以下の大きさ・100–900 の外の太さなど）は見ない。
+   *   オブジェクトでなければ `invalid-type`、fontFamily 以外のフィールドが無ければ
+   *   `missing-field`、値の型が違えば `invalid-type`、知らないフィールドがあれば
+   *   `unknown-field` で、1 件で打ち切らずすべて集めた `err`
+   */
   fromJson(cursor: JsonCursor): JsonDecoded<TypographyToken> {
     return Result.flatMap(Json.record(cursor), (record) =>
       Json.knownFields(
@@ -273,7 +302,12 @@ export const TypographyToken = {
     );
   },
 
-  /** 省略された fontFamily は書き戻さない(既定値の書き出しを避ける)。 */
+  /**
+   * 省略された fontFamily は書き戻さない(既定値の書き出しを避ける)。
+   *
+   * @param token 書き出す書体
+   * @returns fontSize / lineHeight / fontWeight / fontFamily の順の JSON オブジェクト
+   */
   toJson(token: TypographyToken): JsonObject {
     return {
       fontSize: token.fontSize,
@@ -296,14 +330,34 @@ export type TypographyFieldRef = Readonly<{
 }>;
 
 export const TypographyFieldRef = {
+  /**
+   * 書体トークンとフィールドの対を作る。
+   *
+   * @param token 対象の書体トークン
+   * @param field そのトークンのどのフィールドか
+   * @returns 2 つを持つ参照
+   */
   create(token: TypographyToken, field: TypographyField): TypographyFieldRef {
     return { token, field };
   },
 
+  /**
+   * 指すフィールドの展開先の CSS プロパティ名。
+   *
+   * @param ref 書体トークンとフィールドの対
+   * @returns `TypographyField.cssProperty` と同じプロパティ名
+   */
   cssProperty(ref: TypographyFieldRef): TypographyCssProperty {
     return TypographyField.cssProperty(ref.field);
   },
 
+  /**
+   * 指すフィールドを CSS の値として綴る。
+   *
+   * @param ref 書体トークンとフィールドの対
+   * @returns fontSize は px 付き（`16px`）、lineHeight と fontWeight は単位なしの数値、
+   *   fontFamily は `TypographyToken.fontFamilyOf` の値
+   */
   cssValue(ref: TypographyFieldRef): string {
     switch (ref.field) {
       case "fontSize":
