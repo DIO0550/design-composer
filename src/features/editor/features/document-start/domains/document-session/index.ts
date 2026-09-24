@@ -37,7 +37,12 @@ export const OpenAttempt = {
   /** 選択・読み込みの最中。 */
   Opening,
 
-  /** 開けずに終わった状態。 */
+  /**
+   * 開けずに終わった状態を作る。
+   *
+   * @param failure 開けなかった理由
+   * @returns その理由を持つ `failed`
+   */
   failed(failure: DocumentOpenFailure): OpenAttempt {
     return { kind: "failed", failure };
   },
@@ -45,12 +50,20 @@ export const OpenAttempt = {
   /**
    * 開く操作の最中か。
    * ボタンを `disabled` にして二重に開かせないために使う（rules/hooks.md）。
+   *
+   * @param attempt 開く操作の進み具合
+   * @returns 選択・読み込みの最中なら `true`
    */
   isOpening(attempt: OpenAttempt): boolean {
     return attempt.kind === "opening";
   },
 
-  /** 直近の開く操作が失敗していれば、その理由。成否が決まっていなければ `none`。 */
+  /**
+   * 直近の開く操作が失敗した理由。
+   *
+   * @param attempt 開く操作の進み具合
+   * @returns 失敗で終わっていればその理由。まだ開いていない・最中・成功した後は `none`
+   */
   failure(attempt: OpenAttempt): Option<DocumentOpenFailure> {
     return attempt.kind === "failed"
       ? Option.some(attempt.failure)
@@ -84,7 +97,12 @@ export const DocumentSession = {
   /** まだ何も開いていない状態。アプリはここから始まる。 */
   Closed,
 
-  /** 開く操作を始める。開いているドキュメントはそのまま残す。 */
+  /**
+   * 開く操作を始める。開いているドキュメントはそのまま残す。
+   *
+   * @param session 始める前のセッション
+   * @returns 開く操作が最中のセッション。直前の失敗は消える
+   */
   beginOpening(session: DocumentSession): DocumentSession {
     return { documents: session.documents, attempt: Opening };
   },
@@ -118,16 +136,25 @@ export const DocumentSession = {
   },
 
   /**
-   * まだ何も起きていないか（1 つも開いておらず、開く操作も一度も始まっていない）。
+   * 何も開いておらず、開く操作が最中でも失敗で終わってもいないか。
    *
    * 保存されている状態の復元を取り込んでよいかの判断に使う。利用者が先に開き始めていた
    * ら、復元の結果は捨てる。
+   *
+   * @param session 見るセッション
+   * @returns 開いているドキュメントが無く、開く操作が最中でも失敗でもなければ `true`
    */
   isClosed(session: DocumentSession): boolean {
     return !Option.isSome(session.documents) && session.attempt.kind === "idle";
   },
 
-  /** 見ている先をそのパスへ移す。開いていないパスなら何も変わらない。 */
+  /**
+   * 見ている先をそのパスへ移す。
+   *
+   * @param session 移す前のセッション
+   * @param path 移り先のパス
+   * @returns 見ている先を移したセッション。移し方は `OpenedDocuments.activate`
+   */
   activate(session: DocumentSession, path: string): DocumentSession {
     return {
       documents: Option.map(session.documents, (opened) =>
@@ -137,7 +164,13 @@ export const DocumentSession = {
     };
   },
 
-  /** そのパスのドキュメントを閉じる。最後の 1 つを閉じると開始画面へ戻る。 */
+  /**
+   * そのパスのドキュメントを閉じる。最後の 1 つを閉じると開始画面へ戻る。
+   *
+   * @param session 閉じる前のセッション
+   * @param path 閉じるパス
+   * @returns 閉じたあとのセッション。どれを見るようになるかは `OpenedDocuments.close`
+   */
   close(session: DocumentSession, path: string): DocumentSession {
     return {
       documents: Option.flatMap(session.documents, (opened) =>
@@ -150,17 +183,30 @@ export const DocumentSession = {
   /**
    * 開く操作の最中か。
    * ボタンを `disabled` にして二重に開かせないために使う（rules/hooks.md）。
+   *
+   * @param session 見るセッション
+   * @returns `OpenAttempt.isOpening` と同じ
    */
   isOpening(session: DocumentSession): boolean {
     return OpenAttempt.isOpening(session.attempt);
   },
 
-  /** 直近の開く操作が失敗していれば、その理由。成否が決まっていなければ `none`。 */
+  /**
+   * 直近の開く操作が失敗した理由。
+   *
+   * @param session 見るセッション
+   * @returns `OpenAttempt.failure` と同じ条件でその理由、または `none`
+   */
   failure(session: DocumentSession): Option<DocumentOpenFailure> {
     return OpenAttempt.failure(session.attempt);
   },
 
-  /** 今見ているドキュメントのパス。1 つも開いていなければ `none`。 */
+  /**
+   * 今見ているドキュメントのパス。
+   *
+   * @param session 見るセッション
+   * @returns 見ているドキュメントのパス。1 つも開いていなければ `none`
+   */
   activePath(session: DocumentSession): Option<string> {
     return Option.map(session.documents, OpenedDocuments.activePath);
   },

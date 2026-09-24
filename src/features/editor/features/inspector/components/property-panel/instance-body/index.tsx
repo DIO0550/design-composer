@@ -20,6 +20,12 @@ const InstanceLabels = {
   publicProps: "Public props",
   instance: "Instance",
   goToSource: "Go to source component",
+  /**
+   * 同じ部品のインスタンスをまとめて選ぶボタンの綴り。
+   *
+   * @param count 押すと選ばれるインスタンスの数
+   * @returns ボタンに出す 1 行
+   */
   selectAllInstances: (count: number) => `Select all ${count} instances`,
   detach: "Detach instance",
   detachNote:
