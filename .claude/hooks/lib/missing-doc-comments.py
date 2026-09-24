@@ -9,16 +9,14 @@
 「例外(エスケープハッチ)」が記録している、誤検知でフックが信用を失う失敗を避ける）。
 
 - `src/` の実装ファイルだけ（`__tests__/` / `*.stories.*` / `__stories__/` は対象外）
-- **ファイル直下の宣言だけ**（入れ子の関数・オブジェクトのメソッドは見ない）。
-  `--include-methods` を付けたときだけ、コンパニオンオブジェクトの直下のメソッドも見る
-  （それより深い入れ子は見ない）
+- **ファイル直下の宣言と、コンパニオンオブジェクトの直下のメソッドだけ**
+  （入れ子の関数・それより深いオブジェクトのメソッドは見ない）
 - 同じファイルに**同名の宣言があってそちらに doc があれば対象外**
   （型とコンパニオンオブジェクトが doc を共有する、このリポジトリの形を弾かないため）
 
 コンパニオンオブジェクトのメソッドを見るのは、ロジックがそこに集まる形をこのリポジトリが
 採っている（`rules/coding.md`「コンパニオンオブジェクトパターン」）ため。ファイル直下だけを
 見ていた頃は、`Foo.fromJson` のような公開 API が doc 無しのままレビューまで残った。
-既定で見ない理由と外す条件は `.claude/hooks/README.md`「例外(エスケープハッチ)」。
 
 **メソッドと読むのは、`const` で始まるオブジェクトの直下（行頭の空白が 2 つ）にあって、
 引数の括弧の後ろに本体（`{` か `=>`）が続くものだけ。** `type` / `interface` の型リテラルは
@@ -36,11 +34,6 @@ doc がある関数については、`rules/coding.md`「doc に書く項目」�
     missing-doc-comments.py <検査するファイル>              # doc の有無と項目の両方
     missing-doc-comments.py --missing-only <検査するファイル>  # doc の有無だけ
     missing-doc-comments.py --all [ルート]                   # 全体（既定のルートは src）
-    missing-doc-comments.py --lines <検査するファイル>         # `<行番号>:<名前>` で 1 件 1 行
-
-どの形にも `--include-methods` を足せる（コンパニオンオブジェクトのメソッドも見る。位置は問わない）。
-`--lines` は CI が diff の追加行と突き合わせるための機械可読な出力で、doc の有無と項目の
-両方を出す（`duplicate-test-helpers.py --lines` と同じ形式。追加行かどうかは呼ぶ側が見る）。
 
 `--missing-only` は doc の有無だけを見たいときに使う。項目の抜けは 0 件にしたので、
 push 前の検査は項目まで見ている（`.claude/hooks/README.md`
@@ -104,13 +97,12 @@ def preceding_line(lines: list[str], index: int) -> str:
     return ""
 
 
-def declarations(lines: list[str], include_methods: bool) -> list[tuple[int, str]]:
+def declarations(lines: list[str]) -> list[tuple[int, str]]:
     """doc を求める宣言を (行番号(0 始まり), 名前) で返す。
 
     `undocumented` と `incomplete` が同じ列挙を見るよう、対象の定義はここ 1 箇所に置く。
 
     @param lines ファイル全体の行
-    @param include_methods コンパニオンオブジェクトの直下のメソッドも含めるか
     @returns 宣言の行番号と名前。メソッドは `Owner.method` の綴りで返す
     """
     found: list[tuple[int, str]] = []
@@ -120,7 +112,7 @@ def declarations(lines: list[str], include_methods: bool) -> list[tuple[int, str
             matched = next((m for m in (p.match(line) for p in PATTERNS) if m), None)
             if matched:
                 found.append((i, matched.group(1)))
-            start = COMPANION_START.match(line) if include_methods else None
+            start = COMPANION_START.match(line)
             if start:
                 owner = start.group(1)
             continue
@@ -164,18 +156,17 @@ def closing_paren(signature: str) -> int:
     return len(signature) - 1
 
 
-def undocumented(path: Path, include_methods: bool = False) -> list[tuple[int, str]]:
+def undocumented(path: Path) -> list[tuple[int, str]]:
     """doc の付いていない宣言を (行番号, 名前) で返す。
 
     @param path 検査するファイル
-    @param include_methods コンパニオンオブジェクトの直下のメソッドも見るか
     @returns doc の無い宣言の行番号(1 始まり)と名前。同名の宣言に doc があれば含めない
     """
     lines = path.read_text(encoding="utf-8").split("\n")
     documented: set[str] = set()
     candidates: list[tuple[int, str]] = []
 
-    for index, name in declarations(lines, include_methods):
+    for index, name in declarations(lines):
         previous = preceding_line(lines, index)
         # `*/` は JSDoc / ブロックコメントの終わり、`//` は行コメント。
         if previous.endswith("*/") or previous.startswith("//"):
@@ -260,16 +251,15 @@ def body_of(lines: list[str], index: int) -> str:
     return "\n".join(collected)
 
 
-def incomplete(path: Path, include_methods: bool = False) -> list[tuple[int, str]]:
+def incomplete(path: Path) -> list[tuple[int, str]]:
     """doc はあるが「doc に書く項目」が欠けている関数を (行番号, 説明) で返す。
 
     @param path 検査するファイル
-    @param include_methods コンパニオンオブジェクトの直下のメソッドも見るか
     @returns 項目の欠けた関数の行番号(1 始まり)と、名前・欠けた項目の説明
     """
     lines = path.read_text(encoding="utf-8").split("\n")
     found: list[tuple[int, str]] = []
-    for index, name in declarations(lines, include_methods):
+    for index, name in declarations(lines):
         # 型・定数には引数も戻り値も無いので、項目を求めるのは関数とメソッドだけ。
         if not FUNCTION_SIGNATURE.match(lines[index]) and "." not in name:
             continue
@@ -303,11 +293,11 @@ def report(path: Path, found: list[tuple[int, str]]) -> str:
     return body
 
 
-def check_one(path: Path, missing_only: bool = False, include_methods: bool = False) -> int:
+def check_one(path: Path, missing_only: bool = False) -> int:
     if not is_target(path):
         return 0
-    missing = undocumented(path, include_methods)
-    partial = [] if missing_only else incomplete(path, include_methods)
+    missing = undocumented(path)
+    partial = [] if missing_only else incomplete(path)
     if not missing and not partial:
         return 0
     print("doc が規約を満たしていません（rules/coding.md「コメントは doc と Why / Why not に絞る」）:")
@@ -320,30 +310,15 @@ def check_one(path: Path, missing_only: bool = False, include_methods: bool = Fa
     return 1
 
 
-def check_lines(path: Path, include_methods: bool = False) -> int:
-    """doc の無い宣言と項目の欠けた doc を、`<行番号>:<名前>` で 1 件 1 行に出す。
-
-    @param path 検査するファイル
-    @param include_methods コンパニオンオブジェクトの直下のメソッドも見るか
-    @returns 1 件でもあれば 1、無ければ 0(対象外のファイルも 0)
-    """
-    if not is_target(path):
-        return 0
-    found = undocumented(path, include_methods) + incomplete(path, include_methods)
-    for line_no, name in sorted(found):
-        print(f"{line_no}:{name}")
-    return 1 if found else 0
-
-
-def check_all(root: Path, include_methods: bool = False) -> int:
+def check_all(root: Path) -> int:
     missing_total = 0
     partial_total = 0
     files = 0
     for path in sorted(root.rglob("*.ts*")):
         if not is_target(path):
             continue
-        missing = undocumented(path, include_methods)
-        partial = incomplete(path, include_methods)
+        missing = undocumented(path)
+        partial = incomplete(path)
         if not missing and not partial:
             continue
         files += 1
@@ -361,21 +336,17 @@ def check_all(root: Path, include_methods: bool = False) -> int:
 
 def main() -> int:
     args = sys.argv[1:]
-    include_methods = "--include-methods" in args
-    args = [a for a in args if a != "--include-methods"]
     if not args:
         print(__doc__)
         return 2
     if args[0] == "--all":
-        return check_all(Path(args[1]) if len(args) > 1 else Path("src"), include_methods)
-    if args[0] in ("--missing-only", "--lines"):
+        return check_all(Path(args[1]) if len(args) > 1 else Path("src"))
+    if args[0] == "--missing-only":
         if len(args) < 2:
             print(__doc__)
             return 2
-        if args[0] == "--lines":
-            return check_lines(Path(args[1]), include_methods)
-        return check_one(Path(args[1]), missing_only=True, include_methods=include_methods)
-    return check_one(Path(args[0]), include_methods=include_methods)
+        return check_one(Path(args[1]), missing_only=True)
+    return check_one(Path(args[0]))
 
 
 if __name__ == "__main__":

@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 #
 # base から HEAD までに**追加・変更された行**の行番号を、統一 diff のハンク見出しから取り出す。
-# `check-added-lint-suppressions.sh` / `check-added-test-helper-duplication.sh` /
-# `check-added-doc-comments.sh` が共有する
+# `check-added-lint-suppressions.sh` / `check-added-test-helper-duplication.sh` が共有する
 # (`rules/coding.md`「同じ処理が2箇所に現れたら共通化する」)。
 #
 # **rename を追跡する。** `git diff -- <新しいパス>` だけを渡すと、対になる削除側がパスの
