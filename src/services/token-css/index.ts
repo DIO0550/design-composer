@@ -90,14 +90,36 @@ function entriesOfKind(
 
 /** トークンを CSS カスタムプロパティの名前・宣言・`var` 参照へ変換する。 */
 export const TokenCss = {
+  /**
+   * 1 トークン 1 変数の種別で、そのトークンを載せるカスタムプロパティ。
+   *
+   * @param kind トークンの種別
+   * @param name 種別の中のトークン名
+   * @returns 種別と名前から綴った変数名。`ref` と `variables` が同じ名前を使う
+   */
   variableName(kind: SingleVariableTokenKind, name: string): CssVariableName {
     return `--${kind}-${name}`;
   },
 
+  /**
+   * 同じトークンを、値を使う側から読む参照。
+   *
+   * @param kind トークンの種別
+   * @param name 種別の中のトークン名
+   * @returns `variableName` の変数を指す `var(...)`
+   */
   ref(kind: SingleVariableTokenKind, name: string): CssVariableReference {
     return `var(${TokenCss.variableName(kind, name)})`;
   },
 
+  /**
+   * 書体トークンの 1 項目を載せるカスタムプロパティ。
+   *
+   * @param name 書体トークンの名前
+   * @param property その項目を当てる CSS プロパティ
+   * @returns 名前とプロパティから綴った変数名。`typographyRef` と `variables` が同じ名前を
+   *   使う
+   */
   typographyVariableName(
     name: string,
     property: TypographyCssProperty,
@@ -105,6 +127,13 @@ export const TokenCss = {
     return `--typography-${name}-${property}`;
   },
 
+  /**
+   * 書体トークンの 1 項目を、値を使う側から読む参照。
+   *
+   * @param name 書体トークンの名前
+   * @param property その項目を当てる CSS プロパティ
+   * @returns `typographyVariableName` の変数を指す `var(...)`
+   */
   typographyRef(
     name: string,
     property: TypographyCssProperty,
@@ -115,6 +144,9 @@ export const TokenCss = {
   /**
    * トークン全体を CSS カスタムプロパティへ変換する。種別は `TokenSet.kinds` の順、種別内は
    * TokenSet が持つ定義順を保つ (同じ入力からは常に同じ出力になる)。
+   *
+   * @param tokens 変換するトークン一式
+   * @returns 全種別・全トークンぶんの変数
    */
   variables(tokens: TokenSet): CssVariables {
     return Object.fromEntries(
@@ -122,7 +154,12 @@ export const TokenCss = {
     );
   },
 
-  /** `variables` を style 属性へ載せられる宣言の並びに直列化する。 */
+  /**
+   * `variables` を style 属性へ載せられる宣言の並びに直列化する。
+   *
+   * @param tokens 変換するトークン一式
+   * @returns 全トークンぶんの宣言を 1 つに繋いだ文字列
+   */
   toStyleText(tokens: TokenSet): string {
     return CssDeclarations.toStyleText(TokenCss.variables(tokens));
   },
