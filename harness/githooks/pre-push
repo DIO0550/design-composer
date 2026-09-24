@@ -76,14 +76,11 @@ if python3_usable; then
   echo "pre-push: 追加されたテストヘルパーの重複"
   bash .github/scripts/check-added-test-helper-duplication.sh
 
-  echo "pre-push: 追加された宣言の doc コメント"
-  bash .github/scripts/check-added-doc-comments.sh
-
-  # 上の 3 つが読んでいる判定そのものの判定表。
+  # 上の 2 つが読んでいる判定そのものの判定表。
   echo "pre-push: 追加された分の検査の判定表"
   bash .github/scripts/check-added-cases.sh
 else
-  echo "pre-push: python3 が使えないため doc コメント(と判定表) / import 規約 / 判別子の直読み(と判定表) / story の title(と判定表) / 名指ししたパス(と判定表) / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加された宣言の doc コメント / 追加された分の検査の判定表 は飛ばします"
+  echo "pre-push: python3 が使えないため doc コメント(と判定表) / import 規約 / 判別子の直読み(と判定表) / story の title(と判定表) / 名指ししたパス(と判定表) / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加された分の検査の判定表 は飛ばします"
 fi
 
 # 行数の予算(AGENTS.md「常時ロードは増やさない」)。実測と予算がずれていれば落ちる。

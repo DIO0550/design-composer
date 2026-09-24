@@ -25,7 +25,7 @@ DevContainer の `postCreateCommand` も走らない。そこは Claude Code の
 
 | フック | 検査 | 呼んでいるもの |
 | --- | --- | --- |
-| `pre-push` | 型 / lint / format / doc コメント / テスト規約 / import 規約 / 判別子の直読み / story の title / 名指ししたパス / 判別子の直読みの判定表 / story の title の判定表 / 名指ししたパスの判定表 / doc コメントの判定表 / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加された宣言の doc コメント / 追加された分の検査の判定表 / 行数のラチェット / 集計の判定表 / カナリアの判定表 | `pnpm run typecheck`・`pnpm run lint`・`pnpm exec biome check`・`.claude/hooks/lib/missing-doc-comments.py`・`.claude/hooks/lib/test-rules-scan.sh`・`.claude/hooks/lib/import-rule-violations.py`・`.claude/hooks/lib/result-option-read-violations.py`・`.claude/hooks/lib/story-title-violations.py`・`.claude/hooks/lib/named-path-violations.py`・`.claude/hooks/lib/result-option-read-cases.sh`・`.claude/hooks/lib/story-title-cases.sh`・`.claude/hooks/lib/named-path-cases.sh`・`.claude/hooks/lib/missing-doc-comments-cases.sh`・`.github/scripts/check-added-lint-suppressions.sh`・`.github/scripts/check-added-test-helper-duplication.sh`・`.github/scripts/check-added-doc-comments.sh`・`.github/scripts/check-added-cases.sh`・`harness/records/count.sh --ratchet`・`harness/records/count-cases.sh`・`.claude/hooks/lib/canary-cases.sh` |
+| `pre-push` | 型 / lint / format / doc コメント / テスト規約 / import 規約 / 判別子の直読み / story の title / 名指ししたパス / 判別子の直読みの判定表 / story の title の判定表 / 名指ししたパスの判定表 / doc コメントの判定表 / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加された分の検査の判定表 / 行数のラチェット / 集計の判定表 / カナリアの判定表 | `pnpm run typecheck`・`pnpm run lint`・`pnpm exec biome check`・`.claude/hooks/lib/missing-doc-comments.py`・`.claude/hooks/lib/test-rules-scan.sh`・`.claude/hooks/lib/import-rule-violations.py`・`.claude/hooks/lib/result-option-read-violations.py`・`.claude/hooks/lib/story-title-violations.py`・`.claude/hooks/lib/named-path-violations.py`・`.claude/hooks/lib/result-option-read-cases.sh`・`.claude/hooks/lib/story-title-cases.sh`・`.claude/hooks/lib/named-path-cases.sh`・`.claude/hooks/lib/missing-doc-comments-cases.sh`・`.github/scripts/check-added-lint-suppressions.sh`・`.github/scripts/check-added-test-helper-duplication.sh`・`.github/scripts/check-added-cases.sh`・`harness/records/count.sh --ratchet`・`harness/records/count-cases.sh`・`.claude/hooks/lib/canary-cases.sh` |
 
 | スクリプト | 呼ばれ方 | 内容 |
 | --- | --- | --- |
@@ -33,9 +33,9 @@ DevContainer の `postCreateCommand` も走らない。そこは Claude Code の
 
 **検査そのものは `.claude/hooks/lib/` と共有している。** Claude Code のフックはこれと
 同じスクリプトを走らせる即時フィードバック版で、内容が二重管理にならないようにしている。
-`check-added-*` の 3 つだけは `.github/scripts/` にあり、CI と同じスクリプトをそのまま呼ぶ
+`check-added-*` の 2 つだけは `.github/scripts/` にあり、CI と同じスクリプトをそのまま呼ぶ
 (base との差分で判定するので、判定を `lib/` へ移しても呼び出し側は同じになる)。
-[その判定表](../../.github/scripts/check-added-cases.sh)と、3 つが共有する前提チェック
+[その判定表](../../.github/scripts/check-added-cases.sh)と、2 つが共有する前提チェック
 (`.github/scripts/lib/detector-precondition.sh`)も同じ場所に置く。`.claude/hooks/lib/` は
 **検査そのもの**の共有場所なので、当てる先と一緒にしておく。
 **行数のラチェットと判定表 6 本**(`harness/records/count.sh --ratchet` /
@@ -51,7 +51,7 @@ DevContainer の `postCreateCommand` も走らない。そこは Claude Code の
 | 無いもの | 飛ぶ検査 |
 | --- | --- |
 | `pnpm` または `node_modules` | 型 / lint / format |
-| `python3`（起動できないものが PATH に居る場合を含む） | doc コメント（と判定表） / import 規約 / 判別子の直読み（と判定表） / story の title（と判定表） / 名指ししたパス（と判定表） / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加された宣言の doc コメント / 追加された分の検査の判定表 |
+| `python3`（起動できないものが PATH に居る場合を含む） | doc コメント（と判定表） / import 規約 / 判別子の直読み（と判定表） / story の title（と判定表） / 名指ししたパス（と判定表） / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加された分の検査の判定表 |
 | `python3`（同上）または `jq` | カナリアの判定表 |
 
 **どちらも飛ばしたことを出力に「飛ばします」と残す。** 通常の成功と綴りが同じだと、

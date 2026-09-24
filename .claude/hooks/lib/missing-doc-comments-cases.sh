@@ -7,13 +7,13 @@
 # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。
 #
 # **表をファイルに置くのは、コンパニオンオブジェクトのメソッドの見分け方(オブジェクトの
-# 直下・本体が続くか)がこの検査の中心で、`--include-methods` を付けて呼ぶ `check-added-doc-comments.sh`
-# は追加行に違反が無い限り緑のままだから。** 同じ形の前例は同じフォルダの `story-title-cases.sh`。
+# 直下・本体が続くか)がこの検査の中心で、ゲートが呼ぶ `--all src` は `src` に違反が無い限り
+# 緑のままだから。** 同じ形の前例は同じフォルダの `story-title-cases.sh`。
 #
-# 検出器は `--lines` ではなく既定の形で呼ぶ。`decide` は exit 1 に報告の見出しがあるかまで
-# 見るが、`--lines` の出力には見出しが無い。
+# 呼び方は 2 つ。`file` は 1 ファイルを渡す形(Claude Code のフック)、`all` はフォルダを
+# 走査する形(CI と git hooks)。`all` の行も同じ理由で置く。
 #
-# 表は `期待|--include-methods を付けるか|入力|ケース名` の 1 行 1 ケース。期待は 3 つ。
+# 表は `期待|呼び方|入力|ケース名` の 1 行 1 ケース。期待は 3 つ。
 #
 # | 期待 | 意味 |
 # | --- | --- |
@@ -73,42 +73,45 @@ write_input() {
   esac >"$file"
 }
 
-# 検出器を 1 度走らせ、終了コードから deny / pass を決める。
+# 検出器を 1 度走らせ、終了コードから deny / pass を決める。見出しは呼び方ごとに違い、
+# `--all` は報告の後ろに件数の集計を出す。
 verdict() {
-  local flag="$1" file="$2" output status
-  if [ "$flag" = "methods" ]; then
-    output="$(python3 "$detector" --include-methods "$file")" && status=0 || status=$?
+  local mode="$1" file="$2" output status
+  if [ "$mode" = "all" ]; then
+    output="$(python3 "$detector" --all "$(dirname "$file")")" && status=0 || status=$?
+    decide "$output" "$status" '^doc の無い宣言 [0-9]+ 件 / 項目が欠けた doc [0-9]+ 件 / [1-9]'
   else
     output="$(python3 "$detector" "$file")" && status=0 || status=$?
+    decide "$output" "$status" '^doc が規約を満たしていません'
   fi
-  decide "$output" "$status" '^doc が規約を満たしていません'
 }
 
-while IFS='|' read -r expected flag input label; do
+while IFS='|' read -r expected mode input label; do
   [ -n "$input" ] || continue
   file="$work/src/sample.ts"
   mkdir -p "$(dirname "$file")"
   write_input "$input" "$file"
-  report "$expected" "$(normalize_miss "$expected" "$(verdict "$flag" "$file")")" "$label"
+  report "$expected" "$(normalize_miss "$expected" "$(verdict "$mode" "$file")")" "$label"
 done <<'CASES'
-deny|methods|method-undocumented|コンパニオンのメソッドに doc が無い
-deny|methods|method-multiline-undocumented|シグネチャを改行したメソッドに doc が無い
-deny|methods|property-undocumented|関数プロパティ(name: (x) => {)に doc が無い
-deny|methods|expression-property-undocumented|式本体の関数プロパティ(name: (x) => x + 1,)に doc が無い
-deny|methods|method-items-missing|メソッドの doc に @param / @returns が無い
-pass|methods|method-documented|メソッドに @param / @returns の揃った doc がある
-pass|methods|type-literal-member|type の型リテラルの関数型のメンバはオブジェクトのメソッドとして読まない
-pass|methods|lookup-table|対応表のキーは引数の括弧が無いので読まない
-pass|methods|parenthesized-value|値が括弧で始まるだけのプロパティは本体が続かないので読まない
-miss|methods|nested-method-undocumented|入れ子のオブジェクトのメソッドは見ない(意図した取りこぼし)
-deny|methods|brace-in-string|文字列の中に { があっても、その後ろのメソッドを報告する
-deny|methods|call-in-body-undocumented|式本体に括弧を含む関数プロパティ(=> Math.abs(x))に doc が無い
-deny|methods|annotated-companion-undocumented|型注釈の付いたコンパニオン(const Foo: Bar = {)のメソッドに doc が無い
-deny|methods|unexported-companion-undocumented|export していないコンパニオンのメソッドに doc が無い
-deny|methods|function-after-companion|コンパニオンを閉じた後ろのファイル直下の関数に doc が無い
-pass|default|method-undocumented|--include-methods を付けなければ doc の無いメソッドを報告しない
-deny|default|function-undocumented|ファイル直下の関数に doc が無い
-deny|methods|function-undocumented|--include-methods を付けてもファイル直下の関数を報告する
+deny|file|method-undocumented|コンパニオンのメソッドに doc が無い
+deny|file|method-multiline-undocumented|シグネチャを改行したメソッドに doc が無い
+deny|file|property-undocumented|関数プロパティ(name: (x) => {)に doc が無い
+deny|file|expression-property-undocumented|式本体の関数プロパティ(name: (x) => x + 1,)に doc が無い
+deny|file|method-items-missing|メソッドの doc に @param / @returns が無い
+pass|file|method-documented|メソッドに @param / @returns の揃った doc がある
+pass|file|type-literal-member|type の型リテラルの関数型のメンバはオブジェクトのメソッドとして読まない
+pass|file|lookup-table|対応表のキーは引数の括弧が無いので読まない
+pass|file|parenthesized-value|値が括弧で始まるだけのプロパティは本体が続かないので読まない
+miss|file|nested-method-undocumented|入れ子のオブジェクトのメソッドは見ない(意図した取りこぼし)
+deny|file|brace-in-string|文字列の中に { があっても、その後ろのメソッドを報告する
+deny|file|call-in-body-undocumented|式本体に括弧を含む関数プロパティ(=> Math.abs(x))に doc が無い
+deny|file|annotated-companion-undocumented|型注釈の付いたコンパニオン(const Foo: Bar = {)のメソッドに doc が無い
+deny|file|unexported-companion-undocumented|export していないコンパニオンのメソッドに doc が無い
+deny|file|function-after-companion|コンパニオンを閉じた後ろのファイル直下の関数に doc が無い
+deny|file|function-undocumented|ファイル直下の関数に doc が無い
+deny|all|method-undocumented|--all で走査しても、コンパニオンのメソッドに doc が無いのを報告する
+deny|all|method-items-missing|--all で走査しても、メソッドの doc に @param / @returns が無いのを報告する
+pass|all|method-documented|--all で走査して、メソッドに @param / @returns の揃った doc があれば報告しない
 CASES
 
 if [ "$cases_failed" -ne 0 ]; then
