@@ -94,6 +94,9 @@ export const TokenPropKinds = {
   /**
    * トークン参照 prop が引くトークン種別。
    * 出力側が「どの種別から引くか」を書き写さずに済むよう、スキーマの宣言を引かせる。
+   *
+   * @param prop スキーマが `domain: "token"` と宣言した prop の名前
+   * @returns その prop の定義が `tokenKind` に宣言している種別
    */
   kindOf<P extends TokenPropName>(prop: P): TokenPropKinds[P] {
     return TokenKindByProp[prop];

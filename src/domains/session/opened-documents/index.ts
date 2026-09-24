@@ -20,7 +20,12 @@ export type OpenedDocuments = Readonly<{
 }>;
 
 export const OpenedDocuments = {
-  /** 1 つだけ開いた状態。前にも後ろにも並びは無い。 */
+  /**
+   * 1 つだけ開いた状態。前にも後ろにも並びは無い。
+   *
+   * @param document 開くドキュメント
+   * @returns `document` だけを並べ、それを見ている状態
+   */
   create(document: OpenedDocument): OpenedDocuments {
     return { before: [], active: document, after: [] };
   },
@@ -35,7 +40,12 @@ export const OpenedDocuments = {
     return [...opened.before, opened.active, ...opened.after];
   },
 
-  /** 今見ているドキュメントの保存先。 */
+  /**
+   * 今見ているドキュメントの保存先。
+   *
+   * @param opened 読む相手
+   * @returns 今見ているドキュメントのパス
+   */
   activePath(opened: OpenedDocuments): string {
     return opened.active.path;
   },

@@ -97,6 +97,10 @@ export const ComponentBinding = {
   /**
    * binding を、それが属する部品の名前と組にする。
    * `binding` 単体では解決先が決まらないので、解決に渡す値はこの形で作る。
+   *
+   * @param componentName binding が属する部品の名前（`components` のキー）
+   * @param binding その部品の公開 prop の繋ぎ先
+   * @returns 部品名と binding の組
    */
   create(componentName: string, binding: PublicPropBinding): ComponentBinding {
     return { componentName, binding };
@@ -108,6 +112,12 @@ export const ComponentBinding = {
    * 解決できない場合は binding 自体が不整合であり、binding 検証側で報告される。
    *
    * 連鎖の起点なので、循環検出の初期状態（起点の部品名）をここで作る。
+   *
+   * @param components 引き先の部品一式
+   * @param source 解決を始める部品名と binding
+   * @returns 行き着いたプリミティブ prop の定義。部品・binding 先のノードが無いとき、
+   *   binding 先のノードの型が未知かその prop がスキーマに無いとき、連鎖の途中の部品が
+   *   無いかその prop を公開していないとき、連鎖が循環したときは `none`
    */
   resolvePropDefinition(
     components: ComponentSet,

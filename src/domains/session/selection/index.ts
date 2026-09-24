@@ -28,14 +28,22 @@ export type Selection = Readonly<{
 }>;
 
 export const Selection = {
-  /** artboard は種別が名前から決まるので、常に `artboard`。 */
+  /**
+   * artboard を選ばれているものにする。種別は常に `artboard`。
+   *
+   * @param artboard 選ばれた artboard
+   * @returns artboard の名前を持つ選択
+   */
   fromArtboard(artboard: Artboard): Selection {
     return { name: artboard.name, kind: Option.some("artboard") };
   },
 
   /**
-   * ノードの種別。参照ノードは指しているものが部品なので `component`、
-   * プリミティブはスキーマが知っている `type` のときだけその種別になる。
+   * ノードを選ばれているものにする。参照ノードは指しているものが部品なので
+   * `component`、プリミティブはスキーマが知っている `type` のときだけその種別になる。
+   *
+   * @param node 選ばれたノード
+   * @returns ノードの名前と種別の対。スキーマに無い `type` のノードでは種別が `none`
    */
   fromNode(node: Node): Selection {
     if (Node.isRef(node)) {

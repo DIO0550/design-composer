@@ -47,6 +47,12 @@ export const DesignDocumentV1 = {
    * `formatVersion` はこの版の major を名乗っているかまで見る（違う major のテキストを
    * この型の値にしないための境界）。互換性判定とマイグレーション自体はデコードより前に
    * `libs/document-migration` が済ませている。
+   *
+   * @param cursor ファイルから読んだ JSON の値と、その位置
+   * @returns 読めたドキュメント。オブジェクトでなければ `invalid-type` の `err`。そうで
+   *   なければトップレベルのフィールドの欠落（`missing-field`）・各フィールドの中身の失敗・
+   *   major 1 以外の `formatVersion`（`invalid-type`）・トップレベルの知らないフィールド
+   *   （`unknown-field`）を、最初の 1 件で打ち切らずすべて並べた `err`
    */
   fromJson(cursor: JsonCursor): JsonDecoded<DesignDocumentV1> {
     return Result.flatMap(Json.record(cursor), (record) =>
@@ -77,6 +83,10 @@ export const DesignDocumentV1 = {
    * この版のドキュメントを JSON のデータモデルへ落とす。
    * 明示的に設定された値だけを書き、スキーマのデフォルト値は書かない
    * （ドキュメントはそもそも明示的な props しか保持しない）。
+   *
+   * @param document 書き出すドキュメント
+   * @returns 4 つのトップレベルフィールドを持つオブジェクト。`formatVersion` は
+   *   `"major.minor"` の文字列で、ドキュメントが名乗る版のまま書く
    */
   toJson(document: DesignDocumentV1): JsonObject {
     return {

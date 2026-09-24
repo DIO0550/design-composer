@@ -36,7 +36,13 @@ export type PropEdit = Readonly<{
 }>;
 
 export const PropEdit = {
-  /** 指した prop すべてに同じ値を設定する編集。 */
+  /**
+   * 指した prop すべてに同じ値を設定する編集。
+   *
+   * @param names 設定する prop の名前
+   * @param value それらの prop に設定する値
+   * @returns `names` のすべてへ `value` を書く編集
+   */
   set(names: readonly [string, ...string[]], value: PropValue): PropEdit {
     return { names, value: Option.some(value) };
   },
@@ -45,6 +51,9 @@ export const PropEdit = {
    * 指した prop すべてを未設定へ戻す編集。
    * 「未設定」は値が無いことではなくデフォルトが効く状態なので、
    * 空文字や 0 を入れて表さない(`Props.apply` がキーごと落とす)。
+   *
+   * @param names 未設定へ戻す prop の名前
+   * @returns `names` のすべてを未設定へ戻す編集
    */
   clear(names: readonly [string, ...string[]]): PropEdit {
     return { names, value: Option.none };
@@ -53,7 +62,14 @@ export const PropEdit = {
 
 /** prop の値の JSON 表現との相互変換。 */
 export const PropValue = {
-  /** prop の値になれるのはスカラーだけ(構造を持つ値は prop にしない)。 */
+  /**
+   * カーソルの位置の値を prop の値として読む。prop の値になれるのはスカラーだけ(構造を持つ値
+   * は prop にしない)。
+   *
+   * @param cursor 読む値と、その位置
+   * @returns 文字列・数値・真偽値ならその値。`null`・配列・オブジェクトなら `cursor` の位置を
+   *   持つ `invalid-type` の `err`
+   */
   fromJson(cursor: JsonCursor): JsonDecoded<PropValue> {
     const value = cursor.value;
     if (
@@ -74,16 +90,33 @@ export const PropValue = {
 
 /** props の JSON 表現との相互変換と、1 件分の編集の適用。 */
 export const Props = {
+  /**
+   * prop 名をキーとする辞書を props として読む。prop 名がスキーマにあるかは見ない。
+   *
+   * @param cursor 読む値と、その位置
+   * @returns すべての値を読めたら props。失敗の条件は `Json.mapOf` と同じで、値の失敗は
+   *   `PropValue.fromJson` の `err`
+   */
   fromJson(cursor: JsonCursor): JsonDecoded<Props> {
     return Json.mapOf(cursor, PropValue.fromJson);
   },
 
-  /** prop 名の昇順で書き出す(編集した順に依存させない)。 */
+  /**
+   * prop 名の昇順で書き出す(編集した順に依存させない)。
+   *
+   * @param props 書き出す props
+   * @returns `Json.sortedMap` の並びで、値をそのまま持つオブジェクト
+   */
   toJson(props: Props): JsonObject {
     return Json.sortedMap(props, (value) => value);
   },
 
-  /** 1件ずつ扱う消費側のために、設定されている prop を並びへ展開する。 */
+  /**
+   * 1件ずつ扱う消費側のために、設定されている prop を並びへ展開する。
+   *
+   * @param props 展開する props
+   * @returns 設定されている prop ごとの名前と値。並びは `Object.entries` の列挙順
+   */
   toAssignments(props: Props): readonly PropAssignment[] {
     return Object.entries(props).map(([name, value]) => ({ name, value }));
   },
@@ -93,6 +126,11 @@ export const Props = {
    * 決は未設定かどうかを見るため、`undefined` を値として残せない)。
    *
    * 指した prop はすべて同じ値になる。
+   *
+   * @param props 編集する前の props
+   * @param edit 適用する編集。指す prop 名がスキーマにあるかは見ない
+   * @returns 値を設定する編集なら `edit.names` のすべてをその値にした props、消去する編集なら
+   *   `edit.names` のキーを落とした props。指されていない prop はそのまま
    */
   apply(props: Props, edit: PropEdit): Props {
     if (Option.isSome(edit.value)) {
@@ -130,18 +168,44 @@ const RefNodeFields = ["name", "ref", "overrides"] as const;
 
 /** ノードの判定・子の取り出し・JSON 表現との相互変換。 */
 export const Node = {
+  /**
+   * 部品を参照するインスタンスのノードか。
+   *
+   * @param node 見るノード
+   * @returns 部品の参照ノードなら `true`
+   */
   isRef(node: Node): node is RefNode {
     return "ref" in node;
   },
 
+  /**
+   * 型と props を持つプリミティブのノードか。
+   *
+   * @param node 見るノード
+   * @returns プリミティブのノードなら `true`
+   */
   isPrimitive(node: Node): node is PrimitiveNode {
     return "type" in node;
   },
 
+  /**
+   * ノード直下の子。
+   *
+   * @param node 子を取り出すノード
+   * @returns プリミティブなら直下の子の並び。子を持たないプリミティブと参照ノードは空
+   *   (参照ノードの中身は部品の側にあり、このノードの子ではない)
+   */
   children(node: Node): readonly Node[] {
     return Node.isPrimitive(node) ? (node.children ?? []) : [];
   },
 
+  /**
+   * 自分と子孫の名前を集める。
+   *
+   * @param node 走査の起点になるノード
+   * @returns 自分の名前を先頭に、子孫の名前を深さ優先の行きがけ順で並べたもの。同じ名前は
+   *   現れた回数だけ入る
+   */
   collectNames(node: Node): readonly string[] {
     return [node.name, ...Node.children(node).flatMap(Node.collectNames)];
   },
@@ -160,6 +224,13 @@ export const Node = {
     return Node.collectNames(node).some(matches);
   },
 
+  /**
+   * 自分と子孫の参照ノードが指している部品の名前を集める。
+   *
+   * @param node 走査の起点になるノード
+   * @returns 参照先の部品の名前を深さ優先の行きがけ順で並べたもの。同じ部品を指す参照ノード
+   *   が複数あれば、その回数だけ入る。参照ノードが無ければ空
+   */
   collectRefs(node: Node): readonly string[] {
     if (Node.isRef(node)) {
       return [node.ref];
@@ -183,6 +254,14 @@ export const Node = {
     );
   },
 
+  /**
+   * 名前でノードを探す。自分から始めて、子孫を深さ優先の行きがけ順で辿る。
+   *
+   * @param node 走査の起点になるノード
+   * @param name 探すノードの名前
+   * @returns その名前を持つノード。名前が重複した不正なドキュメントでは行きがけ順で先に見つ
+   *   かったもの。自分にも子孫にも無ければ `none`
+   */
   find(node: Node, name: string): Option<Node> {
     if (node.name === name) {
       return Option.some(node);
@@ -199,6 +278,11 @@ export const Node = {
   /**
    * ノードの prop を書き換える。参照ノードが持つのは自分の props ではなく
    * 部品への上書き(`overrides`)なので、同じ編集でも書き込み先が変わる。
+   *
+   * @param node 書き換えるノード
+   * @param edit 適用する編集
+   * @returns 参照ノードなら `overrides`、プリミティブなら `props` に `Props.apply` で編集を
+   *   適用したノード
    */
   applyPropEdit(node: Node, edit: PropEdit): Node {
     if (Node.isRef(node)) {
@@ -207,6 +291,15 @@ export const Node = {
     return { ...node, props: Props.apply(node.props ?? {}, edit) };
   },
 
+  /**
+   * 自分と子孫の名前を対応表に従って付け替える。参照ノードが指す部品の名前(`ref`)は書き
+   * 換えない。
+   *
+   * @param node 走査の起点になるノード
+   * @param renameMap 今の名前から新しい名前への対応。載っていない名前はそのまま
+   * @returns 名前を付け替えたノード。`children` を持たず名前も変わらないノードは渡したもの
+   *   そのもの
+   */
   rename(node: Node, renameMap: Readonly<Record<string, string>>): Node {
     const newName = renameMap[node.name] ?? node.name;
     if (Node.isRef(node) || node.children === undefined) {
@@ -219,7 +312,16 @@ export const Node = {
     };
   },
 
-  /** `ref` を持てば参照ノード、`type` を持てばプリミティブノード(docs/01-file-format.md)。 */
+  /**
+   * `ref` を持てば参照ノード、`type` を持てばプリミティブノード(docs/01-file-format.md)。
+   *
+   * @param cursor 読む値と、その位置
+   * @returns 読めたノード。オブジェクトでなければ `invalid-type`、`ref` と `type` のどちらも
+   *   無ければ `cursor` の位置の `missing-field`。どちらかがあれば、必須フィールドの欠落は
+   *   `missing-field`、型違いは `invalid-type`、そのノードの形に無いフィールドは
+   *   `unknown-field` を 1 件で打ち切らずすべて集めた `err`(両方あれば参照ノードとして読み、
+   *   `type` が `unknown-field` になる)
+   */
   fromJson(cursor: JsonCursor): JsonDecoded<Node> {
     return Result.flatMap(Json.record(cursor), (record) => {
       const keys = Object.keys(record.record);
@@ -237,11 +339,24 @@ export const Node = {
     });
   },
 
+  /**
+   * ノードの配列を読む。
+   *
+   * @param cursor 読む値と、その位置
+   * @returns すべての要素を読めたらノードの並び。失敗の条件は `Json.arrayOf` と同じで、要素の
+   *   失敗は `Node.fromJson` の `err`
+   */
   fromJsonArray(cursor: JsonCursor): JsonDecoded<readonly Node[]> {
     return Json.arrayOf(cursor, Node.fromJson);
   },
 
-  /** 設定されていない props / children は書き出さない。 */
+  /**
+   * 設定されていない props / children は書き出さない。
+   *
+   * @param node 書き出すノード(子孫も含めて書き出す)
+   * @returns ノードの JSON 表現。`props` / `overrides` / `children` は未設定か空なら現れない。
+   *   `props` / `overrides` のキーは `Props.toJson` のとおり昇順
+   */
   toJson(node: Node): JsonObject {
     if (Node.isRef(node)) {
       return {

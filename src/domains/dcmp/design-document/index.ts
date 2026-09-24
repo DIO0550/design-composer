@@ -498,6 +498,15 @@ function expandInstance(
  * `v1/` が持ち、ここは「どの artboard・どの部品を相手にするか」の調停に徹する。
  */
 export const DesignDocument = {
+  /**
+   * 材料からドキュメントを組み立てる。仕様に適合するかは見ない（`collectErrors` の担当）。
+   *
+   * @param params ドキュメントの材料。`formatVersion` は名乗る形式版で、省くと現在の版
+   *   （`FormatVersion.Current`）。`tokens` はトークン一式で、省くと空の `TokenSet`。
+   *   `components` は部品名をキーにした部品定義で、省くと空。`artboards` は並べる順の
+   *   artboard で、省くと空
+   * @returns 省いたフィールドを既定値で埋めたドキュメント
+   */
   create(params: {
     formatVersion?: FormatVersionOf<1>;
     tokens?: TokenSet;
@@ -515,6 +524,9 @@ export const DesignDocument = {
   /**
    * 雛形から新規ドキュメントを作る（docs/04-tokens.md「新規ドキュメントテンプレート」）。
    * artboards は空で始まる（描く対象はユーザーが足す）。
+   *
+   * @param template 新規ドキュメントの雛形
+   * @returns 雛形のトークンと部品を持ち、現在の版を名乗る、artboard が 0 枚のドキュメント
    */
   createFromTemplate(template: DocumentTemplate): DesignDocument {
     return DesignDocument.create({
@@ -523,6 +535,13 @@ export const DesignDocument = {
     });
   },
 
+  /**
+   * ドキュメントが名乗る形式版が、アプリにとってどういう関係にあるか。
+   *
+   * @param document 形式版を見るドキュメント
+   * @returns 現在の版と比べた `FormatVersion.compatibility` の答え。型が major を 1 に
+   *   固定しているので `needs-migration` にはならない
+   */
   compatibility(document: DesignDocument): FormatVersionCompatibility {
     return FormatVersion.compatibility(document.formatVersion);
   },
@@ -531,6 +550,9 @@ export const DesignDocument = {
    * 現在の形式を名乗るドキュメントにする。
    * 書き出しは常に現在の形式で行う（旧形式へのダウングレード書き出しは持たない・
    * マイグレーションは一方向）ため、書き出す値はこれを通したものになる。
+   *
+   * @param document 書き出す前のドキュメント
+   * @returns 中身はそのままで、`formatVersion` だけを現在の版にしたドキュメント
    */
   withCurrentFormatVersion(document: DesignDocument): DesignDocument {
     return { ...document, formatVersion: FormatVersion.Current };
@@ -539,12 +561,21 @@ export const DesignDocument = {
   /**
    * JSON のデータモデルからドキュメントを組み立てる。
    * どのフィールドをどう読むかは版ごとの知識なので、現在の版のモジュールが持つ。
+   *
+   * @param cursor ファイルから読んだ JSON の値と、その位置
+   * @returns `DesignDocumentV1.fromJson` の結果そのまま（失敗の条件もそちら）
    */
   fromJson(cursor: JsonCursor): JsonDecoded<DesignDocument> {
     return DesignDocumentV1.fromJson(cursor);
   },
 
-  /** ドキュメントを JSON のデータモデルへ落とす。表現は現在の版のモジュールが持つ。 */
+  /**
+   * ドキュメントを JSON のデータモデルへ落とす。表現は現在の版のモジュールが持つ。
+   *
+   * @param document 書き出すドキュメント
+   * @returns `DesignDocumentV1.toJson` の結果そのまま。`formatVersion` はドキュメントが
+   *   名乗る版のまま書く
+   */
   toJson(document: DesignDocument): JsonObject {
     return DesignDocumentV1.toJson(document);
   },
@@ -553,6 +584,17 @@ export const DesignDocument = {
    * ツリー上の位置へノードを挿入する。
    * 位置は「どの親の何番目か」で指すので、親が子を持てない・親が居ない・
    * index が範囲外、のいずれでも失敗しうる。
+   *
+   * @param document 挿入先のドキュメント
+   * @param at 挿入する位置。親は artboard でもノードでもよく、`index` は挿入する前の子の
+   *   並びで見た位置（子の数と同じなら末尾）
+   * @param node 挿入するノード。名前の一意性は見ないので、既にある名前もそのまま入る
+   *   （複製を挿すなら `insertNodeCopy`）
+   * @returns 挿入したドキュメント。親の名前が artboard にも artboard 配下のノードにも無い
+   *   （部品定義の中のノードも含む）なら `parent-not-found`、親が参照ノードか、スキーマが
+   *   子を認めていないプリミティブなら `children-not-allowed`、`index` が 0 以上子の数以下の整数でなければ
+   *   `index-out-of-range`。名前が重複した不正なドキュメントでは artboard の名前を先に当て、
+   *   ノードは並びで先にある artboard の中で、各階層の直下の並びを子孫より先に見て当てる
    */
   insertNode(
     document: DesignDocument,
@@ -570,6 +612,12 @@ export const DesignDocument = {
    *
    * 名前はドキュメント全体で一意でなければならない（docs/01-file-format.md「ノードの識別（name）」）
    * ので、挿す前に部分木の名前をまとめて付け替える。
+   *
+   * @param document 挿入先のドキュメント
+   * @param at 挿入する位置（`insertNode` と同じ）
+   * @param node 複製元のノード。自分と子孫の名前は `renameSubtree` でドキュメントの名前と
+   *   衝突しない名前へ付け替える
+   * @returns 名前を付け替えた複製を挿入したドキュメント。`insertNode` と同じ条件で `err`
    */
   insertNodeCopy(
     document: DesignDocument,
@@ -583,7 +631,14 @@ export const DesignDocument = {
     return DesignDocument.insertNode(document, at, renamed);
   },
 
-  /** 名前で指したノードをツリーから取り除く。 */
+  /**
+   * 名前で指したノードをツリーから取り除く。
+   *
+   * @param document 取り除く先のドキュメント
+   * @param name 取り除くノードの名前。配下ごと取り除く
+   * @returns 取り除いたドキュメント。`replaceNode` と同じ条件で `node-not-found` になり、
+   *   名前が重複した不正なドキュメントでも `replaceNode` と同じ相手を取り除く
+   */
   removeNode(
     document: DesignDocument,
     name: string,
@@ -596,6 +651,10 @@ export const DesignDocument = {
   /**
    * パレットに並べる部品の一覧。組み立ての規則は `ComponentSet` が持ち、ここは
    * 「部品の外側にある木はどれか」を渡す調停だけを行う（`nameSpaceOf` と同じ形）。
+   *
+   * @param document 部品と、部品の外側にある木の出どころになるドキュメント
+   * @returns 部品 1 つにつき 1 件のパレット項目。外側の木として渡すのは artboard の直下の
+   *   子（とその子孫）で、並びと数え方は `ComponentSet.assets`
    */
   componentAssets(document: DesignDocument): readonly ComponentAsset[] {
     return ComponentSet.assets(
@@ -658,7 +717,14 @@ export const DesignDocument = {
     );
   },
 
-  /** 名前で artboard を引く。名前は単一名前空間なので artboard 名も一意に決まる。 */
+  /**
+   * 名前で artboard を引く。名前は単一名前空間なので artboard 名も一意に決まる。
+   *
+   * @param document 引き先になるドキュメント
+   * @param name 引きたい artboard の名前
+   * @returns その名前の artboard。無ければ（ノードの名前も含む）`none`。名前が重複した
+   *   不正なドキュメントでは並びで先にある 1 枚
+   */
   findArtboard(document: DesignDocument, name: string): Option<Artboard> {
     return Option.fromNullable(
       document.artboards.find((artboard) => artboard.name === name),
@@ -670,6 +736,12 @@ export const DesignDocument = {
    * 名前ならそれを含む artboard（子孫まで辿る）で、どちらでもなければ `none`。
    *
    * 名前は単一名前空間なので答えは一意に決まる。
+   *
+   * @param document 引き先になるドキュメント
+   * @param name artboard かノードの名前
+   * @returns その名前のものが載っている artboard。部品定義の中のノードの名前は `none`。
+   *   名前が重複した不正なドキュメントでは artboard 自身の名前を先に当て、次に並びで先に
+   *   あるノードを含む artboard を返す
    */
   findOwningArtboard(document: DesignDocument, name: string): Option<Artboard> {
     const named = DesignDocument.findArtboard(document, name);
@@ -689,6 +761,11 @@ export const DesignDocument = {
    * artboard は常に子を持てるので必ず並びを持つ。子を持てないノード（Text・参照ノード）と
    * ドキュメントに無い名前は「子の並びが無い」ので `none`。
    * 「子を持てない」（`none`）と「子が 0 件」（`some([])`）は別のことなので区別する。
+   *
+   * @param document 引き先になるドキュメント
+   * @param name 子の並びを知りたい artboard / ノードの名前
+   * @returns 子の並び。名前が重複した不正なドキュメントでは artboard を優先し、ノードは
+   *   `findNode` が見つけたものの子
    */
   findChildren(
     document: DesignDocument,
@@ -710,6 +787,11 @@ export const DesignDocument = {
    *
    * 足せるかどうかは子の並びを持つかどうかと同じなので `findChildren` に乗せる。挿入の可否は
    * 木の形で決まるためここが答え、UI が `allowsChildren` を見に行かない。
+   *
+   * @param document 引き先になるドキュメント
+   * @param parentName 子を足したい artboard / ノードの名前
+   * @returns その名前と、今の子の数を `index` にした位置。`findChildren` が `none` になる
+   *   名前は `none`
    */
   appendPositionOf(
     document: DesignDocument,
@@ -724,6 +806,13 @@ export const DesignDocument = {
   /**
    * 名前で指したノードが今いる位置を「どの親の何番目か」で引く。
    * artboard 自身は誰の子でもないため位置を持たない（`none`）。
+   *
+   * @param document 引き先になるドキュメント
+   * @param name 位置を知りたいノードの名前
+   * @returns 親の名前（artboard の直下なら artboard 名）と、その親の子の並びの中の位置。
+   *   部品定義の中のノードと無い名前も `none`。名前が重複した不正なドキュメントでは、並び
+   *   で先にある artboard の中で、各階層の直下の並びを子孫より先に見て当たったもの
+   *   （`findNode` とは別のノードを指しうる）
    */
   findChildPosition(
     document: DesignDocument,
@@ -796,7 +885,15 @@ export const DesignDocument = {
     );
   },
 
-  /** 名前でノードを引く。artboard 直下だけでなく子孫も辿る。 */
+  /**
+   * 名前でノードを引く。artboard 直下だけでなく子孫も辿る。
+   *
+   * @param document 引き先になるドキュメント
+   * @param name 引きたいノードの名前
+   * @returns その名前のノード。artboard 自身の名前・部品定義の中のノードの名前・無い名前
+   *   は `none`。名前が重複した不正なドキュメントでは、並びで先にある artboard の中で、
+   *   深さ優先（自分 → 子 → 次の兄弟）で先に当たったもの
+   */
   findNode(document: DesignDocument, name: string): Option<Node> {
     for (const artboard of document.artboards) {
       const found = Artboard.findNode(artboard, name);
@@ -813,6 +910,15 @@ export const DesignDocument = {
    * るかは名前で決まる。
    *
    * 大きさが変わったときは、直下の絶対配置の子をここで追従させる（`withResizeFollowUp`）。
+   *
+   * @param document 書き換える対象を含むドキュメント
+   * @param name 書き換える artboard / ノードの名前
+   * @param edit 書き込む prop と値（未設定へ戻す編集も含む）。参照ノードには上書きとして
+   *   書く
+   * @returns 書き換えたドキュメント。artboard にも artboard 配下のノードにも無い名前
+   *   （部品定義の中のノードも含む）は `node-not-found`。名前が重複した不正なドキュメント
+   *   では artboard を優先して同名の artboard をすべて書き換える。ノードは `findNode` が
+   *   見つけたものに編集を重ね、`replaceNode` の相手へ書く（2 つが別のノードになりうる）
    */
   applyPropEdit(
     document: DesignDocument,
@@ -940,7 +1046,17 @@ export const DesignDocument = {
     );
   },
 
-  /** 名前で指したノードを別のノードに差し替える。 */
+  /**
+   * 名前で指したノードを別のノードに差し替える。
+   *
+   * @param document 差し替える対象を含むドキュメント
+   * @param name 差し替えるノードの名前
+   * @param node 差し替え後のノード。名前は見ないので、`name` と違う名前でもそのまま入る
+   * @returns 差し替えたドキュメント。artboard 自身の名前・部品定義の中のノードの名前・
+   *   無い名前は `node-not-found`。名前が重複した不正なドキュメントでは、並びで先にある
+   *   artboard の中で、各階層の直下の並びを子孫より先に見て当たった並びの、その名前の
+   *   ものをすべて差し替える
+   */
   replaceNode(
     document: DesignDocument,
     name: string,
@@ -954,6 +1070,13 @@ export const DesignDocument = {
   /**
    * 同一の親の中で子を動かす。移動元は「どの親の何番目か」で指す位置なので
    * 移動先は同じ親の中の index だけで決まる（親をまたぐ移動は `moveNode`）。
+   *
+   * @param document 動かす子を含むドキュメント
+   * @param from 動かす子の親と、動かす前の位置
+   * @param toIndex 動かしたあとにその子が来る位置（抜いたあとの並びで見た位置と同じ）
+   * @returns 動かしたドキュメント。親の条件で `insertNode` と同じ `parent-not-found` /
+   *   `children-not-allowed`、`from.index` か `toIndex` が既にある子を指していなければ
+   *   `index-out-of-range`（どちらを報告するかは `ArrayEx.moveWithin`）
    */
   reorderNode(
     document: DesignDocument,
@@ -966,9 +1089,19 @@ export const DesignDocument = {
   },
 
   /**
-   * ノードを別の親の下へ移す（同一の親の中での並べ替えは `reorderNode`）。
+   * ノードを取り除き、指した親の子の並びの指した位置へ挿す。
    * 自分自身や自分の子孫を移動先に指定するとツリーが壊れるため、
    * `move-into-descendant` として失敗させる。
+   *
+   * @param document 移すノードを含むドキュメント
+   * @param name 移すノードの名前
+   * @param to 移したあとの親と位置。今と同じ親も指せる。`index` は自分を取り除いたあとの
+   *   並びで読むので、同じ親の中で取り除く前の子の数（末尾の後ろ）を渡すと
+   *   `index-out-of-range` になる（取り除く前の並びで見た位置は
+   *   `ChildPosition.afterRemoving` で読み替える）
+   * @returns 移したドキュメント。ノードが無い（artboard 自身の名前も含む）なら
+   *   `node-not-found`、`to` の親がそのノード自身か子孫なら `move-into-descendant`、挿す
+   *   ところで失敗すれば `insertNode` と同じ条件の `err`
    */
   moveNode(
     document: DesignDocument,
@@ -1154,7 +1287,16 @@ export const DesignDocument = {
     );
   },
 
-  /** artboard をドキュメントの指定位置へ挿入する。 */
+  /**
+   * artboard をドキュメントの指定位置へ挿入する。
+   *
+   * @param document 挿入先のドキュメント
+   * @param index 挿入する位置。artboard の数と同じなら末尾
+   * @param artboard 挿入する artboard。名前の一意性は見ないので、既にある名前もそのまま
+   *   入る
+   * @returns 挿入したドキュメント。`index` が 0 以上 artboard の数以下の整数でなければ
+   *   `index-out-of-range`
+   */
   insertArtboard(
     document: DesignDocument,
     index: number,
@@ -1172,7 +1314,15 @@ export const DesignDocument = {
     );
   },
 
-  /** 名前で指した artboard をドキュメントから取り除く。 */
+  /**
+   * 名前で指した artboard をドキュメントから取り除く。
+   *
+   * @param document 取り除く先のドキュメント
+   * @param name 取り除く artboard の名前。配下ごと取り除く
+   * @returns 取り除いたドキュメント。その名前の artboard が無ければ（ノードの名前も含む）
+   *   `artboard-not-found`。名前が重複した不正なドキュメントでは並びで先にある 1 枚だけを
+   *   取り除く
+   */
   removeArtboard(
     document: DesignDocument,
     name: string,
@@ -1256,7 +1406,16 @@ export const DesignDocument = {
     );
   },
 
-  /** artboard の並び順を入れ替える。 */
+  /**
+   * artboard を 1 枚抜いて、並びの別の位置へ差し込む。
+   *
+   * @param document 動かす artboard を含むドキュメント
+   * @param fromIndex 動かす artboard の、動かす前の位置
+   * @param toIndex 動かしたあとにその artboard が来る位置（抜いたあとの並びで見た位置と
+   *   同じ）
+   * @returns 動かしたドキュメント。どちらかの位置が既にある artboard を指していなければ
+   *   `index-out-of-range`（どちらを報告するかは `ArrayEx.moveWithin`）
+   */
   reorderArtboard(
     document: DesignDocument,
     fromIndex: number,
@@ -1278,6 +1437,10 @@ export const DesignDocument = {
    * トークンを追加する（docs/06-ui.md「編集操作の一覧」の tokens 編集）。
    * 名前の規則と種別内の一意性は `TokenSet` が見るので、ここは
    * 「ドキュメントのどこを差し替えるか」だけを担う。
+   *
+   * @param document 追加先のドキュメント
+   * @param token 追加するトークン
+   * @returns トークンを足したドキュメント。`TokenSet.add` と同じ条件で `err`
    */
   addToken(
     document: DesignDocument,
@@ -1289,7 +1452,13 @@ export const DesignDocument = {
     }));
   },
 
-  /** トークンの値を差し替える。 */
+  /**
+   * トークンの値を差し替える。
+   *
+   * @param document 差し替える対象を含むドキュメント
+   * @param token 差し替え後のトークン。種別と名前で差し替える相手を指す
+   * @returns 差し替えたドキュメント。`TokenSet.replace` と同じ条件で `err`
+   */
   replaceToken(
     document: DesignDocument,
     token: Token,
@@ -1300,7 +1469,14 @@ export const DesignDocument = {
     }));
   },
 
-  /** トークンの名前を変える。 */
+  /**
+   * トークンの名前を変える。そのトークンを指している prop は書き換えない。
+   *
+   * @param document 名前を変える対象を含むドキュメント
+   * @param ref 名前を変えるトークン
+   * @param newName 新しい名前
+   * @returns 名前を変えたドキュメント。`TokenSet.rename` と同じ条件で `err`
+   */
   renameToken(
     document: DesignDocument,
     ref: TokenRef,
@@ -1312,7 +1488,13 @@ export const DesignDocument = {
     );
   },
 
-  /** トークンを削除する。 */
+  /**
+   * トークンを削除する。そのトークンを指している prop は書き換えない。
+   *
+   * @param document 削除する対象を含むドキュメント
+   * @param ref 削除するトークン
+   * @returns 削除したドキュメント。`TokenSet.remove` と同じ条件で `err`
+   */
   removeToken(
     document: DesignDocument,
     ref: TokenRef,
@@ -1332,6 +1514,11 @@ export const DesignDocument = {
    * を再現できる大域順序が無い）。
    *
    * トークンが実在するかは見ないので、宙に浮いた参照（dangling）も同じ関数で数えられる。
+   *
+   * @param document 参照元を探すドキュメント
+   * @param ref 参照されているかを知りたいトークン
+   * @returns `collectCanvasTokenReferrers` の並びの後に
+   *   `TokenReferrer.collectInComponents` の並びを続けたもの。1 件も無ければ空
    */
   collectTokenReferrers(
     document: DesignDocument,
@@ -1365,12 +1552,23 @@ export const DesignDocument = {
     );
   },
 
-  /** ドキュメントの単一名前空間で使われている名前。 */
+  /**
+   * ドキュメントの単一名前空間で使われている名前。
+   *
+   * @param document 名前を集めるドキュメント
+   * @returns 部品名・部品定義の中のノード名・artboard 名・artboard 配下のノード名の集合。
+   *   同じ名前が何度現れても 1 つに畳まれる
+   */
   usedNames(document: DesignDocument): ReadonlySet<string> {
     return NameSpace.toSet(nameSpaceOf(document));
   },
 
-  /** その名前が識別子の規則（kebab-case）を満たすか。 */
+  /**
+   * その名前が識別子の規則（kebab-case）を満たすか。
+   *
+   * @param name 判定する名前
+   * @returns `NameSpace.isValidIdentifier` の答え
+   */
   isValidIdentifier(name: string): boolean {
     return NameSpace.isValidIdentifier(name);
   },
@@ -1390,12 +1588,26 @@ export const DesignDocument = {
     return !Option.isSome(unusableNameError(document, name));
   },
 
-  /** 使用済みの名前と衝突しない名前。衝突する場合は連番を付ける。 */
+  /**
+   * 使用済みの名前と衝突しない名前。衝突する場合は連番を付ける。
+   *
+   * @param baseName 付けたい名前
+   * @param usedNames 既に使われている名前
+   * @returns 衝突しなければ `baseName` そのまま、衝突すれば `NameSpace.uniqueName` が
+   *   連番を付けた名前
+   */
   uniqueName(baseName: string, usedNames: ReadonlySet<string>): string {
     return NameSpace.uniqueName(NameSpace.create([...usedNames]), baseName);
   },
 
-  /** 部分木のノード名を、使用済みの名前と衝突しないよう付け替える。 */
+  /**
+   * 部分木のノード名を、使用済みの名前と衝突しないよう付け替える。
+   *
+   * @param nodes 付け替える部分木の根の並び
+   * @param usedNames 既に使われている名前
+   * @returns 付け替えた部分木と、部分木の各名前から新しい名前への対応（変わらない名前も
+   *   含む）。新しい名前の決め方は `NameSpace.renameMap`
+   */
   renameSubtree(
     nodes: readonly Node[],
     usedNames: ReadonlySet<string>,
@@ -1415,6 +1627,10 @@ export const DesignDocument = {
    *
    * 適合の規則そのものは `validation/` が関心ごとに持ち、ここは「どの部品・どの artboard
    * を検証対象にするか」の取りまとめを行う。
+   *
+   * @param document 検証するドキュメント
+   * @returns 部品ごとのエラー・artboard ごとのエラー・部品の循環参照・名前のエラーの順に
+   *   連ねた並び。適合していれば空
    */
   collectErrors(
     document: DesignDocument,

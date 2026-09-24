@@ -8,6 +8,12 @@
 export type Instant = Readonly<{ epochMs: number }>;
 
 export const Instant = {
+  /**
+   * UNIX epoch からのミリ秒を瞬間にする。
+   *
+   * @param epochMs UNIX epoch からのミリ秒。検証しないので `NaN`・小数・負の数もそのまま持つ
+   * @returns `epochMs` をそのまま持つ瞬間
+   */
   create(epochMs: number): Instant {
     return { epochMs };
   },

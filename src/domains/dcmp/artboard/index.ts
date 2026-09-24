@@ -209,6 +209,12 @@ export const Artboard = {
    */
   BaseName: "artboard",
 
+  /**
+   * artboard を組み立てる。値の検証はしない。
+   *
+   * @param params artboard が持つ値。`children` を省くと子を持たない
+   * @returns `params` の値を持つ artboard
+   */
   create(params: {
     name: string;
     width: number;
@@ -242,17 +248,33 @@ export const Artboard = {
   /**
    * 子の並びをツリーの一階層として見る。
    * 並びの探索・編集の規則は `NodeTree` が持つので、artboard は自分の並びを渡すだけ。
+   *
+   * @param artboard 並びを取り出す artboard
+   * @returns 直下の子の並びを 1 階層として持つツリー。artboard 自身は含まない
    */
   tree(artboard: Artboard): NodeTree {
     return NodeTree.create(artboard.children);
   },
 
-  /** 子の並びを差し替えた artboard。 */
+  /**
+   * 子の並びを差し替えた artboard。
+   *
+   * @param artboard 差し替える元の artboard
+   * @param tree 新しい直下の子の並び
+   * @returns 子を `tree` の並びにし、それ以外は元のままの artboard
+   */
   withTree(artboard: Artboard, tree: NodeTree): Artboard {
     return { ...artboard, children: NodeTree.nodes(tree) };
   },
 
-  /** 配下のノードを名前で探す。直下だけでなく子孫も辿る。 */
+  /**
+   * 配下のノードを名前で探す。直下だけでなく子孫も辿る。
+   *
+   * @param artboard 探す先の artboard
+   * @param name 探すノードの名前
+   * @returns その名前を持つ配下のノード。探し方は `NodeTree.find` と同じ。artboard 自身の
+   *   名前では見つからず、配下に無ければ `none`
+   */
   findNode(artboard: Artboard, name: string): Option<Node> {
     return NodeTree.find(Artboard.tree(artboard), name);
   },
@@ -297,6 +319,9 @@ export const Artboard = {
    *   ことで、それを出すかどうかがまだ決まっていない（docs/03「表示 / 非表示」）
    * - 回転は**固定**で回らない。artboard は子の座標の原点になる器なので、回ると中身の位置が
    *   全部変わり、枠の外側に描かれる見出しとリサイズハンドルもずれる（docs/03「回転」）
+   *
+   * @param artboard 解決する artboard
+   * @returns Box スキーマのデフォルトを補った props に、上の固定値を重ねたもの
    */
   boxProps(artboard: Artboard): ArtboardBoxProps {
     return {
@@ -316,6 +341,9 @@ export const Artboard = {
 
   /**
    * artboard が props として受け付ける prop の定義（docs/03「Box スキーマを流用する」）。
+   *
+   * @returns Box スキーマの prop 定義から `boxProps` が固定するものを除き、`overflow` の
+   *   デフォルトを `clip` にしたもの。並びは Box スキーマの宣言順
    */
   propDefinitions(): PropDefinitionRecord {
     const editable = Object.entries(BoxSchema.props).filter(
@@ -337,6 +365,11 @@ export const Artboard = {
    * `heightMode` は `fixed` に固定され、`width` / `height` が必須」)。
    *
    * props へ書いても `boxProps` が固定値で上書きするので効かない。
+   *
+   * @param artboard 大きさを変える元の artboard
+   * @param size 変える軸と、その軸の新しい長さ(px)
+   * @returns `size.axis` の側の `width` / `height` を `size.length` にした artboard。長さの
+   *   検証はしない
    */
   resize(artboard: Artboard, size: AxisLength): Artboard {
     return { ...artboard, [size.axis]: size.length };
@@ -359,11 +392,27 @@ export const Artboard = {
     };
   },
 
-  /** artboard の prop を書き換える。 */
+  /**
+   * artboard の prop を書き換える。
+   *
+   * @param artboard 書き換える artboard
+   * @param edit 適用する編集。`boxProps` が固定する prop かどうかは見ない
+   * @returns `props` に `Props.apply` で編集を適用した artboard
+   */
   applyPropEdit(artboard: Artboard, edit: PropEdit): Artboard {
     return { ...artboard, props: Props.apply(artboard.props ?? {}, edit) };
   },
 
+  /**
+   * artboard の JSON 表現を読む（docs/01-file-format.md「artboards」）。
+   *
+   * @param cursor 読む値と、その位置
+   * @returns 読めた artboard。オブジェクトでなければ `invalid-type`。そうでなければ、必須
+   *   フィールド（`name` / `width` / `height` / `children`）の欠落と `x` / `y` の片方だけの
+   *   指定は `missing-field`、型違いは `invalid-type`、知らないフィールドは `unknown-field`
+   *   を 1 件で打ち切らずすべて集めた `err`。配下のノードの失敗は `Node.fromJson` の `err`
+   *   の中身がそのまま加わる
+   */
   fromJson(cursor: JsonCursor): JsonDecoded<Artboard> {
     return Result.flatMap(Json.record(cursor), (record) =>
       Json.knownFields(
@@ -393,6 +442,9 @@ export const Artboard = {
    * `children` は必須フィールドなので空でも書き出す(docs/01-file-format.md)。
    * キャンバス上の位置は `x` / `y` の対で出し、持たないなら**どちらも出さない**
    * (既定値を書き出すと、置き場所を書いていないドキュメントと区別が付かなくなる)。
+   *
+   * @param artboard 書き出す artboard（配下のノードも含めて書き出す）
+   * @returns artboard の JSON 表現。`props` は未設定か空なら現れない
    */
   toJson(artboard: Artboard): JsonObject {
     const canvasPosition = artboard.canvasPosition;

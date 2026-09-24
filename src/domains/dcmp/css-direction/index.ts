@@ -18,12 +18,23 @@ export const CssDirections = {
 export type CssDirection = ValueOf<typeof CssDirections>;
 
 export const CssDirection = {
-  /** 子が並ぶ方向にあたる軸。 */
+  /**
+   * 子が並ぶ方向にあたる軸。
+   *
+   * @param direction flex コンテナの向き
+   * @returns 子が横に並ぶなら幅の軸、縦に並ぶなら高さの軸
+   */
   mainAxis(direction: CssDirection): Axis {
     return direction === CssDirections.Row ? "width" : "height";
   },
 
-  /** その軸が主軸(子が並ぶ方向)かどうか。 */
+  /**
+   * その軸が主軸(子が並ぶ方向)かどうか。
+   *
+   * @param direction flex コンテナの向き
+   * @param axis 見る軸
+   * @returns `axis` が `mainAxis` の答えと同じなら `true`
+   */
   isMainAxis(direction: CssDirection, axis: Axis): boolean {
     return CssDirection.mainAxis(direction) === axis;
   },
@@ -31,6 +42,10 @@ export const CssDirection = {
   /**
    * `fill`(親いっぱいに広がる)の宣言。
    * 主軸方向なら伸長し、交差軸方向なら引き伸ばす。
+   *
+   * @param direction `fill` の子を並べる親の向き
+   * @param axis `fill` を指定した軸
+   * @returns 主軸なら残りの長さへ伸ばす宣言、交差軸なら親いっぱいへ引き伸ばす宣言
    */
   fillDeclaration(direction: CssDirection, axis: Axis): CssDeclaration {
     return CssDirection.isMainAxis(direction, axis)

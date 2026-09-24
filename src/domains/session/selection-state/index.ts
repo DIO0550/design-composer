@@ -76,12 +76,23 @@ export const SelectionState = {
     }
   },
 
-  /** 選ばれている件数。 */
+  /**
+   * 選ばれている件数。
+   *
+   * @param selection 数える選択
+   * @returns `names` の件数。何も選んでいなければ 0
+   */
   count(selection: SelectionState): number {
     return SelectionState.names(selection).length;
   },
 
-  /** その名前が選ばれているか。 */
+  /**
+   * その名前が選ばれているか。
+   *
+   * @param selection 探す選択
+   * @param name 探す名前（単一名前空間の名前）
+   * @returns 選ばれている名前のどれかと一致すれば `true`。何も選んでいなければ `false`
+   */
   includes(selection: SelectionState, name: string): boolean {
     return SelectionState.names(selection).includes(name);
   },

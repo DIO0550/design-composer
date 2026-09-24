@@ -369,12 +369,21 @@ export const PrimitiveSchemas = {
 export const PrimitiveSchema = {
   /**
    * その primitive のスキーマ。
+   *
+   * @param type スキーマを引く primitive の型
+   * @returns その型のスキーマ。prop 名・`tokenKind` などの宣言がリテラル型のまま残る
    */
   forType<T extends PrimitiveType>(type: T): (typeof PrimitiveSchemas)[T] {
     return PrimitiveSchemas[type];
   },
 
-  /** その名前が primitive の型か（ファイル由来の未知の type を弾く境界）。 */
+  /**
+   * その名前が primitive の型か（ファイル由来の未知の type を弾く境界）。
+   *
+   * @param type ノードの `type` に書かれている名前。ファイル由来の未知の名前でもよい
+   * @returns `PrimitiveTypes` のどれかと綴りが完全に一致すれば `true`（大文字小文字も
+   *   区別する）
+   */
   isPrimitiveType(type: string): type is PrimitiveType {
     return (Object.values(PrimitiveTypes) as readonly string[]).includes(type);
   },
@@ -382,6 +391,9 @@ export const PrimitiveSchema = {
   /**
    * その type のノードが子を持てるか。
    * primitive でない type は子を持てない扱いにする（未知の type に子を挿せない）。
+   *
+   * @param type ノードの `type` に書かれている名前
+   * @returns primitive で、そのスキーマが子を許していれば `true`
    */
   allowsChildren(type: string): boolean {
     return (

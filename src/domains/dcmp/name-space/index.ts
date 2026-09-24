@@ -34,6 +34,13 @@ function nextAvailableName(
 }
 
 export const NameSpace = {
+  /**
+   * 集めた名前を名前空間として持つ。
+   *
+   * @param names 名前空間に属する名前を出現順に並べたもの
+   * @returns `names` を重複も畳まずにそのまま持つ名前空間（重複は `duplicatedNames` が
+   *   見つける）
+   */
   create(names: readonly string[]): NameSpace {
     return { names };
   },
@@ -43,6 +50,11 @@ export const NameSpace = {
    * の名前空間自身の性質なので、集める規則もここが持つ。
    *
    * 生成は `create` に一本化しているため、ここは名前を集めるところまでを担う。
+   *
+   * @param components ドキュメントの部品定義
+   * @param artboards ドキュメントの artboard
+   * @returns 部品ごとに部品名とその内部のノードの名前、続いて artboard ごとに artboard 名と
+   *   配下のノードの名前を並べたもの。同じ名前は現れた回数だけ入る
    */
   collectNames(
     components: ComponentSet,
@@ -61,17 +73,33 @@ export const NameSpace = {
     return [...componentNames, ...artboardNames];
   },
 
-  /** 名前の集合。同じ名前が複数回現れても1つに畳まれる。 */
+  /**
+   * 名前の集合。同じ名前が複数回現れても1つに畳まれる。
+   *
+   * @param space 畳む名前空間
+   * @returns 名前空間に属する名前の集合
+   */
   toSet(space: NameSpace): ReadonlySet<string> {
     return new Set(space.names);
   },
 
-  /** その名前が既に使われているか。 */
+  /**
+   * その名前が既に使われているか。
+   *
+   * @param space 探す先の名前空間
+   * @param name 使われているかを見る名前
+   * @returns 名前空間に 1 回以上現れていれば `true`
+   */
   has(space: NameSpace, name: string): boolean {
     return space.names.includes(name);
   },
 
-  /** 2回以上現れる名前を、最初に現れた順で1つずつ返す。 */
+  /**
+   * 2回以上現れる名前を、最初に現れた順で1つずつ返す。
+   *
+   * @param space 重複を探す名前空間
+   * @returns 重複している名前。重複が無ければ空
+   */
   duplicatedNames(space: NameSpace): readonly string[] {
     const { names } = space;
     return names.filter(
@@ -87,12 +115,22 @@ export const NameSpace = {
    *
    * トークン名も同じ規則に従う（docs/04-tokens.md「命名規則」）ため、綴りの判定自体は
    * `CaseStyle` に置いて両者で共有する。
+   *
+   * @param name 判定する名前
+   * @returns `CaseStyle.isKebabCase` が認める綴りなら `true`
    */
   isValidIdentifier(name: string): boolean {
     return CaseStyle.isKebabCase(name);
   },
 
-  /** この名前空間と衝突しない名前。衝突する場合は連番を付ける。 */
+  /**
+   * この名前空間と衝突しない名前。衝突する場合は連番を付ける。
+   *
+   * @param space 衝突を避ける名前空間
+   * @param baseName 付けたい名前。識別子の規則を満たすかは見ない
+   * @returns 衝突しなければ `baseName` そのまま、衝突すれば `baseName-2` から順に空いている
+   *   名前
+   */
   uniqueName(space: NameSpace, baseName: string): string {
     return nextAvailableName(baseName, NameSpace.toSet(space));
   },
@@ -100,6 +138,12 @@ export const NameSpace = {
   /**
    * 渡した名前をこの名前空間と衝突しない名前へ対応づける。
    * 生成した名前どうしも衝突しないよう、割り当て済みを足しながら決める。
+   *
+   * @param space 衝突を避ける名前空間
+   * @param names 新しい名前を割り当てたい名前。並びの順に割り当てる
+   * @returns `names` の各名前から割り当てた名前への対応。衝突しない名前は自分自身へ、衝突
+   *   する名前は `uniqueName` と同じ連番の名前へ対応づける。`names` に同じ名前が複数あれば、
+   *   対応に残るのは最後に割り当てた名前
    */
   renameMap(
     space: NameSpace,

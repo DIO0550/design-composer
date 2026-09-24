@@ -221,7 +221,15 @@ export type TextElement = Readonly<{
 export type CompiledElement = BoxElement | TextElement;
 
 export const BoxElement = {
-  /** 宣言の並びをそのまま受け取り、style へのまとめ上げはここで行う。 */
+  /**
+   * 宣言の並びをそのまま受け取り、style へのまとめ上げはここで行う。
+   *
+   * @param name 元になったノードまたは artboard の名前。出力に `ElementNameAttribute` として残る
+   * @param declarations 出力順に並べた宣言。同じプロパティが複数あるときの扱いは
+   *   `CssDeclarations.from` に従う
+   * @param children コンパイル済みの子。並び順のまま出力する
+   * @returns 宣言を style にまとめた Box
+   */
   create(
     name: string,
     declarations: readonly CssDeclarationType[],
@@ -332,7 +340,15 @@ export const BoxElement = {
 } as const;
 
 export const TextElement = {
-  /** 宣言の並びをそのまま受け取り、style へのまとめ上げはここで行う。 */
+  /**
+   * 宣言の並びをそのまま受け取り、style へのまとめ上げはここで行う。
+   *
+   * @param name 元になったノードの名前。出力に `ElementNameAttribute` として残る
+   * @param declarations 出力順に並べた宣言。同じプロパティが複数あるときの扱いは
+   *   `CssDeclarations.from` に従う
+   * @param content 表示する文字列。エスケープ前の生の値
+   * @returns 宣言を style にまとめた Text
+   */
   create(
     name: string,
     declarations: readonly CssDeclarationType[],
@@ -346,7 +362,13 @@ export const TextElement = {
     };
   },
 
-  /** Text の props を CSS の宣言へ写す (docs/03 の表)。 */
+  /**
+   * Text の props を CSS の宣言へ写す (docs/03 の表)。
+   *
+   * @param props デフォルト解決済みの Text の props
+   * @param tokens カスタムプロパティ名の綴り方
+   * @returns 出力順に並べた宣言。`text-align` は常に含む
+   */
   declarations(
     props: ResolvedProps<"Text">,
     tokens: TokenRefs,
@@ -363,17 +385,32 @@ export const TextElement = {
 } as const;
 
 export const CompiledElement = {
-  /** 子を持つ側の要素か。 */
+  /**
+   * 子を持つ側の要素か。
+   *
+   * @param element 見る要素
+   * @returns 子の並びを持つ要素なら `true`。文字列の中身を持つ要素なら `false`
+   */
   isBox(element: CompiledElement): element is BoxElement {
     return element.kind === "box";
   },
 
-  /** テキストを持つ側の要素か。 */
+  /**
+   * テキストを持つ側の要素か。
+   *
+   * @param element 見る要素
+   * @returns 文字列の中身を持つ要素なら `true`。子の並びを持つ要素なら `false`
+   */
   isText(element: CompiledElement): element is TextElement {
     return element.kind === "text";
   },
 
-  /** style 属性へ載せられる宣言の並びに直列化する。 */
+  /**
+   * style 属性へ載せられる宣言の並びに直列化する。
+   *
+   * @param element 宣言を読む要素。子孫の宣言は含めない
+   * @returns `CssDeclarations.toStyleText` で直列化した宣言。宣言が 1 つも無ければ空文字
+   */
   styleText(element: CompiledElement): string {
     return CssDeclarations.toStyleText(element.style);
   },
@@ -381,6 +418,10 @@ export const CompiledElement = {
   /**
    * `div` + インライン style の HTML へ直列化する (docs/03)。
    * ノードの `name` は `ElementNameAttribute` として残す。
+   *
+   * @param element 直列化する要素。子孫も入れ子の `div` として含める
+   * @returns 1 つの `div` に収まった HTML。名前と style は `Html.escapeAttribute`、Text の
+   *   中身は `Html.escapeText` でエスケープする
    */
   html(element: CompiledElement): string {
     const attributes = `${ElementNameAttribute}="${Html.escapeAttribute(element.name)}" style="${Html.escapeAttribute(CompiledElement.styleText(element))}"`;
@@ -390,7 +431,12 @@ export const CompiledElement = {
     return `<div ${attributes}>${content}</div>`;
   },
 
-  /** 自身と子孫を行きがけ順に辿る。 */
+  /**
+   * 自身と子孫を行きがけ順に辿る。
+   *
+   * @param element 辿り始める要素
+   * @returns 自身を先頭に、子孫を行きがけ順に並べた要素。Text なら自身の 1 件だけ
+   */
   flatten(element: CompiledElement): readonly CompiledElement[] {
     if (CompiledElement.isText(element)) {
       return [element];
