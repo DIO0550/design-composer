@@ -1,0 +1,2 @@
+import{n as e}from"./chunk-BneVvdWh.js";var t,n,r=e((()=>{t=/^[0-9]$/,n={isWhitespace(e){return e===` `||e===`	`||e===`
+`||e===`\r`},isDigit(e){return t.test(e)},includesIgnoreCase(e,t){return e.toLowerCase().includes(t.toLowerCase())}}}));export{r as n,n as t};
