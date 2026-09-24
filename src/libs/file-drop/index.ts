@@ -50,6 +50,12 @@ export type FileDrop = Readonly<{
 }>;
 
 export const FileDrop = {
+  /**
+   * ウィンドウへのファイルのドロップを受け取る口を作る。
+   *
+   * @param tauriIpc ドロップのイベントを購読する IPC
+   * @returns ドロップを購読できる口。作っただけでは購読せず、`subscribeDropped` を呼んだ時点で張る
+   */
   create(tauriIpc: TauriIpc): FileDrop {
     return {
       async subscribeDropped(listener) {

@@ -80,6 +80,12 @@ function permissionDenied(path: string): Promise<never> {
 }
 
 export const DocumentIpcFake = {
+  /**
+   * Rust 側の代役を作る。
+   *
+   * @param files 始めから在るファイルの、パスから中身への表。省くとファイルが 1 つも無い
+   * @returns 代役の口と、外部変更を起こす手段・ファイル表の様子を見る手段
+   */
   create(files: Readonly<Record<string, string>> = {}): DocumentIpcFake {
     const contents = new Map(Object.entries(files));
     const deniedWritePaths = new Set<string>();

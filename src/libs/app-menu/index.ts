@@ -56,6 +56,12 @@ export type AppMenu = Readonly<{
 }>;
 
 export const AppMenu = {
+  /**
+   * OS のメニューの選択を受け取る口を作る。
+   *
+   * @param tauriIpc メニューのイベントを購読する IPC
+   * @returns 指示を購読できる口。作っただけでは購読せず、`subscribeCommand` を呼んだ時点で張る
+   */
   create(tauriIpc: TauriIpc): AppMenu {
     return {
       async subscribeCommand(listener) {

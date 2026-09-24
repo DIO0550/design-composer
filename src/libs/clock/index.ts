@@ -22,6 +22,11 @@ export type Clock = Readonly<{
 const MillisecondsPerSecond = 1000;
 
 export const Clock = {
+  /**
+   * 本物の時刻とタイマーに向いた時計を作る。
+   *
+   * @returns 呼ぶたびに今の時刻を読み、1 秒ごとの購読をタイマーで回す時計
+   */
   create(): Clock {
     return {
       now() {

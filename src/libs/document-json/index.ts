@@ -97,6 +97,10 @@ export const DocumentJson = {
    * 不正入力はエラーの一覧として返し、例外は投げない。
    *
    * 読み込みは「テキストの検証 → 版の解決 → 形の検証」の順で進む。
+   *
+   * @param text ファイルから読んだテキスト
+   * @returns 読み込んだドキュメント。失敗は最初に失敗した段の分だけで、後ろの段は走らない
+   *   (字句スキャンの段なら `JsonLexicalScanner.scan` が返した不正すべて)
    */
   parse(text: string): Parsed {
     const scanErrors = JsonLexicalScanner.scan(text);
@@ -119,6 +123,9 @@ export const DocumentJson = {
    * ドキュメントを JSON テキストへ書き出す。
    * 書き出すのは常に現在の形式（旧形式へのダウングレード書き出しは持たない）。
    * 末尾に改行を1つ入れ、Git diff の `\ No newline at end of file` を避ける。
+   *
+   * @param document 書き出すドキュメント
+   * @returns ファイルへそのまま書けるテキスト
    */
   serialize(document: DesignDocument): string {
     const value: JsonValue = DesignDocument.toJson(

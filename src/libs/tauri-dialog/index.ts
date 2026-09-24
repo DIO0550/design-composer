@@ -39,6 +39,11 @@ function toPluginFilter(filter: FileFilter): {
 }
 
 export const TauriDialog = {
+  /**
+   * 本物のダイアログのプラグインに向いた口を作る。
+   *
+   * @returns `@tauri-apps/plugin-dialog` でダイアログを出す口
+   */
   create(): TauriDialog {
     return {
       async chooseOpenPath(filter) {

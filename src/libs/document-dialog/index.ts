@@ -37,7 +37,8 @@ export type DocumentDialog = Readonly<{
  * このモジュールの公開 API はすべて `Result` を返す。
  *
  * @param chooser 実際にダイアログを出す手続き
- * @returns 選ばれたパス（閉じたなら `none`）。手続きが投げたら失敗として返す
+ * @returns 選ばれたパス（閉じたなら `none`）。手続きが投げたら、投げた値を文字列にした
+ *   `message` を持つ失敗（`Error` なら前に `Error: ` が付く）
  */
 async function choose(
   chooser: () => Promise<Option<string>>,
@@ -50,6 +51,12 @@ async function choose(
 }
 
 export const DocumentDialog = {
+  /**
+   * .dcmp を選ばせるダイアログを作る。
+   *
+   * @param dialog 実際にダイアログを出す口。絞り込みと保存の既定の名前はこのモジュールが渡す
+   * @returns `dialog` を通して .dcmp を選ばせるダイアログ
+   */
   create(dialog: TauriDialog): DocumentDialog {
     return {
       chooseOpenPath() {

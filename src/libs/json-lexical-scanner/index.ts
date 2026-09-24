@@ -417,6 +417,13 @@ function scanValue(text: string, position: number): ScanOutcome {
  * `JSON.parse` が捨ててしまうキーの重複と、失敗した文字位置を取り出すために使う。
  */
 export const JsonLexicalScanner = {
+  /**
+   * テキスト全体を走査して、見つかった不正を集める。
+   *
+   * @param text 走査する JSON のテキスト
+   * @returns 見つかった不正。キーの重複は見つけた順にすべて並べる。構文の不正は見つけた時点で
+   *   走査を止めるので、末尾に高々 1 件。不正が無ければ空
+   */
   scan(text: string): readonly JsonScanError[] {
     const result = scanValue(text, 0);
     if (!result.ok) {

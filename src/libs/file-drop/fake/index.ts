@@ -21,6 +21,11 @@ export type FileDropFake = Readonly<{
 }>;
 
 export const FileDropFake = {
+  /**
+   * ドロップの代役を作る。
+   *
+   * @returns 代役の口と、ドロップを起こす手段
+   */
   create(): FileDropFake {
     const events = SingleEventIpcFake.create(DragDropEvent);
 

@@ -24,7 +24,11 @@ export function ipcFailure(message: string): Promise<never> {
 export type SingleEventIpcFake = Readonly<{
   /** 1 種類のイベントだけを配る `TauriIpc`。 */
   ipc: TauriIpc;
-  /** そのイベントが届いたことにする。 */
+  /**
+   * そのイベントが届いたことにする。
+   *
+   * 配るのはその時点で張られている購読だけで、購読が張られる前に起こしたものは誰にも届かない。
+   */
   deliver(payload: unknown): void;
   /** 購読そのものを張れないようにする。 */
   denySubscribe(): void;

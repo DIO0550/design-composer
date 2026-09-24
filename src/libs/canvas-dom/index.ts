@@ -11,8 +11,14 @@ import { Option } from "@/utils/Option";
  */
 export const CanvasDom = {
   /**
-   * 名前で描かれている要素。名前はドキュメント全体で一意なので 1 つに決まる
-   * （部品インスタンスの中身も展開時に自動リネームされる / docs/06-ui.md「解除」）。
+   * その名前で描かれている要素を引く。
+   *
+   * 名前はドキュメント上で一意（docs/01-file-format.md「ノードの識別（name）」）でも、部品の中の
+   * ノードは展開で名前を付け替えないので、インスタンスの数だけ同じ名前で描かれる。
+   *
+   * @param name 引きたい artboard / ノードの名前
+   * @returns 描かれていればその要素。同じ名前が複数描かれていれば DOM の並びで最初のもの。
+   *   描かれていなければ `none`
    */
   elementOf(name: string): Option<Element> {
     return Option.fromNullable(

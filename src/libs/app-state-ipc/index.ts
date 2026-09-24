@@ -73,6 +73,12 @@ function toStoredContent(
 }
 
 export const AppStateIpc = {
+  /**
+   * アプリ自身の状態を読み書きする口を作る。
+   *
+   * @param tauriIpc コマンドを呼ぶ IPC
+   * @returns `tauriIpc` を通してアプリ自身の状態を読み書きする口
+   */
   create(tauriIpc: TauriIpc): AppStateIpc {
     const call = TauriIpc.caller<AppStateCommand, AppStateIpcError>(
       tauriIpc,
