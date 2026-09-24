@@ -38,6 +38,9 @@ export const DocumentMigrationError = {
   /**
    * 診断用の英語メッセージ。
    * 利用者向けの文言は `kind` で分岐して表示層が組み立てる。
+   *
+   * @param error 綴りたい失敗の理由
+   * @returns その理由を表す英語 1 行
    */
   message(error: DocumentMigrationError): string {
     switch (error.kind) {
@@ -151,17 +154,25 @@ function migrateUpTo(
   );
 }
 
-/**
- * 読み込んだ JSON を、必要ならアプリが読める形式へ揃える(docs/01-file-format.md の表)。
- *
- * - ファイルの major < アプリ: 最新形へマイグレーションする
- * - ファイルの major > アプリ / minor > アプリ: エラー(アプリの更新を促す)
- * - それ以外: そのまま通す
- *
- * formatVersion が読めない入力も素通しする。既定値で補って進めるのではなく、形の検証を
- * 担うデコード側にそのまま報告させる。
- */
+/** 読み込んだ JSON の版の解決(docs/01-file-format.md「formatVersion」)。 */
 export const DocumentMigration = {
+  /**
+   * 読み込んだ JSON を、必要ならアプリが読める形式へ揃える(docs/01-file-format.md の表)。
+   *
+   * - ファイルの major < アプリ: 最新形へマイグレーションする
+   * - ファイルの major > アプリ / major が同じで minor > アプリ: エラー(アプリの更新を促す)
+   * - それ以外: そのまま通す
+   *
+   * formatVersion が読めない入力も素通しする。既定値で補って進めるのではなく、形の検証を
+   * 担うデコード側にそのまま報告させる。
+   *
+   * @param value `JSON.parse` した値
+   * @param steps major ひとつ分の変換の一覧。省くと登録済みの変換
+   * @param appVersion アプリが扱える版。省くと現在の版
+   * @returns アプリが読める形の値(素通しなら `value` そのもの)。上のエラーは
+   *   `unsupported-format-version`。マイグレーションの途中で変換が無ければ `missing-migration-step`、
+   *   変換が理由を返せば `migration-step-failed`
+   */
   toCurrent(
     value: unknown,
     steps: MigrationSteps = RegisteredMigrationSteps,
