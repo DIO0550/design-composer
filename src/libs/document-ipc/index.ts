@@ -199,6 +199,12 @@ function toContent(value: unknown): Result<string, DocumentIpcError> {
 }
 
 export const DocumentIpc = {
+  /**
+   * ドキュメントのファイルを読み書き・監視する口を作る。
+   *
+   * @param tauriIpc コマンドを呼び、外部変更を購読する IPC
+   * @returns 購読の失敗も、コマンドの失敗と同じ種別つきの失敗へ詰め替える口
+   */
   create(tauriIpc: TauriIpc): DocumentIpc {
     const call = TauriIpc.caller<DocumentCommand, DocumentIpcError>(
       tauriIpc,

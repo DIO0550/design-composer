@@ -60,6 +60,11 @@ export const TauriIpc = {
     };
   },
 
+  /**
+   * 本物の Tauri のコマンドとイベントに向いた口を作る。
+   *
+   * @returns `@tauri-apps/api` を呼ぶ口。イベントの購読者には payload だけを渡す
+   */
   create(): TauriIpc {
     return {
       invoke(command, args) {
