@@ -44,7 +44,14 @@ const FormatVersionPattern = /^(\d+)\.(\d+)$/;
 export const FormatVersion = {
   Current,
 
-  /** `"major.minor"` 形式でなければ none を返す。 */
+  /**
+   * `"major.minor"` 形式でなければ none を返す。
+   *
+   * @param value 形式版の綴り
+   * @returns 読めた形式版。数字の並び 2 つを `.` 1 つで繋いだ綴りでなければ（前後の空白・
+   *   `v` などの接頭辞・3 つ目の数字も）`none`。先頭の `0` は数値として読む（`"01.02"` は
+   *   1.2）
+   */
   parse(value: string): Option<FormatVersion> {
     const match = FormatVersionPattern.exec(value);
     if (match === null) {
@@ -53,7 +60,13 @@ export const FormatVersion = {
     return Option.some({ major: Number(match[1]), minor: Number(match[2]) });
   },
 
-  /** JSON 上の表現は `"major.minor"` の文字列(docs/01-file-format.md)。 */
+  /**
+   * JSON 上の表現は `"major.minor"` の文字列(docs/01-file-format.md)。
+   *
+   * @param cursor 読む値と、その位置
+   * @returns 読めた形式版。文字列でない・`parse` が `none` になる綴りなら、`cursor` の
+   *   位置を持つ `invalid-type` の `err`
+   */
   fromJson(cursor: JsonCursor): JsonDecoded<FormatVersion> {
     return Result.flatMap(Json.string(cursor), (text) => {
       const parsed = FormatVersion.parse(text);
@@ -73,6 +86,11 @@ export const FormatVersion = {
    *
    * 版ごとに型を持つドキュメントのデコード境界で使い、「その型の値は必ずその major を名乗
    * る」を成立させる。
+   *
+   * @param cursor 読む値と、その位置
+   * @param major 名乗っていなければならない major
+   * @returns major を型に固定した形式版。`fromJson` が失敗する値はその `err`、別の major を
+   *   名乗る値は `cursor` の位置を持つ `invalid-type` の `err`
    */
   fromJsonOf<Major extends number>(
     cursor: JsonCursor,
@@ -90,10 +108,25 @@ export const FormatVersion = {
     });
   },
 
+  /**
+   * JSON とファイルに書く綴りにする。
+   *
+   * @param version 綴りにする形式版
+   * @returns major と minor を `.` で繋いだ `"major.minor"` の文字列
+   */
   format(version: FormatVersion): string {
     return `${version.major}.${version.minor}`;
   },
 
+  /**
+   * ファイルの版が、アプリにとってどういう関係にあるか（docs/01-file-format.md の表）。
+   *
+   * @param fileVersion ファイルが名乗る版
+   * @param appVersion アプリが読み書きする版。省くと `Current`
+   * @returns major が同じで minor がアプリ以下なら `compatible`、major がアプリより古ければ
+   *   `needs-migration`、major がアプリより新しいか、同じ major で minor がアプリより新しければ
+   *   `unsupported`
+   */
   compatibility(
     fileVersion: FormatVersion,
     appVersion: FormatVersion = Current,

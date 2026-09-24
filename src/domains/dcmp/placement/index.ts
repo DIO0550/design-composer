@@ -72,6 +72,9 @@ export const Placement = {
 
   /**
    * フローから外れて座標で置かれるか。flex アイテムとして並ばない。
+   *
+   * @param placement 見る置かれ方。`undefined` の意味は `fromProps` のとおり
+   * @returns 座標で置かれていれば `true`。フローと、置き場所が決まらないときは `false`
    */
   isAbsolute(placement: Placement | undefined): placement is AbsolutePlacement {
     return placement?.mode === "absolute";

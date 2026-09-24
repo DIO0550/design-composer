@@ -112,6 +112,9 @@ export const TokenEditError = {
   /**
    * 診断用の英語メッセージ。
    * 利用者向けの文言は `kind` で分岐して表示層が組み立てる。
+   *
+   * @param error 失敗の理由
+   * @returns 失敗の理由と、対象のトークンの種別・名前を入れた 1 文
    */
   message(error: TokenEditError): string {
     const { kind, name } = error.ref;
@@ -127,7 +130,14 @@ export const TokenEditError = {
 } as const;
 
 export const TokenValue = {
-  /** 値に名前を付けてトークンにする。 */
+  /**
+   * 値に名前を付けてトークンにする。名前の規則と一意性はここでは見ない
+   * （書き込むときに `TokenSet.add` が見る）。
+   *
+   * @param value トークンにする値
+   * @param name 付ける名前
+   * @returns 値の種別を持ち、`name` が付いたトークン
+   */
   toToken(value: TokenValue, name: string): Token {
     return { ...value, name };
   },
@@ -152,7 +162,12 @@ export const TokenValue = {
 } as const;
 
 export const Token = {
-  /** そのトークンを指す参照。 */
+  /**
+   * そのトークンを指す参照。
+   *
+   * @param token 指したいトークン
+   * @returns そのトークンの種別と名前
+   */
   ref(token: Token): TokenRef {
     return { kind: token.kind, name: token.name };
   },
@@ -163,6 +178,10 @@ export const Token = {
    *
    * 影とグラデーションも通すのは、どちらも中に生 hex を持つため(docs/04-tokens.md
    * 「shadows」「gradients」)。色の種別だけを通すと、中の hex が大文字のまま保存される。
+   *
+   * @param token 倒す元のトークン
+   * @returns 色・影・グラデーションは中の hex を `ColorToken.normalize` で倒したもの。
+   *   spacing / radius / typography は `token` のまま
    */
   normalized(token: Token): Token {
     switch (token.kind) {
@@ -433,6 +452,11 @@ function tokenKindToJson(tokens: TokenSet, kind: TokenKind): JsonObject {
 
 /** トークン一式の生成・検索・編集（追加・改名・削除）と JSON 表現との相互変換。 */
 export const TokenSet = {
+  /**
+   * トークンを 1 つも持たない一式。
+   *
+   * @returns すべての種別を空の入れ物で持つ一式
+   */
   empty(): TokenSet {
     return {
       colors: {},
@@ -444,19 +468,45 @@ export const TokenSet = {
     };
   },
 
+  /**
+   * その種別にその名前のトークンがあるか。
+   *
+   * @param tokens 探す先のトークン一式
+   * @param kind 探す種別
+   * @param name 探す名前
+   * @returns その種別の中にその名前があれば true。別の種別の同名は見ない
+   */
   has(tokens: TokenSet, kind: TokenKind, name: string): boolean {
     return name in tokens[kind];
   },
 
+  /**
+   * トークンの種別の一覧。
+   *
+   * @returns `TokenKinds` に書いた順の種別
+   */
   kinds(): readonly TokenKind[] {
     return Object.values(TokenKinds);
   },
 
+  /**
+   * その種別のトークンの名前の一覧。
+   *
+   * @param tokens 読み出し元のトークン一式
+   * @param kind 読み出す種別
+   * @returns その種別の名前を、その種別の辞書の `Object.keys` の列挙順で並べたもの
+   */
   names(tokens: TokenSet, kind: TokenKind): readonly string[] {
     return Object.keys(tokens[kind]);
   },
 
-  /** その種別のトークンを、持っている定義順で返す。 */
+  /**
+   * その種別のトークンを並べる。
+   *
+   * @param tokens 読み出し元のトークン一式
+   * @param kind 読み出す種別
+   * @returns その種別のトークンを `TokenSet.names` と同じ並びで並べたもの
+   */
   tokensOf(tokens: TokenSet, kind: TokenKind): readonly Token[] {
     return tokensOfKind(tokens, kind);
   },
@@ -492,7 +542,13 @@ export const TokenSet = {
     return Option.fromNullable(tokens[kind][name]);
   },
 
-  /** 参照でトークンを引く。その種別にその名前が無ければ `none`。 */
+  /**
+   * 参照でトークンを引く。
+   *
+   * @param tokens 引き先のトークン一式
+   * @param ref 引きたいトークンの種別と名前
+   * @returns そのトークン。その種別にその名前が無ければ `none`（別の種別の同名は見ない）
+   */
   find(tokens: TokenSet, ref: TokenRef): Option<Token> {
     return Option.fromNullable(
       tokensOfKind(tokens, ref.kind).find((token) => token.name === ref.name),
@@ -503,6 +559,13 @@ export const TokenSet = {
    * トークンを追加する(docs/06-ui.md「編集操作の一覧」の tokens 編集)。
    * 生成した時点で名前の規則と種別内の一意性を満たしていることを成立させるため、
    * 検証は呼び出し側ではなくここで行う。
+   *
+   * @param tokens 追加先のトークン一式
+   * @param token 追加するトークン。値は検証せず、`Token.normalized` で正規形へ倒して
+   *   から入れる
+   * @returns そのトークンを加えた一式。名前がケバブケースでなければ `invalid-token-name`、
+   *   同じ種別に同名があれば `duplicate-token-name`（両方に当たるなら `invalid-token-name`）。
+   *   どちらの `err` も `ref` は追加しようとしたトークンを指す
    */
   add(tokens: TokenSet, token: Token): Result<TokenSet, TokenEditError> {
     return Result.map(checkWritableName(tokens, Token.ref(token)), () =>
@@ -513,6 +576,12 @@ export const TokenSet = {
   /**
    * 既にあるトークンの値を差し替える。
    * 名前を変えないので新しい名前の検証は要らず、対象が無いことだけが失敗しうる。
+   *
+   * @param tokens 差し替え先のトークン一式
+   * @param token 差し替え後のトークン。種別と名前で対象を指す。値は検証せず、
+   *   `Token.normalized` で正規形へ倒してから入れる
+   * @returns 並びの位置を保ったまま値だけが入れ替わった一式。その種別にその名前が
+   *   無ければ `token-not-found`
    */
   replace(tokens: TokenSet, token: Token): Result<TokenSet, TokenEditError> {
     const ref = Token.ref(token);
@@ -528,6 +597,15 @@ export const TokenSet = {
    * 名前を変えると、その名前を指していた prop は宙に浮く。ここで参照を追随させないのは、
    * 参照の解決はドキュメント全体の検証が持つ関心事で、宙に浮いた参照は dangling 参照とし
    * て通常のバリデーションエラーになるため(docs/04-tokens.md「スキーマデフォルトとの関係」)。
+   *
+   * @param tokens 改名先のトークン一式
+   * @param ref 改名するトークンの種別と、今の名前
+   * @param newName 付け替え後の名前。一意性は `ref` と同じ種別の中で見る
+   * @returns 名前だけが入れ替わった一式（`newName` が今の名前と同じなら `tokens` のまま）。
+   *   並びの中の位置は `TokenSet.names` の並びに従う。
+   *   `ref` の種別にその名前が無ければ `ref` を指す `token-not-found`（`newName` より先に
+   *   見る）。`newName` がケバブケースでなければ `invalid-token-name`、同じ種別に使われて
+   *   いれば `duplicate-token-name` で、どちらも `ref` は `newName` の側を指す
    */
   rename(
     tokens: TokenSet,
@@ -551,6 +629,10 @@ export const TokenSet = {
    *
    * 使用中トークンの削除を特別扱いせず、残った参照を dangling 参照として検証で拾うのが仕
    * 様(docs/04-tokens.md)。
+   *
+   * @param tokens 削除元のトークン一式
+   * @param ref 削除するトークンの種別と名前
+   * @returns そのトークンを持たない一式。その種別にその名前が無ければ `token-not-found`
    */
   remove(tokens: TokenSet, ref: TokenRef): Result<TokenSet, TokenEditError> {
     if (!Option.isSome(TokenSet.find(tokens, ref))) {
@@ -562,6 +644,12 @@ export const TokenSet = {
   /**
    * 種別ごとの値の形式は docs/04-tokens.md「値の形式」に従う。
    * 書かれていない種別は空として読む(トークンを1つも持たない種別は書かれないため)。
+   *
+   * @param cursor `tokens` の値と、その位置
+   * @returns 読んだトークン一式。影・グラデーションの中も含め、色は読んだ時点で
+   *   `ColorToken.normalize` で倒す。名前の規則と値の範囲（hex でない色・負の余白）は
+   *   見ない。オブジェクトでなければ `invalid-type`、知らない種別があれば `unknown-field`、
+   *   種別ごとの値の失敗も 1 件で打ち切らずすべて集めた `err`
    */
   fromJson(cursor: JsonCursor): JsonDecoded<TokenSet> {
     return Result.flatMap(Json.record(cursor), (record) =>
@@ -588,7 +676,13 @@ export const TokenSet = {
     );
   },
 
-  /** トークンを1つも持たない種別は書き出さない(空の種別を残さない)。 */
+  /**
+   * トークンを1つも持たない種別は書き出さない(空の種別を残さない)。
+   *
+   * @param tokens 書き出すトークン一式
+   * @returns 種別を `TokenSet.kinds` の順に、各種別の中身を `Json.sortedMap` の並びで
+   *   書き出した JSON オブジェクト
+   */
   toJson(tokens: TokenSet): JsonObject {
     return Object.fromEntries(
       TokenSet.kinds()

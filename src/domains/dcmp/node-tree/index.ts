@@ -52,16 +52,31 @@ function toTreeResult(
 export const NodeTree = {
   /**
    * そのノードが子を持てるか（プリミティブで、かつスキーマが子を認めているか）。
+   *
+   * @param node 見るノード
+   * @returns スキーマが子を認めているプリミティブなら `true`。参照ノードと、スキーマに無い
+   *   `type` のノードは `false`
    */
   allowsChildren(node: Node): boolean {
     return Node.isPrimitive(node) && PrimitiveSchema.allowsChildren(node.type);
   },
 
+  /**
+   * ノードの並びを、ツリーの一階層として見る。
+   *
+   * @param nodes 同じ親を共有するノードの並び。複製せずにそのまま持つ
+   * @returns `nodes` を並びとして持つツリー
+   */
   create(nodes: readonly Node[]): NodeTree {
     return { nodes };
   },
 
-  /** 並びを配列として取り出す。入れ物（artboard / ノード）へ書き戻すときに使う。 */
+  /**
+   * 並びを配列として取り出す。入れ物（artboard / ノード）へ書き戻すときに使う。
+   *
+   * @param tree 取り出す元のツリー
+   * @returns ツリーが持っている並びそのもの（複製しない）
+   */
   nodes(tree: NodeTree): readonly Node[] {
     return tree.nodes;
   },
@@ -70,6 +85,15 @@ export const NodeTree = {
    * 名前でノードを探し、それが「どの親の何番目か」を返す。並びの子孫も辿る。
    *
    * 並び自体の入れ物（artboard / ノード）の名前は外から与える。
+   *
+   * @param tree 探す先の並び
+   * @param parentName `tree` の入れ物（artboard / ノード）の名前。直下で見つかったときの親
+   *   になる
+   * @param name 探すノードの名前
+   * @returns 見つかったノードの親の名前と、その親の子の並びの中の位置。先に `tree` の直下を
+   *   探し、無ければ直下のノードを順に子孫へ辿るので、名前が重複した不正なドキュメントでは
+   *   `NodeTree.find` と違うノードの位置を返すことがある。`parentName` 自身や、どこにも無い
+   *   名前なら `none`
    */
   childPositionOf(
     tree: NodeTree,
@@ -93,7 +117,14 @@ export const NodeTree = {
     return Option.none;
   },
 
-  /** 名前でノードを探す。並びの直下だけでなく子孫も辿る。 */
+  /**
+   * 名前でノードを探す。並びの直下だけでなく子孫も辿る。
+   *
+   * @param tree 探す先の並び
+   * @param name 探すノードの名前
+   * @returns その名前を持つノード。並びのノードを順に `Node.find` で辿るので、名前が重複した
+   *   不正なドキュメントでは深さ優先の行きがけ順で先に見つかったもの。どこにも無ければ `none`
+   */
   find(tree: NodeTree, name: string): Option<Node> {
     for (const node of tree.nodes) {
       const found = Node.find(node, name);
@@ -104,7 +135,15 @@ export const NodeTree = {
     return Option.none;
   },
 
-  /** 並びの指定位置へノードを挿入する。 */
+  /**
+   * 並びの指定位置へノードを挿入する。子孫は辿らず、渡された並びの中だけを見る。
+   *
+   * @param tree 挿入する先の並び
+   * @param index 挿入する位置。並びの長さなら末尾へ足す
+   * @param node 挿入するノード
+   * @returns 挿入したあとの並び。位置の条件は `ArrayEx.insertAt` と同じで、外れていれば
+   *   `index-out-of-range`
+   */
   insertAt(
     tree: NodeTree,
     index: number,
@@ -113,7 +152,16 @@ export const NodeTree = {
     return toTreeResult(ArrayEx.insertAt(tree.nodes, index, node));
   },
 
-  /** 並びの中で位置を入れ替える。 */
+  /**
+   * 並びの中の 1 件を抜き出し、別の位置へ差し込む。子孫は辿らず、渡された並びの中だけを
+   * 見る。
+   *
+   * @param tree 動かす先の並び
+   * @param fromIndex 動かすノードの、動かす前の位置
+   * @param toIndex 動かしたあとにそのノードが来る位置
+   * @returns 動かしたあとの並び。位置の条件は `ArrayEx.moveWithin` と同じで、外れていれば
+   *   `index-out-of-range`
+   */
   moveWithin(
     tree: NodeTree,
     fromIndex: number,
@@ -125,6 +173,12 @@ export const NodeTree = {
   /**
    * 名前で指したノードを持つ並びを差し替える。対象が子孫にある場合はその階層の並びだけを
    * 差し替え、見つからなければ `none`。
+   *
+   * @param tree 探す先の並び
+   * @param name 差し替える並びに含まれているはずのノードの名前
+   * @param update 見つかった階層の並びを差し替える手続き
+   * @returns その階層を `update` の結果に差し替えた、`tree` と同じ階層の並び。直下に無ければ、
+   *   子孫にその名前を持つ最初の直下のノードの中を辿る。どこにも無ければ `none`
    */
   updateSiblingsOf(
     tree: NodeTree,
@@ -163,6 +217,13 @@ export const NodeTree = {
   /**
    * 名前で指した親の子の並びを差し替える。
    * 親が子を持てないノードなら `children-not-allowed`、親が見つからなければ `none`。
+   *
+   * @param tree 探す先の並び
+   * @param parentName 子の並びを差し替える親のノードの名前
+   * @param update 親の子の並びを差し替える手続き
+   * @returns 親の子を `update` の結果に差し替えた、`tree` と同じ階層の並びの `some`。親が
+   *   見つからなければ `none` の `ok`。親が参照ノードか、スキーマが子を認めていないプリミ
+   *   ティブなら `children-not-allowed`、`update` が失敗すればその `err`
    */
   updateChildrenOf(
     tree: NodeTree,
@@ -246,14 +307,29 @@ export const NodeTree = {
     );
   },
 
-  /** 名前で指したノードを並びから取り除く。見つからなければ `none`。 */
+  /**
+   * 名前で指したノードを並びから取り除く。見つからなければ `none`。
+   *
+   * @param tree 探す先の並び
+   * @param name 取り除くノードの名前
+   * @returns 取り除いたあとの、`tree` と同じ階層の並び。探し方は `updateSiblingsOf`、見つかった
+   *   階層での取り除き方は `spliceByName` と同じ
+   */
   removeByName(tree: NodeTree, name: string): Option<NodeTree> {
     return NodeTree.updateSiblingsOf(tree, name, (siblings) =>
       NodeTree.spliceByName(siblings, name, []),
     );
   },
 
-  /** 名前で指したノードを別のノードに差し替える。見つからなければ `none`。 */
+  /**
+   * 名前で指したノードを別のノードに差し替える。見つからなければ `none`。
+   *
+   * @param tree 探す先の並び
+   * @param name 差し替えられるノードの名前
+   * @param node その位置へ置くノード
+   * @returns 差し替えたあとの、`tree` と同じ階層の並び。探し方は `updateSiblingsOf`、見つかった
+   *   階層での差し替え方は `spliceByName` と同じ
+   */
   replaceByName(tree: NodeTree, name: string, node: Node): Option<NodeTree> {
     return NodeTree.updateSiblingsOf(tree, name, (siblings) =>
       NodeTree.spliceByName(siblings, name, [node]),

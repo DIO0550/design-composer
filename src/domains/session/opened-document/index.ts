@@ -27,6 +27,9 @@ export type OpenedDocument = Readonly<{
 export const OpenedDocument = {
   /**
    * 新規作成のドキュメント（docs/04-tokens.md「新規ドキュメントテンプレート」）。
+   *
+   * @param path このドキュメントの保存先
+   * @returns 既定のテンプレートから作ったドキュメントを保存先と対にしたもの
    */
   createFromTemplate(path: string): OpenedDocument {
     return {

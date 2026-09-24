@@ -27,6 +27,10 @@ export const DesignDocumentEditError = {
   /**
    * 診断用の英語メッセージ。
    * 利用者向けの文言は `kind` で分岐して表示層が組み立てる。
+   *
+   * @param error 説明する失敗
+   * @returns 失敗の種類と、それに関わる名前や位置を埋めた 1 文。トークンの失敗は
+   *   `TokenEditError.message`、部品の展開の失敗は `ExpandedNodeError.message` の文
    */
   message(error: DesignDocumentEditError): string {
     switch (error.kind) {
