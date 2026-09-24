@@ -9,6 +9,9 @@ export const CanvasPointer = {
   /**
    * イベントが起きた位置。
    * キャンバスの実測（`getBoundingClientRect`）と揃えるため client 座標で読む。
+   *
+   * @param event キャンバス上のポインタイベント
+   * @returns client 座標のポインタの位置
    */
   offsetOf(event: ReactPointerEvent<HTMLElement>): Offset {
     return { x: event.clientX, y: event.clientY };

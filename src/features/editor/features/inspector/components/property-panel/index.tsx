@@ -25,7 +25,12 @@ export { ShorthandLabels } from "./shorthand-row";
  * 帯に出す綴り。
  */
 const SelectionLabels = {
-  /** 複数選んでいるときに帯へ出す綴り。UI 案に該当の画面が無いので最小の 1 行にする。 */
+  /**
+   * 複数選んでいるときに帯へ出す綴り。UI 案に該当の画面が無いので最小の 1 行にする。
+   *
+   * @param count 選んでいるものの数
+   * @returns 帯に出す 1 行
+   */
   multiple: (count: number) => `${count} selected`,
 } as const;
 

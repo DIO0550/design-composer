@@ -69,7 +69,10 @@ export const KeyShortcut = {
   /**
    * そのキー操作がこの組み合わせにあたるか。
    *
-   * 修飾キーの有無まで一致を要求する。
+   * @param shortcut 待ち受けている割り当て
+   * @param event 突き合わせるキー操作
+   * @returns 押したキーが待ち受けの並びにあり（判定は `pressesKeyOf`）、コマンドキーと
+   *   Shift の有無が割り当てと一致すれば `true`。Alt は見ない
    */
   matches(shortcut: KeyShortcut, event: KeyboardEvent): boolean {
     const matchesKey = pressesKeyOf(shortcut, event);

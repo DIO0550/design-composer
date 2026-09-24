@@ -61,15 +61,23 @@ const BaseNames = {
 } as const satisfies Readonly<Record<TokenKind, string>>;
 
 export const TokenTemplate = {
-  /** 採番の元になる名前。 */
+  /**
+   * 追加するトークンの名前を採番するときの基底名。
+   *
+   * @param template 追加するトークンの指定
+   * @returns その種別の `BaseNames` の綴り
+   */
   baseName(template: TokenTemplate): string {
     return BaseNames[template.kind];
   },
 
   /**
    * 指定を、そのトークン集合へ足せるトークンにする。
-   * `usedNames` はその種別の中で使われている名前（一意性は種別の中でしか
-   * 保証されない / docs/04-tokens.md「命名規則」）。
+   *
+   * @param template 追加するトークンの指定
+   * @param usedNames その種別の中で使われている名前（一意性は種別の中でしか保証されない
+   *   / docs/04-tokens.md「命名規則」）
+   * @returns 種別の初期値と、`usedNames` と衝突しない名前を持つトークン
    */
   toToken(template: TokenTemplate, usedNames: ReadonlySet<string>): Token {
     const name = DesignDocument.uniqueName(

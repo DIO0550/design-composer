@@ -21,7 +21,12 @@ export type EditHistory = Readonly<{
 }>;
 
 export const EditHistory = {
-  /** 開いた直後は戻る先も進む先も無い。 */
+  /**
+   * 開いた直後の履歴を作る。
+   *
+   * @param document 開いたドキュメント
+   * @returns そのドキュメントを現在地にした、戻る先も進む先も無い履歴
+   */
   create(document: DesignDocument): EditHistory {
     return { past: [], present: document, future: [] };
   },
@@ -29,7 +34,9 @@ export const EditHistory = {
   /**
    * 新しいドキュメントを現在地にし、それまでの現在地を戻る先として積む。
    *
-   * `future` は捨てる。
+   * @param history 積む先の履歴
+   * @param document 新しく現在地にするドキュメント
+   * @returns 戻る先が 1 つ増え、進む先を捨てた履歴
    */
   record(history: EditHistory, document: DesignDocument): EditHistory {
     return {
@@ -49,13 +56,20 @@ export const EditHistory = {
    * ドキュメントへは戻れなくなる**（まとまりの始まりを知っているのは操作を受けている側
    * だけなので、ここでは `record` へ倒さない）。
    *
-   * `future` は `record` と同じく捨てる。
+   * @param history 差し替える先の履歴
+   * @param document 新しく現在地にするドキュメント
+   * @returns 戻る先はそのままで、進む先を捨てた履歴
    */
   amend(history: EditHistory, document: DesignDocument): EditHistory {
     return { past: history.past, present: document, future: [] };
   },
 
-  /** 1 つ前へ戻る。戻る先が無ければ `none`。 */
+  /**
+   * 1 つ前へ戻る。
+   *
+   * @param history 戻す履歴
+   * @returns 今の現在地を進む先の先頭へ移した履歴。戻る先が無ければ `none`
+   */
   undo(history: EditHistory): Option<EditHistory> {
     return Option.map(ArrayEx.last(history.past), (previous) => ({
       past: ArrayEx.dropLast(history.past),
@@ -64,7 +78,12 @@ export const EditHistory = {
     }));
   },
 
-  /** 戻る前の位置へ進む。進む先が無ければ `none`。 */
+  /**
+   * 戻る前の位置へ進む。
+   *
+   * @param history 進める履歴
+   * @returns 今の現在地を戻る先の末尾へ積んだ履歴。進む先が無ければ `none`
+   */
   redo(history: EditHistory): Option<EditHistory> {
     return Option.map(ArrayEx.first(history.future), (next) => ({
       past: [...history.past, history.present],

@@ -85,7 +85,14 @@ function markerBounds(zone: DropZone, coordinate: number): CanvasBounds {
 }
 
 export const DropZone = {
-  /** 子の矩形はドキュメント上の並び順で受け取る（描かれる順序がそのまま子の順序）。 */
+  /**
+   * 実測した親と子の矩形から落とし先を作る。
+   *
+   * @param parent 子を受け入れる親
+   * @param bounds 親の矩形
+   * @param children 直下の子の矩形。ドキュメント上の並び順（描かれる順序がそのまま子の順序）
+   * @returns 渡した矩形をそのまま持つ落とし先
+   */
   create(
     parent: InsertionParent,
     bounds: CanvasBounds,
@@ -97,6 +104,10 @@ export const DropZone = {
   /**
    * ポインタの位置から「どの Box の何番目の子になるか」と、そこに引く線を決める。
    * index は「軸方向の中点をポインタが越えた子の数」で、子が無ければ 0 になる。
+   *
+   * @param zone 落とし先
+   * @param pointer 画面上のポインタの位置
+   * @returns 挿さる位置と、線・ラベルを描くのに要る実測値
    */
   targetAt(zone: DropZone, pointer: Offset): DropTarget {
     const direction = zone.parent.direction;

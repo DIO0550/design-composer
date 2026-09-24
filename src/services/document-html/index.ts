@@ -81,6 +81,10 @@ export const DocumentHtml = {
    * ドキュメントをレンダリング可能な形へコンパイルする。出力はトークンの値に依存せず `var`
    * 参照だけを持つため、トークンの編集はルート要素の変数の差し替えだけで全 artboard へ波及す
    * る。
+   *
+   * @param document コンパイル対象のドキュメント
+   * @returns トークンの変数と、並び順を保った artboard。artboard を 1 枚でもコンパイルでき
+   *   なければその失敗
    */
   compile(document: DesignDocument): Result<CompiledDocument, Error> {
     return Result.map(compileArtboards(document), (artboards) => ({
@@ -89,12 +93,22 @@ export const DocumentHtml = {
     }));
   },
 
-  /** ルート要素の style へ載せる形（カスタムプロパティの並び）に直列化する。 */
+  /**
+   * ルート要素の style へ載せる形（カスタムプロパティの並び）に直列化する。
+   *
+   * @param compiled 変数の出どころになるコンパイル結果
+   * @returns `style` 属性の値。属性へ埋め込むためのエスケープはしていない
+   */
   rootStyleText(compiled: CompiledDocument): string {
     return CssDeclarations.toStyleText(compiled.variables);
   },
 
-  /** コンパイル結果を HTML 文字列にする。ルート `div` がカスタムプロパティを持つ。 */
+  /**
+   * コンパイル結果を HTML 文字列にする。ルート `div` がカスタムプロパティを持つ。
+   *
+   * @param compiled 文字列にするコンパイル結果
+   * @returns artboard を並びの順にルート `div` の中へ並べた HTML
+   */
   html(compiled: CompiledDocument): string {
     const style = Html.escapeAttribute(DocumentHtml.rootStyleText(compiled));
     const artboards = compiled.artboards
@@ -103,7 +117,12 @@ export const DocumentHtml = {
     return `<div style="${style}">${artboards}</div>`;
   },
 
-  /** ドキュメント1つから HTML/CSS 一式を得る。 */
+  /**
+   * ドキュメント1つから HTML/CSS 一式を得る。
+   *
+   * @param document 変換するドキュメント
+   * @returns HTML 文字列。`compile` が失敗する条件ではその失敗
+   */
   toHtml(document: DesignDocument): Result<string, Error> {
     return Result.map(DocumentHtml.compile(document), DocumentHtml.html);
   },
