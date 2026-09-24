@@ -98,12 +98,24 @@ export type TextEdit = Readonly<{
 }>;
 
 export const TextEdit = {
-  /** 今の文言を下書きの初期値にして編集を始める。 */
+  /**
+   * 今の文言を下書きの初期値にして編集を始める。
+   *
+   * @param text 編集する Text
+   * @param bounds その文言が描かれている矩形
+   * @returns 下書きが今の文言と同じ編集
+   */
   create(text: EditableText, bounds: CanvasBounds): TextEdit {
     return { draft: text.content, bounds };
   },
 
-  /** 入力された文言で下書きを差し替える。矩形は編集の間変わらない。 */
+  /**
+   * 入力された文言で下書きを差し替える。矩形は編集の間変わらない。
+   *
+   * @param edit 今の編集
+   * @param draft 入力欄に今ある文言
+   * @returns 下書きだけを差し替えた編集
+   */
   withDraft(edit: TextEdit, draft: string): TextEdit {
     return { ...edit, draft };
   },
@@ -114,6 +126,9 @@ export const TextEdit = {
    * 空の下書きを「未設定へ戻す」とは読まない（プロパティパネルの入力欄は `valueFrom` でそ
    * う読む）。パネルは既定値を別に見せる欄なので空欄に「未設定」の意味を持たせられるが、
    * キャンバスに映っているものはそのまま `content` で、空にする操作は「文言を空にした」。
+   *
+   * @param edit 確定する編集
+   * @returns `content` を下書きへ設定する編集
    */
   toPropEdit(edit: TextEdit): PropEdit {
     return PropEdit.set([ContentProp], edit.draft);

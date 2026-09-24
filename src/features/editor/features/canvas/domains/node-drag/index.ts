@@ -83,7 +83,11 @@ export type Carrying =
   | Readonly<{ kind: "droppable"; drop: DropEdit }>;
 
 export const Carrying = {
-  /** 落とせず、掴んだノードも動かない（ツリーのドラッグで落とし先が無いとき）。 */
+  /**
+   * 落とせず、掴んだノードも動かない（ツリーのドラッグで落とし先が無いとき）。
+   *
+   * @returns 落とし先も、ずらす見た目も、ガイド線も持たない運び方
+   */
   nothing(): Carrying {
     return { kind: "nothing" };
   },
@@ -276,7 +280,11 @@ export const DropEdit = {
 export const DragThresholdPx = 4;
 
 export const NodeDrag = {
-  /** 何も掴んでいない状態から始める。 */
+  /**
+   * 操作を受ける前の状態を作る。
+   *
+   * @returns 何も掴んでいない状態
+   */
   create(): NodeDrag {
     return { kind: "idle" };
   },
@@ -308,7 +316,12 @@ export const NodeDrag = {
     );
   },
 
-  /** 掴む。まだ動かしていないので、この時点ではクリックと区別が付かない。 */
+  /**
+   * 掴む。まだ動かしていないので、この時点ではクリックと区別が付かない。
+   *
+   * @param grab 掴んだ時点の状態（`Grab`）
+   * @returns 掴んだまま動かしていない状態
+   */
   grab(grab: Grab): NodeDrag {
     return { kind: "held", grab };
   },
@@ -360,7 +373,12 @@ export const NodeDrag = {
   /**
    * ポインタの移動を反映する。閾値を越えたところで初めて「動かしている」状態になる。
    *
-   * 掴んでいなければ何も起きない（ボタンを離したあとのマウス移動）。
+   * @param drag 今のドラッグの状態
+   * @param pointer 画面上のポインタの位置
+   * @param carrying そのポインタの位置で決まった運び方
+   * @returns 動かしている最中なら、距離に依らず運び方を載せ替えた状態。掴んだまま動かして
+   *   いないなら、掴んだ位置から閾値以上離れたときだけ動かしている状態、それまでは `drag`
+   *   のまま。掴んでいなければ（ボタンを離したあとのマウス移動）`drag` のまま
    */
   moveTo(drag: NodeDrag, pointer: Offset, carrying: Carrying): NodeDrag {
     if (drag.kind === "dragging") {
@@ -460,11 +478,22 @@ export const NodeDrag = {
     return swallowsClick ? { kind: "dropped" } : NodeDrag.create();
   },
 
-  /** 直後の `click` を選択に使わせないか（上の `dropped` の説明を参照）。 */
+  /**
+   * 直後の `click` を選択に使わせないか。
+   *
+   * @param drag 今のドラッグの状態
+   * @returns `dropped`（`NodeDrag` の型の doc）にいれば `true`
+   */
   consumesClick(drag: NodeDrag): boolean {
     return drag.kind === "dropped";
   },
 
+  /**
+   * 閾値を越えて運んでいる最中か。
+   *
+   * @param drag 今のドラッグの状態
+   * @returns 動かしている状態なら `true`
+   */
   isDragging(drag: NodeDrag): boolean {
     return drag.kind === "dragging";
   },

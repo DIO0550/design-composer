@@ -39,12 +39,21 @@ export type ArtboardDrag =
   | Readonly<{ kind: "dragging"; grab: ArtboardGrab; pointer: Offset }>;
 
 export const ArtboardDrag = {
-  /** 何も掴んでいない状態から始める。 */
+  /**
+   * 操作を受ける前の状態を作る。
+   *
+   * @returns 何も掴んでいない状態
+   */
   create(): ArtboardDrag {
     return { kind: "idle" };
   },
 
-  /** 掴む。まだ動かしていないので、この時点ではクリックと区別が付かない。 */
+  /**
+   * 掴む。まだ動かしていないので、この時点ではクリックと区別が付かない。
+   *
+   * @param grab 掴んだ時点の状態（`ArtboardGrab`）
+   * @returns 掴んだまま動かしていない状態
+   */
   grab(grab: ArtboardGrab): ArtboardDrag {
     return { kind: "held", grab };
   },

@@ -26,7 +26,12 @@ const EdgeSides = {
 } as const satisfies Readonly<Record<Axis, Readonly<Record<AxisEnd, Side>>>>;
 
 export const CanvasBounds = {
-  /** 描かれている要素の矩形。レイアウトはブラウザが行うので実測で取る。 */
+  /**
+   * 描かれている要素の矩形。レイアウトはブラウザが行うので実測で取る。
+   *
+   * @param element 測る要素
+   * @returns その要素の今の client 座標の矩形
+   */
   ofElement(element: Element): CanvasBounds {
     const rect = element.getBoundingClientRect();
     return {
@@ -160,7 +165,13 @@ export const CanvasBounds = {
     };
   },
 
-  /** 子が並ぶ向きに沿った始点。 */
+  /**
+   * 子が並ぶ向きに沿った始点。
+   *
+   * @param bounds 見る矩形
+   * @param direction 子が並ぶ向き
+   * @returns 横並びなら左辺、縦並びなら上辺の座標
+   */
   start(bounds: CanvasBounds, direction: CssDirection): number {
     return CanvasBounds.edgeAt(
       bounds,
@@ -223,7 +234,13 @@ export const CanvasBounds = {
     return !apart;
   },
 
-  /** ポインタが矩形の内側にあるか。 */
+  /**
+   * ポインタが矩形の内側にあるか。
+   *
+   * @param bounds 見る矩形
+   * @param pointer 画面上のポインタの位置
+   * @returns 辺の上を含めて内側にあれば `true`
+   */
   contains(bounds: CanvasBounds, pointer: Offset): boolean {
     return (
       pointer.x >= CanvasBounds.side(bounds, Sides.Left) &&
@@ -248,12 +265,24 @@ export const CanvasBounds = {
     return CanvasBounds.side(bounds, EdgeSides[axis][end]);
   },
 
-  /** 軸に沿った終端（右辺 / 下辺）。リサイズハンドルはこの辺に沿って並ぶ。 */
+  /**
+   * 軸に沿った終端。リサイズハンドルはこの辺に沿って並ぶ。
+   *
+   * @param bounds 見る矩形
+   * @param axis 見る軸
+   * @returns 幅の軸なら右辺、高さの軸なら下辺の座標
+   */
   edge(bounds: CanvasBounds, axis: Axis): number {
     return CanvasBounds.edgeAt(bounds, axis, AxisEnds.End);
   },
 
-  /** 子が並ぶ向きに沿った終点。 */
+  /**
+   * 子が並ぶ向きに沿った終点。
+   *
+   * @param bounds 見る矩形
+   * @param direction 子が並ぶ向き
+   * @returns 横並びなら右辺、縦並びなら下辺の座標
+   */
   end(bounds: CanvasBounds, direction: CssDirection): number {
     return CanvasBounds.edge(bounds, CssDirection.mainAxis(direction));
   },
@@ -293,7 +322,13 @@ export const CanvasBounds = {
     });
   },
 
-  /** 子が並ぶ向きに沿った中点。ポインタがここを越えたかで前後が決まる。 */
+  /**
+   * 子が並ぶ向きに沿った中点。ポインタがここを越えたかで前後が決まる。
+   *
+   * @param bounds 見る矩形
+   * @param direction 子が並ぶ向き
+   * @returns `start` と `end` の中間の座標
+   */
   center(bounds: CanvasBounds, direction: CssDirection): number {
     return (
       (CanvasBounds.start(bounds, direction) +

@@ -119,7 +119,11 @@ function scaleBy(view: CanvasView, factor: number): CanvasView {
 }
 
 export const CanvasView = {
-  /** 等倍・原点から始める（ズーム / パンは保存しないので毎回この状態で開く）。 */
+  /**
+   * 開いた直後の表示（ズーム / パンは保存しないので毎回この状態で開く）。
+   *
+   * @returns 等倍・原点で、ドラッグでパンしていない表示
+   */
   create(): CanvasView {
     return {
       scale: DefaultScale,
@@ -128,10 +132,22 @@ export const CanvasView = {
     };
   },
 
+  /**
+   * 倍率を一定の比で上げる。
+   *
+   * @param view 今の表示
+   * @returns 倍率だけが上がった表示（上限は超えない）
+   */
   zoomIn(view: CanvasView): CanvasView {
     return scaleBy(view, ZoomFactor);
   },
 
+  /**
+   * 倍率を `zoomIn` と同じ比で下げる。
+   *
+   * @param view 今の表示
+   * @returns 倍率だけが下がった表示（下限は超えない）
+   */
   zoomOut(view: CanvasView): CanvasView {
     return scaleBy(view, 1 / ZoomFactor);
   },
@@ -190,19 +206,33 @@ export const CanvasView = {
    *
    * `transform` では translate が scale より先に適用され、translate は拡大前の座標系で効
    * くため、倍率で割る必要はない。
+   *
+   * @param view 今の表示
+   * @param delta 画面上の移動量
+   * @returns 位置だけが動いた表示
    */
   panBy(view: CanvasView, delta: Offset): CanvasView {
     return { ...view, offset: Offset.add(view.offset, delta) };
   },
 
-  /** ドラッグによるパンを始める。以後の移動はこの位置からの差分で決まる。 */
+  /**
+   * ドラッグによるパンを始める。以後の移動はこの位置からの差分で決まる。
+   *
+   * @param view 今の表示
+   * @param pointer 押したときの画面上のポインタの位置
+   * @returns パンしている表示
+   */
   startDrag(view: CanvasView, pointer: Offset): CanvasView {
     return { ...view, dragFrom: Option.some(pointer) };
   },
 
   /**
-   * ドラッグ中のポインタ移動を反映する。ドラッグしていないときのポインタ移動（ボタンを離
-   * したあとのマウス移動）では何も起きない。
+   * ドラッグ中のポインタ移動を反映する。
+   *
+   * @param view 今の表示
+   * @param pointer 画面上のポインタの位置
+   * @returns 前のポインタからの差分だけ動いた表示。パンしていなければ（ボタンを離した
+   *   あとのマウス移動）`view` のまま
    */
   dragTo(view: CanvasView, pointer: Offset): CanvasView {
     if (!Option.isSome(view.dragFrom)) {
@@ -215,10 +245,22 @@ export const CanvasView = {
     return { ...moved, dragFrom: Option.some(pointer) };
   },
 
+  /**
+   * ドラッグによるパンを終える。位置はそのまま残る。
+   *
+   * @param view 今の表示
+   * @returns パンしていない表示
+   */
   endDrag(view: CanvasView): CanvasView {
     return { ...view, dragFrom: Option.none };
   },
 
+  /**
+   * ドラッグでパンしている最中か。
+   *
+   * @param view 今の表示
+   * @returns `startDrag` から `endDrag` までの間なら `true`
+   */
   isDragging(view: CanvasView): boolean {
     return Option.isSome(view.dragFrom);
   },
@@ -227,6 +269,10 @@ export const CanvasView = {
    * 画面上の長さをドキュメント上の長さへ直す。
    * 中身は倍率をかけて描かれているので、画面で測った差はその分だけ割り戻す
    * （ドラッグでのリサイズ量は、倍率を変えても掴んだ点に追従する）。
+   *
+   * @param view 割り戻しに使う倍率を持つ表示
+   * @param screenLength 画面で測った長さ
+   * @returns ドキュメント上の長さ
    */
   toDocumentLength(view: CanvasView, screenLength: number): number {
     return screenLength / view.scale;
@@ -279,12 +325,22 @@ export const CanvasView = {
     return Offset.add(CanvasView.toScreenOffset(view, placement), screenDelta);
   },
 
-  /** 表示用の倍率（%）。小数の倍率をそのまま出さないよう整数へ丸める。 */
+  /**
+   * 表示用の倍率（%）。
+   *
+   * @param view 今の表示
+   * @returns 百分率を整数へ丸めた倍率
+   */
   scalePercent(view: CanvasView): number {
     return Math.round(view.scale * 100);
   },
 
-  /** CSS の `transform` に載せる形。translate が先、scale が後（上の panBy 参照）。 */
+  /**
+   * CSS の `transform` に載せる形。translate が先、scale が後（上の panBy 参照）。
+   *
+   * @param view 今の表示
+   * @returns `transform` プロパティの値
+   */
   transform(view: CanvasView): string {
     const x = Px.create(view.offset.x);
     const y = Px.create(view.offset.y);

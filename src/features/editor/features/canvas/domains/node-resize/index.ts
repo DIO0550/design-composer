@@ -305,7 +305,11 @@ export const NodeResize = {
     { x: 0, y: 0.5 },
   ] as const satisfies readonly ResizeHandleAnchor[],
 
-  /** 何も掴んでいない状態から始める。 */
+  /**
+   * 操作を受ける前の状態を作る。
+   *
+   * @returns 何も掴んでいない状態
+   */
   create(): NodeResize {
     return { kind: "idle" };
   },
@@ -428,7 +432,12 @@ export const NodeResize = {
     );
   },
 
-  /** 掴む。以後の長さは掴んだ位置と長さからの差分で決まる。 */
+  /**
+   * 掴む。以後の長さは掴んだ位置と長さからの差分で決まる。
+   *
+   * @param held 掴んだ時点の状態（`ResizeHold`）
+   * @returns リサイズしている状態
+   */
   grab(held: ResizeHold): NodeResize {
     return { kind: "resizing", ...held };
   },
@@ -469,14 +478,24 @@ export const NodeResize = {
     );
   },
 
-  /** 指を離す。掴んでいたなら直後の `click` を飲み込む状態へ。 */
+  /**
+   * 指を離す。
+   *
+   * @param resize 今のリサイズの状態
+   * @returns 掴んでいたなら直後の `click` を飲み込む状態、そうでなければ何も掴んでいない状態
+   */
   release(resize: NodeResize): NodeResize {
     return resize.kind === "resizing"
       ? { kind: "resized" }
       : NodeResize.create();
   },
 
-  /** 直後の `click` を選択に使わせないか（上の `resized` の説明を参照）。 */
+  /**
+   * 直後の `click` を選択に使わせないか。
+   *
+   * @param resize 今のリサイズの状態
+   * @returns `resized`（`NodeResize` の型の doc）にいれば `true`
+   */
   consumesClick(resize: NodeResize): boolean {
     return resize.kind === "resized";
   },
