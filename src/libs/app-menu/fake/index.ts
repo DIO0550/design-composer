@@ -21,6 +21,11 @@ export type AppMenuFake = Readonly<{
 }>;
 
 export const AppMenuFake = {
+  /**
+   * メニューの代役を作る。
+   *
+   * @returns 代役の口と、利用者の操作を起こす手段
+   */
   create(): AppMenuFake {
     const events = SingleEventIpcFake.create(MenuCommandEvent);
 

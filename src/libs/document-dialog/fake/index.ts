@@ -18,10 +18,23 @@ const Canceled: DialogChoice = { kind: "canceled" };
 export const DialogChoice = {
   Canceled,
 
+  /**
+   * 利用者がパスを選んだことにする。
+   *
+   * @param path 選ばれたことにするパス
+   * @returns そのパスが選ばれた結果
+   */
   chosen(path: string): DialogChoice {
     return { kind: "chosen", path };
   },
 
+  /**
+   * ダイアログを出せなかったことにする。
+   *
+   * @param message 代役が投げる例外の文言。`DocumentDialog` を通すと失敗の `message` に載る
+   *   (綴り方は `DocumentDialog` 側の規則)
+   * @returns ダイアログを出せなかった結果
+   */
   failed(message: string): DialogChoice {
     return { kind: "failed", message };
   },
@@ -60,6 +73,12 @@ function chosenPath(choice: DialogChoice): Promise<Option<string>> {
 }
 
 export const DocumentDialogFake = {
+  /**
+   * ダイアログの代役を作る。
+   *
+   * @param choices 開く / 保存それぞれのダイアログの結果。何度出しても同じ結果になる
+   * @returns `choices` のとおりに答える `DocumentDialog`
+   */
   create(choices: DialogChoices): DocumentDialogFake {
     const tauriDialog: TauriDialog = {
       chooseOpenPath() {
