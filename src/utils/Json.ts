@@ -1,3 +1,4 @@
+import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
 /** JSON のデータモデルで表せる値。 */
@@ -251,17 +252,18 @@ export const Json = {
    * @param cursor フィールドを引くオブジェクト
    * @param key 読むフィールドの名前
    * @param decode フィールドの値を読む手続き
-   * @returns フィールドがオブジェクト自身に無ければ `undefined` の `ok`。あれば `decode` の結果
+   * @returns フィールドがオブジェクト自身に無ければ `none` の `ok`。あれば `decode` が読めた値の
+   *   `some` の `ok`、読めなければ `decode` の `err`
    */
-  optional<T>(
+  optional<T extends NonNullable<unknown>>(
     cursor: JsonRecordCursor,
     key: string,
     decode: JsonDecoder<T>,
-  ): JsonDecoded<T | undefined> {
+  ): JsonDecoded<Option<T>> {
     if (!hasField(cursor.record, key)) {
-      return Result.ok(undefined);
+      return Result.ok(Option.none);
     }
-    return decode(fieldCursor(cursor, key));
+    return Result.map(decode(fieldCursor(cursor, key)), Option.some);
   },
 
   /**

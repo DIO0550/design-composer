@@ -293,7 +293,9 @@ export const TypographyToken = {
             fontSize,
             lineHeight,
             fontWeight,
-            ...(fontFamily !== undefined ? { fontFamily } : {}),
+            ...(Option.isSome(fontFamily)
+              ? { fontFamily: fontFamily.value }
+              : {}),
           }),
         ),
         record,

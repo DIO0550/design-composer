@@ -399,8 +399,8 @@ function primitiveNodeFromJson(record: JsonRecordCursor): JsonDecoded<Node> {
       (name, type, props, children) => ({
         name,
         type,
-        ...(props !== undefined ? { props } : {}),
-        ...(children !== undefined ? { children } : {}),
+        ...(Option.isSome(props) ? { props: props.value } : {}),
+        ...(Option.isSome(children) ? { children: children.value } : {}),
       }),
     ),
     record,
@@ -424,7 +424,7 @@ function refNodeFromJson(record: JsonRecordCursor): JsonDecoded<Node> {
       (name, ref, overrides) => ({
         name,
         ref,
-        ...(overrides !== undefined ? { overrides } : {}),
+        ...(Option.isSome(overrides) ? { overrides: overrides.value } : {}),
       }),
     ),
     record,
