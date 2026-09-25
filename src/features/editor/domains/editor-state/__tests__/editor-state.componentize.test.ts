@@ -59,12 +59,11 @@ test("部品にするとその中身は元のサブツリーになる", () => {
   const created = Option.unwrap(
     EditorState.createComponent(selected, "info-panel"),
   );
-  const component = ComponentSet.get(
-    EditorState.document(created).components,
-    "info-panel",
+  const component = Option.unwrap(
+    ComponentSet.get(EditorState.document(created).components, "info-panel"),
   );
 
-  expect(component?.children?.map((child) => child.name)).toEqual([
+  expect(component.children?.map((child) => child.name)).toEqual([
     "home-title",
   ]);
 });

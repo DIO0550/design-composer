@@ -298,7 +298,7 @@ deny のメッセージは、`jq` / `python3` が欠けていればその名前�
 - `pre-push-typecheck.sh` / `pre-push-lint.sh` は node_modules 未インストール時(ツールが実行不能な場合)は黙ってスキップする
 - `post-merge-review.sh` はマージを**ブロックしない**(`additionalContext` を返すだけ)。マージは人の判断で行われるので、記録が無いことを理由に止めても記録の質は上がらないため
   - 検知対象は `mcp__github__merge_pull_request` と `gh pr merge` のみ。素の `git merge` は見ない(ベースブランチの取り込みで日常的に走るため、拾うと誤発火のほうが多くなる)
-- `.oxlintrc.json` の `overrides`(`rules/architecture.md`「依存方向のルール」の強制)は、`domains/` → `libs/` の辺だけ `warn`(**ブロックしない**)。導入時点で `@/libs/document-ipc`(型のみ)・`@/libs/document-json` への import が計 5 件既に存在しており(`document-save-state` は申し送りと決めた既知の債務、残り 3 件はテストの `DocumentJson` fixture 利用)、どちらもドメインの型・モジュール再配置を伴う判断(CLAUDE.md「設計判断の確認」)のため、この回では移動を行わない。`services/` → `features/libs/components/hooks`・`components/hooks/utils/types/` → `domains/services/features`・`libs/` → `services/features/components/hooks` の 3 方向は既存違反 0 件だったため `error` でそのまま導入した
+- `.oxlintrc.json` の `overrides`(`rules/architecture.md`「依存方向のルール」の強制)は、`domains/` → `libs/` の辺だけ `warn`(**ブロックしない**)。導入時点で `@/libs/document-ipc`(型のみ)・`@/libs/document-json` への import が計 5 件既に存在しており(`document-save-state` は申し送りと決めた既知の債務、残り 3 件はテストの `DocumentJson` fixture 利用)、どちらもドメインの型・モジュール再配置を伴う判断(CLAUDE.md「設計判断の確認」)のため、この回では移動を行わない。`services/` → `features/` `libs/` `components/` `hooks/`・`components/` `hooks/` `utils/` `types/` → `domains/` `services/` `features/`・`libs/` → `services/` `features/` `components/` `hooks/` の 3 方向は既存違反 0 件だったため `error` でそのまま導入した
   - `features/<x>/domains/` への同種の適用は未実装
 - `.oxlintrc.json` の `overrides`(`rules/architecture.md`「モジュールの公開API」の「複数ファイルへの分割が必要になったら」の閾値)は、`src/**/*.tsx` に `max-lines: 600` を `error` で置く。捕まえたいのは 1 ファイルに 11 コンポーネント・716 行が同居した形
   - **数えるのは空行とコメントを除いた行**(`skipBlankLines` / `skipComments` を `true` にしている。既定はどちらも false で、素の `wc -l` と同じ数え方になる)。この 2 つがあるため `__tests__/` を対象から外さずに導入時点の違反 0 件が成立している。生の行数では 620 行ある `use-editor-state.actions.test.tsx` が、空行 96 行を引いて閾値の内側に収まる
@@ -324,9 +324,10 @@ deny のメッセージは、`jq` / `python3` が欠けていればその名前�
   - **`title` は story の id でもある。** この検査に合わせてフォルダを動かすと、VRT のベースラインと `iframe.html?id=` の参照が**全部**変わる(同じ形の実例は `harness/case-law/process.md`)。揃えるための移動は、その入れ替わりを織り込んで計画する
   - 判定の仕組み(導出の 3 手・葉を見ない意図した取りこぼし)はスクリプトの docstring が持つ。判定表は `lib/story-title-cases.sh`
 - **名指ししたパス**(`lib/named-path-violations.py`)は **push をブロックする**。見るのはリポジトリ全体の `.ts` / `.tsx`(コメントの中だけ)と `.md`(全文)。**対応する規範は `rules/` に無い**(story の title と同じ扱い)
-  - **エスケープハッチは置かない。** 免除は既に規則の側にある(拡張子の無い PascalCase の名前・`-` で終わる切れたプレースホルダ・相対の綴り・走査しない 2 つ)。導入時点の違反 0 件・偽陽性 0 件で、呼び出しの無い逃げ道を先回りで足さない
+  - **エスケープハッチは置かない。** 免除は既に規則の側にある(拡張子の無い PascalCase の名前・`-` で終わる切れたプレースホルダ・相対の綴り・走査しないフォルダ・このファイルのフェンスの中の probe)。導入時点の違反 0 件・偽陽性 0 件で、呼び出しの無い逃げ道を先回りで足さない
   - 導入時点の違反は **15 件**(`src/` の 6 件と `harness/case-law/` の 9 件)で、同じ PR で 0 件にしてから入れた。#690 のマージ前の木へ当てると、#690 が直した **14 箇所を 14/14** 報告する(`harness-growth`「採用前の再生」)
-  - **`.claude/hooks/README.md`(このファイル)は走査しない。** 上の probe レシピが実在しないファイル(`src/app/probe.ts` 等)を意図して名指しし、`/` 区切りの層の列挙(`components/hooks/utils/types` → `domains/services/features`)もパスと同じ綴りになる。**この 2 つは偽陽性のクラスとして判定表に `miss` の行で残してある**
+  - **`.claude/hooks/README.md`(このファイル)も走査する。免除するのはフェンスの中の probe だけ**(下の動作確認のレシピは、これから作るファイルを意図して名指しする)。probe と見る条件とファイルを丸ごと外さない理由は検出器の docstring が持つ
+  - **このファイルにレシピを書くときは、probe を docstring の条件に合わせる。** 合わない綴り(`canvas/features/deep` のような作るフォルダの途中・実在しない綴りの見本)は違反として報告される。層を並べるときは `/` で繋がず、1 語ずつコードにする(`components/` `hooks/`)
   - **`harness/records/` も走査しない**(`harness/records/README.md`「過去の記録は書き換えない」。この検出器を当てると 206 件出るが、どれも当時の綴りとして正しい)。`harness/case-law/` は走査する — あちらが禁じているのは**判断**の書き換えで、実体を指さなくなった綴りは直す側(判例自身が `pr-330`「判例が古いパスを指したまま残る」で指摘を受けている)
   - **走査対象は git が追跡しているファイル**。フォルダを歩くと `.gitignore` 済みの生成物(`storybook-static/` 等)まで対象になり、手元に成果物が残っている環境だけで push が止まる。コミット前の新しいファイルは見えないが、push の時点では差分がコミットされているのでゲートに穴は開かない
   - 判定の仕組み(解決の 2 手・意図した取りこぼし 7 つ)はスクリプトの docstring が持つ。判定表は `lib/named-path-cases.sh`
@@ -488,10 +489,10 @@ python3 .claude/hooks/lib/import-rule-violations.py src; echo "exit=$?"   # → 
 rm src/features/editor/probe.ts
 
 # 入れ子が 3 段目になると落ちること(feature-nest-depth。import が 1 つも無くても出る)
-mkdir -p src/features/editor/features/canvas/features/deep
-printf 'export const Probe = 1;\n' > src/features/editor/features/canvas/features/deep/index.ts
+mkdir -p src/features/probe/features/a/features/b
+printf 'export const Probe = 1;\n' > src/features/probe/features/a/features/b/index.ts
 python3 .claude/hooks/lib/import-rule-violations.py src; echo "exit=$?"   # → [feature-nest-depth] 1 件・exit=1
-rm -rf src/features/editor/features/canvas/features
+rm -rf src/features/probe
 
 # コメントに書いた import のパスで止まらないこと(doc に綴りを書く箇所があるため)
 printf '// かつては import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view"; と書いていた\nexport const Probe = 1;\n' \
@@ -574,7 +575,7 @@ python3 .claude/hooks/lib/named-path-violations.py; echo "exit=$?"   # → 違�
 
 # 走査対象は git が追跡しているファイル。probe は `git add -N` で索引へ入れる
 # (入れずに置くと、綴りが実在しなくても報告されない)。
-printf '// 参照: features/sidebar\nexport const Probe = 1;\n' > src/app/probe.ts
+printf '// 参照: features/probe-sidebar\nexport const Probe = 1;\n' > src/app/probe.ts
 python3 .claude/hooks/lib/named-path-violations.py; echo "exit=$?"   # → 違反 0 件・exit=0
 git add -N src/app/probe.ts
 python3 .claude/hooks/lib/named-path-violations.py; echo "exit=$?"   # → [named-path-missing] 1 件・exit=1
@@ -584,13 +585,13 @@ printf '// 参照: features/editor/features/sidebar\nexport const Probe = 1;\n' 
 python3 .claude/hooks/lib/named-path-violations.py; echo "exit=$?"   # → 違反 0 件・exit=0
 
 # Markdown の全文も見ること(コメントの外側に綴りを置ける唯一の形)
-printf '参照: features/sidebar\n' > docs/probe.md
+printf '参照: features/probe-sidebar\n' > docs/probe.md
 git add -N docs/probe.md
 python3 .claude/hooks/lib/named-path-violations.py; echo "exit=$?"   # → [named-path-missing] 1 件・exit=1
 git rm -q --cached docs/probe.md; rm docs/probe.md
 
 # push がブロックされること(deny が出力される。違反があるとき)
-printf '// 参照: features/sidebar\nexport const Probe = 1;\n' > src/app/probe.ts
+printf '// 参照: features/probe-sidebar\nexport const Probe = 1;\n' > src/app/probe.ts
 echo '{"tool_input":{"command":"git push"}}' \
   | bash .claude/hooks/pre-push-named-paths.sh
 git rm -q --cached src/app/probe.ts; rm src/app/probe.ts

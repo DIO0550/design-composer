@@ -8,7 +8,9 @@ import { TokenSet } from "@/domains/dcmp/token";
 import type { Corner } from "@/domains/unit/corner";
 import type { Side } from "@/domains/unit/side";
 import type { ValueOf } from "@/types/ValueOf";
+import { Option } from "@/utils/Option";
 import { Range } from "@/utils/Range";
+import { RecordEx } from "@/utils/RecordEx";
 
 /**
  * その prop が編集可能になる条件。「別の prop が特定の値のときだけ意味を持つ」prop を表
@@ -417,11 +419,11 @@ export const PropDefinitionRecord = {
       schema,
       props,
     ).flatMap((assignment) => {
-      const definition = schema[assignment.name];
-      if (definition === undefined) {
+      const definition = RecordEx.get(schema, assignment.name);
+      if (!Option.isSome(definition)) {
         return [];
       }
-      return PropDefinition.isRefTo(definition, assignment, ref)
+      return PropDefinition.isRefTo(definition.value, assignment, ref)
         ? [assignment.name]
         : [];
     });
@@ -451,8 +453,8 @@ export const PropDefinitionRecord = {
       schema,
       props,
     ).flatMap((assignment) => {
-      const definition = schema[assignment.name];
-      if (definition === undefined) {
+      const definition = RecordEx.get(schema, assignment.name);
+      if (!Option.isSome(definition)) {
         return [
           {
             kind: "unknown-prop" as const,
@@ -461,7 +463,7 @@ export const PropDefinitionRecord = {
           },
         ];
       }
-      return PropDefinition.collectErrors(definition, assignment, tokens);
+      return PropDefinition.collectErrors(definition.value, assignment, tokens);
     });
   },
 } as const;

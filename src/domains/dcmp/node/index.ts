@@ -6,6 +6,7 @@ import {
   type JsonRecordCursor,
 } from "@/utils/Json";
 import { Option } from "@/utils/Option";
+import { RecordEx } from "@/utils/RecordEx";
 import { Result } from "@/utils/Result";
 
 /** prop が取りうる値。構造を持つ値は prop にしない（docs/01-file-format.md）。 */
@@ -301,7 +302,10 @@ export const Node = {
    *   そのもの
    */
   rename(node: Node, renameMap: Readonly<Record<string, string>>): Node {
-    const newName = renameMap[node.name] ?? node.name;
+    const newName = Option.unwrapOr(
+      RecordEx.get(renameMap, node.name),
+      node.name,
+    );
     if (Node.isRef(node) || node.children === undefined) {
       return newName === node.name ? node : { ...node, name: newName };
     }

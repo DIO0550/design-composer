@@ -77,3 +77,15 @@ test("rename は元のノードを変更しない", () => {
     children: [{ name: "label", type: "Text" }],
   });
 });
+
+test("対応表に無い constructor という名前は、付け替えずにそのまま残る", () => {
+  const node = { name: "constructor", type: "Box" };
+
+  expect(Node.rename(node, {}).name).toBe("constructor");
+});
+
+test("対応表に無い __proto__ という名前は、付け替えずにそのまま残る", () => {
+  const node = { name: "__proto__", type: "Box" };
+
+  expect(Node.rename(node, {}).name).toBe("__proto__");
+});

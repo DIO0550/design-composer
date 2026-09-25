@@ -2,6 +2,7 @@ import { Artboard } from "@/domains/dcmp/artboard";
 import { ComponentSet } from "@/domains/dcmp/component";
 import { Node } from "@/domains/dcmp/node";
 import { CaseStyle } from "@/utils/CaseStyle";
+import { Option } from "@/utils/Option";
 
 /**
  * ドキュメント全体で一意でなければならない名前の集まり（単一名前空間）。
@@ -62,10 +63,13 @@ export const NameSpace = {
   ): readonly string[] {
     const componentNames = ComponentSet.names(components).flatMap(
       (name): readonly string[] => {
-        const component = ComponentSet.get(components, name);
+        const children = Option.flatMap(
+          ComponentSet.get(components, name),
+          (component) => Option.fromNullable(component.children),
+        );
         return [
           name,
-          ...(component?.children ?? []).flatMap(Node.collectNames),
+          ...Option.unwrapOr(children, []).flatMap(Node.collectNames),
         ];
       },
     );
@@ -150,12 +154,13 @@ export const NameSpace = {
     names: readonly string[],
   ): Readonly<Record<string, string>> {
     const taken = new Set(NameSpace.toSet(space));
-    const renameMap: Record<string, string> = {};
+    const renames: (readonly [string, string])[] = [];
     for (const name of names) {
       const newName = nextAvailableName(name, taken);
-      renameMap[name] = newName;
+      renames.push([name, newName]);
       taken.add(newName);
     }
-    return renameMap;
+    // 添字の代入にしない。`__proto__` へ文字列を代入しても無視され、対応が残らない
+    return Object.fromEntries(renames);
   },
 } as const;
