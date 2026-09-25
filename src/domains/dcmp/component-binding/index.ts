@@ -9,6 +9,7 @@ import {
   type PropDefinition,
 } from "@/domains/dcmp/primitive-schema";
 import { Option } from "@/utils/Option";
+import { RecordEx } from "@/utils/RecordEx";
 
 /**
  * どの部品のどの binding かを指す組。
@@ -77,7 +78,7 @@ function resolveThroughRefs(
       return Option.none;
     }
     const schema: PrimitiveSchema = PrimitiveSchema.forType(target.type);
-    return Option.fromNullable(schema.props[source.binding.prop]);
+    return RecordEx.get<PropDefinition>(schema.props, source.binding.prop);
   }
   if (visited.has(target.ref)) {
     return Option.none;

@@ -19,6 +19,7 @@ import { Size } from "@/domains/dcmp/size";
 import { TokenSet } from "@/domains/dcmp/token";
 import { Axes } from "@/domains/unit/axis";
 import { Option } from "@/utils/Option";
+import { RecordEx } from "@/utils/RecordEx";
 import type { DesignDocumentV1 as DesignDocument } from "../v1";
 
 /** ドキュメントが不正になる理由（docs/03-schema.md「バリデーション仕様」）。 */
@@ -290,7 +291,7 @@ function collectBindingTargetErrors(
     return [];
   }
   const schema: PrimitiveSchema = PrimitiveSchema.forType(target.type);
-  if (binding.prop in schema.props) {
+  if (RecordEx.has(schema.props, binding.prop)) {
     return [];
   }
   return [
