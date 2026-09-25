@@ -154,12 +154,13 @@ export const NameSpace = {
     names: readonly string[],
   ): Readonly<Record<string, string>> {
     const taken = new Set(NameSpace.toSet(space));
-    const renameMap: Record<string, string> = {};
+    const renames: (readonly [string, string])[] = [];
     for (const name of names) {
       const newName = nextAvailableName(name, taken);
-      renameMap[name] = newName;
+      renames.push([name, newName]);
       taken.add(newName);
     }
-    return renameMap;
+    // 添字の代入にしない。`__proto__` へ文字列を代入しても無視され、対応が残らない
+    return Object.fromEntries(renames);
   },
 } as const;
