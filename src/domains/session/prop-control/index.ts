@@ -26,6 +26,7 @@ import { type Corner, Corners } from "@/domains/unit/corner";
 import { type Side, SidePair, SidePairs, Sides } from "@/domains/unit/side";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
+import { RecordEx } from "@/utils/RecordEx";
 
 /*
  * プロパティパネルはスキーマ定数の走査だけで組み立てる（docs/03-schema.md「スキーマから
@@ -363,7 +364,7 @@ function controlOf(
   props: Props,
   tokens: TokenSet,
 ): PropControl {
-  const value = Option.fromNullable(props[editable.name]);
+  const value = RecordEx.get(props, editable.name);
   return {
     prop: editable.name,
     input: inputOf(editable, value, tokens),
