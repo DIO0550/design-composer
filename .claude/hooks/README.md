@@ -24,7 +24,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `pre-push-named-paths.sh` | `PreToolUse` (Bash)    | **push 前の名指ししたパスの検査**(対応する規範は `rules/` に無く、フックだけが持つ)。コメント・doc が名指ししているパスに当たる実体が無ければ push をブロックする |
 | `post-merge-review.sh`   | `PostToolUse` (Bash/MCP)  | **マージ後の振り返りの提示**。PR のマージを検知し、Issue への追記・続きの Issue・評価の記録を促す       |
 | `hook-canary.sh`         | `PreToolUse` (Bash)       | **カナリア**。`echo hook-canary` を必ず deny する。連ねたコマンドの中にあっても切り出して見る。通ってしまったときの読み方は後述（**通った = 不発、ではない**） |
-| `session-url-notice.sh`  | `SessionStart`            | **セッション URL の提示**（AGENTS.md「Issue に紐づいて起動したら、セッションの URL を Issue に残す」）。URL を組み立てて渡す。ブランチが `claude/issue-<N>-...` なら対象の番号も添える |
+| `session-url-notice.sh`  | `SessionStart`            | **セッション URL の提示**（AGENTS.md「Issue に紐づいて起動したら、セッションの URL を Issue に残す」）。URL を組み立てて渡す。ブランチが `claude/issue-<N>-...` なら対象の番号も添える。並行着手の確認(`implementation-flow` フェーズ 1)も指す |
 | `record-firings.sh`      | `SessionStart` + `PostToolUse` (Skill/Task/Agent) | **スキル・サブエージェントの発火ログ**。tmp のセッション別ログへ追記し、`harness-record` が記録を書くときに読む。SessionStart のセッション見出しで「起動しなかった」と「フック不発」を切り分ける |
 | `track-verification-agent-activity.sh` | `PreToolUse` + `PostToolUse` (Task/Agent) | **検証エージェントの実行中フラグ**。`plan-reviewer` / `implementation-reviewer` の開始・終了をセッション別のマーカーで数える。`block-git-during-verification-agent.sh` が読む |
 | `block-git-during-verification-agent.sh` | `PreToolUse` (Bash)   | **検証エージェント実行中の git 操作を拒否**。マーカーが立っている間は `git add` / `commit` / `push` を deny する。ミューテーション実測の途中の書き換えをコミットへ取り込む事故を防ぐ |
@@ -102,7 +102,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 | `block-lint-suppress.sh`(編集時のブロック) | **あり**。抑制コメントは diff に残るので、`.github/scripts/check-added-lint-suppressions.sh` が**追加行の分だけ**同じ判定で落とす(許可される例外も `lib/lint-suppressions.py` で共有)。CI と push 前(git hooks)の両方が走らせる。**push 前は `python3` が使える環境だけ**(無ければ「飛ばします」と出して飛ぶ。CI は落とす → `.github/scripts/lib/detector-precondition.sh`) |
 | `block-npx.sh`(セッション中の行為の禁止) | **無し**。push の時点で痕跡が残らないため代替不能 |
 | `block-git-during-verification-agent.sh`(セッション中の行為の禁止) | **無し**。この競合はセッションの実行タイミングだけが原因で、コミット後のリポジトリの状態には痕跡が残らない |
-| `session-url-notice.sh`(セッション URL の提示) | **無し**。URL はセッションの中にしか無く、残す先も GitHub のコメントなので、push の時点で痕跡が残らない。落ちても穴は開かない(規約が AGENTS.md に残り、失っても情報が 1 つ足りないだけでガードは破れない) |
+| `session-url-notice.sh`(セッション URL の提示) | **無し**。URL はセッションの中にしか無く、残す先も GitHub のコメントなので、push の時点で痕跡が残らない。落ちても穴は開かない(規約が AGENTS.md に、並行着手の確認の手順が `implementation-flow` フェーズ 1 に残り、PR が開いた後は `pr-closing-issue.yml` の `duplicate-issue-pr` が並行を検出する) |
 | `post-edit-lint.sh` / `check-test-rules.sh` / `check-doc-comments.sh`(即時フィードバック) | 結果は push 前の検査(git hooks)と CI が拾う。**即時性だけが失われる** |
 | `check-test-helper-duplication.sh`(即時フィードバック) | **部分的にあり**。`.github/scripts/check-added-test-helper-duplication.sh` が CI(層 1)と push 前(層 2 の git hooks。`python3` が使える環境だけ)で拾うが、既存の重複が `src` に残っているため**このブランチで追加された行だけ**が対象。触っていない既存分は push 時点でも拾えない |
 | `record-firings.sh`(発火ログ) | **無し**。ただし失敗しても穴は開かない(セッション見出しが無いログは `harness-record` が「計測対象外」と書く設計で、誤ったゼロにはならない)。カナリアと同じ「失敗してもガードが破れない」検出系 |
@@ -119,8 +119,8 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 | `block-npx.sh` | 実行した `npx` コマンドがリポジトリへ何か書き込んでいないか `git status` で確認する |
 | `block-git-during-verification-agent.sh` | 検証エージェント実行中に作られたコミットの diff を、そのエージェントが直したはずの内容とだけ照合する(意図しない変更が紛れていないか) |
 
-`session-url-notice.sh` の不発は対応不要(上の表のとおり、失っても情報が 1 つ
-足りないだけでガードは破れない)。
+`session-url-notice.sh` の不発は対応不要(上の表のとおり、URL の規約も並行着手の確認の
+手順もフックの外に残っていて、失うのは開始時の念押しだけ)。
 
 **`frontend.yml` の `rules-check` は、git hooks(層 2)にしか無かった検査を CI(層 1)へ上げるために作った**(いま何を持っているかは下の「判定表をどの層へ置くか」と `harness/githooks/README.md`)。
 **doc コメントとテスト規約の 2 つ**は層 2・層 3 にしか無かったが、**層 2 と層 3 は同じ環境で同時に抜ける**。
