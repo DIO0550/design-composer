@@ -17,6 +17,7 @@ import {
   type JsonObject,
 } from "@/utils/Json";
 import { Option } from "@/utils/Option";
+import { RecordEx } from "@/utils/RecordEx";
 import { Result } from "@/utils/Result";
 
 /** 公開 prop が、部品の内側のどのノードのどの prop に繋がっているか。 */
@@ -161,8 +162,10 @@ function resolveOverrides(
   overrides: Props,
 ): readonly ResolvedOverride[] {
   return Object.entries(overrides).flatMap(([propName, value]) => {
-    const binding = publicProps[propName];
-    return binding === undefined ? [] : [[binding, value] as ResolvedOverride];
+    const binding = RecordEx.get(publicProps, propName);
+    return Option.isSome(binding)
+      ? [[binding.value, value] as ResolvedOverride]
+      : [];
   });
 }
 
@@ -176,7 +179,7 @@ export const Component = {
    * @returns `publicProps` にその名前が宣言されていれば `true`
    */
   isPublicProp(component: Component, name: string): boolean {
-    return component.publicProps !== undefined && name in component.publicProps;
+    return RecordEx.has(component.publicProps ?? {}, name);
   },
 
   /**
@@ -197,7 +200,7 @@ export const Component = {
    * @returns その名前の binding。`publicProps` に宣言されていなければ `none`
    */
   binding(component: Component, name: string): Option<PublicPropBinding> {
-    return Option.fromNullable(component.publicProps?.[name]);
+    return RecordEx.get(component.publicProps ?? {}, name);
   },
 
   /**
@@ -395,10 +398,12 @@ export const Component = {
   ): PublicProps {
     return Object.fromEntries(
       Object.entries(publicProps).map(([propName, binding]) => {
-        const newNode = renameMap[binding.node];
+        const newNode = RecordEx.get(renameMap, binding.node);
         return [
           propName,
-          newNode === undefined ? binding : { ...binding, node: newNode },
+          Option.isSome(newNode)
+            ? { ...binding, node: newNode.value }
+            : binding,
         ];
       }),
     );
@@ -415,8 +420,8 @@ export const Component = {
  * @returns その部品が直接参照している部品名の並び。定義が無ければ空
  */
 function directRefs(components: ComponentSet, name: string): readonly string[] {
-  const component = components[name];
-  return component === undefined ? [] : Component.collectRefs(component);
+  const component = ComponentSet.get(components, name);
+  return Option.isSome(component) ? Component.collectRefs(component.value) : [];
 }
 
 /**
@@ -457,14 +462,10 @@ function targetInPrimitive(
     return Option.none;
   }
   const schema: PrimitiveSchema = PrimitiveSchema.forType(node.type);
-  const definition = schema.props[prop];
-  if (definition === undefined) {
-    return Option.none;
-  }
-  return Option.some({
+  return Option.map(RecordEx.get(schema.props, prop), (definition) => ({
     definition,
-    declared: Option.fromNullable(node.props?.[prop]),
-  });
+    declared: RecordEx.get(node.props ?? {}, prop),
+  }));
 }
 
 /**
@@ -489,7 +490,7 @@ function targetThroughRef(
     remainingHops,
   );
   return Option.map(inner, (target) => {
-    const override = Option.fromNullable(node.overrides?.[prop]);
+    const override = RecordEx.get(node.overrides ?? {}, prop);
     return Option.isSome(override) ? { ...target, declared: override } : target;
   });
 }
@@ -512,16 +513,16 @@ function publicPropTargetWithin(
   if (remainingHops <= 0) {
     return Option.none;
   }
-  const component = components[ref.component];
-  if (component === undefined) {
+  const component = ComponentSet.get(components, ref.component);
+  if (!Option.isSome(component)) {
     return Option.none;
   }
-  const binding = Component.binding(component, ref.prop);
+  const binding = Component.binding(component.value, ref.prop);
   if (!Option.isSome(binding)) {
     return Option.none;
   }
   const target = Component.findNode(
-    component,
+    component.value,
     ref.component,
     binding.value.node,
   );
@@ -555,10 +556,11 @@ export const ComponentSet = {
    *
    * @param components 引き先の部品一式
    * @param name 部品名（`components` のキー）
-   * @returns その名前の部品定義。無ければ `undefined`
+   * @returns その名前の部品定義。定義されていなければ `none`（`constructor` のような
+   *   プロトタイプ上の名前も定義されていないとみなす）
    */
-  get(components: ComponentSet, name: string): Component | undefined {
-    return components[name];
+  get(components: ComponentSet, name: string): Option<Component> {
+    return RecordEx.get(components, name);
   },
 
   /**
@@ -569,7 +571,7 @@ export const ComponentSet = {
    * @returns 定義されていれば `true`
    */
   has(components: ComponentSet, name: string): boolean {
-    return name in components;
+    return RecordEx.has(components, name);
   },
 
   /**

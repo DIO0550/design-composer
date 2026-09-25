@@ -1,5 +1,5 @@
 import { Artboard } from "@/domains/dcmp/artboard";
-import { ComponentSet } from "@/domains/dcmp/component";
+import type { ComponentSet } from "@/domains/dcmp/component";
 import { Node } from "@/domains/dcmp/node";
 import { CaseStyle } from "@/utils/CaseStyle";
 
@@ -60,14 +60,11 @@ export const NameSpace = {
     components: ComponentSet,
     artboards: readonly Artboard[],
   ): readonly string[] {
-    const componentNames = ComponentSet.names(components).flatMap(
-      (name): readonly string[] => {
-        const component = ComponentSet.get(components, name);
-        return [
-          name,
-          ...(component?.children ?? []).flatMap(Node.collectNames),
-        ];
-      },
+    const componentNames = Object.entries(components).flatMap(
+      ([name, component]): readonly string[] => [
+        name,
+        ...(component.children ?? []).flatMap(Node.collectNames),
+      ],
     );
     const artboardNames = artboards.flatMap(Artboard.collectNames);
     return [...componentNames, ...artboardNames];

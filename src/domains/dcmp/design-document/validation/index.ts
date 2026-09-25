@@ -19,6 +19,7 @@ import { Size } from "@/domains/dcmp/size";
 import { TokenSet } from "@/domains/dcmp/token";
 import { Axes } from "@/domains/unit/axis";
 import { Option } from "@/utils/Option";
+import { RecordEx } from "@/utils/RecordEx";
 import type { DesignDocumentV1 as DesignDocument } from "../v1";
 
 /** ドキュメントが不正になる理由（docs/03-schema.md「バリデーション仕様」）。 */
@@ -224,7 +225,7 @@ function collectRefNodeErrors(
   refNode: RefNode,
 ): readonly UnlocatedError[] {
   const component = ComponentSet.get(context.components, refNode.ref);
-  if (component === undefined) {
+  if (!Option.isSome(component)) {
     return [
       {
         kind: "dangling-ref",
@@ -232,7 +233,7 @@ function collectRefNodeErrors(
       },
     ];
   }
-  return collectOverrideErrors(context, refNode, component);
+  return collectOverrideErrors(context, refNode, component.value);
 }
 
 /**
@@ -272,7 +273,10 @@ function collectBindingTargetErrors(
 ): readonly UnlocatedError[] {
   if (Node.isRef(target)) {
     const nested = ComponentSet.get(context.components, target.ref);
-    if (nested === undefined || Component.isPublicProp(nested, binding.prop)) {
+    if (!Option.isSome(nested)) {
+      return [];
+    }
+    if (Component.isPublicProp(nested.value, binding.prop)) {
       return [];
     }
     return [
@@ -286,7 +290,7 @@ function collectBindingTargetErrors(
     return [];
   }
   const schema: PrimitiveSchema = PrimitiveSchema.forType(target.type);
-  if (binding.prop in schema.props) {
+  if (RecordEx.has(schema.props, binding.prop)) {
     return [];
   }
   return [
@@ -536,14 +540,11 @@ function collectTokenNameErrors(
 export function collectDocumentNameErrors(
   document: DesignDocument,
 ): readonly DesignDocumentValidationError[] {
-  const componentErrors = ComponentSet.names(document.components).flatMap(
-    (name): readonly DesignDocumentValidationError[] => {
-      const component = ComponentSet.get(document.components, name);
-      return [
-        ...collectNameErrors(name, "components", `key "${name}"`),
-        ...collectNodeNameErrors(component?.children ?? [], name),
-      ];
-    },
+  const componentErrors = Object.entries(document.components).flatMap(
+    ([name, component]): readonly DesignDocumentValidationError[] => [
+      ...collectNameErrors(name, "components", `key "${name}"`),
+      ...collectNodeNameErrors(component.children ?? [], name),
+    ],
   );
   const artboardErrors = document.artboards.flatMap(
     (artboard, index): readonly DesignDocumentValidationError[] => [

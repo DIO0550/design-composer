@@ -9,6 +9,7 @@ import {
   type PropDefinition,
 } from "@/domains/dcmp/primitive-schema";
 import { Option } from "@/utils/Option";
+import { RecordEx } from "@/utils/RecordEx";
 
 /**
  * どの部品のどの binding かを指す組。
@@ -35,10 +36,10 @@ function next(
   prop: string,
 ): Option<ComponentBinding> {
   const nested = ComponentSet.get(components, ref);
-  if (nested === undefined) {
+  if (!Option.isSome(nested)) {
     return Option.none;
   }
-  const binding = Component.binding(nested, prop);
+  const binding = Component.binding(nested.value, prop);
   if (!Option.isSome(binding)) {
     return Option.none;
   }
@@ -60,11 +61,11 @@ function resolveThroughRefs(
   visited: ReadonlySet<string>,
 ): Option<PropDefinition> {
   const component = ComponentSet.get(components, source.componentName);
-  if (component === undefined) {
+  if (!Option.isSome(component)) {
     return Option.none;
   }
   const found = Component.findNode(
-    component,
+    component.value,
     source.componentName,
     source.binding.node,
   );
@@ -77,7 +78,7 @@ function resolveThroughRefs(
       return Option.none;
     }
     const schema: PrimitiveSchema = PrimitiveSchema.forType(target.type);
-    return Option.fromNullable(schema.props[source.binding.prop]);
+    return RecordEx.get(schema.props, source.binding.prop);
   }
   if (visited.has(target.ref)) {
     return Option.none;
