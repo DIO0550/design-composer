@@ -306,7 +306,6 @@ def check_one(path: Path, missing_only: bool = False) -> int:
     if partial:
         print(report(path, partial))
     print("その関数・型・定数が何かに加え、引数は @param、戻り値は @returns、投げる例外は @throws を書いてください。")
-    print("意図して省くなら、ファイルに `// @doc-comments-ok` を記載します。")
     return 1
 
 

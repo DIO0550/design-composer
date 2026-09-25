@@ -17,8 +17,6 @@
 # 見るのは doc の有無と項目（`@param` / `@returns` / `@throws`）の両方。導入時点では
 # 項目を満たさない doc が 190 件あったため `--missing-only` で有無だけに絞っていたが、
 # その 190 件を埋めて 0 件にしたので絞る理由が無くなった。
-#
-# 無効化: 対象ファイルに `// @doc-comments-ok` を記載する
 set -euo pipefail
 
 hook_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -40,7 +38,6 @@ cd "${CLAUDE_PROJECT_DIR:-$PWD}"
 violations=""
 while IFS= read -r file; do
   [ -f "$file" ] || continue
-  grep -q '@doc-comments-ok' "$file" && continue
   result="$(python3 "$detector" "$file" || true)"
   [ -n "$result" ] || continue
   violations="${violations}${result}
@@ -53,6 +50,6 @@ jq -Rn --arg msg "$violations" '{
   hookSpecificOutput: {
     hookEventName: "PreToolUse",
     permissionDecision: "deny",
-    permissionDecisionReason: ("push 前の doc コメント検査で規約を満たさない doc が見つかったため push をブロックしました。\n\n" + $msg + "\nその関数・型・定数が何かに加え、引数は @param、戻り値は @returns、投げる例外は @throws を書いてから再度 push してください（rules/coding.md「doc に書く項目」）。\n意図して省くなら、対象ファイルに `// @doc-comments-ok` を記載します。")
+    permissionDecisionReason: ("push 前の doc コメント検査で規約を満たさない doc が見つかったため push をブロックしました。\n\n" + $msg + "\nその関数・型・定数が何かに加え、引数は @param、戻り値は @returns、投げる例外は @throws を書いてから再度 push してください（rules/coding.md「doc に書く項目」）。")
   }
 }'
