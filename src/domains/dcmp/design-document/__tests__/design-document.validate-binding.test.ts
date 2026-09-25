@@ -200,3 +200,26 @@ test("複数の binding の不整合がすべて報告される", () => {
     }),
   ]);
 });
+
+test("constructor という prop への binding は dangling-binding-prop エラーになる", () => {
+  const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
+    components: {
+      button: {
+        type: "Box",
+        children: [{ name: "button-label", type: "Text" }],
+        publicProps: { label: { node: "button-label", prop: "constructor" } },
+      },
+    },
+  });
+
+  const errors = DesignDocument.collectErrors(document);
+
+  expect(errors).toEqual([
+    expect.objectContaining({
+      kind: "dangling-binding-prop",
+      nodeName: "button",
+      prop: "label",
+    }),
+  ]);
+});

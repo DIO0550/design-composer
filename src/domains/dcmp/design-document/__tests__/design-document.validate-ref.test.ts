@@ -137,3 +137,22 @@ test("循環していない入れ子の部品参照はエラーにならない",
 
   expect(DesignDocument.collectErrors(document)).toEqual([]);
 });
+
+test("定義していない constructor という部品を参照すると dangling-ref エラーになる", () => {
+  const document = DesignDocument.create({
+    artboards: [
+      {
+        name: "screen",
+        width: 375,
+        height: 812,
+        children: [{ name: "instance", ref: "constructor" }],
+      },
+    ],
+  });
+
+  const errors = DesignDocument.collectErrors(document);
+
+  expect(errors).toEqual([
+    expect.objectContaining({ kind: "dangling-ref", nodeName: "instance" }),
+  ]);
+});

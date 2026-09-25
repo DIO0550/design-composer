@@ -84,3 +84,19 @@ test("参照先が公開していない prop を指す binding は解決でき�
 
   expect(definition).toEqual(Option.none);
 });
+
+test("binding 先が constructor という prop なら解決できない", () => {
+  const components: ComponentSet = {
+    button: { type: "Box", children: [{ name: "button-label", type: "Text" }] },
+  };
+
+  const definition = ComponentBinding.resolvePropDefinition(
+    components,
+    ComponentBinding.create("button", {
+      node: "button-label",
+      prop: "constructor",
+    }),
+  );
+
+  expect(definition).toEqual(Option.none);
+});

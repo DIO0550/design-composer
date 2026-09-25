@@ -109,3 +109,13 @@ test("publicProps 宣言を持たない部品に overrides を渡しても定義
     props: { content: "Button" },
   });
 });
+
+test("定義していない constructor という部品を参照すると、部品が見つからないエラーになる", () => {
+  const instance: RefNode = { name: "root", ref: "constructor" };
+
+  const result = ExpandedNode.fromNode(instance, {});
+
+  expect(result).toEqual(
+    Result.err({ kind: "component-not-found", component: "constructor" }),
+  );
+});
