@@ -8,6 +8,7 @@ import {
 } from "@/utils/Json";
 import { NumberEx } from "@/utils/NumberEx";
 import { Option } from "@/utils/Option";
+import { RecordEx } from "@/utils/RecordEx";
 import { Result } from "@/utils/Result";
 import { ColorToken } from "./color";
 import { GradientToken } from "./gradient";
@@ -478,7 +479,7 @@ export const TokenSet = {
    * @returns その種別の中にその名前があれば true。別の種別の同名は見ない
    */
   has(tokens: TokenSet, kind: TokenKind, name: string): boolean {
-    return name in tokens[kind];
+    return RecordEx.has(tokens[kind], name);
   },
 
   /**
@@ -522,7 +523,7 @@ export const TokenSet = {
    * @returns その名前の色。`colors` にその名前が無ければ `none`
    */
   findColor(tokens: TokenSet, name: string): Option<ColorToken> {
-    return Option.fromNullable(tokens.colors[name]);
+    return RecordEx.get(tokens.colors, name);
   },
 
   /**
@@ -540,7 +541,7 @@ export const TokenSet = {
     kind: NumericTokenKind,
     name: string,
   ): Option<number> {
-    return Option.fromNullable(tokens[kind][name]);
+    return RecordEx.get(tokens[kind], name);
   },
 
   /**
