@@ -16,8 +16,6 @@
 # function）/ 77 件（export された宣言）あり、触っていない分まで push を止めると、
 # 直す気の無い違反を避けるためのエスケープハッチが増えてフック全体が信用されなくなる
 # （README.md「例外(エスケープハッチ)」）。編集したファイルの分だけを出す。
-#
-# 無効化: 対象ファイルに `// @doc-comments-ok` を記載する
 set -euo pipefail
 
 hook_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -34,8 +32,6 @@ case "$file" in
   *"/src/"*|src/*) ;;
   *) exit 0 ;;
 esac
-
-grep -q '@doc-comments-ok' "$file" && exit 0
 
 command -v python3 >/dev/null 2>&1 || exit 0
 
