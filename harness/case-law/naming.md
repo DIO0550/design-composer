@@ -44,6 +44,12 @@
 「名前空間の構成要素」と「エラー報告用の位置」を 1 つの型に持たせていたため名前が付かなかった
 → 役割を分けたら**その型自体が不要になった**。
 
+## 定数は PascalCase
+
+| NG | OK | 何だったか |
+|---|---|---|
+| `DocumentTemplate.DEFAULT` | `DocumentTemplate.Default` | 新規ドキュメントの雛形（トークンと部品定義を持つオブジェクト）を持つコンパニオンのメンバー |
+
 ## `naming-vocabulary-gap` — 対応表のキーをどう綴るか
 
 **キーが値の別名になっている定数**（`Axes` / `LeftPaneViews` / `DocumentErrorOrigins`）は
