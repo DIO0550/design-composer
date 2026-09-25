@@ -306,7 +306,11 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
         state,
       );
     case "set_token_value":
-      // 選択が無ければ編集は存在しない（EditorState.setTokenValue の `none`）。
+      /*
+       * 選択が無い・種別が違う値では編集は存在しない（EditorState.setTokenValue の `none`）。
+       * 種別違いには画面の操作から到達しない。`TokenControl.valueFrom` が選択中の
+       * トークンから値を作るため。
+       */
       return Option.unwrapOr(
         EditorState.setTokenValue(state, action.value),
         state,
