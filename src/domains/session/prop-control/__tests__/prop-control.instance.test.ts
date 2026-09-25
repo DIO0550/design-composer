@@ -39,6 +39,14 @@ const Components: ComponentSet = {
     type: "Box",
     children: [{ name: "sized-card-title", type: "Text" }],
   },
+  /** Object.prototype 上の名前を公開 prop 名にしている部品。 */
+  "prototype-named": {
+    publicProps: {
+      constructor: { node: "prototype-named-label", prop: "content" },
+    },
+    type: "Box",
+    children: [{ name: "prototype-named-label", type: "Text" }],
+  },
 };
 
 function setupSelection(
@@ -193,4 +201,17 @@ test("スキーマの分からない type のノードにはコントロール�
   const selection = setupInstanceSelection({ name: "action", type: "Unknown" });
 
   expect(sectionsOf(selection)).toEqual([]);
+});
+
+test("上書きしていない公開 prop constructor は、今の値を持たない", () => {
+  const selection = setupInstanceSelection({
+    name: "action",
+    ref: "prototype-named",
+  });
+  const control = controlNamed(
+    instanceOf(selection).publicProps,
+    "constructor",
+  );
+
+  expect(control.value).toEqual(Option.none);
 });
