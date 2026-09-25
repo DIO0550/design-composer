@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import { Json } from "@/utils/Json";
+import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 import { recordCursor } from "./Json.setup";
 
@@ -21,12 +22,20 @@ test("必須フィールドが存在するとその値がデコードされる",
   );
 });
 
-test("任意フィールドが存在しないと未設定として扱われる", () => {
+test("任意フィールドが存在しないと値を持たない", () => {
   const record = recordCursor({});
 
   expect(
-    Result.unwrap(Json.optional(record, "props", Json.string)),
-  ).toBeUndefined();
+    Option.isSome(Result.unwrap(Json.optional(record, "props", Json.string))),
+  ).toBe(false);
+});
+
+test("任意フィールドが存在するとデコードした値を持つ", () => {
+  const record = recordCursor({ props: "primary" });
+
+  expect(Result.unwrap(Json.optional(record, "props", Json.string))).toEqual(
+    Option.some("primary"),
+  );
 });
 
 test("辞書は値ごとにデコードされて名前が保たれる", () => {
