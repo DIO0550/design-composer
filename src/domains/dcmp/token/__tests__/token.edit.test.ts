@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
-import { TokenSet } from "../index";
+import { Token, TokenSet } from "../index";
 
 /** colors と spacing に 2 件ずつ持つトークン集合。 */
 function setupTokens(): TokenSet {
@@ -107,6 +107,26 @@ test("その種別に無いトークンの値は差し替えられない", () =>
       ref: { kind: "radius", name: "sm" },
     }),
   );
+});
+
+test("同じ種別の値で差し替えたトークンは名前を保ったまま値が変わる", () => {
+  const token = Token.withValue(
+    { kind: "spacing", name: "sm", value: 8 },
+    { kind: "spacing", value: 12 },
+  );
+
+  expect(token).toEqual(
+    Option.some({ kind: "spacing", name: "sm", value: 12 }),
+  );
+});
+
+test("種別の違う値で差し替えたトークンは存在しない", () => {
+  const token = Token.withValue(
+    { kind: "spacing", name: "sm", value: 8 },
+    { kind: "radius", value: 12 },
+  );
+
+  expect(token).toEqual(Option.none);
 });
 
 test("トークンを改名すると新しい名前で引け、古い名前では引けなくなる", () => {
