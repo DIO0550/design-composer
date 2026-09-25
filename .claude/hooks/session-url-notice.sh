@@ -57,7 +57,14 @@ fi
 
 # 出力は JSON。message には二重引用符・バックスラッシュ・生の改行を入れない
 # (jq を使わずに組み立てるため。改行は \n のまま JSON のエスケープとして渡す)。
-message="このセッションの URL は ${session_url}。${target}着手した時点でその Issue へこの URL をコメントすること(AGENTS.md「Issue に紐づいて起動したら、セッションの URL を Issue に残す」)。\\n同じ URL のコメントが既にあれば足さない。判断待ちで止まるときは、選択肢と根拠を書いたコメントに改めて併記する。"
+#
+# **他セッションの着手表明を、コメントする前に確認する一文を含む。** `duplicate-issue-pr`
+# (`.github/workflows/pr-closing-issue.yml`)は PR が開いた後にしか重複を検出できず、
+# 着手時点の確認は手順に書かれていなかった(`harness/records/pr-639.md` 指摘1・
+# `pr-692.md`・`pr-718.md`・`pr-743.md` 指摘1、分類 `parallel-issue-work`)。確認そのものは
+# GitHub への問い合わせが要るためこのスクリプトの外(AI 自身の gh 呼び出し)に置く。
+# このスクリプトが外部コマンドに依存しない理由は変わらない(直上の Why)
+message="このセッションの URL は ${session_url}。${target}着手する前に、その Issue の既存コメントと assignees を見て、他のセッションの URL コメントや自分以外の assignee が無いか確認すること。あれば着手を止め、並行実装になっている旨と選択肢を Issue にコメントする。無ければ、着手した時点でその Issue へこの URL をコメントすること(AGENTS.md「Issue に紐づいて起動したら、セッションの URL を Issue に残す」)。\\n同じ URL のコメントが既にあれば足さない。判断待ちで止まるときは、選択肢と根拠を書いたコメントに改めて併記する。"
 
 cat <<JSON
 {
