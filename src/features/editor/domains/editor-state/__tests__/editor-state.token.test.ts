@@ -4,7 +4,7 @@ import { TokenSet } from "@/domains/dcmp/token";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 
-/** colors と spacing にトークンを持ち、artboard が 1 つあるドキュメント。 */
+/** colors・spacing・shadows にトークンを持ち、artboard が 1 つあるドキュメント。 */
 function setupState(): EditorState {
   return EditorState.create(
     DesignDocument.create({
@@ -102,6 +102,21 @@ test("選択中のトークンの値を変えると新しい値が引ける", ()
 
 test("トークンが選択されていなければ値の編集は存在しない", () => {
   const edited = EditorState.setTokenValue(setupState(), {
+    kind: "spacing",
+    value: 12,
+  });
+
+  expect(edited).toEqual(Option.none);
+});
+
+test("選択中のトークンと違う種別の値では編集は存在しない", () => {
+  /* 同じ名前の `spacing.sm` があるので、種別を見ずに書き込むとそちらが書き換わる。 */
+  const state = EditorState.selectToken(setupState(), {
+    kind: "shadows",
+    name: "sm",
+  });
+
+  const edited = EditorState.setTokenValue(state, {
     kind: "spacing",
     value: 12,
   });
