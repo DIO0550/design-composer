@@ -298,7 +298,7 @@ deny のメッセージは、`jq` / `python3` が欠けていればその名前�
 - `pre-push-typecheck.sh` / `pre-push-lint.sh` は node_modules 未インストール時(ツールが実行不能な場合)は黙ってスキップする
 - `post-merge-review.sh` はマージを**ブロックしない**(`additionalContext` を返すだけ)。マージは人の判断で行われるので、記録が無いことを理由に止めても記録の質は上がらないため
   - 検知対象は `mcp__github__merge_pull_request` と `gh pr merge` のみ。素の `git merge` は見ない(ベースブランチの取り込みで日常的に走るため、拾うと誤発火のほうが多くなる)
-- `.oxlintrc.json` の `overrides`(`rules/architecture.md`「依存方向のルール」の強制)は、`domains/` → `libs/` の辺だけ `warn`(**ブロックしない**)。導入時点で `@/libs/document-ipc`(型のみ)・`@/libs/document-json` への import が計 5 件既に存在しており(`document-save-state` は申し送りと決めた既知の債務、残り 3 件はテストの `DocumentJson` fixture 利用)、どちらもドメインの型・モジュール再配置を伴う判断(CLAUDE.md「設計判断の確認」)のため、この回では移動を行わない。`services/` → `features/libs/components/hooks`・`components/hooks/utils/types/` → `domains/services/features`・`libs/` → `services/features/components/hooks` の 3 方向は既存違反 0 件だったため `error` でそのまま導入した
+- `.oxlintrc.json` の `overrides`(`rules/architecture.md`「依存方向のルール」の強制)は、`domains/` → `libs/` の辺だけ `warn`(**ブロックしない**)。導入時点で `@/libs/document-ipc`(型のみ)・`@/libs/document-json` への import が計 5 件既に存在しており(`document-save-state` は申し送りと決めた既知の債務、残り 3 件はテストの `DocumentJson` fixture 利用)、どちらもドメインの型・モジュール再配置を伴う判断(CLAUDE.md「設計判断の確認」)のため、この回では移動を行わない。`services/` → `features/` `libs/` `components/` `hooks/`・`components/` `hooks/` `utils/` `types/` → `domains/` `services/` `features/`・`libs/` → `services/` `features/` `components/` `hooks/` の 3 方向は既存違反 0 件だったため `error` でそのまま導入した
   - `features/<x>/domains/` への同種の適用は未実装
 - `.oxlintrc.json` の `overrides`(`rules/architecture.md`「モジュールの公開API」の「複数ファイルへの分割が必要になったら」の閾値)は、`src/**/*.tsx` に `max-lines: 600` を `error` で置く。捕まえたいのは 1 ファイルに 11 コンポーネント・716 行が同居した形
   - **数えるのは空行とコメントを除いた行**(`skipBlankLines` / `skipComments` を `true` にしている。既定はどちらも false で、素の `wc -l` と同じ数え方になる)。この 2 つがあるため `__tests__/` を対象から外さずに導入時点の違反 0 件が成立している。生の行数では 620 行ある `use-editor-state.actions.test.tsx` が、空行 96 行を引いて閾値の内側に収まる
@@ -488,10 +488,10 @@ python3 .claude/hooks/lib/import-rule-violations.py src; echo "exit=$?"   # → 
 rm src/features/editor/probe.ts
 
 # 入れ子が 3 段目になると落ちること(feature-nest-depth。import が 1 つも無くても出る)
-mkdir -p src/features/editor/features/canvas/features/deep
-printf 'export const Probe = 1;\n' > src/features/editor/features/canvas/features/deep/index.ts
+mkdir -p src/features/probe/features/a/features/b
+printf 'export const Probe = 1;\n' > src/features/probe/features/a/features/b/index.ts
 python3 .claude/hooks/lib/import-rule-violations.py src; echo "exit=$?"   # → [feature-nest-depth] 1 件・exit=1
-rm -rf src/features/editor/features/canvas/features
+rm -rf src/features/probe
 
 # コメントに書いた import のパスで止まらないこと(doc に綴りを書く箇所があるため)
 printf '// かつては import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view"; と書いていた\nexport const Probe = 1;\n' \
@@ -574,7 +574,7 @@ python3 .claude/hooks/lib/named-path-violations.py; echo "exit=$?"   # → 違�
 
 # 走査対象は git が追跡しているファイル。probe は `git add -N` で索引へ入れる
 # (入れずに置くと、綴りが実在しなくても報告されない)。
-printf '// 参照: features/sidebar\nexport const Probe = 1;\n' > src/app/probe.ts
+printf '// 参照: features/probe-sidebar\nexport const Probe = 1;\n' > src/app/probe.ts
 python3 .claude/hooks/lib/named-path-violations.py; echo "exit=$?"   # → 違反 0 件・exit=0
 git add -N src/app/probe.ts
 python3 .claude/hooks/lib/named-path-violations.py; echo "exit=$?"   # → [named-path-missing] 1 件・exit=1
@@ -584,13 +584,13 @@ printf '// 参照: features/editor/features/sidebar\nexport const Probe = 1;\n' 
 python3 .claude/hooks/lib/named-path-violations.py; echo "exit=$?"   # → 違反 0 件・exit=0
 
 # Markdown の全文も見ること(コメントの外側に綴りを置ける唯一の形)
-printf '参照: features/sidebar\n' > docs/probe.md
+printf '参照: features/probe-sidebar\n' > docs/probe.md
 git add -N docs/probe.md
 python3 .claude/hooks/lib/named-path-violations.py; echo "exit=$?"   # → [named-path-missing] 1 件・exit=1
 git rm -q --cached docs/probe.md; rm docs/probe.md
 
 # push がブロックされること(deny が出力される。違反があるとき)
-printf '// 参照: features/sidebar\nexport const Probe = 1;\n' > src/app/probe.ts
+printf '// 参照: features/probe-sidebar\nexport const Probe = 1;\n' > src/app/probe.ts
 echo '{"tool_input":{"command":"git push"}}' \
   | bash .claude/hooks/pre-push-named-paths.sh
 git rm -q --cached src/app/probe.ts; rm src/app/probe.ts
