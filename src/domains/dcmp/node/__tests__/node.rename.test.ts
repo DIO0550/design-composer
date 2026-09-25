@@ -77,3 +77,17 @@ test("rename は元のノードを変更しない", () => {
     children: [{ name: "label", type: "Text" }],
   });
 });
+
+test("対応表に無い constructor という子の名前は、付け替えても変わらない", () => {
+  const node = {
+    name: "root",
+    type: "Box",
+    children: [{ name: "constructor", type: "Text" }],
+  };
+
+  expect(Node.rename(node, { root: "top" })).toEqual({
+    name: "top",
+    type: "Box",
+    children: [{ name: "constructor", type: "Text" }],
+  });
+});
