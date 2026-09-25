@@ -222,7 +222,7 @@ export const ShadowToken = {
             x,
             y,
             blur,
-            ...(spread !== undefined ? { spread } : {}),
+            ...(Option.isSome(spread) ? { spread: spread.value } : {}),
             color,
           }),
         ),

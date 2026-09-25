@@ -345,9 +345,11 @@ export const Component = {
           Json.optional(record, "children", Node.fromJsonArray),
           (publicProps, type, props, children) => ({
             type,
-            ...(props !== undefined ? { props } : {}),
-            ...(children !== undefined ? { children } : {}),
-            ...(publicProps !== undefined ? { publicProps } : {}),
+            ...(Option.isSome(props) ? { props: props.value } : {}),
+            ...(Option.isSome(children) ? { children: children.value } : {}),
+            ...(Option.isSome(publicProps)
+              ? { publicProps: publicProps.value }
+              : {}),
           }),
         ),
         record,

@@ -47,6 +47,18 @@ test("必須フィールドが無いと欠落として報告される", () => {
   ]);
 });
 
+test("任意フィールドに null が書かれていると不在ではなく型違いとして報告される", () => {
+  const record = recordCursor({ props: null }, "artboards[0]");
+
+  expect(Json.errorsOf(Json.optional(record, "props", Json.string))).toEqual([
+    {
+      kind: "invalid-type",
+      path: "artboards[0].props",
+      message: "expected string but got null",
+    },
+  ]);
+});
+
 test("知らないフィールドは未知のフィールドとして報告される", () => {
   const record = recordCursor({ name: "screen", zoom: 1.5 });
 

@@ -16,7 +16,7 @@ import {
   type JsonObject,
   type JsonRecordCursor,
 } from "@/utils/Json";
-import type { Option } from "@/utils/Option";
+import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
 /**
@@ -132,30 +132,32 @@ const ArtboardUneditableProps: readonly string[] = [
  * キャンバス上の位置を `x` / `y` の対として読む。
  *
  * @param record 読み取り元の artboard のフィールド一式
- * @returns 位置。`x` と `y` がどちらも無ければ不在を表す `undefined`。片方だ
- *   けのとき・数値でないときは失敗
+ * @returns 位置。`x` と `y` がどちらも無ければ `none`。片方だけのとき（無いほうの軸の
+ *   `missing-field`）・数値でないときは失敗
  */
 function canvasPositionFromJson(
   record: JsonRecordCursor,
-): JsonDecoded<Offset | undefined> {
+): JsonDecoded<Option<Offset>> {
   const axes = Json.combine2(
     Json.optional(record, "x", Json.number),
     Json.optional(record, "y", Json.number),
     (x, y) => ({ x, y }),
   );
-  return Result.flatMap(axes, ({ x, y }) => {
-    if (x === undefined && y === undefined) {
-      return Result.ok(undefined);
+  return Result.flatMap(axes, ({ x, y }): JsonDecoded<Option<Offset>> => {
+    const hasBothAxes = Option.isSome(x) && Option.isSome(y);
+    if (hasBothAxes) {
+      return Result.ok(Option.some({ x: x.value, y: y.value }));
     }
-    const missing = x === undefined ? "x" : "y";
-    if (x === undefined || y === undefined) {
-      return Json.error(
-        "missing-field",
-        `${record.path}.${missing}`,
-        `"${missing}" is required when the other axis is present`,
-      );
+    const hasNoAxis = !Option.isSome(x) && !Option.isSome(y);
+    if (hasNoAxis) {
+      return Result.ok(Option.none);
     }
-    return Result.ok({ x, y });
+    const missing = Option.isSome(x) ? "y" : "x";
+    return Json.error(
+      "missing-field",
+      `${record.path}.${missing}`,
+      `"${missing}" is required when the other axis is present`,
+    );
   });
 }
 
@@ -427,8 +429,10 @@ export const Artboard = {
             name,
             width,
             height,
-            ...(canvasPosition !== undefined ? { canvasPosition } : {}),
-            ...(props !== undefined ? { props } : {}),
+            ...(Option.isSome(canvasPosition)
+              ? { canvasPosition: canvasPosition.value }
+              : {}),
+            ...(Option.isSome(props) ? { props: props.value } : {}),
             children,
           }),
         ),
