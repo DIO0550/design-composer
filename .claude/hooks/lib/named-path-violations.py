@@ -12,7 +12,7 @@ import 325 箇所が書き換わったのに説明の中の 14 箇所が残り�
 - `named-path-missing` — 名指ししている先に実体が無い
 
 **見るのは説明だけで、コードの文字列リテラルは見ない。** `.ts` / `.tsx` はコメントの中、
-`.md` は全文（全文が説明なので）。`import` の綴りは typecheck が、公開 API を迂回する向きは
+`.md` は全文（全文が説明なので。例外は下の probe レシピだけ）。`import` の綴りは typecheck が、公開 API を迂回する向きは
 `import-rule-violations.py` が既に見ている。
 
 **綴りはリポジトリルートか `src/` からの絶対として解決する。** 祖先フォルダからの相対も
@@ -48,9 +48,13 @@ import 325 箇所が書き換わったのに説明の中の 14 箇所が残り�
 - **相対の綴りは見ない**（第 1 セグメントがフォルダ名でないもの）
 - **相対リンクの段数は見ない。** `../` は落としてルートから解決するので、段数を間違えた
   Markdown リンクは、行き先が実在する限り通る
-- **`.claude/hooks/README.md` は走査しない。** probe レシピが実在しないファイル
-  （`src/app/probe.ts` など）を意図して名指しし、`/` 区切りの層の列挙
-  （`components/hooks/utils/types`）もパスと同じ綴りになる
+- **`.claude/hooks/README.md` のフェンスの中の probe は見ない。** 動作確認のレシピが、
+  これから作るファイル（`src/app/probe.ts` など）を意図して名指しするため。probe と見るのは、
+  セグメントのどれかが `probe` を `-` `.` 区切りの語として持ち（`probe.ts` /
+  `internal-probe` / `probe-a.ts`。`probes` は違う）、**その手前までのフォルダが実在する**
+  綴りだけ。フェンスの中でもそれ以外の綴りは見る。ファイルを丸ごと外していた間に、レシピが
+  移動前のテストファイルを名指ししたまま残っていた（#708）。README 以外のフェンスへ広げない
+  のは、該当が 0 件で使われない逃げ道になるため
 - **`harness/records/` は走査しない**（`harness/records/README.md`「過去の記録は
   書き換えない」。当時の綴りとして正しい）
 - **git が追跡していないファイルは走査しない。** push の時点では差分がコミットされて
@@ -74,9 +78,17 @@ from ts_sources import DEFAULT_ROOT, report
 CODE_SUFFIXES = (".ts", ".tsx")
 DOC_SUFFIX = ".md"
 
-# 走査しない綴り。どちらも意図した取りこぼし（上の「意図した取りこぼし」）。
-SKIPPED_FILE = ".claude/hooks/README.md"
+# 走査しないフォルダ。意図した取りこぼし（上の「意図した取りこぼし」）。
 SKIPPED_PREFIX = "harness/records/"
+
+# フェンスの中の probe を免除するファイル（上の「意図した取りこぼし」）。
+PROBE_RECIPES = ".claude/hooks/README.md"
+
+# Markdown のフェンスの開閉。
+FENCE = "```"
+
+# probe の綴り。`-` `.` 区切りの語として `probe` を持つセグメント。
+PROBE_SEGMENT = re.compile(r"(?:^|[-.])probe(?:[-.]|$)")
 
 # パスらしい綴り。`/` を 1 つ以上含む、パスに使える文字の連なり。
 PATH = re.compile(r"[@A-Za-z0-9_.-]+(?:/[@A-Za-z0-9_.-]+)+")
@@ -180,6 +192,22 @@ def doc_lines(text: str) -> list[tuple[int, str]]:
     return list(enumerate(text.split("\n"), 1))
 
 
+def fenced_numbers(text: str) -> set[int]:
+    """Markdown のフェンスの中にある行の行番号を集める。
+
+    @param text Markdown の全文
+    @returns フェンスの中身の行番号の集合。開閉の行そのものは含めない
+    """
+    inside = False
+    numbers: set[int] = set()
+    for number, line in doc_lines(text):
+        toggles = line.lstrip().startswith(FENCE)
+        if inside and not toggles:
+            numbers.add(number)
+        inside = inside != toggles
+    return numbers
+
+
 def scanned_files() -> list[str]:
     """走査の対象になるファイルを、git が追跡しているものから集める。
 
@@ -202,7 +230,6 @@ def scanned_files() -> list[str]:
         for path in listed.split("\0")
         if path.endswith(CODE_SUFFIXES + (DOC_SUFFIX,))
         and not path.endswith(".d.ts")
-        and path != SKIPPED_FILE
         and not path.startswith(SKIPPED_PREFIX)
     )
 
@@ -251,6 +278,22 @@ def spelled_as_path(segments: list[str]) -> bool:
     return inner and bool(FOLDER_SEGMENT.match(leaf) or FILE_SEGMENT.match(leaf))
 
 
+def probe_recipe(spelling: str) -> bool:
+    """その綴りが、レシピがこれから作る probe を指しているかを答える。
+
+    @param spelling フェンスの中から取り出した綴り
+    @returns セグメントのどれかが probe で、その手前までのフォルダが実在すれば `True`
+    """
+    segments = LEADING.sub("", spelling.removeprefix(ALIAS)).split("/")
+    probes = [index for index, segment in enumerate(segments) if PROBE_SEGMENT.search(segment)]
+    if not probes:
+        return False
+    parent = "/".join(segments[: probes[0]])
+    root = Path(".")
+    bases = [root / DEFAULT_ROOT] if spelling.startswith(ALIAS) else [root, root / DEFAULT_ROOT]
+    return any((base / parent).is_dir() for base in bases)
+
+
 def missing_path(spelling: str, folders: set[str]) -> bool:
     """1 つの綴りが、実体を持たないパスの名指しかを答える。
 
@@ -277,15 +320,19 @@ def spellings(path: str) -> list[tuple[int, str]]:
     """1 つのファイルの説明から、パスらしい綴りを行番号付きで取り出す。
 
     @param path 走査するファイルのパス
-    @returns `(行番号, 綴り)` の並び
+    @returns `(行番号, 綴り)` の並び。`PROBE_RECIPES` のフェンスの中の probe は含めない
     """
     text = Path(path).read_text(encoding="utf-8")
     read = doc_lines if path.endswith(DOC_SUFFIX) else comment_lines
-    return [
+    fenced = fenced_numbers(text) if path == PROBE_RECIPES else set()
+    found = [
         (number, spelling)
         for number, content in read(text)
         for spelling in PATH.findall(content)
     ]
+    in_recipes = [(number, spelling) for number, spelling in found if number in fenced]
+    probes = {entry for entry in in_recipes if probe_recipe(entry[1])}
+    return [entry for entry in found if entry not in probes]
 
 
 def scan() -> int:
