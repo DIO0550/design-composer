@@ -1,6 +1,8 @@
 import { expect, test } from "vitest";
 import type { Artboard } from "@/domains/dcmp/artboard";
 import type { ComponentSet } from "@/domains/dcmp/component";
+import { Option } from "@/utils/Option";
+import { RecordEx } from "@/utils/RecordEx";
 import { NameSpace } from "../index";
 
 function setupArtboards(): readonly Artboard[] {
@@ -93,4 +95,12 @@ test("名前の集合には重複が畳まれて入る", () => {
   const space = NameSpace.create(["a", "a", "b"]);
 
   expect(NameSpace.toSet(space)).toEqual(new Set(["a", "b"]));
+});
+
+test("__proto__ という名前も、付け替え先の対応に残る", () => {
+  const renameMap = NameSpace.renameMap(NameSpace.create([]), ["__proto__"]);
+
+  expect(RecordEx.get(renameMap, "__proto__")).toEqual(
+    Option.some("__proto__"),
+  );
 });
