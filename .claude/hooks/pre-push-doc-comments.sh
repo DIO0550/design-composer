@@ -31,20 +31,11 @@ if ! echo "$command" | grep -qE '(^|\s|[;&|])\s*git\s+push\b'; then
 fi
 
 command -v python3 >/dev/null 2>&1 || exit 0
-command -v git >/dev/null 2>&1 || exit 0
 
 cd "${CLAUDE_PROJECT_DIR:-$PWD}"
 
-violations=""
-while IFS= read -r file; do
-  [ -f "$file" ] || continue
-  result="$(python3 "$detector" "$file" || true)"
-  [ -n "$result" ] || continue
-  violations="${violations}${result}
-"
-done < <(find src -type f \( -name '*.ts' -o -name '*.tsx' \) 2>/dev/null || true)
-
-[ -n "$violations" ] || exit 0
+# CI（`rules-check`）・`harness/githooks/pre-push` と同じ `--all` を呼ぶ（理由は README.md）。
+violations="$(python3 "$detector" --all src)" && exit 0
 
 jq -Rn --arg msg "$violations" '{
   hookSpecificOutput: {
