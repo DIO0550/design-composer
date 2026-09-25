@@ -1,5 +1,6 @@
 import { Component, ComponentSet } from "@/domains/dcmp/component";
 import { Node, type Props } from "@/domains/dcmp/node";
+import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
 /**
@@ -80,11 +81,11 @@ function expandNode(
     });
   }
   const component = ComponentSet.get(components, node.ref);
-  if (component === undefined) {
+  if (!Option.isSome(component)) {
     return Result.err({ kind: "component-not-found", component: node.ref });
   }
   const overridden = Component.applyOverrides(
-    component,
+    component.value,
     node.ref,
     node.overrides ?? {},
   );

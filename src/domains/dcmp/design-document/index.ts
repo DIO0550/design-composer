@@ -1643,10 +1643,10 @@ export const DesignDocument = {
     const componentErrors = ComponentSet.names(document.components).flatMap(
       (name) => {
         const component = ComponentSet.get(document.components, name);
-        if (component === undefined) {
+        if (!Option.isSome(component)) {
           return [];
         }
-        return collectComponentErrors(context, name, component);
+        return collectComponentErrors(context, name, component.value);
       },
     );
     const artboardErrors = document.artboards.flatMap((artboard) =>

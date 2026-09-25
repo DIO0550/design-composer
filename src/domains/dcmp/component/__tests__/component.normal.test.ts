@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { Option } from "@/utils/Option";
 import { Component, ComponentSet } from "../index";
 
 test("publicProps に宣言された名前は公開propとして判定される", () => {
@@ -36,9 +37,11 @@ test("ComponentSet から名前一覧を取得すると登録されているキ�
 test("ComponentSet から存在する名前を取得すると対応するコンポーネントが返る", () => {
   const primaryButton = { type: "Box" };
   const components = { "primary-button": primaryButton };
-  expect(ComponentSet.get(components, "primary-button")).toBe(primaryButton);
+  expect(ComponentSet.get(components, "primary-button")).toEqual(
+    Option.some(primaryButton),
+  );
 });
 
-test("ComponentSet から存在しない名前を取得すると undefined になる", () => {
-  expect(ComponentSet.get({}, "primary-button")).toBeUndefined();
+test("ComponentSet から存在しない名前を取得すると none になる", () => {
+  expect(ComponentSet.get({}, "primary-button")).toEqual(Option.none);
 });

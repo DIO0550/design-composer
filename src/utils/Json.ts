@@ -1,3 +1,4 @@
+import { RecordEx } from "@/utils/RecordEx";
 import { Result } from "@/utils/Result";
 
 /** JSON のデータモデルで表せる値。 */
@@ -77,17 +78,6 @@ function typeNameOf(value: unknown): string {
  */
 function isJsonRecord(value: unknown): value is JsonRecord {
   return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-/**
- * プロトタイプ由来のキーを拾わないよう、自身のキーだけで存在を判定する。
- *
- * @param record 調べる対象のオブジェクト
- * @param key 存在を知りたいフィールド名
- * @returns そのフィールドを自身が持っていれば true
- */
-function hasField(record: JsonRecord, key: string): boolean {
-  return Object.keys(record).includes(key);
 }
 
 /**
@@ -239,7 +229,7 @@ export const Json = {
     decode: JsonDecoder<T>,
   ): JsonDecoded<T> {
     const field = fieldCursor(cursor, key);
-    if (!hasField(cursor.record, key)) {
+    if (!RecordEx.has(cursor.record, key)) {
       return Json.error("missing-field", field.path, `"${key}" is required`);
     }
     return decode(field);
@@ -258,7 +248,7 @@ export const Json = {
     key: string,
     decode: JsonDecoder<T>,
   ): JsonDecoded<T | undefined> {
-    if (!hasField(cursor.record, key)) {
+    if (!RecordEx.has(cursor.record, key)) {
       return Result.ok(undefined);
     }
     return decode(fieldCursor(cursor, key));
@@ -277,7 +267,7 @@ export const Json = {
     key: string,
     decodeValue: JsonDecoder<T>,
   ): JsonDecoded<Readonly<Record<string, T>>> {
-    if (!hasField(cursor.record, key)) {
+    if (!RecordEx.has(cursor.record, key)) {
       return Result.ok({});
     }
     return Json.mapOf(fieldCursor(cursor, key), decodeValue);
