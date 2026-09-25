@@ -5,6 +5,7 @@ import {
   type PrimitiveType,
   PropDefinitionRecord,
 } from "@/domains/dcmp/primitive-schema";
+import { Option } from "@/utils/Option";
 
 type SchemaPropsOf<T extends PrimitiveType> =
   (typeof PrimitiveSchemas)[T]["props"];
@@ -53,11 +54,14 @@ export const ResolvedProps = {
   /**
    * プリミティブのノードの props を、そのノードの型のスキーマで解決する。
    *
-   * @param node 解決するノード
-   * @returns `resolve` にノードの型と props（未設定なら空）を渡した結果
-   * @throws `type` がスキーマに無い primitive の型のとき（スキーマを引けず `TypeError`）
+   * @param node 解決するノード。`type` はファイル由来の未知の名前でもよい
+   * @returns `resolve` にノードの型と props（未設定なら空）を渡した結果。`type` がスキーマ
+   *   に無い（照らすスキーマが引けない）ときは `none`
    */
-  forNode(node: PrimitiveNode): ResolvedProps<PrimitiveType> {
-    return ResolvedProps.resolve(node.type as PrimitiveType, node.props ?? {});
+  forNode(node: PrimitiveNode): Option<ResolvedProps<PrimitiveType>> {
+    if (!PrimitiveSchema.isPrimitiveType(node.type)) {
+      return Option.none;
+    }
+    return Option.some(ResolvedProps.resolve(node.type, node.props ?? {}));
   },
 } as const;

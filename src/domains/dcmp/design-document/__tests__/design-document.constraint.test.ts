@@ -544,6 +544,96 @@ test("語彙にない追従を書いた子は動かない", () => {
   expect(Option.unwrap(propOf(widened, "broken", "x"))).toBe(150);
 });
 
+/**
+ * スキーマに無い type の子と、右辺へ付いた Box の子が並ぶドキュメント。
+ *
+ * スキーマに無い type の子にも `max` と座標を持たせる。生の props で追従させる実装なら
+ * 動いてしまう入力にしておく。
+ */
+function setupLegacyChildDocument(): DesignDocument {
+  return DesignDocument.create({
+    artboards: [
+      {
+        name: "home",
+        width: 200,
+        height: 100,
+        children: [
+          {
+            name: "legacy",
+            type: "Legacy",
+            props: {
+              placement: "absolute",
+              x: 150,
+              y: 10,
+              constraintX: "max",
+            },
+          },
+          {
+            name: "right-badge",
+            type: "Box",
+            props: {
+              placement: "absolute",
+              x: 150,
+              y: 10,
+              constraintX: "max",
+            },
+            children: [],
+          },
+        ],
+      },
+    ],
+  });
+}
+
+test("スキーマに無い type の子が並びにいても、artboard を広げると他の max の子は追従する", () => {
+  const widened = widen(setupLegacyChildDocument(), "home");
+
+  expect(Option.unwrap(propOf(widened, "right-badge", "x"))).toBe(250);
+});
+
+test("スキーマに無い type の子は artboard を広げても動かない", () => {
+  const widened = widen(setupLegacyChildDocument(), "home");
+
+  expect(Option.unwrap(propOf(widened, "legacy", "x"))).toBe(150);
+});
+
+test("スキーマに無い type の親を広げても、中の max の子は追従しない", () => {
+  // 未知の type は子を挿せないが、手で書いたファイルなら子を持ちうる（`findChildren` は答えない）
+  const document = DesignDocument.create({
+    artboards: [
+      {
+        name: "home",
+        width: 400,
+        height: 100,
+        children: [
+          {
+            name: "legacy",
+            type: "Legacy",
+            props: { widthMode: "fixed", width: 200 },
+            children: [
+              {
+                name: "right-badge",
+                type: "Box",
+                props: {
+                  placement: "absolute",
+                  x: 150,
+                  y: 10,
+                  constraintX: "max",
+                },
+                children: [],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  });
+
+  const widened = widen(document, "legacy");
+
+  expect(Option.unwrap(propOf(widened, "right-badge", "x"))).toBe(150);
+});
+
 test("artboard を左辺から縮めても max の子は画面上の位置が変わらない", () => {
   /*
    * 左辺から縮めると幅が減るぶん artboard 自身が右へ動く。右辺へ付いた子は artboard の

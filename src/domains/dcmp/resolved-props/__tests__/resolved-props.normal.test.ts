@@ -1,5 +1,6 @@
 import { expect, expectTypeOf, test } from "vitest";
 import type { PropValue } from "@/domains/dcmp/node";
+import { Option } from "@/utils/Option";
 import { ResolvedProps } from "../index";
 
 test("未指定の layout はスキーマのデフォルト値 column に解決される", () => {
@@ -36,7 +37,7 @@ test("未指定の color はデフォルトのトークン名 gray-900 にその
 
 test("forNode に渡した props が省略されたノードもデフォルトで解決される", () => {
   const node = { name: "label-1", type: "Text" as const };
-  const resolved = ResolvedProps.forNode(node);
+  const resolved = Option.unwrap(ResolvedProps.forNode(node));
   expect(resolved).toMatchObject({ content: "", typography: "body" });
 });
 
@@ -54,6 +55,6 @@ test("forNode は node.type のスキーマに基づいて解決する", () => {
     type: "Box" as const,
     props: { layout: "row" as const },
   };
-  const resolved = ResolvedProps.forNode(node);
+  const resolved = Option.unwrap(ResolvedProps.forNode(node));
   expect(resolved).toMatchObject({ layout: "row", align: "stretch" });
 });

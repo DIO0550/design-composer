@@ -3,7 +3,8 @@ import { Option } from "@/utils/Option";
 import { DesignDocument, DocumentTemplate } from "../index";
 
 /**
- * `home` に絶対配置・フロー・部品インスタンス・壊れた座標のノードが並ぶドキュメント。
+ * `home` に絶対配置・フロー・部品インスタンス・壊れた座標・スキーマに無い type のノードが
+ * 並ぶドキュメント。
  * 座標で動かせるのは 1 つだけ、という形にして、答えられない側を数え分ける。
  */
 function setupDocument(): DesignDocument {
@@ -29,6 +30,11 @@ function setupDocument(): DesignDocument {
             children: [],
           },
           { name: "login", ref: "primary-button", overrides: {} },
+          {
+            name: "legacy",
+            type: "Legacy",
+            props: { placement: "absolute", x: 40, y: 24 },
+          },
         ],
       },
     ],
@@ -60,6 +66,13 @@ test("絶対配置でも座標が数値でなければ答えない", () => {
 test("部品インスタンスは props を持たないので答えない", () => {
   expect(
     Option.isSome(DesignDocument.childPlacementOf(setupDocument(), "login")),
+  ).toBe(false);
+});
+
+test("スキーマに無い type のノードは props を解決できないので答えない", () => {
+  // 座標は `badge` と同じ綴り。生の props を読めば答えてしまう
+  expect(
+    Option.isSome(DesignDocument.childPlacementOf(setupDocument(), "legacy")),
   ).toBe(false);
 });
 

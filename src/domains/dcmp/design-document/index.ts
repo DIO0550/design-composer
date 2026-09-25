@@ -133,7 +133,8 @@ function applyPropEdits(
  * @param document 引き先になるドキュメント
  * @param name 長さを知りたい artboard / ノードの名前
  * @param axis どちらの軸の長さか
- * @returns その軸の長さ。名前が無い / 部品インスタンス / `hug` `fill` のときは `none`
+ * @returns その軸の長さ。名前が無い / 部品インスタンス / スキーマに無い type /
+ *   `hug` `fill` のときは `none`
  */
 function axisLengthOf(
   document: DesignDocument,
@@ -148,7 +149,9 @@ function axisLengthOf(
   if (!Option.isSome(node) || !Node.isPrimitive(node.value)) {
     return Option.none;
   }
-  return Size.fixedLengthFromProps(ResolvedProps.forNode(node.value), axis);
+  return Option.flatMap(ResolvedProps.forNode(node.value), (props) =>
+    Size.fixedLengthFromProps(props, axis),
+  );
 }
 
 /**
@@ -157,14 +160,18 @@ function axisLengthOf(
  *
  * @param node 追従させる子
  * @param resize 親のその軸の長さの変化
- * @returns 座標と長さの編集。フローの子・部品インスタンス・追従の綴りが読めない子と、
- *   追従しても値が変わらない子では空
+ * @returns 座標と長さの編集。フローの子・部品インスタンス・スキーマに無い type の子・
+ *   追従の綴りが読めない子と、追従しても値が変わらない子では空
  */
 function followPropEdits(node: Node, resize: AxisResize): readonly PropEdit[] {
   if (!Node.isPrimitive(node)) {
     return [];
   }
-  const props = ResolvedProps.forNode(node);
+  const resolved = ResolvedProps.forNode(node);
+  if (!Option.isSome(resolved)) {
+    return [];
+  }
+  const props = resolved.value;
   const placement = Placement.fromProps(props);
   const constraint = Constraint.fromProps(props, resize.axis);
   if (!Placement.isAbsolute(placement) || !Option.isSome(constraint)) {
@@ -206,7 +213,8 @@ function followPropEdits(node: Node, resize: AxisResize): readonly PropEdit[] {
  * @param before 編集する前のドキュメント
  * @param name 大きさが変わったかもしれない artboard / ノードの名前
  * @param edited その編集の結果
- * @returns 子を追従させたドキュメント。長さが変わっていなければ `edited` のまま
+ * @returns 子を追従させたドキュメント。長さが変わっていない・長さが読めない
+ *   （`axisLengthOf` が答えない）ときは `edited` のまま
  */
 function withResizeFollowUp(
   before: DesignDocument,
@@ -256,7 +264,7 @@ function repositionResized(artboard: Artboard, edit: ResizeEdit): Artboard {
  * @param name 置き直すノードの名前
  * @param position 置き直したあとの位置。位置を書かないリサイズなら `none`
  * @returns 値が変わる軸ぶんの編集。位置を書かないとき・そのノードが座標を持たない
- *   ときは空
+ *   とき（`childPlacementOf` が答えないとき）は空
  */
 function nodePositionPropEdits(
   document: DesignDocument,
@@ -864,8 +872,8 @@ export const DesignDocument = {
    * @param document 引き先になるドキュメント
    * @param name 置かれている場所を知りたいノードの名前
    * @returns 今いる親と、その親から見た座標。木に無い名前 / 部品インスタンス（props
-   *   を持たない）/ フロー / 座標が数値でないとき / 親を持たない artboard 自身は
-   *   `none`
+   *   を持たない）/ スキーマに無い type（props を解決できない）/ フロー / 座標が数値で
+   *   ないとき / 親を持たない artboard 自身は `none`
    */
   childPlacementOf(
     document: DesignDocument,
@@ -875,7 +883,11 @@ export const DesignDocument = {
     if (!Option.isSome(node) || !Node.isPrimitive(node.value)) {
       return Option.none;
     }
-    const placement = Placement.fromProps(ResolvedProps.forNode(node.value));
+    const resolved = ResolvedProps.forNode(node.value);
+    if (!Option.isSome(resolved)) {
+      return Option.none;
+    }
+    const placement = Placement.fromProps(resolved.value);
     if (!Placement.isAbsolute(placement)) {
       return Option.none;
     }
@@ -959,7 +971,8 @@ export const DesignDocument = {
    * @param name 大きさを変える artboard / ノードの名前
    * @param edit 書き込む長さと、置き直したあとの位置
    * @returns 書き換えたドキュメント。その名前のものが無ければ失敗。位置が書かれるのは
-   *   artboard と座標を持つノードだけで、フロー配置のノードには長さだけが書かれる
+   *   artboard と座標を持つノード（`childPlacementOf` が答えるもの）だけで、フロー配置・
+   *   スキーマに無い type のノードには長さだけが書かれる
    */
   resize(
     document: DesignDocument,
