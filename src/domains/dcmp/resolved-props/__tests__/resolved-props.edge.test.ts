@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { Option } from "@/utils/Option";
 import { ResolvedProps } from "../index";
 
 test("デフォルト「なし」の gap は未指定のとき解決済み props に含まれない", () => {
@@ -32,4 +33,9 @@ test("resolve は呼び出しごとに新しいオブジェクトを返す", () 
   const props = { layout: "row" as const };
   const resolved = ResolvedProps.resolve("Box", props);
   expect(resolved).not.toBe(props);
+});
+
+test("スキーマに無い type のノードは解決できず不在になる", () => {
+  const node = { name: "a", type: "unknown-type", props: { layout: "row" } };
+  expect(Option.isSome(ResolvedProps.forNode(node))).toBe(false);
 });

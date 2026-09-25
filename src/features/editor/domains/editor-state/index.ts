@@ -807,7 +807,8 @@ export const EditorState = {
    * @param state ずらす前の編集状態
    * @param delta 動かす量。ドキュメント上の px
    * @returns ずらしたあとの編集状態。1 つだけ選んでいないとき（未選択・複数選択）と、
-   *   選んでいるものが座標を持たないとき（フロー配置・インスタンス・artboard 自身）は `none`
+   *   選んでいるものが座標を持たないとき（フロー配置・インスタンス・スキーマに無い type・
+   *   artboard 自身）は `none`
    */
   repositionSelectedNodeBy(
     state: EditorState,

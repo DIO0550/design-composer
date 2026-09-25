@@ -34,6 +34,17 @@ function setupDocument(): DesignDocument {
             },
             children: [],
           },
+          {
+            name: "legacy",
+            type: "Legacy",
+            props: {
+              widthMode: "fixed",
+              width: 60,
+              placement: "absolute",
+              x: 40,
+              y: 90,
+            },
+          },
         ],
       },
     ],
@@ -185,6 +196,33 @@ test("位置を書かないリサイズでは、座標を持つノードの座�
   expect(Node.isPrimitive(node) && [node.props?.x, node.props?.y]).toEqual([
     40, 90,
   ]);
+});
+
+test("スキーマに無い type のノードの大きさを変えると その軸の prop に長さが入る", () => {
+  const resized = Result.unwrap(
+    DesignDocument.resize(
+      setupDocument(),
+      "legacy",
+      ResizeEdit.create([AxisLength.create("width", 200)]),
+    ),
+  );
+
+  const node = Option.unwrap(DesignDocument.findNode(resized, "legacy"));
+  expect(Node.isPrimitive(node) && node.props?.width).toBe(200);
+});
+
+test("スキーマに無い type のノードは、位置を書くリサイズでも座標が変わらない", () => {
+  // props を解決できないので座標を持たない扱い。同じ綴りの `badge` は座標が書かれる
+  const resized = Result.unwrap(
+    DesignDocument.resize(
+      setupDocument(),
+      "legacy",
+      ResizeEdit.placedAt([AxisLength.create("width", 30)], { x: 70, y: 90 }),
+    ),
+  );
+
+  const node = Option.unwrap(DesignDocument.findNode(resized, "legacy"));
+  expect(Node.isPrimitive(node) && node.props?.x).toBe(40);
 });
 
 test("横だけが動くリサイズでは、縦の座標の prop を書き換えない", () => {
