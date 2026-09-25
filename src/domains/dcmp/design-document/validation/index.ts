@@ -224,7 +224,7 @@ function collectRefNodeErrors(
   refNode: RefNode,
 ): readonly UnlocatedError[] {
   const component = ComponentSet.get(context.components, refNode.ref);
-  if (component === undefined) {
+  if (!Option.isSome(component)) {
     return [
       {
         kind: "dangling-ref",
@@ -232,7 +232,7 @@ function collectRefNodeErrors(
       },
     ];
   }
-  return collectOverrideErrors(context, refNode, component);
+  return collectOverrideErrors(context, refNode, component.value);
 }
 
 /**
@@ -272,7 +272,11 @@ function collectBindingTargetErrors(
 ): readonly UnlocatedError[] {
   if (Node.isRef(target)) {
     const nested = ComponentSet.get(context.components, target.ref);
-    if (nested === undefined || Component.isPublicProp(nested, binding.prop)) {
+    // 参照先の部品が無いことは、参照ノード側が dangling-ref として報告する
+    if (!Option.isSome(nested)) {
+      return [];
+    }
+    if (Component.isPublicProp(nested.value, binding.prop)) {
       return [];
     }
     return [
@@ -538,10 +542,13 @@ export function collectDocumentNameErrors(
 ): readonly DesignDocumentValidationError[] {
   const componentErrors = ComponentSet.names(document.components).flatMap(
     (name): readonly DesignDocumentValidationError[] => {
-      const component = ComponentSet.get(document.components, name);
+      const children = Option.flatMap(
+        ComponentSet.get(document.components, name),
+        (component) => Option.fromNullable(component.children),
+      );
       return [
         ...collectNameErrors(name, "components", `key "${name}"`),
-        ...collectNodeNameErrors(component?.children ?? [], name),
+        ...collectNodeNameErrors(Option.unwrapOr(children, []), name),
       ];
     },
   );

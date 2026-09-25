@@ -304,10 +304,10 @@ function publicEditableProps(
   node: RefNode,
 ): readonly EditableProp[] {
   const component = ComponentSet.get(components, node.ref);
-  if (component === undefined) {
+  if (!Option.isSome(component)) {
     return [];
   }
-  return Component.publicPropNames(component).flatMap((name) => {
+  return Component.publicPropNames(component.value).flatMap((name) => {
     const target = ComponentSet.publicPropTarget(components, {
       component: node.ref,
       prop: name,

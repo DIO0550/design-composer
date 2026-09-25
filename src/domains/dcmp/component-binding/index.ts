@@ -35,10 +35,10 @@ function next(
   prop: string,
 ): Option<ComponentBinding> {
   const nested = ComponentSet.get(components, ref);
-  if (nested === undefined) {
+  if (!Option.isSome(nested)) {
     return Option.none;
   }
-  const binding = Component.binding(nested, prop);
+  const binding = Component.binding(nested.value, prop);
   if (!Option.isSome(binding)) {
     return Option.none;
   }
@@ -60,11 +60,11 @@ function resolveThroughRefs(
   visited: ReadonlySet<string>,
 ): Option<PropDefinition> {
   const component = ComponentSet.get(components, source.componentName);
-  if (component === undefined) {
+  if (!Option.isSome(component)) {
     return Option.none;
   }
   const found = Component.findNode(
-    component,
+    component.value,
     source.componentName,
     source.binding.node,
   );
