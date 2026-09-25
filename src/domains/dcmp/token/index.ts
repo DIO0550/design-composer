@@ -131,18 +131,6 @@ export const TokenEditError = {
 
 export const TokenValue = {
   /**
-   * 値に名前を付けてトークンにする。名前の規則と一意性はここでは見ない
-   * （書き込むときに `TokenSet.add` が見る）。
-   *
-   * @param value トークンにする値
-   * @param name 付ける名前
-   * @returns 値の種別を持ち、`name` が付いたトークン
-   */
-  toToken(value: TokenValue, name: string): Token {
-    return { ...value, name };
-  },
-
-  /**
    * 数値の種別（spacing / radius）の値を作る。
    *
    * どちらも px の長さなので負にはならない（docs/04-tokens.md「値の形式」）。
@@ -170,6 +158,19 @@ export const Token = {
    */
   ref(token: Token): TokenRef {
     return { kind: token.kind, name: token.name };
+  },
+
+  /**
+   * 名前を保ったまま値を差し替えたトークン。
+   *
+   * @param token 差し替える元のトークン
+   * @param value 新しい値
+   * @returns `token` の名前と `value` を持つトークン。`value` の種別が `token` と違えば `none`
+   */
+  withValue(token: Token, value: TokenValue): Option<Token> {
+    return value.kind === token.kind
+      ? Option.some({ ...value, name: token.name })
+      : Option.none;
   },
 
   /**

@@ -10,7 +10,7 @@ import {
   Token,
   type TokenRef,
   TokenSet,
-  TokenValue,
+  type TokenValue,
 } from "@/domains/dcmp/token";
 import { DocumentError } from "@/domains/session/document-error";
 import type { DocumentReload } from "@/domains/session/document-reload";
@@ -1301,20 +1301,23 @@ export const EditorState = {
    * 選択中のトークンの値を差し替える。
    *
    * @param state 差し替える前の状態
-   * @param value 新しい値。差し替える相手は値の種別と選択中のトークンの名前で決まる
-   * @returns 値を差し替えた状態。トークンを選んでいない・`DesignDocument.replaceToken` が
-   *   失敗する値（その種別にその名前が無い）・ファイルが不正な間は `none`
+   * @param value 新しい値
+   * @returns 値を差し替えた状態。トークンを選んでいない・選択中のトークンと種別が違う値・
+   *   ファイルが不正な間は `none`（`DesignDocument.replaceToken` の失敗は、文書から引いた
+   *   選択中のトークンの種別と名前へ書き込むので起こらない）
    */
   setTokenValue(state: EditorState, value: TokenValue): Option<EditorState> {
-    return Option.flatMap(EditorState.selectedToken(state), (token) => {
-      const replaced = DesignDocument.replaceToken(
-        EditorState.document(state),
-        TokenValue.toToken(value, token.name),
-      );
-      return Result.isOk(replaced)
-        ? withEdit(state, replaced.value)
-        : Option.none;
-    });
+    return Option.flatMap(EditorState.selectedToken(state), (token) =>
+      Option.flatMap(Token.withValue(token, value), (edited) => {
+        const replaced = DesignDocument.replaceToken(
+          EditorState.document(state),
+          edited,
+        );
+        return Result.isOk(replaced)
+          ? withEdit(state, replaced.value)
+          : Option.none;
+      }),
+    );
   },
 
   /**
