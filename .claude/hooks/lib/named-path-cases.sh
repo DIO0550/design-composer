@@ -29,6 +29,9 @@
 # | `slash` | 同じものを `"..."` で書いたもの |
 # | `template` | 同じものを複数行のテンプレートリテラルへ入れたもの |
 # | `md` | Markdown の 1 行 |
+# | `fence` | Markdown のフェンス(```` ```bash ````)の中の 1 行 |
+# | `fence-after` | 閉じたフェンスの後に続く Markdown の 1 行 |
+# | `indented` | 箇条書きの下へ字下げしたフェンスの中の 1 行 |
 #
 # 文字列の 3 種はどれも**中身がコメントの形をしている**。状態機械が引用符を追えていないと
 # 中身がコメントとして読まれて deny に転ぶので、pass のままであることが引用符の追跡を守る。
@@ -40,8 +43,9 @@
 # | `deny` | 違反として報告してほしい(exit 1) |
 # | `pass` | 報告してはいけない(誤検知したら信用を失う側) |
 # | `miss` | **意図した取りこぼし。** 名前・プレースホルダ・相対の綴りと、走査しない
-#            ファイル。期待の綴りを分けてあるのは、`pass` と並べると次に読む人がバグと
-#            読んで、取りこぼしにした理由ごと消しにいくため |
+#            ファイル・`.claude/hooks/README.md` のフェンスの中の probe。期待の綴りを
+#            分けてあるのは、`pass` と並べると次に読む人がバグと読んで、取りこぼしに
+#            した理由ごと消しにいくため |
 set -uo pipefail
 
 lib_dir="$(cd "$(dirname "$0")" && pwd)"
@@ -87,6 +91,9 @@ write_case() {
     slash)    printf 'export const Probe = "// 参照: %s";\n' "$spelling" ;;
     template) printf 'export const Probe = `\n// 参照: %s\n`;\n// 参照: features/editor/features/canvas\n' "$spelling" ;;
     md)       printf '# probe\n\n参照: %s\n' "$spelling" ;;
+    fence)    printf '# probe\n\n```bash\nrm %s\n```\n' "$spelling" ;;
+    indented) printf '# probe\n\n- 手順\n\n  ```bash\n  rm %s\n  ```\n' "$spelling" ;;
+    fence-after) printf '# probe\n\n```bash\necho\n```\n\n参照: %s\n' "$spelling" ;;
   esac > "$work/$file"
 }
 
@@ -117,6 +124,16 @@ deny|Markdown のリンクの中の、上へ辿る綴り|docs/probe.md|md|[規�
 deny|エイリアスはリポジトリルートからは解決しない|src/probe.ts|line|@/docs/01-file-format.md
 deny|PascalCase でも拡張子を持つ末尾は綴りとして見る|src/probe.ts|line|utils/Nonexistent.ts
 deny|先頭の . を落とさないので .claude/ 以下も検査される|src/probe.ts|line|.claude/hooks/nonexistent.sh
+deny|.claude/hooks/README.md の散文の綴りも見る|.claude/hooks/README.md|md|features/sidebar
+deny|README のフェンスの中でも probe でない綴りは見る(#708 の形)|.claude/hooks/README.md|fence|src/features/sidebar/heading.test.tsx
+deny|README のフェンスの外に書いた probe は見る|.claude/hooks/README.md|md|src/features/editor/probe.ts
+deny|README のフェンスを閉じた後の行は見る|.claude/hooks/README.md|fence-after|src/features/editor/probe.ts
+deny|フェンスの中の probe でも、手前のフォルダが実在しなければ見る|.claude/hooks/README.md|fence|src/features/sidebar/probe.ts
+deny|README 以外の .md のフェンスの中の probe は見る|docs/probe.md|fence|src/features/editor/probe.ts
+deny|コメントに書いた probe は見る(README のレシピが deny を期待する)|src/probe.ts|line|src/features/editor/probe.ts
+deny|右に文字が続く probes は probe と見ない|.claude/hooks/README.md|fence|src/features/editor/probes.ts
+deny|左に文字が付く reprobe は probe と見ない|.claude/hooks/README.md|fence|src/features/editor/reprobe.ts
+deny|エイリアスの probe はルートから手前のフォルダを探さない|.claude/hooks/README.md|fence|@/docs/probe.ts
 pass|実在するフォルダを名指しした行コメント|src/probe.ts|line|features/editor/features/canvas
 pass|拡張子を省いて実在するファイルを指す綴り(接頭辞一致で当たる)|src/probe.ts|line|src/test-setup
 pass|末尾セグメントが区切りまでの接頭辞になっている綴り|src/probe.ts|line|docs/01
@@ -131,7 +148,13 @@ pass|/ で区切った 2 語(NG/OK)はパスと数えない|src/probe.ts|line|NG
 miss|PascalCase を含む綴りは名前(story の title・コンポーネント名)なので見ない|src/probe.ts|line|components/ContextMenu
 miss|- で終わる綴りは、切れたプレースホルダなので見ない|src/probe.ts|line|harness/records/pr-
 miss|相対の綴り(第 1 セグメントがフォルダ名でない)は見ない|src/probe.ts|line|__tests__/canvas-elements.ts
-miss|.claude/hooks/README.md は走査しない(probe レシピと / 区切りの層の列挙)|.claude/hooks/README.md|md|features/sidebar
+miss|README のフェンスの中の probe は見ない(レシピがこれから作るファイル)|.claude/hooks/README.md|fence|src/features/editor/probe.ts
+miss|- の後ろに続く probe(internal-probe)も probe と見る|.claude/hooks/README.md|fence|src/components/context-menu/internal-probe.ts
+miss|セグメント全体が probe のフォルダも probe と見る|.claude/hooks/README.md|fence|src/features/editor/features/canvas/components/probe/index.stories.tsx
+miss|エイリアスの probe は src/ から手前のフォルダを探す|.claude/hooks/README.md|fence|@/components/context-menu/internal-probe
+miss|probe の後ろに - が続くもの(probe-a.ts)も probe と見る|.claude/hooks/README.md|fence|src/utils/probe-a.ts
+miss|probe を 2 つ持つ綴りは、最初の probe の手前だけを見る|.claude/hooks/README.md|fence|src/features/editor/probe/features/a/probe.ts
+miss|字下げしたフェンスの中の probe も見ない|.claude/hooks/README.md|indented|src/features/editor/probe.ts
 miss|harness/records/ は走査しない(当時の綴りとして正しい)|harness/records/pr-999.md|md|features/sidebar
 miss|相対リンクの段数は見ない(行き先が実在すれば通る)|docs/probe.md|md|[規約](../../../../rules/coding.md)
 miss|git が追跡していないファイルは走査しない|untracked.md|md|features/sidebar
