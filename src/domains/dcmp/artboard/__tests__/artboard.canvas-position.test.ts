@@ -44,20 +44,24 @@ test("x も y も無い artboard はキャンバス上の位置を持たない",
   expect(artboard.canvasPosition).toBeUndefined();
 });
 
-test("x だけを持つ artboard は読み込めない", () => {
+test("x だけを持つ artboard は y の欠落として報告される", () => {
   const result = Artboard.fromJson(
     Json.create(artboardJson({ x: 900 }), "a[0]"),
   );
 
-  expect(Result.isOk(result)).toBe(false);
+  expect(Json.errorsOf(result)).toEqual([
+    expect.objectContaining({ kind: "missing-field", path: "a[0].y" }),
+  ]);
 });
 
-test("y だけを持つ artboard は読み込めない", () => {
+test("y だけを持つ artboard は x の欠落として報告される", () => {
   const result = Artboard.fromJson(
     Json.create(artboardJson({ y: 300 }), "a[0]"),
   );
 
-  expect(Result.isOk(result)).toBe(false);
+  expect(Json.errorsOf(result)).toEqual([
+    expect.objectContaining({ kind: "missing-field", path: "a[0].x" }),
+  ]);
 });
 
 test("x が数値でない artboard は読み込めない", () => {
