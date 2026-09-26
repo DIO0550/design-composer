@@ -7,89 +7,61 @@
 # （.claude/hooks/README.md「強制力の序列」）。
 #
 # 配線: git config core.hooksPath harness/githooks
-set -e
 
-cd "$(git rev-parse --show-toplevel)"
+cd "$(git rev-parse --show-toplevel)" || exit 1
 
-# 1 つずつ独立に実行する。&& で連ねると途中の出力が流れて末尾しか見えない
-# （implementation-flow フェーズ 7 / PR #124・#168 で実際に読み違えている）。
-#
-# ツールが無い環境では、そのツールを使う検査だけを飛ばして黙って通す
-# （既存の pre-push-* と同じ扱い。検査できないことを理由に止めても検査の質は上がらない）。
-if command -v pnpm >/dev/null 2>&1 && [ -d node_modules ]; then
-  echo "pre-push: typecheck"
-  pnpm run typecheck
+# 検査は 1 つずつ独立に走らせ、落ちても止めずに最後まで走らせて、結果は最後の 1 行が言う
+# (harness/githooks/README.md「結果の読み方」)。
+. harness/githooks/lib/check-tally.sh || exit 1
 
-  echo "pre-push: oxlint"
-  pnpm run lint
+# ツールが無い環境では、そのツールを使う検査を飛ばして通す(既存の pre-push-* と同じ扱い。
+# 検査できないことを理由に止めても検査の質は上がらない)。飛ばした検査は最後の行で数える。
+pnpm_usable() {
+  command -v pnpm >/dev/null 2>&1 && [ -d node_modules ]
+}
 
-  echo "pre-push: biome"
-  pnpm exec biome check
-else
-  echo "pre-push: pnpm / node_modules が無いため typecheck / lint / format は飛ばします"
-fi
+pnpm_usable || skip_following_checks "pnpm / node_modules が無い"
+run_check "typecheck" pnpm run typecheck
+run_check "oxlint" pnpm run lint
+run_check "biome" pnpm exec biome check
+resume_checks
 
-echo "pre-push: テスト規約"
-bash .claude/hooks/lib/test-rules-scan.sh src
+run_check "テスト規約" bash .claude/hooks/lib/test-rules-scan.sh src
 
 # 疎通の見方を .github/scripts/lib/detector-precondition.sh と揃える。`command -v python3`
 # だと、起動すると落ちる python3 でこの分岐に入り、下の check-added-* が exit 2 を返して
 # push が止まる（上の「検査できないことを理由に止めない」と食い違う）。
-. .github/scripts/lib/detector-precondition.sh
+. .github/scripts/lib/detector-precondition.sh || exit 1
 
-if python3_usable; then
-  echo "pre-push: doc コメント"
-  python3 .claude/hooks/lib/missing-doc-comments.py --all src
+python3_usable || skip_following_checks "python3 が使えない"
+run_check "doc コメント" python3 .claude/hooks/lib/missing-doc-comments.py --all src
+run_check "import 規約" python3 .claude/hooks/lib/import-rule-violations.py src
+run_check "判別子の直読み" python3 .claude/hooks/lib/result-option-read-violations.py src
+run_check "story の title" python3 .claude/hooks/lib/story-title-violations.py src
+run_check "名指ししたパス" python3 .claude/hooks/lib/named-path-violations.py
 
-  echo "pre-push: import 規約"
-  python3 .claude/hooks/lib/import-rule-violations.py src
+# 上の検出器の判定表。判定表をどの層へ置くかと、その理由は
+# .claude/hooks/README.md「カバー範囲と残る穴」。
+run_check "判別子の直読みの判定表" bash .claude/hooks/lib/result-option-read-cases.sh
+run_check "story の title の判定表" bash .claude/hooks/lib/story-title-cases.sh
+run_check "名指ししたパスの判定表" bash .claude/hooks/lib/named-path-cases.sh
+run_check "doc コメントの判定表" bash .claude/hooks/lib/missing-doc-comments-cases.sh
 
-  echo "pre-push: 判別子の直読み"
-  python3 .claude/hooks/lib/result-option-read-violations.py src
+# CI (frontend.yml の lint-suppress ジョブ) と同じ判定を、push の前にも通す。
+# 引数を省くと origin/main を base に比べる。ここへ下ろした経緯は
+# .claude/skills/harness-growth/SKILL.md「3. フックにする」。
+run_check "追加された lint 抑制" bash .github/scripts/check-added-lint-suppressions.sh
+run_check "追加されたテストヘルパーの重複" bash .github/scripts/check-added-test-helper-duplication.sh
 
-  echo "pre-push: story の title"
-  python3 .claude/hooks/lib/story-title-violations.py src
-
-  echo "pre-push: 名指ししたパス"
-  python3 .claude/hooks/lib/named-path-violations.py
-
-  # 上の検出器の判定表。判定表をどの層へ置くかと、その理由は
-  # .claude/hooks/README.md「カバー範囲と残る穴」。
-  echo "pre-push: 判別子の直読みの判定表"
-  bash .claude/hooks/lib/result-option-read-cases.sh
-
-  echo "pre-push: story の title の判定表"
-  bash .claude/hooks/lib/story-title-cases.sh
-
-  echo "pre-push: 名指ししたパスの判定表"
-  bash .claude/hooks/lib/named-path-cases.sh
-
-  echo "pre-push: doc コメントの判定表"
-  bash .claude/hooks/lib/missing-doc-comments-cases.sh
-
-  # CI (frontend.yml の lint-suppress ジョブ) と同じ判定を、push の前にも通す。
-  # 引数を省くと origin/main を base に比べる。ここへ下ろした経緯は
-  # .claude/skills/harness-growth/SKILL.md「3. フックにする」。
-  echo "pre-push: 追加された lint 抑制"
-  bash .github/scripts/check-added-lint-suppressions.sh
-
-  echo "pre-push: 追加されたテストヘルパーの重複"
-  bash .github/scripts/check-added-test-helper-duplication.sh
-
-  # 上の 2 つが読んでいる判定そのものの判定表。
-  echo "pre-push: 追加された分の検査の判定表"
-  bash .github/scripts/check-added-cases.sh
-else
-  echo "pre-push: python3 が使えないため doc コメント(と判定表) / import 規約 / 判別子の直読み(と判定表) / story の title(と判定表) / 名指ししたパス(と判定表) / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加された分の検査の判定表 は飛ばします"
-fi
+# 上の 2 つが読んでいる判定そのものの判定表。
+run_check "追加された分の検査の判定表" bash .github/scripts/check-added-cases.sh
+resume_checks
 
 # 行数の予算(AGENTS.md「常時ロードは増やさない」)。実測と予算がずれていれば落ちる。
-echo "pre-push: 行数のラチェット"
-bash harness/records/count.sh --ratchet
+run_check "行数のラチェット" bash harness/records/count.sh --ratchet
 
 # 上の 2 つが読んでいる数え方そのものの判定表。
-echo "pre-push: 集計の判定表"
-bash harness/records/count-cases.sh
+run_check "集計の判定表" bash harness/records/count-cases.sh
 
 # カナリア(層 3 の部品)の判定表。ここへ置く理由は
 # .claude/hooks/README.md「カバー範囲と残る穴」。
@@ -97,9 +69,17 @@ bash harness/records/count-cases.sh
 # python3 と jq のどちらかが欠けると、判定が変わっていなくてもこの表は NG を出す
 # (どのケースが NG になるかは lib/canary-cases.sh の冒頭)。判定できないことを理由に
 # push を止めても検査の質は上がらないので、型 / lint / format と同じく飛ばす。
-if python3_usable && command -v jq >/dev/null 2>&1; then
-  echo "pre-push: カナリアの判定表"
-  bash .claude/hooks/lib/canary-cases.sh
-else
-  echo "pre-push: python3 が使えない / jq が無いためカナリアの判定表は飛ばします"
-fi
+canary_runnable() {
+  python3_usable && command -v jq >/dev/null 2>&1
+}
+
+canary_runnable || skip_following_checks "python3 が使えない / jq が無い"
+run_check "カナリアの判定表" bash .claude/hooks/lib/canary-cases.sh
+resume_checks
+
+# 最後の行(結果)を出している集計そのものの判定表。bash だけで走るので飛ばさない。
+run_check "pre-push の結果行の判定表" bash harness/githooks/lib/check-tally-cases.sh
+
+# この文の終了コードがフックの終了コードになる(後ろに文を足すと、失敗しても push が通る)。
+# 判定表はこの配線を lib 側からは見られないので、最後の文であることを判定表が別に確かめる。
+finish_checks

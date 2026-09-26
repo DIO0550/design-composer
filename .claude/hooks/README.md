@@ -150,6 +150,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 | `lib/canary-cases.sh` | あり | あり(`python3` と `jq` が揃う環境だけ) |
 | `.github/scripts/check-added-cases.sh` | あり(`lint-suppress` ジョブ) | あり(`python3` がある環境だけ) |
 | `.github/scripts/check-pr-closing-issue-cases.sh` | あり | **無し(残る穴)** |
+| `harness/githooks/lib/check-tally-cases.sh` | あり | あり |
 
 - **`canary-cases.sh` だけは層 3 の部品(`hook-canary.sh`)を層 2・層 1 で検査する。**
   ゲートが見ているのは「リポジトリに入っているスクリプトの判定が変わっていないか」で、
@@ -159,7 +160,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
   当てる 2 本(`check-added-*`)と同じジョブに置き、`python3` と git だけで完結する
 - **`check-pr-closing-issue-cases.sh` は層 1 だけ。** 再試行と問い合わせ直しの待ち時間だけで
   60.5 秒かかる(実測)。`pre-push` 全体は 35.9 秒(実測・`node_modules` のある環境)で、載せると
-  2.5 倍を超える。ここへ載せた 2 本は合わせて 2.2 秒。**この穴は残したままなので、
+  2.5 倍を超える。ここへ載せた 2 本は合わせて 2.2 秒、`harness/githooks/lib/check-tally-cases.sh` は 0.1 秒未満(実測)。**この穴は残したままなので、
   `check-pr-closing-issue.sh` を触ったときは手で走らせる**(「動作確認」)
 - 層 3(`pre-push-*.sh`)には足さない。層 1 と層 2 の両方に置く以上、守る範囲が増えない
 
@@ -422,7 +423,7 @@ rm "${TMPDIR:-/tmp}/design-composer-firings-probe.log"
 echo '{"session_id":"probe","tool_name":"Bash","tool_input":{"command":"ls"}}' | bash .claude/hooks/record-firings.sh; echo "exit=$?"
 ```
 
-**終了コードまで見る。** 層 1(CI の `run:`)と層 2(`pre-push` の `set -e`)は**終了コードだけが配線**なので、
+**終了コードまで見る。** 層 1(CI の `run:`)と層 2(`pre-push` の `run_check`)は**終了コードだけが配線**なので、
 標準出力の文字列しか確かめないと「無条件に落ちる」というゴールの本体が守られない。
 `; echo "exit=$?"` を必ず付ける。
 
@@ -528,15 +529,15 @@ bash .claude/hooks/lib/result-option-read-cases.sh; echo "exit=$?"
 python3 .claude/hooks/lib/result-option-read-violations.py src; echo "exit=$?"   # → 違反 0 件・exit=0
 
 # 定義元の外で直読みすると落ちること(probe が .tsx でも拾えること)。
-# **probe は doc 付き・整形済みで、モジュールフォルダの外に置く。** 層 2 はこの検査より
-# 前に typecheck / oxlint / biome / doc コメント / import 規約を走らせるので、素の 1 行を
-# 置くと未定義の識別子で typecheck が先に落ち、この検査まで届かない
+# **probe は doc 付き・整形済みで、モジュールフォルダの外に置く。** 層 2 は typecheck /
+# oxlint / biome / doc コメント / import 規約も同じ回に走らせるので、素の 1 行を置くとそれらも
+# 落ち、exit 1 がこの検査から来たのかを「失敗した検査」の行で切り分けることになる
 printf '/**\n * 判別子の直読み検査の probe。\n *\n * @param result 成否を持つ値\n * @returns 成否に応じた表示\n */\nexport const Probe = (result: { ok: boolean }) =>\n  result.ok ? <p>y</p> : <p>n</p>;\n' \
   > src/features/editor/probe.tsx
 python3 .claude/hooks/lib/result-option-read-violations.py src; echo "exit=$?"   # → [result-option-read] 1 件・exit=1
 
-# 層 2(git hooks)が止めること。set -e なので検査の exit 1 でそのまま落ちる
-bash harness/githooks/pre-push; echo "exit=$?"                                   # → exit=1
+# 層 2(git hooks)が止めること。最後まで走ったあと結果の行が失敗を言う
+bash harness/githooks/pre-push; echo "exit=$?"                                   # → 「失敗した検査: 判別子の直読み」・exit=1
 
 # 層 3(Claude Code の PreToolUse)が deny を返すこと
 echo '{"tool_input":{"command":"git push"}}' \
