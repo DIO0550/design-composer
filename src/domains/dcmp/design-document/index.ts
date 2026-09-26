@@ -468,7 +468,7 @@ function unusableNameError(
   if (!DocumentNames.isValidIdentifier(name)) {
     return Option.some({ kind: "invalid-name", name });
   }
-  if (DesignDocument.usedNames(document).has(name)) {
+  if (DocumentNames.has(documentNamesOf(document), name)) {
     return Option.some({ kind: "duplicate-name", name });
   }
   return Option.none;
