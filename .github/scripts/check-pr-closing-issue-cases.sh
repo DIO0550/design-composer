@@ -10,7 +10,8 @@
 # (理由は `.claude/hooks/README.md`「カバー範囲と残る穴」)。判定は終了コードで見る。
 #
 # **表をここへ置くのは、CI の run が流れると判定の根拠が残らないため。** 覆うのは
-# 「問い合わせ結果 → 終了コード」と「5xx のときの再試行」の 2 つ。GraphQL のクエリ本体
+# 「問い合わせ結果 → 終了コード」「5xx のときの再試行」「未反映のときの問い合わせ直し」の
+# 3 つ。GraphQL のクエリ本体
 # (フィールド名)とワークフローの配線は覆えないので、そこは CI で実際に叩いて確かめる。
 #
 # **件数(`totalCount`)と中身(`nodes`)は別々に渡す。** クエリは `files(first: 1)` なので
@@ -65,14 +66,18 @@ run_case 1 "$no_issue"  1 "$sibling_folder"  'harness/records- で始まる別�
 run_case 1 "$no_issue"  1 "$nested_path"     'パスの途中に harness/records/ を含むだけのものは記録 PR ではない'
 run_case 1 "$no_issue"  1 "$records_readme"  'harness/records/ でも pr-<番号>.md でなければ記録 PR ではない'
 
-# --- 問い合わせの再試行 ---
+# --- 問い合わせの再試行と問い合わせ直し ---
 #
-# `gh` を差し替えて、GitHub の API が 5xx を返したときの振る舞いを固定する。
-# **待ち時間があるのでこの 2 ケースだけで 20 秒ほどかかる。**
+# `gh` を差し替えて、GitHub の API が 5xx を返したとき・閉じる Issue がまだ反映されて
+# いないときの振る舞いを固定する。スタブは呼び出しごとに `STUB_REPLIES` の語を 1 つずつ
+# 返す(`fail` = 5xx / `empty` = 閉じる Issue が空 / `linked` = 閉じる Issue あり)。
+# 語が尽きたら `linked`。**待ち時間があるので、この節だけで 1 分ほどかかる。**
 # いちばん守りたいのは「3 回とも駄目なら赤」。ここが黙って通るようになると、
-# 問い合わせに失敗しただけの PR が緑になる。
+# 問い合わせに失敗しただけの PR・閉じ忘れた PR が緑になる。
+not_record='[{"path":"AGENTS.md","changeType":"MODIFIED"}]'
+
 run_fetch_case() {
-  local expected="$1" fail_times="$2" expected_calls="$3" label="$4"
+  local expected="$1" expected_calls="$2" label="$3"
   local dir actual=0 calls
 
   dir="$(mktemp -d)"
@@ -81,16 +86,27 @@ run_fetch_case() {
 #!/usr/bin/env bash
 calls=$(( $(cat "$STUB_COUNT_FILE" 2>/dev/null || echo 0) + 1 ))
 echo "$calls" >"$STUB_COUNT_FILE"
-if [ "$calls" -le "$FAIL_TIMES" ]; then
+read -ra replies <<<"$STUB_REPLIES"
+reply="${replies[$((calls - 1))]:-linked}"
+if [ "$reply" = fail ]; then
   echo "gh: HTTP 502" >&2
   exit 1
 fi
-echo '{"data":{"repository":{"pullRequest":{"closingIssuesReferences":{"nodes":[{"number":1}]},"files":{"totalCount":9,"nodes":[{"path":"AGENTS.md","changeType":"MODIFIED"}]}}}}}'
+closing='[{"number":1}]'
+[ "$reply" = empty ] && closing='[]'
+jq -n --argjson closing "$closing" --argjson total "$STUB_FILES_TOTAL" --argjson files "$STUB_FILES" '{
+  data: { repository: { pullRequest: {
+    closingIssuesReferences: { nodes: $closing },
+    files: { totalCount: $total, nodes: $files }
+  } } }
+}'
 STUB
   chmod +x "$dir/bin/gh"
 
-  PATH="$dir/bin:$PATH" STUB_COUNT_FILE="$dir/count" FAIL_TIMES="$fail_times" \
-    GITHUB_REPOSITORY=owner/repo PR_NUMBER=1 \
+  PATH="$dir/bin:$PATH" STUB_COUNT_FILE="$dir/count" STUB_REPLIES="${STUB_REPLIES:-}" \
+    STUB_FILES="${STUB_FILES:-$not_record}" \
+    STUB_FILES_TOTAL="${STUB_FILES_TOTAL:-9}" \
+    GITHUB_REPOSITORY=owner/repo PR_NUMBER=1 PR_ACTION="${PR_ACTION:-synchronize}" \
     bash "$script" >/dev/null 2>&1 || actual=$?
   calls="$(cat "$dir/count" 2>/dev/null || echo 0)"
   rm -rf "$dir"
@@ -104,8 +120,22 @@ STUB
   failed=1
 }
 
-run_fetch_case 0 0 1 '問い合わせが通れば再試行しない'
-run_fetch_case 0 1 2 '一時的な 5xx は再試行して通る'
-run_fetch_case 1 9 3 '3 回とも失敗したら赤にする（握りつぶさない）'
+run_fetch_case 0 1 '問い合わせが通れば再試行しない'
+STUB_REPLIES='fail' run_fetch_case 0 2 '一時的な 5xx は再試行して通る'
+STUB_REPLIES='fail fail fail' run_fetch_case 1 3 '3 回とも失敗したら赤にする（握りつぶさない）'
+
+PR_ACTION=opened STUB_REPLIES='empty' run_fetch_case 0 2 \
+  'PR を作った直後に閉じる Issue が未反映でも、問い合わせ直して反映されれば通る'
+PR_ACTION=opened STUB_REPLIES='empty empty empty' run_fetch_case 1 3 \
+  'PR を作った直後でも、3 回とも閉じる Issue が空なら赤にする'
+PR_ACTION=opened STUB_REPLIES='empty fail fail fail' run_fetch_case 1 4 \
+  '問い合わせ直しの途中で 5xx が 3 回続いたら赤にする'
+STUB_REPLIES='empty' run_fetch_case 1 1 \
+  'PR を作った直後でなければ、閉じる Issue が空でも問い合わせ直さずに赤にする'
+PR_ACTION=edited STUB_REPLIES='empty' run_fetch_case 1 1 \
+  '本文を編集しただけなら、閉じる Issue が空でも問い合わせ直さずに赤にする'
+PR_ACTION=opened STUB_REPLIES='empty' STUB_FILES_TOTAL=1 \
+  STUB_FILES="$record" run_fetch_case 0 1 \
+  '記録 PR は PR を作った直後でも問い合わせ直さずに通す'
 
 exit "$failed"
