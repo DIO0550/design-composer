@@ -39,7 +39,7 @@ const Current: FormatVersionOf<typeof CurrentMajor> = {
   minor: 1,
 };
 
-const FormatVersionPattern = /^(\d+)\.(\d+)$/;
+const FormatVersionPattern = /^(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
 
 export const FormatVersion = {
   Current,
@@ -49,15 +49,18 @@ export const FormatVersion = {
    *
    * @param value 形式版の綴り
    * @returns 読めた形式版。数字の並び 2 つを `.` 1 つで繋いだ綴りでなければ（前後の空白・
-   *   `v` などの接頭辞・3 つ目の数字も）`none`。先頭の `0` は数値として読む（`"01.02"` は
-   *   1.2）
+   *   `v` などの接頭辞・3 つ目の数字も）`none`。`0` 以外の数の先頭に `0` がある綴り
+   *   （`"01.2"`）と、`Number` で正確に表せない大きな数も `none`
    */
   parse(value: string): Option<FormatVersion> {
     const match = FormatVersionPattern.exec(value);
     if (match === null) {
       return Option.none;
     }
-    return Option.some({ major: Number(match[1]), minor: Number(match[2]) });
+    const major = Number(match[1]);
+    const minor = Number(match[2]);
+    const isExact = Number.isSafeInteger(major) && Number.isSafeInteger(minor);
+    return isExact ? Option.some({ major, minor }) : Option.none;
   },
 
   /**
