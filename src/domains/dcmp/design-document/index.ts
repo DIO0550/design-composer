@@ -102,6 +102,24 @@ function artboardIndexOfNode(
 }
 
 /**
+ * 名前で指した artboard の位置。artboard を名前で引く入口（`findArtboard` と、書き換え・
+ * 取り除き）はすべてここを通す。
+ *
+ * @param document 探す対象のドキュメント
+ * @param name 探す artboard の名前
+ * @returns その名前の artboard のうち並びで先の 1 枚の位置。無ければ `none`
+ */
+function artboardIndexNamed(
+  document: DesignDocument,
+  name: string,
+): Option<number> {
+  const index = document.artboards.findIndex(
+    (artboard) => artboard.name === name,
+  );
+  return index === -1 ? Option.none : Option.some(index);
+}
+
+/**
  * 名前で指したノードへ、並びの順に編集を重ねる。
  *
  * 大きさ（軸ごと）と座標（`x` / `y`）がどちらも「1 回の編集で複数の prop を書く」
@@ -319,22 +337,20 @@ function followChildren(
  * @param document 作り直す元のドキュメント
  * @param name 作り直す artboard の名前
  * @param update その artboard を作り直す手続き
- * @returns 差し替え後のドキュメント。その名前の artboard が無ければ `none`
+ * @returns 差し替え後のドキュメント。名前が重複した不正なドキュメントでも作り直すのは
+ *   `findArtboard` が返す 1 枚（並びで先の 1 枚）だけ。その名前の artboard が無ければ `none`
  */
 function updateArtboardNamed(
   document: DesignDocument,
   name: string,
   update: (artboard: Artboard) => Artboard,
 ): Option<DesignDocument> {
-  if (!Option.isSome(DesignDocument.findArtboard(document, name))) {
-    return Option.none;
-  }
-  return Option.some({
+  return Option.map(artboardIndexNamed(document, name), (index) => ({
     ...document,
-    artboards: document.artboards.map((artboard) =>
-      artboard.name === name ? update(artboard) : artboard,
+    artboards: document.artboards.map((artboard, current) =>
+      current === index ? update(artboard) : artboard,
     ),
-  });
+  }));
 }
 
 /**
@@ -390,7 +406,7 @@ function updateSiblingsOfNode(
 /**
  * 名前で指した親の子の並びを差し替える。
  * 親は artboard 自身のこともあるため、artboard 名で当ててから
- * ノードの中を探す、の順で調停する。
+ * ノードの中を探す、の順で調停する（`findChildren` と同じ相手）。
  *
  * @param document 差し替える元のドキュメント
  * @param parentName 子の並びを差し替えたい親の名前（artboard 名でもよい）
@@ -403,13 +419,11 @@ function updateChildrenOfParent(
   parentName: string,
   update: NodeTreeUpdate,
 ): Result<DesignDocument, DesignDocumentEditError> {
-  const artboardIndex = document.artboards.findIndex(
-    (artboard) => artboard.name === parentName,
-  );
-  if (artboardIndex !== -1) {
+  const artboardIndex = artboardIndexNamed(document, parentName);
+  if (Option.isSome(artboardIndex)) {
     return Result.map(
-      update(Artboard.tree(document.artboards[artboardIndex])),
-      (tree) => withArtboardTree(document, artboardIndex, tree),
+      update(Artboard.tree(document.artboards[artboardIndex.value])),
+      (tree) => withArtboardTree(document, artboardIndex.value, tree),
     );
   }
 
@@ -602,8 +616,8 @@ export const DesignDocument = {
    * @returns 挿入したドキュメント。親の名前が artboard にも artboard 配下のノードにも無い
    *   （部品定義の中のノードも含む）なら `parent-not-found`、親が参照ノードか、スキーマが
    *   子を認めていないプリミティブなら `children-not-allowed`、`index` が 0 以上子の数以下の整数でなければ
-   *   `index-out-of-range`。名前が重複した不正なドキュメントでは artboard の名前を先に当て、
-   *   ノードは並びで先にある artboard の中で、各階層の直下の並びを子孫より先に見て当てる
+   *   `index-out-of-range`。名前が重複した不正なドキュメントでは `findChildren` が返す並びへ
+   *   挿す（artboard の名前を先に当て、ノードは `findNode` が返すもの）
    */
   insertNode(
     document: DesignDocument,
@@ -645,7 +659,8 @@ export const DesignDocument = {
    * @param document 取り除く先のドキュメント
    * @param name 取り除くノードの名前。配下ごと取り除く
    * @returns 取り除いたドキュメント。`replaceNode` と同じ条件で `node-not-found` になり、
-   *   名前が重複した不正なドキュメントでも `replaceNode` と同じ相手を取り除く
+   *   名前が重複した不正なドキュメントでも `replaceNode` と同じ相手（`findNode` が返す
+   *   ノード）だけを取り除く
    */
   removeNode(
     document: DesignDocument,
@@ -734,8 +749,9 @@ export const DesignDocument = {
    *   不正なドキュメントでは並びで先にある 1 枚
    */
   findArtboard(document: DesignDocument, name: string): Option<Artboard> {
-    return Option.fromNullable(
-      document.artboards.find((artboard) => artboard.name === name),
+    return Option.map(
+      artboardIndexNamed(document, name),
+      (index) => document.artboards[index],
     );
   },
 
@@ -818,9 +834,8 @@ export const DesignDocument = {
    * @param document 引き先になるドキュメント
    * @param name 位置を知りたいノードの名前
    * @returns 親の名前（artboard の直下なら artboard 名）と、その親の子の並びの中の位置。
-   *   部品定義の中のノードと無い名前も `none`。名前が重複した不正なドキュメントでは、並び
-   *   で先にある artboard の中で、各階層の直下の並びを子孫より先に見て当たったもの
-   *   （`findNode` とは別のノードを指しうる）
+   *   部品定義の中のノードと無い名前も `none`。名前が重複した不正なドキュメントでは
+   *   `findNode` が返すノードの位置
    */
   findChildPosition(
     document: DesignDocument,
@@ -929,8 +944,8 @@ export const DesignDocument = {
    *   書く
    * @returns 書き換えたドキュメント。artboard にも artboard 配下のノードにも無い名前
    *   （部品定義の中のノードも含む）は `node-not-found`。名前が重複した不正なドキュメント
-   *   では artboard を優先して同名の artboard をすべて書き換える。ノードは `findNode` が
-   *   見つけたものに編集を重ね、`replaceNode` の相手へ書く（2 つが別のノードになりうる）
+   *   では artboard を優先して `findArtboard` が返す 1 枚を、ノードは `findNode` が返す
+   *   ものを書き換える
    */
   applyPropEdit(
     document: DesignDocument,
@@ -1066,9 +1081,8 @@ export const DesignDocument = {
    * @param name 差し替えるノードの名前
    * @param node 差し替え後のノード。名前は見ないので、`name` と違う名前でもそのまま入る
    * @returns 差し替えたドキュメント。artboard 自身の名前・部品定義の中のノードの名前・
-   *   無い名前は `node-not-found`。名前が重複した不正なドキュメントでは、並びで先にある
-   *   artboard の中で、各階層の直下の並びを子孫より先に見て当たった並びの、その名前の
-   *   ものをすべて差し替える
+   *   無い名前は `node-not-found`。名前が重複した不正なドキュメントでは `findNode` が返す
+   *   ノードだけを差し替える
    */
   replaceNode(
     document: DesignDocument,
@@ -1339,17 +1353,15 @@ export const DesignDocument = {
     document: DesignDocument,
     name: string,
   ): Result<DesignDocument, DesignDocumentEditError> {
-    const index = document.artboards.findIndex(
-      (artboard) => artboard.name === name,
-    );
-    if (index === -1) {
+    const index = artboardIndexNamed(document, name);
+    if (!Option.isSome(index)) {
       return Result.err({ kind: "artboard-not-found", name });
     }
     return Result.ok({
       ...document,
       artboards: [
-        ...document.artboards.slice(0, index),
-        ...document.artboards.slice(index + 1),
+        ...document.artboards.slice(0, index.value),
+        ...document.artboards.slice(index.value + 1),
       ],
     });
   },
@@ -1390,7 +1402,9 @@ export const DesignDocument = {
    * @param names 今の名前と、新しい名前
    * @returns 名前を変えたドキュメント。新しい名前が識別子の規則を満たさなければ
    *   `invalid-name`、単一名前空間で既に使われていれば `duplicate-name`、今の名前が
-   *   artboard にもノードにも無ければ `node-not-found`
+   *   artboard にもノードにも無ければ `node-not-found`。名前が重複した不正なドキュメント
+   *   では artboard を優先して `findArtboard` が返す 1 枚を、ノードは `findNode` が返す
+   *   もの（子孫に同じ名前があってもそれ自身）だけを変える
    */
   rename(
     document: DesignDocument,
@@ -1411,11 +1425,10 @@ export const DesignDocument = {
     if (!Option.isSome(node)) {
       return Result.err({ kind: "node-not-found", name: from });
     }
-    return DesignDocument.replaceNode(
-      document,
-      from,
-      Node.rename(node.value, { [from]: to }),
-    );
+    return DesignDocument.replaceNode(document, from, {
+      ...node.value,
+      name: to,
+    });
   },
 
   /**

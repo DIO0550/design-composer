@@ -49,6 +49,26 @@ function toTreeResult(
   );
 }
 
+/**
+ * 並びの中の 1 件の子の並びを差し替える。
+ *
+ * @param tree 差し替える対象を含む並び
+ * @param index 子の並びを差し替えるノードの位置
+ * @param children 差し替え後の子の並び
+ * @returns `index` 番目のノードだけ子の並びが入れ替わった、`tree` と同じ階層の並び
+ */
+function withChildrenAt(
+  tree: NodeTree,
+  index: number,
+  children: NodeTree,
+): NodeTree {
+  return NodeTree.create(
+    tree.nodes.map((node, current) =>
+      current === index ? { ...node, children: children.nodes } : node,
+    ),
+  );
+}
+
 export const NodeTree = {
   /**
    * そのノードが子を持てるか（プリミティブで、かつスキーマが子を認めているか）。
@@ -90,21 +110,19 @@ export const NodeTree = {
    * @param parentName `tree` の入れ物（artboard / ノード）の名前。直下で見つかったときの親
    *   になる
    * @param name 探すノードの名前
-   * @returns 見つかったノードの親の名前と、その親の子の並びの中の位置。先に `tree` の直下を
-   *   探し、無ければ直下のノードを順に子孫へ辿るので、名前が重複した不正なドキュメントでは
-   *   `NodeTree.find` と違うノードの位置を返すことがある。`parentName` 自身や、どこにも無い
-   *   名前なら `none`
+   * @returns 見つかったノードの親の名前と、その親の子の並びの中の位置。探す順は `find` と
+   *   同じ（深さ優先の行きがけ順）で、名前が重複した不正なドキュメントでも `find` が返す
+   *   ノードの位置になる。`parentName` 自身や、どこにも無い名前なら `none`
    */
   childPositionOf(
     tree: NodeTree,
     parentName: string,
     name: string,
   ): Option<ChildPosition> {
-    const index = tree.nodes.findIndex((node) => node.name === name);
-    if (index !== -1) {
-      return Option.some({ parentName, index });
-    }
-    for (const node of tree.nodes) {
+    for (const [index, node] of tree.nodes.entries()) {
+      if (node.name === name) {
+        return Option.some({ parentName, index });
+      }
       const found = NodeTree.childPositionOf(
         NodeTree.create(Node.children(node)),
         node.name,
@@ -177,41 +195,29 @@ export const NodeTree = {
    * @param tree 探す先の並び
    * @param name 差し替える並びに含まれているはずのノードの名前
    * @param update 見つかった階層の並びを差し替える手続き
-   * @returns その階層を `update` の結果に差し替えた、`tree` と同じ階層の並び。直下に無ければ、
-   *   子孫にその名前を持つ最初の直下のノードの中を辿る。どこにも無ければ `none`
+   * @returns その階層を `update` の結果に差し替えた、`tree` と同じ階層の並び。探す順は
+   *   `find` と同じ（深さ優先の行きがけ順）で、名前が重複した不正なドキュメントでも `find` が
+   *   返すノードを含む並びを差し替える。どこにも無ければ `none`
    */
   updateSiblingsOf(
     tree: NodeTree,
     name: string,
     update: (siblings: NodeTree) => NodeTree,
   ): Option<NodeTree> {
-    if (tree.nodes.some((node) => node.name === name)) {
-      return Option.some(update(tree));
+    for (const [hostIndex, host] of tree.nodes.entries()) {
+      if (host.name === name) {
+        return Option.some(update(tree));
+      }
+      const updated = NodeTree.updateSiblingsOf(
+        NodeTree.create(Node.children(host)),
+        name,
+        update,
+      );
+      if (Option.isSome(updated)) {
+        return Option.some(withChildrenAt(tree, hostIndex, updated.value));
+      }
     }
-    const hostIndex = tree.nodes.findIndex((node) =>
-      Option.isSome(NodeTree.find(NodeTree.create(Node.children(node)), name)),
-    );
-    if (hostIndex === -1) {
-      return Option.none;
-    }
-    const host = tree.nodes[hostIndex];
-    const updated = NodeTree.updateSiblingsOf(
-      NodeTree.create(Node.children(host)),
-      name,
-      update,
-    );
-    if (!Option.isSome(updated)) {
-      return Option.none;
-    }
-    return Option.some(
-      NodeTree.create(
-        tree.nodes.map((node, index) =>
-          index === hostIndex
-            ? { ...host, children: updated.value.nodes }
-            : node,
-        ),
-      ),
-    );
+    return Option.none;
   },
 
   /**
@@ -221,66 +227,37 @@ export const NodeTree = {
    * @param tree 探す先の並び
    * @param parentName 子の並びを差し替える親のノードの名前
    * @param update 親の子の並びを差し替える手続き
-   * @returns 親の子を `update` の結果に差し替えた、`tree` と同じ階層の並びの `some`。親が
-   *   見つからなければ `none` の `ok`。親が参照ノードか、スキーマが子を認めていないプリミ
-   *   ティブなら `children-not-allowed`、`update` が失敗すればその `err`
+   * @returns 親の子を `update` の結果に差し替えた、`tree` と同じ階層の並びの `some`。親は
+   *   `find` と同じ順（深さ優先の行きがけ順）で探すので、名前が重複した不正なドキュメント
+   *   でも `find` が返すノードを親にする。親が見つからなければ `none` の `ok`。親が参照ノード
+   *   か、スキーマが子を認めていないプリミティブなら `children-not-allowed`、`update` が
+   *   失敗すればその `err`
    */
   updateChildrenOf(
     tree: NodeTree,
     parentName: string,
     update: NodeTreeUpdate,
   ): Result<Option<NodeTree>, NodeTreeEditError> {
-    const parentIndex = tree.nodes.findIndex(
-      (node) => node.name === parentName,
-    );
-    if (parentIndex !== -1) {
-      const parent = tree.nodes[parentIndex];
-      if (!NodeTree.allowsChildren(parent)) {
-        return Result.err({ kind: "children-not-allowed", name: parentName });
+    for (const [index, node] of tree.nodes.entries()) {
+      const children = NodeTree.create(Node.children(node));
+      if (node.name === parentName) {
+        if (!NodeTree.allowsChildren(node)) {
+          return Result.err({ kind: "children-not-allowed", name: parentName });
+        }
+        return Result.map(update(children), (updated) =>
+          Option.some(withChildrenAt(tree, index, updated)),
+        );
       }
-      return Result.map(
-        update(NodeTree.create(Node.children(parent))),
-        (children) =>
-          Option.some(
-            NodeTree.create(
-              tree.nodes.map((node, index) =>
-                index === parentIndex
-                  ? { ...parent, children: children.nodes }
-                  : node,
-              ),
-            ),
-          ),
-      );
+      const updated = NodeTree.updateChildrenOf(children, parentName, update);
+      // 失敗も「この部分木で親が見つかった」ことなので、次の兄弟へ進まずに返す
+      const settled = !Result.isOk(updated) || Option.isSome(updated.value);
+      if (settled) {
+        return Result.map(updated, (found) =>
+          Option.map(found, (subtree) => withChildrenAt(tree, index, subtree)),
+        );
+      }
     }
-
-    const hostIndex = tree.nodes.findIndex((node) =>
-      Option.isSome(
-        NodeTree.find(NodeTree.create(Node.children(node)), parentName),
-      ),
-    );
-    if (hostIndex === -1) {
-      return Result.ok(Option.none);
-    }
-    const host = tree.nodes[hostIndex];
-    return Result.map(
-      NodeTree.updateChildrenOf(
-        NodeTree.create(Node.children(host)),
-        parentName,
-        update,
-      ),
-      (updated) =>
-        Option.isSome(updated)
-          ? Option.some(
-              NodeTree.create(
-                tree.nodes.map((node, index) =>
-                  index === hostIndex
-                    ? { ...host, children: updated.value.nodes }
-                    : node,
-                ),
-              ),
-            )
-          : Option.none,
-    );
+    return Result.ok(Option.none);
   },
 
   /**
@@ -293,16 +270,19 @@ export const NodeTree = {
    * @param siblings 置き換える対象を含む並び
    * @param name 置き換えるノードの名前
    * @param replacements その位置へ置く並び。空なら取り除く
-   * @returns 置き換えたあとの並び。名前が並びに無ければそのまま
+   * @returns 置き換えたあとの並び。名前が重複した不正なドキュメントでも置き換えるのは並びで
+   *   先の 1 件だけ（`updateSiblingsOf` が行きがけ順で当てるノードと同じ）。名前が並びに
+   *   無ければそのまま
    */
   spliceByName(
     siblings: NodeTree,
     name: string,
     replacements: readonly Node[],
   ): NodeTree {
+    const index = siblings.nodes.findIndex((sibling) => sibling.name === name);
     return NodeTree.create(
-      siblings.nodes.flatMap((sibling) =>
-        sibling.name === name ? replacements : [sibling],
+      siblings.nodes.flatMap((sibling, current) =>
+        current === index ? replacements : [sibling],
       ),
     );
   },
