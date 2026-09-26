@@ -13,6 +13,17 @@ test.each([
 });
 
 test.each([
+  "#3B82F6",
+  "#3b82f6ff",
+])("正規形でない hex %s は無効な色として判定される", (value) => {
+  expect(ColorToken.isValid(value)).toBe(false);
+});
+
+test("5桁の hex は短縮形として展開されずそのまま返る", () => {
+  expect(ColorToken.normalize("#12345")).toBe("#12345");
+});
+
+test.each([
   "#fff",
   "#3b82f6ff",
   "3b82f6",

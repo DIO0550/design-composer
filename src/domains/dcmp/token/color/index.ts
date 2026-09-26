@@ -12,6 +12,9 @@ const HexColorPattern = /^#[0-9a-f]{6}([0-9a-f]{2})?$/;
 /** 大文字の hex も受ける版。正規化の対象かどうかの判定にだけ使う。 */
 const AnyCaseHexColorPattern = /^#[0-9a-f]{6}([0-9a-f]{2})?$/i;
 
+/** 3 桁・4 桁の短縮形の hex。大文字も受ける。各桁を 2 回重ねると 6 桁・8 桁になる。 */
+const AnyCaseShortHexPattern = /^#[0-9a-f]{3,4}$/i;
+
 /** alpha を持たない6桁だけの hex。大文字も受ける(生成時に小文字へ倒す)。 */
 const AnyCaseRgbPattern = /^#[0-9a-f]{6}$/i;
 
@@ -56,6 +59,20 @@ function alphaOf(color: ColorToken): string {
   return AnyCaseHexColorPattern.exec(color)?.[1]?.toLowerCase() ?? "";
 }
 
+/**
+ * 3 桁・4 桁の短縮形を、各桁を 2 回重ねて 6 桁・8 桁へ広げる(CSS の `#rgb` / `#rgba` と同じ読み)。
+ *
+ * @param value 広げる元の色の綴り
+ * @returns 短縮形なら広げた綴り(大文字は大文字のまま)。短縮形でなければ `value` のまま
+ */
+function expandShortHex(value: string): string {
+  if (!AnyCaseShortHexPattern.test(value)) {
+    return value;
+  }
+  const digits = Array.from(value.slice(1), (digit) => digit.repeat(2));
+  return `#${digits.join("")}`;
+}
+
 /** 不透明を表す alpha の 2 桁。 */
 const OpaqueAlphaHex = "ff";
 
@@ -82,15 +99,15 @@ const AlphaPercentDigits = { fractionDigits: 1 } as const;
 
 export const ColorToken = {
   /**
-   * 小文字の hex として綴られた色か。CSS 色文字列(`rgb` / 名前色)を許さないのは、同値異表記
+   * 正規形の hex として綴られた色か。CSS 色文字列(`rgb` / 名前色)を許さないのは、同値異表記
    * の併存を構造的に排除するため(docs/04-tokens.md「値の形式」)。
    *
    * @param value 判定する綴り
-   * @returns `#` と小文字の 6 桁、または alpha 込みの 8 桁なら true。`normalize` が 6 桁へ
-   *   倒す `#rrggbbff` も true。大文字を含む・3 桁・CSS 色文字列は false
+   * @returns `#` と小文字の 6 桁、または不透明でない alpha 込みの 8 桁なら true。`normalize`
+   *   で綴りが変わるもの(大文字を含む・3 桁・4 桁・`#rrggbbff`)と CSS 色文字列は false
    */
   isValid(value: string): boolean {
-    return HexColorPattern.test(value);
+    return HexColorPattern.test(value) && ColorToken.normalize(value) === value;
   },
 
   /**
@@ -101,14 +118,16 @@ export const ColorToken = {
    * 形式」が正規形を 1 つに保つと明文で決めているため。
    *
    * @param value 倒す元の色の綴り
-   * @returns 6 桁か 8 桁の hex（大文字も可）なら小文字にし、alpha が `ff` なら 6 桁へ
-   *   落としたもの。3 桁・CSS 色文字列・前後に空白を含むなど、それ以外は `value` のまま
+   * @returns 3 桁・4 桁の短縮形は各桁を重ねて 6 桁・8 桁へ広げたうえで、6 桁か 8 桁の hex
+   *   （大文字も可）なら小文字にし、alpha が `ff` なら 6 桁へ落としたもの。5 桁・CSS 色文字列・
+   *   前後に空白を含むなど、それ以外は `value` のまま
    */
   normalize(value: string): ColorToken {
-    if (!AnyCaseHexColorPattern.test(value)) {
+    const expanded = expandShortHex(value);
+    if (!AnyCaseHexColorPattern.test(expanded)) {
       return value;
     }
-    const lowered = value.toLowerCase();
+    const lowered = expanded.toLowerCase();
     return alphaOf(lowered) === OpaqueAlphaHex
       ? lowered.slice(0, RgbLength)
       : lowered;
@@ -180,8 +199,9 @@ export const ColorToken = {
    * JSON 上の表現は hex 文字列。読み込んだ時点で正規形へ倒す。
    *
    * @param cursor 色の値と、その位置
-   * @returns `normalize` で倒した色。hex でない文字列も `ok`（`normalize` がそのまま返す）。
-   *   文字列でなければ `invalid-type` の `err`
+   * @returns `normalize` で倒した色。hex でない文字列も `ok`（`normalize` がそのまま返す。
+   *   colors トークンなら検証の `invalid-color` が報告し、影・グラデーションの中の色は報告
+   *   しない）。文字列でなければ `invalid-type` の `err`
    */
   fromJson(cursor: JsonCursor): JsonDecoded<ColorToken> {
     return Result.map(Json.string(cursor), ColorToken.normalize);

@@ -646,6 +646,19 @@ export const TokenSet = {
   },
 
   /**
+   * 値が正規形の hex でない色の名前（docs/04-tokens.md「colors」）。
+   * 影・グラデーションの中の色は見ない（docs/03-schema.md「バリデーション仕様」）。
+   *
+   * @param tokens 色を確かめるトークン一式
+   * @returns `ColorToken.isValid` を満たさない色の名前を colors の並びの順で並べたもの
+   */
+  collectInvalidColorNames(tokens: TokenSet): readonly string[] {
+    return Object.entries(tokens.colors)
+      .filter(([, color]) => !ColorToken.isValid(color))
+      .map(([name]) => name);
+  },
+
+  /**
    * その種別のトークンを並べる。
    *
    * @param tokens 読み出し元のトークン一式
@@ -795,7 +808,7 @@ export const TokenSet = {
    *
    * @param cursor `tokens` の値と、その位置
    * @returns 読んだトークン一式。影・グラデーションの中も含め、色は読んだ時点で
-   *   `ColorToken.normalize` で倒す。名前の規則と値の範囲（hex でない色・負の余白）は
+   *   `ColorToken.normalize` で倒す。名前の規則・hex でない色・値の範囲（負の余白など）は
    *   見ない。オブジェクトでなければ `invalid-type`、知らない種別があれば `unknown-field`、
    *   種別ごとの値の失敗も 1 件で打ち切らずすべて集めた `err`
    */

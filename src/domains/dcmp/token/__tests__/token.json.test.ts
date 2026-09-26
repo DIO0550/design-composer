@@ -38,6 +38,16 @@ test("影の色も読み込んだ時点で小文字の hex に正規化される
   expect(tokens.shadows.sm.color).toBe("#0000001a");
 });
 
+test("影の色の短縮形も読み込んだ時点で6桁へ展開される", () => {
+  const shadows = { sm: { x: 0, y: 1, blur: 3, color: "#FFF" } };
+
+  const tokens = Result.unwrap(
+    TokenSet.fromJson(Json.create({ shadows }, "tokens")),
+  );
+
+  expect(tokens.shadows.sm.color).toBe("#ffffff");
+});
+
 test("知らない種別は読み込めない", () => {
   /* 実在する 6 種別のどれとも一致せず、かつ紛れやすい綴りを未知の例に選んでいる。 */
   const result = TokenSet.fromJson(Json.create({ gradient: {} }, "tokens"));

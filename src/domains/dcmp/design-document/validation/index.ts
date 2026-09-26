@@ -35,7 +35,8 @@ export type DesignDocumentValidationErrorKind =
   | "invalid-identifier"
   | "duplicate-name"
   | "conflicting-token-name"
-  | "fill-in-free-parent";
+  | "fill-in-free-parent"
+  | "invalid-color";
 
 /** 不正 1 件。どのノードのどの prop かと、診断用のメッセージを持つ。 */
 export type DesignDocumentValidationError = Readonly<{
@@ -550,6 +551,26 @@ function collectPaintNameConflictErrors(
       kind: "conflicting-token-name",
       nodeName: name,
       message: `token name "${name}" is used in both colors and gradients`,
+    }),
+  );
+}
+
+/**
+ * 値が正規形の hex でない colors トークン（docs/04-tokens.md「colors」）。
+ *
+ * 位置には識別子違反（`collectTokenNameErrors`）と同じくトークン名を入れる。
+ *
+ * @param tokens 検証するトークン一式
+ * @returns `TokenSet.collectInvalidColorNames` が返す名前ごとの invalid-color エラーの並び
+ */
+export function collectColorTokenErrors(
+  tokens: TokenSet,
+): readonly DesignDocumentValidationError[] {
+  return TokenSet.collectInvalidColorNames(tokens).map(
+    (name): DesignDocumentValidationError => ({
+      kind: "invalid-color",
+      nodeName: name,
+      message: `color token "${name}" is not a hex color in normal form (#rrggbb / #rrggbbaa)`,
     }),
   );
 }

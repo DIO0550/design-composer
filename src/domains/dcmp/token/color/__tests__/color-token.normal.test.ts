@@ -30,6 +30,18 @@ test("末尾が ff でも6桁の色は桁が落ちない", () => {
   expect(ColorToken.normalize("#ccccff")).toBe("#ccccff");
 });
 
+test("3桁の短縮形は各桁を重ねた6桁へ正規化される", () => {
+  expect(ColorToken.normalize("#FA0")).toBe("#ffaa00");
+});
+
+test("4桁の短縮形は alpha を保ったまま8桁へ正規化される", () => {
+  expect(ColorToken.normalize("#0008")).toBe("#00000088");
+});
+
+test("不透明を表す4桁の短縮形は6桁へ正規化される", () => {
+  expect(ColorToken.normalize("#FA0F")).toBe("#ffaa00");
+});
+
 test("正規化した色は有効な色として判定される", () => {
   expect(ColorToken.isValid(ColorToken.normalize("#3B82F6"))).toBe(true);
 });
@@ -38,7 +50,6 @@ test.each([
   "#3b82f6",
   "#111827",
   "#0000001a",
-  "#ffffffff",
 ])("hex カラー %s は有効な色として判定される", (value) => {
   expect(ColorToken.isValid(value)).toBe(true);
 });

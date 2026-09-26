@@ -36,6 +36,7 @@ import { DesignDocumentV1 } from "./v1";
 import {
   collectArtboardErrors,
   collectCircularRefErrors,
+  collectColorTokenErrors,
   collectComponentErrors,
   collectDocumentNameErrors,
   type DesignDocumentValidationError,
@@ -1608,8 +1609,8 @@ export const DesignDocument = {
    * を検証対象にするか」の取りまとめを行う。
    *
    * @param document 検証するドキュメント
-   * @returns 部品ごとのエラー・artboard ごとのエラー・部品の循環参照・名前のエラーの順に
-   *   連ねた並び。適合していれば空
+   * @returns 部品ごとのエラー・artboard ごとのエラー・部品の循環参照・名前のエラー・色トークン
+   *   のエラーの順に連ねた並び。適合していれば空
    */
   collectErrors(
     document: DesignDocument,
@@ -1633,12 +1634,14 @@ export const DesignDocument = {
     );
     const circularErrors = collectCircularRefErrors(document.components);
     const nameErrors = collectDocumentNameErrors(document);
+    const colorErrors = collectColorTokenErrors(document.tokens);
 
     return [
       ...componentErrors,
       ...artboardErrors,
       ...circularErrors,
       ...nameErrors,
+      ...colorErrors,
     ];
   },
 } as const;
