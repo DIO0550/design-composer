@@ -92,7 +92,7 @@ awaits_closing_issue_link() {
 
 # 反映待ちでありうる間だけ、間を空けて 2 回まで問い合わせ直し、最後の結果を返す。
 # 待ちは 5xx の再試行と同じ形に揃えた。3 回とも空なら、そのまま閉じ忘れとして赤にする。
-refetch_until_linked() {
+refetch_while_awaiting_link() {
   local result="$1" attempt
   for attempt in 1 2; do
     awaits_closing_issue_link "$result" || break
@@ -111,7 +111,7 @@ else
   : "${PR_NUMBER:?PR 番号が要る}"
   : "${PR_ACTION:?PR のイベント種別(opened 等)が要る}"
   result="$(fetch_pull_request)"
-  result="$(refetch_until_linked "$result")"
+  result="$(refetch_while_awaiting_link "$result")"
 fi
 
 closing_issues="$(closing_issues_of "$result")"
