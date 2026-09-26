@@ -167,6 +167,67 @@ export type Node = PrimitiveNode | RefNode;
 const PrimitiveNodeFields = ["name", "type", "props", "children"] as const;
 const RefNodeFields = ["name", "ref", "overrides"] as const;
 
+/**
+ * 名前を 1 ノードずつ決め直すときの決め方。
+ *
+ * @param name 今の名前
+ * @param taken 使われている名前(最初に渡した名前と、それまでに決めた名前)
+ * @returns そのノードの新しい名前
+ */
+type NameAssigner = (name: string, taken: ReadonlySet<string>) => string;
+
+/**
+ * 子の並びを持つノードか。子を持たないプリミティブと参照ノードは付け替えで子へ降りない。
+ *
+ * @param node 見るノード
+ * @returns プリミティブで `children` を持てば true
+ */
+function holdsChildren(
+  node: Node,
+): node is PrimitiveNode & Readonly<{ children: readonly Node[] }> {
+  return !Node.isRef(node) && node.children !== undefined;
+}
+
+/** 名前を付け替えた兄弟の並びと、付け替え終えた時点で使われている名前。 */
+type RenamedSiblings = Readonly<{
+  nodes: readonly Node[];
+  taken: ReadonlySet<string>;
+}>;
+
+/**
+ * `Node.renameEach` の本体。決めた名前を次のノード（子、続いて次の兄弟）へ持ち越すため、
+ * 使われている名前も一緒に返す。
+ *
+ * @param nodes 付け替える兄弟の並び
+ * @param taken 先頭のノードの名前を決めるときに使われている名前
+ * @param assign 今の名前と使われている名前から新しい名前を決める
+ * @returns 付け替えた並びと、並びの最後の子孫まで決め終えた時点で使われている名前
+ */
+function renameSiblings(
+  nodes: readonly Node[],
+  taken: ReadonlySet<string>,
+  assign: NameAssigner,
+): RenamedSiblings {
+  return nodes.reduce<RenamedSiblings>(
+    (renamed, node) => {
+      const name = assign(node.name, renamed.taken);
+      const takenWithName = new Set([...renamed.taken, name]);
+      if (!holdsChildren(node)) {
+        return {
+          nodes: [...renamed.nodes, { ...node, name }],
+          taken: takenWithName,
+        };
+      }
+      const children = renameSiblings(node.children, takenWithName, assign);
+      return {
+        nodes: [...renamed.nodes, { ...node, name, children: children.nodes }],
+        taken: children.taken,
+      };
+    },
+    { nodes: [], taken },
+  );
+}
+
 /** ノードの判定・子の取り出し・JSON 表現との相互変換。 */
 export const Node = {
   /**
@@ -296,6 +357,9 @@ export const Node = {
    * 自分と子孫の名前を対応表に従って付け替える。参照ノードが指す部品の名前(`ref`)は書き
    * 換えない。
    *
+   * 同じ名前のノードは同じ名前へ付け替わるので、部分木を名前空間へ入れるときの付け替えには
+   * 使わない（`renameEach` を使う）。
+   *
    * @param node 走査の起点になるノード
    * @param renameMap 今の名前から新しい名前への対応。載っていない名前はそのまま
    * @returns 名前を付け替えたノード。`children` を持たず名前も変わらないノードは渡したもの
@@ -306,7 +370,7 @@ export const Node = {
       RecordEx.get(renameMap, node.name),
       node.name,
     );
-    if (Node.isRef(node) || node.children === undefined) {
+    if (!holdsChildren(node)) {
       return newName === node.name ? node : { ...node, name: newName };
     }
     return {
@@ -314,6 +378,27 @@ export const Node = {
       name: newName,
       children: node.children.map((child) => Node.rename(child, renameMap)),
     };
+  },
+
+  /**
+   * 兄弟の並びと、その子孫の名前を 1 ノードずつ決め直す。深さ優先の行きがけ順に辿り、参照
+   * ノードが指す部品の名前(`ref`)は書き換えない。
+   *
+   * `rename` をこの上に乗せて畳まない。`rename` は名前の変わらない葉を渡したものそのまま
+   * 返すが、ここは常に新しいノードを組む。
+   *
+   * @param nodes 付け替える部分木の根の並び
+   * @param taken 最初のノードの名前を決めるときに既に使われている名前
+   * @param assign 今の名前と、使われている名前(`taken` とそれまでに決めた名前)から新しい
+   *   名前を決める
+   * @returns 名前を付け替えたノードの並び
+   */
+  renameEach(
+    nodes: readonly Node[],
+    taken: ReadonlySet<string>,
+    assign: NameAssigner,
+  ): readonly Node[] {
+    return renameSiblings(nodes, taken, assign).nodes;
   },
 
   /**
