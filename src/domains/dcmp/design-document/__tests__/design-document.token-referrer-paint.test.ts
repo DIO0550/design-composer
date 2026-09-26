@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { Fade } from "@/domains/__tests__/gradient-tokens";
 import { TokenSet } from "@/domains/dcmp/token";
-import { DesignDocument, TokenReferrer } from "../index";
+import { DesignDocument } from "../index";
 
 test("background が gradients のトークンを指していると、そのノードが参照元になる", () => {
   const document = DesignDocument.create({
@@ -23,7 +23,9 @@ test("background が gradients のトークンを指していると、そのノ�
     name: "fade",
   });
 
-  expect(referrers.map(TokenReferrer.toText)).toEqual(["hero.background"]);
+  expect(referrers).toEqual([
+    expect.objectContaining({ name: "hero", prop: "background" }),
+  ]);
 });
 
 test("colors しか指せない prop が gradients と同じ名前を指していても、その gradients の参照元にならない", () => {
@@ -47,7 +49,9 @@ test("colors しか指せない prop が gradients と同じ名前を指して�
     name: "fade",
   });
 
-  expect(referrers.map(TokenReferrer.toText)).toEqual(["hero.background"]);
+  expect(referrers).toEqual([
+    expect.objectContaining({ name: "hero", prop: "background" }),
+  ]);
 });
 
 test("colors と gradients に同じ名前があると、それを指す background は両方の参照元になる", () => {
@@ -78,9 +82,8 @@ test("colors と gradients に同じ名前があると、それを指す backgro
     name: "brand",
   });
 
-  expect(
-    [colorReferrers, gradientReferrers].map((referrers) =>
-      referrers.map(TokenReferrer.toText),
-    ),
-  ).toEqual([["hero.background"], ["hero.background"]]);
+  expect([colorReferrers, gradientReferrers]).toEqual([
+    [expect.objectContaining({ name: "hero", prop: "background" })],
+    [expect.objectContaining({ name: "hero", prop: "background" })],
+  ]);
 });
