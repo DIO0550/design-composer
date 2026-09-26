@@ -12,7 +12,7 @@
 # 前例は `.github/scripts/check-pr-closing-issue-cases.sh`。終了コードで見る理由も、そこと
 # `.claude/hooks/lib/result-option-read-cases.sh` の冒頭にある。
 #
-# `report()` を前例と共通化しないのは、判定表が 3 つのフォルダに割れていて、共有先を作ると
+# `report()` を前例と共通化しないのは、判定表が 4 つのフォルダに割れていて、共有先を作ると
 # 判定表 1 本を単体で読めなくなるため。
 #
 # 合成側が語彙表(`.claude/skills/harness-record/templates/record.md`)に載っている綴りを使うのは、

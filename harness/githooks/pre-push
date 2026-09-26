@@ -77,4 +77,9 @@ canary_runnable || skip_following_checks "python3 が使えない / jq が無い
 run_check "カナリアの判定表" bash .claude/hooks/lib/canary-cases.sh
 resume_checks
 
+# 最後の行(結果)を出している集計そのものの判定表。bash だけで走るので飛ばさない。
+run_check "pre-push の結果行の判定表" bash harness/githooks/lib/check-tally-cases.sh
+
+# この文の終了コードがフックの終了コードになる(後ろに文を足すと、失敗しても push が通る)。
+# 判定表はこの配線を lib 側からは見られないので、最後の文であることを判定表が別に確かめる。
 finish_checks
