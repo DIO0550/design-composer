@@ -5,13 +5,14 @@ import { CaseStyle } from "@/utils/CaseStyle";
 import { Option } from "@/utils/Option";
 
 /**
- * ドキュメント全体で一意でなければならない名前の集まり（単一名前空間）。
+ * ドキュメント全体で一意でなければならない名前の集まり。仕様書の「単一名前空間」
+ * （docs/01-file-format.md「ノードの識別（name）」）に当たり、トークン名は含まない
+ * （トークン名は種別の中で一意なだけ / docs/04-tokens.md「命名規則」）。
  *
  * 属するのは components のキー・artboard 名・全ノードの `name`（部品内部を含む）。
- * トークン名は種別の中で一意なだけなので、この名前空間には含めない。
  * 重複の検出には出現の重なりが要るため、集合ではなく出現順の並びで持つ。
  */
-export type NameSpace = Readonly<{ names: readonly string[] }>;
+export type DocumentNames = Readonly<{ names: readonly string[] }>;
 
 /**
  * 使用済みの名前と衝突しない名前を作る。衝突するなら連番を付ける。
@@ -34,7 +35,7 @@ function nextAvailableName(
   return `${baseName}-${suffix}`;
 }
 
-export const NameSpace = {
+export const DocumentNames = {
   /**
    * 集めた名前を名前空間として持つ。
    *
@@ -42,7 +43,7 @@ export const NameSpace = {
    * @returns `names` を重複も畳まずにそのまま持つ名前空間（重複は `duplicatedNames` が
    *   見つける）
    */
-  create(names: readonly string[]): NameSpace {
+  create(names: readonly string[]): DocumentNames {
     return { names };
   },
 
@@ -80,32 +81,32 @@ export const NameSpace = {
   /**
    * 名前の集合。同じ名前が複数回現れても1つに畳まれる。
    *
-   * @param space 畳む名前空間
+   * @param documentNames 畳む名前空間
    * @returns 名前空間に属する名前の集合
    */
-  toSet(space: NameSpace): ReadonlySet<string> {
-    return new Set(space.names);
+  toSet(documentNames: DocumentNames): ReadonlySet<string> {
+    return new Set(documentNames.names);
   },
 
   /**
    * その名前が既に使われているか。
    *
-   * @param space 探す先の名前空間
+   * @param documentNames 探す先の名前空間
    * @param name 使われているかを見る名前
    * @returns 名前空間に 1 回以上現れていれば `true`
    */
-  has(space: NameSpace, name: string): boolean {
-    return space.names.includes(name);
+  has(documentNames: DocumentNames, name: string): boolean {
+    return documentNames.names.includes(name);
   },
 
   /**
    * 2回以上現れる名前を、最初に現れた順で1つずつ返す。
    *
-   * @param space 重複を探す名前空間
+   * @param documentNames 重複を探す名前空間
    * @returns 重複している名前。重複が無ければ空
    */
-  duplicatedNames(space: NameSpace): readonly string[] {
-    const { names } = space;
+  duplicatedNames(documentNames: DocumentNames): readonly string[] {
+    const { names } = documentNames;
     return names.filter(
       (name, index) =>
         names.indexOf(name) === index && names.lastIndexOf(name) !== index,
@@ -130,30 +131,30 @@ export const NameSpace = {
   /**
    * この名前空間と衝突しない名前。衝突する場合は連番を付ける。
    *
-   * @param space 衝突を避ける名前空間
+   * @param documentNames 衝突を避ける名前空間
    * @param baseName 付けたい名前。識別子の規則を満たすかは見ない
    * @returns 衝突しなければ `baseName` そのまま、衝突すれば `baseName-2` から順に空いている
    *   名前
    */
-  uniqueName(space: NameSpace, baseName: string): string {
-    return nextAvailableName(baseName, NameSpace.toSet(space));
+  uniqueName(documentNames: DocumentNames, baseName: string): string {
+    return nextAvailableName(baseName, DocumentNames.toSet(documentNames));
   },
 
   /**
    * 渡した名前をこの名前空間と衝突しない名前へ対応づける。
    * 生成した名前どうしも衝突しないよう、割り当て済みを足しながら決める。
    *
-   * @param space 衝突を避ける名前空間
+   * @param documentNames 衝突を避ける名前空間
    * @param names 新しい名前を割り当てたい名前。並びの順に割り当てる
    * @returns `names` の各名前から割り当てた名前への対応。衝突しない名前は自分自身へ、衝突
    *   する名前は `uniqueName` と同じ連番の名前へ対応づける。`names` に同じ名前が複数あれば、
    *   対応に残るのは最後に割り当てた名前
    */
   renameMap(
-    space: NameSpace,
+    documentNames: DocumentNames,
     names: readonly string[],
   ): Readonly<Record<string, string>> {
-    const taken = new Set(NameSpace.toSet(space));
+    const taken = new Set(DocumentNames.toSet(documentNames));
     const renames: (readonly [string, string])[] = [];
     for (const name of names) {
       const newName = nextAvailableName(name, taken);

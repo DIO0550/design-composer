@@ -8,13 +8,13 @@ import {
   ComponentSet,
 } from "@/domains/dcmp/component";
 import { Constraint } from "@/domains/dcmp/constraint";
+import { DocumentNames } from "@/domains/dcmp/document-names";
 import { ExpandedNode } from "@/domains/dcmp/expanded-node";
 import {
   FormatVersion,
   type FormatVersionCompatibility,
   type FormatVersionOf,
 } from "@/domains/dcmp/format-version";
-import { NameSpace } from "@/domains/dcmp/name-space";
 import { Node, type PropEdit, type RefNode } from "@/domains/dcmp/node";
 import { NodeTree, type NodeTreeUpdate } from "@/domains/dcmp/node-tree";
 import { Placement } from "@/domains/dcmp/placement";
@@ -75,7 +75,7 @@ export type UngroupedBox = Readonly<{
 
 /*
  * 以下の関数は「どの artboard を相手にするか」を選ぶためのもの。
- * 並びの探索・編集そのものは `NodeTree` が、名前の規則は `NameSpace` が持っており、
+ * 並びの探索・編集そのものは `NodeTree` が、名前の規則は `DocumentNames` が持っており、
  * ドキュメントに残るのは「複数の artboard のどれに対して行うか」という調停だけ。
  *
  * 例外は追従（`followPropEdits`）で、ここだけは `Placement` / `Constraint` / `Size` を
@@ -443,9 +443,9 @@ function updateChildrenOfParent(
  * @param document 名前を集める対象のドキュメント
  * @returns 部品・artboard・配下のノードの名前を集めた名前空間
  */
-function nameSpaceOf(document: DesignDocument): NameSpace {
-  return NameSpace.create(
-    NameSpace.collectNames(document.components, document.artboards),
+function documentNamesOf(document: DesignDocument): DocumentNames {
+  return DocumentNames.create(
+    DocumentNames.collectNames(document.components, document.artboards),
   );
 }
 
@@ -502,7 +502,7 @@ function expandInstance(
 
 /**
  * ドキュメントのコンパニオンオブジェクト。ツリーの探索・編集は `NodeTree`、名前の規則は
- * `NameSpace`、部品への変換は `Component`、検証は `validation/`、版ごとの JSON 表現は
+ * `DocumentNames`、部品への変換は `Component`、検証は `validation/`、版ごとの JSON 表現は
  * `v1/` が持ち、ここは「どの artboard・どの部品を相手にするか」の調停に徹する。
  */
 export const DesignDocument = {
@@ -658,7 +658,7 @@ export const DesignDocument = {
 
   /**
    * パレットに並べる部品の一覧。組み立ての規則は `ComponentSet` が持ち、ここは
-   * 「部品の外側にある木はどれか」を渡す調停だけを行う（`nameSpaceOf` と同じ形）。
+   * 「部品の外側にある木はどれか」を渡す調停だけを行う（`documentNamesOf` と同じ形）。
    *
    * @param document 部品と、部品の外側にある木の出どころになるドキュメント
    * @returns 部品 1 つにつき 1 件のパレット項目。外側の木として渡すのは artboard の直下の
@@ -1573,17 +1573,17 @@ export const DesignDocument = {
    *   同じ名前が何度現れても 1 つに畳まれる
    */
   usedNames(document: DesignDocument): ReadonlySet<string> {
-    return NameSpace.toSet(nameSpaceOf(document));
+    return DocumentNames.toSet(documentNamesOf(document));
   },
 
   /**
    * その名前が識別子の規則（kebab-case）を満たすか。
    *
    * @param name 判定する名前
-   * @returns `NameSpace.isValidIdentifier` の答え
+   * @returns `DocumentNames.isValidIdentifier` の答え
    */
   isValidIdentifier(name: string): boolean {
-    return NameSpace.isValidIdentifier(name);
+    return DocumentNames.isValidIdentifier(name);
   },
 
   /**
@@ -1606,11 +1606,14 @@ export const DesignDocument = {
    *
    * @param baseName 付けたい名前
    * @param usedNames 既に使われている名前
-   * @returns 衝突しなければ `baseName` そのまま、衝突すれば `NameSpace.uniqueName` が
+   * @returns 衝突しなければ `baseName` そのまま、衝突すれば `DocumentNames.uniqueName` が
    *   連番を付けた名前
    */
   uniqueName(baseName: string, usedNames: ReadonlySet<string>): string {
-    return NameSpace.uniqueName(NameSpace.create([...usedNames]), baseName);
+    return DocumentNames.uniqueName(
+      DocumentNames.create([...usedNames]),
+      baseName,
+    );
   },
 
   /**
@@ -1619,14 +1622,14 @@ export const DesignDocument = {
    * @param nodes 付け替える部分木の根の並び
    * @param usedNames 既に使われている名前
    * @returns 付け替えた部分木と、部分木の各名前から新しい名前への対応（変わらない名前も
-   *   含む）。新しい名前の決め方は `NameSpace.renameMap`
+   *   含む）。新しい名前の決め方は `DocumentNames.renameMap`
    */
   renameSubtree(
     nodes: readonly Node[],
     usedNames: ReadonlySet<string>,
   ): { nodes: readonly Node[]; renameMap: Readonly<Record<string, string>> } {
-    const renameMap = NameSpace.renameMap(
-      NameSpace.create([...usedNames]),
+    const renameMap = DocumentNames.renameMap(
+      DocumentNames.create([...usedNames]),
       nodes.flatMap(Node.collectNames),
     );
     return {
