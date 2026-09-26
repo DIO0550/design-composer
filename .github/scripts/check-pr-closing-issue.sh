@@ -61,6 +61,30 @@ fetch_pull_request() {
   return 1
 }
 
+closing_issue_count() {
+  jq -r '.data.repository.pullRequest.closingIssuesReferences.nodes | length' <<<"$1"
+}
+
+# `opened` の直後は `closingIssuesReferences` の反映が間に合わないことがある
+# (問い合わせ自体は 200 で通り、空で返る。5xx の再試行では捕まえられない形
+# — `harness/records/pr-757.md` 指摘 12)。**この形だけ**、間を空けて 2 回まで
+# 問い合わせ直す。`opened` 以外(`edited` 等)は本文が変わっていないのに待つだけ
+# 遅くなるので対象にしない。
+retry_if_opened_and_empty() {
+  local response="$1" attempt
+  if [ "${PR_IS_OPENED:-false}" != "true" ] || [ "$(closing_issue_count "$response")" != "0" ]; then
+    printf '%s' "$response"
+    return 0
+  fi
+  for attempt in 1 2; do
+    printf 'closingIssuesReferences が空だった(opened 直後の %s 回目)。待って問い合わせ直す\n' "$attempt" >&2
+    sleep $((attempt * 2))
+    response="$(fetch_pull_request)"
+    [ "$(closing_issue_count "$response")" != "0" ] && break
+  done
+  printf '%s' "$response"
+}
+
 result_file="${1:-}"
 if [ -n "$result_file" ]; then
   result="$(cat "$result_file")"
@@ -68,6 +92,7 @@ else
   : "${GITHUB_REPOSITORY:?owner/repo が要る}"
   : "${PR_NUMBER:?PR 番号が要る}"
   result="$(fetch_pull_request)"
+  result="$(retry_if_opened_and_empty "$result")"
 fi
 
 closing_issues="$(

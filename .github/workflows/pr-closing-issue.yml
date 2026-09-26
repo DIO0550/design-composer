@@ -55,6 +55,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_IS_OPENED: ${{ github.event.action == 'opened' }}
         run: bash .github/scripts/check-pr-closing-issue.sh
 
   duplicate-issue-pr:
