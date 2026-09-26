@@ -1,7 +1,7 @@
 import { render } from "@testing-library/react";
 import { expect, test } from "vitest";
 import { ElementNameAttribute } from "@/domains/compiled/compiled-element";
-import { NameStyleRule, nameSelector } from "../index";
+import { NameStyleRule } from "../index";
 
 /*
  * 名前で引く規則の差し込み。キャンバスの中身は React の管理外なので class を足せず、
@@ -38,9 +38,4 @@ test("引用符を含む名前でも選択子が途中で閉じない", () => {
   expect(ruleText(container)).toBe(
     `[${ElementNameAttribute}="a\\"b"]{outline:2px solid #3b82f6}`,
   );
-});
-
-test("選択子は名前の属性で引く形になる", () => {
-  // リサイズハンドルの擬似要素もこの選択子へ後置きするので、形が共有されている
-  expect(nameSelector("home")).toBe(`[${ElementNameAttribute}="home"]`);
 });

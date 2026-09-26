@@ -11,4 +11,15 @@ export const Css = {
   escapeQuotedString(value: string): string {
     return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
   },
+
+  /**
+   * 属性の値が一致する要素を指す属性選択子。
+   *
+   * @param attribute 見る属性の名前。escape せずそのまま埋め込む
+   * @param value 一致させる値。引用符の内側へ入れるので `escapeQuotedString` を通す
+   * @returns `[attribute="value"]` の形の選択子
+   */
+  attributeSelector(attribute: string, value: string): string {
+    return `[${attribute}="${Css.escapeQuotedString(value)}"]`;
+  },
 } as const;

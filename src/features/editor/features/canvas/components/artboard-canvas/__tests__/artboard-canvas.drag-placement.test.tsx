@@ -8,8 +8,8 @@ import {
   releasePointer,
   wheel,
 } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
+import { CanvasDom } from "@/libs/canvas-dom";
 import { Option } from "@/utils/Option";
-import { nameSelector } from "../name-style-rule";
 import {
   CarriedNodeUnclipped,
   repositionPreviewDeclarations,
@@ -361,7 +361,7 @@ test("運んでいる間、掴んだノードは当たり判定から外れる",
  * @returns そこへ差し込まれる規則 1 本
  */
 function unclippedRule(name: string): string {
-  return `${nameSelector(name)}{${CarriedNodeUnclipped}}`;
+  return `${CanvasDom.selectorOf(name)}{${CarriedNodeUnclipped}}`;
 }
 
 /**
