@@ -100,22 +100,15 @@ if [ "$reply" = fail ]; then
   echo "gh: HTTP 502" >&2
   exit 1
 fi
-closing='[{"number":1}]'
-[ "$reply" = empty ] && closing='[]'
-jq -n --argjson closing "$closing" --argjson total "$STUB_FILES_TOTAL" --argjson files "$STUB_FILES" '{
-  data: { repository: { pullRequest: {
-    closingIssuesReferences: { nodes: $closing },
-    files: { totalCount: $total, nodes: $files }
-  } } }
-}'
+cat "$STUB_DIR/$reply.json"
 STUB
   chmod +x "$dir/bin/gh"
+  result_json "$no_issue" "${STUB_FILES_TOTAL:-9}" "${STUB_FILES:-$not_record}" >"$dir/empty.json"
+  result_json "$one_issue" "${STUB_FILES_TOTAL:-9}" "${STUB_FILES:-$not_record}" >"$dir/linked.json"
 
   output="$(
     PATH="$dir/bin:$PATH" STUB_COUNT_FILE="$dir/count" STUB_REPLIES="${STUB_REPLIES:-}" \
-      STUB_FILES="${STUB_FILES:-$not_record}" \
-      STUB_FILES_TOTAL="${STUB_FILES_TOTAL:-9}" \
-      GITHUB_REPOSITORY=owner/repo PR_NUMBER=1 PR_ACTION="$PR_ACTION" \
+      STUB_DIR="$dir" GITHUB_REPOSITORY=owner/repo PR_NUMBER=1 PR_ACTION="$PR_ACTION" \
       bash "$script" 2>/dev/null
   )" || status=$?
   calls="$(cat "$dir/count" 2>/dev/null || echo 0)"
