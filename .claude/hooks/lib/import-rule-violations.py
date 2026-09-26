@@ -6,7 +6,7 @@
 層と方向の対（`services/` → `features/` のように、呼び出し元と禁止パターンが静的に決まる
 もの）は `.oxlintrc.json` の `no-restricted-imports` が見るので、ここでは扱わない。
 
-報告する違反は 8 つ。
+報告する違反は 7 つ。
 
 - `feature-public-api` — feature の外から、その feature の公開口以外を読んでいる
 - `feature-sibling` — 子 feature が、親以外の feature を読んでいる（公開口経由でも）
@@ -15,7 +15,10 @@
 - `module-public-api` — `index.ts` を持つフォルダの内部を、そのフォルダの外から読んでいる
 - `domains-category` — `src/domains/` のモジュールがカテゴリのフォルダの下にいない
 - `import-cycle` — ファイル単位の循環
-- `feature-cycle` — feature 単位の循環
+
+**feature 単位の循環は見ない。** 違反なしで通る feature 間の辺は入れ子の段数を必ず 1 増やす
+（親から直下の子だけ）ので、閉路は必ずほかの種別に当たる辺を含み、報告が 2 重になるだけ。
+`feature_relation()` が段数の増えない辺（子から親・兄弟・トップレベル同士）を通すようにしたら戻す。
 
 **入れ子のモジュールフォルダは、それ自体が公開 API を持つ。** `index.ts` に解決される
 import は `module-public-api` の違反にしない。`libs/<x>/fake/index.ts`（`rules/testing.md`
@@ -49,9 +52,8 @@ DOMAINS_ROOT = f"{ALIAS_ROOT}/domains"
 
 # `import ... from "X"` / `export ... from "X"` / `import("X")` の X を、行番号付きで拾う。
 #
-# 型だけの import も一緒に拾う。循環で困るのは実行時のロード順ではなく設計の向きで
-# （`features/editor/features/canvas/index.ts` の doc が「canvas -> editor の辺を作ると
-# 循環する」という不変条件を書いている）、型だけの import でもその向きは逆転するため。
+# 型だけの import も一緒に拾う。循環で困るのは実行時のロード順ではなく設計の向きで、
+# 型だけの import でもその向きは逆転するため。
 SPECIFIER = re.compile(r'(?:from|import)\s*\(?\s*"([^"]+)"')
 
 # コメント行の始まり。doc に import のパスを書く箇所があるので、実 import と数えない。
@@ -309,13 +311,8 @@ def scan(root: Path) -> int:
     bypassing: list[str] = []
     siblings: list[str] = []
     ancestor_reads: list[str] = []
-    feature_edges: dict[str, list[str]] = {}
     for importer, targets in graph.items():
-        owner = feature_of(importer)
         for number, target in targets:
-            reached = feature_of(target)
-            if owner is not None and reached is not None and owner != reached:
-                feature_edges.setdefault(owner, []).append(reached)
             kind, reason = classify(importer, target, modules)
             collected = {
                 "feature-public-api": crossing,
@@ -327,7 +324,6 @@ def scan(root: Path) -> int:
                 collected.append(f"{importer}:{number} -> {target}（{reason}）")
 
     file_cycles = [" -> ".join(c) for c in cycles_in({k: [t for _, t in v] for k, v in graph.items()})]
-    feature_cycles = [" -> ".join(c) for c in cycles_in(feature_edges)]
 
     uncategorized = uncategorized_domains(modules)
     too_deep = sorted(
@@ -344,7 +340,6 @@ def scan(root: Path) -> int:
         ("module-public-api", bypassing),
         ("domains-category", uncategorized),
         ("import-cycle", file_cycles),
-        ("feature-cycle", feature_cycles),
     )
     for kind, lines in groups:
         if lines:
