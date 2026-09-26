@@ -77,6 +77,9 @@ test("トークン参照 prop への binding はトークン種別を持つ定�
 
   expect(definition).toEqual({
     some: true,
-    value: expect.objectContaining({ domain: "token", tokenKind: "colors" }),
+    value: expect.objectContaining({
+      domain: "token",
+      tokenKind: ["colors", "gradients"],
+    }),
   });
 });

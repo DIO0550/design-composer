@@ -33,7 +33,7 @@ test("Text の typography は typography トークン参照でデフォルトが
   expect(PropDefinition.isToken(definition)).toBe(true);
   expect(definition).toMatchObject({
     domain: "token",
-    tokenKind: "typography",
+    tokenKind: ["typography"],
     default: "body",
   });
 });
@@ -42,7 +42,7 @@ test("Text の color は colors トークン参照でデフォルトが gray-900
   const definition = TextSchema.props.color;
   expect(definition).toMatchObject({
     domain: "token",
-    tokenKind: "colors",
+    tokenKind: ["colors"],
     default: "gray-900",
   });
 });

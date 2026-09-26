@@ -1,5 +1,6 @@
 import { Constraints } from "@/domains/dcmp/constraint";
 import { Layout, Layouts } from "@/domains/dcmp/layout";
+import { PaintTokenKinds } from "@/domains/dcmp/token";
 import { Visibilities, Visibility } from "@/domains/dcmp/visibility";
 import type { ValueOf } from "@/types/ValueOf";
 import {
@@ -166,31 +167,31 @@ export const BoxSchema = {
     },
     gap: {
       domain: "token",
-      tokenKind: "spacing",
+      tokenKind: ["spacing"],
       group: "layout",
       enabledWhen: FlexOnly,
     },
     paddingTop: {
       domain: "token",
-      tokenKind: "spacing",
+      tokenKind: ["spacing"],
       group: "layout",
       shorthand: { name: ShorthandNames.Padding, side: "top" },
     },
     paddingRight: {
       domain: "token",
-      tokenKind: "spacing",
+      tokenKind: ["spacing"],
       group: "layout",
       shorthand: { name: ShorthandNames.Padding, side: "right" },
     },
     paddingBottom: {
       domain: "token",
-      tokenKind: "spacing",
+      tokenKind: ["spacing"],
       group: "layout",
       shorthand: { name: ShorthandNames.Padding, side: "bottom" },
     },
     paddingLeft: {
       domain: "token",
-      tokenKind: "spacing",
+      tokenKind: ["spacing"],
       group: "layout",
       shorthand: { name: ShorthandNames.Padding, side: "left" },
     },
@@ -279,32 +280,36 @@ export const BoxSchema = {
         notEquals: "fixed",
       },
     },
-    background: { domain: "token", tokenKind: "colors", group: "appearance" },
+    background: {
+      domain: "token",
+      tokenKind: PaintTokenKinds,
+      group: "appearance",
+    },
     radiusTopLeft: {
       domain: "token",
-      tokenKind: "radius",
+      tokenKind: ["radius"],
       group: "appearance",
       shorthand: { name: ShorthandNames.Radius, corner: "topLeft" },
     },
     radiusTopRight: {
       domain: "token",
-      tokenKind: "radius",
+      tokenKind: ["radius"],
       group: "appearance",
       shorthand: { name: ShorthandNames.Radius, corner: "topRight" },
     },
     radiusBottomRight: {
       domain: "token",
-      tokenKind: "radius",
+      tokenKind: ["radius"],
       group: "appearance",
       shorthand: { name: ShorthandNames.Radius, corner: "bottomRight" },
     },
     radiusBottomLeft: {
       domain: "token",
-      tokenKind: "radius",
+      tokenKind: ["radius"],
       group: "appearance",
       shorthand: { name: ShorthandNames.Radius, corner: "bottomLeft" },
     },
-    shadow: { domain: "token", tokenKind: "shadows", group: "appearance" },
+    shadow: { domain: "token", tokenKind: ["shadows"], group: "appearance" },
     overflow: {
       domain: "enum",
       values: ["visible", "clip"],
@@ -340,13 +345,13 @@ export const TextSchema = {
     },
     typography: {
       domain: "token",
-      tokenKind: "typography",
+      tokenKind: ["typography"],
       default: "body",
       group: "appearance",
     },
     color: {
       domain: "token",
-      tokenKind: "colors",
+      tokenKind: ["colors"],
       default: "gray-900",
       group: "appearance",
     },
