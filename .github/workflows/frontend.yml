@@ -179,9 +179,9 @@ jobs:
         run: bash .claude/hooks/lib/canary-cases.sh
 
       # pr-closing-issue.yml が呼ぶ検査の判定表。**検査対象と別のワークフローに置く。**
-      # あちらは本文の編集(`edited`)でも再実行するので、20 秒かかるこのステップを
+      # あちらは本文の編集(`edited`)でも再実行するので、1 分かかるこのステップを
       # 本文の手直しのたびに走らせることになる(`on: pull_request` を既定のまま使う
-      # このワークフローは `edited` を含まない)。同じ 20 秒が pre-push に無い理由は
+      # このワークフローは `edited` を含まない)。同じ 1 分が pre-push に無い理由は
       # 上と同じ README の段落。
       - name: PR が閉じる Issue の検査の判定表
         run: bash .github/scripts/check-pr-closing-issue-cases.sh
