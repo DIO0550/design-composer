@@ -42,6 +42,16 @@ test("子を持てないノードを親に指定すると children-not-allowed �
   );
 });
 
+test("子孫にある子を持てないノードを親に指定しても children-not-allowed になる", () => {
+  const updated = NodeTree.updateChildrenOf(setupTree(), "title", (children) =>
+    Result.ok(children),
+  );
+
+  expect(updated).toEqual(
+    Result.err({ kind: "children-not-allowed", name: "title" }),
+  );
+});
+
 test("参照ノードを親に指定すると children-not-allowed になる", () => {
   const updated = NodeTree.updateChildrenOf(
     setupTree(),
