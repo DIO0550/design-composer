@@ -256,3 +256,33 @@ test("影を足すと中の色は小文字の hex で保持される", () => {
 
   expect(added.shadows.sm.color).toBe("#0000001a");
 });
+
+test("数字だけの名前ではトークンを追加できない", () => {
+  const added = TokenSet.add(setupTokens(), {
+    kind: "spacing",
+    name: "20",
+    value: 80,
+  });
+
+  expect(added).toEqual(
+    Result.err({
+      kind: "invalid-token-name",
+      ref: { kind: "spacing", name: "20" },
+    }),
+  );
+});
+
+test("数字だけの名前へは改名できない", () => {
+  const renamed = TokenSet.rename(
+    setupTokens(),
+    { kind: "spacing", name: "md" },
+    "3",
+  );
+
+  expect(renamed).toEqual(
+    Result.err({
+      kind: "invalid-token-name",
+      ref: { kind: "spacing", name: "3" },
+    }),
+  );
+});
