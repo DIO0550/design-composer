@@ -54,6 +54,10 @@ import { RecordEx } from "@/utils/RecordEx";
  * enum とトークン参照を分けるのは、UI 案（docs/Design Composer.html）が enum をセグメン
  * ト、トークンを `▾` 付きの欄と描き分けているため（畳むと、パネル側が選択肢の出どころを
  * prop 名でしか判別できない）。
+ *
+ * `paintToken` は colors と gradients を指せる `background` の欄。`names` は colors の名前
+ * （今の値が無ければ先頭へ足す。他の欄の `names` と同じ扱い）、`gradients` は gradients の
+ * 名前で、2 種別を 1 つの並びに混ぜない。
  */
 export type PropControlInput =
   | Readonly<{ kind: "enum"; values: readonly string[] }>
@@ -66,6 +70,12 @@ export type PropControlInput =
   | Readonly<{
       kind: "colorToken";
       names: readonly string[];
+      color: Option<ColorToken>;
+    }>
+  | Readonly<{
+      kind: "paintToken";
+      names: readonly string[];
+      gradients: readonly string[];
       color: Option<ColorToken>;
     }>
   | Readonly<{ kind: "number" }>
@@ -208,6 +218,28 @@ function colorOf(
 }
 
 /**
+ * 塗りの欄で効いているトークン名が指す色。
+ *
+ * 名前を colors から直接引かない。colors と gradients の両方にある名前はどちらとも決まらず
+ * （docs/03「塗り」）、colors を引くと片方を優先して見本を出すことになる。
+ *
+ * @param effective 今その prop に効いているトークン名
+ * @param tokens 名前の種別と色を引くトークン一式
+ * @returns その名前が colors だけにあるときの色。gradients の名前・両方にある名前・実在し
+ *   ない名前・効いている名前が無いときは `none`
+ */
+function paintColorOf(
+  effective: Option<PropValue>,
+  tokens: TokenSet,
+): Option<ColorToken> {
+  return Option.flatMap(effective, (name) =>
+    Option.contains(TokenSet.findPaintKind(tokens, String(name)), "colors")
+      ? TokenSet.findColor(tokens, String(name))
+      : Option.none,
+  );
+}
+
+/**
  * 効いているトークン名が指す数値。
  *
  * @param effective 今その prop に効いているトークン名
@@ -251,13 +283,24 @@ function inputOf(
       ? { kind: "number" }
       : { kind: "text" };
   }
-  const names = withCurrentValue(
-    TokenSet.names(tokens, definition.tokenKind),
-    value,
-  );
   /* 解決値も色も、明示値が無ければ既定値が効く（未設定でも既定の色は見える）。 */
   const effective = Option.or(value, editable.defaultValue);
-  switch (definition.tokenKind) {
+  if (definition.tokenKind.length === 2) {
+    const [colors, gradients] = definition.tokenKind;
+    /*
+     * 2 種別を 1 つの並びに混ぜない。どちらの種別の一覧から選ばせるかは docs/03「塗り」が
+     * 決めておらず、混ぜると並び順と見分け方をここで決めることになる。
+     */
+    return {
+      kind: "paintToken",
+      names: withCurrentValue(TokenSet.names(tokens, colors), value),
+      gradients: TokenSet.names(tokens, gradients),
+      color: paintColorOf(effective, tokens),
+    };
+  }
+  const [kind] = definition.tokenKind;
+  const names = withCurrentValue(TokenSet.names(tokens, kind), value);
+  switch (kind) {
     case "colors":
       return { kind: "colorToken", names, color: colorOf(effective, tokens) };
     case "spacing":
@@ -265,7 +308,7 @@ function inputOf(
       return {
         kind: "numericToken",
         names,
-        resolvedValue: numberOf(effective, tokens, definition.tokenKind),
+        resolvedValue: numberOf(effective, tokens, kind),
       };
     case "shadows":
     case "typography":
@@ -779,7 +822,7 @@ export const PropCollapsedControl = {
 
   /**
    * 畳んだ欄の入力の形。書き込み先が同じ形の定義を持つことを前提に、先頭の形を使う
-   * （`paddingTop` と `paddingBottom` は別々の定義だが、同じ `tokenKind` を宣言している）。
+   * （`paddingTop` と `paddingBottom` は別々の定義だが、同じ `tokenKind` の並びを宣言している）。
    *
    * @param collapsed 入力の形を知りたい畳んだ欄
    * @returns longhand と同じ入力の形。不揃いなら解決値を持たない

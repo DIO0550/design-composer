@@ -266,7 +266,7 @@ function TokenEditorBody({
           名前
         </label>
         {/*
-          規則を満たさない名前・種別の中で重複する名前では改名しない
+          `TokenSet.rename` が弾く名前では改名しない
           （EditorState.renameToken の `none`）。通らなかったときは打った文字列が
           入力欄に残るので、そのまま直せる。
         */}

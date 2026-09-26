@@ -27,6 +27,6 @@ test("子を持てるかは仕様の宣言どおりに答える", () => {
 });
 
 test("トークン参照 prop は仕様で宣言されたトークン種別を答える", () => {
-  expect(TokenPropKinds.kindOf("gap")).toBe("spacing");
-  expect(TokenPropKinds.kindOf("typography")).toBe("typography");
+  expect(TokenPropKinds.kindsOf("gap")).toEqual(["spacing"]);
+  expect(TokenPropKinds.kindsOf("typography")).toEqual(["typography"]);
 });

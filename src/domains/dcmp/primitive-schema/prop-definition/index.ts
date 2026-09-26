@@ -3,7 +3,11 @@ import {
   Props,
   type PropValue,
 } from "@/domains/dcmp/node";
-import type { TokenKind, TokenRef } from "@/domains/dcmp/token";
+import type {
+  PaintTokenKinds,
+  TokenKind,
+  TokenRef,
+} from "@/domains/dcmp/token";
 import { TokenSet } from "@/domains/dcmp/token";
 import type { Corner } from "@/domains/unit/corner";
 import type { Side } from "@/domains/unit/side";
@@ -67,13 +71,22 @@ export type EnumPropDefinition = PropDefinitionBase &
   }>;
 
 /**
- * トークンを名前で参照する prop。どの種別のトークンから引くかを `tokenKind` が持ち、この
+ * トークン参照 prop が指せる種別の並び（docs/03「prop 定義のフィールド」）。2 つ持てるのは
+ * 塗り用の 2 種別だけ（docs/03「塗り」）。
+ *
+ * 任意長の並びにしない。`[spacing, colors]` のような組を宣言できると、名前がどちらの種別を
+ * 指すかを一意にする規則（docs/04「命名規則」）が塗りの組にしか無いので決まらなくなる。
+ */
+export type TokenKindList = readonly [TokenKind] | PaintTokenKinds;
+
+/**
+ * トークンを名前で参照する prop。どの種別のトークンから引けるかを `tokenKind` が持ち、この
  * 宣言が種別の唯一の情報源で検証も CSS 出力もここを見る。
  */
 export type TokenPropDefinition = PropDefinitionBase &
   Readonly<{
     domain: "token";
-    tokenKind: TokenKind;
+    tokenKind: TokenKindList;
   }>;
 
 /**
@@ -200,6 +213,19 @@ function collectLiteralErrors(
   return collectRangeErrors(name, value, definition.range);
 }
 
+/**
+ * そのトークン参照 prop が指せる種別。
+ *
+ * `TokenKindList` は長さの違う組の和なので、そのままでは `includes` / `some` に種別を渡せ
+ * ない。並びとして読むときはここを通す。
+ *
+ * @param definition 見るトークン参照 prop の定義
+ * @returns `tokenKind` に宣言した種別の並び
+ */
+function referableKinds(definition: TokenPropDefinition): readonly TokenKind[] {
+  return definition.tokenKind;
+}
+
 export const PropDefinition = {
   /**
    * 値を列挙から選ぶ prop か。
@@ -215,7 +241,7 @@ export const PropDefinition = {
    * 値をトークン名で指す prop か。
    *
    * @param definition 見る prop 定義
-   * @returns `tokenKind` の種別のトークンを名前で指す prop なら `true`
+   * @returns `tokenKind` のいずれかの種別のトークンを名前で指す prop なら `true`
    */
   isToken(definition: PropDefinition): definition is TokenPropDefinition {
     return definition.domain === "token";
@@ -234,27 +260,31 @@ export const PropDefinition = {
   /**
    * その prop 設定が、指したトークンを参照しているか。
    *
-   * 種別まで見るのは、トークン名の一意性が種別の中だけで保証されるため
+   * 種別まで見るのは、トークン名の一意性が種別の中でしか保証されないため
    * （docs/04-tokens.md「命名規則」）。`colors` と `spacing` に同名があってもよく、
    * 名前だけで一致を見ると別の種別の同名トークンを参照しているものまで拾う。
    *
    * トークンが実在するかは見ない（`collectErrors` の担当）。この判定が答えるのは
    * 「この設定はその参照を指しているか」だけなので、宙に浮いた参照にも同じ答えを返す。
+   * 塗り用の 2 種別に同名があるドキュメントでは、その名前を指す `background` は両方の
+   * トークンを指していると答える。どちらを消しても残る参照を、参照元の一覧から隠さないため。
    *
    * @param definition `assignment` の prop の定義
    * @param assignment 見る prop 設定
    * @param ref 指しているかを知りたいトークン
-   * @returns 定義がトークン参照 prop で、その種別が `ref` と同じで、値が `ref` の名前と一致
-   *   すれば `true`。値が数値・真偽値なら、名前と同じ綴りでも `false`
+   * @returns 定義がトークン参照 prop で、指せる種別に `ref` の種別が含まれ、値が `ref` の
+   *   名前と一致すれば `true`。値が数値・真偽値なら、名前と同じ綴りでも `false`
    */
   isRefTo(
     definition: PropDefinition,
     assignment: PropAssignment,
     ref: TokenRef,
   ): boolean {
-    const isSameKind =
-      PropDefinition.isToken(definition) && definition.tokenKind === ref.kind;
-    return isSameKind && assignment.value === ref.name;
+    return (
+      PropDefinition.isToken(definition) &&
+      referableKinds(definition).includes(ref.kind) &&
+      assignment.value === ref.name
+    );
   },
 
   /**
@@ -292,7 +322,7 @@ export const PropDefinition = {
    * @returns 適合しない理由の並び（多くて 1 件）。`enum-violation` は値が文字列でないか
    *   `values` に無いとき。`literal-type-mismatch` / `range-violation` は literal の型が
    *   違うときと、数値が宣言した範囲の外にあるとき。`dangling-token` は値が文字列でない
-   *   か、その名前のトークンが `tokenKind` の種別に無いとき（判定は `TokenSet.has`）
+   *   か、その名前のトークンが `tokenKind` のどの種別にも無いとき（判定は `TokenSet.has`）
    */
   collectErrors(
     definition: PropDefinition,
@@ -318,17 +348,18 @@ export const PropDefinition = {
       return collectLiteralErrors(definition, assignment);
     }
 
-    if (
+    const kinds = referableKinds(definition);
+    const isResolved =
       typeof value === "string" &&
-      TokenSet.has(tokens, definition.tokenKind, value)
-    ) {
+      kinds.some((kind) => TokenSet.has(tokens, kind, value));
+    if (isResolved) {
       return [];
     }
     return [
       {
         kind: "dangling-token",
         prop: name,
-        message: `prop "${name}" references unknown ${definition.tokenKind} token "${String(value)}"`,
+        message: `prop "${name}" references unknown ${kinds.join(" or ")} token "${String(value)}"`,
       },
     ];
   },

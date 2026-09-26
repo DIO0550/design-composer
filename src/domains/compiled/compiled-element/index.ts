@@ -30,7 +30,7 @@ import { Option } from "@/utils/Option";
  * 規則」の表。仕様と同じく prop 名で引く)。
  *
  * 引くトークン種別はスキーマの `tokenKind` だけが宣言するため、ここには書かず
- * `TokenPropKinds.kindOf` から引く (`gap` を colors から引く組み合わせを書けない)。
+ * `TokenPropKinds.kindsOf` から引く (`gap` を colors から引く組み合わせを書けない)。
  *
  * 4 つの longhand を 1 本の shorthand へ合成する prop（padding の 4 辺・radius の 4 隅）は
  * `Padding` / `CornerRadius` が、`typography` は複数プロパティへ展開されるため下の関数が
@@ -50,6 +50,10 @@ type TokenBackedProp = keyof typeof TokenPropProperties;
  * トークン参照 prop を `var` 参照の宣言にする。未指定の prop は宣言を出力しない (トークン
  * の値は参照しないため、トークン編集は再コンパイルなしに CSS 経由で波及する)。
  *
+ * var は指せる種別の並びの先頭の種別で綴る。colors と gradients を指せる `background` も
+ * colors の var を出すので、gradients の名前を指していると参照先の無い var になる
+ * （名前が属する種別で出し分ける規則は docs/03「HTML/CSS へのコンパイル規則」の表が持つ）。
+ *
  * @param prop 宣言にする prop 名
  * @param value その prop に設定されている値。未設定なら宣言を出さない
  * @param tokens カスタムプロパティ名の綴り方
@@ -64,7 +68,7 @@ function tokenDeclarations(
     return [];
   }
   const property = TokenPropProperties[prop];
-  const kind = TokenPropKinds.kindOf(prop);
+  const [kind] = TokenPropKinds.kindsOf(prop);
   return [CssDeclaration.create(property, tokens.ref(kind, String(value)))];
 }
 
