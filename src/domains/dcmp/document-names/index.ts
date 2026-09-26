@@ -1,6 +1,7 @@
 import { Artboard } from "@/domains/dcmp/artboard";
 import { ComponentSet } from "@/domains/dcmp/component";
 import { Node } from "@/domains/dcmp/node";
+import { ArrayEx } from "@/utils/ArrayEx";
 import { CaseStyle } from "@/utils/CaseStyle";
 import { Option } from "@/utils/Option";
 import { StringEx } from "@/utils/StringEx";
@@ -147,8 +148,8 @@ export const DocumentNames = {
    * @param documentNames 衝突を避ける名前空間
    * @param names 新しい名前を割り当てたい名前。並びの順に割り当てる
    * @returns `names` の各名前から割り当てた名前への対応。衝突しない名前は自分自身へ、衝突
-   *   する名前は `uniqueName` と同じ連番の名前へ対応づける。`names` に同じ名前が複数あれば、
-   *   対応に残るのは最後に割り当てた名前
+   *   する名前は `uniqueName` と同じ連番の名前へ対応づける。`names` に同じ名前が複数あって
+   *   も、割り当てるのは最初の 1 回だけ
    */
   renameMap(
     documentNames: DocumentNames,
@@ -156,7 +157,7 @@ export const DocumentNames = {
   ): Readonly<Record<string, string>> {
     const taken = new Set(DocumentNames.toSet(documentNames));
     const renames: (readonly [string, string])[] = [];
-    for (const name of names) {
+    for (const name of ArrayEx.distinct(names)) {
       const newName = nextAvailableName(name, taken);
       renames.push([name, newName]);
       taken.add(newName);
