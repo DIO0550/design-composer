@@ -99,15 +99,15 @@ const AlphaPercentDigits = { fractionDigits: 1 } as const;
 
 export const ColorToken = {
   /**
-   * 小文字の hex として綴られた色か。CSS 色文字列(`rgb` / 名前色)を許さないのは、同値異表記
+   * 正規形の hex として綴られた色か。CSS 色文字列(`rgb` / 名前色)を許さないのは、同値異表記
    * の併存を構造的に排除するため(docs/04-tokens.md「値の形式」)。
    *
    * @param value 判定する綴り
-   * @returns `#` と小文字の 6 桁、または alpha 込みの 8 桁なら true。`normalize` が 6 桁へ
-   *   倒す `#rrggbbff` も true。大文字を含む・3 桁・CSS 色文字列は false
+   * @returns `#` と小文字の 6 桁、または不透明でない alpha 込みの 8 桁なら true。`normalize`
+   *   で綴りが変わるもの(大文字を含む・3 桁・4 桁・`#rrggbbff`)と CSS 色文字列は false
    */
   isValid(value: string): boolean {
-    return HexColorPattern.test(value);
+    return HexColorPattern.test(value) && ColorToken.normalize(value) === value;
   },
 
   /**

@@ -50,7 +50,6 @@ test.each([
   "#3b82f6",
   "#111827",
   "#0000001a",
-  "#ffffffff",
 ])("hex カラー %s は有効な色として判定される", (value) => {
   expect(ColorToken.isValid(value)).toBe(true);
 });
