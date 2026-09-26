@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { TokenSet } from "@/domains/dcmp/token";
 import { DocumentNames } from "../index";
 
 test("kebab-case の名前は識別子として正しい", () => {
@@ -45,4 +46,24 @@ test("パス修飾のために予約された文字を含む名前は識別子�
   expect(DocumentNames.isValidIdentifier("a/b")).toBe(false);
   expect(DocumentNames.isValidIdentifier("a#b")).toBe(false);
   expect(DocumentNames.isValidIdentifier("a.b")).toBe(false);
+});
+
+test("数字だけの名前は識別子として不正", () => {
+  expect(DocumentNames.isValidIdentifier("3")).toBe(false);
+});
+
+test("先頭が 0 の数字だけの名前も識別子として不正", () => {
+  expect(DocumentNames.isValidIdentifier("007")).toBe(false);
+});
+
+test("数字とハイフンだけからなる名前は識別子として正しい", () => {
+  expect(DocumentNames.isValidIdentifier("2-3")).toBe(true);
+});
+
+test("識別子の規則はトークン名の規則と同じ答えを返す", () => {
+  const names = ["3", "007", "2-3", "label", "Label"];
+
+  expect(names.map(DocumentNames.isValidIdentifier)).toEqual(
+    names.map(TokenSet.isValidName),
+  );
 });
