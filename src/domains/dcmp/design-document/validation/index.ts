@@ -34,6 +34,7 @@ export type DesignDocumentValidationErrorKind =
   | "missing-name"
   | "invalid-identifier"
   | "duplicate-name"
+  | "conflicting-token-name"
   | "fill-in-free-parent"
   | "invalid-color";
 
@@ -534,6 +535,27 @@ function collectTokenNameErrors(
 }
 
 /**
+ * 塗り用の 2 種別（colors と gradients）の両方にある名前（docs/04-tokens.md「命名規則」）。
+ * `background` がその名前を指しているかは見ない。
+ *
+ * 位置には識別子違反（`collectTokenNameErrors`）と同じくトークン名を入れる。
+ *
+ * @param tokens 検証するトークン一式
+ * @returns 両方にある名前ごとの conflicting-token-name エラーの並び
+ */
+function collectPaintNameConflictErrors(
+  tokens: TokenSet,
+): readonly DesignDocumentValidationError[] {
+  return TokenSet.collectPaintNameConflicts(tokens).map(
+    (name): DesignDocumentValidationError => ({
+      kind: "conflicting-token-name",
+      nodeName: name,
+      message: `token name "${name}" is used in both colors and gradients`,
+    }),
+  );
+}
+
+/**
  * colors トークンの値が正規形の hex か（docs/04-tokens.md「colors」）。
  *
  * 影・グラデーションの中の色は見ない（docs/03-schema.md「バリデーション仕様」）。
@@ -563,7 +585,7 @@ export function collectColorTokenErrors(
  * ドキュメント全体の名前（部品・artboard・ノード・トークン）のエラーを集める。
  *
  * @param document 検証するドキュメント
- * @returns 欠落・識別子違反・重複を含む、名前のエラーの並び
+ * @returns 欠落・識別子違反・重複・塗り用の 2 種別での名前の衝突を含む、名前のエラーの並び
  */
 export function collectDocumentNameErrors(
   document: DesignDocument,
@@ -591,5 +613,6 @@ export function collectDocumentNameErrors(
     ...artboardErrors,
     ...collectDuplicateNameErrors(document),
     ...collectTokenNameErrors(document.tokens),
+    ...collectPaintNameConflictErrors(document.tokens),
   ];
 }

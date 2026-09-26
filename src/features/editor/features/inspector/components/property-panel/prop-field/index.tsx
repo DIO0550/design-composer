@@ -2,6 +2,7 @@ import { type ReactElement, useId, useRef } from "react";
 import { ColorSwatch } from "@/components/color-swatch";
 import { SegmentedControl } from "@/components/segmented-control";
 import type { PropEdit } from "@/domains/dcmp/node";
+import type { ColorToken } from "@/domains/dcmp/token";
 import {
   EditContinuities,
   type EditContinuity,
@@ -163,6 +164,34 @@ function TokenSelect({
 }
 
 /**
+ * 色の見本を添えたトークン名の選択欄。
+ *
+ * 見本を欄の内側に置かない（UI 案 docs/Design Composer.html は内側）。ネイティブの
+ * `<select>` の中には要素を描けず、内側に置くには一覧そのものを自作することになる（キーボ
+ * ード操作と読み上げを自前で持つ）。
+ *
+ * @param names 選択肢に出すトークン名
+ * @param color 今効いている名前が指す色。色でなければ見本を出さない
+ * @returns 見本と選択欄を並べた行
+ */
+function ColorTokenSelect({
+  field,
+  names,
+  color,
+}: Readonly<{
+  field: FieldBinding;
+  names: readonly string[];
+  color: Option<ColorToken>;
+}>): ReactElement {
+  return (
+    <div className="flex min-w-0 items-center gap-2">
+      {Option.isSome(color) ? <ColorSwatch color={color.value} /> : null}
+      <TokenSelect field={field} names={names} />
+    </div>
+  );
+}
+
+/**
  * 解決値の添え方。
  *
  * `beside` は全幅の行で、UI 案 docs/Design Composer.html の `gap`（`lg` の右端に `20`）
@@ -320,19 +349,22 @@ export function PropField({
           resolvedValuePlacement={resolvedValuePlacement}
         />
       );
-    /*
-     * 見本を欄の内側に置かない（UI 案 docs/Design Composer.html は内側）。ネイティブの
-     * `<select>` の中には要素を描けず、内側に置くには一覧そのものを自作することになる（キ
-     * ーボード操作と読み上げを自前で持つ）。
-     */
     case "colorToken":
       return (
-        <div className="flex min-w-0 items-center gap-2">
-          {Option.isSome(input.color) ? (
-            <ColorSwatch color={input.color.value} />
-          ) : null}
-          <TokenSelect field={field} names={input.names} />
-        </div>
+        <ColorTokenSelect
+          field={field}
+          names={input.names}
+          color={input.color}
+        />
+      );
+    /* gradients の名前はまだ出さない。欄での見せ方が決まっていない（docs/03「塗り」）。 */
+    case "paintToken":
+      return (
+        <ColorTokenSelect
+          field={field}
+          names={input.names}
+          color={input.color}
+        />
       );
     case "number":
       return <LiteralInput field={field} inputType="number" />;

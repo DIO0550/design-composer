@@ -1,18 +1,19 @@
 #!/usr/bin/env bash
 #
 # `check-pr-closing-issue.sh` の判定表。問い合わせ結果を模した JSON を食わせ、
-# exit コードが期待どおりかを 1 コマンドで確かめる。
+# 結果が期待どおりかを 1 コマンドで確かめる。
 #
 # 使い方: bash .github/scripts/check-pr-closing-issue-cases.sh
 # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。
 #
 # 配線は CI(`frontend.yml` の `rules-check`)だけで、層 2(`pre-push`)には無い
-# (理由は `.claude/hooks/README.md`「カバー範囲と残る穴」)。判定は終了コードで見る。
+# (理由は `.claude/hooks/README.md`「カバー範囲と残る穴」)。判定は終了コードで見る
+# (問い合わせの節だけは結果の種別で見る。理由はその節)。
 #
 # **表をここへ置くのは、CI の run が流れると判定の根拠が残らないため。** 覆うのは
-# 「問い合わせ結果 → 終了コード」「5xx のときの再試行」「opened 直後に空で返ったときの
-# 再試行」の 3 つ。GraphQL のクエリ本体(フィールド名)とワークフローの配線は覆えないので、
-# そこは CI で実際に叩いて確かめる。
+# 「問い合わせ結果 → 終了コード」「5xx のときの再試行」「未反映のときの問い合わせ直し」
+# 「イベント種別が無いときに問い合わせずに落ちること」の 4 つ。GraphQL のクエリ本体
+# (フィールド名)とワークフローの配線は覆えないので、そこは CI で実際に叩いて確かめる。
 #
 # **件数(`totalCount`)と中身(`nodes`)は別々に渡す。** クエリは `files(first: 1)` なので
 # GitHub は 2 ファイル以上の PR でも `nodes` を 1 件しか返さない。`nodes` の数から
@@ -66,15 +67,26 @@ run_case 1 "$no_issue"  1 "$sibling_folder"  'harness/records- で始まる別�
 run_case 1 "$no_issue"  1 "$nested_path"     'パスの途中に harness/records/ を含むだけのものは記録 PR ではない'
 run_case 1 "$no_issue"  1 "$records_readme"  'harness/records/ でも pr-<番号>.md でなければ記録 PR ではない'
 
-# --- 問い合わせの再試行 ---
+# --- 問い合わせの再試行と問い合わせ直し ---
 #
-# `gh` を差し替えて、GitHub の API が 5xx を返したときの振る舞いを固定する。
-# **待ち時間があるのでこの 2 ケースだけで 20 秒ほどかかる。**
+# `gh` を差し替えて、GitHub の API が 5xx を返したとき・閉じる Issue がまだ反映されて
+# いないときの振る舞いを固定する。スタブは呼び出しごとに `STUB_REPLIES` の語を 1 つずつ
+# 返す(`fail` = 5xx / `empty` = 閉じる Issue が空 / `linked` = 閉じる Issue あり)。
+# 語が尽きたら `linked`。**待ち時間があるので、この節だけで 1 分ほどかかる。**
 # いちばん守りたいのは「3 回とも駄目なら赤」。ここが黙って通るようになると、
-# 問い合わせに失敗しただけの PR が緑になる。
+# 問い合わせに失敗しただけの PR・閉じ忘れた PR が緑になる。
+#
+# 期待は終了コードではなく結果の種別で書く(`pass` = 通った / `missing` = 閉じ忘れとして
+# 赤 / `fetch-failed` = 閉じ忘れの案内を出さずに赤)。どちらの赤も exit 1 なので、
+# 終了コードだけでは問い合わせの失敗が空の結果として判定へ流れても区別できない。
+#
+# `PR_ACTION` は各行で必ず与える。ここで既定値を埋めると、イベント種別が空の経路を
+# 表から踏めなくなる。
+not_record='[{"path":"AGENTS.md","changeType":"MODIFIED"}]'
+
 run_fetch_case() {
-  local expected="$1" fail_times="$2" expected_calls="$3" label="$4"
-  local dir actual=0 calls
+  local expected="$1" expected_calls="$2" label="$3"
+  local dir output status=0 actual calls
 
   dir="$(mktemp -d)"
   mkdir -p "$dir/bin"
@@ -82,73 +94,62 @@ run_fetch_case() {
 #!/usr/bin/env bash
 calls=$(( $(cat "$STUB_COUNT_FILE" 2>/dev/null || echo 0) + 1 ))
 echo "$calls" >"$STUB_COUNT_FILE"
-if [ "$calls" -le "$FAIL_TIMES" ]; then
+read -ra replies <<<"$STUB_REPLIES"
+reply="${replies[$((calls - 1))]:-linked}"
+if [ "$reply" = fail ]; then
   echo "gh: HTTP 502" >&2
   exit 1
 fi
-echo '{"data":{"repository":{"pullRequest":{"closingIssuesReferences":{"nodes":[{"number":1}]},"files":{"totalCount":9,"nodes":[{"path":"AGENTS.md","changeType":"MODIFIED"}]}}}}}'
+cat "$STUB_DIR/$reply.json"
 STUB
   chmod +x "$dir/bin/gh"
+  result_json "$no_issue" "${STUB_FILES_TOTAL:-9}" "${STUB_FILES:-$not_record}" >"$dir/empty.json"
+  result_json "$one_issue" "${STUB_FILES_TOTAL:-9}" "${STUB_FILES:-$not_record}" >"$dir/linked.json"
 
-  PATH="$dir/bin:$PATH" STUB_COUNT_FILE="$dir/count" FAIL_TIMES="$fail_times" \
-    GITHUB_REPOSITORY=owner/repo PR_NUMBER=1 \
-    bash "$script" >/dev/null 2>&1 || actual=$?
+  output="$(
+    PATH="$dir/bin:$PATH" STUB_COUNT_FILE="$dir/count" STUB_REPLIES="${STUB_REPLIES:-}" \
+      STUB_DIR="$dir" GITHUB_REPOSITORY=owner/repo PR_NUMBER=1 PR_ACTION="$PR_ACTION" \
+      bash "$script" 2>/dev/null
+  )" || status=$?
   calls="$(cat "$dir/count" 2>/dev/null || echo 0)"
   rm -rf "$dir"
 
+  if [ "$status" = 0 ]; then
+    actual=pass
+  elif grep -q 'マージ時に閉じる Issue がありません' <<<"$output"; then
+    actual=missing
+  else
+    actual=fetch-failed
+  fi
+
   if [ "$actual" = "$expected" ] && [ "$calls" = "$expected_calls" ]; then
-    printf 'ok   exit=%s 呼び出し=%s  %s\n' "$actual" "$calls" "$label"
+    printf 'ok   %s 呼び出し=%s  %s\n' "$actual" "$calls" "$label"
     return
   fi
-  printf 'NG   exit=%s 呼び出し=%s (期待 exit=%s 呼び出し=%s)  %s\n' \
+  printf 'NG   %s 呼び出し=%s (期待 %s 呼び出し=%s)  %s\n' \
     "$actual" "$calls" "$expected" "$expected_calls" "$label"
   failed=1
 }
 
-run_fetch_case 0 0 1 '問い合わせが通れば再試行しない'
-run_fetch_case 0 1 2 '一時的な 5xx は再試行して通る'
-run_fetch_case 1 9 3 '3 回とも失敗したら赤にする（握りつぶさない）'
+PR_ACTION=synchronize run_fetch_case pass 1 '問い合わせが通れば再試行しない'
+PR_ACTION=synchronize STUB_REPLIES='fail' run_fetch_case pass 2 '一時的な 5xx は再試行して通る'
+PR_ACTION=synchronize STUB_REPLIES='fail fail fail' run_fetch_case fetch-failed 3 \
+  '3 回とも失敗したら赤にする（握りつぶさない）'
+PR_ACTION='' run_fetch_case fetch-failed 0 \
+  'イベント種別が渡らなければ、問い合わせずに赤にする'
 
-# --- opened 直後の空反映 ---
-#
-# `gh` を差し替えて、`closingIssuesReferences` が最初は空・後から埋まる応答を固定する
-# (`harness/records/pr-757.md` 指摘 12)。守りたいのは「`opened` のときだけ待って
-# 問い合わせ直す」で、`opened` 以外(未設定含む)まで待つと、閉じ忘れの PR も遅れて赤になる。
-run_opened_retry_case() {
-  local expected="$1" empty_times="$2" expected_calls="$3" is_opened="$4" label="$5"
-  local dir actual=0 calls
-
-  dir="$(mktemp -d)"
-  mkdir -p "$dir/bin"
-  cat >"$dir/bin/gh" <<'STUB'
-#!/usr/bin/env bash
-calls=$(( $(cat "$STUB_COUNT_FILE" 2>/dev/null || echo 0) + 1 ))
-echo "$calls" >"$STUB_COUNT_FILE"
-if [ "$calls" -le "$EMPTY_TIMES" ]; then
-  echo '{"data":{"repository":{"pullRequest":{"closingIssuesReferences":{"nodes":[]},"files":{"totalCount":1,"nodes":[{"path":"AGENTS.md","changeType":"MODIFIED"}]}}}}}'
-else
-  echo '{"data":{"repository":{"pullRequest":{"closingIssuesReferences":{"nodes":[{"number":1}]},"files":{"totalCount":1,"nodes":[{"path":"AGENTS.md","changeType":"MODIFIED"}]}}}}}'
-fi
-STUB
-  chmod +x "$dir/bin/gh"
-
-  PATH="$dir/bin:$PATH" STUB_COUNT_FILE="$dir/count" EMPTY_TIMES="$empty_times" \
-    GITHUB_REPOSITORY=owner/repo PR_NUMBER=1 PR_IS_OPENED="$is_opened" \
-    bash "$script" >/dev/null 2>&1 || actual=$?
-  calls="$(cat "$dir/count" 2>/dev/null || echo 0)"
-  rm -rf "$dir"
-
-  if [ "$actual" = "$expected" ] && [ "$calls" = "$expected_calls" ]; then
-    printf 'ok   exit=%s 呼び出し=%s  %s\n' "$actual" "$calls" "$label"
-    return
-  fi
-  printf 'NG   exit=%s 呼び出し=%s (期待 exit=%s 呼び出し=%s)  %s\n' \
-    "$actual" "$calls" "$expected" "$expected_calls" "$label"
-  failed=1
-}
-
-run_opened_retry_case 0 1 2 true  'opened で 1 回空でも、埋まった時点で通る'
-run_opened_retry_case 1 9 3 true  'opened で 3 回とも空なら、閉じ忘れとして赤にする'
-run_opened_retry_case 1 9 1 false 'opened 以外は空でも待たずに赤にする'
+PR_ACTION=opened STUB_REPLIES='empty' run_fetch_case pass 2 \
+  'PR を作った直後に閉じる Issue が未反映でも、問い合わせ直して反映されれば通る'
+PR_ACTION=opened STUB_REPLIES='empty empty empty' run_fetch_case missing 3 \
+  'PR を作った直後でも、3 回とも閉じる Issue が空なら閉じ忘れとして赤にする'
+PR_ACTION=opened STUB_REPLIES='empty fail fail fail' run_fetch_case fetch-failed 4 \
+  '問い合わせ直しの途中で 5xx が 3 回続いたら、閉じ忘れではなく問い合わせ失敗として赤にする'
+PR_ACTION=synchronize STUB_REPLIES='empty' run_fetch_case missing 1 \
+  'PR を作った直後でなければ、閉じる Issue が空でも問い合わせ直さずに赤にする'
+PR_ACTION=edited STUB_REPLIES='empty' run_fetch_case missing 1 \
+  '本文を編集しただけなら、閉じる Issue が空でも問い合わせ直さずに赤にする'
+PR_ACTION=opened STUB_REPLIES='empty' STUB_FILES_TOTAL=1 \
+  STUB_FILES="$record" run_fetch_case pass 1 \
+  '記録 PR は PR を作った直後でも問い合わせ直さずに通す'
 
 exit "$failed"

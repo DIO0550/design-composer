@@ -1270,13 +1270,13 @@ export const EditorState = {
   /**
    * トークンを追加し、そのまま編集できるよう選択する。
    *
-   * 名前は呼び出し側が決めず、種別の中で衝突しない名前をここで採る（追加のボタンが渡せる
+   * 名前は呼び出し側が決めず、足す種別で衝突しない名前をここで採る（追加のボタンが渡せる
    * のは「どの種別に足すか」だけで、名前の一意性はドキュメントを見ないと決まらない）。
    *
    * @param state 足す前の状態
    * @param template 足すトークンの指定
    * @returns 1 つ増え、それを選んだ状態。ファイルが不正な間は `none`
-   *   （`DesignDocument.addToken` の失敗は、名前を種別の中で採番するので起こらない）
+   *   （`DesignDocument.addToken` の失敗は、名前を `TokenSet.uniqueName` で採番するので起こらない）
    */
   addToken(state: EditorState, template: TokenTemplate): Option<EditorState> {
     const document = EditorState.document(state);

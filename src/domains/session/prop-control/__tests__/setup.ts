@@ -134,10 +134,13 @@ export function controlNamed(
 export function colorOfControl(
   control: PropControl | undefined,
 ): Option<ColorToken> {
-  if (control?.input.kind !== "colorToken") {
-    throw new Error("色のトークン参照の編集欄ではない");
+  switch (control?.input.kind) {
+    case "colorToken":
+    case "paintToken":
+      return control.input.color;
+    default:
+      throw new Error("色のトークン参照の編集欄ではない");
   }
-  return control.input.color;
 }
 
 /**

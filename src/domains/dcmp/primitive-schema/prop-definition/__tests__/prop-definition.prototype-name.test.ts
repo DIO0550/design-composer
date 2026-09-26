@@ -21,7 +21,7 @@ test("スキーマに宣言の無い constructor という prop は unknown-prop
 test("トークン参照の prop が存在しないトークン constructor を指すと dangling-token になる", () => {
   const definition = {
     domain: "token",
-    tokenKind: "colors",
+    tokenKind: ["colors"],
     group: "appearance",
   } as const;
 

@@ -2,14 +2,17 @@ import { expect, expectTypeOf, test } from "vitest";
 import { TokenPropKinds, type TokenPropName } from "../index";
 
 test("トークン参照 prop はスキーマで宣言されたトークン種別を答える", () => {
-  expect(TokenPropKinds.kindOf("gap")).toBe("spacing");
-  expect(TokenPropKinds.kindOf("radiusTopLeft")).toBe("radius");
-  expect(TokenPropKinds.kindOf("shadow")).toBe("shadows");
+  expect(TokenPropKinds.kindsOf("gap")).toEqual(["spacing"]);
+  expect(TokenPropKinds.kindsOf("radiusTopLeft")).toEqual(["radius"]);
+  expect(TokenPropKinds.kindsOf("shadow")).toEqual(["shadows"]);
 });
 
 test("primitive が違っても prop 名だけでトークン種別を引ける", () => {
-  expect(TokenPropKinds.kindOf("background")).toBe("colors");
-  expect(TokenPropKinds.kindOf("color")).toBe("colors");
+  expect(TokenPropKinds.kindsOf("color")).toEqual(["colors"]);
+});
+
+test("background は colors と gradients の両方を指せる", () => {
+  expect(TokenPropKinds.kindsOf("background")).toEqual(["colors", "gradients"]);
 });
 
 test("トークン参照 prop の名前はスキーマの宣言だけで決まる", () => {
@@ -21,6 +24,10 @@ test("トークン参照 prop の名前はスキーマの宣言だけで決ま�
 });
 
 test("トークン種別は prop ごとにスキーマの宣言どおりの型で返る", () => {
-  expectTypeOf(TokenPropKinds.kindOf("gap")).toEqualTypeOf<"spacing">();
-  expectTypeOf(TokenPropKinds.kindOf("background")).toEqualTypeOf<"colors">();
+  expectTypeOf(TokenPropKinds.kindsOf("gap")).toEqualTypeOf<
+    readonly ["spacing"]
+  >();
+  expectTypeOf(TokenPropKinds.kindsOf("background")).toEqualTypeOf<
+    readonly ["colors", "gradients"]
+  >();
 });

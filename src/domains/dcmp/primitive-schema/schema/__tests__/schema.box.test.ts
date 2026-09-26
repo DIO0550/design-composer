@@ -134,7 +134,7 @@ test("Box の回転は取りうる範囲を宣言しない", () => {
 test("Box の gap は spacing トークン参照でデフォルトを持たない", () => {
   const definition = BoxSchema.props.gap;
   expect(PropDefinition.isToken(definition)).toBe(true);
-  expect(definition).toMatchObject({ domain: "token", tokenKind: "spacing" });
+  expect(definition).toMatchObject({ domain: "token", tokenKind: ["spacing"] });
   expect("default" in definition).toBe(false);
 });
 

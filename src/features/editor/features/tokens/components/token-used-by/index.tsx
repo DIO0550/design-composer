@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import { TypeGlyph, type TypeGlyphKind } from "@/components/type-glyph";
-import { TokenReferrer } from "@/domains/dcmp/design-document";
+import type { TokenReferrer } from "@/domains/dcmp/design-document";
 import { TokenSelection } from "@/domains/session/token-selection";
 
 /**
@@ -40,6 +40,19 @@ function glyphKindOf(referrer: TokenReferrer): TypeGlyphKind {
 }
 
 /**
+ * 参照元の位置の表示（UI 案の `Used by` の行の `title.color`）。
+ *
+ * 同じ綴りを `document-error-list` の `locationLabel` も作っているが、あちらが受けるのは
+ * エラーの発生位置（prop を持たない位置や文字位置も含む直和）で、型も分岐も違うため共通化しない。
+ *
+ * @param referrer 表示したい参照元
+ * @returns 参照元の名前と prop 名を `.` で繋いだ綴り。`target` は綴りに出ない
+ */
+function referrerLabel(referrer: TokenReferrer): string {
+  return `${referrer.name}.${referrer.prop}`;
+}
+
+/**
  * そのトークンを参照している箇所 1 件の行。
  *
  * @returns アイコンと参照元の位置を並べた 1 行
@@ -50,7 +63,7 @@ function UsedByRow({
   return (
     <li className="flex items-center gap-2 border-gray-200 border-t px-2.5 py-1.5 text-xs first:border-t-0">
       <TypeGlyph kind={glyphKindOf(referrer)} />
-      <span className="min-w-0 truncate">{TokenReferrer.toText(referrer)}</span>
+      <span className="min-w-0 truncate">{referrerLabel(referrer)}</span>
     </li>
   );
 }
@@ -97,7 +110,7 @@ export function TokenUsedBy({
                * ため、行の種類も混ぜて衝突を避ける。
                */
               <UsedByRow
-                key={`${referrer.target}/${TokenReferrer.toText(referrer)}`}
+                key={`${referrer.target}/${referrerLabel(referrer)}`}
                 referrer={referrer}
               />
             ))}

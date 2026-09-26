@@ -51,26 +51,26 @@ export type TokenPropName = {
 }[PrimitiveType];
 
 /**
- * その prop が引くトークン種別。スキーマの `tokenKind` の宣言をそのまま取り出す。
+ * その prop が指せるトークン種別の並び。スキーマの `tokenKind` の宣言をそのまま取り出す。
  *
  * `P` を持つスキーマの props を `Extract` で選び出し（持たない primitive は落ちる）、
- * その prop の定義から `tokenKind` を読む。例: `TokenKindOfProp<"gap">` は `"spacing"`。
- * 種別をここに書き写していないので、スキーマを直せば自動的に追従する。
+ * その prop の定義から `tokenKind` を読む。例: `TokenKindsOfProp<"gap">` は
+ * `readonly ["spacing"]`。種別をここに書き写していないので、スキーマを直せば自動的に追従する。
  */
-type TokenKindOfProp<P extends TokenPropName> = Extract<
+type TokenKindsOfProp<P extends TokenPropName> = Extract<
   SchemaPropsOf<PrimitiveType>,
   Readonly<Record<P, TokenPropDefinition>>
 >[P]["tokenKind"];
 
 /**
- * トークン参照 prop → 引くトークン種別の対応。
+ * トークン参照 prop → 指せるトークン種別の並びの対応。
  *
  * スキーマの `tokenKind` から導出するので、種別の宣言はスキーマだけが持つ
  * （対応表を別に書き写して二重管理しない）。値がリテラル型で残るため、
- * 出力側は `TokenPropKinds["gap"]` を `"spacing"` として受け取れる。
+ * 出力側は `TokenPropKinds["gap"]` を `readonly ["spacing"]` として受け取れる。
  */
 export type TokenPropKinds = {
-  readonly [P in TokenPropName]: TokenKindOfProp<P>;
+  readonly [P in TokenPropName]: TokenKindsOfProp<P>;
 };
 
 /**
@@ -92,13 +92,13 @@ const TokenKindByProp = Object.fromEntries(
 
 export const TokenPropKinds = {
   /**
-   * トークン参照 prop が引くトークン種別。
+   * トークン参照 prop が指せるトークン種別の並び。
    * 出力側が「どの種別から引くか」を書き写さずに済むよう、スキーマの宣言を引かせる。
    *
    * @param prop スキーマが `domain: "token"` と宣言した prop の名前
-   * @returns その prop の定義が `tokenKind` に宣言している種別
+   * @returns その prop の定義が `tokenKind` に宣言している種別の並び（宣言の順）
    */
-  kindOf<P extends TokenPropName>(prop: P): TokenPropKinds[P] {
+  kindsOf<P extends TokenPropName>(prop: P): TokenPropKinds[P] {
     return TokenKindByProp[prop];
   },
 } as const;

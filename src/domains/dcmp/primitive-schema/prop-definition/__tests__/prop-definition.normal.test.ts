@@ -13,7 +13,7 @@ test("domain が enum の prop 定義は isEnum で true と判定される", ()
 test("domain が token の prop 定義は isToken で true と判定される", () => {
   const definition = {
     domain: "token",
-    tokenKind: "spacing",
+    tokenKind: ["spacing"],
     group: "layout",
   } as const;
   expect(PropDefinition.isToken(definition)).toBe(true);
@@ -52,7 +52,7 @@ test("enabledWhen の条件を満たす props を渡すと isEnabled が true �
 test("不等値の条件と違う値を渡すと isEnabled が true になる", () => {
   const definition = {
     domain: "token",
-    tokenKind: "spacing",
+    tokenKind: ["spacing"],
     group: "layout",
     enabledWhen: { kind: "notEquals", prop: "layout", notEquals: "free" },
   } as const;
@@ -62,7 +62,7 @@ test("不等値の条件と違う値を渡すと isEnabled が true になる", 
 test("prop 定義1エントリを追加すると propNames にその prop が定義順で加わる", () => {
   const schema = {
     layout: { domain: "enum", values: ["row", "column"], group: "layout" },
-    gap: { domain: "token", tokenKind: "spacing", group: "layout" },
+    gap: { domain: "token", tokenKind: ["spacing"], group: "layout" },
   } satisfies PropDefinitionRecord;
 
   const extended = {
