@@ -173,13 +173,13 @@ function followPropEdits(node: Node, resize: AxisResize): readonly PropEdit[] {
     return [];
   }
   const props = resolved.value;
-  const placement = Placement.fromProps(props);
+  const placement = Placement.absoluteFromProps(props);
   const constraint = Constraint.fromProps(props, resize.axis);
-  if (!Placement.isAbsolute(placement) || !Option.isSome(constraint)) {
+  if (!Option.isSome(placement) || !Option.isSome(constraint)) {
     return [];
   }
   const offsetEdit = Placement.followPropEdit(
-    placement,
+    placement.value,
     constraint.value,
     resize,
   );
@@ -887,13 +887,13 @@ export const DesignDocument = {
     if (!Option.isSome(resolved)) {
       return Option.none;
     }
-    const placement = Placement.fromProps(resolved.value);
-    if (!Placement.isAbsolute(placement)) {
+    const placement = Placement.absoluteFromProps(resolved.value);
+    if (!Option.isSome(placement)) {
       return Option.none;
     }
     return Option.map(
       DesignDocument.findChildPosition(document, name),
-      (position) => ChildPlacement.create(position.parentName, placement),
+      (position) => ChildPlacement.create(position.parentName, placement.value),
     );
   },
 

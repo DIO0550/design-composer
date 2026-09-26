@@ -13,7 +13,7 @@ import { Layout } from "@/domains/dcmp/layout";
 import { LengthShorthand } from "@/domains/dcmp/length-shorthand";
 import type { PropValue } from "@/domains/dcmp/node";
 import { Padding } from "@/domains/dcmp/padding";
-import { Placement } from "@/domains/dcmp/placement";
+import { type AbsolutePlacement, Placement } from "@/domains/dcmp/placement";
 import {
   TokenPropKinds,
   type TokenPropName,
@@ -77,15 +77,15 @@ function tokenDeclarations(
  *
  * 子を持たない Text には要らないので `Placement` ではなく Box 側が持つ。
  *
- * @param placement Box 自身の置かれ方。置き場所が決まらないときは `undefined`
+ * @param placement Box 自身の絶対配置。フローと、置き場所が決まらないときは `none`
  * @returns 絶対配置なら座標込みの宣言、そうでなければ `position: relative` の 1
  *   件
  */
 function placementDeclarations(
-  placement: Placement | undefined,
+  placement: Option<AbsolutePlacement>,
 ): readonly CssDeclarationType[] {
-  return Placement.isAbsolute(placement)
-    ? Placement.declarations(placement)
+  return Option.isSome(placement)
+    ? Placement.declarations(placement.value)
     : [CssDeclaration.create("position", "relative")];
 }
 
@@ -263,9 +263,9 @@ export const BoxElement = {
     parentDirection: Option<CssDirection>,
     tokens: TokenRefs,
   ): readonly CssDeclarationType[] {
-    const placement = Placement.fromProps(props);
+    const placement = Placement.absoluteFromProps(props);
     // 絶対配置の子はフローから外れるので、flex アイテムとしての親を持たない
-    const flexParentDirection = Placement.isAbsolute(placement)
+    const flexParentDirection = Option.isSome(placement)
       ? Option.none
       : parentDirection;
     const layout = Layout.fromProps(props);
@@ -378,7 +378,10 @@ export const TextElement = {
     tokens: TokenRefs,
   ): readonly CssDeclarationType[] {
     return [
-      ...Placement.declarations(Placement.fromProps(props)),
+      ...Option.unwrapOr(
+        Option.map(Placement.absoluteFromProps(props), Placement.declarations),
+        [],
+      ),
       ...rotationDeclarations(props.rotation),
       ...typographyDeclarations(props.typography, tokens),
       ...tokenDeclarations("color", props.color, tokens),

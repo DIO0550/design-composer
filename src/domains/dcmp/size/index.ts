@@ -122,7 +122,7 @@ export const Size = {
    * props からその軸のサイズを組み立てる。
    *
    * この `undefined` は「不在」ではなく「スキーマ違反で決められない」を表す
-   * (不正は `DesignDocument.collectErrors` が出す / `Placement.fromProps` と同じ)。
+   * (不正は `DesignDocument.collectErrors` が出す)。
    *
    * @param props 読み取り元の props (デフォルト解決済みでなくてよい)
    * @param axis どちらの軸のサイズを読むか
