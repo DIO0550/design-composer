@@ -682,7 +682,7 @@ export const TokenSet = {
    *
    * @param cursor `tokens` の値と、その位置
    * @returns 読んだトークン一式。影・グラデーションの中も含め、色は読んだ時点で
-   *   `ColorToken.normalize` で倒す。名前の規則と値の範囲（hex でない色・負の余白）は
+   *   `ColorToken.normalize` で倒す。名前の規則・hex でない色・値の範囲（負の余白など）は
    *   見ない。オブジェクトでなければ `invalid-type`、知らない種別があれば `unknown-field`、
    *   種別ごとの値の失敗も 1 件で打ち切らずすべて集めた `err`
    */

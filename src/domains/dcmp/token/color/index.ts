@@ -199,8 +199,9 @@ export const ColorToken = {
    * JSON 上の表現は hex 文字列。読み込んだ時点で正規形へ倒す。
    *
    * @param cursor 色の値と、その位置
-   * @returns `normalize` で倒した色。hex でない文字列も `ok`（`normalize` がそのまま返す）。
-   *   文字列でなければ `invalid-type` の `err`
+   * @returns `normalize` で倒した色。hex でない文字列も `ok`（`normalize` がそのまま返す。
+   *   colors トークンなら検証の `invalid-color` が報告し、影・グラデーションの中の色は報告
+   *   しない）。文字列でなければ `invalid-type` の `err`
    */
   fromJson(cursor: JsonCursor): JsonDecoded<ColorToken> {
     return Result.map(Json.string(cursor), ColorToken.normalize);

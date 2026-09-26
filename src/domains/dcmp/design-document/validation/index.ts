@@ -16,7 +16,7 @@ import {
   PropDefinitionRecord,
 } from "@/domains/dcmp/primitive-schema";
 import { Size } from "@/domains/dcmp/size";
-import { TokenSet } from "@/domains/dcmp/token";
+import { ColorToken, TokenSet } from "@/domains/dcmp/token";
 import { Axes } from "@/domains/unit/axis";
 import { Option } from "@/utils/Option";
 import { RecordEx } from "@/utils/RecordEx";
@@ -34,7 +34,8 @@ export type DesignDocumentValidationErrorKind =
   | "missing-name"
   | "invalid-identifier"
   | "duplicate-name"
-  | "fill-in-free-parent";
+  | "fill-in-free-parent"
+  | "invalid-color";
 
 /** 不正 1 件。どのノードのどの prop かと、診断用のメッセージを持つ。 */
 export type DesignDocumentValidationError = Readonly<{
@@ -529,6 +530,32 @@ function collectTokenNameErrors(
               },
             ],
     ),
+  );
+}
+
+/**
+ * colors トークンの値が正規形の hex か（docs/04-tokens.md「colors」）。
+ *
+ * 影・グラデーションの中の色は見ない（docs/03-schema.md「バリデーション仕様」）。
+ *
+ * @param tokens 検証するトークン一式
+ * @returns `ColorToken.isValid` を満たさない色ごとの、トークン名を位置にした invalid-color
+ *   エラーの並び
+ */
+export function collectColorTokenErrors(
+  tokens: TokenSet,
+): readonly DesignDocumentValidationError[] {
+  return Object.entries(tokens.colors).flatMap(
+    ([name, color]): readonly DesignDocumentValidationError[] =>
+      ColorToken.isValid(color)
+        ? []
+        : [
+            {
+              kind: "invalid-color",
+              nodeName: name,
+              message: `color token "${name}" is not a hex color in normal form (#rrggbb / #rrggbbaa): "${color}"`,
+            },
+          ],
   );
 }
 
