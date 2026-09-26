@@ -646,6 +646,19 @@ export const TokenSet = {
   },
 
   /**
+   * 値が正規形の hex でない色の名前（docs/04-tokens.md「colors」）。
+   * 影・グラデーションの中の色は見ない（docs/03-schema.md「バリデーション仕様」）。
+   *
+   * @param tokens 色を確かめるトークン一式
+   * @returns `ColorToken.isValid` を満たさない色の名前を colors の並びの順で並べたもの
+   */
+  collectInvalidColorNames(tokens: TokenSet): readonly string[] {
+    return Object.entries(tokens.colors)
+      .filter(([, color]) => !ColorToken.isValid(color))
+      .map(([name]) => name);
+  },
+
+  /**
    * その種別のトークンを並べる。
    *
    * @param tokens 読み出し元のトークン一式
