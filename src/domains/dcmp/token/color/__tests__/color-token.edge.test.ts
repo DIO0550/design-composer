@@ -12,6 +12,10 @@ test.each([
   expect(ColorToken.isValid(value)).toBe(false);
 });
 
+test("5桁の hex は短縮形として展開されずそのまま返る", () => {
+  expect(ColorToken.normalize("#12345")).toBe("#12345");
+});
+
 test.each([
   "#fff",
   "#3b82f6ff",

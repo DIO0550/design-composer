@@ -12,6 +12,9 @@ const HexColorPattern = /^#[0-9a-f]{6}([0-9a-f]{2})?$/;
 /** 大文字の hex も受ける版。正規化の対象かどうかの判定にだけ使う。 */
 const AnyCaseHexColorPattern = /^#[0-9a-f]{6}([0-9a-f]{2})?$/i;
 
+/** 3 桁・4 桁の短縮形の hex。大文字も受ける。各桁を 2 回重ねると 6 桁・8 桁になる。 */
+const AnyCaseShortHexPattern = /^#[0-9a-f]{3,4}$/i;
+
 /** alpha を持たない6桁だけの hex。大文字も受ける(生成時に小文字へ倒す)。 */
 const AnyCaseRgbPattern = /^#[0-9a-f]{6}$/i;
 
@@ -54,6 +57,20 @@ export const Rgb = {
  */
 function alphaOf(color: ColorToken): string {
   return AnyCaseHexColorPattern.exec(color)?.[1]?.toLowerCase() ?? "";
+}
+
+/**
+ * 3 桁・4 桁の短縮形を、各桁を 2 回重ねて 6 桁・8 桁へ広げる(CSS の `#rgb` / `#rgba` と同じ読み)。
+ *
+ * @param value 広げる元の色の綴り
+ * @returns 短縮形なら広げた綴り(大文字は大文字のまま)。短縮形でなければ `value` のまま
+ */
+function expandShortHex(value: string): string {
+  if (!AnyCaseShortHexPattern.test(value)) {
+    return value;
+  }
+  const digits = Array.from(value.slice(1), (digit) => digit.repeat(2));
+  return `#${digits.join("")}`;
 }
 
 /** 不透明を表す alpha の 2 桁。 */
@@ -101,14 +118,16 @@ export const ColorToken = {
    * 形式」が正規形を 1 つに保つと明文で決めているため。
    *
    * @param value 倒す元の色の綴り
-   * @returns 6 桁か 8 桁の hex（大文字も可）なら小文字にし、alpha が `ff` なら 6 桁へ
-   *   落としたもの。3 桁・CSS 色文字列・前後に空白を含むなど、それ以外は `value` のまま
+   * @returns 3 桁・4 桁の短縮形は各桁を重ねて 6 桁・8 桁へ広げたうえで、6 桁か 8 桁の hex
+   *   （大文字も可）なら小文字にし、alpha が `ff` なら 6 桁へ落としたもの。5 桁・CSS 色文字列・
+   *   前後に空白を含むなど、それ以外は `value` のまま
    */
   normalize(value: string): ColorToken {
-    if (!AnyCaseHexColorPattern.test(value)) {
+    const expanded = expandShortHex(value);
+    if (!AnyCaseHexColorPattern.test(expanded)) {
       return value;
     }
-    const lowered = value.toLowerCase();
+    const lowered = expanded.toLowerCase();
     return alphaOf(lowered) === OpaqueAlphaHex
       ? lowered.slice(0, RgbLength)
       : lowered;
