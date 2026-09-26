@@ -22,9 +22,8 @@
 #   bash .github/scripts/check-pr-closing-issue.sh <file.json>  # 問い合わせ結果を差し替える(動作確認)
 #
 # **クエリ本体は CI でしか動かせない。** 判定表(`check-pr-closing-issue-cases.sh`)は
-# 「問い合わせ結果 → 終了コード」「5xx のときの再試行」「未反映のときの問い合わせ直し」を
-# `gh` の差し替えで覆うが、クエリのフィールド名・`permissions` の過不足が分かるのは
-# CI で実際に叩いたときだけ。
+# `gh` を差し替えて振る舞いを覆う(覆う範囲は判定表の冒頭)が、クエリのフィールド名・
+# `permissions` の過不足が分かるのは CI で実際に叩いたときだけ。
 set -euo pipefail
 
 # PR が閉じる Issue と、変更したファイルを 1 度の問い合わせで取る。
@@ -84,6 +83,7 @@ is_record_pull_request() {
 # PR を作った直後(`opened`)は、本文に `Closes #<番号>` があっても `closingIssuesReferences` が
 # 数秒は空で返る(`harness/records/pr-757.md` 指摘 12)。記録 PR は閉じる Issue が無くても通るので待たない。
 # `edited` は含めない。本文の手直しのたびに走るので、本来の赤(閉じ忘れ)に毎回待ちが乗る。
+# 本文へ `Closes` を足した `edited` も反映待ちで赤になりうるが、次の編集・push か再実行で揃う。
 awaits_closing_issue_link() {
   [ "$PR_ACTION" = "opened" ] || return 1
   [ -z "$(closing_issues_of "$1")" ] || return 1
@@ -92,7 +92,7 @@ awaits_closing_issue_link() {
 
 # 反映待ちでありうる間だけ、間を空けて 2 回まで問い合わせ直し、最後の結果を返す。
 # 待ちは 5xx の再試行と同じ形に揃えた。3 回とも空なら、そのまま閉じ忘れとして赤にする。
-refetch_until_linked() {
+refetch_while_awaiting_link() {
   local result="$1" attempt
   for attempt in 1 2; do
     awaits_closing_issue_link "$result" || break
@@ -111,7 +111,7 @@ else
   : "${PR_NUMBER:?PR 番号が要る}"
   : "${PR_ACTION:?PR のイベント種別(opened 等)が要る}"
   result="$(fetch_pull_request)"
-  result="$(refetch_until_linked "$result")"
+  result="$(refetch_while_awaiting_link "$result")"
 fi
 
 closing_issues="$(closing_issues_of "$result")"
