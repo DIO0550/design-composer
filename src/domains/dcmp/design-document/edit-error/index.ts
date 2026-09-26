@@ -56,6 +56,7 @@ export const DesignDocumentEditError = {
         return `index ${error.index} is out of bounds for length ${error.length}`;
       case "invalid-token-name":
       case "duplicate-token-name":
+      case "conflicting-token-name":
       case "token-not-found":
         return TokenEditError.message(error);
       case "component-not-found":

@@ -135,9 +135,67 @@ test("トークンの値を変えると解決値もその値に追随する", ()
 });
 
 test("色のトークン参照の prop はトークン名から選ぶコントロールになる", () => {
+  const selection = setupSelection([{ name: "label", type: "Text" }], "label");
+
+  expect(controlOf(selection, "color")?.input.kind).toBe("colorToken");
+});
+
+test("塗りの prop は colors と gradients の名前を種別ごとに分けて持つ", () => {
   const selection = setupSelection([{ name: "box", type: "Box" }], "box");
 
-  expect(controlOf(selection, "background")?.input.kind).toBe("colorToken");
+  expect(controlOf(selection, "background")?.input).toEqual({
+    kind: "paintToken",
+    names: Object.keys(DocumentTemplate.Default.tokens.colors),
+    gradients: ["brand"],
+    color: Option.none,
+  });
+});
+
+test("塗りの prop が gradients の名前を指しているときも、その名前が選択肢の先頭に出る", () => {
+  const selection = setupSelection(
+    [{ name: "box", type: "Box", props: { background: "brand" } }],
+    "box",
+  );
+
+  const input = controlOf(selection, "background")?.input;
+  expect(input?.kind === "paintToken" ? input.names[0] : undefined).toBe(
+    "brand",
+  );
+});
+
+test("colors と gradients の両方にある名前を指す塗りの prop は色を持たない", () => {
+  const tokens = DocumentTemplate.Default.tokens;
+  const selection = DocumentSelection.fromNames(
+    DesignDocument.create({
+      tokens: { ...tokens, colors: { ...tokens.colors, brand: "#123456" } },
+      artboards: [
+        {
+          name: "home",
+          width: 360,
+          height: 240,
+          children: [
+            { name: "box", type: "Box", props: { background: "brand" } },
+          ],
+        },
+      ],
+    }),
+    ["box"],
+  );
+
+  expect(colorOfControl(controlOf(selection, "background"))).toEqual(
+    Option.none,
+  );
+});
+
+test("塗りの prop が gradients の名前を指しているときは色を持たない", () => {
+  const selection = setupSelection(
+    [{ name: "box", type: "Box", props: { background: "brand" } }],
+    "box",
+  );
+
+  expect(colorOfControl(controlOf(selection, "background"))).toEqual(
+    Option.none,
+  );
 });
 
 test("色のトークン参照の prop は設定されている色を持つ", () => {
@@ -306,7 +364,7 @@ test("Box の opacity は数値の欄として出る", () => {
 test("artboard を選ぶと Box の prop を編集するコントロールが出る", () => {
   const selection = setupSelection([], "home");
 
-  expect(controlOf(selection, "background")?.input.kind).toBe("colorToken");
+  expect(controlOf(selection, "background")?.input.kind).toBe("paintToken");
 });
 
 test("artboard のはみ出しの既定は clip として出る", () => {

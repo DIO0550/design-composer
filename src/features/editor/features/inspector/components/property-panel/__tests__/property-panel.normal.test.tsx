@@ -144,6 +144,18 @@ test("トークン参照の prop はトークン名から選ぶ入力欄にな�
   ).toContain("primary");
 });
 
+test("塗りの欄の選択肢には colors の名前だけが出て、gradients の名前は出ない", () => {
+  renderSelected("home");
+
+  const options = optionValuesOf(
+    screen.getByRole("combobox", { name: "Background" }),
+  );
+  expect([options.includes("white"), options.includes("brand")]).toEqual([
+    true,
+    false,
+  ]);
+});
+
 test("未指定のトークン参照は既定値付きの未指定が選ばれ、明示設定と区別できる", () => {
   renderSelected("home-title");
 

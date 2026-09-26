@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { TokenSet } from "@/domains/dcmp/token";
 import { Result } from "@/utils/Result";
-import { DesignDocument, TokenReferrer } from "../index";
+import { DesignDocument } from "../index";
 
 const Gray900 = { kind: "colors", name: "gray-900" } as const;
 
@@ -46,14 +46,27 @@ function setupDocument(): DesignDocument {
   });
 }
 
+/** 参照元・dangling のどちらからも取り出せる、どのノードのどの prop か。 */
+type ReferringLocation = Readonly<{ name: string; prop: string | undefined }>;
+
 /**
- * 並べ替えて、出どころによる順序の違いを落とす。
+ * 位置だけを取り出して並べ替え、出どころによる順序の違いと位置以外のフィールドを落とす。
  *
  * 参照元はキャンバスが先・部品定義が後、検証は部品定義が先・artboard が後、と並びの規則が
  * 違う。
+ *
+ * @param locations 並べ替える位置の並び（位置以外のフィールドを持っていてもよい）
+ * @returns 名前 → prop 名の順で並べ替えた、位置だけの並び
  */
-function sortedTexts(texts: readonly string[]): readonly string[] {
-  return [...texts].sort();
+function sortedLocations(
+  locations: readonly ReferringLocation[],
+): readonly ReferringLocation[] {
+  const onlyLocations = locations.map(({ name, prop }) => ({ name, prop }));
+  return onlyLocations.sort((a, b) =>
+    a.name === b.name
+      ? (a.prop ?? "").localeCompare(b.prop ?? "")
+      : a.name.localeCompare(b.name),
+  );
 }
 
 test("参照元の集合は、そのトークンを消したときに dangling になる箇所の集合と一致する", () => {
@@ -63,16 +76,15 @@ test("参照元の集合は、そのトークンを消したときに dangling �
    */
   const document = setupDocument();
 
-  const referrerTexts = DesignDocument.collectTokenReferrers(
-    document,
-    Gray900,
-  ).map(TokenReferrer.toText);
+  const referrers = DesignDocument.collectTokenReferrers(document, Gray900);
   const removed = Result.unwrap(DesignDocument.removeToken(document, Gray900));
-  const danglingTexts = DesignDocument.collectErrors(removed)
+  const danglingLocations = DesignDocument.collectErrors(removed)
     .filter((error) => error.kind === "dangling-token")
-    .map((error) => `${error.nodeName}.${String(error.prop)}`);
+    .map((error) => ({ name: error.nodeName, prop: error.prop }));
 
-  expect(sortedTexts(referrerTexts)).toEqual(sortedTexts(danglingTexts));
+  expect(sortedLocations(referrers)).toEqual(
+    sortedLocations(danglingLocations),
+  );
 });
 
 test("一致を見る土台は、参照のしかたが違う 6 通りをすべて含んでいる", () => {
@@ -85,12 +97,12 @@ test("一致を見る土台は、参照のしかたが違う 6 通りをすべ�
     Gray900,
   );
 
-  expect(sortedTexts(referrers.map(TokenReferrer.toText))).toEqual([
-    "home-caption.color",
-    "home-panel.tone",
-    "home-title.color",
-    "home.background",
-    "panel-caption.color",
-    "panel.background",
+  expect(sortedLocations(referrers)).toEqual([
+    { name: "home", prop: "background" },
+    { name: "home-caption", prop: "color" },
+    { name: "home-panel", prop: "tone" },
+    { name: "home-title", prop: "color" },
+    { name: "panel", prop: "background" },
+    { name: "panel-caption", prop: "color" },
   ]);
 });

@@ -13,7 +13,7 @@ test("domain が enum の prop 定義は isToken で false と判定される", 
 test("domain が token の prop 定義は isLiteral で false と判定される", () => {
   const definition = {
     domain: "token",
-    tokenKind: "colors",
+    tokenKind: ["colors"],
     group: "appearance",
   } as const;
   expect(PropDefinition.isLiteral(definition)).toBe(false);
@@ -53,7 +53,7 @@ test("enabledWhen が参照する prop が props に存在しない場合 isEnab
 test("不等値の条件と同じ値を渡すと isEnabled が false になる", () => {
   const definition = {
     domain: "token",
-    tokenKind: "spacing",
+    tokenKind: ["spacing"],
     group: "layout",
     enabledWhen: { kind: "notEquals", prop: "layout", notEquals: "free" },
   } as const;
@@ -63,7 +63,7 @@ test("不等値の条件と同じ値を渡すと isEnabled が false になる",
 test("不等値の条件は判定する prop が未設定でも満たされる", () => {
   const definition = {
     domain: "token",
-    tokenKind: "spacing",
+    tokenKind: ["spacing"],
     group: "layout",
     enabledWhen: { kind: "notEquals", prop: "layout", notEquals: "free" },
   } as const;

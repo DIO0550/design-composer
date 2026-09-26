@@ -158,7 +158,7 @@ test("範囲を宣言していない prop は、範囲では弾かれない", ()
 test("トークン参照の prop にトークンセットに存在する名前を設定するとエラーにならない", () => {
   const definition = {
     domain: "token",
-    tokenKind: "colors",
+    tokenKind: ["colors"],
     group: "appearance",
   } as const;
   const tokens = { ...TokenSet.empty(), colors: { "gray-900": "#111111" } };
@@ -175,7 +175,7 @@ test("トークン参照の prop にトークンセットに存在する名前�
 test("トークン参照の prop にトークンセットに存在しない名前を設定すると dangling-token になる", () => {
   const definition = {
     domain: "token",
-    tokenKind: "colors",
+    tokenKind: ["colors"],
     group: "appearance",
   } as const;
 
@@ -231,13 +231,13 @@ function schemaWithTokenDefaults() {
   return {
     typography: {
       domain: "token",
-      tokenKind: "typography",
+      tokenKind: ["typography"],
       default: "body",
       group: "appearance",
     },
     color: {
       domain: "token",
-      tokenKind: "colors",
+      tokenKind: ["colors"],
       default: "gray-900",
       group: "appearance",
     },
@@ -289,7 +289,7 @@ test("prop を明示設定していれば、デフォルトが指すトークン
 
 test("デフォルトを持たない prop は、設定していなければ検証されない", () => {
   const schema = {
-    gap: { domain: "token", tokenKind: "spacing", group: "layout" },
+    gap: { domain: "token", tokenKind: ["spacing"], group: "layout" },
   } satisfies Parameters<typeof PropDefinitionRecord.collectErrors>[0];
 
   expect(

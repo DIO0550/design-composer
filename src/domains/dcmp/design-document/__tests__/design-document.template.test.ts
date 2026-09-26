@@ -42,16 +42,16 @@ test("Text の typography デフォルトが指すトークンは既定のテン
   const { tokens } = DocumentTemplate.Default;
   const definition = TextSchema.props.typography;
 
-  expect(TokenSet.has(tokens, definition.tokenKind, definition.default)).toBe(
-    true,
-  );
+  expect(
+    TokenSet.has(tokens, definition.tokenKind[0], definition.default),
+  ).toBe(true);
 });
 
 test("Text の color デフォルトが指すトークンは既定のテンプレートに存在する", () => {
   const { tokens } = DocumentTemplate.Default;
   const definition = TextSchema.props.color;
 
-  expect(TokenSet.has(tokens, definition.tokenKind, definition.default)).toBe(
-    true,
-  );
+  expect(
+    TokenSet.has(tokens, definition.tokenKind[0], definition.default),
+  ).toBe(true);
 });

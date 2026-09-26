@@ -7,11 +7,11 @@ test("設定されていない prop のデフォルトがトークンを指し�
   const schema = {
     color: {
       domain: "token",
-      tokenKind: "colors",
+      tokenKind: ["colors"],
       default: "accent",
       group: "appearance",
     },
-    background: { domain: "token", tokenKind: "colors", group: "appearance" },
+    background: { domain: "token", tokenKind: ["colors"], group: "appearance" },
   } satisfies PropDefinitionRecord;
 
   /* `background` は設定も既定も無いので、拾えるのは `color` の既定だけ。 */
@@ -24,11 +24,11 @@ test("明示設定がデフォルトを上書きしているとき、デフォ�
   const schema = {
     color: {
       domain: "token",
-      tokenKind: "colors",
+      tokenKind: ["colors"],
       default: "accent",
       group: "appearance",
     },
-    background: { domain: "token", tokenKind: "colors", group: "appearance" },
+    background: { domain: "token", tokenKind: ["colors"], group: "appearance" },
   } satisfies PropDefinitionRecord;
   /* 上書きした側は集まる、を同じ入力で見る（集めすぎでも集め漏れでも落ちる）。 */
   const props = { color: "danger", background: "accent" };
@@ -46,11 +46,11 @@ test("明示設定の prop 名が先、デフォルトで補われた prop 名�
   const schema = {
     defaulted: {
       domain: "token",
-      tokenKind: "colors",
+      tokenKind: ["colors"],
       default: "accent",
       group: "appearance",
     },
-    assigned: { domain: "token", tokenKind: "colors", group: "appearance" },
+    assigned: { domain: "token", tokenKind: ["colors"], group: "appearance" },
   } satisfies PropDefinitionRecord;
 
   expect(
