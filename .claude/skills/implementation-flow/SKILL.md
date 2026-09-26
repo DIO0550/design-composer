@@ -145,49 +145,27 @@ description: "design-composer の実装を ゴールの確定 → タスクの�
   `.github/workflows/pr-closing-issue.yml` が、閉じる Issue を持たない PR を落とす
 - CI(lint / typecheck / test / 視覚差分)を通す
 
-**push の前に、まずフックが発火する環境かを確かめ、続けて CI と同じ検査を 1 つずつ
-独立に実行して結果を確認する。**
+**push の前に、まずフックが発火する環境かを確かめ、続けて git hooks と同じ検査を
+`pre-push` ごと走らせ、終了コードで判定する。**
 
 ```bash
 echo hook-canary          # 必ず deny されるカナリア(.claude/hooks/hook-canary.sh)
 ```
 
 ```bash
-pnpm run typecheck        # tsc -b
-pnpm run lint             # oxlint
-pnpm exec biome check     # Biome（oxlint とは別のステップ。format 差分もここで出る）
-pnpm run test:run         # vitest
-python3 .claude/hooks/lib/missing-doc-comments.py --all src     # doc コメント
-bash .claude/hooks/lib/test-rules-scan.sh src                   # テスト規約
-python3 .claude/hooks/lib/import-rule-violations.py src         # import 規約
-python3 .claude/hooks/lib/result-option-read-violations.py src  # 判別子の直読み
-bash .claude/hooks/lib/result-option-read-cases.sh              # 判別子の直読みの判定表
-python3 .claude/hooks/lib/story-title-violations.py src         # story の title
-bash .claude/hooks/lib/story-title-cases.sh                     # story の title の判定表
-python3 .claude/hooks/lib/named-path-violations.py              # 名指ししたパス
-bash .claude/hooks/lib/named-path-cases.sh                      # 名指ししたパスの判定表
-bash .claude/hooks/lib/missing-doc-comments-cases.sh            # doc コメントの判定表
-bash .github/scripts/check-added-lint-suppressions.sh           # 追加された lint 抑制
-bash .github/scripts/check-added-test-helper-duplication.sh     # 追加されたテストヘルパーの重複
-bash .github/scripts/check-added-cases.sh                       # 追加された分の検査の判定表
-bash harness/records/count.sh --ratchet                         # 行数のラチェット
-bash harness/records/count-cases.sh                             # 集計の判定表
-bash .claude/hooks/lib/canary-cases.sh                          # カナリアの判定表
+PRE_PUSH_REQUIRE_ALL=1 bash harness/githooks/pre-push   # git hooks と同じ検査すべて(型 / lint / format / 規約 / 判定表)
+pnpm run test:run                                       # vitest(pre-push に無い)
 ```
 
-- **一覧の下 16 個は `pnpm` のスクリプトに無い。** `rules-check` と同じ 13 個は git hooks
-  (道具が揃わない環境では飛ぶ)と CI が、`check-added-*` とその判定表の 3 つは git hooks と
-  CI の `lint-suppress` ジョブだけが走らせるので、この 16 行を省くと手元の確認がゲートより
-  狭くなる。**doc コメントとテスト規約が CI へ上げられたのは、層 2 と層 3 が
-  同じ環境で同時に抜けたため**(`.claude/hooks/README.md`「カバー範囲と残る穴」)
-- **`rules-check` にはもう 1 つ、CI だけが走らせる検査がある。**
+- **判定は終了コードで、読むのは最後の行**(`harness/githooks/README.md`「結果の読み方」)。
+  途中の出力から通ったと推測しない
+- **`PRE_PUSH_REQUIRE_ALL=1` を外さない。** 外すと道具(`pnpm` / `node_modules` / `python3` /
+  `jq`)が無い検査を飛ばしたまま exit 0 になる。飛ばして落ちたら道具を揃えて走らせ直す
+- **検査をここへ一覧として写さない。** 足すのは `pre-push` の側だけ(`分類: harness-process-drift`)
+- **`pre-push` に無く、CI の `rules-check` だけが走らせる検査が 1 つある。**
   `.github/scripts/check-pr-closing-issue-cases.sh` は `pre-push` に無いので、
   `check-pr-closing-issue.sh` を触ったときだけ手元でも走らせる
   (層 2 へ置かない理由と所要時間は `.claude/hooks/README.md`「カバー範囲と残る穴」)
-- **`check-added-*` の 2 つは base との差分で判定する。** 引数を省くと `origin/main` と
-  比べるので、手元では引数なしで走る(判定表は一時リポジトリを自分で組むので引数を取らない)。
-  CI だけが走らせていて push 前の一覧に無かった間に、CI で落ちて初めて気づく形が 2 回
-  出ている(`分類: harness-process-drift`)
 - **カナリアが通っても、それだけでは不発と決まらない。** カナリアは自分の取りこぼしと本当の
   不発を区別できない。`.claude/hooks/README.md`「発火しているかを確かめる(カナリア)」の表で
   PreToolUse の痕跡を見て切り分ける。`分類: hook-environment` を付けてよいのは痕跡が無い枝だけ
@@ -200,13 +178,13 @@ bash .claude/hooks/lib/canary-cases.sh                          # カナリア�
   不発環境ではこの層でしか止まらない。Bash の実行履歴を見直し、該当があれば取り消す
   (`git add -A` を打ってしまったら `git reset` して個別に add し直す)
 - **`&&` で 1 本に連ねない。** 連ねると途中の出力が流れて末尾しか見えず、「全部通った」と
-  読み違える(実際に 2 回、format 差分のまま push して CI を落としている)。**カナリアを
-  混ぜた場合はさらに、deny でコマンド全体が止まり、後ろの検査が 1 つも走らない**
-- **oxlint と biome は別物。** 片方が 0 件でももう片方は落ちうる
+  読み違える(実際に 2 回、format 差分のまま push して CI を落としている)。`pre-push` が落ちると
+  後ろの `test:run` が走らず、**カナリアを混ぜた場合はさらに、deny でコマンド全体が止まり、
+  後ろの検査が 1 つも走らない**
 - **フックは保険ではなく確認。** push 前検査の enforcement は git hooks(`harness/githooks/`)が
   担う。`.claude/hooks/` の `pre-push-*` は同じスクリプトを走らせる即時フィードバック層
 
-**`src/` か `.storybook/` に差分があるときは、撮影範囲も確かめる。** 上の一覧とは別で、
+**`src/` か `.storybook/` に差分があるときは、撮影範囲も確かめる。** 上の 2 つとは別で、
 ゲートは CI(`Storybook Visual Regression`)だけが持つ検査。
 
 ```bash
