@@ -54,7 +54,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `lib/missing-doc-comments.py` | `check-doc-comments.sh` / `pre-push-doc-comments.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `src/` のファイル直下の宣言とコンパニオンオブジェクトの直下のメソッドのうち、doc コメントの無いもの・項目の欠けたものを探す。`--all` で全体を見る |
 | `lib/test-rules-scan.sh` | `pre-push-test-rules.sh` / `harness/githooks/pre-push` | 指定したルート配下の `*.test.ts(x)` をすべて検査する。違反があれば exit 1 |
 | `lib/lint-suppressions.py` | `block-lint-suppress.sh` / `.github/scripts/check-added-lint-suppressions.sh`(CI と `harness/githooks/pre-push`) | 許可されていない lint 抑制コメントの行を報告する。例外の判定もここが持つ |
-| `lib/import-rule-violations.py` | `pre-push-import-rules.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | 公開 API を迂回する import（`feature-public-api` / `module-public-api`）・循環（`import-cycle` / `feature-cycle`）・カテゴリの外に置かれた domains のモジュール（`domains-category`）を報告する |
+| `lib/import-rule-violations.py` | `pre-push-import-rules.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | 公開 API を迂回する import（`feature-public-api` / `module-public-api`）・親から直下の子以外の feature 間の import（`feature-sibling` / `feature-ancestor`）・3 段目以降の feature（`feature-nest-depth`）・ファイル単位の循環（`import-cycle`）・カテゴリの外に置かれた domains のモジュール（`domains-category`）を報告する |
 | `lib/ts_sources.py` | `lib/import-rule-violations.py` / `lib/result-option-read-violations.py` / `lib/story-title-violations.py` / `lib/named-path-violations.py`（報告の形だけ） | `src/` の走査対象の集め方・報告の形・コマンドラインの受け方と、feature の連なりの辿り方（`feature_of()`）。ファイル名だけアンダースコアなのは、ハイフンを含む名前が Python の import 名にならないため |
 | `lib/named-path-violations.py` | `pre-push-named-paths.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | コメント（`.ts` / `.tsx`）と Markdown の全文が名指ししているパスのうち、実体を持たないもの（`named-path-missing`）を報告する |
 | `lib/pre-push-detector.sh` | `pre-push-import-rules.sh` / `pre-push-result-option-reads.sh` / `pre-push-story-titles.sh` / `pre-push-named-paths.sh` | `git push` のときだけ検出器を走らせ、違反があれば deny の JSON を返す（`deny_on_violations <検出器> <検査の名前> <直し方の一文>`）。**走査ルートは渡さない**（検出器が自分の既定で決める） |
@@ -474,13 +474,22 @@ rm src/utils/probe-a.ts src/utils/probe-b.ts src/utils/probe-c.ts
 # 子 feature 同士が読み合うと落ちること(feature-sibling。公開口を通っていても通さない)
 printf 'export { TokenList } from "@/features/editor/features/tokens";\n' > src/features/editor/features/sidebar/probe.ts
 python3 .claude/hooks/lib/import-rule-violations.py src; echo "exit=$?"   # → [feature-sibling] 1 件・exit=1
-rm src/features/editor/features/sidebar/probe.ts
 
-# 子が親を読むと落ちること(feature-ancestor)
-# 親がその子を読んでいる間は feature-cycle も一緒に出るが、**親が import をやめると
-# cycle は消える**。子から祖先への向きを押さえているのは feature-ancestor のほう。
+# 兄弟が読み合って閉路になっても、出るのは feature-sibling だけ(feature 単位の閉路は見ない)
+printf 'export * from "@/features/editor/features/sidebar";\n' > src/features/editor/features/tokens/probe.ts
+python3 .claude/hooks/lib/import-rule-violations.py src; echo "exit=$?"   # → [feature-sibling] 2 件・exit=1
+rm src/features/editor/features/sidebar/probe.ts src/features/editor/features/tokens/probe.ts
+
+# トップレベルの feature 同士が読むと落ちること(feature-sibling。これを通すようにしたら feature 単位の閉路の検査を戻す)
+mkdir -p src/features/probe-a src/features/probe-b
+printf 'export const A = 1;\n' > src/features/probe-a/index.ts
+printf 'export { A } from "@/features/probe-a";\n' > src/features/probe-b/index.ts
+python3 .claude/hooks/lib/import-rule-violations.py src; echo "exit=$?"   # → [feature-sibling] 1 件・exit=1
+rm -rf src/features/probe-a src/features/probe-b
+
+# 子が親を読むと落ちること(feature-ancestor。親がその子を読んでいて閉路になっても、出るのはこれだけ)
 printf 'export { EditorScreen } from "@/features/editor";\n' > src/features/editor/features/canvas/probe.ts
-python3 .claude/hooks/lib/import-rule-violations.py src; echo "exit=$?"   # → [feature-ancestor] 1 件 + [feature-cycle] 1 件・exit=1
+python3 .claude/hooks/lib/import-rule-violations.py src; echo "exit=$?"   # → [feature-ancestor] 1 件・exit=1
 rm src/features/editor/features/canvas/probe.ts
 
 # 親から直下の子は通ること(繋ぐのは親、の向き)
