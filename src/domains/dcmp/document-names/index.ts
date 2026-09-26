@@ -3,6 +3,7 @@ import { ComponentSet } from "@/domains/dcmp/component";
 import { Node } from "@/domains/dcmp/node";
 import { CaseStyle } from "@/utils/CaseStyle";
 import { Option } from "@/utils/Option";
+import { StringEx } from "@/utils/StringEx";
 
 /**
  * ドキュメント全体で一意でなければならない名前の集まり。仕様書の「単一名前空間」
@@ -114,18 +115,17 @@ export const DocumentNames = {
   },
 
   /**
-   * その名前が識別子の規則を満たすか。規則は kebab-case そのもので、将来のパス修飾のために
-   * 予約された `/` `#` `.` はこの綴りで弾かれる（docs/01-file-format.md「ノードの識別
-   * （name）」）。
+   * その名前が識別子の規則を満たすか（docs/01-file-format.md「識別子の規則」）。予約された
+   * `/` `#` `.` は kebab-case の綴りで弾かれる。
    *
-   * トークン名も同じ規則に従う（docs/04-tokens.md「命名規則」）ため、綴りの判定自体は
-   * `CaseStyle` に置いて両者で共有する。
+   * トークン名も同じ規則に従い、`TokenSet.isValidName` が同じ条件を持つ（共有しない理由は
+   * そちらの doc）。
    *
    * @param name 判定する名前
-   * @returns `CaseStyle.isKebabCase` が認める綴りなら `true`
+   * @returns `CaseStyle.isKebabCase` が認める綴りで、数字だけの綴りではなければ `true`
    */
   isValidIdentifier(name: string): boolean {
-    return CaseStyle.isKebabCase(name);
+    return CaseStyle.isKebabCase(name) && !StringEx.isAllDigits(name);
   },
 
   /**
