@@ -44,10 +44,7 @@ test("採番の元にする名前が既に使われていると連番が付く",
     artboards: [Artboard.createInitial(Artboard.BaseName)],
   });
 
-  const name = DesignDocument.uniqueName(
-    Artboard.BaseName,
-    DesignDocument.usedNames(document),
-  );
+  const name = DesignDocument.uniqueName(document, Artboard.BaseName);
 
   expect(name).not.toBe(Artboard.BaseName);
 });

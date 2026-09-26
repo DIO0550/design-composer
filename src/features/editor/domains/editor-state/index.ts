@@ -940,10 +940,7 @@ export const EditorState = {
     at: ChildPosition,
   ): Option<EditorState> {
     const document = EditorState.document(state);
-    const node = NodeTemplate.toNode(
-      template,
-      DesignDocument.usedNames(document),
-    );
+    const node = NodeTemplate.toNode(template, document);
     const inserted = DesignDocument.insertNode(document, at, node);
     return Result.isOk(inserted)
       ? withEdit(state, inserted.value)
@@ -1001,10 +998,7 @@ export const EditorState = {
   addArtboard(state: EditorState): Option<EditorState> {
     const document = EditorState.document(state);
     const artboard = Artboard.createInitial(
-      DesignDocument.uniqueName(
-        Artboard.BaseName,
-        DesignDocument.usedNames(document),
-      ),
+      DesignDocument.uniqueName(document, Artboard.BaseName),
     );
     const added = DesignDocument.insertArtboard(
       document,
@@ -1114,8 +1108,8 @@ export const EditorState = {
     return Option.flatMap(EditorState.singleName(state), (name) => {
       const document = EditorState.document(state);
       const boxName = DesignDocument.uniqueName(
+        document,
         NodeTemplate.baseName({ kind: "primitive", type: PrimitiveTypes.Box }),
-        DesignDocument.usedNames(document),
       );
       const grouped = DesignDocument.groupIntoBox(document, name, boxName);
       return Result.isOk(grouped)

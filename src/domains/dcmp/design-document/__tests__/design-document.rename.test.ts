@@ -29,21 +29,20 @@ test("使用中の名前を収集すると部品名が含まれる", () => {
   expect(DesignDocument.usedNames(document).has("primary-button")).toBe(true);
 });
 
-test("未使用の名前を渡すとそのままの名前が返る", () => {
-  const usedNames = new Set(["screen"]);
-  expect(DesignDocument.uniqueName("login-form", usedNames)).toBe("login-form");
+test("ドキュメントで使われていない名前はそのまま使える", () => {
+  const document = DesignDocument.create({
+    artboards: [{ name: "screen", width: 375, height: 812, children: [] }],
+  });
+
+  expect(DesignDocument.uniqueName(document, "login-form")).toBe("login-form");
 });
 
-test("使用中の名前を渡すと連番を付与した名前が返る", () => {
-  const usedNames = new Set(["login-form"]);
-  expect(DesignDocument.uniqueName("login-form", usedNames)).toBe(
+test("artboard 名と衝突する名前には連番が付く", () => {
+  const document = DesignDocument.create({
+    artboards: [{ name: "login-form", width: 375, height: 812, children: [] }],
+  });
+
+  expect(DesignDocument.uniqueName(document, "login-form")).toBe(
     "login-form-2",
-  );
-});
-
-test("連番の名前も使用中の場合はさらに次の連番を付与した名前が返る", () => {
-  const usedNames = new Set(["login-form", "login-form-2"]);
-  expect(DesignDocument.uniqueName("login-form", usedNames)).toBe(
-    "login-form-3",
   );
 });

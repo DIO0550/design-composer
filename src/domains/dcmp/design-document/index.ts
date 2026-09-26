@@ -1590,18 +1590,15 @@ export const DesignDocument = {
   },
 
   /**
-   * 使用済みの名前と衝突しない名前。衝突する場合は連番を付ける。
+   * このドキュメントの単一名前空間と衝突しない名前。衝突する場合は連番を付ける。
    *
-   * @param baseName 付けたい名前
-   * @param usedNames 既に使われている名前
+   * @param document 名前空間の出どころ
+   * @param baseName 付けたい名前。識別子の規則を満たすかは見ない
    * @returns 衝突しなければ `baseName` そのまま、衝突すれば `DocumentNames.uniqueName` が
    *   連番を付けた名前
    */
-  uniqueName(baseName: string, usedNames: ReadonlySet<string>): string {
-    return DocumentNames.uniqueName(
-      DocumentNames.create([...usedNames]),
-      baseName,
-    );
+  uniqueName(document: DesignDocument, baseName: string): string {
+    return DocumentNames.uniqueName(documentNamesOf(document), baseName);
   },
 
   /**
