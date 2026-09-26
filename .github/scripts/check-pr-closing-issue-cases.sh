@@ -10,8 +10,9 @@
 # (理由は `.claude/hooks/README.md`「カバー範囲と残る穴」)。判定は終了コードで見る。
 #
 # **表をここへ置くのは、CI の run が流れると判定の根拠が残らないため。** 覆うのは
-# 「問い合わせ結果 → 終了コード」と「5xx のときの再試行」の 2 つ。GraphQL のクエリ本体
-# (フィールド名)とワークフローの配線は覆えないので、そこは CI で実際に叩いて確かめる。
+# 「問い合わせ結果 → 終了コード」「5xx のときの再試行」「opened 直後に空で返ったときの
+# 再試行」の 3 つ。GraphQL のクエリ本体(フィールド名)とワークフローの配線は覆えないので、
+# そこは CI で実際に叩いて確かめる。
 #
 # **件数(`totalCount`)と中身(`nodes`)は別々に渡す。** クエリは `files(first: 1)` なので
 # GitHub は 2 ファイル以上の PR でも `nodes` を 1 件しか返さない。`nodes` の数から
@@ -107,5 +108,47 @@ STUB
 run_fetch_case 0 0 1 '問い合わせが通れば再試行しない'
 run_fetch_case 0 1 2 '一時的な 5xx は再試行して通る'
 run_fetch_case 1 9 3 '3 回とも失敗したら赤にする（握りつぶさない）'
+
+# --- opened 直後の空反映 ---
+#
+# `gh` を差し替えて、`closingIssuesReferences` が最初は空・後から埋まる応答を固定する
+# (`harness/records/pr-757.md` 指摘 12)。守りたいのは「`opened` のときだけ待って
+# 問い合わせ直す」で、`opened` 以外(未設定含む)まで待つと、閉じ忘れの PR も遅れて赤になる。
+run_opened_retry_case() {
+  local expected="$1" empty_times="$2" expected_calls="$3" is_opened="$4" label="$5"
+  local dir actual=0 calls
+
+  dir="$(mktemp -d)"
+  mkdir -p "$dir/bin"
+  cat >"$dir/bin/gh" <<'STUB'
+#!/usr/bin/env bash
+calls=$(( $(cat "$STUB_COUNT_FILE" 2>/dev/null || echo 0) + 1 ))
+echo "$calls" >"$STUB_COUNT_FILE"
+if [ "$calls" -le "$EMPTY_TIMES" ]; then
+  echo '{"data":{"repository":{"pullRequest":{"closingIssuesReferences":{"nodes":[]},"files":{"totalCount":1,"nodes":[{"path":"AGENTS.md","changeType":"MODIFIED"}]}}}}}'
+else
+  echo '{"data":{"repository":{"pullRequest":{"closingIssuesReferences":{"nodes":[{"number":1}]},"files":{"totalCount":1,"nodes":[{"path":"AGENTS.md","changeType":"MODIFIED"}]}}}}}'
+fi
+STUB
+  chmod +x "$dir/bin/gh"
+
+  PATH="$dir/bin:$PATH" STUB_COUNT_FILE="$dir/count" EMPTY_TIMES="$empty_times" \
+    GITHUB_REPOSITORY=owner/repo PR_NUMBER=1 PR_IS_OPENED="$is_opened" \
+    bash "$script" >/dev/null 2>&1 || actual=$?
+  calls="$(cat "$dir/count" 2>/dev/null || echo 0)"
+  rm -rf "$dir"
+
+  if [ "$actual" = "$expected" ] && [ "$calls" = "$expected_calls" ]; then
+    printf 'ok   exit=%s 呼び出し=%s  %s\n' "$actual" "$calls" "$label"
+    return
+  fi
+  printf 'NG   exit=%s 呼び出し=%s (期待 exit=%s 呼び出し=%s)  %s\n' \
+    "$actual" "$calls" "$expected" "$expected_calls" "$label"
+  failed=1
+}
+
+run_opened_retry_case 0 1 2 true  'opened で 1 回空でも、埋まった時点で通る'
+run_opened_retry_case 1 9 3 true  'opened で 3 回とも空なら、閉じ忘れとして赤にする'
+run_opened_retry_case 1 9 1 false 'opened 以外は空でも待たずに赤にする'
 
 exit "$failed"
