@@ -1,0 +1,1 @@
+import{n as e}from"./chunk-BneVvdWh.js";var t,n=e((()=>{t={escapeQuotedString(e){return e.replace(/\\/g,`\\\\`).replace(/"/g,`\\"`)}}}));export{n,t};
