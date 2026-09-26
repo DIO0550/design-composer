@@ -26,9 +26,9 @@ import type { CanvasBounds } from "@/features/editor/features/canvas/domains/can
 import type { ResizeHandleAnchor } from "@/features/editor/features/canvas/domains/node-resize";
 import { useCanvasView } from "@/features/editor/features/canvas/hooks/use-canvas-view";
 import { useNodeDrag } from "@/features/editor/features/canvas/hooks/use-node-drag";
+import { CanvasDom } from "@/libs/canvas-dom";
 import { Option } from "@/utils/Option";
 import { ArtboardCanvas } from "../index";
-import { nameSelector } from "../name-style-rule";
 import {
   RepositionPreviewProperty,
   repositionPreviewDeclarations,
@@ -288,5 +288,5 @@ export const PreviewDeclarationPrefix = `${RepositionPreviewProperty}:`;
  * @returns そのノードへ差し込まれる規則 1 本
  */
 export function previewRule(name: string, offset: Offset): string {
-  return `${nameSelector(name)}{${repositionPreviewDeclarations(offset)}}`;
+  return `${CanvasDom.selectorOf(name)}{${repositionPreviewDeclarations(offset)}}`;
 }

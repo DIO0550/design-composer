@@ -2,6 +2,7 @@ import { screen, within } from "@testing-library/react";
 import { ElementNameAttribute } from "@/domains/compiled/compiled-element";
 import { TokenReferrerOutline } from "@/features/editor/features/canvas/components/artboard-canvas";
 import { ArtboardHandleTestId } from "@/features/editor/features/canvas/components/artboard-canvas/artboard-label";
+import { CanvasDom } from "@/libs/canvas-dom";
 import { ArrayEx } from "@/utils/ArrayEx";
 
 /**
@@ -51,9 +52,7 @@ export function renderedElement(
   canvas: HTMLElement,
   name: string,
 ): HTMLElement {
-  const element = canvas.querySelector<HTMLElement>(
-    `[${ElementNameAttribute}="${name}"]`,
-  );
+  const element = canvas.querySelector<HTMLElement>(CanvasDom.selectorOf(name));
   if (element === null) {
     throw new Error(`キャンバスに ${name} が描かれていない`);
   }
