@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { DesignDocument, TokenReferrer } from "@/domains/dcmp/design-document";
+import { DesignDocument } from "@/domains/dcmp/design-document";
 import { type TokenRef, TokenSet } from "@/domains/dcmp/token";
 import { Option } from "@/utils/Option";
 import { TokenSelection } from "../index";
@@ -46,7 +46,7 @@ test("トークンを選ぶと、そのトークンを参照している箇所�
 
   const referrers = TokenSelection.collectReferrers(selection);
 
-  expect(referrers.map(TokenReferrer.toText)).toEqual(["title.color"]);
+  expect(referrers).toMatchObject([{ name: "title", prop: "color" }]);
 });
 
 test("別のトークンを選ぶと、参照元もそのトークンのものになる", () => {
@@ -55,9 +55,9 @@ test("別のトークンを選ぶと、参照元もそのトークンのもの�
     name: "primary",
   });
 
-  expect(
-    TokenSelection.collectReferrers(selection).map(TokenReferrer.toText),
-  ).toEqual(["login-form.background"]);
+  expect(TokenSelection.collectReferrers(selection)).toMatchObject([
+    { name: "login-form", prop: "background" },
+  ]);
 });
 
 test("トークンを選んでいないときは参照元が空になる", () => {

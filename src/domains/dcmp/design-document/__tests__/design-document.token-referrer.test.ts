@@ -25,7 +25,7 @@ test("ノードの prop がトークンを指していると、そのノード�
 
   const referrers = DesignDocument.collectTokenReferrers(document, Gray900);
 
-  expect(referrers.map(TokenReferrer.toText)).toEqual(["title.color"]);
+  expect(referrers).toMatchObject([{ name: "title", prop: "color" }]);
 });
 
 test("artboard の props がトークンを指していると artboard も参照元になる", () => {
@@ -79,11 +79,11 @@ test("1つのノードが2つの prop から同じトークンを指すと prop 
     name: "md",
   });
 
-  expect(referrers.map(TokenReferrer.toText)).toEqual([
-    "login-form.paddingTop",
-    "login-form.paddingRight",
-    "login-form.paddingBottom",
-    "login-form.paddingLeft",
+  expect(referrers).toMatchObject([
+    { name: "login-form", prop: "paddingTop" },
+    { name: "login-form", prop: "paddingRight" },
+    { name: "login-form", prop: "paddingBottom" },
+    { name: "login-form", prop: "paddingLeft" },
   ]);
 });
 
@@ -120,7 +120,7 @@ test("入れ子の奥にあるノードからも参照元が集まる", () => {
 
   const referrers = DesignDocument.collectTokenReferrers(document, Gray900);
 
-  expect(referrers.map(TokenReferrer.toText)).toEqual(["login-label.color"]);
+  expect(referrers).toMatchObject([{ name: "login-label", prop: "color" }]);
 });
 
 test("インスタンスの上書きがトークンを指すと、そのインスタンスと公開 prop が参照元になる", () => {
@@ -233,9 +233,9 @@ test("部品定義の中のノードがデフォルトで指しているトー�
     name: "body",
   });
 
-  expect(referrers.map(TokenReferrer.toText)).toEqual([
-    "primary-button-label.typography",
-    "primary-button-note.typography",
+  expect(referrers).toMatchObject([
+    { name: "primary-button-label", prop: "typography" },
+    { name: "primary-button-note", prop: "typography" },
   ]);
 });
 
@@ -259,9 +259,9 @@ test("参照元はキャンバス上のものが先、部品定義の中のも�
 
   const referrers = DesignDocument.collectTokenReferrers(document, Gray900);
 
-  expect(referrers.map(TokenReferrer.toText)).toEqual([
-    "title.color",
-    "primary-button.background",
+  expect(referrers).toMatchObject([
+    { name: "title", prop: "color" },
+    { name: "primary-button", prop: "background" },
   ]);
 });
 
@@ -294,9 +294,9 @@ test("キャンバス上の参照元は artboard の並び順で並ぶ", () => {
 
   const referrers = DesignDocument.collectTokenReferrers(document, Gray900);
 
-  expect(referrers.map(TokenReferrer.toText)).toEqual([
-    "home-title.color",
-    "settings-title.color",
+  expect(referrers).toMatchObject([
+    { name: "home-title", prop: "color" },
+    { name: "settings-title", prop: "color" },
   ]);
 });
 

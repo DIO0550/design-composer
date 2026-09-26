@@ -1,10 +1,6 @@
 import { expect, test } from "vitest";
 import { TokenSet } from "@/domains/dcmp/token";
-import {
-  DesignDocument,
-  type DesignDocument as Document,
-  TokenReferrer,
-} from "../index";
+import { DesignDocument, type DesignDocument as Document } from "../index";
 
 const Gray900 = { kind: "colors", name: "gray-900" } as const;
 
@@ -92,9 +88,7 @@ test("同じ名前でも種別が違うトークンは参照元にならない",
     name: "md",
   });
 
-  expect(referrers.map(TokenReferrer.toText)).toEqual([
-    "login-form.background",
-  ]);
+  expect(referrers).toMatchObject([{ name: "login-form", prop: "background" }]);
 });
 
 test("トークンを引かない prop に同じ文字列が入っていても参照元にならない", () => {
@@ -118,7 +112,7 @@ test("トークンを引かない prop に同じ文字列が入っていても�
 
   const referrers = DesignDocument.collectTokenReferrers(document, Gray900);
 
-  expect(referrers.map(TokenReferrer.toText)).toEqual(["title.color"]);
+  expect(referrers).toMatchObject([{ name: "title", prop: "color" }]);
 });
 
 test("スキーマに宣言の無い prop がトークン名と同じ値を持っていても参照元にならない", () => {
@@ -143,9 +137,7 @@ test("スキーマに宣言の無い prop がトークン名と同じ値を持�
 
   const referrers = DesignDocument.collectTokenReferrers(document, Gray900);
 
-  expect(referrers.map(TokenReferrer.toText)).toEqual([
-    "login-form.background",
-  ]);
+  expect(referrers).toMatchObject([{ name: "login-form", prop: "background" }]);
 });
 
 test("スキーマに無い type のノードの props は参照元にならない", () => {
@@ -175,9 +167,7 @@ test("スキーマに無い type のノードの props は参照元にならな�
 
   const referrers = DesignDocument.collectTokenReferrers(document, Gray900);
 
-  expect(referrers.map(TokenReferrer.toText)).toEqual([
-    "login-form.background",
-  ]);
+  expect(referrers).toMatchObject([{ name: "login-form", prop: "background" }]);
 });
 
 test("デフォルトで解決されるトークンも参照元になる", () => {
@@ -202,9 +192,9 @@ test("デフォルトで解決されるトークンも参照元になる", () =>
 
   const referrers = DesignDocument.collectTokenReferrers(document, Gray900);
 
-  expect(referrers.map(TokenReferrer.toText)).toEqual([
-    "plain.color",
-    "title.color",
+  expect(referrers).toMatchObject([
+    { name: "plain", prop: "color" },
+    { name: "title", prop: "color" },
   ]);
 });
 
@@ -233,7 +223,7 @@ test("デフォルトが指していないトークンは、設定していな�
     name: "gray-500",
   });
 
-  expect(referrers.map(TokenReferrer.toText)).toEqual(["caption.color"]);
+  expect(referrers).toMatchObject([{ name: "caption", prop: "color" }]);
 });
 
 test("スキーマに無い type の部品定義の props は参照元にならない", () => {
@@ -248,7 +238,7 @@ test("スキーマに無い type の部品定義の props は参照元になら�
 
   const referrers = DesignDocument.collectTokenReferrers(document, Gray900);
 
-  expect(referrers.map(TokenReferrer.toText)).toEqual(["panel.background"]);
+  expect(referrers).toMatchObject([{ name: "panel", prop: "background" }]);
 });
 
 test("公開 prop が生の値の prop へ binding されているとき、上書きの値がトークン名と同じでも参照元にならない", () => {
@@ -256,7 +246,7 @@ test("公開 prop が生の値の prop へ binding されているとき、上�
 
   const referrers = DesignDocument.collectTokenReferrers(document, Gray900);
 
-  expect(referrers.map(TokenReferrer.toText)).toEqual(["title.color"]);
+  expect(referrers).toMatchObject([{ name: "title", prop: "color" }]);
 });
 
 test("宣言されていない公開 prop の上書きは参照元にならない", () => {
@@ -264,7 +254,7 @@ test("宣言されていない公開 prop の上書きは参照元にならな�
 
   const referrers = DesignDocument.collectTokenReferrers(document, Gray900);
 
-  expect(referrers.map(TokenReferrer.toText)).toEqual(["title.color"]);
+  expect(referrers).toMatchObject([{ name: "title", prop: "color" }]);
 });
 
 test("定義の無い部品を指すインスタンスの上書きは参照元にならない", () => {
@@ -285,7 +275,7 @@ test("定義の無い部品を指すインスタンスの上書きは参照元�
 
   const referrers = DesignDocument.collectTokenReferrers(document, Gray900);
 
-  expect(referrers.map(TokenReferrer.toText)).toEqual(["title.color"]);
+  expect(referrers).toMatchObject([{ name: "title", prop: "color" }]);
 });
 
 test("ドキュメントに無いトークン名を指す prop も参照元として集まる", () => {
@@ -306,7 +296,7 @@ test("ドキュメントに無いトークン名を指す prop も参照元と�
     name: "ghost",
   });
 
-  expect(referrers.map(TokenReferrer.toText)).toEqual(["title.color"]);
+  expect(referrers).toMatchObject([{ name: "title", prop: "color" }]);
 });
 
 test("どこからも参照されていないトークンでは参照元が空になる", () => {
