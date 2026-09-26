@@ -513,6 +513,29 @@ export const TokenSet = {
   },
 
   /**
+   * その種別の中で衝突しない名前。衝突する場合は連番を付ける。
+   *
+   * 連番のコードは `DocumentNames.uniqueName` と共有しない。あちらはドキュメントの名前の
+   * 採番（docs/06-ui.md「名前の変更」）で、トークン名の採番を同じ規則に従わせる仕様は無い。
+   *
+   * @param tokens 衝突を見るトークン一式
+   * @param kind 名前を足す種別。衝突はこの種別の名前とだけ見る
+   * @param baseName 付けたい名前。識別子の規則を満たすかは見ない
+   * @returns その種別に無ければ `baseName` そのまま、あれば `baseName-2` から順に空いている
+   *   名前
+   */
+  uniqueName(tokens: TokenSet, kind: TokenKind, baseName: string): string {
+    if (!TokenSet.has(tokens, kind, baseName)) {
+      return baseName;
+    }
+    let suffix = 2;
+    while (TokenSet.has(tokens, kind, `${baseName}-${suffix}`)) {
+      suffix += 1;
+    }
+    return `${baseName}-${suffix}`;
+  },
+
+  /**
    * その種別のトークンを並べる。
    *
    * @param tokens 読み出し元のトークン一式
