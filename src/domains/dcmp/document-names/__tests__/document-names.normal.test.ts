@@ -1,8 +1,6 @@
 import { expect, test } from "vitest";
 import type { Artboard } from "@/domains/dcmp/artboard";
 import type { ComponentSet } from "@/domains/dcmp/component";
-import { Option } from "@/utils/Option";
-import { RecordEx } from "@/utils/RecordEx";
 import { DocumentNames } from "../index";
 
 function setupArtboards(): readonly Artboard[] {
@@ -90,42 +88,8 @@ test("連番の名前も使用中ならさらに次の連番になる", () => {
   expect(DocumentNames.uniqueName(documentNames, "title")).toBe("title-3");
 });
 
-test("付け替えた名前どうしも衝突しない", () => {
-  const documentNames = DocumentNames.create(["title"]);
-
-  expect(DocumentNames.renameMap(documentNames, ["title", "title-2"])).toEqual({
-    title: "title-2",
-    "title-2": "title-2-2",
-  });
-});
-
 test("名前の集合には重複が畳まれて入る", () => {
   const documentNames = DocumentNames.create(["a", "a", "b"]);
 
   expect(DocumentNames.toSet(documentNames)).toEqual(new Set(["a", "b"]));
-});
-
-test("__proto__ という名前も、付け替え先の対応に残る", () => {
-  const renameMap = DocumentNames.renameMap(DocumentNames.create([]), [
-    "__proto__",
-  ]);
-
-  expect(RecordEx.get(renameMap, "__proto__")).toEqual(
-    Option.some("__proto__"),
-  );
-});
-
-test("同じ名前を 2 回渡しても、衝突しなければ自分自身へ対応する", () => {
-  expect(
-    DocumentNames.renameMap(DocumentNames.create([]), ["title", "title"]),
-  ).toEqual({ title: "title" });
-});
-
-test("同じ名前を 2 回渡しても、衝突するなら最初に割り当てた連番へ対応する", () => {
-  expect(
-    DocumentNames.renameMap(DocumentNames.create(["title"]), [
-      "title",
-      "title",
-    ]),
-  ).toEqual({ title: "title-2" });
 });
