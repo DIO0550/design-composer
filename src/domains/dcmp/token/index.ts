@@ -10,6 +10,7 @@ import { NumberEx } from "@/utils/NumberEx";
 import { Option } from "@/utils/Option";
 import { RecordEx } from "@/utils/RecordEx";
 import { Result } from "@/utils/Result";
+import { StringEx } from "@/utils/StringEx";
 import { ColorToken } from "./color";
 import { GradientToken } from "./gradient";
 import { ShadowToken } from "./shadow";
@@ -463,7 +464,7 @@ function findPaintConflict(tokens: TokenSet, ref: TokenRef): Option<TokenKind> {
  *
  * @param tokens 一意性を見る対象のトークン一式
  * @param ref 書き込み先の種別と名前
- * @returns 使えるならその `ref`。ケバブケースでなければ `invalid-token-name`、
+ * @returns 使えるならその `ref`。識別子の規則を満たさなければ `invalid-token-name`、
  *   同じ種別に同名があれば `duplicate-token-name`、塗りの相手の種別に同名があれば
  *   `conflicting-token-name`（複数に当たるならこの並びの先のもの）
  */
@@ -571,7 +572,9 @@ export const TokenSet = {
    *
    * @param tokens 読み出し元のトークン一式
    * @param kind 読み出す種別
-   * @returns その種別の名前を、その種別の辞書の `Object.keys` の列挙順で並べたもの
+   * @returns その種別の名前を、その種別の辞書の `Object.keys` の列挙順で並べたもの。名前が
+   *   `TokenSet.isValidName` を満たす限り辞書へ書いた順になる(数字だけの名前は列挙で先頭へ
+   *   並び替わる)
    */
   names(tokens: TokenSet, kind: TokenKind): readonly string[] {
     return Object.keys(tokens[kind]);
@@ -580,11 +583,15 @@ export const TokenSet = {
   /**
    * その名前がトークン名の規則を満たすか（docs/04-tokens.md「命名規則」）。
    *
+   * 規則は識別子と同じで `DocumentNames.isValidIdentifier` と同じ条件を持つ。あちらへ委譲
+   * すると `document-names` がこのモジュールを間接に import しているので循環し、逆向きは
+   * 識別子の規則をトークン側から借りることになって仕様の参照の向き(04 → 01)と逆になる。
+   *
    * @param name 判定する名前
-   * @returns `CaseStyle.isKebabCase` が認める綴りなら `true`
+   * @returns `CaseStyle.isKebabCase` が認める綴りで、数字だけの綴りではなければ `true`
    */
   isValidName(name: string): boolean {
-    return CaseStyle.isKebabCase(name);
+    return CaseStyle.isKebabCase(name) && !StringEx.isAllDigits(name);
   },
 
   /**
@@ -721,9 +728,9 @@ export const TokenSet = {
    * @param tokens 追加先のトークン一式
    * @param token 追加するトークン。値は検証せず、`Token.normalized` で正規形へ倒して
    *   から入れる
-   * @returns そのトークンを加えた一式。名前がケバブケースでなければ `invalid-token-name`、
-   *   同じ種別に同名があれば `duplicate-token-name`、塗りの相手の種別に同名があれば
-   *   `conflicting-token-name`（複数に当たるならこの並びの先のもの）。
+   * @returns そのトークンを加えた一式。名前が識別子の規則を満たさなければ
+   *   `invalid-token-name`、同じ種別に同名があれば `duplicate-token-name`、塗りの相手の
+   *   種別に同名があれば `conflicting-token-name`（複数に当たるならこの並びの先のもの）。
    *   どの `err` も `ref` は追加しようとしたトークンを指す
    */
   add(tokens: TokenSet, token: Token): Result<TokenSet, TokenEditError> {
@@ -764,8 +771,8 @@ export const TokenSet = {
    * @returns 名前だけが入れ替わった一式（`newName` が今の名前と同じなら `tokens` のまま）。
    *   並びの中の位置は `TokenSet.names` の並びに従う。
    *   `ref` の種別にその名前が無ければ `ref` を指す `token-not-found`（`newName` より先に
-   *   見る）。`newName` がケバブケースでなければ `invalid-token-name`、同じ種別に使われて
-   *   いれば `duplicate-token-name`、塗りの相手の種別に使われていれば
+   *   見る）。`newName` が識別子の規則を満たさなければ `invalid-token-name`、同じ種別に
+   *   使われていれば `duplicate-token-name`、塗りの相手の種別に使われていれば
    *   `conflicting-token-name` で、どれも `ref` は `newName` の側を指す
    */
   rename(
