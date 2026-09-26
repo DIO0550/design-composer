@@ -83,6 +83,7 @@ is_record_pull_request() {
 # PR を作った直後(`opened`)は、本文に `Closes #<番号>` があっても `closingIssuesReferences` が
 # 数秒は空で返る(`harness/records/pr-757.md` 指摘 12)。記録 PR は閉じる Issue が無くても通るので待たない。
 # `edited` は含めない。本文の手直しのたびに走るので、本来の赤(閉じ忘れ)に毎回待ちが乗る。
+# 本文へ `Closes` を足した `edited` も反映待ちで赤になりうるが、次の編集・push か再実行で揃う。
 awaits_closing_issue_link() {
   [ "$PR_ACTION" = "opened" ] || return 1
   [ -z "$(closing_issues_of "$1")" ] || return 1
