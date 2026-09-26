@@ -114,3 +114,18 @@ test("__proto__ という名前も、付け替え先の対応に残る", () => {
     Option.some("__proto__"),
   );
 });
+
+test("同じ名前を 2 回渡しても、衝突しなければ自分自身へ対応する", () => {
+  expect(
+    DocumentNames.renameMap(DocumentNames.create([]), ["title", "title"]),
+  ).toEqual({ title: "title" });
+});
+
+test("同じ名前を 2 回渡しても、衝突するなら最初に割り当てた連番へ対応する", () => {
+  expect(
+    DocumentNames.renameMap(DocumentNames.create(["title"]), [
+      "title",
+      "title",
+    ]),
+  ).toEqual({ title: "title-2" });
+});
