@@ -385,31 +385,6 @@ export const Component = {
       ...Json.nonEmptyField("children", component.children?.map(Node.toJson)),
     };
   },
-
-  /**
-   * binding が指す内部ノードの名前を付け替える。
-   *
-   * @param publicProps 付け替える部品の公開 prop の宣言
-   * @param renameMap 部品内部の今のノード名から新しい名前への対応
-   * @returns `renameMap` にある名前を指す binding の `node` だけを新しい名前にした宣言。
-   *   公開 prop 名と binding の `prop` は変えない
-   */
-  renameBindings(
-    publicProps: PublicProps,
-    renameMap: Readonly<Record<string, string>>,
-  ): PublicProps {
-    return Object.fromEntries(
-      Object.entries(publicProps).map(([propName, binding]) => {
-        const newNode = RecordEx.get(renameMap, binding.node);
-        return [
-          propName,
-          Option.isSome(newNode)
-            ? { ...binding, node: newNode.value }
-            : binding,
-        ];
-      }),
-    );
-  },
 } as const;
 
 /**

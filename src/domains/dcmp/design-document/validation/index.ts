@@ -5,8 +5,8 @@ import {
   type PublicPropBinding,
 } from "@/domains/dcmp/component";
 import { ComponentBinding } from "@/domains/dcmp/component-binding";
+import { DocumentNames } from "@/domains/dcmp/document-names";
 import { Layout } from "@/domains/dcmp/layout";
-import { NameSpace } from "@/domains/dcmp/name-space";
 import { Node, Props, type RefNode } from "@/domains/dcmp/node";
 import type { PropValidationError } from "@/domains/dcmp/primitive-schema";
 import {
@@ -440,9 +440,9 @@ export function collectArtboardErrors(
 function collectDuplicateNameErrors(
   document: DesignDocument,
 ): readonly DesignDocumentValidationError[] {
-  return NameSpace.duplicatedNames(
-    NameSpace.create(
-      NameSpace.collectNames(document.components, document.artboards),
+  return DocumentNames.duplicatedNames(
+    DocumentNames.create(
+      DocumentNames.collectNames(document.components, document.artboards),
     ),
   ).map(
     (name): DesignDocumentValidationError => ({
@@ -478,7 +478,7 @@ function collectNameErrors(
       },
     ];
   }
-  if (!NameSpace.isValidIdentifier(name)) {
+  if (!DocumentNames.isValidIdentifier(name)) {
     return [
       {
         kind: "invalid-identifier",
@@ -519,7 +519,7 @@ function collectTokenNameErrors(
   return TokenSet.kinds().flatMap((kind) =>
     TokenSet.names(tokens, kind).flatMap(
       (name): readonly DesignDocumentValidationError[] =>
-        NameSpace.isValidIdentifier(name)
+        TokenSet.isValidName(name)
           ? []
           : [
               {

@@ -19,7 +19,7 @@
 | モジュール | 責務 | 依存 | 実体 |
 |---|---|---|---|
 | `schema` | プリミティブ定義の TS 定数と型（03-schema） | なし | `src/domains/dcmp/primitive-schema` |
-| `document` | ノード・部品・トークンの型、ツリー操作（挿入 / 移動 / 部品化 / detach / 自動リネーム） | schema | `src/domains/dcmp/` の `design-document` / `node` / `node-tree`（型とツリー操作）、`component` / `component-binding`（部品）、`token`（トークン）、`name-space`（一意名と自動リネーム） |
+| `document` | ノード・部品・トークンの型、ツリー操作（挿入 / 移動 / 部品化 / detach / 自動リネーム） | schema | `src/domains/dcmp/` の `design-document` / `node` / `node-tree`（型とツリー操作）、`component` / `component-binding`（部品）、`token`（トークン）、`document-names`（一意名と自動リネーム） |
 | `validator` | 03 の全エラー検出（重複キーの字句スキャンを含む） | schema, document | `src/domains/dcmp/design-document/validation`。ただし重複キーだけは検証ではなく**読み込み時**に見つかる（serializer 側の字句スキャン） |
 | `compiler` | ドキュメント → HTML/CSS（カスタムプロパティ＋インライン style）。ref / overrides の合成 | schema, document | 合成は `src/domains/dcmp/` の `expanded-node`（ref の展開）と `resolved-props`（既定値の解決）、HTML/CSS の組み立ては `src/services/` の `document-html` / `node-html` / `token-css`、描画用の表現は `src/domains/compiled/` |
 | `serializer` | JSON ⇔ ドキュメントの正規化入出力。フォーマット差し替えの閉じ込め先（外部フォーマットの解釈なので `libs/`） | document | `src/libs/document-json` / `src/libs/json-lexical-scanner` |

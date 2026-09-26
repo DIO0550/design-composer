@@ -22,12 +22,6 @@ test("宣言していない constructor の繋ぎ先は引けない", () => {
   expect(Component.binding(component, "constructor")).toEqual(Option.none);
 });
 
-test("対応表に無い constructor というノードを指す binding は付け替えない", () => {
-  const publicProps = { label: { node: "constructor", prop: "content" } };
-
-  expect(Component.renameBindings(publicProps, {})).toEqual(publicProps);
-});
-
 test("binding 先の prop が constructor なら、スキーマに無い prop として繋ぎ先は解けない", () => {
   const components: ComponentSet = {
     button: {
