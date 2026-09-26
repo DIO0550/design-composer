@@ -20,6 +20,15 @@ test("採番の元が既に使われていれば連番が付く", () => {
   expect(token.name).toBe("color-2");
 });
 
+test("足す種別に採番の元と同じ名前があれば、その種別の中で連番が付く", () => {
+  const token = TokenTemplate.toToken(
+    { kind: "spacing" },
+    { ...TokenSet.empty(), spacing: { spacing: 8 } },
+  );
+
+  expect(token.name).toBe("spacing-2");
+});
+
 test("色を足すと黒から始まる", () => {
   expect(TokenTemplate.toToken({ kind: "colors" }, TokenSet.empty())).toEqual({
     kind: "colors",
