@@ -465,7 +465,7 @@ function unusableNameError(
   document: DesignDocument,
   name: string,
 ): Option<DesignDocumentEditError> {
-  if (!DesignDocument.isValidIdentifier(name)) {
+  if (!DocumentNames.isValidIdentifier(name)) {
     return Option.some({ kind: "invalid-name", name });
   }
   if (DesignDocument.usedNames(document).has(name)) {
@@ -1572,16 +1572,6 @@ export const DesignDocument = {
    */
   usedNames(document: DesignDocument): ReadonlySet<string> {
     return DocumentNames.toSet(documentNamesOf(document));
-  },
-
-  /**
-   * その名前が識別子の規則（kebab-case）を満たすか。
-   *
-   * @param name 判定する名前
-   * @returns `DocumentNames.isValidIdentifier` の答え
-   */
-  isValidIdentifier(name: string): boolean {
-    return DocumentNames.isValidIdentifier(name);
   },
 
   /**
