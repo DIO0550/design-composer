@@ -1,3 +1,4 @@
+import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 
 /**
@@ -20,15 +21,17 @@ export const SelectionState = {
    *
    * 外から `multiple` を直接組み立てるとこの分岐を通らずに 1 件の `multiple` が作れてしまう。
    *
-   * @param names 選ばれているものの名前。並びはそのまま保つ
-   * @returns 0 件なら未選択、1 件なら単一選択、2 件以上なら複数選択
+   * @param names 選ばれているものの名前。同じ名前は最初に現れた位置に 1 つだけ残し、並びは
+   *   そのまま保つ
+   * @returns 重複を畳んだ件数が 0 件なら未選択、1 件なら単一選択、2 件以上なら複数選択
    */
   create(names: readonly string[]): SelectionState {
-    if (names.length === 0) {
+    const distinctNames = ArrayEx.distinct(names);
+    if (distinctNames.length === 0) {
       return SelectionState.None;
     }
-    const [first, second, ...rest] = names;
-    if (names.length === 1) {
+    const [first, second, ...rest] = distinctNames;
+    if (distinctNames.length === 1) {
       return { kind: "single", name: first };
     }
     return { kind: "multiple", names: [first, second, ...rest] };

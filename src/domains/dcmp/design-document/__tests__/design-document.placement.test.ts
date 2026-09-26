@@ -57,7 +57,7 @@ test("フローのノードは座標で動かせないので答えない", () =>
 });
 
 test("絶対配置でも座標が数値でなければ答えない", () => {
-  // 手で壊した `.dcmp`。`Placement.fromProps` の `undefined` はここで `none` に潰れる
+  // 手で壊した `.dcmp`
   expect(
     Option.isSome(DesignDocument.childPlacementOf(setupDocument(), "broken")),
   ).toBe(false);

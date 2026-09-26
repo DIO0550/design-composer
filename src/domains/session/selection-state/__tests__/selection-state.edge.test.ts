@@ -31,3 +31,30 @@ test("何も選ばれていないときはどの名前も含まれないと答�
 test("単一選択の件数は1になる", () => {
   expect(SelectionState.count(SelectionState.create(["home-title"]))).toBe(1);
 });
+
+test("同じ名前を 2 回渡して選択を作ると単一選択になる", () => {
+  expect(SelectionState.create(["home-title", "home-title"])).toEqual({
+    kind: "single",
+    name: "home-title",
+  });
+});
+
+test("重複を含む並びから選択を作ると、最初に現れた順で名前ごとに 1 件ずつ残る", () => {
+  const selection = SelectionState.create([
+    "home-title",
+    "home-login",
+    "home-title",
+  ]);
+
+  expect(SelectionState.names(selection)).toEqual(["home-title", "home-login"]);
+});
+
+test("重複を含む並びから作った選択の件数は、名前の種類の数になる", () => {
+  const selection = SelectionState.create([
+    "home-title",
+    "home-login",
+    "home-title",
+  ]);
+
+  expect(SelectionState.count(selection)).toBe(2);
+});

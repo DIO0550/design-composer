@@ -43,11 +43,11 @@ export const DocumentSelection = {
    * ドキュメントと、選ばれている名前の並びから対を作る。
    *
    * 並びから選択を組み立てる `SelectionState.create` を挟む手間をここで引き受ける。
-   * 「未選択・単一・複数」の作り分けは並びの長さで決まるので、呼び出し側が状態を
-   * 選ぶ必要はない。
+   * 「未選択・単一・複数」の作り分けは `SelectionState.create` が決めるので、呼び出し側が
+   * 状態を選ぶ必要はない。
    *
    * @param document 選ばれている名前を引くドキュメント
-   * @param names 選ばれているものの名前。並びはそのまま保つ。空なら未選択
+   * @param names 選ばれているものの名前（重複の扱いは `SelectionState.create`）。空なら未選択
    * @returns 2 つを対にした選択
    */
   fromNames(

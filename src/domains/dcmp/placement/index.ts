@@ -41,23 +41,38 @@ export const Placement = {
   /**
    * props から置かれ方を組み立てる。
    *
-   * この `undefined` は「不在」ではなく「スキーマ違反で決められない」を表す(出力は `flow` と
-   * 同じ / 不正は `DesignDocument.collectErrors` が出す)。
+   * 決まらないのはスキーマ違反のときで、不正は `DesignDocument.collectErrors` が出す。出力は
+   * `flow` と同じになる。
    *
    * @param props 配置を読み取る props(デフォルト解決済みでなくてよい)
-   * @returns 置かれ方。`absolute` なのに座標が数値でないなど、置き場所を決め
-   *   られないときは `undefined`
+   * @returns 置かれ方。`absolute` なのに座標が数値でない・知らないモードなど、置き場所を
+   *   決められないときは `none`
    */
-  fromProps(props: Props): Placement | undefined {
+  fromProps(props: Props): Option<Placement> {
     const { placement, x, y } = props;
     if (placement === "flow") {
-      return { mode: "flow" };
+      return Option.some({ mode: "flow" });
     }
     const hasCoordinates = typeof x === "number" && typeof y === "number";
     if (placement === "absolute" && hasCoordinates) {
-      return { mode: "absolute", x, y };
+      return Option.some({ mode: "absolute", x, y });
     }
-    return undefined;
+    return Option.none;
+  },
+
+  /**
+   * props から、座標で置かれるときの配置だけを取り出す。
+   *
+   * @param props 配置を読み取る props(デフォルト解決済みでなくてよい)
+   * @returns 絶対配置ならその配置。フローと、置き場所が決まらないとき(`fromProps` が
+   *   `none`)は `none`
+   */
+  absoluteFromProps(props: Props): Option<AbsolutePlacement> {
+    return Option.flatMap(
+      Placement.fromProps(props),
+      (placement): Option<AbsolutePlacement> =>
+        placement.mode === "absolute" ? Option.some(placement) : Option.none,
+    );
   },
 
   /**
@@ -68,16 +83,6 @@ export const Placement = {
    */
   offset(placement: AbsolutePlacement): Offset {
     return { x: placement.x, y: placement.y };
-  },
-
-  /**
-   * フローから外れて座標で置かれるか。flex アイテムとして並ばない。
-   *
-   * @param placement 見る置かれ方。`undefined` の意味は `fromProps` のとおり
-   * @returns 座標で置かれていれば `true`。フローと、置き場所が決まらないときは `false`
-   */
-  isAbsolute(placement: Placement | undefined): placement is AbsolutePlacement {
-    return placement?.mode === "absolute";
   },
 
   /**
@@ -164,18 +169,15 @@ export const Placement = {
   },
 
   /**
-   * 置かれ方を CSS の宣言にする。
+   * 絶対配置を CSS の宣言にする。
    *
    * フローの Box が出す `position: relative` は「子の基準になれる」という Box の性質なので
    * `BoxElement` が持つ。
    *
-   * @param placement 宣言にする置かれ方。置き場所が決まらないときは `undefined`
-   * @returns 絶対配置なら `position` と座標の 3 件。それ以外は空
+   * @param placement 宣言にする絶対配置
+   * @returns `position` と座標の 3 件
    */
-  declarations(placement: Placement | undefined): readonly CssDeclaration[] {
-    if (placement === undefined || placement.mode === "flow") {
-      return [];
-    }
+  declarations(placement: AbsolutePlacement): readonly CssDeclaration[] {
     return [
       CssDeclaration.create("position", "absolute"),
       CssDeclaration.create("left", Px.create(placement.x)),

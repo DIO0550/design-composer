@@ -1,36 +1,37 @@
 import { expect, test } from "vitest";
+import { Option } from "@/utils/Option";
 import { Placement } from "../index";
 
 test("絶対配置なのに横の座標が数値でないときは置き場所が決まらない", () => {
   expect(
     Placement.fromProps({ placement: "absolute", x: "40", y: 24 }),
-  ).toBeUndefined();
+  ).toEqual(Option.none);
 });
 
 test("絶対配置なのに縦の座標が数値でないときは置き場所が決まらない", () => {
   expect(
     Placement.fromProps({ placement: "absolute", x: 40, y: "24" }),
-  ).toBeUndefined();
+  ).toEqual(Option.none);
 });
 
 test("知らないモードのときは置き場所が決まらない", () => {
-  expect(
-    Placement.fromProps({ placement: "sticky", x: 40, y: 24 }),
-  ).toBeUndefined();
+  expect(Placement.fromProps({ placement: "sticky", x: 40, y: 24 })).toEqual(
+    Option.none,
+  );
 });
 
-test("置き場所が決まらない配置は座標の宣言を出さない", () => {
+test("置き場所が決まらない配置は、絶対配置として取り出せない", () => {
   expect(
-    Placement.declarations(
-      Placement.fromProps({ placement: "absolute", x: "40", y: 24 }),
-    ),
-  ).toEqual([]);
+    Placement.absoluteFromProps({ placement: "absolute", x: "40", y: 24 }),
+  ).toEqual(Option.none);
 });
 
 test("負の座標でも絶対配置になり、親の外へはみ出して置ける", () => {
   expect(
     Placement.declarations(
-      Placement.fromProps({ placement: "absolute", x: -10, y: -20 }),
+      Option.unwrap(
+        Placement.absoluteFromProps({ placement: "absolute", x: -10, y: -20 }),
+      ),
     ),
   ).toEqual([
     { property: "position", value: "absolute" },
