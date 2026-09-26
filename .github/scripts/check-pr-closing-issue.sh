@@ -22,9 +22,8 @@
 #   bash .github/scripts/check-pr-closing-issue.sh <file.json>  # 問い合わせ結果を差し替える(動作確認)
 #
 # **クエリ本体は CI でしか動かせない。** 判定表(`check-pr-closing-issue-cases.sh`)は
-# 「問い合わせ結果 → 終了コード」「5xx のときの再試行」「未反映のときの問い合わせ直し」を
-# `gh` の差し替えで覆うが、クエリのフィールド名・`permissions` の過不足が分かるのは
-# CI で実際に叩いたときだけ。
+# `gh` を差し替えて振る舞いを覆う(覆う範囲は判定表の冒頭)が、クエリのフィールド名・
+# `permissions` の過不足が分かるのは CI で実際に叩いたときだけ。
 set -euo pipefail
 
 # PR が閉じる Issue と、変更したファイルを 1 度の問い合わせで取る。
