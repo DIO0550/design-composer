@@ -22,8 +22,9 @@
 #   bash .github/scripts/check-pr-closing-issue.sh <file.json>  # 問い合わせ結果を差し替える(動作確認)
 #
 # **クエリ本体は CI でしか動かせない。** 判定表(`check-pr-closing-issue-cases.sh`)は
-# 「問い合わせ結果 → 終了コード」と「5xx のときの再試行」を `gh` の差し替えで覆うが、
-# クエリのフィールド名・`permissions` の過不足が分かるのは CI で実際に叩いたときだけ。
+# 「問い合わせ結果 → 終了コード」「5xx のときの再試行」「未反映のときの問い合わせ直し」を
+# `gh` の差し替えで覆うが、クエリのフィールド名・`permissions` の過不足が分かるのは
+# CI で実際に叩いたときだけ。
 set -euo pipefail
 
 # PR が閉じる Issue と、変更したファイルを 1 度の問い合わせで取る。
@@ -61,34 +62,66 @@ fetch_pull_request() {
   return 1
 }
 
+# 問い合わせ結果が閉じる Issue を「#1 #2」の形で返す。無ければ空
+closing_issues_of() {
+  jq -r '.data.repository.pullRequest.closingIssuesReferences.nodes
+         | map("#\(.number)") | join(" ")' <<<"$1"
+}
+
+# 記録 PR かどうか。`harness/records/pr-<番号>.md` の新規 1 ファイルだけがその形
+is_record_pull_request() {
+  local verdict
+  verdict="$(
+    jq -r '.data.repository.pullRequest.files
+           | .totalCount == 1
+             and .nodes[0].changeType == "ADDED"
+             and (.nodes[0].path | test("^harness/records/pr-[0-9]+\\.md$"))' <<<"$1"
+  )"
+  [ "$verdict" = "true" ]
+}
+
+# 閉じる Issue が空なのが、GitHub 側の反映待ちでありうるか。
+# PR を作った直後(`opened`)は、本文に `Closes #<番号>` があっても `closingIssuesReferences` が
+# 数秒は空で返る(`harness/records/pr-757.md` 指摘 12)。記録 PR は閉じる Issue が無くても通るので待たない。
+# `edited` は含めない。本文の手直しのたびに走るので、本来の赤(閉じ忘れ)に毎回待ちが乗る。
+awaits_closing_issue_link() {
+  [ "$PR_ACTION" = "opened" ] || return 1
+  [ -z "$(closing_issues_of "$1")" ] || return 1
+  ! is_record_pull_request "$1"
+}
+
+# 反映待ちでありうる間だけ、間を空けて 2 回まで問い合わせ直し、最後の結果を返す。
+# 待ちは 5xx の再試行と同じ形に揃えた。3 回とも空なら、そのまま閉じ忘れとして赤にする。
+refetch_until_linked() {
+  local result="$1" attempt
+  for attempt in 1 2; do
+    awaits_closing_issue_link "$result" || break
+    printf '閉じる Issue がまだ反映されていない(%s 回目)。待って問い合わせ直す\n' "$attempt" >&2
+    sleep $((attempt * 5))
+    result="$(fetch_pull_request)" || return 1
+  done
+  printf '%s' "$result"
+}
+
 result_file="${1:-}"
 if [ -n "$result_file" ]; then
   result="$(cat "$result_file")"
 else
   : "${GITHUB_REPOSITORY:?owner/repo が要る}"
   : "${PR_NUMBER:?PR 番号が要る}"
+  : "${PR_ACTION:?PR のイベント種別(opened 等)が要る}"
   result="$(fetch_pull_request)"
+  result="$(refetch_until_linked "$result")"
 fi
 
-closing_issues="$(
-  jq -r '.data.repository.pullRequest.closingIssuesReferences.nodes
-         | map("#\(.number)") | join(" ")' <<<"$result"
-)"
+closing_issues="$(closing_issues_of "$result")"
 
 if [ -n "$closing_issues" ]; then
   echo "マージ時に閉じる Issue: ${closing_issues}"
   exit 0
 fi
 
-# 記録 PR かどうか。`harness/records/pr-<番号>.md` の新規 1 ファイルだけがその形
-is_record_pull_request="$(
-  jq -r '.data.repository.pullRequest.files
-         | .totalCount == 1
-           and .nodes[0].changeType == "ADDED"
-           and (.nodes[0].path | test("^harness/records/pr-[0-9]+\\.md$"))' <<<"$result"
-)"
-
-if [ "$is_record_pull_request" = "true" ]; then
+if is_record_pull_request "$result"; then
   record="$(jq -r '.data.repository.pullRequest.files.nodes[0].path' <<<"$result")"
   echo "記録 PR のため対象外: ${record}"
   exit 0

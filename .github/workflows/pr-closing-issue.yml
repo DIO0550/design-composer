@@ -7,7 +7,8 @@
 # `GH_TOKEN: ${{ github.token }}` を env に置いて `gh api` を呼ぶ形は、frontend.yml の
 # `report-comment` ジョブと ci-trace.yml に倣う（どちらも REST。`gh api graphql` はここが初）。
 # ci-trace.yml の `workflows:` には載せない。トレースの目的は実行時間の可視化で、
-# このジョブは数秒しかかからないため。
+# このジョブはほとんど数秒で終わるため(待つのは 5xx の再試行と、PR を作った直後の
+# 問い合わせ直しのときだけ)。
 #
 # `duplicate-issue-pr` ジョブは同じ `closingIssuesReferences` を読むが別ジョブにしてある。
 # 閉じ忘れ(`closing-issue`)はマージを止めたい検査だが、重複はこの検査だけでは
@@ -49,12 +50,13 @@ jobs:
         with:
           fetch-depth: 1
 
-      # PR 本文はシェルへ渡さない（PR 番号だけ渡す）ので、`${{ }}` の展開が
+      # PR 本文はシェルへ渡さない（PR 番号とイベント種別だけ渡す）ので、`${{ }}` の展開が
       # コマンドになる経路を作らない
       - name: 閉じる Issue
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_ACTION: ${{ github.event.action }}
         run: bash .github/scripts/check-pr-closing-issue.sh
 
   duplicate-issue-pr:
