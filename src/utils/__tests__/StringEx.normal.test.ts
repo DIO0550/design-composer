@@ -35,3 +35,15 @@ test("含まれていない語では部分一致しない", () => {
 test("空の語はどの文字列にも部分一致する", () => {
   expect(StringEx.includesIgnoreCase("primary-button", "")).toBe(true);
 });
+
+test("数字だけからなる綴りは数字だけとして true になる", () => {
+  expect(StringEx.isAllDigits("20")).toBe(true);
+});
+
+test("数字 1 文字の綴りは数字だけとして true になる", () => {
+  expect(StringEx.isAllDigits("0")).toBe(true);
+});
+
+test("先頭が 0 の数字の綴りも数字だけとして true になる", () => {
+  expect(StringEx.isAllDigits("007")).toBe(true);
+});

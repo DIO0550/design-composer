@@ -20,3 +20,15 @@ test("2 文字以上の空白の並びは空白 1 文字として false にな�
 test("空文字は空白 1 文字として false になる", () => {
   expect(StringEx.isWhitespace("")).toBe(false);
 });
+
+test("空文字は数字だけとして false になる", () => {
+  expect(StringEx.isAllDigits("")).toBe(false);
+});
+
+test("数字とハイフンからなる綴りは数字だけとして false になる", () => {
+  expect(StringEx.isAllDigits("2-column")).toBe(false);
+});
+
+test("全角の数字は数字だけとして false になる", () => {
+  expect(StringEx.isAllDigits("２")).toBe(false);
+});

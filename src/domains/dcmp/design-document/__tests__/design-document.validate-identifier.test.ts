@@ -233,3 +233,65 @@ test("識別子規則に違反する名前が重複していると規則違反�
     "duplicate-name",
   ]);
 });
+
+test("数字だけのノード名は invalid-identifier エラーになる", () => {
+  const document = DesignDocument.create({
+    artboards: [
+      {
+        name: "screen",
+        width: 375,
+        height: 812,
+        children: [{ name: "3", type: "Box" }],
+      },
+    ],
+  });
+
+  const errors = DesignDocument.collectErrors(document);
+
+  expect(errors).toEqual([
+    expect.objectContaining({ kind: "invalid-identifier", nodeName: "3" }),
+  ]);
+});
+
+test("数字だけの部品名は invalid-identifier エラーになる", () => {
+  const document = DesignDocument.create({
+    components: { "20": { type: "Box" } },
+  });
+
+  const errors = DesignDocument.collectErrors(document);
+
+  expect(errors).toEqual([
+    expect.objectContaining({ kind: "invalid-identifier", nodeName: "20" }),
+  ]);
+});
+
+test("数字だけの artboard 名は invalid-identifier エラーになる", () => {
+  const document = DesignDocument.create({
+    artboards: [{ name: "1", width: 375, height: 812, children: [] }],
+  });
+
+  const errors = DesignDocument.collectErrors(document);
+
+  expect(errors).toEqual([
+    expect.objectContaining({ kind: "invalid-identifier", nodeName: "1" }),
+  ]);
+});
+
+test("数字だけのトークン名は invalid-identifier エラーになる", () => {
+  const document = DesignDocument.create({
+    tokens: {
+      colors: {},
+      spacing: { "4": 16 },
+      radius: {},
+      shadows: {},
+      typography: {},
+      gradients: {},
+    },
+  });
+
+  const errors = DesignDocument.collectErrors(document);
+
+  expect(errors).toEqual([
+    expect.objectContaining({ kind: "invalid-identifier", nodeName: "4" }),
+  ]);
+});

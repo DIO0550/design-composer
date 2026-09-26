@@ -283,7 +283,7 @@ Box と Ellipse が、面をどう塗るかを 1 prop で持つ（Text が持つ
 - **子を並べない親の下の `fill`**（`layout: free` の親の子に `widthMode` / `heightMode` の `fill` を書いている）
 - overrides の未宣言キー（部品の publicProps 宣言に無い名前の上書き）
 - binding の不整合（存在しない内部ノード名 / 存在しない prop への binding、ドメイン違反の上書き値）
-- 識別子規則違反（命名規則・予約文字）
+- 識別子規則違反（命名規則・予約文字・数字だけの名前）
 - ノードの `name` 欠落
 - 名前の一意性違反（components キー・artboard 名・全ノード name の単一名前空間内での重複）
 - **塗り用の 2 種別での名前衝突**（colors と gradients に同じトークン名がある。参照の有無は見ない / 04-tokens「命名規則」）

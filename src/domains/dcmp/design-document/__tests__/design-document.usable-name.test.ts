@@ -59,3 +59,7 @@ test("使えないと判定した名前では部品化が失敗する", () => {
     Result.isOk(DesignDocument.createComponent(document, "box-1", "card")),
   ).toBe(false);
 });
+
+test("数字だけの名前は新しく付けられない", () => {
+  expect(DesignDocument.isUsableName(setupDocument(), "2")).toBe(false);
+});

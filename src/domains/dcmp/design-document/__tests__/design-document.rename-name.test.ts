@@ -120,6 +120,18 @@ test("識別子の規則を満たさない名前へは変えられない", () =>
   });
 });
 
+test("数字だけの名前へは変えられない", () => {
+  const result = DesignDocument.rename(setupDocument(), {
+    from: "label",
+    to: "3",
+  });
+
+  expect(result).toEqual({
+    ok: false,
+    error: { kind: "invalid-name", name: "3" },
+  });
+});
+
 test("ドキュメントに無い名前を変えようとすると node-not-found になる", () => {
   const result = DesignDocument.rename(setupDocument(), {
     from: "missing",

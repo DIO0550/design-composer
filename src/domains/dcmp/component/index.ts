@@ -526,7 +526,9 @@ export const ComponentSet = {
    * 定義されている部品名の一覧。
    *
    * @param components 見る部品一式
-   * @returns 部品名を `Object.keys` の列挙順で並べたもの
+   * @returns 部品名を `Object.keys` の列挙順で並べたもの。部品名が
+   *   `DocumentNames.isValidIdentifier` を満たす限り定義順になる(数字だけの名前は列挙で
+   *   先頭へ並び替わる)
    */
   names(components: ComponentSet): readonly string[] {
     return Object.keys(components);

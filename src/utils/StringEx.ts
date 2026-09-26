@@ -1,6 +1,9 @@
 /** 半角の数字 1 文字だけからなる綴り。 */
 const DigitPattern = /^[0-9]$/;
 
+/** 半角の数字 1 文字以上だけからなる綴り。 */
+const AllDigitsPattern = /^[0-9]+$/;
+
 /** 文字列・文字に対する汎用操作。 */
 export const StringEx = {
   /**
@@ -23,6 +26,17 @@ export const StringEx = {
    */
   isDigit(text: string): boolean {
     return DigitPattern.test(text);
+  },
+
+  /**
+   * 半角の数字だけからなる綴りか。
+   *
+   * @param text 判定する文字列
+   * @returns 1 文字以上あり、すべてが半角の `0`〜`9` なら true。空文字・数字以外を含む綴り
+   *   (`"2-column"`)と、全角の数字は false
+   */
+  isAllDigits(text: string): boolean {
+    return AllDigitsPattern.test(text);
   },
 
   /**
