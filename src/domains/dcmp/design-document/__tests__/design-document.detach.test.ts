@@ -141,6 +141,34 @@ test("解除したドキュメントは部品定義の内部ノード名と重�
   expect(DesignDocument.collectErrors(result)).toEqual([]);
 });
 
+test("同じ部品のインスタンスを 2 つ含む部品を解除しても、同名のノードが残らない", () => {
+  const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
+    components: {
+      badge: { type: "Box", children: [{ name: "badge-label", type: "Text" }] },
+      card: {
+        type: "Box",
+        children: [
+          { name: "first-badge", ref: "badge" },
+          { name: "second-badge", ref: "badge" },
+        ],
+      },
+    },
+    artboards: [
+      {
+        name: "screen",
+        width: 375,
+        height: 812,
+        children: [{ name: "profile-card", ref: "card" }],
+      },
+    ],
+  });
+
+  const result = Result.unwrap(DesignDocument.detach(document, "profile-card"));
+
+  expect(DesignDocument.collectErrors(result)).toEqual([]);
+});
+
 test("解除しても元のドキュメントは変更されない", () => {
   const document = DesignDocument.create({
     components,
