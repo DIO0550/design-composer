@@ -1286,10 +1286,7 @@ export const EditorState = {
    */
   addToken(state: EditorState, template: TokenTemplate): Option<EditorState> {
     const document = EditorState.document(state);
-    const token = TokenTemplate.toToken(
-      template,
-      new Set(TokenSet.names(document.tokens, template.kind)),
-    );
+    const token = TokenTemplate.toToken(template, document.tokens);
     const added = DesignDocument.addToken(document, token);
     return Result.isOk(added)
       ? Option.map(withEdit(state, added.value), (edited) =>
