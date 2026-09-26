@@ -208,21 +208,6 @@ export const TokenReferrer = {
   },
 
   /**
-   * `title.color` の形の表記（UI 案の `Used by` の行）。
-   * 参照箇所を1つの文字列で指せる形なので、対の側が持つ。
-   *
-   * 同じ綴りを `document-error-list` の `locationLabel` も作っているが、あちらが受けるのは
-   * エラーの発生位置（`DocumentErrorLocation`。prop を持たない位置や文字位置も含む直和）で、
-   * 型も分岐も違うため共通化しない。
-   *
-   * @param referrer 表記にする参照元
-   * @returns 参照元の名前と prop 名を `.` で繋いだ文字列。`target` は綴りに出ない
-   */
-  toText(referrer: TokenReferrer): string {
-    return `${referrer.name}.${referrer.prop}`;
-  },
-
-  /**
    * artboard 1枚の中で、そのトークンを参照している箇所を集める。
    *
    * artboard 自身の props も対象。受け付ける prop の定義は `Artboard.propDefinitions` が持つ
