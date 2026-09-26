@@ -70,6 +70,18 @@ export const TokenKinds = {
 export type TokenKind = ValueOf<typeof TokenKinds>;
 
 /**
+ * 塗り用の 2 種別（docs/04-tokens.md「命名規則」の例外）。`background` がどちらも指せるの
+ * で、この 2 種別の間では名前の一意性を種別をまたいで見る。
+ */
+export const PaintTokenKinds = [
+  TokenKinds.Colors,
+  TokenKinds.Gradients,
+] as const;
+
+/** 塗り用の 2 種別の並び。 */
+export type PaintTokenKinds = typeof PaintTokenKinds;
+
+/**
  * 種別ごとの値の形式(docs/04-tokens.md「値の形式」)。
  * `TokenSet` が持つ入れ物から引くことで、種別と値の対応を二重管理しない。
  */
@@ -91,15 +103,15 @@ export type TokenValue = {
   [K in TokenKind]: Readonly<{ kind: K; value: TokenValueOf[K] }>;
 }[TokenKind];
 
-/** トークン1件。値に、種別の中で一意な名前が付いたもの。 */
+/** トークン1件。値に名前が付いたもの。名前が一意になる範囲は `TokenRef` が持つ。 */
 export type Token = {
   [K in TokenKind]: Readonly<{ kind: K; name: string; value: TokenValueOf[K] }>;
 }[TokenKind];
 
 /**
  * トークン1件を指す。
- * 名前の一意性は種別の中でしか保証されない(docs/04-tokens.md「命名規則」)ので、
- * 種別と名前は常に対でしか意味を持たない。
+ * 名前の一意性は種別の中でしか保証されない(docs/04-tokens.md「命名規則」。塗り用の 2 種別
+ * だけは互いの間でも一意)ので、種別と名前は常に対でしか意味を持たない。
  */
 export type TokenRef = Readonly<{ kind: TokenKind; name: string }>;
 
@@ -107,6 +119,11 @@ export type TokenRef = Readonly<{ kind: TokenKind; name: string }>;
 export type TokenEditError =
   | Readonly<{ kind: "invalid-token-name"; ref: TokenRef }>
   | Readonly<{ kind: "duplicate-token-name"; ref: TokenRef }>
+  | Readonly<{
+      kind: "conflicting-token-name";
+      ref: TokenRef;
+      conflictsWith: TokenKind;
+    }>
   | Readonly<{ kind: "token-not-found"; ref: TokenRef }>;
 
 export const TokenEditError = {
@@ -124,6 +141,8 @@ export const TokenEditError = {
         return `token name "${name}" in ${kind} is not a valid identifier`;
       case "duplicate-token-name":
         return `token name "${name}" is already used in ${kind}`;
+      case "conflicting-token-name":
+        return `token name "${name}" in ${kind} is already used in ${error.conflictsWith}`;
       case "token-not-found":
         return `token "${name}" not found in ${kind}`;
     }
@@ -405,14 +424,48 @@ function tokensOfKind(tokens: TokenSet, kind: TokenKind): readonly Token[] {
 }
 
 /**
+ * 名前の一意性を種別をまたいで見る相手の種別（docs/04-tokens.md「命名規則」）。
+ *
+ * @param kind 相手を知りたい種別
+ * @returns 塗り用の 2 種別ならもう片方。それ以外の種別では `none`
+ */
+function paintCounterpart(kind: TokenKind): Option<TokenKind> {
+  const [colors, gradients] = PaintTokenKinds;
+  if (kind === colors) {
+    return Option.some(gradients);
+  }
+  if (kind === gradients) {
+    return Option.some(colors);
+  }
+  return Option.none;
+}
+
+/**
+ * 相手の種別がその名前を使っているか。
+ *
+ * @param tokens 名前を探すトークン一式
+ * @param ref 名前と、相手を求める元の種別
+ * @returns 相手の種別がその名前を持っていればその種別。相手が無い種別か、相手がその名前を
+ *   持っていなければ `none`
+ */
+function findPaintConflict(tokens: TokenSet, ref: TokenRef): Option<TokenKind> {
+  return Option.flatMap(paintCounterpart(ref.kind), (counterpart) =>
+    TokenSet.has(tokens, counterpart, ref.name)
+      ? Option.some(counterpart)
+      : Option.none,
+  );
+}
+
+/**
  * 書き込み先の名前が使えるかを確かめる。
- * 名前の規則は識別子と同じで、一意性は種別の中だけで見る
+ * 名前の規則は識別子と同じで、一意性は種別の中と、塗り用の 2 種別の間で見る
  * (docs/04-tokens.md「命名規則」)。
  *
  * @param tokens 一意性を見る対象のトークン一式
  * @param ref 書き込み先の種別と名前
  * @returns 使えるならその `ref`。ケバブケースでなければ `invalid-token-name`、
- *   同じ種別に同名があれば `duplicate-token-name`
+ *   同じ種別に同名があれば `duplicate-token-name`、塗りの相手の種別に同名があれば
+ *   `conflicting-token-name`（複数に当たるならこの並びの先のもの）
  */
 function checkWritableName(
   tokens: TokenSet,
@@ -424,7 +477,29 @@ function checkWritableName(
   if (TokenSet.has(tokens, ref.kind, ref.name)) {
     return Result.err({ kind: "duplicate-token-name", ref });
   }
+  const conflict = findPaintConflict(tokens, ref);
+  if (Option.isSome(conflict)) {
+    return Result.err({
+      kind: "conflicting-token-name",
+      ref,
+      conflictsWith: conflict.value,
+    });
+  }
   return Result.ok(ref);
+}
+
+/**
+ * その名前が、その種別へ足すときに既に使われているか。
+ *
+ * @param tokens 名前を探すトークン一式
+ * @param ref 足す先の種別と名前
+ * @returns 同じ種別か、塗りの相手の種別にその名前があれば `true`
+ */
+function isNameTaken(tokens: TokenSet, ref: TokenRef): boolean {
+  return (
+    TokenSet.has(tokens, ref.kind, ref.name) ||
+    Option.isSome(findPaintConflict(tokens, ref))
+  );
 }
 
 /**
@@ -513,26 +588,61 @@ export const TokenSet = {
   },
 
   /**
-   * その種別の中で衝突しない名前。衝突する場合は連番を付ける。
+   * その種別へ足しても衝突しない名前。衝突する場合は連番を付ける。衝突は同じ種別の名前と、
+   * 塗り用の 2 種別なら相手の種別の名前とで見る（`TokenSet.add` が弾く範囲と同じ）。
    *
    * 連番のコードは `DocumentNames.uniqueName` と共有しない。あちらはドキュメントの名前の
    * 採番（docs/06-ui.md「名前の変更」）で、トークン名の採番を同じ規則に従わせる仕様は無い。
    *
    * @param tokens 衝突を見るトークン一式
-   * @param kind 名前を足す種別。衝突はこの種別の名前とだけ見る
+   * @param kind 名前を足す種別
    * @param baseName 付けたい名前。識別子の規則を満たすかは見ない
-   * @returns その種別に無ければ `baseName` そのまま、あれば `baseName-2` から順に空いている
-   *   名前
+   * @returns 使われていなければ `baseName` そのまま、使われていれば `baseName-2` から順に
+   *   空いている名前
    */
   uniqueName(tokens: TokenSet, kind: TokenKind, baseName: string): string {
-    if (!TokenSet.has(tokens, kind, baseName)) {
+    if (!isNameTaken(tokens, { kind, name: baseName })) {
       return baseName;
     }
     let suffix = 2;
-    while (TokenSet.has(tokens, kind, `${baseName}-${suffix}`)) {
+    while (isNameTaken(tokens, { kind, name: `${baseName}-${suffix}` })) {
       suffix += 1;
     }
     return `${baseName}-${suffix}`;
+  },
+
+  /**
+   * 塗り用の 2 種別のうち、その名前を持っている種別（docs/03「塗り」: どちらを指しているか
+   * は、その名前を持っている種別で決まる）。
+   *
+   * @param tokens 名前を探すトークン一式
+   * @param name 探す名前
+   * @returns その名前を持つ種別。どちらにも無いときと、両方にあって決まらないとき
+   *   （docs/04「命名規則」が禁じている状態）は `none`
+   */
+  findPaintKind(
+    tokens: TokenSet,
+    name: string,
+  ): Option<PaintTokenKinds[number]> {
+    const owners = PaintTokenKinds.filter((kind) =>
+      TokenSet.has(tokens, kind, name),
+    );
+    const [owner] = owners;
+    return owners.length === 1 ? Option.some(owner) : Option.none;
+  },
+
+  /**
+   * 塗り用の 2 種別の両方にある名前（docs/04-tokens.md「命名規則」が禁じている状態）。
+   * 参照されているかは見ない。
+   *
+   * @param tokens 名前を突き合わせるトークン一式
+   * @returns 両方にある名前を colors の並びの順で並べたもの。片方にだけある名前は含まない
+   */
+  collectPaintNameConflicts(tokens: TokenSet): readonly string[] {
+    const [colors] = PaintTokenKinds;
+    return TokenSet.names(tokens, colors).filter((name) =>
+      Option.isSome(findPaintConflict(tokens, { kind: colors, name })),
+    );
   },
 
   /**
@@ -592,15 +702,16 @@ export const TokenSet = {
 
   /**
    * トークンを追加する(docs/06-ui.md「編集操作の一覧」の tokens 編集)。
-   * 生成した時点で名前の規則と種別内の一意性を満たしていることを成立させるため、
+   * 生成した時点で名前の規則と一意性を満たしていることを成立させるため、
    * 検証は呼び出し側ではなくここで行う。
    *
    * @param tokens 追加先のトークン一式
    * @param token 追加するトークン。値は検証せず、`Token.normalized` で正規形へ倒して
    *   から入れる
    * @returns そのトークンを加えた一式。名前がケバブケースでなければ `invalid-token-name`、
-   *   同じ種別に同名があれば `duplicate-token-name`（両方に当たるなら `invalid-token-name`）。
-   *   どちらの `err` も `ref` は追加しようとしたトークンを指す
+   *   同じ種別に同名があれば `duplicate-token-name`、塗りの相手の種別に同名があれば
+   *   `conflicting-token-name`（複数に当たるならこの並びの先のもの）。
+   *   どの `err` も `ref` は追加しようとしたトークンを指す
    */
   add(tokens: TokenSet, token: Token): Result<TokenSet, TokenEditError> {
     return Result.map(checkWritableName(tokens, Token.ref(token)), () =>
@@ -635,12 +746,14 @@ export const TokenSet = {
    *
    * @param tokens 改名先のトークン一式
    * @param ref 改名するトークンの種別と、今の名前
-   * @param newName 付け替え後の名前。一意性は `ref` と同じ種別の中で見る
+   * @param newName 付け替え後の名前。一意性は `ref` と同じ種別の中と、塗りの相手の種別とで
+   *   見る
    * @returns 名前だけが入れ替わった一式（`newName` が今の名前と同じなら `tokens` のまま）。
    *   並びの中の位置は `TokenSet.names` の並びに従う。
    *   `ref` の種別にその名前が無ければ `ref` を指す `token-not-found`（`newName` より先に
    *   見る）。`newName` がケバブケースでなければ `invalid-token-name`、同じ種別に使われて
-   *   いれば `duplicate-token-name` で、どちらも `ref` は `newName` の側を指す
+   *   いれば `duplicate-token-name`、塗りの相手の種別に使われていれば
+   *   `conflicting-token-name` で、どれも `ref` は `newName` の側を指す
    */
   rename(
     tokens: TokenSet,

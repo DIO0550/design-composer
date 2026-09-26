@@ -299,7 +299,7 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
     case "add_token":
       /*
        * 追加できなければトークンは変わらない（EditorState.addToken の `none`）。
-       * 名前は種別の中で衝突しないよう採番されるため、画面の操作からこの `none` には到達しない。
+       * 名前は `TokenSet.add` が弾かないよう採番されるため、画面の操作からこの `none` には到達しない。
        */
       return Option.unwrapOr(
         EditorState.addToken(state, action.template),
@@ -317,7 +317,7 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
       );
     case "rename_token":
       /*
-       * 規則を満たさない名前・種別の中で重複する名前では改名しない
+       * `TokenSet.rename` が弾く名前では改名しない
        * （EditorState.renameToken の `none`）。名前の入力欄はどんな文字列も打てるため、
        * この `none` には画面の操作から到達する。
        */

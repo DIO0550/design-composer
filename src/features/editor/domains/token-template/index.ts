@@ -80,7 +80,7 @@ export const TokenTemplate = {
    *
    * @param template 追加するトークンの指定
    * @param tokens 足す先のトークン一式
-   * @returns 種別の初期値と、`tokens` の同じ種別の名前と衝突しない名前を持つトークン
+   * @returns 種別の初期値と、`TokenSet.uniqueName` が `tokens` から採った衝突しない名前を持つトークン
    */
   toToken(template: TokenTemplate, tokens: TokenSet): Token {
     const name = TokenSet.uniqueName(

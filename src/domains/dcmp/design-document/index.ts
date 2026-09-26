@@ -1446,7 +1446,7 @@ export const DesignDocument = {
 
   /**
    * トークンを追加する（docs/06-ui.md「編集操作の一覧」の tokens 編集）。
-   * 名前の規則と種別内の一意性は `TokenSet` が見るので、ここは
+   * 名前の規則と一意性（種別の中と塗り用の 2 種別の間）は `TokenSet` が見るので、ここは
    * 「ドキュメントのどこを差し替えるか」だけを担う。
    *
    * @param document 追加先のドキュメント
