@@ -89,3 +89,92 @@ test("対応表に無い __proto__ という名前は、付け替えずにその
 
   expect(Node.rename(node, {}).name).toBe("__proto__");
 });
+
+/** 使われている名前なら `-b` を付ける。`renameEach` に渡す、決め方の見本。 */
+function suffixIfTaken(name: string, taken: ReadonlySet<string>): string {
+  return taken.has(name) ? `${name}-b` : name;
+}
+
+test("1 ノードずつ付け替えると、親に決めた名前が子の名前を決めるときに使われている", () => {
+  const node = {
+    name: "item",
+    type: "Box",
+    children: [{ name: "item", type: "Text" }],
+  };
+
+  expect(Node.renameEach([node], new Set(), suffixIfTaken)).toEqual([
+    { name: "item", type: "Box", children: [{ name: "item-b", type: "Text" }] },
+  ]);
+});
+
+test("1 ノードずつ付け替えると、前の兄弟に決めた名前が次の兄弟の名前を決めるときに使われている", () => {
+  const node = {
+    name: "list",
+    type: "Box",
+    children: [
+      { name: "item", type: "Text" },
+      { name: "item", type: "Text" },
+    ],
+  };
+
+  expect(Node.renameEach([node], new Set(), suffixIfTaken)).toEqual([
+    {
+      name: "list",
+      type: "Box",
+      children: [
+        { name: "item", type: "Text" },
+        { name: "item-b", type: "Text" },
+      ],
+    },
+  ]);
+});
+
+test("1 ノードずつ付け替えると、前の根の子孫に決めた名前が次の根の名前を決めるときに使われている", () => {
+  const first = {
+    name: "list",
+    type: "Box",
+    children: [{ name: "item", type: "Text" }],
+  };
+  const second = { name: "item", type: "Text" };
+
+  expect(Node.renameEach([first, second], new Set(), suffixIfTaken)).toEqual([
+    first,
+    { name: "item-b", type: "Text" },
+  ]);
+});
+
+test("1 ノードずつ付け替えると、次のノードの名前を決めるときに使われているのは元の名前ではなく決めた名前", () => {
+  const nodes = [
+    { name: "item", type: "Text" },
+    { name: "item-b", type: "Text" },
+  ];
+
+  expect(Node.renameEach(nodes, new Set(["item"]), suffixIfTaken)).toEqual([
+    { name: "item-b", type: "Text" },
+    { name: "item-b-b", type: "Text" },
+  ]);
+});
+
+test("1 ノードずつ付け替えると、ref ノードは name だけが置き換わる", () => {
+  const node = { name: "save-button", ref: "primary-button" };
+
+  expect(
+    Node.renameEach([node], new Set(["save-button"]), suffixIfTaken),
+  ).toEqual([{ name: "save-button-b", ref: "primary-button" }]);
+});
+
+test("1 ノードずつ付け替えても、渡したノードは変わらない", () => {
+  const node = {
+    name: "item",
+    type: "Box",
+    children: [{ name: "item", type: "Text" }],
+  };
+
+  Node.renameEach([node], new Set(["item"]), suffixIfTaken);
+
+  expect(node).toEqual({
+    name: "item",
+    type: "Box",
+    children: [{ name: "item", type: "Text" }],
+  });
+});
