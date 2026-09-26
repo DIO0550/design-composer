@@ -1,5 +1,9 @@
-import { DesignDocument } from "@/domains/dcmp/design-document";
-import type { Token, TokenKind, TokenValue } from "@/domains/dcmp/token";
+import {
+  type Token,
+  type TokenKind,
+  TokenSet,
+  type TokenValue,
+} from "@/domains/dcmp/token";
 
 /**
  * これから追加するトークンの指定（docs/06-ui.md「編集操作の一覧」の tokens 編集）。
@@ -49,7 +53,7 @@ const InitialValues = {
  *
  * 種別名を機械的に単数形へ倒さない。`colors` は複数形だが `radius` は複数形ではなく、
  * 末尾の `s` を落とす規則では `radiu` になる。どれも識別子の規則（kebab-case）を
- * 満たす綴りにしておき、衝突したときの連番は `DesignDocument.uniqueName` が付ける。
+ * 満たす綴りにしておき、衝突したときの連番は `TokenSet.uniqueName` が付ける。
  */
 const BaseNames = {
   colors: "color",
@@ -75,14 +79,14 @@ export const TokenTemplate = {
    * 指定を、そのトークン集合へ足せるトークンにする。
    *
    * @param template 追加するトークンの指定
-   * @param usedNames その種別の中で使われている名前（一意性は種別の中でしか保証されない
-   *   / docs/04-tokens.md「命名規則」）
-   * @returns 種別の初期値と、`usedNames` と衝突しない名前を持つトークン
+   * @param tokens 足す先のトークン一式
+   * @returns 種別の初期値と、`tokens` の同じ種別の名前と衝突しない名前を持つトークン
    */
-  toToken(template: TokenTemplate, usedNames: ReadonlySet<string>): Token {
-    const name = DesignDocument.uniqueName(
+  toToken(template: TokenTemplate, tokens: TokenSet): Token {
+    const name = TokenSet.uniqueName(
+      tokens,
+      template.kind,
       TokenTemplate.baseName(template),
-      usedNames,
     );
     return { ...InitialValues[template.kind], name };
   },

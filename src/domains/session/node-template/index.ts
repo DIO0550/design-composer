@@ -74,18 +74,18 @@ export const NodeTemplate = {
 
   /**
    * 指定を、そのドキュメントへ挿せるノードにする。
-   * `usedNames` と衝突しない名前を採番するため、生成されたノードは
+   * `document` の名前と衝突しない名前を採番するため、生成されたノードは
    * そのまま挿しても単一名前空間の一意性を壊さない。
    *
    * @param template ノードにする指定
-   * @param usedNames 挿し先のドキュメントの単一名前空間で使用済みの名前
+   * @param document 挿し先のドキュメント
    * @returns `baseName` を `DesignDocument.uniqueName` で採番した名前を持つノード。
    *   プリミティブは挿入時の初期 props を持ち、インスタンスは props を持たない参照ノード
    */
-  toNode(template: NodeTemplate, usedNames: ReadonlySet<string>): Node {
+  toNode(template: NodeTemplate, document: DesignDocument): Node {
     const name = DesignDocument.uniqueName(
+      document,
       NodeTemplate.baseName(template),
-      usedNames,
     );
     if (template.kind === "instance") {
       return { name, ref: template.componentName };
