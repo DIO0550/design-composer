@@ -623,8 +623,8 @@ export const DesignDocument = {
    *
    * @param document 挿入先のドキュメント
    * @param at 挿入する位置（`insertNode` と同じ）
-   * @param node 複製元のノード。自分と子孫の名前は `renameSubtree` でドキュメントの名前と
-   *   衝突しない名前へ付け替える
+   * @param node 複製元のノード。自分と子孫の名前は `DocumentNames.renameSubtree` で
+   *   ドキュメントの名前と衝突しない名前へ付け替える
    * @returns 名前を付け替えた複製を挿入したドキュメント。`insertNode` と同じ条件で `err`
    */
   insertNodeCopy(
@@ -632,10 +632,9 @@ export const DesignDocument = {
     at: ChildPosition,
     node: Node,
   ): Result<DesignDocument, DesignDocumentEditError> {
-    const [renamed] = DesignDocument.renameSubtree(
-      [node],
-      DesignDocument.usedNames(document),
-    ).nodes;
+    const [renamed] = DocumentNames.renameSubtree(documentNamesOf(document), [
+      node,
+    ]);
     return DesignDocument.insertNode(document, at, renamed);
   },
 
@@ -1197,16 +1196,15 @@ export const DesignDocument = {
     name: string,
   ): Result<DesignDocument, DesignDocumentEditError> {
     return Result.flatMap(expandInstance(document, name), (expanded) => {
-      const usedNames = DesignDocument.usedNames(document);
       /*
        * ここに来る `expanded` は参照ノードを展開したものだけで、その `children` は
        * 必ず配列（部品に子が無ければ空）。`ExpandedNode` の `children?` が省略可能
        * なのは、木の途中に居る子無しのプリミティブのため。
        */
-      const children = DesignDocument.renameSubtree(
+      const children = DocumentNames.renameSubtree(
+        documentNamesOf(document),
         expanded.children ?? [],
-        usedNames,
-      ).nodes;
+      );
       const replacement: Node = {
         name: expanded.name,
         type: expanded.type,
@@ -1614,28 +1612,6 @@ export const DesignDocument = {
       DocumentNames.create([...usedNames]),
       baseName,
     );
-  },
-
-  /**
-   * 部分木のノード名を、使用済みの名前と衝突しないよう付け替える。
-   *
-   * @param nodes 付け替える部分木の根の並び
-   * @param usedNames 既に使われている名前
-   * @returns 付け替えた部分木と、部分木の各名前から新しい名前への対応（変わらない名前も
-   *   含む）。新しい名前の決め方は `DocumentNames.renameMap`
-   */
-  renameSubtree(
-    nodes: readonly Node[],
-    usedNames: ReadonlySet<string>,
-  ): { nodes: readonly Node[]; renameMap: Readonly<Record<string, string>> } {
-    const renameMap = DocumentNames.renameMap(
-      DocumentNames.create([...usedNames]),
-      nodes.flatMap(Node.collectNames),
-    );
-    return {
-      nodes: nodes.map((node) => Node.rename(node, renameMap)),
-      renameMap,
-    };
   },
 
   /**

@@ -164,4 +164,23 @@ export const DocumentNames = {
     // 添字の代入にしない。`__proto__` へ文字列を代入しても無視され、対応が残らない
     return Object.fromEntries(renames);
   },
+
+  /**
+   * 部分木のノード名を、この名前空間と衝突しないよう付け替える。
+   *
+   * @param documentNames 衝突を避ける名前空間
+   * @param nodes 付け替える部分木の根の並び
+   * @returns 自分と子孫の名前を `renameMap` の割り当てで付け替えたノードの並び。衝突しない
+   *   名前はそのまま残る
+   */
+  renameSubtree(
+    documentNames: DocumentNames,
+    nodes: readonly Node[],
+  ): readonly Node[] {
+    const renameMap = DocumentNames.renameMap(
+      documentNames,
+      nodes.flatMap(Node.collectNames),
+    );
+    return nodes.map((node) => Node.rename(node, renameMap));
+  },
 } as const;
