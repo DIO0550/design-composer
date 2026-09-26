@@ -519,7 +519,7 @@ function collectTokenNameErrors(
   return TokenSet.kinds().flatMap((kind) =>
     TokenSet.names(tokens, kind).flatMap(
       (name): readonly DesignDocumentValidationError[] =>
-        DocumentNames.isValidIdentifier(name)
+        TokenSet.isValidName(name)
           ? []
           : [
               {

@@ -418,7 +418,7 @@ function checkWritableName(
   tokens: TokenSet,
   ref: TokenRef,
 ): Result<TokenRef, TokenEditError> {
-  if (!CaseStyle.isKebabCase(ref.name)) {
+  if (!TokenSet.isValidName(ref.name)) {
     return Result.err({ kind: "invalid-token-name", ref });
   }
   if (TokenSet.has(tokens, ref.kind, ref.name)) {
@@ -500,6 +500,16 @@ export const TokenSet = {
    */
   names(tokens: TokenSet, kind: TokenKind): readonly string[] {
     return Object.keys(tokens[kind]);
+  },
+
+  /**
+   * その名前がトークン名の規則を満たすか（docs/04-tokens.md「命名規則」）。
+   *
+   * @param name 判定する名前
+   * @returns `CaseStyle.isKebabCase` が認める綴りなら `true`
+   */
+  isValidName(name: string): boolean {
+    return CaseStyle.isKebabCase(name);
   },
 
   /**
