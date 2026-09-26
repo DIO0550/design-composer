@@ -1,7 +1,6 @@
 import { Artboard } from "@/domains/dcmp/artboard";
 import { ComponentSet } from "@/domains/dcmp/component";
 import { Node } from "@/domains/dcmp/node";
-import { ArrayEx } from "@/utils/ArrayEx";
 import { CaseStyle } from "@/utils/CaseStyle";
 import { Option } from "@/utils/Option";
 import { StringEx } from "@/utils/StringEx";
@@ -142,46 +141,22 @@ export const DocumentNames = {
   },
 
   /**
-   * 渡した名前をこの名前空間と衝突しない名前へ対応づける。
-   * 生成した名前どうしも衝突しないよう、割り当て済みを足しながら決める。
-   *
-   * @param documentNames 衝突を避ける名前空間
-   * @param names 新しい名前を割り当てたい名前。並びの順に割り当てる
-   * @returns `names` の各名前から割り当てた名前への対応。衝突しない名前は自分自身へ、衝突
-   *   する名前は `uniqueName` と同じ連番の名前へ対応づける。`names` に同じ名前が複数あって
-   *   も、割り当てるのは最初の 1 回だけ
-   */
-  renameMap(
-    documentNames: DocumentNames,
-    names: readonly string[],
-  ): Readonly<Record<string, string>> {
-    const taken = new Set(DocumentNames.toSet(documentNames));
-    const renames: (readonly [string, string])[] = [];
-    for (const name of ArrayEx.distinct(names)) {
-      const newName = nextAvailableName(name, taken);
-      renames.push([name, newName]);
-      taken.add(newName);
-    }
-    // 添字の代入にしない。`__proto__` へ文字列を代入しても無視され、対応が残らない
-    return Object.fromEntries(renames);
-  },
-
-  /**
    * 部分木のノード名を、この名前空間と衝突しないよう付け替える。
    *
    * @param documentNames 衝突を避ける名前空間
    * @param nodes 付け替える部分木の根の並び
-   * @returns 自分と子孫の名前を `renameMap` の割り当てで付け替えたノードの並び。衝突しない
-   *   名前はそのまま残る
+   * @returns 自分と子孫の名前を行きがけ順に 1 つずつ `uniqueName` と同じ規則で付け替えた
+   *   ノードの並び。先に付け替えた名前とも衝突しないので、部分木に同じ名前が複数あっても
+   *   別々の名前になる。衝突しない名前はそのまま残る
    */
   renameSubtree(
     documentNames: DocumentNames,
     nodes: readonly Node[],
   ): readonly Node[] {
-    const renameMap = DocumentNames.renameMap(
-      documentNames,
-      nodes.flatMap(Node.collectNames),
+    return Node.renameEach(
+      nodes,
+      DocumentNames.toSet(documentNames),
+      nextAvailableName,
     );
-    return nodes.map((node) => Node.rename(node, renameMap));
   },
 } as const;
