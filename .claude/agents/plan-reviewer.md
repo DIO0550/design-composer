@@ -53,6 +53,13 @@ tools: Read, Grep, Glob, Bash
   - **ドメインが受け取る値に、入力欄側の解釈が紛れていないか**（`分類: domain-input-convention`）
   - **ドメインオブジェクトの置き場所を、実際に消費する feature の数で判断しているか**
     （`分類: domain-scope-promotion`）
+  - **新しく `src/utils/` `services/` `validation/` にモジュールを足すなら、第1引数の型が
+    `src/domains/` の型になっていないか確認したか。** 見た目が既存の汎用変換（`CaseStyle` 等）に
+    似ていても、その規則が `docs/` の仕様として定義されているならドメインの知識
+    （`harness/case-law/architecture.md`「`utils-hides-domain-rule`」「`service-placement`」）
+  - **複数のドメインを1つへまとめる理由が「コードの形が同じ」だけになっていないか。**
+    衝突してはいけない相手と仕様の出どころ（`docs/` のどの節か）が両方一致するかを計画に
+    書かせる（`harness/case-law/architecture.md`「`shape-not-identity`」）
 - **依存方向を壊していないか。** `app → features → services → domains`。
   `components/` `hooks/` `utils/` `types/` にドメイン知識が流れ込んでいないか。
   I/O が `libs/` の外に出ていないか
