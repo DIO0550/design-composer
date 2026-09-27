@@ -34,6 +34,7 @@ export const EditMenuTarget = {
 
 /** メニューから行える編集操作。 */
 export const EditOperations = {
+  Duplicate: "duplicate",
   Copy: "copy",
   Paste: "paste",
   Rename: "rename",
@@ -65,12 +66,12 @@ export type EditMenu = Readonly<{
 /**
  * 対象ごとに並ぶ操作と、その節の分かれ目（docs/06-ui.md「コンテキストメニュー」の表）。
  *
- * docs が挙げる並びのうち、実装が無い操作（複製）と部品化は並べない。
+ * docs が挙げる並びのうち、部品化は並べない。
  * 状態に依らず永久に押せない行は入口として働かないため。
  */
 const OperationSections = {
   node: [
-    [EditOperations.Copy, EditOperations.Paste],
+    [EditOperations.Duplicate, EditOperations.Copy, EditOperations.Paste],
     [EditOperations.Rename, EditOperations.Group, EditOperations.Ungroup],
     [EditOperations.BringForward, EditOperations.SendBackward],
     [EditOperations.DetachInstance],
@@ -95,6 +96,8 @@ const OperationSections = {
  */
 function isEnabled(state: EditorState, operation: EditOperation): boolean {
   switch (operation) {
+    case "duplicate":
+      return Option.isSome(EditorState.duplicateSelected(state));
     case "copy":
       return Option.isSome(EditorState.copyNode(state));
     case "paste":
