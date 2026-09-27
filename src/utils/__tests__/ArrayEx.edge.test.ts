@@ -91,3 +91,12 @@ test("findEqual は NaN を探すと並びの中の NaN を見つける", () => 
 test("distinct は 0 と -0 を等しいとみなし、先に現れた 0 だけを残す", () => {
   expect(ArrayEx.distinct([0, -0])).toEqual([0]);
 });
+
+test("countOccurrences は NaN どうしと 0 と -0 をそれぞれ同じ値として数える", () => {
+  expect([
+    ...ArrayEx.countOccurrences([Number.NaN, 0, Number.NaN, -0]),
+  ]).toEqual([
+    [Number.NaN, 2],
+    [0, 2],
+  ]);
+});

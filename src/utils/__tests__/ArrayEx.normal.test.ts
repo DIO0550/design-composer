@@ -158,3 +158,13 @@ test("findEqual は並びの中の等しい要素を返す", () => {
 test("findEqual は等しい要素が無ければ none を返す", () => {
   expect(ArrayEx.findEqual(["a", "b", "c"], "z")).toEqual(Option.none);
 });
+
+test("countOccurrences は各値の出現回数を最初に現れた順で返す", () => {
+  expect([...ArrayEx.countOccurrences(["b", "a", "b", "c", "b", "a"])]).toEqual(
+    [
+      ["b", 3],
+      ["a", 2],
+      ["c", 1],
+    ],
+  );
+});

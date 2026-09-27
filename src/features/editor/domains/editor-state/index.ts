@@ -932,7 +932,8 @@ export const EditorState = {
    * @param template 挿すものの指定
    * @param at 挿す位置
    * @returns 挿したあとの状態。居ない親・範囲外の位置と、ファイルが不正な間は
-   *   `none`
+   *   `none`（`insertNode` の `duplicate-name` は、`NodeTemplate.toNode` が衝突しない名前を
+   *   採るので起こらない）
    */
   insertNodeAt(
     state: EditorState,
@@ -993,7 +994,8 @@ export const EditorState = {
    *
    * @param state 足す前のエディタの状態
    * @returns 1 枚増え、それを選んだ状態。ファイルが不正な間は `none` （`insertArtboard`
-   *   の失敗は末尾を指す限り起こらないので、そちらでは `none` にならない）
+   *   の失敗は、末尾を指し、名前を `uniqueName` で採る限り起こらないので、そちらでは
+   *   `none` にならない）
    */
   addArtboard(state: EditorState): Option<EditorState> {
     const document = EditorState.document(state);
