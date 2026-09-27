@@ -19,7 +19,13 @@ test("部品と artboard に名前の欠落と識別子違反が混ざってい�
         name: "",
         width: 375,
         height: 812,
-        children: [{ name: "Label", type: "Text" }],
+        children: [
+          {
+            name: "Label",
+            type: "Box",
+            children: [{ name: "Icon", type: "Text" }],
+          },
+        ],
       },
     ],
   });
@@ -65,6 +71,11 @@ test("部品と artboard に名前の欠落と識別子違反が混ざってい�
       kind: "invalid-identifier",
       nodeName: "Label",
       message: 'name "Label" is not a valid identifier',
+    },
+    {
+      kind: "invalid-identifier",
+      nodeName: "Icon",
+      message: 'name "Icon" is not a valid identifier',
     },
   ]);
 });

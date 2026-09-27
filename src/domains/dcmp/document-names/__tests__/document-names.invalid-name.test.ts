@@ -13,7 +13,7 @@ function setupArtboard(children: Artboard["children"]): Artboard {
   return { name: "screen", width: 375, height: 812, children };
 }
 
-test("識別子の規則を満たさない名前が、部品から artboard の順に行きがけ順で集まる", () => {
+test("識別子の規則を満たさない名前が、部品から artboard の順に、親から子への行きがけ順で集まる", () => {
   // artboard 名（Alpha）は辞書順では部品名（Card）より前に来る
   const components: ComponentSet = {
     Card: { type: "Box", children: [{ name: "Title", type: "Text" }] },
@@ -23,7 +23,13 @@ test("識別子の規則を満たさない名前が、部品から artboard の�
       name: "Alpha",
       width: 375,
       height: 812,
-      children: [{ name: "Label", type: "Text" }],
+      children: [
+        {
+          name: "Label",
+          type: "Box",
+          children: [{ name: "Icon", type: "Text" }],
+        },
+      ],
     },
   ];
 
@@ -32,6 +38,7 @@ test("識別子の規則を満たさない名前が、部品から artboard の�
     { kind: "invalid-identifier", name: "Title" },
     { kind: "invalid-identifier", name: "Alpha" },
     { kind: "invalid-identifier", name: "Label" },
+    { kind: "invalid-identifier", name: "Icon" },
   ]);
 });
 
