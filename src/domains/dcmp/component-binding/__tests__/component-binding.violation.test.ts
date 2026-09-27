@@ -119,3 +119,12 @@ test("部品のルートを指す binding も、ルートの型のスキーマ�
 
   expect(violation).toEqual(Option.some({ kind: "missing-prop" }));
 });
+
+test("部品一式に無い部品名の binding は違反にしない", () => {
+  const violation = ComponentBinding.violation(
+    components(),
+    ComponentBinding.create("missing", { node: "ghost", prop: "content" }),
+  );
+
+  expect(violation).toEqual(Option.none);
+});
