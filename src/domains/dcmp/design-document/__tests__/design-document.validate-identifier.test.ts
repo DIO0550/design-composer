@@ -295,3 +295,24 @@ test("数字だけのトークン名は invalid-identifier エラーになる", 
     expect.objectContaining({ kind: "invalid-identifier", nodeName: "4" }),
   ]);
 });
+
+test("トークン名の識別子違反は、トークン名と種別を添えた文言で報告される", () => {
+  const document = DesignDocument.create({
+    tokens: {
+      colors: {},
+      spacing: { Md: 8 },
+      radius: {},
+      shadows: {},
+      typography: {},
+      gradients: {},
+    },
+  });
+
+  const errors = DesignDocument.collectErrors(document);
+
+  expect(errors).toEqual([
+    expect.objectContaining({
+      message: 'token name "Md" in spacing is not a valid identifier',
+    }),
+  ]);
+});

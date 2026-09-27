@@ -115,3 +115,19 @@ test("name が欠落したノードは識別子規則違反として二重に報
 
   expect(errors.map((error) => error.kind)).toEqual(["missing-name"]);
 });
+
+test("キーが空の部品は、components の中のキーとして報告される", () => {
+  const document = DesignDocument.create({
+    components: { "": { type: "Box" } },
+  });
+
+  const errors = DesignDocument.collectErrors(document);
+
+  expect(errors).toEqual([
+    expect.objectContaining({
+      kind: "missing-name",
+      nodeName: "components",
+      message: 'key "" of "components" has no name',
+    }),
+  ]);
+});
