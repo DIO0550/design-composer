@@ -35,8 +35,8 @@ export type InstanceViolation =
  * @param context 部品とトークンの一式
  * @param refNode 上書きを持つインスタンス
  * @param component `refNode` の参照先の部品
- * @returns 上書きの並び順の違反。宣言が解けない公開 prop（binding の不整合）の上書きは
- *   照らさない（binding の側が報告する）
+ * @returns 上書きの並び順の違反。宣言が解けない公開 prop の上書きは照らさない（解けない
+ *   理由は binding・循環参照・未知の型・参照先の部品の欠落として別の検査が報告する）
  */
 function collectOverrideViolations(
   context: ReferenceContext,

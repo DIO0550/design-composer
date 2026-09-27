@@ -37,7 +37,7 @@ export type BindingViolation =
 
 /**
  * binding を 1 段辿った結果。`resolvePropDefinition` と `violation` が同じ辿りを使うこと
- * で、「解決できたのに違反がある」「解決できないのに違反が無い」の食い違いを作らない。
+ * で、1 段目の判定（指し先のノード・型・prop・公開の有無）を 2 つの関数で食い違わせない。
  */
 type BindingHop =
   /**

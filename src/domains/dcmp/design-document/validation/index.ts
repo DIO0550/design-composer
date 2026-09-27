@@ -143,6 +143,9 @@ function collectFillErrors(
 /**
  * ノードとその子孫のプリミティブの props をスキーマで照らす（走査は `Node` が持つ）。
  *
+ * 部品インスタンスの中身は対象外で、検証が見るのは**定義時点の props** だけ（中身は部品の
+ * 定義として照らされる）。
+ *
  * @param node 起点のノード
  * @param tokens トークン参照の解決に使うトークン一式
  * @param parentProps このノードを収めている親の props
