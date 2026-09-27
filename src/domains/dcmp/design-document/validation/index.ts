@@ -29,6 +29,7 @@ export type DesignDocumentValidationErrorKind =
   | "dangling-ref"
   | "circular-ref"
   | "undeclared-override"
+  | "invalid-public-prop-name"
   | "dangling-binding-node"
   | "dangling-binding-prop"
   | "missing-name"
@@ -347,6 +348,29 @@ function collectBindingErrors(
 }
 
 /**
+ * 部品の publicProps の宣言名が、宣言名の規則を満たしているか。
+ *
+ * @param componentName エラーの位置に使う部品名
+ * @param component 検証する部品
+ * @returns 規則を満たさない宣言名ごとの invalid-public-prop-name エラーの並び
+ */
+function collectPublicPropNameErrors(
+  componentName: string,
+  component: Component,
+): readonly DesignDocumentValidationError[] {
+  return Component.publicPropNames(component).flatMap((publicPropName) =>
+    Component.isValidPublicPropName(publicPropName)
+      ? []
+      : withLocation({ nodeName: componentName, prop: publicPropName }, [
+          {
+            kind: "invalid-public-prop-name",
+            message: `public prop name "${publicPropName}" is not a valid public prop name`,
+          },
+        ]),
+  );
+}
+
+/**
  * 部品どうしの参照が輪になっているものを報告する。
  *
  * @param components 検証する部品の一式
@@ -363,7 +387,7 @@ export function collectCircularRefErrors(
 }
 
 /**
- * 部品1件の props・子ノード・binding・参照のエラーを集める。
+ * 部品1件の props・子ノード・公開 prop の宣言名・binding・参照のエラーを集める。
  *
  * @param context 部品とトークンの一式
  * @param name エラーの位置に使う部品名
@@ -387,11 +411,18 @@ export function collectComponentErrors(
       Layout.fromProps(component.props ?? {}),
     ),
   );
+  const publicPropNameErrors = collectPublicPropNameErrors(name, component);
   const bindingErrors = collectBindingErrors(context, name, component);
   const refErrors = children.flatMap((child) =>
     collectNodeRefErrors(context, child),
   );
-  return [...propErrors, ...childErrors, ...bindingErrors, ...refErrors];
+  return [
+    ...propErrors,
+    ...childErrors,
+    ...publicPropNameErrors,
+    ...bindingErrors,
+    ...refErrors,
+  ];
 }
 
 /**
