@@ -653,6 +653,21 @@ export const TokenSet = {
   },
 
   /**
+   * 名前がトークン名の規則（`TokenSet.isValidName`）を満たさないトークン。
+   *
+   * @param tokens 名前を確かめるトークン一式
+   * @returns 規則を満たさないトークンを、`kinds()` の種別の順、種別の中は `names()` の順で
+   *   並べたもの
+   */
+  collectInvalidNameRefs(tokens: TokenSet): readonly TokenRef[] {
+    return TokenSet.kinds().flatMap((kind) =>
+      TokenSet.names(tokens, kind)
+        .filter((name) => !TokenSet.isValidName(name))
+        .map((name) => ({ kind, name })),
+    );
+  },
+
+  /**
    * 値が正規形の hex でない色の名前（docs/04-tokens.md「colors」）。
    * 影・グラデーションの中の色は見ない（docs/03-schema.md「バリデーション仕様」）。
    *
