@@ -263,6 +263,20 @@ test("ファイルが不正でなければ、コピーしたノードを貼り�
   expect(Option.isSome(EditorState.pasteNode(atInsertable))).toBe(true);
 });
 
+test("ファイルが不正な間は、選んでいるノードを複製できない", () => {
+  const selected = EditorState.select(openedState(), "home-title");
+
+  expect(EditorState.duplicateSelected(frozen(selected))).toStrictEqual(
+    Option.none,
+  );
+});
+
+test("ファイルが不正でなければ、選んでいるノードを複製できる", () => {
+  const selected = EditorState.select(openedState(), "home-title");
+
+  expect(Option.isSome(EditorState.duplicateSelected(selected))).toBe(true);
+});
+
 test("ファイルが不正な間は、選んでいるトークンを削除できない", () => {
   const selected = EditorState.selectToken(openedState(), {
     kind: "typography",
