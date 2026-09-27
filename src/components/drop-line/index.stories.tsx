@@ -1,25 +1,34 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { DropLine } from "./index";
+import { DropLine, ListOrientations } from "./index";
 
 /**
  * 並べ替えで落ちる先を示す線。
  *
- * **左ペインのストーリーには出てこない。
+ * 左ペインやタブ列のストーリーは掴んでいない状態しか描かないので、線の見た目を視覚差分で
+ * 守るのはこのストーリーだけ。
  *
- * 本番は行の枠（`position: relative`）へ重ねるので、器として行を模した枠を与える。
+ * 本番は行やタブの枠（`position: relative`）へ重ねるので、器としてその枠を模したものを
+ * 与える。縦に積む並びは行、横に並べる並びはタブの大きさにする。
  */
 const meta = {
   title: "components/DropLine",
   component: DropLine,
   parameters: { layout: "padded" },
   decorators: [
-    (Story) => (
-      <div className="relative flex h-8 w-56 items-center rounded bg-white px-2 text-sm">
-        行
-        <Story />
-      </div>
-    ),
+    (Story, { args }) =>
+      args.listOrientation === ListOrientations.Vertical ? (
+        <div className="relative flex h-8 w-56 items-center rounded bg-white px-2 text-sm">
+          行
+          <Story />
+        </div>
+      ) : (
+        <div className="relative flex h-8 w-28 items-center bg-[#f0f0f0] px-[10px] text-[11px]">
+          タブ
+          <Story />
+        </div>
+      ),
   ],
+  args: { listOrientation: ListOrientations.Vertical },
 } satisfies Meta<typeof DropLine>;
 
 export default meta;
@@ -36,4 +45,16 @@ export const Before: Story = {
 export const After: Story = {
   name: "後ろへ動かしている",
   args: { side: "after" },
+};
+
+/** 横に並べる並びで前へ動かしているとき。入ったタブの左の縁に出る。 */
+export const HorizontalBefore: Story = {
+  name: "横並びで前へ動かしている",
+  args: { side: "before", listOrientation: ListOrientations.Horizontal },
+};
+
+/** 横に並べる並びで後ろへ動かしているとき。入ったタブの右の縁に出る。 */
+export const HorizontalAfter: Story = {
+  name: "横並びで後ろへ動かしている",
+  args: { side: "after", listOrientation: ListOrientations.Horizontal },
 };

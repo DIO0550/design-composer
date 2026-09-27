@@ -27,6 +27,7 @@ const meta = {
     opened: OpenedDocuments.create(openedAt(LoginPath)),
     onSelect: () => {},
     onClose: () => {},
+    onReorder: () => {},
   },
 } satisfies Meta<typeof DocumentTabBar>;
 

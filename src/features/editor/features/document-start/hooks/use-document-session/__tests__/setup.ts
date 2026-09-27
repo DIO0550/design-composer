@@ -13,6 +13,7 @@ import {
 } from "@/libs/document-dialog/fake";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { FileDropFake } from "@/libs/file-drop/fake";
+import type { IndexMove } from "@/types/IndexMove";
 import { Option } from "@/utils/Option";
 import { useDocumentSession } from "../index";
 
@@ -37,7 +38,7 @@ export const NewPath = "/work/untitled.dcmp";
  * 開いているドキュメントのパスを並び順に読む。
  *
  * @param session 読む相手
- * @returns 開いた順に並んだパス。1 つも開いていなければ空
+ * @returns タブ列に並ぶ順のパス。1 つも開いていなければ空
  */
 export function openedPaths(session: DocumentSession): readonly string[] {
   return Option.isSome(session.documents)
@@ -89,6 +90,8 @@ export type SessionObserver = Readonly<{
   activateTab: (path: string) => Promise<void>;
   /** そのパスのタブを閉じる。 */
   closeTab: (path: string) => Promise<void>;
+  /** タブを 1 つ並びの別の位置へ移す。 */
+  reorderTab: (move: IndexMove) => Promise<void>;
 }>;
 
 /** 代役の口を用意するときの追加の指定。 */
@@ -180,6 +183,10 @@ export function renderDocumentSession(
     closeTab: (path) =>
       act(async () => {
         result.current.tabActions.close(path);
+      }),
+    reorderTab: (move) =>
+      act(async () => {
+        result.current.tabActions.reorder(move);
       }),
   };
 }

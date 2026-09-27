@@ -2,6 +2,7 @@ import { expect, test } from "vitest";
 import { openedAt } from "@/domains/__tests__/sample-document";
 import { OpenedDocuments } from "@/domains/session/opened-documents";
 import { Option } from "@/utils/Option";
+import { Result } from "@/utils/Result";
 import {
   FirstPath,
   SecondPath,
@@ -32,7 +33,7 @@ test("開いたドキュメントは並びの末尾に付き、それを見て�
   });
 });
 
-test("並びは開いた順に読める", () => {
+test("並びはタブ列に並ぶ順に読める", () => {
   const opened = threeOpenedWithMiddleActive();
 
   expect(OpenedDocuments.documents(opened)).toStrictEqual([
@@ -110,4 +111,50 @@ test("見ているドキュメントへ移しても、並びは変わらない",
   const opened = threeOpenedWithMiddleActive();
 
   expect(OpenedDocuments.activate(opened, SecondPath)).toStrictEqual(opened);
+});
+
+/*
+ * 見ているものを跨いで動かす。跨がない入力では、見ている先を「並びの同じ位置」のまま組み
+ * 直す実装でも通ってしまう。
+ */
+test("見ていないドキュメントを後ろへ動かすと並びが変わり、見ている先は変わらない", () => {
+  const opened = threeOpenedWithMiddleActive();
+
+  expect(
+    Result.unwrap(
+      OpenedDocuments.reorder(opened, { fromIndex: 0, toIndex: 2 }),
+    ),
+  ).toStrictEqual({
+    before: [],
+    active: openedAt(SecondPath),
+    after: [openedAt(ThirdPath), openedAt(FirstPath)],
+  });
+});
+
+test("見ていないドキュメントを前へ動かすと並びが変わり、見ている先は変わらない", () => {
+  const opened = threeOpenedWithMiddleActive();
+
+  expect(
+    Result.unwrap(
+      OpenedDocuments.reorder(opened, { fromIndex: 2, toIndex: 0 }),
+    ),
+  ).toStrictEqual({
+    before: [openedAt(ThirdPath), openedAt(FirstPath)],
+    active: openedAt(SecondPath),
+    after: [],
+  });
+});
+
+test("見ているドキュメントを動かすと、動かした先でもそれを見ている", () => {
+  const opened = threeOpenedWithMiddleActive();
+
+  expect(
+    Result.unwrap(
+      OpenedDocuments.reorder(opened, { fromIndex: 1, toIndex: 0 }),
+    ),
+  ).toStrictEqual({
+    before: [],
+    active: openedAt(SecondPath),
+    after: [openedAt(FirstPath), openedAt(ThirdPath)],
+  });
 });

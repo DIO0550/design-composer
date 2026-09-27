@@ -1,5 +1,6 @@
 import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { dragRowNamed } from "@/components/__tests__/row-drag";
 import { changeFileExternally } from "@/libs/__tests__/document-change";
 
 export {
@@ -144,6 +145,20 @@ export function tabBar(): HTMLElement {
  */
 export async function selectTab(path: string): Promise<void> {
   await userEvent.click(within(tabBar()).getByTitle(path));
+  await act(async () => {});
+}
+
+/**
+ * タブを掴んで別のタブの上まで運び、そこで離す。
+ *
+ * @param movement 掴むタブと離す先のタブの、帯に出ている字（ファイル名）
+ */
+export async function dragTab(
+  movement: Readonly<{ from: string; to: string }>,
+): Promise<void> {
+  // 外側の `act` で包まない。包むと掴む・入るの反映が離すまで描かれず、離す時点の状態が
+  // 掴む前のまま読まれる（`fireEvent` がそれぞれ `act` を持っている）
+  dragRowNamed(tabBar(), movement);
   await act(async () => {});
 }
 

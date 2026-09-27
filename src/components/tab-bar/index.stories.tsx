@@ -11,9 +11,11 @@ const meta = {
   parameters: { layout: "fullscreen" },
   args: {
     label: "開いているもの",
+    onReorder: () => {},
     children: (
       <TabBar.Tab
         name={LoginPath}
+        index={0}
         isCurrent={true}
         onSelect={() => {}}
         onClose={() => {}}
@@ -41,6 +43,7 @@ export const Multiple: Story = {
       <TabBar.Tab
         key={LoginPath}
         name={LoginPath}
+        index={0}
         isCurrent={false}
         onSelect={() => {}}
         onClose={() => {}}
@@ -50,6 +53,7 @@ export const Multiple: Story = {
       <TabBar.Tab
         key={SettingsPath}
         name={SettingsPath}
+        index={1}
         isCurrent={true}
         onSelect={() => {}}
         onClose={() => {}}
@@ -59,6 +63,7 @@ export const Multiple: Story = {
       <TabBar.Tab
         key={TokensPath}
         name={TokensPath}
+        index={2}
         isCurrent={false}
         onSelect={() => {}}
         onClose={() => {}}

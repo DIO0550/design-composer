@@ -126,6 +126,7 @@ export function EditorScreen({
         opened={session.documents.value}
         onSelect={tabActions.activate}
         onClose={tabActions.close}
+        onReorder={tabActions.reorder}
       />
       {/*
         開けなかったことは、タブ列の下に帯で伝える（docs/06-ui.md）。開始画面へ戻して

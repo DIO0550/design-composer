@@ -2,6 +2,7 @@ import { expect, test } from "vitest";
 import { openedAt } from "@/domains/__tests__/sample-document";
 import { OpenedDocuments } from "@/domains/session/opened-documents";
 import { Option } from "@/utils/Option";
+import { Result } from "@/utils/Result";
 import {
   FirstPath,
   SecondPath,
@@ -55,4 +56,12 @@ test("開いていないパスへは移せず、並びは変わらない", () =>
   const opened = threeOpenedWithMiddleActive();
 
   expect(OpenedDocuments.activate(opened, UnopenedPath)).toStrictEqual(opened);
+});
+
+test("並びの外を指す移動はできない", () => {
+  const opened = threeOpenedWithMiddleActive();
+
+  expect(
+    Result.isOk(OpenedDocuments.reorder(opened, { fromIndex: 0, toIndex: 3 })),
+  ).toBe(false);
 });

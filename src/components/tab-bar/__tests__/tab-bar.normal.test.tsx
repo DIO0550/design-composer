@@ -19,11 +19,12 @@ function renderTabBar(): Readonly<{ selected: string[]; closed: string[] }> {
   const closed: string[] = [];
 
   render(
-    <TabBar label="開いているもの">
-      {Items.map((item) => (
+    <TabBar label="開いているもの" onReorder={vi.fn()}>
+      {Items.map((item, index) => (
         <TabBar.Tab
           key={item.name}
           name={item.name}
+          index={index}
           isCurrent={item.name === Items[1].name}
           onSelect={() => selected.push(item.name)}
           onClose={() => closed.push(item.name)}
@@ -93,9 +94,10 @@ test("帯は何の並びかを名前で答える", () => {
 
 test("1 枚だけでも閉じるボタンは出る", () => {
   render(
-    <TabBar label="開いているもの">
+    <TabBar label="開いているもの" onReorder={vi.fn()}>
       <TabBar.Tab
         name="/work/login.dcmp"
+        index={0}
         isCurrent={true}
         onSelect={vi.fn()}
         onClose={vi.fn()}

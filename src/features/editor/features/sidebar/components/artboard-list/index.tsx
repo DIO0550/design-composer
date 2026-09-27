@@ -1,4 +1,4 @@
-import { DropLine } from "@/components/drop-line";
+import { DropLine, ListOrientations } from "@/components/drop-line";
 import { NoMatchMessage } from "@/components/search-field";
 import { TypeGlyph } from "@/components/type-glyph";
 import type { Artboard } from "@/domains/dcmp/artboard";
@@ -138,7 +138,12 @@ function ArtboardRow({
           {artboard.width}×{artboard.height}
         </span>
       </button>
-      {Option.isSome(dropSide) ? <DropLine side={dropSide.value} /> : null}
+      {Option.isSome(dropSide) ? (
+        <DropLine
+          side={dropSide.value}
+          listOrientation={ListOrientations.Vertical}
+        />
+      ) : null}
     </li>
   );
 }

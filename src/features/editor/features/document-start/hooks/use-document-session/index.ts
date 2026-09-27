@@ -14,6 +14,7 @@ import { type DocumentIpc, toDocumentAccessFailure } from "@/libs/document-ipc";
 import { DocumentJson } from "@/libs/document-json";
 import type { FileDrop } from "@/libs/file-drop";
 import type { Unsubscribe } from "@/libs/tauri-ipc";
+import type { IndexMove } from "@/types/IndexMove";
 import type { ValueOf } from "@/types/ValueOf";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
@@ -65,7 +66,7 @@ export type DocumentSessionActions = Readonly<{
 }>;
 
 /**
- * 開いているドキュメントを行き来する手続き。
+ * タブ列から開いているドキュメントを扱う手続き（行き来・閉じる・並べ替え）。
  *
  * 開く / 新規作成と分けて返すのは、開始画面が受け取るのが前者だけだから
  * （rules/components.md「props は必要最小限に絞る」）。
@@ -75,6 +76,8 @@ export type DocumentTabActions = Readonly<{
   activate: (path: string) => void;
   /** そのパスのドキュメントを閉じる。 */
   close: (path: string) => void;
+  /** 開いているドキュメントの 1 つを並びの別の位置へ移す。 */
+  reorder: (move: IndexMove) => void;
 }>;
 
 /** 開いているドキュメントと、最近開いたファイルの一覧。 */
@@ -96,7 +99,8 @@ type DocumentSessionAction =
     }>
   | Readonly<{ type: "settled"; outcome: OpenOutcome; recents: RecentFiles }>
   | Readonly<{ type: "activate"; path: string }>
-  | Readonly<{ type: "close"; path: string }>;
+  | Readonly<{ type: "close"; path: string }>
+  | Readonly<{ type: "reorder"; move: IndexMove }>;
 
 const InitialState: DocumentSessionState = {
   session: DocumentSession.Closed,
@@ -149,6 +153,19 @@ function reduce(
       return {
         ...state,
         session: DocumentSession.close(state.session, action.path),
+      };
+    case "reorder":
+      /*
+       * 並びの外を指す移動なら並びは変わらない（DocumentSession.reorder の `none`）。
+       * タブ列は開いている間だけ出て、掴めるのは並んでいるタブだけなので、画面の操作から
+       * この `none` には到達しない（reorder_artboard と同じ扱い）。
+       */
+      return {
+        ...state,
+        session: Option.unwrapOr(
+          DocumentSession.reorder(state.session, action.move),
+          state.session,
+        ),
       };
   }
 }
@@ -333,8 +350,8 @@ function rememberOpened(
 }
 
 /**
- * どのドキュメントを開いているかと最近使ったファイルを持ち、開く / 新規作成とタブの行き来
- * の導線を返す。
+ * どのドキュメントを開いているかと最近使ったファイルを持ち、開く / 新規作成とタブ列から
+ * の操作の導線を返す。
  *
  * 開く操作が終わると開いているドキュメントと最近使ったファイルの一覧が一緒に動き、更新の
  * 型も複数あるので `useReducer` で 1 つの状態にまとめる（rules/hooks.md）。指示を受け取れ
@@ -342,8 +359,8 @@ function rememberOpened(
  *
  * @param ports ダイアログ・I/O・メニュー・ドロップ・アプリ自身の状態の相手
  * @returns 今のセッション、最近開いたファイルのパス（新しい順）、その一覧を読み取れ
- *   なかった理由（読めていれば `none`）、開く / 新規作成を始める手続き、開いているものを
- *   行き来する手続き、指示を受け取れなかった経路とその理由（どちらも受け取れていれば
+ *   なかった理由（読めていれば `none`）、開く / 新規作成を始める手続き、タブ列から開いて
+ *   いるものを扱う手続き、指示を受け取れなかった経路とその理由（どちらも受け取れていれば
  *   `none`）
  */
 export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
@@ -503,6 +520,7 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
     tabActions: {
       activate: (path) => dispatch({ type: "activate", path }),
       close: (path) => dispatch({ type: "close", path }),
+      reorder: (move) => dispatch({ type: "reorder", move }),
     },
     commandFailure,
   };
