@@ -348,6 +348,15 @@ function renderB(props: Partial<Props> = {}) {
 }
 TS
 
+check deny "export の付いた宣言と付かない宣言で、本体が同じものを重複と読む" <<'TS'
+function renderPanelA() {
+  return render(<Panel mode="edit" title="layers" />);
+}
+export function renderPanelB() {
+  return render(<Panel mode="edit" title="layers" />);
+}
+TS
+
 check miss "先頭の桁から始まらない(入れ子の)宣言は、本体が同じでも見ない" <<'TS'
 test("入れ子", () => {
   function nestedA(): string[] {
