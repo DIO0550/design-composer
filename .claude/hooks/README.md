@@ -60,12 +60,13 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `lib/pre-push-detector.sh` | `pre-push-import-rules.sh` / `pre-push-result-option-reads.sh` / `pre-push-story-titles.sh` / `pre-push-named-paths.sh` | `git push` のときだけ検出器を走らせ、違反があれば deny の JSON を返す（`deny_on_violations <検出器> <検査の名前> <直し方の一文>`）。**走査ルートは渡さない**（検出器が自分の既定で決める） |
 | `lib/story-title-violations.py` | `pre-push-story-titles.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | story の `title` が、最後のセグメント（葉に出る表示名）を除いてフォルダ階層から導出した綴りと違うもの（`story-title-tree`）と、`title` をリテラル 1 行として取れないもの（`story-title-missing`）を報告する |
 | `lib/result-option-read-violations.py` | `pre-push-result-option-reads.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `Result` / `Option` の判別子（`ok` / `some`）を、その判別子を型宣言で定義していないファイルで直読みしている箇所（`result-option-read`）を報告する |
-| `lib/cases-report.sh` | `lib/result-option-read-cases.sh` / `lib/story-title-cases.sh` / `lib/named-path-cases.sh` / `lib/missing-doc-comments-cases.sh` | 判定表が共有する、判定の読み取り（`decide` / `normalize_miss`）と報告（`report` / `cases_failed`）。ケースの並べ方と検出器の呼び方は判定表ごとに違うので、そこは各判定表が持つ |
+| `lib/cases-report.sh` | `lib/result-option-read-cases.sh` / `lib/story-title-cases.sh` / `lib/named-path-cases.sh` / `lib/missing-doc-comments-cases.sh` / `lib/duplicate-test-helpers-cases.sh` | 判定表が共有する、判定の読み取り（`decide` / `normalize_miss`）と報告（`report` / `cases_failed`）。ケースの並べ方と検出器の呼び方は判定表ごとに違うので、そこは各判定表が持つ |
 | `lib/named-path-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `named-path-violations.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードで報告する。食い違いがあれば exit 1 |
 | `lib/canary-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `hook-canary.sh` へ判定表を流し、deny / pass / miss が期待どおりかを報告する。食い違いがあれば exit 1 |
 | `lib/result-option-read-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `result-option-read-violations.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードで報告する。食い違いがあれば exit 1 |
 | `lib/story-title-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `story-title-violations.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードで報告する。食い違いがあれば exit 1 |
 | `lib/missing-doc-comments-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `missing-doc-comments.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードで報告する。食い違いがあれば exit 1 |
+| `lib/duplicate-test-helpers-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `duplicate-test-helpers.py` へ判定表を流し、ファイル 1 つを渡す形と `--lines` の両方で deny / pass / miss が期待どおりかを終了コードで報告する。食い違いがあれば exit 1 |
 
 ## 強制力の序列 — フックが発火しない実行環境がある
 
@@ -147,6 +148,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 | `lib/story-title-cases.sh` | あり | あり(`python3` がある環境だけ) |
 | `lib/named-path-cases.sh` | あり | あり(`python3` がある環境だけ) |
 | `lib/missing-doc-comments-cases.sh` | あり | あり(`python3` がある環境だけ) |
+| `lib/duplicate-test-helpers-cases.sh` | あり | あり(`python3` がある環境だけ) |
 | `lib/canary-cases.sh` | あり | あり(`python3` と `jq` が揃う環境だけ) |
 | `.github/scripts/check-added-cases.sh` | あり(`lint-suppress` ジョブ) | あり(`python3` がある環境だけ) |
 | `.github/scripts/check-pr-closing-issue-cases.sh` | あり | **無し(残る穴)** |
@@ -279,10 +281,9 @@ deny のメッセージは、`jq` / `python3` が欠けていればその名前�
 - `check-test-helper-duplication.sh`(層 3・PostToolUse)は**ブロックしない**(`additionalContext` を返すだけ)。見るのは**編集したファイルが絡む重複だけ**だが、探す範囲はプロジェクト全体の `__tests__/`(同じフォルダに限らない)
   - 判定は「本体が一字一句同じ」に限る。似ているだけのものは見ない(偽陽性で止めない)
   - 導入時点でリポジトリに既存の重複が 13 組あり、#153 で一旦 0 組にした。**ただしそれは検出器が見える範囲での 0 組**で、フォルダをまたぐ重複(#179)は検出器自体が見ておらず数に入っていなかった。探索範囲をプロジェクト全体へ広げたところ、フォルダをまたぐ重複が新たに 11 組見つかっている(個別の解消は別 Issue)
-  - `f(props: T = {})` のように**既定引数の `{}` が宣言中で最初に現れる関数**は、本体が `"{}"` と読まれて `MIN_BODY_CHARS`(20)未満で捨てられ、重複があっても見えない(#153 で足した `renderToolbar` がこの形にあたる。未解消)
-  - 引数の型注釈が `Readonly<{ x: number }>` のように `{}` を含む場合に本体と読み違える偽陽性(#179)は、引数リストの閉じ括弧より後ろから本体を探すよう直して解消した(`duplicate-test-helpers.py` の `params_end`)
+  - 本体の切り出し方(引数・戻り値の型注釈を読み飛ばす・式本体のアロー関数)と意図した取りこぼしは検出器の docstring、判定表は `lib/duplicate-test-helpers-cases.sh`。型注釈の `{}` を本体と読む偽陽性(#179・#406)と、既定引数 `f(props: T = {})` の `{}` を本体と読んで短すぎると捨てる見逃しは、これで解消している
   - ファイル単位で無効化: `// @duplicate-helpers-ok`
-- `.github/scripts/check-added-test-helper-duplication.sh`(層 1・CI、`frontend.yml` の `lint-suppress` ジョブ。同じスクリプトを `harness/githooks/pre-push` も引数なしで呼び、base を `origin/main` として push 前にも通す。**検出器を走らせられなければ exit 2** → `.github/scripts/lib/detector-precondition.sh`)は、Claude Code hook(層 3)が発火しない実行環境向けの無条件の代替。**既存の 11 組を理由に `--all` を無条件でブロックにはしない**(`check-added-lint-suppressions.sh` と同じ考え方)。`duplicate-test-helpers.py --lines` で対象ファイルの重複行を機械可読に出し、**このブランチで新しく追加された行に載っているものだけ**を違反にする。既存の 11 組を 0 組にすれば `--all` を無条件のブロックへ格上げできる(その時点でこの限定は不要になる)
+- `.github/scripts/check-added-test-helper-duplication.sh`(層 1・CI、`frontend.yml` の `lint-suppress` ジョブ。同じスクリプトを `harness/githooks/pre-push` も引数なしで呼び、base を `origin/main` として push 前にも通す。**検出器を走らせられなければ exit 2** → `.github/scripts/lib/detector-precondition.sh`)は、Claude Code hook(層 3)が発火しない実行環境向けの無条件の代替。**既存の重複(`--all src` で数える)を理由に `--all` を無条件でブロックにはしない**(`check-added-lint-suppressions.sh` と同じ考え方)。`duplicate-test-helpers.py --lines` で対象ファイルの重複行を機械可読に出し、**このブランチで新しく追加された行に載っているものだけ**を違反にする。既存の重複を 0 組にすれば `--all` を無条件のブロックへ格上げできる(その時点でこの限定は不要になる)
   - `check-added-lint-suppressions.sh` と違い、**base に同じ本体を持つファイルがあっても除外しない**。ファイル分割でヘルパーが新しいファイルへ移ると、移った側は全行が追加行になり、既存の重複が「新規」として引っかかる余地が残っている(pr-240 で lint 抑制コメントが踏んだのと同じ形)。単純な `git mv` はリネーム検出で diff に載らないため踏まないが、**分割**は対象
 - `check-doc-comments.sh` は**ブロックしない**(`additionalContext` を返すだけ)。また、見るのは**編集したファイルの分だけ**
   - 対象は `src/` の実装ファイルのみ(`__tests__/` / `*.stories.*` / `__stories__/` は見ない)
@@ -350,6 +351,9 @@ echo '{"tool_input":{"file_path":"src/features/editor/features/inspector/compone
 
 # 全体の重複を数える
 python3 .claude/hooks/lib/duplicate-test-helpers.py --all src
+
+# テストヘルパーの重複の判定表(`ok` だけなら期待どおり・`NG` が出たら判定が変わっている)。pre-push と CI も走らせる
+bash .claude/hooks/lib/duplicate-test-helpers-cases.sh; echo "exit=$?"
 ```
 
 ```bash

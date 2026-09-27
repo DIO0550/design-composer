@@ -173,6 +173,9 @@ jobs:
       - name: doc コメントの判定表
         run: bash .claude/hooks/lib/missing-doc-comments-cases.sh
 
+      - name: テストヘルパーの重複の判定表
+        run: bash .claude/hooks/lib/duplicate-test-helpers-cases.sh
+
       # pre-push は jq の無い環境で飛ばすが、ランナーの image には jq がある
       # (ci-trace.yml も素の jq を呼ぶ)ので、ここは無条件に走らせる。
       - name: カナリアの判定表

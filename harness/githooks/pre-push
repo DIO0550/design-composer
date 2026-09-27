@@ -46,6 +46,7 @@ run_check "判別子の直読みの判定表" bash .claude/hooks/lib/result-opti
 run_check "story の title の判定表" bash .claude/hooks/lib/story-title-cases.sh
 run_check "名指ししたパスの判定表" bash .claude/hooks/lib/named-path-cases.sh
 run_check "doc コメントの判定表" bash .claude/hooks/lib/missing-doc-comments-cases.sh
+run_check "テストヘルパーの重複の判定表" bash .claude/hooks/lib/duplicate-test-helpers-cases.sh
 
 # CI (frontend.yml の lint-suppress ジョブ) と同じ判定を、push の前にも通す。
 # 引数を省くと origin/main を base に比べる。ここへ下ろした経緯は
