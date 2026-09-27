@@ -1,6 +1,7 @@
 import { Artboard } from "@/domains/dcmp/artboard";
 import { ComponentSet } from "@/domains/dcmp/component";
 import { Node } from "@/domains/dcmp/node";
+import { ArrayEx } from "@/utils/ArrayEx";
 import { CaseStyle } from "@/utils/CaseStyle";
 import { Option } from "@/utils/Option";
 import { StringEx } from "@/utils/StringEx";
@@ -112,6 +113,31 @@ export const DocumentNames = {
       (name, index) =>
         names.indexOf(name) === index && names.lastIndexOf(name) !== index,
     );
+  },
+
+  /**
+   * 編集の前後を比べて、新しく重複した名前を返す。既にある重複は、出現が増えない限り
+   * 返さない（docs/03-schema.md「不正ファイル時の挙動」では重複したドキュメントでも編集を
+   * 続けられる）。
+   *
+   * @param names 編集前（`before`）と編集後（`after`）の名前空間
+   * @returns `after` で 2 回以上現れ、`before` より出現が増えた名前を、`after` で最初に
+   *   現れた順に 1 つずつ。無ければ空
+   */
+  newlyDuplicatedNames({
+    before,
+    after,
+  }: Readonly<{
+    before: DocumentNames;
+    after: DocumentNames;
+  }>): readonly string[] {
+    const beforeCounts = ArrayEx.countOccurrences(before.names);
+    const afterCounts = ArrayEx.countOccurrences(after.names);
+    return [...afterCounts].flatMap(([name, count]) => {
+      const isNewlyDuplicated =
+        count >= 2 && count > (beforeCounts.get(name) ?? 0);
+      return isNewlyDuplicated ? [name] : [];
+    });
   },
 
   /**
