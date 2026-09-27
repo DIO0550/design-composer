@@ -6,6 +6,7 @@ import type {
 import { CssDeclarations } from "@/domains/dcmp/css-declaration";
 import {
   GradientToken,
+  type PaintNameResolution,
   ShadowToken,
   type TokenKind,
   TokenSet,
@@ -165,13 +166,22 @@ export const TokenCss = {
   },
 
   /**
-   * ドメインへ渡すトークン参照の綴り方。
-   * カスタムプロパティ名の規則はこの層の知識なので、参照を作る側はこれを通す。
+   * ドメインへ渡すトークン参照の綴り方と、塗りの名前の解決。
+   *
+   * カスタムプロパティ名の規則はこの層の知識なので、参照を作る側はこれを通す。塗りの解決
+   * だけは開いているドキュメントのトークン一式が要るので、その一式に束縛して作る。
+   *
+   * @param tokens 塗りの名前を引くトークン一式
+   * @returns そのトークン一式に対する綴り方
    */
-  refs: {
-    ref: (kind: SingleVariableTokenKind, name: string): string =>
-      TokenCss.ref(kind, name),
-    typographyRef: (name: string, property: TypographyCssProperty): string =>
-      TokenCss.typographyRef(name, property),
-  } satisfies TokenRefs,
+  refsFrom(tokens: TokenSet): TokenRefs {
+    return {
+      ref: (kind: SingleVariableTokenKind, name: string): string =>
+        TokenCss.ref(kind, name),
+      paintResolution: (name: string): PaintNameResolution =>
+        TokenSet.resolvePaintName(tokens, name),
+      typographyRef: (name: string, property: TypographyCssProperty): string =>
+        TokenCss.typographyRef(name, property),
+    };
+  },
 } as const;

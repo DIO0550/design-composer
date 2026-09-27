@@ -1,4 +1,5 @@
 import { expect, expectTypeOf, test } from "vitest";
+import type { PaintTokenKinds, TokenKind } from "@/domains/dcmp/token";
 import { TokenPropKinds, type TokenPropName } from "../index";
 
 test("トークン参照 prop はスキーマで宣言されたトークン種別を答える", () => {
@@ -30,4 +31,17 @@ test("トークン種別は prop ごとにスキーマの宣言どおりの型�
   expectTypeOf(TokenPropKinds.kindsOf("background")).toEqualTypeOf<
     readonly ["colors", "gradients"]
   >();
+});
+
+test("2 つの種別を指せる prop は塗りの組だけ", () => {
+  /*
+   * docs/03「塗り」の「2 つの種別を指せるのは `background` だけ」。CSS 出力はこの前提で
+   * 単一種別と塗りを長さで分けるので、塗りでない 2 種別 prop がスキーマへ入ると壊れる。
+   */
+  type MultiKind = Exclude<
+    TokenPropKinds[TokenPropName],
+    readonly [TokenKind]
+  >;
+
+  expectTypeOf<MultiKind>().toEqualTypeOf<PaintTokenKinds>();
 });

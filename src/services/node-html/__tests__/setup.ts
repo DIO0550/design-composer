@@ -1,3 +1,4 @@
+import { DefaultTokenRefs } from "@/domains/__tests__/token-refs";
 import type { CssDirection } from "@/domains/dcmp/css-direction";
 import type { ExpandedNode } from "@/domains/dcmp/expanded-node";
 import { Option } from "@/utils/Option";
@@ -15,5 +16,6 @@ export function styleOf(
   node: ExpandedNode,
   parentDirection: Option<CssDirection> = Option.none,
 ): Readonly<Record<string, string>> {
-  return Result.unwrap(NodeHtml.compile(node, parentDirection)).style;
+  return Result.unwrap(NodeHtml.compile(node, DefaultTokenRefs, parentDirection))
+    .style;
 }

@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { TokenRefSpelling } from "@/domains/__tests__/token-refs";
+import { DefaultTokenRefs } from "@/domains/__tests__/token-refs";
 import { TextElement } from "@/domains/compiled/compiled-element";
 import { Artboard } from "@/domains/dcmp/artboard";
 import { CompiledArtboard } from "../index";
@@ -11,7 +11,7 @@ test("コンパイル結果の大きさは、宣言元の artboard から取ら�
   const compiled = CompiledArtboard.fromArtboard(
     artboard,
     [],
-    TokenRefSpelling,
+    DefaultTokenRefs,
   );
 
   expect([compiled.width, compiled.height]).toStrictEqual([360, 240]);
@@ -28,7 +28,7 @@ test("コンパイル結果の中身は、宣言元の artboard の props から
   const compiled = CompiledArtboard.fromArtboard(
     artboard,
     [],
-    TokenRefSpelling,
+    DefaultTokenRefs,
   );
 
   expect(compiled.element.style).toMatchObject({
@@ -49,7 +49,7 @@ test("props で絶対配置を指定した artboard も、子が位置を測る�
   const compiled = CompiledArtboard.fromArtboard(
     artboard,
     [],
-    TokenRefSpelling,
+    DefaultTokenRefs,
   );
 
   expect(compiled.element.style.position).toBe("relative");
@@ -62,7 +62,7 @@ test("コンパイル結果の中身は、渡された子をそのまま並べ�
   const compiled = CompiledArtboard.fromArtboard(
     artboard,
     [child],
-    TokenRefSpelling,
+    DefaultTokenRefs,
   );
 
   expect(compiled.element.children).toStrictEqual([child]);

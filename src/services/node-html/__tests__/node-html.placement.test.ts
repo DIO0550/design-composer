@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
 import type { ExpandedNode } from "@/domains/dcmp/expanded-node";
 import { Result } from "@/utils/Result";
+import { DefaultTokenRefs } from "@/domains/__tests__/token-refs";
 import { NodeHtml } from "../index";
 import { styleOf } from "./setup";
 
@@ -9,7 +10,7 @@ function childValuesOf(
   node: ExpandedNode,
   property: string,
 ): readonly (string | undefined)[] {
-  const compiled = Result.unwrap(NodeHtml.compile(node));
+  const compiled = Result.unwrap(NodeHtml.compile(node, DefaultTokenRefs));
   const children = compiled.kind === "box" ? compiled.children : [];
   return children.map((child) => child.style[property]);
 }

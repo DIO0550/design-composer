@@ -1,8 +1,12 @@
-import { TokenRefSpelling } from "@/domains/__tests__/token-refs";
+import {
+  DefaultTokenRefs,
+  tokenRefsFrom,
+} from "@/domains/__tests__/token-refs";
 import { CssDeclarations } from "@/domains/dcmp/css-declaration";
 import type { CssDirection } from "@/domains/dcmp/css-direction";
 import type { Props } from "@/domains/dcmp/node";
 import { ResolvedProps } from "@/domains/dcmp/resolved-props";
+import type { TokenSet } from "@/domains/dcmp/token";
 import { Option } from "@/utils/Option";
 import { BoxElement, TextElement } from "../index";
 
@@ -22,7 +26,27 @@ export function setupBoxStyle(
     BoxElement.declarations(
       ResolvedProps.resolve("Box", props),
       parentDirection,
-      TokenRefSpelling,
+      DefaultTokenRefs,
+    ),
+  );
+}
+
+/**
+ * 塗りの名前の解決に使うトークン一式を差し替えて、Box 1 つ分の style を組み立てる。
+ *
+ * @param props 設定されている props（デフォルト解決前）
+ * @param tokens 塗りの名前を引くトークン一式
+ * @returns 親を持たない位置に置いたときの style
+ */
+export function setupBoxStyleWithTokens(
+  props: Props,
+  tokens: TokenSet,
+): CssDeclarations {
+  return CssDeclarations.from(
+    BoxElement.declarations(
+      ResolvedProps.resolve("Box", props),
+      Option.none,
+      tokenRefsFrom(tokens),
     ),
   );
 }
@@ -37,7 +61,7 @@ export function setupTextStyle(props: Props): CssDeclarations {
   return CssDeclarations.from(
     TextElement.declarations(
       ResolvedProps.resolve("Text", props),
-      TokenRefSpelling,
+      DefaultTokenRefs,
     ),
   );
 }

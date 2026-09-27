@@ -13,7 +13,16 @@ function setupTokens(): TokenSet {
     typography: {
       body: { fontSize: 16, lineHeight: 1.6, fontWeight: 400 },
     },
-    gradients: {},
+    gradients: {
+      brand: {
+        shape: "linear",
+        angle: 90,
+        stops: [
+          { color: "#3b82f6", ratio: 0 },
+          { color: "#1d4ed8", ratio: 1 },
+        ],
+      },
+    },
   };
 }
 
@@ -197,6 +206,7 @@ test("ドキュメント1つからレンダリング可能な HTML が得られ�
     "--typography-body-font-weight:400",
     "--typography-body-font-family:system-ui, -apple-system, &quot;Segoe UI&quot;," +
       " Roboto, &quot;Helvetica Neue&quot;, Arial, sans-serif",
+    "--gradients-brand:linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%)",
   ].join(";");
   const artboardStyle = [
     "display:flex",
@@ -244,4 +254,46 @@ test("コンパイル結果は artboard ごとに宣言された大きさを持�
     [360, 240],
     [720, 900],
   ]);
+});
+
+test("gradients を指す背景は、変数の定義と参照の両方を持つ HTML になる", () => {
+  const document = DesignDocument.create({
+    tokens: setupTokens(),
+    artboards: [
+      {
+        name: "home",
+        width: 375,
+        height: 812,
+        children: [{ name: "hero", type: "Box", props: { background: "brand" } }],
+      },
+    ],
+  });
+
+  const html = Result.unwrap(DocumentHtml.toHtml(document));
+
+  expect(html).toContain(
+    "--gradients-brand:linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%)",
+  );
+  expect(html).toContain("background:var(--gradients-brand)");
+});
+
+test("artboard の背景も名前を持っている種別の var になる", () => {
+  const document = DesignDocument.create({
+    tokens: setupTokens(),
+    artboards: [
+      {
+        name: "home",
+        width: 375,
+        height: 812,
+        props: { background: "brand" },
+        children: [],
+      },
+    ],
+  });
+
+  const compiled = Result.unwrap(DocumentHtml.compile(document));
+
+  expect(compiled.artboards[0]?.element.style.background).toBe(
+    "var(--gradients-brand)",
+  );
 });

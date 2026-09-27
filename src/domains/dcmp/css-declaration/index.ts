@@ -1,4 +1,8 @@
-import type { TokenKind, TypographyCssProperty } from "@/domains/dcmp/token";
+import type {
+  PaintNameResolution,
+  TokenKind,
+  TypographyCssProperty,
+} from "@/domains/dcmp/token";
 
 /**
  * 出力し得る CSS プロパティ名。
@@ -51,12 +55,16 @@ export type CssDeclarationName = CssProperty | CssVariableName;
 export type SingleVariableTokenKind = Exclude<TokenKind, "typography">;
 
 /**
- * トークン参照を CSS の値へ変換する手段。
- * カスタムプロパティ名の綴り方は CSS 出力層 (services) の知識なので、
- * ドメインはこの形で受け取り、規則そのものは持たない。
+ * トークン参照を CSS の値へ変換する手段と、塗りの名前がどの種別へ解決するか。
+ *
+ * カスタムプロパティ名の綴り方は CSS 出力層 (services) の知識なので、ドメインはこの形で
+ * 受け取り、綴りの規則そのものは持たない。塗りの解決だけは、開いているドキュメントの
+ * トークン一式を見ないと答えられないので同じ口で運ぶ (解決そのものは
+ * `TokenSet.resolvePaintName` が決め、3 つの状態をどの宣言にするかは受け取る側が決める)。
  */
 export type TokenRefs = Readonly<{
   ref(kind: SingleVariableTokenKind, name: string): string;
+  paintResolution(name: string): PaintNameResolution;
   typographyRef(name: string, property: TypographyCssProperty): string;
 }>;
 
