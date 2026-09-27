@@ -15,8 +15,9 @@
 # 報告の出し方(見出し / `<行番号>:<名前>`)が別なので、読み取りも別になる。
 #
 # 1 ケースは `check <期待> <ケース名>` に、テストファイルの中身をヒアドキュメントで渡す。
-# ヘルパーを同じファイルに 2 つ置くのは、探す範囲がプロジェクト全体の `__tests__/` で、
-# ファイルを分けても判定が変わらないため。期待は 3 つ。
+# 本体の切り出し方を見るケースは、ヘルパーを同じファイルに 2 つ置く。探す範囲がプロジェクト
+# 全体の `__tests__/` で、ファイルを分けても判定が変わらないため。その探す範囲のほうは
+# `check_across` で、深さの違う別の `__tests__/` にもう 1 ファイルを置いて確かめる。期待は 3 つ。
 #
 # | 期待 | 意味 |
 # | --- | --- |
@@ -44,11 +45,13 @@ target="$work/src/sample/__tests__/sample.cases.test.tsx"
 mkdir -p "$(dirname "$target")"
 
 # 2 つの呼び方で検出器を走らせ、判定が揃えばそれを、食い違えば `split` を返す。
+#
+# $1 検査するファイル
 verdict() {
-  local output status by_file by_lines
-  output="$(python3 "$detector" "$target")" && status=0 || status=$?
+  local checked="$1" output status by_file by_lines
+  output="$(python3 "$detector" "$checked")" && status=0 || status=$?
   by_file="$(decide "$output" "$status" '^本体が同じテストヘルパーが')"
-  output="$(python3 "$detector" --lines "$target")" && status=0 || status=$?
+  output="$(python3 "$detector" --lines "$checked")" && status=0 || status=$?
   by_lines="$(decide "$output" "$status" '^[0-9]+:')"
   if [ "$by_file" = "$by_lines" ]; then
     echo "$by_file"
@@ -64,7 +67,50 @@ verdict() {
 check() {
   local expected="$1" label="$2"
   cat >"$target"
-  report "$expected" "$(normalize_miss "$expected" "$(verdict)")" "$label"
+  report "$expected" "$(normalize_miss "$expected" "$(verdict "$target")")" "$label"
+}
+
+# 深さの違う 2 つの `__tests__/`。`src` 直下 1 段目と、実際の `__tests__/` と同じくらい深い位置
+shallow="$target"
+deep="$work/src/features/editor/features/canvas/__tests__/canvas.cases.test.tsx"
+
+# 検査するファイルと相方を置いて判定し、判定のあとで両方を消す(後ろのケースへ残さない)。
+# 標準入力は検査するファイルの中身。
+#
+# $1 検査するファイル
+# $2 相方
+# $3 相方の中身
+verdict_across() {
+  local checked="$1" mate="$2" mate_source="$3" decision
+  mkdir -p "$(dirname "$checked")" "$(dirname "$mate")"
+  cat >"$checked"
+  printf '%s\n' "$mate_source" >"$mate"
+  decision="$(verdict "$checked")"
+  rm -f "$checked" "$mate"
+  echo "$decision"
+}
+
+# 深さの違う別の `__tests__/` に相方を置いて、1 ケースを判定する。標準入力は検査する
+# ファイルの中身で、`check` と同じく扱う。
+#
+# 検査するファイルを浅い側に置く向きと深い側に置く向きの両方で判定し、食い違えば `split`
+# にする。片方の向きだけだと、探す範囲を検査するファイルの位置から決め打ちする退行
+# (`target.parent.parent` など)が配置の偶然で `src` と一致して通る。`check-added-cases.sh` の
+# 相方はどちらも 1 段目なので、`src/*/__tests__` へ狭める退行もここでしか捕まらない。
+#
+# $1 期待
+# $2 ケース名
+# $3 相方の中身
+check_across() {
+  local expected="$1" label="$2" mate_source="$3" source by_shallow by_deep decision
+  source="$(cat)"
+  by_shallow="$(verdict_across "$shallow" "$deep" "$mate_source" <<<"$source")"
+  by_deep="$(verdict_across "$deep" "$shallow" "$mate_source" <<<"$source")"
+  decision="$by_shallow"
+  if [ "$by_shallow" != "$by_deep" ]; then
+    decision="split(shallow=$by_shallow,deep=$by_deep)"
+  fi
+  report "$expected" "$(normalize_miss "$expected" "$decision")" "$label"
 }
 
 check pass "引数の型注釈だけが同じ関数を重複と読まない" <<'TS'
@@ -302,6 +348,15 @@ function renderB(props: Partial<Props> = {}) {
 }
 TS
 
+check deny "export の付いた宣言と付かない宣言で、本体が同じものを重複と読む" <<'TS'
+function renderPanelA() {
+  return render(<Panel mode="edit" title="layers" />);
+}
+export function renderPanelB() {
+  return render(<Panel mode="edit" title="layers" />);
+}
+TS
+
 check miss "先頭の桁から始まらない(入れ子の)宣言は、本体が同じでも見ない" <<'TS'
 test("入れ子", () => {
   function nestedA(): string[] {
@@ -319,6 +374,35 @@ function one() {
 }
 function first() {
   return 1;
+}
+TS
+
+check_across deny "深さの違う別の __tests__ フォルダにある、本体が同じヘルパーを重複と読む" "$(
+  cat <<'TS'
+function openedAt(path: string) {
+  return OpenedDocument.create({ path, document: sampleDocument() });
+}
+TS
+)" <<'TS'
+function openedAt(path: string) {
+  return OpenedDocument.create({ path, document: sampleDocument() });
+}
+TS
+
+# 守っているのはファイル 1 つを渡す形の絞り込み(`groups_for_file`)。`--lines` は出力の段でも
+# 検査するファイルで絞るので、`groups_for_file` の絞り込みを外すと両者が割れて NG になる。
+check_across pass "検査するファイルが絡まない重複は、別の __tests__ フォルダにあっても報告しない" "$(
+  cat <<'TS'
+function canvasSurfaceA() {
+  return screen.getByTestId("artboard-canvas-surface");
+}
+function canvasSurfaceB() {
+  return screen.getByTestId("artboard-canvas-surface");
+}
+TS
+)" <<'TS'
+function openedAt(path: string) {
+  return OpenedDocument.create({ path, document: sampleDocument() });
 }
 TS
 
