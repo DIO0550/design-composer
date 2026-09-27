@@ -55,6 +55,8 @@ function documentWithMixedErrors(): DesignDocument {
   });
 }
 
+// 見たいのは並びだけ。kind を並べて比べるのは、同じ位置（card の "1"）に出る宣言名と
+// binding のエラーの前後を見分けるため。
 test("エラーは部品ごとに props・子の行きがけ順・宣言名・binding・参照の順、続いて artboard の子・参照の順に並ぶ", () => {
   const errors = DesignDocument.collectErrors(documentWithMixedErrors());
 
