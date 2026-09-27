@@ -54,7 +54,7 @@ services に置かれたロジックの多くは、`rules/architecture.md` の 1
 
 | 起きたこと |
 |---|
-| `src/utils/PointerButton.ts` へ「Util とも言い難い」というレビューコメントが付いた。既存の類似形(`CommandKey` 13 消費側 / `ElementEx` 3 消費側)と `libs/` からの参照実績 0 件を根拠に utils 据え置きを回答したが、**返答が無いままマージされ、スレッドは未解決のまま残った**(pr-467#54) |
+| `src/utils/PointerButton`(現 `src/libs/dom-event/pointer-button/`)へ「Util とも言い難い」というレビューコメントが付いた。既存の類似形(`CommandKey` 13 消費側 / `ElementEx` 3 消費側)と `libs/` からの参照実績 0 件を根拠に utils 据え置きを回答したが、**返答が無いままマージされ、スレッドは未解決のまま残った**(pr-467#54) |
 
 - 実測を添えた回答をした時点で終わらせず、**応答が無いまま閉じるなら、未決着であること
   自体を Issue かこの判例へ残す。** 沈黙を「現状維持で合意した」と読み替えない
