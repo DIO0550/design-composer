@@ -1,6 +1,8 @@
 import { CssDeclaration } from "@/domains/dcmp/css-declaration";
 import { type CssDirection, CssDirections } from "@/domains/dcmp/css-direction";
 import type { Props } from "@/domains/dcmp/node";
+import { Size } from "@/domains/dcmp/size";
+import { Axes, type Axis } from "@/domains/unit/axis";
 import type { ValueOf } from "@/types/ValueOf";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
@@ -47,14 +49,34 @@ export const Layout = {
   /**
    * その配置モードが子を並べる向き。
    *
-   * コンパイルの出し分けとバリデーション（`free` の親の子は `fill` を書けない）は
-   * どちらもここを引く。
-   *
    * @param layout 向きを知りたい配置モード
    * @returns 子が並ぶ向き。`free` は子を並べないので `none`
    */
   direction(layout: Layout): Option<CssDirection> {
     return layout === Layouts.Free ? Option.none : Option.some(layout);
+  },
+
+  /**
+   * 子を並べない親の下で `fill` になっている軸（docs/03「サイズ指定の原則」。Figma と同じく
+   * `fill` は子を並べる親の下でだけ意味を持つ）。
+   *
+   * スキーマの `enabledWhen` で閉じられないのは、条件が**親の** prop だから（docs/03
+   * 「`enabledWhen` は単純な等値・不等値のみ」）。
+   *
+   * @param parentLayout その props を持つノードの親の配置モード
+   * @param props 見るノードの props（デフォルト解決済みでなくてよい）
+   * @returns `fill` になっている軸を width・height の順で。親が子を並べるときは空
+   */
+  collectFillAxesInFreeParent(
+    parentLayout: Layout,
+    props: Props,
+  ): readonly Axis[] {
+    if (Option.isSome(Layout.direction(parentLayout))) {
+      return [];
+    }
+    return Object.values(Axes).filter(
+      (axis) => Size.fromProps(props, axis)?.mode === "fill",
+    );
   },
 
   /**
