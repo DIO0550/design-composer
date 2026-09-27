@@ -5,7 +5,7 @@ import {
   pressPointer,
 } from "@/components/__tests__/pointer-gesture";
 import { dragRowNamed, rowOf } from "@/components/__tests__/row-drag";
-import { DropLineTestId } from "@/components/drop-line";
+import { DropLineTestId, ListOrientations } from "@/components/drop-line";
 import { renderRowList } from "./setup";
 
 test("行を1つ前の兄弟の上へ運ぶと同じ親の中の位置として伝わる", () => {
@@ -66,6 +66,17 @@ test("運んでいる間は落ちる先が示される", () => {
   enterPointer(rowOf(list, "body"));
 
   expect(screen.getAllByTestId(DropLineTestId)).toHaveLength(1);
+});
+
+test("運んでいる間の落ちる先は、縦に積む並びの線として引かれる", () => {
+  const { list } = renderRowList();
+
+  pressPointer(rowOf(list, "title"), { x: 0, y: 0 });
+  enterPointer(rowOf(list, "body"));
+
+  expect(
+    screen.getByTestId(DropLineTestId).getAttribute("data-orientation"),
+  ).toBe(ListOrientations.Vertical);
 });
 
 test("掴んだだけで動かしていない間は落ちる先が出ない", () => {
