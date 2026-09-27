@@ -12,6 +12,8 @@ import type { ReorderStep } from "@/features/editor/domains/reorder-step";
 export type EditActions = Readonly<{
   copy: () => void;
   paste: () => void;
+  /** 選んでいるノードの複製を直後へ挿し、複製を選ぶ。 */
+  duplicateSelected: () => void;
   undo: () => void;
   redo: () => void;
   /** 選んでいるものを、ノードならサブツリーごと・artboard なら 1 枚ごと消す。 */
@@ -34,7 +36,7 @@ export type EditActions = Readonly<{
  * 対象が無いときは状態側が「その操作は存在しない」と答える（各アクションの `none`）ので、
  * 押せるかどうかはここで判定しない。
  *
- * @returns コピー & ペースト・undo / redo・削除・並べ替え・座標の移動・名前の編集の開始・
+ * @returns コピー & ペースト・複製・undo / redo・削除・並べ替え・座標の移動・名前の編集の開始・
  *   グループ化・グループ解除
  */
 export function useEditActions(): EditActions {
@@ -43,6 +45,7 @@ export function useEditActions(): EditActions {
   return {
     copy: () => dispatch({ type: "copy_node" }),
     paste: () => dispatch({ type: "paste_node" }),
+    duplicateSelected: () => dispatch({ type: "duplicate_selected" }),
     undo: () => dispatch({ type: "undo" }),
     redo: () => dispatch({ type: "redo" }),
     removeSelected: () => dispatch({ type: "remove_selected" }),
