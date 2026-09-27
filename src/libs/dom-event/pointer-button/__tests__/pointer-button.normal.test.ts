@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { PointerButton, PointerButtons } from "../PointerButton";
+import { PointerButton, PointerButtons } from "../index";
 
 test("主ボタンで押された操作は主ボタンの押下として扱う", () => {
   expect(PointerButton.isPrimary({ button: PointerButtons.Primary })).toBe(

@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { CommandKey } from "../CommandKey";
+import { CommandKey } from "../index";
 
 test("⌘ が押されていればコマンドキーの押下として扱う", () => {
   expect(CommandKey.isHeld({ metaKey: true, ctrlKey: false })).toBe(true);

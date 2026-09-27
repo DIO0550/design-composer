@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import type { KeyName } from "../KeyName";
+import type { KeyName } from "../index";
 
 /*
  * 語彙を型で閉じたことを固定する（`rules/coding.md`「値の語彙を型で閉じる」）。

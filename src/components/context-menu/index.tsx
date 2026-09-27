@@ -10,9 +10,9 @@ import {
   useEffect,
   useRef,
 } from "react";
+import { KeyName, KeyNames } from "@/libs/dom-event";
 import type { ValueOf } from "@/types/ValueOf";
 import { ArrayEx } from "@/utils/ArrayEx";
-import { KeyName, KeyNames } from "@/utils/KeyName";
 import { Option } from "@/utils/Option";
 
 /**

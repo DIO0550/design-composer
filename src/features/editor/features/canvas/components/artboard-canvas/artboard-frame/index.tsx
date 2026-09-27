@@ -12,12 +12,10 @@ import type { ArtboardDragControl } from "@/features/editor/features/canvas/hook
 import type { NodeDragControl } from "@/features/editor/features/canvas/hooks/use-node-drag";
 import type { NodeResizeControl } from "@/features/editor/features/canvas/hooks/use-node-resize";
 import type { TextEditControl } from "@/features/editor/features/canvas/hooks/use-text-edit";
+import { CommandKey, KeyName, KeyNames, PointerButton } from "@/libs/dom-event";
 import { ArrayEx } from "@/utils/ArrayEx";
-import { CommandKey } from "@/utils/CommandKey";
 import { ElementEx } from "@/utils/ElementEx";
-import { KeyName, KeyNames } from "@/utils/KeyName";
 import { Option } from "@/utils/Option";
-import { PointerButton } from "@/utils/PointerButton";
 import { ArtboardLabel } from "../artboard-label";
 
 /**

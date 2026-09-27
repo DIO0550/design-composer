@@ -7,7 +7,7 @@ import {
   pressPointer,
   releasePointer,
 } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
-import { PointerButtons } from "@/utils/PointerButton";
+import { PointerButtons } from "@/libs/dom-event";
 import { renderCanvas } from "./setup";
 import { drawnApart, setupSiblings } from "./snap-siblings";
 

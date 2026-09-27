@@ -9,7 +9,7 @@ import {
   releaseSpace,
   wheel,
 } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
-import { PointerButtons } from "@/utils/PointerButton";
+import { PointerButtons } from "@/libs/dom-event";
 import { renderCanvas, selectionFromArtboards } from "./setup";
 
 /** artboard を 1 枚だけ持つドキュメントと選択の対。ズーム / パンは中身に依存しない。 */

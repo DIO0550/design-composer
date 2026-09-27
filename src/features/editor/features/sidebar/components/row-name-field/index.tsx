@@ -1,7 +1,7 @@
 import { type ReactElement, useCallback, useState } from "react";
 import { TypeGlyph } from "@/components/type-glyph";
 import type { SelectionKind } from "@/domains/session/selection";
-import { KeyNames } from "@/utils/KeyName";
+import { KeyNames } from "@/libs/dom-event";
 
 /** 編集を終えるキー（docs/06-ui.md「名前の変更」）。 */
 const CommitKey = KeyNames.Enter;

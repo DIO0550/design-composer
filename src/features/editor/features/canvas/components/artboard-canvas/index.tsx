@@ -23,10 +23,10 @@ import { useNodeResize } from "@/features/editor/features/canvas/hooks/use-node-
 import { useRangeSelect } from "@/features/editor/features/canvas/hooks/use-range-select";
 import { useSpaceHeld } from "@/features/editor/features/canvas/hooks/use-space-held";
 import { useTextEdit } from "@/features/editor/features/canvas/hooks/use-text-edit";
+import { PointerButton } from "@/libs/dom-event";
 import { DocumentHtml } from "@/services/document-html";
 import { ElementEx } from "@/utils/ElementEx";
 import { Option } from "@/utils/Option";
-import { PointerButton } from "@/utils/PointerButton";
 import { CanvasBody } from "./canvas-body";
 import { DropMarker } from "./drop-marker";
 import { DropPositionLabel } from "./drop-position-label";

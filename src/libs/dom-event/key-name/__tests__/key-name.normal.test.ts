@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { KeyName, KeyNames } from "../KeyName";
+import { KeyName, KeyNames } from "../index";
 
 test("待ち受けている綴りが押されたら、その並びに入っていると答える", () => {
   expect(
