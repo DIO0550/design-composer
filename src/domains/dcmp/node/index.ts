@@ -163,6 +163,17 @@ export type RefNode = Readonly<{
 /** ツリーに並ぶノード。プリミティブか部品インスタンスのどちらか。 */
 export type Node = PrimitiveNode | RefNode;
 
+/**
+ * プリミティブのノードと、それを直下に収めている親の props。
+ *
+ * 親の配置モード（`Layout`）ではなく props を持つのは、`layout` が `node` を import して
+ * いてここから `Layout` を import できないため。
+ */
+export type NestedPrimitive = Readonly<{
+  node: PrimitiveNode;
+  parentProps: Props;
+}>;
+
 /** ノードが JSON 上で持ちうるフィールド(docs/01-file-format.md)。 */
 const PrimitiveNodeFields = ["name", "type", "props", "children"] as const;
 const RefNodeFields = ["name", "ref", "overrides"] as const;
@@ -298,6 +309,32 @@ export const Node = {
       return [node];
     }
     return Node.children(node).flatMap(Node.collectRefNodes);
+  },
+
+  /**
+   * 自分と子孫のプリミティブを、直下に収めている親の props と対にして集める。
+   *
+   * 参照ノードは含めず、その中へも降りない。インスタンスの中身は部品の側にあり、そこは部品
+   * の定義として照らされる（検証が見るのは定義時点の props だけ）。
+   *
+   * @param node 走査の起点になるノード
+   * @param parentProps 起点のノードを直下に収めている親の props
+   * @returns プリミティブを深さ優先の行きがけ順で並べたもの。起点の親の props は
+   *   `parentProps`、それより下は直下の親のノードの props（持たなければ空）。型が未知の
+   *   プリミティブも含む
+   */
+  collectNestedPrimitives(
+    node: Node,
+    parentProps: Props,
+  ): readonly NestedPrimitive[] {
+    if (!Node.isPrimitive(node)) {
+      return [];
+    }
+    const ownProps = node.props ?? {};
+    const descendants = Node.children(node).flatMap((child) =>
+      Node.collectNestedPrimitives(child, ownProps),
+    );
+    return [{ node, parentProps }, ...descendants];
   },
 
   /**
