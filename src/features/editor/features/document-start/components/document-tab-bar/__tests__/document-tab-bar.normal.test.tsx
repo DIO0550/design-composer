@@ -1,8 +1,10 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
+import { dragRowNamed } from "@/components/__tests__/row-drag";
 import { openedAt } from "@/domains/__tests__/sample-document";
 import { OpenedDocuments } from "@/domains/session/opened-documents";
+import type { IndexMove } from "@/types/IndexMove";
 import { DocumentTabBar } from "../index";
 
 const FirstPath = "/work/login.dcmp";
@@ -11,14 +13,16 @@ const SecondPath = "/work/settings.dcmp";
 /**
  * 2 つ開いて 2 つ目を見ている帯を描く。
  *
- * @returns 押された先を記録する手続き
+ * @returns 押された先と、運ばれた移動を記録する並び
  */
 function renderTwoTabs(): Readonly<{
   selected: string[];
   closed: string[];
+  moves: IndexMove[];
 }> {
   const selected: string[] = [];
   const closed: string[] = [];
+  const moves: IndexMove[] = [];
   const opened = OpenedDocuments.open(
     OpenedDocuments.create(openedAt(FirstPath)),
     openedAt(SecondPath),
@@ -29,14 +33,14 @@ function renderTwoTabs(): Readonly<{
       opened={opened}
       onSelect={(path) => selected.push(path)}
       onClose={(path) => closed.push(path)}
-      onReorder={vi.fn()}
+      onReorder={(move) => moves.push(move)}
     />,
   );
 
-  return { selected, closed };
+  return { selected, closed, moves };
 }
 
-test("開いているファイルの名前が、開いた順に並ぶ", () => {
+test("開いているファイルの名前が、並び順に並ぶ", () => {
   renderTwoTabs();
 
   const names = screen
@@ -108,4 +112,15 @@ test("見ているタブだけが、見ている印を持つ", () => {
   expect(screen.getByTitle(FirstPath).getAttribute("aria-current")).toBe(
     "false",
   );
+});
+
+test("タブを掴んで別のタブの上で離すと、並びの位置での移動が伝わる", () => {
+  const { moves } = renderTwoTabs();
+
+  dragRowNamed(screen.getByRole("list"), {
+    from: "settings.dcmp",
+    to: "login.dcmp",
+  });
+
+  expect(moves).toStrictEqual([{ fromIndex: 1, toIndex: 0 }]);
 });

@@ -9,6 +9,7 @@ import { DocumentJson } from "@/libs/document-json";
 import { Option } from "@/utils/Option";
 import {
   closeTab,
+  dragTab,
   OtherPath,
   Path,
   renderEditorScreen,
@@ -326,6 +327,75 @@ test("別のタブへ移って戻っても、選んでいたものは選ばれ�
 
   await observer.dropFiles([OtherPath]);
   await selectTab(Path);
+
+  expect(
+    within(
+      screen.getByRole("complementary", { name: "プロパティパネル" }),
+    ).getByText("home-title"),
+  ).toBeDefined();
+});
+
+test("タブを掴んで別のタブの上で離すと、タブの並びが変わる", async () => {
+  const observer = renderEditorScreen(
+    {
+      [Path]: DocumentJson.serialize(SampleDocument),
+      [OtherPath]: artboardContent("settings"),
+    },
+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
+  );
+  await startOpen(observer);
+  await observer.dropFiles([OtherPath]);
+
+  await dragTab({ from: "settings.dcmp", to: "login.dcmp" });
+
+  const titles = within(tabBar())
+    .getAllByRole("button")
+    .map((button) => button.getAttribute("title"))
+    .filter((title) => title !== null);
+  expect(titles).toStrictEqual([OtherPath, Path]);
+});
+
+test("見ていないタブを運んでも、見えている編集画面は変わらない", async () => {
+  const observer = renderEditorScreen(
+    {
+      [Path]: DocumentJson.serialize(SampleDocument),
+      [OtherPath]: artboardContent("settings"),
+    },
+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
+  );
+  await startOpen(observer);
+  await observer.dropFiles([OtherPath]);
+
+  await dragTab({ from: "login.dcmp", to: "settings.dcmp" });
+
+  const topBar = screen.getByRole("banner");
+  expect(
+    within(topBar).getByTitle(OtherPath).textContent?.includes("settings.dcmp"),
+  ).toBe(true);
+});
+
+/*
+ * 並べ替えで編集画面の並びも入れ替わる。`key` がパスなので作り直されないはずで、
+ * 作り直されると選択も undo 履歴もズームも消える。
+ */
+test("タブを並べ替えても、選んでいたものは選ばれたまま", async () => {
+  const observer = renderEditorScreen(
+    {
+      [Path]: DocumentJson.serialize(SampleDocument),
+      [OtherPath]: artboardContent("settings"),
+    },
+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
+  );
+  await startOpen(observer);
+  await observer.dropFiles([OtherPath]);
+  await selectTab(Path);
+  await userEvent.click(
+    within(screen.getByRole("region", { name: "ツリー" })).getByRole("button", {
+      name: "home-title",
+    }),
+  );
+
+  await dragTab({ from: "login.dcmp", to: "settings.dcmp" });
 
   expect(
     within(
