@@ -29,6 +29,7 @@ function renderTwoTabs(): Readonly<{
       opened={opened}
       onSelect={(path) => selected.push(path)}
       onClose={(path) => closed.push(path)}
+      onReorder={vi.fn()}
     />,
   );
 
@@ -89,6 +90,7 @@ test("1 つだけ開いているときも、閉じるボタンは出る", () => 
       opened={OpenedDocuments.create(openedAt(FirstPath))}
       onSelect={vi.fn()}
       onClose={vi.fn()}
+      onReorder={vi.fn()}
     />,
   );
 
