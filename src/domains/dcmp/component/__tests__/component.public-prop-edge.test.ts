@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { Option } from "@/utils/Option";
-import { ComponentSet } from "../index";
+import { Component, ComponentSet } from "../index";
 
 test("存在しない部品の公開 prop は解決できない", () => {
   const target = ComponentSet.publicPropTarget(
@@ -94,4 +94,28 @@ test("参照が循環していても解決は停止し、解決できないも�
   });
 
   expect(Option.isSome(target)).toBe(false);
+});
+
+test("binding 先の無い上書きと有る上書きが同時にあるとき、有る方だけが反映され、ほかの子は定義値のまま", () => {
+  const component: Component = {
+    type: "Box",
+    children: [
+      { name: "title", type: "Text", props: { content: "題" } },
+      { name: "body", type: "Text", props: { content: "本文" } },
+    ],
+    publicProps: {
+      heading: { node: "title", prop: "content" },
+      missing: { node: "ghost", prop: "content" },
+    },
+  };
+
+  const overridden = Component.applyOverrides(component, "card", {
+    heading: "新",
+    missing: "消える",
+  });
+
+  expect(overridden.children).toEqual([
+    { name: "title", type: "Text", props: { content: "新" } },
+    { name: "body", type: "Text", props: { content: "本文" } },
+  ]);
 });

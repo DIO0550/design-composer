@@ -6,6 +6,7 @@ import {
   type PropValue,
   type RefNode,
 } from "@/domains/dcmp/node";
+import { NodeTree } from "@/domains/dcmp/node-tree";
 import {
   PrimitiveSchema,
   type PropDefinition,
@@ -123,31 +124,6 @@ export const ComponentAsset = {
   },
 } as const;
 
-/**
- * 名前の一致する 1 ノードだけを差し替えた木を返す。見つからなければそのまま。
- *
- * @param nodes 走査する木の根の並び
- * @param name 差し替える対象のノード名
- * @param update 見つかったノードを差し替える手続き
- * @returns 対象だけが差し替わった新しい木。見つからなければ元と同じ内容
- */
-function updateNodeByName(
-  nodes: readonly Node[],
-  name: string,
-  update: (node: Node) => Node,
-): readonly Node[] {
-  return nodes.map((node) => {
-    if (node.name === name) {
-      return update(node);
-    }
-    const children = Node.children(node);
-    if (children.length === 0) {
-      return node;
-    }
-    return { ...node, children: updateNodeByName(children, name, update) };
-  });
-}
-
 type ResolvedOverride = readonly [PublicPropBinding, PropValue];
 
 /**
@@ -167,6 +143,29 @@ function resolveOverrides(
       ? [[binding.value, value] as ResolvedOverride]
       : [];
   });
+}
+
+/**
+ * 上書き 1 件を、binding 先の内部ノードの prop へ書き込む。
+ *
+ * @param tree 部品の内部ノードの並び
+ * @param override 書き込む binding と値の対
+ * @returns binding 先を書き換えた並び。書き込む相手は `NodeTree.find` と同じ深さ優先の
+ *   行きがけ順で先に当たる 1 ノード（`Component.findNode` と同じ相手）。binding 先が無ければ
+ *   `tree` のまま
+ */
+function applyOverrideTo(
+  tree: NodeTree,
+  [binding, value]: ResolvedOverride,
+): NodeTree {
+  const replaced = Option.flatMap(NodeTree.find(tree, binding.node), (target) =>
+    NodeTree.replaceByName(
+      tree,
+      binding.node,
+      Node.applyPropEdit(target, PropEdit.set([binding.prop], value)),
+    ),
+  );
+  return Option.unwrapOr(replaced, tree);
 }
 
 /** 部品定義の判定・展開・binding の解決と、JSON 表現との相互変換。 */
@@ -282,8 +281,9 @@ export const Component = {
    * @param overrides インスタンスが設定している上書き。キーは公開 prop 名
    * @returns binding 先の prop を上書きの値に差し替えた部品定義。binding 先が参照ノードなら
    *   その `overrides` に書き込む。binding 先のノードが無ければその上書きは捨て、名前が重複した
-   *   不正なドキュメントでは同名のノードすべてに書き込む（書き込んだノードの子孫は除く）。
-   *   `publicProps` が無ければ `component` そのもの
+   *   不正なドキュメントでは `findNode` と同じ 1 ノード（部品名と同じならルート、それ以外は
+   *   深さ優先の行きがけ順で先に当たる内部ノード）にだけ書き込む。`publicProps` が無ければ
+   *   `component` そのもの
    */
   applyOverrides(
     component: Component,
@@ -310,15 +310,11 @@ export const Component = {
       children:
         toChildren.length === 0
           ? component.children
-          : toChildren.reduce(
-              (children, [binding, value]) =>
-                updateNodeByName(children, binding.node, (target) =>
-                  Node.applyPropEdit(
-                    target,
-                    PropEdit.set([binding.prop], value),
-                  ),
-                ),
-              component.children ?? [],
+          : NodeTree.nodes(
+              toChildren.reduce(
+                applyOverrideTo,
+                NodeTree.create(component.children ?? []),
+              ),
             ),
     };
   },
