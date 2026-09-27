@@ -28,6 +28,11 @@ type OperationPresentation = Omit<
  * `Context menu`）。出すのは macOS の綴りだけで、動いている OS には合わせていない。
  */
 const OperationPresentations = {
+  duplicate: {
+    label: "Duplicate",
+    shortcut: Option.some("⌘D"),
+    tone: ContextMenuTones.Normal,
+  },
   copy: {
     label: "Copy",
     shortcut: Option.some("⌘C"),
@@ -97,6 +102,7 @@ function operationHandlers(
   node: NodeActions,
 ): Readonly<Record<EditOperation, () => void>> {
   return {
+    duplicate: edit.duplicateSelected,
     copy: edit.copy,
     paste: edit.paste,
     rename: edit.startRenaming,

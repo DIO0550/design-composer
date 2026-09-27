@@ -74,6 +74,18 @@ export type UngroupedBox = Readonly<{
   freedNames: readonly string[];
 }>;
 
+/**
+ * ノードの複製を元の直後へ挿した結果（`DesignDocument.insertCopyAfter`）。
+ *
+ * 呼び出し側は付け替えた名前も挿した位置も知らないので、複製を選び直せるよう
+ * `UngroupedBox` と同じく対で返す。
+ */
+export type InsertedCopy = Readonly<{
+  document: DesignDocument;
+  /** 挿した複製の根に付いた名前。子孫の名前も同じ規則で付け替わっている。 */
+  copyName: string;
+}>;
+
 /*
  * 以下の関数は「どの artboard を相手にするか」を選ぶためのもの。
  * 並びの探索・編集そのものは `NodeTree` が、名前の規則は `DocumentNames` が持っており、
@@ -465,6 +477,20 @@ function documentNamesOf(document: DesignDocument): DocumentNames {
 }
 
 /**
+ * ノードの複製を、ドキュメントの名前と衝突しない名前へ付け替えたもの。
+ *
+ * @param document 名前の衝突を見る相手のドキュメント
+ * @param node 複製元のノード
+ * @returns 自分と子孫の名前を `DocumentNames.renameSubtree` で付け替えたノード
+ */
+function renamedCopy(document: DesignDocument, node: Node): Node {
+  const [renamed] = DocumentNames.renameSubtree(documentNamesOf(document), [
+    node,
+  ]);
+  return renamed;
+}
+
+/**
  * 新しい名前を単一名前空間へ加えられないときの理由。
  *
  * 加える側（`createComponent`）と、加えられるかだけを知りたい側
@@ -694,10 +720,40 @@ export const DesignDocument = {
     at: ChildPosition,
     node: Node,
   ): Result<DesignDocument, DesignDocumentEditError> {
-    const [renamed] = DocumentNames.renameSubtree(documentNamesOf(document), [
-      node,
-    ]);
-    return DesignDocument.insertNode(document, at, renamed);
+    return DesignDocument.insertNode(document, at, renamedCopy(document, node));
+  },
+
+  /**
+   * 名前で指したノードの複製を、同じ親の中の直後へ挿す（docs/06-ui.md「編集操作の一覧」の
+   * 複製）。
+   *
+   * @param document 挿入先のドキュメント
+   * @param name 複製元のノードの名前。自分と子孫の名前は `insertNodeCopy` と同じ規則で
+   *   付け替える
+   * @returns 複製を挿したドキュメントと、複製の根に付いた名前。artboard の名前・部品定義の
+   *   中のノードの名前・無い名前は `node-not-found`
+   */
+  insertCopyAfter(
+    document: DesignDocument,
+    name: string,
+  ): Result<InsertedCopy, DesignDocumentEditError> {
+    const source = Option.flatMap(
+      DesignDocument.findNode(document, name),
+      (node) =>
+        Option.map(DesignDocument.findChildPosition(document, name), (at) => ({
+          node,
+          at,
+        })),
+    );
+    if (!Option.isSome(source)) {
+      return Result.err({ kind: "node-not-found", name });
+    }
+    const { node, at } = source.value;
+    const copy = renamedCopy(document, node);
+    return Result.map(
+      DesignDocument.insertNode(document, { ...at, index: at.index + 1 }, copy),
+      (inserted) => ({ document: inserted, copyName: copy.name }),
+    );
   },
 
   /**

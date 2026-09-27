@@ -74,6 +74,7 @@ export type EditorAction =
   | Readonly<{ type: "ungroup_selected" }>
   | Readonly<{ type: "copy_node" }>
   | Readonly<{ type: "paste_node" }>
+  | Readonly<{ type: "duplicate_selected" }>
   | Readonly<{
       type: "apply_prop_edit";
       edit: PropEdit;
@@ -271,6 +272,13 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
        * （クリップボードはドキュメントを変えない）。
        */
       return Option.unwrapOr(EditorState.pasteNode(state), state);
+    case "duplicate_selected":
+      /*
+       * 1 つだけ選んでいないとき・選んでいるのが artboard のとき・ファイルが不正な間は
+       * 木は変わらない（EditorState.duplicateSelected の `none`）。到達しうる理由は
+       * copy_node と同じ。
+       */
+      return Option.unwrapOr(EditorState.duplicateSelected(state), state);
     case "apply_prop_edit":
       // 選択が無ければ編集は存在しない（EditorState.applyPropEdit の `none`）。
       return Option.unwrapOr(

@@ -96,6 +96,19 @@ test("ノードのメニューの Copy のあと空き領域のメニューの P
   ]);
 });
 
+test("ノードのメニューの Duplicate を押すと、そのノードの直後に複製が並ぶ", async () => {
+  await renderOpenedDocument();
+
+  rightClick(drawn("home-title"));
+  await userEvent.click(menuRow("Duplicate"));
+
+  expect(rowNames(tree())).toEqual([
+    "home-title",
+    "home-title-2",
+    "home-login",
+  ]);
+});
+
 test("メニューの Bring forward を押すと、ツリーの並びが入れ替わる", async () => {
   await renderOpenedDocument();
 
@@ -215,6 +228,14 @@ test("行にはキーボードの割り当てが併記される", async () => {
   expect(menuRow("Copy").textContent).toContain("⌘C");
 });
 
+test("複製の行には ⌘D が併記される", async () => {
+  await renderOpenedDocument();
+
+  rightClick(drawn("home-title"));
+
+  expect(menuRow("Duplicate").textContent).toContain("⌘D");
+});
+
 test("別の場所を右クリックすると、メニューがそこへ開き直す", async () => {
   await renderOpenedDocument();
   rightClick(drawn("home-title"));
@@ -237,6 +258,6 @@ test("下端の近くでノードを右クリックすると、並ぶ行のぶ�
   // 窓の高さは happy-dom の既定（768）
   rightClick(drawn("home-title"), { x: 120, y: 760 });
 
-  // ノードのメニューは 5 組 9 行 = 6 + 26 × 9 + 9 × 4 + 6 = 282px
-  expect(contextMenu().style.top).toBe("478px");
+  // ノードのメニューは 5 組 10 行 = 6 + 26 × 10 + 9 × 4 + 6 = 308px
+  expect(contextMenu().style.top).toBe("452px");
 });
