@@ -595,6 +595,21 @@ export const TokenSet = {
   },
 
   /**
+   * `TokenSet.isValidName` を満たさない名前のトークン（docs/04-tokens.md「命名規則」）。
+   *
+   * @param tokens 名前を確かめるトークン一式
+   * @returns 満たさない名前を種別と名前の対で、種別は `TokenSet.kinds` の順、種別の中は
+   *   `TokenSet.names` の順に並べたもの
+   */
+  collectInvalidNameRefs(tokens: TokenSet): readonly TokenRef[] {
+    return TokenSet.kinds().flatMap((kind) =>
+      TokenSet.names(tokens, kind)
+        .filter((name) => !TokenSet.isValidName(name))
+        .map((name): TokenRef => ({ kind, name })),
+    );
+  },
+
+  /**
    * その種別へ足しても衝突しない名前。衝突する場合は連番を付ける。衝突は同じ種別の名前と、
    * 塗り用の 2 種別なら相手の種別の名前とで見る（`TokenSet.add` が弾く範囲と同じ）。
    *
