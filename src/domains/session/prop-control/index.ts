@@ -232,11 +232,12 @@ function paintColorOf(
   effective: Option<PropValue>,
   tokens: TokenSet,
 ): Option<ColorToken> {
-  return Option.flatMap(effective, (name) =>
-    Option.contains(TokenSet.findPaintKind(tokens, String(name)), "colors")
-      ? TokenSet.findColor(tokens, String(name))
-      : Option.none,
-  );
+  return Option.flatMap(effective, (name) => {
+    const resolution = TokenSet.resolvePaintName(tokens, String(name));
+    const isColor =
+      resolution.kind === "owned" && resolution.tokenKind === "colors";
+    return isColor ? TokenSet.findColor(tokens, String(name)) : Option.none;
+  });
 }
 
 /**

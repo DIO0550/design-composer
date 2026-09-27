@@ -83,6 +83,18 @@ export const PaintTokenKinds = [
 export type PaintTokenKinds = typeof PaintTokenKinds;
 
 /**
+ * 塗りの名前がどの種別のトークンへ解決するか（docs/03-schema.md「塗り」）。
+ *
+ * 「どちらにも無い」と「両方にある」を 1 つの不在で表さない。出力の扱いが別（前者は
+ * colors の var を出し、後者は宣言を出さない / docs/03-schema.md「塗り」）で、
+ * 区別が消えると呼び出し側で作り直すことになる。
+ */
+export type PaintNameResolution =
+  | Readonly<{ kind: "owned"; tokenKind: PaintTokenKinds[number] }>
+  | Readonly<{ kind: "conflicted" }>
+  | Readonly<{ kind: "dangling" }>;
+
+/**
  * 種別ごとの値の形式(docs/04-tokens.md「値の形式」)。
  * `TokenSet` が持つ入れ物から引くことで、種別と値の対応を二重管理しない。
  */
@@ -619,23 +631,25 @@ export const TokenSet = {
   },
 
   /**
-   * 塗り用の 2 種別のうち、その名前を持っている種別（docs/03「塗り」: どちらを指しているか
-   * は、その名前を持っている種別で決まる）。
+   * 塗りの名前がどの種別へ解決するか（docs/03「塗り」: どちらを指しているかは、その名前を
+   * 持っている種別で決まる）。
    *
    * @param tokens 名前を探すトークン一式
    * @param name 探す名前
-   * @returns その名前を持つ種別。どちらにも無いときと、両方にあって決まらないとき
-   *   （docs/04「命名規則」が禁じている状態）は `none`
+   * @returns 1 つの種別だけが持っていれば `owned`。両方が持っていれば `conflicted`
+   *   （docs/04「命名規則」が禁じている状態）。どちらも持っていなければ `dangling`
    */
-  findPaintKind(
-    tokens: TokenSet,
-    name: string,
-  ): Option<PaintTokenKinds[number]> {
+  resolvePaintName(tokens: TokenSet, name: string): PaintNameResolution {
     const owners = PaintTokenKinds.filter((kind) =>
       TokenSet.has(tokens, kind, name),
     );
     const [owner] = owners;
-    return owners.length === 1 ? Option.some(owner) : Option.none;
+    if (owner === undefined) {
+      return { kind: "dangling" };
+    }
+    return owners.length === 1
+      ? { kind: "owned", tokenKind: owner }
+      : { kind: "conflicted" };
   },
 
   /**
