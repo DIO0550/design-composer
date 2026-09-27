@@ -1,6 +1,8 @@
 import type { OpenedDocument } from "@/domains/session/opened-document";
-import { ArrayEx } from "@/utils/ArrayEx";
+import type { IndexMove } from "@/types/IndexMove";
+import { ArrayEx, type IndexOutOfRange } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
+import { Result } from "@/utils/Result";
 
 /**
  * 同時に開いているドキュメントの並びと、今見ているもの
@@ -19,6 +21,24 @@ export type OpenedDocuments = Readonly<{
   after: readonly OpenedDocument[];
 }>;
 
+/**
+ * 並びを、その位置のドキュメントを見ている形に切り分ける。
+ *
+ * @param documents タブ列に並ぶ順のドキュメント
+ * @param index 見ているドキュメントの位置。並びの中を指していること
+ * @returns その位置より前・その位置・後ろに分けた並び
+ */
+function focusAt(
+  documents: readonly OpenedDocument[],
+  index: number,
+): OpenedDocuments {
+  return {
+    before: documents.slice(0, index),
+    active: documents[index],
+    after: documents.slice(index + 1),
+  };
+}
+
 export const OpenedDocuments = {
   /**
    * 1 つだけ開いた状態。前にも後ろにも並びは無い。
@@ -34,7 +54,7 @@ export const OpenedDocuments = {
    * 開いているドキュメントを並び順に読む。
    *
    * @param opened 読む相手
-   * @returns 開いた順に並んだドキュメント。1 件以上ある
+   * @returns タブ列に並ぶ順のドキュメント。1 件以上ある
    */
   documents(opened: OpenedDocuments): readonly OpenedDocument[] {
     return [...opened.before, opened.active, ...opened.after];
@@ -76,11 +96,31 @@ export const OpenedDocuments = {
     if (!ArrayEx.isIndexInRange(documents, index)) {
       return opened;
     }
-    return {
-      before: documents.slice(0, index),
-      active: documents[index],
-      after: documents.slice(index + 1),
-    };
+    return focusAt(documents, index);
+  },
+
+  /**
+   * 1 つを並びの別の位置へ移す。見ている先は変わらない。
+   *
+   * @param opened 並べ替える相手
+   * @param move 動かすドキュメントの今の位置と、動かした後に来る位置
+   * @returns 並べ替えた並び。どちらかの位置が並びの外なら `err`（どちらを報告するかは
+   *   `ArrayEx.moveWithin`）
+   */
+  reorder(
+    opened: OpenedDocuments,
+    move: IndexMove,
+  ): Result<OpenedDocuments, IndexOutOfRange> {
+    return Result.map(
+      ArrayEx.moveWithin(
+        OpenedDocuments.documents(opened),
+        move.fromIndex,
+        move.toIndex,
+      ),
+      // 見ている先はパスで引き直す。位置を引く規則を `activate` と 1 つにするため
+      (documents) =>
+        OpenedDocuments.activate(focusAt(documents, 0), opened.active.path),
+    );
   },
 
   /**
