@@ -13,6 +13,7 @@ export const ListOrientations = {
   Horizontal: "horizontal",
 } as const;
 
+/** 線を引く並びの向き。 */
 export type ListOrientation = ValueOf<typeof ListOrientations>;
 
 /** 並びの向きと落ちる側から決まる、線を置く縁。 */
