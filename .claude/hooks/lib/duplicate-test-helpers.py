@@ -10,6 +10,18 @@
 だけのものは見ない。偽陽性で止まるフックはエスケープハッチを足す運用を招き、全体が
 信用されなくなるため（`.claude/hooks/README.md`「例外(エスケープハッチ)」）。
 
+本体として比べるのは、引数リストと戻り値の型注釈を読み飛ばした後ろの `{…}`（アロー関数で
+`=>` の後ろが `{` でなければ、その式）。引数や戻り値の型だけが同じヘルパーを重複と読まない
+ため。
+
+意図した取りこぼし（判定表 `duplicate-test-helpers-cases.sh` の `miss`）:
+- 先頭の桁から始まらない宣言（入れ子の関数・メソッド）は見ない
+- 空白を潰して `MIN_BODY_CHARS` 未満の本体は見ない
+- 文字列・コメントの中の括弧と `;` も、括弧・文の区切りとして数える（型注釈の中の文字列
+  リテラル型だけは読み飛ばす）
+- オーバーロードのシグネチャ（本体を持たない `function f(x: string): string;`）は、後ろに
+  ある実装の本体を自分の本体と読む
+
 使い方:
     duplicate-test-helpers.py <検査するファイル>   # そのファイルが絡む重複だけ（プロジェクト全体から探す。人向けの報告）
     duplicate-test-helpers.py --all [ルート]        # 全体（既定のルートは src。人向けの報告）
@@ -32,6 +44,22 @@ DECLARATION = re.compile(
 
 # 一字一句の比較にならないほど短い本体は見ない（`return 0;` 等の偶然の一致を避ける）
 MIN_BODY_CHARS = 20
+
+# 型注釈の中の括弧。式の中では `<` `>` が比較演算子にもなるので、式を読むときは `([{` だけを数える
+TYPE_BRACKETS = "([{<"
+EXPRESSION_BRACKETS = "([{"
+CLOSING_BRACKET = {"(": ")", "[": "]", "{": "}", "<": ">"}
+
+# 戻り値の型注釈を読むときの字句。`=>` を 1 つの字句にして、本体の矢印か型の続きかを見分ける
+TYPE_TOKEN = re.compile(r"=>|[A-Za-z_$][\w$.]*|\"[^\"\n]*\"|'[^'\n]*'|`[^`]*`|\s+|.", re.S)
+
+# 直後に型が続くことを示す字句。これらの後ろの `{` は本体ではなく型リテラル。最上位に `,` は
+# 現れず、`typeof` `readonly` などの後ろに `{` は来ないので載せない
+TYPE_CONTINUATIONS = frozenset({":", "|", "&", "?", "=>", "extends", "keyof", "is"})
+
+# 関数型の引数リストに見える `(…)` の中身（空か、引数名の後ろに `:` `?` `,` が続くか、残余引数）。
+# `(() => void)` や `(A | B)` のような括弧で囲んだ型と区別する
+FUNCTION_TYPE_PARAMS = re.compile(r"\s*(?:\)|\.\.\.|[A-Za-z_$][\w$]*\s*[:?,)])")
 
 
 def body_after(source: str, start: int) -> str:
@@ -79,6 +107,117 @@ def params_end(source: str, after_open: int) -> int:
     return i
 
 
+def group_end(source: str, open_at: int, brackets: str) -> int:
+    """`open_at` の開き括弧に対応する閉じ括弧の直後を返す。
+
+    `brackets` に含まれる括弧は種類を問わず入れ子を数える。`=>` の `>` は閉じ括弧に
+    数えない（`Array<() => void>` で数えると、`=>` の `>` で閉じたと読み、型の途中で止まる）。
+
+    @param brackets 数える開き括弧の並び（`TYPE_BRACKETS` か `EXPRESSION_BRACKETS`）
+    @returns 閉じ括弧の直後の位置。閉じていなければ末尾
+    """
+    closers = {CLOSING_BRACKET[b] for b in brackets}
+    depth = 0
+    for i in range(open_at, len(source)):
+        ch = source[i]
+        is_arrow_head = ch == ">" and source[i - 1] == "="
+        closes = ch in closers and not is_arrow_head
+        if ch in brackets:
+            depth += 1
+        elif closes:
+            depth -= 1
+        if depth == 0:
+            return i + 1
+    return len(source)
+
+
+def return_type_end(source: str, after_params: int) -> int:
+    """引数リストの直後から、戻り値の型注釈を読み飛ばした位置を返す。
+
+    型が来るべき位置（`:` `|` `=>` `extends` などの直後）の `{` は型リテラル、型が完結した後の
+    `{` は関数宣言の本体と読む。型が完結した後の `=>` はアロー関数の本体の矢印と読む
+    （関数型の引数 `(…)` の直後の `=>` は型の続き）。
+
+    @param after_params 引数リストの `)` の直後（`params_end` の戻り値）
+    @returns 本体の `{`（関数宣言）か `=>`（アロー関数）の位置。型注釈が無ければ `after_params`、
+        型注釈が閉じなければ末尾
+    """
+    annotation = re.compile(r"\s*:").match(source, after_params)
+    if not annotation:
+        return after_params
+    expects_type = True
+    after_function_params = False
+    i = annotation.end()
+    while i < len(source):
+        ch = source[i]
+        starts_body = ch == "{" and not expects_type
+        if starts_body:
+            return i
+        if ch in TYPE_BRACKETS:
+            opens_function_type = ch == "(" and expects_type
+            after_function_params = opens_function_type and bool(FUNCTION_TYPE_PARAMS.match(source, i + 1))
+            expects_type = False
+            i = group_end(source, i, TYPE_BRACKETS)
+            continue
+        token = TYPE_TOKEN.match(source, i).group(0)
+        is_body_arrow = token == "=>" and not (expects_type or after_function_params)
+        if is_body_arrow:
+            return i
+        if not token.isspace():
+            expects_type = token in TYPE_CONTINUATIONS
+            after_function_params = False
+        i += len(token)
+    return len(source)
+
+
+def expression_end(source: str, start: int) -> int:
+    """式本体の終わり（最上位の `;` か、次の行が空白で始まらない改行）の位置を返す。"""
+    i = start
+    while i < len(source):
+        ch = source[i]
+        if ch in EXPRESSION_BRACKETS:
+            i = group_end(source, i, EXPRESSION_BRACKETS)
+            continue
+        ends_line = ch == "\n" and not source.startswith((" ", "\t"), i + 1)
+        if ch == ";" or ends_line:
+            return i
+        i += 1
+    return len(source)
+
+
+def arrow_body(source: str, start: int) -> str:
+    """`start` の直後にある `=>` の後ろの本体を返す。
+
+    `{` で始まればその `{…}`、そうでなければ式本体としてその式を返す。`=>` や `{` を
+    後ろへ探しにいくと、後ろにある別の宣言の本体を自分の本体と読む。
+
+    @param start 本体の `=>` か、その手前の空白の位置（`return_type_end` の戻り値）
+    @returns 本体。`start` の直後が `=>` でなければ（`const x = (a + b) * c;` のような
+        括弧で始まるだけの値）空文字
+    """
+    arrow = re.compile(r"\s*=>").match(source, start)
+    if not arrow:
+        return ""
+    body_at = re.compile(r"\s*").match(source, arrow.end()).end()
+    if source.startswith("{", body_at):
+        return body_after(source, body_at)
+    return source[body_at : expression_end(source, body_at)]
+
+
+def body_of(source: str, declaration: re.Match[str]) -> str:
+    """引数リストと戻り値の型注釈を読み飛ばした後ろにある、宣言の本体を返す。
+
+    @param declaration `DECLARATION` に当たった宣言の始まり
+    @returns 本体。見つからなければ空文字
+    """
+    is_arrow = declaration.group(2) is not None
+    after_params = params_end(source, declaration.end())
+    body_start = return_type_end(source, after_params)
+    if is_arrow:
+        return arrow_body(source, body_start)
+    return body_after(source, body_start)
+
+
 def helpers_in(path: Path) -> list[tuple[str, str, int]]:
     """そのファイルが持つ（名前, 空白を潰した本体, 宣言の行番号）の一覧。行番号は 1 始まり。"""
     try:
@@ -88,11 +227,7 @@ def helpers_in(path: Path) -> list[tuple[str, str, int]]:
     found = []
     for match in DECLARATION.finditer(source):
         name = match.group(1) or match.group(2)
-        # 本体を探す起点は引数リストが閉じたところから。そのままだと、引数の型注釈に
-        # 現れる `{`(例: `Readonly<{ x: number }>`)を本体の開始と読み違える
-        body = re.sub(
-            r"\s+", " ", body_after(source, params_end(source, match.end()))
-        ).strip()
+        body = re.sub(r"\s+", " ", body_of(source, match)).strip()
         if len(body) >= MIN_BODY_CHARS:
             line = source.count("\n", 0, match.start()) + 1
             found.append((name, body, line))
