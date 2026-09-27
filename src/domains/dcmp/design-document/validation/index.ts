@@ -5,7 +5,11 @@ import {
   type PublicPropBinding,
 } from "@/domains/dcmp/component";
 import { ComponentBinding } from "@/domains/dcmp/component-binding";
-import { DocumentNames } from "@/domains/dcmp/document-names";
+import {
+  DocumentNames,
+  type InvalidName,
+  type NamePlace,
+} from "@/domains/dcmp/document-names";
 import { Layout } from "@/domains/dcmp/layout";
 import { Node, Props, type RefNode } from "@/domains/dcmp/node";
 import type { PropValidationError } from "@/domains/dcmp/primitive-schema";
@@ -487,81 +491,69 @@ function collectDuplicateNameErrors(
 }
 
 /**
- * 名前1つを検証する。
- * 名前が欠落している場合は自身の名前で位置を示せないため、
- * その名前を含む入れ物（`ownerName`）と入れ物内での位置（`position`）を引数で受け取る。
+ * 欠落した名前の位置を、報告に使う入れ物の名前と入れ物の中での位置に綴る。
  *
- * @param name 検証する名前
- * @param ownerName その名前を含む入れ物の名前
- * @param position 入れ物内での位置（`child 0` / `key "x"` など）
- * @returns 空なら missing-name、識別子の規則を満たさなければ invalid-identifier。
- *   問題なければ空
+ * @param place 名前が欠落している位置
+ * @returns 入れ物の名前（`ownerName`）と、入れ物の中での位置（`child 0` / `key ""` など）
  */
-function collectNameErrors(
-  name: string,
-  ownerName: string,
-  position: string,
-): readonly DesignDocumentValidationError[] {
-  if (!name) {
-    return [
-      {
+function describeMissingNamePlace(
+  place: NamePlace,
+): Readonly<{ ownerName: string; position: string }> {
+  switch (place.kind) {
+    case "component":
+      return { ownerName: "components", position: 'key ""' };
+    case "artboard":
+      return { ownerName: "artboards", position: `artboard ${place.index}` };
+    case "child":
+      return { ownerName: place.ownerName, position: `child ${place.index}` };
+  }
+}
+
+/**
+ * 名前 1 つで判定できる不正を、報告用のエラーに詰め替える。
+ *
+ * @param invalidName `DocumentNames.collectInvalidNames` が返した不正
+ * @returns 欠落なら入れ物を位置にした missing-name、識別子違反ならその名前を位置にした
+ *   invalid-identifier
+ */
+function toDocumentNameError(
+  invalidName: InvalidName,
+): DesignDocumentValidationError {
+  switch (invalidName.kind) {
+    case "missing-name": {
+      const { ownerName, position } = describeMissingNamePlace(
+        invalidName.place,
+      );
+      return {
         kind: "missing-name",
         nodeName: ownerName,
         message: `${position} of "${ownerName}" has no name`,
-      },
-    ];
-  }
-  if (!DocumentNames.isValidIdentifier(name)) {
-    return [
-      {
+      };
+    }
+    case "invalid-identifier":
+      return {
         kind: "invalid-identifier",
-        nodeName: name,
-        message: `name "${name}" is not a valid identifier`,
-      },
-    ];
+        nodeName: invalidName.name,
+        message: `name "${invalidName.name}" is not a valid identifier`,
+      };
   }
-  return [];
 }
 
 /**
- * ノードとその子孫の name が、欠落せず識別子の規則を満たしているか。
- *
- * @param nodes 検証するノードの並び
- * @param ownerName 名前が欠落しているときに位置として出す入れ物の名前
- * @returns 自身と子孫の名前のエラーの並び
- */
-function collectNodeNameErrors(
-  nodes: readonly Node[],
-  ownerName: string,
-): readonly DesignDocumentValidationError[] {
-  return nodes.flatMap((node, index) => [
-    ...collectNameErrors(node.name, ownerName, `child ${index}`),
-    ...collectNodeNameErrors(Node.children(node), node.name || ownerName),
-  ]);
-}
-
-/**
- * すべての種別のトークン名が識別子の規則を満たしているか。
+ * 識別子の規則を満たさないトークン名を、報告用のエラーに詰め替える。
  *
  * @param tokens 検証するトークン一式
- * @returns 規則を満たさない名前ごとの invalid-identifier エラーの並び
+ * @returns `TokenSet.collectInvalidNameRefs` が返す名前ごとの invalid-identifier エラーの並び
  */
 function collectTokenNameErrors(
   tokens: TokenSet,
 ): readonly DesignDocumentValidationError[] {
-  return TokenSet.kinds().flatMap((kind) =>
-    TokenSet.names(tokens, kind).flatMap(
-      (name): readonly DesignDocumentValidationError[] =>
-        TokenSet.isValidName(name)
-          ? []
-          : [
-              {
-                kind: "invalid-identifier",
-                nodeName: name,
-                message: `token name "${name}" in ${kind} is not a valid identifier`,
-              },
-            ],
-    ),
+  return TokenSet.collectInvalidNameRefs(tokens).map(
+    ({ kind, name }): DesignDocumentValidationError => ({
+      kind: "invalid-identifier",
+      nodeName: name,
+      message: `token name "${name}" in ${kind} is not a valid identifier`,
+    }),
   );
 }
 
@@ -615,27 +607,12 @@ export function collectColorTokenErrors(
 export function collectDocumentNameErrors(
   document: DesignDocument,
 ): readonly DesignDocumentValidationError[] {
-  const componentErrors = ComponentSet.names(document.components).flatMap(
-    (name): readonly DesignDocumentValidationError[] => {
-      const children = Option.flatMap(
-        ComponentSet.get(document.components, name),
-        (component) => Option.fromNullable(component.children),
-      );
-      return [
-        ...collectNameErrors(name, "components", `key "${name}"`),
-        ...collectNodeNameErrors(Option.unwrapOr(children, []), name),
-      ];
-    },
-  );
-  const artboardErrors = document.artboards.flatMap(
-    (artboard, index): readonly DesignDocumentValidationError[] => [
-      ...collectNameErrors(artboard.name, "artboards", `artboard ${index}`),
-      ...collectNodeNameErrors(artboard.children, artboard.name),
-    ],
-  );
+  const invalidNameErrors = DocumentNames.collectInvalidNames(
+    document.components,
+    document.artboards,
+  ).map(toDocumentNameError);
   return [
-    ...componentErrors,
-    ...artboardErrors,
+    ...invalidNameErrors,
     ...collectDuplicateNameErrors(document),
     ...collectTokenNameErrors(document.tokens),
     ...collectPaintNameConflictErrors(document.tokens),
