@@ -182,7 +182,7 @@ function measureReposition(
 }
 
 /**
- * 揃う位置へ寄せる量と、揃った辺に引くガイド線。
+ * 揃う位置へ寄せる量と、揃った線（辺か中心線）に引くガイド線。
  *
  * 行き先の矩形は、今の親の左上へ運んだ先の位置を置き、大きさは運んでいるものの実測をその
  * まま採って組み立てる。位置まで実測から採れないのは、運んでいる間は `translate` でずら
@@ -194,7 +194,7 @@ function measureReposition(
  *
  * @param measured 落とし先の実測（寄せの原点・運んでいるものの大きさ・揃え先）
  * @param movedTo 今の親の左上から見た、運んだ先の画面上の位置
- * @returns 寄せ量とガイド線（どちらも画面上の px。閾値に届く辺が無ければ寄せ量は
+ * @returns 寄せ量とガイド線（どちらも画面上の px。閾値に届く線が無ければ寄せ量は
  *   縦横とも 0・線は無し）
  */
 function snapAt(measured: RepositionMeasure, movedTo: Offset): SideSnapped {
@@ -386,7 +386,7 @@ export type NodeDragControl = Readonly<{
  *
  * このフックが持つのは DOM の実測とイベントの仲介だけ。「どこへ落ちるか」「いつドラッグ
  * とみなすか」は `node-drop` / `node-drag`、「実測した親のずれからどの座標が書かれるか」
- * は `reposition-target`、「揃う辺があるならどれだけ寄せるか」は `side-snap` にある。
+ * は `reposition-target`、「揃う線（辺か中心線）があるならどれだけ寄せるか」は `side-snap` にある。
  *
  * @param params 落とし先を決める `document` / `view` と、確定したときに呼ぶ
  *   `onMove` / `onInsertAt` / `onReposition`

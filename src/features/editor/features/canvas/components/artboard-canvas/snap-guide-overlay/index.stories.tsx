@@ -3,7 +3,7 @@ import { Option } from "@/utils/Option";
 import { OverlayStage } from "../__stories__/overlay-stage";
 import { SnapGuideOverlay } from "./index";
 
-/** 揃った辺に引くガイド線（映し方は `OverlayStage` の doc を参照）。 */
+/** 揃った線（辺か中心線）に引くガイド線（映し方は `OverlayStage` の doc を参照）。 */
 const meta = {
   title: "features/editor/features/canvas/ArtboardCanvas/SnapGuideOverlay",
   component: SnapGuideOverlay,
