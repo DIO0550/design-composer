@@ -1,4 +1,4 @@
-import { Artboard } from "@/domains/dcmp/artboard";
+import type { Artboard } from "@/domains/dcmp/artboard";
 import { ComponentSet } from "@/domains/dcmp/component";
 import { Node } from "@/domains/dcmp/node";
 import { ArrayEx } from "@/utils/ArrayEx";
@@ -15,6 +15,81 @@ import { StringEx } from "@/utils/StringEx";
  * 重複の検出には出現の重なりが要るため、集合ではなく出現順の並びで持つ。
  */
 export type DocumentNames = Readonly<{ names: readonly string[] }>;
+
+/**
+ * 名前空間に属する名前が置かれている位置。名前が欠落していると名前で位置を示せないので、
+ * 入れ物と入れ物の中での位置で示す。
+ *
+ * - `component`: components のキー
+ * - `artboard`: artboards の並びの `index` 番目
+ * - `child`: `ownerName` の子の並びの `index` 番目
+ */
+export type NamePlace =
+  | Readonly<{ kind: "component" }>
+  | Readonly<{ kind: "artboard"; index: number }>
+  | Readonly<{ kind: "child"; ownerName: string; index: number }>;
+
+/**
+ * 名前 1 つで判定できる不正（docs/03-schema.md「バリデーション仕様」の `name` 欠落と
+ * 識別子規則違反）。重複は出現どうしを比べないと決まらないので含めず、`duplicatedNames` が見る。
+ */
+export type InvalidName =
+  | Readonly<{ kind: "missing-name"; place: NamePlace }>
+  | Readonly<{ kind: "invalid-identifier"; name: string }>;
+
+/** 名前空間に属する名前 1 つの出現。 */
+type NameOccurrence = Readonly<{ name: string; place: NamePlace }>;
+
+/**
+ * ノードとその子孫の名前の出現を、行きがけ順に集める。
+ *
+ * @param nodes 集めるノードの並び
+ * @param ownerName `nodes` を子として持つ入れ物の名前
+ * @returns 自身と子孫の名前の出現。子孫の入れ物には、名前の無いノードを飛ばして名前のある
+ *   祖先（どれも無ければ `ownerName`）を入れる
+ */
+function collectNodeOccurrences(
+  nodes: readonly Node[],
+  ownerName: string,
+): readonly NameOccurrence[] {
+  return nodes.flatMap((node, index): readonly NameOccurrence[] => [
+    { name: node.name, place: { kind: "child", ownerName, index } },
+    ...collectNodeOccurrences(Node.children(node), node.name || ownerName),
+  ]);
+}
+
+/**
+ * ドキュメントの構成要素から、名前空間に属する名前の出現を集める。
+ *
+ * @param components ドキュメントの部品定義
+ * @param artboards ドキュメントの artboard
+ * @returns 部品ごとに部品名とその内部のノードの名前、続いて artboard ごとに artboard 名と
+ *   配下のノードの名前の出現を、行きがけ順に並べたもの
+ */
+function collectOccurrences(
+  components: ComponentSet,
+  artboards: readonly Artboard[],
+): readonly NameOccurrence[] {
+  const componentOccurrences = ComponentSet.names(components).flatMap(
+    (name): readonly NameOccurrence[] => {
+      const children = Option.flatMap(
+        ComponentSet.get(components, name),
+        (component) => Option.fromNullable(component.children),
+      );
+      return [
+        { name, place: { kind: "component" } },
+        ...collectNodeOccurrences(Option.unwrapOr(children, []), name),
+      ];
+    },
+  );
+  const artboardOccurrences = artboards.flatMap(
+    (artboard, index): readonly NameOccurrence[] => [
+      { name: artboard.name, place: { kind: "artboard", index } },
+      ...collectNodeOccurrences(artboard.children, artboard.name),
+    ],
+  );
+  return [...componentOccurrences, ...artboardOccurrences];
+}
 
 /**
  * 使用済みの名前と衝突しない名前を作る。衝突するなら連番を付ける。
@@ -64,20 +139,34 @@ export const DocumentNames = {
     components: ComponentSet,
     artboards: readonly Artboard[],
   ): readonly string[] {
-    const componentNames = ComponentSet.names(components).flatMap(
-      (name): readonly string[] => {
-        const children = Option.flatMap(
-          ComponentSet.get(components, name),
-          (component) => Option.fromNullable(component.children),
-        );
-        return [
-          name,
-          ...Option.unwrapOr(children, []).flatMap(Node.collectNames),
-        ];
+    return collectOccurrences(components, artboards).map(
+      (occurrence) => occurrence.name,
+    );
+  },
+
+  /**
+   * ドキュメントの構成要素から、名前 1 つで判定できる不正を集める。
+   *
+   * @param components ドキュメントの部品定義
+   * @param artboards ドキュメントの artboard
+   * @returns 名前が空なら欠落した位置、識別子の規則を満たさなければその名前を、
+   *   `collectNames` と同じ並びで並べたもの。不正が無ければ空
+   */
+  collectInvalidNames(
+    components: ComponentSet,
+    artboards: readonly Artboard[],
+  ): readonly InvalidName[] {
+    return collectOccurrences(components, artboards).flatMap(
+      ({ name, place }): readonly InvalidName[] => {
+        if (!name) {
+          return [{ kind: "missing-name", place }];
+        }
+        if (!DocumentNames.isValidIdentifier(name)) {
+          return [{ kind: "invalid-identifier", name }];
+        }
+        return [];
       },
     );
-    const artboardNames = artboards.flatMap(Artboard.collectNames);
-    return [...componentNames, ...artboardNames];
   },
 
   /**
