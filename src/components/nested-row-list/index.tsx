@@ -1,5 +1,5 @@
 import { type ReactElement, type ReactNode, useState } from "react";
-import { DropLine } from "@/components/drop-line";
+import { DropLine, ListOrientations } from "@/components/drop-line";
 import { type RowProps, useReorderDrag } from "@/hooks/use-reorder-drag";
 import type { ValueOf } from "@/types/ValueOf";
 import { Option } from "@/utils/Option";
@@ -190,7 +190,12 @@ function RowBranch({
           />
         )}
         {row.content}
-        {Option.isSome(dropSide) ? <DropLine side={dropSide.value} /> : null}
+        {Option.isSome(dropSide) ? (
+          <DropLine
+            side={dropSide.value}
+            listOrientation={ListOrientations.Vertical}
+          />
+        ) : null}
       </div>
       {showsChildren ? (
         <RowList
