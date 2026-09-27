@@ -20,6 +20,7 @@ import {
 import { Option } from "@/utils/Option";
 import { RecordEx } from "@/utils/RecordEx";
 import { Result } from "@/utils/Result";
+import { StringEx } from "@/utils/StringEx";
 
 /** 公開 prop が、部品の内側のどのノードのどの prop に繋がっているか。 */
 export type PublicPropBinding = Readonly<{
@@ -185,10 +186,23 @@ export const Component = {
    * 部品が外へ公開している prop 名の一覧。
    *
    * @param component 見る部品定義
-   * @returns `publicProps` の `Object.keys` の列挙順の並び。`publicProps` が無ければ空
+   * @returns `publicProps` の `Object.keys` の列挙順の並び。宣言名が
+   *   `Component.isValidPublicPropName` を満たす限りファイルに書かれた順になる(数字だけの
+   *   名前は列挙で先頭へ並び替わる)。`publicProps` が無ければ空
    */
   publicPropNames(component: Component): readonly string[] {
     return Object.keys(component.publicProps ?? {});
+  },
+
+  /**
+   * その名前が公開 prop の宣言名の規則を満たすか(docs/02-data-model.md「部品のインターフェース」)。
+   * 識別子の規則(`DocumentNames.isValidIdentifier`)とは違い、kebab-case は求めない。
+   *
+   * @param name 判定する宣言名
+   * @returns 数字だけの綴りではなければ `true`
+   */
+  isValidPublicPropName(name: string): boolean {
+    return !StringEx.isAllDigits(name);
   },
 
   /**
@@ -360,8 +374,9 @@ export const Component = {
    * 公開インターフェース(publicProps)を先に書く(docs/04-tokens.md の並び)。
    *
    * @param component 書き出す部品定義
-   * @returns `publicProps`（`Json.sortedMap` の並び）・`type`・`props`・`children` の順に持つ
-   *   オブジェクト。未設定か空の `publicProps` / `props` / `children` は書き出さない
+   * @returns `publicProps`（`Json.sortedMap` の並び。宣言名が `Component.isValidPublicPropName`
+   *   を満たさなければ、数字だけの名前が先頭へ数値順に並ぶ）・`type`・`props`・`children` の
+   *   順に持つオブジェクト。未設定か空の `publicProps` / `props` / `children` は書き出さない
    */
   toJson(component: Component): JsonObject {
     return {
