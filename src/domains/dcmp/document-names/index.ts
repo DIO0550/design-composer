@@ -24,6 +24,9 @@ export type DocumentNames = Readonly<{ names: readonly string[] }>;
  * - `artboard`: artboards の `index` 番目
  * - `child`: `ownerName` の配下の、兄弟の中で `index` 番目のノード。`ownerName` は名前が空で
  *   ない最も近い祖先のノード名で、そうした祖先が無ければ部品名・artboard 名（空でもそのまま）
+ *
+ * `child` を `ChildPosition`（直接の親と添字）で表さない。欠落した親は名前で指せないので、
+ * 入れ物は直接の親ではなく名前を持つ最も近い祖先になる。
  */
 export type NamePosition =
   | Readonly<{ kind: "component-key" }>
