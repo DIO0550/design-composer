@@ -1,4 +1,4 @@
-import { Artboard } from "@/domains/dcmp/artboard";
+import type { Artboard } from "@/domains/dcmp/artboard";
 import { ComponentSet } from "@/domains/dcmp/component";
 import { Node } from "@/domains/dcmp/node";
 import { ArrayEx } from "@/utils/ArrayEx";
@@ -15,6 +15,84 @@ import { StringEx } from "@/utils/StringEx";
  * 重複の検出には出現の重なりが要るため、集合ではなく出現順の並びで持つ。
  */
 export type DocumentNames = Readonly<{ names: readonly string[] }>;
+
+/**
+ * 名前空間に属する名前が、ドキュメントのどこに書かれているか。名前が欠落していると名前自身では
+ * 位置を示せないため、入れ物の中での位置で表す。
+ *
+ * - `component-key`: components のキー
+ * - `artboard`: artboards の `index` 番目
+ * - `child`: `ownerName` の配下の、兄弟の中で `index` 番目のノード。`ownerName` は名前が空で
+ *   ない最も近い祖先のノード名で、そうした祖先が無ければ部品名・artboard 名（空でもそのまま）
+ */
+export type NamePosition =
+  | Readonly<{ kind: "component-key" }>
+  | Readonly<{ kind: "artboard"; index: number }>
+  | Readonly<{ kind: "child"; ownerName: string; index: number }>;
+
+/**
+ * 名前空間に属する名前のバリデーション違反（docs/03-schema.md「バリデーション仕様」の
+ * 「識別子規則違反」と「`name` 欠落」）。
+ *
+ * - `missing`: 名前が欠落している。どこで欠落したかを `position` に持つ
+ * - `invalid-identifier`: 名前が識別子の規則を満たさない。その名前を `name` に持つ
+ */
+export type NameViolation =
+  | Readonly<{ kind: "missing"; position: NamePosition }>
+  | Readonly<{ kind: "invalid-identifier"; name: string }>;
+
+/** 名前空間に属する名前 1 つの出現。 */
+type NameOccurrence = Readonly<{ name: string; position: NamePosition }>;
+
+/**
+ * ノードの並びとその子孫の名前の出現を、行きがけ順に並べる。
+ *
+ * @param nodes 並べるノードの兄弟の並び
+ * @param ownerName 兄弟を収めている入れ物の名前
+ * @returns 各ノードの名前の出現と、その子孫の出現を行きがけ順に並べたもの
+ */
+function collectNodeOccurrences(
+  nodes: readonly Node[],
+  ownerName: string,
+): readonly NameOccurrence[] {
+  return nodes.flatMap((node, index): readonly NameOccurrence[] => [
+    { name: node.name, position: { kind: "child", ownerName, index } },
+    ...collectNodeOccurrences(Node.children(node), node.name || ownerName),
+  ]);
+}
+
+/**
+ * ドキュメントの構成要素から、名前空間に属する名前の出現を集める。
+ *
+ * @param components ドキュメントの部品定義
+ * @param artboards ドキュメントの artboard
+ * @returns 部品ごとに部品名とその内部のノード、続いて artboard ごとに artboard 名と配下の
+ *   ノードの名前の出現を、入れ物の中では行きがけ順に並べたもの
+ */
+function collectOccurrences(
+  components: ComponentSet,
+  artboards: readonly Artboard[],
+): readonly NameOccurrence[] {
+  const componentOccurrences = ComponentSet.names(components).flatMap(
+    (name): readonly NameOccurrence[] => {
+      const children = Option.flatMap(
+        ComponentSet.get(components, name),
+        (component) => Option.fromNullable(component.children),
+      );
+      return [
+        { name, position: { kind: "component-key" } },
+        ...collectNodeOccurrences(Option.unwrapOr(children, []), name),
+      ];
+    },
+  );
+  const artboardOccurrences = artboards.flatMap(
+    (artboard, index): readonly NameOccurrence[] => [
+      { name: artboard.name, position: { kind: "artboard", index } },
+      ...collectNodeOccurrences(artboard.children, artboard.name),
+    ],
+  );
+  return [...componentOccurrences, ...artboardOccurrences];
+}
 
 /**
  * 使用済みの名前と衝突しない名前を作る。衝突するなら連番を付ける。
@@ -64,20 +142,34 @@ export const DocumentNames = {
     components: ComponentSet,
     artboards: readonly Artboard[],
   ): readonly string[] {
-    const componentNames = ComponentSet.names(components).flatMap(
-      (name): readonly string[] => {
-        const children = Option.flatMap(
-          ComponentSet.get(components, name),
-          (component) => Option.fromNullable(component.children),
-        );
-        return [
-          name,
-          ...Option.unwrapOr(children, []).flatMap(Node.collectNames),
-        ];
+    return collectOccurrences(components, artboards).map(
+      (occurrence) => occurrence.name,
+    );
+  },
+
+  /**
+   * 名前空間に属する名前のうち、欠落しているものと識別子の規則を満たさないものを集める。
+   * 欠落した名前は識別子の規則違反としては数えない。
+   *
+   * @param components ドキュメントの部品定義
+   * @param artboards ドキュメントの artboard
+   * @returns 違反を `collectNames` と同じ並びで並べたもの。違反が無ければ空
+   */
+  collectNameViolations(
+    components: ComponentSet,
+    artboards: readonly Artboard[],
+  ): readonly NameViolation[] {
+    return collectOccurrences(components, artboards).flatMap(
+      ({ name, position }): readonly NameViolation[] => {
+        if (!name) {
+          return [{ kind: "missing", position }];
+        }
+        if (!DocumentNames.isValidIdentifier(name)) {
+          return [{ kind: "invalid-identifier", name }];
+        }
+        return [];
       },
     );
-    const artboardNames = artboards.flatMap(Artboard.collectNames);
-    return [...componentNames, ...artboardNames];
   },
 
   /**
