@@ -8,9 +8,13 @@ import { DocumentSelection } from "@/domains/session/document-selection";
  * キャンバスのストーリー用のサンプルドキュメント。雛形のトークン・部品に artboard を 3
  * 枚足してあり、キャンバスが映すものが 1 つのドキュメントで揃う。
  *
- * 1 枚目に部品インスタンス（`home-login`）とトークンを参照するノード（`home-title`）、3
- * 枚目に**中身が artboard より大きい**ノードを置いて、はみ出しがデフォルトで clip され
- * ることを目で確認できるようにしている（docs/01「はみ出し: …デフォルトで clip」）。
+ * 1 枚目に部品インスタンス（`home-login`）、トークンを参照するノード（`home-title`）、
+ * **gradients のトークンを指す `background`**（`home-banner`）、3 枚目に**中身が artboard
+ * より大きい**ノードを置いて、はみ出しがデフォルトで clip されることを目で確認できるように
+ * している（docs/01「はみ出し: …デフォルトで clip」）。
+ *
+ * 階調のノードを置いているのは、`background` が colors と gradients のどちらも指せる
+ * （docs/03「塗り」）ことを画面で確かめられる場所が他に無いため。
  */
 export const SampleCanvasDocument = DesignDocument.create({
   tokens: DocumentTemplate.Default.tokens,
@@ -30,6 +34,21 @@ export const SampleCanvasDocument = DesignDocument.create({
         background: "white",
       },
       children: [
+        {
+          name: "home-banner",
+          type: "Box",
+          props: {
+            widthMode: "fill",
+            heightMode: "fixed",
+            height: 40,
+            background: "brand",
+            radiusTopLeft: "md",
+            radiusTopRight: "md",
+            radiusBottomRight: "md",
+            radiusBottomLeft: "md",
+          },
+          children: [],
+        },
         {
           name: "home-title",
           type: "Text",
