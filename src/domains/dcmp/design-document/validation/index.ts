@@ -4,25 +4,30 @@ import {
   ComponentSet,
   type PublicPropBinding,
 } from "@/domains/dcmp/component";
-import { ComponentBinding } from "@/domains/dcmp/component-binding";
+import {
+  type BindingViolation,
+  ComponentBinding,
+} from "@/domains/dcmp/component-binding";
 import {
   DocumentNames,
   type NamePosition,
   type NameViolation,
 } from "@/domains/dcmp/document-names";
 import { Layout } from "@/domains/dcmp/layout";
-import { Node, Props, type RefNode } from "@/domains/dcmp/node";
+import { Node, type Props, type RefNode } from "@/domains/dcmp/node";
 import type { PropValidationError } from "@/domains/dcmp/primitive-schema";
 import {
   BoxSchema,
   PrimitiveSchema,
-  PropDefinition,
   PropDefinitionRecord,
 } from "@/domains/dcmp/primitive-schema";
+import {
+  type InstanceViolation,
+  ReferenceContext,
+} from "@/domains/dcmp/reference-context";
 import { Size } from "@/domains/dcmp/size";
 import { TokenSet } from "@/domains/dcmp/token";
 import { Option } from "@/utils/Option";
-import { RecordEx } from "@/utils/RecordEx";
 import type { DesignDocumentV1 as DesignDocument } from "../v1";
 
 /** ドキュメントが不正になる理由（docs/03-schema.md「バリデーション仕様」）。 */
@@ -101,18 +106,21 @@ function collectTypedPropErrors(
   props: Props | undefined,
   tokens: TokenSet,
 ): readonly UnlocatedError[] {
-  if (!PrimitiveSchema.isPrimitiveType(type)) {
+  const schema = PrimitiveSchema.forTypeName(type);
+  if (!Option.isSome(schema)) {
     return [{ kind: "unknown-type", message: `unknown type "${type}"` }];
   }
-  const schema = PrimitiveSchema.forType(type);
-  return PropDefinitionRecord.collectErrors(schema.props, props ?? {}, tokens);
+  return PropDefinitionRecord.collectErrors(
+    schema.value.props,
+    props ?? {},
+    tokens,
+  );
 }
 
 /**
  * 子を並べない親の下の `fill` を、軸ごとのエラーにする（判定は `Layout` が持つ）。
  *
- * 親を引数で要求するので、親が決まらない位置（部品のルート）はそもそも呼ばれない。部品
- * インスタンスの中身も対象外で、検証が見るのは**定義時点の props** だけ。
+ * 親を引数で要求するので、親が決まらない位置（部品のルート）はそもそも呼ばれない。
  *
  * @param parentLayout その props を持つノードの親の配置モード
  * @param props 検査するノードの props
@@ -133,105 +141,63 @@ function collectFillErrors(
 }
 
 /**
- * ノードとその子孫の props をスキーマで照らす。部品インスタンスは対象外。
+ * ノードとその子孫のプリミティブの props をスキーマで照らす（走査は `Node` が持つ）。
+ *
+ * 部品インスタンスの中身は対象外で、検証が見るのは**定義時点の props** だけ（中身は部品の
+ * 定義として照らされる）。
  *
  * @param node 起点のノード
  * @param tokens トークン参照の解決に使うトークン一式
- * @param parentLayout このノードを収めている親の配置モード
- * @returns 自身と子孫の props のエラーの並び（部品インスタンスは空）
+ * @param parentProps このノードを収めている親の props
+ * @returns 自身と子孫のプリミティブの props のエラーの並び（部品インスタンスは空）
  */
 function collectNodeErrors(
   node: Node,
   tokens: TokenSet,
-  parentLayout: Layout,
+  parentProps: Props,
 ): readonly DesignDocumentValidationError[] {
-  if (Node.isRef(node)) {
-    return [];
-  }
-  const props = node.props ?? {};
-  const ownErrors = withLocation({ nodeName: node.name }, [
-    ...collectTypedPropErrors(node.type, node.props, tokens),
-    ...collectFillErrors(parentLayout, props),
-  ]);
-  const childLayout = Layout.fromProps(props);
-  const childErrors = Node.children(node).flatMap((child) =>
-    collectNodeErrors(child, tokens, childLayout),
-  );
-  return [...ownErrors, ...childErrors];
-}
-
-/** 参照検証が横断的に必要とする、ドキュメント全体の文脈。 */
-export type ReferenceContext = Readonly<{
-  components: ComponentSet;
-  tokens: TokenSet;
-}>;
-
-/**
- * インスタンスの overrides が、参照先の公開 prop の宣言と値域に収まっているか。
- *
- * @param context 部品とトークンの一式
- * @param refNode overrides を持つインスタンスのノード
- * @param component 参照先の部品
- * @returns 未宣言の override・値域違反のエラーの並び
- */
-function collectOverrideErrors(
-  context: ReferenceContext,
-  refNode: RefNode,
-  component: Component,
-): readonly UnlocatedError[] {
-  return Props.toAssignments(refNode.overrides ?? {}).flatMap(
-    (assignment): readonly UnlocatedError[] => {
-      const binding = Component.binding(component, assignment.name);
-      if (!Option.isSome(binding)) {
-        return [
-          {
-            kind: "undeclared-override" as const,
-            prop: assignment.name,
-            message: `component "${refNode.ref}" does not declare public prop "${assignment.name}"`,
-          },
-        ];
-      }
-      const definition = ComponentBinding.resolvePropDefinition(
-        context.components,
-        ComponentBinding.create(refNode.ref, binding.value),
-      );
-      if (!Option.isSome(definition)) {
-        return [];
-      }
-      return PropDefinition.collectErrors(
-        definition.value,
-        assignment,
-        context.tokens,
-      );
-    },
+  return Node.collectNestedPrimitives(node, parentProps).flatMap((nested) =>
+    withLocation({ nodeName: nested.node.name }, [
+      ...collectTypedPropErrors(nested.node.type, nested.node.props, tokens),
+      ...collectFillErrors(
+        Layout.fromProps(nested.parentProps),
+        nested.node.props ?? {},
+      ),
+    ]),
   );
 }
 
 /**
- * インスタンスの参照先が存在するか、展開が自分自身へ戻らないか。
+ * インスタンスの違反 1 件を、位置を持たないエラーにする。
  *
- * @param context 部品とトークンの一式
- * @param refNode 検証するインスタンスのノード
- * @returns 参照先が無い場合の dangling-ref と、overrides のエラーの並び
+ * @param refNode 違反を持つインスタンス
+ * @param violation `ReferenceContext.collectInstanceViolations` が返した違反
+ * @returns 参照先が無ければ dangling-ref、未宣言の上書きなら undeclared-override、値が宣言に
+ *   適合しなければその prop の検証エラー
  */
-function collectRefNodeErrors(
-  context: ReferenceContext,
+function toInstanceError(
   refNode: RefNode,
-): readonly UnlocatedError[] {
-  const component = ComponentSet.get(context.components, refNode.ref);
-  if (!Option.isSome(component)) {
-    return [
-      {
+  violation: InstanceViolation,
+): UnlocatedError {
+  switch (violation.kind) {
+    case "missing-component":
+      return {
         kind: "dangling-ref",
         message: `unknown component "${refNode.ref}"`,
-      },
-    ];
+      };
+    case "undeclared-override":
+      return {
+        kind: "undeclared-override",
+        prop: violation.prop,
+        message: `component "${refNode.ref}" does not declare public prop "${violation.prop}"`,
+      };
+    case "invalid-override":
+      return violation.error;
   }
-  return collectOverrideErrors(context, refNode, component.value);
 }
 
 /**
- * ノードとその子孫に含まれる部品参照を、位置を付けて集める。
+ * ノードとその子孫に含まれる部品参照を、位置を付けて集める（走査は `Node` が持つ）。
  *
  * @param context 部品とトークンの一式
  * @param node 起点のノード
@@ -241,71 +207,57 @@ function collectNodeRefErrors(
   context: ReferenceContext,
   node: Node,
 ): readonly DesignDocumentValidationError[] {
-  if (Node.isRef(node)) {
-    return withLocation(
-      { nodeName: node.name },
-      collectRefNodeErrors(context, node),
-    );
-  }
-  return Node.children(node).flatMap((child) =>
-    collectNodeRefErrors(context, child),
+  return Node.collectRefNodes(node).flatMap((refNode) =>
+    withLocation(
+      { nodeName: refNode.name },
+      ReferenceContext.collectInstanceViolations(context, refNode).map(
+        (violation) => toInstanceError(refNode, violation),
+      ),
+    ),
   );
 }
 
 /**
- * binding が指す内部ノードと prop が実在し、値域に収まっているか。
+ * binding の違反 1 件を、位置を持たないエラーにする。
  *
- * @param context 部品とトークンの一式
- * @param binding 検証する公開 prop の binding
- * @param target binding が指している内部ノード
- * @returns 指し先の prop が無い場合・値域違反のエラーの並び
+ * @param binding 違反を持つ公開 prop の binding
+ * @param violation `ComponentBinding.violation` が返した違反
+ * @returns 指し先のノードが無ければ dangling-binding-node、指し先の prop が無ければ
+ *   dangling-binding-prop
  */
-function collectBindingTargetErrors(
-  context: ReferenceContext,
+function toBindingError(
   binding: PublicPropBinding,
-  target: Node,
-): readonly UnlocatedError[] {
-  if (Node.isRef(target)) {
-    const nested = ComponentSet.get(context.components, target.ref);
-    // 参照先の部品が無いことは、参照ノード側が dangling-ref として報告する
-    if (!Option.isSome(nested)) {
-      return [];
-    }
-    if (Component.isPublicProp(nested.value, binding.prop)) {
-      return [];
-    }
-    return [
-      {
+  violation: BindingViolation,
+): UnlocatedError {
+  switch (violation.kind) {
+    case "missing-node":
+      return {
+        kind: "dangling-binding-node",
+        message: `unknown node "${binding.node}"`,
+      };
+    case "missing-public-prop":
+      return {
         kind: "dangling-binding-prop",
-        message: `"${binding.prop}" is not a public prop of component "${target.ref}"`,
-      },
-    ];
+        message: `"${binding.prop}" is not a public prop of component "${violation.ref}"`,
+      };
+    case "missing-prop":
+      return {
+        kind: "dangling-binding-prop",
+        message: `node "${binding.node}" has no prop "${binding.prop}"`,
+      };
   }
-  if (!PrimitiveSchema.isPrimitiveType(target.type)) {
-    return [];
-  }
-  const schema: PrimitiveSchema = PrimitiveSchema.forType(target.type);
-  if (RecordEx.has(schema.props, binding.prop)) {
-    return [];
-  }
-  return [
-    {
-      kind: "dangling-binding-prop",
-      message: `node "${binding.node}" has no prop "${binding.prop}"`,
-    },
-  ];
 }
 
 /**
- * 部品の publicProps が宣言している binding をすべて照らす。
+ * 部品の publicProps が宣言している binding をすべて照らす（判定は `ComponentBinding` が持つ）。
  *
- * @param context 部品とトークンの一式
+ * @param components 部品一式
  * @param componentName エラーの位置に使う部品名
  * @param component 検証する部品
- * @returns 指し先のノードが無い場合を含む、位置の付いたエラーの並び
+ * @returns 公開 prop ごとの、位置の付いたエラーの並び
  */
 function collectBindingErrors(
-  context: ReferenceContext,
+  components: ComponentSet,
   componentName: string,
   component: Component,
 ): readonly DesignDocumentValidationError[] {
@@ -314,32 +266,21 @@ function collectBindingErrors(
     if (!Option.isSome(binding)) {
       return [];
     }
-    const location: ErrorLocation = {
-      nodeName: componentName,
-      prop: publicPropName,
-    };
-    const found = Component.findNode(
-      component,
-      componentName,
-      binding.value.node,
+    const violation = ComponentBinding.violation(
+      components,
+      ComponentBinding.create(componentName, binding.value),
     );
-    if (!Option.isSome(found)) {
-      return withLocation(location, [
-        {
-          kind: "dangling-binding-node",
-          message: `unknown node "${binding.value.node}"`,
-        },
-      ]);
+    if (!Option.isSome(violation)) {
+      return [];
     }
-    return withLocation(
-      location,
-      collectBindingTargetErrors(context, binding.value, found.value),
-    );
+    return withLocation({ nodeName: componentName, prop: publicPropName }, [
+      toBindingError(binding.value, violation.value),
+    ]);
   });
 }
 
 /**
- * 部品の publicProps の宣言名が、宣言名の規則を満たしているか。
+ * 部品の publicProps の宣言名のうち、宣言名の規則を満たさないもの（判定は `Component` が持つ）。
  *
  * @param componentName エラーの位置に使う部品名
  * @param component 検証する部品
@@ -349,15 +290,14 @@ function collectPublicPropNameErrors(
   componentName: string,
   component: Component,
 ): readonly DesignDocumentValidationError[] {
-  return Component.publicPropNames(component).flatMap((publicPropName) =>
-    Component.isValidPublicPropName(publicPropName)
-      ? []
-      : withLocation({ nodeName: componentName, prop: publicPropName }, [
-          {
-            kind: "invalid-public-prop-name",
-            message: `public prop name "${publicPropName}" is not a valid public prop name`,
-          },
-        ]),
+  return Component.collectInvalidPublicPropNames(component).flatMap(
+    (publicPropName) =>
+      withLocation({ nodeName: componentName, prop: publicPropName }, [
+        {
+          kind: "invalid-public-prop-name",
+          message: `public prop name "${publicPropName}" is not a valid public prop name`,
+        },
+      ]),
   );
 }
 
@@ -396,14 +336,14 @@ export function collectComponentErrors(
     collectTypedPropErrors(component.type, component.props, context.tokens),
   );
   const childErrors = children.flatMap((child) =>
-    collectNodeErrors(
-      child,
-      context.tokens,
-      Layout.fromProps(component.props ?? {}),
-    ),
+    collectNodeErrors(child, context.tokens, component.props ?? {}),
   );
   const publicPropNameErrors = collectPublicPropNameErrors(name, component);
-  const bindingErrors = collectBindingErrors(context, name, component);
+  const bindingErrors = collectBindingErrors(
+    context.components,
+    name,
+    component,
+  );
   const refErrors = children.flatMap((child) =>
     collectNodeRefErrors(context, child),
   );
@@ -446,7 +386,7 @@ export function collectArtboardErrors(
       context.tokens,
       // artboard 固有の既定を被せた props から読む。`Artboard.propDefinitions()` が
       // `layout` の既定を差し替えたときに、描画とここで違う親を見ないようにするため
-      Layout.fromProps(Artboard.boxProps(artboard)),
+      Artboard.boxProps(artboard),
     ),
   );
   const refErrors = artboard.children.flatMap((child) =>

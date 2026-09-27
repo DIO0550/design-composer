@@ -3,6 +3,7 @@ import { Layout, Layouts } from "@/domains/dcmp/layout";
 import { PaintTokenKinds } from "@/domains/dcmp/token";
 import { Visibilities, Visibility } from "@/domains/dcmp/visibility";
 import type { ValueOf } from "@/types/ValueOf";
+import { Option } from "@/utils/Option";
 import {
   type EnabledWhen,
   type PropDefinitionRecord,
@@ -391,6 +392,20 @@ export const PrimitiveSchema = {
    */
   isPrimitiveType(type: string): type is PrimitiveType {
     return (Object.values(PrimitiveTypes) as readonly string[]).includes(type);
+  },
+
+  /**
+   * ノードの `type` に書かれている名前から、その primitive のスキーマを引く。
+   *
+   * @param type ノードの `type` に書かれている名前。ファイル由来の未知の名前でもよい
+   * @returns その型のスキーマ。`isPrimitiveType` を満たさない名前（大文字小文字違い・
+   *   `constructor` のような `Object.prototype` 上の名前を含む）なら `none`
+   */
+  forTypeName(type: string): Option<PrimitiveSchema> {
+    if (!PrimitiveSchema.isPrimitiveType(type)) {
+      return Option.none;
+    }
+    return Option.some(PrimitiveSchemas[type]);
   },
 
   /**
