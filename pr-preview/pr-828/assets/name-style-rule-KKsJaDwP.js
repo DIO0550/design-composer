@@ -1,0 +1,6 @@
+import{n as e}from"./chunk-BneVvdWh.js";import{t}from"./jsx-runtime-D16BNjX-.js";import{n,t as r}from"./canvas-dom-BPUb8mTw.js";function i({name:e,declarations:t}){return(0,a.jsx)(`style`,{children:`${r.selectorOf(e)}{${t}}`})}var a,o=e((()=>{n(),a=t();try{i.displayName=`NameStyleRule`,i.__docgenInfo={description:`1 ノード分の宣言を、名前で引く選択子の規則としてキャンバスへ差し込む。
+
+キャンバスの中身は文字列の HTML を流し込んでおり React の管理下に無いため、
+特定の要素へ class を足せない。出力に残っているノード名の属性を選択子にして、
+規則を 1 本だけ差し込む。選択子はその名前で描かれている要素すべてに当たるので、
+部品の中のノードの名前を渡すと全インスタンスに効く（\`CanvasDom\`）。`,displayName:`NameStyleRule`,filePath:`/home/runner/work/design-composer/design-composer/src/features/editor/features/canvas/components/artboard-canvas/name-style-rule/index.tsx`,methods:[],props:{name:{defaultValue:null,declarations:[{fileName:`design-composer/src/features/editor/features/canvas/components/artboard-canvas/name-style-rule/index.tsx`,name:`TypeLiteral`}],description:``,name:`name`,required:!0,tags:{},type:{name:`string`}},declarations:{defaultValue:null,declarations:[{fileName:`design-composer/src/features/editor/features/canvas/components/artboard-canvas/name-style-rule/index.tsx`,name:`TypeLiteral`}],description:``,name:`declarations`,required:!0,tags:{},type:{name:`string`}}},tags:{param:"name 指したい artboard / ノードの名前\ndeclarations 差し込む宣言（`{}` の中身）"}}}catch{}}));export{o as n,i as t};
