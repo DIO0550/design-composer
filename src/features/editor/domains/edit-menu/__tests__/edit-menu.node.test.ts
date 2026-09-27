@@ -29,8 +29,9 @@ function nodeOperations(state: EditorState): readonly EditOperation[] {
   return operationsIn(EditMenu.create(state, EditMenuTargets.Node));
 }
 
-test("ノードを選んでいるときはコピー・ペースト・名前を変更・グループ化・グループ解除・前面へ・背面へ・インスタンスを解除・削除が並ぶ", () => {
+test("ノードを選んでいるときは複製・コピー・ペースト・名前を変更・グループ化・グループ解除・前面へ・背面へ・インスタンスを解除・削除が並ぶ", () => {
   expect(nodeOperations(stateSelecting("panel"))).toEqual([
+    EditOperations.Duplicate,
     EditOperations.Copy,
     EditOperations.Paste,
     EditOperations.Rename,
@@ -77,6 +78,30 @@ test("Box を選んでいるときはグループ化が押せる", () => {
   const menu = EditMenu.create(stateSelecting("panel"), EditMenuTargets.Node);
 
   expect(isRowEnabled(menu, EditOperations.Group)).toBe(true);
+});
+
+test("複製・コピー・ペーストは同じ組に並ぶ", () => {
+  const menu = EditMenu.create(stateSelecting("panel"), EditMenuTargets.Node);
+
+  expect(
+    menu.sections.map((section) => section.map((row) => row.operation)),
+  ).toContainEqual([
+    EditOperations.Duplicate,
+    EditOperations.Copy,
+    EditOperations.Paste,
+  ]);
+});
+
+test("Text を選んでいても複製は押せる", () => {
+  const menu = EditMenu.create(stateSelecting("title"), EditMenuTargets.Node);
+
+  expect(isRowEnabled(menu, EditOperations.Duplicate)).toBe(true);
+});
+
+test("何も選んでいないときは複製が押せない", () => {
+  const menu = EditMenu.create(setupState(), EditMenuTargets.Node);
+
+  expect(isRowEnabled(menu, EditOperations.Duplicate)).toBe(false);
 });
 
 test("Text を選んでいてもグループ化は押せる", () => {
@@ -174,6 +199,7 @@ test("複数選択中はどの行も押せない", () => {
   );
 
   expect(menu.sections.flat().map((row) => row.isEnabled)).toEqual([
+    false,
     false,
     false,
     false,
