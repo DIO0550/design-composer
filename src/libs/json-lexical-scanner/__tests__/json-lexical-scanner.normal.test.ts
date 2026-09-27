@@ -40,3 +40,10 @@ test("JSONとしてパース不能な入力は構文エラーとして検出さ�
   expect(errors).toHaveLength(1);
   expect(errors[0].kind).toBe("syntax-error");
 });
+
+test("true / false / null を値に持つ JSON ではエラーが検出されない", () => {
+  const errors = JsonLexicalScanner.scan(
+    '{"visible":true,"clip":false,"fill":null}',
+  );
+  expect(errors).toEqual([]);
+});

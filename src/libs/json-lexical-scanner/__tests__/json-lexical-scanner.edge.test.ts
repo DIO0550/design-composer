@@ -45,3 +45,10 @@ test("正常なJSONの後に余分な文字列があると構文エラーとし�
     },
   ]);
 });
+
+test("綴りが途中で切れたリテラルは、その位置の構文エラーとして検出される", () => {
+  const errors = JsonLexicalScanner.scan('{"a":tru}');
+  expect(errors).toEqual([
+    { kind: "syntax-error", message: "unexpected token", position: 5 },
+  ]);
+});

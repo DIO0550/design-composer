@@ -1,3 +1,4 @@
+import { Option } from "@/utils/Option";
 import { StringEx } from "@/utils/StringEx";
 
 /** 字句スキャンで見つかる不正。JSON.parse では分からないキーの重複を含む。 */
@@ -228,19 +229,19 @@ function scanNumber(text: string, position: number): ScanOutcome {
 }
 
 /**
- * `true` / `false` / `null` を読む。どれでもなければ `null`。
+ * `true` / `false` / `null` を読む。
  *
  * @param text 読んでいる全文
  * @param position リテラルの先頭の位置
- * @returns リテラルの次の位置。どのリテラルでもなければ `null`
+ * @returns リテラルの次の位置。どのリテラルでもなければ `none`
  */
-function scanLiteral(text: string, position: number): number | null {
+function scanLiteral(text: string, position: number): Option<number> {
   for (const literal of Literals) {
     if (text.startsWith(literal, position)) {
-      return position + literal.length;
+      return Option.some(position + literal.length);
     }
   }
-  return null;
+  return Option.none;
 }
 
 /**
@@ -403,8 +404,8 @@ function scanValue(text: string, position: number): ScanOutcome {
   }
 
   const literalEnd = scanLiteral(text, pos);
-  if (literalEnd !== null) {
-    return ok(literalEnd);
+  if (Option.isSome(literalEnd)) {
+    return ok(literalEnd.value);
   }
 
   return fail(pos, [
