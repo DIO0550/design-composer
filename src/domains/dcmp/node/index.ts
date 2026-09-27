@@ -287,6 +287,20 @@ export const Node = {
   },
 
   /**
+   * 自分と子孫の参照ノードそのものを集める（指している部品の名前だけなら `collectRefs`）。
+   *
+   * @param node 走査の起点になるノード
+   * @returns 参照ノードを深さ優先の行きがけ順で並べたもの。起点が参照ノードならそれ 1 つ。
+   *   参照ノードが無ければ空
+   */
+  collectRefNodes(node: Node): readonly RefNode[] {
+    if (Node.isRef(node)) {
+      return [node];
+    }
+    return Node.children(node).flatMap(Node.collectRefNodes);
+  },
+
+  /**
    * 自分と子孫の参照ノードが指している部品の名前を集める。
    *
    * @param node 走査の起点になるノード
@@ -294,10 +308,7 @@ export const Node = {
    *   が複数あれば、その回数だけ入る。参照ノードが無ければ空
    */
   collectRefs(node: Node): readonly string[] {
-    if (Node.isRef(node)) {
-      return [node.ref];
-    }
-    return Node.children(node).flatMap(Node.collectRefs);
+    return Node.collectRefNodes(node).map((refNode) => refNode.ref);
   },
 
   /**
@@ -308,12 +319,9 @@ export const Node = {
    * @returns その部品を指す参照ノードの名前。1 つも無ければ空
    */
   collectInstanceNames(node: Node, componentName: string): readonly string[] {
-    if (Node.isRef(node)) {
-      return node.ref === componentName ? [node.name] : [];
-    }
-    return Node.children(node).flatMap((child) =>
-      Node.collectInstanceNames(child, componentName),
-    );
+    return Node.collectRefNodes(node)
+      .filter((refNode) => refNode.ref === componentName)
+      .map((refNode) => refNode.name);
   },
 
   /**
