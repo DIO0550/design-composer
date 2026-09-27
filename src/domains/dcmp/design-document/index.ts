@@ -19,6 +19,7 @@ import { Node, type PropEdit, type RefNode } from "@/domains/dcmp/node";
 import { NodeTree, type NodeTreeUpdate } from "@/domains/dcmp/node-tree";
 import { Placement } from "@/domains/dcmp/placement";
 import { PrimitiveTypes } from "@/domains/dcmp/primitive-schema";
+import { ReferenceContext } from "@/domains/dcmp/reference-context";
 import type { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import { ResolvedProps } from "@/domains/dcmp/resolved-props";
 import { Size } from "@/domains/dcmp/size";
@@ -40,7 +41,6 @@ import {
   collectComponentErrors,
   collectDocumentNameErrors,
   type DesignDocumentValidationError,
-  type ReferenceContext,
 } from "./validation";
 
 export { DesignDocumentEditError } from "./edit-error";
@@ -1686,10 +1686,10 @@ export const DesignDocument = {
   collectErrors(
     document: DesignDocument,
   ): readonly DesignDocumentValidationError[] {
-    const context: ReferenceContext = {
-      components: document.components,
-      tokens: document.tokens,
-    };
+    const context = ReferenceContext.create(
+      document.components,
+      document.tokens,
+    );
 
     const componentErrors = ComponentSet.names(document.components).flatMap(
       (name) => {
