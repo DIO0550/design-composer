@@ -93,6 +93,21 @@ test("タブを閉じると、そのドキュメントだけが並びから消�
   expect(openedPaths(observer.session())).toStrictEqual([OtherPath]);
 });
 
+test("タブを並べ替えると、開いているドキュメントの並びが変わる", async () => {
+  const observer = renderDocumentSession(
+    {
+      [Path]: artboardContent("home"),
+      [OtherPath]: artboardContent("settings"),
+    },
+    { open: DialogChoice.Canceled, save: DialogChoice.Canceled },
+  );
+  await observer.dropFiles([Path, OtherPath]);
+
+  await observer.reorderTab({ fromIndex: 0, toIndex: 1 });
+
+  expect(openedPaths(observer.session())).toStrictEqual([OtherPath, Path]);
+});
+
 test("最後のタブを閉じると、何も開いていない状態へ戻る", async () => {
   const observer = renderDocumentSession(
     { [Path]: artboardContent("home") },
