@@ -923,6 +923,31 @@ export const EditorState = {
   },
 
   /**
+   * 選んでいるノードの複製を同じ親の中の直後へ挿し、複製を選び直す（docs/06-ui.md「編集
+   * 操作の一覧」の複製）。クリップボードは経由しない。
+   *
+   * 選択を複製へ移すのは、続けて複製したときに作った順で並ぶようにするため。元を選んだ
+   * ままだと、新しい複製ほど元の直後へ割り込み、並びが作った順の逆になる。
+   *
+   * @param state 複製する前のエディタの状態
+   * @returns 複製したあとのエディタの状態。1 つだけ選んでいないとき（未選択・複数選択）、
+   *   選択が artboard のとき、ファイルが不正な間は `none`
+   */
+  duplicateSelected(state: EditorState): Option<EditorState> {
+    return Option.flatMap(EditorState.singleName(state), (name) => {
+      const copied = DesignDocument.insertCopyAfter(
+        EditorState.document(state),
+        name,
+      );
+      return Result.isOk(copied)
+        ? Option.map(withEdit(state, copied.value.document), (edited) =>
+            EditorState.select(edited, copied.value.copyName),
+          )
+        : Option.none;
+    });
+  },
+
+  /**
    * ツリー上の指した位置へノードを挿す（docs/06-ui.md「編集操作の一覧」の挿入）。
    *
    * 名前の採番に要るのはドキュメント全体の名前なので、ノードの組み立ては挿入先を受け取ってか
