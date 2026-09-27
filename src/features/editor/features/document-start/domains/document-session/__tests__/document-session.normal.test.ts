@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import { openedAt } from "@/domains/__tests__/sample-document";
+import { OpenedDocuments } from "@/domains/session/opened-documents";
 import { Option } from "@/utils/Option";
 import { DocumentSession } from "../index";
 
@@ -127,6 +128,58 @@ test("見ている先を別の開いているドキュメントへ移せる", ()
   expect(
     DocumentSession.activePath(DocumentSession.activate(session, Path)),
   ).toStrictEqual(Option.some(Path));
+});
+
+test("開いているドキュメントを並べ替えると、並びが変わる", () => {
+  const session = DocumentSession.finishOpening(
+    DocumentSession.Closed,
+    opened(Path, OtherPath),
+  );
+
+  const reordered = Option.unwrap(
+    DocumentSession.reorder(session, { fromIndex: 1, toIndex: 0 }),
+  );
+
+  expect(
+    Option.map(reordered.documents, (documents) =>
+      OpenedDocuments.documents(documents).map((document) => document.path),
+    ),
+  ).toStrictEqual(Option.some([OtherPath, Path]));
+});
+
+test("並べ替えても、直前の失敗は残る", () => {
+  const session = DocumentSession.finishOpening(DocumentSession.Closed, {
+    documents: [openedAt(Path), openedAt(OtherPath)],
+    failure: Option.some(DialogFailure),
+  });
+
+  const reordered = Option.unwrap(
+    DocumentSession.reorder(session, { fromIndex: 1, toIndex: 0 }),
+  );
+
+  expect(DocumentSession.failure(reordered)).toStrictEqual(
+    Option.some(DialogFailure),
+  );
+});
+
+test("何も開いていない間は並べ替えられない", () => {
+  expect(
+    DocumentSession.reorder(DocumentSession.Closed, {
+      fromIndex: 0,
+      toIndex: 0,
+    }),
+  ).toStrictEqual(Option.none);
+});
+
+test("並びの外を指す移動では並べ替えられない", () => {
+  const session = DocumentSession.finishOpening(
+    DocumentSession.Closed,
+    opened(Path, OtherPath),
+  );
+
+  expect(
+    DocumentSession.reorder(session, { fromIndex: 0, toIndex: 2 }),
+  ).toStrictEqual(Option.none);
 });
 
 test("開けなかった後に開けると、直前の失敗は消える", () => {
