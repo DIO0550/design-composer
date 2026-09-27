@@ -3,7 +3,9 @@ import type { DocumentError } from "@/domains/session/document-error";
 import type { OpenedDocument } from "@/domains/session/opened-document";
 import { OpenedDocuments } from "@/domains/session/opened-documents";
 import type { DocumentDialogError } from "@/libs/document-dialog";
+import type { IndexMove } from "@/types/IndexMove";
 import { Option } from "@/utils/Option";
+import { Result } from "@/utils/Result";
 
 /**
  * 開けなかった理由。由来ごとに画面へ出すものが変わる（解釈できなかったファイルはエラー
@@ -178,6 +180,26 @@ export const DocumentSession = {
       ),
       attempt: session.attempt,
     };
+  },
+
+  /**
+   * 開いているドキュメントの 1 つを並びの別の位置へ移す。見ている先は変わらない。
+   *
+   * @param session 並べ替える前のセッション
+   * @param move 動かすドキュメントの今の位置と、動かした後に来る位置
+   * @returns 並べ替えたセッション。何も開いていないときと、どちらかの位置が並びの外の
+   *   ときは `none`
+   */
+  reorder(session: DocumentSession, move: IndexMove): Option<DocumentSession> {
+    return Option.flatMap(session.documents, (opened) => {
+      const reordered = OpenedDocuments.reorder(opened, move);
+      return Result.isOk(reordered)
+        ? Option.some({
+            documents: Option.some(reordered.value),
+            attempt: session.attempt,
+          })
+        : Option.none;
+    });
   },
 
   /**
