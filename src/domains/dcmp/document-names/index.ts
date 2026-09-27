@@ -108,11 +108,10 @@ export const DocumentNames = {
    * @returns 重複している名前。重複が無ければ空
    */
   duplicatedNames(documentNames: DocumentNames): readonly string[] {
-    const { names } = documentNames;
-    return names.filter(
-      (name, index) =>
-        names.indexOf(name) === index && names.lastIndexOf(name) !== index,
-    );
+    return DocumentNames.newlyDuplicatedNames({
+      before: DocumentNames.create([]),
+      after: documentNames,
+    });
   },
 
   /**
