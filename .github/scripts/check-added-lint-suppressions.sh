@@ -35,7 +35,8 @@ existing_suppressions="$(
 
 
 violations=""
-while IFS= read -r file; do
+# パスを `-z` で読む理由は lib/added-lines.sh の冒頭。
+while IFS= read -r -d '' file; do
   case "$file" in
     .claude/*|node_modules/*|dist/*|src-tauri/target/*) continue ;;
   esac
@@ -58,7 +59,7 @@ while IFS= read -r file; do
     violations="${violations}${file}:${entry}
 "
   done < <(entries_on_added_lines "$added" "$reported")
-done < <(git diff --name-only --diff-filter=d "$base"...HEAD -- '*.ts' '*.tsx' '*.js' '*.jsx')
+done < <(git diff -z --name-only --diff-filter=d "$base"...HEAD -- '*.ts' '*.tsx' '*.js' '*.jsx')
 
 if [ -z "$violations" ]; then
   echo "追加された lint 抑制コメントはありません"

@@ -11,18 +11,35 @@
 #
 # 使う側は `init_added_lines <base>` を 1 度呼んでから `added_line_numbers <base> <file>` を呼び、
 # 検出器の報告を `entries_on_added_lines` で絞る。
+#
+# **パスは `git diff -z` の NUL 区切りで読む。** 行区切りの出力では git が非 ASCII・`"`・`\`・
+# タブを含むパスをクォートして出し、その綴りは実在するファイル名と一致しない。
+# `-c core.quotePath=false` にしないのは、外れるのが非 ASCII のエスケープだけで `"` `\`
+# 制御文字は引き続きクォートされるため。使う側のファイル一覧も同じく `-z` で読むこと。
 
-# rename の対応表(新しいパス -> 古いパス)を 1 度だけ作る。ファイルごとに `git diff` を
-# 走らせると、移動が数百件ある変更で毎回全体を読み直すことになる。
+# rename の一覧(`R<類似度>\0<古いパス>\0<新しいパス>\0` の並び)を 1 度だけ取っておく。
+# ファイルごとに `git diff` を走らせると、移動が数百件ある変更で毎回全体を読み直すことになる。
 init_added_lines() {
   ADDED_LINES_RENAMES="$(mktemp)"
-  git diff -M --name-status --diff-filter=R "$1"...HEAD \
-    | awk -F'\t' '/^R/ { print $3 "\t" $2 }' > "$ADDED_LINES_RENAMES"
+  git diff -M -z --name-status --diff-filter=R "$1"...HEAD > "$ADDED_LINES_RENAMES"
+}
+
+# rename の一覧から、新しいパスに対応する古いパスを出す(rename でなければ何も出さない)。
+#
+# @param 1 新しいパス
+rename_source_of() {
+  local file="$1" status old new
+  while IFS= read -r -d '' status && IFS= read -r -d '' old && IFS= read -r -d '' new; do
+    if [ "$new" = "$file" ]; then
+      printf '%s' "$old"
+      return
+    fi
+  done < "$ADDED_LINES_RENAMES"
 }
 
 added_line_numbers() {
   local base="$1" file="$2" source_path
-  source_path="$(awk -F'\t' -v f="$file" '$1 == f { print $2; exit }' "$ADDED_LINES_RENAMES")"
+  source_path="$(rename_source_of "$file")"
   git diff -M -U0 "$base"...HEAD -- "$file" ${source_path:+"$source_path"} | awk '
     /^@@/ {
       match($0, /\+[0-9]+(,[0-9]+)?/)

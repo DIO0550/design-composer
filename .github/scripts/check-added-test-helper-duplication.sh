@@ -25,7 +25,8 @@ require_runnable_detector "追加されたテストヘルパーの重複" "$dete
 
 
 violations=""
-while IFS= read -r file; do
+# パスを `-z` で読む理由は lib/added-lines.sh の冒頭。
+while IFS= read -r -d '' file; do
   [ -f "$file" ] || continue
   case "$(basename "$(dirname "$file")")" in
     __tests__) ;;
@@ -44,7 +45,7 @@ while IFS= read -r file; do
     violations="${violations}${file}:${entry}
 "
   done < <(entries_on_added_lines "$added" "$reported")
-done < <(git diff --name-only --diff-filter=d "$base"...HEAD -- '*.ts' '*.tsx')
+done < <(git diff -z --name-only --diff-filter=d "$base"...HEAD -- '*.ts' '*.tsx')
 
 if [ -z "$violations" ]; then
   echo "追加されたテストヘルパーの重複はありません"
