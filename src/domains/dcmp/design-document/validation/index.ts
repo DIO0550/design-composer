@@ -358,18 +358,15 @@ function collectPublicPropNameErrors(
   componentName: string,
   component: Component,
 ): readonly DesignDocumentValidationError[] {
-  return Component.publicPropNames(component).flatMap(
-    (publicPropName): readonly DesignDocumentValidationError[] =>
-      Component.isValidPublicPropName(publicPropName)
-        ? []
-        : [
-            {
-              kind: "invalid-public-prop-name",
-              nodeName: componentName,
-              prop: publicPropName,
-              message: `public prop name "${publicPropName}" is all digits`,
-            },
-          ],
+  return Component.publicPropNames(component).flatMap((publicPropName) =>
+    Component.isValidPublicPropName(publicPropName)
+      ? []
+      : withLocation({ nodeName: componentName, prop: publicPropName }, [
+          {
+            kind: "invalid-public-prop-name",
+            message: `public prop name "${publicPropName}" is not a valid public prop name`,
+          },
+        ]),
   );
 }
 
