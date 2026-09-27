@@ -77,6 +77,26 @@ test("名前が欠落したノードの子の欠落は、名前を持つ最も�
   });
 });
 
+test("名前を持つ途中のノードの下の欠落は、そのノードを入れ物として返る", () => {
+  const violations = DocumentNames.collectNameViolations({}, [
+    {
+      name: "screen",
+      width: 375,
+      height: 812,
+      children: [
+        { name: "row", type: "Box", children: [{ name: "", type: "Text" }] },
+      ],
+    },
+  ]);
+
+  expect(violations).toEqual([
+    {
+      kind: "missing",
+      position: { kind: "child", ownerName: "row", index: 0 },
+    },
+  ]);
+});
+
 test("名前を持つ祖先が無いノードの欠落は、空の入れ物の名前で返る", () => {
   const violations = DocumentNames.collectNameViolations({}, [
     {

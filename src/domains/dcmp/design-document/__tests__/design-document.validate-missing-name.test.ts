@@ -206,3 +206,29 @@ test("名前を持つ祖先が無いノードの欠落は、空の入れ物名�
     }),
   ]);
 });
+
+test("名前を持つ途中のノードの下の欠落は、そのノードの名前で報告される", () => {
+  const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
+    artboards: [
+      {
+        name: "screen",
+        width: 375,
+        height: 812,
+        children: [
+          { name: "row", type: "Box", children: [{ name: "", type: "Text" }] },
+        ],
+      },
+    ],
+  });
+
+  const errors = DesignDocument.collectErrors(document);
+
+  expect(errors).toEqual([
+    expect.objectContaining({
+      kind: "missing-name",
+      nodeName: "row",
+      message: 'child 0 of "row" has no name',
+    }),
+  ]);
+});

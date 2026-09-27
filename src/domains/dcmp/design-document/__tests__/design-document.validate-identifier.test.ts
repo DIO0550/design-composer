@@ -299,8 +299,8 @@ test("数字だけのトークン名は invalid-identifier エラーになる", 
 test("トークン名の識別子違反は種別を添えた文言で報告される", () => {
   const document = DesignDocument.create({
     tokens: {
-      colors: { Primary: "#112233" },
-      spacing: {},
+      colors: {},
+      spacing: { Large: 16 },
       radius: {},
       shadows: {},
       typography: {},
@@ -312,7 +312,7 @@ test("トークン名の識別子違反は種別を添えた文言で報告さ�
 
   expect(errors).toEqual([
     expect.objectContaining({
-      message: 'token name "Primary" in colors is not a valid identifier',
+      message: 'token name "Large" in spacing is not a valid identifier',
     }),
   ]);
 });
@@ -354,5 +354,26 @@ test("入れ物の中の名前の違反と欠落は行きがけ順に報告さ�
     "invalid-identifier",
     "missing-name",
     "invalid-identifier",
+  ]);
+});
+
+test("ノード名の識別子違反は名前を添えた文言で報告される", () => {
+  const document = DesignDocument.create({
+    artboards: [
+      {
+        name: "screen",
+        width: 375,
+        height: 812,
+        children: [{ name: "LoginForm", type: "Box" }],
+      },
+    ],
+  });
+
+  const errors = DesignDocument.collectErrors(document);
+
+  expect(errors).toEqual([
+    expect.objectContaining({
+      message: 'name "LoginForm" is not a valid identifier',
+    }),
   ]);
 });
