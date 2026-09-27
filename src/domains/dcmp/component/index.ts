@@ -447,11 +447,11 @@ function targetInPrimitive(
   node: PrimitiveNode,
   prop: string,
 ): Option<PublicPropTarget> {
-  if (!PrimitiveSchema.isPrimitiveType(node.type)) {
+  const schema = PrimitiveSchema.forTypeName(node.type);
+  if (!Option.isSome(schema)) {
     return Option.none;
   }
-  const schema: PrimitiveSchema = PrimitiveSchema.forType(node.type);
-  const definition = RecordEx.get<PropDefinition>(schema.props, prop);
+  const definition = RecordEx.get<PropDefinition>(schema.value.props, prop);
   if (!Option.isSome(definition)) {
     return Option.none;
   }

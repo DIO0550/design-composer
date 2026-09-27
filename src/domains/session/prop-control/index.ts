@@ -594,14 +594,14 @@ function nodeControls(document: DesignDocument, node: Node): SelectionControls {
       ).length,
     };
   }
-  if (!PrimitiveSchema.isPrimitiveType(node.type)) {
+  const schema = PrimitiveSchema.forTypeName(node.type);
+  if (!Option.isSome(schema)) {
     return { kind: "groups", sections: [] };
   }
-  const schema: PrimitiveSchema = PrimitiveSchema.forType(node.type);
   return {
     kind: "groups",
     sections: sectionsOf(
-      declaredEditableProps(schema.props),
+      declaredEditableProps(schema.value.props),
       node.props ?? {},
       document.tokens,
     ),
