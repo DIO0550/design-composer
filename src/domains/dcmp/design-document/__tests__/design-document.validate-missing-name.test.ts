@@ -115,3 +115,94 @@ test("name が欠落したノードは識別子規則違反として二重に報
 
   expect(errors.map((error) => error.kind)).toEqual(["missing-name"]);
 });
+
+test("キーが空の部品は components の中のキーとして報告される", () => {
+  const document = DesignDocument.create({
+    components: { "": { type: "Box" } },
+  });
+
+  const errors = DesignDocument.collectErrors(document);
+
+  expect(errors).toEqual([
+    expect.objectContaining({
+      kind: "missing-name",
+      nodeName: "components",
+      message: 'key "" of "components" has no name',
+    }),
+  ]);
+});
+
+test("name が欠落した artboard は artboards の中の位置で報告される", () => {
+  const document = DesignDocument.create({
+    artboards: [
+      { name: "screen", width: 375, height: 812, children: [] },
+      { name: "", width: 375, height: 812, children: [] },
+    ],
+  });
+
+  const errors = DesignDocument.collectErrors(document);
+
+  expect(errors).toEqual([
+    expect.objectContaining({
+      kind: "missing-name",
+      nodeName: "artboards",
+      message: 'artboard 1 of "artboards" has no name',
+    }),
+  ]);
+});
+
+test("name が欠落したノードの子の欠落は、名前を持つ最も近い祖先で報告される", () => {
+  const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
+    artboards: [
+      {
+        name: "screen",
+        width: 375,
+        height: 812,
+        children: [
+          {
+            name: "",
+            type: "Box",
+            children: [{ name: "", type: "Box" }],
+          },
+        ],
+      },
+    ],
+  });
+
+  const errors = DesignDocument.collectErrors(document).filter(
+    (error) => error.kind === "missing-name",
+  );
+
+  expect(errors).toEqual([
+    expect.objectContaining({ message: 'child 0 of "screen" has no name' }),
+    expect.objectContaining({ message: 'child 0 of "screen" has no name' }),
+  ]);
+});
+
+test("名前を持つ祖先が無いノードの欠落は、空の入れ物名で報告される", () => {
+  const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
+    artboards: [
+      {
+        name: "",
+        width: 375,
+        height: 812,
+        children: [{ name: "", type: "Text" }],
+      },
+    ],
+  });
+
+  const errors = DesignDocument.collectErrors(document).filter(
+    (error) => error.kind === "missing-name",
+  );
+
+  expect(errors).toEqual([
+    expect.objectContaining({ kind: "missing-name", nodeName: "artboards" }),
+    expect.objectContaining({
+      kind: "missing-name",
+      nodeName: "",
+      message: 'child 0 of "" has no name',
+    }),
+  ]);
+});
