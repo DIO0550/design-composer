@@ -21,7 +21,6 @@ import {
 } from "@/domains/dcmp/primitive-schema";
 import { Size } from "@/domains/dcmp/size";
 import { TokenSet } from "@/domains/dcmp/token";
-import { Axes } from "@/domains/unit/axis";
 import { Option } from "@/utils/Option";
 import { RecordEx } from "@/utils/RecordEx";
 import type { DesignDocumentV1 as DesignDocument } from "../v1";
@@ -110,12 +109,7 @@ function collectTypedPropErrors(
 }
 
 /**
- * 子を並べない親（`layout: free`）の下に `fill` を書いていないか（docs/03「サイズ指定の原則」。Figma
- * と同じく `fill` は子を並べる親の下でだけ意味を持つ）。
- *
- * スキーマの `enabledWhen` で閉じられないのは、条件が**親の** prop だから（docs/03「`enabledWhen`
- * は単純な等値・不等値のみ」）。向きを持つかの判定は `Layout.direction` を引くので、コ
- * ンパイル側の `fill` の出し分けと同じ答えになる。
+ * 子を並べない親の下の `fill` を、軸ごとのエラーにする（判定は `Layout` が持つ）。
  *
  * 親を引数で要求するので、親が決まらない位置（部品のルート）はそもそも呼ばれない。部品
  * インスタンスの中身も対象外で、検証が見るのは**定義時点の props** だけ。
@@ -126,23 +120,15 @@ function collectTypedPropErrors(
  */
 function collectFillErrors(
   parentLayout: Layout,
-  props: Props | undefined,
+  props: Props,
 ): readonly UnlocatedError[] {
-  if (Option.isSome(Layout.direction(parentLayout))) {
-    return [];
-  }
-  return Object.values(Axes).flatMap((axis): readonly UnlocatedError[] => {
+  return Layout.collectFillAxesInFreeParent(parentLayout, props).map((axis) => {
     const modeProp = Size.modeProp(axis);
-    if (props?.[modeProp] !== "fill") {
-      return [];
-    }
-    return [
-      {
-        kind: "fill-in-free-parent" as const,
-        prop: modeProp,
-        message: `prop "${modeProp}" cannot be "fill" inside a parent that does not arrange its children`,
-      },
-    ];
+    return {
+      kind: "fill-in-free-parent" as const,
+      prop: modeProp,
+      message: `prop "${modeProp}" cannot be "fill" inside a parent that does not arrange its children`,
+    };
   });
 }
 
@@ -162,11 +148,12 @@ function collectNodeErrors(
   if (Node.isRef(node)) {
     return [];
   }
+  const props = node.props ?? {};
   const ownErrors = withLocation({ nodeName: node.name }, [
     ...collectTypedPropErrors(node.type, node.props, tokens),
-    ...collectFillErrors(parentLayout, node.props),
+    ...collectFillErrors(parentLayout, props),
   ]);
-  const childLayout = Layout.fromProps(node.props ?? {});
+  const childLayout = Layout.fromProps(props);
   const childErrors = Node.children(node).flatMap((child) =>
     collectNodeErrors(child, tokens, childLayout),
   );
