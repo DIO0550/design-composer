@@ -26,9 +26,10 @@ function outOfRange<T>(
 }
 
 /**
- * 2 つの値を等しいとみなすか。`ArrayEx` の「等しい」はすべてここで決める。
+ * 2 つの値を等しいとみなすか。`ArrayEx` の「等しい」はすべてここで決める。ただし
+ * `countOccurrences` は、同じ基準を持つ `Map` のキーの等しさに任せる。
  *
- * 基準は `includes` / `Set` と同じ SameValueZero(`NaN` どうしは等しく、`0` と `-0` も等しい)。
+ * 基準は `includes` / `Set` / `Map` と同じ SameValueZero(`NaN` どうしは等しく、`0` と `-0` も等しい)。
  * 組み込みの `includes` と `indexOf` を操作ごとに使い分けると基準が 2 通りに割れ、
  * コードからはそれが読めないので、判定を 1 つにして全操作から通す。
  *
@@ -138,6 +139,21 @@ export const ArrayEx = {
    */
   distinct<T>(array: readonly T[]): readonly T[] {
     return array.filter((item, index) => indexOfEqual(array, item) === index);
+  },
+
+  /**
+   * 各値が並びに何回現れるか。
+   *
+   * @param array 数える並び
+   * @returns 値ごとの出現回数。キーは最初に現れた順に並び、等しさは SameValueZero で見る
+   */
+  countOccurrences<T>(array: readonly T[]): ReadonlyMap<T, number> {
+    // 1 件ごとに Map を複製すると並びの長さの 2 乗になるので、ここで作った Map だけを書き足す
+    const counts = new Map<T, number>();
+    for (const item of array) {
+      counts.set(item, (counts.get(item) ?? 0) + 1);
+    }
+    return counts;
   },
 
   /**
