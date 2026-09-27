@@ -1,5 +1,5 @@
 import { fireEvent } from "@testing-library/react";
-import { type PointerButton, PointerButtons } from "@/utils/PointerButton";
+import { type PointerButton, PointerButtons } from "@/libs/dom-event";
 
 /**
  * ポインタ操作。キャンバスのドラッグ（`features/editor/features/canvas`）と、左ペインの

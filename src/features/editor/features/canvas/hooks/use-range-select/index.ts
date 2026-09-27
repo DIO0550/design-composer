@@ -4,8 +4,8 @@ import type { CanvasBounds } from "@/features/editor/features/canvas/domains/can
 import { RangeSelect } from "@/features/editor/features/canvas/domains/range-select";
 import { CanvasPointer } from "@/features/editor/features/canvas/utils/CanvasPointer";
 import { DrawnBounds } from "@/features/editor/features/canvas/utils/DrawnBounds";
+import { PointerButton } from "@/libs/dom-event";
 import { Option } from "@/utils/Option";
-import { PointerButton } from "@/utils/PointerButton";
 
 /**
  * その範囲に重なって描かれている、選べるものの名前。

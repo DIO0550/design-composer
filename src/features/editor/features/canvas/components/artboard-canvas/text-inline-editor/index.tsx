@@ -1,6 +1,6 @@
 import type { KeyboardEvent } from "react";
 import type { TextEdit } from "@/features/editor/features/canvas/domains/text-edit";
-import { KeyNames } from "@/utils/KeyName";
+import { KeyNames } from "@/libs/dom-event";
 
 /** 編集を終えるキー（docs/06-ui.md「確定（Enter / フォーカス外し）」「キャンセル（Escape）」）。 */
 const CommitKey = KeyNames.Enter;

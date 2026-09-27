@@ -1,6 +1,6 @@
 import { createContext, type ReactNode, useContext, useEffect } from "react";
+import { CommandKey } from "@/libs/dom-event";
 import type { ValueOf } from "@/types/ValueOf";
-import { CommandKey } from "@/utils/CommandKey";
 import { ElementEx } from "@/utils/ElementEx";
 
 /**
