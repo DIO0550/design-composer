@@ -25,6 +25,16 @@
     "name": "前へ動かしている"
   },
   {
+    "id": "components-dropline--horizontal-after",
+    "title": "components/DropLine",
+    "name": "横並びで後ろへ動かしている"
+  },
+  {
+    "id": "components-dropline--horizontal-before",
+    "title": "components/DropLine",
+    "name": "横並びで前へ動かしている"
+  },
+  {
     "id": "components-panebody--default",
     "title": "components/PaneBody",
     "name": "中身が枠に収まる"
