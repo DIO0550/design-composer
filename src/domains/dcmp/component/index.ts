@@ -206,6 +206,19 @@ export const Component = {
   },
 
   /**
+   * 部品が宣言している公開 prop 名のうち、宣言名の規則を満たさないもの。
+   *
+   * @param component 見る部品定義
+   * @returns `isValidPublicPropName` を満たさない宣言名を `publicPropNames` の順で並べたもの。
+   *   すべて満たせば空
+   */
+  collectInvalidPublicPropNames(component: Component): readonly string[] {
+    return Component.publicPropNames(component).filter(
+      (name) => !Component.isValidPublicPropName(name),
+    );
+  },
+
+  /**
    * 公開 prop の繋ぎ先を引く。
    *
    * @param component 見る部品定義
