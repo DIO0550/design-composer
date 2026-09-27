@@ -1,7 +1,7 @@
 import { CssDirection } from "@/domains/dcmp/css-direction";
 import { Axes, type Axis, type AxisEnd, AxisEnds } from "@/domains/unit/axis";
 import type { Offset } from "@/domains/unit/offset";
-import { type Side, Sides } from "@/domains/unit/side";
+import { type Side, SidePair, Sides } from "@/domains/unit/side";
 import { Option } from "@/utils/Option";
 
 /**
@@ -334,6 +334,23 @@ export const CanvasBounds = {
       (CanvasBounds.start(bounds, direction) +
         CanvasBounds.end(bounds, direction)) /
       2
+    );
+  },
+
+  /**
+   * 向かい合う 2 辺のちょうど中間を通る中心線の座標。
+   *
+   * `center` へは委譲しない。あちらは子が並ぶ向き（`CssDirection`）で引く前後判定の点で、
+   * 辺の組から引くには `SidePair` ↔ `CssDirection` の対応表を新たに持つことになる。
+   *
+   * @param bounds 中心線を知りたい矩形
+   * @param pair 中心線を挟む 2 辺の組
+   * @returns 水平の組なら左右の辺の中間の x、垂直の組なら上下の辺の中間の y（画面上の px）
+   */
+  midline(bounds: CanvasBounds, pair: SidePair): number {
+    const [first, second] = SidePair.sides(pair);
+    return (
+      (CanvasBounds.side(bounds, first) + CanvasBounds.side(bounds, second)) / 2
     );
   },
 } as const;
