@@ -490,6 +490,49 @@ function unusableNameError(
 }
 
 /**
+ * 編集が単一名前空間に新しい重複を作っていたら失敗にする。
+ *
+ * @param before 編集する前のドキュメント
+ * @param edited その編集の結果
+ * @returns `edited` のまま。ただし `DocumentNames.newlyDuplicatedNames` が名前を返せば、
+ *   その先頭の `duplicate-name`
+ */
+function rejectNewlyDuplicatedNames(
+  before: DesignDocument,
+  edited: Result<DesignDocument, DesignDocumentEditError>,
+): Result<DesignDocument, DesignDocumentEditError> {
+  return Result.flatMap(edited, (after) => {
+    const duplicated = ArrayEx.first(
+      DocumentNames.newlyDuplicatedNames({
+        before: documentNamesOf(before),
+        after: documentNamesOf(after),
+      }),
+    );
+    return Option.isSome(duplicated)
+      ? Result.err({ kind: "duplicate-name", name: duplicated.value })
+      : Result.ok(after);
+  });
+}
+
+/**
+ * ツリー上の位置へノードを挿す。名前の一意性は見ない（見るのは `insertNode`）。
+ *
+ * @param document 挿入先のドキュメント
+ * @param at 挿入する位置
+ * @param node 挿入するノード
+ * @returns 挿入したドキュメント。位置の条件で `insertNode` と同じ `err`
+ */
+function insertIntoParent(
+  document: DesignDocument,
+  at: ChildPosition,
+  node: Node,
+): Result<DesignDocument, DesignDocumentEditError> {
+  return updateChildrenOfParent(document, at.parentName, (children) =>
+    NodeTree.insertAt(children, at.index, node),
+  );
+}
+
+/**
  * 解除の対象になる参照ノードを、部品を辿って展開したもの。
  *
  * 解除できるか（`isDetachable`）と解除そのもの（`detach`）の両方がここを通る。
@@ -611,21 +654,24 @@ export const DesignDocument = {
    * @param document 挿入先のドキュメント
    * @param at 挿入する位置。親は artboard でもノードでもよく、`index` は挿入する前の子の
    *   並びで見た位置（子の数と同じなら末尾）
-   * @param node 挿入するノード。名前の一意性は見ないので、既にある名前もそのまま入る
-   *   （複製を挿すなら `insertNodeCopy`）
+   * @param node 挿入するノード。自分と子孫の名前は付け替えない（既にある名前と衝突しうる
+   *   複製を挿すなら `insertNodeCopy`）
    * @returns 挿入したドキュメント。親の名前が artboard にも artboard 配下のノードにも無い
    *   （部品定義の中のノードも含む）なら `parent-not-found`、親が参照ノードか、スキーマが
    *   子を認めていないプリミティブなら `children-not-allowed`、`index` が 0 以上子の数以下の整数でなければ
-   *   `index-out-of-range`。名前が重複した不正なドキュメントでは `findChildren` が返す並びへ
-   *   挿す（artboard の名前を先に当て、ノードは `findNode` が返すもの）
+   *   `index-out-of-range`。位置の条件を満たしたうえで、単一名前空間に新しい重複ができるなら
+   *   その名前の `duplicate-name`（`DocumentNames.newlyDuplicatedNames` の先頭）。名前が
+   *   重複した不正なドキュメントでは `findChildren` が返す並びへ挿す（artboard の名前を
+   *   先に当て、ノードは `findNode` が返すもの）
    */
   insertNode(
     document: DesignDocument,
     at: ChildPosition,
     node: Node,
   ): Result<DesignDocument, DesignDocumentEditError> {
-    return updateChildrenOfParent(document, at.parentName, (children) =>
-      NodeTree.insertAt(children, at.index, node),
+    return rejectNewlyDuplicatedNames(
+      document,
+      insertIntoParent(document, at, node),
     );
   },
 
@@ -640,7 +686,8 @@ export const DesignDocument = {
    * @param at 挿入する位置（`insertNode` と同じ）
    * @param node 複製元のノード。自分と子孫の名前は `DocumentNames.renameSubtree` で
    *   ドキュメントの名前と衝突しない名前へ付け替える
-   * @returns 名前を付け替えた複製を挿入したドキュメント。`insertNode` と同じ条件で `err`
+   * @returns 名前を付け替えた複製を挿入したドキュメント。位置の条件で `insertNode` と同じ
+   *   `err`。付け替えてから挿すので `duplicate-name` にはならない
    */
   insertNodeCopy(
     document: DesignDocument,
@@ -1079,8 +1126,10 @@ export const DesignDocument = {
    *
    * @param document 差し替える対象を含むドキュメント
    * @param name 差し替えるノードの名前
-   * @param node 差し替え後のノード。名前は見ないので、`name` と違う名前でもそのまま入る
-   * @returns 差し替えたドキュメント。artboard 自身の名前・部品定義の中のノードの名前・
+   * @param node 差し替え後のノード。`name` と違う名前でもよい
+   * @returns 差し替えたドキュメント。単一名前空間に新しい重複ができるなら（同じ名前のまま
+   *   差し替えるなど出現が増えない編集は、既に重複している名前でも通す）その名前の
+   *   `duplicate-name`。artboard 自身の名前・部品定義の中のノードの名前・
    *   無い名前は `node-not-found`。名前が重複した不正なドキュメントでは `findNode` が返す
    *   ノードだけを差し替える
    */
@@ -1089,8 +1138,11 @@ export const DesignDocument = {
     name: string,
     node: Node,
   ): Result<DesignDocument, DesignDocumentEditError> {
-    return updateSiblingsOfNode(document, name, (siblings) =>
-      NodeTree.spliceByName(siblings, name, [node]),
+    return rejectNewlyDuplicatedNames(
+      document,
+      updateSiblingsOfNode(document, name, (siblings) =>
+        NodeTree.spliceByName(siblings, name, [node]),
+      ),
     );
   },
 
@@ -1128,7 +1180,8 @@ export const DesignDocument = {
    *   `ChildPosition.afterRemoving` で読み替える）
    * @returns 移したドキュメント。ノードが無い（artboard 自身の名前も含む）なら
    *   `node-not-found`、`to` の親がそのノード自身か子孫なら `move-into-descendant`、挿す
-   *   ところで失敗すれば `insertNode` と同じ条件の `err`
+   *   ところで失敗すれば位置の条件で `insertNode` と同じ `err`（名前の検査は通さないので
+   *   `duplicate-name` にはならない）
    */
   moveNode(
     document: DesignDocument,
@@ -1147,9 +1200,11 @@ export const DesignDocument = {
         parentName: to.parentName,
       });
     }
+    // `insertNode` は通さない。取り除いた後と比べるので、既に重複している名前のノードを
+    // 移すと出現が増えたように見えて弾かれる
     return Result.flatMap(
       DesignDocument.removeNode(document, name),
-      (without) => DesignDocument.insertNode(without, to, node),
+      (without) => insertIntoParent(without, to, node),
     );
   },
 
@@ -1234,7 +1289,8 @@ export const DesignDocument = {
    * その名前のノードを解除できるか（参照ノードで、参照先を辿りきれる）。
    *
    * `DesignDocument.replaceNode` も `Result` を返すが、探索（`findNode`）と置き換えは同じ
-   * `Node.children` の走査を通るので、探索できたノードの置き換えは必ず成功する。
+   * `Node.children` の走査を通り、`detach` は自分の名前を変えず子を `renameSubtree` で
+   * 付け替えて新しい重複を作らないので、探索できたノードの置き換えは必ず成功する。
    *
    * @param document 解除元のドキュメント
    * @param name 解除したいノードの名前
@@ -1318,17 +1374,18 @@ export const DesignDocument = {
    *
    * @param document 挿入先のドキュメント
    * @param index 挿入する位置。artboard の数と同じなら末尾
-   * @param artboard 挿入する artboard。名前の一意性は見ないので、既にある名前もそのまま
-   *   入る
+   * @param artboard 挿入する artboard
    * @returns 挿入したドキュメント。`index` が 0 以上 artboard の数以下の整数でなければ
-   *   `index-out-of-range`
+   *   `index-out-of-range`。位置の条件を満たしたうえで、artboard 名か配下のノードの名前で
+   *   単一名前空間に新しい重複ができるならその名前の `duplicate-name`
+   *   （`DocumentNames.newlyDuplicatedNames` の先頭）
    */
   insertArtboard(
     document: DesignDocument,
     index: number,
     artboard: Artboard,
   ): Result<DesignDocument, DesignDocumentEditError> {
-    return Result.map(
+    const inserted = Result.map(
       Result.mapErr(
         ArrayEx.insertAt(document.artboards, index, artboard),
         (range): DesignDocumentEditError => ({
@@ -1338,6 +1395,7 @@ export const DesignDocument = {
       ),
       (artboards) => ({ ...document, artboards }),
     );
+    return rejectNewlyDuplicatedNames(document, inserted);
   },
 
   /**
