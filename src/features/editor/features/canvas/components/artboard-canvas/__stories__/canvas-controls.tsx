@@ -48,6 +48,7 @@ export function WithCanvasControls({
   children: (controls: CanvasControls) => ReactElement;
 }>): ReactElement {
   const artboardDrag = useArtboardDrag({
+    document: selection.document,
     view: CanvasView.create(),
     onReposition: () => {},
   });

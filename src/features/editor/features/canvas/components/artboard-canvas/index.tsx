@@ -151,6 +151,7 @@ export function ArtboardCanvas({
     : NodeResize.resizable(selection);
   const nodeResize = useNodeResize({ resizable, selection, view, onResize });
   const artboardDrag = useArtboardDrag({
+    document: designDocument,
     view,
     onReposition: onRepositionArtboard,
   });

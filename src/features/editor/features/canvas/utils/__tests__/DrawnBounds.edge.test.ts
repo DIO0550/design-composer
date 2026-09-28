@@ -55,3 +55,16 @@ test("描かれていない名前は拾わない", () => {
 
   expect(overlapping).toEqual(["home"]);
 });
+
+test("描かれていない名前と面積を持たないものは、測った並びに入らない", () => {
+  drawNamed("collapsed", { left: 0, top: 0, width: 0, height: 0 });
+  drawNamed("home", { left: 60, top: 60, width: 40, height: 40 });
+
+  const drawnBounds = DrawnBounds.collectDrawnBounds([
+    "about",
+    "collapsed",
+    "home",
+  ]);
+
+  expect(drawnBounds).toEqual([{ left: 60, top: 60, width: 40, height: 40 }]);
+});
