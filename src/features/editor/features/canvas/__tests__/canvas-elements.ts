@@ -30,8 +30,13 @@ export function canvasContent(): HTMLElement {
   return screen.getByTestId("canvas-content");
 }
 
+/** キャンバスの中身に効いている変形（ズーム / パンの結果）。 */
+export function canvasTransform(): string {
+  return canvasContent().style.transform;
+}
+
 /**
- * キャンバスの土台（ズーム / パンを受ける面）。
+ * キャンバスの土台（ズーム / パン・範囲選択を受ける面）。
  * 中身の器はこの左上を原点に置かれるので、**収める先**として測る対象になる。
  */
 export function canvasSurface(): HTMLElement {

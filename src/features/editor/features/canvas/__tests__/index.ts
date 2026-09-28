@@ -8,6 +8,7 @@ export {
   artboardHandle,
   canvasContent,
   canvasSurface,
+  canvasTransform,
   highlightedNames,
   renderedElement,
   textInlineEditorField,
