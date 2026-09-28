@@ -13,7 +13,9 @@ import { DocumentSelection } from "@/domains/session/document-selection";
 import { NameFilter } from "@/domains/session/name-filter";
 import { Selection, type SelectionKind } from "@/domains/session/selection";
 import { RowNameField } from "@/features/editor/features/sidebar/components/row-name-field";
+import type { OpenRowContextMenu } from "@/features/editor/features/sidebar/types/LeftPaneContextMenuActions";
 import type { LeftPaneRenameActions } from "@/features/editor/features/sidebar/types/LeftPaneRenameActions";
+import { RowContextMenuEvent } from "@/features/editor/features/sidebar/utils/RowContextMenuEvent";
 import { Option } from "@/utils/Option";
 
 /** 文言を読む prop。Text のスキーマが宣言している名前に限る。 */
@@ -43,6 +45,7 @@ type RowContext = Readonly<{
   /** 名前を絞る条件。絞っていなければ不在 */
   filter: Option<NameFilter>;
   onSelect: (name: string) => void;
+  onOpenContextMenu: OpenRowContextMenu;
   rename: TreeRename;
 }>;
 
@@ -139,12 +142,14 @@ function SelectableName({
   isSelected,
   onSelect,
   onStartRenaming,
+  onOpenContextMenu,
 }: Readonly<{
   name: string;
   marks: NodeMarks;
   isSelected: boolean;
   onSelect: (name: string) => void;
   onStartRenaming: (name: string) => void;
+  onOpenContextMenu: OpenRowContextMenu;
 }>) {
   return (
     <button
@@ -153,6 +158,7 @@ function SelectableName({
       aria-current={isSelected}
       onClick={() => onSelect(name)}
       onDoubleClick={() => onStartRenaming(name)}
+      onContextMenu={RowContextMenuEvent.handlerFor(name, onOpenContextMenu)}
       className="flex min-w-0 flex-1 items-center gap-1.5 pr-2 text-left"
     >
       {Option.isSome(marks.glyph) ? (
@@ -203,7 +209,7 @@ function rowsFromNodes(
  * @returns そのノードと、絞り込みに残った子孫を映した行
  */
 function rowFromNode(node: Node, context: RowContext): NestedRow {
-  const { selection, onSelect, rename } = context;
+  const { selection, onSelect, onOpenContextMenu, rename } = context;
   const isSelected = DocumentSelection.isSelected(selection, node.name);
   const isRenaming = Option.contains(rename.renaming, node.name);
   const marks = nodeMarks(node);
@@ -229,6 +235,7 @@ function rowFromNode(node: Node, context: RowContext): NestedRow {
         isSelected={isSelected}
         onSelect={onSelect}
         onStartRenaming={rename.actions.startAt}
+        onOpenContextMenu={onOpenContextMenu}
       />
     ),
     children: rowsFromNodes(Node.children(node), context),
@@ -267,6 +274,7 @@ export function DocumentTree({
   filter,
   onSelect,
   onReorder,
+  onOpenContextMenu,
   renameActions,
 }: Readonly<{
   selection: DocumentSelection;
@@ -276,6 +284,8 @@ export function DocumentTree({
   filter: Option<NameFilter>;
   onSelect: (name: string) => void;
   onReorder: (from: ChildPosition, toIndex: number) => void;
+  /** 行を右クリックしたときに、そのノードの名前と押した窓の座標を伝える。 */
+  onOpenContextMenu: OpenRowContextMenu;
   renameActions: LeftPaneRenameActions;
 }>) {
   const current = DocumentSelection.currentArtboard(selection);
@@ -312,6 +322,7 @@ export function DocumentTree({
           selection,
           filter,
           onSelect,
+          onOpenContextMenu,
           rename: { renaming, actions: renameActions },
         })}
         parentName={artboard.name}

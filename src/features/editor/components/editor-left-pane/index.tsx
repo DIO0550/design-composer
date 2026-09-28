@@ -10,6 +10,7 @@ import {
 import {
   LayersPanel,
   LeftPane,
+  type LeftPaneContextMenuActions,
   type LeftPaneView,
   type LeftPaneViewContent,
   LeftPaneViews,
@@ -44,6 +45,7 @@ export function EditorLeftPane({
   artboard,
   token,
   grab,
+  contextMenu,
 }: Readonly<{
   view: LeftPaneView;
   onSelectView: (view: LeftPaneView) => void;
@@ -56,6 +58,7 @@ export function EditorLeftPane({
   artboard: ArtboardActions;
   token: TokenActions;
   grab: AssetGrab;
+  contextMenu: LeftPaneContextMenuActions;
 }>): ReactElement {
   /*
    * 行き先を 1 つ足すと `Record` が漏れをコンパイルエラーにする。この注釈を外すと
@@ -85,6 +88,7 @@ export function EditorLeftPane({
             finish: node.finishRenaming,
             cancel: node.cancelRenaming,
           }}
+          contextMenu={contextMenu}
         />
       ),
     },

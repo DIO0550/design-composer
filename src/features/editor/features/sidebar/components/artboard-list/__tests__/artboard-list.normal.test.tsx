@@ -35,6 +35,7 @@ function renderList(selection: DocumentSelection): {
       listing={ArtboardListing.full(selection.document.artboards)}
       selection={selection}
       onSelect={onSelect}
+      onOpenContextMenu={vi.fn()}
       artboardActions={{ add: vi.fn(), reorder: vi.fn() }}
       renaming={Option.none}
       renameActions={spyRenameActions()}

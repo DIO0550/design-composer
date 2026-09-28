@@ -41,6 +41,7 @@ function renderTree(selection: DocumentSelection): void {
       filter={Option.none}
       selection={selection}
       onSelect={vi.fn()}
+      onOpenContextMenu={vi.fn()}
       onReorder={vi.fn()}
       renaming={Option.none}
       renameActions={spyRenameActions()}

@@ -4,6 +4,7 @@ import { dragRowNamed } from "@/components/__tests__/row-drag";
 import { rowNames } from "@/components/__tests__/row-names";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { DocumentSelection } from "@/domains/session/document-selection";
+import { spyContextMenuActions } from "@/features/editor/features/sidebar/__tests__/context-menu-actions";
 import { spyRenameActions } from "@/features/editor/features/sidebar/__tests__/rename-actions";
 import { Option } from "@/utils/Option";
 import { LayersPanel } from "../index";
@@ -52,6 +53,7 @@ function renderPanel(
         reorder: vi.fn(),
       }}
       rename={spyRenameActions()}
+      contextMenu={spyContextMenuActions()}
     />,
   );
 }
@@ -119,6 +121,7 @@ test("artboard が 1 枚も無いときは、検索語を打っても artboard �
         reorder: vi.fn(),
       }}
       rename={spyRenameActions()}
+      contextMenu={spyContextMenuActions()}
     />,
   );
 

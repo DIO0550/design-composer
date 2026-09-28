@@ -6,6 +6,7 @@ import { EditContinuities } from "@/domains/session/edit-continuity";
 import { FileValidity } from "@/domains/session/file-validity";
 import type { OpenedDocument } from "@/domains/session/opened-document";
 import { SelectionDigs } from "@/domains/session/selection-dig";
+import type { Offset } from "@/domains/unit/offset";
 import { CanvasDockContent } from "@/features/editor/components/canvas-dock";
 import { EditorContextMenu } from "@/features/editor/components/editor-context-menu";
 import { EditorLayout } from "@/features/editor/components/editor-layout";
@@ -134,6 +135,15 @@ function EditorPanes({
     canvasView.fitTo(DocumentSelection.names(documentSelection)),
   );
 
+  const openRowContextMenu = (
+    target: EditMenuTarget,
+    name: string,
+    at: Offset,
+  ) => {
+    node.selectIfUnselected(name);
+    setContextMenu(Option.some({ at, target }));
+  };
+
   const isFrozen = EditorState.isFileInvalid(state);
   /* 掴む側（パレット）と落とす側（キャンバス）の対。
      `features/editor/features/assets` が持つ契約。 */
@@ -157,6 +167,12 @@ function EditorPanes({
             artboard={artboard}
             token={token}
             grab={assetGrab}
+            contextMenu={{
+              openForNode: (name, at) =>
+                openRowContextMenu(EditMenuTargets.Node, name, at),
+              openForArtboard: (name, at) =>
+                openRowContextMenu(EditMenuTargets.Artboard, name, at),
+            }}
           />
         </EditorLayout.LeftPane>
         <EditorLayout.CenterPane>

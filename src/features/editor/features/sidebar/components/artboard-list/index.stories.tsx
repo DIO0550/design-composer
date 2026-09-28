@@ -25,6 +25,7 @@ const meta = {
   ],
   args: {
     onSelect: fn(),
+    onOpenContextMenu: fn(),
     artboardActions: { add: fn(), reorder: fn() },
     renaming: Option.none,
     renameActions: sampleRenameActions(),

@@ -27,6 +27,7 @@ const meta = {
   ],
   args: {
     onSelect: fn(),
+    onOpenContextMenu: fn(),
     onReorder: fn(),
     renaming: Option.none,
     filter: Option.none,

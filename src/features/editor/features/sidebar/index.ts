@@ -19,4 +19,5 @@ export {
   LeftPaneViewLabels,
   LeftPaneViews,
 } from "@/features/editor/features/sidebar/components/left-pane-rail";
+export type { LeftPaneContextMenuActions } from "@/features/editor/features/sidebar/types/LeftPaneContextMenuActions";
 export type { LeftPaneViewContent } from "@/features/editor/features/sidebar/types/LeftPaneViewContent";

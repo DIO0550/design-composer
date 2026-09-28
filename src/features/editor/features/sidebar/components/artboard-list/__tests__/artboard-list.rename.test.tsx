@@ -40,6 +40,7 @@ function renderList(renaming: Option<string>): LeftPaneRenameActions {
       selection={selection}
       renaming={renaming}
       onSelect={vi.fn()}
+      onOpenContextMenu={vi.fn()}
       artboardActions={{ add: vi.fn(), reorder: vi.fn() }}
       renameActions={renameActions}
     />,

@@ -67,6 +67,7 @@ function renderTreeWithReorder(renaming: Option<string>): {
       selection={setupSelection()}
       renaming={renaming}
       onSelect={vi.fn()}
+      onOpenContextMenu={vi.fn()}
       onReorder={onReorder}
       renameActions={renameActions}
     />,

@@ -7,6 +7,7 @@ import {
 } from "@/features/editor/features/sidebar/components/artboard-list";
 import { DocumentTree } from "@/features/editor/features/sidebar/components/document-tree";
 import type { LeftPaneArtboardActions } from "@/features/editor/features/sidebar/types/LeftPaneArtboardActions";
+import type { LeftPaneContextMenuActions } from "@/features/editor/features/sidebar/types/LeftPaneContextMenuActions";
 import type { LeftPaneNodeActions } from "@/features/editor/features/sidebar/types/LeftPaneNodeActions";
 import type { LeftPaneRenameActions } from "@/features/editor/features/sidebar/types/LeftPaneRenameActions";
 import { Option } from "@/utils/Option";
@@ -69,6 +70,7 @@ export function LayersPanel({
   artboard,
   node,
   rename,
+  contextMenu,
 }: Readonly<{
   /** 検索欄に打たれた語。空なら絞っていない */
   query: string;
@@ -78,6 +80,7 @@ export function LayersPanel({
   artboard: LeftPaneArtboardActions;
   node: LeftPaneNodeActions;
   rename: LeftPaneRenameActions;
+  contextMenu: LeftPaneContextMenuActions;
 }>) {
   const filter = NameFilter.create(query);
   const artboards = selection.document.artboards;
@@ -104,6 +107,7 @@ export function LayersPanel({
         selection={selection}
         renaming={renaming}
         onSelect={node.select}
+        onOpenContextMenu={contextMenu.openForArtboard}
         artboardActions={artboard}
         renameActions={rename}
       />
@@ -114,6 +118,7 @@ export function LayersPanel({
           filter={filter}
           onSelect={node.select}
           onReorder={node.reorder}
+          onOpenContextMenu={contextMenu.openForNode}
           renameActions={rename}
         />
       )}
