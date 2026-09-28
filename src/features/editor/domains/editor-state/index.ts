@@ -1190,7 +1190,7 @@ export const EditorState = {
   /**
    * 選択中の artboard / ノードの prop を書き換える（docs/06-ui.md「編集操作の一覧」）。
    *
-   * 選択が無い・書き換えられない指定は「その編集が存在しない」ことなので `none`。
+   * 選択が無いのは「その編集が存在しない」ことなので `none`。
    *
    * **1 つの欄への打ち込みを Undo 1 回で戻すのは `continuity` の担当**で、打鍵のたびに
    * 届く 2 件目以降を続きとして受けると戻る先が増えない（docs/06-ui.md「編集操作の一覧」
@@ -1199,8 +1199,9 @@ export const EditorState = {
    * @param state prop を書き換えるエディタの状態
    * @param edit 書き換える prop と値
    * @param continuity 直前の編集との続き方（1 つの欄へ続けて打った 2 打鍵目以降は続き）
-   * @returns prop を書き換えたエディタの状態。選択が無い・単一選択でない・書き換えられない
-   *   指定と、ファイルが不正な間は `none`
+   * @returns prop を書き換えたエディタの状態。選択が無い・単一選択でない・ファイルが不正な
+   *   間は `none`（`DesignDocument.applyPropEdit` の失敗は、選択も、大きさに追従させる子も
+   *   ドキュメントに残る名前だけを指し、prop の編集は名前を変えないので起こらない）
    */
   applyPropEdit(
     state: EditorState,
@@ -1221,8 +1222,8 @@ export const EditorState = {
    * 選択中の artboard / ノードの大きさと位置を変える（docs/06-ui.md「キャンバス直接操作」
    * のリサイズハンドル）。
    *
-   * 選択が無い・大きさを持たない指定は「そのリサイズが存在しない」ことなので `none`（選択は
-   * name で持つのでリサイズでは変わらない）。
+   * 選択が無いのは「そのリサイズが存在しない」ことなので `none`（選択は name で持つので
+   * リサイズでは変わらない）。
    *
    * **長さと位置をまとめて受けることで 1 回の編集になる**（別々に呼ぶと Undo 1 回で片方
    * しか戻らない）。ドラッグ全体を Undo 1 回で戻すのは `continuity` の担当で、ポインタが
@@ -1231,8 +1232,9 @@ export const EditorState = {
    * @param state 大きさを変えるエディタの状態
    * @param edit 書き込む長さと、置き直したあとの位置
    * @param continuity 直前の編集との続き方（1 回のドラッグの 2 件目以降は続き）
-   * @returns 大きさを変えたエディタの状態。選択が無い・単一選択でない・大きさを持たない
-   *   指定と、ファイルが不正な間は `none`
+   * @returns 大きさを変えたエディタの状態。選択が無い・単一選択でない・ファイルが不正な間は
+   *   `none`（`DesignDocument.resize` の失敗は、`EditorState.applyPropEdit` と同じ理由で
+   *   起こらない）
    */
   resize(
     state: EditorState,
