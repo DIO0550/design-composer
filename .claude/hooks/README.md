@@ -50,7 +50,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | ファイル | 使う側 | 内容 |
 | --- | --- | --- |
 | `lib/test-conditionals.awk` | `check-test-rules.sh` / `pre-push-test-rules.sh` | `test()` / `it()` ブロック内の `if` / `else` / `switch` を行番号付きで出力する |
-| `lib/duplicate-test-helpers.py` | `check-test-helper-duplication.sh` / `.github/scripts/check-added-test-helper-duplication.sh`(CI と `harness/githooks/pre-push`) | プロジェクト全体の `__tests__/` を横断して本体が完全に一致するヘルパーを探す。`--all` で全体、`--lines` で 1 ファイルの重複行を `<行番号>:<名前>` で機械可読に出力できる |
+| `lib/duplicate-test-helpers.py` | `check-test-helper-duplication.sh` / `.github/scripts/check-added-test-helper-duplication.sh`(CI と `harness/githooks/pre-push`) | プロジェクト全体の `__tests__/` を横断して本体が完全に一致するヘルパーを探す。`--all` で全体、`--lines` で 1 ファイルの重複行を `<行番号>:<名前>` で機械可読に出力できる(`--base-root` を足すと、本体の数が base より増えた重複だけ) |
 | `lib/missing-doc-comments.py` | `check-doc-comments.sh` / `pre-push-doc-comments.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `src/` のファイル直下の宣言とコンパニオンオブジェクトの直下のメソッドのうち、doc コメントの無いもの・項目の欠けたものを探す。`--all` で全体を見る |
 | `lib/test-rules-scan.sh` | `pre-push-test-rules.sh` / `harness/githooks/pre-push` | 指定したルート配下の `*.test.ts(x)` をすべて検査する。違反があれば exit 1 |
 | `lib/lint-suppressions.py` | `block-lint-suppress.sh` / `.github/scripts/check-added-lint-suppressions.sh`(CI と `harness/githooks/pre-push`) | 許可されていない lint 抑制コメントの行を報告する。例外の判定もここが持つ |
@@ -283,8 +283,8 @@ deny のメッセージは、`jq` / `python3` が欠けていればその名前�
   - 導入時点でリポジトリに既存の重複が 13 組あり、#153 で一旦 0 組にした。**ただしそれは検出器が見える範囲での 0 組**で、フォルダをまたぐ重複(#179)は検出器自体が見ておらず数に入っていなかった。探索範囲をプロジェクト全体へ広げたところ、フォルダをまたぐ重複が新たに 11 組見つかった(#866 の着手時点では 8 組・18 箇所。#866 で 0 組にした。`--all src` が exit 0)
   - 本体の切り出し方(引数・戻り値の型注釈を読み飛ばす・式本体のアロー関数)と意図した取りこぼしは検出器の docstring、判定表は `lib/duplicate-test-helpers-cases.sh`。型注釈の `{}` を本体と読む偽陽性(#179・#406)と、既定引数 `f(props: T = {})` の `{}` を本体と読んで短すぎると捨てる見逃しは、これで解消している
   - ファイル単位で無効化: `// @duplicate-helpers-ok`
-- `.github/scripts/check-added-test-helper-duplication.sh`(層 1・CI、`frontend.yml` の `lint-suppress` ジョブ。同じスクリプトを `harness/githooks/pre-push` も引数なしで呼び、base を `origin/main` として push 前にも通す。**検出器を走らせられなければ exit 2** → `.github/scripts/lib/detector-precondition.sh`)は、Claude Code hook(層 3)が発火しない実行環境向けの無条件の代替。**`--all` を無条件のブロックへ格上げするかは #309 で判断する**(既存の重複は #866 で 0 組にした)。`duplicate-test-helpers.py --lines` で対象ファイルの重複行を機械可読に出し、**このブランチで新しく追加された行に載っているものだけ**を違反にする
-  - `check-added-lint-suppressions.sh` と違い、**base に同じ本体を持つファイルがあっても除外しない**。ファイル分割でヘルパーが新しいファイルへ移ると、移った側は全行が追加行になり、既存の重複が「新規」として引っかかる余地が残っている(main に重複が再び入った場合に限る。pr-240 で lint 抑制コメントが踏んだのと同じ形)。単純な `git mv` はリネーム検出で diff に載らないため踏まないが、**分割**は対象
+- `.github/scripts/check-added-test-helper-duplication.sh`(層 1・CI、`frontend.yml` の `lint-suppress` ジョブ。同じスクリプトを `harness/githooks/pre-push` も引数なしで呼び、base を `origin/main` として push 前にも通す。**検出器を走らせられなければ exit 2** → `.github/scripts/lib/detector-precondition.sh`)は、Claude Code hook(層 3)が発火しない実行環境向けの無条件の代替。**`--all` を無条件のブロックへ格上げするかは #309 で判断する**(既存の重複は #866 で 0 組にした)。`duplicate-test-helpers.py --lines` で対象ファイルの重複行を機械可読に出し、**このブランチで新しく追加された行に載っていて、かつ同じ本体の数が base(merge-base)より増えたものだけ**を違反にする
+  - ファイル分割や rename と組めないほど書き換えた移動では、移った側が全行「追加行」になる(pr-240 で lint 抑制コメントが踏んだのと同じ形)。そこで追加行に候補が出たときだけ merge-base の `src` を展開し、`--base-root` で本体の数を比べる。`check-added-lint-suppressions.sh` のような有無ではなく数で比べる理由と、それで生じる取りこぼしは検出器の `grown_since` と docstring「意図した取りこぼし」
 - `check-doc-comments.sh` は**ブロックしない**(`additionalContext` を返すだけ)。また、見るのは**編集したファイルの分だけ**
   - 対象は `src/` の実装ファイルのみ(`__tests__/` / `*.stories.*` / `__stories__/` は見ない)
   - 見るのは**ファイル直下の宣言とコンパニオンオブジェクトの直下のメソッド**だけ(入れ子の関数・それより深いオブジェクトのメソッドは対象外)
