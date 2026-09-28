@@ -7,7 +7,6 @@ import { RowNameField } from "@/features/editor/features/sidebar/components/row-
 import type { LeftPaneArtboardActions } from "@/features/editor/features/sidebar/types/LeftPaneArtboardActions";
 import type { LeftPaneRenameActions } from "@/features/editor/features/sidebar/types/LeftPaneRenameActions";
 import { type RowProps, useReorderDrag } from "@/hooks/use-reorder-drag";
-import { ClientPoint } from "@/libs/dom-event";
 import { Option } from "@/utils/Option";
 import { type DropSide, ReorderDrag } from "@/utils/ReorderDrag";
 
@@ -131,7 +130,10 @@ function ArtboardRow({
         onDoubleClick={() => renameActions.startAt(artboard.name)}
         onContextMenu={(event) => {
           event.preventDefault();
-          onOpenContextMenu(artboard.name, ClientPoint.fromEvent(event));
+          onOpenContextMenu(artboard.name, {
+            x: event.clientX,
+            y: event.clientY,
+          });
         }}
         className={`flex min-w-0 flex-1 items-center gap-1.5 rounded px-2 py-1 text-left ${
           // 押せる範囲を示す hover と、今の 1 枚を示す色を重ねない

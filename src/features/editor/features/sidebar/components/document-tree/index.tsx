@@ -15,7 +15,6 @@ import { Selection, type SelectionKind } from "@/domains/session/selection";
 import { RowNameField } from "@/features/editor/features/sidebar/components/row-name-field";
 import type { LeftPaneNodeActions } from "@/features/editor/features/sidebar/types/LeftPaneNodeActions";
 import type { LeftPaneRenameActions } from "@/features/editor/features/sidebar/types/LeftPaneRenameActions";
-import { ClientPoint } from "@/libs/dom-event";
 import { Option } from "@/utils/Option";
 
 /** 文言を読む prop。Text のスキーマが宣言している名前に限る。 */
@@ -160,7 +159,7 @@ function SelectableName({
       onDoubleClick={() => onStartRenaming(name)}
       onContextMenu={(event) => {
         event.preventDefault();
-        onOpenContextMenu(name, ClientPoint.fromEvent(event));
+        onOpenContextMenu(name, { x: event.clientX, y: event.clientY });
       }}
       className="flex min-w-0 flex-1 items-center gap-1.5 pr-2 text-left"
     >
