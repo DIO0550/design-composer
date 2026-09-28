@@ -146,3 +146,14 @@ test("拡大して見ているときは、画面上で揃う長さをドキュ�
     Option.some(ResizeEdit.create([{ axis: "width", length: 234 }])),
   );
 });
+
+test("揃え先を外した掴みでは、揃え先の近くまで運んでも運んだ量そのままの幅の編集になる", () => {
+  // 1 件目と同じ動かし方。外さなければ 240 になる
+  const resize = NodeResize.withoutSnapTargets(
+    grabbedWithSnap({ x: 1, y: 0.5 }, { x: 300, y: 100 }, [RightAt340]),
+  );
+
+  expect(NodeResize.editAt(resize, { x: 337, y: 100 }, setupView())).toEqual(
+    Option.some(ResizeEdit.create([{ axis: "width", length: 237 }])),
+  );
+});

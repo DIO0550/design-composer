@@ -20,6 +20,7 @@ import {
 import { SideSnap } from "@/features/editor/features/canvas/domains/side-snap";
 import { CanvasPointer } from "@/features/editor/features/canvas/utils/CanvasPointer";
 import { DrawnBounds } from "@/features/editor/features/canvas/utils/DrawnBounds";
+import { CommandKey } from "@/libs/dom-event";
 import { Option } from "@/utils/Option";
 
 /** リサイズの進み方（docs/06-ui.md「キャンバス直接操作」のリサイズハンドル）。 */
@@ -123,6 +124,8 @@ export type NodeResizeControl = Readonly<{
  *
  * このフックが持つのは DOM の実測とイベントの仲介だけで、
  * 「どこを掴めるか」「どれだけの長さになるか」の判定は `node-resize` にある。
+ * ⌘ / Ctrl を押している間に揃え先を外す（吸い付かせない）のは、修飾キーという入力の事情
+ * なのでこちらが持つ。
  *
  * @param params 掴める軸と位置を持つ `resizable`、実測に使う `selection`、倍率の `view`、
  *   大きさが確定したときに呼ぶ `onResize`
@@ -208,10 +211,13 @@ export function useNodeResize(
    *
    * 2 件目以降を続きとして渡すことで、掴んでから離すまでが undo 1 回ぶんになる
    * （docs/06-ui.md「リサイズハンドル」）。
+   *
+   * ⌘ / Ctrl を押している移動では揃え先を外してから通す。外した値は状態へ書き戻さないので、
+   * キーを離して動かし直せば同じ掴みのまま再び吸い付く。
    */
   const trackPointer = (event: ReactPointerEvent<HTMLElement>) => {
     const edit = NodeResize.editAt(
-      resize,
+      CommandKey.isHeld(event) ? NodeResize.withoutSnapTargets(resize) : resize,
       CanvasPointer.offsetOf(event),
       params.view,
     );
