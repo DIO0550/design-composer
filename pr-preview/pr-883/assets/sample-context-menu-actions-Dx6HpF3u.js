@@ -1,1 +1,0 @@
-import{n as e}from"./chunk-BneVvdWh.js";function t(){return{openForNode:n(),openForArtboard:n()}}var n,r=e((()=>{({fn:n}=__STORYBOOK_MODULE_TEST__)}));export{t as n,r as t};
