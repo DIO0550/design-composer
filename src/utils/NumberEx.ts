@@ -45,14 +45,15 @@ export const NumberEx = {
   },
 
   /**
-   * 小数点以下を指定の桁数で四捨五入した値。
+   * 小数点以下を指定の桁数で四捨五入（`.5` は大きい側へ）した値。
    *
    * 桁数をオブジェクトで受けるのは、値と桁数を取り違えても型では落ちないため（どちらも
    * `number`）。
    *
    * @param value 丸める値
-   * @param digits 小数点以下に残す桁数
-   * @returns 小数点以下 `fractionDigits` 桁に四捨五入した値
+   * @param digits 小数点以下に残す桁数（`fractionDigits`）
+   * @returns 小数点以下 `digits.fractionDigits` 桁に四捨五入した値。負の値のちょうど半分は 0 に
+   *   近い側へ丸まる。半分かどうかは `value` に `10 ** digits.fractionDigits` を掛けた二進の値で決まる
    */
   round(value: number, digits: Readonly<{ fractionDigits: number }>): number {
     const scale = 10 ** digits.fractionDigits;
