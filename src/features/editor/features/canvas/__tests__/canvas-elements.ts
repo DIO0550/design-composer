@@ -25,7 +25,10 @@ const HighlightedNamePattern = new RegExp(
   "g",
 );
 
-/** キャンバスの中身（コンパイル結果を流し込む器）。倍率と位置はここに載る。 */
+/**
+ * キャンバスの中身（コンパイル結果を流し込む器）。倍率と位置はここに載り、リサイズと
+ * artboard の移動のポインタもここが受ける。
+ */
 export function canvasContent(): HTMLElement {
   return screen.getByTestId("canvas-content");
 }
