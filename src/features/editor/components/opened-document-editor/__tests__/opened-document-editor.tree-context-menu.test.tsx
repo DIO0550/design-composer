@@ -2,12 +2,8 @@ import { fireEvent, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { rowNames } from "@/components/__tests__/row-names";
-import { Artboard } from "@/domains/dcmp/artboard";
-import {
-  DesignDocument,
-  DocumentTemplate,
-} from "@/domains/dcmp/design-document";
 import { rightPaneHeading } from "@/features/editor/__tests__/right-pane-heading";
+import { SampleDocumentWithSameComponentInstances } from "@/features/editor/__tests__/sample-document";
 import {
   artboardList,
   canvasPane,
@@ -123,36 +119,8 @@ test("中のノードを選んでいるときに、その artboard の行のメ�
   expect(rowNames(artboardList())).toEqual(["settings"]);
 });
 
-/** 同じ部品を指すインスタンスを 2 つ持たせ、まとめて選べるようにする。 */
-function setupDocumentWithInstances(): DesignDocument {
-  return DesignDocument.create({
-    tokens: DocumentTemplate.Default.tokens,
-    components: DocumentTemplate.Default.components,
-    artboards: [
-      Artboard.create({
-        name: "home",
-        width: 360,
-        height: 240,
-        children: [
-          { name: "home-title", type: "Text", props: { content: "ホーム" } },
-          {
-            name: "home-login",
-            ref: "primary-button",
-            overrides: { label: "ログイン" },
-          },
-          {
-            name: "home-signup",
-            ref: "primary-button",
-            overrides: { label: "登録" },
-          },
-        ],
-      }),
-    ],
-  });
-}
-
 test("複数選択の一員の行を右クリックしても、複数選択のまま変わらない", async () => {
-  await renderOpenedDocument(setupDocumentWithInstances());
+  await renderOpenedDocument(SampleDocumentWithSameComponentInstances);
   await userEvent.click(within(canvasPane()).getByText("ログイン"));
   await userEvent.click(
     within(propertyPane()).getByRole("button", {

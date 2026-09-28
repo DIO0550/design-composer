@@ -1,29 +1,16 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
-import { DesignDocument } from "@/domains/dcmp/design-document";
-import { DocumentSelection } from "@/domains/session/document-selection";
 import { nameField } from "@/features/editor/features/sidebar/__tests__/name-field";
 import { spyRenameActions } from "@/features/editor/features/sidebar/__tests__/rename-actions";
 import { Option } from "@/utils/Option";
 import { ArtboardList, ArtboardListing } from "../index";
+import { setupSelection } from "./setup";
 
 /*
  * `Artboards` の行の右クリック（docs/06-ui.md「コンテキストメニュー」の「出る場所は
  * キャンバスとツリー」）。メニューを出すのは呼び出し側で、ここは押された行と位置を
  * 伝えるところまで。
  */
-
-function setupSelection(): DocumentSelection {
-  return DocumentSelection.fromNames(
-    DesignDocument.create({
-      artboards: [
-        { name: "home", width: 375, height: 812, children: [] },
-        { name: "settings", width: 375, height: 812, children: [] },
-      ],
-    }),
-    [],
-  );
-}
 
 /**
  * 一覧を描く。

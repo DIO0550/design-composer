@@ -7,36 +7,16 @@ import {
   releasePointer,
 } from "@/components/__tests__/pointer-gesture";
 import { rowOf } from "@/components/__tests__/row-drag";
-import { DesignDocument } from "@/domains/dcmp/design-document";
-import { DocumentSelection } from "@/domains/session/document-selection";
 import { nameField } from "@/features/editor/features/sidebar/__tests__/name-field";
 import { spyRenameActions } from "@/features/editor/features/sidebar/__tests__/rename-actions";
 import type { LeftPaneRenameActions } from "@/features/editor/features/sidebar/types/LeftPaneRenameActions";
 import { Option } from "@/utils/Option";
 import { DocumentTree } from "../index";
+import { setupSelection } from "./setup";
 
 /*
  * ツリーの行でその場で名前を打ち替える（docs/06-ui.md「名前の変更」）。
  */
-
-function setupSelection(): DocumentSelection {
-  return DocumentSelection.fromNames(
-    DesignDocument.create({
-      artboards: [
-        {
-          name: "home",
-          width: 375,
-          height: 812,
-          children: [
-            { name: "title", type: "Text" },
-            { name: "lead", type: "Text" },
-          ],
-        },
-      ],
-    }),
-    [],
-  );
-}
 
 /**
  * ツリーを描く。
