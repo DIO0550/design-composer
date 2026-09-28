@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #
-# この PR が閉じる Issue を、別の open な PR も閉じていないかを検査する。
+# この PR が閉じる Issue を、別の PR(open / マージ済み)も閉じていないか、その Issue が既に
+# クローズされていないかを検査する。
 #
 # **重複の判定は本文の綴りではなく、両方の PR の GraphQL `closingIssuesReferences` を
 # 突き合わせる。** 片方向(この PR が閉じる Issue の cross-reference)だけを見ると、
@@ -21,10 +22,16 @@
 #   bash check-duplicate-issue-pr.sh              # GitHub へ問い合わせる(CI)
 #   bash check-duplicate-issue-pr.sh <file.json>  # 問い合わせ結果を差し替える(動作確認)
 #
-# **`repository.pullRequests(states: OPEN)` は先頭 100 件までしか見ない。** 並びを更新の
-# 新しい順にしてあるので、100 件で切れたときに落ちるのは更新の止まった古い PR になる
-# (並行して実装している相手は、更新が新しい側にいる)。切れたときは `totalCount` と
-# 見た件数を注記に出し、黙って見落とさないようにする。
+# 相手は 2 つの経路から集め、PR 番号で束ねる。
+# - `repository.pullRequests(states: OPEN)` — open な PR を更新の新しい順に先頭 100 件まで
+#   見る。100 件で切れたときに落ちるのは更新の止まった古い PR になる(並行して実装している
+#   相手は、更新が新しい側にいる)
+# - 閉じる Issue ごとの `closedByPullRequestsReferences` — 同じ関係の逆向き。merged の相手は
+#   ここからしか見えない(先にマージされた PR は open の一覧に載らない。`harness/records/pr-631.md`)。
+#   `states` を `[OPEN, MERGED]` へ広げる形は採らない。母数がリポジトリの全 PR になり、
+#   100 件の切り詰めが常態になる。`includeClosedPrs` の既定が merged を含むかに依らないよう
+#   `true` を明示し、マージされずに閉じた PR は jq で除く
+# どちらも切れたときは `totalCount` と見た件数を注記に出し、黙って見落とさないようにする。
 #
 # 問い合わせ・再試行・`gh` の差し替えは `check-pr-closing-issue.sh` に倣う(同じ
 # `closingIssuesReferences` を読む検査で、5xx の再試行が要ることは実測済み)。
@@ -41,7 +48,17 @@ fetch() {
         query($owner: String!, $repo: String!, $number: Int!) {
           repository(owner: $owner, name: $repo) {
             pullRequest(number: $number) {
-              closingIssuesReferences(first: 10) { nodes { number } }
+              state
+              closingIssuesReferences(first: 10) {
+                nodes {
+                  number
+                  state
+                  closedByPullRequestsReferences(first: 20, includeClosedPrs: true) {
+                    totalCount
+                    nodes { number state }
+                  }
+                }
+              }
             }
             pullRequests(states: OPEN, first: 100, orderBy: { field: UPDATED_AT, direction: DESC }) {
               totalCount
@@ -73,28 +90,70 @@ fi
 
 closing_issues="$(jq -c '[.data.repository.pullRequest.closingIssuesReferences.nodes[].number]' <<<"$result")"
 
-# 自分以外の open な PR のうち、closing_issues と 1 件でも重なる相手だけを拾う。
+# 自分以外の PR のうち、closing_issues と 1 件でも重なる相手を (PR, Issue) の組で集め、
+# PR ごとに 1 件へ束ねる。並びは「open な PR の一覧の相手 → 逆向きの一覧だけに載っていた相手」。
 # 差集合を 2 回取る(a - (a - b))のは、jq に組み込みの積集合演算子が無いため。
+#
+# 相手の種別は open を既定とし、マージ済みにだけ `merged: true` を付ける(コメントの文言が
+# 変わるのはマージ済みの相手だけ)。
 duplicates="$(
   jq -c --argjson closing "$closing_issues" --argjson self "${PR_NUMBER:-0}" '
-    [ .data.repository.pullRequests.nodes[]
-      | select(.number != $self)
-      | . as $candidate
-      | ($candidate.closingIssuesReferences.nodes | map(.number)) as $theirs
-      | ($closing - ($closing - $theirs)) as $overlap
-      | select($overlap | length > 0)
-      | {pr: $candidate.number, issues: $overlap}
-    ]' <<<"$result"
+    .data.repository as $repo
+    | [ $repo.pullRequests.nodes[]
+        | select(.number != $self)
+        | . as $candidate
+        | ($candidate.closingIssuesReferences.nodes | map(.number)) as $theirs
+        | ($closing - ($closing - $theirs))[]
+        | {pr: $candidate.number, issue: ., merged: false}
+      ] as $scanned
+    | [ $repo.pullRequest.closingIssuesReferences.nodes[]
+        | .number as $issue
+        | .closedByPullRequestsReferences.nodes[]
+        | select(.number != $self)
+        | select(.state == "OPEN" or .state == "MERGED")
+        | {pr: .number, issue: $issue, merged: (.state == "MERGED")}
+      ] as $reversed
+    | reduce ($scanned + $reversed)[] as $pair ([];
+        if any(.[]; .pr == $pair.pr)
+        then map(if .pr == $pair.pr then .issues += ([$pair.issue] - .issues) else . end)
+        else . + [{pr: $pair.pr, issues: [$pair.issue], merged: $pair.merged}]
+        end)
+    | map(if .merged then . else del(.merged) end)
+  ' <<<"$result"
 )"
+
+# 既にクローズされている閉じる Issue。**自分が open のときだけ数える。** ワークフローは
+# 本文の編集(`edited`)でマージ後にも走り、そのとき Issue は自分のマージで閉じている
+closed_issues="$(
+  jq -c '
+    .data.repository.pullRequest
+    | if .state == "OPEN"
+      then [.closingIssuesReferences.nodes[] | select(.state == "CLOSED") | .number]
+      else []
+      end
+  ' <<<"$result"
+)"
+
+has_duplicates="$([ "$(jq 'length' <<<"$duplicates")" -gt 0 ] && echo true || echo false)"
+has_closed_issues="$([ "$(jq 'length' <<<"$closed_issues")" -gt 0 ] && echo true || echo false)"
 
 echo "$duplicates"
 
-# 見た範囲が open な PR の全部でなければ、その旨を出す
+if [ "$has_closed_issues" = true ]; then
+  jq -r '"注意: この PR が閉じようとしている Issue " + (map("#" + tostring) | join(", ")) + " は既にクローズされています"' \
+    <<<"$closed_issues"
+fi
+
+# 見た範囲が相手の全部でなければ、その旨を出す(open な PR の一覧 → Issue ごとの逆向きの一覧)
 truncation_note="$(
   jq -r '
-    .data.repository.pullRequests
-    | select(.totalCount > (.nodes | length))
-    | "注記: open な PR は \(.totalCount) 件あり、更新の新しい \(.nodes | length) 件だけを見た"
+    (.data.repository.pullRequests
+      | select(.totalCount > (.nodes | length))
+      | "注記: open な PR は \(.totalCount) 件あり、更新の新しい \(.nodes | length) 件だけを見た"),
+    (.data.repository.pullRequest.closingIssuesReferences.nodes[]
+      | .closedByPullRequestsReferences as $refs
+      | select($refs.totalCount > ($refs.nodes | length))
+      | "注記: Issue #\(.number) を閉じる PR は \($refs.totalCount) 件あり、\($refs.nodes | length) 件だけを見た")
   ' <<<"$result"
 )"
 if [ -n "$truncation_note" ]; then echo "$truncation_note"; fi
@@ -107,18 +166,27 @@ if [ -z "${GITHUB_REPOSITORY:-}" ] || [ -z "${PR_NUMBER:-}" ]; then
 fi
 
 marker="<!-- sticky-comment: duplicate-issue-pr -->"
-if [ "$(jq 'length' <<<"$duplicates")" -gt 0 ]; then
-  lines="$(jq -r '.[] | "- Issue " + (.issues | map("#" + (. | tostring)) | join(", ")) + " は PR #" + (.pr | tostring) + " も閉じています。"' <<<"$duplicates")"
-  body="$(printf '%s\n同じ Issue を閉じる PR が他にもあります。片方だけが必要か、着手前に確認してください。\n\n%s' "$marker" "$lines")"
-else
-  body="$(printf '%s\n現在、同じ Issue を閉じる他の open な PR はありません。' "$marker")"
+
+sections=()
+if [ "$has_duplicates" = true ]; then
+  lines="$(jq -r '.[] | "- Issue " + (.issues | map("#" + (. | tostring)) | join(", ")) + (if .merged then " はマージ済みの PR #" else " は PR #" end) + (.pr | tostring) + " も閉じています。"' <<<"$duplicates")"
+  sections+=("$(printf '同じ Issue を閉じる PR が他にもあります。片方だけが必要か、着手前に確認してください。\n\n%s' "$lines")")
+fi
+if [ "$has_closed_issues" = true ]; then
+  lines="$(jq -r '.[] | "- Issue #" + tostring' <<<"$closed_issues")"
+  sections+=("$(printf 'この PR が閉じようとしている Issue は既にクローズされています。\n\n%s' "$lines")")
 fi
 
-has_duplicates="$([ "$(jq 'length' <<<"$duplicates")" -gt 0 ] && echo true || echo false)"
+if [ "${#sections[@]}" -gt 0 ]; then
+  body="$(printf '%s\n' "$marker"; printf '%s\n\n' "${sections[@]}")"
+else
+  body="$(printf '%s\n現在、同じ Issue を閉じる他の PR(open / マージ済み)は無く、閉じる Issue もクローズされていません。' "$marker")"
+fi
 
 # **ページを送って全部見る。** 一覧は作成の古い順で、1 ページに収まらないことがある
-# (実測: `per_page=1` で `rel="next"` の Link が返る)。このコメントは重複が出たときにしか
-# 貼らないので、コメントが積もった後に貼られると 1 ページ目に載らない。見失うと二重に貼る。
+# (実測: `per_page=1` で `rel="next"` の Link が返る)。このコメントは重複かクローズ済みの
+# Issue が出たときにしか貼らないので、コメントが積もった後に貼られると 1 ページ目に載らない。
+# 見失うと二重に貼る。
 # 先頭行だけを採るのは、`--paginate` がページごとに `--jq` の結果を返す場合に 2 行以上
 # 返るため(`head` で切ると `gh` が SIGPIPE で落ちて `pipefail` に引っかかる)。
 #
@@ -136,7 +204,7 @@ existing="${comment_ids%%$'\n'*}"
 if [ -n "$existing" ]; then
   gh api -X PATCH "repos/${GITHUB_REPOSITORY}/issues/comments/${existing}" -f body="$body" \
     >/dev/null || echo 'コメントの差し替えに失敗した' >&2
-elif [ "$has_duplicates" = true ]; then
+elif [ "${#sections[@]}" -gt 0 ]; then
   gh api -X POST "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" -f body="$body" \
     >/dev/null || echo 'コメントの投稿に失敗した' >&2
 fi

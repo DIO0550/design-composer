@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 #
 # `check-duplicate-issue-pr.sh` の判定表。問い合わせ結果を模した JSON を食わせ、
-# 「重複を拾うか」を 1 コマンドで確かめる(`check-pr-closing-issue-cases.sh` に倣う)。
+# 「重複を拾うか」「閉じる Issue が既にクローズされていることを知らせるか」を 1 コマンドで
+# 確かめる(`check-pr-closing-issue-cases.sh` に倣う)。
 #
 # 使い方: bash .github/scripts/check-duplicate-issue-pr-cases.sh
 # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。
@@ -12,21 +13,40 @@
 # (両方 open だったときの形)を JSON で再現し、検出器が捕まえることを確かめる。
 # 両 Issue とも現在はマージ済みで片方が closed になっているため、GitHub への実際の
 # 問い合わせでは当時の状態を再現できない。
+#
+# 相手が先にマージされていた形は `harness/records/pr-631.md`(Issue #628 を #627 がマージで
+# 閉じた 37 分後に #631 が開いた)と、#635 を #636 がマージで閉じた後も #639 が open の
+# ままだった実例で再生する。
 set -uo pipefail
 
 script="$(dirname "$0")/check-duplicate-issue-pr.sh"
 failed=0
 
-# 問い合わせ結果を組み立てる。この PR が閉じる Issue と、他の open な PR の一覧を差し替える。
+# 問い合わせ結果を組み立てる。この PR が閉じる Issue(Issue ごとの状態と、その Issue を
+# 閉じる PR の逆向きの一覧を含む)と、他の open な PR の一覧を差し替える。
+#
+# **閉じる Issue の `state` と `closedByPullRequestsReferences` は省略できる。** 省略したときは
+# open・逆向きの一覧は空にする(逆向きの一覧を足す前からある表の形)。既定値をスクリプトではなく
+# ここで補うのは、実際の問い合わせで `closedByPullRequestsReferences` が欠けたときに、補った
+# 既定値で黙って通らず jq のエラーで赤にするため。
+# この PR 自身の `state` は $SELF_STATE(省略したときは open)。ワークフローは本文の編集
+# (`edited`)でマージ後にも走るので、その形は `SELF_STATE=MERGED` で作る
 #
 # **件数(`totalCount`)は中身(`nodes`)と別に渡せる。** クエリは `first: 100` なので、GitHub は
 # 101 件以上ある repository でも `nodes` を 100 件しか返さない。`nodes` の数からしか
 # `totalCount` を作れないと、その切り詰められた形を表で 1 度も踏めなくなる。
 # 省略したときは `nodes` の数(切り詰めが起きていない形)にする
 result_json() {
-  jq -n --argjson closing "$1" --argjson others "$2" --arg total "${3:-}" '{
+  jq -n --argjson closing "$1" --argjson others "$2" --arg total "${3:-}" \
+    --arg self_state "${SELF_STATE:-OPEN}" '{
     data: { repository: {
-      pullRequest: { closingIssuesReferences: { nodes: $closing } },
+      pullRequest: {
+        state: $self_state,
+        closingIssuesReferences: { nodes: (
+          $closing
+          | map({state: "OPEN", closedByPullRequestsReferences: {totalCount: 0, nodes: []}} + .)
+        ) }
+      },
       pullRequests: {
         totalCount: (if $total == "" then ($others | length) else ($total | tonumber) end),
         nodes: $others
@@ -56,6 +76,29 @@ no_closing='[]'
 issue_595='[{"number":595}]'
 issue_600='[{"number":600}]'
 
+# 例 1: #631 が閉じる #628 は、#627 がマージで閉じてクローズ済み(#631 も逆向きの一覧に載る)
+issue_628_closed_by_627='[{"number":628,"state":"CLOSED","closedByPullRequestsReferences":{"totalCount":2,"nodes":[{"number":627,"state":"MERGED"},{"number":631,"state":"OPEN"}]}}]'
+# 例 2: #639 が閉じる #635 は、#636 がマージで閉じてクローズ済み
+issue_635_closed_by_636='[{"number":635,"state":"CLOSED","closedByPullRequestsReferences":{"totalCount":2,"nodes":[{"number":636,"state":"MERGED"},{"number":639,"state":"OPEN"}]}}]'
+# マージ済みの相手がいるが、Issue は開き直されて open
+issue_628_reopened='[{"number":628,"state":"OPEN","closedByPullRequestsReferences":{"totalCount":2,"nodes":[{"number":627,"state":"MERGED"},{"number":631,"state":"OPEN"}]}}]'
+# 手でクローズされ、閉じる PR は自分(#604。コメント・本文のケースの自分)だけ
+issue_628_closed_by_hand_for_604='[{"number":628,"state":"CLOSED","closedByPullRequestsReferences":{"totalCount":1,"nodes":[{"number":604,"state":"OPEN"}]}}]'
+# 手でクローズされ、閉じる PR は自分だけ
+issue_628_closed_by_hand='[{"number":628,"state":"CLOSED","closedByPullRequestsReferences":{"totalCount":1,"nodes":[{"number":631,"state":"OPEN"}]}}]'
+# 自分がマージで閉じた後(自分は MERGED で載る)
+issue_628_closed_by_self='[{"number":628,"state":"CLOSED","closedByPullRequestsReferences":{"totalCount":1,"nodes":[{"number":631,"state":"MERGED"}]}}]'
+# 自分がマージで閉じた後に開き直された
+issue_628_reopened_after_self='[{"number":628,"state":"OPEN","closedByPullRequestsReferences":{"totalCount":1,"nodes":[{"number":631,"state":"MERGED"}]}}]'
+# 自分(#604)が #595 と #596 を閉じ、#602 は #595 を open な PR の一覧で、#596 を逆向きの一覧で閉じる
+issues_595_596_open_602='[{"number":595},{"number":596,"state":"OPEN","closedByPullRequestsReferences":{"totalCount":2,"nodes":[{"number":602,"state":"OPEN"},{"number":604,"state":"OPEN"}]}}]'
+# 相手 #602 が open で、逆向きの一覧にも載る
+issue_595_open_602='[{"number":595,"state":"OPEN","closedByPullRequestsReferences":{"totalCount":2,"nodes":[{"number":602,"state":"OPEN"},{"number":604,"state":"OPEN"}]}}]'
+# 相手 #612 はマージされずに閉じた
+issue_595_closed_unmerged_612='[{"number":595,"state":"OPEN","closedByPullRequestsReferences":{"totalCount":2,"nodes":[{"number":612,"state":"CLOSED"},{"number":604,"state":"OPEN"}]}}]'
+# 逆向きの一覧が 25 件あり、1 件だけ返った
+issue_595_truncated='[{"number":595,"state":"OPEN","closedByPullRequestsReferences":{"totalCount":25,"nodes":[{"number":604,"state":"OPEN"}]}}]'
+
 no_others='[]'
 self_only='[{"number":604,"closingIssuesReferences":{"nodes":[{"number":595}]}}]'
 unrelated='[{"number":610,"closingIssuesReferences":{"nodes":[{"number":700}]}}]'
@@ -73,11 +116,43 @@ run_case '[{"pr":601,"issues":[600]}]'                            605 "$issue_60
 run_case '[{"pr":601,"issues":[600]},{"pr":602,"issues":[600]}]'  605 "$issue_600"  "$two_duplicates" '重複が 2 件あれば両方拾う'
 run_case '[{"pr":611,"issues":[595]}]'                            604 "$issue_595"  "$partial_overlap" '閉じる Issue が複数あっても、重なった番号だけを報告する'
 
+# --- マージ済みの相手・クローズ済みの Issue ---
+
+run_case '[{"pr":627,"issues":[628],"merged":true}]
+注意: この PR が閉じようとしている Issue #628 は既にクローズされています' \
+  631 "$issue_628_closed_by_627" "$no_others" 'pr-631 の実例(#628 を先に #627 がマージで閉じていた)を捕まえる'
+run_case '[{"pr":636,"issues":[635],"merged":true}]
+注意: この PR が閉じようとしている Issue #635 は既にクローズされています' \
+  639 "$issue_635_closed_by_636" "$no_others" '#639 の実例(#635 を先に #636 がマージで閉じていた)を捕まえる'
+run_case '[{"pr":627,"issues":[628],"merged":true}]' \
+  631 "$issue_628_reopened" "$no_others" 'Issue が開き直されていても、マージ済みの相手は知らせる（クローズの注意は出さない）'
+run_case '[]
+注意: この PR が閉じようとしている Issue #628 は既にクローズされています' \
+  631 "$issue_628_closed_by_hand" "$no_others" '閉じる Issue がクローズ済みなら、相手の PR が無くても知らせる'
+run_case '[{"pr":602,"issues":[595]}]' \
+  604 "$issue_595_open_602" "$duplicate_595" 'open な相手が両方の一覧に載っていても 1 回だけ出す'
+run_case '[{"pr":602,"issues":[595]}]' \
+  604 "$issue_595_open_602" "$no_others" 'open な PR の一覧から漏れた open な相手も、逆向きの一覧から拾う'
+run_case '[{"pr":602,"issues":[595,596]}]' \
+  604 "$issues_595_596_open_602" "$duplicate_595" '同じ相手が 2 つの一覧にまたがって複数の Issue を閉じていれば、1 件に束ねて全部並べる'
+run_case '[]' \
+  604 "$issue_595_closed_unmerged_612" "$no_others" 'マージされずに閉じた PR は重複ではない'
+
+# 自分は MERGED で載せる。OPEN で載せると MERGED / OPEN の絞り込みを素通りするだけで、
+# 自分を除く条件を壊しても落ちない
+SELF_STATE=MERGED run_case '[]' \
+  631 "$issue_628_reopened_after_self" "$no_others" 'マージ済みの自分は、逆向きの一覧に載っていても相手に数えない'
+SELF_STATE=MERGED run_case '[]' \
+  631 "$issue_628_closed_by_self" "$no_others" '自分がマージで閉じた後は、閉じる Issue がクローズ済みでも注意を出さない'
+
 # --- 切り詰め ---
 
 run_case '[]
 注記: open な PR は 120 件あり、更新の新しい 1 件だけを見た' \
   604 "$issue_595" "$unrelated" 'open な PR が全部は見られなかったときは、見た範囲を添える' 120
+run_case '[]
+注記: Issue #595 を閉じる PR は 25 件あり、1 件だけを見た' \
+  604 "$issue_595_truncated" "$no_others" 'Issue を閉じる PR が全部は見られなかったときは、見た範囲を添える'
 
 # --- コメントの投稿 ---
 #
@@ -110,12 +185,12 @@ STUB
   chmod +x "$1/bin/gh"
 }
 
-# 差し替えた `gh` を置いて走らせ、$dir に calls / body を残す
+# 差し替えた `gh` を置いて走らせ、$dir に calls / body を残す。$4 は組み立て済みの問い合わせ結果
 run_with_gh_stub() {
-  local dir="$1" existing="$2" fail_on="$3" others="$4"
+  local dir="$1" existing="$2" fail_on="$3" result="$4"
 
   install_gh_stub "$dir"
-  result_json "$issue_595" "$others" >"$dir/result.json"
+  printf '%s' "$result" >"$dir/result.json"
   PATH="$dir/bin:$PATH" STUB_CALL_FILE="$dir/calls" STUB_BODY_FILE="$dir/body" \
     EXISTING_COMMENT_ID="$existing" FAIL_ON="$fail_on" \
     GITHUB_REPOSITORY=owner/repo PR_NUMBER=604 \
@@ -123,11 +198,11 @@ run_with_gh_stub() {
 }
 
 run_comment_case() {
-  local expected="$1" existing="$2" fail_on="$3" others="$4" label="$5"
+  local expected="$1" existing="$2" fail_on="$3" result="$4" label="$5"
   local dir calls actual=0
 
   dir="$(mktemp -d)"
-  run_with_gh_stub "$dir" "$existing" "$fail_on" "$others" || actual=$?
+  run_with_gh_stub "$dir" "$existing" "$fail_on" "$result" || actual=$?
   calls="$(tr '\n' ' ' <"$dir/calls" 2>/dev/null || true)"
   rm -rf "$dir"
 
@@ -140,28 +215,33 @@ run_comment_case() {
   failed=1
 }
 
-run_comment_case 'GET POST'  ''      ''      "$duplicate_595" '重複があってコメントがまだ無ければ、新しく貼る'
-run_comment_case 'GET PATCH' '12345' ''      "$duplicate_595" '重複があってコメントが既にあれば、差し替える'
-run_comment_case 'GET PATCH' '12345' ''      "$unrelated"     '重複が無くなったら、貼ってあるコメントを差し替える'
-run_comment_case 'GET'       ''      ''      "$unrelated"     '重複が無くてコメントも無ければ、何も貼らない'
-run_comment_case 'GET-FAILED' ''     GET     "$duplicate_595" 'コメントの一覧を取れなければ、貼らない（取れなかったのを「無い」と読んで二重に貼らない）'
-run_comment_case 'GET POST-FAILED'  '' POST  "$duplicate_595" 'コメントの投稿に失敗しても赤にしない'
-run_comment_case 'GET PATCH-FAILED' '12345' PATCH "$duplicate_595" 'コメントの差し替えに失敗しても赤にしない'
+with_duplicate="$(result_json "$issue_595" "$duplicate_595")"
+without_duplicate="$(result_json "$issue_595" "$unrelated")"
+with_closed_issue="$(result_json "$issue_628_closed_by_hand_for_604" "$no_others")"
+
+run_comment_case 'GET POST'  ''      ''      "$with_duplicate"    '重複があってコメントがまだ無ければ、新しく貼る'
+run_comment_case 'GET PATCH' '12345' ''      "$with_duplicate"    '重複があってコメントが既にあれば、差し替える'
+run_comment_case 'GET PATCH' '12345' ''      "$without_duplicate" '重複が無くなったら、貼ってあるコメントを差し替える'
+run_comment_case 'GET'       ''      ''      "$without_duplicate" '重複が無くてコメントも無ければ、何も貼らない'
+run_comment_case 'GET-FAILED' ''     GET     "$with_duplicate"    'コメントの一覧を取れなければ、貼らない（取れなかったのを「無い」と読んで二重に貼らない）'
+run_comment_case 'GET POST-FAILED'  '' POST  "$with_duplicate"    'コメントの投稿に失敗しても赤にしない'
+run_comment_case 'GET PATCH-FAILED' '12345' PATCH "$with_duplicate" 'コメントの差し替えに失敗しても赤にしない'
+run_comment_case 'GET POST'  ''      ''      "$with_closed_issue" '閉じる Issue がクローズ済みなら、重複が無くても新しく貼る'
 
 # --- 投稿する本文 ---
 #
 # 呼ばれ方だけを見ていると、**marker も相手の PR 番号も無い本文**で緑になる。marker は
 # sticky の要(次の実行が `startswith` で探す)で、行は知らせたい中身そのもの。
 run_body_case() {
-  local expected="$1" label="$2"
+  local expected="$1" result="$2" label="$3"
   local dir body
 
   dir="$(mktemp -d)"
-  run_with_gh_stub "$dir" '' '' "$duplicate_595"
+  run_with_gh_stub "$dir" '' '' "$result"
   body="$(cat "$dir/body" 2>/dev/null || true)"
   rm -rf "$dir"
 
-  if grep -qF "$expected" <<<"$body"; then
+  if grep -qF -- "$expected" <<<"$body"; then
     printf 'ok   %s\n' "$label"
     return
   fi
@@ -169,10 +249,17 @@ run_body_case() {
   failed=1
 }
 
-run_body_case '<!-- sticky-comment: duplicate-issue-pr -->' \
+run_body_case '<!-- sticky-comment: duplicate-issue-pr -->' "$with_duplicate" \
   '貼る本文は marker で始まる（次の実行がこのコメントを見つけられる）'
-run_body_case 'Issue #595 は PR #602 も閉じています。' \
+run_body_case 'Issue #595 は PR #602 も閉じています。' "$with_duplicate" \
   '貼る本文に、閉じる Issue と相手の PR の行が入る'
+run_body_case 'Issue #628 はマージ済みの PR #627 も閉じています。' \
+  "$(result_json "$issue_628_reopened" "$no_others")" \
+  '貼る本文に、マージ済みの相手の行が入る'
+run_body_case 'この PR が閉じようとしている Issue は既にクローズされています。' "$with_closed_issue" \
+  '貼る本文に、閉じる Issue が既にクローズされている旨が入る'
+run_body_case '- Issue #628' "$with_closed_issue" \
+  '貼る本文に、クローズ済みの Issue の番号が入る'
 
 # --- 問い合わせの再試行 ---
 #
