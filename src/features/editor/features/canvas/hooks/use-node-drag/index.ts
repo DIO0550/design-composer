@@ -34,6 +34,7 @@ import {
 import { CanvasPointer } from "@/features/editor/features/canvas/utils/CanvasPointer";
 import { DrawnBounds } from "@/features/editor/features/canvas/utils/DrawnBounds";
 import { CanvasDom } from "@/libs/canvas-dom";
+import { CommandKey } from "@/libs/dom-event";
 import { ElementEx } from "@/utils/ElementEx";
 import { Option } from "@/utils/Option";
 
@@ -192,16 +193,21 @@ function measureReposition(
  * 平行な外接矩形になるため、寄せの当たりが回る前の形とは変わる。happy-dom はレイアウトを
  * 持たないのでテストには出ない。
  *
- * @param measured 落とし先の実測（寄せの原点・運んでいるものの大きさ・揃え先）
+ * @param measured 落とし先の実測（寄せの原点と、運んでいるものの大きさ）
  * @param movedTo 今の親の左上から見た、運んだ先の画面上の位置
- * @returns 寄せ量とガイド線（どちらも画面上の px。閾値に届く線が無ければ寄せ量は
- *   縦横とも 0・線は無し）
+ * @param targets 今回揃える先の矩形の並び（吸い付かない回は空）
+ * @returns 寄せ量とガイド線（どちらも画面上の px。閾値に届く線が無い / 揃え先が空なら
+ *   寄せ量は縦横とも 0・線は無し）
  */
-function snapAt(measured: RepositionMeasure, movedTo: Offset): SideSnapped {
+function snapAt(
+  measured: RepositionMeasure,
+  movedTo: Offset,
+  targets: readonly CanvasBounds[],
+): SideSnapped {
   return SideSnap.toSnapped(
     SideSnap.create(
       CanvasBounds.placedAt(measured.origin, movedTo, measured.dragged),
-      measured.stationary,
+      targets,
     ),
   );
 }
@@ -240,6 +246,8 @@ function carriedNode(
  * 運んだ量は画面上の移動量を倍率で割り戻したもので（倍率を変えても掴んだ点に追従する）、
  * そこから書かれる座標と見た目のずらし量を決めるのは `RepositionTarget`。
  *
+ * ⌘ / Ctrl を押しながら動かしている間は吸い付かない（docs/06-ui.md の辺のスナップ）。
+ *
  * **落とせる親がポインタの下に無くても、見た目は追従させる**（ずらし量は原点の
  * 付け替えを含まないので親が決まらなくても決まる）。追従を止めると、キャンバスの余白へ
  * 一瞬寄っただけで元の位置へ戻り、運べているのか分からなくなる。
@@ -274,8 +282,14 @@ function repositionCarrying(
       ),
     });
   }
+  /*
+   * 吸い付かない回は揃え先を空にして同じ判定へ通す。寄せ無しの答えを別に組むと、揃え先が
+   * 無いときの答え（寄せ量 0・線無し）が 2 か所に書かれる。
+   */
+  const targets = CommandKey.isHeld(context.event)
+    ? []
+    : measured.value.stationary;
   // 寄せ量とガイド線は 1 回の判定から配る（理由は `DropEdit.reposition` の doc）
-
   const snap = snapAt(
     measured.value,
     CanvasView.toScreenPoint(
@@ -283,6 +297,7 @@ function repositionCarrying(
       { x: carried.at.placement.x, y: carried.at.placement.y },
       screenDelta,
     ),
+    targets,
   );
   // 寄せ量を運んだ量へ畳んでから渡すので、書かれる座標と見た目のずらし量が同じ材料から出る
   const snapped = Offset.add(screenDelta, snap.offset);
@@ -387,6 +402,8 @@ export type NodeDragControl = Readonly<{
  * このフックが持つのは DOM の実測とイベントの仲介だけ。「どこへ落ちるか」「いつドラッグ
  * とみなすか」は `node-drop` / `node-drag`、「実測した親のずれからどの座標が書かれるか」
  * は `reposition-target`、「揃う線（辺か中心線）があるならどれだけ寄せるか」は `side-snap` にある。
+ * ⌘ / Ctrl を押している間に揃え先を渡さない（吸い付かせない）のは、修飾キーという入力の事情
+ * なのでこちらが持つ。
  *
  * @param params 落とし先を決める `document` / `view` と、確定したときに呼ぶ
  *   `onMove` / `onInsertAt` / `onReposition`

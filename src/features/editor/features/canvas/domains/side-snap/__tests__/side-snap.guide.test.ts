@@ -106,6 +106,13 @@ test("どの辺も届かない揃え先からは、線が出ない", () => {
   });
 });
 
+test("揃える先が 1 つも無ければ、線は出ない", () => {
+  expect(SideSnap.toSnapped(SideSnap.create(Moving, [])).guides).toEqual({
+    horizontal: Option.none,
+    vertical: Option.none,
+  });
+});
+
 test("縦横のどちらでも揃うときは、軸ごとに線が 1 本ずつ出る", () => {
   const alongX: CanvasBounds = { left: 104, top: 300, width: 200, height: 20 };
   const alongY: CanvasBounds = { left: 500, top: 95, width: 40, height: 200 };
