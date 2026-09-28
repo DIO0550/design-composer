@@ -126,8 +126,8 @@ export type ResizeHold = Readonly<{
   grabbedAt: Option<Offset>;
   /**
    * 掴んだ時点の辺のスナップの組（`moving` は掴んだ時点の矩形）。`hold` の直後と、掴んだ
-   * 時点の矩形を測れなかったときは `none`。揃え先が無い対象（フロー配置）では `stationary`
-   * が空の組になる。
+   * 時点の矩形を測れなかったときは `none`。揃え先が無い対象（フロー配置）と、揃え先を外した
+   * 値（`withoutSnapTargets`）では `stationary` が空の組になる。
    *
    * 揃え先はリサイズしても動かないものに絞っている（`ResizableSelection.snapTargetNames`）
    * ので、動かすたびには測り直さない。
@@ -453,6 +453,28 @@ export const NodeResize = {
    */
   withSideSnap(held: ResizeHold, snap: SideSnap): ResizeHold {
     return { ...held, snapFrom: Option.some(snap) };
+  },
+
+  /**
+   * 掴んでいる最中の状態から揃え先を外す。外した状態で `editAt` を通すと、揃え先の近くでも
+   * 寄せない（docs/06-ui.md「リサイズハンドル」の辺のスナップ）。
+   *
+   * `snapFrom` を `none` にはせず揃え先を空にする。`none` は `hold` の直後か、掴んだ時点に
+   * 測れなかったことを表しており、吸い付かないことはフロー配置もノードの移動も「揃え先が空」で表している。
+   *
+   * @param resize 今のリサイズの状態
+   * @returns 揃え先を空にした状態。掴んでいない / 組が載っていなければ `resize` のまま
+   */
+  withoutSnapTargets(resize: NodeResize): NodeResize {
+    if (resize.kind !== "resizing") {
+      return resize;
+    }
+    return {
+      ...resize,
+      snapFrom: Option.map(resize.snapFrom, (snap) =>
+        SideSnap.create(snap.moving, []),
+      ),
+    };
   },
 
   /**
