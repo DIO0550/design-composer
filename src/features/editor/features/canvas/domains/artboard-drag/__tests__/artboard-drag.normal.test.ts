@@ -3,20 +3,7 @@ import { Offset } from "@/domains/unit/offset";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
 import { Option } from "@/utils/Option";
 import { ArtboardDrag } from "../index";
-
-/**
- * `home` を掴んだ状態。
- * 掴んだ時点の位置と押した位置を別の値にして、取り違えを落とせるようにする。
- *
- * @returns 掴んだだけで、まだ動かしていない状態
- */
-function heldDrag(): ArtboardDrag {
-  return ArtboardDrag.grab({
-    name: "home",
-    grabbedAt: { x: 100, y: 40 },
-    pointerOrigin: { x: 500, y: 300 },
-  });
-}
+import { heldDrag } from "./held-drag";
 
 test("閾値を越えて動かすと、掴んだ時点の位置に移動量を足した座標を運んでいる", () => {
   // 縦横を別の量にする（取り違えても同じ答えになる入力を避ける）
