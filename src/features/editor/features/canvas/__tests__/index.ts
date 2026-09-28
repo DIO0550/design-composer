@@ -10,6 +10,7 @@ export {
   canvasSurface,
   highlightedNames,
   renderedElement,
+  textInlineEditorField,
   tokenReferrerNames,
 } from "@/features/editor/features/canvas/__tests__/canvas-elements";
 export {

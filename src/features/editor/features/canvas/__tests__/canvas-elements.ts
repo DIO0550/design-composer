@@ -8,7 +8,7 @@ import { ArrayEx } from "@/utils/ArrayEx";
 /**
  * キャンバスに描かれたものを読む。キャンバスの中身はコンパイル結果の HTML を文字列のま
  * ま流し込んだもので React の管理下に無いため、要素も強調もノード名の属性を頼りに DOM
- * から引く。
+ * から引く。描かれた文言の上へ重ねて出す入力欄も、キャンバスの上に出るものとしてここで引く。
  *
  * キャンバス単体（`features/editor/features/canvas/components/artboard-canvas`）と編集
  * 画面の通し（`features/editor` の `opened-document-editor`）の両方が「何が描かれている
@@ -36,6 +36,11 @@ export function canvasContent(): HTMLElement {
  */
 export function canvasSurface(): HTMLElement {
   return screen.getByTestId("canvas-surface");
+}
+
+/** 描かれた文言の上へ重ねて出ている、Text の文言を書き換える入力欄。 */
+export function textInlineEditorField(): HTMLInputElement {
+  return screen.getByRole("textbox", { name: "文言を編集" });
 }
 
 /**

@@ -1,6 +1,7 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
+import { textInlineEditorField } from "@/features/editor/features/canvas/__tests__/canvas-elements";
 import type { TextEdit } from "@/features/editor/features/canvas/domains/text-edit";
 import { TextInlineEditor } from "../index";
 
@@ -28,10 +29,6 @@ function setup() {
   return calls;
 }
 
-function field(): HTMLElement {
-  return screen.getByRole("textbox", { name: "文言を編集" });
-}
-
 test("打ちかけの文言が入力欄に出る", () => {
   render(
     <TextInlineEditor
@@ -42,13 +39,13 @@ test("打ちかけの文言が入力欄に出る", () => {
     />,
   );
 
-  expect(field().getAttribute("value")).toBe("ようこそ");
+  expect(textInlineEditorField().getAttribute("value")).toBe("ようこそ");
 });
 
 test("Enter を押すと編集が確定する", () => {
   const calls = setup();
 
-  fireEvent.keyDown(field(), { key: "Enter" });
+  fireEvent.keyDown(textInlineEditorField(), { key: "Enter" });
 
   expect(calls).toEqual(["commit"]);
 });
@@ -56,7 +53,7 @@ test("Enter を押すと編集が確定する", () => {
 test("Escape を押すと編集が取り消される", () => {
   const calls = setup();
 
-  fireEvent.keyDown(field(), { key: "Escape" });
+  fireEvent.keyDown(textInlineEditorField(), { key: "Escape" });
 
   expect(calls).toEqual(["cancel"]);
 });
@@ -65,7 +62,7 @@ test("編集に関わらないキーではどちらも起きない", () => {
   // Enter / Escape 以外で確定してしまうと、打っている途中で閉じる
   const calls = setup();
 
-  fireEvent.keyDown(field(), { key: "Tab" });
+  fireEvent.keyDown(textInlineEditorField(), { key: "Tab" });
 
   expect(calls).toEqual([]);
 });
@@ -73,7 +70,7 @@ test("編集に関わらないキーではどちらも起きない", () => {
 test("フォーカスが外れると編集が確定する", () => {
   const calls = setup();
 
-  fireEvent.blur(field());
+  fireEvent.blur(textInlineEditorField());
 
   expect(calls).toEqual(["commit"]);
 });
@@ -89,7 +86,7 @@ test("打つと打った内容が下書きとして伝わる", async () => {
     />,
   );
 
-  await userEvent.type(field(), "あ");
+  await userEvent.type(textInlineEditorField(), "あ");
 
   expect(drafts).toEqual(["あ"]);
 });
@@ -105,5 +102,5 @@ test("開いた時点で入力欄へフォーカスが当たる", () => {
     />,
   );
 
-  expect(document.activeElement).toBe(field());
+  expect(document.activeElement).toBe(textInlineEditorField());
 });
