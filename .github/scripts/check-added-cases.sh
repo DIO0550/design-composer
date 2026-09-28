@@ -14,6 +14,9 @@
 # 加えて、git がクォートして出すパス(非 ASCII・`"`・タブ)の追加と移動を置く。外すと
 # クォートされたファイルが `[ -f ]` で黙って検査から外れても、表は緑のまま通る。
 #
+# 重複の検査には、既にある重複を分割・rename と組めない移動で動かした組と、重複を増やした組を
+# 置く。前者は追加行に載っても違反にせず、後者は違反にする(base と本体の数を比べる境界)。
+#
 # **「走らせられない」は PATH 先頭に置いた壊れた python3 で作る。** PATH から python3 を
 # 消す形にすると、前提チェックが `command -v python3` で書かれていても同じ終了コードに
 # なり、採らなかったその実装を表が素通りさせる。
@@ -22,8 +25,8 @@
 # 差分が無いブランチではループ本体が 1 度も回らず、検出器が 1 回も呼ばれないまま
 # 「ありません」が出る。「base と差分が無い」のケースがそこを分けている。
 #
-# 表は `期待する終了コード|出力に含まれる綴り|検査|python3|検出器|入力|ケース名`。
-# 綴りが空の行は終了コードだけを見る。
+# 表は `期待する終了コード|出力に含まれる綴り|検査|python3|検出器|入力|ケース名|出力に含まれない綴り`。
+# 綴りが空(最後の列は省略)なら、その綴りは見ない。
 set -uo pipefail
 
 scripts_dir="$(cd "$(dirname "$0")" && pwd)"
@@ -64,6 +67,14 @@ mate_ts="export const artboard = () => {
 ${helper_body}"
 added_helper_ts="export const board = () => {
 ${helper_body}"
+# base に無い本体を持つ、新しく作った重複の組
+fresh_pair_ts='export const freshA = () => {
+  return { depth: 300, weight: 400 };
+};
+export const freshB = () => {
+  return { depth: 300, weight: 400 };
+};
+'
 # 一時リポジトリの中でコミットする。CI のランナーには既定の user.email が無いので
 # `-c` で毎回渡す(手元は global の設定で通ってしまい、CI だけが落ちる)。
 commit_in() {
@@ -79,6 +90,14 @@ broken_python3_dir() {
   printf '#!/usr/bin/env bash\nexit 127\n' >"$dir/python3"
   chmod +x "$dir/python3"
   printf '%s' "$dir"
+}
+
+# base の時点で既に重複がある(a.test.ts と相方に同じ本体を置く)入力か。
+has_base_duplicate() {
+  case "$1" in
+    duplication-renamed*|duplication-split*|duplication-moved-dissimilar|duplication-grown*) return 0 ;;
+  esac
+  return 1
 }
 
 # 入力の名前から、base コミットと HEAD コミットを持つ一時リポジトリを組み、そのパスを返す。
@@ -105,10 +124,10 @@ setup_repo() {
   case "$input" in
     lint-violation*) added_content="$suppressed_ts" ;;
     duplication-violation*) added_content="$added_helper_ts" ;;
-    duplication-renamed*) added_content="" ;;
     no-diff) added_content="" ;;
     *) added_content="$plain_ts" ;;
   esac
+  has_base_duplicate "$input" && added_content=""
 
   mkdir -p "$dir/.claude/hooks/lib" "$dir/$(dirname "$path")"
   cp "$repo_root/.claude/hooks/lib/$lint_detector" \
@@ -116,10 +135,8 @@ setup_repo() {
 
   git -C "$dir" init -q
   printf '%s' "$base_ts" >"$dir/$path"
-  # 移動の検査では、重複そのものは base の時点で既にある
-  case "$input" in
-    duplication-renamed*) printf '%s' "$added_helper_ts" >>"$dir/$path" ;;
-  esac
+  # 移動・分割・書き足しの検査では、重複そのものは base の時点で既にある(相方と 2 件)
+  has_base_duplicate "$input" && printf '%s' "$added_helper_ts" >>"$dir/$path"
   git -C "$dir" add "$path" ".claude/hooks/lib/$lint_detector" \
     ".claude/hooks/lib/$duplication_detector"
   if [ -n "$mate_path" ]; then
@@ -129,13 +146,44 @@ setup_repo() {
   fi
   commit_in "$dir" -m base
 
-  local moved=""
+  local moved="" written=""
   case "$input" in
     duplication-renamed) moved=src/moved/__tests__/a.test.ts ;;
     duplication-renamed-non-ascii) moved=src/移動/__tests__/a.test.ts ;;
     duplication-renamed-tab) moved=$'src/tab\tdir/__tests__/a.test.ts' ;;
+    duplication-moved-dissimilar) moved=src/moved/__tests__/a.test.ts ;;
+    duplication-split*) written="$(dirname "$path")/c.test.ts" ;;
+    duplication-grown*) written=src/c/__tests__/c.test.ts ;;
   esac
-  if [ -n "$moved" ]; then
+  if [ "$input" = duplication-grown-main-advanced ]; then
+    # 分岐のあとで、base 側(タグ `base`)にも同じ本体が足される。base の先端と比べると
+    # 数が揃って見え、このブランチが足した分を見逃す
+    git -C "$dir" checkout -q -b advanced
+    mkdir -p "$dir/src/d/__tests__"
+    printf '%s' "$added_helper_ts" >"$dir/src/d/__tests__/d.test.ts"
+    git -C "$dir" add src/d/__tests__/d.test.ts
+    commit_in "$dir" -m advanced
+    git -C "$dir" tag base
+    git -C "$dir" checkout -q -
+  fi
+  if [ "$input" = duplication-moved-dissimilar ]; then
+    # 4 行のファイルへ 8 行書き足し、類似度を git の rename の閾値(既定 50%)より下げる。
+    # rename として組めると `duplication-renamed` と同じ経路を通り、base 照合を外しても通る
+    mkdir -p "$dir/$(dirname "$moved")"
+    git -C "$dir" mv "$path" "$moved"
+    printf 'export const extra%s = %s;\n' 1 1 2 2 3 3 4 4 5 5 6 6 7 7 8 8 >>"$dir/$moved"
+    git -C "$dir" add "$moved"
+    commit_in "$dir" -m head
+  elif [ -n "$written" ]; then
+    # 分割は元のファイルから本体を消し(重複は 2 件のまま)、書き足しは残す(2 件から 3 件)
+    case "$input" in duplication-split*) printf '%s' "$base_ts" >"$dir/$path" ;; esac
+    mkdir -p "$dir/$(dirname "$written")"
+    printf '%s' "$added_helper_ts" >"$dir/$written"
+    # 移しただけの既存の重複と、新しく作った重複を同じファイルに同居させる
+    [ "$input" = duplication-split-with-new ] && printf '%s' "$fresh_pair_ts" >>"$dir/$written"
+    git -C "$dir" add "$path" "$written"
+    commit_in "$dir" -m head
+  elif [ -n "$moved" ]; then
     # 移動しただけのファイルが全行「追加」に見えると、既存の重複が新規として報告される
     mkdir -p "$dir/$(dirname "$moved")"
     git -C "$dir" mv "$path" "$moved"
@@ -153,15 +201,17 @@ setup_repo() {
 # 表の 1 行を走らせて、終了コードと(綴りが指定されていれば)出力を確かめる。
 run_case() {
   local expected="$1" expected_text="$2" script="$3" python3_state="$4"
-  local detector_state="$5" input="$6" label="$7"
-  local dir actual=0 output path_prefix=""
+  local detector_state="$5" input="$6" label="$7" absent_text="$8"
+  local dir actual=0 output path_prefix="" base_rev
 
   dir="$(setup_repo "$input")"
   [ "$python3_state" = broken ] && path_prefix="$(broken_python3_dir "$dir"):"
   [ "$detector_state" = missing ] && rm -f "$dir/.claude/hooks/lib/$lint_detector" \
     "$dir/.claude/hooks/lib/$duplication_detector"
+  # base は既定で HEAD の 1 つ前。分岐のあとで base 側が進むケースだけ、タグ `base` を渡す
+  base_rev="$(git -C "$dir" rev-parse -q --verify refs/tags/base || git -C "$dir" rev-parse HEAD~1)"
   output="$(cd "$dir" && PATH="${path_prefix}${PATH}" \
-    bash "$scripts_dir/$script" "$(git -C "$dir" rev-parse HEAD~1)" 2>&1)" || actual=$?
+    bash "$scripts_dir/$script" "$base_rev" 2>&1)" || actual=$?
 
   if [ "$actual" != "$expected" ]; then
     printf 'NG   exit=%s (期待 %s)  %s\n' "$actual" "$expected" "$label"
@@ -170,6 +220,11 @@ run_case() {
   fi
   if [ -n "$expected_text" ] && ! printf '%s' "$output" | grep -qF "$expected_text"; then
     printf 'NG   exit=%s 出力に「%s」が無い  %s\n' "$actual" "$expected_text" "$label"
+    failed=1
+    return
+  fi
+  if [ -n "$absent_text" ] && printf '%s' "$output" | grep -qF "$absent_text"; then
+    printf 'NG   exit=%s 出力に「%s」がある  %s\n' "$actual" "$absent_text" "$label"
     failed=1
     return
   fi
@@ -197,11 +252,16 @@ cases="\
 1|検出された行:|$duplication_script|ok|present|duplication-violation-non-ascii|非 ASCII のフォルダの追加行に重複したテストヘルパーがある
 1|検出された行:|$duplication_script|ok|present|duplication-violation-tab|タブを含むフォルダの追加行に重複したテストヘルパーがある
 0||$duplication_script|ok|present|duplication-renamed-non-ascii|既にある重複を非 ASCII のフォルダへ移しただけ
-0||$duplication_script|ok|present|duplication-renamed-tab|既にある重複をタブを含むフォルダへ移しただけ"
+0||$duplication_script|ok|present|duplication-renamed-tab|既にある重複をタブを含むフォルダへ移しただけ
+0||$duplication_script|ok|present|duplication-split|既にある重複を、同じフォルダの新しいファイルへ切り出した
+0||$duplication_script|ok|present|duplication-moved-dissimilar|既にある重複を、rename と組めないほど書き足しながら別のフォルダへ移した
+1|検出された行:|$duplication_script|ok|present|duplication-grown|既にある重複の本体を、さらに別のファイルへ書き足した
+1|検出された行:|$duplication_script|ok|present|duplication-grown-main-advanced|既にある重複の本体を書き足し、分岐のあとで base 側にも同じ本体が足された
+1|:freshA|$duplication_script|ok|present|duplication-split-with-new|既にある重複を切り出した先に、新しい重複を作った|:board"
 
-while IFS='|' read -r expected expected_text script python3_state detector_state input label; do
+while IFS='|' read -r expected expected_text script python3_state detector_state input label absent_text; do
   run_case "$expected" "$expected_text" "$script" "$python3_state" "$detector_state" \
-    "$input" "$label"
+    "$input" "$label" "$absent_text"
 done <<< "$cases"
 
 exit "$failed"

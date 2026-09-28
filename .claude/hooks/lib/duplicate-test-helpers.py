@@ -21,11 +21,15 @@
   リテラル型だけは読み飛ばす）
 - オーバーロードのシグネチャ（本体を持たない `function f(x: string): string;`）は、後ろに
   ある実装の本体を自分の本体と読む
+- `--base-root` を渡した `--lines` は、本体の数が base から増えていない重複を報告しない。
+  ある本体を 1 つのファイルから消して別のファイルへ書いた場合も、分割と見分けられないので
+  報告しない（判定表 `check-added-cases.sh`）
 
 使い方:
     duplicate-test-helpers.py <検査するファイル>   # そのファイルが絡む重複だけ（プロジェクト全体から探す。人向けの報告）
     duplicate-test-helpers.py --all [ルート]        # 全体（既定のルートは src。人向けの報告）
     duplicate-test-helpers.py --lines <検査するファイル>  # そのファイルの重複行だけを `<行番号>:<名前>` で 1 件 1 行(CI が追加行と突き合わせる用。lint-suppressions.py と同じ形式)
+    duplicate-test-helpers.py --lines <検査するファイル> --base-root <base の src>  # 上のうち、本体の数が base より増えた重複だけ
 
 重複があれば標準出力へ報告して終了コード 1、無ければ何も出さず 0。
 """
@@ -282,19 +286,46 @@ def is_valid_target(target: Path) -> bool:
     return target.parent.name == "__tests__" and target.exists()
 
 
-def groups_for_file(target: Path) -> list[list[tuple[Path, str, int]]]:
+def groups_for_file(
+    target: Path, base_root: Path | None = None
+) -> list[list[tuple[Path, str, int]]]:
     """`target` が絡む重複だけを返す。探す範囲は同じフォルダに限らずプロジェクト全体
 
     (別モジュールへコピーした重複を見逃さないため)。プロジェクト内の既存の重複まで
     毎回並べると、触っていないものの報告に紛れて今書いた分が読めなくなるので、
     `target` を含まないグループは返さない。
+
+    @param base_root 渡すと、同じ本体の数がそこ(base の `src`)より増えた重複だけに絞る
     """
+    everywhere = helpers_under(project_src_root(target))
+    by_body = grown_since(everywhere, base_root) if base_root else everywhere
     target_resolved = target.resolve()
     return [
         places
-        for places in duplicate_groups(helpers_under(project_src_root(target)))
+        for places in duplicate_groups(by_body)
         if any(path.resolve() == target_resolved for path, _, _ in places)
     ]
+
+
+def grown_since(
+    by_body: dict[str, list[tuple[Path, str, int]]], base_root: Path
+) -> dict[str, list[tuple[Path, str, int]]]:
+    """本体ごとに集めたものから、同じ本体の数が `base_root` 配下の `__tests__/` より増えたものだけを残す。
+
+    有無ではなく数で比べる。base に 1 つだけあった本体を別のファイルへ写すのは、この検査が
+    止めたい「重複を新しく作った」そのものなので、base に同じ本体があるだけでは除けない。
+
+    @param by_body 比べる側(HEAD)のヘルパーを本体ごとに集めたもの(`helpers_under` の戻り値)
+    @param base_root base の木を展開した先の、`src` に当たるディレクトリ
+    @returns `by_body` のうち、base より数が増えた本体だけ。base に `__tests__/` が無ければ
+        すべて残す
+    """
+    base_by_body = helpers_under(base_root)
+    return {
+        body: places
+        for body, places in by_body.items()
+        if len(places) > len(base_by_body.get(body, []))
+    }
 
 
 def main() -> int:
@@ -309,15 +340,17 @@ def main() -> int:
 
     if args[:1] == ["--lines"]:
         # CI が diff の追加行と突き合わせるための機械可読な出力(lint-suppressions.py と同じ形式)。
-        # `<行番号>:<名前>` を 1 件 1 行、フィルタなしで返す(追加行かどうかの判定は呼ぶ側が持つ)
+        # `<行番号>:<名前>` を 1 件 1 行で返す(追加行かどうかの判定は呼ぶ側が持つ)
         if len(args) < 2:
             return 0
         target = Path(args[1])
         if not is_valid_target(target):
             return 0
+        has_base_root = args[2:3] == ["--base-root"] and len(args) > 3
+        base_root = Path(args[3]) if has_base_root else None
         target_resolved = target.resolve()
         found = False
-        for places in groups_for_file(target):
+        for places in groups_for_file(target, base_root):
             for path, name, line in places:
                 if path.resolve() != target_resolved:
                     continue

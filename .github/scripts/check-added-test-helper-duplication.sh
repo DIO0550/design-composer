@@ -9,7 +9,12 @@
 #
 # 判定そのものは `.claude/hooks/lib/duplicate-test-helpers.py --lines` で共有している
 # (`<行番号>:<名前>` を返す。`lint-suppressions.py` と同じ出力形式)。
-# **追加された行に載っているヘルパーだけ**を違反とする。
+# **追加された行に載っていて、かつ同じ本体の数が base より増えたヘルパーだけ**を違反とする。
+#
+# 追加行かどうかは行番号でしか見えないため、ファイルを分割する・rename と組めないほど書き換えて
+# 移すと、既にあった重複がすべて「追加」に見える。そこで追加行に候補が出たときだけ、比べる相手の
+# 木(merge-base の `src`)を展開し、検出器に本体の数を比べさせる(`--base-root`)。
+# 有無ではなく数で比べる理由は検出器の `grown_since`。
 set -euo pipefail
 
 # `cd` の前に解決する(`cd` したあとの `$0` は元の作業ディレクトリからの相対になる)
@@ -23,6 +28,16 @@ init_added_lines "$base"
 detector=.claude/hooks/lib/duplicate-test-helpers.py
 require_runnable_detector "追加されたテストヘルパーの重複" "$detector"
 
+# 比べる相手の木を展開した先。展開は候補が出たときに 1 度だけ行う(違反の無い push では
+# 走らせない)。先端ではなく merge-base を展開するのは、追加行の判定(`"$base"...HEAD`)と
+# 同じ木と比べるため。先端と比べると、分岐後に main が同じ本体を足していたときに見逃す。
+base_tree=""
+extract_base_tree() {
+  [ -n "$base_tree" ] && return
+  base_tree="$(mktemp -d)"
+  git archive "$(git merge-base "$base" HEAD)" -- src | tar -x -C "$base_tree"
+}
+trap 'rm -rf ${base_tree:+"$base_tree"}' EXIT
 
 violations=""
 # パスを `-z` で読む理由は lib/added-lines.sh の冒頭。
@@ -38,6 +53,12 @@ while IFS= read -r -d '' file; do
 
   # `|| true` は外せない(理由は check-added-lint-suppressions.sh の同じ行)。
   reported="$(python3 "$detector" --lines "$file" || true)"
+  [ -z "$reported" ] && continue
+  [ -z "$(entries_on_added_lines "$added" "$reported")" ] && continue
+
+  # `$(...)` の中で展開すると `base_tree` がサブシェルに閉じ、ファイルごとに展開し直す
+  extract_base_tree
+  reported="$(python3 "$detector" --lines "$file" --base-root "$base_tree/src" || true)"
   [ -z "$reported" ] && continue
 
   while IFS= read -r entry; do
