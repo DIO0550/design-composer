@@ -5,7 +5,7 @@ import { DesignDocument } from "@/domains/dcmp/design-document";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
 import { useEditorState } from "../index";
-import { homeChildNames } from "./setup";
+import { childNamesText, homeChildNames } from "./setup";
 
 /*
  * 名前の変更のアクションを 1 つずつ送って、変わるときと変わらないときを対で確かめる
@@ -109,10 +109,6 @@ function renaming(): string {
   return screen.getByTestId("renaming").textContent ?? "";
 }
 
-function childNames(): string {
-  return screen.getByTestId("children").textContent ?? "";
-}
-
 test("1 つ選んでから名前の編集に入るアクションを送ると、それが編集中になる", async () => {
   render(<EditorStateHarness />);
 
@@ -161,7 +157,7 @@ test("編集をやめるアクションを送っても名前は変わらない",
   await userEvent.click(screen.getByText("lead の名前の編集に入る"));
   await userEvent.click(screen.getByText("編集をやめる"));
 
-  expect(childNames()).toBe("title,lead");
+  expect(childNamesText()).toBe("title,lead");
 });
 
 test("編集中に名前を変えるアクションを送ると、その名前になる", async () => {
@@ -171,7 +167,7 @@ test("編集中に名前を変えるアクションを送ると、その名前�
   await userEvent.click(screen.getByText("名前の編集に入る"));
   await userEvent.click(screen.getByText("caption にする"));
 
-  expect(childNames()).toBe("caption,lead");
+  expect(childNamesText()).toBe("caption,lead");
 });
 
 test("編集していないときに名前を変えるアクションを送っても名前は変わらない", async () => {
@@ -180,7 +176,7 @@ test("編集していないときに名前を変えるアクションを送っ�
   await userEvent.click(screen.getByText("title を選ぶ"));
   await userEvent.click(screen.getByText("caption にする"));
 
-  expect(childNames()).toBe("title,lead");
+  expect(childNamesText()).toBe("title,lead");
 });
 
 test("使えない名前へ変えるアクションを送ると、名前は変わらず編集も閉じない", async () => {
@@ -190,7 +186,7 @@ test("使えない名前へ変えるアクションを送ると、名前は変�
   await userEvent.click(screen.getByText("名前の編集に入る"));
   await userEvent.click(screen.getByText("lead にする"));
 
-  expect(childNames()).toBe("title,lead");
+  expect(childNamesText()).toBe("title,lead");
   expect(renaming()).toBe("title");
 });
 
@@ -201,7 +197,7 @@ test("使えない名前で終えるアクションを送ると、名前は変�
   await userEvent.click(screen.getByText("名前の編集に入る"));
   await userEvent.click(screen.getByText("lead で終える"));
 
-  expect(childNames()).toBe("title,lead");
+  expect(childNamesText()).toBe("title,lead");
   expect(renaming()).toBe("編集なし");
 });
 
@@ -212,5 +208,5 @@ test("使える名前で終えるアクションを送ると、その名前に�
   await userEvent.click(screen.getByText("名前の編集に入る"));
   await userEvent.click(screen.getByText("caption で終える"));
 
-  expect(childNames()).toBe("caption,lead");
+  expect(childNamesText()).toBe("caption,lead");
 });

@@ -1,32 +1,18 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
-import { DesignDocument } from "@/domains/dcmp/design-document";
+import { DocumentWithCardComponent } from "@/features/editor/__tests__/sample-document";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
 import { useEditorState } from "../index";
 import { homeChildNames } from "./setup";
-
-function setupDocument(): DesignDocument {
-  return DesignDocument.create({
-    components: { card: { type: "Box" } },
-    artboards: [
-      {
-        name: "home",
-        width: 375,
-        height: 812,
-        children: [{ name: "title", type: "Text" }],
-      },
-    ],
-  });
-}
 
 /**
  * 挿入・削除・コピー & ペーストのアクションを 1 つずつ送る器。
  * 選択の切り替えも同じ器から行い、選択に応じた結果を見る。
  */
 function TreeEditHarness() {
-  const [state, dispatch] = useEditorState(setupDocument());
+  const [state, dispatch] = useEditorState(DocumentWithCardComponent);
 
   return (
     <>

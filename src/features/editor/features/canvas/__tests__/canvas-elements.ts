@@ -8,7 +8,7 @@ import { ArrayEx } from "@/utils/ArrayEx";
 /**
  * キャンバスに描かれたものを読む。キャンバスの中身はコンパイル結果の HTML を文字列のま
  * ま流し込んだもので React の管理下に無いため、要素も強調もノード名の属性を頼りに DOM
- * から引く。
+ * から引く。描かれた文言の上へ重ねて出す入力欄も、キャンバスの上に出るものとしてここで引く。
  *
  * キャンバス単体（`features/editor/features/canvas/components/artboard-canvas`）と編集
  * 画面の通し（`features/editor` の `opened-document-editor`）の両方が「何が描かれている
@@ -25,17 +25,30 @@ const HighlightedNamePattern = new RegExp(
   "g",
 );
 
-/** キャンバスの中身（コンパイル結果を流し込む器）。倍率と位置はここに載る。 */
+/**
+ * キャンバスの中身（コンパイル結果を流し込む器）。倍率と位置はここに載り、リサイズと
+ * artboard の移動のポインタもここが受ける。
+ */
 export function canvasContent(): HTMLElement {
   return screen.getByTestId("canvas-content");
 }
 
+/** キャンバスの中身に効いている変形（ズーム / パンの結果）。 */
+export function canvasTransform(): string {
+  return canvasContent().style.transform;
+}
+
 /**
- * キャンバスの土台（ズーム / パンを受ける面）。
+ * キャンバスの土台（ズーム / パン・範囲選択を受ける面）。
  * 中身の器はこの左上を原点に置かれるので、**収める先**として測る対象になる。
  */
 export function canvasSurface(): HTMLElement {
   return screen.getByTestId("canvas-surface");
+}
+
+/** 描かれた文言の上へ重ねて出ている、Text の文言を書き換える入力欄。 */
+export function textInlineEditorField(): HTMLInputElement {
+  return screen.getByRole("textbox", { name: "文言を編集" });
 }
 
 /**

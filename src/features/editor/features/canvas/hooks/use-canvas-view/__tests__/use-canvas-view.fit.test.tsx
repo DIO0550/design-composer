@@ -8,6 +8,7 @@ import {
 } from "@/features/editor/features/canvas/__tests__/canvas-measure";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
 import { useCanvasView } from "../index";
+import { transform } from "./setup";
 
 /*
  * 名前で指したものを画面へ収める操作。
@@ -45,10 +46,6 @@ function FitHarness({ names }: Readonly<{ names: readonly string[] }>) {
       </button>
     </>
   );
-}
-
-function transform(): string {
-  return screen.getByTestId("transform").textContent ?? "";
 }
 
 async function pressFit(): Promise<void> {

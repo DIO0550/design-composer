@@ -2,7 +2,10 @@ import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { SampleDocumentWithDeepBranch } from "@/features/editor/__tests__/sample-document";
-import { renderedElement } from "@/features/editor/features/canvas/__tests__";
+import {
+  renderedElement,
+  textInlineEditorField,
+} from "@/features/editor/features/canvas/__tests__";
 import { canvasPane, propertyPane, renderOpenedDocument } from "./setup";
 
 /*
@@ -10,17 +13,13 @@ import { canvasPane, propertyPane, renderOpenedDocument } from "./setup";
  * 文言がドキュメントへ反映されるまでを確かめる
  * （docs/06-ui.md「キャンバス直接操作」の「Text のインライン編集」）。
  */
-/** 重ねて出ている入力欄。 */
-function editor(): HTMLElement {
-  return screen.getByRole("textbox", { name: "文言を編集" });
-}
 
 test("Text をダブルクリックして書き換え確定すると、キャンバスの文言が変わる", async () => {
   await renderOpenedDocument();
 
   await userEvent.dblClick(renderedElement(canvasPane(), "home-title"));
-  await userEvent.clear(editor());
-  await userEvent.type(editor(), "トップ{Enter}");
+  await userEvent.clear(textInlineEditorField());
+  await userEvent.type(textInlineEditorField(), "トップ{Enter}");
 
   expect(renderedElement(canvasPane(), "home-title").textContent).toBe(
     "トップ",
@@ -31,8 +30,8 @@ test("確定した文言はプロパティパネルの content にも出る", as
   await renderOpenedDocument();
 
   await userEvent.dblClick(renderedElement(canvasPane(), "home-title"));
-  await userEvent.clear(editor());
-  await userEvent.type(editor(), "トップ{Enter}");
+  await userEvent.clear(textInlineEditorField());
+  await userEvent.type(textInlineEditorField(), "トップ{Enter}");
 
   expect(
     within(propertyPane()).getByLabelText<HTMLInputElement>("Content").value,
@@ -43,8 +42,8 @@ test("Escape で取り消すとキャンバスの文言は元のままになる"
   await renderOpenedDocument();
 
   await userEvent.dblClick(renderedElement(canvasPane(), "home-title"));
-  await userEvent.clear(editor());
-  await userEvent.type(editor(), "トップ{Escape}");
+  await userEvent.clear(textInlineEditorField());
+  await userEvent.type(textInlineEditorField(), "トップ{Escape}");
 
   expect(renderedElement(canvasPane(), "home-title").textContent).toBe(
     "ホーム",
@@ -64,7 +63,7 @@ test("入れ子の Text は掘りきってからのダブルクリックで編�
 
   await userEvent.dblClick(text());
 
-  expect(editor()).toBeDefined();
+  expect(textInlineEditorField()).toBeDefined();
 });
 
 test("掘りきる前のダブルクリックでは入力欄は出ない", async () => {
@@ -82,8 +81,8 @@ test("確定したあと 1 回戻すと、確定する前の文言に戻る", as
    */
   await renderOpenedDocument();
   await userEvent.dblClick(renderedElement(canvasPane(), "home-title"));
-  await userEvent.clear(editor());
-  await userEvent.type(editor(), "トップ{Enter}");
+  await userEvent.clear(textInlineEditorField());
+  await userEvent.type(textInlineEditorField(), "トップ{Enter}");
 
   await userEvent.keyboard("{Control>}z{/Control}");
 

@@ -92,8 +92,8 @@ jobs:
         run: bash .github/scripts/check-added-lint-suppressions.sh "${{ github.event.pull_request.base.sha }}"
 
       # .claude/hooks/check-test-helper-duplication.sh はブロックせず、フックが発火しない
-      # 実行環境もある（.claude/hooks/README.md「強制力の序列」）。既存の重複が `src` に
-      # 残っているため、それらを落とさないようこのPRで追加された行だけを対象にする
+      # 実行環境もある（.claude/hooks/README.md「強制力の序列」）。このPRで追加された行だけを
+      # 対象にする理由は .claude/hooks/README.md「例外(エスケープハッチ)」
       - name: Check added test helper duplication
         run: bash .github/scripts/check-added-test-helper-duplication.sh "${{ github.event.pull_request.base.sha }}"
 

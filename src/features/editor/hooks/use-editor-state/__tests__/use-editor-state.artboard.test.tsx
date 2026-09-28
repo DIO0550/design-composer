@@ -1,10 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
-import {
-  artboardNames,
-  documentWithThreeArtboards,
-} from "@/features/editor/__tests__/artboard-fixtures";
+import { DesignDocument } from "@/domains/dcmp/design-document";
+import { documentWithThreeArtboards } from "@/features/editor/__tests__/artboard-fixtures";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
 import { useEditorState } from "../index";
@@ -16,7 +14,9 @@ function ArtboardActionHarness() {
   return (
     <>
       <p data-testid="artboards">
-        {artboardNames(EditorState.document(state)).join(",")}
+        {DesignDocument.collectArtboardNames(EditorState.document(state)).join(
+          ",",
+        )}
       </p>
       <p data-testid="selected">
         {Option.unwrapOr(EditorState.singleName(state), "選択なし")}

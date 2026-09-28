@@ -1,15 +1,12 @@
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { DocumentSelection } from "@/domains/session/document-selection";
-import {
-  artboardNames,
-  stateWithThreeArtboards,
-} from "@/features/editor/__tests__/artboard-fixtures";
+import { stateWithThreeArtboards } from "@/features/editor/__tests__/artboard-fixtures";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 
 function namesOf(state: EditorState): readonly string[] {
-  return artboardNames(EditorState.document(state));
+  return DesignDocument.collectArtboardNames(EditorState.document(state));
 }
 
 /**

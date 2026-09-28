@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
+import { canvasSurface } from "@/features/editor/features/canvas/__tests__/canvas-elements";
 import {
   drag,
   movePointer,
@@ -9,6 +10,7 @@ import {
 } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
 import { useCanvasView } from "../index";
+import { transform } from "./setup";
 
 /**
  * フックを DOM へ繋いだだけの器。
@@ -22,7 +24,7 @@ function CanvasViewHarness() {
 
   return (
     <>
-      <div data-testid="surface" ref={surfaceRef} {...panHandlers} />
+      <div data-testid="canvas-surface" ref={surfaceRef} {...panHandlers} />
       <p data-testid="transform">{CanvasView.transform(view)}</p>
       <p data-testid="scale-percent">{CanvasView.scalePercent(view)}</p>
       <button type="button" onClick={zoomIn}>
@@ -36,14 +38,6 @@ function CanvasViewHarness() {
       </button>
     </>
   );
-}
-
-function surface(): Element {
-  return screen.getByTestId("surface");
-}
-
-function transform(): string {
-  return screen.getByTestId("transform").textContent ?? "";
 }
 
 function scalePercent(): string {
@@ -75,7 +69,7 @@ test("縮小を求めると倍率が下がる", async () => {
 test("ドラッグするとポインタの移動量だけ位置が動く", () => {
   render(<CanvasViewHarness />);
 
-  drag(surface(), { from: { x: 100, y: 100 }, to: { x: 130, y: 80 } });
+  drag(canvasSurface(), { from: { x: 100, y: 100 }, to: { x: 130, y: 80 } });
 
   expect(transform()).toContain("translate(30px, -20px)");
 });
@@ -83,9 +77,9 @@ test("ドラッグするとポインタの移動量だけ位置が動く", () =>
 test("ドラッグ中に何度も動かすと移動量が積み上がる", () => {
   render(<CanvasViewHarness />);
 
-  pressPointer(surface(), { x: 100, y: 100 });
-  movePointer(surface(), { x: 130, y: 80 });
-  movePointer(surface(), { x: 140, y: 90 });
+  pressPointer(canvasSurface(), { x: 100, y: 100 });
+  movePointer(canvasSurface(), { x: 130, y: 80 });
+  movePointer(canvasSurface(), { x: 140, y: 90 });
 
   expect(transform()).toContain("translate(40px, -10px)");
 });
@@ -93,16 +87,16 @@ test("ドラッグ中に何度も動かすと移動量が積み上がる", () =>
 test("押していないときのポインタ移動では位置が動かない", () => {
   render(<CanvasViewHarness />);
 
-  movePointer(surface(), { x: 130, y: 80 });
+  movePointer(canvasSurface(), { x: 130, y: 80 });
 
   expect(transform()).toContain("translate(0px, 0px)");
 });
 
 test("ドラッグを終えたあとのポインタ移動では位置が動かない", () => {
   render(<CanvasViewHarness />);
-  drag(surface(), { from: { x: 100, y: 100 }, to: { x: 130, y: 80 } });
+  drag(canvasSurface(), { from: { x: 100, y: 100 }, to: { x: 130, y: 80 } });
 
-  movePointer(surface(), { x: 400, y: 400 });
+  movePointer(canvasSurface(), { x: 400, y: 400 });
 
   expect(transform()).toContain("translate(30px, -20px)");
 });
@@ -110,7 +104,7 @@ test("ドラッグを終えたあとのポインタ移動では位置が動か�
 test("ctrl を押しながらホイールを上へ回すと拡大する", () => {
   render(<CanvasViewHarness />);
 
-  wheel(surface(), { x: 0, y: -100 }, "ctrl");
+  wheel(canvasSurface(), { x: 0, y: -100 }, "ctrl");
 
   expect(scalePercent()).toBe("120");
 });
@@ -118,7 +112,7 @@ test("ctrl を押しながらホイールを上へ回すと拡大する", () => 
 test("ctrl を押しながらホイールを下へ回すと縮小する", () => {
   render(<CanvasViewHarness />);
 
-  wheel(surface(), { x: 0, y: 100 }, "ctrl");
+  wheel(canvasSurface(), { x: 0, y: 100 }, "ctrl");
 
   expect(scalePercent()).toBe("83");
 });
@@ -126,7 +120,7 @@ test("ctrl を押しながらホイールを下へ回すと縮小する", () => 
 test("⌘ を押しながらホイールを回しても拡大する", () => {
   render(<CanvasViewHarness />);
 
-  wheel(surface(), { x: 0, y: -100 }, "meta");
+  wheel(canvasSurface(), { x: 0, y: -100 }, "meta");
 
   expect(scalePercent()).toBe("120");
 });
@@ -134,7 +128,7 @@ test("⌘ を押しながらホイールを回しても拡大する", () => {
 test("修飾キーなしでホイールを回すとスクロール方向へ移動する", () => {
   render(<CanvasViewHarness />);
 
-  wheel(surface(), { x: 0, y: 40 }, "none");
+  wheel(canvasSurface(), { x: 0, y: 40 }, "none");
 
   expect(transform()).toContain("translate(0px, -40px)");
 });
@@ -142,7 +136,7 @@ test("修飾キーなしでホイールを回すとスクロール方向へ移�
 test("修飾キーなしの横方向のホイールでも移動する", () => {
   render(<CanvasViewHarness />);
 
-  wheel(surface(), { x: 30, y: 0 }, "none");
+  wheel(canvasSurface(), { x: 30, y: 0 }, "none");
 
   expect(transform()).toContain("translate(-30px, 0px)");
 });
@@ -150,7 +144,7 @@ test("修飾キーなしの横方向のホイールでも移動する", () => {
 test("修飾キーなしのホイールでは倍率は変わらない", () => {
   render(<CanvasViewHarness />);
 
-  wheel(surface(), { x: 0, y: 40 }, "none");
+  wheel(canvasSurface(), { x: 0, y: 40 }, "none");
 
   expect(scalePercent()).toBe("100");
 });
@@ -158,7 +152,7 @@ test("修飾キーなしのホイールでは倍率は変わらない", () => {
 test("リセットすると倍率と位置の両方が初期状態に戻る", async () => {
   render(<CanvasViewHarness />);
   await userEvent.click(screen.getByRole("button", { name: "拡大" }));
-  drag(surface(), { from: { x: 100, y: 100 }, to: { x: 130, y: 80 } });
+  drag(canvasSurface(), { from: { x: 100, y: 100 }, to: { x: 130, y: 80 } });
 
   await userEvent.click(screen.getByRole("button", { name: "リセット" }));
 

@@ -8,6 +8,7 @@ import {
   EditContinuities,
   type EditContinuity,
 } from "@/domains/session/edit-continuity";
+import { canvasContent } from "@/features/editor/features/canvas/__tests__/canvas-elements";
 import {
   movePointer,
   pressPointer,
@@ -80,7 +81,7 @@ function NodeResizeHarness({
   });
 
   return (
-    <div data-testid="surface" {...nodeResize.dragHandlers}>
+    <div data-testid="canvas-content" {...nodeResize.dragHandlers}>
       <button
         type="button"
         data-name="panel"
@@ -113,10 +114,6 @@ function panel(): Element {
       PanelBounds.height,
     );
   return element;
-}
-
-function surface(): Element {
-  return screen.getByTestId("surface");
 }
 
 function grabbed(): string {
@@ -171,7 +168,7 @@ test("掴んだままポインタを動かすと動かした分の大きさが�
   );
 
   pressPointer(panel(), { x: 298, y: 100 });
-  movePointer(surface(), { x: 338, y: 100 });
+  movePointer(canvasContent(), { x: 338, y: 100 });
 
   // まとまりの扱いは continuity の 3 件が専任で見るので、ここでは巻き込まない
   expect(onResize).toHaveBeenCalledWith(
@@ -189,7 +186,7 @@ test("掴んでいなければポインタを動かしても大きさは通知�
     />,
   );
 
-  movePointer(surface(), { x: 338, y: 100 });
+  movePointer(canvasContent(), { x: 338, y: 100 });
 
   expect(onResize).not.toHaveBeenCalled();
 });
@@ -204,8 +201,8 @@ test("離したあとにポインタを動かしても大きさは通知され�
   );
 
   pressPointer(panel(), { x: 298, y: 100 });
-  releasePointer(surface(), { x: 298, y: 100 });
-  movePointer(surface(), { x: 338, y: 100 });
+  releasePointer(canvasContent(), { x: 298, y: 100 });
+  movePointer(canvasContent(), { x: 338, y: 100 });
 
   expect(onResize).not.toHaveBeenCalled();
 });
@@ -220,8 +217,8 @@ test("ポインタがキャンバスの外へ出るとリサイズが取り消�
   );
 
   pressPointer(panel(), { x: 298, y: 100 });
-  fireEvent.pointerLeave(surface());
-  movePointer(surface(), { x: 338, y: 100 });
+  fireEvent.pointerLeave(canvasContent());
+  movePointer(canvasContent(), { x: 338, y: 100 });
 
   expect(onResize).not.toHaveBeenCalled();
 });
@@ -235,8 +232,8 @@ test("大きさを変えた直後の click は飲み込まれる", () => {
   );
 
   pressPointer(panel(), { x: 298, y: 100 });
-  movePointer(surface(), { x: 338, y: 100 });
-  releasePointer(surface(), { x: 338, y: 100 });
+  movePointer(canvasContent(), { x: 338, y: 100 });
+  releasePointer(canvasContent(), { x: 338, y: 100 });
   fireEvent.click(panel());
 
   expect(clicked()).toBe("飲み込んだ");
@@ -265,7 +262,7 @@ test("掴んでから最初の通知は、直前の編集とは別のまとま�
   );
 
   pressPointer(panel(), { x: 298, y: 100 });
-  movePointer(surface(), { x: 318, y: 100 });
+  movePointer(canvasContent(), { x: 318, y: 100 });
 
   expect(onResize.mock.calls.map(([, continuity]) => continuity)).toEqual([
     EditContinuities.Separate,
@@ -282,8 +279,8 @@ test("続けてポインタを動かした通知は、同じまとまりの続�
   );
 
   pressPointer(panel(), { x: 298, y: 100 });
-  movePointer(surface(), { x: 318, y: 100 });
-  movePointer(surface(), { x: 338, y: 100 });
+  movePointer(canvasContent(), { x: 318, y: 100 });
+  movePointer(canvasContent(), { x: 338, y: 100 });
 
   expect(onResize.mock.calls.map(([, continuity]) => continuity)).toEqual([
     EditContinuities.Separate,
@@ -301,10 +298,10 @@ test("離して掴み直すと、そこからまた別のまとまりとして�
   );
 
   pressPointer(panel(), { x: 298, y: 100 });
-  movePointer(surface(), { x: 318, y: 100 });
-  releasePointer(surface(), { x: 318, y: 100 });
+  movePointer(canvasContent(), { x: 318, y: 100 });
+  releasePointer(canvasContent(), { x: 318, y: 100 });
   pressPointer(panel(), { x: 298, y: 100 });
-  movePointer(surface(), { x: 338, y: 100 });
+  movePointer(canvasContent(), { x: 338, y: 100 });
 
   expect(onResize.mock.calls.map(([, continuity]) => continuity)).toEqual([
     EditContinuities.Separate,

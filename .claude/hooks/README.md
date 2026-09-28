@@ -105,7 +105,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 | `block-git-during-verification-agent.sh`(セッション中の行為の禁止) | **無し**。この競合はセッションの実行タイミングだけが原因で、コミット後のリポジトリの状態には痕跡が残らない |
 | `session-url-notice.sh`(セッション URL の提示) | **無し**。URL はセッションの中にしか無く、残す先も GitHub のコメントなので、push の時点で痕跡が残らない。落ちても穴は開かない(規約が AGENTS.md に残り、失っても情報が 1 つ足りないだけでガードは破れない) |
 | `post-edit-lint.sh` / `check-test-rules.sh` / `check-doc-comments.sh`(即時フィードバック) | 結果は push 前の検査(git hooks)と CI が拾う。**即時性だけが失われる** |
-| `check-test-helper-duplication.sh`(即時フィードバック) | **部分的にあり**。`.github/scripts/check-added-test-helper-duplication.sh` が CI(層 1)と push 前(層 2 の git hooks。`python3` が使える環境だけ)で拾うが、既存の重複が `src` に残っているため**このブランチで追加された行だけ**が対象。触っていない既存分は push 時点でも拾えない |
+| `check-test-helper-duplication.sh`(即時フィードバック) | **部分的にあり**。`.github/scripts/check-added-test-helper-duplication.sh` が CI(層 1)と push 前(層 2 の git hooks。`python3` が使える環境だけ)で拾うが、**このブランチで追加された行だけ**が対象。触っていない既存分は push 時点でも拾えない |
 | `record-firings.sh`(発火ログ) | **無し**。ただし失敗しても穴は開かない(セッション見出しが無いログは `harness-record` が「計測対象外」と書く設計で、誤ったゼロにはならない)。カナリアと同じ「失敗してもガードが破れない」検出系 |
 
 ### 「代替不能」が実際に不発だったとき、手動で肩代わりする
@@ -280,11 +280,11 @@ deny のメッセージは、`jq` / `python3` が欠けていればその名前�
   - 導入時点で `src/` の 321 件すべてが既に `__tests__/` 直下にあり、偽陽性 0 件で入れられた(絞る理由が無い)
 - `check-test-helper-duplication.sh`(層 3・PostToolUse)は**ブロックしない**(`additionalContext` を返すだけ)。見るのは**編集したファイルが絡む重複だけ**だが、探す範囲はプロジェクト全体の `__tests__/`(同じフォルダに限らない)
   - 判定は「本体が一字一句同じ」に限る。似ているだけのものは見ない(偽陽性で止めない)
-  - 導入時点でリポジトリに既存の重複が 13 組あり、#153 で一旦 0 組にした。**ただしそれは検出器が見える範囲での 0 組**で、フォルダをまたぐ重複(#179)は検出器自体が見ておらず数に入っていなかった。探索範囲をプロジェクト全体へ広げたところ、フォルダをまたぐ重複が新たに 11 組見つかっている(個別の解消は別 Issue)
+  - 導入時点でリポジトリに既存の重複が 13 組あり、#153 で一旦 0 組にした。**ただしそれは検出器が見える範囲での 0 組**で、フォルダをまたぐ重複(#179)は検出器自体が見ておらず数に入っていなかった。探索範囲をプロジェクト全体へ広げたところ、フォルダをまたぐ重複が新たに 11 組見つかった(#866 の着手時点では 8 組・18 箇所。#866 で 0 組にした。`--all src` が exit 0)
   - 本体の切り出し方(引数・戻り値の型注釈を読み飛ばす・式本体のアロー関数)と意図した取りこぼしは検出器の docstring、判定表は `lib/duplicate-test-helpers-cases.sh`。型注釈の `{}` を本体と読む偽陽性(#179・#406)と、既定引数 `f(props: T = {})` の `{}` を本体と読んで短すぎると捨てる見逃しは、これで解消している
   - ファイル単位で無効化: `// @duplicate-helpers-ok`
-- `.github/scripts/check-added-test-helper-duplication.sh`(層 1・CI、`frontend.yml` の `lint-suppress` ジョブ。同じスクリプトを `harness/githooks/pre-push` も引数なしで呼び、base を `origin/main` として push 前にも通す。**検出器を走らせられなければ exit 2** → `.github/scripts/lib/detector-precondition.sh`)は、Claude Code hook(層 3)が発火しない実行環境向けの無条件の代替。**既存の重複(`--all src` で数える)を理由に `--all` を無条件でブロックにはしない**(`check-added-lint-suppressions.sh` と同じ考え方)。`duplicate-test-helpers.py --lines` で対象ファイルの重複行を機械可読に出し、**このブランチで新しく追加された行に載っているものだけ**を違反にする。既存の重複を 0 組にすれば `--all` を無条件のブロックへ格上げできる(その時点でこの限定は不要になる)
-  - `check-added-lint-suppressions.sh` と違い、**base に同じ本体を持つファイルがあっても除外しない**。ファイル分割でヘルパーが新しいファイルへ移ると、移った側は全行が追加行になり、既存の重複が「新規」として引っかかる余地が残っている(pr-240 で lint 抑制コメントが踏んだのと同じ形)。単純な `git mv` はリネーム検出で diff に載らないため踏まないが、**分割**は対象
+- `.github/scripts/check-added-test-helper-duplication.sh`(層 1・CI、`frontend.yml` の `lint-suppress` ジョブ。同じスクリプトを `harness/githooks/pre-push` も引数なしで呼び、base を `origin/main` として push 前にも通す。**検出器を走らせられなければ exit 2** → `.github/scripts/lib/detector-precondition.sh`)は、Claude Code hook(層 3)が発火しない実行環境向けの無条件の代替。**`--all` を無条件のブロックへ格上げするかは #309 で判断する**(既存の重複は #866 で 0 組にした)。`duplicate-test-helpers.py --lines` で対象ファイルの重複行を機械可読に出し、**このブランチで新しく追加された行に載っているものだけ**を違反にする
+  - `check-added-lint-suppressions.sh` と違い、**base に同じ本体を持つファイルがあっても除外しない**。ファイル分割でヘルパーが新しいファイルへ移ると、移った側は全行が追加行になり、既存の重複が「新規」として引っかかる余地が残っている(main に重複が再び入った場合に限る。pr-240 で lint 抑制コメントが踏んだのと同じ形)。単純な `git mv` はリネーム検出で diff に載らないため踏まないが、**分割**は対象
 - `check-doc-comments.sh` は**ブロックしない**(`additionalContext` を返すだけ)。また、見るのは**編集したファイルの分だけ**
   - 対象は `src/` の実装ファイルのみ(`__tests__/` / `*.stories.*` / `__stories__/` は見ない)
   - 見るのは**ファイル直下の宣言とコンパニオンオブジェクトの直下のメソッド**だけ(入れ子の関数・それより深いオブジェクトのメソッドは対象外)

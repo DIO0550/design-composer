@@ -13,7 +13,7 @@ import { EditorState } from "@/features/editor/domains/editor-state";
 import { ReorderSteps } from "@/features/editor/domains/reorder-step";
 import { Option } from "@/utils/Option";
 import { useEditorState } from "../index";
-import { homeChildNames } from "./setup";
+import { childNamesText, homeChildNames } from "./setup";
 
 function setupDocument(): DesignDocument {
   return DesignDocument.create({
@@ -315,10 +315,6 @@ function selected(): string {
   return screen.getByTestId("selected").textContent ?? "";
 }
 
-function children(): string {
-  return screen.getByTestId("children").textContent ?? "";
-}
-
 function artboardWidthText(): string {
   return screen.getByTestId("artboard-width").textContent ?? "";
 }
@@ -363,7 +359,7 @@ test("読み直しのアクションを送るとドキュメントが差し替�
 
   await userEvent.click(screen.getByRole("button", { name: "読み直す" }));
 
-  expect(children()).toBe("lead");
+  expect(childNamesText()).toBe("lead");
 });
 
 test("読み直したドキュメントに選択中のノードが無ければ選択が外れる", async () => {
@@ -382,7 +378,7 @@ test("不正なファイルを取り込むアクションを送ってもドキ�
     screen.getByRole("button", { name: "不正なファイルを取り込む" }),
   );
 
-  expect(children()).toBe("title,footer");
+  expect(childNamesText()).toBe("title,footer");
 });
 
 test("並べ替えのアクションを送ると子の並びがその順序に変わる", async () => {
@@ -390,7 +386,7 @@ test("並べ替えのアクションを送ると子の並びがその順序に�
 
   await userEvent.click(screen.getByRole("button", { name: "title を下へ" }));
 
-  expect(children()).toBe("footer,title");
+  expect(childNamesText()).toBe("footer,title");
 });
 
 test("並べ替えても選択していたノードは選択されたままになる", async () => {
@@ -407,7 +403,7 @@ test("並びの外を移動先にした並べ替えでは子の並びが変わ�
 
   await userEvent.click(screen.getByRole("button", { name: "並びの外へ" }));
 
-  expect(children()).toBe("title,footer");
+  expect(childNamesText()).toBe("title,footer");
 });
 
 test("選択を前面へ動かすアクションを送ると子の並びが入れ替わる", async () => {
@@ -418,7 +414,7 @@ test("選択を前面へ動かすアクションを送ると子の並びが入�
     screen.getByRole("button", { name: "選択を前面へ動かす" }),
   );
 
-  expect(children()).toBe("footer,title");
+  expect(childNamesText()).toBe("footer,title");
 });
 
 test("何も選ばずに前面へ動かすアクションを送っても子の並びは変わらない", async () => {
@@ -428,7 +424,7 @@ test("何も選ばずに前面へ動かすアクションを送っても子の�
     screen.getByRole("button", { name: "選択を前面へ動かす" }),
   );
 
-  expect(children()).toBe("title,footer");
+  expect(childNamesText()).toBe("title,footer");
 });
 
 test("選択を横へずらすアクションを送ると横の座標だけが動く", async () => {
@@ -459,7 +455,7 @@ test("移動のアクションを送ると、離した位置に応じて子の�
     screen.getByRole("button", { name: "title を末尾へ運ぶ" }),
   );
 
-  expect(children()).toBe("footer,title");
+  expect(childNamesText()).toBe("footer,title");
 });
 
 test("子を持てないノードの下を移動先にすると子の並びが変わらない", async () => {
@@ -469,7 +465,7 @@ test("子を持てないノードの下を移動先にすると子の並びが�
     screen.getByRole("button", { name: "title を Text の下へ運ぶ" }),
   );
 
-  expect(children()).toBe("title,footer");
+  expect(childNamesText()).toBe("title,footer");
 });
 
 test("落とし先を指した挿入のアクションを送ると、その位置に子が増える", async () => {
@@ -480,7 +476,7 @@ test("落とし先を指した挿入のアクションを送ると、その位�
     screen.getByRole("button", { name: "home の 2 番目へ挿す" }),
   );
 
-  expect(children()).toBe("title,box,footer");
+  expect(childNamesText()).toBe("title,box,footer");
 });
 
 test("子を持てないノードを落とし先にした挿入のアクションを送っても子は増えない", async () => {
@@ -494,7 +490,7 @@ test("子を持てないノードを落とし先にした挿入のアクショ�
     screen.getByRole("button", { name: "Text の下へ挿す" }),
   );
 
-  expect(children()).toBe("title,footer");
+  expect(childNamesText()).toBe("title,footer");
 });
 
 test("置き直しのアクションを送ると縦横とも新しい座標になる", async () => {

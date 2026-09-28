@@ -3,6 +3,7 @@ import { expect, test, vi } from "vitest";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { PropEdit } from "@/domains/dcmp/node";
 import { DocumentSelection } from "@/domains/session/document-selection";
+import { textInlineEditorField } from "@/features/editor/features/canvas/__tests__/canvas-elements";
 import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { drawn, drawnAt, renderCanvas } from "./setup";
 
@@ -38,17 +39,12 @@ const TitleBounds: CanvasBounds = {
   height: 20,
 };
 
-/** 重ねて出ている入力欄。 */
-function editor(): HTMLInputElement {
-  return screen.getByRole("textbox", { name: "文言を編集" });
-}
-
 test("選択中の Text をダブルクリックすると今の文言が入った入力欄が出る", () => {
   renderCanvas({ selection: setupSelection(["title"]) });
 
   fireEvent.doubleClick(drawn("title"));
 
-  expect(editor().value).toBe("ホーム");
+  expect(textInlineEditorField().value).toBe("ホーム");
 });
 
 test("入力欄は文言が描かれている位置に重なる", () => {
@@ -56,7 +52,7 @@ test("入力欄は文言が描かれている位置に重なる", () => {
 
   fireEvent.doubleClick(drawnAt("title", TitleBounds));
 
-  const { left, top, width, height } = editor().style;
+  const { left, top, width, height } = textInlineEditorField().style;
   expect({ left, top, width, height }).toEqual({
     left: "100px",
     top: "50px",
@@ -70,7 +66,7 @@ test("文言を設定していない Text をダブルクリックすると空�
 
   fireEvent.doubleClick(drawn("caption"));
 
-  expect(editor().value).toBe("");
+  expect(textInlineEditorField().value).toBe("");
 });
 
 test("Text 以外を選択中にダブルクリックしても入力欄は出ない", () => {
@@ -102,8 +98,8 @@ test("書き換えて Enter を押すと、その文言が content の編集と�
   renderCanvas({ selection: setupSelection(["title"]), onEditProp });
   fireEvent.doubleClick(drawn("title"));
 
-  fireEvent.change(editor(), { target: { value: "トップ" } });
-  fireEvent.keyDown(editor(), { key: "Enter" });
+  fireEvent.change(textInlineEditorField(), { target: { value: "トップ" } });
+  fireEvent.keyDown(textInlineEditorField(), { key: "Enter" });
 
   expect(onEditProp).toHaveBeenCalledWith(PropEdit.set(["content"], "トップ"));
 });
@@ -112,7 +108,7 @@ test("確定すると入力欄は消える", () => {
   renderCanvas({ selection: setupSelection(["title"]) });
   fireEvent.doubleClick(drawn("title"));
 
-  fireEvent.keyDown(editor(), { key: "Enter" });
+  fireEvent.keyDown(textInlineEditorField(), { key: "Enter" });
 
   expect(screen.queryByRole("textbox")).toBeNull();
 });
@@ -122,8 +118,8 @@ test("書き換えてフォーカスを外すと、その文言が content の�
   renderCanvas({ selection: setupSelection(["title"]), onEditProp });
   fireEvent.doubleClick(drawn("title"));
 
-  fireEvent.change(editor(), { target: { value: "トップ" } });
-  fireEvent.blur(editor());
+  fireEvent.change(textInlineEditorField(), { target: { value: "トップ" } });
+  fireEvent.blur(textInlineEditorField());
 
   expect(onEditProp).toHaveBeenCalledWith(PropEdit.set(["content"], "トップ"));
 });
@@ -133,8 +129,8 @@ test("書き換えて Escape を押すと文言は変わらない", () => {
   renderCanvas({ selection: setupSelection(["title"]), onEditProp });
   fireEvent.doubleClick(drawn("title"));
 
-  fireEvent.change(editor(), { target: { value: "トップ" } });
-  fireEvent.keyDown(editor(), { key: "Escape" });
+  fireEvent.change(textInlineEditorField(), { target: { value: "トップ" } });
+  fireEvent.keyDown(textInlineEditorField(), { key: "Escape" });
 
   expect(onEditProp).not.toHaveBeenCalled();
 });
@@ -143,7 +139,7 @@ test("Escape で取り消すと入力欄は消える", () => {
   renderCanvas({ selection: setupSelection(["title"]) });
   fireEvent.doubleClick(drawn("title"));
 
-  fireEvent.keyDown(editor(), { key: "Escape" });
+  fireEvent.keyDown(textInlineEditorField(), { key: "Escape" });
 
   expect(screen.queryByRole("textbox")).toBeNull();
 });
@@ -151,10 +147,10 @@ test("Escape で取り消すと入力欄は消える", () => {
 test("取り消したあとにダブルクリックすると元の文言から編集し直せる", () => {
   renderCanvas({ selection: setupSelection(["title"]) });
   fireEvent.doubleClick(drawn("title"));
-  fireEvent.change(editor(), { target: { value: "トップ" } });
-  fireEvent.keyDown(editor(), { key: "Escape" });
+  fireEvent.change(textInlineEditorField(), { target: { value: "トップ" } });
+  fireEvent.keyDown(textInlineEditorField(), { key: "Escape" });
 
   fireEvent.doubleClick(drawn("title"));
 
-  expect(editor().value).toBe("ホーム");
+  expect(textInlineEditorField().value).toBe("ホーム");
 });

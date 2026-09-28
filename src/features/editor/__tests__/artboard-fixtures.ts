@@ -32,16 +32,6 @@ export function stateWithThreeArtboards(): EditorState {
 }
 
 /**
- * ドキュメントが持つ artboard の名前を並び順のまま。
- *
- * @param document 読み出し元のドキュメント
- * @returns artboard の名前の並び
- */
-export function artboardNames(document: DesignDocument): readonly string[] {
-  return document.artboards.map((artboard) => artboard.name);
-}
-
-/**
  * 名前で指した artboard の幅。
  *
  * @param state 幅を引くエディタの状態

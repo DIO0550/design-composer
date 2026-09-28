@@ -2,12 +2,8 @@ import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { dragRowNamed } from "@/components/__tests__/row-drag";
+import { canvasTransform } from "@/features/editor/features/canvas/__tests__";
 import { canvasPane, renderOpenedDocument, tree, zoomToolbar } from "./setup";
-
-/** キャンバスの中身に効いている変形（ズームの結果）。 */
-function canvasTransform(): string {
-  return screen.getByTestId("canvas-content").getAttribute("style") ?? "";
-}
 
 test("開いているファイルの名前が上部バーに出る", async () => {
   await renderOpenedDocument();

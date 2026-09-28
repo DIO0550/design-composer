@@ -2,6 +2,10 @@ import { screen } from "@testing-library/react";
 import { expect, test } from "vitest";
 import type { DocumentSelection } from "@/domains/session/document-selection";
 import {
+  canvasSurface,
+  canvasTransform,
+} from "@/features/editor/features/canvas/__tests__/canvas-elements";
+import {
   drag,
   holdSpace,
   movePointer,
@@ -20,16 +24,6 @@ function setupSelection(
     [{ name: "home", width: 360, height: 240, children: [] }],
     selectedNames,
   );
-}
-
-/** キャンバスの中身に効いている変形（ズーム / パンの結果）。 */
-function canvasTransform(): string {
-  return screen.getByTestId("canvas-content").getAttribute("style") ?? "";
-}
-
-/** ズーム / パンの操作を受け取るキャンバスの土台。 */
-function canvasSurface(): Element {
-  return screen.getByTestId("canvas-surface");
 }
 
 test("キャンバスを開いた直後は等倍で表示される", () => {

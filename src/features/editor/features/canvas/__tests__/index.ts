@@ -8,8 +8,10 @@ export {
   artboardHandle,
   canvasContent,
   canvasSurface,
+  canvasTransform,
   highlightedNames,
   renderedElement,
+  textInlineEditorField,
   tokenReferrerNames,
 } from "@/features/editor/features/canvas/__tests__/canvas-elements";
 export {
