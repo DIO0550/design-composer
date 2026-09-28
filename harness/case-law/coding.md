@@ -27,7 +27,7 @@
 
 | 起きたこと | 判定 |
 |---|---|
-| `hooks/use-key-shortcut` のキー名が `readonly string[]` の生の文字列リテラルのまま、13 ファイル・15 箇所（局所的な寄せ集めも 3 つ）に散っていた | **閉じる。** `utils/KeyName.ts`（`KeyNames` + `KeyName` + `isOneOf`）へ寄せ、素の `string` と綴り違いが `tsc` で弾かれることを確かめて型テストで固定した。**同じ語彙が複数箇所に重複しているか**が、閉じる価値がある目安になる |
+| `hooks/use-key-shortcut` のキー名が `readonly string[]` の生の文字列リテラルのまま、13 ファイル・15 箇所（局所的な寄せ集めも 3 つ）に散っていた | **閉じる。** `src/libs/dom-event/key-name/index.ts`（`KeyNames` + `KeyName` + `isOneOf`）へ寄せ、素の `string` と綴り違いが `tsc` で弾かれることを確かめて型テストで固定した。**同じ語彙が複数箇所に重複しているか**が、閉じる価値がある目安になる |
 | `RecentFiles` のパスが素の `string` のままだったので `FilePath` をブランド型にする案が出た | **この PR では入れない。** 素の `string` で通っている箇所が `OpenedDocument.path` / `DocumentIpc.load` / `DocumentSession.openedPath` / `DocumentDialog.chooseOpenPath` / `FileDrop` / Rust 側の引数まで境界 4 経路に跨っており、1 箇所だけ閉じても他が素の `string` のまま残る。**境界ごとに検証の入口を決め直す規模の変更を、目の前の PR のついでに含めない**（誤用がまだ現れていないことも理由に添える。`rules/coding.md`「ブランド型は最終手段」）。境界の数を数えたうえで別 Issue に分けて進める |
 
 **判定の分かれ目は規模。** 同じモジュール内で完結する重複（1 つ目の形）はその場で閉じる。
