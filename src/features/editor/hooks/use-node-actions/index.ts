@@ -19,6 +19,8 @@ import { Option } from "@/utils/Option";
  */
 export type NodeActions = Readonly<{
   select: (name: string) => void;
+  /** 左ペインの行の右クリックで、その行を選ぶ。既に選択に入っていれば選択を変えない。 */
+  selectIfUnselected: (name: string) => void;
   selectAt: (names: readonly string[], dig: SelectionDig) => void;
   /** キャンバスの範囲選択で、範囲に重なったものをまとめて選ぶ。 */
   selectNodes: (names: readonly string[]) => void;
@@ -68,6 +70,8 @@ export function useNodeActions(): NodeActions {
 
   return {
     select: (name) => dispatch({ type: "select", name }),
+    selectIfUnselected: (name) =>
+      dispatch({ type: "select_if_unselected", name }),
     /**
      * キャンバスは押された位置から外へ辿った名前と、押し方から決まった掘る量を渡す。
      * どこまで内側へ入るかは状態側の判断（`EditorState.selectAt`）。
