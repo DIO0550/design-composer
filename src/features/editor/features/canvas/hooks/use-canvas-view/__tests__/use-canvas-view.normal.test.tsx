@@ -9,6 +9,7 @@ import {
 } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
 import { useCanvasView } from "../index";
+import { transform } from "./setup";
 
 /**
  * フックを DOM へ繋いだだけの器。
@@ -40,10 +41,6 @@ function CanvasViewHarness() {
 
 function surface(): Element {
   return screen.getByTestId("surface");
-}
-
-function transform(): string {
-  return screen.getByTestId("transform").textContent ?? "";
 }
 
 function scalePercent(): string {
