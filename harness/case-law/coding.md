@@ -23,6 +23,17 @@
 - 既存の `TokenKinds` / `TypographyFields` / `PrimitiveTypes` は配列 + `(typeof X)[number]` の
   まま（#105 で寄せる）
 
+### 閉じる価値があるかの見分け方
+
+| 起きたこと | 判定 |
+|---|---|
+| `hooks/use-key-shortcut` のキー名が `readonly string[]` の生の文字列リテラルのまま、13 ファイル・15 箇所（局所的な寄せ集めも 3 つ）に散っていた | **閉じる。** `src/libs/dom-event/key-name/index.ts`（`KeyNames` + `KeyName` + `isOneOf`）へ寄せ、素の `string` と綴り違いが `tsc` で弾かれることを確かめて型テストで固定した。**同じ語彙が複数箇所に重複しているか**が、閉じる価値がある目安になる |
+| `RecentFiles` のパスが素の `string` のままだったので `FilePath` をブランド型にする案が出た | **この PR では入れない。** 素の `string` で通っている箇所が `OpenedDocument.path` / `DocumentIpc.load` / `DocumentSession.openedPath` / `DocumentDialog.chooseOpenPath` / `FileDrop` / Rust 側の引数まで境界 4 経路に跨っており、1 箇所だけ閉じても他が素の `string` のまま残る。**境界ごとに検証の入口を決め直す規模の変更を、目の前の PR のついでに含めない**（誤用がまだ現れていないことも理由に添える。`rules/coding.md`「ブランド型は最終手段」）。境界の数を数えたうえで別 Issue に分けて進める |
+
+**判定の分かれ目は規模。** 同じモジュール内で完結する重複（1 つ目の形）はその場で閉じる。
+複数の境界（feature・Rust 側の I/O 等）に跨って初めて全体が閉じる語彙（2 つ目の形）は、
+1 つの PR の差分としては大きすぎるサイン。境界の数を数え、閉じる範囲を決める Issue に分ける。
+
 ### 語彙と単位を型に出した形
 
 ```typescript
@@ -292,3 +303,16 @@ export const Money = {
   isNegative(money: Money): boolean { /* ... */ },
 } as const;
 ```
+
+### 手本にする既存モジュールの形を確認する
+
+| NG | OK |
+|---|---|
+| `TokenReferrer` 型と同名のオブジェクトを置きつつ、収集の実体は `export function collectTokenReferrers(...)` として型の外に並べた(表記の変換 `toText` だけがオブジェクト側にあった) | 収集も `TokenReferrer.collect(...)` としてコンパニオンオブジェクトのメソッドに置く |
+
+写す先を `validation/` に取ったが、**そちらは型と同名のコンパニオンオブジェクトを持たない**
+（エラーの型と、それを集める自由関数だけの形）。同じフォルダの並びに見えても、モジュールに
+よって「型 + 同名コンパニオン」と「型 + 自由関数」が混在しうる。**既存モジュールを手本にする
+前に、そのモジュール自身が `rules/coding.md`「コンパニオンオブジェクトパターン」の形を
+実際に持っているかを確認する**(持たないモジュールを手本にすると、同じ欠落を新しいモジュールへ
+複製する)。
