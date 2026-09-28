@@ -17,6 +17,19 @@ export const DrawnBounds = {
   },
 
   /**
+   * 名前で指したもののうち、大きさを持って描かれているものの矩形（client 座標）。
+   *
+   * @param names 測りたい artboard / ノードの名前
+   * @returns 描かれていて面積を持つものの矩形。渡された並びの順を保つ
+   */
+  collectDrawnBounds(names: readonly string[]): readonly CanvasBounds[] {
+    return names.flatMap((name) => {
+      const measured = measureWithArea(name);
+      return Option.isSome(measured) ? [measured.value] : [];
+    });
+  },
+
+  /**
    * 名前で指したものすべてを含む矩形（client 座標）。
    *
    * 描かれていない名前は**飛ばして残りで囲む**。全部揃うまで何もしない形にすると、
@@ -37,9 +50,8 @@ export const DrawnBounds = {
   /**
    * 名前で指したもののうち、その矩形に重なって描かれているもの（範囲選択が拾う相手）。
    *
-   * 面積を持たないものは外す。要素が在っても**まだレイアウトされていない / 畳まれている**
-   * ときの実測は原点の 0×0 で返るため、外さないと画面の左上へ引いた範囲がそれらを
-   * まとめて拾う（`CanvasBounds.hasArea` の doc）。
+   * 面積を持たないものは外す（`measureWithArea`）。外さないと画面の左上へ引いた範囲が
+   * それらをまとめて拾う。
    *
    * @param names 見る artboard / ノードの名前
    * @param bounds 重なりを見る矩形（client 座標）
@@ -50,12 +62,26 @@ export const DrawnBounds = {
     bounds: CanvasBounds,
   ): readonly string[] {
     return names.filter((name) => {
-      const measured = DrawnBounds.measure(name);
+      const measured = measureWithArea(name);
       return (
-        Option.isSome(measured) &&
-        CanvasBounds.hasArea(measured.value) &&
-        CanvasBounds.overlaps(measured.value, bounds)
+        Option.isSome(measured) && CanvasBounds.overlaps(measured.value, bounds)
       );
     });
   },
 } as const;
+
+/**
+ * 名前で指した要素の矩形のうち、面積を持つもの。
+ *
+ * 要素が在っても**まだレイアウトされていない / 畳まれている**ときの実測は原点の 0×0 で
+ * 返る（`CanvasBounds.hasArea` の doc）。そこに何かがあるとみなすと、原点のまわりへの
+ * 操作がそれらを拾ってしまう。
+ *
+ * @param name 描かれている artboard / ノードの名前
+ * @returns 描かれている矩形。描かれていない / 面積を持たないなら `none`
+ */
+function measureWithArea(name: string): Option<CanvasBounds> {
+  return Option.flatMap(DrawnBounds.measure(name), (bounds) =>
+    CanvasBounds.hasArea(bounds) ? Option.some(bounds) : Option.none,
+  );
+}
