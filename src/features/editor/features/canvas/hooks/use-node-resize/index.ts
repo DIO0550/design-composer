@@ -9,7 +9,7 @@ import {
   EditContinuities,
   type EditContinuity,
 } from "@/domains/session/edit-continuity";
-import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
+import { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import type { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
 import {
   NodeResize,
@@ -17,6 +17,7 @@ import {
   type ResizeGrip,
   type ResizeHold,
 } from "@/features/editor/features/canvas/domains/node-resize";
+import { SideSnap } from "@/features/editor/features/canvas/domains/side-snap";
 import { CanvasPointer } from "@/features/editor/features/canvas/utils/CanvasPointer";
 import { DrawnBounds } from "@/features/editor/features/canvas/utils/DrawnBounds";
 import { Option } from "@/utils/Option";
@@ -65,6 +66,29 @@ function selectionBounds(selection: DocumentSelection): Option<CanvasBounds> {
   return Option.flatMap(
     DocumentSelection.singleName(selection),
     DrawnBounds.measure,
+  );
+}
+
+/**
+ * 掴んだものに、掴んだ時点の辺のスナップの組を載せる（docs/06-ui.md「リサイズハンドル」の
+ * 辺のスナップ）。揃え先を決めるのは `NodeResize.resizable`、ここは実測だけ。
+ *
+ * @param held 掴んだもの
+ * @param grabbed 選択中のものが掴んだ時点に描かれている矩形
+ * @param resizable 揃え先の名前を持つ、選択中のもの
+ * @returns 揃え先の実測を載せた掴み
+ */
+function withMeasuredSnap(
+  held: ResizeHold,
+  grabbed: CanvasBounds,
+  resizable: ResizableSelection,
+): ResizeHold {
+  return NodeResize.withSideSnap(
+    held,
+    SideSnap.create(
+      grabbed,
+      DrawnBounds.collectDrawnBounds(resizable.snapTargetNames),
+    ),
   );
 }
 
@@ -136,13 +160,24 @@ export function useNodeResize(
     event: ReactPointerEvent<HTMLElement>,
   ): void => {
     hasResized.current = false;
+    const held = NodeResize.hold(
+      params.resizable,
+      grip,
+      CanvasPointer.offsetOf(event),
+    );
+    /*
+     * ハンドルは測らなくても掴める。測れないときは吸い付かないだけで、掴むことは止めない。
+     * 大きさの無い実測は原点に返るので、そこから行き先を作ると関係の無い辺へ吸い付く
+     * （帯の経路は `grabAt` の当たり判定で弾かれる）。
+     */
+    const bounds = Option.flatMap(selectionBounds(params.selection), (drawn) =>
+      CanvasBounds.hasArea(drawn) ? Option.some(drawn) : Option.none,
+    );
     dispatch({
       type: "grab",
-      held: NodeResize.hold(
-        params.resizable,
-        grip,
-        CanvasPointer.offsetOf(event),
-      ),
+      held: Option.isSome(bounds)
+        ? withMeasuredSnap(held, bounds.value, params.resizable)
+        : held,
     });
   };
 
@@ -160,7 +195,10 @@ export function useNodeResize(
       return false;
     }
     hasResized.current = false;
-    dispatch({ type: "grab", held: grabbed.value });
+    dispatch({
+      type: "grab",
+      held: withMeasuredSnap(grabbed.value, bounds.value, params.resizable),
+    });
     return true;
   };
 
