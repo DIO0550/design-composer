@@ -128,3 +128,97 @@ test("同じ距離の辺が 2 つあるときは、揃え先の並びで先に�
     y: 0,
   });
 });
+
+test("運んでいるものの横の中心が揃える先の横の中心の近くにあると、中心が重なる位置まで寄る", () => {
+  // 横の中心は 120 と 123。辺どうしはどの組も 30 以上離れている
+  const stationary: CanvasBounds = {
+    left: 63,
+    top: 300,
+    width: 120,
+    height: 20,
+  };
+
+  expect(
+    SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).offset,
+  ).toEqual({
+    x: 3,
+    y: 0,
+  });
+});
+
+test("運んでいるものの縦の中心が揃える先の縦の中心の近くにあると、中心が重なる位置まで寄る", () => {
+  // 縦の中心は 110 と 112。辺どうしはどの組も 40 以上離れている
+  const stationary: CanvasBounds = {
+    left: 500,
+    top: 60,
+    width: 40,
+    height: 104,
+  };
+
+  expect(
+    SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).offset,
+  ).toEqual({
+    x: 0,
+    y: 2,
+  });
+});
+
+test("運んでいるものの中心が揃える先の辺の近くにあるだけでは、中心と辺は揃えない", () => {
+  /*
+   * 運んでいるものの横の中心（120）は揃え先の左辺（123）から 3 しか離れていないが、横は
+   * 寄らない。縦は上辺どうし・下辺どうしが −5 で寄るので、同じ入力で寄る側と対で見る。
+   */
+  const stationary: CanvasBounds = {
+    left: 123,
+    top: 95,
+    width: 200,
+    height: 20,
+  };
+
+  expect(
+    SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).offset,
+  ).toEqual({
+    x: 0,
+    y: -5,
+  });
+});
+
+test("揃える先の横の中心が運んでいるものの辺の近くにあるだけでは、中心と辺は揃えない", () => {
+  /*
+   * 揃え先の横の中心（103）は運んでいるものの左辺（100）から 3 しか離れていないが、横は
+   * 寄らない。縦は上辺どうし・下辺どうし・中心どうしが −5 で寄るので、対で見る。
+   */
+  const stationary: CanvasBounds = {
+    left: 43,
+    top: 95,
+    width: 120,
+    height: 20,
+  };
+
+  expect(
+    SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).offset,
+  ).toEqual({
+    x: 0,
+    y: -5,
+  });
+});
+
+test("揃える先の縦の中心が運んでいるものの辺の近くにあるだけでは、中心と辺は揃えない", () => {
+  /*
+   * 揃え先の縦の中心（103）は運んでいるものの上辺（100）から 3 しか離れていないが、縦は
+   * 寄らない。横は左辺どうし・右辺どうし・中心どうしが +4 で寄るので、対で見る。
+   */
+  const stationary: CanvasBounds = {
+    left: 104,
+    top: 57,
+    width: 40,
+    height: 92,
+  };
+
+  expect(
+    SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).offset,
+  ).toEqual({
+    x: 4,
+    y: 0,
+  });
+});

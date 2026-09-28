@@ -50,7 +50,7 @@ const SampleGuides: SnapGuides = {
   vertical: Option.none,
 };
 
-/** 揃った辺が 1 つも無い状態。 */
+/** 揃った線が 1 つも無い状態。 */
 const NoGuides: SnapGuides = { horizontal: Option.none, vertical: Option.none };
 
 /** `body` の中の座標へ落ちる側の行き先。見た目のずらし量は行き先と別の値にする。 */
@@ -217,7 +217,7 @@ test("ツリーへ落とす落とし方では、挿さる位置の親が子に�
   expect(DropEdit.dropParentName(SampleDrop)).toBe("body");
 });
 
-test("座標を置き直す落とし方は、揃った辺に引く線をそのまま答える", () => {
+test("座標を置き直す落とし方は、揃った線に引くガイド線をそのまま答える", () => {
   const edit = DropEdit.reposition(
     "title",
     SampleRepositionTarget,
@@ -227,12 +227,12 @@ test("座標を置き直す落とし方は、揃った辺に引く線をその�
   expect(DropEdit.snapGuides(edit)).toEqual(SampleGuides);
 });
 
-test("ツリーへ落とす落とし方では、揃った辺の線を引かない", () => {
+test("ツリーへ落とす落とし方では、揃った線のガイド線を引かない", () => {
   // 対照。1 つ上のテストと対で読む（辺の吸い付きは座標の置き直しでしか起きない）
   expect(DropEdit.snapGuides(SampleDrop)).toEqual(NoGuides);
 });
 
-test("運んでいる間は、揃った辺に引く線を答える", () => {
+test("運んでいる間は、揃った線に引くガイド線を答える", () => {
   const dragging = NodeDrag.moveTo(
     NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
     { x: 100, y: 140 },
@@ -244,7 +244,7 @@ test("運んでいる間は、揃った辺に引く線を答える", () => {
   expect(NodeDrag.snapGuides(dragging)).toEqual(SampleGuides);
 });
 
-test("押しただけでまだ動かしていない間は、揃った辺の線を引かない", () => {
+test("押しただけでまだ動かしていない間は、揃った線のガイド線を引かない", () => {
   const held = NodeDrag.grab({
     dragged: MovingTitle,
     origin: { x: 100, y: 100 },
@@ -253,7 +253,7 @@ test("押しただけでまだ動かしていない間は、揃った辺の線�
   expect(NodeDrag.snapGuides(held)).toEqual(NoGuides);
 });
 
-test("落とせる親が無いまま運んでいる間は、揃った辺の線を引かない", () => {
+test("落とせる親が無いまま運んでいる間は、揃った線のガイド線を引かない", () => {
   // 揃え先は落とし先の親とその子なので、親が決まらなければ吸い付きも起きない
   const dragging = NodeDrag.moveTo(
     NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),

@@ -29,7 +29,7 @@ function GuideLine({ bounds }: Readonly<{ bounds: CanvasBounds }>) {
 }
 
 /**
- * 揃った辺に引くガイド線（docs/06-ui.md「キャンバス直接操作」の辺のスナップ。色・太さの
+ * 揃った線（辺か中心線）に引くガイド線（docs/06-ui.md「キャンバス直接操作」の辺のスナップ。色・太さの
  * 選定理由もそちらにある）。どこへ引くかは `side-snap` が実測から決める。
  *
  * 並びを `map` しないので、線の同一性を key で作る必要が無い。

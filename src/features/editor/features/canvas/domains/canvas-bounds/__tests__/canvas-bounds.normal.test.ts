@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { SidePairs } from "@/domains/unit/side";
 import { Option } from "@/utils/Option";
 import { CanvasBounds } from "../index";
 
@@ -27,6 +28,14 @@ test("横に並ぶときの中点は左右の端の中央になる", () => {
 
 test("縦に並ぶときの中点は上下の端の中央になる", () => {
   expect(CanvasBounds.center(Bounds, "column")).toBe(40);
+});
+
+test("水平の組の中心線は、左右の辺の中央になる", () => {
+  expect(CanvasBounds.midline(Bounds, SidePairs.Horizontal)).toBe(60);
+});
+
+test("垂直の組の中心線は、上下の辺の中央になる", () => {
+  expect(CanvasBounds.midline(Bounds, SidePairs.Vertical)).toBe(40);
 });
 
 test("同じ位置と大きさなら、別に作った矩形どうしでも等しい", () => {

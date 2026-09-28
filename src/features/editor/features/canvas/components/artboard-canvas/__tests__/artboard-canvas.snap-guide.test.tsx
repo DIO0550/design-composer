@@ -4,7 +4,7 @@ import { carryNode, dragNode, renderCanvas, snapGuides } from "./setup";
 import { drawnApart, setupSiblings } from "./snap-siblings";
 
 /*
- * 揃った辺に引くガイド線（docs/06-ui.md「キャンバス直接操作」の辺のスナップ）。
+ * 揃った線（辺か中心線）に引くガイド線（docs/06-ui.md「キャンバス直接操作」の辺のスナップ）。
  * 運んでいる最中にしか出ないので、離す前の状態（`carryNode`）で見る。
  */
 
@@ -12,7 +12,10 @@ test("兄弟の辺へ吸い付いている間、その辺の位置に線が出�
   renderCanvas({ selection: setupSiblings() });
   drawnApart();
 
-  // 左辺が `marker` の左辺（250）の 3px 手前まで来る量
+  /*
+   * 左辺が `marker` の左辺（250）の 3px 手前まで来る量。`card` の中心線（260）も同じ
+   * −3 で届くが、揃え先の並びで `marker` が先なのでこちらの辺に揃う。
+   */
   carryNode("badge", { x: 113, y: -12 });
 
   /*

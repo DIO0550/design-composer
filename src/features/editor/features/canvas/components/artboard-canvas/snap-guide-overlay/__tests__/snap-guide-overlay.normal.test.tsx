@@ -4,7 +4,7 @@ import { Option } from "@/utils/Option";
 import { SnapGuideOverlay } from "../index";
 
 /*
- * 揃った辺に引くガイド線（docs/06-ui.md「キャンバス直接操作」の辺のスナップ）。
+ * 揃った線（辺か中心線）に引くガイド線（docs/06-ui.md「キャンバス直接操作」の辺のスナップ）。
  * どこへ引くかは実測から `side-snap` が決めるので、ここが見るのは渡された矩形を
  * そのまま線として出すかどうか。
  */
@@ -20,7 +20,7 @@ const HorizontalLine = Option.some({
   height: 2,
 });
 
-test("揃った辺の数だけ線が出る", () => {
+test("揃った線の数だけガイド線が出る", () => {
   render(
     <SnapGuideOverlay
       guides={{ horizontal: VerticalLine, vertical: HorizontalLine }}
@@ -55,7 +55,7 @@ test("横の線は渡された矩形の位置と長さで出る", () => {
   ).toContain("left: 200px; top: 149px; width: 120px; height: 2px");
 });
 
-test("揃った辺が無ければ線は 1 本も出ない", () => {
+test("揃った線が無ければガイド線は 1 本も出ない", () => {
   render(
     <SnapGuideOverlay
       guides={{ horizontal: Option.none, vertical: Option.none }}

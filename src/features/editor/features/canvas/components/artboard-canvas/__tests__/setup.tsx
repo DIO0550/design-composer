@@ -159,7 +159,7 @@ export function resizeHandles(): readonly HTMLElement[] {
 }
 
 /**
- * 出ている揃った辺のガイド線。
+ * 出ている揃った線（辺か中心線）のガイド線。
  *
  * @returns 出ている線の並び。出ていなければ空
  */

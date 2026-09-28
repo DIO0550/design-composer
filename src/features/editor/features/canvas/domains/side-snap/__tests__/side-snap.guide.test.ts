@@ -5,8 +5,8 @@ import { SideSnap } from "../index";
 import { Moving } from "./moving-bounds";
 
 /*
- * 揃った辺に引くガイド線（docs/06-ui.md「キャンバス直接操作」の辺のスナップ）。
- * 線は太さのぶんを中心で振り分けるので、位置は揃った辺の座標より 1 小さくなる。
+ * 揃った線（辺か中心線）に引くガイド線（docs/06-ui.md「キャンバス直接操作」の辺のスナップ）。
+ * 線は太さのぶんを中心で振り分けるので、位置は揃った線の座標より 1 小さくなる。
  */
 
 test("左辺どうしが揃うと、揃え先の左辺に中心を合わせた縦の線が 1 本出る", () => {
@@ -133,5 +133,39 @@ test("線の範囲は、もう一方の軸の寄せも畳んだ位置で決ま�
   ).toEqual({
     horizontal: Option.some({ left: 103, top: 95, width: 2, height: 225 }),
     vertical: Option.some({ left: 104, top: 94, width: 436, height: 2 }),
+  });
+});
+
+test("横の中心どうしが揃うと、揃え先の横の中心線に縦の線が 1 本出る", () => {
+  // 揃え先の横の中心は 123。辺どうしはどの組も届かない
+  const stationary: CanvasBounds = {
+    left: 63,
+    top: 300,
+    width: 120,
+    height: 20,
+  };
+
+  expect(
+    SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).guides,
+  ).toEqual({
+    horizontal: Option.some({ left: 122, top: 100, width: 2, height: 220 }),
+    vertical: Option.none,
+  });
+});
+
+test("縦の中心どうしが揃うと、揃え先の縦の中心線に横の線が 1 本出る", () => {
+  // 揃え先の縦の中心は 112。辺どうしはどの組も届かない
+  const stationary: CanvasBounds = {
+    left: 500,
+    top: 60,
+    width: 40,
+    height: 104,
+  };
+
+  expect(
+    SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).guides,
+  ).toEqual({
+    horizontal: Option.none,
+    vertical: Option.some({ left: 100, top: 111, width: 440, height: 2 }),
   });
 });
