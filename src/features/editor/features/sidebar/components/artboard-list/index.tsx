@@ -84,6 +84,7 @@ function ArtboardRow({
   dropSide,
   rowProps,
   onSelect,
+  onOpenContextMenu,
   renameActions,
 }: Readonly<{
   artboard: Artboard;
@@ -97,6 +98,7 @@ function ArtboardRow({
   /** 掴む口と、ポインタが入ったことを伝える口。絞った並びでは配られないので不在 */
   rowProps: Option<RowProps>;
   onSelect: (name: string) => void;
+  onOpenContextMenu: LeftPaneArtboardActions["openContextMenu"];
   renameActions: LeftPaneRenameActions;
 }>) {
   if (isRenaming) {
@@ -126,6 +128,13 @@ function ArtboardRow({
         aria-current={isCurrent}
         onClick={() => onSelect(artboard.name)}
         onDoubleClick={() => renameActions.startAt(artboard.name)}
+        onContextMenu={(event) => {
+          event.preventDefault();
+          onOpenContextMenu(artboard.name, {
+            x: event.clientX,
+            y: event.clientY,
+          });
+        }}
         className={`flex min-w-0 flex-1 items-center gap-1.5 rounded px-2 py-1 text-left ${
           // 押せる範囲を示す hover と、今の 1 枚を示す色を重ねない
           isCurrent ? "bg-blue-100 text-blue-900" : "hover:bg-gray-100"
@@ -221,6 +230,7 @@ export function ArtboardList({
                 isReorderable ? Option.some(rowProps(index)) : Option.none
               }
               onSelect={onSelect}
+              onOpenContextMenu={artboardActions.openContextMenu}
               renameActions={renameActions}
             />
           ))}

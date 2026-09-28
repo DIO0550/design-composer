@@ -1,29 +1,16 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
-import { DesignDocument } from "@/domains/dcmp/design-document";
-import { DocumentSelection } from "@/domains/session/document-selection";
 import { nameField } from "@/features/editor/features/sidebar/__tests__/name-field";
 import { spyRenameActions } from "@/features/editor/features/sidebar/__tests__/rename-actions";
 import type { LeftPaneRenameActions } from "@/features/editor/features/sidebar/types/LeftPaneRenameActions";
 import { Option } from "@/utils/Option";
 import { ArtboardList, ArtboardListing } from "../index";
+import { setupSelection } from "./setup";
 
 /*
  * artboard の行でその場で名前を打ち替える（docs/06-ui.md「名前の変更」）。
  */
-
-function setupSelection(): DocumentSelection {
-  return DocumentSelection.fromNames(
-    DesignDocument.create({
-      artboards: [
-        { name: "home", width: 375, height: 812, children: [] },
-        { name: "settings", width: 375, height: 812, children: [] },
-      ],
-    }),
-    [],
-  );
-}
 
 /**
  * 一覧を描く。
@@ -40,7 +27,11 @@ function renderList(renaming: Option<string>): LeftPaneRenameActions {
       selection={selection}
       renaming={renaming}
       onSelect={vi.fn()}
-      artboardActions={{ add: vi.fn(), reorder: vi.fn() }}
+      artboardActions={{
+        add: vi.fn(),
+        reorder: vi.fn(),
+        openContextMenu: vi.fn(),
+      }}
       renameActions={renameActions}
     />,
   );

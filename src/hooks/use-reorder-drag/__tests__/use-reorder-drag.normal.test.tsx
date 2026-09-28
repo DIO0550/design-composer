@@ -7,6 +7,7 @@ import {
   pressPointer,
   releasePointer,
 } from "@/components/__tests__/pointer-gesture";
+import { PointerButtons } from "@/libs/dom-event";
 import { ReorderDrag } from "@/utils/ReorderDrag";
 import { useReorderDrag } from "../index";
 
@@ -67,6 +68,26 @@ test("掴んでいる間はどの行を掴んでいるかが分かる", () => {
   pressPointer(screen.getByTestId("b"), { x: 0, y: 0 });
 
   expect(screen.getByTestId("b").textContent).toBe("b掴んでいる");
+});
+
+test("右ボタンで押しても行は掴まれない", () => {
+  renderHarness();
+
+  pressPointer(
+    screen.getByTestId("b"),
+    { x: 0, y: 0 },
+    PointerButtons.Secondary,
+  );
+
+  expect(screen.getByTestId("b").textContent).toBe("b");
+});
+
+test("中ボタンで押しても行は掴まれない", () => {
+  renderHarness();
+
+  pressPointer(screen.getByTestId("b"), { x: 0, y: 0 }, PointerButtons.Middle);
+
+  expect(screen.getByTestId("b").textContent).toBe("b");
 });
 
 test("離すと掴んでいない状態へ戻る", () => {

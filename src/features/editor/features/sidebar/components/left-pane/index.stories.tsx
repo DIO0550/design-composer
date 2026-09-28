@@ -20,11 +20,13 @@ import { LeftPane } from "./index";
 const SampleNodeActions: LeftPaneNodeActions = {
   select: fn(),
   reorder: fn(),
+  openContextMenu: fn(),
 };
 
 const SampleArtboardActions: LeftPaneArtboardActions = {
   add: fn(),
   reorder: fn(),
+  openContextMenu: fn(),
 };
 
 /**

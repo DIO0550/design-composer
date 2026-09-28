@@ -2,6 +2,11 @@ import type { ReactElement } from "react";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import type { TokenSelection } from "@/domains/session/token-selection";
+import type { Offset } from "@/domains/unit/offset";
+import {
+  type EditMenuTarget,
+  EditMenuTargets,
+} from "@/features/editor/domains/edit-menu";
 import {
   type AssetGrab,
   AssetsPanel,
@@ -44,6 +49,7 @@ export function EditorLeftPane({
   artboard,
   token,
   grab,
+  onOpenContextMenu,
 }: Readonly<{
   view: LeftPaneView;
   onSelectView: (view: LeftPaneView) => void;
@@ -56,6 +62,8 @@ export function EditorLeftPane({
   artboard: ArtboardActions;
   token: TokenActions;
   grab: AssetGrab;
+  /** 行を右クリックしたときに、行の種類・名前・押した窓の座標を伝える。 */
+  onOpenContextMenu: (target: EditMenuTarget, name: string, at: Offset) => void;
 }>): ReactElement {
   /*
    * 行き先を 1 つ足すと `Record` が漏れをコンパイルエラーにする。この注釈を外すと
@@ -77,8 +85,18 @@ export function EditorLeftPane({
           query={query}
           selection={selection}
           renaming={renaming}
-          artboard={artboard}
-          node={node}
+          artboard={{
+            add: artboard.add,
+            reorder: artboard.reorder,
+            openContextMenu: (name, at) =>
+              onOpenContextMenu(EditMenuTargets.Artboard, name, at),
+          }}
+          node={{
+            select: node.select,
+            reorder: node.reorder,
+            openContextMenu: (name, at) =>
+              onOpenContextMenu(EditMenuTargets.Node, name, at),
+          }}
           rename={{
             startAt: node.startRenamingAt,
             commit: node.rename,

@@ -140,3 +140,32 @@ export const SampleDocumentWithDeepBranch = DesignDocument.create({
     }),
   ],
 });
+
+/**
+ * 同じ部品（`primary-button`）を指すインスタンスを 2 つ持つドキュメント。
+ * `Select all N instances` でまとめて選び、複数選択の状態を作るのに使う。
+ */
+export const SampleDocumentWithSameComponentInstances = DesignDocument.create({
+  tokens: DocumentTemplate.Default.tokens,
+  components: DocumentTemplate.Default.components,
+  artboards: [
+    Artboard.create({
+      name: "home",
+      width: 360,
+      height: 240,
+      children: [
+        { name: "home-title", type: "Text", props: { content: "ホーム" } },
+        {
+          name: "home-login",
+          ref: "primary-button",
+          overrides: { label: "ログイン" },
+        },
+        {
+          name: "home-signup",
+          ref: "primary-button",
+          overrides: { label: "登録" },
+        },
+      ],
+    }),
+  ],
+});

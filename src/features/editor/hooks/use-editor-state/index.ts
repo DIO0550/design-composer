@@ -20,6 +20,8 @@ import { Option } from "@/utils/Option";
 /** エディタ画面で起きる状態遷移（docs/06-ui.md「選択」「編集操作の一覧」）。 */
 export type EditorAction =
   | Readonly<{ type: "select"; name: string }>
+  /* 左ペインの行の右クリック。既に選択に入っている行では選択を変えない。 */
+  | Readonly<{ type: "select_if_unselected"; name: string }>
   /* キャンバスからの選択。押し方の解釈（掘る量）はキャンバス側が済ませて渡す。 */
   | Readonly<{
       type: "select_at";
@@ -109,6 +111,8 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
   switch (action.type) {
     case "select":
       return EditorState.select(state, action.name);
+    case "select_if_unselected":
+      return EditorState.selectIfUnselected(state, action.name);
     case "select_at":
       return EditorState.selectAt(state, action.names, action.dig);
     case "select_nodes":

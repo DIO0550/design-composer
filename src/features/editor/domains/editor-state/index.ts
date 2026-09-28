@@ -481,6 +481,20 @@ export const EditorState = {
   },
 
   /**
+   * 左ペインの行の右クリックで、その行のものを選ぶ（docs/06-ui.md「コンテキストメニュー」）。
+   * 既に選択に入っているなら選択を変えないので、複数選択の一員の行では複数選択のまま残る。
+   *
+   * @param state 選択を移す前の状態
+   * @param name 右クリックされた行の artboard / ノードの名前
+   * @returns 選択に入っていればそのままの状態、入っていなければ `select` と同じ状態
+   */
+  selectIfUnselected(state: EditorState, name: string): EditorState {
+    return EditorState.isSelected(state, name)
+      ? state
+      : EditorState.select(state, name);
+  },
+
+  /**
    * 選んでいるものがすべて同じ部品のインスタンスであるときの、その部品の名前。
    * 規則は `DocumentSelection.sourceName` が持つ。
    *

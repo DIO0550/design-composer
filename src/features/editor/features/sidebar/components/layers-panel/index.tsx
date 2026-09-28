@@ -114,6 +114,7 @@ export function LayersPanel({
           filter={filter}
           onSelect={node.select}
           onReorder={node.reorder}
+          onOpenContextMenu={node.openContextMenu}
           renameActions={rename}
         />
       )}

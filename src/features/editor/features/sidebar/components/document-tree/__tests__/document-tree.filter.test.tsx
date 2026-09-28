@@ -53,6 +53,7 @@ function tree(query: string) {
       filter={NameFilter.create(query)}
       selection={setupSelection()}
       onSelect={vi.fn()}
+      onOpenContextMenu={vi.fn()}
       onReorder={vi.fn()}
       renaming={Option.none}
       renameActions={spyRenameActions()}
@@ -123,6 +124,7 @@ test("絞り込んでいる間は行を掴んでも並べ替わらない", () =>
       filter={NameFilter.create("e")}
       selection={setupSelection()}
       onSelect={vi.fn()}
+      onOpenContextMenu={vi.fn()}
       onReorder={onReorder}
       renaming={Option.none}
       renameActions={spyRenameActions()}

@@ -46,10 +46,11 @@ function renderPanel(
       query={query}
       selection={selection}
       renaming={Option.none}
-      artboard={{ add: vi.fn(), reorder }}
+      artboard={{ add: vi.fn(), reorder, openContextMenu: vi.fn() }}
       node={{
         select: vi.fn(),
         reorder: vi.fn(),
+        openContextMenu: vi.fn(),
       }}
       rename={spyRenameActions()}
     />,
@@ -113,10 +114,11 @@ test("artboard が 1 枚も無いときは、検索語を打っても artboard �
         [],
       )}
       renaming={Option.none}
-      artboard={{ add: vi.fn(), reorder: vi.fn() }}
+      artboard={{ add: vi.fn(), reorder: vi.fn(), openContextMenu: vi.fn() }}
       node={{
         select: vi.fn(),
         reorder: vi.fn(),
+        openContextMenu: vi.fn(),
       }}
       rename={spyRenameActions()}
     />,

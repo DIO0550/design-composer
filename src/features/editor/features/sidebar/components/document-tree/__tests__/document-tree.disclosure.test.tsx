@@ -43,6 +43,7 @@ function renderTree(): ReturnType<typeof vi.fn> {
       filter={Option.none}
       selection={setupSelection()}
       onSelect={onSelect}
+      onOpenContextMenu={vi.fn()}
       onReorder={vi.fn()}
       renaming={Option.none}
       renameActions={spyRenameActions()}

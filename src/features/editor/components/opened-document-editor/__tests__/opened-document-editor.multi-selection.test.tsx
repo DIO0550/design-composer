@@ -2,11 +2,7 @@ import { within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { currentRowNames } from "@/components/__tests__/row-names";
-import { Artboard } from "@/domains/dcmp/artboard";
-import {
-  DesignDocument,
-  DocumentTemplate,
-} from "@/domains/dcmp/design-document";
+import { SampleDocumentWithSameComponentInstances } from "@/features/editor/__tests__/sample-document";
 import {
   canvasSurface,
   drag,
@@ -23,42 +19,16 @@ import {
   tree,
 } from "./setup";
 
-/**
+/*
  * 3 ペインを実物のまま組み立て、`Select all N instances` を押した結果が
  * ツリー・キャンバス・右ペインへ届くことを確かめる（docs/06-ui.md「選択」）。
  *
  * ここでしか見られないのは配線そのもの。ドメイン・reducer・単体 UI を個別に揃えても、
  * `useNodeActions` から `PropertyPanel` までのどこかが切れていれば全部緑になる。
  */
-function setupDocument(): DesignDocument {
-  return DesignDocument.create({
-    tokens: DocumentTemplate.Default.tokens,
-    components: DocumentTemplate.Default.components,
-    artboards: [
-      Artboard.create({
-        name: "home",
-        width: 360,
-        height: 240,
-        children: [
-          { name: "home-title", type: "Text", props: { content: "ホーム" } },
-          {
-            name: "home-login",
-            ref: "primary-button",
-            overrides: { label: "ログイン" },
-          },
-          {
-            name: "home-signup",
-            ref: "primary-button",
-            overrides: { label: "登録" },
-          },
-        ],
-      }),
-    ],
-  });
-}
 
 test("インスタンスを選んでまとめて選ぶと、ツリーの複数行が選択状態になる", async () => {
-  await renderOpenedDocument(setupDocument());
+  await renderOpenedDocument(SampleDocumentWithSameComponentInstances);
   await userEvent.click(within(canvasPane()).getByText("ログイン"));
 
   await userEvent.click(
@@ -71,7 +41,7 @@ test("インスタンスを選んでまとめて選ぶと、ツリーの複数�
 });
 
 test("インスタンスを選んでまとめて選ぶと、キャンバスの複数のノードが強調される", async () => {
-  await renderOpenedDocument(setupDocument());
+  await renderOpenedDocument(SampleDocumentWithSameComponentInstances);
   await userEvent.click(within(canvasPane()).getByText("ログイン"));
 
   await userEvent.click(
@@ -87,7 +57,7 @@ test("インスタンスを選んでまとめて選ぶと、キャンバスの�
 });
 
 test("まとめて選ぶと右ペインが選択数に切り替わる", async () => {
-  await renderOpenedDocument(setupDocument());
+  await renderOpenedDocument(SampleDocumentWithSameComponentInstances);
   await userEvent.click(within(canvasPane()).getByText("ログイン"));
 
   await userEvent.click(
@@ -107,7 +77,7 @@ test("キャンバスの空き領域から範囲を引くと、範囲に入っ�
    * `ArtboardCanvas` の通知も個別には緑にできるが、`useNodeActions` から reducer までの
    * どこかが切れていれば範囲を引いても選択が変わらない。
    */
-  await renderOpenedDocument(setupDocument());
+  await renderOpenedDocument(SampleDocumentWithSameComponentInstances);
   stubBounds(drawn("home-title"), {
     left: 140,
     top: 84,
@@ -138,7 +108,7 @@ test("範囲を引いている間、離す前からツリーの選択行が追�
    * 離してから選ぶ形だと、何が選ばれるのかを引きながら確かめられない（レビュー指摘）。
    * 配線の通しで見るのは、選択そのものを動かしているから（見た目だけの別経路ではない）。
    */
-  await renderOpenedDocument(setupDocument());
+  await renderOpenedDocument(SampleDocumentWithSameComponentInstances);
   stubBounds(drawn("home-title"), {
     left: 140,
     top: 84,
@@ -159,7 +129,7 @@ test("範囲を引いている間、離す前からツリーの選択行が追�
 });
 
 test("範囲を引いてまとめて選ぶと右ペインが選択数に切り替わる", async () => {
-  await renderOpenedDocument(setupDocument());
+  await renderOpenedDocument(SampleDocumentWithSameComponentInstances);
   stubBounds(drawn("home-title"), {
     left: 140,
     top: 84,
@@ -181,7 +151,7 @@ test("範囲を引いてまとめて選ぶと右ペインが選択数に切り�
 });
 
 test("まとめて選んだあとにツリーで1つ選び直すと単一選択に戻る", async () => {
-  await renderOpenedDocument(setupDocument());
+  await renderOpenedDocument(SampleDocumentWithSameComponentInstances);
   await userEvent.click(within(canvasPane()).getByText("ログイン"));
   await userEvent.click(
     within(propertyPane()).getByRole("button", {
