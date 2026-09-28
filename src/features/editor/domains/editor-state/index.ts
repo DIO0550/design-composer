@@ -1,7 +1,10 @@
 import { Artboard } from "@/domains/dcmp/artboard";
 import { ChildPlacement } from "@/domains/dcmp/child-placement";
 import { ChildPosition } from "@/domains/dcmp/child-position";
-import { DesignDocument } from "@/domains/dcmp/design-document";
+import {
+  DesignDocument,
+  type DesignDocumentEditError,
+} from "@/domains/dcmp/design-document";
 import type { Node, PropEdit } from "@/domains/dcmp/node";
 import { Placement } from "@/domains/dcmp/placement";
 import { PrimitiveTypes } from "@/domains/dcmp/primitive-schema";
@@ -259,6 +262,28 @@ function withEdit(
     : Option.some(withDocument(state, document, continuity));
 }
 
+/**
+ * ドキュメントへの編集の結果を見て、成功したものだけを `withEdit` へ渡す。
+ *
+ * 結果から文書以外の値も取り出す操作（`duplicateSelected` の `copyName`・`ungroupSelected`
+ * の `freedNames`）は、取り出すために成否の分岐が要るので、ここを通さず `withEdit` を直に呼ぶ。
+ *
+ * @param state 入れる先のエディタの状態
+ * @param edited `DesignDocument` の編集操作が返した、編集後のドキュメントか失敗
+ * @param continuity 直前の編集との続き方。続きなら戻る先は増えない
+ * @returns その編集を現在地にしたエディタの状態。編集が失敗したとき・ファイルが不正な間は
+ *   `none`
+ */
+function withEditResult(
+  state: EditorState,
+  edited: Result<DesignDocument, DesignDocumentEditError>,
+  continuity: EditContinuity = EditContinuities.Separate,
+): Option<EditorState> {
+  return Result.isOk(edited)
+    ? withEdit(state, edited.value, continuity)
+    : Option.none;
+}
+
 export const EditorState = {
   /**
    * 選択なしの状態から始める（選択は非永続なので開いた直後は何も選ばれていない）。
@@ -405,10 +430,7 @@ export const EditorState = {
         from,
         to: newName,
       });
-      if (!Result.isOk(renamed)) {
-        return Option.none;
-      }
-      return Option.map(withEdit(state, renamed.value), (edited) =>
+      return Option.map(withEditResult(state, renamed), (edited) =>
         EditorState.select(edited, newName),
       );
     });
@@ -700,9 +722,7 @@ export const EditorState = {
       from,
       toIndex,
     );
-    return Result.isOk(reordered)
-      ? withEdit(state, reordered.value)
-      : Option.none;
+    return withEditResult(state, reordered);
   },
 
   /**
@@ -764,7 +784,7 @@ export const EditorState = {
       name,
       ChildPosition.afterRemoving(to, current.value),
     );
-    return Result.isOk(moved) ? withEdit(state, moved.value) : Option.none;
+    return withEditResult(state, moved);
   },
 
   /**
@@ -792,9 +812,7 @@ export const EditorState = {
       name,
       to,
     );
-    return Result.isOk(repositioned)
-      ? withEdit(state, repositioned.value)
-      : Option.none;
+    return withEditResult(state, repositioned);
   },
 
   /**
@@ -853,9 +871,7 @@ export const EditorState = {
       name,
       canvasPosition,
     );
-    return Result.isOk(repositioned)
-      ? withEdit(state, repositioned.value)
-      : Option.none;
+    return withEditResult(state, repositioned);
   },
 
   /**
@@ -915,9 +931,7 @@ export const EditorState = {
           at,
           node,
         );
-        return Result.isOk(pasted)
-          ? withEdit(state, pasted.value)
-          : Option.none;
+        return withEditResult(state, pasted);
       }),
     );
   },
@@ -968,9 +982,7 @@ export const EditorState = {
     const document = EditorState.document(state);
     const node = NodeTemplate.toNode(template, document);
     const inserted = DesignDocument.insertNode(document, at, node);
-    return Result.isOk(inserted)
-      ? withEdit(state, inserted.value)
-      : Option.none;
+    return withEditResult(state, inserted);
   },
 
   /**
@@ -1003,9 +1015,7 @@ export const EditorState = {
   removeSelected(state: EditorState): Option<EditorState> {
     return Option.flatMap(EditorState.singleName(state), (name) => {
       const removed = DesignDocument.remove(EditorState.document(state), name);
-      return Result.isOk(removed)
-        ? withEdit(state, removed.value)
-        : Option.none;
+      return withEditResult(state, removed);
     });
   },
 
@@ -1032,11 +1042,9 @@ export const EditorState = {
       document.artboards.length,
       artboard,
     );
-    return Result.isOk(added)
-      ? Option.map(withEdit(state, added.value), (edited) =>
-          EditorState.select(edited, artboard.name),
-        )
-      : Option.none;
+    return Option.map(withEditResult(state, added), (edited) =>
+      EditorState.select(edited, artboard.name),
+    );
   },
 
   /**
@@ -1060,9 +1068,7 @@ export const EditorState = {
       move.fromIndex,
       move.toIndex,
     );
-    return Result.isOk(reordered)
-      ? withEdit(state, reordered.value)
-      : Option.none;
+    return withEditResult(state, reordered);
   },
 
   /**
@@ -1079,9 +1085,7 @@ export const EditorState = {
   detachInstance(state: EditorState): Option<EditorState> {
     return Option.flatMap(EditorState.singleName(state), (name) => {
       const detached = DesignDocument.detach(EditorState.document(state), name);
-      return Result.isOk(detached)
-        ? withEdit(state, detached.value)
-        : Option.none;
+      return withEditResult(state, detached);
     });
   },
 
@@ -1111,9 +1115,7 @@ export const EditorState = {
         name,
         componentName,
       );
-      return Result.isOk(created)
-        ? withEdit(state, created.value)
-        : Option.none;
+      return withEditResult(state, created);
     });
   },
 
@@ -1139,11 +1141,9 @@ export const EditorState = {
         NodeTemplate.baseName({ kind: "primitive", type: PrimitiveTypes.Box }),
       );
       const grouped = DesignDocument.groupIntoBox(document, name, boxName);
-      return Result.isOk(grouped)
-        ? Option.map(withEdit(state, grouped.value), (edited) =>
-            EditorState.select(edited, boxName),
-          )
-        : Option.none;
+      return Option.map(withEditResult(state, grouped), (edited) =>
+        EditorState.select(edited, boxName),
+      );
     });
   },
 
@@ -1199,9 +1199,7 @@ export const EditorState = {
         name,
         edit,
       );
-      return Result.isOk(edited)
-        ? withEdit(state, edited.value, continuity)
-        : Option.none;
+      return withEditResult(state, edited, continuity);
     });
   },
 
@@ -1233,9 +1231,7 @@ export const EditorState = {
         name,
         edit,
       );
-      return Result.isOk(resized)
-        ? withEdit(state, resized.value, continuity)
-        : Option.none;
+      return withEditResult(state, resized, continuity);
     });
   },
 
@@ -1309,11 +1305,9 @@ export const EditorState = {
     const document = EditorState.document(state);
     const token = TokenTemplate.toToken(template, document.tokens);
     const added = DesignDocument.addToken(document, token);
-    return Result.isOk(added)
-      ? Option.map(withEdit(state, added.value), (edited) =>
-          EditorState.selectToken(edited, Token.ref(token)),
-        )
-      : Option.none;
+    return Option.map(withEditResult(state, added), (edited) =>
+      EditorState.selectToken(edited, Token.ref(token)),
+    );
   },
 
   /**
@@ -1332,9 +1326,7 @@ export const EditorState = {
           EditorState.document(state),
           edited,
         );
-        return Result.isOk(replaced)
-          ? withEdit(state, replaced.value)
-          : Option.none;
+        return withEditResult(state, replaced);
       }),
     );
   },
@@ -1354,10 +1346,7 @@ export const EditorState = {
         ref,
         newName,
       );
-      if (!Result.isOk(renamed)) {
-        return Option.none;
-      }
-      return Option.map(withEdit(state, renamed.value), (edited) =>
+      return Option.map(withEditResult(state, renamed), (edited) =>
         EditorState.selectToken(edited, { kind: ref.kind, name: newName }),
       );
     });
@@ -1381,9 +1370,7 @@ export const EditorState = {
         EditorState.document(state),
         ref,
       );
-      return Result.isOk(removed)
-        ? withEdit(state, removed.value)
-        : Option.none;
+      return withEditResult(state, removed);
     });
   },
 } as const;
