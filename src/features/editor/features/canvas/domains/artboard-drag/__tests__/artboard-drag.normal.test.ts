@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { Offset } from "@/domains/unit/offset";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
 import { Option } from "@/utils/Option";
 import { ArtboardDrag } from "../index";
@@ -19,7 +20,10 @@ function heldDrag(): ArtboardDrag {
 
 test("閾値を越えて動かすと、掴んだ時点の位置に移動量を足した座標を運んでいる", () => {
   // 縦横を別の量にする（取り違えても同じ答えになる入力を避ける）
-  const dragging = ArtboardDrag.moveTo(heldDrag(), { x: 560, y: 380 });
+  const dragging = ArtboardDrag.moveTo(heldDrag(), {
+    pointer: { x: 560, y: 380 },
+    snap: Offset.Origin,
+  });
 
   expect(ArtboardDrag.preview(dragging, CanvasView.create())).toEqual(
     Option.some({ name: "home", canvasPosition: { x: 160, y: 120 } }),
@@ -28,7 +32,10 @@ test("閾値を越えて動かすと、掴んだ時点の位置に移動量を�
 
 test("閾値までの動きでは運んでいるものが決まらない", () => {
   // 3px は閾値（4px）未満なのでクリックとして扱う
-  const held = ArtboardDrag.moveTo(heldDrag(), { x: 503, y: 300 });
+  const held = ArtboardDrag.moveTo(heldDrag(), {
+    pointer: { x: 503, y: 300 },
+    snap: Offset.Origin,
+  });
 
   expect(ArtboardDrag.preview(held, CanvasView.create())).toEqual(Option.none);
 });
@@ -40,7 +47,10 @@ test("倍率を上げても、動く量はドキュメント上の px になる"
    * のため。運んでいる間の見た目は小数のままで構わない。
    */
   const zoomed = CanvasView.zoomIn(CanvasView.zoomIn(CanvasView.create()));
-  const dragging = ArtboardDrag.moveTo(heldDrag(), { x: 620, y: 300 });
+  const dragging = ArtboardDrag.moveTo(heldDrag(), {
+    pointer: { x: 620, y: 300 },
+    snap: Offset.Origin,
+  });
 
   const moved = Option.unwrap(ArtboardDrag.preview(dragging, zoomed));
 
