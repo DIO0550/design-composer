@@ -5,7 +5,7 @@ import { DocumentWithCardComponent } from "@/features/editor/__tests__/sample-do
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
 import { useEditorState } from "../index";
-import { homeChildNames } from "./setup";
+import { childNamesText, homeChildNames } from "./setup";
 
 /**
  * 挿入・削除・コピー & ペーストのアクションを 1 つずつ送る器。
@@ -77,7 +77,7 @@ test("artboard を選んで挿入すると子の並びの末尾に加わる", as
   await user.click(screen.getByRole("button", { name: "home を選ぶ" }));
   await user.click(screen.getByRole("button", { name: "Box を挿す" }));
 
-  expect(screen.getByTestId("children").textContent).toBe("title,box");
+  expect(childNamesText()).toBe("title,box");
 });
 
 test("部品を挿入すると参照ノードが子の並びに加わる", async () => {
@@ -87,7 +87,7 @@ test("部品を挿入すると参照ノードが子の並びに加わる", async
   await user.click(screen.getByRole("button", { name: "home を選ぶ" }));
   await user.click(screen.getByRole("button", { name: "card を挿す" }));
 
-  expect(screen.getByTestId("children").textContent).toBe("title,card-2");
+  expect(childNamesText()).toBe("title,card-2");
 });
 
 test("ノードを選んで削除すると子の並びから消える", async () => {
@@ -97,7 +97,7 @@ test("ノードを選んで削除すると子の並びから消える", async ()
   await user.click(screen.getByRole("button", { name: "title を選ぶ" }));
   await user.click(screen.getByRole("button", { name: "削除する" }));
 
-  expect(screen.getByTestId("children").textContent).toBe("");
+  expect(childNamesText()).toBe("");
 });
 
 test("削除すると選択が外れる", async () => {
@@ -116,7 +116,7 @@ test("何も選んでいないときに削除しても子の並びは変わら�
 
   await user.click(screen.getByRole("button", { name: "削除する" }));
 
-  expect(screen.getByTestId("children").textContent).toBe("title");
+  expect(childNamesText()).toBe("title");
 });
 
 test("ノードをコピーして artboard へ貼ると連番の名前で子の並びに加わる", async () => {
@@ -128,7 +128,7 @@ test("ノードをコピーして artboard へ貼ると連番の名前で子の�
   await user.click(screen.getByRole("button", { name: "home を選ぶ" }));
   await user.click(screen.getByRole("button", { name: "貼り付ける" }));
 
-  expect(screen.getByTestId("children").textContent).toBe("title,title-2");
+  expect(childNamesText()).toBe("title,title-2");
 });
 
 test("コピーしただけでは子の並びは変わらない", async () => {
@@ -138,7 +138,7 @@ test("コピーしただけでは子の並びは変わらない", async () => {
   await user.click(screen.getByRole("button", { name: "title を選ぶ" }));
   await user.click(screen.getByRole("button", { name: "コピーする" }));
 
-  expect(screen.getByTestId("children").textContent).toBe("title");
+  expect(childNamesText()).toBe("title");
 });
 
 test("何もコピーしていないときに貼り付けても子の並びは変わらない", async () => {
@@ -148,7 +148,7 @@ test("何もコピーしていないときに貼り付けても子の並びは�
   await user.click(screen.getByRole("button", { name: "home を選ぶ" }));
   await user.click(screen.getByRole("button", { name: "貼り付ける" }));
 
-  expect(screen.getByTestId("children").textContent).toBe("title");
+  expect(childNamesText()).toBe("title");
 });
 
 test("何も選んでいないときにコピーしても貼り付けるものは増えない", async () => {
@@ -159,5 +159,5 @@ test("何も選んでいないときにコピーしても貼り付けるもの�
   await user.click(screen.getByRole("button", { name: "home を選ぶ" }));
   await user.click(screen.getByRole("button", { name: "貼り付ける" }));
 
-  expect(screen.getByTestId("children").textContent).toBe("title");
+  expect(childNamesText()).toBe("title");
 });

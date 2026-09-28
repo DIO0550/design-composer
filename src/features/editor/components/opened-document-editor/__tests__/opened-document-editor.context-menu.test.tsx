@@ -4,7 +4,10 @@ import { expect, test } from "vitest";
 import { rowNames } from "@/components/__tests__/row-names";
 import { rightPaneHeading } from "@/features/editor/__tests__/right-pane-heading";
 import { SampleDocumentWithDeepBranch } from "@/features/editor/__tests__/sample-document";
-import { artboardHandle } from "@/features/editor/features/canvas/__tests__";
+import {
+  artboardHandle,
+  canvasSurface,
+} from "@/features/editor/features/canvas/__tests__";
 import {
   breakFileExternally,
   contextMenu,
@@ -86,7 +89,7 @@ test("ノードのメニューの Copy のあと空き領域のメニューの P
    * 手を付けないので、そのままの選択へ貼れる。
    */
   await selectArtboard("home");
-  rightClick(screen.getByTestId("canvas-surface"));
+  rightClick(canvasSurface());
   await userEvent.click(menuRow("Paste"));
 
   expect(rowNames(tree())).toEqual([
@@ -150,7 +153,7 @@ test("artboard の見出しを右クリックしても artboard のメニュー�
 test("空き領域を右クリックすると取り消す・やり直すが並ぶ", async () => {
   await renderOpenedDocument();
 
-  rightClick(screen.getByTestId("canvas-surface"));
+  rightClick(canvasSurface());
 
   expect(menuRow("Undo")).toBeDefined();
   expect(menuRow("Redo")).toBeDefined();
@@ -161,7 +164,7 @@ test("空き領域のメニューの Undo を押すと、直前の編集が戻�
   await selectInTree("home-title");
   await userEvent.keyboard("{Delete}");
 
-  rightClick(screen.getByTestId("canvas-surface"));
+  rightClick(canvasSurface());
   await userEvent.click(menuRow("Undo"));
 
   expect(rowNames(tree())).toEqual(["home-title", "home-login"]);
@@ -203,7 +206,7 @@ test("ファイルが不正な間は右クリックでメニューが出ない",
 test("貼るものが無いときは、空き領域のメニューの Paste が押せない", async () => {
   await renderOpenedDocument();
 
-  rightClick(screen.getByTestId("canvas-surface"));
+  rightClick(canvasSurface());
 
   expect(menuRow("Paste").hasAttribute("disabled")).toBe(true);
 });
@@ -215,7 +218,7 @@ test("コピー済みで貼り先があるときは、空き領域のメニュ�
   await selectArtboard("home");
 
   // 上のテストの対照。これが無いと、どの行も押せないメニューでも通ってしまう
-  rightClick(screen.getByTestId("canvas-surface"));
+  rightClick(canvasSurface());
 
   expect(menuRow("Paste").hasAttribute("disabled")).toBe(false);
 });
@@ -240,7 +243,7 @@ test("別の場所を右クリックすると、メニューがそこへ開き�
   await renderOpenedDocument();
   rightClick(drawn("home-title"));
 
-  rightClick(screen.getByTestId("canvas-surface"));
+  rightClick(canvasSurface());
 
   // artboard でもノードでもない空き領域のメニューに入れ替わる
   expect(menuRow("Undo")).toBeDefined();

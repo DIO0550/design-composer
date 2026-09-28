@@ -1,8 +1,9 @@
-import { fireEvent, screen } from "@testing-library/react";
+import { fireEvent } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
 import {
   artboardHandle,
   canvasSurface,
+  textInlineEditorField,
 } from "@/features/editor/features/canvas/__tests__/canvas-elements";
 import {
   drawn,
@@ -184,7 +185,7 @@ test("文言のその場編集の入力欄では、ブラウザ既定のメニ�
     onOpenContextMenu,
   });
   fireEvent.doubleClick(drawn("title"));
-  const editor = screen.getByRole("textbox", { name: "文言を編集" });
+  const editor = textInlineEditorField();
 
   /*
    * 切り取り / 貼り付けはブラウザのものが要るので、入力欄の上では既定のメニューを残す。
