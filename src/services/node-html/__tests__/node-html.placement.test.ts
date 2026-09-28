@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
+import { DefaultTokenRefs } from "@/domains/__tests__/token-refs";
 import type { ExpandedNode } from "@/domains/dcmp/expanded-node";
 import { Result } from "@/utils/Result";
-import { DefaultTokenRefs } from "@/domains/__tests__/token-refs";
 import { NodeHtml } from "../index";
 import { styleOf } from "./setup";
 

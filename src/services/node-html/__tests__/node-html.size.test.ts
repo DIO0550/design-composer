@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
+import { DefaultTokenRefs } from "@/domains/__tests__/token-refs";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
-import { DefaultTokenRefs } from "@/domains/__tests__/token-refs";
 import { NodeHtml } from "../index";
 import { styleOf } from "./setup";
 
@@ -89,7 +89,9 @@ test("子の fill は親ノードの layout に従って出し分けられる", 
         name: "row",
         type: "Box",
         props: { layout: "row" },
-        children: [{ name: "child", type: "Box", props: { widthMode: "fill" } }],
+        children: [
+          { name: "child", type: "Box", props: { widthMode: "fill" } },
+        ],
       },
       DefaultTokenRefs,
     ),
@@ -157,7 +159,9 @@ test("横並びの親の中では子の fill が宣言を出す", () => {
         name: "row",
         type: "Box",
         props: { layout: "row" },
-        children: [{ name: "child", type: "Box", props: { widthMode: "fill" } }],
+        children: [
+          { name: "child", type: "Box", props: { widthMode: "fill" } },
+        ],
       },
       DefaultTokenRefs,
     ),

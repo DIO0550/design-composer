@@ -16,6 +16,7 @@ export function styleOf(
   node: ExpandedNode,
   parentDirection: Option<CssDirection> = Option.none,
 ): Readonly<Record<string, string>> {
-  return Result.unwrap(NodeHtml.compile(node, DefaultTokenRefs, parentDirection))
-    .style;
+  return Result.unwrap(
+    NodeHtml.compile(node, DefaultTokenRefs, parentDirection),
+  ).style;
 }

@@ -235,7 +235,7 @@ function paintColorOf(
   return Option.flatMap(effective, (name) => {
     const resolution = TokenSet.resolvePaintName(tokens, String(name));
     const isColor =
-      resolution.kind === "owned" && resolution.tokenKind === "colors";
+      resolution.state === "owned" && resolution.tokenKind === "colors";
     return isColor ? TokenSet.findColor(tokens, String(name)) : Option.none;
   });
 }

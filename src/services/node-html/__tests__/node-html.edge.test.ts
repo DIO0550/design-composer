@@ -1,14 +1,17 @@
 import { expect, test } from "vitest";
+import { DefaultTokenRefs } from "@/domains/__tests__/token-refs";
 import type { ComponentSet } from "@/domains/dcmp/component";
 import { ExpandedNode } from "@/domains/dcmp/expanded-node";
 import type { RefNode } from "@/domains/dcmp/node";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
-import { DefaultTokenRefs } from "@/domains/__tests__/token-refs";
 import { NodeHtml } from "../index";
 
 test("未知の type のノードはコンパイルできずエラーになる", () => {
-  const result = NodeHtml.compile({ name: "unknown", type: "Image" }, DefaultTokenRefs);
+  const result = NodeHtml.compile(
+    { name: "unknown", type: "Image" },
+    DefaultTokenRefs,
+  );
 
   expect(Result.isOk(result)).toBe(false);
 });

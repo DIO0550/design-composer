@@ -167,14 +167,14 @@ test("名前の衝突の失敗は、足そうとした種別と衝突した相�
 
 test("colors にだけある名前は colors が持っている", () => {
   expect(TokenSet.resolvePaintName(setupTokens(), "primary")).toEqual({
-    kind: "owned",
+    state: "owned",
     tokenKind: "colors",
   });
 });
 
 test("gradients にだけある名前は gradients が持っている", () => {
   expect(TokenSet.resolvePaintName(setupTokens(), "fade")).toEqual({
-    kind: "owned",
+    state: "owned",
     tokenKind: "gradients",
   });
 });
@@ -187,13 +187,13 @@ test("colors と gradients の両方にある名前はどちらが持ってい�
   };
 
   expect(TokenSet.resolvePaintName(tokens, "brand")).toEqual({
-    kind: "conflicted",
+    state: "conflicted",
   });
 });
 
 test("塗り用の 2 種別のどちらも持っていない名前は、他の種別にあっても宙に浮く", () => {
   // 入力は spacing に実在する名前。`TokenSet` 全体を見る実装ならここで owned になる
   expect(TokenSet.resolvePaintName(setupTokens(), "sm")).toEqual({
-    kind: "dangling",
+    state: "dangling",
   });
 });

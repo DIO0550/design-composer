@@ -12,7 +12,7 @@ test("座標が数値でない絶対配置の Box は、フローの Box と同�
 test("座標で置いた Box は、横に並べる親の中でも伸びない", () => {
   const style = setupBoxStyle(
     { placement: "absolute", x: 40, y: 24, widthMode: "fill" },
-    Option.some("row"),
+    { parentDirection: Option.some("row") },
   );
 
   expect(style).not.toHaveProperty("flex-grow");
@@ -21,7 +21,7 @@ test("座標で置いた Box は、横に並べる親の中でも伸びない", 
 test("座標が数値でない絶対配置の Box は、flex アイテムとして親いっぱいに伸びる", () => {
   const style = setupBoxStyle(
     { placement: "absolute", x: "40", y: 24, widthMode: "fill" },
-    Option.some("row"),
+    { parentDirection: Option.some("row") },
   );
 
   expect(style["flex-grow"]).toBe("1");

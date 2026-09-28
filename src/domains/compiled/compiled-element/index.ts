@@ -65,16 +65,12 @@ function paintKind(
   resolution: PaintNameResolution,
 ): Option<PaintTokenKinds[number]> {
   const [defaultKind] = kinds;
-  switch (resolution.kind) {
+  switch (resolution.state) {
     case "owned":
       return Option.some(resolution.tokenKind);
     case "conflicted":
       return Option.none;
-    /*
-     * 実在しない名前も既定の種別で綴る。宣言を落とすのは衝突のときだけで、ここで消すと
-     * 同じ「存在しないトークン名」が prop ごとに別の見え方になる（他の prop は
-     * `var(--spacing-xxx)` を出す）。報告はバリデーションが持つ。
-     */
+    // 実在しない名前も既定の種別で綴る理由は docs/03「塗り」
     case "dangling":
       return Option.some(defaultKind);
   }
@@ -84,6 +80,9 @@ function paintKind(
  * トークン参照 prop を `var` 参照の宣言にする。未指定の prop は宣言を出力しない (トークンの
  * 値は参照しないため、**値**の編集は再コンパイルなしに CSS 経由で波及する。塗りのトークン名
  * の増減は解決先を変えるので再コンパイルが要る / docs/03「HTML/CSS へのコンパイル規則」)。
+ *
+ * 塗りの解決を `TokenSet` ごと受け取らないのは、この層からトークンの**値**が読めるように
+ * なり、「出力は値に依存しない」が型ではなく規律で守られる形になるため。
  *
  * @param prop 宣言にする prop 名
  * @param value その prop に設定されている値。未設定なら宣言を出さない
@@ -105,8 +104,11 @@ function tokenDeclarations(
     const [kind] = kinds;
     return [CssDeclaration.create(property, tokens.ref(kind, name))];
   }
-  // 2 種別を指せるのは塗りだけ (docs/03「塗り」)。引数の型で束縛しておくと、塗り以外の
-  // 2 種別 prop をスキーマへ足したときにコンパイルエラーになる
+  /*
+   * 2 種別を指せるのは塗りだけ (docs/03「塗り」)。スキーマがそれ以外の組を宣言できないのは
+   * `TokenKindList` が `readonly [TokenKind] | PaintTokenKinds` だからで、ここの引数の型は
+   * その保証を受け取り直しているだけ。
+   */
   const kind = paintKind(kinds, tokens.paintResolution(name));
   return Option.isSome(kind)
     ? [CssDeclaration.create(property, tokens.ref(kind.value, name))]

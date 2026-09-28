@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
+import { DefaultTokenRefs } from "@/domains/__tests__/token-refs";
 import { CompiledElement } from "@/domains/compiled/compiled-element";
 import { Result } from "@/utils/Result";
-import { DefaultTokenRefs } from "@/domains/__tests__/token-refs";
 import { NodeHtml } from "../index";
 import { styleOf } from "./setup";
 
@@ -98,16 +98,6 @@ test("background・shadow はそれぞれの種別のトークン参照になる
 
   expect(style.background).toBe("var(--colors-primary)");
   expect(style["box-shadow"]).toBe("var(--shadows-lg)");
-});
-
-test("gradients だけが持つ名前を指す背景は gradients のトークン参照になる", () => {
-  const style = styleOf({
-    name: "hero",
-    type: "Box",
-    props: { background: "brand" },
-  });
-
-  expect(style.background).toBe("var(--gradients-brand)");
 });
 
 test("4隅の角丸は 左上 右上 右下 左下 の順で border-radius 1宣言に合成される", () => {

@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { Fade } from "@/domains/__tests__/gradient-tokens";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import type { TokenSet } from "@/domains/dcmp/token";
 import { Result } from "@/utils/Result";
@@ -13,16 +14,7 @@ function setupTokens(): TokenSet {
     typography: {
       body: { fontSize: 16, lineHeight: 1.6, fontWeight: 400 },
     },
-    gradients: {
-      brand: {
-        shape: "linear",
-        angle: 90,
-        stops: [
-          { color: "#3b82f6", ratio: 0 },
-          { color: "#1d4ed8", ratio: 1 },
-        ],
-      },
-    },
+    gradients: { brand: Fade },
   };
 }
 
@@ -264,7 +256,9 @@ test("gradients を指す背景は、変数の定義と参照の両方を持つ 
         name: "home",
         width: 375,
         height: 812,
-        children: [{ name: "hero", type: "Box", props: { background: "brand" } }],
+        children: [
+          { name: "hero", type: "Box", props: { background: "brand" } },
+        ],
       },
     ],
   });

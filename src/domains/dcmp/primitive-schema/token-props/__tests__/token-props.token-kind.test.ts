@@ -35,13 +35,11 @@ test("トークン種別は prop ごとにスキーマの宣言どおりの型�
 
 test("2 つの種別を指せる prop は塗りの組だけ", () => {
   /*
-   * docs/03「塗り」の「2 つの種別を指せるのは `background` だけ」。CSS 出力はこの前提で
-   * 単一種別と塗りを長さで分けるので、塗りでない 2 種別 prop がスキーマへ入ると壊れる。
+   * 塗りでない 2 種別の組を弾いているのは `TokenKindList`（`prop-definition`）。この観点は
+   * その制約が `TokenPropKinds` の導出まで生き残っていることを見る。CSS 出力が単一種別と
+   * 塗りを長さで分けられるのは、ここまで生きているため。
    */
-  type MultiKind = Exclude<
-    TokenPropKinds[TokenPropName],
-    readonly [TokenKind]
-  >;
+  type MultiKind = Exclude<TokenPropKinds[TokenPropName], readonly [TokenKind]>;
 
   expectTypeOf<MultiKind>().toEqualTypeOf<PaintTokenKinds>();
 });

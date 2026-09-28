@@ -85,14 +85,16 @@ export type PaintTokenKinds = typeof PaintTokenKinds;
 /**
  * 塗りの名前がどの種別のトークンへ解決するか（docs/03-schema.md「塗り」）。
  *
- * 「どちらにも無い」と「両方にある」を 1 つの不在で表さない。出力の扱いが別（前者は
- * colors の var を出し、後者は宣言を出さない / docs/03-schema.md「塗り」）で、
- * 区別が消えると呼び出し側で作り直すことになる。
+ * 「どちらにも無い」と「両方にある」を 1 つの不在で表さない。CSS へ出すときの扱いが別
+ * （docs/03-schema.md「塗り」）で、区別が消えると呼び出し側で作り直すことになる。
+ *
+ * 判別子が `kind` でないのは、このモジュールでは `kind` がトークンの種別を指すため
+ * （`TokenKind` / `TokenRef.kind`）。
  */
 export type PaintNameResolution =
-  | Readonly<{ kind: "owned"; tokenKind: PaintTokenKinds[number] }>
-  | Readonly<{ kind: "conflicted" }>
-  | Readonly<{ kind: "dangling" }>;
+  | Readonly<{ state: "owned"; tokenKind: PaintTokenKinds[number] }>
+  | Readonly<{ state: "conflicted" }>
+  | Readonly<{ state: "dangling" }>;
 
 /**
  * 種別ごとの値の形式(docs/04-tokens.md「値の形式」)。
@@ -645,11 +647,11 @@ export const TokenSet = {
     );
     const [owner] = owners;
     if (owner === undefined) {
-      return { kind: "dangling" };
+      return { state: "dangling" };
     }
     return owners.length === 1
-      ? { kind: "owned", tokenKind: owner }
-      : { kind: "conflicted" };
+      ? { state: "owned", tokenKind: owner }
+      : { state: "conflicted" };
   },
 
   /**
@@ -661,8 +663,8 @@ export const TokenSet = {
    */
   collectPaintNameConflicts(tokens: TokenSet): readonly string[] {
     const [colors] = PaintTokenKinds;
-    return TokenSet.names(tokens, colors).filter((name) =>
-      Option.isSome(findPaintConflict(tokens, { kind: colors, name })),
+    return TokenSet.names(tokens, colors).filter(
+      (name) => TokenSet.resolvePaintName(tokens, name).state === "conflicted",
     );
   },
 
