@@ -92,6 +92,26 @@ export const ArrangedArtboard = {
   },
 
   /**
+   * 並びの中の 1 枚の幅が変わると、別の 1 枚の位置も動くか。既定の位置は自分より前の
+   * artboard の幅の累積なので（`positionAt`）、**後ろにある座標を持たない** artboard が動く。
+   * 高さは既定の位置に効かない。
+   *
+   * @param artboards 大きさと座標を持つ artboard の並び（`.dcmp` の並び順）
+   * @param pair 幅を変える artboard（`resized`）と、動くかを知りたい artboard（`other`）の
+   *   並びの中の位置
+   * @returns `other` が `resized` より後ろにあり、座標を持たないなら `true`
+   */
+  isShiftedByWidth(
+    artboards: readonly PlaceableArtboard[],
+    pair: Readonly<{ resized: number; other: number }>,
+  ): boolean {
+    return (
+      pair.other > pair.resized &&
+      artboards[pair.other].canvasPosition === undefined
+    );
+  },
+
+  /**
    * 並び全体が占める大きさ。
    *
    * 絶対配置にすると器が内容の大きさを失うので、代わりに与えるために使う。
