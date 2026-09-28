@@ -54,3 +54,13 @@ test("拾った名前は渡された並びの順のまま返る", () => {
 
   expect(overlapping).toEqual(["home", "about"]);
 });
+
+test("名前で指したものの矩形を、渡した並びの順に測る", () => {
+  drawNamed("home", { left: 10, top: 20, width: 100, height: 50 });
+  drawNamed("about", { left: 200, top: 20, width: 80, height: 60 });
+
+  expect(DrawnBounds.collectDrawnBounds(["about", "home"])).toEqual([
+    { left: 200, top: 20, width: 80, height: 60 },
+    { left: 10, top: 20, width: 100, height: 50 },
+  ]);
+});
