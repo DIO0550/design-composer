@@ -1,66 +1,18 @@
 import { expect, test } from "vitest";
 import { AxisLength } from "@/domains/dcmp/axis-length";
 import { ResizeEdit } from "@/domains/dcmp/resize-edit";
-import type { Offset } from "@/domains/unit/offset";
 import { resizeAnchorAt } from "@/features/editor/features/canvas/__tests__/canvas-resize";
 import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
 import { Option } from "@/utils/Option";
+import { NodeResize, type ResizableSelection } from "../index";
 import {
-  NodeResize,
-  type ResizableSelection,
-  type ResizeHandleAnchor,
-} from "../index";
-
-/** 画面の (100, 50) から 200x100 の大きさで描かれている要素。 */
-function setupBounds(): CanvasBounds {
-  return { left: 100, top: 50, width: 200, height: 100 };
-}
-
-/** 2 軸とも掴めて、(30, 70) に置かれている要素（左辺・上辺も掴める）。 */
-function setupResizable(): ResizableSelection {
-  return {
-    lengths: [
-      AxisLength.create("width", 200),
-      AxisLength.create("height", 100),
-    ],
-    origin: Option.some({ x: 30, y: 70 }),
-  };
-}
-
-/** 2 軸とも掴めるが位置を持たない要素（フロー配置のノード）。 */
-function setupFlowResizable(): ResizableSelection {
-  return { ...setupResizable(), origin: Option.none };
-}
-
-/** 等倍で見ているキャンバス。 */
-function setupView(): CanvasView {
-  return CanvasView.create();
-}
-
-/**
- * その箇所を押して掴んだ状態。
- *
- * @param resizable 掴む対象
- * @param anchor 押した箇所
- * @param pointerOrigin 押した位置
- * @returns 掴んだ状態
- */
-function grabbedAt(
-  resizable: ResizableSelection,
-  anchor: ResizeHandleAnchor,
-  pointerOrigin: Offset,
-): NodeResize {
-  return NodeResize.grab(
-    NodeResize.hold(
-      resizable,
-      Option.unwrap(
-        NodeResize.gripFor(resizable, Option.unwrap(resizeAnchorAt(anchor))),
-      ),
-      pointerOrigin,
-    ),
-  );
-}
+  grabbedAt,
+  setupBounds,
+  setupFlowResizable,
+  setupResizable,
+  setupView,
+} from "./setup";
 
 test("右辺の内側を押すと幅のハンドルを掴む", () => {
   // 戻り値はそのまま `grab` へ渡るので、押した位置（起点）まで含めて丸ごと固定する
@@ -74,6 +26,7 @@ test("右辺の内側を押すと幅のハンドルを掴む", () => {
       },
       pointerOrigin: { x: 297, y: 100 },
       grabbedAt: Option.some({ x: 30, y: 70 }),
+      snapFrom: Option.none,
     }),
   );
 });
@@ -622,6 +575,7 @@ test("両側の帯に入る細い要素では、近いほうの辺を掴む", ()
   const narrow: ResizableSelection = {
     lengths: [AxisLength.create("width", 10)],
     origin: Option.some({ x: 30, y: 70 }),
+    snapTargetNames: [],
   };
   const narrowBounds: CanvasBounds = {
     left: 100,
@@ -645,6 +599,7 @@ test("両側の帯に入る細い要素でも、左寄りを押せば始点側�
   const narrow: ResizableSelection = {
     lengths: [AxisLength.create("width", 10)],
     origin: Option.some({ x: 30, y: 70 }),
+    snapTargetNames: [],
   };
   const narrowBounds: CanvasBounds = {
     left: 100,

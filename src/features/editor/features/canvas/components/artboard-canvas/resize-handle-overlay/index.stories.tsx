@@ -58,6 +58,7 @@ export const BothAxes: Story = {
         AxisLength.create("height", 120),
       ],
       origin: Option.some({ x: 0, y: 0 }),
+      snapTargetNames: [],
     },
   },
 };
@@ -69,6 +70,7 @@ export const WidthOnly: Story = {
     resizable: {
       lengths: [AxisLength.create("width", 220)],
       origin: Option.some({ x: 0, y: 0 }),
+      snapTargetNames: [],
     },
   },
 };
