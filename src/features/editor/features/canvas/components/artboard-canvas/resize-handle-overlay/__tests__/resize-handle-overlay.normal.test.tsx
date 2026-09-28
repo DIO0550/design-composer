@@ -27,12 +27,16 @@ const HeightHandle = AxisLength.create("height", 100);
 
 /** ドキュメントへ位置を書ける対象（artboard / 絶対配置のノード）。 */
 function placed(lengths: readonly AxisLength[]): ResizableSelection {
-  return { lengths, origin: Option.some({ x: 30, y: 70 }) };
+  return {
+    lengths,
+    origin: Option.some({ x: 30, y: 70 }),
+    snapTargetNames: [],
+  };
 }
 
 /** 位置を書けない対象（フロー配置のノード）。 */
 function unplaced(lengths: readonly AxisLength[]): ResizableSelection {
-  return { lengths, origin: Option.none };
+  return { lengths, origin: Option.none, snapTargetNames: [] };
 }
 
 /** 出ているハンドルから、見たいスタイルだけを左上から時計回りの並びで取り出す。 */

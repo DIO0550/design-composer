@@ -11,6 +11,7 @@ import { Offset } from "@/domains/unit/offset";
 import { ArrangedArtboard } from "@/features/editor/features/canvas/domains/arranged-artboard";
 import { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
+import { SideSnap } from "@/features/editor/features/canvas/domains/side-snap";
 import { Option } from "@/utils/Option";
 
 /**
@@ -96,15 +97,23 @@ export type ResizeHandleAnchor = Readonly<{
 }>;
 
 /**
- * リサイズの観点から見た選択。掴める軸の長さと、ドキュメントへ書ける今の位置。
+ * リサイズの観点から見た選択。掴める軸の長さと、ドキュメントへ書ける今の位置と、掴んだ辺を
+ * 揃える先。
  *
  * 始点側の辺を掴めるかは「その軸が固定か」だけでは決まらず、反対の辺を留めるための位置を
- * 書けるかにも依るので、対で 1 つの型にする。
+ * 書けるかにも依るので、対で 1 つの型にする。揃え先も位置を書ける対象にしか無いので、
+ * 同じ分岐で決める。
  */
 export type ResizableSelection = Readonly<{
   lengths: readonly AxisLength[];
   /** 掴んだ時点の位置。ドキュメントへ位置を書けない対象（フロー配置）なら `none`。 */
   origin: Option<Offset>;
+  /**
+   * 掴んだ辺を揃える先の名前（docs/06-ui.md「リサイズハンドル」の辺のスナップ）。
+   * **リサイズしても動かないもの**だけで、並びは近さが同じときに先に寄る順。位置を書けない
+   * 対象（フロー配置）なら空。
+   */
+  snapTargetNames: readonly string[];
 }>;
 
 /**
@@ -115,6 +124,15 @@ export type ResizeHold = Readonly<{
   pointerOrigin: Offset;
   /** 掴んだ時点の対象の位置。位置を書けない対象なら `none`。 */
   grabbedAt: Option<Offset>;
+  /**
+   * 掴んだ時点の辺のスナップの組（`moving` は掴んだ時点の矩形）。`hold` の直後と、掴んだ
+   * 時点の矩形を測れなかったときは `none`。揃え先が無い対象（フロー配置）では `stationary`
+   * が空の組になる。
+   *
+   * 揃え先はリサイズしても動かないものに絞っている（`ResizableSelection.snapTargetNames`）
+   * ので、動かすたびには測り直さない。
+   */
+  snapFrom: Option<SideSnap>;
 }>;
 
 /**
@@ -136,6 +154,7 @@ export type NodeResize =
 const UnresizableSelection: ResizableSelection = {
   lengths: [],
   origin: Option.none,
+  snapTargetNames: [],
 };
 
 /**
@@ -346,12 +365,17 @@ export const NodeResize = {
   },
 
   /**
-   * 選択中の artboard / ノードの、掴める軸のハンドルと掴んだ時点の位置
+   * 選択中の artboard / ノードの、掴める軸のハンドルと掴んだ時点の位置と揃え先
    * （docs/06-ui.md「リサイズハンドル」）。
    *
+   * 揃え先は、artboard なら他の artboard のうち幅を変えても動かないもの
+   * （`ArrangedArtboard.isShiftedByWidth` を外す）、`placement: "absolute"` のノードなら
+   * 今の親と、その直下にある自分以外の子（孫は含めない。絶対配置はフローから外れるので、
+   * 親の大きさにも兄弟の配置にも関わらない）。
+   *
    * @param selection ハンドルを出す対象を決める、ドキュメントと選択の対
-   * @returns 掴める軸のハンドルと、ドキュメントへ書ける今の位置。単一選択でなければ
-   *   掴める軸が空
+   * @returns 掴める軸のハンドルと、ドキュメントへ書ける今の位置と、揃え先の名前。単一選択
+   *   でなければ掴める軸も揃え先も空
    */
   resizable(selection: DocumentSelection): ResizableSelection {
     const selected = DocumentSelection.singleName(selection);
@@ -365,6 +389,11 @@ export const NodeResize = {
       return {
         lengths: artboardHandles(artboards[index]),
         origin: Option.some(ArrangedArtboard.positionAt(artboards, index)),
+        snapTargetNames: artboards
+          .filter((_, other) =>
+            isStillWhileResizing(artboards, { resized: index, other }),
+          )
+          .map((artboard) => artboard.name),
       };
     }
     const node = DesignDocument.findNode(selection.document, name);
@@ -376,6 +405,15 @@ export const NodeResize = {
       lengths: nodeHandles(node.value),
       origin: Option.map(placement, (child) =>
         Placement.offset(child.placement),
+      ),
+      snapTargetNames: Option.unwrapOr(
+        Option.flatMap(placement, (child) =>
+          parentWithSiblingNames(selection.document, {
+            name,
+            parentName: child.parentName,
+          }),
+        ),
+        [],
       ),
     };
   },
@@ -396,7 +434,25 @@ export const NodeResize = {
     grip: ResizeGrip,
     pointerOrigin: Offset,
   ): ResizeHold {
-    return { grip, pointerOrigin, grabbedAt: resizable.origin };
+    return {
+      grip,
+      pointerOrigin,
+      grabbedAt: resizable.origin,
+      snapFrom: Option.none,
+    };
+  },
+
+  /**
+   * 掴んだものに、掴んだ時点の辺のスナップの組を載せる。載せると、掴んだ辺が揃え先の辺の
+   * 近くで吸い付く（docs/06-ui.md「リサイズハンドル」の辺のスナップ）。
+   *
+   * @param held 掴んだもの
+   * @param snap 掴んだ時点の矩形（`moving`）と、`ResizableSelection.snapTargetNames` の
+   *   揃え先の実測
+   * @returns その組を載せた掴み
+   */
+  withSideSnap(held: ResizeHold, snap: SideSnap): ResizeHold {
+    return { ...held, snapFrom: Option.some(snap) };
   },
 
   /**
@@ -459,7 +515,8 @@ export const NodeResize = {
     if (resize.kind !== "resizing") {
       return Option.none;
     }
-    const moved = Offset.delta(resize.pointerOrigin, pointer);
+    const pointerMoved = Offset.delta(resize.pointerOrigin, pointer);
+    const moved = Offset.add(pointerMoved, snapOffset(resize, pointerMoved));
     // 先頭を分けて組み立てるのは、`map` だと並びが空になりうる型へ落ちるため
     const [first, ...rest] = ResizeGrip.grabs(resize.grip);
     const resized: readonly [ResizedLength, ...ResizedLength[]] = [
@@ -500,6 +557,84 @@ export const NodeResize = {
     return resize.kind === "resized";
   },
 } as const;
+
+/**
+ * その artboard が、並びの中の 1 枚をリサイズしても動かない揃え先になるか。
+ *
+ * 高さだけを変えるときも、幅につられて動くものを外す。揃え先は掴んだ時点に 1 回だけ決め、
+ * 角では幅と高さを同時に変えるため。
+ *
+ * @param artboards artboard の並び（`.dcmp` の並び順）
+ * @param pair リサイズする artboard（`resized`）と、揃え先になるかを知りたい artboard
+ *   （`other`）の並びの中の位置
+ * @returns 自分自身でなく、幅につられて動くものでもなければ `true`
+ */
+function isStillWhileResizing(
+  artboards: readonly Artboard[],
+  pair: Readonly<{ resized: number; other: number }>,
+): boolean {
+  if (pair.other === pair.resized) {
+    return false;
+  }
+  return !ArrangedArtboard.isShiftedByWidth(artboards, pair);
+}
+
+/**
+ * 今の親と、その直下にある自分以外の子の名前。
+ *
+ * @param document 引き先になるドキュメント
+ * @param placed 自分の名前と、今の親の名前
+ * @returns 親を先に、あとは子の並び順。親が子の並びを持たなければ `none`
+ */
+function parentWithSiblingNames(
+  document: DesignDocument,
+  placed: Readonly<{ name: string; parentName: string }>,
+): Option<readonly string[]> {
+  return Option.map(
+    DesignDocument.findChildren(document, placed.parentName),
+    (children) => [
+      placed.parentName,
+      ...children
+        .map((child) => child.name)
+        .filter((sibling) => sibling !== placed.name),
+    ],
+  );
+}
+
+/**
+ * 掴んだ辺を揃え先の辺へ寄せる量。軸ごとに、その軸で掴んだ辺だけを見る。
+ *
+ * 行き先の矩形は掴んだ時点の矩形を移動量だけずらして作る。見るのは掴んだ辺だけなので、
+ * 反対側の辺が留まっていることは寄せ量に効かない。
+ *
+ * 回転したノードでは実測が軸に平行な外接矩形になるため、寄せの当たりが回る前の形とは
+ * 変わる（ノードの移動と同じ。happy-dom はレイアウトを持たないのでテストには出ない）。
+ *
+ * @param held 掴んでいるもの
+ * @param moved 掴んでからのポインタの移動量（画面上の px）
+ * @returns 寄せ量（画面上の px）。組が載っていない / 掴んだ辺が閾値に届かない軸は 0
+ */
+function snapOffset(held: ResizeHold, moved: Offset): Offset {
+  if (!Option.isSome(held.snapFrom)) {
+    return Offset.Origin;
+  }
+  const from = held.snapFrom.value;
+  const snap = SideSnap.create(
+    CanvasBounds.movedBy(from.moving, moved),
+    from.stationary,
+  );
+  return ResizeGrip.grabs(held.grip).reduce<Offset>(
+    (offset, grab) =>
+      Offset.add(
+        offset,
+        axisOffset(
+          grab.length.axis,
+          SideSnap.toEdgeShift(snap, grab.length.axis, grab.end),
+        ),
+      ),
+    Offset.Origin,
+  );
+}
 
 /** 掴んだ 1 軸ぶんの結果。新しい長さと、そのために辺が動いた量。 */
 type ResizedLength = Readonly<{
@@ -562,7 +697,16 @@ function placedPosition(
  * @returns その軸だけが動く差
  */
 function shiftOffset(resized: ResizedLength): Offset {
-  return resized.length.axis === Axes.Width
-    ? { x: resized.shift, y: 0 }
-    : { x: 0, y: resized.shift };
+  return axisOffset(resized.length.axis, resized.shift);
+}
+
+/**
+ * 1 軸に沿った量を平面の差にする。
+ *
+ * @param axis 量が沿う軸
+ * @param amount その軸に沿った量
+ * @returns その軸だけが動く差
+ */
+function axisOffset(axis: Axis, amount: number): Offset {
+  return axis === Axes.Width ? { x: amount, y: 0 } : { x: 0, y: amount };
 }
