@@ -1,8 +1,9 @@
-import { screen, within } from "@testing-library/react";
+import { within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { SampleDocumentWithDeepBranch } from "@/features/editor/__tests__/sample-document";
 import {
+  hasNoTextInlineEditorField,
   renderedElement,
   textInlineEditorField,
 } from "@/features/editor/features/canvas/__tests__";
@@ -71,7 +72,7 @@ test("掘りきる前のダブルクリックでは入力欄は出ない", async
 
   await userEvent.dblClick(renderedElement(canvasPane(), "deep-title"));
 
-  expect(screen.queryByRole("textbox", { name: "文言を編集" })).toBeNull();
+  expect(hasNoTextInlineEditorField()).toBe(true);
 });
 
 test("確定したあと 1 回戻すと、確定する前の文言に戻る", async () => {

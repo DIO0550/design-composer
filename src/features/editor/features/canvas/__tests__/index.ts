@@ -9,6 +9,7 @@ export {
   canvasContent,
   canvasSurface,
   canvasTransform,
+  hasNoTextInlineEditorField,
   highlightedNames,
   renderedElement,
   textInlineEditorField,

@@ -46,9 +46,19 @@ export function canvasSurface(): HTMLElement {
   return screen.getByTestId("canvas-surface");
 }
 
+/** Text の文言を書き換える入力欄の名前（`text-inline-editor` の `aria-label`）。 */
+const TextInlineEditorFieldName = "文言を編集";
+
 /** 描かれた文言の上へ重ねて出ている、Text の文言を書き換える入力欄。 */
 export function textInlineEditorField(): HTMLInputElement {
-  return screen.getByRole("textbox", { name: "文言を編集" });
+  return screen.getByRole("textbox", { name: TextInlineEditorFieldName });
+}
+
+/** Text の文言を書き換える入力欄が出ていないか。 */
+export function hasNoTextInlineEditorField(): boolean {
+  return (
+    screen.queryByRole("textbox", { name: TextInlineEditorFieldName }) === null
+  );
 }
 
 /**
