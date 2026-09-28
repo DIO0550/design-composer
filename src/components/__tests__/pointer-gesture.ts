@@ -16,6 +16,21 @@ const PointerId = 1;
 /** 画面上の位置。 */
 export type PointerPoint = Readonly<{ x: number; y: number }>;
 
+/** 操作と一緒に押されている修飾キー（コマンドキーにあたる 2 つだけを見分ける）。 */
+export type PressedModifier = "none" | "ctrl" | "meta";
+
+/**
+ * 押されている修飾キーを、イベントが持つ修飾キーの組へ読み替える。
+ *
+ * @param pressed 押されている修飾キー
+ * @returns イベントへ載せる `ctrlKey` / `metaKey`
+ */
+export function modifierKeysOf(
+  pressed: PressedModifier,
+): Readonly<{ ctrlKey: boolean; metaKey: boolean }> {
+  return { ctrlKey: pressed === "ctrl", metaKey: pressed === "meta" };
+}
+
 /**
  * ポインタを押す。
  *
@@ -40,11 +55,23 @@ export function pressPointer(
   });
 }
 
-export function movePointer(element: Element, to: PointerPoint): void {
+/**
+ * ポインタを動かす。
+ *
+ * @param element 動かした先の要素
+ * @param to 動かした先の位置
+ * @param pressed 動かしている間に押されている修飾キー。既定は押していない
+ */
+export function movePointer(
+  element: Element,
+  to: PointerPoint,
+  pressed: PressedModifier = "none",
+): void {
   fireEvent.pointerMove(element, {
     pointerId: PointerId,
     clientX: to.x,
     clientY: to.y,
+    ...modifierKeysOf(pressed),
   });
 }
 

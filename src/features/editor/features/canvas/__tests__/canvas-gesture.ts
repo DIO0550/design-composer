@@ -11,9 +11,15 @@ import type { Offset } from "@/domains/unit/offset";
  * つのはホイール（キャンバス固有）だけ。
  */
 
+import {
+  modifierKeysOf,
+  type PressedModifier,
+} from "@/components/__tests__/pointer-gesture";
+
 export {
   drag,
   movePointer,
+  type PressedModifier,
   pressPointer,
   releasePointer,
 } from "@/components/__tests__/pointer-gesture";
@@ -31,9 +37,6 @@ export function releaseSpace(): void {
   fireEvent.keyUp(globalThis.document, { code: "Space", key: " " });
 }
 
-/** ホイールと一緒に押されている修飾キー。 */
-export type WheelModifier = "none" | "ctrl" | "meta";
-
 /**
  * ホイールを回す。
  * happy-dom の `WheelEvent` は `UIEvent` 派生で修飾キーを持たないため、
@@ -42,7 +45,7 @@ export type WheelModifier = "none" | "ctrl" | "meta";
 export function wheel(
   element: Element,
   delta: Offset,
-  modifier: WheelModifier,
+  modifier: PressedModifier,
 ): void {
   const event = new WheelEvent("wheel", {
     deltaX: delta.x,
@@ -50,7 +53,8 @@ export function wheel(
     bubbles: true,
     cancelable: true,
   });
-  Object.defineProperty(event, "ctrlKey", { value: modifier === "ctrl" });
-  Object.defineProperty(event, "metaKey", { value: modifier === "meta" });
+  const keys = modifierKeysOf(modifier);
+  Object.defineProperty(event, "ctrlKey", { value: keys.ctrlKey });
+  Object.defineProperty(event, "metaKey", { value: keys.metaKey });
   fireEvent(element, event);
 }

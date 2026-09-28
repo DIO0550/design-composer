@@ -18,6 +18,7 @@ import {
 } from "@/features/editor/features/canvas/__tests__/canvas-elements";
 import {
   movePointer,
+  type PressedModifier,
   pressPointer,
   releasePointer,
 } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
@@ -238,10 +239,15 @@ export function drawnAt(name: string, bounds: CanvasBounds): HTMLElement {
  *
  * @param name 掴むノードの名前
  * @param by 画面上で運ぶ量
+ * @param pressed 運んでいる間に押している修飾キー。既定は押していない
  */
-export function carryNode(name: string, by: Offset): void {
+export function carryNode(
+  name: string,
+  by: Offset,
+  pressed: PressedModifier = "none",
+): void {
   pressPointer(drawn(name), { x: 100, y: 100 });
-  movePointer(drawn(name), { x: 100 + by.x, y: 100 + by.y });
+  movePointer(drawn(name), { x: 100 + by.x, y: 100 + by.y }, pressed);
 }
 
 /**
@@ -250,9 +256,14 @@ export function carryNode(name: string, by: Offset): void {
  *
  * @param name 掴むノードの名前
  * @param by 画面上で運ぶ量
+ * @param pressed 運んでいる間に押している修飾キー。既定は押していない
  */
-export function dragNode(name: string, by: Offset): void {
-  carryNode(name, by);
+export function dragNode(
+  name: string,
+  by: Offset,
+  pressed: PressedModifier = "none",
+): void {
+  carryNode(name, by, pressed);
   releasePointer(drawn(name), { x: 100 + by.x, y: 100 + by.y });
 }
 
