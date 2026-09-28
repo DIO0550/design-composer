@@ -1,7 +1,8 @@
-import { fireEvent, screen } from "@testing-library/react";
+import { fireEvent } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
 import type { DocumentSelection } from "@/domains/session/document-selection";
 import { SelectionDigs } from "@/domains/session/selection-dig";
+import { canvasSurface } from "@/features/editor/features/canvas/__tests__/canvas-elements";
 import {
   movePointer,
   pressPointer,
@@ -161,7 +162,7 @@ test("運んでいる途中でキャンバスの外へ出ると座標は動か�
 test("倍率を上げても、動く量は画面上ではなくドキュメント上の px になる", () => {
   const onRepositionNode = vi.fn();
   renderCanvas({ selection: setupSelection(), onRepositionNode });
-  wheel(screen.getByTestId("canvas-surface"), { x: 0, y: -100 }, "ctrl");
+  wheel(canvasSurface(), { x: 0, y: -100 }, "ctrl");
 
   /*
    * 1.2 倍で見ているとき、画面上の (34, -13) はドキュメント上の
@@ -253,7 +254,7 @@ test("親をまたいで離すと、届く座標は 2 つの親の左上のず�
 test("倍率を上げると、親の左上のずれもドキュメント上の px へ割り戻される", () => {
   const onRepositionNode = vi.fn();
   renderCanvas({ selection: setupSelection(), onRepositionNode });
-  wheel(screen.getByTestId("canvas-surface"), { x: 0, y: -100 }, "ctrl");
+  wheel(canvasSurface(), { x: 0, y: -100 }, "ctrl");
   drawnApart();
 
   dragBadgeOnto(drawn("settings"));
@@ -318,7 +319,7 @@ test("運んでいる間、掴んだノードは離す位置まで見た目だ�
 
 test("倍率を上げても、見た目の移動量は画面上ではなくドキュメント上の px になる", () => {
   renderCanvas({ selection: setupSelection() });
-  wheel(screen.getByTestId("canvas-surface"), { x: 0, y: -100 }, "ctrl");
+  wheel(canvasSurface(), { x: 0, y: -100 }, "ctrl");
 
   // 1.2 倍で見ているとき、画面上の (34, -13) はドキュメント上の (28.33…, -10.83…)。
   // 丸めた行き先から逆算するので、見た目のずれも確定後と同じ (28, -11) になる

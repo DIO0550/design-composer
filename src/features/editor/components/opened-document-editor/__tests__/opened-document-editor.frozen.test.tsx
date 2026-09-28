@@ -4,6 +4,10 @@ import { expect, test } from "vitest";
 import { rowNames } from "@/components/__tests__/row-names";
 import { rightPaneHeading } from "@/features/editor/__tests__/right-pane-heading";
 import {
+  canvasContent,
+  canvasTransform,
+} from "@/features/editor/features/canvas/__tests__";
+import {
   breakFileExternally,
   canvasPane,
   fixFileExternally,
@@ -68,7 +72,7 @@ test("ファイルが壊れると、キャンバスの中身が操作を受け�
 
   await breakFileExternally(fake);
 
-  expect(screen.getByTestId("canvas-content").hasAttribute("inert")).toBe(true);
+  expect(canvasContent().hasAttribute("inert")).toBe(true);
 });
 
 /*
@@ -158,9 +162,7 @@ test("凍結中も倍率は操作できる", async () => {
     within(zoomToolbar()).getByRole("button", { name: "拡大" }),
   );
 
-  expect(
-    screen.getByTestId("canvas-content").getAttribute("style") ?? "",
-  ).toContain("scale(1.2)");
+  expect(canvasTransform()).toContain("scale(1.2)");
 });
 
 test("ファイルが直ると凍結が解けて通常表示に戻る", async () => {

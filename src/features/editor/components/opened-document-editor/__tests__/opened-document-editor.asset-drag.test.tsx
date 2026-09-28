@@ -7,6 +7,7 @@ import {
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
 import {
+  canvasSurface,
   movePointer,
   pressPointer,
   releasePointer,
@@ -110,7 +111,7 @@ test("受け入れ先が無い場所で離しても木は変わらない", async
   await goTo(LeftPaneViews.Assets);
 
   // artboard の外（キャンバスの余白）には受け入れられる親が無い
-  const surface = screen.getByTestId("canvas-surface");
+  const surface = canvasSurface();
   pressPointer(paletteRow("card"), { x: 100, y: 100 });
   movePointer(surface, { x: 300, y: 150 });
   releasePointer(surface, { x: 300, y: 150 });

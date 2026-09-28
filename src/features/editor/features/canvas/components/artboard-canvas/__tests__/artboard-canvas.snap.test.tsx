@@ -1,5 +1,5 @@
-import { screen } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
+import { canvasSurface } from "@/features/editor/features/canvas/__tests__/canvas-elements";
 import { wheel } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
 import {
   carryNode,
@@ -85,7 +85,7 @@ test("倍率を上げても、画面上で同じだけ近づけば辺に吸い�
   const onRepositionNode = vi.fn();
   renderCanvas({ selection: setupSiblings(), onRepositionNode });
   drawnApart();
-  wheel(screen.getByTestId("canvas-surface"), { x: 0, y: -100 }, "ctrl");
+  wheel(canvasSurface(), { x: 0, y: -100 }, "ctrl");
 
   /*
    * 1.2 倍で見ているとき、`badge` の左辺は画面上の 148 にいる。105 運ぶと 253 で、
