@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { type PointerEvent, useState } from "react";
+import { PointerButton } from "@/libs/dom-event";
 import type { IndexMove } from "@/types/IndexMove";
 import { Option } from "@/utils/Option";
 import { ReorderDrag } from "@/utils/ReorderDrag";
 
 /** 行に配る props。掴む口と、ポインタが入ったことを伝える口。 */
 export type RowProps = Readonly<{
-  onPointerDown: () => void;
+  onPointerDown: (event: PointerEvent<HTMLElement>) => void;
   onPointerEnter: () => void;
 }>;
 
@@ -38,7 +39,16 @@ export function useReorderDrag(onReorder: (move: IndexMove) => void): {
   return {
     drag,
     rowProps: (index) => ({
-      onPointerDown: () => setDrag(ReorderDrag.grab(index)),
+      /*
+       * 主ボタン以外では掴まない。右クリックはポインタの位置へメニューを出すので、
+       * 離した通知がメニューに吸われて並びへ届かず、行が掴まれたまま残る。
+       */
+      onPointerDown: (event) => {
+        if (!PointerButton.isPrimary(event)) {
+          return;
+        }
+        setDrag(ReorderDrag.grab(index));
+      },
       onPointerEnter: () =>
         setDrag((current) => ReorderDrag.enter(current, index)),
     }),
