@@ -5,10 +5,6 @@ import { Result } from "@/utils/Result";
 import { DesignDocument } from "../index";
 import { documentWithOneArtboard } from "./artboard-edit-setup";
 
-function artboardNames(document: DesignDocument): readonly string[] {
-  return document.artboards.map((artboard) => artboard.name);
-}
-
 test("artboard を末尾へ挿すと既にある1枚の後ろに並ぶ", () => {
   const document = documentWithOneArtboard();
 
@@ -20,7 +16,10 @@ test("artboard を末尾へ挿すと既にある1枚の後ろに並ぶ", () => {
     ),
   );
 
-  expect(artboardNames(added)).toEqual(["home", "artboard"]);
+  expect(DesignDocument.collectArtboardNames(added)).toEqual([
+    "home",
+    "artboard",
+  ]);
 });
 
 test("追加直後の artboard は子を持たない", () => {
@@ -62,7 +61,7 @@ test("名前で指したものがノードのときは載せている artboard �
     DesignDocument.remove(documentWithOneArtboard(), "home-title"),
   );
 
-  expect(artboardNames(removed)).toEqual(["home"]);
+  expect(DesignDocument.collectArtboardNames(removed)).toEqual(["home"]);
 });
 
 test("名前で指したものがノードのときはそのノードだけが消える", () => {
