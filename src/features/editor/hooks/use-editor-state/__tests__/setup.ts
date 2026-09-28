@@ -1,3 +1,4 @@
+import { screen } from "@testing-library/react";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
@@ -13,4 +14,13 @@ export function homeChildNames(state: EditorState): readonly string[] {
   return Option.unwrap(
     DesignDocument.findChildren(EditorState.document(state), "home"),
   ).map((child) => child.name);
+}
+
+/**
+ * 器が `children` に出している `home` の子の名前（カンマ区切り）。
+ *
+ * @returns 画面に出ている文字列。子が居なければ空文字
+ */
+export function childNamesText(): string {
+  return screen.getByTestId("children").textContent ?? "";
 }
