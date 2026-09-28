@@ -169,3 +169,18 @@ export const SampleDocumentWithSameComponentInstances = DesignDocument.create({
     }),
   ],
 });
+
+/**
+ * 部品定義 `card`（Box）を 1 つ持ち、`home` の直下に Text の `title` だけが並ぶドキュメント。
+ */
+export const DocumentWithCardComponent = DesignDocument.create({
+  components: { card: { type: "Box" } },
+  artboards: [
+    {
+      name: "home",
+      width: 375,
+      height: 812,
+      children: [{ name: "title", type: "Text" }],
+    },
+  ],
+});
