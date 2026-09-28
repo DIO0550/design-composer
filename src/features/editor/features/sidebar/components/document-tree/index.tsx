@@ -13,9 +13,9 @@ import { DocumentSelection } from "@/domains/session/document-selection";
 import { NameFilter } from "@/domains/session/name-filter";
 import { Selection, type SelectionKind } from "@/domains/session/selection";
 import { RowNameField } from "@/features/editor/features/sidebar/components/row-name-field";
-import type { OpenRowContextMenu } from "@/features/editor/features/sidebar/types/LeftPaneContextMenuActions";
+import type { LeftPaneNodeActions } from "@/features/editor/features/sidebar/types/LeftPaneNodeActions";
 import type { LeftPaneRenameActions } from "@/features/editor/features/sidebar/types/LeftPaneRenameActions";
-import { RowContextMenuEvent } from "@/features/editor/features/sidebar/utils/RowContextMenuEvent";
+import { ClientPoint } from "@/libs/dom-event";
 import { Option } from "@/utils/Option";
 
 /** 文言を読む prop。Text のスキーマが宣言している名前に限る。 */
@@ -45,7 +45,7 @@ type RowContext = Readonly<{
   /** 名前を絞る条件。絞っていなければ不在 */
   filter: Option<NameFilter>;
   onSelect: (name: string) => void;
-  onOpenContextMenu: OpenRowContextMenu;
+  onOpenContextMenu: LeftPaneNodeActions["openContextMenu"];
   rename: TreeRename;
 }>;
 
@@ -149,7 +149,7 @@ function SelectableName({
   isSelected: boolean;
   onSelect: (name: string) => void;
   onStartRenaming: (name: string) => void;
-  onOpenContextMenu: OpenRowContextMenu;
+  onOpenContextMenu: LeftPaneNodeActions["openContextMenu"];
 }>) {
   return (
     <button
@@ -158,7 +158,10 @@ function SelectableName({
       aria-current={isSelected}
       onClick={() => onSelect(name)}
       onDoubleClick={() => onStartRenaming(name)}
-      onContextMenu={RowContextMenuEvent.handlerFor(name, onOpenContextMenu)}
+      onContextMenu={(event) => {
+        event.preventDefault();
+        onOpenContextMenu(name, ClientPoint.fromEvent(event));
+      }}
       className="flex min-w-0 flex-1 items-center gap-1.5 pr-2 text-left"
     >
       {Option.isSome(marks.glyph) ? (
@@ -285,7 +288,7 @@ export function DocumentTree({
   onSelect: (name: string) => void;
   onReorder: (from: ChildPosition, toIndex: number) => void;
   /** 行を右クリックしたときに、そのノードの名前と押した窓の座標を伝える。 */
-  onOpenContextMenu: OpenRowContextMenu;
+  onOpenContextMenu: LeftPaneNodeActions["openContextMenu"];
   renameActions: LeftPaneRenameActions;
 }>) {
   const current = DocumentSelection.currentArtboard(selection);

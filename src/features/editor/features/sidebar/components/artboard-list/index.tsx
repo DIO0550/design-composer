@@ -5,10 +5,9 @@ import type { Artboard } from "@/domains/dcmp/artboard";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { RowNameField } from "@/features/editor/features/sidebar/components/row-name-field";
 import type { LeftPaneArtboardActions } from "@/features/editor/features/sidebar/types/LeftPaneArtboardActions";
-import type { OpenRowContextMenu } from "@/features/editor/features/sidebar/types/LeftPaneContextMenuActions";
 import type { LeftPaneRenameActions } from "@/features/editor/features/sidebar/types/LeftPaneRenameActions";
-import { RowContextMenuEvent } from "@/features/editor/features/sidebar/utils/RowContextMenuEvent";
 import { type RowProps, useReorderDrag } from "@/hooks/use-reorder-drag";
+import { ClientPoint } from "@/libs/dom-event";
 import { Option } from "@/utils/Option";
 import { type DropSide, ReorderDrag } from "@/utils/ReorderDrag";
 
@@ -100,7 +99,7 @@ function ArtboardRow({
   /** 掴む口と、ポインタが入ったことを伝える口。絞った並びでは配られないので不在 */
   rowProps: Option<RowProps>;
   onSelect: (name: string) => void;
-  onOpenContextMenu: OpenRowContextMenu;
+  onOpenContextMenu: LeftPaneArtboardActions["openContextMenu"];
   renameActions: LeftPaneRenameActions;
 }>) {
   if (isRenaming) {
@@ -130,10 +129,10 @@ function ArtboardRow({
         aria-current={isCurrent}
         onClick={() => onSelect(artboard.name)}
         onDoubleClick={() => renameActions.startAt(artboard.name)}
-        onContextMenu={RowContextMenuEvent.handlerFor(
-          artboard.name,
-          onOpenContextMenu,
-        )}
+        onContextMenu={(event) => {
+          event.preventDefault();
+          onOpenContextMenu(artboard.name, ClientPoint.fromEvent(event));
+        }}
         className={`flex min-w-0 flex-1 items-center gap-1.5 rounded px-2 py-1 text-left ${
           // 押せる範囲を示す hover と、今の 1 枚を示す色を重ねない
           isCurrent ? "bg-blue-100 text-blue-900" : "hover:bg-gray-100"
@@ -177,7 +176,6 @@ export function ArtboardList({
   selection,
   renaming,
   onSelect,
-  onOpenContextMenu,
   artboardActions,
   renameActions,
 }: Readonly<{
@@ -186,8 +184,6 @@ export function ArtboardList({
   /** 今その名前を編集しているもの。編集していなければ不在 */
   renaming: Option<string>;
   onSelect: (name: string) => void;
-  /** 行を右クリックしたときに、その artboard の名前と押した窓の座標を伝える。 */
-  onOpenContextMenu: OpenRowContextMenu;
   artboardActions: LeftPaneArtboardActions;
   renameActions: LeftPaneRenameActions;
 }>) {
@@ -232,7 +228,7 @@ export function ArtboardList({
                 isReorderable ? Option.some(rowProps(index)) : Option.none
               }
               onSelect={onSelect}
-              onOpenContextMenu={onOpenContextMenu}
+              onOpenContextMenu={artboardActions.openContextMenu}
               renameActions={renameActions}
             />
           ))}

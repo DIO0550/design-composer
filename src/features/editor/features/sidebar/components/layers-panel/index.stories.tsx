@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
 import { LeftPaneShell } from "@/components/__stories__/left-pane-shell";
-import { sampleContextMenuActions } from "@/features/editor/features/sidebar/__stories__/sample-context-menu-actions";
 import { sampleRenameActions } from "@/features/editor/features/sidebar/__stories__/sample-rename-actions";
 import { sampleSidebarSelection } from "@/features/editor/features/sidebar/__stories__/sample-sidebar-document";
 import { Option } from "@/utils/Option";
@@ -23,10 +22,9 @@ const meta = {
   args: {
     selection: sampleSidebarSelection(),
     renaming: Option.none,
-    artboard: { add: fn(), reorder: fn() },
-    node: { select: fn(), reorder: fn() },
+    artboard: { add: fn(), reorder: fn(), openContextMenu: fn() },
+    node: { select: fn(), reorder: fn(), openContextMenu: fn() },
     rename: sampleRenameActions(),
-    contextMenu: sampleContextMenuActions(),
   },
 } satisfies Meta<typeof LayersPanel>;
 

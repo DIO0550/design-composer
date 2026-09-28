@@ -27,8 +27,11 @@ function renderList(renaming: Option<string>): ReturnType<typeof vi.fn> {
       selection={selection}
       renaming={renaming}
       onSelect={vi.fn()}
-      onOpenContextMenu={onOpenContextMenu}
-      artboardActions={{ add: vi.fn(), reorder: vi.fn() }}
+      artboardActions={{
+        add: vi.fn(),
+        reorder: vi.fn(),
+        openContextMenu: onOpenContextMenu,
+      }}
       renameActions={spyRenameActions()}
     />,
   );

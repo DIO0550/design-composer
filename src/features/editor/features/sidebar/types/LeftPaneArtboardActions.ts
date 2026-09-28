@@ -1,3 +1,4 @@
+import type { Offset } from "@/domains/unit/offset";
 import type { IndexMove } from "@/types/IndexMove";
 
 /**
@@ -13,4 +14,6 @@ export type LeftPaneArtboardActions = Readonly<{
   add: () => void;
   /** 行を運んだときに、今の位置と移す先を伝える。 */
   reorder: (move: IndexMove) => void;
+  /** 行を右クリックしたときに、その名前と押した窓の座標を伝える（凍結中の扱いは `LeftPaneNodeActions`）。 */
+  openContextMenu: (name: string, at: Offset) => void;
 }>;

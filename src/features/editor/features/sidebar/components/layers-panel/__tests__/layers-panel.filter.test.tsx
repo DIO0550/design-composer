@@ -4,7 +4,6 @@ import { dragRowNamed } from "@/components/__tests__/row-drag";
 import { rowNames } from "@/components/__tests__/row-names";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { DocumentSelection } from "@/domains/session/document-selection";
-import { spyContextMenuActions } from "@/features/editor/features/sidebar/__tests__/context-menu-actions";
 import { spyRenameActions } from "@/features/editor/features/sidebar/__tests__/rename-actions";
 import { Option } from "@/utils/Option";
 import { LayersPanel } from "../index";
@@ -47,13 +46,13 @@ function renderPanel(
       query={query}
       selection={selection}
       renaming={Option.none}
-      artboard={{ add: vi.fn(), reorder }}
+      artboard={{ add: vi.fn(), reorder, openContextMenu: vi.fn() }}
       node={{
         select: vi.fn(),
         reorder: vi.fn(),
+        openContextMenu: vi.fn(),
       }}
       rename={spyRenameActions()}
-      contextMenu={spyContextMenuActions()}
     />,
   );
 }
@@ -115,13 +114,13 @@ test("artboard が 1 枚も無いときは、検索語を打っても artboard �
         [],
       )}
       renaming={Option.none}
-      artboard={{ add: vi.fn(), reorder: vi.fn() }}
+      artboard={{ add: vi.fn(), reorder: vi.fn(), openContextMenu: vi.fn() }}
       node={{
         select: vi.fn(),
         reorder: vi.fn(),
+        openContextMenu: vi.fn(),
       }}
       rename={spyRenameActions()}
-      contextMenu={spyContextMenuActions()}
     />,
   );
 

@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
-import { sampleContextMenuActions } from "@/features/editor/features/sidebar/__stories__/sample-context-menu-actions";
 import { sampleRenameActions } from "@/features/editor/features/sidebar/__stories__/sample-rename-actions";
 import { sampleSidebarSelection } from "@/features/editor/features/sidebar/__stories__/sample-sidebar-document";
 import { LayersPanel } from "@/features/editor/features/sidebar/components/layers-panel";
@@ -21,11 +20,13 @@ import { LeftPane } from "./index";
 const SampleNodeActions: LeftPaneNodeActions = {
   select: fn(),
   reorder: fn(),
+  openContextMenu: fn(),
 };
 
 const SampleArtboardActions: LeftPaneArtboardActions = {
   add: fn(),
   reorder: fn(),
+  openContextMenu: fn(),
 };
 
 /**
@@ -48,7 +49,6 @@ function layersView(...selected: readonly string[]): LeftPaneViewContent {
         artboard={SampleArtboardActions}
         node={SampleNodeActions}
         rename={sampleRenameActions()}
-        contextMenu={sampleContextMenuActions()}
       />
     ),
   };

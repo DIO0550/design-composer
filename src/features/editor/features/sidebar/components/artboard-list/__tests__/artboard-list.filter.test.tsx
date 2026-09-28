@@ -36,8 +36,7 @@ function renderList(listing: ArtboardListing): {
       selection={setupSelection()}
       renaming={Option.none}
       onSelect={vi.fn()}
-      onOpenContextMenu={vi.fn()}
-      artboardActions={{ add: vi.fn(), reorder }}
+      artboardActions={{ add: vi.fn(), reorder, openContextMenu: vi.fn() }}
       renameActions={spyRenameActions()}
     />,
   );

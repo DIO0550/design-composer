@@ -167,12 +167,7 @@ function EditorPanes({
             artboard={artboard}
             token={token}
             grab={assetGrab}
-            contextMenu={{
-              openForNode: (name, at) =>
-                openRowContextMenu(EditMenuTargets.Node, name, at),
-              openForArtboard: (name, at) =>
-                openRowContextMenu(EditMenuTargets.Artboard, name, at),
-            }}
+            onOpenContextMenu={openRowContextMenu}
           />
         </EditorLayout.LeftPane>
         <EditorLayout.CenterPane>
