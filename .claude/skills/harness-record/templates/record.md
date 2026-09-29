@@ -72,7 +72,7 @@
 | `レビュー（bot）` | Copilot など GitHub 上の自動レビュー | ○ |
 | `CI` | CI の失敗・報告(カバレッジ・VRT を含む) | ○ |
 | `レビュー（plan-reviewer）` | 計画検証のサブエージェント | |
-| `レビュー（<エージェント名>）` | 実装検証の観点別サブエージェント。括弧の中は指摘を返したエージェントの `name`(`レビュー（test-reviewer）` など)。代行させたときも定義の名前で書く | |
+| `レビュー（<エージェント名>）` | 実装検証の観点別サブエージェント。括弧の中は指摘を返したエージェントの `name`(`レビュー（test-reviewer）` など)。`general-purpose` に代行させたときも定義の名前で書き、代行したことは「内容」に書く | |
 | `フック` | git hooks / `.claude/hooks/` が止めた | |
 | `自己修正` | 上のどれでもなく、自分で気づいて直した | |
 
@@ -94,7 +94,7 @@
 | `react` | rules/hooks.md / rules/components.md | `effect` `state-management` `ref-guard` `composition` `nested-interactive-event-boundary` |
 | `ui` | rules/ui-verification.md | `ui-*` `vrt-blind-spot` `drag-feedback-incomplete` |
 | `over-guard` | 過剰なブロック / フォールバック(`over-guard-reviewer`) | — |
-| `plan` | `implementation-flow` フェーズ 3〜4 / `plan-reviewer` | `plan-*` `version-bump-unverified` |
+| `plan` | `implementation-flow` フェーズ 3〜4 / `plan-reviewer`(フェーズ 6 の方式は `solution-reviewer`) | `plan-*` `version-bump-unverified` |
 | `harness` | ハーネス自身(規約の矛盾・フック環境・サブエージェント制御・検査スクリプト・外部の挙動の未確認) | `rules-consistency` `docs-consistency` `subagent-control` `hook-environment*` `tooling-rule-scope-gap` `harness-process-drift` `tool-behavior-unverified` |
 | `parallel-issue-work` | 同じ Issue を 2 つ以上の PR / セッションが並行して進める形（検査は `.github/workflows/pr-closing-issue.yml` の `duplicate-issue-pr`） | — |
 | `なし` | 対応する規範が無い | — |

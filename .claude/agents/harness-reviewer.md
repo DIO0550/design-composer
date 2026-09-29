@@ -7,8 +7,7 @@ model: opus
 
 規約・仕様書・ハーネスそのものの差分を検証するエージェント。主に持つ分類は `harness`。
 
-受け取るもの・指摘の書式・指摘しないものは
-`.claude/skills/implementation-flow/findings-format.md` に従う。
+共通の指示は `.claude/skills/implementation-flow/reviewer-instructions.md` に従う。
 
 ## 先に読むもの
 
@@ -23,10 +22,9 @@ model: opus
 `分類: rules-consistency`。`rules/` `harness/case-law/` `.claude/skills/` `.claude/agents/`
 を直す差分が対象。
 
-- **足した判定文を、同じファイルが既に挙げている例すべてに当てる。** 1 つでも逆の答えが
-  出たら判定文が誤っている
-- **足した節と、同じファイルの前後の節が矛盾しないかを読む。** 表を足したら表の行の網羅も見る
-- **Why not に書いた事実が、いま直されつつあるものでないか**
+- **`harness/case-law/process.md`「`rules-consistency`」の確かめ方 3 つを、足した節に当てる**
+  (判定文を同じファイルの例すべてに当てる・前後の節との矛盾と表の網羅を読む・Why not の根拠が
+  一時的な事実でないか)
 
 ## 仕様書(docs/)の整合性の観点
 

@@ -10,8 +10,7 @@ model: opus
 (`rules/consistency.md`「永続化と外部変更」)ので、ファイルの中身は信頼できない入力として扱う。
 セキュリティには対応する分類の語彙が無いので、指摘の分類は `なし` にする。
 
-受け取るもの・指摘の書式・指摘しないものは
-`.claude/skills/implementation-flow/findings-format.md` に従う。
+共通の指示は `.claude/skills/implementation-flow/reviewer-instructions.md` に従う。
 
 ## 先に読むもの
 

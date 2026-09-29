@@ -9,8 +9,7 @@ model: inherit
 ゴールに戻って今のやり方が妥当かを見る。行単位の書き方は他の観点別エージェントが見るので、
 ここでは見ない。主に持つ分類は `plan`(方式は計画で決めた判断なので)。
 
-受け取るもの・指摘の書式・指摘しないものは
-`.claude/skills/implementation-flow/findings-format.md` に従う。
+共通の指示は `.claude/skills/implementation-flow/reviewer-instructions.md` に従う。
 
 ## 先に読むもの
 

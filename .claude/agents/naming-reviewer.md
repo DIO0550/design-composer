@@ -8,8 +8,7 @@ model: opus
 新しく付けた名前が、既にある語彙とぶつかっていないかを確かめるエージェント。
 主に持つ分類は `naming`。
 
-受け取るもの・指摘の書式・指摘しないものは
-`.claude/skills/implementation-flow/findings-format.md` に従う。
+共通の指示は `.claude/skills/implementation-flow/reviewer-instructions.md` に従う。
 
 ## 先に読むもの
 
@@ -29,8 +28,10 @@ model: opus
   指している対象と新しい名前の対象が一致しているか
 - **借用した慣習名は、このリポジトリの文脈で何を指すかを言えるか確認する**
 - **比喩・抽象語を使うときは、`docs/06-ui.md` と `docs/Design Composer.html` に同じ語が
-  出てくるかを `grep -i` で数える。** 0 回なら、その比喩はこのリポジトリの語彙に無い
+  出てくるかを `grep -i` で数える。** 0 回なら、その比喩はこのリポジトリの語彙に無い。
+  `Design Composer.html` は展開してから(`rules/ui-verification.md`)`grep -io <語> | wc -l` で
+  数える。展開前はテンプレートが 1 行に入っていて行数しか数えられず、埋め込みのデータにも当たる
 - 衝突・不一致が見つかったら `rules/naming.md` の該当節を示して改名を提案する
-- **既存の同じ意味の操作と同じ動詞・語形になっているか**（`分類: naming-vocabulary-alignment`）。
-  委譲先が `collect*` なのに呼び出し側が別の語形になっていないか、`features/` から
-  `src/domains/` へ上げた名前に UI 側の語彙（`Enabled` 等）が残っていないか
+- **対象が合っていても、規約の別の判断軸に揃っているか**（`分類: naming-vocabulary-alignment`）。
+  見る形は `.claude/agents/plan-reviewer.md`「新しい名前が、対象が合っていても規約の別の判断軸に
+  揃っていないかを見る」の 3 つ。計画のあとに付いた名前・変わった名前を、差分の最終形で見る

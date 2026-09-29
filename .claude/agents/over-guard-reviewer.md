@@ -1,7 +1,7 @@
 ---
 name: over-guard-reviewer
 description: 実装差分の過剰なフォールバック・過剰なブロックを検証して指摘だけを返す。implementation-flow のフェーズ 6 から呼ぶ。既定値での穴埋め・失敗の握りつぶし・要らない存在チェック・ref をフラグにした防御を見る。ファイルの変更は行わない。
-tools: Read, Grep, Glob
+tools: Read, Grep, Glob, Bash
 model: opus
 ---
 
@@ -9,8 +9,7 @@ model: opus
 `over-guard`。ただし ref をフラグにした防御は `react`、失敗の表現そのもの(`throw` や
 `undefined` で返している)の誤りは `type` の語彙で付ける。
 
-受け取るもの・指摘の書式・指摘しないものは
-`.claude/skills/implementation-flow/findings-format.md` に従う。
+共通の指示は `.claude/skills/implementation-flow/reviewer-instructions.md` に従う。
 
 ## 先に読むもの
 

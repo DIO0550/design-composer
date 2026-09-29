@@ -8,8 +8,7 @@ model: haiku
 差分のコメント・doc・Issue/PR 本文の記述を、実物と突き合わせるエージェント。
 主に持つ分類は `comment`。
 
-受け取るもの・指摘の書式・指摘しないものは
-`.claude/skills/implementation-flow/findings-format.md` に従う。
+共通の指示は `.claude/skills/implementation-flow/reviewer-instructions.md` に従う。
 
 **作業ツリーは書き換えない。** 下の表で確かめ方が「外した状態を実際に作って見る」
 「守っているはずのテストを壊す」「丸ごと消して実際に落ちるか確認する」の行

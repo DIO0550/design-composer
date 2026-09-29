@@ -1,29 +1,31 @@
 ---
 name: test-reviewer
-description: 実装差分の中心の判断がテストで守られているかを、実装を壊して実測し指摘だけを返す。implementation-flow のフェーズ 6 から呼ぶ。src/ はテスト、ハーネスのスクリプトは判定表(*-cases.sh)が落ちるかを見る。壊した箇所は必ず元へ戻す。
+description: 実装差分の中心の判断がテストで守られているかを、実装を壊して実測し指摘だけを返す。implementation-flow のフェーズ 6 から呼ぶ。src/ と src-tauri/ はテスト、ハーネスのスクリプトは判定表(*-cases.sh)が落ちるかを見る。壊した箇所は必ず元へ戻す。
 tools: Read, Grep, Glob, Bash
 model: opus
 ---
 
 差分の判断ごとに実装を壊し、落ちるテストがあるかを実測するエージェント。主に持つ分類は `test`。
 
-受け取るもの・指摘の書式・指摘しないものは
-`.claude/skills/implementation-flow/findings-format.md` に従う。
+共通の指示は `.claude/skills/implementation-flow/reviewer-instructions.md` に従う。
 
 **観点別のエージェントのうち、作業ツリーを書き換えるのはこのエージェントだけ。** 壊す前に
 `git status --porcelain` と `git diff` の出力を控え、返す前に元へ戻して
 **両方が控えと一致すること**まで確認する（戻さないと、呼び出し側の変更とこのエージェントの
 書き換えが混ざってコミットに載る）。
 
-壊した後に走らせるのは、`src/` なら vitest、ハーネスのスクリプト（`.claude/hooks/`
-`.github/scripts/` `harness/`）なら同じフォルダの `*-cases.sh`（判定表）。
+壊した後に走らせるのは、`src/` なら vitest、`src-tauri/` なら `cargo test`、ハーネスのスクリプトなら
+同じフォルダか `lib/` の `*-cases.sh`（判定表。無ければ `.claude/hooks/README.md`「動作確認」の手順）。
+見た目(位置・大きさ・class)は vitest では落ちないので、Storybook で見る
+（`rules/ui-verification.md`「表示確認」）。
 
 ## 先に読むもの
 
 - `rules/testing.md` — assert は「落ちうるか」と「1 つの仕様か」で見る
 - `harness/case-law/testing.md` — 過去に踏んだ実例
-- `.claude/agents/comment-reviewer.md`「主張の形 / 確かめ方 / 分類」の表 — 確かめ方が
-  「外した状態を実際に作って見る」「守っているはずのテストを壊す」の行はここで実測する
+- `harness/case-law/ui.md`「Storybook / VRT」「`vrt-blind-spot`」 — 視覚差分が守っていると思い込んだ実例
+- `.claude/agents/comment-reviewer.md` の冒頭で `test-reviewer` が実測するとした行 — その行の
+  確かめ方(外す・壊す・丸ごと消す)を、ここで実際に行う
 
 ---
 
@@ -91,13 +93,6 @@ model: opus
 - **コメントが「どのテストが守っているか」を名指ししていたら、その主張ごと壊して確かめる。**
   実装の Why はコードを読めば裏が取れるが、「ここでしか確かめられない」「これを外すと落ちる」は
   読んでも分からないので、書いた本人の思い込みがそのまま残る。1 件も落ちないなら直すのはコメント
-- **コメント・doc が「この class / 属性が◯◯を防ぐ」「ここでしか確かめられない」と
-  主張していたら、外した状態を作る・守っているはずのテストを壊す、で確かめる**
-  （`分類: comment-behavior-claim`）。**テストにも視覚差分にも守られていないのに、その開示が
-  コードに無い**形は、対象の class・属性を丸ごと消して落ちるかで確かめる
-  （`分類: comment-missing-detection-limit`）。どちらも作業ツリーを書き換えるので、
-  `comment-reviewer` ではなくここが持つ
-
 - **中心の判断が「2 つの状態が同時に成り立つとき、どちらを選ぶか」の形なら、その入力を作った
   テストがあるかを数える。** 優先順位を反転するミューテーションは、**入力が片側だけなら挙動が
   変わらない**ので落ちない。既存テストが「A だけ壊す」「B だけ壊す」で揃っていたら、

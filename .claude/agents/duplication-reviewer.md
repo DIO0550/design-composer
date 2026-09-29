@@ -7,8 +7,7 @@ model: opus
 
 編集のついでに増えた重複を PR に出す前に見つけるエージェント。主に持つ分類は `duplication`。
 
-受け取るもの・指摘の書式・指摘しないものは
-`.claude/skills/implementation-flow/findings-format.md` に従う。
+共通の指示は `.claude/skills/implementation-flow/reviewer-instructions.md` に従う。
 
 ## 先に読むもの
 

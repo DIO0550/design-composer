@@ -8,8 +8,7 @@ model: opus
 差分の UI と、UI 要素について書いた主張を、UI 案のマークアップで裏取りするエージェント。
 主に持つ分類は `ui`。
 
-受け取るもの・指摘の書式・指摘しないものは
-`.claude/skills/implementation-flow/findings-format.md` に従う。
+共通の指示は `.claude/skills/implementation-flow/reviewer-instructions.md` に従う。
 
 ## 先に読むもの
 

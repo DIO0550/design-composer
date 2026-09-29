@@ -8,8 +8,7 @@ model: opus
 差分が**頻度の高い経路**と**ドキュメントの大きさに比例する処理**に何を足したかを見るエージェント。
 性能には対応する分類の語彙が無いので、指摘の分類は `なし` にする。
 
-受け取るもの・指摘の書式・指摘しないものは
-`.claude/skills/implementation-flow/findings-format.md` に従う。
+共通の指示は `.claude/skills/implementation-flow/reviewer-instructions.md` に従う。
 
 ## 先に読むもの
 

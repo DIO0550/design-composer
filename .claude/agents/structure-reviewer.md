@@ -8,8 +8,7 @@ model: inherit
 差分の**構造**（どこに置いたか・何に依存したか・型で何を防いだか・状態をどう持ったか）を
 検証するエージェント。主に持つ分類は `ownership` `dependency` `type` `react`。
 
-受け取るもの・指摘の書式・指摘しないものは
-`.claude/skills/implementation-flow/findings-format.md` に従う。
+共通の指示は `.claude/skills/implementation-flow/reviewer-instructions.md` に従う。
 
 ## 先に読むもの
 
@@ -39,7 +38,7 @@ model: inherit
 
 ## モジュールの公開 API の観点
 
-`分類: dependency`（旧 `module-api`）。**typecheck も lint も落ちないので、見なければ通る。**
+`分類: module-api`。**typecheck も lint も落ちないので、見なければ通る。**
 
 - **deep import が入っていないか。** フォルダ外部からの import は `index.ts` 経由だけ。
   段数を数えず `python3 .claude/hooks/lib/import-rule-violations.py src` で見る
@@ -63,7 +62,7 @@ model: inherit
 
 ## 状態管理の観点
 
-`分類: react`（旧 `state-management`）。
+`分類: state-management`。
 
 - **1 つのイベントハンドラ内で複数の setter を順に呼んでいないか。** state が連動している
   サインなので、`useReducer` で 1 つの state + アクションに統合する
@@ -72,7 +71,7 @@ model: inherit
 
 ## 入れ子の対話要素とイベント境界の観点
 
-`分類: react`（旧 `nested-interactive-event-boundary`）。親(器・土台)側に張ったイベント受け口
+`分類: nested-interactive-event-boundary`。親(器・土台)側に張ったイベント受け口
 (`preventDefault` / `stopPropagation` / ドラッグ開始の判定等)が、視覚的に重なる・構造的に
 入れ子になった対話可能な子要素(入力欄・リサイズハンドル等)の意図と衝突していないかを
 確認する。typecheck・lint のどちらも「範囲」までは見ないため、実際に重なる子要素を洗い出して
