@@ -2,6 +2,7 @@
 name: harness-counter
 description: harness/records/ を集計して、分類ごとの再発(人・bot・CI へ届いた指摘)と分岐、その根拠になった指摘の要約を返す。harness-growth スキルの手順 1 から呼ぶ。記録本文は返さず結論だけを返す。ファイルの変更は行わない。
 tools: Read, Grep, Glob, Bash
+model: haiku
 ---
 
 `harness/records/` を集計し、**分岐の結論と根拠だけ**を返す。記録は増え続けるので、本文を
