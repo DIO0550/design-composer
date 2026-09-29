@@ -1,6 +1,5 @@
 import { expect, test } from "vitest";
 import { Fade } from "@/domains/__tests__/gradient-tokens";
-import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 import { TokenEditError, TokenSet } from "../index";
 
@@ -166,28 +165,35 @@ test("名前の衝突の失敗は、足そうとした種別と衝突した相�
   );
 });
 
-test("colors にだけある名前は colors を指している", () => {
-  expect(TokenSet.findPaintKind(setupTokens(), "primary")).toEqual(
-    Option.some("colors"),
-  );
+test("colors にだけある名前は colors が持っている", () => {
+  expect(TokenSet.resolvePaintName(setupTokens(), "primary")).toEqual({
+    state: "owned",
+    tokenKind: "colors",
+  });
 });
 
-test("gradients にだけある名前は gradients を指している", () => {
-  expect(TokenSet.findPaintKind(setupTokens(), "fade")).toEqual(
-    Option.some("gradients"),
-  );
+test("gradients にだけある名前は gradients が持っている", () => {
+  expect(TokenSet.resolvePaintName(setupTokens(), "fade")).toEqual({
+    state: "owned",
+    tokenKind: "gradients",
+  });
 });
 
-test("colors と gradients の両方にある名前はどちらを指しているか決まらない", () => {
+test("colors と gradients の両方にある名前はどちらが持っているか決まらない", () => {
   const tokens: TokenSet = {
     ...TokenSet.empty(),
     colors: { brand: "#3b82f6" },
     gradients: { brand: Fade },
   };
 
-  expect(TokenSet.findPaintKind(tokens, "brand")).toEqual(Option.none);
+  expect(TokenSet.resolvePaintName(tokens, "brand")).toEqual({
+    state: "conflicted",
+  });
 });
 
-test("塗り用の 2 種別のどちらにも無い名前は、他の種別にあっても塗りとしては指せない", () => {
-  expect(TokenSet.findPaintKind(setupTokens(), "sm")).toEqual(Option.none);
+test("塗り用の 2 種別のどちらも持っていない名前は、他の種別にあっても宙に浮く", () => {
+  // 入力は spacing に実在する名前。`TokenSet` 全体を見る実装ならここで owned になる
+  expect(TokenSet.resolvePaintName(setupTokens(), "sm")).toEqual({
+    state: "dangling",
+  });
 });

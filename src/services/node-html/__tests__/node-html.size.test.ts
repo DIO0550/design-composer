@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { DefaultTokenRefs } from "@/domains/__tests__/token-refs";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 import { NodeHtml } from "../index";
@@ -83,12 +84,17 @@ test("横並びの親の中で heightMode を fill にすると交差軸方向�
 
 test("子の fill は親ノードの layout に従って出し分けられる", () => {
   const compiled = Result.unwrap(
-    NodeHtml.compile({
-      name: "row",
-      type: "Box",
-      props: { layout: "row" },
-      children: [{ name: "child", type: "Box", props: { widthMode: "fill" } }],
-    }),
+    NodeHtml.compile(
+      {
+        name: "row",
+        type: "Box",
+        props: { layout: "row" },
+        children: [
+          { name: "child", type: "Box", props: { widthMode: "fill" } },
+        ],
+      },
+      DefaultTokenRefs,
+    ),
   );
 
   expect(compiled.kind === "box" && compiled.children[0].style).toEqual({
@@ -125,15 +131,18 @@ test("widthMode が fixed でも width が未指定なら幅の宣言を出力�
 
 test("自由配置の親の中では子の fill が宣言を出さない", () => {
   const compiled = Result.unwrap(
-    NodeHtml.compile({
-      name: "free",
-      type: "Box",
-      props: { layout: "free" },
-      children: [
-        { name: "child", type: "Box", props: { widthMode: "fill" } },
-        { name: "tall", type: "Box", props: { heightMode: "fill" } },
-      ],
-    }),
+    NodeHtml.compile(
+      {
+        name: "free",
+        type: "Box",
+        props: { layout: "free" },
+        children: [
+          { name: "child", type: "Box", props: { widthMode: "fill" } },
+          { name: "tall", type: "Box", props: { heightMode: "fill" } },
+        ],
+      },
+      DefaultTokenRefs,
+    ),
   );
 
   const children = compiled.kind === "box" ? compiled.children : [];
@@ -145,12 +154,17 @@ test("自由配置の親の中では子の fill が宣言を出さない", () =>
 
 test("横並びの親の中では子の fill が宣言を出す", () => {
   const compiled = Result.unwrap(
-    NodeHtml.compile({
-      name: "row",
-      type: "Box",
-      props: { layout: "row" },
-      children: [{ name: "child", type: "Box", props: { widthMode: "fill" } }],
-    }),
+    NodeHtml.compile(
+      {
+        name: "row",
+        type: "Box",
+        props: { layout: "row" },
+        children: [
+          { name: "child", type: "Box", props: { widthMode: "fill" } },
+        ],
+      },
+      DefaultTokenRefs,
+    ),
   );
 
   const children = compiled.kind === "box" ? compiled.children : [];

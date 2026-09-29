@@ -30,7 +30,7 @@ export const CompiledArtboard = {
    *
    * @param artboard 中身と大きさの出どころになる、コンパイル前の artboard
    * @param children ref 展開とコンパイルを終えた子の並び
-   * @param tokens カスタムプロパティ名の綴り方（出力層の知識なので引数で受け取る）
+   * @param tokens カスタムプロパティ名の綴り方と塗りの名前の解決（出力層の知識なので引数で受け取る）
    * @returns 中身と、大きさ・キャンバス上の位置を対にしたコンパイル結果。
    *   位置は artboard が持っていなければそのまま持たない
    */

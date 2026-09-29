@@ -105,19 +105,19 @@ function CanvasWithView(props: CanvasValues & CanvasHandlers) {
   );
 }
 
+type CanvasProps = Readonly<{ selection: DocumentSelection }> &
+  Partial<Omit<CanvasValues, "selection">> &
+  Partial<CanvasHandlers>;
+
 /**
- * キャンバスを描く。
+ * 描く値とハンドラを既定で埋めたキャンバス。
  *
  * @param props 描く値（`selection` は必須、トークンと凍結は既定あり）と、
  *   確かめたい操作だけのハンドラ
- * @returns `render` の戻り値
+ * @returns 既定を埋めたキャンバスの要素
  */
-export function renderCanvas(
-  props: Readonly<{ selection: DocumentSelection }> &
-    Partial<Omit<CanvasValues, "selection">> &
-    Partial<CanvasHandlers>,
-) {
-  return render(
+function canvasElement(props: CanvasProps) {
+  return (
     <CanvasWithView
       tokenSelection={TokenSelection.create(
         props.selection.document,
@@ -133,8 +133,25 @@ export function renderCanvas(
       onEditProp={vi.fn()}
       onOpenContextMenu={vi.fn()}
       {...props}
-    />,
+    />
   );
+}
+
+/**
+ * キャンバスを描く。
+ *
+ * @param props 描く値（`selection` は必須、トークンと凍結は既定あり）と、
+ *   確かめたい操作だけのハンドラ
+ * @returns `render` の戻り値に、同じ器のまま別の選択で描き直す `rerenderWith` を足したもの
+ */
+export function renderCanvas(props: CanvasProps) {
+  const result = render(canvasElement(props));
+  return {
+    ...result,
+    rerenderWith(selection: DocumentSelection) {
+      result.rerender(canvasElement({ ...props, selection }));
+    },
+  };
 }
 
 /**

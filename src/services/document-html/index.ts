@@ -4,7 +4,10 @@ import {
   CompiledElement,
 } from "@/domains/compiled/compiled-element";
 import { Artboard } from "@/domains/dcmp/artboard";
-import { CssDeclarations } from "@/domains/dcmp/css-declaration";
+import {
+  CssDeclarations,
+  type TokenRefs,
+} from "@/domains/dcmp/css-declaration";
 import type { DesignDocument } from "@/domains/dcmp/design-document";
 import { ExpandedNode, ExpandedNodeError } from "@/domains/dcmp/expanded-node";
 import { NodeHtml } from "@/services/node-html";
@@ -33,12 +36,14 @@ export type CompiledDocument = Readonly<{
  *
  * @param artboard コンパイル対象の artboard
  * @param document 部品の引き先になるドキュメント
+ * @param refs トークン参照の綴り方と、塗りの名前の解決
  * @returns コンパイル済みの中身と、宣言されている大きさ。
  *   ref の展開か子のコンパイルが失敗すればその失敗
  */
 function compileArtboard(
   artboard: Artboard,
   document: DesignDocument,
+  refs: TokenRefs,
 ): Result<CompiledArtboard, Error> {
   // 子のコンパイルより先に要る（`fill` の出し分けが親の向きに依存する）ので、
   // 中身の組み立てを `CompiledArtboard` へ預けたあともここに残る
@@ -49,8 +54,8 @@ function compileArtboard(
     (error) => new Error(ExpandedNodeError.message(error)),
   );
   return Result.flatMap(expanded, (nodes) =>
-    Result.map(NodeHtml.compileAll(nodes, childDirection), (children) =>
-      CompiledArtboard.fromArtboard(artboard, children, TokenCss.refs),
+    Result.map(NodeHtml.compileAll(nodes, refs, childDirection), (children) =>
+      CompiledArtboard.fromArtboard(artboard, children, refs),
     ),
   );
 }
@@ -64,9 +69,11 @@ function compileArtboard(
 function compileArtboards(
   document: DesignDocument,
 ): Result<readonly CompiledArtboard[], Error> {
+  // 塗りの解決はドキュメントのトークン一式に依るので、1 枚ごとに作り直さず先に 1 つ作る
+  const refs = TokenCss.refsFrom(document.tokens);
   const compiled: CompiledArtboard[] = [];
   for (const artboard of document.artboards) {
-    const result = compileArtboard(artboard, document);
+    const result = compileArtboard(artboard, document, refs);
     if (!Result.isOk(result)) {
       return result;
     }
@@ -79,8 +86,9 @@ function compileArtboards(
 export const DocumentHtml = {
   /**
    * ドキュメントをレンダリング可能な形へコンパイルする。出力はトークンの値に依存せず `var`
-   * 参照だけを持つため、トークンの編集はルート要素の変数の差し替えだけで全 artboard へ波及す
-   * る。
+   * 参照だけを持つため、トークンの**値**の編集はルート要素の変数の差し替えだけで全 artboard
+   * へ波及する（塗りのトークン名の増減は `background` の解決先を変えるので、そこだけは
+   * コンパイルし直す必要がある / docs/03-schema.md「塗り」）。
    *
    * @param document コンパイル対象のドキュメント
    * @returns トークンの変数と、並び順を保った artboard。artboard を 1 枚でもコンパイルでき

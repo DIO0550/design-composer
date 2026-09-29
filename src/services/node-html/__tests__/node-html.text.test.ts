@@ -1,10 +1,11 @@
 import { expect, test } from "vitest";
+import { DefaultTokenRefs } from "@/domains/__tests__/token-refs";
 import type { ExpandedNode } from "@/domains/dcmp/expanded-node";
 import { Result } from "@/utils/Result";
 import { type CompiledElement, NodeHtml } from "../index";
 
 function compile(node: ExpandedNode): CompiledElement {
-  return Result.unwrap(NodeHtml.compile(node));
+  return Result.unwrap(NodeHtml.compile(node, DefaultTokenRefs));
 }
 
 test("Text は typography トークンを各 CSS プロパティへ展開する", () => {

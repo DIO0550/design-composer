@@ -1,8 +1,10 @@
 import { screen } from "@testing-library/react";
 import { expect, test } from "vitest";
+import { Fade } from "@/domains/__tests__/gradient-tokens";
 import { DesignDocument } from "@/domains/dcmp/design-document";
+import { TokenSet } from "@/domains/dcmp/token";
 import { DocumentSelection } from "@/domains/session/document-selection";
-import { renderCanvas, selectionFromArtboards } from "./setup";
+import { drawn, renderCanvas, selectionFromArtboards } from "./setup";
 
 /** 画面に出ている artboard を、描画されている順に並べた名前。 */
 function renderedArtboardNames(): readonly string[] {
@@ -182,4 +184,38 @@ test("artboard のラベルには、その artboard 自身の大きさが出る"
   expect(
     screen.getAllByText(/^\d+ × \d+$/).map((size) => size.textContent),
   ).toStrictEqual(["360 × 240", "720 × 900"]);
+});
+
+test("塗りのトークン名が増えると、同じ artboard のままでもキャンバスの背景が描き直される", () => {
+  /*
+   * artboard の並びは同じ値のままトークンだけを差し替える。コンパイルし直す条件を
+   * 「artboard が変わったとき」に狭めると gradients の var が残り、ここが落ちる
+   * （docs/03-schema.md「塗り」: 塗りのトークン名の増減は解決先を変える）。
+   */
+  const artboards = [
+    {
+      name: "home",
+      width: 360,
+      height: 240,
+      children: [{ name: "hero", type: "Box", props: { background: "brand" } }],
+    },
+  ];
+  const gradientOnly: TokenSet = {
+    ...TokenSet.empty(),
+    gradients: { brand: Fade },
+  };
+  const selectionOf = (tokens: TokenSet): DocumentSelection =>
+    DocumentSelection.fromNames(
+      DesignDocument.create({ tokens, artboards }),
+      [],
+    );
+
+  const { rerenderWith } = renderCanvas({
+    selection: selectionOf(gradientOnly),
+  });
+  const before = drawn("hero").getAttribute("style");
+  rerenderWith(selectionOf({ ...gradientOnly, colors: { brand: "#3b82f6" } }));
+
+  expect(before).toContain("background:var(--gradients-brand)");
+  expect(drawn("hero").getAttribute("style")).not.toContain("background:");
 });

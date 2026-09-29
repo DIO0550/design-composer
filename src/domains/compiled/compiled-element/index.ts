@@ -20,7 +20,12 @@ import {
 } from "@/domains/dcmp/primitive-schema";
 import type { ResolvedProps } from "@/domains/dcmp/resolved-props";
 import { Size } from "@/domains/dcmp/size";
-import { TypographyField, TypographyToken } from "@/domains/dcmp/token";
+import {
+  type PaintNameResolution,
+  type PaintTokenKinds,
+  TypographyField,
+  TypographyToken,
+} from "@/domains/dcmp/token";
 import { Visibility } from "@/domains/dcmp/visibility";
 import { Html } from "@/utils/Html";
 import { Option } from "@/utils/Option";
@@ -47,17 +52,42 @@ const TokenPropProperties = {
 type TokenBackedProp = keyof typeof TokenPropProperties;
 
 /**
- * トークン参照 prop を `var` 参照の宣言にする。未指定の prop は宣言を出力しない (トークン
- * の値は参照しないため、トークン編集は再コンパイルなしに CSS 経由で波及する)。
+ * 塗りの名前を綴る種別。どちらの種別の var を出すかは、その名前を持っている種別で決まる
+ * (docs/03「塗り」)。
  *
- * var は指せる種別の並びの先頭の種別で綴る。colors と gradients を指せる `background` も
- * colors の var を出すので、gradients の名前を指していると参照先の無い var になる
- * （名前が属する種別で出し分ける規則は docs/03「HTML/CSS へのコンパイル規則」の表が持つ）。
+ * @param kinds その prop が指せる塗りの 2 種別。並びの先頭が既定になる
+ * @param resolution その名前がどの種別へ解決したか
+ * @returns 綴る種別。両方の種別が持っている名前では `none`（どちらが勝つかがファイルから
+ *   読めなくなるので、片方を優先して選ばない / docs/03「塗り」）
+ */
+function paintKind(
+  kinds: PaintTokenKinds,
+  resolution: PaintNameResolution,
+): Option<PaintTokenKinds[number]> {
+  const [defaultKind] = kinds;
+  switch (resolution.state) {
+    case "owned":
+      return Option.some(resolution.tokenKind);
+    case "conflicted":
+      return Option.none;
+    // 実在しない名前も既定の種別で綴る理由は docs/03「塗り」
+    case "dangling":
+      return Option.some(defaultKind);
+  }
+}
+
+/**
+ * トークン参照 prop を `var` 参照の宣言にする。未指定の prop は宣言を出力しない (トークンの
+ * 値は参照しないため、**値**の編集は再コンパイルなしに CSS 経由で波及する。塗りのトークン名
+ * の増減は解決先を変えるので再コンパイルが要る / docs/03「HTML/CSS へのコンパイル規則」)。
+ *
+ * 塗りの解決を `TokenSet` ごと受け取らないのは、この層からトークンの**値**が読めるように
+ * なり、「出力は値に依存しない」が型ではなく規律で守られる形になるため。
  *
  * @param prop 宣言にする prop 名
  * @param value その prop に設定されている値。未設定なら宣言を出さない
- * @param tokens カスタムプロパティ名の綴り方
- * @returns `var()` 参照の宣言 1 件。未設定なら空
+ * @param tokens カスタムプロパティ名の綴り方と、塗りの名前の解決
+ * @returns `var()` 参照の宣言 1 件。未設定のときと、塗りの名前が両方の種別にあるときは空
  */
 function tokenDeclarations(
   prop: TokenBackedProp,
@@ -68,8 +98,21 @@ function tokenDeclarations(
     return [];
   }
   const property = TokenPropProperties[prop];
-  const [kind] = TokenPropKinds.kindsOf(prop);
-  return [CssDeclaration.create(property, tokens.ref(kind, String(value)))];
+  const name = String(value);
+  const kinds = TokenPropKinds.kindsOf(prop);
+  if (kinds.length === 1) {
+    const [kind] = kinds;
+    return [CssDeclaration.create(property, tokens.ref(kind, name))];
+  }
+  /*
+   * 2 種別を指せるのは塗りだけ (docs/03「塗り」)。スキーマがそれ以外の組を宣言できないのは
+   * `TokenKindList` が `readonly [TokenKind] | PaintTokenKinds` だからで、ここの引数の型は
+   * その保証を受け取り直しているだけ。
+   */
+  const kind = paintKind(kinds, tokens.paintResolution(name));
+  return Option.isSome(kind)
+    ? [CssDeclaration.create(property, tokens.ref(kind.value, name))]
+    : [];
 }
 
 /**
@@ -174,7 +217,7 @@ function opacityDeclarations(
  * `TypographyToken.fields` に従うため、トークンのフィールドが増えても追従漏れが出ない。
  *
  * @param typography `typography` prop に設定されているトークン名。未設定なら宣言を出さない
- * @param tokens カスタムプロパティ名の綴り方
+ * @param tokens カスタムプロパティ名の綴り方と、塗りの名前の解決
  * @returns フィールドごとの `var()` 参照の宣言。未設定なら空
  */
 function typographyDeclarations(
@@ -255,7 +298,7 @@ export const BoxElement = {
    * @param props デフォルト解決済みの Box の props
    * @param parentDirection この Box を flex アイテムとして並べる親の向き。
    *   親を持たない位置と、親が子を並べない (`layout: free`) ときは `none`
-   * @param tokens カスタムプロパティ名の綴り方
+   * @param tokens カスタムプロパティ名の綴り方と、塗りの名前の解決
    * @returns 出力順に並べた宣言
    */
   declarations(
@@ -370,7 +413,7 @@ export const TextElement = {
    * Text の props を CSS の宣言へ写す (docs/03 の表)。
    *
    * @param props デフォルト解決済みの Text の props
-   * @param tokens カスタムプロパティ名の綴り方
+   * @param tokens カスタムプロパティ名の綴り方と、塗りの名前の解決
    * @returns 出力順に並べた宣言。`text-align` は常に含む
    */
   declarations(

@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { DefaultTokenRefs } from "@/domains/__tests__/token-refs";
 import type { ComponentSet } from "@/domains/dcmp/component";
 import { ExpandedNode } from "@/domains/dcmp/expanded-node";
 import type { RefNode } from "@/domains/dcmp/node";
@@ -7,34 +8,43 @@ import { Result } from "@/utils/Result";
 import { NodeHtml } from "../index";
 
 test("未知の type のノードはコンパイルできずエラーになる", () => {
-  const result = NodeHtml.compile({ name: "unknown", type: "Image" });
+  const result = NodeHtml.compile(
+    { name: "unknown", type: "Image" },
+    DefaultTokenRefs,
+  );
 
   expect(Result.isOk(result)).toBe(false);
 });
 
 test("子孫に未知の type があればツリー全体のコンパイルが失敗する", () => {
-  const result = NodeHtml.compile({
-    name: "root",
-    type: "Box",
-    children: [{ name: "broken", type: "Image" }],
-  });
+  const result = NodeHtml.compile(
+    {
+      name: "root",
+      type: "Box",
+      children: [{ name: "broken", type: "Image" }],
+    },
+    DefaultTokenRefs,
+  );
 
   expect(Result.isOk(result)).toBe(false);
 });
 
 test("入れ子のノードは階層を保ったままコンパイルされる", () => {
   const compiled = Result.unwrap(
-    NodeHtml.compile({
-      name: "root",
-      type: "Box",
-      children: [
-        {
-          name: "inner",
-          type: "Box",
-          children: [{ name: "label", type: "Text" }],
-        },
-      ],
-    }),
+    NodeHtml.compile(
+      {
+        name: "root",
+        type: "Box",
+        children: [
+          {
+            name: "inner",
+            type: "Box",
+            children: [{ name: "label", type: "Text" }],
+          },
+        ],
+      },
+      DefaultTokenRefs,
+    ),
   );
 
   const inner = compiled.kind === "box" ? compiled.children[0] : undefined;
@@ -48,7 +58,7 @@ test("入れ子のノードは階層を保ったままコンパイルされる",
 
 test("子を持たない Box の children は空になる", () => {
   const compiled = Result.unwrap(
-    NodeHtml.compile({ name: "box", type: "Box" }),
+    NodeHtml.compile({ name: "box", type: "Box" }, DefaultTokenRefs),
   );
 
   expect(compiled.kind === "box" && compiled.children).toEqual([]);
@@ -62,8 +72,8 @@ test("同じノードをコンパイルすると常に同じ出力になる", ()
     children: [{ name: "label", type: "Text", props: { content: "Hello" } }],
   } as const;
 
-  const first = Result.unwrap(NodeHtml.compile(node));
-  const second = Result.unwrap(NodeHtml.compile(node));
+  const first = Result.unwrap(NodeHtml.compile(node, DefaultTokenRefs));
+  const second = Result.unwrap(NodeHtml.compile(node, DefaultTokenRefs));
 
   expect(first).toEqual(second);
 });
@@ -85,7 +95,7 @@ test("部品インスタンスは展開してからコンパイルすると部�
   const instance: RefNode = { name: "save-button", ref: "primary-button" };
 
   const expanded = Result.unwrap(ExpandedNode.fromNode(instance, components));
-  const compiled = Result.unwrap(NodeHtml.compile(expanded));
+  const compiled = Result.unwrap(NodeHtml.compile(expanded, DefaultTokenRefs));
 
   expect(compiled.name).toBe("save-button");
   expect(compiled.style.background).toBe("var(--colors-primary)");
@@ -99,10 +109,13 @@ test("部品インスタンスは展開してからコンパイルすると部�
 
 test("複数のノードをまとめてコンパイルすると並び順が保たれる", () => {
   const compiled = Result.unwrap(
-    NodeHtml.compileAll([
-      { name: "first", type: "Box" },
-      { name: "second", type: "Text" },
-    ]),
+    NodeHtml.compileAll(
+      [
+        { name: "first", type: "Box" },
+        { name: "second", type: "Text" },
+      ],
+      DefaultTokenRefs,
+    ),
   );
 
   expect(compiled.map((element) => element.name)).toEqual(["first", "second"]);
@@ -112,6 +125,7 @@ test("まとめてコンパイルするときも親の向きが子へ渡る", ()
   const compiled = Result.unwrap(
     NodeHtml.compileAll(
       [{ name: "child", type: "Box", props: { widthMode: "fill" } }],
+      DefaultTokenRefs,
       Option.some("row"),
     ),
   );

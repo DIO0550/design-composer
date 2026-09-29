@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { DefaultTokenRefs } from "@/domains/__tests__/token-refs";
 import { CompiledElement } from "@/domains/compiled/compiled-element";
 import { Result } from "@/utils/Result";
 import { NodeHtml } from "../index";
@@ -164,11 +165,14 @@ test("非表示にした Box は描画から外れる", () => {
 
 test("style は style 属性へ載せられる宣言の並びに直列化できる", () => {
   const compiled = Result.unwrap(
-    NodeHtml.compile({
-      name: "box",
-      type: "Box",
-      props: { layout: "row", gap: "md", wrap: "wrap" },
-    }),
+    NodeHtml.compile(
+      {
+        name: "box",
+        type: "Box",
+        props: { layout: "row", gap: "md", wrap: "wrap" },
+      },
+      DefaultTokenRefs,
+    ),
   );
 
   expect(CompiledElement.styleText(compiled)).toBe(
