@@ -42,8 +42,8 @@ export const CanvasDom = {
   /**
    * 描かれている要素の矩形。位置も大きさもレイアウトはブラウザが行うので実測で取る。
    *
-   * 戻り値は `CanvasBounds` と同じ形だが、`libs/` は feature を import できないので型を
-   * 名指しせずに書く。形が揃っているので、呼び出し側はそのまま `CanvasBounds` として扱える。
+   * 戻り値の型は名前を付けずに書く。描かれた矩形の型はキャンバスの feature が持っており、
+   * `libs/` からは import できないため。
    *
    * @param element 測る要素（名前ではなく、`elementOf` などで引いた後の要素）
    * @returns その要素の今の client 座標の矩形
