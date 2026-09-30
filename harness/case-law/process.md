@@ -36,8 +36,9 @@
 
 **プロンプトで禁止しても守られない。** そのため対策を 2 段に置いてある。
 
-1. エージェント定義（`.claude/agents/*.md`）に「返す前に `git status --porcelain` が空である
-   ことを確認する」を書く
+1. エージェント定義（`.claude/agents/*.md`）と実装の検証の共通の指示
+   （`.claude/skills/implementation-flow/reviewer-instructions.md`）に「呼ばれた直後の
+   `git status --porcelain` を控え、返す前に控えと同じであることを確認する」を書く
 2. 呼び出し側は、**返答を読む前に `git status` を見て作業ツリーを戻す**
    （`implementation-flow`「サブエージェントの使い方」）
 

@@ -20,7 +20,7 @@
 それぞれ別の主張を持つ差分では、1 つだけ確かめると残りが素通りする。
 
 UI で消すもの 6 つ（アイコン / 読み上げ名 / 器 / 状態からの配線 / **出し分け** / 位置・大きさ）は
-`.claude/agents/implementation-reviewer.md`「テストが守っているかの観点」にある。
+`.claude/agents/test-reviewer.md`「テストが守っているかの観点」にある。
 
 ## `test-default-input` — 確かめた入力が既定値と一致していた
 
@@ -81,7 +81,7 @@ expect(collect(document, Gray900).map(toText)).toEqual(["title.color"]);
 `check-test-helper-duplication.sh` が機械判定する。ただし対象は**編集したファイルが絡む・
 同じ `__tests__/` フォルダ内・関数本体のみ**で、**定数の重複と `__tests__/` を跨いだ重複は
 見ていない**（#179）。差分で複数のテストファイルを触ったら、フックが拾わない範囲を
-`implementation-reviewer` が補う。
+`duplication-reviewer` が補う。
 
 ### 寄せ先を決める前に、寄せ先に同型が無いかを探す
 

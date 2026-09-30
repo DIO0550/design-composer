@@ -1,6 +1,6 @@
 ---
 name: implementation-flow
-description: "design-composer の実装を ゴールの確定 → タスクの分割 → 計画 → サブエージェント(plan-reviewer)による計画検証 → 実装 → サブエージェント(implementation-reviewer)による実装検証 → PR → マージ後の追記 の順で進める。計画と却下案は Issue に追記する。機能追加・バグ修正・リファクタリングなど、このリポジトリのソースへ手を入れる依頼を受けたら最初に使用する。「実装して」「直して」「対応して」「Issue #N をやって」「計画を立てて」といった依頼では積極的に使用すること。"
+description: "design-composer の実装を ゴールの確定 → タスクの分割 → 計画 → サブエージェント(plan-reviewer)による計画検証 → 実装 → 観点別のサブエージェント(*-reviewer)による実装検証 → PR → マージ後の追記 の順で進める。計画と却下案は Issue に追記する。機能追加・バグ修正・リファクタリングなど、このリポジトリのソースへ手を入れる依頼を受けたら最初に使用する。「実装して」「直して」「対応して」「Issue #N をやって」「計画を立てて」といった依頼では積極的に使用すること。"
 ---
 
 # 実装フロー
@@ -15,12 +15,12 @@ description: "design-composer の実装を ゴールの確定 → タスクの�
 | 3 | 計画 | Issue に書かれた計画と却下案 |
 | 4 | 計画の検証 | `plan-reviewer` の指摘と、それへの対応 |
 | 5 | 実装 | コードとテスト |
-| 6 | 実装の検証 | `implementation-reviewer` の指摘と、それへの対応 |
+| 6 | 実装の検証 | 観点別のレビューエージェントの指摘と、それへの対応 |
 | 7 | PR | 差分を説明する PR |
 | 8 | マージ後の追記 | 閉じた Issue へのコメントと、続きの Issue |
 
-**検証の観点はこのファイルに書かない。** `.claude/agents/plan-reviewer.md` と
-`.claude/agents/implementation-reviewer.md` が持つ。観点を親のコンテキストへ通さないための分割。
+**検証の観点はこのファイルに書かない。** `.claude/agents/` の `plan-reviewer.md` と
+観点別の `*-reviewer.md` が持つ。観点を親のコンテキストへ通さないための分割。
 
 ---
 
@@ -127,14 +127,56 @@ description: "design-composer の実装を ゴールの確定 → タスクの�
   `claim-verification` スキルで確かめる**(フェーズ6まで持ち越さない。
   `.claude/skills/claim-verification/`)
 
-## フェーズ 6: 実装の検証(`implementation-reviewer`)
+## フェーズ 6: 実装の検証(観点別のレビューエージェント)
 
-実装が一通り終わったら差分を `implementation-reviewer` サブエージェントへ渡す。
+実装が一通り終わったら、差分に応じて観点別のエージェントを選び、**2 段で**起動する。
+渡すもの(ゴール・計画と却下案・差分)と指摘の書式は、共通の指示
+[`reviewer-instructions.md`](reviewer-instructions.md) が持つ(各エージェントが読む)。
+モデルは各エージェントの frontmatter の `model` が持つので、ここへ写さない。
 
-```text
-ゴール: <ゴール>
-差分: <git diff の出力、または変更したファイルのパス一覧>
+1. 下の表で「呼ぶ条件」に当たるエージェントのうち `test-reviewer` 以外を、1 つのメッセージで
+   並列に起動する
+2. 返ってきた指摘に対応してから、**`test-reviewer` を単独で、前面で起動する**(同じメッセージに
+   他のツール呼び出しを並べない)。実装を壊して確かめるので、並べると他のエージェントが壊れた
+   状態を実装として読む。背景で起動すると起動の直後に PostToolUse が走り、
+   `track-verification-agent-activity.sh` の印が消えて git 操作の抑止が効かない(実測)
+
+| エージェント | 観点 | 呼ぶ条件 |
+| --- | --- | --- |
+| `solution-reviewer` | 方式(根本原因を直しているか・より単純な代替・継ぎ当て) | 常に |
+| `duplication-reviewer` | 重複 | 常に |
+| `comment-reviewer` | コメント・doc の記述と実物 | 常に |
+| `naming-reviewer` | 命名 | 常に |
+| `structure-reviewer` | 帰属先・依存方向・型・React の状態 | `src/` |
+| `performance-reviewer` | 性能 | `src/` `src-tauri/` |
+| `over-guard-reviewer` | 過剰なフォールバック / ブロック | 実行されるコード(下) |
+| `ui-reviewer` | UI 案との対応 | `.tsx` `docs/06-ui.md`、または差分が語 `UI 案` / `Design Composer.html` を含む |
+| `security-reviewer` | セキュリティ | `src/libs/` `src/domains/compiled/` `src-tauri/` `package.json` `pnpm-lock.yaml` `.github/` `.claude/hooks/` `.claude/agents/` `.claude/settings.json` `harness/githooks/`、または差分が語 `innerHTML` / `url(` を含む |
+| `harness-reviewer` | 規約・仕様書・ハーネス | `AGENTS.md` `rules/` `docs/` `.claude/` `.github/` `harness/` |
+| `test-reviewer` | テストが守っているか(ミューテーション) | 実行されるコード(下)。2 段目 |
+
+「実行されるコード」は `src/` `src-tauri/` `.claude/hooks/` `.github/scripts/` `harness/githooks/` と
+`harness/records/*.sh`。設定(`.storybook/` `vite.config.ts` `.github/workflows/`)は含めない。
+壊したときに落ちるのが vitest や判定表ではなく、ビルドや CI そのものなので。
+
+パスと語は次で出す。コミット前の新しいファイルも含め、語は大文字小文字を区別しない
+(`dangerouslySetInnerHTML` も `innerHTML` として拾う)。数が 0 なら、その語の条件には当たらない。
+
+```bash
+base=$(git merge-base origin/main HEAD)
+{ git diff --name-only "$base"; git ls-files --others --exclude-standard; } | sort -u
+diff_text() { git diff "$base"; git ls-files --others --exclude-standard -z | xargs -0 cat; }
+diff_text | grep -ciE 'innerhtml|url\('              # security-reviewer の語
+diff_text | grep -ciE 'UI 案|Design Composer\.html'   # ui-reviewer の語
 ```
+
+**返ってきた指摘は、方式(`solution-reviewer`)の結論を先に読み、エージェントをまたいで根本原因が
+同じものを束ねてから対応を決める。** 束ねるのは対応を決めるときだけで、記録(`harness-record`)は
+元の指摘ごとに書く(出どころの書き方は `.claude/skills/harness-record/templates/record.md`
+「出どころの語彙」)。
+
+`solution-reviewer` を 1 段目の前に単独で走らせることはしない。方式はフェーズ 4 で検証済みで
+「置き換え」の結論はまれなので、毎回それを待つほうが、まれな空振りより高くつく。
 
 この位置に置くのは、過剰な防御が PR に出た後だと差分の意図と絡んで剥がしにくくなるため。
 
@@ -227,17 +269,23 @@ pnpm visual:capture -- --storybook-dir storybook-static --out visual-actual  # �
   自分の変更とエージェントの書き換えが混ざってコミットに載る
 - **実行中に git add / commit / push を挟まない。** ミューテーション実測の途中でコミットすると、
   その瞬間の書き換えが載る。`block-git-during-verification-agent.sh` が
-  plan-reviewer / implementation-reviewer の実行中はここを機械的に止める
-  (`.claude/hooks/README.md`)
+  plan-reviewer / test-reviewer の実行中はここを機械的に止める(`.claude/hooks/README.md`)。
+  **止まるのは前面で起動したときだけ**なので、この 2 つは前面で起動する(フェーズ 6 の 2 段目の理由)
 - **バックグラウンドで起動した場合は、完了を取り逃さない。** 結果を受け取るまで次のフェーズへ
   進まない
+- **セッションの途中で `.claude/agents/` に足した定義は、同じセッションから呼べないことがある**
+  (リモート実行環境で `Agent type not found` を実測)。そのときは `general-purpose` に定義ファイルを
+  読ませて代行させる。代行では frontmatter が効かないので、定義の `model` を Agent の `model` に
+  渡し(`inherit` なら渡さない)、定義の `tools` に無いツールを使わないことを prompt に書く。
+  代行中は印も作られないので、ミューテーションを当てるものは前面で単独で起動する
 
 ## 参照ファイル
 
 | ファイル | 内容 | 読むタイミング |
 | --- | --- | --- |
 | `.claude/agents/plan-reviewer.md` | 計画の検証観点(エージェントが読む) | フェーズ 4 |
-| `.claude/agents/implementation-reviewer.md` | 実装の検証観点(エージェントが読む) | フェーズ 6 |
+| `.claude/agents/` の `plan-reviewer.md` 以外の `*-reviewer.md` | 実装の検証観点(エージェントが読む) | フェーズ 6 |
+| [`reviewer-instructions.md`](reviewer-instructions.md) | 実装の検証の観点別エージェントへの共通の指示(エージェントが読む) | フェーズ 6 |
 | `.claude/skills/claim-verification/SKILL.md` | コメント・doc・PR/Issue 本文の事実主張を書く前に確かめる手順 | フェーズ 3 / 5 |
 | [`harness/case-law/planning.md`](../../../harness/case-law/planning.md) | 計画で過去に踏んだ実例 | フェーズ 3 |
 | [`harness/case-law/process.md`](../../../harness/case-law/process.md) | サブエージェント・フック環境の実例 | フェーズ 4 / 6 / 7 |

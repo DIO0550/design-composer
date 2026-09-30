@@ -222,7 +222,7 @@ function compile(props: ResolvedProps<"Box">): Style { /* ... */ }
 
 置き場所・寄せ先の 2 つ(pr-359 / pr-394)に限った判定の分かれ目は「**素直な置き場所・素直な型が別にあり、
 そこへ寄せても機械的には何も止まらないか**」。止まらないなら、寄せなかった理由は型にもテストにも
-無いので、コメントにしか残らない。`implementation-reviewer` の語彙では、先例から外れた判断の理由が
+無いので、コメントにしか残らない。`comment-reviewer` の語彙では、先例から外れた判断の理由が
 無い形(`comment-missing-divergence`)の置き場所版にあたる。
 
 ## `comment-temporary-premise` — 理由の根拠に一時的な事実を置いた

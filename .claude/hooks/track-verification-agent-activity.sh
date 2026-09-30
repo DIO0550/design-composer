@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 #
-# plan-reviewer / implementation-reviewer(ミューテーション実測で作業ツリーを
+# plan-reviewer / test-reviewer(ミューテーション実測で作業ツリーを
 # 一時的に書き換える検証エージェント)が実行中かどうかを、セッション別のマーカーで
 # 記録する PreToolUse + PostToolUse フック(matcher: Task|Agent)。
 # block-git-during-verification-agent.sh がこのマーカーを読む。
 #
 # 対応する規約: implementation-flow「サブエージェントの使い方」。
-# implementation-reviewer がミューテーションを当てている最中に git add が走ると、
+# test-reviewer がミューテーションを当てている最中に git add が走ると、
 # その瞬間の書き換えをコミットへ取り込んで CI が落ちる。呼び出し側が git 操作と Task を
 # 並列で呼ぶこと自体は通常のツール利用として推奨されているため、規約だけでは防げない。
 #
@@ -15,10 +15,14 @@
 # 個々の呼び出しへ対応付けず、マーカーファイルの数だけで「現在何件実行中か」を見る
 # (FIFO: 開始で1つ作り、終了で最も古い1つを消す。どれを消すかを問わなくても総数は合う)。
 #
-# 全 Task/Agent を常時対象にはしない。Explore や harness-counter のような
-# 読み取り専用のサブエージェントは作業ツリーを書き換えないため、対象を広げても
-# 実害が防げないまま誤検知だけが増える(README「誤検知で止まるフックは全体が
-# 信用されなくなる」)。対象は実際にミューテーションを当てる 2 エージェントに絞る。
+# 「終了」は Task/Agent の PostToolUse で、エージェントの完了ではない。背景で起動すると
+# PostToolUse が起動の直後に来るので、実行中でも印は残らない(実測)。止めたいものは前面で
+# 起動する、と implementation-flow「サブエージェントの使い方」が決めている。
+#
+# 全 Task/Agent を常時対象にはしない。Explore や harness-counter、test-reviewer 以外の
+# 観点別レビューエージェントは、作業ツリーを書き換えない(道具か定義でそう決めている)ため、
+# 対象を広げても実害が防げないまま誤検知だけが増える(README「誤検知で止まるフックは
+# 全体が信用されなくなる」)。対象は実際にミューテーションを当てる 2 エージェントに絞る。
 set -uo pipefail
 
 input="$(cat)"
@@ -35,7 +39,7 @@ esac
 
 subagent_type="$(extract subagent_type)"
 case "$subagent_type" in
-  plan-reviewer | implementation-reviewer) ;;
+  plan-reviewer | test-reviewer) ;;
   *) exit 0 ;;
 esac
 

@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #
-# plan-reviewer / implementation-reviewer が作業ツリーを検証中(ミューテーション実測)の
+# plan-reviewer / test-reviewer が作業ツリーを検証中(ミューテーション実測)の
 # あいだ、git add / commit / push を拒否する PreToolUse フック(matcher: Bash)。
 # マーカーは track-verification-agent-activity.sh が置く。
 #
-# implementation-reviewer がミューテーションを当てている最中に git add が走ると、
+# test-reviewer がミューテーションを当てている最中に git add が走ると、
 # その瞬間の書き換えをコミットへ取り込んで CI が落ちる。
 # implementation-flow「サブエージェントの使い方」の「返ってきたら git status を見る」は
 # 戻ってきた**後**の話で、**実行中**にコミットするなとは書かれていなかった穴を塞ぐ。
@@ -52,7 +52,7 @@ cat <<'JSON'
   "hookSpecificOutput": {
     "hookEventName": "PreToolUse",
     "permissionDecision": "deny",
-    "permissionDecisionReason": "plan-reviewer / implementation-reviewer が作業ツリーを検証中です(分類: subagent-control。pr-391 #18 で同じ形が CI を落としています)。ミューテーション実測の途中でコミットすると、その瞬間の書き換えが取り込まれます。サブエージェントの完了を待ってから git add / commit / push を実行してください。"
+    "permissionDecisionReason": "plan-reviewer / test-reviewer が作業ツリーを検証中です(分類: subagent-control。pr-391 #18 で同じ形が CI を落としています)。ミューテーション実測の途中でコミットすると、その瞬間の書き換えが取り込まれます。サブエージェントの完了を待ってから git add / commit / push を実行してください。"
   }
 }
 JSON

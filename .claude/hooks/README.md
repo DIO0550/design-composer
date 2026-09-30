@@ -26,7 +26,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `hook-canary.sh`         | `PreToolUse` (Bash)       | **カナリア**。`echo hook-canary` を必ず deny する。連ねたコマンドの中にあっても切り出して見る。通ってしまったときの読み方は後述（**通った = 不発、ではない**） |
 | `session-url-notice.sh`  | `SessionStart`            | **セッション URL の提示**（AGENTS.md「Issue に紐づいて起動したら、セッションの URL を Issue に残す」）。URL を組み立てて渡す。ブランチが `claude/issue-<N>-...` なら対象の番号も添える。コメントする前に、他セッションの URL コメント・自分以外の assignee が無いかを確認するよう促す（`parallel-issue-work`） |
 | `record-firings.sh`      | `SessionStart` + `PostToolUse` (Skill/Task/Agent) | **スキル・サブエージェントの発火ログ**。tmp のセッション別ログへ追記し、`harness-record` が記録を書くときに読む。SessionStart のセッション見出しで「起動しなかった」と「フック不発」を切り分ける |
-| `track-verification-agent-activity.sh` | `PreToolUse` + `PostToolUse` (Task/Agent) | **検証エージェントの実行中フラグ**。`plan-reviewer` / `implementation-reviewer` の開始・終了をセッション別のマーカーで数える。`block-git-during-verification-agent.sh` が読む |
+| `track-verification-agent-activity.sh` | `PreToolUse` + `PostToolUse` (Task/Agent) | **検証エージェントの実行中フラグ**(前面で起動したときだけ。背景で起動すると起動直後の PostToolUse で消える)。`plan-reviewer` / `test-reviewer` の開始・終了をセッション別のマーカーで数える。`block-git-during-verification-agent.sh` が読む |
 | `block-git-during-verification-agent.sh` | `PreToolUse` (Bash)   | **検証エージェント実行中の git 操作を拒否**。マーカーが立っている間は `git add` / `commit` / `push` を deny する。ミューテーション実測の途中の書き換えをコミットへ取り込む事故を防ぐ |
 
 ## 移植元から見送ったもの
@@ -220,7 +220,7 @@ ls -d "${TMPDIR:-/tmp}/design-composer-verification-agents-${CLAUDE_CODE_SESSION
 grep -c $'\tsession\t' "${TMPDIR:-/tmp}/design-composer-firings-${CLAUDE_CODE_SESSION_ID:-}.log"
 ```
 
-**マーカーは `plan-reviewer` / `implementation-reviewer` を 1 度でも通した後にしか現れない。**
+**マーカーは `plan-reviewer` / `test-reviewer` を 1 度でも通した後にしか現れない。**
 `track-verification-agent-activity.sh` がこの 2 つの Task/Agent でしか作らないため、着手直後に
 カナリアを実行した回は 2 行目に当たらず、マーカー無しの枝へ落ちる。2 行目で読めるのは
 `implementation-flow` フェーズ 7(`plan-reviewer` を通した後)以降。
@@ -375,13 +375,13 @@ echo '{"tool_input":{"command":"git push"}}' \
 ```bash
 # 検証エージェント実行中は git add が拒否されること
 export TMPDIR=/tmp
-echo '{"hook_event_name":"PreToolUse","session_id":"probe","tool_name":"Task","tool_input":{"subagent_type":"implementation-reviewer"}}' \
+echo '{"hook_event_name":"PreToolUse","session_id":"probe","tool_name":"Task","tool_input":{"subagent_type":"test-reviewer"}}' \
   | bash .claude/hooks/track-verification-agent-activity.sh
 echo '{"session_id":"probe","tool_input":{"command":"git add -A"}}' \
   | bash .claude/hooks/block-git-during-verification-agent.sh
 
 # 終了すれば通ること(出力なし・exit 0)
-echo '{"hook_event_name":"PostToolUse","session_id":"probe","tool_name":"Task","tool_input":{"subagent_type":"implementation-reviewer"}}' \
+echo '{"hook_event_name":"PostToolUse","session_id":"probe","tool_name":"Task","tool_input":{"subagent_type":"test-reviewer"}}' \
   | bash .claude/hooks/track-verification-agent-activity.sh
 echo '{"session_id":"probe","tool_input":{"command":"git add -A"}}' \
   | bash .claude/hooks/block-git-during-verification-agent.sh; echo "exit=$?"

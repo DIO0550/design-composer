@@ -23,7 +23,7 @@ description: "マージ済み PR を振り返り、その回のレビュー指�
 | 材料 | 取り方 |
 | --- | --- |
 | レビュー指摘(人) | `pull_request_read` の 3 つを**すべて**引く(次節) |
-| レビュー指摘(サブエージェント) | `plan-reviewer` / `implementation-reviewer` の返答。このセッションの履歴 |
+| レビュー指摘(サブエージェント) | `plan-reviewer` と実装の検証の観点別エージェント(`*-reviewer`)の返答。このセッションの履歴 |
 | CI の失敗 | `pull_request_read`(`get_check_runs`)、詳細は `get_job_logs` |
 | 差分の規模 | `pull_request_read`(`get_files`) |
 | 関連 Issue | PR 本文のリンク。Issue のコメント履歴に計画と却下案がある |

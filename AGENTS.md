@@ -48,7 +48,7 @@
 
 実装は `implementation-flow` スキルの手順で進める(`.claude/skills/implementation-flow/`)。
 ゴールの確定 → タスクの分割 → 計画 → **計画の検証(`plan-reviewer`)** → 実装 →
-**実装の検証(`implementation-reviewer`)** → PR → マージ後の追記、までが1セット。
+**実装の検証(観点別の `*-reviewer`)** → PR → マージ後の追記、までが1セット。
 
 検証の観点は `.claude/agents/` のサブエージェントが持つ(検証のときにしか要らないものを
 常時ロードへ入れないため)。
