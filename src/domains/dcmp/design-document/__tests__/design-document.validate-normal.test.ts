@@ -89,6 +89,8 @@ test("複数の違反がある場合、最初の1件で止まらず全件報告�
 
   const errors = DesignDocument.collectErrors(document);
 
-  expect(errors).toHaveLength(2);
-  expect(errors.map((error) => error.nodeName)).toEqual(["box-1", "label-1"]);
+  expect(errors).toEqual([
+    expect.objectContaining({ nodeName: "box-1" }),
+    expect.objectContaining({ nodeName: "label-1" }),
+  ]);
 });

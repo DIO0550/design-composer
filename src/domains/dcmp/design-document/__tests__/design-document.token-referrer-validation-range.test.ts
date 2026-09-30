@@ -78,9 +78,12 @@ test("参照元の集合は、そのトークンを消したときに dangling �
 
   const referrers = DesignDocument.collectTokenReferrers(document, Gray900);
   const removed = Result.unwrap(DesignDocument.removeToken(document, Gray900));
-  const danglingLocations = DesignDocument.collectErrors(removed)
-    .filter((error) => error.kind === "dangling-token")
-    .map((error) => ({ name: error.nodeName, prop: error.prop }));
+  const danglingLocations = DesignDocument.collectErrors(removed).flatMap(
+    (error) =>
+      error.kind === "dangling-token"
+        ? [{ name: error.nodeName, prop: error.prop }]
+        : [],
+  );
 
   expect(sortedLocations(referrers)).toEqual(
     sortedLocations(danglingLocations),

@@ -10,7 +10,7 @@ test("hex でない色トークンは、そのトークン名で invalid-color �
   });
 
   expect(DesignDocument.collectErrors(document)).toEqual([
-    expect.objectContaining({ kind: "invalid-color", nodeName: "brand" }),
+    expect.objectContaining({ kind: "invalid-color", tokenName: "brand" }),
   ]);
 });
 

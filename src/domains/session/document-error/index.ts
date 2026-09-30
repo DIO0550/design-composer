@@ -12,11 +12,13 @@ import { Option } from "@/utils/Option";
  * 由来ごとに指せる粒度が違う（字句スキャンはテキストの文字位置までしか分からず、
  * スキーマ検証はテキストのどこかを知らない）ため、1 つの形に潰さず直和で持つ。
  * 潰すと「位置が無いのに 0 文字目」のような嘘の位置が画面に出る。
+ * ノードとトークンも分けて持つ（理由は `DesignDocumentValidationError`）。
  */
 export type DocumentErrorLocation =
   | Readonly<{ kind: "text-position"; position: number }>
   | Readonly<{ kind: "document-path"; path: string }>
   | Readonly<{ kind: "node"; nodeName: string; prop?: string }>
+  | Readonly<{ kind: "token"; tokenName: string }>
   | Readonly<{ kind: "whole-document" }>;
 
 export const DocumentErrorLocation = {
@@ -25,7 +27,7 @@ export const DocumentErrorLocation = {
    *
    * @param location エラーが指している場所
    * @returns ノードを指しているならその名前。テキストの文字位置・ドキュメント内の
-   *   パス・ファイル全体を指すものは、飛べるノードが決まらないので `none`
+   *   パス・トークン・ファイル全体を指すものは、飛べるノードが決まらないので `none`
    */
   nodeName(location: DocumentErrorLocation): Option<string> {
     return location.kind === "node"
@@ -65,10 +67,29 @@ export type DocumentError = Readonly<{
 }>;
 
 /**
- * スキーマ検証の失敗は、どのノードの（あれば）どの prop かを指す。
+ * スキーマ検証の失敗は、どのノードの（あれば）どの prop か、またはどのトークンかを指す。
+ *
+ * @param error スキーマ検証が報告した失敗 1 件
+ * @returns 失敗が指すノードまたはトークン
+ */
+function locationOf(
+  error: DesignDocumentValidationError,
+): DocumentErrorLocation {
+  if ("tokenName" in error) {
+    return { kind: "token", tokenName: error.tokenName };
+  }
+  return {
+    kind: "node",
+    nodeName: error.nodeName,
+    ...(error.prop !== undefined ? { prop: error.prop } : {}),
+  };
+}
+
+/**
+ * スキーマ検証の失敗を、画面に出すエラーの形へ揃える。
  *
  * @param errors スキーマ検証が報告した失敗の並び
- * @returns ノードを指すエラーの並び
+ * @returns ノードまたはトークンを指すエラーの並び
  */
 function fromValidationErrors(
   errors: readonly DesignDocumentValidationError[],
@@ -76,11 +97,7 @@ function fromValidationErrors(
   return errors.map((error) => ({
     kind: error.kind,
     message: error.message,
-    location: {
-      kind: "node",
-      nodeName: error.nodeName,
-      ...(error.prop !== undefined ? { prop: error.prop } : {}),
-    },
+    location: locationOf(error),
   }));
 }
 
