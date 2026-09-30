@@ -2,12 +2,15 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
 import {
   BackgroundControl,
+  ColorPaintControl,
   DanglingGapControl,
   DirectionControl,
   GapControl,
+  GradientPaintControl,
   LabelControl,
   MissingBackgroundControl,
   TypographyControl,
+  UnresolvedPaintControl,
   WidthControl,
 } from "../__stories__/panel-controls";
 import { PanelFrame } from "../__stories__/panel-frame";
@@ -16,7 +19,7 @@ import { fieldOf, PropField } from "./index";
 /**
  * 値域ごとの入力欄。
  *
- * 6 種類を並べるのは、どの種別がどの見た目になるかがスキーマの走査だけで決まり、
+ * 7 種類を並べるのは、どの種別がどの見た目になるかがスキーマの走査だけで決まり、
  * 画面から確かめる手段が視覚差分しか無いため（happy-dom は Tailwind を解決しない）。
  */
 const meta = {
@@ -95,6 +98,33 @@ export const MissingColorToken: Story = {
   args: {
     field: fieldOf("field-label", MissingBackgroundControl, fn()),
     input: MissingBackgroundControl.input,
+  },
+};
+
+/** 塗りの欄が colors を指しているとき。一覧は種別ごとの節に分かれる。 */
+export const ColorPaintToken: Story = {
+  name: "塗りのトークン（色）",
+  args: {
+    field: fieldOf("field-label", ColorPaintControl, fn()),
+    input: ColorPaintControl.input,
+  },
+};
+
+/** 塗りの欄がどちらの種別にも無い名前を指しているとき。見本が出ず、名前は節の外に出る。 */
+export const UnresolvedPaintToken: Story = {
+  name: "塗りのトークン（解決しない名前）",
+  args: {
+    field: fieldOf("field-label", UnresolvedPaintControl, fn()),
+    input: UnresolvedPaintControl.input,
+  },
+};
+
+/** 塗りの欄が gradients を指しているとき。見本が階調になる。 */
+export const GradientPaintToken: Story = {
+  name: "塗りのトークン（グラデーション）",
+  args: {
+    field: fieldOf("field-label", GradientPaintControl, fn()),
+    input: GradientPaintControl.input,
   },
 };
 
