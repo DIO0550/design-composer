@@ -37,9 +37,9 @@ import { DesignDocumentV1 } from "./v1";
 import {
   collectArtboardErrors,
   collectCircularRefErrors,
-  collectColorTokenErrors,
   collectComponentErrors,
   collectDocumentNameErrors,
+  collectInvalidColorErrors,
   type DesignDocumentValidationError,
 } from "./validation";
 
@@ -1761,7 +1761,7 @@ export const DesignDocument = {
     );
     const circularErrors = collectCircularRefErrors(document.components);
     const nameErrors = collectDocumentNameErrors(document);
-    const colorErrors = collectColorTokenErrors(document.tokens);
+    const colorErrors = collectInvalidColorErrors(document.tokens);
 
     return [
       ...componentErrors,

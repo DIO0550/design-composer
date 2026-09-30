@@ -130,6 +130,22 @@ export type Token = {
  */
 export type TokenRef = Readonly<{ kind: TokenKind; name: string }>;
 
+/**
+ * トークン一式の中で色を持つ場所 1 つ（docs/04-tokens.md「値の形式」）。
+ *
+ * - `colors`: 色トークンそのもの
+ * - `shadows`: 影トークンの `color`
+ * - `gradients`: グラデーショントークンの `stops` の `stopIndex` 番目（0 始まり）の `color`
+ */
+export type TokenColorPosition =
+  | Readonly<{ kind: typeof TokenKinds.Colors; name: string }>
+  | Readonly<{ kind: typeof TokenKinds.Shadows; name: string }>
+  | Readonly<{
+      kind: typeof TokenKinds.Gradients;
+      name: string;
+      stopIndex: number;
+    }>;
+
 /** トークンの追加・改名・変更・削除が失敗する理由。 */
 export type TokenEditError =
   | Readonly<{ kind: "invalid-token-name"; ref: TokenRef }>
@@ -684,16 +700,29 @@ export const TokenSet = {
   },
 
   /**
-   * 値が正規形の hex でない色の名前（docs/04-tokens.md「colors」）。
-   * 影・グラデーションの中の色は見ない（docs/03-schema.md「バリデーション仕様」）。
+   * 色が正規形の hex でない場所（docs/04-tokens.md「colors」）。見る場所は
+   * `TokenColorPosition` の種類のすべて。
    *
    * @param tokens 色を確かめるトークン一式
-   * @returns `ColorToken.isValid` を満たさない色の名前を colors の並びの順で並べたもの
+   * @returns `ColorToken.isValid` を満たさない色の場所を、colors → shadows → gradients の順、
+   *   種別の中は書かれた順、グラデーションの中は stop の順で並べたもの
    */
-  collectInvalidColorNames(tokens: TokenSet): readonly string[] {
-    return Object.entries(tokens.colors)
+  collectInvalidColorPositions(
+    tokens: TokenSet,
+  ): readonly TokenColorPosition[] {
+    const colorPositions = Object.entries(tokens.colors)
       .filter(([, color]) => !ColorToken.isValid(color))
-      .map(([name]) => name);
+      .map(([name]) => ({ kind: TokenKinds.Colors, name }));
+    const shadowPositions = Object.entries(tokens.shadows)
+      .filter(([, shadow]) => !ColorToken.isValid(shadow.color))
+      .map(([name]) => ({ kind: TokenKinds.Shadows, name }));
+    const gradientPositions = Object.entries(tokens.gradients).flatMap(
+      ([name, gradient]) =>
+        GradientToken.collectInvalidColorStopIndexes(gradient).map(
+          (stopIndex) => ({ kind: TokenKinds.Gradients, name, stopIndex }),
+        ),
+    );
+    return [...colorPositions, ...shadowPositions, ...gradientPositions];
   },
 
   /**
