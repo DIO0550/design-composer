@@ -560,6 +560,11 @@
     "name": "ラベル欄の幅と字下げ"
   },
   {
+    "id": "features-editor-features-inspector-propertypanel-propfield--color-paint-token",
+    "title": "features/editor/features/inspector/PropertyPanel/PropField",
+    "name": "塗りのトークン（色）"
+  },
+  {
     "id": "features-editor-features-inspector-propertypanel-propfield--color-token",
     "title": "features/editor/features/inspector/PropertyPanel/PropField",
     "name": "色のトークン（見本あり）"
@@ -573,6 +578,11 @@
     "id": "features-editor-features-inspector-propertypanel-propfield--enum",
     "title": "features/editor/features/inspector/PropertyPanel/PropField",
     "name": "enum（未指定）"
+  },
+  {
+    "id": "features-editor-features-inspector-propertypanel-propfield--gradient-paint-token",
+    "title": "features/editor/features/inspector/PropertyPanel/PropField",
+    "name": "塗りのトークン（グラデーション）"
   },
   {
     "id": "features-editor-features-inspector-propertypanel-propfield--missing-color-token",
@@ -603,6 +613,11 @@
     "id": "features-editor-features-inspector-propertypanel-propfield--token",
     "title": "features/editor/features/inspector/PropertyPanel/PropField",
     "name": "トークン名から選ぶ"
+  },
+  {
+    "id": "features-editor-features-inspector-propertypanel-propfield--unresolved-paint-token",
+    "title": "features/editor/features/inspector/PropertyPanel/PropField",
+    "name": "塗りのトークン（解決しない名前）"
   },
   {
     "id": "features-editor-features-inspector-propertypanel-proprow--dependent",
