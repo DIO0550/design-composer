@@ -34,6 +34,16 @@ test("ComponentSet から名前一覧を取得すると登録されているキ�
   ]);
 });
 
+test("ComponentSet を名前と部品定義の組に展開すると定義した順に並ぶ", () => {
+  const card = { type: "Box" };
+  const button = { type: "Text" };
+  const components = { card, button };
+  expect(ComponentSet.toNamedComponents(components)).toEqual([
+    { name: "card", component: card },
+    { name: "button", component: button },
+  ]);
+});
+
 test("ComponentSet から存在する名前を取得すると対応するコンポーネントが返る", () => {
   const primaryButton = { type: "Box" };
   const components = { "primary-button": primaryButton };

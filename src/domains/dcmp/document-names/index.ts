@@ -3,7 +3,6 @@ import { ComponentSet } from "@/domains/dcmp/component";
 import { Node } from "@/domains/dcmp/node";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { CaseStyle } from "@/utils/CaseStyle";
-import { Option } from "@/utils/Option";
 import { StringEx } from "@/utils/StringEx";
 
 /**
@@ -76,18 +75,12 @@ function collectOccurrences(
   components: ComponentSet,
   artboards: readonly Artboard[],
 ): readonly NameOccurrence[] {
-  const componentOccurrences = ComponentSet.names(components).flatMap(
-    (name): readonly NameOccurrence[] => {
-      const children = Option.flatMap(
-        ComponentSet.get(components, name),
-        (component) => Option.fromNullable(component.children),
-      );
-      return [
-        { name, position: { kind: "component-key" } },
-        ...collectNodeOccurrences(Option.unwrapOr(children, []), name),
-      ];
-    },
-  );
+  const componentOccurrences = ComponentSet.toNamedComponents(
+    components,
+  ).flatMap(({ name, component }): readonly NameOccurrence[] => [
+    { name, position: { kind: "component-key" } },
+    ...collectNodeOccurrences(component.children ?? [], name),
+  ]);
   const artboardOccurrences = artboards.flatMap(
     (artboard, index): readonly NameOccurrence[] => [
       { name: artboard.name, position: { kind: "artboard", index } },

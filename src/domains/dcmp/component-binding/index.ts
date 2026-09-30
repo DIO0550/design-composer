@@ -9,7 +9,6 @@ import {
   type PropDefinition,
 } from "@/domains/dcmp/primitive-schema";
 import { Option } from "@/utils/Option";
-import { RecordEx } from "@/utils/RecordEx";
 
 /**
  * どの部品のどの binding かを指す組。
@@ -61,11 +60,10 @@ type BindingHop =
  *   無ければ `missing-prop`
  */
 function hopIntoPrimitive(target: PrimitiveNode, prop: string): BindingHop {
-  const schema = PrimitiveSchema.forTypeName(target.type);
-  if (!Option.isSome(schema)) {
+  if (!PrimitiveSchema.isPrimitiveType(target.type)) {
     return { kind: "unresolvable" };
   }
-  const definition = RecordEx.get<PropDefinition>(schema.value.props, prop);
+  const definition = PrimitiveSchema.propDefinition(target.type, prop);
   if (!Option.isSome(definition)) {
     return { kind: "missing-prop" };
   }
