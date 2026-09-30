@@ -17,21 +17,21 @@ test("互いを参照し合う部品を辿っても打ち切られる", () => {
     },
   };
 
-  const definition = ComponentBinding.resolvePropDefinition(
+  const target = ComponentBinding.resolvePropTarget(
     components,
     ComponentBinding.create("a", { node: "a-inner", prop: "text" }),
   );
 
-  expect(definition).toEqual(Option.none);
+  expect(target).toEqual(Option.none);
 });
 
 test("存在しない部品を起点にすると解決できない", () => {
-  const definition = ComponentBinding.resolvePropDefinition(
+  const target = ComponentBinding.resolvePropTarget(
     {},
     ComponentBinding.create("missing", { node: "missing", prop: "content" }),
   );
 
-  expect(definition).toEqual(Option.none);
+  expect(target).toEqual(Option.none);
 });
 
 test("部品内に無いノードを指す binding は解決できない", () => {
@@ -39,12 +39,12 @@ test("部品内に無いノードを指す binding は解決できない", () =>
     button: { type: "Box", children: [{ name: "button-label", type: "Text" }] },
   };
 
-  const definition = ComponentBinding.resolvePropDefinition(
+  const target = ComponentBinding.resolvePropTarget(
     components,
     ComponentBinding.create("button", { node: "missing", prop: "content" }),
   );
 
-  expect(definition).toEqual(Option.none);
+  expect(target).toEqual(Option.none);
 });
 
 test("スキーマに無い prop を指す binding は解決できない", () => {
@@ -52,7 +52,7 @@ test("スキーマに無い prop を指す binding は解決できない", () =>
     button: { type: "Box", children: [{ name: "button-label", type: "Text" }] },
   };
 
-  const definition = ComponentBinding.resolvePropDefinition(
+  const target = ComponentBinding.resolvePropTarget(
     components,
     ComponentBinding.create("button", {
       node: "button-label",
@@ -60,7 +60,7 @@ test("スキーマに無い prop を指す binding は解決できない", () =>
     }),
   );
 
-  expect(definition).toEqual(Option.none);
+  expect(target).toEqual(Option.none);
 });
 
 test("参照先が公開していない prop を指す binding は解決できない", () => {
@@ -77,12 +77,12 @@ test("参照先が公開していない prop を指す binding は解決でき�
     },
   };
 
-  const definition = ComponentBinding.resolvePropDefinition(
+  const target = ComponentBinding.resolvePropTarget(
     components,
     ComponentBinding.create("card", { node: "card-action", prop: "hidden" }),
   );
 
-  expect(definition).toEqual(Option.none);
+  expect(target).toEqual(Option.none);
 });
 
 test("binding 先の prop が constructor なら、スキーマに無い prop として解決できない", () => {
@@ -90,7 +90,7 @@ test("binding 先の prop が constructor なら、スキーマに無い prop �
     button: { type: "Box", children: [{ name: "button-label", type: "Text" }] },
   };
 
-  const definition = ComponentBinding.resolvePropDefinition(
+  const target = ComponentBinding.resolvePropTarget(
     components,
     ComponentBinding.create("button", {
       node: "button-label",
@@ -98,5 +98,5 @@ test("binding 先の prop が constructor なら、スキーマに無い prop �
     }),
   );
 
-  expect(definition).toEqual(Option.none);
+  expect(target).toEqual(Option.none);
 });

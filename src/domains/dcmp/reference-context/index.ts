@@ -49,9 +49,12 @@ function collectOverrideViolations(
       if (!Option.isSome(binding)) {
         return [{ kind: "undeclared-override", prop: assignment.name }];
       }
-      const definition = ComponentBinding.resolvePropDefinition(
-        context.components,
-        ComponentBinding.create(refNode.ref, binding.value),
+      const definition = Option.map(
+        ComponentBinding.resolvePropTarget(
+          context.components,
+          ComponentBinding.create(refNode.ref, binding.value),
+        ),
+        (target) => target.definition,
       );
       if (!Option.isSome(definition)) {
         return [];

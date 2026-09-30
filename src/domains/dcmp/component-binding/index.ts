@@ -3,12 +3,18 @@ import {
   ComponentSet,
   type PublicPropBinding,
 } from "@/domains/dcmp/component";
-import { Node, type PrimitiveNode, type RefNode } from "@/domains/dcmp/node";
+import {
+  Node,
+  type PrimitiveNode,
+  type PropValue,
+  type RefNode,
+} from "@/domains/dcmp/node";
 import {
   PrimitiveSchema,
   type PropDefinition,
 } from "@/domains/dcmp/primitive-schema";
 import { Option } from "@/utils/Option";
+import { RecordEx } from "@/utils/RecordEx";
 
 /**
  * どの部品のどの binding かを指す組。
@@ -18,6 +24,24 @@ import { Option } from "@/utils/Option";
 export type ComponentBinding = Readonly<{
   componentName: string;
   binding: PublicPropBinding;
+}>;
+
+/**
+ * 公開 prop 1つを指す参照。部品名だけでも prop 名だけでも binding は引けないため対で持つ。
+ */
+export type PublicPropRef = Readonly<{
+  component: string;
+  prop: string;
+}>;
+
+/**
+ * binding をたどった先にある prop。
+ * `declared` は部品定義がそこに設定している値で、インスタンスが何も上書きしなければ
+ * これが効く(スキーマのデフォルトではなく、この値が既定として見える)。
+ */
+export type PublicPropTarget = Readonly<{
+  definition: PropDefinition;
+  declared: Option<PropValue>;
 }>;
 
 /**
@@ -35,7 +59,7 @@ export type BindingViolation =
   | Readonly<{ kind: "missing-public-prop"; ref: string }>;
 
 /**
- * binding を 1 段辿った結果。`resolvePropDefinition` と `violation` が同じ辿りを使うこと
+ * binding を 1 段辿った結果。`resolvePropTarget` と `violation` が同じ辿りを使うこと
  * で、1 段目の判定（指し先のノード・型・prop・公開の有無）を 2 つの関数で食い違わせない。
  */
 type BindingHop =
@@ -46,28 +70,41 @@ type BindingHop =
    */
   | Readonly<{ kind: "unresolvable" }>
   | BindingViolation
-  /** 指し先のプリミティブの prop 定義に着いた。 */
-  | Readonly<{ kind: "definition"; definition: PropDefinition }>
-  /** 指し先が部品インスタンスで、その部品の binding へ続く。 */
-  | Readonly<{ kind: "nested"; next: ComponentBinding }>;
+  /** 指し先のプリミティブの prop 定義と、そのプリミティブに設定されている値に着いた。 */
+  | Readonly<{ kind: "definition"; target: PublicPropTarget }>
+  /**
+   * 指し先が部品インスタンスで、その部品の binding へ続く。`override` はそのインスタンスが
+   * 公開 prop に書いている上書き。
+   */
+  | Readonly<{
+      kind: "nested";
+      next: ComponentBinding;
+      override: Option<PropValue>;
+    }>;
 
 /**
- * 指し先のプリミティブで、binding の prop の定義を引く。
+ * 指し先のプリミティブで、binding の prop の定義と設定値を引く。
  *
- * @param target binding の指し先のプリミティブ
+ * @param primitive binding の指し先のプリミティブ
  * @param prop binding が指す prop 名
- * @returns 定義があれば `definition`、型が未知なら `unresolvable`、スキーマにその prop が
- *   無ければ `missing-prop`
+ * @returns 定義があれば `definition`（設定値はプリミティブの props のその prop）、型が未知
+ *   なら `unresolvable`、スキーマにその prop が無ければ `missing-prop`
  */
-function hopIntoPrimitive(target: PrimitiveNode, prop: string): BindingHop {
-  if (!PrimitiveSchema.isPrimitiveType(target.type)) {
+function hopIntoPrimitive(primitive: PrimitiveNode, prop: string): BindingHop {
+  if (!PrimitiveSchema.isPrimitiveType(primitive.type)) {
     return { kind: "unresolvable" };
   }
-  const definition = PrimitiveSchema.propDefinition(target.type, prop);
+  const definition = PrimitiveSchema.propDefinition(primitive.type, prop);
   if (!Option.isSome(definition)) {
     return { kind: "missing-prop" };
   }
-  return { kind: "definition", definition: definition.value };
+  return {
+    kind: "definition",
+    target: {
+      definition: definition.value,
+      declared: RecordEx.get(primitive.props ?? {}, prop),
+    },
+  };
 }
 
 /**
@@ -75,27 +112,29 @@ function hopIntoPrimitive(target: PrimitiveNode, prop: string): BindingHop {
  * （インターフェースの連鎖）。
  *
  * @param components 引き先の部品一式
- * @param target binding の指し先の参照ノード
+ * @param instance binding の指し先の参照ノード
  * @param prop binding が指す prop 名。参照先では公開 prop 名として引く
- * @returns 参照先の binding へ続くなら `nested`、参照先の部品が無ければ `unresolvable`、
+ * @returns 参照先の binding へ続くなら `nested`（上書きは `instance` の overrides のその prop）、
+ *   参照先の部品が無ければ `unresolvable`、
  *   参照先がその prop を公開していなければ `missing-public-prop`
  */
 function hopIntoInstance(
   components: ComponentSet,
-  target: RefNode,
+  instance: RefNode,
   prop: string,
 ): BindingHop {
-  const nested = ComponentSet.get(components, target.ref);
+  const nested = ComponentSet.get(components, instance.ref);
   if (!Option.isSome(nested)) {
     return { kind: "unresolvable" };
   }
   const binding = Component.binding(nested.value, prop);
   if (!Option.isSome(binding)) {
-    return { kind: "missing-public-prop", ref: target.ref };
+    return { kind: "missing-public-prop", ref: instance.ref };
   }
   return {
     kind: "nested",
-    next: ComponentBinding.create(target.ref, binding.value),
+    next: ComponentBinding.create(instance.ref, binding.value),
+    override: RecordEx.get(instance.overrides ?? {}, prop),
   };
 }
 
@@ -127,33 +166,37 @@ function hop(components: ComponentSet, source: ComponentBinding): BindingHop {
 }
 
 /**
- * ref ノードの連鎖を辿って prop 定義に行き着く。
- * `visited` は辿った部品名で、循環参照に入ったときに打ち切るために持ち回る。
+ * `resolvePropTarget` の本体。`visited` は辿った部品名で、循環参照に入ったときに打ち切る
+ * ために持ち回る。
  *
  * @param components 引き先の部品一式
  * @param source 辿り始める部品名と binding
  * @param visited ここまでに辿った部品名（再訪したら打ち切る）
- * @returns 行き着いた prop 定義。連鎖が途切れた場合と循環に入った場合は `none`
+ * @returns 行き着いた prop 定義と設定値。連鎖が途切れた場合と循環に入った場合は `none`
  */
 function resolveThroughRefs(
   components: ComponentSet,
   source: ComponentBinding,
   visited: ReadonlySet<string>,
-): Option<PropDefinition> {
+): Option<PublicPropTarget> {
   const step = hop(components, source);
   switch (step.kind) {
     case "definition":
-      return Option.some(step.definition);
+      return Option.some(step.target);
     case "nested": {
       const nextName = step.next.componentName;
       if (visited.has(nextName)) {
         return Option.none;
       }
-      return resolveThroughRefs(
+      const inner = resolveThroughRefs(
         components,
         step.next,
         new Set(visited).add(nextName),
       );
+      return Option.map(inner, (target) => ({
+        ...target,
+        declared: Option.or(step.override, target.declared),
+      }));
     }
     case "unresolvable":
     case "missing-node":
@@ -177,26 +220,58 @@ export const ComponentBinding = {
   },
 
   /**
-   * binding が最終的に指すプリミティブ prop の定義を解決する。
+   * binding が最終的に指すプリミティブ prop の定義と、そこに設定されている値を解決する。
    * binding 先が ref ノードの場合は参照先部品の publicProps を辿る（インターフェースの連鎖）。
    * 解決できない理由のうち binding 自体の不整合は `violation` が返す（検証が報告する）。
    *
-   * 連鎖の起点なので、循環検出の初期状態（起点の部品名）をここで作る。
+   * 循環参照は検証エラーとして検出されるが、不正なドキュメントも画面には残る（docs/03
+   * 「不正ファイル時の挙動」）ため、辿った部品へ戻った時点で打ち切って必ず停止させる。
+   *
+   * 上書きは内側から戻る結果に外側ほど後に被せるので、いちばん外側が勝つ。描画側の
+   * `Component.applyOverrides` と同じ向きで、逆にするとパネルの既定値と描画が食い違う。
    *
    * @param components 引き先の部品一式
    * @param source 解決を始める部品名と binding
-   * @returns 行き着いたプリミティブ prop の定義。部品・binding 先のノードが無いとき、
+   * @returns 行き着いたプリミティブ prop の定義と、部品定義がそこに設定している値（途中の
+   *   参照ノードが上書きしていれば、いちばん外側の上書き）。部品・binding 先のノードが無いとき、
    *   binding 先のノードの型が未知かその prop がスキーマに無いとき、連鎖の途中の部品が
-   *   無いかその prop を公開していないとき、連鎖が循環したときは `none`
+   *   無いかその prop を公開していないとき、連鎖が辿った部品へ戻ったときは `none`
    */
-  resolvePropDefinition(
+  resolvePropTarget(
     components: ComponentSet,
     source: ComponentBinding,
-  ): Option<PropDefinition> {
+  ): Option<PublicPropTarget> {
     return resolveThroughRefs(
       components,
       source,
       new Set([source.componentName]),
+    );
+  },
+
+  /**
+   * 公開 prop の binding を辿った先の prop 定義と設定値を解決する。辿り方と `none` になる
+   * 条件は `resolvePropTarget` と同じ。
+   *
+   * @param components 引き先の部品一式
+   * @param publicProp 解決を始める部品名と公開 prop 名
+   * @returns `resolvePropTarget` の結果。部品が一式に無いか、その prop を公開していなければ
+   *   `none`
+   */
+  resolvePublicPropTarget(
+    components: ComponentSet,
+    publicProp: PublicPropRef,
+  ): Option<PublicPropTarget> {
+    const component = ComponentSet.get(components, publicProp.component);
+    if (!Option.isSome(component)) {
+      return Option.none;
+    }
+    return Option.flatMap(
+      Component.binding(component.value, publicProp.prop),
+      (binding) =>
+        ComponentBinding.resolvePropTarget(
+          components,
+          ComponentBinding.create(publicProp.component, binding),
+        ),
     );
   },
 
