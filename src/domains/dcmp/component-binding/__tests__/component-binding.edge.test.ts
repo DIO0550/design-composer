@@ -100,3 +100,68 @@ test("binding 先の prop が constructor なら、スキーマに無い prop �
 
   expect(target).toEqual(Option.none);
 });
+
+test("binding 先がプリミティブでない型なら解決できない", () => {
+  const components: ComponentSet = {
+    card: {
+      type: "Box",
+      children: [{ name: "card-title", type: "Unknown" }],
+      publicProps: { title: { node: "card-title", prop: "content" } },
+    },
+  };
+
+  const target = ComponentBinding.resolvePropTarget(
+    components,
+    ComponentBinding.create("card", { node: "card-title", prop: "content" }),
+  );
+
+  expect(target).toEqual(Option.none);
+});
+
+test("自分自身のインスタンスを指す binding を辿っても打ち切られる", () => {
+  const components: ComponentSet = {
+    card: {
+      type: "Box",
+      children: [{ name: "card-inner", ref: "card" }],
+      publicProps: { title: { node: "card-inner", prop: "title" } },
+    },
+  };
+
+  const target = ComponentBinding.resolvePropTarget(
+    components,
+    ComponentBinding.create("card", { node: "card-inner", prop: "title" }),
+  );
+
+  expect(target).toEqual(Option.none);
+});
+
+test("公開 prop 名を変えながら辿った部品へ戻ったら、戻った先の prop がプリミティブに着いても解決できない", () => {
+  // 部品数を辿る段数より多くしておく。段数の上限で止める実装だと、ここでは a の label が
+  // Text の content に着いてしまう
+  const components: ComponentSet = {
+    a: {
+      type: "Box",
+      children: [
+        { name: "a-b", ref: "b" },
+        { name: "a-label", type: "Text" },
+      ],
+      publicProps: {
+        title: { node: "a-b", prop: "caption" },
+        label: { node: "a-label", prop: "content" },
+      },
+    },
+    b: {
+      type: "Box",
+      children: [{ name: "b-a", ref: "a" }],
+      publicProps: { caption: { node: "b-a", prop: "label" } },
+    },
+    unrelated: { type: "Box" },
+  };
+
+  const target = ComponentBinding.resolvePropTarget(
+    components,
+    ComponentBinding.create("a", { node: "a-b", prop: "caption" }),
+  );
+
+  expect(target).toEqual(Option.none);
+});
