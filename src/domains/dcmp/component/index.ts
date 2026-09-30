@@ -1,16 +1,5 @@
-import {
-  Node,
-  type PrimitiveNode,
-  PropEdit,
-  Props,
-  type PropValue,
-  type RefNode,
-} from "@/domains/dcmp/node";
+import { Node, PropEdit, Props, type PropValue } from "@/domains/dcmp/node";
 import { NodeTree } from "@/domains/dcmp/node-tree";
-import {
-  PrimitiveSchema,
-  type PropDefinition,
-} from "@/domains/dcmp/primitive-schema";
 import {
   Json,
   type JsonCursor,
@@ -70,24 +59,6 @@ export const PublicPropBinding = {
 
 /** 部品が外へ公開する prop 名と、その繋ぎ先。 */
 export type PublicProps = Readonly<Record<string, PublicPropBinding>>;
-
-/**
- * 公開 prop 1つを指す参照。部品名だけでも prop 名だけでも binding は引けないため対で持つ。
- */
-export type PublicPropRef = Readonly<{
-  component: string;
-  prop: string;
-}>;
-
-/**
- * binding をたどった先にある prop。
- * `declared` は部品定義がそこに設定している値で、インスタンスが何も上書きしなければ
- * これが効く(スキーマのデフォルトではなく、この値が既定として見える)。
- */
-export type PublicPropTarget = Readonly<{
-  definition: PropDefinition;
-  declared: Option<PropValue>;
-}>;
 
 /** 部品定義。インスタンスから参照され、展開されてキャンバスに描かれる。 */
 export type Component = Readonly<{
@@ -458,101 +429,6 @@ function reachableRefs(
   return reached;
 }
 
-/**
- * プリミティブノードが持つ prop の定義と、そのノードに設定されている値。
- *
- * @param node 引き先のプリミティブノード
- * @param prop 知りたい prop 名
- * @returns 宣言と設定値の対。型が未知、またはスキーマに無い prop なら `none`
- */
-function targetInPrimitive(
-  node: PrimitiveNode,
-  prop: string,
-): Option<PublicPropTarget> {
-  if (!PrimitiveSchema.isPrimitiveType(node.type)) {
-    return Option.none;
-  }
-  const definition = PrimitiveSchema.propDefinition(node.type, prop);
-  if (!Option.isSome(definition)) {
-    return Option.none;
-  }
-  return Option.some({
-    definition: definition.value,
-    declared: RecordEx.get(node.props ?? {}, prop),
-  });
-}
-
-/**
- * binding 先が参照ノードのとき、相手の部品の公開 prop としてたどり直す。
- * 途中の参照ノードが値を上書きしていれば、そちらが既定として見える。
- *
- * @param components 引き先の部品一式
- * @param node binding 先になっている参照ノード
- * @param prop 知りたい prop 名
- * @param remainingHops あと何段たどれるか
- * @returns 宣言と設定値の対。たどり切れなければ `none`
- */
-function targetThroughRef(
-  components: ComponentSet,
-  node: RefNode,
-  prop: string,
-  remainingHops: number,
-): Option<PublicPropTarget> {
-  const inner = publicPropTargetWithin(
-    components,
-    { component: node.ref, prop },
-    remainingHops,
-  );
-  return Option.map(inner, (target) => {
-    const override = RecordEx.get(node.overrides ?? {}, prop);
-    return Option.isSome(override) ? { ...target, declared: override } : target;
-  });
-}
-
-/**
- * 公開 prop の繋ぎ先を、入れ子の部品を越えてたどる。`remainingHops` が尽きたら `none`
- * （循環参照でも止まらなくなるのを防ぐため）。
- *
- * @param components 引き先の部品一式
- * @param ref たどり始める部品名と公開 prop 名
- * @param remainingHops あと何段たどれるか
- * @returns 宣言と設定値の対。部品・binding・指し先が無い場合と、
- *   段数が尽きた場合は `none`
- */
-function publicPropTargetWithin(
-  components: ComponentSet,
-  ref: PublicPropRef,
-  remainingHops: number,
-): Option<PublicPropTarget> {
-  if (remainingHops <= 0) {
-    return Option.none;
-  }
-  const component = RecordEx.get(components, ref.component);
-  if (!Option.isSome(component)) {
-    return Option.none;
-  }
-  const binding = Component.binding(component.value, ref.prop);
-  if (!Option.isSome(binding)) {
-    return Option.none;
-  }
-  const target = Component.findNode(
-    component.value,
-    ref.component,
-    binding.value.node,
-  );
-  if (!Option.isSome(target)) {
-    return Option.none;
-  }
-  return Node.isRef(target.value)
-    ? targetThroughRef(
-        components,
-        target.value,
-        binding.value.prop,
-        remainingHops - 1,
-      )
-    : targetInPrimitive(target.value, binding.value.prop);
-}
-
 /** 部品定義の一覧に対する引き当て・部品をまたぐ解決と、JSON 表現との相互変換。 */
 export const ComponentSet = {
   /**
@@ -601,32 +477,6 @@ export const ComponentSet = {
    */
   has(components: ComponentSet, name: string): boolean {
     return RecordEx.has(components, name);
-  },
-
-  /**
-   * 公開 prop が binding でどの prop に繋がっているかを解く。
-   * 公開 prop の名前だけからは値の語彙が決まらない（enum なのかトークン参照なのかは
-   * binding 先の宣言が持つ）ため、prop 定義まで辿って返す。
-   *
-   * binding 先が参照ノードなら相手の部品へ辿り直す。循環参照は検証エラーとして
-   * 検出されるが、不正なドキュメントも画面には残る（docs/03「不正ファイル時の挙動」）
-   * ため、部品数をホップ上限にして必ず停止させる。
-   *
-   * @param components 引き先の部品一式
-   * @param ref たどり始める部品名と公開 prop 名
-   * @returns binding 先の prop 定義と、部品定義がそこに設定している値（途中の参照ノードが上書き
-   *   していればその値）。部品・binding・binding 先のノードが無いとき、binding 先のノードの型が
-   *   未知かその prop がスキーマに無いとき、循環してホップ上限に達したときは `none`
-   */
-  publicPropTarget(
-    components: ComponentSet,
-    ref: PublicPropRef,
-  ): Option<PublicPropTarget> {
-    return publicPropTargetWithin(
-      components,
-      ref,
-      ComponentSet.names(components).length,
-    );
   },
 
   /**
