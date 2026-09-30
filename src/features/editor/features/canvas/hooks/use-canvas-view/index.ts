@@ -7,13 +7,13 @@ import {
   useRef,
 } from "react";
 import type { Offset } from "@/domains/unit/offset";
-import { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import {
   CanvasView,
   type FitBounds,
 } from "@/features/editor/features/canvas/domains/canvas-view";
 import { CanvasPointer } from "@/features/editor/features/canvas/utils/CanvasPointer";
 import { DrawnBounds } from "@/features/editor/features/canvas/utils/DrawnBounds";
+import { CanvasDom } from "@/libs/canvas-dom";
 import { CommandKey } from "@/libs/dom-event";
 import { Option } from "@/utils/Option";
 
@@ -186,7 +186,7 @@ export function useCanvasView(): CanvasViewControl {
         bounds: {
           target: target.value,
           // 収める先は土台そのもの。その左上が中身の transform の原点になる
-          viewport: CanvasBounds.ofElement(surface),
+          viewport: CanvasDom.boundsOf(surface),
         },
       });
     },

@@ -1,6 +1,7 @@
 import { type RefObject, useLayoutEffect, useState } from "react";
 import { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { DrawnBounds } from "@/features/editor/features/canvas/utils/DrawnBounds";
+import { CanvasDom } from "@/libs/canvas-dom";
 import { Option } from "@/utils/Option";
 
 /**
@@ -18,7 +19,7 @@ function measure(
   if (container === null) {
     return Option.none;
   }
-  const origin = CanvasBounds.ofElement(container);
+  const origin = CanvasDom.boundsOf(container);
   return Option.map(Option.flatMap(target, DrawnBounds.measure), (bounds) =>
     CanvasBounds.relativeTo(bounds, origin),
   );

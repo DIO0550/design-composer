@@ -102,8 +102,8 @@ function measureZone(parent: InsertionParent): Option<DropZone> {
   return Option.map(CanvasDom.elementOf(parent.name), (element) =>
     DropZone.create(
       parent,
-      CanvasBounds.ofElement(element),
-      namedChildrenOf(element).map(CanvasBounds.ofElement),
+      CanvasDom.boundsOf(element),
+      namedChildrenOf(element).map(CanvasDom.boundsOf),
     ),
   );
 }
@@ -162,12 +162,12 @@ function measureReposition(
   if (!measurable) {
     return Option.none;
   }
-  const droppedBounds = CanvasBounds.ofElement(droppedElement.value);
+  const droppedBounds = CanvasDom.boundsOf(droppedElement.value);
   const siblings = namedChildrenOf(droppedElement.value)
     .filter(
       (child) => child.getAttribute(ElementNameAttribute) !== carried.name,
     )
-    .map(CanvasBounds.ofElement);
+    .map(CanvasDom.boundsOf);
   return Option.some({
     shift: {
       name: dropped.name,
