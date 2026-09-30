@@ -1,3 +1,4 @@
+import { DocumentTemplate } from "@/domains/dcmp/design-document";
 import { ShorthandNames } from "@/domains/dcmp/primitive-schema";
 import type {
   PropControl,
@@ -71,7 +72,12 @@ export const TypographyControl: PropControl = {
   enabledBy: Option.none,
 };
 
-/** 色のトークンを選ぶ欄。見本が左に付く。 */
+/**
+ * 色のトークンを選ぶ欄。見本が左に付く。
+ *
+ * 実物の `background` は塗りの欄（`paintToken`）になるが、色の欄（`colorToken`）の見た目を
+ * 撮る story を残すためにこの形で置く。塗りの欄は下の `*PaintControl` が撮る。
+ */
 export const BackgroundControl: PropControl = {
   prop: "background",
   input: {
@@ -93,6 +99,55 @@ export const MissingBackgroundControl: PropControl = {
     color: Option.none,
   },
   value: Option.some("missing"),
+  defaultValue: Option.none,
+  enabledBy: Option.none,
+};
+
+/** 塗りの欄が colors のトークンを指しているとき。色の見本が左に付く。 */
+export const ColorPaintControl: PropControl = {
+  prop: "background",
+  input: {
+    kind: "paintToken",
+    namesByKind: { colors: ["white", "primary"], gradients: ["brand"] },
+    current: {
+      state: "owned",
+      token: { kind: "colors", name: "primary", value: "#7a34d6" },
+    },
+  },
+  value: Option.some("primary"),
+  defaultValue: Option.none,
+  enabledBy: Option.none,
+};
+
+/** 塗りの欄がどちらの種別にも無い名前を指しているとき。見本が出ず、名前は節の外に出る。 */
+export const UnresolvedPaintControl: PropControl = {
+  prop: "background",
+  input: {
+    kind: "paintToken",
+    namesByKind: { colors: ["white", "primary"], gradients: ["brand"] },
+    current: { state: "unresolved", name: "missing" },
+  },
+  value: Option.some("missing"),
+  defaultValue: Option.none,
+  enabledBy: Option.none,
+};
+
+/** 塗りの欄が gradients のトークンを指しているとき。階調の見本が左に付く。 */
+export const GradientPaintControl: PropControl = {
+  prop: "background",
+  input: {
+    kind: "paintToken",
+    namesByKind: { colors: ["white", "primary"], gradients: ["brand"] },
+    current: {
+      state: "owned",
+      token: {
+        kind: "gradients",
+        name: "brand",
+        value: DocumentTemplate.Default.tokens.gradients.brand,
+      },
+    },
+  },
+  value: Option.some("brand"),
   defaultValue: Option.none,
   enabledBy: Option.none,
 };

@@ -7,6 +7,7 @@ import type { ColorToken } from "@/domains/dcmp/token";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { Option } from "@/utils/Option";
 import {
+  type CurrentPaint,
   type PropControl,
   type PropControlSection,
   PropShorthandControl,
@@ -134,13 +135,25 @@ export function controlNamed(
 export function colorOfControl(
   control: PropControl | undefined,
 ): Option<ColorToken> {
-  switch (control?.input.kind) {
-    case "colorToken":
-    case "paintToken":
-      return control.input.color;
-    default:
-      throw new Error("色のトークン参照の編集欄ではない");
+  if (control?.input.kind !== "colorToken") {
+    throw new Error("色のトークン参照の編集欄ではない");
   }
+  return control.input.color;
+}
+
+/**
+ * 塗りの編集欄の今の値。
+ *
+ * @param control 今の値を見たい編集欄
+ * @returns 塗りの欄の今の値。塗りの欄でなければテストを落とす
+ */
+export function currentPaintOfControl(
+  control: PropControl | undefined,
+): CurrentPaint {
+  if (control?.input.kind !== "paintToken") {
+    throw new Error("塗りの編集欄ではない");
+  }
+  return control.input.current;
 }
 
 /**

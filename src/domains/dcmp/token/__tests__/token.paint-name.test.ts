@@ -197,3 +197,48 @@ test("塗り用の 2 種別のどちらも持っていない名前は、他の�
     state: "dangling",
   });
 });
+
+test("colors にだけある名前は、その色のトークンへ解決する", () => {
+  expect(TokenSet.resolvePaintToken(setupTokens(), "primary")).toEqual({
+    state: "owned",
+    token: { kind: "colors", name: "primary", value: "#3b82f6" },
+  });
+});
+
+test("gradients にだけある名前は、そのグラデーションのトークンへ解決する", () => {
+  expect(TokenSet.resolvePaintToken(setupTokens(), "fade")).toEqual({
+    state: "owned",
+    token: { kind: "gradients", name: "fade", value: Fade },
+  });
+});
+
+test("colors と gradients の両方にある名前は、どちらのトークンへも解決しない", () => {
+  const tokens: TokenSet = {
+    ...TokenSet.empty(),
+    colors: { brand: "#3b82f6" },
+    gradients: { brand: Fade },
+  };
+
+  expect(TokenSet.resolvePaintToken(tokens, "brand")).toEqual({
+    state: "conflicted",
+  });
+});
+
+test("塗り用の 2 種別のどちらも持っていない名前は、他の種別にあってもトークンへ解決しない", () => {
+  expect(TokenSet.resolvePaintToken(setupTokens(), "sm")).toEqual({
+    state: "dangling",
+  });
+});
+
+test("塗りの名前の並びは、両方の種別にある名前を除いてその種別の並びで出る", () => {
+  const tokens: TokenSet = {
+    ...TokenSet.empty(),
+    colors: { primary: "#3b82f6", brand: "#123456", white: "#ffffff" },
+    gradients: { brand: Fade },
+  };
+
+  expect(TokenSet.ownedPaintNames(tokens, "colors")).toEqual([
+    "primary",
+    "white",
+  ]);
+});

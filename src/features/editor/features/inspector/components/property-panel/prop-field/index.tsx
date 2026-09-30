@@ -1,13 +1,18 @@
 import { type ReactElement, useId, useRef } from "react";
-import { ColorSwatch } from "@/components/color-swatch";
+import { ColorSwatch, GradientSwatch } from "@/components/color-swatch";
 import { SegmentedControl } from "@/components/segmented-control";
 import type { PropEdit } from "@/domains/dcmp/node";
-import type { ColorToken } from "@/domains/dcmp/token";
+import {
+  GradientToken,
+  type PaintKindToken,
+  PaintTokenKinds,
+} from "@/domains/dcmp/token";
 import {
   EditContinuities,
   type EditContinuity,
 } from "@/domains/session/edit-continuity";
 import {
+  type CurrentPaint,
   PropCollapsedControl,
   PropControl,
   type PropControlInput,
@@ -127,20 +132,26 @@ export function collapsedFieldOf(
   };
 }
 
+/** 選択欄の中の 1 節。見出しの下にトークン名を並べる。 */
+type TokenOptionGroup = Readonly<{ label: string; names: readonly string[] }>;
+
 /**
  * トークン名から選ぶ入力欄。
  *
- * @param names 選択肢に出すトークン名（ファイル由来の不正な参照を含む）
+ * @param names 節の外に出すトークン名（ファイル由来の不正な参照を含む）
+ * @param groups `names` の後ろに並べる節。省略すると節を出さない
  * @param describedBy 欄に添えた説明の識別子。省略すると説明を繋がない
  * @returns トークン名の選択欄
  */
 function TokenSelect({
   field,
   names,
+  groups = [],
   describedBy,
 }: Readonly<{
   field: FieldBinding;
   names: readonly string[];
+  groups?: readonly TokenOptionGroup[];
   describedBy?: string;
 }>): ReactElement {
   return (
@@ -159,35 +170,115 @@ function TokenSelect({
           {name}
         </option>
       ))}
+      {groups.map((group) => (
+        <optgroup key={group.label} label={group.label}>
+          {group.names.map((name) => (
+            <option key={name} value={name}>
+              {name}
+            </option>
+          ))}
+        </optgroup>
+      ))}
     </select>
   );
 }
 
 /**
- * 色の見本を添えたトークン名の選択欄。
+ * 見本を添えたトークン名の選択欄。
  *
  * 見本を欄の内側に置かない（UI 案 docs/Design Composer.html は内側）。ネイティブの
  * `<select>` の中には要素を描けず、内側に置くには一覧そのものを自作することになる（キーボ
  * ード操作と読み上げを自前で持つ）。
  *
- * @param names 選択肢に出すトークン名
- * @param color 今効いている名前が指す色。色でなければ見本を出さない
+ * @param swatch 欄の外に添える見本。無ければ選択欄だけ
+ * @param names 節の外に出すトークン名
+ * @param groups `names` の後ろに並べる節。省略すると節を出さない
  * @returns 見本と選択欄を並べた行
  */
-function ColorTokenSelect({
+function SwatchedTokenSelect({
   field,
+  swatch,
   names,
-  color,
+  groups,
 }: Readonly<{
   field: FieldBinding;
+  swatch: Option<ReactElement>;
   names: readonly string[];
-  color: Option<ColorToken>;
+  groups?: readonly TokenOptionGroup[];
 }>): ReactElement {
   return (
     <div className="flex min-w-0 items-center gap-2">
-      {Option.isSome(color) ? <ColorSwatch color={color.value} /> : null}
-      <TokenSelect field={field} names={names} />
+      {Option.isSome(swatch) ? swatch.value : null}
+      <TokenSelect field={field} names={names} groups={groups} />
     </div>
+  );
+}
+
+/**
+ * 塗りの見本。単色なら色、グラデーションなら階調で塗る。
+ *
+ * @param paint 見本にする塗りのトークン
+ * @returns 種別に応じた見本
+ */
+function PaintSwatch({
+  paint,
+}: Readonly<{ paint: PaintKindToken }>): ReactElement {
+  switch (paint.kind) {
+    case "colors":
+      return <ColorSwatch color={paint.value} />;
+    case "gradients":
+      return <GradientSwatch gradient={GradientToken.cssValue(paint.value)} />;
+  }
+}
+
+/** 塗りの欄の今の値から決まる、見本と節の外に出す名前。 */
+type PaintFieldParts = Readonly<{
+  swatch: Option<PaintKindToken>;
+  outsideNames: readonly string[];
+}>;
+
+/**
+ * 塗りの欄の今の値を、見本と節の外に出す名前にする（docs/06-ui.md「編集操作の一覧」）。
+ *
+ * @param current 塗りの欄の今の値
+ * @returns 解決した塗りを見本に持ち、解決しない名前だけを節の外に出す組
+ */
+function paintFieldPartsOf(current: CurrentPaint): PaintFieldParts {
+  switch (current.state) {
+    case "unset":
+      return { swatch: current.defaultPaint, outsideNames: [] };
+    case "owned":
+      return { swatch: Option.some(current.token), outsideNames: [] };
+    case "unresolved":
+      return { swatch: Option.none, outsideNames: [current.name] };
+  }
+}
+
+/**
+ * 塗り（colors と gradients）のトークン名を種別ごとの節に分けて選ぶ欄。
+ *
+ * @returns 今の塗りの見本と、名前がある種別だけを節にした選択欄を並べた行
+ */
+function PaintTokenSelect({
+  field,
+  input,
+}: Readonly<{
+  field: FieldBinding;
+  input: Extract<PropControlInput, { kind: "paintToken" }>;
+}>): ReactElement {
+  const groups = PaintTokenKinds.map((kind) => ({
+    label: kind,
+    names: input.namesByKind[kind],
+  })).filter((group) => group.names.length > 0);
+  const { swatch, outsideNames } = paintFieldPartsOf(input.current);
+
+  return (
+    <SwatchedTokenSelect
+      field={field}
+      swatch={Option.map(swatch, (paint) => <PaintSwatch paint={paint} />)}
+      names={outsideNames}
+      groups={groups}
+    />
   );
 }
 
@@ -351,21 +442,16 @@ export function PropField({
       );
     case "colorToken":
       return (
-        <ColorTokenSelect
+        <SwatchedTokenSelect
           field={field}
+          swatch={Option.map(input.color, (color) => (
+            <ColorSwatch color={color} />
+          ))}
           names={input.names}
-          color={input.color}
         />
       );
-    /* gradients の名前はまだ出さない。欄での見せ方が決まっていない（docs/03「塗り」）。 */
     case "paintToken":
-      return (
-        <ColorTokenSelect
-          field={field}
-          names={input.names}
-          color={input.color}
-        />
-      );
+      return <PaintTokenSelect field={field} input={input} />;
     case "number":
       return <LiteralInput field={field} inputType="number" />;
     case "text":

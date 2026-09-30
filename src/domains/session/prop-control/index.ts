@@ -19,6 +19,8 @@ import {
 import {
   type ColorToken,
   type NumericTokenKind,
+  type PaintKindToken,
+  type PaintTokenKinds,
   TokenSet,
 } from "@/domains/dcmp/token";
 import { DocumentSelection } from "@/domains/session/document-selection";
@@ -55,9 +57,9 @@ import { RecordEx } from "@/utils/RecordEx";
  * ト、トークンを `▾` 付きの欄と描き分けているため（畳むと、パネル側が選択肢の出どころを
  * prop 名でしか判別できない）。
  *
- * `paintToken` は colors と gradients を指せる `background` の欄。`names` は colors の名前
- * （今の値が無ければ先頭へ足す。他の欄の `names` と同じ扱い）、`gradients` は gradients の
- * 名前で、2 種別を 1 つの並びに混ぜない。
+ * `paintToken` は colors と gradients を指せる `background` の欄。`namesByKind` は種別ごとに
+ * その種別へ解決する名前を持つ（2 種別を 1 つの並びに混ぜない / docs/06-ui.md「編集操作の
+ * 一覧」）。今の値がどちらへも解決しないときは、並びへ足さずに `current` が持つ。
  */
 export type PropControlInput =
   | Readonly<{ kind: "enum"; values: readonly string[] }>
@@ -74,12 +76,24 @@ export type PropControlInput =
     }>
   | Readonly<{
       kind: "paintToken";
-      names: readonly string[];
-      gradients: readonly string[];
-      color: Option<ColorToken>;
+      namesByKind: Readonly<Record<PaintTokenKinds[number], readonly string[]>>;
+      current: CurrentPaint;
     }>
   | Readonly<{ kind: "number" }>
   | Readonly<{ kind: "text" }>;
+
+/**
+ * 塗りの欄の今の値。欄での見え方（docs/06-ui.md「編集操作の一覧」）が変わる単位で分ける。
+ *
+ * - `unset`: 明示値が無い。既定値が解決した塗りを持つ
+ * - `owned`: 明示値が 1 つの種別のトークンへ解決している
+ * - `unresolved`: 明示値が両方の種別にある / どちらにも無い（2 つの区別は
+ *   `TokenSet.resolvePaintToken` が持つ）
+ */
+export type CurrentPaint =
+  | Readonly<{ state: "unset"; defaultPaint: Option<PaintKindToken> }>
+  | Readonly<{ state: "owned"; token: PaintKindToken }>
+  | Readonly<{ state: "unresolved"; name: string }>;
 
 /**
  * 1 prop 分の編集欄。
@@ -218,26 +232,39 @@ function colorOf(
 }
 
 /**
- * 塗りの欄で効いているトークン名が指す色。
+ * 塗りの欄の今の値。
  *
- * 名前を colors から直接引かない。colors と gradients の両方にある名前はどちらとも決まらず
- * （docs/03「塗り」）、colors を引くと片方を優先して見本を出すことになる。
- *
- * @param effective 今その prop に効いているトークン名
- * @param tokens 名前の種別と色を引くトークン一式
- * @returns その名前が colors だけにあるときの色。gradients の名前・両方にある名前・実在し
- *   ない名前・効いている名前が無いときは `none`
+ * @param value 今その prop に設定されている値
+ * @param defaultValue 設定が無いときに効く値
+ * @param tokens 名前を引くトークン一式
+ * @returns 設定が無ければ既定値が解決した塗りを持つ `unset`。設定が 1 つの種別へ解決すれば
+ *   `owned`、しなければその名前を持つ `unresolved`
  */
-function paintColorOf(
-  effective: Option<PropValue>,
+function currentPaintOf(
+  value: Option<PropValue>,
+  defaultValue: Option<PropValue>,
   tokens: TokenSet,
-): Option<ColorToken> {
-  return Option.flatMap(effective, (name) => {
-    const resolution = TokenSet.resolvePaintName(tokens, String(name));
-    const isColor =
-      resolution.state === "owned" && resolution.tokenKind === "colors";
-    return isColor ? TokenSet.findColor(tokens, String(name)) : Option.none;
-  });
+): CurrentPaint {
+  if (!Option.isSome(value)) {
+    return {
+      state: "unset",
+      defaultPaint: Option.flatMap(defaultValue, (name) => {
+        const resolution = TokenSet.resolvePaintToken(tokens, String(name));
+        return resolution.state === "owned"
+          ? Option.some(resolution.token)
+          : Option.none;
+      }),
+    };
+  }
+  const name = String(value.value);
+  const resolution = TokenSet.resolvePaintToken(tokens, name);
+  switch (resolution.state) {
+    case "owned":
+      return { state: "owned", token: resolution.token };
+    case "conflicted":
+    case "dangling":
+      return { state: "unresolved", name };
+  }
 }
 
 /**
@@ -265,7 +292,8 @@ function numberOf(
  * @param editable 入力の形を決める prop
  * @param value 今その prop に設定されている値
  * @param tokens トークン参照の選択肢と解決値の出どころ
- * @returns 値域に応じた入力欄の形。選択式には今の値も選択肢として含む
+ * @returns 値域に応じた入力欄の形。enum と単一種別のトークン参照は今の値も選択肢として
+ *   含み、塗りはどちらの種別へも解決しない今の値を並びへ足さずに `current` に持つ
  */
 function inputOf(
   editable: EditableProp,
@@ -288,15 +316,13 @@ function inputOf(
   const effective = Option.or(value, editable.defaultValue);
   if (definition.tokenKind.length === 2) {
     const [colors, gradients] = definition.tokenKind;
-    /*
-     * 2 種別を 1 つの並びに混ぜない。どちらの種別の一覧から選ばせるかは docs/03「塗り」が
-     * 決めておらず、混ぜると並び順と見分け方をここで決めることになる。
-     */
     return {
       kind: "paintToken",
-      names: withCurrentValue(TokenSet.names(tokens, colors), value),
-      gradients: TokenSet.names(tokens, gradients),
-      color: paintColorOf(effective, tokens),
+      namesByKind: {
+        colors: TokenSet.ownedPaintNames(tokens, colors),
+        gradients: TokenSet.ownedPaintNames(tokens, gradients),
+      },
+      current: currentPaintOf(value, editable.defaultValue, tokens),
     };
   }
   const [kind] = definition.tokenKind;
