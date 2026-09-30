@@ -90,6 +90,38 @@ function collectOccurrences(
   return [...componentOccurrences, ...artboardOccurrences];
 }
 
+/** 自動リネームが連番とみなす名前の末尾（`-` と数字）と、それを除いた基底名。 */
+const SequencedNamePattern = /^(.+)-([0-9]+)$/;
+
+/**
+ * 自動リネームが付ける連番の最小値。
+ *
+ * 連番は `bigint` で数える。`number` では 2^53 を超えた番号が `+ 1` で進まず空きを探すループが
+ * 止まらなくなり、10^21 以上は `1e+21` と綴られて識別子の規則を破る。
+ */
+const FirstSequenceNumber = 2n;
+
+/** 連番を付ける基底名と、空きを探し始める番号。 */
+type SequenceStart = Readonly<{ baseName: string; from: bigint }>;
+
+/**
+ * `<基底名>-<番号>` の形で、使用済みの名前と衝突しない最初の名前を探す。
+ *
+ * @param start 連番を付ける基底名と、探し始める番号
+ * @param taken 既に使われている名前
+ * @returns `start.from` から順に番号を増やして最初に空いていた `<基底名>-<番号>`
+ */
+function firstAvailableSequencedName(
+  start: SequenceStart,
+  taken: ReadonlySet<string>,
+): string {
+  let sequenceNumber = start.from;
+  while (taken.has(`${start.baseName}-${sequenceNumber}`)) {
+    sequenceNumber += 1n;
+  }
+  return `${start.baseName}-${sequenceNumber}`;
+}
+
 /**
  * 使用済みの名前と衝突しない名前を作る。衝突するなら連番を付ける。
  *
@@ -104,11 +136,38 @@ function nextAvailableName(
   if (!taken.has(baseName)) {
     return baseName;
   }
-  let suffix = 2;
-  while (taken.has(`${baseName}-${suffix}`)) {
-    suffix += 1;
+  return firstAvailableSequencedName(
+    { baseName, from: FirstSequenceNumber },
+    taken,
+  );
+}
+
+/**
+ * 既にある名前の複製に、使用済みの名前と衝突しない名前を付ける。規則は `renameSubtree` の
+ * `@returns` のとおり。
+ *
+ * 剥がした基底名そのものは返さない。`12-3` から数字だけの `12` を作ると識別子の規則を破り、
+ * `title-2` の複製が元の `title` と取り違えられる。
+ *
+ * @param name 複製元の名前
+ * @param taken 既に使われている名前
+ * @returns 衝突しなければ `name` そのまま、衝突すれば連番を付け直した名前
+ */
+function nextAvailableCopyName(
+  name: string,
+  taken: ReadonlySet<string>,
+): string {
+  const sequenced = SequencedNamePattern.exec(name);
+  if (sequenced === null) {
+    return nextAvailableName(name, taken);
   }
-  return `${baseName}-${suffix}`;
+  if (!taken.has(name)) {
+    return name;
+  }
+  const [, baseName, sequenceNumber] = sequenced;
+  const next = BigInt(sequenceNumber) + 1n;
+  const from = next < FirstSequenceNumber ? FirstSequenceNumber : next;
+  return firstAvailableSequencedName({ baseName, from }, taken);
 }
 
 export const DocumentNames = {
@@ -244,6 +303,10 @@ export const DocumentNames = {
   /**
    * この名前空間と衝突しない名前。衝突する場合は連番を付ける。
    *
+   * `baseName` の末尾の `-<数字>` は、`renameSubtree` と違って連番とみなさない。基底名には部品名
+   * がそのまま来るので、剥がすと部品 `icon-24` のインスタンスが `icon-25` のような別の部品の名前
+   * に見える名前になる。
+   *
    * @param documentNames 衝突を避ける名前空間
    * @param baseName 付けたい名前。識別子の規則を満たすかは見ない
    * @returns 衝突しなければ `baseName` そのまま、衝突すれば `baseName-2` から順に空いている
@@ -258,9 +321,11 @@ export const DocumentNames = {
    *
    * @param documentNames 衝突を避ける名前空間
    * @param nodes 付け替える部分木の根の並び
-   * @returns 自分と子孫の名前を行きがけ順に 1 つずつ `uniqueName` と同じ規則で付け替えた
-   *   ノードの並び。先に付け替えた名前とも衝突しないので、部分木に同じ名前が複数あっても
-   *   別々の名前になる。衝突しない名前はそのまま残る
+   * @returns 自分と子孫の名前を行きがけ順に 1 つずつ付け替えたノードの並び。衝突する名前は、
+   *   末尾の `-<数字>` を連番とみなしてその番号 + 1（2 未満なら 2）から空きを探し
+   *   （`title-2` → `title-3`）、連番の無い名前には `uniqueName` と同じく `-2` から付ける
+   *   （docs/01-file-format.md「ノードの識別（name）」）。先に付け替えた名前とも衝突しないので、
+   *   部分木に同じ名前が複数あっても別々の名前になる。衝突しない名前はそのまま残る
    */
   renameSubtree(
     documentNames: DocumentNames,
@@ -269,7 +334,7 @@ export const DocumentNames = {
     return Node.renameEach(
       nodes,
       DocumentNames.toSet(documentNames),
-      nextAvailableName,
+      nextAvailableCopyName,
     );
   },
 } as const;

@@ -107,7 +107,7 @@ test("部品インスタンスの複製を挿しても参照先の部品名は�
   );
 
   expect(result.artboards[0].children[1]).toEqual({
-    name: "primary-button-1-2",
+    name: "primary-button-2",
     ref: "primary-button",
   });
 });

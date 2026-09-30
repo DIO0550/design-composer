@@ -27,7 +27,7 @@ test("部分木の子孫もまとめて付け替わる", () => {
 
   expect(DocumentNames.renameSubtree(documentNames, [node])).toEqual([
     {
-      name: "box-1-2",
+      name: "box-2",
       type: "Box",
       children: [{ name: "label-2", type: "Text" }],
     },
@@ -41,7 +41,7 @@ test("複数のノードを付け替えると、付け替えた名前どうし�
 
   expect(DocumentNames.renameSubtree(documentNames, [first, second])).toEqual([
     { name: "label-3", type: "Text" },
-    { name: "label-2-2", type: "Text" },
+    { name: "label-4", type: "Text" },
   ]);
 });
 
