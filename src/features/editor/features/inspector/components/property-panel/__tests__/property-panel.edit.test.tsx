@@ -63,6 +63,20 @@ test("トークン参照の prop を選び直すとその値が入力欄に反�
   );
 });
 
+test("塗りの欄で gradients の名前を選ぶと、その名前が欄に反映される", async () => {
+  const { user } = setupEditablePanel("home-body");
+
+  await user.selectOptions(
+    screen.getByRole("combobox", { name: "Background" }),
+    ["brand"],
+  );
+
+  expect(screen.getByRole("combobox", { name: "Background" })).toHaveProperty(
+    "value",
+    "brand",
+  );
+});
+
 test("インスタンスの公開 prop を書き換えると overrides として反映される", async () => {
   const { user } = setupEditablePanel("home-action");
 
