@@ -27,22 +27,6 @@ const EdgeSides = {
 
 export const CanvasBounds = {
   /**
-   * 描かれている要素の矩形。レイアウトはブラウザが行うので実測で取る。
-   *
-   * @param element 測る要素
-   * @returns その要素の今の client 座標の矩形
-   */
-  ofElement(element: Element): CanvasBounds {
-    const rect = element.getBoundingClientRect();
-    return {
-      left: rect.left,
-      top: rect.top,
-      width: rect.width,
-      height: rect.height,
-    };
-  },
-
-  /**
    * 2 つの矩形が同じ位置・同じ大きさか。
    *
    * 測り直した結果を持ち替えるかどうかの判定に使う（`useDrawnBounds`）。

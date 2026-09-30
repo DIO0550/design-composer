@@ -3,7 +3,7 @@ import { CanvasDom } from "@/libs/canvas-dom";
 import { Option } from "@/utils/Option";
 
 /**
- * キャンバスに描かれているものの実測を 1 箇所に集める（`CanvasPointer` と同じ形）。
+ * 名前で指した、キャンバスに描かれているものの実測をまとめる（`CanvasPointer` と同じ形）。
  */
 export const DrawnBounds = {
   /**
@@ -13,7 +13,7 @@ export const DrawnBounds = {
    * @returns 描かれている矩形。その名前の要素がまだ画面に出ていなければ `none`
    */
   measure(name: string): Option<CanvasBounds> {
-    return Option.map(CanvasDom.elementOf(name), CanvasBounds.ofElement);
+    return Option.map(CanvasDom.elementOf(name), CanvasDom.boundsOf);
   },
 
   /**
