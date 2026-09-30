@@ -1747,14 +1747,10 @@ export const DesignDocument = {
       document.tokens,
     );
 
-    const componentErrors = ComponentSet.names(document.components).flatMap(
-      (name) => {
-        const component = ComponentSet.get(document.components, name);
-        if (!Option.isSome(component)) {
-          return [];
-        }
-        return collectComponentErrors(context, name, component.value);
-      },
+    const componentErrors = ComponentSet.toNamedComponents(
+      document.components,
+    ).flatMap(({ name, component }) =>
+      collectComponentErrors(context, name, component),
     );
     const artboardErrors = document.artboards.flatMap((artboard) =>
       collectArtboardErrors(context, artboard),
