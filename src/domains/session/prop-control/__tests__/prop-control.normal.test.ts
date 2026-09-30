@@ -11,6 +11,7 @@ import { SelectionControls } from "../index";
 import {
   colorOfControl,
   controlsIn,
+  currentPaintOfControl,
   resolvedValueOfControl,
   sectionsOf,
 } from "./setup";
@@ -143,27 +144,46 @@ test("色のトークン参照の prop はトークン名から選ぶコント�
 test("塗りの prop は colors と gradients の名前を種別ごとに分けて持つ", () => {
   const selection = setupSelection([{ name: "box", type: "Box" }], "box");
 
-  expect(controlOf(selection, "background")?.input).toEqual({
-    kind: "paintToken",
-    names: Object.keys(DocumentTemplate.Default.tokens.colors),
+  const input = controlOf(selection, "background")?.input;
+  expect(input?.kind === "paintToken" ? input.namesByKind : undefined).toEqual({
+    colors: Object.keys(DocumentTemplate.Default.tokens.colors),
     gradients: ["brand"],
-    color: Option.none,
   });
 });
 
-test("塗りの prop が gradients の名前を指しているときも、その名前が選択肢の先頭に出る", () => {
+test("塗りの prop が gradients の名前を指しているときは、そのグラデーションを今の値として持つ", () => {
   const selection = setupSelection(
     [{ name: "box", type: "Box", props: { background: "brand" } }],
     "box",
   );
 
-  const input = controlOf(selection, "background")?.input;
-  expect(input?.kind === "paintToken" ? input.names[0] : undefined).toBe(
-    "brand",
-  );
+  expect(currentPaintOfControl(controlOf(selection, "background"))).toEqual({
+    state: "owned",
+    token: {
+      kind: "gradients",
+      name: "brand",
+      value: DocumentTemplate.Default.tokens.gradients.brand,
+    },
+  });
 });
 
-test("colors と gradients の両方にある名前を指す塗りの prop は色を持たない", () => {
+test("塗りの prop が colors の名前を指しているときは、その色を今の値として持つ", () => {
+  const selection = setupSelection(
+    [{ name: "box", type: "Box", props: { background: "primary" } }],
+    "box",
+  );
+
+  expect(currentPaintOfControl(controlOf(selection, "background"))).toEqual({
+    state: "owned",
+    token: {
+      kind: "colors",
+      name: "primary",
+      value: DocumentTemplate.Default.tokens.colors.primary,
+    },
+  });
+});
+
+test("colors と gradients の両方にある名前を指す塗りの prop は、解決しない名前として持つ", () => {
   const tokens = DocumentTemplate.Default.tokens;
   const selection = DocumentSelection.fromNames(
     DesignDocument.create({
@@ -182,31 +202,31 @@ test("colors と gradients の両方にある名前を指す塗りの prop は�
     ["box"],
   );
 
-  expect(colorOfControl(controlOf(selection, "background"))).toEqual(
-    Option.none,
-  );
+  expect(currentPaintOfControl(controlOf(selection, "background"))).toEqual({
+    state: "unresolved",
+    name: "brand",
+  });
 });
 
-test("塗りの prop が gradients の名前を指しているときは色を持たない", () => {
+test("実在しないトークンを指す塗りの prop は、解決しない名前として持つ", () => {
   const selection = setupSelection(
-    [{ name: "box", type: "Box", props: { background: "brand" } }],
+    [{ name: "box", type: "Box", props: { background: "nope" } }],
     "box",
   );
 
-  expect(colorOfControl(controlOf(selection, "background"))).toEqual(
-    Option.none,
-  );
+  expect(currentPaintOfControl(controlOf(selection, "background"))).toEqual({
+    state: "unresolved",
+    name: "nope",
+  });
 });
 
-test("色のトークン参照の prop は設定されている色を持つ", () => {
-  const selection = setupSelection(
-    [{ name: "box", type: "Box", props: { background: "primary" } }],
-    "box",
-  );
+test("値も既定も持たない塗りの prop は、既定の塗りを持たない未設定になる", () => {
+  const selection = setupSelection([{ name: "box", type: "Box" }], "box");
 
-  expect(colorOfControl(controlOf(selection, "background"))).toEqual(
-    Option.some(DocumentTemplate.Default.tokens.colors.primary),
-  );
+  expect(currentPaintOfControl(controlOf(selection, "background"))).toEqual({
+    state: "unset",
+    defaultPaint: Option.none,
+  });
 });
 
 test("値が無くても既定を持つ色のトークン参照は既定の色を持つ", () => {
@@ -217,23 +237,24 @@ test("値が無くても既定を持つ色のトークン参照は既定の色�
   );
 });
 
-test("値も既定も持たない色のトークン参照は色を持たない", () => {
-  const selection = setupSelection([{ name: "box", type: "Box" }], "box");
+test("色のトークン参照の prop は設定されている色を持つ", () => {
+  const selection = setupSelection(
+    [{ name: "label", type: "Text", props: { color: "primary" } }],
+    "label",
+  );
 
-  expect(colorOfControl(controlOf(selection, "background"))).toEqual(
-    Option.none,
+  expect(colorOfControl(controlOf(selection, "color"))).toEqual(
+    Option.some(DocumentTemplate.Default.tokens.colors.primary),
   );
 });
 
 test("実在しないトークンを指す色の prop は色を持たない", () => {
   const selection = setupSelection(
-    [{ name: "box", type: "Box", props: { background: "nope" } }],
-    "box",
+    [{ name: "label", type: "Text", props: { color: "nope" } }],
+    "label",
   );
 
-  expect(colorOfControl(controlOf(selection, "background"))).toEqual(
-    Option.none,
-  );
+  expect(colorOfControl(controlOf(selection, "color"))).toEqual(Option.none);
 });
 
 test("宣言に無い値が設定されている enum はその値も選択肢に出る", () => {

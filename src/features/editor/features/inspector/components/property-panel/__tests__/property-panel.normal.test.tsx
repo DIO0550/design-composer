@@ -1,12 +1,15 @@
 import { screen, within } from "@testing-library/react";
 import { expect, test } from "vitest";
 import { pressedSegmentsOf } from "@/components/__tests__/segmented-controls";
-import { ColorSwatchTestId } from "@/components/color-swatch";
+import {
+  ColorSwatchTestId,
+  GradientSwatchTestId,
+} from "@/components/color-swatch";
 import {
   DesignDocument,
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
-import type { TokenSet } from "@/domains/dcmp/token";
+import { GradientToken, type TokenSet } from "@/domains/dcmp/token";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { renderPanel } from "./setup";
 
@@ -34,6 +37,7 @@ function setupDocument(): DesignDocument {
           { name: "home-title", type: "Text", props: { content: "ホーム" } },
           { name: "home-action", ref: "primary-button" },
           { name: "home-body", type: "Box", props: { widthMode: "fixed" } },
+          { name: "home-banner", type: "Box", props: { background: "brand" } },
           /* ファイル由来の不正な値。スキーマの `layout` に `diagonal` は無い。 */
           {
             name: "home-odd",
@@ -64,17 +68,53 @@ function optionValuesOf(select: HTMLElement): readonly string[] {
 }
 
 /**
- * その入力欄に添えられている色の見本。
+ * その入力欄に添えられている見本。
  *
  * @param select 見本を探す起点になる入力欄
+ * @param testId 探す見本の目印。省略すると色の見本
  * @returns 同じ行に置かれた見本。無ければ `null`
  */
-function swatchNextTo(select: HTMLElement): HTMLElement | null {
+function swatchNextTo(
+  select: HTMLElement,
+  testId: string = ColorSwatchTestId,
+): HTMLElement | null {
   return (
     select.parentElement?.querySelector<HTMLElement>(
-      `[data-testid="${ColorSwatchTestId}"]`,
+      `[data-testid="${testId}"]`,
     ) ?? null
   );
+}
+
+/**
+ * 選択欄の直下に並ぶもの。節は見出しで、節の外の選択肢は値で表す。
+ *
+ * @param select 読む選択欄
+ * @returns 直下の子を欄に並んだ順で並べたもの
+ */
+function topLevelOf(select: HTMLElement): readonly string[] {
+  return [...select.children].map((child) => {
+    if (child instanceof HTMLOptGroupElement) {
+      return `optgroup:${child.label}`;
+    }
+    return child instanceof HTMLOptionElement
+      ? `option:${child.value}`
+      : child.tagName;
+  });
+}
+
+/**
+ * 選択欄の節の見出しと、その中の選択肢。
+ *
+ * @param select 節を読む選択欄
+ * @returns 節ごとの見出しと選択肢の値を、欄に並んだ順で並べたもの
+ */
+function optionGroupsOf(
+  select: HTMLElement,
+): readonly Readonly<{ label: string; values: readonly string[] }>[] {
+  return [...select.querySelectorAll("optgroup")].map((group) => ({
+    label: group.label,
+    values: optionValuesOf(group),
+  }));
 }
 
 test("何も選択していないときは選択されていないことを伝える", () => {
@@ -144,18 +184,73 @@ test("トークン参照の prop はトークン名から選ぶ入力欄にな�
   ).toContain("primary");
 });
 
-test("塗りの欄の選択肢には colors の名前だけが出て、gradients の名前は出ない", () => {
+test("塗りの欄は colors と gradients の名前を種別ごとの節に分けて出す", () => {
   renderSelected("home");
 
-  const options = optionValuesOf(
-    screen.getByRole("combobox", { name: "Background" }),
-  );
-  expect([options.includes("white"), options.includes("brand")]).toEqual([
-    true,
-    false,
+  expect(
+    optionGroupsOf(screen.getByRole("combobox", { name: "Background" })),
+  ).toEqual([
+    { label: "colors", values: Object.keys(Tokens.colors) },
+    { label: "gradients", values: ["brand"] },
   ]);
 });
 
+test("gradients を 1 つも持たない文書では、塗りの欄に gradients の節を出さない", () => {
+  renderPanel(
+    DocumentSelection.fromNames(
+      DesignDocument.create({
+        tokens: { ...Tokens, gradients: {} },
+        artboards: [{ name: "home", width: 360, height: 240, children: [] }],
+      }),
+      ["home"],
+    ),
+  );
+
+  expect(
+    optionGroupsOf(screen.getByRole("combobox", { name: "Background" })).map(
+      (group) => group.label,
+    ),
+  ).toEqual(["colors"]);
+});
+
+test("どちらの種別にも解決しない名前を指す塗りの欄は、その名前を節の外の先頭に出す", () => {
+  renderSelected("home-odd");
+
+  expect(
+    topLevelOf(screen.getByRole("combobox", { name: "Background" })),
+  ).toEqual([
+    "option:",
+    "option:missing",
+    "optgroup:colors",
+    "optgroup:gradients",
+  ]);
+});
+
+test("解決する名前を指す塗りの欄は、その名前を節の外へ足さない", () => {
+  renderSelected("home-banner");
+
+  expect(
+    topLevelOf(screen.getByRole("combobox", { name: "Background" })),
+  ).toEqual(["option:", "optgroup:colors", "optgroup:gradients"]);
+});
+
+test("colors と gradients の両方にある名前は、塗りの欄のどちらの節にも出ない", () => {
+  renderPanel(
+    DocumentSelection.fromNames(
+      DesignDocument.create({
+        tokens: { ...Tokens, colors: { ...Tokens.colors, brand: "#123456" } },
+        artboards: [{ name: "home", width: 360, height: 240, children: [] }],
+      }),
+      ["home"],
+    ),
+  );
+
+  expect(
+    optionGroupsOf(
+      screen.getByRole("combobox", { name: "Background" }),
+    ).flatMap((group) => group.values),
+  ).not.toContain("brand");
+});
 test("未指定のトークン参照は既定値付きの未指定が選ばれ、明示設定と区別できる", () => {
   renderSelected("home-title");
 
@@ -164,13 +259,87 @@ test("未指定のトークン参照は既定値付きの未指定が選ばれ�
   ).toHaveProperty("selected", true);
 });
 
-test("色のトークン参照には今効いている色の見本が出る", () => {
+test("塗りの欄が colors の名前を指すと、その色の見本が出る", () => {
   renderSelected("home");
 
   const swatch = swatchNextTo(
     screen.getByRole("combobox", { name: "Background" }),
   );
   expect(swatch?.style.backgroundColor).toBe(Tokens.colors.white);
+});
+
+test("色のトークン参照には今効いている色の見本が出る", () => {
+  renderSelected("home-title");
+
+  const swatch = swatchNextTo(screen.getByRole("combobox", { name: "Color" }));
+  expect(swatch?.style.backgroundColor).toBe(Tokens.colors["gray-900"]);
+});
+
+test("上書きしていない塗りの公開 prop には、部品が設定している階調の見本が出る", () => {
+  renderPanel(
+    DocumentSelection.fromNames(
+      DesignDocument.create({
+        tokens: Tokens,
+        components: {
+          "banner-card": {
+            publicProps: {
+              background: { node: "banner-card", prop: "background" },
+            },
+            type: "Box",
+            props: { background: "brand" },
+            children: [],
+          },
+        },
+        artboards: [
+          {
+            name: "home",
+            width: 360,
+            height: 240,
+            children: [{ name: "home-banner-card", ref: "banner-card" }],
+          },
+        ],
+      }),
+      ["home-banner-card"],
+    ),
+  );
+
+  expect(
+    swatchNextTo(
+      screen.getByRole("combobox", { name: "Background" }),
+      GradientSwatchTestId,
+    ),
+  ).not.toBeNull();
+});
+
+test("colors の名前を指す塗りの欄には階調の見本が出ない", () => {
+  renderSelected("home");
+
+  expect(
+    swatchNextTo(
+      screen.getByRole("combobox", { name: "Background" }),
+      GradientSwatchTestId,
+    ),
+  ).toBeNull();
+});
+
+test("gradients の名前を指す塗りの欄には、その階調の見本が出る", () => {
+  renderSelected("home-banner");
+
+  const swatch = swatchNextTo(
+    screen.getByRole("combobox", { name: "Background" }),
+    GradientSwatchTestId,
+  );
+  expect(swatch?.style.backgroundImage).toBe(
+    GradientToken.cssValue(Tokens.gradients.brand),
+  );
+});
+
+test("gradients の名前を指す塗りの欄には色の見本が出ない", () => {
+  renderSelected("home-banner");
+
+  expect(
+    swatchNextTo(screen.getByRole("combobox", { name: "Background" })),
+  ).toBeNull();
 });
 
 test("数値のトークン参照には解決後の値が欄の説明として添えて出る", () => {
