@@ -588,7 +588,7 @@ function toColorErrorLocation(
       return {
         location: {
           tokenName: position.name,
-          prop: `stops[${position.stopIndex}].color`,
+          prop: `${Json.elementPath("stops", position.stopIndex)}.color`,
         },
         subject: `the stop ${position.stopIndex} color of gradient token "${position.name}"`,
       };
