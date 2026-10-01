@@ -130,3 +130,25 @@ test("トークンを指すエラーにはトークン名が出る", () => {
 
   expect(screen.getByText("brand")).toBeDefined();
 });
+
+test("トークンの中の位置で起きたエラーにはトークン名と位置が出る", () => {
+  render(
+    <DocumentErrorList
+      origin={DocumentErrorOrigins.UnopenedFile}
+      errors={[
+        {
+          kind: "invalid-color",
+          message:
+            'the stop 1 color of gradient token "hero" is not a hex color in normal form (#rrggbb / #rrggbbaa)',
+          location: {
+            kind: "token",
+            tokenName: "hero",
+            prop: "stops[1].color",
+          },
+        },
+      ]}
+    />,
+  );
+
+  expect(screen.getByText("hero.stops[1].color")).toBeDefined();
+});

@@ -89,3 +89,27 @@ test("未知の型のノードは、prop を持たずにそのノードを指す
     DocumentError.collectFrom(document).map((error) => error.location),
   ).toStrictEqual([{ kind: "node", nodeName: "widget" }]);
 });
+
+test("グラデーションの stop の hex でない色は、そのトークンと stop の位置を指すエラーになる", () => {
+  const document = DesignDocument.create({
+    tokens: {
+      ...TokenSet.empty(),
+      gradients: {
+        hero: {
+          shape: "linear",
+          angle: 90,
+          stops: [
+            { color: "#3b82f6", ratio: 0 },
+            { color: "red", ratio: 1 },
+          ],
+        },
+      },
+    },
+  });
+
+  expect(
+    DocumentError.collectFrom(document).map((error) => error.location),
+  ).toStrictEqual([
+    { kind: "token", tokenName: "hero", prop: "stops[1].color" },
+  ]);
+});
