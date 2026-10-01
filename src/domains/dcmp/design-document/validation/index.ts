@@ -26,7 +26,7 @@ import {
   ReferenceContext,
 } from "@/domains/dcmp/reference-context";
 import { Size } from "@/domains/dcmp/size";
-import { TokenSet } from "@/domains/dcmp/token";
+import { type TokenColorPosition, TokenSet } from "@/domains/dcmp/token";
 import { Option } from "@/utils/Option";
 import type { DesignDocumentV1 as DesignDocument } from "../v1";
 
@@ -64,12 +64,19 @@ type NodeValidationError = Readonly<{
   message: string;
 }>;
 
-/** トークンを指す不正 1 件。どのトークンかと、診断用のメッセージを持つ。 */
+/**
+ * トークンを指す不正 1 件。どのトークンの（あれば）トークンの中のどこかと、診断用のメッセージを
+ * 持つ。
+ */
 type TokenValidationError = Readonly<{
   kind: TokenValidationErrorKind;
   tokenName: string;
+  prop?: string;
   message: string;
 }>;
+
+/** トークンでのエラーの発生位置。`prop` はトークンの中の位置（影の `color` 等）。 */
+type TokenErrorLocation = Readonly<{ tokenName: string; prop?: string }>;
 
 /**
  * 不正 1 件。ノードを指すものとトークンを指すものがある。
@@ -530,20 +537,55 @@ function collectPaintNameConflictErrors(
 }
 
 /**
- * 値が正規形の hex でない colors トークン（docs/04-tokens.md「colors」）。
+ * 不正な色の場所を、エラーの位置とメッセージの主語にする。
+ *
+ * @param position `TokenSet.collectInvalidColorPositions` が返した場所
+ * @returns 位置にはトークン名を入れる。影は `color`、グラデーションは `stops[<添字>].color`
+ *   を prop に持ち、colors トークンは prop を持たない
+ */
+function toColorErrorLocation(
+  position: TokenColorPosition,
+): Readonly<{ location: TokenErrorLocation; subject: string }> {
+  switch (position.kind) {
+    case "colors":
+      return {
+        location: { tokenName: position.name },
+        subject: `color token "${position.name}"`,
+      };
+    case "shadows":
+      return {
+        location: { tokenName: position.name, prop: "color" },
+        subject: `the color of shadow token "${position.name}"`,
+      };
+    case "gradients":
+      return {
+        location: {
+          tokenName: position.name,
+          prop: `stops[${position.stopIndex}].color`,
+        },
+        subject: `the stop ${position.stopIndex} color of gradient token "${position.name}"`,
+      };
+  }
+}
+
+/**
+ * 色が正規形の hex でないトークン（docs/04-tokens.md「colors」）。
  *
  * @param tokens 検証するトークン一式
- * @returns `TokenSet.collectInvalidColorNames` が返す名前ごとの invalid-color エラーの並び
+ * @returns `TokenSet.collectInvalidColorPositions` が返す場所ごとの invalid-color エラーの並び
  */
-export function collectColorTokenErrors(
+export function collectInvalidColorErrors(
   tokens: TokenSet,
 ): readonly TokenValidationError[] {
-  return TokenSet.collectInvalidColorNames(tokens).map(
-    (name): TokenValidationError => ({
-      kind: "invalid-color",
-      tokenName: name,
-      message: `color token "${name}" is not a hex color in normal form (#rrggbb / #rrggbbaa)`,
-    }),
+  return TokenSet.collectInvalidColorPositions(tokens).map(
+    (position): TokenValidationError => {
+      const { location, subject } = toColorErrorLocation(position);
+      return {
+        kind: "invalid-color",
+        ...location,
+        message: `${subject} is not a hex color in normal form (#rrggbb / #rrggbbaa)`,
+      };
+    },
   );
 }
 

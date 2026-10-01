@@ -198,6 +198,19 @@ export const GradientToken = {
   },
 
   /**
+   * 色が正規形の hex でない色の変わり目(docs/04-tokens.md「colors」)。
+   *
+   * @param gradient 色を確かめるグラデーション
+   * @returns `ColorToken.isValid` を満たさない色の変わり目の添字(0 始まり)を、並びの順で
+   *   並べたもの
+   */
+  collectInvalidColorStopIndexes(gradient: GradientToken): readonly number[] {
+    return gradient.stops.flatMap((stop, index) =>
+      ColorToken.isValid(stop.color) ? [] : [index],
+    );
+  },
+
+  /**
    * CSS の `background` に置ける値として綴る（docs/04-tokens.md「gradients」）。
    *
    * 色の変わり目は書かれた順のまま並べ、2 件に満たなくてもそのまま綴る。

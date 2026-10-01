@@ -256,12 +256,18 @@ export const TokenReferrer = {
     components: ComponentSet,
     ref: TokenRef,
   ): readonly TokenReferrer[] {
-    return Object.entries(components).flatMap(([name, component]) => {
-      const ownReferrers = collectComponentRootReferrers(name, component, ref);
-      const childReferrers = (component.children ?? []).flatMap((child) =>
-        collectNodeReferrers(components, child, ref),
-      );
-      return [...ownReferrers, ...childReferrers];
-    });
+    return ComponentSet.toNamedComponents(components).flatMap(
+      ({ name, component }) => {
+        const ownReferrers = collectComponentRootReferrers(
+          name,
+          component,
+          ref,
+        );
+        const childReferrers = (component.children ?? []).flatMap((child) =>
+          collectNodeReferrers(components, child, ref),
+        );
+        return [...ownReferrers, ...childReferrers];
+      },
+    );
   },
 } as const;

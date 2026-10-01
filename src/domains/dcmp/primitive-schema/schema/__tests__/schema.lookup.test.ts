@@ -21,3 +21,19 @@ test("プリミティブに無い型名からはスキーマが引けない", ()
 test("Object.prototype 上の名前からはスキーマが引けない", () => {
   expect(PrimitiveSchema.forTypeName("constructor")).toEqual(Option.none);
 });
+
+test("Box が宣言している prop は、その定義が引ける", () => {
+  expect(PrimitiveSchema.propDefinition("Box", "layout")).toEqual(
+    Option.some(BoxSchema.props.layout),
+  );
+});
+
+test("Text が宣言していない prop 名からは定義が引けない", () => {
+  expect(PrimitiveSchema.propDefinition("Text", "layout")).toEqual(Option.none);
+});
+
+test("Object.prototype 上の名前からは prop の定義が引けない", () => {
+  expect(PrimitiveSchema.propDefinition("Box", "constructor")).toEqual(
+    Option.none,
+  );
+});

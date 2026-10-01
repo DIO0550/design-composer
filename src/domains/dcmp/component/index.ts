@@ -101,6 +101,15 @@ export type Component = Readonly<{
 export type ComponentSet = Readonly<Record<string, Component>>;
 
 /**
+ * 部品一式の 1 件。部品定義は自分の名前を持たない（名前は一式のキー）ため、1 件ずつ扱う
+ * 消費側のために名前と対にする。
+ */
+export type NamedComponent = Readonly<{
+  name: string;
+  component: Component;
+}>;
+
+/**
  * パレットに 1 件として並ぶ部品（UI 案 docs/Design Composer.html の `Assets`。ここでの
  * `Assets` はバイナリ資産ではなく**部品のパレット**を指す）。
  *
@@ -460,11 +469,10 @@ function targetInPrimitive(
   node: PrimitiveNode,
   prop: string,
 ): Option<PublicPropTarget> {
-  const schema = PrimitiveSchema.forTypeName(node.type);
-  if (!Option.isSome(schema)) {
+  if (!PrimitiveSchema.isPrimitiveType(node.type)) {
     return Option.none;
   }
-  const definition = RecordEx.get<PropDefinition>(schema.value.props, prop);
+  const definition = PrimitiveSchema.propDefinition(node.type, prop);
   if (!Option.isSome(definition)) {
     return Option.none;
   }
@@ -560,6 +568,19 @@ export const ComponentSet = {
   },
 
   /**
+   * 部品一式を名前と部品定義の組の並びへ展開する。
+   *
+   * @param components 展開する部品一式
+   * @returns 部品 1 つにつき 1 件。並びは `names` と同じ
+   */
+  toNamedComponents(components: ComponentSet): readonly NamedComponent[] {
+    return Object.entries(components).map(([name, component]) => ({
+      name,
+      component,
+    }));
+  },
+
+  /**
    * 部品定義を名前で引く。
    *
    * @param components 引き先の部品一式
@@ -626,14 +647,14 @@ export const ComponentSet = {
     components: ComponentSet,
     outsideNodes: readonly Node[],
   ): readonly ComponentAsset[] {
-    const entries = Object.entries(components);
-    const refsInComponents = entries.flatMap(([, component]) =>
+    const namedComponents = ComponentSet.toNamedComponents(components);
+    const refsInComponents = namedComponents.flatMap(({ component }) =>
       Component.collectRefs(component),
     );
     const refsOutside = outsideNodes.flatMap(Node.collectRefs);
     const refs = [...refsInComponents, ...refsOutside];
 
-    return entries.map(([name, component]) => ({
+    return namedComponents.map(({ name, component }) => ({
       name,
       publicPropNames: Component.publicPropNames(component),
       refCount: refs.filter((ref) => ref === name).length,

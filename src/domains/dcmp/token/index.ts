@@ -123,12 +123,43 @@ export type Token = {
   [K in TokenKind]: Readonly<{ kind: K; name: string; value: TokenValueOf[K] }>;
 }[TokenKind];
 
+/** 塗り用の 2 種別（`PaintTokenKinds`）のトークン 1 件。 */
+export type PaintKindToken = Extract<
+  Token,
+  Readonly<{ kind: PaintTokenKinds[number] }>
+>;
+
+/**
+ * 塗りの名前がどのトークンへ解決するか（docs/03-schema.md「塗り」）。
+ * `PaintNameResolution` と同じ 3 つの状態で、解決したときはトークンの値まで持つ。
+ */
+export type PaintTokenResolution =
+  | Readonly<{ state: "owned"; token: PaintKindToken }>
+  | Readonly<{ state: "conflicted" }>
+  | Readonly<{ state: "dangling" }>;
+
 /**
  * トークン1件を指す。
  * 名前の一意性は種別の中でしか保証されない(docs/04-tokens.md「命名規則」。塗り用の 2 種別
  * だけは互いの間でも一意)ので、種別と名前は常に対でしか意味を持たない。
  */
 export type TokenRef = Readonly<{ kind: TokenKind; name: string }>;
+
+/**
+ * トークン一式の中で色を持つ場所 1 つ（docs/04-tokens.md「値の形式」）。
+ *
+ * - `colors`: 色トークンそのもの
+ * - `shadows`: 影トークンの `color`
+ * - `gradients`: グラデーショントークンの `stops` の `stopIndex` 番目（0 始まり）の `color`
+ */
+export type TokenColorPosition =
+  | Readonly<{ kind: typeof TokenKinds.Colors; name: string }>
+  | Readonly<{ kind: typeof TokenKinds.Shadows; name: string }>
+  | Readonly<{
+      kind: typeof TokenKinds.Gradients;
+      name: string;
+      stopIndex: number;
+    }>;
 
 /** トークンの追加・改名・変更・削除が失敗する理由。 */
 export type TokenEditError =
@@ -391,6 +422,34 @@ function withRenamedToken(
 }
 
 /**
+ * 塗りの種別の中で名前を引く。
+ *
+ * @param tokens 引き先のトークン一式
+ * @param ref 引く塗りの種別と名前
+ * @returns そのトークン。その種別にその名前が無ければ `none`（相手の種別の同名は見ない）
+ */
+function findPaintKindToken(
+  tokens: TokenSet,
+  ref: Readonly<{ kind: PaintTokenKinds[number]; name: string }>,
+): Option<PaintKindToken> {
+  const { kind, name } = ref;
+  switch (kind) {
+    case TokenKinds.Colors:
+      return Option.map(RecordEx.get(tokens.colors, name), (value) => ({
+        kind,
+        name,
+        value,
+      }));
+    case TokenKinds.Gradients:
+      return Option.map(RecordEx.get(tokens.gradients, name), (value) => ({
+        kind,
+        name,
+        value,
+      }));
+  }
+}
+
+/**
  * 種別ごとに値の型が違うので、読み出し元の種別で分岐する。
  *
  * @param tokens 読み出し元のトークン一式
@@ -642,16 +701,53 @@ export const TokenSet = {
    *   （docs/04「命名規則」が禁じている状態）。どちらも持っていなければ `dangling`
    */
   resolvePaintName(tokens: TokenSet, name: string): PaintNameResolution {
-    const owners = PaintTokenKinds.filter((kind) =>
-      TokenSet.has(tokens, kind, name),
-    );
+    const resolution = TokenSet.resolvePaintToken(tokens, name);
+    switch (resolution.state) {
+      case "owned":
+        return { state: "owned", tokenKind: resolution.token.kind };
+      case "conflicted":
+      case "dangling":
+        return resolution;
+    }
+  },
+
+  /**
+   * 塗りの名前がどのトークンへ解決するか。`resolvePaintName` と同じ規則で、解決したときは
+   * そのトークンを返す。
+   *
+   * @param tokens 名前を探すトークン一式
+   * @param name 探す名前
+   * @returns 1 つの種別だけが持っていれば、そのトークンを持つ `owned`。両方が持っていれば
+   *   `conflicted`。どちらも持っていなければ `dangling`
+   */
+  resolvePaintToken(tokens: TokenSet, name: string): PaintTokenResolution {
+    const owners = PaintTokenKinds.map((kind) =>
+      findPaintKindToken(tokens, { kind, name }),
+    ).filter(Option.isSome);
     const [owner] = owners;
     if (owner === undefined) {
       return { state: "dangling" };
     }
     return owners.length === 1
-      ? { state: "owned", tokenKind: owner }
+      ? { state: "owned", token: owner.value }
       : { state: "conflicted" };
+  },
+
+  /**
+   * その種別へ解決する塗りの名前（両方の種別にある名前は、どちらへも解決しないので除く）。
+   *
+   * @param tokens 名前を読み出すトークン一式
+   * @param kind 読み出す塗りの種別
+   * @returns その種別の名前のうち `resolvePaintName` が `owned` になるものを、
+   *   `TokenSet.names` と同じ並びで並べたもの
+   */
+  ownedPaintNames(
+    tokens: TokenSet,
+    kind: PaintTokenKinds[number],
+  ): readonly string[] {
+    return TokenSet.names(tokens, kind).filter(
+      (name) => TokenSet.resolvePaintName(tokens, name).state === "owned",
+    );
   },
 
   /**
@@ -684,16 +780,29 @@ export const TokenSet = {
   },
 
   /**
-   * 値が正規形の hex でない色の名前（docs/04-tokens.md「colors」）。
-   * 影・グラデーションの中の色は見ない（docs/03-schema.md「バリデーション仕様」）。
+   * 色が正規形の hex でない場所（docs/04-tokens.md「colors」）。見る場所は
+   * `TokenColorPosition` の種類のすべて。
    *
    * @param tokens 色を確かめるトークン一式
-   * @returns `ColorToken.isValid` を満たさない色の名前を colors の並びの順で並べたもの
+   * @returns `ColorToken.isValid` を満たさない色の場所を、colors → shadows → gradients の順、
+   *   種別の中は書かれた順、グラデーションの中は stop の順で並べたもの
    */
-  collectInvalidColorNames(tokens: TokenSet): readonly string[] {
-    return Object.entries(tokens.colors)
+  collectInvalidColorPositions(
+    tokens: TokenSet,
+  ): readonly TokenColorPosition[] {
+    const colorPositions = Object.entries(tokens.colors)
       .filter(([, color]) => !ColorToken.isValid(color))
-      .map(([name]) => name);
+      .map(([name]) => ({ kind: TokenKinds.Colors, name }));
+    const shadowPositions = Object.entries(tokens.shadows)
+      .filter(([, shadow]) => !ColorToken.isValid(shadow.color))
+      .map(([name]) => ({ kind: TokenKinds.Shadows, name }));
+    const gradientPositions = Object.entries(tokens.gradients).flatMap(
+      ([name, gradient]) =>
+        GradientToken.collectInvalidColorStopIndexes(gradient).map(
+          (stopIndex) => ({ kind: TokenKinds.Gradients, name, stopIndex }),
+        ),
+    );
+    return [...colorPositions, ...shadowPositions, ...gradientPositions];
   },
 
   /**

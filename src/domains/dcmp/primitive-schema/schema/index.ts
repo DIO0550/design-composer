@@ -4,8 +4,10 @@ import { PaintTokenKinds } from "@/domains/dcmp/token";
 import { Visibilities, Visibility } from "@/domains/dcmp/visibility";
 import type { ValueOf } from "@/types/ValueOf";
 import { Option } from "@/utils/Option";
+import { RecordEx } from "@/utils/RecordEx";
 import {
   type EnabledWhen,
+  type PropDefinition,
   type PropDefinitionRecord,
   ShorthandNames,
 } from "../prop-definition";
@@ -406,6 +408,19 @@ export const PrimitiveSchema = {
       return Option.none;
     }
     return Option.some(PrimitiveSchemas[type]);
+  },
+
+  /**
+   * その primitive が宣言している prop の定義を、prop 名で引く。
+   *
+   * @param type 定義を引く primitive の型
+   * @param prop 定義を知りたい prop 名。ファイル由来の未知の名前でもよい
+   * @returns その prop の定義。その型のスキーマが宣言していない名前（`constructor` のような
+   *   `Object.prototype` 上の名前を含む）なら `none`
+   */
+  propDefinition(type: PrimitiveType, prop: string): Option<PropDefinition> {
+    const schema: PrimitiveSchema = PrimitiveSchemas[type];
+    return RecordEx.get(schema.props, prop);
   },
 
   /**

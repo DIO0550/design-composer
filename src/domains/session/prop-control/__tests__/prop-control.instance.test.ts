@@ -9,6 +9,7 @@ import { DocumentSelection } from "@/domains/session/document-selection";
 import { Option } from "@/utils/Option";
 import {
   controlNamed,
+  currentPaintOfControl,
   instanceOf,
   resolvedValueOfControl,
   sectionsOf,
@@ -28,6 +29,13 @@ const Components: ComponentSet = {
     type: "Box",
     props: { gap: "lg" },
     children: [{ name: "gapped-card-title", type: "Text" }],
+  },
+  /** 塗りを公開 prop にしている部品。既定の塗りが階調へ解決するのを見るために使う。 */
+  "banner-card": {
+    publicProps: { background: { node: "banner-card", prop: "background" } },
+    type: "Box",
+    props: { background: "brand" },
+    children: [],
   },
   /** 公開 prop の並びと、条件つきの公開 prop を見るための部品。 */
   "sized-card": {
@@ -132,6 +140,47 @@ test("上書きしていない公開 prop は部品が設定している値が�
 
   expect(Option.isSome(control.value)).toBe(false);
   expect(control.defaultValue).toEqual(Option.some("Button"));
+});
+
+test("上書きしていない塗りの公開 prop は、部品が設定している階調を既定の塗りとして持つ", () => {
+  const selection = setupInstanceSelection({
+    name: "banner",
+    ref: "banner-card",
+  });
+
+  expect(
+    currentPaintOfControl(
+      controlNamed(instanceOf(selection).publicProps, "background"),
+    ),
+  ).toEqual({
+    state: "unset",
+    defaultPaint: Option.some({
+      kind: "gradients",
+      name: "brand",
+      value: DocumentTemplate.Default.tokens.gradients.brand,
+    }),
+  });
+});
+
+test("上書きしている塗りの公開 prop は、部品の既定ではなく上書きした塗りを今の値として持つ", () => {
+  const selection = setupInstanceSelection({
+    name: "banner",
+    ref: "banner-card",
+    overrides: { background: "primary" },
+  });
+
+  expect(
+    currentPaintOfControl(
+      controlNamed(instanceOf(selection).publicProps, "background"),
+    ),
+  ).toEqual({
+    state: "owned",
+    token: {
+      kind: "colors",
+      name: "primary",
+      value: DocumentTemplate.Default.tokens.colors.primary,
+    },
+  });
 });
 
 test("上書きしている公開 prop はその値がコントロールに乗る", () => {

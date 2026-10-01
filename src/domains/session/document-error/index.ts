@@ -18,7 +18,7 @@ export type DocumentErrorLocation =
   | Readonly<{ kind: "text-position"; position: number }>
   | Readonly<{ kind: "document-path"; path: string }>
   | Readonly<{ kind: "node"; nodeName: string; prop?: string }>
-  | Readonly<{ kind: "token"; tokenName: string }>
+  | Readonly<{ kind: "token"; tokenName: string; prop?: string }>
   | Readonly<{ kind: "whole-document" }>;
 
 export const DocumentErrorLocation = {
@@ -67,7 +67,7 @@ export type DocumentError = Readonly<{
 }>;
 
 /**
- * スキーマ検証の失敗は、どのノードの（あれば）どの prop か、またはどのトークンかを指す。
+ * スキーマ検証の失敗は、どのノードまたはトークンの（あれば）どの prop かを指す。
  *
  * @param error スキーマ検証が報告した失敗 1 件
  * @returns 失敗が指すノードまたはトークン
@@ -76,7 +76,11 @@ function locationOf(
   error: DesignDocumentValidationError,
 ): DocumentErrorLocation {
   if ("tokenName" in error) {
-    return { kind: "token", tokenName: error.tokenName };
+    return {
+      kind: "token",
+      tokenName: error.tokenName,
+      ...(error.prop !== undefined ? { prop: error.prop } : {}),
+    };
   }
   return {
     kind: "node",
