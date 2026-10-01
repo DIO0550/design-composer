@@ -79,7 +79,10 @@ test("name が欠落した artboard は missing-name エラーになる", () => 
   const errors = DesignDocument.collectErrors(document);
 
   expect(errors).toEqual([
-    expect.objectContaining({ kind: "missing-name", nodeName: "artboards" }),
+    expect.objectContaining({
+      kind: "missing-name",
+      documentPath: "artboards[0]",
+    }),
   ]);
 });
 
@@ -126,7 +129,7 @@ test("キーが空の部品は components の中のキーとして報告され�
   expect(errors).toEqual([
     expect.objectContaining({
       kind: "missing-name",
-      nodeName: "components",
+      documentPath: "components",
       message: 'key "" of "components" has no name',
     }),
   ]);
@@ -145,7 +148,7 @@ test("name が欠落した artboard は artboards の中の位置で報告され
   expect(errors).toEqual([
     expect.objectContaining({
       kind: "missing-name",
-      nodeName: "artboards",
+      documentPath: "artboards[1]",
       message: 'artboard 1 of "artboards" has no name',
     }),
   ]);
@@ -198,7 +201,10 @@ test("名前を持つ祖先が無いノードの欠落は、空の入れ物名�
   );
 
   expect(errors).toEqual([
-    expect.objectContaining({ kind: "missing-name", nodeName: "artboards" }),
+    expect.objectContaining({
+      kind: "missing-name",
+      documentPath: "artboards[0]",
+    }),
     expect.objectContaining({
       kind: "missing-name",
       nodeName: "",
