@@ -1,10 +1,10 @@
 {
-  "reportVersion": "73dd3617742e616f6a86b715ed6590222fa3b6f2",
+  "reportVersion": "09fc0fcdc55ef8e95d4c2cabbf244f36e6d5f582",
   "maxDiffRatio": 0.002,
   "changed": 0,
   "new": 1,
   "deleted": 0,
-  "passed": 181,
+  "passed": 184,
   "failed": 0,
   "results": [
     {
@@ -546,12 +546,12 @@
       "title": "features/editor/features/assets/CreateComponent",
       "name": "ファイルが不正な間に部品名を打っている",
       "status": "passed",
-      "reason": "within-threshold",
-      "diffPixels": 5,
+      "reason": "match",
+      "diffPixels": 0,
       "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": true
+      "hasDiff": false
     },
     {
       "story": "features-editor-features-assets-createcomponent--instance-selected",
@@ -1477,6 +1477,19 @@
       "hasDiff": false
     },
     {
+      "story": "features-editor-features-inspector-propertypanel-propfield--color-paint-token",
+      "id": "features-editor-features-inspector-propertypanel-propfield--color-paint-token",
+      "title": "features/editor/features/inspector/PropertyPanel/PropField",
+      "name": "塗りのトークン（色）",
+      "status": "passed",
+      "reason": "match",
+      "diffPixels": 0,
+      "diffRatio": 0,
+      "hasExpected": true,
+      "hasActual": true,
+      "hasDiff": false
+    },
+    {
       "story": "features-editor-features-inspector-propertypanel-propfield--color-token",
       "id": "features-editor-features-inspector-propertypanel-propfield--color-token",
       "title": "features/editor/features/inspector/PropertyPanel/PropField",
@@ -1507,6 +1520,19 @@
       "id": "features-editor-features-inspector-propertypanel-propfield--enum",
       "title": "features/editor/features/inspector/PropertyPanel/PropField",
       "name": "enum（未指定）",
+      "status": "passed",
+      "reason": "match",
+      "diffPixels": 0,
+      "diffRatio": 0,
+      "hasExpected": true,
+      "hasActual": true,
+      "hasDiff": false
+    },
+    {
+      "story": "features-editor-features-inspector-propertypanel-propfield--gradient-paint-token",
+      "id": "features-editor-features-inspector-propertypanel-propfield--gradient-paint-token",
+      "title": "features/editor/features/inspector/PropertyPanel/PropField",
+      "name": "塗りのトークン（グラデーション）",
       "status": "passed",
       "reason": "match",
       "diffPixels": 0,
@@ -1585,6 +1611,19 @@
       "id": "features-editor-features-inspector-propertypanel-propfield--token",
       "title": "features/editor/features/inspector/PropertyPanel/PropField",
       "name": "トークン名から選ぶ",
+      "status": "passed",
+      "reason": "match",
+      "diffPixels": 0,
+      "diffRatio": 0,
+      "hasExpected": true,
+      "hasActual": true,
+      "hasDiff": false
+    },
+    {
+      "story": "features-editor-features-inspector-propertypanel-propfield--unresolved-paint-token",
+      "id": "features-editor-features-inspector-propertypanel-propfield--unresolved-paint-token",
+      "title": "features/editor/features/inspector/PropertyPanel/PropField",
+      "name": "塗りのトークン（解決しない名前）",
       "status": "passed",
       "reason": "match",
       "diffPixels": 0,
