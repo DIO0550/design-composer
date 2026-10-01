@@ -113,3 +113,46 @@ test("グラデーションの stop の hex でない色は、そのトークン
     { kind: "token", tokenName: "hero", prop: "stops[1].color" },
   ]);
 });
+
+test("キーが空の部品は、components を指すドキュメント内のパスのエラーになる", () => {
+  const document = DesignDocument.create({
+    tokens: TokenSet.empty(),
+    components: { "": { type: "Box" } },
+  });
+
+  expect(
+    DocumentError.collectFrom(document).map((error) => error.location),
+  ).toStrictEqual([{ kind: "document-path", path: "components" }]);
+});
+
+test("名前が欠落した artboard は、artboards の中の添字を指すドキュメント内のパスのエラーになる", () => {
+  const document = DesignDocument.create({
+    tokens: TokenSet.empty(),
+    artboards: [
+      { name: "screen", width: 375, height: 812, children: [] },
+      { name: "", width: 375, height: 812, children: [] },
+    ],
+  });
+
+  expect(
+    DocumentError.collectFrom(document).map((error) => error.location),
+  ).toStrictEqual([{ kind: "document-path", path: "artboards[1]" }]);
+});
+
+test("名前が欠落した子ノードは、名前を持つ親ノードを指すエラーになる", () => {
+  const document = DesignDocument.create({
+    tokens: TokenSet.empty(),
+    artboards: [
+      {
+        name: "screen",
+        width: 375,
+        height: 812,
+        children: [{ name: "", type: "Box" }],
+      },
+    ],
+  });
+
+  expect(
+    DocumentError.collectFrom(document).map((error) => error.location),
+  ).toStrictEqual([{ kind: "node", nodeName: "screen" }]);
+});
