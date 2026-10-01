@@ -1,6 +1,7 @@
 import { Artboard } from "@/domains/dcmp/artboard";
 import type { Component } from "@/domains/dcmp/component";
 import { ComponentSet } from "@/domains/dcmp/component";
+import { ComponentBinding } from "@/domains/dcmp/component-binding";
 import {
   Node,
   type PrimitiveNode,
@@ -65,7 +66,7 @@ function collectSchemaRefProps(
  *
  * 参照ノードが持つのは自分の props ではなく部品への上書きなので、その値が何の prop なの
  * かは公開 prop の binding を辿って初めて決まる（辿るのは
- * `ComponentSet.publicPropTarget` の担当）。
+ * `ComponentBinding.resolvePublicPropTarget` の担当）。
  *
  * 他の経路と違いスキーマデフォルトを足さない。参照先の部品や公開 prop が無いときは prop 定
  * 義が決まらず数えない。
@@ -81,13 +82,11 @@ function collectRefNodeRefProps(
   ref: TokenRef,
 ): readonly string[] {
   return Props.toAssignments(refNode.overrides ?? {}).flatMap((assignment) => {
-    const definition = Option.map(
-      ComponentSet.publicPropTarget(components, {
-        component: refNode.ref,
-        prop: assignment.name,
-      }),
-      (target) => target.definition,
-    );
+    const target = ComponentBinding.resolvePublicPropTarget(components, {
+      component: refNode.ref,
+      prop: assignment.name,
+    });
+    const definition = Option.map(target, ({ definition }) => definition);
     const isRefTo =
       Option.isSome(definition) &&
       PropDefinition.isRefTo(definition.value, assignment, ref);

@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import type { ComponentSet } from "@/domains/dcmp/component";
+import { Option } from "@/utils/Option";
 import { ComponentBinding } from "../index";
 
 /** ラベルの文言を外へ公開しただけの部品。binding 先はプリミティブの Text。 */
@@ -28,7 +29,7 @@ function setupCard(): ComponentSet {
 test("binding 先がプリミティブならそのノードの prop 定義が解決される", () => {
   const components = setupButton();
 
-  const definition = ComponentBinding.resolvePropDefinition(
+  const target = ComponentBinding.resolvePropTarget(
     components,
     ComponentBinding.create("button", {
       node: "button-label",
@@ -36,7 +37,7 @@ test("binding 先がプリミティブならそのノードの prop 定義が解
     }),
   );
 
-  expect(definition).toEqual({
+  expect(Option.map(target, ({ definition }) => definition)).toEqual({
     some: true,
     value: expect.objectContaining({
       domain: "literal",
@@ -48,12 +49,12 @@ test("binding 先がプリミティブならそのノードの prop 定義が解
 test("binding 先が ref ノードなら参照先の publicProps を辿って解決される", () => {
   const components = setupCard();
 
-  const definition = ComponentBinding.resolvePropDefinition(
+  const target = ComponentBinding.resolvePropTarget(
     components,
     ComponentBinding.create("card", { node: "card-action", prop: "label" }),
   );
 
-  expect(definition).toEqual({
+  expect(Option.map(target, ({ definition }) => definition)).toEqual({
     some: true,
     value: expect.objectContaining({
       domain: "literal",
@@ -70,12 +71,12 @@ test("トークン参照 prop への binding はトークン種別を持つ定�
     },
   };
 
-  const definition = ComponentBinding.resolvePropDefinition(
+  const target = ComponentBinding.resolvePropTarget(
     components,
     ComponentBinding.create("panel", { node: "panel", prop: "background" }),
   );
 
-  expect(definition).toEqual({
+  expect(Option.map(target, ({ definition }) => definition)).toEqual({
     some: true,
     value: expect.objectContaining({
       domain: "token",

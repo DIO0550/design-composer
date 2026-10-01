@@ -1,5 +1,6 @@
 import { Artboard } from "@/domains/dcmp/artboard";
 import { Component, ComponentSet } from "@/domains/dcmp/component";
+import { ComponentBinding } from "@/domains/dcmp/component-binding";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import {
   Node,
@@ -379,7 +380,7 @@ function publicEditableProps(
     return [];
   }
   return Component.publicPropNames(component.value).flatMap((name) => {
-    const target = ComponentSet.publicPropTarget(components, {
+    const target = ComponentBinding.resolvePublicPropTarget(components, {
       component: node.ref,
       prop: name,
     });
