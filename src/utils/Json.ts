@@ -122,6 +122,17 @@ export const Json = {
   },
 
   /**
+   * 配列の要素の位置を綴る。
+   *
+   * @param arrayPath 配列の位置
+   * @param index 配列の中の要素の添字
+   * @returns `arrayPath[index]`
+   */
+  elementPath(arrayPath: string, index: number): string {
+    return `${arrayPath}[${index}]`;
+  },
+
+  /**
    * 失敗 1 件のデコード結果を作る。
    *
    * @param kind 失敗の種類
@@ -315,7 +326,10 @@ export const Json = {
     return Result.flatMap(Json.array(cursor), (items) =>
       Json.collect(
         items.map((item, index) =>
-          decodeItem({ value: item, path: `${cursor.path}[${index}]` }),
+          decodeItem({
+            value: item,
+            path: Json.elementPath(cursor.path, index),
+          }),
         ),
       ),
     );
