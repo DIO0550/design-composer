@@ -100,6 +100,11 @@
     "name": "スキーマ違反が複数"
   },
   {
+    "id": "features-editor-documenterrorlist--token-errors",
+    "title": "features/editor/DocumentErrorList",
+    "name": "トークンを指す不正"
+  },
+  {
     "id": "features-editor-documenterrorlist--unopened-file",
     "title": "features/editor/DocumentErrorList",
     "name": "開けなかったファイル"
