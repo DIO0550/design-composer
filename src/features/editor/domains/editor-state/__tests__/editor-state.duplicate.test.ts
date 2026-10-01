@@ -44,7 +44,7 @@ test("続けて複製すると、複製の複製がその直後に並ぶ", () =>
     "outer-panel",
     "sibling-panel",
     "sibling-panel-2",
-    "sibling-panel-2-2",
+    "sibling-panel-3",
     "home-login",
   ]);
 });
