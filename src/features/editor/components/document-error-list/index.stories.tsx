@@ -152,7 +152,8 @@ export const DocumentOrigin: Story = {
 };
 
 /**
- * トークンを指す不正と、同じ名前のノードを指す不正。`Reveal` が出るのはノードを指す行だけ。
+ * トークンを指す不正（トークンの中の位置を持つものを含む）と、同じ名前のノードを指す不正。
+ * `Reveal` が出るのはノードを指す行だけ。
  */
 export const TokenErrors: Story = {
   name: "トークンを指す不正",
@@ -170,6 +171,12 @@ export const TokenErrors: Story = {
         kind: "conflicting-token-name",
         message: 'token name "accent" is used in both colors and gradients',
         location: { kind: "token", tokenName: "accent" },
+      },
+      {
+        kind: "invalid-color",
+        message:
+          'the stop 1 color of gradient token "hero" is not a hex color in normal form (#rrggbb / #rrggbbaa)',
+        location: { kind: "token", tokenName: "hero", prop: "stops[1].color" },
       },
       {
         kind: "unknown-type",
