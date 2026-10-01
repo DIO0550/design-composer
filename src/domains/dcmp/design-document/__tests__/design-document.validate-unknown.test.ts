@@ -64,5 +64,8 @@ test("未知の type でも子ノードは独立して検証される", () => {
 
   const errors = DesignDocument.collectErrors(document);
 
-  expect(errors.map((error) => error.nodeName)).toEqual(["widget", "label"]);
+  expect(errors).toEqual([
+    expect.objectContaining({ nodeName: "widget" }),
+    expect.objectContaining({ nodeName: "label" }),
+  ]);
 });

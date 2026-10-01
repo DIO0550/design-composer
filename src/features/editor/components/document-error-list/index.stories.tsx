@@ -51,8 +51,8 @@ export const BrokenJson: Story = {
 };
 
 /**
- * 場所の持ち方が 4 種類そろう。`Reveal` が出るのはノードを指す 2 件だけで、出し分けがその
- * まま見える。
+ * トークン以外の場所の持ち方が 4 種類そろう（トークンは `TokenErrors`）。`Reveal` が出るのは
+ * ノードを指す 2 件だけで、出し分けがそのまま見える。
  */
 export const SchemaErrors: Story = {
   name: "スキーマ違反が複数",
@@ -146,6 +146,42 @@ export const DocumentOrigin: Story = {
         message:
           'prop "typography" references unknown typography token "heading"',
         location: { kind: "node", nodeName: "home-title", prop: "typography" },
+      },
+    ],
+  } satisfies DocumentErrorListProps,
+};
+
+/**
+ * トークンを指す不正（トークンの中の位置を持つものを含む）と、同じ名前のノードを指す不正。
+ * `Reveal` が出るのはノードを指す行だけ。
+ */
+export const TokenErrors: Story = {
+  name: "トークンを指す不正",
+  args: {
+    origin: DocumentErrorOrigins.Document,
+    onReveal: fn(),
+    errors: [
+      {
+        kind: "invalid-color",
+        message:
+          'color token "brand" is not a hex color in normal form (#rrggbb / #rrggbbaa)',
+        location: { kind: "token", tokenName: "brand" },
+      },
+      {
+        kind: "conflicting-token-name",
+        message: 'token name "accent" is used in both colors and gradients',
+        location: { kind: "token", tokenName: "accent" },
+      },
+      {
+        kind: "invalid-color",
+        message:
+          'the stop 1 color of gradient token "hero" is not a hex color in normal form (#rrggbb / #rrggbbaa)',
+        location: { kind: "token", tokenName: "hero", prop: "stops[1].color" },
+      },
+      {
+        kind: "unknown-type",
+        message: 'unknown type "Widget"',
+        location: { kind: "node", nodeName: "brand" },
       },
     ],
   } satisfies DocumentErrorListProps,

@@ -175,7 +175,7 @@ test("トークン名が識別子規則に違反していると invalid-identifi
   expect(errors).toEqual([
     expect.objectContaining({
       kind: "invalid-identifier",
-      nodeName: "Primary",
+      tokenName: "Primary",
     }),
   ]);
 });
@@ -292,7 +292,7 @@ test("数字だけのトークン名は invalid-identifier エラーになる", 
   const errors = DesignDocument.collectErrors(document);
 
   expect(errors).toEqual([
-    expect.objectContaining({ kind: "invalid-identifier", nodeName: "4" }),
+    expect.objectContaining({ kind: "invalid-identifier", tokenName: "4" }),
   ]);
 });
 
@@ -325,7 +325,10 @@ test("部品の名前の違反は artboard の名前の違反より先に報告�
 
   const errors = DesignDocument.collectErrors(document);
 
-  expect(errors.map((error) => error.nodeName)).toEqual(["Card", "Screen"]);
+  expect(errors).toEqual([
+    expect.objectContaining({ nodeName: "Card" }),
+    expect.objectContaining({ nodeName: "Screen" }),
+  ]);
 });
 
 test("入れ物の中の名前の違反と欠落は行きがけ順に報告される", () => {

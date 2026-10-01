@@ -30,8 +30,8 @@ import { type TokenColorPosition, TokenSet } from "@/domains/dcmp/token";
 import { Option } from "@/utils/Option";
 import type { DesignDocumentV1 as DesignDocument } from "../v1";
 
-/** ドキュメントが不正になる理由（docs/03-schema.md「バリデーション仕様」）。 */
-export type DesignDocumentValidationErrorKind =
+/** ノード（部品・artboard・子ノード）を指す不正の理由。 */
+type NodeValidationErrorKind =
   | PropValidationError["kind"]
   | "unknown-type"
   | "dangling-ref"
@@ -43,30 +43,63 @@ export type DesignDocumentValidationErrorKind =
   | "missing-name"
   | "invalid-identifier"
   | "duplicate-name"
+  | "fill-in-free-parent";
+
+/** トークンを指す不正の理由。 */
+type TokenValidationErrorKind =
+  | "invalid-identifier"
   | "conflicting-token-name"
-  | "fill-in-free-parent"
   | "invalid-color";
 
-/** 不正 1 件。どのノードのどの prop かと、診断用のメッセージを持つ。 */
-export type DesignDocumentValidationError = Readonly<{
-  kind: DesignDocumentValidationErrorKind;
+/** ドキュメントが不正になる理由（docs/03-schema.md「バリデーション仕様」）。 */
+export type DesignDocumentValidationErrorKind =
+  | NodeValidationErrorKind
+  | TokenValidationErrorKind;
+
+/** ノードを指す不正 1 件。どのノードのどの prop かと、診断用のメッセージを持つ。 */
+type NodeValidationError = Readonly<{
+  kind: NodeValidationErrorKind;
   nodeName: string;
   prop?: string;
   message: string;
 }>;
 
 /**
- * 発生位置（nodeName / prop）を持たないエラー。
- * 位置は検出側ではなく、その位置を知っている呼び出し側で付与する。
+ * トークンを指す不正 1 件。どのトークンの（あれば）トークンの中のどこかと、診断用のメッセージを
+ * 持つ。
  */
-type UnlocatedError = Readonly<{
-  kind: DesignDocumentValidationErrorKind;
+type TokenValidationError = Readonly<{
+  kind: TokenValidationErrorKind;
+  tokenName: string;
   prop?: string;
   message: string;
 }>;
 
-/** エラーの発生位置。 */
-type ErrorLocation = Readonly<{
+/** トークンでのエラーの発生位置。`prop` はトークンの中の位置（影の `color` 等）。 */
+type TokenErrorLocation = Readonly<{ tokenName: string; prop?: string }>;
+
+/**
+ * 不正 1 件。ノードを指すものとトークンを指すものがある。
+ *
+ * トークン名をノード名の位置に入れない。ノードとトークンは別の名前空間なので、入れると同名の
+ * ノードを指しているのと区別できなくなる。
+ */
+export type DesignDocumentValidationError =
+  | NodeValidationError
+  | TokenValidationError;
+
+/**
+ * 発生位置（nodeName / prop）を持たない、ノードを指すエラー。
+ * 位置は検出側ではなく、その位置を知っている呼び出し側で付与する。
+ */
+type UnlocatedError = Readonly<{
+  kind: NodeValidationErrorKind;
+  prop?: string;
+  message: string;
+}>;
+
+/** ノードでのエラーの発生位置。 */
+type NodeErrorLocation = Readonly<{
   nodeName: string;
   prop?: string;
 }>;
@@ -79,9 +112,9 @@ type ErrorLocation = Readonly<{
  * @returns 位置の付いた報告用のエラーの並び
  */
 function withLocation(
-  location: ErrorLocation,
+  location: NodeErrorLocation,
   errors: readonly UnlocatedError[],
-): readonly DesignDocumentValidationError[] {
+): readonly NodeValidationError[] {
   return errors.map((error) => {
     const prop = error.prop ?? location.prop;
     return {
@@ -155,7 +188,7 @@ function collectNodeErrors(
   node: Node,
   tokens: TokenSet,
   parentProps: Props,
-): readonly DesignDocumentValidationError[] {
+): readonly NodeValidationError[] {
   return Node.collectNestedPrimitives(node, parentProps).flatMap((nested) =>
     withLocation({ nodeName: nested.node.name }, [
       ...collectTypedPropErrors(nested.node.type, nested.node.props, tokens),
@@ -206,7 +239,7 @@ function toInstanceError(
 function collectNodeRefErrors(
   context: ReferenceContext,
   node: Node,
-): readonly DesignDocumentValidationError[] {
+): readonly NodeValidationError[] {
   return Node.collectRefNodes(node).flatMap((refNode) =>
     withLocation(
       { nodeName: refNode.name },
@@ -260,7 +293,7 @@ function collectBindingErrors(
   components: ComponentSet,
   componentName: string,
   component: Component,
-): readonly DesignDocumentValidationError[] {
+): readonly NodeValidationError[] {
   return Component.publicPropNames(component).flatMap((publicPropName) => {
     const binding = Component.binding(component, publicPropName);
     if (!Option.isSome(binding)) {
@@ -289,7 +322,7 @@ function collectBindingErrors(
 function collectPublicPropNameErrors(
   componentName: string,
   component: Component,
-): readonly DesignDocumentValidationError[] {
+): readonly NodeValidationError[] {
   return Component.collectInvalidPublicPropNames(component).flatMap(
     (publicPropName) =>
       withLocation({ nodeName: componentName, prop: publicPropName }, [
@@ -309,7 +342,7 @@ function collectPublicPropNameErrors(
  */
 export function collectCircularRefErrors(
   components: ComponentSet,
-): readonly DesignDocumentValidationError[] {
+): readonly NodeValidationError[] {
   return ComponentSet.circularNames(components).map((name) => ({
     kind: "circular-ref" as const,
     nodeName: name,
@@ -329,7 +362,7 @@ export function collectComponentErrors(
   context: ReferenceContext,
   name: string,
   component: Component,
-): readonly DesignDocumentValidationError[] {
+): readonly NodeValidationError[] {
   const children = component.children ?? [];
   const propErrors = withLocation(
     { nodeName: name },
@@ -366,7 +399,7 @@ export function collectComponentErrors(
 export function collectArtboardErrors(
   context: ReferenceContext,
   artboard: Artboard,
-): readonly DesignDocumentValidationError[] {
+): readonly NodeValidationError[] {
   // 照らす先が `Artboard.propDefinitions()` ではなく Box スキーマなので、デフォルト解決も
   // Box の既定（`overflow: visible`）で行う。Box の既定はすべて enum で artboard の
   // 上書き（`clip`）も値域内なので今は差が出ないが、artboard 固有の既定がトークンを
@@ -403,13 +436,13 @@ export function collectArtboardErrors(
  */
 function collectDuplicateNameErrors(
   document: DesignDocument,
-): readonly DesignDocumentValidationError[] {
+): readonly NodeValidationError[] {
   return DocumentNames.duplicatedNames(
     DocumentNames.create(
       DocumentNames.collectNames(document.components, document.artboards),
     ),
   ).map(
-    (name): DesignDocumentValidationError => ({
+    (name): NodeValidationError => ({
       kind: "duplicate-name",
       nodeName: name,
       message: `name "${name}" is not unique in the document`,
@@ -447,7 +480,7 @@ function describeMissingPosition(
  * @returns 欠落なら入れ物の名前を位置にした missing-name、識別子違反ならその名前を位置にした
  *   invalid-identifier
  */
-function toNameError(violation: NameViolation): DesignDocumentValidationError {
+function toNameError(violation: NameViolation): NodeValidationError {
   switch (violation.kind) {
     case "missing": {
       const { ownerName, place } = describeMissingPosition(violation.position);
@@ -474,11 +507,11 @@ function toNameError(violation: NameViolation): DesignDocumentValidationError {
  */
 function collectTokenNameErrors(
   tokens: TokenSet,
-): readonly DesignDocumentValidationError[] {
+): readonly TokenValidationError[] {
   return TokenSet.collectInvalidNameRefs(tokens).map(
-    (ref): DesignDocumentValidationError => ({
+    (ref): TokenValidationError => ({
       kind: "invalid-identifier",
-      nodeName: ref.name,
+      tokenName: ref.name,
       message: `token name "${ref.name}" in ${ref.kind} is not a valid identifier`,
     }),
   );
@@ -488,18 +521,16 @@ function collectTokenNameErrors(
  * 塗り用の 2 種別（colors と gradients）の両方にある名前（docs/04-tokens.md「命名規則」）。
  * `background` がその名前を指しているかは見ない。
  *
- * 位置には識別子違反（`collectTokenNameErrors`）と同じくトークン名を入れる。
- *
  * @param tokens 検証するトークン一式
  * @returns 両方にある名前ごとの conflicting-token-name エラーの並び
  */
 function collectPaintNameConflictErrors(
   tokens: TokenSet,
-): readonly DesignDocumentValidationError[] {
+): readonly TokenValidationError[] {
   return TokenSet.collectPaintNameConflicts(tokens).map(
-    (name): DesignDocumentValidationError => ({
+    (name): TokenValidationError => ({
       kind: "conflicting-token-name",
-      nodeName: name,
+      tokenName: name,
       message: `token name "${name}" is used in both colors and gradients`,
     }),
   );
@@ -514,22 +545,22 @@ function collectPaintNameConflictErrors(
  */
 function toColorErrorLocation(
   position: TokenColorPosition,
-): Readonly<{ location: ErrorLocation; subject: string }> {
+): Readonly<{ location: TokenErrorLocation; subject: string }> {
   switch (position.kind) {
     case "colors":
       return {
-        location: { nodeName: position.name },
+        location: { tokenName: position.name },
         subject: `color token "${position.name}"`,
       };
     case "shadows":
       return {
-        location: { nodeName: position.name, prop: "color" },
+        location: { tokenName: position.name, prop: "color" },
         subject: `the color of shadow token "${position.name}"`,
       };
     case "gradients":
       return {
         location: {
-          nodeName: position.name,
+          tokenName: position.name,
           prop: `stops[${position.stopIndex}].color`,
         },
         subject: `the stop ${position.stopIndex} color of gradient token "${position.name}"`,
@@ -545,16 +576,17 @@ function toColorErrorLocation(
  */
 export function collectInvalidColorErrors(
   tokens: TokenSet,
-): readonly DesignDocumentValidationError[] {
-  return TokenSet.collectInvalidColorPositions(tokens).flatMap((position) => {
-    const { location, subject } = toColorErrorLocation(position);
-    return withLocation(location, [
-      {
+): readonly TokenValidationError[] {
+  return TokenSet.collectInvalidColorPositions(tokens).map(
+    (position): TokenValidationError => {
+      const { location, subject } = toColorErrorLocation(position);
+      return {
         kind: "invalid-color",
+        ...location,
         message: `${subject} is not a hex color in normal form (#rrggbb / #rrggbbaa)`,
-      },
-    ]);
-  });
+      };
+    },
+  );
 }
 
 /**

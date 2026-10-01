@@ -65,6 +65,10 @@ function locationLabel(location: DocumentError["location"]): string {
       return location.prop === undefined
         ? location.nodeName
         : `${location.nodeName}.${location.prop}`;
+    case "token":
+      return location.prop === undefined
+        ? location.tokenName
+        : `${location.tokenName}.${location.prop}`;
     case "whole-document":
       return "ファイル全体";
   }

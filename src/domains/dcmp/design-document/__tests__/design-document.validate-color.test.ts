@@ -12,7 +12,7 @@ test("hex でない色トークンは、そのトークン名で prop を持た�
   const errors = DesignDocument.collectErrors(document);
 
   expect(errors).toEqual([
-    expect.objectContaining({ kind: "invalid-color", nodeName: "brand" }),
+    expect.objectContaining({ kind: "invalid-color", tokenName: "brand" }),
   ]);
   expect(errors[0]).not.toHaveProperty("prop");
 });
@@ -38,7 +38,7 @@ test("影の中の hex でない色は、影のトークン名と color の位�
   expect(DesignDocument.collectErrors(document)).toEqual([
     expect.objectContaining({
       kind: "invalid-color",
-      nodeName: "sm",
+      tokenName: "sm",
       prop: "color",
     }),
   ]);
@@ -64,7 +64,7 @@ test("グラデーションの中の hex でない stop の色は、トークン
   expect(DesignDocument.collectErrors(document)).toEqual([
     expect.objectContaining({
       kind: "invalid-color",
-      nodeName: "hero",
+      tokenName: "hero",
       prop: "stops[1].color",
     }),
   ]);
@@ -89,8 +89,8 @@ test("1 つのグラデーションに hex でない stop の色が 2 つあれ�
   });
 
   expect(DesignDocument.collectErrors(document)).toEqual([
-    expect.objectContaining({ nodeName: "hero", prop: "stops[0].color" }),
-    expect.objectContaining({ nodeName: "hero", prop: "stops[2].color" }),
+    expect.objectContaining({ tokenName: "hero", prop: "stops[0].color" }),
+    expect.objectContaining({ tokenName: "hero", prop: "stops[2].color" }),
   ]);
 });
 

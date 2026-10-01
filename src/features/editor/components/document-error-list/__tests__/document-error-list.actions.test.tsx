@@ -1,13 +1,16 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
-import { SampleSyntaxError } from "@/domains/__tests__/document-errors";
+import {
+  SampleSyntaxError,
+  SampleTokenError,
+} from "@/domains/__tests__/document-errors";
 import type { DocumentError } from "@/domains/session/document-error";
 import { DocumentErrorList, DocumentErrorOrigins } from "../index";
 
 /**
  * 飛べる行と飛べない行を混ぜた一覧。片方だけだと「常に出す」「常に出さない」の
- * どちらの実装でも通ってしまうので、4 種類の場所を 1 つの入力に入れる。
+ * どちらの実装でも通ってしまうので、5 種類の場所を 1 つの入力に入れる。
  */
 const MixedErrors: readonly DocumentError[] = [
   SampleSyntaxError,
@@ -26,6 +29,7 @@ const MixedErrors: readonly DocumentError[] = [
     message: 'unknown component "missing-button"',
     location: { kind: "node", nodeName: "cta" },
   },
+  SampleTokenError,
 ];
 
 test("ノードを指すエラーの行にだけ、そのノードを表示するボタンが出る", () => {

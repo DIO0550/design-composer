@@ -30,6 +30,15 @@ test("ドキュメント内のパスを指す場所からは、ノードの名�
   expect(Option.isSome(nodeName)).toBe(false);
 });
 
+test("トークンを指す場所からは、同じ名前でもノードの名前として読めない", () => {
+  const nodeName = DocumentErrorLocation.nodeName({
+    kind: "token",
+    tokenName: "brand",
+  });
+
+  expect(Option.isSome(nodeName)).toBe(false);
+});
+
 test("ファイル全体を指す場所からは、ノードの名前が読めない", () => {
   const nodeName = DocumentErrorLocation.nodeName({ kind: "whole-document" });
 

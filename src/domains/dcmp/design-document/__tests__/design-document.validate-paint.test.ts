@@ -15,7 +15,7 @@ test("colors と gradients に同じ名前があると、参照されていな�
   expect(DesignDocument.collectErrors(document)).toEqual([
     expect.objectContaining({
       kind: "conflicting-token-name",
-      nodeName: "brand",
+      tokenName: "brand",
     }),
   ]);
 });

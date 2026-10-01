@@ -1,6 +1,9 @@
 import { render, screen, within } from "@testing-library/react";
 import { expect, test } from "vitest";
-import { SampleSyntaxError } from "@/domains/__tests__/document-errors";
+import {
+  SampleSyntaxError,
+  SampleTokenError,
+} from "@/domains/__tests__/document-errors";
 import { DocumentErrorList, DocumentErrorOrigins } from "../index";
 
 test("エラーが無いときは何も重ねない", () => {
@@ -115,4 +118,37 @@ test("ドキュメント内のパスが分かるエラーにはそのパスが�
   );
 
   expect(screen.getByText("artboards[0].width")).toBeDefined();
+});
+
+test("トークンを指すエラーにはトークン名が出る", () => {
+  render(
+    <DocumentErrorList
+      origin={DocumentErrorOrigins.UnopenedFile}
+      errors={[SampleTokenError]}
+    />,
+  );
+
+  expect(screen.getByText("brand")).toBeDefined();
+});
+
+test("トークンの中の位置で起きたエラーにはトークン名と位置が出る", () => {
+  render(
+    <DocumentErrorList
+      origin={DocumentErrorOrigins.UnopenedFile}
+      errors={[
+        {
+          kind: "invalid-color",
+          message:
+            'the stop 1 color of gradient token "hero" is not a hex color in normal form (#rrggbb / #rrggbbaa)',
+          location: {
+            kind: "token",
+            tokenName: "hero",
+            prop: "stops[1].color",
+          },
+        },
+      ]}
+    />,
+  );
+
+  expect(screen.getByText("hero.stops[1].color")).toBeDefined();
 });

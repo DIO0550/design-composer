@@ -60,20 +60,61 @@ function documentWithMixedErrors(): DesignDocument {
 test("エラーは部品ごとに props・子の行きがけ順・宣言名・binding・参照の順、続いて artboard の子・参照の順に並ぶ", () => {
   const errors = DesignDocument.collectErrors(documentWithMixedErrors());
 
-  expect(
-    errors.map((error) => [error.kind, error.nodeName, error.prop]),
-  ).toEqual([
-    ["unknown-prop", "card", "card-extra"],
-    ["unknown-prop", "alpha", "alpha-extra"],
-    ["fill-in-free-parent", "alpha", "widthMode"],
-    ["unknown-type", "beta", undefined],
-    ["unknown-prop", "gamma", "gamma-extra"],
-    ["unknown-prop", "delta", "delta-extra"],
-    ["invalid-public-prop-name", "card", "1"],
-    ["dangling-binding-prop", "card", "1"],
-    ["dangling-binding-node", "card", "label"],
-    ["dangling-ref", "missing-instance", undefined],
-    ["unknown-prop", "plain", "plain-extra"],
-    ["undeclared-override", "instance", "caption"],
+  expect(errors).toEqual([
+    expect.objectContaining({
+      kind: "unknown-prop",
+      nodeName: "card",
+      prop: "card-extra",
+    }),
+    expect.objectContaining({
+      kind: "unknown-prop",
+      nodeName: "alpha",
+      prop: "alpha-extra",
+    }),
+    expect.objectContaining({
+      kind: "fill-in-free-parent",
+      nodeName: "alpha",
+      prop: "widthMode",
+    }),
+    expect.objectContaining({ kind: "unknown-type", nodeName: "beta" }),
+    expect.objectContaining({
+      kind: "unknown-prop",
+      nodeName: "gamma",
+      prop: "gamma-extra",
+    }),
+    expect.objectContaining({
+      kind: "unknown-prop",
+      nodeName: "delta",
+      prop: "delta-extra",
+    }),
+    expect.objectContaining({
+      kind: "invalid-public-prop-name",
+      nodeName: "card",
+      prop: "1",
+    }),
+    expect.objectContaining({
+      kind: "dangling-binding-prop",
+      nodeName: "card",
+      prop: "1",
+    }),
+    expect.objectContaining({
+      kind: "dangling-binding-node",
+      nodeName: "card",
+      prop: "label",
+    }),
+    expect.objectContaining({
+      kind: "dangling-ref",
+      nodeName: "missing-instance",
+    }),
+    expect.objectContaining({
+      kind: "unknown-prop",
+      nodeName: "plain",
+      prop: "plain-extra",
+    }),
+    expect.objectContaining({
+      kind: "undeclared-override",
+      nodeName: "instance",
+      prop: "caption",
+    }),
   ]);
 });

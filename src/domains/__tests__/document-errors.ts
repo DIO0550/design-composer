@@ -11,3 +11,11 @@ export const SampleSyntaxError: DocumentError = {
   message: "expected ',' or '}'",
   location: { kind: "text-position", position: 42 },
 };
+
+/** 値が hex でない色トークン `brand` のエラー。トークンを指すエラーを 1 件要するテストで共有する。 */
+export const SampleTokenError: DocumentError = {
+  kind: "invalid-color",
+  message:
+    'color token "brand" is not a hex color in normal form (#rrggbb / #rrggbbaa)',
+  location: { kind: "token", tokenName: "brand" },
+};
