@@ -16,6 +16,12 @@
 #
 # 重複の検査には、既にある重複を分割・rename と組めない移動で動かした組と、重複を増やした組を
 # 置く。前者は追加行に載っても違反にせず、後者は違反にする(base と本体の数を比べる境界)。
+# lint の検査には、既にある抑制行を新しいファイルへ切り出した組を置き、違反にしない。
+#
+# どちらの検査も比べる相手は base の先端ではなく merge-base(理由は lib/added-lines.sh の
+# `init_added_lines`)。分岐のあとで base 側に同じ本体を足した組と、lint には base 側から消した組を
+# 置く。後者が無いと、先端と merge-base の両方に本体があるときだけ除く実装も表を通る。
+# merge-base が取れない(共通の祖先が無い)base は、違反ありの 1 ではなく git の 128 で止まる。
 #
 # **「走らせられない」は PATH 先頭に置いた壊れた python3 で作る。** PATH から python3 を
 # 消す形にすると、前提チェックが `command -v python3` で書かれていても同じ終了コードに
@@ -92,10 +98,11 @@ broken_python3_dir() {
   printf '%s' "$dir"
 }
 
-# base の時点で既に重複がある(a.test.ts と相方に同じ本体を置く)入力か。
-has_base_duplicate() {
+# base の時点で、HEAD が移す・書き足す本体(lint は抑制行・重複はヘルパー)を既に持つ入力か。
+base_has_carried_body() {
   case "$1" in
     duplication-renamed*|duplication-split*|duplication-moved-dissimilar|duplication-grown*) return 0 ;;
+    lint-split*) return 0 ;;
   esac
   return 1
 }
@@ -105,7 +112,7 @@ has_base_duplicate() {
 # 検出器は「リポジトリ top からの相対パス」で呼ばれるので、`.claude/hooks/lib/` を
 # 中へコピーしないと、python3 が動いていても検出器が見つからない。
 setup_repo() {
-  local input="$1" path mate_path="" mate_content="" added_content
+  local input="$1" path mate_path="" mate_content="" added_content carried_body
   local dir
   dir="$(mktemp -d --tmpdir="$work")"
 
@@ -121,13 +128,18 @@ setup_repo() {
     duplication-*) mate_path=src/b/__tests__/b.test.ts
        mate_content="$mate_ts" ;;
   esac
+  # 追加行・base 側に足す本体・移す本体を同じ変数から取る。`*-main-advanced` は、base 側に
+  # 足したものと追加行の綴りが一致していないと、先端と比べる実装でも違反になって表を通す
   case "$input" in
-    lint-violation*) added_content="$suppressed_ts" ;;
-    duplication-violation*) added_content="$added_helper_ts" ;;
+    lint-*) carried_body="$suppressed_ts" ;;
+    *) carried_body="$added_helper_ts" ;;
+  esac
+  case "$input" in
+    lint-violation*|duplication-violation*) added_content="$carried_body" ;;
     no-diff) added_content="" ;;
     *) added_content="$plain_ts" ;;
   esac
-  has_base_duplicate "$input" && added_content=""
+  base_has_carried_body "$input" && added_content=""
 
   mkdir -p "$dir/.claude/hooks/lib" "$dir/$(dirname "$path")"
   cp "$repo_root/.claude/hooks/lib/$lint_detector" \
@@ -135,8 +147,8 @@ setup_repo() {
 
   git -C "$dir" init -q
   printf '%s' "$base_ts" >"$dir/$path"
-  # 移動・分割・書き足しの検査では、重複そのものは base の時点で既にある(相方と 2 件)
-  has_base_duplicate "$input" && printf '%s' "$added_helper_ts" >>"$dir/$path"
+  # 移動・分割・書き足しの検査では、本体は base の時点で既にある(重複なら相方と 2 件)
+  base_has_carried_body "$input" && printf '%s' "$carried_body" >>"$dir/$path"
   git -C "$dir" add "$path" ".claude/hooks/lib/$lint_detector" \
     ".claude/hooks/lib/$duplication_detector"
   if [ -n "$mate_path" ]; then
@@ -153,19 +165,26 @@ setup_repo() {
     duplication-renamed-tab) moved=$'src/tab\tdir/__tests__/a.test.ts' ;;
     duplication-moved-dissimilar) moved=src/moved/__tests__/a.test.ts ;;
     duplication-split*) written="$(dirname "$path")/c.test.ts" ;;
+    lint-split*) written=src/split.ts ;;
     duplication-grown*) written=src/c/__tests__/c.test.ts ;;
   esac
-  if [ "$input" = duplication-grown-main-advanced ]; then
-    # 分岐のあとで、base 側(タグ `base`)にも同じ本体が足される。base の先端と比べると
-    # 数が揃って見え、このブランチが足した分を見逃す
-    git -C "$dir" checkout -q -b advanced
-    mkdir -p "$dir/src/d/__tests__"
-    printf '%s' "$added_helper_ts" >"$dir/src/d/__tests__/d.test.ts"
-    git -C "$dir" add src/d/__tests__/d.test.ts
-    commit_in "$dir" -m advanced
-    git -C "$dir" tag base
-    git -C "$dir" checkout -q -
-  fi
+  case "$input" in
+    *-main-advanced|*-main-removed)
+      # 分岐のあとで、base 側(タグ `base`)に同じ本体を足す / base 側から本体を消す
+      git -C "$dir" checkout -q -b advanced
+      case "$input" in
+        *-main-advanced)
+          mkdir -p "$dir/src/d/__tests__"
+          printf '%s' "$carried_body" >"$dir/src/d/__tests__/d.test.ts"
+          git -C "$dir" add src/d/__tests__/d.test.ts ;;
+        *-main-removed)
+          printf '%s' "$base_ts" >"$dir/$path"
+          git -C "$dir" add "$path" ;;
+      esac
+      commit_in "$dir" -m advanced
+      git -C "$dir" tag base
+      git -C "$dir" checkout -q - ;;
+  esac
   if [ "$input" = duplication-moved-dissimilar ]; then
     # 4 行のファイルへ 8 行書き足し、類似度を git の rename の閾値(既定 50%)より下げる。
     # rename として組めると `duplication-renamed` と同じ経路を通り、base 照合を外しても通る
@@ -176,9 +195,9 @@ setup_repo() {
     commit_in "$dir" -m head
   elif [ -n "$written" ]; then
     # 分割は元のファイルから本体を消し(重複は 2 件のまま)、書き足しは残す(2 件から 3 件)
-    case "$input" in duplication-split*) printf '%s' "$base_ts" >"$dir/$path" ;; esac
+    case "$input" in duplication-split*|lint-split*) printf '%s' "$base_ts" >"$dir/$path" ;; esac
     mkdir -p "$dir/$(dirname "$written")"
-    printf '%s' "$added_helper_ts" >"$dir/$written"
+    printf '%s' "$carried_body" >"$dir/$written"
     # 移しただけの既存の重複と、新しく作った重複を同じファイルに同居させる
     [ "$input" = duplication-split-with-new ] && printf '%s' "$fresh_pair_ts" >>"$dir/$written"
     git -C "$dir" add "$path" "$written"
@@ -194,6 +213,18 @@ setup_repo() {
     commit_in "$dir" -m head
   else
     commit_in "$dir" --allow-empty -m head
+  fi
+  if [ "$input" = no-common-ancestor ]; then
+    # HEAD と履歴を共有しない base(タグ `base`)。merge-base が取れないときに、違反ありと同じ
+    # 1 ではなく git の 128 で止まることを見る(`init_added_lines` が merge-base を求める順序)
+    local head_branch
+    head_branch="$(git -C "$dir" symbolic-ref --short HEAD)"
+    # orphan からは `checkout -` で戻れない(実測)ので名前で戻る
+    git -C "$dir" checkout -q --orphan unrelated
+    git -C "$dir" rm -rqf .
+    commit_in "$dir" --allow-empty -m unrelated
+    git -C "$dir" tag base
+    git -C "$dir" checkout -q "$head_branch"
   fi
   printf '%s' "$dir"
 }
@@ -257,7 +288,12 @@ cases="\
 0||$duplication_script|ok|present|duplication-moved-dissimilar|既にある重複を、rename と組めないほど書き足しながら別のフォルダへ移した
 1|検出された行:|$duplication_script|ok|present|duplication-grown|既にある重複の本体を、さらに別のファイルへ書き足した
 1|検出された行:|$duplication_script|ok|present|duplication-grown-main-advanced|既にある重複の本体を書き足し、分岐のあとで base 側にも同じ本体が足された
-1|:freshA|$duplication_script|ok|present|duplication-split-with-new|既にある重複を切り出した先に、新しい重複を作った|:board"
+1|:freshA|$duplication_script|ok|present|duplication-split-with-new|既にある重複を切り出した先に、新しい重複を作った|:board
+0||$lint_script|ok|present|lint-split|既にある lint 抑制を、新しいファイルへ切り出した
+1|検出された行:|$lint_script|ok|present|lint-violation-main-advanced|追加行に lint 抑制があり、分岐のあとで base 側にも同じ綴りの抑制が足された
+0||$lint_script|ok|present|lint-split-main-removed|既にある lint 抑制を切り出し、分岐のあとで base 側からはその抑制が消された
+128|no merge base|$lint_script|ok|present|no-common-ancestor|base と HEAD に共通の祖先が無い
+128|no merge base|$duplication_script|ok|present|no-common-ancestor|base と HEAD に共通の祖先が無い / 重複の検査"
 
 while IFS='|' read -r expected expected_text script python3_state detector_state input label absent_text; do
   run_case "$expected" "$expected_text" "$script" "$python3_state" "$detector_state" \
