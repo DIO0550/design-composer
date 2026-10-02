@@ -168,3 +168,20 @@ test("countOccurrences は各値の出現回数を最初に現れた順で返す
     ],
   );
 });
+
+test("minBy は取り出した数値が最も小さい要素を返す", () => {
+  expect(ArrayEx.minBy(["ccc", "a", "bb"], (item) => item.length)).toEqual(
+    Option.some("a"),
+  );
+});
+
+test("minBy は同じ数値の要素が 2 つあると先に並んだほうを返す", () => {
+  // 後ろのほうを採ると "y2" になる
+  expect(ArrayEx.minBy(["y1", "zzz", "y2"], (item) => item.length)).toEqual(
+    Option.some("y1"),
+  );
+});
+
+test("minBy は空の並びには none を返す", () => {
+  expect(ArrayEx.minBy([], (item: string) => item.length)).toEqual(Option.none);
+});
