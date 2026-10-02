@@ -98,6 +98,27 @@ export const ArrayEx = {
   },
 
   /**
+   * 数値が最も小さくなる要素。同じ値の要素が 2 つ以上あれば先に並んだほうを採る。
+   *
+   * @param array 選ぶ並び
+   * @param measure 要素から比べる数値を取り出す手段
+   * @returns 最も小さい要素。空の並びと、選ばれた要素が `null` / `undefined` の並びは `none`
+   */
+  minBy<T>(
+    array: readonly T[],
+    measure: (item: T) => number,
+  ): Option<NonNullable<T>> {
+    if (array.length === 0) {
+      return Option.none;
+    }
+    return Option.fromNullable(
+      array.reduce((smallest, item) =>
+        measure(item) < measure(smallest) ? item : smallest,
+      ),
+    );
+  },
+
+  /**
    * 先頭を除いた並び。
    *
    * @param array 除く前の並び
