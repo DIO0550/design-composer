@@ -72,7 +72,7 @@ run_case 1 "$no_issue"  1 "$records_readme"  'harness/records/ でも pr-<番号
 # `gh` を差し替えて、GitHub の API が 5xx を返したとき・閉じる Issue がまだ反映されて
 # いないときの振る舞いを固定する。スタブは呼び出しごとに `STUB_REPLIES` の語を 1 つずつ
 # 返す(`fail` = 5xx / `empty` = 閉じる Issue が空 / `linked` = 閉じる Issue あり)。
-# 語が尽きたら `linked`。**待ち時間があるので、この節だけで 1 分ほどかかる。**
+# 語が尽きたら `linked`。**待ち時間があるので、この節だけで 30 秒ほど(5xx の再試行の待ち)かかる。**
 # いちばん守りたいのは「3 回とも駄目なら赤」。ここが黙って通るようになると、
 # 問い合わせに失敗しただけの PR・閉じ忘れた PR が緑になる。
 #
@@ -108,7 +108,7 @@ STUB
 
   output="$(
     PATH="$dir/bin:$PATH" STUB_COUNT_FILE="$dir/count" STUB_REPLIES="${STUB_REPLIES:-}" \
-      STUB_DIR="$dir" GITHUB_REPOSITORY=owner/repo PR_NUMBER=1 PR_ACTION="$PR_ACTION" \
+      LINK_WAIT_STEP=0 STUB_DIR="$dir" GITHUB_REPOSITORY=owner/repo PR_NUMBER=1 PR_ACTION="$PR_ACTION" \
       bash "$script" 2>/dev/null
   )" || status=$?
   calls="$(cat "$dir/count" 2>/dev/null || echo 0)"
@@ -140,8 +140,10 @@ PR_ACTION='' run_fetch_case fetch-failed 0 \
 
 PR_ACTION=opened STUB_REPLIES='empty' run_fetch_case pass 2 \
   'PR を作った直後に閉じる Issue が未反映でも、問い合わせ直して反映されれば通る'
-PR_ACTION=opened STUB_REPLIES='empty empty empty' run_fetch_case missing 3 \
-  'PR を作った直後でも、3 回とも閉じる Issue が空なら閉じ忘れとして赤にする'
+PR_ACTION=opened STUB_REPLIES='empty empty empty empty linked' run_fetch_case pass 5 \
+  'PR を作った直後に閉じる Issue が 4 回空でも、5 回目で反映されれば通る'
+PR_ACTION=opened STUB_REPLIES='empty empty empty empty empty empty' run_fetch_case missing 6 \
+  'PR を作った直後でも、問い合わせ直しを尽くして閉じる Issue が空なら閉じ忘れとして赤にする'
 PR_ACTION=opened STUB_REPLIES='empty fail fail fail' run_fetch_case fetch-failed 4 \
   '問い合わせ直しの途中で 5xx が 3 回続いたら、閉じ忘れではなく問い合わせ失敗として赤にする'
 PR_ACTION=synchronize STUB_REPLIES='empty' run_fetch_case missing 1 \

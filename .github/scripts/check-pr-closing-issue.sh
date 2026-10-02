@@ -90,14 +90,18 @@ awaits_closing_issue_link() {
   ! is_record_pull_request "$1"
 }
 
-# 反映待ちでありうる間だけ、間を空けて 2 回まで問い合わせ直し、最後の結果を返す。
-# 待ちは 5xx の再試行と同じ形に揃えた。3 回とも空なら、そのまま閉じ忘れとして赤にする。
+# 反映待ちでありうる間だけ、間を空けて 5 回まで問い合わせ直し、最後の結果を返す。
+# 待ちは合計 150 秒(10・20・30・40・50 秒)。15 秒では足りず、PR を作って 2 分後に
+# 反映された回があったため(`harness/records/pr-919.md` 指摘 13 / `pr-920.md` 指摘 1)。
+# 数分から 1 時間かかる回もあり(`pr-914.md` 指摘 11 / `pr-918.md` 指摘 12)、そこまでは
+# 待たない。ジョブの timeout(5 分)に収め、全部空なら閉じ忘れとして赤にして再実行に任せる。
+# `LINK_WAIT_STEP` は判定表が待ちを 0 にするための差し替え口。
 refetch_while_awaiting_link() {
   local result="$1" attempt
-  for attempt in 1 2; do
+  for attempt in 1 2 3 4 5; do
     awaits_closing_issue_link "$result" || break
     printf '閉じる Issue がまだ反映されていない(%s 回目)。待って問い合わせ直す\n' "$attempt" >&2
-    sleep $((attempt * 5))
+    sleep $((attempt * ${LINK_WAIT_STEP:-10}))
     result="$(fetch_pull_request)" || return 1
   done
   printf '%s' "$result"
