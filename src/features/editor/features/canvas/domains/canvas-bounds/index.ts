@@ -3,6 +3,7 @@ import { Axes, type Axis, type AxisEnd, AxisEnds } from "@/domains/unit/axis";
 import type { Offset } from "@/domains/unit/offset";
 import { type Side, SidePair, Sides } from "@/domains/unit/side";
 import { Option } from "@/utils/Option";
+import type { Range } from "@/utils/Range";
 
 /**
  * 画面上の矩形（client 座標・px）。
@@ -336,5 +337,19 @@ export const CanvasBounds = {
     return (
       (CanvasBounds.side(bounds, first) + CanvasBounds.side(bounds, second)) / 2
     );
+  },
+
+  /**
+   * 向かい合う 2 辺に挟まれた範囲。
+   *
+   * @param bounds 範囲を知りたい矩形
+   * @param pair 範囲を挟む 2 辺の組
+   * @returns 水平の組なら左辺から右辺まで、垂直の組なら上辺から下辺まで（画面上の px）
+   */
+  extentAlong(bounds: CanvasBounds, pair: SidePair): Range {
+    const [first, second] = SidePair.sides(pair).map((side) =>
+      CanvasBounds.side(bounds, side),
+    );
+    return { min: Math.min(first, second), max: Math.max(first, second) };
   },
 } as const;
