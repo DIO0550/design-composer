@@ -10,7 +10,8 @@
 # 対になる古いパスを先に引き、両方を渡して rename として見せる。
 #
 # 使う側は `init_added_lines <base>` を 1 度呼んでから `added_line_numbers <base> <file>` を呼び、
-# 検出器の報告を `entries_on_added_lines` で絞る。
+# 検出器の報告を `entries_on_added_lines` で絞る。base にあったものと比べるときは、base の先端では
+# なく `ADDED_LINES_MERGE_BASE` を見る(`init_added_lines` の doc)。
 #
 # **パスは `git diff -z` の NUL 区切りで読む。** 行区切りの出力では git が非 ASCII・`"`・`\`・
 # タブを含むパスをクォートして出し、その綴りは実在するファイル名と一致しない。
@@ -19,9 +20,16 @@
 
 # rename の一覧(`R<類似度>\0<古いパス>\0<新しいパス>\0` の並び)を 1 度だけ取っておく。
 # ファイルごとに `git diff` を走らせると、移動が数百件ある変更で毎回全体を読み直すことになる。
+#
+# あわせて、追加行の判定(`<base>...HEAD`)が比べている木 = merge-base を `ADDED_LINES_MERGE_BASE`
+# に置く。base にあったものと比べる側が base の先端を見ると、分岐のあとで base 側が同じものを
+# 足していれば見逃し、消していれば移しただけのものを新しく足したと読む。
+# 求めるのは `git diff` の後。共通の祖先が無いとき `git merge-base` は違反ありと同じ 1 を返すが、
+# その前に `git diff` が 128 で止まる。
 init_added_lines() {
   ADDED_LINES_RENAMES="$(mktemp)"
   git diff -M -z --name-status --diff-filter=R "$1"...HEAD > "$ADDED_LINES_RENAMES"
+  ADDED_LINES_MERGE_BASE="$(git merge-base "$1" HEAD)"
 }
 
 # rename の一覧から、新しいパスに対応する古いパスを出す(rename でなければ何も出さない)。

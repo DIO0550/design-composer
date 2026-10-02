@@ -14,6 +14,7 @@
 # 追加行かどうかは行番号でしか見えないため、ファイルを分割する・rename と組めないほど書き換えて
 # 移すと、既にあった重複がすべて「追加」に見える。そこで追加行に候補が出たときだけ、比べる相手の
 # 木(merge-base の `src`)を展開し、検出器に本体の数を比べさせる(`--base-root`)。
+# 先端ではなく merge-base を見る理由は lib/added-lines.sh の `init_added_lines`。
 # 有無ではなく数で比べる理由は検出器の `grown_since`。
 set -euo pipefail
 
@@ -29,13 +30,12 @@ detector=.claude/hooks/lib/duplicate-test-helpers.py
 require_runnable_detector "追加されたテストヘルパーの重複" "$detector"
 
 # 比べる相手の木を展開した先。展開は候補が出たときに 1 度だけ行う(違反の無い push では
-# 走らせない)。先端ではなく merge-base を展開するのは、追加行の判定(`"$base"...HEAD`)と
-# 同じ木と比べるため。先端と比べると、分岐後に main が同じ本体を足していたときに見逃す。
+# 走らせない)。
 base_tree=""
 extract_base_tree() {
   [ -n "$base_tree" ] && return
   base_tree="$(mktemp -d)"
-  git archive "$(git merge-base "$base" HEAD)" -- src | tar -x -C "$base_tree"
+  git archive "$ADDED_LINES_MERGE_BASE" -- src | tar -x -C "$base_tree"
 }
 trap 'rm -rf ${base_tree:+"$base_tree"}' EXIT
 
