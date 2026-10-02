@@ -21,6 +21,7 @@
 # どちらの検査も比べる相手は base の先端ではなく merge-base(理由は lib/added-lines.sh の
 # `init_added_lines`)。分岐のあとで base 側に同じ本体を足した組と、lint には base 側から消した組を
 # 置く。後者が無いと、先端と merge-base の両方に本体があるときだけ除く実装も表を通る。
+# merge-base が取れない(共通の祖先が無い)base は、違反ありの 1 ではなく git の 128 で止まる。
 #
 # **「走らせられない」は PATH 先頭に置いた壊れた python3 で作る。** PATH から python3 を
 # 消す形にすると、前提チェックが `command -v python3` で書かれていても同じ終了コードに
@@ -213,6 +214,18 @@ setup_repo() {
   else
     commit_in "$dir" --allow-empty -m head
   fi
+  if [ "$input" = no-common-ancestor ]; then
+    # HEAD と履歴を共有しない base(タグ `base`)。merge-base が取れないときに、違反ありと同じ
+    # 1 ではなく git の 128 で止まることを見る(`init_added_lines` が merge-base を求める順序)
+    local head_branch
+    head_branch="$(git -C "$dir" symbolic-ref --short HEAD)"
+    # orphan からは `checkout -` で戻れない(実測)ので名前で戻る
+    git -C "$dir" checkout -q --orphan unrelated
+    git -C "$dir" rm -rqf .
+    commit_in "$dir" --allow-empty -m unrelated
+    git -C "$dir" tag base
+    git -C "$dir" checkout -q "$head_branch"
+  fi
   printf '%s' "$dir"
 }
 
@@ -278,7 +291,9 @@ cases="\
 1|:freshA|$duplication_script|ok|present|duplication-split-with-new|既にある重複を切り出した先に、新しい重複を作った|:board
 0||$lint_script|ok|present|lint-split|既にある lint 抑制を、新しいファイルへ切り出した
 1|検出された行:|$lint_script|ok|present|lint-violation-main-advanced|追加行に lint 抑制があり、分岐のあとで base 側にも同じ綴りの抑制が足された
-0||$lint_script|ok|present|lint-split-main-removed|既にある lint 抑制を切り出し、分岐のあとで base 側からはその抑制が消された"
+0||$lint_script|ok|present|lint-split-main-removed|既にある lint 抑制を切り出し、分岐のあとで base 側からはその抑制が消された
+128|no merge base|$lint_script|ok|present|no-common-ancestor|base と HEAD に共通の祖先が無い
+128|no merge base|$duplication_script|ok|present|no-common-ancestor|base と HEAD に共通の祖先が無い / 重複の検査"
 
 while IFS='|' read -r expected expected_text script python3_state detector_state input label absent_text; do
   run_case "$expected" "$expected_text" "$script" "$python3_state" "$detector_state" \
