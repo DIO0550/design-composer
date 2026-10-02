@@ -115,3 +115,16 @@ test("同じ距離の揃え先が 2 つあると、先に並んだほうへ寄�
     ),
   ).toBe(3);
 });
+
+test("兄弟として渡した矩形の辺にも、掴んだ辺が寄る", () => {
+  // 右辺は 144。揃え先（stationary）には何も無く、兄弟としてだけ渡している
+  const sibling: CanvasBounds = { left: 44, top: 300, width: 100, height: 20 };
+
+  expect(
+    SideSnap.toEdgeShift(
+      SideSnap.withSiblings(SideSnap.create(Moving, []), [sibling]),
+      "width",
+      "end",
+    ),
+  ).toBe(4);
+});
