@@ -2,12 +2,14 @@ import { type Axis, type AxisEnd, AxisEnds } from "@/domains/unit/axis";
 import type { Offset } from "@/domains/unit/offset";
 import { SidePair, SidePairs } from "@/domains/unit/side";
 import { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
+import { IntervalSlot } from "@/features/editor/features/canvas/domains/interval-slot";
+import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 
 /**
  * 辺のスナップ 1 回分（運んでいる / 伸び縮みさせているものの行き先と、揃え先の並び /
  * すべて画面上の px / docs/06-ui.md「キャンバス直接操作」）。運ぶときに揃えるのは辺どうしと
- * 中心線どうし、伸び縮みさせるとき（`toEdgeShift`）は掴んだ辺と揃え先の辺だけ。
+ * 中心線どうしと兄弟の列の間隔、伸び縮みさせるとき（`toEdgeShift`）は掴んだ辺と揃え先の辺だけ。
  *
  * 寄せ量は**運んでいるものの行き先と、揃え先の並びの両方**で決まり片方だけでは答えが出
  * ないので、対を表す型にして判定をそこへ帰属させる（rules/architecture.md「2つの値が常
@@ -15,7 +17,14 @@ import { Option } from "@/utils/Option";
  */
 export type SideSnap = Readonly<{
   moving: CanvasBounds;
+  /** 辺と中心線だけを揃える先。`siblings` に入れたものはここに重ねない */
   stationary: readonly CanvasBounds[];
+  /**
+   * 辺と中心線に加えて、兄弟の列の間隔も測る先。辺と中心線は `stationary` の後ろに並べて
+   * 見る。間隔を測るかどうかはここに入れるかで決まり、辺だけを揃える呼び出し側は兄弟を
+   * `stationary` に入れてよい。
+   */
+  siblings: readonly CanvasBounds[];
 }>;
 
 /**
@@ -34,7 +43,7 @@ export type SnapGuides = Readonly<Record<SidePair, Option<CanvasBounds>>>;
  * 別々の入口にすると、寄る先とガイド線が別々に決まる余地が残る。
  */
 export type SideSnapped = Readonly<{
-  /** 寄せ量（画面上の px）。揃う線が無ければ縦横とも 0 */
+  /** 寄せ量（画面上の px）。揃う線も同じ間隔になる位置も無い軸は 0 */
   offset: Offset;
   guides: SnapGuides;
 }>;
@@ -54,6 +63,7 @@ const GuideThicknessPx = 2;
  * ある向きで揃った線（辺か中心線）1 つ分。
  */
 type SnappedLine = Readonly<{
+  kind: "line";
   pair: SidePair;
   /** 寄せ量（画面上の px）。既に揃っていれば 0 */
   shift: number;
@@ -62,6 +72,20 @@ type SnappedLine = Readonly<{
   /** 揃え先の矩形 */
   stationary: CanvasBounds;
 }>;
+
+/**
+ * ある向きで寄せる先の候補 1 つ分。揃った線（辺か中心線）か、兄弟の列と同じ間隔になる位置。
+ *
+ * 同じ間隔になる位置には揃え先の線が無いので、`SnappedLine` に詰めるとガイド線を引く位置を
+ * 偽って埋めることになる。
+ */
+type SnapCandidate =
+  | SnappedLine
+  | Readonly<{
+      kind: "interval";
+      /** 寄せ量（画面上の px） */
+      shift: number;
+    }>;
 
 export const SideSnap = {
   /**
@@ -73,23 +97,36 @@ export const SideSnap = {
   ThresholdPx: 6,
 
   /**
-   * 判定する組を作る。
+   * 判定する組を作る。列の間隔を測る兄弟は持たない（`withSiblings` で足す）。
    *
    * @param moving 運んでいる / 伸び縮みさせているものの行き先の矩形
    * @param stationary 揃える先の矩形の並び（近さが同じときは先にあるほうへ寄る）
    * @returns 揃えの判定に使う組
    */
   create(moving: CanvasBounds, stationary: readonly CanvasBounds[]): SideSnap {
-    return { moving, stationary };
+    return { moving, stationary, siblings: [] };
   },
 
   /**
-   * 揃う位置へ寄せる量と、揃った線（辺か中心線）に引くガイド線。
+   * 列の間隔も測る兄弟を持たせた組。
+   *
+   * @param snap 判定する組
+   * @param siblings 辺と中心線に加えて列の間隔も測る兄弟の矩形の並び（`stationary` に含めない）
+   * @returns 兄弟を差し替えた組
+   */
+  withSiblings(snap: SideSnap, siblings: readonly CanvasBounds[]): SideSnap {
+    return { ...snap, siblings };
+  },
+
+  /**
+   * 揃う位置か兄弟の列と同じ間隔になる位置へ寄せる量と、揃った線（辺か中心線）に引く
+   * ガイド線。
    *
    * 寄せる前の位置で組み立てると、線が寄せ量のぶんだけ短く / 長く出る。
    *
    * @param snap 判定する組
-   * @returns 寄せ量と、揃った線に引くガイド線（閾値に届く組が無ければ寄せ量は縦横とも 0・線は無し）
+   * @returns 寄せ量と、揃った線に引くガイド線（閾値に届く候補が無い軸は寄せ量 0・線は無し。
+   *   同じ間隔になる位置へ寄った軸も線は無し）
    */
   toSnapped(snap: SideSnap): SideSnapped {
     const horizontal = nearestAlong(snap, SidePairs.Horizontal);
@@ -99,8 +136,12 @@ export const SideSnap = {
     return {
       offset,
       guides: {
-        horizontal: Option.map(horizontal, (side) => guideBounds(side, moved)),
-        vertical: Option.map(vertical, (side) => guideBounds(side, moved)),
+        horizontal: Option.flatMap(horizontal, (candidate) =>
+          guideOf(candidate, moved),
+        ),
+        vertical: Option.flatMap(vertical, (candidate) =>
+          guideOf(candidate, moved),
+        ),
       },
     };
   },
@@ -118,7 +159,7 @@ export const SideSnap = {
    */
   toEdgeShift(snap: SideSnap, axis: Axis, end: AxisEnd): number {
     const movingLine = CanvasBounds.edgeAt(snap.moving, axis, end);
-    const shifts = snap.stationary.flatMap((stationary) =>
+    const shifts = lineTargets(snap).flatMap((stationary) =>
       Object.values(AxisEnds).map((stationaryEnd) => ({
         shift:
           CanvasBounds.edgeAt(stationary, axis, stationaryEnd) - movingLine,
@@ -129,37 +170,57 @@ export const SideSnap = {
 } as const;
 
 /**
- * 揃った候補の寄せ量。
+ * 採った候補の寄せ量。
  *
- * @param snapped 揃った線（辺か中心線）か辺
- * @returns 寄せ量（画面上の px）。揃うものが無ければ 0
+ * @param snapped 揃った線（辺か中心線）・辺・列と同じ間隔になる位置のどれか
+ * @returns 寄せ量（画面上の px）。寄せ先が無ければ 0
  */
 function shiftOf(snapped: Option<Readonly<{ shift: number }>>): number {
   return Option.isSome(snapped) ? snapped.value.shift : 0;
 }
 
 /**
- * 向かい合う 2 辺の組ごとに、いちばん近い揃い。
+ * 辺と中心線を揃える先の並び。親 → 子の並び順になるよう、`stationary` を兄弟より先に置く。
+ *
+ * @param snap 判定する組
+ * @returns 辺と中心線を見る揃え先の矩形の並び
+ */
+function lineTargets(snap: SideSnap): readonly CanvasBounds[] {
+  return [...snap.stationary, ...snap.siblings];
+}
+
+/**
+ * 向かい合う 2 辺の組ごとに、いちばん近い寄せ先。
  *
  * 揃え先ごとに、運んでいるものと揃え先の**辺どうしの 4 組**と**中心線どうしの 1 組**を
- * 並べ（`candidatesAgainst`）、その中からいちばん近い組を採る（`nearestReachable`）。
- * 中心線と辺は組にしない。
+ * 並べ（`candidatesAgainst`）、その後ろに兄弟の列と同じ間隔になる位置を並べて、いちばん
+ * 近いものを採る（`nearestReachable`）。中心線と辺は組にしない。
+ *
+ * 揃った線を先に並べるのは、同じ距離なら列の間隔より辺と中心線へ寄せるため。
  *
  * @param snap 判定する組
  * @param pair 見る 2 辺の組（水平なら左右＝x、垂直なら上下＝y）
- * @returns その向きで揃った線。閾値に届く組が無ければ `none`
+ * @returns その向きの寄せ先。閾値に届く候補が無ければ `none`
  */
-function nearestAlong(snap: SideSnap, pair: SidePair): Option<SnappedLine> {
-  return nearestReachable(
-    snap.stationary.flatMap((stationary) =>
-      candidatesAgainst(snap.moving, { stationary, pair }),
-    ),
+function nearestAlong(snap: SideSnap, pair: SidePair): Option<SnapCandidate> {
+  const lines = lineTargets(snap).flatMap((stationary) =>
+    candidatesAgainst(snap.moving, { stationary, pair }),
   );
+  const intervals = IntervalSlot.collect(snap.siblings, pair).flatMap(
+    (slot) => {
+      const shift = IntervalSlot.toShift(slot, snap.moving);
+      return Option.isSome(shift)
+        ? [{ kind: "interval" as const, shift: shift.value }]
+        : [];
+    },
+  );
+  const candidates: readonly SnapCandidate[] = [...lines, ...intervals];
+  return nearestReachable(candidates);
 }
 
 /**
  * 閾値に届く候補のうち、寄せ量がいちばん小さいもの。同じ距離の候補が 2 つあるときは先に
- * 並んだほうを採る（揃え先の並び順。揃え先の中の順は候補を並べる側が決める）。
+ * 並んだほうを採る（どの順に並べるかは候補を並べる側が決める）。
  *
  * @param candidates 揃えたときの寄せ量を持つ候補の並び（閾値で絞る前）
  * @returns いちばん近い候補。閾値に届く候補が無ければ `none`
@@ -170,14 +231,7 @@ function nearestReachable<T extends Readonly<{ shift: number }>>(
   const reachable = candidates.filter(
     (candidate) => Math.abs(candidate.shift) <= SideSnap.ThresholdPx,
   );
-  if (reachable.length === 0) {
-    return Option.none;
-  }
-  return Option.some(
-    reachable.reduce((nearest, candidate) =>
-      Math.abs(candidate.shift) < Math.abs(nearest.shift) ? candidate : nearest,
-    ),
-  );
+  return ArrayEx.minBy(reachable, (candidate) => Math.abs(candidate.shift));
 }
 
 /**
@@ -208,11 +262,31 @@ function candidatesAgainst(
   };
   const pairings = [...sidePairings, midlinePairing];
   return pairings.map(({ stationaryLine, movingLine }) => ({
+    kind: "line",
     pair,
     shift: stationaryLine - movingLine,
     stationaryLine,
     stationary,
   }));
+}
+
+/**
+ * 寄せ先に引くガイド線。揃った線（辺か中心線）にだけ引く。
+ *
+ * @param candidate 寄せ先
+ * @param moved 寄せたあとの運んでいるものの矩形
+ * @returns 線として描く矩形（画面上の px）。列の間隔へ寄ったなら `none`
+ */
+function guideOf(
+  candidate: SnapCandidate,
+  moved: CanvasBounds,
+): Option<CanvasBounds> {
+  switch (candidate.kind) {
+    case "line":
+      return Option.some(guideBounds(candidate, moved));
+    case "interval":
+      return Option.none;
+  }
 }
 
 /**
