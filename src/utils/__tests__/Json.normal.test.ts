@@ -87,3 +87,7 @@ test("中身のある値はフィールドとして現れる", () => {
     props: { gap: "md" },
   });
 });
+
+test("配列の要素の位置は、配列の位置に添字を角括弧で続けて綴る", () => {
+  expect(Json.elementPath("artboards", 2)).toBe("artboards[2]");
+});

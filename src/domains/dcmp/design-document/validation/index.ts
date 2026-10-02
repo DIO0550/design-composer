@@ -27,10 +27,11 @@ import {
 } from "@/domains/dcmp/reference-context";
 import { Size } from "@/domains/dcmp/size";
 import { type TokenColorPosition, TokenSet } from "@/domains/dcmp/token";
+import { Json } from "@/utils/Json";
 import { Option } from "@/utils/Option";
 import type { DesignDocumentV1 as DesignDocument } from "../v1";
 
-/** ノード（部品・artboard・子ノード）を指す不正の理由。 */
+/** ノード（名前を持つ部品・artboard と子ノード）を指す不正の理由。 */
 type NodeValidationErrorKind =
   | PropValidationError["kind"]
   | "unknown-type"
@@ -79,14 +80,31 @@ type TokenValidationError = Readonly<{
 type TokenErrorLocation = Readonly<{ tokenName: string; prop?: string }>;
 
 /**
- * 不正 1 件。ノードを指すものとトークンを指すものがある。
+ * 名前の無いルート（部品定義・artboard）を指す不正 1 件。どのルートかをドキュメント内のパスで
+ * 持ち、診断用のメッセージを持つ。
+ */
+type UnnamedRootValidationError = Readonly<{
+  kind: "missing-name";
+  documentPath: string;
+  message: string;
+}>;
+
+/** 部品定義を収めるトップレベルフィールド。型で版のフィールド名に結び、綴りを二重に持たない。 */
+const ComponentsField = "components" satisfies keyof DesignDocument;
+
+/** artboard を収めるトップレベルフィールド。 */
+const ArtboardsField = "artboards" satisfies keyof DesignDocument;
+
+/**
+ * 不正 1 件。ノードを指すもの・トークンを指すもの・名前の無いルートを指すものがある。
  *
- * トークン名をノード名の位置に入れない。ノードとトークンは別の名前空間なので、入れると同名の
- * ノードを指しているのと区別できなくなる。
+ * トークン名やルートを収めるフィールドの名前（`components` / `artboards`）をノード名の位置に
+ * 入れない。ノードとは別の名前空間なので、入れると同名のノードを指しているのと区別できなくなる。
  */
 export type DesignDocumentValidationError =
   | NodeValidationError
-  | TokenValidationError;
+  | TokenValidationError
+  | UnnamedRootValidationError;
 
 /**
  * 発生位置（nodeName / prop）を持たない、ノードを指すエラー。
@@ -451,24 +469,37 @@ function collectDuplicateNameErrors(
 }
 
 /**
- * 名前が欠落した位置を、入れ物の名前と入れ物の中での位置の綴りにする。
+ * 名前が欠落した位置を、報告用のエラーにする。
  *
  * @param position 名前が欠落した位置
- * @returns 入れ物の名前（`nodeName` に入れる）と、入れ物の中での位置（`child 0` / `key ""` /
- *   `artboard 0`）
+ * @returns 部品のキー・artboard の欠落はそのルートをドキュメント内のパス（`components` /
+ *   `artboards[<添字>]`）で指す missing-name、子ノードの欠落は名前を持つ最も近い祖先のノードを
+ *   指す missing-name
+ *
+ * キーが空の部品は、デコード失敗の綴り（`components.`）ではなく `components` で指す。末尾の
+ * `.` は綴りが欠けて見えるため。
  */
-function describeMissingPosition(
+function toMissingNameError(
   position: NamePosition,
-): Readonly<{ ownerName: string; place: string }> {
+): NodeValidationError | UnnamedRootValidationError {
   switch (position.kind) {
     case "component-key":
-      return { ownerName: "components", place: 'key ""' };
+      return {
+        kind: "missing-name",
+        documentPath: ComponentsField,
+        message: `key "" of "${ComponentsField}" has no name`,
+      };
     case "artboard":
-      return { ownerName: "artboards", place: `artboard ${position.index}` };
+      return {
+        kind: "missing-name",
+        documentPath: Json.elementPath(ArtboardsField, position.index),
+        message: `artboard ${position.index} of "${ArtboardsField}" has no name`,
+      };
     case "child":
       return {
-        ownerName: position.ownerName,
-        place: `child ${position.index}`,
+        kind: "missing-name",
+        nodeName: position.ownerName,
+        message: `child ${position.index} of "${position.ownerName}" has no name`,
       };
   }
 }
@@ -477,19 +508,15 @@ function describeMissingPosition(
  * 名前空間に属する名前の違反 1 件を、報告用のエラーにする。
  *
  * @param violation `DocumentNames.collectNameViolations` が返した違反
- * @returns 欠落なら入れ物の名前を位置にした missing-name、識別子違反ならその名前を位置にした
+ * @returns 欠落なら `toMissingNameError` の missing-name、識別子違反ならその名前を位置にした
  *   invalid-identifier
  */
-function toNameError(violation: NameViolation): NodeValidationError {
+function toNameError(
+  violation: NameViolation,
+): NodeValidationError | UnnamedRootValidationError {
   switch (violation.kind) {
-    case "missing": {
-      const { ownerName, place } = describeMissingPosition(violation.position);
-      return {
-        kind: "missing-name",
-        nodeName: ownerName,
-        message: `${place} of "${ownerName}" has no name`,
-      };
-    }
+    case "missing":
+      return toMissingNameError(violation.position);
     case "invalid-identifier":
       return {
         kind: "invalid-identifier",
@@ -561,7 +588,7 @@ function toColorErrorLocation(
       return {
         location: {
           tokenName: position.name,
-          prop: `stops[${position.stopIndex}].color`,
+          prop: `${Json.elementPath("stops", position.stopIndex)}.color`,
         },
         subject: `the stop ${position.stopIndex} color of gradient token "${position.name}"`,
       };

@@ -67,10 +67,11 @@ export type DocumentError = Readonly<{
 }>;
 
 /**
- * スキーマ検証の失敗は、どのノードまたはトークンの（あれば）どの prop かを指す。
+ * スキーマ検証の失敗が指す場所。ノードまたはトークンの（あれば）どの prop か、名前の無い
+ * 部品定義・artboard ならドキュメント内のパス。
  *
  * @param error スキーマ検証が報告した失敗 1 件
- * @returns 失敗が指すノードまたはトークン
+ * @returns 失敗が指すノード・トークン・ドキュメント内のパス
  */
 function locationOf(
   error: DesignDocumentValidationError,
@@ -81,6 +82,9 @@ function locationOf(
       tokenName: error.tokenName,
       ...(error.prop !== undefined ? { prop: error.prop } : {}),
     };
+  }
+  if ("documentPath" in error) {
+    return { kind: "document-path", path: error.documentPath };
   }
   return {
     kind: "node",
@@ -93,7 +97,7 @@ function locationOf(
  * スキーマ検証の失敗を、画面に出すエラーの形へ揃える。
  *
  * @param errors スキーマ検証が報告した失敗の並び
- * @returns ノードまたはトークンを指すエラーの並び
+ * @returns ノード・トークン・ドキュメント内のパスを指すエラーの並び
  */
 function fromValidationErrors(
   errors: readonly DesignDocumentValidationError[],
