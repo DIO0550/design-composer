@@ -117,9 +117,21 @@ type DropContext = Readonly<{
 }>;
 
 /**
+ * 吸い付く先。それぞれの意味は `SideSnap` の同名のフィールド。`stationary` には落とし先の
+ * 親の枠、`siblings` にはその親の直下にある運んでいるもの以外の子を入れる。
+ */
+type SnapTargets = Readonly<{
+  stationary: readonly CanvasBounds[];
+  siblings: readonly CanvasBounds[];
+}>;
+
+/** 吸い付かない回の揃え先。 */
+const NoSnapTargets: SnapTargets = { stationary: [], siblings: [] };
+
+/**
  * 座標の置き直しに要る実測。
  *
- * 単位が 1 つだけ違う: `origin` / `dragged` / `stationary` は実測したままの**画面上の px**、
+ * 単位が 1 つだけ違う: `origin` / `dragged` / `targets` は実測したままの**画面上の px**、
  * `shift` だけは書かれる座標へ足す量なので**ドキュメント上の px**（倍率で割り戻し済み）。
  */
 type RepositionMeasure = Readonly<{
@@ -128,8 +140,8 @@ type RepositionMeasure = Readonly<{
   origin: CanvasBounds;
   /** 運んでいるノードの矩形。使うのは大きさだけ（位置は運んでいる間ずれている）。 */
   dragged: CanvasBounds;
-  /** 揃え先（落とし先の親の枠と、その直下にある運んでいるもの以外の子）。 */
-  stationary: readonly CanvasBounds[];
+  /** 吸い付く先。 */
+  targets: SnapTargets;
 }>;
 
 /**
@@ -178,12 +190,13 @@ function measureReposition(
     },
     origin: currentBounds.value,
     dragged: dragged.value,
-    stationary: [droppedBounds, ...siblings],
+    targets: { stationary: [droppedBounds], siblings },
   });
 }
 
 /**
- * 揃う位置へ寄せる量と、揃った線（辺か中心線）に引くガイド線。
+ * 揃う位置か兄弟の列と同じ間隔になる位置へ寄せる量と、揃った線（辺か中心線）に引く
+ * ガイド線。
  *
  * 行き先の矩形は、今の親の左上へ運んだ先の位置を置き、大きさは運んでいるものの実測をその
  * まま採って組み立てる。位置まで実測から採れないのは、運んでいる間は `translate` でずら
@@ -195,19 +208,23 @@ function measureReposition(
  *
  * @param measured 落とし先の実測（寄せの原点と、運んでいるものの大きさ）
  * @param movedTo 今の親の左上から見た、運んだ先の画面上の位置
- * @param targets 今回揃える先の矩形の並び（吸い付かない回は空）
- * @returns 寄せ量とガイド線（どちらも画面上の px。閾値に届く線が無い / 揃え先が空なら
- *   寄せ量は縦横とも 0・線は無し）
+ * @param targets 今回吸い付く先（吸い付かない回は空）
+ * @returns 寄せ量とガイド線（どちらも画面上の px。中身は `SideSnap.toSnapped` の答え）
  */
 function snapAt(
   measured: RepositionMeasure,
   movedTo: Offset,
-  targets: readonly CanvasBounds[],
+  targets: SnapTargets,
 ): SideSnapped {
+  const moving = CanvasBounds.placedAt(
+    measured.origin,
+    movedTo,
+    measured.dragged,
+  );
   return SideSnap.toSnapped(
-    SideSnap.create(
-      CanvasBounds.placedAt(measured.origin, movedTo, measured.dragged),
-      targets,
+    SideSnap.withSiblings(
+      SideSnap.create(moving, targets.stationary),
+      targets.siblings,
     ),
   );
 }
@@ -287,8 +304,8 @@ function repositionCarrying(
    * 無いときの答え（寄せ量 0・線無し）が 2 か所に書かれる。
    */
   const targets = CommandKey.isHeld(context.event)
-    ? []
-    : measured.value.stationary;
+    ? NoSnapTargets
+    : measured.value.targets;
   // 寄せ量とガイド線は 1 回の判定から配る（理由は `DropEdit.reposition` の doc）
   const snap = snapAt(
     measured.value,
@@ -401,7 +418,8 @@ export type NodeDragControl = Readonly<{
  *
  * このフックが持つのは DOM の実測とイベントの仲介だけ。「どこへ落ちるか」「いつドラッグ
  * とみなすか」は `node-drop` / `node-drag`、「実測した親のずれからどの座標が書かれるか」
- * は `reposition-target`、「揃う線（辺か中心線）があるならどれだけ寄せるか」は `side-snap` にある。
+ * は `reposition-target`、「揃う線（辺か中心線）か兄弟の列と同じ間隔になる位置があるなら
+ * どれだけ寄せるか」は `side-snap` にある。
  * ⌘ / Ctrl を押している間に揃え先を渡さない（吸い付かせない）のは、修飾キーという入力の事情
  * なのでこちらが持つ。
  *

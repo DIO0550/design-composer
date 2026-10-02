@@ -7,7 +7,7 @@
  */
 export type Range = Readonly<{ min: number; max: number }>;
 
-/** 範囲の判定。 */
+/** 範囲の判定と計算。 */
 export const Range = {
   /**
    * その範囲に入っているか。下端と上端はどちらも含む。
@@ -21,5 +21,19 @@ export const Range = {
    */
   contains(range: Range, value: number): boolean {
     return range.min <= value && value <= range.max;
+  },
+
+  /**
+   * 2 つの範囲が重なっている長さ。
+   *
+   * @param range 見る範囲
+   * @param other 重なりを見る相手の範囲
+   * @returns 重なっている部分の長さ。離れている / 端が接するだけなら 0
+   */
+  intersectionLength(range: Range, other: Range): number {
+    return Math.max(
+      0,
+      Math.min(range.max, other.max) - Math.max(range.min, other.min),
+    );
   },
 } as const;
