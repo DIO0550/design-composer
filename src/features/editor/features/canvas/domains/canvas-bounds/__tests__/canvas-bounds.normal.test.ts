@@ -38,6 +38,20 @@ test("垂直の組の中心線は、上下の辺の中央になる", () => {
   expect(CanvasBounds.midline(Bounds, SidePairs.Vertical)).toBe(40);
 });
 
+test("水平の組の範囲は、左辺から右辺までになる", () => {
+  expect(CanvasBounds.extentAlong(Bounds, SidePairs.Horizontal)).toEqual({
+    min: 10,
+    max: 110,
+  });
+});
+
+test("垂直の組の範囲は、上辺から下辺までになる", () => {
+  expect(CanvasBounds.extentAlong(Bounds, SidePairs.Vertical)).toEqual({
+    min: 20,
+    max: 60,
+  });
+});
+
 test("同じ位置と大きさなら、別に作った矩形どうしでも等しい", () => {
   // 実測のたびに新しいオブジェクトになるので、参照が違っても等しくなければならない
   expect(
