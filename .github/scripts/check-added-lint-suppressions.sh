@@ -10,7 +10,8 @@
 # 判定そのものは .claude/hooks/lib/lint-suppressions.py で共有している。
 # 既存行の抑制で落とさないよう、**追加された行に載っているものだけ**を違反とする。
 # ただし追加行かどうかは行番号でしか見えないため、ファイルを分けると既にあった抑制が
-# すべて「追加」に見える。base に同じ綴りの行があるものは移動として除く。
+# すべて「追加」に見える。merge-base に同じ綴りの行があるものは移動として除く
+# (先端ではなく merge-base を見る理由は lib/added-lines.sh の `init_added_lines`)。
 set -euo pipefail
 
 # `cd` の前に解決する(`cd` したあとの `$0` は元の作業ディレクトリからの相対になる)
@@ -24,11 +25,11 @@ init_added_lines "$base"
 detector=.claude/hooks/lib/lint-suppressions.py
 require_runnable_detector "追加された lint 抑制" "$detector"
 
-# base に既にあった抑制コメントの綴り。ファイルをまたぐ移動を「追加」と読まないために使う
+# merge-base に既にあった抑制コメントの綴り。ファイルをまたぐ移動を「追加」と読まないために使う
 # (新しいファイルは全行が追加行になるので、行番号だけでは移動と新設を見分けられない)。
 # 抑制コメントは理由を必ず後ろに書くので、綴りが一字一句同じなら同じ抑制が移ったもの。
 existing_suppressions="$(
-  git grep -h -E 'biome-ignore|eslint-disable' "$base" -- \
+  git grep -h -E 'biome-ignore|eslint-disable' "$ADDED_LINES_MERGE_BASE" -- \
     '*.ts' '*.tsx' '*.js' '*.jsx' 2>/dev/null |
     sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | sort -u || true
 )"
