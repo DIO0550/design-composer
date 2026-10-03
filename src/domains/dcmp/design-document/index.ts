@@ -1035,6 +1035,27 @@ export const DesignDocument = {
   },
 
   /**
+   * 並びのうち、artboard 配下のノードとして在る名前だけ（キャンバスで選び・掴みうる相手）。
+   *
+   * キャンバスから届く名前は、押された位置から辿ったもの（クリック・ドラッグ）と範囲に重
+   * なったもの（範囲選択）の 2 通りあり、どちらも同じ絞り込みを通す。**綴りを揃えるだけで
+   * は定義が 2 箇所に散る**ので、絞り込み自体をここへ 1 つ置く。
+   *
+   * @param document 名前を引くドキュメント
+   * @param names 絞り込む名前の並び
+   * @returns `findNode` で引ける名前だけを、渡された順のまま残した並び。artboard 自身の名
+   *   前・部品定義の中のノードの名前・無い名前は落ちる
+   */
+  collectNodeNames(
+    document: DesignDocument,
+    names: readonly string[],
+  ): readonly string[] {
+    return names.filter((name) =>
+      Option.isSome(DesignDocument.findNode(document, name)),
+    );
+  },
+
+  /**
    * 名前で指した artboard またはノードの prop を書き換える（docs/06-ui.md「編集操作の一
    * 覧」の props 編集）。名前は単一名前空間なので、artboard とノードのどちらを相手にす
    * るかは名前で決まる。
