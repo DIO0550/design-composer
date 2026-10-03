@@ -56,6 +56,30 @@ export function pressPointer(
 }
 
 /**
+ * 修飾キーを押しながら、主ボタンでポインタを押す。
+ *
+ * `pressPointer` の引数に足さないのは、ボタンと並べると引数が 4 つになるため（押しながら
+ * 掴むのは主ボタンだけなので、ボタンは受け取らない）。
+ *
+ * @param element 押す要素
+ * @param at 押した位置
+ * @param pressed 押した時点で押されている修飾キー
+ */
+export function pressPointerHolding(
+  element: Element,
+  at: PointerPoint,
+  pressed: PressedModifier,
+): void {
+  fireEvent.pointerDown(element, {
+    pointerId: PointerId,
+    clientX: at.x,
+    clientY: at.y,
+    button: PointerButtons.Primary,
+    ...modifierKeysOf(pressed),
+  });
+}
+
+/**
  * ポインタを動かす。
  *
  * @param element 動かした先の要素
