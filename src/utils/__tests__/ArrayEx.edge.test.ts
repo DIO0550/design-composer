@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
 import { ArrayEx } from "../ArrayEx";
 import { Option } from "../Option";
+import { Result } from "../Result";
 
 test("範囲外の index を指定して insertAt を呼ぶと範囲外として Err が返る", () => {
   expect(ArrayEx.insertAt(["a", "b"], 3, "c")).toEqual({
@@ -99,4 +100,18 @@ test("countOccurrences は NaN どうしと 0 と -0 をそれぞれ同じ値と
     [Number.NaN, 2],
     [0, 2],
   ]);
+});
+
+test("reduceUntilErr は 2 つ目と 3 つ目がどちらも err なら 2 つ目の err を返す", () => {
+  expect(
+    ArrayEx.reduceUntilErr([1, 2, 3], 0, (sum, item) =>
+      item === 1 ? Result.ok(sum + item) : Result.err(`failed at ${item}`),
+    ),
+  ).toEqual(Result.err("failed at 2"));
+});
+
+test("reduceUntilErr は空の並びなら初めの値をそのまま返す", () => {
+  expect(
+    ArrayEx.reduceUntilErr([], 7, (sum, item: number) => Result.ok(sum + item)),
+  ).toEqual(Result.ok(7));
 });
