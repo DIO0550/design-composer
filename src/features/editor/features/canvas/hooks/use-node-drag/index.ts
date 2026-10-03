@@ -406,12 +406,15 @@ export type NodeDragControl = Readonly<{
    * が動かなくなる。
    *
    * @param event artboard の枠で受けた `pointerdown`
+   * @param names 押された位置から外へ辿った名前（内→外）。クリックが選ぶときと同じ集め方
+   *   で受け取る
    * @param dig 押し方から決まった掘る量（クリックと同じ読み替え）
    * @returns 掴んだ（＝この先の判定へ渡さない）なら `true`。押された位置から根までに
    *   ドキュメントのノードが 1 つも無ければ `false`（artboard の背景を押したとき）
    */
   grabNode: (
     event: ReactPointerEvent<HTMLElement>,
+    names: readonly string[],
     dig: SelectionDig,
   ) => boolean;
   dragHandlers: NodeDragHandlers;
@@ -455,13 +458,10 @@ export function useNodeDrag(
 
   const grabNode = (
     event: ReactPointerEvent<HTMLElement>,
+    names: readonly string[],
     dig: SelectionDig,
   ): boolean => {
-    const name = DocumentSelection.nodeNameAt(
-      params.selection,
-      namesToRoot(event.target),
-      dig,
-    );
+    const name = DocumentSelection.nodeNameAt(params.selection, names, dig);
     if (!Option.isSome(name)) {
       return false;
     }

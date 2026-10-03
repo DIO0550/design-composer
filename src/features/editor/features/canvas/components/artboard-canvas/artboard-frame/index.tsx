@@ -214,7 +214,9 @@ export function ArtboardFrame({
           if (nodeResize.grabAt(event)) {
             return;
           }
-          if (nodeDrag.grabNode(event, pressDig(event))) {
+          if (
+            nodeDrag.grabNode(event, namesAt(event.target), pressDig(event))
+          ) {
             return;
           }
           artboardDrag.grab(element.name, canvasPosition, event);
