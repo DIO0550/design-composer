@@ -7,40 +7,16 @@
 #   「doc としての説明」と、その下の「doc に書く項目」
 #
 # 見るのは `src/` の実装ファイルのみ（`__tests__/` / `*.stories.*` / `__stories__/` は
-# 対象外）。判定は lib/missing-doc-comments.py。
+# 対象外）。判定は lib/missing-doc-comments.py。deny の組み立ては lib/pre-push-detector.sh。
 #
-# 全体を見る。導入時点では既存の抜けが 149 件あったため「このブランチで追加した行」だけに
-# 絞っていたが、その 149 件を埋めて 0 件にしたので、絞る理由が無くなった
-# （触っていない分で止まることがないため、README.md「例外(エスケープハッチ)」が
-# 記録している「止まる理由が自分の変更でない」状態にならない）。
-#
-# 見るのは doc の有無と項目（`@param` / `@returns` / `@throws`）の両方。導入時点では
-# 項目を満たさない doc が 190 件あったため `--missing-only` で有無だけに絞っていたが、
-# その 190 件を埋めて 0 件にしたので絞る理由が無くなった。
+# `src/` 全体を見る理由と、doc の有無と項目（`@param` / `@returns` / `@throws`）の両方を
+# 見る理由は README.md「例外(エスケープハッチ)」に一本化してある。
 set -euo pipefail
 
 hook_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-detector="$hook_dir/lib/missing-doc-comments.py"
+source "$hook_dir/lib/pre-push-detector.sh"
 
-input="$(cat)"
-command="$(jq -r '.tool_input.command // empty' <<< "$input")"
-
-# git push 以外はスルー
-if ! echo "$command" | grep -qE '(^|\s|[;&|])\s*git\s+push\b'; then
-  exit 0
-fi
-
-command -v python3 >/dev/null 2>&1 || exit 0
-
-cd "${CLAUDE_PROJECT_DIR:-$PWD}"
-
-# CI（`rules-check`）・`harness/githooks/pre-push` と同じ `--all` を呼ぶ（理由は README.md）。
-violations="$(python3 "$detector" --all src)" && exit 0
-
-jq -Rn --arg msg "$violations" '{
-  hookSpecificOutput: {
-    hookEventName: "PreToolUse",
-    permissionDecision: "deny",
-    permissionDecisionReason: ("push 前の doc コメント検査で規約を満たさない doc が見つかったため push をブロックしました。\n\n" + $msg + "\nその関数・型・定数が何かに加え、引数は @param、戻り値は @returns、投げる例外は @throws を書いてから再度 push してください（rules/coding.md「doc に書く項目」）。")
-  }
-}'
+deny_on_all_src_failure \
+  "$hook_dir/lib/missing-doc-comments.py" \
+  "doc コメント" \
+  "その関数・型・定数が何かに加え、引数は @param、戻り値は @returns、投げる例外は @throws を書いてから再度 push してください（rules/coding.md「doc に書く項目」）。"
