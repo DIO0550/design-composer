@@ -56,3 +56,12 @@ test("自由配置の親の下でも fill 以外のサイズ指定の軸は返�
     }),
   ).toEqual([]);
 });
+
+test("自由配置の親の下でもサイズが決まらない軸は fill として返らない", () => {
+  expect(
+    Layout.collectFillAxesInFreeParent(Layouts.Free, {
+      widthMode: "fixed",
+      heightMode: "hug",
+    }),
+  ).toEqual([]);
+});
