@@ -147,14 +147,8 @@ function applyPropEdits(
   name: string,
   edits: readonly PropEdit[],
 ): Result<DesignDocument, DesignDocumentEditError> {
-  const unedited: Result<DesignDocument, DesignDocumentEditError> =
-    Result.ok(document);
-  return edits.reduce<Result<DesignDocument, DesignDocumentEditError>>(
-    (edited, edit) =>
-      Result.flatMap(edited, (current) =>
-        DesignDocument.applyPropEdit(current, name, edit),
-      ),
-    unedited,
+  return ArrayEx.reduceUntilErr(edits, document, (current, edit) =>
+    DesignDocument.applyPropEdit(current, name, edit),
   );
 }
 
@@ -327,18 +321,12 @@ function followChildren(
   children: readonly Node[],
   resizes: readonly AxisResize[],
 ): Result<DesignDocument, DesignDocumentEditError> {
-  const unfollowed: Result<DesignDocument, DesignDocumentEditError> =
-    Result.ok(document);
-  return children.reduce<Result<DesignDocument, DesignDocumentEditError>>(
-    (followed, child) =>
-      Result.flatMap(followed, (current) =>
-        applyPropEdits(
-          current,
-          child.name,
-          resizes.flatMap((resize) => followPropEdits(child, resize)),
-        ),
-      ),
-    unfollowed,
+  return ArrayEx.reduceUntilErr(children, document, (current, child) =>
+    applyPropEdits(
+      current,
+      child.name,
+      resizes.flatMap((resize) => followPropEdits(child, resize)),
+    ),
   );
 }
 
