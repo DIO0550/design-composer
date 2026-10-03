@@ -356,16 +356,8 @@ export const BoxElement = {
       ...gap,
       ...padding,
       ...alignment,
-      ...Size.declarations(
-        Size.fromProps(props, "width"),
-        "width",
-        flexParentDirection,
-      ),
-      ...Size.declarations(
-        Size.fromProps(props, "height"),
-        "height",
-        flexParentDirection,
-      ),
+      ...Size.declarationsFromProps(props, "width", flexParentDirection),
+      ...Size.declarationsFromProps(props, "height", flexParentDirection),
       ...tokenDeclarations("background", props.background, tokens),
       ...cornerRadius,
       ...tokenDeclarations("shadow", props.shadow, tokens),

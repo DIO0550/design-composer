@@ -4,8 +4,8 @@ import { Size } from "../index";
 
 test("hug に最小を書くとその長さより縮まない", () => {
   expect(
-    Size.declarations(
-      Size.fromProps({ widthMode: "hug", minWidth: 120 }, "width"),
+    Size.declarationsFromProps(
+      { widthMode: "hug", minWidth: 120 },
       "width",
       Option.some("row"),
     ),
@@ -17,8 +17,8 @@ test("hug に最小を書くとその長さより縮まない", () => {
 
 test("hug に最大を書くとその長さより伸びない", () => {
   expect(
-    Size.declarations(
-      Size.fromProps({ widthMode: "hug", maxWidth: 400 }, "width"),
+    Size.declarationsFromProps(
+      { widthMode: "hug", maxWidth: 400 },
       "width",
       Option.some("row"),
     ),
@@ -30,11 +30,8 @@ test("hug に最大を書くとその長さより伸びない", () => {
 
 test("fill に最小と最大の両方を書くと下限が先に出力される", () => {
   expect(
-    Size.declarations(
-      Size.fromProps(
-        { widthMode: "fill", minWidth: 200, maxWidth: 400 },
-        "width",
-      ),
+    Size.declarationsFromProps(
+      { widthMode: "fill", minWidth: 200, maxWidth: 400 },
       "width",
       Option.some("row"),
     ),
@@ -47,11 +44,8 @@ test("fill に最小と最大の両方を書くと下限が先に出力される
 
 test("fixed に最小を書いてもその宣言は出力しない", () => {
   expect(
-    Size.declarations(
-      Size.fromProps(
-        { widthMode: "fixed", width: 320, minWidth: 120 },
-        "width",
-      ),
+    Size.declarationsFromProps(
+      { widthMode: "fixed", width: 320, minWidth: 120 },
       "width",
       Option.some("row"),
     ),
@@ -60,11 +54,8 @@ test("fixed に最小を書いてもその宣言は出力しない", () => {
 
 test("fixed に最大を書いてもその宣言は出力しない", () => {
   expect(
-    Size.declarations(
-      Size.fromProps(
-        { widthMode: "fixed", width: 320, maxWidth: 400 },
-        "width",
-      ),
+    Size.declarationsFromProps(
+      { widthMode: "fixed", width: 320, maxWidth: 400 },
       "width",
       Option.some("row"),
     ),
@@ -73,11 +64,8 @@ test("fixed に最大を書いてもその宣言は出力しない", () => {
 
 test("高さの軸の fixed に書いた最小も出力しない", () => {
   expect(
-    Size.declarations(
-      Size.fromProps(
-        { heightMode: "fixed", height: 240, minHeight: 100 },
-        "height",
-      ),
+    Size.declarationsFromProps(
+      { heightMode: "fixed", height: 240, minHeight: 100 },
       "height",
       Option.some("row"),
     ),
@@ -86,8 +74,8 @@ test("高さの軸の fixed に書いた最小も出力しない", () => {
 
 test("並べる親を持たない位置の fill でも最小は出力する", () => {
   expect(
-    Size.declarations(
-      Size.fromProps({ widthMode: "fill", minWidth: 200 }, "width"),
+    Size.declarationsFromProps(
+      { widthMode: "fill", minWidth: 200 },
       "width",
       Option.none,
     ),
@@ -96,11 +84,8 @@ test("並べる親を持たない位置の fill でも最小は出力する", ()
 
 test("高さの軸では min-height と max-height を出力する", () => {
   expect(
-    Size.declarations(
-      Size.fromProps(
-        { heightMode: "hug", minHeight: 80, maxHeight: 200 },
-        "height",
-      ),
+    Size.declarationsFromProps(
+      { heightMode: "hug", minHeight: 80, maxHeight: 200 },
       "height",
       Option.some("row"),
     ),
@@ -113,8 +98,8 @@ test("高さの軸では min-height と max-height を出力する", () => {
 
 test("数値でない最小は書かれていないものとして扱う", () => {
   expect(
-    Size.declarations(
-      Size.fromProps({ widthMode: "hug", minWidth: "abc" }, "width"),
+    Size.declarationsFromProps(
+      { widthMode: "hug", minWidth: "abc" },
       "width",
       Option.some("row"),
     ),
@@ -123,8 +108,8 @@ test("数値でない最小は書かれていないものとして扱う", () =>
 
 test("幅の最小は minWidth prop が持ち、高さの最小と混ざらない", () => {
   expect(
-    Size.declarations(
-      Size.fromProps({ widthMode: "hug", minHeight: 80 }, "width"),
+    Size.declarationsFromProps(
+      { widthMode: "hug", minHeight: 80 },
       "width",
       Option.some("row"),
     ),

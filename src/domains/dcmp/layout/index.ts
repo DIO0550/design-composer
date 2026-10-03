@@ -74,8 +74,11 @@ export const Layout = {
     if (Option.isSome(Layout.direction(parentLayout))) {
       return [];
     }
-    return Object.values(Axes).filter(
-      (axis) => Size.fromProps(props, axis)?.mode === "fill",
+    return Object.values(Axes).filter((axis) =>
+      Option.contains(
+        Option.map(Size.fromProps(props, axis), (size) => size.mode),
+        "fill",
+      ),
     );
   },
 

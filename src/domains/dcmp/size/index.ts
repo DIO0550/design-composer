@@ -117,32 +117,70 @@ function fillDeclarations(
     : [];
 }
 
+/**
+ * `Size.fixedLengthFromProps` のうち、サイズが決まった後の部分。
+ *
+ * @param size 見るサイズ
+ * @returns `fixed` ならその長さ。それ以外は `none`
+ */
+function fixedLength(size: Size): Option<number> {
+  return size.mode === "fixed" ? Option.some(size.length) : Option.none;
+}
+
+/**
+ * `Size.declarationsFromProps` のうち、サイズが決まった後の部分。
+ *
+ * @param size 宣言にするサイズ
+ * @param axis どちらの軸のサイズか
+ * @param flexParentDirection `Size.declarationsFromProps` のとおり
+ * @returns その軸の宣言
+ */
+function declarations(
+  size: Size,
+  axis: Axis,
+  flexParentDirection: Option<CssDirection>,
+): readonly CssDeclaration[] {
+  switch (size.mode) {
+    case "hug":
+      return [
+        CssDeclaration.create(axis, "fit-content"),
+        ...SizeLimits.declarations(size.limits, axis),
+      ];
+    case "fixed":
+      return [CssDeclaration.create(axis, Px.create(size.length))];
+    case "fill":
+      return [
+        ...fillDeclarations(flexParentDirection, axis),
+        ...SizeLimits.declarations(size.limits, axis),
+      ];
+  }
+}
+
 export const Size = {
   /**
    * props からその軸のサイズを組み立てる。
    *
-   * この `undefined` は「不在」ではなく「スキーマ違反で決められない」を表す
-   * (不正は `DesignDocument.collectErrors` が出す)。
+   * 決まらないのはスキーマ違反のときで、不正は `DesignDocument.collectErrors` が出す。
    *
    * @param props 読み取り元の props (デフォルト解決済みでなくてよい)
    * @param axis どちらの軸のサイズを読むか
    * @returns その軸のサイズ。モードの綴りが読めないときと、`fixed` なのに長さが数値で
-   *   ないときは `undefined`
+   *   ないときは `none`
    */
-  fromProps(props: Props, axis: Axis): Size | undefined {
+  fromProps(props: Props, axis: Axis): Option<Size> {
     const mode = props[Size.modeProp(axis)];
     const limits = SizeLimits.fromProps(props, axis);
     if (mode === "hug") {
-      return { mode: "hug", limits };
+      return Option.some({ mode: "hug", limits });
     }
     if (mode === "fill") {
-      return { mode: "fill", limits };
+      return Option.some({ mode: "fill", limits });
     }
     const length = props[axis];
     if (mode === "fixed" && typeof length === "number") {
-      return { mode: "fixed", length };
+      return Option.some({ mode: "fixed", length });
     }
-    return undefined;
+    return Option.none;
   },
 
   /**
@@ -158,66 +196,44 @@ export const Size = {
   },
 
   /**
-   * 固定された長さ。`hug` / `fill` と、長さの決まらないサイズは持たない。
-   *
-   * @param size 見るサイズ。`undefined` の意味は `fromProps` のとおり
-   * @returns `fixed` ならその長さ。`hug` / `fill` と `undefined` なら `none`
-   */
-  fixedLength(size: Size | undefined): Option<number> {
-    return size?.mode === "fixed" ? Option.some(size.length) : Option.none;
-  },
-
-  /**
    * props からその軸の固定された長さを読む。
    *
    * モードと長さがどの prop に載っているかを知っているのはこのモジュールなので、
-   * 軸で引く側が 2 つの prop 名を組み立てずに済む。`fixedLength` と組で使う形が
-   * 呼び出し側に散っていたのでここへ集約している。
+   * 軸で引く側が 2 つの prop 名を組み立てずに済む。
    *
    * @param props 読み取り元の props (デフォルト解決済みでなくてよい)
    * @param axis どちらの軸の長さを読むか
    * @returns その軸の長さ。`hug` / `fill` と、`fixed` なのに長さが無いときは `none`
    */
   fixedLengthFromProps(props: Props, axis: Axis): Option<number> {
-    return Size.fixedLength(Size.fromProps(props, axis));
+    return Option.flatMap(Size.fromProps(props, axis), fixedLength);
   },
 
   /**
-   * サイズを CSS の宣言にする。
+   * props からその軸のサイズを読み、CSS の宣言にする。
    * `fill` だけは親の向きに依存する (docs/03「親コンテキストに依存するコンパイル」)。
    *
    * 下限・上限は親の向きに依らないので、`fill` がフローの外にあって伸長の宣言を出さない
    * ときも出す。
    *
-   * @param size 宣言にするサイズ。サイズが決まらないときは `undefined`
+   * @param props 読み取り元の props (デフォルト解決済みでなくてよい)
    * @param axis どちらの軸のサイズか
    * @param flexParentDirection flex アイテムとして並ぶ親の向き。フローに参加して
    *   いない位置（親を持たない / 親が `layout: free` / 自身が絶対配置）では `none`。
    *   そこでは `fill` が意味を持たないので宣言を出さない
-   * @returns その軸の宣言。サイズが決まらないときと、`fill` がフローの外にあって
-   *   下限・上限も無いときは空
+   * @returns その軸の宣言。サイズが決まらない（`fromProps` が `none`）ときと、`fill` が
+   *   フローの外にあって下限・上限も無いときは空
    */
-  declarations(
-    size: Size | undefined,
+  declarationsFromProps(
+    props: Props,
     axis: Axis,
     flexParentDirection: Option<CssDirection>,
   ): readonly CssDeclaration[] {
-    if (size === undefined) {
-      return [];
-    }
-    switch (size.mode) {
-      case "hug":
-        return [
-          CssDeclaration.create(axis, "fit-content"),
-          ...SizeLimits.declarations(size.limits, axis),
-        ];
-      case "fixed":
-        return [CssDeclaration.create(axis, Px.create(size.length))];
-      case "fill":
-        return [
-          ...fillDeclarations(flexParentDirection, axis),
-          ...SizeLimits.declarations(size.limits, axis),
-        ];
-    }
+    return Option.unwrapOr(
+      Option.map(Size.fromProps(props, axis), (size) =>
+        declarations(size, axis, flexParentDirection),
+      ),
+      [],
+    );
   },
 } as const;
