@@ -403,8 +403,8 @@ export type NodeDragControl = Readonly<{
    * （`DocumentSelection.nodeNameAt`）。
    *
    * **artboard の背景を押したときに `false` を返すことに、キャンバスの掴み分けが載ってい
-   * る**（`ArtboardFrame` の `onPointerDown`）。掴めるようにすると、背景を押しても artboard
-   * が動かなくなる。
+   * る**（`ArtboardFrame` の `onPointerDown`）。掴めるようにすると、背景から範囲選択を
+   * 始められなくなる。
    *
    * @param event artboard の枠で受けた `pointerdown`
    * @param names 押された位置から外へ辿った名前（内→外）。クリックが選ぶときと同じ集め方

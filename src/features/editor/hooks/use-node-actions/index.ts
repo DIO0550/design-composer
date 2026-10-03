@@ -104,7 +104,7 @@ export function useNodeActions(): NodeActions {
      */
     reposition: (name, to) => dispatch({ type: "reposition_node", name, to }),
     /**
-     * artboard の見出し・背景を掴んだドラッグはキャンバス上の移動。
+     * artboard の見出しを掴んだドラッグはキャンバス上の移動。
      */
     repositionArtboard: (name, canvasPosition) =>
       dispatch({ type: "reposition_artboard", name, canvasPosition }),
