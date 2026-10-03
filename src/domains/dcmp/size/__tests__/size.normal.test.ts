@@ -112,3 +112,9 @@ test("サイズが決まらないときは固定の長さも持たない", () =>
     Option.none,
   );
 });
+
+test("fill のサイズは固定の長さを持たない", () => {
+  expect(Size.fixedLengthFromProps({ widthMode: "fill" }, "width")).toEqual(
+    Option.none,
+  );
+});
