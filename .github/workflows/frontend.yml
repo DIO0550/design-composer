@@ -181,6 +181,9 @@ jobs:
       - name: カナリアの判定表
         run: bash .claude/hooks/lib/canary-cases.sh
 
+      - name: 検証エージェントの実行中フラグの判定表
+        run: bash .claude/hooks/lib/verification-agent-cases.sh
+
       - name: pre-push の結果行の判定表
         run: bash harness/githooks/lib/check-tally-cases.sh
 
