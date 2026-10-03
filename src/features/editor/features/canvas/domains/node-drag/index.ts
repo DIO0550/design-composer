@@ -1,4 +1,3 @@
-import { DesignDocument } from "@/domains/dcmp/design-document";
 import type { NodeTemplate } from "@/domains/session/node-template";
 import { Offset } from "@/domains/unit/offset";
 import {
@@ -287,33 +286,6 @@ export const NodeDrag = {
    */
   create(): NodeDrag {
     return { kind: "idle" };
-  },
-
-  /**
-   * 内側から外へ並べた候補のうち、最も内側の掴めるノードの名前。掴めるのは artboard 配下
-   * のノードだけで、artboard 自身の名前はどのツリーにも無いので引けない
-   * （`Artboard.findNode` が探すのは `children`）。
-   *
-   * ツリー内の移動先も持たない（artboard の並べ替えは別の操作 / docs/06-ui.md「編集操作の一
-   * 覧」）。部品インスタンスの中身は木に無いので、そこを押すとインスタンス自身が掴まれる。
-   *
-   * **artboard の背景を押したときにここが `none` を返すことに、キャンバスの掴み分けが載
-   * っている**（`ArtboardFrame` の `onPointerDown`）。引けるようにすると、背景を押しても
-   * artboard が動かなくなる。
-   *
-   * @param document 名前の引き先になるドキュメント
-   * @param names 押された位置から根へ向かう順のノード名
-   * @returns 最も内側の掴めるノードの名前。1つも掴めなければ `none`
-   */
-  grabbableName(
-    document: DesignDocument,
-    names: readonly string[],
-  ): Option<string> {
-    return Option.fromNullable(
-      names.find((name) =>
-        Option.isSome(DesignDocument.findNode(document, name)),
-      ),
-    );
   },
 
   /**

@@ -91,18 +91,6 @@ function EditorPanes({
   useEditShortcuts();
 
   /*
-   * 掴む場所（左ペインのパレット）と落とす場所（キャンバス）が別のペインにあるので、
-   * ドラッグの状態は両方の親であるここが持つ。運んでいるものが既存ノードなら移動、
-   * パレットの雛形なら落とした先への挿入になる。
-   */
-  const nodeDrag = useNodeDrag({
-    document: EditorState.document(state),
-    view: canvasView.view,
-    onMove: node.move,
-    onReposition: node.reposition,
-    onInsertAt: node.insertAt,
-  });
-  /*
    * ドキュメントと選択の対・トークンの対を、ここで 1 つずつだけ作る。
    * 受け取る側（キャンバスの破線、下端の帯）はこれを覚えて数え直しを避けるので、
    * レンダーのたびに作り直すと覚えたものが毎回捨てられる
@@ -117,6 +105,18 @@ function EditorPanes({
     [state],
   );
 
+  /*
+   * 掴む場所（左ペインのパレット）と落とす場所（キャンバス）が別のペインにあるので、
+   * ドラッグの状態は両方の親であるここが持つ。運んでいるものが既存ノードなら移動、
+   * パレットの雛形なら落とした先への挿入になる。
+   */
+  const nodeDrag = useNodeDrag({
+    selection: documentSelection,
+    view: canvasView.view,
+    onMove: node.move,
+    onReposition: node.reposition,
+    onInsertAt: node.insertAt,
+  });
   /*
    * 収めるズームの 2 本は `useEditShortcuts` へは寄せない。あちらが張るのはドキュメント
    * と編集履歴に触れる操作で、`useEditor()` の dispatch しか持たない。ズームは表示だけ

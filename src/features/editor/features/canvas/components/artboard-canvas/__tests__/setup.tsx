@@ -92,7 +92,7 @@ type CanvasHandlers = Readonly<{
 function CanvasWithView(props: CanvasValues & CanvasHandlers) {
   const canvasView = useCanvasView();
   const nodeDrag = useNodeDrag({
-    document: props.selection.document,
+    selection: props.selection,
     view: canvasView.view,
     onMove: props.onMoveNode,
     onInsertAt: () => {},

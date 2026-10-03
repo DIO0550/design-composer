@@ -53,7 +53,7 @@ export function WithCanvasControls({
     onReposition: () => {},
   });
   const nodeDrag = useNodeDrag({
-    document: selection.document,
+    selection,
     view: CanvasView.create(),
     onMove: () => {},
     onInsertAt: () => {},

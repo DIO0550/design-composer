@@ -1,5 +1,4 @@
 import { expect, test } from "vitest";
-import { DesignDocument } from "@/domains/dcmp/design-document";
 import type {
   DraggedNode,
   DropTarget,
@@ -17,22 +16,6 @@ const PlacingBox: DraggedNode = {
   kind: "new",
   template: { kind: "primitive", type: "Box" },
 };
-
-function setupDocument(): DesignDocument {
-  return DesignDocument.create({
-    artboards: [
-      {
-        name: "home",
-        width: 375,
-        height: 812,
-        children: [
-          { name: "title", type: "Text" },
-          { name: "body", type: "Box", children: [] },
-        ],
-      },
-    ],
-  });
-}
 
 const SampleDropTarget: DropTarget = {
   position: { parentName: "body", index: 0 },
@@ -348,18 +331,6 @@ test("落とせる先が無い間は、子になる親の名前を答えない",
   );
 
   expect(Option.isSome(NodeDrag.dropParentName(dragging))).toBe(false);
-});
-
-test("押された位置から外へ辿った名前のうち最も内側のノードを掴む", () => {
-  const name = NodeDrag.grabbableName(setupDocument(), ["title", "home"]);
-
-  expect(Option.unwrap(name)).toBe("title");
-});
-
-test("artboard の枠だけを押したときは掴めるノードが無い", () => {
-  const name = NodeDrag.grabbableName(setupDocument(), ["home"]);
-
-  expect(Option.isSome(name)).toBe(false);
 });
 
 test("パレットの雛形を運んでから離したときは、直後のクリックを飲み込まない", () => {
