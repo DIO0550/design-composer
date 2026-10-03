@@ -10,13 +10,13 @@ import {
   pressPointer,
   releasePointer,
 } from "@/features/editor/features/canvas/__tests__";
-import { drawn, renderOpenedDocument } from "./setup";
+import { drawn, drawnParentName, renderOpenedDocument } from "./setup";
 
 /*
  * ドラッグで掴むものが、クリックで選んだものと一致するところを編集画面の配線ごと確かめる
  * （docs/06-ui.md「キャンバス直接操作」の移動）。クリックで選択が変わり、その選択が掴む側
  * へ届くのは編集画面が `useNodeDrag` へ渡す選択を通してだけなので、キャンバス単体
- * （`artboard-canvas.grab-depth.test.tsx`）では見られない。
+ * （`artboard-canvas.grab-dig.test.tsx`）では見られない。
  */
 
 /**
@@ -46,11 +46,6 @@ function setupDocument(): DesignDocument {
       }),
     ],
   });
-}
-
-/** 描かれた要素を包んでいる要素の名前（ドキュメント上の親）。 */
-function drawnParentName(name: string): string | undefined {
-  return drawn(name).parentElement?.dataset.name;
 }
 
 /** `label` の上で掴み、`panel` の上まで運んで離す。 */

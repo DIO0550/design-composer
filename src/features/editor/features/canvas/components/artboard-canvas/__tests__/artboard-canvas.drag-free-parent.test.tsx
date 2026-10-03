@@ -12,8 +12,8 @@ import {
   drawnAt,
   injectedStyles,
   renderCanvas,
-  selectingOnly,
   selectionFromArtboards,
+  withOnlySelected,
 } from "./setup";
 
 /**
@@ -109,7 +109,7 @@ function drawnNested(): void {
 test("free の Box の中の絶対配置の子を運ぶと、その Box を親にした座標が届く", () => {
   const onRepositionNode = vi.fn();
   renderCanvas({
-    selection: selectingOnly(setupFreeBoxSelection(), "badge"),
+    selection: withOnlySelected(setupFreeBoxSelection(), "badge"),
     onRepositionNode,
   });
   drawnNested();

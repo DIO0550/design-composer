@@ -1,16 +1,13 @@
 import { expect, test, vi } from "vitest";
 import type { DocumentSelection } from "@/domains/session/document-selection";
+import { pressPointerHolding } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
 import {
-  movePointer,
-  pressPointer,
-  pressPointerHolding,
-  releasePointer,
-} from "@/features/editor/features/canvas/__tests__/canvas-gesture";
-import {
+  dragNodeOnto,
   drawn,
+  dropOnto,
   renderCanvas,
-  selectingOnly,
   selectionFromArtboards,
+  withOnlySelected,
 } from "./setup";
 
 /*
@@ -55,18 +52,14 @@ function setupSelection(): DocumentSelection {
   );
 }
 
-/** 掴んだあと、`to` の上まで運んで離す。 */
-function carryOnto(to: Element): void {
-  movePointer(to, { x: 100, y: 150 });
-  releasePointer(to, { x: 100, y: 150 });
-}
+/** 掴む位置から、離す位置までの量。クリックと区別が付くだけ取る。 */
+const Carried = { x: 0, y: 50 };
 
 test("選んでいない入れ子の中身を押して運ぶと、artboard 直下の子が動く", () => {
   const onMoveNode = vi.fn();
   renderCanvas({ selection: setupSelection(), onMoveNode });
 
-  pressPointer(drawn("label"), { x: 100, y: 100 });
-  carryOnto(drawn("panel"));
+  dragNodeOnto("label", drawn("panel"), Carried);
 
   expect(onMoveNode).toHaveBeenCalledWith("card", {
     parentName: "panel",
@@ -77,12 +70,11 @@ test("選んでいない入れ子の中身を押して運ぶと、artboard 直�
 test("選んでいるノードの内側を押して運ぶと、選んでいるそのノードが動く", () => {
   const onMoveNode = vi.fn();
   renderCanvas({
-    selection: selectingOnly(setupSelection(), "row"),
+    selection: withOnlySelected(setupSelection(), "row"),
     onMoveNode,
   });
 
-  pressPointer(drawn("label"), { x: 100, y: 100 });
-  carryOnto(drawn("panel"));
+  dragNodeOnto("label", drawn("panel"), Carried);
 
   expect(onMoveNode).toHaveBeenCalledWith("row", {
     parentName: "panel",
@@ -93,12 +85,12 @@ test("選んでいるノードの内側を押して運ぶと、選んでいる�
 test("⌘ を押しながら掴むと、選択に関わらず押した位置のいちばん内側が動く", () => {
   const onMoveNode = vi.fn();
   renderCanvas({
-    selection: selectingOnly(setupSelection(), "row"),
+    selection: withOnlySelected(setupSelection(), "row"),
     onMoveNode,
   });
 
   pressPointerHolding(drawn("label"), { x: 100, y: 100 }, "meta");
-  carryOnto(drawn("panel"));
+  dropOnto(drawn("panel"), Carried);
 
   expect(onMoveNode).toHaveBeenCalledWith("label", {
     parentName: "panel",
@@ -111,7 +103,7 @@ test("Ctrl を押しながら掴んでも、押した位置のいちばん内側
   renderCanvas({ selection: setupSelection(), onMoveNode });
 
   pressPointerHolding(drawn("label"), { x: 100, y: 100 }, "ctrl");
-  carryOnto(drawn("panel"));
+  dropOnto(drawn("panel"), Carried);
 
   expect(onMoveNode).toHaveBeenCalledWith("label", {
     parentName: "panel",
@@ -124,8 +116,7 @@ test("外側の子を自分の内側の Box の上で離すと、自分の中へ
   renderCanvas({ selection: setupSelection(), onMoveNode });
 
   // 掴むのは `card`。離す位置の `row` は運んでいるものの子孫なので落とし先にならない
-  pressPointer(drawn("label"), { x: 100, y: 100 });
-  carryOnto(drawn("row"));
+  dragNodeOnto("label", drawn("row"), Carried);
 
   /*
    * 何番目になるかは描かれた大きさで決まるが、happy-dom は矩形を返さない。ここで確かめ

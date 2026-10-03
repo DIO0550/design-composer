@@ -4,8 +4,8 @@ import {
   carryNode,
   dragNode,
   renderCanvas,
-  selectingOnly,
   snapGuides,
+  withOnlySelected,
 } from "./setup";
 import { drawnApart, setupSiblings } from "./snap-siblings";
 
@@ -64,7 +64,7 @@ test("離すと線は消える", () => {
 });
 
 test("ツリー内の移動では、ガイド線ではなくドロップ線が出る", () => {
-  renderCanvas({ selection: selectingOnly(setupSiblings(), "label") });
+  renderCanvas({ selection: withOnlySelected(setupSiblings(), "label") });
   drawnApart();
 
   // `label` は座標を持たない（`flow`）ので、運ぶとツリー内の移動になる

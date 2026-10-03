@@ -66,7 +66,7 @@ export function selectionFromArtboards(
  * @param name 選んでおくノードの名前
  * @returns 同じドキュメントで、そのノードだけを選んだ対
  */
-export function selectingOnly(
+export function withOnlySelected(
   selection: DocumentSelection,
   name: string,
 ): DocumentSelection {
@@ -309,6 +309,16 @@ export function dragNode(
  */
 export function dragNodeOnto(name: string, to: Element, by: Offset): void {
   pressPointer(drawn(name), { x: 100, y: 100 });
+  dropOnto(to, by);
+}
+
+/**
+ * 掴んでいるものを別の要素の上まで運び、そこで離す。掴む位置は (100, 100) とみなす。
+ *
+ * @param to 運んだ先の要素（この要素が落とし先の親を決める）
+ * @param by 画面上で運ぶ量
+ */
+export function dropOnto(to: Element, by: Offset): void {
   movePointer(to, { x: 100 + by.x, y: 100 + by.y });
   releasePointer(to, { x: 100 + by.x, y: 100 + by.y });
 }
