@@ -163,6 +163,27 @@ export const ArrayEx = {
   },
 
   /**
+   * 並びの順に `fn` を重ねて 1 つの値へ畳む。`err` が返ったところで止める。
+   *
+   * @param array 畳む並び
+   * @param initial 1 件目に渡す値
+   * @param fn それまでに畳んだ値と次の要素から、次の値を作る
+   * @returns すべて畳んだ値。空の並びなら `initial`。途中で `err` が返ればその `err`
+   *   （以降の要素は畳まない）
+   */
+  reduceUntilErr<T, A, E>(
+    array: readonly T[],
+    initial: A,
+    fn: (accumulated: A, item: T) => Result<A, E>,
+  ): Result<A, E> {
+    return array.reduce<Result<A, E>>(
+      (accumulated, item) =>
+        Result.flatMap(accumulated, (value) => fn(value, item)),
+      Result.ok(initial),
+    );
+  },
+
+  /**
    * 各値が並びに何回現れるか。
    *
    * @param array 数える並び
