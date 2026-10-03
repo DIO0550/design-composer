@@ -11,8 +11,10 @@
 # 追加行に重複が無い限り緑のままだから。** 同じ形の前例は同じフォルダの `story-title-cases.sh`。
 #
 # **1 ケースを 2 つの呼び方で判定し、食い違えば NG にする。** ファイル 1 つを渡す形は
-# Claude Code のフック、`--lines` は CI と git hooks が使う。本体の切り出しは共有していても、
-# 報告の出し方(見出し / `<行番号>:<名前>`)が別なので、読み取りも別になる。
+# Claude Code の PostToolUse フック、`--lines` は追加行だけを見る `check-added-*` が使う。
+# 本体の切り出しは共有していても、報告の出し方(見出し / `<行番号>:<名前>`)が別なので、
+# 読み取りも別になる。push 前のフック・git hooks・CI の `rules-check` が呼ぶ `--all` は
+# 検査するファイルを取らないので、末尾の `check_all` が別に判定する。
 # `--lines` の `--base-root` はここに置けない(base より増えていない重複を外すので、ファイルを
 # 渡す形と判定がわざと割れる)。その判定表は `.github/scripts/check-added-cases.sh`。
 #
@@ -400,6 +402,47 @@ function canvasSurfaceA() {
 }
 function canvasSurfaceB() {
   return screen.getByTestId("artboard-canvas-surface");
+}
+TS
+)" <<'TS'
+function openedAt(path: string) {
+  return OpenedDocument.create({ path, document: sampleDocument() });
+}
+TS
+
+# 2 つの `__tests__/` に置いた中身を `--all` で判定し、判定のあとで両方を消す。標準入力は
+# 浅い側の中身。`--all` は検査するファイルを取らないので、`check_across` と違って向きを
+# 入れ替えても判定は変わらない。
+#
+# $1 期待
+# $2 ケース名
+# $3 深い側の中身
+check_all() {
+  local expected="$1" label="$2" deep_source="$3" output status
+  mkdir -p "$(dirname "$shallow")" "$(dirname "$deep")"
+  cat >"$shallow"
+  printf '%s\n' "$deep_source" >"$deep"
+  output="$(python3 "$detector" --all "$work/src")" && status=0 || status=$?
+  rm -f "$shallow" "$deep"
+  report "$expected" "$(decide "$output" "$status" '^本体が同じテストヘルパーが')" "$label"
+}
+
+check_all deny "全体の検査は、深さの違う別の __tests__ フォルダにある本体が同じヘルパーを重複と読む" "$(
+  cat <<'TS'
+function openedAt(path: string) {
+  return OpenedDocument.create({ path, document: sampleDocument() });
+}
+TS
+)" <<'TS'
+function openedAt(path: string) {
+  return OpenedDocument.create({ path, document: sampleDocument() });
+}
+TS
+
+check_all pass "全体の検査は、名前が同じでも本体の違うヘルパーを重複と読まない" "$(
+  cat <<'TS'
+function openedAt(path: string) {
+  return OpenedDocument.create({ path, document: emptyDocument() });
 }
 TS
 )" <<'TS'
