@@ -2,8 +2,8 @@
 #
 # テストヘルパーの重複検出: 編集された `__tests__/` のファイルが、プロジェクト内の
 # 別のファイルと**本体が一字一句同じ**ヘルパーを持っていないかを検証し、
-# AI にフィードバックする PostToolUse フック。push 前の無条件の検査は
-# `.github/scripts/check-added-test-helper-duplication.sh`(CI)が担う。
+# AI にフィードバックする PostToolUse フック。push を止める検査は `src/` 全体を見る
+# `pre-push-test-helper-duplication.sh`・`harness/githooks/pre-push`・CI（`rules-check`）が担う。
 #
 # 対応する規約: rules/testing.md「テスト用ヘルパーの置き場所」
 #   「同じヘルパーを2つ以上のテストファイルに書いたら、その時点で共通化する」
@@ -12,10 +12,8 @@
 # 似ているだけのものは見ない。判定は lib/duplicate-test-helpers.py。
 #
 # ブロックしない（フィードバックのみ）。編集したファイルが絡む分だけを出す。
-# 理由と、いつ格上げするかは README.md「例外(エスケープハッチ)」に一本化してある
+# 理由は README.md「例外(エスケープハッチ)」に一本化してある
 # （同じ判断を 2 箇所へ書くと片方だけ古くなる）。
-#
-# 無効化: 対象ファイルに `// @duplicate-helpers-ok` を記載する
 set -euo pipefail
 
 hook_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -32,8 +30,6 @@ case "$(basename "$(dirname "$file")")" in
   __tests__) ;;
   *) exit 0 ;;
 esac
-
-grep -q '@duplicate-helpers-ok' "$file" && exit 0
 
 command -v python3 >/dev/null 2>&1 || exit 0
 
