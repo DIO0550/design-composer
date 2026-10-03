@@ -58,6 +58,22 @@ export function selectionFromArtboards(
 }
 
 /**
+ * 同じドキュメントで、そのノードだけを選んだ対にする。キャンバスで掴むのはクリックが選ぶ
+ * ものと同じなので（`DocumentSelection.nodeNameAt`）、入れ子の中身を運ぶにはそれを選んで
+ * おく（選ばずに押すと外側の artboard 直下の子を掴む）。
+ *
+ * @param selection ドキュメントの出どころになる対
+ * @param name 選んでおくノードの名前
+ * @returns 同じドキュメントで、そのノードだけを選んだ対
+ */
+export function selectingOnly(
+  selection: DocumentSelection,
+  name: string,
+): DocumentSelection {
+  return DocumentSelection.fromNames(selection.document, [name]);
+}
+
+/**
  * キャンバスが描くのに要る値。トークンと凍結は見たいテストだけが渡せばよいので、
  * `renderCanvas` が既定（トークン未選択 / 凍結していない）を埋める。
  */
