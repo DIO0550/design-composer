@@ -995,21 +995,29 @@ export const EditorState = {
   },
 
   /**
-   * 選んでいるものを削除する（docs/06-ui.md「編集操作の一覧」の削除と artboard 操作）。
-   * ノードならサブツリーごと、artboard ならその 1 枚を配下ごと消す。
+   * 選んでいるものをすべて削除する（docs/06-ui.md「編集操作の一覧」の削除と artboard
+   * 操作 /「複数選択」）。消し方は `DesignDocument.removeAll`。複数選んでいても 1 回の
+   * 編集なので、1 回の取り消しで全部戻る。
    *
    * 消したものは新しいドキュメントに無いので、選択は `withHistory` で外れる。
    *
+   * 何も選んでいないときは `DesignDocument.removeAll` に空を渡さず `none` にする。空でも
+   * 渡すと、何も変わらない編集が戻る先として履歴に積まれる。
+   *
    * @param state 消す前の状態
-   * @returns 消したあとの状態。1 つだけ選んでいないとき（未選択・複数選択）と、ファイルが
-   *   不正な間は `none`（`DesignDocument.remove` の失敗は、選択が残っている名前だけを持つ
-   *   ので起こらない）
+   * @returns 消したあとの状態。何も選んでいないときと、ファイルが不正な間は `none`
+   *   （`DesignDocument.removeAll` の失敗は、選択が残っている名前だけを持つので起こらない）
    */
   removeSelected(state: EditorState): Option<EditorState> {
-    return Option.flatMap(EditorState.singleName(state), (name) => {
-      const removed = DesignDocument.remove(EditorState.document(state), name);
-      return withEditResult(state, removed);
-    });
+    const names = DocumentSelection.names(EditorState.documentSelection(state));
+    if (names.length === 0) {
+      return Option.none;
+    }
+    const removed = DesignDocument.removeAll(
+      EditorState.document(state),
+      names,
+    );
+    return withEditResult(state, removed);
   },
 
   /**
