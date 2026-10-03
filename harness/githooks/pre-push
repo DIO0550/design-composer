@@ -39,6 +39,7 @@ run_check "import 規約" python3 .claude/hooks/lib/import-rule-violations.py sr
 run_check "判別子の直読み" python3 .claude/hooks/lib/result-option-read-violations.py src
 run_check "story の title" python3 .claude/hooks/lib/story-title-violations.py src
 run_check "名指ししたパス" python3 .claude/hooks/lib/named-path-violations.py
+run_check "テストヘルパーの重複" python3 .claude/hooks/lib/duplicate-test-helpers.py --all src
 
 # 上の検出器の判定表。判定表をどの層へ置くかと、その理由は
 # .claude/hooks/README.md「カバー範囲と残る穴」。
@@ -64,11 +65,11 @@ run_check "行数のラチェット" bash harness/records/count.sh --ratchet
 # 上の 2 つが読んでいる数え方そのものの判定表。
 run_check "集計の判定表" bash harness/records/count-cases.sh
 
-# カナリア(層 3 の部品)の判定表。ここへ置く理由は
+# カナリアと push 前の検査フックの共通部分(どちらも層 3 の部品)の判定表。ここへ置く理由は
 # .claude/hooks/README.md「カバー範囲と残る穴」。
 #
-# python3 と jq のどちらかが欠けると、判定が変わっていなくてもこの表は NG を出す
-# (どのケースが NG になるかは lib/canary-cases.sh の冒頭)。判定できないことを理由に
+# python3 と jq のどちらかが欠けると、判定が変わっていなくてもこの 2 つの表は NG を出す
+# (どのケースが NG になるかは各判定表の冒頭)。判定できないことを理由に
 # push を止めても検査の質は上がらないので、型 / lint / format と同じく飛ばす。
 canary_runnable() {
   python3_usable && command -v jq >/dev/null 2>&1
@@ -76,6 +77,7 @@ canary_runnable() {
 
 canary_runnable || skip_following_checks "python3 が使えない / jq が無い"
 run_check "カナリアの判定表" bash .claude/hooks/lib/canary-cases.sh
+run_check "push 前の検査フックの判定表" bash .claude/hooks/lib/pre-push-detector-cases.sh
 resume_checks
 
 # 検証エージェントの実行中フラグ(層 3 の部品)の判定表。bash だけで走るので飛ばさない。

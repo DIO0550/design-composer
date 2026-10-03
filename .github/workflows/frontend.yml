@@ -91,9 +91,9 @@ jobs:
       - name: Check added lint suppressions
         run: bash .github/scripts/check-added-lint-suppressions.sh "${{ github.event.pull_request.base.sha }}"
 
-      # .claude/hooks/check-test-helper-duplication.sh はブロックせず、フックが発火しない
-      # 実行環境もある（.claude/hooks/README.md「強制力の序列」）。このPRで追加された行だけを
-      # 対象にする理由は .claude/hooks/README.md「例外(エスケープハッチ)」
+      # 追加された行だけを見るテストヘルパーの重複検査。src 全体を見る rules-check の
+      # 「テストヘルパーの重複」より前から置いているもので、いまはその一部を二重に落とす。
+      # 位置づけは .claude/hooks/README.md「例外(エスケープハッチ)」
       - name: Check added test helper duplication
         run: bash .github/scripts/check-added-test-helper-duplication.sh "${{ github.event.pull_request.base.sha }}"
 
@@ -151,6 +151,11 @@ jobs:
       - name: 名指ししたパス
         run: python3 .claude/hooks/lib/named-path-violations.py
 
+      # 本体が一字一句同じテストヘルパー。触っていないファイルも含めて src 全体を見る
+      # （理由は .claude/hooks/README.md「例外(エスケープハッチ)」）。
+      - name: テストヘルパーの重複
+        run: python3 .claude/hooks/lib/duplicate-test-helpers.py --all src
+
       # 常時ロードと harness-growth スキルの行数の予算（AGENTS.md「常時ロードは増やさない」）。
       # 実測と予算がずれていれば落ちる（超過なら削る、下回ったら予算を下げる）。
       - name: 行数のラチェット
@@ -180,6 +185,9 @@ jobs:
       # (ci-trace.yml も素の jq を呼ぶ)ので、ここは無条件に走らせる。
       - name: カナリアの判定表
         run: bash .claude/hooks/lib/canary-cases.sh
+
+      - name: push 前の検査フックの判定表
+        run: bash .claude/hooks/lib/pre-push-detector-cases.sh
 
       - name: 検証エージェントの実行中フラグの判定表
         run: bash .claude/hooks/lib/verification-agent-cases.sh
