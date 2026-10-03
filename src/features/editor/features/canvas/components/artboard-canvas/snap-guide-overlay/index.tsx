@@ -72,6 +72,8 @@ function GapLine({ readout }: Readonly<{ readout: GapReadout }>) {
 
 /**
  * 1 つの軸のスマートガイド。ガイド線と、揃え先から離れていれば隙間の短い線と数値。
+ *
+ * @returns ガイド線と隙間の表示。その軸に揃った線が無ければ `null`
  */
 function Guide({
   guides,
