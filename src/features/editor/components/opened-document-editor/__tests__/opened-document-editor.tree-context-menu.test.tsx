@@ -134,3 +134,18 @@ test("複数選択の一員の行を右クリックしても、複数選択の�
     within(propertyPane()).getByRole("heading", { name: "2 selected" }),
   ).toBeDefined();
 });
+
+test("複数選択の一員の行のメニューの Delete を押すと、選んだものがすべて消える", async () => {
+  await renderOpenedDocument(SampleDocumentWithSameComponentInstances);
+  await userEvent.click(within(canvasPane()).getByText("ログイン"));
+  await userEvent.click(
+    within(propertyPane()).getByRole("button", {
+      name: "Select all 2 instances",
+    }),
+  );
+
+  rightClickInTree("home-signup");
+  await userEvent.click(menuRow("Delete"));
+
+  expect(rowNames(tree())).toEqual(["home-title"]);
+});

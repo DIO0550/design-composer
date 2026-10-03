@@ -1,7 +1,7 @@
 import { within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
-import { currentRowNames } from "@/components/__tests__/row-names";
+import { currentRowNames, rowNames } from "@/components/__tests__/row-names";
 import { SampleDocumentWithSameComponentInstances } from "@/features/editor/__tests__/sample-document";
 import {
   canvasSurface,
@@ -69,6 +69,20 @@ test("まとめて選ぶと右ペインが選択数に切り替わる", async ()
   expect(
     within(propertyPane()).getByRole("heading", { name: "2 selected" }),
   ).toBeDefined();
+});
+
+test("まとめて選んで Delete を押すと、選んだものがすべてツリーから消える", async () => {
+  await renderOpenedDocument(SampleDocumentWithSameComponentInstances);
+  await userEvent.click(within(canvasPane()).getByText("ログイン"));
+  await userEvent.click(
+    within(propertyPane()).getByRole("button", {
+      name: "Select all 2 instances",
+    }),
+  );
+
+  await userEvent.keyboard("{Delete}");
+
+  expect(rowNames(tree())).toEqual(["home-title"]);
 });
 
 test("キャンバスの空き領域から範囲を引くと、範囲に入ったノードがまとめて選ばれる", async () => {
