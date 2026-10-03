@@ -27,9 +27,12 @@ const SampleDropTarget: DropTarget = {
 /** ツリーへ挿す側の落とし方。座標の置き直しは別のファイルで見る。 */
 const SampleDrop = DropEdit.intoTree(MovingTitle, SampleDropTarget);
 
-/** 左右の辺が揃って縦線が 1 本出ている状態。運んでいる間だけの提示。 */
+/** 左右の辺が揃って縦線が 1 本と、揃え先との隙間が出ている状態。運んでいる間だけの提示。 */
 const SampleGuides: SnapGuides = {
-  horizontal: Option.some({ left: 249, top: 72, width: 2, height: 168 }),
+  horizontal: Option.some({
+    guideLine: { left: 249, top: 72, width: 2, height: 168 },
+    gapLine: Option.some({ left: 259, top: 84, width: 2, height: 116 }),
+  }),
   vertical: Option.none,
 };
 

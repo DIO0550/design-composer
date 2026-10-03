@@ -2,9 +2,11 @@ import { type Axis, type AxisEnd, AxisEnds } from "@/domains/unit/axis";
 import type { Offset } from "@/domains/unit/offset";
 import { SidePair, SidePairs } from "@/domains/unit/side";
 import { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
+import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
 import { IntervalSlot } from "@/features/editor/features/canvas/domains/interval-slot";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
+import { Range } from "@/utils/Range";
 
 /**
  * 辺のスナップ 1 回分（運んでいる / 伸び縮みさせているものの行き先と、揃え先の並び /
@@ -28,14 +30,38 @@ export type SideSnap = Readonly<{
 }>;
 
 /**
- * 揃った線（辺か中心線）に引くガイド線として描く矩形（画面上の px）。
+ * 揃った線 1 つ分のスマートガイド。揃った線（辺か中心線）に引くガイド線と、揃え先との
+ * 隙間に引く短い線（docs/06-ui.md「キャンバス直接操作」の辺のスナップ。どちらも描く矩形・
+ * 画面上の px）。
+ *
+ * 隙間を軸ごとの別の並びで持つと、線の無い軸に隙間がある状態が書けてしまう。
+ */
+export type SnapGuide = Readonly<{
+  guideLine: CanvasBounds;
+  /** 揃え先との隙間に引く短い線。揃え先と重なっている / 接しているなら `none` */
+  gapLine: Option<CanvasBounds>;
+}>;
+
+/**
+ * 軸ごとの揃いの表示（揃った線と、揃え先との隙間）。
  *
  * キーは**揃った線を挟む辺の組**で、線の向きとは直交する（`horizontal` は左右の辺か
- * 左右の中心線が揃ったことを指すので、線そのものは**縦**に伸びる）。
+ * 左右の中心線が揃ったことを指すので、線そのものは**縦**に伸び、隙間は縦に測る）。
  *
  * 並びにすると「同じ軸に 2 本」が型で書けてしまう。
  */
-export type SnapGuides = Readonly<Record<SidePair, Option<CanvasBounds>>>;
+export type SnapGuides = Readonly<Record<SidePair, Option<SnapGuide>>>;
+
+/**
+ * 揃え先との隙間の見せ方。隙間に引く短い線と、その中点に出す数値。
+ *
+ * 単位が 1 つだけ違う: `gapLine` は描く矩形なので**画面上の px**、`length` は人に見せる値なので
+ * **ドキュメント上の px**（最も近い整数・1 以上）。
+ */
+export type GapReadout = Readonly<{
+  gapLine: CanvasBounds;
+  length: number;
+}>;
 
 /**
  * 辺のスナップ 1 回分の答え（docs/06-ui.md「キャンバス直接操作」の辺のスナップ。中心線を含む）。
@@ -125,8 +151,8 @@ export const SideSnap = {
    * 寄せる前の位置で組み立てると、線が寄せ量のぶんだけ短く / 長く出る。
    *
    * @param snap 判定する組
-   * @returns 寄せ量と、揃った線に引くガイド線（閾値に届く候補が無い軸は寄せ量 0・線は無し。
-   *   同じ間隔になる位置へ寄った軸も線は無し）
+   * @returns 寄せ量と、揃った線に引くガイド線・揃え先との隙間（閾値に届く候補が無い軸は
+   *   寄せ量 0・線も隙間も無し。同じ間隔になる位置へ寄った軸も線と隙間は無し）
    */
   toSnapped(snap: SideSnap): SideSnapped {
     const horizontal = nearestAlong(snap, SidePairs.Horizontal);
@@ -144,6 +170,36 @@ export const SideSnap = {
         ),
       },
     };
+  },
+
+  /**
+   * ある軸の揃え先との隙間を、見せる数値と一緒に引く（docs/06-ui.md の辺のスナップ）。
+   *
+   * 引くキーと測る向きを同じ `pair` から取る。キーと向きを別々に渡す形にすると、取り違えた
+   * ときに線の太さが隙間の数値として出る。
+   *
+   * @param guides 軸ごとのスマートガイド
+   * @param pair 見る軸（揃った線を挟む辺の組）
+   * @param view 割り戻しに使う倍率を持つ表示
+   * @returns 隙間の短い線と数値。その軸に揃った線が無い / 揃え先と重なっている・接している /
+   *   ドキュメント上の px へ丸めると 0 になるなら `none`
+   */
+  toGapReadout(
+    guides: SnapGuides,
+    pair: SidePair,
+    view: CanvasView,
+  ): Option<GapReadout> {
+    return Option.flatMap(guides[pair], (guide) =>
+      Option.flatMap(guide.gapLine, (gapLine) => {
+        const length = CanvasView.toRoundedDocumentLength(
+          view,
+          Range.length(
+            CanvasBounds.extentAlong(gapLine, SidePair.perpendicular(pair)),
+          ),
+        );
+        return length > 0 ? Option.some({ gapLine, length }) : Option.none;
+      }),
+    );
   },
 
   /**
@@ -271,19 +327,22 @@ function candidatesAgainst(
 }
 
 /**
- * 寄せ先に引くガイド線。揃った線（辺か中心線）にだけ引く。
+ * 寄せ先に出すスマートガイド。揃った線（辺か中心線）にだけ出す。
  *
  * @param candidate 寄せ先
  * @param moved 寄せたあとの運んでいるものの矩形
- * @returns 線として描く矩形（画面上の px）。列の間隔へ寄ったなら `none`
+ * @returns ガイド線と揃え先との隙間（画面上の px）。列の間隔へ寄ったなら `none`
  */
 function guideOf(
   candidate: SnapCandidate,
   moved: CanvasBounds,
-): Option<CanvasBounds> {
+): Option<SnapGuide> {
   switch (candidate.kind) {
     case "line":
-      return Option.some(guideBounds(candidate, moved));
+      return Option.some({
+        guideLine: guideBounds(candidate, moved),
+        gapLine: gapBounds(candidate, moved),
+      });
     case "interval":
       return Option.none;
   }
@@ -293,8 +352,7 @@ function guideOf(
  * 揃った線（辺か中心線）に引くガイド線を、描く矩形として組み立てる。
  *
  * 線は揃った辺・中心線と同じ向きに伸び、**寄せたあとの運んでいるものと揃え先の両方をまたぐ**
- * 長さで引く（またがないと、何に揃ったのかが見えない）。太さのぶんは線の中心を揃った
- * 座標に合わせて振り分ける（`DropZone` の挿入線と同じ）。
+ * 長さで引く（またがないと、何に揃ったのかが見えない）。
  *
  * @param snapped 揃った線
  * @param moved 寄せたあとの運んでいるものの矩形
@@ -305,19 +363,84 @@ function guideBounds(snapped: SnappedLine, moved: CanvasBounds): CanvasBounds {
   const ends = [moved, snapped.stationary].flatMap((bounds) =>
     across.map((side) => CanvasBounds.side(bounds, side)),
   );
-  const from = Math.min(...ends);
-  const length = Math.max(...ends) - from;
-  const half = GuideThicknessPx / 2;
-  return snapped.pair === SidePairs.Horizontal
+  return thinLineBounds(snapped.pair, {
+    at: snapped.stationaryLine,
+    span: { min: Math.min(...ends), max: Math.max(...ends) },
+  });
+}
+
+/**
+ * 揃え先との隙間に引く短い線を、描く矩形として組み立てる（置き方は docs/06-ui.md）。
+ *
+ * @param snapped 揃った線
+ * @param moved 寄せたあとの運んでいるものの矩形
+ * @returns 短い線として描く矩形（画面上の px）。ガイド線に沿った向きで重なっている /
+ *   接しているなら `none`
+ */
+function gapBounds(
+  snapped: SnappedLine,
+  moved: CanvasBounds,
+): Option<CanvasBounds> {
+  const along = SidePair.perpendicular(snapped.pair);
+  const gap = Range.gapBetween(
+    CanvasBounds.extentAlong(moved, along),
+    CanvasBounds.extentAlong(snapped.stationary, along),
+  );
+  return Option.map(gap, (span) =>
+    thinLineBounds(snapped.pair, {
+      at: facingCenter(moved, snapped),
+      span,
+    }),
+  );
+}
+
+/**
+ * 運んでいるものと揃え先が、揃った線と直交する向きで向かい合う範囲の中央。
+ *
+ * 重なりの有無は判定しない。外側で辺が揃ったときの重なりは 1 点で、
+ * 寄せたあとの辺は浮動小数の足し引きで作るため、倍率や実測の端数で 1 点が数 ULP 離れて
+ * 「重ならない」と判定され、隙間が黙って消える。
+ *
+ * @param moved 寄せたあとの運んでいるものの矩形
+ * @param snapped 揃った線と揃え先
+ * @returns 内側の 2 つの端の真ん中の座標（画面上の px）
+ */
+function facingCenter(moved: CanvasBounds, snapped: SnappedLine): number {
+  const movedExtent = CanvasBounds.extentAlong(moved, snapped.pair);
+  const stationaryExtent = CanvasBounds.extentAlong(
+    snapped.stationary,
+    snapped.pair,
+  );
+  return Range.center({
+    min: Math.max(movedExtent.min, stationaryExtent.min),
+    max: Math.min(movedExtent.max, stationaryExtent.max),
+  });
+}
+
+/**
+ * 揃った組の向きに伸びる細い線（ガイド線・隙間の短い線）を、描く矩形として組み立てる。
+ * 太さのぶんは線の中心を `at` に合わせて振り分ける（`DropZone` の挿入線と同じ）。
+ *
+ * @param pair 揃った線を挟む辺の組（水平の組なら縦に伸びる線になる）
+ * @param line 線の中心の座標と、線が伸びる範囲（どちらも画面上の px）
+ * @returns 線として描く矩形（画面上の px）
+ */
+function thinLineBounds(
+  pair: SidePair,
+  line: Readonly<{ at: number; span: Range }>,
+): CanvasBounds {
+  const start = line.at - GuideThicknessPx / 2;
+  const length = Range.length(line.span);
+  return pair === SidePairs.Horizontal
     ? {
-        left: snapped.stationaryLine - half,
-        top: from,
+        left: start,
+        top: line.span.min,
         width: GuideThicknessPx,
         height: length,
       }
     : {
-        left: from,
-        top: snapped.stationaryLine - half,
+        left: line.span.min,
+        top: start,
         width: length,
         height: GuideThicknessPx,
       };
