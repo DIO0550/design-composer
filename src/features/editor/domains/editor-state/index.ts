@@ -24,7 +24,7 @@ import {
 } from "@/domains/session/edit-continuity";
 import { FileValidity } from "@/domains/session/file-validity";
 import { NodeTemplate } from "@/domains/session/node-template";
-import { SelectionDig } from "@/domains/session/selection-dig";
+import type { SelectionDig } from "@/domains/session/selection-dig";
 import { SelectionState } from "@/domains/session/selection-state";
 import { TokenSelection } from "@/domains/session/token-selection";
 import type { Instant } from "@/domains/unit/instant";
@@ -515,9 +515,9 @@ export const EditorState = {
    * キャンバスで押された位置から、掘る量ぶんだけ内側へ入ったものを選ぶ（docs/06-ui.md「選
    * 択」）。
    *
-   * ここが持つのは候補の絞り込みだけで、どれを選ぶかの規則は `SelectionDig` にある。キャ
-   * ンバスは部品インスタンスの中身まで描くが、そこに出るのは部品定義側のノード名でドキュ
-   * メントの木には無いため候補に入らない（掘ってもインスタンス自身で止まる）。
+   * どのノードを選ぶかは `DocumentSelection.nodeNameAt` が決める（ドラッグで掴むものと同じ
+   * 規則）。ここが持つのは、ノードが無いところ（枠の上）を押したときに artboard 自身へ倒
+   * すことだけ。
    *
    * どれも選べなければ選択は外れる。
    *
@@ -532,16 +532,15 @@ export const EditorState = {
     dig: SelectionDig,
   ): EditorState {
     const document = EditorState.document(state);
-    const nodeCandidates = DesignDocument.collectNodeNames(document, names);
     const artboardCandidate = ArrayEx.first(
       names.filter((name) =>
         Option.isSome(selectableArtboardName(document, name)),
       ),
     );
-    const dug = SelectionDig.nameAt(
+    const dug = DocumentSelection.nodeNameAt(
+      EditorState.documentSelection(state),
+      names,
       dig,
-      nodeCandidates,
-      EditorState.singleName(state),
     );
     return {
       ...state,
@@ -552,8 +551,7 @@ export const EditorState = {
   /**
    * 名前で指したものをまとめて選ぶ（キャンバスの範囲選択 / docs/06-ui.md「範囲選択」）。
    *
-   * 選べないもの（ドキュメントに無い名前・部品定義の中の参照ノード）は落とす。絞り込みは
-   * `selectAt` と同じ `DesignDocument.collectNodeNames` を通す。
+   * 選べないもの（ドキュメントに無い名前・部品定義の中の参照ノード）は落とす。
    *
    * `selectAllInstances` へは寄せていない。あちらは**対象を状態から決める**
    * （選択中のインスタンスと同じ部品）のに対し、こちらは引数で受ける。共通なのは
