@@ -7,7 +7,9 @@ import { ElementNameAttribute } from "@/domains/compiled/compiled-element";
 import type { ChildPlacement } from "@/domains/dcmp/child-placement";
 import type { ChildPosition } from "@/domains/dcmp/child-position";
 import { DesignDocument } from "@/domains/dcmp/design-document";
+import { DocumentSelection } from "@/domains/session/document-selection";
 import type { NodeTemplate } from "@/domains/session/node-template";
+import type { SelectionDig } from "@/domains/session/selection-dig";
 import { Offset } from "@/domains/unit/offset";
 import { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
@@ -396,13 +398,25 @@ export type NodeDragControl = Readonly<{
    */
   carriedTemplate: Option<NodeTemplate>;
   /**
-   * 押された位置にある既存ノードを掴む。
+   * 押された位置にある既存ノードのうち、同じ押し方のクリックが選ぶものを掴む
+   * （`DocumentSelection.nodeNameAt`）。
+   *
+   * **artboard の背景を押したときに `false` を返すことに、キャンバスの掴み分けが載ってい
+   * る**（`ArtboardFrame` の `onPointerDown`）。掴めるようにすると、背景を押しても artboard
+   * が動かなくなる。
    *
    * @param event artboard の枠で受けた `pointerdown`
+   * @param names 押された位置から外へ辿った名前（内→外）。クリックが選ぶときと同じ集め方
+   *   で受け取る
+   * @param dig 押し方から決まった掘る量（クリックと同じ読み替え）
    * @returns 掴んだ（＝この先の判定へ渡さない）なら `true`。押された位置から根までに
    *   ドキュメントのノードが 1 つも無ければ `false`（artboard の背景を押したとき）
    */
-  grabNode: (event: ReactPointerEvent<HTMLElement>) => boolean;
+  grabNode: (
+    event: ReactPointerEvent<HTMLElement>,
+    names: readonly string[],
+    dig: SelectionDig,
+  ) => boolean;
   dragHandlers: NodeDragHandlers;
   /** パレットの行から掴む。掴めるものは行が知っているので指定を受け取る。 */
   grabTemplate: (
@@ -423,13 +437,13 @@ export type NodeDragControl = Readonly<{
  * ⌘ / Ctrl を押している間に揃え先を渡さない（吸い付かせない）のは、修飾キーという入力の事情
  * なのでこちらが持つ。
  *
- * @param params 落とし先を決める `document` / `view` と、確定したときに呼ぶ
+ * @param params 掴むものと落とし先を決める `selection` / `view` と、確定したときに呼ぶ
  *   `onMove` / `onInsertAt` / `onReposition`
  * @returns 今のドラッグの状態と、画面の要素へ渡すハンドラ
  */
 export function useNodeDrag(
   params: Readonly<{
-    document: DesignDocument;
+    selection: DocumentSelection;
     view: CanvasView;
     onMove: (name: string, to: ChildPosition) => void;
     onInsertAt: (template: NodeTemplate, at: ChildPosition) => void;
@@ -442,11 +456,12 @@ export function useNodeDrag(
     NodeDrag.create,
   );
 
-  const grabNode = (event: ReactPointerEvent<HTMLElement>): boolean => {
-    const name = NodeDrag.grabbableName(
-      params.document,
-      namesToRoot(event.target),
-    );
+  const grabNode = (
+    event: ReactPointerEvent<HTMLElement>,
+    names: readonly string[],
+    dig: SelectionDig,
+  ): boolean => {
+    const name = DocumentSelection.nodeNameAt(params.selection, names, dig);
     if (!Option.isSome(name)) {
       return false;
     }
@@ -482,7 +497,7 @@ export function useNodeDrag(
       type: "move",
       pointer: CanvasPointer.offsetOf(event),
       carrying: carryingAt({
-        document: params.document,
+        document: params.selection.document,
         grab: grabbed.value,
         view: params.view,
         event,

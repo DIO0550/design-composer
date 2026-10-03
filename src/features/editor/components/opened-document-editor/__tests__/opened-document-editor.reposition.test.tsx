@@ -13,9 +13,9 @@ import {
   pressPointer,
   releasePointer,
 } from "@/features/editor/features/canvas/__tests__";
-import { Option } from "@/utils/Option";
 import {
   drawn,
+  drawnParentName,
   leftPane,
   propertyPane,
   renderOpenedDocument,
@@ -77,13 +77,6 @@ function setupDocument(): DesignDocument {
       }),
     ],
   });
-}
-
-/** 描かれた `home-badge` を包んでいる要素の名前。 */
-function badgeParentName(): string {
-  return Option.unwrap(
-    Option.fromNullable(drawn("home-badge").parentElement?.dataset.name),
-  );
 }
 
 /**
@@ -148,7 +141,7 @@ test("絶対配置のノードを別の artboard の上へ運ぶと、その art
   movePointer(drawn("settings"), { x: 70, y: 112 });
   releasePointer(drawn("settings"), { x: 70, y: 112 });
 
-  expect(badgeParentName()).toBe("settings");
+  expect(drawnParentName("home-badge")).toBe("settings");
 });
 
 test("キャンバスで掴んだノードを左ペインの上で離しても、直後のクリックは選択に使われない", async () => {
@@ -176,5 +169,5 @@ test("同じ親の中で運んだときは、包んでいる artboard が変わ�
 
   dragBadge();
 
-  expect(badgeParentName()).toBe("home");
+  expect(drawnParentName("home-badge")).toBe("home");
 });

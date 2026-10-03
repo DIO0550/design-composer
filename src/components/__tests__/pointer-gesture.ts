@@ -32,6 +32,29 @@ export function modifierKeysOf(
 }
 
 /**
+ * ポインタを押すイベントを撃つ。押し方の組み合わせは公開する側の関数が決める。
+ *
+ * @param element 押す要素
+ * @param press 押した位置・ボタン・その時点で押されている修飾キー
+ */
+function firePointerDown(
+  element: Element,
+  press: Readonly<{
+    at: PointerPoint;
+    button: PointerButton;
+    pressed: PressedModifier;
+  }>,
+): void {
+  fireEvent.pointerDown(element, {
+    pointerId: PointerId,
+    clientX: press.at.x,
+    clientY: press.at.y,
+    button: press.button,
+    ...modifierKeysOf(press.pressed),
+  });
+}
+
+/**
  * ポインタを押す。
  *
  * ボタンを渡せるのは、押したボタンで操作が分かれるため（キャンバスは中ボタンだけをパンに
@@ -47,11 +70,28 @@ export function pressPointer(
   at: PointerPoint,
   button: PointerButton = PointerButtons.Primary,
 ): void {
-  fireEvent.pointerDown(element, {
-    pointerId: PointerId,
-    clientX: at.x,
-    clientY: at.y,
-    button,
+  firePointerDown(element, { at, button, pressed: "none" });
+}
+
+/**
+ * 修飾キーを押しながら、主ボタンでポインタを押す。
+ *
+ * `pressPointer` の引数に足さないのは、ボタンと並べると引数が 4 つになるため（押しながら
+ * 掴むのは主ボタンだけなので、ボタンは受け取らない）。
+ *
+ * @param element 押す要素
+ * @param at 押した位置
+ * @param pressed 押した時点で押されている修飾キー
+ */
+export function pressPointerHolding(
+  element: Element,
+  at: PointerPoint,
+  pressed: PressedModifier,
+): void {
+  firePointerDown(element, {
+    at,
+    button: PointerButtons.Primary,
+    pressed,
   });
 }
 

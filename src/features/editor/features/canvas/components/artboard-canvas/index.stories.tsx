@@ -24,7 +24,7 @@ function CanvasWithView(
 ) {
   const canvasView = useCanvasView();
   const nodeDrag = useNodeDrag({
-    document: props.selection.document,
+    selection: props.selection,
     view: canvasView.view,
     onMove: () => {},
     onInsertAt: () => {},

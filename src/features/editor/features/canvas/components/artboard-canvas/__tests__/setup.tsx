@@ -58,6 +58,22 @@ export function selectionFromArtboards(
 }
 
 /**
+ * 同じドキュメントで、そのノードだけを選んだ対にする。キャンバスで掴むのはクリックが選ぶ
+ * ものと同じなので（`DocumentSelection.nodeNameAt`）、入れ子の中身を運ぶにはそれを選んで
+ * おく（選ばずに押すと外側の artboard 直下の子を掴む）。
+ *
+ * @param selection ドキュメントの出どころになる対
+ * @param name 選んでおくノードの名前
+ * @returns 同じドキュメントで、そのノードだけを選んだ対
+ */
+export function withOnlySelected(
+  selection: DocumentSelection,
+  name: string,
+): DocumentSelection {
+  return DocumentSelection.fromNames(selection.document, [name]);
+}
+
+/**
  * キャンバスが描くのに要る値。トークンと凍結は見たいテストだけが渡せばよいので、
  * `renderCanvas` が既定（トークン未選択 / 凍結していない）を埋める。
  */
@@ -92,7 +108,7 @@ type CanvasHandlers = Readonly<{
 function CanvasWithView(props: CanvasValues & CanvasHandlers) {
   const canvasView = useCanvasView();
   const nodeDrag = useNodeDrag({
-    document: props.selection.document,
+    selection: props.selection,
     view: canvasView.view,
     onMove: props.onMoveNode,
     onInsertAt: () => {},
@@ -293,6 +309,16 @@ export function dragNode(
  */
 export function dragNodeOnto(name: string, to: Element, by: Offset): void {
   pressPointer(drawn(name), { x: 100, y: 100 });
+  dropOnto(to, by);
+}
+
+/**
+ * 掴んでいるものを別の要素の上まで運び、そこで離す。掴む位置は (100, 100) とみなす。
+ *
+ * @param to 運んだ先の要素（この要素が落とし先の親を決める）
+ * @param by 画面上で運ぶ量
+ */
+export function dropOnto(to: Element, by: Offset): void {
   movePointer(to, { x: 100 + by.x, y: 100 + by.y });
   releasePointer(to, { x: 100 + by.x, y: 100 + by.y });
 }

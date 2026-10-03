@@ -28,6 +28,22 @@ import { ArtboardLabel } from "../artboard-label";
 const ActivationKeys: readonly KeyName[] = [KeyNames.Enter];
 
 /**
+ * クリックと掴むときに共通の、押し方から読んだ掘る量。⌘ / Ctrl を押しながらだけが、押され
+ * た位置のいちばん内側まで一度に掘る（docs/06-ui.md「キャンバスのクリックが選ぶ階層」）。
+ *
+ * 修飾キーの有無という入力の事情を掘る量へ読み替えるのはここまでで、どれを選ぶか・掴む
+ * かは `DocumentSelection.nodeNameAt` が決める。
+ *
+ * @param event 枠で受けた `click` か `pointerdown`
+ * @returns ⌘ / Ctrl を押していれば `Deepest`、押していなければ `NoDeeper`
+ */
+function pressDig(event: MouseEvent<HTMLElement>): SelectionDig {
+  return CommandKey.isHeld(event)
+    ? SelectionDigs.Deepest
+    : SelectionDigs.NoDeeper;
+}
+
+/**
  * 1 枚の artboard。中身はコンパイル結果の HTML をそのまま流し込む。
  *
  * 書き出しと同じ文字列を描くことで、キャンバスの見た目と出力の一致も保たれる。埋め込む文字
@@ -158,16 +174,7 @@ export function ArtboardFrame({
           if (nodeResize.consumeClick()) {
             return;
           }
-          /*
-           * ⌘ / Ctrl を押しながらのクリックだけが、押された位置のいちばん内側まで
-           * 一度に掘る（docs/06-ui.md「選択」）。修飾キーの有無という入力の事情を
-           * 掘る量へ読み替えるのはここまでで、どれを選ぶかは状態側が決める。
-           */
-          const digsToDeepest = CommandKey.isHeld(event);
-          onSelect(
-            namesAt(event.target),
-            digsToDeepest ? SelectionDigs.Deepest : SelectionDigs.NoDeeper,
-          );
+          onSelect(namesAt(event.target), pressDig(event));
         }}
         /*
          * ダブルクリックは 1 階層内側へ掘る操作で、掘りきった Text をさらに押したときだけ
@@ -207,7 +214,9 @@ export function ArtboardFrame({
           if (nodeResize.grabAt(event)) {
             return;
           }
-          if (nodeDrag.grabNode(event)) {
+          if (
+            nodeDrag.grabNode(event, namesAt(event.target), pressDig(event))
+          ) {
             return;
           }
           artboardDrag.grab(element.name, canvasPosition, event);

@@ -24,7 +24,7 @@ import {
 } from "@/domains/session/edit-continuity";
 import { FileValidity } from "@/domains/session/file-validity";
 import { NodeTemplate } from "@/domains/session/node-template";
-import { SelectionDig } from "@/domains/session/selection-dig";
+import type { SelectionDig } from "@/domains/session/selection-dig";
 import { SelectionState } from "@/domains/session/selection-state";
 import { TokenSelection } from "@/domains/session/token-selection";
 import type { Instant } from "@/domains/unit/instant";
@@ -112,29 +112,7 @@ function selectableNodeName(
   document: DesignDocument,
   name: string,
 ): Option<string> {
-  return Option.isSome(DesignDocument.findNode(document, name))
-    ? Option.some(name)
-    : Option.none;
-}
-
-/**
- * 並びのうち、選択できるノードとして残っている名前だけ。
- *
- * キャンバスから届く名前は、押された位置から辿ったもの（`selectAt`）と範囲に重なった
- * もの（`selectNodes`）の 2 通りあり、どちらも同じ絞り込みを通す。**綴りを揃えるだけでは
- * 定義が 2 箇所に散る**ので、絞り込み自体をここへ 1 つ置く。
- *
- * @param document 選択先を引くドキュメント
- * @param names 絞り込む名前の並び
- * @returns 選択できるものだけを、渡された順のまま残した並び
- */
-function selectableNodeNames(
-  document: DesignDocument,
-  names: readonly string[],
-): readonly string[] {
-  return names.filter((name) =>
-    Option.isSome(selectableNodeName(document, name)),
-  );
+  return ArrayEx.first(DesignDocument.collectFoundNodeNames(document, [name]));
 }
 
 /**
@@ -537,9 +515,9 @@ export const EditorState = {
    * キャンバスで押された位置から、掘る量ぶんだけ内側へ入ったものを選ぶ（docs/06-ui.md「選
    * 択」）。
    *
-   * ここが持つのは候補の絞り込みだけで、どれを選ぶかの規則は `SelectionDig` にある。キャ
-   * ンバスは部品インスタンスの中身まで描くが、そこに出るのは部品定義側のノード名でドキュ
-   * メントの木には無いため候補に入らない（掘ってもインスタンス自身で止まる）。
+   * どのノードを選ぶかは `DocumentSelection.nodeNameAt` が決める（ドラッグで掴むものと同じ
+   * 規則）。ここが持つのは、ノードが無いところ（枠の上）を押したときに artboard 自身へ倒
+   * すことだけ。
    *
    * どれも選べなければ選択は外れる。
    *
@@ -554,16 +532,15 @@ export const EditorState = {
     dig: SelectionDig,
   ): EditorState {
     const document = EditorState.document(state);
-    const nodeCandidates = selectableNodeNames(document, names);
     const artboardCandidate = ArrayEx.first(
       names.filter((name) =>
         Option.isSome(selectableArtboardName(document, name)),
       ),
     );
-    const dug = SelectionDig.nameAt(
+    const dug = DocumentSelection.nodeNameAt(
+      EditorState.documentSelection(state),
+      names,
       dig,
-      nodeCandidates,
-      EditorState.singleName(state),
     );
     return {
       ...state,
@@ -574,8 +551,7 @@ export const EditorState = {
   /**
    * 名前で指したものをまとめて選ぶ（キャンバスの範囲選択 / docs/06-ui.md「範囲選択」）。
    *
-   * 選べないもの（ドキュメントに無い名前・部品定義の中の参照ノード）は落とす。絞り込みは
-   * `selectAt` と同じ `selectableNodeNames` を通す（選べるものの定義を 1 箇所に保つ）。
+   * 選べないもの（ドキュメントに無い名前・部品定義の中の参照ノード）は落とす。
    *
    * `selectAllInstances` へは寄せていない。あちらは**対象を状態から決める**
    * （選択中のインスタンスと同じ部品）のに対し、こちらは引数で受ける。共通なのは
@@ -590,7 +566,10 @@ export const EditorState = {
     return {
       ...state,
       selection: SelectionState.create(
-        selectableNodeNames(EditorState.document(state), names),
+        DesignDocument.collectFoundNodeNames(
+          EditorState.document(state),
+          names,
+        ),
       ),
     };
   },

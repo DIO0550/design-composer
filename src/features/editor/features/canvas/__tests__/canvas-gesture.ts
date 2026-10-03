@@ -21,6 +21,7 @@ export {
   movePointer,
   type PressedModifier,
   pressPointer,
+  pressPointerHolding,
   releasePointer,
 } from "@/components/__tests__/pointer-gesture";
 

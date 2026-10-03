@@ -2,6 +2,7 @@ import type { Artboard } from "@/domains/dcmp/artboard";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { Node } from "@/domains/dcmp/node";
 import { Selection } from "@/domains/session/selection";
+import { SelectionDig } from "@/domains/session/selection-dig";
 import { SelectionState } from "@/domains/session/selection-state";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
@@ -133,6 +134,32 @@ export const DocumentSelection = {
         Selection.fromNode,
       );
     });
+  },
+
+  /**
+   * キャンバスで押された位置から、掘る量ぶんだけ内側へ入ったノードの名前（docs/06-ui.md
+   * 「キャンバスのクリックが選ぶ階層」「キャンバス直接操作」の移動）。クリックで選ぶもの
+   * と、ドラッグで掴むものの両方がこれを使う。
+   *
+   * 候補はドキュメントの木にあるノードだけで、artboard 自身と部品定義の中のノード名は入
+   * らない（掘ってもインスタンス自身で止まる）。
+   *
+   * @param selection 候補を引くドキュメントと、掘る起点になる今の選択
+   * @param names 押された位置から外へ辿った名前（内→外）
+   * @param dig 押し方から決まった掘る量
+   * @returns 掘った先のノードの名前。押された位置にノードが 1 つも無ければ（artboard の
+   *   背景を押したとき）`none`
+   */
+  nodeNameAt(
+    selection: DocumentSelection,
+    names: readonly string[],
+    dig: SelectionDig,
+  ): Option<string> {
+    return SelectionDig.nameAt(
+      dig,
+      DesignDocument.collectFoundNodeNames(selection.document, names),
+      DocumentSelection.singleName(selection),
+    );
   },
 
   /**

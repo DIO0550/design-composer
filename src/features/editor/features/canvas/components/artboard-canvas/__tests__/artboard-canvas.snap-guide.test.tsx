@@ -1,6 +1,12 @@
 import { screen } from "@testing-library/react";
 import { expect, test } from "vitest";
-import { carryNode, dragNode, renderCanvas, snapGuides } from "./setup";
+import {
+  carryNode,
+  dragNode,
+  renderCanvas,
+  snapGuides,
+  withOnlySelected,
+} from "./setup";
 import { drawnApart, setupSiblings } from "./snap-siblings";
 
 /*
@@ -58,7 +64,7 @@ test("離すと線は消える", () => {
 });
 
 test("ツリー内の移動では、ガイド線ではなくドロップ線が出る", () => {
-  renderCanvas({ selection: setupSiblings() });
+  renderCanvas({ selection: withOnlySelected(setupSiblings(), "label") });
   drawnApart();
 
   // `label` は座標を持たない（`flow`）ので、運ぶとツリー内の移動になる

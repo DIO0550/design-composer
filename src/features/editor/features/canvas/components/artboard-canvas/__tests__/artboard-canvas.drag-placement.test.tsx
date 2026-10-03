@@ -27,6 +27,7 @@ import {
   previewRule,
   renderCanvas,
   selectionFromArtboards,
+  withOnlySelected,
 } from "./setup";
 
 /**
@@ -407,7 +408,9 @@ test("運んでいる間、掴んだノードを包んでいる artboard は中�
 
 test("包んでいるものが入れ子のときは、間の Box も中身を切り取らなくなる", () => {
   // Box も `overflow: clip` を持てるので、artboard 1 枚を解くだけでは足りない
-  renderCanvas({ selection: setupNestedSelection() });
+  renderCanvas({
+    selection: withOnlySelected(setupNestedSelection(), "badge"),
+  });
 
   carryNode("badge", { x: 30, y: -12 });
 

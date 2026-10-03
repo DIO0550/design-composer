@@ -16,6 +16,7 @@ import { changeFileExternally } from "@/libs/__tests__/document-change";
 import { ClockFake } from "@/libs/clock/fake";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
+import { Option } from "@/utils/Option";
 import { OpenedDocumentEditor } from "../index";
 
 /** 開いているファイル。テストの中で開いているファイルは常に 1 つ。 */
@@ -121,6 +122,18 @@ export function canvasPane(): HTMLElement {
 /** キャンバスに描かれている、名前で指した要素。 */
 export function drawn(name: string): HTMLElement {
   return renderedElement(canvasPane(), name);
+}
+
+/**
+ * 描かれた要素を包んでいる要素の名前（ドキュメント上の親）。
+ *
+ * @param name 親を知りたいノードの名前
+ * @returns 描かれた要素の親が持つ名前
+ */
+export function drawnParentName(name: string): string {
+  return Option.unwrap(
+    Option.fromNullable(drawn(name).parentElement?.dataset.name),
+  );
 }
 
 /**
