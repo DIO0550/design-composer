@@ -1,3 +1,4 @@
+import { screen } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
 import type { DocumentSelection } from "@/domains/session/document-selection";
 import { pressPointerHolding } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
@@ -126,4 +127,39 @@ test("外側の子を自分の内側の Box の上で離すと、自分の中へ
     "card",
     expect.objectContaining({ parentName: "home" }),
   );
+});
+
+test("⌘ を押しながら部品インスタンスの中身を掴むと、インスタンス自身が動く", () => {
+  const onMoveNode = vi.fn();
+  const selection = selectionFromArtboards([
+    {
+      name: "home",
+      width: 360,
+      height: 240,
+      children: [
+        {
+          name: "card",
+          type: "Box",
+          children: [
+            {
+              name: "login",
+              ref: "primary-button",
+              overrides: { label: "ログイン" },
+            },
+          ],
+        },
+        { name: "panel", type: "Box", children: [] },
+      ],
+    },
+  ]);
+  renderCanvas({ selection, onMoveNode });
+
+  // 押した位置のいちばん内側は部品定義の中のノードだが、木に無いので掴めない
+  pressPointerHolding(screen.getByText("ログイン"), { x: 100, y: 100 }, "meta");
+  dropOnto(drawn("panel"), Carried);
+
+  expect(onMoveNode).toHaveBeenCalledWith("login", {
+    parentName: "panel",
+    index: 0,
+  });
 });
