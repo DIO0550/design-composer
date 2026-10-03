@@ -2,9 +2,12 @@ import { fireEvent } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
 import {
   artboardHandle,
+  canvasContent,
   canvasSurface,
   textInlineEditorField,
 } from "@/features/editor/features/canvas/__tests__/canvas-elements";
+import { drag } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
+import { PointerButtons } from "@/libs/dom-event";
 import {
   drawn,
   renderCanvas,
@@ -98,27 +101,54 @@ test("ファイルが不正でなければ同じ右クリックで受け口が�
   expect(onOpenContextMenu).toHaveBeenCalled();
 });
 
-test("右ボタンの押下では artboard の移動が始まらない", () => {
+test("右ボタンで中身のノードを押して動かしても、ノードは動かない", () => {
+  /*
+   * 中身とリサイズの帯を右ボタンから守っているのは枠の判定だけ（掴む側はボタンを見ない）。
+   * 掴むと、メニューを操作するあいだの動きがそのままノードの移動になる。
+   */
+  const onMoveNode = vi.fn();
+  renderCanvas({ selection: selectionWithTitle(), onMoveNode });
+
+  drag(
+    drawn("title"),
+    { from: { x: 40, y: 40 }, to: { x: 140, y: 140 } },
+    PointerButtons.Secondary,
+  );
+
+  expect(onMoveNode).not.toHaveBeenCalled();
+});
+
+test("主ボタンなら同じ操作で中身のノードが動く", () => {
+  // 上のテストの対照。これが無いと、ノードを一切動かさない実装でも通ってしまう
+  const onMoveNode = vi.fn();
+  renderCanvas({ selection: selectionWithTitle(), onMoveNode });
+
+  drag(drawn("title"), { from: { x: 40, y: 40 }, to: { x: 140, y: 140 } });
+
+  expect(onMoveNode).toHaveBeenCalled();
+});
+
+test("右ボタンで見出しを押しても artboard の移動が始まらない", () => {
   const onRepositionArtboard = vi.fn();
   renderCanvas({ selection: selectionWithTitle(), onRepositionArtboard });
-  const frame = drawn("home");
+  const handle = artboardHandle("home");
 
-  fireEvent.pointerDown(frame, { button: 2, clientX: 40, clientY: 40 });
-  fireEvent.pointerMove(frame, { clientX: 140, clientY: 140 });
-  fireEvent.pointerUp(frame, { clientX: 140, clientY: 140 });
+  fireEvent.pointerDown(handle, { button: 2, clientX: 40, clientY: 40 });
+  fireEvent.pointerMove(canvasContent(), { clientX: 140, clientY: 140 });
+  fireEvent.pointerUp(canvasContent(), { clientX: 140, clientY: 140 });
 
   expect(onRepositionArtboard).not.toHaveBeenCalled();
 });
 
-test("主ボタンの押下なら同じ操作で artboard が動く", () => {
+test("主ボタンで見出しを押せば同じ操作で artboard が動く", () => {
   const onRepositionArtboard = vi.fn();
   renderCanvas({ selection: selectionWithTitle(), onRepositionArtboard });
-  const frame = drawn("home");
+  const handle = artboardHandle("home");
 
   // 上のテストの対照。これが無いと、artboard を一切動かさない実装でも通ってしまう
-  fireEvent.pointerDown(frame, { button: 0, clientX: 40, clientY: 40 });
-  fireEvent.pointerMove(frame, { clientX: 140, clientY: 140 });
-  fireEvent.pointerUp(frame, { clientX: 140, clientY: 140 });
+  fireEvent.pointerDown(handle, { button: 0, clientX: 40, clientY: 40 });
+  fireEvent.pointerMove(canvasContent(), { clientX: 140, clientY: 140 });
+  fireEvent.pointerUp(canvasContent(), { clientX: 140, clientY: 140 });
 
   expect(onRepositionArtboard).toHaveBeenCalled();
 });
