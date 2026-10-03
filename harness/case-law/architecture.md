@@ -117,3 +117,21 @@ pr-235 で観点(`implementation-reviewer`「モジュールの公開 API の観
 | NG(汎用化するとこう誤検知する) | OK(実際に指摘された形) |
 |---|---|
 | `Type["key"]` の indexed access 型はすべて警告 | `resizeCursor(grip): CSSProperties["cursor"]` は正当。問題は `DocumentSessionPorts["ipc"]` のように**直接 import できる名前付きの型(`DocumentIpc`)が既にあるのに** 束から添字で引く形だけ |
+
+## `dependency` — 同じ語彙の兄弟モジュールを、親のフォルダを作らずに並べた
+
+pr-846 で `PointerButton` / `CommandKey` / `KeyName` を `src/libs/` 直下に 3〜4 モジュールとして並べる
+計画が、オーナーから「もう 1 段フォルダを作る」よう指示された。`dependency` の再発 2 件は
+どちらも人のレビューで、pr-330 の `domains` → `libs` は oxlint が既に拾っており(機械判定済み)、
+こちらの形は**親でまとめるかどうかの判断**なのでフックにできない(判断をフックにすると偽陽性が出る)。
+
+判定の分かれ目: **同じ層の直下に、同じ語彙から切り出した兄弟が 2 つ以上並ぶか。** 並ぶなら親の
+フォルダを 1 つ作り、`index.ts` から re-export する。
+
+| NG | OK |
+|---|---|
+| `src/libs/` 直下に `pointer-button` / `command-key` / `key-name` を並べる | `src/libs/dom-event/` を作り、各サブフォルダを `dom-event/index.ts` から re-export する(前例: `src/domains/dcmp/token`) |
+
+- 親の `index.ts` を持たない入れ物にする形も示されたが、pr-846 では re-export する形に決まった
+- 親へまとめたあとは、`@/libs/dom-event/<サブフォルダ>` への deep import が検査をすり抜けるため
+  grep で 0 件を確かめる(`import-rule-violations.py` は入れ子モジュールの `index.ts` を違反にしない)
