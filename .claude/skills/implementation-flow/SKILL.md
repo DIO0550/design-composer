@@ -138,8 +138,8 @@ description: "design-composer の実装を ゴールの確定 → タスクの�
    並列に起動する
 2. 返ってきた指摘に対応してから、**`test-reviewer` を単独で、前面で起動する**(同じメッセージに
    他のツール呼び出しを並べない)。実装を壊して確かめるので、並べると他のエージェントが壊れた
-   状態を実装として読む。背景で起動すると起動の直後に PostToolUse が走り、
-   `track-verification-agent-activity.sh` の印が消えて git 操作の抑止が効かない(実測)
+   状態を実装として読む。背景で起動すると git 操作の抑止が効かない(理由と、フックが塞いでいる
+   範囲は「サブエージェントの使い方」)
 
 | エージェント | 観点 | 呼ぶ条件 |
 | --- | --- | --- |
@@ -270,7 +270,11 @@ pnpm visual:capture -- --storybook-dir storybook-static --out visual-actual  # �
 - **実行中に git add / commit / push を挟まない。** ミューテーション実測の途中でコミットすると、
   その瞬間の書き換えが載る。`block-git-during-verification-agent.sh` が
   plan-reviewer / test-reviewer の実行中はここを機械的に止める(`.claude/hooks/README.md`)。
-  **止まるのは前面で起動したときだけ**なので、この 2 つは前面で起動する(フェーズ 6 の 2 段目の理由)
+  **止まるのは前面で起動したときだけ**(背景で起動すると起動の直後に PostToolUse が走り、
+  印が消える。実測)。`run_in_background: true` を明示した起動は
+  `track-verification-agent-activity.sh` が拒否するが、塞いでいない形がある(フックの冒頭)。
+  `false` を渡しても背景で起動したとき・実行中に背景へ移したときは、完了通知を受け取るまで
+  git add / commit / push を挟まない
 - **バックグラウンドで起動した場合は、完了を取り逃さない。** 結果を受け取るまで次のフェーズへ
   進まない
 - **セッションの途中で `.claude/agents/` に足した定義は、同じセッションから呼べないことがある**
