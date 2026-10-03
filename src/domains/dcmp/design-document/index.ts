@@ -1511,6 +1511,34 @@ export const DesignDocument = {
   },
 
   /**
+   * 名前で指したものをまとめて取り除く（docs/06-ui.md「複数選択」の削除）。1 つずつの
+   * 取り除き方は `remove` と同じ。
+   *
+   * 祖先が同じ並びにある名前は、祖先と一緒に消えるので取り除く対象から落とす。落とさずに
+   * 順に `remove` を当てると、祖先が先に並んだとき子が `node-not-found` になる。
+   *
+   * @param document 取り除く先のドキュメント
+   * @param names 取り除きたい artboard / ノードの名前。重複は 1 つとして扱う
+   * @returns すべて取り除いたドキュメント。空の並びならそのまま。どれか 1 つでも取り除け
+   *   なければ（`remove` が `err` になる名前があれば）その `err` で、何も取り除かない
+   */
+  removeAll(
+    document: DesignDocument,
+    names: readonly string[],
+  ): Result<DesignDocument, DesignDocumentEditError> {
+    const distinctNames = ArrayEx.distinct(names);
+    const outermostNames = distinctNames.filter(
+      (name) =>
+        !DesignDocument.collectAncestorNames(document, name).some((ancestor) =>
+          distinctNames.includes(ancestor),
+        ),
+    );
+    return ArrayEx.reduceUntilErr(outermostNames, document, (current, name) =>
+      DesignDocument.remove(current, name),
+    );
+  },
+
+  /**
    * 単一名前空間の名前で指したものに別の名前を付ける（docs/06-ui.md「編集操作の一覧」の
    * 名前を変更）。artboard ならその 1 枚、そうでなければノードの名前を付け替える。
    *
