@@ -3,9 +3,9 @@
 # この PR で**追加された**テストヘルパーが、プロジェクト全体の `__tests__/` にある
 # 別のヘルパーと本体が一字一句同じでないかを検出する。1 件でもあれば exit 1。
 #
-# `.claude/hooks/check-test-helper-duplication.sh` は編集時に同じ判定を見るが、
-# Claude Code のフックは発火しない実行環境がある(`.claude/hooks/README.md`)ので、
-# CI 側でも同じ判定を通す(`check-added-lint-suppressions.sh` と同じ形)。
+# `src/` 全体を見る `duplicate-test-helpers.py --all src`(CI の `rules-check`・
+# `harness/githooks/pre-push`)より前から置いている追加行だけの検査で、いまはその一部を
+# 二重に落とす。位置づけは `.claude/hooks/README.md`「例外(エスケープハッチ)」。
 #
 # 判定そのものは `.claude/hooks/lib/duplicate-test-helpers.py --lines` で共有している
 # (`<行番号>:<名前>` を返す。`lint-suppressions.py` と同じ出力形式)。
