@@ -141,3 +141,17 @@ test("ドキュメント上の移動量は、縦横とも倍率を掛けた画�
     y: -14,
   });
 });
+
+test("見せるドキュメント上の長さは、割り戻した値の最も近い整数になる", () => {
+  // 100 / 1.5 = 66.67。切り捨てる実装なら 66 になる
+  const zoomed = { ...CanvasView.create(), scale: 1.5 };
+
+  expect(CanvasView.toRoundedDocumentLength(zoomed, 100)).toBe(67);
+});
+
+test("割り戻した値の小数部が 0.5 未満なら、見せる長さは小さいほうの整数になる", () => {
+  // 101 / 1.5 = 67.33。切り上げる実装なら 68 になる
+  const zoomed = { ...CanvasView.create(), scale: 1.5 };
+
+  expect(CanvasView.toRoundedDocumentLength(zoomed, 101)).toBe(67);
+});

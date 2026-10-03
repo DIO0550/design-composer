@@ -1,13 +1,26 @@
 import { expect, test } from "vitest";
 import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { Option } from "@/utils/Option";
-import { SideSnap } from "../index";
+import { SideSnap, type SnapGuides } from "../index";
 import { Moving } from "./moving-bounds";
 
 /*
  * 揃った線（辺か中心線）に引くガイド線（docs/06-ui.md「キャンバス直接操作」の辺のスナップ）。
  * 線は太さのぶんを中心で振り分けるので、位置は揃った線の座標より 1 小さくなる。
  */
+
+/**
+ * 軸ごとのガイド線だけ。揃え先との隙間は `side-snap.gap` が見るので、ここでは比べない。
+ *
+ * @param guides 揃いの表示
+ * @returns 軸ごとのガイド線
+ */
+function linesOf(guides: SnapGuides) {
+  return {
+    horizontal: Option.map(guides.horizontal, (guide) => guide.guideLine),
+    vertical: Option.map(guides.vertical, (guide) => guide.guideLine),
+  };
+}
 
 test("左辺どうしが揃うと、揃え先の左辺に中心を合わせた縦の線が 1 本出る", () => {
   const stationary: CanvasBounds = {
@@ -18,7 +31,7 @@ test("左辺どうしが揃うと、揃え先の左辺に中心を合わせた�
   };
 
   expect(
-    SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).guides,
+    linesOf(SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).guides),
   ).toEqual({
     horizontal: Option.some({ left: 103, top: 100, width: 2, height: 220 }),
     vertical: Option.none,
@@ -38,7 +51,7 @@ test("運んでいるものの左辺が揃え先の右辺と揃うときも、�
     Option.unwrap(
       SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).guides
         .horizontal,
-    ).left,
+    ).guideLine.left,
   ).toBe(96);
 });
 
@@ -52,7 +65,7 @@ test("線の長さは、寄せたあとの運んでいるものと揃え先の�
   };
 
   expect(
-    SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).guides,
+    linesOf(SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).guides),
   ).toEqual({
     horizontal: Option.some({ left: 103, top: 20, width: 2, height: 100 }),
     vertical: Option.none,
@@ -69,7 +82,7 @@ test("既に辺が重なっているときも、揃った線は出る", () => {
   };
 
   expect(
-    SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).guides,
+    linesOf(SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).guides),
   ).toEqual({
     horizontal: Option.some({ left: 99, top: 100, width: 2, height: 220 }),
     vertical: Option.none,
@@ -81,7 +94,7 @@ test("同じ軸に届く辺が複数あっても、線は寄る先の 1 本だ�
   const near: CanvasBounds = { left: 102, top: 340, width: 300, height: 20 };
 
   expect(
-    SideSnap.toSnapped(SideSnap.create(Moving, [far, near])).guides,
+    linesOf(SideSnap.toSnapped(SideSnap.create(Moving, [far, near])).guides),
   ).toEqual({
     horizontal: Option.some({ left: 101, top: 100, width: 2, height: 260 }),
     vertical: Option.none,
@@ -99,7 +112,9 @@ test("どの辺も届かない揃え先からは、線が出ない", () => {
   };
 
   expect(
-    SideSnap.toSnapped(SideSnap.create(Moving, [far, reachable])).guides,
+    linesOf(
+      SideSnap.toSnapped(SideSnap.create(Moving, [far, reachable])).guides,
+    ),
   ).toEqual({
     horizontal: Option.none,
     vertical: Option.some({ left: 100, top: 94, width: 440, height: 2 }),
@@ -107,7 +122,9 @@ test("どの辺も届かない揃え先からは、線が出ない", () => {
 });
 
 test("揃える先が 1 つも無ければ、線は出ない", () => {
-  expect(SideSnap.toSnapped(SideSnap.create(Moving, [])).guides).toEqual({
+  expect(
+    linesOf(SideSnap.toSnapped(SideSnap.create(Moving, [])).guides),
+  ).toEqual({
     horizontal: Option.none,
     vertical: Option.none,
   });
@@ -136,7 +153,9 @@ test("線の範囲は、もう一方の軸の寄せも畳んだ位置で決ま�
    * 横の寄せ（+4）についても同じで、横線の左端が 104 ではなく 100 になる。
    */
   expect(
-    SideSnap.toSnapped(SideSnap.create(Moving, [alongX, alongY])).guides,
+    linesOf(
+      SideSnap.toSnapped(SideSnap.create(Moving, [alongX, alongY])).guides,
+    ),
   ).toEqual({
     horizontal: Option.some({ left: 103, top: 95, width: 2, height: 225 }),
     vertical: Option.some({ left: 104, top: 94, width: 436, height: 2 }),
@@ -153,7 +172,7 @@ test("横の中心どうしが揃うと、揃え先の横の中心線に縦の�
   };
 
   expect(
-    SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).guides,
+    linesOf(SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).guides),
   ).toEqual({
     horizontal: Option.some({ left: 122, top: 100, width: 2, height: 220 }),
     vertical: Option.none,
@@ -170,7 +189,7 @@ test("縦の中心どうしが揃うと、揃え先の縦の中心線に横の�
   };
 
   expect(
-    SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).guides,
+    linesOf(SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).guides),
   ).toEqual({
     horizontal: Option.none,
     vertical: Option.some({ left: 100, top: 111, width: 440, height: 2 }),

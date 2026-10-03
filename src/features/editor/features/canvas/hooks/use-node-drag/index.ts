@@ -211,7 +211,8 @@ function measureReposition(
  * @param measured 落とし先の実測（寄せの原点と、運んでいるものの大きさ）
  * @param movedTo 今の親の左上から見た、運んだ先の画面上の位置
  * @param targets 今回吸い付く先（吸い付かない回は空）
- * @returns 寄せ量とガイド線（どちらも画面上の px。中身は `SideSnap.toSnapped` の答え）
+ * @returns 寄せ量と、揃った線のガイド線・揃え先との隙間（どれも画面上の px。中身は
+ *   `SideSnap.toSnapped` の答え）
  */
 function snapAt(
   measured: RepositionMeasure,

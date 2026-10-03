@@ -51,7 +51,7 @@ export type DropEdit =
       name: string;
       /** 書かれる座標と見た目のずらし量（**ドキュメント上の px**）。 */
       target: RepositionTarget;
-      /** 揃った線（辺か中心線）に引くガイド線（**画面上の px**。軸ごとに 0 本か 1 本）。 */
+      /** 揃った線（辺か中心線）に引くガイド線と揃え先との隙間（**画面上の px**。軸ごとに 0 か 1 つ）。 */
       guides: SnapGuides;
     }>;
 
@@ -147,10 +147,10 @@ export const Carrying = {
   },
 
   /**
-   * 揃った線（辺か中心線）に引くガイド線。
+   * 揃った線（辺か中心線）に引くガイド線と、揃え先との隙間。
    *
    * @param carrying 今の運び方
-   * @returns 引く線（画面上の px）。揃った線が無ければ縦横とも `none`
+   * @returns 引く線と隙間（画面上の px）。揃った線が無ければ縦横とも `none`
    */
   snapGuides(carrying: Carrying): SnapGuides {
     switch (carrying.kind) {
@@ -190,7 +190,7 @@ export const DropEdit = {
    * @param name 置き直すノードの名前
    * @param target 落とし先の親から見た座標と、運んでいる間のずらし量（ドキュメ
    *   ント上の px）
-   * @param guides 揃った線に引くガイド線（画面上の px）
+   * @param guides 揃った線に引くガイド線と揃え先との隙間（画面上の px）
    * @returns 座標の置き直しの落とし方
    */
   reposition(
@@ -235,11 +235,11 @@ export const DropEdit = {
   },
 
   /**
-   * 揃った線に引くガイド線。ツリーへ落とすときは引かない
+   * 揃った線に引くガイド線と、揃え先との隙間。ツリーへ落とすときは引かない
    * （辺の吸い付きが起きるのは座標の置き直しだけ / docs/06-ui.md）。
    *
    * @param edit 今の落とし方
-   * @returns 引く線（画面上の px）。ツリーへの移動・挿入なら縦横とも `none`
+   * @returns 引く線と隙間（画面上の px）。ツリーへの移動・挿入なら縦横とも `none`
    */
   snapGuides(edit: DropEdit): SnapGuides {
     switch (edit.kind) {
@@ -406,12 +406,12 @@ export const NodeDrag = {
   },
 
   /**
-   * 揃った線に引くガイド線（docs/06-ui.md「キャンバス直接操作」の辺のスナップ）。
+   * 揃った線に引くガイド線と、揃え先との隙間（docs/06-ui.md「キャンバス直接操作」の辺のスナップ）。
    *
    * 押しただけで線が出ると、クリックのたびに一瞬線が走る。
    *
    * @param drag 今のドラッグの状態
-   * @returns 引く線（画面上の px）。動かしていない / 揃った線が無いなら縦横とも `none`
+   * @returns 引く線と隙間（画面上の px）。動かしていない / 揃った線が無いなら縦横とも `none`
    */
   snapGuides(drag: NodeDrag): SnapGuides {
     return drag.kind === "dragging"

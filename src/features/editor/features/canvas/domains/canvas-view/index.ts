@@ -279,6 +279,18 @@ export const CanvasView = {
   },
 
   /**
+   * 画面上の長さをドキュメント上の長さへ直し、最も近い整数へ丸める。座標は整数で持つので、
+   * 人に見せるドキュメント上の長さはこの桁で揃える（docs/06-ui.md の辺のスナップの隙間）。
+   *
+   * @param view 割り戻しに使う倍率を持つ表示
+   * @param screenLength 画面で測った長さ
+   * @returns 最も近い整数へ丸めたドキュメント上の長さ
+   */
+  toRoundedDocumentLength(view: CanvasView, screenLength: number): number {
+    return Math.round(CanvasView.toDocumentLength(view, screenLength));
+  },
+
+  /**
    * 画面上の移動量をドキュメント上の移動量へ直す。
    *
    * 縦横に同じ割り戻しを効かせるだけだが、呼び出し側で 2 回書くと片方だけ倍率を

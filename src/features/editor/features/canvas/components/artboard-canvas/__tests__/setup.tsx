@@ -202,6 +202,17 @@ export function snapGuides(): readonly HTMLElement[] {
 }
 
 /**
+ * 出ている揃え先との隙間の数値。
+ *
+ * @returns 出ている数値の並び（ラベルの文字列）。出ていなければ空
+ */
+export function snapGapLabels(): readonly string[] {
+  return screen
+    .queryAllByTestId("snap-gap-label")
+    .map((label) => label.textContent ?? "");
+}
+
+/**
  * その箇所に出ているハンドル。
  *
  * @param anchor 引きたい箇所（`0` が始点側、`1` が終点側、`0.5` が辺の中央）

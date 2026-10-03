@@ -335,7 +335,10 @@ export function ArtboardCanvas({
         <RangeSelectOverlay bounds={rangeSelect.bounds.value} />
       ) : null}
       {/* 吸い付いた辺は運んでいる間しか分からないので、離す前に線で見せる */}
-      <SnapGuideOverlay guides={NodeDrag.snapGuides(nodeDrag.drag)} />
+      <SnapGuideOverlay
+        guides={NodeDrag.snapGuides(nodeDrag.drag)}
+        view={view}
+      />
       {/* 座標を動かすドラッグにはドロップ線が出ないので、代わりに実体を先に動かす */}
       <RepositionPreviewStyle
         drag={nodeDrag.drag}
