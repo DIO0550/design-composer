@@ -385,6 +385,11 @@
     "name": "左右の辺が揃った"
   },
   {
+    "id": "features-editor-features-canvas-artboardcanvas-snapguideoverlay--with-gaps",
+    "title": "features/editor/features/canvas/ArtboardCanvas/SnapGuideOverlay",
+    "name": "揃え先との隙間の数値"
+  },
+  {
     "id": "features-editor-features-canvas-artboardcanvas-stalecanvasoverlay--default",
     "title": "features/editor/features/canvas/ArtboardCanvas/StaleCanvasOverlay",
     "name": "斜線とバッジ"
