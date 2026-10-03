@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { Option } from "../Option";
 import { Range } from "../Range";
 
 test("下端と上端はどちらも範囲に入っているとみなされる", () => {
@@ -57,4 +58,25 @@ test("離れている 2 つの範囲は、重なりの長さが 0 になる", ()
   expect(
     Range.intersectionLength({ min: 0, max: 20 }, { min: 30, max: 40 }),
   ).toBe(0);
+});
+
+test("離れている 2 つの範囲の間は、前の範囲の上端から後ろの範囲の下端まで", () => {
+  expect(Range.gapBetween({ min: 0, max: 20 }, { min: 30, max: 40 })).toEqual(
+    Option.some({ min: 20, max: 30 }),
+  );
+});
+
+test("後ろの範囲を先に渡しても、2 つの範囲の間は同じになる", () => {
+  // 引数の順で上端・下端を取る実装だと { min: 40, max: 0 } のような向きの逆な範囲になる
+  expect(Range.gapBetween({ min: 30, max: 40 }, { min: 0, max: 20 })).toEqual(
+    Option.some({ min: 20, max: 30 }),
+  );
+});
+
+test("範囲の長さは、上端から下端を引いたもの", () => {
+  expect(Range.length({ min: 15, max: 40 })).toBe(25);
+});
+
+test("範囲の中央は、下端と上端の真ん中", () => {
+  expect(Range.center({ min: 15, max: 40 })).toBe(27.5);
 });
