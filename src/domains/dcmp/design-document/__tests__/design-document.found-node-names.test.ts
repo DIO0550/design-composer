@@ -39,7 +39,7 @@ function setupDocument(): DesignDocument {
 const ComponentInnerName = "primary-button-label";
 
 test("artboard 配下のノードの名前は、渡した順のまま残る", () => {
-  const names = DesignDocument.collectNodeNames(setupDocument(), [
+  const names = DesignDocument.collectFoundNodeNames(setupDocument(), [
     "label",
     "card",
     "title",
@@ -49,7 +49,7 @@ test("artboard 配下のノードの名前は、渡した順のまま残る", ()
 });
 
 test("artboard 自身の名前は落ちる", () => {
-  const names = DesignDocument.collectNodeNames(setupDocument(), [
+  const names = DesignDocument.collectFoundNodeNames(setupDocument(), [
     "card",
     "home",
   ]);
@@ -58,7 +58,7 @@ test("artboard 自身の名前は落ちる", () => {
 });
 
 test("部品定義の中のノードの名前は落ち、インスタンス自身は残る", () => {
-  const names = DesignDocument.collectNodeNames(setupDocument(), [
+  const names = DesignDocument.collectFoundNodeNames(setupDocument(), [
     ComponentInnerName,
     "login",
     "home",
@@ -68,7 +68,7 @@ test("部品定義の中のノードの名前は落ち、インスタンス自�
 });
 
 test("ドキュメントに無い名前は落ちる", () => {
-  const names = DesignDocument.collectNodeNames(setupDocument(), [
+  const names = DesignDocument.collectFoundNodeNames(setupDocument(), [
     "missing",
     "title",
   ]);

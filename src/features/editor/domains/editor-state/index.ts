@@ -112,7 +112,7 @@ function selectableNodeName(
   document: DesignDocument,
   name: string,
 ): Option<string> {
-  return ArrayEx.first(DesignDocument.collectNodeNames(document, [name]));
+  return ArrayEx.first(DesignDocument.collectFoundNodeNames(document, [name]));
 }
 
 /**
@@ -566,7 +566,10 @@ export const EditorState = {
     return {
       ...state,
       selection: SelectionState.create(
-        DesignDocument.collectNodeNames(EditorState.document(state), names),
+        DesignDocument.collectFoundNodeNames(
+          EditorState.document(state),
+          names,
+        ),
       ),
     };
   },

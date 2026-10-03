@@ -1046,7 +1046,7 @@ export const DesignDocument = {
    * @returns `findNode` で引ける名前だけを、渡された順のまま残した並び。artboard 自身の名
    *   前・部品定義の中のノードの名前・無い名前は落ちる
    */
-  collectNodeNames(
+  collectFoundNodeNames(
     document: DesignDocument,
     names: readonly string[],
   ): readonly string[] {

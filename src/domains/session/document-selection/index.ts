@@ -138,11 +138,8 @@ export const DocumentSelection = {
 
   /**
    * キャンバスで押された位置から、掘る量ぶんだけ内側へ入ったノードの名前（docs/06-ui.md
-   * 「キャンバスのクリックが選ぶ階層」）。クリックで選ぶものと、ドラッグで掴むものの両方
-   * がこれを使う。
-   *
-   * 2 つを別々に決めると、選んだものと運ぶものが食い違う（入れ子の中身をクリックすると
-   * 外側の子が選ばれ、同じところを掴むと選ばれていない内側が動く）。
+   * 「キャンバスのクリックが選ぶ階層」「キャンバス直接操作」の移動）。クリックで選ぶもの
+   * と、ドラッグで掴むものの両方がこれを使う。
    *
    * 候補はドキュメントの木にあるノードだけで、artboard 自身と部品定義の中のノード名は入
    * らない（掘ってもインスタンス自身で止まる）。
@@ -160,7 +157,7 @@ export const DocumentSelection = {
   ): Option<string> {
     return SelectionDig.nameAt(
       dig,
-      DesignDocument.collectNodeNames(selection.document, names),
+      DesignDocument.collectFoundNodeNames(selection.document, names),
       DocumentSelection.singleName(selection),
     );
   },
