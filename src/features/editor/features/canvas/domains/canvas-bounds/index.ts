@@ -3,7 +3,7 @@ import { Axes, type Axis, type AxisEnd, AxisEnds } from "@/domains/unit/axis";
 import type { Offset } from "@/domains/unit/offset";
 import { type Side, SidePair, Sides } from "@/domains/unit/side";
 import { Option } from "@/utils/Option";
-import type { Range } from "@/utils/Range";
+import { Range } from "@/utils/Range";
 
 /**
  * 画面上の矩形（client 座標・px）。
@@ -333,10 +333,7 @@ export const CanvasBounds = {
    * @returns 水平の組なら左右の辺の中間の x、垂直の組なら上下の辺の中間の y（画面上の px）
    */
   midline(bounds: CanvasBounds, pair: SidePair): number {
-    const [first, second] = SidePair.sides(pair);
-    return (
-      (CanvasBounds.side(bounds, first) + CanvasBounds.side(bounds, second)) / 2
-    );
+    return Range.center(CanvasBounds.extentAlong(bounds, pair));
   },
 
   /**
