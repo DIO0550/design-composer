@@ -130,6 +130,37 @@ test("見ている先を別の開いているドキュメントへ移せる", ()
   ).toStrictEqual(Option.some(Path));
 });
 
+test("位置を指して、見ている先をその位置のドキュメントへ移せる", () => {
+  const session = DocumentSession.finishOpening(
+    DocumentSession.Closed,
+    opened(Path, OtherPath),
+  );
+
+  expect(
+    DocumentSession.activePath(DocumentSession.activateAt(session, 0)),
+  ).toStrictEqual(Option.some(Path));
+});
+
+test("見ているドキュメントを閉じると、その後ろのドキュメントを見る", () => {
+  const session = DocumentSession.activate(
+    DocumentSession.finishOpening(
+      DocumentSession.Closed,
+      opened(Path, OtherPath),
+    ),
+    Path,
+  );
+
+  expect(
+    DocumentSession.activePath(DocumentSession.closeActive(session)),
+  ).toStrictEqual(Option.some(OtherPath));
+});
+
+test("何も開いていない間に見ているものを閉じても、何も開いていないまま", () => {
+  expect(DocumentSession.closeActive(DocumentSession.Closed)).toStrictEqual(
+    DocumentSession.Closed,
+  );
+});
+
 test("開いているドキュメントを並べ替えると、並びが変わる", () => {
   const session = DocumentSession.finishOpening(
     DocumentSession.Closed,
