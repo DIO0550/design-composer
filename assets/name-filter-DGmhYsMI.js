@@ -1,1 +1,0 @@
-import{n as e}from"./chunk-BneVvdWh.js";import{n as t,t as n}from"./Option-BfXl6WpD.js";import{F as r,P as i}from"./placement-CQvoPJt3.js";var a,o=e((()=>{t(),r(),a={create(e){return e===``?n.none:n.some({text:e})},isMatch(e,t){return i.includesIgnoreCase(t,e.text)}}}));export{o as n,a as t};
