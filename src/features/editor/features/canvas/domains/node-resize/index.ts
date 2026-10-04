@@ -375,7 +375,8 @@ export const NodeResize = {
    *
    * @param selection ハンドルを出す対象を決める、ドキュメントと選択の対
    * @returns 掴める軸のハンドルと、ドキュメントへ書ける今の位置と、揃え先の名前。単一選択
-   *   でないとき・ロック中のノード（docs/03「ロック」）は掴める軸も揃え先も空
+   *   でないとき・ロック中のノード（docs/03「ロック」）・非表示のノード（docs/03「表示 /
+   *   非表示」。包んでいるノード・artboard が非表示のものを含む）は掴める軸も揃え先も空
    */
   resizable(selection: DocumentSelection): ResizableSelection {
     const selected = DocumentSelection.singleName(selection);
@@ -400,7 +401,10 @@ export const NodeResize = {
     if (!Option.isSome(node)) {
       return UnresizableSelection;
     }
-    if (DesignDocument.isLocked(selection.document, name)) {
+    const isUnresizableOnCanvas =
+      DesignDocument.isLocked(selection.document, name) ||
+      DesignDocument.isHidden(selection.document, name);
+    if (isUnresizableOnCanvas) {
       return UnresizableSelection;
     }
     const placement = DesignDocument.childPlacementOf(selection.document, name);

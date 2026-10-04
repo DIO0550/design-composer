@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { ComponentProps } from "react";
 import { fn } from "storybook/test";
 import { DesignDocument } from "@/domains/dcmp/design-document";
+import { Node } from "@/domains/dcmp/node";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { TokenSelection } from "@/domains/session/token-selection";
 import {
@@ -116,6 +117,34 @@ export const HiddenArtboardSelected: Story = {
       "settings",
     ]),
     tokenSelection: TokenSelection.create(HiddenSettingsDocument, Option.none),
+  },
+};
+
+/** `home-banner`（高さが固定の Box）だけを非表示にしたサンプル。 */
+const HiddenBannerDocument = DesignDocument.create({
+  tokens: SampleCanvasDocument.tokens,
+  components: SampleCanvasDocument.components,
+  artboards: SampleCanvasDocument.artboards.map((artboard) => ({
+    ...artboard,
+    children: artboard.children.map((child) =>
+      child.name === "home-banner" && Node.isPrimitive(child)
+        ? { ...child, props: { ...child.props, visibility: "hidden" } }
+        : child,
+    ),
+  })),
+});
+
+/**
+ * 非表示のノードは、ツリーから選んでいても枠もリサイズハンドルも描かれない
+ * （docs/06-ui.md「リサイズハンドル」）。
+ */
+export const HiddenNodeSelected: Story = {
+  name: "非表示のノードを選択中",
+  args: {
+    selection: DocumentSelection.fromNames(HiddenBannerDocument, [
+      "home-banner",
+    ]),
+    tokenSelection: TokenSelection.create(HiddenBannerDocument, Option.none),
   },
 };
 

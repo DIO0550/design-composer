@@ -8,7 +8,8 @@ import { NodeResize } from "../index";
  * `home` に、2 軸とも固定の `panel`、幅だけ固定の `column`、モードを持たない `title`、
  * 幅を固定と書きながら長さの無い `broken`、部品インスタンスの `action`、
  * 絶対配置の `badge`、2 軸とも固定でロックした `locked-panel`（中に 2 軸とも固定の
- * `locked-child`）が並ぶドキュメント。`home` の次に座標を持たない `about` が続く。
+ * `locked-child`）、2 軸とも固定で非表示の `hidden-panel`（中に 2 軸とも固定の `hidden-child`）
+ * が並ぶドキュメント。`home` の次に座標を持たない `about` が続く。
  */
 function setupSelection(
   selectedNames: readonly string[] = [],
@@ -77,6 +78,30 @@ function setupSelection(
               children: [
                 {
                   name: "locked-child",
+                  type: "Box",
+                  props: {
+                    widthMode: "fixed",
+                    width: 120,
+                    heightMode: "fixed",
+                    height: 80,
+                  },
+                  children: [],
+                },
+              ],
+            },
+            {
+              name: "hidden-panel",
+              type: "Box",
+              props: {
+                widthMode: "fixed",
+                width: 120,
+                heightMode: "fixed",
+                height: 80,
+                visibility: "hidden",
+              },
+              children: [
+                {
+                  name: "hidden-child",
                   type: "Box",
                   props: {
                     widthMode: "fixed",
@@ -173,4 +198,12 @@ test("ロックしたノードを選んでいるとハンドルが出ない", ()
 
 test("ロックした Box の子を選んでいてもハンドルが出ない", () => {
   expect(handlesOf("locked-child")).toEqual([]);
+});
+
+test("非表示のノードを選んでいるとハンドルが出ない", () => {
+  expect(handlesOf("hidden-panel")).toEqual([]);
+});
+
+test("非表示の Box の子を選んでいてもハンドルが出ない", () => {
+  expect(handlesOf("hidden-child")).toEqual([]);
 });

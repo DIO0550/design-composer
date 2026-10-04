@@ -6,7 +6,7 @@ import {
   canvasContent,
   hasArtboardHandle,
 } from "@/features/editor/features/canvas/__tests__/canvas-elements";
-import { renderCanvas, selectionFromArtboards } from "./setup";
+import { renderCanvas, resizeHandles, selectionFromArtboards } from "./setup";
 
 /**
  * 表示の `home`、非表示の `draft`、その後ろに座標を持たない `about` を並べる。
@@ -74,4 +74,36 @@ test("いちばん右下の artboard を隠すと、座標平面は表示の art
 
   const plane = artboardFrameContainer(canvasContent(), "home").parentElement;
   expect([plane?.style.width, plane?.style.height]).toEqual(["360px", "240px"]);
+});
+
+test("非表示のノードを選んでいても、キャンバスにハンドルが描かれない", () => {
+  // 同じ寸法の表示のノードでは 8 個描かれる（`artboard-canvas.resize.test.tsx`）
+  const selection = selectionFromArtboards(
+    [
+      {
+        name: "home",
+        width: 360,
+        height: 240,
+        children: [
+          {
+            name: "panel",
+            type: "Box",
+            props: {
+              widthMode: "fixed",
+              width: 200,
+              heightMode: "fixed",
+              height: 100,
+              visibility: "hidden",
+            },
+            children: [],
+          },
+        ],
+      },
+    ],
+    ["panel"],
+  );
+
+  renderCanvas({ selection });
+
+  expect(resizeHandles()).toHaveLength(0);
 });
