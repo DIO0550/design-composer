@@ -66,7 +66,7 @@ export type DocumentSessionActions = Readonly<{
 }>;
 
 /**
- * タブ列から開いているドキュメントを扱う手続き（行き来・閉じる・並べ替え）。
+ * タブ列とキーボードから開いているドキュメントを扱う手続き（行き来・閉じる・並べ替え）。
  *
  * 開く / 新規作成と分けて返すのは、開始画面が受け取るのが前者だけだから
  * （rules/components.md「props は必要最小限に絞る」）。
@@ -74,6 +74,8 @@ export type DocumentSessionActions = Readonly<{
 export type DocumentTabActions = Readonly<{
   /** そのパスのドキュメントを見ている状態にする。 */
   activate: (path: string) => void;
+  /** タブ列のその位置（パスではなく位置。左端が 0）のドキュメントを見ている状態にする。 */
+  activateAt: (index: number) => void;
   /** そのパスのドキュメントを閉じる。 */
   close: (path: string) => void;
   /** 開いているドキュメントの 1 つを並びの別の位置へ移す。 */
@@ -99,6 +101,7 @@ type DocumentSessionAction =
     }>
   | Readonly<{ type: "settled"; outcome: OpenOutcome; recents: RecentFiles }>
   | Readonly<{ type: "activate"; path: string }>
+  | Readonly<{ type: "activateAt"; index: number }>
   | Readonly<{ type: "close"; path: string }>
   | Readonly<{ type: "reorder"; move: IndexMove }>;
 
@@ -148,6 +151,11 @@ function reduce(
       return {
         ...state,
         session: DocumentSession.activate(state.session, action.path),
+      };
+    case "activateAt":
+      return {
+        ...state,
+        session: DocumentSession.activateAt(state.session, action.index),
       };
     case "close":
       return {
@@ -350,8 +358,8 @@ function rememberOpened(
 }
 
 /**
- * どのドキュメントを開いているかと最近使ったファイルを持ち、開く / 新規作成とタブ列から
- * の操作の導線を返す。
+ * どのドキュメントを開いているかと最近使ったファイルを持ち、開く / 新規作成とタブ列・
+ * キーボードからの操作の導線を返す。
  *
  * 開く操作が終わると開いているドキュメントと最近使ったファイルの一覧が一緒に動き、更新の
  * 型も複数あるので `useReducer` で 1 つの状態にまとめる（rules/hooks.md）。指示を受け取れ
@@ -519,6 +527,7 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
     actions: { openDocument, createDocument, openDocumentsAt },
     tabActions: {
       activate: (path) => dispatch({ type: "activate", path }),
+      activateAt: (index) => dispatch({ type: "activateAt", index }),
       close: (path) => dispatch({ type: "close", path }),
       reorder: (move) => dispatch({ type: "reorder", move }),
     },
