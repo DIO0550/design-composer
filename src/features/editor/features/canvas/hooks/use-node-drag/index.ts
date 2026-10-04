@@ -393,9 +393,10 @@ export type NodeDragControl = Readonly<{
    * 今パレットから運んでいる雛形。掴んだ行の強調とキャンバスのツールバーの点灯がこれで決
    * まり、運んでいない / 既存ノードを運んでいるなら `none`。
    *
-   * **この配線を外してもテストは 1 件も落ちない** — 届く先はどちらも class の差し替えだけ
-   * （`asset-row` の強調 / `canvas-toolbar` の `◆` の背景）で、happy-dom では見えない。
-   * 気づく手段は Storybook の視覚差分だけ。
+   * **届く先の配線を外してもテストは 1 件も落ちない** — 戻り値はこのフックの単体テストが
+   * 見ているが、届く先はどちらも class の差し替えだけ（`asset-row` の強調 /
+   * `canvas-toolbar` の `◆` の背景）で、happy-dom では見えない。気づく手段は Storybook の
+   * 視覚差分だけ。
    */
   carriedTemplate: Option<NodeTemplate>;
   /**
