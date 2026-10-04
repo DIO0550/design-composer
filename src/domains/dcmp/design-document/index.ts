@@ -574,6 +574,49 @@ function expandInstance(
 }
 
 /**
+ * 祖先から継ぐ性質を、自身について答える判定。artboard とノードでは性質の持ち方が違うので
+ * 別々に受け取る。
+ */
+type InheritedTest = Readonly<{
+  artboard: (artboard: Artboard) => boolean;
+  node: (node: Node) => boolean;
+}>;
+
+/**
+ * 名前で指したものか、それを包んでいるノード・artboard のどれかが判定を満たすか。
+ *
+ * artboard に着いた時点で辿るのをやめる。`collectAncestorNames` で並べてから見ると、
+ * 最後の artboard で木の全体を 2 度走り、範囲選択ではそれがポインタの移動ごとに重なる。
+ *
+ * @param document 引き先になるドキュメント
+ * @param name 起点にする artboard / ノードの名前
+ * @param test 自身について答える判定
+ * @returns 起点か祖先のどれかが判定を満たせば真。ドキュメントに無い名前は偽
+ */
+function holdsForSelfOrAncestor(
+  document: DesignDocument,
+  name: string,
+  test: InheritedTest,
+): boolean {
+  const artboard = DesignDocument.findArtboard(document, name);
+  if (Option.isSome(artboard)) {
+    return test.artboard(artboard.value);
+  }
+  const node = DesignDocument.findNode(document, name);
+  if (!Option.isSome(node)) {
+    return false;
+  }
+  if (test.node(node.value)) {
+    return true;
+  }
+  const position = DesignDocument.findChildPosition(document, name);
+  return (
+    Option.isSome(position) &&
+    holdsForSelfOrAncestor(document, position.value.parentName, test)
+  );
+}
+
+/**
  * ドキュメントのコンパニオンオブジェクト。ツリーの探索・編集は `NodeTree`、名前の規則は
  * `DocumentNames`、部品への変換は `Component`、検証は `validation/`、版ごとの JSON 表現は
  * `v1/` が持ち、ここは「どの artboard・どの部品を相手にするか」の調停に徹する。
@@ -1044,33 +1087,18 @@ export const DesignDocument = {
    * 名前で指したノードが、自身か包んでいるノードのどれかでロックされているか
    * （docs/03「ロック」。子孫へは書き写さず、祖先を辿って決める）。
    *
-   * artboard に着いた時点で辿るのをやめる。`collectAncestorNames` で並べてから見ると、
-   * 最後の artboard で木の全体を 2 度走り、範囲選択ではそれがポインタの移動ごとに重なる。
-   *
    * @param document 引き先になるドキュメント
    * @param name ロックされているかを知りたいノードの名前
    * @returns 自身か祖先のプリミティブが `locked` なら真。artboard 自身・ドキュメントに無い
    *   名前は偽。部品インスタンスは `locking` を持たないので、祖先がロックしていなければ偽
    */
   isLocked(document: DesignDocument, name: string): boolean {
-    if (Option.isSome(DesignDocument.findArtboard(document, name))) {
-      return false;
-    }
-    const node = DesignDocument.findNode(document, name);
-    if (!Option.isSome(node)) {
-      return false;
-    }
-    const isLockedItself =
-      Node.isPrimitive(node.value) &&
-      Locking.fromProps(node.value.props ?? {}) === Lockings.Locked;
-    if (isLockedItself) {
-      return true;
-    }
-    const position = DesignDocument.findChildPosition(document, name);
-    return (
-      Option.isSome(position) &&
-      DesignDocument.isLocked(document, position.value.parentName)
-    );
+    return holdsForSelfOrAncestor(document, name, {
+      artboard: () => false,
+      node: (node) =>
+        Node.isPrimitive(node) &&
+        Locking.fromProps(node.props ?? {}) === Lockings.Locked,
+    });
   },
 
   /**
