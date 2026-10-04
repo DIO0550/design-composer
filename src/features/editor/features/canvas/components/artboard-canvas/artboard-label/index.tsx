@@ -1,5 +1,6 @@
 import type { PointerEvent as ReactPointerEvent } from "react";
 import type { CompiledArtboard } from "@/domains/compiled/compiled-artboard";
+import { PointerButton } from "@/libs/dom-event";
 
 /**
  * 掴み口を指す目印。掴めることは `onPointerDown` にしか出ないので、テストから引く手掛かり
@@ -14,8 +15,7 @@ export const ArtboardHandleTestId = "artboard-handle";
  * 行中 1 行だけで、その画面では artboard 自身ではなく配下のノードが選択されているのに
  * `Artboards` 一覧は `login` を光らせるので、青が指すのは選択ではないと読んだ。
  *
- * 見出しは artboard を動かす掴み口の 1 つ（docs/06-ui.md「キャンバス直接操作」/ もう 1 つ
- * は枠の背景）。**子が全面を覆う artboard**では背景を押せないので残している。
+ * 見出しは artboard を動かす唯一の掴み口（docs/06-ui.md「キャンバス直接操作」）。
  *
  * @returns 名前と大きさを並べた見出しの 1 行
  */
@@ -34,10 +34,17 @@ export function ArtboardLabel({
       /*
        * 掴んで動かすドラッグが文字の範囲選択にならないようにする（`select-none`）。
        * 幅は器（`ArtboardFrame`）が枠に合わせるので、ここでは絞らない。名前の右の余白でも
-       * 動くが、背景でも動くようになった今はそちらのほうが一貫する。
+       * 動くのは、掴み口がここだけで、狙える面を広く取るため。
        */
       className="flex h-[18px] cursor-grab select-none items-center gap-2 text-[11px]"
       onPointerDown={(event) => {
+        /*
+         * 右ボタンでは掴まない。掴むとポインタを捕捉し、メニューを操作するあいだの動きが
+         * そのまま移動になる（土台へ渡ったあとは `useRangeSelect` が決める）。
+         */
+        if (!PointerButton.isPrimary(event)) {
+          return;
+        }
         // 見出しの上で始めたドラッグは土台へ渡さない（掴んだものが動かないと操作が読めない）
         event.stopPropagation();
         onGrab(event);

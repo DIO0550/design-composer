@@ -2,9 +2,12 @@ import type { ReactElement } from "react";
 import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { SelectionColor } from "../artboard-frame-list";
 
+/** 範囲の枠を指す目印（見た目の class で引くと Tailwind の綴りに縛られる）。 */
+export const RangeSelectTestId = "range-select";
+
 /**
- * 空き領域から引いている選択の範囲（docs/06-ui.md「範囲選択」）。UI 案 docs/Design
- * Composer.html にこの状態の絵は無い。
+ * 空き領域か artboard の背景から引いている選択の範囲（docs/06-ui.md「範囲選択」）。UI 案
+ * docs/Design Composer.html にこの状態の絵は無い。
  *
  * 色は選択の枠と同じ青（`SelectionColor`）。示すのは**これから選ばれる範囲**で、選択と同じ
  * 意味の系統に属する（緑の落とし先と赤の辺のスナップは運んでいる間だけ出る）。
@@ -12,7 +15,7 @@ import { SelectionColor } from "../artboard-frame-list";
  * ズーム / パンの変形の**外側**に置き、実測した client 座標を `position: fixed` で使う
  * （変形の内側は React の管理外。器からの相対へ直すにはレンダー中の実測が要り、名前で引
  * く `useDrawnBounds` と噛み合わない）。`pointer-events-none` は土台の**兄弟**として重
- * なるためで、引いている間は土台が捕捉していて**外してもテストも絵も変わらない**。
+ * なるためで、引いている間はポインタを捕捉していて**外してもテストも絵も変わらない**。
  *
  * @returns 引いている範囲を示す矩形
  */
@@ -21,7 +24,7 @@ export function RangeSelectOverlay({
 }: Readonly<{ bounds: CanvasBounds }>): ReactElement {
   return (
     <div
-      data-testid="range-select"
+      data-testid={RangeSelectTestId}
       aria-hidden
       className="pointer-events-none fixed z-10"
       style={{

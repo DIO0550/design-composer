@@ -211,13 +211,16 @@ export function ArtboardCanvas({
         ref={surfaceRef}
         data-testid="canvas-surface"
         /*
-         * パンだけ capture で取る。artboard の枠と見出しは `pointerdown` を止めるので
-         * （`artboard-frame` / `artboard-label`）、bubble で待つと artboard の上から
-         * 始めたパンが届かない。捕捉したら子へは渡さないので、**パンが始まったなら
+         * パンは capture で取る。見出しと、中身のノード・リサイズの帯を掴んだ枠は
+         * `pointerdown` を止めるので（`artboard-label` / `artboard-frame`）、bubble で待つと
+         * そこから始めたパンが届かない。捕捉したら子へは渡さないので、**パンが始まったなら
          * 範囲選択は始まらない**（右ボタンのように「どちらも始まらない」入力があるかは
          * 範囲選択の側が決める / `useRangeSelect`）。
+         *
+         * 範囲選択の飲み込み待ちを解くのもここ。止められる前に必ず通るのは capture だけ。
          */
         onPointerDownCapture={(event) => {
+          rangeSelect.dragHandlers.onPointerDownCapture();
           if (!pansCanvas(event)) {
             return;
           }
@@ -225,9 +228,9 @@ export function ArtboardCanvas({
           panHandlers.onPointerDown(event);
         }}
         /*
-         * 空き領域の左ドラッグは範囲選択。ここまで `pointerdown` が上がってくるのは
-         * artboard の外側の余白を押したときだけで、artboard の上は枠と見出しが止める
-         * （artboard の背景を範囲選択にするかは）。凍結中に始めないのは、
+         * 空き領域と artboard の背景の左ドラッグは範囲選択。ここまで `pointerdown` が
+         * 上がってくるのは、artboard の外側の余白か、枠が何も掴まなかった背景を押したとき
+         * （見出しと、中身のノード・リサイズの帯を掴んだ枠は止める）。凍結中に始めないのは、
          * 映っているのが最後に正常だった表示で、そこへ加えた選択が今のファイルと
          * 噛み合わないため（`canvas-content` の `inert` はここまで及ばない）。
          */
@@ -246,6 +249,8 @@ export function ArtboardCanvas({
           panHandlers.onPointerUp(event);
           rangeSelect.dragHandlers.onPointerUp(event);
         }}
+        onClickCapture={rangeSelect.dragHandlers.onClickCapture}
+        onLostPointerCapture={rangeSelect.dragHandlers.onLostPointerCapture}
         className={`flex-1 overflow-hidden ${canvasCursor({
           isDragging: CanvasView.isDragging(view),
           isArmed: isSpaceHeld,

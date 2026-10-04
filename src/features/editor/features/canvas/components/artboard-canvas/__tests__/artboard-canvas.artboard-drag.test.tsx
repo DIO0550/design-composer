@@ -1,4 +1,4 @@
-import { fireEvent, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
 import { SelectionDigs } from "@/domains/session/selection-dig";
 import {
@@ -97,10 +97,11 @@ test("閾値までの動きでは置き直しが届かない", () => {
   expect(onRepositionArtboard).not.toHaveBeenCalled();
 });
 
-test("artboard の背景を掴んで動かすと、離した位置の座標で置き直しが届く", () => {
+test("artboard の背景を掴んで動かしても、置き直しは届かない", () => {
   /*
-   * 押すのは枠の `role="button"` ではなく**描かれた artboard そのもの**
-   * （`drawn`）。実ブラウザで背景を押したときの `event.target` はこちらで、
+   * 背景から引くのは範囲選択で、artboard を動かすのは見出しだけ（docs/06-ui.md
+   * 「キャンバス直接操作」）。押すのは枠の `role="button"` ではなく**描かれた artboard
+   * そのもの**（`drawn`）。実ブラウザで背景を押したときの `event.target` はこちらで、
    * 枠を押すと「名前を 1 つも辿らない」別の道を通ってしまう。
    */
   const onRepositionArtboard = vi.fn();
@@ -108,10 +109,7 @@ test("artboard の背景を掴んで動かすと、離した位置の座標で�
 
   drag(drawn("second"), { from: { x: 0, y: 0 }, to: { x: 60, y: 40 } });
 
-  expect(onRepositionArtboard).toHaveBeenCalledWith("second", {
-    x: 292,
-    y: 40,
-  });
+  expect(onRepositionArtboard).not.toHaveBeenCalled();
 });
 
 test("artboard の中身を掴んでも artboard の置き直しは届かない", () => {
@@ -142,21 +140,6 @@ test("artboard の中身を掴んだときは、ツリー内の移動として�
   drag(drawn("title"), { from: { x: 0, y: 0 }, to: { x: 60, y: 40 } });
 
   expect(onMoveNode).toHaveBeenCalled();
-});
-
-test("背景を掴んで運んだ直後でも、次のクリックで選べる", () => {
-  /*
-   * 見出し経路と**対**にして置く。次に「離した直後の click を飲み込む」状態を足す人が、
-   * どちらの掴み口でも次のクリックを食べることに気づけるようにするため
-   * （飲み込む相手が居ない理由は掴み口ごとに違う / `ArtboardDrag` の doc）。
-   */
-  const onSelect = vi.fn();
-  renderCanvas({ selection: setupSelection(), onSelect });
-
-  drag(drawn("second"), { from: { x: 0, y: 0 }, to: { x: 60, y: 40 } });
-  fireEvent.click(drawn("third"));
-
-  expect(onSelect).toHaveBeenCalledWith(["third"], SelectionDigs.NoDeeper);
 });
 
 test("運んでいる間は、離す前から運び先に描かれる", () => {
@@ -211,7 +194,7 @@ test("space を押しながら見出しを掴むと、artboard ではなくキ�
 
 test("見出しを掴んで運んだ直後でも、次のクリックで選べる", () => {
   /*
-   * ノードのドラッグ / リサイズは「離した直後の click を飲み込む」状態を持つが、
+   * ノードのドラッグ / リサイズ / 範囲選択は「離した直後の click を飲み込む」状態を持つが、
    * **見出しは**枠の兄弟なので、ドラッグ由来の click は枠まで上がってこない。
    * 同じ形を写すと、飲み込む相手が居ないまま**次のクリックを食べる**（`ArtboardDrag` の doc）。
    */

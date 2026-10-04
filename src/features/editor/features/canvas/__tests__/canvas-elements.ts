@@ -2,6 +2,7 @@ import { screen, within } from "@testing-library/react";
 import { ElementNameAttribute } from "@/domains/compiled/compiled-element";
 import { TokenReferrerOutline } from "@/features/editor/features/canvas/components/artboard-canvas";
 import { ArtboardHandleTestId } from "@/features/editor/features/canvas/components/artboard-canvas/artboard-label";
+import { RangeSelectTestId } from "@/features/editor/features/canvas/components/artboard-canvas/range-select-overlay";
 import { CanvasDom } from "@/libs/canvas-dom";
 import { ArrayEx } from "@/utils/ArrayEx";
 
@@ -44,6 +45,11 @@ export function canvasTransform(): string {
  */
 export function canvasSurface(): HTMLElement {
   return screen.getByTestId("canvas-surface");
+}
+
+/** 出ている範囲選択の枠。引いていなければ空。 */
+export function rangeFrames(): readonly HTMLElement[] {
+  return screen.queryAllByTestId(RangeSelectTestId);
 }
 
 /** Text の文言を書き換える入力欄の名前（`text-inline-editor` の `aria-label`）。 */
@@ -103,8 +109,8 @@ export function artboardFrameContainer(
 }
 
 /**
- * artboard をキャンバス上で動かす掴み口のうち、**見出しのほう**。
- * もう 1 つは枠の背景で、そちらは描かれた要素（`renderedElement`）を押す。
+ * artboard をキャンバス上で動かす掴み口（見出し）。枠の背景は範囲選択の起点で、
+ * 掴み口ではない。
  *
  * @param name 掴む artboard の名前
  * @returns その artboard の見出し。描かれていなければテストを落とす

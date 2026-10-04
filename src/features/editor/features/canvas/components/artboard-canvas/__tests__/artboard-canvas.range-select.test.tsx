@@ -1,6 +1,8 @@
-import { screen } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
-import { canvasSurface } from "@/features/editor/features/canvas/__tests__/canvas-elements";
+import {
+  canvasSurface,
+  rangeFrames,
+} from "@/features/editor/features/canvas/__tests__/canvas-elements";
 import {
   drag,
   holdSpace,
@@ -12,16 +14,11 @@ import { PointerButtons } from "@/libs/dom-event";
 import { renderCanvas } from "./setup";
 import { drawnApart, setupSiblings } from "./snap-siblings";
 
-/** 出ている範囲の枠。引いていなければ空。 */
-function rangeFrames(): readonly HTMLElement[] {
-  return screen.queryAllByTestId("range-select");
-}
-
 /**
  * 空き領域から範囲を引いて離す。
  *
- * 押すのはキャンバスの土台。artboard の上の `pointerdown` は枠と見出しが止めるので、
- * 範囲選択が始まるのは土台へ届いたとき（＝ artboard の外側の余白）だけ。
+ * 押すのはキャンバスの土台（artboard の外側の余白）。artboard の背景から引く場合は
+ * `artboard-canvas.range-select-artboard` が見る。
  */
 function drawRange(to: Readonly<{ x: number; y: number }>): void {
   drag(canvasSurface(), { from: { x: 60, y: 40 }, to });

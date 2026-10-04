@@ -135,7 +135,7 @@ export function ArtboardFrame({
       }}
     >
       {/*
-        `right-0` で枠の幅いっぱいに広げるのは、見出しが掴み口だから（`ArtboardLabel`）。
+        `right-0` で枠の幅いっぱいに広げるのは、見出しが artboard の唯一の掴み口だから（`ArtboardLabel`）。
         中身ぶんだと `home 360 × 240` で 85px しか無く、枠の 360px に対して狙いづらい。
         UI 案（docs/Design Composer.html）の見出しも枠と同じ幅のブロックなので、
         絞るほうが乖離だった。
@@ -166,10 +166,10 @@ export function ArtboardFrame({
            * 選択に使えない。**枠の外まで引いて離した回は届かない**（リサイズの `pointerup`
            * を受けるのは枠の外の器）が、受け口の移動はこの差分では行わない。
            *
-           * ノードのドラッグは尋ねない。運んだあとの click は離した場所によって枠の外へ出る
-           * ので、枠より外側の器がまとめて飲み込む（`useNodeDrag` の `dragHandlers`）。
-           * artboard のドラッグも尋ねない。運んだあとの click はどちらの掴み口からもここへ
-           * 届かず、届いてもその artboard を選ぶだけで害が無い（`ArtboardDrag` の doc）。
+           * ノードのドラッグと範囲選択は尋ねない。引いたあとの click は離した場所や捕捉した
+           * 要素によって枠の外へも出るので、枠より外側の器がまとめて飲み込む（`useNodeDrag`
+           * / `useRangeSelect` の `dragHandlers`）。artboard のドラッグも尋ねない。掴み口の
+           * 見出しは枠の兄弟なので、運んだあとの click はここへ届かない（`ArtboardDrag` の doc）。
            */
           if (nodeResize.consumeClick()) {
             return;
@@ -198,28 +198,24 @@ export function ArtboardFrame({
         }}
         onPointerDown={(event) => {
           /*
-           * 右ボタンで掴むと `useArtboardDrag.grab` がポインタを捕捉し、メニューを操作する
-           * あいだの動きがそのまま移動になる（離した時点で座標が確定する）。
+           * 右ボタンでは何も掴まない。掴むと、メニューを操作するあいだの動きがそのまま移動に
+           * なる（土台へ渡ったあとは `useRangeSelect` が決める）。
            */
           if (!PointerButton.isPrimary(event)) {
             return;
           }
-          // artboard の上で始めたドラッグは土台へ渡さない（掴んだものが動かないと操作が読めなくなる）
-          event.stopPropagation();
           /*
-           * 内側から外へ向かって掴み手を決める。ハンドル → 中身のノード → artboard 自身の順で、
-           * 先に掴んだものが後ろへ渡さない。artboard を末尾に置くのは、背景（子が乗っていない
-           * ところ）まで来たら必ず掴めるため（`ArtboardDrag.grab` は失敗しない）。
+           * 内側から外へ向かって掴み手を決める。ハンドル → 中身のノードの順で、先に掴んだもの
+           * が後ろへ渡さない。どちらも掴まなかった背景（子が乗っていないところ）は土台まで
+           * 渡す（docs/06-ui.md「範囲選択」）。
            */
-          if (nodeResize.grabAt(event)) {
-            return;
+          const grabbed =
+            nodeResize.grabAt(event) ||
+            nodeDrag.grabNode(event, namesAt(event.target), pressDig(event));
+          if (grabbed) {
+            // 掴んだドラッグは土台へ渡さない（掴んだものと範囲の両方が動くと操作が読めなくなる）
+            event.stopPropagation();
           }
-          if (
-            nodeDrag.grabNode(event, namesAt(event.target), pressDig(event))
-          ) {
-            return;
-          }
-          artboardDrag.grab(element.name, canvasPosition, event);
         }}
         // 中身のテキストは選択させない（ノードを運ぶドラッグが範囲選択になってしまうため）
         className="w-fit select-none bg-white shadow-sm outline outline-gray-300 aria-[current=true]:outline-2 aria-[current=true]:outline-blue-500"

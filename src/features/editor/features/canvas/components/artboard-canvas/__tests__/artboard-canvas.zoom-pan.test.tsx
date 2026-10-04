@@ -73,7 +73,7 @@ test("space を離したあとの左ドラッグでは中身が動かない", ()
 
 test("space を押しながらなら artboard の上で始めたドラッグでもキャンバスが動く", () => {
   /*
-   * artboard の枠と見出しは `pointerdown` を止めるので、土台が bubble で待っていると
+   * 見出しと、中身を掴んだ枠は `pointerdown` を止めるので、土台が bubble で待っていると
    * artboard で埋まった画面ではパンを始められなくなる（capture で取っている理由）。
    */
   renderCanvas({ selection: setupSelection() });
