@@ -411,7 +411,8 @@ export type NodeDragControl = Readonly<{
    *   で受け取る
    * @param dig 押し方から決まった掘る量（クリックと同じ読み替え）
    * @returns 掴んだ（＝この先の判定へ渡さない）なら `true`。押された位置から根までに
-   *   ドキュメントのノードが 1 つも無ければ `false`（artboard の背景を押したとき）
+   *   選べるノードが 1 つも無ければ `false`（artboard の背景か、ロック中のノードの上を押し
+   *   たとき / docs/03「ロック」）
    */
   grabNode: (
     event: ReactPointerEvent<HTMLElement>,
