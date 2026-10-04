@@ -22,6 +22,11 @@ test("追加ボタンはそれぞれの型アイコンを出す", () => {
     within(screen.getByRole("button", { name: "Text を追加" })).getByText("T"),
   ).toBeDefined();
   expect(
+    within(screen.getByRole("button", { name: "Ellipse を追加" })).getByText(
+      "○",
+    ),
+  ).toBeDefined();
+  expect(
     within(screen.getByRole("button", { name: "artboard を追加" })).getByText(
       "#",
     ),

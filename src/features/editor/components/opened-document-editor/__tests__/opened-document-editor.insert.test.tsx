@@ -44,6 +44,17 @@ test("Text を追加すると選択位置の子として増える", async () => 
   expect(rowNames(tree())).toEqual(["home-title", "home-login", "text"]);
 });
 
+test("Ellipse を追加すると選択位置の子として増える", async () => {
+  await renderOpenedDocument();
+  await selectArtboard("home");
+
+  await userEvent.click(
+    within(canvasPane()).getByRole("button", { name: "Ellipse を追加" }),
+  );
+
+  expect(rowNames(tree())).toEqual(["home-title", "home-login", "ellipse"]);
+});
+
 test("何も選んでいないときは追加のボタンを押せない", async () => {
   await renderOpenedDocument();
 

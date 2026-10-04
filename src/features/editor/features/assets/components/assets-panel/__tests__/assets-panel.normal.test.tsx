@@ -36,6 +36,7 @@ test("組み込みのプリミティブが行として出る", () => {
 
   expect(screen.getByText("Box")).toBeDefined();
   expect(screen.getByText("Text")).toBeDefined();
+  expect(screen.getByText("Ellipse")).toBeDefined();
 });
 
 test("渡された部品が行として出る", () => {
