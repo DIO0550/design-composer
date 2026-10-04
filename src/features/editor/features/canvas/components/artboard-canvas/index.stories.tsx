@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { ComponentProps } from "react";
 import { fn } from "storybook/test";
+import { DesignDocument } from "@/domains/dcmp/design-document";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { TokenSelection } from "@/domains/session/token-selection";
 import {
@@ -89,6 +90,32 @@ export const TokenSelected: Story = {
       SampleCanvasDocument,
       Option.some({ kind: "colors", name: "primary" }),
     ),
+  },
+};
+
+/** `settings` だけを非表示にしたサンプル。 */
+const HiddenSettingsDocument = DesignDocument.create({
+  tokens: SampleCanvasDocument.tokens,
+  components: SampleCanvasDocument.components,
+  artboards: SampleCanvasDocument.artboards.map((artboard) =>
+    artboard.name === "settings"
+      ? { ...artboard, props: { ...artboard.props, visibility: "hidden" } }
+      : artboard,
+  ),
+});
+
+/**
+ * 非表示の artboard は、選んでいても枠・見出し・リサイズハンドルごと描かれない
+ * （docs/06-ui.md「非表示の artboard」）。後ろの自動配置の artboard は隠す前と同じ位置に残る
+ * （`選択なし` と見比べる）。
+ */
+export const HiddenArtboardSelected: Story = {
+  name: "非表示の artboard を選択中",
+  args: {
+    selection: DocumentSelection.fromNames(HiddenSettingsDocument, [
+      "settings",
+    ]),
+    tokenSelection: TokenSelection.create(HiddenSettingsDocument, Option.none),
   },
 };
 

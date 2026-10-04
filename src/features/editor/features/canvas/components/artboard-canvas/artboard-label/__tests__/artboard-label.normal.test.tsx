@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { expect, test } from "vitest";
 import type { CompiledArtboard } from "@/domains/compiled/compiled-artboard";
 import { BoxElement } from "@/domains/compiled/compiled-element";
+import { Visibility } from "@/domains/dcmp/visibility";
 import { ArtboardLabel } from "../index";
 
 /*
@@ -15,6 +16,7 @@ function setupArtboard(): CompiledArtboard {
     element: BoxElement.create("login", [], []),
     width: 720,
     height: 900,
+    visibility: Visibility.Default,
   };
 }
 

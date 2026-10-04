@@ -95,7 +95,7 @@ test("指定のない props は Box スキーマのデフォルトで補われ�
   });
 });
 
-test("props で非表示を指定しても artboard は表示のまま", () => {
+test("props で非表示を指定した artboard は、Box として非表示に解決される", () => {
   const props = Artboard.boxProps(
     Artboard.create({
       name: "login-screen",
@@ -105,7 +105,7 @@ test("props で非表示を指定しても artboard は表示のまま", () => {
     }),
   );
 
-  expect(props.visibility).toBe("visible");
+  expect(props.visibility).toBe("hidden");
 });
 
 test("props で回転を指定しても artboard は回らない", () => {

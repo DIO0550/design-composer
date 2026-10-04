@@ -85,7 +85,14 @@ export function ArtboardFrameList({
   textEdit: TextEditControl;
 }>) {
   const dropParentName = NodeDrag.dropParentName(nodeDrag.drag);
-  const arranged = ArrangedArtboard.fromArtboards(compiled.artboards);
+  /*
+   * 非表示の artboard は枠ごと描かない。見出しとリサイズハンドルは中身の要素の外側に
+   * 描くので、中身の `display: none` だけでは消えない（docs/03「表示 / 非表示」）。
+   * リサイズハンドル・揃え先・範囲選択から外れるのも、DOM に無く測れないことによる。
+   */
+  const arranged = ArrangedArtboard.collectVisible(
+    ArrangedArtboard.fromArtboards(compiled.artboards),
+  );
   const size = ArrangedArtboard.size(arranged);
 
   /*
