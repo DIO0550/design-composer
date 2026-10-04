@@ -2,6 +2,7 @@ import type { AxisLength } from "@/domains/dcmp/axis-length";
 import { Lockings } from "@/domains/dcmp/locking";
 import { Node, type PropEdit, Props } from "@/domains/dcmp/node";
 import { NodeTree } from "@/domains/dcmp/node-tree";
+import { Placement } from "@/domains/dcmp/placement";
 import {
   BoxSchema,
   type PropDefinition,
@@ -87,13 +88,7 @@ const ArtboardFixedSizeLimitProps: readonly string[] = [
  * artboard 自身のキャンバス上の位置は**別の座標系**で、props ではなく `canvasPosition` が
  * 持つ。
  */
-const ArtboardFixedPlacementProps: readonly string[] = [
-  "placement",
-  "x",
-  "y",
-  "constraintX",
-  "constraintY",
-];
+const ArtboardFixedPlacementProps: readonly string[] = Placement.PropNames;
 
 /**
  * artboard の props では変えられないロックの prop（受け付けない理由は docs/03「ロック」）。

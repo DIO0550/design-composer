@@ -59,3 +59,17 @@ test("複数の prop を指す編集は、指していない prop を変えな�
     ),
   ).toEqual({ paddingTop: "md", paddingRight: "sm", paddingBottom: "md" });
 });
+
+test("写す編集は、指した prop のうち書かれているものだけを同じ値で設定する", () => {
+  expect(
+    PropEdit.collectWritten({ gap: "md", wrap: "wrap", layout: "row" }, [
+      "gap",
+      "layout",
+      "align",
+    ]),
+  ).toEqual([PropEdit.set(["gap"], "md"), PropEdit.set(["layout"], "row")]);
+});
+
+test("指した prop が 1 つも書かれていなければ、写す編集は空", () => {
+  expect(PropEdit.collectWritten({ gap: "md" }, ["layout"])).toEqual([]);
+});

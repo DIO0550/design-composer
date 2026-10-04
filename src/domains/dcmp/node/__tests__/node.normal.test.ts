@@ -36,3 +36,13 @@ test("ref ノードの children を取得すると空配列になる", () => {
   const node = { name: "save-button", ref: "primary-button" };
   expect(Node.children(node)).toEqual([]);
 });
+
+test("プリミティブのノードに書かれている props が返る", () => {
+  expect(
+    Node.propsOf({ name: "title", type: "Text", props: { content: "a" } }),
+  ).toEqual({ content: "a" });
+});
+
+test("props を持たないプリミティブのノードは空の props になる", () => {
+  expect(Node.propsOf({ name: "title", type: "Text" })).toEqual({});
+});

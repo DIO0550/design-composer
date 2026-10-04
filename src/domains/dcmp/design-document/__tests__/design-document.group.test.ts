@@ -78,7 +78,7 @@ test("入れ子の中にいるノードも包める", () => {
   ]);
 });
 
-test("包んで作られた Box は props を持たない", () => {
+test("フローで fill を持たないノードを包んだ Box は props を持たない", () => {
   const document = DesignDocument.create({
     artboards: [
       {
