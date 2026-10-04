@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { BoxElement } from "@/domains/compiled/compiled-element";
+import { Visibility } from "@/domains/dcmp/visibility";
 import { ArtboardLabel } from "./index";
 
 /**
@@ -20,6 +21,7 @@ const meta = {
       element: BoxElement.create("login", [], []),
       width: 720,
       height: 900,
+      visibility: Visibility.Default,
     },
   },
 } satisfies Meta<typeof ArtboardLabel>;
