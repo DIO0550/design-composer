@@ -198,4 +198,14 @@ export const OpenedDocuments = {
     }
     return Option.none;
   },
+
+  /**
+   * 今見ているドキュメントを閉じる。移り先は `close` と同じ。
+   *
+   * @param opened 閉じる相手
+   * @returns 閉じた後の並び。最後の 1 つを閉じたときは `none`
+   */
+  closeActive(opened: OpenedDocuments): Option<OpenedDocuments> {
+    return OpenedDocuments.close(opened, OpenedDocuments.activePath(opened));
+  },
 } as const;
