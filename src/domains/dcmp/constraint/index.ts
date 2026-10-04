@@ -35,6 +35,16 @@ const ConstraintProps = {
 
 export const Constraint = {
   /**
+   * その軸の追従の仕方を持つ prop 名（docs/03「配置の指定」）。
+   *
+   * @param axis どちらの軸の追従か
+   * @returns `axis` の側の追従を持つ prop の名前
+   */
+  prop(axis: Axis): "constraintX" | "constraintY" {
+    return ConstraintProps[axis];
+  },
+
+  /**
    * props から 1 軸ぶんを読む。
    *
    * `Placement.fromProps` の可否に混ぜると、綴りが 1 つ不正なだけで座標ごと描画を失う。
