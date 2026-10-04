@@ -95,6 +95,20 @@ export type DocumentSession = Readonly<{
 
 const Closed: DocumentSession = { documents: Option.none, attempt: Idle };
 
+/**
+ * 開いている並びだけを差し替える。開く操作の進み具合は持ち越す。
+ *
+ * @param session 差し替える前のセッション
+ * @param documents 差し替えた後の並び
+ * @returns 並びを差し替えたセッション
+ */
+function withDocuments(
+  session: DocumentSession,
+  documents: Option<OpenedDocuments>,
+): DocumentSession {
+  return { documents, attempt: session.attempt };
+}
+
 export const DocumentSession = {
   /** まだ何も開いていない状態。アプリはここから始まる。 */
   Closed,
@@ -158,12 +172,12 @@ export const DocumentSession = {
    * @returns 見ている先を移したセッション。移し方は `OpenedDocuments.activate`
    */
   activate(session: DocumentSession, path: string): DocumentSession {
-    return {
-      documents: Option.map(session.documents, (opened) =>
+    return withDocuments(
+      session,
+      Option.map(session.documents, (opened) =>
         OpenedDocuments.activate(opened, path),
       ),
-      attempt: session.attempt,
-    };
+    );
   },
 
   /**
@@ -174,12 +188,12 @@ export const DocumentSession = {
    * @returns 閉じたあとのセッション。どれを見るようになるかは `OpenedDocuments.close`
    */
   close(session: DocumentSession, path: string): DocumentSession {
-    return {
-      documents: Option.flatMap(session.documents, (opened) =>
+    return withDocuments(
+      session,
+      Option.flatMap(session.documents, (opened) =>
         OpenedDocuments.close(opened, path),
       ),
-      attempt: session.attempt,
-    };
+    );
   },
 
   /**
@@ -194,10 +208,7 @@ export const DocumentSession = {
     return Option.flatMap(session.documents, (opened) => {
       const reordered = OpenedDocuments.reorder(opened, move);
       return Result.isOk(reordered)
-        ? Option.some({
-            documents: Option.some(reordered.value),
-            attempt: session.attempt,
-          })
+        ? Option.some(withDocuments(session, Option.some(reordered.value)))
         : Option.none;
     });
   },
