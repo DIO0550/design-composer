@@ -2,6 +2,7 @@ import { fireEvent } from "@testing-library/react";
 import { expect, test } from "vitest";
 import { canvasSurface } from "@/features/editor/features/canvas/__tests__/canvas-elements";
 import {
+  movePointer,
   pressPointer,
   releasePointer,
 } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
@@ -12,6 +13,17 @@ test("範囲を引いて離した直後の click は、中身へ届かない", (
   renderHarness();
 
   drawRange();
+  fireEvent.click(artboardFrame());
+
+  expect(harnessOutput("clicked")).toBe("click は届いていない");
+});
+
+test("閾値に届かないまま動かして離れた位置で離しても、直後の click は中身へ届かない", () => {
+  renderHarness();
+
+  pressPointer(artboardFrame(), { x: 200, y: 160 });
+  movePointer(canvasSurface(), { x: 198, y: 159 });
+  releasePointer(canvasSurface(), { x: 90, y: 90 });
   fireEvent.click(artboardFrame());
 
   expect(harnessOutput("clicked")).toBe("click は届いていない");

@@ -16,12 +16,13 @@ import { renderHarness } from "./setup";
 
 /**
  * `home` を原点に置き、`badge` を掴んだ時点の座標 (40, 24) に 20x20 で描く。`card` と
- * `title` は `badge` の運び先から離れた下側に置き、揃え先にならないようにする。
+ * `title` は左辺 x=150・中心線 x=250 に揃えて下側に置く。home の左縁 x=0 とも、`badge` の
+ * 運び先の辺・中心線とも重ならないので、親の縁へ寄るのか兄弟の辺へ寄るのかが見分けられる。
  */
 function drawnHomeAtOrigin(): void {
   drawnAt("home", { left: 0, top: 0, width: 360, height: 240 });
-  drawnAt("card", { left: 0, top: 120, width: 200, height: 100 });
-  drawnAt("title", { left: 0, top: 225, width: 300, height: 15 });
+  drawnAt("card", { left: 150, top: 120, width: 200, height: 100 });
+  drawnAt("title", { left: 150, top: 225, width: 200, height: 15 });
   drawnAt("badge", { left: 40, top: 24, width: 20, height: 20 });
 }
 
@@ -82,6 +83,27 @@ test("別の親の上で離すと、2 つの親の左上のずれを打ち消し
   ]);
 });
 
+test("倍率を上げると、2 つの親の左上のずれもドキュメント上の px へ割り戻される", () => {
+  const { onReposition } = renderHarness({ ...CanvasView.create(), scale: 2 });
+  // 画面上で (400, 140) ずれているので、ドキュメント上では (200, 70)
+  drawnAt("home", { left: 100, top: 60, width: 360, height: 240 });
+  drawnAt("settings", { left: 500, top: 200, width: 360, height: 240 });
+  drawnAt("badge", { left: 180, top: 108, width: 40, height: 40 });
+
+  carryBadgeOnto(drawn("settings"));
+  releasePointer(drawn("settings"), { x: 130, y: 88 });
+
+  expect(onReposition.mock.calls).toEqual([
+    [
+      "badge",
+      {
+        parentName: "settings",
+        placement: { mode: "absolute", x: -145, y: -52 },
+      },
+    ],
+  ]);
+});
+
 test("運んでいる間、掴んだノードは運んだ分だけずれて見える", () => {
   renderHarness();
   drawnHomeAtOrigin();
@@ -98,6 +120,15 @@ test("落とせる親が無い場所へ運んでいる間も、掴んだノー�
   carryBadgeOnto(canvasContent());
 
   expect(harnessOutput("reposition-preview")).toBe("badge 30,-12");
+});
+
+test("倍率を上げると、落とせる親が無い場所へ運んでいる間のずらし量もドキュメント上の px になる", () => {
+  renderHarness({ ...CanvasView.create(), scale: 2 });
+  drawnHomeAtOrigin();
+
+  carryBadgeOnto(canvasContent());
+
+  expect(harnessOutput("reposition-preview")).toBe("badge 15,-6");
 });
 
 test("落とせる親が無い場所で離すと置き直しは届かない", () => {
@@ -123,6 +154,23 @@ test("親の縁の近くまで運んで離すと、縁に揃う座標が届く",
     [
       "badge",
       { parentName: "home", placement: { mode: "absolute", x: 0, y: 24 } },
+    ],
+  ]);
+});
+
+test("兄弟の辺の近くまで運んで離すと、その辺に揃う座標が届く", () => {
+  const { onReposition } = renderHarness();
+  drawnHomeAtOrigin();
+
+  // 左辺が x=147 まで来ると、card の左辺 x=150 との差 3px が閾値の内側に入る
+  pressPointer(drawn("badge"), { x: 100, y: 100 });
+  movePointer(drawn("home"), { x: 207, y: 100 });
+  releasePointer(drawn("home"), { x: 207, y: 100 });
+
+  expect(onReposition.mock.calls).toEqual([
+    [
+      "badge",
+      { parentName: "home", placement: { mode: "absolute", x: 150, y: 24 } },
     ],
   ]);
 });
