@@ -37,6 +37,14 @@ test("新規作成が選ばれると、作る指示が届く", async () => {
   expect(received).toStrictEqual([AppMenuCommands.Create]);
 });
 
+test("タブを閉じるが選ばれると、閉じる指示が届く", async () => {
+  const { fake, received } = await subscribeMenu();
+
+  fake.choose(AppMenuCommands.CloseTab);
+
+  expect(received).toStrictEqual([AppMenuCommands.CloseTab]);
+});
+
 test("購読を解除すると、その後に選ばれても届かない", async () => {
   const fake = AppMenuFake.create();
   const received: AppMenuCommand[] = [];
