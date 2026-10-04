@@ -1,9 +1,11 @@
 import type { CompiledArtboard } from "@/domains/compiled/compiled-artboard";
 import { BoxElement } from "@/domains/compiled/compiled-element";
+import { Visibility } from "@/domains/dcmp/visibility";
 import type { Offset } from "@/domains/unit/offset";
 
 /**
  * 置き場所を決める入力になる artboard。中身は空の枠にする（置き場所しか問わないため）。
+ * 表示 / 非表示は既定にする。非表示はテスト側で `visibility` を重ねる。
  *
  * @param name 見分けるための名前
  * @param size 自動配置の起点と、占める大きさに効く幅・高さ
@@ -20,5 +22,6 @@ export function compiledArtboard(
     width: size.width,
     height: size.height,
     canvasPosition,
+    visibility: Visibility.Default,
   };
 }

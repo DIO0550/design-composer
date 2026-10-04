@@ -82,7 +82,7 @@ major・minor はそれぞれ 0 以上の整数を 10 進で書き、`0` 以外�
 | 版 | 加わったもの |
 |---|---|
 | 1.0 | 初期 |
-| 1.1 | ノードの `placement` / `x` / `y`（03-schema「配置の指定」。**親からの相対**）／ artboard の `x` / `y`（下記「artboards」。**キャンバス上の絶対位置**）／ ノードの `constraintX` / `constraintY`（03-schema「親のリサイズへの追従」）／ Box の `layout`（03-schema「Box」。`direction` を吸収して置き換えた）／ Box の `opacity`（03-schema「不透明度」。0〜1 の生リテラル）／ ノードの `visibility`（03-schema「表示 / 非表示」。artboard が受け付けるかは未定）／ Box の `radiusTopLeft` / `radiusTopRight` / `radiusBottomRight` / `radiusBottomLeft`（03-schema「Box」。`radius` を 4 隅へ割って置き換えた）／ ノードの `rotation`（03-schema「回転」。度の生リテラル。artboard は受け付けない）／ Box の `wrap`（03-schema「Box」。`layout` が `free` 以外のときの子の折り返し）／ Box の `minWidth` / `maxWidth` / `minHeight` / `maxHeight`（03-schema「サイズ指定の原則」。`fixed` 以外のモードでの長さの下限・上限）／ トークンの `gradients`（04-tokens「gradients」。直線グラデーションの種別） |
+| 1.1 | ノードの `placement` / `x` / `y`（03-schema「配置の指定」。**親からの相対**）／ artboard の `x` / `y`（下記「artboards」。**キャンバス上の絶対位置**）／ ノードの `constraintX` / `constraintY`（03-schema「親のリサイズへの追従」）／ Box の `layout`（03-schema「Box」。`direction` を吸収して置き換えた）／ Box の `opacity`（03-schema「不透明度」。0〜1 の生リテラル）／ ノードと artboard の `visibility`（03-schema「表示 / 非表示」）／ Box の `radiusTopLeft` / `radiusTopRight` / `radiusBottomRight` / `radiusBottomLeft`（03-schema「Box」。`radius` を 4 隅へ割って置き換えた）／ ノードの `rotation`（03-schema「回転」。度の生リテラル。artboard は受け付けない）／ Box の `wrap`（03-schema「Box」。`layout` が `free` 以外のときの子の折り返し）／ Box の `minWidth` / `maxWidth` / `minHeight` / `maxHeight`（03-schema「サイズ指定の原則」。`fixed` 以外のモードでの長さの下限・上限）／ トークンの `gradients`（04-tokens「gradients」。直線グラデーションの種別） |
 
 | 状況 | 挙動 |
 |---|---|
@@ -151,7 +151,7 @@ major・minor はそれぞれ 0 以上の整数を 10 進で書き、`0` 以外�
 - はみ出し: コンテンツが固定サイズを超えた場合、**デフォルトで clip**（Figma の Clip content 相当）
 - **キャンバス上の位置は `x` / `y` で持つ**（Figma のページ上のフレームと同じ持ち方）。artboard をどこに並べるかは作者が作った内容なので source of truth に含める。一方、**閲覧側の状態（ズーム・スクロール位置）は含めない** — こちらは見る人ごとに違う
 - `x` / `y` は**両方書くか、両方書かないか**。片方だけのファイルは読み込みエラーになる（位置は対でしか決まらないため）
-- `x` / `y` を持たない artboard は、**ツールが配列順に自動レイアウトする**（1.1 以前のファイルはこれで開く）。既定の位置は**配列順と各 artboard の幅**だけで決まり、座標を持つ artboard もその枠を空けない（1 枚に座標が付いても、残りの artboard は動かない）
+- `x` / `y` を持たない artboard は、**ツールが配列順に自動レイアウトする**（1.1 以前のファイルはこれで開く）。既定の位置は**配列順と各 artboard の幅**だけで決まり、座標を持つ artboard もその枠を空けない（1 枚に座標が付いても、残りの artboard は動かない）。非表示の artboard（03-schema「表示 / 非表示」）の幅も数える
 - 将来の artboard 間参照（プロトタイプ遷移等）に備え、`name` は識別子として扱う
 
 ## 部品参照（ref）

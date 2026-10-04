@@ -116,7 +116,21 @@ export function artboardFrameContainer(
  * @returns その artboard の見出し。描かれていなければテストを落とす
  */
 export function artboardHandle(name: string): HTMLElement {
-  return screen.getByTestId(`${ArtboardHandleTestId}:${name}`);
+  return screen.getByTestId(artboardHandleTestId(name));
+}
+
+/**
+ * artboard の見出しが描かれているか。
+ *
+ * @param name 調べる artboard の名前
+ * @returns 描かれていれば `true`
+ */
+export function hasArtboardHandle(name: string): boolean {
+  return screen.queryByTestId(artboardHandleTestId(name)) !== null;
+}
+
+function artboardHandleTestId(name: string): string {
+  return `${ArtboardHandleTestId}:${name}`;
 }
 
 /**

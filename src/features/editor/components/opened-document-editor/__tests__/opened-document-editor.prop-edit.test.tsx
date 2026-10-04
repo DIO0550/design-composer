@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { segmentOf } from "@/components/__tests__/segmented-controls";
@@ -175,4 +175,30 @@ test("続けて 2 回打ち替えると、1 回戻るのは直前の打ち替え
 
   // 2 回の打ち替えが 1 件に畳まれるなら「ホーム」まで戻ってしまう
   expect(screen.getByText("ホームab")).toBeDefined();
+});
+
+test("プロパティパネルで artboard を非表示にすると、キャンバスから枠が消える", async () => {
+  await renderOpenedDocument();
+  await selectArtboard("home");
+
+  await userEvent.click(segmentOf("Visibility", "hidden"));
+
+  // 対照: 隠していない artboard は描かれたまま
+  within(canvasPane()).getByRole("button", { name: "settings" });
+  expect(
+    within(canvasPane()).queryByRole("button", { name: "home" }),
+  ).toBeNull();
+});
+
+test("非表示にした artboard を表示に戻すと、キャンバスに枠が再び描かれる", async () => {
+  await renderOpenedDocument();
+  await selectArtboard("home");
+
+  await userEvent.click(segmentOf("Visibility", "hidden"));
+  await userEvent.click(segmentOf("Visibility", "visible"));
+
+  // 位置そのものは artboard-canvas.visibility が守る（ここの home は先頭で常に原点）
+  expect(
+    within(canvasPane()).getByRole("button", { name: "home" }),
+  ).toBeDefined();
 });
