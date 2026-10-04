@@ -388,6 +388,15 @@ test("artboard を選ぶと Box の prop を編集するコントロールが出
   expect(controlOf(selection, "background")?.input.kind).toBe("paintToken");
 });
 
+test("artboard の表示 / 非表示は選択肢の欄として出る", () => {
+  const selection = setupSelection([], "home");
+
+  expect(controlOf(selection, "visibility")?.input).toEqual({
+    kind: "enum",
+    values: ["visible", "hidden"],
+  });
+});
+
 test("artboard のはみ出しの既定は clip として出る", () => {
   const selection = setupSelection([], "home");
 

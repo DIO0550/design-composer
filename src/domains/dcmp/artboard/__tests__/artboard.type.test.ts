@@ -1,4 +1,5 @@
 import { expectTypeOf, test } from "vitest";
+import type { ResolvedProps } from "@/domains/dcmp/resolved-props";
 import type { ArtboardBoxProps } from "../index";
 
 test("artboard のサイズは型の上でも fixed に固定される", () => {
@@ -15,8 +16,10 @@ test("artboard の配置は型でも flow に絞られている", () => {
   expectTypeOf<ArtboardBoxProps["placement"]>().toEqualTypeOf<"flow">();
 });
 
-test("artboard の表示 / 非表示は型でも visible に絞られている", () => {
-  expectTypeOf<ArtboardBoxProps["visibility"]>().toEqualTypeOf<"visible">();
+test("artboard の表示 / 非表示は型の上でも Box と同じく絞られていない", () => {
+  expectTypeOf<ArtboardBoxProps["visibility"]>().toEqualTypeOf<
+    ResolvedProps<"Box">["visibility"]
+  >();
 });
 
 test("artboard の回転は型でも回らない値に絞られている", () => {
