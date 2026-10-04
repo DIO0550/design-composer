@@ -10,8 +10,11 @@ import { type PointerButton, PointerButtons } from "@/libs/dom-event";
  * 呼び出し側が持つ）。
  */
 
-/** 1 本の指 / 1 つのマウスによる操作として扱う。 */
-const PointerId = 1;
+/**
+ * 1 本の指 / 1 つのマウスによる操作として扱う。ポインタを捕捉したかを確かめる側
+ * （`hasPointerCapture`）が同じ id で問うので export する。
+ */
+export const PointerId = 1;
 
 /** 画面上の位置。 */
 export type PointerPoint = Readonly<{ x: number; y: number }>;

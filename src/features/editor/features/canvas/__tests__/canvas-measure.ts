@@ -1,4 +1,5 @@
 import { ElementNameAttribute } from "@/domains/compiled/compiled-element";
+import { drawn } from "@/features/editor/features/canvas/__tests__/canvas-elements";
 import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 
 /**
@@ -21,6 +22,22 @@ import type { CanvasBounds } from "@/features/editor/features/canvas/domains/can
 export function stubBounds(element: Element, bounds: CanvasBounds): void {
   element.getBoundingClientRect = () =>
     new DOMRect(bounds.left, bounds.top, bounds.width, bounds.height);
+}
+
+/**
+ * キャンバスに描かれている要素の、描かれた位置と大きさをテスト用の値にする。
+ *
+ * **2 つの親の矩形を差し替えていないテストでは、原点のずれが 0 になる。** 付け替えで座
+ * 標が直ることを見たいテストは、必ず両方の親をここに通すこと。
+ *
+ * @param name 描かれているノードの名前
+ * @param bounds そのノードが描かれていることにする位置と大きさ
+ * @returns 測定を差し替えたあとの要素
+ */
+export function drawnAt(name: string, bounds: CanvasBounds): HTMLElement {
+  const element = drawn(name);
+  stubBounds(element, bounds);
+  return element;
 }
 
 /**
