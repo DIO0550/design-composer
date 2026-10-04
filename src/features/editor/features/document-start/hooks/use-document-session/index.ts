@@ -23,8 +23,9 @@ import { Result } from "@/utils/Result";
 /**
  * どのドキュメントを開くかが決まるまでに要る、外部世界の口。
  *
- * ダイアログとファイルの読み書きは開く操作の中身、メニューとドロップは操作の起こり方、
- * アプリ自身の状態は操作を待たずに開く相手（前回開いていたファイル）の出どころ。
+ * ダイアログとファイルの読み書きは開く操作の中身、メニューとドロップは操作の起こり方
+ * （メニューはタブを閉じる操作の起こり方でもある）、アプリ自身の状態は操作を待たずに開く
+ * 相手（前回開いていたファイル）の出どころ。
  * どれが欠けても開く経路のどれかが成立しないので、常に対で必要になる。
  */
 export type DocumentSessionPorts = Readonly<{
@@ -36,7 +37,7 @@ export type DocumentSessionPorts = Readonly<{
 }>;
 
 /**
- * 開く指示が届く経路。
+ * 指示（開く / タブを閉じる）が届く経路。
  *
  * 受け取れなかったときに、どちらが使えないのかを画面へ出すために名前で持つ
  * （1 つに畳むと、生きている側まで壊れていると読める文言になる）。
@@ -46,7 +47,7 @@ export const CommandSources = {
   Drop: "drop",
 } as const;
 
-/** 開く指示が届く経路。 */
+/** 指示が届く経路。 */
 export type CommandSource = ValueOf<typeof CommandSources>;
 
 /** その経路から指示を受け取れなかったことと、診断用の原文。 */
@@ -103,6 +104,7 @@ type DocumentSessionAction =
   | Readonly<{ type: "activate"; path: string }>
   | Readonly<{ type: "activateAt"; index: number }>
   | Readonly<{ type: "close"; path: string }>
+  | Readonly<{ type: "closeActive" }>
   | Readonly<{ type: "reorder"; move: IndexMove }>;
 
 const InitialState: DocumentSessionState = {
@@ -161,6 +163,11 @@ function reduce(
       return {
         ...state,
         session: DocumentSession.close(state.session, action.path),
+      };
+    case "closeActive":
+      return {
+        ...state,
+        session: DocumentSession.closeActive(state.session),
       };
     case "reorder":
       /*
@@ -359,7 +366,8 @@ function rememberOpened(
 
 /**
  * どのドキュメントを開いているかと最近使ったファイルを持ち、開く / 新規作成とタブ列・
- * キーボードからの操作の導線を返す。
+ * キーボードからの操作の導線を返す。メニューの指示（開く / 新規作成 / タブを閉じる）も
+ * ここで受ける。
  *
  * 開く操作が終わると開いているドキュメントと最近使ったファイルの一覧が一緒に動き、更新の
  * 型も複数あるので `useReducer` で 1 つの状態にまとめる（rules/hooks.md）。指示を受け取れ
@@ -424,15 +432,16 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
    */
   const runMenuCommand = useEffectEvent((command: AppMenuCommand) => {
     /*
-     * 指示ごとの始め方。`satisfies Record<AppMenuCommand, …>` が網羅を強制する
+     * 指示ごとの手続き。`satisfies Record<AppMenuCommand, …>` が網羅を強制する
      * （メニューへ項目を足すとここがコンパイルエラーになる）。`switch` にしないのは、
      * 戻り値の無い出し分けでは case が抜けても型で気づけないため。
      */
-    const start = {
+    const run = {
       open: openDocument,
       create: createDocument,
+      "close-tab": () => dispatch({ type: "closeActive" }),
     } as const satisfies Readonly<Record<AppMenuCommand, () => void>>;
-    start[command]();
+    run[command]();
   });
 
   const openDropped = useEffectEvent((paths: readonly string[]) => {

@@ -11,6 +11,7 @@ import { Result } from "@/utils/Result";
 export const AppMenuCommands = {
   Open: "open",
   Create: "create",
+  CloseTab: "close-tab",
 } as const;
 
 /** メニューから届く指示。 */
@@ -44,7 +45,8 @@ function toAppMenuCommand(payload: unknown): Option<AppMenuCommand> {
  * OS のメニュー（docs/05-architecture.md「Tauri IPC」）。
  *
  * ドキュメントを開く / 作る指示は、開いている間はメニューからしか来ない（画面の帯には置か
- * ない）。ここが知っているのは指示の語彙までで、それを受けて何をするかは呼び出し側が決める。
+ * ない）。見ているタブを閉じる指示（⌘W）もメニューから来る。ここが知っているのは指示の
+ * 語彙までで、それを受けて何をするかは呼び出し側が決める。
  */
 export type AppMenu = Readonly<{
   /**
