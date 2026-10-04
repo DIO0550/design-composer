@@ -235,6 +235,11 @@
     "name": "選択なし"
   },
   {
+    "id": "features-editor-features-canvas-artboardcanvas--ellipse-selected",
+    "title": "features/editor/features/canvas/ArtboardCanvas",
+    "name": "Ellipse を選択中"
+  },
+  {
     "id": "features-editor-features-canvas-artboardcanvas--empty",
     "title": "features/editor/features/canvas/ArtboardCanvas",
     "name": "artboard がない"
