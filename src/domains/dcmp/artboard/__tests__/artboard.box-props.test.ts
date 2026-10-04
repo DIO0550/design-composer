@@ -120,3 +120,16 @@ test("props で回転を指定しても artboard は回らない", () => {
 
   expect(props.rotation).toBe(0);
 });
+
+test("props でロックを指定しても artboard はロックしていないとして解決される", () => {
+  const props = Artboard.boxProps(
+    Artboard.create({
+      name: "login-screen",
+      width: 375,
+      height: 812,
+      props: { locking: "locked" },
+    }),
+  );
+
+  expect(props.locking).toBe("unlocked");
+});
