@@ -145,7 +145,10 @@ export const Props = {
   },
 } as const;
 
-/** プリミティブ（Box / Text）のノード。型と props を持ち、子を持てる。 */
+/**
+ * プリミティブのノード。型と props を持ち、スキーマが子を認めている型（`allowsChildren`）
+ * なら子を持てる。
+ */
 export type PrimitiveNode = Readonly<{
   name: string;
   type: string;

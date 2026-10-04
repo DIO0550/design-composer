@@ -45,7 +45,7 @@ type ParentSearchContext = Readonly<{
  * @param document 名前の引き先になるドキュメント
  * @param name 親として読みたい artboard / ノードの名前
  * @returns 親として解決した Box の props。ドキュメントに無い名前と、
- *   子を持てないノード（Text・参照ノード）なら `none`
+ *   子を持てないノード（参照ノードと、スキーマが子を認めていないプリミティブ）なら `none`
  */
 function parentBoxProps(
   document: DesignDocument,
@@ -135,7 +135,7 @@ export const DropParent = {
    * 受け入れられないのは次の 3 つで、いずれも候補から外して外側を見に行く。
    *
    * - ドキュメントに無い名前（部品インスタンスの中身は定義側のノード名で描かれる）
-   * - 子を持てないノード（Text・参照ノード）
+   * - 子を持てないノード（参照ノードと、スキーマが子を認めていないプリミティブ）
    * - 運んでいるものが占めている名前（入れるとツリーが壊れる。占めている名前は
    *   `DraggedNode` が答える）
    *

@@ -903,7 +903,8 @@ export const EditorState = {
    *
    * @param state 選択の出どころになるエディタの状態
    * @returns 選んでいるものの子の並びの末尾。1 つだけ選んでいないとき（未選択・複数選択）と、
-   *   選択が子を持てないノード（Text / インスタンス）のときは `none`。ファイルの妥当性は
+   *   選択が子を持てないノード（インスタンスと、スキーマが子を認めていない
+   *   プリミティブ）のときは `none`。ファイルの妥当性は
    *   見ない
    */
   insertPosition(state: EditorState): Option<ChildPosition> {
