@@ -79,3 +79,10 @@ test("縦の追従は横とは別の prop から読む", () => {
     ),
   ).toBe(Constraints.Center);
 });
+
+test("横の追従は constraintX、縦の追従は constraintY に書かれる", () => {
+  expect([Constraint.prop(Axes.Width), Constraint.prop(Axes.Height)]).toEqual([
+    "constraintX",
+    "constraintY",
+  ]);
+});
