@@ -161,7 +161,7 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
     case "reposition_selected_node":
       /*
        * 1 つだけ選んでいないとき・選んでいるものが座標を持たない（フロー配置 /
-       * インスタンス / artboard）ときは何も動かない
+       * インスタンス / artboard）とき・ロック中のときは何も動かない
        * （EditorState.repositionSelectedNodeBy の `none`）。割り当ては何を選んでいても
        * 押せるため、この `none` には画面の操作から到達する。
        */

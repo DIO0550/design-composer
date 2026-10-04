@@ -842,9 +842,9 @@ export const EditorState = {
    *
    * @param state ずらす前の編集状態
    * @param delta 動かす量。ドキュメント上の px
-   * @returns ずらしたあとの編集状態。1 つだけ選んでいないとき（未選択・複数選択）と、
+   * @returns ずらしたあとの編集状態。1 つだけ選んでいないとき（未選択・複数選択）、
    *   選んでいるものが座標を持たないとき（フロー配置・インスタンス・スキーマに無い type・
-   *   artboard 自身）は `none`
+   *   artboard 自身）と、ロックされているとき（docs/03「ロック」）は `none`
    */
   repositionSelectedNodeBy(
     state: EditorState,
@@ -853,7 +853,9 @@ export const EditorState = {
     const document = EditorState.document(state);
     return Option.flatMap(EditorState.singleName(state), (name) =>
       Option.flatMap(
-        DesignDocument.childPlacementOf(document, name),
+        DesignDocument.isLocked(document, name)
+          ? Option.none
+          : DesignDocument.childPlacementOf(document, name),
         (current) =>
           EditorState.reposition(
             state,
