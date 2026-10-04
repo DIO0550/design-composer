@@ -91,8 +91,21 @@ export const OpenedDocuments = {
    * @returns そのパスを見ている並び。開いていないパスなら並びは変わらない
    */
   activate(opened: OpenedDocuments, path: string): OpenedDocuments {
+    const index = OpenedDocuments.documents(opened).findIndex(
+      (document) => document.path === path,
+    );
+    return OpenedDocuments.activateAt(opened, index);
+  },
+
+  /**
+   * 見ている先を、並びのその位置のドキュメントへ移す。
+   *
+   * @param opened 移す相手
+   * @param index 移り先の位置。タブ列の左端が 0
+   * @returns その位置のドキュメントを見ている並び。並びの外の位置なら並びは変わらない
+   */
+  activateAt(opened: OpenedDocuments, index: number): OpenedDocuments {
     const documents = OpenedDocuments.documents(opened);
-    const index = documents.findIndex((document) => document.path === path);
     if (!ArrayEx.isIndexInRange(documents, index)) {
       return opened;
     }
