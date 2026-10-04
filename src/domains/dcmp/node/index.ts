@@ -59,6 +59,22 @@ export const PropEdit = {
   clear(names: readonly [string, ...string[]]): PropEdit {
     return { names, value: Option.none };
   },
+
+  /**
+   * 指した prop のうち書かれているものを、別のノードへ同じ値で書く編集
+   * （グループ化で、包むノードの指定を Box へ引き継ぐときなど）。
+   *
+   * @param props 写し元の props（デフォルト解決済みでないもの。書かれている prop だけを
+   *   写すため）
+   * @param names 写す prop の名前
+   * @returns `names` のうち `props` に書かれているものを 1 件ずつ、同じ値で設定する編集。
+   *   1 件も書かれていなければ空
+   */
+  collectWritten(props: Props, names: readonly string[]): readonly PropEdit[] {
+    return names
+      .filter((name) => RecordEx.has(props, name))
+      .map((name) => PropEdit.set([name], props[name]));
+  },
 } as const;
 
 /** prop の値の JSON 表現との相互変換。 */
@@ -381,6 +397,16 @@ export const Node = {
       }
     }
     return Option.none;
+  },
+
+  /**
+   * プリミティブのノードに書かれている props。
+   *
+   * @param node 見るノード
+   * @returns 書かれている props。`props` を持たなければ空
+   */
+  propsOf(node: PrimitiveNode): Props {
+    return node.props ?? {};
   },
 
   /**
