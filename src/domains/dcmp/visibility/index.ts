@@ -43,14 +43,24 @@ export const Visibility = {
   },
 
   /**
+   * 描かれる側の値か。
+   *
+   * @param visibility 判定する表示 / 非表示
+   * @returns 表示なら `true`。非表示なら `false`
+   */
+  isVisible(visibility: Visibility): boolean {
+    return visibility === Visibilities.Visible;
+  },
+
+  /**
    * 表示 / 非表示を CSS の宣言にする（docs/03「HTML/CSS へのコンパイル規則」）。
    *
    * @param visibility 宣言にする表示 / 非表示
    * @returns 非表示なら `display: none` の 1 件。表示なら空
    */
   declarations(visibility: Visibility): readonly CssDeclaration[] {
-    return visibility === Visibilities.Hidden
-      ? [CssDeclaration.create("display", "none")]
-      : [];
+    return Visibility.isVisible(visibility)
+      ? []
+      : [CssDeclaration.create("display", "none")];
   },
 } as const;

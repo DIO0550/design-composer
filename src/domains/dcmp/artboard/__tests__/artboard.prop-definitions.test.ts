@@ -46,8 +46,8 @@ test("既定を差し替えない prop は Box の既定のまま", () => {
   expect(Artboard.propDefinitions().layout.default).toBe("column");
 });
 
-test("表示 / 非表示は artboard の props では受け付けない", () => {
-  expect(Object.keys(Artboard.propDefinitions())).not.toContain("visibility");
+test("表示 / 非表示は artboard の props でも受け付ける", () => {
+  expect(Object.keys(Artboard.propDefinitions())).toContain("visibility");
 });
 
 test("回転は artboard の props では受け付けない", () => {

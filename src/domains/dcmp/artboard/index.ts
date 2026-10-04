@@ -8,7 +8,6 @@ import {
   type PropDefinitionRecord,
 } from "@/domains/dcmp/primitive-schema";
 import { ResolvedProps } from "@/domains/dcmp/resolved-props";
-import { Visibilities } from "@/domains/dcmp/visibility";
 import type { Offset } from "@/domains/unit/offset";
 import {
   Json,
@@ -69,8 +68,7 @@ const ArtboardFixedSizeProps: readonly string[] = [
  * artboard の props では変えられない最小 / 最大の prop。
  *
  * サイズが `fixed` 固定である以上、最小 / 最大は宣言として出力されない
- * (docs/03「サイズ指定の原則」)。書けても効かないものを受け付けない側に倒すのは
- * `visibility` と同じ。
+ * (docs/03「サイズ指定の原則」)。書けても効かないものは受け付けない側に倒す。
  */
 const ArtboardFixedSizeLimitProps: readonly string[] = [
   "minWidth",
@@ -98,15 +96,6 @@ const ArtboardFixedPlacementProps: readonly string[] = [
 ];
 
 /**
- * artboard の props では変えられない表示 / 非表示の prop。
- *
- * artboard を隠すとは、要素の外側にキャンバスが描く見出しとリサイズハンドルごと隠すことで、
- * それを出すかどうかはまだ決まっていない（docs/03「表示 / 非表示」）。決まるまでは書けても
- * 効かない状態を作らず、受け付けない側に倒す。
- */
-const ArtboardFixedVisibilityProps: readonly string[] = ["visibility"];
-
-/**
  * artboard の props では変えられないロックの prop（受け付けない理由は docs/03「ロック」）。
  */
 const ArtboardFixedLockingProps: readonly string[] = ["locking"];
@@ -130,7 +119,6 @@ const ArtboardUneditableProps: readonly string[] = [
   ...ArtboardFixedSizeProps,
   ...ArtboardFixedSizeLimitProps,
   ...ArtboardFixedPlacementProps,
-  ...ArtboardFixedVisibilityProps,
   ...ArtboardFixedLockingProps,
   ...ArtboardFixedRotationProps,
 ];
@@ -197,7 +185,6 @@ export type ArtboardBoxProps = ResolvedProps<"Box"> &
     heightMode: "fixed";
     height: number;
     placement: "flow";
-    visibility: "visible";
     locking: "unlocked";
     rotation: 0;
   }>;
@@ -325,8 +312,6 @@ export const Artboard = {
    *   変えられない
    * - 配置は `flow` **固定**。ここで固定しないと、持っていない親からの相対で置かれた
    *   artboard が描かれる（props を照らす先は Box スキーマなのでファイルには書けてしまう）
-   * - 表示は `visible` **固定**。artboard を隠すとは枠の見出しとリサイズハンドルごと隠す
-   *   ことで、それを出すかどうかがまだ決まっていない（docs/03「表示 / 非表示」）
    * - ロックは `unlocked` **固定**（docs/03「ロック」）
    * - 回転は**固定**で回らない。artboard は子の座標の原点になる器なので、回ると中身の位置が
    *   全部変わり、枠の外側に描かれる見出しとリサイズハンドルもずれる（docs/03「回転」）
@@ -345,7 +330,6 @@ export const Artboard = {
       heightMode: "fixed",
       height: artboard.height,
       placement: "flow",
-      visibility: Visibilities.Visible,
       locking: Lockings.Unlocked,
       rotation: 0,
     };
