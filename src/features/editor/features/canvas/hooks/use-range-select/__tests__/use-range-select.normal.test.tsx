@@ -1,6 +1,5 @@
 import { fireEvent } from "@testing-library/react";
 import { afterEach, expect, test } from "vitest";
-import { harnessOutput } from "@/components/__tests__/harness-output";
 import { canvasSurface } from "@/features/editor/features/canvas/__tests__/canvas-elements";
 import {
   movePointer,
@@ -9,8 +8,14 @@ import {
   releasePointer,
 } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
 import { clearDrawn } from "@/features/editor/features/canvas/__tests__/canvas-measure";
+import { harnessOutput } from "@/features/editor/features/canvas/__tests__/harness-output";
 import { PointerButtons } from "@/libs/dom-event";
-import { artboardFrame, drawHomeChildren, renderHarness } from "./setup";
+import {
+  artboardFrame,
+  drawHomeChildren,
+  drawRange,
+  renderHarness,
+} from "./setup";
 
 afterEach(clearDrawn);
 
@@ -43,9 +48,7 @@ test("主ボタン以外で押して引いても範囲を出さない", () => {
 test("離すと範囲が消える", () => {
   renderHarness();
 
-  pressPointer(artboardFrame(), { x: 200, y: 160 });
-  movePointer(canvasSurface(), { x: 90, y: 90 });
-  releasePointer(canvasSurface(), { x: 90, y: 90 });
+  drawRange();
 
   expect(harnessOutput("range-bounds")).toBe("引いていない");
 });

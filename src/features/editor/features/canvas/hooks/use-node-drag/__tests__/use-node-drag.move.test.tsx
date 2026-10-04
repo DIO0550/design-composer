@@ -1,28 +1,27 @@
-import { fireEvent } from "@testing-library/react";
 import { expect, test } from "vitest";
 import {
   canvasContent,
   drawn,
 } from "@/features/editor/features/canvas/__tests__/canvas-elements";
 import {
+  leavePointer,
   movePointer,
   pressPointer,
   releasePointer,
 } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
 import {
   BoxTemplate,
-  drawCardColumn,
+  dragTitleOntoCard,
+  drawnCardColumn,
   paletteBox,
   renderHarness,
 } from "./setup";
 
 test("フローのノードを Box の上へ運んで離すと、ポインタが中点を越えた子の数の位置への移動が届く", () => {
   const { onMove } = renderHarness();
-  drawCardColumn();
+  drawnCardColumn();
 
-  pressPointer(drawn("title"), { x: 20, y: 235 });
-  movePointer(drawn("card"), { x: 50, y: 200 });
-  releasePointer(drawn("card"), { x: 50, y: 200 });
+  dragTitleOntoCard();
 
   expect(onMove.mock.calls).toEqual([
     ["title", { parentName: "card", index: 1 }],
@@ -31,7 +30,7 @@ test("フローのノードを Box の上へ運んで離すと、ポインタが
 
 test("パレットの雛形を Box の上へ運んで離すと、その位置への挿入が届く", () => {
   const { onInsertAt } = renderHarness();
-  drawCardColumn();
+  drawnCardColumn();
 
   pressPointer(paletteBox(), { x: 100, y: 100 });
   movePointer(drawn("card"), { x: 50, y: 200 });
@@ -44,7 +43,7 @@ test("パレットの雛形を Box の上へ運んで離すと、その位置へ
 
 test("落とせる親が無い場所で離すと移動は届かない", () => {
   const { onMove } = renderHarness();
-  drawCardColumn();
+  drawnCardColumn();
 
   pressPointer(drawn("title"), { x: 20, y: 235 });
   movePointer(canvasContent(), { x: 50, y: 200 });
@@ -55,11 +54,11 @@ test("落とせる親が無い場所で離すと移動は届かない", () => {
 
 test("運んでいる途中でキャンバスの外へ出ると、離しても移動は届かない", () => {
   const { onMove } = renderHarness();
-  drawCardColumn();
+  drawnCardColumn();
 
   pressPointer(drawn("title"), { x: 20, y: 235 });
   movePointer(drawn("card"), { x: 50, y: 200 });
-  fireEvent.pointerLeave(canvasContent());
+  leavePointer(canvasContent());
   releasePointer(drawn("card"), { x: 50, y: 200 });
 
   expect(onMove).not.toHaveBeenCalled();

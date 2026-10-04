@@ -1,5 +1,4 @@
 import { expect, test } from "vitest";
-import { harnessOutput } from "@/components/__tests__/harness-output";
 import {
   canvasContent,
   drawn,
@@ -11,6 +10,7 @@ import {
   releasePointer,
 } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
 import { drawnAt } from "@/features/editor/features/canvas/__tests__/canvas-measure";
+import { harnessOutput } from "@/features/editor/features/canvas/__tests__/harness-output";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
 import { renderHarness } from "./setup";
 
@@ -18,7 +18,7 @@ import { renderHarness } from "./setup";
  * `home` を原点に置き、`badge` を掴んだ時点の座標 (40, 24) に 20x20 で描く。`card` と
  * `title` は `badge` の運び先から離れた下側に置き、揃え先にならないようにする。
  */
-function drawHomeAtOrigin(): void {
+function drawnHomeAtOrigin(): void {
   drawnAt("home", { left: 0, top: 0, width: 360, height: 240 });
   drawnAt("card", { left: 0, top: 120, width: 200, height: 100 });
   drawnAt("title", { left: 0, top: 225, width: 300, height: 15 });
@@ -33,7 +33,7 @@ function carryBadgeOnto(to: Element): void {
 
 test("絶対配置のノードを運んで離すと、掴んだ時点の座標から動いた分だけずれた座標が届く", () => {
   const { onReposition } = renderHarness();
-  drawHomeAtOrigin();
+  drawnHomeAtOrigin();
 
   carryBadgeOnto(drawn("home"));
   releasePointer(drawn("home"), { x: 130, y: 88 });
@@ -48,7 +48,7 @@ test("絶対配置のノードを運んで離すと、掴んだ時点の座標�
 
 test("倍率を上げると、届く座標の動きは画面上ではなくドキュメント上の px になる", () => {
   const { onReposition } = renderHarness({ ...CanvasView.create(), scale: 2 });
-  drawHomeAtOrigin();
+  drawnHomeAtOrigin();
 
   carryBadgeOnto(drawn("home"));
   releasePointer(drawn("home"), { x: 130, y: 88 });
@@ -84,7 +84,7 @@ test("別の親の上で離すと、2 つの親の左上のずれを打ち消し
 
 test("運んでいる間、掴んだノードは運んだ分だけずれて見える", () => {
   renderHarness();
-  drawHomeAtOrigin();
+  drawnHomeAtOrigin();
 
   carryBadgeOnto(drawn("home"));
 
@@ -93,7 +93,7 @@ test("運んでいる間、掴んだノードは運んだ分だけずれて見�
 
 test("落とせる親が無い場所へ運んでいる間も、掴んだノードは運んだ分だけずれて見える", () => {
   renderHarness();
-  drawHomeAtOrigin();
+  drawnHomeAtOrigin();
 
   carryBadgeOnto(canvasContent());
 
@@ -102,7 +102,7 @@ test("落とせる親が無い場所へ運んでいる間も、掴んだノー�
 
 test("落とせる親が無い場所で離すと置き直しは届かない", () => {
   const { onReposition } = renderHarness();
-  drawHomeAtOrigin();
+  drawnHomeAtOrigin();
 
   carryBadgeOnto(canvasContent());
   releasePointer(canvasContent(), { x: 130, y: 88 });
@@ -112,7 +112,7 @@ test("落とせる親が無い場所で離すと置き直しは届かない", ()
 
 test("親の縁の近くまで運んで離すと、縁に揃う座標が届く", () => {
   const { onReposition } = renderHarness();
-  drawHomeAtOrigin();
+  drawnHomeAtOrigin();
 
   // 左辺が x=3 まで来ると、home の左縁 x=0 との差 3px が閾値の内側に入る
   pressPointer(drawn("badge"), { x: 100, y: 100 });
@@ -129,7 +129,7 @@ test("親の縁の近くまで運んで離すと、縁に揃う座標が届く",
 
 test("⌘ を押しながら縁の近くまで運んで離すと、運んだ量そのままの座標が届く", () => {
   const { onReposition } = renderHarness();
-  drawHomeAtOrigin();
+  drawnHomeAtOrigin();
 
   pressPointerHolding(drawn("badge"), { x: 100, y: 100 }, "meta");
   movePointer(drawn("home"), { x: 63, y: 100 }, "meta");
@@ -145,7 +145,7 @@ test("⌘ を押しながら縁の近くまで運んで離すと、運んだ量�
 
 test("運んでいるノード自身の辺へは寄らない", () => {
   const { onReposition } = renderHarness();
-  drawHomeAtOrigin();
+  drawnHomeAtOrigin();
 
   // 掴んだ時点の自分の左辺 x=40 からは 5px で閾値の内側だが、そこへ戻されない
   pressPointer(drawn("badge"), { x: 100, y: 100 });

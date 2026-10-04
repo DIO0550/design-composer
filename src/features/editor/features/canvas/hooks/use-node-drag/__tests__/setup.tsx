@@ -6,6 +6,12 @@ import { DesignDocument } from "@/domains/dcmp/design-document";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { NodeTemplate } from "@/domains/session/node-template";
 import { SelectionDigs } from "@/domains/session/selection-dig";
+import { drawn } from "@/features/editor/features/canvas/__tests__/canvas-elements";
+import {
+  movePointer,
+  pressPointer,
+  releasePointer,
+} from "@/features/editor/features/canvas/__tests__/canvas-gesture";
 import { drawnAt } from "@/features/editor/features/canvas/__tests__/canvas-measure";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
 import { NodeDrag } from "@/features/editor/features/canvas/domains/node-drag";
@@ -60,7 +66,8 @@ function named(name: string) {
  * フックを DOM へ繋いだだけの器。
  *
  * ドキュメントと同じ入れ子で名前の属性を持つ要素を置き、artboard の枠と同じく押された位置
- * から外へ辿った名前で掴む（枠はボタンなので、中身もボタンの中に置ける `span` にする）。掴めたか・`click` が選択まで届いたか・運んでいる雛形・掴んだ
+ * から外へ辿った名前で掴む（production の枠は中身の div の木を入れるために `div role="button"` にしている。器は
+ * ボタン要素で代用するので、中身をボタンの中に置ける `span` にする）。掴めたか・`click` が選択まで届いたか・運んでいる雛形・掴んだ
  * ノードのずらし量を読めるようにする（枠・ドロップ線・ガイド線の見た目は
  * features/editor/features/canvas/components/artboard-canvas の責務なのでここでは扱わない）。
  */
@@ -152,7 +159,7 @@ export function renderHarness(view: CanvasView = CanvasView.create()) {
  * `card` の中に `label` が上寄りに 1 つ並ぶ配置にする。`label` の中点は y=140 で、
  * それより下で離せば `card` の 2 番目（index 1）へ挿さる。
  */
-export function drawCardColumn(): void {
+export function drawnCardColumn(): void {
   drawnAt("card", { left: 0, top: 120, width: 200, height: 100 });
   drawnAt("label", { left: 10, top: 130, width: 100, height: 20 });
 }
@@ -160,4 +167,11 @@ export function drawCardColumn(): void {
 /** パレットの行の代わりに置いた、Box の雛形を掴むボタン。 */
 export function paletteBox(): HTMLElement {
   return screen.getByTestId("palette-box");
+}
+
+/** `title` を掴んで `card` の上（`label` の中点より下）まで運び、そこで離す。 */
+export function dragTitleOntoCard(): void {
+  pressPointer(drawn("title"), { x: 20, y: 235 });
+  movePointer(drawn("card"), { x: 50, y: 200 });
+  releasePointer(drawn("card"), { x: 50, y: 200 });
 }

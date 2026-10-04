@@ -2,6 +2,12 @@ import { render, screen } from "@testing-library/react";
 import { vi } from "vitest";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import type { Offset } from "@/domains/unit/offset";
+import { canvasContent } from "@/features/editor/features/canvas/__tests__/canvas-elements";
+import {
+  movePointer,
+  pressPointer,
+  releasePointer,
+} from "@/features/editor/features/canvas/__tests__/canvas-gesture";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
 import { Option } from "@/utils/Option";
 import { useArtboardDrag } from "../index";
@@ -68,4 +74,11 @@ export function renderHarness(view: CanvasView = CanvasView.create()) {
 /** `settings` を掴むボタン。 */
 export function settingsHandle(): HTMLElement {
   return screen.getByTestId("settings-handle");
+}
+
+/** `settings` を (500, 100) で掴み、(30, -12) 運んだ位置で離す。 */
+export function dragSettings(): void {
+  pressPointer(settingsHandle(), { x: 500, y: 100 });
+  movePointer(canvasContent(), { x: 530, y: 88 });
+  releasePointer(canvasContent(), { x: 530, y: 88 });
 }

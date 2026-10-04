@@ -2,6 +2,12 @@ import { render, screen } from "@testing-library/react";
 import { useState } from "react";
 import { vi } from "vitest";
 import { DesignDocument } from "@/domains/dcmp/design-document";
+import { canvasSurface } from "@/features/editor/features/canvas/__tests__/canvas-elements";
+import {
+  movePointer,
+  pressPointer,
+  releasePointer,
+} from "@/features/editor/features/canvas/__tests__/canvas-gesture";
 import { drawNamed } from "@/features/editor/features/canvas/__tests__/canvas-measure";
 import { Option } from "@/utils/Option";
 import { useRangeSelect } from "../index";
@@ -93,4 +99,11 @@ export function artboardFrame(): HTMLElement {
 /** 枠の中のノード。押しても `pointerdown` が土台まで上がらない。 */
 export function frameNode(): HTMLElement {
   return screen.getByTestId("node");
+}
+
+/** 枠の代わりのボタンを (200, 160) で押して (90, 90) まで範囲を引き、そこで離す。 */
+export function drawRange(): void {
+  pressPointer(artboardFrame(), { x: 200, y: 160 });
+  movePointer(canvasSurface(), { x: 90, y: 90 });
+  releasePointer(canvasSurface(), { x: 90, y: 90 });
 }

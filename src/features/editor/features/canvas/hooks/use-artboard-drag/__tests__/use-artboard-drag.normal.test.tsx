@@ -1,5 +1,4 @@
 import { expect, test } from "vitest";
-import { harnessOutput } from "@/components/__tests__/harness-output";
 import { canvasContent } from "@/features/editor/features/canvas/__tests__/canvas-elements";
 import {
   movePointer,
@@ -7,8 +6,9 @@ import {
   pressPointer,
   releasePointer,
 } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
+import { harnessOutput } from "@/features/editor/features/canvas/__tests__/harness-output";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
-import { renderHarness, settingsHandle } from "./setup";
+import { dragSettings, renderHarness, settingsHandle } from "./setup";
 
 test("掴んで動かすと、掴んだ時点の位置に動かした量を足した位置が運び先になる", () => {
   renderHarness();
@@ -31,9 +31,7 @@ test("倍率を上げると、運んだ量はドキュメント上の px に割�
 test("運んで離すと、運び先の位置で置き直しが届く", () => {
   const { onReposition } = renderHarness();
 
-  pressPointer(settingsHandle(), { x: 500, y: 100 });
-  movePointer(canvasContent(), { x: 530, y: 88 });
-  releasePointer(canvasContent(), { x: 530, y: 88 });
+  dragSettings();
 
   expect(onReposition.mock.calls).toEqual([["settings", { x: 430, y: -12 }]]);
 });
@@ -50,9 +48,7 @@ test("動かさずに離すと置き直しは届かない", () => {
 test("離したあとは運び先を出さない", () => {
   renderHarness();
 
-  pressPointer(settingsHandle(), { x: 500, y: 100 });
-  movePointer(canvasContent(), { x: 530, y: 88 });
-  releasePointer(canvasContent(), { x: 530, y: 88 });
+  dragSettings();
 
   expect(harnessOutput("preview")).toBe("運んでいない");
 });

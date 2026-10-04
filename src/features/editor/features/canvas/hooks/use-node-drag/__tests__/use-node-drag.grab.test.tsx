@@ -1,10 +1,10 @@
 import { expect, test } from "vitest";
-import { harnessOutput } from "@/components/__tests__/harness-output";
 import { drawn } from "@/features/editor/features/canvas/__tests__/canvas-elements";
 import {
   movePointer,
   pressPointer,
 } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
+import { harnessOutput } from "@/features/editor/features/canvas/__tests__/harness-output";
 import { paletteBox, renderHarness } from "./setup";
 
 test("選べるノードを押すと掴む", () => {

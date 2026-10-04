@@ -1,5 +1,4 @@
 import { afterEach, expect, test } from "vitest";
-import { harnessOutput } from "@/components/__tests__/harness-output";
 import { canvasContent } from "@/features/editor/features/canvas/__tests__/canvas-elements";
 import {
   movePointer,
@@ -9,6 +8,7 @@ import {
   clearDrawn,
   drawNamed,
 } from "@/features/editor/features/canvas/__tests__/canvas-measure";
+import { harnessOutput } from "@/features/editor/features/canvas/__tests__/harness-output";
 import { renderHarness, settingsHandle } from "./setup";
 
 afterEach(clearDrawn);
