@@ -16,7 +16,12 @@ import {
   type FormatVersionOf,
 } from "@/domains/dcmp/format-version";
 import { Locking, Lockings } from "@/domains/dcmp/locking";
-import { Node, type PropEdit, type RefNode } from "@/domains/dcmp/node";
+import {
+  Node,
+  type PropEdit,
+  type Props,
+  type RefNode,
+} from "@/domains/dcmp/node";
 import { NodeTree, type NodeTreeUpdate } from "@/domains/dcmp/node-tree";
 import { Placement } from "@/domains/dcmp/placement";
 import { PrimitiveTypes } from "@/domains/dcmp/primitive-schema";
@@ -25,6 +30,7 @@ import type { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import { ResolvedProps } from "@/domains/dcmp/resolved-props";
 import { Size } from "@/domains/dcmp/size";
 import { type Token, type TokenRef, TokenSet } from "@/domains/dcmp/token";
+import { Visibilities, Visibility } from "@/domains/dcmp/visibility";
 import { Axes, type Axis } from "@/domains/unit/axis";
 import { Offset } from "@/domains/unit/offset";
 import { ArrayEx } from "@/utils/ArrayEx";
@@ -617,6 +623,25 @@ function holdsForSelfOrAncestor(
 }
 
 /**
+ * ノードが自身の値として持つ props。部品インスタンスは上書きを当てた部品の根の props。
+ *
+ * @param document 参照先の部品を引くドキュメント
+ * @param node props を読むノード
+ * @returns 自身の props。参照先の部品が無いインスタンスは `none`
+ */
+function rootPropsOf(document: DesignDocument, node: Node): Option<Props> {
+  if (Node.isPrimitive(node)) {
+    return Option.some(node.props ?? {});
+  }
+  return Option.map(
+    ComponentSet.get(document.components, node.ref),
+    (component) =>
+      Component.applyOverrides(component, node.ref, node.overrides ?? {})
+        .props ?? {},
+  );
+}
+
+/**
  * ドキュメントのコンパニオンオブジェクト。ツリーの探索・編集は `NodeTree`、名前の規則は
  * `DocumentNames`、部品への変換は `Component`、検証は `validation/`、版ごとの JSON 表現は
  * `v1/` が持ち、ここは「どの artboard・どの部品を相手にするか」の調停に徹する。
@@ -1098,6 +1123,29 @@ export const DesignDocument = {
       node: (node) =>
         Node.isPrimitive(node) &&
         Locking.fromProps(node.props ?? {}) === Lockings.Locked,
+    });
+  },
+
+  /**
+   * 名前で指したものが、自身か包んでいるノード・artboard のどれかで非表示になっているか
+   * （docs/03「表示 / 非表示」。親を非表示にすれば子孫もまとめて描かれなくなる）。
+   *
+   * @param document 引き先になるドキュメント
+   * @param name 非表示かを知りたい artboard / ノードの名前
+   * @returns 自身か祖先が `hidden` なら真。artboard の名前ならその artboard 自身の表示 /
+   *   非表示を、部品インスタンスなら上書きを当てた部品の根の表示 / 非表示を自身の値とする。
+   *   ドキュメントに無い名前・参照先の部品が無いインスタンス自身は偽
+   */
+  isHidden(document: DesignDocument, name: string): boolean {
+    return holdsForSelfOrAncestor(document, name, {
+      artboard: (artboard) =>
+        Visibility.fromProps(Artboard.boxProps(artboard)) ===
+        Visibilities.Hidden,
+      node: (node) =>
+        Option.contains(
+          Option.map(rootPropsOf(document, node), Visibility.fromProps),
+          Visibilities.Hidden,
+        ),
     });
   },
 
