@@ -1,6 +1,8 @@
 import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { dragRowNamed } from "@/components/__tests__/row-drag";
+import { artboardContent } from "@/domains/__tests__/sample-document";
+import { SampleDocument } from "@/features/editor/__tests__/sample-document";
 import { changeFileExternally } from "@/libs/__tests__/document-change";
 
 export {
@@ -13,10 +15,12 @@ import { AppMenuFake } from "@/libs/app-menu/fake";
 import { AppStateIpcFake } from "@/libs/app-state-ipc/fake";
 import { ClockFake } from "@/libs/clock/fake";
 import {
+  DialogChoice,
   type DialogChoices,
   DocumentDialogFake,
 } from "@/libs/document-dialog/fake";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
+import { DocumentJson } from "@/libs/document-json";
 import { FileDropFake } from "@/libs/file-drop/fake";
 import { EditorScreen } from "../index";
 
@@ -129,6 +133,25 @@ export async function startCreate(observer: ScreenObserver): Promise<void> {
   }
   await userEvent.click(button);
   await act(async () => {});
+}
+
+/**
+ * `Path` を開いてから `OtherPath` を落とし、タブを 2 つ並べる。並びは `Path` →
+ * `OtherPath` で、右端の `OtherPath` を見ている。
+ *
+ * @returns 画面と、その外側の口を動かす手段
+ */
+export async function openTwo(): Promise<ScreenObserver> {
+  const observer = renderEditorScreen(
+    {
+      [Path]: DocumentJson.serialize(SampleDocument),
+      [OtherPath]: artboardContent("settings"),
+    },
+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
+  );
+  await startOpen(observer);
+  await observer.dropFiles([OtherPath]);
+  return observer;
 }
 
 /** 開いているドキュメントを並べた帯。 */
