@@ -43,3 +43,20 @@ test("2 つの種別を指せる prop は塗りの組だけ", () => {
 
   expectTypeOf<MultiKind>().toEqualTypeOf<PaintTokenKinds>();
 });
+
+test("複数の primitive が持つトークン参照 prop も、指せる種別の並びは 1 通りに決まる", () => {
+  /*
+   * 実体の `TokenKindByProp` は同じ名前を後勝ちで 1 つにするので、primitive ごとに違う種別を
+   * 宣言すると、型（並びの union）と実行時の値が黙って食い違う。
+   */
+  type IsUnion<T, U = T> = T extends unknown
+    ? [U] extends [T]
+      ? false
+      : true
+    : never;
+  type AmbiguousProp = {
+    [P in TokenPropName]: IsUnion<TokenPropKinds[P]> extends false ? never : P;
+  }[TokenPropName];
+
+  expectTypeOf<AmbiguousProp>().toEqualTypeOf<never>();
+});

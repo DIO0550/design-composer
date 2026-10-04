@@ -27,6 +27,7 @@ function setupSelection(): DocumentSelection {
               type: "Box",
               children: [{ name: "body-action", ref: "primary-button" }],
             },
+            { name: "dot", type: "Ellipse" },
           ],
         },
       ],
@@ -59,6 +60,12 @@ test("Text の行には Text を表す型アイコンが出る", () => {
   renderTree(setupSelection());
 
   expect(screen.getAllByText("T")).toHaveLength(2);
+});
+
+test("Ellipse の行には Ellipse を表す型アイコンが出る", () => {
+  renderTree(setupSelection());
+
+  expect(screen.getByText("○")).toBeDefined();
 });
 
 test("文言を持つ Text の行にはその文言が引用符付きで出る", () => {

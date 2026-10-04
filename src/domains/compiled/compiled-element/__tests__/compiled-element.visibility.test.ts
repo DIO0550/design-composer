@@ -1,5 +1,9 @@
 import { expect, test } from "vitest";
-import { setupBoxStyle, setupTextStyle } from "./element-style-setup";
+import {
+  setupBoxStyle,
+  setupEllipseStyle,
+  setupTextStyle,
+} from "./element-style-setup";
 
 test("非表示の Box は子を並べる指定より非表示が勝つ", () => {
   expect(
@@ -23,4 +27,8 @@ test("非表示の Text は描画から外れる", () => {
 
 test("表示のままの Text は描画から外す宣言を持たない", () => {
   expect("display" in setupTextStyle({})).toBe(false);
+});
+
+test("非表示の Ellipse は描画から外れる", () => {
+  expect(setupEllipseStyle({ visibility: "hidden" }).display).toBe("none");
 });

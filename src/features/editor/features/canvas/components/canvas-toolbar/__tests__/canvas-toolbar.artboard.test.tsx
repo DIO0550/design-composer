@@ -8,10 +8,11 @@ import { renderToolbar, toolbar } from "./setup";
  * プリミティブの挿入とは押せる条件が違うので、観点を分けて見る。
  */
 
-test("ツールバーは artboard・Box・Text の順に追加ボタンを並べる", () => {
+test("ツールバーは artboard・Box・Text・Ellipse の順に追加ボタンを並べる", () => {
   /*
    * UI 案の並びは `ポインタ → # → □ → T`。ポインタは持たない（ツールモードが無い）ので、
-   * 残る 4 つの相対順序を保つと `#` が先頭になる。
+   * 残る 4 つの相対順序を保つと `#` が先頭になる。UI 案に無い `○`（Ellipse）は `T` の後ろ
+   * （docs/06-ui.md）。
    */
   renderToolbar();
 
@@ -19,7 +20,7 @@ test("ツールバーは artboard・Box・Text の順に追加ボタンを並べ
     toolbar()
       .getAllByRole("button")
       .map((button) => button.getAttribute("aria-label")),
-  ).toEqual(["artboard を追加", "Box を追加", "Text を追加"]);
+  ).toEqual(["artboard を追加", "Box を追加", "Text を追加", "Ellipse を追加"]);
 });
 
 test("artboard の追加ボタンを押すと artboard の追加が伝わる", async () => {

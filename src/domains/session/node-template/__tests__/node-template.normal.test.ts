@@ -56,3 +56,16 @@ test("挿入する Box はキャンバスで掴めるよう大きさを持った
 
   expect(Node.isPrimitive(node) && node.props?.widthMode).toBe("fixed");
 });
+
+test("挿入する Ellipse は props を書かずにできる", () => {
+  /*
+   * スキーマの既定（100 × 100・gray-300）のままで見えるので足すものが無く、空の props を
+   * 書くとファイルに `"props": {}` が残る。
+   */
+  const node = NodeTemplate.toNode(
+    { kind: "primitive", type: "Ellipse" },
+    DesignDocument.create({}),
+  );
+
+  expect(node).toEqual({ name: "ellipse", type: "Ellipse" });
+});

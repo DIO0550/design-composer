@@ -874,7 +874,7 @@ export const DesignDocument = {
   /**
    * 名前で指したもの（artboard またはノード）の子の並び。
    *
-   * artboard は常に子を持てるので必ず並びを持つ。子を持てないノード（Text・参照ノード）と
+   * artboard は常に子を持てるので必ず並びを持つ。子を持てないノード（参照ノードと、スキーマが子を認めていないプリミティブ）と
    * ドキュメントに無い名前は「子の並びが無い」ので `none`。
    * 「子を持てない」（`none`）と「子が 0 件」（`some([])`）は別のことなので区別する。
    *
@@ -1211,7 +1211,7 @@ export const DesignDocument = {
    * @param to 置き直したあとの親と、その親から見た座標
    * @returns 親と座標を書き換えたドキュメント。その名前のノードが無い（artboard
    *   の名前もノードではない）なら失敗。指した親が子を受け入れられない（無い名前
-   *   ・ Text・参照ノード）ときと、指した親が自分自身か自分の子孫のときも失敗
+   *   ・参照ノード・スキーマが子を認めていないプリミティブ）ときと、指した親が自分自身か自分の子孫のときも失敗
    */
   reposition(
     document: DesignDocument,
@@ -1460,7 +1460,8 @@ export const DesignDocument = {
    * @param name 外したい Box の名前
    * @returns Box が居た位置へその子が同じ順で並んだドキュメントと、親へ戻った子の名前。
    *   ノードが無い・artboard を指しているときは `node-not-found`、子を持てないノード
-   *   （Text・部品インスタンス）は `children-not-allowed`
+   *   （部品インスタンスと、スキーマが子を認めていないプリミティブ）は
+   *   `children-not-allowed`
    */
   ungroupBox(
     document: DesignDocument,

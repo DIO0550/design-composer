@@ -27,6 +27,7 @@ function setupDocument(): DesignDocument {
         children: [
           { name: "home-title", type: "Text" },
           { name: "home-body", type: "Box" },
+          { name: "home-dot", type: "Ellipse" },
           { name: "home-login", ref: "primary-button" },
           { name: "home-signup", ref: "primary-button" },
           { name: "mystery", type: "Widget" },
@@ -59,6 +60,12 @@ test("Text を選ぶと種別として Text が出る", () => {
   renderSelected("home-title");
 
   expect(screen.getByText("Text")).toBeDefined();
+});
+
+test("Ellipse を選ぶと種別として Ellipse が出る", () => {
+  renderSelected("home-dot");
+
+  expect(screen.getByText("Ellipse")).toBeDefined();
 });
 
 test("部品インスタンスを選ぶと種別として Instance が出る", () => {

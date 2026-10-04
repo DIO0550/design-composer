@@ -14,3 +14,10 @@ test("Text の要素はテキストを持ち子を持たない", () => {
   expectTypeOf<TextElement>().toHaveProperty("content");
   expectTypeOf<TextElement>().not.toHaveProperty("children");
 });
+
+test("Ellipse の要素は子もテキストも持たない", () => {
+  type EllipseElement = Extract<CompiledElement, { kind: "ellipse" }>;
+
+  expectTypeOf<EllipseElement>().not.toHaveProperty("children");
+  expectTypeOf<EllipseElement>().not.toHaveProperty("content");
+});

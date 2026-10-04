@@ -256,8 +256,8 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
       return Option.unwrapOr(EditorState.groupSelected(state), state);
     case "ungroup_selected":
       /*
-       * 1 つだけ選んでいないとき・選んでいるのが artboard / Text / 部品インスタンスの
-       * とき・ファイルが不正な間は木は変わらない（EditorState.ungroupSelected の `none`）。
+       * 1 つだけ選んでいないとき・選んでいるのが Box でないとき・ファイルが不正な間は木は
+       * 変わらない（EditorState.ungroupSelected の `none`）。
        * 到達しうる理由は group_selected と同じ。
        */
       return Option.unwrapOr(EditorState.ungroupSelected(state), state);

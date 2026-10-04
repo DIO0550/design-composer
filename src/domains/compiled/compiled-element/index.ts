@@ -118,7 +118,7 @@ function tokenDeclarations(
 /**
  * Box 自身の置かれ方の宣言。
  *
- * 子を持たない Text には要らないので `Placement` ではなく Box 側が持つ。
+ * 子を持たない Text / Ellipse には要らないので `Placement` ではなく Box 側が持つ。
  *
  * @param placement Box 自身の絶対配置。フローと、置き場所が決まらないときは `none`
  * @returns 絶対配置なら座標込みの宣言、そうでなければ `position: relative` の 1
@@ -131,6 +131,39 @@ function placementDeclarations(
     ? Placement.declarations(placement.value)
     : [CssDeclaration.create("position", "relative")];
 }
+
+/**
+ * 子を持たないノード（Text / Ellipse）の置かれ方の宣言。
+ *
+ * `placementDeclarations` と違ってフローのときに `position: relative` を補わない。絶対配置
+ * の子が位置を測る基準にならないため（docs/03「子を持たないプリミティブ」）。
+ *
+ * @param placement そのノードの絶対配置。フローと、置き場所が決まらないときは `none`
+ * @returns 絶対配置なら座標込みの宣言、そうでなければ空
+ */
+function absolutePlacementDeclarations(
+  placement: Option<AbsolutePlacement>,
+): readonly CssDeclarationType[] {
+  return Option.unwrapOr(Option.map(placement, Placement.declarations), []);
+}
+
+/**
+ * flex アイテムとして自分を並べる親の向き。絶対配置のノードはフローから外れるので、並べる
+ * 親を持たない。
+ *
+ * @param placement そのノードの絶対配置。フローなら `none`
+ * @param parentDirection そのノードを入れている親が子を並べる向き
+ * @returns フローのノードなら親の向き。絶対配置なら `none`
+ */
+function inFlowParentDirection(
+  placement: Option<AbsolutePlacement>,
+  parentDirection: Option<CssDirection>,
+): Option<CssDirection> {
+  return Option.isSome(placement) ? Option.none : parentDirection;
+}
+
+/** 楕円の丸み。prop ではなく形そのものなので固定で出す（docs/03「Ellipse 自体」）。 */
+const EllipseBorderRadius = "50%";
 
 /** 向きを変えない、回っていない状態。 */
 const Unrotated = 0;
@@ -264,8 +297,15 @@ export type TextElement = Readonly<{
   content: string;
 }>;
 
-/** Box と Text のどちらか。両方の性質を持つ状態は構造上作れない。 */
-export type CompiledElement = BoxElement | TextElement;
+/** コンパイル済みの Ellipse。子もテキストも持たない。 */
+export type EllipseElement = Readonly<{
+  kind: "ellipse";
+  name: string;
+  style: CssDeclarations;
+}>;
+
+/** Box / Text / Ellipse のどれか。2 つ以上の性質を持つ状態は構造上作れない。 */
+export type CompiledElement = BoxElement | TextElement | EllipseElement;
 
 export const BoxElement = {
   /**
@@ -307,10 +347,10 @@ export const BoxElement = {
     tokens: TokenRefs,
   ): readonly CssDeclarationType[] {
     const placement = Placement.absoluteFromProps(props);
-    // 絶対配置の子はフローから外れるので、flex アイテムとしての親を持たない
-    const flexParentDirection = Option.isSome(placement)
-      ? Option.none
-      : parentDirection;
+    const flexParentDirection = inFlowParentDirection(
+      placement,
+      parentDirection,
+    );
     const layout = Layout.fromProps(props);
     // 子を並べない Box で効かない prop は、スキーマの `enabledWhen` (`FlexOnly`) と同じ
     const arrangesChildren = Option.isSome(Layout.direction(layout));
@@ -413,10 +453,7 @@ export const TextElement = {
     tokens: TokenRefs,
   ): readonly CssDeclarationType[] {
     return [
-      ...Option.unwrapOr(
-        Option.map(Placement.absoluteFromProps(props), Placement.declarations),
-        [],
-      ),
+      ...absolutePlacementDeclarations(Placement.absoluteFromProps(props)),
       ...rotationDeclarations(props.rotation),
       ...typographyDeclarations(props.typography, tokens),
       ...tokenDeclarations("color", props.color, tokens),
@@ -426,27 +463,77 @@ export const TextElement = {
   },
 } as const;
 
+export const EllipseElement = {
+  /**
+   * 宣言の並びをそのまま受け取り、style へのまとめ上げはここで行う。
+   *
+   * @param name 元になったノードの名前。出力に `ElementNameAttribute` として残る
+   * @param declarations 出力順に並べた宣言。同じプロパティが複数あるときの扱いは
+   *   `CssDeclarations.from` に従う
+   * @returns 宣言を style にまとめた Ellipse
+   */
+  create(
+    name: string,
+    declarations: readonly CssDeclarationType[],
+  ): EllipseElement {
+    return {
+      kind: "ellipse",
+      name,
+      style: CssDeclarations.from(declarations),
+    };
+  },
+
+  /**
+   * Ellipse の props を CSS の宣言へ写す (docs/03 の表)。
+   *
+   * @param props デフォルト解決済みの Ellipse の props
+   * @param parentDirection この Ellipse を flex アイテムとして並べる親の向き。
+   *   親を持たない位置と、親が子を並べない (`layout: free`) ときは `none`
+   * @param tokens カスタムプロパティ名の綴り方と、塗りの名前の解決
+   * @returns 出力順に並べた宣言。`border-radius: 50%` は常に含む
+   */
+  declarations(
+    props: ResolvedProps<"Ellipse">,
+    parentDirection: Option<CssDirection>,
+    tokens: TokenRefs,
+  ): readonly CssDeclarationType[] {
+    const placement = Placement.absoluteFromProps(props);
+    const flexParentDirection = inFlowParentDirection(
+      placement,
+      parentDirection,
+    );
+    return [
+      ...absolutePlacementDeclarations(placement),
+      ...rotationDeclarations(props.rotation),
+      ...Size.declarationsFromProps(props, "width", flexParentDirection),
+      ...Size.declarationsFromProps(props, "height", flexParentDirection),
+      ...tokenDeclarations("background", props.background, tokens),
+      CssDeclaration.create("border-radius", EllipseBorderRadius),
+      ...tokenDeclarations("shadow", props.shadow, tokens),
+      ...opacityDeclarations(props.opacity),
+      ...Visibility.declarations(Visibility.fromProps(props)),
+    ];
+  },
+} as const;
+
+/**
+ * 要素の `div` の中に入る HTML。
+ *
+ * @param element 中身を直列化する要素
+ * @returns Box は子を直列化して連ねたもの、Text はエスケープした文字列、Ellipse は空文字
+ */
+function contentHtml(element: CompiledElement): string {
+  switch (element.kind) {
+    case "box":
+      return element.children.map(CompiledElement.html).join("");
+    case "text":
+      return Html.escapeText(element.content);
+    case "ellipse":
+      return "";
+  }
+}
+
 export const CompiledElement = {
-  /**
-   * 子を持つ側の要素か。
-   *
-   * @param element 見る要素
-   * @returns 子の並びを持つ要素なら `true`。文字列の中身を持つ要素なら `false`
-   */
-  isBox(element: CompiledElement): element is BoxElement {
-    return element.kind === "box";
-  },
-
-  /**
-   * テキストを持つ側の要素か。
-   *
-   * @param element 見る要素
-   * @returns 文字列の中身を持つ要素なら `true`。子の並びを持つ要素なら `false`
-   */
-  isText(element: CompiledElement): element is TextElement {
-    return element.kind === "text";
-  },
-
   /**
    * style 属性へ載せられる宣言の並びに直列化する。
    *
@@ -463,26 +550,27 @@ export const CompiledElement = {
    *
    * @param element 直列化する要素。子孫も入れ子の `div` として含める
    * @returns 1 つの `div` に収まった HTML。名前と style は `Html.escapeAttribute`、Text の
-   *   中身は `Html.escapeText` でエスケープする
+   *   中身は `Html.escapeText` でエスケープする。Ellipse は中身の無い `div`
    */
   html(element: CompiledElement): string {
     const attributes = `${ElementNameAttribute}="${Html.escapeAttribute(element.name)}" style="${Html.escapeAttribute(CompiledElement.styleText(element))}"`;
-    const content = CompiledElement.isText(element)
-      ? Html.escapeText(element.content)
-      : element.children.map(CompiledElement.html).join("");
-    return `<div ${attributes}>${content}</div>`;
+    return `<div ${attributes}>${contentHtml(element)}</div>`;
   },
 
   /**
    * 自身と子孫を行きがけ順に辿る。
    *
    * @param element 辿り始める要素
-   * @returns 自身を先頭に、子孫を行きがけ順に並べた要素。Text なら自身の 1 件だけ
+   * @returns 自身を先頭に、子孫を行きがけ順に並べた要素。子を持たない Text / Ellipse なら
+   *   自身の 1 件だけ
    */
   flatten(element: CompiledElement): readonly CompiledElement[] {
-    if (CompiledElement.isText(element)) {
-      return [element];
+    switch (element.kind) {
+      case "box":
+        return [element, ...element.children.flatMap(CompiledElement.flatten)];
+      case "text":
+      case "ellipse":
+        return [element];
     }
-    return [element, ...element.children.flatMap(CompiledElement.flatten)];
   },
 } as const;

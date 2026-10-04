@@ -119,6 +119,48 @@ export const HiddenArtboardSelected: Story = {
   },
 };
 
+/** 既定のままの円と、幅 ≠ 高さの楕円を 1 つずつ置いたサンプル。 */
+const EllipseDocument = DesignDocument.create({
+  tokens: SampleCanvasDocument.tokens,
+  artboards: [
+    {
+      name: "shapes",
+      width: 320,
+      height: 200,
+      props: {
+        layout: "row",
+        gap: "md",
+        paddingTop: "lg",
+        paddingRight: "lg",
+        paddingBottom: "lg",
+        paddingLeft: "lg",
+        background: "white",
+      },
+      children: [
+        { name: "dot", type: "Ellipse" },
+        {
+          name: "oval",
+          type: "Ellipse",
+          props: { width: 140, height: 72, background: "brand" },
+        },
+      ],
+    },
+  ],
+});
+
+/**
+ * Ellipse は `border-radius: 50%` で丸く描かれる（docs/03-schema.md「Ellipse 自体」）。
+ * テストが守るのは宣言を出すところまでで、**それが実際に円として描かれることは見えない**
+ * （happy-dom は CSS を描かない）。確かめる手段はこのストーリーの視覚差分だけ。
+ */
+export const EllipseSelected: Story = {
+  name: "Ellipse を選択中",
+  args: {
+    selection: DocumentSelection.fromNames(EllipseDocument, ["oval"]),
+    tokenSelection: TokenSelection.create(EllipseDocument, Option.none),
+  },
+};
+
 export const Empty: Story = {
   name: "artboard がない",
   args: {

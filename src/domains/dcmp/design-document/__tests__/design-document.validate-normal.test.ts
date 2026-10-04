@@ -55,6 +55,29 @@ test("props を指定しないノードは、デフォルトが指すトーク�
   expect(DesignDocument.collectErrors(document)).toEqual([]);
 });
 
+test("Ellipse のノードを書いたドキュメントは検証を通る", () => {
+  const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
+    artboards: [
+      {
+        name: "screen",
+        width: 375,
+        height: 812,
+        props: { layout: "column" },
+        children: [
+          {
+            name: "dot",
+            type: "Ellipse",
+            props: { widthMode: "fill", heightMode: "fixed", height: 48 },
+          },
+        ],
+      },
+    ],
+  });
+
+  expect(DesignDocument.collectErrors(document)).toEqual([]);
+});
+
 test("ref ノードはプリミティブとしてのスキーマ検証を受けない", () => {
   const document = DesignDocument.create({
     components: { button: { type: "Box" } },

@@ -1,5 +1,9 @@
 import { expect, test } from "vitest";
-import { setupBoxStyle, setupTextStyle } from "./element-style-setup";
+import {
+  setupBoxStyle,
+  setupEllipseStyle,
+  setupTextStyle,
+} from "./element-style-setup";
 
 test("絶対配置の Box に回転を書くと、その角度で回る", () => {
   expect(
@@ -36,4 +40,8 @@ test("1 周を超える角度も丸めずそのまま出力する", () => {
 
 test("数値でない回転は宣言を出力しない", () => {
   expect("transform" in setupBoxStyle({ rotation: "30" })).toBe(false);
+});
+
+test("Ellipse に回転を書くと、その角度で回る", () => {
+  expect(setupEllipseStyle({ rotation: 15 }).transform).toBe("rotate(15deg)");
 });

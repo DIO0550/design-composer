@@ -4,8 +4,8 @@ import { Option } from "@/utils/Option";
 
 /**
  * 帯の右端に出す種別の綴り。UI 案（docs/Design Composer.html）に実在するのは `Box` と
- * `Instance` だけで、`Artboard` / `Text` はここで決めた（型の綴りをそのまま出す形に揃え
- * ている）。
+ * `Instance` だけで、`Artboard` / `Text` / `Ellipse` はここで決めた（型の綴りをそのまま
+ * 出す形に揃えている）。
  *
  * ドメインには置かない。ドメインが答えるのは「参照ノードか」「どの primitive か」で、
  * `Instance` はそれをこの画面でどう呼ぶかという表示の語彙（同じ参照ノードをツリーは
@@ -17,6 +17,7 @@ const KindLabels = {
   artboard: "Artboard",
   Box: "Box",
   Text: "Text",
+  Ellipse: "Ellipse",
   component: "Instance",
 } as const satisfies Readonly<Record<SelectionKind, string>>;
 

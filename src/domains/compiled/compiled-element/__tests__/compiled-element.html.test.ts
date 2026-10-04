@@ -1,6 +1,11 @@
 import { expect, test } from "vitest";
 import { CssDeclaration } from "@/domains/dcmp/css-declaration";
-import { BoxElement, CompiledElement, TextElement } from "../index";
+import {
+  BoxElement,
+  CompiledElement,
+  EllipseElement,
+  TextElement,
+} from "../index";
 
 test("要素はインライン style を持つ div になる", () => {
   const element = BoxElement.create(
@@ -71,4 +76,14 @@ test("同じ要素からは常に同じ HTML が得られる", () => {
   );
 
   expect(CompiledElement.html(element)).toBe(CompiledElement.html(element));
+});
+
+test("Ellipse は中身の無い div になる", () => {
+  const element = EllipseElement.create("dot", [
+    CssDeclaration.create("border-radius", "50%"),
+  ]);
+
+  expect(CompiledElement.html(element)).toBe(
+    '<div data-name="dot" style="border-radius:50%"></div>',
+  );
 });

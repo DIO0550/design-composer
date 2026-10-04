@@ -87,3 +87,31 @@ test("colors と gradients に同じ名前があると、それを指す backgro
     [expect.objectContaining({ name: "hero", prop: "background" })],
   ]);
 });
+
+test("塗りを書いていない Ellipse は、既定の gray-300 の参照元になる", () => {
+  /*
+   * 塗りは Box では既定を持たないが、Ellipse は `gray-300` を既定で指す（docs/03-schema.md
+   * 「Ellipse」）。塗りを書いていない Box を対照に置き、Ellipse だけが並ぶことを見る。
+   */
+  const document = DesignDocument.create({
+    tokens: { ...TokenSet.empty(), colors: { "gray-300": "#d1d5db" } },
+    artboards: [
+      {
+        name: "login",
+        width: 375,
+        height: 812,
+        children: [
+          { name: "frame", type: "Box" },
+          { name: "dot", type: "Ellipse" },
+        ],
+      },
+    ],
+  });
+
+  const referrers = DesignDocument.collectTokenReferrers(document, {
+    kind: "colors",
+    name: "gray-300",
+  });
+
+  expect(referrers).toMatchObject([{ name: "dot", prop: "background" }]);
+});

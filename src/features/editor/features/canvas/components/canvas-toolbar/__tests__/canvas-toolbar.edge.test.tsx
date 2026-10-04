@@ -18,7 +18,7 @@ test("挿せる位置が無いときはどのプリミティブの追加ボタ�
 
   expect(
     primitiveInsertButtons().map((button) => button.hasAttribute("disabled")),
-  ).toEqual([true, true]);
+  ).toEqual([true, true, true]);
 });
 
 test("押せないときはどのプリミティブの追加ボタンからも理由が読める", () => {
@@ -29,6 +29,7 @@ test("押せないときはどのプリミティブの追加ボタンからも�
   expect(
     primitiveInsertButtons().map((button) => button.getAttribute("title")),
   ).toEqual([
+    "子を持てるものを選ぶと追加できます",
     "子を持てるものを選ぶと追加できます",
     "子を持てるものを選ぶと追加できます",
   ]);
