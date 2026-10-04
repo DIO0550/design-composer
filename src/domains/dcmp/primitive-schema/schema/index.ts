@@ -33,9 +33,10 @@ const FlexOnly = {
 export const PrimitiveTypes = {
   Box: "Box",
   Text: "Text",
+  Ellipse: "Ellipse",
 } as const;
 
-/** 組み込みで用意されているノードの型（docs/02「プリミティブ」）。 */
+/** 組み込みで用意されているノードの型（docs/03「プリミティブの初期セット」）。 */
 export type PrimitiveType = ValueOf<typeof PrimitiveTypes>;
 
 /** 1つの primitive の仕様。子を持てるかと、受け付ける props を宣言する。 */
@@ -46,7 +47,7 @@ export type PrimitiveSchema = Readonly<{
 
 /**
  * 親の中でのノードの置かれ方を決める props（docs/03「配置の指定」）。
- * Box と Text のどちらも親の中に置かれるので、同じ 5 prop を両方が持つ。
+ * どのプリミティブも親の中に置かれるので、同じ 5 prop をすべてが持つ。
  *
  * 既定はファイルに書き出されない（docs/02「明示的に設定した props のみを保存する」）ので、
  * 書いていないノードの diff には現れない。
@@ -93,7 +94,7 @@ const PlacementProps = {
 
 /**
  * ノード自身の回転の props（docs/03「回転」）。
- * Box と Text のどちらも回せるので、同じ 1 prop を両方が持つ。
+ * どのプリミティブも回せるので、同じ 1 prop をすべてが持つ。
  *
  * `enabledWhen` を付けないのは、回転が置かれ方に依らず効くため。フローの子に書いた座標は
  * 読み捨てられるが（docs/03「配置の指定」）、回転はフローの子でも効く。
@@ -115,14 +116,14 @@ const RotationProps = {
 
 /**
  * ノードを描くかどうかの props（docs/03「表示 / 非表示」）。
- * Box と Text のどちらも描かれる対象なので、同じ 1 prop を両方が持つ。
+ * どのプリミティブも描かれる対象なので、同じ 1 prop をすべてが持つ。
  *
  * `group` を `appearance` にするのは、この節が「どう描かれるか」を集めた場所で、0 にすると
  * 見えなくなる `opacity` も同じ節にあるため。節を 1 つ増やすと、UI 案
  * （docs/Design Composer.html）に無い見出しがパネルへ出る。
  *
  * spread する位置を各スキーマの末尾にするのは、パネルの節の並びが `group` の初出順で決まる
- * ため（先頭へ置くと Box / Text のどちらでも `appearance` が最初の節になる）。
+ * ため（先頭へ置くと、どのプリミティブでも `appearance` が最初の節になる）。
  */
 const VisibilityProps = {
   visibility: {
@@ -135,7 +136,7 @@ const VisibilityProps = {
 
 /**
  * ノードをキャンバスの直接操作から外すかどうかの props（docs/03「ロック」）。
- * Box と Text のどちらもキャンバスで選び・動かす対象なので、同じ 1 prop を両方が持つ。
+ * どのプリミティブもキャンバスで選び・動かす対象なので、同じ 1 prop をすべてが持つ。
  *
  * ロックは描き方に関わらないが `group` は `appearance` に置く。節を 1 つ増やすと UI 案
  * （docs/Design Composer.html）に無い見出しがパネルへ出るので、既にある節のうち表示 / 非表示
@@ -151,7 +152,30 @@ const LockingProps = {
 } as const satisfies PropDefinitionRecord;
 
 /**
- * Box の仕様（docs/02「プリミティブ」の表）。
+ * 面に落とす影の props（docs/03「Box」「Ellipse」）。Box と Ellipse が同じ 1 prop を持つ。
+ */
+const ShadowProps = {
+  shadow: { domain: "token", tokenKind: ["shadows"], group: "appearance" },
+} as const satisfies PropDefinitionRecord;
+
+/**
+ * 透け具合の props（docs/03「不透明度」）。Box と Ellipse が同じ 1 prop を持つ。
+ *
+ * 見た目の値だが対応するトークン種別が無いので生リテラルにする（docs/02「値のドメイン:
+ * 3種類」）。トークンが持つ色の不透明度（0〜100 の %）とは別の値。
+ */
+const OpacityProps = {
+  opacity: {
+    domain: "literal",
+    literalType: "number",
+    range: { min: 0, max: 1 },
+    default: 1,
+    group: "appearance",
+  },
+} as const satisfies PropDefinitionRecord;
+
+/**
+ * Box の仕様（docs/03「Box」の表）。
  */
 export const BoxSchema = {
   allowsChildren: true,
@@ -330,30 +354,20 @@ export const BoxSchema = {
       group: "appearance",
       shorthand: { name: ShorthandNames.Radius, corner: "bottomLeft" },
     },
-    shadow: { domain: "token", tokenKind: ["shadows"], group: "appearance" },
+    ...ShadowProps,
     overflow: {
       domain: "enum",
       values: ["visible", "clip"],
       default: "visible",
       group: "appearance",
     },
-    /*
-     * 見た目の値だが対応するトークン種別が無いので生リテラルにする（docs/02「値のドメイン:
-     * 3種類」/ docs/03「不透明度」）。トークンが持つ色の不透明度（0〜100 の %）とは別の値。
-     */
-    opacity: {
-      domain: "literal",
-      literalType: "number",
-      range: { min: 0, max: 1 },
-      default: 1,
-      group: "appearance",
-    },
+    ...OpacityProps,
     ...VisibilityProps,
     ...LockingProps,
   },
 } as const satisfies PrimitiveSchema;
 
-/** Text の仕様（docs/02 の表）。子は持たず、文言と見た目だけを持つ。 */
+/** Text の仕様（docs/03「Text」の表）。子は持たず、文言と見た目だけを持つ。 */
 export const TextSchema = {
   allowsChildren: false,
   props: {
@@ -388,10 +402,65 @@ export const TextSchema = {
   },
 } as const satisfies PrimitiveSchema;
 
+/**
+ * Ellipse の仕様（docs/03「Ellipse」の表）。子は持たず、幅と高さで形が決まる。
+ *
+ * 丸みは形そのものなので角丸の prop を持たず、コンパイルが固定で出す。
+ */
+export const EllipseSchema = {
+  allowsChildren: false,
+  props: {
+    ...PlacementProps,
+    ...RotationProps,
+    widthMode: {
+      domain: "enum",
+      values: ["fill", "fixed"],
+      default: "fixed",
+      group: "size",
+    },
+    /*
+     * 既定の `100` は Figma が楕円を作るときの既定に揃えた値（docs/03「Ellipse」）。型でも
+     * テストでも根拠を守れないので、変えるときは docs の行ごと変える。
+     */
+    width: {
+      domain: "literal",
+      literalType: "number",
+      default: 100,
+      group: "size",
+      enabledWhen: { kind: "equals", prop: "widthMode", equals: "fixed" },
+    },
+    heightMode: {
+      domain: "enum",
+      values: ["fill", "fixed"],
+      default: "fixed",
+      group: "size",
+    },
+    height: {
+      domain: "literal",
+      literalType: "number",
+      default: 100,
+      group: "size",
+      enabledWhen: { kind: "equals", prop: "heightMode", equals: "fixed" },
+    },
+    // 既定が Box（なし）と違うので定義ごとは共有しない。指せる種別は同じ `PaintTokenKinds`
+    background: {
+      domain: "token",
+      tokenKind: PaintTokenKinds,
+      default: "gray-300",
+      group: "appearance",
+    },
+    ...ShadowProps,
+    ...OpacityProps,
+    ...VisibilityProps,
+    ...LockingProps,
+  },
+} as const satisfies PrimitiveSchema;
+
 /** primitive の型 → その仕様。型を取り違えた引き当てにならないよう対応で持つ。 */
 export const PrimitiveSchemas = {
   Box: BoxSchema,
   Text: TextSchema,
+  Ellipse: EllipseSchema,
 } as const satisfies Readonly<Record<PrimitiveType, PrimitiveSchema>>;
 
 export const PrimitiveSchema = {

@@ -1,6 +1,7 @@
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import type { Node, Props } from "@/domains/dcmp/node";
 import type { PrimitiveType } from "@/domains/dcmp/primitive-schema";
+import { Option } from "@/utils/Option";
 
 /**
  * これから挿入するノードの指定（docs/06-ui.md「編集操作の一覧」の挿入）。
@@ -13,17 +14,27 @@ export type NodeTemplate =
   | Readonly<{ kind: "instance"; componentName: string }>;
 
 /**
- * 挿入直後のプリミティブに入れる props。
+ * 挿入直後のプリミティブに入れる props。`none` は props を書かずに挿す。
  *
  * スキーマの既定値（Box は widthMode / heightMode が `hug`、Text は `content` が空文字）に
  * 委ねると、中身の無いノードは矩形が潰れてキャンバス上に現れない。掴めないノードは選択もダ
  * ブルクリックによるインライン編集もできず、挿入した結果を確かめられないため、挿入時に限っ
- * て初期値を与える。
+ * て初期値を与える。Ellipse はスキーマの既定のままで見える大きさと塗りを持つ（docs/03
+ * 「Ellipse」）。
+ *
+ * Ellipse に空の props を書かないのは、ファイルへ `"props": {}` が出るため（docs/02
+ * 「明示的に設定した props のみを保存する」）。
  */
 const InitialProps = {
-  Box: { widthMode: "fixed", width: 120, heightMode: "fixed", height: 80 },
-  Text: { content: "テキスト" },
-} as const satisfies Readonly<Record<PrimitiveType, Props>>;
+  Box: Option.some({
+    widthMode: "fixed",
+    width: 120,
+    heightMode: "fixed",
+    height: 80,
+  }),
+  Text: Option.some({ content: "テキスト" }),
+  Ellipse: Option.none,
+} as const satisfies Readonly<Record<PrimitiveType, Option<Props>>>;
 
 export const NodeTemplate = {
   /**
@@ -80,7 +91,8 @@ export const NodeTemplate = {
    * @param template ノードにする指定
    * @param document 挿し先のドキュメント
    * @returns `baseName` を `DesignDocument.uniqueName` で採番した名前を持つノード。
-   *   プリミティブは挿入時の初期 props を持ち、インスタンスは props を持たない参照ノード
+   *   プリミティブは挿入時の初期 props を持つ（初期 props の無い型は props を持たない）。
+   *   インスタンスは props を持たない参照ノード
    */
   toNode(template: NodeTemplate, document: DesignDocument): Node {
     const name = DesignDocument.uniqueName(
@@ -90,6 +102,9 @@ export const NodeTemplate = {
     if (template.kind === "instance") {
       return { name, ref: template.componentName };
     }
-    return { name, type: template.type, props: InitialProps[template.type] };
+    const props: Option<Props> = InitialProps[template.type];
+    return Option.isSome(props)
+      ? { name, type: template.type, props: props.value }
+      : { name, type: template.type };
   },
 } as const;

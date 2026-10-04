@@ -7,7 +7,7 @@ import {
 
 /*
  * このフォルダは「スキーマが宣言した事実」を型として取り出すための導出を持つ。
- * スキーマ（`BoxSchema` / `TextSchema`）を `as const satisfies` で書いているため
+ * スキーマ（`PrimitiveSchemas` の各値）を `as const satisfies` で書いているため
  * prop 名も `domain` も `tokenKind` もリテラル型として残っており、
  * 対応表を別に書き写さずに型レベルで走査できる。
  */
@@ -39,9 +39,9 @@ type TokenPropNameOf<T extends PrimitiveType> = {
 /**
  * スキーマが `domain: "token"` と宣言した prop の名前（全 primitive 分）。
  *
- * `TokenPropNameOf` を primitive ごとに求めて union へまとめている。名前は primitive をま
- * たいで重複しないため、型を問わず名前だけで引ける（`gap` は Box にしか、`color` は Text
- * にしか無い）。
+ * `TokenPropNameOf` を primitive ごとに求めて union へまとめている。型を問わず名前だけで
+ * 引けるのは、複数の primitive が持つ名前（Box と Ellipse の `background` / `shadow`）が
+ * どれも同じ `tokenKind` を宣言しているため（`token-props.token-kind.test.ts` が固定する）。
  *
  * トークンを引かない prop（`layout` などの enum、`width` などの literal）は含まれないので、
  * この型で受ければ非トークン prop を渡せない。

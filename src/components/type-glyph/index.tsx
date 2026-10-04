@@ -5,14 +5,22 @@
  * にも `◆` を置いている以上、描き分けの並びは 1 つでよい（2 つ持つと primitive が増えた
  * とき両方へ足す）。
  */
-export type TypeGlyphKind = "artboard" | "Box" | "Text" | "component";
+export type TypeGlyphKind =
+  | "artboard"
+  | "Box"
+  | "Text"
+  | "Ellipse"
+  | "component";
 
 /** 字面と色の対で 1 つの種別を表す。 */
 type Glyph = Readonly<{ symbol: string; className: string }>;
 
 /**
- * 種別ごとのアイコン。字面は UI 案から採った値で、Tailwind の色名に対応するものが無いた
- * め色は実際の値をそのまま書いている。
+ * 種別ごとのアイコン。字面は `○` を除いて UI 案から採った値で、Tailwind の色名に対応する
+ * ものが無いため色は実際の値をそのまま書いている。
+ *
+ * `○` は UI 案に無い（Ellipse を描いていない）。選んだ理由は docs/06-ui.md の `Primitives`
+ * 一覧の節。色は他の 4 色ともエラー色（`#d13438`）とも色相が離れるものを選んだ。
  *
  * 色のうち UI 案と一致しているのは `artboard` と `component` だけ。UI 案は `□` / `T` を
  * **選択状態**で塗り分けていて種別の色を持たないので、ここは種別ごとに 1 色のままにして
@@ -27,6 +35,7 @@ const Glyphs = {
   artboard: { symbol: "#", className: "text-[#0d99ff]" },
   Box: { symbol: "□", className: "text-[#00a0a0]" },
   Text: { symbol: "T", className: "font-bold text-[#c67c00]" },
+  Ellipse: { symbol: "○", className: "text-[#d6409f]" },
   component: { symbol: "◆", className: "text-[#9747ff]" },
 } as const satisfies Readonly<Record<TypeGlyphKind, Glyph>>;
 
