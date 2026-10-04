@@ -70,6 +70,24 @@ test("artboard の名前とドキュメントに無い名前はロックされ�
   ]).toEqual([false, false]);
 });
 
+test("根がロックした部品のインスタンスは、自身ではロックされていない", () => {
+  const document = DesignDocument.create({
+    components: {
+      frozen: { type: "Box", props: { locking: "locked" }, children: [] },
+    },
+    artboards: [
+      {
+        name: "home",
+        width: 360,
+        height: 240,
+        children: [{ name: "instance", ref: "frozen" }],
+      },
+    ],
+  });
+
+  expect(DesignDocument.isLocked(document, "instance")).toBe(false);
+});
+
 test("選びうる名前からはロック中のノードとその子孫が落ち、残りは渡した順のまま残る", () => {
   const names = DesignDocument.collectUnlockedNodeNames(setupDocument(), [
     "login",
