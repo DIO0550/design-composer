@@ -27,3 +27,27 @@ test("購読を張れなければ失敗が返る", async () => {
 
   expect(Result.isOk(subscribed)).toBe(false);
 });
+
+/*
+ * Rust 側（`src-tauri/src/menu.rs`）が流す綴りそのものを届ける。定数で届けると、TS 側の
+ * 綴りだけを変えても一緒に動いてしまい、Rust 側とずれたことに気づけない。
+ */
+test("Rust 側が流す綴りの指示は、どれも語彙にある指示として配られる", async () => {
+  const fake = AppMenuFake.create();
+  const received: AppMenuCommand[] = [];
+  Result.unwrap(
+    await fake.menu.subscribeCommand((command) => {
+      received.push(command);
+    }),
+  );
+
+  fake.deliverUnknown("open");
+  fake.deliverUnknown("create");
+  fake.deliverUnknown("close-tab");
+
+  expect(received).toStrictEqual([
+    AppMenuCommands.Open,
+    AppMenuCommands.Create,
+    AppMenuCommands.CloseTab,
+  ]);
+});

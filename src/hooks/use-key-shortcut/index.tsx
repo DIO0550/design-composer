@@ -7,7 +7,8 @@ import { ElementEx } from "@/utils/ElementEx";
  * 押下を割り当てへ結び付けるきっかけ。`TypedCharacter` は打たれた文字（`event.key`）、
  * `PhysicalKey` は押された物理キー（`event.code`）。
  *
- * 数字のショートカットは物理キーで待つ。
+ * 数字のショートカットは物理キーで待つ。Shift と組み合わせたときや配列によっては、打た
+ * れる文字が数字にならない。
  */
 export const KeyTriggers = {
   TypedCharacter: "typed-character",

@@ -38,6 +38,16 @@ test("後ろが無いドキュメントを見ているときに閉じると、�
   });
 });
 
+test("見ているドキュメントを閉じるよう指すと、後ろの先頭へ移る", () => {
+  const opened = threeOpenedWithMiddleActive();
+
+  expect(Option.unwrap(OpenedDocuments.closeActive(opened))).toStrictEqual({
+    before: [openedAt(FirstPath)],
+    active: openedAt(ThirdPath),
+    after: [],
+  });
+});
+
 test("最後の 1 つを閉じると、開いているドキュメントが無くなる", () => {
   const opened = OpenedDocuments.create(openedAt(FirstPath));
 
@@ -64,4 +74,16 @@ test("並びの外を指す移動はできない", () => {
   expect(
     Result.isOk(OpenedDocuments.reorder(opened, { fromIndex: 0, toIndex: 3 })),
   ).toBe(false);
+});
+
+test("並びの長さ以上の位置へは移せず、並びは変わらない", () => {
+  const opened = threeOpenedWithMiddleActive();
+
+  expect(OpenedDocuments.activateAt(opened, 3)).toStrictEqual(opened);
+});
+
+test("負の位置へは移せず、並びは変わらない", () => {
+  const opened = threeOpenedWithMiddleActive();
+
+  expect(OpenedDocuments.activateAt(opened, -1)).toStrictEqual(opened);
 });

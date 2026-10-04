@@ -13,6 +13,7 @@ import {
   DocumentTabBar,
   useDocumentSession,
 } from "@/features/editor/features/document-start";
+import { useActivateTabShortcut } from "@/features/editor/hooks/use-activate-tab-shortcut";
 import {
   KeyShortcutScopeProvider,
   KeyShortcutScopes,
@@ -93,6 +94,9 @@ export function EditorScreen({
     commandFailure,
   } = useDocumentSession(ports);
   const failure = DocumentSession.failure(session);
+  // タブ列を跨ぐ割り当てなので、背面を止めているドキュメントごとの節
+  // （`OpenedDocumentEditors`）の外で張る。
+  useActivateTabShortcut(tabActions.activateAt);
 
   if (!Option.isSome(session.documents)) {
     return (

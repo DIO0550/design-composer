@@ -23,8 +23,9 @@ import { Result } from "@/utils/Result";
 /**
  * どのドキュメントを開くかが決まるまでに要る、外部世界の口。
  *
- * ダイアログとファイルの読み書きは開く操作の中身、メニューとドロップは操作の起こり方、
- * アプリ自身の状態は操作を待たずに開く相手（前回開いていたファイル）の出どころ。
+ * ダイアログとファイルの読み書きは開く操作の中身、メニューとドロップは操作の起こり方
+ * （メニューはタブを閉じる操作の起こり方でもある）、アプリ自身の状態は操作を待たずに開く
+ * 相手（前回開いていたファイル）の出どころ。
  * どれが欠けても開く経路のどれかが成立しないので、常に対で必要になる。
  */
 export type DocumentSessionPorts = Readonly<{
@@ -36,7 +37,7 @@ export type DocumentSessionPorts = Readonly<{
 }>;
 
 /**
- * 開く指示が届く経路。
+ * 指示（開く / タブを閉じる）が届く経路。
  *
  * 受け取れなかったときに、どちらが使えないのかを画面へ出すために名前で持つ
  * （1 つに畳むと、生きている側まで壊れていると読める文言になる）。
@@ -46,7 +47,7 @@ export const CommandSources = {
   Drop: "drop",
 } as const;
 
-/** 開く指示が届く経路。 */
+/** 指示が届く経路。 */
 export type CommandSource = ValueOf<typeof CommandSources>;
 
 /** その経路から指示を受け取れなかったことと、診断用の原文。 */
@@ -66,7 +67,7 @@ export type DocumentSessionActions = Readonly<{
 }>;
 
 /**
- * タブ列から開いているドキュメントを扱う手続き（行き来・閉じる・並べ替え）。
+ * タブ列とキーボードから開いているドキュメントを扱う手続き（行き来・閉じる・並べ替え）。
  *
  * 開く / 新規作成と分けて返すのは、開始画面が受け取るのが前者だけだから
  * （rules/components.md「props は必要最小限に絞る」）。
@@ -74,6 +75,8 @@ export type DocumentSessionActions = Readonly<{
 export type DocumentTabActions = Readonly<{
   /** そのパスのドキュメントを見ている状態にする。 */
   activate: (path: string) => void;
+  /** タブ列のその位置（パスではなく位置。左端が 0）のドキュメントを見ている状態にする。 */
+  activateAt: (index: number) => void;
   /** そのパスのドキュメントを閉じる。 */
   close: (path: string) => void;
   /** 開いているドキュメントの 1 つを並びの別の位置へ移す。 */
@@ -99,7 +102,9 @@ type DocumentSessionAction =
     }>
   | Readonly<{ type: "settled"; outcome: OpenOutcome; recents: RecentFiles }>
   | Readonly<{ type: "activate"; path: string }>
+  | Readonly<{ type: "activateAt"; index: number }>
   | Readonly<{ type: "close"; path: string }>
+  | Readonly<{ type: "closeActive" }>
   | Readonly<{ type: "reorder"; move: IndexMove }>;
 
 const InitialState: DocumentSessionState = {
@@ -149,10 +154,20 @@ function reduce(
         ...state,
         session: DocumentSession.activate(state.session, action.path),
       };
+    case "activateAt":
+      return {
+        ...state,
+        session: DocumentSession.activateAt(state.session, action.index),
+      };
     case "close":
       return {
         ...state,
         session: DocumentSession.close(state.session, action.path),
+      };
+    case "closeActive":
+      return {
+        ...state,
+        session: DocumentSession.closeActive(state.session),
       };
     case "reorder":
       /*
@@ -350,8 +365,9 @@ function rememberOpened(
 }
 
 /**
- * どのドキュメントを開いているかと最近使ったファイルを持ち、開く / 新規作成とタブ列から
- * の操作の導線を返す。
+ * どのドキュメントを開いているかと最近使ったファイルを持ち、開く / 新規作成とタブ列・
+ * キーボードからの操作の導線を返す。メニューの指示（開く / 新規作成 / タブを閉じる）も
+ * ここで受ける。
  *
  * 開く操作が終わると開いているドキュメントと最近使ったファイルの一覧が一緒に動き、更新の
  * 型も複数あるので `useReducer` で 1 つの状態にまとめる（rules/hooks.md）。指示を受け取れ
@@ -416,15 +432,16 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
    */
   const runMenuCommand = useEffectEvent((command: AppMenuCommand) => {
     /*
-     * 指示ごとの始め方。`satisfies Record<AppMenuCommand, …>` が網羅を強制する
+     * 指示ごとの手続き。`satisfies Record<AppMenuCommand, …>` が網羅を強制する
      * （メニューへ項目を足すとここがコンパイルエラーになる）。`switch` にしないのは、
      * 戻り値の無い出し分けでは case が抜けても型で気づけないため。
      */
-    const start = {
+    const run = {
       open: openDocument,
       create: createDocument,
+      "close-tab": () => dispatch({ type: "closeActive" }),
     } as const satisfies Readonly<Record<AppMenuCommand, () => void>>;
-    start[command]();
+    run[command]();
   });
 
   const openDropped = useEffectEvent((paths: readonly string[]) => {
@@ -519,6 +536,7 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
     actions: { openDocument, createDocument, openDocumentsAt },
     tabActions: {
       activate: (path) => dispatch({ type: "activate", path }),
+      activateAt: (index) => dispatch({ type: "activateAt", index }),
       close: (path) => dispatch({ type: "close", path }),
       reorder: (move) => dispatch({ type: "reorder", move }),
     },
