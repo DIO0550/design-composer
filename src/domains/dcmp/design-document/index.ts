@@ -18,12 +18,13 @@ import {
 import { Locking, Lockings } from "@/domains/dcmp/locking";
 import {
   Node,
+  type PrimitiveNode,
   type PropEdit,
   type Props,
   type RefNode,
 } from "@/domains/dcmp/node";
 import { NodeTree, type NodeTreeUpdate } from "@/domains/dcmp/node-tree";
-import { Placement } from "@/domains/dcmp/placement";
+import { type AbsolutePlacement, Placement } from "@/domains/dcmp/placement";
 import { PrimitiveTypes } from "@/domains/dcmp/primitive-schema";
 import { ReferenceContext } from "@/domains/dcmp/reference-context";
 import type { ResizeEdit } from "@/domains/dcmp/resize-edit";
@@ -98,8 +99,8 @@ export type InsertedCopy = Readonly<{
  * 並びの探索・編集そのものは `NodeTree` が、名前の規則は `DocumentNames` が持っており、
  * ドキュメントに残るのは「複数の artboard のどれに対して行うか」という調停だけ。
  *
- * 例外は追従（`followPropEdits`）で、ここだけは `Placement` / `Constraint` / `Size` を
- * 組み合わせて編集を作る。子側のドメイン（`Node`）へ置けないのは、`Placement` が
+ * 例外は追従（`followPropEdits`）とグループ化 / 解除（`groupedBox` / `freedChildren`）で、
+ * ここだけは `Placement` / `Constraint` / `Size` を組み合わせて編集を作る。子側のドメイン（`Node`）へ置けないのは、`Placement` が
  * `PropEdit` を `Node` から import しており、逆向きの import が循環になるため。
  */
 
@@ -233,6 +234,117 @@ function followPropEdits(node: Node, resize: AxisResize): readonly PropEdit[] {
   );
   const edits = [offsetEdit, lengthEdit];
   return edits.flatMap((edit) => (Option.isSome(edit) ? [edit.value] : []));
+}
+
+/**
+ * ノードが座標で置かれているときの配置。
+ *
+ * @param node 見るノード
+ * @returns 絶対配置ならその配置。フロー・部品インスタンス・スキーマに無い type・座標が数値で
+ *   ないときは `none`
+ */
+function absolutePlacementOf(node: Node): Option<AbsolutePlacement> {
+  if (!Node.isPrimitive(node)) {
+    return Option.none;
+  }
+  return Option.flatMap(
+    ResolvedProps.forNode(node),
+    Placement.absoluteFromProps,
+  );
+}
+
+/**
+ * ノードへ編集を順に重ねる。
+ *
+ * @param node 書き換えるノード
+ * @param edits 重ねる編集。並びの順に適用する
+ * @returns すべて適用したノード。編集が空なら渡したノードそのもの
+ */
+function applyNodePropEdits(node: Node, edits: readonly PropEdit[]): Node {
+  return edits.reduce<Node>(
+    (current, edit) => Node.applyPropEdit(current, edit),
+    node,
+  );
+}
+
+/**
+ * ノードを包む Box と、その唯一の子になったノード（docs/06-ui.md「編集操作の一覧」の
+ * グループ化）。
+ *
+ * 包んでも見た目が変わらないよう、Box がノードの外側の指定を引き継ぐ。絶対配置のノードなら
+ * 配置の 5 prop を Box へ移してノードをフローに戻す。`fill` の軸は、配置に依らず Box も
+ * `fill` にする。ノードの `fill` は残す（新しい Box は既定で子を並べるので、Box の中でも
+ * そのまま書ける。消すと外したときに戻らない）。
+ *
+ * フローのノードの配置は移さない。読み捨てられている座標が Box へ移ると、フローの Box を
+ * 外しても子へ戻らず、⌘G → ⌘⇧G で元のノードに戻らなくなる。
+ *
+ * @param node 包むノード
+ * @param boxName 新しく作る Box に付ける名前
+ * @returns 包んだ Box。引き継ぐ指定が無ければ props を持たない
+ */
+function groupedBox(node: Node, boxName: string): Node {
+  const props = Node.isPrimitive(node) ? Node.propsOf(node) : {};
+  const isAbsolute = Option.isSome(absolutePlacementOf(node));
+  const placementEdits = isAbsolute
+    ? Placement.collectWrittenPropEdits(props)
+    : [];
+  const content = isAbsolute
+    ? applyNodePropEdits(node, [Placement.clearPropEdit()])
+    : node;
+  const box: Node = {
+    name: boxName,
+    type: PrimitiveTypes.Box,
+    children: [content],
+  };
+  return applyNodePropEdits(box, [
+    ...placementEdits,
+    ...Size.collectFillPropEdits(props),
+  ]);
+}
+
+/**
+ * Box を外したときに、Box が居た位置へ戻る子（docs/06-ui.md「編集操作の一覧」のグループ
+ * 解除。`groupedBox` の逆向き）。
+ *
+ * 座標を返すのは Box が絶対配置のときだけ。絶対配置の子は Box の座標を足し、追従は子の
+ * ものを残す（Box が消えると Box の追従は向ける相手がいない）。フローの子（インスタンスも
+ * 数える）が 1 つだけで、それがプリミティブなら、その子が Box の配置を持つ（子に残っていた
+ * 配置は先に消す）。置かれるのは
+ * Box の原点で、Box の padding や揃えのぶんのずれは足さない。フローの子が 2 つ以上なら全員
+ * が同じ座標に重なるので返さない。インスタンスは配置の prop を持てない。
+ *
+ * @param box 外す Box
+ * @returns Box の中にあった子を同じ順で。Box がフローなら子そのもの
+ */
+function freedChildren(box: PrimitiveNode): readonly Node[] {
+  const children = Node.children(box);
+  const boxPlacement = absolutePlacementOf(box);
+  if (!Option.isSome(boxPlacement)) {
+    return children;
+  }
+  const boxOffset = Placement.offset(boxPlacement.value);
+  const flowChildren = children.filter(
+    (child) => !Option.isSome(absolutePlacementOf(child)),
+  );
+  const soleFlowChild =
+    flowChildren.length === 1 ? ArrayEx.first(flowChildren) : Option.none;
+  const inheritedPlacementEdits = [
+    Placement.clearPropEdit(),
+    ...Placement.collectWrittenPropEdits(Node.propsOf(box)),
+  ];
+  return children.map((child) => {
+    const placement = absolutePlacementOf(child);
+    if (Option.isSome(placement)) {
+      const moved = Placement.moveBy(placement.value, boxOffset);
+      return applyNodePropEdits(child, Placement.toPropEdits(moved));
+    }
+    const inheritsBoxPlacement =
+      Option.contains(soleFlowChild, child) && Node.isPrimitive(child);
+    return inheritsBoxPlacement
+      ? applyNodePropEdits(child, inheritedPlacementEdits)
+      : child;
+  });
 }
 
 /**
@@ -1054,15 +1166,10 @@ export const DesignDocument = {
     document: DesignDocument,
     name: string,
   ): Option<ChildPlacement> {
-    const node = DesignDocument.findNode(document, name);
-    if (!Option.isSome(node) || !Node.isPrimitive(node.value)) {
-      return Option.none;
-    }
-    const resolved = ResolvedProps.forNode(node.value);
-    if (!Option.isSome(resolved)) {
-      return Option.none;
-    }
-    const placement = Placement.absoluteFromProps(resolved.value);
+    const placement = Option.flatMap(
+      DesignDocument.findNode(document, name),
+      absolutePlacementOf,
+    );
     if (!Option.isSome(placement)) {
       return Option.none;
     }
@@ -1495,8 +1602,9 @@ export const DesignDocument = {
   /**
    * ノードを新しい Box の中へ入れる（docs/06-ui.md「編集操作の一覧」のグループ化）。
    *
-   * 新しい Box は元のノードが居た位置へ入り、そのノードを唯一の子にする。props は持たせ
-   * ない（スキーマ既定の `hug` が包んだ中身に合う）。
+   * 新しい Box は元のノードが居た位置へ入り、そのノードを唯一の子にする。Box が引き継ぐ
+   * 指定は `groupedBox` のとおりで、それ以外の props は持たせない（スキーマ既定の `hug` が
+   * 包んだ中身に合う）。
    *
    * @param document 包む先のドキュメント
    * @param name 包むノードの名前
@@ -1518,12 +1626,11 @@ export const DesignDocument = {
     if (Option.isSome(unusable)) {
       return Result.err(unusable.value);
     }
-    const box: Node = {
-      name: boxName,
-      type: PrimitiveTypes.Box,
-      children: [found.value],
-    };
-    return DesignDocument.replaceNode(document, name, box);
+    return DesignDocument.replaceNode(
+      document,
+      name,
+      groupedBox(found.value, boxName),
+    );
   },
 
   /**
@@ -1531,6 +1638,7 @@ export const DesignDocument = {
    * プ解除。`groupIntoBox` の逆向き）。
    *
    * 子の名前は単一名前空間で既に一意なので付け替えない。子が 0 件なら Box だけが消える。
+   * 子へ返す座標は `freedChildren` のとおり。
    *
    * @param document 外す先のドキュメント
    * @param name 外したい Box の名前
@@ -1547,10 +1655,12 @@ export const DesignDocument = {
     if (!Option.isSome(found)) {
       return Result.err({ kind: "node-not-found", name });
     }
-    if (!NodeTree.allowsChildren(found.value)) {
+    const box = found.value;
+    const holdsChildren = Node.isPrimitive(box) && NodeTree.allowsChildren(box);
+    if (!holdsChildren) {
       return Result.err({ kind: "children-not-allowed", name });
     }
-    const freed = Node.children(found.value);
+    const freed = freedChildren(box);
     return Result.map(
       updateSiblingsOfNode(document, name, (siblings) =>
         NodeTree.spliceByName(siblings, name, freed),
