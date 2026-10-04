@@ -1,6 +1,7 @@
 import {
   BoxElement,
   type CompiledElement,
+  EllipseElement,
   TextElement,
 } from "@/domains/compiled/compiled-element";
 import type {
@@ -69,7 +70,28 @@ function compileBox(
 }
 
 /**
- * 型で Text / Box へ振り分ける。未知の型は失敗にする。
+ * Ellipse をコンパイルする。子を持たないが、`fill` の出し分けに親の向きを使う。
+ *
+ * @param node コンパイル対象の Ellipse ノード
+ * @param refs トークン参照の綴り方と、塗りの名前の解決
+ * @param parentDirection 親が子を並べる向き。親を持たない位置と、親が子を
+ *   並べない (`layout: free`) ときは `none`
+ * @returns 宣言を持つコンパイル済み要素
+ */
+function compileEllipse(
+  node: ExpandedNode,
+  refs: TokenRefs,
+  parentDirection: Option<CssDirection>,
+): CompiledElement {
+  const resolved = ResolvedProps.resolve("Ellipse", node.props ?? {});
+  return EllipseElement.create(
+    node.name,
+    EllipseElement.declarations(resolved, parentDirection, refs),
+  );
+}
+
+/**
+ * 型で Box / Text / Ellipse へ振り分ける。未知の型は失敗にする。
  *
  * @param node コンパイル対象のノード
  * @param refs トークン参照の綴り方と、塗りの名前の解決
@@ -87,10 +109,14 @@ function compileNode(
       new Error(`unknown primitive type "${type}" at node "${node.name}"`),
     );
   }
-  if (type === "Text") {
-    return Result.ok(compileText(node.name, node.props ?? {}, refs));
+  switch (type) {
+    case "Box":
+      return compileBox(node, refs, parentDirection);
+    case "Text":
+      return Result.ok(compileText(node.name, node.props ?? {}, refs));
+    case "Ellipse":
+      return Result.ok(compileEllipse(node, refs, parentDirection));
   }
-  return compileBox(node, refs, parentDirection);
 }
 
 /**

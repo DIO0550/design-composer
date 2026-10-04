@@ -8,7 +8,7 @@ import type { Props } from "@/domains/dcmp/node";
 import { ResolvedProps } from "@/domains/dcmp/resolved-props";
 import type { TokenSet } from "@/domains/dcmp/token";
 import { Option } from "@/utils/Option";
-import { BoxElement, TextElement } from "../index";
+import { BoxElement, EllipseElement, TextElement } from "../index";
 
 /**
  * props から Box 1 つ分の style を組み立てる。
@@ -47,6 +47,26 @@ export function setupTextStyle(props: Props): CssDeclarations {
   return CssDeclarations.from(
     TextElement.declarations(
       ResolvedProps.resolve("Text", props),
+      DefaultTokenRefs,
+    ),
+  );
+}
+
+/**
+ * props から Ellipse 1 つ分の style を組み立てる。
+ *
+ * @param props 設定されている props（デフォルト解決前）
+ * @param parentDirection flex アイテムとして並べる親の向き。省くと親を持たない位置
+ * @returns その位置に置いたときの style
+ */
+export function setupEllipseStyle(
+  props: Props,
+  parentDirection: Option<CssDirection> = Option.none,
+): CssDeclarations {
+  return CssDeclarations.from(
+    EllipseElement.declarations(
+      ResolvedProps.resolve("Ellipse", props),
+      parentDirection,
       DefaultTokenRefs,
     ),
   );

@@ -4,7 +4,13 @@ import type {
   CssDeclarationName,
 } from "@/domains/dcmp/css-declaration";
 import { CssDeclaration as Declaration } from "@/domains/dcmp/css-declaration";
-import { BoxElement, CompiledElement, TextElement } from "../index";
+import {
+  BoxElement,
+  CompiledElement,
+  EllipseElement,
+  TextElement,
+} from "../index";
+import { setupEllipseStyle } from "./element-style-setup";
 
 function style(
   property: CssDeclarationName,
@@ -27,13 +33,20 @@ test("Text の要素はテキストを持つ", () => {
   expect(text.content).toBe("OK");
 });
 
-test("Box の要素と Text の要素は互いに区別できる", () => {
+test("Box・Text・Ellipse の要素は互いに区別できる", () => {
   const box = BoxElement.create("root", style("display", "flex"), []);
   const text = TextElement.create("label", style("color", "red"), "OK");
+  const ellipse = EllipseElement.create("dot", style("color", "red"));
 
-  expect(CompiledElement.isBox(box)).toBe(true);
-  expect(CompiledElement.isText(box)).toBe(false);
-  expect(CompiledElement.isText(text)).toBe(true);
+  expect([box.kind, text.kind, ellipse.kind]).toEqual([
+    "box",
+    "text",
+    "ellipse",
+  ]);
+});
+
+test("Ellipse は角を 50% 丸めて楕円になる", () => {
+  expect(setupEllipseStyle({})["border-radius"]).toBe("50%");
 });
 
 test("要素の style は style 属性の形に直列化できる", () => {
@@ -53,4 +66,10 @@ test("入れ子の要素は行きがけ順に並べて辿れる", () => {
     "inner",
     "label",
   ]);
+});
+
+test("Ellipse の要素を辿ると自身の 1 件だけになる", () => {
+  const ellipse = EllipseElement.create("dot", style("color", "red"));
+
+  expect(CompiledElement.flatten(ellipse)).toEqual([ellipse]);
 });
