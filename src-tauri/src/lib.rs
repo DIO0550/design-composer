@@ -20,7 +20,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         // 開く / 新規作成は画面の帯ではなく OS のメニューに置く（#374）
         .menu(menu::build)
-        .on_menu_event(menu::emit_command)
+        .on_menu_event(menu::run_item)
         // watch のコールバックからも参照するため Arc で共有する
         .manage(Arc::new(KnownContentRegistry::new()))
         .manage(DocumentWatchers::new())
