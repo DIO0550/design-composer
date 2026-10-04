@@ -2,7 +2,7 @@ import { CssDeclaration } from "@/domains/dcmp/css-declaration";
 import { type CssDirection, CssDirections } from "@/domains/dcmp/css-direction";
 import type { Props } from "@/domains/dcmp/node";
 import { Size } from "@/domains/dcmp/size";
-import { Axes, type Axis } from "@/domains/unit/axis";
+import type { Axis } from "@/domains/unit/axis";
 import type { ValueOf } from "@/types/ValueOf";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
@@ -74,12 +74,7 @@ export const Layout = {
     if (Option.isSome(Layout.direction(parentLayout))) {
       return [];
     }
-    return Object.values(Axes).filter((axis) =>
-      Option.contains(
-        Option.map(Size.fromProps(props, axis), (size) => size.mode),
-        "fill",
-      ),
-    );
+    return Size.collectFillAxes(props);
   },
 
   /**

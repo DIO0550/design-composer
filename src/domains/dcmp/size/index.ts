@@ -3,8 +3,8 @@ import {
   type CssProperty,
 } from "@/domains/dcmp/css-declaration";
 import { CssDirection } from "@/domains/dcmp/css-direction";
-import type { Props, PropValue } from "@/domains/dcmp/node";
-import type { Axis } from "@/domains/unit/axis";
+import { PropEdit, type Props, type PropValue } from "@/domains/dcmp/node";
+import { Axes, type Axis } from "@/domains/unit/axis";
 import { Px } from "@/domains/unit/px";
 import { Option } from "@/utils/Option";
 
@@ -193,6 +193,39 @@ export const Size = {
    */
   modeProp(axis: Axis): "widthMode" | "heightMode" {
     return axis === "width" ? "widthMode" : "heightMode";
+  },
+
+  /**
+   * `fill` になっている軸。
+   *
+   * @param props 見るノードの props（デフォルト解決済みでなくてよい）
+   * @returns `fill` の軸を width・height の順で。サイズが決まらない軸は含めない
+   */
+  collectFillAxes(props: Props): readonly Axis[] {
+    return Object.values(Axes).filter((axis) =>
+      Option.contains(
+        Option.map(Size.fromProps(props, axis), (size) => size.mode),
+        "fill",
+      ),
+    );
+  },
+
+  /**
+   * `fill` の軸を、下限・上限ごと別のノードへ書く編集（グループ化で、包むノードの `fill` を
+   * Box へ引き継ぐときなど）。
+   *
+   * 下限・上限を写さないと、写した先だけが上限を超えて伸び、並びの中の兄弟の長さが変わる。
+   *
+   * @param props 写し元の props（デフォルト解決済みでないもの。書かれている下限・上限だけを
+   *   写すため）
+   * @returns `fill` の軸ごとに、モードを `fill` にする編集と、書かれているその軸の下限・上限
+   *   を同じ値で設定する編集。`fill` の軸が無ければ空
+   */
+  collectFillPropEdits(props: Props): readonly PropEdit[] {
+    return Size.collectFillAxes(props).flatMap((axis) => [
+      PropEdit.set([Size.modeProp(axis)], "fill"),
+      ...PropEdit.collectWritten(props, Object.values(limitProps(axis))),
+    ]);
   },
 
   /**
