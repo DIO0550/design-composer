@@ -171,10 +171,6 @@ const Unrotated = 0;
 /**
  * 回っていないノードは宣言を出力しない (docs/03 の表)。
  *
- * `rotate(0deg)` でも `transform` が `none` でなくなり、そのノードが**新しい stacking
- * context** になる。出すと、中の子を運んでいる間に前へ出す `z-index`
- * (`repositionPreviewDeclarations`) が回っていないノードでも効かなくなる (実測)。
- *
  * `opacityDeclarations` と形は似ているが、既定を出さない理由が別 (あちらは初期値と同じで
  * 効果が無い) なので畳まない。畳むと呼び出しからどちらの理由かが読めなくなる。
  *
