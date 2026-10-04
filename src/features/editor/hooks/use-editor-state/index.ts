@@ -29,7 +29,7 @@ export type EditorAction =
       dig: SelectionDig;
     }>
   /* キャンバスの範囲選択。範囲に重なったものの名前はキャンバス側が実測から決めて渡す。 */
-  | Readonly<{ type: "select_nodes"; names: readonly string[] }>
+  | Readonly<{ type: "select_in_range"; names: readonly string[] }>
   | Readonly<{ type: "clear_selection" }>
   | Readonly<{ type: "reveal"; name: string }>
   /*
@@ -115,8 +115,8 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
       return EditorState.selectIfUnselected(state, action.name);
     case "select_at":
       return EditorState.selectAt(state, action.names, action.dig);
-    case "select_nodes":
-      return EditorState.selectNodes(state, action.names);
+    case "select_in_range":
+      return EditorState.selectInRange(state, action.names);
     case "clear_selection":
       return EditorState.clearSelection(state);
     case "reveal":

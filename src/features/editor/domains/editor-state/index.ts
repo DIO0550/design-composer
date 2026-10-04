@@ -516,8 +516,8 @@ export const EditorState = {
    * 択」）。
    *
    * どのノードを選ぶかは `DocumentSelection.nodeNameAt` が決める（ドラッグで掴むものと同じ
-   * 規則）。ここが持つのは、ノードが無いところ（枠の上）を押したときに artboard 自身へ倒
-   * すことだけ。
+   * 規則）。ここが持つのは、選べるノードが無いところ（枠の上・ロック中のノードの上）を押
+   * したときに artboard 自身へ倒すことだけ。
    *
    * どれも選べなければ選択は外れる。
    *
@@ -549,9 +549,11 @@ export const EditorState = {
   },
 
   /**
-   * 名前で指したものをまとめて選ぶ（キャンバスの範囲選択 / docs/06-ui.md「範囲選択」）。
+   * 名前で指したものをまとめて選ぶ（グループ解除で外した子・テストの組み立て）。
    *
-   * 選べないもの（ドキュメントに無い名前・部品定義の中の参照ノード）は落とす。
+   * 選べないもの（ドキュメントに無い名前・部品定義の中の参照ノード）は落とす。ロック中のノ
+   * ードは落とさない（ツリーからは選べるので / docs/03「ロック」）。キャンバスの範囲選択は
+   * `selectInRange` を通す。
    *
    * `selectAllInstances` へは寄せていない。あちらは**対象を状態から決める**
    * （選択中のインスタンスと同じ部品）のに対し、こちらは引数で受ける。共通なのは
@@ -567,6 +569,29 @@ export const EditorState = {
       ...state,
       selection: SelectionState.create(
         DesignDocument.collectFoundNodeNames(
+          EditorState.document(state),
+          names,
+        ),
+      ),
+    };
+  },
+
+  /**
+   * キャンバスの範囲に重なったものをまとめて選ぶ（docs/06-ui.md「範囲選択」）。
+   *
+   * `selectNodes` が落とすものに加えて、ロック中のノードも落とす（docs/03「ロック」）。
+   * `selectNodes` に混ぜないのは、グループ解除のようにキャンバスを通らない選び直しまで
+   * ロック中の子を落として、選択が消えるため。
+   *
+   * @param state 選択を移す前の状態
+   * @param names 範囲に重なって描かれているものの名前
+   * @returns キャンバスで選べるものだけを選んだ状態。1 つも選べなければ未選択
+   */
+  selectInRange(state: EditorState, names: readonly string[]): EditorState {
+    return {
+      ...state,
+      selection: SelectionState.create(
+        DesignDocument.collectUnlockedNodeNames(
           EditorState.document(state),
           names,
         ),

@@ -178,7 +178,7 @@ function EditorPanes({
             canvasView={canvasView}
             nodeDrag={nodeDrag}
             onSelect={node.selectAt}
-            onSelectInRange={node.selectNodes}
+            onSelectInRange={node.selectInRange}
             onResize={node.resize}
             /* インライン編集は確定の 1 件だけを送るので、常に別のまとまり。 */
             onEditProp={(edit) =>
