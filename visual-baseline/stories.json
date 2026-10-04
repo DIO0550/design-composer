@@ -255,6 +255,11 @@
     "name": "非表示の artboard を選択中"
   },
   {
+    "id": "features-editor-features-canvas-artboardcanvas--hidden-node-selected",
+    "title": "features/editor/features/canvas/ArtboardCanvas",
+    "name": "非表示のノードを選択中"
+  },
+  {
     "id": "features-editor-features-canvas-artboardcanvas--selected",
     "title": "features/editor/features/canvas/ArtboardCanvas",
     "name": "artboard を選択中"
