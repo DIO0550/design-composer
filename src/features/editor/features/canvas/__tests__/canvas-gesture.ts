@@ -19,6 +19,7 @@ import {
 export {
   drag,
   movePointer,
+  PointerId,
   type PressedModifier,
   pressPointer,
   pressPointerHolding,
