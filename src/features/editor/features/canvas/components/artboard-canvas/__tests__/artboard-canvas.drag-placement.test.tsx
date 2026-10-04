@@ -367,6 +367,24 @@ function unclippedRule(name: string): string {
 }
 
 /**
+ * 名前で引いた規則に差し込まれている宣言。
+ *
+ * 期待値を定数から組むと、定数から宣言を消しても期待値ごと変わって落ちないので、宣言は
+ * ここで取り出してテストに直に書いた綴りと比べる。
+ *
+ * @param name 規則の選択子が指す artboard / ノードの名前
+ * @returns その名前の規則すべての宣言をつないだもの。規則が無ければ空文字
+ */
+function injectedDeclarationsOf(name: string): string {
+  const head = `${CanvasDom.selectorOf(name)}{`;
+  return injectedStyles()
+    .split("}")
+    .filter((rule) => rule.startsWith(head))
+    .map((rule) => rule.slice(head.length))
+    .join(";");
+}
+
+/**
  * `home` の中の `card` に絶対配置の `badge` が入っている、未選択の対。
  * 包んでいるものが 2 段あるので、artboard 1 枚だけを解く実装と区別できる。
  */
@@ -418,15 +436,33 @@ test("包んでいるものが入れ子のときは、間の Box も中身を切
 });
 
 test("運んでいる間、掴んだノードは他の artboard より前に出る", () => {
-  /*
-   * artboard の枠は z-index を持たない兄弟なので、前に出さないと隣の artboard の
-   * 白い面の裏へ回る（happy-dom は重なりを解釈しないので、宣言でしか確かめられない）。
-   */
+  // artboard の規則も同じ宣言を持つので、掴んだノードの規則だけを見る
   renderCanvas({ selection: setupSelection() });
 
   carryNode("badge", { x: 30, y: -12 });
 
-  expect(injectedStyles()).toContain("z-index:1");
+  expect(injectedDeclarationsOf("badge")).toContain("z-index:1");
+});
+
+test("運んでいる間、掴んだノードを載せている artboard も他の artboard より前に出る", () => {
+  renderCanvas({
+    selection: withOnlySelected(setupNestedSelection(), "badge"),
+  });
+
+  carryNode("badge", { x: 30, y: -12 });
+
+  expect(injectedDeclarationsOf("home")).toContain("z-index:1");
+});
+
+test("運んでいる間も、包んでいる Box は同じ artboard の兄弟との前後を変えない", () => {
+  renderCanvas({
+    selection: withOnlySelected(setupNestedSelection(), "badge"),
+  });
+
+  carryNode("badge", { x: 30, y: -12 });
+
+  expect(injectedDeclarationsOf("card")).toContain("overflow:visible");
+  expect(injectedDeclarationsOf("card")).not.toContain("z-index");
 });
 
 test("フローのノードを運んでいる間は、包んでいるものの切り取りを解かない", () => {
