@@ -2,9 +2,10 @@ import type { AxisResize } from "@/domains/dcmp/axis-length";
 import { Constraint } from "@/domains/dcmp/constraint";
 import { CssDeclaration } from "@/domains/dcmp/css-declaration";
 import { PropEdit, type Props } from "@/domains/dcmp/node";
-import type { Axis } from "@/domains/unit/axis";
+import { Axes, type Axis } from "@/domains/unit/axis";
 import { Offset } from "@/domains/unit/offset";
 import { Px } from "@/domains/unit/px";
+import type { ValueOf } from "@/types/ValueOf";
 import { Option } from "@/utils/Option";
 
 /**
@@ -15,6 +16,23 @@ const OffsetProps = {
   width: "x",
   height: "y",
 } as const satisfies Readonly<Record<Axis, keyof AbsolutePlacement>>;
+
+/** 配置の指定を持つ prop の名前（docs/03「配置の指定」）。 */
+type PlacementPropName =
+  | "placement"
+  | ValueOf<typeof OffsetProps>
+  | ReturnType<typeof Constraint.prop>;
+
+/**
+ * 配置の指定を持つ 5 prop の名前（docs/03「配置の指定」）。
+ * `PropEdit.clear` が空でない並びを求めるので、先頭を固定した形で持つ。
+ */
+const PlacementPropNames: readonly [PlacementPropName, ...PlacementPropName[]] =
+  [
+    "placement",
+    ...Object.values(OffsetProps),
+    ...Object.values(Axes).map(Constraint.prop),
+  ];
 
 /**
  * フローから外れ、親からの相対座標で置かれる配置。
@@ -38,6 +56,9 @@ export type AbsolutePlacement = Readonly<{
 export type Placement = Readonly<{ mode: "flow" }> | AbsolutePlacement;
 
 export const Placement = {
+  /** 配置の指定を持つ 5 prop の名前（docs/03「配置の指定」）。 */
+  PropNames: PlacementPropNames,
+
   /**
    * props から置かれ方を組み立てる。
    *
@@ -166,6 +187,28 @@ export const Placement = {
     return Object.values(OffsetProps).map((prop) =>
       PropEdit.set([prop], placement[prop]),
     );
+  },
+
+  /**
+   * 配置の指定のうち書かれているものを、別のノードへ同じ値で書く編集（グループ化で、包む
+   * ノードの配置を Box へ移すときなど）。
+   *
+   * @param props 写し元の props（デフォルト解決済みでないもの。書かれている prop だけを写す
+   *   ため）
+   * @returns 配置の 5 prop のうち `props` に書かれているものを、同じ値で設定する編集。1 件も
+   *   書かれていなければ空
+   */
+  collectWrittenPropEdits(props: Props): readonly PropEdit[] {
+    return PropEdit.collectWritten(props, PlacementPropNames);
+  },
+
+  /**
+   * 配置の指定をすべて未設定へ戻す編集。戻したノードはフローで置かれる。
+   *
+   * @returns 配置の 5 prop を消去する編集 1 件
+   */
+  clearPropEdit(): PropEdit {
+    return PropEdit.clear(PlacementPropNames);
   },
 
   /**
