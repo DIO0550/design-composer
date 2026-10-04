@@ -14,7 +14,7 @@ import { TokenSelection } from "@/domains/session/token-selection";
 import type { Offset } from "@/domains/unit/offset";
 import {
   canvasContent,
-  renderedElement,
+  drawn,
 } from "@/features/editor/features/canvas/__tests__/canvas-elements";
 import {
   movePointer,
@@ -23,7 +23,6 @@ import {
   releasePointer,
 } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
 import { resizeAnchorIndexAt } from "@/features/editor/features/canvas/__tests__/canvas-resize";
-import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import type { ResizeHandleAnchor } from "@/features/editor/features/canvas/domains/node-resize";
 import { useCanvasView } from "@/features/editor/features/canvas/hooks/use-canvas-view";
 import { useNodeDrag } from "@/features/editor/features/canvas/hooks/use-node-drag";
@@ -34,6 +33,13 @@ import {
   RepositionPreviewProperty,
   repositionPreviewDeclarations,
 } from "../reposition-preview-style";
+
+/*
+ * 名前で引く・測りを差し替えるのはキャンバスのフックの単体テストも使うので、持ち主は
+ * feature 直下の `canvas-elements` / `canvas-measure`。ここからは今までどおりの名前で出す。
+ */
+export { drawn } from "@/features/editor/features/canvas/__tests__/canvas-elements";
+export { drawnAt } from "@/features/editor/features/canvas/__tests__/canvas-measure";
 
 /**
  * artboard の並びだけを差し替えたドキュメントと、選択の対
@@ -231,16 +237,6 @@ export function resizeHandleAt(anchor: ResizeHandleAnchor): HTMLElement {
 }
 
 /**
- * キャンバスに描かれている、名前で指した要素。
- *
- * @param name 描かれている artboard / ノードの名前
- * @returns その名前の要素。描かれていなければテストを落とす
- */
-export function drawn(name: string): HTMLElement {
-  return renderedElement(canvasContent(), name);
-}
-
-/**
  * artboard の並び（`ul`）。キャンバスの中で、**名前を持たない場所**として使う。
  *
  * ここへ運んで離すと、落とせる親が 1 つも見つからない状態になる。
@@ -251,30 +247,6 @@ export function artboardList(): Element {
   return Option.unwrap(
     Option.fromNullable(canvasContent().querySelector("ul")),
   );
-}
-
-/**
- * 描かれた位置と大きさをテスト用の値にする。
- *
- * happy-dom はレイアウトを行わず矩形をすべて 0 で返すため、そのままでは**どこが掴める帯
- * か**（リサイズ）も**入力欄を重ねる位置**（インライン編集）も**親どうしの左上のずれ**
- * （親の付け替え）も決まらない。
- *
- * 差し替えるのはブラウザが行う測定だけで、その矩形から何が決まるかは実物のドメインが答え
- * る（rules/testing.md「プロセス外・制御不能な境界」）。
- *
- * **2 つの親の矩形を差し替えていないテストでは、原点のずれが 0 になる。** 付け替えで座
- * 標が直ることを見たいテストは、必ず両方の親をここに通すこと。
- *
- * @param name 描かれているノードの名前
- * @param bounds そのノードが描かれていることにする位置と大きさ
- * @returns 測定を差し替えたあとの要素
- */
-export function drawnAt(name: string, bounds: CanvasBounds): HTMLElement {
-  const element = drawn(name);
-  element.getBoundingClientRect = () =>
-    new DOMRect(bounds.left, bounds.top, bounds.width, bounds.height);
-  return element;
 }
 
 /**

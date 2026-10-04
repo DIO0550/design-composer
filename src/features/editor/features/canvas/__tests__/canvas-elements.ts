@@ -89,6 +89,16 @@ export function renderedElement(
 }
 
 /**
+ * キャンバスに描かれている、名前で指した要素。
+ *
+ * @param name 描かれている artboard / ノードの名前
+ * @returns その名前の要素。描かれていなければテストを落とす
+ */
+export function drawn(name: string): HTMLElement {
+  return renderedElement(canvasContent(), name);
+}
+
+/**
  * artboard 1 枚ぶんの器（見出しと枠をまとめたもの）。
  * キャンバス上の座標を持つのはこの器で、枠そのもの（`role="button"`）ではない。
  *
