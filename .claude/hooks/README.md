@@ -106,7 +106,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 | `block-lint-suppress.sh`(編集時のブロック) | **あり**。抑制コメントは diff に残るので、`.github/scripts/check-added-lint-suppressions.sh` が**追加行の分だけ**同じ判定で落とす(許可される例外も `lib/lint-suppressions.py` で共有)。CI と push 前(git hooks)の両方が走らせる。**push 前は `python3` が使える環境だけ**(無ければ「飛ばします」と出して飛ぶ。CI は落とす → `.github/scripts/lib/detector-precondition.sh`) |
 | `block-npx.sh`(セッション中の行為の禁止) | **無し**。push の時点で痕跡が残らないため代替不能 |
 | `block-git-during-verification-agent.sh`(セッション中の行為の禁止) | **無し**。この競合はセッションの実行タイミングだけが原因で、コミット後のリポジトリの状態には痕跡が残らない |
-| `session-url-notice.sh`(セッション URL の提示) | **無し**。URL はセッションの中にしか無く、残す先も GitHub のコメントなので、push の時点で痕跡が残らない。落ちても穴は開かない(規約が AGENTS.md に残り、失っても情報が 1 つ足りないだけでガードは破れない) |
+| `session-url-notice.sh`(セッション URL の提示) | **無し**。宛先の Issue とそのコメントは CI から読めるが、CI が走るのは規約の起点(着手時)より後で、赤にしても事後に貼らせる以外に直せない(`harness/case-law/process.md`)。落ちても穴は開かない(規約が AGENTS.md に残り、失っても情報が 1 つ足りないだけでガードは破れない) |
 | `post-edit-lint.sh` / `check-test-rules.sh` / `check-doc-comments.sh`(即時フィードバック) | 結果は push 前の検査(git hooks)と CI が拾う。**即時性だけが失われる** |
 | `check-test-helper-duplication.sh`(即時フィードバック) | 結果は push 前の検査(git hooks の `duplicate-test-helpers.py --all src`。`python3` が使える環境だけ)と CI(`rules-check`)が `src/` 全体で拾う。**即時性だけが失われる** |
 | `record-firings.sh`(発火ログ) | **無し**。ただし失敗しても穴は開かない(セッション見出しが無いログは `harness-record` が「計測対象外」と書く設計で、誤ったゼロにはならない)。カナリアと同じ「失敗してもガードが破れない」検出系 |
