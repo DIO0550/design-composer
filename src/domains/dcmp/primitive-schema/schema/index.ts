@@ -1,5 +1,6 @@
 import { Constraints } from "@/domains/dcmp/constraint";
 import { Layout, Layouts } from "@/domains/dcmp/layout";
+import { Locking, Lockings } from "@/domains/dcmp/locking";
 import { PaintTokenKinds } from "@/domains/dcmp/token";
 import { Visibilities, Visibility } from "@/domains/dcmp/visibility";
 import type { ValueOf } from "@/types/ValueOf";
@@ -128,6 +129,23 @@ const VisibilityProps = {
     domain: "enum",
     values: Object.values(Visibilities),
     default: Visibility.Default,
+    group: "appearance",
+  },
+} as const satisfies PropDefinitionRecord;
+
+/**
+ * ノードをキャンバスの直接操作から外すかどうかの props（docs/03「ロック」）。
+ * Box と Text のどちらもキャンバスで選び・動かす対象なので、同じ 1 prop を両方が持つ。
+ *
+ * ロックは描き方に関わらないが `group` は `appearance` に置く。節を 1 つ増やすと UI 案
+ * （docs/Design Composer.html）に無い見出しがパネルへ出るので、既にある節のうち表示 / 非表示
+ * の隣に並べる。spread する位置を末尾にする理由は `VisibilityProps` と同じ。
+ */
+const LockingProps = {
+  locking: {
+    domain: "enum",
+    values: Object.values(Lockings),
+    default: Locking.Default,
     group: "appearance",
   },
 } as const satisfies PropDefinitionRecord;
@@ -331,6 +349,7 @@ export const BoxSchema = {
       group: "appearance",
     },
     ...VisibilityProps,
+    ...LockingProps,
   },
 } as const satisfies PrimitiveSchema;
 
@@ -365,6 +384,7 @@ export const TextSchema = {
       group: "appearance",
     },
     ...VisibilityProps,
+    ...LockingProps,
   },
 } as const satisfies PrimitiveSchema;
 
