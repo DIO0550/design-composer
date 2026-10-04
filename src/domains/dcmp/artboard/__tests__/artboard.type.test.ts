@@ -25,3 +25,7 @@ test("artboard の表示 / 非表示は型の上でも Box と同じく絞られ
 test("artboard の回転は型でも回らない値に絞られている", () => {
   expectTypeOf<ArtboardBoxProps["rotation"]>().toEqualTypeOf<0>();
 });
+
+test("artboard のロックは型でも unlocked に絞られている", () => {
+  expectTypeOf<ArtboardBoxProps["locking"]>().toEqualTypeOf<"unlocked">();
+});

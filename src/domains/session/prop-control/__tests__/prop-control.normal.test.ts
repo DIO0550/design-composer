@@ -367,7 +367,7 @@ test("セクション内のコントロールはスキーマの宣言順に並�
     appearance === undefined
       ? undefined
       : controlsIn(appearance).map((control) => control.prop),
-  ).toEqual(["typography", "color", "align", "visibility"]);
+  ).toEqual(["typography", "color", "align", "visibility", "locking"]);
 });
 
 test("Box の rotation は数値の欄として出る", () => {

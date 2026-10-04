@@ -87,7 +87,7 @@ test("まとめて選んで Delete を押すと、選んだものがすべてツ
 
 test("キャンバスの空き領域から範囲を引くと、範囲に入ったノードがまとめて選ばれる", async () => {
   /*
-   * ここでしか見られないのは配線そのもの。`EditorState.selectNodes` も
+   * ここでしか見られないのは配線そのもの。`EditorState.selectInRange` も
    * `ArtboardCanvas` の通知も個別には緑にできるが、`useNodeActions` から reducer までの
    * どこかが切れていれば範囲を引いても選択が変わらない。
    */

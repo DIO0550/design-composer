@@ -62,3 +62,7 @@ test("artboard は最小 / 最大のサイズを受け付けない", () => {
   expect(names).not.toContain("minHeight");
   expect(names).not.toContain("maxHeight");
 });
+
+test("ロックは artboard の props では受け付けない", () => {
+  expect(Object.keys(Artboard.propDefinitions())).not.toContain("locking");
+});

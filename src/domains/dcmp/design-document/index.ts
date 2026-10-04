@@ -15,6 +15,7 @@ import {
   type FormatVersionCompatibility,
   type FormatVersionOf,
 } from "@/domains/dcmp/format-version";
+import { Locking, Lockings } from "@/domains/dcmp/locking";
 import { Node, type PropEdit, type RefNode } from "@/domains/dcmp/node";
 import { NodeTree, type NodeTreeUpdate } from "@/domains/dcmp/node-tree";
 import { Placement } from "@/domains/dcmp/placement";
@@ -1023,11 +1024,7 @@ export const DesignDocument = {
   },
 
   /**
-   * 並びのうち、artboard 配下のノードとして在る名前だけ（キャンバスで選び・掴みうる相手）。
-   *
-   * キャンバスから届く名前は、押された位置から辿ったもの（クリック・ドラッグ）と範囲に重
-   * なったもの（範囲選択）の 2 通りあり、どちらも同じ絞り込みを通す。**綴りを揃えるだけで
-   * は定義が 2 箇所に散る**ので、絞り込み自体をここへ 1 つ置く。
+   * 並びのうち、artboard 配下のノードとして在る名前だけ（ツリーから選びうる相手）。
    *
    * @param document 名前を引くドキュメント
    * @param names 絞り込む名前の並び
@@ -1040,6 +1037,60 @@ export const DesignDocument = {
   ): readonly string[] {
     return names.filter((name) =>
       Option.isSome(DesignDocument.findNode(document, name)),
+    );
+  },
+
+  /**
+   * 名前で指したノードが、自身か包んでいるノードのどれかでロックされているか
+   * （docs/03「ロック」。子孫へは書き写さず、祖先を辿って決める）。
+   *
+   * artboard に着いた時点で辿るのをやめる。`collectAncestorNames` で並べてから見ると、
+   * 最後の artboard で木の全体を 2 度走り、範囲選択ではそれがポインタの移動ごとに重なる。
+   *
+   * @param document 引き先になるドキュメント
+   * @param name ロックされているかを知りたいノードの名前
+   * @returns 自身か祖先のプリミティブが `locked` なら真。artboard 自身・ドキュメントに無い
+   *   名前は偽。部品インスタンスは `locking` を持たないので、祖先がロックしていなければ偽
+   */
+  isLocked(document: DesignDocument, name: string): boolean {
+    if (Option.isSome(DesignDocument.findArtboard(document, name))) {
+      return false;
+    }
+    const node = DesignDocument.findNode(document, name);
+    if (!Option.isSome(node)) {
+      return false;
+    }
+    const isLockedItself =
+      Node.isPrimitive(node.value) &&
+      Locking.fromProps(node.value.props ?? {}) === Lockings.Locked;
+    if (isLockedItself) {
+      return true;
+    }
+    const position = DesignDocument.findChildPosition(document, name);
+    return (
+      Option.isSome(position) &&
+      DesignDocument.isLocked(document, position.value.parentName)
+    );
+  },
+
+  /**
+   * 並びのうち、キャンバスで選び・掴みうるノードの名前だけ。`collectFoundNodeNames` で
+   * 残る名前から、ロックされているもの（`isLocked`）を落とす。
+   *
+   * キャンバスから届く名前は、押された位置から辿ったもの（クリック・ドラッグ・右クリック）
+   * と範囲に重なったもの（範囲選択）の 2 通りあり、どちらも同じ絞り込みを通す。**綴りを揃
+   * えるだけでは定義が 2 箇所に散る**ので、絞り込み自体をここへ 1 つ置く。
+   *
+   * @param document 名前を引くドキュメント
+   * @param names 絞り込む名前の並び
+   * @returns 選び・掴みうる名前だけを、渡された順のまま残した並び
+   */
+  collectUnlockedNodeNames(
+    document: DesignDocument,
+    names: readonly string[],
+  ): readonly string[] {
+    return DesignDocument.collectFoundNodeNames(document, names).filter(
+      (name) => !DesignDocument.isLocked(document, name),
     );
   },
 

@@ -23,7 +23,7 @@ export type NodeActions = Readonly<{
   selectIfUnselected: (name: string) => void;
   selectAt: (names: readonly string[], dig: SelectionDig) => void;
   /** キャンバスの範囲選択で、範囲に重なったものをまとめて選ぶ。 */
-  selectNodes: (names: readonly string[]) => void;
+  selectInRange: (names: readonly string[]) => void;
   clearSelection: () => void;
   /** エラー行から、そのエラーが指すノードを見せる。 */
   reveal: (nodeName: string) => void;
@@ -80,9 +80,9 @@ export function useNodeActions(): NodeActions {
     /**
      * 範囲に重なったものはキャンバスが実測から決めて渡す（描かれた位置は
      * ドキュメントからは分からない）。選べるものへの絞り込みは状態側の判断
-     * （`EditorState.selectNodes`）。
+     * （`EditorState.selectInRange`）。
      */
-    selectNodes: (names) => dispatch({ type: "select_nodes", names }),
+    selectInRange: (names) => dispatch({ type: "select_in_range", names }),
     clearSelection: () => dispatch({ type: "clear_selection" }),
     /*
      * `select` と分けているのは、エラーの飛び先が表示中のドキュメントに

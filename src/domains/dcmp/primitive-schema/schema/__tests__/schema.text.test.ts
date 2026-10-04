@@ -69,3 +69,14 @@ test("Text の表示 / 非表示は visible / hidden の enum でデフォルト
     default: "visible",
   });
 });
+
+test("Text のロックは unlocked / locked の enum でデフォルトが unlocked、appearance 節にある", () => {
+  const definition = TextSchema.props.locking;
+  expect(PropDefinition.isEnum(definition)).toBe(true);
+  expect(definition).toMatchObject({
+    domain: "enum",
+    values: ["unlocked", "locked"],
+    default: "unlocked",
+    group: "appearance",
+  });
+});

@@ -29,7 +29,7 @@ export type EditorAction =
       dig: SelectionDig;
     }>
   /* キャンバスの範囲選択。範囲に重なったものの名前はキャンバス側が実測から決めて渡す。 */
-  | Readonly<{ type: "select_nodes"; names: readonly string[] }>
+  | Readonly<{ type: "select_in_range"; names: readonly string[] }>
   | Readonly<{ type: "clear_selection" }>
   | Readonly<{ type: "reveal"; name: string }>
   /*
@@ -115,8 +115,8 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
       return EditorState.selectIfUnselected(state, action.name);
     case "select_at":
       return EditorState.selectAt(state, action.names, action.dig);
-    case "select_nodes":
-      return EditorState.selectNodes(state, action.names);
+    case "select_in_range":
+      return EditorState.selectInRange(state, action.names);
     case "clear_selection":
       return EditorState.clearSelection(state);
     case "reveal":
@@ -161,7 +161,7 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
     case "reposition_selected_node":
       /*
        * 1 つだけ選んでいないとき・選んでいるものが座標を持たない（フロー配置 /
-       * インスタンス / artboard）ときは何も動かない
+       * インスタンス / artboard）とき・ロック中のときは何も動かない
        * （EditorState.repositionSelectedNodeBy の `none`）。割り当ては何を選んでいても
        * 押せるため、この `none` には画面の操作から到達する。
        */

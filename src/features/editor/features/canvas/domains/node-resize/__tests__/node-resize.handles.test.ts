@@ -7,7 +7,8 @@ import { NodeResize } from "../index";
 /**
  * `home` に、2 軸とも固定の `panel`、幅だけ固定の `column`、モードを持たない `title`、
  * 幅を固定と書きながら長さの無い `broken`、部品インスタンスの `action`、
- * 絶対配置の `badge` が並ぶドキュメント。`home` の次に座標を持たない `about` が続く。
+ * 絶対配置の `badge`、2 軸とも固定でロックした `locked-panel`（中に 2 軸とも固定の
+ * `locked-child`）が並ぶドキュメント。`home` の次に座標を持たない `about` が続く。
  */
 function setupSelection(
   selectedNames: readonly string[] = [],
@@ -62,6 +63,30 @@ function setupSelection(
                 y: 34,
               },
               children: [],
+            },
+            {
+              name: "locked-panel",
+              type: "Box",
+              props: {
+                widthMode: "fixed",
+                width: 120,
+                heightMode: "fixed",
+                height: 80,
+                locking: "locked",
+              },
+              children: [
+                {
+                  name: "locked-child",
+                  type: "Box",
+                  props: {
+                    widthMode: "fixed",
+                    width: 120,
+                    heightMode: "fixed",
+                    height: 80,
+                  },
+                  children: [],
+                },
+              ],
             },
           ],
         },
@@ -140,4 +165,12 @@ test("座標を書いた artboard はその座標を位置として持つ", () =
 test("座標を書いていない artboard は自動配置で置かれる位置を持つ", () => {
   // 先頭ではなく 2 枚目を見る（先頭だと原点になり、自動配置を壊しても通る）
   expect(originOf("about")).toEqual(Option.some({ x: 392, y: 0 }));
+});
+
+test("ロックしたノードを選んでいるとハンドルが出ない", () => {
+  expect(handlesOf("locked-panel")).toEqual([]);
+});
+
+test("ロックした Box の子を選んでいてもハンドルが出ない", () => {
+  expect(handlesOf("locked-child")).toEqual([]);
 });

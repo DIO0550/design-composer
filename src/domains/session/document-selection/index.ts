@@ -142,13 +142,14 @@ export const DocumentSelection = {
    * と、ドラッグで掴むものの両方がこれを使う。
    *
    * 候補はドキュメントの木にあるノードだけで、artboard 自身と部品定義の中のノード名は入
-   * らない（掘ってもインスタンス自身で止まる）。
+   * らない（掘ってもインスタンス自身で止まる）。ロック中のノードとその子孫も入らない
+   * （docs/03「ロック」）ので、今の選択がロック中なら押された枝の入口から選び直す。
    *
    * @param selection 候補を引くドキュメントと、掘る起点になる今の選択
    * @param names 押された位置から外へ辿った名前（内→外）
    * @param dig 押し方から決まった掘る量
-   * @returns 掘った先のノードの名前。押された位置にノードが 1 つも無ければ（artboard の
-   *   背景を押したとき）`none`
+   * @returns 掘った先のノードの名前。押された位置に選べるノードが 1 つも無ければ（artboard
+   *   の背景か、ロック中のノードの上を押したとき）`none`
    */
   nodeNameAt(
     selection: DocumentSelection,
@@ -157,7 +158,7 @@ export const DocumentSelection = {
   ): Option<string> {
     return SelectionDig.nameAt(
       dig,
-      DesignDocument.collectFoundNodeNames(selection.document, names),
+      DesignDocument.collectUnlockedNodeNames(selection.document, names),
       DocumentSelection.singleName(selection),
     );
   },
