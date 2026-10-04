@@ -181,6 +181,22 @@ export const DocumentSession = {
   },
 
   /**
+   * 見ている先を、並びのその位置のドキュメントへ移す。
+   *
+   * @param session 移す前のセッション
+   * @param index 移り先の位置。タブ列の左端が 0
+   * @returns 見ている先を移したセッション。移し方は `OpenedDocuments.activateAt`
+   */
+  activateAt(session: DocumentSession, index: number): DocumentSession {
+    return withDocuments(
+      session,
+      Option.map(session.documents, (opened) =>
+        OpenedDocuments.activateAt(opened, index),
+      ),
+    );
+  },
+
+  /**
    * そのパスのドキュメントを閉じる。最後の 1 つを閉じると開始画面へ戻る。
    *
    * @param session 閉じる前のセッション
@@ -193,6 +209,20 @@ export const DocumentSession = {
       Option.flatMap(session.documents, (opened) =>
         OpenedDocuments.close(opened, path),
       ),
+    );
+  },
+
+  /**
+   * 今見ているドキュメントを閉じる。最後の 1 つを閉じると開始画面へ戻る。
+   *
+   * @param session 閉じる前のセッション
+   * @returns 閉じたあとのセッション。どれを見るようになるかは
+   *   `OpenedDocuments.closeActive`。何も開いていなければ変わらない
+   */
+  closeActive(session: DocumentSession): DocumentSession {
+    return withDocuments(
+      session,
+      Option.flatMap(session.documents, OpenedDocuments.closeActive),
     );
   },
 
