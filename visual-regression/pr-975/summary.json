@@ -1,10 +1,10 @@
 {
-  "reportVersion": "5167baada3a1df13cd3fa80fff2f3d5df96a872a",
+  "reportVersion": "cf1b0baf441808e89144c65f4c57048011fc1217",
   "maxDiffRatio": 0.002,
   "changed": 0,
   "new": 0,
   "deleted": 0,
-  "passed": 186,
+  "passed": 187,
   "failed": 0,
   "results": [
     {
@@ -546,12 +546,12 @@
       "title": "features/editor/features/assets/CreateComponent",
       "name": "ファイルが不正な間に部品名を打っている",
       "status": "passed",
-      "reason": "within-threshold",
-      "diffPixels": 5,
+      "reason": "match",
+      "diffPixels": 0,
       "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": true
+      "hasDiff": false
     },
     {
       "story": "features-editor-features-assets-createcomponent--instance-selected",
@@ -636,6 +636,19 @@
       "id": "features-editor-features-canvas-artboardcanvas--frozen",
       "title": "features/editor/features/canvas/ArtboardCanvas",
       "name": "ファイルが不正（凍結中）",
+      "status": "passed",
+      "reason": "match",
+      "diffPixels": 0,
+      "diffRatio": 0,
+      "hasExpected": true,
+      "hasActual": true,
+      "hasDiff": false
+    },
+    {
+      "story": "features-editor-features-canvas-artboardcanvas--hidden-artboard-selected",
+      "id": "features-editor-features-canvas-artboardcanvas--hidden-artboard-selected",
+      "title": "features/editor/features/canvas/ArtboardCanvas",
+      "name": "非表示の artboard を選択中",
       "status": "passed",
       "reason": "match",
       "diffPixels": 0,
