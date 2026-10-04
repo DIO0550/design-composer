@@ -1,4 +1,4 @@
-import type { CompiledArtboard } from "@/domains/compiled/compiled-artboard";
+import { CompiledArtboard } from "@/domains/compiled/compiled-artboard";
 import type { Offset } from "@/domains/unit/offset";
 
 /**
@@ -65,6 +65,24 @@ export const ArrangedArtboard = {
       artboard,
       canvasPosition: ArrangedArtboard.positionAt(artboards, index),
     }));
+  },
+
+  /**
+   * 置き場所が決まった並びから、キャンバスに描く artboard だけを残す（docs/03「表示 /
+   * 非表示」）。
+   *
+   * 置き場所を決めたあとで絞るので、非表示の artboard の幅も後ろの artboard の既定の位置に
+   * 数えたまま残る（docs/01「artboards」）。
+   *
+   * @param arranged 置き場所が決まった artboard の並び
+   * @returns 非表示の artboard を除いた並び。並び順は元のまま
+   */
+  collectVisible(
+    arranged: readonly ArrangedArtboard[],
+  ): readonly ArrangedArtboard[] {
+    return arranged.filter(({ artboard }) =>
+      CompiledArtboard.isVisible(artboard),
+    );
   },
 
   /**
