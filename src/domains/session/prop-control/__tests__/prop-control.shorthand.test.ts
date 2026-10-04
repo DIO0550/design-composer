@@ -93,7 +93,14 @@ test("隅を宣言した prop は束ねた行にまとまり、隅ごとの行�
 
   expect(
     rows.flatMap((row) => (row.kind === "prop" ? [row.control.prop] : [])),
-  ).toEqual(["background", "shadow", "overflow", "opacity", "visibility"]);
+  ).toEqual([
+    "background",
+    "shadow",
+    "overflow",
+    "opacity",
+    "visibility",
+    "locking",
+  ]);
 });
 
 test("束ねた行はセクション内で最初の辺の位置に出る", () => {
@@ -129,6 +136,7 @@ test("束ねた行はセクション内で最初の隅の位置に出る", () =>
     "overflow",
     "opacity",
     "visibility",
+    "locking",
   ]);
 });
 
