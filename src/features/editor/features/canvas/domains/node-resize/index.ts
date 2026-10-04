@@ -304,7 +304,7 @@ function bandEndAt(
 }
 
 export const NodeResize = {
-  /** 掴める軸も位置も無い選択（未選択・掴めない対象・凍結中）。 */
+  /** 掴める軸も位置も無い選択（未選択・掴めない対象・ロック中・凍結中）。 */
   Unresizable: UnresizableSelection,
 
   /**
@@ -375,7 +375,7 @@ export const NodeResize = {
    *
    * @param selection ハンドルを出す対象を決める、ドキュメントと選択の対
    * @returns 掴める軸のハンドルと、ドキュメントへ書ける今の位置と、揃え先の名前。単一選択
-   *   でなければ掴める軸も揃え先も空
+   *   でないとき・ロック中のノード（docs/03「ロック」）は掴める軸も揃え先も空
    */
   resizable(selection: DocumentSelection): ResizableSelection {
     const selected = DocumentSelection.singleName(selection);
@@ -398,6 +398,9 @@ export const NodeResize = {
     }
     const node = DesignDocument.findNode(selection.document, name);
     if (!Option.isSome(node)) {
+      return UnresizableSelection;
+    }
+    if (DesignDocument.isLocked(selection.document, name)) {
       return UnresizableSelection;
     }
     const placement = DesignDocument.childPlacementOf(selection.document, name);
