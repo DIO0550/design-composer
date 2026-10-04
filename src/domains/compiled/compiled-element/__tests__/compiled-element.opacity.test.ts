@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { setupBoxStyle } from "./element-style-setup";
+import { setupBoxStyle, setupEllipseStyle } from "./element-style-setup";
 
 test("opacity を下げた Box は opacity を出力する", () => {
   expect(setupBoxStyle({ opacity: 0.5 }).opacity).toBe("0.5");
@@ -23,4 +23,8 @@ test("取りうる範囲を外れた opacity は丸めずそのまま出力す�
 
 test("数値でない opacity は宣言を出力しない", () => {
   expect("opacity" in setupBoxStyle({ opacity: "0.5" })).toBe(false);
+});
+
+test("opacity を下げた Ellipse は opacity を出力する", () => {
+  expect(setupEllipseStyle({ opacity: 0.4 }).opacity).toBe("0.4");
 });

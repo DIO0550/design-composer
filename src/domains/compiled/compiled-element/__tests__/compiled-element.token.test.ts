@@ -1,7 +1,11 @@
 import { expect, test } from "vitest";
 import { Fade } from "@/domains/__tests__/gradient-tokens";
 import { TokenSet } from "@/domains/dcmp/token";
-import { setupBoxStyle, setupTextStyle } from "./element-style-setup";
+import {
+  setupBoxStyle,
+  setupEllipseStyle,
+  setupTextStyle,
+} from "./element-style-setup";
 
 /** 塗りの解決だけを見るトークン一式。名前がどちらの種別にあるかだけを変えて使う。 */
 function setupPaintTokens(): TokenSet {
@@ -88,4 +92,14 @@ test("塗りに同名があっても塗り以外の prop は巻き込まれな�
   );
 
   expect(style["box-shadow"]).toBe("var(--shadows-sm)");
+});
+
+test("塗りを書いていない Ellipse は gray-300 の色で塗られる", () => {
+  expect(setupEllipseStyle({}).background).toBe("var(--colors-gray-300)");
+});
+
+test("Ellipse に影を書くと影のトークン参照になる", () => {
+  expect(setupEllipseStyle({ shadow: "md" })["box-shadow"]).toBe(
+    "var(--shadows-md)",
+  );
 });
