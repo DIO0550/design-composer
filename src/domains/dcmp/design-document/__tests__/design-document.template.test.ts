@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { FormatVersion } from "@/domains/dcmp/format-version";
-import { TextSchema } from "@/domains/dcmp/primitive-schema";
+import { PrimitiveSchemas, TextSchema } from "@/domains/dcmp/primitive-schema";
 import { TokenSet } from "@/domains/dcmp/token";
 import { DesignDocument, DocumentTemplate } from "../index";
 
@@ -50,6 +50,15 @@ test("Text の typography デフォルトが指すトークンは既定のテン
 test("Text の color デフォルトが指すトークンは既定のテンプレートに存在する", () => {
   const { tokens } = DocumentTemplate.Default;
   const definition = TextSchema.props.color;
+
+  expect(
+    TokenSet.has(tokens, definition.tokenKind[0], definition.default),
+  ).toBe(true);
+});
+
+test("Ellipse の background デフォルトが指すトークンは既定のテンプレートに存在する", () => {
+  const { tokens } = DocumentTemplate.Default;
+  const definition = PrimitiveSchemas.Ellipse.props.background;
 
   expect(
     TokenSet.has(tokens, definition.tokenKind[0], definition.default),
