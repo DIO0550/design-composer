@@ -158,3 +158,19 @@ test("見ているドキュメントを動かすと、動かした先でもそ�
     after: [openedAt(FirstPath), openedAt(ThirdPath)],
   });
 });
+
+test("位置を指すと、その位置のドキュメントを見ている状態になる", () => {
+  const opened = OpenedDocuments.open(
+    OpenedDocuments.open(
+      OpenedDocuments.create(openedAt(FirstPath)),
+      openedAt(SecondPath),
+    ),
+    openedAt(ThirdPath),
+  );
+
+  expect(OpenedDocuments.activateAt(opened, 1)).toStrictEqual({
+    before: [openedAt(FirstPath)],
+    active: openedAt(SecondPath),
+    after: [openedAt(ThirdPath)],
+  });
+});
