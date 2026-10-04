@@ -1,3 +1,4 @@
+import { DesignDocument } from "@/domains/dcmp/design-document";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { ReorderSteps } from "@/features/editor/domains/reorder-step";
 import type { ValueOf } from "@/types/ValueOf";
@@ -19,16 +20,26 @@ export type EditMenuTarget = ValueOf<typeof EditMenuTargets>;
 export const EditMenuTarget = {
   /**
    * 押された位置から外へ辿った名前から対象を決める。名前の末尾は必ずその artboard 自身
-   * なので、1 つだけなら artboard の枠か見出しを押したことになる。
+   * なので、空でなければ押されたのは artboard の中になる。
    *
+   * ノードかどうかは、キャンバスで選びうるノードが残るかで決める。名前の数で決めると、ロ
+   * ック中のノードの上ではノードのメニューが出るのに、選択は artboard へ倒れる。
+   *
+   * @param document 名前を引くドキュメント
    * @param names 押された位置から外へ辿った名前（内→外）
-   * @returns 名前が空なら空き領域、1 つだけなら artboard、それより多ければノード
+   * @returns 名前が空なら空き領域、選びうるノードがあればノード、無ければ artboard
+   *   （枠の背景・見出し・ロック中のノードの上）
    */
-  fromNames(names: readonly string[]): EditMenuTarget {
+  fromNames(
+    document: DesignDocument,
+    names: readonly string[],
+  ): EditMenuTarget {
     if (names.length === 0) {
       return EditMenuTargets.EmptyArea;
     }
-    return names.length === 1 ? EditMenuTargets.Artboard : EditMenuTargets.Node;
+    return DesignDocument.collectUnlockedNodeNames(document, names).length > 0
+      ? EditMenuTargets.Node
+      : EditMenuTargets.Artboard;
   },
 } as const;
 

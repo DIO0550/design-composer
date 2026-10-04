@@ -186,7 +186,10 @@ function EditorPanes({
             }
             onRepositionArtboard={node.repositionArtboard}
             onOpenContextMenu={(names, at) => {
-              const target = EditMenuTarget.fromNames(names);
+              const target = EditMenuTarget.fromNames(
+                documentSelection.document,
+                names,
+              );
               // 空き領域では選択に手を付けない（docs/06-ui.md「コンテキストメニュー」）
               if (target !== EditMenuTargets.EmptyArea) {
                 node.selectAt(names, SelectionDigs.NoDeeper);
