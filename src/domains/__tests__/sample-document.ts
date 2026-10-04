@@ -19,6 +19,31 @@ export function artboardDocument(name: string): DesignDocument {
 }
 
 /**
+ * `home` と `about` の 2 枚が、それぞれ Text を 1 つずつ持つドキュメント（artboard を
+ * またぐ編集の起点）。
+ *
+ * @returns `home-title` を持つ `home` と、`about-title` を持つ `about` が並ぶドキュメント
+ */
+export function documentWithChildInEachArtboard(): DesignDocument {
+  return DesignDocument.create({
+    artboards: [
+      Artboard.create({
+        name: "home",
+        width: 360,
+        height: 240,
+        children: [{ name: "home-title", type: "Text" }],
+      }),
+      Artboard.create({
+        name: "about",
+        width: 360,
+        height: 240,
+        children: [{ name: "about-title", type: "Text" }],
+      }),
+    ],
+  });
+}
+
+/**
  * ファイルに載っている状態の `artboardDocument`。
  *
  * @param name 収める artboard の名前

@@ -147,14 +147,8 @@ function applyPropEdits(
   name: string,
   edits: readonly PropEdit[],
 ): Result<DesignDocument, DesignDocumentEditError> {
-  const unedited: Result<DesignDocument, DesignDocumentEditError> =
-    Result.ok(document);
-  return edits.reduce<Result<DesignDocument, DesignDocumentEditError>>(
-    (edited, edit) =>
-      Result.flatMap(edited, (current) =>
-        DesignDocument.applyPropEdit(current, name, edit),
-      ),
-    unedited,
+  return ArrayEx.reduceUntilErr(edits, document, (current, edit) =>
+    DesignDocument.applyPropEdit(current, name, edit),
   );
 }
 
@@ -327,18 +321,12 @@ function followChildren(
   children: readonly Node[],
   resizes: readonly AxisResize[],
 ): Result<DesignDocument, DesignDocumentEditError> {
-  const unfollowed: Result<DesignDocument, DesignDocumentEditError> =
-    Result.ok(document);
-  return children.reduce<Result<DesignDocument, DesignDocumentEditError>>(
-    (followed, child) =>
-      Result.flatMap(followed, (current) =>
-        applyPropEdits(
-          current,
-          child.name,
-          resizes.flatMap((resize) => followPropEdits(child, resize)),
-        ),
-      ),
-    unfollowed,
+  return ArrayEx.reduceUntilErr(children, document, (current, child) =>
+    applyPropEdits(
+      current,
+      child.name,
+      resizes.flatMap((resize) => followPropEdits(child, resize)),
+    ),
   );
 }
 
@@ -1520,6 +1508,34 @@ export const DesignDocument = {
     return Option.isSome(DesignDocument.findArtboard(document, name))
       ? DesignDocument.removeArtboard(document, name)
       : DesignDocument.removeNode(document, name);
+  },
+
+  /**
+   * 名前で指したものをまとめて取り除く（docs/06-ui.md「複数選択」の削除）。1 つずつの
+   * 取り除き方は `remove` と同じ。
+   *
+   * 祖先が同じ並びにある名前は、祖先と一緒に消えるので取り除く対象から落とす。落とさずに
+   * 順に `remove` を当てると、祖先が先に並んだとき子が `node-not-found` になる。
+   *
+   * @param document 取り除く先のドキュメント
+   * @param names 取り除きたい artboard / ノードの名前。重複は 1 つとして扱う
+   * @returns すべて取り除いたドキュメント。空の並びならそのまま。どれか 1 つでも取り除け
+   *   なければ（`remove` が `err` になる名前があれば）その `err` で、何も取り除かない
+   */
+  removeAll(
+    document: DesignDocument,
+    names: readonly string[],
+  ): Result<DesignDocument, DesignDocumentEditError> {
+    const distinctNames = ArrayEx.distinct(names);
+    const outermostNames = distinctNames.filter(
+      (name) =>
+        !DesignDocument.collectAncestorNames(document, name).some((ancestor) =>
+          distinctNames.includes(ancestor),
+        ),
+    );
+    return ArrayEx.reduceUntilErr(outermostNames, document, (current, name) =>
+      DesignDocument.remove(current, name),
+    );
   },
 
   /**

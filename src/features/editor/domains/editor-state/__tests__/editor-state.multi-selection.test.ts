@@ -68,15 +68,6 @@ function setupSingleSelected(): EditorState {
 
 const Width: AxisLength = { axis: "width", length: 120 };
 
-test("複数選んでいる間は削除できない", () => {
-  expect(Option.isSome(EditorState.removeSelected(setupSingleSelected()))).toBe(
-    true,
-  );
-  expect(Option.isSome(EditorState.removeSelected(setupMultiSelected()))).toBe(
-    false,
-  );
-});
-
 test("複数選んでいる間はコピーできない", () => {
   expect(Option.isSome(EditorState.copyNode(setupSingleSelected()))).toBe(true);
   expect(Option.isSome(EditorState.copyNode(setupMultiSelected()))).toBe(false);

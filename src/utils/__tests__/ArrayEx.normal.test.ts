@@ -185,3 +185,11 @@ test("minBy は同じ数値の要素が 2 つあると先に並んだほうを�
 test("minBy は空の並びには none を返す", () => {
   expect(ArrayEx.minBy([], (item: string) => item.length)).toEqual(Option.none);
 });
+
+test("reduceUntilErr はすべて ok なら並びの順に畳んだ値を返す", () => {
+  expect(
+    ArrayEx.reduceUntilErr(["a", "b", "c"], "", (joined, item) =>
+      Result.ok(`${joined}${item}`),
+    ),
+  ).toEqual(Result.ok("abc"));
+});

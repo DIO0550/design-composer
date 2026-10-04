@@ -192,22 +192,16 @@ test("1 つだけ選んでいるときは削除が押せる", () => {
   expect(isRowEnabled(menu, EditOperations.Delete)).toBe(true);
 });
 
-test("複数選択中はどの行も押せない", () => {
+test("複数選択中は削除だけが押せる", () => {
   const menu = EditMenu.create(
     EditorState.selectNodes(setupState(), ["title", "panel"]),
     EditMenuTargets.Node,
   );
 
-  expect(menu.sections.flat().map((row) => row.isEnabled)).toEqual([
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-  ]);
+  expect(
+    menu.sections
+      .flat()
+      .filter((row) => row.isEnabled)
+      .map((row) => row.operation),
+  ).toEqual([EditOperations.Delete]);
 });
