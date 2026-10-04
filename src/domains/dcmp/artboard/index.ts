@@ -1,4 +1,5 @@
 import type { AxisLength } from "@/domains/dcmp/axis-length";
+import { Lockings } from "@/domains/dcmp/locking";
 import { Node, type PropEdit, Props } from "@/domains/dcmp/node";
 import { NodeTree } from "@/domains/dcmp/node-tree";
 import {
@@ -106,6 +107,11 @@ const ArtboardFixedPlacementProps: readonly string[] = [
 const ArtboardFixedVisibilityProps: readonly string[] = ["visibility"];
 
 /**
+ * artboard の props では変えられないロックの prop（受け付けない理由は docs/03「ロック」）。
+ */
+const ArtboardFixedLockingProps: readonly string[] = ["locking"];
+
+/**
  * artboard の props では変えられない回転の prop。
  *
  * 枠の見出しとリサイズハンドルは枠の**外側に別の要素として**描かれるので、要素だけが回ると
@@ -125,6 +131,7 @@ const ArtboardUneditableProps: readonly string[] = [
   ...ArtboardFixedSizeLimitProps,
   ...ArtboardFixedPlacementProps,
   ...ArtboardFixedVisibilityProps,
+  ...ArtboardFixedLockingProps,
   ...ArtboardFixedRotationProps,
 ];
 
@@ -191,6 +198,7 @@ export type ArtboardBoxProps = ResolvedProps<"Box"> &
     height: number;
     placement: "flow";
     visibility: "visible";
+    locking: "unlocked";
     rotation: 0;
   }>;
 
@@ -309,7 +317,7 @@ export const Artboard = {
 
   /**
    * artboard の props を Box の props として解決する（docs/01「artboard は…ルートノード
-   * (Box)を兼ねる」/ docs/03「Box スキーマを流用する」）。Box スキーマと違う点は 5 つで、
+   * (Box)を兼ねる」/ docs/03「Box スキーマを流用する」）。Box スキーマと違う点は次のとおりで、
    * それぞれ効き方が異なる。
    *
    * - `overflow` の既定が `clip`。**デフォルト**なので artboard 側の指定が勝つ
@@ -319,6 +327,7 @@ export const Artboard = {
    *   artboard が描かれる（props を照らす先は Box スキーマなのでファイルには書けてしまう）
    * - 表示は `visible` **固定**。artboard を隠すとは枠の見出しとリサイズハンドルごと隠す
    *   ことで、それを出すかどうかがまだ決まっていない（docs/03「表示 / 非表示」）
+   * - ロックは `unlocked` **固定**（docs/03「ロック」）
    * - 回転は**固定**で回らない。artboard は子の座標の原点になる器なので、回ると中身の位置が
    *   全部変わり、枠の外側に描かれる見出しとリサイズハンドルもずれる（docs/03「回転」）
    *
@@ -337,6 +346,7 @@ export const Artboard = {
       height: artboard.height,
       placement: "flow",
       visibility: Visibilities.Visible,
+      locking: Lockings.Unlocked,
       rotation: 0,
     };
   },
