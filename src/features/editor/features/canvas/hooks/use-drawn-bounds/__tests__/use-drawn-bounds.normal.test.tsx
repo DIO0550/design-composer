@@ -5,6 +5,7 @@ import {
   clearDrawn,
   drawNamed,
   stubBounds,
+  stubLayoutSize,
 } from "@/features/editor/features/canvas/__tests__/canvas-measure";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
 import { Option } from "@/utils/Option";
@@ -100,3 +101,27 @@ test("描かれる位置が変わると測り直す", () => {
   expect(screen.getByTestId("bounds").textContent).toBe("10,20,400,200");
 });
 
+test("回った要素は、レイアウトの大きさに倍率を掛けた矩形を外接矩形の中心に置いたものになる", () => {
+  /*
+   * 外接矩形 (100, 40) 300x200 の中心は (250, 140)。回る前の大きさ 100x40 を 2 倍した
+   * 200x80 をそこへ置く。外接矩形の大きさからは導けない大きさにしてある。
+   */
+  const target = drawNamed("card", {
+    left: 100,
+    top: 40,
+    width: 300,
+    height: 200,
+  });
+  stubLayoutSize(target, { width: 100, height: 40 });
+
+  render(
+    <BoundsProbe
+      target={Option.some("card")}
+      rotation={30}
+      view={{ ...CanvasView.create(), scale: 2 }}
+    />,
+  );
+
+  // 器の左上（10, 20）を原点に置き直すので、(150, 100) は (140, 80) になる
+  expect(screen.getByTestId("bounds").textContent).toBe("140,80,200,80");
+});

@@ -228,3 +228,55 @@ test("掴んでいる間はハンドルがポインタを受け取らない", ()
   );
 });
 
+/** `PanelBounds` を中心 (200, 100) まわりに回して描いたもの。 */
+function turnedPanel(rotation: number): RotatedBounds {
+  return { unrotated: PanelBounds.unrotated, rotation };
+}
+
+test("回ったノードのハンドルは回った角に置かれる", () => {
+  /*
+   * 右下の角 (300, 150) を中心まわりに 30 度回すと (261.6, 193.3)。外接矩形の右下
+   * （軸に平行な 8 点の位置）なら (311.6, 168.3) になる。
+   */
+  render(
+    <ResizeHandleOverlay
+      bounds={turnedPanel(30)}
+      resizable={placed([WidthHandle, HeightHandle])}
+      isGrabbing={false}
+      onGrab={() => {}}
+    />,
+  );
+
+  const bottomRight = screen.getAllByTestId("resize-handle")[4];
+  expect(Number.parseFloat(bottomRight.style.left)).toBeCloseTo(256.6, 1);
+  expect(Number.parseFloat(bottomRight.style.top)).toBeCloseTo(188.3, 1);
+});
+
+test("回ったノードのハンドルは、四角も要素と同じ角度だけ回る", () => {
+  render(
+    <ResizeHandleOverlay
+      bounds={turnedPanel(30)}
+      resizable={placed([WidthHandle, HeightHandle])}
+      isGrabbing={false}
+      onGrab={() => {}}
+    />,
+  );
+
+  expect(new Set(handleStyles((style) => style.transform))).toEqual(
+    new Set(["rotate(30deg)"]),
+  );
+});
+
+test("90 度回したノードの幅のハンドルには、縦の矢印のカーソルが出る", () => {
+  // 右辺は画面の下へ来るので、伸び縮みするのは縦
+  render(
+    <ResizeHandleOverlay
+      bounds={turnedPanel(90)}
+      resizable={placed([WidthHandle, HeightHandle])}
+      isGrabbing={false}
+      onGrab={() => {}}
+    />,
+  );
+
+  expect(handleStyles((style) => style.cursor)[3]).toBe("ns-resize");
+});
