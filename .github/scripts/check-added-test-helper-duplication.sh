@@ -24,10 +24,12 @@ base="${1:-${BASE_SHA:-origin/main}}"
 cd "$(git rev-parse --show-toplevel)"
 
 . "$script_dir/lib/detector-precondition.sh"
+. "$script_dir/lib/detector-report.sh"
 . "$script_dir/lib/added-lines.sh"
 init_added_lines "$base"
 detector=.claude/hooks/lib/duplicate-test-helpers.py
-require_runnable_detector "追加されたテストヘルパーの重複" "$detector"
+check_name="追加されたテストヘルパーの重複"
+require_runnable_detector "$check_name" "$detector"
 
 # 比べる相手の木を展開した先。展開は候補が出たときに 1 度だけ行う(違反の無い push では
 # 走らせない)。
@@ -51,14 +53,17 @@ while IFS= read -r -d '' file; do
   added="$(added_line_numbers "$base" "$file")"
   [ -z "$added" ] && continue
 
-  # `|| true` は外せない(理由は check-added-lint-suppressions.sh の同じ行)。
-  reported="$(python3 "$detector" --lines "$file" || true)"
+  if ! reported="$(detector_report '^[0-9]+:' "$detector" --lines "$file")"; then
+    exit_unchecked "$check_name" "$detector" "$file"
+  fi
   [ -z "$reported" ] && continue
   [ -z "$(entries_on_added_lines "$added" "$reported")" ] && continue
 
   # `$(...)` の中で展開すると `base_tree` がサブシェルに閉じ、ファイルごとに展開し直す
   extract_base_tree
-  reported="$(python3 "$detector" --lines "$file" --base-root "$base_tree/src" || true)"
+  if ! reported="$(detector_report '^[0-9]+:' "$detector" --lines "$file" --base-root "$base_tree/src")"; then
+    exit_unchecked "$check_name" "$detector" "$file"
+  fi
   [ -z "$reported" ] && continue
 
   while IFS= read -r entry; do
