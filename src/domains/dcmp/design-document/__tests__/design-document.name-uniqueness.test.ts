@@ -38,10 +38,7 @@ test("既にあるノードと同じ名前のノードを挿すと duplicate-nam
     { name: "title", type: "Text" },
   );
 
-  expect(result).toEqual({
-    ok: false,
-    error: { kind: "duplicate-name", name: "title" },
-  });
+  expect(result).toEqual(Result.err({ kind: "duplicate-name", name: "title" }));
 });
 
 test("挿すノードの子孫が既にある名前を持つと duplicate-name になる", () => {
@@ -55,10 +52,7 @@ test("挿すノードの子孫が既にある名前を持つと duplicate-name �
     },
   );
 
-  expect(result).toEqual({
-    ok: false,
-    error: { kind: "duplicate-name", name: "label" },
-  });
+  expect(result).toEqual(Result.err({ kind: "duplicate-name", name: "label" }));
 });
 
 test("新しい重複が 2 つできるとき、先に現れる名前の duplicate-name になる", () => {
@@ -75,10 +69,7 @@ test("新しい重複が 2 つできるとき、先に現れる名前の duplica
     },
   );
 
-  expect(result).toEqual({
-    ok: false,
-    error: { kind: "duplicate-name", name: "title" },
-  });
+  expect(result).toEqual(Result.err({ kind: "duplicate-name", name: "title" }));
 });
 
 test("既にある名前のノードを範囲外の位置へ挿すと、位置の失敗が先に返る", () => {
@@ -88,10 +79,9 @@ test("既にある名前のノードを範囲外の位置へ挿すと、位置�
     { name: "title", type: "Text" },
   );
 
-  expect(result).toEqual({
-    ok: false,
-    error: { kind: "index-out-of-range", index: 5, length: 2 },
-  });
+  expect(result).toEqual(
+    Result.err({ kind: "index-out-of-range", index: 5, length: 2 }),
+  );
 });
 
 test("既にある名前の artboard を範囲外の位置へ足すと、位置の失敗が先に返る", () => {
@@ -101,10 +91,9 @@ test("既にある名前の artboard を範囲外の位置へ足すと、位置�
     setupArtboard("home", []),
   );
 
-  expect(result).toEqual({
-    ok: false,
-    error: { kind: "index-out-of-range", index: 5, length: 1 },
-  });
+  expect(result).toEqual(
+    Result.err({ kind: "index-out-of-range", index: 5, length: 1 }),
+  );
 });
 
 test("部品の名前と同じ名前のノードを挿すと duplicate-name になる", () => {
@@ -114,10 +103,7 @@ test("部品の名前と同じ名前のノードを挿すと duplicate-name に�
     { name: "card", type: "Box" },
   );
 
-  expect(result).toEqual({
-    ok: false,
-    error: { kind: "duplicate-name", name: "card" },
-  });
+  expect(result).toEqual(Result.err({ kind: "duplicate-name", name: "card" }));
 });
 
 test("既に 2 つある名前のノードをもう 1 つ挿すと duplicate-name になる", () => {
@@ -127,10 +113,7 @@ test("既に 2 つある名前のノードをもう 1 つ挿すと duplicate-nam
     { name: "label", type: "Text" },
   );
 
-  expect(result).toEqual({
-    ok: false,
-    error: { kind: "duplicate-name", name: "label" },
-  });
+  expect(result).toEqual(Result.err({ kind: "duplicate-name", name: "label" }));
 });
 
 test("名前が重複したドキュメントでも、使われていない名前のノードは挿せる", () => {
@@ -154,10 +137,7 @@ test("既にある artboard と同じ名前の artboard を足すと duplicate-n
     setupArtboard("home", []),
   );
 
-  expect(result).toEqual({
-    ok: false,
-    error: { kind: "duplicate-name", name: "home" },
-  });
+  expect(result).toEqual(Result.err({ kind: "duplicate-name", name: "home" }));
 });
 
 test("足す artboard の配下のノードが既にある名前を持つと duplicate-name になる", () => {
@@ -167,10 +147,7 @@ test("足す artboard の配下のノードが既にある名前を持つと dup
     setupArtboard("settings", [{ name: "title", type: "Text" }]),
   );
 
-  expect(result).toEqual({
-    ok: false,
-    error: { kind: "duplicate-name", name: "title" },
-  });
+  expect(result).toEqual(Result.err({ kind: "duplicate-name", name: "title" }));
 });
 
 test("既に 2 つある名前のノードを配下に持つ artboard を足すと duplicate-name になる", () => {
@@ -180,10 +157,7 @@ test("既に 2 つある名前のノードを配下に持つ artboard を足す�
     setupArtboard("settings", [{ name: "label", type: "Text" }]),
   );
 
-  expect(result).toEqual({
-    ok: false,
-    error: { kind: "duplicate-name", name: "label" },
-  });
+  expect(result).toEqual(Result.err({ kind: "duplicate-name", name: "label" }));
 });
 
 test("名前が重複したドキュメントでも、使われていない名前の artboard は足せる", () => {
@@ -206,10 +180,7 @@ test("差し替え後のノードが別の既にある名前を持つと duplica
     type: "Text",
   });
 
-  expect(result).toEqual({
-    ok: false,
-    error: { kind: "duplicate-name", name: "title" },
-  });
+  expect(result).toEqual(Result.err({ kind: "duplicate-name", name: "title" }));
 });
 
 test("差し替え後のノードが自分と同じ名前なら差し替えられる", () => {
@@ -250,10 +221,7 @@ test("既に 2 つある名前のノードを、同じ名前の子を足して�
     ],
   });
 
-  expect(result).toEqual({
-    ok: false,
-    error: { kind: "duplicate-name", name: "label" },
-  });
+  expect(result).toEqual(Result.err({ kind: "duplicate-name", name: "label" }));
 });
 
 test("既に 2 つある名前のノードを別の親へ移せる", () => {

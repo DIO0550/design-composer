@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { Result } from "@/utils/Result";
 import { DesignDocument } from "../index";
 import { documentWithOneArtboard } from "./artboard-edit-setup";
 
@@ -10,8 +11,7 @@ import { documentWithOneArtboard } from "./artboard-edit-setup";
 test("どこにも無い名前を指すとノードが見つからない失敗になる", () => {
   const removed = DesignDocument.remove(documentWithOneArtboard(), "居ない");
 
-  expect(removed).toEqual({
-    ok: false,
-    error: { kind: "node-not-found", name: "居ない" },
-  });
+  expect(removed).toEqual(
+    Result.err({ kind: "node-not-found", name: "居ない" }),
+  );
 });

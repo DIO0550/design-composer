@@ -5,7 +5,7 @@
 #
 # 使う側:
 #   - deny_on_violations: .claude/hooks/pre-push-import-rules.sh /
-#     pre-push-result-option-reads.sh / pre-push-story-titles.sh / pre-push-named-paths.sh
+#     pre-push-result-option-discriminants.sh / pre-push-story-titles.sh / pre-push-named-paths.sh
 #   - deny_on_all_src_failure: .claude/hooks/pre-push-doc-comments.sh /
 #     pre-push-test-helper-duplication.sh
 #

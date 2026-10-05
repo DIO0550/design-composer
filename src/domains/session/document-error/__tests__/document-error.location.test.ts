@@ -9,7 +9,7 @@ test("ノードを指す場所からは、そのノードの名前が読める",
     prop: "typography",
   });
 
-  expect(nodeName).toStrictEqual({ some: true, value: "home-title" });
+  expect(nodeName).toStrictEqual(Option.some("home-title"));
 });
 
 test("テキストの文字位置を指す場所からは、ノードの名前が読めない", () => {

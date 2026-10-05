@@ -6,7 +6,7 @@ test.each([
   [false],
   [""],
 ])("falsy な値 %j でも fromNullable は存在する値として扱う", (value) => {
-  expect(Option.fromNullable(value)).toEqual({ some: true, value });
+  expect(Option.fromNullable(value)).toEqual(Option.some(value));
 });
 
 test("unwrapOr は falsy な値 0 をデフォルト値で上書きしない", () => {

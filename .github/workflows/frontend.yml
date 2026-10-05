@@ -133,12 +133,14 @@ jobs:
       - name: import 規約
         run: python3 .claude/hooks/lib/import-rule-violations.py src
 
-      # Result / Option の判別子を定義元の外で直読みしている箇所（#523）。
-      # oxlint には no-restricted-syntax が無く、Biome の GritQL プラグインでは
-      # 呼び出し位置（list.some(fn)）と引数の中の読み（expect(option.some)）を
-      # 区別できないため、ここでスクリプトとして持つ。
-      - name: 判別子の直読み
-        run: python3 .claude/hooks/lib/result-option-read-violations.py src
+      # Result / Option の判別子を定義元の外で直読み（#523）・値リテラルで直書き
+      # （#524）している箇所。oxlint には no-restricted-syntax が無く、Biome の
+      # GritQL プラグインでは呼び出し位置（list.some(fn)）と引数の中の読み
+      # （expect(option.some)）を区別できないため、ここでスクリプトとして持つ。
+      # 値リテラルの ok: false は GritQL で取れるが、免除（判別子を型宣言で定義して
+      # いるファイル）をパターンで書けず、パスで外すと除外リストになる。
+      - name: 判別子の直読み・直書き
+        run: python3 .claude/hooks/lib/result-option-discriminant-violations.py src
 
       # story の title とフォルダ階層の食い違い（#669 / #701）。Storybook のツリーは
       # title の綴りだけで組まれ、フォルダからは導出されないので、フォルダを動かしても
@@ -169,8 +171,8 @@ jobs:
       - name: import 規約の判定表
         run: bash .claude/hooks/lib/import-rule-cases.sh
 
-      - name: 判別子の直読みの判定表
-        run: bash .claude/hooks/lib/result-option-read-cases.sh
+      - name: 判別子の直読み・直書きの判定表
+        run: bash .claude/hooks/lib/result-option-discriminant-cases.sh
 
       - name: story の title の判定表
         run: bash .claude/hooks/lib/story-title-cases.sh

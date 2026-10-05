@@ -13,7 +13,7 @@ test("artboard の名前を指すとその artboard が得られる", () => {
 
   const found = DesignDocument.findArtboard(document, "home");
 
-  expect(found).toEqual({ some: true, value: home });
+  expect(found).toEqual(Option.some(home));
 });
 
 test("artboard に無い名前を指すと見つからない", () => {

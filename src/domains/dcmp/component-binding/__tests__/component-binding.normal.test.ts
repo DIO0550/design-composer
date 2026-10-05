@@ -37,13 +37,14 @@ test("binding 先がプリミティブならそのノードの prop 定義が解
     }),
   );
 
-  expect(Option.map(target, ({ definition }) => definition)).toEqual({
-    some: true,
-    value: expect.objectContaining({
-      domain: "literal",
-      literalType: "string",
-    }),
-  });
+  expect(Option.map(target, ({ definition }) => definition)).toEqual(
+    Option.some(
+      expect.objectContaining({
+        domain: "literal",
+        literalType: "string",
+      }),
+    ),
+  );
 });
 
 test("binding 先が ref ノードなら参照先の publicProps を辿って解決される", () => {
@@ -54,13 +55,14 @@ test("binding 先が ref ノードなら参照先の publicProps を辿って解
     ComponentBinding.create("card", { node: "card-action", prop: "label" }),
   );
 
-  expect(Option.map(target, ({ definition }) => definition)).toEqual({
-    some: true,
-    value: expect.objectContaining({
-      domain: "literal",
-      literalType: "string",
-    }),
-  });
+  expect(Option.map(target, ({ definition }) => definition)).toEqual(
+    Option.some(
+      expect.objectContaining({
+        domain: "literal",
+        literalType: "string",
+      }),
+    ),
+  );
 });
 
 test("トークン参照 prop への binding はトークン種別を持つ定義として解決される", () => {
@@ -76,11 +78,12 @@ test("トークン参照 prop への binding はトークン種別を持つ定�
     ComponentBinding.create("panel", { node: "panel", prop: "background" }),
   );
 
-  expect(Option.map(target, ({ definition }) => definition)).toEqual({
-    some: true,
-    value: expect.objectContaining({
-      domain: "token",
-      tokenKind: ["colors", "gradients"],
-    }),
-  });
+  expect(Option.map(target, ({ definition }) => definition)).toEqual(
+    Option.some(
+      expect.objectContaining({
+        domain: "token",
+        tokenKind: ["colors", "gradients"],
+      }),
+    ),
+  );
 });

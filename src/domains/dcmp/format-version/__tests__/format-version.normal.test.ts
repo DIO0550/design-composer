@@ -1,11 +1,11 @@
 import { expect, test } from "vitest";
+import { Option } from "@/utils/Option";
 import { FormatVersion } from "../index";
 
 test("major.minor 形式の文字列をパースすると値を持つ FormatVersion になる", () => {
-  expect(FormatVersion.parse("1.2")).toEqual({
-    some: true,
-    value: { major: 1, minor: 2 },
-  });
+  expect(FormatVersion.parse("1.2")).toEqual(
+    Option.some({ major: 1, minor: 2 }),
+  );
 });
 
 test("FormatVersion を文字列にフォーマットすると major.minor 形式になる", () => {

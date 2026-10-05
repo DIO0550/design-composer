@@ -8,7 +8,7 @@ test.each([
   [false],
   [""],
 ])("falsy な成功値 %j でも toOption は存在する値に変換する", (value) => {
-  expect(Interop.toOption(Result.ok(value))).toEqual({ some: true, value });
+  expect(Interop.toOption(Result.ok(value))).toEqual(Option.some(value));
 });
 
 test.each([
@@ -16,8 +16,7 @@ test.each([
   [false],
   [""],
 ])("falsy な値 %j でも toResult は成功に変換する", (value) => {
-  expect(Interop.toResult(Option.some(value), "missing")).toEqual({
-    ok: true,
-    value,
-  });
+  expect(Interop.toResult(Option.some(value), "missing")).toEqual(
+    Result.ok(value),
+  );
 });

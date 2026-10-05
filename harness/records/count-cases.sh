@@ -10,7 +10,7 @@
 # **表をファイルに置くのは、窓の取り方(綴りごとに持ち、そのうちいちばん古い窓から数える)が
 # この集計の中心で、増え続ける本物の記録を目で数えても退行を検知できないため。** 同じ形の
 # 前例は `.github/scripts/check-pr-closing-issue-cases.sh`。終了コードで見る理由も、そこと
-# `.claude/hooks/lib/result-option-read-cases.sh` の冒頭にある。
+# `.claude/hooks/lib/result-option-discriminant-cases.sh` の冒頭にある。
 #
 # `report()` を前例と共通化しないのは、判定表が 4 つのフォルダに割れていて、共有先を作ると
 # 判定表 1 本を単体で読めなくなるため。

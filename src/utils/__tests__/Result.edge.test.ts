@@ -6,7 +6,8 @@ test.each([
   [false],
   [""],
 ])("falsy な値 %j でも ok は成功として扱う", (value) => {
-  expect(Result.ok(value)).toEqual({ ok: true, value });
+  const success = Result.ok(value);
+  expect(Result.isOk(success) ? success.value : undefined).toBe(value);
 });
 
 test("unwrapOr は falsy な成功値 0 をデフォルト値で上書きしない", () => {

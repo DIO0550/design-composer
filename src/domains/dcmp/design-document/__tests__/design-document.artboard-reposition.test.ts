@@ -59,7 +59,7 @@ test("ノードの名前を指すと node-not-found エラーになる", () => {
       x: 900,
       y: 300,
     }),
-  ).toEqual({ ok: false, error: { kind: "node-not-found", name: "badge" } });
+  ).toEqual(Result.err({ kind: "node-not-found", name: "badge" }));
 });
 
 test("存在しない名前を指すと node-not-found エラーになる", () => {
@@ -68,5 +68,5 @@ test("存在しない名前を指すと node-not-found エラーになる", () =
       x: 900,
       y: 300,
     }),
-  ).toEqual({ ok: false, error: { kind: "node-not-found", name: "居ない" } });
+  ).toEqual(Result.err({ kind: "node-not-found", name: "居ない" }));
 });

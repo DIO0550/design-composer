@@ -30,10 +30,7 @@ function setupTrailSteps(): MigrationSteps {
 test("アプリと同じ形式のドキュメントはそのまま通る", () => {
   const document = setupDocument("1.0");
 
-  expect(DocumentMigration.toCurrent(document)).toEqual({
-    ok: true,
-    value: document,
-  });
+  expect(DocumentMigration.toCurrent(document)).toEqual(Result.ok(document));
 });
 
 test("major がアプリより小さいドキュメントは登録されたステップで変換される", () => {
@@ -72,10 +69,7 @@ test("major が2つ以上離れていてもステップは major の昇順に適
 test("formatVersion を持たない入力はそのまま通る", () => {
   const document: JsonRecord = { tokens: {} };
 
-  expect(DocumentMigration.toCurrent(document)).toEqual({
-    ok: true,
-    value: document,
-  });
+  expect(DocumentMigration.toCurrent(document)).toEqual(Result.ok(document));
 });
 
 test("元のドキュメントは変換で書き換えられない", () => {
