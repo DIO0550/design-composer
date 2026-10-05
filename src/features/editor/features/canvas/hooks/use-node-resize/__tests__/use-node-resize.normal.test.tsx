@@ -60,7 +60,7 @@ const PanelBounds: CanvasBounds = {
  * フックを DOM へ繋いだだけの器。
  *
  * キャンバスは中身を文字列の HTML で流し込むので、フックは名前の属性で要素を引く。
- * ここでも同じ属性を持つ要素を 1 つ置き、掴めたか / click を飲み込んだかを読めるようにする
+ * ここでも同じ属性を持つ要素を 1 つ置き、掴めたか / click が選択まで届いたかを読めるようにする
  * （ハンドルの見た目は features/editor/features/canvas/components/artboard-canvas の
  * 責務なのでここでは扱わない）。
  */
@@ -81,7 +81,11 @@ function NodeResizeHarness({
   });
 
   return (
-    <div data-testid="canvas-content" {...nodeResize.dragHandlers}>
+    <div
+      data-testid="canvas-content"
+      {...nodeResize.dragHandlers}
+      onClickCapture={nodeResize.onClickCapture}
+    >
       <button
         type="button"
         data-name="panel"
@@ -89,9 +93,7 @@ function NodeResizeHarness({
         onPointerDown={(event) =>
           setGrabbed(nodeResize.grabAt(event) ? "掴んだ" : "掴んでいない")
         }
-        onClick={() =>
-          setClicked(nodeResize.consumeClick() ? "飲み込んだ" : "選択に使う")
-        }
+        onClick={() => setClicked("選択に使う")}
       />
       <p data-testid="grabbed">{grabbed}</p>
       <p data-testid="clicked">{clicked}</p>
@@ -236,7 +238,24 @@ test("大きさを変えた直後の click は飲み込まれる", () => {
   releasePointer(canvasContent(), { x: 338, y: 100 });
   fireEvent.click(panel());
 
-  expect(clicked()).toBe("飲み込んだ");
+  expect(clicked()).toBe("click は届いていない");
+});
+
+test("枠の外で離した直後の click を受けたあとは、次の click が選択に届く", () => {
+  render(
+    <NodeResizeHarness
+      selection={setupSelection(["panel"])}
+      onResize={vi.fn()}
+    />,
+  );
+
+  pressPointer(panel(), { x: 298, y: 100 });
+  movePointer(canvasContent(), { x: 338, y: 100 });
+  releasePointer(canvasContent(), { x: 338, y: 100 });
+  fireEvent.click(canvasContent());
+  fireEvent.click(panel());
+
+  expect(clicked()).toBe("選択に使う");
 });
 
 test("リサイズしていないときの click はそのまま選択に使える", () => {
