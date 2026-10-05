@@ -514,7 +514,7 @@ export const NodeResize = {
       origin: Option.map(placement, (child) =>
         Placement.offset(child.placement),
       ),
-      snapTargetNames: Rotation.isUpright(rotation.value.total)
+      snapTargetNames: Rotation.isWholeTurns(rotation.value.total)
         ? Option.unwrapOr(
             Option.flatMap(placement, (child) =>
               parentWithSiblingNames(selection.document, {

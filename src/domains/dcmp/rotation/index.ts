@@ -18,12 +18,13 @@ export const Rotation = {
    * props から向きを読む。
    *
    * @param props 読み取り元の props（デフォルト解決済みでなくてよい）
-   * @returns 書かれている角度。未設定・数値でない値（ファイル由来の不正な綴り）のときは既定
-   *   （`Default`）
+   * @returns 書かれている角度。未設定・数値でない値・有限でない値（ファイル由来の不正な綴り。
+   *   JSON の `1e400` は Infinity として読まれる）のときは既定（`Default`）
    */
   fromProps(props: Props): Rotation {
-    return typeof props.rotation === "number"
-      ? props.rotation
+    const rotation = props.rotation;
+    return typeof rotation === "number" && Number.isFinite(rotation)
+      ? rotation
       : Rotation.Default;
   },
 
@@ -33,7 +34,7 @@ export const Rotation = {
    * @param rotation 判定する向き
    * @returns 360 の倍数（0 を含む）なら `true`
    */
-  isUpright(rotation: Rotation): boolean {
+  isWholeTurns(rotation: Rotation): boolean {
     return rotation % FullTurn === 0;
   },
 } as const;

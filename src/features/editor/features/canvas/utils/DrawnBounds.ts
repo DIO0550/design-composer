@@ -39,7 +39,7 @@ export const DrawnBounds = {
   ): Option<RotatedBounds> {
     return Option.flatMap(CanvasDom.elementOf(name), (element) => {
       const enclosing = CanvasDom.boundsOf(element);
-      if (Rotation.isUpright(rotation)) {
+      if (Rotation.isWholeTurns(rotation)) {
         return Option.some(
           RotatedBounds.fromEnclosing(enclosing, enclosing, rotation),
         );

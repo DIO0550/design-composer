@@ -172,11 +172,8 @@ const EllipseBorderRadius = "50%";
  * `opacityDeclarations` と形は似ているが、既定を出さない理由が別 (あちらは初期値と同じで
  * 効果が無い) なので畳まない。畳むと呼び出しからどちらの理由かが読めなくなる。
  *
- * 360 の倍数でも出す（`Rotation.isUpright` では見ない）。`rotate(360deg)` も新しい stacking
- * context を作るので、出さないと重なり順が変わる。
- *
  * @param props ノードに設定されている props
- * @returns 回っているときだけ宣言 1 件。数値でない値（ファイル由来の不正な綴り）では空
+ * @returns 0 以外の角度のときだけ宣言 1 件。読めない値（`Rotation.fromProps`）では空
  */
 function rotationDeclarations(props: Props): readonly CssDeclarationType[] {
   const rotation = Rotation.fromProps(props);
