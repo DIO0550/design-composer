@@ -12,24 +12,22 @@ import {
   type ResizeHandleAnchor,
   type ResizeRotation,
 } from "../index";
-import { grabbedAt, setupFlowResizable, setupView } from "./setup";
+import {
+  grabbedAt,
+  setupBounds,
+  setupFlowResizable,
+  setupResizable,
+  setupView,
+} from "./setup";
 
 /*
  * 回って描かれているもののリサイズ（docs/06-ui.md「リサイズハンドル」）。
  * 回っていないものの振る舞いは `node-resize.gesture` が持つ。
  */
 
-/** (30, 70) に置かれた 200x100 の、向きを指定した絶対配置のノード。 */
+/** `setupResizable`（(30, 70) に置かれた 200x100 の絶対配置）を、指定した向きに回したもの。 */
 function placedTurned(rotation: ResizeRotation): ResizableSelection {
-  return {
-    lengths: [
-      AxisLength.create("width", 200),
-      AxisLength.create("height", 100),
-    ],
-    origin: Option.some({ x: 30, y: 70 }),
-    snapTargetNames: [],
-    rotation,
-  };
+  return { ...setupResizable(), rotation };
 }
 
 /**
@@ -200,11 +198,8 @@ test("祖先も回っているとき、置き直しは自分の向きだけで�
   expect(moved.y).toBeCloseTo(stayed.y);
 });
 
-/** 画面の (100, 50) から 200x100 の矩形を 45 度回して描いたもの。中心は (200, 100)。 */
-const TurnedBounds: RotatedBounds = {
-  unrotated: { left: 100, top: 50, width: 200, height: 100 },
-  rotation: 45,
-};
+/** `setupBounds`（画面の (100, 50) から 200x100）を 45 度回して描いたもの。中心は (200, 100)。 */
+const TurnedBounds: RotatedBounds = { unrotated: setupBounds(), rotation: 45 };
 
 test("45 度回したノードの回った右辺の内側を押すと、幅を掴む", () => {
   const onRightBand = RotatedBounds.pointAt(TurnedBounds, { x: 0.985, y: 0.5 });

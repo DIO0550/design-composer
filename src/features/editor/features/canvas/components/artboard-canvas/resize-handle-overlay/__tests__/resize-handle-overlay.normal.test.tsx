@@ -233,6 +233,14 @@ function turnedPanel(rotation: number): RotatedBounds {
   return { unrotated: PanelBounds.unrotated, rotation };
 }
 
+/** 同じ角度だけ回っている、2 軸とも掴めて位置を持つ対象。 */
+function turnedPlaced(rotation: number): ResizableSelection {
+  return {
+    ...placed([WidthHandle, HeightHandle]),
+    rotation: { own: rotation, total: rotation },
+  };
+}
+
 test("回ったノードのハンドルは回った角に置かれる", () => {
   /*
    * 右下の角 (300, 150) を中心まわりに 30 度回すと (261.6, 193.3)。外接矩形の右下
@@ -241,7 +249,7 @@ test("回ったノードのハンドルは回った角に置かれる", () => {
   render(
     <ResizeHandleOverlay
       bounds={turnedPanel(30)}
-      resizable={placed([WidthHandle, HeightHandle])}
+      resizable={turnedPlaced(30)}
       isGrabbing={false}
       onGrab={() => {}}
     />,
@@ -256,7 +264,7 @@ test("回ったノードのハンドルは、四角も要素と同じ角度だ�
   render(
     <ResizeHandleOverlay
       bounds={turnedPanel(30)}
-      resizable={placed([WidthHandle, HeightHandle])}
+      resizable={turnedPlaced(30)}
       isGrabbing={false}
       onGrab={() => {}}
     />,
@@ -272,7 +280,7 @@ test("90 度回したノードの幅のハンドルには、縦の矢印のカ�
   render(
     <ResizeHandleOverlay
       bounds={turnedPanel(90)}
-      resizable={placed([WidthHandle, HeightHandle])}
+      resizable={turnedPlaced(90)}
       isGrabbing={false}
       onGrab={() => {}}
     />,
