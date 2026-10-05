@@ -51,6 +51,18 @@ test("右向きの差を 30 度回すと長さを保ったまま右下へ向く"
   expect(rotated.y).toBeCloseTo(10, 2);
 });
 
+test("1 回り回した差は元の差と同じになる", () => {
+  expect(Offset.rotate({ x: 30, y: -12 }, 360)).toEqual({ x: 30, y: -12 });
+});
+
+test("縦横どちらも 0 の差は動きが無い", () => {
+  expect(Offset.isOrigin({ x: 0, y: 0 })).toBe(true);
+});
+
+test("片方だけ 0 の差は動きがある", () => {
+  expect(Offset.isOrigin({ x: 0, y: 3 })).toBe(false);
+});
+
 test("負の角度は反時計回りに回す", () => {
   const rotated = Offset.rotate({ x: 30, y: 0 }, -90);
   expect(rotated.x).toBeCloseTo(0);
