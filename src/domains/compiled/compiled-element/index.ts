@@ -212,9 +212,20 @@ function overflowDeclarations(
 function wrapDeclarations(
   wrap: PropValue | undefined,
 ): readonly CssDeclarationType[] {
-  return wrap === "wrap"
+  return isWrapping(wrap)
     ? [CssDeclaration.create("flex-wrap", String(wrap))]
     : [];
+}
+
+/**
+ * `wrap` prop の値が子を折り返す指定か。`flex-wrap` の出力と、落とし先の行の分割
+ * （`BoxElement.wrapsChildren`）が同じ判定を引く。
+ *
+ * @param wrap `wrap` prop に設定されている値
+ * @returns `wrap` なら `true`。既定の `nowrap` と未設定は `false`
+ */
+function isWrapping(wrap: PropValue | undefined): boolean {
+  return wrap === "wrap";
 }
 
 /** 出力しても効果の無い、CSS の初期値と同じ完全な不透明。 */
@@ -411,6 +422,17 @@ export const BoxElement = {
    */
   childDirection(props: ResolvedProps<"Box">): Option<CssDirection> {
     return Layout.direction(Layout.fromProps(props));
+  },
+
+  /**
+   * 子を折り返すか。
+   *
+   * @param props デフォルト解決済みの Box の props
+   * @returns `wrap: wrap` なら `true`。子を並べない (`layout: free`) Box では `wrap` が効
+   *   かないが、ここでは区別しない（並ぶ向きは `childDirection` が答える）
+   */
+  wrapsChildren(props: ResolvedProps<"Box">): boolean {
+    return isWrapping(props.wrap);
   },
 } as const;
 
