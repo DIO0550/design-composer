@@ -5,7 +5,7 @@ import type { ResizableSelection } from "@/features/editor/features/canvas/domai
 import { Option } from "@/utils/Option";
 import { ResizeHandleOverlay } from "./index";
 
-/** 選択されている体の箱（回る前）。器とハンドルの両方が同じ数値を使うので 1 つに置く。 */
+/** 既定で選択されている体の箱（回る前）。器はストーリーの `bounds` から描く。 */
 const SelectedBounds: CanvasBounds = {
   left: 40,
   top: 40,
@@ -37,10 +37,10 @@ const meta = {
         <div
           className="absolute overflow-hidden bg-white shadow-sm outline-2 outline-blue-500"
           style={{
-            left: `${SelectedBounds.left}px`,
-            top: `${SelectedBounds.top}px`,
-            width: `${SelectedBounds.width}px`,
-            height: `${SelectedBounds.height}px`,
+            left: `${context.args.bounds.unrotated.left}px`,
+            top: `${context.args.bounds.unrotated.top}px`,
+            width: `${context.args.bounds.unrotated.width}px`,
+            height: `${context.args.bounds.unrotated.height}px`,
             transform: `rotate(${context.args.bounds.rotation}deg)`,
           }}
         />
@@ -71,11 +71,16 @@ export const BothAxes: Story = {
 /**
  * 30 度回した要素。ハンドルは回った角・辺の中点に出て、四角も同じ角度だけ回る
  * （docs/06-ui.md「リサイズハンドル」）。
+ *
+ * 回すと外接矩形が広がるので、器（高さ 224px）からはみ出さない小さい箱にしてある。
  */
 export const Rotated: Story = {
   name: "回った要素",
   args: {
-    bounds: { unrotated: SelectedBounds, rotation: 30 },
+    bounds: {
+      unrotated: { left: 50, top: 70, width: 160, height: 80 },
+      rotation: 30,
+    },
     resizable: { ...BothAxesResizable, rotation: { own: 30, total: 30 } },
   },
 };
