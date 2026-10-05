@@ -5,7 +5,11 @@ import { DropZone } from "../index";
 
 /** 高さ 100 の子が縦に3つ並ぶ、高さ 300 の親。 */
 function setupColumnZone(): DropZone {
-  const parent: InsertionParent = { name: "body", direction: "column" };
+  const parent: InsertionParent = {
+    name: "body",
+    direction: "column",
+    wraps: false,
+  };
   const children: readonly CanvasBounds[] = [
     { left: 0, top: 0, width: 100, height: 100 },
     { left: 0, top: 100, width: 100, height: 100 },
@@ -20,7 +24,11 @@ function setupColumnZone(): DropZone {
 
 /** 幅 100 の子が横に3つ並ぶ、幅 300 の親。 */
 function setupRowZone(): DropZone {
-  const parent: InsertionParent = { name: "row", direction: "row" };
+  const parent: InsertionParent = {
+    name: "row",
+    direction: "row",
+    wraps: false,
+  };
   const children: readonly CanvasBounds[] = [
     { left: 0, top: 0, width: 100, height: 100 },
     { left: 100, top: 0, width: 100, height: 100 },
@@ -59,7 +67,7 @@ test("横に並ぶ親では、位置は上下ではなく左右で決まる", ()
 
 test("子がいない親ではどこで離しても最初の子の位置になる", () => {
   const zone = DropZone.create(
-    { name: "empty", direction: "column" },
+    { name: "empty", direction: "column", wraps: false },
     { left: 10, top: 20, width: 100, height: 100 },
     [],
   );
@@ -106,7 +114,7 @@ test("末尾の位置では、線は最後の子の後ろに引かれる", () =>
 
 test("子がいない親では、線は親の内側の先頭に引かれる", () => {
   const zone = DropZone.create(
-    { name: "empty", direction: "column" },
+    { name: "empty", direction: "column", wraps: false },
     { left: 10, top: 20, width: 100, height: 100 },
     [],
   );
@@ -125,7 +133,7 @@ test("落とし先には、その親が今持っている子の数が付く", ()
 
 test("子がいない親では、落とし先に付く子の数が0になる", () => {
   const zone = DropZone.create(
-    { name: "empty", direction: "column" },
+    { name: "empty", direction: "column", wraps: false },
     { left: 10, top: 20, width: 100, height: 100 },
     [],
   );
