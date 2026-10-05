@@ -120,7 +120,51 @@ ul.focus li { margin: 6px 0; }
     <main>
       <article id="explain">
 <!-- EXPLAIN:BEGIN -->
-<p class="empty-note">解説はまだ書かれていません。下の「変更の地図」は push のたびに自動で更新されます。振る舞い・技術・テストのページも、書かれると上のナビから開けるようになります。</p>
+<p class="explain-meta" data-explained-sha="77b8e615cda35d63b642fdc50c1d198877995586" data-pr="1024" data-page="index">解説時点 <code>77b8e61</code> · 材料 <a href="https://github.com/DIO0550/design-composer/issues/1022">Issue #1022</a></p>
+<h1>PR ごとの解説ページを Pages に出す</h1>
+<p class="lead">実装したセッションが「振る舞い・技術・テスト」の解説を HTML で書き、Actions が「変更の地図」を足して、PR から 1 クリックで読める 4 ページにする。このページ自体が、その仕組みで出した最初の解説。</p>
+
+<h2 id="overview">概要</h2>
+<p>長いセッションで作られた PR は、diff と Issue を読むだけでは「何の技術を使い、なぜその振る舞いにしたか」が掴みにくい。この PR は、PR ごとに <code>https://dio0550.github.io/design-composer/pr-explain/pr-&lt;番号&gt;/</code> という解説ページを作り、その読み解きを人間の代わりに先に済ませておく仕組みを足す。</p>
+<p>解説は読む目的ごとに 4 ページに分かれる。このページ(入口)は全体像と見てほしい箇所、<a href="behavior.html">振る舞い</a>はマージしてよいかを決めるための変更前と変更後、<a href="tech.html">技術</a>は使った技術とコードの読み方、<a href="tests.html">テスト</a>は何が守られていて何が守られていないか。</p>
+<p>書くのは 2 人。解説の本文は実装したセッションが <code>pr-explain</code> スキル(<code class="ref">.claude/skills/pr-explain/SKILL.md</code>)で書く。経緯はセッションの中にしか無いので、ここは AI が書くしかない。変更の地図(変更ファイルの一覧・テスト名の増減・解説の古さ)は git の差分だけで決まるので、Actions(<code class="ref">.github/workflows/pr-explain.yml</code>)が機械的に作る。どちらも gh-pages ブランチの <code>pr-explain/pr-&lt;番号&gt;/</code> にだけ置き、PR ブランチにも main にも入れない。</p>
+<figure class="diagram">
+  <svg viewBox="0 0 640 210" role="img" aria-label="セッションと Actions が gh-pages の同じフォルダへ書き込む流れ">
+    <rect x="10" y="20" width="180" height="56" rx="6" class="d-accent"/>
+    <text x="100" y="44" text-anchor="middle" class="d-text">セッション</text>
+    <text x="100" y="64" text-anchor="middle" class="d-muted">ページごとの断片を書く</text>
+    <rect x="10" y="130" width="180" height="56" rx="6" class="d-box"/>
+    <text x="100" y="154" text-anchor="middle" class="d-text">PR Explain(Actions)</text>
+    <text x="100" y="174" text-anchor="middle" class="d-muted">change-map.json を作る</text>
+    <rect x="240" y="20" width="170" height="56" rx="6" class="d-box"/>
+    <text x="325" y="44" text-anchor="middle" class="d-text">build-pr-explain-page</text>
+    <text x="325" y="64" text-anchor="middle" class="d-muted">検査してテンプレートへ</text>
+    <rect x="460" y="75" width="170" height="56" rx="6" class="d-accent"/>
+    <text x="545" y="99" text-anchor="middle" class="d-text">gh-pages</text>
+    <text x="545" y="119" text-anchor="middle" class="d-muted">pr-explain/pr-N/</text>
+    <line x1="190" y1="48" x2="240" y2="48" class="d-line"/>
+    <line x1="410" y1="48" x2="460" y2="95" class="d-line"/>
+    <line x1="190" y1="158" x2="460" y2="112" class="d-line"/>
+    <text x="420" y="40" class="d-muted">4 ページの .html</text>
+    <text x="300" y="150" class="d-muted">change-map.json</text>
+  </svg>
+  <figcaption>どちらの書き込みも <code>pr-explain-pages.sh</code> を通り、そのフォルダだけを書き換える</figcaption>
+</figure>
+
+<h2 id="focus"><span class="kicker">レビュー</span>特に見てほしい箇所</h2>
+<ul class="focus">
+  <li><strong>この PR がマージされるまでは、main へのマージのたびに開いている PR の解説が消える。</strong>main 側の Storybook のデプロイがまだ <code>pr-explain/</code> を掃除の対象から外していないため(実際に一度消えた)。<a href="behavior.html#b-main">振る舞い</a></li>
+  <li><strong>ページの固定スクリプト(地図の描画・古さの帯・ナビ・行リンク)には自動テストが無い。</strong>Playwright で状態ごとに目視しただけ。<a href="tests.html#untested">テストで守れていない振る舞い</a></li>
+  <li><strong>Pages のデプロイが PR のイベントごとに増える。</strong>#109(同時に 1 つしかデプロイできず、待ちが 10 分でタイムアウトする)が再発しないかは観察が要る</li>
+  <li><strong>解説を書く手間が PR ごとに増える。</strong>4 ページのうち該当しないものは書かない決まりにしたが、どこまで書くかの目安(各ページ 5〜10 分で読める長さ)が妥当か</li>
+</ul>
+
+<h2 id="guide">各ページの案内</h2>
+<ul>
+  <li><a href="behavior.html">振る舞い</a>: PR のイベントごとに何が起きるか(開く・push・公開・閉じる・main へのマージ)と、方式の判断・逸脱・見送り</li>
+  <li><a href="tech.html">技術</a>: CSP のハッシュ、<code>html.parser</code> での検査、partial clone と sparse-checkout、merge-base とテスト名の集合比較、Actions の認証。後半は読む順のコード解説</li>
+  <li><a href="tests.html">テスト</a>: 判定表 3 本が守る振る舞いと、test-reviewer が壊して確かめた結果、守れていない振る舞い</li>
+</ul>
 <!-- EXPLAIN:END -->
       </article>
       <section class="map" id="map-section" hidden>
