@@ -154,3 +154,14 @@ test("4 辺のうち指定した辺の座標が返る", () => {
     CanvasBounds.side(Bounds, "bottom"),
   ]).toEqual([10, 110, 20, 60]);
 });
+
+test("横に並ぶときの交差軸の範囲は上端から下端までになる", () => {
+  expect(CanvasBounds.crossExtent(Bounds, "row")).toEqual({ min: 20, max: 60 });
+});
+
+test("縦に並ぶときの交差軸の範囲は左端から右端までになる", () => {
+  expect(CanvasBounds.crossExtent(Bounds, "column")).toEqual({
+    min: 10,
+    max: 110,
+  });
+});
