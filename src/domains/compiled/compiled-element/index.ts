@@ -27,6 +27,7 @@ import {
   TypographyToken,
 } from "@/domains/dcmp/token";
 import { Visibility } from "@/domains/dcmp/visibility";
+import { Wrap } from "@/domains/dcmp/wrap";
 import { Html } from "@/utils/Html";
 import { Option } from "@/utils/Option";
 
@@ -200,34 +201,6 @@ function overflowDeclarations(
     : [];
 }
 
-/**
- * 初期値と同じ `nowrap` は宣言を出力しない (docs/03 の表は `wrap: wrap` の行だけを規定)。
- *
- * `overflowDeclarations` と理由まで同じだが畳まない。畳むと、値・CSS プロパティ・CSS 値の
- * 3 つを引数に取る関数になり、呼び出しからどの prop の規則かが読めなくなる。
- *
- * @param wrap `wrap` prop に設定されている値
- * @returns 折り返すときだけ `flex-wrap: wrap` の宣言 1 件。それ以外は空
- */
-function wrapDeclarations(
-  wrap: PropValue | undefined,
-): readonly CssDeclarationType[] {
-  return isWrapping(wrap)
-    ? [CssDeclaration.create("flex-wrap", String(wrap))]
-    : [];
-}
-
-/**
- * `wrap` prop の値が子を折り返す指定か。`flex-wrap` の出力と、落とし先の行の分割
- * （`BoxElement.wrapsChildren`）が同じ判定を引く。
- *
- * @param wrap `wrap` prop に設定されている値
- * @returns `wrap` なら `true`。既定の `nowrap` と未設定は `false`
- */
-function isWrapping(wrap: PropValue | undefined): boolean {
-  return wrap === "wrap";
-}
-
 /** 出力しても効果の無い、CSS の初期値と同じ完全な不透明。 */
 const FullyOpaque = 1;
 
@@ -361,7 +334,9 @@ export const BoxElement = {
     const layout = Layout.fromProps(props);
     // 子を並べない Box で効かない prop は、スキーマの `enabledWhen` (`FlexOnly`) と同じ
     const arrangesChildren = Option.isSome(Layout.direction(layout));
-    const wrap = arrangesChildren ? wrapDeclarations(props.wrap) : [];
+    const wrap = arrangesChildren
+      ? Wrap.declarations(Wrap.fromProps(props))
+      : [];
     const gap = arrangesChildren
       ? tokenDeclarations("gap", props.gap, tokens)
       : [];
@@ -422,17 +397,6 @@ export const BoxElement = {
    */
   childDirection(props: ResolvedProps<"Box">): Option<CssDirection> {
     return Layout.direction(Layout.fromProps(props));
-  },
-
-  /**
-   * 子を折り返すか。
-   *
-   * @param props デフォルト解決済みの Box の props
-   * @returns `wrap: wrap` なら `true`。子を並べない (`layout: free`) Box では `wrap` が効
-   *   かないが、ここでは区別しない（並ぶ向きは `childDirection` が答える）
-   */
-  wrapsChildren(props: ResolvedProps<"Box">): boolean {
-    return isWrapping(props.wrap);
   },
 } as const;
 
