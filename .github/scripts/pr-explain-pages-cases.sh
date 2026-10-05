@@ -8,7 +8,9 @@
 #
 # **他の PR のフォルダ・`pr-preview/` に触らないことを、どのモードでも見る。** gh-pages は
 # Storybook と VRT の配信と同じブランチで、ここを壊すとこの機能の外まで消える。
-# `remove 1` が `pr-12` を消さないケースは、`pr-$pr*` のような前方一致の取り違えを捕まえる。
+# `remove 1` が `pr-12` を消さないのは、作業コピーに展開するのが `pr-explain/pr-1/` だけ
+# (sparse-checkout)だから。消す側を `pr-1*` の前方一致に取り違えても、展開の範囲を
+# `pr-explain/` 全体へ広げない限りこのケースは通る。見ているのは 2 つが組み合わさった結果。
 #
 # 競合の再試行は、bare リポジトリの pre-receive フックで 1 回目の push だけを拒否して作る。
 # 待ち時間は `PR_EXPLAIN_RETRY_WAIT=0` で消す。
@@ -95,8 +97,8 @@ expect "put-page は pr-preview に触らない" '[ "$(on_pages pr-preview/pr-1/
 
 fresh_origin seeded
 before="$(tip)"
-run_pages put-page 1 "$work/broken.html"; status=$?
-expect "検査に落ちる解説は push しない" '[ "$status" -eq 1 ] && [ "$(tip)" = "$before" ]'
+output="$(bash "$pages" put-page 1 "$work/broken.html" 2>&1)"; status=$?
+expect "検査に落ちる解説は、取り直しへ進まずに push しない" '[ "$status" -eq 1 ] && [ "$(tip)" = "$before" ] && [[ "$output" == *"[pr-explain-content]"* ]] && [[ "$output" != *"反映に失敗"* ]]'
 
 fresh_origin seeded
 before="$(tip)"
@@ -118,6 +120,16 @@ run_pages remove 1
 expect "remove はその PR のフォルダを消す" '[ "$(on_pages pr-explain/pr-1/index.html)" = "<none>" ]'
 expect "remove 1 は pr-12 を消さない" '[ "$(on_pages pr-explain/pr-12/index.html)" = twelve ]'
 expect "remove は pr-preview に触らない" '[ "$(on_pages pr-preview/pr-1/index.html)" = storybook ]'
+
+fresh_origin seeded
+before="$(tip)"
+run_pages remove 99; status=$?
+expect "消すフォルダが無い remove は変更なしで終わる" '[ "$status" -eq 0 ] && [ "$(tip)" = "$before" ]'
+
+fresh_origin seeded
+before="$(tip)"
+run_pages put-page 1; status=$?
+expect "put-page に断片が無ければ引数の誤り" '[ "$status" -eq 2 ] && [ "$(tip)" = "$before" ]'
 
 fresh_origin seeded
 before="$(tip)"

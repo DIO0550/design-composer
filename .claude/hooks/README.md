@@ -176,7 +176,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
   当てる 2 本(`check-added-*`)と同じジョブに置き、`python3` と git だけで完結する
 - **`check-pr-closing-issue-cases.sh` は層 1 だけ。** 再試行と問い合わせ直しの待ち時間だけで
   60.5 秒かかる(実測)。`pre-push` 全体は 35.9 秒(実測・`node_modules` のある環境)で、載せると
-  2.5 倍を超える。ここへ載せた 2 本は合わせて 2.2 秒、解説ページの 3 本は合わせて 5.2 秒(組み立て 1.2・地図 1.0・置き場 3.0。置き場は再試行の待ちを環境変数で 0 にしている)、`harness/githooks/lib/check-tally-cases.sh` は 0.1 秒未満、`lib/import-rule-cases.sh` は 2.2 秒(実測)。**この穴は残したままなので、
+  2.5 倍を超える。ここへ載せた 2 本は合わせて 2.2 秒、解説ページの 3 本は合わせて 6.5 秒(組み立て 1.6・地図 1.3・置き場 3.6。置き場は再試行の待ちを環境変数で 0 にしている)、`harness/githooks/lib/check-tally-cases.sh` は 0.1 秒未満、`lib/import-rule-cases.sh` は 2.2 秒(実測)。**この穴は残したままなので、
   `check-pr-closing-issue.sh` を触ったときは手で走らせる**(「動作確認」)
 - 層 3(`pre-push-*.sh`)には足さない。層 1 と層 2 の両方に置く以上、守る範囲が増えない
 

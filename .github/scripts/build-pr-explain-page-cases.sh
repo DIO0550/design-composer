@@ -47,9 +47,11 @@ pass|見本どおりの部品で埋めた解説|<h1>題</h1><table class="behavi
 pass|SVG の図(クラスで色を付ける)|<figure class="diagram"><svg viewBox="0 0 100 40" role="img"><defs><marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5"><path d="M0,0 L10,5 L0,10 z" class="d-line"/></marker></defs><rect x="1" y="1" width="40" height="30" class="d-box"/><text x="5" y="20" class="d-text">A</text><line x1="41" y1="16" x2="90" y2="16" class="d-line" marker-end="url(#arrow)"/></svg><figcaption>図</figcaption></figure>
 pass|本文テキストの onClick={...} と javascript: という語|<p>ボタンは <code>onClick={handleClick}</code> で受ける。<code>javascript:</code> の URL は使わない。</p>
 pass|エスケープしたコード抜粋の &lt;script&gt;|<pre class="code"><code>&lt;script&gt;alert(1)&lt;/script&gt;</code></pre>
+pass|実体参照で書いた # へのリンク(値はデコードしてから見る)|<a href="&#35;map">地図</a>
 pass|このリポジトリの github.com・Pages・# へのリンク|<a href="https://github.com/DIO0550/design-composer/pull/12">PR</a><a href="https://dio0550.github.io/design-composer/pr-preview/pr-12/">SB</a><a href="#map">地図</a>
 deny|explain-meta が無い|@nometa<h1>題</h1>
 deny|explain-meta が 2 つある|<p class="explain-meta" data-explained-sha="0123456789abcdef0123456789abcdef01234567" data-pr="12"></p>
+deny|解説時点の sha が 41 桁|@nometa<p class="explain-meta" data-explained-sha="0123456789abcdef0123456789abcdef012345678" data-pr="12"></p>
 deny|解説時点の sha が 7 桁|@nometa<p class="explain-meta" data-explained-sha="0123456" data-pr="12"></p>
 deny|data-pr が公開先の PR と違う|@nometa<p class="explain-meta" data-explained-sha="0123456789abcdef0123456789abcdef01234567" data-pr="13"></p>
 deny|内側に script|<script>alert(1)</script>
@@ -58,10 +60,15 @@ deny|内側に style 要素|<style>body{display:none}</style>
 deny|内側に iframe|<iframe src="https://github.com/DIO0550/design-composer/"></iframe>
 deny|SVG の中の foreignObject|<svg><foreignObject><p>x</p></foreignObject></svg>
 deny|onclick 属性|<p onclick="alert(1)">x</p>
+deny|自己終了タグの onerror|<img src="#x" onerror="alert(1)"/>
+deny|SVG の xlink:href に javascript:|<svg><a xlink:href="javascript:alert(1)"><text>x</text></a></svg>
+deny|SVG のアニメーションで href を書き換える|<svg><a href="#x"><animate attributeName="href" to="javascript:alert(1)"/></a></svg>
+deny|meta refresh での遷移(CSP では止まらない)|<meta http-equiv="refresh" content="0;url=https://example.com">
 deny|javascript: の href|<a href="javascript:alert(1)">x</a>
-deny|実体参照で書いた javascript: の href|<a href="&#106;avascript:alert(1)">x</a>
+deny|実体参照で書いた javascript: の href(デコードしても許す接頭辞に一致しない)|<a href="&#106;avascript:alert(1)">x</a>
 deny|外部ドメインへの href|<a href="https://example.com/">x</a>
 deny|リポジトリ名を接頭辞で詐称した href|<a href="https://github.com/DIO0550/design-composer-evil/">x</a>
+deny|Pages のパスを接頭辞で詐称した href|<a href="https://dio0550.github.io/design-composer-evil/">x</a>
 deny|プロトコル相対の src|<img src="//evil.example/x.png">
 deny|style 属性|<p style="background:url(https://example.com/x.png)">x</p>
 deny|srcset 属性|<img src="#x" srcset="https://example.com/x.png 2x">

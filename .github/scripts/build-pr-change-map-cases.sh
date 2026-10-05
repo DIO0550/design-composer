@@ -43,6 +43,7 @@ put src/features/editor/features/tokens/__tests__/token.normal.test.ts "test(\"�
 it('消すテスト', () => {});"
 put src/utils/__tests__/Moved.normal.test.ts 'test("動かすだけのテスト", () => {});'
 put src/utils/__tests__/Body.normal.test.ts 'test("中身だけ変えるテスト", () => { expect(1).toBe(1); });'
+put src/utils/__tests__/Gone.normal.test.ts 'test("ファイルごと消えるテスト", () => {});'
 put docs/base-only.md 'base'
 git add -A && git commit --quiet -m base
 fork="$(git rev-parse HEAD)"
@@ -68,6 +69,24 @@ put docs/x.md 'x'
 put src-tauri/src/lib.rs 'fn main() {}'
 put src/services/node-html/index.ts 'export const NodeHtml = {};'
 printf '\x89PNG\x00\x01' > docs/x.png
+git rm --quiet src/utils/__tests__/Gone.normal.test.ts
+# テスト名ではない呼び出し(`split(` `.test(`)と、修飾付き・括弧入りの表を持つ新しいテストファイル。
+put src/libs/x/__tests__/x.normal.test.ts "test(\"新しいファイルのテスト\", () => { \"a,b\".split(\",\"); /x/.test(\"y\"); });
+test.skip(\"飛ばすテスト\", () => {});
+test.each([[\"(\", 1]])(\"括弧入りの表 %s\", () => {});"
+# 読む順を確かめるために、各層へ 1 件ずつ置く。components には本体・テスト・story を並べる。
+put src/domains/unit/px/index.ts 'export const Px = {};'
+put src/domains/session/doc/index.ts 'export const Doc = {};'
+put src/libs/x/index.ts 'export const X = {};'
+put src/types/T.ts 'export type T = 1;'
+put src/components/button/index.tsx 'export const Button = 1;'
+put src/components/button/__tests__/button.normal.test.tsx 'test("ボタンのテスト", () => {});'
+put src/components/button/index.stories.tsx 'export default {};'
+put src/hooks/use-x/index.ts 'export const useX = 1;'
+put src/app/App.tsx 'export const App = 1;'
+put src/main.tsx 'export {};'
+put rules/x.md 'x'
+put .claude/skills/x/SKILL.md 'x'
 git add -A && git commit --quiet -m second
 head="$(git rev-parse HEAD)"
 
@@ -105,17 +124,23 @@ done <<'CASES'
 head は PR の先端|m["head"] == head and m["pr"] == 12
 domains のカテゴリで分類される|label_of["src/domains/dcmp/node/index.ts"] == "domains / dcmp"
 入れ子の feature は子 feature の単位で分類される|label_of["src/features/editor/features/tokens/__tests__/token.normal.test.ts"] == "features / editor/features/tokens"
-src の外は src-tauri / docs / ハーネス に分かれる|label_of[".github/workflows/x.yml"] == "ハーネス" and label_of["harness/case-law/x.md"] == "ハーネス" and label_of["docs/x.md"] == "docs" and label_of["src-tauri/src/lib.rs"] == "src-tauri"
-読む順は domains → services → utils → features → src-tauri → docs → ハーネス|labels == ["domains / dcmp", "services", "utils", "features / editor", "features / editor/features/tokens", "src-tauri", "docs", "ハーネス"]
+src の外は src-tauri / docs / ハーネス に分かれる|label_of["src-tauri/src/lib.rs"] == "src-tauri" and label_of["docs/x.md"] == "docs" and all(label_of[p] == "ハーネス" for p in [".github/workflows/x.yml", "harness/case-law/x.md", "rules/x.md", ".claude/skills/x/SKILL.md"])
+読む順は内側の層から外側へ|labels == ["domains / unit", "domains / dcmp", "domains / session", "services", "libs", "utils", "types", "features / editor", "features / editor/features/tokens", "components", "hooks", "app", "src(その他)", "src-tauri", "docs", "ハーネス"]
+層の中では本体 → テスト → story の順|[f["path"] for g in m["groups"] if g["label"] == "components" for f in g["files"]] == ["src/components/button/index.tsx", "src/components/button/__tests__/button.normal.test.tsx", "src/components/button/index.stories.tsx"]
 バイナリの行数は数えられないので null|files["docs/x.png"]["additions"] is None and files["docs/x.png"]["deletions"] is None and files["docs/x.md"]["additions"] == 1
 非 ASCII のパスも欠けない|"src/features/editor/components/日本語/index.tsx" in files
 rename は旧パスを持つ 1 件として出る|files["src/utils/__tests__/Renamed.normal.test.ts"]["status"] == "R" and files["src/utils/__tests__/Renamed.normal.test.ts"]["oldPath"] == "src/utils/__tests__/Moved.normal.test.ts" and "src/utils/__tests__/Moved.normal.test.ts" not in files
+中身を変えずに rename したファイルの行数は 0 と 0|(files["src/utils/__tests__/Renamed.normal.test.ts"]["additions"], files["src/utils/__tests__/Renamed.normal.test.ts"]["deletions"]) == (0, 0)
+rename でないファイルは旧パスを持たない|files["src/utils/__tests__/Body.normal.test.ts"]["status"] == "M" and files["src/utils/__tests__/Body.normal.test.ts"]["oldPath"] is None
 足した test("…") は追加として出る|"足したテスト" in added
 test.each(…)(…) の名前も拾う|"表で回すテスト %i" in added
-消した it('…') は削除として出る|removed == {"消すテスト"}
+消した it('…') とファイルごと消したテストは削除として出る|removed == {"消すテスト", "ファイルごと消えるテスト"}
+新しく足したテストファイルのテストは追加として出る|"新しいファイルのテスト" in added and "ボタンのテスト" in added
+修飾付きの test.skip と、括弧入りの表の test.each も拾う|"飛ばすテスト" in added and "括弧入りの表 %s" in added
+split(",") や /x/.test("y") の引数はテスト名として拾わない|"," not in added and "y" not in added
 テストファイルの rename は増減に出ない|"動かすだけのテスト" not in added and "動かすだけのテスト" not in removed
 中身だけ変えたテストは増減に出ない|"中身だけ変えるテスト" not in added and "既存のテスト" not in added
-追加はこの 2 件だけ|added == {"足したテスト", "表で回すテスト %i"}
+追加はこの 6 件だけ|added == {"足したテスト", "表で回すテスト %i", "新しいファイルのテスト", "飛ばすテスト", "括弧入りの表 %s", "ボタンのテスト"}
 コミットごとの変更ファイルが古い順に入る|[c["sha"] for c in m["commits"]] == [first, head] and m["commits"][0]["files"] == ["src/domains/dcmp/node/index.ts", "src/features/editor/features/tokens/__tests__/token.normal.test.ts"]
 差分なしでも head が入り、各一覧は空|m["head"] == head and m["groups"] == [] and m["tests"] == {"added": [], "removed": []} and m["commits"] == []
 CASES
