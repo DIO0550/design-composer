@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-TLLWSMm5q5UA+5n9uxOXLlZtq56fAykpmfFIzNSw2+4='; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PR 解説</title>
+<style>
+:root {
+  --bg: #fbfaf7;
+  --surface: #ffffff;
+  --surface-2: #f3f1ec;
+  --border: #e3dfd6;
+  --text: #1f1d1a;
+  --text-2: #57534b;
+  --text-3: #8a8478;
+  --accent: #2f5fd0;
+  --accent-soft: #e6edfb;
+  --green: #2f7d4f;
+  --green-soft: #e3f2e8;
+  --rose: #b23a48;
+  --rose-soft: #f8e4e6;
+  --amber: #9a6b12;
+  --amber-soft: #fbf0d9;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #15171a;
+    --surface: #1c1f23;
+    --surface-2: #23272c;
+    --border: #33383f;
+    --text: #e8e6e1;
+    --text-2: #b4afa6;
+    --text-3: #847f76;
+    --accent: #8fb0ff;
+    --accent-soft: #23314f;
+    --green: #7cc79a;
+    --green-soft: #1d3326;
+    --rose: #ec8f9b;
+    --rose-soft: #3d2328;
+    --amber: #e3b45a;
+    --amber-soft: #3a2f19;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.75 var(--sans); }
+a { color: var(--accent); }
+code { font-family: var(--mono); font-size: 0.88em; background: var(--surface-2); padding: 0.1em 0.35em; border-radius: 4px; }
+.page { max-width: 1180px; margin: 0 auto; padding: 24px 16px 64px; }
+.top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+.links { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; margin-left: auto; }
+.explain-pages { display: flex; flex-wrap: wrap; gap: 4px; }
+.explain-pages a, .explain-pages span { padding: 4px 12px; border-radius: 999px; font-size: 13px; text-decoration: none; color: var(--text-2); border: 1px solid var(--border); }
+.explain-pages a[aria-current="page"] { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); font-weight: 600; }
+.explain-pages span { color: var(--text-3); border-style: dashed; }
+.banner { margin: 16px 0 0; padding: 12px 14px; border-radius: 8px; background: var(--amber-soft); color: var(--text); border: 1px solid var(--border); font-size: 14px; }
+.banner ul { margin: 6px 0 0; padding-left: 20px; }
+.layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 32px; margin-top: 24px; }
+.toc { position: sticky; top: 16px; align-self: start; font-size: 13px; }
+.toc a { display: block; padding: 3px 0 3px 10px; color: var(--text-2); text-decoration: none; border-left: 2px solid var(--border); }
+.toc a:hover { color: var(--accent); border-left-color: var(--accent); }
+@media (max-width: 860px) { .layout { grid-template-columns: minmax(0, 1fr); } .toc { position: static; } }
+main { min-width: 0; }
+h1 { font-size: 28px; line-height: 1.35; margin: 0 0 8px; }
+h2 { font-size: 20px; margin: 48px 0 12px; padding-top: 8px; border-top: 1px solid var(--border); }
+h3 { font-size: 16px; margin: 28px 0 8px; }
+.kicker { display: inline-block; margin-right: 8px; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); font-weight: 700; vertical-align: 0.15em; }
+.explain-meta { color: var(--text-3); font-size: 13px; margin: 0 0 16px; }
+.lead { font-size: 17px; color: var(--text-2); }
+.empty-note { padding: 20px; border: 1px dashed var(--border); border-radius: 8px; color: var(--text-2); background: var(--surface); }
+table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; background: var(--surface); }
+th, td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
+th { background: var(--surface-2); font-weight: 600; }
+table.behavior td:nth-child(2) { background: var(--rose-soft); }
+table.behavior td:nth-child(3) { background: var(--green-soft); }
+.decision { margin: 16px 0; padding: 14px 16px; background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 8px; }
+.decision[data-kind="逸脱"] { border-left-color: var(--amber); }
+.decision[data-kind="見送り"] { border-left-color: var(--text-3); }
+.decision h3 { margin: 0 0 8px; }
+.decision::before { content: attr(data-kind); display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; padding: 1px 8px; border-radius: 999px; background: var(--surface-2); color: var(--text-2); margin-bottom: 6px; }
+.decision dl { display: grid; grid-template-columns: 7em minmax(0, 1fr); gap: 4px 12px; margin: 0; }
+.decision dt { color: var(--text-3); font-size: 13px; }
+.decision dd { margin: 0; }
+article.tech { margin: 24px 0; }
+figure.diagram { margin: 16px 0; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow-x: auto; }
+figure.diagram svg { display: block; max-width: 100%; height: auto; margin: 0 auto; }
+figure.diagram figcaption { margin-top: 8px; font-size: 13px; color: var(--text-3); text-align: center; }
+.d-box { fill: var(--surface-2); stroke: var(--border); stroke-width: 1.5; }
+.d-accent { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+.d-line { stroke: var(--text-2); stroke-width: 1.5; fill: none; }
+.d-text { fill: var(--text); font: 13px var(--sans); }
+.d-muted { fill: var(--text-3); font: 12px var(--sans); }
+pre.code { margin: 12px 0; padding: 12px 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; overflow-x: auto; font: 13px/1.6 var(--mono); }
+pre.code code { background: none; padding: 0; font-size: inherit; }
+pre.code[data-file]::before { content: attr(data-file); display: block; margin-bottom: 8px; color: var(--text-3); font-size: 12px; }
+.note { margin: 14px 0; padding: 10px 14px; border-radius: 8px; font-size: 14px; }
+.note.info { background: var(--accent-soft); }
+.note.warn { background: var(--amber-soft); }
+ul.focus li { margin: 6px 0; }
+.map h3 { font-size: 14px; color: var(--text-2); margin: 20px 0 6px; }
+.map ul { list-style: none; margin: 0; padding: 0; }
+.map li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding: 4px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.map .status { font: 11px var(--mono); min-width: 1.6em; text-align: center; border-radius: 4px; background: var(--surface-2); color: var(--text-2); }
+.map .count { font: 12px var(--mono); color: var(--text-3); }
+.muted { color: var(--text-3); }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="top">
+    <span class="kicker">PR 解説</span>
+    <nav class="explain-pages" id="explain-pages" aria-label="解説のページ"></nav>
+    <nav class="links" id="links"></nav>
+  </header>
+  <div class="banner" id="staleness" hidden></div>
+  <div class="layout">
+    <nav class="toc" id="toc" aria-label="目次"></nav>
+    <main>
+      <article id="explain">
+<!-- EXPLAIN:BEGIN -->
+<p class="explain-meta" data-explained-sha="77b8e615cda35d63b642fdc50c1d198877995586" data-pr="1024" data-page="tests">解説時点 <code>77b8e61</code> · 材料 <a href="https://github.com/DIO0550/design-composer/issues/1022">Issue #1022</a></p>
+<h1>PR ごとの解説ページを Pages に出す: テスト</h1>
+<p class="lead">この PR の実行されるコードはすべてハーネスのスクリプトで、vitest ではなく判定表(<code>*-cases.sh</code>)が守る。判定表 3 本は CI の <code>rules-check</code> と pre-push で走る。</p>
+
+<h2 id="guards"><span class="kicker">テスト</span>守っている振る舞い</h2>
+<table>
+  <tr><th>守る振る舞い</th><th>判定表のケース(抜粋)</th><th>壊して確かめたか</th></tr>
+  <tr id="t-check"><td><a href="behavior.html#b-reject">危ない断片は公開しない</a></td><td><code class="ref">.github/scripts/build-pr-explain-page-cases.sh</code> 「内側に script」「自己終了タグの onerror」「SVG の xlink:href に javascript:」「空のコメントの後ろに置いた要素」「リポジトリ名を接頭辞で詐称した href」「data-page が公開先のページと違う」「技術のページへ data-page=index のままの断片を置こうとした」「data-page の無い断片は、公開先のページ名とみなさない」ほか</td><td>落ちた(test-reviewer)。最初の版では自己終了タグ・SVG 経由・41 桁の sha・Pages 側の詐称が、4 ページ化の版では入口以外のページの data-page の突き合わせが、壊しても落ちず、ケースを足した</td></tr>
+  <tr><td>普通の解説の文章は通す(誤検出しない)</td><td>同 「本文テキストの onClick={...} と javascript: という語」「エスケープしたコード抜粋の &lt;script&gt;」「解説のほかのページへのリンク」</td><td>落ちた(正規表現で生のテキストを見る実装に戻すと落ちる)</td></tr>
+  <tr><td>枠は 1 文字も変わらず、CSP のハッシュは固定スクリプトと一致する</td><td>同 「組み立てたページはマーカーの外がテンプレートのまま」「固定スクリプトを変えて CSP のハッシュを直さなかったテンプレート」</td><td>落ちた</td></tr>
+  <tr id="t-put"><td><a href="behavior.html#b-put">公開はそのページの 1 ファイルだけを置き換える</a></td><td><code class="ref">.github/scripts/pr-explain-pages-cases.sh</code> 「put-page tech は tech.html に置き、入口の index.html には触らない」「put-page は他の PR のフォルダに触らない」「地図の無いフォルダへは put-page しない」</td><td>落ちた</td></tr>
+  <tr id="t-map"><td><a href="behavior.html#b-open">地図を置き、入口が無いときだけテンプレートを置く</a></td><td>同 「put-map は解説があれば index.html を残す」「put-map は解説が無ければテンプレートを置く」</td><td>落ちた(両方の枝)</td></tr>
+  <tr id="t-remove"><td><a href="behavior.html#b-close">閉じたら消す。他は消さない・何も無ければ何もしない</a></td><td>同 「remove 1 は pr-12 を消さない」「消すフォルダが無い remove は変更なしで終わる」「gh-pages が無いときの remove は何も作らない」</td><td>落ちた。ただし「pr-12 を消さない」を守っているのは sparse-checkout の範囲で、消す側の前方一致の誤りだけでは落ちない(ケースのコメントに明記)</td></tr>
+  <tr><td>push が競合しても取り直して通る</td><td>同 「1 回目の push が拒否されても取り直して通る」(bare リポジトリの pre-receive で 1 回目だけ拒否)</td><td>落ちた</td></tr>
+  <tr><td>地図の範囲は merge-base から</td><td><code class="ref">.github/scripts/build-pr-change-map-cases.sh</code> 「起点は merge-base で、base 側で後から変わったファイルは出ない」</td><td>落ちた</td></tr>
+  <tr><td>読む順は内側の層から外側へ</td><td>同 「読む順は内側の層から外側へ」「層の中では本体 → テスト → story の順」</td><td>落ちた。最初の版では components・hooks・app を丸ごと落としても気づけず、全層を置くケースにした</td></tr>
+  <tr><td>テスト名の増減が「削除 + 追加」に化けない</td><td>同 「テストファイルの rename は増減に出ない」「中身だけ変えたテストは増減に出ない」「split(",") や /x/.test("y") の引数はテスト名として拾わない」</td><td>落ちた</td></tr>
+</table>
+
+<h2 id="untested"><span class="kicker">穴</span>テストで守れていない振る舞い</h2>
+<ul class="focus">
+  <li><strong>テンプレートの固定スクリプト全体</strong>(ナビの「なし」、地図の描画、古さの帯、行リンク、「解説に出てこない」の照合)。素の HTML のスクリプトを走らせる仕組みがリポジトリに無く、そのために依存を足す規模ではないと判断した。代わりにローカルのフィクスチャを Playwright で開き、1 ページ版で 5 状態(未記入・最新・古い・古い(追えない)・地図なし)、4 ページ版でナビとページごとの自動生成の節を目視した。変えたときに機械が気づけるのは CSP のハッシュの直し忘れだけ</li>
+  <li><strong>Actions 上の認証経路。</strong>判定表はローカルの bare リポジトリで、認証を通らない。この PR の <code>PR Explain</code> の run が緑になったことで確かめた</li>
+  <li><strong>gh-pages への問い合わせが失敗する経路</strong>(<code>ls-remote</code> が 0 と 2 以外を返す)。失敗を再現する環境を組めず、test-reviewer も計測していない</li>
+  <li><strong>引数の誤りで終了コード 2 になる経路の一部</strong>(地図の生成スクリプトの引数検査など)。呼び出し元が 2 つだけで、どちらも値を自分で決めているので見送った</li>
+</ul>
+
+<h2 id="mutation"><span class="kicker">実測</span>壊して確かめた結果</h2>
+<p>1 ページの版では、test-reviewer が判定表の複製で合計 63 個の書き換えを入れ、落ちなかったもの(生き残り)を 11 種類報告した。うち 10 種類はケースを足して落ちるようにし、主なものは自分でも壊して落ちることを確かめた(テスト名の抜き出しの後読みを外す・新しく足したテストファイルを base から読む・「変更なし」の枝を消す・検査に落ちたときの即時終了を外す)。残した 1 種類は、引数の誤りの経路(上の「守れていない」の最後)。</p>
+<p>4 ページに分けた版では、ページ名の所属・ページどうしのリンク・置き先のファイル名・終了コードの受け渡しを 22 通り壊し、落ちなかったのは data-page の突き合わせの片側(入口以外のページ・属性の欠落)と、<code>--page</code> が必須であることの 2 点だった。どちらもケースを足し、壊して落ちることを確かめた。</p>
+<!-- EXPLAIN:END -->
+      </article>
+      <section class="map" id="map-section" hidden>
+        <h2 id="map-section-heading"></h2>
+        <div id="map-section-body"><p class="muted">読み込み中…</p></div>
+      </section>
+    </main>
+  </div>
+</div>
+<script>
+(() => {
+  const Repo = "DIO0550/design-composer";
+  const ExplainPages = [
+    { name: "index", href: "./", label: "入口" },
+    { name: "behavior", href: "behavior.html", label: "振る舞い" },
+    { name: "tech", href: "tech.html", label: "技術" },
+    { name: "tests", href: "tests.html", label: "テスト" },
+  ];
+  const explain = document.getElementById("explain");
+  const meta = explain.querySelector(".explain-meta");
+  const explainedSha = meta ? meta.dataset.explainedSha : "";
+  const prFromPath = (location.pathname.match(/pr-(\d+)/) || [])[1] || "";
+  const pr = meta ? meta.dataset.pr : prFromPath;
+  // explain-meta が無いのは、Actions が入口に置いたテンプレートだけ。
+  const page = meta ? meta.dataset.page : "index";
+
+  const el = (tag, props, children) => {
+    const node = document.createElement(tag);
+    for (const [key, value] of Object.entries(props || {})) {
+      if (key === "text") node.textContent = value;
+      else node.setAttribute(key, value);
+    }
+    for (const child of children || []) node.append(child);
+    return node;
+  };
+
+  const heading = explain.querySelector("h1");
+  if (heading) document.title = `${heading.textContent.trim()} · PR 解説`;
+
+  for (const code of explain.querySelectorAll("code.ref")) {
+    const match = code.textContent.trim().match(/^(.+?)(?::(\d+)(?:-(\d+))?)?$/);
+    if (!match) continue;
+    const [, path, start, end] = match;
+    const lines = start ? `#L${start}${end ? `-L${end}` : ""}` : "";
+    const link = el("a", { href: `https://github.com/${Repo}/blob/${explainedSha}/${path}${lines}` });
+    code.replaceWith(link);
+    link.append(code);
+  }
+
+  // 書かれていないページ(404)は「なし」として出す(ドキュメントだけの PR はテストのページを書かない)。
+  // 404 以外の失敗は有無が分からないので、リンクのまま残す。
+  const pagesNav = document.getElementById("explain-pages");
+  for (const target of ExplainPages) {
+    const isCurrent = target.name === page;
+    const item = el("a", isCurrent ? { href: target.href, "aria-current": "page", text: target.label } : { href: target.href, text: target.label });
+    pagesNav.append(item);
+    if (isCurrent) continue;
+    fetch(target.href, { method: "HEAD", cache: "no-store" }).then((response) => {
+      if (response.status === 404) item.replaceWith(el("span", { text: `${target.label}(なし)` }));
+    });
+  }
+
+  const links = document.getElementById("links");
+  if (pr) {
+    links.append(
+      el("a", { href: `https://github.com/${Repo}/pull/${pr}`, text: `PR #${pr}` }),
+      el("a", { href: `../../pr-preview/pr-${pr}/`, text: "Storybook プレビュー" }),
+      el("a", { href: `../../visual-regression/pr-${pr}/`, text: "VRT レポート(差分が無い回・撮影で落ちた回は無い)" }),
+    );
+  }
+
+  const isKicker = (node) => node.classList !== undefined && node.classList.contains("kicker");
+  const buildToc = () => {
+    const toc = document.getElementById("toc");
+    toc.replaceChildren();
+    for (const h2 of document.querySelectorAll("main h2[id]")) {
+      if (h2.closest("[hidden]")) continue;
+      const label = [...h2.childNodes].filter((node) => !isKicker(node)).map((node) => node.textContent).join("").trim();
+      toc.append(el("a", { href: `#${h2.id}`, text: label }));
+    }
+  };
+
+  // パスの直後にパスの文字が続く出現は数えない(`index.ts` を `index.tsx` の言及と取り違えない)。
+  const explainText = explain.textContent;
+  const isMentioned = (path) => {
+    let at = explainText.indexOf(path);
+    while (at >= 0) {
+      if (!/[\w./-]/.test(explainText.charAt(at + path.length))) return true;
+      at = explainText.indexOf(path, at + 1);
+    }
+    return false;
+  };
+
+  const showStaleness = (map) => {
+    const isOutdated = explainedSha !== "" && map.head !== explainedSha;
+    if (!isOutdated) return;
+    const banner = document.getElementById("staleness");
+    const index = map.commits.findIndex((commit) => commit.sha === explainedSha);
+    banner.hidden = false;
+    if (index < 0) {
+      banner.append(`解説を書いた時点のコミット(${explainedSha.slice(0, 7)})が、この PR のコミット一覧に見つかりません。force push などで履歴が変わった可能性があります。`);
+      return;
+    }
+    const changed = [...new Set(map.commits.slice(index + 1).flatMap((commit) => commit.files))].sort();
+    banner.append(`このページは ${explainedSha.slice(0, 7)} 時点のものです。以降のコミットで変わったファイル:`);
+    banner.append(el("ul", {}, changed.map((path) => el("li", {}, [el("code", { text: path })]))));
+  };
+
+  const lineCount = (file) => (file.additions === null ? "バイナリ" : `+${file.additions} −${file.deletions}`);
+  const fileItem = (file) => {
+    const children = [el("span", { class: "status", text: file.status }), el("code", { text: file.path })];
+    if (file.oldPath) children.push(el("span", { class: "muted", text: `← ${file.oldPath}` }));
+    children.push(el("span", { class: "count", text: lineCount(file) }));
+    return el("li", {}, children);
+  };
+  const testItem = (test) => el("li", {}, [el("span", { text: test.name }), el("code", { text: test.file })]);
+
+  // 見出し(件数)と一覧の組を 1 つ足す。
+  const appendList = (body, title, items) => {
+    body.append(el("h3", { text: `${title}(${items.length})` }), el("ul", {}, items));
+  };
+
+  // ページごとに、地図から足す節。振る舞いのページには足さない。
+  const MapSections = {
+    index: {
+      heading: "変更の地図",
+      render: (body, map) => {
+        body.append(el("p", { class: "muted", text: `head ${map.head.slice(0, 7)} · base との分岐点 ${map.mergeBase.slice(0, 7)} · 上から読む順(内側の層から外側へ)に並べています。` }));
+        for (const group of map.groups) appendList(body, group.label, group.files.map(fileItem));
+        if (map.groups.length === 0) body.append(el("p", { class: "muted", text: "変更されたファイルはありません。" }));
+      },
+    },
+    tech: {
+      heading: "解説に出てこない変更ファイル",
+      render: (body, map) => {
+        const unmentioned = map.groups.flatMap((group) => group.files).filter((file) => !isMentioned(file.path));
+        body.append(el("p", { class: "muted", text: "このページの本文にフルパスで出てこない変更ファイル。コードの読み方が触れていないものです。" }));
+        appendList(body, "解説に出てこない", unmentioned.map(fileItem));
+      },
+    },
+    tests: {
+      heading: "追加・削除されたテスト",
+      render: (body, map) => {
+        appendList(body, "追加されたテスト", map.tests.added.map(testItem));
+        appendList(body, "削除されたテスト", map.tests.removed.map(testItem));
+      },
+    },
+  };
+  const mapSection = MapSections[page];
+
+  const renderMap = (map) => {
+    showStaleness(map);
+    if (!mapSection) return;
+    const body = document.getElementById("map-section-body");
+    body.replaceChildren();
+    mapSection.render(body, map);
+  };
+
+  // 読み込みの失敗だけを受ける。描画の失敗は握らず、コンソールにそのまま出す。
+  // 古さを確かめられないことは、地図の節を持たないページでも見えるよう帯に出す。
+  const mapUnreadable = (error) => {
+    const message = `change-map.json を読めませんでした(${error.message})。このページが最新かを確かめられません。ローカルで開いたときと、地図がまだ置かれていないときに出ます。`;
+    const banner = document.getElementById("staleness");
+    banner.hidden = false;
+    banner.append(message);
+    document.getElementById("map-section-body").replaceChildren(el("p", { class: "muted", text: "地図はありません。" }));
+  };
+
+  if (mapSection) {
+    document.getElementById("map-section").hidden = false;
+    document.getElementById("map-section-heading").append(el("span", { class: "kicker", text: "自動生成" }), mapSection.heading);
+  }
+  buildToc();
+  fetch(`change-map.json?t=${Date.now()}`, { cache: "no-store" })
+    .then((response) => (response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`))))
+    .then(renderMap, mapUnreadable)
+    .then(buildToc);
+})();
+</script>
+</body>
+</html>
