@@ -1284,19 +1284,26 @@ export const DesignDocument = {
    *
    * @param document 引き先になるドキュメント
    * @param name 向きを知りたい artboard / ノードの名前
-   * @returns 自分と包んでいるノード・artboard の角度の合計。自分の角度が引けないとき
-   *   （`rotationOf` が `none`）は `none`
+   * @returns 自分と包んでいるノード・artboard の角度の合計。自分か包んでいるもののどれか
+   *   の角度が引けないとき（`rotationOf` が `none`）は `none`
    */
   totalRotationOf(document: DesignDocument, name: string): Option<Rotation> {
-    const ancestorRotations = DesignDocument.collectAncestorNames(
-      document,
-      name,
-    ).flatMap((ancestor) => {
-      const rotation = DesignDocument.rotationOf(document, ancestor);
-      return Option.isSome(rotation) ? [rotation.value] : [];
-    });
-    return Option.map(DesignDocument.rotationOf(document, name), (own) =>
-      ancestorRotations.reduce((total, rotation) => total + rotation, own),
+    const own = DesignDocument.rotationOf(document, name);
+    // artboard は誰の子でもないので、親を探す前に止める（探すと木の全体を走る）
+    const isArtboard = Option.isSome(
+      DesignDocument.findArtboard(document, name),
+    );
+    const position = isArtboard
+      ? Option.none
+      : DesignDocument.findChildPosition(document, name);
+    if (!Option.isSome(position)) {
+      return own;
+    }
+    return Option.flatMap(own, (rotation) =>
+      Option.map(
+        DesignDocument.totalRotationOf(document, position.value.parentName),
+        (outer) => rotation + outer,
+      ),
     );
   },
 
