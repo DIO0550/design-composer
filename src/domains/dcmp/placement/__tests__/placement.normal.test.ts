@@ -48,8 +48,8 @@ test("座標は整数へ丸める（倍率の割り戻しで出た端数を残�
 
 test("絶対配置を props の編集へ戻すと、横と縦の座標の 2 件になる", () => {
   expect(Placement.toPropEdits({ mode: "absolute", x: 40, y: 24 })).toEqual([
-    { names: ["x"], value: { some: true, value: 40 } },
-    { names: ["y"], value: { some: true, value: 24 } },
+    { names: ["x"], value: Option.some(40) },
+    { names: ["y"], value: Option.some(24) },
   ]);
 });
 

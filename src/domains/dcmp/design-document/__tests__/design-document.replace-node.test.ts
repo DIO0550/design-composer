@@ -11,19 +11,20 @@ test("存在するノード名を指定して置き換えると新しいノー�
 
   const result = DesignDocument.replaceNode(document, "box-1", replacement);
 
-  expect(result).toEqual({
-    ok: true,
-    value: expect.objectContaining({
-      artboards: [
-        {
-          name: "screen",
-          width: 375,
-          height: 812,
-          children: [replacement],
-        },
-      ],
-    }),
-  });
+  expect(result).toEqual(
+    Result.ok(
+      expect.objectContaining({
+        artboards: [
+          {
+            name: "screen",
+            width: 375,
+            height: 812,
+            children: [replacement],
+          },
+        ],
+      }),
+    ),
+  );
 });
 
 test("存在しないノード名を指定して置き換えようとすると Err が返る", () => {

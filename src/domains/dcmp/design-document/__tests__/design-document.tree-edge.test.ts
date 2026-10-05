@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { Result } from "@/utils/Result";
 import { DesignDocument } from "../index";
 
 test("Text ノードへ挿入しようとすると children-not-allowed エラーになる", () => {
@@ -19,10 +20,9 @@ test("Text ノードへ挿入しようとすると children-not-allowed エラ�
     { name: "inner", type: "Text" },
   );
 
-  expect(result).toEqual({
-    ok: false,
-    error: { kind: "children-not-allowed", name: "label" },
-  });
+  expect(result).toEqual(
+    Result.err({ kind: "children-not-allowed", name: "label" }),
+  );
 });
 
 test("ref ノードへ挿入しようとすると children-not-allowed エラーになる", () => {
@@ -43,10 +43,9 @@ test("ref ノードへ挿入しようとすると children-not-allowed エラー
     { name: "inner", type: "Text" },
   );
 
-  expect(result).toEqual({
-    ok: false,
-    error: { kind: "children-not-allowed", name: "button" },
-  });
+  expect(result).toEqual(
+    Result.err({ kind: "children-not-allowed", name: "button" }),
+  );
 });
 
 test("存在しない親名を指定してノードを挿入すると parent-not-found エラーになる", () => {
@@ -60,10 +59,9 @@ test("存在しない親名を指定してノードを挿入すると parent-not
     { name: "label", type: "Text" },
   );
 
-  expect(result).toEqual({
-    ok: false,
-    error: { kind: "parent-not-found", name: "missing-parent" },
-  });
+  expect(result).toEqual(
+    Result.err({ kind: "parent-not-found", name: "missing-parent" }),
+  );
 });
 
 test("範囲外の index を指定してノードを挿入すると index-out-of-range エラーになる", () => {
@@ -77,10 +75,9 @@ test("範囲外の index を指定してノードを挿入すると index-out-of
     { name: "label", type: "Text" },
   );
 
-  expect(result).toEqual({
-    ok: false,
-    error: { kind: "index-out-of-range", index: 1, length: 0 },
-  });
+  expect(result).toEqual(
+    Result.err({ kind: "index-out-of-range", index: 1, length: 0 }),
+  );
 });
 
 test("存在しないノード名を指定して削除すると node-not-found エラーになる", () => {
@@ -90,10 +87,9 @@ test("存在しないノード名を指定して削除すると node-not-found �
 
   const result = DesignDocument.removeNode(document, "missing");
 
-  expect(result).toEqual({
-    ok: false,
-    error: { kind: "node-not-found", name: "missing" },
-  });
+  expect(result).toEqual(
+    Result.err({ kind: "node-not-found", name: "missing" }),
+  );
 });
 
 test("範囲外の fromIndex を指定してノードを並べ替えると index-out-of-range エラーになる", () => {
@@ -114,10 +110,9 @@ test("範囲外の fromIndex を指定してノードを並べ替えると index
     0,
   );
 
-  expect(result).toEqual({
-    ok: false,
-    error: { kind: "index-out-of-range", index: 5, length: 1 },
-  });
+  expect(result).toEqual(
+    Result.err({ kind: "index-out-of-range", index: 5, length: 1 }),
+  );
 });
 
 test("自分自身を移動先に指定して移動しようとすると move-into-descendant エラーになる", () => {
@@ -137,14 +132,13 @@ test("自分自身を移動先に指定して移動しようとすると move-in
     index: 0,
   });
 
-  expect(result).toEqual({
-    ok: false,
-    error: {
+  expect(result).toEqual(
+    Result.err({
       kind: "move-into-descendant",
       name: "box-1",
       parentName: "box-1",
-    },
-  });
+    }),
+  );
 });
 
 test("自分の子孫を移動先に指定して移動しようとすると move-into-descendant エラーになる", () => {
@@ -170,14 +164,13 @@ test("自分の子孫を移動先に指定して移動しようとすると move
     index: 0,
   });
 
-  expect(result).toEqual({
-    ok: false,
-    error: {
+  expect(result).toEqual(
+    Result.err({
       kind: "move-into-descendant",
       name: "box-1",
       parentName: "box-2",
-    },
-  });
+    }),
+  );
 });
 
 test("存在しないノード名を指定して移動しようとすると node-not-found エラーになる", () => {
@@ -190,10 +183,9 @@ test("存在しないノード名を指定して移動しようとすると node
     index: 0,
   });
 
-  expect(result).toEqual({
-    ok: false,
-    error: { kind: "node-not-found", name: "missing" },
-  });
+  expect(result).toEqual(
+    Result.err({ kind: "node-not-found", name: "missing" }),
+  );
 });
 
 test("存在しない移動先の親名を指定して移動しようとすると parent-not-found エラーになる", () => {
@@ -213,10 +205,9 @@ test("存在しない移動先の親名を指定して移動しようとする�
     index: 0,
   });
 
-  expect(result).toEqual({
-    ok: false,
-    error: { kind: "parent-not-found", name: "missing-parent" },
-  });
+  expect(result).toEqual(
+    Result.err({ kind: "parent-not-found", name: "missing-parent" }),
+  );
 });
 
 test("子を持てないノードへ移動しようとすると children-not-allowed エラーになる", () => {
@@ -239,10 +230,9 @@ test("子を持てないノードへ移動しようとすると children-not-all
     index: 0,
   });
 
-  expect(result).toEqual({
-    ok: false,
-    error: { kind: "children-not-allowed", name: "target" },
-  });
+  expect(result).toEqual(
+    Result.err({ kind: "children-not-allowed", name: "target" }),
+  );
 });
 
 test("移動に失敗しても元のドキュメントは変更されない", () => {
@@ -269,10 +259,9 @@ test("存在しない artboard 名を指定して削除すると artboard-not-fo
 
   const result = DesignDocument.removeArtboard(document, "missing");
 
-  expect(result).toEqual({
-    ok: false,
-    error: { kind: "artboard-not-found", name: "missing" },
-  });
+  expect(result).toEqual(
+    Result.err({ kind: "artboard-not-found", name: "missing" }),
+  );
 });
 
 test("範囲外の index を指定して artboard を並べ替えると index-out-of-range エラーになる", () => {
@@ -282,10 +271,9 @@ test("範囲外の index を指定して artboard を並べ替えると index-ou
 
   const result = DesignDocument.reorderArtboard(document, 0, 3);
 
-  expect(result).toEqual({
-    ok: false,
-    error: { kind: "index-out-of-range", index: 3, length: 1 },
-  });
+  expect(result).toEqual(
+    Result.err({ kind: "index-out-of-range", index: 3, length: 1 }),
+  );
 });
 
 test("範囲外の index を指定して artboard を挿入すると index-out-of-range エラーになる", () => {
@@ -300,8 +288,7 @@ test("範囲外の index を指定して artboard を挿入すると index-out-o
     children: [],
   });
 
-  expect(result).toEqual({
-    ok: false,
-    error: { kind: "index-out-of-range", index: 5, length: 1 },
-  });
+  expect(result).toEqual(
+    Result.err({ kind: "index-out-of-range", index: 5, length: 1 }),
+  );
 });

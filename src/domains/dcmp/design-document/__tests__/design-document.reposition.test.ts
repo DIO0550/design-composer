@@ -140,10 +140,7 @@ test("子を持てない相手を親に指すと parent-not-found エラーに�
       "badge",
       ChildPlacement.create("title", { mode: "absolute", x: 52, y: 19 }),
     ),
-  ).toEqual({
-    ok: false,
-    error: { kind: "parent-not-found", name: "title" },
-  });
+  ).toEqual(Result.err({ kind: "parent-not-found", name: "title" }));
 });
 
 test("自分の子孫を親に指すと move-into-descendant エラーになる", () => {
@@ -154,14 +151,13 @@ test("自分の子孫を親に指すと move-into-descendant エラーになる"
       "badge",
       ChildPlacement.create("badge-dot", { mode: "absolute", x: 52, y: 19 }),
     ),
-  ).toEqual({
-    ok: false,
-    error: {
+  ).toEqual(
+    Result.err({
       kind: "move-into-descendant",
       name: "badge",
       parentName: "badge-dot",
-    },
-  });
+    }),
+  );
 });
 
 test("artboard の名前を置き直そうとすると node-not-found エラーになる", () => {
@@ -173,10 +169,7 @@ test("artboard の名前を置き直そうとすると node-not-found エラー�
       "home",
       ChildPlacement.create("home", { mode: "absolute", x: 52, y: 19 }),
     ),
-  ).toEqual({
-    ok: false,
-    error: { kind: "node-not-found", name: "home" },
-  });
+  ).toEqual(Result.err({ kind: "node-not-found", name: "home" }));
 });
 
 test("存在しないノードを置き直そうとすると node-not-found エラーになる", () => {
@@ -186,8 +179,5 @@ test("存在しないノードを置き直そうとすると node-not-found エ�
       "居ない",
       ChildPlacement.create("home", { mode: "absolute", x: 52, y: 19 }),
     ),
-  ).toEqual({
-    ok: false,
-    error: { kind: "node-not-found", name: "居ない" },
-  });
+  ).toEqual(Result.err({ kind: "node-not-found", name: "居ない" }));
 });

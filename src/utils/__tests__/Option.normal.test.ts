@@ -2,15 +2,12 @@ import { expect, test } from "vitest";
 import { Option } from "../Option";
 
 test("some で生成した値は存在する値として保持される", () => {
-  expect(Option.some(42)).toEqual({ some: true, value: 42 });
-});
-
-test("none は値が存在しないことを表す", () => {
-  expect(Option.none).toEqual({ some: false });
+  const option = Option.some(42);
+  expect(Option.isSome(option) ? option.value : undefined).toBe(42);
 });
 
 test("fromNullable は有効な値に対して存在する値を返す", () => {
-  expect(Option.fromNullable(42)).toEqual({ some: true, value: 42 });
+  expect(Option.fromNullable(42)).toEqual(Option.some(42));
 });
 
 test("fromNullable は null に対して none を返す", () => {
@@ -22,10 +19,7 @@ test("fromNullable は undefined に対して none を返す", () => {
 });
 
 test("map は存在する値を変換した新しい値を返す", () => {
-  expect(Option.map(Option.some(2), (v) => v * 3)).toEqual({
-    some: true,
-    value: 6,
-  });
+  expect(Option.map(Option.some(2), (v) => v * 3)).toEqual(Option.some(6));
 });
 
 test("map は none をそのまま返す", () => {
@@ -33,10 +27,9 @@ test("map は none をそのまま返す", () => {
 });
 
 test("flatMap は存在する値に続く処理を連結できる", () => {
-  expect(Option.flatMap(Option.some(2), (v) => Option.some(v * 3))).toEqual({
-    some: true,
-    value: 6,
-  });
+  expect(Option.flatMap(Option.some(2), (v) => Option.some(v * 3))).toEqual(
+    Option.some(6),
+  );
 });
 
 test("flatMap は連結した処理が none を返した場合 none になる", () => {

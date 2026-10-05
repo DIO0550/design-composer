@@ -78,10 +78,7 @@ test("同じ artboard にある別のノードの名前へは変えられない"
     to: "login",
   });
 
-  expect(result).toEqual({
-    ok: false,
-    error: { kind: "duplicate-name", name: "login" },
-  });
+  expect(result).toEqual(Result.err({ kind: "duplicate-name", name: "login" }));
 });
 
 test("部品名へは変えられない（名前空間はドキュメント全体で 1 つなので）", () => {
@@ -90,10 +87,9 @@ test("部品名へは変えられない（名前空間はドキュメント全�
     to: "primary-button",
   });
 
-  expect(result).toEqual({
-    ok: false,
-    error: { kind: "duplicate-name", name: "primary-button" },
-  });
+  expect(result).toEqual(
+    Result.err({ kind: "duplicate-name", name: "primary-button" }),
+  );
 });
 
 test("部品の内部にあるノードの名前へは変えられない", () => {
@@ -102,10 +98,9 @@ test("部品の内部にあるノードの名前へは変えられない", () =>
     to: "button-label",
   });
 
-  expect(result).toEqual({
-    ok: false,
-    error: { kind: "duplicate-name", name: "button-label" },
-  });
+  expect(result).toEqual(
+    Result.err({ kind: "duplicate-name", name: "button-label" }),
+  );
 });
 
 test("識別子の規則を満たさない名前へは変えられない", () => {
@@ -114,10 +109,7 @@ test("識別子の規則を満たさない名前へは変えられない", () =>
     to: "Caption",
   });
 
-  expect(result).toEqual({
-    ok: false,
-    error: { kind: "invalid-name", name: "Caption" },
-  });
+  expect(result).toEqual(Result.err({ kind: "invalid-name", name: "Caption" }));
 });
 
 test("数字だけの名前へは変えられない", () => {
@@ -126,10 +118,7 @@ test("数字だけの名前へは変えられない", () => {
     to: "3",
   });
 
-  expect(result).toEqual({
-    ok: false,
-    error: { kind: "invalid-name", name: "3" },
-  });
+  expect(result).toEqual(Result.err({ kind: "invalid-name", name: "3" }));
 });
 
 test("ドキュメントに無い名前を変えようとすると node-not-found になる", () => {
@@ -138,8 +127,7 @@ test("ドキュメントに無い名前を変えようとすると node-not-foun
     to: "caption",
   });
 
-  expect(result).toEqual({
-    ok: false,
-    error: { kind: "node-not-found", name: "missing" },
-  });
+  expect(result).toEqual(
+    Result.err({ kind: "node-not-found", name: "missing" }),
+  );
 });

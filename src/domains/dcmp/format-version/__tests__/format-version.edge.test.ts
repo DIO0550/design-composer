@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { Option } from "@/utils/Option";
 import { FormatVersion } from "../index";
 
 test.each([
@@ -8,7 +9,7 @@ test.each([
   "",
   "1.2.3",
 ])("major.minor 形式でない文字列 %s をパースすると値を持たない", (value) => {
-  expect(FormatVersion.parse(value)).toEqual({ some: false });
+  expect(FormatVersion.parse(value)).toEqual(Option.none);
 });
 
 test.each([
@@ -16,14 +17,14 @@ test.each([
   "1.02",
   "00.1",
 ])("0 以外の数の先頭に 0 がある綴り %s は読めない", (value) => {
-  expect(FormatVersion.parse(value)).toEqual({ some: false });
+  expect(FormatVersion.parse(value)).toEqual(Option.none);
 });
 
 test.each([
   "9007199254740992.0",
   "1.9007199254740992",
 ])("Number で正確に表せない大きな数を含む綴り %s は読めない", (value) => {
-  expect(FormatVersion.parse(value)).toEqual({ some: false });
+  expect(FormatVersion.parse(value)).toEqual(Option.none);
 });
 
 test.each([
@@ -39,7 +40,7 @@ test.each([
   value,
   expected,
 }) => {
-  expect(FormatVersion.parse(value)).toEqual({ some: true, value: expected });
+  expect(FormatVersion.parse(value)).toEqual(Option.some(expected));
 });
 
 test.each([
@@ -49,7 +50,7 @@ test.each([
   value,
   expected,
 }) => {
-  expect(FormatVersion.parse(value)).toEqual({ some: true, value: expected });
+  expect(FormatVersion.parse(value)).toEqual(Option.some(expected));
 });
 
 test("ファイルの major がアプリより大きいとき unsupported になる", () => {

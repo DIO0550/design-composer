@@ -85,10 +85,9 @@ test("存在しない名前を指した prop の編集は失敗する", () => {
     value: Option.some("md"),
   });
 
-  expect(edited).toEqual({
-    ok: false,
-    error: { kind: "node-not-found", name: "missing" },
-  });
+  expect(edited).toEqual(
+    Result.err({ kind: "node-not-found", name: "missing" }),
+  );
 });
 
 test("prop を編集しても元のドキュメントは変わらない", () => {

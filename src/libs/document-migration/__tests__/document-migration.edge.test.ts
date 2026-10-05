@@ -14,27 +14,25 @@ function setupFailingSteps(): MigrationSteps {
 test("major がアプリより大きいファイルは unsupported-format-version になる", () => {
   const document: JsonRecord = { formatVersion: "2.0" };
 
-  expect(DocumentMigration.toCurrent(document)).toEqual({
-    ok: false,
-    error: {
+  expect(DocumentMigration.toCurrent(document)).toEqual(
+    Result.err({
       kind: "unsupported-format-version",
       fileVersion: { major: 2, minor: 0 },
       appVersion: { major: 1, minor: 1 },
-    },
-  });
+    }),
+  );
 });
 
 test("major が一致し minor がアプリより大きいファイルは unsupported-format-version になる", () => {
   const document: JsonRecord = { formatVersion: "1.5" };
 
-  expect(DocumentMigration.toCurrent(document)).toEqual({
-    ok: false,
-    error: {
+  expect(DocumentMigration.toCurrent(document)).toEqual(
+    Result.err({
       kind: "unsupported-format-version",
       fileVersion: { major: 1, minor: 5 },
       appVersion: { major: 1, minor: 1 },
-    },
-  });
+    }),
+  );
 });
 
 test("新しすぎるファイルのメッセージはアプリの更新を促す", () => {
@@ -48,34 +46,29 @@ test("新しすぎるファイルのメッセージはアプリの更新を促�
 test("変換すべき major のステップが無いと missing-migration-step になる", () => {
   const document: JsonRecord = { formatVersion: "0.9" };
 
-  expect(DocumentMigration.toCurrent(document)).toEqual({
-    ok: false,
-    error: { kind: "missing-migration-step", fromMajor: 0 },
-  });
+  expect(DocumentMigration.toCurrent(document)).toEqual(
+    Result.err({ kind: "missing-migration-step", fromMajor: 0 }),
+  );
 });
 
 test("ステップが失敗すると理由を持つ migration-step-failed になる", () => {
   const document: JsonRecord = { formatVersion: "0.9" };
 
-  expect(DocumentMigration.toCurrent(document, setupFailingSteps())).toEqual({
-    ok: false,
-    error: {
+  expect(DocumentMigration.toCurrent(document, setupFailingSteps())).toEqual(
+    Result.err({
       kind: "migration-step-failed",
       fromMajor: 0,
       reason: "tokens が読めない形になっている",
-    },
-  });
+    }),
+  );
 });
 
 test("formatVersion が major.minor 形式でない入力はそのまま通る", () => {
   const document: JsonRecord = { formatVersion: "1" };
 
-  expect(DocumentMigration.toCurrent(document)).toEqual({
-    ok: true,
-    value: document,
-  });
+  expect(DocumentMigration.toCurrent(document)).toEqual(Result.ok(document));
 });
 
 test("オブジェクトでない入力はそのまま通る", () => {
-  expect(DocumentMigration.toCurrent([])).toEqual({ ok: true, value: [] });
+  expect(DocumentMigration.toCurrent([])).toEqual(Result.ok([]));
 });

@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { Result } from "@/utils/Result";
 import { DesignDocument } from "../index";
 
 test("存在しないノード名を指定して部品化しようとすると node-not-found エラーになる", () => {
@@ -8,10 +9,9 @@ test("存在しないノード名を指定して部品化しようとすると n
 
   const result = DesignDocument.createComponent(document, "missing", "card");
 
-  expect(result).toEqual({
-    ok: false,
-    error: { kind: "node-not-found", name: "missing" },
-  });
+  expect(result).toEqual(
+    Result.err({ kind: "node-not-found", name: "missing" }),
+  );
 });
 
 test("識別子の規則を満たさない名前を指定して部品化しようとすると invalid-name エラーになる", () => {
@@ -22,10 +22,7 @@ test("識別子の規則を満たさない名前を指定して部品化しよ�
 
   const result = DesignDocument.createComponent(document, "box-1", "Card");
 
-  expect(result).toEqual({
-    ok: false,
-    error: { kind: "invalid-name", name: "Card" },
-  });
+  expect(result).toEqual(Result.err({ kind: "invalid-name", name: "Card" }));
 });
 
 test("既存の部品名と衝突する名前を指定して部品化しようとすると duplicate-name エラーになる", () => {
@@ -37,10 +34,7 @@ test("既存の部品名と衝突する名前を指定して部品化しよう�
 
   const result = DesignDocument.createComponent(document, "box-1", "card");
 
-  expect(result).toEqual({
-    ok: false,
-    error: { kind: "duplicate-name", name: "card" },
-  });
+  expect(result).toEqual(Result.err({ kind: "duplicate-name", name: "card" }));
 });
 
 test("既存のノード名と衝突する名前を指定して部品化しようとすると duplicate-name エラーになる", () => {
@@ -54,10 +48,7 @@ test("既存のノード名と衝突する名前を指定して部品化しよ�
 
   const result = DesignDocument.createComponent(document, "box-1", "label");
 
-  expect(result).toEqual({
-    ok: false,
-    error: { kind: "duplicate-name", name: "label" },
-  });
+  expect(result).toEqual(Result.err({ kind: "duplicate-name", name: "label" }));
 });
 
 test("既存の artboard 名と衝突する名前を指定して部品化しようとすると duplicate-name エラーになる", () => {
@@ -68,10 +59,9 @@ test("既存の artboard 名と衝突する名前を指定して部品化しよ�
 
   const result = DesignDocument.createComponent(document, "box-1", "screen");
 
-  expect(result).toEqual({
-    ok: false,
-    error: { kind: "duplicate-name", name: "screen" },
-  });
+  expect(result).toEqual(
+    Result.err({ kind: "duplicate-name", name: "screen" }),
+  );
 });
 
 test("ref ノードを部品化しようとすると ref-node-not-supported エラーになる", () => {
@@ -89,10 +79,9 @@ test("ref ノードを部品化しようとすると ref-node-not-supported エ�
 
   const result = DesignDocument.createComponent(document, "button-1", "card");
 
-  expect(result).toEqual({
-    ok: false,
-    error: { kind: "ref-node-not-supported", name: "button-1" },
-  });
+  expect(result).toEqual(
+    Result.err({ kind: "ref-node-not-supported", name: "button-1" }),
+  );
 });
 
 test("部品化に失敗しても元のドキュメントは変更されない", () => {

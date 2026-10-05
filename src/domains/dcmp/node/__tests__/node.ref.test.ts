@@ -38,7 +38,7 @@ test("子孫にある ref の参照先がすべて集まる", () => {
 test("自分自身の名前でノードを探すとそのノードが見つかる", () => {
   const found = Node.find({ name: "root", type: "Box" }, "root");
 
-  expect(found).toEqual({ some: true, value: { name: "root", type: "Box" } });
+  expect(found).toEqual(Option.some({ name: "root", type: "Box" }));
 });
 
 test("子孫の名前でノードを探すとその子孫が見つかる", () => {
@@ -57,7 +57,7 @@ test("子孫の名前でノードを探すとその子孫が見つかる", () =>
     "label",
   );
 
-  expect(found).toEqual({ some: true, value: { name: "label", type: "Text" } });
+  expect(found).toEqual(Option.some({ name: "label", type: "Text" }));
 });
 
 test("存在しない名前でノードを探すと見つからない", () => {
