@@ -26,28 +26,18 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / ".claude/hooks/lib"))
-from ts_sources import DEFAULT_ROOT, feature_of  # noqa: E402
-
-DomainsRoot = f"{DEFAULT_ROOT}/domains"
+from ts_sources import DEFAULT_ROOT, DOMAINS_ROOT, feature_of
 
 # 層の読む順。内側(依存される側)から外側へ。`src/domains` のカテゴリは import してよい向き
-# (`rules/architecture.md`「domains のカテゴリ」)の順に並べる。
+# (`rules/architecture.md`「domains のカテゴリ」)の順に並べ、`src/features` を挟んで
+# 内側の層と外側の層を置く。
 DomainCategories = ("unit", "dcmp", "compiled", "session")
-SourceLayers = (
-    ("services", "src/services"),
-    ("libs", "src/libs"),
-    ("utils", "src/utils"),
-    ("types", "src/types"),
-)
-OuterLayers = (
-    ("components", "src/components"),
-    ("hooks", "src/hooks"),
-    ("app", "src/app"),
-)
+InnerLayers = tuple((name, f"{DEFAULT_ROOT}/{name}") for name in ("services", "libs", "utils", "types"))
+OuterLayers = tuple((name, f"{DEFAULT_ROOT}/{name}") for name in ("components", "hooks", "app"))
 HarnessPaths = ("AGENTS.md", "CLAUDE.md", "rules/", ".claude/", ".github/", "harness/")
 
 TestFolder = "/__tests__/"
-TestFile = re.compile(r"/__tests__/.*\.test\.tsx?$")
+TestFile = re.compile(re.escape(TestFolder) + r".*\.test\.tsx?$")
 StoryFile = re.compile(r"\.stories\.tsx?$")
 
 # `test(` / `it(` と、その修飾(`.skip` `.only` など)と `.each`。`regex.test(` や `split(` を
@@ -164,16 +154,16 @@ def changed_files(base: str, head: str) -> list[dict]:
         index += 3 if renamed else 2
     line_counts = numstat_by_path(counts)
     for file in files:
-        file["additions"], file["deletions"] = line_counts.get(file["path"], (0, 0))
+        file["additions"], file["deletions"] = line_counts[file["path"]]
     return files
 
 
-def numstat_by_path(fields: list[str]) -> dict[str, tuple[int, int]]:
-    """`--numstat -z` の出力を、新しいパスごとの追加・削除行数にする。バイナリは 0 行として扱う。
+def numstat_by_path(fields: list[str]) -> dict[str, tuple[int | None, int | None]]:
+    """`--numstat -z` の出力を、新しいパスごとの追加・削除行数にする。バイナリは行数が無いので None。
 
     rename の行は `追加\\t削除\\t` の後に旧パスと新パスが別のフィールドで続く。
     """
-    counts: dict[str, tuple[int, int]] = {}
+    counts: dict[str, tuple[int | None, int | None]] = {}
     index = 0
     while index < len(fields) - 1:
         added, deleted, path = fields[index].split("\t", 2)
@@ -181,19 +171,19 @@ def numstat_by_path(fields: list[str]) -> dict[str, tuple[int, int]]:
         if path == "":
             path = fields[index + 2]
             step = 3
-        counts[path] = (int(added) if added.isdigit() else 0, int(deleted) if deleted.isdigit() else 0)
+        counts[path] = (int(added) if added.isdigit() else None, int(deleted) if deleted.isdigit() else None)
         index += step
     return counts
 
 
 def layer_of(path: str) -> tuple[int, str, str]:
     """ファイルが属する層を、読む順の位置・層の見出し・層の中での並べ替えの鍵で返す。"""
-    if path.startswith(f"{DomainsRoot}/"):
+    if path.startswith(f"{DOMAINS_ROOT}/"):
         category = path.split("/")[2]
         rank = DomainCategories.index(category) if category in DomainCategories else len(DomainCategories)
         return rank, f"domains / {category}", ""
     rank = len(DomainCategories) + 1
-    for name, root in SourceLayers:
+    for name, root in InnerLayers:
         if path.startswith(f"{root}/"):
             return rank, name, ""
         rank += 1
@@ -205,11 +195,11 @@ def layer_of(path: str) -> tuple[int, str, str]:
         if path.startswith(f"{root}/"):
             return rank, name, ""
         rank += 1
-    return outer_layer_of(path, rank)
+    return unlayered_area_of(path, rank)
 
 
-def outer_layer_of(path: str, rank: int) -> tuple[int, str, str]:
-    """`src/` の層に入らないファイルの層を返す。"""
+def unlayered_area_of(path: str, rank: int) -> tuple[int, str, str]:
+    """`src/` のどの層にも入らないファイルの置き場を、`layer_of` と同じ形で返す。"""
     if path.startswith(f"{DEFAULT_ROOT}/"):
         return rank, "src(その他)", ""
     if path.startswith("src-tauri/"):
@@ -266,25 +256,25 @@ def commits_between(base: str, head: str) -> list[dict]:
     ]
 
 
-def build_map(base_ref: str, head_ref: str, pr: int) -> dict:
+def build_map(base_tip: str, head_ref: str, pr: int) -> dict:
     """change-map.json の中身を作る。
 
-    @param base_ref PR の base の先端
+    @param base_tip PR の base の先端
     @param head_ref PR の head
     @param pr PR 番号
-    @returns 地図。変更が無ければ各一覧は空配列
+    @returns 地図。`mergeBase` は base の先端ではなく head との分岐点。変更が無ければ各一覧は空配列
     """
     head = git("rev-parse", head_ref).strip()
-    base = git("merge-base", base_ref, head).strip()
-    files = changed_files(base, head)
+    merge_base = git("merge-base", base_tip, head).strip()
+    files = changed_files(merge_base, head)
     return {
         "version": 1,
         "pr": pr,
-        "base": base,
+        "mergeBase": merge_base,
         "head": head,
         "groups": group_files(files),
-        "tests": test_changes(files, base, head),
-        "commits": commits_between(base, head),
+        "tests": test_changes(files, merge_base, head),
+        "commits": commits_between(merge_base, head),
     }
 
 

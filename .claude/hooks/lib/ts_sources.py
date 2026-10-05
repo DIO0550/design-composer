@@ -16,13 +16,16 @@ import sys
 from pathlib import Path
 
 # ソースの置き場。走査ルートを省いたときの既定でもあり、`src/` から始まる固定パス
-# （`FEATURES_ROOT` / `import-rule-violations.py` の `ALIAS_ROOT`）の出どころでもある。
+# （`FEATURES_ROOT` / `DOMAINS_ROOT` / `import-rule-violations.py` の `ALIAS_ROOT`）の出どころでもある。
 DEFAULT_ROOT = "src"
 
 SOURCE_SUFFIXES = (".ts", ".tsx")
 
 # feature 層の位置。この下で `features/` が続く限り、子 feature として辿る。
 FEATURES_ROOT = f"{DEFAULT_ROOT}/features"
+
+# ドメイン層の位置。この直下はカテゴリのフォルダで、モジュールはその下に置く。
+DOMAINS_ROOT = f"{DEFAULT_ROOT}/domains"
 
 # コメント行の始まり。doc に綴りを書く箇所があるので、実コードと数えない。
 COMMENT_LINE = re.compile(r"^\s*(?://|\*|/\*)")

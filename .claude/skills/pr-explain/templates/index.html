@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-ISA5LyZboFD3ewPOJeBqe9l/VJzACQz+bYNREDPY5TU='; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-LUrw4288swpwT+wsyUcM+LYzSSmN90XLQ38fl6g8xog='; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR 解説</title>
 <style>
@@ -50,7 +50,6 @@ a { color: var(--accent); }
 code { font-family: var(--mono); font-size: 0.88em; background: var(--surface-2); padding: 0.1em 0.35em; border-radius: 4px; }
 .page { max-width: 1180px; margin: 0 auto; padding: 24px 16px 64px; }
 .top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
-.kind { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3); font-weight: 700; }
 .links { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; }
 .banner { margin: 16px 0 0; padding: 12px 14px; border-radius: 8px; background: var(--amber-soft); color: var(--text); border: 1px solid var(--border); font-size: 14px; }
 .banner ul { margin: 6px 0 0; padding-left: 20px; }
@@ -108,7 +107,7 @@ ul.focus li { margin: 6px 0; }
 <body>
 <div class="page">
   <header class="top">
-    <span class="kind">PR 解説</span>
+    <span class="kicker">PR 解説</span>
     <nav class="links" id="links"></nav>
   </header>
   <div class="banner" id="staleness" hidden></div>
@@ -132,9 +131,9 @@ ul.focus li { margin: 6px 0; }
   const Repo = "DIO0550/design-composer";
   const explain = document.getElementById("explain");
   const meta = explain.querySelector(".explain-meta");
-  const explainedSha = meta ? meta.dataset.explainedSha || "" : "";
+  const explainedSha = meta ? meta.dataset.explainedSha : "";
   const prFromPath = (location.pathname.match(/pr-(\d+)/) || [])[1] || "";
-  const pr = (meta && meta.dataset.pr) || prFromPath;
+  const pr = meta ? meta.dataset.pr : prFromPath;
 
   const el = (tag, props, children) => {
     const node = document.createElement(tag);
@@ -154,7 +153,7 @@ ul.focus li { margin: 6px 0; }
     if (!match) continue;
     const [, path, start, end] = match;
     const lines = start ? `#L${start}${end ? `-L${end}` : ""}` : "";
-    const link = el("a", { href: `https://github.com/${Repo}/blob/${explainedSha || "main"}/${path}${lines}` });
+    const link = el("a", { href: `https://github.com/${Repo}/blob/${explainedSha}/${path}${lines}` });
     code.replaceWith(link);
     link.append(code);
   }
@@ -168,20 +167,31 @@ ul.focus li { margin: 6px 0; }
     );
   }
 
+  const isKicker = (node) => node.classList !== undefined && node.classList.contains("kicker");
   const buildToc = () => {
     const toc = document.getElementById("toc");
     toc.replaceChildren();
     for (const h2 of document.querySelectorAll("main h2[id]")) {
-      const label = [...h2.childNodes].filter((node) => !(node.classList && node.classList.contains("kicker"))).map((node) => node.textContent).join("").trim();
+      const label = [...h2.childNodes].filter((node) => !isKicker(node)).map((node) => node.textContent).join("").trim();
       toc.append(el("a", { href: `#${h2.id}`, text: label }));
     }
   };
 
+  // パスの直後にパスの文字が続く出現は数えない(`index.ts` を `index.tsx` の言及と取り違えない)。
   const explainText = explain.textContent;
-  const isMentioned = (path) => explainText.includes(path);
+  const isMentioned = (path) => {
+    let at = explainText.indexOf(path);
+    while (at >= 0) {
+      if (!/[\w./-]/.test(explainText.charAt(at + path.length))) return true;
+      at = explainText.indexOf(path, at + 1);
+    }
+    return false;
+  };
+  const isUnmentioned = (file) => explainedSha !== "" && !isMentioned(file.path);
 
   const showStaleness = (map) => {
-    if (!explainedSha || map.head === explainedSha) return;
+    const isOutdated = explainedSha !== "" && map.head !== explainedSha;
+    if (!isOutdated) return;
     const banner = document.getElementById("staleness");
     const index = map.commits.findIndex((commit) => commit.sha === explainedSha);
     banner.hidden = false;
@@ -194,48 +204,43 @@ ul.focus li { margin: 6px 0; }
     banner.append(el("ul", {}, changed.map((path) => el("li", {}, [el("code", { text: path })]))));
   };
 
+  const lineCount = (file) => (file.additions === null ? "バイナリ" : `+${file.additions} −${file.deletions}`);
   const fileItem = (file) => {
     const children = [el("span", { class: "status", text: file.status }), el("code", { text: file.path })];
     if (file.oldPath) children.push(el("span", { class: "muted", text: `← ${file.oldPath}` }));
-    children.push(el("span", { class: "count", text: `+${file.additions} −${file.deletions}` }));
-    if (explainedSha && !isMentioned(file.path)) children.push(el("span", { class: "unmentioned", text: "解説に出てこない" }));
+    children.push(el("span", { class: "count", text: lineCount(file) }));
+    if (isUnmentioned(file)) children.push(el("span", { class: "unmentioned", text: "解説に出てこない" }));
     return el("li", {}, children);
   };
+  const testItem = (test) => el("li", {}, [el("span", { text: test.name }), el("code", { text: test.file })]);
 
-  const testItems = (tests) => tests.map((test) => el("li", {}, [el("span", { text: test.name }), el("code", { text: test.file })]));
+  // 見出し(件数)と一覧の組を 1 つ足す。
+  const appendList = (body, title, items) => {
+    body.append(el("h3", { text: `${title}(${items.length})` }), el("ul", {}, items));
+  };
 
   const renderMap = (map) => {
     const body = document.getElementById("map-body");
     body.replaceChildren();
-    body.append(el("p", { class: "muted", text: `head ${map.head.slice(0, 7)} · base との分岐点 ${map.base.slice(0, 7)} · 上から読む順(内側の層から外側へ)に並べています。` }));
-    if (explainedSha) {
-      const unmentioned = map.groups.flatMap((group) => group.files).filter((file) => !isMentioned(file.path));
-      if (unmentioned.length > 0) {
-        body.append(el("h3", { text: `解説に出てこない変更ファイル(${unmentioned.length})` }));
-        body.append(el("ul", {}, unmentioned.map(fileItem)));
-      }
-    }
-    for (const group of map.groups) {
-      body.append(el("h3", { text: `${group.label}(${group.files.length})` }));
-      body.append(el("ul", {}, group.files.map(fileItem)));
-    }
+    body.append(el("p", { class: "muted", text: `head ${map.head.slice(0, 7)} · base との分岐点 ${map.mergeBase.slice(0, 7)} · 上から読む順(内側の層から外側へ)に並べています。` }));
+    const unmentioned = map.groups.flatMap((group) => group.files).filter(isUnmentioned);
+    if (unmentioned.length > 0) appendList(body, "解説に出てこない変更ファイル", unmentioned.map(fileItem));
+    for (const group of map.groups) appendList(body, group.label, group.files.map(fileItem));
     if (map.groups.length === 0) body.append(el("p", { class: "muted", text: "変更されたファイルはありません。" }));
-    body.append(el("h3", { text: `追加されたテスト(${map.tests.added.length})` }));
-    body.append(el("ul", {}, testItems(map.tests.added)));
-    body.append(el("h3", { text: `削除されたテスト(${map.tests.removed.length})` }));
-    body.append(el("ul", {}, testItems(map.tests.removed)));
+    appendList(body, "追加されたテスト", map.tests.added.map(testItem));
+    appendList(body, "削除されたテスト", map.tests.removed.map(testItem));
     showStaleness(map);
   };
 
-  const mapFailed = () => {
-    document.getElementById("map-body").replaceChildren(el("p", { class: "muted", text: "change-map.json を読めませんでした(Pages 上でのみ表示されます)。" }));
+  // 読み込みの失敗だけを受ける。描画の失敗は握らず、コンソールにそのまま出す。
+  const mapUnreadable = (error) => {
+    document.getElementById("map-body").replaceChildren(el("p", { class: "muted", text: `change-map.json を読めませんでした(${error.message})。ローカルで開いたときと、地図がまだ置かれていないときに出ます。` }));
   };
 
   buildToc();
   fetch(`change-map.json?t=${Date.now()}`, { cache: "no-store" })
-    .then((response) => (response.ok ? response.json() : Promise.reject(new Error(String(response.status)))))
-    .then(renderMap)
-    .catch(mapFailed)
+    .then((response) => (response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`))))
+    .then(renderMap, mapUnreadable)
     .then(buildToc);
 })();
 </script>

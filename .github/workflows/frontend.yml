@@ -209,14 +209,14 @@ jobs:
         run: bash .github/scripts/check-pr-closing-issue-cases.sh
 
       # PR の解説ページ(pr-explain.yml とセッションの pr-explain スキル)が使う 3 本の判定表。
-      - name: 解説ページの検査の判定表
-        run: bash .github/scripts/check-pr-explain-html-cases.sh
+      - name: 解説ページの組み立ての判定表
+        run: bash .github/scripts/build-pr-explain-page-cases.sh
 
       - name: 変更の地図の判定表
         run: bash .github/scripts/build-pr-change-map-cases.sh
 
-      - name: 解説ページの公開の判定表
-        run: bash .github/scripts/publish-pr-explain-cases.sh
+      - name: 解説ページの置き場の判定表
+        run: bash .github/scripts/pr-explain-pages-cases.sh
 
   report-comment:
     name: post ci report comment

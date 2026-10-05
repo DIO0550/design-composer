@@ -41,14 +41,11 @@ import re
 import sys
 from pathlib import Path
 
-from ts_sources import DEFAULT_ROOT, FEATURES_ROOT, feature_of, report, run, source_files
+from ts_sources import DEFAULT_ROOT, DOMAINS_ROOT, FEATURES_ROOT, feature_of, report, run, source_files
 
 # tsconfig.json / vite.config.ts のパスエイリアス（`@/*` → `src/*`）。
 ALIAS = "@/"
 ALIAS_ROOT = DEFAULT_ROOT
-
-# ドメイン層の位置。この直下はカテゴリのフォルダで、モジュールはその下に置く。
-DOMAINS_ROOT = f"{ALIAS_ROOT}/domains"
 
 # `import ... from "X"` / `export ... from "X"` / `import("X")` の X を、行番号付きで拾う。
 #

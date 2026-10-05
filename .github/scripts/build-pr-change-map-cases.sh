@@ -13,7 +13,7 @@
 # base 側にも PR の分岐後のコミットを置く。地図の起点が merge-base でなく base の先端になると、
 # base 側で変わったファイルが PR の変更として出てくる。
 #
-# 表は `ケース名|JSON(変数 m)に対する Python の式` の 1 行 1 ケース。式が真なら ok。
+# 表は `ケース名|JSON(変数 m)に対する Python の表明` の 1 行 1 ケース。表明が成り立てば ok。
 set -uo pipefail
 
 scripts_dir="$(cd "$(dirname "$0")" && pwd)"
@@ -67,6 +67,7 @@ put harness/case-law/x.md 'x'
 put docs/x.md 'x'
 put src-tauri/src/lib.rs 'fn main() {}'
 put src/services/node-html/index.ts 'export const NodeHtml = {};'
+printf '\x89PNG\x00\x01' > docs/x.png
 git add -A && git commit --quiet -m second
 head="$(git rev-parse HEAD)"
 
@@ -78,8 +79,9 @@ base="$(git rev-parse HEAD)"
 python3 "$builder" --base "$base" --head "$head" --pr 12 > "$work/map.json" || { echo "NG   地図が作れなかった"; exit 1; }
 python3 "$builder" --base "$head" --head "$head" --pr 12 > "$work/empty.json" || { echo "NG   差分なしの地図が作れなかった"; exit 1; }
 
-# $1 地図の JSON, $2 Python の式
-holds() {
+# 表明が成り立つかを holds / fails で出す。
+# $1 地図の JSON, $2 Python の表明
+outcome_of() {
   python3 - "$1" "$2" "$fork" "$first" "$head" <<'PY'
 import json, sys
 m = json.load(open(sys.argv[1], encoding="utf-8"))
@@ -89,7 +91,7 @@ files = {file["path"]: file for group in m["groups"] for file in group["files"]}
 label_of = {file["path"]: group["label"] for group in m["groups"] for file in group["files"]}
 added = {test["name"] for test in m["tests"]["added"]}
 removed = {test["name"] for test in m["tests"]["removed"]}
-sys.exit(0 if eval(sys.argv[2]) else 1)
+print("holds" if eval(sys.argv[2]) else "fails")
 PY
 }
 
@@ -97,15 +99,15 @@ while IFS='|' read -r label expression; do
   [ -n "$label" ] || continue
   file="$work/map.json"
   case "$label" in 差分なし*) file="$work/empty.json" ;; esac
-  if holds "$file" "$expression"; then decision=pass; else decision=deny; fi
-  report pass "$decision" "$label"
+  report holds "$(outcome_of "$file" "$expression")" "$label"
 done <<'CASES'
-起点は merge-base で、base 側で後から変わったファイルは出ない|m["base"] == fork and "docs/base-only.md" not in files
+起点は merge-base で、base 側で後から変わったファイルは出ない|m["mergeBase"] == fork and "docs/base-only.md" not in files
 head は PR の先端|m["head"] == head and m["pr"] == 12
 domains のカテゴリで分類される|label_of["src/domains/dcmp/node/index.ts"] == "domains / dcmp"
 入れ子の feature は子 feature の単位で分類される|label_of["src/features/editor/features/tokens/__tests__/token.normal.test.ts"] == "features / editor/features/tokens"
 src の外は src-tauri / docs / ハーネス に分かれる|label_of[".github/workflows/x.yml"] == "ハーネス" and label_of["harness/case-law/x.md"] == "ハーネス" and label_of["docs/x.md"] == "docs" and label_of["src-tauri/src/lib.rs"] == "src-tauri"
 読む順は domains → services → utils → features → src-tauri → docs → ハーネス|labels == ["domains / dcmp", "services", "utils", "features / editor", "features / editor/features/tokens", "src-tauri", "docs", "ハーネス"]
+バイナリの行数は数えられないので null|files["docs/x.png"]["additions"] is None and files["docs/x.png"]["deletions"] is None and files["docs/x.md"]["additions"] == 1
 非 ASCII のパスも欠けない|"src/features/editor/components/日本語/index.tsx" in files
 rename は旧パスを持つ 1 件として出る|files["src/utils/__tests__/Renamed.normal.test.ts"]["status"] == "R" and files["src/utils/__tests__/Renamed.normal.test.ts"]["oldPath"] == "src/utils/__tests__/Moved.normal.test.ts" and "src/utils/__tests__/Moved.normal.test.ts" not in files
 足した test("…") は追加として出る|"足したテスト" in added

@@ -33,9 +33,9 @@ URL は `https://dio0550.github.io/design-composer/pr-explain/pr-<番号>/`。St
    - Issue: ゴール・計画・却下した案・計画から外れた点(`implementation-flow` が書いている)
    - 差分: `git diff $(git merge-base origin/main HEAD)`
    - このセッションの記憶: Issue に書くほどではなかった判断・試して捨てた形
-2. **テンプレートを作業用の場所へコピーする**(リポジトリの外。`mktemp -d` など)。
-   `templates/index.html` の `<!-- EXPLAIN:BEGIN -->` 〜 `<!-- EXPLAIN:END -->` の**間だけ**を
-   書き換える。外側(CSS・固定スクリプト・CSP)は 1 文字でも変えると検査で落ちる
+2. **解説の断片を、リポジトリの外の作業用ファイルに書く**(`mktemp -d` など)。書くのは
+   `templates/index.html` の `<!-- EXPLAIN:BEGIN -->` 〜 `<!-- EXPLAIN:END -->` の間に入る部分だけで、
+   枠(CSS・固定スクリプト・CSP)は公開のときにスクリプトがテンプレートから写す
 3. **下の「節の構成」と「部品」で書く**
 4. **事実の主張を確かめる。** 解説は「この関数は◯◯を返す」「この操作で□□になる」の集まりなので、
    `claim-verification` スキル(管轄はフェーズ 3 / 5)の手順をここでも使う。根拠の `path:line` は
@@ -43,10 +43,10 @@ URL は `https://dio0550.github.io/design-composer/pr-explain/pr-<番号>/`。St
 5. **公開する**
 
    ```bash
-   bash .github/scripts/publish-pr-explain.sh page <PR 番号> <書いた HTML>
+   bash .github/scripts/pr-explain-pages.sh put-page <PR 番号> <書いた断片>
    ```
 
-   - push の前に `check-pr-explain-html.py` が走る。落ちたら報告を読んで直す
+   - push の前に `build-pr-explain-page.py` が断片を検査してページを組み立てる。落ちたら報告を読んで直す
    - **終了コード 3** は置き先に `change-map.json` がまだ無い(`PR Explain` の run が終わる前)か、
      PR が閉じて消された後。run の完了を待ってからやり直す。閉じた PR には置かない
    - **gh-pages へ push してよいのは、このスクリプトで `pr-explain/pr-<番号>/` へ置くときだけ。**
@@ -75,8 +75,11 @@ URL は `https://dio0550.github.io/design-composer/pr-explain/pr-<番号>/`。St
 
 ## 部品
 
-マーカーの間の先頭には必ず `explain-meta` を置く。`data-explained-sha` は解説を書いた時点の
-PR の head(`git rev-parse HEAD`。push 済みのもの)で、地図の head と違うと「古い」帯が出る。
+断片の先頭には `explain-meta` を 1 つだけ置く(無い・sha が 40 桁でない・PR 番号が違うと検査で落ちる)。
+`data-explained-sha` は解説を書いた時点の PR の head(`git rev-parse HEAD`。push 済みのもの)で、
+根拠のリンク先になり、地図の head と違うと「古い」帯が出る。
+
+`kicker` は見出しの頭に付ける小さな分類の札、`lead` は題の下の要約の段落。
 
 ```html
 <p class="explain-meta" data-explained-sha="<40 桁の sha>" data-pr="<PR 番号>">解説時点 <code><7 桁></code> · 材料 <a href="https://github.com/DIO0550/design-composer/issues/<番号>">Issue #<番号></a></p>
@@ -93,7 +96,7 @@ PR の head(`git rev-parse HEAD`。push 済みのもの)で、地図の head と
 </table>
 
 <h2 id="decisions"><span class="kicker">判断</span>判断</h2>
-<div class="decision" data-kind="判断"><!-- data-kind は 判断 / 逸脱 / 見送り -->
+<div class="decision" data-kind="判断">
   <h3><何を決めたか></h3>
   <dl>
     <dt>採った案</dt><dd>…</dd>
@@ -123,13 +126,15 @@ PR の head(`git rev-parse HEAD`。push 済みのもの)で、地図の head と
 <ul class="focus"><li>…</li></ul>
 ```
 
-**書けないもの**(検査が落とす。枠の CSP でもブラウザが止める):
+`.decision` の `data-kind` は `判断` / `逸脱`(計画から外れた) / `見送り` のどれか。
 
-- `<script>` `<style>` `<iframe>` `<form>` などの要素、SVG の `<foreignObject>` とアニメーション要素
-- `on*=` のイベント属性・`style` 属性・`srcset`(色や余白はテンプレートのクラスで付ける。図は
-  `d-box` `d-accent` `d-line` `d-text` `d-muted`)
-- `#…`・`https://github.com/DIO0550/design-composer/…`・`https://dio0550.github.io/design-composer/…`
-  以外への `href` / `src`
+**書けないものの一覧は `build-pr-explain-page.py` の定数が持つ**(違反は報告に出る。枠の CSP でも
+ブラウザが止める)。書くときに押さえるのは次の 3 つ。
+
+- 動くもの・外から読むもの(`<script>` `<style>` `<iframe>`・`on*=`・`style` 属性)を書かない。
+  色や余白はテンプレートのクラスで付ける。図は `d-box` `d-accent` `d-line` `d-text` `d-muted`
+- リンクはこのリポジトリの github.com・Pages・ページ内(`#…`)だけ
+- HTML のコメント(`<!-- -->`)も書かない
 
 **コード抜粋は必ずエスケープする**(`&` → `&amp;`、`<` → `&lt;`、`>` → `&gt;`)。JSX の抜粋を
 そのまま貼ると要素として解釈され、`onClick=` が属性になって検査で落ちる。
@@ -138,8 +143,8 @@ PR の head(`git rev-parse HEAD`。push 済みのもの)で、地図の head と
 
 | ファイル | 内容 |
 | --- | --- |
-| [`templates/index.html`](templates/index.html) | 枠(CSS・固定スクリプト・CSP)。固定スクリプトを変えたら CSP の `sha256-` も直す(検査が突き合わせる) |
-| `.github/scripts/check-pr-explain-html.py` | 公開前の検査 |
-| `.github/scripts/publish-pr-explain.sh` | gh-pages への公開(`page` / `map` / `remove`) |
+| [`templates/index.html`](templates/index.html) | 枠(CSS・固定スクリプト・CSP)。固定スクリプトを変えたら CSP の `sha256-` も直す(組み立てのスクリプトが突き合わせる) |
+| `.github/scripts/build-pr-explain-page.py` | 断片の検査とページの組み立て |
+| `.github/scripts/pr-explain-pages.sh` | gh-pages の `pr-explain/pr-<番号>/` の書き換え(`put-page` / `put-map` / `remove`) |
 | `.github/scripts/build-pr-change-map.py` | 変更の地図(Actions が呼ぶ) |
 | `.github/workflows/pr-explain.yml` | 地図の配置と、PR が閉じたときの削除 |

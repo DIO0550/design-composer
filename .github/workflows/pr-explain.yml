@@ -15,8 +15,7 @@ on:
 permissions:
   contents: write
 
-# PR ごとに独立したグループにする(共有グループだと待機中の run が別 PR の run に
-# 置き換えられ、closed 時の削除が消失することがある。storybook-pr-preview.yml と同じ理由)。
+# PR ごとに独立したグループにする(理由は storybook-pr-preview.yml の concurrency)。
 concurrency:
   group: pr-explain-${{ github.event.pull_request.number }}
   cancel-in-progress: true
@@ -30,11 +29,13 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      # merge-base を求めるので履歴をすべて取る
+      # merge-base を求めるので履歴をすべて取る。認証は下の公開ステップで 1 本だけ渡すので、
+      # checkout には残させない(残すと git が Authorization を 2 本送る)。
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Build change map
         if: github.event.action != 'closed'
@@ -44,19 +45,22 @@ jobs:
           PR: ${{ github.event.number }}
         run: python3 .github/scripts/build-pr-change-map.py --base "$BASE_SHA" --head "$HEAD_SHA" --pr "$PR" > "$RUNNER_TEMP/change-map.json"
 
-      # publish-pr-explain.sh は作業用に gh-pages を別のフォルダへ clone するので、checkout が
-      # このリポジトリの設定に置いた認証は引き継がれない。環境変数の git 設定で同じヘッダを渡す。
+      # 環境変数の git 設定で認証ヘッダを渡す。pr-explain-pages.sh は gh-pages を作業用の別フォルダへ
+      # clone するので、どのフォルダで走る git にも同じ設定が効く形にする。base64 にした値は
+      # Actions が自動では伏せないので、ログに出ないよう登録する。
       - name: Publish to gh-pages
         env:
           GH_TOKEN: ${{ github.token }}
           PR: ${{ github.event.number }}
           ACTION: ${{ github.event.action }}
         run: |
+          credential="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          echo "::add-mask::$credential"
           export GIT_CONFIG_COUNT=1
           export GIT_CONFIG_KEY_0="http.https://github.com/.extraheader"
-          export GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          export GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $credential"
           if [ "$ACTION" = "closed" ]; then
-            bash .github/scripts/publish-pr-explain.sh remove "$PR"
+            bash .github/scripts/pr-explain-pages.sh remove "$PR"
           else
-            bash .github/scripts/publish-pr-explain.sh map "$PR" "$RUNNER_TEMP/change-map.json" .claude/skills/pr-explain/templates/index.html
+            bash .github/scripts/pr-explain-pages.sh put-map "$PR" "$RUNNER_TEMP/change-map.json" .claude/skills/pr-explain/templates/index.html
           fi
