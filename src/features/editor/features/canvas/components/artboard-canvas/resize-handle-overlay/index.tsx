@@ -1,11 +1,13 @@
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
-import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
+import type { Rotation } from "@/domains/dcmp/rotation";
 import {
   NodeResize,
   type ResizableSelection,
-  type ResizeGrip,
+  ResizeGrip,
   type ResizeHandleAnchor,
+  Slants,
 } from "@/features/editor/features/canvas/domains/node-resize";
+import { RotatedBounds } from "@/features/editor/features/canvas/domains/rotated-bounds";
 import { Option } from "@/utils/Option";
 import { SelectionColor } from "../artboard-frame-list";
 
@@ -16,54 +18,64 @@ const HandleSizePx = 10;
 const HandleBorderPx = 1.5;
 
 /**
- * 掴めるものに出すカーソル。
+ * 掴めるものに出すカーソル。掴んだものが画面上で伸び縮みする向き（`ResizeGrip.slantOf`）の
+ * 矢印を出す。
  *
- * 2 軸の角は、掴んだ 2 つの端が同じ側（左上・右下）なら左上 - 右下の斜め、違う側
- * （右上・左下）なら右上 - 左下の斜めになる。掴んだ箇所そのものは受け取らない
- * （向きは掴んだ端から決まるので、渡すとカーソルの出どころが 2 つに割れる）。
+ * 掴んだ箇所そのものは受け取らない（向きは掴んだ端から決まるので、渡すとカーソルの出どころ
+ * が 2 つに割れる）。
  *
  * @param grip 掴めるもの
+ * @param rotation 掴めるものの画面上の向き（自分と祖先の合計）
  * @returns その掴み方で出すカーソル
  */
-export function resizeCursor(grip: ResizeGrip): CSSProperties["cursor"] {
-  switch (grip.kind) {
-    case "width":
+export function resizeCursor(
+  grip: ResizeGrip,
+  rotation: Rotation,
+): CSSProperties["cursor"] {
+  switch (ResizeGrip.slantOf(grip, rotation)) {
+    case Slants.Horizontal:
       return "ew-resize";
-    case "height":
+    case Slants.Falling:
+      return "nwse-resize";
+    case Slants.Vertical:
       return "ns-resize";
-    case "both":
-      return grip.width.end === grip.height.end ? "nwse-resize" : "nesw-resize";
+    case Slants.Rising:
+      return "nesw-resize";
   }
 }
 
 /**
  * ハンドル 1 個の見た目と位置。
  *
- * 中心を辺の上に置く（`- HandleSizePx / 2`）ので、選択の枠がハンドルの真ん中を通る。
- * artboard は `overflow:hidden` を持つが、このオーバーレイは artboard の外にあるので
- * はみ出した半分が切られない。
+ * 中心を回った辺の上に置き（`- HandleSizePx / 2`）、四角も要素と同じ角度だけ回すので、選択の
+ * 枠がハンドルの真ん中を辺に沿って通る。artboard は `overflow:hidden` を持つが、このオーバー
+ * レイは artboard の外にあるのではみ出した半分が切られない。
  *
  * @param anchor 出す箇所
- * @param bounds 選択中のものが描かれている矩形（器からの相対）
+ * @param bounds 選択中のものが回って描かれている矩形（器からの相対）
  * @param grab その箇所で今つかめるもの。掴めないなら `none`
  * @returns その箇所へ置くためのスタイル
  */
 function handleStyle(
   anchor: ResizeHandleAnchor,
-  bounds: CanvasBounds,
+  bounds: RotatedBounds,
   grab: Option<ResizeGrip>,
 ): CSSProperties {
+  const center = RotatedBounds.pointAt(bounds, anchor);
   return {
     position: "absolute",
-    left: `${bounds.left + bounds.width * anchor.x - HandleSizePx / 2}px`,
-    top: `${bounds.top + bounds.height * anchor.y - HandleSizePx / 2}px`,
+    left: `${center.x - HandleSizePx / 2}px`,
+    top: `${center.y - HandleSizePx / 2}px`,
     width: `${HandleSizePx}px`,
     height: `${HandleSizePx}px`,
     boxSizing: "border-box",
     background: "#fff",
     border: `${HandleBorderPx}px solid ${SelectionColor}`,
     borderRadius: "1px",
-    cursor: Option.isSome(grab) ? resizeCursor(grab.value) : undefined,
+    transform: `rotate(${bounds.rotation}deg)`,
+    cursor: Option.isSome(grab)
+      ? resizeCursor(grab.value, bounds.rotation)
+      : undefined,
     // 掴めない位置は透明にして、下にあるノードをクリックで選べるままにする
     pointerEvents: Option.isSome(grab) ? "auto" : "none",
   };
@@ -75,7 +87,7 @@ function handleStyle(
  * 掴んでいる間は**全部をポインタに対して透明にする ** — 移動と解放を受けるのは器（`canvas-content`）
  * で、不透明だと追いかけてきたハンドルに乗った瞬間に器から離脱したことになる。
  *
- * 座標は器からの相対（`CanvasBounds.relativeTo`）。
+ * 座標は器からの相対（`RotatedBounds.relativeTo`）。
  */
 export function ResizeHandleOverlay({
   bounds,
@@ -83,7 +95,7 @@ export function ResizeHandleOverlay({
   isGrabbing,
   onGrab,
 }: Readonly<{
-  bounds: CanvasBounds;
+  bounds: RotatedBounds;
   resizable: ResizableSelection;
   isGrabbing: boolean;
   onGrab: (grip: ResizeGrip, event: ReactPointerEvent<HTMLElement>) => void;

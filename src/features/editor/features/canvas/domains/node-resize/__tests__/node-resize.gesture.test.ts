@@ -2,22 +2,25 @@ import { expect, test } from "vitest";
 import { AxisLength } from "@/domains/dcmp/axis-length";
 import { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import { resizeAnchorAt } from "@/features/editor/features/canvas/__tests__/canvas-resize";
-import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
+import type { RotatedBounds } from "@/features/editor/features/canvas/domains/rotated-bounds";
 import { Option } from "@/utils/Option";
 import { NodeResize, type ResizableSelection } from "../index";
 import {
   grabbedAt,
-  setupBounds,
   setupFlowResizable,
   setupResizable,
+  setupRotatedBounds,
   setupView,
 } from "./setup";
 
 test("右辺の内側を押すと幅のハンドルを掴む", () => {
   // 戻り値はそのまま `grab` へ渡るので、押した位置（起点）まで含めて丸ごと固定する
   expect(
-    NodeResize.grabAt(setupResizable(), setupBounds(), { x: 297, y: 100 }),
+    NodeResize.grabAt(setupResizable(), setupRotatedBounds(), {
+      x: 297,
+      y: 100,
+    }),
   ).toEqual(
     Option.some({
       grip: {
@@ -26,13 +29,14 @@ test("右辺の内側を押すと幅のハンドルを掴む", () => {
       },
       pointerOrigin: { x: 297, y: 100 },
       grabbedAt: Option.some({ x: 30, y: 70 }),
+      rotation: { own: 0, total: 0 },
       snapFrom: Option.none,
     }),
   );
 });
 
 test("下辺の内側を押すと高さのハンドルを掴む", () => {
-  const grabbed = NodeResize.grabAt(setupResizable(), setupBounds(), {
+  const grabbed = NodeResize.grabAt(setupResizable(), setupRotatedBounds(), {
     x: 150,
     y: 147,
   });
@@ -46,7 +50,7 @@ test("下辺の内側を押すと高さのハンドルを掴む", () => {
 });
 
 test("左辺の内側を押すと幅を始点側から掴む", () => {
-  const grabbed = NodeResize.grabAt(setupResizable(), setupBounds(), {
+  const grabbed = NodeResize.grabAt(setupResizable(), setupRotatedBounds(), {
     x: 103,
     y: 100,
   });
@@ -60,7 +64,7 @@ test("左辺の内側を押すと幅を始点側から掴む", () => {
 });
 
 test("上辺の内側を押すと高さを始点側から掴む", () => {
-  const grabbed = NodeResize.grabAt(setupResizable(), setupBounds(), {
+  const grabbed = NodeResize.grabAt(setupResizable(), setupRotatedBounds(), {
     x: 150,
     y: 53,
   });
@@ -75,16 +79,23 @@ test("上辺の内側を押すと高さを始点側から掴む", () => {
 
 test("位置を持たない要素では左辺の内側を押しても掴めない", () => {
   expect(
-    NodeResize.grabAt(setupFlowResizable(), setupBounds(), { x: 103, y: 100 }),
+    NodeResize.grabAt(setupFlowResizable(), setupRotatedBounds(), {
+      x: 103,
+      y: 100,
+    }),
   ).toEqual(Option.none);
 });
 
 test("位置を持たない要素でも右辺の内側は掴める", () => {
   // 対照。左辺が掴めないことを「帯を丸ごと殺した」実装で通させないため
-  const grabbed = NodeResize.grabAt(setupFlowResizable(), setupBounds(), {
-    x: 297,
-    y: 100,
-  });
+  const grabbed = NodeResize.grabAt(
+    setupFlowResizable(),
+    setupRotatedBounds(),
+    {
+      x: 297,
+      y: 100,
+    },
+  );
 
   expect(Option.map(grabbed, (grab) => grab.grip.kind)).toEqual(
     Option.some("width"),
@@ -93,13 +104,19 @@ test("位置を持たない要素でも右辺の内側は掴める", () => {
 
 test("辺から離れた内側を押してもハンドルは掴めない", () => {
   expect(
-    NodeResize.grabAt(setupResizable(), setupBounds(), { x: 200, y: 100 }),
+    NodeResize.grabAt(setupResizable(), setupRotatedBounds(), {
+      x: 200,
+      y: 100,
+    }),
   ).toEqual(Option.none);
 });
 
 test("要素の外を押すとハンドルは掴めない", () => {
   expect(
-    NodeResize.grabAt(setupResizable(), setupBounds(), { x: 320, y: 100 }),
+    NodeResize.grabAt(setupResizable(), setupRotatedBounds(), {
+      x: 320,
+      y: 100,
+    }),
   ).toEqual(Option.none);
 });
 
@@ -110,7 +127,7 @@ test("出ていないハンドルの辺を押しても掴めない", () => {
   };
 
   expect(
-    NodeResize.grabAt(widthOnly, setupBounds(), { x: 150, y: 147 }),
+    NodeResize.grabAt(widthOnly, setupRotatedBounds(), { x: 150, y: 147 }),
   ).toEqual(Option.none);
 });
 
@@ -119,7 +136,7 @@ test("角の帯を押しても 1 軸しか掴めない", () => {
    * 2 本の帯が重なる角では、並び順で先にある幅を掴む（近さでは決まらない）。
    * 角の四角の外側・帯の内側を押したときの話で、四角そのものは 2 軸を掴める。
    */
-  const grabbed = NodeResize.grabAt(setupResizable(), setupBounds(), {
+  const grabbed = NodeResize.grabAt(setupResizable(), setupRotatedBounds(), {
     x: 297,
     y: 147,
   });
@@ -130,7 +147,7 @@ test("角の帯を押しても 1 軸しか掴めない", () => {
 });
 
 test("左上の角の帯でも、掴めるのは並び順で先にある幅だけ", () => {
-  const grabbed = NodeResize.grabAt(setupResizable(), setupBounds(), {
+  const grabbed = NodeResize.grabAt(setupResizable(), setupRotatedBounds(), {
     x: 103,
     y: 53,
   });
@@ -576,12 +593,11 @@ test("両側の帯に入る細い要素では、近いほうの辺を掴む", ()
     lengths: [AxisLength.create("width", 10)],
     origin: Option.some({ x: 30, y: 70 }),
     snapTargetNames: [],
+    rotation: { own: 0, total: 0 },
   };
-  const narrowBounds: CanvasBounds = {
-    left: 100,
-    top: 50,
-    width: 10,
-    height: 100,
+  const narrowBounds: RotatedBounds = {
+    unrotated: { left: 100, top: 50, width: 10, height: 100 },
+    rotation: 0,
   };
 
   const grabbed = NodeResize.grabAt(narrow, narrowBounds, { x: 108, y: 100 });
@@ -600,12 +616,11 @@ test("両側の帯に入る細い要素でも、左寄りを押せば始点側�
     lengths: [AxisLength.create("width", 10)],
     origin: Option.some({ x: 30, y: 70 }),
     snapTargetNames: [],
+    rotation: { own: 0, total: 0 },
   };
-  const narrowBounds: CanvasBounds = {
-    left: 100,
-    top: 50,
-    width: 10,
-    height: 100,
+  const narrowBounds: RotatedBounds = {
+    unrotated: { left: 100, top: 50, width: 10, height: 100 },
+    rotation: 0,
   };
 
   const grabbed = NodeResize.grabAt(narrow, narrowBounds, { x: 102, y: 100 });

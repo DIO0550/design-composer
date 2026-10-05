@@ -1,8 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import { expect, test } from "vitest";
 import { AxisLength } from "@/domains/dcmp/axis-length";
-import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import type { ResizableSelection } from "@/features/editor/features/canvas/domains/node-resize";
+import type { RotatedBounds } from "@/features/editor/features/canvas/domains/rotated-bounds";
 import { Option } from "@/utils/Option";
 import { ResizeHandleOverlay } from "../index";
 
@@ -15,11 +15,9 @@ import { ResizeHandleOverlay } from "../index";
  */
 
 /** 画面の (100, 50) に 200x100 で描かれている、という前提。右辺 x=300 / 下辺 y=150。 */
-const PanelBounds: CanvasBounds = {
-  left: 100,
-  top: 50,
-  width: 200,
-  height: 100,
+const PanelBounds: RotatedBounds = {
+  unrotated: { left: 100, top: 50, width: 200, height: 100 },
+  rotation: 0,
 };
 
 const WidthHandle = AxisLength.create("width", 200);
@@ -31,12 +29,18 @@ function placed(lengths: readonly AxisLength[]): ResizableSelection {
     lengths,
     origin: Option.some({ x: 30, y: 70 }),
     snapTargetNames: [],
+    rotation: { own: 0, total: 0 },
   };
 }
 
 /** 位置を書けない対象（フロー配置のノード）。 */
 function unplaced(lengths: readonly AxisLength[]): ResizableSelection {
-  return { lengths, origin: Option.none, snapTargetNames: [] };
+  return {
+    lengths,
+    origin: Option.none,
+    snapTargetNames: [],
+    rotation: { own: 0, total: 0 },
+  };
 }
 
 /** 出ているハンドルから、見たいスタイルだけを左上から時計回りの並びで取り出す。 */
@@ -223,3 +227,4 @@ test("掴んでいる間はハンドルがポインタを受け取らない", ()
     Array(8).fill("none"),
   );
 });
+

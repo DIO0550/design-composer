@@ -6,6 +6,7 @@ import {
   drawNamed,
   stubBounds,
 } from "@/features/editor/features/canvas/__tests__/canvas-measure";
+import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
 import { Option } from "@/utils/Option";
 import { useDrawnBounds } from "../index";
 
@@ -16,10 +17,18 @@ afterEach(clearDrawn);
 /** 器の左上。0 以外にして、器からの相対に直していることが見えるようにする。 */
 const ContainerOrigin = { left: 10, top: 20 };
 
-/** 測った矩形をそのまま読める形で出す器。 */
-function BoundsProbe({ target }: Readonly<{ target: Option<string> }>) {
+/**
+ * 測った回る前の矩形をそのまま読める形で出す器。
+ *
+ * 向きと倍率を省くと、回っていない等倍の要素として測る。
+ */
+function BoundsProbe({
+  target,
+  rotation = 0,
+  view = CanvasView.create(),
+}: Readonly<{ target: Option<string>; rotation?: number; view?: CanvasView }>) {
   const container = useRef<HTMLDivElement>(null);
-  const bounds = useDrawnBounds(target, container);
+  const bounds = useDrawnBounds(target, container, { rotation, view });
   return (
     <div
       ref={(element) => {
@@ -40,7 +49,7 @@ function BoundsProbe({ target }: Readonly<{ target: Option<string> }>) {
     >
       <output data-testid="bounds">
         {Option.isSome(bounds)
-          ? `${bounds.value.left},${bounds.value.top},${bounds.value.width},${bounds.value.height}`
+          ? `${bounds.value.unrotated.left},${bounds.value.unrotated.top},${bounds.value.unrotated.width},${bounds.value.unrotated.height}`
           : "測れていない"}
       </output>
     </div>
@@ -90,3 +99,4 @@ test("描かれる位置が変わると測り直す", () => {
 
   expect(screen.getByTestId("bounds").textContent).toBe("10,20,400,200");
 });
+

@@ -4,6 +4,7 @@ import { DesignDocument } from "@/domains/dcmp/design-document";
 import { Node, type Props } from "@/domains/dcmp/node";
 import { Placement } from "@/domains/dcmp/placement";
 import { ResizeEdit } from "@/domains/dcmp/resize-edit";
+import { Rotation } from "@/domains/dcmp/rotation";
 import { Size } from "@/domains/dcmp/size";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { Axes, type Axis, type AxisEnd, AxisEnds } from "@/domains/unit/axis";
@@ -11,7 +12,9 @@ import { Offset } from "@/domains/unit/offset";
 import { ArrangedArtboard } from "@/features/editor/features/canvas/domains/arranged-artboard";
 import { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
+import { RotatedBounds } from "@/features/editor/features/canvas/domains/rotated-bounds";
 import { SideSnap } from "@/features/editor/features/canvas/domains/side-snap";
+import type { ValueOf } from "@/types/ValueOf";
 import { Option } from "@/utils/Option";
 
 /**
@@ -43,6 +46,28 @@ type AxisGrab = Readonly<{
   length: AxisLength;
   end: AxisEnd;
 }>;
+
+/**
+ * 掴んだ軸が画面上で向いている斜めの具合を 45 度刻みに丸めたもの（度・時計回り。
+ * 180 度で一周する）。カーソルの矢印の向きを選ぶのに使う。
+ */
+export const Slants = {
+  Horizontal: 0,
+  /** 左上 - 右下（y が下向きの画面で、右へ進むと下がる）。 */
+  Falling: 45,
+  Vertical: 90,
+  /** 右上 - 左下。 */
+  Rising: 135,
+} as const;
+
+/** 掴んだ軸の画面上の向き（`Slants`）。 */
+export type Slant = ValueOf<typeof Slants>;
+
+/** 矢印は向きを区別しないので、半回りで同じ向きに戻る。 */
+const HalfTurn = 180;
+
+/** カーソルの向きを丸める刻み。 */
+const SlantStep = 45;
 
 /**
  * 掴んだハンドルが変える大きさ。
@@ -83,7 +108,60 @@ export const ResizeGrip = {
         return [grip.width, grip.height];
     }
   },
+
+  /**
+   * 掴んだものが画面上で伸び縮みする向き。2 軸の角は、掴んだ 2 つの端が同じ側（左上・
+   * 右下）なら左上 - 右下、違う側（右上・左下）なら右上 - 左下の斜めを回る前の向きにする。
+   *
+   * @param grip 掴んだもの
+   * @param rotation 掴んだものの画面上の向き（自分と祖先の合計）
+   * @returns 回る前の向きに `rotation` を足し、45 度刻みの最も近い向きへ丸めたもの。
+   *   ちょうど中間（22.5 度など）は大きい側へ丸める
+   */
+  slantOf(grip: ResizeGrip, rotation: Rotation): Slant {
+    const turned = (unrotatedSlant(grip) + rotation) % HalfTurn;
+    return nearestSlant((turned + HalfTurn) % HalfTurn);
+  },
 } as const;
+
+/**
+ * 掴んだものが、回る前に伸び縮みする向き。
+ *
+ * @param grip 掴んだもの
+ * @returns 幅なら横、高さなら縦、角なら掴んだ端の組で決まる斜め
+ */
+function unrotatedSlant(grip: ResizeGrip): Slant {
+  switch (grip.kind) {
+    case "width":
+      return Slants.Horizontal;
+    case "height":
+      return Slants.Vertical;
+    case "both":
+      return grip.width.end === grip.height.end
+        ? Slants.Falling
+        : Slants.Rising;
+  }
+}
+
+/**
+ * 半回りの中の角度に最も近い 45 度刻みの向き。
+ *
+ * @param degrees 0 以上 180 未満の角度
+ * @returns 最も近い向き。ちょうど中間は大きい側。157.5 度以上は 180 度（＝横）に近い
+ */
+function nearestSlant(degrees: number): Slant {
+  const halfStep = SlantStep / 2;
+  if (degrees < Slants.Falling - halfStep) {
+    return Slants.Horizontal;
+  }
+  if (degrees < Slants.Vertical - halfStep) {
+    return Slants.Falling;
+  }
+  if (degrees < Slants.Rising - halfStep) {
+    return Slants.Vertical;
+  }
+  return degrees < HalfTurn - halfStep ? Slants.Rising : Slants.Horizontal;
+}
 
 /**
  * ハンドルを留める 1 箇所（docs/06-ui.md「リサイズハンドル」）。
@@ -94,6 +172,19 @@ export const ResizeGrip = {
 export type ResizeHandleAnchor = Readonly<{
   x: AnchorRatio;
   y: AnchorRatio;
+}>;
+
+/**
+ * 選択中のものの向き（度・時計回り）。
+ *
+ * 伸びる向きは画面上の向きで決まり、位置の置き直しは親の座標（祖先の回転を含まない）で
+ * 行うので、2 つを持つ。
+ */
+export type ResizeRotation = Readonly<{
+  /** 自分の `rotation`。位置を書く親の座標の中での向き。 */
+  own: Rotation;
+  /** 自分と包んでいるものの `rotation` の合計（`DesignDocument.totalRotationOf`）。 */
+  total: Rotation;
 }>;
 
 /**
@@ -111,9 +202,10 @@ export type ResizableSelection = Readonly<{
   /**
    * 掴んだ辺を揃える先の名前（docs/06-ui.md「リサイズハンドル」の辺のスナップ）。
    * **リサイズしても動かないもの**だけで、並びは近さが同じときに先に寄る順。位置を書けない
-   * 対象（フロー配置）なら空。
+   * 対象（フロー配置）と、画面上で回っている対象なら空。
    */
   snapTargetNames: readonly string[];
+  rotation: ResizeRotation;
 }>;
 
 /**
@@ -124,6 +216,7 @@ export type ResizeHold = Readonly<{
   pointerOrigin: Offset;
   /** 掴んだ時点の対象の位置。位置を書けない対象なら `none`。 */
   grabbedAt: Option<Offset>;
+  rotation: ResizeRotation;
   /**
    * 掴んだ時点の辺のスナップの組（`moving` は掴んだ時点の矩形）。`hold` の直後と、掴んだ
    * 時点の矩形を測れなかったときは `none`。揃え先が無い対象（フロー配置）と、揃え先を外した
@@ -155,6 +248,7 @@ const UnresizableSelection: ResizableSelection = {
   lengths: [],
   origin: Option.none,
   snapTargetNames: [],
+  rotation: { own: Rotation.Default, total: Rotation.Default },
 };
 
 /**
@@ -282,8 +376,8 @@ function combinedGrip(
  *
  * 両方の帯に入る（長さが帯 2 本ぶん未満）ときは**近いほうの辺**を取る。
  *
- * @param bounds 選択中のものが描かれている矩形
- * @param pointer 押された位置
+ * @param bounds 選択中のものの回る前の矩形
+ * @param pointer 押された位置を回る前へ戻した点
  * @param axis 見る軸
  * @returns 入っている帯の端。どちらの帯にも入っていなければ `none`
  */
@@ -371,12 +465,14 @@ export const NodeResize = {
    * 揃え先は、artboard なら他の artboard のうち幅を変えても動かないもの
    * （`ArrangedArtboard.isShiftedByWidth` を外す）、`placement: "absolute"` のノードなら
    * 今の親と、その直下にある自分以外の子（孫は含めない。絶対配置はフローから外れるので、
-   * 親の大きさにも兄弟の配置にも関わらない）。
+   * 親の大きさにも兄弟の配置にも関わらない）。画面上で回っているノード（自分と祖先の
+   * 合計が 360 の倍数でない）は揃え先を持たない（docs/06-ui.md「リサイズハンドル」）。
    *
    * @param selection ハンドルを出す対象を決める、ドキュメントと選択の対
    * @returns 掴める軸のハンドルと、ドキュメントへ書ける今の位置と、揃え先の名前。単一選択
    *   でないとき・ロック中のノード（docs/03「ロック」）・非表示のノード（docs/03「表示 /
-   *   非表示」。包んでいるノード・artboard が非表示のものを含む）は掴める軸も揃え先も空
+   *   非表示」。包んでいるノード・artboard が非表示のものを含む）・参照先の部品が無い
+   *   インスタンスは掴める軸も揃え先も空
    */
   resizable(selection: DocumentSelection): ResizableSelection {
     const selected = DocumentSelection.singleName(selection);
@@ -384,6 +480,10 @@ export const NodeResize = {
       return UnresizableSelection;
     }
     const name = selected.value;
+    const rotation = rotationIn(selection.document, name);
+    if (!Option.isSome(rotation)) {
+      return UnresizableSelection;
+    }
     const artboards = selection.document.artboards;
     const index = artboards.findIndex((artboard) => artboard.name === name);
     if (index >= 0) {
@@ -395,6 +495,7 @@ export const NodeResize = {
             isStillWhileResizing(artboards, { resized: index, other }),
           )
           .map((artboard) => artboard.name),
+        rotation: rotation.value,
       };
     }
     const node = DesignDocument.findNode(selection.document, name);
@@ -413,15 +514,18 @@ export const NodeResize = {
       origin: Option.map(placement, (child) =>
         Placement.offset(child.placement),
       ),
-      snapTargetNames: Option.unwrapOr(
-        Option.flatMap(placement, (child) =>
-          parentWithSiblingNames(selection.document, {
-            name,
-            parentName: child.parentName,
-          }),
-        ),
-        [],
-      ),
+      snapTargetNames: Rotation.isUpright(rotation.value.total)
+        ? Option.unwrapOr(
+            Option.flatMap(placement, (child) =>
+              parentWithSiblingNames(selection.document, {
+                name,
+                parentName: child.parentName,
+              }),
+            ),
+            [],
+          )
+        : [],
+      rotation: rotation.value,
     };
   },
 
@@ -445,6 +549,7 @@ export const NodeResize = {
       grip,
       pointerOrigin,
       grabbedAt: resizable.origin,
+      rotation: resizable.rotation,
       snapFrom: Option.none,
     };
   },
@@ -491,22 +596,27 @@ export const NodeResize = {
    * 角では 2 本の帯が重なるので、先にある方（`resizable.lengths` の並び順）を掴む。
    * **帯は角でも 1 軸**なので、順序を決めておけば足りる（上の定数を参照）。
    *
+   * 回って描かれているものは、押された位置を回る前へ戻してから回る前の矩形で判定する
+   * ので、帯は回った辺に沿う。
+   *
    * @param resizable 選択中のものの掴める軸と位置
-   * @param bounds 選択中のものが描かれている矩形
+   * @param bounds 選択中のものが回って描かれている矩形
    * @param pointer 押された位置
-   * @returns その位置で掴めるもの。矩形の外か、どの帯にも入っていないか、入っている
-   *   帯が始点側なのに位置を書けないときは `none`
+   * @returns その位置で掴めるもの。回った矩形の外か、どの帯にも入っていないか、入って
+   *   いる帯が始点側なのに位置を書けないときは `none`
    */
   grabAt(
     resizable: ResizableSelection,
-    bounds: CanvasBounds,
+    bounds: RotatedBounds,
     pointer: Offset,
   ): Option<ResizeHold> {
-    if (!CanvasBounds.contains(bounds, pointer)) {
+    const unrotated = bounds.unrotated;
+    const unrotatedPointer = RotatedBounds.unrotatePoint(bounds, pointer);
+    if (!CanvasBounds.contains(unrotated, unrotatedPointer)) {
       return Option.none;
     }
     const onBand = resizable.lengths.flatMap((handle) => {
-      const end = bandEndAt(bounds, pointer, handle.axis);
+      const end = bandEndAt(unrotated, unrotatedPointer, handle.axis);
       const grab = Option.flatMap(end, (side) =>
         grabFor(resizable, handle, side),
       );
@@ -531,6 +641,9 @@ export const NodeResize = {
    * 今のポインタ位置で書き込む長さと位置。掴んでいなければ決まらない
    * （ボタンを離したあとのマウス移動）。
    *
+   * 長さはポインタの移動量を掴んだものの画面上の向きの分だけ戻し、その軸へ射影した量だけ
+   * 変わる（docs/06-ui.md「リサイズハンドル」）。
+   *
    * @param resize 今のリサイズの状態
    * @param pointer 今のポインタの位置
    * @param view 画面上の量をドキュメント上の量へ直す倍率
@@ -545,7 +658,12 @@ export const NodeResize = {
       return Option.none;
     }
     const pointerMoved = Offset.delta(resize.pointerOrigin, pointer);
-    const moved = Offset.add(pointerMoved, snapOffset(resize, pointerMoved));
+    const screenMoved = Offset.add(
+      pointerMoved,
+      snapOffset(resize, pointerMoved),
+    );
+    // 掴んだものの軸に沿って伸びるよう、画面の移動量を回る前の向きへ戻す
+    const moved = Offset.rotate(screenMoved, -resize.rotation.total);
     // 先頭を分けて組み立てるのは、`map` だと並びが空になりうる型へ落ちるため
     const [first, ...rest] = ResizeGrip.grabs(resize.grip);
     const resized: readonly [ResizedLength, ...ResizedLength[]] = [
@@ -556,7 +674,7 @@ export const NodeResize = {
       resized[0].length,
       ...resized.slice(1).map((each) => each.length),
     ];
-    const position = placedPosition(resize.grabbedAt, resized);
+    const position = placedPosition(resize, resized);
     return Option.some(
       Option.isSome(position)
         ? ResizeEdit.placedAt(lengths, position.value)
@@ -586,6 +704,25 @@ export const NodeResize = {
     return resize.kind === "resized";
   },
 } as const;
+
+/**
+ * 名前で指したものの、自分の向きと画面上の向き。
+ *
+ * @param document 引き先になるドキュメント
+ * @param name 選択中の artboard / ノードの名前
+ * @returns 2 つの向き。向きが引けない（`DesignDocument.rotationOf` が `none`）なら `none`
+ */
+function rotationIn(
+  document: DesignDocument,
+  name: string,
+): Option<ResizeRotation> {
+  return Option.flatMap(DesignDocument.rotationOf(document, name), (own) =>
+    Option.map(DesignDocument.totalRotationOf(document, name), (total) => ({
+      own,
+      total,
+    })),
+  );
+}
 
 /**
  * その artboard が、並びの中の 1 枚をリサイズしても動かない揃え先になるか。
@@ -636,8 +773,8 @@ function parentWithSiblingNames(
  * 行き先の矩形は掴んだ時点の矩形を移動量だけずらして作る。見るのは掴んだ辺だけなので、
  * 反対側の辺が留まっていることは寄せ量に効かない。
  *
- * 回転したノードでは実測が軸に平行な外接矩形になるため、寄せの当たりが回る前の形とは
- * 変わる（ノードの移動と同じ。happy-dom はレイアウトを持たないのでテストには出ない）。
+ * 画面上で回っているノードには揃え先が無い（`NodeResize.resizable`）ので寄せない。寄せ量は
+ * 画面の軸で出るが、回ったノードが伸びるのは自分の軸のため。
  *
  * @param held 掴んでいるもの
  * @param moved 掴んでからのポインタの移動量（画面上の px）
@@ -665,23 +802,24 @@ function snapOffset(held: ResizeHold, moved: Offset): Offset {
   );
 }
 
-/** 掴んだ 1 軸ぶんの結果。新しい長さと、そのために辺が動いた量。 */
+/** 掴んだ 1 軸ぶんの結果。新しい長さと、掴んだ端と、縮んだ量。 */
 type ResizedLength = Readonly<{
   length: AxisLength;
-  /** 始点側の辺が動いた量（ドキュメント上の px）。終点側を掴んだ軸は 0。 */
-  shift: number;
+  end: AxisEnd;
+  /** 掴んだ時点の長さから縮んだ量（ドキュメント上の px）。伸びたなら負。 */
+  shrunk: number;
 }>;
 
 /**
  * 掴んだ軸を、ポインタの移動量ぶんだけ伸び縮みさせた結果。
  *
- * 始点側を掴んだ軸は、**丸めたあとの長さから**動いた量を逆算する。長さが 0 で止まると
- * 辺もそこで止まり、反対側の辺がその場に留まる。
+ * 縮んだ量は**丸めたあとの長さから**逆算する。長さが 0 で止まると辺もそこで止まり、
+ * 反対側の辺がその場に留まる。
  *
  * @param grab 掴んだ軸とその時点の長さ・端
- * @param moved 掴んでからのポインタの移動量（画面上の px）
+ * @param moved 掴んでからのポインタの移動量を回る前の向きへ戻したもの（画面上の px）
  * @param view 画面上の量をドキュメント上の量へ直す倍率
- * @returns 新しい長さと、始点側の辺が動いた量
+ * @returns 新しい長さと、掴んだ端と、縮んだ量
  */
 function resizedLength(
   grab: AxisGrab,
@@ -691,42 +829,65 @@ function resizedLength(
   const axis = grab.length.axis;
   const along = CanvasView.toDocumentLength(view, Offset.along(moved, axis));
   const before = grab.length.length;
-  const isStart = grab.end === AxisEnds.Start;
   const length = AxisLength.create(
     axis,
-    isStart ? before - along : before + along,
+    grab.end === AxisEnds.Start ? before - along : before + along,
   );
-  return { length, shift: isStart ? before - length.length : 0 };
+  return { length, end: grab.end, shrunk: before - length.length };
 }
 
 /**
- * 反対側の辺をその場に留めるための、置き直したあとの位置。
+ * 反対側の端を親の座標の上でその場に留めるための、置き直したあとの位置。
  *
- * @param grabbedAt 掴んだ時点の対象の位置。位置を書けない対象なら `none`
+ * `rotate()` は中心を軸に回るので、長さが変わると中心が動き、回っているものは終点側を
+ * 掴んでも左上が動く。掴んだ軸ごとに反対側の端（始点側を掴んだなら終点側）を留める点に
+ * とり、その点が親の座標で動かないよう左上を動かす。回っていなければ、始点側を掴んだ軸は
+ * 縮んだ量だけ動き、終点側を掴んだ軸は動かない。
+ *
+ * @param held 掴んでいるもの（掴んだ時点の位置と、自分の向き）
  * @param resized 掴んだ軸ぶんの結果
- * @returns 置き直したあとの位置。始点側を掴んだ軸が無いか、位置を書けない対象なら `none`
+ * @returns 置き直したあとの位置。左上が動かないか、位置を書けない対象なら `none`
  */
 function placedPosition(
-  grabbedAt: Option<Offset>,
+  held: ResizeHold,
   resized: readonly ResizedLength[],
 ): Option<Offset> {
-  const shifts = resized.filter((each) => each.shift !== 0);
-  if (shifts.length === 0) {
+  const centerMoved = resized.reduce<Offset>(
+    (sum, each) => Offset.add(sum, centerShift(each)),
+    Offset.Origin,
+  );
+  const halfShrunk = resized.reduce<Offset>(
+    (sum, each) =>
+      Offset.add(sum, axisOffset(each.length.axis, each.shrunk / 2)),
+    Offset.Origin,
+  );
+  // 左上は中心から長さの半分だけ戻った位置なので、中心の動きに縮んだ量の半分を足す
+  const shift = Offset.add(
+    Offset.rotate(centerMoved, held.rotation.own),
+    halfShrunk,
+  );
+  const isStill = shift.x === 0 && shift.y === 0;
+  if (isStill) {
     return Option.none;
   }
-  return Option.map(grabbedAt, (from) =>
-    shifts.reduce((moved, each) => Offset.add(moved, shiftOffset(each)), from),
-  );
+  return Option.map(held.grabbedAt, (from) => Offset.add(from, shift));
 }
 
 /**
- * 1 軸ぶんの辺の動きを平面の差にする。
+ * 反対側の端を留めたまま 1 軸の長さが変わったときに、中心が動く量（回る前の向き）。
+ *
+ * 中心は縮んだ量の半分だけ、留めている端のほうへ寄る。始点側を掴んだなら留めている
+ * のは終点側（+）、終点側を掴んだなら始点側（-）。
  *
  * @param resized 掴んだ 1 軸ぶんの結果
  * @returns その軸だけが動く差
  */
-function shiftOffset(resized: ResizedLength): Offset {
-  return axisOffset(resized.length.axis, resized.shift);
+function centerShift(resized: ResizedLength): Offset {
+  const half = resized.shrunk / 2;
+  return axisOffset(
+    resized.length.axis,
+    resized.end === AxisEnds.Start ? half : -half,
+  );
 }
 
 /**

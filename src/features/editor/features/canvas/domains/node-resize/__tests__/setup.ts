@@ -3,6 +3,7 @@ import type { Offset } from "@/domains/unit/offset";
 import { resizeAnchorAt } from "@/features/editor/features/canvas/__tests__/canvas-resize";
 import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
+import type { RotatedBounds } from "@/features/editor/features/canvas/domains/rotated-bounds";
 import { Option } from "@/utils/Option";
 import {
   NodeResize,
@@ -16,6 +17,11 @@ export function setupBounds(): CanvasBounds {
   return { left: 100, top: 50, width: 200, height: 100 };
 }
 
+/** `setupBounds` に回らずに描かれている要素。 */
+export function setupRotatedBounds(): RotatedBounds {
+  return { unrotated: setupBounds(), rotation: 0 };
+}
+
 /** 2 軸とも掴めて、(30, 70) に置かれている要素（左辺・上辺も掴める）。 */
 export function setupResizable(): ResizableSelection {
   return {
@@ -25,6 +31,7 @@ export function setupResizable(): ResizableSelection {
     ],
     origin: Option.some({ x: 30, y: 70 }),
     snapTargetNames: [],
+    rotation: { own: 0, total: 0 },
   };
 }
 
