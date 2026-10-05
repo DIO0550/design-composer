@@ -1,0 +1,62 @@
+# PR ごとの解説ページ(gh-pages/pr-explain/pr-{番号}/)の「変更の地図」を置き、PR が閉じたら消す。
+#
+# 解説の本文はセッションが `pr-explain` スキルで書いて同じフォルダへ直接 push する。ここが置くのは
+# git の差分だけで決まる地図(change-map.json)と、解説がまだ無いときのテンプレートだけ。
+# ページの URL は storybook-pr-preview.yml の固定コメントに載る。
+#
+# storybook-pr-preview.yml とは別のワークフローにしてあるのは、あちらが Storybook のビルドを
+# 待つため(数分)。地図は差分だけで作れるので、ビルドを待たずに出す。
+name: PR Explain
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, closed]
+
+permissions:
+  contents: write
+
+# PR ごとに独立したグループにする(共有グループだと待機中の run が別 PR の run に
+# 置き換えられ、closed 時の削除が消失することがある。storybook-pr-preview.yml と同じ理由)。
+concurrency:
+  group: pr-explain-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  change-map:
+    # フォークや Dependabot の PR では GITHUB_TOKEN が read-only になり gh-pages へ push できない
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      # merge-base を求めるので履歴をすべて取る
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Build change map
+        if: github.event.action != 'closed'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR: ${{ github.event.number }}
+        run: python3 .github/scripts/build-pr-change-map.py --base "$BASE_SHA" --head "$HEAD_SHA" --pr "$PR" > "$RUNNER_TEMP/change-map.json"
+
+      # publish-pr-explain.sh は作業用に gh-pages を別のフォルダへ clone するので、checkout が
+      # このリポジトリの設定に置いた認証は引き継がれない。環境変数の git 設定で同じヘッダを渡す。
+      - name: Publish to gh-pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.number }}
+          ACTION: ${{ github.event.action }}
+        run: |
+          export GIT_CONFIG_COUNT=1
+          export GIT_CONFIG_KEY_0="http.https://github.com/.extraheader"
+          export GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          if [ "$ACTION" = "closed" ]; then
+            bash .github/scripts/publish-pr-explain.sh remove "$PR"
+          else
+            bash .github/scripts/publish-pr-explain.sh map "$PR" "$RUNNER_TEMP/change-map.json" .claude/skills/pr-explain/templates/index.html
+          fi

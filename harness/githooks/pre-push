@@ -58,6 +58,11 @@ run_check "追加されたテストヘルパーの重複" bash .github/scripts/c
 
 # 上の 2 つが読んでいる判定そのものの判定表。
 run_check "追加された分の検査の判定表" bash .github/scripts/check-added-cases.sh
+
+# PR の解説ページ(.claude/skills/pr-explain/)が使う検査・地図・公開の判定表。
+run_check "解説ページの検査の判定表" bash .github/scripts/check-pr-explain-html-cases.sh
+run_check "変更の地図の判定表" bash .github/scripts/build-pr-change-map-cases.sh
+run_check "解説ページの公開の判定表" bash .github/scripts/publish-pr-explain-cases.sh
 resume_checks
 
 # 行数の予算(AGENTS.md「常時ロードは増やさない」)。実測と予算がずれていれば落ちる。

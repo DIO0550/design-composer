@@ -25,7 +25,7 @@ DevContainer の `postCreateCommand` も走らない。そこは Claude Code の
 
 | フック | 検査 | 呼んでいるもの |
 | --- | --- | --- |
-| `pre-push` | 型 / lint / format / doc コメント / テスト規約 / import 規約 / 判別子の直読み・直書き / story の title / 名指ししたパス / テストヘルパーの重複 / import 規約の判定表 / 判別子の直読み・直書きの判定表 / story の title の判定表 / 名指ししたパスの判定表 / doc コメントの判定表 / テストヘルパーの重複の判定表 / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加された分の検査の判定表 / 行数のラチェット / 集計の判定表 / カナリアの判定表 / push 前の検査フックの判定表 / 検証エージェントの実行中フラグの判定表 / pre-push の結果行の判定表 | `pnpm run typecheck`・`pnpm run lint`・`pnpm exec biome check`・`.claude/hooks/lib/missing-doc-comments.py`・`.claude/hooks/lib/test-rules-scan.sh`・`.claude/hooks/lib/import-rule-violations.py`・`.claude/hooks/lib/result-option-discriminant-violations.py`・`.claude/hooks/lib/story-title-violations.py`・`.claude/hooks/lib/named-path-violations.py`・`.claude/hooks/lib/duplicate-test-helpers.py --all src`・`.claude/hooks/lib/import-rule-cases.sh`・`.claude/hooks/lib/result-option-discriminant-cases.sh`・`.claude/hooks/lib/story-title-cases.sh`・`.claude/hooks/lib/named-path-cases.sh`・`.claude/hooks/lib/missing-doc-comments-cases.sh`・`.claude/hooks/lib/duplicate-test-helpers-cases.sh`・`.github/scripts/check-added-lint-suppressions.sh`・`.github/scripts/check-added-test-helper-duplication.sh`・`.github/scripts/check-added-cases.sh`・`harness/records/count.sh --ratchet`・`harness/records/count-cases.sh`・`.claude/hooks/lib/canary-cases.sh`・`.claude/hooks/lib/pre-push-detector-cases.sh`・`.claude/hooks/lib/verification-agent-cases.sh`・`harness/githooks/lib/check-tally-cases.sh` |
+| `pre-push` | 型 / lint / format / doc コメント / テスト規約 / import 規約 / 判別子の直読み・直書き / story の title / 名指ししたパス / テストヘルパーの重複 / import 規約の判定表 / 判別子の直読み・直書きの判定表 / story の title の判定表 / 名指ししたパスの判定表 / doc コメントの判定表 / テストヘルパーの重複の判定表 / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加された分の検査の判定表 / 解説ページの検査の判定表 / 変更の地図の判定表 / 解説ページの公開の判定表 / 行数のラチェット / 集計の判定表 / カナリアの判定表 / push 前の検査フックの判定表 / 検証エージェントの実行中フラグの判定表 / pre-push の結果行の判定表 | `pnpm run typecheck`・`pnpm run lint`・`pnpm exec biome check`・`.claude/hooks/lib/missing-doc-comments.py`・`.claude/hooks/lib/test-rules-scan.sh`・`.claude/hooks/lib/import-rule-violations.py`・`.claude/hooks/lib/result-option-discriminant-violations.py`・`.claude/hooks/lib/story-title-violations.py`・`.claude/hooks/lib/named-path-violations.py`・`.claude/hooks/lib/duplicate-test-helpers.py --all src`・`.claude/hooks/lib/import-rule-cases.sh`・`.claude/hooks/lib/result-option-discriminant-cases.sh`・`.claude/hooks/lib/story-title-cases.sh`・`.claude/hooks/lib/named-path-cases.sh`・`.claude/hooks/lib/missing-doc-comments-cases.sh`・`.claude/hooks/lib/duplicate-test-helpers-cases.sh`・`.github/scripts/check-added-lint-suppressions.sh`・`.github/scripts/check-added-test-helper-duplication.sh`・`.github/scripts/check-added-cases.sh`・`.github/scripts/check-pr-explain-html-cases.sh`・`.github/scripts/build-pr-change-map-cases.sh`・`.github/scripts/publish-pr-explain-cases.sh`・`harness/records/count.sh --ratchet`・`harness/records/count-cases.sh`・`.claude/hooks/lib/canary-cases.sh`・`.claude/hooks/lib/pre-push-detector-cases.sh`・`.claude/hooks/lib/verification-agent-cases.sh`・`harness/githooks/lib/check-tally-cases.sh` |
 
 | スクリプト | 呼ばれ方 | 内容 |
 | --- | --- | --- |
@@ -44,14 +44,17 @@ DevContainer の `postCreateCommand` も走らない。そこは Claude Code の
 **検査そのもの**の共有場所なので、当てる先と一緒にしておく。前提チェックと異常終了の見分けは
 層 3 の `.claude/hooks/lib/pre-push-detector.sh` も自分の位置から辿って source する
 (層ごとに見方を割らないため)。
-**行数のラチェットと判定表 11 本**(`harness/records/count.sh --ratchet` /
+PR の解説ページの判定表 3 本(`check-pr-explain-html-cases.sh` / `build-pr-change-map-cases.sh` /
+`publish-pr-explain-cases.sh`)も `.github/scripts/` にある。当てる先が `pr-explain.yml` と
+`pr-explain` スキルから呼ばれるスクリプトで、同じ場所にあるため。
+**行数のラチェットと判定表 14 本**(`harness/records/count.sh --ratchet` /
 `harness/records/count-cases.sh` / `.claude/hooks/lib/import-rule-cases.sh` /
 `.claude/hooks/lib/result-option-discriminant-cases.sh` /
 `.claude/hooks/lib/story-title-cases.sh` / `.claude/hooks/lib/named-path-cases.sh` /
 `.claude/hooks/lib/missing-doc-comments-cases.sh` / `.claude/hooks/lib/duplicate-test-helpers-cases.sh` /
 `.claude/hooks/lib/canary-cases.sh` / `.claude/hooks/lib/pre-push-detector-cases.sh` /
 `.claude/hooks/lib/verification-agent-cases.sh` /
-`harness/githooks/lib/check-tally-cases.sh`)も
+`harness/githooks/lib/check-tally-cases.sh` と上の解説ページの 3 本)も
 `.claude/hooks/` 側のフック(`pre-push-*.sh`)に対応物を持たない。判定表をどの層へ置くかと、層 3 へ足さない理由は
 `.claude/hooks/README.md`「カバー範囲と残る穴」。
 

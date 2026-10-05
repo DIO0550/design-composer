@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-ISA5LyZboFD3ewPOJeBqe9l/VJzACQz+bYNREDPY5TU='; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PR 解説</title>
+<style>
+:root {
+  --bg: #fbfaf7;
+  --surface: #ffffff;
+  --surface-2: #f3f1ec;
+  --border: #e3dfd6;
+  --text: #1f1d1a;
+  --text-2: #57534b;
+  --text-3: #8a8478;
+  --accent: #2f5fd0;
+  --accent-soft: #e6edfb;
+  --green: #2f7d4f;
+  --green-soft: #e3f2e8;
+  --rose: #b23a48;
+  --rose-soft: #f8e4e6;
+  --amber: #9a6b12;
+  --amber-soft: #fbf0d9;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #15171a;
+    --surface: #1c1f23;
+    --surface-2: #23272c;
+    --border: #33383f;
+    --text: #e8e6e1;
+    --text-2: #b4afa6;
+    --text-3: #847f76;
+    --accent: #8fb0ff;
+    --accent-soft: #23314f;
+    --green: #7cc79a;
+    --green-soft: #1d3326;
+    --rose: #ec8f9b;
+    --rose-soft: #3d2328;
+    --amber: #e3b45a;
+    --amber-soft: #3a2f19;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.75 var(--sans); }
+a { color: var(--accent); }
+code { font-family: var(--mono); font-size: 0.88em; background: var(--surface-2); padding: 0.1em 0.35em; border-radius: 4px; }
+.page { max-width: 1180px; margin: 0 auto; padding: 24px 16px 64px; }
+.top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+.kind { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-3); font-weight: 700; }
+.links { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; }
+.banner { margin: 16px 0 0; padding: 12px 14px; border-radius: 8px; background: var(--amber-soft); color: var(--text); border: 1px solid var(--border); font-size: 14px; }
+.banner ul { margin: 6px 0 0; padding-left: 20px; }
+.layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 32px; margin-top: 24px; }
+.toc { position: sticky; top: 16px; align-self: start; font-size: 13px; }
+.toc a { display: block; padding: 3px 0 3px 10px; color: var(--text-2); text-decoration: none; border-left: 2px solid var(--border); }
+.toc a:hover { color: var(--accent); border-left-color: var(--accent); }
+@media (max-width: 860px) { .layout { grid-template-columns: minmax(0, 1fr); } .toc { position: static; } }
+main { min-width: 0; }
+h1 { font-size: 28px; line-height: 1.35; margin: 0 0 8px; }
+h2 { font-size: 20px; margin: 48px 0 12px; padding-top: 8px; border-top: 1px solid var(--border); }
+h3 { font-size: 16px; margin: 28px 0 8px; }
+.kicker { display: inline-block; margin-right: 8px; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); font-weight: 700; vertical-align: 0.15em; }
+.explain-meta { color: var(--text-3); font-size: 13px; margin: 0 0 16px; }
+.lead { font-size: 17px; color: var(--text-2); }
+.empty-note { padding: 20px; border: 1px dashed var(--border); border-radius: 8px; color: var(--text-2); background: var(--surface); }
+table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; background: var(--surface); }
+th, td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
+th { background: var(--surface-2); font-weight: 600; }
+table.behavior td:nth-child(2) { background: var(--rose-soft); }
+table.behavior td:nth-child(3) { background: var(--green-soft); }
+.decision { margin: 16px 0; padding: 14px 16px; background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 8px; }
+.decision[data-kind="逸脱"] { border-left-color: var(--amber); }
+.decision[data-kind="見送り"] { border-left-color: var(--text-3); }
+.decision h3 { margin: 0 0 8px; }
+.decision::before { content: attr(data-kind); display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; padding: 1px 8px; border-radius: 999px; background: var(--surface-2); color: var(--text-2); margin-bottom: 6px; }
+.decision dl { display: grid; grid-template-columns: 7em minmax(0, 1fr); gap: 4px 12px; margin: 0; }
+.decision dt { color: var(--text-3); font-size: 13px; }
+.decision dd { margin: 0; }
+article.tech { margin: 24px 0; }
+figure.diagram { margin: 16px 0; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow-x: auto; }
+figure.diagram svg { display: block; max-width: 100%; height: auto; margin: 0 auto; }
+figure.diagram figcaption { margin-top: 8px; font-size: 13px; color: var(--text-3); text-align: center; }
+.d-box { fill: var(--surface-2); stroke: var(--border); stroke-width: 1.5; }
+.d-accent { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+.d-line { stroke: var(--text-2); stroke-width: 1.5; fill: none; }
+.d-text { fill: var(--text); font: 13px var(--sans); }
+.d-muted { fill: var(--text-3); font: 12px var(--sans); }
+pre.code { margin: 12px 0; padding: 12px 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; overflow-x: auto; font: 13px/1.6 var(--mono); }
+pre.code code { background: none; padding: 0; font-size: inherit; }
+pre.code[data-file]::before { content: attr(data-file); display: block; margin-bottom: 8px; color: var(--text-3); font-size: 12px; }
+.note { margin: 14px 0; padding: 10px 14px; border-radius: 8px; font-size: 14px; }
+.note.info { background: var(--accent-soft); }
+.note.warn { background: var(--amber-soft); }
+ul.focus li { margin: 6px 0; }
+.map h3 { font-size: 14px; color: var(--text-2); margin: 20px 0 6px; }
+.map ul { list-style: none; margin: 0; padding: 0; }
+.map li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding: 4px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.map .status { font: 11px var(--mono); min-width: 1.6em; text-align: center; border-radius: 4px; background: var(--surface-2); color: var(--text-2); }
+.map .count { font: 12px var(--mono); color: var(--text-3); }
+.map .unmentioned { font-size: 11px; color: var(--amber); }
+.muted { color: var(--text-3); }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="top">
+    <span class="kind">PR 解説</span>
+    <nav class="links" id="links"></nav>
+  </header>
+  <div class="banner" id="staleness" hidden></div>
+  <div class="layout">
+    <nav class="toc" id="toc" aria-label="目次"></nav>
+    <main>
+      <article id="explain">
+<!-- EXPLAIN:BEGIN -->
+<p class="empty-note">解説はまだ書かれていません。下の「変更の地図」は push のたびに自動で更新されます。</p>
+<!-- EXPLAIN:END -->
+      </article>
+      <section class="map" id="change-map">
+        <h2 id="map"><span class="kicker">自動生成</span>変更の地図</h2>
+        <div id="map-body"><p class="muted">読み込み中…</p></div>
+      </section>
+    </main>
+  </div>
+</div>
+<script>
+(() => {
+  const Repo = "DIO0550/design-composer";
+  const explain = document.getElementById("explain");
+  const meta = explain.querySelector(".explain-meta");
+  const explainedSha = meta ? meta.dataset.explainedSha || "" : "";
+  const prFromPath = (location.pathname.match(/pr-(\d+)/) || [])[1] || "";
+  const pr = (meta && meta.dataset.pr) || prFromPath;
+
+  const el = (tag, props, children) => {
+    const node = document.createElement(tag);
+    for (const [key, value] of Object.entries(props || {})) {
+      if (key === "text") node.textContent = value;
+      else node.setAttribute(key, value);
+    }
+    for (const child of children || []) node.append(child);
+    return node;
+  };
+
+  const heading = explain.querySelector("h1");
+  if (heading) document.title = `${heading.textContent.trim()} · PR 解説`;
+
+  for (const code of explain.querySelectorAll("code.ref")) {
+    const match = code.textContent.trim().match(/^(.+?)(?::(\d+)(?:-(\d+))?)?$/);
+    if (!match) continue;
+    const [, path, start, end] = match;
+    const lines = start ? `#L${start}${end ? `-L${end}` : ""}` : "";
+    const link = el("a", { href: `https://github.com/${Repo}/blob/${explainedSha || "main"}/${path}${lines}` });
+    code.replaceWith(link);
+    link.append(code);
+  }
+
+  const links = document.getElementById("links");
+  if (pr) {
+    links.append(
+      el("a", { href: `https://github.com/${Repo}/pull/${pr}`, text: `PR #${pr}` }),
+      el("a", { href: `../../pr-preview/pr-${pr}/`, text: "Storybook プレビュー" }),
+      el("a", { href: `../../visual-regression/pr-${pr}/`, text: "VRT レポート(差分が無い回・撮影で落ちた回は無い)" }),
+    );
+  }
+
+  const buildToc = () => {
+    const toc = document.getElementById("toc");
+    toc.replaceChildren();
+    for (const h2 of document.querySelectorAll("main h2[id]")) {
+      const label = [...h2.childNodes].filter((node) => !(node.classList && node.classList.contains("kicker"))).map((node) => node.textContent).join("").trim();
+      toc.append(el("a", { href: `#${h2.id}`, text: label }));
+    }
+  };
+
+  const explainText = explain.textContent;
+  const isMentioned = (path) => explainText.includes(path);
+
+  const showStaleness = (map) => {
+    if (!explainedSha || map.head === explainedSha) return;
+    const banner = document.getElementById("staleness");
+    const index = map.commits.findIndex((commit) => commit.sha === explainedSha);
+    banner.hidden = false;
+    if (index < 0) {
+      banner.append(`解説を書いた時点のコミット(${explainedSha.slice(0, 7)})が、この PR のコミット一覧に見つかりません。force push などで履歴が変わった可能性があります。`);
+      return;
+    }
+    const changed = [...new Set(map.commits.slice(index + 1).flatMap((commit) => commit.files))].sort();
+    banner.append(`この解説は ${explainedSha.slice(0, 7)} 時点のものです。以降のコミットで変わったファイル:`);
+    banner.append(el("ul", {}, changed.map((path) => el("li", {}, [el("code", { text: path })]))));
+  };
+
+  const fileItem = (file) => {
+    const children = [el("span", { class: "status", text: file.status }), el("code", { text: file.path })];
+    if (file.oldPath) children.push(el("span", { class: "muted", text: `← ${file.oldPath}` }));
+    children.push(el("span", { class: "count", text: `+${file.additions} −${file.deletions}` }));
+    if (explainedSha && !isMentioned(file.path)) children.push(el("span", { class: "unmentioned", text: "解説に出てこない" }));
+    return el("li", {}, children);
+  };
+
+  const testItems = (tests) => tests.map((test) => el("li", {}, [el("span", { text: test.name }), el("code", { text: test.file })]));
+
+  const renderMap = (map) => {
+    const body = document.getElementById("map-body");
+    body.replaceChildren();
+    body.append(el("p", { class: "muted", text: `head ${map.head.slice(0, 7)} · base との分岐点 ${map.base.slice(0, 7)} · 上から読む順(内側の層から外側へ)に並べています。` }));
+    if (explainedSha) {
+      const unmentioned = map.groups.flatMap((group) => group.files).filter((file) => !isMentioned(file.path));
+      if (unmentioned.length > 0) {
+        body.append(el("h3", { text: `解説に出てこない変更ファイル(${unmentioned.length})` }));
+        body.append(el("ul", {}, unmentioned.map(fileItem)));
+      }
+    }
+    for (const group of map.groups) {
+      body.append(el("h3", { text: `${group.label}(${group.files.length})` }));
+      body.append(el("ul", {}, group.files.map(fileItem)));
+    }
+    if (map.groups.length === 0) body.append(el("p", { class: "muted", text: "変更されたファイルはありません。" }));
+    body.append(el("h3", { text: `追加されたテスト(${map.tests.added.length})` }));
+    body.append(el("ul", {}, testItems(map.tests.added)));
+    body.append(el("h3", { text: `削除されたテスト(${map.tests.removed.length})` }));
+    body.append(el("ul", {}, testItems(map.tests.removed)));
+    showStaleness(map);
+  };
+
+  const mapFailed = () => {
+    document.getElementById("map-body").replaceChildren(el("p", { class: "muted", text: "change-map.json を読めませんでした(Pages 上でのみ表示されます)。" }));
+  };
+
+  buildToc();
+  fetch(`change-map.json?t=${Date.now()}`, { cache: "no-store" })
+    .then((response) => (response.ok ? response.json() : Promise.reject(new Error(String(response.status)))))
+    .then(renderMap)
+    .catch(mapFailed)
+    .then(buildToc);
+})();
+</script>
+</body>
+</html>
