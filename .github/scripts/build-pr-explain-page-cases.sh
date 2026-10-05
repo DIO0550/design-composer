@@ -113,6 +113,27 @@ unknown_page=pass
 { [ "$status" -eq 2 ] && [ ! -e "$work/page.html" ]; } || unknown_page=deny
 report pass "$unknown_page" "知らないページ名は引数の誤りとして断る"
 
+# data-page の突き合わせは入口以外のページでも効き、属性が無いのを公開先のページ名とみなさない。
+# 表は入口のページとして組み立てるので、入口以外のページへ置く形をここに置く。
+# $1 断片の explain-meta の data-page 属性(空なら付けない)、$2 公開先のページ
+page_verdict() {
+  local attribute="${1:+ data-page=\"$1\"}" output status
+  printf '<p class="explain-meta" data-explained-sha="0123456789abcdef0123456789abcdef01234567" data-pr="12"%s>x</p>\n' "$attribute" > "$work/fragment.html"
+  output="$(python3 "$builder" "$work/fragment.html" --pr 12 --page "$2" --out "$work/page.html")" && status=0 || status=$?
+  decide "$output" "$status" '^\[pr-explain-meta\]'
+}
+report pass "$(page_verdict tech tech)" "技術のページへ data-page=tech の断片を置ける"
+report deny "$(page_verdict index tech)" "技術のページへ data-page=index のままの断片を置こうとした"
+report deny "$(page_verdict "" tech)" "data-page の無い断片は、公開先のページ名とみなさない"
+
+# --page は必須で、無ければ引数の誤り(2)。入口とみなして組み立てない。
+printf '%s\n' "$meta" > "$work/fragment.html"
+rm -f "$work/page.html"
+python3 "$builder" "$work/fragment.html" --pr 12 --out "$work/page.html" 2>/dev/null; status=$?
+missing_page=pass
+{ [ "$status" -eq 2 ] && [ ! -e "$work/page.html" ]; } || missing_page=deny
+report pass "$missing_page" "--page が無ければ引数の誤りとして断る"
+
 # 枠の CSP が固定スクリプトのハッシュを許していること。スクリプトを 1 文字変えて
 # ハッシュを直さなかったテンプレートでは、断片が正しくても落ちる。
 sed 's/const Repo = /const  Repo = /' "$template" > "$work/broken-template.html"
