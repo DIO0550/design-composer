@@ -5,6 +5,7 @@ import { DesignDocument } from "@/domains/dcmp/design-document";
 import { Node } from "@/domains/dcmp/node";
 import { NodeTree } from "@/domains/dcmp/node-tree";
 import { ResolvedProps } from "@/domains/dcmp/resolved-props";
+import { Wrap } from "@/domains/dcmp/wrap";
 import { Option } from "@/utils/Option";
 import { DraggedNode } from "../dragged-node";
 
@@ -127,7 +128,7 @@ function insertionParentOf(
     Option.map(BoxElement.childDirection(props), (direction) => ({
       name,
       direction,
-      wraps: BoxElement.wrapsChildren(props),
+      wraps: Wrap.isWrapping(Wrap.fromProps(props)),
     })),
   );
 }
