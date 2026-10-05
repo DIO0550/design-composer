@@ -29,6 +29,16 @@ export const CssDirection = {
   },
 
   /**
+   * 子が並ぶ方向と直交する軸。折り返した子は、この軸の向きへ次の行として積まれる。
+   *
+   * @param direction flex コンテナの向き
+   * @returns 子が横に並ぶなら高さの軸、縦に並ぶなら幅の軸
+   */
+  crossAxis(direction: CssDirection): Axis {
+    return direction === CssDirections.Row ? "height" : "width";
+  },
+
+  /**
    * その軸が主軸(子が並ぶ方向)かどうか。
    *
    * @param direction flex コンテナの向き
