@@ -24,6 +24,22 @@ test("layout が row の Box は横に子が並ぶものとして扱われる", 
   expect(Option.unwrap(parent).direction).toBe("row");
 });
 
+test("wrap を指定した Box は子を折り返す親として扱われる", () => {
+  const parent = InsertionParent.innermost(setupDocument(), moving("moved"), [
+    "grid",
+  ]);
+
+  expect(Option.unwrap(parent).wraps).toBe(true);
+});
+
+test("wrap を指定していない Box は子を折り返さない親として扱われる", () => {
+  const parent = InsertionParent.innermost(setupDocument(), moving("moved"), [
+    "row",
+  ]);
+
+  expect(Option.unwrap(parent).wraps).toBe(false);
+});
+
 test("子を並べない Box は並びへ挿す先にならず外側の親が選ばれる", () => {
   const parent = InsertionParent.innermost(setupDocument(), moving("moved"), [
     "free",

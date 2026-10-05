@@ -18,8 +18,8 @@ export const placingBox: DraggedNode = {
 };
 
 /**
- * `home` の下に、子を持てる `body`（縦積み）と `row`（横並び）、子を並べない `free`、
- * 子を持てない `title`、部品インスタンスの `login` が並ぶドキュメント。
+ * `home` の下に、子を持てる `body`（縦積み）と `row`（横並び）と `grid`（折り返す横並び）、
+ * 子を並べない `free`、子を持てない `title`、部品インスタンスの `login` が並ぶドキュメント。
  *
  * @returns その並びを持つドキュメント
  */
@@ -53,6 +53,12 @@ export function setupDocument(): DesignDocument {
             name: "free",
             type: "Box",
             props: { layout: "free" },
+            children: [],
+          },
+          {
+            name: "grid",
+            type: "Box",
+            props: { layout: "row", wrap: "wrap" },
             children: [],
           },
           { name: "login", ref: "primary-button" },
