@@ -61,7 +61,8 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `lib/pre-push-detector.sh` | `pre-push-import-rules.sh` / `pre-push-result-option-reads.sh` / `pre-push-story-titles.sh` / `pre-push-named-paths.sh` / `pre-push-doc-comments.sh` / `pre-push-test-helper-duplication.sh` | `git push` のときだけ検出器を走らせ、違反があれば deny の JSON を返す。`deny_on_violations <検出器> <検査の名前> <直し方の一文>` は**走査ルートを渡さず**(検出器が自分の既定で決める)、`[種別]` で始まる行で違反を読む(`[種別]` の行を出さずに 1 で終わった・0 と 1 以外で終わったなら、検出器が落ちたとして「検査できなかった」の deny。判定は `.github/scripts/lib/detector-report.sh` を `check-added-*` と共有する)。`deny_on_all_src_failure`(引数は同じ)は `--all src` で呼び、終了コードで違反を読む(報告の綴りが `[` で始まらない検出器向け。CI・`harness/githooks/pre-push` と同じ呼び方) |
 | `lib/story-title-violations.py` | `pre-push-story-titles.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | story の `title` が、最後のセグメント（葉に出る表示名）を除いてフォルダ階層から導出した綴りと違うもの（`story-title-tree`）と、`title` をリテラル 1 行として取れないもの（`story-title-missing`）を報告する |
 | `lib/result-option-read-violations.py` | `pre-push-result-option-reads.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `Result` / `Option` の判別子（`ok` / `some`）を、その判別子を型宣言で定義していないファイルで直読みしている箇所（`result-option-read`）を報告する |
-| `lib/cases-report.sh` | `lib/result-option-read-cases.sh` / `lib/story-title-cases.sh` / `lib/named-path-cases.sh` / `lib/missing-doc-comments-cases.sh` / `lib/duplicate-test-helpers-cases.sh` / `lib/verification-agent-cases.sh`(`report` だけ) | 判定表が共有する、判定の読み取り（`decide` / `normalize_miss`）と報告（`report` / `cases_failed`）。ケースの並べ方と検出器の呼び方は判定表ごとに違うので、そこは各判定表が持つ |
+| `lib/cases-report.sh` | `lib/import-rule-cases.sh`(`report` だけ) / `lib/result-option-read-cases.sh` / `lib/story-title-cases.sh` / `lib/named-path-cases.sh` / `lib/missing-doc-comments-cases.sh` / `lib/duplicate-test-helpers-cases.sh` / `lib/verification-agent-cases.sh`(`report` だけ) / `lib/pre-push-detector-cases.sh`(`report` だけ) | 判定表が共有する、判定の読み取り（`decide` / `normalize_miss`）と報告（`report` / `cases_failed`）。ケースの並べ方と検出器の呼び方は判定表ごとに違うので、そこは各判定表が持つ |
+| `lib/import-rule-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `import-rule-violations.py` へ判定表を流し、報告された種別と件数が期待どおりかを報告する。検出器が報告する種別のうち、表の期待に 1 度も出ないものがあっても NG。食い違いがあれば exit 1 |
 | `lib/named-path-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `named-path-violations.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードで報告する。食い違いがあれば exit 1 |
 | `lib/pre-push-detector-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `pre-push-test-helper-duplication.sh` へ `CLAUDE_PROJECT_DIR` を一時ディレクトリに向けた JSON を流して `deny_on_all_src_failure` を、スタブの検出器を渡して `deny_on_violations` を判定し、deny(違反 / 検査できなかった)/ pass が期待どおりかを報告する。食い違いがあれば exit 1 |
 | `lib/canary-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `hook-canary.sh` へ判定表を流し、deny / pass / miss が期待どおりかを報告する。食い違いがあれば exit 1 |
@@ -147,6 +148,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 | 判定表 | 層 1(CI) | 層 2(`pre-push`) |
 | --- | --- | --- |
 | `harness/records/count-cases.sh` | あり | あり |
+| `lib/import-rule-cases.sh` | あり | あり(`python3` がある環境だけ) |
 | `lib/result-option-read-cases.sh` | あり | あり(`python3` がある環境だけ) |
 | `lib/story-title-cases.sh` | あり | あり(`python3` がある環境だけ) |
 | `lib/named-path-cases.sh` | あり | あり(`python3` がある環境だけ) |
@@ -171,7 +173,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
   当てる 2 本(`check-added-*`)と同じジョブに置き、`python3` と git だけで完結する
 - **`check-pr-closing-issue-cases.sh` は層 1 だけ。** 再試行と問い合わせ直しの待ち時間だけで
   60.5 秒かかる(実測)。`pre-push` 全体は 35.9 秒(実測・`node_modules` のある環境)で、載せると
-  2.5 倍を超える。ここへ載せた 2 本は合わせて 2.2 秒、`harness/githooks/lib/check-tally-cases.sh` は 0.1 秒未満(実測)。**この穴は残したままなので、
+  2.5 倍を超える。ここへ載せた 2 本は合わせて 2.2 秒、`harness/githooks/lib/check-tally-cases.sh` は 0.1 秒未満、`lib/import-rule-cases.sh` は 2.2 秒(実測)。**この穴は残したままなので、
   `check-pr-closing-issue.sh` を触ったときは手で走らせる**(「動作確認」)
 - 層 3(`pre-push-*.sh`)には足さない。層 1 と層 2 の両方に置く以上、守る範囲が増えない
 
@@ -322,7 +324,7 @@ deny のメッセージは、`jq` / `python3` が欠けていればその名前�
   - エスケープハッチは他の oxlint ルールと共通で、ファイルに `// @lint-suppress-ok` を書くと `block-lint-suppress.sh` / `check-added-lint-suppressions.sh` の抑制コメント禁止が**そのファイル全体で**外れる。分割の判断を迂回する使い方はしない
   - **導入時点では、上の一文は事実ではなかった。** `lib/lint-suppressions.py` の検出は `biome-ignore` / `eslint-disable` の 2 綴りしか見ておらず、oxlint が同じく読む `oxlint-disable` の綴りは素通りしていた(実測: `// oxlint-disable eslint/max-lines` の 1 行で、`@lint-suppress-ok` 無しにこのルールを無効化できた)。検出側へ `oxlint-disable` を足して塞いである。既存の抑制は `biome-ignore` の 3 件だけなので、追加による新しい違反は 0 件
 - **feature 間の deep import・循環参照・モジュール内部への deep import**(#257 のゴール 1・2・6)は `lib/import-rule-violations.py` が見る。oxlint に置かなかったのは、3 つとも**リポジトリの構造を読まないと判定できない**ため(「自分の feature を除く」は呼び出し元のパスに依存し、循環はグラフ、deep import は「そのフォルダが `index.ts` を持つか」を要する)。`overrides.files` の静的な glob では書けない(#284 の実測では同一 feature 内のドメイン間 import まで巻き込んで 38 件の偽陽性。数値の出どころは #257 のコメント)
-  - **判定の根拠はスクリプトの docstring に書いてある**(入れ子モジュールの扱い・`__tests__/` の扱い・feature だけ狭い理由)。ここに写すと片方だけ古くなるので繰り返さない
+  - **判定の根拠はスクリプトの docstring に書いてある**(入れ子モジュールの扱い・`__tests__/` の扱い・feature だけ狭い理由)。ここに写すと片方だけ古くなるので繰り返さない。判定表は `lib/import-rule-cases.sh`
   - **ゴール 6 の実効範囲は現状ほぼ fixture 専用。** 入れ子モジュールの index を許すため、`module-public-api` に当たるのは「モジュールフォルダ配下の非 index ファイルを外から読む」形だけで、実測するとテスト・ストーリーを除いた該当ファイルは 4 件しか無い(このリポジトリが「実装は `index.ts` に直接書く」を守っているため)。**将来の退行を止める枠であって、いま何かを剥がす検査ではない**
   - **エスケープハッチは置かない。** 他の push ブロック系(`@test-rules-disable` / `@lint-suppress-ok`)と違い、この検査は「その import を書いてよいか」の判定で、**ファイル単位で例外にできる性質のものではない**(例外にした瞬間そのファイルからは何でも読める)。偽陽性を避ける側で手当てしてある — コメント行は数えない・入れ子の index は通す
   - 導入時点の既存違反は 8 件(feature をまたぐ fixture の直接 import)で、テスト用の公開口を置いて 0 件にしてから `error` 相当(exit 1)で入れた
@@ -467,6 +469,9 @@ echo '{"session_id":"probe","tool_name":"Bash","tool_input":{"command":"ls"}}' |
 拡張子の取りこぼし(`SOURCE_SUFFIXES` / `INDEX_NAMES` から `.tsx` が落ちる形)を素通りさせる。
 
 ```bash
+# import 規約の判定表(`ok` だけなら期待どおり・`NG` が出たら判定が変わっている)。pre-push と CI も走らせる
+bash .claude/hooks/lib/import-rule-cases.sh; echo "exit=$?"
+
 # import 規約の全体検査(git hooks・CI と共有)
 python3 .claude/hooks/lib/import-rule-violations.py src; echo "exit=$?"   # → 違反 0 件・exit=0
 
