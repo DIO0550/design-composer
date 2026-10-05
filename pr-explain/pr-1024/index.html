@@ -116,7 +116,141 @@ ul.focus li { margin: 6px 0; }
     <main>
       <article id="explain">
 <!-- EXPLAIN:BEGIN -->
-<p class="empty-note">解説はまだ書かれていません。下の「変更の地図」は push のたびに自動で更新されます。</p>
+<p class="explain-meta" data-explained-sha="d7b590de5f843be68fa7eeabd9a260fabbb68fc7" data-pr="1024">解説時点 <code>d7b590d</code> · 材料 <a href="https://github.com/DIO0550/design-composer/issues/1022">Issue #1022</a></p>
+<h1>PR ごとの解説ページを Pages に出す</h1>
+<p class="lead">実装したセッションが「技術解説・振る舞いの判断・見てほしい箇所」を HTML で書き、Actions が「変更の地図」を足して、PR から 1 クリックで読めるページにする。このページ自体が、その仕組みで出した最初の解説。</p>
+
+<h2 id="overview">概要</h2>
+<p>長いセッションで作られた PR は、diff と Issue を読むだけでは「何の技術を使い、なぜその振る舞いにしたか」が掴みにくい。この PR は、PR ごとに <code>https://dio0550.github.io/design-composer/pr-explain/pr-&lt;番号&gt;/</code> という 1 枚のページを作り、その読み解きを人間の代わりに先に済ませておく仕組みを足す。</p>
+<p>ページは 2 人で書く。<strong>解説</strong>は実装したセッションが <code>pr-explain</code> スキル(<code class="ref">.claude/skills/pr-explain/SKILL.md</code>)で書く。経緯はセッションの中にしか無いので、ここは AI が書くしかない。<strong>変更の地図</strong>(変更ファイルを内側の層から外側へ並べた一覧・テスト名の増減・解説の古さ)は git の差分だけで決まるので、Actions(<code class="ref">.github/workflows/pr-explain.yml</code>)が機械的に作る。</p>
+<p>どちらも gh-pages ブランチの <code>pr-explain/pr-&lt;番号&gt;/</code> にだけ置き、PR ブランチにも main にも入れない。PR が閉じたら Actions がフォルダごと消す。</p>
+<figure class="diagram">
+  <svg viewBox="0 0 640 210" role="img" aria-label="セッションと Actions が gh-pages の同じフォルダへ書き込む流れ">
+    <rect x="10" y="20" width="180" height="56" rx="6" class="d-accent"/>
+    <text x="100" y="44" text-anchor="middle" class="d-text">セッション</text>
+    <text x="100" y="64" text-anchor="middle" class="d-muted">解説の断片を書く</text>
+    <rect x="10" y="130" width="180" height="56" rx="6" class="d-box"/>
+    <text x="100" y="154" text-anchor="middle" class="d-text">PR Explain(Actions)</text>
+    <text x="100" y="174" text-anchor="middle" class="d-muted">change-map.json を作る</text>
+    <rect x="240" y="20" width="170" height="56" rx="6" class="d-box"/>
+    <text x="325" y="44" text-anchor="middle" class="d-text">build-pr-explain-page</text>
+    <text x="325" y="64" text-anchor="middle" class="d-muted">検査してテンプレートへ</text>
+    <rect x="460" y="75" width="170" height="56" rx="6" class="d-accent"/>
+    <text x="545" y="99" text-anchor="middle" class="d-text">gh-pages</text>
+    <text x="545" y="119" text-anchor="middle" class="d-muted">pr-explain/pr-N/</text>
+    <line x1="190" y1="48" x2="240" y2="48" class="d-line"/>
+    <line x1="410" y1="48" x2="460" y2="95" class="d-line"/>
+    <line x1="190" y1="158" x2="460" y2="112" class="d-line"/>
+    <text x="430" y="40" class="d-muted">index.html</text>
+    <text x="300" y="150" class="d-muted">change-map.json</text>
+  </svg>
+  <figcaption>どちらの書き込みも <code>pr-explain-pages.sh</code> を通り、そのフォルダだけを書き換える</figcaption>
+</figure>
+
+<h2 id="behavior"><span class="kicker">振る舞い</span>振る舞いの変化</h2>
+<table class="behavior">
+  <tr><th>操作・状況</th><th>変更前</th><th>変更後</th><th>根拠</th></tr>
+  <tr><td>PR を開く・push する</td><td>Storybook プレビューと VRT だけ</td><td>数十秒で地図が置かれ、解説がまだなら「解説はまだ書かれていません」のページが出る</td><td><code class="ref">.github/scripts/pr-explain-pages.sh:93</code></td></tr>
+  <tr><td>Storybook プレビューの固定コメント</td><td>Storybook の URL だけ</td><td>解説ページの URL が 1 行増える</td><td><code class="ref">.github/workflows/storybook-pr-preview.yml:124</code></td></tr>
+  <tr><td>セッションが解説を公開する</td><td>(無い)</td><td>断片を検査してテンプレートへ差し込み、<code>index.html</code> だけを上書きする</td><td><code class="ref">.github/scripts/build-pr-explain-page.py:186</code></td></tr>
+  <tr><td>断片に <code>&lt;script&gt;</code>・<code>onclick=</code>・外部 URL・コメントがある</td><td>(無い)</td><td>報告を出して push しない(取り直しにも進まない)</td><td><code class="ref">.github/scripts/build-pr-explain-page.py:167</code></td></tr>
+  <tr><td>解説を書いた後に push した</td><td>(無い)</td><td>「この解説は ◯◯ 時点」の帯と、以降に変わったファイルが出る</td><td><code class="ref">.claude/skills/pr-explain/templates/index.html:192</code></td></tr>
+  <tr><td>地図が置かれる前・PR が閉じた後に解説を公開しようとした</td><td>(無い)</td><td>終了コード 3 で止まり、フォルダを復活させない</td><td><code class="ref">.github/scripts/pr-explain-pages.sh:93</code></td></tr>
+  <tr><td>PR を閉じる</td><td>(無い)</td><td>Actions が <code>pr-explain/pr-&lt;番号&gt;/</code> を消す。gh-pages が無ければ何もしない</td><td><code class="ref">.github/scripts/pr-explain-pages.sh:126</code></td></tr>
+  <tr><td>main へマージする</td><td>gh-pages のルートを掃除するとき <code>pr-preview</code> と <code>visual-regression</code> だけを残していた</td><td><code>pr-explain</code> も残す(残さないと全 PR の解説が消える)</td><td><code class="ref">.github/workflows/deploy-storybook-main.yml:80</code></td></tr>
+</table>
+
+<h2 id="decisions"><span class="kicker">判断</span>判断</h2>
+<div class="decision" data-kind="判断">
+  <h3>置き場所は gh-pages に直接 push する</h3>
+  <dl>
+    <dt>採った案</dt><dd>セッションが gh-pages の <code>pr-explain/pr-N/</code> へ直接 push する。実際に push できることを、計画の段階で 1 回置いて確かめた</dd>
+    <dt>検討した案</dt><dd>JSON を書いて描画する / Markdown を PR コメントに書く / PR ブランチにコミットする / PR コメントに HTML 断片を貼る / 専用ブランチ経由 / CI で AI に生成させる</dd>
+    <dt>理由</dt><dd>AI が書いたものをそのまま読める形にしたい(JSON は読めない)、HTML にしたい、main に溜めたくない・Files changed に混ぜたくない、という 3 つを同時に満たすのがこれだけだった。専用ブランチは、push で起動するワークフローがそのブランチ側の定義で動くため、HTML しか無いブランチでは何も起動しない</dd>
+  </dl>
+</div>
+<div class="decision" data-kind="逸脱">
+  <h3>セッションが書くのは断片だけにした</h3>
+  <dl>
+    <dt>採った案</dt><dd>マーカーの間に入る断片だけを書き、<code>build-pr-explain-page.py</code> が検査してテンプレートへ差し込む</dd>
+    <dt>計画にあった案</dt><dd>テンプレートを丸ごとコピーして間を書き換え、マーカーの外がテンプレートと一致するかを照合する</dd>
+    <dt>理由</dt><dd>同じ枠を 2 か所に持つと、ずれを「検出」することになる。断片だけにすれば、ずれ自体が起きない(solution-reviewer の指摘)</dd>
+    <dt>根拠</dt><dd><code class="ref">.github/scripts/build-pr-explain-page.py:186-190</code></dd>
+  </dl>
+</div>
+<div class="decision" data-kind="逸脱">
+  <h3>解説を書くのはサブエージェントではなく、実装したセッション自身</h3>
+  <dl>
+    <dt>採った案</dt><dd>実装したセッションが自分で書く</dd>
+    <dt>計画にあった案</dt><dd>着手前の会話では「サブエージェントに書かせる」と言っていた</dd>
+    <dt>理由</dt><dd>材料に「Issue に書くほどではなかった判断・試して捨てた形」が要り、それはセッションの中にしか無い</dd>
+  </dl>
+</div>
+<div class="decision" data-kind="判断">
+  <h3>防ぐのは事故で、攻撃ではない</h3>
+  <dl>
+    <dt>採った案</dt><dd>検査(要素・属性・URL・コメント)と CSP の 2 段。CSP は固定スクリプトのハッシュだけを許す</dd>
+    <dt>理由</dt><dd>解説は差分のコードを抜粋するので、エスケープし忘れた JSX の <code>onClick=</code> がそのまま属性になる事故が起きうる。差分を書ける人はリポジトリへ書き込める人なので、悪意ある入力は前提にしない</dd>
+    <dt>根拠</dt><dd><code class="ref">.claude/skills/pr-explain/templates/index.html:5</code></dd>
+  </dl>
+</div>
+<div class="decision" data-kind="見送り">
+  <h3>解説ページの告知を、Storybook のビルドから切り離さない</h3>
+  <dl>
+    <dt>採った案</dt><dd>既存の Storybook プレビューの固定コメントに URL を 1 行足す</dd>
+    <dt>検討した案</dt><dd><code>pr-explain.yml</code> 側で固定コメントを持つ</dd>
+    <dt>理由</dt><dd>固定コメントを作る処理の 3 本目の複製になる。困るのは初回のビルドが落ちた PR だけで、URL は PR 番号だけで決まる。共通化(#63)のときに置き場所を見直す</dd>
+  </dl>
+</div>
+
+<h2 id="tech"><span class="kicker">技術</span>技術解説</h2>
+
+<article class="tech">
+  <h3><span class="kicker">ブラウザ</span>CSP のハッシュでスクリプトを 1 本だけ許す</h3>
+  <p>Content Security Policy(CSP)は、ページが「どこから何を読み込み、どのスクリプトを実行してよいか」をブラウザに宣言する仕組み。<code>&lt;meta http-equiv="Content-Security-Policy"&gt;</code> に書いておくと、ブラウザはそれに反するものを実行せずに捨てる。</p>
+  <p>この PR では <code>script-src 'sha256-…'</code> を使う。これは「中身の SHA-256 がこの値になるインラインスクリプトだけを実行してよい」という意味で、テンプレートの固定スクリプト 1 本だけが該当する。断片に <code>&lt;script&gt;</code> が紛れ込んでも中身が違うのでハッシュが合わず、<code>onclick=</code> のようなイベント属性や <code>javascript:</code> の URL も、<code>'unsafe-inline'</code> を許していないので動かない。</p>
+  <pre class="code" data-file=".claude/skills/pr-explain/templates/index.html"><code>&lt;meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-…'; style-src 'unsafe-inline'; connect-src 'self'; …"&gt;</code></pre>
+  <div class="note warn">固定スクリプトを 1 文字でも変えるとハッシュが変わり、スクリプトが丸ごと止まる。<code>build-pr-explain-page.py</code> が毎回テンプレートのハッシュと中身を突き合わせ、合わなければ公開しない(<code class="ref">.github/scripts/build-pr-explain-page.py:150</code>)。</div>
+</article>
+
+<article class="tech">
+  <h3><span class="kicker">Python</span>html.parser で「属性として」見る</h3>
+  <p>危ない綴りを正規表現で探すと、解説の本文に出てくる <code>onClick={handleClick}</code> のような普通の文章まで引っかかる。そこで標準ライブラリの <code>html.parser</code> に断片を読ませ、<strong>タグとして開かれた要素</strong>と<strong>属性として付いた値</strong>だけを調べる。エスケープされた <code>&amp;lt;script&amp;gt;</code> はテキストなので、そもそも要素として報告されない。</p>
+  <p>属性の値は実体参照をデコードした後で渡されるので、<code>&amp;#106;avascript:</code> も <code>javascript:</code> として見える。URL は許す接頭辞(このリポジトリの github.com・Pages・<code>#</code>)で始まるかだけを見るので、末尾の <code>/</code> まで含めて <code>design-composer-evil</code> のような詐称を通さない(<code class="ref">.github/scripts/build-pr-explain-page.py:59</code>)。</p>
+  <div class="note info">コメント(<code>&lt;!-- --&gt;</code>)と CDATA は断片に書かせない(<code class="ref">.github/scripts/build-pr-explain-page.py:84</code>)。<code>&lt;!--&gt;</code> のような綴りを <code>html.parser</code> とブラウザが別々に解釈し、その中に置いた要素が検査を素通りしうるため。</div>
+</article>
+
+<article class="tech">
+  <h3><span class="kicker">git</span>partial clone と sparse-checkout で 1 フォルダだけ取る</h3>
+  <p>gh-pages は Storybook 本体・PR プレビュー・VRT の画像で約 352 MB ある。解説を 1 枚置くたびに全部を取るのは重いので、<code>--filter=blob:none</code>(ファイルの中身を後回しにする partial clone)と <code>--depth 1</code> で履歴とファイルの中身を取らずに clone し、<code>sparse-checkout</code> で <code>pr-explain/pr-N/</code> だけを作業ツリーに展開する。実測で 1 秒ほど(<code class="ref">.github/scripts/pr-explain-pages.sh:84</code>)。</p>
+  <p>この展開の範囲は安全装置も兼ねる。<code>remove 1</code> で消せるのは作業ツリーにある <code>pr-explain/pr-1/</code> だけで、隣の <code>pr-12</code> は展開されていないので触れない。</p>
+  <pre class="code" data-file=".github/scripts/pr-explain-pages.sh"><code>git clone --filter=blob:none --no-checkout --depth 1 --branch gh-pages "$remote" "$work/site"
+git -C "$work/site" sparse-checkout set --no-cone "/$folder/"
+git -C "$work/site" checkout gh-pages</code></pre>
+  <div class="note info">他のワークフロー(Storybook・VRT)も gh-pages に push するので、ぶつかったら取り直してやり直す(最大 5 回、<code class="ref">.github/scripts/pr-explain-pages.sh:131</code>)。</div>
+</article>
+
+<article class="tech">
+  <h3><span class="kicker">git</span>merge-base と、テスト名を集合で比べること</h3>
+  <p>PR の「Files changed」は base の先端との差ではなく、PR が分岐した点(merge-base)からの差を見せている。地図も同じ範囲にするため、Actions から受け取った base の先端からまず merge-base を求める(<code class="ref">.github/scripts/build-pr-change-map.py:259</code>)。地図の JSON のキーが <code>mergeBase</code> なのは、先端と取り違えないため。</p>
+  <p>テスト名の増減は、差分の行からは拾わない。ファイルを rename しただけ、名前を変えずに中身だけ直しただけ、<code>test.each(…)(</code> の改行の位置が変わっただけ、のどれでも行の差分には出てしまい、同じテストが「削除 + 追加」に化ける。代わりに前後のファイルの中身からテスト名を抜き出して集合の差を取る(<code class="ref">.github/scripts/build-pr-change-map.py:234</code>)。</p>
+  <p>テスト名の抜き出しは <code>test(</code> / <code>it(</code> の直前が識別子の文字や <code>.</code> でないことを求める(<code class="ref">.github/scripts/build-pr-change-map.py:45</code>)。これが無いと、テスト本体の <code>"a,b".split(",")</code> が <code>it(</code> に見え、<code>","</code> がテスト名として載る。</p>
+</article>
+
+<article class="tech">
+  <h3><span class="kicker">Actions</span>認証ヘッダを環境変数の git 設定で 1 本だけ渡す</h3>
+  <p><code>pr-explain-pages.sh</code> は作業用の別フォルダへ clone するので、<code>actions/checkout</code> がリポジトリの設定に置いた認証は引き継がれない。そこで <code>GIT_CONFIG_COUNT</code> / <code>GIT_CONFIG_KEY_0</code> / <code>GIT_CONFIG_VALUE_0</code> という環境変数で、どのフォルダで走る git にも同じ <code>http.extraheader</code> を効かせる。</p>
+  <p>このとき checkout 側の認証が残っていると、ワークスペースの中で走る <code>git ls-remote</code> には同じヘッダが 2 本付く(harness-reviewer が再現)。checkout に <code>persist-credentials: false</code> を付けて 1 本にしている(<code class="ref">.github/workflows/pr-explain.yml:38</code>)。base64 にした値は Actions が自動では伏せないので、<code>::add-mask::</code> で登録する(<code class="ref">.github/workflows/pr-explain.yml:58</code>)。</p>
+</article>
+
+<h2 id="focus"><span class="kicker">レビュー</span>特に見てほしい箇所</h2>
+<ul class="focus">
+  <li><strong>Actions の認証経路は、この PR の <code>PR Explain</code> の run で初めて動く。</strong>このページの下に「変更の地図」が出ていれば通っている。出ていなければ <code class="ref">.github/workflows/pr-explain.yml</code> の Publish のステップを見てほしい</li>
+  <li><strong>ページの固定スクリプト(地図の描画・古さの帯・行リンク)には自動テストが無い。</strong>5 つの状態をローカルで Playwright を使って確かめただけ。変えたときに気づけるのは CSP のハッシュの突き合わせ(「ハッシュを直し忘れた」)だけ</li>
+  <li><strong>Pages のデプロイが PR のイベントごとに 1〜2 本増える。</strong>#109(同時に 1 つしかデプロイできず、待ちが 10 分でタイムアウトする)が再発しないかは、この PR の run で観察する</li>
+  <li><strong>読む順(<code class="ref">.github/scripts/build-pr-change-map.py:179</code>)が実際に読みやすいか。</strong>domains(unit → dcmp → compiled → session)→ services → libs → utils → types → features → components → hooks → app → その他 → src-tauri → docs → ハーネス、層の中は本体 → テスト → story</li>
+  <li>「解説に出てこない変更ファイル」はフルパスの一致で数える。このページは主要なファイルしか名指ししていないので、判定表 3 本(<code class="ref">.github/scripts/build-pr-explain-page-cases.sh</code> <code class="ref">.github/scripts/build-pr-change-map-cases.sh</code> <code class="ref">.github/scripts/pr-explain-pages-cases.sh</code>)と配線(<code class="ref">.github/workflows/frontend.yml</code> <code class="ref">harness/githooks/pre-push</code>)、README 2 本(<code class="ref">.claude/hooks/README.md</code> <code class="ref">harness/githooks/README.md</code>)、<code class="ref">.claude/skills/implementation-flow/SKILL.md</code>、<code class="ref">.claude/hooks/lib/ts_sources.py</code> と <code class="ref">.claude/hooks/lib/import-rule-violations.py</code>(<code>DOMAINS_ROOT</code> の共有)以外が一覧に出ていれば、それは解説が触れていないファイル</li>
+</ul>
 <!-- EXPLAIN:END -->
       </article>
       <section class="map" id="change-map">
