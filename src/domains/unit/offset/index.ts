@@ -57,6 +57,24 @@ export const Offset = {
   },
 
   /**
+   * 差を時計回りに回したもの（y が下向きの画面の座標で見た時計回り。CSS の `rotate()` と
+   * 同じ向き）。
+   *
+   * @param offset 回す元の差
+   * @param degrees 回す角度（度）。負なら反時計回り
+   * @returns 長さを保ったまま向きだけを変えた差。0 度なら元と同じ値
+   */
+  rotate(offset: Offset, degrees: number): Offset {
+    const radians = (degrees * Math.PI) / 180;
+    const cos = Math.cos(radians);
+    const sin = Math.sin(radians);
+    return {
+      x: offset.x * cos - offset.y * sin,
+      y: offset.x * sin + offset.y * cos,
+    };
+  },
+
+  /**
    * 2 点の直線距離。「どれだけ動いたか」を向きに依らず 1 つの値で見るために使う。
    *
    * @param from 一方の点
