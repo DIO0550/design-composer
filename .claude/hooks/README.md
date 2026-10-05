@@ -19,7 +19,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `check-doc-comments.sh`  | `PostToolUse` (Edit/Write) | **doc コメントの検証**(rules/coding.md「コメントは doc と Why / Why not に絞る」)。doc の無い宣言と、`@param` / `@returns` / `@throws` が欠けた doc を知らせる |
 | `pre-push-doc-comments.sh` | `PreToolUse` (Bash)     | **push 前の doc コメント検査**。`src/` に doc の無い宣言、または `@param` / `@returns` / `@throws` の欠けた doc があれば push をブロック |
 | `pre-push-import-rules.sh` | `PreToolUse` (Bash)     | **push 前の import 規約検査**(rules/architecture.md「モジュールの公開API」「依存方向のルール」)。公開 API を迂回する import・循環参照・カテゴリの外に置かれた domains のモジュールがあれば push をブロック |
-| `pre-push-result-option-reads.sh` | `PreToolUse` (Bash) | **push 前の判別子の直読み検査**(rules/coding.md「エラーと不在の表現」)。`Result` / `Option` の判別子(`ok` / `some`)を、その判別子を型宣言で定義していないファイルで直読みしていれば push をブロック |
+| `pre-push-result-option-discriminants.sh` | `PreToolUse` (Bash) | **push 前の判別子の直読み・直書き検査**(rules/coding.md「エラーと不在の表現」)。`Result` / `Option` の判別子(`ok` / `some`)を、その判別子を型宣言で定義していないファイルで直読みしている・値リテラルで書いていれば push をブロック |
 | `pre-push-story-titles.sh` | `PreToolUse` (Bash)     | **push 前の story の title 検査**(対応する規範は `rules/` に無く、フックだけが持つ)。story の `title` が、最後のセグメント(葉に出る表示名)を除いてフォルダ階層と食い違っていれば push をブロック |
 | `pre-push-named-paths.sh` | `PreToolUse` (Bash)    | **push 前の名指ししたパスの検査**(対応する規範は `rules/` に無く、フックだけが持つ)。コメント・doc が名指ししているパスに当たる実体が無ければ push をブロックする |
 | `pre-push-test-helper-duplication.sh` | `PreToolUse` (Bash) | **push 前のテストヘルパーの重複検査**(rules/testing.md「テスト用ヘルパーの置き場所」)。`src/` の `__tests__/` を横断し、本体が一字一句同じヘルパーが 2 つ以上あれば push をブロック |
@@ -56,17 +56,17 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `lib/test-rules-scan.sh` | `pre-push-test-rules.sh` / `harness/githooks/pre-push` | 指定したルート配下の `*.test.ts(x)` をすべて検査する。違反があれば exit 1 |
 | `lib/lint-suppressions.py` | `block-lint-suppress.sh` / `.github/scripts/check-added-lint-suppressions.sh`(CI と `harness/githooks/pre-push`) | 許可されていない lint 抑制コメントの行を報告する。例外の判定もここが持つ |
 | `lib/import-rule-violations.py` | `pre-push-import-rules.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | 公開 API を迂回する import（`feature-public-api` / `module-public-api`）・親から直下の子以外の feature 間の import（`feature-sibling` / `feature-ancestor`）・3 段目以降の feature（`feature-nest-depth`）・ファイル単位の循環（`import-cycle`）・カテゴリの外に置かれた domains のモジュール（`domains-category`）を報告する |
-| `lib/ts_sources.py` | `lib/import-rule-violations.py` / `lib/result-option-read-violations.py` / `lib/story-title-violations.py` / `lib/named-path-violations.py`（報告の形だけ） | `src/` の走査対象の集め方・報告の形・コマンドラインの受け方と、feature の連なりの辿り方（`feature_of()`）。ファイル名だけアンダースコアなのは、ハイフンを含む名前が Python の import 名にならないため |
+| `lib/ts_sources.py` | `lib/import-rule-violations.py` / `lib/result-option-discriminant-violations.py` / `lib/story-title-violations.py` / `lib/named-path-violations.py`（報告の形だけ） | `src/` の走査対象の集め方・報告の形・コマンドラインの受け方と、feature の連なりの辿り方（`feature_of()`）。ファイル名だけアンダースコアなのは、ハイフンを含む名前が Python の import 名にならないため |
 | `lib/named-path-violations.py` | `pre-push-named-paths.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | コメント（`.ts` / `.tsx`）と Markdown の全文が名指ししているパスのうち、実体を持たないもの（`named-path-missing`）を報告する |
-| `lib/pre-push-detector.sh` | `pre-push-import-rules.sh` / `pre-push-result-option-reads.sh` / `pre-push-story-titles.sh` / `pre-push-named-paths.sh` / `pre-push-doc-comments.sh` / `pre-push-test-helper-duplication.sh` | `git push` のときだけ検出器を走らせ、違反があれば deny の JSON を返す。`deny_on_violations <検出器> <検査の名前> <直し方の一文>` は**走査ルートを渡さず**(検出器が自分の既定で決める)、`[種別]` で始まる行で違反を読む(`[種別]` の行を出さずに 1 で終わった・0 と 1 以外で終わったなら、検出器が落ちたとして「検査できなかった」の deny。判定は `.github/scripts/lib/detector-report.sh` を `check-added-*` と共有する)。`deny_on_all_src_failure`(引数は同じ)は `--all src` で呼び、終了コードで違反を読む(報告の綴りが `[` で始まらない検出器向け。CI・`harness/githooks/pre-push` と同じ呼び方) |
+| `lib/pre-push-detector.sh` | `pre-push-import-rules.sh` / `pre-push-result-option-discriminants.sh` / `pre-push-story-titles.sh` / `pre-push-named-paths.sh` / `pre-push-doc-comments.sh` / `pre-push-test-helper-duplication.sh` | `git push` のときだけ検出器を走らせ、違反があれば deny の JSON を返す。`deny_on_violations <検出器> <検査の名前> <直し方の一文>` は**走査ルートを渡さず**(検出器が自分の既定で決める)、`[種別]` で始まる行で違反を読む(`[種別]` の行を出さずに 1 で終わった・0 と 1 以外で終わったなら、検出器が落ちたとして「検査できなかった」の deny。判定は `.github/scripts/lib/detector-report.sh` を `check-added-*` と共有する)。`deny_on_all_src_failure`(引数は同じ)は `--all src` で呼び、終了コードで違反を読む(報告の綴りが `[` で始まらない検出器向け。CI・`harness/githooks/pre-push` と同じ呼び方) |
 | `lib/story-title-violations.py` | `pre-push-story-titles.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | story の `title` が、最後のセグメント（葉に出る表示名）を除いてフォルダ階層から導出した綴りと違うもの（`story-title-tree`）と、`title` をリテラル 1 行として取れないもの（`story-title-missing`）を報告する |
-| `lib/result-option-read-violations.py` | `pre-push-result-option-reads.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `Result` / `Option` の判別子（`ok` / `some`）を、その判別子を型宣言で定義していないファイルで直読みしている箇所（`result-option-read`）を報告する |
-| `lib/cases-report.sh` | `lib/import-rule-cases.sh`(`report` だけ) / `lib/result-option-read-cases.sh` / `lib/story-title-cases.sh` / `lib/named-path-cases.sh` / `lib/missing-doc-comments-cases.sh` / `lib/duplicate-test-helpers-cases.sh` / `lib/verification-agent-cases.sh`(`report` だけ) / `lib/pre-push-detector-cases.sh`(`report` だけ) | 判定表が共有する、判定の読み取り（`decide` / `normalize_miss`）と報告（`report` / `cases_failed`）。ケースの並べ方と検出器の呼び方は判定表ごとに違うので、そこは各判定表が持つ |
+| `lib/result-option-discriminant-violations.py` | `pre-push-result-option-discriminants.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `Result` / `Option` の判別子（`ok` / `some`）を、その判別子を型宣言で定義していないファイルで直読みしている箇所（`result-option-read`）と値リテラルで直書きしている箇所（`result-option-write`）を報告する |
+| `lib/cases-report.sh` | `lib/import-rule-cases.sh`(`report` だけ) / `lib/result-option-discriminant-cases.sh` / `lib/story-title-cases.sh` / `lib/named-path-cases.sh` / `lib/missing-doc-comments-cases.sh` / `lib/duplicate-test-helpers-cases.sh` / `lib/verification-agent-cases.sh`(`report` だけ) / `lib/pre-push-detector-cases.sh`(`report` だけ) | 判定表が共有する、判定の読み取り（`decide` / `normalize_miss`）と報告（`report` / `cases_failed`）。ケースの並べ方と検出器の呼び方は判定表ごとに違うので、そこは各判定表が持つ |
 | `lib/import-rule-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `import-rule-violations.py` へ判定表を流し、報告された種別と件数が期待どおりかを報告する。検出器が報告する種別のうち、表の期待に 1 度も出ないものがあっても NG。食い違いがあれば exit 1 |
 | `lib/named-path-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `named-path-violations.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードで報告する。食い違いがあれば exit 1 |
 | `lib/pre-push-detector-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `pre-push-test-helper-duplication.sh` へ `CLAUDE_PROJECT_DIR` を一時ディレクトリに向けた JSON を流して `deny_on_all_src_failure` を、スタブの検出器を渡して `deny_on_violations` を判定し、deny(違反 / 検査できなかった)/ pass が期待どおりかを報告する。食い違いがあれば exit 1 |
 | `lib/canary-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `hook-canary.sh` へ判定表を流し、deny / pass / miss が期待どおりかを報告する。食い違いがあれば exit 1 |
-| `lib/result-option-read-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `result-option-read-violations.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードで報告する。食い違いがあれば exit 1 |
+| `lib/result-option-discriminant-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `result-option-discriminant-violations.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードで報告する。食い違いがあれば exit 1 |
 | `lib/story-title-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `story-title-violations.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードで報告する。食い違いがあれば exit 1 |
 | `lib/missing-doc-comments-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `missing-doc-comments.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードで報告する。食い違いがあれば exit 1 |
 | `lib/duplicate-test-helpers-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `duplicate-test-helpers.py` へ判定表を流し、ファイル 1 つを渡す形と `--lines` の両方で deny / pass / miss が期待どおりかを終了コードで報告する。食い違いがあれば exit 1 |
@@ -149,7 +149,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 | --- | --- | --- |
 | `harness/records/count-cases.sh` | あり | あり |
 | `lib/import-rule-cases.sh` | あり | あり(`python3` がある環境だけ) |
-| `lib/result-option-read-cases.sh` | あり | あり(`python3` がある環境だけ) |
+| `lib/result-option-discriminant-cases.sh` | あり | あり(`python3` がある環境だけ) |
 | `lib/story-title-cases.sh` | あり | あり(`python3` がある環境だけ) |
 | `lib/named-path-cases.sh` | あり | あり(`python3` がある環境だけ) |
 | `lib/missing-doc-comments-cases.sh` | あり | あり(`python3` がある環境だけ) |
@@ -328,13 +328,13 @@ deny のメッセージは、`jq` / `python3` が欠けていればその名前�
   - **ゴール 6 の実効範囲は現状ほぼ fixture 専用。** 入れ子モジュールの index を許すため、`module-public-api` に当たるのは「モジュールフォルダ配下の非 index ファイルを外から読む」形だけで、実測するとテスト・ストーリーを除いた該当ファイルは 4 件しか無い(このリポジトリが「実装は `index.ts` に直接書く」を守っているため)。**将来の退行を止める枠であって、いま何かを剥がす検査ではない**
   - **エスケープハッチは置かない。** 他の push ブロック系(`@test-rules-disable` / `@lint-suppress-ok`)と違い、この検査は「その import を書いてよいか」の判定で、**ファイル単位で例外にできる性質のものではない**(例外にした瞬間そのファイルからは何でも読める)。偽陽性を避ける側で手当てしてある — コメント行は数えない・入れ子の index は通す
   - 導入時点の既存違反は 8 件(feature をまたぐ fixture の直接 import)で、テスト用の公開口を置いて 0 件にしてから `error` 相当(exit 1)で入れた
-- **判別子の直読み**(`lib/result-option-read-violations.py`。#523)は **push をブロックする**。見るのは `src/` 全体で、`rules/coding.md`「エラーと不在の表現」の「判定は `Option.isSome` / `Result.isOk` を通す」に対応する
+- **判別子の直読み・直書き**(`lib/result-option-discriminant-violations.py`。#523 / #524)は **push をブロックする**。見るのは `src/` 全体で、`rules/coding.md`「エラーと不在の表現」の「判別子を直接読み書きしてよいのは、その判別子を型宣言で定義しているファイルの中だけ」に対応する
   - **エスケープハッチは置かない。** この検査は**ファイル単位の免除を規則として持っている**(その判別子を型宣言で定義しているファイルの中は許す)ので、逃げ道は既に規則の側にある。導入時点の違反 0 件・偽陽性 0 件で、呼び出しの無い逃げ道を先回りで足さない
   - 導入時点の違反は 0 件。読み側の移行は #423 / #502 / #504 / #509 で終わっており、`src/` に残る直読みは `src/utils/Result.ts` / `src/utils/Option.ts` / `src/libs/json-lexical-scanner/index.ts`(`ok` を判別子にした別の直和を 2 つ持つ)の中だけ
-  - **構築側・比較側のリテラル**(`toEqual({ ok: false, error: e })`)は対象外。読み側だけで 0 件になるので無条件のブロックで入れられる(→ #524)
+  - **作る側・比べる側の値リテラル**(`toEqual({ ok: false, error: e })`)は #524 で足した。`__tests__/` に 104 件あったものを `Result.err(e)` などへ移して 0 件にしてから入れた
   - **外の語彙が同じ綴りを持つ形**(Fetch API の `response.ok` など)は、いま `src/` に無いのでそのまま違反になる。出てきたら `libs/` の境界で詰め替えるか、検出器の表を見直す
-  - 判定の仕組み(型宣言の領域の見分け方・意図した取りこぼし)はスクリプトの docstring が持つ。判定表は `lib/result-option-read-cases.sh`
-  - oxlint にも Biome にも置けなかった(理由は `frontend.yml` の `rules-check` にある「判別子の直読み」ステップのコメント)
+  - 判定の仕組み(型宣言の領域の見分け方・意図した取りこぼし)はスクリプトの docstring が持つ。判定表は `lib/result-option-discriminant-cases.sh`
+  - oxlint にも Biome にも置けなかった(理由は `frontend.yml` の `rules-check` にある「判別子の直読み・直書き」ステップのコメント)
 - **story の title**(`lib/story-title-violations.py`)は **push をブロックする**。見るのは `src/` 全体。**対応する規範は `rules/` に無い**(機械で判定できるのでフックだけが持つ → `AGENTS.md`「規約の更新」の「ルールに書くくらいならフックにする」)
   - **エスケープハッチは置かない。** 免除は既に規則の側にある(葉 = ツリーに出る表示名は見ない)ので、`title` の綴りが実装の都合で必要になる余地はそこで吸収される。導入時点の違反 0 件・偽陽性 0 件で、呼び出しの無い逃げ道を先回りで足さない
   - 導入時点の違反は 0 件・49 本。綴りを揃えたのは PR #679 で、この検査はその状態が剥がれないようにするもの
@@ -555,11 +555,11 @@ echo '{"tool_input":{"command":"git push"}}' \
 ```
 
 ```bash
-# 判別子の直読みの判定表(`ok` だけなら期待どおり・`NG` が出たら判定が変わっている)。pre-push と CI も走らせる
-bash .claude/hooks/lib/result-option-read-cases.sh; echo "exit=$?"
+# 判別子の直読み・直書きの判定表(`ok` だけなら期待どおり・`NG` が出たら判定が変わっている)。pre-push と CI も走らせる
+bash .claude/hooks/lib/result-option-discriminant-cases.sh; echo "exit=$?"
 
-# 判別子の直読みの全体検査(git hooks・CI と共有)
-python3 .claude/hooks/lib/result-option-read-violations.py src; echo "exit=$?"   # → 違反 0 件・exit=0
+# 判別子の直読み・直書きの全体検査(git hooks・CI と共有)
+python3 .claude/hooks/lib/result-option-discriminant-violations.py src; echo "exit=$?"   # → 違反 0 件・exit=0
 
 # 定義元の外で直読みすると落ちること(probe が .tsx でも拾えること)。
 # **probe は doc 付き・整形済みで、モジュールフォルダの外に置く。** 層 2 は typecheck /
@@ -567,19 +567,25 @@ python3 .claude/hooks/lib/result-option-read-violations.py src; echo "exit=$?"  
 # 落ち、exit 1 がこの検査から来たのかを「失敗した検査」の行で切り分けることになる
 printf '/**\n * 判別子の直読み検査の probe。\n *\n * @param result 成否を持つ値\n * @returns 成否に応じた表示\n */\nexport const Probe = (result: { ok: boolean }) =>\n  result.ok ? <p>y</p> : <p>n</p>;\n' \
   > src/features/editor/probe.tsx
-python3 .claude/hooks/lib/result-option-read-violations.py src; echo "exit=$?"   # → [result-option-read] 1 件・exit=1
+python3 .claude/hooks/lib/result-option-discriminant-violations.py src; echo "exit=$?"   # → [result-option-read] 1 件・exit=1
 
 # 層 2(git hooks)が止めること。最後まで走ったあと結果の行が失敗を言う
-bash harness/githooks/pre-push; echo "exit=$?"                                   # → 「失敗した検査: 判別子の直読み」・exit=1
+bash harness/githooks/pre-push; echo "exit=$?"                                   # → 「失敗した検査: 判別子の直読み・直書き」・exit=1
 
 # 層 3(Claude Code の PreToolUse)が deny を返すこと
 echo '{"tool_input":{"command":"git push"}}' \
-  | bash .claude/hooks/pre-push-result-option-reads.sh
+  | bash .claude/hooks/pre-push-result-option-discriminants.sh
 rm src/features/editor/probe.tsx
+
+# 定義元の外で値リテラルを書くと落ちること(作る側。同じ層 2・層 3 で止まる)
+printf '/** 判別子の直書き検査の probe。 */\nexport const Probe = { ok: false, error: "e" };\n' \
+  > src/features/editor/probe.ts
+python3 .claude/hooks/lib/result-option-discriminant-violations.py src; echo "exit=$?"   # → [result-option-write] 1 件・exit=1
+rm src/features/editor/probe.ts
 
 # 通ること(違反 0 のとき。出力なし・exit 0)
 echo '{"tool_input":{"command":"git push"}}' \
-  | bash .claude/hooks/pre-push-result-option-reads.sh; echo "exit=$?"
+  | bash .claude/hooks/pre-push-result-option-discriminants.sh; echo "exit=$?"
 ```
 
 ```bash

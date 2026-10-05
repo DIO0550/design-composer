@@ -36,7 +36,7 @@ run_check "テスト規約" bash .claude/hooks/lib/test-rules-scan.sh src
 python3_usable || skip_following_checks "python3 が使えない"
 run_check "doc コメント" python3 .claude/hooks/lib/missing-doc-comments.py --all src
 run_check "import 規約" python3 .claude/hooks/lib/import-rule-violations.py src
-run_check "判別子の直読み" python3 .claude/hooks/lib/result-option-read-violations.py src
+run_check "判別子の直読み・直書き" python3 .claude/hooks/lib/result-option-discriminant-violations.py src
 run_check "story の title" python3 .claude/hooks/lib/story-title-violations.py src
 run_check "名指ししたパス" python3 .claude/hooks/lib/named-path-violations.py
 run_check "テストヘルパーの重複" python3 .claude/hooks/lib/duplicate-test-helpers.py --all src
@@ -44,7 +44,7 @@ run_check "テストヘルパーの重複" python3 .claude/hooks/lib/duplicate-t
 # 上の検出器の判定表。判定表をどの層へ置くかと、その理由は
 # .claude/hooks/README.md「カバー範囲と残る穴」。
 run_check "import 規約の判定表" bash .claude/hooks/lib/import-rule-cases.sh
-run_check "判別子の直読みの判定表" bash .claude/hooks/lib/result-option-read-cases.sh
+run_check "判別子の直読み・直書きの判定表" bash .claude/hooks/lib/result-option-discriminant-cases.sh
 run_check "story の title の判定表" bash .claude/hooks/lib/story-title-cases.sh
 run_check "名指ししたパスの判定表" bash .claude/hooks/lib/named-path-cases.sh
 run_check "doc コメントの判定表" bash .claude/hooks/lib/missing-doc-comments-cases.sh
