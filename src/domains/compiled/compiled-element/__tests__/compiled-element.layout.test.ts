@@ -74,3 +74,17 @@ test("自由配置の Box は子を並べる向きを持たない", () => {
     BoxElement.childDirection(ResolvedProps.resolve("Box", { layout: "free" })),
   ).toEqual(Option.none);
 });
+
+test("wrap を指定した Box は子を折り返す", () => {
+  expect(
+    BoxElement.wrapsChildren(
+      ResolvedProps.resolve("Box", { layout: "row", wrap: "wrap" }),
+    ),
+  ).toBe(true);
+});
+
+test("wrap を指定していない Box は子を折り返さない", () => {
+  expect(
+    BoxElement.wrapsChildren(ResolvedProps.resolve("Box", { layout: "row" })),
+  ).toBe(false);
+});
