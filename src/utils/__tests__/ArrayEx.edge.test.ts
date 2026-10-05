@@ -109,3 +109,11 @@ test("reduceUntilErr は空の並びなら初めの値をそのまま返す", ()
     ArrayEx.reduceUntilErr([], 7, (sum, item: number) => Result.ok(sum + item)),
   ).toEqual(Result.ok(7));
 });
+
+test("要素が 1 つしか無い並びには、隣り合う要素の組が無い", () => {
+  expect(ArrayEx.adjacentPairs(["a"])).toEqual([]);
+});
+
+test("空の並びには、隣り合う要素の組が無い", () => {
+  expect(ArrayEx.adjacentPairs([])).toEqual([]);
+});
