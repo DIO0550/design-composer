@@ -48,26 +48,24 @@ type AxisGrab = Readonly<{
 }>;
 
 /**
- * 掴んだ軸が画面上で向いている斜めの具合を 45 度刻みに丸めたもの（度・時計回り。
- * 180 度で一周する）。カーソルの矢印の向きを選ぶのに使う。
+ * 掴んだものが画面上で伸び縮みする向きを 45 度刻みに丸めたもの（度・時計回り。矢印は前後を
+ * 区別しないので 180 度で一周する）。カーソルの矢印の向きを選ぶのに使う。
  */
-export const Slants = {
+export const GripOrientations = {
   Horizontal: 0,
-  /** 左上 - 右下（y が下向きの画面で、右へ進むと下がる）。 */
-  Falling: 45,
+  TopLeftToBottomRight: 45,
   Vertical: 90,
-  /** 右上 - 左下。 */
-  Rising: 135,
+  TopRightToBottomLeft: 135,
 } as const;
 
-/** 掴んだ軸の画面上の向き（`Slants`）。 */
-export type Slant = ValueOf<typeof Slants>;
+/** 掴んだものが画面上で伸び縮みする向き（`GripOrientations`）。 */
+export type GripOrientation = ValueOf<typeof GripOrientations>;
 
 /** 矢印は向きを区別しないので、半回りで同じ向きに戻る。 */
 const HalfTurn = 180;
 
 /** カーソルの向きを丸める刻み。 */
-const SlantStep = 45;
+const OrientationStep = 45;
 
 /**
  * 掴んだハンドルが変える大きさ。
@@ -110,17 +108,15 @@ export const ResizeGrip = {
   },
 
   /**
-   * 掴んだものが画面上で伸び縮みする向き。2 軸の角は、掴んだ 2 つの端が同じ側（左上・
-   * 右下）なら左上 - 右下、違う側（右上・左下）なら右上 - 左下の斜めを回る前の向きにする。
+   * 掴んだものが画面上で伸び縮みする向き（docs/06-ui.md「リサイズハンドル」）。
    *
    * @param grip 掴んだもの
    * @param rotation 掴んだものの画面上の向き（自分と祖先の合計）
-   * @returns 回る前の向きに `rotation` を足し、45 度刻みの最も近い向きへ丸めたもの。
-   *   ちょうど中間（22.5 度など）は大きい側へ丸める
+   * @returns 45 度刻みで最も近い向き。ちょうど中間（22.5 度など）は時計回りの側
    */
-  slantOf(grip: ResizeGrip, rotation: Rotation): Slant {
-    const turned = (unrotatedSlant(grip) + rotation) % HalfTurn;
-    return nearestSlant((turned + HalfTurn) % HalfTurn);
+  orientationOf(grip: ResizeGrip, rotation: Rotation): GripOrientation {
+    const turned = (unrotatedOrientation(grip) + rotation) % HalfTurn;
+    return nearestOrientation((turned + HalfTurn) % HalfTurn);
   },
 } as const;
 
@@ -128,18 +124,19 @@ export const ResizeGrip = {
  * 掴んだものが、回る前に伸び縮みする向き。
  *
  * @param grip 掴んだもの
- * @returns 幅なら横、高さなら縦、角なら掴んだ端の組で決まる斜め
+ * @returns 幅なら横、高さなら縦。角は掴んだ 2 つの端が同じ側（左上・右下）なら左上 - 右下、
+ *   違う側（右上・左下）なら右上 - 左下
  */
-function unrotatedSlant(grip: ResizeGrip): Slant {
+function unrotatedOrientation(grip: ResizeGrip): GripOrientation {
   switch (grip.kind) {
     case "width":
-      return Slants.Horizontal;
+      return GripOrientations.Horizontal;
     case "height":
-      return Slants.Vertical;
+      return GripOrientations.Vertical;
     case "both":
       return grip.width.end === grip.height.end
-        ? Slants.Falling
-        : Slants.Rising;
+        ? GripOrientations.TopLeftToBottomRight
+        : GripOrientations.TopRightToBottomLeft;
   }
 }
 
@@ -149,18 +146,20 @@ function unrotatedSlant(grip: ResizeGrip): Slant {
  * @param degrees 0 以上 180 未満の角度
  * @returns 最も近い向き。ちょうど中間は大きい側。157.5 度以上は 180 度（＝横）に近い
  */
-function nearestSlant(degrees: number): Slant {
-  const halfStep = SlantStep / 2;
-  if (degrees < Slants.Falling - halfStep) {
-    return Slants.Horizontal;
+function nearestOrientation(degrees: number): GripOrientation {
+  const halfStep = OrientationStep / 2;
+  if (degrees < GripOrientations.TopLeftToBottomRight - halfStep) {
+    return GripOrientations.Horizontal;
   }
-  if (degrees < Slants.Vertical - halfStep) {
-    return Slants.Falling;
+  if (degrees < GripOrientations.Vertical - halfStep) {
+    return GripOrientations.TopLeftToBottomRight;
   }
-  if (degrees < Slants.Rising - halfStep) {
-    return Slants.Vertical;
+  if (degrees < GripOrientations.TopRightToBottomLeft - halfStep) {
+    return GripOrientations.Vertical;
   }
-  return degrees < HalfTurn - halfStep ? Slants.Rising : Slants.Horizontal;
+  return degrees < HalfTurn - halfStep
+    ? GripOrientations.TopRightToBottomLeft
+    : GripOrientations.Horizontal;
 }
 
 /**
@@ -202,7 +201,7 @@ export type ResizableSelection = Readonly<{
   /**
    * 掴んだ辺を揃える先の名前（docs/06-ui.md「リサイズハンドル」の辺のスナップ）。
    * **リサイズしても動かないもの**だけで、並びは近さが同じときに先に寄る順。位置を書けない
-   * 対象（フロー配置）と、画面上で回っている対象なら空。
+   * 対象（フロー配置）と、画面上で回っている対象（`NodeResize.resizable`）なら空。
    */
   snapTargetNames: readonly string[];
   rotation: ResizeRotation;
@@ -466,13 +465,12 @@ export const NodeResize = {
    * （`ArrangedArtboard.isShiftedByWidth` を外す）、`placement: "absolute"` のノードなら
    * 今の親と、その直下にある自分以外の子（孫は含めない。絶対配置はフローから外れるので、
    * 親の大きさにも兄弟の配置にも関わらない）。画面上で回っているノード（自分と祖先の
-   * 合計が 360 の倍数でない）は揃え先を持たない（docs/06-ui.md「リサイズハンドル」）。
+   * 合計が 360 の倍数でない）は揃え先を持たない（docs/06-ui.md「辺のスナップ」）。
    *
    * @param selection ハンドルを出す対象を決める、ドキュメントと選択の対
    * @returns 掴める軸のハンドルと、ドキュメントへ書ける今の位置と、揃え先の名前。単一選択
    *   でないとき・ロック中のノード（docs/03「ロック」）・非表示のノード（docs/03「表示 /
-   *   非表示」。包んでいるノード・artboard が非表示のものを含む）・参照先の部品が無い
-   *   インスタンスは掴める軸も揃え先も空
+   *   非表示」。包んでいるノード・artboard が非表示のものを含む）は掴める軸も揃え先も空
    */
   resizable(selection: DocumentSelection): ResizableSelection {
     const selected = DocumentSelection.singleName(selection);
@@ -480,7 +478,7 @@ export const NodeResize = {
       return UnresizableSelection;
     }
     const name = selected.value;
-    const rotation = rotationIn(selection.document, name);
+    const rotation = resizeRotationOf(selection.document, name);
     if (!Option.isSome(rotation)) {
       return UnresizableSelection;
     }
@@ -712,7 +710,7 @@ export const NodeResize = {
  * @param name 選択中の artboard / ノードの名前
  * @returns 2 つの向き。向きが引けない（`DesignDocument.rotationOf` が `none`）なら `none`
  */
-function rotationIn(
+function resizeRotationOf(
   document: DesignDocument,
   name: string,
 ): Option<ResizeRotation> {
@@ -773,8 +771,7 @@ function parentWithSiblingNames(
  * 行き先の矩形は掴んだ時点の矩形を移動量だけずらして作る。見るのは掴んだ辺だけなので、
  * 反対側の辺が留まっていることは寄せ量に効かない。
  *
- * 画面上で回っているノードには揃え先が無い（`NodeResize.resizable`）ので寄せない。寄せ量は
- * 画面の軸で出るが、回ったノードが伸びるのは自分の軸のため。
+ * 画面上で回っているノードには揃え先が無い（`NodeResize.resizable`）ので寄せない。
  *
  * @param held 掴んでいるもの
  * @param moved 掴んでからのポインタの移動量（画面上の px）
@@ -837,12 +834,11 @@ function resizedLength(
 }
 
 /**
- * 反対側の端を親の座標の上でその場に留めるための、置き直したあとの位置。
+ * 反対の辺・角が親の座標で動かないよう置き直したあとの位置（docs/06-ui.md「リサイズ
+ * ハンドル」）。掴んだ軸ごとに、反対側の端を留める。
  *
- * `rotate()` は中心を軸に回るので、長さが変わると中心が動き、回っているものは終点側を
- * 掴んでも左上が動く。掴んだ軸ごとに反対側の端（始点側を掴んだなら終点側）を留める点に
- * とり、その点が親の座標で動かないよう左上を動かす。回っていなければ、始点側を掴んだ軸は
- * 縮んだ量だけ動き、終点側を掴んだ軸は動かない。
+ * 回っていなければ、始点側を掴んだ軸は縮んだ量だけ動き、終点側を掴んだ軸は動かない。
+ * 回っていれば、中心を軸に回るので終点側を掴んでも左上が動く。
  *
  * @param held 掴んでいるもの（掴んだ時点の位置と、自分の向き）
  * @param resized 掴んだ軸ぶんの結果
@@ -866,8 +862,7 @@ function placedPosition(
     Offset.rotate(centerMoved, held.rotation.own),
     halfShrunk,
   );
-  const isStill = shift.x === 0 && shift.y === 0;
-  if (isStill) {
+  if (Offset.isOrigin(shift)) {
     return Option.none;
   }
   return Option.map(held.grabbedAt, (from) => Offset.add(from, shift));

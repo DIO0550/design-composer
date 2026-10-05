@@ -1,5 +1,6 @@
 import type { Rotation } from "@/domains/dcmp/rotation";
 import { Offset } from "@/domains/unit/offset";
+import { SidePairs } from "@/domains/unit/side";
 import { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 
 /**
@@ -28,14 +29,14 @@ export type RotatedBounds = Readonly<{
  * @param degrees 回す角度（度・時計回り）
  * @returns 回したあとの点
  */
-function turnedAround(
+function rotatedAboutCenter(
   bounds: CanvasBounds,
   point: Offset,
   degrees: number,
 ): Offset {
   const center = {
-    x: bounds.left + bounds.width / 2,
-    y: bounds.top + bounds.height / 2,
+    x: CanvasBounds.midline(bounds, SidePairs.Horizontal),
+    y: CanvasBounds.midline(bounds, SidePairs.Vertical),
   };
   const fromCenter = Offset.delta(center, point);
   return Offset.add(
@@ -80,7 +81,7 @@ export const RotatedBounds = {
    */
   pointAt(bounds: RotatedBounds, ratio: Offset): Offset {
     const unrotated = bounds.unrotated;
-    return turnedAround(
+    return rotatedAboutCenter(
       unrotated,
       {
         x: unrotated.left + unrotated.width * ratio.x,
@@ -99,7 +100,7 @@ export const RotatedBounds = {
    * @returns 矩形ごと回す前へ戻したときに、その点が来る位置
    */
   unrotatePoint(bounds: RotatedBounds, point: Offset): Offset {
-    return turnedAround(bounds.unrotated, point, -bounds.rotation);
+    return rotatedAboutCenter(bounds.unrotated, point, -bounds.rotation);
   },
 
   /**

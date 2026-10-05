@@ -1,11 +1,11 @@
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
 import type { Rotation } from "@/domains/dcmp/rotation";
 import {
+  GripOrientations,
   NodeResize,
   type ResizableSelection,
   ResizeGrip,
   type ResizeHandleAnchor,
-  Slants,
 } from "@/features/editor/features/canvas/domains/node-resize";
 import { RotatedBounds } from "@/features/editor/features/canvas/domains/rotated-bounds";
 import { Option } from "@/utils/Option";
@@ -18,8 +18,8 @@ const HandleSizePx = 10;
 const HandleBorderPx = 1.5;
 
 /**
- * 掴めるものに出すカーソル。掴んだものが画面上で伸び縮みする向き（`ResizeGrip.slantOf`）の
- * 矢印を出す。
+ * 掴めるものに出すカーソル。掴んだものが画面上で伸び縮みする向き
+ * （`ResizeGrip.orientationOf`）の矢印を出す。
  *
  * 掴んだ箇所そのものは受け取らない（向きは掴んだ端から決まるので、渡すとカーソルの出どころ
  * が 2 つに割れる）。
@@ -32,14 +32,14 @@ export function resizeCursor(
   grip: ResizeGrip,
   rotation: Rotation,
 ): CSSProperties["cursor"] {
-  switch (ResizeGrip.slantOf(grip, rotation)) {
-    case Slants.Horizontal:
+  switch (ResizeGrip.orientationOf(grip, rotation)) {
+    case GripOrientations.Horizontal:
       return "ew-resize";
-    case Slants.Falling:
+    case GripOrientations.TopLeftToBottomRight:
       return "nwse-resize";
-    case Slants.Vertical:
+    case GripOrientations.Vertical:
       return "ns-resize";
-    case Slants.Rising:
+    case GripOrientations.TopRightToBottomLeft:
       return "nesw-resize";
   }
 }

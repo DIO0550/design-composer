@@ -15,7 +15,10 @@ import { Option } from "@/utils/Option";
  */
 export type ResizeEdit = Readonly<{
   lengths: AxisLengths;
-  /** 置き直したあとの位置。左上が動かない（回っていないものの終点側だけを掴んだ）なら `none`。 */
+  /**
+   * 置き直したあとの位置。左上が動かないなら `none`（回っていないものの終点側だけを掴んだ
+   * とき。自分が回っているものは終点側を掴んでも左上が動く）。
+   */
   position: Option<Offset>;
 }>;
 
