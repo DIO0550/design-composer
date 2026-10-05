@@ -2,6 +2,7 @@ import type { ChildPosition } from "@/domains/dcmp/child-position";
 import { CssDirection } from "@/domains/dcmp/css-direction";
 import { Offset } from "@/domains/unit/offset";
 import { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
+import { ArrayEx } from "@/utils/ArrayEx";
 import { Range } from "@/utils/Range";
 import type { InsertionParent } from "../drop-parent";
 
@@ -73,13 +74,14 @@ function splitIntoFlexLines(
   drawn: readonly IndexedBounds[],
   direction: CssDirection,
 ): readonly (readonly IndexedBounds[])[] {
-  const starts = drawn.flatMap(({ bounds }, position) => {
-    const startsLine =
-      position === 0 ||
-      CanvasBounds.crossExtent(bounds, direction).min >=
-        CanvasBounds.crossExtent(drawn[position - 1].bounds, direction).max;
-    return startsLine ? [position] : [];
-  });
+  const crossExtents = drawn.map(({ bounds }, position) => ({
+    position,
+    extent: CanvasBounds.crossExtent(bounds, direction),
+  }));
+  const nextLineStarts = ArrayEx.adjacentPairs(crossExtents)
+    .filter(({ previous, next }) => Range.follows(next.extent, previous.extent))
+    .map(({ next }) => next.position);
+  const starts = [0, ...nextLineStarts];
   return starts.map((start, line) => drawn.slice(start, starts[line + 1]));
 }
 
@@ -136,9 +138,9 @@ function flexLinesOf(zone: DropZone): readonly FlexLine[] {
   const direction = zone.parent.direction;
   const parentRange = CanvasBounds.crossExtent(zone.bounds, direction);
   const groups = groupChildren(zone);
-  const boundaries = groups.slice(1).map((next, line) =>
+  const boundaries = ArrayEx.adjacentPairs(groups).map(({ previous, next }) =>
     Range.center({
-      min: occupiedCrossRange(groups[line], direction).max,
+      min: occupiedCrossRange(previous, direction).max,
       max: occupiedCrossRange(next, direction).min,
     }),
   );
