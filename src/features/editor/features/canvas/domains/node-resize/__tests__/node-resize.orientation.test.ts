@@ -54,6 +54,16 @@ test("90 度回したノードの右辺は縦に伸び縮みする", () => {
   expect(Grip.orientationOf(RightEdge, 90)).toBe(GripOrientations.Vertical);
 });
 
+test("縦と右上 - 左下の斜めのちょうど中間（112.5 度）は斜めに寄せる", () => {
+  expect(Grip.orientationOf(RightEdge, 112.5)).toBe(
+    GripOrientations.TopRightToBottomLeft,
+  );
+});
+
+test("170 度回したノードの右辺は、斜めより横に近いので横に伸び縮みする", () => {
+  expect(Grip.orientationOf(RightEdge, 170)).toBe(GripOrientations.Horizontal);
+});
+
 test("反時計回りに 45 度回したノードの右辺は右上 - 左下の斜めに伸び縮みする", () => {
   expect(Grip.orientationOf(RightEdge, -45)).toBe(
     GripOrientations.TopRightToBottomLeft,

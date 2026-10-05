@@ -23,6 +23,15 @@ test("回っていなければ、右辺の中点の箇所は矩形の右辺の�
   });
 });
 
+test("回っていなければ、端数を持つ矩形でも左上の箇所は矩形の左上そのものに描かれる", () => {
+  // 中心を経由して戻すと (l - cx) + cx が l に戻らない端数が出る
+  const unrotated = { left: 1.89, top: 0.1, width: 196.72, height: 0.7 };
+
+  expect(
+    RotatedBounds.pointAt({ unrotated, rotation: 0 }, { x: 0, y: 0 }),
+  ).toEqual({ x: 1.89, y: 0.1 });
+});
+
 test("90 度回すと、左上の箇所は中心から見て右上へ来る", () => {
   const point = RotatedBounds.pointAt(
     { unrotated: Unrotated, rotation: 90 },

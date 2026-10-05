@@ -230,8 +230,9 @@ test("45 度回したノードの外接矩形の角を押しても、回った�
 });
 
 /**
- * 30 度回した Box の中に絶対配置の `badge`、1 回りした絶対配置の `stamp`、30 度回した
- * 絶対配置の `tilted` がいるドキュメントで、名前を 1 つ選ぶ。
+ * 30 度回した Box の中に 15 度回した絶対配置の `badge` と回していない `upright`、1 回り
+ * した絶対配置の `stamp`、30 度回した絶対配置の `tilted` がいるドキュメントで、名前を
+ * 1 つ選ぶ。
  *
  * @param name 選ぶものの名前
  * @returns ドキュメントと選択の対
@@ -264,6 +265,12 @@ function setupTurnedSelection(name: string): DocumentSelection {
                   name: "badge",
                   type: "Box",
                   props: placedBox(10, 15),
+                  children: [],
+                },
+                {
+                  name: "upright",
+                  type: "Box",
+                  props: placedBox(60, 0),
                   children: [],
                 },
               ],
@@ -304,6 +311,13 @@ test("回したノードには揃え先が無い", () => {
 test("回った Box の中のノードにも揃え先が無い", () => {
   expect(
     NodeResize.resizable(setupTurnedSelection("badge")).snapTargetNames,
+  ).toEqual([]);
+});
+
+test("回った Box の中の、自分は回していないノードにも揃え先が無い", () => {
+  // 自分の向きで見ると回っていないので、合計で見ていなければ揃え先を持ってしまう
+  expect(
+    NodeResize.resizable(setupTurnedSelection("upright")).snapTargetNames,
   ).toEqual([]);
 });
 
