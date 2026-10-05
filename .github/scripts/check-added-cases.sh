@@ -7,9 +7,13 @@
 # 使い方: bash .github/scripts/check-added-cases.sh
 # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。
 #
-# 覆うのは「追加行の違反の有無」×「検査を走らせられるか」の組。**走らせられない枝を
-# ここへ置くのが主目的**で、外すと「検査できなかった」が「違反がありません」と同じ
-# 綴り・同じ終了コードに戻る。
+# 覆うのは「追加行の違反の有無」×「検査を走らせられるか・検出器が最後まで走るか」の組。
+# **走らせられない枝・途中で落ちる枝をここへ置くのが主目的**で、外すと「検査できなかった」が
+# 「違反がありません」と同じ綴り・同じ終了コードに戻る。
+#
+# 「途中で落ちる」は検出器をスタブへ差し替えて作る(`crashing` は traceback、`usage-error` は
+# 使い方を出して exit 2)。`crashing-on-base` は重複の検査の 2 つ目の呼び出し(base との照合)で
+# だけ落ちる。1 つ目だけを見る実装は、2 つ目が落ちても出力が空のまま「ありません」へ進む。
 #
 # 加えて、git がクォートして出すパス(非 ASCII・`"`・タブ)の追加と移動を置く。外すと
 # クォートされたファイルが `[ -f ]` で黙って検査から外れても、表は緑のまま通る。
@@ -32,6 +36,8 @@
 # 「ありません」が出る。「base と差分が無い」のケースがそこを分けている。
 #
 # 表は `期待する終了コード|出力に含まれる綴り|検査|python3|検出器|入力|ケース名|出力に含まれない綴り`。
+# 検出器の列は `present` / `missing` / `crashing` / `crashing-on-base` / `usage-error` /
+# `report-exit2`(報告の行を出して exit 2) / `noise-then-crash`(報告の形でない行を出して落ちる)。
 # 綴りが空(最後の列は省略)なら、その綴りは見ない。
 set -uo pipefail
 
@@ -229,6 +235,34 @@ setup_repo() {
   printf '%s' "$dir"
 }
 
+# 一時リポジトリの検出器を、検出器の列の状態へ差し替える。`present` なら何もしない。
+#
+# @param 1 一時リポジトリ
+# @param 2 検出器の列の値
+replace_detectors() {
+  local lib="$1/.claude/hooks/lib" state="$2"
+  case "$state" in
+    missing) rm -f "$lib/$lint_detector" "$lib/$duplication_detector" ;;
+    crashing)
+      printf 'raise RuntimeError("判定表: 検出器が途中で落ちる")\n' | tee "$lib/$lint_detector" \
+        >"$lib/$duplication_detector" ;;
+    usage-error)
+      printf 'import sys\nprint("使い方: 判定表")\nsys.exit(2)\n' | tee "$lib/$lint_detector" \
+        >"$lib/$duplication_detector" ;;
+    report-exit2)
+      printf 'import sys\nprint("1:判定表")\nsys.exit(2)\n' | tee "$lib/$lint_detector" \
+        >"$lib/$duplication_detector" ;;
+    noise-then-crash)
+      printf 'print("判定表: 報告の形でない行")\nraise RuntimeError("判定表: 検出器が途中で落ちる")\n' |
+        tee "$lib/$lint_detector" >"$lib/$duplication_detector" ;;
+    crashing-on-base)
+      # 1 つ目の呼び出し(`--lines <file>`)は実物に任せ、追加行に候補を出させる
+      mv "$lib/$duplication_detector" "$lib/real-$duplication_detector"
+      printf 'import runpy, sys\nif "--base-root" in sys.argv:\n    raise RuntimeError("判定表: base との照合で落ちる")\nrunpy.run_path(sys.argv[0].replace("%s", "real-%s"), run_name="__main__")\n' \
+        "$duplication_detector" "$duplication_detector" >"$lib/$duplication_detector" ;;
+  esac
+}
+
 # 表の 1 行を走らせて、終了コードと(綴りが指定されていれば)出力を確かめる。
 run_case() {
   local expected="$1" expected_text="$2" script="$3" python3_state="$4"
@@ -237,8 +271,7 @@ run_case() {
 
   dir="$(setup_repo "$input")"
   [ "$python3_state" = broken ] && path_prefix="$(broken_python3_dir "$dir"):"
-  [ "$detector_state" = missing ] && rm -f "$dir/.claude/hooks/lib/$lint_detector" \
-    "$dir/.claude/hooks/lib/$duplication_detector"
+  replace_detectors "$dir" "$detector_state"
   # base は既定で HEAD の 1 つ前。分岐のあとで base 側が進むケースだけ、タグ `base` を渡す
   base_rev="$(git -C "$dir" rev-parse -q --verify refs/tags/base || git -C "$dir" rev-parse HEAD~1)"
   output="$(cd "$dir" && PATH="${path_prefix}${PATH}" \
@@ -262,8 +295,8 @@ run_case() {
   printf 'ok   exit=%s  %s\n' "$actual" "$label"
 }
 
-# 違反ありのケースが報告の見出しまで見るのは、終了コードだけだと `|| true` を外した実装も
-# 同じ 1 で通ってしまうため(外すと違反を見つけた瞬間に見出しを出さずに止まる)。
+# 違反ありのケースが報告の見出しまで見るのは、終了コードだけだと検出器を `set -e` の下で
+# 条件の外から呼ぶ実装も同じ 1 で通ってしまうため(違反を見つけた瞬間に見出しを出さずに止まる)。
 cases="\
 1|検出された行:|$lint_script|ok|present|lint-violation|追加行に lint 抑制がある
 0||$lint_script|ok|present|lint-clean|追加行に lint 抑制が無い
@@ -277,6 +310,15 @@ cases="\
 2|$duplication_check_name|$duplication_script|broken|present|duplication-violation|python3 が起動できない / 追加行に重複したテストヘルパーがある
 2||$duplication_script|broken|present|duplication-clean|python3 が起動できない / 追加行に重複したテストヘルパーが無い
 2|$duplication_check_name|$duplication_script|ok|missing|duplication-violation|検出器が見つからない / 追加行に重複したテストヘルパーがある
+2|異常終了|$lint_script|ok|crashing|lint-violation|検出器が途中で落ちる / 追加行に lint 抑制がある|ありません
+2|異常終了|$lint_script|ok|crashing|lint-clean|検出器が途中で落ちる / 追加行に lint 抑制が無い|ありません
+2|使い方: 判定表|$lint_script|ok|usage-error|lint-clean|検出器が使い方を出して exit 2 で終わる / 追加行に lint 抑制が無い|ありません
+2|異常終了|$lint_script|ok|report-exit2|lint-violation|検出器が報告の行を出して exit 2 で終わる / 追加行に lint 抑制がある|検出された行:
+2|異常終了|$lint_script|ok|noise-then-crash|lint-clean|検出器が報告の形でない行を出してから落ちる / 追加行に lint 抑制が無い|ありません
+2|異常終了|$duplication_script|ok|noise-then-crash|duplication-violation|検出器が報告の形でない行を出してから落ちる / 追加行に重複したテストヘルパーがある|ありません
+2|異常終了|$duplication_script|ok|crashing|duplication-violation|検出器が途中で落ちる / 追加行に重複したテストヘルパーがある|ありません
+2|異常終了|$duplication_script|ok|crashing|duplication-clean|検出器が途中で落ちる / 追加行に重複したテストヘルパーが無い|ありません
+2|異常終了|$duplication_script|ok|crashing-on-base|duplication-violation|検出器が base との照合でだけ落ちる / 追加行に重複したテストヘルパーがある|ありません
 0||$duplication_script|ok|present|duplication-renamed|既にある重複をフォルダごと移しただけ
 1|検出された行:|$lint_script|ok|present|lint-violation-non-ascii|非 ASCII のパスの追加行に lint 抑制がある
 1|検出された行:|$lint_script|ok|present|lint-violation-quoted|\" を含むパスの追加行に lint 抑制がある
