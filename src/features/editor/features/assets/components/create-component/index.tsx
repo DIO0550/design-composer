@@ -200,9 +200,7 @@ export function CreateComponent({
   const componentization = Componentization.forSelection(document, singleName);
 
   return (
-    // `shrink-0` を外すと一覧が長いときにフッターが潰れるが、happy-dom は Tailwind を
-    // 解決しないためテストでは落ちない。気づく手段は Storybook の視覚差分だけ。
-    <div className="flex shrink-0 flex-col gap-2 border-[#f0f0f0] border-t p-3">
+    <div className="flex flex-col gap-2 border-[#f0f0f0] border-t p-3">
       {componentization.kind === "ready" ? (
         <ReadyBody
           key={componentization.sourceName}
