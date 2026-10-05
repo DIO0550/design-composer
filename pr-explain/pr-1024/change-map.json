@@ -2,7 +2,7 @@
   "version": 1,
   "pr": 1024,
   "mergeBase": "2421cd666bb86ab3de76f66d1deb75e1b1a5eea0",
-  "head": "d7b590de5f843be68fa7eeabd9a260fabbb68fc7",
+  "head": "77b8e615cda35d63b642fdc50c1d198877995586",
   "groups": [
     {
       "label": "ハーネス",
@@ -39,14 +39,14 @@
           "path": ".claude/skills/pr-explain/SKILL.md",
           "status": "A",
           "oldPath": null,
-          "additions": 150,
+          "additions": 196,
           "deletions": 0
         },
         {
           "path": ".claude/skills/pr-explain/templates/index.html",
           "status": "A",
           "oldPath": null,
-          "additions": 248,
+          "additions": 304,
           "deletions": 0
         },
         {
@@ -67,28 +67,28 @@
           "path": ".github/scripts/build-pr-explain-page-cases.sh",
           "status": "A",
           "oldPath": null,
-          "additions": 109,
+          "additions": 142,
           "deletions": 0
         },
         {
           "path": ".github/scripts/build-pr-explain-page.py",
           "status": "A",
           "oldPath": null,
-          "additions": 223,
+          "additions": 245,
           "deletions": 0
         },
         {
           "path": ".github/scripts/pr-explain-pages-cases.sh",
           "status": "A",
           "oldPath": null,
-          "additions": 152,
+          "additions": 162,
           "deletions": 0
         },
         {
           "path": ".github/scripts/pr-explain-pages.sh",
           "status": "A",
           "oldPath": null,
-          "additions": 142,
+          "additions": 145,
           "deletions": 0
         },
         {
@@ -197,6 +197,34 @@
       "sha": "d7b590de5f843be68fa7eeabd9a260fabbb68fc7",
       "files": [
         ".claude/skills/pr-explain/SKILL.md"
+      ]
+    },
+    {
+      "sha": "d199102187db2a67c8231bfd4b9bbad360170ee9",
+      "files": [
+        ".claude/skills/implementation-flow/SKILL.md",
+        ".claude/skills/pr-explain/SKILL.md",
+        ".claude/skills/pr-explain/templates/index.html",
+        ".github/scripts/build-pr-explain-page-cases.sh",
+        ".github/scripts/build-pr-explain-page.py",
+        ".github/scripts/pr-explain-pages-cases.sh",
+        ".github/scripts/pr-explain-pages.sh",
+        ".github/workflows/storybook-pr-preview.yml"
+      ]
+    },
+    {
+      "sha": "0a6a4f9ba7bbb5f047a48310b5dee0fb33da6dad",
+      "files": [
+        ".claude/skills/pr-explain/SKILL.md",
+        ".claude/skills/pr-explain/templates/index.html",
+        ".github/scripts/build-pr-explain-page-cases.sh",
+        ".github/scripts/pr-explain-pages.sh"
+      ]
+    },
+    {
+      "sha": "77b8e615cda35d63b642fdc50c1d198877995586",
+      "files": [
+        ".github/scripts/build-pr-explain-page-cases.sh"
       ]
     }
   ]
