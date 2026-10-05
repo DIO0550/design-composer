@@ -19,6 +19,9 @@ import { NameStyleRule } from "../name-style-rule";
  */
 export const RepositionPreviewProperty = "translate";
 
+/** 他の artboard より前に出す宣言。artboard の枠は z-index を持たない兄弟なので 1 で足りる。 */
+const InFrontOfArtboards = "z-index:1";
+
 /**
  * 運んでいるノードを**見た目だけの存在**にする宣言（ずらして見せる・当たり判定から外す
  * ・他の artboard より前に出す）。テストが綴りを写さずに済むよう、組み立てをここから出
@@ -27,13 +30,11 @@ export const RepositionPreviewProperty = "translate";
  * 親が中身を切り取る artboard のときだけは付け替えが効いてしまい、**親の種類で挙動が変わ
  * る**。
  *
- * 前に出さないと、隣の artboard へ運んだノードがその白い面の裏へ回る。
- *
  * @param offset ドキュメント上の px で表した移動量
  * @returns ずらす宣言・当たり判定から外す宣言・前に出す宣言
  */
 export function repositionPreviewDeclarations(offset: Offset): string {
-  return `${RepositionPreviewProperty}:${Px.create(offset.x)} ${Px.create(offset.y)};pointer-events:none;z-index:1`;
+  return `${RepositionPreviewProperty}:${Px.create(offset.x)} ${Px.create(offset.y)};pointer-events:none;${InFrontOfArtboards}`;
 }
 
 /**
@@ -54,8 +55,8 @@ export const CarriedNodeUnclipped = "overflow:visible!important";
  * ドキュメントは書き換えない。ここは編集を続きとして送らないので、書き換えるとポインタ
  * 移動の刻みだけ undo が積まれる（ドラッグ 1 回 = undo 1 回が壊れる）。
  *
- * @returns ずらす規則と、包んでいるものの切り取りを解く規則。座標を動かすドラッグ
- *   をしていなければ何も出さない
+ * @returns ずらす規則・包んでいるものの切り取りを解く規則・載せている artboard を前に出す
+ *   規則。座標を動かすドラッグをしていなければ何も出さない
  */
 export function RepositionPreviewStyle({
   drag,
@@ -69,6 +70,10 @@ export function RepositionPreviewStyle({
     designDocument,
     preview.value.name,
   );
+  const owningArtboard = DesignDocument.findOwningArtboard(
+    designDocument,
+    preview.value.name,
+  );
   return (
     <>
       {wrappingNames.map((name) => (
@@ -78,6 +83,22 @@ export function RepositionPreviewStyle({
           declarations={CarriedNodeUnclipped}
         />
       ))}
+      {/*
+        運んでいるノード自身の z-index だけでは、回転・不透明度を持つ祖先（新しい stacking
+        context）の外へ効かず、隣の artboard の白い面の裏へ回る（実測）。artboard ごと前に出せば、
+        祖先が何で stacking context を作っていても越えられる。artboard の枠（`ArtboardFrame` の
+        `li`）が stacking context を作ると効かなくなるが、happy-dom は重なりを解かないのでテスト
+        は落ちない（気づく手段は視覚での確認だけ）。
+
+        間の Box には付けない。付けると運んでいる間だけ、その Box が同じ artboard の中で後ろに
+        重なる兄弟より前に出て、重なり順が入れ替わって見える（実測）。
+      */}
+      {Option.isSome(owningArtboard) && (
+        <NameStyleRule
+          name={owningArtboard.value.name}
+          declarations={InFrontOfArtboards}
+        />
+      )}
       <NameStyleRule
         name={preview.value.name}
         declarations={repositionPreviewDeclarations(preview.value.offset)}
