@@ -273,6 +273,21 @@ export const CanvasBounds = {
   },
 
   /**
+   * 子が並ぶ向きと直交する軸の上で占める範囲。折り返した親では、この範囲で行を見分ける。
+   *
+   * @param bounds 見る矩形
+   * @param direction 子が並ぶ向き
+   * @returns 横並びなら上辺から下辺まで、縦並びなら左辺から右辺まで
+   */
+  crossExtent(bounds: CanvasBounds, direction: CssDirection): Range {
+    const axis = CssDirection.crossAxis(direction);
+    return {
+      min: CanvasBounds.edgeAt(bounds, axis, AxisEnds.Start),
+      max: CanvasBounds.edgeAt(bounds, axis, AxisEnds.End),
+    };
+  },
+
+  /**
    * 並び全体を含む最小の矩形。まとめて 1 つの範囲として扱いたいとき（選択したものすべて
    * / artboard すべてを画面へ収める）に使う。
    *

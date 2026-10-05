@@ -5,6 +5,7 @@ import { DesignDocument } from "@/domains/dcmp/design-document";
 import { Node } from "@/domains/dcmp/node";
 import { NodeTree } from "@/domains/dcmp/node-tree";
 import { ResolvedProps } from "@/domains/dcmp/resolved-props";
+import { Wrap } from "@/domains/dcmp/wrap";
 import { Option } from "@/utils/Option";
 import { DraggedNode } from "../dragged-node";
 
@@ -26,6 +27,8 @@ export type DropParent = Readonly<{
 export type InsertionParent = Readonly<{
   name: string;
   direction: CssDirection;
+  /** 子を折り返すか。折り返さない親の子は、配置によらず 1 行に並んでいるものとして扱う */
+  wraps: boolean;
 }>;
 
 /** 落とし先の親を探すのに要るもの。 */
@@ -114,7 +117,7 @@ function dropParentOf(
  *
  * @param document 名前の引き先になるドキュメント
  * @param name 親として読みたい artboard / ノードの名前
- * @returns その親と子が並ぶ向き。`dropParentOf` が `none` になる場合に加えて、
+ * @returns その親と、子が並ぶ向き・折り返すか。`dropParentOf` が `none` になる場合に加えて、
  *   子を並べない親（`layout: free`）でも `none`
  */
 function insertionParentOf(
@@ -125,6 +128,7 @@ function insertionParentOf(
     Option.map(BoxElement.childDirection(props), (direction) => ({
       name,
       direction,
+      wraps: Wrap.isWrapping(Wrap.fromProps(props)),
     })),
   );
 }

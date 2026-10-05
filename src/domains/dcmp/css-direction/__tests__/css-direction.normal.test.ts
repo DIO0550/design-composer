@@ -28,3 +28,11 @@ test("交差軸方向に広がる指定は引き伸ばしの宣言になる", ()
     value: "stretch",
   });
 });
+
+test("横並びのとき交差軸は高さになる", () => {
+  expect(CssDirection.crossAxis("row")).toBe("height");
+});
+
+test("縦並びのとき交差軸は幅になる", () => {
+  expect(CssDirection.crossAxis("column")).toBe("width");
+});
