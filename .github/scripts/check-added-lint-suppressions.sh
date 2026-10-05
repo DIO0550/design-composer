@@ -20,10 +20,12 @@ base="${1:-${BASE_SHA:-origin/main}}"
 cd "$(git rev-parse --show-toplevel)"
 
 . "$script_dir/lib/detector-precondition.sh"
+. "$script_dir/lib/detector-report.sh"
 . "$script_dir/lib/added-lines.sh"
 init_added_lines "$base"
 detector=.claude/hooks/lib/lint-suppressions.py
-require_runnable_detector "追加された lint 抑制" "$detector"
+check_name="追加された lint 抑制"
+require_runnable_detector "$check_name" "$detector"
 
 # merge-base に既にあった抑制コメントの綴り。ファイルをまたぐ移動を「追加」と読まないために使う
 # (新しいファイルは全行が追加行になるので、行番号だけでは移動と新設を見分けられない)。
@@ -48,9 +50,9 @@ while IFS= read -r -d '' file; do
   added="$(added_line_numbers "$base" "$file")"
   [ -z "$added" ] && continue
 
-  # `|| true` は外せない。検出器は**違反を見つけたときに exit 1** を返すので、
-  # set -e の下では違反を見つけた瞬間に、下のメッセージを出さないまま止まる。
-  reported="$(python3 "$detector" "$file" || true)"
+  if ! reported="$(detector_report '^[0-9]+:' "$detector" "$file")"; then
+    exit_unchecked "$check_name" "$detector" "$file"
+  fi
   [ -z "$reported" ] && continue
 
   while IFS= read -r entry; do

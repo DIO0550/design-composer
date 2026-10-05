@@ -58,13 +58,13 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `lib/import-rule-violations.py` | `pre-push-import-rules.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | 公開 API を迂回する import（`feature-public-api` / `module-public-api`）・親から直下の子以外の feature 間の import（`feature-sibling` / `feature-ancestor`）・3 段目以降の feature（`feature-nest-depth`）・ファイル単位の循環（`import-cycle`）・カテゴリの外に置かれた domains のモジュール（`domains-category`）を報告する |
 | `lib/ts_sources.py` | `lib/import-rule-violations.py` / `lib/result-option-read-violations.py` / `lib/story-title-violations.py` / `lib/named-path-violations.py`（報告の形だけ） | `src/` の走査対象の集め方・報告の形・コマンドラインの受け方と、feature の連なりの辿り方（`feature_of()`）。ファイル名だけアンダースコアなのは、ハイフンを含む名前が Python の import 名にならないため |
 | `lib/named-path-violations.py` | `pre-push-named-paths.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | コメント（`.ts` / `.tsx`）と Markdown の全文が名指ししているパスのうち、実体を持たないもの（`named-path-missing`）を報告する |
-| `lib/pre-push-detector.sh` | `pre-push-import-rules.sh` / `pre-push-result-option-reads.sh` / `pre-push-story-titles.sh` / `pre-push-named-paths.sh` / `pre-push-doc-comments.sh` / `pre-push-test-helper-duplication.sh` | `git push` のときだけ検出器を走らせ、違反があれば deny の JSON を返す。`deny_on_violations <検出器> <検査の名前> <直し方の一文>` は**走査ルートを渡さず**(検出器が自分の既定で決める)、`[種別]` で始まる行で違反を読む。`deny_on_all_src_failure`(引数は同じ)は `--all src` で呼び、終了コードで違反を読む(報告の綴りが `[` で始まらない検出器向け。CI・`harness/githooks/pre-push` と同じ呼び方) |
+| `lib/pre-push-detector.sh` | `pre-push-import-rules.sh` / `pre-push-result-option-reads.sh` / `pre-push-story-titles.sh` / `pre-push-named-paths.sh` / `pre-push-doc-comments.sh` / `pre-push-test-helper-duplication.sh` | `git push` のときだけ検出器を走らせ、違反があれば deny の JSON を返す。`deny_on_violations <検出器> <検査の名前> <直し方の一文>` は**走査ルートを渡さず**(検出器が自分の既定で決める)、`[種別]` で始まる行で違反を読む(`[種別]` の行を出さずに 1 で終わった・0 と 1 以外で終わったなら、検出器が落ちたとして「検査できなかった」の deny。判定は `.github/scripts/lib/detector-report.sh` を `check-added-*` と共有する)。`deny_on_all_src_failure`(引数は同じ)は `--all src` で呼び、終了コードで違反を読む(報告の綴りが `[` で始まらない検出器向け。CI・`harness/githooks/pre-push` と同じ呼び方) |
 | `lib/story-title-violations.py` | `pre-push-story-titles.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | story の `title` が、最後のセグメント（葉に出る表示名）を除いてフォルダ階層から導出した綴りと違うもの（`story-title-tree`）と、`title` をリテラル 1 行として取れないもの（`story-title-missing`）を報告する |
 | `lib/result-option-read-violations.py` | `pre-push-result-option-reads.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `Result` / `Option` の判別子（`ok` / `some`）を、その判別子を型宣言で定義していないファイルで直読みしている箇所（`result-option-read`）を報告する |
 | `lib/cases-report.sh` | `lib/import-rule-cases.sh`(`report` だけ) / `lib/result-option-read-cases.sh` / `lib/story-title-cases.sh` / `lib/named-path-cases.sh` / `lib/missing-doc-comments-cases.sh` / `lib/duplicate-test-helpers-cases.sh` / `lib/verification-agent-cases.sh`(`report` だけ) / `lib/pre-push-detector-cases.sh`(`report` だけ) | 判定表が共有する、判定の読み取り（`decide` / `normalize_miss`）と報告（`report` / `cases_failed`）。ケースの並べ方と検出器の呼び方は判定表ごとに違うので、そこは各判定表が持つ |
 | `lib/import-rule-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `import-rule-violations.py` へ判定表を流し、報告された種別と件数が期待どおりかを報告する。検出器が報告する種別のうち、表の期待に 1 度も出ないものがあっても NG。食い違いがあれば exit 1 |
 | `lib/named-path-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `named-path-violations.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードで報告する。食い違いがあれば exit 1 |
-| `lib/pre-push-detector-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `pre-push-test-helper-duplication.sh` へ `CLAUDE_PROJECT_DIR` を一時ディレクトリに向けた JSON を流し、`deny_on_all_src_failure` の deny / pass が期待どおりかを報告する。食い違いがあれば exit 1 |
+| `lib/pre-push-detector-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `pre-push-test-helper-duplication.sh` へ `CLAUDE_PROJECT_DIR` を一時ディレクトリに向けた JSON を流して `deny_on_all_src_failure` を、スタブの検出器を渡して `deny_on_violations` を判定し、deny(違反 / 検査できなかった)/ pass が期待どおりかを報告する。食い違いがあれば exit 1 |
 | `lib/canary-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `hook-canary.sh` へ判定表を流し、deny / pass / miss が期待どおりかを報告する。食い違いがあれば exit 1 |
 | `lib/result-option-read-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `result-option-read-violations.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードで報告する。食い違いがあれば exit 1 |
 | `lib/story-title-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `story-title-violations.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードで報告する。食い違いがあれば exit 1 |
@@ -104,7 +104,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 
 | 効かなくなるもの | CI の代替 |
 | --- | --- |
-| `block-lint-suppress.sh`(編集時のブロック) | **あり**。抑制コメントは diff に残るので、`.github/scripts/check-added-lint-suppressions.sh` が**追加行の分だけ**同じ判定で落とす(許可される例外も `lib/lint-suppressions.py` で共有)。CI と push 前(git hooks)の両方が走らせる。**push 前は `python3` が使える環境だけ**(無ければ「飛ばします」と出して飛ぶ。CI は落とす → `.github/scripts/lib/detector-precondition.sh`) |
+| `block-lint-suppress.sh`(編集時のブロック) | **あり**。抑制コメントは diff に残るので、`.github/scripts/check-added-lint-suppressions.sh` が**追加行の分だけ**同じ判定で落とす(許可される例外も `lib/lint-suppressions.py` で共有)。CI と push 前(git hooks)の両方が走らせる。**push 前は `python3` が使える環境だけ**(無ければ「飛ばします」と出して飛ぶ。CI は落とす → `.github/scripts/lib/detector-precondition.sh`)。検出器が途中で落ちたときは push 前も CI も落とす(`.github/scripts/lib/detector-report.sh`) |
 | `block-npx.sh`(セッション中の行為の禁止) | **無し**。push の時点で痕跡が残らないため代替不能 |
 | `block-git-during-verification-agent.sh`(セッション中の行為の禁止) | **無し**。この競合はセッションの実行タイミングだけが原因で、コミット後のリポジトリの状態には痕跡が残らない |
 | `session-url-notice.sh`(セッション URL の提示) | **無し**。宛先の Issue とそのコメントは CI から読めるが、CI が走るのは規約の起点(着手時)より後で、赤にしても事後に貼らせる以外に直せない(`harness/case-law/process.md`)。落ちても穴は開かない(規約が AGENTS.md に残り、失っても情報が 1 つ足りないだけでガードは破れない) |
@@ -163,11 +163,11 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 
 - **`canary-cases.sh` と `verification-agent-cases.sh` と `pre-push-detector-cases.sh` の 3 本は、層 3 の部品
   (`hook-canary.sh` / `track-verification-agent-activity.sh` と `block-git-during-verification-agent.sh` /
-  `lib/pre-push-detector.sh` の `deny_on_all_src_failure`)を層 2・層 1 で検査する。** ゲートが見ているのは
+  `lib/pre-push-detector.sh` の `deny_on_all_src_failure` / `deny_on_violations`)を層 2・層 1 で検査する。** ゲートが見ているのは
   「リポジトリに入っているスクリプトの判定が変わっていないか」で、その部品がどの層で使われるかとは別。
   push 前手順(`implementation-flow` フェーズ 7)はカナリアの出力を読んで不発かどうかを決め、
   フェーズ 6 は検証エージェントの実行中に git 操作が止まる前提で並べているので、判定が黙って変わると
-  手順の読みが嘘になる。`deny_on_all_src_failure` は壊れると層 3 が黙って素通りするだけで、
+  手順の読みが嘘になる。`deny_on_all_src_failure` / `deny_on_violations` は壊れると層 3 が黙って素通りするだけで、
   git hooks と CI は検出器を直接呼ぶので緑のまま残る
 - **`check-added-cases.sh` だけは層 1 のジョブが `rules-check` ではなく `lint-suppress`。**
   当てる 2 本(`check-added-*`)と同じジョブに置き、`python3` と git だけで完結する
@@ -295,7 +295,7 @@ deny のメッセージは、`jq` / `python3` が欠けていればその名前�
   - 導入時点でリポジトリに既存の重複が 13 組あり、#153 で一旦 0 組にした。**ただしそれは検出器が見える範囲での 0 組**で、フォルダをまたぐ重複(#179)は検出器自体が見ておらず数に入っていなかった。探索範囲をプロジェクト全体へ広げたところ、フォルダをまたぐ重複が新たに 11 組見つかった(#866 の着手時点では 8 組・18 箇所。#866 で 0 組にした。`--all src` が exit 0)
   - 本体の切り出し方(引数・戻り値の型注釈を読み飛ばす・式本体のアロー関数)と意図した取りこぼしは検出器の docstring、判定表は `lib/duplicate-test-helpers-cases.sh`。型注釈の `{}` を本体と読む偽陽性(#179・#406)と、既定引数 `f(props: T = {})` の `{}` を本体と読んで短すぎると捨てる見逃しは、これで解消している
   - **エスケープハッチは置かない。** `// @duplicate-helpers-ok` で無効化できたが、`src` での使用が導入以来 0 件で、`--all`(push 前と `rules-check`)が読まないため層によって効き方が割れる。`check-doc-comments.sh` と同じ理由で撤去した(#309)
-- `.github/scripts/check-added-test-helper-duplication.sh`(層 1・CI、`frontend.yml` の `lint-suppress` ジョブ。同じスクリプトを `harness/githooks/pre-push` も引数なしで呼び、base を `origin/main` として push 前にも通す。**検出器を走らせられなければ exit 2** → `.github/scripts/lib/detector-precondition.sh`)は、`--all` の格上げ(#309。下の `pre-push-test-helper-duplication.sh`)より前から置いている追加行だけの検査で、いまは `--all` が落とすものの一部を二重に落とす。撤去するかは #954 で判断する。`duplicate-test-helpers.py --lines` で対象ファイルの重複行を機械可読に出し、**このブランチで新しく追加された行に載っていて、かつ同じ本体の数が base(merge-base)より増えたものだけ**を違反にする
+- `.github/scripts/check-added-test-helper-duplication.sh`(層 1・CI、`frontend.yml` の `lint-suppress` ジョブ。同じスクリプトを `harness/githooks/pre-push` も引数なしで呼び、base を `origin/main` として push 前にも通す。**検出器を走らせられない・途中で落ちたなら exit 2** → `.github/scripts/lib/detector-precondition.sh` / `detector-report.sh`)は、`--all` の格上げ(#309。下の `pre-push-test-helper-duplication.sh`)より前から置いている追加行だけの検査で、いまは `--all` が落とすものの一部を二重に落とす。撤去するかは #954 で判断する。`duplicate-test-helpers.py --lines` で対象ファイルの重複行を機械可読に出し、**このブランチで新しく追加された行に載っていて、かつ同じ本体の数が base(merge-base)より増えたものだけ**を違反にする
   - ファイル分割や rename と組めないほど書き換えた移動では、移った側が全行「追加行」になる(pr-240 で lint 抑制コメントが踏んだのと同じ形)。そこで追加行に候補が出たときだけ merge-base の `src` を展開し、`--base-root` で本体の数を比べる。`check-added-lint-suppressions.sh` のような有無ではなく数で比べる理由と、それで生じる取りこぼしは検出器の `grown_since` と docstring「意図した取りこぼし」
 - `check-doc-comments.sh` は**ブロックしない**(`additionalContext` を返すだけ)。また、見るのは**編集したファイルの分だけ**
   - 対象は `src/` の実装ファイルのみ(`__tests__/` / `*.stories.*` / `__stories__/` は見ない)

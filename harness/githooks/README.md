@@ -38,9 +38,12 @@ DevContainer の `postCreateCommand` も走らない。そこは Claude Code の
 `check-added-*` の 2 つだけは `.github/scripts/` にあり、CI と同じスクリプトをそのまま呼ぶ
 (base との差分で判定するので、判定を `lib/` へ移しても呼び出し側は同じになる)。
 [その判定表](../../.github/scripts/check-added-cases.sh)と、2 つが source する共有スクリプト
-(前提チェックの `.github/scripts/lib/detector-precondition.sh`、追加行の行番号を取り出す
+(前提チェックの `.github/scripts/lib/detector-precondition.sh`、検出器の異常終了を見分ける
+`.github/scripts/lib/detector-report.sh`、追加行の行番号を取り出す
 `.github/scripts/lib/added-lines.sh`)も同じ場所に置く。`.claude/hooks/lib/` は
-**検査そのもの**の共有場所なので、当てる先と一緒にしておく。
+**検査そのもの**の共有場所なので、当てる先と一緒にしておく。前提チェックと異常終了の見分けは
+層 3 の `.claude/hooks/lib/pre-push-detector.sh` も自分の位置から辿って source する
+(層ごとに見方を割らないため)。
 **行数のラチェットと判定表 11 本**(`harness/records/count.sh --ratchet` /
 `harness/records/count-cases.sh` / `.claude/hooks/lib/import-rule-cases.sh` /
 `.claude/hooks/lib/result-option-read-cases.sh` /
@@ -68,6 +71,9 @@ DevContainer の `postCreateCommand` も走らない。そこは Claude Code の
 [`lib/detector-precondition.sh`](../../.github/scripts/lib/detector-precondition.sh) が
 その場合に exit 2 を返すので、**層 1（CI）は落ちる**。層 2 はそれを受け取らず、上の表の
 とおり呼ぶ前に飛ばす（止めない方針のため）。
+検出器が起動したあとに途中で落ちた場合も、同じく出力が空になる。こちらは道具の欠けではなく
+検出器側の欠陥なので、[`lib/detector-report.sh`](../../.github/scripts/lib/detector-report.sh) が
+見分けて exit 2 を返し、**層 1・層 2 とも落ちる**(層 3 の `deny_on_violations` も deny する)。
 
 ## 結果の読み方
 
