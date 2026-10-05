@@ -127,7 +127,7 @@ jobs:
           {
             echo "$COMMENT_MARKER"
             echo "📖 Storybook preview: ${URL}"
-            echo "📘 PR 解説(技術解説・振る舞いの判断・変更の地図): ${EXPLAIN_URL}"
+            echo "📘 PR 解説(振る舞い・技術・テスト・変更の地図): ${EXPLAIN_URL}"
           } > "$BODY_FILE"
 
           # 既存のプレビューコメントがあれば編集、なければ新規作成。

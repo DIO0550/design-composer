@@ -32,10 +32,11 @@ export GIT_COMMITTER_NAME=cases GIT_COMMITTER_EMAIL=cases@example.com
 source "$repo_root/.claude/hooks/lib/cases-report.sh"
 
 # 解説として通る断片(PR #1 宛て)と、検査に落ちる断片。
-meta='<p class="explain-meta" data-explained-sha="0123456789abcdef0123456789abcdef01234567" data-pr="1">解説時点</p>'
+meta='<p class="explain-meta" data-explained-sha="0123456789abcdef0123456789abcdef01234567" data-pr="1" data-page="index">解説時点</p>'
 printf '%s\n<h1>書いた解説</h1>\n' "$meta" > "$work/fragment.html"
 printf '%s\n<script>alert(1)</script>\n' "$meta" > "$work/broken.html"
 printf '%s\n' "${meta/data-pr=\"1\"/data-pr=\"7\"}" > "$work/fragment-7.html"
+printf '%s\n<h1>技術の解説</h1>\n' "${meta/data-page=\"index\"/data-page=\"tech\"}" > "$work/fragment-tech.html"
 printf '{"head": "new"}\n' > "$work/map.json"
 
 # gh-pages を持つ bare リポジトリを作り直す。
@@ -89,7 +90,7 @@ run_pages() {
 }
 
 fresh_origin seeded
-run_pages put-page 1 "$work/fragment.html"
+run_pages put-page 1 index "$work/fragment.html"
 expect "put-page は断片を組み立てた index.html で上書きする" 'on_pages pr-explain/pr-1/index.html | grep -q "書いた解説"'
 expect "put-page は change-map.json に触らない" '[ "$(on_pages pr-explain/pr-1/change-map.json)" = "{\"head\": \"old\"}" ]'
 expect "put-page は他の PR のフォルダに触らない" '[ "$(on_pages pr-explain/pr-12/index.html)" = twelve ]'
@@ -97,12 +98,12 @@ expect "put-page は pr-preview に触らない" '[ "$(on_pages pr-preview/pr-1/
 
 fresh_origin seeded
 before="$(tip)"
-output="$(bash "$pages" put-page 1 "$work/broken.html" 2>&1)"; status=$?
+output="$(bash "$pages" put-page 1 index "$work/broken.html" 2>&1)"; status=$?
 expect "検査に落ちる解説は、取り直しへ進まずに push しない" '[ "$status" -eq 1 ] && [ "$(tip)" = "$before" ] && [[ "$output" == *"[pr-explain-content]"* ]] && [[ "$output" != *"反映に失敗"* ]]'
 
 fresh_origin seeded
 before="$(tip)"
-run_pages put-page 7 "$work/fragment-7.html"; status=$?
+run_pages put-page 7 index "$work/fragment-7.html"; status=$?
 expect "地図の無いフォルダへは put-page しない" '[ "$status" -eq 3 ] && [ "$(tip)" = "$before" ] && [ "$(on_pages pr-explain/pr-7/index.html)" = "<none>" ]'
 
 fresh_origin seeded
@@ -128,8 +129,17 @@ expect "消すフォルダが無い remove は変更なしで終わる" '[ "$sta
 
 fresh_origin seeded
 before="$(tip)"
-run_pages put-page 1; status=$?
+run_pages put-page 1 index; status=$?
 expect "put-page に断片が無ければ引数の誤り" '[ "$status" -eq 2 ] && [ "$(tip)" = "$before" ]'
+
+fresh_origin seeded
+run_pages put-page 1 tech "$work/fragment-tech.html"
+expect "put-page tech は tech.html に置き、入口の index.html には触らない" 'on_pages pr-explain/pr-1/tech.html | grep -q "技術の解説" && [ "$(on_pages pr-explain/pr-1/index.html)" = old ]'
+
+fresh_origin seeded
+before="$(tip)"
+run_pages put-page 1 other "$work/fragment.html"; status=$?
+expect "知らないページ名は引数の誤り" '[ "$status" -eq 2 ] && [ "$(tip)" = "$before" ]'
 
 fresh_origin seeded
 before="$(tip)"

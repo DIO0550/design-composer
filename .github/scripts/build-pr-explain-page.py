@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """PR の解説の断片(`pr-explain` スキルが書く HTML)を検査し、テンプレートへ差し込んで解説ページを組み立てる。
 
-セッションが書くのは、テンプレート(`.claude/skills/pr-explain/templates/index.html`)の
+解説は読む目的ごとに 4 ページ(入口 `index` / 振る舞い `behavior` / 技術 `tech` / テスト `tests`)に分かれ、
+どのページも同じテンプレートから組み立てる。セッションが書くのは、テンプレート(`.claude/skills/pr-explain/templates/index.html`)の
 `<!-- EXPLAIN:BEGIN -->` 〜 `<!-- EXPLAIN:END -->` の間に入る断片だけ。枠(CSS・固定スクリプト・CSP)は
 このスクリプトがテンプレートから写すので、断片の側からは変えられない。報告する違反は 3 つ。
 
 - `pr-explain-content` — 断片に、スクリプトが動く・外から読み込む・入力を送る要素や属性、
   またはコメント・宣言がある
-- `pr-explain-meta` — 断片の `explain-meta` が 1 つでない・解説時点の sha が 40 桁でない・PR 番号が違う
+- `pr-explain-meta` — 断片の `explain-meta` が 1 つでない・解説時点の sha が 40 桁でない・PR 番号や
+  ページ名が公開先と違う
 - `pr-explain-csp` — テンプレートの CSP が許しているハッシュと、固定スクリプトの中身が合わない
 
 **防いでいるのは事故で、攻撃ではない。** 解説は差分のコードを抜粋するので、エスケープし忘れた
@@ -21,7 +23,7 @@
 `html.parser` とブラウザとで割れ、その中に置いた要素が検査を素通りするため。
 
 使い方:
-    build-pr-explain-page.py <断片> --pr <番号> --out <書き出す先> [--template <テンプレート>]
+    build-pr-explain-page.py <断片> --pr <番号> --page <ページ名> --out <書き出す先> [--template <テンプレート>]
 
 違反が無ければページを書き出して終了コード 0。違反があれば標準出力へ報告して 1(書き出さない)。
 引数の誤りは 2。
@@ -33,11 +35,15 @@ import re
 import sys
 from html.parser import HTMLParser
 from pathlib import Path
+from typing import NamedTuple
 
 BeginMarker = "<!-- EXPLAIN:BEGIN -->"
 EndMarker = "<!-- EXPLAIN:END -->"
 
 DefaultTemplate = Path(__file__).resolve().parents[2] / ".claude/skills/pr-explain/templates/index.html"
+
+# 解説のページ名。gh-pages には `<ページ名>.html` で置く。
+PageNames = ("index", "behavior", "tech", "tests")
 
 # スクリプトが動く・外から読み込む・入力を送る要素。SVG の図は許すので、SVG の中で
 # スクリプトや別文書を差し込める要素(`foreignObject`・アニメーションで属性を書き換える要素)も並べる。
@@ -62,9 +68,19 @@ AllowedUrlPrefixes = (
     "https://dio0550.github.io/design-composer/",
 )
 
+# 解説のページどうしのリンク(`tests.html#…`)。相対の行き先はこの 4 つのファイル名だけを許す。
+SiblingPageLink = re.compile(rf"(?:{'|'.join(PageNames)})\.html(?:#[\w-]*)?")
+
 FullSha = re.compile(r"[0-9a-f]{40}")
 InlineScript = re.compile(r"<script>(.*?)</script>", re.S)
 CspScriptHash = re.compile(r"script-src 'sha256-([A-Za-z0-9+/=]+)'")
+
+
+class Destination(NamedTuple):
+    """公開先(どの PR のどのページか)。"""
+
+    pr: int
+    page: str
 
 
 class FragmentScanner(HTMLParser):
@@ -121,19 +137,21 @@ def attribute_problem(name: str, value: str) -> str | None:
         return f"属性 {name} は書けない"
     if name not in UrlAttributes:
         return None
-    if value.strip().startswith(AllowedUrlPrefixes):
+    target = value.strip()
+    is_allowed = target.startswith(AllowedUrlPrefixes) or SiblingPageLink.fullmatch(target) is not None
+    if is_allowed:
         return None
-    return f"{name} の行き先 {value!r} は許していない(許すのは {' / '.join(AllowedUrlPrefixes)} で始まるものだけ)"
+    return f"{name} の行き先 {value!r} は許していない(許すのは {' / '.join(AllowedUrlPrefixes)} で始まるものと、解説のページ {' / '.join(f'{page}.html' for page in PageNames)} だけ)"
 
 
-def meta_problems(metas: list[dict[str, str]], pr: int) -> list[str]:
-    """`explain-meta` が 1 つだけあり、解説時点の sha と PR 番号を持っているかを見る。
+def meta_problems(metas: list[dict[str, str]], destination: Destination) -> list[str]:
+    """`explain-meta` が 1 つだけあり、解説時点の sha・PR 番号・ページ名を持っているかを見る。
 
-    固定スクリプトはこの sha で根拠のリンク先・「古い」帯・「解説に出てこない」を決めるので、
-    欠けると 3 つとも黙って出なくなる。
+    固定スクリプトはこの sha で根拠のリンク先・「古い」帯・「解説に出てこない」を決め、ページ名で
+    地図から足す節を選ぶので、欠けると黙って出なくなる。
 
     @param metas 断片に現れた `explain-meta` 要素の属性
-    @param pr 公開先の PR 番号
+    @param destination 公開先
     @returns 違反の説明。無ければ空
     """
     if len(metas) != 1:
@@ -142,8 +160,10 @@ def meta_problems(metas: list[dict[str, str]], pr: int) -> list[str]:
     problems = []
     if not FullSha.fullmatch(sha):
         problems.append(f"data-explained-sha は 40 桁の sha で書く(今は {sha!r})")
-    if metas[0].get("data-pr") != str(pr):
-        problems.append(f"data-pr が公開先の PR #{pr} と違う(今は {metas[0].get('data-pr')!r})")
+    if metas[0].get("data-pr") != str(destination.pr):
+        problems.append(f"data-pr が公開先の PR #{destination.pr} と違う(今は {metas[0].get('data-pr')!r})")
+    if metas[0].get("data-page") != destination.page:
+        problems.append(f"data-page が公開先のページ {destination.page} と違う(今は {metas[0].get('data-page')!r})")
     return problems
 
 
@@ -164,12 +184,12 @@ def csp_problem(template: str) -> str | None:
     return None
 
 
-def collect_violations(fragment: str, template: str, pr: int) -> list[str]:
+def collect_violations(fragment: str, template: str, destination: Destination) -> list[str]:
     """断片とテンプレートの違反を集める。
 
     @param fragment セッションが書いた断片
     @param template テンプレートの HTML
-    @param pr 公開先の PR 番号
+    @param destination 公開先
     @returns 報告の行。違反が無ければ空
     """
     problem = csp_problem(template)
@@ -179,7 +199,7 @@ def collect_violations(fragment: str, template: str, pr: int) -> list[str]:
     scanner.feed(fragment)
     scanner.close()
     content = [f"[pr-explain-content] {violation}" for violation in scanner.violations]
-    meta = [f"[pr-explain-meta] {violation}" for violation in meta_problems(scanner.metas, pr)]
+    meta = [f"[pr-explain-meta] {violation}" for violation in meta_problems(scanner.metas, destination)]
     return content + meta
 
 
@@ -191,26 +211,28 @@ def assemble(fragment: str, template: str) -> str:
 
 
 def parse_args(argv: list[str]) -> dict[str, str] | None:
-    """`<断片> --pr <番号> --out <先> [--template <テンプレート>]` を読む。読めなければ None。"""
+    """`<断片> --pr <番号> --page <ページ名> --out <先> [--template <テンプレート>]` を読む。読めなければ None。"""
     if len(argv) < 2:
         return None
     options = dict(zip(argv[2::2], argv[3::2]))
     options["fragment"] = argv[1]
-    known = {"--pr", "--out", "--template", "fragment"}
-    is_complete = len(argv) % 2 == 0 and set(options) <= known and {"--pr", "--out"} <= set(options)
-    if not is_complete or not options["--pr"].isdigit():
+    known = {"--pr", "--page", "--out", "--template", "fragment"}
+    is_complete = len(argv) % 2 == 0 and set(options) <= known and {"--pr", "--page", "--out"} <= set(options)
+    if not is_complete:
         return None
-    return options
+    is_valid = options["--pr"].isdigit() and options["--page"] in PageNames
+    return options if is_valid else None
 
 
 def main(argv: list[str]) -> int:
     options = parse_args(argv)
     if options is None:
-        print("使い方: build-pr-explain-page.py <断片> --pr <番号> --out <書き出す先> [--template <テンプレート>]", file=sys.stderr)
+        print(f"使い方: build-pr-explain-page.py <断片> --pr <番号> --page <{'|'.join(PageNames)}> --out <書き出す先> [--template <テンプレート>]", file=sys.stderr)
         return 2
     fragment = Path(options["fragment"]).read_text(encoding="utf-8")
     template = Path(options.get("--template", DefaultTemplate)).read_text(encoding="utf-8")
-    violations = collect_violations(fragment, template, int(options["--pr"]))
+    destination = Destination(pr=int(options["--pr"]), page=options["--page"])
+    violations = collect_violations(fragment, template, destination)
     for violation in violations:
         print(violation)
     if violations:

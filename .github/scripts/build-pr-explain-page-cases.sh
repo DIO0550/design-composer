@@ -12,7 +12,7 @@
 # `html.parser` とブラウザとで解釈が割れるコメントと CDATA。
 #
 # 表は `期待|ケース名|断片` の 1 行 1 ケース。断片の先頭には、`@nometa` で始まらない限り
-# 正しい `explain-meta`(PR #12・40 桁の sha)を付ける。
+# 正しい `explain-meta`(PR #12・入口のページ・40 桁の sha)を付け、入口のページとして組み立てる。
 set -uo pipefail
 
 scripts_dir="$(cd "$(dirname "$0")" && pwd)"
@@ -25,7 +25,7 @@ trap 'rm -rf "$work"' EXIT
 # 判定の読み取りと報告は判定表どうしで共有する（`cases_failed` / `decide` / `report`）。
 source "$repo_root/.claude/hooks/lib/cases-report.sh"
 
-meta='<p class="explain-meta" data-explained-sha="0123456789abcdef0123456789abcdef01234567" data-pr="12">解説時点</p>'
+meta='<p class="explain-meta" data-explained-sha="0123456789abcdef0123456789abcdef01234567" data-pr="12" data-page="index">解説時点</p>'
 
 # $1 断片(先頭が `@nometa` なら explain-meta を付けない)、$2 テンプレート
 verdict() {
@@ -35,7 +35,7 @@ verdict() {
     *) printf '%s\n%s\n' "$meta" "$fragment" > "$work/fragment.html" ;;
   esac
   rm -f "$work/page.html"
-  output="$(python3 "$builder" "$work/fragment.html" --pr 12 --out "$work/page.html" --template "$2")" && status=0 || status=$?
+  output="$(python3 "$builder" "$work/fragment.html" --pr 12 --page index --out "$work/page.html" --template "$2")" && status=0 || status=$?
   decide "$output" "$status" '^\[pr-explain-(content|meta|csp)\]'
 }
 
@@ -48,12 +48,16 @@ pass|SVG の図(クラスで色を付ける)|<figure class="diagram"><svg viewBo
 pass|本文テキストの onClick={...} と javascript: という語|<p>ボタンは <code>onClick={handleClick}</code> で受ける。<code>javascript:</code> の URL は使わない。</p>
 pass|エスケープしたコード抜粋の &lt;script&gt;|<pre class="code"><code>&lt;script&gt;alert(1)&lt;/script&gt;</code></pre>
 pass|実体参照で書いた # へのリンク(値はデコードしてから見る)|<a href="&#35;map">地図</a>
+pass|解説のほかのページへのリンク|<a href="tests.html#t-1">テスト</a><a href="behavior.html">振る舞い</a>
+deny|解説のページでない相対リンク|<a href="other.html">x</a>
+deny|解説のページ名に続けた別の綴り|<a href="tests.html.evil">x</a>
 pass|このリポジトリの github.com・Pages・# へのリンク|<a href="https://github.com/DIO0550/design-composer/pull/12">PR</a><a href="https://dio0550.github.io/design-composer/pr-preview/pr-12/">SB</a><a href="#map">地図</a>
 deny|explain-meta が無い|@nometa<h1>題</h1>
-deny|explain-meta が 2 つある|<p class="explain-meta" data-explained-sha="0123456789abcdef0123456789abcdef01234567" data-pr="12"></p>
-deny|解説時点の sha が 41 桁|@nometa<p class="explain-meta" data-explained-sha="0123456789abcdef0123456789abcdef012345678" data-pr="12"></p>
-deny|解説時点の sha が 7 桁|@nometa<p class="explain-meta" data-explained-sha="0123456" data-pr="12"></p>
-deny|data-pr が公開先の PR と違う|@nometa<p class="explain-meta" data-explained-sha="0123456789abcdef0123456789abcdef01234567" data-pr="13"></p>
+deny|explain-meta が 2 つある|<p class="explain-meta" data-explained-sha="0123456789abcdef0123456789abcdef01234567" data-pr="12" data-page="index"></p>
+deny|解説時点の sha が 41 桁|@nometa<p class="explain-meta" data-explained-sha="0123456789abcdef0123456789abcdef012345678" data-pr="12" data-page="index"></p>
+deny|解説時点の sha が 7 桁|@nometa<p class="explain-meta" data-explained-sha="0123456" data-pr="12" data-page="index"></p>
+deny|data-pr が公開先の PR と違う|@nometa<p class="explain-meta" data-explained-sha="0123456789abcdef0123456789abcdef01234567" data-pr="13" data-page="index"></p>
+deny|data-page が公開先のページと違う|@nometa<p class="explain-meta" data-explained-sha="0123456789abcdef0123456789abcdef01234567" data-pr="12" data-page="tech"></p>
 deny|内側に script|<script>alert(1)</script>
 deny|内側に大文字の SCRIPT|<SCRIPT>alert(1)</SCRIPT>
 deny|内側に style 要素|<style>body{display:none}</style>
@@ -79,7 +83,7 @@ CASES
 
 # 通った断片はテンプレートのマーカーの間に入り、マーカーの外はテンプレートのまま残る。
 printf '%s\n<h1>差し込んだ解説</h1>\n' "$meta" > "$work/fragment.html"
-python3 "$builder" "$work/fragment.html" --pr 12 --out "$work/page.html" >/dev/null
+python3 "$builder" "$work/fragment.html" --pr 12 --page index --out "$work/page.html" >/dev/null
 assembled="$(python3 - "$template" "$work/page.html" <<'PY'
 import sys
 template, page = (open(path, encoding="utf-8").read() for path in sys.argv[1:3])
@@ -96,10 +100,18 @@ report pass "$assembled" "組み立てたページはマーカーの外がテン
 # 違反があればページを書き出さない。
 printf '%s\n<script>x</script>\n' "$meta" > "$work/fragment.html"
 rm -f "$work/page.html"
-python3 "$builder" "$work/fragment.html" --pr 12 --out "$work/page.html" >/dev/null
+python3 "$builder" "$work/fragment.html" --pr 12 --page index --out "$work/page.html" >/dev/null
 written=pass
 [ -e "$work/page.html" ] && written=deny
 report pass "$written" "違反のある断片からはページを書き出さない"
+
+# 知らないページ名は引数の誤り(2)で、ページを書き出さない。
+printf '%s\n' "${meta/data-page=\"index\"/data-page=\"other\"}" > "$work/fragment.html"
+rm -f "$work/page.html"
+python3 "$builder" "$work/fragment.html" --pr 12 --page other --out "$work/page.html" 2>/dev/null; status=$?
+unknown_page=pass
+{ [ "$status" -eq 2 ] && [ ! -e "$work/page.html" ]; } || unknown_page=deny
+report pass "$unknown_page" "知らないページ名は引数の誤りとして断る"
 
 # 枠の CSP が固定スクリプトのハッシュを許していること。スクリプトを 1 文字変えて
 # ハッシュを直さなかったテンプレートでは、断片が正しくても落ちる。

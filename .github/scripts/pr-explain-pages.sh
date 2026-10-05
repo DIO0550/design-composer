@@ -3,12 +3,13 @@
 # gh-pages の `pr-explain/pr-<番号>/`(PR の解説ページ)を書き換える。
 #
 # 使い方:
-#   pr-explain-pages.sh put-page <PR 番号> <解説の断片>                  … 解説を組み立てて index.html に置く(セッションが呼ぶ)
+#   pr-explain-pages.sh put-page <PR 番号> <ページ名> <解説の断片>       … 解説を組み立てて <ページ名>.html に置く(セッションが呼ぶ)
 #   pr-explain-pages.sh put-map  <PR 番号> <change-map.json> <テンプレート>  … 変更の地図を置く(Actions が呼ぶ)
 #   pr-explain-pages.sh remove   <PR 番号>                              … フォルダごと消す(PR が閉じたとき)
 #
+# - ページ名は `index`(入口) / `behavior` / `tech` / `tests`(`build-pr-explain-page.py` の `PageNames`)
 # - `put-page` は `build-pr-explain-page.py` で断片を検査してテンプレートへ差し込む。違反があれば
-#   push しない
+#   push しない。触るのはそのページの 1 ファイルだけ
 # - `put-page` は `change-map.json` が無いフォルダへは置かない。Actions が作る前と、PR が閉じて
 #   消した後に、セッションがフォルダを復活させないため
 # - `put-map` は `index.html` が無いときだけテンプレートそのもの(「解説はまだ」)を置く。解説が
@@ -23,7 +24,7 @@
 #   PR_EXPLAIN_RETRY_WAIT  n 回目の失敗の後に n × この秒数だけ待つ(既定 2)
 #
 # 終了コード: 0 = 置いた / 変更が無かった、1 = 断片が検査に落ちた・push できなかった、
-#             2 = 引数の誤り、3 = `put-page` の置き先に地図が無い
+#             2 = 引数の誤り(知らないページ名を含む)、3 = `put-page` の置き先に地図が無い
 set -uo pipefail
 
 scripts_dir="$(cd "$(dirname "$0")" && pwd)"
@@ -40,7 +41,7 @@ mode="${1:-}"
 pr="${2:-}"
 [[ "$pr" =~ ^[1-9][0-9]*$ ]] || usage
 case "$mode" in
-  put-page) args_ok=$([ $# -eq 3 ] && [ -f "$3" ] && echo yes) ;;
+  put-page) args_ok=$([ $# -eq 4 ] && [[ "$3" =~ ^[a-z]+$ ]] && [ -f "$4" ] && echo yes) ;;
   put-map) args_ok=$([ $# -eq 4 ] && [ -f "$3" ] && [ -f "$4" ] && echo yes) ;;
   remove) args_ok=$([ $# -eq 2 ] && echo yes) ;;
   *) args_ok="" ;;
@@ -52,8 +53,9 @@ folder="pr-explain/pr-$pr"
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 
+# ページ名が決まった 4 つのどれかであることは組み立ての側が見る(知らない名前なら 2)。
 if [ "$mode" = "put-page" ]; then
-  python3 "$scripts_dir/build-pr-explain-page.py" "$3" --pr "$pr" --out "$work/index.html" || exit 1
+  python3 "$scripts_dir/build-pr-explain-page.py" "$4" --pr "$pr" --page "$3" --out "$work/page.html" || exit $?
 fi
 
 # gh-pages の有無。0 = ある、2 = 無い、それ以外 = 問い合わせに失敗した。
@@ -91,7 +93,7 @@ apply_change() {
   case "$mode" in
     put-page)
       [ -f "$site/$folder/change-map.json" ] || return 3
-      cp "$work/index.html" "$site/$folder/index.html"
+      cp "$work/page.html" "$site/$folder/$3.html"
       ;;
     put-map)
       mkdir -p "$site/$folder"

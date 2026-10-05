@@ -186,8 +186,8 @@ diff_text | grep -ciE 'UI 案|Design Composer\.html'   # ui-reviewer の語
 - **本文に `Closes #<Issue 番号>` を書く**(`AGENTS.md`「着手した Issue は、その回で閉じる」)。
   `.github/workflows/pr-closing-issue.yml` が、閉じる Issue を持たない PR を落とす
 - CI(lint / typecheck / test / 視覚差分)を通す
-- **PR を出したら `pr-explain` スキルで解説ページを書く**(技術解説・振る舞いの判断・特に見て
-  ほしい箇所)。振る舞いが変わる push をしたら書き直す(`.claude/skills/pr-explain/`)
+- **PR を出したら `pr-explain` スキルで解説ページを書く**(入口・振る舞い・技術・テストの
+  4 ページ)。振る舞いが変わる push をしたら書き直す(`.claude/skills/pr-explain/`)
 
 **push の前に、まずフックが発火する環境かを確かめ、続けて git hooks と同じ検査を
 `pre-push` ごと走らせ、終了コードで判定する。**
