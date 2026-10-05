@@ -43,6 +43,7 @@ run_check "テストヘルパーの重複" python3 .claude/hooks/lib/duplicate-t
 
 # 上の検出器の判定表。判定表をどの層へ置くかと、その理由は
 # .claude/hooks/README.md「カバー範囲と残る穴」。
+run_check "import 規約の判定表" bash .claude/hooks/lib/import-rule-cases.sh
 run_check "判別子の直読みの判定表" bash .claude/hooks/lib/result-option-read-cases.sh
 run_check "story の title の判定表" bash .claude/hooks/lib/story-title-cases.sh
 run_check "名指ししたパスの判定表" bash .claude/hooks/lib/named-path-cases.sh
