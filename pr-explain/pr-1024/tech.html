@@ -120,9 +120,31 @@ ul.focus li { margin: 6px 0; }
     <main>
       <article id="explain">
 <!-- EXPLAIN:BEGIN -->
-<p class="explain-meta" data-explained-sha="77b8e615cda35d63b642fdc50c1d198877995586" data-pr="1024" data-page="tech">解説時点 <code>77b8e61</code> · 材料 <a href="https://github.com/DIO0550/design-composer/issues/1022">Issue #1022</a></p>
+<p class="explain-meta" data-explained-sha="a0d0badd3487d224bc599d123f4bbea4daff149b" data-pr="1024" data-page="tech">解説時点 <code>a0d0bad</code> · 材料 <a href="https://github.com/DIO0550/design-composer/issues/1022">Issue #1022</a></p>
 <h1>PR ごとの解説ページを Pages に出す: 技術</h1>
-<p class="lead">使った技術 5 つの解説と、変更ファイルを読む順に辿るコードの読み方。</p>
+<p class="lead">「どこで何をしているか」の索引、使った技術 5 つの解説、変更ファイルを読む順に辿るコードの読み方。</p>
+
+<h2 id="where"><span class="kicker">索引</span>どこで何をしているか</h2>
+<table>
+  <tr><th>やっていること</th><th>場所</th><th>呼ばれ方</th></tr>
+  <tr><td>PR のイベントで地図を作り、gh-pages に置く(閉じたら消す)</td><td><code class="ref">.github/workflows/pr-explain.yml:40-66</code></td><td>PR の opened / reopened / synchronize / closed</td></tr>
+  <tr><td>地図を組む(merge-base・変更ファイル・テスト名・コミット)</td><td><code class="ref">.github/scripts/build-pr-change-map.py:259</code></td><td>上のワークフローの Build change map</td></tr>
+  <tr><td>変更ファイルを層に分けて読む順に並べる</td><td><code class="ref">.github/scripts/build-pr-change-map.py:179</code></td><td><code>group_files</code> から 1 ファイルずつ</td></tr>
+  <tr><td>テスト名の増減を前後の中身の集合で比べる</td><td><code class="ref">.github/scripts/build-pr-change-map.py:234</code></td><td><code>build_map</code> から 1 回</td></tr>
+  <tr><td>断片の要素・属性・コメントを検査する</td><td><code class="ref">.github/scripts/build-pr-explain-page.py:86</code></td><td><code>collect_violations</code>(<code class="ref">.github/scripts/build-pr-explain-page.py:187</code>)から</td></tr>
+  <tr><td>explain-meta(sha・PR 番号・ページ名)を突き合わせる</td><td><code class="ref">.github/scripts/build-pr-explain-page.py:147</code></td><td>同上</td></tr>
+  <tr><td>CSP のハッシュと固定スクリプトを突き合わせる</td><td><code class="ref">.github/scripts/build-pr-explain-page.py:170</code></td><td>同上(毎回いちばん先に)</td></tr>
+  <tr><td>断片をテンプレートのマーカーの間へ差し込む</td><td><code class="ref">.github/scripts/build-pr-explain-page.py:206</code></td><td>違反が無かったときだけ</td></tr>
+  <tr><td>gh-pages の 1 フォルダだけを取って書き換え、push する</td><td><code class="ref">.github/scripts/pr-explain-pages.sh:70-134</code></td><td>セッションの <code>put-page</code>、Actions の <code>put-map</code> / <code>remove</code></td></tr>
+  <tr><td>ページのナビ(書かなかったページは「なし」)</td><td><code class="ref">.claude/skills/pr-explain/templates/index.html:136</code></td><td>ページを開いたとき</td></tr>
+  <tr><td><code>path:line</code> を解説時点の GitHub の行リンクにする</td><td><code class="ref">.claude/skills/pr-explain/templates/index.html:163</code></td><td>同上</td></tr>
+  <tr><td>「このページは ◯◯ 時点」の帯</td><td><code class="ref">.claude/skills/pr-explain/templates/index.html:217</code></td><td><code>change-map.json</code> を読んだ後</td></tr>
+  <tr><td>ページごとの地図の節(入口・技術・テスト)</td><td><code class="ref">.claude/skills/pr-explain/templates/index.html:247</code></td><td>同上</td></tr>
+  <tr><td>スクリプトを固定スクリプトだけに絞る(CSP)</td><td><code class="ref">.claude/skills/pr-explain/templates/index.html:5</code></td><td>ブラウザが読み込むとき</td></tr>
+  <tr><td>PR に解説の URL を告知する</td><td><code class="ref">.github/workflows/storybook-pr-preview.yml:124</code></td><td>Storybook プレビューの固定コメントを更新するとき</td></tr>
+  <tr><td>main のデプロイで <code>pr-explain/</code> を消さない</td><td><code class="ref">.github/workflows/deploy-storybook-main.yml:80</code></td><td>main への push</td></tr>
+  <tr><td>判定表 3 本を走らせる</td><td><code class="ref">.github/workflows/frontend.yml:211-219</code> · <code class="ref">harness/githooks/pre-push:62-65</code></td><td>CI の rules-check と、push の前</td></tr>
+</table>
 
 <h2 id="tech"><span class="kicker">技術</span>技術解説</h2>
 
