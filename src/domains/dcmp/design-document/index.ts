@@ -29,6 +29,7 @@ import { PrimitiveTypes } from "@/domains/dcmp/primitive-schema";
 import { ReferenceContext } from "@/domains/dcmp/reference-context";
 import type { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import { ResolvedProps } from "@/domains/dcmp/resolved-props";
+import { Rotation } from "@/domains/dcmp/rotation";
 import { Size } from "@/domains/dcmp/size";
 import { type Token, type TokenRef, TokenSet } from "@/domains/dcmp/token";
 import { Visibilities, Visibility } from "@/domains/dcmp/visibility";
@@ -1254,6 +1255,49 @@ export const DesignDocument = {
           Visibilities.Hidden,
         ),
     });
+  },
+
+  /**
+   * 名前で指したものの向き（docs/03「回転」）。
+   *
+   * @param document 引き先になるドキュメント
+   * @param name 向きを知りたい artboard / ノードの名前
+   * @returns その名前のもの自身の角度。部品インスタンスは上書きを当てた部品の根の角度
+   *   （`isHidden` と同じ）。ドキュメントに無い名前・参照先の部品が無いインスタンスは `none`
+   */
+  rotationOf(document: DesignDocument, name: string): Option<Rotation> {
+    const artboard = DesignDocument.findArtboard(document, name);
+    if (Option.isSome(artboard)) {
+      return Option.some(Rotation.fromProps(Artboard.boxProps(artboard.value)));
+    }
+    return Option.map(
+      Option.flatMap(DesignDocument.findNode(document, name), (node) =>
+        rootPropsOf(document, node),
+      ),
+      Rotation.fromProps,
+    );
+  },
+
+  /**
+   * 名前で指したものが画面上で向いている角度。回った Box の中の子は、親と一緒に回ったうえで
+   * 自分の分だけさらに回る（`rotate()` は子孫にも効く）。
+   *
+   * @param document 引き先になるドキュメント
+   * @param name 向きを知りたい artboard / ノードの名前
+   * @returns 自分と包んでいるノード・artboard の角度の合計。自分の角度が引けないとき
+   *   （`rotationOf` が `none`）は `none`
+   */
+  totalRotationOf(document: DesignDocument, name: string): Option<Rotation> {
+    const ancestorRotations = DesignDocument.collectAncestorNames(
+      document,
+      name,
+    ).flatMap((ancestor) => {
+      const rotation = DesignDocument.rotationOf(document, ancestor);
+      return Option.isSome(rotation) ? [rotation.value] : [];
+    });
+    return Option.map(DesignDocument.rotationOf(document, name), (own) =>
+      ancestorRotations.reduce((total, rotation) => total + rotation, own),
+    );
   },
 
   /**
