@@ -41,7 +41,7 @@ mode="${1:-}"
 pr="${2:-}"
 [[ "$pr" =~ ^[1-9][0-9]*$ ]] || usage
 case "$mode" in
-  put-page) args_ok=$([ $# -eq 4 ] && [[ "$3" =~ ^[a-z]+$ ]] && [ -f "$4" ] && echo yes) ;;
+  put-page) args_ok=$([ $# -eq 4 ] && [ -f "$4" ] && echo yes) ;;
   put-map) args_ok=$([ $# -eq 4 ] && [ -f "$3" ] && [ -f "$4" ] && echo yes) ;;
   remove) args_ok=$([ $# -eq 2 ] && echo yes) ;;
   *) args_ok="" ;;
@@ -53,7 +53,8 @@ folder="pr-explain/pr-$pr"
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 
-# ページ名が決まった 4 つのどれかであることは組み立ての側が見る(知らない名前なら 2)。
+# ページ名が決まった 4 つのどれかであることは組み立ての側が見る(知らない名前なら 2)。ここを通った
+# ページ名だけが下で置き先のファイル名(`$folder/<ページ名>.html`)になる。
 if [ "$mode" = "put-page" ]; then
   python3 "$scripts_dir/build-pr-explain-page.py" "$4" --pr "$pr" --page "$3" --out "$work/page.html" || exit $?
 fi

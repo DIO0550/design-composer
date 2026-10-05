@@ -51,7 +51,7 @@ pass|実体参照で書いた # へのリンク(値はデコードしてから�
 pass|解説のほかのページへのリンク|<a href="tests.html#t-1">テスト</a><a href="behavior.html">振る舞い</a>
 deny|解説のページでない相対リンク|<a href="other.html">x</a>
 deny|解説のページ名に続けた別の綴り|<a href="tests.html.evil">x</a>
-pass|このリポジトリの github.com・Pages・# へのリンク|<a href="https://github.com/DIO0550/design-composer/pull/12">PR</a><a href="https://dio0550.github.io/design-composer/pr-preview/pr-12/">SB</a><a href="#map">地図</a>
+pass|このリポジトリの github.com・Pages・# へのリンク|<a href="https://github.com/DIO0550/design-composer/pull/12">PR</a><a href="https://dio0550.github.io/design-composer/pr-preview/pr-12/">SB</a><a href="#overview">概要</a>
 deny|explain-meta が無い|@nometa<h1>題</h1>
 deny|explain-meta が 2 つある|<p class="explain-meta" data-explained-sha="0123456789abcdef0123456789abcdef01234567" data-pr="12" data-page="index"></p>
 deny|解説時点の sha が 41 桁|@nometa<p class="explain-meta" data-explained-sha="0123456789abcdef0123456789abcdef012345678" data-pr="12" data-page="index"></p>

@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-qCXtEZyJBFtUE6N0PO6FZxYDOLAJbS7uxg80825uS2A='; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-TLLWSMm5q5UA+5n9uxOXLlZtq56fAykpmfFIzNSw2+4='; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR 解説</title>
 <style>
@@ -51,10 +51,10 @@ code { font-family: var(--mono); font-size: 0.88em; background: var(--surface-2)
 .page { max-width: 1180px; margin: 0 auto; padding: 24px 16px 64px; }
 .top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
 .links { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; margin-left: auto; }
-.pages { display: flex; flex-wrap: wrap; gap: 4px; }
-.pages a, .pages span { padding: 4px 12px; border-radius: 999px; font-size: 13px; text-decoration: none; color: var(--text-2); border: 1px solid var(--border); }
-.pages a[aria-current="page"] { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); font-weight: 600; }
-.pages span { color: var(--text-3); border-style: dashed; }
+.explain-pages { display: flex; flex-wrap: wrap; gap: 4px; }
+.explain-pages a, .explain-pages span { padding: 4px 12px; border-radius: 999px; font-size: 13px; text-decoration: none; color: var(--text-2); border: 1px solid var(--border); }
+.explain-pages a[aria-current="page"] { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); font-weight: 600; }
+.explain-pages span { color: var(--text-3); border-style: dashed; }
 .banner { margin: 16px 0 0; padding: 12px 14px; border-radius: 8px; background: var(--amber-soft); color: var(--text); border: 1px solid var(--border); font-size: 14px; }
 .banner ul { margin: 6px 0 0; padding-left: 20px; }
 .layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 32px; margin-top: 24px; }
@@ -111,7 +111,7 @@ ul.focus li { margin: 6px 0; }
 <div class="page">
   <header class="top">
     <span class="kicker">PR 解説</span>
-    <nav class="pages" id="pages" aria-label="ページ"></nav>
+    <nav class="explain-pages" id="explain-pages" aria-label="解説のページ"></nav>
     <nav class="links" id="links"></nav>
   </header>
   <div class="banner" id="staleness" hidden></div>
@@ -123,9 +123,9 @@ ul.focus li { margin: 6px 0; }
 <p class="empty-note">解説はまだ書かれていません。下の「変更の地図」は push のたびに自動で更新されます。振る舞い・技術・テストのページも、書かれると上のナビから開けるようになります。</p>
 <!-- EXPLAIN:END -->
       </article>
-      <section class="map" id="generated" hidden>
-        <h2 id="generated-heading"></h2>
-        <div id="generated-body"><p class="muted">読み込み中…</p></div>
+      <section class="map" id="map-section" hidden>
+        <h2 id="map-section-heading"></h2>
+        <div id="map-section-body"><p class="muted">読み込み中…</p></div>
       </section>
     </main>
   </div>
@@ -133,19 +133,19 @@ ul.focus li { margin: 6px 0; }
 <script>
 (() => {
   const Repo = "DIO0550/design-composer";
-  const Pages = [
-    { name: "index", file: "./", label: "入口" },
-    { name: "behavior", file: "behavior.html", label: "振る舞い" },
-    { name: "tech", file: "tech.html", label: "技術" },
-    { name: "tests", file: "tests.html", label: "テスト" },
+  const ExplainPages = [
+    { name: "index", href: "./", label: "入口" },
+    { name: "behavior", href: "behavior.html", label: "振る舞い" },
+    { name: "tech", href: "tech.html", label: "技術" },
+    { name: "tests", href: "tests.html", label: "テスト" },
   ];
   const explain = document.getElementById("explain");
   const meta = explain.querySelector(".explain-meta");
   const explainedSha = meta ? meta.dataset.explainedSha : "";
   const prFromPath = (location.pathname.match(/pr-(\d+)/) || [])[1] || "";
   const pr = meta ? meta.dataset.pr : prFromPath;
-  const fileFromPath = (location.pathname.match(/([a-z]+)\.html$/) || [])[1] || "index";
-  const page = meta ? meta.dataset.page : fileFromPath;
+  // explain-meta が無いのは、Actions が入口に置いたテンプレートだけ。
+  const page = meta ? meta.dataset.page : "index";
 
   const el = (tag, props, children) => {
     const node = document.createElement(tag);
@@ -170,14 +170,16 @@ ul.focus li { margin: 6px 0; }
     link.append(code);
   }
 
-  // 書かれていないページは「なし」として出す(ドキュメントだけの PR はテストのページを書かない)。
-  const pagesNav = document.getElementById("pages");
-  for (const target of Pages) {
-    const item = target.name === page ? el("a", { href: target.file, "aria-current": "page", text: target.label }) : el("span", { text: target.label });
+  // 書かれていないページ(404)は「なし」として出す(ドキュメントだけの PR はテストのページを書かない)。
+  // 404 以外の失敗は有無が分からないので、リンクのまま残す。
+  const pagesNav = document.getElementById("explain-pages");
+  for (const target of ExplainPages) {
+    const isCurrent = target.name === page;
+    const item = el("a", isCurrent ? { href: target.href, "aria-current": "page", text: target.label } : { href: target.href, text: target.label });
     pagesNav.append(item);
-    if (target.name === page) continue;
-    fetch(target.file, { method: "HEAD", cache: "no-store" }).then((response) => {
-      item.replaceWith(response.ok ? el("a", { href: target.file, text: target.label }) : el("span", { text: `${target.label}(なし)` }));
+    if (isCurrent) continue;
+    fetch(target.href, { method: "HEAD", cache: "no-store" }).then((response) => {
+      if (response.status === 404) item.replaceWith(el("span", { text: `${target.label}(なし)` }));
     });
   }
 
@@ -242,7 +244,7 @@ ul.focus li { margin: 6px 0; }
   };
 
   // ページごとに、地図から足す節。振る舞いのページには足さない。
-  const Generated = {
+  const MapSections = {
     index: {
       heading: "変更の地図",
       render: (body, map) => {
@@ -267,24 +269,29 @@ ul.focus li { margin: 6px 0; }
       },
     },
   };
-  const generated = Generated[page];
+  const mapSection = MapSections[page];
 
   const renderMap = (map) => {
     showStaleness(map);
-    if (!generated) return;
-    const body = document.getElementById("generated-body");
+    if (!mapSection) return;
+    const body = document.getElementById("map-section-body");
     body.replaceChildren();
-    generated.render(body, map);
+    mapSection.render(body, map);
   };
 
   // 読み込みの失敗だけを受ける。描画の失敗は握らず、コンソールにそのまま出す。
+  // 古さを確かめられないことは、地図の節を持たないページでも見えるよう帯に出す。
   const mapUnreadable = (error) => {
-    document.getElementById("generated-body").replaceChildren(el("p", { class: "muted", text: `change-map.json を読めませんでした(${error.message})。ローカルで開いたときと、地図がまだ置かれていないときに出ます。` }));
+    const message = `change-map.json を読めませんでした(${error.message})。このページが最新かを確かめられません。ローカルで開いたときと、地図がまだ置かれていないときに出ます。`;
+    const banner = document.getElementById("staleness");
+    banner.hidden = false;
+    banner.append(message);
+    document.getElementById("map-section-body").replaceChildren(el("p", { class: "muted", text: "地図はありません。" }));
   };
 
-  if (generated) {
-    document.getElementById("generated").hidden = false;
-    document.getElementById("generated-heading").append(el("span", { class: "kicker", text: "自動生成" }), generated.heading);
+  if (mapSection) {
+    document.getElementById("map-section").hidden = false;
+    document.getElementById("map-section-heading").append(el("span", { class: "kicker", text: "自動生成" }), mapSection.heading);
   }
   buildToc();
   fetch(`change-map.json?t=${Date.now()}`, { cache: "no-store" })

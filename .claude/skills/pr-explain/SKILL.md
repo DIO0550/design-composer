@@ -120,6 +120,23 @@ URL は `https://dio0550.github.io/design-composer/pr-explain/pr-<番号>/`(入�
 </div>
 ```
 
+入口のページ:
+
+```html
+<p class="explain-meta" data-explained-sha="<40 桁の sha>" data-pr="<PR 番号>" data-page="index">解説時点 <code><7 桁></code> · 材料 <a href="https://github.com/DIO0550/design-composer/issues/<番号>">Issue #<番号></a></p>
+<h1><PR の題></h1>
+<p class="lead"><1〜2 文の要約></p>
+
+<h2 id="overview">概要</h2>
+<p>…</p>
+
+<h2 id="focus"><span class="kicker">レビュー</span>特に見てほしい箇所</h2>
+<ul class="focus"><li><strong>…</strong>…<a href="behavior.html#b-1">振る舞い</a></li></ul>
+
+<h2 id="guide">各ページの案内</h2>
+<ul><li><a href="behavior.html">振る舞い</a>: …</li></ul>
+```
+
 技術のページの記事と、コードの読み方の 1 ファイル分:
 
 ```html
