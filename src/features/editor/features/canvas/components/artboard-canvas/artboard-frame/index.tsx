@@ -162,18 +162,12 @@ export function ArtboardFrame({
         aria-current={isSelected}
         onClick={(event: MouseEvent<HTMLElement>) => {
           /*
-           * 直前にリサイズしていたなら、ここへ届く click は掴んだハンドルを指しているので
-           * 選択に使えない。**枠の外まで引いて離した回は届かない**（リサイズの `pointerup`
-           * を受けるのは枠の外の器）が、受け口の移動はこの差分では行わない。
-           *
-           * ノードのドラッグと範囲選択は尋ねない。引いたあとの click は離した場所や捕捉した
-           * 要素によって枠の外へも出るので、枠より外側の器がまとめて飲み込む（`useNodeDrag`
-           * / `useRangeSelect` の `dragHandlers`）。artboard のドラッグも尋ねない。掴み口の
-           * 見出しは枠の兄弟なので、運んだあとの click はここへ届かない（`ArtboardDrag` の doc）。
+           * リサイズ・ノードのドラッグ・範囲選択のどれも尋ねない。引いたあとの click は離した
+           * 場所や捕捉した要素によって枠の外へも出るので、枠より外側の器がまとめて飲み込む
+           * （`useNodeResize` の `onClickCapture` / `useNodeDrag` / `useRangeSelect` の
+           * `dragHandlers`）。artboard のドラッグも尋ねない。掴み口の見出しは枠の兄弟なので、
+           * 運んだあとの click はここへ届かない（`ArtboardDrag` の doc）。
            */
-          if (nodeResize.consumeClick()) {
-            return;
-          }
           onSelect(namesAt(event.target), pressDig(event));
         }}
         /*

@@ -1,9 +1,10 @@
-import { fireEvent } from "@testing-library/react";
+import { fireEvent, screen } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { EditContinuities } from "@/domains/session/edit-continuity";
+import { SelectionDigs } from "@/domains/session/selection-dig";
 import { canvasContent } from "@/features/editor/features/canvas/__tests__/canvas-elements";
 import {
   movePointer,
@@ -12,6 +13,7 @@ import {
 } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
 import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import {
+  artboardList,
   drawn,
   drawnAt,
   renderCanvas,
@@ -200,6 +202,67 @@ test("大きさを変えた直後のクリックでは選択が変わらない",
   fireEvent.click(drawn("title"));
 
   expect(onSelect).not.toHaveBeenCalled();
+});
+
+/**
+ * キャンバスの面（ハンドルと土台を並べて持つ器）。ハンドルから掴んで離した直後の `click`
+ * は、押した場所（ハンドル）と離した場所の共通の祖先であるここに出る。
+ */
+function canvasArea(): HTMLElement {
+  return screen.getByRole("region", { name: "キャンバスの面" });
+}
+
+test("辺を掴んで artboard の並びまで引いて離しても、次のクリックは選択に使われる", () => {
+  const onSelect = vi.fn();
+  renderCanvas({ selection: setupSelection(["panel"]), onSelect });
+  const panel = drawnAt("panel", PanelBounds);
+
+  pressPointer(panel, { x: 298, y: 100 });
+  movePointer(artboardList(), { x: 338, y: 100 });
+  releasePointer(artboardList(), { x: 338, y: 100 });
+  // 押した場所（枠の中）と離した場所（並び）の共通の祖先＝並びに出る
+  fireEvent.click(artboardList());
+  fireEvent.click(drawn("title"));
+
+  expect(onSelect).toHaveBeenCalledWith(
+    ["title", "home"],
+    SelectionDigs.NoDeeper,
+  );
+});
+
+test("ハンドルを掴んで artboard の並びまで引いて離しても、次のクリックは選択に使われる", () => {
+  const onSelect = vi.fn();
+  renderCanvas({ selection: setupSelection(["panel"]), onSelect });
+  drawnAt("panel", PanelBounds);
+
+  pressPointer(resizeHandleAt({ x: 1, y: 0.5 }), { x: 300, y: 100 });
+  movePointer(artboardList(), { x: 340, y: 100 });
+  releasePointer(artboardList(), { x: 340, y: 100 });
+  fireEvent.click(canvasArea());
+  fireEvent.click(drawn("title"));
+
+  expect(onSelect).toHaveBeenCalledWith(
+    ["title", "home"],
+    SelectionDigs.NoDeeper,
+  );
+});
+
+test("ハンドルを掴んで枠の中で離しても、次のクリックは選択に使われる", () => {
+  const onSelect = vi.fn();
+  renderCanvas({ selection: setupSelection(["panel"]), onSelect });
+  const panel = drawnAt("panel", PanelBounds);
+
+  pressPointer(resizeHandleAt({ x: 1, y: 0.5 }), { x: 300, y: 100 });
+  movePointer(panel, { x: 280, y: 100 });
+  releasePointer(panel, { x: 280, y: 100 });
+  // ハンドルは土台の兄弟なので、枠の中で離しても共通の祖先はキャンバスの面になる
+  fireEvent.click(canvasArea());
+  fireEvent.click(drawn("title"));
+
+  expect(onSelect).toHaveBeenCalledWith(
+    ["title", "home"],
+    SelectionDigs.NoDeeper,
+  );
 });
 
 test("幅のハンドルを掴んで右へ運ぶと、動かした分だけ幅が伸びた大きさが通知される", () => {

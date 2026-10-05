@@ -205,6 +205,12 @@ export function ArtboardCanvas({
        * 入力欄は土台の外にあり、土台で受けるとその上だけブラウザの既定メニューが出る。
        */
       onContextMenu={(event) => openContextMenu(event, [])}
+      /*
+       * リサイズで離した直後の `click` は、押した場所と離した場所の最も近い共通の祖先に出る。
+       * ハンドルは土台の兄弟なので、ハンドルから掴んだ回はどこで離してもこの器に出る。
+       * 土台や `canvas-content` で受けるとその回を飲み込めず、状態が次のクリックまで残る。
+       */
+      onClickCapture={nodeResize.onClickCapture}
       className="relative flex h-full flex-col overflow-hidden"
     >
       <div

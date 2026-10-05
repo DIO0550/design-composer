@@ -1,4 +1,5 @@
 import {
+  type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
   useReducer,
   useRef,
@@ -93,14 +94,20 @@ function withMeasuredSnap(
   );
 }
 
-/** 運んでいる間のポインタを追う側（artboard の並び）へ渡す props。 */
+/** 運んでいる間のポインタを追う側（artboard の並びを包む `canvas-content`）へ渡す props。 */
 export type NodeResizeHandlers = Readonly<{
   onPointerMove: (event: ReactPointerEvent<HTMLElement>) => void;
   onPointerUp: () => void;
   onPointerLeave: () => void;
 }>;
 
-/** リサイズ中の状態と、ハンドルへ渡すハンドラ。 */
+/**
+ * リサイズ中の状態と、ハンドル・キャンバスの面へ渡すハンドラ。
+ *
+ * `onClickCapture` は `dragHandlers` に入れない（`useNodeDrag` / `useRangeSelect` とは
+ * 形が違う）。付け先が `dragHandlers` と違い、ハンドルと土台をともに含む器になるため
+ * （理由は付け先の `ArtboardCanvas` が持つ）。
+ */
 export type NodeResizeControl = Readonly<{
   /** 押された位置が掴める帯なら掴む。掴んだ（＝移動のドラッグに渡さない）なら `true`。 */
   grabAt: (event: ReactPointerEvent<HTMLElement>) => boolean;
@@ -114,8 +121,8 @@ export type NodeResizeControl = Readonly<{
    */
   grabbed: Option<ResizeHold>;
   dragHandlers: NodeResizeHandlers;
-  /** リサイズ直後の `click` を飲み込む。飲み込んだ（＝選択に使わない）なら `true`。 */
-  consumeClick: () => boolean;
+  /** リサイズ直後の `click` を飲み込む（選択に使わせない / `NodeResize` の `resized`）。 */
+  onClickCapture: (event: ReactMouseEvent<HTMLElement>) => void;
 }>;
 
 /**
@@ -129,7 +136,7 @@ export type NodeResizeControl = Readonly<{
  *
  * @param params 掴める軸と位置を持つ `resizable`、実測に使う `selection`、倍率の `view`、
  *   大きさが確定したときに呼ぶ `onResize`
- * @returns ハンドルを掴む手続きと、ポインタを追うハンドラ・`click` を飲み込む手続き
+ * @returns ハンドルを掴む手続きと、ポインタを追うハンドラ・`click` を飲み込むハンドラ
  */
 export function useNodeResize(
   params: Readonly<{
@@ -240,12 +247,12 @@ export function useNodeResize(
       onPointerUp: () => dispatch({ type: "release" }),
       onPointerLeave: () => dispatch({ type: "cancel" }),
     },
-    consumeClick: () => {
+    onClickCapture: (event) => {
       if (!NodeResize.consumesClick(resize)) {
-        return false;
+        return;
       }
+      event.stopPropagation();
       dispatch({ type: "consume_click" });
-      return true;
     },
   };
 }
