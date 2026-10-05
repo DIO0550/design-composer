@@ -8,7 +8,7 @@ import { Option } from "@/utils/Option";
  * キャンバスの中身はコンパイル結果の HTML を流し込んでおり React の管理下に無いため、
  * ref では掴めず名前の属性を選択子にして引くしかない。引き方はどこでも同じなので、
  * 名前で要素を引く選択子の綴りと、DOM を触るところをここへ閉じ込める（要素の実測は
- * `boundsOf`、名前で引いて測るのは `DrawnBounds`、規則の差し込みは `NameStyleRule`）。
+ * `boundsOf` と `layoutSizeOf`、名前で引いて測るのは `DrawnBounds`、規則の差し込みは `NameStyleRule`）。
  *
  * 名前で引いて 1 つに定まるのは artboard とその配下のノードだけ。名前はドキュメント上で
  * 一意（docs/01-file-format.md「ノードの識別（name）」）でも、部品の中のノードは展開で
@@ -58,5 +58,26 @@ export const CanvasDom = {
       width: rect.width,
       height: rect.height,
     };
+  },
+
+  /**
+   * 変形（`transform`）を効かせる前の、レイアウトが決めた大きさ。回っている要素の実測
+   * （`boundsOf`）は軸に平行な外接矩形になるので、回る前の大きさはこちらで測る。
+   *
+   * 戻り値の型を名前を付けずに書く理由は `boundsOf` と同じ。
+   *
+   * @param element 測る要素
+   * @returns border を含む幅と高さ（整数へ丸められている）。レイアウトの大きさを持たない
+   *   要素（HTML の要素でないもの）は `none`
+   */
+  layoutSizeOf(
+    element: Element,
+  ): Option<Readonly<{ width: number; height: number }>> {
+    return element instanceof HTMLElement
+      ? Option.some({
+          width: element.offsetWidth,
+          height: element.offsetHeight,
+        })
+      : Option.none;
   },
 } as const;
