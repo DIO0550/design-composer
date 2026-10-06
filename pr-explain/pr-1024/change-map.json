@@ -2,7 +2,7 @@
   "version": 1,
   "pr": 1024,
   "mergeBase": "2421cd666bb86ab3de76f66d1deb75e1b1a5eea0",
-  "head": "f51f6fbb6e695373f4ec75265e2afdeff10ef77a",
+  "head": "cba4db683515f83931953193e07c76654a7c1408",
   "groups": [
     {
       "label": "ハーネス",
@@ -39,7 +39,7 @@
           "path": ".claude/skills/pr-explain/SKILL.md",
           "status": "A",
           "oldPath": null,
-          "additions": 227,
+          "additions": 228,
           "deletions": 0
         },
         {
@@ -67,14 +67,14 @@
           "path": ".github/scripts/build-pr-explain-excerpt-cases.sh",
           "status": "A",
           "oldPath": null,
-          "additions": 82,
+          "additions": 116,
           "deletions": 0
         },
         {
           "path": ".github/scripts/build-pr-explain-excerpt.py",
           "status": "A",
           "oldPath": null,
-          "additions": 139,
+          "additions": 226,
           "deletions": 0
         },
         {
@@ -95,7 +95,7 @@
           "path": ".github/scripts/pr-explain-pages-cases.sh",
           "status": "A",
           "oldPath": null,
-          "additions": 162,
+          "additions": 168,
           "deletions": 0
         },
         {
@@ -279,6 +279,16 @@
         ".github/workflows/frontend.yml",
         "harness/githooks/README.md",
         "harness/githooks/pre-push"
+      ]
+    },
+    {
+      "sha": "cba4db683515f83931953193e07c76654a7c1408",
+      "files": [
+        ".claude/skills/pr-explain/SKILL.md",
+        ".claude/skills/pr-explain/templates/index.html",
+        ".github/scripts/build-pr-explain-excerpt-cases.sh",
+        ".github/scripts/build-pr-explain-excerpt.py",
+        ".github/scripts/pr-explain-pages-cases.sh"
       ]
     }
   ]
