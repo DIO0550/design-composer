@@ -95,6 +95,8 @@ figure.diagram figcaption { margin-top: 8px; font-size: 13px; color: var(--text-
 pre.code { margin: 12px 0; padding: 12px 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; overflow-x: auto; font: 13px/1.6 var(--mono); }
 pre.code code { background: none; padding: 0; font-size: inherit; }
 pre.code[data-file]::before { content: attr(data-file); display: block; margin-bottom: 8px; color: var(--text-3); font-size: 12px; }
+pre.code .ln { display: inline-block; min-width: 3.5ch; margin-right: 14px; color: var(--text-3); text-align: right; user-select: none; }
+.where-ref { margin: 4px 0 0; color: var(--text-2); font-size: 14px; }
 .note { margin: 14px 0; padding: 10px 14px; border-radius: 8px; font-size: 14px; }
 .note.info { background: var(--accent-soft); }
 .note.warn { background: var(--amber-soft); }
@@ -120,31 +122,354 @@ ul.focus li { margin: 6px 0; }
     <main>
       <article id="explain">
 <!-- EXPLAIN:BEGIN -->
-<p class="explain-meta" data-explained-sha="a0d0badd3487d224bc599d123f4bbea4daff149b" data-pr="1024" data-page="tech">解説時点 <code>a0d0bad</code> · 材料 <a href="https://github.com/DIO0550/design-composer/issues/1022">Issue #1022</a></p>
+<p class="explain-meta" data-explained-sha="9267f565c14f4414ea96a0a56ca7a2cbbb8a438a" data-pr="1024" data-page="tech">解説時点 <code>9267f56</code> · 材料 <a href="https://github.com/DIO0550/design-composer/issues/1022">Issue #1022</a></p>
 <h1>PR ごとの解説ページを Pages に出す: 技術</h1>
-<p class="lead">「どこで何をしているか」の索引、使った技術 5 つの解説、変更ファイルを読む順に辿るコードの読み方。</p>
+<p class="lead">この PR がやっていることごとのコード抜粋(どこで何をしているか)、使った技術 5 つの解説、変更ファイルを読む順に辿るコードの読み方。</p>
 
-<h2 id="where"><span class="kicker">索引</span>どこで何をしているか</h2>
-<table>
-  <tr><th>やっていること</th><th>場所</th><th>呼ばれ方</th></tr>
-  <tr><td>PR のイベントで地図を作り、gh-pages に置く(閉じたら消す)</td><td><code class="ref">.github/workflows/pr-explain.yml:40-66</code></td><td>PR の opened / reopened / synchronize / closed</td></tr>
-  <tr><td>地図を組む(merge-base・変更ファイル・テスト名・コミット)</td><td><code class="ref">.github/scripts/build-pr-change-map.py:259</code></td><td>上のワークフローの Build change map</td></tr>
-  <tr><td>変更ファイルを層に分けて読む順に並べる</td><td><code class="ref">.github/scripts/build-pr-change-map.py:179</code></td><td><code>group_files</code> から 1 ファイルずつ</td></tr>
-  <tr><td>テスト名の増減を前後の中身の集合で比べる</td><td><code class="ref">.github/scripts/build-pr-change-map.py:234</code></td><td><code>build_map</code> から 1 回</td></tr>
-  <tr><td>断片の要素・属性・コメントを検査する</td><td><code class="ref">.github/scripts/build-pr-explain-page.py:86</code></td><td><code>collect_violations</code>(<code class="ref">.github/scripts/build-pr-explain-page.py:187</code>)から</td></tr>
-  <tr><td>explain-meta(sha・PR 番号・ページ名)を突き合わせる</td><td><code class="ref">.github/scripts/build-pr-explain-page.py:147</code></td><td>同上</td></tr>
-  <tr><td>CSP のハッシュと固定スクリプトを突き合わせる</td><td><code class="ref">.github/scripts/build-pr-explain-page.py:170</code></td><td>同上(毎回いちばん先に)</td></tr>
-  <tr><td>断片をテンプレートのマーカーの間へ差し込む</td><td><code class="ref">.github/scripts/build-pr-explain-page.py:206</code></td><td>違反が無かったときだけ</td></tr>
-  <tr><td>gh-pages の 1 フォルダだけを取って書き換え、push する</td><td><code class="ref">.github/scripts/pr-explain-pages.sh:70-134</code></td><td>セッションの <code>put-page</code>、Actions の <code>put-map</code> / <code>remove</code></td></tr>
-  <tr><td>ページのナビ(書かなかったページは「なし」)</td><td><code class="ref">.claude/skills/pr-explain/templates/index.html:136</code></td><td>ページを開いたとき</td></tr>
-  <tr><td><code>path:line</code> を解説時点の GitHub の行リンクにする</td><td><code class="ref">.claude/skills/pr-explain/templates/index.html:163</code></td><td>同上</td></tr>
-  <tr><td>「このページは ◯◯ 時点」の帯</td><td><code class="ref">.claude/skills/pr-explain/templates/index.html:217</code></td><td><code>change-map.json</code> を読んだ後</td></tr>
-  <tr><td>ページごとの地図の節(入口・技術・テスト)</td><td><code class="ref">.claude/skills/pr-explain/templates/index.html:247</code></td><td>同上</td></tr>
-  <tr><td>スクリプトを固定スクリプトだけに絞る(CSP)</td><td><code class="ref">.claude/skills/pr-explain/templates/index.html:5</code></td><td>ブラウザが読み込むとき</td></tr>
-  <tr><td>PR に解説の URL を告知する</td><td><code class="ref">.github/workflows/storybook-pr-preview.yml:124</code></td><td>Storybook プレビューの固定コメントを更新するとき</td></tr>
-  <tr><td>main のデプロイで <code>pr-explain/</code> を消さない</td><td><code class="ref">.github/workflows/deploy-storybook-main.yml:80</code></td><td>main への push</td></tr>
-  <tr><td>判定表 3 本を走らせる</td><td><code class="ref">.github/workflows/frontend.yml:211-219</code> · <code class="ref">harness/githooks/pre-push:62-65</code></td><td>CI の rules-check と、push の前</td></tr>
-</table>
+<h2 id="where"><span class="kicker">コード</span>どこで何をしているか</h2>
+<p>この PR がやっていることごとに、それをしているコードの実物を抜粋した。行番号は解説時点のファイルのもので、抜粋の上の <code>path:行</code> は GitHub の該当行へのリンク。</p>
+
+<h3 id="w-workflow">PR のイベントで地図を作り、gh-pages に置く(閉じたら消す)</h3>
+<p>PR が開かれた・push された・開き直されたときは地図(<code>change-map.json</code>)を作って <code>put-map</code> で置き、閉じたときは <code>remove</code> でフォルダごと消す。認証ヘッダは環境変数の git 設定で 1 本だけ渡す。</p>
+<p class="where-ref"><code class="ref">.github/workflows/pr-explain.yml:40-66</code></p>
+<pre class="code"><code><span class="ln">40</span>      - name: Build change map
+<span class="ln">41</span>        if: github.event.action != 'closed'
+<span class="ln">42</span>        env:
+<span class="ln">43</span>          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+<span class="ln">44</span>          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+<span class="ln">45</span>          PR: ${{ github.event.number }}
+<span class="ln">46</span>        run: python3 .github/scripts/build-pr-change-map.py --base "$BASE_SHA" --head "$HEAD_SHA" --pr "$PR" &gt; "$RUNNER_TEMP/change-map.json"
+<span class="ln">47</span>
+<span class="ln">48</span>      # 環境変数の git 設定で認証ヘッダを渡す。pr-explain-pages.sh は gh-pages を作業用の別フォルダへ
+<span class="ln">49</span>      # clone するので、どのフォルダで走る git にも同じ設定が効く形にする。base64 にした値は
+<span class="ln">50</span>      # Actions が自動では伏せないので、ログに出ないよう登録する。
+<span class="ln">51</span>      - name: Publish to gh-pages
+<span class="ln">52</span>        env:
+<span class="ln">53</span>          GH_TOKEN: ${{ github.token }}
+<span class="ln">54</span>          PR: ${{ github.event.number }}
+<span class="ln">55</span>          ACTION: ${{ github.event.action }}
+<span class="ln">56</span>        run: |
+<span class="ln">57</span>          credential="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+<span class="ln">58</span>          echo "::add-mask::$credential"
+<span class="ln">59</span>          export GIT_CONFIG_COUNT=1
+<span class="ln">60</span>          export GIT_CONFIG_KEY_0="http.https://github.com/.extraheader"
+<span class="ln">61</span>          export GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $credential"
+<span class="ln">62</span>          if [ "$ACTION" = "closed" ]; then
+<span class="ln">63</span>            bash .github/scripts/pr-explain-pages.sh remove "$PR"
+<span class="ln">64</span>          else
+<span class="ln">65</span>            bash .github/scripts/pr-explain-pages.sh put-map "$PR" "$RUNNER_TEMP/change-map.json" .claude/skills/pr-explain/templates/index.html
+<span class="ln">66</span>          fi</code></pre>
+
+<h3 id="w-map">地図を組む</h3>
+<p>上の Build change map から 1 回呼ばれる入口。base の先端ではなく head との分岐点(merge-base)から差分を取り、変更ファイル・層ごとのまとまり・テスト名の増減・コミットごとの変更ファイルを 1 つの JSON にする。</p>
+<p class="where-ref"><code class="ref">.github/scripts/build-pr-change-map.py:259-278</code></p>
+<pre class="code"><code><span class="ln">259</span>def build_map(base_tip: str, head_ref: str, pr: int) -&gt; dict:
+<span class="ln">260</span>    """change-map.json の中身を作る。
+<span class="ln">261</span>
+<span class="ln">262</span>    @param base_tip PR の base の先端
+<span class="ln">263</span>    @param head_ref PR の head
+<span class="ln">264</span>    @param pr PR 番号
+<span class="ln">265</span>    @returns 地図。`mergeBase` は base の先端ではなく head との分岐点。変更が無ければ各一覧は空配列
+<span class="ln">266</span>    """
+<span class="ln">267</span>    head = git("rev-parse", head_ref).strip()
+<span class="ln">268</span>    merge_base = git("merge-base", base_tip, head).strip()
+<span class="ln">269</span>    files = changed_files(merge_base, head)
+<span class="ln">270</span>    return {
+<span class="ln">271</span>        "version": 1,
+<span class="ln">272</span>        "pr": pr,
+<span class="ln">273</span>        "mergeBase": merge_base,
+<span class="ln">274</span>        "head": head,
+<span class="ln">275</span>        "groups": group_files(files),
+<span class="ln">276</span>        "tests": test_changes(files, merge_base, head),
+<span class="ln">277</span>        "commits": commits_between(merge_base, head),
+<span class="ln">278</span>    }</code></pre>
+
+<h3 id="w-layer">変更ファイルを層に分けて読む順に並べる</h3>
+<p><code>group_files</code> が 1 ファイルずつ <code>layer_of</code> に層を聞き、(読む順の位置, 見出し, 並べ替えの鍵) の組でまとめてソートする。層の中は本体 → テスト → story の順。</p>
+<p class="where-ref"><code class="ref">.github/scripts/build-pr-change-map.py:223-231</code></p>
+<pre class="code"><code><span class="ln">223</span>def group_files(files: list[dict]) -&gt; list[dict]:
+<span class="ln">224</span>    """変更ファイルを層ごとにまとめ、読む順に並べる。"""
+<span class="ln">225</span>    groups: dict[tuple[int, str, str], list[dict]] = {}
+<span class="ln">226</span>    for file in files:
+<span class="ln">227</span>        groups.setdefault(layer_of(file["path"]), []).append(file)
+<span class="ln">228</span>    return [
+<span class="ln">229</span>        {"label": label, "files": sorted(members, key=lambda file: (kind_of(file["path"]), file["path"]))}
+<span class="ln">230</span>        for (_, label, _), members in sorted(groups.items())
+<span class="ln">231</span>    ]</code></pre>
+<p class="where-ref"><code class="ref">.github/scripts/build-pr-change-map.py:179-198</code></p>
+<pre class="code"><code><span class="ln">179</span>def layer_of(path: str) -&gt; tuple[int, str, str]:
+<span class="ln">180</span>    """ファイルが属する層を、読む順の位置・層の見出し・層の中での並べ替えの鍵で返す。"""
+<span class="ln">181</span>    if path.startswith(f"{DOMAINS_ROOT}/"):
+<span class="ln">182</span>        category = path.split("/")[2]
+<span class="ln">183</span>        rank = DomainCategories.index(category) if category in DomainCategories else len(DomainCategories)
+<span class="ln">184</span>        return rank, f"domains / {category}", ""
+<span class="ln">185</span>    rank = len(DomainCategories) + 1
+<span class="ln">186</span>    for name, root in InnerLayers:
+<span class="ln">187</span>        if path.startswith(f"{root}/"):
+<span class="ln">188</span>            return rank, name, ""
+<span class="ln">189</span>        rank += 1
+<span class="ln">190</span>    feature = feature_of(path)
+<span class="ln">191</span>    if feature is not None:
+<span class="ln">192</span>        return rank, f"features / {feature}", feature
+<span class="ln">193</span>    rank += 1
+<span class="ln">194</span>    for name, root in OuterLayers:
+<span class="ln">195</span>        if path.startswith(f"{root}/"):
+<span class="ln">196</span>            return rank, name, ""
+<span class="ln">197</span>        rank += 1
+<span class="ln">198</span>    return unlayered_area_of(path, rank)</code></pre>
+
+<h3 id="w-tests">テスト名の増減を、前後のファイルの中身の集合で比べる</h3>
+<p>差分の行ではなく、変更前と変更後のファイルからテスト名を抜いて集合の差を取る。rename や <code>test.each</code> の改行位置が変わっただけのときに「削除 + 追加」に化けないため。</p>
+<p class="where-ref"><code class="ref">.github/scripts/build-pr-change-map.py:234-247</code></p>
+<pre class="code"><code><span class="ln">234</span>def test_changes(files: list[dict], base: str, head: str) -&gt; dict[str, list[dict]]:
+<span class="ln">235</span>    """テストファイルごとに、前後のテスト名の集合を比べて増減を出す。"""
+<span class="ln">236</span>    added: list[dict] = []
+<span class="ln">237</span>    removed: list[dict] = []
+<span class="ln">238</span>    for file in files:
+<span class="ln">239</span>        old_path = file["oldPath"] or file["path"]
+<span class="ln">240</span>        is_test = TestFile.search(file["path"]) or TestFile.search(old_path)
+<span class="ln">241</span>        if not is_test:
+<span class="ln">242</span>            continue
+<span class="ln">243</span>        before = test_names(file_at(base, old_path)) if file["status"] != "A" else set()
+<span class="ln">244</span>        after = test_names(file_at(head, file["path"])) if file["status"] != "D" else set()
+<span class="ln">245</span>        added += [{"file": file["path"], "name": name} for name in sorted(after - before)]
+<span class="ln">246</span>        removed += [{"file": file["path"], "name": name} for name in sorted(before - after)]
+<span class="ln">247</span>    return {"added": added, "removed": removed}</code></pre>
+<p class="where-ref"><code class="ref">.github/scripts/build-pr-change-map.py:131-134</code></p>
+<pre class="code"><code><span class="ln">131</span>def test_names(text: str) -&gt; set[str]:
+<span class="ln">132</span>    """テストファイルの中身から、テスト名の集合を抜く。"""
+<span class="ln">133</span>    names = (test_name_at(text, call) for call in TestCall.finditer(text))
+<span class="ln">134</span>    return {name for name in names if name is not None}</code></pre>
+
+<h3 id="w-scan">断片の要素・属性を検査する</h3>
+<p><code>html.parser</code> が開いたタグごとに <code>inspect</code> が呼ばれる。禁止の要素を報告し、属性は 1 つずつ <code>attribute_problem</code> に渡す(値は実体参照をデコード済み)。<code>explain-meta</code> の属性もここで集める。</p>
+<p class="where-ref"><code class="ref">.github/scripts/build-pr-explain-page.py:115-124</code></p>
+<pre class="code"><code><span class="ln">115</span>    def inspect(self, tag: str, attrs: list[tuple[str, str | None]]) -&gt; None:
+<span class="ln">116</span>        if tag in ForbiddenTags:
+<span class="ln">117</span>            self.reject(f"&lt;{tag}&gt; は書けない")
+<span class="ln">118</span>        values = {name: value or "" for name, value in attrs}
+<span class="ln">119</span>        if "explain-meta" in values.get("class", "").split():
+<span class="ln">120</span>            self.metas.append(values)
+<span class="ln">121</span>        for name, value in values.items():
+<span class="ln">122</span>            problem = attribute_problem(name, value)
+<span class="ln">123</span>            if problem:
+<span class="ln">124</span>                self.reject(f"&lt;{tag}&gt; の {problem}")</code></pre>
+<p class="where-ref"><code class="ref">.github/scripts/build-pr-explain-page.py:134-144</code></p>
+<pre class="code"><code><span class="ln">134</span>    if name.startswith("on"):
+<span class="ln">135</span>        return f"イベント属性 {name} は書けない"
+<span class="ln">136</span>    if name in ForbiddenAttributes:
+<span class="ln">137</span>        return f"属性 {name} は書けない"
+<span class="ln">138</span>    if name not in UrlAttributes:
+<span class="ln">139</span>        return None
+<span class="ln">140</span>    target = value.strip()
+<span class="ln">141</span>    is_allowed = target.startswith(AllowedUrlPrefixes) or SiblingPageLink.fullmatch(target) is not None
+<span class="ln">142</span>    if is_allowed:
+<span class="ln">143</span>        return None
+<span class="ln">144</span>    return f"{name} の行き先 {value!r} は許していない(許すのは {' / '.join(AllowedUrlPrefixes)} で始まるものと、解説のページ {' / '.join(f'{page}.html' for page in PageNames)} だけ)"</code></pre>
+
+<h3 id="w-meta">explain-meta(sha・PR 番号・ページ名)を公開先と突き合わせる</h3>
+<p>固定スクリプトはこの sha で行リンク・「古い」帯を決め、ページ名で地図の節を選ぶので、欠けたり食い違ったりしたら公開しない。</p>
+<p class="where-ref"><code class="ref">.github/scripts/build-pr-explain-page.py:157-167</code></p>
+<pre class="code"><code><span class="ln">157</span>    if len(metas) != 1:
+<span class="ln">158</span>        return [f'class="explain-meta" の要素は 1 つだけ置く(今は {len(metas)} 個)']
+<span class="ln">159</span>    sha = metas[0].get("data-explained-sha", "")
+<span class="ln">160</span>    problems = []
+<span class="ln">161</span>    if not FullSha.fullmatch(sha):
+<span class="ln">162</span>        problems.append(f"data-explained-sha は 40 桁の sha で書く(今は {sha!r})")
+<span class="ln">163</span>    if metas[0].get("data-pr") != str(destination.pr):
+<span class="ln">164</span>        problems.append(f"data-pr が公開先の PR #{destination.pr} と違う(今は {metas[0].get('data-pr')!r})")
+<span class="ln">165</span>    if metas[0].get("data-page") != destination.page:
+<span class="ln">166</span>        problems.append(f"data-page が公開先のページ {destination.page} と違う(今は {metas[0].get('data-page')!r})")
+<span class="ln">167</span>    return problems</code></pre>
+
+<h3 id="w-csp">CSP のハッシュと固定スクリプトを突き合わせる</h3>
+<p>毎回いちばん先に見る。固定スクリプトを変えてハッシュを直し忘れると、ブラウザでスクリプトが丸ごと止まるため。</p>
+<p class="where-ref"><code class="ref">.github/scripts/build-pr-explain-page.py:176-184</code></p>
+<pre class="code"><code><span class="ln">176</span>    scripts = InlineScript.findall(template)
+<span class="ln">177</span>    declared = CspScriptHash.findall(template)
+<span class="ln">178</span>    has_one_each = len(scripts) == 1 and len(declared) == 1
+<span class="ln">179</span>    if not has_one_each:
+<span class="ln">180</span>        return f"固定スクリプト {len(scripts)} 本・CSP のハッシュ {len(declared)} 個(どちらも 1 つのはず)"
+<span class="ln">181</span>    actual = base64.b64encode(hashlib.sha256(scripts[0].encode("utf-8")).digest()).decode("ascii")
+<span class="ln">182</span>    if declared[0] != actual:
+<span class="ln">183</span>        return f"CSP は sha256-{declared[0]} を許しているが、固定スクリプトは sha256-{actual}"
+<span class="ln">184</span>    return None</code></pre>
+
+<h3 id="w-assemble">違反が無ければ、断片をテンプレートのマーカーの間へ差し込んで書き出す</h3>
+<p>違反が 1 件でもあれば報告して終了コード 1(書き出さない)。無ければマーカーの間だけを断片に置き換える。枠(CSS・スクリプト・CSP)はテンプレートのまま。</p>
+<p class="where-ref"><code class="ref">.github/scripts/build-pr-explain-page.py:235-241</code></p>
+<pre class="code"><code><span class="ln">235</span>    violations = collect_violations(fragment, template, destination)
+<span class="ln">236</span>    for violation in violations:
+<span class="ln">237</span>        print(violation)
+<span class="ln">238</span>    if violations:
+<span class="ln">239</span>        return 1
+<span class="ln">240</span>    Path(options["--out"]).write_text(assemble(fragment, template), encoding="utf-8")
+<span class="ln">241</span>    return 0</code></pre>
+<p class="where-ref"><code class="ref">.github/scripts/build-pr-explain-page.py:206-210</code></p>
+<pre class="code"><code><span class="ln">206</span>def assemble(fragment: str, template: str) -&gt; str:
+<span class="ln">207</span>    """断片をテンプレートのマーカーの間へ差し込む(マーカーの間にあった既定の文は捨てる)。"""
+<span class="ln">208</span>    before, rest = template.split(BeginMarker)
+<span class="ln">209</span>    _, after = rest.split(EndMarker)
+<span class="ln">210</span>    return f"{before}{BeginMarker}\n{fragment.strip()}\n{EndMarker}{after}"</code></pre>
+
+<h3 id="w-checkout">gh-pages の 1 フォルダだけを取る</h3>
+<p><code>put-page</code> / <code>put-map</code> / <code>remove</code> のどれでも最初に呼ばれる。中身を後回しにする浅い clone から <code>pr-explain/pr-N/</code> だけを展開する(gh-pages は約 352 MB ある)。</p>
+<p class="where-ref"><code class="ref">.github/scripts/pr-explain-pages.sh:85-88</code></p>
+<pre class="code"><code><span class="ln">85</span>  git clone --quiet --filter=blob:none --no-checkout --depth 1 --branch "$branch" --single-branch \
+<span class="ln">86</span>    "$remote" "$work/site" &amp;&amp;
+<span class="ln">87</span>    git -C "$work/site" sparse-checkout set --no-cone "/$folder/" &amp;&amp;
+<span class="ln">88</span>    git -C "$work/site" checkout --quiet "$branch"</code></pre>
+
+<h3 id="w-apply">モードごとにフォルダを書き換える</h3>
+<p><code>put-page</code> は地図が無ければ 3 を返して置かない(PR が閉じて消された後に復活させない)。<code>put-map</code> は入口がまだ無いときだけテンプレートを置く。</p>
+<p class="where-ref"><code class="ref">.github/scripts/pr-explain-pages.sh:92-108</code></p>
+<pre class="code"><code><span class="ln">92</span>apply_change() {
+<span class="ln">93</span>  local site="$work/site"
+<span class="ln">94</span>  case "$mode" in
+<span class="ln">95</span>    put-page)
+<span class="ln">96</span>      [ -f "$site/$folder/change-map.json" ] || return 3
+<span class="ln">97</span>      cp "$work/page.html" "$site/$folder/$3.html"
+<span class="ln">98</span>      ;;
+<span class="ln">99</span>    put-map)
+<span class="ln">100</span>      mkdir -p "$site/$folder"
+<span class="ln">101</span>      cp "$3" "$site/$folder/change-map.json"
+<span class="ln">102</span>      [ -f "$site/$folder/index.html" ] || cp "$4" "$site/$folder/index.html"
+<span class="ln">103</span>      ;;
+<span class="ln">104</span>    remove)
+<span class="ln">105</span>      git -C "$site" rm -r --quiet --ignore-unmatch -- "$folder"
+<span class="ln">106</span>      ;;
+<span class="ln">107</span>  esac
+<span class="ln">108</span>}</code></pre>
+
+<h3 id="w-retry">push が競合したら取り直してやり直す</h3>
+<p>Storybook のデプロイなどほかのワークフローも gh-pages へ push するので、最大 5 回、待ち時間を伸ばしながら取り直す。</p>
+<p class="where-ref"><code class="ref">.github/scripts/pr-explain-pages.sh:134-143</code></p>
+<pre class="code"><code><span class="ln">134</span>for attempt in $(seq 1 "$max_attempts"); do
+<span class="ln">135</span>  if checkout_site; then
+<span class="ln">136</span>    apply_change "$@"
+<span class="ln">137</span>    applied=$?
+<span class="ln">138</span>    [ "$applied" -eq 3 ] &amp;&amp; { echo "$folder/change-map.json がありません(PR が開いていて、地図が作られた後に置けます)" &gt;&amp;2; exit 3; }
+<span class="ln">139</span>    [ "$applied" -eq 0 ] &amp;&amp; commit_and_push &amp;&amp; exit 0
+<span class="ln">140</span>  fi
+<span class="ln">141</span>  echo "gh-pages への反映に失敗しました($attempt 回目)。取り直してやり直します" &gt;&amp;2
+<span class="ln">142</span>  sleep $((attempt * retry_wait))
+<span class="ln">143</span>done</code></pre>
+
+<h3 id="w-csp-meta">スクリプトを固定スクリプトだけに絞る(CSP)</h3>
+<p>ブラウザがページを読み込むときに効く。断片に <code>&lt;script&gt;</code> やイベント属性が紛れても、ハッシュが合わないので動かない。</p>
+<p class="where-ref"><code class="ref">.claude/skills/pr-explain/templates/index.html:5</code></p>
+<pre class="code"><code><span class="ln">5</span>&lt;meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-TLLWSMm5q5UA+5n9uxOXLlZtq56fAykpmfFIzNSw2+4='; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'"&gt;</code></pre>
+
+<h3 id="w-ref"><code>path:line</code> を解説時点の GitHub の行リンクにする</h3>
+<p>ページを開いたときに、本文の <code>code.ref</code> をすべて <code>explain-meta</code> の sha の行へのリンクで包む。</p>
+<p class="where-ref"><code class="ref">.claude/skills/pr-explain/templates/index.html:165-173</code></p>
+<pre class="code"><code><span class="ln">165</span>  for (const code of explain.querySelectorAll("code.ref")) {
+<span class="ln">166</span>    const match = code.textContent.trim().match(/^(.+?)(?::(\d+)(?:-(\d+))?)?$/);
+<span class="ln">167</span>    if (!match) continue;
+<span class="ln">168</span>    const [, path, start, end] = match;
+<span class="ln">169</span>    const lines = start ? `#L${start}${end ? `-L${end}` : ""}` : "";
+<span class="ln">170</span>    const link = el("a", { href: `https://github.com/${Repo}/blob/${explainedSha}/${path}${lines}` });
+<span class="ln">171</span>    code.replaceWith(link);
+<span class="ln">172</span>    link.append(code);
+<span class="ln">173</span>  }</code></pre>
+
+<h3 id="w-nav">ページのナビ(書かなかったページは「なし」)</h3>
+<p>ページを開いたときに 4 ページ分のリンクを並べ、ほかのページを HEAD で問い合わせて 404 なら「(なし)」に差し替える。</p>
+<p class="where-ref"><code class="ref">.claude/skills/pr-explain/templates/index.html:178-186</code></p>
+<pre class="code"><code><span class="ln">178</span>  for (const target of ExplainPages) {
+<span class="ln">179</span>    const isCurrent = target.name === page;
+<span class="ln">180</span>    const item = el("a", isCurrent ? { href: target.href, "aria-current": "page", text: target.label } : { href: target.href, text: target.label });
+<span class="ln">181</span>    pagesNav.append(item);
+<span class="ln">182</span>    if (isCurrent) continue;
+<span class="ln">183</span>    fetch(target.href, { method: "HEAD", cache: "no-store" }).then((response) =&gt; {
+<span class="ln">184</span>      if (response.status === 404) item.replaceWith(el("span", { text: `${target.label}(なし)` }));
+<span class="ln">185</span>    });
+<span class="ln">186</span>  }</code></pre>
+
+<h3 id="w-stale">「このページは ◯◯ 時点」の帯</h3>
+<p><code>change-map.json</code> を読んだ後に呼ばれる。解説時点の sha が地図の head と違えば、それ以降のコミットで変わったファイルを帯に並べる。</p>
+<p class="where-ref"><code class="ref">.claude/skills/pr-explain/templates/index.html:219-232</code></p>
+<pre class="code"><code><span class="ln">219</span>  const showStaleness = (map) =&gt; {
+<span class="ln">220</span>    const isOutdated = explainedSha !== "" &amp;&amp; map.head !== explainedSha;
+<span class="ln">221</span>    if (!isOutdated) return;
+<span class="ln">222</span>    const banner = document.getElementById("staleness");
+<span class="ln">223</span>    const index = map.commits.findIndex((commit) =&gt; commit.sha === explainedSha);
+<span class="ln">224</span>    banner.hidden = false;
+<span class="ln">225</span>    if (index &lt; 0) {
+<span class="ln">226</span>      banner.append(`解説を書いた時点のコミット(${explainedSha.slice(0, 7)})が、この PR のコミット一覧に見つかりません。force push などで履歴が変わった可能性があります。`);
+<span class="ln">227</span>      return;
+<span class="ln">228</span>    }
+<span class="ln">229</span>    const changed = [...new Set(map.commits.slice(index + 1).flatMap((commit) =&gt; commit.files))].sort();
+<span class="ln">230</span>    banner.append(`このページは ${explainedSha.slice(0, 7)} 時点のものです。以降のコミットで変わったファイル:`);
+<span class="ln">231</span>    banner.append(el("ul", {}, changed.map((path) =&gt; el("li", {}, [el("code", { text: path })]))));
+<span class="ln">232</span>  };</code></pre>
+
+<h3 id="w-sections">ページごとの地図の節(入口・技術・テスト)</h3>
+<p>ページ名で節を選ぶ。入口は変更ファイルの一覧、技術は本文にフルパスで出てこない変更ファイル、テストは追加・削除されたテスト名。振る舞いのページには足さない。</p>
+<p class="where-ref"><code class="ref">.claude/skills/pr-explain/templates/index.html:249-273</code></p>
+<pre class="code"><code><span class="ln">249</span>  const MapSections = {
+<span class="ln">250</span>    index: {
+<span class="ln">251</span>      heading: "変更の地図",
+<span class="ln">252</span>      render: (body, map) =&gt; {
+<span class="ln">253</span>        body.append(el("p", { class: "muted", text: `head ${map.head.slice(0, 7)} · base との分岐点 ${map.mergeBase.slice(0, 7)} · 上から読む順(内側の層から外側へ)に並べています。` }));
+<span class="ln">254</span>        for (const group of map.groups) appendList(body, group.label, group.files.map(fileItem));
+<span class="ln">255</span>        if (map.groups.length === 0) body.append(el("p", { class: "muted", text: "変更されたファイルはありません。" }));
+<span class="ln">256</span>      },
+<span class="ln">257</span>    },
+<span class="ln">258</span>    tech: {
+<span class="ln">259</span>      heading: "解説に出てこない変更ファイル",
+<span class="ln">260</span>      render: (body, map) =&gt; {
+<span class="ln">261</span>        const unmentioned = map.groups.flatMap((group) =&gt; group.files).filter((file) =&gt; !isMentioned(file.path));
+<span class="ln">262</span>        body.append(el("p", { class: "muted", text: "このページの本文にフルパスで出てこない変更ファイル。コードの読み方が触れていないものです。" }));
+<span class="ln">263</span>        appendList(body, "解説に出てこない", unmentioned.map(fileItem));
+<span class="ln">264</span>      },
+<span class="ln">265</span>    },
+<span class="ln">266</span>    tests: {
+<span class="ln">267</span>      heading: "追加・削除されたテスト",
+<span class="ln">268</span>      render: (body, map) =&gt; {
+<span class="ln">269</span>        appendList(body, "追加されたテスト", map.tests.added.map(testItem));
+<span class="ln">270</span>        appendList(body, "削除されたテスト", map.tests.removed.map(testItem));
+<span class="ln">271</span>      },
+<span class="ln">272</span>    },
+<span class="ln">273</span>  };</code></pre>
+
+<h3 id="w-announce">PR に解説の URL を告知する</h3>
+<p>Storybook プレビューの固定コメントを更新するときに 1 行足す。告知のコメントを別に増やさない。</p>
+<p class="where-ref"><code class="ref">.github/workflows/storybook-pr-preview.yml:122-131</code></p>
+<pre class="code"><code><span class="ln">122</span>          # 解説ページは pr-explain.yml が地図を置き、本文はセッションが書く(.claude/skills/pr-explain/)。
+<span class="ln">123</span>          # 告知の固定コメントをもう 1 本増やさないよう、ここに相乗りする。
+<span class="ln">124</span>          EXPLAIN_URL="https://${OWNER}.github.io/${REPO_NAME}/pr-explain/pr-${PR}/"
+<span class="ln">125</span>
+<span class="ln">126</span>          BODY_FILE=preview-comment.md
+<span class="ln">127</span>          {
+<span class="ln">128</span>            echo "$COMMENT_MARKER"
+<span class="ln">129</span>            echo "📖 Storybook preview: ${URL}"
+<span class="ln">130</span>            echo "📘 PR 解説(振る舞い・技術・テスト・変更の地図): ${EXPLAIN_URL}"
+<span class="ln">131</span>          } &gt; "$BODY_FILE"</code></pre>
+
+<h3 id="w-keep">main のデプロイで <code>pr-explain/</code> を消さない</h3>
+<p>main への push で gh-pages を作り直すときの掃除の対象から外す。</p>
+<p class="where-ref"><code class="ref">.github/workflows/deploy-storybook-main.yml:79-80</code></p>
+<pre class="code"><code><span class="ln">79</span>            # pr-preview/ と visual-regression/ と pr-explain/ 以外を全削除してから main の成果物を配置
+<span class="ln">80</span>            find . -mindepth 1 -maxdepth 1 ! -name pr-preview ! -name visual-regression ! -name pr-explain ! -name .git -exec rm -rf {} +</code></pre>
+
+<h3 id="w-cases">判定表 3 本を走らせる</h3>
+<p>CI の <code>rules-check</code> と、push の前の pre-push の両方で走る。</p>
+<p class="where-ref"><code class="ref">.github/workflows/frontend.yml:211-219</code></p>
+<pre class="code"><code><span class="ln">211</span>      # PR の解説ページ(pr-explain.yml とセッションの pr-explain スキル)が使う 3 本の判定表。
+<span class="ln">212</span>      - name: 解説ページの組み立ての判定表
+<span class="ln">213</span>        run: bash .github/scripts/build-pr-explain-page-cases.sh
+<span class="ln">214</span>
+<span class="ln">215</span>      - name: 変更の地図の判定表
+<span class="ln">216</span>        run: bash .github/scripts/build-pr-change-map-cases.sh
+<span class="ln">217</span>
+<span class="ln">218</span>      - name: 解説ページの置き場の判定表
+<span class="ln">219</span>        run: bash .github/scripts/pr-explain-pages-cases.sh</code></pre>
+<p class="where-ref"><code class="ref">harness/githooks/pre-push:62-65</code></p>
+<pre class="code"><code><span class="ln">62</span># PR の解説ページ(.claude/skills/pr-explain/)が使う組み立て・地図・置き場の判定表。
+<span class="ln">63</span>run_check "解説ページの組み立ての判定表" bash .github/scripts/build-pr-explain-page-cases.sh
+<span class="ln">64</span>run_check "変更の地図の判定表" bash .github/scripts/build-pr-change-map-cases.sh
+<span class="ln">65</span>run_check "解説ページの置き場の判定表" bash .github/scripts/pr-explain-pages-cases.sh</code></pre>
 
 <h2 id="tech"><span class="kicker">技術</span>技術解説</h2>
 
@@ -192,34 +517,25 @@ git -C "$work/site" checkout gh-pages</code></pre>
 +DOMAINS_ROOT = f"{DEFAULT_ROOT}/domains"</code></pre>
 
 <h3><code class="ref">.claude/skills/pr-explain/templates/index.html</code></h3>
-<p>4 ページが共有する枠。CSS(ライト/ダーク)、CSP、固定スクリプトを持つ。固定スクリプトは、断片の <code>explain-meta</code> からページ名と解説時点の sha を読み、ナビ・行リンク・古さの帯を作り、<code>change-map.json</code> からページごとの自動生成の節(<code>Generated</code> の対応表)を描く。描画はすべて <code>textContent</code> で、PR 由来の文字列が HTML として解釈される経路は無い。</p>
-<pre class="code" data-file=".claude/skills/pr-explain/templates/index.html"><code>const Generated = {
-  index: { heading: "変更の地図", render: … },
-  tech: { heading: "解説に出てこない変更ファイル", render: … },
-  tests: { heading: "追加・削除されたテスト", render: … },
-};</code></pre>
+<p>4 ページが共有する枠。CSS(ライト/ダーク)、CSP、固定スクリプトを持つ。固定スクリプトは、断片の <code>explain-meta</code> からページ名と解説時点の sha を読み、ナビ・行リンク・古さの帯を作り、<code>change-map.json</code> からページごとの地図の節(<code>MapSections</code> の対応表)を描く。描画はすべて <code>textContent</code> で、PR 由来の文字列が HTML として解釈される経路は無い。コードは <a href="#w-ref">行リンク</a>・<a href="#w-nav">ナビ</a>・<a href="#w-stale">古さの帯</a>・<a href="#w-sections">地図の節</a>。</p>
 
 <h3><code class="ref">.claude/skills/pr-explain/SKILL.md</code> と <code class="ref">.claude/skills/implementation-flow/SKILL.md</code></h3>
 <p>セッションが従う手順。ページごとに何を書き何を書かないか、部品の HTML、公開のコマンド。implementation-flow はフェーズ 7 に「PR を出したら解説を書く」を 1 行足しただけ。</p>
 
 <h3><code class="ref">.github/scripts/build-pr-change-map.py</code></h3>
-<p>Actions が呼ぶ。<code>build_map</code> が入口で、merge-base を求め、<code>changed_files</code>(rename を 1 件に畳む)→ <code>group_files</code>(<code>layer_of</code> で層に分けて読む順に並べる)→ <code>test_changes</code>(前後の中身からテスト名を抜いて集合で比べる)→ <code>commits_between</code>(コミットごとの変更ファイル)の順に地図を組む。</p>
+<p>Actions が呼ぶ。<code>build_map</code> が入口で、merge-base を求め、<code>changed_files</code>(rename を 1 件に畳む)→ <code>group_files</code>(<code>layer_of</code> で層に分けて読む順に並べる)→ <code>test_changes</code>(前後の中身からテスト名を抜いて集合で比べる)→ <code>commits_between</code>(コミットごとの変更ファイル)の順に地図を組む。コードは <a href="#w-map">地図を組む</a>・<a href="#w-layer">層に分ける</a>・<a href="#w-tests">テスト名の増減</a>。</p>
 
 <h3><code class="ref">.github/scripts/build-pr-explain-page.py</code></h3>
-<p>セッションが書いた断片を検査してテンプレートへ差し込む。<code>FragmentScanner</code> が要素・属性・コメントを集め、<code>meta_problems</code> が <code>explain-meta</code>(sha 40 桁・PR 番号・ページ名)を見て、<code>assemble</code> がマーカーの間を置き換える。違反があればページを書き出さない。</p>
-<pre class="code" data-file=".github/scripts/build-pr-explain-page.py"><code>def assemble(fragment: str, template: str) -&gt; str:
-    before, rest = template.split(BeginMarker)
-    _, after = rest.split(EndMarker)
-    return f"{before}{BeginMarker}\n{fragment.strip()}\n{EndMarker}{after}"</code></pre>
+<p>セッションが書いた断片を検査してテンプレートへ差し込む。<code>FragmentScanner</code> が要素・属性・コメントを集め、<code>meta_problems</code> が <code>explain-meta</code>(sha 40 桁・PR 番号・ページ名)を見て、<code>assemble</code> がマーカーの間を置き換える。違反があればページを書き出さない。コードは <a href="#w-scan">要素・属性の検査</a>・<a href="#w-meta">explain-meta</a>・<a href="#w-csp">CSP</a>・<a href="#w-assemble">差し込み</a>。</p>
 
 <h3><code class="ref">.github/scripts/pr-explain-pages.sh</code></h3>
-<p>gh-pages の <code>pr-explain/pr-N/</code> だけを書き換える。<code>put-page</code>(セッション)は組み立てたページを 1 ファイル置き、<code>put-map</code>(Actions)は地図を置いて入口が無ければテンプレートを置き、<code>remove</code> はフォルダごと消す。どれも <code>checkout_site</code> → <code>apply_change</code> → <code>commit_and_push</code> の順で、push が競合したら最大 5 回取り直す。</p>
+<p>gh-pages の <code>pr-explain/pr-N/</code> だけを書き換える。<code>put-page</code>(セッション)は組み立てたページを 1 ファイル置き、<code>put-map</code>(Actions)は地図を置いて入口が無ければテンプレートを置き、<code>remove</code> はフォルダごと消す。どれも <code>checkout_site</code> → <code>apply_change</code> → <code>commit_and_push</code> の順で、push が競合したら最大 5 回取り直す。コードは <a href="#w-checkout">1 フォルダだけ取る</a>・<a href="#w-apply">書き換え</a>・<a href="#w-retry">やり直し</a>。</p>
 
 <h3><code class="ref">.github/workflows/pr-explain.yml</code>・<code class="ref">.github/workflows/storybook-pr-preview.yml</code>・<code class="ref">.github/workflows/deploy-storybook-main.yml</code></h3>
-<p><code>pr-explain.yml</code> は PR のイベントで地図を作って置き、閉じたら消す。Storybook のビルドを待たないよう別のワークフローにした。プレビューの固定コメントには URL を 1 行足し、main のデプロイの掃除からは <code>pr-explain</code> を外した。</p>
+<p><code>pr-explain.yml</code> は PR のイベントで地図を作って置き、閉じたら消す。Storybook のビルドを待たないよう別のワークフローにした。プレビューの固定コメントには URL を 1 行足し、main のデプロイの掃除からは <code>pr-explain</code> を外した。コードは <a href="#w-workflow">地図を置く</a>・<a href="#w-announce">告知</a>・<a href="#w-keep">掃除から外す</a>。</p>
 
 <h3>判定表と配線: <code class="ref">.github/scripts/build-pr-explain-page-cases.sh</code>・<code class="ref">.github/scripts/build-pr-change-map-cases.sh</code>・<code class="ref">.github/scripts/pr-explain-pages-cases.sh</code></h3>
-<p>3 本とも <code>ok</code> だけなら期待どおり。CI の <code class="ref">.github/workflows/frontend.yml</code>(<code>rules-check</code>)と <code class="ref">harness/githooks/pre-push</code> が走らせ、置き場所と所要時間は <code class="ref">.claude/hooks/README.md</code> と <code class="ref">harness/githooks/README.md</code> に書いた。何を守っているかは<a href="tests.html">テストのページ</a>。</p>
+<p>3 本とも <code>ok</code> だけなら期待どおり。CI の <code class="ref">.github/workflows/frontend.yml</code>(<code>rules-check</code>)と <code class="ref">harness/githooks/pre-push</code> が走らせ、置き場所と所要時間は <code class="ref">.claude/hooks/README.md</code> と <code class="ref">harness/githooks/README.md</code> に書いた。配線のコードは <a href="#w-cases">判定表を走らせる</a>。何を守っているかは<a href="tests.html">テストのページ</a>。</p>
 <!-- EXPLAIN:END -->
       </article>
       <section class="map" id="map-section" hidden>
