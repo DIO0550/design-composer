@@ -2,7 +2,7 @@
   "version": 1,
   "pr": 1024,
   "mergeBase": "2421cd666bb86ab3de76f66d1deb75e1b1a5eea0",
-  "head": "cba4db683515f83931953193e07c76654a7c1408",
+  "head": "f6bb371127168b74a5094d53b71777c41709b0cb",
   "groups": [
     {
       "label": "ハーネス",
@@ -39,28 +39,28 @@
           "path": ".claude/skills/pr-explain/SKILL.md",
           "status": "A",
           "oldPath": null,
-          "additions": 228,
+          "additions": 246,
           "deletions": 0
         },
         {
           "path": ".claude/skills/pr-explain/templates/index.html",
           "status": "A",
           "oldPath": null,
-          "additions": 636,
+          "additions": 907,
           "deletions": 0
         },
         {
           "path": ".github/scripts/build-pr-change-map-cases.sh",
           "status": "A",
           "oldPath": null,
-          "additions": 148,
+          "additions": 172,
           "deletions": 0
         },
         {
           "path": ".github/scripts/build-pr-change-map.py",
           "status": "A",
           "oldPath": null,
-          "additions": 298,
+          "additions": 384,
           "deletions": 0
         },
         {
@@ -290,6 +290,105 @@
         ".github/scripts/build-pr-explain-excerpt.py",
         ".github/scripts/pr-explain-pages-cases.sh"
       ]
+    },
+    {
+      "sha": "f6bb371127168b74a5094d53b71777c41709b0cb",
+      "files": [
+        ".claude/skills/pr-explain/SKILL.md",
+        ".claude/skills/pr-explain/templates/index.html",
+        ".github/scripts/build-pr-change-map-cases.sh",
+        ".github/scripts/build-pr-change-map.py"
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".claude/hooks/lib/import-rule-violations.py",
+      "to": ".claude/hooks/lib/ts_sources.py"
+    },
+    {
+      "from": ".github/scripts/build-pr-change-map-cases.sh",
+      "to": ".github/scripts/build-pr-change-map.py"
+    },
+    {
+      "from": ".github/scripts/build-pr-change-map.py",
+      "to": ".claude/hooks/lib/ts_sources.py"
+    },
+    {
+      "from": ".github/scripts/build-pr-explain-excerpt-cases.sh",
+      "to": ".github/scripts/build-pr-explain-excerpt.py"
+    },
+    {
+      "from": ".github/scripts/build-pr-explain-excerpt-cases.sh",
+      "to": ".github/scripts/build-pr-explain-page.py"
+    },
+    {
+      "from": ".github/scripts/build-pr-explain-page-cases.sh",
+      "to": ".github/scripts/build-pr-explain-page.py"
+    },
+    {
+      "from": ".github/scripts/build-pr-explain-page.py",
+      "to": ".claude/skills/pr-explain/templates/index.html"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": ".github/scripts/pr-explain-pages.sh"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages.sh",
+      "to": ".github/scripts/build-pr-explain-page.py"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/import-rule-violations.py"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/build-pr-change-map-cases.sh"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/build-pr-explain-excerpt-cases.sh"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/build-pr-explain-page-cases.sh"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/pr-explain-pages-cases.sh"
+    },
+    {
+      "from": ".github/workflows/pr-explain.yml",
+      "to": ".claude/skills/pr-explain/templates/index.html"
+    },
+    {
+      "from": ".github/workflows/pr-explain.yml",
+      "to": ".github/scripts/build-pr-change-map.py"
+    },
+    {
+      "from": ".github/workflows/pr-explain.yml",
+      "to": ".github/scripts/pr-explain-pages.sh"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/import-rule-violations.py"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/build-pr-change-map-cases.sh"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/build-pr-explain-excerpt-cases.sh"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/build-pr-explain-page-cases.sh"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/pr-explain-pages-cases.sh"
     }
   ]
 }
