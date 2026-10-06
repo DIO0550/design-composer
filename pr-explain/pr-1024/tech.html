@@ -548,7 +548,7 @@ ul.focus li { margin: 6px 0; }
  # 型だけの import も一緒に拾う。循環で困るのは実行時のロード順ではなく設計の向きで、</code></pre>
 
 <h3 id="w-excerpt">コード抜粋を起点からの diff として作る</h3>
-<p>セッションが解説を書くときに、行範囲ごとに呼ぶ。起点の中身と作業ツリーのファイルを全行の文脈付きで diff し、変更後の行番号が範囲にある行と、範囲の中で消した行を抜き出す。</p>
+<p>セッションが解説を書くときに、行範囲ごとに呼ぶ。起点の中身とコミット済みの HEAD の中身を全行の文脈付きで diff し、変更後の行番号が範囲にある行と、範囲の中で消した行を抜き出す。</p>
 <p class="where-ref"><code class="ref">.github/scripts/build-pr-explain-excerpt.py:128-141</code></p>
 <pre class="code" data-diff><code>@@ -0,0 +128,14 @@
 +def excerpt_lines(lines: list[DiffLine], span: range) -&gt; list[DiffLine]:
