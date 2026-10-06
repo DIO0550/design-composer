@@ -1,11 +1,19 @@
 #!/usr/bin/env python3
 """PR の差分から、解説ページの「変更の地図」(`change-map.json`)を作る。
 
-地図に載せるのは 3 つ。どれも git の差分だけで決まるので、AI ではなく Actions が作る。
+地図に載せるのは 4 つ。どれも git の差分と中身だけで決まるので、AI ではなく Actions が作る。
 
 - 変更したファイルを層ごとにまとめ、内側の層から外側へ読む順に並べたもの
 - `__tests__/` のテスト名の増減(テスト名は仕様の文なので、増減がそのまま守る仕様の増減になる)
 - コミットごとの変更ファイル(解説を書いた時点より後に何が変わったかをページ側で出すため)
+- 変更ファイルどうしの依存(どのファイルがどのファイルを使っているか。ページが依存の図にする)
+
+**依存は 3 通りで拾う。** TypeScript / JavaScript の import(`@/` と相対パスを解決する)、Python の
+import(モジュール名と同じ名前の `.py`)、ファイルの中に別の変更ファイルのパスが書かれていること
+(ワークフローがスクリプトを呼ぶ・スクリプトがテンプレートを読む、など言語をまたぐ参照)。同じフォルダの
+ファイルはファイル名だけでも数える(`"$scripts_dir/x.py"` のように呼ぶため。`index.*` は名前が
+ありふれているので数えない)。コメントだけの行・Python の docstring の言及と Markdown は、説明であって
+依存ではないので数えない(「理由は x を見る」が逆向きの依存に化ける)。
 
 **差分の起点は base の先端ではなく merge-base。** PR の画面の「Files changed」と同じ範囲にする。
 
@@ -20,6 +28,7 @@
 """
 
 import json
+import posixpath
 import re
 import subprocess
 import sys
@@ -46,6 +55,15 @@ TestCall = re.compile(r"(?<![\w$.])(?:test|it)(?:\.(?:skip|only|todo|concurrent|
 Quote = re.compile(r"\s*(['\"`])")
 OpeningParen = re.compile(r"\s*\(")
 StatusLetters = {"A": "A", "M": "M", "D": "D", "R": "R", "C": "A", "T": "M"}
+
+# import の指定子(`from "x"` / `import("x")` / `import "x"`)と、指定子から試すファイルの候補。
+ImportSpecifier = re.compile(r"""(?:\bfrom\s*|\bimport\s*\(\s*|\bimport\s+)(['"])([^'"\n]+)\1""")
+ScriptSuffixes = (".ts", ".tsx", ".js", ".mjs", ".jsx")
+ImportCandidates = ("", ".ts", ".tsx", "/index.ts", "/index.tsx")
+PythonImport = re.compile(r"^\s*(?:from\s+([\w.]+)\s+import\b|import\s+([\w.]+))", re.M)
+# コメントだけの行(`#` `//` と、doc コメントの続きの `*`)と、Python の docstring。
+CommentLine = re.compile(r"^\s*(?:#|//|/?\*)")
+Docstring = re.compile(r'("""|\'\'\')[\s\S]*?\1')
 
 
 def git(*args: str) -> str:
@@ -247,6 +265,73 @@ def test_changes(files: list[dict], base: str, head: str) -> dict[str, list[dict
     return {"added": added, "removed": removed}
 
 
+def import_targets(source: str, text: str) -> set[str]:
+    """import が指すファイルの候補を返す(`@/` と相対パスだけ。パッケージは返さない)。
+
+    @param source import している側のパス
+    @param text その中身
+    @returns 指定子を拡張子と `index` で補った候補のパス
+    """
+    candidates = set()
+    for match in ImportSpecifier.finditer(text):
+        specifier = match.group(2)
+        if specifier.startswith("@/"):
+            stem = f"{DEFAULT_ROOT}/{specifier[2:]}"
+        elif specifier.startswith("."):
+            stem = posixpath.normpath(posixpath.join(posixpath.dirname(source), specifier))
+        else:
+            continue
+        candidates.update(stem + suffix for suffix in ImportCandidates)
+    return candidates
+
+
+def python_import_targets(text: str, paths: set[str]) -> set[str]:
+    """Python の import が指す変更ファイル(モジュール名の最後の部分と同じ名前の `.py`)を返す。"""
+    modules = {(match.group(1) or match.group(2)).split(".")[-1] for match in PythonImport.finditer(text)}
+    return {path for path in paths if path.endswith(".py") and posixpath.basename(path)[:-3] in modules}
+
+
+def code_of(source: str, text: str) -> str:
+    """依存を探す範囲。コメントだけの行と、Python なら docstring を落とす。"""
+    code = Docstring.sub("", text) if source.endswith(".py") else text
+    return "\n".join(line for line in code.split("\n") if not CommentLine.match(line))
+
+
+def reference_pattern(source: str, target: str) -> re.Pattern[str]:
+    """source の中で target を指す綴り。
+
+    フルパスか、同じフォルダならファイル名(シェル変数のフォルダを前に置いた `$dir/x.py` も含む)。
+    前後が別のパスの文字に続いているものは、別のパスの一部なので当てない。
+    """
+    name = posixpath.basename(target)
+    is_sibling = posixpath.dirname(source) == posixpath.dirname(target) and not name.startswith("index.")
+    sibling = rf"|(?:\$\{{?\w+\}}?/)?{re.escape(name)}" if is_sibling else ""
+    return re.compile(rf"(?<![\w./-])(?:{re.escape(target)}{sibling})(?![\w./-])")
+
+
+def dependencies_between(files: list[dict], head: str) -> list[dict]:
+    """変更ファイルどうしの依存を返す。
+
+    @param files 変更ファイル(`changed_files` の戻り値)
+    @param head 中身を読む時点
+    @returns `{"from": 使う側, "to": 使われる側}` の並び。消したファイル・バイナリ・Markdown は使う側にしない
+    """
+    paths = {file["path"] for file in files if file["status"] != "D"}
+    edges = set()
+    for file in files:
+        source = file["path"]
+        is_readable = file["status"] != "D" and file["additions"] is not None and not source.endswith(".md")
+        if not is_readable:
+            continue
+        text = code_of(source, file_at(head, source))
+        imported = import_targets(source, text) if source.endswith(ScriptSuffixes) else set()
+        imported_python = python_import_targets(text, paths) if source.endswith(".py") else set()
+        mentioned = {target for target in paths if reference_pattern(source, target).search(text)}
+        targets = (imported | imported_python | mentioned) & paths
+        edges.update((source, target) for target in targets if target != source)
+    return [{"from": source, "to": target} for source, target in sorted(edges)]
+
+
 def commits_between(base: str, head: str) -> list[dict]:
     """base..head のコミットを古い順に、変更ファイルとともに返す。マージコミットは変更ファイルを持たない。"""
     shas = git("rev-list", "--reverse", f"{base}..{head}").split()
@@ -275,6 +360,7 @@ def build_map(base_tip: str, head_ref: str, pr: int) -> dict:
         "groups": group_files(files),
         "tests": test_changes(files, merge_base, head),
         "commits": commits_between(merge_base, head),
+        "dependencies": dependencies_between(files, head),
     }
 
 

@@ -87,6 +87,20 @@ put src/app/App.tsx 'export const App = 1;'
 put src/main.tsx 'export {};'
 put rules/x.md 'x'
 put .claude/skills/x/SKILL.md 'x'
+# 依存を確かめるファイル。TS の import(`@/` と相対)、Python の import、ワークフローからの呼び出し、
+# 同じフォルダのシェル変数付きの呼び出しは依存。コメント・docstring・Markdown の言及と、同じフォルダの
+# ありふれた `index.*` の名前は依存にしない。
+put src/services/uses-node/index.ts 'import { Node } from "@/domains/dcmp/node";
+import { Px } from "../../domains/unit/px";'
+put .github/scripts/helper_mod.py 'x = 1'
+put .github/scripts/tool.py 'from helper_mod import x'
+put .github/scripts/doc_only.py '"""helper_mod.py の説明だけ"""
+y = 2'
+put .github/scripts/run-cases.sh 'python3 "$scripts_dir/tool.py"
+# 説明: doc_only.py を見る'
+put .github/workflows/y.yml 'run: python3 .github/scripts/tool.py'
+put docs/ref.md 'see .github/scripts/tool.py'
+put src/hooks/use-x/other.ts 'export const Name = "index.ts";'
 git add -A && git commit --quiet -m second
 head="$(git rev-parse HEAD)"
 
@@ -106,6 +120,7 @@ import json, sys
 m = json.load(open(sys.argv[1], encoding="utf-8"))
 fork, first, head = sys.argv[3:6]
 labels = [group["label"] for group in m["groups"]]
+deps = {(d["from"], d["to"]) for d in m.get("dependencies", [])}
 files = {file["path"]: file for group in m["groups"] for file in group["files"]}
 label_of = {file["path"]: group["label"] for group in m["groups"] for file in group["files"]}
 added = {test["name"] for test in m["tests"]["added"]}
@@ -138,6 +153,15 @@ test.each(…)(…) の名前も拾う|"表で回すテスト %i" in added
 新しく足したテストファイルのテストは追加として出る|"新しいファイルのテスト" in added and "ボタンのテスト" in added
 修飾付きの test.skip と、括弧入りの表の test.each も拾う|"飛ばすテスト" in added and "括弧入りの表 %s" in added
 split(",") や /x/.test("y") の引数はテスト名として拾わない|"," not in added and "y" not in added
+TS の @/ と相対パスの import は、index を補って変更ファイルへの依存になる|("src/services/uses-node/index.ts", "src/domains/dcmp/node/index.ts") in deps and ("src/services/uses-node/index.ts", "src/domains/unit/px/index.ts") in deps
+Python の import は同じ名前の .py への依存になる|(".github/scripts/tool.py", ".github/scripts/helper_mod.py") in deps
+ワークフローがフルパスで呼ぶスクリプトは依存になる|(".github/workflows/y.yml", ".github/scripts/tool.py") in deps
+同じフォルダを $変数/ファイル名 で呼ぶのは依存になる|(".github/scripts/run-cases.sh", ".github/scripts/tool.py") in deps
+コメントだけの行の言及は依存にしない|(".github/scripts/run-cases.sh", ".github/scripts/doc_only.py") not in deps
+docstring の言及は依存にしない|(".github/scripts/doc_only.py", ".github/scripts/helper_mod.py") not in deps
+Markdown は使う側にしない|not any(source == "docs/ref.md" for source, _ in deps)
+同じフォルダのありふれた index.* の名前は依存にしない|("src/hooks/use-x/other.ts", "src/hooks/use-x/index.ts") not in deps
+差分なしの地図は依存も空|m["dependencies"] == []
 テストファイルの rename は増減に出ない|"動かすだけのテスト" not in added and "動かすだけのテスト" not in removed
 中身だけ変えたテストは増減に出ない|"中身だけ変えるテスト" not in added and "既存のテスト" not in added
 追加はこの 6 件だけ|added == {"足したテスト", "表で回すテスト %i", "新しいファイルのテスト", "飛ばすテスト", "括弧入りの表 %s", "ボタンのテスト"}
