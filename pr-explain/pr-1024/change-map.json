@@ -2,7 +2,7 @@
   "version": 1,
   "pr": 1024,
   "mergeBase": "2421cd666bb86ab3de76f66d1deb75e1b1a5eea0",
-  "head": "a88ac650e310a25a8eef9cf75e757669edc7afcf",
+  "head": "f51f6fbb6e695373f4ec75265e2afdeff10ef77a",
   "groups": [
     {
       "label": "ハーネス",
@@ -11,7 +11,7 @@
           "path": ".claude/hooks/README.md",
           "status": "M",
           "oldPath": null,
-          "additions": 4,
+          "additions": 5,
           "deletions": 1
         },
         {
@@ -39,14 +39,14 @@
           "path": ".claude/skills/pr-explain/SKILL.md",
           "status": "A",
           "oldPath": null,
-          "additions": 224,
+          "additions": 227,
           "deletions": 0
         },
         {
           "path": ".claude/skills/pr-explain/templates/index.html",
           "status": "A",
           "oldPath": null,
-          "additions": 540,
+          "additions": 636,
           "deletions": 0
         },
         {
@@ -61,6 +61,20 @@
           "status": "A",
           "oldPath": null,
           "additions": 298,
+          "deletions": 0
+        },
+        {
+          "path": ".github/scripts/build-pr-explain-excerpt-cases.sh",
+          "status": "A",
+          "oldPath": null,
+          "additions": 82,
+          "deletions": 0
+        },
+        {
+          "path": ".github/scripts/build-pr-explain-excerpt.py",
+          "status": "A",
+          "oldPath": null,
+          "additions": 139,
           "deletions": 0
         },
         {
@@ -102,7 +116,7 @@
           "path": ".github/workflows/frontend.yml",
           "status": "M",
           "oldPath": null,
-          "additions": 10,
+          "additions": 13,
           "deletions": 0
         },
         {
@@ -130,7 +144,7 @@
           "path": "harness/githooks/pre-push",
           "status": "M",
           "oldPath": null,
-          "additions": 5,
+          "additions": 6,
           "deletions": 0
         }
       ]
@@ -252,6 +266,19 @@
       "files": [
         ".claude/skills/pr-explain/SKILL.md",
         ".claude/skills/pr-explain/templates/index.html"
+      ]
+    },
+    {
+      "sha": "f51f6fbb6e695373f4ec75265e2afdeff10ef77a",
+      "files": [
+        ".claude/hooks/README.md",
+        ".claude/skills/pr-explain/SKILL.md",
+        ".claude/skills/pr-explain/templates/index.html",
+        ".github/scripts/build-pr-explain-excerpt-cases.sh",
+        ".github/scripts/build-pr-explain-excerpt.py",
+        ".github/workflows/frontend.yml",
+        "harness/githooks/README.md",
+        "harness/githooks/pre-push"
       ]
     }
   ]
