@@ -179,7 +179,7 @@ PY
 
 <h3><code class="ref">src/…/index.ts</code></h3>
 <p><このファイルの役割と、呼び出しの流れの中での位置></p>
-<pre class="code" data-file="src/…/index.ts"><code>+ 足した行
+<pre class="code" data-file="src/…/index.ts" data-lang="diff"><code>+ 足した行
 - 消した行</code></pre>
 ```
 
@@ -206,6 +206,11 @@ PY
 
 **コード抜粋は必ずエスケープする**(`&` → `&amp;`、`<` → `&lt;`、`>` → `&gt;`)。JSX の抜粋を
 そのまま貼ると要素として解釈され、`onClick=` が属性になって検査で落ちる。
+
+`pre.code` は固定スクリプトが開閉できる枠に入れ、言語ごとに色を付ける(断片には書かない)。言語は
+抜粋の上の `path:行`(`where-ref`)か `data-file` の拡張子で決まる。**拡張子が無い・中身の言語が
+拡張子と違う**(`harness/githooks/pre-push`、HTML の中のスクリプト)ときと、diff の抜粋は
+`data-lang` で指定する(`python` / `js` / `shell` / `yaml` / `html` / `diff`。diff は行頭の `+` / `-` に色が付く)。
 
 ## 参照ファイル
 

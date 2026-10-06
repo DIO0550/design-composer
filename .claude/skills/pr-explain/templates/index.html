@@ -2,54 +2,73 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-TLLWSMm5q5UA+5n9uxOXLlZtq56fAykpmfFIzNSw2+4='; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-yw0DxTjSmddvb67CpJNgFxi58JroX3a8kfKRVYPu5Uc='; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR 解説</title>
 <style>
 :root {
-  --bg: #fbfaf7;
+  --bg: #f3f8fd;
   --surface: #ffffff;
-  --surface-2: #f3f1ec;
-  --border: #e3dfd6;
-  --text: #1f1d1a;
-  --text-2: #57534b;
-  --text-3: #8a8478;
-  --accent: #2f5fd0;
-  --accent-soft: #e6edfb;
+  --surface-2: #e8f1fb;
+  --border: #d2e1f1;
+  --text: #13233a;
+  --text-2: #3e5571;
+  --text-3: #7189a5;
+  --accent: #1f6fd1;
+  --accent-soft: #deecfc;
   --green: #2f7d4f;
-  --green-soft: #e3f2e8;
+  --green-soft: #e1f3e8;
   --rose: #b23a48;
-  --rose-soft: #f8e4e6;
+  --rose-soft: #fbe6e9;
   --amber: #9a6b12;
-  --amber-soft: #fbf0d9;
+  --amber-soft: #fdf2dc;
+  --code-bg: #f5f9fe;
+  --tok-kw: #1d4fc4;
+  --tok-str: #0f7a6c;
+  --tok-com: #7a8ca3;
+  --tok-num: #b45309;
+  --tok-fn: #7c3aed;
+  --tok-key: #0b63b6;
+  --tok-var: #c0266d;
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --sans: system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif;
+  --header-h: 64px;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #15171a;
-    --surface: #1c1f23;
-    --surface-2: #23272c;
-    --border: #33383f;
-    --text: #e8e6e1;
-    --text-2: #b4afa6;
-    --text-3: #847f76;
-    --accent: #8fb0ff;
-    --accent-soft: #23314f;
+    --bg: #0f1724;
+    --surface: #152033;
+    --surface-2: #1b2a40;
+    --border: #2a3c56;
+    --text: #e2ebf6;
+    --text-2: #a8bcd5;
+    --text-3: #7288a5;
+    --accent: #7fb3ff;
+    --accent-soft: #1d3353;
     --green: #7cc79a;
-    --green-soft: #1d3326;
+    --green-soft: #1b3326;
     --rose: #ec8f9b;
     --rose-soft: #3d2328;
     --amber: #e3b45a;
     --amber-soft: #3a2f19;
+    --code-bg: #111c2c;
+    --tok-kw: #82aaff;
+    --tok-str: #7fd6c2;
+    --tok-com: #6f84a0;
+    --tok-num: #f0b46b;
+    --tok-fn: #c4a3ff;
+    --tok-key: #6fc1ff;
+    --tok-var: #ff8fb8;
   }
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.75 var(--sans); }
 a { color: var(--accent); }
 code { font-family: var(--mono); font-size: 0.88em; background: var(--surface-2); padding: 0.1em 0.35em; border-radius: 4px; }
-.page { max-width: 1180px; margin: 0 auto; padding: 24px 16px 64px; }
-.top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+.page { max-width: 1180px; margin: 0 auto; padding: 0 16px 64px; }
+.top { position: sticky; top: 0; z-index: 10; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 12px 0; background: var(--bg); border-bottom: 1px solid var(--border); }
+.code-toggle { font: 12px var(--sans); padding: 4px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--text-2); cursor: pointer; }
+.code-toggle:hover { color: var(--accent); border-color: var(--accent); }
 .links { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; margin-left: auto; }
 .explain-pages { display: flex; flex-wrap: wrap; gap: 4px; }
 .explain-pages a, .explain-pages span { padding: 4px 12px; border-radius: 999px; font-size: 13px; text-decoration: none; color: var(--text-2); border: 1px solid var(--border); }
@@ -58,10 +77,11 @@ code { font-family: var(--mono); font-size: 0.88em; background: var(--surface-2)
 .banner { margin: 16px 0 0; padding: 12px 14px; border-radius: 8px; background: var(--amber-soft); color: var(--text); border: 1px solid var(--border); font-size: 14px; }
 .banner ul { margin: 6px 0 0; padding-left: 20px; }
 .layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 32px; margin-top: 24px; }
-.toc { position: sticky; top: 16px; align-self: start; font-size: 13px; }
+.toc { position: sticky; top: calc(var(--header-h) + 16px); align-self: start; max-height: calc(100vh - var(--header-h) - 32px); overflow-y: auto; font-size: 13px; }
+h2[id], h3[id], tr[id] { scroll-margin-top: calc(var(--header-h) + 12px); }
 .toc a { display: block; padding: 3px 0 3px 10px; color: var(--text-2); text-decoration: none; border-left: 2px solid var(--border); }
 .toc a:hover { color: var(--accent); border-left-color: var(--accent); }
-@media (max-width: 860px) { .layout { grid-template-columns: minmax(0, 1fr); } .toc { position: static; } }
+@media (max-width: 860px) { .layout { grid-template-columns: minmax(0, 1fr); } .toc { position: static; max-height: none; } .links { flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; margin-left: 0; max-width: 100%; } }
 main { min-width: 0; }
 h1 { font-size: 28px; line-height: 1.35; margin: 0 0 8px; }
 h2 { font-size: 20px; margin: 48px 0 12px; padding-top: 8px; border-top: 1px solid var(--border); }
@@ -92,11 +112,28 @@ figure.diagram figcaption { margin-top: 8px; font-size: 13px; color: var(--text-
 .d-line { stroke: var(--text-2); stroke-width: 1.5; fill: none; }
 .d-text { fill: var(--text); font: 13px var(--sans); }
 .d-muted { fill: var(--text-3); font: 12px var(--sans); }
-pre.code { margin: 12px 0; padding: 12px 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; overflow-x: auto; font: 13px/1.6 var(--mono); }
+pre.code { margin: 12px 0; padding: 12px 14px; background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; overflow-x: auto; font: 13px/1.6 var(--mono); }
 pre.code code { background: none; padding: 0; font-size: inherit; }
 pre.code[data-file]::before { content: attr(data-file); display: block; margin-bottom: 8px; color: var(--text-3); font-size: 12px; }
 pre.code .ln { display: inline-block; min-width: 3.5ch; margin-right: 14px; color: var(--text-3); text-align: right; user-select: none; }
 .where-ref { margin: 4px 0 0; color: var(--text-2); font-size: 14px; }
+details.code-fold { margin: 12px 0; border: 1px solid var(--border); border-radius: 8px; background: var(--code-bg); }
+details.code-fold > summary { padding: 6px 12px; font-size: 13px; color: var(--text-2); cursor: pointer; background: var(--surface-2); border-radius: 8px; }
+details.code-fold[open] > summary { border-bottom: 1px solid var(--border); border-radius: 8px 8px 0 0; }
+details.code-fold > summary code { background: none; padding: 0; }
+details.code-fold .fold-count { margin-left: 8px; color: var(--text-3); }
+details.code-fold > pre.code { margin: 0; border: 0; border-radius: 0 0 8px 8px; }
+details.code-fold > pre.code[data-file]::before { display: none; }
+.tok-kw { color: var(--tok-kw); font-weight: 600; }
+.tok-str { color: var(--tok-str); }
+.tok-com { color: var(--tok-com); font-style: italic; }
+.tok-num { color: var(--tok-num); }
+.tok-fn { color: var(--tok-fn); }
+.tok-key { color: var(--tok-key); }
+.tok-var { color: var(--tok-var); }
+.diff-add, .diff-del { display: inline-block; min-width: 100%; }
+.diff-add { background: var(--green-soft); }
+.diff-del { background: var(--rose-soft); }
 .note { margin: 14px 0; padding: 10px 14px; border-radius: 8px; font-size: 14px; }
 .note.info { background: var(--accent-soft); }
 .note.warn { background: var(--amber-soft); }
@@ -115,6 +152,7 @@ ul.focus li { margin: 6px 0; }
     <span class="kicker">PR 解説</span>
     <nav class="explain-pages" id="explain-pages" aria-label="解説のページ"></nav>
     <nav class="links" id="links"></nav>
+    <span id="code-controls"></span>
   </header>
   <div class="banner" id="staleness" hidden></div>
   <div class="layout">
@@ -170,6 +208,177 @@ ul.focus li { margin: 6px 0; }
     const link = el("a", { href: `https://github.com/${Repo}/blob/${explainedSha}/${path}${lines}` });
     code.replaceWith(link);
     link.append(code);
+  }
+
+  // 上部の固定ヘッダの高さ。目次の固定位置と、見出しへ飛んだときにヘッダの下へ隠れない余白に使う(折り返すと変わる)。
+  const header = document.querySelector(".top");
+  new ResizeObserver(() => document.documentElement.style.setProperty("--header-h", `${header.offsetHeight}px`)).observe(header);
+
+  // コード抜粋の色分けの規則。キーワード・文字列・コメント・数値・関数呼び出しだけを見る簡易なもの。
+  const Grammars = {
+    python: { comment: "#", hashAnywhere: true, strings: ['"""', "'''", '"', "'"], keywords: "def class return if elif else for while in not and or is None True False import from as with try except finally raise lambda yield pass continue break assert del async await global nonlocal" },
+    js: { comment: "//", block: ["/*", "*/"], strings: ['"', "'", "`"], keywords: "const let var function return if else for while of in new class extends import export from default switch case break continue try catch finally throw typeof instanceof null undefined true false this async await yield delete void" },
+    shell: { comment: "#", strings: ['"', "'"], variables: true, keywords: "if then else elif fi for in do done while until case esac function return local export set exit trap source echo readonly shift" },
+    yaml: { comment: "#", strings: ['"', "'"], keys: true, keywords: "true false null" },
+    html: { block: ["<!--", "-->"], strings: ['"', "'"], tags: true, keywords: "" },
+  };
+  for (const grammar of Object.values(Grammars)) grammar.keywords = new Set(grammar.keywords.split(" "));
+  const Extensions = { py: "python", js: "js", mjs: "js", ts: "js", tsx: "js", jsx: "js", json: "js", sh: "shell", yml: "yaml", yaml: "yaml", html: "html" };
+  const Identifier = /[A-Za-z_]\w*/y;
+  const NumberLiteral = /\d+(?:\.\d+)?/y;
+  const YamlKey = /[ \t]*(?:- )?[\w.$-]+(?=:(?:\s|$))/y;
+  const ShellVariable = /\$(?:\{[^}\n]*\}|[A-Za-z_]\w*|[0-9#?@*$])/y;
+  const TagName = /<\/?[A-Za-z][\w-]*/y;
+  const AttributeName = /[A-Za-z_:][\w:.-]*(?==)/y;
+
+  const matchAt = (pattern, text, at) => {
+    pattern.lastIndex = at;
+    const match = pattern.exec(text);
+    return match ? match[0] : null;
+  };
+  const lineEndFrom = (text, at) => {
+    const end = text.indexOf("\n", at);
+    return end < 0 ? text.length : end;
+  };
+
+  // 文字列の終わりまで。閉じずに行が終わったら、三重引用符とテンプレート文字列だけ次の行へ持ち越す。
+  const stringAt = (text, at, grammar, state) => {
+    const quote = grammar.strings.find((candidate) => text.startsWith(candidate, at));
+    if (!quote) return null;
+    let end = at + quote.length;
+    while (end < text.length && text[end] !== "\n") {
+      if (text.startsWith(quote, end)) return text.slice(at, end + quote.length);
+      end += text[end] === "\\" ? 2 : 1;
+    }
+    if (quote.length === 3 || quote === "`") state.open = { cls: "tok-str", close: quote };
+    return text.slice(at, Math.min(end, text.length));
+  };
+
+  // `#` のコメントは、Python 以外では行頭か空白の直後だけ(シェルの `$#`・URL の `#` を取り違えない)。
+  const commentAt = (text, at, grammar, state) => {
+    const block = grammar.block;
+    if (block && text.startsWith(block[0], at)) {
+      const close = text.indexOf(block[1], at + block[0].length);
+      if (close >= 0) return text.slice(at, close + block[1].length);
+      state.open = { cls: "tok-com", close: block[1] };
+      return text.slice(at, lineEndFrom(text, at));
+    }
+    const prev = at > 0 ? text[at - 1] : state.prev;
+    const isComment = grammar.comment && text.startsWith(grammar.comment, at) && (grammar.comment !== "#" || grammar.hashAnywhere || /\s/.test(prev));
+    return isComment ? text.slice(at, lineEndFrom(text, at)) : null;
+  };
+
+  // 位置 at から始まる色付きの字句を 1 つ返す。無ければ null。
+  const tokenAt = (text, at, grammar, state) => {
+    const key = grammar.keys && state.lineStart ? matchAt(YamlKey, text, at) : null;
+    if (key) return ["tok-key", key];
+    const comment = commentAt(text, at, grammar, state);
+    if (comment) return ["tok-com", comment];
+    const string = stringAt(text, at, grammar, state);
+    if (string) return ["tok-str", string];
+    const variable = grammar.variables ? matchAt(ShellVariable, text, at) : null;
+    if (variable) return ["tok-var", variable];
+    const tag = grammar.tags ? matchAt(TagName, text, at) || matchAt(AttributeName, text, at) : null;
+    if (tag) return [tag.startsWith("<") ? "tok-kw" : "tok-key", tag];
+    const prev = at > 0 ? text[at - 1] : state.prev;
+    if (/\w/.test(prev)) return null;
+    const number = matchAt(NumberLiteral, text, at);
+    if (number) return ["tok-num", number];
+    const word = matchAt(Identifier, text, at);
+    if (!word) return null;
+    if (grammar.keywords.has(word)) return ["tok-kw", word];
+    return [text[at + word.length] === "(" ? "tok-fn" : null, word];
+  };
+
+  // 1 つの text ノードを字句に分ける。行をまたぐ文字列・コメントは state で次のノードへ持ち越す。
+  const tokenize = (text, grammar, state) => {
+    const tokens = [];
+    let at = 0;
+    while (at < text.length) {
+      const open = state.open;
+      if (open) {
+        const close = text.indexOf(open.close, at);
+        const end = close < 0 ? text.length : close + open.close.length;
+        if (close >= 0) state.open = null;
+        tokens.push([open.cls, text.slice(at, end)]);
+        at = end;
+        continue;
+      }
+      const token = tokenAt(text, at, grammar, state) || [null, text[at]];
+      tokens.push(token);
+      at += token[1].length;
+      if (token[1] === "\n") state.lineStart = true;
+      else if (/\S/.test(token[1])) state.lineStart = false;
+    }
+    state.prev = text.length > 0 ? text[text.length - 1] : state.prev;
+    return tokens;
+  };
+
+  // 色は span の textContent で付ける。抜粋が HTML として解釈される経路は作らない。
+  const paint = (code, grammar) => {
+    const state = { open: null, lineStart: true, prev: "\n" };
+    const walker = document.createTreeWalker(code, NodeFilter.SHOW_TEXT);
+    const textNodes = [];
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      if (!node.parentElement.closest(".ln")) textNodes.push(node);
+    }
+    for (const node of textNodes) {
+      const parts = tokenize(node.data, grammar, state).map(([cls, value]) => (cls ? el("span", { class: cls, text: value }) : document.createTextNode(value)));
+      node.replaceWith(...parts);
+    }
+  };
+
+  // diff の抜粋は、行頭の + / - で行ごとに背景を付ける。
+  const markDiff = (code) => {
+    const lines = code.textContent.replace(/\n$/, "").split("\n");
+    const DiffLine = { "+": "diff-add", "-": "diff-del" };
+    code.replaceChildren(...lines.flatMap((line, index) => [
+      el("span", DiffLine[line[0]] ? { class: DiffLine[line[0]], text: line } : { text: line }),
+      ...(index < lines.length - 1 ? ["\n"] : []),
+    ]));
+  };
+
+  // 言語は `data-lang`、無ければ抜粋の上の `path:行` か `data-file` の拡張子で決める。
+  const languageOf = (pre, label) => {
+    if (pre.dataset.lang) return pre.dataset.lang;
+    const extension = (label.match(/\.(\w+)(?::[\d-]+)?$/) || [])[1];
+    return Extensions[extension] || "";
+  };
+
+  // 抜粋を開閉できる枠に入れる。見出しには抜粋の上の `path:行`(なければ data-file)と行数を出す。
+  const fold = (pre) => {
+    const above = pre.previousElementSibling;
+    const ref = above && above.classList.contains("where-ref") ? above : null;
+    const label = ref ? ref.textContent.trim() : pre.dataset.file || "";
+    const code = pre.querySelector("code") || pre;
+    const language = languageOf(pre, label);
+    if (language === "diff") markDiff(code);
+    else if (Grammars[language]) paint(code, Grammars[language]);
+    const lineCount = pre.querySelectorAll(".ln").length || code.textContent.replace(/\n$/, "").split("\n").length;
+    const summary = el("summary", {}, ref ? [...ref.childNodes] : [el("code", { text: label || "コード" })]);
+    summary.append(el("span", { class: "fold-count", text: `${lineCount} 行` }));
+    const details = el("details", { class: "code-fold", open: "" });
+    pre.replaceWith(details);
+    details.append(summary, pre);
+    if (ref) ref.remove();
+  };
+
+  const codeBlocks = [...explain.querySelectorAll("pre.code")];
+  for (const pre of codeBlocks) fold(pre);
+  if (codeBlocks.length > 0) {
+    const folds = () => [...explain.querySelectorAll("details.code-fold")];
+    const toggle = el("button", { type: "button", class: "code-toggle" });
+    const syncLabel = () => {
+      toggle.textContent = folds().some((details) => details.open) ? "コードをすべて畳む" : "コードをすべて開く";
+    };
+    toggle.addEventListener("click", () => {
+      const shouldOpen = !folds().some((details) => details.open);
+      for (const details of folds()) details.open = shouldOpen;
+      syncLabel();
+    });
+    explain.addEventListener("toggle", syncLabel, true);
+    syncLabel();
+    document.getElementById("code-controls").append(toggle);
   }
 
   // 書かれていないページ(404)は「なし」として出す(ドキュメントだけの PR はテストのページを書かない)。
