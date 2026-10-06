@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-LxAxGXrbtSaCprnVlyN6JNrHiBN6hYZ19TlRLEpmjpA='; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-xdF4dq4OzB/5QeJWuAnfH6FQBzmml99EhtdzPuuSHV4='; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR 解説</title>
 <style>
@@ -65,7 +65,7 @@
 body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.75 var(--sans); }
 a { color: var(--accent); }
 code { font-family: var(--mono); font-size: 0.88em; background: var(--surface-2); padding: 0.1em 0.35em; border-radius: 4px; }
-.page { max-width: 1180px; margin: 0 auto; padding: 0 16px 64px; }
+.page { padding: 0 24px 64px 16px; }
 .top { position: sticky; top: 0; z-index: 10; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 12px 0; background: var(--bg); border-bottom: 1px solid var(--border); }
 .code-toggle { font: 12px var(--sans); padding: 4px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--text-2); cursor: pointer; }
 .code-toggle:hover { color: var(--accent); border-color: var(--accent); }
@@ -76,13 +76,13 @@ code { font-family: var(--mono); font-size: 0.88em; background: var(--surface-2)
 .explain-pages span { color: var(--text-3); border-style: dashed; }
 .banner { margin: 16px 0 0; padding: 12px 14px; border-radius: 8px; background: var(--amber-soft); color: var(--text); border: 1px solid var(--border); font-size: 14px; }
 .banner ul { margin: 6px 0 0; padding-left: 20px; }
-.layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 32px; margin-top: 24px; }
+.layout { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 40px; margin-top: 24px; }
 .toc { position: sticky; top: calc(var(--header-h) + 16px); align-self: start; max-height: calc(100vh - var(--header-h) - 32px); overflow-y: auto; font-size: 13px; }
 h2[id], h3[id], tr[id] { scroll-margin-top: calc(var(--header-h) + 12px); }
 .toc a { display: block; padding: 3px 0 3px 10px; color: var(--text-2); text-decoration: none; border-left: 2px solid var(--border); }
 .toc a:hover { color: var(--accent); border-left-color: var(--accent); }
 @media (max-width: 860px) { .layout { grid-template-columns: minmax(0, 1fr); } .toc { position: static; max-height: none; } .links { flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; margin-left: 0; max-width: 100%; } }
-main { min-width: 0; }
+main { min-width: 0; max-width: 1320px; }
 h1 { font-size: 28px; line-height: 1.35; margin: 0 0 8px; }
 h2 { font-size: 20px; margin: 48px 0 12px; padding-top: 8px; border-top: 1px solid var(--border); }
 h3 { font-size: 16px; margin: 28px 0 8px; }
@@ -114,7 +114,6 @@ figure.diagram figcaption { margin-top: 8px; font-size: 13px; color: var(--text-
 .d-muted { fill: var(--text-3); font: 12px var(--sans); }
 pre.code { margin: 12px 0; padding: 12px 14px; background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; overflow-x: auto; font: 13px/1.6 var(--mono); }
 pre.code code { background: none; padding: 0; font-size: inherit; }
-pre.code .ln { display: inline-block; min-width: 3.5ch; margin-right: 14px; color: var(--text-3); text-align: right; user-select: none; }
 .where-ref { margin: 4px 0 0; color: var(--text-2); font-size: 14px; }
 details.code-fold { margin: 12px 0; border: 1px solid var(--border); border-radius: 8px; background: var(--code-bg); }
 details.code-fold > summary { padding: 6px 12px; font-size: 13px; color: var(--text-2); cursor: pointer; background: var(--surface-2); border-radius: 8px; }
@@ -129,9 +128,22 @@ details.code-fold > pre.code { margin: 0; border: 0; border-radius: 0 0 8px 8px;
 .tok-fn { color: var(--tok-fn); }
 .tok-key { color: var(--tok-key); }
 .tok-var { color: var(--tok-var); }
-.diff-add, .diff-del { display: inline-block; min-width: 100%; }
-.diff-add { background: var(--green-soft); }
-.diff-del { background: var(--rose-soft); }
+pre.code.has-diff { padding: 8px 0; }
+pre.code.has-diff code { display: none; }
+details[data-view="diff"] pre.code.has-diff code.view-diff,
+details[data-view="code"] pre.code.has-diff code.view-code { display: block; }
+pre.code .row { display: block; width: max-content; min-width: 100%; padding: 0 14px 0 8px; }
+pre.code .row .ln { display: inline-block; min-width: 4ch; margin-right: 10px; color: var(--text-3); text-align: right; user-select: none; }
+pre.code .row .sign { display: inline-block; width: 2ch; color: var(--text-3); user-select: none; }
+.view-diff .row-add { background: var(--green-soft); }
+.view-diff .row-add .sign { color: var(--green); }
+.view-diff .row-del { background: var(--rose-soft); }
+.view-diff .row-del .sign { color: var(--rose); }
+.view-diff .row-hunk { background: var(--accent-soft); color: var(--text-3); padding-left: 14px; }
+.view-code .row-add { box-shadow: inset 3px 0 0 var(--green); }
+.view-switch { display: flex; gap: 4px; padding: 6px 12px; border-bottom: 1px solid var(--border); background: var(--surface); }
+.view-switch button { font: 12px var(--sans); padding: 2px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--text-2); cursor: pointer; }
+.view-switch button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); font-weight: 600; }
 .note { margin: 14px 0; padding: 10px 14px; border-radius: 8px; font-size: 14px; }
 .note.info { background: var(--accent-soft); }
 .note.warn { background: var(--amber-soft); }
@@ -158,9 +170,9 @@ ul.focus li { margin: 6px 0; }
     <main>
       <article id="explain">
 <!-- EXPLAIN:BEGIN -->
-<p class="explain-meta" data-explained-sha="a88ac650e310a25a8eef9cf75e757669edc7afcf" data-pr="1024" data-page="tests">解説時点 <code>a88ac65</code> · 材料 <a href="https://github.com/DIO0550/design-composer/issues/1022">Issue #1022</a></p>
+<p class="explain-meta" data-explained-sha="cba4db683515f83931953193e07c76654a7c1408" data-pr="1024" data-page="tests">解説時点 <code>cba4db6</code> · 材料 <a href="https://github.com/DIO0550/design-composer/issues/1022">Issue #1022</a></p>
 <h1>PR ごとの解説ページを Pages に出す: テスト</h1>
-<p class="lead">この PR の実行されるコードはすべてハーネスのスクリプトで、vitest ではなく判定表(<code>*-cases.sh</code>)が守る。判定表 3 本は CI の <code>rules-check</code> と pre-push で走る。</p>
+<p class="lead">この PR の実行されるコードはすべてハーネスのスクリプトで、vitest ではなく判定表(<code>*-cases.sh</code>)が守る。判定表 4 本は CI の <code>rules-check</code> と pre-push で走る。</p>
 
 <h2 id="guards"><span class="kicker">テスト</span>守っている振る舞い</h2>
 <table>
@@ -174,13 +186,14 @@ ul.focus li { margin: 6px 0; }
   <tr><td>push が競合しても取り直して通る</td><td>同 「1 回目の push が拒否されても取り直して通る」(bare リポジトリの pre-receive で 1 回目だけ拒否)</td><td>落ちた</td></tr>
   <tr><td>地図の範囲は merge-base から</td><td><code class="ref">.github/scripts/build-pr-change-map-cases.sh</code> 「起点は merge-base で、base 側で後から変わったファイルは出ない」</td><td>落ちた</td></tr>
   <tr><td>読む順は内側の層から外側へ</td><td>同 「読む順は内側の層から外側へ」「層の中では本体 → テスト → story の順」</td><td>落ちた。最初の版では components・hooks・app を丸ごと落としても気づけず、全層を置くケースにした</td></tr>
+  <tr id="t-excerpt"><td><a href="behavior.html#b-view">コード抜粋は起点からの diff で、範囲の中で消した行も入る</a></td><td><code class="ref">.github/scripts/build-pr-explain-excerpt-cases.sh</code> 「範囲の中で書き換えた行は、消した行と足した行の両方が出る」「範囲の先頭の直前で消した行は入る」「範囲の末尾の直後で消した行は入らない」「起点に無いファイルは全行が追加になる」「抜粋の断片は、そのまま解説ページの検査を通る」</td><td>落ちた(消した行を落とす・境目を 1 つずらす、の 2 通りを自分で壊した)</td></tr>
   <tr><td>テスト名の増減が「削除 + 追加」に化けない</td><td>同 「テストファイルの rename は増減に出ない」「中身だけ変えたテストは増減に出ない」「split(",") や /x/.test("y") の引数はテスト名として拾わない」</td><td>落ちた</td></tr>
 </table>
 
 <h2 id="untested"><span class="kicker">穴</span>テストで守れていない振る舞い</h2>
 <ul class="focus">
   <li><strong>テンプレートの固定スクリプト全体</strong>(ナビの「なし」、地図の描画、古さの帯、行リンク、「解説に出てこない」の照合)。素の HTML のスクリプトを走らせる仕組みがリポジトリに無く、そのために依存を足す規模ではないと判断した。代わりにローカルのフィクスチャを Playwright で開き、1 ページ版で 5 状態(未記入・最新・古い・古い(追えない)・地図なし)、4 ページ版でナビとページごとの自動生成の節を目視した。変えたときに機械が気づけるのは CSP のハッシュの直し忘れだけ</li>
-  <li><strong>ナビの固定・コードの色分け・開閉</strong>も同じく固定スクリプトと CSS なので自動テストは無い。この PR の技術のページをライト・ダーク・スマホ幅(390px)で開き、Python・JavaScript・シェル・YAML・diff の色、すべて畳む / 開く、スクロール中のナビを目視した</li>
+  <li><strong>ナビの固定・コードの色分け・開閉・差分 / コードの切り替え・レイアウト</strong>も同じく固定スクリプトと CSS なので自動テストは無い。この PR の技術のページをライト・ダーク・スマホ幅(390px)で開き、Python・JavaScript・シェル・YAML・diff の色、すべて畳む / 開く、スクロール中のナビを目視した</li>
   <li><strong>Actions 上の認証経路。</strong>判定表はローカルの bare リポジトリで、認証を通らない。この PR の <code>PR Explain</code> の run が緑になったことで確かめた</li>
   <li><strong>gh-pages への問い合わせが失敗する経路</strong>(<code>ls-remote</code> が 0 と 2 以外を返す)。失敗を再現する環境を組めず、test-reviewer も計測していない</li>
   <li><strong>引数の誤りで終了コード 2 になる経路の一部</strong>(地図の生成スクリプトの引数検査など)。呼び出し元が 2 つだけで、どちらも値を自分で決めているので見送った</li>
@@ -348,62 +361,121 @@ ul.focus li { margin: 6px 0; }
   };
 
   // 色は span の textContent で付ける。抜粋が HTML として解釈される経路は作らない。
+  const tokenNode = ({ cls, value }) => (cls ? el("span", { class: cls, text: value }) : document.createTextNode(value));
+  const Start = { open: null, lineStart: true, prev: "\n" };
+
   const paint = (code, grammar) => {
     const walker = document.createTreeWalker(code, NodeFilter.SHOW_TEXT);
     const textNodes = [];
-    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-      if (!node.parentElement.closest(".ln")) textNodes.push(node);
-    }
-    const Start = { open: null, lineStart: true, prev: "\n" };
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) textNodes.push(node);
     textNodes.reduce((carry, node) => {
       const result = tokenize(node.data, grammar, carry);
-      node.replaceWith(...result.tokens.map(({ cls, value }) => (cls ? el("span", { class: cls, text: value }) : document.createTextNode(value))));
+      node.replaceWith(...result.tokens.map(tokenNode));
       return result.carry;
     }, Start);
   };
 
-  // 抜粋の本文の行(行番号の span は含めない前提で呼ぶ)。
-  const excerptLines = (code) => code.textContent.replace(/\n$/, "").split("\n");
+  const excerptLines = (node) => node.textContent.replace(/\n$/, "").split("\n");
 
-  // diff の抜粋は、行頭の + / - で行ごとに背景を付ける。行番号(`.ln`)はいったん外して本文だけで行を割り、同じ行の頭へ戻す。
-  const markDiff = (code) => {
-    const numberSpans = [...code.querySelectorAll(".ln")];
-    const numbers = numberSpans.map((ln) => ln.textContent);
-    for (const ln of numberSpans) ln.remove();
-    const lines = excerptLines(code);
-    const DiffLine = { "+": "diff-add", "-": "diff-del" };
-    code.replaceChildren(...lines.flatMap((line, index) => [
-      ...(index < numbers.length ? [el("span", { class: "ln", text: numbers[index] })] : []),
-      el("span", Object.hasOwn(DiffLine, line[0]) ? { class: DiffLine[line[0]], text: line } : { text: line }),
-      ...(index < lines.length - 1 ? ["\n"] : []),
-    ]));
+  const HunkHeader = /^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@/;
+  const RowKinds = { "+": "add", "-": "del", " ": "ctx" };
+
+  // diff の行を、変更前・変更後の行番号付きの行にする。`@@` の見出しが無い抜粋は行番号を空にする。
+  const diffRowsOf = (lines) => {
+    const rows = [];
+    let oldNo = null;
+    let newNo = null;
+    for (const line of lines) {
+      const hunk = line.match(HunkHeader);
+      if (hunk) {
+        oldNo = Number(hunk[1]);
+        newNo = Number(hunk[2]);
+        rows.push({ kind: "hunk", text: line, oldNo: null, newNo: null });
+        continue;
+      }
+      const hasSign = Object.hasOwn(RowKinds, line[0]);
+      const kind = hasSign ? RowKinds[line[0]] : "ctx";
+      const hasOldLine = kind !== "add";
+      const hasNewLine = kind !== "del";
+      rows.push({ kind, text: hasSign ? line.slice(1) : line, oldNo: hasOldLine ? oldNo : null, newNo: hasNewLine ? newNo : null });
+      // `@@` の見出しより前の行は番号が決まらない(null のまま)。
+      if (oldNo !== null) oldNo += hasOldLine ? 1 : 0;
+      if (newNo !== null) newNo += hasNewLine ? 1 : 0;
+    }
+    return rows;
+  };
+
+  // 1 行に色を付ける。行をまたぐ文字列・コメントだけを次の行へ持ち越し、行頭の扱いは行ごとにやり直す。
+  const highlightLine = (text, grammar, carry) => {
+    if (grammar === null) return { nodes: [document.createTextNode(text)], carry };
+    const result = tokenize(text, grammar, { ...carry, lineStart: true, prev: "\n" });
+    return { nodes: result.tokens.map(tokenNode), carry: result.carry };
+  };
+
+  // 差分の表示は GitHub と同じく変更前・変更後の行番号と +/- を出す。コードの表示は変更後の行だけを、
+  // 変更後の行番号で出す(足した行は左端の印で分かる)。
+  const SignOf = { add: "+", del: "-", ctx: " ", hunk: "" };
+  const numberCell = (no) => el("span", { class: "ln", text: no === null ? "" : String(no) });
+  const DiffViews = {
+    diff: { label: "差分", shows: () => true, cells: (row) => [numberCell(row.oldNo), numberCell(row.newNo), el("span", { class: "sign", text: SignOf[row.kind] })] },
+    code: { label: "コード", shows: (row) => row.kind === "add" || row.kind === "ctx", cells: (row) => [numberCell(row.newNo)] },
+  };
+
+  // 持ち越しは変更前の側(消した行と文脈)と変更後の側(足した行と文脈)で分ける。消した行で閉じなかった
+  // 文字列が、続く足した行の色に移らないようにするため。
+  const SideOf = { del: "old", add: "new" };
+  const renderView = (rows, grammar, view) => {
+    const code = el("code", { class: `view-${view}` });
+    rows.filter(DiffViews[view].shows).reduce((carries, row) => {
+      const side = Object.hasOwn(SideOf, row.kind) ? SideOf[row.kind] : "new";
+      const line = row.kind === "hunk" ? { nodes: [document.createTextNode(row.text)], carry: carries[side] } : highlightLine(row.text, grammar, carries[side]);
+      code.append(el("span", { class: `row row-${row.kind}` }, [...DiffViews[view].cells(row), ...line.nodes]));
+      if (row.kind === "del") return { ...carries, old: line.carry };
+      if (row.kind === "add") return { ...carries, new: line.carry };
+      return { old: line.carry, new: line.carry };
+    }, { old: Start, new: Start });
+    return code;
+  };
+
+  // diff の抜粋を、差分とコードの 2 つの表示に組み直し、足した行と消した行の数を返す。
+  const renderDiff = (pre, grammar) => {
+    const rows = diffRowsOf(excerptLines(pre));
+    pre.replaceChildren(renderView(rows, grammar, "diff"), renderView(rows, grammar, "code"));
+    pre.classList.add("has-diff");
+    return { added: rows.filter((row) => row.kind === "add").length, removed: rows.filter((row) => row.kind === "del").length };
   };
 
   // 言語は `data-lang`(言語名か拡張子)、無ければ抜粋の上の `path:行` か `data-file` の拡張子で決める。
   // 断片由来の値なので、規則表は自分のキーだけを引く(`constructor` などでプロトタイプを引くと止まる)。
-  const languageOf = (pre, label) => {
+  const grammarOf = (pre, label) => {
     const named = pre.dataset.lang || (label.match(/\.(\w+)(?::[\d-]+)?$/) || [])[1] || "";
-    const isLanguageName = named === "diff" || Object.hasOwn(Grammars, named);
-    if (isLanguageName) return named;
-    return Object.hasOwn(LanguageByExtension, named) ? LanguageByExtension[named] : "";
+    const language = Object.hasOwn(LanguageByExtension, named) ? LanguageByExtension[named] : named;
+    return Object.hasOwn(Grammars, language) ? Grammars[language] : null;
   };
 
-  const colorize = (pre, label) => {
-    const code = pre.querySelector("code") || pre;
-    const language = languageOf(pre, label);
-    if (language === "diff") markDiff(code);
-    else if (Object.hasOwn(Grammars, language)) paint(code, Grammars[language]);
+  const setView = (details, view) => {
+    details.dataset.view = view;
+    for (const button of details.querySelectorAll(".view-switch button")) {
+      button.setAttribute("aria-pressed", String(button.dataset.view === view));
+    }
   };
 
-  // 抜粋を開閉できる枠に入れる。見出しには抜粋の上の `path:行`(where-ref。無ければ data-file)と行数を出す。
-  const fold = (pre, ref, label) => {
-    const code = pre.querySelector("code") || pre;
-    const lineCount = pre.querySelectorAll(".ln").length || excerptLines(code).length;
-    const summary = el("summary", {}, ref ? [...ref.childNodes] : [el("code", { text: label || "コード" })]);
-    summary.append(el("span", { class: "fold-count", text: `${lineCount} 行` }));
+  // 抜粋を開閉できる枠に入れる。見出しには抜粋の上の `path:行`(where-ref。無ければ data-file)と、
+  // diff なら増減、そうでなければ行数を出す。diff には差分 / コードの切り替えを付ける。
+  const fold = (pre, ref, diffCounts) => {
+    const label = ref ? null : pre.dataset.file || "コード";
+    const summary = el("summary", {}, ref ? [...ref.childNodes] : [el("code", { text: label })]);
+    const count = diffCounts === null ? `${excerptLines(pre).length} 行` : `+${diffCounts.added} −${diffCounts.removed}`;
+    summary.append(el("span", { class: "fold-count", text: count }));
     const details = el("details", { class: "code-fold", open: "" });
     pre.replaceWith(details);
-    details.append(summary, pre);
+    details.append(summary);
+    if (diffCounts !== null) {
+      const buttons = Object.entries(DiffViews).map(([view, { label: name }]) => el("button", { type: "button", "data-view": view, text: name }));
+      details.append(el("div", { class: "view-switch" }, buttons));
+      setView(details, "diff");
+    }
+    details.append(pre);
     if (ref) ref.remove();
   };
 
@@ -417,9 +489,13 @@ ul.focus li { margin: 6px 0; }
   for (const pre of codeBlocks) {
     const ref = whereRefOf(pre);
     const label = ref ? ref.textContent.trim() : pre.dataset.file || "";
-    colorize(pre, label);
-    fold(pre, ref, label);
+    const grammar = grammarOf(pre, label);
+    const isDiff = pre.dataset.diff !== undefined;
+    const diffCounts = isDiff ? renderDiff(pre, grammar) : null;
+    if (!isDiff && grammar !== null) paint(pre.querySelector("code") || pre, grammar);
+    fold(pre, ref, diffCounts);
   }
+  const codeControls = document.getElementById("code-controls");
   if (codeBlocks.length > 0) {
     const folds = () => [...explain.querySelectorAll("details.code-fold")];
     const toggle = el("button", { type: "button", class: "code-toggle" });
@@ -433,7 +509,28 @@ ul.focus li { margin: 6px 0; }
     });
     explain.addEventListener("toggle", syncLabel, true);
     syncLabel();
-    document.getElementById("code-controls").append(toggle);
+    codeControls.append(toggle);
+  }
+  const diffFolds = () => [...explain.querySelectorAll("details.code-fold[data-view]")];
+  if (diffFolds().length > 0) {
+    const viewToggle = el("button", { type: "button", class: "code-toggle" });
+    const allShowCode = () => diffFolds().every((details) => details.dataset.view === "code");
+    const syncViewLabel = () => {
+      viewToggle.textContent = allShowCode() ? "すべて差分で表示" : "すべてコードで表示";
+    };
+    viewToggle.addEventListener("click", () => {
+      const next = allShowCode() ? "diff" : "code";
+      for (const details of diffFolds()) setView(details, next);
+      syncViewLabel();
+    });
+    explain.addEventListener("click", (event) => {
+      const button = event.target.closest(".view-switch button");
+      if (!button) return;
+      setView(button.closest("details"), button.dataset.view);
+      syncViewLabel();
+    });
+    syncViewLabel();
+    codeControls.append(viewToggle);
   }
 
   // 書かれていないページ(404)は「なし」として出す(ドキュメントだけの PR はテストのページを書かない)。
