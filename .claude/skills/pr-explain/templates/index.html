@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-yw0DxTjSmddvb67CpJNgFxi58JroX3a8kfKRVYPu5Uc='; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-LxAxGXrbtSaCprnVlyN6JNrHiBN6hYZ19TlRLEpmjpA='; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR 解説</title>
 <style>
@@ -13,7 +13,7 @@
   --border: #d2e1f1;
   --text: #13233a;
   --text-2: #3e5571;
-  --text-3: #7189a5;
+  --text-3: #5f7590;
   --accent: #1f6fd1;
   --accent-soft: #deecfc;
   --green: #2f7d4f;
@@ -25,7 +25,7 @@
   --code-bg: #f5f9fe;
   --tok-kw: #1d4fc4;
   --tok-str: #0f7a6c;
-  --tok-com: #7a8ca3;
+  --tok-com: #637893;
   --tok-num: #b45309;
   --tok-fn: #7c3aed;
   --tok-key: #0b63b6;
@@ -114,7 +114,6 @@ figure.diagram figcaption { margin-top: 8px; font-size: 13px; color: var(--text-
 .d-muted { fill: var(--text-3); font: 12px var(--sans); }
 pre.code { margin: 12px 0; padding: 12px 14px; background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; overflow-x: auto; font: 13px/1.6 var(--mono); }
 pre.code code { background: none; padding: 0; font-size: inherit; }
-pre.code[data-file]::before { content: attr(data-file); display: block; margin-bottom: 8px; color: var(--text-3); font-size: 12px; }
 pre.code .ln { display: inline-block; min-width: 3.5ch; margin-right: 14px; color: var(--text-3); text-align: right; user-select: none; }
 .where-ref { margin: 4px 0 0; color: var(--text-2); font-size: 14px; }
 details.code-fold { margin: 12px 0; border: 1px solid var(--border); border-radius: 8px; background: var(--code-bg); }
@@ -123,7 +122,6 @@ details.code-fold[open] > summary { border-bottom: 1px solid var(--border); bord
 details.code-fold > summary code { background: none; padding: 0; }
 details.code-fold .fold-count { margin-left: 8px; color: var(--text-3); }
 details.code-fold > pre.code { margin: 0; border: 0; border-radius: 0 0 8px 8px; }
-details.code-fold > pre.code[data-file]::before { display: none; }
 .tok-kw { color: var(--tok-kw); font-weight: 600; }
 .tok-str { color: var(--tok-str); }
 .tok-com { color: var(--tok-com); font-style: italic; }
@@ -214,16 +212,17 @@ ul.focus li { margin: 6px 0; }
   const header = document.querySelector(".top");
   new ResizeObserver(() => document.documentElement.style.setProperty("--header-h", `${header.offsetHeight}px`)).observe(header);
 
-  // コード抜粋の色分けの規則。キーワード・文字列・コメント・数値・関数呼び出しだけを見る簡易なもの。
+  // コード抜粋の色分けの規則。キーワード・文字列・コメント・数値・関数呼び出しに加え、YAML はキー、
+  // シェルは変数、HTML はタグと属性名に色を付ける簡易なもの。
+  const words = (list) => new Set(list.split(" ").filter((word) => word !== ""));
   const Grammars = {
-    python: { comment: "#", hashAnywhere: true, strings: ['"""', "'''", '"', "'"], keywords: "def class return if elif else for while in not and or is None True False import from as with try except finally raise lambda yield pass continue break assert del async await global nonlocal" },
-    js: { comment: "//", block: ["/*", "*/"], strings: ['"', "'", "`"], keywords: "const let var function return if else for while of in new class extends import export from default switch case break continue try catch finally throw typeof instanceof null undefined true false this async await yield delete void" },
-    shell: { comment: "#", strings: ['"', "'"], variables: true, keywords: "if then else elif fi for in do done while until case esac function return local export set exit trap source echo readonly shift" },
-    yaml: { comment: "#", strings: ['"', "'"], keys: true, keywords: "true false null" },
-    html: { block: ["<!--", "-->"], strings: ['"', "'"], tags: true, keywords: "" },
+    python: { comment: "#", hashAnywhere: true, strings: ['"""', "'''", '"', "'"], keywords: words("def class return if elif else for while in not and or is None True False import from as with try except finally raise lambda yield pass continue break assert del async await global nonlocal") },
+    js: { comment: "//", block: ["/*", "*/"], strings: ['"', "'", "`"], keywords: words("const let var function return if else for while of in new class extends import export from default switch case break continue try catch finally throw typeof instanceof null undefined true false this async await yield delete void") },
+    shell: { comment: "#", strings: ['"', "'"], variables: true, keywords: words("if then else elif fi for in do done while until case esac function return local export set exit trap source echo readonly shift") },
+    yaml: { comment: "#", strings: ['"', "'"], keys: true, keywords: words("true false null") },
+    html: { block: ["<!--", "-->"], strings: ['"', "'"], tags: true, keywords: words("") },
   };
-  for (const grammar of Object.values(Grammars)) grammar.keywords = new Set(grammar.keywords.split(" "));
-  const Extensions = { py: "python", js: "js", mjs: "js", ts: "js", tsx: "js", jsx: "js", json: "js", sh: "shell", yml: "yaml", yaml: "yaml", html: "html" };
+  const LanguageByExtension = { py: "python", js: "js", mjs: "js", ts: "js", tsx: "js", jsx: "js", json: "js", sh: "shell", bash: "shell", yml: "yaml", yaml: "yaml", html: "html" };
   const Identifier = /[A-Za-z_]\w*/y;
   const NumberLiteral = /\d+(?:\.\d+)?/y;
   const YamlKey = /[ \t]*(?:- )?[\w.$-]+(?=:(?:\s|$))/y;
@@ -231,130 +230,145 @@ ul.focus li { margin: 6px 0; }
   const TagName = /<\/?[A-Za-z][\w-]*/y;
   const AttributeName = /[A-Za-z_:][\w:.-]*(?==)/y;
 
-  const matchAt = (pattern, text, at) => {
-    pattern.lastIndex = at;
-    const match = pattern.exec(text);
+  // 字句。`opens` は閉じずに行が終わった文字列・コメントの閉じ記号で、次の行の頭から続ける。
+  const Token = (cls, value, opens = null) => ({ cls, value, opens });
+
+  // cursor は { text, at, prev(直前の文字。ノードの頭では前のノードの末尾), lineStart }。
+  const matchAt = (pattern, cursor) => {
+    pattern.lastIndex = cursor.at;
+    const match = pattern.exec(cursor.text);
     return match ? match[0] : null;
   };
-  const lineEndFrom = (text, at) => {
-    const end = text.indexOf("\n", at);
-    return end < 0 ? text.length : end;
+  const restOfLine = (cursor) => {
+    const end = cursor.text.indexOf("\n", cursor.at);
+    return cursor.text.slice(cursor.at, end < 0 ? cursor.text.length : end);
   };
 
   // 文字列の終わりまで。閉じずに行が終わったら、三重引用符とテンプレート文字列だけ次の行へ持ち越す。
-  const stringAt = (text, at, grammar, state) => {
+  const stringAt = (cursor, grammar) => {
+    const { text, at } = cursor;
     const quote = grammar.strings.find((candidate) => text.startsWith(candidate, at));
     if (!quote) return null;
     let end = at + quote.length;
     while (end < text.length && text[end] !== "\n") {
-      if (text.startsWith(quote, end)) return text.slice(at, end + quote.length);
+      if (text.startsWith(quote, end)) return Token("tok-str", text.slice(at, end + quote.length));
       end += text[end] === "\\" ? 2 : 1;
     }
-    if (quote.length === 3 || quote === "`") state.open = { cls: "tok-str", close: quote };
-    return text.slice(at, Math.min(end, text.length));
+    const spansLines = quote.length === 3 || quote === "`";
+    return Token("tok-str", text.slice(at, Math.min(end, text.length)), spansLines ? quote : null);
   };
 
-  // `#` のコメントは、Python 以外では行頭か空白の直後だけ(シェルの `$#`・URL の `#` を取り違えない)。
-  const commentAt = (text, at, grammar, state) => {
+  const commentAt = (cursor, grammar) => {
+    const { text, at } = cursor;
     const block = grammar.block;
-    if (block && text.startsWith(block[0], at)) {
+    const isBlockCommentStart = block !== undefined && text.startsWith(block[0], at);
+    if (isBlockCommentStart) {
       const close = text.indexOf(block[1], at + block[0].length);
-      if (close >= 0) return text.slice(at, close + block[1].length);
-      state.open = { cls: "tok-com", close: block[1] };
-      return text.slice(at, lineEndFrom(text, at));
+      return close >= 0 ? Token("tok-com", text.slice(at, close + block[1].length)) : Token("tok-com", restOfLine(cursor), block[1]);
     }
-    const prev = at > 0 ? text[at - 1] : state.prev;
-    const isComment = grammar.comment && text.startsWith(grammar.comment, at) && (grammar.comment !== "#" || grammar.hashAnywhere || /\s/.test(prev));
-    return isComment ? text.slice(at, lineEndFrom(text, at)) : null;
+    const isLineCommentStart = grammar.comment !== undefined && text.startsWith(grammar.comment, at);
+    // `#` は Python 以外では行頭か空白の直後だけコメントにする(シェルの `$#`・URL の `#` を取り違えない)。
+    const isHashAllowedHere = grammar.comment !== "#" || grammar.hashAnywhere === true || /\s/.test(cursor.prev);
+    const isComment = isLineCommentStart && isHashAllowedHere;
+    return isComment ? Token("tok-com", restOfLine(cursor)) : null;
   };
 
-  // 位置 at から始まる色付きの字句を 1 つ返す。無ければ null。
-  const tokenAt = (text, at, grammar, state) => {
-    const key = grammar.keys && state.lineStart ? matchAt(YamlKey, text, at) : null;
-    if (key) return ["tok-key", key];
-    const comment = commentAt(text, at, grammar, state);
-    if (comment) return ["tok-com", comment];
-    const string = stringAt(text, at, grammar, state);
-    if (string) return ["tok-str", string];
-    const variable = grammar.variables ? matchAt(ShellVariable, text, at) : null;
-    if (variable) return ["tok-var", variable];
-    const tag = grammar.tags ? matchAt(TagName, text, at) || matchAt(AttributeName, text, at) : null;
-    if (tag) return [tag.startsWith("<") ? "tok-kw" : "tok-key", tag];
-    const prev = at > 0 ? text[at - 1] : state.prev;
-    if (/\w/.test(prev)) return null;
-    const number = matchAt(NumberLiteral, text, at);
-    if (number) return ["tok-num", number];
-    const word = matchAt(Identifier, text, at);
+  // 位置から始まる字句を 1 つ返す。色の付かない識別子も、途中で切らないよう 1 字句(cls が null)で返す。
+  // どの規則にも当たらなければ null(呼び出し側が 1 文字だけ進める)。
+  const tokenAt = (cursor, grammar) => {
+    const isYamlKeyPosition = grammar.keys === true && cursor.lineStart;
+    const key = isYamlKeyPosition ? matchAt(YamlKey, cursor) : null;
+    if (key) return Token("tok-key", key);
+    const quoted = commentAt(cursor, grammar) || stringAt(cursor, grammar);
+    if (quoted) return quoted;
+    const variable = grammar.variables === true ? matchAt(ShellVariable, cursor) : null;
+    if (variable) return Token("tok-var", variable);
+    const markup = grammar.tags === true ? matchAt(TagName, cursor) || matchAt(AttributeName, cursor) : null;
+    if (markup) return Token(markup.startsWith("<") ? "tok-kw" : "tok-key", markup);
+    if (/\w/.test(cursor.prev)) return null;
+    const number = matchAt(NumberLiteral, cursor);
+    if (number) return Token("tok-num", number);
+    const word = matchAt(Identifier, cursor);
     if (!word) return null;
-    if (grammar.keywords.has(word)) return ["tok-kw", word];
-    return [text[at + word.length] === "(" ? "tok-fn" : null, word];
+    if (grammar.keywords.has(word)) return Token("tok-kw", word);
+    return Token(cursor.text[cursor.at + word.length] === "(" ? "tok-fn" : null, word);
   };
 
-  // 1 つの text ノードを字句に分ける。行をまたぐ文字列・コメントは state で次のノードへ持ち越す。
-  const tokenize = (text, grammar, state) => {
+  // 持ち越しの続き(前の行で閉じなかった文字列・コメント)を、閉じ記号まで 1 字句にする。
+  const continuationOf = (cursor, open) => {
+    const close = cursor.text.indexOf(open.close, cursor.at);
+    if (close < 0) return Token(open.cls, cursor.text.slice(cursor.at), open.close);
+    return Token(open.cls, cursor.text.slice(cursor.at, close + open.close.length));
+  };
+
+  // 1 つの text ノードを字句に分け、次のノードへ持ち越す状態(carry)と一緒に返す。
+  const tokenize = (text, grammar, carry) => {
     const tokens = [];
+    let { open, lineStart } = carry;
     let at = 0;
     while (at < text.length) {
-      const open = state.open;
-      if (open) {
-        const close = text.indexOf(open.close, at);
-        const end = close < 0 ? text.length : close + open.close.length;
-        if (close >= 0) state.open = null;
-        tokens.push([open.cls, text.slice(at, end)]);
-        at = end;
-        continue;
-      }
-      const token = tokenAt(text, at, grammar, state) || [null, text[at]];
+      const cursor = { text, at, prev: at > 0 ? text[at - 1] : carry.prev, lineStart };
+      const token = open ? continuationOf(cursor, open) : tokenAt(cursor, grammar) || Token(null, text[at]);
       tokens.push(token);
-      at += token[1].length;
-      if (token[1] === "\n") state.lineStart = true;
-      else if (/\S/.test(token[1])) state.lineStart = false;
+      at += token.value.length;
+      open = token.opens === null ? null : { cls: token.cls, close: token.opens };
+      lineStart = token.value.endsWith("\n") || (lineStart && !/\S/.test(token.value));
     }
-    state.prev = text.length > 0 ? text[text.length - 1] : state.prev;
-    return tokens;
+    return { tokens, carry: { open, lineStart, prev: text.length > 0 ? text[text.length - 1] : carry.prev } };
   };
 
   // 色は span の textContent で付ける。抜粋が HTML として解釈される経路は作らない。
   const paint = (code, grammar) => {
-    const state = { open: null, lineStart: true, prev: "\n" };
     const walker = document.createTreeWalker(code, NodeFilter.SHOW_TEXT);
     const textNodes = [];
     for (let node = walker.nextNode(); node; node = walker.nextNode()) {
       if (!node.parentElement.closest(".ln")) textNodes.push(node);
     }
-    for (const node of textNodes) {
-      const parts = tokenize(node.data, grammar, state).map(([cls, value]) => (cls ? el("span", { class: cls, text: value }) : document.createTextNode(value)));
-      node.replaceWith(...parts);
-    }
+    const Start = { open: null, lineStart: true, prev: "\n" };
+    textNodes.reduce((carry, node) => {
+      const result = tokenize(node.data, grammar, carry);
+      node.replaceWith(...result.tokens.map(({ cls, value }) => (cls ? el("span", { class: cls, text: value }) : document.createTextNode(value))));
+      return result.carry;
+    }, Start);
   };
 
-  // diff の抜粋は、行頭の + / - で行ごとに背景を付ける。
+  // 抜粋の本文の行(行番号の span は含めない前提で呼ぶ)。
+  const excerptLines = (code) => code.textContent.replace(/\n$/, "").split("\n");
+
+  // diff の抜粋は、行頭の + / - で行ごとに背景を付ける。行番号(`.ln`)はいったん外して本文だけで行を割り、同じ行の頭へ戻す。
   const markDiff = (code) => {
-    const lines = code.textContent.replace(/\n$/, "").split("\n");
+    const numberSpans = [...code.querySelectorAll(".ln")];
+    const numbers = numberSpans.map((ln) => ln.textContent);
+    for (const ln of numberSpans) ln.remove();
+    const lines = excerptLines(code);
     const DiffLine = { "+": "diff-add", "-": "diff-del" };
     code.replaceChildren(...lines.flatMap((line, index) => [
-      el("span", DiffLine[line[0]] ? { class: DiffLine[line[0]], text: line } : { text: line }),
+      ...(index < numbers.length ? [el("span", { class: "ln", text: numbers[index] })] : []),
+      el("span", Object.hasOwn(DiffLine, line[0]) ? { class: DiffLine[line[0]], text: line } : { text: line }),
       ...(index < lines.length - 1 ? ["\n"] : []),
     ]));
   };
 
-  // 言語は `data-lang`、無ければ抜粋の上の `path:行` か `data-file` の拡張子で決める。
+  // 言語は `data-lang`(言語名か拡張子)、無ければ抜粋の上の `path:行` か `data-file` の拡張子で決める。
+  // 断片由来の値なので、規則表は自分のキーだけを引く(`constructor` などでプロトタイプを引くと止まる)。
   const languageOf = (pre, label) => {
-    if (pre.dataset.lang) return pre.dataset.lang;
-    const extension = (label.match(/\.(\w+)(?::[\d-]+)?$/) || [])[1];
-    return Extensions[extension] || "";
+    const named = pre.dataset.lang || (label.match(/\.(\w+)(?::[\d-]+)?$/) || [])[1] || "";
+    const isLanguageName = named === "diff" || Object.hasOwn(Grammars, named);
+    if (isLanguageName) return named;
+    return Object.hasOwn(LanguageByExtension, named) ? LanguageByExtension[named] : "";
   };
 
-  // 抜粋を開閉できる枠に入れる。見出しには抜粋の上の `path:行`(なければ data-file)と行数を出す。
-  const fold = (pre) => {
-    const above = pre.previousElementSibling;
-    const ref = above && above.classList.contains("where-ref") ? above : null;
-    const label = ref ? ref.textContent.trim() : pre.dataset.file || "";
+  const colorize = (pre, label) => {
     const code = pre.querySelector("code") || pre;
     const language = languageOf(pre, label);
     if (language === "diff") markDiff(code);
-    else if (Grammars[language]) paint(code, Grammars[language]);
-    const lineCount = pre.querySelectorAll(".ln").length || code.textContent.replace(/\n$/, "").split("\n").length;
+    else if (Object.hasOwn(Grammars, language)) paint(code, Grammars[language]);
+  };
+
+  // 抜粋を開閉できる枠に入れる。見出しには抜粋の上の `path:行`(where-ref。無ければ data-file)と行数を出す。
+  const fold = (pre, ref, label) => {
+    const code = pre.querySelector("code") || pre;
+    const lineCount = pre.querySelectorAll(".ln").length || excerptLines(code).length;
     const summary = el("summary", {}, ref ? [...ref.childNodes] : [el("code", { text: label || "コード" })]);
     summary.append(el("span", { class: "fold-count", text: `${lineCount} 行` }));
     const details = el("details", { class: "code-fold", open: "" });
@@ -363,8 +377,19 @@ ul.focus li { margin: 6px 0; }
     if (ref) ref.remove();
   };
 
+  const whereRefOf = (pre) => {
+    const above = pre.previousElementSibling;
+    const hasWhereRef = above !== null && above.classList.contains("where-ref");
+    return hasWhereRef ? above : null;
+  };
+
   const codeBlocks = [...explain.querySelectorAll("pre.code")];
-  for (const pre of codeBlocks) fold(pre);
+  for (const pre of codeBlocks) {
+    const ref = whereRefOf(pre);
+    const label = ref ? ref.textContent.trim() : pre.dataset.file || "";
+    colorize(pre, label);
+    fold(pre, ref, label);
+  }
   if (codeBlocks.length > 0) {
     const folds = () => [...explain.querySelectorAll("details.code-fold")];
     const toggle = el("button", { type: "button", class: "code-toggle" });

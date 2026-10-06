@@ -210,7 +210,8 @@ PY
 `pre.code` は固定スクリプトが開閉できる枠に入れ、言語ごとに色を付ける(断片には書かない)。言語は
 抜粋の上の `path:行`(`where-ref`)か `data-file` の拡張子で決まる。**拡張子が無い・中身の言語が
 拡張子と違う**(`harness/githooks/pre-push`、HTML の中のスクリプト)ときと、diff の抜粋は
-`data-lang` で指定する(`python` / `js` / `shell` / `yaml` / `html` / `diff`。diff は行頭の `+` / `-` に色が付く)。
+`data-lang` で指定する。書ける値はテンプレートの `Grammars`(言語名)と `LanguageByExtension`(拡張子)の
+キー、または `diff`(行頭の `+` / `-` に色が付く)。どれでもない値は色が付かないだけで、検査では落ちない。
 
 ## 参照ファイル
 
