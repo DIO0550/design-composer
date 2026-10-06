@@ -2,54 +2,73 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-TLLWSMm5q5UA+5n9uxOXLlZtq56fAykpmfFIzNSw2+4='; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-LxAxGXrbtSaCprnVlyN6JNrHiBN6hYZ19TlRLEpmjpA='; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR 解説</title>
 <style>
 :root {
-  --bg: #fbfaf7;
+  --bg: #f3f8fd;
   --surface: #ffffff;
-  --surface-2: #f3f1ec;
-  --border: #e3dfd6;
-  --text: #1f1d1a;
-  --text-2: #57534b;
-  --text-3: #8a8478;
-  --accent: #2f5fd0;
-  --accent-soft: #e6edfb;
+  --surface-2: #e8f1fb;
+  --border: #d2e1f1;
+  --text: #13233a;
+  --text-2: #3e5571;
+  --text-3: #5f7590;
+  --accent: #1f6fd1;
+  --accent-soft: #deecfc;
   --green: #2f7d4f;
-  --green-soft: #e3f2e8;
+  --green-soft: #e1f3e8;
   --rose: #b23a48;
-  --rose-soft: #f8e4e6;
+  --rose-soft: #fbe6e9;
   --amber: #9a6b12;
-  --amber-soft: #fbf0d9;
+  --amber-soft: #fdf2dc;
+  --code-bg: #f5f9fe;
+  --tok-kw: #1d4fc4;
+  --tok-str: #0f7a6c;
+  --tok-com: #637893;
+  --tok-num: #b45309;
+  --tok-fn: #7c3aed;
+  --tok-key: #0b63b6;
+  --tok-var: #c0266d;
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --sans: system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif;
+  --header-h: 64px;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #15171a;
-    --surface: #1c1f23;
-    --surface-2: #23272c;
-    --border: #33383f;
-    --text: #e8e6e1;
-    --text-2: #b4afa6;
-    --text-3: #847f76;
-    --accent: #8fb0ff;
-    --accent-soft: #23314f;
+    --bg: #0f1724;
+    --surface: #152033;
+    --surface-2: #1b2a40;
+    --border: #2a3c56;
+    --text: #e2ebf6;
+    --text-2: #a8bcd5;
+    --text-3: #7288a5;
+    --accent: #7fb3ff;
+    --accent-soft: #1d3353;
     --green: #7cc79a;
-    --green-soft: #1d3326;
+    --green-soft: #1b3326;
     --rose: #ec8f9b;
     --rose-soft: #3d2328;
     --amber: #e3b45a;
     --amber-soft: #3a2f19;
+    --code-bg: #111c2c;
+    --tok-kw: #82aaff;
+    --tok-str: #7fd6c2;
+    --tok-com: #6f84a0;
+    --tok-num: #f0b46b;
+    --tok-fn: #c4a3ff;
+    --tok-key: #6fc1ff;
+    --tok-var: #ff8fb8;
   }
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.75 var(--sans); }
 a { color: var(--accent); }
 code { font-family: var(--mono); font-size: 0.88em; background: var(--surface-2); padding: 0.1em 0.35em; border-radius: 4px; }
-.page { max-width: 1180px; margin: 0 auto; padding: 24px 16px 64px; }
-.top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+.page { max-width: 1180px; margin: 0 auto; padding: 0 16px 64px; }
+.top { position: sticky; top: 0; z-index: 10; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 12px 0; background: var(--bg); border-bottom: 1px solid var(--border); }
+.code-toggle { font: 12px var(--sans); padding: 4px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--text-2); cursor: pointer; }
+.code-toggle:hover { color: var(--accent); border-color: var(--accent); }
 .links { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; margin-left: auto; }
 .explain-pages { display: flex; flex-wrap: wrap; gap: 4px; }
 .explain-pages a, .explain-pages span { padding: 4px 12px; border-radius: 999px; font-size: 13px; text-decoration: none; color: var(--text-2); border: 1px solid var(--border); }
@@ -58,10 +77,11 @@ code { font-family: var(--mono); font-size: 0.88em; background: var(--surface-2)
 .banner { margin: 16px 0 0; padding: 12px 14px; border-radius: 8px; background: var(--amber-soft); color: var(--text); border: 1px solid var(--border); font-size: 14px; }
 .banner ul { margin: 6px 0 0; padding-left: 20px; }
 .layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 32px; margin-top: 24px; }
-.toc { position: sticky; top: 16px; align-self: start; font-size: 13px; }
+.toc { position: sticky; top: calc(var(--header-h) + 16px); align-self: start; max-height: calc(100vh - var(--header-h) - 32px); overflow-y: auto; font-size: 13px; }
+h2[id], h3[id], tr[id] { scroll-margin-top: calc(var(--header-h) + 12px); }
 .toc a { display: block; padding: 3px 0 3px 10px; color: var(--text-2); text-decoration: none; border-left: 2px solid var(--border); }
 .toc a:hover { color: var(--accent); border-left-color: var(--accent); }
-@media (max-width: 860px) { .layout { grid-template-columns: minmax(0, 1fr); } .toc { position: static; } }
+@media (max-width: 860px) { .layout { grid-template-columns: minmax(0, 1fr); } .toc { position: static; max-height: none; } .links { flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; margin-left: 0; max-width: 100%; } }
 main { min-width: 0; }
 h1 { font-size: 28px; line-height: 1.35; margin: 0 0 8px; }
 h2 { font-size: 20px; margin: 48px 0 12px; padding-top: 8px; border-top: 1px solid var(--border); }
@@ -92,11 +112,26 @@ figure.diagram figcaption { margin-top: 8px; font-size: 13px; color: var(--text-
 .d-line { stroke: var(--text-2); stroke-width: 1.5; fill: none; }
 .d-text { fill: var(--text); font: 13px var(--sans); }
 .d-muted { fill: var(--text-3); font: 12px var(--sans); }
-pre.code { margin: 12px 0; padding: 12px 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; overflow-x: auto; font: 13px/1.6 var(--mono); }
+pre.code { margin: 12px 0; padding: 12px 14px; background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; overflow-x: auto; font: 13px/1.6 var(--mono); }
 pre.code code { background: none; padding: 0; font-size: inherit; }
-pre.code[data-file]::before { content: attr(data-file); display: block; margin-bottom: 8px; color: var(--text-3); font-size: 12px; }
 pre.code .ln { display: inline-block; min-width: 3.5ch; margin-right: 14px; color: var(--text-3); text-align: right; user-select: none; }
 .where-ref { margin: 4px 0 0; color: var(--text-2); font-size: 14px; }
+details.code-fold { margin: 12px 0; border: 1px solid var(--border); border-radius: 8px; background: var(--code-bg); }
+details.code-fold > summary { padding: 6px 12px; font-size: 13px; color: var(--text-2); cursor: pointer; background: var(--surface-2); border-radius: 8px; }
+details.code-fold[open] > summary { border-bottom: 1px solid var(--border); border-radius: 8px 8px 0 0; }
+details.code-fold > summary code { background: none; padding: 0; }
+details.code-fold .fold-count { margin-left: 8px; color: var(--text-3); }
+details.code-fold > pre.code { margin: 0; border: 0; border-radius: 0 0 8px 8px; }
+.tok-kw { color: var(--tok-kw); font-weight: 600; }
+.tok-str { color: var(--tok-str); }
+.tok-com { color: var(--tok-com); font-style: italic; }
+.tok-num { color: var(--tok-num); }
+.tok-fn { color: var(--tok-fn); }
+.tok-key { color: var(--tok-key); }
+.tok-var { color: var(--tok-var); }
+.diff-add, .diff-del { display: inline-block; min-width: 100%; }
+.diff-add { background: var(--green-soft); }
+.diff-del { background: var(--rose-soft); }
 .note { margin: 14px 0; padding: 10px 14px; border-radius: 8px; font-size: 14px; }
 .note.info { background: var(--accent-soft); }
 .note.warn { background: var(--amber-soft); }
@@ -115,6 +150,7 @@ ul.focus li { margin: 6px 0; }
     <span class="kicker">PR 解説</span>
     <nav class="explain-pages" id="explain-pages" aria-label="解説のページ"></nav>
     <nav class="links" id="links"></nav>
+    <span id="code-controls"></span>
   </header>
   <div class="banner" id="staleness" hidden></div>
   <div class="layout">
@@ -122,12 +158,12 @@ ul.focus li { margin: 6px 0; }
     <main>
       <article id="explain">
 <!-- EXPLAIN:BEGIN -->
-<p class="explain-meta" data-explained-sha="9267f565c14f4414ea96a0a56ca7a2cbbb8a438a" data-pr="1024" data-page="tech">解説時点 <code>9267f56</code> · 材料 <a href="https://github.com/DIO0550/design-composer/issues/1022">Issue #1022</a></p>
+<p class="explain-meta" data-explained-sha="a88ac650e310a25a8eef9cf75e757669edc7afcf" data-pr="1024" data-page="tech">解説時点 <code>a88ac65</code> · 材料 <a href="https://github.com/DIO0550/design-composer/issues/1022">Issue #1022</a></p>
 <h1>PR ごとの解説ページを Pages に出す: 技術</h1>
 <p class="lead">この PR がやっていることごとのコード抜粋(どこで何をしているか)、使った技術 5 つの解説、変更ファイルを読む順に辿るコードの読み方。</p>
 
 <h2 id="where"><span class="kicker">コード</span>どこで何をしているか</h2>
-<p>この PR がやっていることごとに、それをしているコードの実物を抜粋した。行番号は解説時点のファイルのもので、抜粋の上の <code>path:行</code> は GitHub の該当行へのリンク。</p>
+<p>この PR がやっていることごとに、それをしているコードを抜粋した(行番号は解説時点のファイルのもの。行番号をクリックせずとも、<code>path:行</code> から GitHub の該当行へ飛べる)。</p>
 
 <h3 id="w-workflow">PR のイベントで地図を作り、gh-pages に置く(閉じたら消す)</h3>
 <p>PR が開かれた・push された・開き直されたときは地図(<code>change-map.json</code>)を作って <code>put-map</code> で置き、閉じたときは <code>remove</code> でフォルダごと消す。認証ヘッダは環境変数の git 設定で 1 本だけ渡す。</p>
@@ -355,83 +391,176 @@ ul.focus li { margin: 6px 0; }
 <span class="ln">142</span>  sleep $((attempt * retry_wait))
 <span class="ln">143</span>done</code></pre>
 
+<h3 id="w-sticky">ナビを画面の上に固定する</h3>
+<p>ページのナビ・リンク・「コードをすべて畳む」を持つヘッダを <code>position: sticky</code> で上に固定する。ヘッダは画面幅で折り返して高さが変わるので、固定スクリプトが高さを測って CSS 変数 <code>--header-h</code> に入れ、目次の固定位置と、見出しへ飛んだときにヘッダの下へ隠れない余白に使う。</p>
+<p class="where-ref"><code class="ref">.claude/skills/pr-explain/templates/index.html:69</code></p>
+<pre class="code" data-lang="html"><code><span class="ln">69</span>.top { position: sticky; top: 0; z-index: 10; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 12px 0; background: var(--bg); border-bottom: 1px solid var(--border); }</code></pre>
+<p class="where-ref"><code class="ref">.claude/skills/pr-explain/templates/index.html:212-213</code></p>
+<pre class="code" data-lang="js"><code><span class="ln">212</span>  const header = document.querySelector(".top");
+<span class="ln">213</span>  new ResizeObserver(() =&gt; document.documentElement.style.setProperty("--header-h", `${header.offsetHeight}px`)).observe(header);</code></pre>
+
+<h3 id="w-fold">コード抜粋を開閉できる枠に入れる</h3>
+<p>ページを開いたときに、本文の <code>pre.code</code> をすべて <code>&lt;details&gt;</code> に入れる(最初は開いている)。見出しには抜粋の上の <code>path:行</code> と行数を出し、ヘッダの「コードをすべて畳む / 開く」でまとめて切り替える。</p>
+<p class="where-ref"><code class="ref">.claude/skills/pr-explain/templates/index.html:369-377</code></p>
+<pre class="code" data-lang="js"><code><span class="ln">369</span>  const fold = (pre, ref, label) =&gt; {
+<span class="ln">370</span>    const code = pre.querySelector("code") || pre;
+<span class="ln">371</span>    const lineCount = pre.querySelectorAll(".ln").length || excerptLines(code).length;
+<span class="ln">372</span>    const summary = el("summary", {}, ref ? [...ref.childNodes] : [el("code", { text: label || "コード" })]);
+<span class="ln">373</span>    summary.append(el("span", { class: "fold-count", text: `${lineCount} 行` }));
+<span class="ln">374</span>    const details = el("details", { class: "code-fold", open: "" });
+<span class="ln">375</span>    pre.replaceWith(details);
+<span class="ln">376</span>    details.append(summary, pre);
+<span class="ln">377</span>    if (ref) ref.remove();</code></pre>
+<p class="where-ref"><code class="ref">.claude/skills/pr-explain/templates/index.html:386-407</code></p>
+<pre class="code" data-lang="js"><code><span class="ln">386</span>  const codeBlocks = [...explain.querySelectorAll("pre.code")];
+<span class="ln">387</span>  for (const pre of codeBlocks) {
+<span class="ln">388</span>    const ref = whereRefOf(pre);
+<span class="ln">389</span>    const label = ref ? ref.textContent.trim() : pre.dataset.file || "";
+<span class="ln">390</span>    colorize(pre, label);
+<span class="ln">391</span>    fold(pre, ref, label);
+<span class="ln">392</span>  }
+<span class="ln">393</span>  if (codeBlocks.length &gt; 0) {
+<span class="ln">394</span>    const folds = () =&gt; [...explain.querySelectorAll("details.code-fold")];
+<span class="ln">395</span>    const toggle = el("button", { type: "button", class: "code-toggle" });
+<span class="ln">396</span>    const syncLabel = () =&gt; {
+<span class="ln">397</span>      toggle.textContent = folds().some((details) =&gt; details.open) ? "コードをすべて畳む" : "コードをすべて開く";
+<span class="ln">398</span>    };
+<span class="ln">399</span>    toggle.addEventListener("click", () =&gt; {
+<span class="ln">400</span>      const shouldOpen = !folds().some((details) =&gt; details.open);
+<span class="ln">401</span>      for (const details of folds()) details.open = shouldOpen;
+<span class="ln">402</span>      syncLabel();
+<span class="ln">403</span>    });
+<span class="ln">404</span>    explain.addEventListener("toggle", syncLabel, true);
+<span class="ln">405</span>    syncLabel();
+<span class="ln">406</span>    document.getElementById("code-controls").append(toggle);
+<span class="ln">407</span>  }</code></pre>
+
+<h3 id="w-highlight">コード抜粋に色を付ける</h3>
+<p>ページを開いたときに抜粋ごとに呼ばれる(<code>colorize</code>)。言語(<code>data-lang</code> か拡張子)の規則で text ノードを字句に分け、キーワード・文字列・コメント・数値・関数呼び出し(YAML のキー・シェルの変数・HTML のタグも)を <code>span</code> で包む。<code>tokenAt</code> が 1 字句を決め、<code>tokenize</code> が 1 行ずつ回して、閉じずに行が終わった文字列・コメントを <code>carry</code> で次の行へ持ち越す。行番号の <code>span</code> は飛ばす。色は <code>textContent</code> で付けるので、抜粋が HTML として解釈される経路は無い。</p>
+<p class="where-ref"><code class="ref">.claude/skills/pr-explain/templates/index.html:278-295</code></p>
+<pre class="code" data-lang="js"><code><span class="ln">278</span>  const tokenAt = (cursor, grammar) =&gt; {
+<span class="ln">279</span>    const isYamlKeyPosition = grammar.keys === true &amp;&amp; cursor.lineStart;
+<span class="ln">280</span>    const key = isYamlKeyPosition ? matchAt(YamlKey, cursor) : null;
+<span class="ln">281</span>    if (key) return Token("tok-key", key);
+<span class="ln">282</span>    const quoted = commentAt(cursor, grammar) || stringAt(cursor, grammar);
+<span class="ln">283</span>    if (quoted) return quoted;
+<span class="ln">284</span>    const variable = grammar.variables === true ? matchAt(ShellVariable, cursor) : null;
+<span class="ln">285</span>    if (variable) return Token("tok-var", variable);
+<span class="ln">286</span>    const markup = grammar.tags === true ? matchAt(TagName, cursor) || matchAt(AttributeName, cursor) : null;
+<span class="ln">287</span>    if (markup) return Token(markup.startsWith("&lt;") ? "tok-kw" : "tok-key", markup);
+<span class="ln">288</span>    if (/\w/.test(cursor.prev)) return null;
+<span class="ln">289</span>    const number = matchAt(NumberLiteral, cursor);
+<span class="ln">290</span>    if (number) return Token("tok-num", number);
+<span class="ln">291</span>    const word = matchAt(Identifier, cursor);
+<span class="ln">292</span>    if (!word) return null;
+<span class="ln">293</span>    if (grammar.keywords.has(word)) return Token("tok-kw", word);
+<span class="ln">294</span>    return Token(cursor.text[cursor.at + word.length] === "(" ? "tok-fn" : null, word);
+<span class="ln">295</span>  };</code></pre>
+<p class="where-ref"><code class="ref">.claude/skills/pr-explain/templates/index.html:305-318</code></p>
+<pre class="code" data-lang="js"><code><span class="ln">305</span>  const tokenize = (text, grammar, carry) =&gt; {
+<span class="ln">306</span>    const tokens = [];
+<span class="ln">307</span>    let { open, lineStart } = carry;
+<span class="ln">308</span>    let at = 0;
+<span class="ln">309</span>    while (at &lt; text.length) {
+<span class="ln">310</span>      const cursor = { text, at, prev: at &gt; 0 ? text[at - 1] : carry.prev, lineStart };
+<span class="ln">311</span>      const token = open ? continuationOf(cursor, open) : tokenAt(cursor, grammar) || Token(null, text[at]);
+<span class="ln">312</span>      tokens.push(token);
+<span class="ln">313</span>      at += token.value.length;
+<span class="ln">314</span>      open = token.opens === null ? null : { cls: token.cls, close: token.opens };
+<span class="ln">315</span>      lineStart = token.value.endsWith("\n") || (lineStart &amp;&amp; !/\S/.test(token.value));
+<span class="ln">316</span>    }
+<span class="ln">317</span>    return { tokens, carry: { open, lineStart, prev: text.length &gt; 0 ? text[text.length - 1] : carry.prev } };
+<span class="ln">318</span>  };</code></pre>
+<p class="where-ref"><code class="ref">.claude/skills/pr-explain/templates/index.html:321-333</code></p>
+<pre class="code" data-lang="js"><code><span class="ln">321</span>  const paint = (code, grammar) =&gt; {
+<span class="ln">322</span>    const walker = document.createTreeWalker(code, NodeFilter.SHOW_TEXT);
+<span class="ln">323</span>    const textNodes = [];
+<span class="ln">324</span>    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+<span class="ln">325</span>      if (!node.parentElement.closest(".ln")) textNodes.push(node);
+<span class="ln">326</span>    }
+<span class="ln">327</span>    const Start = { open: null, lineStart: true, prev: "\n" };
+<span class="ln">328</span>    textNodes.reduce((carry, node) =&gt; {
+<span class="ln">329</span>      const result = tokenize(node.data, grammar, carry);
+<span class="ln">330</span>      node.replaceWith(...result.tokens.map(({ cls, value }) =&gt; (cls ? el("span", { class: cls, text: value }) : document.createTextNode(value))));
+<span class="ln">331</span>      return result.carry;
+<span class="ln">332</span>    }, Start);
+<span class="ln">333</span>  };</code></pre>
+
 <h3 id="w-csp-meta">スクリプトを固定スクリプトだけに絞る(CSP)</h3>
 <p>ブラウザがページを読み込むときに効く。断片に <code>&lt;script&gt;</code> やイベント属性が紛れても、ハッシュが合わないので動かない。</p>
 <p class="where-ref"><code class="ref">.claude/skills/pr-explain/templates/index.html:5</code></p>
-<pre class="code"><code><span class="ln">5</span>&lt;meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-TLLWSMm5q5UA+5n9uxOXLlZtq56fAykpmfFIzNSw2+4='; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'"&gt;</code></pre>
+<pre class="code"><code><span class="ln">5</span>&lt;meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-LxAxGXrbtSaCprnVlyN6JNrHiBN6hYZ19TlRLEpmjpA='; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'"&gt;</code></pre>
 
 <h3 id="w-ref"><code>path:line</code> を解説時点の GitHub の行リンクにする</h3>
 <p>ページを開いたときに、本文の <code>code.ref</code> をすべて <code>explain-meta</code> の sha の行へのリンクで包む。</p>
-<p class="where-ref"><code class="ref">.claude/skills/pr-explain/templates/index.html:165-173</code></p>
-<pre class="code"><code><span class="ln">165</span>  for (const code of explain.querySelectorAll("code.ref")) {
-<span class="ln">166</span>    const match = code.textContent.trim().match(/^(.+?)(?::(\d+)(?:-(\d+))?)?$/);
-<span class="ln">167</span>    if (!match) continue;
-<span class="ln">168</span>    const [, path, start, end] = match;
-<span class="ln">169</span>    const lines = start ? `#L${start}${end ? `-L${end}` : ""}` : "";
-<span class="ln">170</span>    const link = el("a", { href: `https://github.com/${Repo}/blob/${explainedSha}/${path}${lines}` });
-<span class="ln">171</span>    code.replaceWith(link);
-<span class="ln">172</span>    link.append(code);
-<span class="ln">173</span>  }</code></pre>
+<p class="where-ref"><code class="ref">.claude/skills/pr-explain/templates/index.html:201-208</code></p>
+<pre class="code" data-lang="js"><code><span class="ln">201</span>  for (const code of explain.querySelectorAll("code.ref")) {
+<span class="ln">202</span>    const match = code.textContent.trim().match(/^(.+?)(?::(\d+)(?:-(\d+))?)?$/);
+<span class="ln">203</span>    if (!match) continue;
+<span class="ln">204</span>    const [, path, start, end] = match;
+<span class="ln">205</span>    const lines = start ? `#L${start}${end ? `-L${end}` : ""}` : "";
+<span class="ln">206</span>    const link = el("a", { href: `https://github.com/${Repo}/blob/${explainedSha}/${path}${lines}` });
+<span class="ln">207</span>    code.replaceWith(link);
+<span class="ln">208</span>    link.append(code);</code></pre>
 
 <h3 id="w-nav">ページのナビ(書かなかったページは「なし」)</h3>
 <p>ページを開いたときに 4 ページ分のリンクを並べ、ほかのページを HEAD で問い合わせて 404 なら「(なし)」に差し替える。</p>
-<p class="where-ref"><code class="ref">.claude/skills/pr-explain/templates/index.html:178-186</code></p>
-<pre class="code"><code><span class="ln">178</span>  for (const target of ExplainPages) {
-<span class="ln">179</span>    const isCurrent = target.name === page;
-<span class="ln">180</span>    const item = el("a", isCurrent ? { href: target.href, "aria-current": "page", text: target.label } : { href: target.href, text: target.label });
-<span class="ln">181</span>    pagesNav.append(item);
-<span class="ln">182</span>    if (isCurrent) continue;
-<span class="ln">183</span>    fetch(target.href, { method: "HEAD", cache: "no-store" }).then((response) =&gt; {
-<span class="ln">184</span>      if (response.status === 404) item.replaceWith(el("span", { text: `${target.label}(なし)` }));
-<span class="ln">185</span>    });
-<span class="ln">186</span>  }</code></pre>
+<p class="where-ref"><code class="ref">.claude/skills/pr-explain/templates/index.html:411-418</code></p>
+<pre class="code" data-lang="js"><code><span class="ln">411</span>  const pagesNav = document.getElementById("explain-pages");
+<span class="ln">412</span>  for (const target of ExplainPages) {
+<span class="ln">413</span>    const isCurrent = target.name === page;
+<span class="ln">414</span>    const item = el("a", isCurrent ? { href: target.href, "aria-current": "page", text: target.label } : { href: target.href, text: target.label });
+<span class="ln">415</span>    pagesNav.append(item);
+<span class="ln">416</span>    if (isCurrent) continue;
+<span class="ln">417</span>    fetch(target.href, { method: "HEAD", cache: "no-store" }).then((response) =&gt; {
+<span class="ln">418</span>      if (response.status === 404) item.replaceWith(el("span", { text: `${target.label}(なし)` }));</code></pre>
 
 <h3 id="w-stale">「このページは ◯◯ 時点」の帯</h3>
 <p><code>change-map.json</code> を読んだ後に呼ばれる。解説時点の sha が地図の head と違えば、それ以降のコミットで変わったファイルを帯に並べる。</p>
-<p class="where-ref"><code class="ref">.claude/skills/pr-explain/templates/index.html:219-232</code></p>
-<pre class="code"><code><span class="ln">219</span>  const showStaleness = (map) =&gt; {
-<span class="ln">220</span>    const isOutdated = explainedSha !== "" &amp;&amp; map.head !== explainedSha;
-<span class="ln">221</span>    if (!isOutdated) return;
-<span class="ln">222</span>    const banner = document.getElementById("staleness");
-<span class="ln">223</span>    const index = map.commits.findIndex((commit) =&gt; commit.sha === explainedSha);
-<span class="ln">224</span>    banner.hidden = false;
-<span class="ln">225</span>    if (index &lt; 0) {
-<span class="ln">226</span>      banner.append(`解説を書いた時点のコミット(${explainedSha.slice(0, 7)})が、この PR のコミット一覧に見つかりません。force push などで履歴が変わった可能性があります。`);
-<span class="ln">227</span>      return;
-<span class="ln">228</span>    }
-<span class="ln">229</span>    const changed = [...new Set(map.commits.slice(index + 1).flatMap((commit) =&gt; commit.files))].sort();
-<span class="ln">230</span>    banner.append(`このページは ${explainedSha.slice(0, 7)} 時点のものです。以降のコミットで変わったファイル:`);
-<span class="ln">231</span>    banner.append(el("ul", {}, changed.map((path) =&gt; el("li", {}, [el("code", { text: path })]))));
-<span class="ln">232</span>  };</code></pre>
+<p class="where-ref"><code class="ref">.claude/skills/pr-explain/templates/index.html:453-465</code></p>
+<pre class="code" data-lang="js"><code><span class="ln">453</span>  const showStaleness = (map) =&gt; {
+<span class="ln">454</span>    const isOutdated = explainedSha !== "" &amp;&amp; map.head !== explainedSha;
+<span class="ln">455</span>    if (!isOutdated) return;
+<span class="ln">456</span>    const banner = document.getElementById("staleness");
+<span class="ln">457</span>    const index = map.commits.findIndex((commit) =&gt; commit.sha === explainedSha);
+<span class="ln">458</span>    banner.hidden = false;
+<span class="ln">459</span>    if (index &lt; 0) {
+<span class="ln">460</span>      banner.append(`解説を書いた時点のコミット(${explainedSha.slice(0, 7)})が、この PR のコミット一覧に見つかりません。force push などで履歴が変わった可能性があります。`);
+<span class="ln">461</span>      return;
+<span class="ln">462</span>    }
+<span class="ln">463</span>    const changed = [...new Set(map.commits.slice(index + 1).flatMap((commit) =&gt; commit.files))].sort();
+<span class="ln">464</span>    banner.append(`このページは ${explainedSha.slice(0, 7)} 時点のものです。以降のコミットで変わったファイル:`);
+<span class="ln">465</span>    banner.append(el("ul", {}, changed.map((path) =&gt; el("li", {}, [el("code", { text: path })]))));</code></pre>
 
 <h3 id="w-sections">ページごとの地図の節(入口・技術・テスト)</h3>
 <p>ページ名で節を選ぶ。入口は変更ファイルの一覧、技術は本文にフルパスで出てこない変更ファイル、テストは追加・削除されたテスト名。振る舞いのページには足さない。</p>
-<p class="where-ref"><code class="ref">.claude/skills/pr-explain/templates/index.html:249-273</code></p>
-<pre class="code"><code><span class="ln">249</span>  const MapSections = {
-<span class="ln">250</span>    index: {
-<span class="ln">251</span>      heading: "変更の地図",
-<span class="ln">252</span>      render: (body, map) =&gt; {
-<span class="ln">253</span>        body.append(el("p", { class: "muted", text: `head ${map.head.slice(0, 7)} · base との分岐点 ${map.mergeBase.slice(0, 7)} · 上から読む順(内側の層から外側へ)に並べています。` }));
-<span class="ln">254</span>        for (const group of map.groups) appendList(body, group.label, group.files.map(fileItem));
-<span class="ln">255</span>        if (map.groups.length === 0) body.append(el("p", { class: "muted", text: "変更されたファイルはありません。" }));
-<span class="ln">256</span>      },
-<span class="ln">257</span>    },
-<span class="ln">258</span>    tech: {
-<span class="ln">259</span>      heading: "解説に出てこない変更ファイル",
-<span class="ln">260</span>      render: (body, map) =&gt; {
-<span class="ln">261</span>        const unmentioned = map.groups.flatMap((group) =&gt; group.files).filter((file) =&gt; !isMentioned(file.path));
-<span class="ln">262</span>        body.append(el("p", { class: "muted", text: "このページの本文にフルパスで出てこない変更ファイル。コードの読み方が触れていないものです。" }));
-<span class="ln">263</span>        appendList(body, "解説に出てこない", unmentioned.map(fileItem));
-<span class="ln">264</span>      },
-<span class="ln">265</span>    },
-<span class="ln">266</span>    tests: {
-<span class="ln">267</span>      heading: "追加・削除されたテスト",
-<span class="ln">268</span>      render: (body, map) =&gt; {
-<span class="ln">269</span>        appendList(body, "追加されたテスト", map.tests.added.map(testItem));
-<span class="ln">270</span>        appendList(body, "削除されたテスト", map.tests.removed.map(testItem));
-<span class="ln">271</span>      },
-<span class="ln">272</span>    },
-<span class="ln">273</span>  };</code></pre>
+<p class="where-ref"><code class="ref">.claude/skills/pr-explain/templates/index.html:483-508</code></p>
+<pre class="code" data-lang="js"><code><span class="ln">483</span>  const MapSections = {
+<span class="ln">484</span>    index: {
+<span class="ln">485</span>      heading: "変更の地図",
+<span class="ln">486</span>      render: (body, map) =&gt; {
+<span class="ln">487</span>        body.append(el("p", { class: "muted", text: `head ${map.head.slice(0, 7)} · base との分岐点 ${map.mergeBase.slice(0, 7)} · 上から読む順(内側の層から外側へ)に並べています。` }));
+<span class="ln">488</span>        for (const group of map.groups) appendList(body, group.label, group.files.map(fileItem));
+<span class="ln">489</span>        if (map.groups.length === 0) body.append(el("p", { class: "muted", text: "変更されたファイルはありません。" }));
+<span class="ln">490</span>      },
+<span class="ln">491</span>    },
+<span class="ln">492</span>    tech: {
+<span class="ln">493</span>      heading: "解説に出てこない変更ファイル",
+<span class="ln">494</span>      render: (body, map) =&gt; {
+<span class="ln">495</span>        const unmentioned = map.groups.flatMap((group) =&gt; group.files).filter((file) =&gt; !isMentioned(file.path));
+<span class="ln">496</span>        body.append(el("p", { class: "muted", text: "このページの本文にフルパスで出てこない変更ファイル。コードの読み方が触れていないものです。" }));
+<span class="ln">497</span>        appendList(body, "解説に出てこない", unmentioned.map(fileItem));
+<span class="ln">498</span>      },
+<span class="ln">499</span>    },
+<span class="ln">500</span>    tests: {
+<span class="ln">501</span>      heading: "追加・削除されたテスト",
+<span class="ln">502</span>      render: (body, map) =&gt; {
+<span class="ln">503</span>        appendList(body, "追加されたテスト", map.tests.added.map(testItem));
+<span class="ln">504</span>        appendList(body, "削除されたテスト", map.tests.removed.map(testItem));
+<span class="ln">505</span>      },
+<span class="ln">506</span>    },
+<span class="ln">507</span>  };
+<span class="ln">508</span>  const mapSection = MapSections[page];</code></pre>
 
 <h3 id="w-announce">PR に解説の URL を告知する</h3>
 <p>Storybook プレビューの固定コメントを更新するときに 1 行足す。告知のコメントを別に増やさない。</p>
@@ -466,7 +595,7 @@ ul.focus li { margin: 6px 0; }
 <span class="ln">218</span>      - name: 解説ページの置き場の判定表
 <span class="ln">219</span>        run: bash .github/scripts/pr-explain-pages-cases.sh</code></pre>
 <p class="where-ref"><code class="ref">harness/githooks/pre-push:62-65</code></p>
-<pre class="code"><code><span class="ln">62</span># PR の解説ページ(.claude/skills/pr-explain/)が使う組み立て・地図・置き場の判定表。
+<pre class="code" data-lang="shell"><code><span class="ln">62</span># PR の解説ページ(.claude/skills/pr-explain/)が使う組み立て・地図・置き場の判定表。
 <span class="ln">63</span>run_check "解説ページの組み立ての判定表" bash .github/scripts/build-pr-explain-page-cases.sh
 <span class="ln">64</span>run_check "変更の地図の判定表" bash .github/scripts/build-pr-change-map-cases.sh
 <span class="ln">65</span>run_check "解説ページの置き場の判定表" bash .github/scripts/pr-explain-pages-cases.sh</code></pre>
@@ -513,11 +642,11 @@ git -C "$work/site" checkout gh-pages</code></pre>
 
 <h3><code class="ref">.claude/hooks/lib/ts_sources.py</code> と <code class="ref">.claude/hooks/lib/import-rule-violations.py</code></h3>
 <p>ドメイン層の位置 <code>DOMAINS_ROOT</code> を共有モジュールへ上げ、import 規約の検査はそれを import するだけにした。変更の地図の層の分類も同じ定義を使う(同じ値を 2 か所で導かないため)。</p>
-<pre class="code" data-file=".claude/hooks/lib/ts_sources.py"><code>+# ドメイン層の位置。この直下はカテゴリのフォルダで、モジュールはその下に置く。
+<pre class="code" data-file=".claude/hooks/lib/ts_sources.py" data-lang="diff"><code>+# ドメイン層の位置。この直下はカテゴリのフォルダで、モジュールはその下に置く。
 +DOMAINS_ROOT = f"{DEFAULT_ROOT}/domains"</code></pre>
 
 <h3><code class="ref">.claude/skills/pr-explain/templates/index.html</code></h3>
-<p>4 ページが共有する枠。CSS(ライト/ダーク)、CSP、固定スクリプトを持つ。固定スクリプトは、断片の <code>explain-meta</code> からページ名と解説時点の sha を読み、ナビ・行リンク・古さの帯を作り、<code>change-map.json</code> からページごとの地図の節(<code>MapSections</code> の対応表)を描く。描画はすべて <code>textContent</code> で、PR 由来の文字列が HTML として解釈される経路は無い。コードは <a href="#w-ref">行リンク</a>・<a href="#w-nav">ナビ</a>・<a href="#w-stale">古さの帯</a>・<a href="#w-sections">地図の節</a>。</p>
+<p>4 ページが共有する枠。CSS(ライト/ダーク)、CSP、固定スクリプトを持つ。固定スクリプトは、断片の <code>explain-meta</code> からページ名と解説時点の sha を読み、ナビ・行リンク・古さの帯を作り、<code>change-map.json</code> からページごとの地図の節(<code>MapSections</code> の対応表)を描く。描画はすべて <code>textContent</code> で、PR 由来の文字列が HTML として解釈される経路は無い。コード抜粋は開閉できる枠に入れて言語ごとに色を付け、ヘッダは画面の上に固定する。コードは <a href="#w-ref">行リンク</a>・<a href="#w-nav">ナビ</a>・<a href="#w-stale">古さの帯</a>・<a href="#w-sections">地図の節</a>・<a href="#w-sticky">ナビの固定</a>・<a href="#w-fold">開閉</a>・<a href="#w-highlight">色分け</a>。</p>
 
 <h3><code class="ref">.claude/skills/pr-explain/SKILL.md</code> と <code class="ref">.claude/skills/implementation-flow/SKILL.md</code></h3>
 <p>セッションが従う手順。ページごとに何を書き何を書かないか、部品の HTML、公開のコマンド。implementation-flow はフェーズ 7 に「PR を出したら解説を書く」を 1 行足しただけ。</p>
@@ -583,6 +712,204 @@ git -C "$work/site" checkout gh-pages</code></pre>
     const link = el("a", { href: `https://github.com/${Repo}/blob/${explainedSha}/${path}${lines}` });
     code.replaceWith(link);
     link.append(code);
+  }
+
+  // 上部の固定ヘッダの高さ。目次の固定位置と、見出しへ飛んだときにヘッダの下へ隠れない余白に使う(折り返すと変わる)。
+  const header = document.querySelector(".top");
+  new ResizeObserver(() => document.documentElement.style.setProperty("--header-h", `${header.offsetHeight}px`)).observe(header);
+
+  // コード抜粋の色分けの規則。キーワード・文字列・コメント・数値・関数呼び出しに加え、YAML はキー、
+  // シェルは変数、HTML はタグと属性名に色を付ける簡易なもの。
+  const words = (list) => new Set(list.split(" ").filter((word) => word !== ""));
+  const Grammars = {
+    python: { comment: "#", hashAnywhere: true, strings: ['"""', "'''", '"', "'"], keywords: words("def class return if elif else for while in not and or is None True False import from as with try except finally raise lambda yield pass continue break assert del async await global nonlocal") },
+    js: { comment: "//", block: ["/*", "*/"], strings: ['"', "'", "`"], keywords: words("const let var function return if else for while of in new class extends import export from default switch case break continue try catch finally throw typeof instanceof null undefined true false this async await yield delete void") },
+    shell: { comment: "#", strings: ['"', "'"], variables: true, keywords: words("if then else elif fi for in do done while until case esac function return local export set exit trap source echo readonly shift") },
+    yaml: { comment: "#", strings: ['"', "'"], keys: true, keywords: words("true false null") },
+    html: { block: ["<!--", "-->"], strings: ['"', "'"], tags: true, keywords: words("") },
+  };
+  const LanguageByExtension = { py: "python", js: "js", mjs: "js", ts: "js", tsx: "js", jsx: "js", json: "js", sh: "shell", bash: "shell", yml: "yaml", yaml: "yaml", html: "html" };
+  const Identifier = /[A-Za-z_]\w*/y;
+  const NumberLiteral = /\d+(?:\.\d+)?/y;
+  const YamlKey = /[ \t]*(?:- )?[\w.$-]+(?=:(?:\s|$))/y;
+  const ShellVariable = /\$(?:\{[^}\n]*\}|[A-Za-z_]\w*|[0-9#?@*$])/y;
+  const TagName = /<\/?[A-Za-z][\w-]*/y;
+  const AttributeName = /[A-Za-z_:][\w:.-]*(?==)/y;
+
+  // 字句。`opens` は閉じずに行が終わった文字列・コメントの閉じ記号で、次の行の頭から続ける。
+  const Token = (cls, value, opens = null) => ({ cls, value, opens });
+
+  // cursor は { text, at, prev(直前の文字。ノードの頭では前のノードの末尾), lineStart }。
+  const matchAt = (pattern, cursor) => {
+    pattern.lastIndex = cursor.at;
+    const match = pattern.exec(cursor.text);
+    return match ? match[0] : null;
+  };
+  const restOfLine = (cursor) => {
+    const end = cursor.text.indexOf("\n", cursor.at);
+    return cursor.text.slice(cursor.at, end < 0 ? cursor.text.length : end);
+  };
+
+  // 文字列の終わりまで。閉じずに行が終わったら、三重引用符とテンプレート文字列だけ次の行へ持ち越す。
+  const stringAt = (cursor, grammar) => {
+    const { text, at } = cursor;
+    const quote = grammar.strings.find((candidate) => text.startsWith(candidate, at));
+    if (!quote) return null;
+    let end = at + quote.length;
+    while (end < text.length && text[end] !== "\n") {
+      if (text.startsWith(quote, end)) return Token("tok-str", text.slice(at, end + quote.length));
+      end += text[end] === "\\" ? 2 : 1;
+    }
+    const spansLines = quote.length === 3 || quote === "`";
+    return Token("tok-str", text.slice(at, Math.min(end, text.length)), spansLines ? quote : null);
+  };
+
+  const commentAt = (cursor, grammar) => {
+    const { text, at } = cursor;
+    const block = grammar.block;
+    const isBlockCommentStart = block !== undefined && text.startsWith(block[0], at);
+    if (isBlockCommentStart) {
+      const close = text.indexOf(block[1], at + block[0].length);
+      return close >= 0 ? Token("tok-com", text.slice(at, close + block[1].length)) : Token("tok-com", restOfLine(cursor), block[1]);
+    }
+    const isLineCommentStart = grammar.comment !== undefined && text.startsWith(grammar.comment, at);
+    // `#` は Python 以外では行頭か空白の直後だけコメントにする(シェルの `$#`・URL の `#` を取り違えない)。
+    const isHashAllowedHere = grammar.comment !== "#" || grammar.hashAnywhere === true || /\s/.test(cursor.prev);
+    const isComment = isLineCommentStart && isHashAllowedHere;
+    return isComment ? Token("tok-com", restOfLine(cursor)) : null;
+  };
+
+  // 位置から始まる字句を 1 つ返す。色の付かない識別子も、途中で切らないよう 1 字句(cls が null)で返す。
+  // どの規則にも当たらなければ null(呼び出し側が 1 文字だけ進める)。
+  const tokenAt = (cursor, grammar) => {
+    const isYamlKeyPosition = grammar.keys === true && cursor.lineStart;
+    const key = isYamlKeyPosition ? matchAt(YamlKey, cursor) : null;
+    if (key) return Token("tok-key", key);
+    const quoted = commentAt(cursor, grammar) || stringAt(cursor, grammar);
+    if (quoted) return quoted;
+    const variable = grammar.variables === true ? matchAt(ShellVariable, cursor) : null;
+    if (variable) return Token("tok-var", variable);
+    const markup = grammar.tags === true ? matchAt(TagName, cursor) || matchAt(AttributeName, cursor) : null;
+    if (markup) return Token(markup.startsWith("<") ? "tok-kw" : "tok-key", markup);
+    if (/\w/.test(cursor.prev)) return null;
+    const number = matchAt(NumberLiteral, cursor);
+    if (number) return Token("tok-num", number);
+    const word = matchAt(Identifier, cursor);
+    if (!word) return null;
+    if (grammar.keywords.has(word)) return Token("tok-kw", word);
+    return Token(cursor.text[cursor.at + word.length] === "(" ? "tok-fn" : null, word);
+  };
+
+  // 持ち越しの続き(前の行で閉じなかった文字列・コメント)を、閉じ記号まで 1 字句にする。
+  const continuationOf = (cursor, open) => {
+    const close = cursor.text.indexOf(open.close, cursor.at);
+    if (close < 0) return Token(open.cls, cursor.text.slice(cursor.at), open.close);
+    return Token(open.cls, cursor.text.slice(cursor.at, close + open.close.length));
+  };
+
+  // 1 つの text ノードを字句に分け、次のノードへ持ち越す状態(carry)と一緒に返す。
+  const tokenize = (text, grammar, carry) => {
+    const tokens = [];
+    let { open, lineStart } = carry;
+    let at = 0;
+    while (at < text.length) {
+      const cursor = { text, at, prev: at > 0 ? text[at - 1] : carry.prev, lineStart };
+      const token = open ? continuationOf(cursor, open) : tokenAt(cursor, grammar) || Token(null, text[at]);
+      tokens.push(token);
+      at += token.value.length;
+      open = token.opens === null ? null : { cls: token.cls, close: token.opens };
+      lineStart = token.value.endsWith("\n") || (lineStart && !/\S/.test(token.value));
+    }
+    return { tokens, carry: { open, lineStart, prev: text.length > 0 ? text[text.length - 1] : carry.prev } };
+  };
+
+  // 色は span の textContent で付ける。抜粋が HTML として解釈される経路は作らない。
+  const paint = (code, grammar) => {
+    const walker = document.createTreeWalker(code, NodeFilter.SHOW_TEXT);
+    const textNodes = [];
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      if (!node.parentElement.closest(".ln")) textNodes.push(node);
+    }
+    const Start = { open: null, lineStart: true, prev: "\n" };
+    textNodes.reduce((carry, node) => {
+      const result = tokenize(node.data, grammar, carry);
+      node.replaceWith(...result.tokens.map(({ cls, value }) => (cls ? el("span", { class: cls, text: value }) : document.createTextNode(value))));
+      return result.carry;
+    }, Start);
+  };
+
+  // 抜粋の本文の行(行番号の span は含めない前提で呼ぶ)。
+  const excerptLines = (code) => code.textContent.replace(/\n$/, "").split("\n");
+
+  // diff の抜粋は、行頭の + / - で行ごとに背景を付ける。行番号(`.ln`)はいったん外して本文だけで行を割り、同じ行の頭へ戻す。
+  const markDiff = (code) => {
+    const numberSpans = [...code.querySelectorAll(".ln")];
+    const numbers = numberSpans.map((ln) => ln.textContent);
+    for (const ln of numberSpans) ln.remove();
+    const lines = excerptLines(code);
+    const DiffLine = { "+": "diff-add", "-": "diff-del" };
+    code.replaceChildren(...lines.flatMap((line, index) => [
+      ...(index < numbers.length ? [el("span", { class: "ln", text: numbers[index] })] : []),
+      el("span", Object.hasOwn(DiffLine, line[0]) ? { class: DiffLine[line[0]], text: line } : { text: line }),
+      ...(index < lines.length - 1 ? ["\n"] : []),
+    ]));
+  };
+
+  // 言語は `data-lang`(言語名か拡張子)、無ければ抜粋の上の `path:行` か `data-file` の拡張子で決める。
+  // 断片由来の値なので、規則表は自分のキーだけを引く(`constructor` などでプロトタイプを引くと止まる)。
+  const languageOf = (pre, label) => {
+    const named = pre.dataset.lang || (label.match(/\.(\w+)(?::[\d-]+)?$/) || [])[1] || "";
+    const isLanguageName = named === "diff" || Object.hasOwn(Grammars, named);
+    if (isLanguageName) return named;
+    return Object.hasOwn(LanguageByExtension, named) ? LanguageByExtension[named] : "";
+  };
+
+  const colorize = (pre, label) => {
+    const code = pre.querySelector("code") || pre;
+    const language = languageOf(pre, label);
+    if (language === "diff") markDiff(code);
+    else if (Object.hasOwn(Grammars, language)) paint(code, Grammars[language]);
+  };
+
+  // 抜粋を開閉できる枠に入れる。見出しには抜粋の上の `path:行`(where-ref。無ければ data-file)と行数を出す。
+  const fold = (pre, ref, label) => {
+    const code = pre.querySelector("code") || pre;
+    const lineCount = pre.querySelectorAll(".ln").length || excerptLines(code).length;
+    const summary = el("summary", {}, ref ? [...ref.childNodes] : [el("code", { text: label || "コード" })]);
+    summary.append(el("span", { class: "fold-count", text: `${lineCount} 行` }));
+    const details = el("details", { class: "code-fold", open: "" });
+    pre.replaceWith(details);
+    details.append(summary, pre);
+    if (ref) ref.remove();
+  };
+
+  const whereRefOf = (pre) => {
+    const above = pre.previousElementSibling;
+    const hasWhereRef = above !== null && above.classList.contains("where-ref");
+    return hasWhereRef ? above : null;
+  };
+
+  const codeBlocks = [...explain.querySelectorAll("pre.code")];
+  for (const pre of codeBlocks) {
+    const ref = whereRefOf(pre);
+    const label = ref ? ref.textContent.trim() : pre.dataset.file || "";
+    colorize(pre, label);
+    fold(pre, ref, label);
+  }
+  if (codeBlocks.length > 0) {
+    const folds = () => [...explain.querySelectorAll("details.code-fold")];
+    const toggle = el("button", { type: "button", class: "code-toggle" });
+    const syncLabel = () => {
+      toggle.textContent = folds().some((details) => details.open) ? "コードをすべて畳む" : "コードをすべて開く";
+    };
+    toggle.addEventListener("click", () => {
+      const shouldOpen = !folds().some((details) => details.open);
+      for (const details of folds()) details.open = shouldOpen;
+      syncLabel();
+    });
+    explain.addEventListener("toggle", syncLabel, true);
+    syncLabel();
+    document.getElementById("code-controls").append(toggle);
   }
 
   // 書かれていないページ(404)は「なし」として出す(ドキュメントだけの PR はテストのページを書かない)。
