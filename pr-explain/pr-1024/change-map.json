@@ -2,7 +2,7 @@
   "version": 1,
   "pr": 1024,
   "mergeBase": "2421cd666bb86ab3de76f66d1deb75e1b1a5eea0",
-  "head": "f6bb371127168b74a5094d53b71777c41709b0cb",
+  "head": "f4246de7b368d38dc6c802123bbc78cb9a103596",
   "groups": [
     {
       "label": "ハーネス",
@@ -18,15 +18,15 @@
           "path": ".claude/hooks/lib/import-rule-violations.py",
           "status": "M",
           "oldPath": null,
-          "additions": 1,
-          "deletions": 4
+          "additions": 14,
+          "deletions": 41
         },
         {
           "path": ".claude/hooks/lib/ts_sources.py",
           "status": "M",
           "oldPath": null,
-          "additions": 4,
-          "deletions": 1
+          "additions": 38,
+          "deletions": 2
         },
         {
           "path": ".claude/skills/implementation-flow/SKILL.md",
@@ -39,28 +39,28 @@
           "path": ".claude/skills/pr-explain/SKILL.md",
           "status": "A",
           "oldPath": null,
-          "additions": 246,
+          "additions": 247,
           "deletions": 0
         },
         {
           "path": ".claude/skills/pr-explain/templates/index.html",
           "status": "A",
           "oldPath": null,
-          "additions": 907,
+          "additions": 924,
           "deletions": 0
         },
         {
           "path": ".github/scripts/build-pr-change-map-cases.sh",
           "status": "A",
           "oldPath": null,
-          "additions": 172,
+          "additions": 212,
           "deletions": 0
         },
         {
           "path": ".github/scripts/build-pr-change-map.py",
           "status": "A",
           "oldPath": null,
-          "additions": 384,
+          "additions": 437,
           "deletions": 0
         },
         {
@@ -299,6 +299,17 @@
         ".github/scripts/build-pr-change-map-cases.sh",
         ".github/scripts/build-pr-change-map.py"
       ]
+    },
+    {
+      "sha": "f4246de7b368d38dc6c802123bbc78cb9a103596",
+      "files": [
+        ".claude/hooks/lib/import-rule-violations.py",
+        ".claude/hooks/lib/ts_sources.py",
+        ".claude/skills/pr-explain/SKILL.md",
+        ".claude/skills/pr-explain/templates/index.html",
+        ".github/scripts/build-pr-change-map-cases.sh",
+        ".github/scripts/build-pr-change-map.py"
+      ]
     }
   ],
   "dependencies": [
@@ -324,10 +335,18 @@
     },
     {
       "from": ".github/scripts/build-pr-explain-page-cases.sh",
+      "to": ".claude/skills/pr-explain/templates/index.html"
+    },
+    {
+      "from": ".github/scripts/build-pr-explain-page-cases.sh",
       "to": ".github/scripts/build-pr-explain-page.py"
     },
     {
       "from": ".github/scripts/build-pr-explain-page.py",
+      "to": ".claude/skills/pr-explain/templates/index.html"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
       "to": ".claude/skills/pr-explain/templates/index.html"
     },
     {
