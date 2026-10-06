@@ -76,9 +76,9 @@ URL は `https://dio0550.github.io/design-composer/pr-explain/pr-<番号>/`(入�
 | 入口 | 各ページの案内 | 各ページに何が書いてあるかを 1 行ずつ | |
 | 振る舞い | 振る舞いの変化 | **操作・状況ごと**に変更前と変更後。空・エラー・境界の状況も 1 行ずつ。守っているテストへリンク | 実装の手順 |
 | 振る舞い | 判断 | 採った案・検討した案(または計画にあった案)・理由・根拠。計画から外れた点と見送った点もここ | Issue の写し。Issue へのリンクを添えて要点だけ |
-| 技術 | どこで何をしているか | ページの先頭に置く。この PR がやっていること(振る舞い・処理)ごとに、**それをしているコードそのもの**(行番号付きの抜粋)と、何をしているかの 1〜2 文・誰がいつ呼ぶか・場所(`path:開始-終了`)。抜粋は 1 か所 5〜25 行で、要の関数・分岐を省略せずに出す | 場所だけの表(どこを開けばよいかは分かっても、何をしているかは読めない) |
+| 技術 | どこで何をしているか | ページの先頭に置く。この PR がやっていること(振る舞い・処理)ごとに、**それをしているコードそのもの**(PR の起点からの diff の抜粋。読み手が差分とコードの表示を切り替える)と、何をしているかの 1〜2 文・誰がいつ呼ぶか・場所(`path:開始-終了`)。抜粋は 1 か所 5〜25 行で、要の関数・分岐を省略せずに出す | 場所だけの表(どこを開けばよいかは分かっても、何をしているかは読めない) |
 | 技術 | 技術解説 | 使った技術(React の API・TypeScript の型の技法・Tauri・ブラウザ API・アルゴリズムなど)ごとのミニ記事。**何か → この PR での使いどころ → 仕組み(図) → コード抜粋 → 注意** を散文で | どの PR にも同じ文になる一般論だけの記事(この PR の使いどころへ必ず繋げる) |
-| 技術 | コードの読み方 | 地図の読む順に、ファイル(またはまとまり)ごとの役割と、呼び出しの流れの中での位置。既存のコードを変えたところは要点の diff 抜粋 | diff の全文・「どこで何をしているか」と同じ抜粋の再掲(`#w-…` へリンクする) |
+| 技術 | コードの読み方 | 地図の読む順に、ファイル(またはまとまり)ごとの役割と、呼び出しの流れの中での位置 | diff の全文・「どこで何をしているか」と同じ抜粋の再掲(`#w-…` へリンクする) |
 | テスト | 守っている振る舞い | 振る舞いごとに、それを守るテスト(ファイルとテスト名)。振る舞いのページの行へリンク | テストコードの写し |
 | テスト | 守れていない振る舞い | テストで確かめられず、目視や運用で確かめているもの・残した穴 | |
 | テスト | 壊して確かめた結果 | `test-reviewer` が壊して落ちた判断・落ちなかったものと、その対応 | |
@@ -145,21 +145,23 @@ URL は `https://dio0550.github.io/design-composer/pr-explain/pr-<番号>/`(入�
 <h3 id="w-1"><やっていること></h3>
 <p><何をしているかの 1〜2 文>。<code>Foo.bar</code> から、ノードを選ぶたびに呼ばれる。</p>
 <p class="where-ref"><code class="ref">src/…/index.ts:12-30</code></p>
-<pre class="code"><code><span class="ln">12</span>…
-<span class="ln">13</span>…</code></pre>
+<pre class="code" data-diff><code>@@ -10,17 +12,19 @@
+ 変えていない行
+-消した行
++足した行</code></pre>
 ```
 
-抜粋は手で写さず、**解説時点の head のファイルから行範囲を取り出す**(行番号とエスケープも付く)。
-`<span class="ln">` は行番号で、コピーしたときには含まれない。
+抜粋の `where-ref` と `pre` は手で写さず、**解説時点の head の作業ツリーで、行範囲から作る**。PR の
+起点(merge-base)からの diff になり、中身はエスケープされる。範囲は変更後のファイルの行番号で、
+範囲の中で消した行も入る。
 
 ```bash
-python3 - <path> <開始行> <終了行> <<'PY'
-import html, sys
-path, start, end = sys.argv[1], int(sys.argv[2]), int(sys.argv[3])
-lines = open(path, encoding="utf-8").read().splitlines()[start - 1:end]
-print("\n".join(f'<span class="ln">{start + i}</span>{html.escape(line, quote=False)}' for i, line in enumerate(lines)))
-PY
+python3 .github/scripts/build-pr-explain-excerpt.py <path> <開始行> <終了行> --base "$(git merge-base origin/main HEAD)"
 ```
+
+固定スクリプトはこれを、GitHub と同じ**差分**(変更前・変更後の行番号と `+` / `-`)と、変更後の行だけの
+**コード**(足した行は左端の印)の 2 つの表示に組み直す。最初は差分で、抜粋ごとの切り替えとヘッダの
+「すべてコードで表示」で読み手が選ぶ。
 
 ```html
 <article class="tech">
@@ -179,8 +181,7 @@ PY
 
 <h3><code class="ref">src/…/index.ts</code></h3>
 <p><このファイルの役割と、呼び出しの流れの中での位置></p>
-<pre class="code" data-file="src/…/index.ts" data-lang="diff"><code>+ 足した行
-- 消した行</code></pre>
+<p>このまとまりの抜粋は <a href="#w-1">…</a></p>
 ```
 
 テストのページの表:
@@ -209,9 +210,10 @@ PY
 
 `pre.code` は固定スクリプトが開閉できる枠に入れ、言語ごとに色を付ける(断片には書かない)。言語は
 抜粋の上の `path:行`(`where-ref`)か `data-file` の拡張子で決まる。**拡張子が無い・中身の言語が
-拡張子と違う**(`harness/githooks/pre-push`、HTML の中のスクリプト)ときと、diff の抜粋は
-`data-lang` で指定する。書ける値はテンプレートの `Grammars`(言語名)と `LanguageByExtension`(拡張子)の
-キー、または `diff`(行頭の `+` / `-` に色が付く)。どれでもない値は色が付かないだけで、検査では落ちない。
+拡張子と違う**(`harness/githooks/pre-push`、HTML の中のスクリプト)ときは `data-lang` で指定する
+(抜粋のスクリプトなら `--lang`)。書ける値はテンプレートの `Grammars`(言語名)と `LanguageByExtension`
+(拡張子)のキー。どれでもない値は色が付かないだけで、検査では落ちない。`data-diff` の付いた抜粋は
+diff として読み、差分 / コードの切り替えを付ける。
 
 ## 参照ファイル
 
@@ -219,6 +221,7 @@ PY
 | --- | --- |
 | [`templates/index.html`](templates/index.html) | 4 ページが共有する枠(CSS・固定スクリプト・CSP)。固定スクリプトを変えたら CSP の `sha256-` も直す(組み立てのスクリプトが突き合わせる) |
 | `.github/scripts/build-pr-explain-page.py` | 断片の検査とページの組み立て |
+| `.github/scripts/build-pr-explain-excerpt.py` | 「どこで何をしているか」のコード抜粋(起点からの diff)を行範囲から作る |
 | `.github/scripts/pr-explain-pages.sh` | gh-pages の `pr-explain/pr-<番号>/` の書き換え(`put-page` / `put-map` / `remove`) |
 | `.github/scripts/build-pr-change-map.py` | 変更の地図(Actions が呼ぶ) |
 | `.github/workflows/pr-explain.yml` | 地図の配置と、PR が閉じたときの削除 |
