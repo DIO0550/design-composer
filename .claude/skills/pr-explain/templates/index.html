@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-gZSiWKtKKpy12p9dmWimyV9dXNS6vwWaWBK3+DdbiDo='; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-Z7+o5A5cjz1xsciOstQ3ZmasJG9pPx5+RlIyQh032FQ='; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR 解説</title>
 <style>
@@ -463,10 +463,11 @@ ul.focus li { margin: 6px 0; }
   // diff なら増減、そうでなければ行数を出す。diff には差分 / コードの切り替えを付ける。
   const fold = (pre, ref, diffCounts) => {
     const label = ref ? null : pre.dataset.file || "コード";
+    const reviewKey = ref ? ref.textContent.trim() : label;
     const summary = el("summary", {}, ref ? [...ref.childNodes] : [el("code", { text: label })]);
     const count = diffCounts === null ? `${excerptLines(pre).length} 行` : `+${diffCounts.added} −${diffCounts.removed}`;
     summary.append(el("span", { class: "fold-count", text: count }));
-    const details = el("details", { class: "code-fold", open: "", "data-review-key": ref ? ref.textContent.trim() : label });
+    const details = el("details", { class: "code-fold", open: "", "data-review-key": reviewKey });
     pre.replaceWith(details);
     details.append(summary);
     if (diffCounts !== null) {
@@ -495,16 +496,17 @@ ul.focus li { margin: 6px 0; }
     fold(pre, ref, diffCounts);
   }
   // `pre.sequence` の「A -> B: 文」(呼び出し)と「A --> B: 文」(戻り)を、参加者の縦線と矢印の図にする。
-  // 読めない行が 1 つでもあれば、元の pre のまま残す(書いた人がページで気づける)。
+  // 読めない行が 1 つでもある・行が多すぎるときは、元の pre のまま残す(書いた人がページで気づける)。
   const SequenceLine = /^(.+?)\s*(-->|->)\s*(.+?)\s*:\s*(.*)$/;
-  const SequenceLayout = { top: 8, headHeight: 32, rowHeight: 42, minBox: 90, maxBox: 300, minGap: 24, selfWidth: 36 };
+  const SequenceLayout = { top: 8, headHeight: 32, rowHeight: 42, minBox: 90, maxBox: 300, minGap: 24, selfWidth: 36, maxLines: 200 };
   const textWidth = (text) => [...text].reduce((sum, char) => sum + (char.charCodeAt(0) > 0xff ? 13 : 7.2), 0);
   // 参加者の名前は太字なので、幅を見積もりより広めに取る。
   const BoldRatio = 1.15;
   const sequenceOf = (pre) => {
     const lines = pre.textContent.split("\n").map((line) => line.trim()).filter((line) => line !== "");
     const matches = lines.map((line) => line.match(SequenceLine));
-    if (matches.length === 0 || matches.includes(null)) return null;
+    const isDrawable = matches.length > 0 && matches.length <= SequenceLayout.maxLines && !matches.includes(null);
+    if (!isDrawable) return null;
     const messages = matches.map(([, from, arrow, to, label]) => ({ from, to, label, isReturn: arrow === "-->" }));
     const participants = [...new Set(messages.flatMap((message) => [message.from, message.to]))];
     return { participants, messages };
@@ -514,11 +516,12 @@ ul.focus li { margin: 6px 0; }
     if (sequence === null) return;
     const { participants, messages } = sequence;
     const layout = SequenceLayout;
+    const order = new Map(participants.map((name, index) => [name, index]));
     // 箱の幅はそれぞれの名前に合わせる。隣どうしの間は、その 2 人の間を行き来する文が収まるだけ空ける
     // (離れた参加者への文は間に縦線をまたぐので、そこまでは広げない)。
     const boxWidths = participants.map((name) => Math.min(layout.maxBox, Math.max(layout.minBox, textWidth(name) * BoldRatio + 32)));
     const isBetween = (message, left) => {
-      const ends = [participants.indexOf(message.from), participants.indexOf(message.to)].sort((a, b) => a - b);
+      const ends = [order.get(message.from), order.get(message.to)].sort((a, b) => a - b);
       return ends[0] === left && ends[1] === left + 1;
     };
     const gaps = boxWidths.slice(1).map((boxWidth, left) => {
@@ -526,14 +529,14 @@ ul.focus li { margin: 6px 0; }
       return Math.max(layout.minGap, needed - (boxWidths[left] + boxWidth) / 2);
     });
     const centers = boxWidths.reduce((placed, boxWidth, index) => [...placed, index === 0 ? boxWidth / 2 : placed[index - 1] + boxWidths[index - 1] / 2 + gaps[index - 1] + boxWidth / 2], []);
-    const xOf = (name) => centers[participants.indexOf(name)];
+    const xOf = (name) => centers[order.get(name)];
     const selfLabels = messages.filter((message) => message.from === message.to).map((message) => textWidth(message.label));
     const bottom = layout.top + layout.headHeight + 16 + messages.length * layout.rowHeight;
     const width = centers[centers.length - 1] + boxWidths[boxWidths.length - 1] / 2 + layout.selfWidth + Math.max(0, ...selfLabels);
     const heads = participants.flatMap((name) => [
       svgEl("line", { class: "seq-life", x1: xOf(name), y1: layout.top + layout.headHeight, x2: xOf(name), y2: bottom }),
       svgEl("g", { class: "seq-head" }, [
-        svgEl("rect", { x: xOf(name) - boxWidths[participants.indexOf(name)] / 2, y: layout.top, width: boxWidths[participants.indexOf(name)], height: layout.headHeight, rx: 6 }),
+        svgEl("rect", { x: xOf(name) - boxWidths[order.get(name)] / 2, y: layout.top, width: boxWidths[order.get(name)], height: layout.headHeight, rx: 6 }),
         svgEl("text", { x: xOf(name), y: layout.top + 21, "text-anchor": "middle", text: name }),
       ]),
     ]);
@@ -601,7 +604,8 @@ ul.focus li { margin: 6px 0; }
     codeControls.append(viewToggle);
   }
 
-  // 抜粋ごとの「確認した」。読み手のブラウザにだけ残す(解説の sha ごと。書き直された解説は未確認から)。
+  // 抜粋ごとの「確認した」。読み手のブラウザにだけ残す。鍵は解説時点の sha(PR の head)とページと
+  // 抜粋の場所(`path:行`)なので、push の後に書き直された解説は未確認から始まる。
   // localStorage は使えない環境(保存の無効化・プライベートブラウズ)で例外を投げるので、ここで受けて
   // 「残さない」として扱う。確認の印が消えるだけで、ページは読める。
   const ReviewStore = `pr-explain:${pr}:${explainedSha}:${page}:reviewed`;
@@ -705,15 +709,20 @@ ul.focus li { margin: 6px 0; }
     syncCurrentHeading();
   }
 
-  // 見出しの下(次の見出しまで)の抜粋がすべて確認済みなら、目次に印を付ける。
+  // 見出しの下の抜粋がすべて確認済みなら、目次に印を付ける。h3 は次の見出しまで、h2 は次の h2 まで
+  // (配下の h3 の抜粋を含む)を数える。
   function syncTocMarks() {
     const sections = new Map();
-    let owner = null;
+    let section = null;
+    let chapter = null;
     for (const node of explain.querySelectorAll("h2[id], h3[id], details.code-fold")) {
       const isFold = node.tagName === "DETAILS";
       if (!isFold) sections.set(node, []);
-      if (!isFold) owner = node;
-      else if (owner !== null) sections.get(owner).push(node);
+      if (node.tagName === "H2") chapter = node;
+      if (!isFold) section = node;
+      if (!isFold) continue;
+      const owners = new Set([section, chapter].filter((owner) => owner !== null));
+      for (const owner of owners) sections.get(owner).push(node);
     }
     for (const entry of tocEntries) {
       const folds = sections.get(entry.heading) || [];
@@ -782,11 +791,8 @@ ul.focus li { margin: 6px 0; }
   // 繰り返しはファイルの数で打ち切る。
   const dependencyLevels = (paths, edges) => {
     const uses = new Map(paths.map((path) => [path, edges.filter((edge) => edge.from === path).map((edge) => edge.to)]));
-    let levels = new Map(paths.map((path) => [path, 0]));
-    for (let round = 0; round < paths.length; round += 1) {
-      levels = new Map(paths.map((path) => [path, Math.min(paths.length, Math.max(0, ...uses.get(path).map((used) => levels.get(used) + 1)))]));
-    }
-    return levels;
+    const deepen = (levels) => new Map(paths.map((path) => [path, Math.min(paths.length, Math.max(0, ...uses.get(path).map((used) => levels.get(used) + 1)))]));
+    return paths.reduce(deepen, new Map(paths.map((path) => [path, 0])));
   };
   const GraphLayout = { minWidth: 120, maxWidth: 280, height: 30, columnGap: 48, rowGap: 12, pad: 12 };
   const fileName = (path) => path.split("/").pop();
@@ -799,15 +805,16 @@ ul.focus li { margin: 6px 0; }
     const linked = readingOrder.filter((path) => edges.some((edge) => edge.from === path || edge.to === path));
     if (linked.length === 0) return el("p", { class: "muted", text: "変更ファイルどうしの依存は見つかりませんでした。" });
     const levels = dependencyLevels(linked, edges);
-    const columns = [];
-    for (const path of linked) columns[levels.get(path)] = [...(columns[levels.get(path)] || []), path];
+    // 循環していると深さが飛ぶ(打ち切りの値になる)ので、使われている深さだけを詰めて列にする。
+    const usedLevels = [...new Set(levels.values())].sort((a, b) => a - b);
+    const columns = usedLevels.map((level) => linked.filter((path) => levels.get(path) === level));
     const box = GraphLayout;
     // 列の幅はその列でいちばん長いファイル名に合わせる(名前を切らずに、図を横へ広げすぎない)。
-    const columnWidths = columns.map((paths) => Math.min(box.maxWidth, Math.max(box.minWidth, ...(paths || []).map((path) => textWidth(fileName(path)) + 20))));
+    const columnWidths = columns.map((paths) => Math.min(box.maxWidth, Math.max(box.minWidth, ...paths.map((path) => textWidth(fileName(path)) + 20))));
     const columnLefts = columnWidths.map((_, level) => box.pad + columnWidths.slice(0, level).reduce((sum, columnWidth) => sum + columnWidth + box.columnGap, 0));
-    const place = new Map(columns.flatMap((paths, level) => (paths || []).map((path, row) => [path, { x: columnLefts[level], y: box.pad + row * (box.height + box.rowGap), width: columnWidths[level] }])));
+    const place = new Map(columns.flatMap((paths, level) => paths.map((path, row) => [path, { x: columnLefts[level], y: box.pad + row * (box.height + box.rowGap), width: columnWidths[level] }])));
     const width = columnLefts[columnLefts.length - 1] + columnWidths[columnWidths.length - 1] + box.pad;
-    const height = box.pad * 2 + Math.max(...columns.map((paths) => (paths || []).length)) * (box.height + box.rowGap) - box.rowGap;
+    const height = box.pad * 2 + Math.max(...columns.map((paths) => paths.length)) * (box.height + box.rowGap) - box.rowGap;
     const marker = svgEl("marker", { id: "dep-arrow", viewBox: "0 0 10 10", refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: "auto" }, [svgEl("path", { class: "dep-arrow", d: "M0,0 L10,5 L0,10 z" })]);
     const edgeNodes = edges.map((edge) => {
       const from = place.get(edge.from);
@@ -831,13 +838,23 @@ ul.focus li { margin: 6px 0; }
       for (const edge of edgeNodes) edge.classList.toggle("is-related", edge.dataset.from === path || edge.dataset.to === path);
     };
     let pinned = null;
+    const togglePin = (node) => {
+      pinned = pinned === node.dataset.path ? null : node.dataset.path;
+      for (const other of nodes) other.classList.toggle("is-pinned", other.dataset.path === pinned);
+      focusOn(pinned);
+    };
+    // マウスでもキーボードでも同じ: 載せる(フォーカスする)と強調し、押す(Enter / Space)と固定する。
     for (const node of nodes) {
       node.addEventListener("mouseenter", () => focusOn(node.dataset.path));
       node.addEventListener("mouseleave", () => focusOn(pinned));
-      node.addEventListener("click", () => {
-        pinned = pinned === node.dataset.path ? null : node.dataset.path;
-        for (const other of nodes) other.classList.toggle("is-pinned", other.dataset.path === pinned);
-        focusOn(pinned);
+      node.addEventListener("focus", () => focusOn(node.dataset.path));
+      node.addEventListener("blur", () => focusOn(pinned));
+      node.addEventListener("click", () => togglePin(node));
+      node.addEventListener("keydown", (event) => {
+        const isPress = event.key === "Enter" || event.key === " ";
+        if (!isPress) return;
+        event.preventDefault();
+        togglePin(node);
       });
     }
     const isolated = readingOrder.filter((path) => !linked.includes(path));

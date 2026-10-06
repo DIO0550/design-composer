@@ -8,12 +8,20 @@
 - コミットごとの変更ファイル(解説を書いた時点より後に何が変わったかをページ側で出すため)
 - 変更ファイルどうしの依存(どのファイルがどのファイルを使っているか。ページが依存の図にする)
 
-**依存は 3 通りで拾う。** TypeScript / JavaScript の import(`@/` と相対パスを解決する)、Python の
-import(モジュール名と同じ名前の `.py`)、ファイルの中に別の変更ファイルのパスが書かれていること
-(ワークフローがスクリプトを呼ぶ・スクリプトがテンプレートを読む、など言語をまたぐ参照)。同じフォルダの
-ファイルはファイル名だけでも数える(`"$scripts_dir/x.py"` のように呼ぶため。`index.*` は名前が
-ありふれているので数えない)。コメントだけの行・Python の docstring の言及と Markdown は、説明であって
-依存ではないので数えない(「理由は x を見る」が逆向きの依存に化ける)。
+**依存は 3 通りで拾う。**
+
+- TypeScript / JavaScript の import。解決は import 規約の検査と同じ `ts_sources.resolve_import`
+  (`@/` と相対パス。拡張子を省いた綴り)
+- Python の import(モジュール名の最後の部分と同じ名前の `.py`)
+- ファイルの中に別の変更ファイルのパスが書かれていること(ワークフローがスクリプトを呼ぶ・
+  スクリプトがテンプレートを読む、など言語をまたぐ参照)。リポジトリのルートからのパスのほか、
+  `$dir/…` `${dir}/…` `$(dirname "$0")/…` で始まるものは、使う側のフォルダからの相対として解く
+  (このリポジトリのシェルは、自分のフォルダを変数に入れて隣やサブフォルダを呼ぶ)。同じフォルダの
+  ファイルはファイル名だけでも数える(`index.*` は名前がありふれているので数えない)
+
+コメント(行頭・行末・`/* */`)・Python の docstring・Markdown の言及は、説明であって依存ではないので
+数えない(「理由は x を見る」が逆向きの依存に化ける)。**文字列の中の言及は拾う。** 実行時に読む
+パスと、メッセージに書いただけのパスを見分けられないため。
 
 **差分の起点は base の先端ではなく merge-base。** PR の画面の「Files changed」と同じ範囲にする。
 
@@ -35,7 +43,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / ".claude/hooks/lib"))
-from ts_sources import DEFAULT_ROOT, DOMAINS_ROOT, feature_of
+from ts_sources import COMMENT_LINE, DEFAULT_ROOT, DOMAINS_ROOT, IMPORT_SPECIFIER, feature_of, resolve_import
 
 # 層の読む順。内側(依存される側)から外側へ。`src/domains` のカテゴリは import してよい向き
 # (`rules/architecture.md`「domains のカテゴリ」)の順に並べ、`src/features` を挟んで
@@ -56,19 +64,29 @@ Quote = re.compile(r"\s*(['\"`])")
 OpeningParen = re.compile(r"\s*\(")
 StatusLetters = {"A": "A", "M": "M", "D": "D", "R": "R", "C": "A", "T": "M"}
 
-# import の指定子(`from "x"` / `import("x")` / `import "x"`)と、指定子から試すファイルの候補。
-ImportSpecifier = re.compile(r"""(?:\bfrom\s*|\bimport\s*\(\s*|\bimport\s+)(['"])([^'"\n]+)\1""")
 ScriptSuffixes = (".ts", ".tsx", ".js", ".mjs", ".jsx")
-ImportCandidates = ("", ".ts", ".tsx", "/index.ts", "/index.tsx")
-PythonImport = re.compile(r"^\s*(?:from\s+([\w.]+)\s+import\b|import\s+([\w.]+))", re.M)
-# コメントだけの行(`#` `//` と、doc コメントの続きの `*`)と、Python の docstring。
-CommentLine = re.compile(r"^\s*(?:#|//|/?\*)")
+PythonImport = re.compile(r"^[ \t]*(?:from\s+([\w.]+)\s+import\b|import\s+([\w.]+))", re.M)
+# 説明として落とすもの。`#` だけの行(TS の行頭のコメントは `ts_sources.COMMENT_LINE`)、行末の
+# `#` / `//` のコメント(前後に空白があるものだけ。URL の `//` やシェルの `$#` を落とさない)、
+# `/* */`(JSX の `{/* */}` を含む)、Python の docstring。
+HashCommentLine = re.compile(r"^\s*#")
+TrailingComment = re.compile(r"[ \t]+(?:#|//)[ \t].*$", re.M)
+BlockComment = re.compile(r"/\*[\s\S]*?\*/")
 Docstring = re.compile(r'("""|\'\'\')[\s\S]*?\1')
+# パスとして読める字句(フォルダをシェル変数で書いた `$dir/x.py` `${dir}/x.py` を含む)と、その変数の前置き。
+PathToken = re.compile(r"[\w./${}-]+")
+VariablePrefix = re.compile(r"^\$\{?\w+\}?/")
+# これより長い(文字数)ファイルは依存を探しに読まない(生成物のフィクスチャなどで地図づくりを遅らせない)。
+MaxSourceCharacters = 1_000_000
 
 
 def git(*args: str) -> str:
-    """git を走らせて標準出力を返す。失敗したら例外のまま落とす(地図を半端に作らない)。"""
-    return subprocess.run(["git", *args], check=True, capture_output=True, text=True).stdout
+    """git を走らせて標準出力を返す。失敗したら例外のまま落とす(地図を半端に作らない)。
+
+    UTF-8 として読めないバイトは置き換える(Shift_JIS のファイルや壊れたフィクスチャが 1 つあるだけで、
+    地図全体を作れなくしない)。
+    """
+    return subprocess.run(["git", *args], check=True, capture_output=True, text=True, errors="replace").stdout
 
 
 def read_string(text: str, start: int) -> tuple[str, int] | None:
@@ -265,48 +283,79 @@ def test_changes(files: list[dict], base: str, head: str) -> dict[str, list[dict
     return {"added": added, "removed": removed}
 
 
-def import_targets(source: str, text: str) -> set[str]:
-    """import が指すファイルの候補を返す(`@/` と相対パスだけ。パッケージは返さない)。
+def import_targets(source: str, text: str, paths: set[str]) -> set[str]:
+    """TS / JS の import が指す変更ファイルを返す(解決は import 規約の検査と同じ)。
 
     @param source import している側のパス
-    @param text その中身
-    @returns 指定子を拡張子と `index` で補った候補のパス
+    @param text その中身(説明を落とした後)
+    @param paths 変更ファイル(消したものを除く)
     """
-    candidates = set()
-    for match in ImportSpecifier.finditer(text):
-        specifier = match.group(2)
-        if specifier.startswith("@/"):
-            stem = f"{DEFAULT_ROOT}/{specifier[2:]}"
-        elif specifier.startswith("."):
-            stem = posixpath.normpath(posixpath.join(posixpath.dirname(source), specifier))
-        else:
-            continue
-        candidates.update(stem + suffix for suffix in ImportCandidates)
-    return candidates
+    targets = (resolve_import(match.group(1), source, paths) for match in IMPORT_SPECIFIER.finditer(text))
+    return {target for target in targets if target is not None}
 
 
 def python_import_targets(text: str, paths: set[str]) -> set[str]:
-    """Python の import が指す変更ファイル(モジュール名の最後の部分と同じ名前の `.py`)を返す。"""
+    """Python の import が指す変更ファイル(モジュール名の最後の部分と同じ名前の `.py`)を返す。
+
+    @param text import している側の中身(説明を落とした後)
+    @param paths 変更ファイル(消したものを除く)
+    """
     modules = {(match.group(1) or match.group(2)).split(".")[-1] for match in PythonImport.finditer(text)}
     return {path for path in paths if path.endswith(".py") and posixpath.basename(path)[:-3] in modules}
 
 
 def code_of(source: str, text: str) -> str:
-    """依存を探す範囲。コメントだけの行と、Python なら docstring を落とす。"""
-    code = Docstring.sub("", text) if source.endswith(".py") else text
-    return "\n".join(line for line in code.split("\n") if not CommentLine.match(line))
+    """依存を探す範囲を返す。説明(コメント・docstring)を落とした中身。
 
-
-def reference_pattern(source: str, target: str) -> re.Pattern[str]:
-    """source の中で target を指す綴り。
-
-    フルパスか、同じフォルダならファイル名(シェル変数のフォルダを前に置いた `$dir/x.py` も含む)。
-    前後が別のパスの文字に続いているものは、別のパスの一部なので当てない。
+    @param source 中身を読んだファイル(拡張子で、落とすものを決める)
+    @param text その中身
     """
-    name = posixpath.basename(target)
-    is_sibling = posixpath.dirname(source) == posixpath.dirname(target) and not name.startswith("index.")
-    sibling = rf"|(?:\$\{{?\w+\}}?/)?{re.escape(name)}" if is_sibling else ""
-    return re.compile(rf"(?<![\w./-])(?:{re.escape(target)}{sibling})(?![\w./-])")
+    code = Docstring.sub("", text) if source.endswith(".py") else text
+    code = BlockComment.sub("", code) if source.endswith(ScriptSuffixes) else code
+    lines = (line for line in code.split("\n") if not (COMMENT_LINE.match(line) or HashCommentLine.match(line)))
+    return TrailingComment.sub("", "\n".join(lines))
+
+
+def referenced_path(source: str, token: str, after_subshell: bool) -> str:
+    """パスとして読める字句が指すパスを返す。
+
+    `$dir/` `${dir}/` で始まるもの、`$(dirname "$0")` の直後の `/…` は、使う側のフォルダからの相対として解く。
+    それ以外はそのまま(リポジトリのルートからのパスか、ファイル名だけ)。
+
+    @param source 中身を読んだファイル
+    @param token 字句
+    @param after_subshell 字句の直前が `)` で、`/` から始まっているか
+    """
+    folder = posixpath.dirname(source)
+    if after_subshell:
+        return posixpath.normpath(posixpath.join(folder, token[1:]))
+    if VariablePrefix.match(token):
+        return posixpath.normpath(posixpath.join(folder, VariablePrefix.sub("", token)))
+    return token
+
+
+def mentioned_paths(source: str, text: str, paths: set[str]) -> set[str]:
+    """中身にパスとして書かれている変更ファイルを返す。
+
+    字句の切れ目で分けるので、別のパスの一部(`x.py` に対する `ax.py`)には当たらない。本文は 1 回だけ
+    走査する(変更ファイルの数だけ走査し直すと、大きな PR で Actions の時間を食う)。
+
+    @param source 中身を読んだファイル
+    @param text その中身(説明を落とした後)
+    @param paths 変更ファイル(消したものを除く)
+    """
+    folder = posixpath.dirname(source)
+    siblings = {posixpath.basename(path): path for path in paths if posixpath.dirname(path) == folder and not posixpath.basename(path).startswith("index.")}
+    found = set()
+    for match in PathToken.finditer(text):
+        token = match.group(0)
+        after_subshell = token.startswith("/") and match.start() > 0 and text[match.start() - 1] == ")"
+        variable_relative = VariablePrefix.sub("", token)
+        candidates = {token, referenced_path(source, token, after_subshell), variable_relative}
+        found.update(candidates & paths)
+        if token in siblings:
+            found.add(siblings[token])
+    return found
 
 
 def dependencies_between(files: list[dict], head: str) -> list[dict]:
@@ -314,7 +363,8 @@ def dependencies_between(files: list[dict], head: str) -> list[dict]:
 
     @param files 変更ファイル(`changed_files` の戻り値)
     @param head 中身を読む時点
-    @returns `{"from": 使う側, "to": 使われる側}` の並び。消したファイル・バイナリ・Markdown は使う側にしない
+    @returns `{"from": 使う側, "to": 使われる側}` の並び。消したファイル・バイナリ・Markdown・`MaxSourceCharacters` を
+        超えるファイルは使う側にしない
     """
     paths = {file["path"] for file in files if file["status"] != "D"}
     edges = set()
@@ -323,10 +373,13 @@ def dependencies_between(files: list[dict], head: str) -> list[dict]:
         is_readable = file["status"] != "D" and file["additions"] is not None and not source.endswith(".md")
         if not is_readable:
             continue
-        text = code_of(source, file_at(head, source))
-        imported = import_targets(source, text) if source.endswith(ScriptSuffixes) else set()
+        content = file_at(head, source)
+        if len(content) > MaxSourceCharacters:
+            continue
+        text = code_of(source, content)
+        imported = import_targets(source, text, paths) if source.endswith(ScriptSuffixes) else set()
         imported_python = python_import_targets(text, paths) if source.endswith(".py") else set()
-        mentioned = {target for target in paths if reference_pattern(source, target).search(text)}
+        mentioned = mentioned_paths(source, text, paths)
         targets = (imported | imported_python | mentioned) & paths
         edges.update((source, target) for target in targets if target != source)
     return [{"from": source, "to": target} for source, target in sorted(edges)]

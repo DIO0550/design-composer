@@ -101,6 +101,31 @@ put .github/scripts/run-cases.sh 'python3 "$scripts_dir/tool.py"
 put .github/workflows/y.yml 'run: python3 .github/scripts/tool.py'
 put docs/ref.md 'see .github/scripts/tool.py'
 put src/hooks/use-x/other.ts 'export const Name = "index.ts";'
+# 依存の境目を確かめるファイル。拾うもの: .tsx から index.tsx(フォルダ)への import・動的 import・
+# ドット付きの Python の import・`$dir/サブフォルダ/`・`$(dirname "$0")/`・`$dir/../..`・ルートからの
+# `$repo_root/`。拾わないもの: 名前の一部だけが一致する別のパス・別のフォルダの同じ名前・自分自身・
+# 消したファイル・行末のコメント・`/* */`(JSX の中を含む)。
+put src/app/Uses.tsx 'import { Button } from "@/components/button";'
+put src/hooks/use-x/lazy.ts 'export const load = () => import("@/libs/x");'
+put src/hooks/use-x/jsx.tsx 'export const A = () => <div>{/* docs/x.md */}</div>;
+/*
+ * src/types/T.ts
+ */'
+put src/hooks/use-x/comment.ts '// docs/x.md を見る
+export const C = 1;'
+put .github/scripts/dotted.py 'from lib.helper_mod import x'
+put .github/scripts/lib/inner.py 'z = 3'
+put .github/scripts/sub-call.sh 'python3 "$scripts_dir/lib/inner.py"'
+put .github/scripts/dirname-call.sh 'bash "$(dirname "$0")/run-cases.sh"'
+put .github/scripts/up-call.sh 'cat "$scripts_dir/../../harness/case-law/x.md" "$repo_root/docs/x.md"'
+put .github/scripts/partial.sh 'python3 "$scripts_dir/xtool.py" tool.pyc'
+put harness/other.sh 'python3 tool.py'
+put .github/scripts/self.sh 'echo .github/scripts/self.sh'
+put .github/scripts/mention-gone.sh 'cat src/utils/__tests__/Gone.normal.test.ts'
+put .github/scripts/trailing.py 'w = 1  # see .github/scripts/tool.py'
+# UTF-8 として読めないバイトを含むファイル(地図づくりを落とさない)と、長すぎて依存を探しに読まないファイル。
+printf 'python3 "$scripts_dir/tool.py" # \x82\xa0\xff\n' > .github/scripts/sjis.sh
+python3 -c 'import sys; sys.stdout.write("python3 .github/scripts/tool.py\n" + "x" * 1_000_001 + "\n")' > .github/scripts/huge.sh
 git add -A && git commit --quiet -m second
 head="$(git rev-parse HEAD)"
 
@@ -162,6 +187,21 @@ docstring の言及は依存にしない|(".github/scripts/doc_only.py", ".githu
 Markdown は使う側にしない|not any(source == "docs/ref.md" for source, _ in deps)
 同じフォルダのありふれた index.* の名前は依存にしない|("src/hooks/use-x/other.ts", "src/hooks/use-x/index.ts") not in deps
 差分なしの地図は依存も空|m["dependencies"] == []
+UTF-8 として読めないバイトがあっても地図を作り、そのファイルの依存も拾う|(".github/scripts/sjis.sh", ".github/scripts/tool.py") in deps
+長すぎるファイルは依存を探しに読まない|not any(source == ".github/scripts/huge.sh" for source, _ in deps)
+.tsx から、フォルダを指す import で index.tsx への依存になる|("src/app/Uses.tsx", "src/components/button/index.tsx") in deps
+動的 import(import("…"))も依存になる|("src/hooks/use-x/lazy.ts", "src/libs/x/index.ts") in deps
+ドット付きの Python の import も、最後の名前の .py への依存になる|(".github/scripts/dotted.py", ".github/scripts/helper_mod.py") in deps
+$dir/サブフォルダ/ で呼ぶのは、使う側のフォルダからの相対で依存になる|(".github/scripts/sub-call.sh", ".github/scripts/lib/inner.py") in deps
+$(dirname "$0")/ で呼ぶのは依存になる|(".github/scripts/dirname-call.sh", ".github/scripts/run-cases.sh") in deps
+$dir/../.. と、ルートから書いた $repo_root/ も依存になる|(".github/scripts/up-call.sh", "harness/case-law/x.md") in deps and (".github/scripts/up-call.sh", "docs/x.md") in deps
+名前の一部だけが一致する別のパスは依存にしない|not any(source == ".github/scripts/partial.sh" for source, _ in deps)
+別のフォルダの同じ名前は依存にしない|("harness/other.sh", ".github/scripts/tool.py") not in deps
+自分自身は依存にしない|(".github/scripts/self.sh", ".github/scripts/self.sh") not in deps
+消したファイルへの言及は依存にしない|not any(source == ".github/scripts/mention-gone.sh" for source, _ in deps)
+行末のコメントの言及は依存にしない|(".github/scripts/trailing.py", ".github/scripts/tool.py") not in deps
+// の行の言及は依存にしない|("src/hooks/use-x/comment.ts", "docs/x.md") not in deps
+/* */ の中(JSX の中を含む)の言及は依存にしない|not any(source == "src/hooks/use-x/jsx.tsx" for source, _ in deps)
 テストファイルの rename は増減に出ない|"動かすだけのテスト" not in added and "動かすだけのテスト" not in removed
 中身だけ変えたテストは増減に出ない|"中身だけ変えるテスト" not in added and "既存のテスト" not in added
 追加はこの 6 件だけ|added == {"足したテスト", "表で回すテスト %i", "新しいファイルのテスト", "飛ばすテスト", "括弧入りの表 %s", "ボタンのテスト"}

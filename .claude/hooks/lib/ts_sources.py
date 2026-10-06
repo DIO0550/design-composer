@@ -3,7 +3,8 @@
 
 走査の対象の集め方・報告の形・コマンドラインの受け方は、どの検査でも同じものが要る。
 `import-rule-violations.py` と `result-option-discriminant-violations.py` と
-`story-title-violations.py` がこれを読む。`named-path-violations.py` は走査の範囲が
+`story-title-violations.py` がこれを読む。import の解決(`IMPORT_SPECIFIER` / `resolve_import`)は、
+PR の解説ページの変更の地図(`.github/scripts/build-pr-change-map.py`)も同じものを使う。`named-path-violations.py` は走査の範囲が
 `src/` に収まらないので、報告の形（`report`）と `src/` の綴り（`DEFAULT_ROOT`）だけを読む。
 
 **ファイル名だけアンダースコア。** `lib/` の綴りはケバブケースだが、ハイフンを含む名前は
@@ -11,12 +12,13 @@ Python のモジュールとして import できない。直接実行される�
 `sys.path` を触らずに `import ts_sources` で読める。
 """
 
+import os
 import re
 import sys
 from pathlib import Path
 
 # ソースの置き場。走査ルートを省いたときの既定でもあり、`src/` から始まる固定パス
-# （`FEATURES_ROOT` / `DOMAINS_ROOT` / `import-rule-violations.py` の `ALIAS_ROOT`）の出どころでもある。
+# （`FEATURES_ROOT` / `DOMAINS_ROOT` / `ALIAS_ROOT`）の出どころでもある。
 DEFAULT_ROOT = "src"
 
 SOURCE_SUFFIXES = (".ts", ".tsx")
@@ -30,8 +32,39 @@ DOMAINS_ROOT = f"{DEFAULT_ROOT}/domains"
 # コメント行の始まり。doc に綴りを書く箇所があるので、実コードと数えない。
 COMMENT_LINE = re.compile(r"^\s*(?://|\*|/\*)")
 
+# tsconfig.json / vite.config.ts のパスエイリアス（`@/*` → `src/*`）。
+ALIAS = "@/"
+ALIAS_ROOT = DEFAULT_ROOT
+
+# `import ... from "X"` / `export ... from "X"` / `import("X")` の X を拾う。
+#
+# 型だけの import も一緒に拾う。循環で困るのは実行時のロード順ではなく設計の向きで、
+# 型だけの import でもその向きは逆転するため。
+IMPORT_SPECIFIER = re.compile(r'(?:from|import)\s*\(?\s*"([^"]+)"')
+
+# フォルダを指す import の解決先。
+INDEX_NAMES = ("index.ts", "index.tsx")
+
 # 報告が長くなると読まれないので、種別ごとに先頭からこの件数までを出す。
 MAX_REPORTED = 10
+
+
+def resolve_import(specifier: str, importer: str, files: set[str]) -> str | None:
+    """import 先のファイルを求める。
+
+    @param specifier import に書かれている綴り（`@/` エイリアスと相対パスを解く）
+    @param importer それを書いているファイルのパス
+    @param files 実在するファイルのパスの集合
+    @returns 解決できたファイルのパス。外部パッケージや実在しない綴りなら `None`
+    """
+    if specifier.startswith(ALIAS):
+        base = f"{ALIAS_ROOT}/{specifier[len(ALIAS) :]}"
+    elif specifier.startswith("."):
+        base = os.path.normpath(f"{os.path.dirname(importer)}/{specifier}").replace(os.sep, "/")
+    else:
+        return None
+    candidates = (f"{base}.ts", f"{base}.tsx", *(f"{base}/{name}" for name in INDEX_NAMES))
+    return next((c for c in candidates if c in files), None)
 
 
 def source_files(root: Path) -> list[str]:
