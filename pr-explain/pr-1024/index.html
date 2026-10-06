@@ -203,7 +203,7 @@ ul.focus li { margin: 6px 0; }
 
 <h2 id="overview">概要</h2>
 <p>長いセッションで作られた PR は、diff と Issue を読むだけでは「何の技術を使い、なぜその振る舞いにしたか」が掴みにくい。この PR は、PR ごとに <code>https://dio0550.github.io/design-composer/pr-explain/pr-&lt;番号&gt;/</code> という解説ページを作り、その読み解きを人間の代わりに先に済ませておく仕組みを足す。</p>
-<p>解説は読む目的ごとに 4 ページに分かれる。このページ(入口)は全体像と見てほしい箇所、<a href="behavior.html">振る舞い</a>はマージしてよいかを決めるための変更前と変更後、<a href="tech.html">技術</a>は使った技術とコードの読み方、<a href="tests.html">テスト</a>は何が守られていて何が守られていないか。</p>
+<p>解説は読む目的ごとに 4 ページに分かれる。このページ(入口)は全体像と見てほしい箇所と、変更ファイルの依存の図、<a href="behavior.html">振る舞い</a>はマージしてよいかを決めるための変更前と変更後、<a href="tech.html">技術</a>は使った技術とコードの読み方、<a href="tests.html">テスト</a>は何が守られていて何が守られていないか。</p>
 <p>書くのは 2 人。解説の本文は実装したセッションが <code>pr-explain</code> スキル(<code class="ref">.claude/skills/pr-explain/SKILL.md</code>)で書く。経緯はセッションの中にしか無いので、ここは AI が書くしかない。変更の地図(変更ファイルの一覧・テスト名の増減・解説の古さ)は git の差分だけで決まるので、Actions(<code class="ref">.github/workflows/pr-explain.yml</code>)が機械的に作る。どちらも gh-pages ブランチの <code>pr-explain/pr-&lt;番号&gt;/</code> にだけ置き、PR ブランチにも main にも入れない。</p>
 <figure class="diagram">
   <svg viewBox="0 0 640 210" role="img" aria-label="セッションと Actions が gh-pages の同じフォルダへ書き込む流れ">
@@ -239,7 +239,7 @@ ul.focus li { margin: 6px 0; }
 <h2 id="guide">各ページの案内</h2>
 <ul>
   <li><a href="behavior.html">振る舞い</a>: PR のイベントごとに何が起きるか(開く・push・公開・閉じる・main へのマージ)と、方式の判断・逸脱・見送り</li>
-  <li><a href="tech.html">技術</a>: 「どこで何をしているか」の索引(やっていること → 実装の場所)、CSP のハッシュ、<code>html.parser</code> での検査、partial clone と sparse-checkout、merge-base とテスト名の集合比較、Actions の認証。後半は読む順のコード解説</li>
+  <li><a href="tech.html">技術</a>: 処理の流れの図(誰が何をどの順に呼ぶか)、「どこで何をしているか」(やっていることごとのコード抜粋。差分 / コードの切り替えと確認の印付き)、CSP のハッシュ、<code>html.parser</code> での検査、partial clone と sparse-checkout、merge-base とテスト名の集合比較、Actions の認証。後半は読む順のコード解説</li>
   <li><a href="tests.html">テスト</a>: 判定表 4 本が守る振る舞いと、test-reviewer が壊して確かめた結果、守れていない振る舞い</li>
 </ul>
 <!-- EXPLAIN:END -->
