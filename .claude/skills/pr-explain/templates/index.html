@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-kP0OfEi8T6fGkbmERotwEkHBe/+4J29qDChZtdOkS9A='; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-xdF4dq4OzB/5QeJWuAnfH6FQBzmml99EhtdzPuuSHV4='; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR 解説</title>
 <style>
@@ -114,7 +114,6 @@ figure.diagram figcaption { margin-top: 8px; font-size: 13px; color: var(--text-
 .d-muted { fill: var(--text-3); font: 12px var(--sans); }
 pre.code { margin: 12px 0; padding: 12px 14px; background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; overflow-x: auto; font: 13px/1.6 var(--mono); }
 pre.code code { background: none; padding: 0; font-size: inherit; }
-pre.code .ln { display: inline-block; min-width: 3.5ch; margin-right: 14px; color: var(--text-3); text-align: right; user-select: none; }
 .where-ref { margin: 4px 0 0; color: var(--text-2); font-size: 14px; }
 details.code-fold { margin: 12px 0; border: 1px solid var(--border); border-radius: 8px; background: var(--code-bg); }
 details.code-fold > summary { padding: 6px 12px; font-size: 13px; color: var(--text-2); cursor: pointer; background: var(--surface-2); border-radius: 8px; }
@@ -134,7 +133,7 @@ pre.code.has-diff code { display: none; }
 details[data-view="diff"] pre.code.has-diff code.view-diff,
 details[data-view="code"] pre.code.has-diff code.view-code { display: block; }
 pre.code .row { display: block; width: max-content; min-width: 100%; padding: 0 14px 0 8px; }
-pre.code .row .ln { min-width: 4ch; margin-right: 10px; }
+pre.code .row .ln { display: inline-block; min-width: 4ch; margin-right: 10px; color: var(--text-3); text-align: right; user-select: none; }
 pre.code .row .sign { display: inline-block; width: 2ch; color: var(--text-3); user-select: none; }
 .view-diff .row-add { background: var(--green-soft); }
 .view-diff .row-add .sign { color: var(--green); }
@@ -337,9 +336,7 @@ ul.focus li { margin: 6px 0; }
   const paint = (code, grammar) => {
     const walker = document.createTreeWalker(code, NodeFilter.SHOW_TEXT);
     const textNodes = [];
-    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-      if (!node.parentElement.closest(".ln")) textNodes.push(node);
-    }
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) textNodes.push(node);
     textNodes.reduce((carry, node) => {
       const result = tokenize(node.data, grammar, carry);
       node.replaceWith(...result.tokens.map(tokenNode));
@@ -347,7 +344,6 @@ ul.focus li { margin: 6px 0; }
     }, Start);
   };
 
-  // 抜粋の本文の行(行番号の span は含めない前提で呼ぶ)。
   const excerptLines = (node) => node.textContent.replace(/\n$/, "").split("\n");
 
   const HunkHeader = /^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@/;
@@ -368,9 +364,12 @@ ul.focus li { margin: 6px 0; }
       }
       const hasSign = Object.hasOwn(RowKinds, line[0]);
       const kind = hasSign ? RowKinds[line[0]] : "ctx";
-      rows.push({ kind, text: hasSign ? line.slice(1) : line, oldNo: kind === "add" ? null : oldNo, newNo: kind === "del" ? null : newNo });
-      if (oldNo !== null && kind !== "add") oldNo += 1;
-      if (newNo !== null && kind !== "del") newNo += 1;
+      const hasOldLine = kind !== "add";
+      const hasNewLine = kind !== "del";
+      rows.push({ kind, text: hasSign ? line.slice(1) : line, oldNo: hasOldLine ? oldNo : null, newNo: hasNewLine ? newNo : null });
+      // `@@` の見出しより前の行は番号が決まらない(null のまま)。
+      if (oldNo !== null) oldNo += hasOldLine ? 1 : 0;
+      if (newNo !== null) newNo += hasNewLine ? 1 : 0;
     }
     return rows;
   };
@@ -391,19 +390,24 @@ ul.focus li { margin: 6px 0; }
     code: { label: "コード", shows: (row) => row.kind === "add" || row.kind === "ctx", cells: (row) => [numberCell(row.newNo)] },
   };
 
+  // 持ち越しは変更前の側(消した行と文脈)と変更後の側(足した行と文脈)で分ける。消した行で閉じなかった
+  // 文字列が、続く足した行の色に移らないようにするため。
+  const SideOf = { del: "old", add: "new" };
   const renderView = (rows, grammar, view) => {
     const code = el("code", { class: `view-${view}` });
-    rows.filter(DiffViews[view].shows).reduce((carry, row) => {
-      const line = row.kind === "hunk" ? { nodes: [document.createTextNode(row.text)], carry } : highlightLine(row.text, grammar, carry);
+    rows.filter(DiffViews[view].shows).reduce((carries, row) => {
+      const side = Object.hasOwn(SideOf, row.kind) ? SideOf[row.kind] : "new";
+      const line = row.kind === "hunk" ? { nodes: [document.createTextNode(row.text)], carry: carries[side] } : highlightLine(row.text, grammar, carries[side]);
       code.append(el("span", { class: `row row-${row.kind}` }, [...DiffViews[view].cells(row), ...line.nodes]));
-      return line.carry;
-    }, Start);
+      if (row.kind === "del") return { ...carries, old: line.carry };
+      if (row.kind === "add") return { ...carries, new: line.carry };
+      return { old: line.carry, new: line.carry };
+    }, { old: Start, new: Start });
     return code;
   };
 
-  // diff の抜粋を、差分とコードの 2 つの表示に組み直す。行番号は `@@` の見出しから数え直すので、元の `.ln` は捨てる。
+  // diff の抜粋を、差分とコードの 2 つの表示に組み直し、足した行と消した行の数を返す。
   const renderDiff = (pre, grammar) => {
-    for (const ln of pre.querySelectorAll(".ln")) ln.remove();
     const rows = diffRowsOf(excerptLines(pre));
     pre.replaceChildren(renderView(rows, grammar, "diff"), renderView(rows, grammar, "code"));
     pre.classList.add("has-diff");
@@ -418,14 +422,6 @@ ul.focus li { margin: 6px 0; }
     return Object.hasOwn(Grammars, language) ? Grammars[language] : null;
   };
 
-  // 色を付ける。diff の抜粋(`data-diff`)なら増減の行数を返し、そうでなければ null を返す。
-  const colorize = (pre, label) => {
-    const grammar = grammarOf(pre, label);
-    if (pre.dataset.diff !== undefined) return renderDiff(pre, grammar);
-    if (grammar !== null) paint(pre.querySelector("code") || pre, grammar);
-    return null;
-  };
-
   const setView = (details, view) => {
     details.dataset.view = view;
     for (const button of details.querySelectorAll(".view-switch button")) {
@@ -438,7 +434,7 @@ ul.focus li { margin: 6px 0; }
   const fold = (pre, ref, diffCounts) => {
     const label = ref ? null : pre.dataset.file || "コード";
     const summary = el("summary", {}, ref ? [...ref.childNodes] : [el("code", { text: label })]);
-    const count = diffCounts === null ? `${pre.querySelectorAll(".ln").length || excerptLines(pre).length} 行` : `+${diffCounts.added} −${diffCounts.removed}`;
+    const count = diffCounts === null ? `${excerptLines(pre).length} 行` : `+${diffCounts.added} −${diffCounts.removed}`;
     summary.append(el("span", { class: "fold-count", text: count }));
     const details = el("details", { class: "code-fold", open: "" });
     pre.replaceWith(details);
@@ -462,7 +458,11 @@ ul.focus li { margin: 6px 0; }
   for (const pre of codeBlocks) {
     const ref = whereRefOf(pre);
     const label = ref ? ref.textContent.trim() : pre.dataset.file || "";
-    fold(pre, ref, colorize(pre, label));
+    const grammar = grammarOf(pre, label);
+    const isDiff = pre.dataset.diff !== undefined;
+    const diffCounts = isDiff ? renderDiff(pre, grammar) : null;
+    if (!isDiff && grammar !== null) paint(pre.querySelector("code") || pre, grammar);
+    fold(pre, ref, diffCounts);
   }
   const codeControls = document.getElementById("code-controls");
   if (codeBlocks.length > 0) {

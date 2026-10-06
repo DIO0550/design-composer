@@ -205,6 +205,7 @@ python3 .github/scripts/build-pr-explain-excerpt.py <path> <開始行> <終了�
   (`index.html` `behavior.html` `tech.html` `tests.html`)だけ
 - HTML のコメント(`<!-- -->`)も書かない
 
+技術解説の記事に置く数行の抜粋(`pre.code data-file`)は手で書き、行番号は付けない。その
 **コード抜粋は必ずエスケープする**(`&` → `&amp;`、`<` → `&lt;`、`>` → `&gt;`)。JSX の抜粋を
 そのまま貼ると要素として解釈され、`onClick=` が属性になって検査で落ちる。
 

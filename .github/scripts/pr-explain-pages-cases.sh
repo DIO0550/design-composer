@@ -74,6 +74,12 @@ on_pages() {
   git --git-dir="$work/origin.git" show "gh-pages:$1" 2>/dev/null || echo "<none>"
 }
 
+# gh-pages 上のファイルが文字列を含むか。`grep -q` にしないのは、見つけた時点で読むのをやめ、
+# 書き終わっていない `git show` が SIGPIPE で落ちて pipefail で偽になるため(ページが大きいと時々落ちる)。
+page_has() {
+  on_pages "$1" | grep -F "$2" >/dev/null
+}
+
 tip() {
   git --git-dir="$work/origin.git" rev-parse --verify --quiet gh-pages || echo "<none>"
 }
@@ -91,7 +97,7 @@ run_pages() {
 
 fresh_origin seeded
 run_pages put-page 1 index "$work/fragment.html"
-expect "put-page は断片を組み立てた index.html で上書きする" 'on_pages pr-explain/pr-1/index.html | grep -q "書いた解説"'
+expect "put-page は断片を組み立てた index.html で上書きする" 'page_has pr-explain/pr-1/index.html "書いた解説"'
 expect "put-page は change-map.json に触らない" '[ "$(on_pages pr-explain/pr-1/change-map.json)" = "{\"head\": \"old\"}" ]'
 expect "put-page は他の PR のフォルダに触らない" '[ "$(on_pages pr-explain/pr-12/index.html)" = twelve ]'
 expect "put-page は pr-preview に触らない" '[ "$(on_pages pr-preview/pr-1/index.html)" = storybook ]'
@@ -134,7 +140,7 @@ expect "put-page に断片が無ければ引数の誤り" '[ "$status" -eq 2 ] &
 
 fresh_origin seeded
 run_pages put-page 1 tech "$work/fragment-tech.html"
-expect "put-page tech は tech.html に置き、入口の index.html には触らない" 'on_pages pr-explain/pr-1/tech.html | grep -q "技術の解説" && [ "$(on_pages pr-explain/pr-1/index.html)" = old ]'
+expect "put-page tech は tech.html に置き、入口の index.html には触らない" 'page_has pr-explain/pr-1/tech.html "技術の解説" && [ "$(on_pages pr-explain/pr-1/index.html)" = old ]'
 
 fresh_origin seeded
 before="$(tip)"
