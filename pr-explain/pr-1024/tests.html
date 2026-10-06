@@ -95,6 +95,8 @@ figure.diagram figcaption { margin-top: 8px; font-size: 13px; color: var(--text-
 pre.code { margin: 12px 0; padding: 12px 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; overflow-x: auto; font: 13px/1.6 var(--mono); }
 pre.code code { background: none; padding: 0; font-size: inherit; }
 pre.code[data-file]::before { content: attr(data-file); display: block; margin-bottom: 8px; color: var(--text-3); font-size: 12px; }
+pre.code .ln { display: inline-block; min-width: 3.5ch; margin-right: 14px; color: var(--text-3); text-align: right; user-select: none; }
+.where-ref { margin: 4px 0 0; color: var(--text-2); font-size: 14px; }
 .note { margin: 14px 0; padding: 10px 14px; border-radius: 8px; font-size: 14px; }
 .note.info { background: var(--accent-soft); }
 .note.warn { background: var(--amber-soft); }
@@ -120,7 +122,7 @@ ul.focus li { margin: 6px 0; }
     <main>
       <article id="explain">
 <!-- EXPLAIN:BEGIN -->
-<p class="explain-meta" data-explained-sha="a0d0badd3487d224bc599d123f4bbea4daff149b" data-pr="1024" data-page="tests">解説時点 <code>a0d0bad</code> · 材料 <a href="https://github.com/DIO0550/design-composer/issues/1022">Issue #1022</a></p>
+<p class="explain-meta" data-explained-sha="9267f565c14f4414ea96a0a56ca7a2cbbb8a438a" data-pr="1024" data-page="tests">解説時点 <code>9267f56</code> · 材料 <a href="https://github.com/DIO0550/design-composer/issues/1022">Issue #1022</a></p>
 <h1>PR ごとの解説ページを Pages に出す: テスト</h1>
 <p class="lead">この PR の実行されるコードはすべてハーネスのスクリプトで、vitest ではなく判定表(<code>*-cases.sh</code>)が守る。判定表 3 本は CI の <code>rules-check</code> と pre-push で走る。</p>
 
