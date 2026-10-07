@@ -2,7 +2,7 @@
   "version": 1,
   "pr": 1024,
   "mergeBase": "2421cd666bb86ab3de76f66d1deb75e1b1a5eea0",
-  "head": "f4246de7b368d38dc6c802123bbc78cb9a103596",
+  "head": "eb7db1dae5da487d6d0f128883c6432ceb447ad9",
   "groups": [
     {
       "label": "ハーネス",
@@ -46,7 +46,7 @@
           "path": ".claude/skills/pr-explain/templates/index.html",
           "status": "A",
           "oldPath": null,
-          "additions": 924,
+          "additions": 1098,
           "deletions": 0
         },
         {
@@ -309,6 +309,13 @@
         ".claude/skills/pr-explain/templates/index.html",
         ".github/scripts/build-pr-change-map-cases.sh",
         ".github/scripts/build-pr-change-map.py"
+      ]
+    },
+    {
+      "sha": "eb7db1dae5da487d6d0f128883c6432ceb447ad9",
+      "files": [
+        ".claude/skills/pr-explain/SKILL.md",
+        ".claude/skills/pr-explain/templates/index.html"
       ]
     }
   ],
