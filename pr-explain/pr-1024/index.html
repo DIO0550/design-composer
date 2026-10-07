@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-Z7+o5A5cjz1xsciOstQ3ZmasJG9pPx5+RlIyQh032FQ='; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-CTdhon0BIOFs2CZVUcOCWx5WL94vJ8UYu5BXGXCZwrk='; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR 解説</title>
 <style>
@@ -132,12 +132,21 @@ details.code-fold .review-mark { float: right; font: 12px var(--sans); padding: 
 details.code-fold .review-mark[aria-pressed="true"] { background: var(--green-soft); color: var(--green); border-color: var(--green); font-weight: 600; }
 details.code-fold.is-reviewed > summary { opacity: 0.75; }
 .dep-graph .dep-node rect { fill: var(--surface); stroke: var(--border); stroke-width: 1.5; }
-.dep-graph .dep-node text { fill: var(--text); font: 12px var(--mono); }
+.dep-graph .dep-node .dep-name { fill: var(--text); font: 600 12px var(--mono); }
+.dep-graph .dep-node .dep-folder { fill: var(--text-3); font: 10.5px var(--mono); }
+.dep-graph .dep-node.is-deleted rect { stroke-dasharray: 4 3; fill: var(--surface-2); }
+.dep-graph .dep-band-line { stroke: var(--border); stroke-width: 1; stroke-dasharray: 4 4; }
+.dep-graph .dep-band-title { fill: var(--text-2); font: 600 12px var(--sans); }
+.dep-graph .dep-node.is-center rect { stroke: var(--accent); stroke-width: 2; fill: var(--accent-soft); }
+.dep-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 960px), 1fr)); gap: 12px; margin: 8px 0 20px; }
+.dep-card { padding: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow-x: auto; }
+.dep-card svg { display: block; max-width: 100%; height: auto; }
 .dep-graph .dep-node:hover rect, .dep-graph .dep-node.is-pinned rect { stroke: var(--accent); fill: var(--accent-soft); }
-.dep-graph .dep-edge { stroke: var(--text-3); stroke-width: 1.4; fill: none; }
+.dep-graph .dep-edge { stroke: var(--text-3); stroke-width: 1.4; stroke-opacity: 0.45; fill: none; }
+.dep-card .dep-graph .dep-edge { stroke-opacity: 1; }
 .dep-graph .dep-arrow { fill: var(--text-3); }
 .dep-graph.has-focus .dep-edge:not(.is-related), .dep-graph.has-focus .dep-node:not(.is-related) { opacity: 0.15; }
-.dep-graph.has-focus .dep-edge.is-related { stroke: var(--accent); stroke-width: 2; }
+.dep-graph.has-focus .dep-edge.is-related { stroke: var(--accent); stroke-width: 2; stroke-opacity: 1; }
 .seq-head rect { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
 .seq-head text { fill: var(--text); font: 600 13px var(--sans); }
 .seq-life { stroke: var(--border); stroke-width: 1.5; stroke-dasharray: 4 4; }
@@ -197,7 +206,7 @@ ul.focus li { margin: 6px 0; }
     <main>
       <article id="explain">
 <!-- EXPLAIN:BEGIN -->
-<p class="explain-meta" data-explained-sha="f4246de7b368d38dc6c802123bbc78cb9a103596" data-pr="1024" data-page="index">解説時点 <code>f4246de</code> · 材料 <a href="https://github.com/DIO0550/design-composer/issues/1022">Issue #1022</a></p>
+<p class="explain-meta" data-explained-sha="eb7db1dae5da487d6d0f128883c6432ceb447ad9" data-pr="1024" data-page="index">解説時点 <code>eb7db1d</code> · 材料 <a href="https://github.com/DIO0550/design-composer/issues/1022">Issue #1022</a></p>
 <h1>PR ごとの解説ページを Pages に出す</h1>
 <p class="lead">実装したセッションが「振る舞い・技術・テスト」の解説を HTML で書き、Actions が「変更の地図」を足して、PR から 1 クリックで読める 4 ページにする。このページ自体が、その仕組みで出した最初の解説。</p>
 
@@ -838,42 +847,138 @@ ul.focus li { margin: 6px 0; }
     const deepen = (levels) => new Map(paths.map((path) => [path, Math.min(paths.length, Math.max(0, ...uses.get(path).map((used) => levels.get(used) + 1)))]));
     return paths.reduce(deepen, new Map(paths.map((path) => [path, 0])));
   };
-  const GraphLayout = { minWidth: 120, maxWidth: 280, height: 30, columnGap: 48, rowGap: 12, pad: 12 };
+  const NodeBox = { minWidth: 150, maxWidth: 300, height: 40, columnGap: 56, rowGap: 12 };
+  const BandLayout = { pad: 12, titleHeight: 28, gap: 24, isolatedColumns: 4 };
+  const BarycenterRounds = 4;
   const fileName = (path) => path.split("/").pop();
+  const folderName = (path) => path.split("/").slice(0, -1).join("/") || "(ルート)";
+  // 箱に収まるよう、長いフォルダ名は頭を落として末尾を残す(どのフォルダかは末尾で分かる)。
+  const fitFolder = (folder, width) => {
+    const room = Math.floor((width - 20) / 6.2);
+    return folder.length > room ? `…${folder.slice(folder.length - room + 1)}` : folder;
+  };
+  const boxWidthOf = (paths) => Math.min(NodeBox.maxWidth, Math.max(NodeBox.minWidth, ...paths.map((path) => textWidth(fileName(path)) + 24)));
 
-  // 変更ファイルの依存の図。左ほど多くから使われる土台で、矢印は使う側から使われる側へ向く。
-  // ファイルに載せる(押す)と、そのファイルのつながりだけを残す。
-  const renderDependencyGraph = (map) => {
-    const edges = map.dependencies;
-    const readingOrder = map.groups.flatMap((group) => group.files.map((file) => file.path));
-    const linked = readingOrder.filter((path) => edges.some((edge) => edge.from === path || edge.to === path));
-    if (linked.length === 0) return el("p", { class: "muted", text: "変更ファイルどうしの依存は見つかりませんでした。" });
-    const levels = dependencyLevels(linked, edges);
+  // ある 1 つのファイルから、依存をどちら向きにでも辿れるファイルの集まり。
+  const reachFrom = (start, neighbors) => {
+    const reached = new Set([start]);
+    const queue = [start];
+    while (queue.length > 0) {
+      for (const next of neighbors.get(queue.shift())) {
+        if (!reached.has(next)) queue.push(next);
+        reached.add(next);
+      }
+    }
+    return reached;
+  };
+  // つながっているファイルのまとまり。読む順で先に出たファイルを含むまとまりから並べる。
+  const componentsOf = (paths, edges) => {
+    const neighbors = new Map(paths.map((path) => [path, edges.filter((edge) => edge.from === path).map((edge) => edge.to).concat(edges.filter((edge) => edge.to === path).map((edge) => edge.from))]));
+    const components = [];
+    for (const start of paths) {
+      if (components.some((members) => members.has(start))) continue;
+      components.push(reachFrom(start, neighbors));
+    }
+    return components.map((members) => paths.filter((path) => members.has(path)));
+  };
+
+  // 列の中の並びを、隣の列のつながる相手の位置の平均(重心)で並べ直す。左から右、右から左へ交互に
+  // 数回くり返すと線の交差が減る。中継点を置いたので、線はどれも隣り合う列どうしを結ぶ。位置は列の長さで
+  // 割った値で比べる(行の数が違う列どうしでも比べられるように)。
+  const orderColumns = (columns, segments) => {
+    const partnersOf = (id) => segments.filter((segment) => segment.from === id).map((segment) => segment.to).concat(segments.filter((segment) => segment.to === id).map((segment) => segment.from));
+    const relative = (column) => new Map(column.map((id, row) => [id, (row + 0.5) / column.length]));
+    const sweep = (current, towardLeft) => {
+      const visiting = towardLeft ? [...current.keys()].reverse() : [...current.keys()];
+      return visiting.slice(1).reduce((state, column) => {
+        const reference = relative(state[towardLeft ? column + 1 : column - 1]);
+        const own = relative(state[column]);
+        const keyOf = (id) => {
+          const beside = partnersOf(id).filter((other) => reference.has(other));
+          return beside.length === 0 ? own.get(id) : beside.reduce((sum, other) => sum + reference.get(other), 0) / beside.length;
+        };
+        const sorted = [...state[column]].sort((a, b) => keyOf(a) - keyOf(b));
+        return state.map((ids, index) => (index === column ? sorted : ids));
+      }, current);
+    };
+    return Array.from({ length: BarycenterRounds * 2 }).reduce((current, _, round) => sweep(current, round % 2 === 1), columns);
+  };
+
+  // 2 列以上離れた依存は、間の列に中継点を置いて通す。中継点も並べ替えに加えるので、線は箱の間の
+  // すき間を通り、箱の上を横切らない(層に分けたグラフの描き方の定石)。
+  const RelayHeight = 8;
+  const isRelay = (id) => id.startsWith("relay:");
+  const routesOf = (edges, columnOf) => edges.map((edge) => {
+    const span = columnOf(edge.from) - columnOf(edge.to);
+    const relays = Array.from({ length: Math.max(0, span - 1) }, (_, step) => ({ id: `relay:${edge.from}>${edge.to}:${step}`, column: columnOf(edge.from) - 1 - step }));
+    return { edge, relays, points: [edge.from, ...relays.map((relay) => relay.id), edge.to] };
+  });
+
+  // 1 つのまとまりの箱と中継点の位置。列は依存の深さ(左ほど土台)、行は重心で並べ直した順。top はまとまりの上端。
+  const placeComponent = (paths, edges, top) => {
+    const levels = dependencyLevels(paths, edges);
     // 循環していると深さが飛ぶ(打ち切りの値になる)ので、使われている深さだけを詰めて列にする。
     const usedLevels = [...new Set(levels.values())].sort((a, b) => a - b);
-    const columns = usedLevels.map((level) => linked.filter((path) => levels.get(path) === level));
-    const box = GraphLayout;
-    // 列の幅はその列でいちばん長いファイル名に合わせる(名前を切らずに、図を横へ広げすぎない)。
-    const columnWidths = columns.map((paths) => Math.min(box.maxWidth, Math.max(box.minWidth, ...paths.map((path) => textWidth(fileName(path)) + 20))));
-    const columnLefts = columnWidths.map((_, level) => box.pad + columnWidths.slice(0, level).reduce((sum, columnWidth) => sum + columnWidth + box.columnGap, 0));
-    const place = new Map(columns.flatMap((paths, level) => paths.map((path, row) => [path, { x: columnLefts[level], y: box.pad + row * (box.height + box.rowGap), width: columnWidths[level] }])));
-    const width = columnLefts[columnLefts.length - 1] + columnWidths[columnWidths.length - 1] + box.pad;
-    const height = box.pad * 2 + Math.max(...columns.map((paths) => paths.length)) * (box.height + box.rowGap) - box.rowGap;
-    const marker = svgEl("marker", { id: "dep-arrow", viewBox: "0 0 10 10", refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: "auto" }, [svgEl("path", { class: "dep-arrow", d: "M0,0 L10,5 L0,10 z" })]);
-    const edgeNodes = edges.map((edge) => {
-      const from = place.get(edge.from);
-      const to = place.get(edge.to);
-      const start = [from.x, from.y + box.height / 2];
-      const end = [to.x + to.width, to.y + box.height / 2];
-      const bend = Math.max(30, Math.abs(start[0] - end[0]) / 2);
-      return svgEl("path", { class: "dep-edge", "data-from": edge.from, "data-to": edge.to, "marker-end": "url(#dep-arrow)", d: `M ${start[0]} ${start[1]} C ${start[0] - bend} ${start[1]}, ${end[0] + bend} ${end[1]}, ${end[0]} ${end[1]}` });
+    const columnOf = (path) => usedLevels.indexOf(levels.get(path));
+    const routes = routesOf(edges, columnOf);
+    const relays = routes.flatMap((route) => route.relays);
+    const segments = routes.flatMap((route) => route.points.slice(1).map((to, index) => ({ from: route.points[index], to })));
+    const initial = usedLevels.map((_, column) => [...paths.filter((path) => columnOf(path) === column), ...relays.filter((relay) => relay.column === column).map((relay) => relay.id)]);
+    const columns = orderColumns(initial, segments);
+    const widths = columns.map((column) => boxWidthOf(column.filter((id) => !isRelay(id))));
+    const lefts = widths.map((_, column) => BandLayout.pad + widths.slice(0, column).reduce((sum, width) => sum + width + NodeBox.columnGap, 0));
+    const firstRow = top + BandLayout.titleHeight;
+    const heightOf = (id) => (isRelay(id) ? RelayHeight : NodeBox.height);
+    const stack = (column, index) => column.reduce((placed, id) => {
+      const y = placed.length === 0 ? firstRow : placed[placed.length - 1][1].y + placed[placed.length - 1][1].height + NodeBox.rowGap;
+      return [...placed, [id, { x: lefts[index], y, width: widths[index], height: heightOf(id) }]];
+    }, []);
+    const place = new Map(columns.flatMap(stack));
+    const bottom = Math.max(...[...place.values()].map((box) => box.y + box.height));
+    return { place, routes, height: bottom - top, width: lefts[lefts.length - 1] + widths[widths.length - 1] + BandLayout.pad };
+  };
+  // つながりの無いファイルは、決まった列数で左上から詰めて並べる。
+  const placeIsolated = (paths, top) => {
+    const width = boxWidthOf(paths);
+    const columns = Math.min(BandLayout.isolatedColumns, paths.length);
+    const firstRow = top + BandLayout.titleHeight;
+    const place = new Map(paths.map((path, index) => [path, { x: BandLayout.pad + (index % columns) * (width + NodeBox.columnGap / 2), y: firstRow + Math.floor(index / columns) * (NodeBox.height + NodeBox.rowGap), width, height: NodeBox.height }]));
+    const rows = Math.ceil(paths.length / columns);
+    return { place, routes: [], height: BandLayout.titleHeight + rows * (NodeBox.height + NodeBox.rowGap) - NodeBox.rowGap, width: BandLayout.pad * 2 + columns * width + (columns - 1) * (NodeBox.columnGap / 2) };
+  };
+
+  // 1 本の依存の線。使う側の箱の左端から出て、中継点では列を水平に横切り、使われる側の箱の右端で止まる。
+  const dependencyEdge = (route, place) => {
+    const middle = (box) => box.y + box.height / 2;
+    const first = place.get(route.points[0]);
+    const pieces = route.points.slice(1).map((id, index) => {
+      const from = place.get(route.points[index]);
+      const to = place.get(id);
+      const bend = Math.max(20, Math.abs(from.x - (to.x + to.width)) / 2);
+      const curve = `C ${from.x - bend} ${middle(from)}, ${to.x + to.width + bend} ${middle(to)}, ${to.x + to.width} ${middle(to)}`;
+      return isRelay(id) ? `${curve} L ${to.x} ${middle(to)}` : curve;
     });
-    const nodes = linked.map((path) => svgEl("g", { class: "dep-node", "data-path": path, tabindex: 0 }, [
-      svgEl("title", { text: path }),
-      svgEl("rect", { x: place.get(path).x, y: place.get(path).y, width: place.get(path).width, height: box.height, rx: 6 }),
-      svgEl("text", { x: place.get(path).x + 10, y: place.get(path).y + 19, text: fileName(path) }),
-    ]));
-    const graph = svgEl("svg", { class: "dep-graph", viewBox: `0 0 ${width} ${height}`, width, role: "img", "aria-label": "変更ファイルの依存の図" }, [svgEl("defs", {}, [marker]), ...edgeNodes, ...nodes]);
+    return svgEl("path", { class: "dep-edge", "data-from": route.edge.from, "data-to": route.edge.to, "marker-end": "url(#dep-arrow)", d: `M ${first.x} ${middle(first)} ${pieces.join(" ")}` });
+  };
+  // 箱 1 つ。上の行にファイル名、下の行にフォルダ。消したファイルは破線の枠にする。
+  const dependencyNode = (path, place, status) => {
+    const box = place.get(path);
+    const classes = ["dep-node", status === "D" ? "is-deleted" : ""].filter((name) => name !== "").join(" ");
+    return svgEl("g", { class: classes, "data-path": path, tabindex: 0 }, [
+      svgEl("title", { text: status === "D" ? `${path}(消したファイル)` : path }),
+      svgEl("rect", { x: box.x, y: box.y, width: box.width, height: box.height, rx: 6 }),
+      svgEl("text", { class: "dep-name", x: box.x + 10, y: box.y + 17, text: fileName(path) }),
+      svgEl("text", { class: "dep-folder", x: box.x + 10, y: box.y + 32, text: fitFolder(folderName(path), box.width) }),
+    ]);
+  };
+  const bandTitle = (text, top, width) => [
+    svgEl("line", { class: "dep-band-line", x1: BandLayout.pad, y1: top + 4, x2: width - BandLayout.pad, y2: top + 4 }),
+    svgEl("text", { class: "dep-band-title", x: BandLayout.pad, y: top + 20, text }),
+  ];
+
+  // 載せる(フォーカスする)と強調し、押す(Enter / Space)と固定する。マウスでもキーボードでも同じ。
+  const makeGraphInteractive = (graph, nodes, edges) => {
+    const edgeNodes = [...graph.querySelectorAll(".dep-edge")];
     const neighborsOf = (path) => new Set([path, ...edges.filter((edge) => edge.from === path).map((edge) => edge.to), ...edges.filter((edge) => edge.to === path).map((edge) => edge.from)]);
     const focusOn = (path) => {
       const related = path === null ? new Set() : neighborsOf(path);
@@ -887,7 +992,6 @@ ul.focus li { margin: 6px 0; }
       for (const other of nodes) other.classList.toggle("is-pinned", other.dataset.path === pinned);
       focusOn(pinned);
     };
-    // マウスでもキーボードでも同じ: 載せる(フォーカスする)と強調し、押す(Enter / Space)と固定する。
     for (const node of nodes) {
       node.addEventListener("mouseenter", () => focusOn(node.dataset.path));
       node.addEventListener("mouseleave", () => focusOn(pinned));
@@ -901,9 +1005,77 @@ ul.focus li { margin: 6px 0; }
         togglePin(node);
       });
     }
+  };
+
+  // 変更ファイルの依存の図。すべての変更ファイルを載せ、つながっているまとまりごとに帯を分けて上から並べる
+  // (まとまりをまたぐ線は無いので、帯ごとに読める)。つながりの無いファイルは最後の帯にまとめる。
+  const renderDependencyGraph = (map) => {
+    const edges = map.dependencies;
+    const files = map.groups.flatMap((group) => group.files);
+    const statusOf = new Map(files.map((file) => [file.path, file.status]));
+    const readingOrder = files.map((file) => file.path);
+    const linked = readingOrder.filter((path) => edges.some((edge) => edge.from === path || edge.to === path));
     const isolated = readingOrder.filter((path) => !linked.includes(path));
-    const caption = `矢印は使う側 → 使われる側。左ほど多くのファイルから使われる土台です。ファイルに載せる(押すと固定)と、そのつながりだけが残ります。依存が見つからなかったファイル ${isolated.length} 件は下の一覧だけに出ます。`;
+    const components = componentsOf(linked, edges);
+    const bands = [];
+    let top = BandLayout.pad;
+    for (const [index, paths] of components.entries()) {
+      const inside = edges.filter((edge) => paths.includes(edge.from));
+      const layout = placeComponent(paths, inside, top);
+      bands.push({ ...layout, top, paths, title: `つながり ${index + 1} · ${paths.length} ファイル` });
+      top += layout.height + BandLayout.gap;
+    }
+    if (isolated.length > 0) {
+      const layout = placeIsolated(isolated, top);
+      bands.push({ ...layout, top, paths: isolated, title: `依存のつながりが見つからないファイル · ${isolated.length} 件` });
+      top += layout.height + BandLayout.gap;
+    }
+    if (bands.length === 0) return el("p", { class: "muted", text: "変更されたファイルはありません。" });
+    const width = Math.max(...bands.map((band) => band.width));
+    const height = top - BandLayout.gap + BandLayout.pad;
+    const marker = svgEl("marker", { id: "dep-arrow", viewBox: "0 0 10 10", refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: "auto" }, [svgEl("path", { class: "dep-arrow", d: "M0,0 L10,5 L0,10 z" })]);
+    const titles = bands.flatMap((band) => bandTitle(band.title, band.top, width));
+    const edgeNodes = bands.flatMap((band) => band.routes.map((route) => dependencyEdge(route, band.place)));
+    const nodes = bands.flatMap((band) => band.paths.map((path) => dependencyNode(path, band.place, statusOf.get(path))));
+    const graph = svgEl("svg", { class: "dep-graph", viewBox: `0 0 ${width} ${height}`, width, role: "img", "aria-label": "変更ファイルの依存の図" }, [svgEl("defs", {}, [marker]), ...titles, ...edgeNodes, ...nodes]);
+    makeGraphInteractive(graph, nodes, edges);
+    const caption = "すべての変更ファイルを、つながっているまとまりごとに帯に分けています。帯の中は左ほど多くのファイルから使われる土台で、矢印は使う側 → 使われる側。線は薄く描いてあり、ファイルに載せる(押すと固定)とそのつながりだけが濃く残ります。1 つずつ読むなら下の「ファイルごとのつながり」。破線の枠は消したファイル。";
     return el("figure", { class: "diagram" }, [graph, el("figcaption", { text: caption })]);
+  };
+
+  // ファイル 1 つのつながりだけを描いたカード。左がそのファイルが使うもの、中央がそのファイル、右がそれを
+  // 使うもの。全体の図は線が多くて追いにくいので、1 つのファイルから見た範囲だけを交差なしで見せる。
+  const NeighborhoodGap = 40;
+  const NeighborhoodHeadings = ["使うもの", "このファイル", "これを使うもの"];
+  const HeadingHeight = 20;
+  // context は図の全体で共有するもの(依存・ファイルの状態・箱の幅)。箱の幅をカードどうしで揃えると、
+  // どのカードも同じ縮尺で表示される。
+  const renderNeighborhood = (path, context) => {
+    const { edges, statusOf, width } = context;
+    const uses = edges.filter((edge) => edge.from === path).map((edge) => edge.to);
+    const usedBy = edges.filter((edge) => edge.to === path).map((edge) => edge.from);
+    const rows = Math.max(uses.length, usedBy.length, 1);
+    const inner = rows * (NodeBox.height + NodeBox.rowGap) - NodeBox.rowGap;
+    const pad = BandLayout.pad;
+    const lefts = [0, 1, 2].map((column) => pad + column * (width + NeighborhoodGap));
+    const top = pad + HeadingHeight;
+    const stack = (ids, column) => ids.map((id, row) => [id, { x: lefts[column], y: top + (inner - (ids.length * (NodeBox.height + NodeBox.rowGap) - NodeBox.rowGap)) / 2 + row * (NodeBox.height + NodeBox.rowGap), width, height: NodeBox.height }]);
+    const place = new Map([...stack(uses, 0), ...stack([path], 1), ...stack(usedBy, 2)]);
+    const routes = [...uses.map((used) => ({ from: path, to: used })), ...usedBy.map((user) => ({ from: user, to: path }))].map((edge) => ({ edge, points: [edge.from, edge.to] }));
+    const nodes = [...place.keys()].map((id) => dependencyNode(id, place, statusOf.get(id)));
+    nodes.find((node) => node.dataset.path === path).classList.add("is-center");
+    const headings = NeighborhoodHeadings.map((text, column) => svgEl("text", { class: "dep-band-title", x: lefts[column] + width / 2, y: pad + 12, "text-anchor": "middle", text }));
+    const svgWidth = lefts[2] + width + pad;
+    const svgHeight = top + inner + pad;
+    return el("div", { class: "dep-card" }, [svgEl("svg", { class: "dep-graph", viewBox: `0 0 ${svgWidth} ${svgHeight}`, width: svgWidth, role: "img", "aria-label": `${path} のつながり` }, [...headings, ...routes.map((route) => dependencyEdge(route, place)), ...nodes])]);
+  };
+  const renderNeighborhoods = (map) => {
+    const edges = map.dependencies;
+    const statusOf = new Map(map.groups.flatMap((group) => group.files).map((file) => [file.path, file.status]));
+    const linked = map.groups.flatMap((group) => group.files.map((file) => file.path)).filter((path) => edges.some((edge) => edge.from === path || edge.to === path));
+    const note = el("p", { class: "muted", text: "ファイルごとに、左がそのファイルが使うもの、右がそのファイルを使うもの(矢印は使う側 → 使われる側)。上の図から線を目で追わずに、1 つのファイルのつながりを読めます。" });
+    const context = { edges, statusOf, width: boxWidthOf(linked) };
+    return [el("h3", { text: `ファイルごとのつながり(${linked.length})` }), note, el("div", { class: "dep-cards" }, linked.map((path) => renderNeighborhood(path, context)))];
   };
 
   // ページごとに、地図から足す節。振る舞いのページには足さない。
@@ -912,7 +1084,9 @@ ul.focus li { margin: 6px 0; }
       heading: "変更の地図",
       render: (body, map) => {
         body.append(el("p", { class: "muted", text: `head ${map.head.slice(0, 7)} · base との分岐点 ${map.mergeBase.slice(0, 7)} · 上から読む順(内側の層から外側へ)に並べています。` }));
-        body.append(el("h3", { text: "依存の図" }), Array.isArray(map.dependencies) ? renderDependencyGraph(map) : el("p", { class: "muted", text: "この地図は依存を持たない古い形です。次の push で作り直されます。" }));
+        const hasDependencies = Array.isArray(map.dependencies);
+        const dependencyViews = hasDependencies ? [renderDependencyGraph(map), ...renderNeighborhoods(map)] : [el("p", { class: "muted", text: "この地図は依存を持たない古い形です。次の push で作り直されます。" })];
+        body.append(el("h3", { text: "依存の図" }), ...dependencyViews);
         for (const group of map.groups) appendList(body, group.label, group.files.map(fileItem));
         if (map.groups.length === 0) body.append(el("p", { class: "muted", text: "変更されたファイルはありません。" }));
       },
