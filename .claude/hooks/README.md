@@ -70,7 +70,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `lib/story-title-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `story-title-violations.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードで報告する。食い違いがあれば exit 1 |
 | `lib/missing-doc-comments-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `missing-doc-comments.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードで報告する。食い違いがあれば exit 1 |
 | `lib/duplicate-test-helpers-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `duplicate-test-helpers.py` へ判定表を流し、ファイル 1 つを渡す形と `--lines` の両方で deny / pass / miss が期待どおりかを終了コードで報告する。食い違いがあれば exit 1 |
-| `lib/verification-agent-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `track-verification-agent-activity.sh` と `block-git-during-verification-agent.sh` へ Task/Agent と git の呼び出しを順に流し、背景起動の拒否と、印が残っている間だけ git 操作が止まること、終了で消えるのが同じ種類の印であること、印の有効期間が種類ごとに違うこと(印を古くして見分ける)を確かめる。食い違いがあれば exit 1 |
+| `lib/verification-agent-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `track-verification-agent-activity.sh` と `block-git-during-verification-agent.sh` へ Task/Agent と git の呼び出しを順に流し、起動の拒否と git 操作の拒否が期待どおりかを報告する。確かめる項目は判定表の冒頭コメントと各ケースの名前が持つ。食い違いがあれば exit 1 |
 
 ## 強制力の序列 — フックが発火しない実行環境がある
 
