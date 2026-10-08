@@ -2,8 +2,8 @@
 #
 # 作業ツリーを書き換えるサブエージェントの実行中フラグの判定表。
 # `track-verification-agent-activity.sh` と `block-git-during-verification-agent.sh` へ
-# Task/Agent と git の呼び出しを順に流し、起動の拒否と git 操作の拒否が期待どおりかを
-# 1 コマンドで確かめる。
+# Task/Agent と git の呼び出しを順に流し、起動の拒否と git 操作の拒否(拒否文に載る印の場所を
+# 含む)が期待どおりかを 1 コマンドで確かめる。
 #
 # 使い方: bash .claude/hooks/lib/verification-agent-cases.sh
 # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。
@@ -61,24 +61,34 @@ agent_verdict() {
   decide_by_permission "$output" "$status"
 }
 
+# git コマンドを書いた Bash の呼び出しを流し、フックの出力をそのまま返す(git は実行しない)。
+# 終了コードはフックのもの。
+#
+# $1 セッション
+# $2 コマンド(省くと `git add src`)
+git_output() {
+  printf '{"session_id":"%s","tool_input":{"command":"%s"}}' "$1" "${2:-git add src}" | bash "$block_hook"
+}
+
 # git コマンドを書いた Bash の呼び出しを流し、判定を返す(git は実行しない)。
 #
 # $1 セッション
 # $2 コマンド(省くと `git add src`)
 git_verdict() {
   local output status
-  output="$(printf '{"session_id":"%s","tool_input":{"command":"%s"}}' "$1" "${2:-git add src}" | bash "$block_hook")"
+  output="$(git_output "$@")"
   status=$?
   decide_by_permission "$output" "$status"
 }
 
-# セッションの印をすべて 1 時間前の時刻へ戻す。印の有効期間(種類ごとに違う)を確かめるため。
-# `date -d @` は GNU、`date -r` は BSD の綴り。
+# セッションの印をすべて指定した秒数だけ前の時刻へ戻す。印の有効期間(種類ごとに違う)を
+# 確かめるため。`date -d @` は GNU、`date -r` は BSD の綴り。
 #
 # $1 セッション
-backdate_markers_to_one_hour_ago() {
+# $2 戻す秒数
+backdate_markers() {
   local then stamp
-  then=$(( $(date +%s) - 3600 ))
+  then=$(( $(date +%s) - $2 ))
   stamp="$(date -d "@$then" +%Y%m%d%H%M.%S 2>/dev/null || date -r "$then" +%Y%m%d%H%M.%S)"
   touch -t "$stamp" "$TMPDIR/design-composer-verification-agents-$1"/active.*
 }
@@ -134,19 +144,51 @@ report deny "$(agent_verdict s17 PreToolUse "$background_implementer")" "run_in_
 # 残った印の種類は有効期間でしか外から見えないので、最後に印を古くして見分ける。implementer の印を
 # 先に古くしておくのは、種類を問わず最も古い印を消す実装だと implementer の印が消えるようにするため。
 agent_verdict s18 PreToolUse "$foreground_implementer" >/dev/null
-backdate_markers_to_one_hour_ago s18
+backdate_markers s18 3600
 agent_verdict s18 PreToolUse "$foreground_test_reviewer" >/dev/null
 agent_verdict s18 PostToolUse "$foreground_test_reviewer" >/dev/null
-backdate_markers_to_one_hour_ago s18
+backdate_markers s18 3600
 report deny "$(git_verdict s18)" "test-reviewer が終わって消えるのは test-reviewer の印で、先に起動した implementer の印は残る"
 
 agent_verdict s19 PreToolUse "$foreground_implementer" >/dev/null
-backdate_markers_to_one_hour_ago s19
+backdate_markers s19 3600
 report deny "$(git_verdict s19)" "implementer の印は 1 時間たっても有効で、git add が拒否される"
 
 agent_verdict s20 PreToolUse "$foreground_test_reviewer" >/dev/null
-backdate_markers_to_one_hour_ago s20
+backdate_markers s20 3600
 report pass "$(git_verdict s20)" "test-reviewer の印は 1 時間たつと古い印として無視され、git add が通る"
+
+# 逆の起動順。種類を問わず最も新しい印を消す実装だと implementer の印が消え、残った test-reviewer の
+# 印が 1 時間たって無視されて git add が通る。test-reviewer の印を先に古くするのは、どちらが新しいかを
+# 作成時刻の細かさに頼らないため。
+agent_verdict s22 PreToolUse "$foreground_test_reviewer" >/dev/null
+backdate_markers s22 3600
+agent_verdict s22 PreToolUse "$foreground_implementer" >/dev/null
+agent_verdict s22 PostToolUse "$foreground_test_reviewer" >/dev/null
+backdate_markers s22 3600
+report deny "$(git_verdict s22)" "test-reviewer が終わって消えるのは test-reviewer の印で、後から起動した implementer の印は残る"
+
+agent_verdict s23 PreToolUse "$foreground_test_reviewer" >/dev/null
+agent_verdict s23 PreToolUse "$foreground_test_reviewer" >/dev/null
+agent_verdict s23 PostToolUse "$foreground_test_reviewer" >/dev/null
+report deny "$(git_verdict s23)" "test-reviewer を 2 件起動して 1 件だけ終わっても、残る 1 件の実行中は git add が拒否される"
+
+agent_verdict s24 PreToolUse "$foreground_implementer" >/dev/null
+backdate_markers s24 10800
+report pass "$(git_verdict s24)" "implementer の印は 3 時間たつと古い印として無視され、git add が通る"
+
+# 印の場所は拒否文(JSON の文字列)へ埋まるので、`"` と `\` を含む TMPDIR で綴りを見る。TMPDIR は
+# この 2 回の呼び出しだけ差し替え、他のケースの印と同じ場所に置かない。
+quoted_tmpdir="$TMPDIR/q\"x\\y"
+mkdir -p "$quoted_tmpdir"
+TMPDIR="$quoted_tmpdir" agent_verdict s25 PreToolUse "$foreground_test_reviewer" >/dev/null
+escaped_marker_location='q\"x\\y/design-composer-verification-agents-s25/active.*'
+quoted_output="$(TMPDIR="$quoted_tmpdir" git_output s25)"
+marker_location_in_reason=missing
+if [[ "$quoted_output" == *"$escaped_marker_location"* ]]; then
+  marker_location_in_reason=escaped
+fi
+report escaped "$marker_location_in_reason" "TMPDIR に \" と \\ が入っていても、拒否文の印の場所は JSON の文字列としてエスケープされる"
 
 report pass "$(agent_verdict s21 PreToolUse '"subagent_type":"planner","prompt":"x","run_in_background":true')" "planner は背景で起動しても拒否されない"
 report pass "$(agent_verdict s11 PreToolUse '"subagent_type":"Explore","prompt":"x","run_in_background":true')" "対象外のエージェントは背景で起動しても拒否されない"
