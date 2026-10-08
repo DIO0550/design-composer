@@ -20,7 +20,6 @@ model: inherit
 
 ## 先に読むもの
 
-- `.claude/skills/implementation-flow/SKILL.md` のフェーズ 5
 - `.claude/skills/claim-verification/SKILL.md` — 事実の主張を書いたら確かめる手順
 - `AGENTS.md`「実装を始める前に」の読む順と、そこが指す `rules/` の節
 - UI を触るなら `rules/ui-verification.md`
@@ -28,14 +27,15 @@ model: inherit
 ## 手順
 
 1. 計画の順に実装する
-2. **計画から外れる必要が出たら、その時点で止めて返す。** ファイル表に無いファイルを触る・テストケースを
-   足す/外す・却下案を採る、のどれかに当たるなら外れている。続けるかどうかは呼び出し側が Issue に
-   理由を書いてから決める
+2. **計画と渡された指摘のどちらにも無いことをする必要が出たら、その時点で止めて返す。** ファイル表にも
+   指摘の対象にも無いファイルを触る・計画にも指摘にも無いテストケースを足す/外す・却下案を採る、の
+   どれかに当たるなら外れている(渡された指摘を直すためにテストを足す・表に無いファイルを直すのは
+   外れではない)。続けるかどうかは呼び出し側が Issue に理由を書いてから決める
 3. **コメント・doc に事実の主張を書いたら、書き終えるたびに `claim-verification` の手順で照合する。**
    Skill ツールは持たないので、上の `SKILL.md` を読んでその手順に従う(Issue・PR 本文は呼び出し側が持つ)
 4. UI を触ったなら `rules/ui-verification.md` の表示確認まで行う
-5. 変更に応じた手元の検査(`pnpm run typecheck` / `pnpm run lint` / `pnpm exec biome check` /
-   `pnpm run test:run`、ハーネスなら触った判定表)を走らせ、**終了コードで**判定する
+5. `.claude/skills/implementation-flow/SKILL.md` フェーズ 7 の `PRE_PUSH_REQUIRE_ALL=1 bash harness/githooks/pre-push`
+   と `pnpm run test:run` を走らせ、**終了コードで**判定する(検査の一覧はここへ写さない)
 
 ## 返すもの
 
@@ -46,8 +46,8 @@ model: inherit
 
 ## してはいけないこと
 
-- **`git add` / `commit` / `push` をしない。** 検証は commit 前の差分に当てる順序で、git 操作は呼び出し側が持つ
-  (実行中は `block-git-during-verification-agent.sh` も止める)
+- **`git add` / `commit` / `push` をしない。** 返した変更を呼び出し側が計画と突き合わせてから commit するので、
+  git 操作は呼び出し側が持つ(実行中は `block-git-during-verification-agent.sh` も止める)
 - **Issue・PR に書かない。** 計画との差分も返すだけ
 - **渡されていない指摘・気づいた改善を足さない。** 気づいたものは返すものの末尾に 1 行で添える
 - テストを skip・削除して検査を通さない

@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 #
-# 作業ツリーを書き換えるサブエージェント(ミューテーション実測で一時的に書き換える
-# plan-reviewer / test-reviewer と、実装を書く implementer)が実行中かどうかを、セッション別の
+# 作業ツリーを書き換えるサブエージェント(対象は下の case)が実行中かどうかを、セッション別の
 # マーカーで記録する PreToolUse + PostToolUse フック(matcher: Task|Agent)。
 # `run_in_background: true` を明示した起動は拒否する。block-git-during-verification-agent.sh が
 # このマーカーを読む。
@@ -20,16 +19,14 @@
 #
 # 「終了」は Task/Agent の PostToolUse で、エージェントの完了ではない。背景で起動すると
 # PostToolUse が起動の直後に来るので、実行中でも印は残らない(実測)。そのため対象の
-# 3 エージェントは `run_in_background: true` を明示した起動を PreToolUse で拒否し、印も作らない。
+# エージェントは `run_in_background: true` を明示した起動を PreToolUse で拒否し、印も作らない。
 # 塞いでいないのは、`false` を渡しても実行環境が背景で起動した場合(記録が複数ある)と、
 # 前面で起動したあと背景へ移した場合。どちらも入力には現れず、PostToolUse がいつ来るかも
 # 実測できていない(エージェントの完了で印を消す形は未着手)。
 #
-# 全 Task/Agent を常時対象にはしない。Explore や harness-counter、planner、test-reviewer 以外の
-# 観点別レビューエージェントは、作業ツリーを書き換えない(道具か定義でそう決めている)。
-# 対象にすると背景で起動できなくなる(planner なら並列で計画を立てられない)のに、防げるのは
-# 定義に反した書き換えだけで、それは返ってきた後の `git status` で見つけられる
-# (implementation-flow「サブエージェントの使い方」)。対象は書き換えを仕事にする 3 エージェントに絞る。
+# planner など、道具か定義で作業ツリーを書き換えないエージェントは対象外。対象にすると背景で
+# 起動できなくなり、定義に反した書き換えは返った後の `git status` で見つかる
+# (implementation-flow「サブエージェントの使い方」)。
 set -uo pipefail
 
 input="$(cat)"
@@ -46,6 +43,8 @@ case "$tool_name" in
 esac
 
 subagent_type="$(extract subagent_type)"
+# 作業ツリーを書き換えるサブエージェント。plan-reviewer / test-reviewer は実測のために一時的に
+# 書き換えうる。implementer は実装を書く。
 case "$subagent_type" in
   plan-reviewer | test-reviewer | implementer) ;;
   *) exit 0 ;;
@@ -65,7 +64,7 @@ if [ "$launching_in_background" = true ]; then
   "hookSpecificOutput": {
     "hookEventName": "PreToolUse",
     "permissionDecision": "deny",
-    "permissionDecisionReason": "plan-reviewer / test-reviewer / implementer は背景で起動できません(分類: subagent-control)。背景で起動すると実行中の印が起動の直後に消え、作業ツリーを書き換えている途中の git add / commit / push を止められません。run_in_background を付けずに前面で起動し直してください。"
+    "permissionDecisionReason": "作業ツリーを書き換えるサブエージェントは背景で起動できません(分類: subagent-control)。背景で起動すると実行中の印が起動の直後に消え、作業ツリーを書き換えている途中の git add / commit / push を止められません。run_in_background を付けずに前面で起動し直してください。"
   }
 }
 JSON

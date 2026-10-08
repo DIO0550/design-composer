@@ -38,9 +38,11 @@ description: "design-composer の実装を ゴールの確定 → タスクの�
 | 7 PR / 8 マージ後 | 親(push 前検査・commit・push・PR・Issue への追記) |
 
 - **親はリポジトリの中のファイルを編集しない**(`src/` に限らず `.claude/` `harness/` `docs/` `rules/` も)。
-  1 行の修正にも例外を置かない。線引きを毎回判断すると分担が崩れる
-- 例外は、判断を伴わない自動修正コマンド(`pnpm exec biome check --write` 等)をフェーズ 7 で
-  親が走らせることだけ
+  修正の小ささは理由にしない(1 行でも `implementer` に渡す)。線引きを毎回判断すると分担が崩れる
+- 親が作業ツリーを変えてよいのは、判断を伴わない次の 2 つだけ
+  - 自動修正コマンド(`pnpm exec biome check --write` 等)をフェーズ 7 で走らせる
+  - 検証エージェントの書き換えを、基準のコミットへ `git restore` / `git clean` で戻す
+    (「サブエージェントの使い方」)
 - Issue・PR 本文を書くのは親。`planner` / `implementer` は返すだけ
 - この分担は `implementation-flow` の中だけで、`harness-record` / `harness-growth` には及ばない
 
@@ -78,13 +80,14 @@ Issue: #<番号>
 計画に書くのは次の 4 つ。
 
 1. **変更するファイルと、そこに何を置くか。** 帰属先は `rules/architecture.md` で決める。
+   行の単位で直す記述があるなら「何行目のどの記述をどう直すか」まで書く。
    **公開 API を変える場合は、それを呼んでいる `*.stories.tsx` と `__tests__/` も
    変更するファイルとして数える**(数え漏らすと typecheck が落ちる状態で計画が固まる)。
    **アクション・状態の直和へ枝を足す場合も同じく数える**(枝を足しても既存テストは落ちず
    typecheck も通るので、数え漏らしても誰も教えてくれない)
 2. **テストケースの一覧。** 仕様の文(「◯◯のとき□□になる」)で書く(`rules/testing.md`)
 3. **却下した案と、やめた理由**
-4. **未決の判断**(あれば)
+4. **未決の判断。** 無いなら「無し」と、各セクションを洗った結果を 1 行で書く
 
 却下案を残すのは、後で同じ案が再浮上したときに前回の理由が失われるため。
 「A にした」だけでは、B を試していないのか、試して駄目だったのかが読めない。
@@ -159,11 +162,9 @@ Issue: #<番号>
 計画: <plan-reviewer を通した計画と却下案>
 ```
 
-- 計画の順に実装する、`AGENTS.md`「実装を始める前に」の自己チェック、UI の表示確認
-  (`rules/ui-verification.md`)、コメント・doc の事実の主張の照合(`claim-verification`)は
-  `implementer` が行う
-- **計画から外れる必要が出たら、`implementer` はその時点で止めて返す。** 親が外れた理由を
-  Issue に追記してから、続けるかを決めて起動し直す。後でまとめて書くと理由が思い出せなくなる
+- 実装の手順は `.claude/agents/implementer.md` が持つ
+- **`implementer` が計画から外れて止めて返ってきたら、** 親が外れた理由を Issue に追記してから、
+  続けるかを決めて起動し直す。後でまとめて書くと理由が思い出せなくなる
 - **Issue・PR 本文に事実の主張を書いたら、書き終えるたびに親が `claim-verification` スキルで
   確かめる**(フェーズ6まで持ち越さない。`.claude/skills/claim-verification/`)
 
@@ -307,16 +308,17 @@ pnpm visual:capture -- --storybook-dir storybook-static --out visual-actual  # �
   読むので、抜けが同じ位置に残る
 - 検証エージェントに実装させない。指摘だけを返させ、直すかどうかはこちらで判断する。
   直すのは `implementer` で、検証エージェントとは別に起動する
-- **返ってきたら、指摘を読む前に `git status` を見る。**
-  エージェント定義に「変更するな」と書いても書き換えることがある。戻さずに指摘へ対応すると、
-  `implementer` の変更とエージェントの書き換えが混ざってコミットに載る
-- **`implementer` から返ったら、報告された変更ファイルと `git status --porcelain` が一致するかを見る。**
-  作業ツリーが変わって返るのが正常なので、見るのは変わったかではなく、報告に無い変更が無いか
+- **`implementer` から返ったら、`git status --porcelain` を「計画のファイル表と、渡した指摘の対象」と
+  突き合わせる。** 一致したら commit して、それを作業ツリーの基準にする(push はフェーズ 7)
+- **それ以外のエージェントから返ったら、指摘を読む前に作業ツリーが基準のまま
+  (`git status --porcelain` が空)かを見る。** エージェント定義に「変更するな」と書いても
+  書き換えることがある。戻さずに指摘へ対応すると、`implementer` の変更とエージェントの書き換えが
+  混ざってコミットに載る
 - **直しは `SendMessage` で続けず、新しい Agent 呼び出しで `implementer` に渡す。** 実行中の印を
   作るフックの matcher は `Task|Agent` で、`SendMessage` には当たらない(`.claude/settings.json`)
 - **実行中に git add / commit / push を挟まない。** ミューテーション実測や実装の途中でコミットすると、
   その瞬間の書き換えが載る。`block-git-during-verification-agent.sh` が
-  plan-reviewer / test-reviewer / implementer の実行中はここを機械的に止める(`.claude/hooks/README.md`)。
+  作業ツリーを書き換えるサブエージェントの実行中はここを機械的に止める(対象は `.claude/hooks/README.md`)。
   **止まるのは前面で起動したときだけ**(背景で起動すると起動の直後に PostToolUse が走り、
   印が消える。実測)。`run_in_background: true` を明示した起動は
   `track-verification-agent-activity.sh` が拒否するが、塞いでいない形がある(フックの冒頭)。
@@ -328,8 +330,8 @@ pnpm visual:capture -- --storybook-dir storybook-static --out visual-actual  # �
   (リモート実行環境で `Agent type not found` を実測)。そのときは `general-purpose` に定義ファイルを
   読ませて代行させる。代行では frontmatter が効かないので、定義の `model` を Agent の `model` に
   渡し(`inherit` なら渡さない)、定義の `tools` に無いツールを使わないことを prompt に書く。
-  代行中は印も作られないので、作業ツリーを書き換えるもの(`test-reviewer` のミューテーション・
-  `implementer` の実装)は前面で単独で起動し、完了を受け取るまで git add / commit / push を挟まない
+  代行中は印も作られないので、作業ツリーを書き換えるサブエージェントは前面で単独で起動し、
+  完了を受け取るまで git add / commit / push を挟まない
 
 ## 参照ファイル
 

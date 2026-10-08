@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 #
-# 検証エージェントの実行中フラグの判定表。`track-verification-agent-activity.sh` と
-# `block-git-during-verification-agent.sh` へ Task/Agent と git の呼び出しを順に流し、
-# 起動の拒否と git 操作の拒否が期待どおりかを 1 コマンドで確かめる。
+# 作業ツリーを書き換えるサブエージェントの実行中フラグの判定表。
+# `track-verification-agent-activity.sh` と `block-git-during-verification-agent.sh` へ
+# Task/Agent と git の呼び出しを順に流し、起動の拒否と git 操作の拒否が期待どおりかを
+# 1 コマンドで確かめる。
 #
 # 使い方: bash .claude/hooks/lib/verification-agent-cases.sh
 # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。
@@ -13,7 +14,7 @@
 #
 # 2 本のフックは deny でも exit 0 で JSON を返すので、`cases-report.sh` の `decide`
 # (exit 1 を違反とみなす)ではなく、出力の `permissionDecision` を見て決める。
-# JSON は固定の文字列で組み、外部コマンドに依存しない(フック本体と同じ)。
+# JSON は jq を使わず printf で組む(フック本体と同じく、jq の無い環境でも走らせるため)。
 #
 # **入力は Agent ツールの引数名に合わせて組んだもので、実物の PreToolUse から写していない。**
 # Claude Code が `tool_input` に `run_in_background` を載せるかは、この表では確かめられない。
@@ -75,76 +76,76 @@ git_verdict() {
 # `date -d @` は GNU、`date -r` は BSD の綴り。
 #
 # $1 セッション
-age_markers_one_hour() {
+backdate_markers_to_one_hour_ago() {
   local then stamp
   then=$(( $(date +%s) - 3600 ))
   stamp="$(date -d "@$then" +%Y%m%d%H%M.%S 2>/dev/null || date -r "$then" +%Y%m%d%H%M.%S)"
   touch -t "$stamp" "$TMPDIR/design-composer-verification-agents-$1"/active.*
 }
 
-foreground_test='"subagent_type":"test-reviewer","prompt":"x"'
-foreground_plan='"subagent_type":"plan-reviewer","prompt":"x"'
-background_test='"subagent_type":"test-reviewer","prompt":"x","run_in_background":true'
-background_plan='"subagent_type":"plan-reviewer","prompt":"x","run_in_background":true'
-foreground_impl='"subagent_type":"implementer","prompt":"x"'
-background_impl='"subagent_type":"implementer","prompt":"x","run_in_background":true'
+foreground_test_reviewer='"subagent_type":"test-reviewer","prompt":"x"'
+foreground_plan_reviewer='"subagent_type":"plan-reviewer","prompt":"x"'
+background_test_reviewer='"subagent_type":"test-reviewer","prompt":"x","run_in_background":true'
+background_plan_reviewer='"subagent_type":"plan-reviewer","prompt":"x","run_in_background":true'
+foreground_implementer='"subagent_type":"implementer","prompt":"x"'
+background_implementer='"subagent_type":"implementer","prompt":"x","run_in_background":true'
 
-agent_verdict s1 PreToolUse "$foreground_test" >/dev/null
+agent_verdict s1 PreToolUse "$foreground_test_reviewer" >/dev/null
 report deny "$(git_verdict s1)" "前面で起動した test-reviewer の実行中は git add が拒否される"
 
 report deny "$(git_verdict s1 'git commit -m x')" "前面で起動した test-reviewer の実行中は git commit が拒否される"
 report deny "$(git_verdict s1 'git push')" "前面で起動した test-reviewer の実行中は git push が拒否される"
 
-agent_verdict s2 PreToolUse "$foreground_plan" >/dev/null
+agent_verdict s2 PreToolUse "$foreground_plan_reviewer" >/dev/null
 report deny "$(git_verdict s2)" "前面で起動した plan-reviewer の実行中は git add が拒否される"
 
-TOOL_NAME=Task agent_verdict s3 PreToolUse "$foreground_test" >/dev/null
+TOOL_NAME=Task agent_verdict s3 PreToolUse "$foreground_test_reviewer" >/dev/null
 report deny "$(git_verdict s3)" "ツール名が Task でも、前面で起動した test-reviewer の実行中は git add が拒否される"
 
-agent_verdict s4 PreToolUse "$foreground_test" >/dev/null
-agent_verdict s4 PostToolUse "$foreground_test" >/dev/null
+agent_verdict s4 PreToolUse "$foreground_test_reviewer" >/dev/null
+agent_verdict s4 PostToolUse "$foreground_test_reviewer" >/dev/null
 report pass "$(git_verdict s4)" "前面で起動した test-reviewer が終わると git add が通る"
 
-report deny "$(agent_verdict s5 PreToolUse "$background_test")" "run_in_background: true を明示した test-reviewer は起動が拒否される"
-report deny "$(agent_verdict s6 PreToolUse "$background_plan")" "run_in_background: true を明示した plan-reviewer は起動が拒否される"
-report deny "$(TOOL_NAME=Task agent_verdict s7 PreToolUse "$background_test")" "ツール名が Task でも、run_in_background: true を明示した test-reviewer は起動が拒否される"
+report deny "$(agent_verdict s5 PreToolUse "$background_test_reviewer")" "run_in_background: true を明示した test-reviewer は起動が拒否される"
+report deny "$(agent_verdict s6 PreToolUse "$background_plan_reviewer")" "run_in_background: true を明示した plan-reviewer は起動が拒否される"
+report deny "$(TOOL_NAME=Task agent_verdict s7 PreToolUse "$background_test_reviewer")" "ツール名が Task でも、run_in_background: true を明示した test-reviewer は起動が拒否される"
 report deny "$(agent_verdict s8 PreToolUse '"subagent_type":"test-reviewer","prompt":"x","run_in_background": true')" "キーと値の間に空白があっても、背景起動は拒否される"
 
-agent_verdict s9 PreToolUse "$background_test" >/dev/null
+agent_verdict s9 PreToolUse "$background_test_reviewer" >/dev/null
 report pass "$(git_verdict s9)" "背景起動が拒否されたときは印が残らず、git add は止まらない"
 
-agent_verdict s10 PreToolUse "$foreground_test" >/dev/null
-agent_verdict s10 PreToolUse "$background_plan" >/dev/null
+agent_verdict s10 PreToolUse "$foreground_test_reviewer" >/dev/null
+agent_verdict s10 PreToolUse "$background_plan_reviewer" >/dev/null
 report deny "$(git_verdict s10)" "前面の test-reviewer の実行中に背景の plan-reviewer が拒否されても、git add は拒否され続ける"
 
-agent_verdict s14 PreToolUse "$foreground_test" >/dev/null
-report pass "$(agent_verdict s14 PostToolUse "$background_test")" "PostToolUse では、背景起動の入力でも拒否を返さない"
+agent_verdict s14 PreToolUse "$foreground_test_reviewer" >/dev/null
+report pass "$(agent_verdict s14 PostToolUse "$background_test_reviewer")" "PostToolUse では、背景起動の入力でも拒否を返さない"
 report pass "$(git_verdict s14)" "PostToolUse では、背景起動の入力でも印を消す"
 
-agent_verdict s15 PreToolUse "$foreground_impl" >/dev/null
+agent_verdict s15 PreToolUse "$foreground_implementer" >/dev/null
 report deny "$(git_verdict s15)" "前面で起動した implementer の実行中は git add が拒否される"
 
-agent_verdict s16 PreToolUse "$foreground_impl" >/dev/null
-agent_verdict s16 PostToolUse "$foreground_impl" >/dev/null
+agent_verdict s16 PreToolUse "$foreground_implementer" >/dev/null
+agent_verdict s16 PostToolUse "$foreground_implementer" >/dev/null
 report pass "$(git_verdict s16)" "前面で起動した implementer が終わると git add が通る"
 
-report deny "$(agent_verdict s17 PreToolUse "$background_impl")" "run_in_background: true を明示した implementer は起動が拒否される"
+report deny "$(agent_verdict s17 PreToolUse "$background_implementer")" "run_in_background: true を明示した implementer は起動が拒否される"
 
 # 残った印の種類は有効期間でしか外から見えないので、最後に印を古くして見分ける。implementer の印を
 # 先に古くしておくのは、種類を問わず最も古い印を消す実装だと implementer の印が消えるようにするため。
-agent_verdict s18 PreToolUse "$foreground_impl" >/dev/null
-age_markers_one_hour s18
-agent_verdict s18 PreToolUse "$foreground_test" >/dev/null
-agent_verdict s18 PostToolUse "$foreground_test" >/dev/null
-age_markers_one_hour s18
+agent_verdict s18 PreToolUse "$foreground_implementer" >/dev/null
+backdate_markers_to_one_hour_ago s18
+agent_verdict s18 PreToolUse "$foreground_test_reviewer" >/dev/null
+agent_verdict s18 PostToolUse "$foreground_test_reviewer" >/dev/null
+backdate_markers_to_one_hour_ago s18
 report deny "$(git_verdict s18)" "test-reviewer が終わって消えるのは test-reviewer の印で、先に起動した implementer の印は残る"
 
-agent_verdict s19 PreToolUse "$foreground_impl" >/dev/null
-age_markers_one_hour s19
+agent_verdict s19 PreToolUse "$foreground_implementer" >/dev/null
+backdate_markers_to_one_hour_ago s19
 report deny "$(git_verdict s19)" "implementer の印は 1 時間たっても有効で、git add が拒否される"
 
-agent_verdict s20 PreToolUse "$foreground_test" >/dev/null
-age_markers_one_hour s20
+agent_verdict s20 PreToolUse "$foreground_test_reviewer" >/dev/null
+backdate_markers_to_one_hour_ago s20
 report pass "$(git_verdict s20)" "test-reviewer の印は 1 時間たつと古い印として無視され、git add が通る"
 
 report pass "$(agent_verdict s21 PreToolUse '"subagent_type":"planner","prompt":"x","run_in_background":true')" "planner は背景で起動しても拒否されない"
