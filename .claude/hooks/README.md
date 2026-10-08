@@ -27,8 +27,8 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `hook-canary.sh`         | `PreToolUse` (Bash)       | **カナリア**。`echo hook-canary` を必ず deny する。連ねたコマンドの中にあっても切り出して見る。通ってしまったときの読み方は後述（**通った = 不発、ではない**） |
 | `session-url-notice.sh`  | `SessionStart`            | **セッション URL の提示**（AGENTS.md「Issue に紐づいて起動したら、セッションの URL を Issue に残す」）。URL を組み立てて渡す。ブランチが `claude/issue-<N>-...` なら対象の番号も添える。コメントする前に、他セッションの URL コメント・自分以外の assignee が無いかを確認するよう促す（`parallel-issue-work`） |
 | `record-firings.sh`      | `SessionStart` + `PostToolUse` (Skill/Task/Agent) | **スキル・サブエージェントの発火ログ**。tmp のセッション別ログへ追記し、`harness-record` が記録を書くときに読む。SessionStart のセッション見出しで「起動しなかった」と「フック不発」を切り分ける |
-| `track-verification-agent-activity.sh` | `PreToolUse` + `PostToolUse` (Task/Agent) | **検証エージェントの実行中フラグ**。`plan-reviewer` / `test-reviewer` の開始・終了をセッション別のマーカーで数える。`block-git-during-verification-agent.sh` が読む。この 2 つの起動のうち、**`run_in_background: true` を明示したものは拒否する**(塞いでいない形はフックの冒頭) |
-| `block-git-during-verification-agent.sh` | `PreToolUse` (Bash)   | **検証エージェント実行中の git 操作を拒否**。マーカーが立っている間は `git add` / `commit` / `push` を deny する。ミューテーション実測の途中の書き換えをコミットへ取り込む事故を防ぐ |
+| `track-verification-agent-activity.sh` | `PreToolUse` + `PostToolUse` (Task/Agent) | **作業ツリーを書き換えるサブエージェントの実行中フラグ**。`plan-reviewer` / `test-reviewer` / `implementer` の開始・終了をセッション別・種類別のマーカーで数える。`block-git-during-verification-agent.sh` が読む。この 3 つの起動のうち、**`run_in_background: true` を明示したものは拒否する**(塞いでいない形はフックの冒頭) |
+| `block-git-during-verification-agent.sh` | `PreToolUse` (Bash)   | **作業ツリーを書き換えるサブエージェントの実行中の git 操作を拒否**。マーカーが立っている間は `git add` / `commit` / `push` を deny する。ミューテーション実測や実装の途中の書き換えをコミットへ取り込む事故を防ぐ。古いマーカーは無視する(種類ごとに有効期間が違う。値と理由はフックの本文)。拒否文に印のディレクトリを出す |
 
 ## 移植元から見送ったもの
 
@@ -70,7 +70,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `lib/story-title-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `story-title-violations.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードで報告する。食い違いがあれば exit 1 |
 | `lib/missing-doc-comments-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `missing-doc-comments.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードで報告する。食い違いがあれば exit 1 |
 | `lib/duplicate-test-helpers-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `duplicate-test-helpers.py` へ判定表を流し、ファイル 1 つを渡す形と `--lines` の両方で deny / pass / miss が期待どおりかを終了コードで報告する。食い違いがあれば exit 1 |
-| `lib/verification-agent-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `track-verification-agent-activity.sh` と `block-git-during-verification-agent.sh` へ Task/Agent と git の呼び出しを順に流し、背景起動の拒否と、印が残っている間だけ git 操作が止まることを確かめる。食い違いがあれば exit 1 |
+| `lib/verification-agent-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `track-verification-agent-activity.sh` と `block-git-during-verification-agent.sh` へ Task/Agent と git の呼び出しを順に流し、起動の拒否と git 操作の拒否が期待どおりかを報告する。確かめる項目は判定表の冒頭コメントと各ケースの名前が持つ。食い違いがあれば exit 1 |
 
 ## 強制力の序列 — フックが発火しない実行環境がある
 
@@ -122,7 +122,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 | 不発したフック | 手動で確認すること |
 | --- | --- |
 | `block-npx.sh` | 実行した `npx` コマンドがリポジトリへ何か書き込んでいないか `git status` で確認する |
-| `block-git-during-verification-agent.sh` | 検証エージェント実行中に作られたコミットの diff を、そのエージェントが直したはずの内容とだけ照合する(意図しない変更が紛れていないか) |
+| `block-git-during-verification-agent.sh` | 作業ツリーを書き換えるサブエージェントの実行中に作られたコミットの diff を、そのエージェントが返したはずの内容とだけ照合する(意図しない変更が紛れていないか) |
 
 `session-url-notice.sh` の不発は対応不要(上の表のとおり、失っても情報が 1 つ
 足りないだけでガードは破れない)。
@@ -166,7 +166,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
   `lib/pre-push-detector.sh` の `deny_on_all_src_failure` / `deny_on_violations`)を層 2・層 1 で検査する。** ゲートが見ているのは
   「リポジトリに入っているスクリプトの判定が変わっていないか」で、その部品がどの層で使われるかとは別。
   push 前手順(`implementation-flow` フェーズ 7)はカナリアの出力を読んで不発かどうかを決め、
-  フェーズ 6 は検証エージェントの実行中に git 操作が止まる前提で並べているので、判定が黙って変わると
+  フェーズ 5・6 は作業ツリーを書き換えるサブエージェントの実行中に git 操作が止まる前提で並べているので、判定が黙って変わると
   手順の読みが嘘になる。`deny_on_all_src_failure` / `deny_on_violations` は壊れると層 3 が黙って素通りするだけで、
   git hooks と CI は検出器を直接呼ぶので緑のまま残る
 - **`check-added-cases.sh` だけは層 1 のジョブが `rules-check` ではなく `lint-suppress`。**
@@ -219,7 +219,7 @@ silent だったフックの不発が detected に変わる。
 **通った = 不発、ではない。** カナリアは自分の取りこぼしと本当の不発を区別できないので、
 通ったときは PreToolUse の痕跡を見て決める。
 
-| カナリア | 検証エージェントのマーカー | 発火ログの見出し | 読み方 |
+| カナリア | 実行中フラグのマーカー | 発火ログの見出し | 読み方 |
 | --- | --- | --- | --- |
 | deny された | — | — | **発火している** |
 | 通った | ある | — | **カナリアの取りこぼし**。Task/Agent のフックは発火している(不発と書かない) |
@@ -231,8 +231,8 @@ ls -d "${TMPDIR:-/tmp}/design-composer-verification-agents-${CLAUDE_CODE_SESSION
 grep -c $'\tsession\t' "${TMPDIR:-/tmp}/design-composer-firings-${CLAUDE_CODE_SESSION_ID:-}.log"
 ```
 
-**マーカーは `plan-reviewer` / `test-reviewer` を 1 度でも通した後にしか現れない。**
-`track-verification-agent-activity.sh` がこの 2 つの Task/Agent でしか作らないため、着手直後に
+**マーカーは作業ツリーを書き換えるサブエージェントを 1 度でも通した後にしか現れない。**
+`track-verification-agent-activity.sh` がその Task/Agent でしか作らないため、着手直後に
 カナリアを実行した回は 2 行目に当たらず、マーカー無しの枝へ落ちる。2 行目で読めるのは
 `implementation-flow` フェーズ 7(`plan-reviewer` を通した後)以降。
 
@@ -276,6 +276,10 @@ deny のメッセージは、`jq` / `python3` が欠けていればその名前�
 
 ## 例外(エスケープハッチ)
 
+- `block-git-during-verification-agent.sh` が拒否したのに、該当するサブエージェントが動いていないなら、
+  中断で PostToolUse が来ずに残った印。拒否文に出るディレクトリの `active.<種類>.*` がそれで、種類ごとの
+  有効期間(フックの本文)を過ぎれば無視される。**待たずに消すかは利用者に確認してから**、そのファイルを
+  `rm` で消す。本当に実行中の印を消すと、そのサブエージェントが終わる前に git 操作が通る
 - `block-lint-suppress.sh` は以下を許可する:
   - `useExhaustiveDependencies` / `react-hooks/exhaustive-deps`(useEffect マウント時)
   - `noUnusedVariables` / `no-unused-vars`(ブランド型 `declare const ... unique symbol` の直前行のみ)
