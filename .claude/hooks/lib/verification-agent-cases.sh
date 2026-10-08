@@ -71,10 +71,23 @@ git_verdict() {
   decide_by_permission "$output" "$status"
 }
 
+# セッションの印をすべて 1 時間前の時刻へ戻す。印の有効期間(種類ごとに違う)を確かめるため。
+# `date -d @` は GNU、`date -r` は BSD の綴り。
+#
+# $1 セッション
+age_markers_one_hour() {
+  local then stamp
+  then=$(( $(date +%s) - 3600 ))
+  stamp="$(date -d "@$then" +%Y%m%d%H%M.%S 2>/dev/null || date -r "$then" +%Y%m%d%H%M.%S)"
+  touch -t "$stamp" "$TMPDIR/design-composer-verification-agents-$1"/active.*
+}
+
 foreground_test='"subagent_type":"test-reviewer","prompt":"x"'
 foreground_plan='"subagent_type":"plan-reviewer","prompt":"x"'
 background_test='"subagent_type":"test-reviewer","prompt":"x","run_in_background":true'
 background_plan='"subagent_type":"plan-reviewer","prompt":"x","run_in_background":true'
+foreground_impl='"subagent_type":"implementer","prompt":"x"'
+background_impl='"subagent_type":"implementer","prompt":"x","run_in_background":true'
 
 agent_verdict s1 PreToolUse "$foreground_test" >/dev/null
 report deny "$(git_verdict s1)" "前面で起動した test-reviewer の実行中は git add が拒否される"
@@ -108,6 +121,33 @@ agent_verdict s14 PreToolUse "$foreground_test" >/dev/null
 report pass "$(agent_verdict s14 PostToolUse "$background_test")" "PostToolUse では、背景起動の入力でも拒否を返さない"
 report pass "$(git_verdict s14)" "PostToolUse では、背景起動の入力でも印を消す"
 
+agent_verdict s15 PreToolUse "$foreground_impl" >/dev/null
+report deny "$(git_verdict s15)" "前面で起動した implementer の実行中は git add が拒否される"
+
+agent_verdict s16 PreToolUse "$foreground_impl" >/dev/null
+agent_verdict s16 PostToolUse "$foreground_impl" >/dev/null
+report pass "$(git_verdict s16)" "前面で起動した implementer が終わると git add が通る"
+
+report deny "$(agent_verdict s17 PreToolUse "$background_impl")" "run_in_background: true を明示した implementer は起動が拒否される"
+
+# 残った印の種類は有効期間でしか外から見えないので、最後に印を古くして見分ける。implementer の印を
+# 先に古くしておくのは、種類を問わず最も古い印を消す実装だと implementer の印が消えるようにするため。
+agent_verdict s18 PreToolUse "$foreground_impl" >/dev/null
+age_markers_one_hour s18
+agent_verdict s18 PreToolUse "$foreground_test" >/dev/null
+agent_verdict s18 PostToolUse "$foreground_test" >/dev/null
+age_markers_one_hour s18
+report deny "$(git_verdict s18)" "test-reviewer が終わって消えるのは test-reviewer の印で、先に起動した implementer の印は残る"
+
+agent_verdict s19 PreToolUse "$foreground_impl" >/dev/null
+age_markers_one_hour s19
+report deny "$(git_verdict s19)" "implementer の印は 1 時間たっても有効で、git add が拒否される"
+
+agent_verdict s20 PreToolUse "$foreground_test" >/dev/null
+age_markers_one_hour s20
+report pass "$(git_verdict s20)" "test-reviewer の印は 1 時間たつと古い印として無視され、git add が通る"
+
+report pass "$(agent_verdict s21 PreToolUse '"subagent_type":"planner","prompt":"x","run_in_background":true')" "planner は背景で起動しても拒否されない"
 report pass "$(agent_verdict s11 PreToolUse '"subagent_type":"Explore","prompt":"x","run_in_background":true')" "対象外のエージェントは背景で起動しても拒否されない"
 report pass "$(agent_verdict s12 PreToolUse '"subagent_type":"test-reviewer","prompt":"x","run_in_background":false')" "run_in_background が false なら拒否されない"
 report pass "$(agent_verdict s13 PreToolUse '"subagent_type":"test-reviewer","prompt":"\"run_in_background\":true と書いてある"')" "prompt の本文に run_in_background: true と書いてあっても、前面起動なら拒否されない"

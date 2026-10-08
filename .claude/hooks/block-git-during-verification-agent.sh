@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 #
-# plan-reviewer / test-reviewer が作業ツリーを検証中(ミューテーション実測)の
-# あいだ、git add / commit / push を拒否する PreToolUse フック(matcher: Bash)。
-# マーカーは track-verification-agent-activity.sh が置く。
+# 作業ツリーを書き換えるサブエージェント(plan-reviewer / test-reviewer のミューテーション実測、
+# implementer の実装)の実行中に、git add / commit / push を拒否する PreToolUse フック
+# (matcher: Bash)。マーカーは track-verification-agent-activity.sh が置く。
 #
-# test-reviewer がミューテーションを当てている最中に git add が走ると、
-# その瞬間の書き換えをコミットへ取り込んで CI が落ちる。
+# test-reviewer がミューテーションを当てている最中や implementer が実装を書いている最中に
+# git add が走ると、その瞬間の書き換えをコミットへ取り込んで CI が落ちる。
 # implementation-flow「サブエージェントの使い方」の「返ってきたら git status を見る」は
 # 戻ってきた**後**の話で、**実行中**にコミットするなとは書かれていなかった穴を塞ぐ。
 #
@@ -33,14 +33,26 @@ lock_dir="${TMPDIR:-/tmp}/design-composer-verification-agents-${session_id:-unkn
 [ -d "$lock_dir" ] || exit 0
 
 # 実行が異常終了して消し忘れたマーカーで恒久的にブロックし続けないよう、
-# 一定時間より古いマーカーは無視する(フェイルオープン側へ倒す)。
-stale_seconds=1800
+# 一定時間より古いマーカーは無視する(フェイルオープン側へ倒す)。implementer だけ長くするのは、
+# 実装は 30 分を超えて走るのが普通で、1800 秒では実装の途中で git add が通るため。全体を
+# 長くしないのは、中断で PostToolUse が来なかった検証エージェントの印まで長く git を止めるから。
+#
+# $1 マーカーのパス(`active.<subagent_type>.XXXXXX`)
+stale_seconds_of() {
+  local name="${1##*/}"
+  local rest="${name#active.}"
+  case "${rest%%.*}" in
+    implementer) echo 7200 ;;
+    *) echo 1800 ;;
+  esac
+}
+
 now="$(date +%s)"
 active=0
 for marker in "$lock_dir"/active.*; do
   [ -e "$marker" ] || continue
   mtime="$(stat -c %Y "$marker" 2>/dev/null || stat -f %m "$marker" 2>/dev/null || printf '0')"
-  if [ $(( now - mtime )) -le "$stale_seconds" ]; then
+  if [ $(( now - mtime )) -le "$(stale_seconds_of "$marker")" ]; then
     active=$(( active + 1 ))
   fi
 done
@@ -52,7 +64,7 @@ cat <<'JSON'
   "hookSpecificOutput": {
     "hookEventName": "PreToolUse",
     "permissionDecision": "deny",
-    "permissionDecisionReason": "plan-reviewer / test-reviewer が作業ツリーを検証中です(分類: subagent-control。pr-391 #18 で同じ形が CI を落としています)。ミューテーション実測の途中でコミットすると、その瞬間の書き換えが取り込まれます。サブエージェントの完了を待ってから git add / commit / push を実行してください。"
+    "permissionDecisionReason": "plan-reviewer / test-reviewer / implementer が作業ツリーを書き換えている最中です(分類: subagent-control。pr-391 #18 で同じ形が CI を落としています)。ミューテーション実測や実装の途中でコミットすると、その瞬間の書き換えが取り込まれます。サブエージェントの完了を待ってから git add / commit / push を実行してください。"
   }
 }
 JSON
