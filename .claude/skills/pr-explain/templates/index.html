@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-7hlcry3/JZOQc3mlyvyYK3C7+nBkuUnkGe7hCF491Ic='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-LUZqMcBJpcGGPHTRXGPbmwmDO0VdLiUJHb7OmoyFy1U='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR 解説</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -124,9 +124,6 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 .tags { display: flex; flex-wrap: wrap; gap: 4px; }
 .tag { font-size: 10.5px; color: var(--ink-2); background: var(--track); border-radius: 4px; padding: 1px 6px; }
 .tag.is-warn { font-weight: 600; color: var(--mod); background: var(--warn-tint); }
-.tag.is-new { font-weight: 600; color: var(--add); background: rgba(46, 157, 91, .12); }
-.tag.is-gone { font-weight: 600; color: var(--del); background: rgba(210, 69, 58, .12); }
-.tag.is-todo { font-weight: 600; color: var(--ink-2); background: transparent; border: 1px dashed var(--ink-4); }
 .group-head { display: flex; align-items: baseline; gap: 8px; padding: 12px 20px 4px; }
 .group-title { font-size: 12px; font-weight: 600; flex: none; }
 .group-role { font-size: 11px; color: var(--ink-3); white-space: normal; min-width: 0; }
@@ -222,9 +219,10 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 .behavior-none { font-size: 13px; color: var(--ink-3); }
 .message-chip { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .kind { font-size: 10.5px; font-weight: 600; padding: 1px 6px; border-radius: 4px; border: 1px solid var(--line); }
-.kind[data-kind="cmd"] { background: #E3EDFC; border-color: #B5CDF3; color: #1F4FA3; }
-.kind[data-kind="qry"] { background: #EEE8FA; border-color: #D2C4F0; color: #55369F; }
-.kind[data-kind="evt"] { background: #FDEBD6; border-color: #F2C690; color: #8A4307; }
+[data-kind="cmd"] { --kind-bg: #E3EDFC; --kind-line: #B5CDF3; --kind-ink: #1F4FA3; }
+[data-kind="qry"] { --kind-bg: #EEE8FA; --kind-line: #D2C4F0; --kind-ink: #55369F; }
+[data-kind="evt"] { --kind-bg: #FDEBD6; --kind-line: #F2C690; --kind-ink: #8A4307; }
+.kind[data-kind], .label-chip[data-kind] { background: var(--kind-bg); border-color: var(--kind-line); color: var(--kind-ink); }
 .message-name { font-size: 12px; font-weight: 600; }
 .behavior-card:not(.is-after) .message-name { font-weight: 500; text-decoration: line-through; color: var(--ink-2); }
 .message-route { font-size: 11.5px; color: var(--ink-3); }
@@ -287,6 +285,187 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 .tok-fn { color: var(--tok-fn); }
 .tok-key { color: var(--tok-key); }
 .tok-var { color: var(--tok-var); }
+.graph-canvas { position: relative; overflow: hidden; min-width: 0; background-color: var(--sunken); background-image: radial-gradient(#DCD8CF 1px, transparent 1px); background-size: 20px 20px; cursor: grab; user-select: none; touch-action: none; }
+.graph-canvas.is-dragging { cursor: grabbing; }
+.graph-world { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.graph-world.is-animated { transition: transform .45s cubic-bezier(.2, .7, .2, 1); }
+.graph-edges { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
+.graph-overlay { position: absolute; left: 14px; right: 14px; display: flex; flex-wrap: wrap; gap: 8px 14px; pointer-events: none; }
+.graph-overlay.is-top { top: 12px; align-items: center; }
+.graph-overlay.is-bottom { bottom: 14px; flex-wrap: wrap-reverse; align-items: flex-end; justify-content: space-between; gap: 8px; }
+.graph-empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--ink-3); pointer-events: none; }
+.graph-empty[hidden] { display: none; }
+.canvas-hint { font-size: 11px; color: var(--ink-3); white-space: nowrap; }
+.legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 7px 12px; min-width: 0; flex: 0 1 auto; background: rgba(251, 250, 247, .94); border: 1px solid var(--line); border-radius: 8px; font-size: 11px; color: var(--ink-2); white-space: nowrap; }
+.legend > span { display: flex; align-items: center; gap: 5px; }
+.zoom-controls { flex: none; margin-left: auto; pointer-events: auto; white-space: nowrap; display: flex; align-items: center; gap: 2px; padding: 3px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+.zoom-controls button { height: 26px; min-width: 28px; padding: 0 9px; border: none; background: transparent; border-radius: 5px; cursor: pointer; font-size: 11px; color: var(--ink); }
+.zoom-controls button.is-step { font-size: 15px; padding: 0; }
+.zoom-controls button:hover { background: var(--track); }
+.zoom-percent { min-width: 44px; text-align: center; font-family: var(--mono); font-size: 11px; color: var(--ink-2); }
+.zoom-sep { width: 1px; height: 14px; background: var(--line); margin: 0 2px; }
+.graph-container { position: absolute; border-radius: 14px; background: rgba(255, 255, 255, .5); border: 1px solid var(--line-strong); cursor: pointer; transition: opacity .2s, box-shadow .2s; }
+.graph-container.is-picked { border-color: var(--accent); background: rgba(47, 91, 234, .05); box-shadow: 0 0 0 1px var(--accent), 0 0 0 6px rgba(47, 91, 234, .12); }
+.graph-container.is-dim { opacity: .55; }
+.graph-container-head { display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 8px 0 12px; white-space: nowrap; }
+.graph-container-title { font-size: 13px; font-weight: 600; }
+.count-chip { font-size: 11px; color: var(--ink-2); background: var(--track); border-radius: 4px; padding: 1px 6px; white-space: nowrap; }
+.gap-chip { font-size: 11px; font-weight: 500; color: var(--mod); background: rgba(201, 138, 18, .12); border-radius: 4px; padding: 1px 6px; white-space: nowrap; }
+.mini-button { border: none; background: transparent; cursor: pointer; font-size: 11px; color: var(--ink-2); padding: 4px 6px; border-radius: 5px; white-space: nowrap; }
+.mini-button:hover { background: var(--track); }
+.mini-button.is-outlined { border: 1px solid var(--line); background: var(--panel); padding: 2px 7px; }
+.mini-button.is-outlined:hover { border-color: var(--ink-4); color: var(--ink); }
+.graph-node { position: absolute; background: var(--surface); border: 1px solid var(--line-strong); box-shadow: 0 1px 2px rgba(29, 31, 36, .06); cursor: pointer; transition: opacity .2s, box-shadow .2s, border-color .2s; }
+.graph-node.is-group { border-radius: 12px; padding: 10px 10px 10px 14px; display: flex; flex-direction: column; justify-content: space-between; }
+.graph-node.is-box { border-radius: 7px; display: flex; align-items: center; gap: 7px; padding: 0 6px 0 8px; }
+.graph-node.is-picked { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 0 0 5px rgba(47, 91, 234, .15), 0 8px 22px rgba(47, 91, 234, .28); }
+.graph-node.has-gap { border-color: var(--mod-mark); box-shadow: 0 0 0 1px rgba(201, 138, 18, .5); }
+.graph-node.is-dim { opacity: .35; }
+.graph-node.is-faint { opacity: .45; }
+.node-row { display: flex; align-items: center; gap: 6px; min-width: 0; white-space: nowrap; }
+.group-name { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1; }
+.box-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12.5px; font-weight: 500; }
+.is-file-name { font-family: var(--mono); }
+.box-count { flex: none; min-width: 18px; height: 18px; border-radius: 9px; padding: 0 5px; font-family: var(--mono); font-size: 10.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; color: var(--ink-3); background: var(--track); }
+.box-count.is-tested, .legend .box-count { color: #FFFFFF; background: var(--ink); }
+.edge-line { fill: none; stroke: #A9A59C; stroke-width: 1.2; stroke-dasharray: 4 4; transition: opacity .2s, stroke .2s; }
+.edge-head { fill: #A9A59C; transition: opacity .2s, fill .2s; }
+.edge-hit { fill: none; stroke: transparent; stroke-width: 14; pointer-events: stroke; cursor: pointer; }
+.edge.is-dependency .edge-line, .edge.is-covered .edge-line { stroke-dasharray: none; }
+.edge.is-covered .edge-line { stroke: #6E6A62; stroke-width: 1.6; }
+.edge.is-covered .edge-head { fill: #6E6A62; }
+.edge.is-gap .edge-line { stroke: var(--mod-mark); }
+.edge.is-gap .edge-head { fill: var(--mod-mark); }
+.edge.is-on .edge-line { stroke: var(--accent); stroke-width: 2.4; stroke-dasharray: none; }
+.edge.is-on .edge-head { fill: var(--accent); }
+.edge.is-hover .edge-line { stroke-width: 2.4; }
+.edge.is-dim { opacity: .12; }
+.edge.is-faint { opacity: .25; }
+.graph-label { position: absolute; transform: translate(-50%, -50%); z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; transition: opacity .2s; }
+.graph-label.is-on { z-index: 4; }
+.graph-label.is-important, .graph-label.is-hover { z-index: 6; }
+.graph-label.is-dim { opacity: .2; }
+.graph-label.is-faint { opacity: .25; }
+.label-chip { display: flex; align-items: center; gap: 6px; white-space: nowrap; padding: 2px 4px 2px 7px; border-radius: 5px; border: 1px solid; box-shadow: 0 1px 2px rgba(29, 31, 36, .08); font-size: 11px; font-weight: 500; }
+.label-chip.is-code { font-family: var(--mono); }
+.graph-label.is-picked .label-chip { box-shadow: 0 0 0 2px rgba(47, 91, 234, .4); }
+.coverage-tag { font-family: var(--sans); font-size: 10px; font-weight: 600; padding: 0 5px; border-radius: 3px; color: var(--ink-3); background: rgba(255, 255, 255, .6); white-space: nowrap; }
+.coverage-tag.is-tested { color: var(--add); background: rgba(46, 157, 91, .14); }
+.coverage-tag.is-gap { color: var(--mod); background: rgba(201, 138, 18, .16); }
+.label-more { font-size: 10px; font-weight: 600; color: var(--ink-2); background: var(--surface); border: 1px solid var(--line-strong); border-radius: 4px; padding: 0 5px; margin-top: -1px; white-space: nowrap; }
+.control { display: flex; align-items: center; gap: 8px; flex: none; }
+.control-label { font-size: 11px; color: var(--ink-3); }
+.switch-button { flex: none; display: flex; align-items: center; gap: 8px; border: none; background: transparent; cursor: pointer; font-size: 12px; color: var(--ink); padding: 4px 0; white-space: nowrap; }
+.switch { width: 28px; height: 16px; border-radius: 8px; background: var(--line-strong); position: relative; transition: background .2s; }
+.switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 6px; background: #FFFFFF; box-shadow: 0 1px 2px rgba(0, 0, 0, .25); transition: left .2s; }
+.switch-button[aria-pressed="true"] .switch { background: var(--accent); }
+.switch-button[aria-pressed="true"] .switch::after { left: 14px; }
+[data-technique="boundary"] { --tech: #1F6F8B; }
+[data-technique="equivalence"] { --tech: #5A5E66; }
+[data-technique="error"] { --tech: #A34A28; }
+[data-technique="state"] { --tech: #4B4FA8; }
+[data-technique="regression"] { --tech: #6B7A2A; }
+[data-technique="idempotence"] { --tech: #8A3F7A; }
+[data-technique="type"] { --tech: #2F6B5E; }
+.technique { flex: none; font-size: 10.5px; font-weight: 500; color: var(--tech); background: color-mix(in srgb, var(--tech) 11%, transparent); border-radius: 4px; padding: 0 6px; white-space: nowrap; }
+.swatch { flex: none; width: 7px; height: 7px; border-radius: 2px; background: var(--tech); }
+.list-head { display: flex; flex-direction: column; gap: 10px; padding: 12px 14px 10px; border-bottom: 1px solid var(--chip); }
+.list-head .panel-head { padding: 0; }
+.tech-filters { display: flex; flex-wrap: wrap; gap: 5px; }
+.tech-filter { display: flex; align-items: center; gap: 5px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 3px 9px; font-size: 11.5px; font-weight: 500; cursor: pointer; white-space: nowrap; }
+.tech-filter .n { font-family: var(--mono); font-size: 10.5px; opacity: .7; }
+.tech-filter[aria-pressed="true"] { background: var(--tech); border-color: var(--tech); color: #FFFFFF; }
+.tech-filter[aria-pressed="true"] .swatch { background: #FFFFFF; }
+.suite { display: flex; flex-direction: column; gap: 1px; padding: 8px 0 4px; }
+.suite-head { display: flex; align-items: baseline; gap: 8px; padding: 0 16px 4px; min-width: 0; white-space: nowrap; }
+.suite-title { font-size: 12px; font-weight: 600; flex: none; }
+.suite-file { font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; }
+.test-row { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 8px; margin: 0 8px; padding: 7px 8px; width: calc(100% - 16px); border-radius: 7px; transition: background .2s, box-shadow .2s, opacity .2s; }
+.test-row:hover { outline: 1px solid var(--line); }
+.test-row.is-current { background: var(--accent-tint); box-shadow: inset 0 0 0 1px var(--accent-ring), 0 0 16px var(--accent-glow); }
+.test-row.is-related { background: rgba(47, 91, 234, .06); }
+.test-row.is-dim { opacity: .45; }
+.test-mark { width: 14px; height: 14px; margin-top: 3px; border-radius: 7px; border: 1.5px solid var(--ink-4); background: var(--ink-4); }
+.test-mark[data-status="new"] { background: var(--add-mark); border-color: var(--add-mark); }
+.test-mark[data-status="todo"] { background: transparent; border-style: dashed; border-color: var(--ink-3); }
+.test-mark[data-status="removed"] { background: transparent; border-color: var(--del-mark); }
+.test-body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.test-name { font-size: 12.5px; line-height: 1.5; text-wrap: pretty; overflow-wrap: anywhere; }
+.test-row[data-status="todo"] .test-name { color: var(--ink-2); }
+.test-row[data-status="removed"] .test-name { color: var(--ink-2); text-decoration: line-through; }
+.test-facts { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.test-status { font-size: 10.5px; color: var(--ink-2); }
+.test-status[data-status="new"] { color: var(--add); }
+.test-status[data-status="todo"] { color: var(--mod); }
+.test-status[data-status="removed"] { color: var(--del); }
+.side { overflow: auto; flex: 1; padding: 18px 18px 32px; display: flex; flex-direction: column; gap: 22px; }
+.side > * { flex-shrink: 0; }
+.side-block { display: flex; flex-direction: column; gap: 8px; }
+.side-head { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.side h2 { margin: 0; font-size: 18px; font-weight: 600; line-height: 1.45; text-wrap: pretty; overflow-wrap: anywhere; }
+.side-sub { margin: 0; font-size: 13px; line-height: 1.75; color: var(--ink-2); text-wrap: pretty; overflow-wrap: anywhere; }
+.side-path { font-family: var(--mono); font-size: 11.5px; color: var(--ink-3); word-break: break-all; }
+.side-counts { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12.5px; color: var(--ink-2); margin-top: 2px; }
+.side-counts b { color: var(--ink); }
+.side-counts .is-new b { color: var(--add); }
+.side-counts .is-todo b { color: var(--mod); }
+.side-counts .is-removed b { color: var(--del); }
+.eyebrow-row { display: flex; align-items: baseline; gap: 8px; }
+.eyebrow-note { font-size: 11px; color: var(--ink-3); }
+.side-note { margin: 0; font-size: 12px; line-height: 1.7; color: var(--ink-3); text-wrap: pretty; }
+.chip { font-size: 11px; font-weight: 600; color: var(--ink-2); background: var(--track); border-radius: 4px; padding: 2px 6px; }
+.chip[data-status="new"] { color: var(--add); background: rgba(46, 157, 91, .12); }
+.chip[data-status="todo"] { color: var(--mod); background: rgba(201, 138, 18, .14); }
+.chip[data-status="removed"] { color: var(--del); background: rgba(210, 69, 58, .12); }
+.pending { font-size: 11px; font-weight: 600; color: var(--mod); }
+.tech-bar { display: flex; flex-direction: column; gap: 4px; padding: 8px 10px; margin: 0 -10px; border-radius: 8px; width: calc(100% + 20px); }
+.tech-bar:hover { background: var(--sunken); }
+.tech-bar-line { display: grid; grid-template-columns: 84px minmax(0, 1fr) 22px; align-items: center; gap: 10px; }
+.tech-bar-label { display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 500; }
+.tech-bar-track { display: flex; height: 6px; border-radius: 3px; background: var(--track); overflow: hidden; }
+.tech-bar-fill { height: 100%; background: var(--tech); }
+.tech-bar-count { font-family: var(--mono); font-size: 11px; color: var(--ink-2); text-align: right; }
+.tech-bar-desc { font-size: 11.5px; line-height: 1.6; color: var(--ink-3); padding-left: 13px; }
+.tech-line { display: flex; gap: 8px; align-items: baseline; }
+.tech-line .technique { font-size: 11.5px; font-weight: 600; padding: 1px 7px; }
+.tech-line-desc { font-size: 12px; line-height: 1.6; color: var(--ink-2); }
+.why { margin: 4px 0 0; font-size: 13.5px; line-height: 1.8; text-wrap: pretty; }
+.gwt { display: grid; grid-template-columns: auto minmax(0, 1fr); border: 1px solid var(--line); border-radius: 10px; background: var(--surface); overflow: hidden; }
+.gwt-key { font-size: 11.5px; font-weight: 600; color: var(--ink-2); padding: 10px 12px; background: var(--panel); white-space: nowrap; }
+.gwt-value { font-size: 13px; line-height: 1.65; padding: 10px 12px; text-wrap: pretty; overflow-wrap: anywhere; }
+.gwt > :nth-child(n + 3) { border-top: 1px solid var(--chip); }
+.values { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.values-grid { display: grid; min-width: 100%; }
+.values-head { font-size: 11px; font-weight: 600; color: var(--ink-2); padding: 8px 10px; background: var(--panel); border-bottom: 1px solid var(--line); white-space: nowrap; }
+.values-cell { display: flex; align-items: center; gap: 6px; font-size: 12.5px; line-height: 1.5; padding: 8px 10px; border-top: 1px solid var(--chip); }
+.values-cell.is-first { font-weight: 600; }
+.values-cell.is-boundary { background: rgba(31, 111, 139, .05); }
+.boundary-tag { font-size: 10px; font-weight: 600; color: #1F6F8B; background: rgba(31, 111, 139, .12); border-radius: 3px; padding: 0 4px; white-space: nowrap; }
+.message-row { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 8px; padding: 7px 10px; margin: 0 -10px; width: calc(100% + 20px); border-radius: 8px; }
+.message-row:hover { background: var(--sunken); }
+.message-row-n { font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); padding-top: 2px; text-align: right; }
+.message-row-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.message-row .message-name { font-size: 12.5px; }
+.message-row .message-name.is-code { font-family: var(--mono); }
+.message-row .message-route { color: var(--ink-2); }
+.gap-card { display: flex; flex-direction: column; gap: 3px; padding: 9px 11px; border: 1px solid rgba(201, 138, 18, .35); border-radius: 9px; background: var(--surface); }
+button.gap-card:hover { border-color: var(--mod-mark); }
+.gap-card .message-name { font-size: 13px; }
+.gap-card .message-route { color: var(--ink-2); }
+.excerpt { overflow-x: auto; padding: 10px 0; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); font-family: var(--mono); font-size: 12px; line-height: 20px; }
+.excerpt-line { display: grid; grid-template-columns: 40px max-content; min-width: max-content; }
+.excerpt-line .ln { color: var(--ink-4); text-align: right; padding-right: 10px; user-select: none; }
+.excerpt-line .code-text { padding-right: 14px; }
+.commit-link { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); width: 100%; }
+.commit-link:hover { border-color: var(--ink-4); }
+.commit-link .label { font-size: 11px; color: var(--ink-3); flex: none; }
+.commit-link .sha { font-family: var(--mono); font-size: 11.5px; font-weight: 600; flex: none; }
+.commit-link .subject { font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 1; }
+.commit-link .arrow { color: var(--ink-3); flex: none; }
+.test-card { display: flex; flex-direction: column; gap: 4px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); width: 100%; }
+.test-card:hover { border-color: var(--ink-4); }
+.test-card .test-name { font-size: 13px; line-height: 1.55; }
+.warn-text { font-size: 12.5px; color: var(--mod); }
 </style>
 </head>
 <body>
@@ -665,17 +844,27 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
       const targets = new Map(map.groups.flatMap((group) => group.files).map((file) => [file.path, file.target ?? null]));
       const targetOf = (path) => (targets.get(path) ? [targets.get(path)] : []);
       const changed = entries.filter((entry) => entry.changed);
+      const commits = commitsOf(mapCommits, explain);
+      const ownCommits = commits.filter((commit) => !commit.merge);
       return Object.freeze({
         map: { version: map.version, isCurrent, pr: map.pr, head: map.head, mergeBase: map.mergeBase, headBranch: map.headBranch ?? null, baseBranch: map.baseBranch ?? null },
         explain: reading,
         freshness: freshnessOf(explain, map.head, mapCommits),
         entries,
+        dependencies,
         groupings: groupingsOf({ groups: map.groups, entries, explain }),
         unmappedConcepts: concepts.filter((concept) => !mapPaths.has(concept.path)),
-        commits: commitsOf(mapCommits, explain),
+        commits,
         strayNotes: listOf(explain, "commitNotes").filter((note) => !mapCommits.some((commit) => commit.sha === note.sha)),
         tests: testsOf({ mapTests: isRecord(map.tests) ? map.tests : { added: [], removed: [] }, explain, targetOf }),
-        totals: { files: changed.length, additions: sumOf(changed.map((entry) => entry.additions)), deletions: sumOf(changed.map((entry) => entry.deletions)), commits: mapCommits.length },
+        totals: {
+          files: changed.length,
+          additions: sumOf(changed.map((entry) => entry.additions)),
+          deletions: sumOf(changed.map((entry) => entry.deletions)),
+          commits: mapCommits.length,
+          // 変更の経緯のヘッダの数。ファイルごとの差し引きと違い、あとのコミットで書き直した行もコミットごとに数える。
+          commitLines: { additions: sumOf(ownCommits.map((commit) => commit.additions)), deletions: sumOf(ownCommits.map((commit) => commit.deletions)) },
+        },
       });
     };
 
@@ -800,8 +989,292 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
     });
   })();
 
+  /**
+   * 箱の図の配置。まとめ方の組と箱を依存の深さで段に並べ、線の道筋とラベルの置き場を決める。どの画面の図も
+   * これで並べる。
+   */
+  const GraphLayout = (() => {
+    const Group = Object.freeze({ width: 212, height: 72, head: 42, padX: 14, padBottom: 14 });
+    const Box = Object.freeze({ width: 152, height: 30, gap: 12, rowGap: 40 });
+    const Spacing = Object.freeze({ rowGap: 100, columnGap: 72 });
+    const PerRow = 4;
+    const Levels = Object.freeze({ High: "high", Mid: "mid", Low: "low" });
+    // 線の中ほどから端へ向かって、ラベルを置く位置を試す順(ベジェ曲線の媒介変数)。
+    const LabelSpots = [0.5, 0.42, 0.58, 0.34, 0.66, 0.26, 0.74, 0.18, 0.82];
+    const ObstaclePad = 4;
+    const ContainerHeadHeight = 38;
+
+    const sumOf = (values) => values.reduce((sum, value) => sum + value, 0);
+    const chunksOf = (items, size) => Array.from({ length: Math.ceil(items.length / size) }, (_, index) => items.slice(index * size, (index + 1) * size));
+
+    /**
+     * 強連結成分(Tarjan)。
+     * @param successorsOf id から、それが使う id の並びを引く
+     * @returns 成分の並び。辺 a → b があれば、b の成分が a の成分より前に来る
+     */
+    const componentsOf = (ids, successorsOf) => {
+      const order = new Map();
+      const low = new Map();
+      const stack = [];
+      const onStack = new Set();
+      const components = [];
+      const visit = (id) => {
+        order.set(id, order.size);
+        low.set(id, order.get(id));
+        stack.push(id);
+        onStack.add(id);
+        for (const next of successorsOf(id)) {
+          if (!order.has(next)) visit(next);
+          if (onStack.has(next)) low.set(id, Math.min(low.get(id), low.get(next)));
+        }
+        if (low.get(id) !== order.get(id)) return;
+        const component = stack.splice(stack.lastIndexOf(id));
+        for (const member of component) onStack.delete(member);
+        components.push(component);
+      };
+      for (const id of ids) if (!order.has(id)) visit(id);
+      return components;
+    };
+
+    /**
+     * 使う側からの深さ。強連結成分を 1 つにまとめた DAG で最長の道のりを取り、同じ成分には同じ深さを付ける。
+     * 循環を打ち切りで済ませると、打ち切る位置が入力の順で変わり、段も変わる。
+     * @param pairs `[使う側, 使われる側]` の並び(どちらも ids にあるもの)
+     * @returns id から深さ(誰にも使われていなければ 0)
+     */
+    const depthsOf = (ids, pairs) => {
+      const successors = new Map(ids.map((id) => [id, pairs.filter(([from]) => from === id).map(([, to]) => to)]));
+      const components = componentsOf(ids, (id) => successors.get(id));
+      const componentOf = new Map(components.flatMap((members, index) => members.map((id) => [id, index])));
+      // 成分は使われる側から並ぶので、使う側の成分の大きい順に辺をたどれば、どの成分も深さが決まってから先へ伸ばせる。
+      const links = pairs.map(([from, to]) => [componentOf.get(from), componentOf.get(to)]).filter(([from, to]) => from !== to).toSorted((a, b) => b[0] - a[0]);
+      const depths = links.reduce((sofar, [from, to]) => sofar.with(to, Math.max(sofar[to], sofar[from] + 1)), components.map(() => 0));
+      return new Map(ids.map((id) => [id, depths[componentOf.get(id)]]));
+    };
+
+    /** 深さごとに変更行数の多い順(同じなら入力の順)に並べ、1 段 4 つずつの行に割る。 */
+    const rowsOf = (items, depthOf) => {
+      const deepest = Math.max(0, ...items.map((item) => depthOf.get(item.id)));
+      const levels = Array.from({ length: deepest + 1 }, (_, depth) => items.filter((item) => depthOf.get(item.id) === depth).toSorted((a, b) => b.lines - a.lines));
+      return levels.filter((level) => level.length > 0).flatMap((level) => chunksOf(level, PerRow));
+    };
+
+    /** 組 1 つの大きさ。開いた組は中の箱を同じ規則で段に並べる。 */
+    const blockOf = (group, { links, isOpen }) => {
+      const lines = sumOf(group.boxes.map((box) => box.lines));
+      if (!isOpen) return { group, lines, isOpen, rows: [], width: Group.width, height: Group.height };
+      const paths = new Set(group.boxes.map((box) => box.path));
+      const isInside = (link) => paths.has(link.from) && paths.has(link.to);
+      const inner = links.filter(isInside).map((link) => [link.from, link.to]);
+      const rows = rowsOf(group.boxes.map((box) => ({ ...box, id: box.path })), depthsOf([...paths], inner));
+      const widest = Math.max(...rows.map((row) => row.length));
+      const width = Math.max(Group.width, widest * Box.width + (widest - 1) * Box.gap + Group.padX * 2);
+      const height = Group.head + rows.length * (Box.height + Box.rowGap) - Box.rowGap + Group.padBottom;
+      return { group, lines, isOpen, rows, width, height };
+    };
+
+    /** 段の行を上から積み、各行を図の幅の中央に寄せて、組の位置を決める。 */
+    const placedBlocksOf = (rows) => {
+      const rowWidths = rows.map((row) => sumOf(row.map((block) => block.width)) + (row.length - 1) * Spacing.columnGap);
+      const rowHeights = rows.map((row) => Math.max(...row.map((block) => block.height)));
+      const width = Math.max(0, ...rowWidths);
+      const height = rows.length === 0 ? 0 : sumOf(rowHeights) + (rows.length - 1) * Spacing.rowGap;
+      const blocks = rows.flatMap((row, index) => {
+        const top = sumOf(rowHeights.slice(0, index)) + index * Spacing.rowGap;
+        const left = (width - rowWidths[index]) / 2;
+        return row.map((block, at) => ({ ...block, x: left + sumOf(row.slice(0, at).map((before) => before.width)) + at * Spacing.columnGap, y: top + (rowHeights[index] - block.height) / 2 }));
+      });
+      return { width, height, blocks };
+    };
+
+    const groupIdOf = (id) => `group:${id}`;
+    const pathsIn = (block) => block.group.boxes.map((box) => box.path);
+
+    /** 箱の図に描く単位。畳んだ組は 1 つ、開いた組は中の箱ごとに 1 つ。 */
+    const unitsOf = (block) => {
+      if (!block.isOpen) return [{ id: groupIdOf(block.group.id), kind: "group", group: block.group.id, paths: pathsIn(block), x: block.x, y: block.y, width: block.width, height: block.height }];
+      return block.rows.flatMap((row, index) => {
+        const rowWidth = row.length * Box.width + (row.length - 1) * Box.gap;
+        const left = block.x + (block.width - rowWidth) / 2;
+        const top = block.y + Group.head + index * (Box.height + Box.rowGap);
+        return row.map((box, at) => ({ id: `box:${box.path}`, kind: "box", group: block.group.id, path: box.path, paths: [box.path], x: left + at * (Box.width + Box.gap), y: top, width: Box.width, height: Box.height }));
+      });
+    };
+
+    /**
+     * 組と箱を並べる。
+     * @param groups まとめ方の組 `{id, boxes: [{path, lines}]}`(lines は変更行数)。箱の無い組は描かない
+     * @param links 依存 `{from, to, state}`(使う側 → 使われる側のパス)。消えた依存(`removed`)は段に使わない
+     * @param expanded 開いて中の箱を並べる組の id
+     * @returns 図の大きさ、描く単位(`units`)、開いた組の枠(`containers`)、パスから単位の id を引く `unitOf`
+     */
+    const of = ({ groups, links, expanded }) => {
+      const drawn = groups.filter((group) => group.boxes.length > 0);
+      const groupOf = new Map(drawn.flatMap((group) => group.boxes.map((box) => [box.path, group.id])));
+      const isLive = (link) => link.state !== "removed" && groupOf.has(link.from) && groupOf.has(link.to) && link.from !== link.to;
+      const live = links.filter(isLive);
+      const crossing = live.map((link) => [groupOf.get(link.from), groupOf.get(link.to)]).filter(([from, to]) => from !== to);
+      const open = new Set(expanded);
+      const blocks = drawn.map((group) => ({ ...blockOf(group, { links: live, isOpen: open.has(group.id) }), id: group.id }));
+      const placed = placedBlocksOf(rowsOf(blocks, depthsOf(drawn.map((group) => group.id), crossing)));
+      const units = placed.blocks.flatMap(unitsOf);
+      const containers = placed.blocks.filter((block) => block.isOpen).map((block) => ({ id: groupIdOf(block.group.id), group: block.group.id, paths: pathsIn(block), x: block.x, y: block.y, width: block.width, height: block.height }));
+      return Object.freeze({ width: placed.width, height: placed.height, units, containers, unitOf: new Map(units.flatMap((unit) => unit.paths.map((path) => [path, unit.id]))) });
+    };
+
+    const rounded = (value) => Math.round(value * 10) / 10;
+
+    /** 矢じりの三角形。`direction` は線の進む向き(d / u / r / l)。 */
+    const headAt = (x, y, direction) => {
+      const half = 4.5;
+      const length = 7;
+      switch (direction) {
+        case "d":
+          return `M${x - half} ${y - length} L${x} ${y} L${x + half} ${y - length} Z`;
+        case "u":
+          return `M${x - half} ${y + length} L${x} ${y} L${x + half} ${y + length} Z`;
+        case "r":
+          return `M${x - length} ${y - half} L${x} ${y} L${x - length} ${y + half} Z`;
+        case "l":
+          return `M${x + length} ${y - half} L${x} ${y} L${x + length} ${y + half} Z`;
+      }
+    };
+
+    /** 線の両端と制御点。上下に離れていれば上下の辺から、重なっていれば左右の辺から出す。 */
+    const endsOf = (source, target) => {
+      const sourceCenter = { x: source.x + source.width / 2, y: source.y + source.height / 2 };
+      const targetCenter = { x: target.x + target.width / 2, y: target.y + target.height / 2 };
+      if (target.y >= source.y + source.height + 2) {
+        const from = [sourceCenter.x, source.y + source.height];
+        const to = [targetCenter.x, target.y - 1];
+        const bend = Math.max(24, (to[1] - from[1]) / 2);
+        return { from, to, controls: [from[0], from[1] + bend, to[0], to[1] - bend], direction: "d", back: "u" };
+      }
+      if (target.y + target.height <= source.y - 2) {
+        const from = [sourceCenter.x, source.y];
+        const to = [targetCenter.x, target.y + target.height + 1];
+        const bend = Math.max(40, (from[1] - to[1]) / 2);
+        return { from, to, controls: [from[0], from[1] - bend, to[0], to[1] + bend], direction: "u", back: "d" };
+      }
+      if (targetCenter.x > sourceCenter.x) {
+        const from = [source.x + source.width, sourceCenter.y];
+        const to = [target.x - 1, targetCenter.y];
+        const bend = Math.max(16, (to[0] - from[0]) / 2);
+        return { from, to, controls: [from[0] + bend, from[1], to[0] - bend, to[1]], direction: "r", back: "l" };
+      }
+      const from = [source.x, sourceCenter.y];
+      const to = [target.x + target.width + 1, targetCenter.y];
+      const bend = Math.max(16, (from[0] - to[0]) / 2);
+      return { from, to, controls: [from[0] - bend, from[1], to[0] + bend, to[1]], direction: "l", back: "r" };
+    };
+
+    /**
+     * 2 つの単位を結ぶ線の道筋。
+     * @returns SVG の `d`(`path`)、終わりの矢じり(`head`)、始まりの矢じり(`tail`、両向きの線に使う)、
+     *   ラベルを置くためのベジェ曲線の 4 点(`bezier`)
+     */
+    const routeOf = (source, target) => {
+      const { from, to, controls, direction, back } = endsOf(source, target);
+      const points = [...from, ...controls, ...to].map(rounded);
+      const [x1, y1, c1x, c1y, c2x, c2y, x2, y2] = points;
+      return { path: `M${x1} ${y1} C${c1x} ${c1y} ${c2x} ${c2y} ${x2} ${y2}`, head: headAt(x2, y2, direction), tail: headAt(x1, y1, back), bezier: [...from, ...controls, ...to] };
+    };
+
+    const pointOn = (bezier, t) => {
+      const u = 1 - t;
+      const at = (offset) => u * u * u * bezier[offset] + 3 * u * u * t * bezier[offset + 2] + 3 * u * t * t * bezier[offset + 4] + t * t * t * bezier[offset + 6];
+      return { x: at(0), y: at(1) };
+    };
+
+    const overlapOf = (rect, others) => sumOf(others.map((other) => {
+      const width = Math.min(rect.x + rect.width, other.x + other.width) - Math.max(rect.x, other.x);
+      const height = Math.min(rect.y + rect.height, other.y + other.height) - Math.max(rect.y, other.y);
+      return width > 0 && height > 0 ? width * height : 0;
+    }));
+
+    /** 1 つのラベルの置き場。箱との重なりは 2 倍に数え、重なりの無い位置が見つかればそこで止める。 */
+    const bestSpotOf = (candidate, { obstacles, placed }) => {
+      const spots = LabelSpots.map((t) => {
+        const center = pointOn(candidate.bezier, t);
+        const rect = { x: center.x - candidate.width / 2, y: center.y - candidate.height / 2, width: candidate.width, height: candidate.height };
+        return { center, rect, score: overlapOf(rect, obstacles) * 2 + overlapOf(rect, placed) };
+      });
+      const clear = spots.find((spot) => spot.score === 0);
+      return clear ?? spots.reduce((best, spot) => (spot.score < best.score ? spot : best));
+    };
+
+    return Object.freeze({
+      Levels,
+      of,
+      /**
+       * 抽象度ごとに開く組。高はすべて畳み、低はすべて開き、中は変更行数の多い上位 ⌈n/3⌉ を開く。
+       * @param groups `of` と同じ組(箱の無い組は数えない)
+       * @returns 開く組の id(入力の順)
+       */
+      expandedAt: (level, groups) => {
+        const drawn = groups.filter((group) => group.boxes.length > 0);
+        const linesOf = (group) => sumOf(group.boxes.map((box) => box.lines));
+        switch (level) {
+          case Levels.High:
+            return [];
+          case Levels.Low:
+            return drawn.map((group) => group.id);
+          case Levels.Mid: {
+            const top = new Set(drawn.toSorted((a, b) => linesOf(b) - linesOf(a)).slice(0, Math.ceil(drawn.length / 3)).map((group) => group.id));
+            return drawn.map((group) => group.id).filter((id) => top.has(id));
+          }
+        }
+      },
+      /**
+       * 単位どうしの線。両端が同じ単位のものは描かず、同じ 2 つの単位を結ぶものは 1 本にまとめる。
+       * @param links `{from, to, item, leads}`(パスどうし)。線の向きは、`leads` が真の最初のもので決め、無ければ最初のもの
+       * @returns 線ごとに、`key`(2 つの単位の id を並べたもの)、向きの順の端(`from` / `to`)、まとめた `items`、道筋(`route`)
+       */
+      edgesOf: (layout, links) => {
+        const unitAt = new Map(layout.units.map((unit) => [unit.id, unit]));
+        const ends = links.map((link) => ({ link, from: layout.unitOf.get(link.from), to: layout.unitOf.get(link.to) }));
+        const isDrawn = (end) => end.from !== undefined && end.to !== undefined && end.from !== end.to;
+        const byKey = new Map();
+        for (const end of ends.filter(isDrawn)) {
+          const key = [end.from, end.to].sort().join("|");
+          const edge = byKey.get(key) ?? { key, ends: null, first: null, items: [] };
+          const leadsHere = edge.ends === null && end.link.leads;
+          byKey.set(key, { ...edge, ends: leadsHere ? [end.from, end.to] : edge.ends, items: [...edge.items, end.link.item], first: edge.first ?? [end.from, end.to] });
+        }
+        return [...byKey.values()].map((edge) => {
+          const [from, to] = edge.ends ?? edge.first;
+          return { key: edge.key, from, to, items: edge.items, route: routeOf(unitAt.get(from), unitAt.get(to)) };
+        });
+      },
+      /** ラベルの幅の見積もり。書体を読み込む前でも同じ置き場になるよう、測らずに全角 11.2px・半角 6.8px で数える。 */
+      textWidthOf: (text) => sumOf([...text].map((char) => (char.charCodeAt(0) > 255 ? 11.2 : 6.8))),
+      /** ラベルが避けるもの。単位(周りに 4px の余白)と、開いた組の見出し。 */
+      obstaclesOf: (layout) => [
+        ...layout.units.map((unit) => ({ x: unit.x - ObstaclePad, y: unit.y - ObstaclePad, width: unit.width + ObstaclePad * 2, height: unit.height + ObstaclePad * 2 })),
+        ...layout.containers.map((container) => ({ x: container.x, y: container.y, width: container.width, height: ContainerHeadHeight })),
+      ],
+      /**
+       * ラベルを線の上に置く。優先度の高い順に、線の中ほどから端へ向かって位置を試し、箱と置いたラベルに重なる
+       * 面積が最も小さい所を選ぶ。
+       * @param candidates `{key, bezier, width, height, priority, allowance}`。重なりが自分の面積の allowance 倍
+       *   未満なら置く(0 なら重ならない所だけ、Infinity なら必ず)
+       * @returns 置いたラベルの `{key, x, y}`(中心)。置けなかったものは含まない
+       */
+      placeLabels: ({ candidates, obstacles }) => {
+        const ordered = candidates.toSorted((a, b) => b.priority - a.priority);
+        const result = ordered.reduce((sofar, candidate) => {
+          const spot = bestSpotOf(candidate, { obstacles, placed: sofar.rects });
+          const isAccepted = spot.score === 0 || spot.score < candidate.width * candidate.height * candidate.allowance;
+          if (!isAccepted) return sofar;
+          return { rects: [...sofar.rects, spot.rect], labels: [...sofar.labels, { key: candidate.key, x: spot.center.x, y: spot.center.y }] };
+        }, { rects: [], labels: [] });
+        return result.labels;
+      },
+    });
+  })();
+
   /** DOM に触らない部分(核)。判定表が node の vm で評価して叩く。 */
-  const core = Object.freeze({ ExplainedMap, ScreenChoice, ReviewMark, Highlighter, CommitDiff });
+  const core = Object.freeze({ ExplainedMap, ScreenChoice, ReviewMark, Highlighter, CommitDiff, GraphLayout });
   if (typeof document === "undefined") {
     globalThis.prExplainCore = core;
     return;
@@ -809,6 +1282,8 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 
   const Repo = "DIO0550/design-composer";
   const RepoName = Repo.split("/")[1];
+
+  const SvgNamespace = "http://www.w3.org/2000/svg";
 
   /** 要素の組み立て。中身の文字は textContent で入れ、属性は setAttribute で付ける(HTML として解釈させない)。 */
   const Dom = Object.freeze({
@@ -832,6 +1307,13 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
       const children = paired.map((part, index) => (index % 2 === 1 ? Dom.el("code", { text: part }) : part)).filter((child) => child !== "");
       const cls = typeof props.class === "string" ? `${props.class} prose` : "prose";
       return Dom.el(tag, { ...props, class: cls }, children);
+    },
+    /** SVG の要素。属性は setAttribute で付ける。 */
+    svg: (tag, attributes, children) => {
+      const node = document.createElementNS(SvgNamespace, tag);
+      for (const [key, value] of Object.entries(attributes || {})) node.setAttribute(key, value);
+      node.append(...(children || []));
+      return node;
     },
   });
   const el = Dom.el;
@@ -1490,43 +1972,821 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
     const overviewRow = rows.get(OverviewId);
     const commitRows = commits.toReversed().map((commit) => rows.get(commit.sha));
     return {
-      controls: [countsOf(`${explained.totals.commits} commits`, explained.totals.additions, explained.totals.deletions), el("span", { class: "hint", text: "↑ ↓ でコミットを移動" })],
+      controls: [countsOf(`${explained.totals.commits} commits`, explained.totals.commitLines.additions, explained.totals.commitLines.deletions), el("span", { class: "hint", text: "↑ ↓ でコミットを移動" })],
       left: panelOf("left", [panelHead("コミット", "新しい順"), el("div", { class: "panel-scroll" }, [overviewRow, el("div", { class: "commit-list" }, commitRows)])]),
       main,
       right: null,
       onKey,
+      /** 他の画面から、そのコミットを選んだ状態にする。地図に無い sha なら全体の流れを出す。 */
+      select: (sha) => actions.select(commitAt.has(sha) ? sha : OverviewId),
     };
   };
 
-  const TestStatusTags = {
-    new: { label: "追加", cls: "tag is-new" },
-    old: { label: "既存", cls: "tag" },
-    todo: { label: "未実装", cls: "tag is-todo" },
-    removed: { label: "削除", cls: "tag is-gone" },
+  /** 図の中の位置と大きさを要素に付ける。 */
+  const placedAt = (node, rect) => {
+    Object.assign(node.style, { left: `${rect.x}px`, top: `${rect.y}px`, width: `${rect.width}px`, height: `${rect.height}px` });
+    return node;
   };
 
-  const testRowOf = (test) => el("div", { class: "row" }, [
-    el("span", { class: "row-title", text: test.name }),
-    el("div", { class: "tags" }, [el("span", { class: TestStatusTags[test.status].cls, text: TestStatusTags[test.status].label })]),
-    el("span", { class: "row-path", text: test.file ?? "" }),
-  ]);
+  /** 真のものだけをクラスに足す。 */
+  const classesOf = (base, flags) => [base, ...Object.entries(flags).filter(([, isOn]) => isOn).map(([name]) => name)].join(" ");
 
-  /** テストの器。suite(解説が無ければファイル)ごとに並べる。 */
-  const TestScreen = (explained) => {
-    const groupLabelOf = (test) => (test.suite === null ? test.file ?? "" : test.suite.label);
-    const labels = [...new Set(explained.tests.map(groupLabelOf))];
-    const blocks = labels.flatMap((label) => [
-      el("div", { class: "group-head" }, [el("span", { class: "group-title", text: label })]),
-      ...explained.tests.filter((test) => groupLabelOf(test) === label).map(testRowOf),
-    ]);
-    const countOf = (status) => explained.tests.filter((test) => test.status === status).length;
-    const stats = Object.entries(TestStatusTags).map(([status, tag]) => statOf(countOf(status), tag.label));
-    const body = explained.tests.length === 0 ? [emptyOf("この PR で増減したテストはありません。")] : blocks;
+  /**
+   * 箱の図を載せるキャンバス。4px 動かしてからのドラッグで動かし、ホイールと −/+ で 0.2〜2.5 倍に拡大縮小し、
+   * 全体表示で収める。キャンバスの大きさが変わったときと、書体を読み込んだあと(読み手が動かしていなければ)にも
+   * 収め直す。
+   */
+  const GraphView = (() => {
+    const MinScale = 0.2;
+    const MaxScale = 2.5;
+    const MaxFitScale = 1.05;
+    const ZoomStep = 1.2;
+    const WheelRate = 0.0015;
+    const DragThreshold = 4;
+    const FitMargin = 24;
+    const MinFreeHeight = 80;
+    const ResizeSettle = 30;
+    const clampScale = (scale) => Math.min(MaxScale, Math.max(MinScale, scale));
+
+    /**
+     * @param top 図の上に重ねるもの
+     * @param legend 図の下に重ねる凡例
+     * @param onBackground 何も無いところを押したときに呼ぶ
+     * @param onFirstFit 初めて収めたときに、そのときの縮尺で呼ぶ
+     * @returns キャンバスの要素(`element`)と、図の中身を差し替える `show`
+     */
+    const create = ({ top, legend, onBackground, onFirstFit }) => {
+      const world = el("div", { class: "graph-world" });
+      const percent = el("span", { class: "zoom-percent", text: "100%" });
+      const empty = el("div", { class: "graph-empty", text: "図に出す箱がありません", hidden: "" });
+      const topOverlay = el("div", { class: "graph-overlay is-top" }, top);
+      const zoomControls = el("div", { class: "zoom-controls" });
+      const bottomOverlay = el("div", { class: "graph-overlay is-bottom" }, [...legend, zoomControls]);
+      const canvas = el("main", { class: "graph-canvas" }, [world, empty, topOverlay, bottomOverlay]);
+      let state = { view: { scale: 1, x: 0, y: 0 }, size: { width: 0, height: 0 }, signature: null, fitted: false, userMoved: false, box: null, measured: null, suppressClick: false };
+
+      const moveTo = (view, animate) => {
+        state = { ...state, view };
+        world.classList.toggle("is-animated", animate);
+        world.style.transform = `translate(${view.x}px, ${view.y}px) scale(${view.scale})`;
+        percent.textContent = `${Math.round(view.scale * 100)}%`;
+      };
+
+      /** `center`(キャンバスの中の点)の下にあるものを動かさずに拡大縮小する。 */
+      const zoomAround = (scale, center, animate) => {
+        const { view } = state;
+        const next = clampScale(scale);
+        moveTo({ scale: next, x: center.x - ((center.x - view.x) * next) / view.scale, y: center.y - ((center.y - view.y) * next) / view.scale }, animate);
+      };
+
+      /**
+       * 図を上下の重ねもののあいだに収める。1.05 倍より大きくはしない。
+       * @returns 収めた縮尺。キャンバスが隠れている・図が空で測れなければ null
+       */
+      const fit = (animate) => {
+        const rect = canvas.getBoundingClientRect();
+        const isMeasurable = rect.width > 0 && rect.height > 0 && state.size.width > 0;
+        if (!isMeasurable) return null;
+        const topEdge = topOverlay.getBoundingClientRect().bottom - rect.top + FitMargin;
+        const bottomEdge = rect.bottom - bottomOverlay.getBoundingClientRect().top + FitMargin;
+        const free = Math.max(MinFreeHeight, rect.height - topEdge - bottomEdge);
+        const { width, height } = state.size;
+        const scale = clampScale(Math.min(MaxFitScale, (rect.width - FitMargin * 2) / width, free / height));
+        moveTo({ scale, x: (rect.width - width * scale) / 2, y: topEdge + (free - height * scale) / 2 }, animate);
+        return scale;
+      };
+
+      /** 収め直して、読み手が動かした印を消す。初めて収めたときは `onFirstFit` を呼ぶ。 */
+      const refit = (animate) => {
+        const scale = fit(animate);
+        if (scale === null) return;
+        const isFirst = !state.fitted;
+        state = { ...state, fitted: true, userMoved: false };
+        if (isFirst) onFirstFit(scale);
+      };
+
+      const onResize = () => {
+        const rect = canvas.getBoundingClientRect();
+        const isHidden = rect.width === 0 || rect.height === 0;
+        if (isHidden) return;
+        const box = `${Math.round(rect.width)}x${Math.round(rect.height)}`;
+        const measured = `${box}|${Math.round(topOverlay.offsetHeight)}|${Math.round(bottomOverlay.offsetHeight)}`;
+        const isUnchanged = measured === state.measured;
+        // 読み手が動かした後は、重ねものの高さが変わっただけなら収め直さない。キャンバスの大きさが変われば収め直す。
+        const keepsUserView = state.userMoved && box === state.box;
+        const keepsView = state.fitted && (isUnchanged || keepsUserView);
+        state = { ...state, box, measured };
+        if (!keepsView) refit(false);
+      };
+
+      const zoomBy = (factor) => {
+        const rect = canvas.getBoundingClientRect();
+        state = { ...state, userMoved: true };
+        zoomAround(state.view.scale * factor, { x: rect.width / 2, y: rect.height / 2 }, true);
+      };
+      zoomControls.append(
+        pressable("button", { class: "is-step", title: "縮小", text: "−" }, [], () => zoomBy(1 / ZoomStep)),
+        percent,
+        pressable("button", { class: "is-step", title: "拡大", text: "+" }, [], () => zoomBy(ZoomStep)),
+        el("span", { class: "zoom-sep" }),
+        pressable("button", { text: "全体表示" }, [], () => refit(true)),
+      );
+
+      canvas.addEventListener("wheel", (event) => {
+        event.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        state = { ...state, userMoved: true };
+        zoomAround(state.view.scale * Math.exp(-event.deltaY * WheelRate), { x: event.clientX - rect.left, y: event.clientY - rect.top }, false);
+      }, { passive: false });
+
+      canvas.addEventListener("pointerdown", (event) => {
+        const isPan = event.button === 0 && event.target.closest("button") === null;
+        if (!isPan) return;
+        const start = { x: event.clientX, y: event.clientY, view: state.view };
+        let isMoving = false;
+        const onMove = (move) => {
+          const dx = move.clientX - start.x;
+          const dy = move.clientY - start.y;
+          const isStill = !isMoving && Math.hypot(dx, dy) < DragThreshold;
+          if (isStill) return;
+          isMoving = true;
+          canvas.classList.add("is-dragging");
+          state = { ...state, userMoved: true };
+          moveTo({ ...start.view, x: start.view.x + dx, y: start.view.y + dy }, false);
+        };
+        const onUp = () => {
+          window.removeEventListener("pointermove", onMove);
+          window.removeEventListener("pointerup", onUp);
+          if (!isMoving) return;
+          canvas.classList.remove("is-dragging");
+          // 離した直後の click はドラッグの終わりで、箱や線を押したのではない。
+          state = { ...state, suppressClick: true };
+          setTimeout(() => {
+            state = { ...state, suppressClick: false };
+          }, 0);
+        };
+        window.addEventListener("pointermove", onMove);
+        window.addEventListener("pointerup", onUp);
+      });
+      canvas.addEventListener("click", (event) => {
+        if (!state.suppressClick) return;
+        event.stopPropagation();
+        event.preventDefault();
+      }, true);
+      canvas.addEventListener("click", (event) => {
+        const isBackground = event.target === canvas || event.target === world;
+        if (isBackground) onBackground();
+      });
+
+      let resizeTimer = null;
+      const observer = new ResizeObserver(() => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(onResize, ResizeSettle);
+      });
+      for (const target of [canvas, topOverlay, bottomOverlay]) observer.observe(target);
+      document.fonts.ready.then(() => {
+        if (!state.userMoved) refit(false);
+      });
+
+      return {
+        element: canvas,
+        /**
+         * 図の中身を差し替える。配置が変わったとき(`signature` が前と違うとき)だけ収め直す。
+         * @param signature 配置を表す文字列(まとめ方・開いた組など)
+         * @param size 図の大きさ
+         * @param children 図の中身(座標は図の左上から)
+         */
+        show: ({ signature, size, children }) => {
+          const isRelayout = signature !== state.signature;
+          // まだ一度も収めていなければ、キャンバスが見えたときに ResizeObserver が収める。
+          const isRefitDue = isRelayout && state.fitted;
+          state = { ...state, signature, size };
+          world.replaceChildren(...children);
+          empty.hidden = size.width > 0;
+          if (isRefitDue) refit(true);
+        },
+      };
+    };
+
+    return Object.freeze({ create });
+  })();
+
+  /** まとめ方の組の id。図の組の id に使う。 */
+  const groupKeyOf = (group) => {
+    switch (group.kind) {
+      case "layer":
+        return `layer:${group.layer}`;
+      case "feature":
+        return `feature:${group.feature.id}`;
+      case "unassigned":
+        return "unassigned";
+    }
+  };
+
+  /** まとめ方の組の見出し。 */
+  const groupLabelOf = (group) => {
+    switch (group.kind) {
+      case "layer":
+        return group.layer;
+      case "feature":
+        return group.feature.label;
+      case "unassigned":
+        return "未分類";
+    }
+  };
+
+  const changedLinesOf = (entry) => (entry.additions ?? 0) + (entry.deletions ?? 0);
+
+  /** まとめ方の組を、図の組(箱と、その変更行数)にする。 */
+  const graphGroupsOf = (groups, entryAt) => groups.map((group) => ({
+    id: groupKeyOf(group),
+    label: groupLabelOf(group),
+    boxes: group.paths.map((path) => ({ path, lines: changedLinesOf(entryAt.get(path)) })),
+  }));
+
+  const hasSameMembers = (some, others) => some.length === others.length && some.every((member) => others.includes(member));
+  const withToggledMember = (list, member) => (list.includes(member) ? list.filter((other) => other !== member) : [...list, member]);
+
+  /** 押した 1 つだけが選ばれるボタンの組。 */
+  const toggleGroupOf = ({ options, current, onPick }) => el("div", { class: "toggle-group" }, options.map((option) => pressable("button", { "aria-pressed": String(option.value === current), title: option.title ?? "", text: option.label }, [], () => onPick(option.value))));
+
+  const Techniques = {
+    boundary: { label: "境界値", description: "ちょうど境目の値(0・上限・丸めの境など)で確かめる" },
+    equivalence: { label: "同値分割", description: "同じ扱いになる値のまとまりから、代表を1つずつ選んで確かめる" },
+    error: { label: "異常系", description: "失敗したとき・想定外のときにどう振る舞うかを確かめる" },
+    state: { label: "状態遷移", description: "操作の前後で、状態が正しく移り変わるかを確かめる" },
+    regression: { label: "回帰", description: "作り直しても、以前と同じ結果になるかを確かめる" },
+    idempotence: { label: "冪等性", description: "同じ操作を繰り返しても、結果が1回分になるかを確かめる" },
+    type: { label: "型", description: "書けてはいけない値がコンパイルで弾かれるか・推論される型を確かめる" },
+  };
+  const TestStatuses = {
+    new: { label: "追加", long: "このブランチで追加" },
+    old: { label: "既存", long: "既存のテスト" },
+    todo: { label: "未実装", long: "未実装(提案)" },
+    removed: { label: "削除", long: "このブランチで削除" },
+  };
+  const GroupingLabels = { feature: "機能", layer: "層" };
+  const LevelChoices = [
+    { value: GraphLayout.Levels.High, label: "高", title: "すべてのグループを折りたたむ" },
+    { value: GraphLayout.Levels.Mid, label: "中", title: "変更の多いグループだけ展開" },
+    { value: GraphLayout.Levels.Low, label: "低", title: "すべて個別に表示" },
+  ];
+  const NamingChoices = [{ value: "concept", label: "概念" }, { value: "file", label: "ファイル" }];
+  const MessageKindOrder = { cmd: 0, qry: 1, evt: 2 };
+  // 1 つの線のラベルに並べるやりとりの数。選んだ線・選んだテストが 3 件以下で通る線は 5 件まで、他は 1 件。
+  const LabelLimits = { important: 5, other: 1 };
+  const LabelPadding = 64;
+  const LabelChipHeight = 23;
+  const LabelMoreHeight = 16;
+
+  const techniqueChipOf = (key) => el("span", { class: "technique", "data-technique": key, text: Techniques[key].label });
+  const isVerifying = (test) => test.status === "new" || test.status === "old";
+  const matchesTechniques = (test, techniques) => techniques.length === 0 || test.techniques.some((key) => techniques.includes(key));
+  const isSameSelection = (some, other) => some !== null && other !== null && some.kind === other.kind && some.id === other.id;
+
+  /** テストの画面。左にテストの一覧、中に箱の図、右に全体か、選んだテスト・箱・線の詳しいところを出す。 */
+  const TestScreen = (explained, go) => {
+    const explain = explained.explain.kind === "explained" ? explained.explain.explain : null;
+    const lookup = lookupOf(explain);
+    const messages = [...lookup.messages.values()];
+    const hasMessages = messages.length > 0;
+    const entryAt = new Map(explained.entries.map((entry) => [entry.path, entry]));
+    const commitAt = new Map(explained.commits.map((commit) => [commit.sha, commit]));
+    const graphGroups = Object.fromEntries(Object.entries(explained.groupings).map(([grouping, groups]) => [grouping, graphGroupsOf(groups, entryAt)]));
+    const groupLabels = new Map(Object.values(graphGroups).flat().map((group) => [group.id, group.label]));
+    const groupings = Object.keys(graphGroups);
+    const tests = explained.tests.map((item, index) => {
+      const covers = item.test !== null && Array.isArray(item.test.covers) ? item.test.covers : [];
+      return { ...item, id: index, techniques: item.test === null ? [] : item.test.techniques, covers };
+    });
+    const suiteIds = (explain !== null && Array.isArray(explain.suites) ? explain.suites : []).map((suite) => `suite:${suite.id}`);
+    const suiteKeyOf = (test) => (test.suite === null ? `file:${test.file ?? ""}` : `suite:${test.suite.id}`);
+    const suiteKeys = [...new Set([...suiteIds, ...tests.map(suiteKeyOf)])];
+    const messageLinks = messages.map((message) => ({ from: message.from, to: message.to, item: message, leads: message.kind !== "evt" }));
+    const dependencyLinks = explained.dependencies.filter((link) => link.state !== "removed").map((link) => ({ from: link.from, to: link.to, item: link, leads: true }));
+
+    let state = {
+      grouping: groupings.includes("feature") ? "feature" : "layer",
+      naming: explain === null ? "file" : "concept",
+      expanded: Object.fromEntries(groupings.map((grouping) => [grouping, GraphLayout.expandedAt(GraphLayout.Levels.Mid, graphGroups[grouping])])),
+      selected: null,
+      techniques: [],
+      showGaps: false,
+    };
+
+    /** いまの状態から、図の配置と、テスト・やりとりの数え上げを作る。 */
+    const modelOf = (current) => {
+      const layout = GraphLayout.of({ groups: graphGroups[current.grouping], links: explained.dependencies, expanded: current.expanded[current.grouping] });
+      const shown = tests.filter((test) => matchesTechniques(test, current.techniques));
+      const verifying = shown.filter(isVerifying);
+      const coverage = new Map(messages.map((message) => [message.id, verifying.filter((test) => test.covers.includes(message.id))]));
+      const isGap = (message) => message.status === "new" && coverage.get(message.id).length === 0;
+      const crossesUnits = (message) => layout.unitOf.get(message.from) !== layout.unitOf.get(message.to);
+      const touches = (place, message) => place.paths.includes(message.from) || place.paths.includes(message.to);
+      const placeTests = (place) => verifying.filter((test) => test.targets.some((path) => place.paths.includes(path)));
+      const placeGaps = (place) => messages.filter((message) => isGap(message) && crossesUnits(message) && touches(place, message));
+      return {
+        layout,
+        shown,
+        coverage,
+        isGap,
+        placeTests,
+        placeGaps,
+        places: new Map([...layout.units, ...layout.containers].map((place) => [place.id, place])),
+        edges: GraphLayout.edgesOf(layout, hasMessages ? messageLinks : dependencyLinks),
+      };
+    };
+
+    /** 選んだものが光らせる単位・線・やりとり。 */
+    const highlightOf = (model, selected) => {
+      const none = { units: new Set(), edges: new Set(), messages: new Set() };
+      if (selected === null) return none;
+      switch (selected.kind) {
+        case "test": {
+          const test = tests[selected.id];
+          const covered = test.covers.map((id) => lookup.messages.get(id)).filter((message) => message !== undefined);
+          const paths = [...covered.flatMap((message) => [message.from, message.to]), ...test.targets];
+          const ids = new Set(test.covers);
+          const edges = model.edges.filter((edge) => edge.items.some((item) => ids.has(item.id)));
+          return { units: new Set(paths.map((path) => model.layout.unitOf.get(path)).filter((id) => id !== undefined)), edges: new Set(edges.map((edge) => edge.key)), messages: ids };
+        }
+        case "place":
+          return { ...none, units: new Set([selected.id]) };
+        case "edge": {
+          const edge = model.edges.find((candidate) => candidate.key === selected.id);
+          return { ...none, units: new Set([edge.from, edge.to]), edges: new Set([selected.id]) };
+        }
+      }
+    };
+
+    /** 配置が変わって選んだ箱・線が図から消えたら、選択を外す。 */
+    const validSelectionOf = (selected, model) => {
+      if (selected === null) return null;
+      switch (selected.kind) {
+        case "test":
+          return selected;
+        case "place":
+          return model.places.has(selected.id) ? selected : null;
+        case "edge":
+          return model.edges.some((edge) => edge.key === selected.id) ? selected : null;
+      }
+    };
+
+    const update = (change) => {
+      state = { ...state, ...change };
+      render();
+    };
+    const select = (next) => update({ selected: isSameSelection(state.selected, next) ? null : next });
+    const toggleGroup = (id) => update({ expanded: { ...state.expanded, [state.grouping]: withToggledMember(state.expanded[state.grouping], id) } });
+    /** 箱の中のボタン。押しても箱を選んだことにしない。 */
+    const withoutSelecting = (handler) => (event) => {
+      event.stopPropagation();
+      handler();
+    };
+
+    const placeNameOf = (place) => {
+      if (place.kind !== "box") return groupLabels.get(place.group);
+      return ExplainedMap.nameOf(entryAt.get(place.path), state.naming);
+    };
+    /** やりとりの端の名前。そのパスを含む箱(畳んだ組なら組)の名前で、図に無ければ concept 名かパス。 */
+    const endNameOf = (model, path) => {
+      const unit = model.places.get(model.layout.unitOf.get(path));
+      if (unit !== undefined) return placeNameOf(unit);
+      return lookup.conceptNames.get(path) ?? path;
+    };
+    const messageNameOf = (message) => (state.naming === "concept" ? message.name : message.code);
+    const edgeKeyBetween = (model, message) => {
+      const ends = [model.layout.unitOf.get(message.from), model.layout.unitOf.get(message.to)];
+      const isDrawn = ends.every((id) => id !== undefined) && ends[0] !== ends[1];
+      return isDrawn ? ends.toSorted().join("|") : null;
+    };
+
+    const controlNodes = {
+      grouping: el("div", { class: "control" }),
+      level: el("div", { class: "control" }),
+      naming: el("div", { class: "control" }),
+      gaps: pressable("button", { class: "switch-button", title: "テストの無いやりとりと、それに関わる箱を目立たせる" }, [el("span", { class: "switch" }), "テストの抜けを強調"], () => update({ showGaps: !state.showGaps })),
+    };
+    const renderControls = () => {
+      const groups = graphGroups[state.grouping];
+      const expanded = state.expanded[state.grouping];
+      const level = LevelChoices.find((choice) => hasSameMembers(GraphLayout.expandedAt(choice.value, groups), expanded));
+      const groupingChoices = groupings.toReversed().map((grouping) => ({ value: grouping, label: GroupingLabels[grouping] }));
+      controlNodes.grouping.replaceChildren(el("span", { class: "control-label", text: "まとめ方" }), toggleGroupOf({ options: groupingChoices, current: state.grouping, onPick: (grouping) => update({ grouping, selected: null }) }));
+      controlNodes.level.replaceChildren(el("span", { class: "control-label", text: "抽象度" }), toggleGroupOf({ options: LevelChoices, current: level === undefined ? null : level.value, onPick: (choice) => update({ expanded: { ...state.expanded, [state.grouping]: GraphLayout.expandedAt(choice, groups) } }) }));
+      controlNodes.naming.replaceChildren(el("span", { class: "control-label", text: "表示名" }), toggleGroupOf({ options: NamingChoices, current: state.naming, onPick: (naming) => update({ naming }) }));
+      controlNodes.gaps.setAttribute("aria-pressed", String(state.showGaps));
+    };
+
+    const listHead = el("div", { class: "list-head" });
+    const listBody = el("div", { class: "panel-scroll" });
+
+    /** 選んだ箱・線を確かめているテストか。 */
+    const relatesToSelection = (test, view) => {
+      const { selected, model } = view;
+      const isTargetSelected = selected !== null && selected.kind !== "test";
+      if (!isTargetSelected) return false;
+      if (selected.kind === "edge") {
+        const edge = model.edges.find((candidate) => candidate.key === selected.id);
+        return edge.items.some((item) => test.covers.includes(item.id));
+      }
+      const place = model.places.get(selected.id);
+      return test.targets.some((path) => place.paths.includes(path));
+    };
+
+    const testRowOf = (test, view) => {
+      const isCurrent = isSameSelection(view.selected, { kind: "test", id: test.id });
+      const isRelated = relatesToSelection(test, view);
+      const isTargetSelected = view.selected !== null && view.selected.kind !== "test";
+      const status = test.status === "old" ? [] : [el("span", { class: "test-status", "data-status": test.status, text: TestStatuses[test.status].label })];
+      return pressable("button", { class: classesOf("test-row plain-button", { "is-current": isCurrent, "is-related": isRelated, "is-dim": isTargetSelected && !isRelated }), "data-status": test.status, "data-test": String(test.id), title: test.file ?? "" }, [
+        el("span", { class: "test-mark", "data-status": test.status }),
+        el("span", { class: "test-body" }, [el("span", { class: "test-name", text: test.name }), el("span", { class: "test-facts" }, [...test.techniques.map(techniqueChipOf), ...status])]),
+      ], () => select({ kind: "test", id: test.id }));
+    };
+
+    const suiteHeadOf = (first) => {
+      const label = first.suite === null ? (first.file ?? "").split("/").pop() : first.suite.label;
+      const file = first.suite === null ? first.file ?? "" : first.suite.file;
+      return el("div", { class: "suite-head", title: file }, [el("span", { class: "suite-title", text: label }), el("span", { class: "suite-file", text: file })]);
+    };
+
+    const renderList = (view) => {
+      const { model } = view;
+      const isFiltering = state.techniques.length > 0;
+      const countOf = (key) => tests.filter((test) => test.techniques.includes(key)).length;
+      const filters = explain === null ? [] : [el("div", { class: "tech-filters" }, Object.entries(Techniques).map(([key, technique]) => pressable("button", { class: "tech-filter", "data-technique": key, "aria-pressed": String(state.techniques.includes(key)), title: technique.description }, [el("span", { class: "swatch" }), technique.label, el("span", { class: "n", text: String(countOf(key)) })], () => update({ techniques: withToggledMember(state.techniques, key) }))))];
+      listHead.replaceChildren(panelHead("テストケース", `${model.shown.length} 件${isFiltering ? "(絞り込み中)" : ""}`), ...filters);
+      const suites = suiteKeys.map((key) => model.shown.filter((test) => suiteKeyOf(test) === key)).filter((members) => members.length > 0);
+      const note = explain === null ? [emptyOf("解説が無いので、変更の地図にあるテストの追加と削除だけを並べています。")] : [];
+      const blocks = suites.map((members) => el("div", { class: "suite" }, [suiteHeadOf(members[0]), ...members.map((test) => testRowOf(test, view))]));
+      const nothing = tests.length === 0 ? [emptyOf("この PR で増減したテストはありません。")] : [];
+      const scrollTop = listBody.scrollTop;
+      listBody.replaceChildren(...note, ...blocks, ...nothing);
+      listBody.scrollTop = scrollTop;
+    };
+
+    const hint = el("span", { class: "canvas-hint" });
+    const legendItems = [
+      el("span", {}, [el("span", { class: "box-count", text: "3" }), "その要素を確かめるテスト数"]),
+      ...(hasMessages ? [
+        el("span", {}, [el("span", { class: "coverage-tag is-tested", text: "✓2" }), "やりとりを確かめるテスト"]),
+        el("span", {}, [el("span", { class: "coverage-tag is-gap", text: "未テスト" }), "追加したのにテストがない"]),
+      ] : []),
+    ];
+    const graph = GraphView.create({
+      top: [hint],
+      legend: [el("div", { class: "legend" }, legendItems)],
+      onBackground: () => {
+        if (state.selected !== null) update({ selected: null });
+      },
+      // 初めて収めたときに半分より小さくしか入らないなら、箱が読めないので組をすべて畳む。
+      onFirstFit: (scale) => {
+        if (scale < 0.5) update({ expanded: Object.fromEntries(groupings.map((grouping) => [grouping, []])) });
+      },
+    });
+
+    const hintTextOf = (view) => {
+      const isTestSelected = view.selected !== null && view.selected.kind === "test";
+      if (isTestSelected) return "選んだテストが確かめている範囲を表示中";
+      if (state.techniques.length > 0) return "絞り込んだ観点のテストだけで数えています";
+      if (!hasMessages) return "数字=その要素を確かめるテストの数 · 線はコードの依存(解説にやりとりが無いため)";
+      return "数字=その要素を確かめるテストの数 · 点線=テストのないやりとり";
+    };
+
+    const containerNodeOf = (container, view) => {
+      const { model, highlight, selected } = view;
+      const isPicked = isSameSelection(selected, { kind: "place", id: container.id });
+      const hasLitInside = isPicked || container.paths.some((path) => highlight.units.has(`box:${path}`));
+      const node = placedAt(el("div", { class: classesOf("graph-container", { "is-picked": isPicked, "is-dim": selected !== null && !hasLitInside }), title: "ダブルクリックで折りたたむ" }, [
+        el("div", { class: "graph-container-head" }, [
+          el("span", { class: "graph-container-title", text: groupLabels.get(container.group) }),
+          el("span", { class: "count-chip", text: `テスト ${model.placeTests(container).length}` }),
+          el("span", { class: "spacer" }),
+          pressable("button", { class: "mini-button", text: "折りたたむ" }, [], withoutSelecting(() => toggleGroup(container.group))),
+        ]),
+      ]), container);
+      node.addEventListener("click", () => select({ kind: "place", id: container.id }));
+      node.addEventListener("dblclick", () => toggleGroup(container.group));
+      return node;
+    };
+
+    const unitNodeOf = (unit, view) => {
+      const { model, highlight, selected } = view;
+      const testCount = model.placeTests(unit).length;
+      const gapCount = model.placeGaps(unit).length;
+      const isLit = highlight.units.has(unit.id);
+      const flags = {
+        "is-picked": isLit,
+        "has-gap": !isLit && state.showGaps && gapCount > 0,
+        "is-dim": selected !== null && !isLit,
+        "is-faint": selected === null && state.showGaps && gapCount === 0,
+      };
+      const isGroup = unit.kind === "group";
+      const gapChip = gapCount > 0 ? [el("span", { class: "gap-chip", text: `未テスト ${gapCount}` })] : [];
+      const groupBody = () => [
+        el("div", { class: "node-row" }, [el("span", { class: "group-name", text: placeNameOf(unit) }), pressable("button", { class: "mini-button is-outlined", text: "展開" }, [], withoutSelecting(() => toggleGroup(unit.group)))]),
+        el("div", { class: "node-row" }, [el("span", { class: "count-chip", text: `テスト ${testCount}` }), ...gapChip]),
+      ];
+      const boxBody = () => {
+        const entry = entryAt.get(unit.path);
+        const isFileName = state.naming === "file" || entry.conceptName === null;
+        return [el("span", { class: classesOf("box-name", { "is-file-name": isFileName }), text: placeNameOf(unit) }), el("span", { class: classesOf("box-count", { "is-tested": testCount > 0 }), text: String(testCount) })];
+      };
+      const title = isGroup ? "ダブルクリックで展開" : `${unit.path} · テスト ${testCount} 件`;
+      const node = placedAt(el("div", { class: classesOf(isGroup ? "graph-node is-group" : "graph-node is-box", flags), title, "data-unit": unit.id }, isGroup ? groupBody() : boxBody()), unit);
+      node.addEventListener("click", () => select({ kind: "place", id: unit.id }));
+      if (isGroup) node.addEventListener("dblclick", () => toggleGroup(unit.group));
+      return node;
+    };
+
+    /** 線ごとの見え方。やりとりの線は、テストで確かめているか・抜けがあるかで色を変える。 */
+    const edgeLookOf = (edge, view) => {
+      const { model, highlight, selected } = view;
+      const isOn = highlight.edges.has(edge.key);
+      const gaps = hasMessages ? edge.items.filter(model.isGap) : [];
+      const isCovered = hasMessages && edge.items.some((message) => model.coverage.get(message.id).length > 0);
+      const isDim = selected !== null && !isOn;
+      return { edge, isOn, gaps, isCovered, isDim, isFaint: !isDim && !isOn && state.showGaps && gaps.length === 0 };
+    };
+
+    /** ラベルに並べるやりとり。選んだテストの線ならそのテストが確かめるもの、抜けを強調しているなら抜けだけ。 */
+    const labelMessagesOf = (look, view) => {
+      const sorted = look.edge.items.toSorted((a, b) => MessageKindOrder[a.kind] - MessageKindOrder[b.kind]);
+      const isSelectedTestEdge = view.selected !== null && view.selected.kind === "test" && look.isOn;
+      const isGapFocused = state.showGaps && look.gaps.length > 0;
+      if (isSelectedTestEdge) return sorted.filter((message) => view.highlight.messages.has(message.id));
+      if (isGapFocused) return sorted.filter(view.model.isGap);
+      return sorted;
+    };
+
+    const labelOf = (look, view) => {
+      const isPicked = isSameSelection(view.selected, { kind: "edge", id: look.edge.key });
+      const litCount = look.edge.items.filter((message) => view.highlight.messages.has(message.id)).length;
+      const isImportant = isPicked || (look.isOn && litCount <= 3);
+      const listed = labelMessagesOf(look, view);
+      const shown = listed.slice(0, isImportant ? LabelLimits.important : LabelLimits.other);
+      const texts = shown.map((message) => {
+        const isReversed = view.model.layout.unitOf.get(message.from) !== look.edge.from;
+        return `${isReversed ? "↩ " : ""}${messageNameOf(message)}`;
+      });
+      const more = listed.length - shown.length;
+      const priority = isImportant ? 3 : look.isOn ? 2 : look.gaps.length > 0 ? 1 : 0;
+      const allowance = isImportant ? Infinity : look.isOn ? 0.25 : 0;
+      const width = Math.max(...texts.map(GraphLayout.textWidthOf)) + LabelPadding;
+      const height = shown.length * LabelChipHeight + (more > 0 ? LabelMoreHeight : 0);
+      return { look, isPicked, isImportant, shown, texts, more, candidate: { key: look.edge.key, bezier: look.edge.route.bezier, width, height, priority, allowance } };
+    };
+
+    const coverageTagOf = (message, model) => {
+      const count = model.coverage.get(message.id).length;
+      if (count > 0) return el("span", { class: "coverage-tag is-tested", text: `✓${count}` });
+      if (model.isGap(message)) return el("span", { class: "coverage-tag is-gap", text: "未テスト" });
+      return el("span", { class: "coverage-tag", text: "—" });
+    };
+
+    const renderGraph = (view) => {
+      const { model } = view;
+      const looks = model.edges.map((edge) => edgeLookOf(edge, view)).toSorted((a, b) => Number(a.isOn) - Number(b.isOn));
+      const hovered = new Map(looks.map((look) => [look.edge.key, []]));
+      const hoverable = (key, node) => {
+        hovered.get(key).push(node);
+        node.addEventListener("mouseenter", () => {
+          for (const target of hovered.get(key)) target.classList.add("is-hover");
+        });
+        node.addEventListener("mouseleave", () => {
+          for (const target of hovered.get(key)) target.classList.remove("is-hover");
+        });
+        return node;
+      };
+      const edgeNodes = looks.map((look) => {
+        const flags = { "is-dependency": !hasMessages, "is-covered": look.isCovered, "is-gap": state.showGaps && look.gaps.length > 0 && !look.isOn, "is-on": look.isOn, "is-dim": look.isDim, "is-faint": look.isFaint };
+        const hit = hasMessages ? [Dom.svg("path", { class: "edge-hit", d: look.edge.route.path })] : [];
+        const group = Dom.svg("g", { class: classesOf("edge", flags) }, [Dom.svg("path", { class: "edge-line", d: look.edge.route.path }), Dom.svg("path", { class: "edge-head", d: look.edge.route.head }), ...hit]);
+        if (hasMessages) group.addEventListener("click", () => select({ kind: "edge", id: look.edge.key }));
+        return hasMessages ? hoverable(look.edge.key, group) : group;
+      });
+      const svg = Dom.svg("svg", { class: "graph-edges", width: String(model.layout.width), height: String(model.layout.height) }, edgeNodes);
+      const labels = hasMessages ? looks.map((look) => labelOf(look, view)) : [];
+      const placed = GraphLayout.placeLabels({ candidates: labels.map((label) => label.candidate), obstacles: GraphLayout.obstaclesOf(model.layout) });
+      const labelAt = new Map(labels.map((label) => [label.look.edge.key, label]));
+      const labelNodes = placed.map((spot) => {
+        const label = labelAt.get(spot.key);
+        const chips = label.shown.map((message, index) => el("span", { class: classesOf("label-chip", { "is-code": state.naming === "file" }), "data-kind": message.kind }, [el("span", { text: label.texts[index] }), coverageTagOf(message, model)]));
+        const more = label.more > 0 ? [el("span", { class: "label-more", text: `+${label.more} 件` })] : [];
+        const flags = { "is-important": label.isImportant, "is-on": label.look.isOn, "is-picked": label.isPicked, "is-dim": label.look.isDim, "is-faint": label.look.isFaint };
+        const node = el("div", { class: classesOf("graph-label", flags) }, [...chips, ...more]);
+        Object.assign(node.style, { left: `${spot.x}px`, top: `${spot.y}px` });
+        node.addEventListener("click", () => select({ kind: "edge", id: spot.key }));
+        return hoverable(spot.key, node);
+      });
+      const children = [...model.layout.containers.map((container) => containerNodeOf(container, view)), svg, ...model.layout.units.map((unit) => unitNodeOf(unit, view)), ...labelNodes];
+      const expanded = state.expanded[state.grouping].toSorted().join(",");
+      hint.textContent = hintTextOf(view);
+      graph.show({ signature: `${state.grouping}|${expanded}`, size: { width: model.layout.width, height: model.layout.height }, children });
+    };
+
+    const side = el("div", { class: "side" });
+    const eyebrowOf = (text, note) => el("span", { class: "eyebrow-row" }, [el("span", { class: "eyebrow", text }), ...(note === undefined ? [] : [el("span", { class: "eyebrow-note", text: note })])]);
+    const clearButton = () => pressable("button", { class: "mini-button", text: "選択解除" }, [], () => update({ selected: null }));
+
+    const messageBodyOf = (message, model) => [
+      el("span", { class: "message-chip" }, [el("span", { class: "kind", "data-kind": message.kind, text: MessageKindLabels[message.kind] ?? message.kind }), el("span", { class: classesOf("message-name", { "is-code": state.naming === "file" }), text: messageNameOf(message) })]),
+      el("span", { class: "message-route", text: `${endNameOf(model, message.from)} → ${endNameOf(model, message.to)}` }),
+    ];
+
+    /** やりとりのカード。図に線があれば、押すとその線を選ぶ。 */
+    const gapCardOf = (message, model, isPressable) => {
+      const key = edgeKeyBetween(model, message);
+      const body = messageBodyOf(message, model);
+      const isStatic = !isPressable || key === null;
+      if (isStatic) return el("div", { class: "gap-card" }, body);
+      return pressable("button", { class: "gap-card plain-button" }, body, () => select({ kind: "edge", id: key }));
+    };
+
+    const testCardOf = (test) => pressable("button", { class: "test-card plain-button" }, [
+      el("span", { class: "test-name", text: test.name }),
+      el("span", { class: "test-facts" }, [...test.techniques.map(techniqueChipOf), el("span", { class: "test-status", "data-status": test.status, text: TestStatuses[test.status].long })]),
+    ], () => select({ kind: "test", id: test.id }));
+
+    const overviewOf = (model) => {
+      const countOf = (status) => tests.filter((test) => test.status === status).length;
+      const statuses = Object.keys(TestStatuses).filter((status) => status !== "removed" || countOf(status) > 0);
+      const head = el("div", { class: "side-block" }, [
+        el("span", { class: "eyebrow", text: "テストの全体像" }),
+        el("h2", { text: "このブランチで何を確かめたか" }),
+        el("div", { class: "side-counts" }, statuses.map((status) => el("span", { class: `is-${status}` }, [`${TestStatuses[status].label} `, el("b", { text: String(countOf(status)) })]))),
+      ]);
+      if (explain === null) return [head, el("p", { class: "side-note", text: "解説が無いので、変更の地図にあるテストの追加・削除と、テストファイルの対象だけで組んでいます。左のテストを選ぶと、対象の箱が光ります。" })];
+      const techniqueCountOf = (key) => tests.filter((test) => test.techniques.includes(key)).length;
+      const most = Math.max(1, ...Object.keys(Techniques).map(techniqueCountOf));
+      const bars = Object.entries(Techniques).map(([key, technique]) => {
+        const fill = el("span", { class: "tech-bar-fill" });
+        fill.style.width = `${(techniqueCountOf(key) / most) * 100}%`;
+        return pressable("button", { class: "tech-bar plain-button", "data-technique": key, title: "この観点で絞り込む" }, [
+          el("span", { class: "tech-bar-line" }, [el("span", { class: "tech-bar-label" }, [el("span", { class: "swatch" }), technique.label]), el("span", { class: "tech-bar-track" }, [fill]), el("span", { class: "tech-bar-count", text: String(techniqueCountOf(key)) })]),
+          el("span", { class: "tech-bar-desc", text: technique.description }),
+        ], () => update({ techniques: [key] }));
+      });
+      const gaps = messages.filter(model.isGap);
+      const gapBlock = hasMessages ? [el("div", { class: "side-block" }, [
+        eyebrowOf("テストがないやりとり", "このブランチで追加したもの"),
+        ...gaps.map((message) => gapCardOf(message, model, true)),
+        ...(gaps.length === 0 ? [el("span", { class: "side-sub", text: "すべてテストされています。" })] : []),
+      ])] : [];
+      return [
+        head,
+        el("div", { class: "side-block" }, [el("span", { class: "eyebrow", text: "観点ごとの内訳" }), ...bars]),
+        ...gapBlock,
+        el("p", { class: "side-note", text: "左のテストを選ぶと、確かめている範囲がマップ上で光ります。マップの箱やラベルを選ぶと、そこを確かめているテストが分かります。" }),
+      ];
+    };
+
+    const valuesOf = (values) => {
+      const columns = values.columns.length;
+      const hasBoundary = values.rows.some((row) => row.boundary === true);
+      const grid = el("div", { class: "values-grid" }, [
+        ...values.columns.map((column) => el("span", { class: "values-head", text: column })),
+        ...values.rows.flatMap((row) => row.cells.map((cell, index) => {
+          const tag = row.boundary === true && index === 0 ? [el("span", { class: "boundary-tag", text: "境目" })] : [];
+          return el("span", { class: classesOf("values-cell", { "is-first": index === 0, "is-boundary": row.boundary === true }) }, [prose("span", {}, cell), ...tag]);
+        })),
+      ]);
+      grid.style.gridTemplateColumns = `repeat(${columns}, minmax(max-content, 1fr))`;
+      return el("div", { class: "side-block" }, [eyebrowOf("試している値", hasBoundary ? "「境目」は境界値として選んだ値" : undefined), el("div", { class: "values" }, [grid])]);
+    };
+
+    const excerptOf = (excerpt) => {
+      const grammar = Highlighter.grammarOf(excerpt.path);
+      const lines = excerpt.text.split("\n");
+      const rows = lines.reduce((sofar, text, index) => {
+        const { node, carry } = codeTextOf(text, grammar, sofar.carry);
+        return { carry, nodes: [...sofar.nodes, el("div", { class: "excerpt-line" }, [el("span", { class: "ln", text: String(excerpt.start + index) }), node])] };
+      }, { carry: Highlighter.Start, nodes: [] });
+      return el("div", { class: "side-block" }, [eyebrowOf("テストコード", `${excerpt.path}:${excerpt.start}-${excerpt.end}`), el("div", { class: "excerpt" }, rows.nodes)]);
+    };
+
+    const commitLinkOf = (sha) => {
+      const commit = commitAt.get(sha);
+      const subject = commit === undefined || commit.subject === null ? "地図に無いコミット" : commit.subject;
+      return pressable("button", { class: "commit-link plain-button", title: "変更の経緯でこのコミットを開く" }, [
+        el("span", { class: "label", text: "追加したコミット" }),
+        el("span", { class: "sha", text: shortSha(sha) }),
+        el("span", { class: "subject", text: subject }),
+        el("span", { class: "arrow", text: "↗" }),
+      ], () => go.toCommit(sha));
+    };
+
+    /** 解説の無いテスト(地図の追加・削除)の対象。押すとその箱を選ぶ。 */
+    const targetsOf = (test, model) => {
+      const places = [...new Set(test.targets.map((path) => model.layout.unitOf.get(path)).filter((id) => id !== undefined))].map((id) => model.places.get(id));
+      const rows = places.map((place) => pressable("button", { class: "test-card plain-button" }, [el("span", { class: "test-name", text: placeNameOf(place) })], () => select({ kind: "place", id: place.id })));
+      return el("div", { class: "side-block" }, [eyebrowOf("テストの対象", `${test.targets.length} 件`), ...rows, ...(test.targets.length === 0 ? [el("span", { class: "side-sub", text: "地図に対象のファイルがありません。" })] : [])]);
+    };
+
+    const testDetailOf = (test, model) => {
+      const suiteLabel = test.suite === null ? (test.file ?? "").split("/").pop() : test.suite.label;
+      const pending = test.status === "todo" ? [el("span", { class: "pending", text: "○ まだ書かれていない" })] : [];
+      const head = el("div", { class: "side-block" }, [
+        el("div", { class: "side-head" }, [el("span", { class: "chip", text: suiteLabel }), el("span", { class: "chip", "data-status": test.status, text: TestStatuses[test.status].long }), ...pending, el("span", { class: "spacer" }), clearButton()]),
+        el("h2", { text: test.name }),
+        el("span", { class: "side-path", text: test.file ?? "" }),
+      ]);
+      if (test.test === null) {
+        const reason = test.status === "removed" ? "このブランチで消したテストです。" : "解説に無いテストです。";
+        return [head, el("p", { class: "side-sub", text: `${reason}変更の地図にある名前と、テストファイルの対象だけを出しています。` }), targetsOf(test, model)];
+      }
+      const detail = test.test;
+      const covered = test.covers.map((id) => lookup.messages.get(id)).filter((message) => message !== undefined);
+      const values = detail.values === undefined ? [] : [valuesOf(detail.values)];
+      const coverBlock = covered.length === 0 ? [] : [el("div", { class: "side-block" }, [
+        eyebrowOf("確かめているやりとり", `${covered.length} 件`),
+        ...covered.map((message, index) => {
+          const key = edgeKeyBetween(model, message);
+          const body = [el("span", { class: "message-row-n", text: String(index + 1) }), el("span", { class: "message-row-body" }, messageBodyOf(message, model))];
+          return key === null ? el("div", { class: "message-row" }, body) : pressable("button", { class: "message-row plain-button" }, body, () => select({ kind: "edge", id: key }));
+        }),
+      ])];
+      const hasExcerptText = detail.excerpt !== undefined && typeof detail.excerpt.text === "string";
+      const code = hasExcerptText ? [excerptOf(detail.excerpt)] : [];
+      const commit = typeof detail.commit === "string" ? [commitLinkOf(detail.commit)] : [];
+      return [
+        head,
+        el("div", { class: "side-block" }, [
+          el("span", { class: "eyebrow", text: "テストの観点" }),
+          ...test.techniques.map((key) => el("div", { class: "tech-line" }, [techniqueChipOf(key), el("span", { class: "tech-line-desc", text: Techniques[key].description })])),
+          prose("p", { class: "why" }, detail.why),
+        ]),
+        el("div", { class: "gwt" }, [["前提", detail.given], ["操作", detail.when], ["期待", detail.then]].flatMap(([key, text]) => [el("span", { class: "gwt-key", text: key }), prose("span", { class: "gwt-value" }, text)])),
+        ...values,
+        ...coverBlock,
+        ...code,
+        ...commit,
+      ];
+    };
+
+    /** 選んだ箱・線を確かめているテスト(未実装の提案も足す)と、テストの無いやりとり。 */
+    const targetDetailOf = (selected, model) => {
+      const isEdge = selected.kind === "edge";
+      const edge = isEdge ? model.edges.find((candidate) => candidate.key === selected.id) : null;
+      const place = isEdge ? null : model.places.get(selected.id);
+      const touchesPlace = (test) => test.targets.some((path) => place.paths.includes(path));
+      const touchesEdge = (test) => edge.items.some((message) => test.covers.includes(message.id));
+      const touches = isEdge ? touchesEdge : touchesPlace;
+      const verified = isEdge ? [...new Set(edge.items.flatMap((message) => model.coverage.get(message.id)))] : model.placeTests(place);
+      const proposed = tests.filter((test) => test.status === "todo" && touches(test) && !verified.includes(test));
+      const listed = [...verified, ...proposed];
+      const gaps = isEdge ? edge.items.filter(model.isGap) : model.placeGaps(place);
+      const title = isEdge ? `${placeNameOf(model.places.get(edge.from))} ⇄ ${placeNameOf(model.places.get(edge.to))}` : placeNameOf(place);
+      const kind = isEdge ? "つながり" : place.kind === "box" ? "要素" : "グループ";
+      const sub = isEdge ? `${edge.items.length} 件のやりとり:${edge.items.map((message) => `〈${message.name}〉`).join("")}` : placeSubOf(place);
+      return [
+        el("div", { class: "side-block" }, [el("div", { class: "side-head" }, [el("span", { class: "chip", text: kind }), el("span", { class: "spacer" }), clearButton()]), el("h2", { text: title }), el("p", { class: "side-sub", text: sub })]),
+        el("div", { class: "side-block" }, [eyebrowOf("ここを確かめているテスト", `${listed.length}`), ...listed.map(testCardOf), ...(listed.length === 0 ? [el("span", { class: "warn-text", text: "まだテストがありません。" })] : [])]),
+        ...(gaps.length === 0 ? [] : [el("div", { class: "side-block" }, [el("span", { class: "eyebrow", text: "テストがないやりとり" }), ...gaps.map((message) => gapCardOf(message, model, false))])]),
+      ];
+    };
+
+    /** 箱の補足。概念名で出しているならパス、ファイル名で出しているなら concept 名(無ければパス)。組なら中の数。 */
+    const placeSubOf = (place) => {
+      if (place.kind !== "box") return `${place.paths.length} 要素をまとめた箱`;
+      const entry = entryAt.get(place.path);
+      const isPathShown = state.naming === "concept" || entry.conceptName === null;
+      return isPathShown ? entry.path : entry.conceptName;
+    };
+
+    const renderSide = (view) => {
+      const { selected, model } = view;
+      if (selected === null) side.replaceChildren(...overviewOf(model));
+      else if (selected.kind === "test") side.replaceChildren(...testDetailOf(tests[selected.id], model));
+      else side.replaceChildren(...targetDetailOf(selected, model));
+      side.scrollTop = 0;
+    };
+
+    const render = () => {
+      const model = modelOf(state);
+      const selected = validSelectionOf(state.selected, model);
+      const isNewTestSelection = selected !== null && selected.kind === "test" && !isSameSelection(selected, previous);
+      const view = { model, selected, highlight: highlightOf(model, selected) };
+      state = { ...state, selected };
+      previous = selected;
+      renderControls();
+      renderList(view);
+      renderGraph(view);
+      renderSide(view);
+      const row = isNewTestSelection ? listBody.querySelector(`[data-test="${selected.id}"]`) : null;
+      if (row !== null) row.scrollIntoView({ block: "nearest" });
+    };
+    let previous = null;
+    render();
+
+    const namingControl = explain === null ? [] : [controlNodes.naming];
+    const gapControl = hasMessages ? [controlNodes.gaps] : [];
     return {
-      controls: [el("span", { class: "counts" }, [el("span", { class: "total", text: `${explained.tests.length} tests` })])],
-      left: panelOf("left", [panelHead("テスト", `${explained.tests.length} 件`), el("div", { class: "panel-scroll" }, body)]),
-      main: stageOf([ledeOf(explained, "テスト"), el("div", { class: "stat-grid" }, stats)]),
-      right: panelOf("right", [panelHead("全体", ""), el("dl", { class: "facts" }, Object.entries(TestStatusTags).flatMap(([status, tag]) => [el("dt", { text: tag.label }), el("dd", { text: `${countOf(status)} 件` })]))]),
+      controls: [controlNodes.grouping, controlNodes.level, ...namingControl, gapControl].flat(),
+      left: panelOf("left", [listHead, listBody]),
+      main: graph.element,
+      right: panelOf("right", [side]),
     };
   };
 
@@ -1595,7 +2855,15 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
       const hasIssue = explain !== null && typeof explain.issue === "number";
       const issue = hasIssue ? explain.issue : null;
       document.title = explain === null ? `PR #${pr} · PR 解説` : `${explain.overview.title} · PR #${pr}`;
-      const built = Object.fromEntries(Object.values(Screens).map((screen) => [screen, ScreenBuilders[screen](explained)]));
+      /** 画面をまたぐ移動。ハッシュは開く画面のものにする。 */
+      const go = {
+        toCommit: (sha) => {
+          history.replaceState(null, "", `#${Screens.Story}`);
+          openScreen(Screens.Story);
+          built.story.select(sha);
+        },
+      };
+      const built = Object.fromEntries(Object.values(Screens).map((screen) => [screen, ScreenBuilders[screen](explained, go)]));
       const tabs = Object.values(Screens).map((screen) => el("a", { href: `#${screen}`, "data-screen": screen, text: ScreenLabels[screen] }));
       const controls = el("div", { class: "screen-controls" });
       const branch = el("span", { class: "branch" }, [explained.map.headBranch ?? shortSha(explained.map.head), el("span", { class: "arrow", text: "→" }), explained.map.baseBranch ?? shortSha(explained.map.mergeBase)]);

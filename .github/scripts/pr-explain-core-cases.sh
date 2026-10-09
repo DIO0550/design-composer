@@ -2,15 +2,18 @@
 #
 # 解説ページの核の判定表。テンプレート(`.claude/skills/pr-explain/templates/index.html`)から固定
 # スクリプトを抜き出して node の `vm` で評価し、`document` が無いときに置かれる `prExplainCore` を
-# 叩いて、地図と解説の合流・コミットの差分・確認の印の鍵・開く画面が期待どおりかを 1 コマンドで確かめる。
+# 叩いて、地図と解説の合流・箱の図の配置・コミットの差分・確認の印の鍵・開く画面が期待どおりかを 1 コマンドで
+# 確かめる。
 #
 # 使い方: bash .github/scripts/pr-explain-core-cases.sh
 # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。
 #
 # **どのケースも、既定値や素朴な実装と答えが違う入力を選ぶ。** 古さは 4 件のうち 2 件目を解説時点に
 # して、以降の件数(2)が添字(1)とも「全件数 − 添字」(3)とも違うようにする。表示名は concept 名・`index.*`・それ以外を
-# 並べ、解説なしのときは退けた解説に concept 名を書いておいて、それを使わないことを見る。差分は hunk の
-# あいだの行・変更前と変更後で番号のずれる行・切る前と見せた行数の違う patch を選ぶ。
+# 並べ、解説なしのときは退けた解説に concept 名を書いておいて、それを使わないことを見る。箱の図の段の向きは、
+# 入力の順と答えの順が違うように並べ、循環は打ち切りで済ませると段が割れる順で渡す。抽象度の中と同じ段の中の順は、
+# 変更行数の順をラベルの順と変えておく。差分は hunk のあいだの行・変更前と変更後で番号のずれる行・切る前と見せた
+# 行数の違う patch を選ぶ。
 #
 # 組み立て(DOM を触る側)はここでは通らない。画面の配線は表示確認で見る。
 #
@@ -40,7 +43,7 @@ if (core === undefined) {
   console.error("document の無い評価で prExplainCore が置かれていない");
   process.exit(2);
 }
-const { ExplainedMap, ReviewMark, ScreenChoice, CommitDiff } = core;
+const { ExplainedMap, ReviewMark, ScreenChoice, CommitDiff, GraphLayout } = core;
 
 const Pr = 7;
 const shaOf = (digit) => String(digit).repeat(40);
@@ -69,7 +72,6 @@ const absent = { kind: "absent" };
 const explained = (map, explain) => ExplainedMap.from(map, { kind: "text", text: JSON.stringify(explain) });
 const plain = (value) => JSON.parse(JSON.stringify(value));
 
-// ハブ(Hub.ts)を変え、変更していない 5 本がそれを使っている地図。
 // 差分の地図のファイルと、注釈を付けたコミットの差分。
 const diffFile = (path, extra = {}) => ({ path, status: "M", oldPath: null, additions: 1, deletions: 1, patch: "", patchLines: 0, truncated: false, ...extra });
 const noteOn = (path, start, end, text, extra = {}) => ({ path, start, end, text, ...extra });
@@ -79,6 +81,15 @@ const linesOf = (rows) => rows.join("\n");
 const twoHunks = linesOf(["@@ -1,3 +1,3 @@", " a", "-b", "+B", " c", "@@ -10,3 +10,3 @@", " j", "-k", "+K", " l"]);
 const numbersOf = (file) => file.body.hunks.map((hunk) => hunk.notes.map((note) => [note.n, note.text]));
 
+// 箱の図の組と依存。graphGroup の箱は `組名/番号.ts`、boxesOf の箱は渡した名前で、lines はその箱の変更行数。
+const graphGroup = (id, lines = [1]) => ({ id, boxes: lines.map((count, index) => ({ path: `${id}/${index}.ts`, lines: count })) });
+const dependsOn = (from, to, state = "kept") => ({ from: `${from}/0.ts`, to: `${to}/0.ts`, state });
+const boxesOf = (id, names, lines) => ({ id, boxes: names.map((name, index) => ({ path: name, lines: lines === undefined ? 1 : lines[index] })) });
+// 上の段から順に、行ごとの組(畳んだ組)・箱(開いた組の中)を左から並べる。
+const rowsOf = (units) => [...new Set(units.map((unit) => unit.y))].sort((a, b) => a - b).map((y) => units.filter((unit) => unit.y === y).sort((a, b) => a.x - b.x).map((unit) => (unit.kind === "box" ? unit.path : unit.group)));
+const groupRowsOf = (groups, links) => rowsOf(GraphLayout.of({ groups, links, expanded: [] }).units);
+
+// ハブ(Hub.ts)を変え、変更していない 5 本がそれを使っている地図。
 const hubImporters = ["A", "B", "C", "D", "E"].map((name) => `src/features/${name}.ts`);
 const hubMap = mapOf({
   groups: [
@@ -237,6 +248,49 @@ const cases = [
       return { isCurrent: result.map.isCurrent, boxes: result.entries.filter((entry) => entry.inGraph).map((entry) => entry.path), subject: result.commits[0].subject };
     },
     expected: { isCurrent: false, boxes: ["src/utils/Hub.ts"], subject: null },
+  },
+  {
+    label: "箱の図では、使う側の組が上の段、使われる側の組が下の段に並ぶ",
+    actual: () => groupRowsOf([graphGroup("domain"), graphGroup("ui"), graphGroup("app")], [dependsOn("ui", "app"), dependsOn("app", "domain")]),
+    expected: [["ui"], ["app"], ["domain"]],
+  },
+  {
+    label: "互いに使い合う組は同じ段に並び、それを使う組がその上の段に来る",
+    actual: () => groupRowsOf([graphGroup("b"), graphGroup("c"), graphGroup("a")], [dependsOn("a", "b"), dependsOn("b", "a"), dependsOn("c", "a")]),
+    expected: [["c"], ["b", "a"]],
+  },
+  {
+    label: "開いた組の中の箱も、互いに使い合うものは同じ段に並ぶ",
+    actual: () => {
+      const links = [{ from: "x", to: "y", state: "kept" }, { from: "y", to: "x", state: "kept" }, { from: "z", to: "x", state: "added" }];
+      return rowsOf(GraphLayout.of({ groups: [boxesOf("g", ["y", "z", "x"])], links, expanded: ["g"] }).units);
+    },
+    expected: [["z"], ["y", "x"]],
+  },
+  {
+    label: "同じ段の箱は 1 行に 4 つまでで、5 つ目は次の行に回る",
+    actual: () => rowsOf(GraphLayout.of({ groups: [boxesOf("g", ["a", "b", "c", "d", "e"])], links: [], expanded: ["g"] }).units),
+    expected: [["a", "b", "c", "d"], ["e"]],
+  },
+  {
+    label: "消えた依存は段に使わず、その 2 つの組は同じ段に並ぶ",
+    actual: () => groupRowsOf([graphGroup("a"), graphGroup("b")], [dependsOn("a", "b", "removed")]),
+    expected: [["a", "b"]],
+  },
+  {
+    label: "抽象度が中なら、4 つの組のうち変更行数の多い 2 つを開く",
+    actual: () => GraphLayout.expandedAt(GraphLayout.Levels.Mid, [graphGroup("a", [5]), graphGroup("b", [40]), graphGroup("c", [10]), graphGroup("d", [30])]),
+    expected: ["b", "d"],
+  },
+  {
+    label: "抽象度が中なら、組が 1 つだけでもそれを開く",
+    actual: () => GraphLayout.expandedAt(GraphLayout.Levels.Mid, [graphGroup("a", [5])]),
+    expected: ["a"],
+  },
+  {
+    label: "同じ段の組は、変更行数の多い順に左から並ぶ",
+    actual: () => groupRowsOf([graphGroup("a", [5]), graphGroup("b", [40]), graphGroup("c", [10])], []),
+    expected: [["b", "c", "a"]],
   },
   {
     label: "注釈は行の入る最初の hunk に付き、番号は入力の順ではなく hunk の順にファイルの中で通す",
