@@ -56,8 +56,11 @@
 
 ## ファイルを変更しない
 
-**指摘だけを返す。実装の修正はしない。** 作業ツリーを書き換えてよいのはミューテーションを当てる
-`test-reviewer` だけで、その後始末は `test-reviewer` の定義が持つ。
+この節は `planner`(`.claude/agents/planner.md`)も従う。
+
+**指摘だけを返す。実装の修正はしない。** 観点別のエージェントのうち作業ツリーを書き換えてよいのは
+ミューテーションを当てる `test-reviewer` だけで、その後始末は `test-reviewer` の定義が持つ
+(実装の書き換えは `implementer` の担当)。
 
 - **Bash を持つエージェントは、呼ばれた直後に `git status --porcelain` と `git rev-parse HEAD` を
   控え、返す前に両方が同じであることを確かめる**

@@ -27,6 +27,7 @@ import {
   TypographyToken,
 } from "@/domains/dcmp/token";
 import { Visibility } from "@/domains/dcmp/visibility";
+import { Wrap } from "@/domains/dcmp/wrap";
 import { Html } from "@/utils/Html";
 import { Option } from "@/utils/Option";
 
@@ -200,23 +201,6 @@ function overflowDeclarations(
     : [];
 }
 
-/**
- * 初期値と同じ `nowrap` は宣言を出力しない (docs/03 の表は `wrap: wrap` の行だけを規定)。
- *
- * `overflowDeclarations` と理由まで同じだが畳まない。畳むと、値・CSS プロパティ・CSS 値の
- * 3 つを引数に取る関数になり、呼び出しからどの prop の規則かが読めなくなる。
- *
- * @param wrap `wrap` prop に設定されている値
- * @returns 折り返すときだけ `flex-wrap: wrap` の宣言 1 件。それ以外は空
- */
-function wrapDeclarations(
-  wrap: PropValue | undefined,
-): readonly CssDeclarationType[] {
-  return wrap === "wrap"
-    ? [CssDeclaration.create("flex-wrap", String(wrap))]
-    : [];
-}
-
 /** 出力しても効果の無い、CSS の初期値と同じ完全な不透明。 */
 const FullyOpaque = 1;
 
@@ -350,7 +334,9 @@ export const BoxElement = {
     const layout = Layout.fromProps(props);
     // 子を並べない Box で効かない prop は、スキーマの `enabledWhen` (`FlexOnly`) と同じ
     const arrangesChildren = Option.isSome(Layout.direction(layout));
-    const wrap = arrangesChildren ? wrapDeclarations(props.wrap) : [];
+    const wrap = arrangesChildren
+      ? Wrap.declarations(Wrap.fromProps(props))
+      : [];
     const gap = arrangesChildren
       ? tokenDeclarations("gap", props.gap, tokens)
       : [];

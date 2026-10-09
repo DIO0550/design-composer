@@ -71,4 +71,15 @@ export const Range = {
   center(range: Range): number {
     return (range.min + range.max) / 2;
   },
+
+  /**
+   * 相手の範囲の上端以降から始まっているか。端が接するだけでも始まっているとみなす。
+   *
+   * @param range 見る範囲
+   * @param other 前にあるかを見る相手の範囲
+   * @returns `range` の下端が `other` の上端以上なら true
+   */
+  follows(range: Range, other: Range): boolean {
+    return range.min >= other.max;
+  },
 } as const;

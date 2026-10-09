@@ -3,6 +3,7 @@ import { Layout, Layouts } from "@/domains/dcmp/layout";
 import { Locking, Lockings } from "@/domains/dcmp/locking";
 import { PaintTokenKinds } from "@/domains/dcmp/token";
 import { Visibilities, Visibility } from "@/domains/dcmp/visibility";
+import { Wrap, Wraps } from "@/domains/dcmp/wrap";
 import type { ValueOf } from "@/types/ValueOf";
 import { Option } from "@/utils/Option";
 import { RecordEx } from "@/utils/RecordEx";
@@ -197,16 +198,13 @@ export const BoxSchema = {
       group: "layout",
     },
     /*
-     * 値は CSS の `flex-wrap` の綴りをそのまま採る。パネルは enum の値をそのままセグメント
-     * へ出すので、別の語彙にすると CSS への対応表が要る。
-     *
      * `layout` の直後へ置くのはパネルの行の並びが宣言順で決まるためで、UI 案
      * （docs/Design Composer.html）はこの行を描いていない。
      */
     wrap: {
       domain: "enum",
-      values: ["nowrap", "wrap"],
-      default: "nowrap",
+      values: Object.values(Wraps),
+      default: Wrap.Default,
       group: "layout",
       enabledWhen: FlexOnly,
     },

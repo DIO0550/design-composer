@@ -11,6 +11,14 @@ export type IndexOutOfRange = Readonly<{
   length: number;
 }>;
 
+/** 並びの中で隣り合う 2 つの要素。 */
+export type AdjacentPair<T> = Readonly<{
+  /** 前にある要素 */
+  previous: T;
+  /** `previous` の直後にある要素 */
+  next: T;
+}>;
+
 /**
  * 範囲外の指定を、範囲と指定値を添えた失敗にする。
  *
@@ -126,6 +134,18 @@ export const ArrayEx = {
    */
   dropFirst<T>(array: readonly T[]): readonly T[] {
     return array.slice(1);
+  },
+
+  /**
+   * 隣り合う 2 つの要素の組を、並び順に集める。
+   *
+   * @param array 組を作る並び
+   * @returns 先頭から順に、各要素と直後の要素の組。要素が 2 つ未満なら空
+   */
+  adjacentPairs<T>(array: readonly T[]): readonly AdjacentPair<T>[] {
+    return array
+      .slice(1)
+      .map((next, position) => ({ previous: array[position], next }));
   },
 
   /**

@@ -80,3 +80,15 @@ test("範囲の長さは、上端から下端を引いたもの", () => {
 test("範囲の中央は、下端と上端の真ん中", () => {
   expect(Range.center({ min: 15, max: 40 })).toBe(27.5);
 });
+
+test("相手の上端より後ろから始まる範囲は、相手に続いている", () => {
+  expect(Range.follows({ min: 60, max: 90 }, { min: 10, max: 50 })).toBe(true);
+});
+
+test("相手の上端と下端が接する範囲も、相手に続いている", () => {
+  expect(Range.follows({ min: 50, max: 90 }, { min: 10, max: 50 })).toBe(true);
+});
+
+test("相手と重なっている範囲は、相手に続いていない", () => {
+  expect(Range.follows({ min: 40, max: 90 }, { min: 10, max: 50 })).toBe(false);
+});

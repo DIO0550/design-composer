@@ -193,3 +193,10 @@ test("reduceUntilErr はすべて ok なら並びの順に畳んだ値を返す"
     ),
   ).toEqual(Result.ok("abc"));
 });
+
+test("隣り合う要素の組は、先頭から順に各要素と直後の要素の組になる", () => {
+  expect(ArrayEx.adjacentPairs(["a", "b", "c"])).toEqual([
+    { previous: "a", next: "b" },
+    { previous: "b", next: "c" },
+  ]);
+});
