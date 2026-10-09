@@ -1,0 +1,1098 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-CTdhon0BIOFs2CZVUcOCWx5WL94vJ8UYu5BXGXCZwrk='; style-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PR 解説</title>
+<style>
+:root {
+  --bg: #f3f8fd;
+  --surface: #ffffff;
+  --surface-2: #e8f1fb;
+  --border: #d2e1f1;
+  --text: #13233a;
+  --text-2: #3e5571;
+  --text-3: #5f7590;
+  --accent: #1f6fd1;
+  --accent-soft: #deecfc;
+  --green: #2f7d4f;
+  --green-soft: #e1f3e8;
+  --rose: #b23a48;
+  --rose-soft: #fbe6e9;
+  --amber: #9a6b12;
+  --amber-soft: #fdf2dc;
+  --code-bg: #f5f9fe;
+  --tok-kw: #1d4fc4;
+  --tok-str: #0f7a6c;
+  --tok-com: #637893;
+  --tok-num: #b45309;
+  --tok-fn: #7c3aed;
+  --tok-key: #0b63b6;
+  --tok-var: #c0266d;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif;
+  --header-h: 64px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1724;
+    --surface: #152033;
+    --surface-2: #1b2a40;
+    --border: #2a3c56;
+    --text: #e2ebf6;
+    --text-2: #a8bcd5;
+    --text-3: #7288a5;
+    --accent: #7fb3ff;
+    --accent-soft: #1d3353;
+    --green: #7cc79a;
+    --green-soft: #1b3326;
+    --rose: #ec8f9b;
+    --rose-soft: #3d2328;
+    --amber: #e3b45a;
+    --amber-soft: #3a2f19;
+    --code-bg: #111c2c;
+    --tok-kw: #82aaff;
+    --tok-str: #7fd6c2;
+    --tok-com: #6f84a0;
+    --tok-num: #f0b46b;
+    --tok-fn: #c4a3ff;
+    --tok-key: #6fc1ff;
+    --tok-var: #ff8fb8;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.75 var(--sans); }
+a { color: var(--accent); }
+code { font-family: var(--mono); font-size: 0.88em; background: var(--surface-2); padding: 0.1em 0.35em; border-radius: 4px; }
+.page { padding: 0 24px 64px 16px; }
+.top { position: sticky; top: 0; z-index: 10; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 12px 0; background: var(--bg); border-bottom: 1px solid var(--border); }
+.code-toggle { font: 12px var(--sans); padding: 4px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--text-2); cursor: pointer; }
+.code-toggle:hover { color: var(--accent); border-color: var(--accent); }
+.links { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; margin-left: auto; }
+.explain-pages { display: flex; flex-wrap: wrap; gap: 4px; }
+.explain-pages a, .explain-pages span { padding: 4px 12px; border-radius: 999px; font-size: 13px; text-decoration: none; color: var(--text-2); border: 1px solid var(--border); }
+.explain-pages a[aria-current="page"] { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); font-weight: 600; }
+.explain-pages span { color: var(--text-3); border-style: dashed; }
+.banner { margin: 16px 0 0; padding: 12px 14px; border-radius: 8px; background: var(--amber-soft); color: var(--text); border: 1px solid var(--border); font-size: 14px; }
+.banner ul { margin: 6px 0 0; padding-left: 20px; }
+.layout { display: grid; grid-template-columns: 270px minmax(0, 1fr); gap: 40px; margin-top: 24px; }
+.toc { position: sticky; top: calc(var(--header-h) + 16px); align-self: start; max-height: calc(100vh - var(--header-h) - 32px); overflow-y: auto; font-size: 14px; }
+h2[id], h3[id], tr[id] { scroll-margin-top: calc(var(--header-h) + 12px); }
+.toc a { display: block; padding: 7px 10px 7px 14px; line-height: 1.45; color: var(--text-2); text-decoration: none; border-left: 3px solid var(--border); }
+.toc a:hover { color: var(--accent); border-left-color: var(--accent); }
+.toc a.toc-h2 { font-weight: 600; }
+.toc a.toc-h3 { padding: 5px 10px 5px 28px; font-size: 13px; }
+.toc a.is-current { color: var(--accent); border-left-color: var(--accent); background: var(--accent-soft); }
+.toc a.is-done::after { content: " ✓"; color: var(--green); font-weight: 700; }
+.toc .toc-sub { display: none; }
+.toc .toc-sub.is-open { display: block; }
+.review-progress { font: 12px var(--sans); padding: 4px 12px; border-radius: 999px; background: var(--green-soft); color: var(--green); font-weight: 600; }
+abbr[title] { text-decoration: underline dotted var(--text-3); text-underline-offset: 3px; cursor: help; }
+@media (max-width: 860px) { .layout { grid-template-columns: minmax(0, 1fr); } .toc { position: static; max-height: none; } .links { flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; margin-left: 0; max-width: 100%; } }
+main { min-width: 0; max-width: 1320px; }
+h1 { font-size: 28px; line-height: 1.35; margin: 0 0 8px; }
+h2 { font-size: 20px; margin: 48px 0 12px; padding-top: 8px; border-top: 1px solid var(--border); }
+h3 { font-size: 16px; margin: 28px 0 8px; }
+.kicker { display: inline-block; margin-right: 8px; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); font-weight: 700; vertical-align: 0.15em; }
+.explain-meta { color: var(--text-3); font-size: 13px; margin: 0 0 16px; }
+.lead { font-size: 17px; color: var(--text-2); }
+.empty-note { padding: 20px; border: 1px dashed var(--border); border-radius: 8px; color: var(--text-2); background: var(--surface); }
+table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; background: var(--surface); }
+th, td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
+th { background: var(--surface-2); font-weight: 600; }
+table.behavior td:nth-child(2) { background: var(--rose-soft); }
+table.behavior td:nth-child(3) { background: var(--green-soft); }
+.decision { margin: 16px 0; padding: 14px 16px; background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 8px; }
+.decision[data-kind="逸脱"] { border-left-color: var(--amber); }
+.decision[data-kind="見送り"] { border-left-color: var(--text-3); }
+.decision h3 { margin: 0 0 8px; }
+.decision::before { content: attr(data-kind); display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; padding: 1px 8px; border-radius: 999px; background: var(--surface-2); color: var(--text-2); margin-bottom: 6px; }
+.decision dl { display: grid; grid-template-columns: 7em minmax(0, 1fr); gap: 4px 12px; margin: 0; }
+.decision dt { color: var(--text-3); font-size: 13px; }
+.decision dd { margin: 0; }
+article.tech { margin: 24px 0; }
+figure.diagram { margin: 16px 0; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow-x: auto; }
+figure.diagram svg { display: block; max-width: 100%; height: auto; margin: 0 auto; }
+figure.diagram figcaption { margin-top: 8px; font-size: 13px; color: var(--text-3); text-align: center; }
+.d-box { fill: var(--surface-2); stroke: var(--border); stroke-width: 1.5; }
+.d-accent { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+.d-line { stroke: var(--text-2); stroke-width: 1.5; fill: none; }
+.d-text { fill: var(--text); font: 13px var(--sans); }
+.d-muted { fill: var(--text-3); font: 12px var(--sans); }
+pre.code { margin: 12px 0; padding: 12px 14px; background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; overflow-x: auto; font: 13px/1.6 var(--mono); }
+pre.code code { background: none; padding: 0; font-size: inherit; }
+.where-ref { margin: 4px 0 0; color: var(--text-2); font-size: 14px; }
+details.code-fold { margin: 12px 0; border: 1px solid var(--border); border-radius: 8px; background: var(--code-bg); }
+details.code-fold > summary { padding: 6px 12px; font-size: 13px; color: var(--text-2); cursor: pointer; background: var(--surface-2); border-radius: 8px; }
+details.code-fold[open] > summary { border-bottom: 1px solid var(--border); border-radius: 8px 8px 0 0; }
+details.code-fold > summary code { background: none; padding: 0; }
+details.code-fold .fold-count { margin-left: 8px; color: var(--text-3); }
+details.code-fold .review-mark { float: right; font: 12px var(--sans); padding: 1px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--text-2); cursor: pointer; }
+details.code-fold .review-mark[aria-pressed="true"] { background: var(--green-soft); color: var(--green); border-color: var(--green); font-weight: 600; }
+details.code-fold.is-reviewed > summary { opacity: 0.75; }
+.dep-graph .dep-node rect { fill: var(--surface); stroke: var(--border); stroke-width: 1.5; }
+.dep-graph .dep-node .dep-name { fill: var(--text); font: 600 12px var(--mono); }
+.dep-graph .dep-node .dep-folder { fill: var(--text-3); font: 10.5px var(--mono); }
+.dep-graph .dep-node.is-deleted rect { stroke-dasharray: 4 3; fill: var(--surface-2); }
+.dep-graph .dep-band-line { stroke: var(--border); stroke-width: 1; stroke-dasharray: 4 4; }
+.dep-graph .dep-band-title { fill: var(--text-2); font: 600 12px var(--sans); }
+.dep-graph .dep-node.is-center rect { stroke: var(--accent); stroke-width: 2; fill: var(--accent-soft); }
+.dep-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 960px), 1fr)); gap: 12px; margin: 8px 0 20px; }
+.dep-card { padding: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow-x: auto; }
+.dep-card svg { display: block; max-width: 100%; height: auto; }
+.dep-graph .dep-node:hover rect, .dep-graph .dep-node.is-pinned rect { stroke: var(--accent); fill: var(--accent-soft); }
+.dep-graph .dep-edge { stroke: var(--text-3); stroke-width: 1.4; stroke-opacity: 0.45; fill: none; }
+.dep-card .dep-graph .dep-edge { stroke-opacity: 1; }
+.dep-graph .dep-arrow { fill: var(--text-3); }
+.dep-graph.has-focus .dep-edge:not(.is-related), .dep-graph.has-focus .dep-node:not(.is-related) { opacity: 0.15; }
+.dep-graph.has-focus .dep-edge.is-related { stroke: var(--accent); stroke-width: 2; stroke-opacity: 1; }
+.seq-head rect { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+.seq-head text { fill: var(--text); font: 600 13px var(--sans); }
+.seq-life { stroke: var(--border); stroke-width: 1.5; stroke-dasharray: 4 4; }
+.seq-arrow { stroke: var(--text-2); stroke-width: 1.5; fill: none; }
+.seq-arrow.is-return { stroke-dasharray: 6 4; }
+.seq-label { fill: var(--text); font: 12px var(--sans); }
+.seq-step { fill: var(--text-3); font: 11px var(--mono); }
+.seq-tip { fill: var(--text-2); }
+figure.diagram svg.dep-graph, figure.diagram svg.seq { max-width: none; margin: 0; }
+details.code-fold > pre.code { margin: 0; border: 0; border-radius: 0 0 8px 8px; }
+.tok-kw { color: var(--tok-kw); font-weight: 600; }
+.tok-str { color: var(--tok-str); }
+.tok-com { color: var(--tok-com); font-style: italic; }
+.tok-num { color: var(--tok-num); }
+.tok-fn { color: var(--tok-fn); }
+.tok-key { color: var(--tok-key); }
+.tok-var { color: var(--tok-var); }
+pre.code.has-diff { padding: 8px 0; }
+pre.code.has-diff code { display: none; }
+details[data-view="diff"] pre.code.has-diff code.view-diff,
+details[data-view="code"] pre.code.has-diff code.view-code { display: block; }
+pre.code .row { display: block; width: max-content; min-width: 100%; padding: 0 14px 0 8px; }
+pre.code .row .ln { display: inline-block; min-width: 4ch; margin-right: 10px; color: var(--text-3); text-align: right; user-select: none; }
+pre.code .row .sign { display: inline-block; width: 2ch; color: var(--text-3); user-select: none; }
+.view-diff .row-add { background: var(--green-soft); }
+.view-diff .row-add .sign { color: var(--green); }
+.view-diff .row-del { background: var(--rose-soft); }
+.view-diff .row-del .sign { color: var(--rose); }
+.view-diff .row-hunk { background: var(--accent-soft); color: var(--text-3); padding-left: 14px; }
+.view-code .row-add { box-shadow: inset 3px 0 0 var(--green); }
+.view-switch { display: flex; gap: 4px; padding: 6px 12px; border-bottom: 1px solid var(--border); background: var(--surface); }
+.view-switch button { font: 12px var(--sans); padding: 2px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--text-2); cursor: pointer; }
+.view-switch button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); border-color: var(--accent); font-weight: 600; }
+.note { margin: 14px 0; padding: 10px 14px; border-radius: 8px; font-size: 14px; }
+.note.info { background: var(--accent-soft); }
+.note.warn { background: var(--amber-soft); }
+ul.focus li { margin: 6px 0; }
+.map h3 { font-size: 14px; color: var(--text-2); margin: 20px 0 6px; }
+.map ul { list-style: none; margin: 0; padding: 0; }
+.map li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; padding: 4px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.map .status { font: 11px var(--mono); min-width: 1.6em; text-align: center; border-radius: 4px; background: var(--surface-2); color: var(--text-2); }
+.map .count { font: 12px var(--mono); color: var(--text-3); }
+.muted { color: var(--text-3); }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="top">
+    <span class="kicker">PR 解説</span>
+    <nav class="explain-pages" id="explain-pages" aria-label="解説のページ"></nav>
+    <nav class="links" id="links"></nav>
+    <span id="code-controls"></span>
+  </header>
+  <div class="banner" id="staleness" hidden></div>
+  <div class="layout">
+    <nav class="toc" id="toc" aria-label="目次"></nav>
+    <main>
+      <article id="explain">
+<!-- EXPLAIN:BEGIN -->
+<p class="empty-note">解説はまだ書かれていません。下の「変更の地図」は push のたびに自動で更新されます。振る舞い・技術・テストのページも、書かれると上のナビから開けるようになります。</p>
+<!-- EXPLAIN:END -->
+      </article>
+      <section class="map" id="map-section" hidden>
+        <h2 id="map-section-heading"></h2>
+        <div id="map-section-body"><p class="muted">読み込み中…</p></div>
+      </section>
+    </main>
+  </div>
+</div>
+<script>
+(() => {
+  const Repo = "DIO0550/design-composer";
+  const ExplainPages = [
+    { name: "index", href: "./", label: "入口" },
+    { name: "behavior", href: "behavior.html", label: "振る舞い" },
+    { name: "tech", href: "tech.html", label: "技術" },
+    { name: "tests", href: "tests.html", label: "テスト" },
+  ];
+  const explain = document.getElementById("explain");
+  const meta = explain.querySelector(".explain-meta");
+  const explainedSha = meta ? meta.dataset.explainedSha : "";
+  const prFromPath = (location.pathname.match(/pr-(\d+)/) || [])[1] || "";
+  const pr = meta ? meta.dataset.pr : prFromPath;
+  // explain-meta が無いのは、Actions が入口に置いたテンプレートだけ。
+  const page = meta ? meta.dataset.page : "index";
+
+  // 要素を作る。中身の文字は textContent で入れ、属性は setAttribute で付ける(HTML として解釈させない)。
+  const elementIn = (namespace) => (tag, props, children) => {
+    const node = document.createElementNS(namespace, tag);
+    for (const [key, value] of Object.entries(props || {})) {
+      if (key === "text") node.textContent = value;
+      else node.setAttribute(key, value);
+    }
+    for (const child of children || []) node.append(child);
+    return node;
+  };
+  const el = elementIn("http://www.w3.org/1999/xhtml");
+  const svgEl = elementIn("http://www.w3.org/2000/svg");
+
+  const heading = explain.querySelector("h1");
+  if (heading) document.title = `${heading.textContent.trim()} · PR 解説`;
+
+  for (const code of explain.querySelectorAll("code.ref")) {
+    const match = code.textContent.trim().match(/^(.+?)(?::(\d+)(?:-(\d+))?)?$/);
+    if (!match) continue;
+    const [, path, start, end] = match;
+    const lines = start ? `#L${start}${end ? `-L${end}` : ""}` : "";
+    const link = el("a", { href: `https://github.com/${Repo}/blob/${explainedSha}/${path}${lines}` });
+    code.replaceWith(link);
+    link.append(code);
+  }
+
+  // 上部の固定ヘッダの高さ。目次の固定位置と、見出しへ飛んだときにヘッダの下へ隠れない余白に使う(折り返すと変わる)。
+  const header = document.querySelector(".top");
+  new ResizeObserver(() => document.documentElement.style.setProperty("--header-h", `${header.offsetHeight}px`)).observe(header);
+
+  // コード抜粋の色分けの規則。キーワード・文字列・コメント・数値・関数呼び出しに加え、YAML はキー、
+  // シェルは変数、HTML はタグと属性名に色を付ける簡易なもの。
+  const words = (list) => new Set(list.split(" ").filter((word) => word !== ""));
+  const Grammars = {
+    python: { comment: "#", hashAnywhere: true, strings: ['"""', "'''", '"', "'"], keywords: words("def class return if elif else for while in not and or is None True False import from as with try except finally raise lambda yield pass continue break assert del async await global nonlocal") },
+    js: { comment: "//", block: ["/*", "*/"], strings: ['"', "'", "`"], keywords: words("const let var function return if else for while of in new class extends import export from default switch case break continue try catch finally throw typeof instanceof null undefined true false this async await yield delete void") },
+    shell: { comment: "#", strings: ['"', "'"], variables: true, keywords: words("if then else elif fi for in do done while until case esac function return local export set exit trap source echo readonly shift") },
+    yaml: { comment: "#", strings: ['"', "'"], keys: true, keywords: words("true false null") },
+    html: { block: ["<!--", "-->"], strings: ['"', "'"], tags: true, keywords: words("") },
+  };
+  const LanguageByExtension = { py: "python", js: "js", mjs: "js", ts: "js", tsx: "js", jsx: "js", json: "js", sh: "shell", bash: "shell", yml: "yaml", yaml: "yaml", html: "html" };
+  const Identifier = /[A-Za-z_]\w*/y;
+  const NumberLiteral = /\d+(?:\.\d+)?/y;
+  const YamlKey = /[ \t]*(?:- )?[\w.$-]+(?=:(?:\s|$))/y;
+  const ShellVariable = /\$(?:\{[^}\n]*\}|[A-Za-z_]\w*|[0-9#?@*$])/y;
+  const TagName = /<\/?[A-Za-z][\w-]*/y;
+  const AttributeName = /[A-Za-z_:][\w:.-]*(?==)/y;
+
+  // 字句。`opens` は閉じずに行が終わった文字列・コメントの閉じ記号で、次の行の頭から続ける。
+  const Token = (cls, value, opens = null) => ({ cls, value, opens });
+
+  // cursor は { text, at, prev(直前の文字。ノードの頭では前のノードの末尾), lineStart }。
+  const matchAt = (pattern, cursor) => {
+    pattern.lastIndex = cursor.at;
+    const match = pattern.exec(cursor.text);
+    return match ? match[0] : null;
+  };
+  const restOfLine = (cursor) => {
+    const end = cursor.text.indexOf("\n", cursor.at);
+    return cursor.text.slice(cursor.at, end < 0 ? cursor.text.length : end);
+  };
+
+  // 文字列の終わりまで。閉じずに行が終わったら、三重引用符とテンプレート文字列だけ次の行へ持ち越す。
+  const stringAt = (cursor, grammar) => {
+    const { text, at } = cursor;
+    const quote = grammar.strings.find((candidate) => text.startsWith(candidate, at));
+    if (!quote) return null;
+    let end = at + quote.length;
+    while (end < text.length && text[end] !== "\n") {
+      if (text.startsWith(quote, end)) return Token("tok-str", text.slice(at, end + quote.length));
+      end += text[end] === "\\" ? 2 : 1;
+    }
+    const spansLines = quote.length === 3 || quote === "`";
+    return Token("tok-str", text.slice(at, Math.min(end, text.length)), spansLines ? quote : null);
+  };
+
+  const commentAt = (cursor, grammar) => {
+    const { text, at } = cursor;
+    const block = grammar.block;
+    const isBlockCommentStart = block !== undefined && text.startsWith(block[0], at);
+    if (isBlockCommentStart) {
+      const close = text.indexOf(block[1], at + block[0].length);
+      return close >= 0 ? Token("tok-com", text.slice(at, close + block[1].length)) : Token("tok-com", restOfLine(cursor), block[1]);
+    }
+    const isLineCommentStart = grammar.comment !== undefined && text.startsWith(grammar.comment, at);
+    // `#` は Python 以外では行頭か空白の直後だけコメントにする(シェルの `$#`・URL の `#` を取り違えない)。
+    const isHashAllowedHere = grammar.comment !== "#" || grammar.hashAnywhere === true || /\s/.test(cursor.prev);
+    const isComment = isLineCommentStart && isHashAllowedHere;
+    return isComment ? Token("tok-com", restOfLine(cursor)) : null;
+  };
+
+  // 位置から始まる字句を 1 つ返す。色の付かない識別子も、途中で切らないよう 1 字句(cls が null)で返す。
+  // どの規則にも当たらなければ null(呼び出し側が 1 文字だけ進める)。
+  const tokenAt = (cursor, grammar) => {
+    const isYamlKeyPosition = grammar.keys === true && cursor.lineStart;
+    const key = isYamlKeyPosition ? matchAt(YamlKey, cursor) : null;
+    if (key) return Token("tok-key", key);
+    const quoted = commentAt(cursor, grammar) || stringAt(cursor, grammar);
+    if (quoted) return quoted;
+    const variable = grammar.variables === true ? matchAt(ShellVariable, cursor) : null;
+    if (variable) return Token("tok-var", variable);
+    const markup = grammar.tags === true ? matchAt(TagName, cursor) || matchAt(AttributeName, cursor) : null;
+    if (markup) return Token(markup.startsWith("<") ? "tok-kw" : "tok-key", markup);
+    if (/\w/.test(cursor.prev)) return null;
+    const number = matchAt(NumberLiteral, cursor);
+    if (number) return Token("tok-num", number);
+    const word = matchAt(Identifier, cursor);
+    if (!word) return null;
+    if (grammar.keywords.has(word)) return Token("tok-kw", word);
+    return Token(cursor.text[cursor.at + word.length] === "(" ? "tok-fn" : null, word);
+  };
+
+  // 持ち越しの続き(前の行で閉じなかった文字列・コメント)を、閉じ記号まで 1 字句にする。
+  const continuationOf = (cursor, open) => {
+    const close = cursor.text.indexOf(open.close, cursor.at);
+    if (close < 0) return Token(open.cls, cursor.text.slice(cursor.at), open.close);
+    return Token(open.cls, cursor.text.slice(cursor.at, close + open.close.length));
+  };
+
+  // 1 つの text ノードを字句に分け、次のノードへ持ち越す状態(carry)と一緒に返す。
+  const tokenize = (text, grammar, carry) => {
+    const tokens = [];
+    let { open, lineStart } = carry;
+    let at = 0;
+    while (at < text.length) {
+      const cursor = { text, at, prev: at > 0 ? text[at - 1] : carry.prev, lineStart };
+      const token = open ? continuationOf(cursor, open) : tokenAt(cursor, grammar) || Token(null, text[at]);
+      tokens.push(token);
+      at += token.value.length;
+      open = token.opens === null ? null : { cls: token.cls, close: token.opens };
+      lineStart = token.value.endsWith("\n") || (lineStart && !/\S/.test(token.value));
+    }
+    return { tokens, carry: { open, lineStart, prev: text.length > 0 ? text[text.length - 1] : carry.prev } };
+  };
+
+  // 色は span の textContent で付ける。抜粋が HTML として解釈される経路は作らない。
+  const tokenNode = ({ cls, value }) => (cls ? el("span", { class: cls, text: value }) : document.createTextNode(value));
+  const Start = { open: null, lineStart: true, prev: "\n" };
+
+  const paint = (code, grammar) => {
+    const walker = document.createTreeWalker(code, NodeFilter.SHOW_TEXT);
+    const textNodes = [];
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) textNodes.push(node);
+    textNodes.reduce((carry, node) => {
+      const result = tokenize(node.data, grammar, carry);
+      node.replaceWith(...result.tokens.map(tokenNode));
+      return result.carry;
+    }, Start);
+  };
+
+  const excerptLines = (node) => node.textContent.replace(/\n$/, "").split("\n");
+
+  const HunkHeader = /^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@/;
+  const RowKinds = { "+": "add", "-": "del", " ": "ctx" };
+
+  // diff の行を、変更前・変更後の行番号付きの行にする。`@@` の見出しが無い抜粋は行番号を空にする。
+  const diffRowsOf = (lines) => {
+    const rows = [];
+    let oldNo = null;
+    let newNo = null;
+    for (const line of lines) {
+      const hunk = line.match(HunkHeader);
+      if (hunk) {
+        oldNo = Number(hunk[1]);
+        newNo = Number(hunk[2]);
+        rows.push({ kind: "hunk", text: line, oldNo: null, newNo: null });
+        continue;
+      }
+      const hasSign = Object.hasOwn(RowKinds, line[0]);
+      const kind = hasSign ? RowKinds[line[0]] : "ctx";
+      const hasOldLine = kind !== "add";
+      const hasNewLine = kind !== "del";
+      rows.push({ kind, text: hasSign ? line.slice(1) : line, oldNo: hasOldLine ? oldNo : null, newNo: hasNewLine ? newNo : null });
+      // `@@` の見出しより前の行は番号が決まらない(null のまま)。
+      if (oldNo !== null) oldNo += hasOldLine ? 1 : 0;
+      if (newNo !== null) newNo += hasNewLine ? 1 : 0;
+    }
+    return rows;
+  };
+
+  // 1 行に色を付ける。行をまたぐ文字列・コメントだけを次の行へ持ち越し、行頭の扱いは行ごとにやり直す。
+  const highlightLine = (text, grammar, carry) => {
+    if (grammar === null) return { nodes: [document.createTextNode(text)], carry };
+    const result = tokenize(text, grammar, { ...carry, lineStart: true, prev: "\n" });
+    return { nodes: result.tokens.map(tokenNode), carry: result.carry };
+  };
+
+  // 差分の表示は GitHub と同じく変更前・変更後の行番号と +/- を出す。コードの表示は変更後の行だけを、
+  // 変更後の行番号で出す(足した行は左端の印で分かる)。
+  const SignOf = { add: "+", del: "-", ctx: " ", hunk: "" };
+  const numberCell = (no) => el("span", { class: "ln", text: no === null ? "" : String(no) });
+  const DiffViews = {
+    diff: { label: "差分", shows: () => true, cells: (row) => [numberCell(row.oldNo), numberCell(row.newNo), el("span", { class: "sign", text: SignOf[row.kind] })] },
+    code: { label: "コード", shows: (row) => row.kind === "add" || row.kind === "ctx", cells: (row) => [numberCell(row.newNo)] },
+  };
+
+  // 持ち越しは変更前の側(消した行と文脈)と変更後の側(足した行と文脈)で分ける。消した行で閉じなかった
+  // 文字列が、続く足した行の色に移らないようにするため。
+  const SideOf = { del: "old", add: "new" };
+  const renderView = (rows, grammar, view) => {
+    const code = el("code", { class: `view-${view}` });
+    rows.filter(DiffViews[view].shows).reduce((carries, row) => {
+      const side = Object.hasOwn(SideOf, row.kind) ? SideOf[row.kind] : "new";
+      const line = row.kind === "hunk" ? { nodes: [document.createTextNode(row.text)], carry: carries[side] } : highlightLine(row.text, grammar, carries[side]);
+      code.append(el("span", { class: `row row-${row.kind}` }, [...DiffViews[view].cells(row), ...line.nodes]));
+      if (row.kind === "del") return { ...carries, old: line.carry };
+      if (row.kind === "add") return { ...carries, new: line.carry };
+      return { old: line.carry, new: line.carry };
+    }, { old: Start, new: Start });
+    return code;
+  };
+
+  // diff の抜粋を、差分とコードの 2 つの表示に組み直し、足した行と消した行の数を返す。
+  const renderDiff = (pre, grammar) => {
+    const rows = diffRowsOf(excerptLines(pre));
+    pre.replaceChildren(renderView(rows, grammar, "diff"), renderView(rows, grammar, "code"));
+    pre.classList.add("has-diff");
+    return { added: rows.filter((row) => row.kind === "add").length, removed: rows.filter((row) => row.kind === "del").length };
+  };
+
+  // 言語は `data-lang`(言語名か拡張子)、無ければ抜粋の上の `path:行` か `data-file` の拡張子で決める。
+  // 断片由来の値なので、規則表は自分のキーだけを引く(`constructor` などでプロトタイプを引くと止まる)。
+  const grammarOf = (pre, label) => {
+    const named = pre.dataset.lang || (label.match(/\.(\w+)(?::[\d-]+)?$/) || [])[1] || "";
+    const language = Object.hasOwn(LanguageByExtension, named) ? LanguageByExtension[named] : named;
+    return Object.hasOwn(Grammars, language) ? Grammars[language] : null;
+  };
+
+  const setView = (details, view) => {
+    details.dataset.view = view;
+    for (const button of details.querySelectorAll(".view-switch button")) {
+      button.setAttribute("aria-pressed", String(button.dataset.view === view));
+    }
+  };
+
+  // 抜粋を開閉できる枠に入れる。見出しには抜粋の上の `path:行`(where-ref。無ければ data-file)と、
+  // diff なら増減、そうでなければ行数を出す。diff には差分 / コードの切り替えを付ける。
+  const fold = (pre, ref, diffCounts) => {
+    const label = ref ? null : pre.dataset.file || "コード";
+    const reviewKey = ref ? ref.textContent.trim() : label;
+    const summary = el("summary", {}, ref ? [...ref.childNodes] : [el("code", { text: label })]);
+    const count = diffCounts === null ? `${excerptLines(pre).length} 行` : `+${diffCounts.added} −${diffCounts.removed}`;
+    summary.append(el("span", { class: "fold-count", text: count }));
+    const details = el("details", { class: "code-fold", open: "", "data-review-key": reviewKey });
+    pre.replaceWith(details);
+    details.append(summary);
+    if (diffCounts !== null) {
+      const buttons = Object.entries(DiffViews).map(([view, { label: name }]) => el("button", { type: "button", "data-view": view, text: name }));
+      details.append(el("div", { class: "view-switch" }, buttons));
+      setView(details, "diff");
+    }
+    details.append(pre);
+    if (ref) ref.remove();
+  };
+
+  const whereRefOf = (pre) => {
+    const above = pre.previousElementSibling;
+    const hasWhereRef = above !== null && above.classList.contains("where-ref");
+    return hasWhereRef ? above : null;
+  };
+
+  const codeBlocks = [...explain.querySelectorAll("pre.code")];
+  for (const pre of codeBlocks) {
+    const ref = whereRefOf(pre);
+    const label = ref ? ref.textContent.trim() : pre.dataset.file || "";
+    const grammar = grammarOf(pre, label);
+    const isDiff = pre.dataset.diff !== undefined;
+    const diffCounts = isDiff ? renderDiff(pre, grammar) : null;
+    if (!isDiff && grammar !== null) paint(pre.querySelector("code") || pre, grammar);
+    fold(pre, ref, diffCounts);
+  }
+  // `pre.sequence` の「A -> B: 文」(呼び出し)と「A --> B: 文」(戻り)を、参加者の縦線と矢印の図にする。
+  // 読めない行が 1 つでもある・行が多すぎるときは、元の pre のまま残す(書いた人がページで気づける)。
+  const SequenceLine = /^(.+?)\s*(-->|->)\s*(.+?)\s*:\s*(.*)$/;
+  const SequenceLayout = { top: 8, headHeight: 32, rowHeight: 42, minBox: 90, maxBox: 300, minGap: 24, selfWidth: 36, maxLines: 200 };
+  const textWidth = (text) => [...text].reduce((sum, char) => sum + (char.charCodeAt(0) > 0xff ? 13 : 7.2), 0);
+  // 参加者の名前は太字なので、幅を見積もりより広めに取る。
+  const BoldRatio = 1.15;
+  const sequenceOf = (pre) => {
+    const lines = pre.textContent.split("\n").map((line) => line.trim()).filter((line) => line !== "");
+    const matches = lines.map((line) => line.match(SequenceLine));
+    const isDrawable = matches.length > 0 && matches.length <= SequenceLayout.maxLines && !matches.includes(null);
+    if (!isDrawable) return null;
+    const messages = matches.map(([, from, arrow, to, label]) => ({ from, to, label, isReturn: arrow === "-->" }));
+    const participants = [...new Set(messages.flatMap((message) => [message.from, message.to]))];
+    return { participants, messages };
+  };
+  const renderSequence = (pre) => {
+    const sequence = sequenceOf(pre);
+    if (sequence === null) return;
+    const { participants, messages } = sequence;
+    const layout = SequenceLayout;
+    const order = new Map(participants.map((name, index) => [name, index]));
+    // 箱の幅はそれぞれの名前に合わせる。隣どうしの間は、その 2 人の間を行き来する文が収まるだけ空ける
+    // (離れた参加者への文は間に縦線をまたぐので、そこまでは広げない)。
+    const boxWidths = participants.map((name) => Math.min(layout.maxBox, Math.max(layout.minBox, textWidth(name) * BoldRatio + 32)));
+    const isBetween = (message, left) => {
+      const ends = [order.get(message.from), order.get(message.to)].sort((a, b) => a - b);
+      return ends[0] === left && ends[1] === left + 1;
+    };
+    const gaps = boxWidths.slice(1).map((boxWidth, left) => {
+      const needed = Math.max(0, ...messages.filter((message) => isBetween(message, left)).map((message) => textWidth(message.label) + 24));
+      return Math.max(layout.minGap, needed - (boxWidths[left] + boxWidth) / 2);
+    });
+    const centers = boxWidths.reduce((placed, boxWidth, index) => [...placed, index === 0 ? boxWidth / 2 : placed[index - 1] + boxWidths[index - 1] / 2 + gaps[index - 1] + boxWidth / 2], []);
+    const xOf = (name) => centers[order.get(name)];
+    const selfLabels = messages.filter((message) => message.from === message.to).map((message) => textWidth(message.label));
+    const bottom = layout.top + layout.headHeight + 16 + messages.length * layout.rowHeight;
+    const width = centers[centers.length - 1] + boxWidths[boxWidths.length - 1] / 2 + layout.selfWidth + Math.max(0, ...selfLabels);
+    const heads = participants.flatMap((name) => [
+      svgEl("line", { class: "seq-life", x1: xOf(name), y1: layout.top + layout.headHeight, x2: xOf(name), y2: bottom }),
+      svgEl("g", { class: "seq-head" }, [
+        svgEl("rect", { x: xOf(name) - boxWidths[order.get(name)] / 2, y: layout.top, width: boxWidths[order.get(name)], height: layout.headHeight, rx: 6 }),
+        svgEl("text", { x: xOf(name), y: layout.top + 21, "text-anchor": "middle", text: name }),
+      ]),
+    ]);
+    const arrows = messages.flatMap((message, index) => sequenceArrow(message, index, { xOf, y: layout.top + layout.headHeight + 30 + index * layout.rowHeight }));
+    const figure = el("figure", { class: "diagram" }, [svgEl("svg", { class: "seq", viewBox: `0 0 ${width} ${bottom + 8}`, width, role: "img", "aria-label": pre.dataset.caption || "処理の流れ" }, [...heads, ...arrows])]);
+    if (pre.dataset.caption) figure.append(el("figcaption", { text: pre.dataset.caption }));
+    pre.replaceWith(figure);
+  };
+  // 1 本の矢印と文。自分への呼び出しは右へ出て戻る輪にする。
+  const sequenceArrow = (message, index, place) => {
+    const from = place.xOf(message.from);
+    const to = place.xOf(message.to);
+    const y = place.y;
+    const isSelf = message.from === message.to;
+    const cls = message.isReturn ? "seq-arrow is-return" : "seq-arrow";
+    const step = svgEl("text", { class: "seq-step", x: from + (to >= from ? 4 : -4), y: y + 13, "text-anchor": to >= from ? "start" : "end", text: `${index + 1}` });
+    if (isSelf) {
+      const loop = svgEl("path", { class: cls, d: `M ${from} ${y - 6} h ${SequenceLayout.selfWidth} v 14 h ${-SequenceLayout.selfWidth + 6}` });
+      const tip = svgEl("path", { class: "seq-tip", d: `M ${from} ${y + 8} l 8 -4 l 0 8 z` });
+      return [loop, tip, step, svgEl("text", { class: "seq-label", x: from + SequenceLayout.selfWidth + 6, y: y + 4, text: message.label })];
+    }
+    const direction = to > from ? -1 : 1;
+    const line = svgEl("line", { class: cls, x1: from, y1: y, x2: to + direction * 2, y2: y });
+    const tip = svgEl("path", { class: "seq-tip", d: `M ${to} ${y} l ${direction * 9} -5 l 0 10 z` });
+    const label = svgEl("text", { class: "seq-label", x: (from + to) / 2, y: y - 7, "text-anchor": "middle", text: message.label });
+    return [line, tip, step, label];
+  };
+  for (const pre of explain.querySelectorAll("pre.sequence")) renderSequence(pre);
+
+  const codeControls = document.getElementById("code-controls");
+  if (codeBlocks.length > 0) {
+    const folds = () => [...explain.querySelectorAll("details.code-fold")];
+    const toggle = el("button", { type: "button", class: "code-toggle" });
+    const syncLabel = () => {
+      toggle.textContent = folds().some((details) => details.open) ? "コードをすべて畳む" : "コードをすべて開く";
+    };
+    toggle.addEventListener("click", () => {
+      const shouldOpen = !folds().some((details) => details.open);
+      for (const details of folds()) details.open = shouldOpen;
+      syncLabel();
+    });
+    explain.addEventListener("toggle", syncLabel, true);
+    syncLabel();
+    codeControls.append(toggle);
+  }
+  const diffFolds = () => [...explain.querySelectorAll("details.code-fold[data-view]")];
+  if (diffFolds().length > 0) {
+    const viewToggle = el("button", { type: "button", class: "code-toggle" });
+    const allShowCode = () => diffFolds().every((details) => details.dataset.view === "code");
+    const syncViewLabel = () => {
+      viewToggle.textContent = allShowCode() ? "すべて差分で表示" : "すべてコードで表示";
+    };
+    viewToggle.addEventListener("click", () => {
+      const next = allShowCode() ? "diff" : "code";
+      for (const details of diffFolds()) setView(details, next);
+      syncViewLabel();
+    });
+    explain.addEventListener("click", (event) => {
+      const button = event.target.closest(".view-switch button");
+      if (!button) return;
+      setView(button.closest("details"), button.dataset.view);
+      syncViewLabel();
+    });
+    syncViewLabel();
+    codeControls.append(viewToggle);
+  }
+
+  // 抜粋ごとの「確認した」。読み手のブラウザにだけ残す。鍵は解説時点の sha(PR の head)とページと
+  // 抜粋の場所(`path:行`)なので、push の後に書き直された解説は未確認から始まる。
+  // localStorage は使えない環境(保存の無効化・プライベートブラウズ)で例外を投げるので、ここで受けて
+  // 「残さない」として扱う。確認の印が消えるだけで、ページは読める。
+  const ReviewStore = `pr-explain:${pr}:${explainedSha}:${page}:reviewed`;
+  const loadReviewed = () => {
+    try {
+      return new Set(JSON.parse(localStorage.getItem(ReviewStore) || "[]"));
+    } catch {
+      return new Set();
+    }
+  };
+  const saveReviewed = (keys) => {
+    try {
+      localStorage.setItem(ReviewStore, JSON.stringify([...keys]));
+    } catch {
+      // 残せないだけで、印はこのページを開いている間は効く。
+    }
+  };
+  const reviewFolds = [...explain.querySelectorAll("details.code-fold")];
+  const occurrences = new Map();
+  for (const details of reviewFolds) {
+    const base = details.dataset.reviewKey;
+    occurrences.set(base, (occurrences.get(base) || 0) + 1);
+    details.dataset.reviewKey = `${base}#${occurrences.get(base)}`;
+  }
+  const progress = el("span", { class: "review-progress" });
+  const setReviewed = (details, isReviewed) => {
+    details.classList.toggle("is-reviewed", isReviewed);
+    details.querySelector(".review-mark").setAttribute("aria-pressed", String(isReviewed));
+  };
+  const syncProgressText = () => {
+    const done = reviewFolds.filter((details) => details.classList.contains("is-reviewed")).length;
+    progress.textContent = `確認 ${done} / ${reviewFolds.length}`;
+  };
+  if (reviewFolds.length > 0) {
+    const reviewed = loadReviewed();
+    for (const details of reviewFolds) {
+      details.querySelector("summary").append(el("button", { type: "button", class: "review-mark", "aria-pressed": "false", text: "確認した" }));
+      setReviewed(details, reviewed.has(details.dataset.reviewKey));
+      if (reviewed.has(details.dataset.reviewKey)) details.open = false;
+    }
+    // summary の中のボタンなので、既定の動き(開閉)を止めてから印だけを切り替える。確認したら畳む。
+    explain.addEventListener("click", (event) => {
+      const mark = event.target.closest(".review-mark");
+      if (!mark) return;
+      event.preventDefault();
+      const details = mark.closest("details");
+      const isReviewed = !details.classList.contains("is-reviewed");
+      setReviewed(details, isReviewed);
+      if (isReviewed) details.open = false;
+      saveReviewed(new Set(reviewFolds.filter((fold) => fold.classList.contains("is-reviewed")).map((fold) => fold.dataset.reviewKey)));
+      syncProgressText();
+      syncTocMarks();
+    });
+    syncProgressText();
+    codeControls.prepend(progress);
+  }
+
+  // 書かれていないページ(404)は「なし」として出す(ドキュメントだけの PR はテストのページを書かない)。
+  // 404 以外の失敗は有無が分からないので、リンクのまま残す。
+  const pagesNav = document.getElementById("explain-pages");
+  for (const target of ExplainPages) {
+    const isCurrent = target.name === page;
+    const item = el("a", isCurrent ? { href: target.href, "aria-current": "page", text: target.label } : { href: target.href, text: target.label });
+    pagesNav.append(item);
+    if (isCurrent) continue;
+    fetch(target.href, { method: "HEAD", cache: "no-store" }).then((response) => {
+      if (response.status === 404) item.replaceWith(el("span", { text: `${target.label}(なし)` }));
+    });
+  }
+
+  const links = document.getElementById("links");
+  if (pr) {
+    links.append(
+      el("a", { href: `https://github.com/${Repo}/pull/${pr}`, text: `PR #${pr}` }),
+      el("a", { href: `../../pr-preview/pr-${pr}/`, text: "Storybook プレビュー" }),
+      el("a", { href: `../../visual-regression/pr-${pr}/`, text: "VRT レポート(差分が無い回・撮影で落ちた回は無い)" }),
+    );
+  }
+
+  const isKicker = (node) => node.classList !== undefined && node.classList.contains("kicker");
+  const headingLabel = (heading) => [...heading.childNodes].filter((node) => !isKicker(node)).map((node) => node.textContent).join("").trim();
+  const toc = document.getElementById("toc");
+  let tocEntries = [];
+
+  // 目次は h2 と、その下の h3。h3 は読んでいる h2 の下だけ開く(数十件の h3 を並べ続けない)。
+  function buildToc() {
+    toc.replaceChildren();
+    const entries = [];
+    let group = null;
+    for (const heading of document.querySelectorAll("main h2[id], main h3[id]")) {
+      if (heading.closest("[hidden]")) continue;
+      const isTop = heading.tagName === "H2";
+      const link = el("a", { href: `#${heading.id}`, class: isTop ? "toc-h2" : "toc-h3", text: headingLabel(heading) });
+      if (isTop) group = el("div", { class: "toc-sub" });
+      (isTop || group === null ? toc : group).append(link);
+      if (isTop) toc.append(group);
+      entries.push({ heading, link, group });
+    }
+    tocEntries = entries;
+    syncTocMarks();
+    syncCurrentHeading();
+  }
+
+  // 見出しの下の抜粋がすべて確認済みなら、目次に印を付ける。h3 は次の見出しまで、h2 は次の h2 まで
+  // (配下の h3 の抜粋を含む)を数える。
+  function syncTocMarks() {
+    const sections = new Map();
+    let section = null;
+    let chapter = null;
+    for (const node of explain.querySelectorAll("h2[id], h3[id], details.code-fold")) {
+      const isFold = node.tagName === "DETAILS";
+      if (!isFold) sections.set(node, []);
+      if (node.tagName === "H2") chapter = node;
+      if (!isFold) section = node;
+      if (!isFold) continue;
+      const owners = new Set([section, chapter].filter((owner) => owner !== null));
+      for (const owner of owners) sections.get(owner).push(node);
+    }
+    for (const entry of tocEntries) {
+      const folds = sections.get(entry.heading) || [];
+      const isAllReviewed = folds.length > 0 && folds.every((details) => details.classList.contains("is-reviewed"));
+      entry.link.classList.toggle("is-done", isAllReviewed);
+    }
+  }
+
+  // いま読んでいる見出し(ヘッダの下端を最後に越えたもの)を目次で示し、その h2 の下の h3 を開く。
+  function syncCurrentHeading() {
+    const threshold = header.offsetHeight + 24;
+    const passed = tocEntries.filter((entry) => entry.heading.getBoundingClientRect().top <= threshold);
+    const current = passed.length > 0 ? passed[passed.length - 1] : tocEntries[0];
+    for (const entry of tocEntries) entry.link.classList.toggle("is-current", entry === current);
+    for (const group of toc.querySelectorAll(".toc-sub")) group.classList.toggle("is-open", current !== undefined && group === current.group);
+    const isOutOfView = current !== undefined && (current.link.offsetTop < toc.scrollTop || current.link.offsetTop > toc.scrollTop + toc.clientHeight - 40);
+    if (isOutOfView) toc.scrollTop = current.link.offsetTop - toc.clientHeight / 3;
+  }
+  let scrollFrame = 0;
+  window.addEventListener("scroll", () => {
+    cancelAnimationFrame(scrollFrame);
+    scrollFrame = requestAnimationFrame(syncCurrentHeading);
+  }, { passive: true });
+
+  // パスの直後にパスの文字が続く出現は数えない(`index.ts` を `index.tsx` の言及と取り違えない)。
+  const explainText = explain.textContent;
+  const isMentioned = (path) => {
+    let at = explainText.indexOf(path);
+    while (at >= 0) {
+      if (!/[\w./-]/.test(explainText.charAt(at + path.length))) return true;
+      at = explainText.indexOf(path, at + 1);
+    }
+    return false;
+  };
+
+  const showStaleness = (map) => {
+    const isOutdated = explainedSha !== "" && map.head !== explainedSha;
+    if (!isOutdated) return;
+    const banner = document.getElementById("staleness");
+    const index = map.commits.findIndex((commit) => commit.sha === explainedSha);
+    banner.hidden = false;
+    if (index < 0) {
+      banner.append(`解説を書いた時点のコミット(${explainedSha.slice(0, 7)})が、この PR のコミット一覧に見つかりません。force push などで履歴が変わった可能性があります。`);
+      return;
+    }
+    const changed = [...new Set(map.commits.slice(index + 1).flatMap((commit) => commit.files))].sort();
+    banner.append(`このページは ${explainedSha.slice(0, 7)} 時点のものです。以降のコミットで変わったファイル:`);
+    banner.append(el("ul", {}, changed.map((path) => el("li", {}, [el("code", { text: path })]))));
+  };
+
+  const lineCount = (file) => (file.additions === null ? "バイナリ" : `+${file.additions} −${file.deletions}`);
+  const fileItem = (file) => {
+    const children = [el("span", { class: "status", text: file.status }), el("code", { text: file.path })];
+    if (file.oldPath) children.push(el("span", { class: "muted", text: `← ${file.oldPath}` }));
+    children.push(el("span", { class: "count", text: lineCount(file) }));
+    return el("li", {}, children);
+  };
+  const testItem = (test) => el("li", {}, [el("span", { text: test.name }), el("code", { text: test.file })]);
+
+  // 見出し(件数)と一覧の組を 1 つ足す。
+  const appendList = (body, title, items) => {
+    body.append(el("h3", { text: `${title}(${items.length})` }), el("ul", {}, items));
+  };
+
+  // 依存の深さ。使うファイルが無いもの(土台)が 0 で、使うファイルの深さ + 1。循環しても止まるよう、
+  // 繰り返しはファイルの数で打ち切る。
+  const dependencyLevels = (paths, edges) => {
+    const uses = new Map(paths.map((path) => [path, edges.filter((edge) => edge.from === path).map((edge) => edge.to)]));
+    const deepen = (levels) => new Map(paths.map((path) => [path, Math.min(paths.length, Math.max(0, ...uses.get(path).map((used) => levels.get(used) + 1)))]));
+    return paths.reduce(deepen, new Map(paths.map((path) => [path, 0])));
+  };
+  const NodeBox = { minWidth: 150, maxWidth: 300, height: 40, columnGap: 56, rowGap: 12 };
+  const BandLayout = { pad: 12, titleHeight: 28, gap: 24, isolatedColumns: 4 };
+  const BarycenterRounds = 4;
+  const fileName = (path) => path.split("/").pop();
+  const folderName = (path) => path.split("/").slice(0, -1).join("/") || "(ルート)";
+  // 箱に収まるよう、長いフォルダ名は頭を落として末尾を残す(どのフォルダかは末尾で分かる)。
+  const fitFolder = (folder, width) => {
+    const room = Math.floor((width - 20) / 6.2);
+    return folder.length > room ? `…${folder.slice(folder.length - room + 1)}` : folder;
+  };
+  const boxWidthOf = (paths) => Math.min(NodeBox.maxWidth, Math.max(NodeBox.minWidth, ...paths.map((path) => textWidth(fileName(path)) + 24)));
+
+  // ある 1 つのファイルから、依存をどちら向きにでも辿れるファイルの集まり。
+  const reachFrom = (start, neighbors) => {
+    const reached = new Set([start]);
+    const queue = [start];
+    while (queue.length > 0) {
+      for (const next of neighbors.get(queue.shift())) {
+        if (!reached.has(next)) queue.push(next);
+        reached.add(next);
+      }
+    }
+    return reached;
+  };
+  // つながっているファイルのまとまり。読む順で先に出たファイルを含むまとまりから並べる。
+  const componentsOf = (paths, edges) => {
+    const neighbors = new Map(paths.map((path) => [path, edges.filter((edge) => edge.from === path).map((edge) => edge.to).concat(edges.filter((edge) => edge.to === path).map((edge) => edge.from))]));
+    const components = [];
+    for (const start of paths) {
+      if (components.some((members) => members.has(start))) continue;
+      components.push(reachFrom(start, neighbors));
+    }
+    return components.map((members) => paths.filter((path) => members.has(path)));
+  };
+
+  // 列の中の並びを、隣の列のつながる相手の位置の平均(重心)で並べ直す。左から右、右から左へ交互に
+  // 数回くり返すと線の交差が減る。中継点を置いたので、線はどれも隣り合う列どうしを結ぶ。位置は列の長さで
+  // 割った値で比べる(行の数が違う列どうしでも比べられるように)。
+  const orderColumns = (columns, segments) => {
+    const partnersOf = (id) => segments.filter((segment) => segment.from === id).map((segment) => segment.to).concat(segments.filter((segment) => segment.to === id).map((segment) => segment.from));
+    const relative = (column) => new Map(column.map((id, row) => [id, (row + 0.5) / column.length]));
+    const sweep = (current, towardLeft) => {
+      const visiting = towardLeft ? [...current.keys()].reverse() : [...current.keys()];
+      return visiting.slice(1).reduce((state, column) => {
+        const reference = relative(state[towardLeft ? column + 1 : column - 1]);
+        const own = relative(state[column]);
+        const keyOf = (id) => {
+          const beside = partnersOf(id).filter((other) => reference.has(other));
+          return beside.length === 0 ? own.get(id) : beside.reduce((sum, other) => sum + reference.get(other), 0) / beside.length;
+        };
+        const sorted = [...state[column]].sort((a, b) => keyOf(a) - keyOf(b));
+        return state.map((ids, index) => (index === column ? sorted : ids));
+      }, current);
+    };
+    return Array.from({ length: BarycenterRounds * 2 }).reduce((current, _, round) => sweep(current, round % 2 === 1), columns);
+  };
+
+  // 2 列以上離れた依存は、間の列に中継点を置いて通す。中継点も並べ替えに加えるので、線は箱の間の
+  // すき間を通り、箱の上を横切らない(層に分けたグラフの描き方の定石)。
+  const RelayHeight = 8;
+  const isRelay = (id) => id.startsWith("relay:");
+  const routesOf = (edges, columnOf) => edges.map((edge) => {
+    const span = columnOf(edge.from) - columnOf(edge.to);
+    const relays = Array.from({ length: Math.max(0, span - 1) }, (_, step) => ({ id: `relay:${edge.from}>${edge.to}:${step}`, column: columnOf(edge.from) - 1 - step }));
+    return { edge, relays, points: [edge.from, ...relays.map((relay) => relay.id), edge.to] };
+  });
+
+  // 1 つのまとまりの箱と中継点の位置。列は依存の深さ(左ほど土台)、行は重心で並べ直した順。top はまとまりの上端。
+  const placeComponent = (paths, edges, top) => {
+    const levels = dependencyLevels(paths, edges);
+    // 循環していると深さが飛ぶ(打ち切りの値になる)ので、使われている深さだけを詰めて列にする。
+    const usedLevels = [...new Set(levels.values())].sort((a, b) => a - b);
+    const columnOf = (path) => usedLevels.indexOf(levels.get(path));
+    const routes = routesOf(edges, columnOf);
+    const relays = routes.flatMap((route) => route.relays);
+    const segments = routes.flatMap((route) => route.points.slice(1).map((to, index) => ({ from: route.points[index], to })));
+    const initial = usedLevels.map((_, column) => [...paths.filter((path) => columnOf(path) === column), ...relays.filter((relay) => relay.column === column).map((relay) => relay.id)]);
+    const columns = orderColumns(initial, segments);
+    const widths = columns.map((column) => boxWidthOf(column.filter((id) => !isRelay(id))));
+    const lefts = widths.map((_, column) => BandLayout.pad + widths.slice(0, column).reduce((sum, width) => sum + width + NodeBox.columnGap, 0));
+    const firstRow = top + BandLayout.titleHeight;
+    const heightOf = (id) => (isRelay(id) ? RelayHeight : NodeBox.height);
+    const stack = (column, index) => column.reduce((placed, id) => {
+      const y = placed.length === 0 ? firstRow : placed[placed.length - 1][1].y + placed[placed.length - 1][1].height + NodeBox.rowGap;
+      return [...placed, [id, { x: lefts[index], y, width: widths[index], height: heightOf(id) }]];
+    }, []);
+    const place = new Map(columns.flatMap(stack));
+    const bottom = Math.max(...[...place.values()].map((box) => box.y + box.height));
+    return { place, routes, height: bottom - top, width: lefts[lefts.length - 1] + widths[widths.length - 1] + BandLayout.pad };
+  };
+  // つながりの無いファイルは、決まった列数で左上から詰めて並べる。
+  const placeIsolated = (paths, top) => {
+    const width = boxWidthOf(paths);
+    const columns = Math.min(BandLayout.isolatedColumns, paths.length);
+    const firstRow = top + BandLayout.titleHeight;
+    const place = new Map(paths.map((path, index) => [path, { x: BandLayout.pad + (index % columns) * (width + NodeBox.columnGap / 2), y: firstRow + Math.floor(index / columns) * (NodeBox.height + NodeBox.rowGap), width, height: NodeBox.height }]));
+    const rows = Math.ceil(paths.length / columns);
+    return { place, routes: [], height: BandLayout.titleHeight + rows * (NodeBox.height + NodeBox.rowGap) - NodeBox.rowGap, width: BandLayout.pad * 2 + columns * width + (columns - 1) * (NodeBox.columnGap / 2) };
+  };
+
+  // 1 本の依存の線。使う側の箱の左端から出て、中継点では列を水平に横切り、使われる側の箱の右端で止まる。
+  const dependencyEdge = (route, place) => {
+    const middle = (box) => box.y + box.height / 2;
+    const first = place.get(route.points[0]);
+    const pieces = route.points.slice(1).map((id, index) => {
+      const from = place.get(route.points[index]);
+      const to = place.get(id);
+      const bend = Math.max(20, Math.abs(from.x - (to.x + to.width)) / 2);
+      const curve = `C ${from.x - bend} ${middle(from)}, ${to.x + to.width + bend} ${middle(to)}, ${to.x + to.width} ${middle(to)}`;
+      return isRelay(id) ? `${curve} L ${to.x} ${middle(to)}` : curve;
+    });
+    return svgEl("path", { class: "dep-edge", "data-from": route.edge.from, "data-to": route.edge.to, "marker-end": "url(#dep-arrow)", d: `M ${first.x} ${middle(first)} ${pieces.join(" ")}` });
+  };
+  // 箱 1 つ。上の行にファイル名、下の行にフォルダ。消したファイルは破線の枠にする。
+  const dependencyNode = (path, place, status) => {
+    const box = place.get(path);
+    const classes = ["dep-node", status === "D" ? "is-deleted" : ""].filter((name) => name !== "").join(" ");
+    return svgEl("g", { class: classes, "data-path": path, tabindex: 0 }, [
+      svgEl("title", { text: status === "D" ? `${path}(消したファイル)` : path }),
+      svgEl("rect", { x: box.x, y: box.y, width: box.width, height: box.height, rx: 6 }),
+      svgEl("text", { class: "dep-name", x: box.x + 10, y: box.y + 17, text: fileName(path) }),
+      svgEl("text", { class: "dep-folder", x: box.x + 10, y: box.y + 32, text: fitFolder(folderName(path), box.width) }),
+    ]);
+  };
+  const bandTitle = (text, top, width) => [
+    svgEl("line", { class: "dep-band-line", x1: BandLayout.pad, y1: top + 4, x2: width - BandLayout.pad, y2: top + 4 }),
+    svgEl("text", { class: "dep-band-title", x: BandLayout.pad, y: top + 20, text }),
+  ];
+
+  // 載せる(フォーカスする)と強調し、押す(Enter / Space)と固定する。マウスでもキーボードでも同じ。
+  const makeGraphInteractive = (graph, nodes, edges) => {
+    const edgeNodes = [...graph.querySelectorAll(".dep-edge")];
+    const neighborsOf = (path) => new Set([path, ...edges.filter((edge) => edge.from === path).map((edge) => edge.to), ...edges.filter((edge) => edge.to === path).map((edge) => edge.from)]);
+    const focusOn = (path) => {
+      const related = path === null ? new Set() : neighborsOf(path);
+      graph.classList.toggle("has-focus", path !== null);
+      for (const node of nodes) node.classList.toggle("is-related", related.has(node.dataset.path));
+      for (const edge of edgeNodes) edge.classList.toggle("is-related", edge.dataset.from === path || edge.dataset.to === path);
+    };
+    let pinned = null;
+    const togglePin = (node) => {
+      pinned = pinned === node.dataset.path ? null : node.dataset.path;
+      for (const other of nodes) other.classList.toggle("is-pinned", other.dataset.path === pinned);
+      focusOn(pinned);
+    };
+    for (const node of nodes) {
+      node.addEventListener("mouseenter", () => focusOn(node.dataset.path));
+      node.addEventListener("mouseleave", () => focusOn(pinned));
+      node.addEventListener("focus", () => focusOn(node.dataset.path));
+      node.addEventListener("blur", () => focusOn(pinned));
+      node.addEventListener("click", () => togglePin(node));
+      node.addEventListener("keydown", (event) => {
+        const isPress = event.key === "Enter" || event.key === " ";
+        if (!isPress) return;
+        event.preventDefault();
+        togglePin(node);
+      });
+    }
+  };
+
+  // 変更ファイルの依存の図。すべての変更ファイルを載せ、つながっているまとまりごとに帯を分けて上から並べる
+  // (まとまりをまたぐ線は無いので、帯ごとに読める)。つながりの無いファイルは最後の帯にまとめる。
+  const renderDependencyGraph = (map) => {
+    const edges = map.dependencies;
+    const files = map.groups.flatMap((group) => group.files);
+    const statusOf = new Map(files.map((file) => [file.path, file.status]));
+    const readingOrder = files.map((file) => file.path);
+    const linked = readingOrder.filter((path) => edges.some((edge) => edge.from === path || edge.to === path));
+    const isolated = readingOrder.filter((path) => !linked.includes(path));
+    const components = componentsOf(linked, edges);
+    const bands = [];
+    let top = BandLayout.pad;
+    for (const [index, paths] of components.entries()) {
+      const inside = edges.filter((edge) => paths.includes(edge.from));
+      const layout = placeComponent(paths, inside, top);
+      bands.push({ ...layout, top, paths, title: `つながり ${index + 1} · ${paths.length} ファイル` });
+      top += layout.height + BandLayout.gap;
+    }
+    if (isolated.length > 0) {
+      const layout = placeIsolated(isolated, top);
+      bands.push({ ...layout, top, paths: isolated, title: `依存のつながりが見つからないファイル · ${isolated.length} 件` });
+      top += layout.height + BandLayout.gap;
+    }
+    if (bands.length === 0) return el("p", { class: "muted", text: "変更されたファイルはありません。" });
+    const width = Math.max(...bands.map((band) => band.width));
+    const height = top - BandLayout.gap + BandLayout.pad;
+    const marker = svgEl("marker", { id: "dep-arrow", viewBox: "0 0 10 10", refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: "auto" }, [svgEl("path", { class: "dep-arrow", d: "M0,0 L10,5 L0,10 z" })]);
+    const titles = bands.flatMap((band) => bandTitle(band.title, band.top, width));
+    const edgeNodes = bands.flatMap((band) => band.routes.map((route) => dependencyEdge(route, band.place)));
+    const nodes = bands.flatMap((band) => band.paths.map((path) => dependencyNode(path, band.place, statusOf.get(path))));
+    const graph = svgEl("svg", { class: "dep-graph", viewBox: `0 0 ${width} ${height}`, width, role: "img", "aria-label": "変更ファイルの依存の図" }, [svgEl("defs", {}, [marker]), ...titles, ...edgeNodes, ...nodes]);
+    makeGraphInteractive(graph, nodes, edges);
+    const caption = "すべての変更ファイルを、つながっているまとまりごとに帯に分けています。帯の中は左ほど多くのファイルから使われる土台で、矢印は使う側 → 使われる側。線は薄く描いてあり、ファイルに載せる(押すと固定)とそのつながりだけが濃く残ります。1 つずつ読むなら下の「ファイルごとのつながり」。破線の枠は消したファイル。";
+    return el("figure", { class: "diagram" }, [graph, el("figcaption", { text: caption })]);
+  };
+
+  // ファイル 1 つのつながりだけを描いたカード。左がそのファイルが使うもの、中央がそのファイル、右がそれを
+  // 使うもの。全体の図は線が多くて追いにくいので、1 つのファイルから見た範囲だけを交差なしで見せる。
+  const NeighborhoodGap = 40;
+  const NeighborhoodHeadings = ["使うもの", "このファイル", "これを使うもの"];
+  const HeadingHeight = 20;
+  // context は図の全体で共有するもの(依存・ファイルの状態・箱の幅)。箱の幅をカードどうしで揃えると、
+  // どのカードも同じ縮尺で表示される。
+  const renderNeighborhood = (path, context) => {
+    const { edges, statusOf, width } = context;
+    const uses = edges.filter((edge) => edge.from === path).map((edge) => edge.to);
+    const usedBy = edges.filter((edge) => edge.to === path).map((edge) => edge.from);
+    const rows = Math.max(uses.length, usedBy.length, 1);
+    const inner = rows * (NodeBox.height + NodeBox.rowGap) - NodeBox.rowGap;
+    const pad = BandLayout.pad;
+    const lefts = [0, 1, 2].map((column) => pad + column * (width + NeighborhoodGap));
+    const top = pad + HeadingHeight;
+    const stack = (ids, column) => ids.map((id, row) => [id, { x: lefts[column], y: top + (inner - (ids.length * (NodeBox.height + NodeBox.rowGap) - NodeBox.rowGap)) / 2 + row * (NodeBox.height + NodeBox.rowGap), width, height: NodeBox.height }]);
+    const place = new Map([...stack(uses, 0), ...stack([path], 1), ...stack(usedBy, 2)]);
+    const routes = [...uses.map((used) => ({ from: path, to: used })), ...usedBy.map((user) => ({ from: user, to: path }))].map((edge) => ({ edge, points: [edge.from, edge.to] }));
+    const nodes = [...place.keys()].map((id) => dependencyNode(id, place, statusOf.get(id)));
+    nodes.find((node) => node.dataset.path === path).classList.add("is-center");
+    const headings = NeighborhoodHeadings.map((text, column) => svgEl("text", { class: "dep-band-title", x: lefts[column] + width / 2, y: pad + 12, "text-anchor": "middle", text }));
+    const svgWidth = lefts[2] + width + pad;
+    const svgHeight = top + inner + pad;
+    return el("div", { class: "dep-card" }, [svgEl("svg", { class: "dep-graph", viewBox: `0 0 ${svgWidth} ${svgHeight}`, width: svgWidth, role: "img", "aria-label": `${path} のつながり` }, [...headings, ...routes.map((route) => dependencyEdge(route, place)), ...nodes])]);
+  };
+  const renderNeighborhoods = (map) => {
+    const edges = map.dependencies;
+    const statusOf = new Map(map.groups.flatMap((group) => group.files).map((file) => [file.path, file.status]));
+    const linked = map.groups.flatMap((group) => group.files.map((file) => file.path)).filter((path) => edges.some((edge) => edge.from === path || edge.to === path));
+    const note = el("p", { class: "muted", text: "ファイルごとに、左がそのファイルが使うもの、右がそのファイルを使うもの(矢印は使う側 → 使われる側)。上の図から線を目で追わずに、1 つのファイルのつながりを読めます。" });
+    const context = { edges, statusOf, width: boxWidthOf(linked) };
+    return [el("h3", { text: `ファイルごとのつながり(${linked.length})` }), note, el("div", { class: "dep-cards" }, linked.map((path) => renderNeighborhood(path, context)))];
+  };
+
+  // ページごとに、地図から足す節。振る舞いのページには足さない。
+  const MapSections = {
+    index: {
+      heading: "変更の地図",
+      render: (body, map) => {
+        body.append(el("p", { class: "muted", text: `head ${map.head.slice(0, 7)} · base との分岐点 ${map.mergeBase.slice(0, 7)} · 上から読む順(内側の層から外側へ)に並べています。` }));
+        const hasDependencies = Array.isArray(map.dependencies);
+        const dependencyViews = hasDependencies ? [renderDependencyGraph(map), ...renderNeighborhoods(map)] : [el("p", { class: "muted", text: "この地図は依存を持たない古い形です。次の push で作り直されます。" })];
+        body.append(el("h3", { text: "依存の図" }), ...dependencyViews);
+        for (const group of map.groups) appendList(body, group.label, group.files.map(fileItem));
+        if (map.groups.length === 0) body.append(el("p", { class: "muted", text: "変更されたファイルはありません。" }));
+      },
+    },
+    tech: {
+      heading: "解説に出てこない変更ファイル",
+      render: (body, map) => {
+        const unmentioned = map.groups.flatMap((group) => group.files).filter((file) => !isMentioned(file.path));
+        body.append(el("p", { class: "muted", text: "このページの本文にフルパスで出てこない変更ファイル。コードの読み方が触れていないものです。" }));
+        appendList(body, "解説に出てこない", unmentioned.map(fileItem));
+      },
+    },
+    tests: {
+      heading: "追加・削除されたテスト",
+      render: (body, map) => {
+        appendList(body, "追加されたテスト", map.tests.added.map(testItem));
+        appendList(body, "削除されたテスト", map.tests.removed.map(testItem));
+      },
+    },
+  };
+  const mapSection = MapSections[page];
+
+  const renderMap = (map) => {
+    showStaleness(map);
+    if (!mapSection) return;
+    const body = document.getElementById("map-section-body");
+    body.replaceChildren();
+    mapSection.render(body, map);
+  };
+
+  // 読み込みの失敗だけを受ける。描画の失敗は握らず、コンソールにそのまま出す。
+  // 古さを確かめられないことは、地図の節を持たないページでも見えるよう帯に出す。
+  const mapUnreadable = (error) => {
+    const message = `change-map.json を読めませんでした(${error.message})。このページが最新かを確かめられません。ローカルで開いたときと、地図がまだ置かれていないときに出ます。`;
+    const banner = document.getElementById("staleness");
+    banner.hidden = false;
+    banner.append(message);
+    document.getElementById("map-section-body").replaceChildren(el("p", { class: "muted", text: "地図はありません。" }));
+  };
+
+  if (mapSection) {
+    document.getElementById("map-section").hidden = false;
+    document.getElementById("map-section-heading").append(el("span", { class: "kicker", text: "自動生成" }), mapSection.heading);
+  }
+  buildToc();
+  fetch(`change-map.json?t=${Date.now()}`, { cache: "no-store" })
+    .then((response) => (response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`))))
+    .then(renderMap, mapUnreadable)
+    .then(buildToc);
+})();
+</script>
+</body>
+</html>
