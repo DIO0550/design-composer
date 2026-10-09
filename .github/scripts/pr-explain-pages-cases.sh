@@ -31,13 +31,28 @@ export GIT_COMMITTER_NAME=cases GIT_COMMITTER_EMAIL=cases@example.com
 
 source "$repo_root/.claude/hooks/lib/cases-report.sh"
 
-# 解説として通る断片(PR #1 宛て)と、検査に落ちる断片。
-meta='<p class="explain-meta" data-explained-sha="0123456789abcdef0123456789abcdef01234567" data-pr="1" data-page="index">解説時点</p>'
-printf '%s\n<h1>書いた解説</h1>\n' "$meta" > "$work/fragment.html"
-printf '%s\n<script>alert(1)</script>\n' "$meta" > "$work/broken.html"
-printf '%s\n' "${meta/data-pr=\"1\"/data-pr=\"7\"}" > "$work/fragment-7.html"
-printf '%s\n<h1>技術の解説</h1>\n' "${meta/data-page=\"index\"/data-page=\"tech\"}" > "$work/fragment-tech.html"
-printf '{"head": "new"}\n' > "$work/map.json"
+# 解説として通るもの(PR #1 宛て・このリポジトリの HEAD 時点)と、検査に落ちるもの。抜粋は
+# 検査が中身を足すので、置かれたものが検査の書き出しかどうかが `text` の有無で分かる。
+head="$(git -C "$repo_root" rev-parse HEAD)"
+python3 - "$work" "$head" <<'PY'
+import json, sys
+work, head = sys.argv[1:3]
+explain = {
+    "version": 1, "pr": 1, "sha": head,
+    "overview": {"title": "書いた解説", "lead": "要約", "before": [], "after": [{"text": "後"}]},
+    "suites": [{"id": "s", "label": "置き場", "file": "package.json"}],
+    "tests": [{"id": "t", "suite": "s", "name": "n", "techniques": ["state"], "why": "w", "given": "g", "when": "w", "then": "t",
+               "excerpt": {"path": "package.json", "start": 1, "end": 1}}],
+}
+write = lambda name, value: open(f"{work}/{name}", "w", encoding="utf-8").write(json.dumps(value, ensure_ascii=False))
+write("explain.json", explain)
+write("broken.json", {**explain, "version": 2})
+write("explain-7.json", {**explain, "pr": 7})
+write("explain-2.json", {**explain, "pr": 2})
+write("map.json", {"version": 2, "head": "new"})
+PY
+broken_template="$work/broken-template.html"
+sed 's/<script>/<script> /' "$template" > "$broken_template"
 
 # gh-pages を持つ bare リポジトリを作り直す。
 # $1 `seeded` なら既存の PR のフォルダと pr-preview を置く。`empty` なら gh-pages を作らない
@@ -49,7 +64,13 @@ fresh_origin() {
   git init --quiet -b gh-pages "$work/seed"
   mkdir -p "$work/seed/pr-explain/pr-1" "$work/seed/pr-explain/pr-12" "$work/seed/pr-preview/pr-1"
   echo old > "$work/seed/pr-explain/pr-1/index.html"
-  echo '{"head": "old"}' > "$work/seed/pr-explain/pr-1/change-map.json"
+  printf '{"version": 1, "head": "%s"}\n' "$head" > "$work/seed/pr-explain/pr-1/change-map.json"
+  echo '{"old": "explain"}' > "$work/seed/pr-explain/pr-1/explain.json"
+  echo behavior > "$work/seed/pr-explain/pr-1/behavior.html"
+  mkdir -p "$work/seed/pr-explain/pr-1/assets"
+  echo asset > "$work/seed/pr-explain/pr-1/assets/x.css"
+  mkdir -p "$work/seed/pr-explain/pr-2"
+  echo '{"version": 2, "head": "0000000"}' > "$work/seed/pr-explain/pr-2/change-map.json"
   echo twelve > "$work/seed/pr-explain/pr-12/index.html"
   echo '{"head": "twelve"}' > "$work/seed/pr-explain/pr-12/change-map.json"
   echo storybook > "$work/seed/pr-preview/pr-1/index.html"
@@ -95,32 +116,61 @@ run_pages() {
   bash "$pages" "$@" >/dev/null 2>&1
 }
 
+# 置いた explain.json が、検査の書き出し(抜粋に text がある)か。
+placed_by_builder() {
+  on_pages pr-explain/pr-1/explain.json | python3 -c 'import json, sys; e = json.load(sys.stdin); sys.exit(0 if e["overview"]["title"] == "書いた解説" and "text" in e["tests"][0]["excerpt"] else 1)'
+}
+
 fresh_origin seeded
-run_pages put-page 1 index "$work/fragment.html"
-expect "put-page は断片を組み立てた index.html で上書きする" 'page_has pr-explain/pr-1/index.html "書いた解説"'
-expect "put-page は change-map.json に触らない" '[ "$(on_pages pr-explain/pr-1/change-map.json)" = "{\"head\": \"old\"}" ]'
-expect "put-page は他の PR のフォルダに触らない" '[ "$(on_pages pr-explain/pr-12/index.html)" = twelve ]'
-expect "put-page は pr-preview に触らない" '[ "$(on_pages pr-preview/pr-1/index.html)" = storybook ]'
+errors="$(bash "$pages" put-explain 1 "$work/explain.json" 2>&1 >/dev/null)"; status=$?
+expect "put-explain は explain.json を置き、index.html と change-map.json に触らない" '[ "$status" -eq 0 ] && placed_by_builder && [ "$(on_pages pr-explain/pr-1/index.html)" = old ] && [ "$(on_pages pr-explain/pr-1/change-map.json)" = "{\"version\": 1, \"head\": \"$head\"}" ]'
+expect "put-explain が置くのは、検査が抜粋の中身を足して書き出したもの" 'placed_by_builder'
+expect "put-explain は他の PR のフォルダに触らない" '[ "$(on_pages pr-explain/pr-12/index.html)" = twelve ]'
+expect "put-explain は pr-preview に触らない" '[ "$(on_pages pr-preview/pr-1/index.html)" = storybook ]'
+expect "v1 の地図のフォルダにも put-explain で置ける" '[ "$status" -eq 0 ] && placed_by_builder'
+
+fresh_origin seeded
+stale_errors="$(bash "$pages" put-explain 2 "$work/explain-2.json" 2>&1 >/dev/null)"; stale_status=$?
+expect "解説の sha が地図の head と違えば、置いたうえで標準エラーに知らせる(同じなら知らせない)" '[ "$stale_status" -eq 0 ] && [[ "$stale_errors" == *"地図の head"* ]] && [[ "$errors" != *"地図の head"* ]]'
 
 fresh_origin seeded
 before="$(tip)"
-output="$(bash "$pages" put-page 1 index "$work/broken.html" 2>&1)"; status=$?
-expect "検査に落ちる解説は、取り直しへ進まずに push しない" '[ "$status" -eq 1 ] && [ "$(tip)" = "$before" ] && [[ "$output" == *"[pr-explain-content]"* ]] && [[ "$output" != *"反映に失敗"* ]]'
+output="$(bash "$pages" put-explain 1 "$work/broken.json" 2>&1)"; status=$?
+expect "検査に落ちる解説は、取り直しへ進まずに push しない" '[ "$status" -eq 1 ] && [ "$(tip)" = "$before" ] && [[ "$output" == *"[pr-explain-shape]"* ]] && [[ "$output" != *"反映に失敗"* ]]'
 
 fresh_origin seeded
 before="$(tip)"
-run_pages put-page 7 index "$work/fragment-7.html"; status=$?
-expect "地図の無いフォルダへは put-page しない" '[ "$status" -eq 3 ] && [ "$(tip)" = "$before" ] && [ "$(on_pages pr-explain/pr-7/index.html)" = "<none>" ]'
+run_pages put-explain 7 "$work/explain-7.json"; status=$?
+expect "地図の無いフォルダへは put-explain しない" '[ "$status" -eq 3 ] && [ "$(tip)" = "$before" ] && [ "$(on_pages pr-explain/pr-7/explain.json)" = "<none>" ]'
+
+fresh_origin seeded
+before="$(tip)"
+run_pages put-explain 1; status=$?
+expect "put-explain に解説が無ければ引数の誤り" '[ "$status" -eq 2 ] && [ "$(tip)" = "$before" ]'
+
+fresh_origin seeded
+before="$(tip)"
+run_pages put-page 1 index "$work/explain.json"; status=$?
+expect "put-page は知らないモード(引数の誤り)" '[ "$status" -eq 2 ] && [ "$(tip)" = "$before" ]'
 
 fresh_origin seeded
 run_pages put-map 1 "$work/map.json" "$template"
-expect "put-map は解説があれば index.html を残す" '[ "$(on_pages pr-explain/pr-1/index.html)" = old ]'
-expect "put-map は change-map.json を更新する" '[ "$(on_pages pr-explain/pr-1/change-map.json)" = "{\"head\": \"new\"}" ]'
+expect "put-map は index.html を毎回テンプレートで上書きする" '[ "$(on_pages pr-explain/pr-1/index.html)" = "$(cat "$template")" ]'
+expect "put-map は explain.json を残す" '[ "$(on_pages pr-explain/pr-1/explain.json)" = "{\"old\": \"explain\"}" ]'
+expect "put-map は 3 ファイル以外(以前のページ・サブフォルダ)を消す" '[ "$(on_pages pr-explain/pr-1/behavior.html)" = "<none>" ] && [ "$(on_pages pr-explain/pr-1/assets/x.css)" = "<none>" ]'
+expect "put-map は change-map.json を更新する" '[ "$(on_pages pr-explain/pr-1/change-map.json)" = "$(cat "$work/map.json")" ]'
+expect "put-map は他の PR のフォルダに触らない" '[ "$(on_pages pr-explain/pr-12/index.html)" = twelve ]'
+expect "put-map は pr-preview に触らない" '[ "$(on_pages pr-preview/pr-1/index.html)" = storybook ]'
 
 fresh_origin seeded
 run_pages put-map 5 "$work/map.json" "$template"
-expect "put-map は解説が無ければテンプレートを置く" '[ "$(on_pages pr-explain/pr-5/index.html)" = "$(cat "$template")" ]'
-expect "put-map は新しいフォルダに change-map.json を置く" '[ "$(on_pages pr-explain/pr-5/change-map.json)" = "{\"head\": \"new\"}" ]'
+expect "put-map は新しいフォルダにテンプレートを置く" '[ "$(on_pages pr-explain/pr-5/index.html)" = "$(cat "$template")" ]'
+expect "put-map は新しいフォルダに change-map.json を置く" '[ "$(on_pages pr-explain/pr-5/change-map.json)" = "$(cat "$work/map.json")" ]'
+
+fresh_origin seeded
+before="$(tip)"
+output="$(bash "$pages" put-map 1 "$work/map.json" "$broken_template" 2>&1)"; status=$?
+expect "CSP の合わないテンプレートの put-map は 1 で、push しない" '[ "$status" -eq 1 ] && [ "$(tip)" = "$before" ] && [[ "$output" == *"[pr-explain-csp]"* ]]'
 
 fresh_origin seeded
 run_pages remove 1
@@ -135,31 +185,17 @@ expect "消すフォルダが無い remove は変更なしで終わる" '[ "$sta
 
 fresh_origin seeded
 before="$(tip)"
-run_pages put-page 1 index; status=$?
-expect "put-page に断片が無ければ引数の誤り" '[ "$status" -eq 2 ] && [ "$(tip)" = "$before" ]'
-
-fresh_origin seeded
-run_pages put-page 1 tech "$work/fragment-tech.html"
-expect "put-page tech は tech.html に置き、入口の index.html には触らない" 'page_has pr-explain/pr-1/tech.html "技術の解説" && [ "$(on_pages pr-explain/pr-1/index.html)" = old ]'
-
-fresh_origin seeded
-before="$(tip)"
-run_pages put-page 1 other "$work/fragment.html"; status=$?
-expect "知らないページ名は引数の誤り" '[ "$status" -eq 2 ] && [ "$(tip)" = "$before" ]'
-
-fresh_origin seeded
-before="$(tip)"
 run_pages remove '1 ../..'; status=$?
 expect "数字でない PR 番号は拒否する" '[ "$status" -eq 2 ] && [ "$(tip)" = "$before" ]'
 
 fresh_origin seeded
 reject_first_push
 run_pages put-map 1 "$work/map.json" "$template"; status=$?
-expect "1 回目の push が拒否されても取り直して通る" '[ "$status" -eq 0 ] && [ "$(cat "$work/pushes")" = 2 ] && [ "$(on_pages pr-explain/pr-1/change-map.json)" = "{\"head\": \"new\"}" ]'
+expect "1 回目の push が拒否されても取り直して通る" '[ "$status" -eq 0 ] && [ "$(cat "$work/pushes")" = 2 ] && [ "$(on_pages pr-explain/pr-1/change-map.json)" = "$(cat "$work/map.json")" ]'
 
 fresh_origin empty
 run_pages put-map 3 "$work/map.json" "$template"; status=$?
-expect "gh-pages が無ければ orphan で作る" '[ "$status" -eq 0 ] && [ "$(on_pages pr-explain/pr-3/change-map.json)" = "{\"head\": \"new\"}" ] && [ "$(on_pages .nojekyll)" = "" ]'
+expect "gh-pages が無ければ orphan で作る" '[ "$status" -eq 0 ] && [ "$(on_pages pr-explain/pr-3/change-map.json)" = "$(cat "$work/map.json")" ] && [ "$(on_pages .nojekyll)" = "" ]'
 
 fresh_origin empty
 run_pages remove 3; status=$?

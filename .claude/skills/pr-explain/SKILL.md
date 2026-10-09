@@ -1,247 +1,183 @@
 ---
 name: pr-explain
-description: "PR ごとの解説ページ(入口・振る舞い・技術・テストの 4 ページ)を HTML で書き、gh-pages の pr-explain/pr-<番号>/ へ公開する。implementation-flow のフェーズ 7 で PR を出した直後と、振る舞いが変わる push の後に使用する。「PR の解説を書いて」「解説ページを更新して」といった依頼でも使用する。変更の地図(変更ファイル・依存・テスト名の増減・コミット)は Actions が置くので書かない。"
+description: "PR ごとの解説ページ(構造マップ・変更の経緯・テストの 3 画面)の材料になる解説 explain.json を書き、検査して gh-pages の pr-explain/pr-<番号>/ へ置く。implementation-flow のフェーズ 7 で PR を出した直後と、振る舞いが変わる push の後に使用する。「PR の解説を書いて」「解説ページを更新して」といった依頼でも使用する。変更の地図(変更ファイル・依存・テスト名の増減・コミットと差分)とページの枠は Actions が置くので書かない。"
 ---
 
 # PR の解説ページ
 
-レビュアー(人間)が PR を開いたときに、**この PR で振る舞いをどうしたか・使った技術とコードの
-読み方・テストが何を守っているか**を読めるようにする。diff と Issue だけでは、長いセッションで
-何を使い、なぜその振る舞いにしたかが掴みにくいため。
+レビュアー(人間)が PR を開いたときに、**この PR がどこをどうつなぎ替えたか・どの順で何を変えたか・
+テストが何を守っているか**を読めるようにする。diff と Issue だけでは、長いセッションで何を使い、
+なぜその形にしたかが掴みにくいため。
 
-**読む目的ごとにページを分ける。** 振る舞いはマージしてよいかを決めるために、技術は理解のために
-後からじっくり、テストは守られている範囲の確認に読む。1 ページにまとめると、長い技術解説に
-振る舞いが埋もれる。
+## 3 画面と材料
 
-| ページ(ファイル) | セッションが書くもの | 固定スクリプトが地図から足すもの |
+ページは 1 枚で、`#map` / `#story` / `#test` で画面を切り替える。どの画面も、Actions が git の差分から
+作る**変更の地図**(`change-map.json`)と、セッションが書く**解説**(`explain.json`)を合わせて組む。
+
+| 画面 | 見るもの | 地図から | 解説から |
+| --- | --- | --- | --- |
+| 構造マップ(`#map`) | 変更ファイルと concepts を層(または機能)ごとの箱にし、やりとり(または依存)の線でつないだ図。右に概要・箱の詳細・やりとりの流れ(シーケンス図) | `groups`・`dependencies` | `overview.highlights`・`features`・`layers`・`concepts`・`messages`・`flows` |
+| 変更の経緯(`#story`) | コミットを新しい順に並べた一覧と、ブランチ全体の流れ(題・要約・これまで / このあと・変更の順番・レビューポイント)、コミットごとの説明と差分・行への注釈 | `commits`(件名・本文・作者・日時・ファイルごとの差分) | `overview`・`commitNotes` |
+| テスト(`#test`) | suite ごとのテストの一覧と、図の上でテストが確かめている箱・やりとりと、その抜け。テストごとの前提 / 操作 / 期待・値の表・テストコード | `tests.added` / `tests.removed`・テストファイルの対象(`target`) | `suites`・`tests` |
+
+gh-pages の `pr-explain/pr-<番号>/` に置くのは次の 3 つだけ。
+
+| ファイル | 置くもの | いつ |
 | --- | --- | --- |
-| 入口(`index.html`) | 概要・特に見てほしい箇所・各ページへの案内 | 依存の図(すべての変更ファイルを、つながっているまとまりごとの帯に分けたもの)・ファイルごとのつながりのカード・変更ファイルの一覧(読む順) |
-| 振る舞い(`behavior.html`) | 操作ごとの変更前と変更後・判断(逸脱・見送り) | なし |
-| 技術(`tech.html`) | 処理の流れ・どこで何をしているか・技術解説・コードの読み方 | 解説に出てこない変更ファイル |
-| テスト(`tests.html`) | 各テストが守る振る舞い・守れていない振る舞い・壊して確かめた結果 | 追加・削除されたテスト名 |
+| `index.html` | ページの枠(`templates/index.html`) | Actions が push のたびに置き直す |
+| `change-map.json` | 変更の地図 | Actions が push のたびに置き直す |
+| `explain.json` | 解説 | セッションが `put-explain` で置く |
 
-変更の地図(`change-map.json`)は `pr-explain.yml`(Actions)が git の差分から作る。上部のナビで
-4 ページを行き来し、書かなかったページは「なし」と出る。**該当しないページは書かない**
-(ドキュメントやハーネスの文書だけの PR ならテストのページは要らない。入口は必ず書く)。
-
-URL は `https://dio0550.github.io/design-composer/pr-explain/pr-<番号>/`(入口)。Storybook
-プレビューの固定コメントに載るので、別にコメントしない。**PR ブランチにも main にも入れない**
-(main に溜まり、Files changed にも混ざるため)。
+URL は `https://dio0550.github.io/design-composer/pr-explain/pr-<番号>/`。Storybook プレビューの固定
+コメントに載るので、別にコメントしない。**解説は PR ブランチにも main にも入れない**(main に溜まり、
+Files changed にも混ざるため)。
 
 ## いつ書くか
 
 - **PR を出した直後**(`implementation-flow` フェーズ 7)
-- **振る舞いが変わる push をした後**。変わったページだけを書き直す。format・コメントだけの push
-  では書き直さない(各ページの「古い」帯に以降の変更ファイルが出るので、読み手が判断できる)
-- **PR を reopen した後**(閉じたときに Actions がフォルダごと消し、入口がテンプレートに戻っている)
+- **振る舞いが変わる push をした後**。format・コメントだけの push では書き直さない(ページが
+  「解説は ◯ 時点、以降 n コミットは解説なし」と出すので、読み手が判断できる)
+- **PR を reopen した後**(閉じたときに Actions がフォルダごと消している)
 
 ## 手順
 
 1. **材料を集める**
    - Issue: ゴール・計画・却下した案・計画から外れた点(`implementation-flow` が書いている)
-   - 差分: `git diff $(git merge-base origin/main HEAD)`
-   - 検証エージェントの指摘: とくに `test-reviewer` の「壊して落ちた / 落ちなかった判断」はテストの
-     ページの材料
+   - 地図: ページと同じものを手元で出せる。コミットの sha・層の名前(`groups[].label`)・パスはここから取る
+
+     ```bash
+     python3 .github/scripts/build-pr-change-map.py --base origin/main --head HEAD --pr <番号> --head-branch "$(git branch --show-current)" --base-branch main
+     ```
+
+   - 検証エージェントの指摘: とくに `test-reviewer` の「壊して落ちた / 落ちなかった判断」はテストの材料
    - このセッションの記憶: Issue に書くほどではなかった判断・試して捨てた形
-2. **ページごとに解説の断片を、リポジトリの外の作業用ファイルに書く**(`mktemp -d` など)。書くのは
-   `templates/index.html` の `<!-- EXPLAIN:BEGIN -->` 〜 `<!-- EXPLAIN:END -->` の間に入る部分だけで、
-   枠(CSS・固定スクリプト・CSP)は公開のときにスクリプトがテンプレートから写す
-3. **下の「ページごとの中身」と「部品」で書く**
+2. **見本 [`templates/explain.json`](templates/explain.json) をリポジトリの外の作業用ファイルへ写して
+   書く**(`mktemp -d` など)。見本は `excerpt` 以外のすべてのキーと、Target の 5 つの kind を使って
+   いる。要らない任意のキーは消す
+3. **下の「explain.json の形」と「書き方」で書く**
 4. **事実の主張を確かめる。** 解説は「この関数は◯◯を返す」「この操作で□□になる」の集まりなので、
-   `claim-verification` スキル(管轄はフェーズ 3 / 5)の手順をここでも使う。根拠の `path:line` は
-   実際に開いて行番号まで合わせる
-5. **ページごとに公開する**
+   `claim-verification` スキル(管轄はフェーズ 3 / 5)の手順をここでも使う。Note の行番号は、その
+   コミット時点のファイルを開いて合わせる
+5. **置く**
 
    ```bash
-   bash .github/scripts/pr-explain-pages.sh put-page <PR 番号> <index|behavior|tech|tests> <書いた断片>
+   bash .github/scripts/pr-explain-pages.sh put-explain <PR 番号> <書いた explain.json>
    ```
 
-   - push の前に `build-pr-explain-page.py` が断片を検査してページを組み立てる。落ちたら報告を読んで直す
+   - push の前に `build-pr-explain.py` が検査し、テストの抜粋(`excerpt`)に中身(`text`)を足す。
+     落ちたら報告を読んで直す。報告の分類は `[pr-explain-shape]`(形)・`[pr-explain-meta]`(`pr` が
+     公開先と違う)・`[pr-explain-ref]`(解説の中の参照切れ)・`[pr-explain-code]`(`sha` や抜粋の
+     パスがこのリポジトリに無い)
    - **終了コード 3** は置き先に `change-map.json` がまだ無い(`PR Explain` の run が終わる前)か、
      PR が閉じて消された後。run の完了を待ってからやり直す。閉じた PR には置かない
+   - 解説の `sha` が地図の head と違えば、置いたうえで標準エラーに知らせる。push の直後で run が
+     終わっていないだけなら置き直さなくてよい(run が終われば地図の head と揃う)
    - **gh-pages へ push してよいのは、このスクリプトで `pr-explain/pr-<番号>/` へ置くときだけ。**
      他のフォルダ・他のブランチは触らない
 6. **URL をユーザーに伝える**
 
-## ページごとの中身
+## explain.json の形
+
+**共通の規則**
+
+- 文字列は空にしない。文字列の中の `` `…` `` はページがコードとして描く。HTML は書いても文字のまま出る
+- id は `^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$`、sha は小文字 40 桁
+- 知らないキーと重複したキーは、入れ子を含めて落ちる
+- 任意の配列は、省けば `[]` と同じ
+
+**トップ**
+
+| キー | 必須 | 意味 |
+| --- | --- | --- |
+| `version` | 必須 | `1` |
+| `pr` | 必須 | 公開先の PR 番号 |
+| `sha` | 必須 | 解説を書いた時点の head(`git rev-parse HEAD`。push 済みのもの)。抜粋はここから読む |
+| `issue` | 任意 | 材料の Issue 番号 |
+| `overview` | 必須 | Overview |
+| `features` | 任意 | Feature[]。空ならページは「機能」でまとめられない(層だけ) |
+| `layers` / `concepts` / `messages` / `flows` / `commitNotes` / `suites` / `tests` | 任意 | 下の型の配列 |
+
+**型**(`?` は任意)
+
+| 型 | キー |
+| --- | --- |
+| Overview | `title` `lead` `before: Behavior[]`(0 件でよい)`after: Behavior[]`(1 件以上)`highlights?: Highlight[]` |
+| Behavior | `text` `message?`(messages の id) |
+| Highlight | `title` `text` `target: Target` |
+| Target | `{kind: "feature", id}` / `{kind: "layer", layer}`(地図の `groups[].label` と同じ綴り)/ `{kind: "file", path}` / `{kind: "message", id}` / `{kind: "flow", id}`。kind ごとのキーが欠けるのも、他の kind のキーが混ざるのも不可 |
+| Feature | `id` `label` `role` |
+| LayerNote | `layer`(一意。地図の `groups[].label`)`role` |
+| Concept | `path`(一意)`name` `role` `feature?`(features の id)`change?` `graph?`(既定 true) |
+| Message | `id` `from` `to`(concepts の path)`kind`: `cmd` \| `qry` \| `evt` `name` `code` `via`: `call` \| `http` \| `state` \| `log` \| `exec` \| `file` `payload?` `returns?` `status?`: `new` \| `removed` |
+| Flow | `id` `label` `steps[]`(messages の id。1 件以上) |
+| CommitNote | `sha`(一意)`phase`: `prep` \| `core` \| `hard` \| `review` \| `fin` `role` `why` `flows?`(flows の id)`review?: string[]` `before?: Behavior[]` `after?: Behavior[]` `notes?: Note[]` |
+| Note | `path` `side?`: `new` \| `old`(既定 new)`start`(1 以上)`end`(start 以上)`text`。行番号はそのコミット時点 |
+| Suite | `id` `label` `file` |
+| Test | `id` `suite`(suites の id)`name` `techniques[]`: `boundary` \| `equivalence` \| `error` \| `state` \| `regression` \| `idempotence` \| `type`(1 件以上・重複なし)`why` `given` `when` `then` `todo?: true` `commit?`(sha)`excerpt?: Excerpt` `values?: Values` `targets?`(concepts の path)`covers?`(messages の id) |
+| Excerpt | `path` `start` `end`(80 行まで)。`text` は検査が足す出力だけのキーで、入力に書くと落ちる |
+| Values | `columns[]`(1 件以上)`rows[{cells[](列と同数), boundary?}]` |
+
+id・sha・path・layer は一覧の中で一意にする(features / messages / flows / suites / tests の id、
+commitNotes の sha、concepts の path、layers の layer)。todo のテストは commit も excerpt も持たない。
+
+**解説の中の参照**は満たさなければ置けない(message の from / to、flow の steps、commitNote の flows、
+Behavior の message、test の suite / covers / targets、concept の feature、Target の feature / message /
+flow)。**地図を指す参照**(commitNote の sha・Note のパスと行・Target の layer / file・LayerNote の
+layer・concept のパス)は検査しない。地図は push のたびに変わるので、外れたものはページが
+「地図に無い」と出す。
+
+## 書き方
 
 読み手は、このリポジトリの規約は知っているが、**この PR で使った技術やこのセッションの経緯は
-知らない人**とする。専門用語は出たその場で一言で説明する(`<abbr title="説明">語</abbr>` にすると、点線の
-下線に載せたときに説明が出る。本文を説明で長くしたくない語に使う)。どのページも単独で読めるように書き、
-別のページの内容が要るところはリンクで渡す(`<a href="tests.html#…">`)。
+知らない人**とする。専門用語は出たその場で一言で説明する。
 
-| ページ | 節 | 書くこと | 書かないこと |
-| --- | --- | --- | --- |
-| 入口 | 概要 | 何ができるようになったか・何が変わったかを 2〜3 段落の散文で。必要なら全体の流れの図 | 変更ファイルの列挙(地図が出す) |
-| 入口 | 特に見てほしい箇所 | 自信のない判断・未決のまま入れたもの・目で見ないと分からない表示。詳しい説明は各ページへリンク | 「全体を見てください」 |
-| 入口 | 各ページの案内 | 各ページに何が書いてあるかを 1 行ずつ | |
-| 振る舞い | 振る舞いの変化 | **操作・状況ごと**に変更前と変更後。空・エラー・境界の状況も 1 行ずつ。守っているテストへリンク | 実装の手順 |
-| 振る舞い | 判断 | 採った案・検討した案(または計画にあった案)・理由・根拠。計画から外れた点と見送った点もここ | Issue の写し。Issue へのリンクを添えて要点だけ |
-| 技術 | 処理の流れ | ページの先頭に置く。主な流れ(いつ・誰が・何を・どの順に呼ぶか)ごとに 1 枚の流れの図(`pre.sequence`)。2〜4 枚 | 1 つの関数の中の手順(それは抜粋で見せる) |
-| 技術 | どこで何をしているか | 処理の流れの次に置く。この PR がやっていること(振る舞い・処理)ごとに、**それをしているコードそのもの**(PR の起点からの diff の抜粋。読み手が差分とコードの表示を切り替える)と、何をしているかの 1〜2 文・誰がいつ呼ぶか・場所(`path:開始-終了`)。抜粋は 1 か所 5〜25 行で、要の関数・分岐を省略せずに出す | 場所だけの表(どこを開けばよいかは分かっても、何をしているかは読めない) |
-| 技術 | 技術解説 | 使った技術(React の API・TypeScript の型の技法・Tauri・ブラウザ API・アルゴリズムなど)ごとのミニ記事。**何か → この PR での使いどころ → 仕組み(図) → コード抜粋 → 注意** を散文で | どの PR にも同じ文になる一般論だけの記事(この PR の使いどころへ必ず繋げる) |
-| 技術 | コードの読み方 | 地図の読む順に、ファイル(またはまとまり)ごとの役割と、呼び出しの流れの中での位置 | diff の全文・「どこで何をしているか」と同じ抜粋の再掲(`#w-…` へリンクする) |
-| テスト | 守っている振る舞い | 振る舞いごとに、それを守るテスト(ファイルとテスト名)。振る舞いのページの行へリンク | テストコードの写し |
-| テスト | 守れていない振る舞い | テストで確かめられず、目視や運用で確かめているもの・残した穴 | |
-| テスト | 壊して確かめた結果 | `test-reviewer` が壊して落ちた判断・落ちなかったものと、その対応 | |
+| キー | 書くこと | 書かないこと |
+| --- | --- | --- |
+| `overview` | `title` は PR の題、`lead` は何ができるようになったかの 1〜2 文。`before` / `after` は操作・状況ごとの振る舞いを 1 つ 1 行で(空・エラー・境界の状況も)。関わるやりとりがあれば `message` で指す | 実装の手順 |
+| `overview.highlights` | 特に見てほしい箇所(自信のない判断・未決のまま入れたもの・目で見ないと分からない表示)と、図のどこを見ればよいか(`target`) | 「全体を見てください」 |
+| `features` / `layers` | 機能・層がこの PR で担う役割を 1 文。`layers` の綴りは地図の `groups[].label` に揃える | |
+| `concepts` | 箱にしたいファイルと、その短い名前(`name`。図の表示名になる)・役割・何を変えたか(`change`)。変更していないファイルも名指しすると箱になる。図に出さず木にだけ出すなら `graph: false` | 変更ファイルの列挙だけ(箱は地図からも出る) |
+| `messages` / `flows` | 箱どうしのやりとり。`kind` は変える(`cmd`)/ 問い合わせる(`qry`)/ 知らせる(`evt`)、`code` は実際の呼び出しの綴り。`flows` は操作・イベントごとのやりとりの順で、2〜4 本 | 1 つの関数の中の手順 |
+| `commitNotes` | コミットごとに、`role`(何をするコミットか 1 行)・`why`(なぜこの順でこうしたか)・`review`(レビューで見てほしい点を 1 点 1 文)・振る舞いの前後・行への注釈(`notes`)。`phase` は準備(`prep`)/ 本体(`core`)/ 堅くする(`hard`)/ 指摘の反映(`review`)/ 仕上げ(`fin`) | 件名・本文の写し(地図から出る) |
+| `suites` / `tests` | テストごとに、守る振る舞い(`why`)・前提 / 操作 / 期待・使った技法・境界の値の表(`values`)・確かめているやりとり(`covers`)と箱(`targets`)。テストコードは `excerpt` で範囲を指す | テストコードの写し |
 
-- 根拠は **リポジトリ相対のフルパス**で `<code class="ref">src/utils/Option.ts:12</code>` と書く。固定
-  スクリプトが解説時点の GitHub の該当行へのリンクにする。技術のページでは、地図が「本文に
-  フルパスで出てこない変更ファイル」を出す(ファイル名だけでは数えない)ので、コードの読み方で
-  変更ファイルをすべて名指しする
-- 各ページ 5〜10 分で読める長さを目安にする。技術解説は、この PR を読むのに要る技術だけ
+- **`review` の文は、確認の印の鍵になる。** 読み手のブラウザは「コミットの sha + 文」で確認済みを
+  覚えるので、文を書き直すとその点の印は外れる(別の点へ移らない)
+- **`tests[].name` はテスト名そのままで書く。** ページは `suite.file` と `name` を地図の
+  `tests.added` と突き合わせて「追加 / 既存」を出す。綴りを変えると既存のテストに見える
+- 未実装のテスト(守れていない振る舞い)は `todo: true` で書く。ページは破線で出す
+- Note の `start` / `end` は、そのコミットで `side` の側(既定は変更後)のファイルの行番号。差分の
+  hunk に入らない行への注釈は「差分に出ていない行への注釈」として別に出る
 
-## 部品
+## 解説が無いとき・古いとき
 
-断片の先頭には `explain-meta` を 1 つだけ置く(無い・sha が 40 桁でない・PR 番号やページ名が
-公開先と違うと検査で落ちる)。`data-explained-sha` は解説を書いた時点の PR の head
-(`git rev-parse HEAD`。push 済みのもの)で、根拠のリンク先になり、地図の head と違うと「古い」帯が
-出る。`data-page` は `index` / `behavior` / `tech` / `tests` のどれか。
+ページは地図だけでも 3 画面を出す。解説の状態は上の帯で知らせる。
 
-`kicker` は見出しの頭に付ける小さな分類の札、`lead` は題の下の要約の段落。
+| 状態 | ページの出方 |
+| --- | --- |
+| 解説が無い | 地図だけで組む。まとめ方は層、表示名はファイル名、テストは地図の追加・削除と対象 |
+| 解説が読めない(JSON でない・`version` が 1 でない・`pr` が違う・型が想定外) | 「解説なし」とその理由 |
+| 解説の sha が地図の head より前 | 「解説は ◯ 時点、以降 n コミットは解説なし」。以降のコミットには「解説なし」の札 |
+| 解説の sha が地図のコミットに無い | 「sha が地図に無い」 |
+| commitNotes の sha が地図に無い | 「地図に無い解説 n 件」。別の一覧に出す |
+| 地図が version 1 | 「地図が古い(v1)」 |
 
-```html
-<p class="explain-meta" data-explained-sha="<40 桁の sha>" data-pr="<PR 番号>" data-page="behavior">解説時点 <code><7 桁></code> · 材料 <a href="https://github.com/DIO0550/design-composer/issues/<番号>">Issue #<番号></a></p>
-<h1><PR の題>: 振る舞い</h1>
-<p class="lead"><1〜2 文の要約></p>
+## 移行期間
 
-<h2 id="behavior"><span class="kicker">振る舞い</span>振る舞いの変化</h2>
-<table class="behavior">
-  <tr><th>操作・状況</th><th>変更前</th><th>変更後</th><th>根拠</th></tr>
-  <tr id="b-1"><td>…</td><td>…</td><td>…</td><td><code class="ref">src/…/index.ts:12</code> · <a href="tests.html#t-1">テスト</a></td></tr>
-</table>
+以前は解説を HTML の断片で 4 ページ(入口・振る舞い・技術・テスト)に分けて置いていた。
 
-<h2 id="decisions"><span class="kicker">判断</span>判断</h2>
-<div class="decision" data-kind="判断">
-  <h3><何を決めたか></h3>
-  <dl>
-    <dt>採った案</dt><dd>…</dd>
-    <dt>検討した案</dt><dd>…</dd>
-    <dt>理由</dt><dd>…</dd>
-    <dt>根拠</dt><dd><code class="ref">…</code></dd>
-  </dl>
-</div>
-```
-
-入口のページ:
-
-```html
-<p class="explain-meta" data-explained-sha="<40 桁の sha>" data-pr="<PR 番号>" data-page="index">解説時点 <code><7 桁></code> · 材料 <a href="https://github.com/DIO0550/design-composer/issues/<番号>">Issue #<番号></a></p>
-<h1><PR の題></h1>
-<p class="lead"><1〜2 文の要約></p>
-
-<h2 id="overview">概要</h2>
-<p>…</p>
-
-<h2 id="focus"><span class="kicker">レビュー</span>特に見てほしい箇所</h2>
-<ul class="focus"><li><strong>…</strong>…<a href="behavior.html#b-1">振る舞い</a></li></ul>
-
-<h2 id="guide">各ページの案内</h2>
-<ul><li><a href="behavior.html">振る舞い</a>: …</li></ul>
-```
-
-技術のページの「どこで何をしているか」と、記事と、コードの読み方の 1 ファイル分:
-
-```html
-<h2 id="where"><span class="kicker">コード</span>どこで何をしているか</h2>
-<h3 id="w-1"><やっていること></h3>
-<p><何をしているかの 1〜2 文>。<code>Foo.bar</code> から、ノードを選ぶたびに呼ばれる。</p>
-<p class="where-ref"><code class="ref">src/…/index.ts:12-30</code></p>
-<pre class="code" data-diff><code>@@ -10,17 +12,19 @@
- 変えていない行
--消した行
-+足した行</code></pre>
-```
-
-抜粋の `where-ref` と `pre` は手で写さず、**解説時点の head の作業ツリーで、行範囲から作る**。PR の
-起点(merge-base)からの diff になり、中身はエスケープされる。範囲は変更後のファイルの行番号で、
-範囲の中で消した行も入る。
-
-```bash
-python3 .github/scripts/build-pr-explain-excerpt.py <path> <開始行> <終了行> --base "$(git merge-base origin/main HEAD)"
-```
-
-固定スクリプトはこれを、GitHub と同じ**差分**(変更前・変更後の行番号と `+` / `-`)と、変更後の行だけの
-**コード**(足した行は左端の印)の 2 つの表示に組み直す。最初は差分で、抜粋ごとの切り替えとヘッダの
-「すべてコードで表示」で読み手が選ぶ。
-
-```html
-<article class="tech">
-  <h3><span class="kicker">React</span>useSyncExternalStore</h3>
-  <p>…</p>
-  <figure class="diagram">
-    <svg viewBox="0 0 480 120" role="img" aria-label="…">
-      <rect x="10" y="20" width="120" height="48" rx="6" class="d-box"/>
-      <text x="70" y="49" text-anchor="middle" class="d-text">…</text>
-      <line x1="130" y1="44" x2="200" y2="44" class="d-line"/>
-    </svg>
-    <figcaption>…</figcaption>
-  </figure>
-  <pre class="code" data-file="src/…/index.ts"><code>…(&amp; &lt; &gt; をエスケープ)…</code></pre>
-  <div class="note info">…</div>
-</article>
-
-<h3><code class="ref">src/…/index.ts</code></h3>
-<p><このファイルの役割と、呼び出しの流れの中での位置></p>
-<p>このまとまりの抜粋は <a href="#w-1">…</a></p>
-```
-
-テストのページの表:
-
-```html
-<table>
-  <tr><th>守る振る舞い</th><th>テスト</th><th>壊して確かめたか</th></tr>
-  <tr id="t-1"><td><a href="behavior.html#b-1">…</a></td><td><code class="ref">src/…/__tests__/x.normal.test.ts:20</code> 「…のとき…になる」</td><td>落ちた</td></tr>
-</table>
-```
-
-`.decision` の `data-kind` は `判断` / `逸脱`(計画から外れた) / `見送り` のどれか。注意書きは
-`note info` の代わりに `note warn`。
-
-技術のページの「処理の流れ」は、1 行 1 矢印で書く。`A -> B: 文` が呼び出し(実線)、`A --> B: 文` が
-戻り(破線)で、固定スクリプトが参加者(最初に出た順に左から)の縦線と、番号付きの矢印の図にする。
-`A -> A: 文` は自分の中の処理。読めない行が 1 つでもあると図にせず元の文字のまま出るので、ページで
-図になっているかを見る。
-
-```html
-<h2 id="flow"><span class="kicker">流れ</span>処理の流れ</h2>
-<h3 id="flow-push">PR を push したとき</h3>
-<pre class="sequence" data-caption="PR のイベントから地図が置かれるまで">GitHub -&gt; pr-explain.yml: opened / synchronize
-pr-explain.yml -&gt; build-pr-change-map.py: --base --head --pr
-build-pr-change-map.py --&gt; pr-explain.yml: change-map.json</pre>
-```
-
-固定スクリプトが付けるもの(断片には書かない): 入口の依存の図とファイルごとのつながりのカード(地図の `dependencies` から)、抜粋ごとの
-「確認した」とヘッダの「確認 n / 全体」(読み手のブラウザに解説の sha ごとに残る)、h2 とその下の h3 の
-目次と、いま読んでいる見出しの印。
-
-**書けないものの一覧は `build-pr-explain-page.py` の定数が持つ**(違反は報告に出る。枠の CSP でも
-ブラウザが止める)。書くときに押さえるのは次の 3 つ。
-
-- 動くもの・外から読むもの(`<script>` `<style>` `<iframe>`・`on*=`・`style` 属性)を書かない。
-  色や余白はテンプレートのクラスで付ける。図は `d-box` `d-accent` `d-line` `d-text` `d-muted`
-- リンクはこのリポジトリの github.com・Pages・ページ内(`#…`)・解説のほかのページ
-  (`index.html` `behavior.html` `tech.html` `tests.html`)だけ
-- HTML のコメント(`<!-- -->`)も書かない
-
-技術解説の記事に置く数行の抜粋(`pre.code data-file`)は手で書き、行番号は付けない。その
-**コード抜粋は必ずエスケープする**(`&` → `&amp;`、`<` → `&lt;`、`>` → `&gt;`)。JSX の抜粋を
-そのまま貼ると要素として解釈され、`onClick=` が属性になって検査で落ちる。
-
-`pre.code` は固定スクリプトが開閉できる枠に入れ、言語ごとに色を付ける(断片には書かない)。言語は
-抜粋の上の `path:行`(`where-ref`)か `data-file` の拡張子で決まる。**拡張子が無い・中身の言語が
-拡張子と違う**(`harness/githooks/pre-push`、HTML の中のスクリプト)ときは `data-lang` で指定する
-(抜粋のスクリプトなら `--lang`)。書ける値はテンプレートの `Grammars`(言語名)と `LanguageByExtension`
-(拡張子)のキー。どれでもない値は色が付かないだけで、検査では落ちない。`data-diff` の付いた抜粋は
-diff として読み、差分 / コードの切り替えを付ける。
+- 古いブランチのセッションが古いスクリプトでページを置いても、次の push で Actions が枠を置き直し、
+  3 つ以外のファイルを消す
+- 地図が version 1 のフォルダにも `put-explain` で置ける。ページは「地図が古い(v1)」と出す
 
 ## 参照ファイル
 
 | ファイル | 内容 |
 | --- | --- |
-| [`templates/index.html`](templates/index.html) | 4 ページが共有する枠(CSS・固定スクリプト・CSP)。固定スクリプトを変えたら CSP の `sha256-` も直す(組み立てのスクリプトが突き合わせる) |
-| `.github/scripts/build-pr-explain-page.py` | 断片の検査とページの組み立て |
-| `.github/scripts/build-pr-explain-excerpt.py` | 「どこで何をしているか」のコード抜粋(起点からの diff)を行範囲から作る |
-| `.github/scripts/pr-explain-pages.sh` | gh-pages の `pr-explain/pr-<番号>/` の書き換え(`put-page` / `put-map` / `remove`) |
+| [`templates/index.html`](templates/index.html) | ページの枠(CSS・固定スクリプト・CSP)。固定スクリプトを変えたら CSP の `sha256-` も直す(`check-pr-explain-template.py` が突き合わせる) |
+| [`templates/explain.json`](templates/explain.json) | `excerpt` 以外のすべてのキーと、Target の 5 つの kind を使う解説の見本 |
+| `.github/scripts/build-pr-explain.py` | 解説の検査と、抜粋の中身の書き足し |
+| `.github/scripts/check-pr-explain-template.py` | 枠の CSP と、固定スクリプトが HTML として解釈させる API を使っていないかの検査 |
+| `.github/scripts/pr-explain-pages.sh` | gh-pages の `pr-explain/pr-<番号>/` の書き換え(`put-explain` / `put-map` / `remove`) |
 | `.github/scripts/build-pr-change-map.py` | 変更の地図(Actions が呼ぶ) |
-| `.github/workflows/pr-explain.yml` | 地図の配置と、PR が閉じたときの削除 |
+| `.github/workflows/pr-explain.yml` | 枠と地図の配置と、PR が閉じたときの削除 |

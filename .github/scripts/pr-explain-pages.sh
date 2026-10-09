@@ -3,17 +3,20 @@
 # gh-pages の `pr-explain/pr-<番号>/`(PR の解説ページ)を書き換える。
 #
 # 使い方:
-#   pr-explain-pages.sh put-page <PR 番号> <ページ名> <解説の断片>       … 解説を組み立てて <ページ名>.html に置く(セッションが呼ぶ)
-#   pr-explain-pages.sh put-map  <PR 番号> <change-map.json> <テンプレート>  … 変更の地図を置く(Actions が呼ぶ)
-#   pr-explain-pages.sh remove   <PR 番号>                              … フォルダごと消す(PR が閉じたとき)
+#   pr-explain-pages.sh put-explain <PR 番号> <explain.json>                 … 解説を検査して置く(セッションが呼ぶ)
+#   pr-explain-pages.sh put-map     <PR 番号> <change-map.json> <テンプレート>  … 枠と変更の地図を置く(Actions が呼ぶ)
+#   pr-explain-pages.sh remove      <PR 番号>                                … フォルダごと消す(PR が閉じたとき)
 #
-# - ページ名は `index`(入口) / `behavior` / `tech` / `tests`(`build-pr-explain-page.py` の `PageNames`)
-# - `put-page` は `build-pr-explain-page.py` で断片を検査してテンプレートへ差し込む。違反があれば
-#   push しない。触るのはそのページの 1 ファイルだけ
-# - `put-page` は `change-map.json` が無いフォルダへは置かない。Actions が作る前と、PR が閉じて
-#   消した後に、セッションがフォルダを復活させないため
-# - `put-map` は `index.html` が無いときだけテンプレートそのもの(「解説はまだ」)を置く。解説が
-#   書かれる前でも、PR に貼った URL を 404 にしないため。あれば触らない
+# フォルダに置くのは `index.html`(枠)・`change-map.json`(地図)・`explain.json`(解説)の 3 つだけ。
+#
+# - `put-explain` は `build-pr-explain.py` が検査して書き出したもの(抜粋の中身を足したもの)を
+#   `explain.json` として置く。違反があれば push しない。触るのはこの 1 ファイルだけ
+# - `put-explain` は `change-map.json` が無いフォルダへは置かない。Actions が作る前と、PR が閉じて
+#   消した後に、セッションがフォルダを復活させないため。解説の sha が地図の head と違えば、置いた
+#   うえで標準エラーに知らせる(古い解説も、ページが解説の時点を帯で出すので読める)
+# - `put-map` は clone の前に `check-pr-explain-template.py` で枠を検査し、`index.html` を毎回
+#   上書きする。枠の変わったコミット(main の取り込みを含む)が、次の push でそのままページに効くように。
+#   3 つ以外のファイル(以前の形のページ)は消す
 #
 # gh-pages は Storybook 本体・PR プレビュー・VRT の撮影結果で数百 MB あるので、blob を取らない
 # 浅い clone から `pr-explain/pr-<番号>/` だけを展開する。他のワークフローとの push の競合は、
@@ -23,8 +26,8 @@
 #   PR_EXPLAIN_REMOTE      push 先(既定はこのリポジトリの origin)
 #   PR_EXPLAIN_RETRY_WAIT  n 回目の失敗の後に n × この秒数だけ待つ(既定 2)
 #
-# 終了コード: 0 = 置いた / 変更が無かった、1 = 断片が検査に落ちた・push できなかった、
-#             2 = 引数の誤り(知らないページ名を含む)、3 = `put-page` の置き先に地図が無い
+# 終了コード: 0 = 置いた / 変更が無かった、1 = 解説か枠が検査に落ちた・push できなかった、
+#             2 = 引数の誤り(知らないモードを含む)、3 = `put-explain` の置き先に地図が無い
 set -uo pipefail
 
 scripts_dir="$(cd "$(dirname "$0")" && pwd)"
@@ -41,7 +44,7 @@ mode="${1:-}"
 pr="${2:-}"
 [[ "$pr" =~ ^[1-9][0-9]*$ ]] || usage
 case "$mode" in
-  put-page) args_ok=$([ $# -eq 4 ] && [ -f "$4" ] && echo yes) ;;
+  put-explain) args_ok=$([ $# -eq 3 ] && [ -f "$3" ] && echo yes) ;;
   put-map) args_ok=$([ $# -eq 4 ] && [ -f "$3" ] && [ -f "$4" ] && echo yes) ;;
   remove) args_ok=$([ $# -eq 2 ] && echo yes) ;;
   *) args_ok="" ;;
@@ -53,11 +56,12 @@ folder="pr-explain/pr-$pr"
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 
-# ページ名が決まった 4 つのどれかであることは組み立ての側が見る(知らない名前なら 2)。ここを通った
-# ページ名だけが下で置き先のファイル名(`$folder/<ページ名>.html`)になる。
-if [ "$mode" = "put-page" ]; then
-  python3 "$scripts_dir/build-pr-explain-page.py" "$4" --pr "$pr" --page "$3" --out "$work/page.html" || exit $?
-fi
+# 検査は clone の前に済ませる。落ちたものを置かないのと、取り直しのたびに同じ検査を繰り返さないため。
+# 解説の sha と抜粋は、このスクリプトがあるリポジトリ(セッションの作業コピー)から読む。
+case "$mode" in
+  put-explain) python3 "$scripts_dir/build-pr-explain.py" "$3" --pr "$pr" --out "$work/explain.json" --repo "$scripts_dir" || exit $? ;;
+  put-map) python3 "$scripts_dir/check-pr-explain-template.py" "$4" || exit $? ;;
+esac
 
 # gh-pages の有無。0 = ある、2 = 無い、それ以外 = 問い合わせに失敗した。
 # 失敗の理由(認証・名前解決)を読めるよう、標準エラーは捨てない。
@@ -88,18 +92,32 @@ checkout_site() {
     git -C "$work/site" checkout --quiet "$branch"
 }
 
+# `$folder` の中の、置くと決めた 3 つ以外のファイルを作業コピーから消す(サブフォルダの中も)。
+# 消した分は `commit_and_push` の `git add -A` が拾う。
+# $1 作業コピー
+remove_others() {
+  local path
+  git -C "$1" ls-files -z -- "$folder" | while IFS= read -r -d '' path; do
+    case "$path" in
+      "$folder/index.html" | "$folder/change-map.json" | "$folder/explain.json") ;;
+      *) rm -f -- "$1/$path" ;;
+    esac
+  done
+}
+
 # モードごとに `$folder` を書き換える。終了コード 3 は「置き先に地図が無い」で、やり直さない。
 apply_change() {
   local site="$work/site"
   case "$mode" in
-    put-page)
+    put-explain)
       [ -f "$site/$folder/change-map.json" ] || return 3
-      cp "$work/page.html" "$site/$folder/$3.html"
+      cp "$work/explain.json" "$site/$folder/explain.json"
       ;;
     put-map)
       mkdir -p "$site/$folder"
       cp "$3" "$site/$folder/change-map.json"
-      [ -f "$site/$folder/index.html" ] || cp "$4" "$site/$folder/index.html"
+      cp "$4" "$site/$folder/index.html"
+      remove_others "$site"
       ;;
     remove)
       git -C "$site" rm -r --quiet --ignore-unmatch -- "$folder"
@@ -125,6 +143,19 @@ commit_and_push() {
     echo "$folder: $mode を反映しました"
 }
 
+# `put-explain` で置いた解説の sha が地図の head と違えば、標準エラーに知らせる。置くのは止めない。
+notify_stale() {
+  [ "$mode" = "put-explain" ] || return 0
+  python3 - "$work/explain.json" "$work/site/$folder/change-map.json" <<'PY'
+import json, sys
+explained = json.load(open(sys.argv[1], encoding="utf-8"))["sha"]
+head = json.load(open(sys.argv[2], encoding="utf-8")).get("head")
+if explained != head:
+    print(f"解説の sha {explained[:7]} は地図の head {str(head)[:7]} と違います(置きました。ページは解説がどの時点のものかを帯で出します)", file=sys.stderr)
+PY
+  return 0
+}
+
 # 消すものが無い。gh-pages を作ってまで空のコミットを置かない。
 if [ "$mode" = "remove" ]; then
   pages_branch_state
@@ -136,7 +167,7 @@ for attempt in $(seq 1 "$max_attempts"); do
     apply_change "$@"
     applied=$?
     [ "$applied" -eq 3 ] && { echo "$folder/change-map.json がありません(PR が開いていて、地図が作られた後に置けます)" >&2; exit 3; }
-    [ "$applied" -eq 0 ] && commit_and_push && exit 0
+    [ "$applied" -eq 0 ] && commit_and_push && notify_stale && exit 0
   fi
   echo "gh-pages への反映に失敗しました($attempt 回目)。取り直してやり直します" >&2
   sleep $((attempt * retry_wait))

@@ -119,7 +119,7 @@ jobs:
           OWNER="${GITHUB_REPOSITORY%%/*}"
           URL="https://${OWNER}.github.io/${REPO_NAME}/pr-preview/pr-${PR}/"
 
-          # 解説ページは pr-explain.yml が地図を置き、本文はセッションが書く(.claude/skills/pr-explain/)。
+          # 解説ページは pr-explain.yml が枠と地図を置き、解説(explain.json)はセッションが書く(.claude/skills/pr-explain/)。
           # 告知の固定コメントをもう 1 本増やさないよう、ここに相乗りする。
           EXPLAIN_URL="https://${OWNER}.github.io/${REPO_NAME}/pr-explain/pr-${PR}/"
 
@@ -127,7 +127,7 @@ jobs:
           {
             echo "$COMMENT_MARKER"
             echo "📖 Storybook preview: ${URL}"
-            echo "📘 PR 解説(振る舞い・技術・テスト・変更の地図): ${EXPLAIN_URL}"
+            echo "📘 PR 解説(構造マップ・変更の経緯・テスト): ${EXPLAIN_URL}"
           } > "$BODY_FILE"
 
           # 既存のプレビューコメントがあれば編集、なければ新規作成。

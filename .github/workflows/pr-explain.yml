@@ -1,7 +1,7 @@
 # PR ごとの解説ページ(gh-pages/pr-explain/pr-{番号}/)の「変更の地図」を置き、PR が閉じたら消す。
 #
-# 解説の本文はセッションが `pr-explain` スキルで書いて同じフォルダへ直接 push する。ここが置くのは
-# git の差分だけで決まる地図(change-map.json)と、解説がまだ無いときのテンプレートだけ。
+# 解説(explain.json)はセッションが `pr-explain` スキルで書いて同じフォルダへ置く。ここが置くのは
+# git の差分だけで決まる地図(change-map.json)と、ページの枠(index.html。push のたびに置き直す)。
 # ページの URL は storybook-pr-preview.yml の固定コメントに載る。
 #
 # storybook-pr-preview.yml とは別のワークフローにしてあるのは、あちらが Storybook のビルドを
