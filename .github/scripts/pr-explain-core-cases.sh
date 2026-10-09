@@ -2,8 +2,8 @@
 #
 # 解説ページの核の判定表。テンプレート(`.claude/skills/pr-explain/templates/index.html`)から固定
 # スクリプトを抜き出して node の `vm` で評価し、`document` が無いときに置かれる `prExplainCore` を
-# 叩いて、地図と解説の合流・箱の図の配置・コミットの差分・確認の印の鍵・開く画面が期待どおりかを 1 コマンドで
-# 確かめる。
+# 叩いて、地図と解説の合流・箱の図の配置・コミットの差分・つながりの要約・戻るの履歴・確認の印の鍵・開く画面が
+# 期待どおりかを 1 コマンドで確かめる。
 #
 # 使い方: bash .github/scripts/pr-explain-core-cases.sh
 # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。
@@ -12,7 +12,8 @@
 # して、以降の件数(2)が添字(1)とも「全件数 − 添字」(3)とも違うようにする。表示名は concept 名・`index.*`・それ以外を
 # 並べ、解説なしのときは退けた解説に concept 名を書いておいて、それを使わないことを見る。箱の図の段の向きは、
 # 入力の順と答えの順が違うように並べ、循環は打ち切りで済ませると段が割れる順で渡す。抽象度の中と同じ段の中の順は、
-# 変更行数の順をラベルの順と変えておく。差分は hunk のあいだの行・変更前と変更後で番号のずれる行・切る前と見せた
+# 変更行数の順をラベルの順と変えておく。1 段に並べる数は、等倍を超えて数えると 1 列が選ばれる広さで、等倍で
+# 打ち止めて 1 段に多く並べるほうへ寄ることを見る。つながりの要約は、入力の順を答えの順(向き → 種類)と変えておく。差分は hunk のあいだの行・変更前と変更後で番号のずれる行・切る前と見せた
 # 行数の違う patch を選ぶ。
 #
 # 組み立て(DOM を触る側)はここでは通らない。画面の配線は表示確認で見る。
@@ -43,7 +44,7 @@ if (core === undefined) {
   console.error("document の無い評価で prExplainCore が置かれていない");
   process.exit(2);
 }
-const { ExplainedMap, ReviewMark, ScreenChoice, CommitDiff, GraphLayout } = core;
+const { ExplainedMap, ReviewMark, ScreenChoice, CommitDiff, GraphLayout, ConnectionGist, SelectionHistory } = core;
 
 const Pr = 7;
 const shaOf = (digit) => String(digit).repeat(40);
@@ -87,7 +88,15 @@ const dependsOn = (from, to, state = "kept") => ({ from: `${from}/0.ts`, to: `${
 const boxesOf = (id, names, lines) => ({ id, boxes: names.map((name, index) => ({ path: name, lines: lines === undefined ? 1 : lines[index] })) });
 // 上の段から順に、行ごとの組(畳んだ組)・箱(開いた組の中)を左から並べる。
 const rowsOf = (units) => [...new Set(units.map((unit) => unit.y))].sort((a, b) => a - b).map((y) => units.filter((unit) => unit.y === y).sort((a, b) => a.x - b.x).map((unit) => (unit.kind === "box" ? unit.path : unit.group)));
-const groupRowsOf = (groups, links) => rowsOf(GraphLayout.of({ groups, links, expanded: [] }).units);
+const groupRowsOf = (groups, links, extra = {}) => rowsOf(GraphLayout.of({ groups, links, expanded: [], ...extra }).units);
+// 変更行数が b > d > c > a の 4 つの組(段はどれも同じ)。
+const fourGroups = () => [graphGroup("a", [5]), graphGroup("b", [40]), graphGroup("c", [10]), graphGroup("d", [30])];
+// 同じ段に並んだ 2 つの組のあいだの間隔。
+const columnGapOf = (labelWidth) => {
+  const [left, right] = GraphLayout.of({ groups: [graphGroup("a", [2]), graphGroup("b", [1])], links: [], expanded: [], labelWidth }).units;
+  return right.x - (left.x + left.width);
+};
+const message = (id, from, to, kind, extra = {}) => ({ id, from, to, kind, name: id, ...extra });
 
 // ハブ(Hub.ts)を変え、変更していない 5 本がそれを使っている地図。
 const hubImporters = ["A", "B", "C", "D", "E"].map((name) => `src/features/${name}.ts`);
@@ -278,6 +287,30 @@ const cases = [
     expected: [["a", "b"]],
   },
   {
+    label: "置ける広さを渡すと、等倍で収まる並びどうしでは 1 段に多く並べるものを選ぶ",
+    actual: () => groupRowsOf(fourGroups(), [], { room: { width: 520, height: 900 } }),
+    expected: [["b", "d"], ["c", "a"]],
+  },
+  {
+    label: "等倍で収まる並びが 1 段 1 つだけなら、組を縦に 1 列に並べる",
+    actual: () => groupRowsOf(fourGroups(), [], { room: { width: 300, height: 900 } }),
+    expected: [["b"], ["d"], ["c"], ["a"]],
+  },
+  {
+    label: "ラベルの幅を渡すと、横に並んだ組の間隔はそれが入る幅になり(上限 240px)、渡さなければ 72px",
+    actual: () => [0, 150, 400].map(columnGapOf),
+    expected: [72, 158, 240],
+  },
+  {
+    label: "同じ 2 つの単位を両向きに結ぶ線は両向きと分かり、片向きの link が何本あっても両向きにはならない",
+    actual: () => {
+      const layout = GraphLayout.of({ groups: [graphGroup("a"), graphGroup("b")], links: [], expanded: [] });
+      const link = (from, to) => ({ from: `${from}/0.ts`, to: `${to}/0.ts`, item: `${from}>${to}`, leads: true });
+      return [[link("a", "b"), link("b", "a")], [link("a", "b"), link("a", "b")]].map((links) => GraphLayout.edgesOf(layout, links)[0].isBothWays);
+    },
+    expected: [true, false],
+  },
+  {
     label: "抽象度が中なら、4 つの組のうち変更行数の多い 2 つを開く",
     actual: () => GraphLayout.expandedAt(GraphLayout.Levels.Mid, [graphGroup("a", [5]), graphGroup("b", [40]), graphGroup("c", [10]), graphGroup("d", [30])]),
     expected: ["b", "d"],
@@ -360,6 +393,35 @@ const cases = [
       return CommitDiff.codeRowsOf(hunk).map((row) => (row.kind === "gap" ? ["gap", row.lines.map((line) => line.text)] : ["line", row.line.text]));
     },
     expected: [["line", "a"], ["gap", ["b", "c"]], ["line", "d"], ["gap", ["e"]], ["line", "f"]],
+  },
+  {
+    label: "つながりの要約は、線の向き → 逆向き、コマンド → クエリ → イベントの順にまとめ、消えたやりとりは最後に 1 つにする",
+    actual: () => {
+      const unitOf = new Map([["a.ts", "A"], ["b.ts", "B"]]);
+      const messages = [
+        message("e", "b.ts", "a.ts", "evt"),
+        message("q", "a.ts", "b.ts", "qry"),
+        message("r", "a.ts", "b.ts", "cmd", { status: "removed" }),
+        message("c1", "a.ts", "b.ts", "cmd"),
+        message("c3", "b.ts", "a.ts", "cmd", { status: "new" }),
+        message("c2", "a.ts", "b.ts", "cmd"),
+      ];
+      return ConnectionGist.of({ ends: ["A", "B"], messages, unitOf }).map((sentence) => [sentence.kind, sentence.from, sentence.to, sentence.messages.map((item) => item.id)]);
+    },
+    expected: [["cmd", "A", "B", ["c1", "c2"]], ["qry", "A", "B", ["q"]], ["cmd", "B", "A", ["c3"]], ["evt", "B", "A", ["e"]], ["removed", null, null, ["r"]]],
+  },
+  {
+    label: "戻るの履歴は 40 件までで、41 件目を足すと最も古いものが落ちる",
+    actual: () => {
+      const history = Array.from({ length: 41 }, (_, index) => index).reduce((sofar, index) => SelectionHistory.recorded(sofar, index), []);
+      return [history.length, history[0], history[history.length - 1]];
+    },
+    expected: [40, 1, 40],
+  },
+  {
+    label: "戻ると最後に足した選択になって履歴から外れ、履歴が空なら戻らない",
+    actual: () => [SelectionHistory.back(["a", null, "b"]), SelectionHistory.back([])],
+    expected: [{ selection: "b", history: ["a", null] }, null],
   },
   {
     label: "確認の印の鍵は、同じ sha と同じ文なら同じ",
