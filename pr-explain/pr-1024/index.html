@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-cTe7EVCEXzFp+h7nIHkchZnGAvhpOwtQRjCNO8mh27w='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-7hlcry3/JZOQc3mlyvyYK3C7+nBkuUnkGe7hCF491Ic='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR 解説</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -154,6 +154,132 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 .guide { max-width: 640px; margin: 12vh auto 0; padding: 28px 32px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); display: flex; flex-direction: column; gap: 12px; }
 .guide h1 { margin: 0; font-size: 20px; font-weight: 600; }
 .guide p { margin: 0; font-size: 14px; line-height: 1.8; color: var(--ink-2); }
+.prose code { font-family: var(--mono); font-size: .88em; background: var(--chip); border-radius: 4px; padding: 1px 5px; overflow-wrap: anywhere; }
+.spacer { flex: 1; }
+.muted { color: var(--ink-3); }
+.plain-button { border: none; background: transparent; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+.row.overview-row { margin: 0 8px 6px; padding: 10px 12px; }
+.row.overview-row .row-title { font-weight: 600; }
+.commit-row { width: calc(100% - 16px); }
+.commit-row.is-current, .row.is-current { background: var(--accent-tint); box-shadow: inset 0 0 0 1px var(--accent-ring), 0 0 16px var(--accent-glow); }
+.commit-row.is-current .commit-dot { background: var(--accent); border-color: var(--accent); }
+[data-phase="prep"] { color: var(--ink-2); }
+[data-phase="core"] { color: var(--tok-fn); }
+[data-phase="hard"] { color: var(--mod); }
+[data-phase="review"] { color: var(--tok-kw); }
+[data-phase="fin"] { color: var(--add); }
+.card-head { display: flex; align-items: baseline; gap: 8px; }
+.card-head .muted { font-size: 11px; font-family: var(--mono); }
+.order { display: flex; flex-direction: column; }
+.order-step { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 12px; border-radius: 10px; padding: 0 10px; margin: 0 -10px; }
+.order-step:hover { background: var(--sunken); }
+.order-rail { position: relative; display: flex; justify-content: center; }
+.order-rail::before { content: ""; position: absolute; top: 0; bottom: 0; border-left: 1.5px solid var(--line-strong); }
+.order > .order-step:first-child .order-rail::before { top: 24px; }
+.order > .order-step:last-child .order-rail::before { bottom: calc(100% - 24px); }
+.order-num { position: relative; margin-top: 12px; width: 26px; height: 26px; border-radius: 13px; background: var(--surface); border: 1.5px solid var(--ink); display: flex; align-items: center; justify-content: center; font-family: var(--mono); font-size: 11.5px; font-weight: 600; }
+.order-body { display: flex; flex-direction: column; gap: 3px; padding: 12px 0 14px; min-width: 0; }
+.order-role { font-size: 12px; font-weight: 600; }
+.order-subject { font-size: 14.5px; font-weight: 500; line-height: 1.5; overflow-wrap: anywhere; }
+.order-why { font-size: 13px; line-height: 1.75; color: var(--ink-2); text-wrap: pretty; }
+.order-meta { font-family: var(--mono); font-size: 11px; color: var(--ink-3); }
+.section-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.review-count { font-size: 12px; color: var(--ink-2); }
+.review-count b { font-family: var(--mono); color: var(--ink); }
+.toggle-group { display: flex; gap: 2px; padding: 2px; background: var(--track); border-radius: 8px; }
+.toggle-group button { border: none; cursor: pointer; white-space: nowrap; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; background: transparent; color: var(--ink-2); }
+.toggle-group button[aria-pressed="true"] { font-weight: 600; background: var(--surface); color: var(--ink); box-shadow: var(--shadow-raised); }
+.toggle-group .n { font-family: var(--mono); font-size: 10.5px; opacity: .6; margin-left: 4px; }
+.review-card { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); cursor: pointer; user-select: none; transition: border-color .15s, background .15s; }
+.review-card:hover { border-color: var(--ink-4); }
+.review-card.is-checked { background: var(--panel); }
+.review-card.is-checked .review-text { color: var(--ink-3); }
+.check-box { flex: none; width: 18px; height: 18px; margin-top: 2px; border-radius: 5px; border: 1.5px solid var(--ink-4); background: var(--surface); display: flex; align-items: center; justify-content: center; transition: background .15s, border-color .15s; }
+.is-checked .check-box { background: var(--accent); border-color: var(--accent); }
+.is-checked .check-box::after { content: ""; width: 4px; height: 8px; margin-top: -2px; border: solid #FFFFFF; border-width: 0 1.8px 1.8px 0; transform: rotate(45deg); }
+.review-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.review-text { font-size: 13.5px; line-height: 1.7; text-wrap: pretty; }
+.review-go { align-self: flex-start; padding: 0; font-size: 11.5px; color: var(--accent); }
+.commit-head { display: flex; flex-direction: column; gap: 12px; }
+.commit-facts { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 12px; color: var(--ink-2); }
+.sha-chip { font-family: var(--mono); font-weight: 600; color: var(--ink); background: var(--track); border-radius: 5px; padding: 2px 7px; }
+.step-buttons { display: flex; gap: 6px; }
+.step-buttons button { border: 1px solid var(--line-strong); background: var(--surface); border-radius: 7px; padding: 5px 10px; font-size: 12px; cursor: pointer; color: var(--ink); }
+.step-buttons button:hover { border-color: var(--ink-4); }
+.step-buttons button:disabled { opacity: .4; cursor: default; }
+.commit-step { display: flex; align-items: center; gap: 8px; font-size: 11.5px; font-weight: 600; }
+.commit-head h1 { margin: 0; font-size: 24px; font-weight: 600; line-height: 1.4; text-wrap: pretty; overflow-wrap: anywhere; }
+.commit-message { margin: 0; padding: 12px 14px; background: var(--sunken); border-radius: 10px; font-family: var(--mono); font-size: 12.5px; line-height: 1.7; color: #3A3D44; white-space: pre-wrap; word-break: break-word; }
+.why-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px 28px; align-items: start; }
+.why-text { margin: 0; font-size: 14.5px; line-height: 1.9; text-wrap: pretty; }
+.flow-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; align-items: center; }
+.flow-chips .label { font-size: 11.5px; color: var(--ink-3); }
+.flow-chip { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--ink); background: var(--surface); border: 1px solid var(--line-strong); border-radius: 999px; padding: 3px 10px; }
+.flow-chip:hover { color: var(--ink); border-color: var(--ink-4); text-decoration: none; }
+.flow-chip .arrow { color: var(--ink-3); }
+.behavior-card.is-commit { gap: 12px; }
+.behavior-item { display: flex; flex-direction: column; gap: 5px; font-size: 13.5px; line-height: 1.7; }
+.behavior-none { font-size: 13px; color: var(--ink-3); }
+.message-chip { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.kind { font-size: 10.5px; font-weight: 600; padding: 1px 6px; border-radius: 4px; border: 1px solid var(--line); }
+.kind[data-kind="cmd"] { background: #E3EDFC; border-color: #B5CDF3; color: #1F4FA3; }
+.kind[data-kind="qry"] { background: #EEE8FA; border-color: #D2C4F0; color: #55369F; }
+.kind[data-kind="evt"] { background: #FDEBD6; border-color: #F2C690; color: #8A4307; }
+.message-name { font-size: 12px; font-weight: 600; }
+.behavior-card:not(.is-after) .message-name { font-weight: 500; text-decoration: line-through; color: var(--ink-2); }
+.message-route { font-size: 11.5px; color: var(--ink-3); }
+.code-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.code-head .hint { font-size: 11.5px; }
+.text-button { padding: 2px 4px; font-size: 12px; color: var(--ink-2); }
+.text-button:hover { color: var(--ink); }
+.file-card { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); overflow: hidden; }
+.file-card > summary { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--panel); cursor: pointer; white-space: nowrap; min-width: 0; list-style: none; }
+.file-card > summary::-webkit-details-marker { display: none; }
+.file-card > summary:hover { background: var(--hover); }
+.file-card[open] > summary { border-bottom: 1px solid var(--chip); }
+.chev { flex: none; width: 6px; height: 6px; margin: 0 2px; border-right: 1.4px solid var(--ink-2); border-bottom: 1.4px solid var(--ink-2); transform: rotate(-45deg); transition: transform .15s; }
+.file-card[open] .chev { transform: rotate(45deg); }
+.file-card .status { font-size: 11px; flex: none; }
+.file-path { font-family: var(--mono); font-size: 12.5px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.file-card[data-status="D"] .file-path { text-decoration: line-through; }
+.concept-chip { font-size: 11px; color: var(--ink-2); background: var(--track); border-radius: 4px; padding: 1px 6px; flex: none; }
+.file-counts { font-family: var(--mono); font-size: 11.5px; flex: none; }
+.file-omit { padding: 12px 16px; font-size: 13px; line-height: 1.7; color: var(--ink-2); background: var(--sunken); }
+.file-omit.is-deleted { background: rgba(210, 69, 58, .05); }
+.hunk-head { font-family: var(--mono); font-size: 11.5px; color: var(--ink-3); background: var(--hover); padding: 4px 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hunk { display: flex; flex-wrap: wrap; align-items: stretch; }
+.hunk-code { flex: 1 1 520px; min-width: 0; overflow-x: auto; padding: 4px 0; font-family: var(--mono); font-size: 12.5px; line-height: 21px; }
+.hunk-notes { flex: 1 1 260px; min-width: 0; padding: 10px 14px 12px; display: flex; flex-direction: column; gap: 8px; background: #FCFBF8; }
+.code-line { display: grid; grid-template-columns: 40px 40px 32px 16px max-content; min-width: max-content; transition: background .15s; }
+.hunk-code.is-code .code-line { grid-template-columns: 44px 32px 3px 14px max-content; }
+.code-line .ln { color: var(--ink-4); text-align: right; padding-right: 8px; user-select: none; overflow: hidden; }
+.code-line .marks { display: flex; align-items: center; gap: 2px; padding-left: 4px; }
+.marker { width: 16px; height: 16px; border-radius: 8px; background: var(--ink); color: #FFFFFF; font-family: var(--sans); font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center; transition: background .15s; }
+.code-line .sign { text-align: center; user-select: none; }
+.code-line[data-sign="+"] { background: rgba(46, 157, 91, .10); }
+.code-line[data-sign="+"] .sign { color: var(--add); }
+.code-line[data-sign="-"] { background: rgba(210, 69, 58, .09); }
+.code-line[data-sign="-"] .sign { color: var(--del); }
+.code-line[data-sign="-"] .code-text { color: #6B4B47; }
+.hunk-code.is-code .code-line[data-sign="+"] { background: rgba(46, 157, 91, .045); }
+.code-line.is-gap { background: rgba(210, 69, 58, .05); }
+.code-line .bar { position: relative; }
+.code-line .bar.is-on::before { content: ""; position: absolute; left: 0; right: 0; top: 0; bottom: 0; background: var(--add-mark); }
+.code-line .bar.is-start::before { top: 4px; border-top-left-radius: 2px; border-top-right-radius: 2px; }
+.code-line .bar.is-end::before { bottom: 4px; border-bottom-left-radius: 2px; border-bottom-right-radius: 2px; }
+.code-text { white-space: pre; padding-right: 16px; }
+.code-line.is-lit { background: rgba(47, 91, 234, .14); box-shadow: inset 3px 0 0 var(--accent); }
+.code-line.is-lit .bar.is-on::before, .marker.is-lit { background: var(--accent); }
+.note { display: flex; gap: 9px; align-items: flex-start; padding: 9px 11px; border-radius: 9px; background: var(--surface); border: 1px solid var(--line); transition: background .15s, border-color .15s; }
+.note.is-lit { background: rgba(47, 91, 234, .08); border-color: var(--accent-ring); }
+.note-badge { flex: none; width: 18px; height: 18px; margin-top: 1px; border-radius: 9px; background: var(--ink); color: #FFFFFF; font-size: 10.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
+.note.is-lit .note-badge { background: var(--accent); }
+.note-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.note-lines { font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); overflow-wrap: anywhere; }
+.note-text { font-size: 12.5px; line-height: 1.7; text-wrap: pretty; }
+.file-more { padding: 8px 16px; font-size: 12px; background: var(--panel); border-top: 1px solid var(--chip); }
+.file-notes { padding: 10px 14px 12px; display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--chip); background: #FCFBF8; }
+.file-notes-title { font-size: 11px; font-weight: 600; color: var(--ink-3); }
 .tok-kw { color: var(--tok-kw); }
 .tok-str { color: var(--tok-str); }
 .tok-com { color: var(--tok-com); font-style: italic; }
@@ -563,8 +689,119 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
     });
   })();
 
+  /** コミットの差分。patch を hunk の行に分け、行への注釈を hunk に割り当て、コードの表示では消した行を畳む。 */
+  const CommitDiff = (() => {
+    const HunkHeader = /^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@/;
+    const ChangeSigns = new Set(["+", "-"]);
+
+    const sideOf = (note) => (note.side === "old" ? "old" : "new");
+    const numberOn = (line, side) => (side === "old" ? line.oldNo : line.newNo);
+
+    /**
+     * 注釈の行の範囲に、その行が入るか。行番号は注釈の `side` の側で見る。
+     * @param line hunk の行(`oldNo` / `newNo` は、その側に無い行なら null)
+     */
+    const covers = (note, line) => {
+      const number = numberOn(line, sideOf(note));
+      return number !== null && number >= note.start && number <= note.end;
+    };
+
+    /** hunk の見出しから後の 1 行を、記号と両側の行番号の付いた行にする。 */
+    const lineOf = (raw, next) => {
+      const sign = ChangeSigns.has(raw[0]) ? raw[0] : " ";
+      return { sign, oldNo: sign === "+" ? null : next.old, newNo: sign === "-" ? null : next.new, text: raw.slice(1) };
+    };
+
+    /** patch を hunk に分ける。`\ No newline at end of file` は行ではないので落とす。 */
+    const hunksOf = (patch) => {
+      const hunks = [];
+      let next = null;
+      for (const raw of patch.split("\n")) {
+        const header = HunkHeader.exec(raw);
+        if (header !== null) {
+          next = { old: Number(header[1]), new: Number(header[2]) };
+          hunks.push({ header: raw, lines: [] });
+          continue;
+        }
+        const isLine = next !== null && !raw.startsWith("\\");
+        if (!isLine) continue;
+        const line = lineOf(raw, next);
+        next = { old: next.old + (line.oldNo === null ? 0 : 1), new: next.new + (line.newNo === null ? 0 : 1) };
+        hunks[hunks.length - 1].lines.push(line);
+      }
+      return hunks;
+    };
+
+    /** 注釈に、ファイルの中で通した番号(`from` の次から)を付ける。 */
+    const numbered = (notes, from) => notes.map((note, index) => ({ ...note, side: sideOf(note), n: from + index + 1 }));
+
+    const hunkBodyOf = (file, notes) => {
+      const hunks = hunksOf(file.patch);
+      const placedAt = notes.map((note) => hunks.findIndex((hunk) => hunk.lines.some((line) => covers(note, line))));
+      const placed = hunks.map((hunk, index) => notes.filter((note, noteIndex) => placedAt[noteIndex] === index));
+      const firstNumbers = placed.map((group, index) => placed.slice(0, index).reduce((sum, earlier) => sum + earlier.length, 0));
+      const placedCount = placed.reduce((sum, group) => sum + group.length, 0);
+      const remaining = file.truncated === true ? file.patchLines - file.patch.split("\n").length : 0;
+      return {
+        body: { kind: "hunks", hunks: hunks.map((hunk, index) => ({ ...hunk, notes: numbered(placed[index], firstNumbers[index]) })), remaining },
+        unplaced: numbered(notes.filter((note, index) => placedAt[index] < 0), placedCount),
+      };
+    };
+
+    /** patch が null のとき。消したファイルなら、変更前の行への注釈をそこに付ける。 */
+    const missingBodyOf = (file, notes) => {
+      if (file.status !== "D") return { body: { kind: "binary" }, unplaced: numbered(notes, 0) };
+      const lines = typeof file.deletions === "number" ? file.deletions : null;
+      const isOnDeletedLine = (note) => sideOf(note) === "old" && (lines === null || note.start <= lines);
+      const onDeleted = notes.filter(isOnDeletedLine);
+      return { body: { kind: "deleted", lines, notes: numbered(onDeleted, 0) }, unplaced: numbered(notes.filter((note) => !isOnDeletedLine(note)), onDeleted.length) };
+    };
+
+    const fileOf = (file, notes) => {
+      const shown = { path: file.path, oldPath: file.oldPath ?? null, status: file.status, additions: file.additions, deletions: file.deletions };
+      if (file.patch === "") return { ...shown, body: { kind: "unchanged" }, unplaced: numbered(notes, 0) };
+      if (file.patch === null) return { ...shown, ...missingBodyOf(file, notes) };
+      return { ...shown, ...hunkBodyOf(file, notes) };
+    };
+
+    return Object.freeze({
+      covers,
+      /**
+       * コミットのファイルごとに差分を組み、解説の注釈を `side` の行番号が入る最初の hunk に付ける(番号はファイルの
+       * 中で hunk の順に通す)。どの hunk にも入らない注釈は `unplaced` に回す。
+       * @param commit 地図のコミット(マージは files が空)
+       * @param note そのコミットの commitNote。無ければ null
+       * @returns `files`(本文の `body` は `hunks` / `unchanged`(patch が空)/ `deleted` / `binary`)と、そのコミットに無い
+       *   パスへの注釈 `strayNotes`
+       */
+      of: (commit, note) => {
+        const hasNotes = note !== null && Array.isArray(note.notes);
+        const notes = hasNotes ? note.notes : [];
+        const paths = new Set(commit.files.map((file) => file.path));
+        return {
+          files: commit.files.map((file) => fileOf(file, notes.filter((item) => item.path === file.path))),
+          strayNotes: notes.filter((item) => !paths.has(item.path)),
+        };
+      },
+      /**
+       * コードの表示の行。続けて消した行は 1 つの畳み(`gap`)にまとめる。
+       * @returns `{kind: "line", line}` と `{kind: "gap", lines}`(畳んだ消した行)の並び
+       */
+      codeRowsOf: (hunk) => {
+        const rows = [];
+        for (const line of hunk.lines) {
+          const last = rows[rows.length - 1];
+          const extendsGap = line.sign === "-" && last !== undefined && last.kind === "gap";
+          if (extendsGap) rows[rows.length - 1] = { kind: "gap", lines: [...last.lines, line] };
+          else rows.push(line.sign === "-" ? { kind: "gap", lines: [line] } : { kind: "line", line });
+        }
+        return rows;
+      },
+    });
+  })();
+
   /** DOM に触らない部分(核)。判定表が node の vm で評価して叩く。 */
-  const core = Object.freeze({ ExplainedMap, ScreenChoice, ReviewMark, Highlighter });
+  const core = Object.freeze({ ExplainedMap, ScreenChoice, ReviewMark, Highlighter, CommitDiff });
   if (typeof document === "undefined") {
     globalThis.prExplainCore = core;
     return;
@@ -584,8 +821,21 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
       node.append(...(children || []));
       return node;
     },
+    /**
+     * 解説の文を要素にする。`` `…` `` で囲んだところは code 要素に入れる(どちらも textContent で入れる)。
+     * 閉じていない `` ` `` は文字のまま残す。
+     */
+    prose: (tag, props, text) => {
+      const parts = text.split("`");
+      const hasUnclosed = parts.length % 2 === 0;
+      const paired = hasUnclosed ? [...parts.slice(0, -2), `${parts[parts.length - 2]}\`${parts[parts.length - 1]}`] : parts;
+      const children = paired.map((part, index) => (index % 2 === 1 ? Dom.el("code", { text: part }) : part)).filter((child) => child !== "");
+      const cls = typeof props.class === "string" ? `${props.class} prose` : "prose";
+      return Dom.el(tag, { ...props, class: cls }, children);
+    },
   });
   const el = Dom.el;
+  const prose = Dom.prose;
 
   /**
    * 読み手のブラウザにだけ残す値。localStorage は使えない環境(保存の無効化・プライベートブラウズ)で
@@ -711,7 +961,7 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
   const ledeOf = (explained, eyebrow) => {
     if (explained.explain.kind !== "explained") return el("div", { class: "lede" }, [el("span", { class: "eyebrow", text: eyebrow }), emptyOf("解説はありません。変更の地図だけで組んでいます。")]);
     const overview = explained.explain.explain.overview;
-    return el("div", { class: "lede" }, [el("span", { class: "eyebrow", text: eyebrow }), el("h1", { text: overview.title }), el("p", { text: overview.lead })]);
+    return el("div", { class: "lede" }, [el("span", { class: "eyebrow", text: eyebrow }), prose("h1", {}, overview.title), prose("p", {}, overview.lead)]);
   };
 
   const fileRowOf = (entry) => {
@@ -755,47 +1005,496 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
     };
   };
 
-  const commitRowOf = (commit) => {
+  const PhaseLabels = { prep: "下ごしらえ", core: "本体", hard: "安定化", review: "指摘の反映", fin: "仕上げ" };
+  const MessageKindLabels = { cmd: "コマンド", qry: "クエリ", evt: "イベント" };
+  const DiffViews = {
+    diff: { label: "差分", title: "git diff の形で、消えた行と増えた行を並べる", hint: "番号つきの注釈にマウスを乗せると、該当する行が光ります" },
+    code: { label: "コード", title: "変更後のコードをそのまま読む。変わった行は左端の線で示す", hint: "変更後のコード。左端の緑線が今回変わった行。注釈にマウスを乗せると該当行が光ります" },
+  };
+  const ReviewFilters = { all: "すべて", todo: "未確認", done: "確認済み" };
+  const MoveKeys = { ArrowDown: 1, j: 1, ArrowUp: -1, k: -1 };
+  const OverviewId = "overview";
+
+  const phaseLabelOf = (note) => `${PhaseLabels[note.phase] ?? note.phase}：${note.role}`;
+  const numberText = (number) => (number === null ? "" : String(number));
+  const countsTextOf = (file) => {
+    if (file.additions === null) return [el("span", { class: "muted", text: "バイナリ" })];
+    return [el("span", { class: "add", text: plus(file.additions) }), " ", el("span", { class: "del", text: minus(file.deletions ?? 0) })];
+  };
+
+  /** 確認の印の保存値。読めない値は「印なし」にする。 */
+  const savedChecksOf = (value) => new Set(Array.isArray(value) ? value.filter((key) => typeof key === "string") : []);
+
+  /** 押せる要素。`onPress` はクリックで呼ぶ。 */
+  const pressable = (tag, props, children, onPress) => {
+    const node = el(tag, tag === "button" ? { type: "button", ...props } : props, children);
+    node.addEventListener("click", onPress);
+    return node;
+  };
+
+  const commitRowOf = (commit, story) => {
     const isUnexplained = commit.note === null && !commit.merge;
+    const concepts = [...new Set(commit.files.map((file) => story.lookup.conceptNames.get(file.path)).filter((name) => name !== undefined))].slice(0, 3);
     const tags = [
       commit.merge ? el("span", { class: "tag", text: "マージ" }) : null,
       isUnexplained ? el("span", { class: "tag is-warn", text: "解説なし" }) : null,
+      ...concepts.map((name) => el("span", { class: "tag", text: name })),
     ].filter((tag) => tag !== null);
-    return el("div", { class: "commit-row" }, [
+    return pressable("button", { class: "commit-row plain-button" }, [
       el("div", { class: "commit-rail" }, [el("span", { class: "commit-dot" })]),
       el("div", { class: "commit-body" }, [
         el("span", { class: "row-title", text: commit.subject ?? shortSha(commit.sha) }),
         el("div", { class: "row-meta" }, [el("span", { class: "sha", text: shortSha(commit.sha) }), el("span", { text: dateLabel(commit.date) }), el("span", { class: "add", text: plus(commit.additions) }), el("span", { class: "del", text: minus(commit.deletions) })]),
         el("div", { class: "tags" }, tags),
       ]),
+    ], () => story.actions.select(commit.sha));
+  };
+
+  const behaviorCardOf = ({ title, sub, behaviors, isAfter, mark }) => el("div", { class: isAfter ? "behavior-card is-after" : "behavior-card" }, [
+    el("span", { class: "card-head" }, [el("span", { class: "card-title", text: title }), el("span", { class: "muted", text: sub })]),
+    ...behaviors.map((behavior) => el("div", { class: "behavior" }, [el("span", { class: "mark", text: mark }), prose("span", {}, behavior.text)])),
+  ]);
+
+  /** 変更の順番の 1 段。解説があれば役割と理由も出す。 */
+  const orderStepOf = (commit, story) => {
+    const note = commit.note;
+    const explained = note === null ? [] : [el("span", { class: "order-role", "data-phase": note.phase, text: phaseLabelOf(note) })];
+    const why = note === null ? [] : [prose("span", { class: "order-why" }, note.why)];
+    return pressable("button", { class: "order-step plain-button" }, [
+      el("div", { class: "order-rail" }, [el("span", { class: "order-num", text: String(story.steps.get(commit.sha)) })]),
+      el("div", { class: "order-body" }, [
+        ...explained,
+        el("span", { class: "order-subject", text: commit.subject ?? shortSha(commit.sha) }),
+        ...why,
+        el("span", { class: "order-meta", text: `${shortSha(commit.sha)} · ${commit.files.length} ファイル` }),
+      ]),
+    ], () => story.actions.select(commit.sha));
+  };
+
+  const orderOf = (story, eyebrow) => el("div", { class: "section" }, [
+    el("span", { class: "eyebrow", text: eyebrow }),
+    el("div", { class: "order" }, story.commits.filter((commit) => !commit.merge).map((commit) => orderStepOf(commit, story))),
+  ]);
+
+  /** 確認の印を付けられるレビューの文。`go` を渡すと、そのコミットへ移るボタンを添える。 */
+  const reviewCardOf = ({ text, isChecked, onToggle, go }) => {
+    const goButton = go === null ? [] : [pressable("button", { class: "review-go plain-button", text: `${go.label} →` }, [], (event) => {
+      event.stopPropagation();
+      go.onPress();
+    })];
+    const card = el("div", { class: isChecked ? "review-card is-checked" : "review-card", role: "checkbox", "aria-checked": String(isChecked), tabindex: "0", title: isChecked ? "未確認に戻す" : "確認済みにする" }, [
+      el("span", { class: "check-box" }),
+      el("div", { class: "review-body" }, [prose("span", { class: "review-text" }, text), ...goButton]),
+    ]);
+    card.addEventListener("click", onToggle);
+    card.addEventListener("keydown", (event) => {
+      const isActivationKey = event.key === " " || event.key === "Enter";
+      if (!isActivationKey) return;
+      event.preventDefault();
+      onToggle();
+    });
+    return card;
+  };
+
+  /** ブランチ全体のレビューの文。古いコミットから順に、コミットごとの書いた順で並べる。 */
+  const reviewItemsOf = (story) => story.commits.flatMap((commit) => {
+    const hasReview = commit.note !== null && Array.isArray(commit.note.review);
+    const texts = hasReview ? commit.note.review : [];
+    return texts.map((text) => ({ key: ReviewMark.keyOf(commit.sha, text), text, commit }));
+  });
+
+  const matchesFilter = (filter, isChecked) => {
+    switch (filter) {
+      case "all":
+        return true;
+      case "todo":
+        return !isChecked;
+      case "done":
+        return isChecked;
+    }
+  };
+
+  const reviewSectionOf = (story) => {
+    const items = reviewItemsOf(story);
+    if (items.length === 0) return [];
+    const { checked, filter } = story.state;
+    const counts = { all: items.length, done: items.filter((item) => checked.has(item.key)).length };
+    const countOf = { ...counts, todo: counts.all - counts.done };
+    const filters = Object.entries(ReviewFilters).map(([key, label]) => pressable("button", { "aria-pressed": String(filter === key) }, [label, el("span", { class: "n", text: String(countOf[key]) })], () => story.actions.setFilter(key)));
+    const shown = items.filter((item) => matchesFilter(filter, checked.has(item.key)));
+    const cards = shown.map((item) => reviewCardOf({
+      text: item.text,
+      isChecked: checked.has(item.key),
+      onToggle: () => story.actions.toggleCheck(item.key),
+      go: { label: `${story.steps.get(item.commit.sha)}. ${item.commit.subject ?? shortSha(item.commit.sha)}`, onPress: () => story.actions.select(item.commit.sha) },
+    }));
+    const empty = shown.length > 0 ? [] : [el("span", { class: "review-count", text: filter === "done" ? "まだ確認済みのものはありません。" : "すべて確認済みです。" })];
+    return [el("div", { class: "section" }, [
+      el("div", { class: "section-head" }, [
+        el("span", { class: "eyebrow", text: "レビューポイント" }),
+        el("span", { class: "review-count" }, ["確認済み ", el("b", { text: String(counts.done) }), ` / ${counts.all}`]),
+        el("span", { class: "spacer" }),
+        el("div", { class: "toggle-group" }, filters),
+      ]),
+      ...cards,
+      ...empty,
+    ])];
+  };
+
+  const strayNotesOf = (explained) => {
+    if (explained.strayNotes.length === 0) return [];
+    return [el("div", { class: "section" }, [
+      el("span", { class: "eyebrow", text: `地図に無い解説(${explained.strayNotes.length})` }),
+      ...explained.strayNotes.map((note) => el("div", { class: "row" }, [prose("span", { class: "row-title" }, note.role), el("span", { class: "row-meta" }, [el("span", { class: "sha", text: shortSha(note.sha) })])])),
+    ])];
+  };
+
+  /** ブランチ全体の流れ。解説が無ければ、案内とコミットの件名だけの順番を出す。 */
+  const storyOverviewOf = (story) => {
+    const { explained, explain } = story;
+    if (explain === null) {
+      const guide = el("div", { class: "lede" }, [el("span", { class: "eyebrow", text: "ブランチ全体の流れ" }), emptyOf("解説はありません。変更の地図だけで組んでいます。左のコミットを選ぶと、件名・本文と差分を読めます。")]);
+      return [guide, orderOf(story, "変更の順番")];
+    }
+    const lede = ledeOf(explained, "ブランチ全体の流れ");
+    const behaviors = el("div", { class: "section" }, [
+      el("span", { class: "eyebrow", text: "振る舞いの変化(ブランチ全体)" }),
+      el("div", { class: "behaviors" }, [
+        behaviorCardOf({ title: "これまで", sub: explained.map.baseBranch ?? "", behaviors: explain.overview.before, isAfter: false, mark: "—" }),
+        behaviorCardOf({ title: "このブランチのあと", sub: explained.map.headBranch ?? "", behaviors: explain.overview.after, isAfter: true, mark: "+" }),
+      ]),
+    ]);
+    return [lede, behaviors, orderOf(story, "変更の順番と、それぞれの役割"), ...reviewSectionOf(story), ...strayNotesOf(explained)];
+  };
+
+  const commitHeadOf = (commit, story) => {
+    const index = story.commits.indexOf(commit);
+    const older = index > 0 ? story.commits[index - 1].sha : OverviewId;
+    const newer = index < story.commits.length - 1 ? story.commits[index + 1].sha : null;
+    const total = story.steps.size;
+    const stepText = commit.merge ? "マージ" : `${story.steps.get(commit.sha)} / ${total}`;
+    const step = commit.note === null ? [el("span", { text: stepText })] : [el("span", { "data-phase": commit.note.phase, text: `${stepText} · ${phaseLabelOf(commit.note)}` })];
+    const newerButton = pressable("button", { text: "次の変更 →" }, [], () => story.actions.select(newer));
+    if (newer === null) newerButton.disabled = true;
+    const message = commit.body ? [el("pre", { class: "commit-message", text: commit.body })] : [];
+    return el("div", { class: "commit-head" }, [
+      el("div", { class: "commit-facts" }, [
+        el("span", { class: "sha-chip", text: shortSha(commit.sha) }),
+        el("span", { text: commit.author ?? "" }),
+        el("span", { class: "muted", text: dateLabel(commit.date) }),
+        el("span", { class: "mono" }, [el("span", { class: "add", text: plus(commit.additions) }), " ", el("span", { class: "del", text: minus(commit.deletions) })]),
+        el("span", { class: "muted", text: `${commit.files.length} ファイル` }),
+        el("span", { class: "spacer" }),
+        el("span", { class: "step-buttons" }, [pressable("button", { text: "← 前の変更" }, [], () => story.actions.select(older)), newerButton]),
+      ]),
+      el("div", { class: "commit-step" }, step),
+      el("h1", { text: commit.subject ?? shortSha(commit.sha) }),
+      ...message,
     ]);
   };
 
-  const behaviorCardOf = ({ title, behaviors, isAfter, mark }) => el("div", { class: isAfter ? "behavior-card is-after" : "behavior-card" }, [
-    el("span", { class: "card-title", text: title }),
-    ...behaviors.map((behavior) => el("div", { class: "behavior" }, [el("span", { class: "mark", text: mark }), el("span", { text: behavior.text })])),
-  ]);
+  /** 振る舞いの 1 行。やりとりを指していれば、種類・名前・送り手 → 受け手を添える。 */
+  const behaviorItemOf = (behavior, story) => {
+    const message = typeof behavior.message === "string" ? story.lookup.messages.get(behavior.message) : undefined;
+    const nameOf = (path) => story.lookup.conceptNames.get(path) ?? path;
+    const chip = message === undefined ? [] : [el("span", { class: "message-chip" }, [
+      el("span", { class: "kind", "data-kind": message.kind, text: MessageKindLabels[message.kind] ?? message.kind }),
+      el("span", { class: "message-name", text: message.name }),
+      el("span", { class: "message-route", text: `${nameOf(message.from)} → ${nameOf(message.to)}` }),
+    ])];
+    return el("div", { class: "behavior-item" }, [prose("span", {}, behavior.text), ...chip]);
+  };
 
-  /** 変更の経緯の器。コミットを新しい順に並べ、本文にはブランチ全体の題と振る舞いの前後を出す。 */
-  const StoryScreen = (explained) => {
-    const overview = explained.explain.kind === "explained" ? explained.explain.explain.overview : null;
-    const behaviors = overview === null ? [] : [el("div", { class: "section" }, [
-      el("span", { class: "eyebrow", text: "振る舞いの変化(ブランチ全体)" }),
+  const commitBehaviorsOf = (note, story) => {
+    const before = Array.isArray(note.before) ? note.before : [];
+    const after = Array.isArray(note.after) ? note.after : [];
+    if (before.length + after.length === 0) return [];
+    const beforeItems = before.length === 0 ? [el("span", { class: "behavior-none", text: "(新しく足しただけで、変わる振る舞いはない)" })] : before.map((behavior) => behaviorItemOf(behavior, story));
+    return [el("div", { class: "section" }, [
+      el("span", { class: "eyebrow", text: "何の振る舞いが変わったか" }),
       el("div", { class: "behaviors" }, [
-        behaviorCardOf({ title: "これまで", behaviors: overview.before, isAfter: false, mark: "—" }),
-        behaviorCardOf({ title: "このブランチのあと", behaviors: overview.after, isAfter: true, mark: "+" }),
+        el("div", { class: "behavior-card is-commit" }, [el("span", { class: "card-title", text: "これまで" }), ...beforeItems]),
+        el("div", { class: "behavior-card is-commit is-after" }, [el("span", { class: "card-title", text: "この変更のあと" }), ...after.map((behavior) => behaviorItemOf(behavior, story))]),
       ]),
     ])];
-    const strays = explained.strayNotes.length === 0 ? [] : [el("div", { class: "section" }, [
-      el("span", { class: "eyebrow", text: `地図に無い解説(${explained.strayNotes.length})` }),
-      ...explained.strayNotes.map((note) => el("div", { class: "row" }, [el("span", { class: "row-title", text: note.role }), el("span", { class: "row-meta" }, [el("span", { class: "sha", text: shortSha(note.sha) })])])),
+  };
+
+  /** コミットの解説(なぜ・影響する操作・レビューで見るところ・振る舞いの前後)。 */
+  const commitNoteOf = (commit, story) => {
+    const note = commit.note;
+    const flows = (Array.isArray(note.flows) ? note.flows : []).map((id) => story.lookup.flows.get(id)).filter((flow) => flow !== undefined);
+    const flowChips = flows.length === 0 ? [] : [el("div", { class: "flow-chips" }, [
+      el("span", { class: "label", text: "影響する操作" }),
+      ...flows.map((flow) => el("a", { class: "flow-chip", href: "#map", title: "構造マップで見る" }, [flow.label, el("span", { class: "arrow", text: "↗" })])),
     ])];
-    const overviewRow = el("div", { class: "row is-current" }, [el("span", { class: "row-title", text: "ブランチ全体の流れ" }), el("span", { class: "row-sub", text: "なぜ・何がこの順番で変わったか" })]);
+    const review = Array.isArray(note.review) ? note.review : [];
+    const reviewBlock = review.length === 0 ? [] : [el("div", { class: "section" }, [
+      el("span", { class: "eyebrow", text: "レビューで見るところ" }),
+      ...review.map((text) => {
+        const key = ReviewMark.keyOf(commit.sha, text);
+        return reviewCardOf({ text, isChecked: story.state.checked.has(key), onToggle: () => story.actions.toggleCheck(key), go: null });
+      }),
+    ])];
+    return [
+      el("div", { class: "why-grid" }, [el("div", { class: "section" }, [el("span", { class: "eyebrow", text: "なぜこの変更?" }), prose("p", { class: "why-text" }, note.why), ...flowChips]), ...reviewBlock]),
+      ...commitBehaviorsOf(note, story),
+    ];
+  };
+
+  const unexplainedCommitOf = (commit) => {
+    if (commit.merge) return [];
+    const reason = commit.afterExplained ? "このコミットは解説を書いた後に積まれたので、解説がありません。" : "このコミットには解説がありません。";
+    return [emptyOf(`${reason}件名・本文と差分だけを出します。`)];
+  };
+
+  const lineRangeOf = (note) => {
+    const lines = note.start === note.end ? `${note.start} 行目` : `${note.start}〜${note.end} 行目`;
+    return note.side === "old" ? `${lines}(変更前)` : lines;
+  };
+
+  /** 光らせる行を持たない注釈(差分に出ていない行・消したファイル・地図に無いパス)。 */
+  const plainNoteOf = (note, where) => el("div", { class: "note" }, [
+    el("span", { class: "note-badge", text: String(note.n ?? "·") }),
+    el("div", { class: "note-body" }, [el("span", { class: "note-lines", text: where }), prose("span", { class: "note-text" }, note.text)]),
+  ]);
+
+  /** 行に付いた注釈のカード。載せる(フォーカスする)と、カードと `targets`(行と番号)を光らせる。 */
+  const litNoteOf = (note, targets) => {
+    const card = el("div", { class: "note", tabindex: "0" }, [el("span", { class: "note-badge", text: String(note.n) }), prose("span", { class: "note-text" }, note.text)]);
+    const light = (isLit) => () => {
+      for (const target of [card, ...targets]) target.classList.toggle("is-lit", isLit);
+    };
+    card.addEventListener("mouseenter", light(true));
+    card.addEventListener("mouseleave", light(false));
+    card.addEventListener("focus", light(true));
+    card.addEventListener("blur", light(false));
+    return card;
+  };
+
+  /** 1 行のコードを色分けした字句にする。 */
+  const codeTextOf = (text, grammar, carry) => {
+    if (grammar === null) return { node: el("span", { class: "code-text", text }), carry };
+    const result = Highlighter.tokenizeLine(text, grammar, carry);
+    const tokens = result.tokens.map((token) => (token.cls === null ? token.value : el("span", { class: token.cls, text: token.value })));
+    return { node: el("span", { class: "code-text" }, tokens), carry: result.carry };
+  };
+
+  /**
+   * hunk の行を色分けする。行をまたぐ文字列・コメントの持ち越しは、変更前(消した行)と変更後(足した行)で分けて持つ。
+   * @returns 行ごとの code-text の要素(`hunk.lines` と同じ順)
+   */
+  const highlightedLinesOf = (lines, grammar) => {
+    let carries = { old: Highlighter.Start, new: Highlighter.Start };
+    return lines.map((line) => {
+      const stream = line.sign === "-" ? "old" : "new";
+      const { node, carry } = codeTextOf(line.text, grammar, carries[stream]);
+      carries = line.sign === " " ? { old: carry, new: carry } : { ...carries, [stream]: carry };
+      return node;
+    });
+  };
+
+  const rowLinesOf = (row) => (row.kind === "gap" ? row.lines : [row.line]);
+
+  // コードの表示の左端の線は、足した行のうち空でないものに引き、続く行どうしをつなげる。
+  const hasBar = (row) => row !== undefined && row.kind === "line" && row.line.sign === "+" && row.line.text.trim() !== "";
+  const barClassOf = (rows, index) => {
+    if (!hasBar(rows[index])) return "bar";
+    const start = hasBar(rows[index - 1]) ? "" : " is-start";
+    const end = hasBar(rows[index + 1]) ? "" : " is-end";
+    return `bar is-on${start}${end}`;
+  };
+
+  const diffRowOf = ({ row, text, markers }) => el("div", { class: "code-line", "data-sign": row.line.sign }, [
+    el("span", { class: "ln", text: numberText(row.line.oldNo) }),
+    el("span", { class: "ln", text: numberText(row.line.newNo) }),
+    el("span", { class: "marks" }, markers),
+    el("span", { class: "sign", text: row.line.sign === " " ? "" : row.line.sign }),
+    text,
+  ]);
+
+  const codeRowOf = ({ row, text, markers, bar }) => {
+    if (row.kind === "gap") return el("div", { class: "code-line is-gap" }, [el("span", { class: "ln" }), el("span", { class: "marks" }, markers), el("span", { class: "bar" }), el("span", { class: "code-text tok-com", text: `⋯ ここにあった ${row.lines.length} 行を削除` })]);
+    return el("div", { class: "code-line", "data-sign": row.line.sign }, [el("span", { class: "ln", text: numberText(row.line.newNo) }), el("span", { class: "marks" }, markers), el("span", { class: bar }), text]);
+  };
+
+  /** hunk の見出しと、行・注釈。注釈の番号は、その注釈の範囲に入る最初の行に付ける。 */
+  const hunkOf = (hunk, { grammar, view }) => {
+    const isCode = view === "code";
+    const texts = highlightedLinesOf(hunk.lines, grammar);
+    const textOf = new Map(hunk.lines.map((line, index) => [line, texts[index]]));
+    const rows = isCode ? CommitDiff.codeRowsOf(hunk) : hunk.lines.map((line) => ({ kind: "line", line }));
+    const coveredBy = rows.map((row) => hunk.notes.filter((note) => rowLinesOf(row).some((line) => CommitDiff.covers(note, line))));
+    const markerOf = new Map(hunk.notes.map((note) => [note, el("span", { class: "marker", text: String(note.n) })]));
+    const rowNodes = rows.map((row, index) => {
+      const markers = hunk.notes.filter((note) => coveredBy.findIndex((notes) => notes.includes(note)) === index).map((note) => markerOf.get(note));
+      const text = row.kind === "gap" ? null : textOf.get(row.line);
+      return isCode ? codeRowOf({ row, text, markers, bar: barClassOf(rows, index) }) : diffRowOf({ row, text, markers });
+    });
+    const litTargetsOf = (note) => [...rowNodes.filter((node, index) => coveredBy[index].includes(note)), markerOf.get(note)];
+    const firstNew = hunk.lines.find((line) => line.newNo !== null);
+    const header = isCode ? (firstNew === undefined ? "" : `${firstNew.newNo} 行目から`) : hunk.header;
+    const notes = hunk.notes.length === 0 ? [] : [el("div", { class: "hunk-notes" }, hunk.notes.map((note) => litNoteOf(note, litTargetsOf(note))))];
+    return [el("div", { class: "hunk-head", text: header }), el("div", { class: "hunk" }, [el("div", { class: isCode ? "hunk-code is-code" : "hunk-code" }, rowNodes), ...notes])];
+  };
+
+  /** ファイルの中身。patch の値ごとに出し方を変える。 */
+  const fileBodyOf = (file, context) => {
+    const body = file.body;
+    switch (body.kind) {
+      case "hunks": {
+        const more = body.remaining > 0 ? [el("div", { class: "file-more" }, [el("a", { href: context.commitUrl, text: `残り ${body.remaining} 行は GitHub で` })])] : [];
+        return [...body.hunks.flatMap((hunk) => hunkOf(hunk, context)), ...more];
+      }
+      case "unchanged":
+        return [el("div", { class: "file-omit", text: "中身の変更なし" })];
+      case "deleted": {
+        const text = body.lines === null ? "ファイルごと削除" : `ファイルごと削除(${body.lines} 行)`;
+        const notes = body.notes.length === 0 ? [] : [el("div", { class: "file-notes" }, body.notes.map((note) => plainNoteOf(note, lineRangeOf(note))))];
+        return [el("div", { class: "file-omit is-deleted", text }), ...notes];
+      }
+      case "binary":
+        return [el("div", { class: "file-omit", text: "バイナリのため差分は出しません" })];
+    }
+  };
+
+  const fileCardOf = (file, context) => {
+    const conceptName = context.lookup.conceptNames.get(file.path);
+    const unplaced = file.unplaced.length === 0 ? [] : [el("div", { class: "file-notes" }, [
+      el("span", { class: "file-notes-title", text: "差分に出ていない行への注釈" }),
+      ...file.unplaced.map((note) => plainNoteOf(note, lineRangeOf(note))),
+    ])];
+    const card = el("details", { class: "file-card", "data-status": file.status }, [
+      el("summary", {}, [
+        el("span", { class: "chev" }),
+        el("span", { class: "status", "data-status": file.status, text: file.status }),
+        el("span", { class: "file-path", title: file.path, text: file.oldPath === null ? file.path : `${file.oldPath} → ${file.path}` }),
+        ...(conceptName === undefined ? [] : [el("span", { class: "concept-chip", text: conceptName })]),
+        el("span", { class: "spacer" }),
+        el("span", { class: "file-counts" }, countsTextOf(file)),
+      ]),
+      ...fileBodyOf(file, context),
+      ...unplaced,
+    ]);
+    const key = `${context.sha}:${file.path}`;
+    card.open = !context.closed.has(key);
+    card.addEventListener("toggle", () => context.setOpen(key, card.open));
+    return card;
+  };
+
+  /** 実際のコード。差分 / コードの切り替え、すべて開閉、ファイルのカードと、そのコミットに無いパスへの注釈。 */
+  const codeSectionOf = (commit, story) => {
+    const { view, closed } = story.state;
+    const eyebrow = el("span", { class: "eyebrow", text: "実際のコード" });
+    const diff = CommitDiff.of(commit, commit.note);
+    const strays = diff.strayNotes.length === 0 ? [] : [el("div", { class: "file-notes" }, [
+      el("span", { class: "file-notes-title", text: `地図に無いパスへの注釈(${diff.strayNotes.length})` }),
+      ...diff.strayNotes.map((note) => plainNoteOf(note, `${note.path} ${lineRangeOf(note)}`)),
+    ])];
+    if (commit.merge) return el("div", { class: "section" }, [eyebrow, emptyOf("マージコミットなので、差分は出しません。"), ...strays]);
+    const context = { view, closed, sha: commit.sha, lookup: story.lookup, commitUrl: `https://github.com/${Repo}/commit/${commit.sha}`, setOpen: story.actions.setOpen };
+    const cards = diff.files.map((file) => fileCardOf(file, { ...context, grammar: Highlighter.grammarOf(file.path) }));
+    const openAll = (isOpen) => () => {
+      for (const card of cards) card.open = isOpen;
+    };
+    const views = Object.entries(DiffViews).map(([key, choice]) => pressable("button", { "aria-pressed": String(view === key), title: choice.title, text: choice.label }, [], () => story.actions.setView(key)));
+    return el("div", { class: "section" }, [
+      el("div", { class: "code-head" }, [
+        eyebrow,
+        el("div", { class: "toggle-group" }, views),
+        el("span", { class: "hint", text: DiffViews[view].hint }),
+        el("span", { class: "spacer" }),
+        pressable("button", { class: "text-button plain-button", text: "すべて開く" }, [], openAll(true)),
+        pressable("button", { class: "text-button plain-button", text: "すべて閉じる" }, [], openAll(false)),
+      ]),
+      ...cards,
+      ...strays,
+    ]);
+  };
+
+  const commitViewOf = (commit, story) => [
+    commitHeadOf(commit, story),
+    ...(commit.note === null ? unexplainedCommitOf(commit) : commitNoteOf(commit, story)),
+    codeSectionOf(commit, story),
+  ];
+
+  /** 解説から、ページが名前で引く一覧。 */
+  const lookupOf = (explain) => {
+    const listOf = (key) => (explain !== null && Array.isArray(explain[key]) ? explain[key] : []);
     return {
-      controls: [countsOf(`${explained.totals.commits} commits`, explained.totals.additions, explained.totals.deletions)],
-      left: panelOf("left", [panelHead("コミット", "新しい順"), el("div", { class: "panel-scroll" }, [overviewRow, el("div", { class: "commit-list" }, explained.commits.toReversed().map(commitRowOf))])]),
-      main: stageOf([ledeOf(explained, "ブランチ全体の流れ"), ...behaviors, ...strays]),
+      conceptNames: new Map(listOf("concepts").map((concept) => [concept.path, concept.name])),
+      flows: new Map(listOf("flows").map((flow) => [flow.id, flow])),
+      messages: new Map(listOf("messages").map((message) => [message.id, message])),
+    };
+  };
+
+  /** 変更の経緯。左にコミットを新しい順に並べ、右に全体の流れか、選んだコミットの説明と差分を出す。 */
+  const StoryScreen = (explained) => {
+    const explain = explained.explain.kind === "explained" ? explained.explain.explain : null;
+    const commits = explained.commits;
+    const checkedKey = `prExplain.${explained.map.pr}.checked`;
+    const fixed = { explained, explain, commits, lookup: lookupOf(explain), steps: new Map(commits.filter((commit) => !commit.merge).map((commit, index) => [commit.sha, index + 1])) };
+    const commitAt = new Map(commits.map((commit) => [commit.sha, commit]));
+    const order = [OverviewId, ...commits.toReversed().map((commit) => commit.sha)];
+    let state = { selected: OverviewId, view: "diff", filter: "all", checked: savedChecksOf(BrowserStore.read(checkedKey)), closed: new Set() };
+    const body = el("div", { class: "stage-body" });
+    const main = el("main", { class: "stage" }, [body]);
+    const rows = new Map();
+
+    const render = () => {
+      const story = { ...fixed, state, actions };
+      const isOverview = state.selected === OverviewId;
+      body.replaceChildren(...(isOverview ? storyOverviewOf(story) : commitViewOf(commitAt.get(state.selected), story)));
+      for (const [id, row] of rows) row.classList.toggle("is-current", id === state.selected);
+    };
+    const update = (change) => {
+      state = { ...state, ...change };
+      render();
+    };
+    const withToggled = (set, key, isMember) => new Set(isMember ? [...set, key] : [...set].filter((member) => member !== key));
+    const actions = {
+      select: (id) => {
+        update({ selected: id });
+        main.scrollTop = 0;
+        rows.get(id).scrollIntoView({ block: "nearest" });
+      },
+      toggleCheck: (key) => {
+        const checked = withToggled(state.checked, key, !state.checked.has(key));
+        BrowserStore.write(checkedKey, [...checked]);
+        update({ checked });
+      },
+      setFilter: (filter) => update({ filter }),
+      setView: (view) => update({ view }),
+      // 開閉は details が持っているので描き直さない。差分 / コードを切り替えたときに引き継ぐためだけに覚える。
+      setOpen: (key, isOpen) => {
+        state = { ...state, closed: withToggled(state.closed, key, !isOpen) };
+      },
+    };
+
+    const story = { ...fixed, state, actions };
+    rows.set(OverviewId, pressable("button", { class: "row overview-row plain-button" }, [el("span", { class: "row-title", text: "ブランチ全体の流れ" }), el("span", { class: "row-sub", text: "なぜ・何がこの順番で変わったか" })], () => actions.select(OverviewId)));
+    for (const commit of commits.toReversed()) rows.set(commit.sha, commitRowOf(commit, story));
+    render();
+
+    /** ↑ ↓ / j k で左の並びを 1 つずつ移る。入力欄の中と、修飾キーを押しているときは移らない。 */
+    const onKey = (event) => {
+      const isTyping = event.target instanceof Element && event.target.closest("input, textarea, select, [contenteditable]") !== null;
+      const hasModifier = event.metaKey || event.ctrlKey || event.altKey;
+      const step = Object.hasOwn(MoveKeys, event.key) ? MoveKeys[event.key] : 0;
+      const isMove = step !== 0 && !isTyping && !hasModifier;
+      if (!isMove) return;
+      event.preventDefault();
+      const next = Math.max(0, Math.min(order.length - 1, order.indexOf(state.selected) + step));
+      actions.select(order[next]);
+    };
+
+    const overviewRow = rows.get(OverviewId);
+    const commitRows = commits.toReversed().map((commit) => rows.get(commit.sha));
+    return {
+      controls: [countsOf(`${explained.totals.commits} commits`, explained.totals.additions, explained.totals.deletions), el("span", { class: "hint", text: "↑ ↓ でコミットを移動" })],
+      left: panelOf("left", [panelHead("コミット", "新しい順"), el("div", { class: "panel-scroll" }, [overviewRow, el("div", { class: "commit-list" }, commitRows)])]),
+      main,
       right: null,
+      onKey,
     };
   };
 
@@ -911,7 +1610,9 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
         el("div", { class: "bands" }, bandTextsOf(explained).map((text) => el("div", { class: "band", role: "status", text }))),
         el("div", { class: "screens" }, sections),
       );
+      let current = null;
       const show = (screen) => {
+        current = screen;
         for (const tab of tabs) {
           if (tab.dataset.screen === screen) tab.setAttribute("aria-current", "page");
           else tab.removeAttribute("aria-current");
@@ -932,6 +1633,10 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
         });
       }
       window.addEventListener("hashchange", () => openScreen(choose()));
+      window.addEventListener("keydown", (event) => {
+        const onKey = built[current].onKey;
+        if (onKey !== undefined) onKey(event);
+      });
       show(choose());
     },
   });
