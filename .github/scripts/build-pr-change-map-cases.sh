@@ -38,14 +38,37 @@ put() {
   printf '%s\n' "$2" > "$1"
 }
 
+# 作者と commit の日時を揃えて commit する。コミットの並びを日時で決めるため。
+# $1 日時(ISO 8601)、残りは git commit へ渡す
+commit_at() {
+  local when="$1"
+  shift
+  GIT_AUTHOR_DATE="$when" GIT_COMMITTER_DATE="$when" git commit --quiet "$@"
+}
+
 put src/domains/dcmp/node/index.ts 'export const Node = {};'
 put src/features/editor/features/tokens/__tests__/token.normal.test.ts "test(\"既存のテスト\", () => {});
 it('消すテスト', () => {});"
 put src/utils/__tests__/Moved.normal.test.ts 'test("動かすだけのテスト", () => {});'
-put src/utils/__tests__/Body.normal.test.ts 'test("中身だけ変えるテスト", () => { expect(1).toBe(1); });'
-put src/utils/__tests__/Gone.normal.test.ts 'test("ファイルごと消えるテスト", () => {});'
+put src/utils/__tests__/Body.normal.test.ts 'import { Body } from "../Body";
+test("中身だけ変えるテスト", () => { expect(1).toBe(1); });'
+put src/utils/__tests__/Gone.normal.test.ts 'import { Body } from "../Body";
+test("ファイルごと消えるテスト", () => {});'
 put docs/base-only.md 'base'
-git add -A && git commit --quiet -m base
+# PR では変えないファイル。依存の端に出るものだけが文脈ファイルとして層に入る。Body.ts は Body のテストの
+# 対象(src/utils は index を置かないフォルダ)、Quiet.ts は変えていない reader からしか使われない。
+put src/utils/Body.ts 'export const Body = 1;'
+put src/utils/Quiet.ts 'export const Quiet = 1;'
+put src/services/reader/index.ts 'import { Node } from "@/domains/dcmp/node";
+import { Quiet } from "@/utils/Quiet";'
+put docs/guide.md 'guide'
+put .github/scripts/before-move.sh 'cat docs/guide.md'
+# ハブ。PR で Hub.ts を変えると、import している変えていない 5 本がすべて依存の端に出る。
+put src/utils/Hub.ts 'export const Hub = 1;'
+for user in 1 2 3 4 5; do
+  put "src/services/hub-user-$user/index.ts" 'import { Hub } from "@/utils/Hub";'
+done
+git add -A && commit_at 2026-01-01T00:00:00+00:00 -m base
 fork="$(git rev-parse HEAD)"
 
 git checkout --quiet -b pr
@@ -58,10 +81,28 @@ test.each([
   \"表で回すテスト %i\",
   (a) => {},
 );"
-git add -A && git commit --quiet -m first
+seq 1 10 | sed 's/^/line /' > docs/story-before.txt
+# 作者と作者の日時を、commit した人と日時から変えておく(どちらを載せたかが分かるように)。
+git add -A && GIT_AUTHOR_DATE=2026-01-02T03:04:05+09:00 GIT_COMMITTER_DATE=2026-01-02T12:00:00+00:00 \
+  git commit --quiet --author "書いた人 <writer@example.com>" -m first -m "$(printf '本文の 1 行目\n本文の 2 行目')"
 first="$(git rev-parse HEAD)"
+# PR 側の枝。あとで PR のブランチへマージする。base を取り込むと merge-base が base の先端へ動くので、
+# マージは PR 側の枝から作る。
+git checkout --quiet -b side
+put docs/side.txt 'side'
+git add -A && commit_at 2026-01-03T00:00:00+00:00 -m side
+side="$(git rev-parse HEAD)"
+git checkout --quiet pr
 git mv src/utils/__tests__/Moved.normal.test.ts src/utils/__tests__/Renamed.normal.test.ts
+git mv .github/scripts/before-move.sh .github/scripts/after-move.sh
+git mv docs/story-before.txt docs/story-after.txt
+seq 1 10 | sed 's/^/line /; s/^line 5$/line five/' > docs/story-after.txt
 put src/utils/__tests__/Body.normal.test.ts 'test("中身だけ変えるテスト", () => { expect(2).toBe(2); });'
+put src/utils/Hub.ts 'export const Hub = 2;'
+seq 1 2500 | sed 's/^/line /' > docs/long.txt
+: > docs/empty.txt
+# テストの共有ヘルパー(テストファイルではない)。
+put src/libs/x/__tests__/fake.ts 'export const fake = 1;'
 put 'src/features/editor/components/日本語/index.tsx' 'export const A = 1;'
 put .github/workflows/x.yml 'name: x'
 put harness/case-law/x.md 'x'
@@ -91,7 +132,8 @@ put .claude/skills/x/SKILL.md 'x'
 # 同じフォルダのシェル変数付きの呼び出しは依存。コメント・docstring・Markdown の言及と、同じフォルダの
 # ありふれた `index.*` の名前は依存にしない。
 put src/services/uses-node/index.ts 'import { Node } from "@/domains/dcmp/node";
-import { Px } from "../../domains/unit/px";'
+import { Px } from "../../domains/unit/px";
+import { Body } from "@/utils/Body";'
 put .github/scripts/helper_mod.py 'x = 1'
 put .github/scripts/tool.py 'from helper_mod import x'
 put .github/scripts/doc_only.py '"""helper_mod.py の説明だけ"""
@@ -126,27 +168,40 @@ put .github/scripts/trailing.py 'w = 1  # see .github/scripts/tool.py'
 # UTF-8 として読めないバイトを含むファイル(地図づくりを落とさない)と、長すぎて依存を探しに読まないファイル。
 printf 'python3 "$scripts_dir/tool.py" # \x82\xa0\xff\n' > .github/scripts/sjis.sh
 python3 -c 'import sys; sys.stdout.write("python3 .github/scripts/tool.py\n" + "x" * 1_000_001 + "\n")' > .github/scripts/huge.sh
-git add -A && git commit --quiet -m second
+git add -A && commit_at 2026-01-04T00:00:00+00:00 -m second
+second="$(git rev-parse HEAD)"
+GIT_AUTHOR_DATE=2026-01-05T00:00:00+00:00 GIT_COMMITTER_DATE=2026-01-05T00:00:00+00:00 \
+  git merge --quiet --no-ff --no-edit -m "merge side" side
 head="$(git rev-parse HEAD)"
 
 git checkout --quiet main
 put docs/base-only.md 'changed on base after the fork'
-git add -A && git commit --quiet -m base-moves
+git add -A && commit_at 2026-01-06T00:00:00+00:00 -m base-moves
 base="$(git rev-parse HEAD)"
 
-python3 "$builder" --base "$base" --head "$head" --pr 12 > "$work/map.json" || { echo "NG   地図が作れなかった"; exit 1; }
-python3 "$builder" --base "$head" --head "$head" --pr 12 > "$work/empty.json" || { echo "NG   差分なしの地図が作れなかった"; exit 1; }
+branches=(--head-branch "feature/地図" --base-branch trunk)
+python3 "$builder" --base "$base" --head "$head" --pr 12 "${branches[@]}" > "$work/map.json" || { echo "NG   地図が作れなかった"; exit 1; }
+python3 "$builder" --base "$head" --head "$head" --pr 12 "${branches[@]}" > "$work/empty.json" || { echo "NG   差分なしの地図が作れなかった"; exit 1; }
+python3 "$builder" --base "$base" --head "$head" --pr 12 --head-branch "feature/地図" > /dev/null 2>&1
+without_base_branch=$?
+python3 "$builder" --base "$base" --head "$head" --pr 12 --base-branch trunk > /dev/null 2>&1
+without_head_branch=$?
 
 # 表明が成り立つかを holds / fails で出す。
 # $1 地図の JSON, $2 Python の表明
 outcome_of() {
-  python3 - "$1" "$2" "$fork" "$first" "$head" <<'PY'
+  python3 - "$1" "$2" "$fork" "$first" "$side" "$second" "$head" "$without_base_branch" "$without_head_branch" <<'PY'
 import json, sys
 m = json.load(open(sys.argv[1], encoding="utf-8"))
-fork, first, head = sys.argv[3:6]
+fork, first, side, second, head = sys.argv[3:8]
+without_branch = [int(status) for status in sys.argv[8:10]]
 labels = [group["label"] for group in m["groups"]]
 deps = {(d["from"], d["to"]) for d in m.get("dependencies", [])}
+state = {(d["from"], d["to"]): d["state"] for d in m.get("dependencies", [])}
 files = {file["path"]: file for group in m["groups"] for file in group["files"]}
+commits = {commit["sha"]: commit for commit in m["commits"]}
+in_commit = {(commit["sha"], file["path"]): file for commit in m["commits"] for file in commit["files"]}
+patches = [file["patch"] for commit in m["commits"] for file in commit["files"] if file["patch"]]
 label_of = {file["path"]: group["label"] for group in m["groups"] for file in group["files"]}
 added = {test["name"] for test in m["tests"]["added"]}
 removed = {test["name"] for test in m["tests"]["removed"]}
@@ -198,15 +253,42 @@ $dir/../.. と、ルートから書いた $repo_root/ も依存になる|(".gith
 名前の一部だけが一致する別のパスは依存にしない|not any(source == ".github/scripts/partial.sh" for source, _ in deps)
 別のフォルダの同じ名前は依存にしない|("harness/other.sh", ".github/scripts/tool.py") not in deps
 自分自身は依存にしない|(".github/scripts/self.sh", ".github/scripts/self.sh") not in deps
-消したファイルへの言及は依存にしない|not any(source == ".github/scripts/mention-gone.sh" for source, _ in deps)
+PR で足したファイルから消したファイルへの言及は、removed を含めたどの state でも依存にしない|not any(source == ".github/scripts/mention-gone.sh" for source, _ in deps)
 行末のコメントの言及は依存にしない|(".github/scripts/trailing.py", ".github/scripts/tool.py") not in deps
 // の行の言及は依存にしない|("src/hooks/use-x/comment.ts", "docs/x.md") not in deps
 /* */ の中(JSX の中を含む)の言及は依存にしない|not any(source == "src/hooks/use-x/jsx.tsx" for source, _ in deps)
 テストファイルの rename は増減に出ない|"動かすだけのテスト" not in added and "動かすだけのテスト" not in removed
 中身だけ変えたテストは増減に出ない|"中身だけ変えるテスト" not in added and "既存のテスト" not in added
 追加はこの 6 件だけ|added == {"足したテスト", "表で回すテスト %i", "新しいファイルのテスト", "飛ばすテスト", "括弧入りの表 %s", "ボタンのテスト"}
-コミットごとの変更ファイルが古い順に入る|[c["sha"] for c in m["commits"]] == [first, head] and m["commits"][0]["files"] == ["src/domains/dcmp/node/index.ts", "src/features/editor/features/tokens/__tests__/token.normal.test.ts"]
-差分なしでも head が入り、各一覧は空|m["head"] == head and m["groups"] == [] and m["tests"] == {"added": [], "removed": []} and m["commits"] == []
+コミットは PR 側の枝とマージを含めて古い順に入り、ファイルはパスを持つオブジェクト|[c["sha"] for c in m["commits"]] == [first, side, second, head] and [f["path"] for f in m["commits"][0]["files"]] == ["docs/story-before.txt", "src/domains/dcmp/node/index.ts", "src/features/editor/features/tokens/__tests__/token.normal.test.ts"]
+差分なしでは依存も文脈ファイルも無く、head が入って各一覧は空|m["head"] == head and m["groups"] == [] and m["tests"] == {"added": [], "removed": []} and m["commits"] == [] and m["dependencies"] == []
+地図の version は 2|m["version"] == 2
+渡したブランチ名が入る|m["headBranch"] == "feature/地図" and m["baseBranch"] == "trunk"
+ブランチ名を欠いた呼び出しは引数の誤り(2)|without_branch == [2, 2]
+コミットに件名・複数行の本文・作者・作者の日時(ISO 8601)が入る|(commits[first]["subject"], commits[first]["body"], commits[first]["author"], commits[first]["date"]) == ("first", "本文の 1 行目\n本文の 2 行目", "書いた人", "2026-01-02T03:04:05+09:00")
+コミットのファイルは状態・行数と、@@ から始まる patch を持つ|in_commit[(first, "src/domains/dcmp/node/index.ts")]["status"] == "M" and (in_commit[(first, "src/domains/dcmp/node/index.ts")]["additions"], in_commit[(first, "src/domains/dcmp/node/index.ts")]["deletions"]) == (1, 1) and in_commit[(first, "src/domains/dcmp/node/index.ts")]["patch"].split("\n")[0].startswith("@@") and in_commit[(first, "src/domains/dcmp/node/index.ts")]["patch"].split("\n")[1:] == ["-export const Node = {};", "+export const Node = { changed: true };"]
+patch は diff --git / index / --- / +++ の見出しを含まない|patches != [] and not any(line.startswith(("diff --git", "index ", "--- ", "+++ ")) for patch in patches for line in patch.split("\n"))
+消したファイルの patch は null で、行数は入る|in_commit[(second, "src/utils/__tests__/Gone.normal.test.ts")]["patch"] is None and (in_commit[(second, "src/utils/__tests__/Gone.normal.test.ts")]["additions"], in_commit[(second, "src/utils/__tests__/Gone.normal.test.ts")]["deletions"]) == (0, 2)
+バイナリの patch は null|in_commit[(second, "docs/x.png")]["patch"] is None
+上限を超える patch は 2000 行で切られ、truncated と切る前の行数を持つ|(in_commit[(second, "docs/long.txt")]["truncated"], in_commit[(second, "docs/long.txt")]["patchLines"], len(in_commit[(second, "docs/long.txt")]["patch"].split("\n"))) == (True, 2501, 2000)
+コミットの中で rename したファイルは旧パスを持つ 1 件で、patch は中身の差分だけ|in_commit[(second, "docs/story-after.txt")]["oldPath"] == "docs/story-before.txt" and (second, "docs/story-before.txt") not in in_commit and [line for line in in_commit[(second, "docs/story-after.txt")]["patch"].split("\n") if line[:1] in "+-"] == ["-line 5", "+line five"]
+中身を変えない rename の patch は空文字|in_commit[(second, "src/utils/__tests__/Renamed.normal.test.ts")]["patch"] == ""
+空ファイルの追加の patch は空文字|in_commit[(second, "docs/empty.txt")]["status"] == "A" and in_commit[(second, "docs/empty.txt")]["patch"] == ""
+PR 側の枝のマージは merge が真で、ファイルを持たない|commits[head]["merge"] is True and commits[head]["files"] == [] and commits[second]["merge"] is False
+テストの対象は __tests__ の親フォルダの index|files["src/components/button/__tests__/button.normal.test.tsx"]["target"] == "src/components/button/index.tsx"
+index を置かないフォルダでは、テストファイル名の先頭と同じ名前の .ts が対象|files["src/utils/__tests__/Body.normal.test.ts"]["target"] == "src/utils/Body.ts"
+index も同じ名前のファイルも無ければ、テストの対象は null|files["src/utils/__tests__/Renamed.normal.test.ts"]["target"] is None
+テストファイルでなければ対象は null(__tests__ の中の共有ヘルパーを含む)|files["src/libs/x/__tests__/fake.ts"]["target"] is None and files["src/domains/dcmp/node/index.ts"]["target"] is None
+変えていないファイルから変更ファイルへの依存も載る|("src/services/reader/index.ts", "src/domains/dcmp/node/index.ts") in deps
+変更ファイルから変えていないファイルへの依存は added で載る|state.get(("src/services/uses-node/index.ts", "src/utils/Body.ts")) == "added"
+変えていないファイルどうしの依存は載らない|("src/services/reader/index.ts", "src/utils/Quiet.ts") not in deps
+head で消えた依存は removed(消したファイルからの依存を含む)|state.get(("src/utils/__tests__/Body.normal.test.ts", "src/utils/Body.ts")) == "removed" and state.get(("src/utils/__tests__/Gone.normal.test.ts", "src/utils/Body.ts")) == "removed"
+merge-base と head の両方にある依存は kept|state.get(("src/services/reader/index.ts", "src/domains/dcmp/node/index.ts")) == "kept"
+中身を変えずに rename したファイルの依存は、新しいパスの kept|state.get((".github/scripts/after-move.sh", "docs/guide.md")) == "kept" and not any(".github/scripts/before-move.sh" in edge for edge in deps)
+依存の端に出る変えていないファイルは、changed が偽で層に入る|files["src/utils/Body.ts"] == {"path": "src/utils/Body.ts", "changed": False} and label_of["src/utils/Body.ts"] == "utils" and files["docs/guide.md"]["changed"] is False
+変更ファイルは changed が真|files["src/domains/dcmp/node/index.ts"]["changed"] is True and all(file["changed"] is True for file in files.values() if "status" in file)
+依存の端に出ない変えていないファイルは層に入らない|"src/utils/Quiet.ts" not in files
+ハブを変えた PR では、import している 5 本がすべて依存と層に入る|all(state.get((f"src/services/hub-user-{n}/index.ts", "src/utils/Hub.ts")) == "kept" and files[f"src/services/hub-user-{n}/index.ts"]["changed"] is False for n in range(1, 6))
 CASES
 
 exit "$cases_failed"

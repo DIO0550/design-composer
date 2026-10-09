@@ -42,8 +42,10 @@ jobs:
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
+          HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
           PR: ${{ github.event.number }}
-        run: python3 .github/scripts/build-pr-change-map.py --base "$BASE_SHA" --head "$HEAD_SHA" --pr "$PR" > "$RUNNER_TEMP/change-map.json"
+        run: python3 .github/scripts/build-pr-change-map.py --base "$BASE_SHA" --head "$HEAD_SHA" --pr "$PR" --head-branch "$HEAD_BRANCH" --base-branch "$BASE_BRANCH" > "$RUNNER_TEMP/change-map.json"
 
       # 環境変数の git 設定で認証ヘッダを渡す。pr-explain-pages.sh は gh-pages を作業用の別フォルダへ
       # clone するので、どのフォルダで走る git にも同じ設定が効く形にする。base64 にした値は

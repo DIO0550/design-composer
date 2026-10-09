@@ -1,19 +1,24 @@
 #!/usr/bin/env python3
-"""PR の差分から、解説ページの「変更の地図」(`change-map.json`)を作る。
+"""PR の差分から、解説ページの「変更の地図」(`change-map.json`、version 2)を作る。
 
-地図に載せるのは 4 つ。どれも git の差分と中身だけで決まるので、AI ではなく Actions が作る。
+地図に載せるのは 5 つ。どれも git の差分と中身だけで決まるので、AI ではなく Actions が作る。
 
-- 変更したファイルを層ごとにまとめ、内側の層から外側へ読む順に並べたもの
+- PR のブランチ名(head と base)
+- 変更したファイルと、依存の端に出る変更していないファイル(文脈ファイル)を層ごとにまとめ、内側の層から
+  外側へ読む順に並べたもの。変更したテストファイルには、それが確かめている対象のファイルを添える
 - `__tests__/` のテスト名の増減(テスト名は仕様の文なので、増減がそのまま守る仕様の増減になる)
-- コミットごとの変更ファイル(解説を書いた時点より後に何が変わったかをページ側で出すため)
-- 変更ファイルどうしの依存(どのファイルがどのファイルを使っているか。ページが依存の図にする)
+- コミットごとの件名・本文・作者・日時と、ファイルごとの差分(ページが変更の経緯を出し、解説を書いた
+  時点より後に何が変わったかを出すため)
+- 端の少なくとも一方が変更ファイルの依存(どのファイルがどのファイルを使っているか)。merge-base と head の
+  両方で探し、足した・残った・消えたを分ける。ページが依存の図にする
 
-**依存は 3 通りで拾う。**
+**依存は 3 通りで拾う。** 使う側は Markdown・バイナリ・長すぎるもの以外のすべてのファイル、使われる側は
+すべてのファイル。変更していないファイルどうしの依存は PR と関係が無く、数に上限も無いので載せない。
 
 - TypeScript / JavaScript の import。解決は import 規約の検査と同じ `ts_sources.resolve_import`
   (`@/` と相対パス。拡張子を省いた綴り)
 - Python の import(モジュール名の最後の部分と同じ名前の `.py`)
-- ファイルの中に別の変更ファイルのパスが書かれていること(ワークフローがスクリプトを呼ぶ・
+- ファイルの中に別のファイルのパスが書かれていること(ワークフローがスクリプトを呼ぶ・
   スクリプトがテンプレートを読む、など言語をまたぐ参照)。リポジトリのルートからのパスのほか、
   `$dir/…` `${dir}/…` `$(dirname "$0")/…` で始まるものは、使う側のフォルダからの相対として解く
   (このリポジトリのシェルは、自分のフォルダを変数に入れて隣やサブフォルダを呼ぶ)。同じフォルダの
@@ -30,7 +35,7 @@
 「削除 + 追加」に化ける。
 
 使い方:
-    build-pr-change-map.py --base <sha> --head <sha> --pr <番号>
+    build-pr-change-map.py --base <sha> --head <sha> --pr <番号> --head-branch <名前> --base-branch <名前>
 
 標準出力へ JSON を出す。git が失敗したら終了コード 1、引数の誤りは 2。
 """
@@ -41,9 +46,10 @@ import re
 import subprocess
 import sys
 from pathlib import Path
+from typing import NamedTuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / ".claude/hooks/lib"))
-from ts_sources import COMMENT_LINE, DEFAULT_ROOT, DOMAINS_ROOT, IMPORT_SPECIFIER, feature_of, resolve_import
+from ts_sources import COMMENT_LINE, DEFAULT_ROOT, DOMAINS_ROOT, IMPORT_SPECIFIER, INDEX_NAMES, feature_of, resolve_import
 
 # 層の読む順。内側(依存される側)から外側へ。`src/domains` のカテゴリは import してよい向き
 # (`rules/architecture.md`「domains のカテゴリ」)の順に並べ、`src/features` を挟んで
@@ -78,6 +84,39 @@ PathToken = re.compile(r"[\w./${}-]+")
 VariablePrefix = re.compile(r"^\$\{?\w+\}?/")
 # これより長い(文字数)ファイルは依存を探しに読まない(生成物のフィクスチャなどで地図づくりを遅らせない)。
 MaxSourceCharacters = 1_000_000
+# 先頭のこのバイト数に NUL があればバイナリとみなす(git が差分でバイナリとみなすのと同じ幅)。
+BinaryProbeBytes = 8000
+# コミットのファイルごとの差分は、この行数で切る。
+MaxPatchLines = 2000
+# コミットの読み出し。`git log -z` はコミットの間に NUL を挟むので、欄も NUL で区切れば 6 つずつに割れる。
+CommitFields = ("%H", "%P", "%an", "%aI", "%s", "%b")
+CommitFormat = "%x00".join(CommitFields)
+# 引数の名前。どれも必須。
+Options = ("--base", "--head", "--pr", "--head-branch", "--base-branch")
+
+
+class PullRequest(NamedTuple):
+    """地図を作る PR。
+
+    `base` / `head` はコミットを指す綴り(sha か ref)、`base_branch` / `head_branch` は地図に載せるブランチ名。
+    """
+
+    number: int
+    base: str
+    head: str
+    base_branch: str
+    head_branch: str
+
+
+class PathLookup(NamedTuple):
+    """ある時点で依存の行き先になりうるファイルと、それを名前から引く表。
+
+    `siblings` はフォルダ → ファイル名 → パス(`index.*` を除く)、`modules` は `.py` のモジュール名 → パス。
+    """
+
+    paths: frozenset[str]
+    siblings: dict[str, dict[str, str]]
+    modules: dict[str, frozenset[str]]
 
 
 def git(*args: str) -> str:
@@ -256,8 +295,42 @@ def kind_of(path: str) -> int:
     return 0
 
 
+def target_of(path: str, paths: frozenset[str]) -> str | None:
+    """テストファイルが確かめている対象のファイルを返す。
+
+    `__tests__/` の親フォルダの `index.ts(x)` を探し、無ければ同じフォルダから、テストファイル名の先頭
+    (`Result.normal.test.ts` なら `Result`)と同じ名前の `.ts(x)` を探す。
+
+    @param path 変更ファイルのパス
+    @param paths head のすべてのファイル
+    @returns 対象のパス。テストファイルでないか、どちらも無ければ None
+    """
+    if not TestFile.search(path):
+        return None
+    folder = path[: path.rindex(TestFolder)]
+    stem = posixpath.basename(path).split(".")[0]
+    candidates = [*INDEX_NAMES, f"{stem}.ts", f"{stem}.tsx"]
+    return next((f"{folder}/{name}" for name in candidates if f"{folder}/{name}" in paths), None)
+
+
+def listed_files(files: list[dict], dependencies: list[dict], paths: frozenset[str]) -> list[dict]:
+    """層に載せるファイルを返す。変更ファイルと、依存の端に出る変更していないファイル(文脈ファイル)。
+
+    @param files 変更ファイル(`changed_files` の戻り値)
+    @param dependencies `dependencies_between` の戻り値
+    @param paths head のすべてのファイル(テストの対象を探す範囲)
+    @returns 変更ファイルは `changed: true` と `target`(`target_of` の戻り値)を足したもの。文脈ファイルは
+        `{"path": パス, "changed": false}`
+    """
+    changed = [{**file, "changed": True, "target": target_of(file["path"], paths)} for file in files]
+    changed_paths = {file["path"] for file in files}
+    endpoints = {dependency[end] for dependency in dependencies for end in ("from", "to")}
+    context = [{"path": path, "changed": False} for path in sorted(endpoints - changed_paths)]
+    return changed + context
+
+
 def group_files(files: list[dict]) -> list[dict]:
-    """変更ファイルを層ごとにまとめ、読む順に並べる。"""
+    """層に載せるファイル(`listed_files` の戻り値)を層ごとにまとめ、読む順に並べる。"""
     groups: dict[tuple[int, str, str], list[dict]] = {}
     for file in files:
         groups.setdefault(layer_of(file["path"]), []).append(file)
@@ -283,25 +356,98 @@ def test_changes(files: list[dict], base: str, head: str) -> dict[str, list[dict
     return {"added": added, "removed": removed}
 
 
-def import_targets(source: str, text: str, paths: set[str]) -> set[str]:
-    """TS / JS の import が指す変更ファイルを返す(解決は import 規約の検査と同じ)。
+
+
+def tree_at(revision: str) -> dict[str, str]:
+    """ある時点のファイルを、パス → blob の名前の対応で返す(サブモジュールは除く)。"""
+    entries = (entry.split("\t", 1) for entry in git("ls-tree", "-r", "-z", revision).split("\0")[:-1])
+    return {path: meta.split(" ")[2] for meta, path in entries if meta.split(" ")[1] == "blob"}
+
+
+def read_blobs(names: set[str]) -> dict[str, bytes]:
+    """blob の中身を、`git cat-file --batch` を 1 回だけ走らせて読む。
+
+    @param names blob の名前
+    @returns 名前 → 中身
+    """
+    request = "".join(f"{name}\n" for name in sorted(names)).encode()
+    output = subprocess.run(["git", "cat-file", "--batch"], input=request, check=True, capture_output=True).stdout
+    blobs: dict[str, bytes] = {}
+    position = 0
+    while position < len(output):
+        header_end = output.index(b"\n", position)
+        name, _, size = output[position:header_end].decode().split(" ")
+        start = header_end + 1
+        blobs[name] = output[start : start + int(size)]
+        position = start + int(size) + 1
+    return blobs
+
+
+def is_prose(path: str) -> bool:
+    """Markdown か(説明の文章なので、依存を探しに読まない)。"""
+    return path.endswith(".md")
+
+
+def source_text(path: str, content: bytes | None) -> str | None:
+    """依存を探しに読む中身を返す。
+
+    @param path ファイルのパス
+    @param content その中身。読んでいなければ None
+    @returns UTF-8 として読んだ中身(読めないバイトは `git` と同じ理由で置き換える)。Markdown・バイナリ・
+        `MaxSourceCharacters` を超えるものは None
+    """
+    unreadable = content is None or is_prose(path) or b"\0" in content[:BinaryProbeBytes]
+    if unreadable:
+        return None
+    text = content.decode("utf-8", errors="replace")
+    return text if len(text) <= MaxSourceCharacters else None
+
+
+def snapshots_at(merge_base: str, head: str) -> tuple[dict[str, str | None], dict[str, str | None]]:
+    """merge-base と head のすべてのファイルを、依存を探しに読む中身とともに返す。
+
+    中身は 2 つの時点をまとめて 1 回で読む(同じ blob は 1 度だけ)。
+
+    @returns (merge-base, head) のそれぞれで、パス → `source_text` の戻り値
+    """
+    trees = (tree_at(merge_base), tree_at(head))
+    blobs = read_blobs({name for tree in trees for path, name in tree.items() if not is_prose(path)})
+    before, after = ({path: source_text(path, blobs.get(name)) for path, name in tree.items()} for tree in trees)
+    return before, after
+
+
+def lookup_of(paths: frozenset[str]) -> PathLookup:
+    """ある時点のすべてのファイルから、依存の行き先を名前で引く表を作る。"""
+    siblings: dict[str, dict[str, str]] = {}
+    modules: dict[str, set[str]] = {}
+    for path in paths:
+        name = posixpath.basename(path)
+        if not name.startswith("index."):
+            siblings.setdefault(posixpath.dirname(path), {})[name] = path
+        if name.endswith(".py"):
+            modules.setdefault(name[:-3], set()).add(path)
+    return PathLookup(paths, siblings, {module: frozenset(found) for module, found in modules.items()})
+
+
+def imported_paths(source: str, text: str, lookup: PathLookup) -> set[str]:
+    """TS / JS の import が指すファイルを返す(解決は import 規約の検査と同じ)。
 
     @param source import している側のパス
     @param text その中身(説明を落とした後)
-    @param paths 変更ファイル(消したものを除く)
+    @param lookup 同じ時点のファイル
     """
-    targets = (resolve_import(match.group(1), source, paths) for match in IMPORT_SPECIFIER.finditer(text))
-    return {target for target in targets if target is not None}
+    resolved = (resolve_import(match.group(1), source, lookup.paths) for match in IMPORT_SPECIFIER.finditer(text))
+    return {path for path in resolved if path is not None}
 
 
-def python_import_targets(text: str, paths: set[str]) -> set[str]:
-    """Python の import が指す変更ファイル(モジュール名の最後の部分と同じ名前の `.py`)を返す。
+def python_imported_paths(text: str, lookup: PathLookup) -> set[str]:
+    """Python の import が指すファイル(モジュール名の最後の部分と同じ名前の `.py`)を返す。
 
     @param text import している側の中身(説明を落とした後)
-    @param paths 変更ファイル(消したものを除く)
+    @param lookup 同じ時点のファイル
     """
     modules = {(match.group(1) or match.group(2)).split(".")[-1] for match in PythonImport.finditer(text)}
-    return {path for path in paths if path.endswith(".py") and posixpath.basename(path)[:-3] in modules}
+    return {path for module in modules for path in lookup.modules.get(module, frozenset())}
 
 
 def code_of(source: str, text: str) -> str:
@@ -334,99 +480,174 @@ def referenced_path(source: str, token: str, after_subshell: bool) -> str:
     return token
 
 
-def mentioned_paths(source: str, text: str, paths: set[str]) -> set[str]:
-    """中身にパスとして書かれている変更ファイルを返す。
+
+
+def mentioned_paths(source: str, text: str, lookup: PathLookup) -> set[str]:
+    """中身にパスとして書かれているファイルを返す。
 
     字句の切れ目で分けるので、別のパスの一部(`x.py` に対する `ax.py`)には当たらない。本文は 1 回だけ
-    走査する(変更ファイルの数だけ走査し直すと、大きな PR で Actions の時間を食う)。
+    走査する(ファイルの数だけ走査し直すと、Actions の時間を食う)。
 
     @param source 中身を読んだファイル
     @param text その中身(説明を落とした後)
-    @param paths 変更ファイル(消したものを除く)
+    @param lookup 同じ時点のファイル
     """
-    folder = posixpath.dirname(source)
-    siblings = {posixpath.basename(path): path for path in paths if posixpath.dirname(path) == folder and not posixpath.basename(path).startswith("index.")}
+    siblings = lookup.siblings.get(posixpath.dirname(source), {})
     found = set()
     for match in PathToken.finditer(text):
         token = match.group(0)
         after_subshell = token.startswith("/") and match.start() > 0 and text[match.start() - 1] == ")"
         variable_relative = VariablePrefix.sub("", token)
         candidates = {token, referenced_path(source, token, after_subshell), variable_relative}
-        found.update(candidates & paths)
+        found.update(candidates & lookup.paths)
         if token in siblings:
             found.add(siblings[token])
     return found
 
 
-def dependencies_between(files: list[dict], head: str) -> list[dict]:
-    """変更ファイルどうしの依存を返す。
+def used_paths(source: str, content: str, lookup: PathLookup) -> set[str]:
+    """1 つのファイルが使っているファイルを、3 通りの拾い方(module の docstring)を合わせて返す。
+
+    @param source 使う側のパス
+    @param content その中身(`source_text` の戻り値)
+    @param lookup 同じ時点のファイル
+    """
+    text = code_of(source, content)
+    imported = imported_paths(source, text, lookup) if source.endswith(ScriptSuffixes) else set()
+    imported_python = python_imported_paths(text, lookup) if source.endswith(".py") else set()
+    return imported | imported_python | mentioned_paths(source, text, lookup)
+
+
+def edges_in(snapshot: dict[str, str | None]) -> set[tuple[str, str]]:
+    """ある時点の、使う側 → 使われる側の組をすべて返す(自分自身への組は除く)。
+
+    @param snapshot パス → 依存を探しに読む中身(`snapshots_at` の戻り値の片方)
+    """
+    lookup = lookup_of(frozenset(snapshot))
+    edges = set()
+    for source, content in snapshot.items():
+        if content is None:
+            continue
+        edges.update((source, used) for used in used_paths(source, content, lookup) if used != source)
+    return edges
+
+
+def edges_touching(edges: set[tuple[str, str]], paths: set[str]) -> set[tuple[str, str]]:
+    """端の少なくとも一方が `paths` に入る組だけを返す。"""
+    return {edge for edge in edges if edge[0] in paths or edge[1] in paths}
+
+
+def dependencies_between(files: list[dict], before: dict[str, str | None], after: dict[str, str | None]) -> list[dict]:
+    """端の少なくとも一方が変更ファイルの依存を、merge-base から head への変化とともに返す。
 
     @param files 変更ファイル(`changed_files` の戻り値)
-    @param head 中身を読む時点
-    @returns `{"from": 使う側, "to": 使われる側}` の並び。消したファイル・バイナリ・Markdown・`MaxSourceCharacters` を
-        超えるファイルは使う側にしない
+    @param before merge-base のすべてのファイル(`snapshots_at` の戻り値)
+    @param after head のすべてのファイル
+    @returns `{"from": 使う側, "to": 使われる側, "state": 変化}` の並び。変化は head にだけあれば `added`、両方に
+        あれば `kept`、merge-base にだけあれば `removed`。merge-base 側の端は、rename の新しいパスに付け替えてから比べる
     """
-    paths = {file["path"] for file in files if file["status"] != "D"}
-    edges = set()
-    for file in files:
-        source = file["path"]
-        is_readable = file["status"] != "D" and file["additions"] is not None and not source.endswith(".md")
-        if not is_readable:
-            continue
-        content = file_at(head, source)
-        if len(content) > MaxSourceCharacters:
-            continue
-        text = code_of(source, content)
-        imported = import_targets(source, text, paths) if source.endswith(ScriptSuffixes) else set()
-        imported_python = python_import_targets(text, paths) if source.endswith(".py") else set()
-        mentioned = mentioned_paths(source, text, paths)
-        targets = (imported | imported_python | mentioned) & paths
-        edges.update((source, target) for target in targets if target != source)
-    return [{"from": source, "to": target} for source, target in sorted(edges)]
+    renamed = {file["oldPath"]: file["path"] for file in files if file["oldPath"]}
+    changed_after = {file["path"] for file in files}
+    changed_before = {file["oldPath"] or file["path"] for file in files}
+    edges_after = edges_touching(edges_in(after), changed_after)
+    edges_before = {
+        (renamed.get(source, source), renamed.get(used, used))
+        for source, used in edges_touching(edges_in(before), changed_before)
+    }
+    removed = {edge: "removed" for edge in edges_before - edges_after}
+    added = {edge: "added" for edge in edges_after - edges_before}
+    kept = {edge: "kept" for edge in edges_after & edges_before}
+    states = removed | added | kept
+    return [{"from": source, "to": used, "state": states[(source, used)]} for source, used in sorted(states)]
+
+
+def hunk_lines(diff: str) -> list[str]:
+    """`git diff` の出力から、最初の hunk の見出し(`@@`)から後の行を返す。hunk が無ければ空。"""
+    lines = diff.removesuffix("\n").split("\n")
+    start = next((index for index, line in enumerate(lines) if line.startswith("@@")), len(lines))
+    return lines[start:]
+
+
+def patch_of(sha: str, file: dict) -> dict:
+    """コミットでの 1 ファイルの差分を返す。
+
+    @param sha コミット(親が 1 つ)
+    @param file そのコミットの変更ファイル(`changed_files` の要素)
+    @returns `patch`(最初の `@@` から `MaxPatchLines` 行まで。hunk が無ければ空文字。消したファイルとバイナリは
+        None)・`patchLines`(切る前の行数。patch が None なら 0)・`truncated`(切ったか)
+    """
+    has_no_patch = file["status"] == "D" or file["additions"] is None
+    if has_no_patch:
+        return {"patch": None, "patchLines": 0, "truncated": False}
+    paths = (file["oldPath"], file["path"]) if file["oldPath"] else (file["path"],)
+    diff = git("--literal-pathspecs", "diff", "-M", "--no-color", "--no-ext-diff", f"{sha}^", sha, "--", *paths)
+    lines = hunk_lines(diff)
+    return {"patch": "\n".join(lines[:MaxPatchLines]), "patchLines": len(lines), "truncated": len(lines) > MaxPatchLines}
+
+
+def commit_files(sha: str) -> list[dict]:
+    """親が 1 つのコミットで変わったファイルを、差分とともにパスの順で返す。"""
+    files = changed_files(f"{sha}^", sha)
+    return sorted(({**file, **patch_of(sha, file)} for file in files), key=lambda file: file["path"])
+
+
+def commit_of(record: list[str]) -> dict:
+    """`git log` の 1 コミット分の欄(`CommitFields` の順)から、地図のコミットを作る。"""
+    sha, parents, author, date, subject, body = record
+    merge = len(parents.split()) > 1
+    files = [] if merge else commit_files(sha)
+    return {"sha": sha, "merge": merge, "author": author, "date": date, "subject": subject, "body": body.rstrip("\n"), "files": files}
 
 
 def commits_between(base: str, head: str) -> list[dict]:
-    """base..head のコミットを古い順に、変更ファイルとともに返す。マージコミットは変更ファイルを持たない。"""
-    shas = git("rev-list", "--reverse", f"{base}..{head}").split()
-    return [
-        {"sha": sha, "files": sorted(git("diff-tree", "--no-commit-id", "-r", "-z", "--name-only", "-M", sha).split("\0")[:-1])}
-        for sha in shas
-    ]
+    """base..head のコミットを、親を子より前に置いたうえで古い順に返す。
+
+    @returns コミットごとに sha・マージか(親が 2 つ以上)・作者・作者の日時(ISO 8601)・件名・本文・変更ファイル。
+        マージコミットは変更ファイルを持たない
+    """
+    fields = git("log", "-z", "--date-order", "--reverse", f"--format={CommitFormat}", f"{base}..{head}").split("\0")
+    size = len(CommitFields)
+    return [commit_of(fields[start : start + size]) for start in range(0, len(fields) - size + 1, size)]
 
 
-def build_map(base_tip: str, head_ref: str, pr: int) -> dict:
+def build_map(pr: PullRequest) -> dict:
     """change-map.json の中身を作る。
 
-    @param base_tip PR の base の先端
-    @param head_ref PR の head
-    @param pr PR 番号
+    @param pr 地図を作る PR
     @returns 地図。`mergeBase` は base の先端ではなく head との分岐点。変更が無ければ各一覧は空配列
     """
-    head = git("rev-parse", head_ref).strip()
-    merge_base = git("merge-base", base_tip, head).strip()
+    head = git("rev-parse", pr.head).strip()
+    merge_base = git("merge-base", pr.base, head).strip()
     files = changed_files(merge_base, head)
+    before, after = snapshots_at(merge_base, head)
+    dependencies = dependencies_between(files, before, after)
     return {
-        "version": 1,
-        "pr": pr,
+        "version": 2,
+        "pr": pr.number,
+        "headBranch": pr.head_branch,
+        "baseBranch": pr.base_branch,
         "mergeBase": merge_base,
         "head": head,
-        "groups": group_files(files),
+        "groups": group_files(listed_files(files, dependencies, frozenset(after))),
         "tests": test_changes(files, merge_base, head),
         "commits": commits_between(merge_base, head),
-        "dependencies": dependencies_between(files, head),
+        "dependencies": dependencies,
     }
+
 
 
 def main(argv: list[str]) -> int:
     args = dict(zip(argv[1::2], argv[2::2]))
-    complete = len(argv) == 7 and set(args) == {"--base", "--head", "--pr"} and args["--pr"].isdigit()
+    complete = len(argv) == 1 + 2 * len(Options) and set(args) == set(Options) and args["--pr"].isdigit()
     if not complete:
-        print("使い方: build-pr-change-map.py --base <sha> --head <sha> --pr <番号>", file=sys.stderr)
+        print("使い方: build-pr-change-map.py --base <sha> --head <sha> --pr <番号> --head-branch <名前> --base-branch <名前>", file=sys.stderr)
         return 2
+    pr = PullRequest(int(args["--pr"]), args["--base"], args["--head"], args["--base-branch"], args["--head-branch"])
     try:
-        change_map = build_map(args["--base"], args["--head"], int(args["--pr"]))
+        change_map = build_map(pr)
     except subprocess.CalledProcessError as error:
-        print(f"git が失敗しました: {' '.join(error.cmd)}\n{error.stderr}", file=sys.stderr)
+        stderr = error.stderr.decode(errors="replace") if isinstance(error.stderr, bytes) else error.stderr
+        print(f"git が失敗しました: {' '.join(error.cmd)}\n{stderr}", file=sys.stderr)
         return 1
     json.dump(change_map, sys.stdout, ensure_ascii=False, indent=2)
     print()
