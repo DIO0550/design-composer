@@ -66,6 +66,16 @@ run_check "解説の検査の判定表" bash .github/scripts/build-pr-explain-ca
 run_check "解説ページの枠の検査の判定表" bash .github/scripts/check-pr-explain-template-cases.sh
 resume_checks
 
+# 解説ページの核(テンプレートの固定スクリプトのうち DOM に触らない部分)を node で評価する判定表。
+# `command -v` ではなく 1 回起動して見る理由は、上の python3_usable と同じ。
+node_usable() {
+  node -e '' >/dev/null 2>&1
+}
+
+node_usable || skip_following_checks "node が使えない"
+run_check "解説ページの核の判定表" bash .github/scripts/pr-explain-core-cases.sh
+resume_checks
+
 # 行数の予算(AGENTS.md「常時ロードは増やさない」)。実測と予算がずれていれば落ちる。
 run_check "行数のラチェット" bash harness/records/count.sh --ratchet
 
