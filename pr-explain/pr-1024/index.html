@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-LUZqMcBJpcGGPHTRXGPbmwmDO0VdLiUJHb7OmoyFy1U='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-dwemdw7RquEEzXwGu+1Umky6pXr5hJNAN4SbV/BbWTA='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR 解説</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -60,8 +60,9 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 .segmented a:hover { color: var(--ink); background: rgba(255, 255, 255, .6); }
 .segmented a[aria-current="page"] { font-weight: 600; color: var(--ink); background: var(--surface); box-shadow: var(--shadow-raised); }
 .top-main { display: flex; align-items: center; gap: 10px; min-width: min(240px, 100%); flex: 1 1 auto; overflow: hidden; }
-.branch { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 12px; font-weight: 500; color: var(--ink-2); background: var(--chip); border-radius: 6px; padding: 4px 8px; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-.branch .arrow { color: var(--ink-3); }
+.branch { display: block; font-family: var(--mono); font-size: 12px; font-weight: 500; color: var(--ink-2); background: var(--chip); border-radius: 6px; padding: 4px 8px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.branch .arrow { color: var(--ink-3); margin: 0 6px; }
+.screen-summary { display: flex; flex: none; }
 .counts { display: flex; gap: 8px; font-family: var(--mono); font-size: 12px; flex: none; }
 .counts .total { color: var(--ink-2); }
 .add { color: var(--add); }
@@ -69,6 +70,14 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 .screen-controls { display: flex; align-items: center; gap: 12px; flex: none; }
 .hint { font-size: 11px; color: var(--ink-3); }
 .links { display: flex; gap: 12px; font-size: 12px; flex: none; }
+/* 1280px 以上ではヘッダを 1 行に収める。収まらない分はブランチ名を詰め、1440px 未満では操作の見出しと「PR」「Issue」の語を省く(どちらも title に残す)。 */
+@media (min-width: 1280px) {
+  .top { flex-wrap: nowrap; }
+  .top-main { flex: 1 1 0; min-width: 96px; }
+}
+@media (min-width: 1280px) and (max-width: 1439.98px) {
+  .screen-controls .control-label, .links .link-kind { display: none; }
+}
 .bands { display: flex; flex-direction: column; }
 .band { padding: 7px 14px; font-size: 12px; line-height: 1.6; color: var(--mod); background: var(--warn-tint); border-bottom: 1px solid var(--line); white-space: normal; }
 .screens { min-height: 0; position: relative; }
@@ -111,7 +120,6 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 .row-sub { font-size: 11.5px; color: var(--ink-2); }
 .row-meta { display: flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 11px; white-space: nowrap; color: var(--ink-3); }
 .row-meta .sha { color: var(--ink-2); }
-.row-path { font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); overflow-wrap: anywhere; }
 .commit-row { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 8px; margin: 0 8px; padding: 10px 12px 10px 8px; border-radius: 8px; }
 .commit-row:hover { outline: 1px solid var(--line); }
 .commit-rail { position: relative; }
@@ -124,30 +132,10 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 .tags { display: flex; flex-wrap: wrap; gap: 4px; }
 .tag { font-size: 10.5px; color: var(--ink-2); background: var(--track); border-radius: 4px; padding: 1px 6px; }
 .tag.is-warn { font-weight: 600; color: var(--mod); background: var(--warn-tint); }
-.group-head { display: flex; align-items: baseline; gap: 8px; padding: 12px 20px 4px; }
-.group-title { font-size: 12px; font-weight: 600; flex: none; }
-.group-role { font-size: 11px; color: var(--ink-3); white-space: normal; min-width: 0; }
-.file-row { display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; align-items: baseline; gap: 6px; margin: 0 8px; padding: 6px 12px; border-radius: 8px; }
-.file-row:hover { background: var(--hover); }
-.file-row > span { min-width: 0; }
-.file-row .row-path { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .status { font-family: var(--mono); font-size: 10px; font-weight: 600; text-align: center; color: var(--ink-3); }
 .status[data-status="A"] { color: var(--add); }
 .status[data-status="M"], .status[data-status="R"] { color: var(--mod); }
 .status[data-status="D"] { color: var(--del); }
-.file-name { font-size: 12.5px; font-weight: 500; overflow-wrap: anywhere; }
-.file-name.is-tree-only { color: var(--ink-2); font-style: italic; }
-.file-count { font-family: var(--mono); font-size: 10.5px; white-space: nowrap; }
-.others { margin: 0 8px; padding: 2px 12px 6px 34px; font-size: 11.5px; color: var(--ink-3); }
-.others summary { cursor: pointer; }
-.others ul { margin: 4px 0 0; padding: 0; list-style: none; font-family: var(--mono); font-size: 10.5px; line-height: 1.7; }
-.stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
-.stat { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
-.stat-value { font-family: var(--mono); font-size: 20px; font-weight: 600; }
-.stat-label { font-size: 11.5px; color: var(--ink-2); }
-.facts { margin: 0; padding: 0 16px; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 12px; font-size: 12px; }
-.facts dt { color: var(--ink-3); }
-.facts dd { margin: 0; overflow-wrap: anywhere; }
 .guide { max-width: 640px; margin: 12vh auto 0; padding: 28px 32px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); display: flex; flex-direction: column; gap: 12px; }
 .guide h1 { margin: 0; font-size: 20px; font-weight: 600; }
 .guide p { margin: 0; font-size: 14px; line-height: 1.8; color: var(--ink-2); }
@@ -307,8 +295,11 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 .graph-container { position: absolute; border-radius: 14px; background: rgba(255, 255, 255, .5); border: 1px solid var(--line-strong); cursor: pointer; transition: opacity .2s, box-shadow .2s; }
 .graph-container.is-picked { border-color: var(--accent); background: rgba(47, 91, 234, .05); box-shadow: 0 0 0 1px var(--accent), 0 0 0 6px rgba(47, 91, 234, .12); }
 .graph-container.is-dim { opacity: .55; }
-.graph-container-head { display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 8px 0 12px; white-space: nowrap; }
-.graph-container-title { font-size: 13px; font-weight: 600; }
+.graph-container-head { display: flex; align-items: center; gap: 6px; height: 38px; padding: 0 6px 0 12px; white-space: nowrap; }
+.graph-container-head .mini-button { padding: 4px; }
+.graph-container-title { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; flex: 0 1 auto; min-width: 4em; }
+.graph-container-head > :not(.graph-container-title):not(.spacer):not(.container-facts) { flex: none; }
+.container-facts { display: flex; align-items: center; gap: 6px; flex: 0 1 auto; min-width: 0; overflow: hidden; }
 .count-chip { font-size: 11px; color: var(--ink-2); background: var(--track); border-radius: 4px; padding: 1px 6px; white-space: nowrap; }
 .gap-chip { font-size: 11px; font-weight: 500; color: var(--mod); background: rgba(201, 138, 18, .12); border-radius: 4px; padding: 1px 6px; white-space: nowrap; }
 .mini-button { border: none; background: transparent; cursor: pointer; font-size: 11px; color: var(--ink-2); padding: 4px 6px; border-radius: 5px; white-space: nowrap; }
@@ -466,6 +457,206 @@ button.gap-card:hover { border-color: var(--mod-mark); }
 .test-card:hover { border-color: var(--ink-4); }
 .test-card .test-name { font-size: 13px; line-height: 1.55; }
 .warn-text { font-size: 12.5px; color: var(--mod); }
+.small { font-size: 11px; }
+[data-tone] { --tone: var(--line-strong); --tone-ink: var(--ink-3); --tone-tint: transparent; }
+[data-tone="A"] { --tone: var(--add-mark); --tone-ink: var(--add); --tone-tint: rgba(46, 157, 91, .12); }
+[data-tone="M"] { --tone: var(--mod-mark); --tone-ink: var(--mod); --tone-tint: rgba(201, 138, 18, .12); }
+[data-tone="D"] { --tone: var(--del-mark); --tone-ink: var(--del); --tone-tint: rgba(210, 69, 58, .12); }
+.status-dot { flex: none; width: 6px; height: 6px; border-radius: 3px; background: var(--tone, var(--line-strong)); }
+.status-letter { flex: none; min-width: 10px; text-align: right; font-family: var(--mono); font-size: 10.5px; font-weight: 600; color: var(--tone-ink, var(--ink-3)); }
+.status-chip { flex: none; font-size: 10px; font-weight: 600; padding: 2px 5px; border-radius: 4px; color: var(--tone-ink); background: var(--tone-tint); white-space: nowrap; }
+.chip[data-tone] { color: var(--tone-ink); background: var(--tone-tint); }
+.status-tag { flex: none; font-size: 10.5px; font-weight: 600; color: var(--tone-ink); white-space: nowrap; }
+.label-dot { flex: none; width: 5px; height: 5px; border-radius: 3px; background: transparent; }
+.label-dot:not([data-tone=""]) { background: var(--tone); }
+.switch-button.is-small { gap: 6px; font-size: 11px; color: var(--ink-2); padding: 2px 0; }
+.switch-button.is-small .switch { width: 24px; height: 14px; border-radius: 7px; }
+.switch-button.is-small .switch::after { width: 10px; height: 10px; border-radius: 5px; }
+.switch-button.is-small[aria-pressed="true"] .switch::after { left: 12px; }
+.outline-button { display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--line-strong); background: var(--surface); cursor: pointer; padding: 6px 10px; border-radius: 8px; font-size: 12px; font-weight: 500; color: var(--ink); white-space: nowrap; }
+.outline-button:hover { border-color: var(--ink-4); }
+.outline-button.is-menu { padding: 5px 10px 5px 12px; }
+.chev-down { width: 6px; height: 6px; margin: -3px 1px 0; border-right: 1.4px solid var(--ink-2); border-bottom: 1.4px solid var(--ink-2); transform: rotate(45deg); }
+.chev-left { width: 6px; height: 6px; margin-left: 2px; border-left: 1.5px solid var(--ink); border-bottom: 1.5px solid var(--ink); transform: rotate(45deg); }
+.popover-anchor { position: relative; flex: none; }
+.popover-backdrop { position: fixed; inset: 0; z-index: 30; }
+.popover { position: absolute; top: calc(100% + 8px); right: 0; width: 340px; z-index: 31; display: flex; flex-direction: column; gap: 10px; padding: 14px; white-space: normal; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 14px 36px rgba(29, 31, 36, .16), 0 2px 6px rgba(29, 31, 36, .06); }
+.popover-head { display: flex; flex-direction: column; gap: 3px; padding: 0 4px; }
+.popover-head.is-split { padding-top: 10px; border-top: 1px solid var(--chip); }
+.popover-title { font-size: 13px; font-weight: 600; }
+.popover-sub { font-size: 12px; line-height: 1.5; color: var(--ink-2); }
+.popover-note { font-size: 11.5px; line-height: 1.5; color: var(--ink-3); padding: 0 4px; }
+.popover .control { padding: 0 4px; }
+.popover-rows { display: flex; flex-direction: column; gap: 2px; }
+.popover-row { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 8px; width: 100%; }
+.popover-row:hover { background: var(--hover); }
+.popover-row-label { font-size: 13px; font-weight: 500; }
+.popover-row[aria-pressed="true"] .switch { background: var(--accent); }
+.popover-row[aria-pressed="true"] .switch::after { left: 14px; }
+.popover-actions { display: flex; gap: 6px; padding-top: 8px; border-top: 1px solid var(--chip); }
+.popover-actions .outline-button { flex: 1; border-radius: 7px; padding: 7px 0; }
+.pill-row { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 4px; }
+.side .pill-row { padding: 0; }
+.pill-button { display: flex; align-items: center; gap: 5px; border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink-2); border-radius: 999px; padding: 4px 11px; font-size: 12px; font-weight: 500; cursor: pointer; white-space: nowrap; }
+.pill-button .n { font-family: var(--mono); font-size: 10.5px; opacity: .7; }
+.pill-button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: #FFFFFF; }
+.tree { position: relative; overflow: auto; flex: 1; padding: 2px 0 20px; }
+.tree-row { display: flex; align-items: center; gap: 6px; height: 26px; margin: 1px 8px; padding-right: 8px; width: calc(100% - 16px); border-radius: 6px; transition: background .25s, box-shadow .25s; }
+.tree-row:hover { outline: 1px solid var(--line); }
+.tree-name { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; color: var(--tone-ink); }
+.tree-row.is-dir .tree-name { font-family: var(--sans); font-size: 12.5px; font-weight: 500; color: var(--ink); }
+.tree-row.is-context .tree-name { color: var(--ink); }
+.tree-row.is-context.is-tree-only .tree-name { color: var(--ink-2); }
+.tree-row.is-deleted .tree-name { text-decoration: line-through; }
+.tree-chev { flex: none; width: 5px; height: 5px; margin: 0 2px; border-right: 1.4px solid var(--ink-3); border-bottom: 1.4px solid var(--ink-3); transform: rotate(-45deg); transition: transform .15s; }
+.tree-row.is-open .tree-chev { transform: rotate(45deg); }
+.tree-count { display: flex; align-items: center; gap: 4px; font-size: 10.5px; color: var(--ink-3); }
+.tree-row.has-current { background: var(--accent-tint); }
+.tree-row.is-current { background: rgba(47, 91, 234, .13); box-shadow: inset 0 0 0 1px var(--accent-ring), 0 0 16px rgba(47, 91, 234, .32); }
+.tree-row.is-step { background: rgba(47, 91, 234, .08); }
+.tree-row.is-related { background: rgba(47, 91, 234, .045); }
+.relation-dot { flex: none; width: 5px; height: 5px; border-radius: 3px; background: var(--accent); }
+.canvas-controls { display: contents; }
+.control.is-canvas { gap: 6px; pointer-events: auto; }
+.control.is-canvas .control-label { color: var(--ink-2); }
+.control.is-canvas .toggle-group { background: #E6E3DB; }
+.scope-pill { display: flex; align-items: center; gap: 6px; pointer-events: auto; padding: 3px 4px 3px 10px; border-radius: 999px; background: var(--ink); color: #FFFFFF; font-size: 12px; white-space: nowrap; }
+.scope-pill-mode { color: var(--ink-4); font-size: 11px; }
+.scope-pill-clear { border: none; background: rgba(255, 255, 255, .14); color: #FFFFFF; cursor: pointer; border-radius: 999px; width: 20px; height: 20px; font-size: 12px; line-height: 1; padding: 0; }
+.scope-pill-clear:hover { background: rgba(255, 255, 255, .28); }
+.legend > [data-tone] { color: var(--ink-2); }
+.legend .kind { font-weight: 500; }
+.legend-sep { width: 1px; height: 12px; background: var(--line); }
+.legend-line { width: 18px; border-top: 1.5px solid var(--ink-4); }
+.legend-line.is-removed { border-top: 1.5px dashed var(--del-mark); }
+.legend-line.is-event { border-top: 1.5px dashed var(--tok-var); }
+.graph-node.is-box .status-dot { background: var(--tone); }
+.graph-node.is-box.is-deleted { border-style: dashed; background: #F7F5F0; }
+.graph-node.is-box.is-deleted .box-name { color: var(--ink-3); text-decoration: line-through; }
+.graph-node.is-step { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 0 14px rgba(47, 91, 234, .3); }
+.graph-node.is-related { border-color: rgba(47, 91, 234, .55); box-shadow: 0 0 0 1px rgba(47, 91, 234, .22); }
+.graph-node.is-unfocused { opacity: .4; }
+.graph-node.is-out { opacity: .22; }
+.graph-container.is-out { opacity: .3; }
+.group-inner { position: absolute; left: 12px; top: calc(100% + 6px); font-size: 11px; color: var(--accent); white-space: nowrap; }
+.map-edge .edge-line { stroke-dasharray: none; stroke-width: var(--edge-width); transition: opacity .2s, stroke .2s; }
+.map-edge.is-involved .edge-line { stroke: var(--accent); }
+.map-edge.is-involved .edge-head { fill: var(--accent); }
+.map-edge.is-added .edge-line { stroke: var(--add-mark); }
+.map-edge.is-added .edge-head { fill: var(--add-mark); }
+.map-edge.is-removed .edge-line { stroke: var(--del-mark); stroke-dasharray: 4 4; }
+.map-edge.is-removed .edge-head { fill: var(--del-mark); }
+.map-edge.is-on .edge-line { stroke: var(--accent); }
+.map-edge.is-on .edge-head { fill: var(--accent); }
+.map-edge.is-hover .edge-line { stroke-width: calc(var(--edge-width) + .75px); }
+.label-chip .label-text { white-space: nowrap; }
+.label-chip.is-removed .label-text { text-decoration: line-through; }
+.graph-label .label-chip { padding: 2px 7px; gap: 5px; }
+.graph-label.is-hover { z-index: 8; }
+.side-bar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--chip); white-space: nowrap; min-width: 0; }
+.back-button { flex: none; display: flex; align-items: center; gap: 5px; border: 1px solid var(--line-strong); background: var(--surface); border-radius: 7px; padding: 4px 10px 4px 8px; font-size: 12px; color: var(--ink); cursor: pointer; }
+.back-button:hover { border-color: var(--ink-4); }
+.back-button:disabled { opacity: .4; cursor: default; }
+.side-bar-hint { font-size: 11.5px; color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.highlight-card { display: flex; gap: 10px; align-items: flex-start; padding: 11px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); width: 100%; }
+button.highlight-card:hover { border-color: var(--ink-4); }
+.highlight-card > .status-dot { width: 8px; height: 8px; border-radius: 4px; margin-top: 6px; }
+.highlight-card:not([data-tone]) > .status-dot, .highlight-card[data-tone=""] > .status-dot { background: var(--accent); }
+.highlight-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.highlight-title { font-size: 13px; font-weight: 600; line-height: 1.5; }
+.highlight-text { font-size: 12px; line-height: 1.6; color: var(--ink-2); text-wrap: pretty; }
+.group-bar { display: grid; grid-template-columns: 104px minmax(0, 1fr) 40px; align-items: center; gap: 10px; padding: 4px 6px; margin: 0 -6px; width: calc(100% + 12px); border-radius: 6px; }
+.group-bar:hover { background: var(--sunken); }
+.group-bar-label { font-size: 12.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.group-bar-track { display: flex; height: 6px; border-radius: 3px; background: var(--track); overflow: hidden; }
+.bar-segment { height: 100%; background: var(--tone); }
+.group-bar-count { font-size: 11px; color: var(--ink-2); text-align: right; }
+.message-list { display: flex; flex-direction: column; gap: 1px; }
+.message-item { display: grid; grid-template-columns: auto minmax(0, 1fr) 8px; align-items: center; gap: 9px; padding: 6px 8px; margin: 0 -8px; width: calc(100% + 16px); border-radius: 7px; }
+.message-item:hover { background: var(--sunken); }
+.message-item .kind { justify-self: start; white-space: nowrap; }
+.message-item-body { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.message-item-name { font-size: 12.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.message-item-name.is-code, .dependency-name.is-code, .change-name.is-code, .sequence-text.is-code, .sequence-part-name.is-code { font-family: var(--mono); }
+.message-item .message-route { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 11px; }
+.message-item.is-removed .message-item-name { text-decoration: line-through; }
+.plain-row { display: flex; flex-direction: column; gap: 1px; font-size: 12.5px; }
+.detail-role { margin: 4px 0 0; font-size: 13px; line-height: 1.75; text-wrap: pretty; }
+.member-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.member-button { flex: none; display: flex; gap: 6px; align-items: center; border: 1px solid var(--line); background: var(--surface); border-radius: 6px; padding: 4px 8px; font-size: 11.5px; cursor: pointer; color: var(--ink); white-space: nowrap; }
+.member-button:hover { border-color: var(--ink-4); }
+.accent-button { align-self: flex-start; border: 1px solid var(--accent); background: rgba(47, 91, 234, .06); color: var(--accent); border-radius: 7px; padding: 6px 10px; font-size: 12px; font-weight: 500; cursor: pointer; }
+.accent-button:hover { background: rgba(47, 91, 234, .12); }
+.dark-outline-button { border: 1px solid var(--ink); background: var(--surface); color: var(--ink); border-radius: 7px; padding: 6px 10px; font-size: 12px; font-weight: 500; cursor: pointer; }
+.dark-outline-button:hover { background: var(--sunken); }
+.gist { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+.gist-line { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; line-height: 1.7; text-wrap: pretty; }
+.gist-mark { flex: none; width: 8px; height: 8px; margin-top: 7px; border-radius: 2px; }
+[data-kind="cmd"] { --kind-mark: #4F86EC; }
+[data-kind="qry"] { --kind-mark: #8E6BD8; }
+[data-kind="evt"] { --kind-mark: #EE8A2A; }
+[data-kind="removed"] { --kind-mark: var(--del-mark); }
+.gist-mark, .kind-swatch { background: var(--kind-mark); }
+.section-title-row { display: flex; align-items: baseline; gap: 8px; }
+.section-title { font-size: 12px; font-weight: 600; }
+.message-card { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); width: 100%; transition: border-color .15s; }
+.message-card:hover { border-color: var(--ink-4); }
+.message-card.is-active { border-color: var(--accent); }
+.message-card.is-removed { opacity: .7; }
+.message-card.is-removed .message-name { text-decoration: line-through; }
+.message-card-head { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+.message-card .message-name { font-size: 13px; }
+.message-peer { font-size: 12px; color: var(--ink-2); }
+.kv { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 3px 12px; font-size: 11.5px; line-height: 1.55; }
+.kv-key { color: var(--ink-3); white-space: nowrap; }
+.kv-value { overflow-wrap: anywhere; }
+.import-row { display: flex; align-items: center; gap: 8px; font-size: 11.5px; overflow-wrap: anywhere; }
+.import-row.is-removed { text-decoration: line-through; }
+.dependency-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+.dependency-column { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.dependency-row { display: flex; align-items: center; gap: 6px; padding: 4px 6px; margin: 0 -6px; width: calc(100% + 12px); border-radius: 6px; }
+.dependency-row:hover { background: var(--sunken); }
+.dependency-name { flex: 1; min-width: 0; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dependency-row.is-removed .dependency-name { text-decoration: line-through; color: var(--ink-2); }
+.others { font-size: 11.5px; color: var(--ink-3); }
+.others summary { cursor: pointer; }
+.others ul { margin: 4px 0 0; padding: 0; list-style: none; font-family: var(--mono); font-size: 10.5px; line-height: 1.7; overflow-wrap: anywhere; }
+.change-item { display: flex; flex-direction: column; gap: 3px; padding: 8px 10px; border-radius: 8px; background: var(--hover); width: 100%; }
+button.change-item:hover { background: var(--track); }
+.change-head { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.change-name { font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.change-note { font-size: 12px; line-height: 1.6; color: var(--ink-2); text-wrap: pretty; }
+.flow-block { gap: 12px; }
+.sequence { overflow-x: auto; margin: 0 -18px; padding: 0 18px; }
+.sequence-body { position: relative; }
+.sequence-lifeline { position: absolute; top: 44px; bottom: 0; width: 0; border-left: 1px dashed var(--line-strong); }
+.sequence-lifeline.is-lit { border-left-color: rgba(47, 91, 234, .55); }
+.sequence-parts { display: grid; position: relative; }
+.sequence-part-cell { padding: 0 3px; min-width: 0; }
+.sequence-part { height: 40px; border: 1px solid var(--line-strong); background: var(--surface); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; padding: 0 4px; overflow: hidden; }
+.sequence-part.is-picked { border-color: var(--accent); background: rgba(47, 91, 234, .08); color: var(--accent); }
+.sequence-part.is-step { border-color: var(--accent); }
+.sequence-part-name { max-width: 100%; font-size: 11px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sequence-part-sub { font-size: 9.5px; color: var(--ink-3); white-space: nowrap; }
+.sequence-rows { position: relative; padding-top: 6px; }
+.sequence-row { position: relative; height: 38px; border-radius: 6px; cursor: pointer; transition: background .15s; }
+.sequence-row.is-active { background: rgba(47, 91, 234, .08); }
+.sequence-label { position: absolute; top: 4px; display: flex; justify-content: center; }
+.sequence-text { display: flex; align-items: center; gap: 4px; white-space: nowrap; background: var(--panel); padding: 0 4px; border-radius: 3px; font-size: 11px; color: var(--kind-ink); }
+.sequence-number { color: var(--ink-3); font-size: 10px; }
+.kind-swatch { width: 7px; height: 7px; border-radius: 2px; }
+.sequence-line { position: absolute; top: 26px; border-top: 1.5px solid var(--kind-ink); }
+.sequence-line.is-event { border-top-style: dashed; }
+.sequence-head { position: absolute; top: 22.5px; width: 0; height: 0; border-top: 4.5px solid transparent; border-bottom: 4.5px solid transparent; border-left: 7px solid var(--kind-ink); }
+.sequence-head.is-left { border-left: none; border-right: 7px solid var(--kind-ink); }
+.sequence-row.is-active .sequence-text, .sequence-row.is-active .sequence-line, .sequence-row.is-active .sequence-head { --kind-ink: var(--accent); }
+.sequence-self { position: absolute; top: 10px; display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--ink-3); }
+.sequence-self > span:last-child { background: var(--panel); white-space: nowrap; }
+.sequence-loop { width: 16px; height: 16px; border: 1.5px solid currentColor; border-left: none; border-radius: 0 7px 7px 0; }
+.sequence-row.is-active .sequence-self { color: var(--accent); }
+.sequence-legend { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 11px; color: var(--ink-2); }
+.sequence-legend > span { display: flex; align-items: center; gap: 5px; }
+.sequence-legend .legend-line { width: 16px; border-top-color: var(--ink-2); }
 </style>
 </head>
 <body>
@@ -998,6 +1189,11 @@ button.gap-card:hover { border-color: var(--mod-mark); }
     const Box = Object.freeze({ width: 152, height: 30, gap: 12, rowGap: 40 });
     const Spacing = Object.freeze({ rowGap: 100, columnGap: 72 });
     const PerRow = 4;
+    // 組を 1 段に並べる数の候補。置ける広さが渡されたら、この中から図が最も大きく(等倍まで)収まるものを選ぶ。
+    const PerRowChoices = [PerRow, 3, 2, 1];
+    // 横に並んだ組のあいだを、線のラベルが入る幅まで広げるときの上限。広げすぎると、組が 1 段に並んだときに図全体が
+    // 縮んでどのラベルも読めなくなる。入らないラベルは置ける位置が無ければ出さない(線を押せば詳しいところは読める)。
+    const MaxLabelGap = 240;
     const Levels = Object.freeze({ High: "high", Mid: "mid", Low: "low" });
     // 線の中ほどから端へ向かって、ラベルを置く位置を試す順(ベジェ曲線の媒介変数)。
     const LabelSpots = [0.5, 0.42, 0.58, 0.34, 0.66, 0.26, 0.74, 0.18, 0.82];
@@ -1052,11 +1248,11 @@ button.gap-card:hover { border-color: var(--mod-mark); }
       return new Map(ids.map((id) => [id, depths[componentOf.get(id)]]));
     };
 
-    /** 深さごとに変更行数の多い順(同じなら入力の順)に並べ、1 段 4 つずつの行に割る。 */
-    const rowsOf = (items, depthOf) => {
+    /** 深さごとに変更行数の多い順(同じなら入力の順)に並べ、1 段 `perRow` 個ずつの行に割る。 */
+    const rowsOf = (items, { depthOf, perRow }) => {
       const deepest = Math.max(0, ...items.map((item) => depthOf.get(item.id)));
       const levels = Array.from({ length: deepest + 1 }, (_, depth) => items.filter((item) => depthOf.get(item.id) === depth).toSorted((a, b) => b.lines - a.lines));
-      return levels.filter((level) => level.length > 0).flatMap((level) => chunksOf(level, PerRow));
+      return levels.filter((level) => level.length > 0).flatMap((level) => chunksOf(level, perRow));
     };
 
     /** 組 1 つの大きさ。開いた組は中の箱を同じ規則で段に並べる。 */
@@ -1066,7 +1262,7 @@ button.gap-card:hover { border-color: var(--mod-mark); }
       const paths = new Set(group.boxes.map((box) => box.path));
       const isInside = (link) => paths.has(link.from) && paths.has(link.to);
       const inner = links.filter(isInside).map((link) => [link.from, link.to]);
-      const rows = rowsOf(group.boxes.map((box) => ({ ...box, id: box.path })), depthsOf([...paths], inner));
+      const rows = rowsOf(group.boxes.map((box) => ({ ...box, id: box.path })), { depthOf: depthsOf([...paths], inner), perRow: PerRow });
       const widest = Math.max(...rows.map((row) => row.length));
       const width = Math.max(Group.width, widest * Box.width + (widest - 1) * Box.gap + Group.padX * 2);
       const height = Group.head + rows.length * (Box.height + Box.rowGap) - Box.rowGap + Group.padBottom;
@@ -1074,18 +1270,27 @@ button.gap-card:hover { border-color: var(--mod-mark); }
     };
 
     /** 段の行を上から積み、各行を図の幅の中央に寄せて、組の位置を決める。 */
-    const placedBlocksOf = (rows) => {
-      const rowWidths = rows.map((row) => sumOf(row.map((block) => block.width)) + (row.length - 1) * Spacing.columnGap);
+    const placedBlocksOf = (rows, columnGap) => {
+      const rowWidths = rows.map((row) => sumOf(row.map((block) => block.width)) + (row.length - 1) * columnGap);
       const rowHeights = rows.map((row) => Math.max(...row.map((block) => block.height)));
       const width = Math.max(0, ...rowWidths);
       const height = rows.length === 0 ? 0 : sumOf(rowHeights) + (rows.length - 1) * Spacing.rowGap;
       const blocks = rows.flatMap((row, index) => {
         const top = sumOf(rowHeights.slice(0, index)) + index * Spacing.rowGap;
         const left = (width - rowWidths[index]) / 2;
-        return row.map((block, at) => ({ ...block, x: left + sumOf(row.slice(0, at).map((before) => before.width)) + at * Spacing.columnGap, y: top + (rowHeights[index] - block.height) / 2 }));
+        return row.map((block, at) => ({ ...block, x: left + sumOf(row.slice(0, at).map((before) => before.width)) + at * columnGap, y: top + (rowHeights[index] - block.height) / 2 }));
       });
       return { width, height, blocks };
     };
+
+    /**
+     * 広さに収めたときの縮尺。等倍より大きくは数えない。等倍で収まる並びどうしはどれも等倍で読めるので、1 段に多く
+     * 並べるほう(段が少なく、離れた段を結ぶ線が間の組を横切りにくい)を選ばせるため。図が空なら 0。
+     */
+    const scaleIn = (placed, room) => (placed.width === 0 ? 0 : Math.min(1, room.width / placed.width, room.height / placed.height));
+
+    /** 1 段に並べる数の候補ごとの配置から、広さに最も大きく収まるものを選ぶ(同じなら 1 段に多く並べるほう)。 */
+    const fittestOf = (candidates, room) => candidates.reduce((best, candidate) => (scaleIn(candidate, room) > scaleIn(best, room) ? candidate : best));
 
     const groupIdOf = (id) => `group:${id}`;
     const pathsIn = (block) => block.group.boxes.map((box) => box.path);
@@ -1106,9 +1311,13 @@ button.gap-card:hover { border-color: var(--mod-mark); }
      * @param groups まとめ方の組 `{id, boxes: [{path, lines}]}`(lines は変更行数)。箱の無い組は描かない
      * @param links 依存 `{from, to, state}`(使う側 → 使われる側のパス)。消えた依存(`removed`)は段に使わない
      * @param expanded 開いて中の箱を並べる組の id
+     * @param room 図を置ける広さ `{width, height}`。渡せば、組を 1 段に並べる数(4〜1)を図が最も大きく収まるものにする
+     *   (等倍で収まるものどうしなら 1 段に多いほう)。null なら 1 段に 4 つ
+     * @param labelWidth 横に並んだ組のあいだの線に置くラベルの幅。組の間隔をそれが入るまで広げる(上限 240px)。
+     *   ラベルを描かないなら 0
      * @returns 図の大きさ、描く単位(`units`)、開いた組の枠(`containers`)、パスから単位の id を引く `unitOf`
      */
-    const of = ({ groups, links, expanded }) => {
+    const of = ({ groups, links, expanded, room = null, labelWidth = 0 }) => {
       const drawn = groups.filter((group) => group.boxes.length > 0);
       const groupOf = new Map(drawn.flatMap((group) => group.boxes.map((box) => [box.path, group.id])));
       const isLive = (link) => link.state !== "removed" && groupOf.has(link.from) && groupOf.has(link.to) && link.from !== link.to;
@@ -1116,13 +1325,18 @@ button.gap-card:hover { border-color: var(--mod-mark); }
       const crossing = live.map((link) => [groupOf.get(link.from), groupOf.get(link.to)]).filter(([from, to]) => from !== to);
       const open = new Set(expanded);
       const blocks = drawn.map((group) => ({ ...blockOf(group, { links: live, isOpen: open.has(group.id) }), id: group.id }));
-      const placed = placedBlocksOf(rowsOf(blocks, depthsOf(drawn.map((group) => group.id), crossing)));
+      const depthOf = depthsOf(drawn.map((group) => group.id), crossing);
+      const columnGap = Math.min(MaxLabelGap, Math.max(Spacing.columnGap, labelWidth + ObstaclePad * 2));
+      const candidates = PerRowChoices.map((perRow) => placedBlocksOf(rowsOf(blocks, { depthOf, perRow }), columnGap));
+      const placed = room === null ? candidates[0] : fittestOf(candidates, room);
       const units = placed.blocks.flatMap(unitsOf);
       const containers = placed.blocks.filter((block) => block.isOpen).map((block) => ({ id: groupIdOf(block.group.id), group: block.group.id, paths: pathsIn(block), x: block.x, y: block.y, width: block.width, height: block.height }));
       return Object.freeze({ width: placed.width, height: placed.height, units, containers, unitOf: new Map(units.flatMap((unit) => unit.paths.map((path) => [path, unit.id]))) });
     };
 
     const rounded = (value) => Math.round(value * 10) / 10;
+    /** 2 つの単位を結ぶ線の鍵。向きによらず同じになる。 */
+    const edgeKeyOf = (one, other) => [one, other].sort().join("|");
 
     /** 矢じりの三角形。`direction` は線の進む向き(d / u / r / l)。 */
     const headAt = (x, y, direction) => {
@@ -1225,10 +1439,12 @@ button.gap-card:hover { border-color: var(--mod-mark); }
           }
         }
       },
+      edgeKeyOf,
       /**
        * 単位どうしの線。両端が同じ単位のものは描かず、同じ 2 つの単位を結ぶものは 1 本にまとめる。
        * @param links `{from, to, item, leads}`(パスどうし)。線の向きは、`leads` が真の最初のもので決め、無ければ最初のもの
-       * @returns 線ごとに、`key`(2 つの単位の id を並べたもの)、向きの順の端(`from` / `to`)、まとめた `items`、道筋(`route`)
+       * @returns 線ごとに、`key`(`edgeKeyOf`)、向きの順の端(`from` / `to`)、まとめた `items`、両向きの link を含むか
+       *   (`isBothWays`)、道筋(`route`)
        */
       edgesOf: (layout, links) => {
         const unitAt = new Map(layout.units.map((unit) => [unit.id, unit]));
@@ -1236,14 +1452,15 @@ button.gap-card:hover { border-color: var(--mod-mark); }
         const isDrawn = (end) => end.from !== undefined && end.to !== undefined && end.from !== end.to;
         const byKey = new Map();
         for (const end of ends.filter(isDrawn)) {
-          const key = [end.from, end.to].sort().join("|");
-          const edge = byKey.get(key) ?? { key, ends: null, first: null, items: [] };
+          const key = edgeKeyOf(end.from, end.to);
+          const edge = byKey.get(key) ?? { key, ends: null, first: null, items: [], directions: [] };
           const leadsHere = edge.ends === null && end.link.leads;
-          byKey.set(key, { ...edge, ends: leadsHere ? [end.from, end.to] : edge.ends, items: [...edge.items, end.link.item], first: edge.first ?? [end.from, end.to] });
+          const directions = [...new Set([...edge.directions, end.from])];
+          byKey.set(key, { ...edge, ends: leadsHere ? [end.from, end.to] : edge.ends, items: [...edge.items, end.link.item], first: edge.first ?? [end.from, end.to], directions });
         }
         return [...byKey.values()].map((edge) => {
           const [from, to] = edge.ends ?? edge.first;
-          return { key: edge.key, from, to, items: edge.items, route: routeOf(unitAt.get(from), unitAt.get(to)) };
+          return { key: edge.key, from, to, items: edge.items, isBothWays: edge.directions.length > 1, route: routeOf(unitAt.get(from), unitAt.get(to)) };
         });
       },
       /** ラベルの幅の見積もり。書体を読み込む前でも同じ置き場になるよう、測らずに全角 11.2px・半角 6.8px で数える。 */
@@ -1273,8 +1490,44 @@ button.gap-card:hover { border-color: var(--mod-mark); }
     });
   })();
 
+  /** つながり(2 つの単位を結ぶ線)の「要するに」。 */
+  const ConnectionGist = (() => {
+    const KindOrder = ["cmd", "qry", "evt"];
+    const isRemoved = (message) => message.status === "removed";
+    return Object.freeze({
+      /**
+       * つながりのやりとりを、向き(線の向き → 逆向き)と種類(コマンド → クエリ → イベント)ごとにまとめる。消えたやりとりは
+       * 向きと種類から外し、最後に 1 つにまとめる。
+       * @param ends 線の向きの順の 2 つの単位の id
+       * @param messages つながりのやりとり
+       * @param unitOf パスから単位の id を引く
+       * @returns `{kind, from, to, messages}` の並び(やりとりの無いものは含まない)。kind は cmd / qry / evt / removed で、
+       *   removed は from / to が null
+       */
+      of: ({ ends, messages, unitOf }) => {
+        const live = messages.filter((message) => !isRemoved(message));
+        const directions = [[ends[0], ends[1]], [ends[1], ends[0]]];
+        const sentences = directions.flatMap(([from, to]) => KindOrder.map((kind) => ({ kind, from, to, messages: live.filter((message) => message.kind === kind && unitOf.get(message.from) === from) })));
+        const removed = messages.filter(isRemoved);
+        const gone = removed.length === 0 ? [] : [{ kind: "removed", from: null, to: null, messages: removed }];
+        return [...sentences.filter((sentence) => sentence.messages.length > 0), ...gone];
+      },
+    });
+  })();
+
+  /** 構造マップの「戻る」で辿る、前の選択の並び。 */
+  const SelectionHistory = (() => {
+    const Limit = 40;
+    return Object.freeze({
+      /** @returns 選択を変える前の選択(`previous`、何も選んでいなければ null)を最後に足した並び。40 件を超えたら古いものから落とす */
+      recorded: (history, previous) => [...history, previous].slice(-Limit),
+      /** @returns 戻り先(最後に足した選択)と、それを外した並び。並びが空なら null */
+      back: (history) => (history.length === 0 ? null : { selection: history[history.length - 1], history: history.slice(0, -1) }),
+    });
+  })();
+
   /** DOM に触らない部分(核)。判定表が node の vm で評価して叩く。 */
-  const core = Object.freeze({ ExplainedMap, ScreenChoice, ReviewMark, Highlighter, CommitDiff, GraphLayout });
+  const core = Object.freeze({ ExplainedMap, ScreenChoice, ReviewMark, Highlighter, CommitDiff, GraphLayout, ConnectionGist, SelectionHistory });
   if (typeof document === "undefined") {
     globalThis.prExplainCore = core;
     return;
@@ -1435,8 +1688,6 @@ button.gap-card:hover { border-color: var(--mod-mark); }
   ]);
   const panelHead = (title, sub) => el("div", { class: "panel-head" }, [el("span", { class: "panel-title", text: title }), el("span", { class: "panel-sub", text: sub })]);
   const panelOf = (side, children) => el("aside", { class: `panel is-${side}` }, children);
-  const stageOf = (children) => el("main", { class: "stage" }, [el("div", { class: "stage-body" }, children)]);
-  const statOf = (value, label) => el("div", { class: "stat" }, [el("span", { class: "stat-value", text: String(value) }), el("span", { class: "stat-label", text: label })]);
   const emptyOf = (text) => el("p", { class: "empty", text });
 
   /** 解説の題と要約。解説が無ければ、地図だけで組んでいることを出す。 */
@@ -1444,47 +1695,6 @@ button.gap-card:hover { border-color: var(--mod-mark); }
     if (explained.explain.kind !== "explained") return el("div", { class: "lede" }, [el("span", { class: "eyebrow", text: eyebrow }), emptyOf("解説はありません。変更の地図だけで組んでいます。")]);
     const overview = explained.explain.explain.overview;
     return el("div", { class: "lede" }, [el("span", { class: "eyebrow", text: eyebrow }), prose("h1", {}, overview.title), prose("p", {}, overview.lead)]);
-  };
-
-  const fileRowOf = (entry) => {
-    const counts = entry.changed ? [el("span", { class: "add", text: plus(entry.additions ?? 0) }), " ", el("span", { class: "del", text: minus(entry.deletions ?? 0) })] : [];
-    const nameClass = entry.inGraph ? "file-name" : "file-name is-tree-only";
-    return el("div", { class: "file-row", title: entry.path }, [
-      el("span", { class: "status", "data-status": entry.status ?? "", text: entry.status ?? "·" }),
-      el("span", {}, [el("div", { class: nameClass, text: ExplainedMap.nameOf(entry, "concept") }), el("div", { class: "row-path", text: entry.path })]),
-      el("span", { class: "file-count" }, counts),
-    ]);
-  };
-
-  const othersOf = (paths) => {
-    if (paths.length === 0) return [];
-    return [el("details", { class: "others" }, [el("summary", { text: `ほかに ${paths.length} ファイル` }), el("ul", {}, paths.map((path) => el("li", { text: path })))])];
-  };
-
-  /** 構造マップの器。層ごとに、箱になるファイルと畳んだファイルを並べる。 */
-  const MapScreen = (explained) => {
-    const entryAt = new Map(explained.entries.map((entry) => [entry.path, entry]));
-    const blocks = explained.groupings.layer.filter((group) => group.treePaths.length > 0).flatMap((group) => [
-      el("div", { class: "group-head" }, [el("span", { class: "group-title", text: group.layer }), el("span", { class: "group-role", text: group.role ?? "" })]),
-      ...group.treePaths.map((path) => fileRowOf(entryAt.get(path))),
-      ...othersOf(group.others),
-    ]);
-    const boxes = explained.entries.filter((entry) => entry.inGraph).length;
-    const groupingLabels = Object.keys(explained.groupings).map((grouping) => (grouping === "layer" ? "層" : "機能"));
-    const unmapped = explained.unmappedConcepts.map((concept) => el("div", { class: "file-row" }, [el("span", { class: "status", text: "?" }), el("span", {}, [el("div", { class: "file-name", text: concept.name }), el("div", { class: "row-path", text: concept.path })]), el("span")]));
-    return {
-      controls: [countsOf(`${explained.totals.files} files`, explained.totals.additions, explained.totals.deletions)],
-      left: panelOf("left", [panelHead("ファイル", "層ごと"), el("div", { class: "panel-scroll" }, blocks)]),
-      main: stageOf([
-        ledeOf(explained, "構造マップ"),
-        el("div", { class: "stat-grid" }, [statOf(boxes, "箱にするファイル"), statOf(explained.totals.files, "変更ファイル"), statOf(explained.groupings.layer.length, "層")]),
-      ]),
-      right: panelOf("right", [
-        panelHead("概要", ""),
-        el("dl", { class: "facts" }, [el("dt", { text: "まとめ方" }), el("dd", { text: groupingLabels.join(" / ") }), el("dt", { text: "地図に無い concept" }), el("dd", { text: `${explained.unmappedConcepts.length} 件` })]),
-        el("div", { class: "panel-scroll" }, unmapped),
-      ]),
-    };
   };
 
   const PhaseLabels = { prep: "下ごしらえ", core: "本体", hard: "安定化", review: "指摘の反映", fin: "仕上げ" };
@@ -1707,7 +1917,7 @@ button.gap-card:hover { border-color: var(--mod-mark); }
     const flows = (Array.isArray(note.flows) ? note.flows : []).map((id) => story.lookup.flows.get(id)).filter((flow) => flow !== undefined);
     const flowChips = flows.length === 0 ? [] : [el("div", { class: "flow-chips" }, [
       el("span", { class: "label", text: "影響する操作" }),
-      ...flows.map((flow) => el("a", { class: "flow-chip", href: "#map", title: "構造マップで見る" }, [flow.label, el("span", { class: "arrow", text: "↗" })])),
+      ...flows.map((flow) => pressable("button", { class: "flow-chip", title: "構造マップでこの流れを見る" }, [flow.label, el("span", { class: "arrow", text: "↗" })], () => story.go.toFlow(flow.id))),
     ])];
     const review = Array.isArray(note.review) ? note.review : [];
     const reviewBlock = review.length === 0 ? [] : [el("div", { class: "section" }, [
@@ -1910,11 +2120,11 @@ button.gap-card:hover { border-color: var(--mod-mark); }
   };
 
   /** 変更の経緯。左にコミットを新しい順に並べ、右に全体の流れか、選んだコミットの説明と差分を出す。 */
-  const StoryScreen = (explained) => {
+  const StoryScreen = (explained, go) => {
     const explain = explained.explain.kind === "explained" ? explained.explain.explain : null;
     const commits = explained.commits;
     const checkedKey = `prExplain.${explained.map.pr}.checked`;
-    const fixed = { explained, explain, commits, lookup: lookupOf(explain), steps: new Map(commits.filter((commit) => !commit.merge).map((commit, index) => [commit.sha, index + 1])) };
+    const fixed = { explained, explain, commits, go, lookup: lookupOf(explain), steps: new Map(commits.filter((commit) => !commit.merge).map((commit, index) => [commit.sha, index + 1])) };
     const commitAt = new Map(commits.map((commit) => [commit.sha, commit]));
     const order = [OverviewId, ...commits.toReversed().map((commit) => commit.sha)];
     let state = { selected: OverviewId, view: "diff", filter: "all", checked: savedChecksOf(BrowserStore.read(checkedKey)), closed: new Set() };
@@ -1959,10 +2169,9 @@ button.gap-card:hover { border-color: var(--mod-mark); }
 
     /** ↑ ↓ / j k で左の並びを 1 つずつ移る。入力欄の中と、修飾キーを押しているときは移らない。 */
     const onKey = (event) => {
-      const isTyping = event.target instanceof Element && event.target.closest("input, textarea, select, [contenteditable]") !== null;
       const hasModifier = event.metaKey || event.ctrlKey || event.altKey;
       const step = Object.hasOwn(MoveKeys, event.key) ? MoveKeys[event.key] : 0;
-      const isMove = step !== 0 && !isTyping && !hasModifier;
+      const isMove = step !== 0 && !isTypingIn(event) && !hasModifier;
       if (!isMove) return;
       event.preventDefault();
       const next = Math.max(0, Math.min(order.length - 1, order.indexOf(state.selected) + step));
@@ -1972,7 +2181,8 @@ button.gap-card:hover { border-color: var(--mod-mark); }
     const overviewRow = rows.get(OverviewId);
     const commitRows = commits.toReversed().map((commit) => rows.get(commit.sha));
     return {
-      controls: [countsOf(`${explained.totals.commits} commits`, explained.totals.commitLines.additions, explained.totals.commitLines.deletions), el("span", { class: "hint", text: "↑ ↓ でコミットを移動" })],
+      summary: [countsOf(`${explained.totals.commits} commits`, explained.totals.commitLines.additions, explained.totals.commitLines.deletions)],
+      controls: [el("span", { class: "hint", text: "↑ ↓ でコミットを移動" })],
       left: panelOf("left", [panelHead("コミット", "新しい順"), el("div", { class: "panel-scroll" }, [overviewRow, el("div", { class: "commit-list" }, commitRows)])]),
       main,
       right: null,
@@ -1994,7 +2204,7 @@ button.gap-card:hover { border-color: var(--mod-mark); }
   /**
    * 箱の図を載せるキャンバス。4px 動かしてからのドラッグで動かし、ホイールと −/+ で 0.2〜2.5 倍に拡大縮小し、
    * 全体表示で収める。キャンバスの大きさが変わったときと、書体を読み込んだあと(読み手が動かしていなければ)にも
-   * 収め直す。
+   * 収め直す。図を置ける広さ(上下の重ねもののあいだ)が変わったら画面に知らせ、画面はそれに合わせて並べ直す。
    */
   const GraphView = (() => {
     const MinScale = 0.2;
@@ -2013,9 +2223,10 @@ button.gap-card:hover { border-color: var(--mod-mark); }
      * @param legend 図の下に重ねる凡例
      * @param onBackground 何も無いところを押したときに呼ぶ
      * @param onFirstFit 初めて収めたときに、そのときの縮尺で呼ぶ
-     * @returns キャンバスの要素(`element`)と、図の中身を差し替える `show`
+     * @param onRoom 図を置ける広さが変わったときに呼ぶ(収め直す前)
+     * @returns キャンバスの要素(`element`)、図の中身を差し替える `show`、図を置ける広さを返す `room`
      */
-    const create = ({ top, legend, onBackground, onFirstFit }) => {
+    const create = ({ top, legend, onBackground, onFirstFit, onRoom }) => {
       const world = el("div", { class: "graph-world" });
       const percent = el("span", { class: "zoom-percent", text: "100%" });
       const empty = el("div", { class: "graph-empty", text: "図に出す箱がありません", hidden: "" });
@@ -2023,7 +2234,7 @@ button.gap-card:hover { border-color: var(--mod-mark); }
       const zoomControls = el("div", { class: "zoom-controls" });
       const bottomOverlay = el("div", { class: "graph-overlay is-bottom" }, [...legend, zoomControls]);
       const canvas = el("main", { class: "graph-canvas" }, [world, empty, topOverlay, bottomOverlay]);
-      let state = { view: { scale: 1, x: 0, y: 0 }, size: { width: 0, height: 0 }, signature: null, fitted: false, userMoved: false, box: null, measured: null, suppressClick: false };
+      let state = { view: { scale: 1, x: 0, y: 0 }, size: { width: 0, height: 0 }, signature: null, fitted: false, userMoved: false, box: null, measured: null, room: null, suppressClick: false };
 
       const moveTo = (view, animate) => {
         state = { ...state, view };
@@ -2039,6 +2250,13 @@ button.gap-card:hover { border-color: var(--mod-mark); }
         moveTo({ scale: next, x: center.x - ((center.x - view.x) * next) / view.scale, y: center.y - ((center.y - view.y) * next) / view.scale }, animate);
       };
 
+      /** 図を置ける広さ。左右に余白を取り、上下は重ねもののあいだ。`top` はその上端のキャンバスの中の位置。 */
+      const freeAreaOf = (rect) => {
+        const topEdge = topOverlay.getBoundingClientRect().bottom - rect.top + FitMargin;
+        const bottomEdge = rect.bottom - bottomOverlay.getBoundingClientRect().top + FitMargin;
+        return { top: topEdge, width: rect.width - FitMargin * 2, height: Math.max(MinFreeHeight, rect.height - topEdge - bottomEdge) };
+      };
+
       /**
        * 図を上下の重ねもののあいだに収める。1.05 倍より大きくはしない。
        * @returns 収めた縮尺。キャンバスが隠れている・図が空で測れなければ null
@@ -2047,12 +2265,10 @@ button.gap-card:hover { border-color: var(--mod-mark); }
         const rect = canvas.getBoundingClientRect();
         const isMeasurable = rect.width > 0 && rect.height > 0 && state.size.width > 0;
         if (!isMeasurable) return null;
-        const topEdge = topOverlay.getBoundingClientRect().bottom - rect.top + FitMargin;
-        const bottomEdge = rect.bottom - bottomOverlay.getBoundingClientRect().top + FitMargin;
-        const free = Math.max(MinFreeHeight, rect.height - topEdge - bottomEdge);
+        const free = freeAreaOf(rect);
         const { width, height } = state.size;
-        const scale = clampScale(Math.min(MaxFitScale, (rect.width - FitMargin * 2) / width, free / height));
-        moveTo({ scale, x: (rect.width - width * scale) / 2, y: topEdge + (free - height * scale) / 2 }, animate);
+        const scale = clampScale(Math.min(MaxFitScale, free.width / width, free.height / height));
+        moveTo({ scale, x: (rect.width - width * scale) / 2, y: free.top + (free.height - height * scale) / 2 }, animate);
         return scale;
       };
 
@@ -2075,7 +2291,9 @@ button.gap-card:hover { border-color: var(--mod-mark); }
         // 読み手が動かした後は、重ねものの高さが変わっただけなら収め直さない。キャンバスの大きさが変われば収め直す。
         const keepsUserView = state.userMoved && box === state.box;
         const keepsView = state.fitted && (isUnchanged || keepsUserView);
-        state = { ...state, box, measured };
+        const free = freeAreaOf(rect);
+        state = { ...state, box, measured, room: { width: free.width, height: free.height } };
+        if (!isUnchanged) onRoom();
         if (!keepsView) refit(false);
       };
 
@@ -2150,6 +2368,8 @@ button.gap-card:hover { border-color: var(--mod-mark); }
 
       return {
         element: canvas,
+        /** @returns 図を置ける広さ `{width, height}`。まだ測っていなければ null */
+        room: () => state.room,
         /**
          * 図の中身を差し替える。配置が変わったとき(`signature` が前と違うとき)だけ収め直す。
          * @param signature 配置を表す文字列(まとめ方・開いた組など)
@@ -2170,6 +2390,11 @@ button.gap-card:hover { border-color: var(--mod-mark); }
 
     return Object.freeze({ create });
   })();
+
+  /** 図の配置を表す文字列。描く単位か図の大きさが変われば変わり、GraphView が収め直す。 */
+  const signatureOf = (grouping, layout) => `${grouping}|${layout.units.map((unit) => unit.id).join(",")}|${layout.width}x${layout.height}`;
+  // 初めて収めたときにこれより小さくしか入らないなら、箱の字が読めないので組をすべて畳む。
+  const isTooSmall = (scale) => scale < 0.5;
 
   /** まとめ方の組の id。図の組の id に使う。 */
   const groupKeyOf = (group) => {
@@ -2209,6 +2434,21 @@ button.gap-card:hover { border-color: var(--mod-mark); }
 
   /** 押した 1 つだけが選ばれるボタンの組。 */
   const toggleGroupOf = ({ options, current, onPick }) => el("div", { class: "toggle-group" }, options.map((option) => pressable("button", { "aria-pressed": String(option.value === current), title: option.title ?? "", text: option.label }, [], () => onPick(option.value))));
+  /** 見出しの付いたボタンの組(ヘッダ・キャンバスの操作)。見出しは幅が足りないと省くので、組の title にも入れる。 */
+  const labeledToggleOf = (label, toggle) => {
+    const group = toggleGroupOf(toggle);
+    group.setAttribute("title", label);
+    return [el("span", { class: "control-label", text: label }), group];
+  };
+  /** 入り切りのボタン。`aria-pressed` は呼び出し側が描くたびに付け直す。 */
+  const switchButtonOf = ({ label, title, onPress }) => pressable("button", { class: "switch-button", title }, [el("span", { class: "switch" }), label], onPress);
+  /** 箱の中のボタン。押しても箱を選んだことにしない。 */
+  const withoutSelecting = (handler) => (event) => {
+    event.stopPropagation();
+    handler();
+  };
+  /** キー操作が入力欄の中で起きたか。入力欄の中では画面のキー操作を効かせない。 */
+  const isTypingIn = (event) => event.target instanceof Element && event.target.closest("input, textarea, select, [contenteditable]") !== null;
 
   const Techniques = {
     boundary: { label: "境界値", description: "ちょうど境目の値(0・上限・丸めの境など)で確かめる" },
@@ -2232,6 +2472,18 @@ button.gap-card:hover { border-color: var(--mod-mark); }
     { value: GraphLayout.Levels.Low, label: "低", title: "すべて個別に表示" },
   ];
   const NamingChoices = [{ value: "concept", label: "概念" }, { value: "file", label: "ファイル" }];
+  /** 開いている組が、どの抽象度の開き方と同じか。どれとも違えば null。 */
+  const levelOf = (groups, expanded) => {
+    const level = LevelChoices.find((choice) => hasSameMembers(GraphLayout.expandedAt(choice.value, groups), expanded));
+    return level === undefined ? null : level.value;
+  };
+  /** やりとりの名前。表示名が概念なら名前、ファイルならコード。 */
+  const messageTextOf = (message, naming) => (naming === "concept" ? message.name : message.code);
+  /** 線のラベルに並べる名前のうち最も広いもの(逆向きの印を含む)に、`padding` を足した幅。やりとりが無ければ 0。 */
+  const widestLabelOf = ({ messages, naming, padding }) => {
+    if (messages.length === 0) return 0;
+    return Math.max(...messages.map((message) => GraphLayout.textWidthOf(`↩ ${messageTextOf(message, naming)}`))) + padding;
+  };
   const MessageKindOrder = { cmd: 0, qry: 1, evt: 2 };
   // 1 つの線のラベルに並べるやりとりの数。選んだ線・選んだテストが 3 件以下で通る線は 5 件まで、他は 1 件。
   const LabelLimits = { important: 5, other: 1 };
@@ -2276,7 +2528,8 @@ button.gap-card:hover { border-color: var(--mod-mark); }
 
     /** いまの状態から、図の配置と、テスト・やりとりの数え上げを作る。 */
     const modelOf = (current) => {
-      const layout = GraphLayout.of({ groups: graphGroups[current.grouping], links: explained.dependencies, expanded: current.expanded[current.grouping] });
+      const labelWidth = widestLabelOf({ messages, naming: current.naming, padding: LabelPadding });
+      const layout = GraphLayout.of({ groups: graphGroups[current.grouping], links: explained.dependencies, expanded: current.expanded[current.grouping], room: graph.room(), labelWidth });
       const shown = tests.filter((test) => matchesTechniques(test, current.techniques));
       const verifying = shown.filter(isVerifying);
       const coverage = new Map(messages.map((message) => [message.id, verifying.filter((test) => test.covers.includes(message.id))]));
@@ -2338,11 +2591,6 @@ button.gap-card:hover { border-color: var(--mod-mark); }
     };
     const select = (next) => update({ selected: isSameSelection(state.selected, next) ? null : next });
     const toggleGroup = (id) => update({ expanded: { ...state.expanded, [state.grouping]: withToggledMember(state.expanded[state.grouping], id) } });
-    /** 箱の中のボタン。押しても箱を選んだことにしない。 */
-    const withoutSelecting = (handler) => (event) => {
-      event.stopPropagation();
-      handler();
-    };
 
     const placeNameOf = (place) => {
       if (place.kind !== "box") return groupLabels.get(place.group);
@@ -2354,27 +2602,25 @@ button.gap-card:hover { border-color: var(--mod-mark); }
       if (unit !== undefined) return placeNameOf(unit);
       return lookup.conceptNames.get(path) ?? path;
     };
-    const messageNameOf = (message) => (state.naming === "concept" ? message.name : message.code);
+    const messageNameOf = (message) => messageTextOf(message, state.naming);
     const edgeKeyBetween = (model, message) => {
       const ends = [model.layout.unitOf.get(message.from), model.layout.unitOf.get(message.to)];
       const isDrawn = ends.every((id) => id !== undefined) && ends[0] !== ends[1];
-      return isDrawn ? ends.toSorted().join("|") : null;
+      return isDrawn ? GraphLayout.edgeKeyOf(ends[0], ends[1]) : null;
     };
 
     const controlNodes = {
       grouping: el("div", { class: "control" }),
       level: el("div", { class: "control" }),
       naming: el("div", { class: "control" }),
-      gaps: pressable("button", { class: "switch-button", title: "テストの無いやりとりと、それに関わる箱を目立たせる" }, [el("span", { class: "switch" }), "テストの抜けを強調"], () => update({ showGaps: !state.showGaps })),
+      gaps: switchButtonOf({ label: "テストの抜けを強調", title: "テストの無いやりとりと、それに関わる箱を目立たせる", onPress: () => update({ showGaps: !state.showGaps }) }),
     };
     const renderControls = () => {
       const groups = graphGroups[state.grouping];
-      const expanded = state.expanded[state.grouping];
-      const level = LevelChoices.find((choice) => hasSameMembers(GraphLayout.expandedAt(choice.value, groups), expanded));
       const groupingChoices = groupings.toReversed().map((grouping) => ({ value: grouping, label: GroupingLabels[grouping] }));
-      controlNodes.grouping.replaceChildren(el("span", { class: "control-label", text: "まとめ方" }), toggleGroupOf({ options: groupingChoices, current: state.grouping, onPick: (grouping) => update({ grouping, selected: null }) }));
-      controlNodes.level.replaceChildren(el("span", { class: "control-label", text: "抽象度" }), toggleGroupOf({ options: LevelChoices, current: level === undefined ? null : level.value, onPick: (choice) => update({ expanded: { ...state.expanded, [state.grouping]: GraphLayout.expandedAt(choice, groups) } }) }));
-      controlNodes.naming.replaceChildren(el("span", { class: "control-label", text: "表示名" }), toggleGroupOf({ options: NamingChoices, current: state.naming, onPick: (naming) => update({ naming }) }));
+      controlNodes.grouping.replaceChildren(...labeledToggleOf("まとめ方", { options: groupingChoices, current: state.grouping, onPick: (grouping) => update({ grouping, selected: null }) }));
+      controlNodes.level.replaceChildren(...labeledToggleOf("抽象度", { options: LevelChoices, current: levelOf(groups, state.expanded[state.grouping]), onPick: (choice) => update({ expanded: { ...state.expanded, [state.grouping]: GraphLayout.expandedAt(choice, groups) } }) }));
+      controlNodes.naming.replaceChildren(...labeledToggleOf("表示名", { options: NamingChoices, current: state.naming, onPick: (naming) => update({ naming }) }));
       controlNodes.gaps.setAttribute("aria-pressed", String(state.showGaps));
     };
 
@@ -2440,10 +2686,10 @@ button.gap-card:hover { border-color: var(--mod-mark); }
       onBackground: () => {
         if (state.selected !== null) update({ selected: null });
       },
-      // 初めて収めたときに半分より小さくしか入らないなら、箱が読めないので組をすべて畳む。
       onFirstFit: (scale) => {
-        if (scale < 0.5) update({ expanded: Object.fromEntries(groupings.map((grouping) => [grouping, []])) });
+        if (isTooSmall(scale)) update({ expanded: Object.fromEntries(groupings.map((grouping) => [grouping, []])) });
       },
+      onRoom: () => render(),
     });
 
     const hintTextOf = (view) => {
@@ -2581,9 +2827,8 @@ button.gap-card:hover { border-color: var(--mod-mark); }
         return hoverable(spot.key, node);
       });
       const children = [...model.layout.containers.map((container) => containerNodeOf(container, view)), svg, ...model.layout.units.map((unit) => unitNodeOf(unit, view)), ...labelNodes];
-      const expanded = state.expanded[state.grouping].toSorted().join(",");
       hint.textContent = hintTextOf(view);
-      graph.show({ signature: `${state.grouping}|${expanded}`, size: { width: model.layout.width, height: model.layout.height }, children });
+      graph.show({ signature: signatureOf(state.grouping, model.layout), size: { width: model.layout.width, height: model.layout.height }, children });
     };
 
     const side = el("div", { class: "side" });
@@ -2783,10 +3028,1081 @@ button.gap-card:hover { border-color: var(--mod-mark); }
     const namingControl = explain === null ? [] : [controlNodes.naming];
     const gapControl = hasMessages ? [controlNodes.gaps] : [];
     return {
+      summary: [],
       controls: [controlNodes.grouping, controlNodes.level, ...namingControl, gapControl].flat(),
       left: panelOf("left", [listHead, listBody]),
       main: graph.element,
       right: panelOf("right", [side]),
+    };
+  };
+
+  const StatusLabels = { A: "追加", M: "変更", R: "移動", D: "削除" };
+  const StatusTones = ["A", "M", "D"];
+  /** 色分けの区分。名前を変えただけのファイル(R)は変更の色にする。変更していなければ空。 */
+  const toneOf = (status) => (status === "R" ? "M" : (status ?? ""));
+  const ViaLabels = { call: "関数呼び出し(同期)", http: "HTTP 通信(外部)", state: "状態の購読(再描画)", log: "ログ出力", exec: "コマンドの実行", file: "ファイルの読み書き" };
+  const MessageVerbs = { cmd: "依頼する", qry: "問い合わせる", evt: "通知する" };
+  const MessageKindMeanings = { cmd: "依頼", qry: "問い合わせ", evt: "通知" };
+  const Connections = Object.freeze({ Messages: "messages", Dependencies: "dependencies" });
+  const ConnectionChoices = [
+    { value: Connections.Messages, label: "やりとり", title: "何を受け渡ししているか(コマンド・クエリ・イベント)" },
+    { value: Connections.Dependencies, label: "コード依存", title: "どのファイルがどれを参照しているか" },
+  ];
+  const ScopeModes = Object.freeze({ Dim: "dim", Hide: "hide" });
+  const ScopeModeChoices = [{ value: ScopeModes.Dim, label: "薄く表示" }, { value: ScopeModes.Hide, label: "表示しない" }];
+  const MessageKindFilters = [{ value: "all", label: "すべて" }, { value: "cmd", label: "コマンド" }, { value: "qry", label: "クエリ" }, { value: "evt", label: "イベント" }];
+  // 構造マップの線のラベルの、文字の外側(余白・枠・追加の印)の幅。
+  const MapLabelPadding = 30;
+  // 1 つの線のラベルに並べるやりとりの数。選んだ線・流れで光らせた線と、選んだものに関わる 3 件以下の線は 6 件まで。
+  const MapLabelLimits = { important: 6, other: 1 };
+  // 依存の線の太さ。件数 1 で 1.25px、1 件増えるごとに 0.4px 太らせ、2px 分で打ち止める。
+  const EdgeWidth = { base: 1.25, perItem: 0.4, extra: 2, lit: 0.75 };
+  const SequenceColumnWidth = 86;
+
+  /** 変更したファイルの数を色の区分ごとに数える。 */
+  const toneCountsOf = (entries) => Object.fromEntries(StatusTones.map((tone) => [tone, entries.filter((entry) => entry.changed && toneOf(entry.status) === tone).length]));
+  const statusChipsOf = (entries) => {
+    const counts = toneCountsOf(entries);
+    return StatusTones.filter((tone) => counts[tone] > 0).map((tone) => el("span", { class: "status-chip", "data-tone": tone, text: `${StatusLabels[tone]} ${counts[tone]}` }));
+  };
+  /** いくつかのファイルをまとめた色。すべて追加なら追加、すべて削除なら削除、変更があれば変更、無ければ空。 */
+  const toneOfAll = (entries) => {
+    const changed = entries.filter((entry) => entry.changed).map((entry) => toneOf(entry.status));
+    if (changed.length === 0) return "";
+    const isUniform = changed.every((tone) => tone === changed[0]);
+    return isUniform ? changed[0] : "M";
+  };
+  /** やりとりの色。追加は追加、削除は削除、前からあるもの(status なし)は空。 */
+  const messageToneOf = (message) => {
+    if (message.status === "new") return "A";
+    return message.status === "removed" ? "D" : "";
+  };
+  const isMessageChanged = (message) => message.status !== undefined;
+  const isItemRemoved = (item) => item.state === "removed" || item.status === "removed";
+  const isItemAdded = (item) => item.state === "added" || item.status === "new";
+  /** 線にまとめた依存・やりとりの状態。すべて消えたものなら removed、追加を含めば added、それ以外は kept。 */
+  const edgeStateOf = (items) => {
+    if (items.every(isItemRemoved)) return "removed";
+    return items.some(isItemAdded) ? "added" : "kept";
+  };
+  const selectionEquals = (some, other) => {
+    const hasNull = some === null || other === null;
+    return hasNull ? some === other : some.kind === other.kind && some.id === other.id;
+  };
+  const selectionKeyOf = (selected) => (selected === null ? "" : `${selected.kind}:${selected.id}`);
+  const baseNameOf = (path) => path.split("/").pop();
+
+  /**
+   * ファイルの木。パスをフォルダごとに割り、フォルダは名前の順、ファイルはファイル名の順に並べる。
+   * @param depth いま割っているフォルダの深さ(根は 0)
+   * @returns `{dirs: [{name, prefix, node}], files, all}`(all はそのフォルダの下のすべてのファイル)
+   */
+  const treeOf = (entries, depth) => {
+    const partsOf = (entry) => entry.path.split("/");
+    const isHere = (entry) => partsOf(entry).length === depth + 1;
+    const deeper = entries.filter((entry) => !isHere(entry));
+    const names = [...new Set(deeper.map((entry) => partsOf(entry)[depth]))].sort();
+    const dirs = names.map((name) => {
+      const inside = deeper.filter((entry) => partsOf(entry)[depth] === name);
+      return { name, prefix: `${partsOf(inside[0]).slice(0, depth + 1).join("/")}/`, node: treeOf(inside, depth + 1) };
+    });
+    const files = entries.filter(isHere).toSorted((a, b) => baseNameOf(a.path).localeCompare(baseNameOf(b.path)));
+    return { dirs, files, all: entries };
+  };
+
+  /** 構造マップ。左にファイルの木、中に箱の図、右に概要か選んだものの詳しいところと、やりとりの流れを出す。 */
+  const MapScreen = (explained) => {
+    const explain = explained.explain.kind === "explained" ? explained.explain.explain : null;
+    const lookup = lookupOf(explain);
+    const messages = [...lookup.messages.values()];
+    const flows = [...lookup.flows.values()];
+    const hasMessages = messages.length > 0;
+    const entryAt = new Map(explained.entries.map((entry) => [entry.path, entry]));
+    const graphGroups = Object.fromEntries(Object.entries(explained.groupings).map(([grouping, groups]) => [grouping, graphGroupsOf(groups, entryAt)]));
+    const groupAt = new Map(Object.values(explained.groupings).flat().map((group) => [groupKeyOf(group), group]));
+    const groupLabels = new Map(Object.values(graphGroups).flat().map((group) => [group.id, group.label]));
+    const groupings = Object.keys(graphGroups);
+    const highlights = explain !== null && Array.isArray(explain.overview.highlights) ? explain.overview.highlights : [];
+    const tree = treeOf(explained.entries, 0);
+
+    let state = {
+      grouping: groupings.includes("feature") ? "feature" : "layer",
+      naming: explain === null ? "file" : "concept",
+      connection: hasMessages ? Connections.Messages : Connections.Dependencies,
+      expanded: Object.fromEntries(groupings.map((grouping) => [grouping, GraphLayout.expandedAt(GraphLayout.Levels.Mid, graphGroups[grouping])])),
+      selected: null,
+      history: [],
+      scope: null,
+      scopeMode: ScopeModes.Dim,
+      isFocused: false,
+      isChangedOnly: false,
+      closedDirs: [],
+      isPopoverOpen: false,
+      messageKind: "all",
+      isChangedMessagesOnly: false,
+      flow: null,
+      step: null,
+    };
+
+    /** いまの状態から、図の配置と、図に出ているやりとり・依存と線を作る。他を表示しないときは、絞った組だけを開いて並べる。 */
+    const modelOf = (current) => {
+      const isHiding = current.scope !== null && current.scopeMode === ScopeModes.Hide;
+      const allGroups = graphGroups[current.grouping];
+      const groups = isHiding ? allGroups.filter((group) => group.id === current.scope) : allGroups;
+      const opened = current.expanded[current.grouping];
+      const expanded = isHiding ? [...new Set([...opened, current.scope])] : opened;
+      const isMessageView = current.connection === Connections.Messages;
+      const labelWidth = isMessageView ? widestLabelOf({ messages, naming: current.naming, padding: MapLabelPadding }) : 0;
+      const layout = GraphLayout.of({ groups, links: explained.dependencies, expanded, room: graph.room(), labelWidth });
+      const isShown = (path) => layout.unitOf.has(path);
+      const shownMessages = messages.filter((message) => isShown(message.from) && isShown(message.to));
+      const shownDependencies = explained.dependencies.filter((link) => isShown(link.from) && isShown(link.to));
+      const links = isMessageView
+        ? shownMessages.map((message) => ({ from: message.from, to: message.to, item: message, leads: message.kind !== "evt" }))
+        : shownDependencies.map((link) => ({ from: link.from, to: link.to, item: link, leads: true }));
+      return {
+        layout,
+        groups,
+        isMessageView,
+        messages: shownMessages,
+        dependencies: shownDependencies,
+        edges: GraphLayout.edgesOf(layout, links),
+        places: new Map([...layout.units, ...layout.containers].map((place) => [place.id, place])),
+      };
+    };
+
+    const unitIdOf = (model, path) => model.layout.unitOf.get(path);
+    const pathsOfGroup = (model, id) => {
+      const group = model.groups.find((candidate) => candidate.id === id);
+      return group === undefined ? [] : group.boxes.map((box) => box.path);
+    };
+    /** 選んだパスの外で、つながっているパス。やりとりで見ているならやりとり、依存で見ているなら依存でたどる。 */
+    const relatedPathsOf = (model, paths) => {
+      const links = model.isMessageView ? model.messages : model.dependencies;
+      const across = links.filter((link) => paths.has(link.from) !== paths.has(link.to));
+      return new Set(across.map((link) => (paths.has(link.from) ? link.to : link.from)));
+    };
+
+    /** 選んだものが含むパス・つながっているパスと、それぞれの単位。木だけのファイルを選んだときは図に何も出さない。 */
+    const focusOf = (model, selected) => {
+      const none = { paths: new Set(), related: new Set(), units: new Set(), relatedUnits: new Set(), edge: null, message: null, file: null };
+      if (selected === null) return none;
+      const unitsOf = (paths) => new Set([...paths].map((path) => unitIdOf(model, path)).filter((id) => id !== undefined));
+      switch (selected.kind) {
+        case "file":
+          return { ...none, file: entryAt.get(selected.id) };
+        case "message": {
+          const message = lookup.messages.get(selected.id);
+          const ends = [unitIdOf(model, message.from), unitIdOf(model, message.to)];
+          const edge = ends[0] === ends[1] ? null : GraphLayout.edgeKeyOf(ends[0], ends[1]);
+          return { ...none, paths: new Set([message.from, message.to]), units: new Set(ends), edge, message };
+        }
+        case "edge": {
+          const edge = model.edges.find((candidate) => candidate.key === selected.id);
+          const paths = [edge.from, edge.to].flatMap((id) => model.places.get(id).paths);
+          return { ...none, paths: new Set(paths), units: new Set([edge.from, edge.to]), edge: edge.key };
+        }
+        case "box":
+        case "group": {
+          const paths = new Set(selected.kind === "box" ? [selected.id] : pathsOfGroup(model, selected.id));
+          const related = relatedPathsOf(model, paths);
+          const units = unitsOf(paths);
+          return { ...none, paths, related, units, relatedUnits: new Set([...unitsOf(related)].filter((id) => !units.has(id))) };
+        }
+      }
+    };
+
+    /** 配置が変わって、選んだものが図から消えたら選択を外す。 */
+    const validSelectionOf = (selected, model) => {
+      if (selected === null) return null;
+      switch (selected.kind) {
+        case "file":
+          return selected;
+        case "message":
+          return model.messages.some((message) => message.id === selected.id) ? selected : null;
+        case "edge":
+          return model.edges.some((edge) => edge.key === selected.id) ? selected : null;
+        case "box":
+          return model.layout.unitOf.has(selected.id) ? selected : null;
+        case "group":
+          return model.groups.some((group) => group.id === selected.id && group.boxes.length > 0) ? selected : null;
+      }
+    };
+
+    /** 選んだものが関わる流れと、選んでいる流れのシーケンス(参加者と行)。 */
+    const sequenceOf = (model, focus, selected) => {
+      const touches = (message) => {
+        if (focus.message !== null) return message.id === focus.message.id;
+        const ends = [unitIdOf(model, message.from), unitIdOf(model, message.to)];
+        if (focus.edge !== null) return ends.every((id) => id !== undefined) && GraphLayout.edgeKeyOf(ends[0], ends[1]) === focus.edge;
+        return focus.paths.has(message.from) || focus.paths.has(message.to);
+      };
+      const stepsOf = (flow) => flow.steps.map((id) => lookup.messages.get(id)).filter((message) => message !== undefined);
+      const isNarrowed = selected !== null;
+      const relevant = isNarrowed ? flows.filter((flow) => stepsOf(flow).some(touches)) : flows;
+      const flow = relevant.find((candidate) => candidate.id === state.flow) ?? relevant[0] ?? null;
+      if (flow === null) return { relevant, flow, parts: [], rows: [] };
+      const rows = stepsOf(flow).reduce((sofar, message) => {
+        const from = unitIdOf(model, message.from);
+        const to = unitIdOf(model, message.to);
+        const isOffGraph = from === undefined || to === undefined;
+        if (isOffGraph) return sofar;
+        const last = sofar[sofar.length - 1];
+        const extendsSelf = from === to && last !== undefined && last.kind === "self" && last.unit === from;
+        if (extendsSelf) return [...sofar.slice(0, -1), { ...last, messages: [...last.messages, message] }];
+        return [...sofar, from === to ? { kind: "self", unit: from, messages: [message] } : { kind: "message", from, to, message }];
+      }, []);
+      const parts = [...new Set(rows.flatMap((row) => (row.kind === "self" ? [row.unit] : [row.from, row.to])))];
+      return { relevant, flow, parts, rows };
+    };
+
+    /** シーケンスで押した行が、図で光らせる単位と線。やりとりの行でなければ null。 */
+    const stepOf = (model, sequence) => {
+      const row = state.step === null ? undefined : sequence.rows[state.step];
+      const isMessageRow = row !== undefined && row.kind === "message";
+      if (!isMessageRow) return null;
+      const paths = [row.from, row.to].flatMap((id) => model.places.get(id).paths);
+      return { units: new Set([row.from, row.to]), key: GraphLayout.edgeKeyOf(row.from, row.to), paths: new Set(paths) };
+    };
+
+    const update = (change) => {
+      state = { ...state, ...change };
+      render();
+    };
+    /** 選んだものが木で指すファイル。組なら中の箱、線とやりとりは無し。 */
+    const treePathsOf = (selected) => {
+      if (selected === null) return [];
+      switch (selected.kind) {
+        case "box":
+        case "file":
+          return [selected.id];
+        case "group":
+          return groupAt.get(selected.id).paths;
+        case "edge":
+        case "message":
+          return [];
+      }
+    };
+    /** 選んだもののファイルが入っているフォルダを開く。 */
+    const openedFor = (selected) => {
+      const paths = treePathsOf(selected);
+      return state.closedDirs.filter((prefix) => !paths.some((path) => path.startsWith(prefix)));
+    };
+    /** 選択を変える。変わるなら、前の選択を戻る先に積む。`change` は選択と一緒に変える状態。 */
+    const pick = (next, change = {}) => {
+      const isChange = !selectionEquals(state.selected, next);
+      const history = isChange ? SelectionHistory.recorded(state.history, state.selected) : state.history;
+      update({ ...change, selected: next, history, step: null, closedDirs: openedFor(next) });
+    };
+    /** 同じものをもう一度押したら選択を外す。 */
+    const select = (next) => pick(selectionEquals(state.selected, next) ? null : next);
+    const goBack = () => {
+      const back = SelectionHistory.back(state.history);
+      if (back === null) return;
+      update({ selected: back.selection, history: back.history, step: null });
+    };
+    const toggleGroup = (id) => update({ expanded: { ...state.expanded, [state.grouping]: withToggledMember(state.expanded[state.grouping], id) }, step: null });
+    const setExpanded = (ids) => update({ expanded: { ...state.expanded, [state.grouping]: ids }, step: null });
+    const setScope = (id) => {
+      const isEdgeSelected = state.selected !== null && state.selected.kind === "edge";
+      update({ scope: id, selected: id !== null && isEdgeSelected ? null : state.selected, step: null });
+    };
+    const toggleScope = (id) => setScope(state.scope === id ? null : id);
+    /** まとめ方を変える。組と線の選択は、別のまとめ方では指すものが変わるので外す。 */
+    const groupingChange = (grouping) => {
+      const isGroupBound = state.selected !== null && (state.selected.kind === "group" || state.selected.kind === "edge");
+      return { grouping, scope: grouping === state.grouping ? state.scope : null, selected: isGroupBound ? null : state.selected };
+    };
+    const selectPlace = (place) => select(place.kind === "box" ? { kind: "box", id: place.path } : { kind: "group", id: place.group });
+    const nameOfPath = (path) => (entryAt.has(path) ? ExplainedMap.nameOf(entryAt.get(path), state.naming) : (lookup.conceptNames.get(path) ?? path));
+    const placeNameOf = (place) => (place.kind === "box" ? ExplainedMap.nameOf(entryAt.get(place.path), state.naming) : groupLabels.get(place.group));
+    const isFileNamed = (entry) => state.naming === "file" || entry.conceptName === null;
+    const entriesOfPlace = (place) => place.paths.map((path) => entryAt.get(path));
+
+    // ヘッダの操作。
+    const controlNodes = {
+      grouping: el("div", { class: "control" }),
+      level: el("div", { class: "control" }),
+      scope: el("div", { class: "popover-anchor" }),
+      focus: switchButtonOf({ label: "変更に注目", title: "変更のない箱と線を薄くする", onPress: () => update({ isFocused: !state.isFocused }) }),
+    };
+
+    const popoverOf = () => {
+      const groups = graphGroups[state.grouping].filter((group) => group.boxes.length > 0);
+      const expanded = state.expanded[state.grouping];
+      const scopeChips = [{ id: null, label: "すべて" }, ...groups.map((group) => ({ id: group.id, label: group.label }))].map((chip) => pressable("button", { class: "pill-button", "aria-pressed": String(state.scope === chip.id), text: chip.label }, [], () => setScope(chip.id)));
+      const rows = groups.map((group) => {
+        const isOpen = expanded.includes(group.id);
+        const entries = group.boxes.map((box) => entryAt.get(box.path));
+        return pressable("button", { class: "popover-row plain-button", "aria-pressed": String(isOpen) }, [el("span", { class: "switch" }), el("span", { class: "popover-row-label", text: group.label }), el("span", { class: "muted", text: `${entries.length} 要素` }), el("span", { class: "spacer" }), ...statusChipsOf(entries)], () => toggleGroup(group.id));
+      });
+      const changedGroups = groups.filter((group) => group.boxes.some((box) => entryAt.get(box.path).changed)).map((group) => group.id);
+      const isHiding = state.scope !== null && state.scopeMode === ScopeModes.Hide;
+      const note = isHiding ? [el("span", { class: "popover-note", text: `他を表示しないあいだは「${groupLabels.get(state.scope)}」を開いて描きます。` })] : [];
+      return [
+        pressable("div", { class: "popover-backdrop" }, [], () => update({ isPopoverOpen: false })),
+        el("div", { class: "popover", role: "dialog", "aria-label": "グループを選択" }, [
+          el("div", { class: "popover-head" }, [el("span", { class: "popover-title", text: "表示する範囲" }), el("span", { class: "popover-sub", text: "1つのグループに絞ると、そのグループとつながりだけに集中できます。" })]),
+          el("div", { class: "pill-row" }, scopeChips),
+          el("div", { class: "control" }, [el("span", { class: "popover-sub", text: "他のグループは" }), toggleGroupOf({ options: ScopeModeChoices, current: state.scopeMode, onPick: (scopeMode) => update({ scopeMode }) })]),
+          el("div", { class: "popover-head is-split" }, [el("span", { class: "popover-title", text: "展開するグループ" }), el("span", { class: "popover-sub", text: "展開したグループだけ中身を個別に描きます。それ以外は1つの箱にまとめます。" })]),
+          el("div", { class: "popover-rows" }, rows),
+          ...note,
+          el("div", { class: "popover-actions" }, [
+            pressable("button", { class: "outline-button", text: "変更があるものを展開" }, [], () => setExpanded(changedGroups)),
+            pressable("button", { class: "outline-button", text: "すべて折りたたむ" }, [], () => setExpanded([])),
+          ]),
+        ]),
+      ];
+    };
+
+    const renderControls = () => {
+      const groups = graphGroups[state.grouping];
+      const drawn = groups.filter((group) => group.boxes.length > 0);
+      const expanded = state.expanded[state.grouping];
+      const groupingChoices = groupings.toReversed().map((grouping) => ({ value: grouping, label: GroupingLabels[grouping] }));
+      controlNodes.grouping.replaceChildren(...labeledToggleOf("まとめ方", { options: groupingChoices, current: state.grouping, onPick: (grouping) => update({ ...groupingChange(grouping), step: null }) }));
+      controlNodes.level.replaceChildren(...labeledToggleOf("抽象度", { options: LevelChoices, current: levelOf(groups, expanded), onPick: (choice) => setExpanded(GraphLayout.expandedAt(choice, groups)) }));
+      const openCount = drawn.filter((group) => expanded.includes(group.id)).length;
+      const opener = pressable("button", { class: "outline-button is-menu", "aria-expanded": String(state.isPopoverOpen), title: "表示する範囲と、展開するグループを選ぶ" }, ["グループを選択", el("span", { class: "count-chip mono", text: `${openCount}/${drawn.length}` }), el("span", { class: "chev-down" })], () => update({ isPopoverOpen: !state.isPopoverOpen }));
+      controlNodes.scope.replaceChildren(opener, ...(state.isPopoverOpen ? popoverOf() : []));
+      controlNodes.focus.setAttribute("aria-pressed", String(state.isFocused));
+    };
+
+    // 左の木。
+    const changedCount = explained.entries.filter((entry) => entry.changed).length;
+    const changedOnlySwitch = switchButtonOf({ label: "変更のみ", title: "変更したファイルだけを並べる", onPress: () => update({ isChangedOnly: !state.isChangedOnly }) });
+    changedOnlySwitch.classList.add("is-small");
+    const treeBody = el("div", { class: "tree" });
+
+    /** 木のファイルの行。選んだもの・流れで光らせたもの・つながっているものを出し分ける。 */
+    const fileRowOf = (entry, { depth, view }) => {
+      const { focus, step } = view;
+      const isCurrent = focus.paths.has(entry.path) || (focus.file !== null && focus.file.path === entry.path);
+      const isStep = step !== null && step.paths.has(entry.path);
+      const isRelated = focus.related.has(entry.path);
+      const flags = { "is-current": isCurrent, "is-step": !isCurrent && isStep, "is-related": !isCurrent && !isStep && isRelated, "is-deleted": entry.status === "D", "is-context": !entry.changed, "is-tree-only": !entry.inGraph };
+      const title = entry.conceptName === null ? entry.path : `${entry.conceptName} · ${entry.path}`;
+      const row = pressable("button", { class: classesOf("tree-row plain-button", flags), "data-tone": toneOf(entry.status), title }, [
+        el("span", { class: "tree-name mono", text: baseNameOf(entry.path) }),
+        el("span", { class: "spacer" }),
+        ...(isRelated ? [el("span", { class: "relation-dot", title: "選んでいるものとつながりあり" })] : []),
+        el("span", { class: "status-letter", text: entry.status ?? "" }),
+      ], () => select({ kind: entry.inGraph ? "box" : "file", id: entry.path }));
+      row.style.paddingLeft = `${8 + depth * 12 + 14}px`;
+      return row;
+    };
+
+    const dirRowOf = (dir, { depth, view }) => {
+      const changed = dir.node.all.filter((entry) => entry.changed);
+      const isOpen = !state.closedDirs.includes(dir.prefix);
+      const hasSelectionInside = dir.node.all.some((entry) => view.focus.paths.has(entry.path));
+      const count = changed.length === 0 ? [] : [el("span", { class: "tree-count mono", "data-tone": toneOfAll(changed) }, [el("span", { class: "status-dot" }), String(changed.length)])];
+      const row = pressable("button", { class: classesOf("tree-row is-dir plain-button", { "is-open": isOpen, "has-current": !isOpen && hasSelectionInside }), title: dir.prefix }, [el("span", { class: "tree-chev" }), el("span", { class: "tree-name", text: dir.name }), el("span", { class: "spacer" }), ...count], () => update({ closedDirs: withToggledMember(state.closedDirs, dir.prefix) }));
+      row.style.paddingLeft = `${8 + depth * 12}px`;
+      return row;
+    };
+
+    const treeRowsOf = (node, { depth, view }) => {
+      const dirs = node.dirs.filter((dir) => !state.isChangedOnly || dir.node.all.some((entry) => entry.changed));
+      const files = node.files.filter((entry) => !state.isChangedOnly || entry.changed);
+      return [
+        ...dirs.flatMap((dir) => [dirRowOf(dir, { depth, view }), ...(state.closedDirs.includes(dir.prefix) ? [] : treeRowsOf(dir.node, { depth: depth + 1, view }))]),
+        ...files.map((entry) => fileRowOf(entry, { depth, view })),
+      ];
+    };
+
+    const renderTree = (view) => {
+      changedOnlySwitch.setAttribute("aria-pressed", String(state.isChangedOnly));
+      const scrollTop = treeBody.scrollTop;
+      treeBody.replaceChildren(...treeRowsOf(tree, { depth: 0, view }));
+      treeBody.scrollTop = scrollTop;
+    };
+
+    // キャンバス。
+    const canvasControls = el("div", { class: "canvas-controls" });
+    const legend = el("div", { class: "legend" });
+    const graph = GraphView.create({
+      top: [canvasControls],
+      legend: [legend],
+      onBackground: () => {
+        const isClear = state.selected === null && state.step === null;
+        if (!isClear) pick(null);
+      },
+      onFirstFit: (scale) => {
+        if (isTooSmall(scale)) update({ expanded: Object.fromEntries(groupings.map((grouping) => [grouping, []])) });
+      },
+      onRoom: () => render(),
+    });
+
+    const renderCanvasControls = (model) => {
+      const connection = hasMessages ? [el("div", { class: "control is-canvas" }, labeledToggleOf("つながり", { options: ConnectionChoices, current: state.connection, onPick: (connection) => update({ connection }) }))] : [];
+      const naming = explain === null ? [] : [el("div", { class: "control is-canvas" }, labeledToggleOf("表示名", { options: NamingChoices, current: state.naming, onPick: (naming) => update({ naming }) }))];
+      const scopeMode = state.scopeMode === ScopeModes.Hide ? "他は非表示" : "他は薄く";
+      const scope = state.scope === null ? [] : [el("span", { class: "scope-pill" }, [`「${groupLabels.get(state.scope)}」だけ`, el("span", { class: "scope-pill-mode", text: scopeMode }), pressable("button", { class: "scope-pill-clear", title: "すべて表示に戻す", text: "×" }, [], () => setScope(null))])];
+      const drawn = graphGroups[state.grouping].filter((group) => group.boxes.length > 0);
+      const openCount = drawn.filter((group) => state.expanded[state.grouping].includes(group.id)).length;
+      const hint = model.isMessageView ? "ラベルをクリックで詳細" : "線をクリックで詳細";
+      canvasControls.replaceChildren(...connection, ...naming, ...scope, el("span", { class: "canvas-hint", text: `${GroupingLabels[state.grouping]}でまとめ · ${openCount}/${drawn.length} 展開 · ${hint}` }));
+      const statusItems = StatusTones.map((tone) => el("span", { "data-tone": tone }, [el("span", { class: "status-dot" }), StatusLabels[tone]]));
+      const kindItems = model.isMessageView
+        ? [...Object.entries(MessageKindLabels).map(([kind, label]) => el("span", { class: "kind", "data-kind": kind, text: `${label}=${MessageKindMeanings[kind]}` })), el("span", { text: "↩ 矢印と逆向き" })]
+        : [el("span", {}, [el("span", { class: "legend-line" }), "依存(太さ=件数)"]), el("span", {}, [el("span", { class: "legend-line is-removed" }), "なくなった依存"])];
+      legend.replaceChildren(...statusItems, el("span", { class: "legend-sep" }), ...kindItems);
+    };
+
+    const isInScope = (place) => state.scope === null || place.group === state.scope;
+    const isDimmingScope = () => state.scope !== null && state.scopeMode === ScopeModes.Dim;
+    const hasGraphSelection = (view) => view.selected !== null && view.selected.kind !== "file";
+
+    /** 単位の見え方。範囲の外 → 選択に関わらない → 変更に注目で変更が無い、の順に薄くする(より薄いほうを取る)。 */
+    const fadeOf = (view, { isLit, isChanged, isOutside }) => {
+      const isOutsideScope = isOutside && !isLit;
+      const isAsideSelection = hasGraphSelection(view) && !isLit;
+      const isUnchangedInFocus = state.isFocused && !isChanged && !isLit;
+      if (isOutsideScope) return "is-out";
+      if (isAsideSelection) return "is-dim";
+      if (isUnchangedInFocus) return "is-unfocused";
+      return "";
+    };
+
+    const unitNodeOf = (unit, view) => {
+      const { focus, step } = view;
+      const isPicked = focus.units.has(unit.id);
+      const isStep = step !== null && step.units.has(unit.id);
+      const isRelated = focus.relatedUnits.has(unit.id);
+      const entries = entriesOfPlace(unit);
+      const isChanged = entries.some((entry) => entry.changed);
+      const fade = fadeOf(view, { isLit: isPicked || isStep || isRelated, isChanged, isOutside: isDimmingScope() && !isInScope(unit) });
+      const flags = { "is-picked": isPicked, "is-step": !isPicked && isStep, "is-related": !isPicked && !isStep && isRelated, [fade]: fade !== "" };
+      const node = unit.kind === "group" ? groupNodeOf(unit, { view, flags, entries }) : boxNodeOf(unit, flags);
+      node.addEventListener("click", () => selectPlace(unit));
+      return placedAt(node, unit);
+    };
+
+    const scopeButtonOf = (groupId) => pressable("button", { class: "mini-button", title: "このグループだけに絞る", text: state.scope === groupId ? "解除" : "ここだけ" }, [], withoutSelecting(() => toggleScope(groupId)));
+
+    const groupNodeOf = (unit, { view, flags, entries }) => {
+      const selected = view.selected;
+      const isBoxInside = selected !== null && selected.kind === "box" && unit.paths.includes(selected.id);
+      const inner = isBoxInside ? [el("span", { class: "group-inner", text: `▸ ${nameOfPath(selected.id)} を選択中` })] : [];
+      const node = el("div", { class: classesOf("graph-node is-group", flags), title: "ダブルクリックで展開", "data-unit": unit.id }, [
+        el("div", { class: "node-row" }, [el("span", { class: "group-name", text: groupLabels.get(unit.group) }), scopeButtonOf(unit.group), pressable("button", { class: "mini-button is-outlined", text: "展開" }, [], withoutSelecting(() => toggleGroup(unit.group)))]),
+        el("div", { class: "node-row" }, [el("span", { class: "muted small", text: `${entries.length} 要素` }), ...statusChipsOf(entries)]),
+        ...inner,
+      ]);
+      node.addEventListener("dblclick", () => toggleGroup(unit.group));
+      return node;
+    };
+
+    const boxNodeOf = (unit, flags) => {
+      const entry = entryAt.get(unit.path);
+      const title = state.naming === "concept" ? entry.path : (entry.conceptName ?? entry.path);
+      return el("div", { class: classesOf("graph-node is-box", { ...flags, "is-deleted": entry.status === "D" }), "data-tone": toneOf(entry.status), title, "data-unit": unit.id }, [
+        el("span", { class: "status-dot" }),
+        el("span", { class: classesOf("box-name", { "is-file-name": isFileNamed(entry) }), text: ExplainedMap.nameOf(entry, state.naming) }),
+        el("span", { class: "status-letter", text: entry.status ?? "" }),
+      ]);
+    };
+
+    const containerNodeOf = (container, view) => {
+      const { focus, step, selected } = view;
+      const isPicked = selected !== null && selected.kind === "group" && selected.id === container.group;
+      const isLitInside = container.paths.some((path) => focus.paths.has(path) || focus.related.has(path) || (step !== null && step.paths.has(path)));
+      const isOutside = isDimmingScope() && container.group !== state.scope;
+      const entries = entriesOfPlace(container);
+      const isHiddenScope = state.scope === container.group && state.scopeMode === ScopeModes.Hide;
+      const collapse = isHiddenScope ? [] : [pressable("button", { class: "mini-button", text: "折りたたむ" }, [], withoutSelecting(() => toggleGroup(container.group)))];
+      const flags = { "is-picked": isPicked, "is-out": isOutside && !isPicked, "is-dim": !isOutside && hasGraphSelection(view) && !isLitInside && !isPicked };
+      const node = placedAt(el("div", { class: classesOf("graph-container", flags), title: "ダブルクリックで折りたたむ" }, [
+        el("div", { class: "graph-container-head" }, [
+          el("span", { class: "graph-container-title", text: groupLabels.get(container.group) }),
+          el("span", { class: "container-facts" }, [el("span", { class: "muted small", text: `${entries.length} 要素` }), ...statusChipsOf(entries)]),
+          el("span", { class: "spacer" }),
+          scopeButtonOf(container.group),
+          ...collapse,
+        ]),
+      ]), container);
+      node.addEventListener("click", () => select({ kind: "group", id: container.group }));
+      node.addEventListener("dblclick", () => toggleGroup(container.group));
+      return node;
+    };
+
+    /** 線の濃さ。範囲の外 → 選択に関わらない → 流れの行を押していてその線でない → 変更に注目で変更の無い線、の順に見る。 */
+    const edgeOpacityOf = (view, { isInvolved, isStep, status, touchesScope }) => {
+      const isQuiet = !isInvolved && !isStep;
+      const isOutsideScope = isDimmingScope() && !touchesScope && !isInvolved;
+      const isAsideSelection = hasGraphSelection(view) && isQuiet;
+      const isAsideStep = view.step !== null && !hasGraphSelection(view) && !isStep;
+      const isUnchangedInFocus = state.isFocused && status === "kept" && isQuiet;
+      if (isOutsideScope) return 0.08;
+      if (isAsideSelection) return 0.12;
+      if (isAsideStep || isUnchangedInFocus) return 0.3;
+      return 1;
+    };
+
+    /** 線ごとの見え方。 */
+    const edgeLookOf = (edge, view) => {
+      const { focus, step, model } = view;
+      const isSelected = focus.edge === edge.key;
+      const isStep = step !== null && step.key === edge.key;
+      const touchesFocus = edge.items.some((item) => focus.paths.has(item.from) || focus.paths.has(item.to));
+      const isInvolved = hasGraphSelection(view) && (focus.edge === null ? touchesFocus : isSelected);
+      const status = edgeStateOf(edge.items);
+      const isLit = isSelected || isStep;
+      const touchesScope = [edge.from, edge.to].some((id) => isInScope(model.places.get(id)));
+      const opacity = edgeOpacityOf(view, { isInvolved, isStep, status, touchesScope });
+      const width = EdgeWidth.base + Math.min(EdgeWidth.extra, (edge.items.length - 1) * EdgeWidth.perItem) + (isInvolved || isStep ? EdgeWidth.lit : 0);
+      return { edge, isSelected, isStep, isInvolved, isLit, status, opacity, width };
+    };
+
+    const edgeNodeOf = (look) => {
+      const flags = { "is-on": look.isLit, [`is-${look.status}`]: true, "is-involved": look.isInvolved };
+      const tail = look.edge.isBothWays ? [Dom.svg("path", { class: "edge-head", d: look.edge.route.tail })] : [];
+      const group = Dom.svg("g", { class: classesOf("edge map-edge", flags), style: `opacity: ${look.opacity}; --edge-width: ${look.width}px` }, [
+        Dom.svg("path", { class: "edge-line", d: look.edge.route.path }),
+        Dom.svg("path", { class: "edge-head", d: look.edge.route.head }),
+        ...tail,
+        Dom.svg("path", { class: "edge-hit", d: look.edge.route.path }),
+      ]);
+      group.addEventListener("click", () => select({ kind: "edge", id: look.edge.key }));
+      return group;
+    };
+
+    /** やりとりの線のラベル。選んだ線・流れで光らせた線と、選んだものに関わる 3 件以下の線は並べられるだけ並べる。 */
+    const labelOf = (look, view) => {
+      const isImportant = look.isLit || (look.isInvolved && look.edge.items.length <= 3);
+      const sorted = look.edge.items.toSorted((a, b) => MessageKindOrder[a.kind] - MessageKindOrder[b.kind]);
+      const shown = sorted.slice(0, isImportant ? MapLabelLimits.important : MapLabelLimits.other);
+      const texts = shown.map((message) => {
+        const isReversed = view.model.layout.unitOf.get(message.from) !== look.edge.from;
+        return `${isReversed ? "↩ " : ""}${messageTextOf(message, state.naming)}`;
+      });
+      const more = sorted.length - shown.length;
+      const isChanged = look.status !== "kept";
+      const priority = isImportant ? 3 : look.isInvolved ? 2 : isChanged ? 1 : 0;
+      const allowance = isImportant || look.isInvolved ? Infinity : 0;
+      const width = Math.max(...texts.map(GraphLayout.textWidthOf)) + MapLabelPadding;
+      const height = shown.length * LabelChipHeight + (more > 0 ? LabelMoreHeight : 0);
+      return { look, shown, texts, more, candidate: { key: look.edge.key, bezier: look.edge.route.bezier, width, height, priority, allowance } };
+    };
+
+    const labelNodeOf = (label, spot) => {
+      const chips = label.shown.map((message, index) => el("span", { class: classesOf("label-chip", { "is-code": state.naming === "file", "is-removed": message.status === "removed" }), "data-kind": message.kind }, [
+        el("span", { class: "label-text", text: label.texts[index] }),
+        el("span", { class: "label-dot", "data-tone": messageToneOf(message) }),
+      ]));
+      const more = label.more > 0 ? [el("span", { class: "label-more", text: `+${label.more} 件` })] : [];
+      const { look } = label;
+      const node = el("div", { class: classesOf("graph-label", { "is-important": look.isLit, "is-on": look.isInvolved, "is-picked": look.isSelected }) }, [...chips, ...more]);
+      Object.assign(node.style, { left: `${spot.x}px`, top: `${spot.y}px`, opacity: String(look.opacity < 1 ? Math.max(0.22, look.opacity) : 1) });
+      node.addEventListener("click", () => select({ kind: "edge", id: spot.key }));
+      return node;
+    };
+
+    const renderGraph = (view) => {
+      const { model } = view;
+      const looks = model.edges.map((edge) => edgeLookOf(edge, view)).toSorted((a, b) => Number(a.isInvolved || a.isLit) - Number(b.isInvolved || b.isLit));
+      const edgeNodes = looks.map(edgeNodeOf);
+      const hovered = new Map(looks.map((look, index) => [look.edge.key, [edgeNodes[index]]]));
+      const svg = Dom.svg("svg", { class: "graph-edges", width: String(model.layout.width), height: String(model.layout.height) }, edgeNodes);
+      const labels = model.isMessageView ? looks.map((look) => labelOf(look, view)) : [];
+      const placed = GraphLayout.placeLabels({ candidates: labels.map((label) => label.candidate), obstacles: GraphLayout.obstaclesOf(model.layout) });
+      const labelAt = new Map(labels.map((label) => [label.look.edge.key, label]));
+      const labelNodes = placed.map((spot) => {
+        const node = labelNodeOf(labelAt.get(spot.key), spot);
+        hovered.get(spot.key).push(node);
+        return node;
+      });
+      for (const [, nodes] of hovered) {
+        for (const node of nodes) {
+          node.addEventListener("mouseenter", () => nodes.forEach((target) => target.classList.add("is-hover")));
+          node.addEventListener("mouseleave", () => nodes.forEach((target) => target.classList.remove("is-hover")));
+        }
+      }
+      const children = [...model.layout.containers.map((container) => containerNodeOf(container, view)), svg, ...model.layout.units.map((unit) => unitNodeOf(unit, view)), ...labelNodes];
+      graph.show({ signature: signatureOf(state.grouping, model.layout), size: { width: model.layout.width, height: model.layout.height }, children });
+    };
+
+    // 右のパネル。
+    const sideBar = el("div", { class: "side-bar" });
+    const side = el("div", { class: "side" });
+    const flowSection = el("div", { class: "side-block flow-block" });
+    const eyebrowOf = (text, note) => el("span", { class: "eyebrow-row" }, [el("span", { class: "eyebrow", text }), ...(note === undefined ? [] : [el("span", { class: "eyebrow-note", text: note })])]);
+
+    /** 戻る先の名前。 */
+    const selectionLabelOf = (selected, model) => {
+      if (selected === null) return "概要";
+      switch (selected.kind) {
+        case "message":
+          return lookup.messages.get(selected.id).name;
+        case "file":
+        case "box":
+          return nameOfPath(selected.id);
+        case "group":
+          return groupLabels.get(selected.id) ?? "グループ";
+        case "edge": {
+          const edge = model.edges.find((candidate) => candidate.key === selected.id);
+          return edge === undefined ? "つながり" : `${placeNameOf(model.places.get(edge.from))} ⇄ ${placeNameOf(model.places.get(edge.to))}`;
+        }
+      }
+    };
+
+    const renderSideBar = (view) => {
+      const previous = state.history.length === 0 ? undefined : state.history[state.history.length - 1];
+      const back = pressable("button", { class: "back-button", title: "Backspace / Alt+← でも戻れます" }, [el("span", { class: "chev-left" }), "戻る"], goBack);
+      back.disabled = previous === undefined;
+      const hint = previous === undefined ? "" : `「${selectionLabelOf(previous, view.model)}」に戻る`;
+      const home = view.selected === null ? [] : [pressable("button", { class: "mini-button", text: "概要へ" }, [], () => pick(null))];
+      sideBar.replaceChildren(back, el("span", { class: "side-bar-hint", text: hint }), el("span", { class: "spacer" }), ...home);
+    };
+
+    /** 概要の「このブランチで起きていること」の 1 件が指す先。地図に無ければ null。 */
+    const highlightGoOf = (target) => {
+      switch (target.kind) {
+        case "feature": {
+          const id = `feature:${target.id}`;
+          const entries = groupAt.has(id) ? groupAt.get(id).paths.map((path) => entryAt.get(path)) : [];
+          return groupAt.has(id) ? { tone: toneOfAll(entries), go: () => pick({ kind: "group", id }, groupingChange("feature")) } : null;
+        }
+        case "layer": {
+          const id = `layer:${target.layer}`;
+          const entries = groupAt.has(id) ? groupAt.get(id).paths.map((path) => entryAt.get(path)) : [];
+          return groupAt.has(id) ? { tone: toneOfAll(entries), go: () => pick({ kind: "group", id }, groupingChange("layer")) } : null;
+        }
+        case "file": {
+          const entry = entryAt.get(target.path);
+          return entry === undefined ? null : { tone: toneOf(entry.status), go: () => pick({ kind: entry.inGraph ? "box" : "file", id: entry.path }) };
+        }
+        case "message": {
+          const message = lookup.messages.get(target.id);
+          return message === undefined ? null : { tone: messageToneOf(message), go: () => pick({ kind: "message", id: message.id }) };
+        }
+        case "flow":
+          return lookup.flows.has(target.id) ? { tone: "", go: () => showFlow(target.id) } : null;
+      }
+    };
+
+    const highlightCardOf = (highlight) => {
+      const target = highlightGoOf(highlight.target);
+      const body = [el("span", { class: "status-dot" }), el("span", { class: "highlight-body" }, [prose("span", { class: "highlight-title" }, highlight.title), prose("span", { class: "highlight-text" }, highlight.text), ...(target === null ? [el("span", { class: "warn-text", text: "指している先が地図に無い" })] : [])])];
+      if (target === null) return el("div", { class: "highlight-card is-missing" }, body);
+      return pressable("button", { class: "highlight-card plain-button", "data-tone": target.tone }, body, target.go);
+    };
+
+    const groupBarsOf = () => {
+      const groups = graphGroups[state.grouping].filter((group) => group.boxes.length > 0);
+      const rows = groups.map((group) => {
+        const entries = group.boxes.map((box) => entryAt.get(box.path));
+        const counts = toneCountsOf(entries);
+        const segments = StatusTones.filter((tone) => counts[tone] > 0).map((tone) => {
+          const segment = el("span", { class: "bar-segment", "data-tone": tone });
+          segment.style.width = `${(counts[tone] / entries.length) * 100}%`;
+          return segment;
+        });
+        const changed = StatusTones.reduce((sum, tone) => sum + counts[tone], 0);
+        return pressable("button", { class: "group-bar plain-button" }, [el("span", { class: "group-bar-label", text: group.label }), el("span", { class: "group-bar-track" }, segments), el("span", { class: "group-bar-count mono", text: `${changed}/${entries.length}` })], () => select({ kind: "group", id: group.id }));
+      });
+      return el("div", { class: "side-block" }, [el("span", { class: "eyebrow", text: `${GroupingLabels[state.grouping]}ごとの変更` }), ...rows]);
+    };
+
+    const messageListOf = (model) => {
+      const listed = model.messages.filter((message) => !state.isChangedMessagesOnly || isMessageChanged(message));
+      const countOf = (kind) => (kind === "all" ? listed.length : listed.filter((message) => message.kind === kind).length);
+      const tabs = MessageKindFilters.map((filter) => pressable("button", { class: "pill-button", "aria-pressed": String(state.messageKind === filter.value) }, [filter.label, el("span", { class: "n", text: String(countOf(filter.value)) })], () => update({ messageKind: filter.value })));
+      const rows = listed
+        .filter((message) => state.messageKind === "all" || message.kind === state.messageKind)
+        .toSorted((a, b) => MessageKindOrder[a.kind] - MessageKindOrder[b.kind] || Number(isMessageChanged(b)) - Number(isMessageChanged(a)))
+        .map((message) => pressable("button", { class: classesOf("message-item plain-button", { "is-removed": message.status === "removed" }), title: message.code }, [
+          el("span", { class: "kind", "data-kind": message.kind, text: MessageKindLabels[message.kind] }),
+          el("span", { class: "message-item-body" }, [el("span", { class: classesOf("message-item-name", { "is-code": state.naming === "file" }), text: messageTextOf(message, state.naming) }), el("span", { class: "message-route", text: `${nameOfPath(message.from)} → ${nameOfPath(message.to)}` })]),
+          el("span", { class: "label-dot", "data-tone": messageToneOf(message) }),
+        ], () => select({ kind: "message", id: message.id })));
+      const onlyChanged = switchButtonOf({ label: "変更のみ", title: "このブランチで追加・削除したやりとりだけ", onPress: () => update({ isChangedMessagesOnly: !state.isChangedMessagesOnly }) });
+      onlyChanged.classList.add("is-small");
+      onlyChanged.setAttribute("aria-pressed", String(state.isChangedMessagesOnly));
+      return el("div", { class: "side-block" }, [
+        el("div", { class: "side-head" }, [el("span", { class: "eyebrow", text: "やりとり一覧" }), el("span", { class: "mono muted small", text: `${rows.length} 件` }), el("span", { class: "spacer" }), onlyChanged]),
+        el("div", { class: "pill-row" }, tabs),
+        el("div", { class: "message-list" }, rows),
+      ]);
+    };
+
+    const unmappedOf = () => {
+      if (explained.unmappedConcepts.length === 0) return [];
+      return [el("div", { class: "side-block" }, [
+        eyebrowOf("地図に無い concept", `${explained.unmappedConcepts.length} 件`),
+        ...explained.unmappedConcepts.map((concept) => el("div", { class: "plain-row" }, [el("span", { text: concept.name }), el("span", { class: "side-path", text: concept.path })])),
+      ])];
+    };
+
+    const overviewOf = (model) => {
+      const head = el("div", { class: "side-block" }, [el("span", { class: "eyebrow", text: "ブランチ概要" }), el("h2", { text: "このブランチで起きていること" })]);
+      const cards = highlights.length === 0 ? [] : [el("div", { class: "side-block" }, highlights.map(highlightCardOf))];
+      const list = hasMessages ? [messageListOf(model)] : [];
+      const note = explain === null ? "解説が無いので、変更の地図の層と依存だけで組んでいます。箱・線・左のファイルを選ぶと、詳しいところをここに出します。" : "一覧のやりとり・箱・つながりのラベル・左のファイルを選ぶと、詳しいところをここに出します。上の「戻る」で前の表示に戻れます。";
+      return [head, ...cards, groupBarsOf(), ...list, ...unmappedOf(), el("p", { class: "side-note", text: note })];
+    };
+
+    /** 詳しいところの頭。種類・状態の札、題、パス、役割と、その下に置くボタン。 */
+    const detailHeadOf = ({ kind, status, title, path, role, actions }) => {
+      const chips = [el("span", { class: "chip", text: kind }), ...(status === null ? [] : [el("span", { class: "chip", "data-tone": status.tone, text: status.label })])];
+      return el("div", { class: "side-block" }, [
+        el("div", { class: "side-head" }, [...chips, el("span", { class: "spacer" }), pressable("button", { class: "mini-button", text: "選択解除" }, [], () => pick(null))]),
+        el("h2", { text: title }),
+        ...(path === null ? [] : [el("span", { class: "side-path", text: path })]),
+        ...(role === null ? [] : [prose("p", { class: "detail-role" }, role)]),
+        ...actions,
+      ]);
+    };
+    const entryStatusOf = (entry) => (entry.changed ? { tone: toneOf(entry.status), label: StatusLabels[entry.status] ?? entry.status } : null);
+    const messageStatusOf = (message) => {
+      if (!isMessageChanged(message)) return null;
+      return { tone: messageToneOf(message), label: message.status === "new" ? "このブランチで追加" : "このブランチで削除" };
+    };
+
+    /** やりとりのカード。押すとそのやりとりを選ぶ。 */
+    const messageCardOf = (message, { peer, view }) => {
+      const isStepRow = view.step !== null && view.sequence.rows[state.step].message === message;
+      const rows = [
+        ...(message.payload === undefined ? [] : [["渡すもの", message.payload, false]]),
+        ...(message.returns === undefined ? [] : [["返すもの", message.returns, false]]),
+        ["方式", ViaLabels[message.via] ?? message.via, false],
+        ["コード", `${baseNameOf(message.from)} → ${message.code}`, true],
+      ];
+      const status = messageStatusOf(message);
+      return pressable("button", { class: classesOf("message-card plain-button", { "is-removed": message.status === "removed", "is-active": isStepRow }) }, [
+        el("span", { class: "message-card-head" }, [el("span", { class: "kind", "data-kind": message.kind, text: MessageKindLabels[message.kind] }), el("span", { class: "message-name", text: message.name }), el("span", { class: "spacer" }), ...(status === null ? [] : [el("span", { class: "status-tag", "data-tone": status.tone, text: status.label })])]),
+        ...(peer === null ? [] : [el("span", { class: "message-peer", text: peer })]),
+        el("span", { class: "kv" }, rows.flatMap(([key, value, isCode]) => [el("span", { class: "kv-key", text: key }), isCode ? el("span", { class: "kv-value mono", text: value }) : prose("span", { class: "kv-value" }, value)])),
+      ], () => select({ kind: "message", id: message.id }));
+    };
+
+    const messageSectionOf = ({ title, sub, cards }) => el("div", { class: "side-block" }, [
+      el("span", { class: "section-title-row" }, [el("span", { class: "section-title", text: title }), el("span", { class: "muted small", text: sub })]),
+      ...cards,
+      ...(cards.length === 0 ? [el("span", { class: "muted small", text: "なし" })] : []),
+    ]);
+
+    /** 2 つのファイル(か単位)のあいだの依存の一覧。消えた依存は取り消し線にする。 */
+    const importsOf = (links) => el("div", { class: "side-block" }, [
+      el("span", { class: "eyebrow", text: "コード上の依存" }),
+      ...links.map((link) => el("span", { class: classesOf("import-row mono", { "is-removed": link.state === "removed" }), "data-tone": link.state === "added" ? "A" : link.state === "removed" ? "D" : "" }, [el("span", { class: "status-dot" }), `${baseNameOf(link.from)} → ${baseNameOf(link.to)}`])),
+      ...(links.length === 0 ? [el("span", { class: "muted small", text: "直接の依存はありません(状態や戻り値を通じたやりとりのみ)" })] : []),
+    ]);
+
+    /** 選んだパスの外の単位との依存を、向きごとに単位でまとめる。消えた依存だけの単位は取り消し線にする。 */
+    const dependencyRowsOf = (model, { paths, isOutgoing }) => {
+      const nearOf = (link) => (isOutgoing ? link.from : link.to);
+      const farOf = (link) => (isOutgoing ? link.to : link.from);
+      const crossing = model.dependencies.filter((link) => paths.has(nearOf(link)) && !paths.has(farOf(link)));
+      const unitIds = [...new Set(crossing.map((link) => unitIdOf(model, farOf(link))))];
+      return unitIds.map((id) => {
+        const place = model.places.get(id);
+        const live = crossing.filter((link) => unitIdOf(model, farOf(link)) === id && link.state !== "removed").length;
+        const isGone = live === 0;
+        return pressable("button", { class: classesOf("dependency-row plain-button", { "is-removed": isGone }), "data-tone": toneOfAll(entriesOfPlace(place)), title: isGone ? "このブランチでなくなった依存" : "" }, [el("span", { class: "status-dot" }), el("span", { class: classesOf("dependency-name", { "is-code": place.kind === "box" && isFileNamed(entryAt.get(place.path)) }), text: placeNameOf(place) }), el("span", { class: "muted small", text: isGone ? "" : `${live}件` })], () => selectPlace(place));
+      });
+    };
+
+    const othersOf = (paths) => {
+      if (paths.length === 0) return [];
+      return [el("details", { class: "others" }, [el("summary", { text: `ほかに ${paths.length} ファイル` }), el("ul", {}, paths.map((path) => el("li", { text: path })))])];
+    };
+
+    const dependenciesOf = (model, { paths, others }) => {
+      const uses = dependencyRowsOf(model, { paths, isOutgoing: true });
+      const usedBy = dependencyRowsOf(model, { paths, isOutgoing: false });
+      const columnOf = (title, rows) => el("div", { class: "dependency-column" }, [el("span", { class: "section-title" }, [title, el("span", { class: "muted", text: ` ${rows.length}` })]), ...rows, ...(rows.length === 0 ? [el("span", { class: "muted small", text: "なし" })] : [])]);
+      return el("div", { class: "side-block" }, [
+        el("span", { class: "eyebrow", text: "コード上の依存" }),
+        el("div", { class: "dependency-grid" }, [columnOf("使っている", uses), columnOf("使われている", usedBy)]),
+        ...othersOf(others),
+      ]);
+    };
+
+    const changeItemOf = (entry, isPressable) => {
+      const note = entry.concept !== null && typeof entry.concept.change === "string" ? [prose("span", { class: "change-note" }, entry.concept.change)] : [];
+      const body = [
+        el("span", { class: "change-head" }, [el("span", { class: "status-letter", text: entry.status ?? "" }), el("span", { class: classesOf("change-name", { "is-code": !isPressable || isFileNamed(entry) }), text: isPressable ? ExplainedMap.nameOf(entry, state.naming) : baseNameOf(entry.path) }), el("span", { class: "spacer" }), el("span", { class: "add mono", text: plus(entry.additions ?? 0) }), el("span", { class: "del mono", text: minus(entry.deletions ?? 0) })]),
+        ...note,
+      ];
+      if (!isPressable) return el("div", { class: "change-item", "data-tone": toneOf(entry.status) }, body);
+      return pressable("button", { class: "change-item plain-button", "data-tone": toneOf(entry.status) }, body, () => select({ kind: "box", id: entry.path }));
+    };
+
+    const messagesAround = (model, paths) => {
+      const incoming = model.messages.filter((message) => paths.has(message.to) && !paths.has(message.from)).toSorted((a, b) => MessageKindOrder[a.kind] - MessageKindOrder[b.kind]);
+      const outgoing = model.messages.filter((message) => paths.has(message.from) && !paths.has(message.to)).toSorted((a, b) => MessageKindOrder[a.kind] - MessageKindOrder[b.kind]);
+      const internal = model.messages.filter((message) => paths.has(message.from) && paths.has(message.to));
+      return { incoming, outgoing, internal };
+    };
+
+    const messageSectionsOf = (view, paths) => {
+      if (!hasMessages) return { sections: [], internal: [] };
+      const { incoming, outgoing, internal } = messagesAround(view.model, paths);
+      const peerNameOf = (path) => {
+        const unit = unitIdOf(view.model, path);
+        return unit === undefined ? nameOfPath(path) : placeNameOf(view.model.places.get(unit));
+      };
+      return {
+        sections: [
+          messageSectionOf({ title: "受け取るもの", sub: "誰から何を頼まれ・知らされるか", cards: incoming.map((message) => messageCardOf(message, { peer: `← 「${peerNameOf(message.from)}」から`, view })) }),
+          messageSectionOf({ title: "送り出すもの", sub: "誰に何を頼み・知らせるか", cards: outgoing.map((message) => messageCardOf(message, { peer: `→ 「${peerNameOf(message.to)}」へ`, view })) }),
+        ],
+        internal,
+      };
+    };
+
+    const boxDetailOf = (view) => {
+      const { model } = view;
+      const entry = entryAt.get(view.selected.id);
+      const place = model.places.get(unitIdOf(model, entry.path));
+      const isInCollapsed = place.kind === "group";
+      const featureGroup = groupings.includes("feature") ? [{ key: "機能", id: groupAt.has(`feature:${entry.feature}`) ? `feature:${entry.feature}` : "unassigned", grouping: "feature" }] : [];
+      const members = [...featureGroup, { key: "層", id: `layer:${entry.layer}`, grouping: "layer" }].map((member) => pressable("button", { class: "member-button" }, [el("span", { class: "muted", text: member.key }), groupLabels.get(member.id) ?? member.id], () => pick({ kind: "group", id: member.id }, groupingChange(member.grouping))));
+      const expand = isInCollapsed ? [pressable("button", { class: "accent-button", text: `「${groupLabels.get(place.group)}」を展開してグラフで見る` }, [], () => toggleGroup(place.group))] : [];
+      const path = isFileNamed(entry) ? (entry.conceptName === null ? entry.path : `${entry.conceptName} · ${entry.path}`) : entry.path;
+      const role = entry.concept !== null && typeof entry.concept.role === "string" ? entry.concept.role : null;
+      const { sections } = messageSectionsOf(view, new Set([entry.path]));
+      const changes = entry.changed ? [el("div", { class: "side-block" }, [el("span", { class: "eyebrow", text: "コードの変更" }), changeItemOf(entry, false)])] : [];
+      return [
+        detailHeadOf({ kind: `${entry.layer}の要素`, status: entryStatusOf(entry), title: ExplainedMap.nameOf(entry, state.naming), path, role, actions: [el("div", { class: "member-row" }, members), ...expand] }),
+        ...sections,
+        ...changes,
+        dependenciesOf(model, { paths: new Set([entry.path]), others: entry.others }),
+      ];
+    };
+
+    const groupRoleOf = (group) => {
+      switch (group.kind) {
+        case "layer":
+          return group.role;
+        case "feature":
+          return group.feature.role;
+        case "unassigned":
+          return "どの機能にも入れていないもの。";
+      }
+    };
+
+    const groupDetailOf = (view) => {
+      const { model } = view;
+      const id = view.selected.id;
+      const group = groupAt.get(id);
+      const paths = pathsOfGroup(model, id);
+      const entries = paths.map((path) => entryAt.get(path));
+      const isScoped = state.scope === id;
+      const isOpen = state.expanded[state.grouping].includes(id);
+      const actions = [el("div", { class: "member-row" }, [
+        pressable("button", { class: "dark-outline-button", text: isScoped ? "すべてのグループを表示に戻す" : "このグループだけ表示" }, [], () => toggleScope(id)),
+        pressable("button", { class: "accent-button", text: isOpen ? "折りたたむ" : "展開してグラフで見る" }, [], () => toggleGroup(id)),
+      ])];
+      const { sections, internal } = messageSectionsOf(view, new Set(paths));
+      const internalNote = internal.length === 0 ? [] : [el("span", { class: "side-sub", text: `グループの内側でさらに ${internal.length} 件のやりとりがあります(展開すると個別に見えます)。` })];
+      const changed = entries.filter((entry) => entry.changed);
+      const changes = changed.length === 0 ? [] : [el("div", { class: "side-block" }, [el("span", { class: "eyebrow", text: `変更された要素 ${changed.length}` }), ...changed.map((entry) => changeItemOf(entry, true))])];
+      const others = [...new Set(entries.flatMap((entry) => entry.others))].sort();
+      return [
+        detailHeadOf({ kind: `${GroupingLabels[state.grouping]}グループ · ${entries.length} 要素`, status: null, title: groupLabels.get(id), path: null, role: groupRoleOf(group), actions }),
+        ...sections,
+        ...internalNote,
+        ...changes,
+        dependenciesOf(model, { paths: new Set(paths), others }),
+      ];
+    };
+
+    /** 2 つの単位のあいだの依存(向きを問わない)。 */
+    const dependenciesBetween = (model, key) => model.dependencies.filter((link) => {
+      const ends = [unitIdOf(model, link.from), unitIdOf(model, link.to)];
+      return GraphLayout.edgeKeyOf(ends[0], ends[1]) === key;
+    });
+
+    const gistTextOf = (sentence, names) => {
+      const listed = sentence.messages.map((message) => `〈${message.name}〉`).join("");
+      if (sentence.kind === "removed") return `このブランチで ${listed} のやりとりがなくなった`;
+      const [from, to] = [names.get(sentence.from), names.get(sentence.to)];
+      if (sentence.kind === "evt") return `「${from}」から「${to}」へ ${listed} を${MessageVerbs.evt}`;
+      return `「${from}」が「${to}」に ${listed} を${MessageVerbs[sentence.kind]}`;
+    };
+
+    const edgeDetailOf = (view) => {
+      const { model } = view;
+      const edge = model.edges.find((candidate) => candidate.key === view.selected.id);
+      const names = new Map([edge.from, edge.to].map((id) => [id, placeNameOf(model.places.get(id))]));
+      const between = model.messages.filter((message) => GraphLayout.edgeKeyOf(unitIdOf(model, message.from), unitIdOf(model, message.to)) === edge.key);
+      const sentences = ConnectionGist.of({ ends: [edge.from, edge.to], messages: between, unitOf: model.layout.unitOf });
+      const gist = sentences.length === 0 ? [] : [el("div", { class: "gist" }, [el("span", { class: "eyebrow", text: "要するに" }), ...sentences.map((sentence) => el("div", { class: "gist-line", "data-kind": sentence.kind }, [el("span", { class: "gist-mark" }), el("span", { text: gistTextOf(sentence, names) })]))])];
+      const directed = (from) => between.filter((message) => unitIdOf(model, message.from) === from).toSorted((a, b) => MessageKindOrder[a.kind] - MessageKindOrder[b.kind]);
+      const sections = [[edge.from, edge.to], [edge.to, edge.from]].map(([from, to]) => ({ from, to, messages: directed(from) })).filter((section) => section.messages.length > 0).map((section) => messageSectionOf({ title: `${names.get(section.from)} → ${names.get(section.to)}`, sub: `${section.messages.length} 件`, cards: section.messages.map((message) => messageCardOf(message, { peer: null, view })) }));
+      const role = between.length > 0 ? "この2つが何を受け渡ししているか。矢印の向きは「頼む側 → 頼まれる側」。" : "コード上の依存はあるが、登録されたやりとりはありません(型の参照や見た目の部品など)。";
+      return [
+        detailHeadOf({ kind: "つながり", status: null, title: `${names.get(edge.from)} ⇄ ${names.get(edge.to)}`, path: null, role, actions: [] }),
+        ...gist,
+        ...sections,
+        importsOf(dependenciesBetween(model, edge.key)),
+      ];
+    };
+
+    const messageDetailOf = (view) => {
+      const { model, focus } = view;
+      const message = focus.message;
+      const ends = [unitIdOf(model, message.from), unitIdOf(model, message.to)];
+      const [fromName, toName] = [nameOfPath(message.from), nameOfPath(message.to)];
+      const role = message.kind === "evt" ? `「${fromName}」から「${toName}」へ${MessageVerbs.evt}。` : `「${fromName}」が「${toName}」に${MessageVerbs[message.kind]}。`;
+      const members = [["送る側", fromName, ends[0]], ["受ける側", toName, ends[1]]].map(([key, name, id]) => pressable("button", { class: "member-button" }, [el("span", { class: "muted", text: key }), name], () => selectPlace(model.places.get(id))));
+      const edge = focus.edge === null ? undefined : model.edges.find((candidate) => candidate.key === focus.edge);
+      const siblings = edge === undefined || !model.isMessageView ? [] : edge.items.filter((item) => item.id !== message.id).toSorted((a, b) => MessageKindOrder[a.kind] - MessageKindOrder[b.kind]);
+      const between = model.dependencies.filter((link) => (link.from === message.from && link.to === message.to) || (link.from === message.to && link.to === message.from));
+      return [
+        detailHeadOf({ kind: MessageKindLabels[message.kind], status: messageStatusOf(message), title: messageTextOf(message, state.naming), path: state.naming === "concept" ? message.code : message.name, role, actions: [el("div", { class: "member-row" }, members)] }),
+        messageSectionOf({ title: "受け渡しの中身", sub: "", cards: [messageCardOf(message, { peer: null, view })] }),
+        ...(siblings.length === 0 ? [] : [messageSectionOf({ title: "同じつながりの他のやりとり", sub: `${siblings.length} 件`, cards: siblings.map((item) => messageCardOf(item, { peer: null, view })) })]),
+        importsOf(between),
+      ];
+    };
+
+    const fileDetailOf = (view) => {
+      const entry = view.focus.file;
+      const role = entry.concept !== null && typeof entry.concept.role === "string" ? `${entry.concept.role} 依存グラフの対象外です。` : "依存グラフの対象外です。";
+      const changes = entry.changed ? [el("div", { class: "side-block" }, [el("span", { class: "eyebrow", text: "コードの変更" }), changeItemOf(entry, false)])] : [];
+      return [detailHeadOf({ kind: "ファイル", status: entryStatusOf(entry), title: ExplainedMap.nameOf(entry, state.naming), path: entry.path, role, actions: [] }), ...changes];
+    };
+
+    const detailOf = (view) => {
+      switch (view.selected.kind) {
+        case "file":
+          return fileDetailOf(view);
+        case "message":
+          return messageDetailOf(view);
+        case "edge":
+          return edgeDetailOf(view);
+        case "box":
+          return boxDetailOf(view);
+        case "group":
+          return groupDetailOf(view);
+      }
+    };
+
+    /** シーケンス図の 1 行。やりとりは番号つきの矢印(イベントは破線)、同じ単位の中は「内部で n 件」にまとめる。 */
+    const sequenceRowOf = (row, { index, sequence, view }) => {
+      const count = sequence.parts.length;
+      const centerOf = (unit) => ((sequence.parts.indexOf(unit) + 0.5) / count) * 100;
+      const isSelectedMessage = state.step === null && view.focus.message !== null && row.kind === "message" && row.message.id === view.focus.message.id;
+      const isActive = state.step === index || isSelectedMessage;
+      const node = pressable("div", { class: classesOf("sequence-row", { "is-active": isActive }), title: row.kind === "self" ? row.messages.map((message) => message.name).join(" → ") : `${MessageKindLabels[row.message.kind]}:${row.message.name} (${row.message.code})` }, [], () => update({ step: state.step === index ? null : index }));
+      if (row.kind === "self") {
+        const self = el("div", { class: "sequence-self" }, [el("span", { class: "sequence-loop" }), el("span", { text: `内部で ${row.messages.length} 件` })]);
+        self.style.left = `${centerOf(row.unit)}%`;
+        node.append(self);
+        return node;
+      }
+      const [from, to] = [centerOf(row.from), centerOf(row.to)];
+      const isRightward = to > from;
+      const span = { left: `${Math.min(from, to)}%`, width: `${Math.abs(to - from)}%` };
+      const label = el("div", { class: "sequence-label" }, [el("span", { class: classesOf("sequence-text", { "is-code": state.naming === "file" }), "data-kind": row.message.kind }, [el("span", { class: "sequence-number mono", text: String(index + 1) }), el("span", { class: "kind-swatch" }), messageTextOf(row.message, state.naming), el("span", { class: "label-dot", "data-tone": messageToneOf(row.message) })])]);
+      const line = el("div", { class: classesOf("sequence-line", { "is-event": row.message.kind === "evt" }), "data-kind": row.message.kind });
+      const head = el("div", { class: classesOf("sequence-head", { "is-left": !isRightward }), "data-kind": row.message.kind });
+      Object.assign(label.style, span);
+      Object.assign(line.style, span);
+      head.style.left = isRightward ? `calc(${to}% - 7px)` : `${to}%`;
+      node.append(label, line, head);
+      return node;
+    };
+
+    const sequenceDiagramOf = (sequence, view) => {
+      const count = sequence.parts.length;
+      const columns = `repeat(${count}, minmax(0, 1fr))`;
+      const parts = sequence.parts.map((id) => {
+        const place = view.model.places.get(id);
+        const isPicked = view.focus.units.has(id);
+        const isStep = view.step !== null && view.step.units.has(id);
+        const sub = place.kind === "group" ? "グループ" : entryAt.get(place.path).layer;
+        const isCode = place.kind === "box" && isFileNamed(entryAt.get(place.path));
+        return el("div", { class: "sequence-part-cell" }, [el("div", { class: classesOf("sequence-part", { "is-picked": isPicked, "is-step": !isPicked && isStep }), title: placeNameOf(place) }, [el("span", { class: classesOf("sequence-part-name", { "is-code": isCode }), text: placeNameOf(place) }), el("span", { class: "sequence-part-sub", text: sub })])]);
+      });
+      const lifelines = sequence.parts.map((id, index) => {
+        const line = el("div", { class: classesOf("sequence-lifeline", { "is-lit": view.focus.units.has(id) || (view.step !== null && view.step.units.has(id)) }) });
+        line.style.left = `${((index + 0.5) / count) * 100}%`;
+        return line;
+      });
+      const head = el("div", { class: "sequence-parts" }, parts);
+      head.style.gridTemplateColumns = columns;
+      const body = el("div", { class: "sequence-body" }, [...lifelines, head, el("div", { class: "sequence-rows" }, sequence.rows.map((row, index) => sequenceRowOf(row, { index, sequence, view })))]);
+      body.style.minWidth = `${count * SequenceColumnWidth}px`;
+      const note = `${count} の参加者 · ${sequence.rows.length} ステップ${count > 5 ? " — グループを折りたたむと簡潔になります" : ""}`;
+      return [
+        el("div", { class: "sequence" }, [body]),
+        el("span", { class: "muted small", text: note }),
+        el("div", { class: "sequence-legend" }, [el("span", {}, [el("span", { class: "legend-line" }), "コマンド・クエリ"]), el("span", {}, [el("span", { class: "legend-line is-event" }), "イベント(通知)"]), el("span", { "data-tone": "A" }, [el("span", { class: "status-dot" }), "このブランチで追加"]), el("span", { text: "行をクリックでグラフに表示" })]),
+      ];
+    };
+
+    const renderFlows = (view) => {
+      const { sequence, selected } = view;
+      const isFileOnly = selected !== null && selected.kind === "file";
+      flowSection.hidden = flows.length === 0 || isFileOnly;
+      if (flowSection.hidden) return;
+      const tabs = sequence.relevant.map((flow) => pressable("button", { class: "pill-button", "aria-pressed": String(sequence.flow !== null && flow.id === sequence.flow.id), text: flow.label }, [], () => update({ flow: flow.id, step: null })));
+      const empty = sequence.relevant.length === 0 ? [el("span", { class: "side-sub", text: "この要素を通る代表的な操作の流れは登録されていません。" })] : [];
+      const diagram = sequence.parts.length === 0 ? [] : sequenceDiagramOf(sequence, view);
+      flowSection.replaceChildren(eyebrowOf("やりとりの流れ", selected === null ? "代表的なユーザー操作" : "これを通る操作"), el("div", { class: "pill-row" }, tabs), ...empty, ...diagram);
+    };
+
+    const renderSide = (view, isNewSelection) => {
+      renderSideBar(view);
+      const body = view.selected === null ? overviewOf(view.model) : detailOf(view);
+      renderFlows(view);
+      const scrollTop = side.scrollTop;
+      side.replaceChildren(...body, flowSection);
+      side.scrollTop = isNewSelection ? 0 : scrollTop;
+    };
+
+    let shownKey = null;
+    const render = () => {
+      const model = modelOf(state);
+      const selected = validSelectionOf(state.selected, model);
+      state = { ...state, selected };
+      const focus = focusOf(model, selected);
+      const sequence = sequenceOf(model, focus, selected);
+      const view = { model, selected, focus, sequence, step: stepOf(model, sequence) };
+      const key = selectionKeyOf(selected);
+      const isNewSelection = key !== shownKey;
+      shownKey = key;
+      renderControls();
+      renderCanvasControls(model);
+      renderTree(view);
+      renderGraph(view);
+      renderSide(view, isNewSelection);
+      const current = isNewSelection ? treeBody.querySelector(".tree-row.is-current") : null;
+      if (current !== null) current.scrollIntoView({ block: "nearest" });
+    };
+
+    /** 流れを選んだ状態にし、右のパネルをその流れまで送る。 */
+    const showFlow = (id) => {
+      pick(null, { flow: id });
+      flowSection.scrollIntoView({ block: "start" });
+    };
+
+    render();
+
+    /** Backspace / Alt+← で前の選択に戻る。入力欄の中では戻らない。 */
+    const onKey = (event) => {
+      const isBackspace = event.key === "Backspace" && !event.metaKey && !event.ctrlKey;
+      const isAltLeft = event.altKey && event.key === "ArrowLeft";
+      const isBack = (isBackspace || isAltLeft) && !isTypingIn(event);
+      if (!isBack) return;
+      event.preventDefault();
+      goBack();
+    };
+
+    return {
+      summary: [countsOf(`${explained.totals.files} files`, explained.totals.additions, explained.totals.deletions)],
+      controls: [controlNodes.grouping, controlNodes.level, controlNodes.scope, controlNodes.focus],
+      left: panelOf("left", [el("div", { class: "panel-head" }, [el("span", { class: "panel-title", text: "ファイル" }), el("span", { class: "panel-sub", text: `${changedCount} 件の変更` }), el("span", { class: "spacer" }), changedOnlySwitch]), treeBody]),
+      main: graph.element,
+      right: panelOf("right", [sideBar, side]),
+      onKey,
+      showFlow,
     };
   };
 
@@ -2829,8 +4145,8 @@ button.gap-card:hover { border-color: var(--mod-mark); }
   ].filter((text) => text !== null);
 
   const linksOf = (pr, issue) => {
-    const prLink = pr === null ? [] : [el("a", { href: `https://github.com/${Repo}/pull/${pr}`, text: `PR #${pr}` })];
-    const issueLink = issue === null ? [] : [el("a", { href: `https://github.com/${Repo}/issues/${issue}`, text: `Issue #${issue}` })];
+    const prLink = pr === null ? [] : [el("a", { href: `https://github.com/${Repo}/pull/${pr}`, title: `PR #${pr}` }, [el("span", { class: "link-kind", text: "PR " }), `#${pr}`])];
+    const issueLink = issue === null ? [] : [el("a", { href: `https://github.com/${Repo}/issues/${issue}`, title: `Issue #${issue}` }, [el("span", { class: "link-kind", text: "Issue " }), `#${issue}`])];
     return el("nav", { class: "links" }, [...prLink, ...issueLink]);
   };
 
@@ -2862,10 +4178,16 @@ button.gap-card:hover { border-color: var(--mod-mark); }
           openScreen(Screens.Story);
           built.story.select(sha);
         },
+        toFlow: (id) => {
+          history.replaceState(null, "", `#${Screens.Map}`);
+          openScreen(Screens.Map);
+          built.map.showFlow(id);
+        },
       };
       const built = Object.fromEntries(Object.values(Screens).map((screen) => [screen, ScreenBuilders[screen](explained, go)]));
       const tabs = Object.values(Screens).map((screen) => el("a", { href: `#${screen}`, "data-screen": screen, text: ScreenLabels[screen] }));
       const controls = el("div", { class: "screen-controls" });
+      const summary = el("span", { class: "screen-summary" });
       const branch = el("span", { class: "branch" }, [explained.map.headBranch ?? shortSha(explained.map.head), el("span", { class: "arrow", text: "→" }), explained.map.baseBranch ?? shortSha(explained.map.mergeBase)]);
       const sections = Object.values(Screens).map((screen) => {
         const parts = built[screen];
@@ -2874,7 +4196,7 @@ button.gap-card:hover { border-color: var(--mod-mark); }
         return grid;
       });
       root.replaceChildren(
-        el("header", { class: "top" }, [el("span", { class: "repo", text: RepoName }), el("nav", { class: "segmented", "aria-label": "画面" }, tabs), el("div", { class: "top-main" }, [branch]), controls, linksOf(pr, issue)]),
+        el("header", { class: "top" }, [el("span", { class: "repo", text: RepoName }), el("nav", { class: "segmented", "aria-label": "画面" }, tabs), el("div", { class: "top-main" }, [branch, summary]), controls, linksOf(pr, issue)]),
         el("div", { class: "bands" }, bandTextsOf(explained).map((text) => el("div", { class: "band", role: "status", text }))),
         el("div", { class: "screens" }, sections),
       );
@@ -2886,6 +4208,7 @@ button.gap-card:hover { border-color: var(--mod-mark); }
           else tab.removeAttribute("aria-current");
         }
         for (const section of sections) section.hidden = section.dataset.screen !== screen;
+        summary.replaceChildren(...built[screen].summary);
         controls.replaceChildren(...built[screen].controls);
       };
       const choose = () => ScreenChoice.choose({ hash: location.hash, saved: BrowserStore.read(PageStoreKey) });
