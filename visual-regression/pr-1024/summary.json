@@ -1,5 +1,5 @@
 {
-  "reportVersion": "a417ff10e8ba220f7791586e2920c863de2a0d61",
+  "reportVersion": "07dbeec15ad4e7e61000baa00cf6c61014252b86",
   "maxDiffRatio": 0.002,
   "changed": 0,
   "new": 0,
@@ -546,12 +546,12 @@
       "title": "features/editor/features/assets/CreateComponent",
       "name": "ファイルが不正な間に部品名を打っている",
       "status": "passed",
-      "reason": "within-threshold",
-      "diffPixels": 5,
+      "reason": "match",
+      "diffPixels": 0,
       "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": true
+      "hasDiff": false
     },
     {
       "story": "features-editor-features-assets-createcomponent--instance-selected",
