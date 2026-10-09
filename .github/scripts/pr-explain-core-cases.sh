@@ -2,14 +2,15 @@
 #
 # 解説ページの核の判定表。テンプレート(`.claude/skills/pr-explain/templates/index.html`)から固定
 # スクリプトを抜き出して node の `vm` で評価し、`document` が無いときに置かれる `prExplainCore` を
-# 叩いて、地図と解説の合流・確認の印の鍵・開く画面が期待どおりかを 1 コマンドで確かめる。
+# 叩いて、地図と解説の合流・コミットの差分・確認の印の鍵・開く画面が期待どおりかを 1 コマンドで確かめる。
 #
 # 使い方: bash .github/scripts/pr-explain-core-cases.sh
 # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。
 #
 # **どのケースも、既定値や素朴な実装と答えが違う入力を選ぶ。** 古さは 4 件のうち 2 件目を解説時点に
 # して、以降の件数(2)が添字(1)とも「全件数 − 添字」(3)とも違うようにする。表示名は concept 名・`index.*`・それ以外を
-# 並べ、解説なしのときは退けた解説に concept 名を書いておいて、それを使わないことを見る。
+# 並べ、解説なしのときは退けた解説に concept 名を書いておいて、それを使わないことを見る。差分は hunk の
+# あいだの行・変更前と変更後で番号のずれる行・切る前と見せた行数の違う patch を選ぶ。
 #
 # 組み立て(DOM を触る側)はここでは通らない。画面の配線は表示確認で見る。
 #
@@ -39,7 +40,7 @@ if (core === undefined) {
   console.error("document の無い評価で prExplainCore が置かれていない");
   process.exit(2);
 }
-const { ExplainedMap, ReviewMark, ScreenChoice } = core;
+const { ExplainedMap, ReviewMark, ScreenChoice, CommitDiff } = core;
 
 const Pr = 7;
 const shaOf = (digit) => String(digit).repeat(40);
@@ -69,6 +70,15 @@ const explained = (map, explain) => ExplainedMap.from(map, { kind: "text", text:
 const plain = (value) => JSON.parse(JSON.stringify(value));
 
 // ハブ(Hub.ts)を変え、変更していない 5 本がそれを使っている地図。
+// 差分の地図のファイルと、注釈を付けたコミットの差分。
+const diffFile = (path, extra = {}) => ({ path, status: "M", oldPath: null, additions: 1, deletions: 1, patch: "", patchLines: 0, truncated: false, ...extra });
+const noteOn = (path, start, end, text, extra = {}) => ({ path, start, end, text, ...extra });
+const diffOf = (files, notes) => CommitDiff.of({ ...commitOf(1), files }, { ...commitNote(shaOf(1)), notes });
+const linesOf = (rows) => rows.join("\n");
+// 変更後の 1〜3 行目と 10〜12 行目の 2 つの hunk。4〜9 行目は差分に出ていない。
+const twoHunks = linesOf(["@@ -1,3 +1,3 @@", " a", "-b", "+B", " c", "@@ -10,3 +10,3 @@", " j", "-k", "+K", " l"]);
+const numbersOf = (file) => file.body.hunks.map((hunk) => hunk.notes.map((note) => [note.n, note.text]));
+
 const hubImporters = ["A", "B", "C", "D", "E"].map((name) => `src/features/${name}.ts`);
 const hubMap = mapOf({
   groups: [
@@ -227,6 +237,75 @@ const cases = [
       return { isCurrent: result.map.isCurrent, boxes: result.entries.filter((entry) => entry.inGraph).map((entry) => entry.path), subject: result.commits[0].subject };
     },
     expected: { isCurrent: false, boxes: ["src/utils/Hub.ts"], subject: null },
+  },
+  {
+    label: "注釈は行の入る最初の hunk に付き、番号は入力の順ではなく hunk の順にファイルの中で通す",
+    actual: () => {
+      const notes = [noteOn("src/a.ts", 11, 11, "二つ目"), noteOn("src/a.ts", 3, 10, "またぐ")];
+      return numbersOf(diffOf([diffFile("src/a.ts", { patch: twoHunks })], notes).files[0]);
+    },
+    expected: [[[1, "またぐ"]], [[2, "二つ目"]]],
+  },
+  {
+    label: "hunk のあいだの行への注釈は、差分に出ていない行への注釈として番号を続けて回す",
+    actual: () => {
+      const file = diffOf([diffFile("src/a.ts", { patch: twoHunks })], [noteOn("src/a.ts", 2, 2, "差分の中"), noteOn("src/a.ts", 6, 7, "あいだ")]).files[0];
+      return { placed: numbersOf(file), unplaced: file.unplaced.map((note) => [note.n, note.text]) };
+    },
+    expected: { placed: [[[1, "差分の中"]], []], unplaced: [[2, "あいだ"]] },
+  },
+  {
+    label: "side が old の注釈は、変更前の行番号で hunk と光らせる行を決める",
+    actual: () => {
+      const patch = linesOf(["@@ -10,3 +10,1 @@", "-a", "-b", " c", "@@ -30,2 +28,2 @@", " x", "-y", "+Y"]);
+      const note = noteOn("src/a.ts", 11, 11, "消した行", { side: "old" });
+      const hunks = diffOf([diffFile("src/a.ts", { patch })], [note]).files[0].body.hunks;
+      return { hunk: hunks.findIndex((hunk) => hunk.notes.length > 0), covered: hunks.flatMap((hunk) => hunk.lines).filter((line) => CommitDiff.covers(note, line)).map((line) => line.text) };
+    },
+    expected: { hunk: 0, covered: ["b"] },
+  },
+  {
+    label: "そのコミットに無いパスへの注釈は、どのファイルにも付けず「地図に無い」に回す",
+    actual: () => {
+      const result = diffOf([diffFile("src/a.ts")], [noteOn("src/a.ts", 1, 1, "ある"), noteOn("src/gone.ts", 1, 1, "無い")]);
+      return { stray: result.strayNotes.map((note) => note.path), onFile: result.files[0].unplaced.map((note) => note.text) };
+    },
+    expected: { stray: ["src/gone.ts"], onFile: ["ある"] },
+  },
+  {
+    label: "切った patch の残り行数は、切る前の行数から見せた行数を引いたもので、切っていなければ 0",
+    actual: () => {
+      const patch = linesOf(["@@ -1 +1 @@", "-a", "+b"]);
+      const result = diffOf([diffFile("src/a.ts", { patch, patchLines: 10, truncated: true }), diffFile("src/b.ts", { patch, patchLines: 10 })], []);
+      return result.files.map((file) => file.body.remaining);
+    },
+    expected: [7, 0],
+  },
+  {
+    label: "patch が空なら中身の変更なし、null なら消したファイル(変更前の行への注釈はそこに付く)かバイナリ",
+    actual: () => {
+      const files = [
+        diffFile("src/moved.ts", { status: "R", oldPath: "src/old.ts" }),
+        diffFile("src/gone.ts", { status: "D", additions: 0, deletions: 61, patch: null }),
+        diffFile("src/image.png", { status: "A", additions: null, deletions: null, patch: null }),
+      ];
+      const notes = [noteOn("src/gone.ts", 5, 6, "消した行", { side: "old" }), noteOn("src/gone.ts", 1, 1, "変更後")];
+      return diffOf(files, notes).files.map((file) => ({ kind: file.body.kind, lines: file.body.lines ?? null, onBody: (file.body.notes ?? []).map((note) => [note.n, note.text]), unplaced: file.unplaced.map((note) => [note.n, note.text]) }));
+    },
+    expected: [
+      { kind: "unchanged", lines: null, onBody: [], unplaced: [] },
+      { kind: "deleted", lines: 61, onBody: [[1, "消した行"]], unplaced: [[2, "変更後"]] },
+      { kind: "binary", lines: null, onBody: [], unplaced: [] },
+    ],
+  },
+  {
+    label: "コードの表示では、続けて消した行を 1 つに畳み、あいだに残った行で分ける",
+    actual: () => {
+      const patch = linesOf(["@@ -1,5 +1,3 @@", " a", "-b", "-c", "+d", "-e", " f"]);
+      const hunk = diffOf([diffFile("src/a.ts", { patch })], []).files[0].body.hunks[0];
+      return CommitDiff.codeRowsOf(hunk).map((row) => (row.kind === "gap" ? ["gap", row.lines.map((line) => line.text)] : ["line", row.line.text]));
+    },
+    expected: [["line", "a"], ["gap", ["b", "c"]], ["line", "d"], ["gap", ["e"]], ["line", "f"]],
   },
   {
     label: "確認の印の鍵は、同じ sha と同じ文なら同じ",
