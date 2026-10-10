@@ -146,6 +146,8 @@ deny|shape|sample|suite の名前(suite の label)が識別子|d["suites"][0]["l
 deny|shape|sample|見てほしい点の題(highlight の title)が識別子|d["overview"]["highlights"][0]["title"] = "addStop の規則"
 deny|shape|sample|名前の識別子に日本語が空白なしで続く|d["concepts"][0]["name"] = "TokenTemplateの規則"
 deny|shape|sample|名前の識別子をバッククォートで囲む|d["concepts"][0]["name"] = "`TokenTemplate`"
+pass|-|sample|名前に docs が仕様の語として使う複合語(publicProps)は書ける|d["concepts"][0]["name"] = "publicProps 宣言"
+pass|-|sample|名前の 1 語の識別子(Result)は検査しない|d["concepts"][0]["name"] = "Result の扱い"
 pass|-|sample|名前に大文字だけの略語(UI 案・VRT)は書ける|d["concepts"][0]["name"] = "UI 案"; d["features"][0]["label"] = "VRT"
 pass|-|sample|説明文(concept の role)の識別子は検査しない|d["concepts"][0]["role"] = "TokenTemplate を組み立てる"
 pass|-|sample|テスト名(test の name)の識別子は検査しない|d["tests"][0]["name"] = "sortBy で並べ替えたとき順序が保たれる"
