@@ -1,4 +1,6 @@
 import type { ValueOf } from "@/types/ValueOf";
+import { ArrayEx } from "@/utils/ArrayEx";
+import { Interop } from "@/utils/Interop";
 import {
   Json,
   type JsonCursor,
@@ -31,7 +33,9 @@ export type GradientStop = Readonly<{
 /**
  * グラデーションのトークン(docs/04-tokens.md「gradients」)。
  *
- * 値域を課すのは編集で受け取る側(`GradientStop.create` / `GradientToken.create`)。
+ * 値域を課すのは編集で受け取る側(`GradientStop.create` / `GradientToken.create` と、
+ * 既にある値を差し替える `GradientToken.withAngle` / `withStopRatioPercent` / `withStopColor` /
+ * `removeStop`)。
  */
 export type GradientToken = Readonly<{
   shape: GradientShape;
@@ -70,11 +74,22 @@ const MinStopCount = 2;
  */
 const RatioPercentDigits = { fractionDigits: 4 } as const;
 
+/** 比率そのものを丸める桁数。% の桁数から導き、二重に持たない。 */
+const RatioDigits = {
+  fractionDigits: RatioPercentDigits.fractionDigits + 2,
+} as const;
+
+/** 比率を % で受け取るときの範囲。0% が始点、100% が終点。 */
+const RatioPercentRange = { min: 0, max: 100 } as const satisfies Range;
+
+/** 1 件だけの色の変わり目を、終点側と始点側のどちらへ寄せて補うかの境目。 */
+const SingleStopPivot = 0.5;
+
 /** CSS の color stop 1 件の綴り。色と、始点からの位置（%）。 */
 type ColorStopValue = `${ColorToken} ${number}%`;
 
 /** `linear-gradient()` の綴り。角度（deg）と、color stop の並び。 */
-type LinearGradientValue = `linear-gradient(${number}deg, ${string})`;
+export type LinearGradientValue = `linear-gradient(${number}deg, ${string})`;
 
 /**
  * 形を読む。`"linear"` 以外は読めない。
@@ -137,6 +152,16 @@ export const GradientStop = {
   },
 
   /**
+   * 始点からの比率を % で表した値。0〜1 の外でも範囲へ収めない(docs/04-tokens.md「gradients」)。
+   *
+   * @param stop 比率を読む色の変わり目
+   * @returns 比率を % にして小数 4 桁で丸めた値
+   */
+  ratioPercentOf(stop: GradientStop): number {
+    return NumberEx.round(stop.ratio * 100, RatioPercentDigits);
+  },
+
+  /**
    * CSS の color stop として綴る。比率は 0〜1 の外でも範囲へ収めずそのまま % にする
    * (docs/04-tokens.md「gradients」)。
    *
@@ -144,7 +169,7 @@ export const GradientStop = {
    * @returns 色と、比率を % にして小数 4 桁で丸めた位置
    */
   cssValue(stop: GradientStop): ColorStopValue {
-    return `${stop.color} ${NumberEx.round(stop.ratio * 100, RatioPercentDigits)}%`;
+    return `${stop.color} ${GradientStop.ratioPercentOf(stop)}%`;
   },
 
   /**
@@ -158,8 +183,92 @@ export const GradientStop = {
   },
 } as const;
 
+/**
+ * 節見出しの + で作るグラデーション(docs/06-ui.md「節見出しの + で作るトークン」)。黒から白へ、
+ * 左から右に変わる。色の変わり目が 1 件も無いところへ + を押したときも、この 2 件を入れる。
+ *
+ * feature から作るとドメインの `addStop` が同じ 2 件を参照できないので、ドメインに置く。
+ */
+const InitialGradient: GradientToken = {
+  shape: GradientShapes.Linear,
+  angle: 90,
+  stops: [
+    { color: "#000000", ratio: RatioRange.min },
+    { color: "#ffffff", ratio: RatioRange.max },
+  ],
+};
+
+/**
+ * 1 件しかない色の変わり目に、同じ色の変わり目を補って 2 件にする。
+ *
+ * @param stop 今ある 1 件
+ * @returns 比率が 0.5 未満なら同じ色を比率 1 で末尾へ、0.5 以上なら比率 0 で先頭へ足した 2 件
+ */
+function pairedWithSingleStop(stop: GradientStop): readonly GradientStop[] {
+  return stop.ratio < SingleStopPivot
+    ? [stop, { color: stop.color, ratio: RatioRange.max }]
+    : [{ color: stop.color, ratio: RatioRange.min }, stop];
+}
+
+/**
+ * 隣り合う 2 件のうち最も広い隙間の中央へ、左側の色で色の変わり目を差し込む
+ * (docs/06-ui.md「Tokens の gradients」)。
+ *
+ * 広さは差の絶対値を比率の桁で丸めて比べる。丸めないと、浮動小数の誤差で同じ広さの隙間の
+ * どちらを採るかが入力の綴りによって変わる。
+ *
+ * @param stops 2 件以上の色の変わり目
+ * @returns 差し込んだ並び。並べ替えない。隣り合う組が無ければ `stops` のまま
+ */
+function withStopInWidestGap(
+  stops: readonly GradientStop[],
+): readonly GradientStop[] {
+  const gaps = ArrayEx.adjacentPairs(stops).map((pair, index) => ({
+    pair,
+    index,
+    width: NumberEx.round(
+      Math.abs(pair.next.ratio - pair.previous.ratio),
+      RatioDigits,
+    ),
+  }));
+  const widest = ArrayEx.minBy(gaps, (gap) => -gap.width);
+  if (!Option.isSome(widest)) {
+    return stops;
+  }
+  const { pair, index } = widest.value;
+  const middle: GradientStop = {
+    color: pair.previous.color,
+    ratio: NumberEx.round(
+      (pair.previous.ratio + pair.next.ratio) / 2,
+      RatioDigits,
+    ),
+  };
+  return Result.unwrapOr(ArrayEx.insertAt(stops, index + 1, middle), stops);
+}
+
+/**
+ * 1 件の色の変わり目だけを差し替えたグラデーション。
+ *
+ * @param gradient 差し替える前のグラデーション
+ * @param edit 差し替える位置と、新しい色の変わり目
+ * @returns 差し替えたもの。位置が並びの外なら `none`
+ */
+function withStopAt(
+  gradient: GradientToken,
+  edit: Readonly<{ stopIndex: number; stop: GradientStop }>,
+): Option<GradientToken> {
+  return Option.map(
+    Interop.toOption(
+      ArrayEx.replaceAt(gradient.stops, edit.stopIndex, edit.stop),
+    ),
+    (stops) => ({ ...gradient, stops }),
+  );
+}
+
 /** グラデーションの生成・正規化と、JSON 表現との相互変換。 */
 export const GradientToken = {
+  Initial: InitialGradient,
+
   /**
    * グラデーションを作る。
    *
@@ -207,6 +316,117 @@ export const GradientToken = {
   collectInvalidColorStopIndexes(gradient: GradientToken): readonly number[] {
     return gradient.stops.flatMap((stop, index) =>
       ColorToken.isValid(stop.color) ? [] : [index],
+    );
+  },
+
+  /**
+   * 角度だけを差し替えたグラデーション。値域で丸めず、打った値をそのまま持つ
+   * (docs/06-ui.md「Tokens の gradients」)。
+   *
+   * @param gradient 差し替える前のグラデーション
+   * @param angle 新しい角度(度)
+   * @returns 角度だけが入れ替わったもの。角度が有限でなければ `none`
+   */
+  withAngle(gradient: GradientToken, angle: number): Option<GradientToken> {
+    return Number.isFinite(angle)
+      ? Option.some({ ...gradient, angle })
+      : Option.none;
+  },
+
+  /**
+   * 1 件の色の変わり目の比率を % で差し替え、比率の順に並べ直したグラデーション
+   * (docs/06-ui.md「Tokens の gradients」)。比率が同じ色の変わり目同士は元の並びを保つ。
+   *
+   * 丸めた比率が今と同じなら並べ直さない。欄は同じ値のままフォーカスを外しても確定するので、
+   * 並べ直すと、並んでいないファイルで欄を抜けただけで並びが変わる。
+   *
+   * @param gradient 差し替える前のグラデーション
+   * @param edit 差し替える色の変わり目の位置(0 始まり)と、新しい比率(%。小数も取る)
+   * @returns 比率を小数 6 桁(% の小数 4 桁)に丸めて差し替えたもの。位置が並びの外、
+   *   比率が 0〜100 の外なら `none`
+   */
+  withStopRatioPercent(
+    gradient: GradientToken,
+    edit: Readonly<{ stopIndex: number; percent: number }>,
+  ): Option<GradientToken> {
+    if (!Range.contains(RatioPercentRange, edit.percent)) {
+      return Option.none;
+    }
+    const ratio = NumberEx.round(edit.percent / 100, RatioDigits);
+    return Option.flatMap(
+      Option.fromNullable(gradient.stops[edit.stopIndex]),
+      (current) => {
+        const replaced = withStopAt(gradient, {
+          stopIndex: edit.stopIndex,
+          stop: { ...current, ratio },
+        });
+        if (current.ratio === ratio) {
+          return replaced;
+        }
+        return Option.map(replaced, (next) => ({
+          ...next,
+          stops: ArrayEx.sortBy(next.stops, (stop) => stop.ratio),
+        }));
+      },
+    );
+  },
+
+  /**
+   * 1 件の色の変わり目の色を差し替えたグラデーション。並べ直さない。
+   *
+   * @param gradient 差し替える前のグラデーション
+   * @param edit 差し替える色の変わり目の位置(0 始まり)と、新しい色
+   * @returns 色だけが入れ替わったもの。位置が並びの外なら `none`
+   */
+  withStopColor(
+    gradient: GradientToken,
+    edit: Readonly<{ stopIndex: number; color: ColorToken }>,
+  ): Option<GradientToken> {
+    return Option.flatMap(
+      Option.fromNullable(gradient.stops[edit.stopIndex]),
+      (current) =>
+        withStopAt(gradient, {
+          stopIndex: edit.stopIndex,
+          stop: { ...current, color: edit.color },
+        }),
+    );
+  },
+
+  /**
+   * stop の + で色の変わり目を 1 件足したグラデーション(docs/06-ui.md「Tokens の gradients」)。
+   *
+   * @param gradient 足す前のグラデーション
+   * @returns 2 件以上なら最も広い隙間の中央に 1 件足したもの。1 件なら同じ色を反対の端へ
+   *   補ったもの、0 件なら角度を保って `Initial` の 2 件にしたもの。いずれも並べ替えない
+   */
+  addStop(gradient: GradientToken): GradientToken {
+    switch (gradient.stops.length) {
+      case 0:
+        return { ...gradient, stops: InitialGradient.stops };
+      case 1:
+        return { ...gradient, stops: pairedWithSingleStop(gradient.stops[0]) };
+      default:
+        return { ...gradient, stops: withStopInWidestGap(gradient.stops) };
+    }
+  },
+
+  /**
+   * stop の − で色の変わり目を 1 件除いたグラデーション。
+   *
+   * @param gradient 除く前のグラデーション
+   * @param stopIndex 除く色の変わり目の位置(0 始まり)
+   * @returns 除いたもの。色の変わり目が 2 件以下(除くと描けなくなる)・位置が並びの外なら `none`
+   */
+  removeStop(
+    gradient: GradientToken,
+    stopIndex: number,
+  ): Option<GradientToken> {
+    if (gradient.stops.length <= MinStopCount) {
+      return Option.none;
+    }
+    return Option.map(
+      Interop.toOption(ArrayEx.removeAt(gradient.stops, stopIndex)),
+      (stops) => ({ ...gradient, stops }),
     );
   },
 
