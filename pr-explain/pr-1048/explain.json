@@ -1,0 +1,264 @@
+{
+  "version": 1,
+  "pr": 1048,
+  "sha": "724dab3bb248a9981b2d1e777ba0ae974d298c5d",
+  "issue": 1032,
+  "overview": {
+    "title": "#1032 planner / implementer の起動と実行中フラグの前提の実測を判例に反映する",
+    "lead": "サブエージェントの起動とフックの入力を実測した結果を判例に書き、食い違っていたフックの冒頭コメントと implementation-flow の規範を直した。フックの判定・出力は変えていない。",
+    "before": [
+      {
+        "text": "フックの冒頭は「Pre と Post を結び付ける ID が無い」「PostToolUse がいつ来るかは未測」と書いていた"
+      },
+      {
+        "text": "規範は「`run_in_background: false` を渡しても背景で起動することがある」と読めた"
+      },
+      {
+        "text": "判定表は、サブエージェントの中の呼び出し(`agent_id` 付きの入力)を流していなかった"
+      }
+    ],
+    "after": [
+      {
+        "text": "前面で起動したサブエージェントの実行中は印が残り、サブエージェント自身の git add は止まる",
+        "message": "mark"
+      },
+      {
+        "text": "この実行環境では、120 秒を超えた起動は約 120 秒で背景へ移され、その時点で印が消える(判例に記録。塞ぐのは #1044)"
+      },
+      {
+        "text": "判定表が `agent_id` 付きの入力でも deny を確かめる",
+        "message": "verdict"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "判例の新しい節",
+        "text": "実測の回数と条件はここ 1 箇所に置き、ほかはここを指す",
+        "go": {
+          "kind": "file",
+          "path": "harness/case-law/process.md"
+        }
+      },
+      {
+        "title": "120 秒で背景へ移る",
+        "text": "実装の途中で見つけて訂正した主張。transcript の時刻と印の mtime の一致からの推定を含む",
+        "go": {
+          "kind": "file",
+          "path": ".claude/hooks/track-verification-agent-activity.sh"
+        }
+      },
+      {
+        "title": "判例を書いた権限",
+        "text": "判例は harness-growth だけが書く定めと衝突する。Issue のゴールの指定で書いた(2 回目の例外)",
+        "go": {
+          "kind": "layer",
+          "layer": "ハーネス"
+        }
+      }
+    ]
+  },
+  "layerRoles": [
+    {
+      "layer": "ハーネス",
+      "role": "実行中フラグのフックの説明・規範・判例・判定表"
+    }
+  ],
+  "concepts": [
+    {
+      "path": ".claude/hooks/track-verification-agent-activity.sh",
+      "name": "印を置くフック",
+      "role": "Task/Agent の Pre で印を作り、Post で消す",
+      "change": "冒頭コメントだけを実測に合わせた"
+    },
+    {
+      "path": ".claude/hooks/block-git-during-verification-agent.sh",
+      "name": "git を止めるフック",
+      "role": "印がある間の git add / commit / push を deny する",
+      "change": "冒頭コメントを「呼び出し元を問わず止める」と判例への参照にした"
+    },
+    {
+      "path": ".claude/hooks/lib/verification-agent-cases.sh",
+      "name": "判定表",
+      "role": "2 本のフックの判定を入力ごとに確かめる",
+      "change": "s26 を足した"
+    },
+    {
+      "path": ".claude/skills/implementation-flow/SKILL.md",
+      "name": "規範",
+      "role": "サブエージェントの起動のしかたと、実行中に git を挟まないこと",
+      "change": "2 箇条を 1 つにまとめ、背景をいまの状態で書いた"
+    },
+    {
+      "path": "harness/case-law/process.md",
+      "name": "判例",
+      "role": "実測の回数と条件の置き場",
+      "change": "#1032 の節を 2 つ足した"
+    }
+  ],
+  "messages": [
+    {
+      "id": "mark",
+      "from": ".claude/hooks/track-verification-agent-activity.sh",
+      "to": ".claude/hooks/block-git-during-verification-agent.sh",
+      "kind": "evt",
+      "name": "実行中の印",
+      "code": "mktemp \"$lock_dir/active.$subagent_type.XXXXXX\"",
+      "via": "file",
+      "payload": "セッション別のディレクトリの active.<種類>.* ファイル"
+    },
+    {
+      "id": "verdict",
+      "from": ".claude/hooks/lib/verification-agent-cases.sh",
+      "to": ".claude/hooks/block-git-during-verification-agent.sh",
+      "kind": "qry",
+      "name": "判定を確かめる",
+      "code": "git_verdict s26 'git add --dry-run -- README.md' \"$in_subagent_fields\"",
+      "via": "exec",
+      "payload": "agent_id / agent_type 付きの Bash の PreToolUse 入力",
+      "returns": "deny",
+      "status": "added"
+    },
+    {
+      "id": "cite",
+      "from": ".claude/skills/implementation-flow/SKILL.md",
+      "to": "harness/case-law/process.md",
+      "kind": "qry",
+      "name": "実測を参照する",
+      "code": "実測の記録は harness/case-law/process.md",
+      "via": "file",
+      "status": "changed"
+    }
+  ],
+  "flows": [
+    {
+      "id": "guard",
+      "label": "サブエージェントの実行中に git add が来たとき",
+      "steps": [
+        "mark"
+      ]
+    },
+    {
+      "id": "check",
+      "label": "判定表を走らせたとき",
+      "steps": [
+        "verdict"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "01d883de45cea69ede3d0219ecb32c2b53345170",
+      "phase": "core",
+      "role": "実測の結果を判例の 2 節として足す",
+      "why": "実測は「この回こうだった」という実例なので、規範ではなく判例に置いた。既存の節の判断は変わっていないので、足すだけにした。",
+      "review": [
+        "判例を harness-growth 以外が書く例外を、Issue のゴールの指定を根拠にしてよいか"
+      ]
+    },
+    {
+      "sha": "aa987cd00d7b369876c2e0505dc2add9e4614f6a",
+      "phase": "core",
+      "role": "2 本のフックの冒頭コメントを実測に合わせる",
+      "why": "「ID が無い」「Post の来かたは未測」「親が並行して git を叩く」が実測と食い違っていた。",
+      "flows": [
+        "guard"
+      ]
+    },
+    {
+      "sha": "a4af1529ca0cb34f31f66c01a1713f3a200c4e7b",
+      "phase": "core",
+      "role": "implementation-flow の実行中の git 操作の箇条を実測に合わせる",
+      "why": "前面の実行中は、並べた親の Bash が返った後に走った。156・181 行目が指す「単独で起動する」理由も残す必要があった。"
+    },
+    {
+      "sha": "e72e8bd3f8fc95a858e8d41978abc26dc41c15b2",
+      "phase": "core",
+      "role": "カナリアの実測表に、起動の形で割れた 2 セッションを足す",
+      "why": "3 リポジトリ起動では不発、単独起動では発火した。差は起動時の作業ディレクトリとリポジトリの数で、どちらが効いたかは切り分けていない。"
+    },
+    {
+      "sha": "25502040bb54f749ed798bb13ca0769b518cf772",
+      "phase": "revise",
+      "role": "実測の回数と条件を判例 1 箇所に寄せる",
+      "why": "1 段目の 4 つのレビュアーが、同じ実測を 4〜5 箇所に書き写して範囲が割れていると指摘した。判定文も、同じ節の #1031 の反例と逆の答えを出していた。",
+      "review": [
+        "block-git の冒頭が「印がある間は呼び出し元を問わず止める」とコードの事実だけを書いているか"
+      ]
+    },
+    {
+      "sha": "c0bec466d262c3c1f4f747272bc1631ff8ff12fa",
+      "phase": "revise",
+      "role": "サブエージェントの中から呼んだ git add が止まるケースを判定表に足す",
+      "why": "test-reviewer が、`agent_id` があれば素通しにしても判定表が落ちないことを示した。",
+      "flows": [
+        "check"
+      ],
+      "notes": [
+        {
+          "path": ".claude/hooks/lib/verification-agent-cases.sh",
+          "start": 148,
+          "end": 150,
+          "text": "キーの前後の順は、計測ログの実物の入力と同じにしてある"
+        }
+      ]
+    },
+    {
+      "sha": "193b474856d549143b99422bb77926952a0b35f8",
+      "phase": "revise",
+      "role": "「false でも背景で起動する」を「前面で起動し約 120 秒で背景へ移される」に訂正する",
+      "why": "背景になったはずの implementer の中で git add が止められた。transcript の時刻を並べると、背景になった 7 回はすべて起動から約 120 秒で結果が返っていた。",
+      "review": [
+        "移された瞬間の PostToolUse の入力は取れていない。mtime の一致からの推定と書き分けているか"
+      ],
+      "notes": [
+        {
+          "path": "harness/case-law/process.md",
+          "start": 58,
+          "end": 58,
+          "text": "結果の種類ではなく、返った時刻で読み直した行"
+        }
+      ]
+    },
+    {
+      "sha": "724dab3bb248a9981b2d1e777ba0ae974d298c5d",
+      "phase": "revise",
+      "role": "背景への移行の記述に、測った範囲と省略時の形を添える",
+      "why": "訂正を通したレビュアーが、1 つの実行環境で測った 120 秒を一般の性質として書いている点と、run_in_background を省いて並べた形が落ちている点を指摘した。"
+    }
+  ],
+  "suites": [
+    {
+      "id": "verification",
+      "label": "実行中フラグの判定表",
+      "file": ".claude/hooks/lib/verification-agent-cases.sh"
+    }
+  ],
+  "tests": [
+    {
+      "id": "s26",
+      "suite": "verification",
+      "name": "implementer の実行中は、サブエージェントの中から呼んだ git add も拒否される",
+      "techniques": [
+        "equivalence",
+        "regression"
+      ],
+      "why": "block-git の冒頭の「印がある間は呼び出し元を問わず止める」を守る。`agent_id` で素通しにする変更を見つける",
+      "given": "前面で起動した implementer の実行中の印がある",
+      "when": "`agent_id` / `agent_type` 付きの Bash の PreToolUse 入力で `git add --dry-run -- README.md` を流す",
+      "then": "deny になる",
+      "commit": "c0bec466d262c3c1f4f747272bc1631ff8ff12fa",
+      "excerpt": {
+        "path": ".claude/hooks/lib/verification-agent-cases.sh",
+        "start": 148,
+        "end": 150,
+        "text": "in_subagent_fields='\"agent_id\":\"ab90e859b438c06a1\",\"agent_type\":\"implementer\",\"hook_event_name\":\"PreToolUse\",\"tool_name\":\"Bash\",'\nagent_verdict s26 PreToolUse \"$foreground_implementer\" >/dev/null\nreport deny \"$(git_verdict s26 'git add --dry-run -- README.md' \"$in_subagent_fields\")\" \"implementer の実行中は、サブエージェントの中から呼んだ git add も拒否される\""
+      },
+      "targets": [
+        ".claude/hooks/block-git-during-verification-agent.sh"
+      ],
+      "covers": [
+        "verdict"
+      ]
+    }
+  ]
+}
