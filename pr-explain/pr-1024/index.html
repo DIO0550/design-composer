@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-dwemdw7RquEEzXwGu+1Umky6pXr5hJNAN4SbV/BbWTA='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-3xx6tzjDC42pjT/HOOy15BM/s/EcFpOK37AKgBD/q1c='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR 解説</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -70,14 +70,6 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 .screen-controls { display: flex; align-items: center; gap: 12px; flex: none; }
 .hint { font-size: 11px; color: var(--ink-3); }
 .links { display: flex; gap: 12px; font-size: 12px; flex: none; }
-/* 1280px 以上ではヘッダを 1 行に収める。収まらない分はブランチ名を詰め、1440px 未満では操作の見出しと「PR」「Issue」の語を省く(どちらも title に残す)。 */
-@media (min-width: 1280px) {
-  .top { flex-wrap: nowrap; }
-  .top-main { flex: 1 1 0; min-width: 96px; }
-}
-@media (min-width: 1280px) and (max-width: 1439.98px) {
-  .screen-controls .control-label, .links .link-kind { display: none; }
-}
 .bands { display: flex; flex-direction: column; }
 .band { padding: 7px 14px; font-size: 12px; line-height: 1.6; color: var(--mod); background: var(--warn-tint); border-bottom: 1px solid var(--line); white-space: normal; }
 .screens { min-height: 0; position: relative; }
@@ -110,9 +102,6 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 .behavior-card.is-after { border-color: var(--line-strong); background: var(--surface); }
 .behavior-card .card-title { font-size: 12px; font-weight: 600; color: var(--ink-2); }
 .behavior-card.is-after .card-title { color: var(--ink); }
-.behavior { display: flex; gap: 8px; font-size: 13.5px; line-height: 1.7; }
-.behavior .mark { color: var(--ink-3); }
-.behavior-card.is-after .behavior .mark { color: var(--add-mark); }
 .row { display: flex; flex-direction: column; gap: 3px; margin: 0 8px; padding: 8px 12px; border-radius: 8px; min-width: 0; }
 .row:hover { outline: 1px solid var(--line); }
 .row.is-current { background: var(--accent-tint); box-shadow: inset 0 0 0 1px var(--accent-ring), 0 0 16px var(--accent-glow); }
@@ -151,7 +140,7 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 [data-phase="prep"] { color: var(--ink-2); }
 [data-phase="core"] { color: var(--tok-fn); }
 [data-phase="hard"] { color: var(--mod); }
-[data-phase="review"] { color: var(--tok-kw); }
+[data-phase="revise"] { color: var(--tok-kw); }
 [data-phase="fin"] { color: var(--add); }
 .card-head { display: flex; align-items: baseline; gap: 8px; }
 .card-head .muted { font-size: 11px; font-family: var(--mono); }
@@ -202,8 +191,10 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 .flow-chip { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--ink); background: var(--surface); border: 1px solid var(--line-strong); border-radius: 999px; padding: 3px 10px; }
 .flow-chip:hover { color: var(--ink); border-color: var(--ink-4); text-decoration: none; }
 .flow-chip .arrow { color: var(--ink-3); }
-.behavior-card.is-commit { gap: 12px; }
-.behavior-item { display: flex; flex-direction: column; gap: 5px; font-size: 13.5px; line-height: 1.7; }
+.behavior-item { display: flex; gap: 8px; font-size: 13.5px; line-height: 1.7; }
+.behavior-item .mark { color: var(--ink-3); }
+.behavior-card.is-after .behavior-item .mark { color: var(--add-mark); }
+.behavior-body { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
 .behavior-none { font-size: 13px; color: var(--ink-3); }
 .message-chip { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .kind { font-size: 10.5px; font-weight: 600; padding: 1px 6px; border-radius: 4px; border: 1px solid var(--line); }
@@ -376,10 +367,10 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 .test-row.is-current { background: var(--accent-tint); box-shadow: inset 0 0 0 1px var(--accent-ring), 0 0 16px var(--accent-glow); }
 .test-row.is-related { background: rgba(47, 91, 234, .06); }
 .test-row.is-dim { opacity: .45; }
-.test-mark { width: 14px; height: 14px; margin-top: 3px; border-radius: 7px; border: 1.5px solid var(--ink-4); background: var(--ink-4); }
-.test-mark[data-status="new"] { background: var(--add-mark); border-color: var(--add-mark); }
+.test-mark { width: 14px; height: 14px; margin-top: 3px; border-radius: 7px; border: 1.5px solid var(--add-mark); background: var(--add-mark); display: flex; align-items: center; justify-content: center; }
+.test-mark::after { content: ""; width: 3px; height: 6px; margin-top: -1.5px; border: solid #FFFFFF; border-width: 0 1.6px 1.6px 0; transform: rotate(45deg); }
 .test-mark[data-status="todo"] { background: transparent; border-style: dashed; border-color: var(--ink-3); }
-.test-mark[data-status="removed"] { background: transparent; border-color: var(--del-mark); }
+.test-mark[data-status="todo"]::after { content: none; }
 .test-body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .test-name { font-size: 12.5px; line-height: 1.5; text-wrap: pretty; overflow-wrap: anywhere; }
 .test-row[data-status="todo"] .test-name { color: var(--ink-2); }
@@ -389,6 +380,7 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 .test-status[data-status="new"] { color: var(--add); }
 .test-status[data-status="todo"] { color: var(--mod); }
 .test-status[data-status="removed"] { color: var(--del); }
+.test-status[data-status="unjudged"] { color: var(--ink-3); }
 .side { overflow: auto; flex: 1; padding: 18px 18px 32px; display: flex; flex-direction: column; gap: 22px; }
 .side > * { flex-shrink: 0; }
 .side-block { display: flex; flex-direction: column; gap: 8px; }
@@ -544,6 +536,8 @@ button.gap-card:hover { border-color: var(--mod-mark); }
 .map-edge.is-involved .edge-head { fill: var(--accent); }
 .map-edge.is-added .edge-line { stroke: var(--add-mark); }
 .map-edge.is-added .edge-head { fill: var(--add-mark); }
+.map-edge.is-changed .edge-line { stroke: var(--mod-mark); }
+.map-edge.is-changed .edge-head { fill: var(--mod-mark); }
 .map-edge.is-removed .edge-line { stroke: var(--del-mark); stroke-dasharray: 4 4; }
 .map-edge.is-removed .edge-head { fill: var(--del-mark); }
 .map-edge.is-on .edge-line { stroke: var(--accent); }
@@ -624,6 +618,7 @@ button.highlight-card:hover { border-color: var(--ink-4); }
 .change-item { display: flex; flex-direction: column; gap: 3px; padding: 8px 10px; border-radius: 8px; background: var(--hover); width: 100%; }
 button.change-item:hover { background: var(--track); }
 .change-head { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.change-head > .add, .change-head > .del { font-family: var(--mono); }
 .change-name { font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .change-note { font-size: 12px; line-height: 1.6; color: var(--ink-2); text-wrap: pretty; }
 .flow-block { gap: 12px; }
@@ -668,7 +663,7 @@ button.change-item:hover { background: var(--track); }
   "use strict";
 
   /** コードの色分け。キーワード・文字列・コメント・数値・関数呼び出しに加え、YAML はキー、シェルは変数、HTML はタグと属性名に色を付ける簡易なもの。 */
-  const Highlighter = (() => {
+  const Tokenizer = (() => {
     const words = (list) => new Set(list.split(" ").filter((word) => word !== ""));
     const Grammars = {
       python: { comment: "#", hashAnywhere: true, strings: ['"""', "'''", '"', "'"], keywords: words("def class return if elif else for while in not and or is None True False import from as with try except finally raise lambda yield pass continue break assert del async await global nonlocal") },
@@ -795,8 +790,34 @@ button.change-item:hover { background: var(--track); }
     });
   })();
 
+  /**
+   * 解説の語彙と、ページでの呼び名。キーの集合は `build-pr-explain.py` の語彙と同じで、`pr-explain-core-cases.sh` が
+   * 突き合わせる。やりとりの種類は、キーの順がそのまま並べる順(コマンド → クエリ → イベント)。
+   */
+  const Vocabulary = Object.freeze({
+    techniques: {
+      boundary: { label: "境界値", description: "ちょうど境目の値(0・上限・丸めの境など)で確かめる" },
+      equivalence: { label: "同値分割", description: "同じ扱いになる値のまとまりから、代表を1つずつ選んで確かめる" },
+      error: { label: "異常系", description: "失敗したとき・想定外のときにどう振る舞うかを確かめる" },
+      state: { label: "状態遷移", description: "操作の前後で、状態が正しく移り変わるかを確かめる" },
+      regression: { label: "回帰", description: "作り直しても、以前と同じ結果になるかを確かめる" },
+      idempotence: { label: "冪等性", description: "同じ操作を繰り返しても、結果が1回分になるかを確かめる" },
+      type: { label: "型", description: "書けてはいけない値がコンパイルで弾かれるか・推論される型を確かめる" },
+    },
+    phases: { prep: "下ごしらえ", core: "本体", hard: "安定化", revise: "指摘の反映", fin: "仕上げ" },
+    messageKinds: {
+      cmd: { label: "コマンド", meaning: "依頼", verb: "依頼する" },
+      qry: { label: "クエリ", meaning: "問い合わせ", verb: "問い合わせる" },
+      evt: { label: "イベント", meaning: "通知", verb: "通知する" },
+    },
+    vias: { call: "関数呼び出し(同期)", http: "HTTP 通信(外部)", state: "状態の購読(再描画)", log: "ログ出力", exec: "コマンドの実行", file: "ファイルの読み書き" },
+  });
+  const MessageKindOrder = Object.keys(Vocabulary.messageKinds);
+  /** やりとりを種類の順(コマンド → クエリ → イベント)に並べる比較。 */
+  const byMessageKind = (a, b) => MessageKindOrder.indexOf(a.kind) - MessageKindOrder.indexOf(b.kind);
+
   /** 確認の印の鍵。 */
-  const ReviewMark = Object.freeze({
+  const ReviewCheck = Object.freeze({
     /**
      * レビューの文 1 つに付ける確認の印の鍵を作る。
      * 番号で持つと、解説を書き直したときに別の文へ印が移る。だから文そのもので持つ。
@@ -830,9 +851,9 @@ button.change-item:hover { background: var(--track); }
 
   /** 変更の地図(change-map.json)と解説(explain.json)の合流。 */
   const ExplainedMap = (() => {
-    const CurrentMapVersion = 2;
+    const MapVersion = 2;
     const ExplainVersion = 1;
-    const ExplainListKeys = ["features", "layers", "concepts", "messages", "flows", "commitNotes", "suites", "tests"];
+    const ExplainListKeys = ["features", "layerRoles", "concepts", "messages", "flows", "commitStories", "suites", "tests"];
 
     const isRecord = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
     const isListOfRecords = (value) => Array.isArray(value) && value.every(isRecord);
@@ -891,18 +912,14 @@ button.change-item:hover { background: var(--track); }
       return isIndex ? `${parts[parts.length - 2]}/${name}` : name;
     };
 
-    // version 1 の地図は変更ファイルしか載せず、`changed` を持たない。
-    const isChangedFile = (file) => file.changed !== false;
-
     const entryOf = (file, layer, concept) => {
-      const changed = isChangedFile(file);
       const hasFeature = concept !== null && typeof concept.feature === "string";
       const isDrawn = concept === null || concept.graph !== false;
       return {
         path: file.path,
         layer,
-        changed,
-        status: changed ? file.status : null,
+        changed: file.changed,
+        status: file.changed ? file.status : null,
         oldPath: file.oldPath ?? null,
         additions: file.additions ?? null,
         deletions: file.deletions ?? null,
@@ -917,7 +934,7 @@ button.change-item:hover { background: var(--track); }
 
     /** 木に出すファイル。変更ファイルと、concepts が名指ししたファイル(変更していなくても)。 */
     const entriesOf = (groups, conceptOf) => groups.flatMap((group) => group.files
-      .filter((file) => isChangedFile(file) || conceptOf.has(file.path))
+      .filter((file) => file.changed || conceptOf.has(file.path))
       .map((file) => entryOf(file, group.label, conceptOf.get(file.path) ?? null)));
 
     /** 依存の線の向こう側にあって箱にならないファイル(「ほかに n ファイル」に畳むもの)を、箱ごとに足す。 */
@@ -934,14 +951,14 @@ button.change-item:hover { background: var(--track); }
     const pathsOf = (entries) => entries.filter((entry) => entry.inGraph).map((entry) => entry.path);
     const treePathsOf = (entries) => entries.map((entry) => entry.path);
 
-    const layerGroupsOf = (groups, entries, layerNotes) => groups.map((group) => {
+    const layerGroupsOf = (groups, entries, layerRoles) => groups.map((group) => {
       const members = entries.filter((entry) => entry.layer === group.label);
       const named = new Set(treePathsOf(members));
-      const note = layerNotes.find((layerNote) => layerNote.layer === group.label);
+      const layerRole = layerRoles.find((candidate) => candidate.layer === group.label);
       return {
         kind: "layer",
         layer: group.label,
-        role: note === undefined ? null : note.role,
+        role: layerRole === undefined ? null : layerRole.role,
         paths: pathsOf(members),
         treePaths: treePathsOf(members),
         others: group.files.map((file) => file.path).filter((path) => !named.has(path)),
@@ -962,49 +979,50 @@ button.change-item:hover { background: var(--track); }
     /** まとめ方ごとの組。`layer` は常にあり、`feature` は解説が features を持つときだけある。 */
     const groupingsOf = ({ groups, entries, explain }) => {
       const features = listOf(explain, "features");
-      const byLayer = layerGroupsOf(groups, entries, listOf(explain, "layers"));
+      const byLayer = layerGroupsOf(groups, entries, listOf(explain, "layerRoles"));
       if (features.length === 0) return { layer: byLayer };
       return { layer: byLayer, feature: featureGroupsOf(features, entries) };
     };
 
-    const commitOf = (commit, isCurrent) => {
-      if (isCurrent) return commit;
-      return { sha: commit.sha, merge: false, author: null, date: null, subject: null, body: null, files: [] };
-    };
-
-    const freshnessOf = (explain, head, commits) => {
+    /**
+     * 解説がいつの時点のものか。
+     * @param explainedAt 解説の sha が地図のコミットの何番目か(無ければ -1)
+     */
+    const freshnessOf = ({ explain, head, commits, explainedAt }) => {
       if (explain === null) return { kind: "none" };
       if (explain.sha === head) return { kind: "latest", sha: explain.sha };
-      const index = commits.findIndex((commit) => commit.sha === explain.sha);
-      if (index < 0) return { kind: "unknown", sha: explain.sha };
-      return { kind: "stale", sha: explain.sha, after: commits.length - 1 - index };
+      if (explainedAt < 0) return { kind: "unknown", sha: explain.sha };
+      return { kind: "stale", sha: explain.sha, after: commits.length - 1 - explainedAt };
     };
 
-    const commitsOf = (commits, explain) => {
-      const notes = new Map(listOf(explain, "commitNotes").map((note) => [note.sha, note]));
-      const explainedAt = explain === null ? -1 : commits.findIndex((commit) => commit.sha === explain.sha);
+    const commitsOf = ({ commits, explain, explainedAt }) => {
+      const stories = new Map(listOf(explain, "commitStories").map((story) => [story.sha, story]));
       return commits.map((commit, index) => {
         const additions = sumOf(commit.files.map((file) => file.additions));
         const deletions = sumOf(commit.files.map((file) => file.deletions));
         const afterExplained = explainedAt >= 0 && index > explainedAt;
-        return { ...commit, additions, deletions, note: notes.get(commit.sha) ?? null, afterExplained };
+        return { ...commit, additions, deletions, story: stories.get(commit.sha) ?? null, afterExplained };
       });
     };
 
     const testKeyOf = (file, name) => JSON.stringify([file, name]);
 
     /**
-     * テストの一覧。解説があれば解説のテストを並べ、new / old は地図の追加から導く。解説に無い追加と、
-     * 削除は地図から足す。
+     * テストの一覧。解説があれば解説のテストを並べ、解説に無い追加と、削除は地図から足す。
+     * 追加か既存かは、テスト名を調べたファイルなら地図の追加にあるかで、このブランチで足したファイルなら追加、
+     * それ以外のファイル(テスト名を調べていない)は判定なし(`unjudged`)にする。
+     * @param addedFiles このブランチで足したファイルのパス
      */
-    const testsOf = ({ mapTests, explain, targetOf }) => {
+    const testsOf = ({ mapTests, explain, targetOf, addedFiles }) => {
       const added = new Set(mapTests.added.map((test) => testKeyOf(test.file, test.name)));
+      const examined = new Set(mapTests.files);
       const fromMap = (status) => (test) => ({ name: test.name, file: test.file, status, targets: targetOf(test.file), test: null, suite: null });
       const removed = mapTests.removed.map(fromMap("removed"));
       const suites = new Map(listOf(explain, "suites").map((suite) => [suite.id, suite]));
       const statusOf = (test, file) => {
         if (test.todo === true) return "todo";
-        return added.has(testKeyOf(file, test.name)) ? "new" : "old";
+        if (examined.has(file)) return added.has(testKeyOf(file, test.name)) ? "new" : "old";
+        return addedFiles.has(file) ? "new" : "unjudged";
       };
       const explained = listOf(explain, "tests").map((test) => {
         const suite = suites.get(test.suite) ?? null;
@@ -1016,43 +1034,53 @@ button.change-item:hover { background: var(--track); }
       return [...explained, ...unexplained, ...removed];
     };
 
+    /** 解説から、ページが名前で引く一覧。 */
+    const lookupOf = (explain) => ({
+      conceptNames: new Map(listOf(explain, "concepts").map((concept) => [concept.path, concept.name])),
+      flows: new Map(listOf(explain, "flows").map((flow) => [flow.id, flow])),
+      messages: new Map(listOf(explain, "messages").map((message) => [message.id, message])),
+    });
+
     /**
      * 地図と解説を合わせる。解説が無い・使えないときも、地図だけで 3 画面の材料を作る。
-     * @param map change-map.json の中身(version 1 / 2)
+     * @param map change-map.json の中身(`isReadableMap` が真のもの)
      * @param source 解説の読み込み結果(`readingOf` の source と同じ)
-     * @returns 画面が使う材料。解説の状態は `explain`(`explained` / `missing` と理由)と `freshness` に出る
+     * @returns 画面が使う材料。解説の状態は `reading`(`explained` / `missing` と理由)と `freshness` に出る。
+     *   `explain` は使える解説(無ければ null)、`lookup` はそこから名前で引く一覧
      */
-    const from = (map, source) => {
-      const isCurrent = map.version === CurrentMapVersion;
+    const create = (map, source) => {
       const reading = readingOf(source, map.pr);
       const explain = reading.kind === "explained" ? reading.explain : null;
       const concepts = listOf(explain, "concepts");
       const conceptOf = new Map(concepts.map((concept) => [concept.path, concept]));
-      const mapPaths = new Set(map.groups.flatMap((group) => group.files.map((file) => file.path)));
-      const dependencies = Array.isArray(map.dependencies) ? map.dependencies : [];
-      const entries = withOthers(entriesOf(map.groups, conceptOf), dependencies);
-      const mapCommits = map.commits.map((commit) => commitOf(commit, isCurrent));
-      const targets = new Map(map.groups.flatMap((group) => group.files).map((file) => [file.path, file.target ?? null]));
+      const files = map.groups.flatMap((group) => group.files);
+      const mapPaths = new Set(files.map((file) => file.path));
+      const entries = withOthers(entriesOf(map.groups, conceptOf), map.dependencies);
+      const targets = new Map(files.map((file) => [file.path, file.target ?? null]));
       const targetOf = (path) => (targets.get(path) ? [targets.get(path)] : []);
+      const addedFiles = new Set(files.filter((file) => file.changed && file.status === "A").map((file) => file.path));
+      const explainedAt = explain === null ? -1 : map.commits.findIndex((commit) => commit.sha === explain.sha);
       const changed = entries.filter((entry) => entry.changed);
-      const commits = commitsOf(mapCommits, explain);
+      const commits = commitsOf({ commits: map.commits, explain, explainedAt });
       const ownCommits = commits.filter((commit) => !commit.merge);
       return Object.freeze({
-        map: { version: map.version, isCurrent, pr: map.pr, head: map.head, mergeBase: map.mergeBase, headBranch: map.headBranch ?? null, baseBranch: map.baseBranch ?? null },
-        explain: reading,
-        freshness: freshnessOf(explain, map.head, mapCommits),
+        map: { pr: map.pr, head: map.head, mergeBase: map.mergeBase, headBranch: map.headBranch, baseBranch: map.baseBranch },
+        reading,
+        explain,
+        lookup: lookupOf(explain),
+        freshness: freshnessOf({ explain, head: map.head, commits: map.commits, explainedAt }),
         entries,
-        dependencies,
+        dependencies: map.dependencies,
         groupings: groupingsOf({ groups: map.groups, entries, explain }),
         unmappedConcepts: concepts.filter((concept) => !mapPaths.has(concept.path)),
         commits,
-        strayNotes: listOf(explain, "commitNotes").filter((note) => !mapCommits.some((commit) => commit.sha === note.sha)),
-        tests: testsOf({ mapTests: isRecord(map.tests) ? map.tests : { added: [], removed: [] }, explain, targetOf }),
+        strayStories: listOf(explain, "commitStories").filter((story) => !map.commits.some((commit) => commit.sha === story.sha)),
+        tests: testsOf({ mapTests: map.tests, explain, targetOf, addedFiles }),
         totals: {
           files: changed.length,
           additions: sumOf(changed.map((entry) => entry.additions)),
           deletions: sumOf(changed.map((entry) => entry.deletions)),
-          commits: mapCommits.length,
+          commits: map.commits.length,
           // 変更の経緯のヘッダの数。ファイルごとの差し引きと違い、あとのコミットで書き直した行もコミットごとに数える。
           commitLines: { additions: sumOf(ownCommits.map((commit) => commit.additions)), deletions: sumOf(ownCommits.map((commit) => commit.deletions)) },
         },
@@ -1060,7 +1088,9 @@ button.change-item:hover { background: var(--track); }
     };
 
     return Object.freeze({
-      from,
+      create,
+      /** @returns このページが読める版(2)の地図か。違えば画面を組まず、版を添えて案内を出す */
+      isReadableMap: (map) => isRecord(map) && map.version === MapVersion,
       /**
        * 箱と木に出す名前。
        * @param naming `concept`(concept 名。無ければファイル名)/ `file`(ファイル名)
@@ -1081,7 +1111,7 @@ button.change-item:hover { background: var(--track); }
      * 注釈の行の範囲に、その行が入るか。行番号は注釈の `side` の側で見る。
      * @param line hunk の行(`oldNo` / `newNo` は、その側に無い行なら null)
      */
-    const covers = (note, line) => {
+    const hasLine = (note, line) => {
       const number = numberOn(line, sideOf(note));
       return number !== null && number >= note.start && number <= note.end;
     };
@@ -1117,7 +1147,7 @@ button.change-item:hover { background: var(--track); }
 
     const hunkBodyOf = (file, notes) => {
       const hunks = hunksOf(file.patch);
-      const placedAt = notes.map((note) => hunks.findIndex((hunk) => hunk.lines.some((line) => covers(note, line))));
+      const placedAt = notes.map((note) => hunks.findIndex((hunk) => hunk.lines.some((line) => hasLine(note, line))));
       const placed = hunks.map((hunk, index) => notes.filter((note, noteIndex) => placedAt[noteIndex] === index));
       const firstNumbers = placed.map((group, index) => placed.slice(0, index).reduce((sum, earlier) => sum + earlier.length, 0));
       const placedCount = placed.reduce((sum, group) => sum + group.length, 0);
@@ -1145,18 +1175,18 @@ button.change-item:hover { background: var(--track); }
     };
 
     return Object.freeze({
-      covers,
+      hasLine,
       /**
        * コミットのファイルごとに差分を組み、解説の注釈を `side` の行番号が入る最初の hunk に付ける(番号はファイルの
        * 中で hunk の順に通す)。どの hunk にも入らない注釈は `unplaced` に回す。
        * @param commit 地図のコミット(マージは files が空)
-       * @param note そのコミットの commitNote。無ければ null
+       * @param story そのコミットの commitStory。無ければ null
        * @returns `files`(本文の `body` は `hunks` / `unchanged`(patch が空)/ `deleted` / `binary`)と、そのコミットに無い
        *   パスへの注釈 `strayNotes`
        */
-      of: (commit, note) => {
-        const hasNotes = note !== null && Array.isArray(note.notes);
-        const notes = hasNotes ? note.notes : [];
+      create: (commit, story) => {
+        const hasNotes = story !== null && Array.isArray(story.notes);
+        const notes = hasNotes ? story.notes : [];
         const paths = new Set(commit.files.map((file) => file.path));
         return {
           files: commit.files.map((file) => fileOf(file, notes.filter((item) => item.path === file.path))),
@@ -1309,7 +1339,7 @@ button.change-item:hover { background: var(--track); }
     /**
      * 組と箱を並べる。
      * @param groups まとめ方の組 `{id, boxes: [{path, lines}]}`(lines は変更行数)。箱の無い組は描かない
-     * @param links 依存 `{from, to, state}`(使う側 → 使われる側のパス)。消えた依存(`removed`)は段に使わない
+     * @param links 依存 `{from, to, status}`(使う側 → 使われる側のパス)。消えた依存(`removed`)は段に使わない
      * @param expanded 開いて中の箱を並べる組の id
      * @param room 図を置ける広さ `{width, height}`。渡せば、組を 1 段に並べる数(4〜1)を図が最も大きく収まるものにする
      *   (等倍で収まるものどうしなら 1 段に多いほう)。null なら 1 段に 4 つ
@@ -1317,10 +1347,10 @@ button.change-item:hover { background: var(--track); }
      *   ラベルを描かないなら 0
      * @returns 図の大きさ、描く単位(`units`)、開いた組の枠(`containers`)、パスから単位の id を引く `unitOf`
      */
-    const of = ({ groups, links, expanded, room = null, labelWidth = 0 }) => {
+    const create = ({ groups, links, expanded, room = null, labelWidth = 0 }) => {
       const drawn = groups.filter((group) => group.boxes.length > 0);
       const groupOf = new Map(drawn.flatMap((group) => group.boxes.map((box) => [box.path, group.id])));
-      const isLive = (link) => link.state !== "removed" && groupOf.has(link.from) && groupOf.has(link.to) && link.from !== link.to;
+      const isLive = (link) => link.status !== "removed" && groupOf.has(link.from) && groupOf.has(link.to) && link.from !== link.to;
       const live = links.filter(isLive);
       const crossing = live.map((link) => [groupOf.get(link.from), groupOf.get(link.to)]).filter(([from, to]) => from !== to);
       const open = new Set(expanded);
@@ -1419,10 +1449,10 @@ button.change-item:hover { background: var(--track); }
 
     return Object.freeze({
       Levels,
-      of,
+      create,
       /**
        * 抽象度ごとに開く組。高はすべて畳み、低はすべて開き、中は変更行数の多い上位 ⌈n/3⌉ を開く。
-       * @param groups `of` と同じ組(箱の無い組は数えない)
+       * @param groups `create` と同じ組(箱の無い組は数えない)
        * @returns 開く組の id(入力の順)
        */
       expandedAt: (level, groups) => {
@@ -1475,28 +1505,28 @@ button.change-item:hover { background: var(--track); }
        * 面積が最も小さい所を選ぶ。
        * @param candidates `{key, bezier, width, height, priority, allowance}`。重なりが自分の面積の allowance 倍
        *   未満なら置く(0 なら重ならない所だけ、Infinity なら必ず)
-       * @returns 置いたラベルの `{key, x, y}`(中心)。置けなかったものは含まない
+       * @returns ラベルごとの `{key, x, y, isPlaced}`(中心)。置けなかったもの(`isPlaced` が偽)は、最も重なりの
+       *   小さい位置を持ち、あとのラベルの置き場を避けさせない
        */
       placeLabels: ({ candidates, obstacles }) => {
         const ordered = candidates.toSorted((a, b) => b.priority - a.priority);
         const result = ordered.reduce((sofar, candidate) => {
           const spot = bestSpotOf(candidate, { obstacles, placed: sofar.rects });
-          const isAccepted = spot.score === 0 || spot.score < candidate.width * candidate.height * candidate.allowance;
-          if (!isAccepted) return sofar;
-          return { rects: [...sofar.rects, spot.rect], labels: [...sofar.labels, { key: candidate.key, x: spot.center.x, y: spot.center.y }] };
+          const isPlaced = spot.score === 0 || spot.score < candidate.width * candidate.height * candidate.allowance;
+          const label = { key: candidate.key, x: spot.center.x, y: spot.center.y, isPlaced };
+          return { rects: isPlaced ? [...sofar.rects, spot.rect] : sofar.rects, labels: [...sofar.labels, label] };
         }, { rects: [], labels: [] });
         return result.labels;
       },
     });
   })();
 
-  /** つながり(2 つの単位を結ぶ線)の「要するに」。 */
-  const ConnectionGist = (() => {
-    const KindOrder = ["cmd", "qry", "evt"];
+  /** つながり(2 つの単位を結ぶ線)の「要するに」の文。 */
+  const ConnectionSentences = (() => {
     const isRemoved = (message) => message.status === "removed";
     return Object.freeze({
       /**
-       * つながりのやりとりを、向き(線の向き → 逆向き)と種類(コマンド → クエリ → イベント)ごとにまとめる。消えたやりとりは
+       * つながりのやりとりを、向き(線の向き → 逆向き)と種類(コマンド → クエリ → イベント)ごとの文にまとめる。消えたやりとりは
        * 向きと種類から外し、最後に 1 つにまとめる。
        * @param ends 線の向きの順の 2 つの単位の id
        * @param messages つながりのやりとり
@@ -1504,10 +1534,10 @@ button.change-item:hover { background: var(--track); }
        * @returns `{kind, from, to, messages}` の並び(やりとりの無いものは含まない)。kind は cmd / qry / evt / removed で、
        *   removed は from / to が null
        */
-      of: ({ ends, messages, unitOf }) => {
+      collect: ({ ends, messages, unitOf }) => {
         const live = messages.filter((message) => !isRemoved(message));
         const directions = [[ends[0], ends[1]], [ends[1], ends[0]]];
-        const sentences = directions.flatMap(([from, to]) => KindOrder.map((kind) => ({ kind, from, to, messages: live.filter((message) => message.kind === kind && unitOf.get(message.from) === from) })));
+        const sentences = directions.flatMap(([from, to]) => MessageKindOrder.map((kind) => ({ kind, from, to, messages: live.filter((message) => message.kind === kind && unitOf.get(message.from) === from) })));
         const removed = messages.filter(isRemoved);
         const gone = removed.length === 0 ? [] : [{ kind: "removed", from: null, to: null, messages: removed }];
         return [...sentences.filter((sentence) => sentence.messages.length > 0), ...gone];
@@ -1521,13 +1551,19 @@ button.change-item:hover { background: var(--track); }
     return Object.freeze({
       /** @returns 選択を変える前の選択(`previous`、何も選んでいなければ null)を最後に足した並び。40 件を超えたら古いものから落とす */
       recorded: (history, previous) => [...history, previous].slice(-Limit),
-      /** @returns 戻り先(最後に足した選択)と、それを外した並び。並びが空なら null */
-      back: (history) => (history.length === 0 ? null : { selection: history[history.length - 1], history: history.slice(0, -1) }),
+      /**
+       * @param isAvailable 選択がいまも選べるか(配置が変わって図から消えたものは選べない)
+       * @returns 戻り先(最後に足した選択のうち、選べるもの)と、それより後ろを外した並び。選べるものが無ければ null
+       */
+      back: (history, isAvailable) => {
+        const index = history.findLastIndex(isAvailable);
+        return index < 0 ? null : { selection: history[index], history: history.slice(0, index) };
+      },
     });
   })();
 
   /** DOM に触らない部分(核)。判定表が node の vm で評価して叩く。 */
-  const core = Object.freeze({ ExplainedMap, ScreenChoice, ReviewMark, Highlighter, CommitDiff, GraphLayout, ConnectionGist, SelectionHistory });
+  const core = Object.freeze({ ExplainedMap, ScreenChoice, ReviewCheck, Tokenizer, CommitDiff, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary });
   if (typeof document === "undefined") {
     globalThis.prExplainCore = core;
     return;
@@ -1596,7 +1632,7 @@ button.change-item:hover { background: var(--track); }
   });
 
   const ScreenLabels = { map: "構造マップ", story: "変更の経緯", test: "テスト" };
-  const PageStoreKey = "prExplain.page";
+  const ScreenStoreKey = "prExplain.screen";
 
   /** 画面ごとのパネルの既定の幅。左はどの画面にもあり、右は構造マップとテストだけにある。 */
   const PanelLayouts = {
@@ -1681,24 +1717,21 @@ button.change-item:hover { background: var(--track); }
   const shortSha = (sha) => sha.slice(0, 7);
   const dateLabel = (iso) => (typeof iso === "string" ? iso.slice(0, 16).replace("T", " ") : "");
 
-  const countsOf = (total, additions, deletions) => el("span", { class: "counts" }, [
-    el("span", { class: "total", text: total }),
-    el("span", { class: "add", text: plus(additions) }),
-    el("span", { class: "del", text: minus(deletions) }),
-  ]);
-  const panelHead = (title, sub) => el("div", { class: "panel-head" }, [el("span", { class: "panel-title", text: title }), el("span", { class: "panel-sub", text: sub })]);
+  /** 足した行数と消した行数の組。 */
+  const lineCountsOf = (additions, deletions) => [el("span", { class: "add", text: plus(additions) }), el("span", { class: "del", text: minus(deletions) })];
+  const countsOf = (total, additions, deletions) => el("span", { class: "counts" }, [el("span", { class: "total", text: total }), ...lineCountsOf(additions, deletions)]);
+  /** パネルの見出し。`extra` は右端に並べるもの。 */
+  const panelHead = (title, sub, extra = []) => el("div", { class: "panel-head" }, [el("span", { class: "panel-title", text: title }), el("span", { class: "panel-sub", text: sub }), ...extra]);
   const panelOf = (side, children) => el("aside", { class: `panel is-${side}` }, children);
   const emptyOf = (text) => el("p", { class: "empty", text });
+  /** 右のパネルの小見出し。`note` は横に添える補足。 */
+  const eyebrowOf = (text, note) => el("span", { class: "eyebrow-row" }, [el("span", { class: "eyebrow", text }), ...(note === undefined ? [] : [el("span", { class: "eyebrow-note", text: note })])]);
+  /** やりとりの種類の札。 */
+  const kindChipOf = (kind) => el("span", { class: "kind", "data-kind": kind, text: Object.hasOwn(Vocabulary.messageKinds, kind) ? Vocabulary.messageKinds[kind].label : kind });
 
-  /** 解説の題と要約。解説が無ければ、地図だけで組んでいることを出す。 */
-  const ledeOf = (explained, eyebrow) => {
-    if (explained.explain.kind !== "explained") return el("div", { class: "lede" }, [el("span", { class: "eyebrow", text: eyebrow }), emptyOf("解説はありません。変更の地図だけで組んでいます。")]);
-    const overview = explained.explain.explain.overview;
-    return el("div", { class: "lede" }, [el("span", { class: "eyebrow", text: eyebrow }), prose("h1", {}, overview.title), prose("p", {}, overview.lead)]);
-  };
+  /** 解説の題と要約。 */
+  const ledeOf = (overview, eyebrow) => el("div", { class: "lede" }, [el("span", { class: "eyebrow", text: eyebrow }), prose("h1", {}, overview.title), prose("p", {}, overview.lead)]);
 
-  const PhaseLabels = { prep: "下ごしらえ", core: "本体", hard: "安定化", review: "指摘の反映", fin: "仕上げ" };
-  const MessageKindLabels = { cmd: "コマンド", qry: "クエリ", evt: "イベント" };
   const DiffViews = {
     diff: { label: "差分", title: "git diff の形で、消えた行と増えた行を並べる", hint: "番号つきの注釈にマウスを乗せると、該当する行が光ります" },
     code: { label: "コード", title: "変更後のコードをそのまま読む。変わった行は左端の線で示す", hint: "変更後のコード。左端の緑線が今回変わった行。注釈にマウスを乗せると該当行が光ります" },
@@ -1707,11 +1740,12 @@ button.change-item:hover { background: var(--track); }
   const MoveKeys = { ArrowDown: 1, j: 1, ArrowUp: -1, k: -1 };
   const OverviewId = "overview";
 
-  const phaseLabelOf = (note) => `${PhaseLabels[note.phase] ?? note.phase}：${note.role}`;
+  const phaseLabelOf = (story) => `${Vocabulary.phases[story.phase] ?? story.phase}：${story.role}`;
   const numberText = (number) => (number === null ? "" : String(number));
   const countsTextOf = (file) => {
     if (file.additions === null) return [el("span", { class: "muted", text: "バイナリ" })];
-    return [el("span", { class: "add", text: plus(file.additions) }), " ", el("span", { class: "del", text: minus(file.deletions ?? 0) })];
+    const [added, deleted] = lineCountsOf(file.additions, file.deletions ?? 0);
+    return [added, " ", deleted];
   };
 
   /** 確認の印の保存値。読めない値は「印なし」にする。 */
@@ -1725,7 +1759,7 @@ button.change-item:hover { background: var(--track); }
   };
 
   const commitRowOf = (commit, story) => {
-    const isUnexplained = commit.note === null && !commit.merge;
+    const isUnexplained = commit.story === null && !commit.merge;
     const concepts = [...new Set(commit.files.map((file) => story.lookup.conceptNames.get(file.path)).filter((name) => name !== undefined))].slice(0, 3);
     const tags = [
       commit.merge ? el("span", { class: "tag", text: "マージ" }) : null,
@@ -1735,28 +1769,48 @@ button.change-item:hover { background: var(--track); }
     return pressable("button", { class: "commit-row plain-button" }, [
       el("div", { class: "commit-rail" }, [el("span", { class: "commit-dot" })]),
       el("div", { class: "commit-body" }, [
-        el("span", { class: "row-title", text: commit.subject ?? shortSha(commit.sha) }),
-        el("div", { class: "row-meta" }, [el("span", { class: "sha", text: shortSha(commit.sha) }), el("span", { text: dateLabel(commit.date) }), el("span", { class: "add", text: plus(commit.additions) }), el("span", { class: "del", text: minus(commit.deletions) })]),
+        el("span", { class: "row-title", text: commit.subject }),
+        el("div", { class: "row-meta" }, [el("span", { class: "sha", text: shortSha(commit.sha) }), el("span", { text: dateLabel(commit.date) }), ...lineCountsOf(commit.additions, commit.deletions)]),
         el("div", { class: "tags" }, tags),
       ]),
     ], () => story.actions.select(commit.sha));
   };
 
-  const behaviorCardOf = ({ title, sub, behaviors, isAfter, mark }) => el("div", { class: isAfter ? "behavior-card is-after" : "behavior-card" }, [
-    el("span", { class: "card-head" }, [el("span", { class: "card-title", text: title }), el("span", { class: "muted", text: sub })]),
-    ...behaviors.map((behavior) => el("div", { class: "behavior" }, [el("span", { class: "mark", text: mark }), prose("span", {}, behavior.text)])),
+  /** 振る舞いの 1 行。やりとりを指していれば、種類・名前・送り手 → 受け手のチップを添える。`mark` は行頭の印(無ければ null)。 */
+  const behaviorItemOf = (behavior, { story, mark }) => {
+    const message = typeof behavior.message === "string" ? story.lookup.messages.get(behavior.message) : undefined;
+    const nameOf = (path) => story.lookup.conceptNames.get(path) ?? path;
+    const chip = message === undefined ? [] : [el("span", { class: "message-chip" }, [
+      kindChipOf(message.kind),
+      el("span", { class: "message-name", text: message.name }),
+      el("span", { class: "message-route", text: `${nameOf(message.from)} → ${nameOf(message.to)}` }),
+    ])];
+    const marks = mark === null ? [] : [el("span", { class: "mark", text: mark })];
+    return el("div", { class: "behavior-item" }, [...marks, el("div", { class: "behavior-body" }, [prose("span", {}, behavior.text), ...chip])]);
+  };
+
+  /**
+   * 振る舞いの前後のカード 2 枚の節。
+   * @param cards 前(これまで)と後のカードの `{title, sub, behaviors, mark, empty}`。`empty` は振る舞いが無いときの文
+   */
+  const behaviorsOf = ({ eyebrow, cards, story }) => el("div", { class: "section" }, [
+    el("span", { class: "eyebrow", text: eyebrow }),
+    el("div", { class: "behaviors" }, cards.map((card, index) => el("div", { class: index === 0 ? "behavior-card" : "behavior-card is-after" }, [
+      el("span", { class: "card-head" }, [el("span", { class: "card-title", text: card.title }), el("span", { class: "muted", text: card.sub })]),
+      ...card.behaviors.map((behavior) => behaviorItemOf(behavior, { story, mark: card.mark })),
+      ...(card.behaviors.length === 0 && card.empty !== null ? [el("span", { class: "behavior-none", text: card.empty })] : []),
+    ]))),
   ]);
 
   /** 変更の順番の 1 段。解説があれば役割と理由も出す。 */
   const orderStepOf = (commit, story) => {
-    const note = commit.note;
-    const explained = note === null ? [] : [el("span", { class: "order-role", "data-phase": note.phase, text: phaseLabelOf(note) })];
-    const why = note === null ? [] : [prose("span", { class: "order-why" }, note.why)];
+    const explained = commit.story === null ? [] : [el("span", { class: "order-role", "data-phase": commit.story.phase, text: phaseLabelOf(commit.story) })];
+    const why = commit.story === null ? [] : [prose("span", { class: "order-why" }, commit.story.why)];
     return pressable("button", { class: "order-step plain-button" }, [
       el("div", { class: "order-rail" }, [el("span", { class: "order-num", text: String(story.steps.get(commit.sha)) })]),
       el("div", { class: "order-body" }, [
         ...explained,
-        el("span", { class: "order-subject", text: commit.subject ?? shortSha(commit.sha) }),
+        el("span", { class: "order-subject", text: commit.subject }),
         ...why,
         el("span", { class: "order-meta", text: `${shortSha(commit.sha)} · ${commit.files.length} ファイル` }),
       ]),
@@ -1790,9 +1844,9 @@ button.change-item:hover { background: var(--track); }
 
   /** ブランチ全体のレビューの文。古いコミットから順に、コミットごとの書いた順で並べる。 */
   const reviewItemsOf = (story) => story.commits.flatMap((commit) => {
-    const hasReview = commit.note !== null && Array.isArray(commit.note.review);
-    const texts = hasReview ? commit.note.review : [];
-    return texts.map((text) => ({ key: ReviewMark.keyOf(commit.sha, text), text, commit }));
+    const hasReview = commit.story !== null && Array.isArray(commit.story.review);
+    const texts = hasReview ? commit.story.review : [];
+    return texts.map((text) => ({ key: ReviewCheck.keyOf(commit.sha, text), text, commit }));
   });
 
   const matchesFilter = (filter, isChecked) => {
@@ -1818,7 +1872,7 @@ button.change-item:hover { background: var(--track); }
       text: item.text,
       isChecked: checked.has(item.key),
       onToggle: () => story.actions.toggleCheck(item.key),
-      go: { label: `${story.steps.get(item.commit.sha)}. ${item.commit.subject ?? shortSha(item.commit.sha)}`, onPress: () => story.actions.select(item.commit.sha) },
+      go: { label: `${story.steps.get(item.commit.sha)}. ${item.commit.subject}`, onPress: () => story.actions.select(item.commit.sha) },
     }));
     const empty = shown.length > 0 ? [] : [el("span", { class: "review-count", text: filter === "done" ? "まだ確認済みのものはありません。" : "すべて確認済みです。" })];
     return [el("div", { class: "section" }, [
@@ -1833,30 +1887,31 @@ button.change-item:hover { background: var(--track); }
     ])];
   };
 
-  const strayNotesOf = (explained) => {
-    if (explained.strayNotes.length === 0) return [];
+  const strayStoriesOf = (explained) => {
+    if (explained.strayStories.length === 0) return [];
     return [el("div", { class: "section" }, [
-      el("span", { class: "eyebrow", text: `地図に無い解説(${explained.strayNotes.length})` }),
-      ...explained.strayNotes.map((note) => el("div", { class: "row" }, [prose("span", { class: "row-title" }, note.role), el("span", { class: "row-meta" }, [el("span", { class: "sha", text: shortSha(note.sha) })])])),
+      el("span", { class: "eyebrow", text: `地図に無い解説(${explained.strayStories.length})` }),
+      ...explained.strayStories.map((story) => el("div", { class: "row" }, [prose("span", { class: "row-title" }, story.role), el("span", { class: "row-meta" }, [el("span", { class: "sha", text: shortSha(story.sha) })])])),
     ])];
   };
 
   /** ブランチ全体の流れ。解説が無ければ、案内とコミットの件名だけの順番を出す。 */
   const storyOverviewOf = (story) => {
-    const { explained, explain } = story;
-    if (explain === null) {
+    const { explained } = story;
+    if (explained.explain === null) {
       const guide = el("div", { class: "lede" }, [el("span", { class: "eyebrow", text: "ブランチ全体の流れ" }), emptyOf("解説はありません。変更の地図だけで組んでいます。左のコミットを選ぶと、件名・本文と差分を読めます。")]);
       return [guide, orderOf(story, "変更の順番")];
     }
-    const lede = ledeOf(explained, "ブランチ全体の流れ");
-    const behaviors = el("div", { class: "section" }, [
-      el("span", { class: "eyebrow", text: "振る舞いの変化(ブランチ全体)" }),
-      el("div", { class: "behaviors" }, [
-        behaviorCardOf({ title: "これまで", sub: explained.map.baseBranch ?? "", behaviors: explain.overview.before, isAfter: false, mark: "—" }),
-        behaviorCardOf({ title: "このブランチのあと", sub: explained.map.headBranch ?? "", behaviors: explain.overview.after, isAfter: true, mark: "+" }),
-      ]),
-    ]);
-    return [lede, behaviors, orderOf(story, "変更の順番と、それぞれの役割"), ...reviewSectionOf(story), ...strayNotesOf(explained)];
+    const overview = explained.explain.overview;
+    const behaviors = behaviorsOf({
+      eyebrow: "振る舞いの変化(ブランチ全体)",
+      cards: [
+        { title: "これまで", sub: explained.map.baseBranch, behaviors: overview.before, mark: "—", empty: null },
+        { title: "このブランチのあと", sub: explained.map.headBranch, behaviors: overview.after, mark: "+", empty: null },
+      ],
+      story,
+    });
+    return [ledeOf(overview, "ブランチ全体の流れ"), behaviors, orderOf(story, "変更の順番と、それぞれの役割"), ...reviewSectionOf(story), ...strayStoriesOf(explained)];
   };
 
   const commitHeadOf = (commit, story) => {
@@ -1865,71 +1920,60 @@ button.change-item:hover { background: var(--track); }
     const newer = index < story.commits.length - 1 ? story.commits[index + 1].sha : null;
     const total = story.steps.size;
     const stepText = commit.merge ? "マージ" : `${story.steps.get(commit.sha)} / ${total}`;
-    const step = commit.note === null ? [el("span", { text: stepText })] : [el("span", { "data-phase": commit.note.phase, text: `${stepText} · ${phaseLabelOf(commit.note)}` })];
+    const step = commit.story === null ? [el("span", { text: stepText })] : [el("span", { "data-phase": commit.story.phase, text: `${stepText} · ${phaseLabelOf(commit.story)}` })];
     const newerButton = pressable("button", { text: "次の変更 →" }, [], () => story.actions.select(newer));
     if (newer === null) newerButton.disabled = true;
     const message = commit.body ? [el("pre", { class: "commit-message", text: commit.body })] : [];
+    const [added, deleted] = lineCountsOf(commit.additions, commit.deletions);
     return el("div", { class: "commit-head" }, [
       el("div", { class: "commit-facts" }, [
         el("span", { class: "sha-chip", text: shortSha(commit.sha) }),
-        el("span", { text: commit.author ?? "" }),
+        el("span", { text: commit.author }),
         el("span", { class: "muted", text: dateLabel(commit.date) }),
-        el("span", { class: "mono" }, [el("span", { class: "add", text: plus(commit.additions) }), " ", el("span", { class: "del", text: minus(commit.deletions) })]),
+        el("span", { class: "mono" }, [added, " ", deleted]),
         el("span", { class: "muted", text: `${commit.files.length} ファイル` }),
         el("span", { class: "spacer" }),
         el("span", { class: "step-buttons" }, [pressable("button", { text: "← 前の変更" }, [], () => story.actions.select(older)), newerButton]),
       ]),
       el("div", { class: "commit-step" }, step),
-      el("h1", { text: commit.subject ?? shortSha(commit.sha) }),
+      el("h1", { text: commit.subject }),
       ...message,
     ]);
   };
 
-  /** 振る舞いの 1 行。やりとりを指していれば、種類・名前・送り手 → 受け手を添える。 */
-  const behaviorItemOf = (behavior, story) => {
-    const message = typeof behavior.message === "string" ? story.lookup.messages.get(behavior.message) : undefined;
-    const nameOf = (path) => story.lookup.conceptNames.get(path) ?? path;
-    const chip = message === undefined ? [] : [el("span", { class: "message-chip" }, [
-      el("span", { class: "kind", "data-kind": message.kind, text: MessageKindLabels[message.kind] ?? message.kind }),
-      el("span", { class: "message-name", text: message.name }),
-      el("span", { class: "message-route", text: `${nameOf(message.from)} → ${nameOf(message.to)}` }),
-    ])];
-    return el("div", { class: "behavior-item" }, [prose("span", {}, behavior.text), ...chip]);
-  };
-
-  const commitBehaviorsOf = (note, story) => {
-    const before = Array.isArray(note.before) ? note.before : [];
-    const after = Array.isArray(note.after) ? note.after : [];
+  const commitBehaviorsOf = (commitStory, story) => {
+    const before = Array.isArray(commitStory.before) ? commitStory.before : [];
+    const after = Array.isArray(commitStory.after) ? commitStory.after : [];
     if (before.length + after.length === 0) return [];
-    const beforeItems = before.length === 0 ? [el("span", { class: "behavior-none", text: "(新しく足しただけで、変わる振る舞いはない)" })] : before.map((behavior) => behaviorItemOf(behavior, story));
-    return [el("div", { class: "section" }, [
-      el("span", { class: "eyebrow", text: "何の振る舞いが変わったか" }),
-      el("div", { class: "behaviors" }, [
-        el("div", { class: "behavior-card is-commit" }, [el("span", { class: "card-title", text: "これまで" }), ...beforeItems]),
-        el("div", { class: "behavior-card is-commit is-after" }, [el("span", { class: "card-title", text: "この変更のあと" }), ...after.map((behavior) => behaviorItemOf(behavior, story))]),
-      ]),
-    ])];
+    return [behaviorsOf({
+      eyebrow: "何の振る舞いが変わったか",
+      cards: [
+        { title: "これまで", sub: "", behaviors: before, mark: null, empty: "(新しく足しただけで、変わる振る舞いはない)" },
+        { title: "この変更のあと", sub: "", behaviors: after, mark: null, empty: null },
+      ],
+      story,
+    })];
   };
 
   /** コミットの解説(なぜ・影響する操作・レビューで見るところ・振る舞いの前後)。 */
-  const commitNoteOf = (commit, story) => {
-    const note = commit.note;
-    const flows = (Array.isArray(note.flows) ? note.flows : []).map((id) => story.lookup.flows.get(id)).filter((flow) => flow !== undefined);
+  const commitStoryOf = (commit, story) => {
+    const commitStory = commit.story;
+    const flows = (Array.isArray(commitStory.flows) ? commitStory.flows : []).map((id) => story.lookup.flows.get(id)).filter((flow) => flow !== undefined);
     const flowChips = flows.length === 0 ? [] : [el("div", { class: "flow-chips" }, [
       el("span", { class: "label", text: "影響する操作" }),
       ...flows.map((flow) => pressable("button", { class: "flow-chip", title: "構造マップでこの流れを見る" }, [flow.label, el("span", { class: "arrow", text: "↗" })], () => story.go.toFlow(flow.id))),
     ])];
-    const review = Array.isArray(note.review) ? note.review : [];
+    const review = Array.isArray(commitStory.review) ? commitStory.review : [];
     const reviewBlock = review.length === 0 ? [] : [el("div", { class: "section" }, [
       el("span", { class: "eyebrow", text: "レビューで見るところ" }),
       ...review.map((text) => {
-        const key = ReviewMark.keyOf(commit.sha, text);
+        const key = ReviewCheck.keyOf(commit.sha, text);
         return reviewCardOf({ text, isChecked: story.state.checked.has(key), onToggle: () => story.actions.toggleCheck(key), go: null });
       }),
     ])];
     return [
-      el("div", { class: "why-grid" }, [el("div", { class: "section" }, [el("span", { class: "eyebrow", text: "なぜこの変更?" }), prose("p", { class: "why-text" }, note.why), ...flowChips]), ...reviewBlock]),
-      ...commitBehaviorsOf(note, story),
+      el("div", { class: "why-grid" }, [el("div", { class: "section" }, [el("span", { class: "eyebrow", text: "なぜこの変更?" }), prose("p", { class: "why-text" }, commitStory.why), ...flowChips]), ...reviewBlock]),
+      ...commitBehaviorsOf(commitStory, story),
     ];
   };
 
@@ -1966,7 +2010,7 @@ button.change-item:hover { background: var(--track); }
   /** 1 行のコードを色分けした字句にする。 */
   const codeTextOf = (text, grammar, carry) => {
     if (grammar === null) return { node: el("span", { class: "code-text", text }), carry };
-    const result = Highlighter.tokenizeLine(text, grammar, carry);
+    const result = Tokenizer.tokenizeLine(text, grammar, carry);
     const tokens = result.tokens.map((token) => (token.cls === null ? token.value : el("span", { class: token.cls, text: token.value })));
     return { node: el("span", { class: "code-text" }, tokens), carry: result.carry };
   };
@@ -1976,7 +2020,7 @@ button.change-item:hover { background: var(--track); }
    * @returns 行ごとの code-text の要素(`hunk.lines` と同じ順)
    */
   const highlightedLinesOf = (lines, grammar) => {
-    let carries = { old: Highlighter.Start, new: Highlighter.Start };
+    let carries = { old: Tokenizer.Start, new: Tokenizer.Start };
     return lines.map((line) => {
       const stream = line.sign === "-" ? "old" : "new";
       const { node, carry } = codeTextOf(line.text, grammar, carries[stream]);
@@ -2015,7 +2059,7 @@ button.change-item:hover { background: var(--track); }
     const texts = highlightedLinesOf(hunk.lines, grammar);
     const textOf = new Map(hunk.lines.map((line, index) => [line, texts[index]]));
     const rows = isCode ? CommitDiff.codeRowsOf(hunk) : hunk.lines.map((line) => ({ kind: "line", line }));
-    const coveredBy = rows.map((row) => hunk.notes.filter((note) => rowLinesOf(row).some((line) => CommitDiff.covers(note, line))));
+    const coveredBy = rows.map((row) => hunk.notes.filter((note) => rowLinesOf(row).some((line) => CommitDiff.hasLine(note, line))));
     const markerOf = new Map(hunk.notes.map((note) => [note, el("span", { class: "marker", text: String(note.n) })]));
     const rowNodes = rows.map((row, index) => {
       const markers = hunk.notes.filter((note) => coveredBy.findIndex((notes) => notes.includes(note)) === index).map((note) => markerOf.get(note));
@@ -2077,14 +2121,14 @@ button.change-item:hover { background: var(--track); }
   const codeSectionOf = (commit, story) => {
     const { view, closed } = story.state;
     const eyebrow = el("span", { class: "eyebrow", text: "実際のコード" });
-    const diff = CommitDiff.of(commit, commit.note);
+    const diff = CommitDiff.create(commit, commit.story);
     const strays = diff.strayNotes.length === 0 ? [] : [el("div", { class: "file-notes" }, [
       el("span", { class: "file-notes-title", text: `地図に無いパスへの注釈(${diff.strayNotes.length})` }),
       ...diff.strayNotes.map((note) => plainNoteOf(note, `${note.path} ${lineRangeOf(note)}`)),
     ])];
     if (commit.merge) return el("div", { class: "section" }, [eyebrow, emptyOf("マージコミットなので、差分は出しません。"), ...strays]);
     const context = { view, closed, sha: commit.sha, lookup: story.lookup, commitUrl: `https://github.com/${Repo}/commit/${commit.sha}`, setOpen: story.actions.setOpen };
-    const cards = diff.files.map((file) => fileCardOf(file, { ...context, grammar: Highlighter.grammarOf(file.path) }));
+    const cards = diff.files.map((file) => fileCardOf(file, { ...context, grammar: Tokenizer.grammarOf(file.path) }));
     const openAll = (isOpen) => () => {
       for (const card of cards) card.open = isOpen;
     };
@@ -2105,26 +2149,15 @@ button.change-item:hover { background: var(--track); }
 
   const commitViewOf = (commit, story) => [
     commitHeadOf(commit, story),
-    ...(commit.note === null ? unexplainedCommitOf(commit) : commitNoteOf(commit, story)),
+    ...(commit.story === null ? unexplainedCommitOf(commit) : commitStoryOf(commit, story)),
     codeSectionOf(commit, story),
   ];
 
-  /** 解説から、ページが名前で引く一覧。 */
-  const lookupOf = (explain) => {
-    const listOf = (key) => (explain !== null && Array.isArray(explain[key]) ? explain[key] : []);
-    return {
-      conceptNames: new Map(listOf("concepts").map((concept) => [concept.path, concept.name])),
-      flows: new Map(listOf("flows").map((flow) => [flow.id, flow])),
-      messages: new Map(listOf("messages").map((message) => [message.id, message])),
-    };
-  };
-
   /** 変更の経緯。左にコミットを新しい順に並べ、右に全体の流れか、選んだコミットの説明と差分を出す。 */
   const StoryScreen = (explained, go) => {
-    const explain = explained.explain.kind === "explained" ? explained.explain.explain : null;
     const commits = explained.commits;
     const checkedKey = `prExplain.${explained.map.pr}.checked`;
-    const fixed = { explained, explain, commits, go, lookup: lookupOf(explain), steps: new Map(commits.filter((commit) => !commit.merge).map((commit, index) => [commit.sha, index + 1])) };
+    const fixed = { explained, commits, go, lookup: explained.lookup, steps: new Map(commits.filter((commit) => !commit.merge).map((commit, index) => [commit.sha, index + 1])) };
     const commitAt = new Map(commits.map((commit) => [commit.sha, commit]));
     const order = [OverviewId, ...commits.toReversed().map((commit) => commit.sha)];
     let state = { selected: OverviewId, view: "diff", filter: "all", checked: savedChecksOf(BrowserStore.read(checkedKey)), closed: new Set() };
@@ -2205,6 +2238,7 @@ button.change-item:hover { background: var(--track); }
    * 箱の図を載せるキャンバス。4px 動かしてからのドラッグで動かし、ホイールと −/+ で 0.2〜2.5 倍に拡大縮小し、
    * 全体表示で収める。キャンバスの大きさが変わったときと、書体を読み込んだあと(読み手が動かしていなければ)にも
    * 収め直す。図を置ける広さ(上下の重ねもののあいだ)が変わったら画面に知らせ、画面はそれに合わせて並べ直す。
+   * マウスが乗っている線(`data-edge` を持つ線とラベル)が変わったときも画面に知らせる。
    */
   const GraphView = (() => {
     const MinScale = 0.2;
@@ -2224,9 +2258,11 @@ button.change-item:hover { background: var(--track); }
      * @param onBackground 何も無いところを押したときに呼ぶ
      * @param onFirstFit 初めて収めたときに、そのときの縮尺で呼ぶ
      * @param onRoom 図を置ける広さが変わったときに呼ぶ(収め直す前)
-     * @returns キャンバスの要素(`element`)、図の中身を差し替える `show`、図を置ける広さを返す `room`
+     * @param onHover マウスが乗っている線が変わったときに呼ぶ
+     * @returns キャンバスの要素(`element`)、図の中身を差し替える `show`、図を置ける広さを返す `room`、マウスが乗っている
+     *   線の鍵を返す `hoveredEdge`
      */
-    const create = ({ top, legend, onBackground, onFirstFit, onRoom }) => {
+    const create = ({ top, legend, onBackground, onFirstFit, onRoom, onHover }) => {
       const world = el("div", { class: "graph-world" });
       const percent = el("span", { class: "zoom-percent", text: "100%" });
       const empty = el("div", { class: "graph-empty", text: "図に出す箱がありません", hidden: "" });
@@ -2356,6 +2392,19 @@ button.change-item:hover { background: var(--track); }
         if (isBackground) onBackground();
       });
 
+      // 画面が描き直して要素が入れ替わっても、次に動かしたときに同じ線を指していれば知らせない。
+      let hovered = null;
+      const hoverTo = (key) => {
+        if (key === hovered) return;
+        hovered = key;
+        onHover();
+      };
+      canvas.addEventListener("mouseover", (event) => {
+        const edge = event.target instanceof Element ? event.target.closest("[data-edge]") : null;
+        hoverTo(edge === null ? null : edge.getAttribute("data-edge"));
+      });
+      canvas.addEventListener("mouseleave", () => hoverTo(null));
+
       let resizeTimer = null;
       const observer = new ResizeObserver(() => {
         clearTimeout(resizeTimer);
@@ -2370,6 +2419,8 @@ button.change-item:hover { background: var(--track); }
         element: canvas,
         /** @returns 図を置ける広さ `{width, height}`。まだ測っていなければ null */
         room: () => state.room,
+        /** @returns マウスが乗っている線の鍵。乗っていなければ null */
+        hoveredEdge: () => hovered,
         /**
          * 図の中身を差し替える。配置が変わったとき(`signature` が前と違うとき)だけ収め直す。
          * @param signature 配置を表す文字列(まとめ方・開いた組など)
@@ -2434,12 +2485,8 @@ button.change-item:hover { background: var(--track); }
 
   /** 押した 1 つだけが選ばれるボタンの組。 */
   const toggleGroupOf = ({ options, current, onPick }) => el("div", { class: "toggle-group" }, options.map((option) => pressable("button", { "aria-pressed": String(option.value === current), title: option.title ?? "", text: option.label }, [], () => onPick(option.value))));
-  /** 見出しの付いたボタンの組(ヘッダ・キャンバスの操作)。見出しは幅が足りないと省くので、組の title にも入れる。 */
-  const labeledToggleOf = (label, toggle) => {
-    const group = toggleGroupOf(toggle);
-    group.setAttribute("title", label);
-    return [el("span", { class: "control-label", text: label }), group];
-  };
+  /** 見出しの付いたボタンの組(ヘッダ・キャンバスの操作)。 */
+  const labeledToggleOf = (label, toggle) => [el("span", { class: "control-label", text: label }), toggleGroupOf(toggle)];
   /** 入り切りのボタン。`aria-pressed` は呼び出し側が描くたびに付け直す。 */
   const switchButtonOf = ({ label, title, onPress }) => pressable("button", { class: "switch-button", title }, [el("span", { class: "switch" }), label], onPress);
   /** 箱の中のボタン。押しても箱を選んだことにしない。 */
@@ -2450,20 +2497,13 @@ button.change-item:hover { background: var(--track); }
   /** キー操作が入力欄の中で起きたか。入力欄の中では画面のキー操作を効かせない。 */
   const isTypingIn = (event) => event.target instanceof Element && event.target.closest("input, textarea, select, [contenteditable]") !== null;
 
-  const Techniques = {
-    boundary: { label: "境界値", description: "ちょうど境目の値(0・上限・丸めの境など)で確かめる" },
-    equivalence: { label: "同値分割", description: "同じ扱いになる値のまとまりから、代表を1つずつ選んで確かめる" },
-    error: { label: "異常系", description: "失敗したとき・想定外のときにどう振る舞うかを確かめる" },
-    state: { label: "状態遷移", description: "操作の前後で、状態が正しく移り変わるかを確かめる" },
-    regression: { label: "回帰", description: "作り直しても、以前と同じ結果になるかを確かめる" },
-    idempotence: { label: "冪等性", description: "同じ操作を繰り返しても、結果が1回分になるかを確かめる" },
-    type: { label: "型", description: "書けてはいけない値がコンパイルで弾かれるか・推論される型を確かめる" },
-  };
+  const Techniques = Vocabulary.techniques;
   const TestStatuses = {
     new: { label: "追加", long: "このブランチで追加" },
     old: { label: "既存", long: "既存のテスト" },
     todo: { label: "未実装", long: "未実装(提案)" },
     removed: { label: "削除", long: "このブランチで削除" },
+    unjudged: { label: "判定なし", long: "追加か既存かの判定なし(テスト名を調べていないファイル)" },
   };
   const GroupingLabels = { feature: "機能", layer: "層" };
   const LevelChoices = [
@@ -2484,74 +2524,109 @@ button.change-item:hover { background: var(--track); }
     if (messages.length === 0) return 0;
     return Math.max(...messages.map((message) => GraphLayout.textWidthOf(`↩ ${messageTextOf(message, naming)}`))) + padding;
   };
-  const MessageKindOrder = { cmd: 0, qry: 1, evt: 2 };
-  // 1 つの線のラベルに並べるやりとりの数。選んだ線・選んだテストが 3 件以下で通る線は 5 件まで、他は 1 件。
-  const LabelLimits = { important: 5, other: 1 };
-  const LabelPadding = 64;
   const LabelChipHeight = 23;
   const LabelMoreHeight = 16;
 
+  /** 線のラベルに並べるやりとりの名前。線の向きと逆のものには `↩` を付ける。 */
+  const labelTextsOf = ({ messages, edge, layout, naming }) => messages.map((message) => `${layout.unitOf.get(message.from) !== edge.from ? "↩ " : ""}${messageTextOf(message, naming)}`);
+  /** ラベルの大きさ。`padding` は文字の外側(余白・枠・印)の幅、`more` は並べきれなかった件数。 */
+  const labelSizeOf = ({ texts, more, padding }) => ({ width: Math.max(...texts.map(GraphLayout.textWidthOf)) + padding, height: texts.length * LabelChipHeight + (more > 0 ? LabelMoreHeight : 0) });
+
+  /** 構造マップとテストの画面が共有する図の材料。まとめ方ごとの図の組・組の見出し・まとめ方の並び・パスから木の項目を引く表・やりとり。 */
+  const graphMaterialsOf = (explained) => {
+    const entryAt = new Map(explained.entries.map((entry) => [entry.path, entry]));
+    const graphGroups = Object.fromEntries(Object.entries(explained.groupings).map(([grouping, groups]) => [grouping, graphGroupsOf(groups, entryAt)]));
+    return {
+      entryAt,
+      graphGroups,
+      groupLabels: new Map(Object.values(graphGroups).flat().map((group) => [group.id, group.label])),
+      groupings: Object.keys(graphGroups),
+      messages: [...explained.lookup.messages.values()],
+    };
+  };
+
+  /** 図の初めの状態。機能でまとめられれば機能、解説があれば概念の名前で出し、抽象度は中。 */
+  const initialGraphStateOf = (materials, explained) => ({
+    grouping: materials.groupings.includes("feature") ? "feature" : "layer",
+    naming: explained.explain === null ? "file" : "concept",
+    expanded: Object.fromEntries(materials.groupings.map((grouping) => [grouping, GraphLayout.expandedAt(GraphLayout.Levels.Mid, materials.graphGroups[grouping])])),
+  });
+
+  /** 2 つの選択が同じものを指すか。どちらも null(何も選んでいない)なら同じ。 */
+  const isSameSelection = (some, other) => {
+    const hasNull = some === null || other === null;
+    return hasNull ? some === other : some.kind === other.kind && some.id === other.id;
+  };
+
+  /** やりとりの状態。省いたもの(前からあって変えていない)はここに無い。 */
+  const MessageStatuses = {
+    added: { tone: "A", label: "このブランチで追加" },
+    changed: { tone: "M", label: "このブランチで変更" },
+    removed: { tone: "D", label: "このブランチで削除" },
+  };
+  const isMessageChanged = (message) => Object.hasOwn(MessageStatuses, message.status ?? "");
+  /** やりとりの色の区分。前からあって変えていないものは空。 */
+  const messageToneOf = (message) => (isMessageChanged(message) ? MessageStatuses[message.status].tone : "");
+
+  // 1 つの線のラベルに並べるやりとりの数。選んだ線・マウスが乗っている線・選んだテストが 3 件以下で通る線は 5 件まで、他は 1 件。
+  const LabelLimits = { important: 5, other: 1 };
+  const LabelPadding = 64;
   const techniqueChipOf = (key) => el("span", { class: "technique", "data-technique": key, text: Techniques[key].label });
-  const isVerifying = (test) => test.status === "new" || test.status === "old";
+  /** テストの抜けとして数えるやりとり(このブランチで足した・変えたもの)か。 */
+  const isGapCandidate = (message) => message.status === "added" || message.status === "changed";
+  const isVerifying = (test) => test.status !== "todo" && test.status !== "removed";
   const matchesTechniques = (test, techniques) => techniques.length === 0 || test.techniques.some((key) => techniques.includes(key));
-  const isSameSelection = (some, other) => some !== null && other !== null && some.kind === other.kind && some.id === other.id;
 
   /** テストの画面。左にテストの一覧、中に箱の図、右に全体か、選んだテスト・箱・線の詳しいところを出す。 */
   const TestScreen = (explained, go) => {
-    const explain = explained.explain.kind === "explained" ? explained.explain.explain : null;
-    const lookup = lookupOf(explain);
-    const messages = [...lookup.messages.values()];
+    const { explain, lookup } = explained;
+    const materials = graphMaterialsOf(explained);
+    const { entryAt, graphGroups, groupLabels, groupings, messages } = materials;
     const hasMessages = messages.length > 0;
-    const entryAt = new Map(explained.entries.map((entry) => [entry.path, entry]));
     const commitAt = new Map(explained.commits.map((commit) => [commit.sha, commit]));
-    const graphGroups = Object.fromEntries(Object.entries(explained.groupings).map(([grouping, groups]) => [grouping, graphGroupsOf(groups, entryAt)]));
-    const groupLabels = new Map(Object.values(graphGroups).flat().map((group) => [group.id, group.label]));
-    const groupings = Object.keys(graphGroups);
     const tests = explained.tests.map((item, index) => {
       const covers = item.test !== null && Array.isArray(item.test.covers) ? item.test.covers : [];
       return { ...item, id: index, techniques: item.test === null ? [] : item.test.techniques, covers };
     });
+    const techniqueCounts = Object.fromEntries(Object.keys(Techniques).map((key) => [key, tests.filter((test) => test.techniques.includes(key)).length]));
     const suiteIds = (explain !== null && Array.isArray(explain.suites) ? explain.suites : []).map((suite) => `suite:${suite.id}`);
     const suiteKeyOf = (test) => (test.suite === null ? `file:${test.file ?? ""}` : `suite:${test.suite.id}`);
     const suiteKeys = [...new Set([...suiteIds, ...tests.map(suiteKeyOf)])];
     const messageLinks = messages.map((message) => ({ from: message.from, to: message.to, item: message, leads: message.kind !== "evt" }));
-    const dependencyLinks = explained.dependencies.filter((link) => link.state !== "removed").map((link) => ({ from: link.from, to: link.to, item: link, leads: true }));
+    const dependencyLinks = explained.dependencies.filter((link) => link.status !== "removed").map((link) => ({ from: link.from, to: link.to, item: link, leads: true }));
+    /** テストが箱(か組)の中のファイルを対象にしているか。 */
+    const touchesPlace = (test, place) => test.targets.some((path) => place.paths.includes(path));
+    /** テストが線のやりとりのどれかを確かめているか。 */
+    const touchesEdge = (test, edge) => edge.items.some((message) => test.covers.includes(message.id));
 
-    let state = {
-      grouping: groupings.includes("feature") ? "feature" : "layer",
-      naming: explain === null ? "file" : "concept",
-      expanded: Object.fromEntries(groupings.map((grouping) => [grouping, GraphLayout.expandedAt(GraphLayout.Levels.Mid, graphGroups[grouping])])),
-      selected: null,
-      techniques: [],
-      showGaps: false,
-    };
+    let state = { ...initialGraphStateOf(materials, explained), selected: null, techniques: [], showGaps: false };
 
     /** いまの状態から、図の配置と、テスト・やりとりの数え上げを作る。 */
     const modelOf = (current) => {
       const labelWidth = widestLabelOf({ messages, naming: current.naming, padding: LabelPadding });
-      const layout = GraphLayout.of({ groups: graphGroups[current.grouping], links: explained.dependencies, expanded: current.expanded[current.grouping], room: graph.room(), labelWidth });
+      const layout = GraphLayout.create({ groups: graphGroups[current.grouping], links: explained.dependencies, expanded: current.expanded[current.grouping], room: graph.room(), labelWidth });
       const shown = tests.filter((test) => matchesTechniques(test, current.techniques));
       const verifying = shown.filter(isVerifying);
       const coverage = new Map(messages.map((message) => [message.id, verifying.filter((test) => test.covers.includes(message.id))]));
-      const isGap = (message) => message.status === "new" && coverage.get(message.id).length === 0;
+      const isGap = (message) => isGapCandidate(message) && coverage.get(message.id).length === 0;
       const crossesUnits = (message) => layout.unitOf.get(message.from) !== layout.unitOf.get(message.to);
       const touches = (place, message) => place.paths.includes(message.from) || place.paths.includes(message.to);
-      const placeTests = (place) => verifying.filter((test) => test.targets.some((path) => place.paths.includes(path)));
-      const placeGaps = (place) => messages.filter((message) => isGap(message) && crossesUnits(message) && touches(place, message));
+      const edges = GraphLayout.edgesOf(layout, hasMessages ? messageLinks : dependencyLinks);
       return {
         layout,
         shown,
         coverage,
         isGap,
-        placeTests,
-        placeGaps,
+        placeTests: (place) => verifying.filter((test) => touchesPlace(test, place)),
+        placeGaps: (place) => messages.filter((message) => isGap(message) && crossesUnits(message) && touches(place, message)),
         places: new Map([...layout.units, ...layout.containers].map((place) => [place.id, place])),
-        edges: GraphLayout.edgesOf(layout, hasMessages ? messageLinks : dependencyLinks),
+        edges,
+        edgeAt: new Map(edges.map((edge) => [edge.key, edge])),
       };
     };
 
     /** 選んだものが光らせる単位・線・やりとり。 */
-    const highlightOf = (model, selected) => {
+    const litOf = (model, selected) => {
       const none = { units: new Set(), edges: new Set(), messages: new Set() };
       if (selected === null) return none;
       switch (selected.kind) {
@@ -2559,14 +2634,13 @@ button.change-item:hover { background: var(--track); }
           const test = tests[selected.id];
           const covered = test.covers.map((id) => lookup.messages.get(id)).filter((message) => message !== undefined);
           const paths = [...covered.flatMap((message) => [message.from, message.to]), ...test.targets];
-          const ids = new Set(test.covers);
-          const edges = model.edges.filter((edge) => edge.items.some((item) => ids.has(item.id)));
-          return { units: new Set(paths.map((path) => model.layout.unitOf.get(path)).filter((id) => id !== undefined)), edges: new Set(edges.map((edge) => edge.key)), messages: ids };
+          const edges = model.edges.filter((edge) => touchesEdge(test, edge));
+          return { units: new Set(paths.map((path) => model.layout.unitOf.get(path)).filter((id) => id !== undefined)), edges: new Set(edges.map((edge) => edge.key)), messages: new Set(test.covers) };
         }
         case "place":
           return { ...none, units: new Set([selected.id]) };
         case "edge": {
-          const edge = model.edges.find((candidate) => candidate.key === selected.id);
+          const edge = model.edgeAt.get(selected.id);
           return { ...none, units: new Set([edge.from, edge.to]), edges: new Set([selected.id]) };
         }
       }
@@ -2581,7 +2655,7 @@ button.change-item:hover { background: var(--track); }
         case "place":
           return model.places.has(selected.id) ? selected : null;
         case "edge":
-          return model.edges.some((edge) => edge.key === selected.id) ? selected : null;
+          return model.edgeAt.has(selected.id) ? selected : null;
       }
     };
 
@@ -2612,7 +2686,6 @@ button.change-item:hover { background: var(--track); }
     const controlNodes = {
       grouping: el("div", { class: "control" }),
       level: el("div", { class: "control" }),
-      naming: el("div", { class: "control" }),
       gaps: switchButtonOf({ label: "テストの抜けを強調", title: "テストの無いやりとりと、それに関わる箱を目立たせる", onPress: () => update({ showGaps: !state.showGaps }) }),
     };
     const renderControls = () => {
@@ -2620,7 +2693,6 @@ button.change-item:hover { background: var(--track); }
       const groupingChoices = groupings.toReversed().map((grouping) => ({ value: grouping, label: GroupingLabels[grouping] }));
       controlNodes.grouping.replaceChildren(...labeledToggleOf("まとめ方", { options: groupingChoices, current: state.grouping, onPick: (grouping) => update({ grouping, selected: null }) }));
       controlNodes.level.replaceChildren(...labeledToggleOf("抽象度", { options: LevelChoices, current: levelOf(groups, state.expanded[state.grouping]), onPick: (choice) => update({ expanded: { ...state.expanded, [state.grouping]: GraphLayout.expandedAt(choice, groups) } }) }));
-      controlNodes.naming.replaceChildren(...labeledToggleOf("表示名", { options: NamingChoices, current: state.naming, onPick: (naming) => update({ naming }) }));
       controlNodes.gaps.setAttribute("aria-pressed", String(state.showGaps));
     };
 
@@ -2632,12 +2704,8 @@ button.change-item:hover { background: var(--track); }
       const { selected, model } = view;
       const isTargetSelected = selected !== null && selected.kind !== "test";
       if (!isTargetSelected) return false;
-      if (selected.kind === "edge") {
-        const edge = model.edges.find((candidate) => candidate.key === selected.id);
-        return edge.items.some((item) => test.covers.includes(item.id));
-      }
-      const place = model.places.get(selected.id);
-      return test.targets.some((path) => place.paths.includes(path));
+      if (selected.kind === "edge") return touchesEdge(test, model.edgeAt.get(selected.id));
+      return touchesPlace(test, model.places.get(selected.id));
     };
 
     const testRowOf = (test, view) => {
@@ -2660,8 +2728,7 @@ button.change-item:hover { background: var(--track); }
     const renderList = (view) => {
       const { model } = view;
       const isFiltering = state.techniques.length > 0;
-      const countOf = (key) => tests.filter((test) => test.techniques.includes(key)).length;
-      const filters = explain === null ? [] : [el("div", { class: "tech-filters" }, Object.entries(Techniques).map(([key, technique]) => pressable("button", { class: "tech-filter", "data-technique": key, "aria-pressed": String(state.techniques.includes(key)), title: technique.description }, [el("span", { class: "swatch" }), technique.label, el("span", { class: "n", text: String(countOf(key)) })], () => update({ techniques: withToggledMember(state.techniques, key) }))))];
+      const filters = explain === null ? [] : [el("div", { class: "tech-filters" }, Object.entries(Techniques).map(([key, technique]) => pressable("button", { class: "tech-filter", "data-technique": key, "aria-pressed": String(state.techniques.includes(key)), title: technique.description }, [el("span", { class: "swatch" }), technique.label, el("span", { class: "n", text: String(techniqueCounts[key]) })], () => update({ techniques: withToggledMember(state.techniques, key) }))))];
       listHead.replaceChildren(panelHead("テストケース", `${model.shown.length} 件${isFiltering ? "(絞り込み中)" : ""}`), ...filters);
       const suites = suiteKeys.map((key) => model.shown.filter((test) => suiteKeyOf(test) === key)).filter((members) => members.length > 0);
       const note = explain === null ? [emptyOf("解説が無いので、変更の地図にあるテストの追加と削除だけを並べています。")] : [];
@@ -2672,16 +2739,17 @@ button.change-item:hover { background: var(--track); }
       listBody.scrollTop = scrollTop;
     };
 
-    const hint = el("span", { class: "canvas-hint" });
+    const canvasControls = el("div", { class: "canvas-controls" });
     const legendItems = [
       el("span", {}, [el("span", { class: "box-count", text: "3" }), "その要素を確かめるテスト数"]),
       ...(hasMessages ? [
         el("span", {}, [el("span", { class: "coverage-tag is-tested", text: "✓2" }), "やりとりを確かめるテスト"]),
-        el("span", {}, [el("span", { class: "coverage-tag is-gap", text: "未テスト" }), "追加したのにテストがない"]),
+        el("span", {}, [el("span", { class: "coverage-tag is-gap", text: "未テスト" }), "追加・変更したのにテストがない"]),
       ] : []),
     ];
+    let lastView = null;
     const graph = GraphView.create({
-      top: [hint],
+      top: [canvasControls],
       legend: [el("div", { class: "legend" }, legendItems)],
       onBackground: () => {
         if (state.selected !== null) update({ selected: null });
@@ -2690,6 +2758,9 @@ button.change-item:hover { background: var(--track); }
         if (isTooSmall(scale)) update({ expanded: Object.fromEntries(groupings.map((grouping) => [grouping, []])) });
       },
       onRoom: () => render(),
+      onHover: () => {
+        if (lastView !== null) renderGraph(lastView);
+      },
     });
 
     const hintTextOf = (view) => {
@@ -2700,10 +2771,15 @@ button.change-item:hover { background: var(--track); }
       return "数字=その要素を確かめるテストの数 · 点線=テストのないやりとり";
     };
 
+    const renderCanvasControls = (view) => {
+      const naming = explain === null ? [] : [el("div", { class: "control is-canvas" }, labeledToggleOf("表示名", { options: NamingChoices, current: state.naming, onPick: (choice) => update({ naming: choice }) }))];
+      canvasControls.replaceChildren(...naming, el("span", { class: "canvas-hint", text: hintTextOf(view) }));
+    };
+
     const containerNodeOf = (container, view) => {
-      const { model, highlight, selected } = view;
+      const { model, lit, selected } = view;
       const isPicked = isSameSelection(selected, { kind: "place", id: container.id });
-      const hasLitInside = isPicked || container.paths.some((path) => highlight.units.has(`box:${path}`));
+      const hasLitInside = isPicked || container.paths.some((path) => lit.units.has(`box:${path}`));
       const node = placedAt(el("div", { class: classesOf("graph-container", { "is-picked": isPicked, "is-dim": selected !== null && !hasLitInside }), title: "ダブルクリックで折りたたむ" }, [
         el("div", { class: "graph-container-head" }, [
           el("span", { class: "graph-container-title", text: groupLabels.get(container.group) }),
@@ -2718,10 +2794,10 @@ button.change-item:hover { background: var(--track); }
     };
 
     const unitNodeOf = (unit, view) => {
-      const { model, highlight, selected } = view;
+      const { model, lit, selected } = view;
       const testCount = model.placeTests(unit).length;
       const gapCount = model.placeGaps(unit).length;
-      const isLit = highlight.units.has(unit.id);
+      const isLit = lit.units.has(unit.id);
       const flags = {
         "is-picked": isLit,
         "has-gap": !isLit && state.showGaps && gapCount > 0,
@@ -2748,40 +2824,38 @@ button.change-item:hover { background: var(--track); }
 
     /** 線ごとの見え方。やりとりの線は、テストで確かめているか・抜けがあるかで色を変える。 */
     const edgeLookOf = (edge, view) => {
-      const { model, highlight, selected } = view;
-      const isOn = highlight.edges.has(edge.key);
+      const { model, lit, selected } = view;
+      const isOn = lit.edges.has(edge.key);
       const gaps = hasMessages ? edge.items.filter(model.isGap) : [];
       const isCovered = hasMessages && edge.items.some((message) => model.coverage.get(message.id).length > 0);
       const isDim = selected !== null && !isOn;
-      return { edge, isOn, gaps, isCovered, isDim, isFaint: !isDim && !isOn && state.showGaps && gaps.length === 0 };
+      const isHovered = edge.key === graph.hoveredEdge();
+      return { edge, isOn, gaps, isCovered, isDim, isHovered, isFaint: !isDim && !isOn && state.showGaps && gaps.length === 0 };
     };
 
     /** ラベルに並べるやりとり。選んだテストの線ならそのテストが確かめるもの、抜けを強調しているなら抜けだけ。 */
     const labelMessagesOf = (look, view) => {
-      const sorted = look.edge.items.toSorted((a, b) => MessageKindOrder[a.kind] - MessageKindOrder[b.kind]);
+      const sorted = look.edge.items.toSorted(byMessageKind);
       const isSelectedTestEdge = view.selected !== null && view.selected.kind === "test" && look.isOn;
       const isGapFocused = state.showGaps && look.gaps.length > 0;
-      if (isSelectedTestEdge) return sorted.filter((message) => view.highlight.messages.has(message.id));
+      if (isSelectedTestEdge) return sorted.filter((message) => view.lit.messages.has(message.id));
       if (isGapFocused) return sorted.filter(view.model.isGap);
       return sorted;
     };
 
+    /** 線のラベル。選んだ線・マウスが乗っている線・選んだテストが 3 件以下で通る線は、並べられるだけ並べて必ず置く。 */
     const labelOf = (look, view) => {
       const isPicked = isSameSelection(view.selected, { kind: "edge", id: look.edge.key });
-      const litCount = look.edge.items.filter((message) => view.highlight.messages.has(message.id)).length;
-      const isImportant = isPicked || (look.isOn && litCount <= 3);
+      const litCount = look.edge.items.filter((message) => view.lit.messages.has(message.id)).length;
+      const isImportant = isPicked || look.isHovered || (look.isOn && litCount <= 3);
       const listed = labelMessagesOf(look, view);
       const shown = listed.slice(0, isImportant ? LabelLimits.important : LabelLimits.other);
-      const texts = shown.map((message) => {
-        const isReversed = view.model.layout.unitOf.get(message.from) !== look.edge.from;
-        return `${isReversed ? "↩ " : ""}${messageNameOf(message)}`;
-      });
+      const texts = labelTextsOf({ messages: shown, edge: look.edge, layout: view.model.layout, naming: state.naming });
       const more = listed.length - shown.length;
       const priority = isImportant ? 3 : look.isOn ? 2 : look.gaps.length > 0 ? 1 : 0;
       const allowance = isImportant ? Infinity : look.isOn ? 0.25 : 0;
-      const width = Math.max(...texts.map(GraphLayout.textWidthOf)) + LabelPadding;
-      const height = shown.length * LabelChipHeight + (more > 0 ? LabelMoreHeight : 0);
-      return { look, isPicked, isImportant, shown, texts, more, candidate: { key: look.edge.key, bezier: look.edge.route.bezier, width, height, priority, allowance } };
+      const size = labelSizeOf({ texts, more, padding: LabelPadding });
+      return { look, isPicked, isImportant, shown, texts, more, candidate: { key: look.edge.key, bezier: look.edge.route.bezier, ...size, priority, allowance } };
     };
 
     const coverageTagOf = (message, model) => {
@@ -2793,50 +2867,37 @@ button.change-item:hover { background: var(--track); }
 
     const renderGraph = (view) => {
       const { model } = view;
-      const looks = model.edges.map((edge) => edgeLookOf(edge, view)).toSorted((a, b) => Number(a.isOn) - Number(b.isOn));
-      const hovered = new Map(looks.map((look) => [look.edge.key, []]));
-      const hoverable = (key, node) => {
-        hovered.get(key).push(node);
-        node.addEventListener("mouseenter", () => {
-          for (const target of hovered.get(key)) target.classList.add("is-hover");
-        });
-        node.addEventListener("mouseleave", () => {
-          for (const target of hovered.get(key)) target.classList.remove("is-hover");
-        });
-        return node;
-      };
+      const looks = model.edges.map((edge) => edgeLookOf(edge, view)).toSorted((a, b) => Number(a.isOn || a.isHovered) - Number(b.isOn || b.isHovered));
       const edgeNodes = looks.map((look) => {
-        const flags = { "is-dependency": !hasMessages, "is-covered": look.isCovered, "is-gap": state.showGaps && look.gaps.length > 0 && !look.isOn, "is-on": look.isOn, "is-dim": look.isDim, "is-faint": look.isFaint };
+        const flags = { "is-dependency": !hasMessages, "is-covered": look.isCovered, "is-gap": state.showGaps && look.gaps.length > 0 && !look.isOn, "is-on": look.isOn, "is-hover": look.isHovered, "is-dim": look.isDim, "is-faint": look.isFaint };
         const hit = hasMessages ? [Dom.svg("path", { class: "edge-hit", d: look.edge.route.path })] : [];
-        const group = Dom.svg("g", { class: classesOf("edge", flags) }, [Dom.svg("path", { class: "edge-line", d: look.edge.route.path }), Dom.svg("path", { class: "edge-head", d: look.edge.route.head }), ...hit]);
+        const group = Dom.svg("g", { class: classesOf("edge", flags), ...(hasMessages ? { "data-edge": look.edge.key } : {}) }, [Dom.svg("path", { class: "edge-line", d: look.edge.route.path }), Dom.svg("path", { class: "edge-head", d: look.edge.route.head }), ...hit]);
         if (hasMessages) group.addEventListener("click", () => select({ kind: "edge", id: look.edge.key }));
-        return hasMessages ? hoverable(look.edge.key, group) : group;
+        return group;
       });
       const svg = Dom.svg("svg", { class: "graph-edges", width: String(model.layout.width), height: String(model.layout.height) }, edgeNodes);
       const labels = hasMessages ? looks.map((look) => labelOf(look, view)) : [];
-      const placed = GraphLayout.placeLabels({ candidates: labels.map((label) => label.candidate), obstacles: GraphLayout.obstaclesOf(model.layout) });
+      const spots = GraphLayout.placeLabels({ candidates: labels.map((label) => label.candidate), obstacles: GraphLayout.obstaclesOf(model.layout) });
       const labelAt = new Map(labels.map((label) => [label.look.edge.key, label]));
-      const labelNodes = placed.map((spot) => {
+      const labelNodes = spots.filter((spot) => spot.isPlaced).map((spot) => {
         const label = labelAt.get(spot.key);
         const chips = label.shown.map((message, index) => el("span", { class: classesOf("label-chip", { "is-code": state.naming === "file" }), "data-kind": message.kind }, [el("span", { text: label.texts[index] }), coverageTagOf(message, model)]));
         const more = label.more > 0 ? [el("span", { class: "label-more", text: `+${label.more} 件` })] : [];
-        const flags = { "is-important": label.isImportant, "is-on": label.look.isOn, "is-picked": label.isPicked, "is-dim": label.look.isDim, "is-faint": label.look.isFaint };
-        const node = el("div", { class: classesOf("graph-label", flags) }, [...chips, ...more]);
+        const flags = { "is-important": label.isImportant, "is-on": label.look.isOn, "is-picked": label.isPicked, "is-hover": label.look.isHovered, "is-dim": label.look.isDim, "is-faint": label.look.isFaint };
+        const node = el("div", { class: classesOf("graph-label", flags), "data-edge": spot.key }, [...chips, ...more]);
         Object.assign(node.style, { left: `${spot.x}px`, top: `${spot.y}px` });
         node.addEventListener("click", () => select({ kind: "edge", id: spot.key }));
-        return hoverable(spot.key, node);
+        return node;
       });
       const children = [...model.layout.containers.map((container) => containerNodeOf(container, view)), svg, ...model.layout.units.map((unit) => unitNodeOf(unit, view)), ...labelNodes];
-      hint.textContent = hintTextOf(view);
       graph.show({ signature: signatureOf(state.grouping, model.layout), size: { width: model.layout.width, height: model.layout.height }, children });
     };
 
     const side = el("div", { class: "side" });
-    const eyebrowOf = (text, note) => el("span", { class: "eyebrow-row" }, [el("span", { class: "eyebrow", text }), ...(note === undefined ? [] : [el("span", { class: "eyebrow-note", text: note })])]);
     const clearButton = () => pressable("button", { class: "mini-button", text: "選択解除" }, [], () => update({ selected: null }));
 
     const messageBodyOf = (message, model) => [
-      el("span", { class: "message-chip" }, [el("span", { class: "kind", "data-kind": message.kind, text: MessageKindLabels[message.kind] ?? message.kind }), el("span", { class: classesOf("message-name", { "is-code": state.naming === "file" }), text: messageNameOf(message) })]),
+      el("span", { class: "message-chip" }, [kindChipOf(message.kind), el("span", { class: classesOf("message-name", { "is-code": state.naming === "file" }), text: messageNameOf(message) })]),
       el("span", { class: "message-route", text: `${endNameOf(model, message.from)} → ${endNameOf(model, message.to)}` }),
     ];
 
@@ -2856,26 +2917,26 @@ button.change-item:hover { background: var(--track); }
 
     const overviewOf = (model) => {
       const countOf = (status) => tests.filter((test) => test.status === status).length;
-      const statuses = Object.keys(TestStatuses).filter((status) => status !== "removed" || countOf(status) > 0);
+      const isAlwaysCounted = (status) => status === "new" || status === "old" || status === "todo";
+      const statuses = Object.keys(TestStatuses).filter((status) => isAlwaysCounted(status) || countOf(status) > 0);
       const head = el("div", { class: "side-block" }, [
         el("span", { class: "eyebrow", text: "テストの全体像" }),
         el("h2", { text: "このブランチで何を確かめたか" }),
         el("div", { class: "side-counts" }, statuses.map((status) => el("span", { class: `is-${status}` }, [`${TestStatuses[status].label} `, el("b", { text: String(countOf(status)) })]))),
       ]);
       if (explain === null) return [head, el("p", { class: "side-note", text: "解説が無いので、変更の地図にあるテストの追加・削除と、テストファイルの対象だけで組んでいます。左のテストを選ぶと、対象の箱が光ります。" })];
-      const techniqueCountOf = (key) => tests.filter((test) => test.techniques.includes(key)).length;
-      const most = Math.max(1, ...Object.keys(Techniques).map(techniqueCountOf));
+      const most = Math.max(1, ...Object.values(techniqueCounts));
       const bars = Object.entries(Techniques).map(([key, technique]) => {
         const fill = el("span", { class: "tech-bar-fill" });
-        fill.style.width = `${(techniqueCountOf(key) / most) * 100}%`;
+        fill.style.width = `${(techniqueCounts[key] / most) * 100}%`;
         return pressable("button", { class: "tech-bar plain-button", "data-technique": key, title: "この観点で絞り込む" }, [
-          el("span", { class: "tech-bar-line" }, [el("span", { class: "tech-bar-label" }, [el("span", { class: "swatch" }), technique.label]), el("span", { class: "tech-bar-track" }, [fill]), el("span", { class: "tech-bar-count", text: String(techniqueCountOf(key)) })]),
+          el("span", { class: "tech-bar-line" }, [el("span", { class: "tech-bar-label" }, [el("span", { class: "swatch" }), technique.label]), el("span", { class: "tech-bar-track" }, [fill]), el("span", { class: "tech-bar-count", text: String(techniqueCounts[key]) })]),
           el("span", { class: "tech-bar-desc", text: technique.description }),
         ], () => update({ techniques: [key] }));
       });
       const gaps = messages.filter(model.isGap);
       const gapBlock = hasMessages ? [el("div", { class: "side-block" }, [
-        eyebrowOf("テストがないやりとり", "このブランチで追加したもの"),
+        eyebrowOf("テストがないやりとり", "このブランチで追加・変更したもの"),
         ...gaps.map((message) => gapCardOf(message, model, true)),
         ...(gaps.length === 0 ? [el("span", { class: "side-sub", text: "すべてテストされています。" })] : []),
       ])] : [];
@@ -2902,18 +2963,18 @@ button.change-item:hover { background: var(--track); }
     };
 
     const excerptOf = (excerpt) => {
-      const grammar = Highlighter.grammarOf(excerpt.path);
+      const grammar = Tokenizer.grammarOf(excerpt.path);
       const lines = excerpt.text.split("\n");
       const rows = lines.reduce((sofar, text, index) => {
         const { node, carry } = codeTextOf(text, grammar, sofar.carry);
         return { carry, nodes: [...sofar.nodes, el("div", { class: "excerpt-line" }, [el("span", { class: "ln", text: String(excerpt.start + index) }), node])] };
-      }, { carry: Highlighter.Start, nodes: [] });
+      }, { carry: Tokenizer.Start, nodes: [] });
       return el("div", { class: "side-block" }, [eyebrowOf("テストコード", `${excerpt.path}:${excerpt.start}-${excerpt.end}`), el("div", { class: "excerpt" }, rows.nodes)]);
     };
 
     const commitLinkOf = (sha) => {
       const commit = commitAt.get(sha);
-      const subject = commit === undefined || commit.subject === null ? "地図に無いコミット" : commit.subject;
+      const subject = commit === undefined ? "地図に無いコミット" : commit.subject;
       return pressable("button", { class: "commit-link plain-button", title: "変更の経緯でこのコミットを開く" }, [
         el("span", { class: "label", text: "追加したコミット" }),
         el("span", { class: "sha", text: shortSha(sha) }),
@@ -2973,11 +3034,9 @@ button.change-item:hover { background: var(--track); }
     /** 選んだ箱・線を確かめているテスト(未実装の提案も足す)と、テストの無いやりとり。 */
     const targetDetailOf = (selected, model) => {
       const isEdge = selected.kind === "edge";
-      const edge = isEdge ? model.edges.find((candidate) => candidate.key === selected.id) : null;
+      const edge = isEdge ? model.edgeAt.get(selected.id) : null;
       const place = isEdge ? null : model.places.get(selected.id);
-      const touchesPlace = (test) => test.targets.some((path) => place.paths.includes(path));
-      const touchesEdge = (test) => edge.items.some((message) => test.covers.includes(message.id));
-      const touches = isEdge ? touchesEdge : touchesPlace;
+      const touches = (test) => (isEdge ? touchesEdge(test, edge) : touchesPlace(test, place));
       const verified = isEdge ? [...new Set(edge.items.flatMap((message) => model.coverage.get(message.id)))] : model.placeTests(place);
       const proposed = tests.filter((test) => test.status === "todo" && touches(test) && !verified.includes(test));
       const listed = [...verified, ...proposed];
@@ -3012,11 +3071,13 @@ button.change-item:hover { background: var(--track); }
       const model = modelOf(state);
       const selected = validSelectionOf(state.selected, model);
       const isNewTestSelection = selected !== null && selected.kind === "test" && !isSameSelection(selected, previous);
-      const view = { model, selected, highlight: highlightOf(model, selected) };
+      const view = { model, selected, lit: litOf(model, selected) };
       state = { ...state, selected };
       previous = selected;
+      lastView = view;
       renderControls();
       renderList(view);
+      renderCanvasControls(view);
       renderGraph(view);
       renderSide(view);
       const row = isNewTestSelection ? listBody.querySelector(`[data-test="${selected.id}"]`) : null;
@@ -3025,11 +3086,10 @@ button.change-item:hover { background: var(--track); }
     let previous = null;
     render();
 
-    const namingControl = explain === null ? [] : [controlNodes.naming];
     const gapControl = hasMessages ? [controlNodes.gaps] : [];
     return {
       summary: [],
-      controls: [controlNodes.grouping, controlNodes.level, ...namingControl, gapControl].flat(),
+      controls: [controlNodes.grouping, controlNodes.level, ...gapControl],
       left: panelOf("left", [listHead, listBody]),
       main: graph.element,
       right: panelOf("right", [side]),
@@ -3038,11 +3098,8 @@ button.change-item:hover { background: var(--track); }
 
   const StatusLabels = { A: "追加", M: "変更", R: "移動", D: "削除" };
   const StatusTones = ["A", "M", "D"];
-  /** 色分けの区分。名前を変えただけのファイル(R)は変更の色にする。変更していなければ空。 */
+  /** 色分けの区分。移動したファイル(R。中身も変えていることがある)は変更の色にする。変更していなければ空。 */
   const toneOf = (status) => (status === "R" ? "M" : (status ?? ""));
-  const ViaLabels = { call: "関数呼び出し(同期)", http: "HTTP 通信(外部)", state: "状態の購読(再描画)", log: "ログ出力", exec: "コマンドの実行", file: "ファイルの読み書き" };
-  const MessageVerbs = { cmd: "依頼する", qry: "問い合わせる", evt: "通知する" };
-  const MessageKindMeanings = { cmd: "依頼", qry: "問い合わせ", evt: "通知" };
   const Connections = Object.freeze({ Messages: "messages", Dependencies: "dependencies" });
   const ConnectionChoices = [
     { value: Connections.Messages, label: "やりとり", title: "何を受け渡ししているか(コマンド・クエリ・イベント)" },
@@ -3050,12 +3107,12 @@ button.change-item:hover { background: var(--track); }
   ];
   const ScopeModes = Object.freeze({ Dim: "dim", Hide: "hide" });
   const ScopeModeChoices = [{ value: ScopeModes.Dim, label: "薄く表示" }, { value: ScopeModes.Hide, label: "表示しない" }];
-  const MessageKindFilters = [{ value: "all", label: "すべて" }, { value: "cmd", label: "コマンド" }, { value: "qry", label: "クエリ" }, { value: "evt", label: "イベント" }];
+  const MessageKindFilters = [{ value: "all", label: "すべて" }, ...Object.entries(Vocabulary.messageKinds).map(([value, kind]) => ({ value, label: kind.label }))];
   // 構造マップの線のラベルの、文字の外側(余白・枠・追加の印)の幅。
   const MapLabelPadding = 30;
-  // 1 つの線のラベルに並べるやりとりの数。選んだ線・流れで光らせた線と、選んだものに関わる 3 件以下の線は 6 件まで。
+  // 1 つの線のラベルに並べるやりとりの数。選んだ線・流れで光らせた線・マウスが乗っている線と、選んだものに関わる 3 件以下の線は 6 件まで。
   const MapLabelLimits = { important: 6, other: 1 };
-  // 依存の線の太さ。件数 1 で 1.25px、1 件増えるごとに 0.4px 太らせ、2px 分で打ち止める。
+  // 線の太さ。まとめた依存・やりとりの件数 1 で 1.25px、1 件増えるごとに 0.4px 太らせ、2px 分で打ち止める。
   const EdgeWidth = { base: 1.25, perItem: 0.4, extra: 2, lit: 0.75 };
   const SequenceColumnWidth = 86;
 
@@ -3072,22 +3129,14 @@ button.change-item:hover { background: var(--track); }
     const isUniform = changed.every((tone) => tone === changed[0]);
     return isUniform ? changed[0] : "M";
   };
-  /** やりとりの色。追加は追加、削除は削除、前からあるもの(status なし)は空。 */
-  const messageToneOf = (message) => {
-    if (message.status === "new") return "A";
-    return message.status === "removed" ? "D" : "";
-  };
-  const isMessageChanged = (message) => message.status !== undefined;
-  const isItemRemoved = (item) => item.state === "removed" || item.status === "removed";
-  const isItemAdded = (item) => item.state === "added" || item.status === "new";
-  /** 線にまとめた依存・やりとりの状態。すべて消えたものなら removed、追加を含めば added、それ以外は kept。 */
-  const edgeStateOf = (items) => {
-    if (items.every(isItemRemoved)) return "removed";
-    return items.some(isItemAdded) ? "added" : "kept";
-  };
-  const selectionEquals = (some, other) => {
-    const hasNull = some === null || other === null;
-    return hasNull ? some === other : some.kind === other.kind && some.id === other.id;
+  /**
+   * 線にまとめた依存・やりとりの状態。すべて消えたものなら removed、追加を含めば added、変更を含めば changed、
+   * それ以外は kept。依存は added / kept / removed、やりとりは added / changed / removed か省いたもの。
+   */
+  const edgeStatusOf = (items) => {
+    if (items.every((item) => item.status === "removed")) return "removed";
+    if (items.some((item) => item.status === "added")) return "added";
+    return items.some((item) => item.status === "changed") ? "changed" : "kept";
   };
   const selectionKeyOf = (selected) => (selected === null ? "" : `${selected.kind}:${selected.id}`);
   const baseNameOf = (path) => path.split("/").pop();
@@ -3112,24 +3161,18 @@ button.change-item:hover { background: var(--track); }
 
   /** 構造マップ。左にファイルの木、中に箱の図、右に概要か選んだものの詳しいところと、やりとりの流れを出す。 */
   const MapScreen = (explained) => {
-    const explain = explained.explain.kind === "explained" ? explained.explain.explain : null;
-    const lookup = lookupOf(explain);
-    const messages = [...lookup.messages.values()];
+    const { explain, lookup } = explained;
+    const materials = graphMaterialsOf(explained);
+    const { entryAt, graphGroups, groupLabels, groupings, messages } = materials;
     const flows = [...lookup.flows.values()];
     const hasMessages = messages.length > 0;
-    const entryAt = new Map(explained.entries.map((entry) => [entry.path, entry]));
-    const graphGroups = Object.fromEntries(Object.entries(explained.groupings).map(([grouping, groups]) => [grouping, graphGroupsOf(groups, entryAt)]));
     const groupAt = new Map(Object.values(explained.groupings).flat().map((group) => [groupKeyOf(group), group]));
-    const groupLabels = new Map(Object.values(graphGroups).flat().map((group) => [group.id, group.label]));
-    const groupings = Object.keys(graphGroups);
     const highlights = explain !== null && Array.isArray(explain.overview.highlights) ? explain.overview.highlights : [];
     const tree = treeOf(explained.entries, 0);
 
     let state = {
-      grouping: groupings.includes("feature") ? "feature" : "layer",
-      naming: explain === null ? "file" : "concept",
+      ...initialGraphStateOf(materials, explained),
       connection: hasMessages ? Connections.Messages : Connections.Dependencies,
-      expanded: Object.fromEntries(groupings.map((grouping) => [grouping, GraphLayout.expandedAt(GraphLayout.Levels.Mid, graphGroups[grouping])])),
       selected: null,
       history: [],
       scope: null,
@@ -3153,20 +3196,22 @@ button.change-item:hover { background: var(--track); }
       const expanded = isHiding ? [...new Set([...opened, current.scope])] : opened;
       const isMessageView = current.connection === Connections.Messages;
       const labelWidth = isMessageView ? widestLabelOf({ messages, naming: current.naming, padding: MapLabelPadding }) : 0;
-      const layout = GraphLayout.of({ groups, links: explained.dependencies, expanded, room: graph.room(), labelWidth });
+      const layout = GraphLayout.create({ groups, links: explained.dependencies, expanded, room: graph.room(), labelWidth });
       const isShown = (path) => layout.unitOf.has(path);
       const shownMessages = messages.filter((message) => isShown(message.from) && isShown(message.to));
       const shownDependencies = explained.dependencies.filter((link) => isShown(link.from) && isShown(link.to));
       const links = isMessageView
         ? shownMessages.map((message) => ({ from: message.from, to: message.to, item: message, leads: message.kind !== "evt" }))
         : shownDependencies.map((link) => ({ from: link.from, to: link.to, item: link, leads: true }));
+      const edges = GraphLayout.edgesOf(layout, links);
       return {
         layout,
         groups,
         isMessageView,
         messages: shownMessages,
         dependencies: shownDependencies,
-        edges: GraphLayout.edgesOf(layout, links),
+        edges,
+        edgeAt: new Map(edges.map((edge) => [edge.key, edge])),
         places: new Map([...layout.units, ...layout.containers].map((place) => [place.id, place])),
       };
     };
@@ -3198,7 +3243,7 @@ button.change-item:hover { background: var(--track); }
           return { ...none, paths: new Set([message.from, message.to]), units: new Set(ends), edge, message };
         }
         case "edge": {
-          const edge = model.edges.find((candidate) => candidate.key === selected.id);
+          const edge = model.edgeAt.get(selected.id);
           const paths = [edge.from, edge.to].flatMap((id) => model.places.get(id).paths);
           return { ...none, paths: new Set(paths), units: new Set([edge.from, edge.to]), edge: edge.key };
         }
@@ -3221,7 +3266,7 @@ button.change-item:hover { background: var(--track); }
         case "message":
           return model.messages.some((message) => message.id === selected.id) ? selected : null;
         case "edge":
-          return model.edges.some((edge) => edge.key === selected.id) ? selected : null;
+          return model.edgeAt.has(selected.id) ? selected : null;
         case "box":
           return model.layout.unitOf.has(selected.id) ? selected : null;
         case "group":
@@ -3290,14 +3335,16 @@ button.change-item:hover { background: var(--track); }
     };
     /** 選択を変える。変わるなら、前の選択を戻る先に積む。`change` は選択と一緒に変える状態。 */
     const pick = (next, change = {}) => {
-      const isChange = !selectionEquals(state.selected, next);
+      const isChange = !isSameSelection(state.selected, next);
       const history = isChange ? SelectionHistory.recorded(state.history, state.selected) : state.history;
       update({ ...change, selected: next, history, step: null, closedDirs: openedFor(next) });
     };
     /** 同じものをもう一度押したら選択を外す。 */
-    const select = (next) => pick(selectionEquals(state.selected, next) ? null : next);
+    const select = (next) => pick(isSameSelection(state.selected, next) ? null : next);
+    /** 戻る先。配置が変わって図から消えた選択は飛ばす。 */
+    const backOf = (model) => SelectionHistory.back(state.history, (selected) => validSelectionOf(selected, model) === selected);
     const goBack = () => {
-      const back = SelectionHistory.back(state.history);
+      const back = lastView === null ? null : backOf(lastView.model);
       if (back === null) return;
       update({ selected: back.selection, history: back.history, step: null });
     };
@@ -3422,6 +3469,7 @@ button.change-item:hover { background: var(--track); }
     // キャンバス。
     const canvasControls = el("div", { class: "canvas-controls" });
     const legend = el("div", { class: "legend" });
+    let lastView = null;
     const graph = GraphView.create({
       top: [canvasControls],
       legend: [legend],
@@ -3433,6 +3481,9 @@ button.change-item:hover { background: var(--track); }
         if (isTooSmall(scale)) update({ expanded: Object.fromEntries(groupings.map((grouping) => [grouping, []])) });
       },
       onRoom: () => render(),
+      onHover: () => {
+        if (lastView !== null) renderGraph(lastView);
+      },
     });
 
     const renderCanvasControls = (model) => {
@@ -3446,7 +3497,7 @@ button.change-item:hover { background: var(--track); }
       canvasControls.replaceChildren(...connection, ...naming, ...scope, el("span", { class: "canvas-hint", text: `${GroupingLabels[state.grouping]}でまとめ · ${openCount}/${drawn.length} 展開 · ${hint}` }));
       const statusItems = StatusTones.map((tone) => el("span", { "data-tone": tone }, [el("span", { class: "status-dot" }), StatusLabels[tone]]));
       const kindItems = model.isMessageView
-        ? [...Object.entries(MessageKindLabels).map(([kind, label]) => el("span", { class: "kind", "data-kind": kind, text: `${label}=${MessageKindMeanings[kind]}` })), el("span", { text: "↩ 矢印と逆向き" })]
+        ? [...Object.entries(Vocabulary.messageKinds).map(([kind, names]) => el("span", { class: "kind", "data-kind": kind, text: `${names.label}=${names.meaning}` })), el("span", { text: "↩ 矢印と逆向き" })]
         : [el("span", {}, [el("span", { class: "legend-line" }), "依存(太さ=件数)"]), el("span", {}, [el("span", { class: "legend-line is-removed" }), "なくなった依存"])];
       legend.replaceChildren(...statusItems, el("span", { class: "legend-sep" }), ...kindItems);
     };
@@ -3548,18 +3599,19 @@ button.change-item:hover { background: var(--track); }
       const isStep = step !== null && step.key === edge.key;
       const touchesFocus = edge.items.some((item) => focus.paths.has(item.from) || focus.paths.has(item.to));
       const isInvolved = hasGraphSelection(view) && (focus.edge === null ? touchesFocus : isSelected);
-      const status = edgeStateOf(edge.items);
+      const isHovered = edge.key === graph.hoveredEdge();
+      const status = edgeStatusOf(edge.items);
       const isLit = isSelected || isStep;
       const touchesScope = [edge.from, edge.to].some((id) => isInScope(model.places.get(id)));
       const opacity = edgeOpacityOf(view, { isInvolved, isStep, status, touchesScope });
-      const width = EdgeWidth.base + Math.min(EdgeWidth.extra, (edge.items.length - 1) * EdgeWidth.perItem) + (isInvolved || isStep ? EdgeWidth.lit : 0);
-      return { edge, isSelected, isStep, isInvolved, isLit, status, opacity, width };
+      const width = EdgeWidth.base + Math.min(EdgeWidth.extra, (edge.items.length - 1) * EdgeWidth.perItem) + (isInvolved || isStep || isHovered ? EdgeWidth.lit : 0);
+      return { edge, isSelected, isStep, isInvolved, isHovered, isLit, status, opacity, width };
     };
 
     const edgeNodeOf = (look) => {
-      const flags = { "is-on": look.isLit, [`is-${look.status}`]: true, "is-involved": look.isInvolved };
+      const flags = { "is-on": look.isLit, [`is-${look.status}`]: true, "is-involved": look.isInvolved, "is-hover": look.isHovered };
       const tail = look.edge.isBothWays ? [Dom.svg("path", { class: "edge-head", d: look.edge.route.tail })] : [];
-      const group = Dom.svg("g", { class: classesOf("edge map-edge", flags), style: `opacity: ${look.opacity}; --edge-width: ${look.width}px` }, [
+      const group = Dom.svg("g", { class: classesOf("edge map-edge", flags), style: `opacity: ${look.opacity}; --edge-width: ${look.width}px`, "data-edge": look.edge.key }, [
         Dom.svg("path", { class: "edge-line", d: look.edge.route.path }),
         Dom.svg("path", { class: "edge-head", d: look.edge.route.head }),
         ...tail,
@@ -3569,22 +3621,24 @@ button.change-item:hover { background: var(--track); }
       return group;
     };
 
-    /** やりとりの線のラベル。選んだ線・流れで光らせた線と、選んだものに関わる 3 件以下の線は並べられるだけ並べる。 */
+    /**
+     * やりとりの線のラベル。選んだ線・流れで光らせた線と、選んだものに関わる 3 件以下の線は並べられるだけ並べる。
+     * 置き場はマウスが乗っているかによらずに決め(乗るたびにほかのラベルが動かないように)、乗っている線のラベルは、
+     * 置けなかったものもその位置に、並べられるだけ並べて出す。
+     */
     const labelOf = (look, view) => {
       const isImportant = look.isLit || (look.isInvolved && look.edge.items.length <= 3);
-      const sorted = look.edge.items.toSorted((a, b) => MessageKindOrder[a.kind] - MessageKindOrder[b.kind]);
-      const shown = sorted.slice(0, isImportant ? MapLabelLimits.important : MapLabelLimits.other);
-      const texts = shown.map((message) => {
-        const isReversed = view.model.layout.unitOf.get(message.from) !== look.edge.from;
-        return `${isReversed ? "↩ " : ""}${messageTextOf(message, state.naming)}`;
-      });
-      const more = sorted.length - shown.length;
+      const isFull = isImportant || look.isHovered;
+      const sorted = look.edge.items.toSorted(byMessageKind);
+      const shown = sorted.slice(0, isFull ? MapLabelLimits.important : MapLabelLimits.other);
+      const placedShown = sorted.slice(0, isImportant ? MapLabelLimits.important : MapLabelLimits.other);
+      const layout = view.model.layout;
+      const texts = labelTextsOf({ messages: shown, edge: look.edge, layout, naming: state.naming });
       const isChanged = look.status !== "kept";
       const priority = isImportant ? 3 : look.isInvolved ? 2 : isChanged ? 1 : 0;
       const allowance = isImportant || look.isInvolved ? Infinity : 0;
-      const width = Math.max(...texts.map(GraphLayout.textWidthOf)) + MapLabelPadding;
-      const height = shown.length * LabelChipHeight + (more > 0 ? LabelMoreHeight : 0);
-      return { look, shown, texts, more, candidate: { key: look.edge.key, bezier: look.edge.route.bezier, width, height, priority, allowance } };
+      const size = labelSizeOf({ texts: labelTextsOf({ messages: placedShown, edge: look.edge, layout, naming: state.naming }), more: sorted.length - placedShown.length, padding: MapLabelPadding });
+      return { look, shown, texts, more: sorted.length - shown.length, candidate: { key: look.edge.key, bezier: look.edge.route.bezier, ...size, priority, allowance } };
     };
 
     const labelNodeOf = (label, spot) => {
@@ -3594,7 +3648,7 @@ button.change-item:hover { background: var(--track); }
       ]));
       const more = label.more > 0 ? [el("span", { class: "label-more", text: `+${label.more} 件` })] : [];
       const { look } = label;
-      const node = el("div", { class: classesOf("graph-label", { "is-important": look.isLit, "is-on": look.isInvolved, "is-picked": look.isSelected }) }, [...chips, ...more]);
+      const node = el("div", { class: classesOf("graph-label", { "is-important": look.isLit, "is-on": look.isInvolved, "is-picked": look.isSelected, "is-hover": look.isHovered }), "data-edge": spot.key }, [...chips, ...more]);
       Object.assign(node.style, { left: `${spot.x}px`, top: `${spot.y}px`, opacity: String(look.opacity < 1 ? Math.max(0.22, look.opacity) : 1) });
       node.addEventListener("click", () => select({ kind: "edge", id: spot.key }));
       return node;
@@ -3602,24 +3656,14 @@ button.change-item:hover { background: var(--track); }
 
     const renderGraph = (view) => {
       const { model } = view;
-      const looks = model.edges.map((edge) => edgeLookOf(edge, view)).toSorted((a, b) => Number(a.isInvolved || a.isLit) - Number(b.isInvolved || b.isLit));
+      const looks = model.edges.map((edge) => edgeLookOf(edge, view)).toSorted((a, b) => Number(a.isInvolved || a.isLit || a.isHovered) - Number(b.isInvolved || b.isLit || b.isHovered));
       const edgeNodes = looks.map(edgeNodeOf);
-      const hovered = new Map(looks.map((look, index) => [look.edge.key, [edgeNodes[index]]]));
       const svg = Dom.svg("svg", { class: "graph-edges", width: String(model.layout.width), height: String(model.layout.height) }, edgeNodes);
       const labels = model.isMessageView ? looks.map((look) => labelOf(look, view)) : [];
-      const placed = GraphLayout.placeLabels({ candidates: labels.map((label) => label.candidate), obstacles: GraphLayout.obstaclesOf(model.layout) });
+      const spots = GraphLayout.placeLabels({ candidates: labels.map((label) => label.candidate), obstacles: GraphLayout.obstaclesOf(model.layout) });
       const labelAt = new Map(labels.map((label) => [label.look.edge.key, label]));
-      const labelNodes = placed.map((spot) => {
-        const node = labelNodeOf(labelAt.get(spot.key), spot);
-        hovered.get(spot.key).push(node);
-        return node;
-      });
-      for (const [, nodes] of hovered) {
-        for (const node of nodes) {
-          node.addEventListener("mouseenter", () => nodes.forEach((target) => target.classList.add("is-hover")));
-          node.addEventListener("mouseleave", () => nodes.forEach((target) => target.classList.remove("is-hover")));
-        }
-      }
+      const isShown = (spot) => spot.isPlaced || labelAt.get(spot.key).look.isHovered;
+      const labelNodes = spots.filter(isShown).map((spot) => labelNodeOf(labelAt.get(spot.key), spot));
       const children = [...model.layout.containers.map((container) => containerNodeOf(container, view)), svg, ...model.layout.units.map((unit) => unitNodeOf(unit, view)), ...labelNodes];
       graph.show({ signature: signatureOf(state.grouping, model.layout), size: { width: model.layout.width, height: model.layout.height }, children });
     };
@@ -3628,7 +3672,6 @@ button.change-item:hover { background: var(--track); }
     const sideBar = el("div", { class: "side-bar" });
     const side = el("div", { class: "side" });
     const flowSection = el("div", { class: "side-block flow-block" });
-    const eyebrowOf = (text, note) => el("span", { class: "eyebrow-row" }, [el("span", { class: "eyebrow", text }), ...(note === undefined ? [] : [el("span", { class: "eyebrow-note", text: note })])]);
 
     /** 戻る先の名前。 */
     const selectionLabelOf = (selected, model) => {
@@ -3642,52 +3685,53 @@ button.change-item:hover { background: var(--track); }
         case "group":
           return groupLabels.get(selected.id) ?? "グループ";
         case "edge": {
-          const edge = model.edges.find((candidate) => candidate.key === selected.id);
-          return edge === undefined ? "つながり" : `${placeNameOf(model.places.get(edge.from))} ⇄ ${placeNameOf(model.places.get(edge.to))}`;
+          const edge = model.edgeAt.get(selected.id);
+          return `${placeNameOf(model.places.get(edge.from))} ⇄ ${placeNameOf(model.places.get(edge.to))}`;
         }
       }
     };
 
     const renderSideBar = (view) => {
-      const previous = state.history.length === 0 ? undefined : state.history[state.history.length - 1];
-      const back = pressable("button", { class: "back-button", title: "Backspace / Alt+← でも戻れます" }, [el("span", { class: "chev-left" }), "戻る"], goBack);
-      back.disabled = previous === undefined;
-      const hint = previous === undefined ? "" : `「${selectionLabelOf(previous, view.model)}」に戻る`;
+      const back = backOf(view.model);
+      const backButton = pressable("button", { class: "back-button", title: "Backspace / Alt+← でも戻れます" }, [el("span", { class: "chev-left" }), "戻る"], goBack);
+      backButton.disabled = back === null;
+      const hint = back === null ? "" : `「${selectionLabelOf(back.selection, view.model)}」に戻る`;
       const home = view.selected === null ? [] : [pressable("button", { class: "mini-button", text: "概要へ" }, [], () => pick(null))];
-      sideBar.replaceChildren(back, el("span", { class: "side-bar-hint", text: hint }), el("span", { class: "spacer" }), ...home);
+      sideBar.replaceChildren(backButton, el("span", { class: "side-bar-hint", text: hint }), el("span", { class: "spacer" }), ...home);
+    };
+
+    /** まとめ方の組へ移る先。地図に無い組なら null。 */
+    const groupGoOf = (id, grouping) => {
+      if (!groupAt.has(id)) return null;
+      const entries = groupAt.get(id).paths.map((path) => entryAt.get(path));
+      return { tone: toneOfAll(entries), onPress: () => pick({ kind: "group", id }, groupingChange(grouping)) };
     };
 
     /** 概要の「このブランチで起きていること」の 1 件が指す先。地図に無ければ null。 */
-    const highlightGoOf = (target) => {
-      switch (target.kind) {
-        case "feature": {
-          const id = `feature:${target.id}`;
-          const entries = groupAt.has(id) ? groupAt.get(id).paths.map((path) => entryAt.get(path)) : [];
-          return groupAt.has(id) ? { tone: toneOfAll(entries), go: () => pick({ kind: "group", id }, groupingChange("feature")) } : null;
-        }
-        case "layer": {
-          const id = `layer:${target.layer}`;
-          const entries = groupAt.has(id) ? groupAt.get(id).paths.map((path) => entryAt.get(path)) : [];
-          return groupAt.has(id) ? { tone: toneOfAll(entries), go: () => pick({ kind: "group", id }, groupingChange("layer")) } : null;
-        }
+    const highlightGoOf = (go) => {
+      switch (go.kind) {
+        case "feature":
+          return groupGoOf(`feature:${go.id}`, "feature");
+        case "layer":
+          return groupGoOf(`layer:${go.layer}`, "layer");
         case "file": {
-          const entry = entryAt.get(target.path);
-          return entry === undefined ? null : { tone: toneOf(entry.status), go: () => pick({ kind: entry.inGraph ? "box" : "file", id: entry.path }) };
+          const entry = entryAt.get(go.path);
+          return entry === undefined ? null : { tone: toneOf(entry.status), onPress: () => pick({ kind: entry.inGraph ? "box" : "file", id: entry.path }) };
         }
         case "message": {
-          const message = lookup.messages.get(target.id);
-          return message === undefined ? null : { tone: messageToneOf(message), go: () => pick({ kind: "message", id: message.id }) };
+          const message = lookup.messages.get(go.id);
+          return message === undefined ? null : { tone: messageToneOf(message), onPress: () => pick({ kind: "message", id: message.id }) };
         }
         case "flow":
-          return lookup.flows.has(target.id) ? { tone: "", go: () => showFlow(target.id) } : null;
+          return lookup.flows.has(go.id) ? { tone: "", onPress: () => showFlow(go.id) } : null;
       }
     };
 
     const highlightCardOf = (highlight) => {
-      const target = highlightGoOf(highlight.target);
-      const body = [el("span", { class: "status-dot" }), el("span", { class: "highlight-body" }, [prose("span", { class: "highlight-title" }, highlight.title), prose("span", { class: "highlight-text" }, highlight.text), ...(target === null ? [el("span", { class: "warn-text", text: "指している先が地図に無い" })] : [])])];
-      if (target === null) return el("div", { class: "highlight-card is-missing" }, body);
-      return pressable("button", { class: "highlight-card plain-button", "data-tone": target.tone }, body, target.go);
+      const destination = highlightGoOf(highlight.go);
+      const body = [el("span", { class: "status-dot" }), el("span", { class: "highlight-body" }, [prose("span", { class: "highlight-title" }, highlight.title), prose("span", { class: "highlight-text" }, highlight.text), ...(destination === null ? [el("span", { class: "warn-text", text: "指している先が地図に無い" })] : [])])];
+      if (destination === null) return el("div", { class: "highlight-card is-missing" }, body);
+      return pressable("button", { class: "highlight-card plain-button", "data-tone": destination.tone }, body, destination.onPress);
     };
 
     const groupBarsOf = () => {
@@ -3712,13 +3756,13 @@ button.change-item:hover { background: var(--track); }
       const tabs = MessageKindFilters.map((filter) => pressable("button", { class: "pill-button", "aria-pressed": String(state.messageKind === filter.value) }, [filter.label, el("span", { class: "n", text: String(countOf(filter.value)) })], () => update({ messageKind: filter.value })));
       const rows = listed
         .filter((message) => state.messageKind === "all" || message.kind === state.messageKind)
-        .toSorted((a, b) => MessageKindOrder[a.kind] - MessageKindOrder[b.kind] || Number(isMessageChanged(b)) - Number(isMessageChanged(a)))
+        .toSorted((a, b) => byMessageKind(a, b) || Number(isMessageChanged(b)) - Number(isMessageChanged(a)))
         .map((message) => pressable("button", { class: classesOf("message-item plain-button", { "is-removed": message.status === "removed" }), title: message.code }, [
-          el("span", { class: "kind", "data-kind": message.kind, text: MessageKindLabels[message.kind] }),
+          kindChipOf(message.kind),
           el("span", { class: "message-item-body" }, [el("span", { class: classesOf("message-item-name", { "is-code": state.naming === "file" }), text: messageTextOf(message, state.naming) }), el("span", { class: "message-route", text: `${nameOfPath(message.from)} → ${nameOfPath(message.to)}` })]),
           el("span", { class: "label-dot", "data-tone": messageToneOf(message) }),
         ], () => select({ kind: "message", id: message.id })));
-      const onlyChanged = switchButtonOf({ label: "変更のみ", title: "このブランチで追加・削除したやりとりだけ", onPress: () => update({ isChangedMessagesOnly: !state.isChangedMessagesOnly }) });
+      const onlyChanged = switchButtonOf({ label: "変更のみ", title: "このブランチで追加・変更・削除したやりとりだけ", onPress: () => update({ isChangedMessagesOnly: !state.isChangedMessagesOnly }) });
       onlyChanged.classList.add("is-small");
       onlyChanged.setAttribute("aria-pressed", String(state.isChangedMessagesOnly));
       return el("div", { class: "side-block" }, [
@@ -3756,10 +3800,7 @@ button.change-item:hover { background: var(--track); }
       ]);
     };
     const entryStatusOf = (entry) => (entry.changed ? { tone: toneOf(entry.status), label: StatusLabels[entry.status] ?? entry.status } : null);
-    const messageStatusOf = (message) => {
-      if (!isMessageChanged(message)) return null;
-      return { tone: messageToneOf(message), label: message.status === "new" ? "このブランチで追加" : "このブランチで削除" };
-    };
+    const messageStatusOf = (message) => (isMessageChanged(message) ? MessageStatuses[message.status] : null);
 
     /** やりとりのカード。押すとそのやりとりを選ぶ。 */
     const messageCardOf = (message, { peer, view }) => {
@@ -3767,12 +3808,12 @@ button.change-item:hover { background: var(--track); }
       const rows = [
         ...(message.payload === undefined ? [] : [["渡すもの", message.payload, false]]),
         ...(message.returns === undefined ? [] : [["返すもの", message.returns, false]]),
-        ["方式", ViaLabels[message.via] ?? message.via, false],
+        ["方式", Vocabulary.vias[message.via] ?? message.via, false],
         ["コード", `${baseNameOf(message.from)} → ${message.code}`, true],
       ];
       const status = messageStatusOf(message);
       return pressable("button", { class: classesOf("message-card plain-button", { "is-removed": message.status === "removed", "is-active": isStepRow }) }, [
-        el("span", { class: "message-card-head" }, [el("span", { class: "kind", "data-kind": message.kind, text: MessageKindLabels[message.kind] }), el("span", { class: "message-name", text: message.name }), el("span", { class: "spacer" }), ...(status === null ? [] : [el("span", { class: "status-tag", "data-tone": status.tone, text: status.label })])]),
+        el("span", { class: "message-card-head" }, [kindChipOf(message.kind), el("span", { class: "message-name", text: message.name }), el("span", { class: "spacer" }), ...(status === null ? [] : [el("span", { class: "status-tag", "data-tone": status.tone, text: status.label })])]),
         ...(peer === null ? [] : [el("span", { class: "message-peer", text: peer })]),
         el("span", { class: "kv" }, rows.flatMap(([key, value, isCode]) => [el("span", { class: "kv-key", text: key }), isCode ? el("span", { class: "kv-value mono", text: value }) : prose("span", { class: "kv-value" }, value)])),
       ], () => select({ kind: "message", id: message.id }));
@@ -3787,7 +3828,7 @@ button.change-item:hover { background: var(--track); }
     /** 2 つのファイル(か単位)のあいだの依存の一覧。消えた依存は取り消し線にする。 */
     const importsOf = (links) => el("div", { class: "side-block" }, [
       el("span", { class: "eyebrow", text: "コード上の依存" }),
-      ...links.map((link) => el("span", { class: classesOf("import-row mono", { "is-removed": link.state === "removed" }), "data-tone": link.state === "added" ? "A" : link.state === "removed" ? "D" : "" }, [el("span", { class: "status-dot" }), `${baseNameOf(link.from)} → ${baseNameOf(link.to)}`])),
+      ...links.map((link) => el("span", { class: classesOf("import-row mono", { "is-removed": link.status === "removed" }), "data-tone": link.status === "added" ? "A" : link.status === "removed" ? "D" : "" }, [el("span", { class: "status-dot" }), `${baseNameOf(link.from)} → ${baseNameOf(link.to)}`])),
       ...(links.length === 0 ? [el("span", { class: "muted small", text: "直接の依存はありません(状態や戻り値を通じたやりとりのみ)" })] : []),
     ]);
 
@@ -3799,7 +3840,7 @@ button.change-item:hover { background: var(--track); }
       const unitIds = [...new Set(crossing.map((link) => unitIdOf(model, farOf(link))))];
       return unitIds.map((id) => {
         const place = model.places.get(id);
-        const live = crossing.filter((link) => unitIdOf(model, farOf(link)) === id && link.state !== "removed").length;
+        const live = crossing.filter((link) => unitIdOf(model, farOf(link)) === id && link.status !== "removed").length;
         const isGone = live === 0;
         return pressable("button", { class: classesOf("dependency-row plain-button", { "is-removed": isGone }), "data-tone": toneOfAll(entriesOfPlace(place)), title: isGone ? "このブランチでなくなった依存" : "" }, [el("span", { class: "status-dot" }), el("span", { class: classesOf("dependency-name", { "is-code": place.kind === "box" && isFileNamed(entryAt.get(place.path)) }), text: placeNameOf(place) }), el("span", { class: "muted small", text: isGone ? "" : `${live}件` })], () => selectPlace(place));
       });
@@ -3824,7 +3865,7 @@ button.change-item:hover { background: var(--track); }
     const changeItemOf = (entry, isPressable) => {
       const note = entry.concept !== null && typeof entry.concept.change === "string" ? [prose("span", { class: "change-note" }, entry.concept.change)] : [];
       const body = [
-        el("span", { class: "change-head" }, [el("span", { class: "status-letter", text: entry.status ?? "" }), el("span", { class: classesOf("change-name", { "is-code": !isPressable || isFileNamed(entry) }), text: isPressable ? ExplainedMap.nameOf(entry, state.naming) : baseNameOf(entry.path) }), el("span", { class: "spacer" }), el("span", { class: "add mono", text: plus(entry.additions ?? 0) }), el("span", { class: "del mono", text: minus(entry.deletions ?? 0) })]),
+        el("span", { class: "change-head" }, [el("span", { class: "status-letter", text: entry.status ?? "" }), el("span", { class: classesOf("change-name", { "is-code": !isPressable || isFileNamed(entry) }), text: isPressable ? ExplainedMap.nameOf(entry, state.naming) : baseNameOf(entry.path) }), el("span", { class: "spacer" }), ...lineCountsOf(entry.additions ?? 0, entry.deletions ?? 0)]),
         ...note,
       ];
       if (!isPressable) return el("div", { class: "change-item", "data-tone": toneOf(entry.status) }, body);
@@ -3832,8 +3873,8 @@ button.change-item:hover { background: var(--track); }
     };
 
     const messagesAround = (model, paths) => {
-      const incoming = model.messages.filter((message) => paths.has(message.to) && !paths.has(message.from)).toSorted((a, b) => MessageKindOrder[a.kind] - MessageKindOrder[b.kind]);
-      const outgoing = model.messages.filter((message) => paths.has(message.from) && !paths.has(message.to)).toSorted((a, b) => MessageKindOrder[a.kind] - MessageKindOrder[b.kind]);
+      const incoming = model.messages.filter((message) => paths.has(message.to) && !paths.has(message.from)).toSorted(byMessageKind);
+      const outgoing = model.messages.filter((message) => paths.has(message.from) && !paths.has(message.to)).toSorted(byMessageKind);
       const internal = model.messages.filter((message) => paths.has(message.from) && paths.has(message.to));
       return { incoming, outgoing, internal };
     };
@@ -3917,22 +3958,24 @@ button.change-item:hover { background: var(--track); }
       return GraphLayout.edgeKeyOf(ends[0], ends[1]) === key;
     });
 
-    const gistTextOf = (sentence, names) => {
+    /** 動詞(依頼する・問い合わせる・通知する)。 */
+    const verbOf = (kind) => Vocabulary.messageKinds[kind].verb;
+    const sentenceTextOf = (sentence, names) => {
       const listed = sentence.messages.map((message) => `〈${message.name}〉`).join("");
       if (sentence.kind === "removed") return `このブランチで ${listed} のやりとりがなくなった`;
       const [from, to] = [names.get(sentence.from), names.get(sentence.to)];
-      if (sentence.kind === "evt") return `「${from}」から「${to}」へ ${listed} を${MessageVerbs.evt}`;
-      return `「${from}」が「${to}」に ${listed} を${MessageVerbs[sentence.kind]}`;
+      if (sentence.kind === "evt") return `「${from}」から「${to}」へ ${listed} を${verbOf("evt")}`;
+      return `「${from}」が「${to}」に ${listed} を${verbOf(sentence.kind)}`;
     };
 
     const edgeDetailOf = (view) => {
       const { model } = view;
-      const edge = model.edges.find((candidate) => candidate.key === view.selected.id);
+      const edge = model.edgeAt.get(view.selected.id);
       const names = new Map([edge.from, edge.to].map((id) => [id, placeNameOf(model.places.get(id))]));
       const between = model.messages.filter((message) => GraphLayout.edgeKeyOf(unitIdOf(model, message.from), unitIdOf(model, message.to)) === edge.key);
-      const sentences = ConnectionGist.of({ ends: [edge.from, edge.to], messages: between, unitOf: model.layout.unitOf });
-      const gist = sentences.length === 0 ? [] : [el("div", { class: "gist" }, [el("span", { class: "eyebrow", text: "要するに" }), ...sentences.map((sentence) => el("div", { class: "gist-line", "data-kind": sentence.kind }, [el("span", { class: "gist-mark" }), el("span", { text: gistTextOf(sentence, names) })]))])];
-      const directed = (from) => between.filter((message) => unitIdOf(model, message.from) === from).toSorted((a, b) => MessageKindOrder[a.kind] - MessageKindOrder[b.kind]);
+      const sentences = ConnectionSentences.collect({ ends: [edge.from, edge.to], messages: between, unitOf: model.layout.unitOf });
+      const gist = sentences.length === 0 ? [] : [el("div", { class: "gist" }, [el("span", { class: "eyebrow", text: "要するに" }), ...sentences.map((sentence) => el("div", { class: "gist-line", "data-kind": sentence.kind }, [el("span", { class: "gist-mark" }), el("span", { text: sentenceTextOf(sentence, names) })]))])];
+      const directed = (from) => between.filter((message) => unitIdOf(model, message.from) === from).toSorted(byMessageKind);
       const sections = [[edge.from, edge.to], [edge.to, edge.from]].map(([from, to]) => ({ from, to, messages: directed(from) })).filter((section) => section.messages.length > 0).map((section) => messageSectionOf({ title: `${names.get(section.from)} → ${names.get(section.to)}`, sub: `${section.messages.length} 件`, cards: section.messages.map((message) => messageCardOf(message, { peer: null, view })) }));
       const role = between.length > 0 ? "この2つが何を受け渡ししているか。矢印の向きは「頼む側 → 頼まれる側」。" : "コード上の依存はあるが、登録されたやりとりはありません(型の参照や見た目の部品など)。";
       return [
@@ -3948,13 +3991,13 @@ button.change-item:hover { background: var(--track); }
       const message = focus.message;
       const ends = [unitIdOf(model, message.from), unitIdOf(model, message.to)];
       const [fromName, toName] = [nameOfPath(message.from), nameOfPath(message.to)];
-      const role = message.kind === "evt" ? `「${fromName}」から「${toName}」へ${MessageVerbs.evt}。` : `「${fromName}」が「${toName}」に${MessageVerbs[message.kind]}。`;
+      const role = message.kind === "evt" ? `「${fromName}」から「${toName}」へ${verbOf("evt")}。` : `「${fromName}」が「${toName}」に${verbOf(message.kind)}。`;
       const members = [["送る側", fromName, ends[0]], ["受ける側", toName, ends[1]]].map(([key, name, id]) => pressable("button", { class: "member-button" }, [el("span", { class: "muted", text: key }), name], () => selectPlace(model.places.get(id))));
-      const edge = focus.edge === null ? undefined : model.edges.find((candidate) => candidate.key === focus.edge);
-      const siblings = edge === undefined || !model.isMessageView ? [] : edge.items.filter((item) => item.id !== message.id).toSorted((a, b) => MessageKindOrder[a.kind] - MessageKindOrder[b.kind]);
+      const edge = focus.edge === null ? undefined : model.edgeAt.get(focus.edge);
+      const siblings = edge === undefined || !model.isMessageView ? [] : edge.items.filter((item) => item.id !== message.id).toSorted(byMessageKind);
       const between = model.dependencies.filter((link) => (link.from === message.from && link.to === message.to) || (link.from === message.to && link.to === message.from));
       return [
-        detailHeadOf({ kind: MessageKindLabels[message.kind], status: messageStatusOf(message), title: messageTextOf(message, state.naming), path: state.naming === "concept" ? message.code : message.name, role, actions: [el("div", { class: "member-row" }, members)] }),
+        detailHeadOf({ kind: Vocabulary.messageKinds[message.kind].label, status: messageStatusOf(message), title: messageTextOf(message, state.naming), path: state.naming === "concept" ? message.code : message.name, role, actions: [el("div", { class: "member-row" }, members)] }),
         messageSectionOf({ title: "受け渡しの中身", sub: "", cards: [messageCardOf(message, { peer: null, view })] }),
         ...(siblings.length === 0 ? [] : [messageSectionOf({ title: "同じつながりの他のやりとり", sub: `${siblings.length} 件`, cards: siblings.map((item) => messageCardOf(item, { peer: null, view })) })]),
         importsOf(between),
@@ -3989,7 +4032,7 @@ button.change-item:hover { background: var(--track); }
       const centerOf = (unit) => ((sequence.parts.indexOf(unit) + 0.5) / count) * 100;
       const isSelectedMessage = state.step === null && view.focus.message !== null && row.kind === "message" && row.message.id === view.focus.message.id;
       const isActive = state.step === index || isSelectedMessage;
-      const node = pressable("div", { class: classesOf("sequence-row", { "is-active": isActive }), title: row.kind === "self" ? row.messages.map((message) => message.name).join(" → ") : `${MessageKindLabels[row.message.kind]}:${row.message.name} (${row.message.code})` }, [], () => update({ step: state.step === index ? null : index }));
+      const node = pressable("div", { class: classesOf("sequence-row", { "is-active": isActive }), title: row.kind === "self" ? row.messages.map((message) => message.name).join(" → ") : `${Vocabulary.messageKinds[row.message.kind].label}:${row.message.name} (${row.message.code})` }, [], () => update({ step: state.step === index ? null : index }));
       if (row.kind === "self") {
         const self = el("div", { class: "sequence-self" }, [el("span", { class: "sequence-loop" }), el("span", { text: `内部で ${row.messages.length} 件` })]);
         self.style.left = `${centerOf(row.unit)}%`;
@@ -4033,7 +4076,12 @@ button.change-item:hover { background: var(--track); }
       return [
         el("div", { class: "sequence" }, [body]),
         el("span", { class: "muted small", text: note }),
-        el("div", { class: "sequence-legend" }, [el("span", {}, [el("span", { class: "legend-line" }), "コマンド・クエリ"]), el("span", {}, [el("span", { class: "legend-line is-event" }), "イベント(通知)"]), el("span", { "data-tone": "A" }, [el("span", { class: "status-dot" }), "このブランチで追加"]), el("span", { text: "行をクリックでグラフに表示" })]),
+        el("div", { class: "sequence-legend" }, [
+          el("span", {}, [el("span", { class: "legend-line" }), "コマンド・クエリ"]),
+          el("span", {}, [el("span", { class: "legend-line is-event" }), "イベント(通知)"]),
+          ...Object.values(MessageStatuses).map((status) => el("span", { "data-tone": status.tone }, [el("span", { class: "status-dot" }), status.label])),
+          el("span", { text: "行をクリックでグラフに表示" }),
+        ]),
       ];
     };
 
@@ -4065,6 +4113,7 @@ button.change-item:hover { background: var(--track); }
       const focus = focusOf(model, selected);
       const sequence = sequenceOf(model, focus, selected);
       const view = { model, selected, focus, sequence, step: stepOf(model, sequence) };
+      lastView = view;
       const key = selectionKeyOf(selected);
       const isNewSelection = key !== shownKey;
       shownKey = key;
@@ -4098,7 +4147,7 @@ button.change-item:hover { background: var(--track); }
     return {
       summary: [countsOf(`${explained.totals.files} files`, explained.totals.additions, explained.totals.deletions)],
       controls: [controlNodes.grouping, controlNodes.level, controlNodes.scope, controlNodes.focus],
-      left: panelOf("left", [el("div", { class: "panel-head" }, [el("span", { class: "panel-title", text: "ファイル" }), el("span", { class: "panel-sub", text: `${changedCount} 件の変更` }), el("span", { class: "spacer" }), changedOnlySwitch]), treeBody]),
+      left: panelOf("left", [panelHead("ファイル", `${changedCount} 件の変更`, [el("span", { class: "spacer" }), changedOnlySwitch]), treeBody]),
       main: graph.element,
       right: panelOf("right", [sideBar, side]),
       onKey,
@@ -4136,12 +4185,11 @@ button.change-item:hover { background: var(--track); }
     }
   };
 
-  /** 上の帯に出す文。解説なし(理由)/ 古い / sha が地図に無い / 地図に無い解説 / 地図が v1。 */
+  /** 上の帯に出す文。解説なし(理由)/ 古い / sha が地図に無い / 地図に無い解説。 */
   const bandTextsOf = (explained) => [
-    explained.explain.kind === "missing" ? missingTextOf(explained.explain.reason) : null,
+    explained.reading.kind === "missing" ? missingTextOf(explained.reading.reason) : null,
     freshnessTextOf(explained.freshness),
-    explained.strayNotes.length > 0 ? `地図に無い解説 ${explained.strayNotes.length} 件(地図のコミットに無い sha への commitNotes)` : null,
-    explained.map.isCurrent ? null : `地図が古い(v${explained.map.version})。次の push で Actions が作り直します`,
+    explained.strayStories.length > 0 ? `地図に無い解説 ${explained.strayStories.length} 件(地図のコミットに無い sha への commitStories)` : null,
   ].filter((text) => text !== null);
 
   const linksOf = (pr, issue) => {
@@ -4157,7 +4205,7 @@ button.change-item:hover { background: var(--track); }
       el("header", { class: "top" }, [el("span", { class: "repo", text: RepoName }), el("span", { class: "top-main" }), linksOf(pr, null)]),
       el("div", { class: "bands" }),
       el("div", { class: "screens" }, [el("div", { class: "guide" }, [
-        el("h1", { text: "変更の地図がまだありません" }),
+        el("h1", { text: "変更の地図を読めません" }),
         el("p", { text: `change-map.json を読めませんでした(${detail})。PR に push すると、Actions が地図とこのページを置き直します。地図が置かれると、解説が無くても構造マップ・変更の経緯・テストの 3 画面が出ます。` }),
       ])]),
     );
@@ -4167,7 +4215,7 @@ button.change-item:hover { background: var(--track); }
   const Frame = Object.freeze({
     mount: (root, explained) => {
       const pr = explained.map.pr;
-      const explain = explained.explain.kind === "explained" ? explained.explain.explain : null;
+      const explain = explained.explain;
       const hasIssue = explain !== null && typeof explain.issue === "number";
       const issue = hasIssue ? explain.issue : null;
       document.title = explain === null ? `PR #${pr} · PR 解説` : `${explain.overview.title} · PR #${pr}`;
@@ -4188,7 +4236,7 @@ button.change-item:hover { background: var(--track); }
       const tabs = Object.values(Screens).map((screen) => el("a", { href: `#${screen}`, "data-screen": screen, text: ScreenLabels[screen] }));
       const controls = el("div", { class: "screen-controls" });
       const summary = el("span", { class: "screen-summary" });
-      const branch = el("span", { class: "branch" }, [explained.map.headBranch ?? shortSha(explained.map.head), el("span", { class: "arrow", text: "→" }), explained.map.baseBranch ?? shortSha(explained.map.mergeBase)]);
+      const branch = el("span", { class: "branch" }, [explained.map.headBranch, el("span", { class: "arrow", text: "→" }), explained.map.baseBranch]);
       const sections = Object.values(Screens).map((screen) => {
         const parts = built[screen];
         const grid = el("section", { class: "screen", "data-screen": screen, "aria-label": ScreenLabels[screen] }, [parts.left, parts.main, ...(parts.right === null ? [] : [parts.right])]);
@@ -4211,9 +4259,9 @@ button.change-item:hover { background: var(--track); }
         summary.replaceChildren(...built[screen].summary);
         controls.replaceChildren(...built[screen].controls);
       };
-      const choose = () => ScreenChoice.choose({ hash: location.hash, saved: BrowserStore.read(PageStoreKey) });
+      const choose = () => ScreenChoice.choose({ hash: location.hash, saved: BrowserStore.read(ScreenStoreKey) });
       const openScreen = (screen) => {
-        BrowserStore.write(PageStoreKey, screen);
+        BrowserStore.write(ScreenStoreKey, screen);
         show(screen);
       };
       for (const tab of tabs) {
@@ -4247,13 +4295,21 @@ button.change-item:hover { background: var(--track); }
     })
     .catch((error) => ({ kind: "failed", detail: error.message }));
 
+  /** 地図を読めない理由。読めれば null。 */
+  const mapProblemOf = (mapResult) => {
+    if (!mapResult.isLoaded) return mapResult.detail;
+    if (!ExplainedMap.isReadableMap(mapResult.map)) return `version が ${JSON.stringify(mapResult.map?.version ?? null)} で、このページが読めるのは 2`;
+    return null;
+  };
+
   Promise.all([mapRequest, explainRequest]).then(([mapResult, source]) => {
     const root = document.getElementById("app");
-    if (!mapResult.isLoaded) {
-      mountGuide(root, { pr: prFromPath, detail: mapResult.detail });
+    const problem = mapProblemOf(mapResult);
+    if (problem !== null) {
+      mountGuide(root, { pr: prFromPath, detail: problem });
       return;
     }
-    Frame.mount(root, ExplainedMap.from(mapResult.map, source));
+    Frame.mount(root, ExplainedMap.create(mapResult.map, source));
   });
 })();
 </script>
