@@ -20,6 +20,16 @@ concept が地図にあるか)は見ない。** 地図は push のたびに作�
 `text` として足す。行は改行で割って数える(末尾に改行の無い最終行も 1 行)。入力に `text` を
 書いた解説は落とす(手で写した中身が黙って上書きされるのを、書いた側に知らせるため)。
 
+見出し(`Heading` を使うキー)は、小文字と大文字の継ぎ目(`[a-z][A-Z]`)がある複合語を、docs に出る語の
+ほかは落とす。大文字だけの略語(UI 案・VRT)はこのリポジトリの語彙なので通す。1 語の識別子・ファイル名・snake_case は
+綴りで識別子と言い切れないので見ない(見出しには書かない)。
+
+- 語は ASCII 英数字の並びで切り出し、単語の境界は見ない。日本語が空白なしで続く識別子も落とすため
+- `` `…` `` の中も除かない。名前は書いたまま描かれ、囲んでも識別子がそのまま画面に出るため
+- highlights の `title` は `` `…` `` をコードとして描くが、題も概念で書くので他の見出しと扱いを揃える
+- docs(`docs/*.md`)に出る語は通す。`.dcmp` のキー名や製品名は仕様の語で、言い換えるとかえって伝わらない
+  ため。一覧を手で持たず docs を正本にする
+
 使い方:
     build-pr-explain.py <explain.json> --pr <番号> --out <書き出す先> [--repo <リポジトリ>]
 
@@ -103,18 +113,26 @@ def is_count(value: object) -> bool:
     return isinstance(value, int) and not isinstance(value, bool) and value >= 1
 
 
-IdentifierJoint = re.compile(r"[a-z][A-Z]")
+IdentifierJointPattern = re.compile(r"[a-z][A-Z]")
+AsciiWordPattern = re.compile(r"[A-Za-z0-9]+")
 
 
-def is_concept_name(value: object) -> bool:
-    """空でない文字列で、ASCII の小文字の直後に大文字が来る箇所(camelCase / PascalCase の継ぎ目)が無いか。
+def joint_words(text: str) -> set[str]:
+    """ASCII 英数字の並びで切り出した語のうち、小文字と大文字の継ぎ目(`[a-z][A-Z]`)を含むものを集める。"""
+    return {word for word in AsciiWordPattern.findall(text) if IdentifierJointPattern.search(word) is not None}
 
-    単語の境界は見ない。日本語が空白なしで続く `TokenTemplateの規則` も落とすため。バッククォートの中も
-    除かない。名前は書いたまま描かれ、`…` で囲んでも識別子がそのまま画面に出るため(highlights の title は
-    `…` をコードとして描くが、題も概念で書くので扱いを揃える)。
-    """
-    has_identifier_joint = isinstance(value, str) and IdentifierJoint.search(value) is not None
-    return is_text(value) and not has_identifier_joint
+
+# docs が仕様の語として使う、継ぎ目を含む語(`.dcmp` のキー名・製品名)。
+DocsJointWords = frozenset(
+    word
+    for doc in sorted((Path(__file__).resolve().parents[2] / "docs").glob("*.md"))
+    for word in joint_words(doc.read_text(encoding="utf-8"))
+)
+
+
+def is_text_with_only_docs_joints(value: object) -> bool:
+    """空でない文字列で、継ぎ目を含む語がすべて docs に出る語か。"""
+    return is_text(value) and joint_words(value) <= DocsJointWords
 
 
 IdPattern = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]{0,63}")
@@ -123,7 +141,7 @@ ShaPattern = re.compile(r"[0-9a-f]{40}")
 # 値の規則と、違反したときの説明。
 ScalarRules: dict[str, tuple[Callable[[object], bool], str]] = {
     "text": (is_text, "空でない文字列"),
-    "name": (is_concept_name, "概念の名前(docs の語彙。camelCase / PascalCase の識別子や製品名は書かない)"),
+    "heading": (is_text_with_only_docs_joints, "見出し(小文字と大文字の継ぎ目がある複合語は、docs に出る語のほかは書かない)"),
     "id": (lambda value: isinstance(value, str) and IdPattern.fullmatch(value) is not None, f"id({IdPattern.pattern})"),
     "sha": (lambda value: isinstance(value, str) and ShaPattern.fullmatch(value) is not None, "小文字 40 桁の sha"),
     "count": (is_count, "1 以上の整数"),
@@ -133,8 +151,7 @@ ScalarRules: dict[str, tuple[Callable[[object], bool], str]] = {
 }
 
 Text = Scalar("text")
-# 図・一覧の見出しになる名前(concepts / messages の name、features / flows / suites の label、highlights の title)。
-Name = Scalar("name")
+Heading = Scalar("heading")
 Id = Scalar("id")
 Sha = Scalar("sha")
 Count = Scalar("count")
@@ -172,12 +189,12 @@ Shapes: dict[str, dict[str, Field]] = {
         "highlights": may(Many(Shape("Highlight"))),
     },
     "Behavior": {"text": need(Text), "message": may(Id)},
-    "Highlight": {"title": need(Name), "text": need(Text), "go": need(Variant("Target"))},
-    "Feature": {"id": need(Id), "label": need(Name), "role": need(Text)},
+    "Highlight": {"title": need(Heading), "text": need(Text), "go": need(Variant("Target"))},
+    "Feature": {"id": need(Id), "label": need(Heading), "role": need(Text)},
     "LayerRole": {"layer": need(Text), "role": need(Text)},
     "Concept": {
         "path": need(Text),
-        "name": need(Name),
+        "name": need(Heading),
         "role": need(Text),
         "feature": may(Id),
         "change": may(Text),
@@ -188,14 +205,14 @@ Shapes: dict[str, dict[str, Field]] = {
         "from": need(Text),
         "to": need(Text),
         "kind": need(Word(MessageKinds)),
-        "name": need(Name),
+        "name": need(Heading),
         "code": need(Text),
         "via": need(Word(Vias)),
         "payload": may(Text),
         "returns": may(Text),
         "status": may(Word(MessageStatuses)),
     },
-    "Flow": {"id": need(Id), "label": need(Name), "steps": need(Many(Id, least=1))},
+    "Flow": {"id": need(Id), "label": need(Heading), "steps": need(Many(Id, least=1))},
     "CommitStory": {
         "sha": need(Sha),
         "phase": need(Word(Phases)),
@@ -214,7 +231,7 @@ Shapes: dict[str, dict[str, Field]] = {
         "end": need(Count),
         "text": need(Text),
     },
-    "Suite": {"id": need(Id), "label": need(Name), "file": need(Text)},
+    "Suite": {"id": need(Id), "label": need(Heading), "file": need(Text)},
     "Test": {
         "id": need(Id),
         "suite": need(Id),
