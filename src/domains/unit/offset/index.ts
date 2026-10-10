@@ -1,3 +1,4 @@
+import { Angle } from "@/domains/unit/angle";
 import type { Axis } from "@/domains/unit/axis";
 
 /**
@@ -54,6 +55,36 @@ export const Offset = {
    */
   along(offset: Offset, axis: Axis): number {
     return axis === "width" ? offset.x : offset.y;
+  },
+
+  /**
+   * 差を時計回りに回したもの（y が下向きの画面の座標で見た時計回り。CSS の `rotate()` と
+   * 同じ向き）。
+   *
+   * @param offset 回す元の差
+   * @param degrees 回す角度（度）。負なら反時計回り
+   * @returns 長さを保ったまま向きだけを変えた差。360 の倍数（0 を含む）なら元と同じ値
+   */
+  rotate(offset: Offset, degrees: Angle): Offset {
+    // 1 回りを落としてから回す。360 度などで三角関数の端数が出て、回っていないものと同じ
+    // 向きなのに値がずれるのを防ぐ
+    const radians = ((degrees % Angle.FullTurn) * Math.PI) / 180;
+    const cos = Math.cos(radians);
+    const sin = Math.sin(radians);
+    return {
+      x: offset.x * cos - offset.y * sin,
+      y: offset.x * sin + offset.y * cos,
+    };
+  },
+
+  /**
+   * 動きの無い差か。
+   *
+   * @param offset 見る差
+   * @returns 縦横どちらも 0 なら `true`
+   */
+  isOrigin(offset: Offset): boolean {
+    return offset.x === 0 && offset.y === 0;
   },
 
   /**

@@ -1,4 +1,7 @@
+import { Angle } from "@/domains/unit/angle";
 import { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
+import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
+import { RotatedBounds } from "@/features/editor/features/canvas/domains/rotated-bounds";
 import { CanvasDom } from "@/libs/canvas-dom";
 import { Option } from "@/utils/Option";
 
@@ -14,6 +17,45 @@ export const DrawnBounds = {
    */
   measure(name: string): Option<CanvasBounds> {
     return Option.map(CanvasDom.elementOf(name), CanvasDom.boundsOf);
+  },
+
+  /**
+   * 名前で指した要素が、今どこにどれだけの大きさでどの向きに回って描かれているか
+   * （client 座標）。
+   *
+   * 回っていなければ外接矩形をそのまま使う。レイアウトの大きさは整数へ丸められている
+   * ので、使うと `fill` などで端数を持つ要素の矩形が今の実測からずれる。
+   *
+   * @param name 描かれている artboard / ノードの名前
+   * @param rotation その名前のものの画面上の向き（自分と祖先の合計）
+   * @param view レイアウトの大きさを画面上の大きさへ直す倍率
+   * @returns 回る前の矩形と向き。その名前の要素がまだ画面に出ていない・回っているのに
+   *   レイアウトの大きさを測れないときは `none`
+   */
+  measureRotated(
+    name: string,
+    rotation: Angle,
+    view: CanvasView,
+  ): Option<RotatedBounds> {
+    return Option.flatMap(CanvasDom.elementOf(name), (element) => {
+      const enclosing = CanvasDom.boundsOf(element);
+      if (Angle.isWholeTurns(rotation)) {
+        return Option.some(
+          RotatedBounds.fromEnclosing(enclosing, enclosing, rotation),
+        );
+      }
+      return Option.map(CanvasDom.layoutSizeOf(element), (size) => {
+        const drawn = CanvasView.toScreenOffset(view, {
+          x: size.width,
+          y: size.height,
+        });
+        return RotatedBounds.fromEnclosing(
+          enclosing,
+          { width: drawn.x, height: drawn.y },
+          rotation,
+        );
+      });
+    });
   },
 
   /**

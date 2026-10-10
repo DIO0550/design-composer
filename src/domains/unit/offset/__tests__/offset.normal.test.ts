@@ -34,3 +34,37 @@ test("2 点の距離は向きに依らない 1 つの値になる", () => {
 test("原点は縦横とも 0 の位置", () => {
   expect(Offset.Origin).toEqual({ x: 0, y: 0 });
 });
+
+test("0 度回した差は元の差と同じになる", () => {
+  expect(Offset.rotate({ x: 30, y: -12 }, 0)).toEqual({ x: 30, y: -12 });
+});
+
+test("右向きの差を 90 度回すと下向きになる", () => {
+  const rotated = Offset.rotate({ x: 30, y: 0 }, 90);
+  expect(rotated.x).toBeCloseTo(0);
+  expect(rotated.y).toBeCloseTo(30);
+});
+
+test("右向きの差を 30 度回すと長さを保ったまま右下へ向く", () => {
+  const rotated = Offset.rotate({ x: 20, y: 0 }, 30);
+  expect(rotated.x).toBeCloseTo(17.32, 2);
+  expect(rotated.y).toBeCloseTo(10, 2);
+});
+
+test("1 回り回した差は元の差と同じになる", () => {
+  expect(Offset.rotate({ x: 30, y: -12 }, 360)).toEqual({ x: 30, y: -12 });
+});
+
+test("縦横どちらも 0 の差は動きが無い", () => {
+  expect(Offset.isOrigin({ x: 0, y: 0 })).toBe(true);
+});
+
+test("片方だけ 0 の差は動きがある", () => {
+  expect(Offset.isOrigin({ x: 0, y: 3 })).toBe(false);
+});
+
+test("負の角度は反時計回りに回す", () => {
+  const rotated = Offset.rotate({ x: 30, y: 0 }, -90);
+  expect(rotated.x).toBeCloseTo(0);
+  expect(rotated.y).toBeCloseTo(-30);
+});

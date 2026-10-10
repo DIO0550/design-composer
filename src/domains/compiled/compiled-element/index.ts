@@ -11,7 +11,7 @@ import {
 import type { CssDirection } from "@/domains/dcmp/css-direction";
 import { Layout } from "@/domains/dcmp/layout";
 import { LengthShorthand } from "@/domains/dcmp/length-shorthand";
-import type { PropValue } from "@/domains/dcmp/node";
+import type { Props, PropValue } from "@/domains/dcmp/node";
 import { Padding } from "@/domains/dcmp/padding";
 import { type AbsolutePlacement, Placement } from "@/domains/dcmp/placement";
 import {
@@ -19,6 +19,7 @@ import {
   type TokenPropName,
 } from "@/domains/dcmp/primitive-schema";
 import type { ResolvedProps } from "@/domains/dcmp/resolved-props";
+import { Rotation } from "@/domains/dcmp/rotation";
 import { Size } from "@/domains/dcmp/size";
 import {
   type PaintNameResolution,
@@ -166,22 +167,18 @@ function inFlowParentDirection(
 /** 楕円の丸み。prop ではなく形そのものなので固定で出す（docs/03「Ellipse 自体」）。 */
 const EllipseBorderRadius = "50%";
 
-/** 向きを変えない、回っていない状態。 */
-const Unrotated = 0;
-
 /**
  * 回っていないノードは宣言を出力しない (docs/03 の表)。
  *
  * `opacityDeclarations` と形は似ているが、既定を出さない理由が別 (あちらは初期値と同じで
  * 効果が無い) なので畳まない。畳むと呼び出しからどちらの理由かが読めなくなる。
  *
- * @param rotation `rotation` prop に設定されている値
- * @returns 回っているときだけ宣言 1 件。数値でない値（ファイル由来の不正な綴り）では空
+ * @param props ノードに設定されている props
+ * @returns 0 以外の角度のときだけ宣言 1 件。読めない値（`Rotation.fromProps`）では空
  */
-function rotationDeclarations(
-  rotation: PropValue | undefined,
-): readonly CssDeclarationType[] {
-  if (typeof rotation !== "number" || rotation === Unrotated) {
+function rotationDeclarations(props: Props): readonly CssDeclarationType[] {
+  const rotation = Rotation.fromProps(props);
+  if (rotation === Rotation.Default) {
     return [];
   }
   return [CssDeclaration.create("transform", `rotate(${rotation}deg)`)];
@@ -374,7 +371,7 @@ export const BoxElement = {
       ...Layout.declarations(layout),
       ...wrap,
       ...placementDeclarations(placement),
-      ...rotationDeclarations(props.rotation),
+      ...rotationDeclarations(props),
       ...gap,
       ...padding,
       ...alignment,
@@ -436,7 +433,7 @@ export const TextElement = {
   ): readonly CssDeclarationType[] {
     return [
       ...absolutePlacementDeclarations(Placement.absoluteFromProps(props)),
-      ...rotationDeclarations(props.rotation),
+      ...rotationDeclarations(props),
       ...typographyDeclarations(props.typography, tokens),
       ...tokenDeclarations("color", props.color, tokens),
       CssDeclaration.create("text-align", String(props.align)),
@@ -486,7 +483,7 @@ export const EllipseElement = {
     );
     return [
       ...absolutePlacementDeclarations(placement),
-      ...rotationDeclarations(props.rotation),
+      ...rotationDeclarations(props),
       ...Size.declarationsFromProps(props, "width", flexParentDirection),
       ...Size.declarationsFromProps(props, "height", flexParentDirection),
       ...tokenDeclarations("background", props.background, tokens),

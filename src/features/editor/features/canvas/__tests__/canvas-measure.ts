@@ -25,6 +25,28 @@ export function stubBounds(element: Element, bounds: CanvasBounds): void {
 }
 
 /**
+ * その要素の、変形を効かせる前のレイアウトの大きさを決める（`offsetWidth` / `offsetHeight`）。
+ * 回った要素の回る前の大きさは外接矩形からは決まらないので、回ったものを測るテストは
+ * `stubBounds` と合わせてこれも差し替える。
+ *
+ * @param element 測り方を差し替える要素
+ * @param size その要素が返すことにする幅と高さ
+ */
+export function stubLayoutSize(
+  element: HTMLElement,
+  size: Readonly<{ width: number; height: number }>,
+): void {
+  Object.defineProperty(element, "offsetWidth", {
+    configurable: true,
+    value: size.width,
+  });
+  Object.defineProperty(element, "offsetHeight", {
+    configurable: true,
+    value: size.height,
+  });
+}
+
+/**
  * キャンバスに描かれている要素の、描かれた位置と大きさをテスト用の値にする。
  *
  * **2 つの親の矩形を差し替えていないテストでは、原点のずれが 0 になる。** 付け替えで座

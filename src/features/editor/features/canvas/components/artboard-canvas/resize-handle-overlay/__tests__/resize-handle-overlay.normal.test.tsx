@@ -1,8 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import { expect, test } from "vitest";
 import { AxisLength } from "@/domains/dcmp/axis-length";
-import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import type { ResizableSelection } from "@/features/editor/features/canvas/domains/node-resize";
+import type { RotatedBounds } from "@/features/editor/features/canvas/domains/rotated-bounds";
 import { Option } from "@/utils/Option";
 import { ResizeHandleOverlay } from "../index";
 
@@ -15,11 +15,9 @@ import { ResizeHandleOverlay } from "../index";
  */
 
 /** 画面の (100, 50) に 200x100 で描かれている、という前提。右辺 x=300 / 下辺 y=150。 */
-const PanelBounds: CanvasBounds = {
-  left: 100,
-  top: 50,
-  width: 200,
-  height: 100,
+const PanelBounds: RotatedBounds = {
+  unrotated: { left: 100, top: 50, width: 200, height: 100 },
+  rotation: 0,
 };
 
 const WidthHandle = AxisLength.create("width", 200);
@@ -31,12 +29,18 @@ function placed(lengths: readonly AxisLength[]): ResizableSelection {
     lengths,
     origin: Option.some({ x: 30, y: 70 }),
     snapTargetNames: [],
+    rotation: { own: 0, total: 0 },
   };
 }
 
 /** 位置を書けない対象（フロー配置のノード）。 */
 function unplaced(lengths: readonly AxisLength[]): ResizableSelection {
-  return { lengths, origin: Option.none, snapTargetNames: [] };
+  return {
+    lengths,
+    origin: Option.none,
+    snapTargetNames: [],
+    rotation: { own: 0, total: 0 },
+  };
 }
 
 /** 出ているハンドルから、見たいスタイルだけを左上から時計回りの並びで取り出す。 */
@@ -222,4 +226,65 @@ test("掴んでいる間はハンドルがポインタを受け取らない", ()
   expect(handleStyles((style) => style.pointerEvents)).toEqual(
     Array(8).fill("none"),
   );
+});
+
+/** `PanelBounds` を中心 (200, 100) まわりに回して描いたもの。 */
+function turnedPanel(rotation: number): RotatedBounds {
+  return { unrotated: PanelBounds.unrotated, rotation };
+}
+
+/** 同じ角度だけ回っている、2 軸とも掴めて位置を持つ対象。 */
+function turnedPlaced(rotation: number): ResizableSelection {
+  return {
+    ...placed([WidthHandle, HeightHandle]),
+    rotation: { own: rotation, total: rotation },
+  };
+}
+
+test("回ったノードのハンドルは回った角に置かれる", () => {
+  /*
+   * 右下の角 (300, 150) を中心まわりに 30 度回すと (261.6, 193.3)。外接矩形の右下
+   * （軸に平行な 8 点の位置）なら (311.6, 168.3) になる。
+   */
+  render(
+    <ResizeHandleOverlay
+      bounds={turnedPanel(30)}
+      resizable={turnedPlaced(30)}
+      isGrabbing={false}
+      onGrab={() => {}}
+    />,
+  );
+
+  const bottomRight = screen.getAllByTestId("resize-handle")[4];
+  expect(Number.parseFloat(bottomRight.style.left)).toBeCloseTo(256.6, 1);
+  expect(Number.parseFloat(bottomRight.style.top)).toBeCloseTo(188.3, 1);
+});
+
+test("回ったノードのハンドルは、四角も要素と同じ角度だけ回る", () => {
+  render(
+    <ResizeHandleOverlay
+      bounds={turnedPanel(30)}
+      resizable={turnedPlaced(30)}
+      isGrabbing={false}
+      onGrab={() => {}}
+    />,
+  );
+
+  expect(new Set(handleStyles((style) => style.transform))).toEqual(
+    new Set(["rotate(30deg)"]),
+  );
+});
+
+test("90 度回したノードの幅のハンドルには、縦の矢印のカーソルが出る", () => {
+  // 右辺は画面の下へ来るので、伸び縮みするのは縦
+  render(
+    <ResizeHandleOverlay
+      bounds={turnedPanel(90)}
+      resizable={turnedPlaced(90)}
+      isGrabbing={false}
+      onGrab={() => {}}
+    />,
+  );
+
+  expect(handleStyles((style) => style.cursor)[3]).toBe("ns-resize");
 });

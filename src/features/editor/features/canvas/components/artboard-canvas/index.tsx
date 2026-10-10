@@ -166,7 +166,10 @@ export function ArtboardCanvas({
    * 選択していない間も呼ぶのは、フックを条件付きで呼べないため（`none` を渡すと
    * 測らずに `none` を返す）。
    */
-  const drawnBounds = useDrawnBounds(singleName, canvasAreaRef);
+  const drawnBounds = useDrawnBounds(singleName, canvasAreaRef, {
+    rotation: resizable.rotation.total,
+    view,
+  });
   /*
    * 覚える相手はドキュメントであって対ではない。`selection` を deps にすると
    * **選択のたびに**コンパイルし直して中身の HTML を入れ直すので、`click` 2 回の
@@ -188,7 +191,7 @@ export function ArtboardCanvas({
    * 何も出さないと下にある `cursor-grab`（開いた手）に戻ってしまう。
    */
   const grabbedCursor = Option.map(nodeResize.grabbed, (held) =>
-    resizeCursor(held.grip),
+    resizeCursor(held.grip, held.rotation.total),
   );
 
   return (

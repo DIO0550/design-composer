@@ -55,7 +55,8 @@ function nodeResizeReducer(
 }
 
 /**
- * 選択中のものが今どこにどれだけの大きさで描かれているか。
+ * 選択中のものが今どこにどれだけの大きさで描かれているか（軸に平行な外接矩形。辺の
+ * スナップの組に載せる）。
  *
  * ハンドルを描く側（`useDrawnBounds`）が持つスナップショットを使い回さず、押した
  * 瞬間に測り直す。スナップショットは再レンダーのたびにしか更新されないので、
@@ -193,12 +194,22 @@ export function useNodeResize(
 
   const grabAt = (event: ReactPointerEvent<HTMLElement>): boolean => {
     const bounds = selectionBounds(params.selection);
-    if (!Option.isSome(bounds)) {
+    const rotated = Option.flatMap(
+      DocumentSelection.singleName(params.selection),
+      (name) =>
+        DrawnBounds.measureRotated(
+          name,
+          params.resizable.rotation.total,
+          params.view,
+        ),
+    );
+    // 名前を付けた変数にすると narrowing が効かないので、条件はここへ直に書く
+    if (!Option.isSome(bounds) || !Option.isSome(rotated)) {
       return false;
     }
     const grabbed = NodeResize.grabAt(
       params.resizable,
-      bounds.value,
+      rotated.value,
       CanvasPointer.offsetOf(event),
     );
     if (!Option.isSome(grabbed)) {

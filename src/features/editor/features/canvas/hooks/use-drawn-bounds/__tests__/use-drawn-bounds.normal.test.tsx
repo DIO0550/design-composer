@@ -5,7 +5,9 @@ import {
   clearDrawn,
   drawNamed,
   stubBounds,
+  stubLayoutSize,
 } from "@/features/editor/features/canvas/__tests__/canvas-measure";
+import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
 import { Option } from "@/utils/Option";
 import { useDrawnBounds } from "../index";
 
@@ -16,10 +18,18 @@ afterEach(clearDrawn);
 /** 器の左上。0 以外にして、器からの相対に直していることが見えるようにする。 */
 const ContainerOrigin = { left: 10, top: 20 };
 
-/** 測った矩形をそのまま読める形で出す器。 */
-function BoundsProbe({ target }: Readonly<{ target: Option<string> }>) {
+/**
+ * 測った回る前の矩形をそのまま読める形で出す器。
+ *
+ * 向きと倍率を省くと、回っていない等倍の要素として測る。
+ */
+function BoundsProbe({
+  target,
+  rotation = 0,
+  view = CanvasView.create(),
+}: Readonly<{ target: Option<string>; rotation?: number; view?: CanvasView }>) {
   const container = useRef<HTMLDivElement>(null);
-  const bounds = useDrawnBounds(target, container);
+  const bounds = useDrawnBounds(target, container, { rotation, view });
   return (
     <div
       ref={(element) => {
@@ -40,7 +50,7 @@ function BoundsProbe({ target }: Readonly<{ target: Option<string> }>) {
     >
       <output data-testid="bounds">
         {Option.isSome(bounds)
-          ? `${bounds.value.left},${bounds.value.top},${bounds.value.width},${bounds.value.height}`
+          ? `${bounds.value.unrotated.left},${bounds.value.unrotated.top},${bounds.value.unrotated.width},${bounds.value.unrotated.height}`
           : "測れていない"}
       </output>
     </div>
@@ -89,4 +99,29 @@ test("描かれる位置が変わると測り直す", () => {
   rerender(<BoundsProbe target={Option.some("home")} />);
 
   expect(screen.getByTestId("bounds").textContent).toBe("10,20,400,200");
+});
+
+test("回った要素は、レイアウトの大きさに倍率を掛けた矩形を外接矩形の中心に置いたものになる", () => {
+  /*
+   * 外接矩形 (100, 40) 300x200 の中心は (250, 140)。回る前の大きさ 100x40 を 2 倍した
+   * 200x80 をそこへ置く。外接矩形の大きさからは導けない大きさにしてある。
+   */
+  const target = drawNamed("card", {
+    left: 100,
+    top: 40,
+    width: 300,
+    height: 200,
+  });
+  stubLayoutSize(target, { width: 100, height: 40 });
+
+  render(
+    <BoundsProbe
+      target={Option.some("card")}
+      rotation={30}
+      view={{ ...CanvasView.create(), scale: 2 }}
+    />,
+  );
+
+  // 器の左上（10, 20）を原点に置き直すので、(150, 100) は (140, 80) になる
+  expect(screen.getByTestId("bounds").textContent).toBe("140,80,200,80");
 });

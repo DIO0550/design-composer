@@ -29,9 +29,11 @@ import { PrimitiveTypes } from "@/domains/dcmp/primitive-schema";
 import { ReferenceContext } from "@/domains/dcmp/reference-context";
 import type { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import { ResolvedProps } from "@/domains/dcmp/resolved-props";
+import { Rotation } from "@/domains/dcmp/rotation";
 import { Size } from "@/domains/dcmp/size";
 import { type Token, type TokenRef, TokenSet } from "@/domains/dcmp/token";
 import { Visibilities, Visibility } from "@/domains/dcmp/visibility";
+import type { Angle } from "@/domains/unit/angle";
 import { Axes, type Axis } from "@/domains/unit/axis";
 import { Offset } from "@/domains/unit/offset";
 import { ArrayEx } from "@/utils/ArrayEx";
@@ -1254,6 +1256,56 @@ export const DesignDocument = {
           Visibilities.Hidden,
         ),
     });
+  },
+
+  /**
+   * 名前で指したものの向き（docs/03「回転」）。
+   *
+   * @param document 引き先になるドキュメント
+   * @param name 向きを知りたい artboard / ノードの名前
+   * @returns その名前のもの自身の角度。部品インスタンスは上書きを当てた部品の根の角度
+   *   （`isHidden` と同じ）。ドキュメントに無い名前・参照先の部品が無いインスタンスは `none`
+   */
+  rotationOf(document: DesignDocument, name: string): Option<Angle> {
+    const artboard = DesignDocument.findArtboard(document, name);
+    if (Option.isSome(artboard)) {
+      return Option.some(Rotation.fromProps(Artboard.boxProps(artboard.value)));
+    }
+    return Option.map(
+      Option.flatMap(DesignDocument.findNode(document, name), (node) =>
+        rootPropsOf(document, node),
+      ),
+      Rotation.fromProps,
+    );
+  },
+
+  /**
+   * 名前で指したものが画面上で向いている角度。回った Box の中の子は、親と一緒に回ったうえで
+   * 自分の分だけさらに回る（`rotate()` は子孫にも効く）。
+   *
+   * @param document 引き先になるドキュメント
+   * @param name 向きを知りたい artboard / ノードの名前
+   * @returns 自分と包んでいるノード・artboard の角度の合計。自分か包んでいるもののどれか
+   *   の角度が引けないとき（`rotationOf` が `none`）は `none`
+   */
+  totalRotationOf(document: DesignDocument, name: string): Option<Angle> {
+    const own = DesignDocument.rotationOf(document, name);
+    // artboard は誰の子でもないので、親を探す前に止める（探すと木の全体を走る）
+    const isArtboard = Option.isSome(
+      DesignDocument.findArtboard(document, name),
+    );
+    const position = isArtboard
+      ? Option.none
+      : DesignDocument.findChildPosition(document, name);
+    if (!Option.isSome(position)) {
+      return own;
+    }
+    return Option.flatMap(own, (rotation) =>
+      Option.map(
+        DesignDocument.totalRotationOf(document, position.value.parentName),
+        (outer) => rotation + outer,
+      ),
+    );
   },
 
   /**
