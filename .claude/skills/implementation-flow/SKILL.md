@@ -180,8 +180,8 @@ Issue: #<番号>
 2. 返ってきた指摘の採否を決め、採用したものを `implementer` に渡して直させてから、
    **`test-reviewer` を単独で、前面で起動する**(同じメッセージに
    他のツール呼び出しを並べない)。実装を壊して確かめるので、並べると他のエージェントが壊れた
-   状態を実装として読む。背景で起動すると git 操作の抑止が効かない(理由と、フックが塞いでいる
-   範囲は「サブエージェントの使い方」)
+   状態を実装として読む。背景になると(前面で起動して約 120 秒で移された場合を含む)git 操作の
+   抑止が効かない(理由と、フックが塞いでいる範囲は「サブエージェントの使い方」)
 
 | エージェント | 観点 | 呼ぶ条件 |
 | --- | --- | --- |
@@ -318,16 +318,18 @@ pnpm visual:capture -- --storybook-dir storybook-static --out visual-actual  # �
   混ざってコミットに載る
 - **直しは `SendMessage` で続けず、新しい Agent 呼び出しで `implementer` に渡す。** 実行中の印を
   作るフックの matcher は `Task|Agent` で、`SendMessage` には当たらない(`.claude/settings.json`)
-- **実行中に git add / commit / push を挟まない。** ミューテーション実測や実装の途中でコミットすると、
-  その瞬間の書き換えが載る。`block-git-during-verification-agent.sh` が
-  作業ツリーを書き換えるサブエージェントの実行中はここを機械的に止める(対象は `.claude/hooks/README.md`)。
-  **止まるのは前面で起動したときだけ**(背景で起動すると起動の直後に PostToolUse が走り、
-  印が消える。実測)。`run_in_background: true` を明示した起動は
-  `track-verification-agent-activity.sh` が拒否するが、塞いでいない形がある(フックの冒頭)。
-  `false` を渡しても背景で起動したとき・実行中に背景へ移したときは、完了通知を受け取るまで
-  git add / commit / push を挟まない
-- **バックグラウンドで起動した場合は、完了を取り逃さない。** 結果を受け取るまで次のフェーズへ
-  進まない
+- **作業ツリーを書き換えるサブエージェントは単独で前面で起動し、完了の結果を受け取るまで
+  git add / commit / push を挟まない**(同じメッセージに他のツール呼び出しを並べない)。
+  ミューテーション実測や実装の途中でコミットすると、その瞬間の書き換えが載る。
+  `block-git-during-verification-agent.sh` が実行中の印がある間の git 操作を機械的に止めるが
+  (対象は `.claude/hooks/README.md`)、印が残るのは前面にある間だけ。
+  `run_in_background: true` を明示した起動は `track-verification-agent-activity.sh` が拒否するが、
+  前面で起動しても、この実行環境では 120 秒を超えた起動は約 120 秒で背景へ移され、移された後は
+  印が無い(フックの冒頭)。
+  単独で起動するのは、移された後に並べた呼び出しが実行中に走りうるため。
+  実測の記録は `harness/case-law/process.md`
+- **バックグラウンドになった場合は、完了を取り逃さない**(前面で起動して約 120 秒で移された
+  場合を含む)。結果を受け取るまで次のフェーズへ進まない
 - **セッションの途中で `.claude/agents/` に足した定義は、同じセッションから呼べないことがある**
   (リモート実行環境で `Agent type not found` を実測)。そのときは `general-purpose` に定義ファイルを
   読ませて代行させる。代行では frontmatter が効かないので、定義の `model` を Agent の `model` に

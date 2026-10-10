@@ -43,7 +43,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 ## 配線
 
 [`.claude/settings.json`](../settings.json) の `hooks.PreToolUse` / `hooks.PostToolUse` から参照。
-パスは `$CLAUDE_PROJECT_DIR` 基準。
+パスは `${CLAUDE_PROJECT_DIR:-.}` 基準。
 
 `lib/` はフック本体から読む共有部品と、フックの判定を固定する判定表(`*-cases.sh`)の置き場。
 `settings.json` からは参照しない。
@@ -260,6 +260,10 @@ grep -c $'\tsession\t' "${TMPDIR:-/tmp}/design-composer-firings-${CLAUDE_CODE_SE
 | PR #192(2026-08-11) | webhook 起動 | **通ってしまった** = 不発 |
 | 2026-08-14 | claude.ai/code から起動 | **deny された** = 発火 |
 | 2026-09-12 | claude.ai/code から起動 | `echo hook-canary` は **deny され**、同じセッションの `echo hook-canary && echo done` は**通った** = カナリアの取りこぼし |
+| 2026-10-10(#1032) | Issue の assigned で起動した routine(3 リポジトリを並べ、作業ディレクトリ `/home/user`) | **通った** = 不発(マーカーも見出しも無い) |
+| 2026-10-10(#1032) | 前のセッションが `create_session` で起動(design-composer だけ、作業ディレクトリはリポジトリルート) | **deny された** = 発火 |
+
+#1032 の 2 行の読み方は `harness/case-law/process.md`「起動の形で発火が割れた対照」。
 
 **2026-09-12 の行が、この表の読み方を変えた実測。** ただし**連ねて実行した回に限る**。
 素の `echo hook-canary` は修正前の実装でも deny されるので(旧実装で実測)、素で実行して
