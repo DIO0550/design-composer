@@ -33,6 +33,7 @@ import { Rotation } from "@/domains/dcmp/rotation";
 import { Size } from "@/domains/dcmp/size";
 import { type Token, type TokenRef, TokenSet } from "@/domains/dcmp/token";
 import { Visibilities, Visibility } from "@/domains/dcmp/visibility";
+import type { Angle } from "@/domains/unit/angle";
 import { Axes, type Axis } from "@/domains/unit/axis";
 import { Offset } from "@/domains/unit/offset";
 import { ArrayEx } from "@/utils/ArrayEx";
@@ -1265,7 +1266,7 @@ export const DesignDocument = {
    * @returns その名前のもの自身の角度。部品インスタンスは上書きを当てた部品の根の角度
    *   （`isHidden` と同じ）。ドキュメントに無い名前・参照先の部品が無いインスタンスは `none`
    */
-  rotationOf(document: DesignDocument, name: string): Option<Rotation> {
+  rotationOf(document: DesignDocument, name: string): Option<Angle> {
     const artboard = DesignDocument.findArtboard(document, name);
     if (Option.isSome(artboard)) {
       return Option.some(Rotation.fromProps(Artboard.boxProps(artboard.value)));
@@ -1287,7 +1288,7 @@ export const DesignDocument = {
    * @returns 自分と包んでいるノード・artboard の角度の合計。自分か包んでいるもののどれか
    *   の角度が引けないとき（`rotationOf` が `none`）は `none`
    */
-  totalRotationOf(document: DesignDocument, name: string): Option<Rotation> {
+  totalRotationOf(document: DesignDocument, name: string): Option<Angle> {
     const own = DesignDocument.rotationOf(document, name);
     // artboard は誰の子でもないので、親を探す前に止める（探すと木の全体を走る）
     const isArtboard = Option.isSome(

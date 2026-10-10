@@ -1,3 +1,4 @@
+import { Angle } from "@/domains/unit/angle";
 import type { Axis } from "@/domains/unit/axis";
 
 /**
@@ -64,10 +65,10 @@ export const Offset = {
    * @param degrees 回す角度（度）。負なら反時計回り
    * @returns 長さを保ったまま向きだけを変えた差。360 の倍数（0 を含む）なら元と同じ値
    */
-  rotate(offset: Offset, degrees: number): Offset {
+  rotate(offset: Offset, degrees: Angle): Offset {
     // 1 回りを落としてから回す。360 度などで三角関数の端数が出て、回っていないものと同じ
     // 向きなのに値がずれるのを防ぐ
-    const radians = ((degrees % 360) * Math.PI) / 180;
+    const radians = ((degrees % Angle.FullTurn) * Math.PI) / 180;
     const cos = Math.cos(radians);
     const sin = Math.sin(radians);
     return {

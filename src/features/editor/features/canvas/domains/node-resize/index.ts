@@ -4,9 +4,9 @@ import { DesignDocument } from "@/domains/dcmp/design-document";
 import { Node, type Props } from "@/domains/dcmp/node";
 import { Placement } from "@/domains/dcmp/placement";
 import { ResizeEdit } from "@/domains/dcmp/resize-edit";
-import { Rotation } from "@/domains/dcmp/rotation";
 import { Size } from "@/domains/dcmp/size";
 import { DocumentSelection } from "@/domains/session/document-selection";
+import { Angle } from "@/domains/unit/angle";
 import { Axes, type Axis, type AxisEnd, AxisEnds } from "@/domains/unit/axis";
 import { Offset } from "@/domains/unit/offset";
 import { ArrangedArtboard } from "@/features/editor/features/canvas/domains/arranged-artboard";
@@ -114,7 +114,7 @@ export const ResizeGrip = {
    * @param rotation 掴んだものの画面上の向き（自分と祖先の合計）
    * @returns 45 度刻みで最も近い向き。ちょうど中間（22.5 度など）は時計回りの側
    */
-  orientationOf(grip: ResizeGrip, rotation: Rotation): GripOrientation {
+  orientationOf(grip: ResizeGrip, rotation: Angle): GripOrientation {
     const turned = (unrotatedOrientation(grip) + rotation) % HalfTurn;
     return nearestOrientation((turned + HalfTurn) % HalfTurn);
   },
@@ -181,9 +181,9 @@ export type ResizeHandleAnchor = Readonly<{
  */
 export type ResizeRotation = Readonly<{
   /** 自分の `rotation`。位置を書く親の座標の中での向き。 */
-  own: Rotation;
+  own: Angle;
   /** 自分と包んでいるものの `rotation` の合計（`DesignDocument.totalRotationOf`）。 */
-  total: Rotation;
+  total: Angle;
 }>;
 
 /**
@@ -247,7 +247,7 @@ const UnresizableSelection: ResizableSelection = {
   lengths: [],
   origin: Option.none,
   snapTargetNames: [],
-  rotation: { own: Rotation.Default, total: Rotation.Default },
+  rotation: { own: 0, total: 0 },
 };
 
 /**
@@ -512,7 +512,7 @@ export const NodeResize = {
       origin: Option.map(placement, (child) =>
         Placement.offset(child.placement),
       ),
-      snapTargetNames: Rotation.isWholeTurns(rotation.value.total)
+      snapTargetNames: Angle.isWholeTurns(rotation.value.total)
         ? Option.unwrapOr(
             Option.flatMap(placement, (child) =>
               parentWithSiblingNames(selection.document, {

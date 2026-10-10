@@ -1,5 +1,5 @@
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
-import type { Rotation } from "@/domains/dcmp/rotation";
+import type { Angle } from "@/domains/unit/angle";
 import {
   GripOrientations,
   NodeResize,
@@ -30,7 +30,7 @@ const HandleBorderPx = 1.5;
  */
 export function resizeCursor(
   grip: ResizeGrip,
-  rotation: Rotation,
+  rotation: Angle,
 ): CSSProperties["cursor"] {
   switch (ResizeGrip.orientationOf(grip, rotation)) {
     case GripOrientations.Horizontal:

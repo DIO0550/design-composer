@@ -1,40 +1,28 @@
 import type { Props } from "@/domains/dcmp/node";
+import type { Angle } from "@/domains/unit/angle";
 
 /**
- * ノードの向き（docs/03「回転」）。度で表した時計回りの角度で、中心を軸に回る。
+ * ノードの `rotation` prop の解釈（docs/03「回転」）。中心を軸に、書かれた角度だけ時計回りに
+ * 回る。
  *
- * 値域を型で閉じないのは、どの実数も正当な角度だから（360 以上・負の値も書ける）。
+ * 角度そのものは `unit/angle` の `Angle` で、ここが持つのは `.dcmp` に書かれた値をどう読むか
+ * だけ。型を持たないのは、読んだ結果が `Angle` と同じ構造で、別の型を立てても何も防げないため。
  */
-export type Rotation = number;
-
-/** 1 回りの角度。これの倍数だけ回ったものは、回っていないものと同じ向きに描かれる。 */
-const FullTurn = 360;
-
 export const Rotation = {
-  /** 書かれていないノードに効く向き（回っていない）。 */
+  /** 書かれていないノードに効く角度（回っていない）。 */
   Default: 0,
 
   /**
-   * props から向きを読む。
+   * props から角度を読む。
    *
    * @param props 読み取り元の props（デフォルト解決済みでなくてよい）
    * @returns 書かれている角度。未設定・数値でない値・有限でない値（ファイル由来の不正な綴り。
    *   JSON の `1e400` は Infinity として読まれる）のときは既定（`Default`）
    */
-  fromProps(props: Props): Rotation {
+  fromProps(props: Props): Angle {
     const rotation = props.rotation;
     return typeof rotation === "number" && Number.isFinite(rotation)
       ? rotation
       : Rotation.Default;
-  },
-
-  /**
-   * 回っていないものと同じ向きに描かれるか。
-   *
-   * @param rotation 判定する向き
-   * @returns 360 の倍数（0 を含む）なら `true`
-   */
-  isWholeTurns(rotation: Rotation): boolean {
-    return rotation % FullTurn === 0;
   },
 } as const;

@@ -1,4 +1,4 @@
-import { Rotation } from "@/domains/dcmp/rotation";
+import { Angle } from "@/domains/unit/angle";
 import { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
 import { RotatedBounds } from "@/features/editor/features/canvas/domains/rotated-bounds";
@@ -34,12 +34,12 @@ export const DrawnBounds = {
    */
   measureRotated(
     name: string,
-    rotation: Rotation,
+    rotation: Angle,
     view: CanvasView,
   ): Option<RotatedBounds> {
     return Option.flatMap(CanvasDom.elementOf(name), (element) => {
       const enclosing = CanvasDom.boundsOf(element);
-      if (Rotation.isWholeTurns(rotation)) {
+      if (Angle.isWholeTurns(rotation)) {
         return Option.some(
           RotatedBounds.fromEnclosing(enclosing, enclosing, rotation),
         );

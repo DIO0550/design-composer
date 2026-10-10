@@ -1,4 +1,4 @@
-import type { Rotation } from "@/domains/dcmp/rotation";
+import type { Angle } from "@/domains/unit/angle";
 import { Offset } from "@/domains/unit/offset";
 import { SidePairs } from "@/domains/unit/side";
 import { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
@@ -14,7 +14,7 @@ export type RotatedBounds = Readonly<{
   /** 回る前の矩形（画面上の px）。中心は回したあとも同じ位置にある。 */
   unrotated: CanvasBounds;
   /** 画面上の向き（度・時計回り）。 */
-  rotation: Rotation;
+  rotation: Angle;
 }>;
 
 /**
@@ -59,7 +59,7 @@ export const RotatedBounds = {
   fromEnclosing(
     enclosing: CanvasBounds,
     size: Readonly<{ width: number; height: number }>,
-    rotation: Rotation,
+    rotation: Angle,
   ): RotatedBounds {
     return {
       unrotated: {
