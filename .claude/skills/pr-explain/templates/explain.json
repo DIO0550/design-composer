@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "pr": 1024,
+  "sha": "0123456789abcdef0123456789abcdef01234567",
+  "issue": 1022,
+  "overview": {
+    "title": "PR の解説を explain.json で書き、検査して置く",
+    "lead": "解説は HTML の断片ではなく JSON で書く。ページの固定スクリプトが地図と合わせて 3 画面に組む。",
+    "before": [
+      { "text": "セッションが HTML の断片をページごとに書き、1 ページずつ置いていた" }
+    ],
+    "after": [
+      { "text": "セッションは `explain.json` を 1 つ書き、`put-explain` で置く", "message": "put-explain" },
+      { "text": "Actions は push のたびに枠と地図を置き直す", "message": "put-map" }
+    ],
+    "highlights": [
+      { "title": "公開の入口", "text": "検査に落ちた解説は gh-pages へ push しない", "go": { "kind": "feature", "id": "publish" } },
+      { "title": "ハーネスの層", "text": "検査はすべてハーネスの層にある", "go": { "kind": "layer", "layer": "ハーネス" } },
+      { "title": "置き場の書き換え", "text": "3 ファイル以外を消すのはここだけ", "go": { "kind": "file", "path": ".github/scripts/pr-explain-pages.sh" } },
+      { "title": "地図の配置", "text": "枠は毎回上書きする", "go": { "kind": "message", "id": "put-map" } },
+      { "title": "解説を置く流れ", "text": "検査から push までを 1 本で見る", "go": { "kind": "flow", "id": "explain" } }
+    ]
+  },
+  "features": [
+    { "id": "publish", "label": "公開", "role": "解説と地図を gh-pages の PR のフォルダへ置く" }
+  ],
+  "layerRoles": [
+    { "layer": "ハーネス", "role": "解説の検査と置き場の書き換え" }
+  ],
+  "concepts": [
+    { "path": ".github/workflows/pr-explain.yml", "name": "地図の配置", "role": "PR のイベントで地図を作って置く", "feature": "publish" },
+    { "path": ".github/scripts/pr-explain-pages.sh", "name": "置き場", "role": "gh-pages の PR のフォルダを書き換える", "feature": "publish", "change": "put-explain を足し、ページごとの HTML を置くモードを消した" },
+    { "path": ".github/scripts/build-pr-explain.py", "name": "解説の検査", "role": "explain.json の形と参照を見て、抜粋の中身を足す", "feature": "publish", "change": "新しく作った" },
+    { "path": ".claude/skills/pr-explain/templates/explain.json", "name": "見本", "role": "excerpt 以外のすべてのキーを使う解説", "graph": false }
+  ],
+  "messages": [
+    { "id": "put-map", "from": ".github/workflows/pr-explain.yml", "to": ".github/scripts/pr-explain-pages.sh", "kind": "cmd", "name": "地図を置く", "code": "pr-explain-pages.sh put-map", "via": "exec", "payload": "change-map.json とテンプレート" },
+    { "id": "put-explain", "from": ".github/scripts/pr-explain-pages.sh", "to": ".github/scripts/build-pr-explain.py", "kind": "qry", "name": "解説を検査する", "code": "build-pr-explain.py --pr --out", "via": "exec", "payload": "explain.json", "returns": "抜粋の中身を足した explain.json", "status": "added" }
+  ],
+  "flows": [
+    { "id": "explain", "label": "解説を置いたとき", "steps": ["put-explain"] },
+    { "id": "push", "label": "push したとき", "steps": ["put-map"] }
+  ],
+  "commitStories": [
+    {
+      "sha": "89abcdef0123456789abcdef0123456789abcdef",
+      "phase": "core",
+      "role": "解説を JSON で検査する",
+      "why": "ページが JSON を textContent でしか描かないので、HTML の断片の検査が要らなくなる。",
+      "flows": ["explain"],
+      "review": ["知らないキーを落とす。書き手が綴りを間違えたときに黙って欄が空にならないため"],
+      "before": [{ "text": "断片の HTML を要素・属性ごとに見ていた" }],
+      "after": [{ "text": "JSON の形と参照を見る", "message": "put-explain" }],
+      "notes": [
+        { "path": ".github/scripts/build-pr-explain.py", "start": 1, "end": 3, "text": "形は宣言的な表で持つ" },
+        { "path": ".github/scripts/pr-explain-pages.sh", "side": "old", "start": 58, "end": 60, "text": "ページごとの HTML を組み立てていた呼び出し。解説の検査に置き換えた" }
+      ]
+    }
+  ],
+  "suites": [
+    { "id": "build", "label": "解説の検査", "file": ".github/scripts/build-pr-explain-cases.sh" }
+  ],
+  "tests": [
+    {
+      "id": "unknown-key",
+      "suite": "build",
+      "name": "知らないキーは形の違反になる",
+      "techniques": ["error", "boundary"],
+      "why": "綴りを間違えたキーが黙って無視されると、ページの欄が空になる",
+      "given": "見本の解説",
+      "when": "messages[0] に知らないキーを足して検査する",
+      "then": "[pr-explain-shape] で落ち、書き出さない",
+      "commit": "89abcdef0123456789abcdef0123456789abcdef",
+      "values": {
+        "columns": ["足したキー", "結果"],
+        "rows": [
+          { "cells": ["extra", "落ちる"], "boundary": true },
+          { "cells": ["(足さない)", "通る"] }
+        ]
+      },
+      "targets": [".github/scripts/build-pr-explain.py"],
+      "covers": ["put-explain"]
+    },
+    {
+      "id": "stale",
+      "suite": "build",
+      "name": "地図の head と違う sha の解説は置いたうえで知らせる",
+      "techniques": ["state"],
+      "why": "古い解説も、ページが「以降 n コミットは解説なし」と出せば読める",
+      "given": "地図の head より前の sha で書いた解説",
+      "when": "put-explain で置く",
+      "then": "終了コード 0 で、標準エラーに知らせる",
+      "todo": true,
+      "targets": [".github/scripts/pr-explain-pages.sh"]
+    }
+  ]
+}

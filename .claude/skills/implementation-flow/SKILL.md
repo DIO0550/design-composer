@@ -229,6 +229,8 @@ diff_text | grep -ciE 'UI 案|Design Composer\.html'   # ui-reviewer の語
   `.github/workflows/pr-closing-issue.yml` が、閉じる Issue を持たない PR を落とす
 - CI(lint / typecheck / test / 視覚差分)を通す。push 前の検査や CI が落ちたら、直しは
   `implementer` に渡す(判断を伴わない自動修正コマンドだけは親が走らせてよい →「役割の分担」)
+- **PR を出したら `pr-explain` スキルで解説(`explain.json`)を書く**(ページは構造マップ・変更の経緯・
+  テストの 3 画面)。振る舞いが変わる push をしたら書き直す(`.claude/skills/pr-explain/`)
 
 **push の前に、まずフックが発火する環境かを確かめ、続けて git hooks と同じ検査を
 `pre-push` ごと走らせ、終了コードで判定する。**
@@ -343,5 +345,6 @@ pnpm visual:capture -- --storybook-dir storybook-static --out visual-actual  # �
 | `.claude/agents/` の `plan-reviewer.md` 以外の `*-reviewer.md` | 実装の検証観点(エージェントが読む) | フェーズ 6 |
 | [`reviewer-instructions.md`](reviewer-instructions.md) | 実装の検証の観点別エージェントへの共通の指示(エージェントが読む) | フェーズ 6 |
 | `.claude/skills/claim-verification/SKILL.md` | コメント・doc・PR/Issue 本文の事実主張を書く前に確かめる手順 | フェーズ 3 / 5 |
+| `.claude/skills/pr-explain/SKILL.md` | PR の解説ページの書き方と公開手順 | フェーズ 7 |
 | [`harness/case-law/planning.md`](../../../harness/case-law/planning.md) | 計画で過去に踏んだ実例 | フェーズ 3 |
 | [`harness/case-law/process.md`](../../../harness/case-law/process.md) | サブエージェント・フック環境の実例 | フェーズ 4 / 6 / 7 |

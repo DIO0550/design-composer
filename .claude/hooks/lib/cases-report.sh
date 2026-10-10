@@ -2,7 +2,7 @@
 #
 # 判定表（`*-cases.sh`）が共有する、判定の読み取りと報告。
 #
-# 使い方: source したうえで `decide`・`normalize_miss`・`report` を呼び、最後に
+# 使い方: source したうえで `decide`・`normalize_miss`・`all_in_category`・`report` を呼び、最後に
 # `cases_failed` を見る。ケースの並べ方と検出器の呼び方は、判定表ごとに違う（走査ルートを
 # 絶対パスで渡すもの・`cd` してから相対で渡すもの、置くのが 1 ファイルか木か）ので、
 # そこは各判定表が持つ。
@@ -34,6 +34,18 @@ decide() {
   else
     echo "broken"
   fi
+}
+
+# 報告が 1 行以上あり、すべての行が期待した見出しで始まるか。違反を分類で報告する検出器の、落とす側の
+# ケースに使う。崩したのと別の規則で落ちても終了コードは同じ 1 なので、分類まで見ないと、崩した規則を
+# 消しても ok のまま残る。
+#
+# $1 検出器の報告
+# $2 報告の見出しの正規表現（`grep -E` に渡す。行頭から当てる）
+all_in_category() {
+  local output="$1" heading="$2"
+  [ -n "$output" ] || return 1
+  ! printf '%s\n' "$output" | grep -vE "$heading" >/dev/null
 }
 
 # 意図した取りこぼしは pass になるのが正解なので、表の綴りへ戻す。

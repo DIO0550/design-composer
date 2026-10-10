@@ -115,6 +115,13 @@ jobs:
         with:
           fetch-depth: 1
 
+      # 解説ページの核の判定表が node で固定スクリプトを評価する。ランナーの image の node には
+      # 頼らない(image は変わりうる)。版は check ジョブと揃える。
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: 24
+
       # push 前の検査（harness/githooks/pre-push）と同じスクリプトを呼ぶ。
       # この 2 つは git hooks と Claude Code のフックにしか無く、どちらも
       # 発火しない実行環境がある（クローン直後は core.hooksPath が未設定で、
@@ -207,6 +214,22 @@ jobs:
       # 上と同じ README の段落。
       - name: PR が閉じる Issue の検査の判定表
         run: bash .github/scripts/check-pr-closing-issue-cases.sh
+
+      # PR の解説ページ(pr-explain.yml とセッションの pr-explain スキル)が使う 5 本の判定表。
+      - name: 変更の地図の判定表
+        run: bash .github/scripts/build-pr-change-map-cases.sh
+
+      - name: 解説ページの置き場の判定表
+        run: bash .github/scripts/pr-explain-pages-cases.sh
+
+      - name: 解説の検査の判定表
+        run: bash .github/scripts/build-pr-explain-cases.sh
+
+      - name: 解説ページの枠の検査の判定表
+        run: bash .github/scripts/check-pr-explain-template-cases.sh
+
+      - name: 解説ページの核の判定表
+        run: bash .github/scripts/pr-explain-core-cases.sh
 
   report-comment:
     name: post ci report comment

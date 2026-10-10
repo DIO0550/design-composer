@@ -37,30 +37,21 @@ import は `module-public-api` の違反にしない。`libs/<x>/fake/index.ts`�
 """
 
 import os
-import re
 import sys
 from pathlib import Path
 
-from ts_sources import DEFAULT_ROOT, FEATURES_ROOT, feature_of, report, run, source_files
-
-# tsconfig.json / vite.config.ts のパスエイリアス（`@/*` → `src/*`）。
-ALIAS = "@/"
-ALIAS_ROOT = DEFAULT_ROOT
-
-# ドメイン層の位置。この直下はカテゴリのフォルダで、モジュールはその下に置く。
-DOMAINS_ROOT = f"{ALIAS_ROOT}/domains"
-
-# `import ... from "X"` / `export ... from "X"` / `import("X")` の X を、行番号付きで拾う。
-#
-# 型だけの import も一緒に拾う。循環で困るのは実行時のロード順ではなく設計の向きで、
-# 型だけの import でもその向きは逆転するため。
-SPECIFIER = re.compile(r'(?:from|import)\s*\(?\s*"([^"]+)"')
-
-# コメント行の始まり。doc に import のパスを書く箇所があるので、実 import と数えない。
-COMMENT_LINE = re.compile(r"^\s*(?://|\*|/\*)")
-
-# フォルダを指す import の解決先。
-INDEX_NAMES = ("index.ts", "index.tsx")
+from ts_sources import (
+    COMMENT_LINE,
+    DOMAINS_ROOT,
+    FEATURES_ROOT,
+    IMPORT_SPECIFIER,
+    INDEX_NAMES,
+    feature_of,
+    report,
+    resolve_import,
+    run,
+    source_files,
+)
 
 # feature がテスト用の公開口を置けるフォルダ。
 TEST_ENTRY_FOLDERS = ("__tests__", "__stories__")
@@ -89,24 +80,6 @@ def module_folders(files: list[str]) -> set[str]:
     }
 
 
-def resolve(specifier: str, importer: str, files: set[str]) -> str | None:
-    """import 先のファイルを求める。
-
-    @param specifier import に書かれている綴り（`@/` エイリアスと相対パスを解く）
-    @param importer それを書いているファイルのパス
-    @param files 実在するファイルのパスの集合
-    @returns 解決できたファイルのパス。外部パッケージや実在しない綴りなら `None`
-    """
-    if specifier.startswith(ALIAS):
-        base = f"{ALIAS_ROOT}/{specifier[len(ALIAS) :]}"
-    elif specifier.startswith("."):
-        base = os.path.normpath(f"{os.path.dirname(importer)}/{specifier}").replace(os.sep, "/")
-    else:
-        return None
-    candidates = (f"{base}.ts", f"{base}.tsx", *(f"{base}/{name}" for name in INDEX_NAMES))
-    return next((c for c in candidates if c in files), None)
-
-
 def imports_of(path: str, files: set[str]) -> list[tuple[int, str]]:
     """そのファイルが読んでいる、リポジトリ内のファイルを求める。
 
@@ -118,8 +91,8 @@ def imports_of(path: str, files: set[str]) -> list[tuple[int, str]]:
     for number, line in enumerate(Path(path).read_text(encoding="utf-8").splitlines(), start=1):
         if COMMENT_LINE.match(line):
             continue
-        for match in SPECIFIER.finditer(line):
-            target = resolve(match.group(1), path, files)
+        for match in IMPORT_SPECIFIER.finditer(line):
+            target = resolve_import(match.group(1), path, files)
             if target is not None and target != path:
                 found.append((number, target))
     return found
