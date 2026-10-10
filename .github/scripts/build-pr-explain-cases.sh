@@ -138,6 +138,17 @@ deny|shape|sample|Behavior に知らないキー|d["overview"]["after"][0]["k"] 
 deny|shape|sample|LayerRole に知らないキー|d["layerRoles"][0]["x"] = "y"
 deny|shape|sample|Excerpt に知らないキー|d["tests"][0]["excerpt"] = {"path": "kept.txt", "start": 1, "end": 2, "lang": "py"}
 deny|shape|sample|concept の graph が真偽値でない|d["concepts"][3]["graph"] = "false"
+deny|shape|sample|箱の名前(concept の name)が識別子|d["concepts"][0]["name"] = "TokenTemplate"
+deny|shape|sample|やりとりの名前(message の name)が識別子|d["messages"][0]["name"] = "useTokenActions"
+deny|shape|sample|機能の名前(feature の label)が識別子|d["features"][0]["label"] = "PrExplain"
+deny|shape|sample|流れの名前(flow の label)が識別子|d["flows"][0]["label"] = "putExplain の流れ"
+deny|shape|sample|suite の名前(suite の label)が識別子|d["suites"][0]["label"] = "buildPrExplain"
+deny|shape|sample|見てほしい点の題(highlight の title)が識別子|d["overview"]["highlights"][0]["title"] = "addStop の規則"
+deny|shape|sample|名前の識別子に日本語が空白なしで続く|d["concepts"][0]["name"] = "TokenTemplateの規則"
+deny|shape|sample|名前の識別子をバッククォートで囲む|d["concepts"][0]["name"] = "`TokenTemplate`"
+pass|-|sample|名前に大文字だけの略語(UI 案・VRT)は書ける|d["concepts"][0]["name"] = "UI 案"; d["features"][0]["label"] = "VRT"
+pass|-|sample|説明文(concept の role)の識別子は検査しない|d["concepts"][0]["role"] = "TokenTemplate を組み立てる"
+pass|-|sample|テスト名(test の name)の識別子は検査しない|d["tests"][0]["name"] = "sortBy で並べ替えたとき順序が保たれる"
 deny|meta|sample|pr が公開先と違う|d["pr"] = d["pr"] + 1
 deny|ref|sample|message の from が concepts に無い|d["messages"][0]["from"] = "no/such"
 deny|ref|sample|message の to が concepts に無い|d["messages"][0]["to"] = "no/such"
