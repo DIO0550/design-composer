@@ -322,10 +322,10 @@ pnpm visual:capture -- --storybook-dir storybook-static --out visual-actual  # �
   git add / commit / push を挟まない**(同じメッセージに他のツール呼び出しを並べない)。
   ミューテーション実測や実装の途中でコミットすると、その瞬間の書き換えが載る。
   `block-git-during-verification-agent.sh` が実行中の印がある間の git 操作を機械的に止めるが
-  (対象は `.claude/hooks/README.md`)、印が残るのは前面で起動したときだけ。
+  (対象は `.claude/hooks/README.md`)、印が残るのは前面にある間だけ。
   `run_in_background: true` を明示した起動は `track-verification-agent-activity.sh` が拒否するが、
-  `false` を渡しても背景で起動することがあり、実行中に背景へ移すこともできる(フックの冒頭)。
-  単独で起動するのは、背景になったときに並べた呼び出しが実行中に走りうるため。
+  前面で起動しても約 120 秒で背景へ移されることがあり、移された後は印が無い(フックの冒頭)。
+  単独で起動するのは、移された後に並べた呼び出しが実行中に走りうるため。
   実測の記録は `harness/case-law/process.md`
 - **バックグラウンドで起動した場合は、完了を取り逃さない。** 結果を受け取るまで次のフェーズへ
   進まない

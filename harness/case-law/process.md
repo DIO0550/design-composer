@@ -51,13 +51,13 @@
 
 | 確かめたこと | 結果 |
 |---|---|
-| `planner` / `implementer` が定義どおり起動するか | 計測ログの中で implementer 3 回・planner 4 回、すべて起動した(`Agent type not found` は出ない)。ログの外でも planner 2 回・plan-reviewer 1 回・implementer 1 回が起動した。`tools` は定義どおり(planner は Edit / Write を持たない) |
+| `planner` / `implementer` が定義どおり起動するか | 計測ログの中で implementer 3 回・planner 4 回、すべて起動した(`Agent type not found` は出ない)。ログの外でも planner 2 回・plan-reviewer 1 回・implementer 3 回・test-reviewer 1 回が起動した。`tools` は定義どおり(planner は Edit / Write を持たない) |
 | implementer **自身**の `git add` | 前面で起動した implementer の中の `git add --dry-run` は deny された。そのとき実行中の印も在った |
 | implementer の実行中に**親**の `git add` を挟めるか | 挟めなかった。同じメッセージに Agent(前面)と Bash を並べると、Bash の PreToolUse は Agent の PostToolUse の後に来た(1 回)。Agent を並べた場合は測っていない |
 | Agent の PreToolUse の入力に `run_in_background` が載るか | `tool_input` に `true` / `false` で載る(計測ログの Agent の PreToolUse 6 件すべて) |
-| `run_in_background: false` を渡して前面で起動したか | 8 回中 4 回が前面、4 回が背景(背景になったのは planner 2 回・plan-reviewer 1 回・実装フェーズの implementer 1 回)。#1031 でも 4 回中 2 回が背景 |
+| `run_in_background: false` を渡して前面で起動したか | 11 回とも、起動の直後には返らなかった(最初は前面)。起動から 120 秒以内に終わった 4 回(implementer 3 回・planner 1 回、5.7〜49.6 秒)は前面のまま完了の結果が返った。120 秒を超えた 7 回(planner 2 回・plan-reviewer 1 回・implementer 3 回・test-reviewer 1 回)は、すべて起動から 120.4〜120.6 秒で「Async agent launched」が返り、背景へ移された(セッションの transcript の Agent の tool_use / tool_result の時刻)。#1031 で 4 回中 2 回が背景になったのも同じ形かは、時刻を見ていない |
 | 前面で起動したときの PostToolUse | 完了時に来る(`tool_response.status: "completed"`) |
-| 背景で起動したときの PostToolUse | 起動の直後に来る(`"async_launched"` / `isAsync: true` / `agentId` 付き)。背景になった plan-reviewer は、完了通知の時点で印のディレクトリが空だった |
+| 背景で起動したときの PostToolUse | 起動の直後に来る(`"async_launched"` / `isAsync: true` / `agentId` 付き)。120 秒で背景へ移された plan-reviewer は、完了通知の時点で印のディレクトリが空だった。移された implementer では、「Async agent launched」が返った時刻と印のディレクトリの mtime が一致した(15:11:00.98。完了時点で見た値)ので、移された時点で PostToolUse が来て印が消えたと読める(その瞬間の PostToolUse の入力は取れていない) |
 | Agent の Pre と Post を結び付ける ID | 両方に同じ `tool_use_id` が載る(揃った 6 組すべて) |
 | `SubagentStop` | 前面(1 回)・背景(1 回)とも完了時に届いた(`agent_id` / `agent_type` 付き。前面では PostToolUse と同じ秒で、その前)。背景で起動したものを `TaskStop` で止めたときは届かなかった |
 | サブエージェントの中の呼び出しを PreToolUse で見分けられるか | 見分けられる。サブエージェントの中の Bash / Write / Edit には `agent_id` / `agent_type` が載り、親の呼び出しには無い。`session_id` は親と同じ。Agent 自身の PreToolUse には起動される側の `agent_id` が無く(`subagent_type` だけ)、PostToolUse の `tool_response.agentId` で分かる |
@@ -73,15 +73,15 @@
   ことがある」(リモート実行環境で `Agent type not found`)とは別の結果で、どちらも起きる
 - `block-git-during-verification-agent.sh` はコマンドの文字列だけを見るので、git を実行しない
   コマンド(本文に `git add` の綴りを含むだけ)も止まる
-- 背景で起動した implementer の中で、`git add` の綴りを含む Bash が止められた(implementer 自身の
-  報告)。背景で起動すると印が起動の直後に消える、という上の実測と食い違い、**説明できていない**
+- 背景になった implementer の中で、`git add` の綴りを含む Bash が止められた(implementer 自身の
+  報告)。止められたのが、前面で起動して 120 秒で背景へ移される前だった、で説明がつく(#1031 側の時刻は未確認)
 
-**判定の分かれ目:** git 操作の競合は、**誰の呼び出しか**と**前面か背景か**を分けて見る。前面の
+**判定の分かれ目:** git 操作の競合は、**誰の呼び出しか**と**いま前面か背景か**を分けて見る。前面の
 起動中に git を叩きうるのはサブエージェント自身で、親の呼び出しは返るまで走らない(Bash で 1 回)。
-背景の起動中は親も動く。印は、背景になった plan-reviewer の 1 回では完了通知の時点で残って
-いなかったが、#1031 に逆の観察が 1 件あり(上の 3 点目)、説明できていない。
-`run_in_background: false` は前面を約束しないので、渡したかどうかではなく、返ってきたのが完了の
-結果か起動直後の返りかで前面だったかを見る。
+背景の起動中は親も動く。`run_in_background: false` で前面に起動しても、実行環境は約 120 秒で背景へ
+移しうる。印が効くのはその前までで、移された後は実行が続いていても印は無い。
+前面だったかは渡した値ではなく返りで見る。完了の結果なら最後まで前面、起動の約 120 秒後に
+「Async agent launched」が返ったら前面から移されたもの、起動の直後に返ったら最初から背景。
 
 フックの振る舞いへの反映は #1044〜#1047 に分けた。
 
