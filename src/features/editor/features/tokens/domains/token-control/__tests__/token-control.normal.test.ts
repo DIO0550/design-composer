@@ -17,7 +17,7 @@ function sectionOf(document: DesignDocument, kind: TokenKind): TokenSection {
   );
 }
 
-test("一覧にはパネルが描ける5種別のセクションが仕様の順で並ぶ", () => {
+test("一覧には6種別のセクションが仕様の順で並び、グラデーションが最後に来る", () => {
   const sections = TokenSection.forDocument(setupDocument());
 
   expect(sections.map((section) => section.kind)).toEqual([
@@ -26,30 +26,34 @@ test("一覧にはパネルが描ける5種別のセクションが仕様の順�
     "radius",
     "shadows",
     "typography",
+    "gradients",
   ]);
 });
 
-test("グラデーションを持つドキュメントでもグラデーションのセクションは出ない", () => {
-  const sections = TokenSection.forDocument(setupDocument());
+test("グラデーションを持つドキュメントではグラデーションのセクションに行が出る", () => {
+  const rows = sectionOf(setupDocument(), "gradients").rows;
 
-  /* 対照。同じドキュメントの色は出ているので、一覧そのものが空なのではない。 */
-  expect(sections.map((section) => section.kind)).toContain("colors");
-  expect(sections.map((section) => section.kind)).not.toContain("gradients");
+  expect(rows.map((row) => row.token.name)).toEqual(["brand"]);
 });
 
-test("グラデーションを選んでも編集欄は出ない", () => {
+test("グラデーションを選ぶとグラデーションの編集欄が出る", () => {
   const selection = TokenSelection.create(
     setupDocument(),
     Option.some({ kind: "gradients", name: "brand" } as const),
   );
 
-  expect(TokenControl.forSelection(selection)).toEqual(Option.none);
+  expect(
+    Option.map(
+      TokenControl.forSelection(selection),
+      (control) => control.body.kind,
+    ),
+  ).toEqual(Option.some("gradient"));
 });
 
 test("トークンを1つも持たない種別も見出しだけ並ぶ", () => {
   const document = DesignDocument.create({});
 
-  expect(TokenSection.forDocument(document)).toHaveLength(5);
+  expect(TokenSection.forDocument(document)).toHaveLength(6);
 });
 
 test("色の行には色見本と hex が出る", () => {
@@ -109,7 +113,7 @@ test("色を選ぶとカラーピッカーと不透明度の入力欄が並ぶ",
     {
       name: "alpha",
       label: "不透明度",
-      input: { kind: "alphaPercent", value: 100 },
+      input: { kind: "percent", value: 100 },
       target: { kind: "colorsAlpha", color: "#3b82f6" },
     },
   ]);

@@ -1,16 +1,16 @@
-import { type ReactElement, useId, useState } from "react";
-import type { TokenValue } from "@/domains/dcmp/token";
+import { type ReactElement, useId } from "react";
+import type { Token, TokenKind, TokenValue } from "@/domains/dcmp/token";
+import type { EditContinuity } from "@/domains/session/edit-continuity";
 import type { TokenSelection } from "@/domains/session/token-selection";
 import { TokenUsedBy } from "@/features/editor/features/tokens/components/token-used-by";
 import {
-  type EditableToken,
-  type EditableTokenKind,
   TokenControl,
-  type TokenControlInput,
+  type TokenControlField,
+  type TokenPaint,
 } from "@/features/editor/features/tokens/domains/token-control";
 import { Option } from "@/utils/Option";
-
-const FieldClass = "w-full rounded border border-gray-300 px-2 py-1";
+import { GradientFields } from "./gradient-fields";
+import { DraftField, onEditOf, ValueField } from "./value-field";
 
 /** トークンが選ばれていないときに本文へ出す知らせ。 */
 const NoSelectionMessage = "トークンが選択されていません";
@@ -18,7 +18,8 @@ const NoSelectionMessage = "トークンが選択されていません";
 /**
  * 帯の右端に出す種別の綴り。
  *
- * UI 案（docs/Design Composer.html）に実在するのは `Color` だけで、残る 4 つはここで決めた。
+ * UI 案（docs/Design Composer.html）に実在するのは `Color` だけ。`Gradient` は docs/06-ui.md
+ * 「Tokens の gradients」が決めていて、残る 4 つはここで決めた。
  *
  * 種別を足して綴りを足し忘れると、ここがコンパイルエラーになる。
  */
@@ -28,24 +29,50 @@ const KindLabels = {
   radius: "Radius",
   shadows: "Shadow",
   typography: "Typography",
-} as const satisfies Readonly<Record<EditableTokenKind, string>>;
+  gradients: "Gradient",
+} as const satisfies Readonly<Record<TokenKind, string>>;
 
 /**
- * 編集しているトークンの見出し（先頭の色見本 + 名前 + 右端に種別）。
+ * 見出しの先頭の見本。
  *
- * 先頭の見本を出すのは色だけ。UI 案が描いているのも色の 14×14 のチップだけで、無い絵を
- * 思いつきで足さない（rules/ui-verification.md）。
+ * @returns 単色なら色、階調なら階調で塗った 14×14 のチップ
  */
-function TokenTitle({ token }: Readonly<{ token: EditableToken }>) {
-  return (
-    <>
-      {token.kind === "colors" ? (
+function TitleSwatch({ paint }: Readonly<{ paint: TokenPaint }>): ReactElement {
+  const className = "size-3.5 shrink-0 rounded-sm border border-gray-300";
+  switch (paint.kind) {
+    case "color":
+      return (
         <span
           aria-hidden="true"
-          style={{ background: String(token.value) }}
-          className="size-3.5 shrink-0 rounded-sm border border-gray-300"
+          style={{ background: paint.color }}
+          className={className}
         />
-      ) : null}
+      );
+    case "gradient":
+      return (
+        <span
+          aria-hidden="true"
+          style={{ backgroundImage: paint.value }}
+          className={className}
+        />
+      );
+  }
+}
+
+/**
+ * 編集しているトークンの見出し（先頭の見本 + 名前 + 右端に種別）。
+ *
+ * 先頭の見本は色と階調だけ。UI 案が描いているのは色の 14×14 のチップだけで、階調は
+ * docs/06-ui.md「Tokens の gradients」が足している。無い絵を思いつきで足さない
+ * （rules/ui-verification.md）。
+ */
+function TokenTitle({
+  token,
+  paint,
+}: Readonly<{ token: Token; paint: Option<TokenPaint> }>) {
+  return (
+    <>
+      {Option.isSome(paint) ? <TitleSwatch paint={paint.value} /> : null}
       {/* 名前が余りを占める。flex の子は既定で内容幅より縮まないため省略には min-w-0 が要る */}
       <h2 className="min-w-0 flex-1 truncate font-semibold text-gray-900 text-sm">
         {token.name}
@@ -64,8 +91,7 @@ function TokenTitle({ token }: Readonly<{ token: EditableToken }>) {
  * 帯そのもの（`PaneHeading`）は呼び出し側が置く。選んでいないときに中身だけを空にするのは
  * そのためで、帯ごと消すと選択のたびに本文の位置が帯のぶん動く。
  *
- * @returns 見本・名前・種別の綴り。トークンを選んでいないとき、およびパネルが編集欄を
- *   持っていない種別を選んでいるときは何も出さない
+ * @returns 見本・名前・種別の綴り。トークンを選んでいないときは何も出さない
  */
 function TokenEditorTitle({
   selection,
@@ -76,117 +102,37 @@ function TokenEditorTitle({
   if (!Option.isSome(control)) {
     return null;
   }
-  return <TokenTitle token={control.value.token} />;
-}
-
-/**
- * 打っている途中の文字列を持ち、確定したときだけ外へ渡す入力欄。確定は入力欄を離れたと
- * きと Enter。
- *
- * 1 打鍵ごとに渡すと、確定形だけを受け付ける値（kebab-case の名前・数値）では途中の文字
- * 列が弾かれて打ち続けられない（`primary-` が弾かれると `-` の次を打てない）。
- *
- * 外の値が変わったときの取り直しは `key` で行う（呼び出し側が現在値を key に混ぜる）。
- * 確定が通らなかった入力では外の値も key も変わらないので下書きが残るが、
- * `type="number"` の欄は数値として読めない間ブラウザが表示を空にするので、画面に文字列
- * として残るのは `type="text"` の欄だけ。
- */
-function DraftField({
-  id,
-  type,
-  value,
-  onCommit,
-}: Readonly<{
-  id: string;
-  type: "text" | "number";
-  value: string;
-  onCommit: (raw: string) => void;
-}>) {
-  const [draft, setDraft] = useState(value);
-
   return (
-    <input
-      id={id}
-      type={type}
-      value={draft}
-      onChange={(event) => setDraft(event.target.value)}
-      onBlur={() => onCommit(draft)}
-      onKeyDown={(event) => {
-        if (event.key === "Enter") {
-          event.currentTarget.blur();
-        }
-      }}
-      className={FieldClass}
-    />
+    <TokenTitle token={control.value.token} paint={control.value.titlePaint} />
   );
 }
 
 /**
- * トークンの 1 フィールドの入力欄。形は値の種別で決まる。
+ * 見出しを上に置いた 1 フィールドの欄。
  *
- * @returns 色ならカラーピッカー、不透明度なら % を添えた数値欄、
- *   数値なら数値欄、それ以外はテキスト欄
+ * @returns 見出しと入力欄
  */
-function ValueField({
+function FieldRow({
   id,
-  input,
-  onEdit,
+  field,
+  onSetTokenValue,
 }: Readonly<{
   id: string;
-  input: TokenControlInput;
-  onEdit: (raw: string) => void;
+  field: TokenControlField;
+  onSetTokenValue: (value: TokenValue, continuity: EditContinuity) => void;
 }>): ReactElement {
-  switch (input.kind) {
-    case "number":
-      return (
-        <DraftField
-          id={id}
-          type="number"
-          value={String(input.value)}
-          onCommit={onEdit}
-        />
-      );
-    case "text":
-      return (
-        <DraftField id={id} type="text" value={input.value} onCommit={onEdit} />
-      );
-    case "alphaPercent":
-      return (
-        <div className="flex items-center gap-2">
-          <DraftField
-            id={id}
-            type="number"
-            value={String(input.value)}
-            onCommit={onEdit}
-          />
-          {/*
-            単位を欄の外に出すのは、値だけを打てるようにするため（`%` まで
-            打たせると数値として読めない下書きが増える）。UI 案（docs/Design
-            Composer.html）が hex の右へ `100%` を添えているのと同じ並び。
-          */}
-          <span className="text-gray-600 text-xs">%</span>
-        </div>
-      );
-    case "color":
-      return (
-        <div className="flex items-center gap-2">
-          {/*
-            色はカラーピッカーだけで編集し、保存時に hex（小文字）へ正規化する。ピッカーが返すのは常に完成した hex なので
-            下書きを挟まずそのまま渡す。並べている hex は読み取り専用。
-            自由入力にすると「途中まで打った不正な hex」を画面に置くことになり、
-            仕様に無い中間状態のエラー表示を発明することになるため。
-          */}
-          <input
-            id={id}
-            type="color"
-            value={input.value}
-            onChange={(event) => onEdit(event.target.value)}
-            className="h-8 w-16 rounded border border-gray-300"
-          />
-          <span className="font-mono text-gray-600 text-xs">{input.value}</span>
-        </div>
-      );
-  }
+  return (
+    <div className="flex flex-col gap-1">
+      <label htmlFor={id} className="text-gray-600 text-xs">
+        {field.label}
+      </label>
+      <ValueField
+        id={id}
+        input={field.input}
+        onEdit={onEditOf(field, onSetTokenValue)}
+      />
+    </div>
+  );
 }
 
 /**
@@ -194,11 +140,11 @@ function ValueField({
  * UI 案 docs/Design Composer.html の右ペイン）。
  *
  * 何の入力欄を何行出すかは `TokenControl.forSelection` が決めるため、ここには種別名で分岐
- * するコードを置かない。複合オブジェクトの種別（shadows / typography）はフィールドの数だけ
- * 行が並ぶ。
+ * するコードを置かない。分岐するのは編集欄の形（fields / gradient）だけで、種別名では
+ * 分岐しない。複合オブジェクトの種別（shadows / typography）はフィールドの数だけ行が並ぶ。
  *
- * @returns 名前の欄・値の入力欄・削除のボタンと、参照元の一覧。
- *   トークンを選んでいなければ、選ばれていないことの知らせ
+ * @returns 名前の欄・値の入力欄（グラデーションならプレビュー・角度・stop の行）・削除の
+ *   ボタンと、参照元の一覧。トークンを選んでいなければ、選ばれていないことの知らせ
  */
 function TokenEditorBody({
   selection,
@@ -207,7 +153,7 @@ function TokenEditorBody({
   onRemoveToken,
 }: Readonly<{
   selection: TokenSelection;
-  onSetTokenValue: (value: TokenValue) => void;
+  onSetTokenValue: (value: TokenValue, continuity: EditContinuity) => void;
   onRenameToken: (name: string) => void;
   onRemoveToken: () => void;
 }>): ReactElement {
@@ -219,48 +165,35 @@ function TokenEditorBody({
     return <p className="text-gray-500 text-sm">{NoSelectionMessage}</p>;
   }
 
-  const { token, fields } = control.value;
+  const { token, body } = control.value;
   /** どのトークンを編集しているか。名前は種別の中でしか一意でないので種別も混ぜる。 */
   const tokenKey = `${token.kind}/${token.name}`;
 
   return (
     <section aria-label="トークン編集" className="flex flex-col gap-3 text-sm">
-      {fields.map((field) => (
-        /*
-         * 下書きの取り直しの単位。行は `name` で一意に指す。
-         *
-         * その行自身の値を混ぜるのは、外から値が変わったとき（undo / redo、
-         * 打った値の正規化）に入力欄が古いままにならないため。トークン全体では
-         * なく行ごとの値なので、ある行を確定しても他の行の下書きは残る。
-         */
-        <div
-          key={`${tokenKey}/${field.name}/${field.input.value}`}
-          className="flex flex-col gap-1"
-        >
-          <label
-            htmlFor={`${valueId}-${field.name}`}
-            className="text-gray-600 text-xs"
-          >
-            {field.label}
-          </label>
-          {/*
-            数値として読めない入力と、値域を外れた入力では値を変えない
-            （`TokenControl.valueFrom` の `none`）。名前欄と同じで、通らなかった
-            ことは画面に出さず打ち直しに任せる。仕様に無い中間状態のエラー表示を
-            発明しないため。
-          */}
-          <ValueField
+      {body.kind === "fields" ? (
+        body.fields.map((field) => (
+          /*
+           * 下書きの取り直しの単位。行は `name` で一意に指す。
+           *
+           * 値の追随は `ValueField` が下書きの欄の key に現在値を入れて行う。行の key に値を
+           * 入れるとピッカーが動かすたびに作り直され、undo を 1 件にまとめられない。
+           */
+          <FieldRow
+            key={`${tokenKey}/${field.name}`}
             id={`${valueId}-${field.name}`}
-            input={field.input}
-            onEdit={(raw) =>
-              Option.map(
-                TokenControl.valueFrom(field.target, raw),
-                onSetTokenValue,
-              )
-            }
+            field={field}
+            onSetTokenValue={onSetTokenValue}
           />
-        </div>
-      ))}
+        ))
+      ) : (
+        <GradientFields
+          gradient={body.gradient}
+          idPrefix={valueId}
+          tokenKey={tokenKey}
+          onSetTokenValue={onSetTokenValue}
+        />
+      )}
       <div className="flex flex-col gap-1">
         <label htmlFor={nameId} className="text-gray-600 text-xs">
           名前

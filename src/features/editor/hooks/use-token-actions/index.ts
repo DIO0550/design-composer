@@ -1,4 +1,5 @@
 import type { TokenKind, TokenRef, TokenValue } from "@/domains/dcmp/token";
+import type { EditContinuity } from "@/domains/session/edit-continuity";
 import { useEditor } from "@/features/editor/components/editor-provider";
 
 /**
@@ -11,7 +12,7 @@ import { useEditor } from "@/features/editor/components/editor-provider";
 export type TokenActions = Readonly<{
   select: (ref: TokenRef) => void;
   add: (kind: TokenKind) => void;
-  setValue: (value: TokenValue) => void;
+  setValue: (value: TokenValue, continuity: EditContinuity) => void;
   rename: (name: string) => void;
   remove: () => void;
 }>;
@@ -27,7 +28,8 @@ export function useTokenActions(): TokenActions {
   return {
     select: (ref) => dispatch({ type: "select_token", ref }),
     add: (kind) => dispatch({ type: "add_token", template: { kind } }),
-    setValue: (value) => dispatch({ type: "set_token_value", value }),
+    setValue: (value, continuity) =>
+      dispatch({ type: "set_token_value", value, continuity }),
     rename: (name) => dispatch({ type: "rename_token", name }),
     remove: () => dispatch({ type: "remove_token" }),
   };

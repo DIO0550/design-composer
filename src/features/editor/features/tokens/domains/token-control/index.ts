@@ -2,6 +2,9 @@ import type { DesignDocument } from "@/domains/dcmp/design-document";
 import {
   type BoxShadowValue,
   ColorToken,
+  GradientStop,
+  GradientToken,
+  type LinearGradientValue,
   Rgb,
   type ShadowField,
   ShadowFieldEdit,
@@ -9,7 +12,6 @@ import {
   ShadowToken,
   type Token,
   type TokenKind,
-  TokenKinds,
   TokenSet,
   TokenValue,
   type TypographyField,
@@ -18,7 +20,9 @@ import {
 } from "@/domains/dcmp/token";
 import { TokenSelection } from "@/domains/session/token-selection";
 import { Px } from "@/domains/unit/px";
+import { NumberEx } from "@/utils/NumberEx";
 import { Option } from "@/utils/Option";
+import type { Range } from "@/utils/Range";
 
 /*
  * トークン編集 UI はトークンの種別の走査だけで組み立てる（docs/06-ui.md「編集操作の一覧」
@@ -32,47 +36,17 @@ import { Option } from "@/utils/Option";
  * 綴りはパネル側にあるという違いによる。
  */
 
-/**
- * トークン編集 UI が一覧の見本と編集欄を持っている種別。
- *
- * グラデーションだけ外れるのは、見本の絵も編集欄も UI 案（docs/Design Composer.html）
- * に無く、docs/06-ui.md も見せ方を持っていないため（rules/ui-verification.md）。
- */
-export type EditableTokenKind = Exclude<TokenKind, typeof TokenKinds.Gradients>;
-
-/** 一覧と編集欄を出せるトークン。 */
-export type EditableToken = Extract<Token, { kind: EditableTokenKind }>;
-
-/**
- * その種別の見本と編集欄を持っているか。
- *
- * @param kind 見たい種別
- * @returns 見本と編集欄があれば真
- */
-function isEditableKind(kind: TokenKind): kind is EditableTokenKind {
-  return kind !== TokenKinds.Gradients;
-}
-
-/**
- * そのトークンの見本と編集欄を持っているか。規則は種別だけで決まる。
- *
- * @param token 見たいトークン
- * @returns 見本と編集欄があれば真
- */
-function isEditableToken(token: Token): token is EditableToken {
-  return isEditableKind(token.kind);
-}
-
 /** 一覧の行に出す値の見せ方。種別ごとに何を見せられるかが違う。 */
 export type TokenPreview =
   | Readonly<{ kind: "swatch"; color: ColorToken }>
   | Readonly<{ kind: "bar"; widthPx: number }>
   | Readonly<{ kind: "shadow"; value: BoxShadowValue }>
-  | Readonly<{ kind: "letters"; fontWeight: number; fontFamily: string }>;
+  | Readonly<{ kind: "letters"; fontWeight: number; fontFamily: string }>
+  | Readonly<{ kind: "gradient"; value: LinearGradientValue }>;
 
 /** 一覧の1行。 */
 export type TokenRow = Readonly<{
-  token: EditableToken;
+  token: Token;
   preview: TokenPreview;
   valueText: string;
 }>;
@@ -87,11 +61,12 @@ export type TokenSection = Readonly<{
  * 1行分の入力欄。値の形式（docs/04-tokens.md「値の形式」）から入力欄の種類が決まり、語彙
  * は `PropControlInput` に揃える。
  *
- * alpha は `alphaPercent` の欄が別に持つ。
+ * 不透明度と stop の比率は `percent`、角度は `degree` の欄が持つ。
  */
 export type TokenControlInput =
   | Readonly<{ kind: "color"; value: Rgb }>
-  | Readonly<{ kind: "alphaPercent"; value: number }>
+  | Readonly<{ kind: "percent"; value: number }>
+  | Readonly<{ kind: "degree"; value: number }>
   | Readonly<{ kind: "number"; value: number }>
   | Readonly<{ kind: "text"; value: string }>;
 
@@ -99,7 +74,9 @@ export type TokenControlInput =
  * その行が書き戻す先。
  *
  * `kind` は `TokenKind` と1対1ではない。不透明度の行は色の一部を差し替えるだけなので、
- * `colorsAlpha` が書き戻すのは `colors` の値になる。
+ * `colorsAlpha` が書き戻すのは `colors` の値になる。`gradientsAngle` / `gradientsStopRatio` /
+ * `gradientsStopColor` / `gradientsStopAlpha` の 4 つも、1 つのグラデーションの角度・stop の
+ * 比率・色・不透明度を差し替えるだけなので、書き戻すのは `gradients` の値になる。
  */
 export type TokenFieldTarget =
   | Readonly<{ kind: "colors"; color: ColorToken }>
@@ -112,6 +89,24 @@ export type TokenFieldTarget =
       kind: "typography";
       typography: TypographyToken;
       field: TypographyField;
+    }>
+  | Readonly<{ kind: "gradientsAngle"; gradient: GradientToken }>
+  | Readonly<{
+      kind: "gradientsStopRatio";
+      gradient: GradientToken;
+      stopIndex: number;
+    }>
+  | Readonly<{
+      kind: "gradientsStopColor";
+      gradient: GradientToken;
+      stopIndex: number;
+      color: ColorToken;
+    }>
+  | Readonly<{
+      kind: "gradientsStopAlpha";
+      gradient: GradientToken;
+      stopIndex: number;
+      color: ColorToken;
     }>;
 
 /**
@@ -132,10 +127,55 @@ export type TokenControlField = Readonly<{
  */
 type TokenControlRow = Omit<TokenControlField, "input">;
 
+/** 見出しの先頭に出す見本の塗り。単色か階調か。 */
+export type TokenPaint =
+  | Readonly<{ kind: "color"; color: ColorToken }>
+  | Readonly<{ kind: "gradient"; value: LinearGradientValue }>;
+
+/** 階調のバーに並べる、stop 1 件ぶんのつまみ。 */
+export type GradientKnob = Readonly<{
+  /** つまみの識別子。同じ stop の行（`GradientStopRow.name`）と同じ綴り */
+  name: string;
+  color: ColorToken;
+  /** バーの左端からの位置（%）。0〜100 の外の比率はバーの端へ寄せてある */
+  percent: number;
+}>;
+
+/** stop 1 件ぶんの行（docs/06-ui.md「Tokens の gradients」）。 */
+export type GradientStopRow = Readonly<{
+  /** 行の識別子。1 つのトークンの中で一意 */
+  name: string;
+  /** 比率・色・不透明度の欄。色が hex として読めなければ比率と色のテキスト欄 */
+  fields: readonly TokenControlField[];
+  /** − を押したときの値。除くと 2 件を下回るなら `none`（押せない状態で並べる） */
+  remove: Option<TokenValue>;
+  removeLabel: string;
+}>;
+
+/** グラデーションのエディタの値の欄（docs/06-ui.md「Tokens の gradients」）。 */
+export type GradientControl = Readonly<{
+  /** 96px のプレビューを塗る階調 */
+  preview: LinearGradientValue;
+  /** つまみを並べるバーを塗る階調。角度に依らず左から右へ */
+  bar: LinearGradientValue;
+  knobs: readonly GradientKnob[];
+  angle: TokenControlField;
+  stops: readonly GradientStopRow[];
+  /** stop の + を押したときの値 */
+  add: TokenValue;
+}>;
+
+/** 値の欄の形。グラデーションだけが stop の行と +・− を持つ。 */
+export type TokenControlBody =
+  | Readonly<{ kind: "fields"; fields: readonly TokenControlField[] }>
+  | Readonly<{ kind: "gradient"; gradient: GradientControl }>;
+
 /** 1 つのトークンを編集する画面の中身。並べる欄は種別で決まる。 */
 export type TokenControl = Readonly<{
-  token: EditableToken;
-  fields: readonly TokenControlField[];
+  token: Token;
+  /** 見出しの先頭の見本。色と階調だけが持つ */
+  titlePaint: Option<TokenPaint>;
+  body: TokenControlBody;
 }>;
 
 /**
@@ -162,6 +202,13 @@ const ShadowLabels = {
   color: "色",
 } as const satisfies Readonly<Record<ShadowField, string>>;
 
+/** 角度の行の識別子と見出し。 */
+const AngleFieldName = "angle";
+const AngleLabel = "角度";
+
+/** 比率の % が取りうる範囲。つまみをバーの端へ寄せるときに使う。 */
+const KnobPercentRange = { min: 0, max: 100 } as const satisfies Range;
+
 /** 書体のフィールドの見出し。 */
 const TypographyLabels = {
   fontSize: "サイズ",
@@ -171,12 +218,12 @@ const TypographyLabels = {
 } as const satisfies Readonly<Record<TypographyField, string>>;
 
 /**
- * 一覧の行に出す見本。種別によって色見本・大きさ・書体と形が変わる。
+ * 一覧の行に出す見本。種別によって色見本・大きさ・書体・階調と形が変わる。
  *
  * @param token 見本を出したいトークン
- * @returns 種別に応じた見本（色見本 / 長さの帯 / 影 / 書体の見本）
+ * @returns 種別に応じた見本（色見本 / 長さの帯 / 影 / 書体の見本 / 階調）
  */
-function previewOf(token: EditableToken): TokenPreview {
+function previewOf(token: Token): TokenPreview {
   switch (token.kind) {
     case "colors":
       return { kind: "swatch", color: token.value };
@@ -199,6 +246,8 @@ function previewOf(token: EditableToken): TokenPreview {
         fontWeight: token.value.fontWeight,
         fontFamily: TypographyToken.fontFamilyOf(token.value),
       };
+    case "gradients":
+      return { kind: "gradient", value: GradientToken.cssValue(token.value) };
   }
 }
 
@@ -208,7 +257,7 @@ function previewOf(token: EditableToken): TokenPreview {
  * @param token 値を読みたいトークン
  * @returns 1行で読める値の文字列
  */
-function valueTextOf(token: EditableToken): string {
+function valueTextOf(token: Token): string {
   switch (token.kind) {
     case "colors":
       return token.value;
@@ -219,6 +268,9 @@ function valueTextOf(token: EditableToken): string {
       return ShadowToken.cssValue(token.value);
     case "typography":
       return `${Px.create(token.value.fontSize)} / ${token.value.lineHeight} / ${token.value.fontWeight}`;
+    /* CSS の綴りは一覧の幅に収まらない（docs/06-ui.md「Tokens の gradients」） */
+    case "gradients":
+      return `${token.value.angle}° · ${token.value.stops.length} stops`;
   }
 }
 
@@ -227,30 +279,21 @@ export const TokenSection = {
    * トークン一覧に出すセクションの並び。種別は `TokenSet.kinds` の順、種別内は TokenSet が持
    * つ定義順を保つ。
    *
-   * トークンが1つも無い種別も見出しだけ出す（足す先が画面から消えないため）。ただし見本と
-   * 編集欄を持っていない種別は見出しごと出さない（`EditableTokenKind`）。
+   * トークンが1つも無い種別も見出しだけ出す（足す先が画面から消えないため）。
    *
    * @param document トークンの出どころ
-   * @returns 編集できる種別のセクションの並び。トークンが無い種別も 1 つ並ぶ
+   * @returns 全種別のセクションの並び。トークンが無い種別も 1 つ並ぶ
    */
   forDocument(document: DesignDocument): readonly TokenSection[] {
     const tokens = document.tokens;
-    return TokenSet.kinds()
-      .filter(isEditableKind)
-      .map((kind) => ({
-        kind,
-        /*
-         * 種別は上で絞れているので実行時には 1 件も落ちない。`TokenSet.tokensOf` の
-         * 戻りが `Token` のままなので、見本と値の綴りへ渡す型をここで得ている。
-         */
-        rows: TokenSet.tokensOf(tokens, kind)
-          .filter(isEditableToken)
-          .map((token) => ({
-            token,
-            preview: previewOf(token),
-            valueText: valueTextOf(token),
-          })),
-      }));
+    return TokenSet.kinds().map((kind) => ({
+      kind,
+      rows: TokenSet.tokensOf(tokens, kind).map((token) => ({
+        token,
+        preview: previewOf(token),
+        valueText: valueTextOf(token),
+      })),
+    }));
   },
 } as const;
 
@@ -304,7 +347,7 @@ function colorFields(
     {
       ...alphaRow,
       input: {
-        kind: "alphaPercent",
+        kind: "percent",
         value: ColorToken.alphaPercentOf(color),
       },
     },
@@ -344,7 +387,9 @@ function typographyInput(
  * @param token 編集したいトークン
  * @returns 上から並べる編集欄。単一値の種別は 1 件
  */
-function fieldsOf(token: EditableToken): readonly TokenControlField[] {
+function fieldsOf(
+  token: Exclude<Token, { kind: "gradients" }>,
+): readonly TokenControlField[] {
   switch (token.kind) {
     case "colors":
       return colorFields(
@@ -406,6 +451,186 @@ function fieldsOf(token: EditableToken): readonly TokenControlField[] {
         input: typographyInput(token.value, field),
         target: { kind: "typography", typography: token.value, field },
       }));
+  }
+}
+
+/**
+ * stop の行とつまみの識別子。
+ *
+ * @param stopIndex stop の位置（0 始まり）
+ * @returns 1 始まりの配列順を添えた綴り（`stop-1` など）
+ */
+function stopRowNameOf(stopIndex: number): string {
+  return `stop-${stopIndex + 1}`;
+}
+
+/**
+ * stop 1 件ぶんの行。比率の欄を先頭に置き、色と不透明度を続ける（docs/06-ui.md「Tokens の
+ * gradients」の「stop の行は `ratio`・見本・hex・`−` の順」）。
+ *
+ * @param gradient stop を持つグラデーション
+ * @param stop 行にする stop
+ * @param stopIndex その stop の位置（0 始まり）
+ * @returns 比率・色・不透明度の欄と −。欄の見出しと行の名前は 1 始まりの配列順で数える
+ */
+function gradientStopRowOf(
+  gradient: GradientToken,
+  stop: GradientStop,
+  stopIndex: number,
+): GradientStopRow {
+  const n = stopIndex + 1;
+  const name = stopRowNameOf(stopIndex);
+  const ratioField: TokenControlField = {
+    name: `${name}-ratio`,
+    label: `stop ${n} の比率`,
+    input: { kind: "percent", value: GradientStop.ratioPercentOf(stop) },
+    target: { kind: "gradientsStopRatio", gradient, stopIndex },
+  };
+  const colorRows = colorFields(
+    stop.color,
+    {
+      name: `${name}-color`,
+      label: `stop ${n} の色`,
+      target: {
+        kind: "gradientsStopColor",
+        gradient,
+        stopIndex,
+        color: stop.color,
+      },
+    },
+    {
+      name: `${name}-alpha`,
+      label: `stop ${n} の不透明度`,
+      target: {
+        kind: "gradientsStopAlpha",
+        gradient,
+        stopIndex,
+        color: stop.color,
+      },
+    },
+  );
+  return {
+    name,
+    fields: [ratioField, ...colorRows],
+    remove: Option.map(
+      GradientToken.removeStop(gradient, stopIndex),
+      (value) => ({ kind: "gradients", value }),
+    ),
+    removeLabel: `stop ${n} を削除`,
+  };
+}
+
+/**
+ * グラデーションのエディタの値の欄。
+ *
+ * @param gradient 編集するグラデーション
+ * @returns プレビュー・バーとつまみ・角度の欄・stop の行・+ で足したときの値
+ */
+function gradientControlOf(gradient: GradientToken): GradientControl {
+  return {
+    preview: GradientToken.cssValue(gradient),
+    // バーは stop の並びを左から右へ見せるものなので、角度に依らず 90°（左から右）で塗る
+    bar: GradientToken.cssValue({ ...gradient, angle: 90 }),
+    knobs: gradient.stops.map((stop, stopIndex) => ({
+      name: stopRowNameOf(stopIndex),
+      color: stop.color,
+      percent: NumberEx.clamp(
+        GradientStop.ratioPercentOf(stop),
+        KnobPercentRange,
+      ),
+    })),
+    angle: {
+      name: AngleFieldName,
+      label: AngleLabel,
+      input: { kind: "degree", value: gradient.angle },
+      target: { kind: "gradientsAngle", gradient },
+    },
+    stops: gradient.stops.map((stop, stopIndex) =>
+      gradientStopRowOf(gradient, stop, stopIndex),
+    ),
+    add: { kind: "gradients", value: GradientToken.addStop(gradient) },
+  };
+}
+
+/**
+ * その種別の値の欄。
+ *
+ * @param token 編集したいトークン
+ * @returns グラデーションなら stop の行を持つ欄、それ以外は上から並べる編集欄
+ */
+function bodyOf(token: Token): TokenControlBody {
+  if (token.kind === "gradients") {
+    return { kind: "gradient", gradient: gradientControlOf(token.value) };
+  }
+  return { kind: "fields", fields: fieldsOf(token) };
+}
+
+/**
+ * 見出しの先頭に出す見本の塗り。
+ *
+ * @param token 見出しに出すトークン
+ * @returns 色なら単色、グラデーションなら階調。それ以外の種別は `none`
+ */
+function titlePaintOf(token: Token): Option<TokenPaint> {
+  switch (token.kind) {
+    case "colors":
+      return Option.some({ kind: "color", color: token.value });
+    case "gradients":
+      return Option.some({
+        kind: "gradient",
+        value: GradientToken.cssValue(token.value),
+      });
+    case "spacing":
+    case "radius":
+    case "shadows":
+    case "typography":
+      return Option.none;
+  }
+}
+
+/**
+ * グラデーションの入力欄へ打たれた文字列を、書き換え後のグラデーションにする。
+ *
+ * @param target 書き換えるグラデーションと、角度・どの stop の何か
+ * @param raw 入力欄に入っている文字列
+ * @returns 書き換え後のグラデーション。数値 / 6桁の色として読めないとき、比率・不透明度が
+ *   0–100 の外のとき（`GradientToken` / `ColorToken` の `none`）は `none`
+ */
+function gradientFrom(
+  target: Extract<TokenFieldTarget, { kind: `gradients${string}` }>,
+  raw: string,
+): Option<GradientToken> {
+  switch (target.kind) {
+    case "gradientsAngle":
+      return Option.flatMap(numberFromRaw(raw), (angle) =>
+        GradientToken.withAngle(target.gradient, angle),
+      );
+    case "gradientsStopRatio":
+      return Option.flatMap(numberFromRaw(raw), (percent) =>
+        GradientToken.withStopRatioPercent(target.gradient, {
+          stopIndex: target.stopIndex,
+          percent,
+        }),
+      );
+    /* ピッカーが返した6桁だけを差し替え、不透明度は残す（色の種別と同じ扱い） */
+    case "gradientsStopColor":
+      return Option.flatMap(Rgb.create(raw), (rgb) =>
+        GradientToken.withStopColor(target.gradient, {
+          stopIndex: target.stopIndex,
+          color: ColorToken.withRgb(target.color, rgb),
+        }),
+      );
+    case "gradientsStopAlpha":
+      return Option.flatMap(numberFromRaw(raw), (percent) =>
+        Option.flatMap(
+          ColorToken.withAlphaPercent(target.color, percent),
+          (color) =>
+            GradientToken.withStopColor(target.gradient, {
+              stopIndex: target.stopIndex,
+              color,
+            }),
+        ),
+      );
   }
 }
 
@@ -502,15 +727,14 @@ export const TokenControl = {
    * 選択中のトークンの編集欄（docs/06-ui.md「編集操作の一覧」の tokens 編集）。
    *
    * @param selection ドキュメントと、その中で選ばれているトークン
-   * @returns 編集欄一式。トークンを選んでいないとき、および編集欄を持っていない種別を
-   *   選んでいるときは `none`
+   * @returns 編集欄一式。トークンを選んでいないときは `none`
    */
   forSelection(selection: TokenSelection): Option<TokenControl> {
-    return Option.flatMap(TokenSelection.token(selection), (token) =>
-      isEditableToken(token)
-        ? Option.some({ token, fields: fieldsOf(token) })
-        : Option.none,
-    );
+    return Option.map(TokenSelection.token(selection), (token) => ({
+      token,
+      titlePaint: titlePaintOf(token),
+      body: bodyOf(token),
+    }));
   },
 
   /**
@@ -521,7 +745,7 @@ export const TokenControl = {
    * @param target 書き戻し先の種別と、複合の種別ではどのフィールドか
    * @param raw 入力欄に入っている文字列
    * @returns 書き換え後のトークンの値。数値 / 6桁の色として読めないとき、および
-   *   値域（docs/04-tokens.md「値の形式」・不透明度は 0–100）を外れるときは `none`
+   *   値域（docs/04-tokens.md「値の形式」・不透明度と stop の比率は 0–100）を外れるときは `none`
    */
   valueFrom(target: TokenFieldTarget, raw: string): Option<TokenValue> {
     switch (target.kind) {
@@ -568,6 +792,14 @@ export const TokenControl = {
         return shadowValueFrom(target, raw);
       case "typography":
         return typographyValueFrom(target, raw);
+      case "gradientsAngle":
+      case "gradientsStopRatio":
+      case "gradientsStopColor":
+      case "gradientsStopAlpha":
+        return Option.map(gradientFrom(target, raw), (value) => ({
+          kind: "gradients",
+          value,
+        }));
     }
   },
 } as const;

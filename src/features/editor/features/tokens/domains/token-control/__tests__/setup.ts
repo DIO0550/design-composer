@@ -1,7 +1,12 @@
 import { DesignDocument } from "@/domains/dcmp/design-document";
-import type { TokenKind } from "@/domains/dcmp/token";
+import {
+  type GradientToken,
+  type TokenKind,
+  TokenSet,
+} from "@/domains/dcmp/token";
 import { TokenSelection } from "@/domains/session/token-selection";
 import {
+  type GradientControl,
   TokenControl,
   type TokenControlField,
 } from "@/features/editor/features/tokens/domains/token-control";
@@ -43,13 +48,67 @@ export function selectionOf(kind: TokenKind, name: string): TokenSelection {
   return TokenSelection.create(setupDocument(), Option.some({ kind, name }));
 }
 
-/** 選択したトークンの編集欄の並び。 */
+/**
+ * 選択したトークンの編集欄の並び。
+ *
+ * @throws 値の欄が上から並べる編集欄でない（グラデーション）とき。テストを落とすため
+ */
 export function fieldsOf(
   kind: TokenKind,
   name: string,
 ): readonly TokenControlField[] {
-  return Option.unwrap(TokenControl.forSelection(selectionOf(kind, name)))
-    .fields;
+  const { body } = Option.unwrap(
+    TokenControl.forSelection(selectionOf(kind, name)),
+  );
+  if (body.kind !== "fields") {
+    throw new Error(
+      `${kind}/${name} の値の欄は ${body.kind} で、並べる欄ではない`,
+    );
+  }
+  return body.fields;
+}
+
+/** 角度と色の変わり目の並びの指定。角度を省くと 90。 */
+type GradientSpec = Readonly<{
+  angle?: number;
+  stops: GradientToken["stops"];
+}>;
+
+/** グラデーション `brand` を 1 つだけ持つドキュメント。 */
+export function gradientDocumentOf(gradient: GradientSpec): DesignDocument {
+  return DesignDocument.create({
+    tokens: {
+      ...TokenSet.empty(),
+      gradients: {
+        brand: {
+          shape: "linear",
+          angle: gradient.angle ?? 90,
+          stops: gradient.stops,
+        },
+      },
+    },
+  });
+}
+
+/** グラデーション `brand` を選んでいる状態。 */
+export function gradientSelectionOf(gradient: GradientSpec): TokenSelection {
+  return TokenSelection.create(
+    gradientDocumentOf(gradient),
+    Option.some({ kind: "gradients", name: "brand" }),
+  );
+}
+
+/**
+ * 選択したグラデーションの値の欄。
+ *
+ * @throws 値の欄がグラデーションのものでないとき。テストを落とすため
+ */
+export function gradientOf(selection: TokenSelection): GradientControl {
+  const { body } = Option.unwrap(TokenControl.forSelection(selection));
+  if (body.kind !== "gradient") {
+    throw new Error(`値の欄は ${body.kind} で、グラデーションのものではない`);
+  }
+  return body.gradient;
 }
 
 /** 見出しで編集欄の1行を引く。 */

@@ -1,5 +1,5 @@
 import { type ReactElement, useState } from "react";
-import { ColorSwatch } from "@/components/color-swatch";
+import { ColorSwatch, GradientSwatch } from "@/components/color-swatch";
 import { Token, type TokenKind, type TokenRef } from "@/domains/dcmp/token";
 import { TokenSelection } from "@/domains/session/token-selection";
 import {
@@ -21,7 +21,7 @@ type OpenKinds = ReadonlySet<TokenKind>;
 /**
  * 値の見本。値そのものは行の文字として出ているので、飾りとして読み上げから外す。
  *
- * @returns 種別に応じた見本（色見本 / 長さの帯 / 影 / 書体の見本）
+ * @returns 種別に応じた見本（色見本 / 長さの帯 / 影 / 書体の見本 / 階調）
  */
 function PreviewSlot({
   preview,
@@ -70,6 +70,8 @@ function PreviewSlot({
           Aa
         </span>
       );
+    case "gradient":
+      return <GradientSwatch gradient={preview.value} />;
   }
 }
 

@@ -22,8 +22,8 @@ export const EditContinuities = {
  * （先例は `unit/axis` の `Axis`）。
  *
  * `features/editor/domains/edit-history` と並べないのは、指定する側が
- * `features/editor/features/canvas` と `features/editor/features/inspector`・受け取る側が
- * `features/editor` と 3 つの feature にまたがるため
+ * `features/editor/features/canvas` と `features/editor/features/inspector` と
+ * `features/editor/features/tokens`・受け取る側が `features/editor` と 4 つの feature にまたがるため
  * （`rules/architecture.md`「配置の判断基準」の昇格）。
  */
 export type EditContinuity = ValueOf<typeof EditContinuities>;
