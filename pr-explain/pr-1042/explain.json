@@ -1,11 +1,11 @@
 {
   "version": 1,
   "pr": 1042,
-  "sha": "1ec55778113d11b80ee8638d1ec2243be0626804",
+  "sha": "fc3e8342b137bf23bc5145ebb987b50299eff2b7",
   "issue": 611,
   "overview": {
     "title": "トークンパネルで gradients を出し、angle と stop を編集する",
-    "lead": "トークンパネルの `gradients` の節でグラデーションを作る・消すことができ、角度と stop(色の変わり目。比率・色・hex・不透明度)を足す・消す・直せるようになった。作ったグラデーションは塗り(`background`)の欄から選べる。",
+    "lead": "トークンパネルの `gradients` の節でグラデーションを作る・消すことができ、角度と stop(色の変わり目。比率・色・hex・不透明度)を足す・消す・直せるようになった。作ったグラデーションは塗り(`background`)の欄から選べる。 あわせて(#1043)、解説の見出しにコードの識別子を書くと、解説の検査で落ちるようになった。",
     "before": [
       {
         "text": "トークンパネルの一覧に `gradients` の節が出ず(編集できる種別から外していた)、グラデーションを作る・直す手段が無かった"
@@ -15,6 +15,9 @@
       },
       {
         "text": "UI 仕様は stop の `+` の規則のうち、端の空き・同じ広さの隙間・2 件未満の 3 点を「#611 で決める」としていた"
+      },
+      {
+        "text": "解説の箱の名前や見出しにコードの識別子をそのまま書いても検査を通り、構造マップの箱が識別子の名前で並んでいた(#1043)"
       }
     ],
     "after": [
@@ -44,6 +47,16 @@
       {
         "text": "stop の hex は打てる欄で、`#rrggbb` として読めない値では値を変えない。不透明度は残して 6 桁だけ差し替える",
         "message": "m-valuefrom"
+      },
+      {
+        "text": "解説の見出し(箱・やりとり・機能・流れ・suite の名前と、highlights の題)に小文字→大文字の継ぎ目のある語があると、`build-pr-explain.py` の検査が形の違反(`pr-explain-shape`)として落とす(#1043)",
+        "message": "m-check"
+      },
+      {
+        "text": "`docs/*.md` に出る継ぎ目のある語(`publicProps`・`layoutMode` など、`.dcmp` のキー名や製品名)は見出しでも通る。docs の語と docs に無い識別子が混ざれば落ちる(#1043)"
+      },
+      {
+        "text": "大文字だけの略語(UI 案・VRT)、1 語の識別子、説明文・テスト名・やりとりのコードの識別子は検査しない(#1043)"
       }
     ],
     "highlights": [
@@ -94,6 +107,22 @@
           "kind": "layer",
           "layer": "domains / dcmp"
         }
+      },
+      {
+        "title": "見出しの検査(#1043)",
+        "text": "見出しになるキーだけを、小文字の直後に大文字が来る箇所の有無で落とす。単語の境界は見ず(日本語が空白なしで続く形も落とす)、`…` の中も除かない(名前は書いたまま描かれるため)。説明文は製品名の誤検出が多いので検査せず、スキルの書き方として残した",
+        "go": {
+          "kind": "file",
+          "path": ".github/scripts/build-pr-explain.py"
+        }
+      },
+      {
+        "title": "docs の語は見出しで通す判断",
+        "text": "最初の形は docs が仕様の語として使う `.dcmp` のキー名(`publicProps` 宣言など)まで落としていた。`docs/*.md` から継ぎ目のある語の集合を導いて通すことにした。docs を正本にするので、計画で却下した「許可する語の一覧を手で持つ」案と違い手入れが要らない。docs の無い一時リポジトリでは集合が空になり、落とす側に倒れる",
+        "go": {
+          "kind": "message",
+          "id": "m-docswords"
+        }
       }
     ]
   },
@@ -112,6 +141,11 @@
       "id": "undo-unit",
       "label": "ピッカーの undo の単位",
       "role": "ピッカーを開いてからの変更を、編集履歴の 1 件にまとめて届ける"
+    },
+    {
+      "id": "heading-check",
+      "label": "解説の見出しの検査",
+      "role": "解説の見出しに書いたコードの識別子を、docs の語を除いて検査で落とす(#1043)"
     }
   ],
   "layerRoles": [
@@ -142,6 +176,10 @@
     {
       "layer": "docs",
       "role": "UI 仕様の stop の `+` の未決を規則に書き換え、ピッカーの undo の単位を足した"
+    },
+    {
+      "layer": "ハーネス",
+      "role": "解説の検査に見出しの規則と docs の語の集合を足し、判定表とスキル・見本をその規則に揃えた(#1043)"
     }
   ],
   "concepts": [
@@ -247,6 +285,42 @@
       "path": "src/features/editor/features/tokens/__tests__/gradient-documents.ts",
       "name": "テスト用のグラデーション",
       "role": "欄の組み立てとエディタのテストが共有する stop の並びとドキュメント",
+      "graph": false
+    },
+    {
+      "path": ".github/scripts/build-pr-explain.py",
+      "name": "解説の検査",
+      "role": "`explain.json` の形と参照を見て、テストの抜粋の中身を足す",
+      "feature": "heading-check",
+      "change": "見出しになるキーに、継ぎ目のある語は docs に出るものだけを許す規則を足した。理由は冒頭の doc に 1 か所だけ置く"
+    },
+    {
+      "path": ".github/scripts/build-pr-explain-cases.sh",
+      "name": "解説の検査の判定表",
+      "role": "見本の解説を 1 か所ずつ崩して検査へ流し、落ちる分類が期待どおりかを確かめる",
+      "feature": "heading-check",
+      "change": "見出しの規則のケースを 16 件足した(落ちる 9 件・通る 7 件)"
+    },
+    {
+      "path": ".claude/skills/pr-explain/SKILL.md",
+      "name": "PR の解説のスキル",
+      "role": "解説の書き方・形・置き方の手順",
+      "feature": "heading-check",
+      "change": "見出しは概念の名前で書くこと、検査が落とす範囲、説明文でも実装の名前を `…` で囲むことを書いた"
+    },
+    {
+      "path": ".claude/skills/pr-explain/templates/explain.json",
+      "name": "解説の見本",
+      "role": "スキルの手順で写して書く、`excerpt` 以外のすべてのキーを使う解説",
+      "feature": "heading-check",
+      "change": "地の文の実装の名前を `…` で囲み、スキルの書き方に揃えた",
+      "graph": false
+    },
+    {
+      "path": "docs/03-schema.md",
+      "name": "スキーマの仕様",
+      "role": "`.dcmp` の部品・prop のスキーマを定める仕様。継ぎ目のある語(`publicProps`・`layoutMode` など)のいちばん多い出どころ",
+      "feature": "heading-check",
       "graph": false
     }
   ],
@@ -402,6 +476,30 @@
       "via": "call",
       "returns": "90°、`#000000`@0 → `#ffffff`@1",
       "status": "added"
+    },
+    {
+      "id": "m-check",
+      "from": ".github/scripts/build-pr-explain-cases.sh",
+      "to": ".github/scripts/build-pr-explain.py",
+      "kind": "qry",
+      "name": "崩した解説を検査にかける",
+      "code": "python3 \"$builder\" \"$work/case.json\" --pr \"$pr\" --out \"$work/out.json\" --repo \"$repo\"",
+      "via": "exec",
+      "payload": "見本の見出しを 1 か所だけ書き換えた解説",
+      "returns": "通るか、落ちたときの分類(見出しの違反は `pr-explain-shape`)",
+      "status": "changed"
+    },
+    {
+      "id": "m-docswords",
+      "from": ".github/scripts/build-pr-explain.py",
+      "to": "docs/03-schema.md",
+      "kind": "qry",
+      "name": "docs の継ぎ目のある語を集める",
+      "code": "joint_words(doc.read_text(encoding=\"utf-8\"))",
+      "via": "file",
+      "payload": "`docs/*.md` の各ファイル",
+      "returns": "小文字→大文字の継ぎ目を含む語の集合(読み込み時に 1 度だけ作る)",
+      "status": "added"
     }
   ],
   "flows": [
@@ -446,6 +544,14 @@
       "steps": [
         "m-sections",
         "m-initial"
+      ]
+    },
+    {
+      "id": "f-heading",
+      "label": "解説の見出しを検査する",
+      "steps": [
+        "m-check",
+        "m-docswords"
       ]
     }
   ],
@@ -841,6 +947,190 @@
           "text": "差の絶対値ではなく符号付きの差で比べる実装で落ちる"
         }
       ]
+    },
+    {
+      "sha": "05705f51c09f0d7810249b0c5283961de6d5829e",
+      "phase": "core",
+      "role": "解説の見出しにコードの識別子があれば検査で落とす",
+      "why": "#1042 の解説で箱の名前を識別子のまま書き、オーナーから「明らかに概念じゃない」と指摘された。スキルは名前を「短い名前」としか書いておらず再発が見込まれたので、「ルールに書くくらいならフックにする」に従って機械的に判定できる見出しを検査で止めた。分類は新しく作らず、形の規則として既存の `pr-explain-shape` に収めた",
+      "flows": [
+        "f-heading"
+      ],
+      "review": [
+        "単語の境界を見ず、`…` の中も除かない判断が、見出しを書いたまま描くページの出方と合っているか",
+        "説明文・テスト名・やりとりのコード・PR の題を対象から外した範囲が妥当か"
+      ],
+      "before": [
+        {
+          "text": "見出しに `TokenTemplate` のような識別子を書いても検査を通った"
+        }
+      ],
+      "after": [
+        {
+          "text": "6 つの見出しのキーのどれかに小文字→大文字の継ぎ目があれば落ちる(この時点では製品名も落ちる)",
+          "message": "m-check"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".github/scripts/build-pr-explain.py",
+          "start": 106,
+          "end": 119,
+          "text": "継ぎ目の有無だけを見る判定。この時点では docs の語も区別しない"
+        },
+        {
+          "path": ".github/scripts/build-pr-explain.py",
+          "start": 136,
+          "end": 137,
+          "text": "見出しの規則を使うキーをコメントで列挙していた(次の整理でモジュールの冒頭へ移す)"
+        }
+      ]
+    },
+    {
+      "sha": "bb9cfd408fcd255b1585254dc1ac5945abc05fca",
+      "phase": "core",
+      "role": "見出しの検査を判定表で固定する",
+      "why": "6 つのキーに 1 件ずつ落ちるケースを置き、どれか 1 つを対象から漏らしても判定表が緑のままにならないようにした。通るケース(略語・説明文・テスト名)は、検査が見出しの外へ広がったときに落ちるよう見本の文に頼らず明示した。規則を一時的に外すと落ちるケース 8 件がすべて NG になることを確かめた",
+      "flows": [
+        "f-heading"
+      ],
+      "review": [
+        "落ちるケースがキーごとに 1 件ずつあり、対象の漏れを判定表が拾えるか"
+      ],
+      "notes": [
+        {
+          "path": ".github/scripts/build-pr-explain-cases.sh",
+          "start": 141,
+          "end": 151,
+          "text": "落ちる 8 件(6 キー・日本語が続く形・バッククォート)と通る 3 件"
+        }
+      ]
+    },
+    {
+      "sha": "bd2f4bd342770bcc7e2ebc8a3447edb9a67f7aed",
+      "phase": "core",
+      "role": "スキルに、見出しと説明文での識別子の書き方を書く",
+      "why": "見出しは検査で止めたが、説明文は検査しないので書き方として残す必要があった。検査が落とす範囲と、検査しないが書かないものを分けて書いた。常時ロードの `rules/` は増やさず、呼んだときだけ読まれるスキルに置いた",
+      "review": [
+        "検査で落ちるものと書かないだけのものが分けて書かれ、実物と食い違っていないか"
+      ],
+      "notes": [
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "start": 88,
+          "end": 95,
+          "text": "この時点では検査する 6 キーと理由をスキルにも書き写していた(後の整理で検査の冒頭を指す形にする)"
+        }
+      ]
+    },
+    {
+      "sha": "4ce8e96cfa1876a365a9923f710c72a4d7425f8d",
+      "phase": "revise",
+      "role": "見出しの検査で docs の語を通し、名前と理由の置き場所を整える",
+      "why": "実装の検証で、「docs の語彙で書く」と案内しながら docs が仕様の語として使う `.dcmp` のキー名(`publicProps` 宣言・`widthMode` の fill)まで落としていると指摘された。docs で継ぎ目を含む語はキー名と製品名だけで、指摘のあったコードの識別子は 0 件だったので、docs を正本にして通す語を導いた。規則の名前を「名前」から「見出し」にしたのは、スキルの「名前(`name`・`label`)」とは範囲が違う(テスト名を含まず highlights の題を含む)ため",
+      "flows": [
+        "f-heading"
+      ],
+      "review": [
+        "docs の無い一時リポジトリでは通す語が空になり、落とす側に倒れることが許容できるか",
+        "見出しの理由がモジュールの冒頭 1 か所に集まり、キーの手書きの列挙が消えているか"
+      ],
+      "before": [
+        {
+          "text": "`publicProps` 宣言のような docs の語も見出しで落ちた"
+        }
+      ],
+      "after": [
+        {
+          "text": "見出しの継ぎ目のある語がすべて `docs/*.md` に出ていれば通る",
+          "message": "m-docswords"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".github/scripts/build-pr-explain.py",
+          "start": 23,
+          "end": 32,
+          "text": "判定の理由(単語の境界・バッククォート・docs の語・略語)をここに集めた"
+        },
+        {
+          "path": ".github/scripts/build-pr-explain.py",
+          "start": 116,
+          "end": 135,
+          "text": "語を切り出して継ぎ目のある語を集め、docs から作った集合に含まれるかで判定する"
+        }
+      ]
+    },
+    {
+      "sha": "e6549c6bf3893670a29b04c972a768c211dda158",
+      "phase": "revise",
+      "role": "docs の語と 1 語の識別子が見出しで通ることを判定表で固定する",
+      "why": "直前のコミットで docs の語を通すようにし、1 語の識別子は検査しないことをスキルに書いた。検査の限界もケースに置いておくと、範囲を広げたときに意図して書き換えることになる",
+      "flows": [
+        "f-heading"
+      ],
+      "review": [
+        "1 語の識別子が通るケースは、守りたい仕様ではなく検査の限界を固定していると読めるか"
+      ],
+      "notes": [
+        {
+          "path": ".github/scripts/build-pr-explain-cases.sh",
+          "start": 149,
+          "end": 150,
+          "text": "docs の語が通るケースと、1 語の識別子が通るケース"
+        }
+      ]
+    },
+    {
+      "sha": "d798395f97b5d5617a8f04bfe1a9850b94531a38",
+      "phase": "revise",
+      "role": "スキルの見出しの規則を判定の範囲に合わせ、見本を揃える",
+      "why": "スキルの文が「PascalCase の識別子は落ちる」と書いていたが 1 語の識別子は通るので、実物と食い違っていた。スキルは「見本を写して書く」手順なので、見本が逆の書き方をしていると書き手に引き継がれる。理由と対象のキーはスキルへ写さず、検査の冒頭を指す",
+      "review": [
+        "スキルの見出しの規則が、検査が実際に落とす範囲と一致しているか",
+        "見本の地の文の実装の名前がすべて `…` で囲まれているか"
+      ],
+      "notes": [
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "start": 88,
+          "end": 92,
+          "text": "検査が落とす範囲・書いてよい略語・検査しないが書かないものを分けて書く"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/explain.json",
+          "start": 32,
+          "end": 34,
+          "text": "地の文の実装の名前を `…` で囲んだ"
+        }
+      ]
+    },
+    {
+      "sha": "fc3e8342b137bf23bc5145ebb987b50299eff2b7",
+      "phase": "hard",
+      "role": "検査を壊しても判定表が気づかなかった 3 つの判断をケースで守る",
+      "why": "test-reviewer が検査に 17 通りのミューテーションを当て、「docs の語が 1 つでもあれば通す」への退行・やりとりのコードに見出しの規則が付く・docs の一部しか読まない、の 3 つでどのケースも落ちなかった。足したケースごとに同じミューテーションを当て、そのケースだけが NG になることを確かめた",
+      "flows": [
+        "f-heading"
+      ],
+      "review": [
+        "混ざった入力のケースが、含まれるかの判定を「1 つでもあれば」へ緩める退行で落ちるか",
+        "docs の 1 ファイルにしか出ない語のケースが、docs の一部しか読まない実装で落ちるか"
+      ],
+      "notes": [
+        {
+          "path": ".github/scripts/build-pr-explain-cases.sh",
+          "start": 149,
+          "end": 149,
+          "text": "docs の語と docs に無い識別子が混ざると落ちる"
+        },
+        {
+          "path": ".github/scripts/build-pr-explain-cases.sh",
+          "start": 151,
+          "end": 152,
+          "text": "1 ファイルにしか出ない docs の語は通り、やりとりのコードは検査しない"
+        }
+      ]
     }
   ],
   "suites": [
@@ -873,6 +1163,11 @@
       "id": "s-array",
       "label": "配列の汎用操作",
       "file": "src/utils/__tests__/ArrayEx.normal.test.ts"
+    },
+    {
+      "id": "s-heading",
+      "label": "解説の見出しの判定表",
+      "file": ".github/scripts/build-pr-explain-cases.sh"
     }
   ],
   "tests": [
@@ -1551,6 +1846,422 @@
       "todo": true,
       "targets": [
         "src/features/editor/features/tokens/components/token-editor/gradient-fields/index.tsx"
+      ]
+    },
+    {
+      "id": "t-heading-1",
+      "suite": "s-heading",
+      "name": "箱の名前(concept の name)が識別子",
+      "techniques": [
+        "equivalence",
+        "error"
+      ],
+      "why": "箱の名前が見出しの規則の対象から漏れない",
+      "given": "見本の解説",
+      "when": "concepts の名前を `TokenTemplate` にする",
+      "then": "検査が形の違反(`pr-explain-shape`)だけで落ちる",
+      "commit": "bb9cfd408fcd255b1585254dc1ac5945abc05fca",
+      "excerpt": {
+        "path": ".github/scripts/build-pr-explain-cases.sh",
+        "start": 141,
+        "end": 141,
+        "text": "deny|shape|sample|箱の名前(concept の name)が識別子|d[\"concepts\"][0][\"name\"] = \"TokenTemplate\""
+      },
+      "targets": [
+        ".github/scripts/build-pr-explain.py"
+      ],
+      "covers": [
+        "m-check"
+      ]
+    },
+    {
+      "id": "t-heading-2",
+      "suite": "s-heading",
+      "name": "やりとりの名前(message の name)が識別子",
+      "techniques": [
+        "equivalence",
+        "error"
+      ],
+      "why": "やりとりの名前は、表示名の切り替えで箱の名前と同じ役割を持つので対象にする",
+      "given": "見本の解説",
+      "when": "messages の名前を `useTokenActions` にする",
+      "then": "検査が形の違反(`pr-explain-shape`)だけで落ちる",
+      "commit": "bb9cfd408fcd255b1585254dc1ac5945abc05fca",
+      "excerpt": {
+        "path": ".github/scripts/build-pr-explain-cases.sh",
+        "start": 142,
+        "end": 142,
+        "text": "deny|shape|sample|やりとりの名前(message の name)が識別子|d[\"messages\"][0][\"name\"] = \"useTokenActions\""
+      },
+      "targets": [
+        ".github/scripts/build-pr-explain.py"
+      ],
+      "covers": [
+        "m-check"
+      ]
+    },
+    {
+      "id": "t-heading-3",
+      "suite": "s-heading",
+      "name": "機能の名前(feature の label)が識別子",
+      "techniques": [
+        "equivalence",
+        "error"
+      ],
+      "why": "機能の名前が対象から漏れない",
+      "given": "見本の解説",
+      "when": "features の名前を `PrExplain` にする",
+      "then": "検査が形の違反(`pr-explain-shape`)だけで落ちる",
+      "commit": "bb9cfd408fcd255b1585254dc1ac5945abc05fca",
+      "excerpt": {
+        "path": ".github/scripts/build-pr-explain-cases.sh",
+        "start": 143,
+        "end": 143,
+        "text": "deny|shape|sample|機能の名前(feature の label)が識別子|d[\"features\"][0][\"label\"] = \"PrExplain\""
+      },
+      "targets": [
+        ".github/scripts/build-pr-explain.py"
+      ],
+      "covers": [
+        "m-check"
+      ]
+    },
+    {
+      "id": "t-heading-4",
+      "suite": "s-heading",
+      "name": "流れの名前(flow の label)が識別子",
+      "techniques": [
+        "equivalence",
+        "error"
+      ],
+      "why": "流れの名前が対象から漏れない",
+      "given": "見本の解説",
+      "when": "flows の名前を「`putExplain` の流れ」にする",
+      "then": "検査が形の違反(`pr-explain-shape`)だけで落ちる",
+      "commit": "bb9cfd408fcd255b1585254dc1ac5945abc05fca",
+      "excerpt": {
+        "path": ".github/scripts/build-pr-explain-cases.sh",
+        "start": 144,
+        "end": 144,
+        "text": "deny|shape|sample|流れの名前(flow の label)が識別子|d[\"flows\"][0][\"label\"] = \"putExplain の流れ\""
+      },
+      "targets": [
+        ".github/scripts/build-pr-explain.py"
+      ],
+      "covers": [
+        "m-check"
+      ]
+    },
+    {
+      "id": "t-heading-5",
+      "suite": "s-heading",
+      "name": "suite の名前(suite の label)が識別子",
+      "techniques": [
+        "equivalence",
+        "error"
+      ],
+      "why": "suite の名前が対象から漏れない",
+      "given": "見本の解説",
+      "when": "suites の名前を `buildPrExplain` にする",
+      "then": "検査が形の違反(`pr-explain-shape`)だけで落ちる",
+      "commit": "bb9cfd408fcd255b1585254dc1ac5945abc05fca",
+      "excerpt": {
+        "path": ".github/scripts/build-pr-explain-cases.sh",
+        "start": 145,
+        "end": 145,
+        "text": "deny|shape|sample|suite の名前(suite の label)が識別子|d[\"suites\"][0][\"label\"] = \"buildPrExplain\""
+      },
+      "targets": [
+        ".github/scripts/build-pr-explain.py"
+      ],
+      "covers": [
+        "m-check"
+      ]
+    },
+    {
+      "id": "t-heading-6",
+      "suite": "s-heading",
+      "name": "見てほしい点の題(highlight の title)が識別子",
+      "techniques": [
+        "equivalence",
+        "error"
+      ],
+      "why": "highlights の題は `…` をコードとして描くが、題も概念で書くので他の見出しと揃える",
+      "given": "見本の解説",
+      "when": "highlights の題を「`addStop` の規則」にする",
+      "then": "検査が形の違反(`pr-explain-shape`)だけで落ちる",
+      "commit": "bb9cfd408fcd255b1585254dc1ac5945abc05fca",
+      "excerpt": {
+        "path": ".github/scripts/build-pr-explain-cases.sh",
+        "start": 146,
+        "end": 146,
+        "text": "deny|shape|sample|見てほしい点の題(highlight の title)が識別子|d[\"overview\"][\"highlights\"][0][\"title\"] = \"addStop の規則\""
+      },
+      "targets": [
+        ".github/scripts/build-pr-explain.py"
+      ],
+      "covers": [
+        "m-check"
+      ]
+    },
+    {
+      "id": "t-heading-7",
+      "suite": "s-heading",
+      "name": "名前の識別子に日本語が空白なしで続く",
+      "techniques": [
+        "boundary",
+        "error"
+      ],
+      "why": "単語の境界を見ないので、日本語が空白なしで続いても識別子として落ちる",
+      "given": "見本の解説",
+      "when": "箱の名前を「`TokenTemplate`の規則」にする",
+      "then": "検査が形の違反(`pr-explain-shape`)だけで落ちる",
+      "commit": "bb9cfd408fcd255b1585254dc1ac5945abc05fca",
+      "excerpt": {
+        "path": ".github/scripts/build-pr-explain-cases.sh",
+        "start": 147,
+        "end": 147,
+        "text": "deny|shape|sample|名前の識別子に日本語が空白なしで続く|d[\"concepts\"][0][\"name\"] = \"TokenTemplateの規則\""
+      },
+      "targets": [
+        ".github/scripts/build-pr-explain.py"
+      ],
+      "covers": [
+        "m-check"
+      ]
+    },
+    {
+      "id": "t-heading-8",
+      "suite": "s-heading",
+      "name": "名前の識別子をバッククォートで囲む",
+      "techniques": [
+        "boundary",
+        "error"
+      ],
+      "why": "名前は書いたまま描かれるので、囲んで逃げることはできない",
+      "given": "見本の解説",
+      "when": "箱の名前をバッククォートで囲んだ `TokenTemplate` にする",
+      "then": "検査が形の違反(`pr-explain-shape`)だけで落ちる",
+      "commit": "bb9cfd408fcd255b1585254dc1ac5945abc05fca",
+      "excerpt": {
+        "path": ".github/scripts/build-pr-explain-cases.sh",
+        "start": 148,
+        "end": 148,
+        "text": "deny|shape|sample|名前の識別子をバッククォートで囲む|d[\"concepts\"][0][\"name\"] = \"`TokenTemplate`\""
+      },
+      "targets": [
+        ".github/scripts/build-pr-explain.py"
+      ],
+      "covers": [
+        "m-check"
+      ]
+    },
+    {
+      "id": "t-heading-9",
+      "suite": "s-heading",
+      "name": "名前に docs の語(publicProps)と docs に無い識別子が混ざる",
+      "techniques": [
+        "boundary",
+        "error",
+        "regression"
+      ],
+      "why": "継ぎ目のある語がすべて docs に出るときだけ通す。1 つでも docs の語があれば通す形への退行で落ちる",
+      "given": "見本の解説",
+      "when": "箱の名前を「`publicProps` と `TokenTemplate`」にする",
+      "then": "検査が形の違反(`pr-explain-shape`)だけで落ちる",
+      "commit": "fc3e8342b137bf23bc5145ebb987b50299eff2b7",
+      "excerpt": {
+        "path": ".github/scripts/build-pr-explain-cases.sh",
+        "start": 149,
+        "end": 149,
+        "text": "deny|shape|sample|名前に docs の語(publicProps)と docs に無い識別子が混ざる|d[\"concepts\"][0][\"name\"] = \"publicProps と TokenTemplate\""
+      },
+      "targets": [
+        ".github/scripts/build-pr-explain.py"
+      ],
+      "covers": [
+        "m-check",
+        "m-docswords"
+      ]
+    },
+    {
+      "id": "t-heading-10",
+      "suite": "s-heading",
+      "name": "名前に docs が仕様の語として使う複合語(publicProps)は書ける",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "docs が仕様の語として使う `.dcmp` のキー名は、言い換えるとかえって伝わらないので通す",
+      "given": "見本の解説と、`docs/*.md`",
+      "when": "箱の名前を「`publicProps` 宣言」にする",
+      "then": "検査を通る",
+      "commit": "e6549c6bf3893670a29b04c972a768c211dda158",
+      "excerpt": {
+        "path": ".github/scripts/build-pr-explain-cases.sh",
+        "start": 150,
+        "end": 150,
+        "text": "pass|-|sample|名前に docs が仕様の語として使う複合語(publicProps)は書ける|d[\"concepts\"][0][\"name\"] = \"publicProps 宣言\""
+      },
+      "targets": [
+        ".github/scripts/build-pr-explain.py"
+      ],
+      "covers": [
+        "m-check",
+        "m-docswords"
+      ]
+    },
+    {
+      "id": "t-heading-11",
+      "suite": "s-heading",
+      "name": "名前に docs の 1 ファイル(03-schema.md)にしか出ない複合語(layoutMode)は書ける",
+      "techniques": [
+        "boundary",
+        "regression"
+      ],
+      "why": "docs のすべてのファイルから語を集める。一部しか読まない実装で落ちる",
+      "given": "`layoutMode` が `docs/03-schema.md` にだけ出るリポジトリ",
+      "when": "箱の名前を「`layoutMode` の扱い」にする",
+      "then": "検査を通る",
+      "commit": "fc3e8342b137bf23bc5145ebb987b50299eff2b7",
+      "excerpt": {
+        "path": ".github/scripts/build-pr-explain-cases.sh",
+        "start": 151,
+        "end": 151,
+        "text": "pass|-|sample|名前に docs の 1 ファイル(03-schema.md)にしか出ない複合語(layoutMode)は書ける|d[\"concepts\"][0][\"name\"] = \"layoutMode の扱い\""
+      },
+      "targets": [
+        ".github/scripts/build-pr-explain.py"
+      ],
+      "covers": [
+        "m-check",
+        "m-docswords"
+      ]
+    },
+    {
+      "id": "t-heading-12",
+      "suite": "s-heading",
+      "name": "コード(message の code)の識別子は検査しない",
+      "techniques": [
+        "equivalence",
+        "regression"
+      ],
+      "why": "やりとりのコードは実際の呼び出しの綴りを書く欄で、見出しではない",
+      "given": "見本の解説",
+      "when": "やりとりのコードを `putExplain()` にする",
+      "then": "検査を通る",
+      "commit": "fc3e8342b137bf23bc5145ebb987b50299eff2b7",
+      "excerpt": {
+        "path": ".github/scripts/build-pr-explain-cases.sh",
+        "start": 152,
+        "end": 152,
+        "text": "pass|-|sample|コード(message の code)の識別子は検査しない|d[\"messages\"][0][\"code\"] = \"putExplain()\""
+      },
+      "targets": [
+        ".github/scripts/build-pr-explain.py"
+      ],
+      "covers": [
+        "m-check"
+      ]
+    },
+    {
+      "id": "t-heading-13",
+      "suite": "s-heading",
+      "name": "名前の 1 語の識別子(Result)は検査しない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "1 語の識別子は綴りで識別子と言い切れないので見ない(検査の限界を固定する)",
+      "given": "見本の解説",
+      "when": "箱の名前を「`Result` の扱い」にする",
+      "then": "検査を通る",
+      "commit": "e6549c6bf3893670a29b04c972a768c211dda158",
+      "excerpt": {
+        "path": ".github/scripts/build-pr-explain-cases.sh",
+        "start": 153,
+        "end": 153,
+        "text": "pass|-|sample|名前の 1 語の識別子(Result)は検査しない|d[\"concepts\"][0][\"name\"] = \"Result の扱い\""
+      },
+      "targets": [
+        ".github/scripts/build-pr-explain.py"
+      ],
+      "covers": [
+        "m-check"
+      ]
+    },
+    {
+      "id": "t-heading-14",
+      "suite": "s-heading",
+      "name": "名前に大文字だけの略語(UI 案・VRT)は書ける",
+      "techniques": [
+        "boundary",
+        "equivalence"
+      ],
+      "why": "大文字だけの略語には小文字→大文字の継ぎ目が無く、このリポジトリの語彙として書ける",
+      "given": "見本の解説",
+      "when": "箱の名前を「UI 案」、機能の名前を「VRT」にする",
+      "then": "検査を通る",
+      "commit": "bb9cfd408fcd255b1585254dc1ac5945abc05fca",
+      "excerpt": {
+        "path": ".github/scripts/build-pr-explain-cases.sh",
+        "start": 154,
+        "end": 154,
+        "text": "pass|-|sample|名前に大文字だけの略語(UI 案・VRT)は書ける|d[\"concepts\"][0][\"name\"] = \"UI 案\"; d[\"features\"][0][\"label\"] = \"VRT\""
+      },
+      "targets": [
+        ".github/scripts/build-pr-explain.py"
+      ],
+      "covers": [
+        "m-check"
+      ]
+    },
+    {
+      "id": "t-heading-15",
+      "suite": "s-heading",
+      "name": "説明文(concept の role)の識別子は検査しない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "説明文は製品名の誤検出が多いので検査せず、スキルの書き方として残す",
+      "given": "見本の解説",
+      "when": "箱の役割を「`TokenTemplate` を組み立てる」にする",
+      "then": "検査を通る",
+      "commit": "bb9cfd408fcd255b1585254dc1ac5945abc05fca",
+      "excerpt": {
+        "path": ".github/scripts/build-pr-explain-cases.sh",
+        "start": 155,
+        "end": 155,
+        "text": "pass|-|sample|説明文(concept の role)の識別子は検査しない|d[\"concepts\"][0][\"role\"] = \"TokenTemplate を組み立てる\""
+      },
+      "targets": [
+        ".github/scripts/build-pr-explain.py"
+      ],
+      "covers": [
+        "m-check"
+      ]
+    },
+    {
+      "id": "t-heading-16",
+      "suite": "s-heading",
+      "name": "テスト名(test の name)の識別子は検査しない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "テスト名はテストコードの名前をそのまま書く欄なので対象外",
+      "given": "見本の解説",
+      "when": "テスト名を「`sortBy` で並べ替えたとき順序が保たれる」にする",
+      "then": "検査を通る",
+      "commit": "bb9cfd408fcd255b1585254dc1ac5945abc05fca",
+      "excerpt": {
+        "path": ".github/scripts/build-pr-explain-cases.sh",
+        "start": 156,
+        "end": 156,
+        "text": "pass|-|sample|テスト名(test の name)の識別子は検査しない|d[\"tests\"][0][\"name\"] = \"sortBy で並べ替えたとき順序が保たれる\""
+      },
+      "targets": [
+        ".github/scripts/build-pr-explain.py"
+      ],
+      "covers": [
+        "m-check"
       ]
     }
   ]
