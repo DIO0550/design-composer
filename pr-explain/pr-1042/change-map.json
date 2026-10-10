@@ -4,7 +4,7 @@
   "headBranch": "claude/magical-cannon-8hrkiy",
   "baseBranch": "main",
   "mergeBase": "eb5d13c0ca9fa42a1fb39566cce8c79cf249f6f5",
-  "head": "fc3e8342b137bf23bc5145ebb987b50299eff2b7",
+  "head": "db153c8e57d8478911fab992b438e40eb4587640",
   "groups": [
     {
       "label": "domains / unit",
@@ -609,6 +609,15 @@
           "changed": false
         },
         {
+          "path": "src/features/editor/__tests__/primary-color-token.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 42,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
           "path": "src/features/editor/__tests__/right-pane-heading.ts",
           "changed": false
         },
@@ -849,8 +858,26 @@
           "changed": false
         },
         {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.token.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 110,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/hooks/use-editor-state/index.ts"
+        },
+        {
           "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.tree-edit.test.tsx",
           "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-token-actions/__tests__/use-token-actions.continuity.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 107,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/hooks/use-token-actions/index.ts"
         },
         {
           "path": "src/features/editor/components/editor-screen/index.stories.tsx",
@@ -1598,6 +1625,26 @@
         "name": "一覧には6種別のセクションが仕様の順で並び、グラデーションが最後に来る"
       },
       {
+        "file": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.token.test.tsx",
+        "name": "トークンを選ばずに値を送っても値は変わらない"
+      },
+      {
+        "file": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.token.test.tsx",
+        "name": "値を別の編集として送ると、1 回の undo では直前の値までしか戻らない"
+      },
+      {
+        "file": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.token.test.tsx",
+        "name": "値を続きとして送ると、1 回の undo で最初の値まで戻る"
+      },
+      {
+        "file": "src/features/editor/hooks/use-token-actions/__tests__/use-token-actions.continuity.test.tsx",
+        "name": "別の編集として書き換えた値は、1 回の undo では直前の値までしか戻らない"
+      },
+      {
+        "file": "src/features/editor/hooks/use-token-actions/__tests__/use-token-actions.continuity.test.tsx",
+        "name": "続きとして書き換えた値は、1 回の undo で最初の値まで戻る"
+      },
+      {
         "file": "src/utils/__tests__/ArrayEx.edge.test.ts",
         "name": "範囲外の index を指定して removeAt を呼ぶと範囲外として Err が返る"
       },
@@ -1660,6 +1707,8 @@
       "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.alpha.test.ts",
       "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.gradient.test.ts",
       "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.normal.test.ts",
+      "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.token.test.tsx",
+      "src/features/editor/hooks/use-token-actions/__tests__/use-token-actions.continuity.test.tsx",
       "src/utils/__tests__/ArrayEx.edge.test.ts",
       "src/utils/__tests__/ArrayEx.normal.test.ts"
     ]
@@ -2444,6 +2493,46 @@
           "truncated": false
         }
       ]
+    },
+    {
+      "sha": "db153c8e57d8478911fab992b438e40eb4587640",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-10T14:55:42Z",
+      "subject": "🧪 [Tests]: #611 use-editor-state と use-token-actions が編集の続き方を受け渡すことをテストで固定する",
+      "body": "- use-editor-state: set_token_value を続き（Continued）として送ると undo 1 回で最初の値に\n  戻る / 別の編集（Separate）なら直前の値まで / トークンを選んでいなければ値は変わらない\n- use-token-actions: 実物の EditorProvider の中でフックを描き、setValue が受け取った\n  続き方をそのまま届けること（Continued は undo 1 回にまとまり、Separate は別々）\n- 2 つのテストが共有する primary の色トークンのドキュメントと読み取りを\n  src/features/editor/__tests__/primary-color-token.ts に置く\n\n背景:\nPR #1042 のオーナーのレビュー:「処理が変わってるのにテスト変更入ってないように見える」。\nこの 2 つのフックは continuity を受け渡すように変えたが、守っていたのはドメイン\n（EditorState）のテストと画面全体の通しのテストだけで、フックの段のテストが無かった。\nuse-token-actions にはテストのフォルダ自体が無かった。\n\n採用理由:\nモックを使わず、use-editor-state は既存の rename のテストと同じく useEditorState から\n直接アクションを送る形で、use-token-actions は実物の Provider の中で描く形で確かめた。\n足したテストごとに実装を壊して確かめた。reducer で続き方を Separate / Continued に\n固定する、setValue で続き方を固定する、の各ミューテーションで、対応するテストが落ちる。\n\n影響とトレードオフ:\nテストだけで、実装は変えていない。共有のヘルパーは、テストヘルパーの重複の検査に\n従って、既存の editor 全体のテスト用ヘルパー（sample-document.ts など）と同じ場所に置いた。\n\n代替案:\n- 画面全体の通しのテストで代わりに守る: どの段で続き方が落ちたかが分からない\n\n参考:\nPR #1042 のレビューコメント\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01HpMcYoZ5dWiNEEih2hNZaE",
+      "files": [
+        {
+          "path": "src/features/editor/__tests__/primary-color-token.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 42,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,42 @@\n+import { screen } from \"@testing-library/react\";\n+import { DesignDocument } from \"@/domains/dcmp/design-document\";\n+import { TokenSet } from \"@/domains/dcmp/token\";\n+import { EditorState } from \"@/features/editor/domains/editor-state\";\n+\n+/*\n+ * 色トークン `primary` を 1 つだけ持つ文書と、その値の読み方。トークンの値の書き換えを\n+ * 送る口（`useEditorState` のアクション・`useTokenActions`）の器が共有する。\n+ */\n+\n+/** 器が `primary` の値を出す要素の目印。 */\n+export const PrimaryColorTestId = \"primary-color\";\n+\n+/**\n+ * 色トークン `primary` が `#000000` の文書。書き換えはこの色から始める。\n+ *\n+ * @returns 画面構造を持たず、トークンが `primary` だけの文書\n+ */\n+export function primaryColorDocument(): DesignDocument {\n+  return DesignDocument.create({\n+    tokens: { ...TokenSet.empty(), colors: { primary: \"#000000\" } },\n+  });\n+}\n+\n+/**\n+ * 器が描く `primary` の値。\n+ *\n+ * @param state 読み先のエディタの状態\n+ * @returns 文書にある `primary` の値。消えていれば「無し」\n+ */\n+export function primaryColorOf(state: EditorState): string {\n+  return EditorState.document(state).tokens.colors.primary ?? \"無し\";\n+}\n+\n+/**\n+ * 器が `PrimaryColorTestId` の要素に出している `primary` の値。\n+ *\n+ * @returns 画面に出ている文字列\n+ */\n+export function primaryColorText(): string {\n+  return screen.getByTestId(PrimaryColorTestId).textContent ?? \"\";\n+}",
+          "patchLines": 43,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.token.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 110,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,110 @@\n+import { render, screen } from \"@testing-library/react\";\n+import userEvent from \"@testing-library/user-event\";\n+import { expect, test } from \"vitest\";\n+import { EditContinuities } from \"@/domains/session/edit-continuity\";\n+import {\n+  PrimaryColorTestId,\n+  primaryColorDocument,\n+  primaryColorOf,\n+  primaryColorText,\n+} from \"@/features/editor/__tests__/primary-color-token\";\n+import { useEditorState } from \"../index\";\n+\n+/*\n+ * トークンの値の書き換えのアクションを送って、続き方が履歴のまとまりまで届くことを確かめる\n+ * （docs/06-ui.md「編集操作の一覧」の tokens 編集・undo）。\n+ */\n+\n+/**\n+ * フックを DOM へ繋いだだけの器。トークンの選択・値の書き換え・undo を 1 つずつ送る口と、\n+ * `primary` の値の読み出しを与える。\n+ */\n+function EditorStateHarness() {\n+  const [state, dispatch] = useEditorState(primaryColorDocument());\n+\n+  return (\n+    <>\n+      <p data-testid={PrimaryColorTestId}>{primaryColorOf(state)}</p>\n+      <button\n+        type=\"button\"\n+        onClick={() =>\n+          dispatch({\n+            type: \"select_token\",\n+            ref: { kind: \"colors\", name: \"primary\" },\n+          })\n+        }\n+      >\n+        primary を選ぶ\n+      </button>\n+      <button\n+        type=\"button\"\n+        onClick={() =>\n+          dispatch({\n+            type: \"set_token_value\",\n+            value: { kind: \"colors\", value: \"#ff0000\" },\n+            continuity: EditContinuities.Separate,\n+          })\n+        }\n+      >\n+        #ff0000 を別の編集として送る\n+      </button>\n+      <button\n+        type=\"button\"\n+        onClick={() =>\n+          dispatch({\n+            type: \"set_token_value\",\n+            value: { kind: \"colors\", value: \"#00ff00\" },\n+            continuity: EditContinuities.Continued,\n+          })\n+        }\n+      >\n+        #00ff00 を続きとして送る\n+      </button>\n+      <button\n+        type=\"button\"\n+        onClick={() =>\n+          dispatch({\n+            type: \"set_token_value\",\n+            value: { kind: \"colors\", value: \"#00ff00\" },\n+            continuity: EditContinuities.Separate,\n+          })\n+        }\n+      >\n+        #00ff00 を別の編集として送る\n+      </button>\n+      <button type=\"button\" onClick={() => dispatch({ type: \"undo\" })}>\n+        戻す\n+      </button>\n+    </>\n+  );\n+}\n+\n+test(\"値を続きとして送ると、1 回の undo で最初の値まで戻る\", async () => {\n+  render(<EditorStateHarness />);\n+\n+  await userEvent.click(screen.getByText(\"primary を選ぶ\"));\n+  await userEvent.click(screen.getByText(\"#ff0000 を別の編集として送る\"));\n+  await userEvent.click(screen.getByText(\"#00ff00 を続きとして送る\"));\n+  await userEvent.click(screen.getByText(\"戻す\"));\n+\n+  expect(primaryColorText()).toBe(\"#000000\");\n+});\n+\n+test(\"値を別の編集として送ると、1 回の undo では直前の値までしか戻らない\", async () => {\n+  render(<EditorStateHarness />);\n+\n+  await userEvent.click(screen.getByText(\"primary を選ぶ\"));\n+  await userEvent.click(screen.getByText(\"#ff0000 を別の編集として送る\"));\n+  await userEvent.click(screen.getByText(\"#00ff00 を別の編集として送る\"));\n+  await userEvent.click(screen.getByText(\"戻す\"));\n+\n+  expect(primaryColorText()).toBe(\"#ff0000\");\n+});\n+\n+test(\"トークンを選ばずに値を送っても値は変わらない\", async () => {\n+  render(<EditorStateHarness />);\n+\n+  await userEvent.click(screen.getByText(\"#ff0000 を別の編集として送る\"));\n+\n+  expect(primaryColorText()).toBe(\"#000000\");\n+});",
+          "patchLines": 111,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-token-actions/__tests__/use-token-actions.continuity.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 107,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,107 @@\n+import { render, screen } from \"@testing-library/react\";\n+import userEvent from \"@testing-library/user-event\";\n+import { expect, test } from \"vitest\";\n+import { EditContinuities } from \"@/domains/session/edit-continuity\";\n+import {\n+  PrimaryColorTestId,\n+  primaryColorDocument,\n+  primaryColorOf,\n+  primaryColorText,\n+} from \"@/features/editor/__tests__/primary-color-token\";\n+import {\n+  EditorProvider,\n+  useEditor,\n+} from \"@/features/editor/components/editor-provider\";\n+import { useTokenActions } from \"../index\";\n+\n+/*\n+ * 値の書き換えに渡した続き方が、そのまま履歴のまとまりに効くことを確かめる\n+ * （docs/06-ui.md「編集操作の一覧」の tokens 編集・undo）。\n+ */\n+\n+/**\n+ * 実物の `EditorProvider` の内側でフックを描いた器。選択・値の書き換えはフックから、\n+ * undo と `primary` の値の読み出しはエディタの状態から行う。\n+ */\n+function TokenActionsHarness() {\n+  const actions = useTokenActions();\n+  const { state, dispatch } = useEditor();\n+\n+  return (\n+    <>\n+      <p data-testid={PrimaryColorTestId}>{primaryColorOf(state)}</p>\n+      <button\n+        type=\"button\"\n+        onClick={() => actions.select({ kind: \"colors\", name: \"primary\" })}\n+      >\n+        primary を選ぶ\n+      </button>\n+      <button\n+        type=\"button\"\n+        onClick={() =>\n+          actions.setValue(\n+            { kind: \"colors\", value: \"#ff0000\" },\n+            EditContinuities.Separate,\n+          )\n+        }\n+      >\n+        #ff0000 を別の編集として送る\n+      </button>\n+      <button\n+        type=\"button\"\n+        onClick={() =>\n+          actions.setValue(\n+            { kind: \"colors\", value: \"#00ff00\" },\n+            EditContinuities.Continued,\n+          )\n+        }\n+      >\n+        #00ff00 を続きとして送る\n+      </button>\n+      <button\n+        type=\"button\"\n+        onClick={() =>\n+          actions.setValue(\n+            { kind: \"colors\", value: \"#00ff00\" },\n+            EditContinuities.Separate,\n+          )\n+        }\n+      >\n+        #00ff00 を別の編集として送る\n+      </button>\n+      <button type=\"button\" onClick={() => dispatch({ type: \"undo\" })}>\n+        戻す\n+      </button>\n+    </>\n+  );\n+}\n+\n+function renderHarness(): void {\n+  render(\n+    <EditorProvider initialDocument={primaryColorDocument()}>\n+      <TokenActionsHarness />\n+    </EditorProvider>,\n+  );\n+}\n+\n+test(\"続きとして書き換えた値は、1 回の undo で最初の値まで戻る\", async () => {\n+  renderHarness();\n+\n+  await userEvent.click(screen.getByText(\"primary を選ぶ\"));\n+  await userEvent.click(screen.getByText(\"#ff0000 を別の編集として送る\"));\n+  await userEvent.click(screen.getByText(\"#00ff00 を続きとして送る\"));\n+  await userEvent.click(screen.getByText(\"戻す\"));\n+\n+  expect(primaryColorText()).toBe(\"#000000\");\n+});\n+\n+test(\"別の編集として書き換えた値は、1 回の undo では直前の値までしか戻らない\", async () => {\n+  renderHarness();\n+\n+  await userEvent.click(screen.getByText(\"primary を選ぶ\"));\n+  await userEvent.click(screen.getByText(\"#ff0000 を別の編集として送る\"));\n+  await userEvent.click(screen.getByText(\"#00ff00 を別の編集として送る\"));\n+  await userEvent.click(screen.getByText(\"戻す\"));\n+\n+  expect(primaryColorText()).toBe(\"#ff0000\");\n+});",
+          "patchLines": 108,
+          "truncated": false
+        }
+      ]
     }
   ],
   "dependencies": [
@@ -2996,6 +3085,21 @@
       "from": "src/features/editor/__tests__/artboard-fixtures.ts",
       "to": "src/features/editor/domains/editor-state/index.ts",
       "status": "kept"
+    },
+    {
+      "from": "src/features/editor/__tests__/primary-color-token.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/__tests__/primary-color-token.ts",
+      "to": "src/domains/dcmp/token/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/__tests__/primary-color-token.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "added"
     },
     {
       "from": "src/features/editor/components/canvas-dock/index.tsx",
@@ -4193,6 +4297,21 @@
       "status": "kept"
     },
     {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.token.test.tsx",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.token.test.tsx",
+      "to": "src/features/editor/__tests__/primary-color-token.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.token.test.tsx",
+      "to": "src/features/editor/hooks/use-editor-state/index.ts",
+      "status": "added"
+    },
+    {
       "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.tree-edit.test.tsx",
       "to": "src/features/editor/domains/editor-state/index.ts",
       "status": "kept"
@@ -4296,6 +4415,26 @@
       "from": "src/features/editor/hooks/use-node-actions/index.ts",
       "to": "src/features/editor/domains/editor-state/index.ts",
       "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-token-actions/__tests__/use-token-actions.continuity.test.tsx",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-token-actions/__tests__/use-token-actions.continuity.test.tsx",
+      "to": "src/features/editor/__tests__/primary-color-token.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-token-actions/__tests__/use-token-actions.continuity.test.tsx",
+      "to": "src/features/editor/components/editor-provider/index.tsx",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-token-actions/__tests__/use-token-actions.continuity.test.tsx",
+      "to": "src/features/editor/hooks/use-token-actions/index.ts",
+      "status": "added"
     },
     {
       "from": "src/features/editor/hooks/use-token-actions/index.ts",
