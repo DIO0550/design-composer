@@ -60,17 +60,10 @@ test("編集中のトークンの名前が見出しに出る", () => {
   expect(screen.getByRole("heading", { level: 2 }).textContent).toBe("primary");
 });
 
-test("グラデーションを選んでも見出しに名前が出ない", () => {
-  /*
-   * 同じドキュメントで色を選べば名前が出る。見出しが常に空なのではなく、
-   * 編集欄を持たない種別だけが出ないことを見る。
-   */
-  renderTitle({ kind: "colors", name: "primary" });
-  expect(screen.getByRole("heading", { level: 2 })).toBeDefined();
-
+test("グラデーションを選ぶと見出しに名前が出る", () => {
   renderTitle({ kind: "gradients", name: "brand" });
 
-  expect(screen.getAllByRole("heading", { level: 2 })).toHaveLength(1);
+  expect(screen.getByRole("heading", { level: 2 }).textContent).toBe("brand");
 });
 
 test("色トークンの見出しには色見本が出る", () => {
@@ -79,7 +72,7 @@ test("色トークンの見出しには色見本が出る", () => {
   expect(swatchIn(container)).not.toBeNull();
 });
 
-test("色以外のトークンの見出しには色見本が出ない", () => {
+test("色と階調以外のトークンの見出しには色見本が出ない", () => {
   const container = renderTitle({ kind: "spacing", name: "lg" });
 
   expect(swatchIn(container)).toBeNull();
@@ -89,6 +82,20 @@ test("色トークンの種別は Color と出る", () => {
   renderTitle({ kind: "colors", name: "primary" });
 
   expect(screen.getByText("Color")).toBeDefined();
+});
+
+test("グラデーショントークンの種別は Gradient と出る", () => {
+  renderTitle({ kind: "gradients", name: "brand" });
+
+  expect(screen.getByText("Gradient")).toBeDefined();
+});
+
+test("グラデーションの見出しには階調の見本が出る", () => {
+  const container = renderTitle({ kind: "gradients", name: "brand" });
+
+  expect(
+    container.querySelector("[style*='linear-gradient(90deg']"),
+  ).not.toBeNull();
 });
 
 test("余白トークンの種別は Spacing と出る", () => {

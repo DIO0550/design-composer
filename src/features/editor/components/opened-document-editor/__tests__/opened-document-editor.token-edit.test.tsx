@@ -336,3 +336,145 @@ test("トークンを選んだあとでも Layers へ戻せる", async () => {
   /* 右ペインはプロパティパネルへ戻る（トークンの編集欄は残らない）。 */
   expect(screen.queryByRole("region", { name: "トークン編集" })).toBeNull();
 });
+
+/** gradients の節を開いて + でグラデーションを 1 つ作る。作ったものが選ばれる。 */
+async function addGradient(): Promise<void> {
+  await renderTokensView();
+  await openSection("gradients");
+  await userEvent.click(row("gradients にトークンを追加"));
+}
+
+/** 編集欄に並んでいる stop の比率を、行の並びの順に読む。 */
+function stopRatios(): readonly string[] {
+  return within(propertyPane())
+    .getAllByLabelText(/^stop \d+ の比率$/)
+    .map((input) => (input as HTMLInputElement).value);
+}
+
+/** フォーカスを入力欄・ボタンから外す。欄にフォーカスがある間は undo が効かない。 */
+function blurActive(): void {
+  if (document.activeElement instanceof HTMLElement) {
+    document.activeElement.blur();
+  }
+}
+
+test("gradients の + でグラデーションを作ると一覧に角度と stop の件数が出る", async () => {
+  await addGradient();
+
+  expect(row(/^gradient 90° · 2 stops$/)).toBeDefined();
+});
+
+test("グラデーションの角度を打って確定すると一覧の値が変わる", async () => {
+  await addGradient();
+
+  await userEvent.clear(field("角度"));
+  await userEvent.type(field("角度"), "45");
+  await userEvent.tab();
+
+  expect(row(/^gradient 45° · 2 stops$/)).toBeDefined();
+});
+
+test("stop を追加すると 3 件になり、Ctrl+Z 1 回で 2 件へ戻る", async () => {
+  await addGradient();
+
+  await userEvent.click(
+    within(propertyPane()).getByRole("button", { name: "stop を追加" }),
+  );
+  // 足せたことを先に見る。足せていないと Ctrl+Z が no-op でも最後の assert が通る。
+  expect(row(/^gradient 90° · 3 stops$/)).toBeDefined();
+  blurActive();
+
+  await userEvent.keyboard("{Control>}z{/Control}");
+
+  expect(row(/^gradient 90° · 2 stops$/)).toBeDefined();
+});
+
+test("stop の − を押すとその stop が消える", async () => {
+  await addGradient();
+  await userEvent.click(
+    within(propertyPane()).getByRole("button", { name: "stop を追加" }),
+  );
+
+  await userEvent.click(
+    within(propertyPane()).getByRole("button", { name: "stop 2 を削除" }),
+  );
+
+  expect(stopRatios()).toEqual(["0", "100"]);
+});
+
+test("stop の比率を変えると stop の行が比率の順に並び直る", async () => {
+  await addGradient();
+  await userEvent.click(
+    within(propertyPane()).getByRole("button", { name: "stop を追加" }),
+  );
+
+  await userEvent.clear(field("stop 1 の比率"));
+  await userEvent.type(field("stop 1 の比率"), "75");
+  await userEvent.tab();
+
+  expect(stopRatios()).toEqual(["50", "75", "100"]);
+});
+
+test("ピッカーを開いて 2 回動かしても Ctrl+Z 1 回で元の色へ戻る", async () => {
+  await addGradient();
+  const picker = field("stop 1 の色");
+
+  fireEvent.click(picker);
+  fireEvent.change(picker, { target: { value: "#ff0000" } });
+  fireEvent.change(picker, { target: { value: "#00ff00" } });
+  expect(field("stop 1 の色")).toHaveProperty("value", "#00ff00");
+
+  await userEvent.keyboard("{Control>}z{/Control}");
+
+  expect(field("stop 1 の色")).toHaveProperty("value", "#000000");
+});
+
+test("ピッカーを 2 回開いて動かすと Ctrl+Z 1 回では 1 回目の色までしか戻らない", async () => {
+  await addGradient();
+  const picker = field("stop 1 の色");
+
+  fireEvent.click(picker);
+  fireEvent.change(picker, { target: { value: "#ff0000" } });
+  fireEvent.click(picker);
+  fireEvent.change(picker, { target: { value: "#00ff00" } });
+
+  await userEvent.keyboard("{Control>}z{/Control}");
+
+  expect(field("stop 1 の色")).toHaveProperty("value", "#ff0000");
+});
+
+test("作ったグラデーションは Background の欄の gradients の節から選べ、Used by に出る", async () => {
+  await addGradient();
+  await userEvent.click(
+    within(leftPane()).getByRole("button", { name: "Layers" }),
+  );
+  await userEvent.click(
+    within(leftPane()).getByRole("button", { name: "home-body" }),
+  );
+
+  await userEvent.selectOptions(
+    within(propertyPane()).getByRole("combobox", { name: "Background" }),
+    within(propertyPane()).getByRole("option", { name: "gradient" }),
+  );
+  await userEvent.click(
+    within(leftPane()).getByRole("button", { name: "Tokens" }),
+  );
+  await openSection("gradients");
+  await userEvent.click(row(/^gradient 90°/));
+
+  expect(
+    within(
+      within(propertyPane()).getByRole("region", { name: "Used by" }),
+    ).getByText("home-body.background"),
+  ).toBeDefined();
+});
+
+test("グラデーションを Delete token で消すと一覧から消える", async () => {
+  await addGradient();
+
+  await userEvent.click(
+    within(propertyPane()).getByRole("button", { name: "Delete token" }),
+  );
+
+  expect(row(/^gradients 0$/)).toBeDefined();
+});
