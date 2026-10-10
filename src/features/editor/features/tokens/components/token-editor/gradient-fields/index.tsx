@@ -38,6 +38,8 @@ const StopCellClasses = {
  * 値は隣の欄が読み上げるので、バーとつまみは飾りとして読み上げから外す。ドラッグを入れる
  * #1037 で見直す。
  *
+ * 読み上げから外しているので、描かれていることに気づく手段は Storybook の視覚差分だけ。
+ *
  * @returns 左から右へ塗ったバーと、stop の比率の位置に置いたつまみ
  */
 function GradientBar({
@@ -83,6 +85,7 @@ export function GradientFields({
 
   return (
     <div className="flex flex-col gap-3">
+      {/* 読み上げから外しているので、描かれていることに気づく手段は Storybook の視覚差分だけ */}
       <div
         aria-hidden="true"
         style={{ backgroundImage: gradient.previewImage }}
