@@ -318,20 +318,15 @@ pnpm visual:capture -- --storybook-dir storybook-static --out visual-actual  # �
   混ざってコミットに載る
 - **直しは `SendMessage` で続けず、新しい Agent 呼び出しで `implementer` に渡す。** 実行中の印を
   作るフックの matcher は `Task|Agent` で、`SendMessage` には当たらない(`.claude/settings.json`)
-- **実行中に git add / commit / push を挟まない。** ミューテーション実測や実装の途中でコミットすると、
-  その瞬間の書き換えが載る。前面で起動している間は、同じメッセージに並べた親の呼び出しも
-  サブエージェントが返った後に走った(実測)ので、そこで git を叩きうるのはサブエージェント自身で、
-  `block-git-during-verification-agent.sh` が作業ツリーを書き換えるサブエージェントの実行中は
-  それを機械的に止める(対象は `.claude/hooks/README.md`)。
-  **止まるのは前面で起動したときだけ**(背景で起動すると起動の直後に PostToolUse が走り、
-  印が消える。実測)。`run_in_background: true` を明示した起動は
-  `track-verification-agent-activity.sh` が拒否するが、塞いでいない形がある(フックの冒頭)。
-  `false` を渡しても背景で起動したとき・実行中に背景へ移したときは、完了通知を受け取るまで
-  git add / commit / push を挟まない。実測の記録は `harness/case-law/process.md`
-- **作業ツリーを書き換えるサブエージェントは単独で起動する**(同じメッセージに他のツール呼び出しを
-  並べない)。前面で起動すれば、並べた Bash はサブエージェントが返った後に走る(実測は 1 回)。
-  ただし `false` を渡しても背景で起動することがあり、そのときは並べた呼び出しが実行中に走りうる。
-  他の Agent を並べた場合は測っていない
+- **作業ツリーを書き換えるサブエージェントは単独で前面で起動し、完了の結果を受け取るまで
+  git add / commit / push を挟まない**(同じメッセージに他のツール呼び出しを並べない)。
+  ミューテーション実測や実装の途中でコミットすると、その瞬間の書き換えが載る。
+  `block-git-during-verification-agent.sh` が実行中の印がある間の git 操作を機械的に止めるが
+  (対象は `.claude/hooks/README.md`)、印が残るのは前面で起動したときだけ。
+  `run_in_background: true` を明示した起動は `track-verification-agent-activity.sh` が拒否するが、
+  `false` を渡しても背景で起動することがあり、実行中に背景へ移すこともできる(フックの冒頭)。
+  単独で起動するのは、背景になったときに並べた呼び出しが実行中に走りうるため。
+  実測の記録は `harness/case-law/process.md`
 - **バックグラウンドで起動した場合は、完了を取り逃さない。** 結果を受け取るまで次のフェーズへ
   進まない
 - **セッションの途中で `.claude/agents/` に足した定義は、同じセッションから呼べないことがある**

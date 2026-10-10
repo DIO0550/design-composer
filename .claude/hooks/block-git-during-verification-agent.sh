@@ -5,10 +5,9 @@
 # どのエージェントが対象かもそちらが持つ。
 #
 # test-reviewer がミューテーションを当てている最中や implementer が実装を書いている最中に
-# git add が走ると、その瞬間の書き換えをコミットへ取り込んで CI が落ちる。前面で起動している間は、
-# 同じメッセージに並べた親の Bash もサブエージェントが返った後に走った(実測。harness/case-law/process.md)
-# ので、ここが止めるのはサブエージェント自身の git 操作になる。背景で起動したものは印が起動の直後に
-# 消える(track-verification-agent-activity.sh)。
+# git add が走ると、その瞬間の書き換えをコミットへ取り込んで CI が落ちる。印がある間は、呼び出し元
+# (親かサブエージェントか)を問わず止める。印がいつ消えるかは track-verification-agent-activity.sh、
+# 前面・背景それぞれで実行中に誰の git が走りうるかの実測は harness/case-law/process.md。
 #
 # CI / git hooks(層1・2)では代替できない。この競合はセッションの実行タイミングだけが原因で、
 # コミット後のリポジトリの状態には痕跡が残らない。block-npx.sh と同じ「セッション中の

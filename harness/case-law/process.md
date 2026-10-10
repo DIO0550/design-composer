@@ -51,14 +51,15 @@
 
 | 確かめたこと | 結果 |
 |---|---|
-| `planner` / `implementer` が定義どおり起動するか | 計測ログの中で implementer 3 回・planner 4 回、すべて起動した(`Agent type not found` は出ない)。ログの外でも planner 2 回と plan-reviewer 1 回が起動した。`tools` は定義どおり(planner は Edit / Write を持たない) |
+| `planner` / `implementer` が定義どおり起動するか | 計測ログの中で implementer 3 回・planner 4 回、すべて起動した(`Agent type not found` は出ない)。ログの外でも planner 2 回・plan-reviewer 1 回・implementer 1 回が起動した。`tools` は定義どおり(planner は Edit / Write を持たない) |
 | implementer **自身**の `git add` | 前面で起動した implementer の中の `git add --dry-run` は deny された。そのとき実行中の印も在った |
-| implementer の実行中に**親**の `git add` を挟めるか | 挟めなかった。同じメッセージに Agent(前面)と Bash を並べると、Bash の PreToolUse は Agent の PostToolUse の後に来た(1 回) |
-| `run_in_background: false` を渡して前面で起動したか | 計画を立て終えるまでの 7 回中 4 回が前面、3 回が背景(背景になったのは planner 2 回と plan-reviewer)。#1031 でも 4 回中 2 回が背景 |
+| implementer の実行中に**親**の `git add` を挟めるか | 挟めなかった。同じメッセージに Agent(前面)と Bash を並べると、Bash の PreToolUse は Agent の PostToolUse の後に来た(1 回)。Agent を並べた場合は測っていない |
+| Agent の PreToolUse の入力に `run_in_background` が載るか | `tool_input` に `true` / `false` で載る(計測ログの Agent の PreToolUse 6 件すべて) |
+| `run_in_background: false` を渡して前面で起動したか | 8 回中 4 回が前面、4 回が背景(背景になったのは planner 2 回・plan-reviewer 1 回・実装フェーズの implementer 1 回)。#1031 でも 4 回中 2 回が背景 |
 | 前面で起動したときの PostToolUse | 完了時に来る(`tool_response.status: "completed"`) |
 | 背景で起動したときの PostToolUse | 起動の直後に来る(`"async_launched"` / `isAsync: true` / `agentId` 付き)。背景になった plan-reviewer は、完了通知の時点で印のディレクトリが空だった |
 | Agent の Pre と Post を結び付ける ID | 両方に同じ `tool_use_id` が載る(揃った 6 組すべて) |
-| `SubagentStop` | 前面・背景とも完了時に届く(`agent_id` / `agent_type` 付き。前面では PostToolUse と同じ秒で、その前)。背景で起動したものを `TaskStop` で止めたときは届かなかった |
+| `SubagentStop` | 前面(1 回)・背景(1 回)とも完了時に届いた(`agent_id` / `agent_type` 付き。前面では PostToolUse と同じ秒で、その前)。背景で起動したものを `TaskStop` で止めたときは届かなかった |
 | サブエージェントの中の呼び出しを PreToolUse で見分けられるか | 見分けられる。サブエージェントの中の Bash / Write / Edit には `agent_id` / `agent_type` が載り、親の呼び出しには無い。`session_id` は親と同じ。Agent 自身の PreToolUse には起動される側の `agent_id` が無く(`subagent_type` だけ)、PostToolUse の `tool_response.agentId` で分かる |
 | セッションの途中で `.claude/settings.json` に足した配線 | 足した直後から効いた(`SubagentStop`) |
 
@@ -77,8 +78,10 @@
 
 **判定の分かれ目:** git 操作の競合は、**誰の呼び出しか**と**前面か背景か**を分けて見る。前面の
 起動中に git を叩きうるのはサブエージェント自身で、親の呼び出しは返るまで走らない(Bash で 1 回)。
-背景の起動中は親も動き、印は残らない。`run_in_background: false` は前面を約束しないので、渡したか
-どうかではなく、返ってきたのが完了の結果か起動直後の返りかで前面だったかを見る。
+背景の起動中は親も動く。印は、背景になった plan-reviewer の 1 回では完了通知の時点で残って
+いなかったが、#1031 に逆の観察が 1 件あり(上の 3 点目)、説明できていない。
+`run_in_background: false` は前面を約束しないので、渡したかどうかではなく、返ってきたのが完了の
+結果か起動直後の返りかで前面だったかを見る。
 
 フックの振る舞いへの反映は #1044〜#1047 に分けた。
 
@@ -98,7 +101,7 @@
 
 | | 1 つ目 | 2 つ目 |
 |---|---|---|
-| 起動 | Issue の assigned で起動した routine。3 リポジトリ(design-composer / d-market-workflow / d-market-git)を `/home/user` 配下に並べて起動 | design-composer だけを source にしたセッション |
+| 起動 | Issue の assigned で起動した routine(3 リポジトリ design-composer / d-market-workflow / d-market-git を `/home/user` 配下に並べる) | 前のセッションが `create_session` で起動(design-composer だけ。このセッションの origin は `claude_code_mcp_seed`) |
 | 起動時の作業ディレクトリ | `/home/user` | `/home/user/design-composer`(リポジトリルート) |
 | セッションの中で見た `CLAUDE_PROJECT_DIR` | 空 | 空 |
 | `echo hook-canary` | 通った | deny された |
