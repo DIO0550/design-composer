@@ -385,6 +385,11 @@
     "name": "2 軸とも掴める"
   },
   {
+    "id": "features-editor-features-canvas-artboardcanvas-resizehandleoverlay--rotated",
+    "title": "features/editor/features/canvas/ArtboardCanvas/ResizeHandleOverlay",
+    "name": "回った要素"
+  },
+  {
     "id": "features-editor-features-canvas-artboardcanvas-resizehandleoverlay--width-only",
     "title": "features/editor/features/canvas/ArtboardCanvas/ResizeHandleOverlay",
     "name": "幅だけ掴める"
