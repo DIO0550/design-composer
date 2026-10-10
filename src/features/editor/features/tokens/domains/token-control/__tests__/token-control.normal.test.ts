@@ -45,7 +45,7 @@ test("グラデーションを選ぶとグラデーションの編集欄が出�
   expect(
     Option.map(
       TokenControl.forSelection(selection),
-      (control) => control.body.kind,
+      (control) => control.valueFields.kind,
     ),
   ).toEqual(Option.some("gradient"));
 });

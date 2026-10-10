@@ -1,23 +1,16 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
-import { DesignDocument } from "@/domains/dcmp/design-document";
-import { type GradientStop, TokenSet } from "@/domains/dcmp/token";
+import type { GradientStop } from "@/domains/dcmp/token";
 import { EditContinuities } from "@/domains/session/edit-continuity";
 import { TokenSelection } from "@/domains/session/token-selection";
+import {
+  gradientDocumentOf,
+  ThreeStops,
+  TwoStops,
+} from "@/features/editor/features/tokens/__tests__/gradient-documents";
 import { Option } from "@/utils/Option";
 import { TokenEditor } from "../index";
-
-const TwoStops = [
-  { color: "#000000", ratio: 0 },
-  { color: "#ffffff", ratio: 1 },
-] as const;
-
-const ThreeStops = [
-  { color: "#000000", ratio: 0 },
-  { color: "#888888", ratio: 0.5 },
-  { color: "#ffffff", ratio: 1 },
-] as const;
 
 /**
  * グラデーション `brand` を選んだエディタの本文を描く。
@@ -27,16 +20,10 @@ const ThreeStops = [
  */
 function renderGradient(stops: readonly GradientStop[]) {
   const onSetTokenValue = vi.fn();
-  const document = DesignDocument.create({
-    tokens: {
-      ...TokenSet.empty(),
-      gradients: { brand: { shape: "linear", angle: 90, stops } },
-    },
-  });
   render(
     <TokenEditor.Body
       selection={TokenSelection.create(
-        document,
+        gradientDocumentOf({ stops }),
         Option.some({ kind: "gradients", name: "brand" }),
       )}
       onSetTokenValue={onSetTokenValue}

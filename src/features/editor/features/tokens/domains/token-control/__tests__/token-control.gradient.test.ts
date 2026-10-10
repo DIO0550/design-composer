@@ -1,4 +1,9 @@
 import { expect, test } from "vitest";
+import {
+  gradientDocumentOf,
+  ThreeStops,
+  TwoStops,
+} from "@/features/editor/features/tokens/__tests__/gradient-documents";
 import { Option } from "@/utils/Option";
 import {
   type GradientControl,
@@ -6,30 +11,16 @@ import {
   type TokenControlField,
   TokenSection,
 } from "../index";
-import { gradientDocumentOf, gradientOf, gradientSelectionOf } from "./setup";
-
-const ThreeStops = [
-  { color: "#000000", ratio: 0 },
-  { color: "#888888", ratio: 0.5 },
-  { color: "#ffffff", ratio: 1 },
-] as const;
-
-const TwoStops = [
-  { color: "#000000", ratio: 0 },
-  { color: "#ffffff", ratio: 1 },
-] as const;
+import { fieldLabeled, gradientOf, gradientSelectionOf } from "./setup";
 
 /** 見出しで stop の欄を引く。 */
 function stopFieldOf(
   gradient: GradientControl,
   label: string,
 ): TokenControlField {
-  return Option.unwrap(
-    Option.fromNullable(
-      gradient.stops
-        .flatMap((row) => row.fields)
-        .find((field) => field.label === label),
-    ),
+  return fieldLabeled(
+    gradient.stops.flatMap((row) => row.fields),
+    label,
   );
 }
 
@@ -101,8 +92,10 @@ test("バーは角度に依らず左から右へ塗る", () => {
     gradientSelectionOf({ angle: 180, stops: TwoStops }),
   );
 
-  expect(gradient.bar).toBe("linear-gradient(90deg, #000000 0%, #ffffff 100%)");
-  expect(gradient.preview).toBe(
+  expect(gradient.barImage).toBe(
+    "linear-gradient(90deg, #000000 0%, #ffffff 100%)",
+  );
+  expect(gradient.previewImage).toBe(
     "linear-gradient(180deg, #000000 0%, #ffffff 100%)",
   );
 });
@@ -110,7 +103,7 @@ test("バーは角度に依らず左から右へ塗る", () => {
 test("stop が 2 件なら どの行も − で消せない", () => {
   const gradient = gradientOf(gradientSelectionOf({ stops: TwoStops }));
 
-  expect(gradient.stops.map((row) => row.remove)).toEqual([
+  expect(gradient.stops.map((row) => row.afterRemove)).toEqual([
     Option.none,
     Option.none,
   ]);
@@ -119,7 +112,7 @@ test("stop が 2 件なら どの行も − で消せない", () => {
 test("stop が 3 件なら − でその行の stop を除いた値になる", () => {
   const gradient = gradientOf(gradientSelectionOf({ stops: ThreeStops }));
 
-  expect(gradient.stops[1].remove).toEqual(
+  expect(gradient.stops[1].afterRemove).toEqual(
     Option.some({
       kind: "gradients",
       value: {
@@ -129,7 +122,7 @@ test("stop が 3 件なら − でその行の stop を除いた値になる", (
       },
     }),
   );
-  expect(gradient.stops[1].removeLabel).toBe("stop 2 を削除");
+  expect(gradient.stops[1].removeButtonLabel).toBe("stop 2 を削除");
 });
 
 test("比率の欄に 0〜100 の外を打っても値を変えない", () => {
@@ -213,6 +206,43 @@ test("stop の色をピッカーで選び直しても元の不透明度は残る
   );
 });
 
+test("stop の hex に打った 6 桁でその stop の色だけが変わり、不透明度は残る", () => {
+  const field = stopFieldOf(
+    gradientOf(
+      gradientSelectionOf({
+        stops: [
+          { color: "#00000080", ratio: 0 },
+          { color: "#ffffff", ratio: 1 },
+        ],
+      }),
+    ),
+    "stop 1 の hex",
+  );
+
+  expect(TokenControl.valueFrom(field.target, "#FF0000")).toEqual(
+    Option.some({
+      kind: "gradients",
+      value: {
+        shape: "linear",
+        angle: 90,
+        stops: [
+          { color: "#ff000080", ratio: 0 },
+          { color: "#ffffff", ratio: 1 },
+        ],
+      },
+    }),
+  );
+});
+
+test("stop の hex に 6 桁として読めない値を打っても値を変えない", () => {
+  const field = stopFieldOf(
+    gradientOf(gradientSelectionOf({ stops: TwoStops })),
+    "stop 1 の hex",
+  );
+
+  expect(TokenControl.valueFrom(field.target, "#ff00")).toEqual(Option.none);
+});
+
 test("hex として読めない色の stop は色のテキスト欄 1 本になり、不透明度の欄が無い", () => {
   const gradient = gradientOf(
     gradientSelectionOf({
@@ -253,7 +283,7 @@ test("角度の欄に打った値はそのまま角度になる", () => {
 test("stop の + は最も広い隙間の中央に stop を足した値になる", () => {
   const gradient = gradientOf(gradientSelectionOf({ stops: TwoStops }));
 
-  expect(gradient.add).toEqual({
+  expect(gradient.afterAdd).toEqual({
     kind: "gradients",
     value: {
       shape: "linear",

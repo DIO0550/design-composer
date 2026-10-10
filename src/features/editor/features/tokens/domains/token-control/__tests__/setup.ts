@@ -1,10 +1,10 @@
 import { DesignDocument } from "@/domains/dcmp/design-document";
-import {
-  type GradientToken,
-  type TokenKind,
-  TokenSet,
-} from "@/domains/dcmp/token";
+import type { TokenKind } from "@/domains/dcmp/token";
 import { TokenSelection } from "@/domains/session/token-selection";
+import {
+  type GradientSpec,
+  gradientDocumentOf,
+} from "@/features/editor/features/tokens/__tests__/gradient-documents";
 import {
   type GradientControl,
   TokenControl,
@@ -57,37 +57,15 @@ export function fieldsOf(
   kind: TokenKind,
   name: string,
 ): readonly TokenControlField[] {
-  const { body } = Option.unwrap(
+  const { valueFields } = Option.unwrap(
     TokenControl.forSelection(selectionOf(kind, name)),
   );
-  if (body.kind !== "fields") {
+  if (valueFields.kind !== "fields") {
     throw new Error(
-      `${kind}/${name} の値の欄は ${body.kind} で、並べる欄ではない`,
+      `${kind}/${name} の値の欄は ${valueFields.kind} で、並べる欄ではない`,
     );
   }
-  return body.fields;
-}
-
-/** 角度と色の変わり目の並びの指定。角度を省くと 90。 */
-type GradientSpec = Readonly<{
-  angle?: number;
-  stops: GradientToken["stops"];
-}>;
-
-/** グラデーション `brand` を 1 つだけ持つドキュメント。 */
-export function gradientDocumentOf(gradient: GradientSpec): DesignDocument {
-  return DesignDocument.create({
-    tokens: {
-      ...TokenSet.empty(),
-      gradients: {
-        brand: {
-          shape: "linear",
-          angle: gradient.angle ?? 90,
-          stops: gradient.stops,
-        },
-      },
-    },
-  });
+  return valueFields.fields;
 }
 
 /** グラデーション `brand` を選んでいる状態。 */
@@ -104,11 +82,23 @@ export function gradientSelectionOf(gradient: GradientSpec): TokenSelection {
  * @throws 値の欄がグラデーションのものでないとき。テストを落とすため
  */
 export function gradientOf(selection: TokenSelection): GradientControl {
-  const { body } = Option.unwrap(TokenControl.forSelection(selection));
-  if (body.kind !== "gradient") {
-    throw new Error(`値の欄は ${body.kind} で、グラデーションのものではない`);
+  const { valueFields } = Option.unwrap(TokenControl.forSelection(selection));
+  if (valueFields.kind !== "gradient") {
+    throw new Error(
+      `値の欄は ${valueFields.kind} で、グラデーションのものではない`,
+    );
   }
-  return body.gradient;
+  return valueFields.gradient;
+}
+
+/** 並んだ欄から見出しで 1 行を引く。 */
+export function fieldLabeled(
+  fields: readonly TokenControlField[],
+  label: string,
+): TokenControlField {
+  return Option.unwrap(
+    Option.fromNullable(fields.find((field) => field.label === label)),
+  );
 }
 
 /** 見出しで編集欄の1行を引く。 */
@@ -117,9 +107,5 @@ export function fieldOf(
   name: string,
   label: string,
 ): TokenControlField {
-  return Option.unwrap(
-    Option.fromNullable(
-      fieldsOf(kind, name).find((field) => field.label === label),
-    ),
-  );
+  return fieldLabeled(fieldsOf(kind, name), label);
 }

@@ -1,16 +1,19 @@
-import { type ReactElement, useId } from "react";
-import type { Token, TokenKind, TokenValue } from "@/domains/dcmp/token";
-import type { EditContinuity } from "@/domains/session/edit-continuity";
+import { type CSSProperties, type ReactElement, useId } from "react";
+import type { Token, TokenKind } from "@/domains/dcmp/token";
 import type { TokenSelection } from "@/domains/session/token-selection";
 import { TokenUsedBy } from "@/features/editor/features/tokens/components/token-used-by";
 import {
   TokenControl,
-  type TokenControlField,
   type TokenPaint,
 } from "@/features/editor/features/tokens/domains/token-control";
 import { Option } from "@/utils/Option";
 import { GradientFields } from "./gradient-fields";
-import { DraftField, onEditOf, ValueField } from "./value-field";
+import {
+  DraftField,
+  FieldDensities,
+  FieldRow,
+  type SetTokenValue,
+} from "./value-field";
 
 /** トークンが選ばれていないときに本文へ出す知らせ。 */
 const NoSelectionMessage = "トークンが選択されていません";
@@ -19,7 +22,7 @@ const NoSelectionMessage = "トークンが選択されていません";
  * 帯の右端に出す種別の綴り。
  *
  * UI 案（docs/Design Composer.html）に実在するのは `Color` だけ。`Gradient` は docs/06-ui.md
- * 「Tokens の gradients」が決めていて、残る 4 つはここで決めた。
+ * 「`Tokens` の `gradients`」が決めていて、残る 4 つはここで決めた。
  *
  * 種別を足して綴りを足し忘れると、ここがコンパイルエラーになる。
  */
@@ -33,37 +36,43 @@ const KindLabels = {
 } as const satisfies Readonly<Record<TokenKind, string>>;
 
 /**
+ * 見出しの先頭の見本を塗る指定。
+ *
+ * @param paint 単色か階調か
+ * @returns 単色なら背景色、階調なら背景画像
+ */
+function titleSwatchStyleOf(paint: TokenPaint): CSSProperties {
+  switch (paint.kind) {
+    case "color":
+      return { background: paint.color };
+    case "gradient":
+      return { backgroundImage: paint.value };
+  }
+}
+
+/**
  * 見出しの先頭の見本。
+ *
+ * 一覧の `ColorSwatch` / `GradientSwatch` に寄せないのは、大きさが違うため（UI 案の実測で
+ * 見出しは 14×14、一覧は 12×12）。
  *
  * @returns 単色なら色、階調なら階調で塗った 14×14 のチップ
  */
 function TitleSwatch({ paint }: Readonly<{ paint: TokenPaint }>): ReactElement {
-  const className = "size-3.5 shrink-0 rounded-sm border border-gray-300";
-  switch (paint.kind) {
-    case "color":
-      return (
-        <span
-          aria-hidden="true"
-          style={{ background: paint.color }}
-          className={className}
-        />
-      );
-    case "gradient":
-      return (
-        <span
-          aria-hidden="true"
-          style={{ backgroundImage: paint.value }}
-          className={className}
-        />
-      );
-  }
+  return (
+    <span
+      aria-hidden="true"
+      style={titleSwatchStyleOf(paint)}
+      className="size-3.5 shrink-0 rounded-sm border border-gray-300"
+    />
+  );
 }
 
 /**
  * 編集しているトークンの見出し（先頭の見本 + 名前 + 右端に種別）。
  *
  * 先頭の見本は色と階調だけ。UI 案が描いているのは色の 14×14 のチップだけで、階調は
- * docs/06-ui.md「Tokens の gradients」が足している。無い絵を思いつきで足さない
+ * docs/06-ui.md「`Tokens` の `gradients`」が足している。無い絵を思いつきで足さない
  * （rules/ui-verification.md）。
  */
 function TokenTitle({
@@ -108,34 +117,6 @@ function TokenEditorTitle({
 }
 
 /**
- * 見出しを上に置いた 1 フィールドの欄。
- *
- * @returns 見出しと入力欄
- */
-function FieldRow({
-  id,
-  field,
-  onSetTokenValue,
-}: Readonly<{
-  id: string;
-  field: TokenControlField;
-  onSetTokenValue: (value: TokenValue, continuity: EditContinuity) => void;
-}>): ReactElement {
-  return (
-    <div className="flex flex-col gap-1">
-      <label htmlFor={id} className="text-gray-600 text-xs">
-        {field.label}
-      </label>
-      <ValueField
-        id={id}
-        input={field.input}
-        onEdit={onEditOf(field, onSetTokenValue)}
-      />
-    </div>
-  );
-}
-
-/**
  * 選択中のトークンの編集欄の本文（docs/06-ui.md「編集操作の一覧」の tokens 編集 /
  * UI 案 docs/Design Composer.html の右ペイン）。
  *
@@ -153,7 +134,7 @@ function TokenEditorBody({
   onRemoveToken,
 }: Readonly<{
   selection: TokenSelection;
-  onSetTokenValue: (value: TokenValue, continuity: EditContinuity) => void;
+  onSetTokenValue: SetTokenValue;
   onRenameToken: (name: string) => void;
   onRemoveToken: () => void;
 }>): ReactElement {
@@ -165,14 +146,14 @@ function TokenEditorBody({
     return <p className="text-gray-500 text-sm">{NoSelectionMessage}</p>;
   }
 
-  const { token, body } = control.value;
+  const { token, valueFields } = control.value;
   /** どのトークンを編集しているか。名前は種別の中でしか一意でないので種別も混ぜる。 */
   const tokenKey = `${token.kind}/${token.name}`;
 
   return (
     <section aria-label="トークン編集" className="flex flex-col gap-3 text-sm">
-      {body.kind === "fields" ? (
-        body.fields.map((field) => (
+      {valueFields.kind === "fields" ? (
+        valueFields.fields.map((field) => (
           /*
            * 下書きの取り直しの単位。行は `name` で一意に指す。
            *
@@ -188,7 +169,7 @@ function TokenEditorBody({
         ))
       ) : (
         <GradientFields
-          gradient={body.gradient}
+          gradient={valueFields.gradient}
           idPrefix={valueId}
           tokenKey={tokenKey}
           onSetTokenValue={onSetTokenValue}
@@ -208,6 +189,7 @@ function TokenEditorBody({
           id={nameId}
           type="text"
           value={token.name}
+          density={FieldDensities.Regular}
           onCommit={onRenameToken}
         />
       </div>

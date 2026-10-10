@@ -21,8 +21,9 @@ export type TokenTemplate = Readonly<{ kind: TokenKind }>;
  * / `typography.body`）を選んだ。デフォルトテーマとは値が一致するだけで参照はしていない
  * （追加直後の見え方はこちらの関心事）。
  *
- * グラデーションは docs/06-ui.md「節見出しの + で作るトークン」の値で、中身はドメインの
- * `GradientToken.Initial` が持つ（色の変わり目を全部失ったときに戻す先と同じ 2 件のため）。
+ * グラデーションは docs/06-ui.md「節見出しの `+` で作るトークン」の値で、中身はドメインの
+ * `GradientToken.Initial` が持つ（色の変わり目が 0 件のファイルを stop の `+` で直すときの、
+ * ドメインの 2 件と同じ値のため）。
  */
 const InitialValues = {
   colors: { kind: "colors", value: "#000000" },

@@ -6,9 +6,9 @@ import { rightPaneHeading } from "@/features/editor/__tests__/right-pane-heading
 import { leftPane, propertyPane, renderOpenedDocument } from "./setup";
 
 /**
- * 5 種別すべてに 1 件以上のトークンを持ち、そのうち 1 つ（`primary`）が
- * キャンバス上のノードから使われているドキュメント。
- * 使用中でも消せること（docs/04-tokens.md「スキーマデフォルトとの関係」）まで見られる。
+ * colors / spacing / shadows / typography の 4 種別に 1 件以上を持ち、radius と gradients は空の
+ * ドキュメント。gradients の節見出しの `+` を試せる。1 つ（`primary`）がキャンバス上のノードから
+ * 使われていて、使用中でも消せること（docs/04-tokens.md「スキーマデフォルトとの関係」）まで見られる。
  */
 const EditedDocument = DesignDocument.create({
   tokens: {
