@@ -55,7 +55,8 @@
 | implementer **自身**の `git add` | 前面で起動した implementer の中の `git add --dry-run` は deny された。そのとき実行中の印も在った |
 | implementer の実行中に**親**の `git add` を挟めるか | 挟めなかった。同じメッセージに Agent(前面)と Bash を並べると、Bash の PreToolUse は Agent の PostToolUse の後に来た(1 回)。Agent を並べた場合は測っていない |
 | Agent の PreToolUse の入力に `run_in_background` が載るか | `tool_input` に `true` / `false` で載る(計測ログの Agent の PreToolUse 6 件すべて) |
-| `run_in_background: false` を渡して前面で起動したか | 11 回とも、起動の直後には返らなかった(最初は前面)。起動から 120 秒以内に終わった 4 回(implementer 3 回・planner 1 回、5.7〜49.6 秒)は前面のまま完了の結果が返った。120 秒を超えた 7 回(planner 2 回・plan-reviewer 1 回・implementer 3 回・test-reviewer 1 回)は、すべて起動から 120.4〜120.6 秒で「Async agent launched」が返り、背景へ移された(セッションの transcript の Agent の tool_use / tool_result の時刻)。#1031 で 4 回中 2 回が背景になったのも同じ形かは、時刻を見ていない |
+| `run_in_background: false` を渡して前面で起動したか | 15:09(UTC)の起動までの 11 回とも、起動の直後には返らなかった(最初は前面)。起動から 120 秒以内に終わった 4 回(implementer 3 回・planner 1 回、5.7〜49.6 秒)は前面のまま完了の結果が返った。120 秒を超えた 7 回(planner 2 回・plan-reviewer 1 回・implementer 3 回・test-reviewer 1 回)は、すべて起動から 120.4〜120.6 秒で「Async agent launched」が返り、背景へ移された(セッションの transcript の Agent の tool_use / tool_result の時刻)。#1031 で 4 回中 2 回が背景になったのも同じ形かは、時刻を見ていない |
+| `run_in_background` を省き、同じメッセージに複数の Agent を並べた起動 | 読み取り専用のレビュアー 9 件(7 件と 2 件の 2 メッセージ)は、すべて起動から 0.5〜16.8 秒で「Async agent launched」が返った(最初から背景)。作業ツリーを書き換える対象の 3 種(plan-reviewer / test-reviewer / implementer)をこの形で起動した場合は測っていない |
 | 前面で起動したときの PostToolUse | 完了時に来る(`tool_response.status: "completed"`) |
 | 背景で起動したときの PostToolUse | 起動の直後に来る(`"async_launched"` / `isAsync: true` / `agentId` 付き)。120 秒で背景へ移された plan-reviewer は、完了通知の時点で印のディレクトリが空だった。移された implementer では、「Async agent launched」が返った時刻と印のディレクトリの mtime が一致した(15:11:00.98。完了時点で見た値)ので、移された時点で PostToolUse が来て印が消えたと読める(その瞬間の PostToolUse の入力は取れていない) |
 | Agent の Pre と Post を結び付ける ID | 両方に同じ `tool_use_id` が載る(揃った 6 組すべて) |
@@ -74,12 +75,12 @@
 - `block-git-during-verification-agent.sh` はコマンドの文字列だけを見るので、git を実行しない
   コマンド(本文に `git add` の綴りを含むだけ)も止まる
 - 背景になった implementer の中で、`git add` の綴りを含む Bash が止められた(implementer 自身の
-  報告)。止められたのが、前面で起動して 120 秒で背景へ移される前だった、で説明がつく(#1031 側の時刻は未確認)
+  報告)。止められたのが、前面で起動して 120 秒で背景へ移される前だった可能性がある(#1031 側の時刻は未確認)
 
 **判定の分かれ目:** git 操作の競合は、**誰の呼び出しか**と**いま前面か背景か**を分けて見る。前面の
 起動中に git を叩きうるのはサブエージェント自身で、親の呼び出しは返るまで走らない(Bash で 1 回)。
-背景の起動中は親も動く。`run_in_background: false` で前面に起動しても、実行環境は約 120 秒で背景へ
-移しうる。印が効くのはその前までで、移された後は実行が続いていても印は無い。
+背景の起動中は親も動く。`run_in_background: false` で前面に起動しても、この実行環境では 120 秒を超えた
+起動は 7 件とも約 120 秒で背景へ移された。印が効くのはその前までで、移された後は実行が続いていても印は無い。
 前面だったかは渡した値ではなく返りで見る。完了の結果なら最後まで前面、起動の約 120 秒後に
 「Async agent launched」が返ったら前面から移されたもの、起動の直後に返ったら最初から背景。
 
