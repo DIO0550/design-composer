@@ -16,8 +16,9 @@
 # (exit 1 を違反とみなす)ではなく、出力の `permissionDecision` を見て決める。
 # JSON は jq を使わず printf で組む(フック本体と同じく、jq の無い環境でも走らせるため)。
 #
-# **入力は Agent ツールの引数名に合わせて組んだもので、実物の PreToolUse から写していない。**
+# **Agent / Task の入力は Agent ツールの引数名に合わせて組んだもので、実物の PreToolUse から写していない。**
 # Claude Code が `tool_input` に `run_in_background` を載せるかは、この表では確かめられない。
+# サブエージェントの中の Bash 呼び出しだけは、実物の入力が持つ `agent_id` / `agent_type` を載せて流す。
 set -uo pipefail
 
 lib_dir="$(cd "$(dirname "$0")" && pwd)"
@@ -66,14 +67,16 @@ agent_verdict() {
 #
 # $1 セッション
 # $2 コマンド(省くと `git add src`)
+# $3 session_id と tool_input の間に挟むフィールド(`,` で終わる JSON。省くと何も挟まない)
 git_output() {
-  printf '{"session_id":"%s","tool_input":{"command":"%s"}}' "$1" "${2:-git add src}" | bash "$block_hook"
+  printf '{"session_id":"%s",%s"tool_input":{"command":"%s"}}' "$1" "${3:-}" "${2:-git add src}" | bash "$block_hook"
 }
 
 # git コマンドを書いた Bash の呼び出しを流し、判定を返す(git は実行しない)。
 #
 # $1 セッション
 # $2 コマンド(省くと `git add src`)
+# $3 session_id と tool_input の間に挟むフィールド(`git_output` と同じ)
 git_verdict() {
   local output status
   output="$(git_output "$@")"
@@ -140,6 +143,11 @@ agent_verdict s16 PostToolUse "$foreground_implementer" >/dev/null
 report pass "$(git_verdict s16)" "前面で起動した implementer が終わると git add が通る"
 
 report deny "$(agent_verdict s17 PreToolUse "$background_implementer")" "run_in_background: true を明示した implementer は起動が拒否される"
+
+# サブエージェントの中の Bash 呼び出しは、入力に `agent_id` / `agent_type` が載る(並びは実物の入力に合わせた)。
+in_subagent_fields='"agent_id":"ab90e859b438c06a1","agent_type":"implementer","hook_event_name":"PreToolUse","tool_name":"Bash",'
+agent_verdict s26 PreToolUse "$foreground_implementer" >/dev/null
+report deny "$(git_verdict s26 'git add --dry-run -- README.md' "$in_subagent_fields")" "implementer の実行中は、サブエージェントの中から呼んだ git add も拒否される"
 
 # 残った印の種類は有効期間でしか外から見えないので、最後に印を古くして見分ける。implementer の印を
 # 先に古くしておくのは、種類を問わず最も古い印を消す実装だと implementer の印が消えるようにするため。
