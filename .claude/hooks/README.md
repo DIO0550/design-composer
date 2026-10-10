@@ -260,10 +260,16 @@ grep -c $'\tsession\t' "${TMPDIR:-/tmp}/design-composer-firings-${CLAUDE_CODE_SE
 | PR #192(2026-08-11) | webhook 起動 | **通ってしまった** = 不発 |
 | 2026-08-14 | claude.ai/code から起動 | **deny された** = 発火 |
 | 2026-09-12 | claude.ai/code から起動 | `echo hook-canary` は **deny され**、同じセッションの `echo hook-canary && echo done` は**通った** = カナリアの取りこぼし |
+| 2026-10-10(#1032) | Issue の assigned で起動した routine(3 リポジトリを並べ、作業ディレクトリ `/home/user`) | **通った** = 不発(マーカーも見出しも無い) |
+| 2026-10-10(#1032) | design-composer だけを source にしたセッション(作業ディレクトリはリポジトリルート) | **deny された** = 発火 |
 
 **2026-09-12 の行が、この表の読み方を変えた実測。** ただし**連ねて実行した回に限る**。
 素の `echo hook-canary` は修正前の実装でも deny されるので(旧実装で実測)、素で実行して
 通った回の結論は今も有効。#192 はその形で、不発のまま。
+
+**2026-10-10 の 2 行は、起動の形だけが違う対照。** どちらもセッションの中の `CLAUDE_PROJECT_DIR` は
+空で、差は起動時の作業ディレクトリとリポジトリの数。どちらが効いたかは切り分けていない
+(`harness/case-law/process.md`)。
 
 **カナリアだけは外部コマンドに依存しない。** PreToolUse は exit 2 以外の異常終了を
 「非ブロックのエラー」として素通りさせるので、`jq` の無い環境では他のフックと同様に
