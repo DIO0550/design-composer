@@ -4,7 +4,9 @@
 フェーズ 3 と [`.claude/agents/plan-reviewer.md`](../../.claude/agents/plan-reviewer.md)。
 ここはその実例。
 
-`plan` は通算 65 件でいちばん多い分類。だから層 2（スキルの手順）まで上げてある。
+`plan` は書く側の段取りを `implementation-flow` フェーズ 3 の手順（層=skill）に、判断の実例をこのファイル
+（層=case-law）に置いている。件数と最新の起点は `bash harness/records/count.sh` の `plan` 行で引く
+（ここへ写すと、次の記録で古くなる）。
 
 ## `plan-scope-verification` — 件数・接続先・検証コマンドの範囲を実例に当てずに計画へ書いた
 
