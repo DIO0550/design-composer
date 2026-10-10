@@ -5,16 +5,16 @@
   "issue": 611,
   "overview": {
     "title": "トークンパネルで gradients を出し、angle と stop を編集する",
-    "lead": "トークンパネルの `gradients` の節でグラデーションを作る・消すことができ、角度と stop(色の変わり目。比率・色・hex・不透明度)を足す・消す・直せるようになった。作ったグラデーションは `background` の欄から選べる。",
+    "lead": "トークンパネルの `gradients` の節でグラデーションを作る・消すことができ、角度と stop(色の変わり目。比率・色・hex・不透明度)を足す・消す・直せるようになった。作ったグラデーションは塗り(`background`)の欄から選べる。",
     "before": [
       {
-        "text": "トークンパネルの一覧に `gradients` の節が出ず(`EditableTokenKind` で外していた)、グラデーションを作る・直す手段が無かった"
+        "text": "トークンパネルの一覧に `gradients` の節が出ず(編集できる種別から外していた)、グラデーションを作る・直す手段が無かった"
       },
       {
         "text": "色のピッカーは動かすたびに 1 件ずつ undo に積み、行の key に値が入っていたので動かすたびに欄が作り直されていた"
       },
       {
-        "text": "06-ui は stop の `+` の規則のうち、端の空き・同じ広さの隙間・2 件未満の 3 点を「#611 で決める」としていた"
+        "text": "UI 仕様は stop の `+` の規則のうち、端の空き・同じ広さの隙間・2 件未満の 3 点を「#611 で決める」としていた"
       }
     ],
     "after": [
@@ -49,7 +49,7 @@
     "highlights": [
       {
         "title": "stop の行の寸法は UI 案に無い決定",
-        "text": "数値の欄を 60px、ピッカーを 24px 角にし、欄の間を詰めた。UI 案にも 06-ui にも gradients の寸法は無く、比率・ピッカー・hex・不透明度・`−` の 5 つを右ペインの 1 行に収めるためにここで決めた。Storybook の `TokenEditor / GradientSelected` で見てほしい",
+        "text": "数値の欄を 60px、ピッカーを 24px 角にし、欄の間を詰めた。UI 案にも UI 仕様にも gradients の寸法は無く、比率・ピッカー・hex・不透明度・`−` の 5 つを右ペインの 1 行に収めるためにここで決めた。Storybook のグラデーションを選んだエディタのストーリー(`TokenEditor / GradientSelected`)で見てほしい",
         "go": {
           "kind": "file",
           "path": "src/features/editor/features/tokens/components/token-editor/gradient-fields/index.tsx"
@@ -57,15 +57,15 @@
       },
       {
         "title": "ピッカーの undo の単位",
-        "text": "`ColorPickerField` は click(開いたとき)と blur(ほかへ移ったとき)で印を下ろし、1 回目の change を `Separate`、2 回目以降を `Continued` で送る。欄の部品が共通なので colors / shadows のピッカーにも効く。Chromium でしか確かめておらず、Tauri の WebView でのイベント順は未検証",
+        "text": "ピッカーの欄は click(開いたとき)と blur(ほかへ移ったとき)で印を下ろし、1 回目の変更を区切り(`Separate`)、2 回目以降を続き(`Continued`)として送る。欄の部品が共通なので colors / shadows のピッカーにも効く。Chromium でしか確かめておらず、Tauri の WebView でのイベント順は未検証",
         "go": {
           "kind": "flow",
           "id": "f-picker"
         }
       },
       {
-        "title": "addStop の規則",
-        "text": "オーナー決定 Q1〜Q3(端の空きを数えない・同じ広さは左・2 件未満の扱い)をドメインに置いた。広さは小数 6 桁に丸めてから比べる。丸めないと [0.1, 0.3, 0.5] で右の隙間に入る。並べ替えず、0〜1 の外の比率も寄せない",
+        "title": "stop の + の規則",
+        "text": "オーナー決定 Q1〜Q3(端の空きを数えない・同じ広さは左・2 件未満の扱い)を、グラデーションの値の規則としてドメインに置いた。広さは小数 6 桁に丸めてから比べる。丸めないと [0.1, 0.3, 0.5] で右の隙間に入る。並べ替えず、0〜1 の外の比率も寄せない",
         "go": {
           "kind": "message",
           "id": "m-addstop"
@@ -73,7 +73,7 @@
       },
       {
         "title": "値を key に持たないのは色の欄だけ",
-        "text": "行の key から値を外し、数値・テキスト・% の欄は `ValueField` の中で下書きの欄の key に現在値を入れて、undo / redo・正規化・並べ直しに追随させる。ピッカーだけは値を key に持たないので、動かしても作り直されず 1 件にまとめられる",
+        "text": "行の key から値を外し、数値・テキスト・% の欄は、1 つの値の入力欄の中で下書きの欄の key に現在値を入れて、undo / redo・正規化・並べ直しに追随させる。ピッカーだけは値を key に持たないので、動かしても作り直されず 1 件にまとめられる",
         "go": {
           "kind": "file",
           "path": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx"
@@ -81,7 +81,7 @@
       },
       {
         "title": "プレビューとつまみは VRT でしか守れない",
-        "text": "どちらも `aria-hidden` の飾りで、test-reviewer が描画を消してもどのテストも落ちなかった。値の側(`previewImage` / `knobs`)は token-control のテストが守り、描く段は視覚差分(`GradientSelected`)に任せた",
+        "text": "どちらも `aria-hidden` の飾りで、test-reviewer が描画を消してもどのテストも落ちなかった。値の側(プレビューの塗り・つまみの位置)は欄の組み立てのテストが守り、描く段は視覚差分(`GradientSelected` のストーリー)に任せた",
         "go": {
           "kind": "file",
           "path": "src/features/editor/features/tokens/components/token-editor/gradient-fields/index.tsx"
@@ -89,7 +89,7 @@
       },
       {
         "title": "ドメインの層",
-        "text": "`GradientToken` の編集の入口(`withAngle` / `withStopRatioPercent` / `withStopColor` / `addStop` / `removeStop` / `Initial`)はすべて `domains / dcmp` にある",
+        "text": "グラデーションの編集の入口(角度・比率・色の差し替え、stop の + / −、新しいグラデーションの初期値)はすべて `domains / dcmp` にある",
         "go": {
           "kind": "layer",
           "layer": "domains / dcmp"
@@ -117,136 +117,136 @@
   "layerRoles": [
     {
       "layer": "domains / dcmp",
-      "role": "`GradientToken` に編集の入口と stop の `+` の規則を足し、`GradientStop` と `LinearGradientValue` を公開した"
+      "role": "グラデーションに編集の入口と stop の `+` の規則を足し、stop と線形グラデーションの値の型を公開した"
     },
     {
       "layer": "utils",
-      "role": "stop の削除と並べ直しに使う `ArrayEx.removeAt` / `ArrayEx.sortBy`(安定)を足した"
+      "role": "stop の削除と並べ直しに使う、位置を指定した削除と安定な並べ替えを配列の汎用操作に足した"
     },
     {
       "layer": "features / editor/features/tokens",
-      "role": "値の欄を `fields` と `gradient` の直和にし、グラデーションの欄・共通の欄の部品・一覧の見本を足した"
+      "role": "値の欄を「欄の並び」と「グラデーション」の 2 通りの形にし、グラデーションの欄・共通の入力欄の部品・一覧の見本を足した"
     },
     {
       "layer": "features / editor",
-      "role": "`set_token_value` に `continuity` を通し、`+` で作るグラデーションを `GradientToken.Initial` にした"
+      "role": "値の差し替えの操作に編集の続き方を通し、節見出しの `+` で作るグラデーションをグラデーションの側が持つ初期値にした"
     },
     {
       "layer": "domains / session",
-      "role": "`EditContinuity` を指定する側に tokens の feature が加わったことを doc に書いた"
+      "role": "編集の続き方を指定する側に tokens の feature が加わったことを doc に書いた"
     },
     {
       "layer": "features / editor/features/inspector",
-      "role": "同じ形の ref が tokens にもあることを、prop-field のコメントに書き足した"
+      "role": "同じ形の ref が tokens にもあることを、プロパティの欄のコメントに書き足した"
     },
     {
       "layer": "docs",
-      "role": "06-ui の stop の `+` の未決を規則に書き換え、ピッカーの undo の単位を足した"
+      "role": "UI 仕様の stop の `+` の未決を規則に書き換え、ピッカーの undo の単位を足した"
     }
   ],
   "concepts": [
     {
       "path": "src/domains/dcmp/token/gradient/index.ts",
-      "name": "GradientToken",
+      "name": "グラデーション(値と編集の規則)",
       "role": "グラデーションの生成・正規化・JSON・CSS の綴りと、編集の入口",
       "feature": "gradient-rule",
-      "change": "`withAngle` / `withStopRatioPercent` / `withStopColor` / `addStop` / `removeStop` / `Initial` と `GradientStop.ratioPercentOf` / `clampedRatioPercentOf` を足した"
+      "change": "角度・比率・色の差し替え、stop の + / −、新しいグラデーションの初期値と、stop の比率を % で出す変換(範囲内に寄せる版も)を足した"
     },
     {
       "path": "src/utils/ArrayEx.ts",
-      "name": "ArrayEx",
-      "role": "配列の汎用操作",
+      "name": "配列の汎用操作",
+      "role": "組み込みの配列に対する、ドメイン知識を持たない操作",
       "feature": "gradient-rule",
-      "change": "`removeAt` と安定な `sortBy` を足し、`moveWithin` の除去を `removeAt` で組んだ"
+      "change": "位置を指定した削除と安定な並べ替えを足し、要素の移動の中の除去をその削除で組んだ"
     },
     {
       "path": "src/features/editor/features/tokens/domains/token-control/index.ts",
-      "name": "TokenControl",
+      "name": "トークンパネルの欄の組み立て",
       "role": "一覧の節と、選んだトークンの値の欄(どの欄に何を出し、打った文字列をどの値にするか)を組み立てる",
       "feature": "token-panel",
-      "change": "`EditableTokenKind` を消して 6 種別とも出し、値の欄を `fields` / `gradient` の直和にした。stop の行・つまみ・`afterAdd` / `afterRemove` を組む"
+      "change": "編集できる種別の絞り込みを消して 6 種別とも出し、値の欄を「欄の並び」と「グラデーション」の直和にした。stop の行・つまみ・+ / − を押した後の値を組む"
     },
     {
       "path": "src/features/editor/features/tokens/components/token-editor/index.tsx",
-      "name": "TokenEditor",
+      "name": "トークンのエディタ",
       "role": "選んだトークンの見出しと編集欄の本文",
       "feature": "token-panel",
-      "change": "見出しに `Gradient` と階調の見本を出し、値の欄の形で `fields` と `GradientFields` を出し分ける。行の key から値を外した"
+      "change": "見出しに `Gradient` と階調の見本を出し、値の欄の形で欄の並びとグラデーションの欄を出し分ける。行の key から値を外した"
     },
     {
       "path": "src/features/editor/features/tokens/components/token-editor/gradient-fields/index.tsx",
-      "name": "GradientFields",
+      "name": "グラデーションの値の欄",
       "role": "グラデーションの値の欄(プレビュー・バーとつまみ・角度・stop の行と + / −)",
       "feature": "token-panel",
       "change": "新しく作った"
     },
     {
       "path": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
-      "name": "ValueField",
+      "name": "1 つの値の入力欄",
       "role": "1 フィールドの入力欄(下書きの欄・単位付きの欄・ピッカー)と、打った文字列を値にして送る手続き",
       "feature": "undo-unit",
-      "change": "token-editor から `DraftField` / `ValueField` を移し、`ColorPickerField` に undo のまとめ方、詰め具合(`FieldDensities`)、`FieldRow` を足した"
+      "change": "トークンのエディタから下書きの欄と値の入力欄を移し、ピッカーに undo のまとめ方、欄の詰め具合の列挙、1 行の並べ方を足した"
     },
     {
       "path": "src/features/editor/features/tokens/components/token-list/index.tsx",
-      "name": "TokenList",
+      "name": "トークンの一覧",
       "role": "種別ごとの節に並べたトークンの一覧",
       "feature": "token-panel",
-      "change": "グラデーションの行の見本を `GradientSwatch` にした"
+      "change": "グラデーションの行の見本を階調で塗るようにした"
     },
     {
       "path": "src/features/editor/components/editor-right-pane/index.tsx",
       "name": "右ペイン",
-      "role": "TokenEditor にトークンの操作を渡す",
+      "role": "トークンのエディタにトークンの操作を渡す",
       "feature": "token-panel"
     },
     {
       "path": "src/features/editor/hooks/use-token-actions/index.ts",
-      "name": "useTokenActions",
+      "name": "トークンの操作",
       "role": "トークンの操作を reducer のアクションにして送る",
       "feature": "undo-unit",
-      "change": "`setValue` が `continuity` を受ける"
+      "change": "値の差し替えが編集の続き方を受ける"
     },
     {
       "path": "src/features/editor/hooks/use-editor-state/index.ts",
-      "name": "useEditorState",
+      "name": "エディタの状態の保持",
       "role": "エディタの状態を持つ reducer",
       "feature": "undo-unit",
-      "change": "`set_token_value` のアクションに `continuity` を足し、`EditorState.setTokenValue` へ渡す"
+      "change": "値の差し替えのアクションに編集の続き方を足し、編集中の状態の更新へ渡す"
     },
     {
       "path": "src/features/editor/domains/editor-state/index.ts",
-      "name": "EditorState",
+      "name": "編集中の状態と履歴",
       "role": "エディタの状態と編集履歴",
       "feature": "undo-unit",
-      "change": "`setTokenValue` が `continuity` を受け、続きなら直前の履歴に畳む"
+      "change": "トークンの値の差し替えが編集の続き方を受け、続きなら直前の履歴に畳む"
     },
     {
       "path": "src/features/editor/domains/token-template/index.ts",
-      "name": "TokenTemplate",
+      "name": "新しいトークンの初期値",
       "role": "節見出しの `+` で作るトークンの初期値",
       "feature": "token-panel",
-      "change": "グラデーションの初期値を `GradientToken.Initial`(90°、黒→白)にした"
+      "change": "グラデーションの初期値を、グラデーションの側が持つ初期値(90°、黒→白)にした"
     },
     {
       "path": "src/domains/session/edit-continuity/index.ts",
-      "name": "EditContinuity",
-      "role": "直前の編集との続き方(`Separate` / `Continued`)の語彙",
+      "name": "編集の続き方",
+      "role": "直前の編集との続き方(区切り / 続き)の語彙",
       "feature": "undo-unit",
       "change": "doc の「指定する側」に tokens を足した",
       "graph": false
     },
     {
       "path": "docs/06-ui.md",
-      "name": "06-ui",
-      "role": "UI の仕様",
+      "name": "UI 仕様",
+      "role": "画面で何ができ、どう振る舞うかの仕様",
       "change": "stop の `+` の規則・範囲外の比率の扱い・ピッカーの undo の単位を書いた",
       "graph": false
     },
     {
       "path": "src/features/editor/features/tokens/__tests__/gradient-documents.ts",
       "name": "テスト用のグラデーション",
-      "role": "token-control と token-editor のテストが共有する stop の並びとドキュメント",
+      "role": "欄の組み立てとエディタのテストが共有する stop の並びとドキュメント",
       "graph": false
     }
   ],
@@ -272,7 +272,7 @@
       "code": "TokenControl.forSelection(selection)",
       "via": "call",
       "payload": "ドキュメントと選んでいるトークン",
-      "returns": "見出しの見本と値の欄。グラデーションなら `{kind: \"gradient\"}` でプレビュー・つまみ・角度・stop の行・`afterAdd`",
+      "returns": "見出しの見本と値の欄。グラデーションなら、プレビュー・つまみ・角度・stop の行と、+ を押した後の値",
       "status": "changed"
     },
     {
@@ -296,7 +296,7 @@
       "code": "GradientToken.removeStop(gradient, stopIndex)",
       "via": "call",
       "payload": "今のグラデーションと stop の位置",
-      "returns": "除いたグラデーション。2 件以下・範囲外なら none(− を押せない)",
+      "returns": "除いたグラデーション。2 件以下・範囲外なら値が無い(− を押せない)",
       "status": "added"
     },
     {
@@ -307,7 +307,7 @@
       "name": "+ / − の値を送る",
       "code": "onSetTokenValue(gradient.afterAdd, EditContinuities.Separate)",
       "via": "call",
-      "payload": "組み立て済みの値と `Separate`",
+      "payload": "組み立て済みの値と、区切り(`Separate`)",
       "status": "added"
     },
     {
@@ -319,7 +319,7 @@
       "code": "TokenControl.valueFrom(field.target, raw)",
       "via": "call",
       "payload": "欄の書き戻し先と、欄の文字列",
-      "returns": "新しいトークンの値。読めない・値域の外なら none",
+      "returns": "新しいトークンの値。読めない・値域の外なら値が無い",
       "status": "changed"
     },
     {
@@ -343,7 +343,7 @@
       "code": "GradientToken.withStopRatioPercent(target.gradient, { stopIndex, percent })",
       "via": "call",
       "payload": "stop の位置と %",
-      "returns": "比率を 6 桁に丸めて差し替え、変わっていれば比率順に並べ直したもの。0〜100 の外・範囲外なら none",
+      "returns": "比率を 6 桁に丸めて差し替え、変わっていれば比率順に並べ直したもの。0〜100 の外・範囲外なら値が無い",
       "status": "added"
     },
     {
@@ -366,7 +366,7 @@
       "name": "値と続き方を送る",
       "code": "onSetTokenValue(value, continuity)",
       "via": "call",
-      "payload": "新しい値と、ピッカーなら 2 回目以降は `Continued`",
+      "payload": "新しい値と、ピッカーなら 2 回目以降は続き(`Continued`)",
       "status": "changed"
     },
     {
@@ -374,10 +374,10 @@
       "from": "src/features/editor/hooks/use-token-actions/index.ts",
       "to": "src/features/editor/hooks/use-editor-state/index.ts",
       "kind": "cmd",
-      "name": "set_token_value を送る",
+      "name": "値の差し替えを送る",
       "code": "dispatch({ type: \"set_token_value\", value, continuity })",
       "via": "state",
-      "payload": "値と続き方",
+      "payload": "値と編集の続き方",
       "status": "changed"
     },
     {
@@ -388,7 +388,7 @@
       "name": "値を差し替えて履歴に積む",
       "code": "EditorState.setTokenValue(state, action.value, action.continuity)",
       "via": "call",
-      "payload": "値と続き方",
+      "payload": "値と編集の続き方",
       "returns": "差し替えた状態。続きなら直前の履歴に畳む",
       "status": "changed"
     },
@@ -454,13 +454,13 @@
       "sha": "df293937b76881c0f3ef033d1e5049f26dc4bbc7",
       "phase": "prep",
       "role": "stop の削除と並べ直しに使う配列の汎用操作を足す",
-      "why": "stop の `−` と比率を変えた後の並べ直しに配列の操作が要り、src に同じ処理が無かった。ドメインのローカル関数ではなく `ArrayEx` に集める(rules/architecture.md「utils の形式」)。",
+      "why": "stop の `−` と比率を変えた後の並べ直しに配列の操作が要り、src に同じ処理が無かった。グラデーションのローカル関数ではなく配列の汎用操作に集める(rules/architecture.md「utils の形式」)。",
       "flows": [
         "f-ratio"
       ],
       "review": [
-        "`sortBy` は `toSorted` ではなく複製してから `sort` している。lib が ES2020 で `toSorted` が無く、`sort` は ES2019 から安定",
-        "`removeAt` は `insertAt` / `replaceAt` と同じく `Result<readonly T[], IndexOutOfRange>` を返す"
+        "安定な並べ替えは、組み込みの `toSorted` ではなく複製してから `sort` している。lib が ES2020 で `toSorted` が無く、`sort` は ES2019 から安定",
+        "位置を指定した削除は、既存の差し込み・差し替えと同じく、範囲外を表す失敗の `Result` を返す"
       ],
       "after": [
         {
@@ -473,28 +473,28 @@
           "path": "src/utils/ArrayEx.ts",
           "start": 285,
           "end": 292,
-          "text": "範囲外は `outOfRange` の err。既存の `insertAt` / `replaceAt` と同じ形"
+          "text": "範囲外は失敗(`outOfRange`)を返す。既存の差し込み・差し替えと同じ形"
         },
         {
           "path": "src/utils/ArrayEx.ts",
           "start": 302,
           "end": 305,
-          "text": "複製してから並べるので入力は変えない。同じ ratio の stop が元の順を保つのは `sort` が安定だから"
+          "text": "複製してから並べるので入力は変えない。同じ比率の stop が元の順を保つのは `sort` が安定だから"
         }
       ]
     },
     {
       "sha": "966ab8d54d6c621c9a1e5624a2a9c5eb1da5e323",
       "phase": "core",
-      "role": "GradientToken に角度と stop の編集の入口を足す",
-      "why": "04-tokens が「編集で受け取るところでは ratio を 0〜1、stops を 2 件以上に保ち、ratio を変えたら並べ直す」を値の規則として書いており、つまみのドラッグ(#1037)も同じ規則を通すので、入力欄ではなくドメインに置いた。stop の `+` の 3 点はオーナー決定 Q1〜Q3 で決めた。",
+      "role": "グラデーションに角度と stop の編集の入口を足す",
+      "why": "04-tokens が「編集で受け取るところでは ratio を 0〜1、stops を 2 件以上に保ち、ratio を変えたら並べ直す」を値の規則として書いており、つまみのドラッグ(#1037)も同じ規則を通すので、入力欄ではなくグラデーションの側に置いた。stop の `+` の 3 点はオーナー決定 Q1〜Q3 で決めた。",
       "flows": [
         "f-ratio",
         "f-add",
         "f-create"
       ],
       "review": [
-        "`Initial` をドメインに置いた。0 件のファイルへ `+` を押したときに同じ 2 件を入れるのに使い、ドメインは feature を import できないため",
+        "新しいグラデーションの初期値をドメインに置いた。0 件のファイルへ `+` を押したときに同じ 2 件を入れるのに使い、ドメインは feature を import できないため",
         "広さを小数 6 桁に丸めてから比べている。丸めないと [0.1, 0.3, 0.5] で右の隙間(0.4)に入る",
         "比率を % の 4 桁に丸めてから 100 で割るのではなく、% / 100 を 6 桁に丸めている。前者は 0.12345700000000001 がファイルに書かれる"
       ],
@@ -505,11 +505,11 @@
       ],
       "after": [
         {
-          "text": "`addStop` が最も広い隙間の中央に左側の色で 1 件足す",
+          "text": "stop の `+` が、最も広い隙間の中央に左側の色で 1 件足す",
           "message": "m-addstop"
         },
         {
-          "text": "`withStopRatioPercent` が比率を差し替え、値が変わったときだけ比率の順に並べ直す",
+          "text": "比率の差し替えが、値が変わったときだけ比率の順に並べ直す",
           "message": "m-ratio"
         }
       ],
@@ -518,7 +518,7 @@
           "path": "src/domains/dcmp/token/gradient/index.ts",
           "start": 223,
           "end": 247,
-          "text": "この時点では `minBy` の none と `insertAt` の err で元の並びを返す fallback があった。届かない分岐として f7d7606 で消した"
+          "text": "この時点では、最も広い隙間が見つからないときと差し込みに失敗したときに元の並びを返す fallback があった。届かない分岐として f7d7606 で消した"
         },
         {
           "path": "src/domains/dcmp/token/gradient/index.ts",
@@ -537,7 +537,7 @@
     {
       "sha": "080e32c17705429b24c34f84a12f0dc672db7914",
       "phase": "core",
-      "role": "GradientToken の編集の規則をテストで固定する",
+      "role": "グラデーションの編集の規則をテストで固定する",
       "why": "規則で決まる答えと既定値が重なる入力では、実装を壊しても通る。並べ替えないことは並んでいない入力で、安定ソートは色の並びが逆の組で、`+` の色は左右を別の色にして確かめた。",
       "review": [
         "[0.1, 0.3, 0.5] のテストは、広さを丸めずに比べる実装で落ちる入力として選んでいる"
@@ -555,14 +555,14 @@
       "sha": "01ed5597b727c5a00d8297fee22182abc643421e",
       "phase": "core",
       "role": "トークンパネルで gradients を出し、角度と stop を編集できるようにする",
-      "why": "アクションは足さず、`TokenControl` が新しい値を組み立てて既存の `set_token_value` に流す(影や書体と同じ 1 本)。stop の正本はドキュメントにあり、1 回の操作で送るのは値 1 つなので useReducer も足さない。`set_token_value` の型を変えると `TokenEditor` の props も同時に変わらないと typecheck が通らないため、1 コミットにまとめている。",
+      "why": "アクションは足さず、トークンパネルの欄の組み立てが新しい値を作って、既存の値の差し替えのアクションに流す(影や書体と同じ 1 本)。stop の正本はドキュメントにあり、1 回の操作で送るのは値 1 つなので `useReducer` も足さない。値の差し替えのアクションの型を変えると、トークンのエディタの props も同時に変わらないと typecheck が通らないため、1 コミットにまとめている。",
       "flows": [
         "f-picker",
         "f-add"
       ],
       "review": [
         "ピッカーは click で印を下ろす。focus にしないのは、ピッカーを閉じてもフォーカスが残り、開き直しで focus が発火しないため",
-        "行の key から値を外したのは、ピッカーが動かすたびに欄が作り直されて undo を 1 件にまとめられないため。数値の欄は `ValueField` が下書きの欄の key に現在値を入れて追随させる",
+        "行の key から値を外したのは、ピッカーが動かすたびに欄が作り直されて undo を 1 件にまとめられないため。数値の欄は、1 つの値の入力欄が下書きの欄の key に現在値を入れて追随させる",
         "欄の部品が共通なので、既存の colors / shadows のピッカーも undo 1 件にまとまる"
       ],
       "before": [
@@ -579,7 +579,7 @@
           "message": "m-forselection"
         },
         {
-          "text": "ピッカーを開いてからの 2 回目以降は `Continued` で届き、undo 1 件にまとまる",
+          "text": "ピッカーを開いてからの 2 回目以降は続きとして届き、undo 1 件にまとまる",
           "message": "m-apply"
         }
       ],
@@ -589,31 +589,31 @@
           "side": "old",
           "start": 41,
           "end": 55,
-          "text": "gradients を編集の対象から外していた `EditableTokenKind` と判定。消して 6 種別とも出す"
+          "text": "gradients を編集の対象から外していた種別の絞り込みと、その判定。消して 6 種別とも出す"
         },
         {
           "path": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
           "start": 85,
           "end": 103,
-          "text": "送った時点で印を立て、受理されたかは見ない(prop-field の `LiteralInput` と同じ)。この時点では click だけで下ろしていた"
+          "text": "送った時点で印を立て、受理されたかは見ない(プロパティの欄の文字入力と同じ)。この時点では click だけで下ろしていた"
         },
         {
           "path": "src/features/editor/features/tokens/components/token-editor/index.tsx",
           "start": 179,
           "end": 183,
-          "text": "行の key は `${tokenKey}/${field.name}` だけにした。前は値も混ぜていた"
+          "text": "行の key はトークンの名前と欄の名前だけにした。前は値も混ぜていた"
         },
         {
           "path": "src/features/editor/domains/editor-state/index.ts",
           "start": 1357,
           "end": 1368,
-          "text": "`continuity` を必須にして `withEditResult` へ渡す。`applyPropEdit` と同じ形"
+          "text": "編集の続き方を必須にして履歴へ渡す。プロパティの編集と同じ形"
         },
         {
           "path": "src/features/editor/features/tokens/components/token-editor/gradient-fields/index.tsx",
           "start": 20,
           "end": 20,
-          "text": "この時点では value-field の中の DOM を子孫セレクタで上書きして詰めていた。ccc6f0f で `FieldDensities` の prop に置き換えた"
+          "text": "この時点では、1 つの値の入力欄の中の DOM を子孫セレクタで上書きして詰めていた。ccc6f0f で詰め具合の列挙の prop に置き換えた"
         }
       ]
     },
@@ -628,15 +628,15 @@
         "f-create"
       ],
       "review": [
-        "通しのテストは既存の token-edit のファイルに足した。ヘルパーを 2 ファイル目に複製しないため",
+        "通しのテストは、画面を通したトークンの編集の既存のテストファイルに足した。ヘルパーを 2 ファイル目に複製しないため",
         "Background の欄から選べることは、#608 とのつながりを確かめるために通しのテストに入れた"
       ]
     },
     {
       "sha": "8a2ccaab3495c7ff2f9bf8a4100467d1c872cbd1",
       "phase": "core",
-      "role": "06-ui の stop の + の規則と、ピッカーの undo の単位を決める",
-      "why": "06-ui は stop の `+` について端の空き・同じ広さの隙間・2 件未満を #611 で決めるとしており、オーナーの回答で推奨案に決まった。",
+      "role": "UI 仕様の stop の + の規則と、ピッカーの undo の単位を決める",
+      "why": "UI 仕様は stop の `+` について端の空き・同じ広さの隙間・2 件未満を #611 で決めるとしており、オーナーの回答で推奨案に決まった。",
       "review": [
         "この時点では hex を読み取り専用として undo の列挙から外していた。ui-reviewer の指摘で 7ca0640 が取り消している"
       ],
@@ -664,15 +664,15 @@
     {
       "sha": "f7d76064b1bb17c4d66871629cbe27d0cc0a0c12",
       "phase": "revise",
-      "role": "GradientToken の編集から届かない fallback と二重の範囲判定を消す",
-      "why": "届かない fallback は、前提(2 件以上)が崩れたときに「+ を押しても黙って何も起きない」形で失敗を隠すので、前提を型で持って分岐ごと消した。添字の範囲を 2 か所で見ていたので `withStopAt` 1 か所にした。並べ直さない判定は丸める前の比率と比べていたため、6 桁を超える値のファイルで欄を抜けただけで並び替わっていた。",
+      "role": "グラデーションの編集から届かない fallback と二重の範囲判定を消す",
+      "why": "届かない fallback は、前提(2 件以上)が崩れたときに「+ を押しても黙って何も起きない」形で失敗を隠すので、前提を型で持って分岐ごと消した。添字の範囲を 2 か所で見ていたので、stop 1 件を差し替える処理の 1 か所にした。並べ直さない判定は丸める前の比率と比べていたため、6 桁を超える値のファイルで欄を抜けただけで並び替わっていた。",
       "flows": [
         "f-ratio",
         "f-add"
       ],
       "review": [
-        "`withStopInWidestGap` は 2 件以上のタプル型を受け、先頭の組を初期値に畳み込む",
-        "`withStopColor` が「今の色 → 新しい色」の関数を受けるようになり、token-control の書き戻し先が stop の色を二重に持たない"
+        "最も広い隙間に足す処理は 2 件以上のタプル型を受け、先頭の組を初期値に畳み込む",
+        "stop の色の差し替えが「今の色 → 新しい色」の関数を受けるようになり、欄の組み立ての書き戻し先が stop の色を二重に持たない"
       ],
       "before": [
         {
@@ -690,7 +690,7 @@
           "path": "src/domains/dcmp/token/gradient/index.ts",
           "start": 260,
           "end": 279,
-          "text": "2 件以上を型で受けるので、`minBy` の none も `insertAt` の err も起きない。slice で差し込む"
+          "text": "2 件以上を型で受けるので、最も広い隙間が見つからないことも差し込みの失敗も起きない。slice で差し込む"
         },
         {
           "path": "src/domains/dcmp/token/gradient/index.ts",
@@ -717,7 +717,7 @@
       "review": [
         "stop の行の寸法(数値の欄 60px・ピッカー 24px 角・詰めた間隔)は UI 案にも 06-ui にも無く、ここで決めた",
         "ピッカーの印は click と blur で下ろす。Chromium では Enter / Space で開いても click が届くことを実測したが、Tauri の WebView は未検証",
-        "子孫セレクタの上書きは value-field のマークアップを変えても何も落ちないので、`FieldDensities` の列挙の prop にした",
+        "子孫セレクタの上書きは、1 つの値の入力欄のマークアップを変えても何も落ちないので、詰め具合の列挙の prop にした",
         "比率を確定して並びが変わった直後の `−` の誤爆はここでは直さず #1040 に分けた"
       ],
       "before": [
@@ -746,7 +746,7 @@
           "path": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
           "start": 28,
           "end": 31,
-          "text": "詰め具合を列挙で受ける。詰めた見た目は value-field の中で決める"
+          "text": "詰め具合を列挙で受ける。詰めた見た目は 1 つの値の入力欄の中で決める"
         },
         {
           "path": "src/features/editor/features/tokens/components/token-editor/gradient-fields/index.tsx",
@@ -765,7 +765,7 @@
     {
       "sha": "7ca06409d7a6022f8fa738341beefe66d195ce01",
       "phase": "revise",
-      "role": "06-ui の stop の hex を編集できる欄に戻し、範囲外の ratio の扱いを書く",
+      "role": "UI 仕様の stop の hex を編集できる欄に戻し、範囲外の比率の扱いを書く",
       "why": "hex を読み取り専用にした書き換えは、オーナーの確認なしに #610 で決めた仕様を覆していた。ピッカーの単位を 2 か所に全文で書いていたので片方だけ直せる状態になっていた。範囲外の比率を寄せないことを書かないと、04-tokens の「0〜1 に保つ」を `+` の結果にも当てはまると読んで寄せる方向に直されるおそれがある。",
       "review": [
         "ピッカーの単位は「tokens 編集」の行だけに書き、gradients の節からは参照にした"
@@ -795,7 +795,7 @@
       "sha": "e6ec5f49c713264556a8c88218bd2befc50c232f",
       "phase": "hard",
       "role": "プレビューとバーは視覚差分でしか守れないことを書く",
-      "why": "test-reviewer の実測で、プレビューの `backgroundImage` を消してもつまみを 0 件にしてもどのテストも落ちなかった。どちらも `aria-hidden` の飾りで happy-dom では落とせないので、値の側は token-control のテストに、描く段は VRT に任せ、そのことを書いた。",
+      "why": "test-reviewer の実測で、プレビューの塗りを消してもつまみを 0 件にしてもどのテストも落ちなかった。どちらも `aria-hidden` の飾りで happy-dom では落とせないので、値の側は欄の組み立てのテストに、描く段は VRT に任せ、そのことを書いた。",
       "review": [
         "style の綴りをテストで読む案は、塗りの綴りを固定するだけで見えているかは確かめられないので採らなかった"
       ],
@@ -846,7 +846,7 @@
   "suites": [
     {
       "id": "s-gradient",
-      "label": "GradientToken の編集",
+      "label": "グラデーションの編集規則",
       "file": "src/domains/dcmp/token/gradient/__tests__/gradient.edit.test.ts"
     },
     {
@@ -871,7 +871,7 @@
     },
     {
       "id": "s-array",
-      "label": "ArrayEx",
+      "label": "配列の汎用操作",
       "file": "src/utils/__tests__/ArrayEx.normal.test.ts"
     }
   ],
@@ -885,7 +885,7 @@
       ],
       "why": "足す stop の色は隙間の左側の stop の色(06-ui)。左右を別の色にしないと、右の色を使う実装でも通る",
       "given": "黒 @0 と白 @1 の 2 件",
-      "when": "`addStop` を呼ぶ",
+      "when": "stop の `+` を押した後の値を作る",
       "then": "0.5 に黒の stop が差し込まれ、3 件になる",
       "commit": "080e32c17705429b24c34f84a12f0dc672db7914",
       "excerpt": {
@@ -910,7 +910,7 @@
       ],
       "why": "オーナー決定 Q2: 同じ広さなら左",
       "given": "比率 [0, 0.5, 1]",
-      "when": "`addStop` を呼ぶ",
+      "when": "stop の `+` を押した後の値を作る",
       "then": "比率は [0, 0.25, 0.5, 1]",
       "commit": "080e32c17705429b24c34f84a12f0dc672db7914",
       "excerpt": {
@@ -935,7 +935,7 @@
       ],
       "why": "オーナー決定 Q1: 端の空き(0〜0.4 と 0.6〜1)のほうが広くても、隣り合う 2 件の間だけを比べる",
       "given": "比率 [0.4, 0.6]",
-      "when": "`addStop` を呼ぶ",
+      "when": "stop の `+` を押した後の値を作る",
       "then": "比率は [0.4, 0.5, 0.6]",
       "commit": "080e32c17705429b24c34f84a12f0dc672db7914",
       "excerpt": {
@@ -961,7 +961,7 @@
       ],
       "why": "広さを丸めずに比べると 0.3 - 0.1 が 0.5 - 0.3 より狭くなり、見た目は同じ広さなのに右の隙間を選ぶ",
       "given": "比率 [0.1, 0.3, 0.5]",
-      "when": "`addStop` を呼ぶ",
+      "when": "stop の `+` を押した後の値を作る",
       "then": "左の隙間に 0.2 が入り、[0.1, 0.2, 0.3, 0.5] になる",
       "commit": "080e32c17705429b24c34f84a12f0dc672db7914",
       "excerpt": {
@@ -986,7 +986,7 @@
       ],
       "why": "並んでいないファイルでは差が負になる。符号付きの差で比べる実装を落とす(test-reviewer の指摘)",
       "given": "比率 [0.9, 0.1, 0.2]",
-      "when": "`addStop` を呼ぶ",
+      "when": "stop の `+` を押した後の値を作る",
       "then": "幅 0.8 の先頭の隙間に 0.5 が入り、[0.9, 0.5, 0.1, 0.2] になる",
       "commit": "1ec55778113d11b80ee8638d1ec2243be0626804",
       "excerpt": {
@@ -1011,7 +1011,7 @@
       ],
       "why": "オーナー決定 Q3: 1 件なら空いている側の端に同じ色を足す。境目 0.5 は始点側",
       "given": "`#123456` @0.5 の 1 件",
-      "when": "`addStop` を呼ぶ",
+      "when": "stop の `+` を押した後の値を作る",
       "then": "`#123456` @0 を先頭に足した 2 件になる",
       "commit": "080e32c17705429b24c34f84a12f0dc672db7914",
       "excerpt": {
@@ -1067,8 +1067,8 @@
       ],
       "why": "オーナー決定 Q3: 0 件なら新しく作るときと同じ 2 件。角度は打った値を残す",
       "given": "角度 45、stop 0 件",
-      "when": "`addStop` を呼ぶ",
-      "then": "角度 45 のまま、stop は `Initial` の黒 @0 → 白 @1",
+      "when": "stop の `+` を押した後の値を作る",
+      "then": "角度 45 のまま、stop は新しいグラデーションの初期値と同じ黒 @0 → 白 @1",
       "commit": "080e32c17705429b24c34f84a12f0dc672db7914",
       "excerpt": {
         "path": "src/domains/dcmp/token/gradient/__tests__/gradient.edit.test.ts",
@@ -1093,7 +1093,7 @@
       ],
       "why": "欄は丸めた値を出し、同じ値のままフォーカスを外しても確定する。丸める前の値と比べると、並んでいないファイルで欄を抜けただけで並び替わる",
       "given": "比率 [0.12345678, 0.05] の並んでいない 2 件",
-      "when": "1 件目に欄が出している値(`ratioPercentOf`)のまま `withStopRatioPercent` を呼ぶ",
+      "when": "1 件目の比率を、欄が出している % の値のまま差し替える",
       "then": "色の並びは元のまま",
       "commit": "f7d76064b1bb17c4d66871629cbe27d0cc0a0c12",
       "excerpt": {
@@ -1144,10 +1144,10 @@
         "boundary",
         "error"
       ],
-      "why": "04-tokens は編集で stop を 2 件以上に保つ。none が `−` を押せない状態の元になる",
+      "why": "04-tokens は編集で stop を 2 件以上に保つ。値が無いことが `−` を押せない状態の元になる",
       "given": "比率 [0, 1] の 2 件",
-      "when": "`removeStop` で 1 件目を除く",
-      "then": "`none`",
+      "when": "`−` で 1 件目を除いた後の値を作る",
+      "then": "値が無い(`none`)",
       "commit": "080e32c17705429b24c34f84a12f0dc672db7914",
       "excerpt": {
         "path": "src/domains/dcmp/token/gradient/__tests__/gradient.edit.test.ts",
@@ -1273,10 +1273,10 @@
         "boundary",
         "state"
       ],
-      "why": "押せるかと押した後の値を 1 つの `afterRemove` で持つので、none なら `−` が押せない",
+      "why": "押せるかどうかと押した後の値を、`−` を押した後の値 1 つで持つので、それが無ければ `−` は押せない",
       "given": "黒 @0・白 @1 の 2 件",
       "when": "そのグラデーションを選ぶ",
-      "then": "どの行の `afterRemove` も none",
+      "then": "どの行にも `−` を押した後の値が無い",
       "commit": "affa5cabfe5355d82e22bc0471eb931c28819559",
       "excerpt": {
         "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.gradient.test.ts",
@@ -1298,10 +1298,10 @@
       "techniques": [
         "state"
       ],
-      "why": "ピッカーを開いてからの変更を undo 1 件にまとめるため、2 回目以降は `Continued` で送る",
+      "why": "ピッカーを開いてからの変更を undo 1 件にまとめるため、2 回目以降は続き(`Continued`)として送る",
       "given": "2 件のグラデーションを選んだエディタ",
       "when": "「stop 1 の色」を click して change を 2 回送る",
-      "then": "続き方は `Separate`、`Continued` の順で届く",
+      "then": "続き方は区切り(`Separate`)、続き(`Continued`)の順で届く",
       "commit": "affa5cabfe5355d82e22bc0471eb931c28819559",
       "excerpt": {
         "path": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.gradient.test.tsx",
@@ -1327,7 +1327,7 @@
       "why": "非モーダルな色パネルで別の欄を編集して戻ったとき、前の編集とまとめない。blur で印を下ろさない実装を落とす",
       "given": "2 件のグラデーションを選んだエディタ",
       "when": "click → change → blur → 角度の欄に focus → change",
-      "then": "続き方は 2 回とも `Separate`",
+      "then": "続き方は 2 回とも区切り(`Separate`)",
       "commit": "1ec55778113d11b80ee8638d1ec2243be0626804",
       "excerpt": {
         "path": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.gradient.test.tsx",
@@ -1349,9 +1349,9 @@
       "techniques": [
         "state"
       ],
-      "why": "`setTokenValue` が `continuity` を履歴に渡していることを守る。対照の `Separate` 2 回のテストと組で見る",
+      "why": "トークンの値の差し替えが、編集の続き方を履歴に渡していることを守る。対照の、区切りを 2 回送るテストと組で見る",
       "given": "色 `#000000` のトークンを選んだ状態",
-      "when": "`#ff0000` を `Separate`、`#00ff00` を `Continued` で送り、Undo を 1 回",
+      "when": "`#ff0000` を区切り、`#00ff00` を続きとして送り、Undo を 1 回",
       "then": "値は `#000000` に戻る",
       "commit": "affa5cabfe5355d82e22bc0471eb931c28819559",
       "excerpt": {
@@ -1488,7 +1488,7 @@
       ],
       "why": "比率が同じ stop の順を保つ規則は、この安定性に乗っている",
       "given": "同じ数値を持つ要素を含む並び",
-      "when": "`sortBy` で並べ直す",
+      "when": "安定な並べ替えで数値の小さい順に並べ直す",
       "then": "同じ数値の要素は元の順のまま",
       "commit": "df293937b76881c0f3ef033d1e5049f26dc4bbc7",
       "excerpt": {
