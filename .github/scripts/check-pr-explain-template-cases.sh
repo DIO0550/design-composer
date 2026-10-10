@@ -65,6 +65,10 @@ done <<'CASES'
 pass|-|リポジトリのテンプレートは通る|
 deny|csp|固定スクリプトを 1 文字変えてハッシュを直さない|t = t.replace("<script>", "<script> ", 1)
 deny|csp|固定スクリプトが 2 本|t = t.replace("</body>", "<script></script></body>", 1)
+deny|csp|属性付きの <script> を足す|t = t.replace("</body>", '<script src="x.js"></script></body>', 1)
+deny|csp|CSP の <meta> が 2 つで、2 つ目が表を外れている|t = re.sub(r'(<meta\s+http-equiv="Content-Security-Policy"[^>]*>)', lambda match: match.group(1) + "<meta http-equiv=\"Content-Security-Policy\" content=\"default-src *\">", t, count=1)
+deny|csp|connect-src が無い|t = t.replace("connect-src 'self'; ", "", 1)
+pass|-|ディレクティブ名を大文字で書いても、同じディレクティブとして読む|t = t.replace("form-action 'none'", "FORM-ACTION 'none'", 1)
 deny|csp|script-src にハッシュが 2 つ|t = re.sub(r"(script-src '[^']*')", r"\1 'sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA='", t, count=1)
 deny|csp|script-src に外部ホスト|t = re.sub(r"(script-src '[^']*')", r"\1 https://example.com", t, count=1)
 deny|csp|script-src に 'unsafe-inline'|t = re.sub(r"(script-src '[^']*')", r"\1 'unsafe-inline'", t, count=1)
@@ -80,6 +84,7 @@ deny|template|固定スクリプトに innerHTML|script = body + "\nnode.innerHT
 deny|template|固定スクリプトに outerHTML|script = body + "\nnode.outerHTML;\n"
 deny|template|固定スクリプトに insertAdjacentHTML|script = body + "\nnode.insertAdjacentHTML;\n"
 deny|template|固定スクリプトに document.write|script = body + "\ndocument.write;\n"
+deny|template|固定スクリプトに . の前後へ空白を挟んだ document . write|script = body + "\ndocument . write;\n"
 deny|template|固定スクリプトに document.writeln|script = body + "\ndocument.writeln;\n"
 deny|template|固定スクリプトに DOMParser|script = body + "\nDOMParser;\n"
 deny|template|固定スクリプトに createContextualFragment|script = body + "\nrange.createContextualFragment;\n"

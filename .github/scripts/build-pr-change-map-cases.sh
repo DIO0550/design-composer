@@ -68,6 +68,12 @@ put src/utils/Hub.ts 'export const Hub = 1;'
 for user in 1 2 3 4 5; do
   put "src/services/hub-user-$user/index.ts" 'import { Hub } from "@/utils/Hub";'
 done
+# PR で rename する Old.ts と、それを使う rename-user(PR で import を新しいパスへ直す)。
+put src/utils/Old.ts 'export const Old = 1;'
+put src/services/rename-user/index.ts 'import { Old } from "@/utils/Old";'
+# PR で依存をやめる dropper と、その依存の端にしか出ない変えていない Dropped.ts。
+put src/utils/Dropped.ts 'export const Dropped = 1;'
+put src/services/dropper/index.ts 'import { Dropped } from "@/utils/Dropped";'
 git add -A && commit_at 2026-01-01T00:00:00+00:00 -m base
 fork="$(git rev-parse HEAD)"
 
@@ -96,6 +102,9 @@ git checkout --quiet pr
 git mv src/utils/__tests__/Moved.normal.test.ts src/utils/__tests__/Renamed.normal.test.ts
 git mv .github/scripts/before-move.sh .github/scripts/after-move.sh
 git mv docs/story-before.txt docs/story-after.txt
+git mv src/utils/Old.ts src/utils/New.ts
+put src/services/rename-user/index.ts 'import { Old } from "@/utils/New";'
+put src/services/dropper/index.ts 'export const Dropper = 1;'
 seq 1 10 | sed 's/^/line /; s/^line 5$/line five/' > docs/story-after.txt
 put src/utils/__tests__/Body.normal.test.ts 'test("中身だけ変えるテスト", () => { expect(2).toBe(2); });'
 put src/utils/Hub.ts 'export const Hub = 2;'
@@ -289,6 +298,8 @@ merge-base と head の両方にある依存は kept|status.get(("src/services/r
 依存の端に出る変えていないファイルは、changed が偽で層に入る|files["src/utils/Body.ts"] == {"path": "src/utils/Body.ts", "changed": False} and label_of["src/utils/Body.ts"] == "utils" and files["docs/guide.md"]["changed"] is False
 変更ファイルは changed が真|files["src/domains/dcmp/node/index.ts"]["changed"] is True and all(file["changed"] is True for file in files.values() if "status" in file)
 依存の端に出ない変えていないファイルは層に入らない|"src/utils/Quiet.ts" not in files
+rename したファイルを使われる側に持つ依存は、新しいパスの kept 1 本になる|[(edge, state) for edge, state in status.items() if edge[0] == "src/services/rename-user/index.ts"] == [(("src/services/rename-user/index.ts", "src/utils/New.ts"), "kept")]
+消えた依存の端にしか出ない変えていないファイルも、changed が偽で層に入る|status.get(("src/services/dropper/index.ts", "src/utils/Dropped.ts")) == "removed" and files.get("src/utils/Dropped.ts") == {"path": "src/utils/Dropped.ts", "changed": False}
 ハブを変えた PR では、import している 5 本がすべて依存と層に入る|all(status.get((f"src/services/hub-user-{n}/index.ts", "src/utils/Hub.ts")) == "kept" and files[f"src/services/hub-user-{n}/index.ts"]["changed"] is False for n in range(1, 6))
 CASES
 

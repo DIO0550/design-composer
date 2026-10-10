@@ -3,7 +3,7 @@
 # 解説ページの核の判定表。テンプレート(`.claude/skills/pr-explain/templates/index.html`)から固定
 # スクリプトを抜き出して node の `vm` で評価し、`document` が無いときに置かれる `prExplainCore` を
 # 叩いて、地図と解説の合流・箱の図の配置・コミットの差分・つながりの要約・戻るの履歴・確認の印の鍵・開く画面と、
-# 語彙が解説の検査(`build-pr-explain.py`)と揃っていることが期待どおりかを 1 コマンドで確かめる。
+# 語彙と Target の kind が解説の検査(`build-pr-explain.py`)と揃っていることが期待どおりかを 1 コマンドで確かめる。
 #
 # 使い方: bash .github/scripts/pr-explain-core-cases.sh
 # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。
@@ -22,22 +22,25 @@ template="$repo_root/.claude/skills/pr-explain/templates/index.html"
 
 source "$repo_root/.claude/hooks/lib/cases-report.sh"
 
-# 解説の検査が持つ語彙(ページの `Vocabulary` と突き合わせる)。
-vocabulary="$(python3 - "$scripts_dir/build-pr-explain.py" <<'PY'
+# 解説の検査が持つ語彙(ページの `Vocabulary` と突き合わせる)と、Target の kind ごとのキー(ページの `Target` と
+# 突き合わせる)。
+checker="$(python3 - "$scripts_dir/build-pr-explain.py" <<'PY'
 import importlib.util, json, sys
 spec = importlib.util.spec_from_file_location("build_pr_explain", sys.argv[1])
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
-print(json.dumps({"techniques": module.Techniques, "phases": module.Phases, "messageKinds": module.MessageKinds, "vias": module.Vias}))
+vocabulary = {"techniques": module.Techniques, "phases": module.Phases, "messageKinds": module.MessageKinds, "vias": module.Vias, "messageStatuses": module.MessageStatuses}
+target_keys = {kind: list(fields) for kind, fields in module.Variants["Target"].items()}
+print(json.dumps({"vocabulary": vocabulary, "targetKeys": target_keys}))
 PY
 )" || { echo "NG   解説の検査の語彙を読めない"; exit 1; }
 
-results="$(node - "$template" "$vocabulary" <<'JS'
+results="$(node - "$template" "$checker" <<'JS'
 const fs = require("fs");
 const vm = require("vm");
 
 const template = fs.readFileSync(process.argv[2], "utf8");
-const checkerVocabulary = JSON.parse(process.argv[3]);
+const { vocabulary: checkerVocabulary, targetKeys: checkerTargetKeys } = JSON.parse(process.argv[3]);
 const script = (template.match(/<script>([\s\S]*?)<\/script>/) || [])[1];
 if (script === undefined) {
   console.error("固定スクリプトが見つからない");
@@ -50,7 +53,7 @@ if (core === undefined) {
   console.error("document の無い評価で prExplainCore が置かれていない");
   process.exit(2);
 }
-const { ExplainedMap, ReviewCheck, ScreenChoice, CommitDiff, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary } = core;
+const { ExplainedMap, ReviewCheck, ScreenChoice, CommitDiff, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target } = core;
 
 const Pr = 7;
 const shaOf = (digit) => String(digit).repeat(40);
@@ -211,6 +214,23 @@ const cases = [
     expected: [["a1", "new"], ["c1", "unjudged"], ["s1", "old"]],
   },
   {
+    label: "地図の削除にあるテストは、解説が無くても「削除」として追加の後に出る",
+    actual: () => {
+      const map = mapOf({ tests: { added: [{ file: "s.test.ts", name: "足した" }], removed: [{ file: "s.test.ts", name: "消した" }], files: ["s.test.ts"] } });
+      return ExplainedMap.create(map, absent).tests.map((item) => [item.name, item.status]);
+    },
+    expected: [["足した", "new"], ["消した", "removed"]],
+  },
+  {
+    label: "解説を書いた後に足したテスト(地図の追加にあって解説に無いもの)は、解説のテストの後に「追加」として足す",
+    actual: () => {
+      const map = mapOf({ tests: { added: [{ file: "s.test.ts", name: "後から足した" }, { file: "s.test.ts", name: "足した" }], removed: [], files: ["s.test.ts"] } });
+      const explain = explainOf({ suites: [suite("s", "s.test.ts")], tests: [test("a", "s", "足した")] });
+      return explained(map, explain).tests.map((item) => [item.name, item.status, item.test === null ? null : item.test.id]);
+    },
+    expected: [["足した", "new", "a"], ["後から足した", "new", null]],
+  },
+  {
     label: "todo のテストは、地図の追加に同じ名前があっても todo",
     actual: () => {
       const map = mapOf({ tests: { added: [{ file: "s.test.ts", name: "足した" }], removed: [], files: ["s.test.ts"] } });
@@ -273,6 +293,16 @@ const cases = [
     expected: [["ui"], ["app"], ["domain"]],
   },
   {
+    label: "段の深さは最長の道のりで、近道の依存(a → c)があっても c は b の下に来る",
+    actual: () => groupRowsOf([graphGroup("a"), graphGroup("b"), graphGroup("c")], [dependsOn("b", "c"), dependsOn("a", "c"), dependsOn("a", "b")]),
+    expected: [["a"], ["b"], ["c"]],
+  },
+  {
+    label: "浅い道のりの依存(x → c)が先に並んでいても、c は長い道のり(a → b → c)の深さになる",
+    actual: () => groupRowsOf([graphGroup("x"), graphGroup("a"), graphGroup("b"), graphGroup("c")], [dependsOn("b", "c"), dependsOn("a", "b"), dependsOn("x", "c")]),
+    expected: [["x", "a"], ["b"], ["c"]],
+  },
+  {
     label: "互いに使い合う組は同じ段に並び、それを使う組がその上の段に来る",
     actual: () => groupRowsOf([graphGroup("b"), graphGroup("c"), graphGroup("a")], [dependsOn("a", "b"), dependsOn("b", "a"), dependsOn("c", "a")]),
     expected: [["c"], ["b", "a"]],
@@ -330,6 +360,29 @@ const cases = [
     expected: ["a"],
   },
   {
+    label: "抽象度が中なら、開く組の数は ⌈n/3⌉(3 つなら 1 つ、6 つなら 2 つ)",
+    actual: () => [[5, 40, 10], [5, 40, 10, 30, 20, 1]].map((sizes) => GraphLayout.expandedAt(GraphLayout.Levels.Mid, sizes.map((lines, index) => graphGroup(`g${index}`, [lines])))),
+    expected: [["g1"], ["g1", "g3"]],
+  },
+  {
+    label: "抽象度が高なら、どの組も開かない",
+    actual: () => GraphLayout.expandedAt(GraphLayout.Levels.High, [graphGroup("a", [5]), graphGroup("b", [40])]),
+    expected: [],
+  },
+  {
+    label: "抽象度が低なら、すべての組を入力の順に開く",
+    actual: () => GraphLayout.expandedAt(GraphLayout.Levels.Low, [graphGroup("a", [5]), graphGroup("b", [40])]),
+    expected: ["a", "b"],
+  },
+  {
+    label: "箱の無い組は、開く組にも中の ⌈n/3⌉ の数にも入らない",
+    actual: () => {
+      const groups = [graphGroup("a", [5]), graphGroup("empty", []), graphGroup("b", [40]), graphGroup("c", [10])];
+      return [GraphLayout.Levels.Mid, GraphLayout.Levels.Low].map((level) => GraphLayout.expandedAt(level, groups));
+    },
+    expected: [["b"], ["a", "b", "c"]],
+  },
+  {
     label: "同じ段の組は、変更行数の多い順に左から並ぶ",
     actual: () => groupRowsOf([graphGroup("a", [5]), graphGroup("b", [40]), graphGroup("c", [10])], []),
     expected: [["b", "c", "a"]],
@@ -359,6 +412,16 @@ const cases = [
       return { hunk: hunks.findIndex((hunk) => hunk.notes.length > 0), covered: hunks.flatMap((hunk) => hunk.lines).filter((line) => CommitDiff.hasLine(note, line)).map((line) => line.text) };
     },
     expected: { hunk: 0, covered: ["b"] },
+  },
+  {
+    label: "`\\ No newline at end of file` は行に数えず、その後の行番号をずらさない",
+    actual: () => {
+      const patch = linesOf(["@@ -1,2 +1,3 @@", " a", "-b", "\\ No newline at end of file", "+b", "+c"]);
+      const note = noteOn("src/a.ts", 3, 3, "足した行");
+      const hunk = diffOf([diffFile("src/a.ts", { patch })], [note]).files[0].body.hunks[0];
+      return hunk.lines.filter((line) => CommitDiff.hasLine(note, line)).map((line) => line.text);
+    },
+    expected: ["c"],
   },
   {
     label: "そのコミットに無いパスへの注釈は、どのファイルにも付けず「地図に無い」に回す",
@@ -392,6 +455,21 @@ const cases = [
       { kind: "unchanged", lines: null, onBody: [], unplaced: [] },
       { kind: "deleted", lines: 61, onBody: [[1, "消した行"]], unplaced: [[2, "変更後"]] },
       { kind: "binary", lines: null, onBody: [], unplaced: [] },
+    ],
+  },
+  {
+    label: "消したファイルの行数を超える変更前の注釈は本文に付けず、バイナリへの注釈も落とさずに本文の外に回す",
+    actual: () => {
+      const files = [
+        diffFile("src/gone.ts", { status: "D", additions: 0, deletions: 3, patch: null }),
+        diffFile("src/image.png", { status: "A", additions: null, deletions: null, patch: null }),
+      ];
+      const notes = [noteOn("src/gone.ts", 5, 5, "行数の外", { side: "old" }), noteOn("src/gone.ts", 2, 2, "行数の中", { side: "old" }), noteOn("src/image.png", 1, 1, "画像")];
+      return diffOf(files, notes).files.map((file) => ({ onBody: (file.body.notes ?? []).map((note) => [note.n, note.text]), unplaced: file.unplaced.map((note) => [note.n, note.text]) }));
+    },
+    expected: [
+      { onBody: [[1, "行数の中"]], unplaced: [[2, "行数の外"]] },
+      { onBody: [], unplaced: [[1, "画像"]] },
     ],
   },
   {
@@ -475,6 +553,14 @@ const cases = [
     actual: () => Object.keys(Vocabulary[name]).toSorted(),
     expected: [...checkerVocabulary[name]].sort(),
   })),
+  {
+    label: "解説の検査が受け付ける Target の kind はどれも、ページが検査の求めるキーを読んで移る先にする",
+    actual: () => Object.entries(checkerTargetKeys).map(([kind, keys]) => {
+      const selection = Target.selectionOf({ kind, ...Object.fromEntries(keys.map((key) => [key, `値-${key}`])) });
+      return [kind, selection !== undefined && keys.some((key) => selection.id.endsWith(`値-${key}`))];
+    }),
+    expected: Object.keys(checkerTargetKeys).map((kind) => [kind, true]),
+  },
 ];
 
 // 1 件が例外で止まっても、残りのケースは走らせて、そのケースだけを食い違いとして出す。

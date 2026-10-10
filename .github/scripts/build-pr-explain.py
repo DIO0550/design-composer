@@ -122,14 +122,12 @@ Id = Scalar("id")
 Sha = Scalar("sha")
 Count = Scalar("count")
 
-# 技法・phase・やりとりの種類・方式の語彙。ページの表(固定スクリプトの核の `Vocabulary`)と同じキーの集合で、
-# `pr-explain-core-cases.sh` が突き合わせる。
+# 技法・phase・やりとりの種類・方式・やりとりの状態の語彙。ページの表(固定スクリプトの核の `Vocabulary`)と
+# 同じキーの集合で、`pr-explain-core-cases.sh` が突き合わせる。やりとりの状態は、省けば前からあって変えていないもの。
 Techniques = ("boundary", "equivalence", "error", "state", "regression", "idempotence", "type")
 Phases = ("prep", "core", "hard", "revise", "fin")
 MessageKinds = ("cmd", "qry", "evt")
 Vias = ("call", "http", "state", "log", "exec", "file")
-
-# やりとりの状態。省けば前からあって変えていないもの。
 MessageStatuses = ("added", "changed", "removed")
 
 # 解説の形(`pr-explain` スキルの「explain.json の形」の表を、検査が読む形にしたもの)。
@@ -222,7 +220,8 @@ Shapes: dict[str, dict[str, Field]] = {
     "Row": {"cells": need(Many(Text)), "boundary": may(Scalar("flag"))},
 }
 
-# `kind` ごとに持つキー。他の kind のキーが混ざるのも、知らないキーとして落とす。
+# `kind` ごとに持つキー。他の kind のキーが混ざるのも、知らないキーとして落とす。Target はどの kind も、ページ
+# (固定スクリプトの核の `Target`)がここと同じキーを読んで移る先にすることを `pr-explain-core-cases.sh` が確かめる。
 Variants: dict[str, dict[str, dict[str, Field]]] = {
     "Target": {
         "feature": {"id": need(Id)},

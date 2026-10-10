@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-3xx6tzjDC42pjT/HOOy15BM/s/EcFpOK37AKgBD/q1c='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-aBFDwffHIcBSneGizG9Yl4xP5qcoOb+oEuL/UxMYjZg='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR 解説</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -811,6 +811,12 @@ button.change-item:hover { background: var(--track); }
       evt: { label: "イベント", meaning: "通知", verb: "通知する" },
     },
     vias: { call: "関数呼び出し(同期)", http: "HTTP 通信(外部)", state: "状態の購読(再描画)", log: "ログ出力", exec: "コマンドの実行", file: "ファイルの読み書き" },
+    // やりとりの状態と色の区分。省いたもの(前からあって変えていない)はここに無い。
+    messageStatuses: {
+      added: { tone: "A", label: "このブランチで追加" },
+      changed: { tone: "M", label: "このブランチで変更" },
+      removed: { tone: "D", label: "このブランチで削除" },
+    },
   });
   const MessageKindOrder = Object.keys(Vocabulary.messageKinds);
   /** やりとりを種類の順(コマンド → クエリ → イベント)に並べる比較。 */
@@ -826,6 +832,30 @@ button.change-item:hover { background: var(--track); }
      * @returns sha と文のどちらかが違えば別になる鍵
      */
     keyOf: (sha, text) => JSON.stringify([sha, text]),
+  });
+
+  /** 解説の Target(概要の「このブランチで起きていること」の 1 件が指す先)。 */
+  const Target = Object.freeze({
+    /**
+     * Target を、ページで選ぶ先にする。kind ごとに読むキーは `build-pr-explain.py` の `Variants` と同じで、
+     * `pr-explain-core-cases.sh` が突き合わせる。
+     * @returns `group`(`grouping` のまとめ方の組の `id`)/ `file`(`id` はパス)/ `message` / `flow`。指す先が地図に
+     *   あるかは見ない
+     */
+    selectionOf: (go) => {
+      switch (go.kind) {
+        case "feature":
+          return { kind: "group", id: `feature:${go.id}`, grouping: "feature" };
+        case "layer":
+          return { kind: "group", id: `layer:${go.layer}`, grouping: "layer" };
+        case "file":
+          return { kind: "file", id: go.path };
+        case "message":
+          return { kind: "message", id: go.id };
+        case "flow":
+          return { kind: "flow", id: go.id };
+      }
+    },
   });
 
   const Screens = Object.freeze({ Map: "map", Story: "story", Test: "test" });
@@ -1563,7 +1593,7 @@ button.change-item:hover { background: var(--track); }
   })();
 
   /** DOM に触らない部分(核)。判定表が node の vm で評価して叩く。 */
-  const core = Object.freeze({ ExplainedMap, ScreenChoice, ReviewCheck, Tokenizer, CommitDiff, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary });
+  const core = Object.freeze({ ExplainedMap, ScreenChoice, ReviewCheck, Tokenizer, CommitDiff, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target });
   if (typeof document === "undefined") {
     globalThis.prExplainCore = core;
     return;
@@ -2558,12 +2588,7 @@ button.change-item:hover { background: var(--track); }
     return hasNull ? some === other : some.kind === other.kind && some.id === other.id;
   };
 
-  /** やりとりの状態。省いたもの(前からあって変えていない)はここに無い。 */
-  const MessageStatuses = {
-    added: { tone: "A", label: "このブランチで追加" },
-    changed: { tone: "M", label: "このブランチで変更" },
-    removed: { tone: "D", label: "このブランチで削除" },
-  };
+  const MessageStatuses = Vocabulary.messageStatuses;
   const isMessageChanged = (message) => Object.hasOwn(MessageStatuses, message.status ?? "");
   /** やりとりの色の区分。前からあって変えていないものは空。 */
   const messageToneOf = (message) => (isMessageChanged(message) ? MessageStatuses[message.status].tone : "");
@@ -3709,21 +3734,20 @@ button.change-item:hover { background: var(--track); }
 
     /** 概要の「このブランチで起きていること」の 1 件が指す先。地図に無ければ null。 */
     const highlightGoOf = (go) => {
-      switch (go.kind) {
-        case "feature":
-          return groupGoOf(`feature:${go.id}`, "feature");
-        case "layer":
-          return groupGoOf(`layer:${go.layer}`, "layer");
+      const selection = Target.selectionOf(go);
+      switch (selection.kind) {
+        case "group":
+          return groupGoOf(selection.id, selection.grouping);
         case "file": {
-          const entry = entryAt.get(go.path);
+          const entry = entryAt.get(selection.id);
           return entry === undefined ? null : { tone: toneOf(entry.status), onPress: () => pick({ kind: entry.inGraph ? "box" : "file", id: entry.path }) };
         }
         case "message": {
-          const message = lookup.messages.get(go.id);
+          const message = lookup.messages.get(selection.id);
           return message === undefined ? null : { tone: messageToneOf(message), onPress: () => pick({ kind: "message", id: message.id }) };
         }
         case "flow":
-          return lookup.flows.has(go.id) ? { tone: "", onPress: () => showFlow(go.id) } : null;
+          return lookup.flows.has(selection.id) ? { tone: "", onPress: () => showFlow(selection.id) } : null;
       }
     };
 
