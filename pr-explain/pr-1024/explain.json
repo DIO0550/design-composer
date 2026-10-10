@@ -440,19 +440,127 @@
       "sha": "cccadaa2e61df772174d7a7a19b15f2e35ed14cc",
       "phase": "prep",
       "role": "解説ページの仕組みの最初の形",
-      "why": "Actions が置く地図と、セッションが書く HTML 断片を gh-pages の PR ごとのフォルダへ置く、という骨組みをここで作った。このあとの 3 画面化で、断片は `explain.json` に置き換わる"
+      "why": "Actions が置く地図と、セッションが書く HTML 断片を gh-pages の PR ごとのフォルダへ置く、という骨組みをここで作った。このあとの 3 画面化で、断片は `explain.json` に置き換わる",
+      "notes": [
+        {
+          "path": ".github/scripts/build-pr-change-map.py",
+          "start": 277,
+          "end": 278,
+          "text": "差分の起点を base の先端ではなく、head との分岐点(`merge-base`)にする。PR 画面の「Files changed」と同じ範囲になり、base 側に後から入ったコミットが地図に混ざらない。"
+        },
+        {
+          "path": ".github/scripts/build-pr-change-map.py",
+          "start": 253,
+          "end": 256,
+          "text": "テスト名の増減は差分の行ではなく、前後のファイルの中身からテスト名の集合を抜いて引き算で出す。rename や改行位置の違いで、同じテストが「削除 + 追加」に化けないようにするため。"
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-html.py",
+          "start": 153,
+          "end": 160,
+          "text": "マーカーの外(CSS・固定スクリプト・CSP)がテンプレートと 1 文字でも違えば落とし、マーカーの内側だけを要素・属性の単位で検査する。解説を書く側が枠を書き換えられないようにする。"
+        },
+        {
+          "path": ".github/scripts/publish-pr-explain.sh",
+          "start": 85,
+          "end": 86,
+          "text": "`page` は地図(`change-map.json`)がまだ無いフォルダへは書かない。PR が閉じてフォルダを消した後に、セッションが解説を置いてフォルダを復活させないため。"
+        },
+        {
+          "path": ".github/workflows/pr-explain.yml",
+          "start": 55,
+          "end": 57,
+          "text": "スクリプトは gh-pages を別のフォルダへ clone するので、checkout が置いた認証は効かない。git の設定を環境変数で渡し、どのフォルダの git でも push できるようにする。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 183,
+          "end": 195,
+          "text": "解説を書いた時点の sha より後のコミットで変わったファイルを、ページ上部の帯に並べる。その sha が PR のコミット一覧に無ければ、force push で履歴が変わった可能性を出す。"
+        }
+      ]
     },
     {
       "sha": "d199102187db2a67c8231bfd4b9bbad360170ee9",
       "phase": "prep",
       "role": "解説を 4 ページに分けた形(後で 3 画面へ置き換え)",
-      "why": "振る舞い・技術・テストを読む目的ごとに分けた。ユーザーのデザインが届いて、この 4 ページは 3 画面のページへ作り替えた"
+      "why": "振る舞い・技術・テストを読む目的ごとに分けた。ユーザーのデザインが届いて、この 4 ページは 3 画面のページへ作り替えた",
+      "notes": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 173,
+          "end": 182,
+          "text": "上部のナビに 4 ページを並べ、いま開いているページ以外は `HEAD` で有無を問い合わせる。書かれていないページは「(なし)」と出す(ドキュメントだけの PR はテストのページを書かないため)。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 270,
+          "end": 277,
+          "text": "ページ名で地図から足す節を選ぶ。入口は変更ファイルの一覧、技術は解説に出てこない変更ファイル、テストはテスト名の増減。振る舞いのページは節を持たず、古さの帯だけを更新する。"
+        },
+        {
+          "path": ".github/scripts/build-pr-explain-page.py",
+          "start": 140,
+          "end": 142,
+          "text": "リンクの行き先に、解説のページどうし(`tests.html#…` など 4 つのファイル名だけ)を許す。それ以外の相対リンクは今までどおり断る。"
+        },
+        {
+          "path": ".github/scripts/build-pr-explain-page.py",
+          "start": 165,
+          "end": 166,
+          "text": "断片の `data-page` が公開先のページ名と違えば断る。技術のページ用に書いた断片を入口へ置く、のような取り違えを防ぐ。"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "start": 56,
+          "end": 58,
+          "text": "`put-page` は置き先のページ名を受け取り、そのページの 1 ファイル(`<ページ名>.html`)だけを書き換える。組み立ての終了コードをそのまま返し、知らないページ名は引数の誤り(2)になる。"
+        }
+      ]
     },
     {
       "sha": "eb7db1dae5da487d6d0f128883c6432ceb447ad9",
       "phase": "prep",
       "role": "依存の図を全部の変更ファイルで出した形(後で構造マップへ)",
-      "why": "依存を帯ごとに並べる図はここで一度形になった。構造マップはこれを組・箱・やりとりの図へ置き換えている"
+      "why": "依存を帯ごとに並べる図はここで一度形になった。構造マップはこれを組・箱・やりとりの図へ置き換えている",
+      "notes": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 830,
+          "end": 838,
+          "text": "つながりのあるファイルを、依存をどちら向きにでも辿れるまとまりに分ける。読む順で先に出るファイルを含むまとまりから並べる。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 846,
+          "end": 860,
+          "text": "列の中の並びを、隣の列でつながる相手の位置の平均(重心)で並べ直す。左右へ交互に数回くり返して、線の交差を減らす。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 863,
+          "end": 871,
+          "text": "2 列以上離れた依存は、間の列に中継点を置いて通す。中継点も並べ替えに加わるので、線が箱の上を横切らない。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 919,
+          "end": 928,
+          "text": "箱にファイル名とフォルダの 2 行を出す(長いフォルダ名は末尾を残す)。消したファイルは破線の枠にする。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 974,
+          "end": 988,
+          "text": "すべての変更ファイルを図に載せる。つながりのまとまりごとに帯を分けて上から積み、依存のつながりが無いファイルは最後の帯にまとめる。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 1002,
+          "end": 1012,
+          "text": "ファイル 1 つごとのカード。左にそのファイルが使うもの、中央にそのファイル、右にそれを使うものを置き、交差なしで読めるようにする。箱の幅を全カードで揃え、縮尺を同じにする。"
+        }
+      ]
     },
     {
       "sha": "4b2bc65ac6c9627dc6f768af4bade9bfa84d2ce0",
@@ -492,6 +600,42 @@
           "start": 90,
           "end": 90,
           "text": "ファイルごとの差分の上限。この PR で最も長い差分は 382 行で、上限には十分な余裕がある"
+        },
+        {
+          "path": ".github/scripts/build-pr-change-map.py",
+          "start": 308,
+          "end": 313,
+          "text": "テストファイルが確かめている対象のファイルを探す。`__tests__/` の親フォルダの `index.ts(x)` を先に見て、無ければテストファイル名の先頭と同じ名前の `.ts(x)` を探す。"
+        },
+        {
+          "path": ".github/scripts/build-pr-change-map.py",
+          "start": 325,
+          "end": 329,
+          "text": "変更ファイルに加えて、依存の線の端に出てくる変更していないファイルも `changed: false` で層に載せる。図で線の行き先を描けるようにするため。"
+        },
+        {
+          "path": ".github/scripts/build-pr-change-map.py",
+          "start": 413,
+          "end": 416,
+          "text": "merge-base と head の 2 時点のファイルを、`git cat-file --batch` 1 回でまとめて読む。同じ中身(blob)は 1 度しか読まないので、ファイルが多くても Actions の時間を食わない。"
+        },
+        {
+          "path": ".github/scripts/build-pr-change-map.py",
+          "start": 579,
+          "end": 585,
+          "text": "コミットごとのファイルの差分を作る。消したファイルとバイナリは差分を持たせず(null)、長い差分は `MaxPatchLines` 行で切って、切ったことと元の行数を残す。"
+        },
+        {
+          "path": ".github/scripts/build-pr-change-map.py",
+          "start": 596,
+          "end": 599,
+          "text": "親が 2 つ以上あるコミットはマージとして印を付け、変更ファイルを持たせない。ページはマージの差分を出さない。"
+        },
+        {
+          "path": ".github/workflows/pr-explain.yml",
+          "start": 45,
+          "end": 48,
+          "text": "PR のブランチ名(head / base)を地図の作成に渡す。ページのヘッダに「head → base」として出すため。"
         }
       ]
     },
@@ -528,6 +672,54 @@
           "start": 62,
           "end": 63,
           "text": "置く前に、モードごとの検査を clone より先に走らせる。落ちたら gh-pages を取りに行かない"
+        },
+        {
+          "path": ".github/scripts/build-pr-explain.py",
+          "start": 129,
+          "end": 143,
+          "text": "explain.json の形を、キーごとの「必須 / 省いてよい」と値の規則の表で書く。検査はこの表をたどるだけなので、形の規則が 1 か所に集まる。"
+        },
+        {
+          "path": ".github/scripts/build-pr-explain.py",
+          "start": 212,
+          "end": 213,
+          "text": "抜粋の `text` はこのスクリプトが git から写して足すキーなので、入力の形には載せない。手で `text` を書いた解説は「知らないキー」として落ちる。"
+        },
+        {
+          "path": ".github/scripts/build-pr-explain.py",
+          "start": 304,
+          "end": 308,
+          "text": "JSON に同じキーが 2 回書かれていると、Python の読み込みは黙って後の値を採る。ここで重複を印に置き換え、形の検査で違反として報告する。"
+        },
+        {
+          "path": ".github/scripts/build-pr-explain.py",
+          "start": 494,
+          "end": 502,
+          "text": "解説時点の sha がリポジトリに無ければ止める。テストの抜粋は、その sha のファイルから指定の行範囲を読んで `text` として足す(範囲がファイルに収まらなければ違反)。"
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-template.py",
+          "start": 58,
+          "end": 61,
+          "text": "禁止語を「語」として探す。`document . write` のように `.` の前後へ空白を挟んでもすり抜けず、前後が識別子の文字なら別の語とみなす。"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "start": 98,
+          "end": 106,
+          "text": "置き先のフォルダから `index.html`・`change-map.json`・`explain.json` 以外のファイルを消す。以前の形(ページごとの HTML)が残り続けないようにする。"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "start": 119,
+          "end": 120,
+          "text": "枠(`index.html`)を「無いときだけ置く」から「毎回上書きする」に変えた。テンプレートを直したコミットが、次の push でそのままページに効く。"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "start": 147,
+          "end": 157,
+          "text": "解説の sha が地図の head と違っても置くのは止めず、標準エラーで知らせるだけにする。古い解説も、ページが「何時点の解説か」を帯で出すので読める。"
         }
       ]
     },
@@ -564,6 +756,54 @@
           "start": 569,
           "end": 569,
           "text": "document が無いとき(判定表の node)は、ここで核だけを置いて終わる"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 305,
+          "end": 311,
+          "text": "確認の印は、レビューの文の番号ではなく sha と文そのものを鍵にして残す。解説を書き直して文の並びが変わっても、印が別の文へ移らない。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 327,
+          "end": 332,
+          "text": "開く画面は URL のハッシュ(`#map` など)→ 前回開いた画面 → 構造マップ、の順で決める。知らない値は飛ばす。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 360,
+          "end": 367,
+          "text": "ページが組み立てに使う骨組み(sha・overview・各一覧が配列か)だけを見る。細かい形の検査は、公開する前に `build-pr-explain.py` が済ませている。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 428,
+          "end": 436,
+          "text": "箱に描かないファイルのうち依存の線でつながっているものを、箱ごとに集める。図では「ほかに n ファイル」に畳んで出す。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 479,
+          "end": 485,
+          "text": "解説がどの時点のものかを決める。head と同じなら最新、地図のコミットにあれば「以降 n コミットは解説なし」、無ければ force push などで履歴が変わったとみなす。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 509,
+          "end": 519,
+          "text": "テストの追加 / 既存は解説に書かせず、地図が拾った追加テスト名にあるかで決める。解説に無い追加テストも地図から足し、一覧から漏れないようにする。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 596,
+          "end": 610,
+          "text": "localStorage は保存を無効にしたブラウザで例外を投げるので、ここで受けて「残っていない」として扱う。印や幅が残らないだけで、ページは動く。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 947,
+          "end": 952,
+          "text": "explain.json が 404 なら「まだ置かれていない」、それ以外の失敗は「読めない」として分ける。どちらでも地図だけで 3 画面を組み、帯に理由を出す。"
         }
       ]
     },
@@ -574,6 +814,56 @@
       "why": "コミットの順に、なぜ・何を見てほしいか・振る舞いの前後・差分を読めるようにした。注釈は行番号で書き、ページが hunk に割り当てる(差分の形に依存しない書き方にするため)",
       "review": [
         "どの hunk にも入らない注釈は「差分に出ていない行への注釈」として別に出す。注釈が黙って消えないか"
+      ],
+      "notes": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 726,
+          "end": 729,
+          "text": "hunk の各行に変更前・変更後の両側の行番号を振る。`\\ No newline at end of file` は行ではないので数えずに落とす。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 740,
+          "end": 747,
+          "text": "注釈は、指定した行が入る最初の hunk に付け、番号はファイルの中で hunk の順に通す。どの hunk にも入らない注釈は捨てずに「差分に出ていない行への注釈」へ回す。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 752,
+          "end": 757,
+          "text": "消したファイルは差分を持たないので、変更前(`old`)の行への注釈だけを「ファイルごと削除」の下に付ける。消した行数を超える注釈は別枠へ回す。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 790,
+          "end": 798,
+          "text": "「コード」の表示では、続けて消した行を 1 つの畳み(gap)にまとめる。変更後のコードを上から読めるようにするため。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 828,
+          "end": 834,
+          "text": "解説の文でバッククォートに囲まれたところを code 要素にする。どちらも textContent で入れるので HTML としては解釈しない。閉じていないバッククォートは文字のまま残す。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 1286,
+          "end": 1293,
+          "text": "行をまたぐ文字列やコメントの色分けを、消した行の流れと足した行の流れで別々に持ち越す。差分で両者が交互に並んでも色が崩れない。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 1460,
+          "end": 1464,
+          "text": "確認の印を付け外しし、PR ごとの鍵でブラウザに残す。ページを開き直しても印が残る。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 1479,
+          "end": 1487,
+          "text": "↑↓ / j k で左のコミットの並びを 1 つずつ移る。入力欄の中と、修飾キーを押しているときは反応しない。"
+        }
       ]
     },
     {
@@ -583,6 +873,56 @@
       "why": "テストの画面と構造マップは同じ組・箱の図を使うので、段の配置(GraphLayout)と描画(GraphView)を画面に依らない形で先に作った。段はグループ間の依存の深さで決め、循環は強連結成分で同じ段にする",
       "review": [
         "互いに依存する組は同じ段に並ぶ。この PR では 4 つの機能が 1 つの循環になるので、横に並ぶ見え方で読めるか"
+      ],
+      "notes": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 865,
+          "end": 866,
+          "text": "経緯の画面のヘッダの +/− は、コミットごとの増減の和で数える。あとのコミットで書き直した行もそれぞれ数えるので、ファイルごとの差し引きとは別の数になる。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 1045,
+          "end": 1052,
+          "text": "依存の深さで段を決める。循環は強連結成分にまとめて同じ段にし、成分どうしの最長の道のりを深さにする。循環を打ち切りで済ませると、入力の順で段が変わるため。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 1114,
+          "end": 1119,
+          "text": "消えた依存(`removed`)は段の計算に使わない。組をまたぐ依存で組の段を決め、開いた組の中の箱は組の中の依存で並べる。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 1214,
+          "end": 1225,
+          "text": "抽象度の高 / 中 / 低を、開く組の選び方に置き換える。高はすべて畳み、低はすべて開き、中は変更行数の多い上位 3 分の 1(切り上げ)だけ開く。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 1233,
+          "end": 1243,
+          "text": "同じ 2 つの単位を結ぶ線は 1 本にまとめ、やりとりを束ねる。線の向きは `leads` が真の最初のもので決める(無ければ最初のもの)。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 1263,
+          "end": 1271,
+          "text": "優先度の高いラベルから順に、線の中ほど → 端の順で置き場を試し、箱と置いたラベルへの重なりが最も小さい所を選ぶ。許容を超えて重なるラベルは出さない。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 2074,
+          "end": 2079,
+          "text": "キャンバスの大きさが変われば収め直す。読み手がドラッグやホイールで動かした後は、上下の重ねものの高さが変わっただけなら表示を保つ。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 2443,
+          "end": 2446,
+          "text": "初めて全体を収めたときの縮尺が 0.5 未満なら、箱の字が読めないので組をすべて畳む。"
+        }
       ]
     },
     {
@@ -595,6 +935,56 @@
       ],
       "review": [
         "1 段の組の数を 4 / 3 / 2 / 1 から選ぶ規則はデザインに無い。ユーザーは「並べ方は今のまま」と判断済み"
+      ],
+      "notes": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 1290,
+          "end": 1293,
+          "text": "等倍より大きくは数えないので、等倍で収まる並びどうしなら 1 段に多く並べるほうが残る。段が少ないほど、離れた段を結ぶ線が間の組を横切りにくい。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 1328,
+          "end": 1331,
+          "text": "1 段に並べる組の数を 4〜1 で試し、キャンバスに最も大きく収まる並びを選ぶ。組の間隔は線のラベルが入る幅まで広げる(上限 240px)。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 1458,
+          "end": 1463,
+          "text": "1 本にまとめた線に両向きのやりとり・依存が含まれるかを `isBothWays` で返す。図では線の始まりにも矢じりを付ける。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 1507,
+          "end": 1513,
+          "text": "線を選んだときの「要するに」を作る。やりとりを向き(線の向き → 逆向き)と種類(コマンド → クエリ → イベント)ごとにまとめ、消えたやりとりは最後に 1 つにまとめる。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 1522,
+          "end": 1525,
+          "text": "「戻る」のために前の選択を積む。40 件を超えたら古いものから落とし、積んだものが無ければ戻らない。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 3149,
+          "end": 3153,
+          "text": "範囲を「表示しない」で絞ったときは、絞った組だけを残し、その組を開いて中の箱を並べる。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 3245,
+          "end": 3254,
+          "text": "シーケンス図の行を作る。図に無い単位へのやりとりは飛ばし、同じ単位の中で続くやりとりは「内部で n 件」の 1 行にまとめる。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 3292,
+          "end": 3298,
+          "text": "選択が変わるときだけ前の選択を戻る先に積む。同じものをもう一度押すと選択を外す。"
+        }
       ]
     },
     {
@@ -632,6 +1022,54 @@
           "start": 67,
           "end": 67,
           "text": "この 2 つは必ず書かせる。`connect-src` が無いとページが JSON を読めない"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 797,
+          "end": 807,
+          "text": "解説の語彙(技法・phase・やりとりの種類・方式)とページでの呼び名を 1 つの表にまとめる。キーの集合は Python 側の語彙と同じで、判定表が突き合わせる。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 1022,
+          "end": 1025,
+          "text": "テスト名を調べたファイルなら地図の追加にあるかで追加 / 既存を決める。調べていないファイルは、このブランチで足したファイルなら追加、それ以外は「判定なし」にして言い切らない。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 3136,
+          "end": 3139,
+          "text": "1 本にまとめた線の状態を決める。すべて消えたなら削除、追加を含めば追加、変更を含めば変更、どれでもなければ前からあるもの。"
+        },
+        {
+          "path": ".github/scripts/build-pr-change-map.py",
+          "start": 349,
+          "end": 357,
+          "text": "テスト名を調べたテストファイルの一覧(`files`)も地図に載せる。ページはこの一覧に無いファイルのテストを、追加とも既存とも言い切らない。中身は依存を探すときに読んだものを使い回す。"
+        },
+        {
+          "path": ".github/scripts/build-pr-explain.py",
+          "start": 125,
+          "end": 133,
+          "text": "語彙を名前の付いた定数に出す。ページの `Vocabulary` と同じキーの集合で、判定表が両者を突き合わせる。やりとりの状態は added / changed / removed の 3 つに分けた。"
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-template.py",
+          "start": 17,
+          "end": 19,
+          "text": "固定スクリプトを別の .js に出さない理由。別ファイルにすると `script-src 'self'` が要り、同じ origin の gh-pages にある Storybook などのどの .js も動かせてしまう。"
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-template.py",
+          "start": 52,
+          "end": 63,
+          "text": "CSP に書いてよいディレクティブと、それぞれが許す出どころを 1 つの表にする。表に無いディレクティブ(`script-src-elem` など)は、書けば違反になる。"
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-template.py",
+          "start": 100,
+          "end": 105,
+          "text": "表に無いディレクティブと、同じディレクティブの 2 回書きを違反にする。ブラウザは 2 つ目以降を読まないので、後ろに書いた制限が黙って効かなくなるため。"
         }
       ]
     },
@@ -642,85 +1080,485 @@
       "why": "test-reviewer が実装を 1 か所ずつ壊して約 80 通りを当て、落ちなかった 6 件にケースを足した",
       "review": [
         "Target の振り分けを核へ移して、Python の検査が受け付ける kind をページが読めることを突き合わせた。逆向き(ページにだけある kind)は見ていない"
+      ],
+      "notes": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 814,
+          "end": 819,
+          "text": "やりとりの状態の表を画面側から `Vocabulary` へ移す。Python 側の `MessageStatuses` と判定表で突き合わせられるようにするため。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 845,
+          "end": 857,
+          "text": "Target(概要の 1 件が指す先)を、ページで選ぶ先へ振り分ける部分を核へ移す。kind ごとに読むキーが Python の `Variants` と同じかを、判定表で確かめられる。"
+        },
+        {
+          "path": ".github/scripts/build-pr-change-map-cases.sh",
+          "start": 301,
+          "end": 302,
+          "text": "壊しても落ちなかった 2 件を足す。rename したファイルを使われる側に持つ依存が新しいパスの kept 1 本になること、消えた依存の端にしか出ないファイルも層に入ること。"
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-template-cases.sh",
+          "start": 68,
+          "end": 71,
+          "text": "CSP の検査の抜けを埋めるケース。属性付きの script・CSP の meta が 2 つ・connect-src の欠けを落とし、大文字のディレクティブ名は同じものとして通す。"
+        }
       ]
     },
     {
       "sha": "1b6bc875eae9c8769585187fc82cf2c6405bae7a",
       "phase": "revise",
       "role": "最初の形へのレビューを反映(断片だけを書かせる)",
-      "why": "観点別のレビューの指摘で、セッションにはマーカーの間の断片だけを書かせ、枠への差し込みと検査を 1 本にまとめた。置き場のスクリプト名とモード(`put-page` / `put-map` / `remove`)もここで決まった。断片の仕組みは、のちに `explain.json` へ置き換わる"
+      "why": "観点別のレビューの指摘で、セッションにはマーカーの間の断片だけを書かせ、枠への差し込みと検査を 1 本にまとめた。置き場のスクリプト名とモード(`put-page` / `put-map` / `remove`)もここで決まった。断片の仕組みは、のちに `explain.json` へ置き換わる",
+      "notes": [
+        {
+          "path": ".github/scripts/build-pr-explain-page.py",
+          "start": 186,
+          "end": 190,
+          "text": "セッションが書いた断片を、テンプレートのマーカーの間へ差し込んでページを作る。枠はテンプレートからそのまま写すので、前の版の「枠が同じか」の照合が要らなくなる。"
+        },
+        {
+          "path": ".github/scripts/build-pr-explain-page.py",
+          "start": 84,
+          "end": 94,
+          "text": "断片にコメントや宣言(`<!--` `<![CDATA[` など)を書かせない。`<!-->` のような綴りの解釈が検査に使うパーサとブラウザとで割れ、その中の要素が検査をすり抜けるため。"
+        },
+        {
+          "path": ".github/scripts/build-pr-explain-page.py",
+          "start": 139,
+          "end": 147,
+          "text": "`explain-meta` がちょうど 1 つあり、解説時点の sha が 40 桁で、PR 番号が公開先と一致するかを見る。sha が欠けると、行リンク・古さの帯・「解説に出てこない」が黙って出なくなる。"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "start": 125,
+          "end": 128,
+          "text": "gh-pages がまだ無いときの `remove` は何もせずに終える。消すものが無いのに、空のブランチを作ってコミットを置かない。"
+        },
+        {
+          "path": ".github/workflows/pr-explain.yml",
+          "start": 57,
+          "end": 61,
+          "text": "base64 にしたトークンは Actions が自動では伏せないので、`add-mask` でログから隠す。checkout 側は `persist-credentials: false` にして、認証ヘッダが 2 本送られないようにする。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 180,
+          "end": 190,
+          "text": "パスの直後にパスの文字が続く出現は「言及」と数えない。`index.ts` が `index.tsx` の言及に紛れて、言及済みと誤判定されるのを防ぐ。"
+        }
+      ]
     },
     {
       "sha": "e8a1547e044aa83db68be629cd10135a85d28647",
       "phase": "hard",
       "role": "最初の形の判定表に、壊しても落ちなかったケースを足す",
-      "why": "test-reviewer が実装を壊して当て、落ちなかった判断(テストファイルの追加・削除、rename の旧パス、41 桁の sha、変更なしの remove など)にケースを足した"
+      "why": "test-reviewer が実装を壊して当て、落ちなかった判断(テストファイルの追加・削除、rename の旧パス、41 桁の sha、変更なしの remove など)にケースを足した",
+      "notes": [
+        {
+          "path": ".github/scripts/build-pr-change-map-cases.sh",
+          "start": 73,
+          "end": 77,
+          "text": "ファイルごと消したテストと、テスト名ではない呼び出し(`split(` や `/x/.test(`)・`test.skip`・括弧入りの表の `test.each` を持つ新しいテストファイルを用意する。"
+        },
+        {
+          "path": ".github/scripts/build-pr-change-map-cases.sh",
+          "start": 128,
+          "end": 129,
+          "text": "各層に 1 件ずつ置いたファイルで、読む順(内側の層から外側へ)全体と、層の中で本体 → テスト → story の順になることを確かめる。"
+        },
+        {
+          "path": ".github/scripts/build-pr-explain-page-cases.sh",
+          "start": 63,
+          "end": 66,
+          "text": "前回の判定表に無かった抜け道を足す。自己終了タグのイベント属性、SVG の `xlink:href`、アニメーションで `href` を書き換える要素、CSP では止まらない `meta refresh` を断ることを見る。"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "start": 101,
+          "end": 102,
+          "text": "検査に落ちた断片では push しないだけでなく、「取り直してやり直す」へ進まずすぐ止まることを、出力の文言で確かめる。"
+        }
+      ]
     },
     {
       "sha": "d7b590de5f843be68fa7eeabd9a260fabbb68fc7",
       "phase": "fin",
       "role": "SKILL の例を実在するパスにする",
-      "why": "根拠の書き方の例が存在しないパスを指していたので、実在するパスへ直した"
+      "why": "根拠の書き方の例が存在しないパスを指していたので、実在するパスへ直した",
+      "notes": [
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "start": 71,
+          "end": 71,
+          "text": "根拠の書き方の例を、架空の `src/x/index.ts` から実在するファイルのパスに替える。"
+        }
+      ]
     },
     {
       "sha": "0a6a4f9ba7bbb5f047a48310b5dee0fb33da6dad",
       "phase": "revise",
       "role": "4 ページ化へのレビューを反映",
-      "why": "Pages は GitHub Pages を指す語として既に使われていたので、ページ一覧と地図の節の名前を改名した。ナビの「なし」を 404 のときだけにし、地図を読めないことは帯に出すようにした"
+      "why": "Pages は GitHub Pages を指す語として既に使われていたので、ページ一覧と地図の節の名前を改名した。ナビの「なし」を 404 のときだけにし、地図を読めないことは帯に出すようにした",
+      "notes": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 147,
+          "end": 148,
+          "text": "ページ名を URL から推測するのをやめる。`explain-meta` が無いのは Actions が入口に置いたテンプレートだけなので、そのときは入口とみなす。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 173,
+          "end": 182,
+          "text": "「(なし)」にするのは 404 が返ったときだけにする。それ以外の失敗ではページがあるかどうか分からないので、リンクのまま残す。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 283,
+          "end": 289,
+          "text": "地図を読めなかったことを上部の帯に出す。地図の節を持たない振る舞いのページでも、このページが最新か確かめられないことが見える。"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "start": 56,
+          "end": 59,
+          "text": "ページ名の検査は組み立てのスクリプトだけに任せ、シェル側の正規表現の検査は外す。組み立てを通ったページ名だけが置き先のファイル名になる。"
+        }
+      ]
     },
     {
       "sha": "77b8e615cda35d63b642fdc50c1d198877995586",
       "phase": "hard",
       "role": "ページ名の突き合わせのケースを足す",
-      "why": "`data-page` の突き合わせを、入口以外のページと属性が欠けたときでも判定表で確かめる"
+      "why": "`data-page` の突き合わせを、入口以外のページと属性が欠けたときでも判定表で確かめる",
+      "notes": [
+        {
+          "path": ".github/scripts/build-pr-explain-page-cases.sh",
+          "start": 120,
+          "end": 128,
+          "text": "`data-page` の突き合わせを、入口以外(技術)のページでも確かめる。属性が無い断片を公開先のページ名とみなさず断ることも見る。"
+        },
+        {
+          "path": ".github/scripts/build-pr-explain-page-cases.sh",
+          "start": 130,
+          "end": 136,
+          "text": "`--page` を省くと、入口とみなして組み立てずに引数の誤り(2)で止まり、ページを書き出さないことを確かめる。"
+        }
+      ]
     },
     {
       "sha": "a0d0badd3487d224bc599d123f4bbea4daff149b",
       "phase": "prep",
       "role": "技術のページに「どこで何をしているか」の索引を置く",
-      "why": "ユーザーの要望で、やっていることごとに実装の場所(path:line)と誰がいつ呼ぶかを 1 行で引けるようにした"
+      "why": "ユーザーの要望で、やっていることごとに実装の場所(path:line)と誰がいつ呼ぶかを 1 行で引けるようにした",
+      "notes": [
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "start": 79,
+          "end": 79,
+          "text": "技術のページの先頭に「どこで何をしているか」の索引を置く決まりを足す。やっていることごとに、実装の場所(`path:line`)と誰がいつ呼ぶかを 1 行で引けるようにする。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "start": 144,
+          "end": 148,
+          "text": "索引の書き方の見本。「やっていること / 場所 / 呼ばれ方」の 3 列の表で、場所は行リンクになる `code.ref` で書く。"
+        }
+      ]
     },
     {
       "sha": "9267f565c14f4414ea96a0a56ca7a2cbbb8a438a",
       "phase": "prep",
       "role": "索引を場所の表からコードの抜粋にする",
-      "why": "場所だけの表では、開かないと何をしているかが読めない。行番号付きの抜粋と 1〜2 文を置き、抜粋はファイルから行範囲を取り出して作る(手で写さない)。この考え方は、テストの画面の `excerpt` に残っている"
+      "why": "場所だけの表では、開かないと何をしているかが読めない。行番号付きの抜粋と 1〜2 文を置き、抜粋はファイルから行範囲を取り出して作る(手で写さない)。この考え方は、テストの画面の `excerpt` に残っている",
+      "notes": [
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "start": 79,
+          "end": 79,
+          "text": "「どこで何をしているか」を、場所(`path:line`)だけの表から、それをしているコードの抜粋と 1〜2 文の説明・呼ばれ方に変える。場所だけでは、ファイルを開かないと何をしているかが読めないため。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "start": 81,
+          "end": 81,
+          "text": "「コードの読み方」では同じ抜粋をもう一度載せず、「どこで何をしているか」の見出し(`#w-…`)へのリンクで済ませる。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "start": 152,
+          "end": 161,
+          "text": "抜粋は手で写さず、ファイルから行範囲を切り出し、行番号を付けて HTML エスケープして出す。写し間違いや、エスケープ漏れの `<` が入るのを防ぐ。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 98,
+          "end": 99,
+          "text": "行番号の見た目。`user-select: none` なので、抜粋をコピーしても行番号は入らない。"
+        }
+      ]
     },
     {
       "sha": "1b45435f439f4f30444529682bf5550f69e1ee57",
       "phase": "prep",
       "role": "ナビを固定し、コード抜粋に色と開閉を付ける",
-      "why": "ユーザーのフィードバックで、ヘッダの固定・抜粋の開閉・言語ごとの色分け・薄い青ベースの配色を入れた。配色はのちにユーザーのデザインへ置き換わる"
+      "why": "ユーザーのフィードバックで、ヘッダの固定・抜粋の開閉・言語ごとの色分け・薄い青ベースの配色を入れた。配色はのちにユーザーのデザインへ置き換わる",
+      "notes": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 213,
+          "end": 215,
+          "text": "上に固定したヘッダの高さを ResizeObserver で測り、`--header-h` に入れる。ナビが折り返すと高さが変わるので、固定値にはしない。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 80,
+          "end": 81,
+          "text": "目次の固定位置と、見出しへ飛んだときの上の余白を `--header-h` から決める。見出しが固定ヘッダの下に隠れないようにするため。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 257,
+          "end": 268,
+          "text": "`#` で始まるコメントは、Python 以外では行頭か空白の直後のときだけ認める。シェルの `$#` や URL の `#` をコメントと取り違えない。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 317,
+          "end": 329,
+          "text": "色は `span` の textContent で付け、抜粋が HTML として解釈される経路を作らない。行番号(`.ln`)の中は色付けの対象から外す。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 349,
+          "end": 363,
+          "text": "抜粋を開閉できる `<details>` に入れ、見出しに上の `path:行` と行数を出す。言語が diff なら行ごとの背景を、それ以外は字句ごとの色を付ける。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 368,
+          "end": 382,
+          "text": "ヘッダに「コードをすべて畳む / 開く」ボタンを出す。1 つでも開いていれば「畳む」になり、抜粋を個別に開閉したときも表示を合わせ直す。"
+        }
+      ]
     },
     {
       "sha": "a88ac650e310a25a8eef9cf75e757669edc7afcf",
       "phase": "revise",
       "role": "コードの色分けへのレビューを反映",
-      "why": "規則表が自分で持つキーだけを引くようにした(`constructor` のような名前で固定スクリプト全体が止まらないため)。行番号付きの diff でも色が付くようにし、字句の関数は可変の状態を引き回さない形にした"
+      "why": "規則表が自分で持つキーだけを引くようにした(`constructor` のような名前で固定スクリプト全体が止まらないため)。行番号付きの diff でも色が付くようにし、字句の関数は可変の状態を引き回さない形にした",
+      "notes": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 352,
+          "end": 358,
+          "text": "言語は `data-lang` か拡張子から引くが、規則表が自分で持つキーだけを見る(`Object.hasOwn`)。`constructor` のような値でプロトタイプのメンバーを引いて、スクリプト全体が止まるのを防ぐ。`data-lang` に `ts` のような拡張子も書けるようになった。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 233,
+          "end": 234,
+          "text": "字句に、閉じないまま行が終わった文字列・コメントの閉じ記号(`opens`)を持たせる。共有の状態を書き換えずに、次の行への持ち越しを表すため。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 304,
+          "end": 317,
+          "text": "1 つのテキストノードを字句に分け、次のノードへの持ち越し(`carry`)を新しい値として返す。書き換えられる state を引数で引き回す形をやめた。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 338,
+          "end": 347,
+          "text": "行番号付きの diff 抜粋では、行番号の `span` をいったん外して本文だけで行を割り、同じ行の頭へ戻す。行番号を保ったまま、追加・削除の背景を付けられる。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "start": 213,
+          "end": 214,
+          "text": "`data-lang` に書ける値は、テンプレートの規則表のキーと `diff` だと明記する。それ以外の値は色が付かないだけで、検査では落ちない。"
+        }
+      ]
     },
     {
       "sha": "f51f6fbb6e695373f4ec75265e2afdeff10ef77a",
       "phase": "prep",
       "role": "コード抜粋を差分とコードの 2 つの表示で見せる",
-      "why": "抜粋を PR の起点からの diff として作り、GitHub と同じ差分(変更前・変更後の行番号と +/-)と、変更後のコードを切り替えられるようにした。経緯の画面の差分表示は、この形を引き継いでいる"
+      "why": "抜粋を PR の起点からの diff として作り、GitHub と同じ差分(変更前・変更後の行番号と +/-)と、変更後のコードを切り替えられるようにした。経緯の画面の差分表示は、この形を引き継いでいる",
+      "notes": [
+        {
+          "path": ".github/scripts/build-pr-explain-excerpt.py",
+          "start": 48,
+          "end": 61,
+          "text": "起点の中身を一時ファイルに書き、作業ツリーのファイルとの diff を全行を文脈にして取る。1 つの hunk になるので、行番号を 1 行目から数えられる。変更が無ければ全行を文脈として返す。"
+        },
+        {
+          "path": ".github/scripts/build-pr-explain-excerpt.py",
+          "start": 76,
+          "end": 89,
+          "text": "範囲に入れる行の選び方。消した行は「その次に来る変更後の行」が範囲内のときだけ入れる。範囲の先頭の直前で消した行は入り、末尾の直後で消した行は入らない。"
+        },
+        {
+          "path": ".github/scripts/build-pr-explain-excerpt-cases.sh",
+          "start": 62,
+          "end": 70,
+          "text": "判定表。新規ファイルは全行が追加になること、範囲の境目で消した行の扱い、範囲の外の変更が入らないこと、引数の誤りは終了コード 2 になることを、1 ケース 1 行で確かめる。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 362,
+          "end": 373,
+          "text": "diff の各行に、`@@` の見出しから数え直した変更前・変更後の行番号を振る。足した行は変更前の番号を、消した行は変更後の番号を持たない。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 385,
+          "end": 392,
+          "text": "2 つの表示の定義。「差分」は GitHub と同じく変更前・変更後の行番号と `+`/`-` を出す。「コード」は変更後の行(足した行と文脈)だけを、変更後の番号で出す。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 486,
+          "end": 500,
+          "text": "ヘッダの「すべてコードで表示 / すべて差分で表示」と、抜粋ごとの切り替えボタン。全部がコード表示のときだけ、ヘッダのボタンが「すべて差分で表示」に変わる。"
+        }
+      ]
     },
     {
       "sha": "cba4db683515f83931953193e07c76654a7c1408",
       "phase": "revise",
       "role": "コード抜粋と置き場の判定表へのレビューを反映",
-      "why": "抜粋は HEAD から読むようにした(作業ツリーだけの編集やリポジトリ外のファイルを載せないため)。置き場の判定表の `grep -q` が SIGPIPE で時々落ちていたのも、ここで直した"
+      "why": "抜粋は HEAD から読むようにした(作業ツリーだけの編集やリポジトリ外のファイルを載せないため)。置き場の判定表の `grep -q` が SIGPIPE で時々落ちていたのも、ここで直した",
+      "notes": [
+        {
+          "path": ".github/scripts/build-pr-explain-excerpt.py",
+          "start": 183,
+          "end": 196,
+          "text": "git の中身を読む前に分かる誤りを先に断る。リポジトリのルート以外で走らせた・`--base` がコミットを指さない・HEAD にファイルが無い、はどれも終了コード 2。"
+        },
+        {
+          "path": ".github/scripts/build-pr-explain-excerpt.py",
+          "start": 56,
+          "end": 65,
+          "text": "`--base` をコミットの sha に解く。空の値や `-` で始まる値は git のオプションとして読まれうるので、git に渡さず「指さない」扱いにする。"
+        },
+        {
+          "path": ".github/scripts/build-pr-explain-excerpt.py",
+          "start": 210,
+          "end": 213,
+          "text": "変更後の中身を作業ツリーではなく HEAD から読む。解説の sha と同じ中身になり、コミットしていない編集が抜粋に混ざらない。起点に無いファイルは空として扱い、全行が追加になる。"
+        },
+        {
+          "path": ".github/scripts/build-pr-explain-excerpt.py",
+          "start": 87,
+          "end": 90,
+          "text": "行は `\\n` だけで割る。`splitlines` は U+2028 などの文字でも割るので、git の行番号とずれる。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 393,
+          "end": 405,
+          "text": "色の持ち越しを、変更前の側と変更後の側で分ける。消した行で閉じなかった文字列が、続く足した行まで文字列の色に染めないようにするため。文脈の行で両側を揃える。"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "start": 77,
+          "end": 81,
+          "text": "`grep -q` は見つけた時点で読むのをやめるため、書き途中の `git show` が SIGPIPE で落ち、`pipefail` で偽になることがある。最後まで読む `grep -F … >/dev/null` にして、時々落ちるのを防ぐ。"
+        }
+      ]
     },
     {
       "sha": "f6bb371127168b74a5094d53b71777c41709b0cb",
       "phase": "prep",
       "role": "依存の図・処理の流れの図・確認の印・目次を足す",
-      "why": "地図に変更ファイルどうしの依存を足して図にし、`A -> B: 文` の流れをシーケンス図にした。抜粋ごとの「確認した」の印もここで入れた。依存は構造マップの線に、流れはやりとりの流れに、確認の印はレビューポイントに引き継がれている"
+      "why": "地図に変更ファイルどうしの依存を足して図にし、`A -> B: 文` の流れをシーケンス図にした。抜粋ごとの「確認した」の印もここで入れた。依存は構造マップの線に、流れはやりとりの流れに、確認の印はレビューポイントに引き継がれている",
+      "notes": [
+        {
+          "path": ".github/scripts/build-pr-change-map.py",
+          "start": 294,
+          "end": 297,
+          "text": "依存を探す前に、コメントだけの行と Python の docstring を落とす。「理由は x を見る」のような説明が、逆向きの依存として数えられないようにするため。"
+        },
+        {
+          "path": ".github/scripts/build-pr-change-map.py",
+          "start": 300,
+          "end": 309,
+          "text": "あるファイルが別の変更ファイルを指しているかの判定。フルパスのほか、同じフォルダならファイル名だけ(`$dir/x.py` を含む)でも当てる。前後がパスの文字に続くものは別のパスの一部として除き、ありふれた `index.*` も除く。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 497,
+          "end": 511,
+          "text": "`pre.sequence` の `A -> B: 文`(呼び出し)と `A --> B: 文`(戻り)を読み取る。読めない行が 1 つでもあれば図にせず元の文字のまま残し、書いた人がページで気づけるようにする。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 607,
+          "end": 621,
+          "text": "抜粋ごとの「確認した」を、PR・解説の sha・ページごとの鍵で読み手のブラウザに残す。localStorage が使えない環境では例外を受けて「残さない」扱いにし、ページは読めるままにする。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 725,
+          "end": 734,
+          "text": "いま読んでいる見出し(固定ヘッダの下端を最後に越えたもの)を目次で強調し、その h2 の下の h3 だけを開く。目次の見える範囲から外れたら、目次をスクロールして追う。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 781,
+          "end": 790,
+          "text": "依存の図の列を決める深さ。何も使わないファイル(土台)が 0 で、使う相手の深さ + 1。循環しても止まるよう、繰り返しをファイル数で打ち切る。"
+        }
+      ]
     },
     {
       "sha": "f4246de7b368d38dc6c802123bbc78cb9a103596",
       "phase": "revise",
       "role": "依存の拾い方・確認の印・目次へのレビューを反映",
-      "why": "import の解き方を import 規約の検査と共有した(`ts_sources` の `resolve_import`)。同じ規則を 2 か所に持たないため。確認の印の鍵が並び順で付いていた誤りも直した"
+      "why": "import の解き方を import 規約の検査と共有した(`ts_sources` の `resolve_import`)。同じ規則を 2 か所に持たないため。確認の印の鍵が並び順で付いていた誤りも直した",
+      "notes": [
+        {
+          "path": ".claude/hooks/lib/ts_sources.py",
+          "start": 52,
+          "end": 67,
+          "text": "import の解決(`@/` と相対パス。拡張子と `index` を補う)を、import 規約の検査から共有の lib へ移した。変更の地図の依存も同じ解決を使い、2 つの判定がずれないようにする。"
+        },
+        {
+          "path": ".github/scripts/build-pr-change-map.py",
+          "start": 69,
+          "end": 74,
+          "text": "説明として落とす範囲を広げる。行末の `#` / `//` は前後に空白があるものだけ落とし(URL の `//` やシェルの `$#` は残す)、`/* */` は JSX の `{/* */}` も含めて落とす。"
+        },
+        {
+          "path": ".github/scripts/build-pr-change-map.py",
+          "start": 347,
+          "end": 358,
+          "text": "本文をパスらしい字句に 1 回だけ分け、変更ファイルと照合する。変更ファイルごとに読み直さないので大きな PR でも遅くならず、字句単位なので `ax.py` が `x.py` に当たらない。`$dir/…` などは使う側のフォルダからの相対として解く。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 466,
+          "end": 470,
+          "text": "確認の印の鍵(`path:行`)を、場所の要素を summary へ移す前に控える。移した後に読むと空になり、鍵が並び順だけで決まって、印が別の抜粋に付いていた。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 712,
+          "end": 725,
+          "text": "目次の「確認済み」の印を、h3 は次の見出しまで、h2 は配下の h3 の抜粋も含めて数える。以前は h2 の直下に抜粋が無いと、h2 に印が付かなかった。"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 808,
+          "end": 810,
+          "text": "循環があると深さが打ち切りの値へ飛ぶので、実際に使われている深さだけを詰めて列にする。依存の図の列に空きができない。"
+        }
+      ]
     }
   ],
   "suites": [
