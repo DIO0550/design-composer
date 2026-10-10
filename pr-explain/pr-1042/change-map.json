@@ -4,7 +4,7 @@
   "headBranch": "claude/magical-cannon-8hrkiy",
   "baseBranch": "main",
   "mergeBase": "eb5d13c0ca9fa42a1fb39566cce8c79cf249f6f5",
-  "head": "1ec55778113d11b80ee8638d1ec2243be0626804",
+  "head": "fc3e8342b137bf23bc5145ebb987b50299eff2b7",
   "groups": [
     {
       "label": "domains / unit",
@@ -1213,7 +1213,75 @@
       "label": "ハーネス",
       "files": [
         {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "changed": false
+        },
+        {
           "path": ".claude/hooks/lib/named-path-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 7,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/explain.json",
+          "status": "M",
+          "oldPath": null,
+          "additions": 11,
+          "deletions": 11,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-pr-explain-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 16,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/build-pr-explain.py",
+          "status": "M",
+          "oldPath": null,
+          "additions": 40,
+          "deletions": 6,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "changed": false
+        },
+        {
+          "path": ".github/workflows/pr-explain.yml",
+          "changed": false
+        },
+        {
+          "path": "harness/githooks/pre-push",
           "changed": false
         }
       ]
@@ -2226,12 +2294,227 @@
           "truncated": false
         }
       ]
+    },
+    {
+      "sha": "05705f51c09f0d7810249b0c5283961de6d5829e",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-10T13:39:41Z",
+      "subject": "✨ [New Feature]: #1043 pr-explain の名前・見出しにコードの識別子があれば検査で落とす",
+      "body": "- build-pr-explain.py の ScalarRules に name の規則を足す。ASCII の小文字の直後に\n  大文字が来る箇所（camelCase / PascalCase の継ぎ目）が 1 か所でもあれば違反にする\n- 対象は 6 つのキー: concepts / messages の name、features / flows / suites の label、\n  overview.highlights の title。報告の分類は既存の pr-explain-shape\n\n背景:\nPR #1042 の解説で、構造マップの箱の名前を TokenTemplate・GradientToken・\nuseTokenActions のようにコードの識別子のまま書き、オーナーから「明らかに概念じゃない\n書き方」と指摘を受けた。スキルは name を「短い名前（図の表示名）」としか書いておらず、\n同じことが再発すると見込まれた。\n\n採用理由:\nAGENTS.md「ルールに書くくらいならフックにする」に従い、機械的に判定できる名前・\n見出しは検査で止める。単語の境界は見ない。日本語が空白なしで続く\n「TokenTemplateの規則」も落とすため。バッククォートの中も除かない。名前は書いた\nまま描かれるので、囲んで逃げると識別子が画面に出る。messages の name を対象に\n入れたのは、ページの表示名の切り替え（概念 / ファイル）で concepts の name と\n同じ役割を持つため。\n\n影響とトレードオフ:\nGitHub・TypeScript のように継ぎ目のある綴りの製品名も見出しでは落ちる。許可する語の\n一覧は持たず、見出しでは言い換える（「gh-pages への公開」など）。Tauri のように\n継ぎ目の無い製品名は通る。説明文（role / text / why など）は検査しない。\ntests の name（テスト名をそのまま書く）、overview の title（PR の題）、\nmessages の code（実際の呼び出しの綴り）は対象外。\n\n代替案:\n- 説明文も検査する: WebView・WebKitGTK など製品名の誤検出が多く、許可する語の一覧の手入れが要る\n- スキルの書き方だけを直す: 名前・見出しは機械的に判定できるので、検査で止める\n- 新しい分類（pr-explain-name）を作る: 形の規則の 1 つとして既存の分類に収まる\n\n参考:\nIssue #1043、#611 のコメント（オーナーの指摘）\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01HpMcYoZ5dWiNEEih2hNZaE",
+      "files": [
+        {
+          "path": ".github/scripts/build-pr-explain.py",
+          "status": "M",
+          "oldPath": null,
+          "additions": 23,
+          "deletions": 6,
+          "patch": "@@ -103,12 +103,27 @@ def is_count(value: object) -> bool:\n     return isinstance(value, int) and not isinstance(value, bool) and value >= 1\n \n \n+IdentifierJoint = re.compile(r\"[a-z][A-Z]\")\n+\n+\n+def is_concept_name(value: object) -> bool:\n+    \"\"\"空でない文字列で、ASCII の小文字の直後に大文字が来る箇所(camelCase / PascalCase の継ぎ目)が無いか。\n+\n+    単語の境界は見ない。日本語が空白なしで続く `TokenTemplateの規則` も落とすため。バッククォートの中も\n+    除かない。名前は書いたまま描かれ、`…` で囲んでも識別子がそのまま画面に出るため(highlights の title は\n+    `…` をコードとして描くが、題も概念で書くので扱いを揃える)。\n+    \"\"\"\n+    has_identifier_joint = isinstance(value, str) and IdentifierJoint.search(value) is not None\n+    return is_text(value) and not has_identifier_joint\n+\n+\n IdPattern = re.compile(r\"[A-Za-z0-9][A-Za-z0-9_-]{0,63}\")\n ShaPattern = re.compile(r\"[0-9a-f]{40}\")\n \n # 値の規則と、違反したときの説明。\n ScalarRules: dict[str, tuple[Callable[[object], bool], str]] = {\n     \"text\": (is_text, \"空でない文字列\"),\n+    \"name\": (is_concept_name, \"概念の名前(docs の語彙。camelCase / PascalCase の識別子や製品名は書かない)\"),\n     \"id\": (lambda value: isinstance(value, str) and IdPattern.fullmatch(value) is not None, f\"id({IdPattern.pattern})\"),\n     \"sha\": (lambda value: isinstance(value, str) and ShaPattern.fullmatch(value) is not None, \"小文字 40 桁の sha\"),\n     \"count\": (is_count, \"1 以上の整数\"),\n@@ -118,6 +133,8 @@ ScalarRules: dict[str, tuple[Callable[[object], bool], str]] = {\n }\n \n Text = Scalar(\"text\")\n+# 図・一覧の見出しになる名前(concepts / messages の name、features / flows / suites の label、highlights の title)。\n+Name = Scalar(\"name\")\n Id = Scalar(\"id\")\n Sha = Scalar(\"sha\")\n Count = Scalar(\"count\")\n@@ -155,12 +172,12 @@ Shapes: dict[str, dict[str, Field]] = {\n         \"highlights\": may(Many(Shape(\"Highlight\"))),\n     },\n     \"Behavior\": {\"text\": need(Text), \"message\": may(Id)},\n-    \"Highlight\": {\"title\": need(Text), \"text\": need(Text), \"go\": need(Variant(\"Target\"))},\n-    \"Feature\": {\"id\": need(Id), \"label\": need(Text), \"role\": need(Text)},\n+    \"Highlight\": {\"title\": need(Name), \"text\": need(Text), \"go\": need(Variant(\"Target\"))},\n+    \"Feature\": {\"id\": need(Id), \"label\": need(Name), \"role\": need(Text)},\n     \"LayerRole\": {\"layer\": need(Text), \"role\": need(Text)},\n     \"Concept\": {\n         \"path\": need(Text),\n-        \"name\": need(Text),\n+        \"name\": need(Name),\n         \"role\": need(Text),\n         \"feature\": may(Id),\n         \"change\": may(Text),\n@@ -171,14 +188,14 @@ Shapes: dict[str, dict[str, Field]] = {\n         \"from\": need(Text),\n         \"to\": need(Text),\n         \"kind\": need(Word(MessageKinds)),\n-        \"name\": need(Text),\n+        \"name\": need(Name),\n         \"code\": need(Text),\n         \"via\": need(Word(Vias)),\n         \"payload\": may(Text),\n         \"returns\": may(Text),\n         \"status\": may(Word(MessageStatuses)),\n     },\n-    \"Flow\": {\"id\": need(Id), \"label\": need(Text), \"steps\": need(Many(Id, least=1))},\n+    \"Flow\": {\"id\": need(Id), \"label\": need(Name), \"steps\": need(Many(Id, least=1))},\n     \"CommitStory\": {\n         \"sha\": need(Sha),\n         \"phase\": need(Word(Phases)),\n@@ -197,7 +214,7 @@ Shapes: dict[str, dict[str, Field]] = {\n         \"end\": need(Count),\n         \"text\": need(Text),\n     },\n-    \"Suite\": {\"id\": need(Id), \"label\": need(Text), \"file\": need(Text)},\n+    \"Suite\": {\"id\": need(Id), \"label\": need(Name), \"file\": need(Text)},\n     \"Test\": {\n         \"id\": need(Id),\n         \"suite\": need(Id),",
+          "patchLines": 79,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "bb9cfd408fcd255b1585254dc1ac5945abc05fca",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-10T13:39:41Z",
+      "subject": "🧪 [Tests]: #1043 名前・見出しの識別子の検査を判定表で固定する",
+      "body": "- 落ちるケース: 6 つのキーに 1 件ずつ（TokenTemplate / useTokenActions / PrExplain /\n  putExplain の流れ / buildPrExplain / addStop の規則）と、日本語が直に続く\n  「TokenTemplateの規則」、バッククォートで囲んだ「`TokenTemplate`」\n- 通るケース: 大文字だけの略語（UI 案 / VRT）、concepts の role の識別子\n  （説明文は検査しない）、tests の name に sortBy を含む名前\n\n背景:\n直前のコミットで足した name の規則を判定表で守る。\n\n採用理由:\nキーごとに 1 件ずつ置いたのは、どれか 1 つを対象から漏らしても判定表が緑のまま\nにならないようにするため。通るケースは、検査が説明文やテスト名まで広がって\nしまったときに落ちるよう、見本の文に頼らず明示的に置いた。規則を一時的に外すと\n落ちるケース 8 件がすべて NG になることを確かめた。\n\n影響とトレードオフ:\n判定表の件数が増えるだけで、検査の実行時間はほぼ変わらない。\n\n代替案:\n- 見本のまま通るケースだけで対象外の範囲を守る: 見本の文に依存し、見本を直すと黙って守れなくなる\n\n参考:\nIssue #1043 の計画（フェーズ 4 の改訂）\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01HpMcYoZ5dWiNEEih2hNZaE",
+      "files": [
+        {
+          "path": ".github/scripts/build-pr-explain-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 11,
+          "deletions": 0,
+          "patch": "@@ -138,6 +138,17 @@ deny|shape|sample|Behavior に知らないキー|d[\"overview\"][\"after\"][0][\"k\"]\n deny|shape|sample|LayerRole に知らないキー|d[\"layerRoles\"][0][\"x\"] = \"y\"\n deny|shape|sample|Excerpt に知らないキー|d[\"tests\"][0][\"excerpt\"] = {\"path\": \"kept.txt\", \"start\": 1, \"end\": 2, \"lang\": \"py\"}\n deny|shape|sample|concept の graph が真偽値でない|d[\"concepts\"][3][\"graph\"] = \"false\"\n+deny|shape|sample|箱の名前(concept の name)が識別子|d[\"concepts\"][0][\"name\"] = \"TokenTemplate\"\n+deny|shape|sample|やりとりの名前(message の name)が識別子|d[\"messages\"][0][\"name\"] = \"useTokenActions\"\n+deny|shape|sample|機能の名前(feature の label)が識別子|d[\"features\"][0][\"label\"] = \"PrExplain\"\n+deny|shape|sample|流れの名前(flow の label)が識別子|d[\"flows\"][0][\"label\"] = \"putExplain の流れ\"\n+deny|shape|sample|suite の名前(suite の label)が識別子|d[\"suites\"][0][\"label\"] = \"buildPrExplain\"\n+deny|shape|sample|見てほしい点の題(highlight の title)が識別子|d[\"overview\"][\"highlights\"][0][\"title\"] = \"addStop の規則\"\n+deny|shape|sample|名前の識別子に日本語が空白なしで続く|d[\"concepts\"][0][\"name\"] = \"TokenTemplateの規則\"\n+deny|shape|sample|名前の識別子をバッククォートで囲む|d[\"concepts\"][0][\"name\"] = \"`TokenTemplate`\"\n+pass|-|sample|名前に大文字だけの略語(UI 案・VRT)は書ける|d[\"concepts\"][0][\"name\"] = \"UI 案\"; d[\"features\"][0][\"label\"] = \"VRT\"\n+pass|-|sample|説明文(concept の role)の識別子は検査しない|d[\"concepts\"][0][\"role\"] = \"TokenTemplate を組み立てる\"\n+pass|-|sample|テスト名(test の name)の識別子は検査しない|d[\"tests\"][0][\"name\"] = \"sortBy で並べ替えたとき順序が保たれる\"\n deny|meta|sample|pr が公開先と違う|d[\"pr\"] = d[\"pr\"] + 1\n deny|ref|sample|message の from が concepts に無い|d[\"messages\"][0][\"from\"] = \"no/such\"\n deny|ref|sample|message の to が concepts に無い|d[\"messages\"][0][\"to\"] = \"no/such\"",
+          "patchLines": 18,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "bd2f4bd342770bcc7e2ebc8a3447edb9a67f7aed",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-10T13:39:41Z",
+      "subject": "📝 [Documentation]: #1043 pr-explain スキルに、名前・見出しと説明文での識別子の書き方を書く",
+      "body": "- 「explain.json の形」の共通の規則に、検査する 6 つのキー・判定・対象外のキーを\n  1 か所にまとめて書く\n- 書き方の表の concepts の行に「name は概念の名前（docs の語彙）」を足す\n- 表の下に「説明文でも識別子を地の文の主語にしない。実装の名前を指すときだけ\n  `…` で書く」を足す\n\n背景:\nPR #1042 で、箱の名前と説明文の両方に識別子をそのまま書いた（オーナーの指摘）。\n名前・見出しは検査で止めたが、説明文は検査しないので、書き方として残す。\n\n採用理由:\n検査が実際に落とす範囲と、検査しないが書かないものを分けて書いた。継ぎ目のある\n綴りの識別子・製品名は落ちるが、ファイル名・snake_case・継ぎ目の無い製品名は\n落ちない。分けずに「検査で落ちる」と書くと、実物と食い違う。\n\n影響とトレードオフ:\n常時ロードの rules/ は増やさない（スキルは呼んだときだけ読まれる）。\n\n代替案:\n- 書き方の表の各行に分けて書く: 同じ判断が複数の行に散る\n\n参考:\nIssue #1043\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01HpMcYoZ5dWiNEEih2hNZaE",
+      "files": [
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 1,
+          "patch": "@@ -85,6 +85,14 @@ Files changed にも混ざるため)。\n - 文字列は空にしない。説明文(`title`・`lead`・`text`・`why`・`given` / `when` / `then` など)の中の\n   `` `…` `` は、ページがコードとして描く。名前(`name`・`label`)と `code` は書いたまま出す。HTML は\n   書いても文字のまま出る\n+- **名前は概念の名前(docs の語彙)で書く。** 検査するのは `concepts[].name`・`messages[].name`・\n+  `features[].label`・`flows[].label`・`suites[].label`・`overview.highlights[].title` の 6 つで、\n+  ASCII の小文字の直後に大文字が来る箇所(`[a-z][A-Z]`)が 1 つでもあれば落ちる。単語の境界は見ず、\n+  `` `…` `` の中も除かない(名前は書いたまま出るので、囲んでも識別子が画面に出る。highlights の\n+  `title` は `` `…` `` をコードとして描くが、題も概念で書くので扱いを揃える)。camelCase / PascalCase の\n+  識別子と、同じ綴りの製品名(GitHub など)は検査で落ちる。ほかの製品名・ファイル名・snake_case も\n+  書かない(こちらは検査しない)。製品名は言い換える(例: 「gh-pages への公開」)。`tests[].name`・\n+  `overview.title`・`messages[].code` は対象外\n - id は `^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$`、sha は小文字 40 桁\n - 知らないキーと重複したキーは、入れ子を含めて落ちる\n - 任意の配列は、省けば `[]` と同じ\n@@ -140,11 +148,12 @@ layer・concept のパス)は検査せず、外れたものはページが「地\n | `overview` | `title` は PR の題、`lead` は何ができるようになったかの 1〜2 文。`before` / `after` は操作・状況ごとの振る舞いを 1 つ 1 行で(空・エラー・境界の状況も)。関わるやりとりがあれば `message` で指す | 実装の手順 |\n | `overview.highlights` | 特に見てほしい箇所(自信のない判断・未決のまま入れたもの・目で見ないと分からない表示)と、押したときに図のどこへ移るか(`go`) | 「全体を見てください」 |\n | `features` / `layerRoles` | 機能・層がこの PR で担う役割を 1 文。`layerRoles` の `layer` の綴りは地図の `groups[].label` に揃える | |\n-| `concepts` | 箱にしたいファイルと、その短い名前(`name`。図の表示名になる)・役割・何を変えたか(`change`)。変更していないファイルも名指しすると箱になる。図に出さず木にだけ出すなら `graph: false` | 変更ファイルの列挙だけ(箱は地図からも出る) |\n+| `concepts` | 箱にしたいファイルと、その短い名前(`name`。概念の名前(docs の語彙)で、図の表示名になる)・役割・何を変えたか(`change`)。変更していないファイルも名指しすると箱になる。図に出さず木にだけ出すなら `graph: false` | 変更ファイルの列挙だけ(箱は地図からも出る) |\n | `messages` / `flows` | 箱どうしのやりとり。`kind` は変える(`cmd`)/ 問い合わせる(`qry`)/ 知らせる(`evt`)、`code` は実際の呼び出しの綴り。このブランチで足した・変えた・消したものは `status` を `added` / `changed` / `removed` にする(テストの抜けは `added` と `changed` で数える)。`flows` は操作・イベントごとのやりとりの順で、2〜4 本 | 1 つの関数の中の手順 |\n | `commitStories` | コミットごとに、`role`(何をするコミットか 1 行)・`why`(なぜこの順でこうしたか)・`review`(レビューで見てほしい点を 1 点 1 文)・振る舞いの前後・行への注釈(`notes`)。`phase` は下ごしらえ(`prep`)/ 本体(`core`)/ 安定化(`hard`)/ 指摘の反映(`revise`)/ 仕上げ(`fin`) | 件名・本文の写し(地図から出る) |\n | `suites` / `tests` | テストごとに、守る振る舞い(`why`)・前提 / 操作 / 期待・使った技法・境界の値の表(`values`)・確かめているやりとり(`covers`)と箱(`targets`)。テストコードは `excerpt` で範囲を指す | テストコードの写し |\n \n+- **説明文でも、識別子を地の文の主語にしない。** 実装の名前を指すときだけ `` `…` `` で書く\n - **`review` の文は、確認の印の鍵になる。** 読み手のブラウザは「コミットの sha + 文」で確認済みを\n   覚えるので、文を書き直すとその点の印は外れる(別の点へ移らない)\n - **`tests[].name` はテスト名そのままで書く。** ページは、地図がテスト名を調べたファイル(`tests.files`。",
+          "patchLines": 29,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "4ce8e96cfa1876a365a9923f710c72a4d7425f8d",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-10T13:53:27Z",
+      "subject": "♻️ [Refactoring]: #1043 見出しの検査で docs の語を通し、名前と理由の置き場所を整える",
+      "body": "- docs/*.md から「小文字と大文字の継ぎ目がある語」の集合（DocsJointWords）を導き、\n  見出しの継ぎ目付きの語がすべてそこに入っていれば通す（widthMode・publicProps・GitHub など）\n- 改名: is_concept_name → is_text_with_only_docs_joints、IdentifierJoint →\n  IdentifierJointPattern、規則のキー name / Name → heading / Heading\n- 判定の理由（単語境界を見ない・バッククォートを除かない・docs の語を通す・\n  大文字だけの略語は通す）はモジュールの冒頭だけに置き、6 キーの手書きの列挙を消す\n\n背景:\n実装の検証（over-guard / naming / duplication / comment / harness / solution）の指摘への対応。\n「docs の語彙で書く」と案内しながら、docs が仕様の語として使う .dcmp のキー名\n（publicProps 宣言・widthMode の fill）まで落としていた。\n\n採用理由:\ndocs/*.md で継ぎ目を含む語は .dcmp のキー名と製品名だけで、指摘のあった\nTokenTemplate などのコードの識別子は 0 件だった。docs を正本にして導くので、\n計画で却下した「許可する語の一覧を手で持つ」案と違い、手入れが要らない。\n規則のキーを heading にしたのは、スキルの既存の「名前（name・label）」には\ntests[].name が入り、highlights の title が入らず、範囲が違うため。\n\n影響とトレードオフ:\ndocs の無い場所（pr-explain-pages-cases.sh の一時リポジトリ）では集合が空になり、\n落とす側に倒れる。いまのフィクスチャには継ぎ目付きの語が無いので影響しない。\n\n代替案:\n- docs の語も落として言い換えさせる: docs に無い語が画面に出て、naming 規約の「仕様書に何回出るか」に反する\n- 許可する語の一覧を手で持つ: 手入れが要る（計画で却下）\n\n参考:\nIssue #1043 のフェーズ 6 のコメント\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01HpMcYoZ5dWiNEEih2hNZaE",
+      "files": [
+        {
+          "path": ".github/scripts/build-pr-explain.py",
+          "status": "M",
+          "oldPath": null,
+          "additions": 35,
+          "deletions": 18,
+          "patch": "@@ -20,6 +20,16 @@ concept が地図にあるか)は見ない。** 地図は push のたびに作\n `text` として足す。行は改行で割って数える(末尾に改行の無い最終行も 1 行)。入力に `text` を\n 書いた解説は落とす(手で写した中身が黙って上書きされるのを、書いた側に知らせるため)。\n \n+見出し(`Heading` を使うキー)は、小文字と大文字の継ぎ目(`[a-z][A-Z]`)がある複合語を、docs に出る語の\n+ほかは落とす。大文字だけの略語(UI 案・VRT)はこのリポジトリの語彙なので通す。1 語の識別子・ファイル名・snake_case は\n+綴りで識別子と言い切れないので見ない(見出しには書かない)。\n+\n+- 語は ASCII 英数字の並びで切り出し、単語の境界は見ない。日本語が空白なしで続く識別子も落とすため\n+- `` `…` `` の中も除かない。名前は書いたまま描かれ、囲んでも識別子がそのまま画面に出るため\n+- highlights の `title` は `` `…` `` をコードとして描くが、題も概念で書くので他の見出しと扱いを揃える\n+- docs(`docs/*.md`)に出る語は通す。`.dcmp` のキー名や製品名は仕様の語で、言い換えるとかえって伝わらない\n+  ため。一覧を手で持たず docs を正本にする\n+\n 使い方:\n     build-pr-explain.py <explain.json> --pr <番号> --out <書き出す先> [--repo <リポジトリ>]\n \n@@ -103,18 +113,26 @@ def is_count(value: object) -> bool:\n     return isinstance(value, int) and not isinstance(value, bool) and value >= 1\n \n \n-IdentifierJoint = re.compile(r\"[a-z][A-Z]\")\n+IdentifierJointPattern = re.compile(r\"[a-z][A-Z]\")\n+AsciiWordPattern = re.compile(r\"[A-Za-z0-9]+\")\n \n \n-def is_concept_name(value: object) -> bool:\n-    \"\"\"空でない文字列で、ASCII の小文字の直後に大文字が来る箇所(camelCase / PascalCase の継ぎ目)が無いか。\n+def joint_words(text: str) -> set[str]:\n+    \"\"\"ASCII 英数字の並びで切り出した語のうち、小文字と大文字の継ぎ目(`[a-z][A-Z]`)を含むものを集める。\"\"\"\n+    return {word for word in AsciiWordPattern.findall(text) if IdentifierJointPattern.search(word) is not None}\n \n-    単語の境界は見ない。日本語が空白なしで続く `TokenTemplateの規則` も落とすため。バッククォートの中も\n-    除かない。名前は書いたまま描かれ、`…` で囲んでも識別子がそのまま画面に出るため(highlights の title は\n-    `…` をコードとして描くが、題も概念で書くので扱いを揃える)。\n-    \"\"\"\n-    has_identifier_joint = isinstance(value, str) and IdentifierJoint.search(value) is not None\n-    return is_text(value) and not has_identifier_joint\n+\n+# docs が仕様の語として使う、継ぎ目を含む語(`.dcmp` のキー名・製品名)。\n+DocsJointWords = frozenset(\n+    word\n+    for doc in sorted((Path(__file__).resolve().parents[2] / \"docs\").glob(\"*.md\"))\n+    for word in joint_words(doc.read_text(encoding=\"utf-8\"))\n+)\n+\n+\n+def is_text_with_only_docs_joints(value: object) -> bool:\n+    \"\"\"空でない文字列で、継ぎ目を含む語がすべて docs に出る語か。\"\"\"\n+    return is_text(value) and joint_words(value) <= DocsJointWords\n \n \n IdPattern = re.compile(r\"[A-Za-z0-9][A-Za-z0-9_-]{0,63}\")\n@@ -123,7 +141,7 @@ ShaPattern = re.compile(r\"[0-9a-f]{40}\")\n # 値の規則と、違反したときの説明。\n ScalarRules: dict[str, tuple[Callable[[object], bool], str]] = {\n     \"text\": (is_text, \"空でない文字列\"),\n-    \"name\": (is_concept_name, \"概念の名前(docs の語彙。camelCase / PascalCase の識別子や製品名は書かない)\"),\n+    \"heading\": (is_text_with_only_docs_joints, \"見出し(小文字と大文字の継ぎ目がある複合語は、docs に出る語のほかは書かない)\"),\n     \"id\": (lambda value: isinstance(value, str) and IdPattern.fullmatch(value) is not None, f\"id({IdPattern.pattern})\"),\n     \"sha\": (lambda value: isinstance(value, str) and ShaPattern.fullmatch(value) is not None, \"小文字 40 桁の sha\"),\n     \"count\": (is_count, \"1 以上の整数\"),\n@@ -133,8 +151,7 @@ ScalarRules: dict[str, tuple[Callable[[object], bool], str]] = {\n }\n \n Text = Scalar(\"text\")\n-# 図・一覧の見出しになる名前(concepts / messages の name、features / flows / suites の label、highlights の title)。\n-Name = Scalar(\"name\")\n+Heading = Scalar(\"heading\")\n Id = Scalar(\"id\")\n Sha = Scalar(\"sha\")\n Count = Scalar(\"count\")\n@@ -172,12 +189,12 @@ Shapes: dict[str, dict[str, Field]] = {\n         \"highlights\": may(Many(Shape(\"Highlight\"))),\n     },\n     \"Behavior\": {\"text\": need(Text), \"message\": may(Id)},\n-    \"Highlight\": {\"title\": need(Name), \"text\": need(Text), \"go\": need(Variant(\"Target\"))},\n-    \"Feature\": {\"id\": need(Id), \"label\": need(Name), \"role\": need(Text)},\n+    \"Highlight\": {\"title\": need(Heading), \"text\": need(Text), \"go\": need(Variant(\"Target\"))},\n+    \"Feature\": {\"id\": need(Id), \"label\": need(Heading), \"role\": need(Text)},\n     \"LayerRole\": {\"layer\": need(Text), \"role\": need(Text)},\n     \"Concept\": {\n         \"path\": need(Text),\n-        \"name\": need(Name),\n+        \"name\": need(Heading),\n         \"role\": need(Text),\n         \"feature\": may(Id),\n         \"change\": may(Text),\n@@ -188,14 +205,14 @@ Shapes: dict[str, dict[str, Field]] = {\n         \"from\": need(Text),\n         \"to\": need(Text),\n         \"kind\": need(Word(MessageKinds)),\n-        \"name\": need(Name),\n+        \"name\": need(Heading),\n         \"code\": need(Text),\n         \"via\": need(Word(Vias)),\n         \"payload\": may(Text),\n         \"returns\": may(Text),\n         \"status\": may(Word(MessageStatuses)),\n     },\n-    \"Flow\": {\"id\": need(Id), \"label\": need(Name), \"steps\": need(Many(Id, least=1))},\n+    \"Flow\": {\"id\": need(Id), \"label\": need(Heading), \"steps\": need(Many(Id, least=1))},\n     \"CommitStory\": {\n         \"sha\": need(Sha),\n         \"phase\": need(Word(Phases)),\n@@ -214,7 +231,7 @@ Shapes: dict[str, dict[str, Field]] = {\n         \"end\": need(Count),\n         \"text\": need(Text),\n     },\n-    \"Suite\": {\"id\": need(Id), \"label\": need(Name), \"file\": need(Text)},\n+    \"Suite\": {\"id\": need(Id), \"label\": need(Heading), \"file\": need(Text)},\n     \"Test\": {\n         \"id\": need(Id),\n         \"suite\": need(Id),",
+          "patchLines": 114,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "e6549c6bf3893670a29b04c972a768c211dda158",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-10T13:53:27Z",
+      "subject": "🧪 [Tests]: #1043 docs の語と 1 語の識別子が見出しで通ることを判定表で固定する",
+      "body": "- 通るケース「publicProps 宣言」: docs が仕様の語として使う語は通す\n- 通るケース「Result の扱い」: 1 語の識別子は検査しない（検査の限界を固定する）\n\n背景:\n直前のコミットで、docs の語を通すようにした。また、1 語の識別子は検査しないことを\nスキルに書いた。\n\n採用理由:\ndocs の語を通すことと、検査が継ぎ目のある複合語に限ることを判定表で守る。\n限界をケースに置いておくと、範囲を広げたときに意図して書き換えることになる。\n\n影響とトレードオフ:\n判定表の件数が 2 件増えるだけ。\n\n代替案:\n- 限界はスキルの文だけで示す: 判定が変わっても気づけない\n\n参考:\nIssue #1043\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01HpMcYoZ5dWiNEEih2hNZaE",
+      "files": [
+        {
+          "path": ".github/scripts/build-pr-explain-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "patch": "@@ -146,6 +146,8 @@ deny|shape|sample|suite の名前(suite の label)が識別子|d[\"suites\"][0][\"l\n deny|shape|sample|見てほしい点の題(highlight の title)が識別子|d[\"overview\"][\"highlights\"][0][\"title\"] = \"addStop の規則\"\n deny|shape|sample|名前の識別子に日本語が空白なしで続く|d[\"concepts\"][0][\"name\"] = \"TokenTemplateの規則\"\n deny|shape|sample|名前の識別子をバッククォートで囲む|d[\"concepts\"][0][\"name\"] = \"`TokenTemplate`\"\n+pass|-|sample|名前に docs が仕様の語として使う複合語(publicProps)は書ける|d[\"concepts\"][0][\"name\"] = \"publicProps 宣言\"\n+pass|-|sample|名前の 1 語の識別子(Result)は検査しない|d[\"concepts\"][0][\"name\"] = \"Result の扱い\"\n pass|-|sample|名前に大文字だけの略語(UI 案・VRT)は書ける|d[\"concepts\"][0][\"name\"] = \"UI 案\"; d[\"features\"][0][\"label\"] = \"VRT\"\n pass|-|sample|説明文(concept の role)の識別子は検査しない|d[\"concepts\"][0][\"role\"] = \"TokenTemplate を組み立てる\"\n pass|-|sample|テスト名(test の name)の識別子は検査しない|d[\"tests\"][0][\"name\"] = \"sortBy で並べ替えたとき順序が保たれる\"",
+          "patchLines": 9,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "d798395f97b5d5617a8f04bfe1a9850b94531a38",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-10T13:53:27Z",
+      "subject": "📝 [Documentation]: #1043 pr-explain スキルの見出しの規則を判定の範囲に合わせ、見本を揃える",
+      "body": "- 見出し（Heading を使うキー）の規則を、検査が実際に落とす範囲で書く:\n  小文字と大文字の継ぎ目がある複合語（docs に出る語を除く）は落ちる。\n  大文字だけの略語（UI 案・VRT）は書いてよい。1 語の識別子・ファイル名・\n  snake_case は検査しないが見出しには書かない\n- 理由と対象のキーはスキルに書き写さず、build-pr-explain.py を指す\n- 説明文では、実装の名前とファイル名を指すときに `…` で囲むと決める\n- 見本 templates/explain.json の地の文を、この書き方に揃える\n  （explain.json・put-explain などを `…` で囲み、textContent は言い換える）\n\n背景:\n実装の検証の指摘への対応。スキルの文が「PascalCase の識別子は落ちる」と書いて\nいたが、1 語の識別子は検査を通る。見本も、新しく足した書き方と逆の書き方をしていた。\n\n採用理由:\nスキルは手順 2 で「見本を写して書く」としているので、見本が逆の書き方をしていると\n書き手にそのまま引き継がれる。理由と対象のキーはスクリプト側に 1 か所だけ置く\n（スキルの既存の流儀: 「理由は build-pr-explain.py の冒頭」）。\n\n影響とトレードオフ:\n見本の文言だけが変わり、キーと構造は変わらない。\n\n代替案:\n- 見本はそのままにする: スキルの規則と見本が逆の答えを出す\n\n参考:\nIssue #1043 のフェーズ 6 のコメント\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01HpMcYoZ5dWiNEEih2hNZaE",
+      "files": [
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 9,
+          "patch": "@@ -85,14 +85,11 @@ Files changed にも混ざるため)。\n - 文字列は空にしない。説明文(`title`・`lead`・`text`・`why`・`given` / `when` / `then` など)の中の\n   `` `…` `` は、ページがコードとして描く。名前(`name`・`label`)と `code` は書いたまま出す。HTML は\n   書いても文字のまま出る\n-- **名前は概念の名前(docs の語彙)で書く。** 検査するのは `concepts[].name`・`messages[].name`・\n-  `features[].label`・`flows[].label`・`suites[].label`・`overview.highlights[].title` の 6 つで、\n-  ASCII の小文字の直後に大文字が来る箇所(`[a-z][A-Z]`)が 1 つでもあれば落ちる。単語の境界は見ず、\n-  `` `…` `` の中も除かない(名前は書いたまま出るので、囲んでも識別子が画面に出る。highlights の\n-  `title` は `` `…` `` をコードとして描くが、題も概念で書くので扱いを揃える)。camelCase / PascalCase の\n-  識別子と、同じ綴りの製品名(GitHub など)は検査で落ちる。ほかの製品名・ファイル名・snake_case も\n-  書かない(こちらは検査しない)。製品名は言い換える(例: 「gh-pages への公開」)。`tests[].name`・\n-  `overview.title`・`messages[].code` は対象外\n+- **見出しは概念の名前(docs の語彙)で書く。** 見出しは図・一覧の見出しになる文字列で、検査の対象は\n+  `build-pr-explain.py` の `Heading` を使うキー(名前のうち `tests[].name` を除いたものと、highlights の\n+  `title`)。小文字と大文字の継ぎ目がある複合語(docs に出る語を除く)があれば落ちる。大文字だけの略語\n+  (UI 案・VRT)はこのリポジトリの語彙なので書いてよい。1 語の識別子(`Result`・`Token`)・ファイル名・\n+  snake_case は検査しないが、見出しには書かない。理由は `build-pr-explain.py` の冒頭\n - id は `^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$`、sha は小文字 40 桁\n - 知らないキーと重複したキーは、入れ子を含めて落ちる\n - 任意の配列は、省けば `[]` と同じ\n@@ -153,7 +150,7 @@ layer・concept のパス)は検査せず、外れたものはページが「地\n | `commitStories` | コミットごとに、`role`(何をするコミットか 1 行)・`why`(なぜこの順でこうしたか)・`review`(レビューで見てほしい点を 1 点 1 文)・振る舞いの前後・行への注釈(`notes`)。`phase` は下ごしらえ(`prep`)/ 本体(`core`)/ 安定化(`hard`)/ 指摘の反映(`revise`)/ 仕上げ(`fin`) | 件名・本文の写し(地図から出る) |\n | `suites` / `tests` | テストごとに、守る振る舞い(`why`)・前提 / 操作 / 期待・使った技法・境界の値の表(`values`)・確かめているやりとり(`covers`)と箱(`targets`)。テストコードは `excerpt` で範囲を指す | テストコードの写し |\n \n-- **説明文でも、識別子を地の文の主語にしない。** 実装の名前を指すときだけ `` `…` `` で書く\n+- **説明文でも、識別子を地の文の主語にしない。** 実装の名前とファイル名を指すときは `` `…` `` で囲む\n - **`review` の文は、確認の印の鍵になる。** 読み手のブラウザは「コミットの sha + 文」で確認済みを\n   覚えるので、文を書き直すとその点の印は外れる(別の点へ移らない)\n - **`tests[].name` はテスト名そのままで書く。** ページは、地図がテスト名を調べたファイル(`tests.files`。",
+          "patchLines": 29,
+          "truncated": false
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/explain.json",
+          "status": "M",
+          "oldPath": null,
+          "additions": 11,
+          "deletions": 11,
+          "patch": "@@ -4,7 +4,7 @@\n   \"sha\": \"0123456789abcdef0123456789abcdef01234567\",\n   \"issue\": 1022,\n   \"overview\": {\n-    \"title\": \"PR の解説を explain.json で書き、検査して置く\",\n+    \"title\": \"PR の解説を `explain.json` で書き、検査して置く\",\n     \"lead\": \"解説は HTML の断片ではなく JSON で書く。ページの固定スクリプトが地図と合わせて 3 画面に組む。\",\n     \"before\": [\n       { \"text\": \"セッションが HTML の断片をページごとに書き、1 ページずつ置いていた\" }\n@@ -29,13 +29,13 @@\n   ],\n   \"concepts\": [\n     { \"path\": \".github/workflows/pr-explain.yml\", \"name\": \"地図の配置\", \"role\": \"PR のイベントで地図を作って置く\", \"feature\": \"publish\" },\n-    { \"path\": \".github/scripts/pr-explain-pages.sh\", \"name\": \"置き場\", \"role\": \"gh-pages の PR のフォルダを書き換える\", \"feature\": \"publish\", \"change\": \"put-explain を足し、ページごとの HTML を置くモードを消した\" },\n-    { \"path\": \".github/scripts/build-pr-explain.py\", \"name\": \"解説の検査\", \"role\": \"explain.json の形と参照を見て、抜粋の中身を足す\", \"feature\": \"publish\", \"change\": \"新しく作った\" },\n-    { \"path\": \".claude/skills/pr-explain/templates/explain.json\", \"name\": \"見本\", \"role\": \"excerpt 以外のすべてのキーを使う解説\", \"graph\": false }\n+    { \"path\": \".github/scripts/pr-explain-pages.sh\", \"name\": \"置き場\", \"role\": \"gh-pages の PR のフォルダを書き換える\", \"feature\": \"publish\", \"change\": \"`put-explain` を足し、ページごとの HTML を置くモードを消した\" },\n+    { \"path\": \".github/scripts/build-pr-explain.py\", \"name\": \"解説の検査\", \"role\": \"`explain.json` の形と参照を見て、抜粋の中身を足す\", \"feature\": \"publish\", \"change\": \"新しく作った\" },\n+    { \"path\": \".claude/skills/pr-explain/templates/explain.json\", \"name\": \"見本\", \"role\": \"`excerpt` 以外のすべてのキーを使う解説\", \"graph\": false }\n   ],\n   \"messages\": [\n-    { \"id\": \"put-map\", \"from\": \".github/workflows/pr-explain.yml\", \"to\": \".github/scripts/pr-explain-pages.sh\", \"kind\": \"cmd\", \"name\": \"地図を置く\", \"code\": \"pr-explain-pages.sh put-map\", \"via\": \"exec\", \"payload\": \"change-map.json とテンプレート\" },\n-    { \"id\": \"put-explain\", \"from\": \".github/scripts/pr-explain-pages.sh\", \"to\": \".github/scripts/build-pr-explain.py\", \"kind\": \"qry\", \"name\": \"解説を検査する\", \"code\": \"build-pr-explain.py --pr --out\", \"via\": \"exec\", \"payload\": \"explain.json\", \"returns\": \"抜粋の中身を足した explain.json\", \"status\": \"added\" }\n+    { \"id\": \"put-map\", \"from\": \".github/workflows/pr-explain.yml\", \"to\": \".github/scripts/pr-explain-pages.sh\", \"kind\": \"cmd\", \"name\": \"地図を置く\", \"code\": \"pr-explain-pages.sh put-map\", \"via\": \"exec\", \"payload\": \"`change-map.json` とテンプレート\" },\n+    { \"id\": \"put-explain\", \"from\": \".github/scripts/pr-explain-pages.sh\", \"to\": \".github/scripts/build-pr-explain.py\", \"kind\": \"qry\", \"name\": \"解説を検査する\", \"code\": \"build-pr-explain.py --pr --out\", \"via\": \"exec\", \"payload\": \"`explain.json`\", \"returns\": \"抜粋の中身を足した `explain.json`\", \"status\": \"added\" }\n   ],\n   \"flows\": [\n     { \"id\": \"explain\", \"label\": \"解説を置いたとき\", \"steps\": [\"put-explain\"] },\n@@ -46,7 +46,7 @@\n       \"sha\": \"89abcdef0123456789abcdef0123456789abcdef\",\n       \"phase\": \"core\",\n       \"role\": \"解説を JSON で検査する\",\n-      \"why\": \"ページが JSON を textContent でしか描かないので、HTML の断片の検査が要らなくなる。\",\n+      \"why\": \"ページが JSON の文字列を HTML として解釈しないので、HTML の断片の検査が要らなくなる。\",\n       \"flows\": [\"explain\"],\n       \"review\": [\"知らないキーを落とす。書き手が綴りを間違えたときに黙って欄が空にならないため\"],\n       \"before\": [{ \"text\": \"断片の HTML を要素・属性ごとに見ていた\" }],\n@@ -68,13 +68,13 @@\n       \"techniques\": [\"error\", \"boundary\"],\n       \"why\": \"綴りを間違えたキーが黙って無視されると、ページの欄が空になる\",\n       \"given\": \"見本の解説\",\n-      \"when\": \"messages[0] に知らないキーを足して検査する\",\n-      \"then\": \"[pr-explain-shape] で落ち、書き出さない\",\n+      \"when\": \"`messages[0]` に知らないキーを足して検査する\",\n+      \"then\": \"`[pr-explain-shape]` で落ち、書き出さない\",\n       \"commit\": \"89abcdef0123456789abcdef0123456789abcdef\",\n       \"values\": {\n         \"columns\": [\"足したキー\", \"結果\"],\n         \"rows\": [\n-          { \"cells\": [\"extra\", \"落ちる\"], \"boundary\": true },\n+          { \"cells\": [\"`extra`\", \"落ちる\"], \"boundary\": true },\n           { \"cells\": [\"(足さない)\", \"通る\"] }\n         ]\n       },\n@@ -88,7 +88,7 @@\n       \"techniques\": [\"state\"],\n       \"why\": \"古い解説も、ページが「以降 n コミットは解説なし」と出せば読める\",\n       \"given\": \"地図の head より前の sha で書いた解説\",\n-      \"when\": \"put-explain で置く\",\n+      \"when\": \"`put-explain` で置く\",\n       \"then\": \"終了コード 0 で、標準エラーに知らせる\",\n       \"todo\": true,\n       \"targets\": [\".github/scripts/pr-explain-pages.sh\"]",
+          "patchLines": 63,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "fc3e8342b137bf23bc5145ebb987b50299eff2b7",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-10T14:01:04Z",
+      "subject": "🧪 [Tests]: #1043 検査を壊しても判定表が気づかなかった 3 つの判断をケースで守る",
+      "body": "- deny: docs の語と docs に無い識別子が 1 つの見出しに混ざる（publicProps と TokenTemplate）\n- pass: docs の 1 ファイルにしか出ない語（03-schema.md の layoutMode）\n- pass: message の code の識別子（putExplain()）は検査しない\n\n背景:\ntest-reviewer が検査に 17 通りのミューテーションを当て、次の 3 つではどのケースも\n落ちなかった。\n- 「docs の語が 1 つでもあれば通す」への退行\n- code に見出しの規則が付く\n- docs の一部しか読まない\n\n採用理由:\n足したケースごとに同じミューテーションを当て、そのケースだけが NG になることを\n確かめた。code は「見出しではないので識別子を書いてよい」欄の典型なので、\n説明文の代表（concepts の role）とは別に置いた。\n\n影響とトレードオフ:\n判定表が 3 件増えるだけで、検査は変えていない。\n\n代替案:\n- 混ざった入力を見ずに、docs の語だけ / 識別子だけのケースで守る: 包含の判定の退行に気づけない\n\n参考:\nIssue #1043 のフェーズ 6（test-reviewer）\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01HpMcYoZ5dWiNEEih2hNZaE",
+      "files": [
+        {
+          "path": ".github/scripts/build-pr-explain-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 0,
+          "patch": "@@ -146,7 +146,10 @@ deny|shape|sample|suite の名前(suite の label)が識別子|d[\"suites\"][0][\"l\n deny|shape|sample|見てほしい点の題(highlight の title)が識別子|d[\"overview\"][\"highlights\"][0][\"title\"] = \"addStop の規則\"\n deny|shape|sample|名前の識別子に日本語が空白なしで続く|d[\"concepts\"][0][\"name\"] = \"TokenTemplateの規則\"\n deny|shape|sample|名前の識別子をバッククォートで囲む|d[\"concepts\"][0][\"name\"] = \"`TokenTemplate`\"\n+deny|shape|sample|名前に docs の語(publicProps)と docs に無い識別子が混ざる|d[\"concepts\"][0][\"name\"] = \"publicProps と TokenTemplate\"\n pass|-|sample|名前に docs が仕様の語として使う複合語(publicProps)は書ける|d[\"concepts\"][0][\"name\"] = \"publicProps 宣言\"\n+pass|-|sample|名前に docs の 1 ファイル(03-schema.md)にしか出ない複合語(layoutMode)は書ける|d[\"concepts\"][0][\"name\"] = \"layoutMode の扱い\"\n+pass|-|sample|コード(message の code)の識別子は検査しない|d[\"messages\"][0][\"code\"] = \"putExplain()\"\n pass|-|sample|名前の 1 語の識別子(Result)は検査しない|d[\"concepts\"][0][\"name\"] = \"Result の扱い\"\n pass|-|sample|名前に大文字だけの略語(UI 案・VRT)は書ける|d[\"concepts\"][0][\"name\"] = \"UI 案\"; d[\"features\"][0][\"label\"] = \"VRT\"\n pass|-|sample|説明文(concept の role)の識別子は検査しない|d[\"concepts\"][0][\"role\"] = \"TokenTemplate を組み立てる\"",
+          "patchLines": 11,
+          "truncated": false
+        }
+      ]
     }
   ],
   "dependencies": [
     {
       "from": ".claude/hooks/lib/named-path-cases.sh",
       "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/skills/pr-explain/templates/explain.json",
+      "to": ".github/scripts/build-pr-explain-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/skills/pr-explain/templates/explain.json",
+      "to": ".github/scripts/build-pr-explain.py",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/skills/pr-explain/templates/explain.json",
+      "to": ".github/scripts/pr-explain-pages.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/skills/pr-explain/templates/explain.json",
+      "to": ".github/workflows/pr-explain.yml",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/skills/pr-explain/templates/index.html",
+      "to": ".claude/skills/pr-explain/templates/explain.json",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/build-pr-explain-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/build-pr-explain-cases.sh",
+      "to": ".claude/skills/pr-explain/templates/explain.json",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/build-pr-explain-cases.sh",
+      "to": ".github/scripts/build-pr-explain.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-core-cases.sh",
+      "to": ".github/scripts/build-pr-explain.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": ".github/scripts/build-pr-explain.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages.sh",
+      "to": ".github/scripts/build-pr-explain.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/build-pr-explain-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/build-pr-explain-cases.sh",
       "status": "kept"
     },
     {
