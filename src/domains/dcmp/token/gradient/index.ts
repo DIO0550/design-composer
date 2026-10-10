@@ -1,5 +1,5 @@
 import type { ValueOf } from "@/types/ValueOf";
-import { ArrayEx } from "@/utils/ArrayEx";
+import { type AdjacentPair, ArrayEx } from "@/utils/ArrayEx";
 import { Interop } from "@/utils/Interop";
 import {
   Json,
@@ -33,9 +33,10 @@ export type GradientStop = Readonly<{
 /**
  * グラデーションのトークン(docs/04-tokens.md「gradients」)。
  *
- * 値域を課すのは編集で受け取る側(`GradientStop.create` / `GradientToken.create` と、
- * 既にある値を差し替える `GradientToken.withAngle` / `withStopRatioPercent` / `withStopColor` /
- * `removeStop`)。
+ * 約束を課すのは編集で受け取る側だけで、読み込みは課さない。値域(比率 0〜1・角度が有限)は
+ * `GradientStop.create` / `GradientToken.create` / `withAngle` / `withStopRatioPercent`、
+ * 位置(並びの中を指すこと)は `withStopRatioPercent` / `withStopColor` / `removeStop`、
+ * 件数(2 件以上)は `GradientToken.create` / `removeStop` が見る。
  */
 export type GradientToken = Readonly<{
   shape: GradientShape;
@@ -83,7 +84,7 @@ const RatioDigits = {
 const RatioPercentRange = { min: 0, max: 100 } as const satisfies Range;
 
 /** 1 件だけの色の変わり目を、終点側と始点側のどちらへ寄せて補うかの境目。 */
-const SingleStopPivot = 0.5;
+const SingleStopThreshold = 0.5;
 
 /** CSS の color stop 1 件の綴り。色と、始点からの位置（%）。 */
 type ColorStopValue = `${ColorToken} ${number}%`;
@@ -162,6 +163,17 @@ export const GradientStop = {
   },
 
   /**
+   * 始点からの比率を % で表した値を、0〜100 の範囲へ寄せたもの。範囲の外の比率を端に
+   * 描くときに使う(docs/06-ui.md「`Tokens` の `gradients`」の「つまみはバーの端に寄せて描く」)。
+   *
+   * @param stop 比率を読む色の変わり目
+   * @returns `ratioPercentOf` の値を 0 未満なら 0、100 を超えれば 100 にしたもの
+   */
+  clampedRatioPercentOf(stop: GradientStop): number {
+    return NumberEx.clamp(GradientStop.ratioPercentOf(stop), RatioPercentRange);
+  },
+
+  /**
    * CSS の color stop として綴る。比率は 0〜1 の外でも範囲へ収めずそのまま % にする
    * (docs/04-tokens.md「gradients」)。
    *
@@ -184,7 +196,7 @@ export const GradientStop = {
 } as const;
 
 /**
- * 節見出しの + で作るグラデーション(docs/06-ui.md「節見出しの + で作るトークン」)。黒から白へ、
+ * 節見出しの + で作るグラデーション(docs/06-ui.md「節見出しの `+` で作るトークン」)。黒から白へ、
  * 左から右に変わる。色の変わり目が 1 件も無いところへ + を押したときも、この 2 件を入れる。
  *
  * feature から作るとドメインの `addStop` が同じ 2 件を参照できないので、ドメインに置く。
@@ -205,37 +217,55 @@ const InitialGradient: GradientToken = {
  * @returns 比率が 0.5 未満なら同じ色を比率 1 で末尾へ、0.5 以上なら比率 0 で先頭へ足した 2 件
  */
 function pairedWithSingleStop(stop: GradientStop): readonly GradientStop[] {
-  return stop.ratio < SingleStopPivot
+  return stop.ratio < SingleStopThreshold
     ? [stop, { color: stop.color, ratio: RatioRange.max }]
     : [{ color: stop.color, ratio: RatioRange.min }, stop];
 }
 
+/** 配列で隣り合う 2 件の色の変わり目の間。`index` は左側の位置(0 始まり)。 */
+type StopGap = Readonly<{
+  pair: AdjacentPair<GradientStop>;
+  index: number;
+  width: number;
+}>;
+
 /**
- * 隣り合う 2 件のうち最も広い隙間の中央へ、左側の色で色の変わり目を差し込む
- * (docs/06-ui.md「Tokens の gradients」)。
+ * 隣り合う 2 件の間を、広さを添えた隙間にする。
  *
  * 広さは差の絶対値を比率の桁で丸めて比べる。丸めないと、浮動小数の誤差で同じ広さの隙間の
  * どちらを採るかが入力の綴りによって変わる。
  *
- * @param stops 2 件以上の色の変わり目
- * @returns 差し込んだ並び。並べ替えない。隣り合う組が無ければ `stops` のまま
+ * @param pair 隣り合う 2 件
+ * @param index 左側の位置(0 始まり)
+ * @returns 2 件と位置と、丸めた差の絶対値
  */
-function withStopInWidestGap(
-  stops: readonly GradientStop[],
-): readonly GradientStop[] {
-  const gaps = ArrayEx.adjacentPairs(stops).map((pair, index) => ({
+function stopGapOf(pair: AdjacentPair<GradientStop>, index: number): StopGap {
+  return {
     pair,
     index,
     width: NumberEx.round(
       Math.abs(pair.next.ratio - pair.previous.ratio),
       RatioDigits,
     ),
-  }));
-  const widest = ArrayEx.minBy(gaps, (gap) => -gap.width);
-  if (!Option.isSome(widest)) {
-    return stops;
-  }
-  const { pair, index } = widest.value;
+  };
+}
+
+/**
+ * 隣り合う 2 件のうち最も広い隙間の中央へ、左側の色で色の変わり目を差し込む
+ * (docs/06-ui.md「`Tokens` の `gradients`」)。同じ広さなら配列で左の隙間を採る。
+ *
+ * @param stops 2 件以上の色の変わり目
+ * @returns 差し込んだ並び。並べ替えない
+ */
+function withStopInWidestGap(
+  stops: readonly [GradientStop, GradientStop, ...GradientStop[]],
+): readonly GradientStop[] {
+  const [first, second] = stops;
+  const gaps = ArrayEx.adjacentPairs(stops).map(stopGapOf);
+  const { pair, index } = ArrayEx.dropFirst(gaps).reduce(
+    (widest, gap) => (gap.width > widest.width ? gap : widest),
+    stopGapOf({ previous: first, next: second }, 0),
+  );
   const middle: GradientStop = {
     color: pair.previous.color,
     ratio: NumberEx.round(
@@ -243,25 +273,34 @@ function withStopInWidestGap(
       RatioDigits,
     ),
   };
-  return Result.unwrapOr(ArrayEx.insertAt(stops, index + 1, middle), stops);
+  return [...stops.slice(0, index + 1), middle, ...stops.slice(index + 1)];
 }
 
 /**
  * 1 件の色の変わり目だけを差し替えたグラデーション。
  *
  * @param gradient 差し替える前のグラデーション
- * @param edit 差し替える位置と、新しい色の変わり目
- * @returns 差し替えたもの。位置が並びの外なら `none`
+ * @param edit 差し替える位置と、今の色の変わり目から新しい色の変わり目を作る手段
+ * @returns 差し替えたもの。位置が並びの外か、新しい色の変わり目が作れなければ `none`
  */
 function withStopAt(
   gradient: GradientToken,
-  edit: Readonly<{ stopIndex: number; stop: GradientStop }>,
+  edit: Readonly<{
+    stopIndex: number;
+    nextStopOf: (current: GradientStop) => Option<GradientStop>;
+  }>,
 ): Option<GradientToken> {
+  if (!ArrayEx.isIndexInRange(gradient.stops, edit.stopIndex)) {
+    return Option.none;
+  }
   return Option.map(
-    Interop.toOption(
-      ArrayEx.replaceAt(gradient.stops, edit.stopIndex, edit.stop),
-    ),
-    (stops) => ({ ...gradient, stops }),
+    edit.nextStopOf(gradient.stops[edit.stopIndex]),
+    (next) => ({
+      ...gradient,
+      stops: gradient.stops.map((stop, index) =>
+        index === edit.stopIndex ? next : stop,
+      ),
+    }),
   );
 }
 
@@ -321,7 +360,7 @@ export const GradientToken = {
 
   /**
    * 角度だけを差し替えたグラデーション。値域で丸めず、打った値をそのまま持つ
-   * (docs/06-ui.md「Tokens の gradients」)。
+   * (docs/06-ui.md「`Tokens` の `gradients`」)。
    *
    * @param gradient 差し替える前のグラデーション
    * @param angle 新しい角度(度)
@@ -335,10 +374,11 @@ export const GradientToken = {
 
   /**
    * 1 件の色の変わり目の比率を % で差し替え、比率の順に並べ直したグラデーション
-   * (docs/06-ui.md「Tokens の gradients」)。比率が同じ色の変わり目同士は元の並びを保つ。
+   * (docs/06-ui.md「`Tokens` の `gradients`」)。比率が同じ色の変わり目同士は元の並びを保つ。
    *
-   * 丸めた比率が今と同じなら並べ直さない。欄は同じ値のままフォーカスを外しても確定するので、
-   * 並べ直すと、並んでいないファイルで欄を抜けただけで並びが変わる。
+   * 丸めた比率が、今の比率を同じ桁で丸めた値と同じなら並べ直さない。欄は丸めた今の値を出し、
+   * 同じ値のままフォーカスを外しても確定するので、並べ直すと、並んでいないファイルで欄を
+   * 抜けただけで並びが変わる。
    *
    * @param gradient 差し替える前のグラデーション
    * @param edit 差し替える色の変わり目の位置(0 始まり)と、新しい比率(%。小数も取る)
@@ -353,47 +393,48 @@ export const GradientToken = {
       return Option.none;
     }
     const ratio = NumberEx.round(edit.percent / 100, RatioDigits);
-    return Option.flatMap(
-      Option.fromNullable(gradient.stops[edit.stopIndex]),
-      (current) => {
-        const replaced = withStopAt(gradient, {
-          stopIndex: edit.stopIndex,
-          stop: { ...current, ratio },
-        });
-        if (current.ratio === ratio) {
-          return replaced;
-        }
-        return Option.map(replaced, (next) => ({
-          ...next,
-          stops: ArrayEx.sortBy(next.stops, (stop) => stop.ratio),
-        }));
-      },
-    );
+    const replaced = withStopAt(gradient, {
+      stopIndex: edit.stopIndex,
+      nextStopOf: (current) => Option.some({ ...current, ratio }),
+    });
+    return Option.map(replaced, (next) => {
+      // withStopAt が some を返したので、位置は並びの中を指している
+      const currentRatio = NumberEx.round(
+        gradient.stops[edit.stopIndex].ratio,
+        RatioDigits,
+      );
+      return currentRatio === ratio
+        ? next
+        : { ...next, stops: ArrayEx.sortBy(next.stops, (stop) => stop.ratio) };
+    });
   },
 
   /**
    * 1 件の色の変わり目の色を差し替えたグラデーション。並べ直さない。
    *
    * @param gradient 差し替える前のグラデーション
-   * @param edit 差し替える色の変わり目の位置(0 始まり)と、新しい色
-   * @returns 色だけが入れ替わったもの。位置が並びの外なら `none`
+   * @param edit 差し替える色の変わり目の位置(0 始まり)と、今の色から新しい色を作る手段
+   * @returns 色だけが入れ替わったもの。位置が並びの外か、新しい色が作れなければ `none`
    */
   withStopColor(
     gradient: GradientToken,
-    edit: Readonly<{ stopIndex: number; color: ColorToken }>,
+    edit: Readonly<{
+      stopIndex: number;
+      nextColorOf: (current: ColorToken) => Option<ColorToken>;
+    }>,
   ): Option<GradientToken> {
-    return Option.flatMap(
-      Option.fromNullable(gradient.stops[edit.stopIndex]),
-      (current) =>
-        withStopAt(gradient, {
-          stopIndex: edit.stopIndex,
-          stop: { ...current, color: edit.color },
-        }),
-    );
+    return withStopAt(gradient, {
+      stopIndex: edit.stopIndex,
+      nextStopOf: (current) =>
+        Option.map(edit.nextColorOf(current.color), (color) => ({
+          ...current,
+          color,
+        })),
+    });
   },
 
   /**
-   * stop の + で色の変わり目を 1 件足したグラデーション(docs/06-ui.md「Tokens の gradients」)。
+   * stop の + で色の変わり目を 1 件足したグラデーション(docs/06-ui.md「`Tokens` の `gradients`」)。
    *
    * @param gradient 足す前のグラデーション
    * @returns 2 件以上なら最も広い隙間の中央に 1 件足したもの。1 件なら同じ色を反対の端へ
@@ -405,8 +446,13 @@ export const GradientToken = {
         return { ...gradient, stops: InitialGradient.stops };
       case 1:
         return { ...gradient, stops: pairedWithSingleStop(gradient.stops[0]) };
-      default:
-        return { ...gradient, stops: withStopInWidestGap(gradient.stops) };
+      default: {
+        const [first, second, ...rest] = gradient.stops;
+        return {
+          ...gradient,
+          stops: withStopInWidestGap([first, second, ...rest]),
+        };
+      }
     }
   },
 

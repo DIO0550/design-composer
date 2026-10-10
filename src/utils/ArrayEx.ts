@@ -325,11 +325,7 @@ export const ArrayEx = {
       return outOfRange(array, invalid);
     }
     const item = array[fromIndex];
-    const without = [
-      ...array.slice(0, fromIndex),
-      ...array.slice(fromIndex + 1),
-    ];
-    return Result.ok([
+    return Result.map(ArrayEx.removeAt(array, fromIndex), (without) => [
       ...without.slice(0, toIndex),
       item,
       ...without.slice(toIndex),

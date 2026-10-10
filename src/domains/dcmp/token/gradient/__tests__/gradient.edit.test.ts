@@ -119,6 +119,21 @@ test("並んでいない色の変わり目に今と同じ比率を確定して�
   expect(ratiosOf(edited)).toEqual([0.8, 0.2]);
 });
 
+test("6 桁を超える比率の色の変わり目に欄の値のまま確定しても並びは変わらない", () => {
+  const gradient = gradientOfRatios([0.12345678, 0.05]);
+  const shown = GradientStop.ratioPercentOf(gradient.stops[0]);
+
+  const edited = GradientToken.withStopRatioPercent(gradient, {
+    stopIndex: 0,
+    percent: shown,
+  });
+
+  expect(Option.unwrap(edited).stops.map((stop) => stop.color)).toEqual([
+    "#000000",
+    "#000001",
+  ]);
+});
+
 test("色を変えても並びは変わらない", () => {
   const gradient = gradientOf([
     { color: "#000000", ratio: 0.8 },
@@ -127,7 +142,7 @@ test("色を変えても並びは変わらない", () => {
 
   const edited = GradientToken.withStopColor(gradient, {
     stopIndex: 1,
-    color: "#ff0000",
+    nextColorOf: () => Option.some("#ff0000"),
   });
 
   expect(Option.unwrap(edited).stops).toEqual([
@@ -140,7 +155,10 @@ test("並びの外の色の変わり目の色は変えられない", () => {
   const gradient = gradientOfRatios([0, 1]);
 
   expect(
-    GradientToken.withStopColor(gradient, { stopIndex: 2, color: "#ff0000" }),
+    GradientToken.withStopColor(gradient, {
+      stopIndex: 2,
+      nextColorOf: () => Option.some("#ff0000"),
+    }),
   ).toEqual(Option.none);
 });
 
