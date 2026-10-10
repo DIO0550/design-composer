@@ -1,0 +1,1015 @@
+{
+  "version": 1,
+  "pr": 1024,
+  "sha": "1669dcd103e2c19e4fac06270bce5063e0a0dcb3",
+  "issue": 1022,
+  "overview": {
+    "title": "PR ごとの解説ページ(構造マップ・変更の経緯・テスト)を Pages に出す",
+    "lead": "PR ごとに、どこをどうつなぎ替えたか・どの順で何を変えたか・テストが何を守っているかを 3 画面で読めるページを gh-pages に出す。材料は Actions が作る変更の地図と、セッションが書く `explain.json`。",
+    "before": [
+      {
+        "text": "PR を読む材料は diff と Issue だけで、長いセッションで何をなぜ変えたかが掴みにくい"
+      }
+    ],
+    "after": [
+      {
+        "text": "PR を開く・push すると、Actions が変更の地図とページの枠を `pr-explain/pr-<番号>/` に置く",
+        "message": "put-map"
+      },
+      {
+        "text": "セッションが `explain.json` を書いて `put-explain` すると、検査を通ったものだけが置かれる",
+        "message": "check-explain"
+      },
+      {
+        "text": "解説が無いとき・古いときも、地図だけで 3 画面が出て、帯で状態を知らせる",
+        "message": "read-map"
+      },
+      {
+        "text": "PR を閉じると、Actions がフォルダごと消す"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "3 画面のページ",
+        "text": "構造マップ・変更の経緯・テストを 1 枚で切り替える。デザインに無い表示(帯・札・「ほかに n」・「未分類」など)は実装側で決めたので、実物で確かめてほしい",
+        "go": {
+          "kind": "feature",
+          "id": "page"
+        }
+      },
+      {
+        "title": "変わったのはハーネスだけ",
+        "text": "`src/` には触れていない。VRT は差分 0",
+        "go": {
+          "kind": "layer",
+          "layer": "ハーネス"
+        }
+      },
+      {
+        "title": "置き場のモードを入れ替えた",
+        "text": "`put-page` をやめ、`put-explain`(セッション)と `put-map`(Actions)に分けた。ファイルの持ち主は 1 人ずつ",
+        "go": {
+          "kind": "file",
+          "path": ".github/scripts/pr-explain-pages.sh"
+        }
+      },
+      {
+        "title": "枠の CSP を検査する",
+        "text": "ページは文字を HTML として解釈しない。その前提と CSP の形を、置く前に機械で確かめる",
+        "go": {
+          "kind": "message",
+          "id": "check-template"
+        }
+      },
+      {
+        "title": "解説を置いたときの流れ",
+        "text": "検査を通り、push 済みの sha の解説だけを置く",
+        "go": {
+          "kind": "flow",
+          "id": "explain"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "map",
+      "label": "変更の地図",
+      "role": "git の差分だけで決まる材料(層・依存・テスト名・コミットと差分)を Actions が作る"
+    },
+    {
+      "id": "publish",
+      "label": "検査と置き場",
+      "role": "解説と枠を検査し、gh-pages の PR のフォルダだけを書き換える"
+    },
+    {
+      "id": "page",
+      "label": "解説ページ",
+      "role": "地図と解説を合わせて 3 画面に組む"
+    },
+    {
+      "id": "guard",
+      "label": "判定表と配線",
+      "role": "上の 3 つの判断を表で確かめ、pre-push と CI で走らせる"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "ハーネス",
+      "role": "この PR の変更はすべてここ。ワークフロー・スクリプト・判定表・スキル"
+    }
+  ],
+  "concepts": [
+    {
+      "path": ".github/workflows/pr-explain.yml",
+      "name": "地図の配置",
+      "role": "PR のイベントで変更の地図を作り、ページの枠と一緒に gh-pages へ置く。PR が閉じたらフォルダごと消す",
+      "feature": "map",
+      "change": "ブランチ名を地図へ渡す"
+    },
+    {
+      "path": ".github/scripts/build-pr-change-map.py",
+      "name": "地図を作る",
+      "role": "merge-base から head までの差分から `change-map.json` を作る(層ごとのファイル・依存・テスト名の増減・コミットと差分)",
+      "feature": "map",
+      "change": "version 2: コミットごとの差分・依存の status・文脈ファイル・テストを調べたファイル"
+    },
+    {
+      "path": ".claude/hooks/lib/ts_sources.py",
+      "name": "TS の読み方",
+      "role": "import の解き方と、ドメイン層の位置。地図と import 規約の検査が同じ定義を使う",
+      "feature": "map",
+      "change": "import の解決を共有へ上げた"
+    },
+    {
+      "path": ".claude/hooks/lib/import-rule-violations.py",
+      "name": "import 規約の検査",
+      "role": "import 規約の違反を報告する。解き方は `ts_sources` を使う",
+      "feature": "map",
+      "change": "自前の解き方をやめた"
+    },
+    {
+      "path": ".github/scripts/pr-explain-pages.sh",
+      "name": "置き場",
+      "role": "gh-pages の `pr-explain/pr-<番号>/` だけを書き換える(`put-explain` / `put-map` / `remove`)",
+      "feature": "publish",
+      "change": "`put-page` をやめ、`put-explain` を足した。`put-map` は枠を毎回置き直す"
+    },
+    {
+      "path": ".github/scripts/build-pr-explain.py",
+      "name": "解説の検査",
+      "role": "`explain.json` の形と内部の参照を検査し、テストの抜粋に中身を足して書き出す",
+      "feature": "publish",
+      "change": "新規"
+    },
+    {
+      "path": ".github/scripts/check-pr-explain-template.py",
+      "name": "枠の検査",
+      "role": "枠の CSP と、固定スクリプトが文字を HTML として解釈させていないかを見る",
+      "feature": "publish",
+      "change": "新規"
+    },
+    {
+      "path": ".claude/skills/pr-explain/templates/index.html",
+      "name": "解説ページ",
+      "role": "地図と解説を読み、構造マップ・変更の経緯・テストの 3 画面を組む",
+      "feature": "page",
+      "change": "4 ページの枠から 3 画面のページへ全面書き換え"
+    },
+    {
+      "path": ".claude/skills/pr-explain/templates/explain.json",
+      "name": "解説の見本",
+      "role": "セッションが写して書き始める `explain.json`",
+      "feature": "page",
+      "change": "新規"
+    },
+    {
+      "path": ".claude/skills/pr-explain/SKILL.md",
+      "name": "解説の書き方",
+      "role": "セッションが解説を書いて置く手順と、`explain.json` の形",
+      "feature": "page",
+      "change": "HTML の断片から `explain.json` へ書き直した"
+    },
+    {
+      "path": ".github/scripts/pr-explain-core-cases.sh",
+      "name": "核の判定表",
+      "role": "ページの固定スクリプトの核を node で評価して、判断を表で確かめる",
+      "feature": "guard",
+      "change": "新規"
+    },
+    {
+      "path": ".github/scripts/build-pr-explain-cases.sh",
+      "name": "解説の判定表",
+      "role": "解説の検査の通す / 落とすを表で確かめる",
+      "feature": "guard",
+      "change": "新規"
+    },
+    {
+      "path": ".github/scripts/check-pr-explain-template-cases.sh",
+      "name": "枠の判定表",
+      "role": "枠の検査の通す / 落とすを表で確かめる",
+      "feature": "guard",
+      "change": "新規"
+    },
+    {
+      "path": ".github/scripts/build-pr-change-map-cases.sh",
+      "name": "地図の判定表",
+      "role": "一時リポジトリで地図を作り、中身を表で確かめる",
+      "feature": "guard",
+      "change": "v2 のケースを足した"
+    },
+    {
+      "path": ".github/scripts/pr-explain-pages-cases.sh",
+      "name": "置き場の判定表",
+      "role": "bare リポジトリを gh-pages に見立てて、置き場のモードを確かめる",
+      "feature": "guard",
+      "change": "put-explain と put-map のケースに置き換えた"
+    },
+    {
+      "path": "harness/githooks/pre-push",
+      "name": "push 前の検査",
+      "role": "CI と同じ判定表を push の前に走らせる",
+      "feature": "guard",
+      "change": "解説ページの判定表 5 本"
+    },
+    {
+      "path": ".github/workflows/frontend.yml",
+      "name": "CI の規約検査",
+      "role": "`rules-check` で判定表を走らせる",
+      "feature": "guard",
+      "change": "解説ページの判定表 5 本と node"
+    },
+    {
+      "path": ".claude/hooks/lib/cases-report.sh",
+      "name": "判定表の報告",
+      "role": "判定表の結果を 1 行ずつ出す共有の部品",
+      "feature": "guard",
+      "change": "報告の分類を見る関数を足した"
+    },
+    {
+      "path": ".github/workflows/storybook-pr-preview.yml",
+      "name": "プレビューの告知",
+      "role": "Storybook プレビューの固定コメントに解説の URL を載せる",
+      "feature": "publish",
+      "change": "URL の 1 行"
+    },
+    {
+      "path": ".github/workflows/deploy-storybook-main.yml",
+      "name": "main のデプロイ",
+      "role": "main のデプロイで gh-pages を掃除するとき、`pr-explain/` を残す",
+      "feature": "publish",
+      "change": "掃除の対象から外した"
+    }
+  ],
+  "messages": [
+    {
+      "id": "build-map",
+      "from": ".github/workflows/pr-explain.yml",
+      "to": ".github/scripts/build-pr-change-map.py",
+      "kind": "qry",
+      "name": "変更の地図を作る",
+      "code": "build-pr-change-map.py --base … --head … --head-branch … --base-branch …",
+      "via": "exec",
+      "payload": "base と head の sha・ブランチ名",
+      "returns": "change-map.json",
+      "status": "added"
+    },
+    {
+      "id": "put-map",
+      "from": ".github/workflows/pr-explain.yml",
+      "to": ".github/scripts/pr-explain-pages.sh",
+      "kind": "cmd",
+      "name": "地図と枠を置く",
+      "code": "pr-explain-pages.sh put-map <PR> change-map.json index.html",
+      "via": "exec",
+      "payload": "地図とテンプレート",
+      "status": "added"
+    },
+    {
+      "id": "check-template",
+      "from": ".github/scripts/pr-explain-pages.sh",
+      "to": ".github/scripts/check-pr-explain-template.py",
+      "kind": "qry",
+      "name": "枠を検査する",
+      "code": "check-pr-explain-template.py <テンプレート>",
+      "via": "exec",
+      "payload": "テンプレート",
+      "returns": "違反の報告と終了コード",
+      "status": "added"
+    },
+    {
+      "id": "place-frame",
+      "from": ".github/scripts/pr-explain-pages.sh",
+      "to": ".claude/skills/pr-explain/templates/index.html",
+      "kind": "cmd",
+      "name": "枠を置き直す",
+      "code": "cp \"$4\" \"$site/$folder/index.html\"",
+      "via": "file",
+      "payload": "テンプレート",
+      "status": "added"
+    },
+    {
+      "id": "check-explain",
+      "from": ".github/scripts/pr-explain-pages.sh",
+      "to": ".github/scripts/build-pr-explain.py",
+      "kind": "qry",
+      "name": "解説を検査する",
+      "code": "build-pr-explain.py \"$3\" --pr \"$pr\" --out … --repo …",
+      "via": "exec",
+      "payload": "explain.json",
+      "returns": "抜粋の中身を足した explain.json",
+      "status": "added"
+    },
+    {
+      "id": "explain-passed",
+      "from": ".github/scripts/build-pr-explain.py",
+      "to": ".github/scripts/pr-explain-pages.sh",
+      "kind": "evt",
+      "name": "検査を通った",
+      "code": "exit 0(書き出した)",
+      "via": "exec",
+      "status": "added"
+    },
+    {
+      "id": "read-map",
+      "from": ".claude/skills/pr-explain/templates/index.html",
+      "to": ".github/scripts/build-pr-change-map.py",
+      "kind": "qry",
+      "name": "地図を読む",
+      "code": "fetch(\"change-map.json?t=…\")",
+      "via": "file",
+      "returns": "地図(version 2)",
+      "status": "added"
+    },
+    {
+      "id": "read-explain",
+      "from": ".claude/skills/pr-explain/templates/index.html",
+      "to": ".github/scripts/build-pr-explain.py",
+      "kind": "qry",
+      "name": "解説を読む",
+      "code": "fetch(\"explain.json?t=…\")",
+      "via": "file",
+      "returns": "検査を通った解説",
+      "status": "added"
+    },
+    {
+      "id": "resolve-import",
+      "from": ".github/scripts/build-pr-change-map.py",
+      "to": ".claude/hooks/lib/ts_sources.py",
+      "kind": "qry",
+      "name": "import を解く",
+      "code": "resolve_import(specifier, source, paths)",
+      "via": "call",
+      "returns": "依存先のパス",
+      "status": "added"
+    },
+    {
+      "id": "resolve-import-rules",
+      "from": ".claude/hooks/lib/import-rule-violations.py",
+      "to": ".claude/hooks/lib/ts_sources.py",
+      "kind": "qry",
+      "name": "import を解く",
+      "code": "resolve_import(specifier, source, paths)",
+      "via": "call",
+      "returns": "依存先のパス",
+      "status": "changed"
+    },
+    {
+      "id": "run-core",
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/pr-explain-core-cases.sh",
+      "kind": "cmd",
+      "name": "核の判定表を走らせる",
+      "code": "run_check \"解説ページの核の判定表\" bash .github/scripts/pr-explain-core-cases.sh",
+      "via": "exec",
+      "status": "added"
+    },
+    {
+      "id": "eval-core",
+      "from": ".github/scripts/pr-explain-core-cases.sh",
+      "to": ".claude/skills/pr-explain/templates/index.html",
+      "kind": "qry",
+      "name": "核を評価する",
+      "code": "vm.runInContext(script, context)",
+      "via": "exec",
+      "returns": "globalThis.prExplainCore",
+      "status": "added"
+    },
+    {
+      "id": "read-vocabulary",
+      "from": ".github/scripts/pr-explain-core-cases.sh",
+      "to": ".github/scripts/build-pr-explain.py",
+      "kind": "qry",
+      "name": "検査の語彙を読む",
+      "code": "python3 -c … (Techniques / Phases / MessageKinds / Vias / MessageStatuses)",
+      "via": "exec",
+      "returns": "語彙のキーの集合",
+      "status": "added"
+    },
+    {
+      "id": "ci-core",
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/pr-explain-core-cases.sh",
+      "kind": "cmd",
+      "name": "核の判定表を走らせる",
+      "code": "run: bash .github/scripts/pr-explain-core-cases.sh",
+      "via": "exec",
+      "status": "added"
+    }
+  ],
+  "flows": [
+    {
+      "id": "push",
+      "label": "PR に push したとき",
+      "steps": [
+        "build-map",
+        "resolve-import",
+        "put-map",
+        "check-template",
+        "place-frame"
+      ]
+    },
+    {
+      "id": "explain",
+      "label": "解説を置いたとき",
+      "steps": [
+        "check-explain",
+        "explain-passed"
+      ]
+    },
+    {
+      "id": "open",
+      "label": "ページを開いたとき",
+      "steps": [
+        "read-map",
+        "read-explain"
+      ]
+    },
+    {
+      "id": "pre-push",
+      "label": "push の前の検査",
+      "steps": [
+        "run-core",
+        "eval-core",
+        "read-vocabulary"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "cccadaa2e61df772174d7a7a19b15f2e35ed14cc",
+      "phase": "prep",
+      "role": "解説ページの仕組みの最初の形",
+      "why": "Actions が置く地図と、セッションが書く HTML 断片を gh-pages の PR ごとのフォルダへ置く、という骨組みをここで作った。このあとの 3 画面化で、断片は `explain.json` に置き換わる"
+    },
+    {
+      "sha": "d199102187db2a67c8231bfd4b9bbad360170ee9",
+      "phase": "prep",
+      "role": "解説を 4 ページに分けた形(後で 3 画面へ置き換え)",
+      "why": "振る舞い・技術・テストを読む目的ごとに分けた。ユーザーのデザインが届いて、この 4 ページは 3 画面のページへ作り替えた"
+    },
+    {
+      "sha": "eb7db1dae5da487d6d0f128883c6432ceb447ad9",
+      "phase": "prep",
+      "role": "依存の図を全部の変更ファイルで出した形(後で構造マップへ)",
+      "why": "依存を帯ごとに並べる図はここで一度形になった。構造マップはこれを組・箱・やりとりの図へ置き換えている"
+    },
+    {
+      "sha": "4b2bc65ac6c9627dc6f768af4bade9bfa84d2ce0",
+      "phase": "core",
+      "role": "地図を version 2 にする",
+      "why": "3 画面は地図だけでも組めることを目標にした。そのため、コミットごとの差分(経緯の画面)・依存の増減(構造マップ)・変更していない文脈のファイルを地図が持つ必要があった。解説を書かなくても出る情報は、git だけで決まるので Actions に作らせる",
+      "flows": [
+        "push"
+      ],
+      "review": [
+        "依存を探す元を head の全テキストファイルに広げた。ハブ(多くから import されるファイル)を変えた PR で地図が大きくなりすぎないか",
+        "patch を 2000 行で切っている。この上限で読みたい差分が切れないか"
+      ],
+      "before": [
+        {
+          "text": "地図に載る依存は、変更ファイルどうしの線だけ"
+        }
+      ],
+      "after": [
+        {
+          "text": "依存は端の一方が変更ファイルなら載り、merge-base からの増減(added / kept / removed)を持つ",
+          "message": "build-map"
+        },
+        {
+          "text": "コミットごとに件名・本文・作者・日時とファイルごとの差分を持つ"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".github/scripts/build-pr-change-map.py",
+          "start": 540,
+          "end": 561,
+          "text": "依存を head と merge-base の両方で求めて比べ、増えた・残った・消えたを付ける。rename は新しいパスへ付け替えてから比べる(消えた + 増えたに化けないため)"
+        },
+        {
+          "path": ".github/scripts/build-pr-change-map.py",
+          "start": 90,
+          "end": 90,
+          "text": "ファイルごとの差分の上限。この PR で最も長い差分は 382 行で、上限には十分な余裕がある"
+        }
+      ]
+    },
+    {
+      "sha": "749f71ba2243310724cfe36afed90a71f2fd423e",
+      "phase": "core",
+      "role": "解説を `explain.json` で書き、検査して置く",
+      "why": "ユーザーの判断で、解説は HTML 断片ではなく構造化データにした。ページは文字を HTML として解釈しないので、HTML の中身の検査は要らなくなり、代わりに形と参照の検査と、枠の検査を置いた",
+      "flows": [
+        "explain",
+        "push"
+      ],
+      "review": [
+        "地図を指す参照(コミットの sha・注釈のパスなど)は公開時に検査しない。push のたびに地図が変わるため。ページで「地図に無い」と出せば足りるか"
+      ],
+      "before": [
+        {
+          "text": "セッションは 4 ページ分の HTML 断片を書き、`put-page` で 1 ページずつ置いていた"
+        }
+      ],
+      "after": [
+        {
+          "text": "セッションは `explain.json` を 1 つ書き、`put-explain` で置く",
+          "message": "check-explain"
+        },
+        {
+          "text": "Actions は push のたびに枠(`index.html`)を置き直し、フォルダには 3 ファイルだけを残す",
+          "message": "place-frame"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "start": 62,
+          "end": 63,
+          "text": "置く前に、モードごとの検査を clone より先に走らせる。落ちたら gh-pages を取りに行かない"
+        }
+      ]
+    },
+    {
+      "sha": "a417ff10e8ba220f7791586e2920c863de2a0d61",
+      "phase": "core",
+      "role": "3 画面の枠と、DOM に触らない核",
+      "why": "画面の判断(古さ・解説なしの理由・テストの new / old・どの画面を開くか)を、DOM に触らない核へ集めた。核だけを node で評価できるので、ブラウザを使わずに判定表で守れる",
+      "flows": [
+        "open",
+        "pre-push"
+      ],
+      "review": [
+        "解説が読めないとき(JSON でない・version / pr が違う・型が想定外)は解説なしとして地図だけで組む。帯の文言で理由が伝わるか"
+      ],
+      "after": [
+        {
+          "text": "解説が無くても、地図だけで 3 画面が出る",
+          "message": "read-map"
+        },
+        {
+          "text": "画面は `#map` / `#story` / `#test` で切り替え、最後に開いた画面を覚える"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 374,
+          "end": 374,
+          "text": "解説の読み込み結果を「解説あり / 解説なしとその理由」に振り分ける入口"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 569,
+          "end": 569,
+          "text": "document が無いとき(判定表の node)は、ここで核だけを置いて終わる"
+        }
+      ]
+    },
+    {
+      "sha": "07dbeec15ad4e7e61000baa00cf6c61014252b86",
+      "phase": "core",
+      "role": "変更の経緯の画面",
+      "why": "コミットの順に、なぜ・何を見てほしいか・振る舞いの前後・差分を読めるようにした。注釈は行番号で書き、ページが hunk に割り当てる(差分の形に依存しない書き方にするため)",
+      "review": [
+        "どの hunk にも入らない注釈は「差分に出ていない行への注釈」として別に出す。注釈が黙って消えないか"
+      ]
+    },
+    {
+      "sha": "e2b0c155c68caec0fd24cac6173f04dc3a8c3bf1",
+      "phase": "core",
+      "role": "グラフの土台とテストの画面",
+      "why": "テストの画面と構造マップは同じ組・箱の図を使うので、段の配置(GraphLayout)と描画(GraphView)を画面に依らない形で先に作った。段はグループ間の依存の深さで決め、循環は強連結成分で同じ段にする",
+      "review": [
+        "互いに依存する組は同じ段に並ぶ。この PR では 4 つの機能が 1 つの循環になるので、横に並ぶ見え方で読めるか"
+      ]
+    },
+    {
+      "sha": "d5ff120abc046e3d33125b5ea71e3a9b2c1f9f41",
+      "phase": "core",
+      "role": "構造マップの画面",
+      "why": "組・箱・やりとり(依存)の図と、選んだものの詳細・やりとりの流れを出す。1 段に並べる組の数は、キャンバスに最も大きく収まるものを選ぶ(すべてが 1 段に並んで小さくなるのを避けるため)",
+      "flows": [
+        "open"
+      ],
+      "review": [
+        "1 段の組の数を 4 / 3 / 2 / 1 から選ぶ規則はデザインに無い。ユーザーは「並べ方は今のまま」と判断済み"
+      ]
+    },
+    {
+      "sha": "cae91ffbab842d12e53c3452cfa1c44a7e85cbca",
+      "phase": "revise",
+      "role": "実装の検証の指摘とユーザーの判断を反映",
+      "why": "観点別のレビュー 8 本の指摘と、デザインから離れる点についてのユーザーの判断(テストの丸・追加 / 変更 / 削除・ホバーの全件表示・ヘッダの折り返し)をまとめて直した",
+      "flows": [
+        "explain"
+      ],
+      "review": [
+        "テストの new / old は地図がテスト名を調べたファイルにだけ出し、それ以外は「判定なし」にした。判定表(`*-cases.sh`)のテストは、足したファイルなら「追加」になる",
+        "`put-explain` は push 済みの sha の解説だけを置く"
+      ],
+      "before": [
+        {
+          "text": "CSP の検査はディレクティブを個別に見ていて、同じディレクティブの 2 回書きや `default-src` の欠落を通していた"
+        }
+      ],
+      "after": [
+        {
+          "text": "CSP の検査はポリシー全体の形を見る(重複・`default-src 'none'` の必須・表に無いディレクティブ)",
+          "message": "check-template"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "start": 67,
+          "end": 67,
+          "text": "解説の sha がリモートの追跡ブランチに含まれるかを見る。push していないコミットの中身を公開しないため"
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-template.py",
+          "start": 67,
+          "end": 67,
+          "text": "この 2 つは必ず書かせる。`connect-src` が無いとページが JSON を読めない"
+        }
+      ]
+    },
+    {
+      "sha": "1669dcd103e2c19e4fac06270bce5063e0a0dcb3",
+      "phase": "revise",
+      "role": "壊しても落ちなかった判断のケースを足す",
+      "why": "test-reviewer が実装を 1 か所ずつ壊して約 80 通りを当て、落ちなかった 6 件にケースを足した",
+      "review": [
+        "Target の振り分けを核へ移して、Python の検査が受け付ける kind をページが読めることを突き合わせた。逆向き(ページにだけある kind)は見ていない"
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "core",
+      "label": "解説ページの核",
+      "file": ".github/scripts/pr-explain-core-cases.sh"
+    },
+    {
+      "id": "explain",
+      "label": "解説の検査",
+      "file": ".github/scripts/build-pr-explain-cases.sh"
+    },
+    {
+      "id": "template",
+      "label": "枠の検査",
+      "file": ".github/scripts/check-pr-explain-template-cases.sh"
+    },
+    {
+      "id": "pages",
+      "label": "置き場",
+      "file": ".github/scripts/pr-explain-pages-cases.sh"
+    },
+    {
+      "id": "map",
+      "label": "変更の地図",
+      "file": ".github/scripts/build-pr-change-map-cases.sh"
+    }
+  ],
+  "tests": [
+    {
+      "id": "fresh-stale",
+      "suite": "core",
+      "name": "解説の sha が 4 件中 2 件目のコミットなら古く、以降は 2 コミット",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "解説を書いた後の push で、どこから先が解説なしかを帯と札が正しく言えること。以降の件数は、添字と全件数のどちらで数えても違う答えになる位置を選んでいる",
+      "given": "地図のコミットが 4 件で、解説はその 2 件目",
+      "when": "地図と解説を合わせる",
+      "then": "古さは `stale` で、以降は 2 コミット",
+      "commit": "a417ff10e8ba220f7791586e2920c863de2a0d61",
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "read-map",
+        "read-explain"
+      ],
+      "values": {
+        "columns": [
+          "解説の sha",
+          "以降のコミット"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "1 件目",
+              "3"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "2 件目",
+              "2"
+            ]
+          },
+          {
+            "cells": [
+              "4 件目(head)",
+              "0(最新)"
+            ],
+            "boundary": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "unjudged",
+      "suite": "core",
+      "name": "テスト名を調べていないファイルのテストは、このブランチで足したファイルなら new、それ以外は判定なし",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "地図はテスト名を `__tests__` のファイルでしか調べない。判定表(`*-cases.sh`)のテストを「既存」と言い切らないこと",
+      "given": "地図が調べたファイルは `s.test.ts` だけで、`added-cases.sh` は足したファイル、`changed-cases.sh` は変えたファイル",
+      "when": "地図と解説を合わせる",
+      "then": "足したファイルのテストは new、変えたファイルのテストは判定なし",
+      "commit": "cae91ffbab842d12e53c3452cfa1c44a7e85cbca",
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html",
+        ".github/scripts/build-pr-change-map.py"
+      ],
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 201,
+        "end": 215,
+        "text": "  {\n    label: \"テスト名を調べていないファイルのテストは、このブランチで足したファイルなら new、それ以外は判定なし\",\n    actual: () => {\n      const map = mapOf({\n        groups: [{ label: \"ハーネス\", files: [changedFile(\"added-cases.sh\", { status: \"A\" }), changedFile(\"changed-cases.sh\"), changedFile(\"s.test.ts\", { status: \"A\" })] }],\n        tests: { added: [], removed: [], files: [\"s.test.ts\"] },\n      });\n      const explain = explainOf({\n        suites: [suite(\"a\", \"added-cases.sh\"), suite(\"c\", \"changed-cases.sh\"), suite(\"s\", \"s.test.ts\")],\n        tests: [test(\"a1\", \"a\", \"足したファイルのテスト\"), test(\"c1\", \"c\", \"変えたファイルのテスト\"), test(\"s1\", \"s\", \"調べたファイルの名前の無いテスト\")],\n      });\n      return explained(map, explain).tests.map((item) => [item.test.id, item.status]);\n    },\n    expected: [[\"a1\", \"new\"], [\"c1\", \"unjudged\"], [\"s1\", \"old\"]],\n  },"
+      }
+    },
+    {
+      "id": "depth-longest",
+      "suite": "core",
+      "name": "段の深さは最長の道のりで、近道の依存(a → c)があっても c は b の下に来る",
+      "techniques": [
+        "regression"
+      ],
+      "why": "ひし形の依存で、使う側と使われる側が同じ段に並ばないこと。辺は使われる側から先に並べ、入力の順のままでは答えが変わるようにしている",
+      "given": "組 a・b・c と、依存 b → c、a → c、a → b",
+      "when": "段を求める",
+      "then": "a・b・c がそれぞれ別の段に上から並ぶ",
+      "commit": "1669dcd103e2c19e4fac06270bce5063e0a0dcb3",
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 295,
+        "end": 299,
+        "text": "  {\n    label: \"段の深さは最長の道のりで、近道の依存(a → c)があっても c は b の下に来る\",\n    actual: () => groupRowsOf([graphGroup(\"a\"), graphGroup(\"b\"), graphGroup(\"c\")], [dependsOn(\"b\", \"c\"), dependsOn(\"a\", \"c\"), dependsOn(\"a\", \"b\")]),\n    expected: [[\"a\"], [\"b\"], [\"c\"]],\n  },"
+      }
+    },
+    {
+      "id": "level-mid",
+      "suite": "core",
+      "name": "抽象度が中なら、開く組の数は ⌈n/3⌉(3 つなら 1 つ、6 つなら 2 つ)",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "⌈n/2⌉ や ⌊n/2⌋ とも見分けがつく 2 つの n で確かめる",
+      "given": "組が 3 つ、または 6 つ",
+      "when": "抽象度を中にする",
+      "then": "開く組は 1 つ、または 2 つ",
+      "commit": "1669dcd103e2c19e4fac06270bce5063e0a0dcb3",
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "values": {
+        "columns": [
+          "組の数",
+          "中で開く数"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "1",
+              "1"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "3",
+              "1"
+            ]
+          },
+          {
+            "cells": [
+              "4",
+              "2"
+            ]
+          },
+          {
+            "cells": [
+              "6",
+              "2"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "review-key",
+      "suite": "core",
+      "name": "確認の印の鍵は、文が変われば別",
+      "techniques": [
+        "state"
+      ],
+      "why": "解説を書き直したとき、別の点へ確認の印が移らないこと",
+      "given": "同じコミットのレビューの点が 2 つ",
+      "when": "文を書き換えて鍵を作り直す",
+      "then": "書き換えた点の鍵は元と違う",
+      "commit": "a417ff10e8ba220f7791586e2920c863de2a0d61",
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ]
+    },
+    {
+      "id": "vocab-status",
+      "suite": "core",
+      "name": "語彙 messageStatuses のキーの集合は、解説の検査とページの表で同じ",
+      "techniques": [
+        "regression"
+      ],
+      "why": "検査に語彙を足してページに足し忘れると、検査は通るのに画面が取りこぼす。両方の集合を突き合わせる",
+      "given": "解説の検査の `MessageStatuses` と、ページの核の語彙",
+      "when": "2 つのキーの集合を比べる",
+      "then": "同じ集合",
+      "commit": "1669dcd103e2c19e4fac06270bce5063e0a0dcb3",
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html",
+        ".github/scripts/build-pr-explain.py"
+      ],
+      "covers": [
+        "read-vocabulary"
+      ]
+    },
+    {
+      "id": "explain-unknown",
+      "suite": "explain",
+      "name": "トップに知らないキー",
+      "techniques": [
+        "error"
+      ],
+      "why": "綴りを誤ったキーが黙って無視され、画面に出ないまま公開されるのを防ぐ",
+      "given": "トップに `overviw` のような知らないキーがある解説",
+      "when": "検査する",
+      "then": "`[pr-explain-shape]` で落ち、書き出さない",
+      "commit": "749f71ba2243310724cfe36afed90a71f2fd423e",
+      "targets": [
+        ".github/scripts/build-pr-explain.py"
+      ],
+      "covers": [
+        "check-explain"
+      ]
+    },
+    {
+      "id": "explain-sample",
+      "suite": "explain",
+      "name": "見本(Target の 5 つの kind をすべて使う)は通る",
+      "techniques": [
+        "regression"
+      ],
+      "why": "セッションが写して書き始める見本が、検査に落ちる古いものにならないこと",
+      "given": "`templates/explain.json`",
+      "when": "検査する",
+      "then": "違反なしで通る",
+      "commit": "749f71ba2243310724cfe36afed90a71f2fd423e",
+      "targets": [
+        ".github/scripts/build-pr-explain.py",
+        ".claude/skills/pr-explain/templates/explain.json"
+      ]
+    },
+    {
+      "id": "template-default-src",
+      "suite": "template",
+      "name": "default-src が無い",
+      "techniques": [
+        "error"
+      ],
+      "why": "`default-src 'none'` が無いと、書いていないディレクティブがすべて開く。枠を書き換えた PR で緩めていないかを見る",
+      "given": "`default-src 'none'; ` を消したテンプレート",
+      "when": "枠を検査する",
+      "then": "`[pr-explain-csp]` で落ちる",
+      "commit": "cae91ffbab842d12e53c3452cfa1c44a7e85cbca",
+      "targets": [
+        ".github/scripts/check-pr-explain-template.py"
+      ],
+      "covers": [
+        "check-template"
+      ],
+      "excerpt": {
+        "path": ".github/scripts/check-pr-explain-template-cases.sh",
+        "start": 78,
+        "end": 80,
+        "text": "deny|csp|default-src が無い|t = t.replace(\"default-src 'none'; \", \"\", 1)\ndeny|csp|default-src が 'none' でない|t = t.replace(\"default-src 'none'\", \"default-src 'self'\", 1)\ndeny|csp|同じディレクティブを 2 回書く(どちらも許す値)|t = t.replace(\"form-action 'none'\", \"form-action 'none'; connect-src 'self'\", 1)"
+      }
+    },
+    {
+      "id": "template-duplicate",
+      "suite": "template",
+      "name": "同じディレクティブを 2 回書く(どちらも許す値)",
+      "techniques": [
+        "error"
+      ],
+      "why": "ブラウザは最初の方を採る。検査が後の方を見ていると、緩い方を先に書いた CSP を通してしまう",
+      "given": "`connect-src` を 2 回書いたテンプレート",
+      "when": "枠を検査する",
+      "then": "`[pr-explain-csp]` で落ちる",
+      "commit": "cae91ffbab842d12e53c3452cfa1c44a7e85cbca",
+      "targets": [
+        ".github/scripts/check-pr-explain-template.py"
+      ],
+      "covers": [
+        "check-template"
+      ]
+    },
+    {
+      "id": "pages-unpushed",
+      "suite": "pages",
+      "name": "解説の sha がリモートの追跡ブランチに無ければ、検査を通っても置かずに 1",
+      "techniques": [
+        "error"
+      ],
+      "why": "push していないコミットの中身(抜粋)を公開しないこと",
+      "given": "push していないコミットを sha に持つ解説",
+      "when": "`put-explain` で置く",
+      "then": "gh-pages は変わらず、終了コードは 1",
+      "commit": "cae91ffbab842d12e53c3452cfa1c44a7e85cbca",
+      "targets": [
+        ".github/scripts/pr-explain-pages.sh"
+      ],
+      "covers": [
+        "check-explain"
+      ],
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-pages-cases.sh",
+        "start": 162,
+        "end": 162,
+        "text": "expect \"解説の sha がリモートの追跡ブランチに無ければ、検査を通っても置かずに 1\" '[ \"$status\" -eq 1 ] && [ \"$(tip)\" = \"$before\" ] && [[ \"$output\" == *\"追跡ブランチ\"* ]] && [[ \"$output\" != *\"[pr-explain-\"* ]]'"
+      }
+    },
+    {
+      "id": "pages-put-map",
+      "suite": "pages",
+      "name": "put-map は 3 ファイル以外(ほかのファイル・サブフォルダ)を消す",
+      "techniques": [
+        "state"
+      ],
+      "why": "フォルダには枠・地図・解説の 3 つだけ、という不変条件",
+      "given": "フォルダに `behavior.html` とサブフォルダがある",
+      "when": "`put-map` で置く",
+      "then": "3 ファイルだけが残る",
+      "commit": "749f71ba2243310724cfe36afed90a71f2fd423e",
+      "targets": [
+        ".github/scripts/pr-explain-pages.sh"
+      ],
+      "covers": [
+        "put-map",
+        "place-frame"
+      ]
+    },
+    {
+      "id": "map-rename",
+      "suite": "map",
+      "name": "中身を変えずに rename したファイルの依存は、新しいパスの kept",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "rename が「消えた依存 + 増えた依存」に化けないこと",
+      "given": "依存先を中身を変えずに rename した PR",
+      "when": "地図を作る",
+      "then": "依存は新しいパスへの `kept` 1 本",
+      "commit": "4b2bc65ac6c9627dc6f768af4bade9bfa84d2ce0",
+      "targets": [
+        ".github/scripts/build-pr-change-map.py"
+      ],
+      "covers": [
+        "build-map"
+      ]
+    },
+    {
+      "id": "browser-screens",
+      "suite": "core",
+      "name": "3 画面の組み立て(DOM)は、ブラウザで表示を確かめる",
+      "techniques": [
+        "state"
+      ],
+      "why": "核の判断は判定表で守るが、画面の組み立てと配線は自動のテストが無い(happy-dom は配置を計算しない)。表示確認は Playwright で手で撮っている",
+      "given": "地図と解説",
+      "when": "ブラウザで 3 画面を開いて操作する",
+      "then": "デザインどおりに出る",
+      "todo": true,
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ]
+    }
+  ]
+}
