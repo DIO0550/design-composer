@@ -276,6 +276,35 @@ export const ArrayEx = {
   },
 
   /**
+   * その位置の要素を取り除いた並び。
+   *
+   * @param array 取り除く前の並び
+   * @param index 取り除く要素の位置
+   * @returns 取り除いた新しい並び。`index` が既にある要素を指していなければ `err`
+   */
+  removeAt<T>(
+    array: readonly T[],
+    index: number,
+  ): Result<readonly T[], IndexOutOfRange> {
+    if (!ArrayEx.isIndexInRange(array, index)) {
+      return outOfRange(array, index);
+    }
+    return Result.ok([...array.slice(0, index), ...array.slice(index + 1)]);
+  },
+
+  /**
+   * 数値の小さい順に並べ直した並び。同じ値の要素は元の並びの順を保つ。
+   *
+   * @param array 並べ直す前の並び。変更しない
+   * @param measure 要素から比べる数値を取り出す手段
+   * @returns 並べ直した新しい並び
+   */
+  sortBy<T>(array: readonly T[], measure: (item: T) => number): readonly T[] {
+    // Array.prototype.sort は ES2019 から安定。toSorted は lib(ES2020)に無いので複製してから並べる
+    return [...array].sort((a, b) => measure(a) - measure(b));
+  },
+
+  /**
    * 要素を並びの中の別の位置へ動かした並び。
    *
    * @param array 動かす前の並び
