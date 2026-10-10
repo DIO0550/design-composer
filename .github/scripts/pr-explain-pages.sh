@@ -11,12 +11,14 @@
 #
 # - `put-explain` は `build-pr-explain.py` が検査して書き出したもの(抜粋の中身を足したもの)を
 #   `explain.json` として置く。違反があれば push しない。触るのはこの 1 ファイルだけ
+# - `put-explain` は、解説の sha がリモートの追跡ブランチ(`git branch -r --contains`)に無ければ置かない。
+#   抜粋はその sha の中身から読むので、push していないコミットの中身を公開しないため
 # - `put-explain` は `change-map.json` が無いフォルダへは置かない。Actions が作る前と、PR が閉じて
 #   消した後に、セッションがフォルダを復活させないため。解説の sha が地図の head と違えば、置いた
 #   うえで標準エラーに知らせる(古い解説も、ページが解説の時点を帯で出すので読める)
 # - `put-map` は clone の前に `check-pr-explain-template.py` で枠を検査し、`index.html` を毎回
 #   上書きする。枠の変わったコミット(main の取り込みを含む)が、次の push でそのままページに効くように。
-#   3 つ以外のファイル(以前の形のページ)は消す
+#   フォルダには 3 つだけを置く、という形を保つため、それ以外のファイルは消す
 #
 # gh-pages は Storybook 本体・PR プレビュー・VRT の撮影結果で数百 MB あるので、blob を取らない
 # 浅い clone から `pr-explain/pr-<番号>/` だけを展開する。他のワークフローとの push の競合は、
@@ -26,8 +28,9 @@
 #   PR_EXPLAIN_REMOTE      push 先(既定はこのリポジトリの origin)
 #   PR_EXPLAIN_RETRY_WAIT  n 回目の失敗の後に n × この秒数だけ待つ(既定 2)
 #
-# 終了コード: 0 = 置いた / 変更が無かった、1 = 解説か枠が検査に落ちた・push できなかった、
-#             2 = 引数の誤り(知らないモードを含む)、3 = `put-explain` の置き先に地図が無い
+# 終了コード: 0 = 置いた / 変更が無かった、1 = 解説か枠が検査に落ちた・解説の sha を push していない・
+#             push できなかった、2 = 引数の誤り(知らないモードを含む)、3 = `put-explain` の置き先に地図が
+#             無い(`PR Explain` の run が地図を置く前か、PR が閉じて消した後。やり直さない)
 set -uo pipefail
 
 scripts_dir="$(cd "$(dirname "$0")" && pwd)"
@@ -56,10 +59,21 @@ folder="pr-explain/pr-$pr"
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 
+# 解説の sha が、リモートの追跡ブランチのどれかに入っているか。
+# $1 解説を書き出したファイル
+is_pushed_explain() {
+  local sha
+  sha="$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1], encoding="utf-8"))["sha"])' "$1")" || return 1
+  [ -n "$(git -C "$scripts_dir" branch -r --contains "$sha" 2>/dev/null)" ]
+}
+
 # 検査は clone の前に済ませる。落ちたものを置かないのと、取り直しのたびに同じ検査を繰り返さないため。
 # 解説の sha と抜粋は、このスクリプトがあるリポジトリ(セッションの作業コピー)から読む。
 case "$mode" in
-  put-explain) python3 "$scripts_dir/build-pr-explain.py" "$3" --pr "$pr" --out "$work/explain.json" --repo "$scripts_dir" || exit $? ;;
+  put-explain)
+    python3 "$scripts_dir/build-pr-explain.py" "$3" --pr "$pr" --out "$work/explain.json" --repo "$scripts_dir" || exit $?
+    is_pushed_explain "$work/explain.json" || { echo "解説の sha がリモートの追跡ブランチにありません(push・fetch してから置きます)" >&2; exit 1; }
+    ;;
   put-map) python3 "$scripts_dir/check-pr-explain-template.py" "$4" || exit $? ;;
 esac
 
@@ -105,7 +119,7 @@ remove_others() {
   done
 }
 
-# モードごとに `$folder` を書き換える。終了コード 3 は「置き先に地図が無い」で、やり直さない。
+# モードごとに `$folder` を書き換える。返す 3 は先頭の終了コードの 3 と同じ。
 apply_change() {
   local site="$work/site"
   case "$mode" in
@@ -166,7 +180,7 @@ for attempt in $(seq 1 "$max_attempts"); do
   if checkout_site; then
     apply_change "$@"
     applied=$?
-    [ "$applied" -eq 3 ] && { echo "$folder/change-map.json がありません(PR が開いていて、地図が作られた後に置けます)" >&2; exit 3; }
+    [ "$applied" -eq 3 ] && { echo "$folder/change-map.json がありません" >&2; exit 3; }
     [ "$applied" -eq 0 ] && commit_and_push && notify_stale && exit 0
   fi
   echo "gh-pages への反映に失敗しました($attempt 回目)。取り直してやり直します" >&2

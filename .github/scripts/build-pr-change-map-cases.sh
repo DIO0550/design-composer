@@ -197,7 +197,7 @@ fork, first, side, second, head = sys.argv[3:8]
 without_branch = [int(status) for status in sys.argv[8:10]]
 labels = [group["label"] for group in m["groups"]]
 deps = {(d["from"], d["to"]) for d in m.get("dependencies", [])}
-state = {(d["from"], d["to"]): d["state"] for d in m.get("dependencies", [])}
+status = {(d["from"], d["to"]): d["status"] for d in m.get("dependencies", [])}
 files = {file["path"]: file for group in m["groups"] for file in group["files"]}
 commits = {commit["sha"]: commit for commit in m["commits"]}
 in_commit = {(commit["sha"], file["path"]): file for commit in m["commits"] for file in commit["files"]}
@@ -253,15 +253,16 @@ $dir/../.. と、ルートから書いた $repo_root/ も依存になる|(".gith
 名前の一部だけが一致する別のパスは依存にしない|not any(source == ".github/scripts/partial.sh" for source, _ in deps)
 別のフォルダの同じ名前は依存にしない|("harness/other.sh", ".github/scripts/tool.py") not in deps
 自分自身は依存にしない|(".github/scripts/self.sh", ".github/scripts/self.sh") not in deps
-PR で足したファイルから消したファイルへの言及は、removed を含めたどの state でも依存にしない|not any(source == ".github/scripts/mention-gone.sh" for source, _ in deps)
+PR で足したファイルから消したファイルへの言及は、removed を含めたどの status でも依存にしない|not any(source == ".github/scripts/mention-gone.sh" for source, _ in deps)
 行末のコメントの言及は依存にしない|(".github/scripts/trailing.py", ".github/scripts/tool.py") not in deps
 // の行の言及は依存にしない|("src/hooks/use-x/comment.ts", "docs/x.md") not in deps
 /* */ の中(JSX の中を含む)の言及は依存にしない|not any(source == "src/hooks/use-x/jsx.tsx" for source, _ in deps)
 テストファイルの rename は増減に出ない|"動かすだけのテスト" not in added and "動かすだけのテスト" not in removed
 中身だけ変えたテストは増減に出ない|"中身だけ変えるテスト" not in added and "既存のテスト" not in added
+テスト名を調べたファイルは __tests__ のテストファイル(rename の新しいパスと、消したファイルを含む)だけ|sorted(m["tests"]["files"]) == ["src/components/button/__tests__/button.normal.test.tsx", "src/features/editor/features/tokens/__tests__/token.normal.test.ts", "src/libs/x/__tests__/x.normal.test.ts", "src/utils/__tests__/Body.normal.test.ts", "src/utils/__tests__/Gone.normal.test.ts", "src/utils/__tests__/Renamed.normal.test.ts"]
 追加はこの 6 件だけ|added == {"足したテスト", "表で回すテスト %i", "新しいファイルのテスト", "飛ばすテスト", "括弧入りの表 %s", "ボタンのテスト"}
 コミットは PR 側の枝とマージを含めて古い順に入り、ファイルはパスを持つオブジェクト|[c["sha"] for c in m["commits"]] == [first, side, second, head] and [f["path"] for f in m["commits"][0]["files"]] == ["docs/story-before.txt", "src/domains/dcmp/node/index.ts", "src/features/editor/features/tokens/__tests__/token.normal.test.ts"]
-差分なしでは依存も文脈ファイルも無く、head が入って各一覧は空|m["head"] == head and m["groups"] == [] and m["tests"] == {"added": [], "removed": []} and m["commits"] == [] and m["dependencies"] == []
+差分なしでは依存も文脈ファイルも無く、head が入って各一覧は空|m["head"] == head and m["groups"] == [] and m["tests"] == {"added": [], "removed": [], "files": []} and m["commits"] == [] and m["dependencies"] == []
 地図の version は 2|m["version"] == 2
 渡したブランチ名が入る|m["headBranch"] == "feature/地図" and m["baseBranch"] == "trunk"
 ブランチ名を欠いた呼び出しは引数の誤り(2)|without_branch == [2, 2]
@@ -280,15 +281,15 @@ index を置かないフォルダでは、テストファイル名の先頭と�
 index も同じ名前のファイルも無ければ、テストの対象は null|files["src/utils/__tests__/Renamed.normal.test.ts"]["target"] is None
 テストファイルでなければ対象は null(__tests__ の中の共有ヘルパーを含む)|files["src/libs/x/__tests__/fake.ts"]["target"] is None and files["src/domains/dcmp/node/index.ts"]["target"] is None
 変えていないファイルから変更ファイルへの依存も載る|("src/services/reader/index.ts", "src/domains/dcmp/node/index.ts") in deps
-変更ファイルから変えていないファイルへの依存は added で載る|state.get(("src/services/uses-node/index.ts", "src/utils/Body.ts")) == "added"
+変更ファイルから変えていないファイルへの依存は added で載る|status.get(("src/services/uses-node/index.ts", "src/utils/Body.ts")) == "added"
 変えていないファイルどうしの依存は載らない|("src/services/reader/index.ts", "src/utils/Quiet.ts") not in deps
-head で消えた依存は removed(消したファイルからの依存を含む)|state.get(("src/utils/__tests__/Body.normal.test.ts", "src/utils/Body.ts")) == "removed" and state.get(("src/utils/__tests__/Gone.normal.test.ts", "src/utils/Body.ts")) == "removed"
-merge-base と head の両方にある依存は kept|state.get(("src/services/reader/index.ts", "src/domains/dcmp/node/index.ts")) == "kept"
-中身を変えずに rename したファイルの依存は、新しいパスの kept|state.get((".github/scripts/after-move.sh", "docs/guide.md")) == "kept" and not any(".github/scripts/before-move.sh" in edge for edge in deps)
+head で消えた依存は removed(消したファイルからの依存を含む)|status.get(("src/utils/__tests__/Body.normal.test.ts", "src/utils/Body.ts")) == "removed" and status.get(("src/utils/__tests__/Gone.normal.test.ts", "src/utils/Body.ts")) == "removed"
+merge-base と head の両方にある依存は kept|status.get(("src/services/reader/index.ts", "src/domains/dcmp/node/index.ts")) == "kept"
+中身を変えずに rename したファイルの依存は、新しいパスの kept|status.get((".github/scripts/after-move.sh", "docs/guide.md")) == "kept" and not any(".github/scripts/before-move.sh" in edge for edge in deps)
 依存の端に出る変えていないファイルは、changed が偽で層に入る|files["src/utils/Body.ts"] == {"path": "src/utils/Body.ts", "changed": False} and label_of["src/utils/Body.ts"] == "utils" and files["docs/guide.md"]["changed"] is False
 変更ファイルは changed が真|files["src/domains/dcmp/node/index.ts"]["changed"] is True and all(file["changed"] is True for file in files.values() if "status" in file)
 依存の端に出ない変えていないファイルは層に入らない|"src/utils/Quiet.ts" not in files
-ハブを変えた PR では、import している 5 本がすべて依存と層に入る|all(state.get((f"src/services/hub-user-{n}/index.ts", "src/utils/Hub.ts")) == "kept" and files[f"src/services/hub-user-{n}/index.ts"]["changed"] is False for n in range(1, 6))
+ハブを変えた PR では、import している 5 本がすべて依存と層に入る|all(status.get((f"src/services/hub-user-{n}/index.ts", "src/utils/Hub.ts")) == "kept" and files[f"src/services/hub-user-{n}/index.ts"]["changed"] is False for n in range(1, 6))
 CASES
 
 exit "$cases_failed"

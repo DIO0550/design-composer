@@ -163,7 +163,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 | `.github/scripts/pr-explain-pages-cases.sh` | あり | あり(`python3` がある環境だけ) |
 | `.github/scripts/build-pr-explain-cases.sh` | あり | あり(`python3` がある環境だけ) |
 | `.github/scripts/check-pr-explain-template-cases.sh` | あり | あり(`python3` がある環境だけ) |
-| `.github/scripts/pr-explain-core-cases.sh` | あり | あり(`node` がある環境だけ) |
+| `.github/scripts/pr-explain-core-cases.sh` | あり | あり(`python3` と Node 20 以上がある環境だけ) |
 | `harness/githooks/lib/check-tally-cases.sh` | あり | あり |
 
 - **`canary-cases.sh` と `verification-agent-cases.sh` と `pre-push-detector-cases.sh` の 3 本は、層 3 の部品
@@ -176,9 +176,9 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
   git hooks と CI は検出器を直接呼ぶので緑のまま残る
 - **`check-added-cases.sh` だけは層 1 のジョブが `rules-check` ではなく `lint-suppress`。**
   当てる 2 本(`check-added-*`)と同じジョブに置き、`python3` と git だけで完結する
-- **`check-pr-closing-issue-cases.sh` は層 1 だけ。** 再試行と問い合わせ直しの待ち時間だけで
-  60.5 秒かかる(実測)。`pre-push` 全体は 35.9 秒(実測・`node_modules` のある環境)で、載せると
-  2.5 倍を超える。ここへ載せた 2 本は合わせて 2.2 秒、解説ページの 5 本は合わせて 14.6 秒(地図 3.6・置き場 4.8・解説の検査 4.8・枠の検査 1.3・核 0.1。置き場は再試行の待ちを環境変数で 0 にしている。この 5 本は別の環境で測っていて、その環境の `pre-push` 全体は 75.1 秒)、`harness/githooks/lib/check-tally-cases.sh` は 0.1 秒未満、`lib/import-rule-cases.sh` は 2.2 秒(実測)。**この穴は残したままなので、
+- **`check-pr-closing-issue-cases.sh` は層 1 だけ。** 再試行と問い合わせ直しの待ち時間を含めて
+  35.7 秒かかる(実測)。`pre-push` 全体は 73.0 秒(実測・`node_modules` のある環境。この判定表と同じ環境で
+  続けて測った)で、載せると 1.5 倍になる。ここへ載せた 2 本は合わせて 2.2 秒、解説ページの 5 本は同じ `pre-push` の回の中で合わせて 16.2 秒(地図 3.4・置き場 5.6・解説の検査 4.3・枠の検査 2.8・核 0.1。置き場は再試行の待ちを環境変数で 0 にしている)、`harness/githooks/lib/check-tally-cases.sh` は 0.1 秒未満、`lib/import-rule-cases.sh` は 2.2 秒(実測)。**この穴は残したままなので、
   `check-pr-closing-issue.sh` を触ったときは手で走らせる**(「動作確認」)
 - 層 3(`pre-push-*.sh`)には足さない。層 1 と層 2 の両方に置く以上、守る範囲が増えない
 

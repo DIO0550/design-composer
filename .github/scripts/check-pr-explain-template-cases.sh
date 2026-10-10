@@ -6,11 +6,10 @@
 # 使い方: bash .github/scripts/check-pr-explain-template-cases.sh
 # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。
 #
-# **HTML として解釈させる語のケースは、固定スクリプトのハッシュを計算し直して CSP へ埋める。**
-# 埋めないと、語を足したことでハッシュが合わなくなり、語の検査を消しても CSP の側で落ちて
-# ok のまま残る。落ちるケースは、報告の行がすべて期待した分類であることまで見る。
-#
-# script-src に足す出どころは、正しいハッシュの**後ろ**に置く(先頭の出どころだけを見る実装を通さないため)。
+# **固定スクリプトを書き換えるケースは、ハッシュを計算し直して CSP へ埋める。** 埋めないと、崩した規則を
+# 消しても CSP の側で落ちて ok のまま残る。落ちるケースは、報告の行がすべて期待した分類であることまで見る
+# (`all_in_category`)。崩す位置は、正しい値の後ろなど、素朴な実装(先頭だけを見る・1 つ目だけを見る)でも
+# 通らない所を選ぶ。
 #
 # 表は `期待|分類|ケース名|変形` の 1 行 1 ケース。変形はテンプレート(変数 `t`)を書き換える
 # Python の文で、`script` に入れた文字列は固定スクリプトの中身と差し替えてハッシュを埋め直す。
@@ -41,13 +40,6 @@ open(sys.argv[2], "w", encoding="utf-8").write(t)
 PY
 }
 
-# 報告が 1 行以上あり、すべてが期待した分類の見出しで始まるか。
-# $1 報告, $2 分類
-all_in_category() {
-  [ -n "$1" ] || return 1
-  ! printf '%s\n' "$1" | grep -v "^\[pr-explain-$2\] " >/dev/null
-}
-
 # $1 期待する分類。pass / deny のほか、食い違いの形を返す。
 verdict() {
   local category="$1" output status
@@ -55,8 +47,7 @@ verdict() {
   case "$status" in
     0) echo pass ;;
     1)
-      # 報告の行がすべて期待した分類なら deny。別の分類が混ざれば、崩したのと別の規則で落ちている。
-      if all_in_category "$output" "$category"; then
+      if all_in_category "$output" "^\[pr-explain-$category\] "; then
         echo deny
       else
         echo other-category
@@ -80,6 +71,11 @@ deny|csp|script-src に 'unsafe-inline'|t = re.sub(r"(script-src '[^']*')", r"\1
 deny|csp|connect-src に 'self' 以外|t = t.replace("connect-src 'self'", "connect-src 'self' https://example.com", 1)
 deny|csp|style-src に計画に無いホスト|t = re.sub(r"style-src [^;]*", "style-src 'unsafe-inline' https://example.com", t, count=1)
 deny|csp|font-src に計画に無いホスト|t = t.replace("connect-src ", "font-src https://fonts.gstatic.com https://example.com; connect-src ", 1) if "font-src" not in t else re.sub(r"font-src [^;]*", "font-src https://fonts.gstatic.com https://example.com", t, count=1)
+deny|csp|default-src が無い|t = t.replace("default-src 'none'; ", "", 1)
+deny|csp|default-src が 'none' でない|t = t.replace("default-src 'none'", "default-src 'self'", 1)
+deny|csp|同じディレクティブを 2 回書く(どちらも許す値)|t = t.replace("form-action 'none'", "form-action 'none'; connect-src 'self'", 1)
+deny|csp|表に無いディレクティブ script-src-elem|t = t.replace("form-action 'none'", "form-action 'none'; script-src-elem 'unsafe-inline'", 1)
+deny|csp|表に無いディレクティブ script-src-attr|t = t.replace("form-action 'none'", "form-action 'none'; script-src-attr 'unsafe-inline'", 1)
 deny|template|固定スクリプトに innerHTML|script = body + "\nnode.innerHTML;\n"
 deny|template|固定スクリプトに outerHTML|script = body + "\nnode.outerHTML;\n"
 deny|template|固定スクリプトに insertAdjacentHTML|script = body + "\nnode.insertAdjacentHTML;\n"
@@ -88,6 +84,7 @@ deny|template|固定スクリプトに document.writeln|script = body + "\ndocum
 deny|template|固定スクリプトに DOMParser|script = body + "\nDOMParser;\n"
 deny|template|固定スクリプトに createContextualFragment|script = body + "\nrange.createContextualFragment;\n"
 deny|template|固定スクリプトに setHTMLUnsafe|script = body + "\nnode.setHTMLUnsafe;\n"
+deny|template|固定スクリプトに parseHTMLUnsafe|script = body + "\nDocument.parseHTMLUnsafe;\n"
 deny|template|コメントに書いた srcdoc|script = body + "\n// srcdoc\n"
 CASES
 

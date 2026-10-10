@@ -67,12 +67,14 @@ run_check "解説ページの枠の検査の判定表" bash .github/scripts/chec
 resume_checks
 
 # 解説ページの核(テンプレートの固定スクリプトのうち DOM に触らない部分)を node で評価する判定表。
-# `command -v` ではなく 1 回起動して見る理由は、上の python3_usable と同じ。
-node_usable() {
-  node -e '' >/dev/null 2>&1
+# `command -v` ではなく 1 回起動して見る理由は、上の python3_usable と同じ。核が使う配列のメソッド
+# (`toSorted` など。Node 20 から)が無い node でも、核の判定ではなく node の版で落ちるので飛ばす。
+# 解説の検査(python3)と語彙を突き合わせるケースがあるので、python3 も要る。
+core_runnable() {
+  python3_usable && node -e 'process.exit([].toSorted && [].toReversed && [].with ? 0 : 1)' >/dev/null 2>&1
 }
 
-node_usable || skip_following_checks "node が使えない"
+core_runnable || skip_following_checks "python3 が使えない / node が無いか古い(Node 20 未満)"
 run_check "解説ページの核の判定表" bash .github/scripts/pr-explain-core-cases.sh
 resume_checks
 

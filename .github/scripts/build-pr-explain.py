@@ -2,9 +2,8 @@
 """PR の解説(`explain.json`、version 1)を検査し、テストのコード抜粋の中身を足して書き出す。
 
 解説はセッションが `pr-explain` スキルで書き、ページの固定スクリプトが変更の地図(`change-map.json`)と
-合わせて 3 画面に組む。固定スクリプトは JSON を HTML として解釈させない(`check-pr-explain-template.py`
-が見る)ので、ここが防ぐのはスクリプトの注入ではなく、**形の崩れと解説の中の参照切れ**(ページが黙って
-空欄を出す)。報告する違反は 4 つ。
+合わせて 3 画面に組む。ここが防ぐのはスクリプトの注入ではなく(それは `check-pr-explain-template.py` の
+管轄)、**形の崩れと解説の中の参照切れ**(ページが黙って空欄を出す)。報告する違反は 4 つ。
 
 - `pr-explain-shape` — 読めない・形が表と違う(必須の欠け・知らないキー・重複したキー・型・語彙・
   綴り・一意性・範囲)
@@ -13,7 +12,7 @@
 - `pr-explain-code` — 解説時点の `sha` がこのリポジトリに無い・抜粋のパスがその sha に無い・範囲が
   ファイルに収まらない
 
-**地図を指す参照(commitNote の sha・Note のパスと行・Target の layer / file・LayerNote の layer・
+**地図を指す参照(commitStory の sha・Note のパスと行・Target の layer / file・LayerRole の layer・
 concept が地図にあるか)は見ない。** 地図は push のたびに作り直されるので、解説を書いた時点で
 合っていても後で外れる。外れたものはページが「地図に無い」と出す。
 
@@ -123,7 +122,15 @@ Id = Scalar("id")
 Sha = Scalar("sha")
 Count = Scalar("count")
 
+# 技法・phase・やりとりの種類・方式の語彙。ページの表(固定スクリプトの核の `Vocabulary`)と同じキーの集合で、
+# `pr-explain-core-cases.sh` が突き合わせる。
 Techniques = ("boundary", "equivalence", "error", "state", "regression", "idempotence", "type")
+Phases = ("prep", "core", "hard", "revise", "fin")
+MessageKinds = ("cmd", "qry", "evt")
+Vias = ("call", "http", "state", "log", "exec", "file")
+
+# やりとりの状態。省けば前からあって変えていないもの。
+MessageStatuses = ("added", "changed", "removed")
 
 # 解説の形(`pr-explain` スキルの「explain.json の形」の表を、検査が読む形にしたもの)。
 Shapes: dict[str, dict[str, Field]] = {
@@ -134,11 +141,11 @@ Shapes: dict[str, dict[str, Field]] = {
         "issue": may(Count),
         "overview": need(Shape("Overview")),
         "features": may(Many(Shape("Feature"))),
-        "layers": may(Many(Shape("LayerNote"))),
+        "layerRoles": may(Many(Shape("LayerRole"))),
         "concepts": may(Many(Shape("Concept"))),
         "messages": may(Many(Shape("Message"))),
         "flows": may(Many(Shape("Flow"))),
-        "commitNotes": may(Many(Shape("CommitNote"))),
+        "commitStories": may(Many(Shape("CommitStory"))),
         "suites": may(Many(Shape("Suite"))),
         "tests": may(Many(Shape("Test"))),
     },
@@ -150,9 +157,9 @@ Shapes: dict[str, dict[str, Field]] = {
         "highlights": may(Many(Shape("Highlight"))),
     },
     "Behavior": {"text": need(Text), "message": may(Id)},
-    "Highlight": {"title": need(Text), "text": need(Text), "target": need(Variant("Target"))},
+    "Highlight": {"title": need(Text), "text": need(Text), "go": need(Variant("Target"))},
     "Feature": {"id": need(Id), "label": need(Text), "role": need(Text)},
-    "LayerNote": {"layer": need(Text), "role": need(Text)},
+    "LayerRole": {"layer": need(Text), "role": need(Text)},
     "Concept": {
         "path": need(Text),
         "name": need(Text),
@@ -165,18 +172,18 @@ Shapes: dict[str, dict[str, Field]] = {
         "id": need(Id),
         "from": need(Text),
         "to": need(Text),
-        "kind": need(Word(("cmd", "qry", "evt"))),
+        "kind": need(Word(MessageKinds)),
         "name": need(Text),
         "code": need(Text),
-        "via": need(Word(("call", "http", "state", "log", "exec", "file"))),
+        "via": need(Word(Vias)),
         "payload": may(Text),
         "returns": may(Text),
-        "status": may(Word(("new", "removed"))),
+        "status": may(Word(MessageStatuses)),
     },
     "Flow": {"id": need(Id), "label": need(Text), "steps": need(Many(Id, least=1))},
-    "CommitNote": {
+    "CommitStory": {
         "sha": need(Sha),
-        "phase": need(Word(("prep", "core", "hard", "review", "fin"))),
+        "phase": need(Word(Phases)),
         "role": need(Text),
         "why": need(Text),
         "flows": may(Many(Id)),
@@ -261,11 +268,11 @@ CrossChecks: dict[str, tuple[Callable[[dict], str | None], ...]] = {
 # 一意でなければならない値(トップの一覧と、その中のキー)。
 UniqueKeys = (
     ("features", "id"),
-    ("layers", "layer"),
+    ("layerRoles", "layer"),
     ("concepts", "path"),
     ("messages", "id"),
     ("flows", "id"),
-    ("commitNotes", "sha"),
+    ("commitStories", "sha"),
     ("suites", "id"),
     ("tests", "id"),
 )
@@ -286,18 +293,18 @@ References = (
     Reference("messages[].from", "concepts", "path"),
     Reference("messages[].to", "concepts", "path"),
     Reference("flows[].steps[]", "messages", "id"),
-    Reference("commitNotes[].flows[]", "flows", "id"),
+    Reference("commitStories[].flows[]", "flows", "id"),
     Reference("overview.before[].message", "messages", "id"),
     Reference("overview.after[].message", "messages", "id"),
-    Reference("commitNotes[].before[].message", "messages", "id"),
-    Reference("commitNotes[].after[].message", "messages", "id"),
+    Reference("commitStories[].before[].message", "messages", "id"),
+    Reference("commitStories[].after[].message", "messages", "id"),
     Reference("tests[].suite", "suites", "id"),
     Reference("tests[].covers[]", "messages", "id"),
     Reference("tests[].targets[]", "concepts", "path"),
     Reference("concepts[].feature", "features", "id"),
 )
 
-# Target の kind のうち、解説の中の一覧を指すもの。layer / file は地図を指すので見ない。
+# Target の kind のうち、解説の中の一覧を指すもの(layer / file は地図を指す参照)。
 TargetCollections = {"feature": "features", "message": "messages", "flow": "flows"}
 
 
@@ -435,10 +442,10 @@ def reference_problems(explain: dict) -> list[str]:
         for where, value in values_at(explain, reference.source.split("."), "")
         if value not in known(reference.collection, reference.key)
     ]
-    for where, target in values_at(explain, ["overview", "highlights[]", "target"], ""):
-        collection = TargetCollections.get(target["kind"])
-        is_dangling = collection is not None and target["id"] not in known(collection, "id")
-        problems += [f"{where}.id: {target['id']} が {collection} に無い"] if is_dangling else []
+    for where, go in values_at(explain, ["overview", "highlights[]", "go"], ""):
+        collection = TargetCollections.get(go["kind"])
+        is_dangling = collection is not None and go["id"] not in known(collection, "id")
+        problems += [f"{where}.id: {go['id']} が {collection} に無い"] if is_dangling else []
     todo_with_code = [
         f"tests[{index}]: todo のテストは commit も excerpt も持たない"
         for index, test in enumerate(explain.get("tests", []))

@@ -4,15 +4,19 @@
 ページは変更の地図(`change-map.json`)と解説(`explain.json`)を読み、固定スクリプトが
 `createElement` と `textContent` で組む。JSON の中身は差分のコードや PR の本文をそのまま含むので、
 **固定スクリプトが HTML として解釈させる API を 1 か所でも使えば、そこから中身が要素になる。**
-それを語の有無で止め、すり抜けたものは CSP でブラウザが止める。報告する違反は 2 つ。
+それを語の有無で止める。CSP は、すり抜けた要素があっても、固定スクリプト以外のスクリプトの実行・
+外からの読み込み(書体とその CSS を除く)・フォームの送信を止める。インラインの style は止めない
+(`style-src 'unsafe-inline'`。ページが位置と幅を style で付けるため)。報告する違反は 2 つ。
 
-- `pr-explain-csp` — CSP が次のどれかを外れている
-  - `script-src` は `'sha256-…'` 1 つだけで、固定スクリプトのハッシュと一致する(固定スクリプトは 1 本)
-  - `connect-src` は `'self'` だけ(2 つの JSON を同じフォルダから読む)
-  - `style-src` は `'unsafe-inline'` と `https://fonts.googleapis.com`、`font-src` は
-    `https://fonts.gstatic.com` のうちから選ぶ(書かなければ `default-src` が止める)
+- `pr-explain-csp` — CSP が `Policy` の表を外れている(表に無いディレクティブ・同じディレクティブの重複・
+  表に無い出どころ・必須の欠け)か、`script-src` が固定スクリプトのハッシュ 1 つだけになっていない
+  (固定スクリプトは 1 本)
 - `pr-explain-template` — 固定スクリプトが `ForbiddenWords` の語を使っている。語として見るので、
   コメントの中の綴りも落とす
+
+固定スクリプトは別の `.js` に出さず、HTML の中に置いてハッシュで許す。別のファイルにすると
+`script-src 'self'` が要り、同じ origin(gh-pages の Storybook・PR のプレビュー)にあるどの `.js` も
+動かせるようになる。
 
 使い方:
     check-pr-explain-template.py <テンプレート>
@@ -41,18 +45,26 @@ ForbiddenWords = (
     "DOMParser",
     "createContextualFragment",
     "setHTMLUnsafe",
+    "parseHTMLUnsafe",
     "srcdoc",
 )
 
-# ディレクティブごとに許す出どころ。ここに無いディレクティブは見ない。
-AllowedSources = {
-    "connect-src": frozenset({"'self'"}),
+# 書いてよいディレクティブと、それぞれが許す出どころ。`script-src` の出どころは固定スクリプトのハッシュで、
+# `script_problems` が見る。ここに無いディレクティブ(`script-src-elem` など)は、書けば違反にする。
+Policy = {
+    "default-src": frozenset({"'none'"}),
+    "script-src": None,
     "style-src": frozenset({"'unsafe-inline'", "https://fonts.googleapis.com"}),
     "font-src": frozenset({"https://fonts.gstatic.com"}),
+    # 2 つの JSON を同じフォルダから読む。
+    "connect-src": frozenset({"'self'"}),
+    "img-src": frozenset({"'self'", "data:"}),
+    "base-uri": frozenset({"'none'"}),
+    "form-action": frozenset({"'none'"}),
 }
 
-# 書かれていなければならないディレクティブ。`connect-src` が無いと、`default-src 'none'` で 2 つの JSON が読めない。
-RequiredExactly = {"connect-src": frozenset({"'self'"})}
+# 出どころをちょうどこのとおりに書かなければならないディレクティブ。
+RequiredExactly = ("default-src", "connect-src")
 
 
 def word_pattern(word: str) -> re.Pattern:
@@ -61,10 +73,10 @@ def word_pattern(word: str) -> re.Pattern:
     return re.compile(rf"(?<![\w$]){spelled}(?![\w$])")
 
 
-def directives_of(policy: str) -> dict[str, list[str]]:
-    """CSP をディレクティブ名と出どころの並びに割る。"""
+def directives_of(policy: str) -> list[tuple[str, list[str]]]:
+    """CSP をディレクティブ名と出どころの並びに割る。同じ名前が 2 回あれば 2 つのまま返す。"""
     parts = [part.split() for part in policy.split(";") if part.strip()]
-    return {part[0].lower(): part[1:] for part in parts}
+    return [(part[0].lower(), part[1:]) for part in parts]
 
 
 def script_problems(template: str, directives: dict[str, list[str]]) -> list[str]:
@@ -85,12 +97,24 @@ def script_problems(template: str, directives: dict[str, list[str]]) -> list[str
     return []
 
 
+def directive_problems(pairs: list[tuple[str, list[str]]]) -> list[str]:
+    """表に無いディレクティブと、2 回以上書いたディレクティブを集める(ブラウザは 2 つ目以降を読まない)。"""
+    names = [name for name, _ in pairs]
+    unknown = [f"{name} は書かない(書いてよいのは {' / '.join(Policy)})" for name in dict.fromkeys(names) if name not in Policy]
+    repeated = [f"{name} を {names.count(name)} 回書いている(1 回だけにする)" for name in dict.fromkeys(names) if names.count(name) > 1]
+    return unknown + repeated
+
+
 def source_problems(directives: dict[str, list[str]]) -> list[str]:
     """`script-src` 以外のディレクティブが許す出どころを見る。"""
-    missing = [f"{name} が無い({' '.join(sources)} だけを書く)" for name, sources in RequiredExactly.items() if name not in directives]
-    extra = {name: set(directives.get(name, [])) - allowed for name, allowed in AllowedSources.items()}
+    missing = [
+        f"{name} が無いか違う({' '.join(sorted(Policy[name]))} だけを書く)"
+        for name in RequiredExactly
+        if set(directives.get(name, [])) != Policy[name]
+    ]
+    extra = {name: set(directives.get(name, [])) - allowed for name, allowed in Policy.items() if allowed is not None}
     wrong = [
-        f"{name} に許していない出どころ {' '.join(sorted(sources))}(許すのは {' / '.join(sorted(AllowedSources[name]))})"
+        f"{name} に許していない出どころ {' '.join(sorted(sources))}(許すのは {' / '.join(sorted(Policy[name]))})"
         for name, sources in extra.items()
         if sources
     ]
@@ -102,8 +126,9 @@ def csp_problems(template: str) -> list[str]:
     policies = CspMeta.findall(template)
     if len(policies) != 1:
         return [f"CSP の <meta> は 1 つだけ置く(今は {len(policies)} 個)"]
-    directives = directives_of(policies[0])
-    return script_problems(template, directives) + source_problems(directives)
+    pairs = directives_of(policies[0])
+    directives = dict(pairs)
+    return directive_problems(pairs) + script_problems(template, directives) + source_problems(directives)
 
 
 def word_problems(template: str) -> list[str]:
@@ -113,7 +138,8 @@ def word_problems(template: str) -> list[str]:
 
 
 def main(argv: list[str]) -> int:
-    if len(argv) != 2 or not Path(argv[1]).is_file():
+    is_valid_call = len(argv) == 2 and Path(argv[1]).is_file()
+    if not is_valid_call:
         print("使い方: check-pr-explain-template.py <テンプレート>", file=sys.stderr)
         return 2
     template = Path(argv[1]).read_text(encoding="utf-8")

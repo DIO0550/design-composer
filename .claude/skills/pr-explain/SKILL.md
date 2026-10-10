@@ -16,9 +16,9 @@ description: "PR ごとの解説ページ(構造マップ・変更の経緯・�
 
 | 画面 | 見るもの | 地図から | 解説から |
 | --- | --- | --- | --- |
-| 構造マップ(`#map`) | 左に変更ファイルと concepts の木。中に、それを層(または機能)ごとの組にまとめた箱の図と、やりとり(または依存)の線。組は抽象度で畳む・開く。右に概要(highlights・組ごとの変更・やりとり一覧)か、選んだ箱・線・やりとりの詳細(要するに・受け取るもの / 送り出すもの・使っている / 使われている)と、やりとりの流れ(シーケンス図) | `groups`・`dependencies` | `overview.highlights`・`features`・`layers`・`concepts`・`messages`・`flows` |
-| 変更の経緯(`#story`) | コミットを新しい順に並べた一覧と、ブランチ全体の流れ(題・要約・これまで / このあと・変更の順番・レビューポイント)、コミットごとの説明(なぜ・影響する操作・レビューで見るところ・振る舞いの前後)と差分・行への注釈 | `commits`(件名・本文・作者・日時・ファイルごとの差分) | `overview`・`commitNotes`(操作の名前は `flows`、ファイルの呼び名は `concepts`) |
-| テスト(`#test`) | suite ごとのテストの一覧と、構造マップと同じ組・箱の図の上で、テストが確かめている箱・やりとりと、その抜け。テストごとの前提 / 操作 / 期待・値の表・確かめているやりとり・テストコード・追加したコミット | `tests.added` / `tests.removed`・テストファイルの対象(`target`) | `suites`・`tests`(線は `messages`。無ければ依存) |
+| 構造マップ(`#map`) | 左に変更ファイルと concepts の木。中に、それを層(または機能)ごとの組にまとめた箱の図と、やりとり(または依存)の線。組は抽象度で畳む・開く。右に概要(highlights・組ごとの変更・やりとり一覧)か、選んだ箱・線・やりとりの詳細(要するに・受け取るもの / 送り出すもの・使っている / 使われている)と、やりとりの流れ(シーケンス図) | `groups`・`dependencies` | `overview.highlights`・`features`・`layerRoles`・`concepts`・`messages`・`flows` |
+| 変更の経緯(`#story`) | コミットを新しい順に並べた一覧と、ブランチ全体の流れ(題・要約・これまで / このあと・変更の順番・レビューポイント)、コミットごとの説明(なぜ・影響する操作・レビューで見るところ・振る舞いの前後)と差分・行への注釈 | `commits`(件名・本文・作者・日時・ファイルごとの差分) | `overview`・`commitStories`(操作の名前は `flows`、ファイルの呼び名は `concepts`) |
+| テスト(`#test`) | suite ごとのテストの一覧と、構造マップと同じ組・箱の図の上で、テストが確かめている箱・やりとりと、その抜け。テストごとの前提 / 操作 / 期待・値の表・確かめているやりとり・テストコード・追加したコミット | `tests.added` / `tests.removed`・テスト名を調べたファイル(`tests.files`)・テストファイルの対象(`target`) | `suites`・`tests`(線は `messages`。無ければ依存) |
 
 画面をまたいで移れる。変更の経緯の「影響する操作」を押すと構造マップでその流れを選んだ状態に、テストの
 「追加したコミット」を押すと変更の経緯でそのコミットを開いた状態になる。
@@ -68,11 +68,10 @@ Files changed にも混ざるため)。
    ```
 
    - push の前に `build-pr-explain.py` が検査し、テストの抜粋(`excerpt`)に中身(`text`)を足す。
-     落ちたら報告を読んで直す。報告の分類は `[pr-explain-shape]`(形)・`[pr-explain-meta]`(`pr` が
-     公開先と違う)・`[pr-explain-ref]`(解説の中の参照切れ)・`[pr-explain-code]`(`sha` や抜粋の
-     パスがこのリポジトリに無い)
-   - **終了コード 3** は置き先に `change-map.json` がまだ無い(`PR Explain` の run が終わる前)か、
-     PR が閉じて消された後。run の完了を待ってからやり直す。閉じた PR には置かない
+     落ちたら報告を読んで直す(報告の分類は `build-pr-explain.py` の冒頭)
+   - 解説の `sha` は push してから置く。リモートの追跡ブランチに無い sha の解説は置かない
+   - 終了コードの意味は `pr-explain-pages.sh` の冒頭。**3** なら `PR Explain` の run の完了を待って
+     からやり直す。閉じた PR には置かない
    - 解説の `sha` が地図の head と違えば、置いたうえで標準エラーに知らせる。push の直後で run が
      終わっていないだけなら置き直さなくてよい(run が終われば地図の head と揃う)
    - **gh-pages へ push してよいのは、このスクリプトで `pr-explain/pr-<番号>/` へ置くときだけ。**
@@ -100,7 +99,7 @@ Files changed にも混ざるため)。
 | `issue` | 任意 | 材料の Issue 番号 |
 | `overview` | 必須 | Overview |
 | `features` | 任意 | Feature[]。空ならページは「機能」でまとめられない(層だけ) |
-| `layers` / `concepts` / `messages` / `flows` / `commitNotes` / `suites` / `tests` | 任意 | 下の型の配列 |
+| `layerRoles` / `concepts` / `messages` / `flows` / `commitStories` / `suites` / `tests` | 任意 | 下の型の配列 |
 
 **型**(`?` は任意)
 
@@ -108,14 +107,14 @@ Files changed にも混ざるため)。
 | --- | --- |
 | Overview | `title` `lead` `before: Behavior[]`(0 件でよい)`after: Behavior[]`(1 件以上)`highlights?: Highlight[]` |
 | Behavior | `text` `message?`(messages の id) |
-| Highlight | `title` `text` `target: Target` |
+| Highlight | `title` `text` `go: Target`(押したときに移る先) |
 | Target | `{kind: "feature", id}` / `{kind: "layer", layer}`(地図の `groups[].label` と同じ綴り)/ `{kind: "file", path}` / `{kind: "message", id}` / `{kind: "flow", id}`。kind ごとのキーが欠けるのも、他の kind のキーが混ざるのも不可 |
 | Feature | `id` `label` `role` |
-| LayerNote | `layer`(一意。地図の `groups[].label`)`role` |
+| LayerRole | `layer`(一意。地図の `groups[].label`)`role` |
 | Concept | `path`(一意)`name` `role` `feature?`(features の id)`change?` `graph?`(既定 true) |
-| Message | `id` `from` `to`(concepts の path)`kind`: `cmd` \| `qry` \| `evt` `name` `code` `via`: `call` \| `http` \| `state` \| `log` \| `exec` \| `file` `payload?` `returns?` `status?`: `new` \| `removed` |
+| Message | `id` `from` `to`(concepts の path)`kind`: `cmd` \| `qry` \| `evt` `name` `code` `via`: `call` \| `http` \| `state` \| `log` \| `exec` \| `file` `payload?` `returns?` `status?`: `added` \| `changed` \| `removed`(省けば前からあって変えていない) |
 | Flow | `id` `label` `steps[]`(messages の id。1 件以上) |
-| CommitNote | `sha`(一意)`phase`: `prep` \| `core` \| `hard` \| `review` \| `fin` `role` `why` `flows?`(flows の id)`review?: string[]` `before?: Behavior[]` `after?: Behavior[]` `notes?: Note[]` |
+| CommitStory | `sha`(一意)`phase`: `prep` \| `core` \| `hard` \| `revise` \| `fin` `role` `why` `flows?`(flows の id)`review?: string[]` `before?: Behavior[]` `after?: Behavior[]` `notes?: Note[]` |
 | Note | `path` `side?`: `new` \| `old`(既定 new)`start`(1 以上)`end`(start 以上)`text`。行番号はそのコミット時点 |
 | Suite | `id` `label` `file` |
 | Test | `id` `suite`(suites の id)`name` `techniques[]`: `boundary` \| `equivalence` \| `error` \| `state` \| `regression` \| `idempotence` \| `type`(1 件以上・重複なし)`why` `given` `when` `then` `todo?: true` `commit?`(sha)`excerpt?: Excerpt` `values?: Values` `targets?`(concepts の path)`covers?`(messages の id) |
@@ -123,13 +122,13 @@ Files changed にも混ざるため)。
 | Values | `columns[]`(1 件以上)`rows[{cells[](列と同数), boundary?}]` |
 
 id・sha・path・layer は一覧の中で一意にする(features / messages / flows / suites / tests の id、
-commitNotes の sha、concepts の path、layers の layer)。todo のテストは commit も excerpt も持たない。
+commitStories の sha、concepts の path、layerRoles の layer)。todo のテストは commit も excerpt も持たない。
 
-**解説の中の参照**は満たさなければ置けない(message の from / to、flow の steps、commitNote の flows、
+**解説の中の参照**は満たさなければ置けない(message の from / to、flow の steps、commitStory の flows、
 Behavior の message、test の suite / covers / targets、concept の feature、Target の feature / message /
-flow)。**地図を指す参照**(commitNote の sha・Note のパスと行・Target の layer / file・LayerNote の
-layer・concept のパス)は検査しない。地図は push のたびに変わるので、外れたものはページが
-「地図に無い」と出す。
+flow)。**地図を指す参照**(commitStory の sha・Note のパスと行・Target の layer / file・LayerRole の
+layer・concept のパス)は検査せず、外れたものはページが「地図に無い」と出す(理由は
+`build-pr-explain.py` の冒頭)。
 
 ## 書き方
 
@@ -139,17 +138,19 @@ layer・concept のパス)は検査しない。地図は push のたびに変わ
 | キー | 書くこと | 書かないこと |
 | --- | --- | --- |
 | `overview` | `title` は PR の題、`lead` は何ができるようになったかの 1〜2 文。`before` / `after` は操作・状況ごとの振る舞いを 1 つ 1 行で(空・エラー・境界の状況も)。関わるやりとりがあれば `message` で指す | 実装の手順 |
-| `overview.highlights` | 特に見てほしい箇所(自信のない判断・未決のまま入れたもの・目で見ないと分からない表示)と、図のどこを見ればよいか(`target`) | 「全体を見てください」 |
-| `features` / `layers` | 機能・層がこの PR で担う役割を 1 文。`layers` の綴りは地図の `groups[].label` に揃える | |
+| `overview.highlights` | 特に見てほしい箇所(自信のない判断・未決のまま入れたもの・目で見ないと分からない表示)と、押したときに図のどこへ移るか(`go`) | 「全体を見てください」 |
+| `features` / `layerRoles` | 機能・層がこの PR で担う役割を 1 文。`layerRoles` の `layer` の綴りは地図の `groups[].label` に揃える | |
 | `concepts` | 箱にしたいファイルと、その短い名前(`name`。図の表示名になる)・役割・何を変えたか(`change`)。変更していないファイルも名指しすると箱になる。図に出さず木にだけ出すなら `graph: false` | 変更ファイルの列挙だけ(箱は地図からも出る) |
-| `messages` / `flows` | 箱どうしのやりとり。`kind` は変える(`cmd`)/ 問い合わせる(`qry`)/ 知らせる(`evt`)、`code` は実際の呼び出しの綴り。`flows` は操作・イベントごとのやりとりの順で、2〜4 本 | 1 つの関数の中の手順 |
-| `commitNotes` | コミットごとに、`role`(何をするコミットか 1 行)・`why`(なぜこの順でこうしたか)・`review`(レビューで見てほしい点を 1 点 1 文)・振る舞いの前後・行への注釈(`notes`)。`phase` は準備(`prep`)/ 本体(`core`)/ 堅くする(`hard`)/ 指摘の反映(`review`)/ 仕上げ(`fin`) | 件名・本文の写し(地図から出る) |
+| `messages` / `flows` | 箱どうしのやりとり。`kind` は変える(`cmd`)/ 問い合わせる(`qry`)/ 知らせる(`evt`)、`code` は実際の呼び出しの綴り。このブランチで足した・変えた・消したものは `status` を `added` / `changed` / `removed` にする(テストの抜けは `added` と `changed` で数える)。`flows` は操作・イベントごとのやりとりの順で、2〜4 本 | 1 つの関数の中の手順 |
+| `commitStories` | コミットごとに、`role`(何をするコミットか 1 行)・`why`(なぜこの順でこうしたか)・`review`(レビューで見てほしい点を 1 点 1 文)・振る舞いの前後・行への注釈(`notes`)。`phase` は下ごしらえ(`prep`)/ 本体(`core`)/ 安定化(`hard`)/ 指摘の反映(`revise`)/ 仕上げ(`fin`) | 件名・本文の写し(地図から出る) |
 | `suites` / `tests` | テストごとに、守る振る舞い(`why`)・前提 / 操作 / 期待・使った技法・境界の値の表(`values`)・確かめているやりとり(`covers`)と箱(`targets`)。テストコードは `excerpt` で範囲を指す | テストコードの写し |
 
 - **`review` の文は、確認の印の鍵になる。** 読み手のブラウザは「コミットの sha + 文」で確認済みを
   覚えるので、文を書き直すとその点の印は外れる(別の点へ移らない)
-- **`tests[].name` はテスト名そのままで書く。** ページは `suite.file` と `name` を地図の
-  `tests.added` と突き合わせて「追加 / 既存」を出す。綴りを変えると既存のテストに見える
+- **`tests[].name` はテスト名そのままで書く。** ページは、地図がテスト名を調べたファイル(`tests.files`。
+  `__tests__/` のテストファイル)なら `suite.file` と `name` を `tests.added` と突き合わせて「追加 / 既存」を
+  出す。綴りを変えると既存のテストに見える。それ以外のファイルのテストは、このブランチで足したファイルなら
+  「追加」、ほかは「判定なし」
 - 未実装のテスト(守れていない振る舞い)は `todo: true` で書く。ページは破線で出す
 - Note の `start` / `end` は、そのコミットで `side` の側(既定は変更後)のファイルの行番号。差分の
   hunk に入らない行への注釈は「差分に出ていない行への注釈」として別に出る
@@ -164,16 +165,8 @@ layer・concept のパス)は検査しない。地図は push のたびに変わ
 | 解説が読めない(JSON でない・`version` が 1 でない・`pr` が違う・型が想定外) | 「解説なし」とその理由 |
 | 解説の sha が地図の head より前 | 「解説は ◯ 時点、以降 n コミットは解説なし」。以降のコミットには「解説なし」の札 |
 | 解説の sha が地図のコミットに無い | 「解説の sha が地図に無い」(force push などで履歴が変わったとき) |
-| commitNotes の sha が地図に無い | 「地図に無い解説 n 件」。別の一覧に出す |
-| 地図が version 1 | 「地図が古い(v1)」 |
-
-## 移行期間
-
-以前は解説を HTML の断片で 4 ページ(入口・振る舞い・技術・テスト)に分けて置いていた。
-
-- 古いブランチのセッションが古いスクリプトでページを置いても、次の push で Actions が枠を置き直し、
-  3 つ以外のファイルを消す
-- 地図が version 1 のフォルダにも `put-explain` で置ける。ページは「地図が古い(v1)」と出す
+| commitStories の sha が地図に無い | 「地図に無い解説 n 件」。別の一覧に出す |
+| 地図の version が 2 でない | 画面を組まず、「変更の地図を読めません」と version を出す |
 
 ## 参照ファイル
 

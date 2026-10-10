@@ -6,7 +6,8 @@
 - PR のブランチ名(head と base)
 - 変更したファイルと、依存の端に出る変更していないファイル(文脈ファイル)を層ごとにまとめ、内側の層から
   外側へ読む順に並べたもの。変更したテストファイルには、それが確かめている対象のファイルを添える
-- `__tests__/` のテスト名の増減(テスト名は仕様の文なので、増減がそのまま守る仕様の増減になる)
+- `__tests__/` のテスト名の増減(テスト名は仕様の文なので、増減がそのまま守る仕様の増減になる)と、テスト名を
+  調べたファイルの一覧(ページは、一覧に無いファイルのテストを追加とも既存とも言い切らない)
 - コミットごとの件名・本文・作者・日時と、ファイルごとの差分(ページが変更の経緯を出し、解説を書いた
   時点より後に何が変わったかを出すため)
 - 端の少なくとも一方が変更ファイルの依存(どのファイルがどのファイルを使っているか)。merge-base と head の
@@ -209,11 +210,6 @@ def test_names(text: str) -> set[str]:
     return {name for name in names if name is not None}
 
 
-def file_at(revision: str, path: str) -> str:
-    """ある時点のファイルの中身を返す。"""
-    return git("show", f"{revision}:{path}")
-
-
 def changed_files(base: str, head: str) -> list[dict]:
     """base..head で変わったファイルを、rename を 1 件にまとめて返す。"""
     statuses = git("diff", "-z", "-M", "--name-status", base, head).split("\0")
@@ -340,20 +336,25 @@ def group_files(files: list[dict]) -> list[dict]:
     ]
 
 
-def test_changes(files: list[dict], base: str, head: str) -> dict[str, list[dict]]:
-    """テストファイルごとに、前後のテスト名の集合を比べて増減を出す。"""
+def test_changes(files: list[dict], before: dict[str, str | None], after: dict[str, str | None]) -> dict[str, list]:
+    """テストファイルごとに、前後のテスト名の集合を比べて増減を出す。
+
+    中身は依存を探すときに読んだものを使う(`MaxSourceCharacters` を超えるファイルは読まないので、テスト名も拾わない)。
+
+    @param files 変更ファイル(`changed_files` の戻り値)
+    @param before merge-base のすべてのファイル(`snapshots_at` の戻り値)
+    @param after head のすべてのファイル
+    @returns 増えたテスト(`added`)と減ったテスト(`removed`)の `{file, name}`、テスト名を調べたファイルのパス(`files`)
+    """
+    examined = [file for file in files if TestFile.search(file["path"]) or TestFile.search(file["oldPath"] or file["path"])]
     added: list[dict] = []
     removed: list[dict] = []
-    for file in files:
-        old_path = file["oldPath"] or file["path"]
-        is_test = TestFile.search(file["path"]) or TestFile.search(old_path)
-        if not is_test:
-            continue
-        before = test_names(file_at(base, old_path)) if file["status"] != "A" else set()
-        after = test_names(file_at(head, file["path"])) if file["status"] != "D" else set()
-        added += [{"file": file["path"], "name": name} for name in sorted(after - before)]
-        removed += [{"file": file["path"], "name": name} for name in sorted(before - after)]
-    return {"added": added, "removed": removed}
+    for file in examined:
+        names_before = test_names(before.get(file["oldPath"] or file["path"]) or "")
+        names_after = test_names(after.get(file["path"]) or "")
+        added += [{"file": file["path"], "name": name} for name in sorted(names_after - names_before)]
+        removed += [{"file": file["path"], "name": name} for name in sorted(names_before - names_after)]
+    return {"added": added, "removed": removed, "files": [file["path"] for file in examined]}
 
 
 
@@ -543,7 +544,7 @@ def dependencies_between(files: list[dict], before: dict[str, str | None], after
     @param files 変更ファイル(`changed_files` の戻り値)
     @param before merge-base のすべてのファイル(`snapshots_at` の戻り値)
     @param after head のすべてのファイル
-    @returns `{"from": 使う側, "to": 使われる側, "state": 変化}` の並び。変化は head にだけあれば `added`、両方に
+    @returns `{"from": 使う側, "to": 使われる側, "status": 変化}` の並び。変化は head にだけあれば `added`、両方に
         あれば `kept`、merge-base にだけあれば `removed`。merge-base 側の端は、rename の新しいパスに付け替えてから比べる
     """
     renamed = {file["oldPath"]: file["path"] for file in files if file["oldPath"]}
@@ -557,8 +558,8 @@ def dependencies_between(files: list[dict], before: dict[str, str | None], after
     removed = {edge: "removed" for edge in edges_before - edges_after}
     added = {edge: "added" for edge in edges_after - edges_before}
     kept = {edge: "kept" for edge in edges_after & edges_before}
-    states = removed | added | kept
-    return [{"from": source, "to": used, "state": states[(source, used)]} for source, used in sorted(states)]
+    statuses = removed | added | kept
+    return [{"from": source, "to": used, "status": statuses[(source, used)]} for source, used in sorted(statuses)]
 
 
 def hunk_lines(diff: str) -> list[str]:
@@ -629,7 +630,7 @@ def build_map(pr: PullRequest) -> dict:
         "mergeBase": merge_base,
         "head": head,
         "groups": group_files(listed_files(files, dependencies, frozenset(after))),
-        "tests": test_changes(files, merge_base, head),
+        "tests": test_changes(files, before, after),
         "commits": commits_between(merge_base, head),
         "dependencies": dependencies,
     }

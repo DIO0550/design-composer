@@ -14,17 +14,17 @@
       { "text": "Actions は push のたびに枠と地図を置き直す", "message": "put-map" }
     ],
     "highlights": [
-      { "title": "公開の入口", "text": "検査に落ちた解説は gh-pages へ push しない", "target": { "kind": "feature", "id": "publish" } },
-      { "title": "ハーネスの層", "text": "検査はすべてハーネスの層にある", "target": { "kind": "layer", "layer": "ハーネス" } },
-      { "title": "置き場の書き換え", "text": "3 ファイル以外を消すのはここだけ", "target": { "kind": "file", "path": ".github/scripts/pr-explain-pages.sh" } },
-      { "title": "地図の配置", "text": "枠は毎回上書きする", "target": { "kind": "message", "id": "put-map" } },
-      { "title": "解説を置く流れ", "text": "検査から push までを 1 本で見る", "target": { "kind": "flow", "id": "explain" } }
+      { "title": "公開の入口", "text": "検査に落ちた解説は gh-pages へ push しない", "go": { "kind": "feature", "id": "publish" } },
+      { "title": "ハーネスの層", "text": "検査はすべてハーネスの層にある", "go": { "kind": "layer", "layer": "ハーネス" } },
+      { "title": "置き場の書き換え", "text": "3 ファイル以外を消すのはここだけ", "go": { "kind": "file", "path": ".github/scripts/pr-explain-pages.sh" } },
+      { "title": "地図の配置", "text": "枠は毎回上書きする", "go": { "kind": "message", "id": "put-map" } },
+      { "title": "解説を置く流れ", "text": "検査から push までを 1 本で見る", "go": { "kind": "flow", "id": "explain" } }
     ]
   },
   "features": [
     { "id": "publish", "label": "公開", "role": "解説と地図を gh-pages の PR のフォルダへ置く" }
   ],
-  "layers": [
+  "layerRoles": [
     { "layer": "ハーネス", "role": "解説の検査と置き場の書き換え" }
   ],
   "concepts": [
@@ -35,13 +35,13 @@
   ],
   "messages": [
     { "id": "put-map", "from": ".github/workflows/pr-explain.yml", "to": ".github/scripts/pr-explain-pages.sh", "kind": "cmd", "name": "地図を置く", "code": "pr-explain-pages.sh put-map", "via": "exec", "payload": "change-map.json とテンプレート" },
-    { "id": "put-explain", "from": ".github/scripts/pr-explain-pages.sh", "to": ".github/scripts/build-pr-explain.py", "kind": "qry", "name": "解説を検査する", "code": "build-pr-explain.py --pr --out", "via": "exec", "payload": "explain.json", "returns": "抜粋の中身を足した explain.json", "status": "new" }
+    { "id": "put-explain", "from": ".github/scripts/pr-explain-pages.sh", "to": ".github/scripts/build-pr-explain.py", "kind": "qry", "name": "解説を検査する", "code": "build-pr-explain.py --pr --out", "via": "exec", "payload": "explain.json", "returns": "抜粋の中身を足した explain.json", "status": "added" }
   ],
   "flows": [
     { "id": "explain", "label": "解説を置いたとき", "steps": ["put-explain"] },
     { "id": "push", "label": "push したとき", "steps": ["put-map"] }
   ],
-  "commitNotes": [
+  "commitStories": [
     {
       "sha": "89abcdef0123456789abcdef0123456789abcdef",
       "phase": "core",

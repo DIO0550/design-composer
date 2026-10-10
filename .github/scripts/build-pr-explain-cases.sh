@@ -7,14 +7,9 @@
 # 使い方: bash .github/scripts/build-pr-explain-cases.sh
 # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。
 #
-# **落ちるケースは、報告の行がすべて期待した分類であることまで見る。** 崩したのと別の規則で
-# 落ちていても終了コードは同じ 1 なので、分類を見ないと、崩した規則を消しても ok のまま残る。
+# 落ちるケースは、報告の行がすべて期待した分類であることまで見る(`all_in_category`)。
 #
-# **地図を指す参照(commitNote の sha・Note のパス・Target の layer / file・LayerNote・concept)を
-# 通すケースが要。** 地図は push のたびに変わるので、ここで落とすと古い解説が置けなくなる。
-#
-# 抜粋の中身は解説時点の sha から読む。作業ツリーは別の中身へ書き換えておき、作業ツリーを読む
-# 実装に戻すと落ちるようにしている。
+# **地図を指す参照を通すケースが要。** 見ない理由は `build-pr-explain.py` の冒頭。
 #
 # 表は `期待|分類|基準|ケース名|変形` の 1 行 1 ケース。基準(`sample` = 見本 / `minimal` = 必須の
 # キーだけ)を変数 `d` に読み、変形(Python の文)を当てて検査する。変形が `raw` に文字列を入れたら、
@@ -43,7 +38,7 @@ printf 'a\nb' > "$repo/noeol.txt"
 mkdir -p "$repo/sub"
 git -C "$repo" add -A && git -C "$repo" commit --quiet -m explained
 sha="$(git -C "$repo" rev-parse HEAD)"
-# 解説を書いた後の編集。抜粋には載らない。
+# 解説を書いた後の編集。抜粋は解説時点の sha から読むので載らない(作業ツリーを読む実装なら載る)。
 printf 'ONE\nTWO\nTHREE\nFOUR\nFIVE\nSIX\n' > "$repo/kept.txt"
 
 # 見本の sha をこのリポジトリのコミットにした基準と、必須のキーだけの基準。
@@ -69,13 +64,6 @@ open(sys.argv[2], "w", encoding="utf-8").write(raw if raw is not None else json.
 PY
 }
 
-# 報告が 1 行以上あり、すべてが期待した分類の見出しで始まるか。
-# $1 報告, $2 分類
-all_in_category() {
-  [ -n "$1" ] || return 1
-  ! printf '%s\n' "$1" | grep -v "^\[pr-explain-$2\] " >/dev/null
-}
-
 # $1 期待する分類(`pass` のケースでは使わない)。pass / deny のほか、食い違いの形を返す。
 verdict() {
   local category="$1" output status
@@ -85,8 +73,7 @@ verdict() {
     0) [ -f "$work/out.json" ] && echo pass || echo unwritten ;;
     1)
       if [ -e "$work/out.json" ]; then echo written; return; fi
-      # 報告の行がすべて期待した分類なら deny。別の分類が混ざれば、崩したのと別の規則で落ちている。
-      if all_in_category "$output" "$category"; then
+      if all_in_category "$output" "^\[pr-explain-$category\] "; then
         echo deny
       else
         echo "other-category"
@@ -97,9 +84,9 @@ verdict() {
 }
 
 cases="$(cat <<'CASES'
-pass|-|sample|見本(Target の 5 つの kind をすべて使う)は通る|assert sorted(h["target"]["kind"] for h in d["overview"]["highlights"]) == ["feature", "file", "flow", "layer", "message"]
+pass|-|sample|見本(Target の 5 つの kind をすべて使う)は通る|assert sorted(h["go"]["kind"] for h in d["overview"]["highlights"]) == ["feature", "file", "flow", "layer", "message"]
 pass|-|minimal|必須のキーだけの解説は通る|
-pass|-|sample|地図にしか無いもの(commitNote の sha・Note のパスと行・Target の layer / file・LayerNote・concept)は落とさない|d["commitNotes"][0]["sha"] = "e" * 40; d["tests"][0]["commit"] = "e" * 40; d["commitNotes"][0]["notes"][0].update(path="no/such.ts", start=900, end=901); d["overview"]["highlights"][1]["target"]["layer"] = "地図に無い層"; d["overview"]["highlights"][2]["target"]["path"] = "no/such"; d["layers"][0]["layer"] = "地図に無い層"; d["concepts"].append({"path": "no/such.ts", "name": "無い", "role": "地図に無い"})
+pass|-|sample|地図にしか無いもの(commitStory の sha・Note のパスと行・Target の layer / file・LayerRole・concept)は落とさない|d["commitStories"][0]["sha"] = "e" * 40; d["tests"][0]["commit"] = "e" * 40; d["commitStories"][0]["notes"][0].update(path="no/such.ts", start=900, end=901); d["overview"]["highlights"][1]["go"]["layer"] = "地図に無い層"; d["overview"]["highlights"][2]["go"]["path"] = "no/such"; d["layerRoles"][0]["layer"] = "地図に無い層"; d["concepts"].append({"path": "no/such.ts", "name": "無い", "role": "地図に無い"})
 deny|shape|sample|JSON として読めない|raw = "{"
 deny|shape|sample|version が 1 でない|d["version"] = 2
 deny|shape|sample|必須のキー(overview)が無い|del d["overview"]
@@ -110,61 +97,61 @@ deny|shape|sample|before が配列でなく文字列|d["overview"]["before"] = "
 deny|shape|sample|after の要素が Behavior でなく文字列|d["overview"]["after"] = ["後"]
 deny|shape|sample|語彙の外の message の kind|d["messages"][0]["kind"] = "command"
 deny|shape|sample|語彙の外の via|d["messages"][0]["via"] = "rpc"
-deny|shape|sample|語彙の外の phase|d["commitNotes"][0]["phase"] = "polish"
+deny|shape|sample|語彙の外の phase|d["commitStories"][0]["phase"] = "polish"
 deny|shape|sample|語彙の外の technique|d["tests"][0]["techniques"] = ["fuzz"]
-deny|shape|sample|語彙の外の message の status|d["messages"][1]["status"] = "changed"
+deny|shape|sample|語彙の外の message の status|d["messages"][1]["status"] = "new"
 deny|shape|sample|トップの sha が 40 桁でない|d["sha"] = d["sha"][:39]
-deny|shape|sample|commitNote の sha が 40 桁でない|d["commitNotes"][0]["sha"] = "89abcdef"
+deny|shape|sample|commitStory の sha が 40 桁でない|d["commitStories"][0]["sha"] = "89abcdef"
 deny|shape|sample|id が - で始まる|d["tests"][1]["id"] = "-stale"
 deny|shape|sample|messages の id が重複|d["messages"].append(dict(d["messages"][0]))
 deny|shape|sample|features の id が重複|d["features"].append(dict(d["features"][0]))
 deny|shape|sample|flows の id が重複|d["flows"].append(dict(d["flows"][0]))
 deny|shape|sample|suites の id が重複|d["suites"].append(dict(d["suites"][0]))
 deny|shape|sample|tests の id が重複|d["tests"].append(dict(d["tests"][1]))
-deny|shape|sample|commitNotes の sha が重複|d["commitNotes"].append(dict(d["commitNotes"][0]))
+deny|shape|sample|commitStories の sha が重複|d["commitStories"].append(dict(d["commitStories"][0]))
 deny|shape|sample|concepts の path が重複|d["concepts"].append(dict(d["concepts"][0]))
-deny|shape|sample|layers の layer が重複|d["layers"].append(dict(d["layers"][0]))
+deny|shape|sample|layerRoles の layer が重複|d["layerRoles"].append(dict(d["layerRoles"][0]))
 deny|shape|sample|values の行のセルが列より少ない|d["tests"][0]["values"]["rows"][1]["cells"] = ["1"]
 deny|shape|sample|values の columns が空(rows も空にして、セルの数の規則と切り離す)|d["tests"][0]["values"].update(columns=[], rows=[])
-deny|shape|sample|Note の start が end より後|d["commitNotes"][0]["notes"][0].update(start=3, end=2)
-deny|shape|sample|Note の start が 0|d["commitNotes"][0]["notes"][0]["start"] = 0
+deny|shape|sample|Note の start が end より後|d["commitStories"][0]["notes"][0].update(start=3, end=2)
+deny|shape|sample|Note の start が 0|d["commitStories"][0]["notes"][0]["start"] = 0
 deny|shape|sample|excerpt の start が end より後|d["tests"][0]["excerpt"] = {"path": "kept.txt", "start": 3, "end": 2}
 deny|shape|sample|excerpt の start が 0|d["tests"][0]["excerpt"] = {"path": "kept.txt", "start": 0, "end": 2}
 deny|shape|sample|excerpt が 81 行|d["tests"][0]["excerpt"] = {"path": "kept.txt", "start": 1, "end": 81}
 deny|shape|sample|入力の excerpt に text を書く|d["tests"][0]["excerpt"] = {"path": "kept.txt", "start": 1, "end": 2, "text": "one\ntwo"}
-deny|shape|sample|feature の Target に id が無い|del d["overview"]["highlights"][0]["target"]["id"]
-deny|shape|sample|layer の Target に layer が無い|del d["overview"]["highlights"][1]["target"]["layer"]
-deny|shape|sample|file の Target に path が無い|del d["overview"]["highlights"][2]["target"]["path"]
-deny|shape|sample|message の Target に id が無い|del d["overview"]["highlights"][3]["target"]["id"]
-deny|shape|sample|flow の Target に id が無い|del d["overview"]["highlights"][4]["target"]["id"]
-deny|shape|sample|feature の Target に file の path が混ざる|d["overview"]["highlights"][0]["target"]["path"] = "x"
-deny|shape|sample|layer の Target に feature の id が混ざる|d["overview"]["highlights"][1]["target"]["id"] = "publish"
-deny|shape|sample|file の Target に layer の layer が混ざる|d["overview"]["highlights"][2]["target"]["layer"] = "ハーネス"
-deny|shape|sample|message の Target に file の path が混ざる|d["overview"]["highlights"][3]["target"]["path"] = "x"
-deny|shape|sample|flow の Target に layer の layer が混ざる|d["overview"]["highlights"][4]["target"]["layer"] = "ハーネス"
-deny|shape|sample|語彙の外の Target の kind|d["overview"]["highlights"][0]["target"]["kind"] = "module"
+deny|shape|sample|feature の Target に id が無い|del d["overview"]["highlights"][0]["go"]["id"]
+deny|shape|sample|layer の Target に layer が無い|del d["overview"]["highlights"][1]["go"]["layer"]
+deny|shape|sample|file の Target に path が無い|del d["overview"]["highlights"][2]["go"]["path"]
+deny|shape|sample|message の Target に id が無い|del d["overview"]["highlights"][3]["go"]["id"]
+deny|shape|sample|flow の Target に id が無い|del d["overview"]["highlights"][4]["go"]["id"]
+deny|shape|sample|feature の Target に file の path が混ざる|d["overview"]["highlights"][0]["go"]["path"] = "x"
+deny|shape|sample|layer の Target に feature の id が混ざる|d["overview"]["highlights"][1]["go"]["id"] = "publish"
+deny|shape|sample|file の Target に layer の layer が混ざる|d["overview"]["highlights"][2]["go"]["layer"] = "ハーネス"
+deny|shape|sample|message の Target に file の path が混ざる|d["overview"]["highlights"][3]["go"]["path"] = "x"
+deny|shape|sample|flow の Target に layer の layer が混ざる|d["overview"]["highlights"][4]["go"]["layer"] = "ハーネス"
+deny|shape|sample|語彙の外の Target の kind|d["overview"]["highlights"][0]["go"]["kind"] = "module"
 deny|shape|sample|todo が true でない(false)|d["tests"][1]["todo"] = False
 deny|shape|sample|techniques に同じ観点を 2 回|d["tests"][0]["techniques"] = ["error", "error"]
 deny|shape|sample|techniques が空|d["tests"][0]["techniques"] = []
 deny|shape|sample|flow の steps が空|d["flows"][1]["steps"] = []
 deny|shape|sample|Behavior に知らないキー|d["overview"]["after"][0]["k"] = "x"
-deny|shape|sample|LayerNote に知らないキー|d["layers"][0]["x"] = "y"
+deny|shape|sample|LayerRole に知らないキー|d["layerRoles"][0]["x"] = "y"
 deny|shape|sample|Excerpt に知らないキー|d["tests"][0]["excerpt"] = {"path": "kept.txt", "start": 1, "end": 2, "lang": "py"}
 deny|shape|sample|concept の graph が真偽値でない|d["concepts"][3]["graph"] = "false"
 deny|meta|sample|pr が公開先と違う|d["pr"] = d["pr"] + 1
 deny|ref|sample|message の from が concepts に無い|d["messages"][0]["from"] = "no/such"
 deny|ref|sample|message の to が concepts に無い|d["messages"][0]["to"] = "no/such"
 deny|ref|sample|flow の steps が messages に無い|d["flows"][0]["steps"] = ["nope"]
-deny|ref|sample|commitNote の flows が flows に無い|d["commitNotes"][0]["flows"] = ["nope"]
-deny|ref|sample|commitNote の Behavior の message が messages に無い|d["commitNotes"][0]["before"][0]["message"] = "nope"
+deny|ref|sample|commitStory の flows が flows に無い|d["commitStories"][0]["flows"] = ["nope"]
+deny|ref|sample|commitStory の Behavior の message が messages に無い|d["commitStories"][0]["before"][0]["message"] = "nope"
 deny|ref|sample|overview の Behavior の message が messages に無い|d["overview"]["after"][0]["message"] = "nope"
 deny|ref|sample|test の suite が suites に無い|d["tests"][0]["suite"] = "nope"
 deny|ref|sample|test の covers が messages に無い|d["tests"][0]["covers"] = ["nope"]
 deny|ref|sample|test の targets が concepts に無い|d["tests"][0]["targets"] = ["no/such"]
 deny|ref|sample|concept の feature が features に無い|d["concepts"][0]["feature"] = "nope"
-deny|ref|sample|feature の Target が features に無い|d["overview"]["highlights"][0]["target"]["id"] = "nope"
-deny|ref|sample|message の Target が messages に無い|d["overview"]["highlights"][3]["target"]["id"] = "nope"
-deny|ref|sample|flow の Target が flows に無い|d["overview"]["highlights"][4]["target"]["id"] = "nope"
+deny|ref|sample|feature の Target が features に無い|d["overview"]["highlights"][0]["go"]["id"] = "nope"
+deny|ref|sample|message の Target が messages に無い|d["overview"]["highlights"][3]["go"]["id"] = "nope"
+deny|ref|sample|flow の Target が flows に無い|d["overview"]["highlights"][4]["go"]["id"] = "nope"
 deny|ref|sample|todo のテストが commit を持つ|d["tests"][1]["commit"] = d["sha"]
 deny|ref|sample|todo のテストが excerpt を持つ|d["tests"][1]["excerpt"] = {"path": "kept.txt", "start": 1, "end": 1}
 deny|code|sample|解説時点の sha がこのリポジトリに無い|d["sha"] = "f" * 40
