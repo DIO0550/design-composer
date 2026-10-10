@@ -325,6 +325,20 @@ test("数値として読めない入力を確定してもトークンの値は�
   ).toBeDefined();
 });
 
+test("色のトークンのピッカーを開いて 2 回動かしても Ctrl+Z 1 回で元の色へ戻る", async () => {
+  await renderTokensView();
+  await selectRow("primary");
+
+  fireEvent.click(field("値"));
+  fireEvent.change(field("値"), { target: { value: "#ff0000" } });
+  fireEvent.change(field("値"), { target: { value: "#00ff00" } });
+  expect(field("値")).toHaveProperty("value", "#00ff00");
+
+  await userEvent.keyboard("{Control>}z{/Control}");
+
+  expect(field("値")).toHaveProperty("value", "#3b82f6");
+});
+
 test("トークンを選んだあとでも Layers へ戻せる", async () => {
   await renderTokensView();
   await selectRow("primary");
@@ -370,6 +384,23 @@ test("グラデーションの角度を打って確定すると一覧の値が�
   await userEvent.clear(field("角度"));
   await userEvent.type(field("角度"), "45");
   await userEvent.tab();
+
+  expect(row(/^gradient 45° · 2 stops$/)).toBeDefined();
+});
+
+test("角度を 2 回打って確定すると、Ctrl+Z 1 回で 1 回目の角度へ戻る", async () => {
+  await addGradient();
+
+  await userEvent.clear(field("角度"));
+  await userEvent.type(field("角度"), "45");
+  await userEvent.tab();
+  await userEvent.clear(field("角度"));
+  await userEvent.type(field("角度"), "135");
+  await userEvent.tab();
+  expect(row(/^gradient 135° · 2 stops$/)).toBeDefined();
+  blurActive();
+
+  await userEvent.keyboard("{Control>}z{/Control}");
 
   expect(row(/^gradient 45° · 2 stops$/)).toBeDefined();
 });

@@ -112,6 +112,21 @@ test("ピッカーを開き直して動かすと別のまとまりとして届�
   ).toEqual([EditContinuities.Separate, EditContinuities.Separate]);
 });
 
+test("ピッカーで動かしたあと別の欄へ移り、開き直さずに動かすと別のまとまりとして届く", () => {
+  const onSetTokenValue = renderGradient(TwoStops);
+  const picker = screen.getByLabelText("stop 1 の色");
+
+  fireEvent.click(picker);
+  fireEvent.change(picker, { target: { value: "#ff0000" } });
+  fireEvent.blur(picker);
+  fireEvent.focus(screen.getByLabelText("角度"));
+  fireEvent.change(picker, { target: { value: "#00ff00" } });
+
+  expect(
+    onSetTokenValue.mock.calls.map(([, continuity]) => continuity),
+  ).toEqual([EditContinuities.Separate, EditContinuities.Separate]);
+});
+
 test("角度の欄には ° が、比率と不透明度の欄には % が添えられる", () => {
   renderGradient(TwoStops);
 

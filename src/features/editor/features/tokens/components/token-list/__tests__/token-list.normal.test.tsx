@@ -1,6 +1,7 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
+import { GradientSwatchTestId } from "@/components/color-swatch";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import type { TokenRef } from "@/domains/dcmp/token";
 import { TokenSelection } from "@/domains/session/token-selection";
@@ -97,6 +98,19 @@ test("グラデーションの行には角度と stop の件数が出る", async
   await user.click(screen.getByRole("button", { name: /^gradients 1$/ }));
 
   expect(screen.getByText("90° · 3 stops")).toBeDefined();
+});
+
+test("グラデーションの行の見本は階調の見本になる", async () => {
+  const user = userEvent.setup();
+  renderList();
+
+  await user.click(screen.getByRole("button", { name: /^gradients 1$/ }));
+
+  expect(
+    within(screen.getByRole("button", { name: /brand/ })).getByTestId(
+      GradientSwatchTestId,
+    ),
+  ).toBeDefined();
 });
 
 test("開いている種別には追加ボタンが出る", () => {

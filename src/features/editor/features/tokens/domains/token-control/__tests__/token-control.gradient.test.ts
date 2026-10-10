@@ -296,3 +296,69 @@ test("stop の + は最も広い隙間の中央に stop を足した値になる
     },
   });
 });
+
+test("2 件目の stop の色をピッカーで選ぶとその stop の色だけが変わる", () => {
+  const field = stopFieldOf(
+    gradientOf(gradientSelectionOf({ stops: ThreeStops })),
+    "stop 2 の色",
+  );
+
+  expect(TokenControl.valueFrom(field.target, "#ff0000")).toEqual(
+    Option.some({
+      kind: "gradients",
+      value: {
+        shape: "linear",
+        angle: 90,
+        stops: [
+          { color: "#000000", ratio: 0 },
+          { color: "#ff0000", ratio: 0.5 },
+          { color: "#ffffff", ratio: 1 },
+        ],
+      },
+    }),
+  );
+});
+
+test("2 件目の stop の hex に打った 6 桁でその stop の色だけが変わる", () => {
+  const field = stopFieldOf(
+    gradientOf(gradientSelectionOf({ stops: ThreeStops })),
+    "stop 2 の hex",
+  );
+
+  expect(TokenControl.valueFrom(field.target, "#00FF00")).toEqual(
+    Option.some({
+      kind: "gradients",
+      value: {
+        shape: "linear",
+        angle: 90,
+        stops: [
+          { color: "#000000", ratio: 0 },
+          { color: "#00ff00", ratio: 0.5 },
+          { color: "#ffffff", ratio: 1 },
+        ],
+      },
+    }),
+  );
+});
+
+test("2 件目の stop の比率の欄に打った値はその stop の比率になる", () => {
+  const field = stopFieldOf(
+    gradientOf(gradientSelectionOf({ stops: ThreeStops })),
+    "stop 2 の比率",
+  );
+
+  expect(TokenControl.valueFrom(field.target, "25")).toEqual(
+    Option.some({
+      kind: "gradients",
+      value: {
+        shape: "linear",
+        angle: 90,
+        stops: [
+          { color: "#000000", ratio: 0 },
+          { color: "#888888", ratio: 0.25 },
+          { color: "#ffffff", ratio: 1 },
+        ],
+      },
+    }),
+  );
+});

@@ -208,6 +208,14 @@ test("+ は並んでいない色の変わり目を並べ替えずに隣り合う
   ).toEqual([0.8, 0.5, 0.2]);
 });
 
+test("+ は逆向きに並んだ 2 件の隙間も差の大きさで広さを測る", () => {
+  expect(
+    GradientToken.addStop(gradientOfRatios([0.9, 0.1, 0.2])).stops.map(
+      (stop) => stop.ratio,
+    ),
+  ).toEqual([0.9, 0.5, 0.1, 0.2]);
+});
+
 test("+ で足す比率は小数 6 桁に丸める", () => {
   expect(
     GradientToken.addStop(gradientOfRatios([0, 0.333333])).stops.map(
