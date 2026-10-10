@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "pr": 1038,
+  "headBranch": "claude/magical-cannon-d1ujyy",
+  "baseBranch": "main",
+  "mergeBase": "2f8f19cc1bd7bfc37f93a7adb90253d9795d836a",
+  "head": "58fe3e23d3202a8e757f541555409c4cc76bb991",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/case-law/planning.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "58fe3e23d3202a8e757f541555409c4cc76bb991",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-10T08:11:14Z",
+      "subject": "📝 [Documentation]: #563 planning 判例の冒頭から古い件数と層の番号を外す",
+      "body": "- harness/case-law/planning.md:7 の「通算 65 件でいちばん多い分類。\n  だから層 2（スキルの手順）まで上げてある」を、層の置き場所\n  （skill / case-law）と、件数・起点の引き方（count.sh の plan 行）に\n  置き換えた\n\n背景:\n語彙の畳み込み（pr-900）で判例へ移したときの記述がそのまま残っていた。\n件数は以降の記録で変わり（main 2f8f19c の count.sh では plan の\n通算 19・再発 6）、「層 2」はいまの層の語彙（hook / skill / case-law）に\n無い番号で、plan の最新の介入は 層=case-law at pr-914。\n\n採用理由:\n件数を書き直さず、引き方だけを残した。ここへ写した数は次の記録で\nまた古くなるため（rules/coding.md「理由の根拠に一時的な事実を\n置かない」と同じ向き）。\n\n影響とトレードオフ:\n判例の本文（NG / OK の実例）には触れていない。count.sh の窓にも\n影響しないので、対策済の行は足さない（介入ではなく判例の管理）。\n\n代替案:\n- 件数と層を実測で書き直す: 次の記録でまた古くなるので採らない\n- 古い行を残し「この判断は更新された」の 1 行を添える\n  （harness/case-law/README.md の書き換え方）: 対象は判例の判断では\n  なく現況の説明で、誤った数字が冒頭に残り続けるので採らない\n- implementation-flow から直す: 判例を書けるのは harness-growth\n  だけなので採らない（Issue #563 で判断済み）\n\n参考:\n- Issue #563（案 A → 棚卸しで拾われなかったため、このセッションで\n  harness-growth として直すとオーナーが判断）\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01CzUFXCHqH3jqjWpxGqaSif",
+      "files": [
+        {
+          "path": "harness/case-law/planning.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 1,
+          "patch": "@@ -4,7 +4,9 @@\n フェーズ 3 と [`.claude/agents/plan-reviewer.md`](../../.claude/agents/plan-reviewer.md)。\n ここはその実例。\n \n-`plan` は通算 65 件でいちばん多い分類。だから層 2（スキルの手順）まで上げてある。\n+`plan` は書く側の段取りを `implementation-flow` フェーズ 3 の手順（層=skill）に、判断の実例をこのファイル\n+（層=case-law）に置いている。件数と最新の起点は `bash harness/records/count.sh` の `plan` 行で引く\n+（ここへ写すと、次の記録で古くなる）。\n \n ## `plan-scope-verification` — 件数・接続先・検証コマンドの範囲を実例に当てずに計画へ書いた\n ",
+          "patchLines": 11,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
