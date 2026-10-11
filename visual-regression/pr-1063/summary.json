@@ -1,12 +1,51 @@
 {
-  "reportVersion": "23b3a7e37661a7dc01288fc313102feb4cc4957a",
+  "reportVersion": "07aea4f3522ebfb353d276baa2d1d897852cd51c",
   "maxDiffRatio": 0.002,
   "changed": 9,
-  "new": 0,
+  "new": 3,
   "deleted": 0,
   "passed": 182,
   "failed": 9,
   "results": [
+    {
+      "story": "components-actioncard--disabled",
+      "id": "components-actioncard--disabled",
+      "title": "components/ActionCard",
+      "name": "押せない",
+      "status": "new",
+      "reason": "no-baseline",
+      "diffPixels": 0,
+      "diffRatio": 0,
+      "hasExpected": false,
+      "hasActual": true,
+      "hasDiff": false
+    },
+    {
+      "story": "components-actioncard--normal",
+      "id": "components-actioncard--normal",
+      "title": "components/ActionCard",
+      "name": "ノーマル",
+      "status": "new",
+      "reason": "no-baseline",
+      "diffPixels": 0,
+      "diffRatio": 0,
+      "hasExpected": false,
+      "hasActual": true,
+      "hasDiff": false
+    },
+    {
+      "story": "components-actioncard--primary",
+      "id": "components-actioncard--primary",
+      "title": "components/ActionCard",
+      "name": "プライマリ",
+      "status": "new",
+      "reason": "no-baseline",
+      "diffPixels": 0,
+      "diffRatio": 0,
+      "hasExpected": false,
+      "hasActual": true,
+      "hasDiff": false
+    },
     {
       "story": "components-contextmenu--empty-area",
       "id": "components-contextmenu--empty-area",
