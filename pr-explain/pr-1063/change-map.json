@@ -4,7 +4,7 @@
   "headBranch": "claude/magical-cannon-ihzbcx",
   "baseBranch": "main",
   "mergeBase": "086fa6cb38b2bf603f345761371357e502cd694c",
-  "head": "23b3a7e37661a7dc01288fc313102feb4cc4957a",
+  "head": "07aea4f3522ebfb353d276baa2d1d897852cd51c",
   "groups": [
     {
       "label": "domains / session",
@@ -83,6 +83,15 @@
       ]
     },
     {
+      "label": "types",
+      "files": [
+        {
+          "path": "src/types/ValueOf.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
       "label": "features / editor",
       "files": [
         {
@@ -135,8 +144,8 @@
           "path": "src/features/editor/features/document-start/components/document-start/index.tsx",
           "status": "M",
           "oldPath": null,
-          "additions": 140,
-          "deletions": 36,
+          "additions": 43,
+          "deletions": 38,
           "changed": true,
           "target": null
         },
@@ -193,14 +202,74 @@
       "label": "components",
       "files": [
         {
+          "path": "src/components/action-card/__stories__/sample-contents.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 26,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/components/action-card/index.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 144,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
           "path": "src/components/__tests__/row-drag.ts",
           "changed": false
+        },
+        {
+          "path": "src/components/action-card/__tests__/action-card.normal.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 67,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/components/action-card/index.tsx"
+        },
+        {
+          "path": "src/components/action-card/index.stories.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 50,
+          "deletions": 0,
+          "changed": true,
+          "target": null
         }
       ]
     }
   ],
   "tests": {
     "added": [
+      {
+        "file": "src/components/action-card/__tests__/action-card.normal.test.tsx",
+        "name": "2 枚並べても、それぞれの見出しがそれぞれの名前になる"
+      },
+      {
+        "file": "src/components/action-card/__tests__/action-card.normal.test.tsx",
+        "name": "ショートカットがボタンの説明として添えられる"
+      },
+      {
+        "file": "src/components/action-card/__tests__/action-card.normal.test.tsx",
+        "name": "押させたくないときは、押せない状態で出る"
+      },
+      {
+        "file": "src/components/action-card/__tests__/action-card.normal.test.tsx",
+        "name": "押すと、渡した手続きが 1 回呼ばれる"
+      },
+      {
+        "file": "src/components/action-card/__tests__/action-card.normal.test.tsx",
+        "name": "見出しがボタンの名前になり、説明とショートカットは名前に混ざらない"
+      },
+      {
+        "file": "src/components/action-card/__tests__/action-card.normal.test.tsx",
+        "name": "説明がボタンの説明として添えられる"
+      },
       {
         "file": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.failure.test.tsx",
         "name": "開けなかった後も、新規作成ボタンを押せる"
@@ -232,6 +301,7 @@
     ],
     "removed": [],
     "files": [
+      "src/components/action-card/__tests__/action-card.normal.test.tsx",
       "src/features/editor/features/document-start/components/document-start/__tests__/document-start.failure.test.tsx",
       "src/features/editor/features/document-start/components/document-start/__tests__/document-start.normal.test.tsx"
     ]
@@ -346,9 +416,209 @@
           "truncated": false
         }
       ]
+    },
+    {
+      "sha": "c1162972e0b8c3622409055fb00016b9a89387ae",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-11T09:02:39Z",
+      "subject": "✨ [New Feature]: #1062 押せるカードの共通コンポーネント ActionCard を src/components に足す",
+      "body": "- src/components/action-card に ActionCard を足した\n- 配色の種類 ActionCardTones（Primary / Normal）と、カードの中身の型\n  ActionCardFace（見出し・説明・ショートカット・アイコンの path・配色の種類）を\n  export した\n- 配色の種類ごとのクラスは、非公開の対応表 ActionCardToneClasses に置いた\n- UI 案から離れた配色の理由と、hover 中のコントラストの扱いは Primary の doc に、\n  フォーカス枠が UI 案に無いことは ActionCard の doc に書いた\n\n背景:\nPR #1063 のレビューで、PR オーナーから「ActionCard はどこでも使えるので\n共通コンポーネントにすべき」と指摘を受けた。カードはドメイン知識を持たないので、\nsrc/components に置ける。\n\n採用理由:\nprops は face / onClick / disabled の 3 つのまま。配色は、呼び出し側がクラス\n文字列を渡す形をやめて、tone の列挙 1 つにした。共通化すると tone は呼び出し側が\n選ぶ公開の語彙になり、tone からクラスへの対応表が src/components と呼び出し側の\n境界になる（先例は BreadcrumbToneFaces / EnabledRowClasses）。マークアップと\nクラスは開始画面にあったものと同じにして、開始画面の見た目を変えないようにした。\n表の名前は、中身を指す ActionCardFace と語を分けて *Classes にした。tone の値は\nEditorTopBarTones に倣って PascalCase にした（ContextMenuTones は小文字で、\n先例は割れている）。\n\n代替案:\n- 呼び出し側がクラス文字列で配色を渡す: src/components にこの形は 0 件で、\n  4 つの部位の配色を呼び出し側がばらばらに組めてしまう\n- コンパウンド（ActionCard.Title など）: Title を書き忘れても型で止まらず、\n  aria-labelledby の指す先が無くなる。呼び出しはどれも同じ構造\n- アイコンを ReactElement で受け取る: svg の枠（viewBox・stroke・大きさ・\n  aria-hidden）を呼び出し側が毎回書くことになる\n- ショートカットを Option にする: ショートカットを持たない呼び出しが無い\n- prop の名前を variant にする: このリポジトリの色味の列挙は tone に揃っている\n\n影響とトレードオフ:\nこのコミットの時点では、まだ誰も使っていない（開始画面は次のコミットで\n切り替える）。Primary の配色は開始画面で決めたもので、UI 案に裏付けのある\n汎用の配色ではない。そのことを doc に明記した。\n\n参考:\n- Issue #1062（レビュー指摘への対応の計画）\n- PR #1063 のレビューコメント\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01AXZ39qafTH5FeaDU13UsCW",
+      "files": [
+        {
+          "path": "src/components/action-card/index.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 138,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,138 @@\n+import { type ReactElement, useId } from \"react\";\n+import type { ValueOf } from \"@/types/ValueOf\";\n+\n+/** カードの配色の種類。 */\n+export const ActionCardTones = {\n+  /**\n+   * 並んだカードのうち、いちばん勧めたい操作の配色（青系）。\n+   *\n+   * UI 案の `#4db2ff` 地に白文字は約 2.3:1 で 4.5:1 に届かないので、UI 案の青の組み合わせから離れた。\n+   * この配色は開始画面（#1062）で決めたもので、UI 案に裏付けのある汎用の配色ではない。\n+   * hover 中の `#0a74c9` on `#e7f1fa` も約 4.2:1 で届かないが、押す直前の一時的な状態として受け入れている。\n+   */\n+  Primary: \"Primary\",\n+  /** 勧め分けをしない操作の配色（灰系）。 */\n+  Normal: \"Normal\",\n+} as const;\n+\n+/** カードの配色。 */\n+export type ActionCardTone = ValueOf<typeof ActionCardTones>;\n+\n+/** カード 1 枚の中身。綴り・アイコン・配色の種類を持つ。 */\n+export type ActionCardFace = Readonly<{\n+  /** カードの名前になる見出し。 */\n+  title: string;\n+  /** 押すと何が起きるかの 1 行。 */\n+  description: string;\n+  /** 同じ操作を呼ぶキーボードの割り当ての表記。 */\n+  shortcut: string;\n+  /** アイコン（viewBox 0 0 24 24）を描く path の `d`。 */\n+  iconPaths: readonly string[];\n+  /** 配色の種類。 */\n+  tone: ActionCardTone;\n+}>;\n+\n+/** 配色の種類ごとの、部位ごとの配色を指定する Tailwind のクラス。 */\n+const ActionCardToneClasses = {\n+  [ActionCardTones.Primary]: {\n+    card: \"border-[#0a74c9] bg-[#ffffff] text-[#0a74c9] enabled:hover:bg-[#e7f1fa]\",\n+    icon: \"bg-[#e7f1fa]\",\n+    description: \"text-[#4a6a85]\",\n+    shortcut: \"border-[#b9d6ef] text-[#0a74c9]\",\n+  },\n+  [ActionCardTones.Normal]: {\n+    card: \"border-[#d4d4d4] bg-[#ffffff] text-[#1e1e1e] enabled:hover:bg-[#f5f5f5]\",\n+    icon: \"bg-[#f0f0f0]\",\n+    description: \"text-[#767676]\",\n+    shortcut: \"border-[#e6e6e6] text-[#767676]\",\n+  },\n+} as const satisfies Readonly<\n+  Record<\n+    ActionCardTone,\n+    Readonly<{\n+      /** カードの枠・文字・地と、押せるときの hover の地。 */\n+      card: string;\n+      /** アイコンの地。 */\n+      icon: string;\n+      /** 説明の文字色。 */\n+      description: string;\n+      /** ショートカットの枠・文字の色。 */\n+      shortcut: string;\n+    }>\n+  >\n+>;\n+\n+/**\n+ * アイコン・見出し・説明・ショートカットを載せた、押せるカード。\n+ *\n+ * フォーカス枠の青（`#0a74c9`）は UI 案の語彙に無く、意図して離れている（#1062）。\n+ *\n+ * @param face カードの綴り・アイコン・配色の種類\n+ * @param onClick 押したときに始める手続き\n+ * @param disabled 押させたくないか\n+ * @returns 見出しを名前に、説明とショートカットを説明に持つボタン\n+ */\n+export function ActionCard({\n+  face,\n+  onClick,\n+  disabled,\n+}: Readonly<{\n+  face: ActionCardFace;\n+  onClick: () => void;\n+  disabled: boolean;\n+}>): ReactElement {\n+  const id = useId();\n+  const titleId = `${id}-title`;\n+  const descriptionId = `${id}-description`;\n+  const shortcutId = `${id}-shortcut`;\n+  const toneClasses = ActionCardToneClasses[face.tone];\n+\n+  return (\n+    // 名前は見出しだけにする。中身から決めさせると見出し・説明・ショートカットを繋げた\n+    // 名前になり、見出しで引いている呼び出し側が見つけられなくなる。\n+    <button\n+      type=\"button\"\n+      onClick={onClick}\n+      disabled={disabled}\n+      aria-labelledby={titleId}\n+      aria-describedby={`${descriptionId} ${shortcutId}`}\n+      className={`flex flex-col items-start gap-[10px] rounded-[10px] border p-4 text-left focus-visible:outline-2 focus-visible:outline-[#0a74c9] focus-visible:outline-offset-2 disabled:cursor-default disabled:opacity-50 ${toneClasses.card}`}\n+    >\n+      <span\n+        className={`flex size-8 items-center justify-center rounded-[8px] ${toneClasses.icon}`}\n+      >\n+        <svg\n+          aria-hidden=\"true\"\n+          viewBox=\"0 0 24 24\"\n+          fill=\"none\"\n+          stroke=\"currentColor\"\n+          strokeWidth={2}\n+          strokeLinecap=\"round\"\n+          strokeLinejoin=\"round\"\n+          className=\"size-[18px]\"\n+        >\n+          {face.iconPaths.map((d) => (\n+            <path key={d} d={d} />\n+          ))}\n+        </svg>\n+      </span>\n+      <span className=\"flex flex-col gap-[2px]\">\n+        <span id={titleId} className=\"font-medium text-[14px]\">\n+          {face.title}\n+        </span>\n+        <span\n+          id={descriptionId}\n+          className={`text-[12px] ${toneClasses.description}`}\n+        >\n+          {face.description}\n+        </span>\n+      </span>\n+      <span\n+        id={shortcutId}\n+        className={`self-end rounded-[4px] border px-[6px] py-[1px] text-[11px] ${toneClasses.shortcut}`}\n+      >\n+        {face.shortcut}\n+      </span>\n+    </button>\n+  );\n+}",
+          "patchLines": 139,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "26853074851dfb8d0749e06e4ca8630eaeb26bce",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-11T09:02:51Z",
+      "subject": "♻️ [Refactoring]: #1062 開始画面のカードを共通コンポーネント ActionCard に置き換える",
+      "body": "- 開始画面の中にあった ActionCard と CardFace を消し、@/components/action-card の\n  ActionCard を使うようにした\n- OpenCardFace / CreateCardFace を、配色のクラス 4 つの代わりに tone\n  （Primary / Normal）で持つ ActionCardFace にした\n- menu.rs の割り当てと ⌘ 表記についての説明は、2 つの定数の直前に 1 か所だけ置いた\n- DocumentStart の doc の色の記述は、カードの配色を ActionCard が持つことを\n  指す形に直した\n\n背景:\n前のコミットで ActionCard を src/components に移した。開始画面はその最初の\n使い手になる。\n\n採用理由:\n開始画面に残すのは、綴り・アイコンの path・どの tone を選ぶかだけにした。\nこれらは開始画面の選択で、共通コンポーネントが知るべきことではない。\nUI 案から離れた色の理由は、配色を持つ ActionCard の側に移したので、ここでは\n書き写さずにそちらを指す。\n\n代替案:\n- 開始画面のテストを components 側へ移す: 開始画面のテストが守っているのは、\n  どのカードに何が付くか・いつ押せないか・押すと何が始まるかという開始画面の\n  仕様で、共通コンポーネントの汎用の仕組みとは観点が重ならない\n\n影響とトレードオフ:\n振る舞いと見た目は変えていない。開始画面の既存のテストはそのまま通る。\nStorybook で、開始画面のカードの大きさが前と同じ 194 × 147.5 であることを\n測って確かめた。\n\n参考:\n- Issue #1062\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01AXZ39qafTH5FeaDU13UsCW",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 18,
+          "deletions": 117,
+          "patch": "@@ -1,4 +1,9 @@\n-import { type ReactElement, type ReactNode, useId } from \"react\";\n+import type { ReactElement, ReactNode } from \"react\";\n+import {\n+  ActionCard,\n+  type ActionCardFace,\n+  ActionCardTones,\n+} from \"@/components/action-card\";\n import {\n   DocumentOpenFailureNotice,\n   FailureLine,\n@@ -29,37 +34,13 @@ function commandSourceFailureLabel(source: CommandSource): string {\n   }\n }\n \n-/** 開始画面のカード 1 枚の見た目。綴りと、部位ごとの配色を指定する Tailwind のクラスを持つ。 */\n-type CardFace = Readonly<{\n-  /** カードの名前になる見出し。 */\n-  title: string;\n-  /** 押すと何が起きるかの 1 行。 */\n-  description: string;\n-  /**\n-   * 同じ操作をメニューから呼ぶショートカットの表記。\n-   *\n-   * 割り当ての出どころは `src-tauri/src/menu.rs` の `CmdOrCtrl+O` / `CmdOrCtrl+N` で、ここは表示の綴りだけを持つ。\n-   * OS ごとに表記は変えず、コンテキストメニューと同じ ⌘ 表記に揃えている。\n-   */\n-  shortcut: string;\n-  /** アイコン（viewBox 0 0 24 24）を描く path の `d`。 */\n-  iconPaths: readonly string[];\n-  /** カードの枠・文字・地と、押せるときの hover の地を指定するクラス。 */\n-  cardClass: string;\n-  /** アイコンの地を指定するクラス。 */\n-  iconClass: string;\n-  /** 説明の文字色を指定するクラス。 */\n-  descriptionClass: string;\n-  /** ショートカットの枠・文字の色を指定するクラス。 */\n-  shortcutClass: string;\n-}>;\n-\n-/**\n- * 開くのカード（プライマリ）。\n- *\n- * 元の白文字 on `#4db2ff` は約 2.3:1 で 4.5:1 に届かなかったので、UI 案の青の組み合わせから離れた（#1062）。\n- * hover 中の `#0a74c9` on `#e7f1fa` も約 4.2:1 で届かないが、押す直前の一時的な状態として受け入れている（#1062）。\n+/*\n+ * 開始画面の 2 枚のカードの中身。ショートカットの割り当ての出どころは `src-tauri/src/menu.rs` の\n+ * `CmdOrCtrl+O` / `CmdOrCtrl+N` で、ここは表示の綴りだけを持つ。OS ごとに表記は変えず、\n+ * コンテキストメニューと同じ ⌘ 表記に揃えている。\n  */\n+\n+/** 開くのカード（プライマリ）。 */\n const OpenCardFace = {\n   title: \"開く\",\n   description: \"既存の .dcmp を選ぶ\",\n@@ -67,12 +48,8 @@ const OpenCardFace = {\n   iconPaths: [\n     \"M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\",\n   ],\n-  cardClass:\n-    \"border-[#0a74c9] bg-[#ffffff] text-[#0a74c9] enabled:hover:bg-[#e7f1fa]\",\n-  iconClass: \"bg-[#e7f1fa]\",\n-  descriptionClass: \"text-[#4a6a85]\",\n-  shortcutClass: \"border-[#b9d6ef] text-[#0a74c9]\",\n-} as const satisfies CardFace;\n+  tone: ActionCardTones.Primary,\n+} as const satisfies ActionCardFace;\n \n /** 新規作成のカード。 */\n const CreateCardFace = {\n@@ -80,84 +57,8 @@ const CreateCardFace = {\n   description: \"空のドキュメントから始める\",\n   shortcut: \"⌘N\",\n   iconPaths: [\"M12 5v14\", \"M5 12h14\"],\n-  cardClass:\n-    \"border-[#d4d4d4] bg-[#ffffff] text-[#1e1e1e] enabled:hover:bg-[#f5f5f5]\",\n-  iconClass: \"bg-[#f0f0f0]\",\n-  descriptionClass: \"text-[#767676]\",\n-  shortcutClass: \"border-[#e6e6e6] text-[#767676]\",\n-} as const satisfies CardFace;\n-\n-/**\n- * アイコン・見出し・説明・ショートカットを載せた、押せるカード。\n- *\n- * @param face カードの綴りと配色\n- * @param onClick 押したときに始める手続き\n- * @param disabled 押させたくないか\n- * @returns 見出しを名前に、説明とショートカットを説明に持つボタン\n- */\n-function ActionCard({\n-  face,\n-  onClick,\n-  disabled,\n-}: Readonly<{\n-  face: CardFace;\n-  onClick: () => void;\n-  disabled: boolean;\n-}>): ReactElement {\n-  const id = useId();\n-  const titleId = `${id}-title`;\n-  const descriptionId = `${id}-description`;\n-  const shortcutId = `${id}-shortcut`;\n-\n-  return (\n-    // 名前は見出しだけにする。中身から決めさせると「新規作成 空のドキュメントから始める ⌘N」\n-    // になり、名前で引いている呼び出し側（「開く」「新規作成」）が見つけられなくなる。\n-    <button\n-      type=\"button\"\n-      onClick={onClick}\n-      disabled={disabled}\n-      aria-labelledby={titleId}\n-      aria-describedby={`${descriptionId} ${shortcutId}`}\n-      className={`flex flex-col items-start gap-[10px] rounded-[10px] border p-4 text-left focus-visible:outline-2 focus-visible:outline-[#0a74c9] focus-visible:outline-offset-2 disabled:cursor-default disabled:opacity-50 ${face.cardClass}`}\n-    >\n-      <span\n-        className={`flex size-8 items-center justify-center rounded-[8px] ${face.iconClass}`}\n-      >\n-        <svg\n-          aria-hidden=\"true\"\n-          viewBox=\"0 0 24 24\"\n-          fill=\"none\"\n-          stroke=\"currentColor\"\n-          strokeWidth={2}\n-          strokeLinecap=\"round\"\n-          strokeLinejoin=\"round\"\n-          className=\"size-[18px]\"\n-        >\n-          {face.iconPaths.map((d) => (\n-            <path key={d} d={d} />\n-          ))}\n-        </svg>\n-      </span>\n-      <span className=\"flex flex-col gap-[2px]\">\n-        <span id={titleId} className=\"font-medium text-[14px]\">\n-          {face.title}\n-        </span>\n-        <span\n-          id={descriptionId}\n-          className={`text-[12px] ${face.descriptionClass}`}\n-        >\n-          {face.description}\n-        </span>\n-      </span>\n-      <span\n-        id={shortcutId}\n-        className={`self-end rounded-[4px] border px-[6px] py-[1px] text-[11px] ${face.shortcutClass}`}\n-      >\n-        {face.shortcut}\n-      </span>\n-    </button>\n-  );\n-}\n+  tone: ActionCardTones.Normal,\n+} as const satisfies ActionCardFace;\n \n /**\n  * ドキュメントを開く / 作る導線。\n@@ -273,8 +174,8 @@ function RecentFileList({\n  * 開く前の画面を描いていない（`open` / `recent` / `welcome` はいずれも 0 件）。そのため見せ\n  * 方はここで決めている。画面の数と名前は `rules/ui-verification.md` が持つ。\n  *\n- * 開くのカードの青系の配色（`OpenCardFace`）と、2 枚に共通のフォーカス枠の青（`#0a74c9`）は\n- * UI 案の語彙に無く、意図して離れている（#1062）。それ以外の色は UI 案の語彙から採っている。\n+ * カードの配色とフォーカス枠は `ActionCard` が持つ（UI 案から離れている色とその理由もそちら）。\n+ * それ以外の色は UI 案の語彙から採っている。\n  *\n  * @param attempt 直近の開く操作がどこまで進んだか\n  * @param actions 開く / 作るを始める手続き",
+          "patchLines": 168,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "1de9614983a1773a09b61d7b6015ec220aa4703d",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-11T09:03:04Z",
+      "subject": "🧪 [Tests]: #1062 ActionCard の名前・説明・押下・押せない状態・id の分離をテストで守る",
+      "body": "- 見出しがボタンの名前になり、説明とショートカットが名前に混ざらないこと\n- 説明とショートカットが、それぞれボタンの説明として添えられること\n- 押すと渡した手続きが 1 回呼ばれること、押させたくないときは押せないこと\n- 2 枚並べても、それぞれの見出しがそれぞれの名前になること\n\n背景:\nActionCard を src/components に移したので、開始画面の綴りに頼らず、共通\nコンポーネントとしての仕組みをそれだけで守る必要がある。\n\n採用理由:\n名前は完全一致で引き、説明文とショートカットは別のテストに分けた（1 つの\nassert が 2 つの仕様を固定しないようにするため）。押した回数は spy ではなく\nローカルの数え上げで数えた（rules/testing.md: モックは使わない）。2 枚並べる\nテストは、useId で作る id の取り違えを守る。id を固定値に壊すと、このテスト\nだけが落ちることを確かめた。見本の綴りは、開始画面と重ならないものにした。\n\n代替案:\n- 開始画面の既存のテストを移す: 開始画面のテストは開始画面の仕様を守っていて、\n  観点が重ならないので移さない\n\n影響とトレードオフ:\n配色・hover・フォーカス枠は happy-dom が Tailwind を解決しないので、ここでは\n守れない。Storybook の視覚差分で守る。\n\n参考:\n- Issue #1062\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01AXZ39qafTH5FeaDU13UsCW",
+      "files": [
+        {
+          "path": "src/components/action-card/__tests__/action-card.normal.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 75,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,75 @@\n+import { fireEvent, render, screen } from \"@testing-library/react\";\n+import { expect, test } from \"vitest\";\n+import { ActionCard, type ActionCardFace, ActionCardTones } from \"../index\";\n+\n+/** 見本のカードの中身。綴りは呼び出し側（開始画面）と重ならないものにしている。 */\n+const SampleFace = {\n+  title: \"書き出す\",\n+  description: \"選んだ部品を画像にする\",\n+  shortcut: \"⌘E\",\n+  iconPaths: [\"M12 5v14\"],\n+  tone: ActionCardTones.Normal,\n+} as const satisfies ActionCardFace;\n+\n+test(\"見出しがボタンの名前になり、説明とショートカットは名前に混ざらない\", () => {\n+  render(<ActionCard face={SampleFace} onClick={() => {}} disabled={false} />);\n+\n+  expect(screen.getByRole(\"button\", { name: \"書き出す\" })).toBeDefined();\n+});\n+\n+test(\"説明がボタンの説明として添えられる\", () => {\n+  render(<ActionCard face={SampleFace} onClick={() => {}} disabled={false} />);\n+\n+  expect(\n+    screen.getByRole(\"button\", { description: /選んだ部品を画像にする/ }),\n+  ).toBeDefined();\n+});\n+\n+test(\"ショートカットがボタンの説明として添えられる\", () => {\n+  render(<ActionCard face={SampleFace} onClick={() => {}} disabled={false} />);\n+\n+  expect(screen.getByRole(\"button\", { description: /⌘E/ })).toBeDefined();\n+});\n+\n+test(\"押すと、渡した手続きが 1 回呼ばれる\", () => {\n+  const clicks: string[] = [];\n+  render(\n+    <ActionCard\n+      face={SampleFace}\n+      onClick={() => clicks.push(\"clicked\")}\n+      disabled={false}\n+    />,\n+  );\n+\n+  fireEvent.click(screen.getByRole(\"button\", { name: \"書き出す\" }));\n+\n+  expect(clicks).toHaveLength(1);\n+});\n+\n+test(\"押させたくないときは、押せない状態で出る\", () => {\n+  render(<ActionCard face={SampleFace} onClick={() => {}} disabled={true} />);\n+\n+  expect(\n+    screen.getByRole(\"button\", { name: \"書き出す\" }).hasAttribute(\"disabled\"),\n+  ).toBe(true);\n+});\n+\n+test(\"2 枚並べても、それぞれの見出しがそれぞれの名前になる\", () => {\n+  render(\n+    <>\n+      <ActionCard\n+        face={{\n+          ...SampleFace,\n+          title: \"取り込む\",\n+          tone: ActionCardTones.Primary,\n+        }}\n+        onClick={() => {}}\n+        disabled={false}\n+      />\n+      <ActionCard face={SampleFace} onClick={() => {}} disabled={false} />\n+    </>,\n+  );\n+\n+  expect(screen.getByRole(\"button\", { name: \"取り込む\" })).toBeDefined();\n+  expect(screen.getByRole(\"button\", { name: \"書き出す\" })).toBeDefined();\n+});",
+          "patchLines": 76,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "ce83a1d72c1a45a46a4272551c565a02e4336ee8",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-11T09:03:11Z",
+      "subject": "📝 [Doc]: #1062 ActionCard のストーリー（プライマリ / ノーマル / 押せない）を足す",
+      "body": "- components/ActionCard にストーリーを 3 つ足した\n- 見本のカードの中身を __stories__/sample-faces.ts に置き、ストーリーから import した\n- 器は幅 194px の grid にして、開始画面と同じくカードを横に引き伸ばした\n\n背景:\n共通コンポーネントにしたので、UI カタログ（Storybook）と視覚差分の対象にする。\n\n採用理由:\n器を grid にしたのは、button は幅が auto だと中身の幅に縮むため。開始画面で\nカードが 194px になっているのは、grid の子として引き伸ばされているから。素の\ndiv に幅を付けた器では、開始画面と違う形で撮られる。新しいストーリーは VRT では\nnew 扱いで、どの検査でも落ちないので、Storybook を開いて大きさを測った\n（3 つとも 194 × 147.5 で、開始画面のカードと同じ）。\n見本の中身を __stories__ に分けたのは、pre-push の「story の title」検査が\ntitle: で始まる行が 2 本以上あるファイルを落とすため。ストーリー専用の共有物を\n<モジュール>/__stories__/ に置く規約（rules/architecture.md）にも合う。\n\n代替案:\n- 検査を直して、既定 export の外にある title: を読み分ける: ハーネスに手を\n  入れることになり、この PR の範囲を超える\n- title: と値を別の行に分ける: 検査をすり抜けるだけ\n\n影響とトレードオフ:\nVRT に新しいストーリーが 3 つ増える（new 扱い）。\n\n参考:\n- Issue #1062（共通化の実装で計画から外れた点）\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01AXZ39qafTH5FeaDU13UsCW",
+      "files": [
+        {
+          "path": "src/components/action-card/__stories__/sample-faces.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 26,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,26 @@\n+import { type ActionCardFace, ActionCardTones } from \"../index\";\n+\n+/*\n+ * ストーリーが args.face に渡すカードの中身の見本。\n+ *\n+ * ストーリーファイルに直に書かないのは、`title:` の行が既定 export の title と並ぶと\n+ * story の title の検査（`story-title-violations.py`）が title を一意に取れないため。\n+ */\n+\n+/** 勧め分けをしない配色の見本（書き出す）。 */\n+export const ExportFace: ActionCardFace = {\n+  title: \"書き出す\",\n+  description: \"選んだ部品を画像にする\",\n+  shortcut: \"⌘E\",\n+  iconPaths: [\"M12 5v14\", \"M19 12l-7 7-7-7\"],\n+  tone: ActionCardTones.Normal,\n+};\n+\n+/** いちばん勧めたい配色の見本（取り込む）。 */\n+export const ImportFace: ActionCardFace = {\n+  title: \"取り込む\",\n+  description: \"別のファイルの部品を使う\",\n+  shortcut: \"⌘I\",\n+  iconPaths: [\"M12 19V5\", \"M5 12l7-7 7 7\"],\n+  tone: ActionCardTones.Primary,\n+};",
+          "patchLines": 27,
+          "truncated": false
+        },
+        {
+          "path": "src/components/action-card/index.stories.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 50,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,50 @@\n+import type { Meta, StoryObj } from \"@storybook/react-vite\";\n+import { ExportFace, ImportFace } from \"./__stories__/sample-faces\";\n+import { ActionCard } from \"./index\";\n+\n+/**\n+ * 押せるカード。配色の種類ごとと、押せないときを並べる。\n+ *\n+ * `<button>` は幅が auto だと中身の幅に縮むので、器はグリッドにして子を横へ引き伸ばす\n+ * （開始画面も 2 列のグリッドに置いている）。194px は開始画面でのカード 1 枚の幅。\n+ */\n+const meta = {\n+  title: \"components/ActionCard\",\n+  component: ActionCard,\n+  parameters: { layout: \"padded\" },\n+  decorators: [\n+    (Story) => (\n+      <div className=\"grid w-[194px]\">\n+        <Story />\n+      </div>\n+    ),\n+  ],\n+  args: {\n+    face: ExportFace,\n+    onClick: () => {},\n+    disabled: false,\n+  },\n+} satisfies Meta<typeof ActionCard>;\n+\n+export default meta;\n+\n+type Story = StoryObj<typeof meta>;\n+\n+/** いちばん勧めたい操作のカード。 */\n+export const Primary: Story = {\n+  name: \"プライマリ\",\n+  args: {\n+    face: ImportFace,\n+  },\n+};\n+\n+/** 勧め分けをしない操作のカード。 */\n+export const Normal: Story = {\n+  name: \"ノーマル\",\n+};\n+\n+/** 押させたくないとき。カード全体が薄くなる。 */\n+export const Disabled: Story = {\n+  name: \"押せない\",\n+  args: { disabled: true },\n+};",
+          "patchLines": 51,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "21fedf9b6c1dce33978478727491f380a0ee99dc",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-11T09:13:16Z",
+      "subject": "♻️ [Refactoring]: #1062 ActionCardFace を ActionCardContent に改め、配色の出どころの doc を正す",
+      "body": "- 型 ActionCardFace を ActionCardContent に、prop face を content に改めた\n- tone ごとの配色クラスの表を ActionCardToneFaces にした\n- 見本を __stories__/sample-contents.ts の ExportContent / ImportContent にし、\n  テストもそれを使うようにした（テストの中にあった見本の SampleFace を消した）\n- 開始画面の定数を OpenCardContent / CreateCardContent にした\n- ActionCardTones.Primary の doc の、配色の出どころの記述を正した\n- ストーリーの器の 194px の由来を、汎用の部品として代表的な幅と書き直した\n\n背景:\n共通化の実装の検証（Issue #1062 のコメント「共通化の実装の検証（1 段目）と\n対応」）で採用した指摘への対応。挙動と見た目は変えていない。\n\n採用理由:\n- Face はリポジトリでは見た目のクラスの束を指す語（TabFace / BreadcrumbToneFaces）。\n  配色のクラスを型の外へ出したので、中身（綴り・アイコン・tone）を Face と\n  呼ぶ根拠が無くなった。型は中身を表す Content にした（先例は\n  LeftPaneViewContent）。型の名前から Face が外れたので、配色クラスの表は\n  先例と同じ形の *ToneFaces に戻した\n- Primary の doc は「UI 案の #4db2ff 地に白文字」と書いていたが、UI 案の\n  #4db2ff は a:hover の文字色 1 か所だけで、button の地に青は無い。白文字 on\n  #4db2ff は、このブランチの前の実装が hover の色を地に流用したものだった。\n  UI 案を展開して確かめ、出どころを書き直した\n- テストとストーリーで見本を別々に持つと、綴りを片方だけ直したときにずれる。\n  「綴りを開始画面と重ねない」約束も、見本のファイル 1 か所に書いた\n- 194px を「開始画面の 1 枚の幅」と書くと、開始画面の寸法を変えたときに\n  追随しないのに、コメントだけが残る\n\n代替案:\n- 表の名前を ActionCardToneClasses のまま残す: 先例（EnabledRowClasses）にも\n  合うが、型の名前から Face が外れたので、同じ形の先例 BreadcrumbToneFaces に\n  揃えた\n\n影響とトレードオフ:\n振る舞い・見た目の変更は無い。typecheck / lint / biome / pre-push /\nvitest 全件（4780 件）が通る。\n\n参考:\n- Issue #1062\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01AXZ39qafTH5FeaDU13UsCW",
+      "files": [
+        {
+          "path": "src/components/action-card/__stories__/sample-contents.ts",
+          "status": "R",
+          "oldPath": "src/components/action-card/__stories__/sample-faces.ts",
+          "additions": 4,
+          "deletions": 4,
+          "patch": "@@ -1,14 +1,14 @@\n-import { type ActionCardFace, ActionCardTones } from \"../index\";\n+import { type ActionCardContent, ActionCardTones } from \"../index\";\n \n /*\n- * ストーリーが args.face に渡すカードの中身の見本。\n+ * ストーリーとテストが ActionCard に渡すカードの中身の見本。綴りは呼び出し側（開始画面）と重ならないものにしている。\n  *\n  * ストーリーファイルに直に書かないのは、`title:` の行が既定 export の title と並ぶと\n  * story の title の検査（`story-title-violations.py`）が title を一意に取れないため。\n  */\n \n /** 勧め分けをしない配色の見本（書き出す）。 */\n-export const ExportFace: ActionCardFace = {\n+export const ExportContent: ActionCardContent = {\n   title: \"書き出す\",\n   description: \"選んだ部品を画像にする\",\n   shortcut: \"⌘E\",\n@@ -17,7 +17,7 @@ export const ExportFace: ActionCardFace = {\n };\n \n /** いちばん勧めたい配色の見本（取り込む）。 */\n-export const ImportFace: ActionCardFace = {\n+export const ImportContent: ActionCardContent = {\n   title: \"取り込む\",\n   description: \"別のファイルの部品を使う\",\n   shortcut: \"⌘I\",",
+          "patchLines": 27,
+          "truncated": false
+        },
+        {
+          "path": "src/components/action-card/__tests__/action-card.normal.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 17,
+          "deletions": 25,
+          "patch": "@@ -1,24 +1,20 @@\n import { fireEvent, render, screen } from \"@testing-library/react\";\n import { expect, test } from \"vitest\";\n-import { ActionCard, type ActionCardFace, ActionCardTones } from \"../index\";\n-\n-/** 見本のカードの中身。綴りは呼び出し側（開始画面）と重ならないものにしている。 */\n-const SampleFace = {\n-  title: \"書き出す\",\n-  description: \"選んだ部品を画像にする\",\n-  shortcut: \"⌘E\",\n-  iconPaths: [\"M12 5v14\"],\n-  tone: ActionCardTones.Normal,\n-} as const satisfies ActionCardFace;\n+import { ExportContent, ImportContent } from \"../__stories__/sample-contents\";\n+import { ActionCard } from \"../index\";\n \n test(\"見出しがボタンの名前になり、説明とショートカットは名前に混ざらない\", () => {\n-  render(<ActionCard face={SampleFace} onClick={() => {}} disabled={false} />);\n+  render(\n+    <ActionCard content={ExportContent} onClick={() => {}} disabled={false} />,\n+  );\n \n   expect(screen.getByRole(\"button\", { name: \"書き出す\" })).toBeDefined();\n });\n \n test(\"説明がボタンの説明として添えられる\", () => {\n-  render(<ActionCard face={SampleFace} onClick={() => {}} disabled={false} />);\n+  render(\n+    <ActionCard content={ExportContent} onClick={() => {}} disabled={false} />,\n+  );\n \n   expect(\n     screen.getByRole(\"button\", { description: /選んだ部品を画像にする/ }),\n@@ -26,7 +22,9 @@ test(\"説明がボタンの説明として添えられる\", () => {\n });\n \n test(\"ショートカットがボタンの説明として添えられる\", () => {\n-  render(<ActionCard face={SampleFace} onClick={() => {}} disabled={false} />);\n+  render(\n+    <ActionCard content={ExportContent} onClick={() => {}} disabled={false} />,\n+  );\n \n   expect(screen.getByRole(\"button\", { description: /⌘E/ })).toBeDefined();\n });\n@@ -35,7 +33,7 @@ test(\"押すと、渡した手続きが 1 回呼ばれる\", () => {\n   const clicks: string[] = [];\n   render(\n     <ActionCard\n-      face={SampleFace}\n+      content={ExportContent}\n       onClick={() => clicks.push(\"clicked\")}\n       disabled={false}\n     />,\n@@ -47,7 +45,9 @@ test(\"押すと、渡した手続きが 1 回呼ばれる\", () => {\n });\n \n test(\"押させたくないときは、押せない状態で出る\", () => {\n-  render(<ActionCard face={SampleFace} onClick={() => {}} disabled={true} />);\n+  render(\n+    <ActionCard content={ExportContent} onClick={() => {}} disabled={true} />,\n+  );\n \n   expect(\n     screen.getByRole(\"button\", { name: \"書き出す\" }).hasAttribute(\"disabled\"),\n@@ -57,16 +57,8 @@ test(\"押させたくないときは、押せない状態で出る\", () => {\n test(\"2 枚並べても、それぞれの見出しがそれぞれの名前になる\", () => {\n   render(\n     <>\n-      <ActionCard\n-        face={{\n-          ...SampleFace,\n-          title: \"取り込む\",\n-          tone: ActionCardTones.Primary,\n-        }}\n-        onClick={() => {}}\n-        disabled={false}\n-      />\n-      <ActionCard face={SampleFace} onClick={() => {}} disabled={false} />\n+      <ActionCard content={ImportContent} onClick={() => {}} disabled={false} />\n+      <ActionCard content={ExportContent} onClick={() => {}} disabled={false} />\n     </>,\n   );\n ",
+          "patchLines": 83,
+          "truncated": false
+        },
+        {
+          "path": "src/components/action-card/index.stories.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 4,
+          "patch": "@@ -1,12 +1,12 @@\n import type { Meta, StoryObj } from \"@storybook/react-vite\";\n-import { ExportFace, ImportFace } from \"./__stories__/sample-faces\";\n+import { ExportContent, ImportContent } from \"./__stories__/sample-contents\";\n import { ActionCard } from \"./index\";\n \n /**\n  * 押せるカード。配色の種類ごとと、押せないときを並べる。\n  *\n  * `<button>` は幅が auto だと中身の幅に縮むので、器はグリッドにして子を横へ引き伸ばす\n- * （開始画面も 2 列のグリッドに置いている）。194px は開始画面でのカード 1 枚の幅。\n+ * （開始画面も 2 列のグリッドに置いている）。194px は汎用の部品としてカードを置く代表的な幅。\n  */\n const meta = {\n   title: \"components/ActionCard\",\n@@ -20,7 +20,7 @@ const meta = {\n     ),\n   ],\n   args: {\n-    face: ExportFace,\n+    content: ExportContent,\n     onClick: () => {},\n     disabled: false,\n   },\n@@ -34,7 +34,7 @@ type Story = StoryObj<typeof meta>;\n export const Primary: Story = {\n   name: \"プライマリ\",\n   args: {\n-    face: ImportFace,\n+    content: ImportContent,\n   },\n };\n ",
+          "patchLines": 33,
+          "truncated": false
+        },
+        {
+          "path": "src/components/action-card/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 13,
+          "deletions": 12,
+          "patch": "@@ -6,8 +6,9 @@ export const ActionCardTones = {\n   /**\n    * 並んだカードのうち、いちばん勧めたい操作の配色（青系）。\n    *\n-   * UI 案の `#4db2ff` 地に白文字は約 2.3:1 で 4.5:1 に届かないので、UI 案の青の組み合わせから離れた。\n-   * この配色は開始画面（#1062）で決めたもので、UI 案に裏付けのある汎用の配色ではない。\n+   * UI 案のボタン（`<button>`）に青い塗りは無く、`#4db2ff` はリンクの hover の文字色（`a:hover`）にしか出てこない。\n+   * それを地に流用すると白文字で約 2.3:1 と 4.5:1 に届かないので、地は使わない。\n+   * この青は開始画面（#1062）で決めたもので、UI 案に裏付けのある汎用の配色ではない。\n    * hover 中の `#0a74c9` on `#e7f1fa` も約 4.2:1 で届かないが、押す直前の一時的な状態として受け入れている。\n    */\n   Primary: \"Primary\",\n@@ -19,7 +20,7 @@ export const ActionCardTones = {\n export type ActionCardTone = ValueOf<typeof ActionCardTones>;\n \n /** カード 1 枚の中身。綴り・アイコン・配色の種類を持つ。 */\n-export type ActionCardFace = Readonly<{\n+export type ActionCardContent = Readonly<{\n   /** カードの名前になる見出し。 */\n   title: string;\n   /** 押すと何が起きるかの 1 行。 */\n@@ -33,7 +34,7 @@ export type ActionCardFace = Readonly<{\n }>;\n \n /** 配色の種類ごとの、部位ごとの配色を指定する Tailwind のクラス。 */\n-const ActionCardToneClasses = {\n+const ActionCardToneFaces = {\n   [ActionCardTones.Primary]: {\n     card: \"border-[#0a74c9] bg-[#ffffff] text-[#0a74c9] enabled:hover:bg-[#e7f1fa]\",\n     icon: \"bg-[#e7f1fa]\",\n@@ -67,17 +68,17 @@ const ActionCardToneClasses = {\n  *\n  * フォーカス枠の青（`#0a74c9`）は UI 案の語彙に無く、意図して離れている（#1062）。\n  *\n- * @param face カードの綴り・アイコン・配色の種類\n+ * @param content カードの綴り・アイコン・配色の種類\n  * @param onClick 押したときに始める手続き\n  * @param disabled 押させたくないか\n  * @returns 見出しを名前に、説明とショートカットを説明に持つボタン\n  */\n export function ActionCard({\n-  face,\n+  content,\n   onClick,\n   disabled,\n }: Readonly<{\n-  face: ActionCardFace;\n+  content: ActionCardContent;\n   onClick: () => void;\n   disabled: boolean;\n }>): ReactElement {\n@@ -85,7 +86,7 @@ export function ActionCard({\n   const titleId = `${id}-title`;\n   const descriptionId = `${id}-description`;\n   const shortcutId = `${id}-shortcut`;\n-  const toneClasses = ActionCardToneClasses[face.tone];\n+  const toneClasses = ActionCardToneFaces[content.tone];\n \n   return (\n     // 名前は見出しだけにする。中身から決めさせると見出し・説明・ショートカットを繋げた\n@@ -111,27 +112,27 @@ export function ActionCard({\n           strokeLinejoin=\"round\"\n           className=\"size-[18px]\"\n         >\n-          {face.iconPaths.map((d) => (\n+          {content.iconPaths.map((d) => (\n             <path key={d} d={d} />\n           ))}\n         </svg>\n       </span>\n       <span className=\"flex flex-col gap-[2px]\">\n         <span id={titleId} className=\"font-medium text-[14px]\">\n-          {face.title}\n+          {content.title}\n         </span>\n         <span\n           id={descriptionId}\n           className={`text-[12px] ${toneClasses.description}`}\n         >\n-          {face.description}\n+          {content.description}\n         </span>\n       </span>\n       <span\n         id={shortcutId}\n         className={`self-end rounded-[4px] border px-[6px] py-[1px] text-[11px] ${toneClasses.shortcut}`}\n       >\n-        {face.shortcut}\n+        {content.shortcut}\n       </span>\n     </button>\n   );",
+          "patchLines": 92,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 7,
+          "deletions": 7,
+          "patch": "@@ -1,7 +1,7 @@\n import type { ReactElement, ReactNode } from \"react\";\n import {\n   ActionCard,\n-  type ActionCardFace,\n+  type ActionCardContent,\n   ActionCardTones,\n } from \"@/components/action-card\";\n import {\n@@ -41,7 +41,7 @@ function commandSourceFailureLabel(source: CommandSource): string {\n  */\n \n /** 開くのカード（プライマリ）。 */\n-const OpenCardFace = {\n+const OpenCardContent = {\n   title: \"開く\",\n   description: \"既存の .dcmp を選ぶ\",\n   shortcut: \"⌘O\",\n@@ -49,16 +49,16 @@ const OpenCardFace = {\n     \"M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\",\n   ],\n   tone: ActionCardTones.Primary,\n-} as const satisfies ActionCardFace;\n+} as const satisfies ActionCardContent;\n \n /** 新規作成のカード。 */\n-const CreateCardFace = {\n+const CreateCardContent = {\n   title: \"新規作成\",\n   description: \"空のドキュメントから始める\",\n   shortcut: \"⌘N\",\n   iconPaths: [\"M12 5v14\", \"M5 12h14\"],\n   tone: ActionCardTones.Normal,\n-} as const satisfies ActionCardFace;\n+} as const satisfies ActionCardContent;\n \n /**\n  * ドキュメントを開く / 作る導線。\n@@ -80,12 +80,12 @@ function StartActions({\n   return (\n     <div className=\"mt-2 grid w-full grid-cols-2 gap-3\">\n       <ActionCard\n-        face={OpenCardFace}\n+        content={OpenCardContent}\n         onClick={actions.openDocument}\n         disabled={disabled}\n       />\n       <ActionCard\n-        face={CreateCardFace}\n+        content={CreateCardContent}\n         onClick={actions.createDocument}\n         disabled={disabled}\n       />",
+          "patchLines": 53,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "07aea4f3522ebfb353d276baa2d1d897852cd51c",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-11T09:19:12Z",
+      "subject": "📝 [Doc]: #1062 ActionCard の配色とアイコンは視覚差分でしか守れないことを doc に書く",
+      "body": "- ActionCardToneFaces の doc に、配色とアイコンの崩れに気づけるのは Storybook の\n  視覚差分（components/ActionCard のプライマリ / ノーマル）だけであることを足した\n\n背景:\ntest-reviewer の実測で、tone から配色を引く処理を壊しても、開始画面に渡す\ntone を取り違えても、アイコンを描かなくしても、vitest は 1 件も落ちないことが\n分かった。\n\n採用理由:\nhappy-dom は Tailwind を解決せず描画もしないので、class を assert しても\n見た目は守れない。テストを足さず、守る手段が視覚差分だけであることを、\n表の doc 1 か所に書いた。共通コンポーネントにしたので、開始画面のファイルに\nある既存の同じ趣旨のコメントは、こちらには届かない。\n\n代替案:\n- class 名を assert するテストを足す: 実装の綴りを固定するだけで、見た目は\n  守れない\n\n影響とトレードオフ:\nコメントだけの変更。\n\n参考:\n- Issue #1062（共通化の実装の検証 2 段目）\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01AXZ39qafTH5FeaDU13UsCW",
+      "files": [
+        {
+          "path": "src/components/action-card/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 1,
+          "patch": "@@ -33,7 +33,12 @@ export type ActionCardContent = Readonly<{\n   tone: ActionCardTone;\n }>;\n \n-/** 配色の種類ごとの、部位ごとの配色を指定する Tailwind のクラス。 */\n+/**\n+ * 配色の種類ごとの、部位ごとの配色を指定する Tailwind のクラス。\n+ *\n+ * happy-dom は Tailwind を解決せず描画もしないので、配色とアイコンの崩れはテストでは守れず、\n+ * 気づけるのは Storybook の視覚差分（components/ActionCard のプライマリ / ノーマル）だけ。\n+ */\n const ActionCardToneFaces = {\n   [ActionCardTones.Primary]: {\n     card: \"border-[#0a74c9] bg-[#ffffff] text-[#0a74c9] enabled:hover:bg-[#e7f1fa]\",",
+          "patchLines": 14,
+          "truncated": false
+        }
+      ]
     }
   ],
   "dependencies": [
+    {
+      "from": "src/components/action-card/__stories__/sample-contents.ts",
+      "to": "src/components/action-card/index.tsx",
+      "status": "added"
+    },
+    {
+      "from": "src/components/action-card/__tests__/action-card.normal.test.tsx",
+      "to": "src/components/action-card/__stories__/sample-contents.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/components/action-card/__tests__/action-card.normal.test.tsx",
+      "to": "src/components/action-card/index.tsx",
+      "status": "added"
+    },
+    {
+      "from": "src/components/action-card/index.stories.tsx",
+      "to": "src/components/action-card/__stories__/sample-contents.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/components/action-card/index.stories.tsx",
+      "to": "src/components/action-card/index.tsx",
+      "status": "added"
+    },
+    {
+      "from": "src/components/action-card/index.tsx",
+      "to": "src/types/ValueOf.ts",
+      "status": "added"
+    },
     {
       "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.entry.test.tsx",
       "to": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
@@ -498,6 +768,11 @@
       "from": "src/features/editor/features/document-start/components/document-start/index.stories.tsx",
       "to": "src/features/editor/features/document-start/components/document-start/index.tsx",
       "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "to": "src/components/action-card/index.tsx",
+      "status": "added"
     },
     {
       "from": "src/features/editor/features/document-start/components/document-start/index.tsx",
