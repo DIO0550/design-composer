@@ -283,3 +283,22 @@ test("ドキュメントを開いた後は、開いているドキュメント�
 
   expect(DocumentSession.hasOpenedDocuments(session)).toBe(true);
 });
+
+test("ドキュメントを開いたまま開く操作の最中でも、開いているドキュメントがある", () => {
+  const session = DocumentSession.beginOpening(
+    DocumentSession.finishOpening(DocumentSession.Closed, opened(Path)),
+  );
+
+  expect(DocumentSession.hasOpenedDocuments(session)).toBe(true);
+});
+
+test("ドキュメントを開いたまま次の開く操作が失敗で終わっても、開いているドキュメントがある", () => {
+  const session = DocumentSession.finishOpening(
+    DocumentSession.beginOpening(
+      DocumentSession.finishOpening(DocumentSession.Closed, opened(Path)),
+    ),
+    { documents: [], failure: Option.some(DialogFailure) },
+  );
+
+  expect(DocumentSession.hasOpenedDocuments(session)).toBe(true);
+});

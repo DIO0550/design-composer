@@ -199,3 +199,31 @@ test("最後のタブでメニューのタブを閉じるを選んでも、ウ�
 
   expect(observer.isWindowClosed()).toBe(false);
 });
+
+test("開いているタブがあるときに開けなかった理由が出ている間にメニューのタブを閉じるを選んでも、ウィンドウは閉じない", async () => {
+  const observer = renderEditorScreen(
+    { [Path]: DocumentJson.serialize(SampleDocument) },
+    { open: DialogChoice.chosen(OtherPath), save: DialogChoice.Canceled },
+  );
+  await observer.dropFiles([Path]);
+  await startOpen(observer);
+
+  await observer.chooseMenu(AppMenuCommands.CloseTab);
+
+  expect(observer.isWindowClosed()).toBe(false);
+});
+
+test("開いているタブがあるときに新規作成の書き出しの最中にメニューのタブを閉じるを選んでも、ウィンドウは閉じない", async () => {
+  const observer = renderEditorScreen(
+    { [Path]: DocumentJson.serialize(SampleDocument) },
+    { open: DialogChoice.Canceled, save: DialogChoice.chosen(OtherPath) },
+  );
+  await observer.dropFiles([Path]);
+  const release = observer.files.holdWrites(OtherPath);
+  await startCreate(observer);
+
+  await observer.chooseMenu(AppMenuCommands.CloseTab);
+
+  expect(observer.isWindowClosed()).toBe(false);
+  release();
+});
