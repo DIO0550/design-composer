@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "pr": 1059,
+  "headBranch": "claude/magical-cannon-9vemsu",
+  "baseBranch": "main",
+  "mergeBase": "086fa6cb38b2bf603f345761371357e502cd694c",
+  "head": "fd8f64ee59f6de9cc402870b13a77892c9ff8236",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/records/pr-1054.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 163,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "fd8f64ee59f6de9cc402870b13a77892c9ff8236",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-11T05:33:15Z",
+      "subject": "📝 [Documentation]: #632 PR #1054 の振り返りを記録する",
+      "body": "- harness/records/pr-1054.md を足した(指摘 19 件。分類は plan 2 / test 6 /\n  duplication 4 / comment 4 / harness 3 / なし 1。人・bot・CI からの指摘は 0 件)\n\n背景:\nPR #1054 がマージされたので、harness-record スキルの手順でその回の\nレビュー指摘・手戻り・フックの環境を記録する。\n\n採用理由:\n人のレビューは get_reviews / get_review_comments / get_comments の 3 つを\nすべて引いて 0 件と確かめた。発火ログはこのセッションの分が無く、\nカナリアも通ったので「計測対象外(フック不発)」と書いた。\n\n影響とトレードオフ:\n記録 1 ファイルだけで、rules/・フック・スキルには触れていない。対策済の\n行は書いていない(介入は harness-growth の管轄)。\n\n代替案:\n- 記録を別セッションに任せる: 手戻りとフック不発は記憶からしか取れない\n  ので、同じセッションで書いた\n\n参考:\n- Issue #632 のコメント 6104318590(harness-record 用のメモ)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01B47Kv8zrqzFHvCeNt6LHey",
+      "files": [
+        {
+          "path": "harness/records/pr-1054.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 163,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,163 @@\n+# PR #1054 最小 / 最大の逆転(minWidth > maxWidth)をバリデーションエラーにする\n+\n+- マージ日: 2026-10-11\n+- 関連 Issue: #632\n+- 差分規模: 5 ファイル / +624 -61\n+\n+## ゴールと結果\n+\n+ゴールは「`.dcmp` に最小 / 最大が逆転した指定(`minWidth` > `maxWidth` / `minHeight` > `maxHeight`)を書くと、バリデーションエラーとしてエラー一覧に出る」。達成した。種別は `inverted-size-limits` で、`fixed` 以外の軸だけを対象に、1 軸につき 1 件、`max*` を指して出す。artboard 自身の props と、インスタンスの overrides で生じる逆転は対象外にした。\n+\n+GitHub 上の人のレビューは 0 件だった。`get_reviews` / `get_review_comments` / `get_comments` の 3 つとも確認した。コメントは、自分が投稿したテストケース表と bot の投稿(Storybook プレビュー・CI レポート・VRT)だけ。CI は全件緑で、VRT の差分は 0 件だった(191 件 passed)。\n+\n+範囲外で見つけたものは #1055 / #1056 / #1057 に切り出した。\n+\n+## 指摘\n+\n+### 1. 部品ルートの逆転エラーが一覧のどこに並ぶかを計画が決めていなかった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: `collectComponentErrors` は props → 子 → 宣言名 → binding → 参照の順に返し、validate-order のテストがこの並びを固定している。props の位置に入れると決め、doc の列挙とテストを足した。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3(未決の判断)\n+\n+### 2. エラーの message の文面が決まっていなかった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: エラー一覧は `error.message` を表示するのに、計画は「UI は nodeName.prop を出すだけ」と書き、文面を決めていなかった。文面を決め、テストは両方の prop 名を含むことだけを見る形にした。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3(未決の判断)\n+\n+### 3. 「数値でない最小」「片方だけ」のテスト入力が何も守らない値だった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: `minWidth: \"abc\"` や小さい max だけの入力は、値をそのまま比べる誤り・不在を 0 と扱う誤りでも通る。`\"500\"` と 100 / 大きい min だけ / 小さい max だけ、に変えた。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 4. artboard 自身の props を対象外にする境界をテストしていなかった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: Box として解決すると `hug` になって誤検出する境界を、文で除外しているだけだった。子の逆転を対照に置くテストを足した。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 5. Box 以外で二重に報告しないことをテストしていなかった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: Ellipse に逆転を書いても unknown-prop だけが出ることを足した。Ellipse の既定は `fixed` なので、入力は `widthMode: fill` にした。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 6. 既存の `ResolvedProps.forNode` を探した場所として挙げていなかった\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 型の判定と resolve の 2 段が `forNode` の本体と重なる。部品ルート(`Component`)は `name` を持たず渡せないことと、引数を広げると名前と実体がずれることを却下案に書いた。\n+- 既存ルール: rules/coding.md「同じ処理が2箇所に現れたら共通化する」\n+\n+### 7. 1 ノード分の検査の並びが子孫と部品ルートの 2 か所にあった\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: 片方へ検査を足し忘れても型にもテストにも出ない。未知の型の判定も 2 経路に割れていた。`collectTypedPropErrors` にまとめ、子孫のノード内の並びが「スキーマ → 逆転 → fill」に変わった。\n+- 既存ルール: rules/coding.md「同じ処理が2箇所に現れたら共通化する」\n+\n+### 8. 軸を絞る走査が `collectFillAxes` の写しになっていた\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: 違うのはサイズに対する判定だけだった。ローカル関数 `collectAxesWhere` にまとめ、順序と除外の doc も 1 か所にした。\n+- 既存ルール: rules/coding.md「同じ処理が2箇所に現れたら共通化する」\n+\n+### 9. テストで artboard の骨組みを 4 回その場で書いていた\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: ファイル内のセットアップ関数 `documentWithArtboard` にまとめた。\n+- 既存ルール: rules/testing.md「テスト用ヘルパーの置き場所」\n+\n+### 10. 解決済みを型で要求しない理由が Issue にしか無かった\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: `collectInvertedLimitAxes` は解決済みの props を doc で求めているが、型で要求しない理由(size → resolved-props の import が循環する)がコードに無かった。Why not を足した。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 11. `fromProps` 系の「解決済みでなくてよい」が新しい doc と食い違った\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: モードが書かれていなければ `none` になるので、「解決していないと見落とす」と書いた新しい doc と矛盾した。修正で `fromProps` / `collectFillAxes` を直したあとに、`fixedLengthFromProps` / `declarationsFromProps` と `fromProps` の概要の取りこぼしが見つかり、もう 1 回直した。\n+- 既存ルール: rules/coding.md「コメントは実装と一致させる」\n+\n+### 12. artboard を検査しない理由がコードに無かった\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: `collectComponentErrors` は逆転を見るのに `collectArtboardErrors` は見ない。その理由が Issue にしか無かった。Why not を足した。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 13. `limitProps` の doc が関数とメンバーの 2 か所に重複していた\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 関数の doc を消すと pre-push の doc 検査が落ちるので、実装を `Size.limitProps` のメソッドへ移して doc を 1 つにした。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 14. 開く時の表で「最小 / 最大の逆転」が列挙の区切りとぶつかった\n+\n+- 分類: `harness`\n+- 出どころ: `レビュー（harness-reviewer）`\n+- 内容: docs/03 の表は項目を「 / 」で区切るので、2 項目に読めた。セルの中だけ「最小・最大の逆転」にした。\n+- 既存ルール: なし\n+\n+### 15. docs/03 の箇条が overrides の逆転を対象外としていると書いていなかった\n+\n+- 分類: `harness`\n+- 出どころ: `レビュー（harness-reviewer）`\n+- 内容: 「定義時点の props だけを見る」方針がコードの doc にしか無く、docs だけを読むと overrides で逆転させたインスタンスがエラーにならない理由が分からない。箇条に範囲を書いた。\n+- 既存ルール: なし\n+\n+### 16. 1 ノードごとの resolve で、ドラッグ・パン中の検証の費用が増える\n+\n+- 分類: `なし`\n+- 出どころ: `レビュー（performance-reviewer）`\n+- 内容: 不採用。計算量の次数は変わらず、根本原因は差分の外の「描画のたびに `documentErrors` を呼び、メモ化していない」こと。#1055 に切り出した。\n+- 既存ルール: なし\n+\n+### 17. 1 ノード内の「スキーマ → 逆転」の並びを守るテストが無かった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: ミューテーション 16 件のうち生き残った 1 件。doc は「この順」と主張しているのに、スキーマ違反と逆転が同じノードで起きる入力が無かった。テストを足した。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 18. 「overrides で生じる逆転は見ない」を守るテストが無かった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: ミューテーション 16 件のうち生き残ったもう 1 件。overrides も検査するように壊しても 4765 件がすべて通った。部品定義側の逆転を対照に置くテストを足した。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 19. フックが発火しない環境だった\n+\n+- 分類: `harness`\n+- 出どころ: `自己修正`\n+- 内容: `echo hook-canary` が通り、実行中フラグのマーカーも発火ログの見出しも無かった(README の表で「本当に不発」)。作業ディレクトリがリポジトリの親から始まったためと推定。禁止コマンドを実行していないことは履歴で確かめた。\n+- 既存ルール: なし\n+\n+## 手戻り\n+\n+- 計画は `plan-reviewer` の指摘 6 件を受けて、`planner` が 1 回作り直した\n+- duplication 1 の反映で、子孫のノード内の並びを計画の「fill の後ろに逆転」から「スキーマ → 逆転 → fill」に変えた。テスト名も「前に並ぶ」に書き換えた\n+- `implementer` は、「モジュール関数 `limitProps` の doc を消す」を指示どおりに行うと pre-push の doc 検査が落ちるため、メソッドへ移す形に変えた(指摘 13)\n+- 指摘 11 の直しで取りこぼしがあり、`implementer` をもう 1 回起動した\n+\n+## 発火\n+\n+- 発火: 計測対象外(フック不発)\n+\n+## 規約への反映\n+\n+無し。このスキルの管轄は記録までで、集計と介入は `harness-growth` で行う。",
+          "patchLines": 164,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
