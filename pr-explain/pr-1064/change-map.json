@@ -4,7 +4,7 @@
   "headBranch": "claude/magical-cannon-ihzbcx",
   "baseBranch": "main",
   "mergeBase": "0024eddff935563ad8d7dd8e0dc29c20692b0712",
-  "head": "8b722b1814de88e2f34ba7aa7495e9d2fc378224",
+  "head": "44e3f5e5f526f4d577aa11b538167215665d40f4",
   "groups": [
     {
       "label": "ハーネス",
@@ -28,12 +28,12 @@
   },
   "commits": [
     {
-      "sha": "8b722b1814de88e2f34ba7aa7495e9d2fc378224",
+      "sha": "44e3f5e5f526f4d577aa11b538167215665d40f4",
       "merge": false,
       "author": "Claude",
       "date": "2026-10-11T10:40:02Z",
       "subject": "📝 [Doc]: #1062 PR #1063 の振り返りを harness/records に記録する",
-      "body": "- harness/records/pr-1063.md を足した（指摘 33 件・手戻り・発火）\n- 分類の内訳: ui 9 / comment 7 / naming 5 / plan 5 / duplication 5 /\n  ownership 2 / over-guard 1 / test 1 / harness 1（指摘 1 件 = 1 ブロック）\n\n背景:\nPR #1063 がマージされたので、harness-record の手順でその回のレビュー指摘・\nCI・手戻りを記録した。人のレビューは 1 件（ActionCard の共通化）、CI は\nVRT の見込みの外れ 1 件。\n\n採用理由:\n人のレビューは get_review_comments / get_reviews / get_comments の 3 つを\n引いて確かめた。get_comments の DIO0550 名義の投稿は、どれもこのセッションが\n書いたテスト表と VRT の確認結果だった。発火ログは見出しが無かったので\n「計測対象外(フック不発)」と書いた。手戻りは、セッション中に Issue #1062 へ\n残した覚え書きと照らした。\n\n影響とトレードオフ:\n記録だけを残す回。集計・介入・規約の変更は行わない（harness-growth の管轄）。\n対策済の行は書いていない。\n\n参考:\n- PR #1063 / Issue #1062\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01AXZ39qafTH5FeaDU13UsCW",
+      "body": "- harness/records/pr-1063.md を足した（指摘 33 件・手戻り・発火）\n- 分類の内訳: ui 8 / comment 6 / duplication 5 / plan 5 / naming 4 /\n  ownership 2 / over-guard 1 / test 1 / harness 1（指摘 1 件 = 1 ブロック）\n\n背景:\nPR #1063 がマージされたので、harness-record の手順でその回のレビュー指摘・\nCI・手戻りを記録した。人のレビューは 1 件（ActionCard の共通化）、CI は\nVRT の見込みの外れ 1 件。\n\n採用理由:\n人のレビューは get_review_comments / get_reviews / get_comments の 3 つを\n引いて確かめた。get_comments の DIO0550 名義の投稿は、どれもこのセッションが\n書いたテスト表と VRT の確認結果だった。発火ログは見出しが無かったので\n「計測対象外(フック不発)」と書いた。手戻りは、セッション中に Issue #1062 へ\n残した覚え書きと照らした。\n\n影響とトレードオフ:\n記録だけを残す回。集計・介入・規約の変更は行わない（harness-growth の管轄）。\n対策済の行は書いていない。\n\n参考:\n- PR #1063 / Issue #1062\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01AXZ39qafTH5FeaDU13UsCW",
       "files": [
         {
           "path": "harness/records/pr-1063.md",
