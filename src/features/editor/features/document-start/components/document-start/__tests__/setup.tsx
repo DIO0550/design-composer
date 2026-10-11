@@ -21,6 +21,8 @@ export type RecordedActions = Readonly<{
   openedPaths: string[];
   /** `openDocument` が呼ばれた回数。 */
   openCount: () => number;
+  /** `createDocument` が呼ばれた回数。 */
+  createCount: () => number;
 }>;
 
 /**
@@ -31,19 +33,23 @@ export type RecordedActions = Readonly<{
 export function recordActions(): RecordedActions {
   const openedPaths: string[] = [];
   let opened = 0;
+  let created = 0;
 
   return {
     actions: {
       openDocument: () => {
         opened += 1;
       },
-      createDocument: () => {},
+      createDocument: () => {
+        created += 1;
+      },
       openDocumentsAt: (paths) => {
         openedPaths.push(...paths);
       },
     },
     openedPaths,
     openCount: () => opened,
+    createCount: () => created,
   };
 }
 
