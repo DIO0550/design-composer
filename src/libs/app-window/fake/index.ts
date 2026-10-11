@@ -1,20 +1,16 @@
-import type { TauriIpc } from "@/libs/tauri-ipc";
-import { ipcFailure } from "@/libs/tauri-ipc/fake";
-import { AppWindow } from "../index";
+import { Result } from "@/utils/Result";
+import type { AppWindow } from "../index";
 
 /**
- * Rust 側の代役。`close_current_window` を受けて、ウィンドウが閉じたかどうかだけを持つ。
+ * ウィンドウの代役。`AppWindow` を直接満たし、ウィンドウが閉じたかどうかだけを持つ。
  *
- * 差し込む先は `TauriIpc` の位置なので、`appWindow` を通した呼び出しでは `AppWindow` 本体
- * （コマンド名・エラーの解釈）がそのまま動く。
+ * `AppWindow` 本体（コマンド名・エラーの解釈）は通らない。
  */
 export type AppWindowFake = Readonly<{
   /** 代役のウィンドウに向いた `AppWindow`。 */
   appWindow: AppWindow;
   /** ウィンドウが閉じたか。 */
   isWindowClosed(): boolean;
-  /** ウィンドウを閉じるのを拒むようにする。 */
-  denyClose(): void;
 }>;
 
 export const AppWindowFake = {
@@ -25,38 +21,17 @@ export const AppWindowFake = {
    */
   create(): AppWindowFake {
     let closed = false;
-    let closeDenied = false;
-
-    const closeCurrentWindow = (): Promise<unknown> => {
-      // 本物の `tauri::Error` も文字列で reject されるので、同じ形で拒む。
-      if (closeDenied) {
-        return ipcFailure("close_current_window: ウィンドウを閉じられない");
-      }
-      closed = true;
-      return Promise.resolve(undefined);
-    };
-
-    const tauriIpc: TauriIpc = {
-      invoke(command) {
-        return command === "close_current_window"
-          ? closeCurrentWindow()
-          : ipcFailure(`Command ${command} not found`);
-      },
-
-      listen(event) {
-        return ipcFailure(`Event ${event} not emitted`);
-      },
-    };
 
     return {
-      appWindow: AppWindow.create(tauriIpc),
+      appWindow: {
+        close() {
+          closed = true;
+          return Promise.resolve(Result.ok(undefined));
+        },
+      },
 
       isWindowClosed() {
         return closed;
-      },
-
-      denyClose() {
-        closeDenied = true;
       },
     };
   },

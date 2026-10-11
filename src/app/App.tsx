@@ -17,6 +17,7 @@ import { TauriIpc } from "@/libs/tauri-ipc";
  *
  * Tauri の口（`TauriIpc`）を 1 つにまとめるのは、コマンドもイベントも同じ webview へ
  * 向くため。分けて作っても届く先は同じで、口の数だけ同一性の管理が増える。
+ * ウィンドウの口は購読を持たないので、`TauriIpc` を公開 API に出さないよう中で作る。
  */
 const tauriIpc = TauriIpc.create();
 const ports = {
@@ -25,7 +26,7 @@ const ports = {
   menu: AppMenu.create(tauriIpc),
   drop: FileDrop.create(tauriIpc),
   appState: AppStateIpc.create(tauriIpc),
-  appWindow: AppWindow.create(tauriIpc),
+  appWindow: AppWindow.create(),
 } as const;
 const clock = Clock.create();
 
