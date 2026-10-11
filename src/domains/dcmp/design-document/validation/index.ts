@@ -25,6 +25,7 @@ import {
   type InstanceViolation,
   ReferenceContext,
 } from "@/domains/dcmp/reference-context";
+import { ResolvedProps } from "@/domains/dcmp/resolved-props";
 import { Size } from "@/domains/dcmp/size";
 import { type TokenColorPosition, TokenSet } from "@/domains/dcmp/token";
 import { Json } from "@/utils/Json";
@@ -44,7 +45,8 @@ type NodeValidationErrorKind =
   | "missing-name"
   | "invalid-identifier"
   | "duplicate-name"
-  | "fill-in-free-parent";
+  | "fill-in-free-parent"
+  | "inverted-size-limits";
 
 /** トークンを指す不正の理由。 */
 type TokenValidationErrorKind =
@@ -192,7 +194,34 @@ function collectFillErrors(
 }
 
 /**
- * ノードとその子孫のプリミティブの props をスキーマで照らす（走査は `Node` が持つ）。
+ * 最小が最大を超えている軸を、軸ごとのエラーにする（判定は `Size` が持つ）。
+ *
+ * @param type ノードの型名。プリミティブの型でなければ照らすスキーマが無いので見ない
+ * @param props 検査するノードの props（未設定なら空として扱う）
+ * @returns 軸ごとの、`max*` の側を指すエラーの並び。逆転が無いときと型が未知のときは空
+ */
+function collectInvertedLimitErrors(
+  type: string,
+  props: Props | undefined,
+): readonly UnlocatedError[] {
+  if (!PrimitiveSchema.isPrimitiveType(type)) {
+    return [];
+  }
+  return Size.collectInvertedLimitAxes(
+    ResolvedProps.resolve(type, props ?? {}),
+  ).map((axis) => {
+    const { min, max } = Size.limitProps(axis);
+    return {
+      kind: "inverted-size-limits" as const,
+      prop: max,
+      message: `prop "${max}" is less than "${min}"; the minimum wins`,
+    };
+  });
+}
+
+/**
+ * ノードとその子孫のプリミティブについて、スキーマ照合・子を並べない親の下の `fill`・
+ * 最小 / 最大の逆転のエラーをノードごとにこの順で集める（走査は `Node` が持つ）。
  *
  * 部品インスタンスの中身は対象外で、検証が見るのは**定義時点の props** だけ（中身は部品の
  * 定義として照らされる）。
@@ -200,7 +229,8 @@ function collectFillErrors(
  * @param node 起点のノード
  * @param tokens トークン参照の解決に使うトークン一式
  * @param parentProps このノードを収めている親の props
- * @returns 自身と子孫のプリミティブの props のエラーの並び（部品インスタンスは空）
+ * @returns 自身と子孫のプリミティブについて、スキーマ照合・子を並べない親の下の `fill`・
+ *   最小 / 最大の逆転のエラーの並び（部品インスタンスは空）
  */
 function collectNodeErrors(
   node: Node,
@@ -214,6 +244,7 @@ function collectNodeErrors(
         Layout.fromProps(nested.parentProps),
         nested.node.props ?? {},
       ),
+      ...collectInvertedLimitErrors(nested.node.type, nested.node.props),
     ]),
   );
 }
@@ -369,7 +400,8 @@ export function collectCircularRefErrors(
 }
 
 /**
- * 部品1件の props・子ノード・公開 prop の宣言名・binding・参照のエラーを集める。
+ * 部品1件の props（スキーマ照合と、ルート自身の最小 / 最大の逆転）・子ノード・公開 prop の
+ * 宣言名・binding・参照のエラーを集める。
  *
  * @param context 部品とトークンの一式
  * @param name エラーの位置に使う部品名
@@ -382,10 +414,10 @@ export function collectComponentErrors(
   component: Component,
 ): readonly NodeValidationError[] {
   const children = component.children ?? [];
-  const propErrors = withLocation(
-    { nodeName: name },
-    collectTypedPropErrors(component.type, component.props, context.tokens),
-  );
+  const propErrors = withLocation({ nodeName: name }, [
+    ...collectTypedPropErrors(component.type, component.props, context.tokens),
+    ...collectInvertedLimitErrors(component.type, component.props),
+  ]);
   const childErrors = children.flatMap((child) =>
     collectNodeErrors(child, context.tokens, component.props ?? {}),
   );
