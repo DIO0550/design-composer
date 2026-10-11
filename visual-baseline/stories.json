@@ -870,6 +870,11 @@
     "name": "選択されていない"
   },
   {
+    "id": "features-editor-features-tokens-tokeneditor--gradient-selected",
+    "title": "features/editor/features/tokens/TokenEditor",
+    "name": "グラデーショントークンを選択中"
+  },
+  {
     "id": "features-editor-features-tokens-tokeneditor--radius-selected",
     "title": "features/editor/features/tokens/TokenEditor",
     "name": "角丸トークンを選択中"
