@@ -4,7 +4,7 @@
   "headBranch": "claude/magical-cannon-1gry2n",
   "baseBranch": "main",
   "mergeBase": "086fa6cb38b2bf603f345761371357e502cd694c",
-  "head": "05fd617d4516168ce9fbe2f62c9857f7e7bdba12",
+  "head": "8d94f7e63baf9d7528323eb47681c533c73b0807",
   "groups": [
     {
       "label": "domains / dcmp",
@@ -72,7 +72,7 @@
           "path": "src/libs/app-window/fake/index.ts",
           "status": "A",
           "oldPath": null,
-          "additions": 38,
+          "additions": 63,
           "deletions": 0,
           "changed": true,
           "target": null
@@ -81,7 +81,7 @@
           "path": "src/libs/app-window/index.ts",
           "status": "A",
           "oldPath": null,
-          "additions": 43,
+          "additions": 41,
           "deletions": 0,
           "changed": true,
           "target": null
@@ -127,12 +127,34 @@
           "changed": false
         },
         {
+          "path": "src/libs/tauri-ipc/fake/index.ts",
+          "changed": false
+        },
+        {
           "path": "src/libs/tauri-ipc/index.ts",
           "changed": false
         },
         {
           "path": "src/libs/__tests__/document-change.ts",
           "changed": false
+        },
+        {
+          "path": "src/libs/app-window/__tests__/app-window.edge.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 16,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/libs/app-window/index.ts"
+        },
+        {
+          "path": "src/libs/app-window/__tests__/app-window.normal.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/libs/app-window/index.ts"
         }
       ]
     },
@@ -369,7 +391,7 @@
           "path": "src/app/App.tsx",
           "status": "M",
           "oldPath": null,
-          "additions": 3,
+          "additions": 2,
           "deletions": 0,
           "changed": true,
           "target": null
@@ -489,12 +511,22 @@
       {
         "file": "src/features/editor/features/document-start/domains/document-session/__tests__/document-session.normal.test.ts",
         "name": "何も開けずに終わった後も、開いているドキュメントは無い"
+      },
+      {
+        "file": "src/libs/app-window/__tests__/app-window.edge.test.ts",
+        "name": "閉じるのを拒まれたら、拒まれた理由を持つ失敗になる"
+      },
+      {
+        "file": "src/libs/app-window/__tests__/app-window.normal.test.ts",
+        "name": "閉じると、ウィンドウが閉じる"
       }
     ],
     "removed": [],
     "files": [
       "src/features/editor/components/editor-screen/__tests__/editor-screen.tab-shortcut.test.tsx",
-      "src/features/editor/features/document-start/domains/document-session/__tests__/document-session.normal.test.ts"
+      "src/features/editor/features/document-start/domains/document-session/__tests__/document-session.normal.test.ts",
+      "src/libs/app-window/__tests__/app-window.edge.test.ts",
+      "src/libs/app-window/__tests__/app-window.normal.test.ts"
     ]
   },
   "commits": [
@@ -984,6 +1016,66 @@
           "deletions": 1,
           "patch": "@@ -17,7 +17,7 @@ import { TauriIpc } from \"@/libs/tauri-ipc\";\n  *\n  * Tauri の口（`TauriIpc`）を 1 つにまとめるのは、コマンドもイベントも同じ webview へ\n  * 向くため。分けて作っても届く先は同じで、口の数だけ同一性の管理が増える。\n- * ウィンドウの口は購読を持たないので、`TauriIpc` を公開 API に出さないよう中で作る。\n+ * ただし `AppWindow` だけは IPC を自分で作る（理由は `AppWindow.create`）。\n  */\n const tauriIpc = TauriIpc.create();\n const ports = {",
           "patchLines": 9,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "8d94f7e63baf9d7528323eb47681c533c73b0807",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-11T15:10:25Z",
+      "subject": "⏪ [Revert]: #996 ウィンドウを閉じる口が TauriIpc を受け取る形に戻す",
+      "body": "- 4a625f7 / a9651ae / 05fd617（案 A）を取り消す\n- AppWindow.create(tauriIpc) に戻し、代役は TauriIpc の位置に差す形に戻す\n- app-window.normal / app-window.edge を戻す\n- App.tsx は共有の tauriIpc を渡す形に戻す\n\n背景:\nPR #1060 のレビューで「TauriIpc が外へ漏れている」と指摘を受け、案 A\n（create を引数なしにする）で直していた。その後のレビューで、\nTauriIpc はこのリポジトリで定義した型（src/libs/tauri-ipc）で、\n@tauri-apps/api の型ではないので受け取ってよい、と判断が変わり、\n元に戻すことになった。\n\n採用理由:\nTauriIpc は invoke / listen を持つだけの自前の口で、@tauri-apps/api を\nimport するのは tauri-ipc の 1 ファイルだけ。受け取っても Tauri\nランタイムへの依存は漏れない。受け取る形なら代役を TauriIpc の位置に\n差せるので、本体のコマンド名と失敗の詰め替えがテストを通る。\n案 A で失っていたこの守りが戻る。\n\n影響とトレードオフ:\n中身は 9f22fc2 と同じ（差分 0）。既存の libs と同じ形に揃う。\n\n代替案:\n- 案 A のまま: 本体のコマンド名と失敗の詰め替えがテストできず、\n  カバレッジも 50% に下がっていたため採らない\n- 案 B（テスト用の入口を分ける）: TauriIpc を受け取ってよいなら、\n  入口を 2 つに分ける理由が無い\n\n参考:\nhttps://github.com/DIO0550/design-composer/pull/1060#discussion_r4242054275\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01RYXptcxTxktU83rb3ymRW9",
+      "files": [
+        {
+          "path": "src/app/App.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 2,
+          "patch": "@@ -17,7 +17,6 @@ import { TauriIpc } from \"@/libs/tauri-ipc\";\n  *\n  * Tauri の口（`TauriIpc`）を 1 つにまとめるのは、コマンドもイベントも同じ webview へ\n  * 向くため。分けて作っても届く先は同じで、口の数だけ同一性の管理が増える。\n- * ただし `AppWindow` だけは IPC を自分で作る（理由は `AppWindow.create`）。\n  */\n const tauriIpc = TauriIpc.create();\n const ports = {\n@@ -26,7 +25,7 @@ const ports = {\n   menu: AppMenu.create(tauriIpc),\n   drop: FileDrop.create(tauriIpc),\n   appState: AppStateIpc.create(tauriIpc),\n-  appWindow: AppWindow.create(),\n+  appWindow: AppWindow.create(tauriIpc),\n } as const;\n const clock = Clock.create();\n ",
+          "patchLines": 17,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/app-window/__tests__/app-window.edge.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 16,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,16 @@\n+import { expect, test } from \"vitest\";\n+import { Result } from \"@/utils/Result\";\n+import { AppWindowFake } from \"../fake\";\n+\n+test(\"閉じるのを拒まれたら、拒まれた理由を持つ失敗になる\", async () => {\n+  const fake = AppWindowFake.create();\n+  fake.denyClose();\n+\n+  const closed = await fake.appWindow.close();\n+\n+  expect(closed).toStrictEqual(\n+    Result.err({\n+      message: \"close_current_window: ウィンドウを閉じられない\",\n+    }),\n+  );\n+});",
+          "patchLines": 17,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/app-window/__tests__/app-window.normal.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,10 @@\n+import { expect, test } from \"vitest\";\n+import { AppWindowFake } from \"../fake\";\n+\n+test(\"閉じると、ウィンドウが閉じる\", async () => {\n+  const fake = AppWindowFake.create();\n+\n+  await fake.appWindow.close();\n+\n+  expect(fake.isWindowClosed()).toBe(true);\n+});",
+          "patchLines": 11,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/app-window/fake/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 35,
+          "deletions": 10,
+          "patch": "@@ -1,16 +1,20 @@\n-import { Result } from \"@/utils/Result\";\n-import type { AppWindow } from \"../index\";\n+import type { TauriIpc } from \"@/libs/tauri-ipc\";\n+import { ipcFailure } from \"@/libs/tauri-ipc/fake\";\n+import { AppWindow } from \"../index\";\n \n /**\n- * ウィンドウの代役。`AppWindow` を直接満たし、ウィンドウが閉じたかどうかだけを持つ。\n+ * Rust 側の代役。`close_current_window` を受けて、ウィンドウが閉じたかどうかだけを持つ。\n  *\n- * `AppWindow` 本体（コマンド名・エラーの解釈）は通らない。\n+ * 差し込む先は `TauriIpc` の位置なので、`appWindow` を通した呼び出しでは `AppWindow` 本体\n+ * （コマンド名・エラーの解釈）がそのまま動く。\n  */\n export type AppWindowFake = Readonly<{\n   /** 代役のウィンドウに向いた `AppWindow`。 */\n   appWindow: AppWindow;\n   /** ウィンドウが閉じたか。 */\n   isWindowClosed(): boolean;\n+  /** ウィンドウを閉じるのを拒むようにする。 */\n+  denyClose(): void;\n }>;\n \n export const AppWindowFake = {\n@@ -21,18 +25,39 @@ export const AppWindowFake = {\n    */\n   create(): AppWindowFake {\n     let closed = false;\n+    let closeDenied = false;\n \n-    return {\n-      appWindow: {\n-        close() {\n-          closed = true;\n-          return Promise.resolve(Result.ok(undefined));\n-        },\n+    const closeCurrentWindow = (): Promise<unknown> => {\n+      // 本物の `tauri::Error` も文字列で reject されるので、同じ形で拒む。\n+      if (closeDenied) {\n+        return ipcFailure(\"close_current_window: ウィンドウを閉じられない\");\n+      }\n+      closed = true;\n+      return Promise.resolve(undefined);\n+    };\n+\n+    const tauriIpc: TauriIpc = {\n+      invoke(command) {\n+        return command === \"close_current_window\"\n+          ? closeCurrentWindow()\n+          : ipcFailure(`Command ${command} not found`);\n+      },\n+\n+      listen(event) {\n+        return ipcFailure(`Event ${event} not emitted`);\n       },\n+    };\n+\n+    return {\n+      appWindow: AppWindow.create(tauriIpc),\n \n       isWindowClosed() {\n         return closed;\n       },\n+\n+      denyClose() {\n+        closeDenied = true;\n+      },\n     };\n   },\n } as const;",
+          "patchLines": 71,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/app-window/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 6,
+          "patch": "@@ -20,14 +20,12 @@ export const AppWindow = {\n    * 失敗は Rust の `tauri::Error` もコマンドに届く前の Tauri 自身の失敗も文字列で reject\n    * されるので、形で見分けずに原文へ詰め替える。\n    *\n-   * IPC を引数で受けずに中で作るのは、`TauriIpc` を公開 API に出さないため。\n-   * `TauriIpc.create()` は状態を持たないので、別に作っても届く先は同じ webview になる。\n-   *\n-   * @returns 本物の Tauri のウィンドウに向いた口\n+   * @param tauriIpc コマンドを呼ぶ IPC\n+   * @returns `tauriIpc` を通してウィンドウを操作する口\n    */\n-  create(): AppWindow {\n+  create(tauriIpc: TauriIpc): AppWindow {\n     const call = TauriIpc.caller<AppWindowCommand, AppWindowError>(\n-      TauriIpc.create(),\n+      tauriIpc,\n       (reason) => ({ message: String(reason) }),\n     );\n ",
+          "patchLines": 19,
           "truncated": false
         }
       ]
@@ -1631,13 +1723,33 @@
       "status": "kept"
     },
     {
+      "from": "src/libs/app-window/__tests__/app-window.edge.test.ts",
+      "to": "src/libs/app-window/fake/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/libs/app-window/__tests__/app-window.edge.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/libs/app-window/__tests__/app-window.normal.test.ts",
+      "to": "src/libs/app-window/fake/index.ts",
+      "status": "added"
+    },
+    {
       "from": "src/libs/app-window/fake/index.ts",
       "to": "src/libs/app-window/index.ts",
       "status": "added"
     },
     {
       "from": "src/libs/app-window/fake/index.ts",
-      "to": "src/utils/Result.ts",
+      "to": "src/libs/tauri-ipc/fake/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/libs/app-window/fake/index.ts",
+      "to": "src/libs/tauri-ipc/index.ts",
       "status": "added"
     },
     {
