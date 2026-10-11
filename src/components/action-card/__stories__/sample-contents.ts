@@ -1,14 +1,14 @@
-import { type ActionCardFace, ActionCardTones } from "../index";
+import { type ActionCardContent, ActionCardTones } from "../index";
 
 /*
- * ストーリーが args.face に渡すカードの中身の見本。
+ * ストーリーとテストが ActionCard に渡すカードの中身の見本。綴りは呼び出し側（開始画面）と重ならないものにしている。
  *
  * ストーリーファイルに直に書かないのは、`title:` の行が既定 export の title と並ぶと
  * story の title の検査（`story-title-violations.py`）が title を一意に取れないため。
  */
 
 /** 勧め分けをしない配色の見本（書き出す）。 */
-export const ExportFace: ActionCardFace = {
+export const ExportContent: ActionCardContent = {
   title: "書き出す",
   description: "選んだ部品を画像にする",
   shortcut: "⌘E",
@@ -17,7 +17,7 @@ export const ExportFace: ActionCardFace = {
 };
 
 /** いちばん勧めたい配色の見本（取り込む）。 */
-export const ImportFace: ActionCardFace = {
+export const ImportContent: ActionCardContent = {
   title: "取り込む",
   description: "別のファイルの部品を使う",
   shortcut: "⌘I",

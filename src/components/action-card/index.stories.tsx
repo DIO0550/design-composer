@@ -1,12 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { ExportFace, ImportFace } from "./__stories__/sample-faces";
+import { ExportContent, ImportContent } from "./__stories__/sample-contents";
 import { ActionCard } from "./index";
 
 /**
  * 押せるカード。配色の種類ごとと、押せないときを並べる。
  *
  * `<button>` は幅が auto だと中身の幅に縮むので、器はグリッドにして子を横へ引き伸ばす
- * （開始画面も 2 列のグリッドに置いている）。194px は開始画面でのカード 1 枚の幅。
+ * （開始画面も 2 列のグリッドに置いている）。194px は汎用の部品としてカードを置く代表的な幅。
  */
 const meta = {
   title: "components/ActionCard",
@@ -20,7 +20,7 @@ const meta = {
     ),
   ],
   args: {
-    face: ExportFace,
+    content: ExportContent,
     onClick: () => {},
     disabled: false,
   },
@@ -34,7 +34,7 @@ type Story = StoryObj<typeof meta>;
 export const Primary: Story = {
   name: "プライマリ",
   args: {
-    face: ImportFace,
+    content: ImportContent,
   },
 };
 

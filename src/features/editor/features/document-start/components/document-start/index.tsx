@@ -1,7 +1,7 @@
 import type { ReactElement, ReactNode } from "react";
 import {
   ActionCard,
-  type ActionCardFace,
+  type ActionCardContent,
   ActionCardTones,
 } from "@/components/action-card";
 import {
@@ -41,7 +41,7 @@ function commandSourceFailureLabel(source: CommandSource): string {
  */
 
 /** 開くのカード（プライマリ）。 */
-const OpenCardFace = {
+const OpenCardContent = {
   title: "開く",
   description: "既存の .dcmp を選ぶ",
   shortcut: "⌘O",
@@ -49,16 +49,16 @@ const OpenCardFace = {
     "M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z",
   ],
   tone: ActionCardTones.Primary,
-} as const satisfies ActionCardFace;
+} as const satisfies ActionCardContent;
 
 /** 新規作成のカード。 */
-const CreateCardFace = {
+const CreateCardContent = {
   title: "新規作成",
   description: "空のドキュメントから始める",
   shortcut: "⌘N",
   iconPaths: ["M12 5v14", "M5 12h14"],
   tone: ActionCardTones.Normal,
-} as const satisfies ActionCardFace;
+} as const satisfies ActionCardContent;
 
 /**
  * ドキュメントを開く / 作る導線。
@@ -80,12 +80,12 @@ function StartActions({
   return (
     <div className="mt-2 grid w-full grid-cols-2 gap-3">
       <ActionCard
-        face={OpenCardFace}
+        content={OpenCardContent}
         onClick={actions.openDocument}
         disabled={disabled}
       />
       <ActionCard
-        face={CreateCardFace}
+        content={CreateCardContent}
         onClick={actions.createDocument}
         disabled={disabled}
       />
