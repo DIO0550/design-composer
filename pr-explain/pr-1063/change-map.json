@@ -1,0 +1,533 @@
+{
+  "version": 2,
+  "pr": 1063,
+  "headBranch": "claude/magical-cannon-ihzbcx",
+  "baseBranch": "main",
+  "mergeBase": "086fa6cb38b2bf603f345761371357e502cd694c",
+  "head": "23b3a7e37661a7dc01288fc313102feb4cc4957a",
+  "groups": [
+    {
+      "label": "domains / session",
+      "files": [
+        {
+          "path": "src/domains/session/document-access-failure/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-error/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / __tests__",
+      "files": [
+        {
+          "path": "src/domains/__tests__/sample-document.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "libs",
+      "files": [
+        {
+          "path": "src/libs/app-menu/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/app-menu/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/app-state-ipc/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/clock/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-dialog/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-ipc/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-json/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/file-drop/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/__tests__/document-change.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "utils",
+      "files": [
+        {
+          "path": "src/utils/FilePath.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Option.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor",
+      "files": [
+        {
+          "path": "src/features/editor/components/editor-screen/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/__tests__/pane-regions.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/__tests__/sample-document.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.entry.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.shortcut.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.sync.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.tab-shortcut.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/document-start",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-start/components/document-open-failure/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 140,
+          "deletions": 36,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/document-start/domains/document-session/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.edge.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.failure.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 22,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/features/document-start/components/document-start/index.tsx"
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.normal.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 47,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/features/document-start/components/document-start/index.tsx"
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/__tests__/setup.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 7,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "components",
+      "files": [
+        {
+          "path": "src/components/__tests__/row-drag.ts",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [
+      {
+        "file": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.failure.test.tsx",
+        "name": "開けなかった後も、新規作成ボタンを押せる"
+      },
+      {
+        "file": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.failure.test.tsx",
+        "name": "開けなかった後も、開くボタンを押せる"
+      },
+      {
+        "file": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.normal.test.tsx",
+        "name": "新規作成ボタンには、⌘N でも作れることが説明として添えられる"
+      },
+      {
+        "file": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.normal.test.tsx",
+        "name": "新規作成ボタンには、空のドキュメントから始めることが説明として添えられる"
+      },
+      {
+        "file": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.normal.test.tsx",
+        "name": "新規作成ボタンを押すと、作る操作が始まる"
+      },
+      {
+        "file": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.normal.test.tsx",
+        "name": "開くボタンには、⌘O でも開けることが説明として添えられる"
+      },
+      {
+        "file": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.normal.test.tsx",
+        "name": "開くボタンには、既存の .dcmp を選ぶことが説明として添えられる"
+      }
+    ],
+    "removed": [],
+    "files": [
+      "src/features/editor/features/document-start/components/document-start/__tests__/document-start.failure.test.tsx",
+      "src/features/editor/features/document-start/components/document-start/__tests__/document-start.normal.test.tsx"
+    ]
+  },
+  "commits": [
+    {
+      "sha": "29020f9f89245cfcf96b9787a959c0762ee004c8",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-11T07:21:05Z",
+      "subject": "💄 [UI/UX]: #1062 開始画面の開く / 新規作成をアクションカードにする",
+      "body": "- 開く / 新規作成を、アイコン・見出し・説明・ショートカットを持つ 2 枚のカードにした\n- カードの綴りと配色を CardFace 型の定数 OpenCardFace / CreateCardFace にまとめた\n- ボタンの名前は見出しだけ（aria-labelledby）、説明とショートカットは aria-describedby\n- 開始画面の列の幅を 384px から 400px にした\n- 塗りのボタン用の ActionButton と、前提が無くなった Why コメントを消した\n\n背景:\n新規作成は地も枠も無く、ただの文字に見えていた。開くは 30px・11px と小さく、\n白文字と #4db2ff のコントラストが約 2.4:1 で 4.5:1 に届いていなかった。\nアイコンもショートカットの表記も無く、2 つの違いは綴りだけだった。\n\n採用理由:\n利用者がデザイン案の「案B アクションカード」（基本ボタン 5 ブルー・ゴースト\n基調の配色に合わせた版）を選んだ。UI 案は開始画面を描いておらず、青とゴースト\nの形も UI 案の語彙に無いため、意図して離れている（利用者と確認済み）。\n名前を見出しだけにしたのは、中身から決めさせると「新規作成 空のドキュメント\nから始める ⌘N」になるため。editor-screen のテストの startOpen / startCreate は、\n名前でボタンが見つからないと黙ってメニューの経路へ切り替わる。名前が変わっても\nテストは緑のままで、壊れたことに気づけない。\n\n代替案:\n- 案A 塗り＋枠の 2 ボタン / 案C コマンドリスト: 利用者が案B を選んだため却下\n- aria-label=\"開く\": 見えている綴りと同じ文字列を 2 箇所に持つため却下\n- aria-keyshortcuts: 割り当てを持つのはメニュー（menu.rs の CmdOrCtrl）で、\n  綴る場所がもう 1 箇所増えるため却下\n- 7 つの値を個別の props にする: rules/components.md の「概ね 5 個」を超える。\n  定義はどちらも固定なので、定数 1 つにまとめて props を 3 つにした\n- 配色を tone の対応表に分ける: tone とカードが 1 対 1 で、参照が 1 段増えるだけ\n- カードの列だけ 400px にする: 器から 16px はみ出し、下の一覧と端がずれる\n- OS ごとに表記を変える: Issue が ⌘O / ⌘N と指定しており、既存のコンテキスト\n  メニューも ⌘ で決め打ちしている\n\n影響とトレードオフ:\n列の中身（最近使ったファイル・ドロップの案内・失敗表示）がすべて 16px 広がる。\nhover 中は #0a74c9 on #e7f1fa が 4.22:1、#767676 on #f5f5f5 が 4.17:1 で、\n4.5:1 に届かない（平常時は 4.82:1 / 4.54:1）。押す直前の一時的な状態で、値は\n利用者が選んだ案のものなので受け入れた。Windows では ⌘ の表記が事実と合わない。\nこれは Issue の指定として受け入れた。\n\n参考:\n- Issue #1062\n- デザイン案 https://claude.ai/artifact/VGw715qVvnTadxQvy6v6ep\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01AXZ39qafTH5FeaDU13UsCW",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 131,
+          "deletions": 36,
+          "patch": "@@ -1,4 +1,4 @@\n-import type { ReactElement, ReactNode } from \"react\";\n+import { type ReactElement, type ReactNode, useId } from \"react\";\n import {\n   DocumentOpenFailureNotice,\n   FailureLine,\n@@ -29,16 +29,126 @@ function commandSourceFailureLabel(source: CommandSource): string {\n   }\n }\n \n+/** 開始画面のカード 1 枚の見た目。綴りと、Tailwind のクラスで書いた配色を持つ。 */\n+type CardFace = Readonly<{\n+  /** カードの名前になる見出し。 */\n+  title: string;\n+  /** 押すと何が起きるかの 1 行。 */\n+  description: string;\n+  /** 同じ操作をメニューから呼ぶショートカットの表記。 */\n+  shortcut: string;\n+  /** アイコン（viewBox 0 0 24 24）を描く path の `d`。 */\n+  iconPaths: readonly string[];\n+  /** カードの枠・文字・地・押せるときの hover の地。 */\n+  cardColors: string;\n+  /** アイコンの地。 */\n+  iconColors: string;\n+  /** 説明の文字色。 */\n+  descriptionColors: string;\n+  /** ショートカットの枠・文字。 */\n+  shortcutColors: string;\n+}>;\n+\n+/** 開くのカード（プライマリ）。 */\n+const OpenCardFace = {\n+  title: \"開く\",\n+  description: \"既存の .dcmp を選ぶ\",\n+  shortcut: \"⌘O\",\n+  iconPaths: [\n+    \"M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\",\n+  ],\n+  cardColors:\n+    \"border-[#0a74c9] bg-[#ffffff] text-[#0a74c9] enabled:hover:bg-[#e7f1fa]\",\n+  iconColors: \"bg-[#e7f1fa]\",\n+  descriptionColors: \"text-[#4a6a85]\",\n+  shortcutColors: \"border-[#b9d6ef] text-[#0a74c9]\",\n+} as const satisfies CardFace;\n+\n+/** 新規作成のカード。 */\n+const CreateCardFace = {\n+  title: \"新規作成\",\n+  description: \"空のドキュメントから始める\",\n+  shortcut: \"⌘N\",\n+  iconPaths: [\"M12 5v14\", \"M5 12h14\"],\n+  cardColors:\n+    \"border-[#d4d4d4] bg-[#ffffff] text-[#1e1e1e] enabled:hover:bg-[#f5f5f5]\",\n+  iconColors: \"bg-[#f0f0f0]\",\n+  descriptionColors: \"text-[#767676]\",\n+  shortcutColors: \"border-[#e6e6e6] text-[#767676]\",\n+} as const satisfies CardFace;\n+\n /**\n- * 押せる導線の共通の形。地・枠・文字だけを差し替える。\n+ * アイコン・見出し・説明・ショートカットを載せた、押せるカード。\n  *\n- * 大きさ（高さ 30px / 角丸 5px / font-size 11px / 横 10px）と font-family は UI 案\n- * （`docs/Design Composer.html`）の塗りのボタンに合わせている。\n- *\n- * 共通の `Button` にはしていない。\n+ * @param face カードの綴りと配色\n+ * @param onClick 押したときに始める手続き\n+ * @param disabled 押させたくないか\n+ * @returns 見出しを名前に、説明とショートカットを説明に持つボタン\n  */\n-const ActionButton =\n-  \"flex h-[30px] items-center rounded-[5px] px-[10px] font-[inherit] text-[11px] disabled:cursor-default disabled:opacity-50\";\n+function ActionCard({\n+  face,\n+  onClick,\n+  disabled,\n+}: Readonly<{\n+  face: CardFace;\n+  onClick: () => void;\n+  disabled: boolean;\n+}>): ReactElement {\n+  const id = useId();\n+  const titleId = `${id}-title`;\n+  const descriptionId = `${id}-description`;\n+  const shortcutId = `${id}-shortcut`;\n+\n+  return (\n+    // 名前は見出しだけにする。中身から決めさせると「新規作成 空のドキュメントから始める ⌘N」\n+    // になり、名前で引いている呼び出し側（「開く」「新規作成」）が見つけられなくなる。\n+    <button\n+      type=\"button\"\n+      onClick={onClick}\n+      disabled={disabled}\n+      aria-labelledby={titleId}\n+      aria-describedby={`${descriptionId} ${shortcutId}`}\n+      className={`flex flex-col items-start gap-[10px] rounded-[10px] border p-4 text-left focus-visible:outline-2 focus-visible:outline-[#0a74c9] focus-visible:outline-offset-2 disabled:cursor-default disabled:opacity-50 ${face.cardColors}`}\n+    >\n+      <span\n+        aria-hidden=\"true\"\n+        className={`flex size-8 items-center justify-center rounded-[8px] ${face.iconColors}`}\n+      >\n+        <svg\n+          aria-hidden=\"true\"\n+          viewBox=\"0 0 24 24\"\n+          fill=\"none\"\n+          stroke=\"currentColor\"\n+          strokeWidth={2}\n+          strokeLinecap=\"round\"\n+          strokeLinejoin=\"round\"\n+          className=\"size-[18px]\"\n+        >\n+          {face.iconPaths.map((d) => (\n+            <path key={d} d={d} />\n+          ))}\n+        </svg>\n+      </span>\n+      <span className=\"flex flex-col gap-[2px]\">\n+        <span id={titleId} className=\"font-medium text-[14px]\">\n+          {face.title}\n+        </span>\n+        <span\n+          id={descriptionId}\n+          className={`text-[12px] ${face.descriptionColors}`}\n+        >\n+          {face.description}\n+        </span>\n+      </span>\n+      <span\n+        id={shortcutId}\n+        className={`self-end rounded-[4px] border px-[6px] py-[1px] text-[11px] ${face.shortcutColors}`}\n+      >\n+        {face.shortcut}\n+      </span>\n+    </button>\n+  );\n+}\n \n /**\n  * ドキュメントを開く / 作る導線。\n@@ -48,7 +158,7 @@ const ActionButton =\n  *\n  * @param actions 開く / 作るを始める手続き\n  * @param disabled 既に開く操作が始まっていて、押させたくないか\n- * @returns 開く（強調）と新規作成を並べた 2 つのボタン\n+ * @returns 開く（プライマリ）と新規作成の 2 枚のカード\n  */\n function StartActions({\n   actions,\n@@ -58,31 +168,17 @@ function StartActions({\n   disabled: boolean;\n }>): ReactElement {\n   return (\n-    <div className=\"flex items-center gap-2\">\n-      {/* 地はアクセントの青を一段薄めた `#4db2ff`、hover でその元になっている\n-         `#0d99ff` へ寄せる。UI 案の `a:hover` がこの 2 色を対にしているので、薄い側を\n-         平常時に置くと hover で濃くなり、押せることが伝わる向きに揃う。白 +\n-         font-weight:500 は、UI 案が青地に文字を載せている 2 箇所と同じ組み合わせ。*/}\n-      <button\n-        type=\"button\"\n+    <div className=\"mt-2 grid w-full grid-cols-2 gap-3\">\n+      <ActionCard\n+        face={OpenCardFace}\n         onClick={actions.openDocument}\n         disabled={disabled}\n-        className={`${ActionButton} border-none bg-[#4db2ff] font-medium text-white hover:bg-[#0d99ff]`}\n-      >\n-        開く\n-      </button>\n-      {/* 地も枠も持たず hover でだけ地が出る形。UI 案はこの形のボタンを描いておらず\n-         （`ghost` の綴りも 0 回）、意図して離れている。開く を選んでほしい導線なので、\n-         枠を持つ従来の形だと 2 つが同じ重さに見えるため。hover の `#f0f0f0` は下の\n-         最近使ったファイルの行と同じで、押せる範囲の示し方をこの画面の中で揃えている。*/}\n-      <button\n-        type=\"button\"\n+      />\n+      <ActionCard\n+        face={CreateCardFace}\n         onClick={actions.createDocument}\n         disabled={disabled}\n-        className={`${ActionButton} border-none bg-transparent text-[#1e1e1e] hover:bg-[#f0f0f0]`}\n-      >\n-        新規作成\n-      </button>\n+      />\n     </div>\n   );\n }\n@@ -168,9 +264,8 @@ function RecentFileList({\n  * 開く前の画面を描いていない（`open` / `recent` / `welcome` はいずれも 0 件）。そのため見せ\n  * 方はここで決めている。画面の数と名前は `rules/ui-verification.md` が持つ。\n  *\n- * 使う色と字の大きさは UI 案の語彙から採っている（地 `#fafafa` と hover の `#f0f0f0`、\n- * 文字 `#1e1e1e` / `#767676`、境界 `#e6e6e6`、強調 `#4db2ff` / `#0d99ff`）。組み合わせ方\n- * には UI 案に無いものを含む（`StartActions`）。\n+ * 開くのカードの青系の配色（`OpenCardFace`）は UI 案の語彙に無く、意図して離れている\n+ * （#1062）。それ以外の色は UI 案の語彙から採っている。\n  *\n  * @param attempt 直近の開く操作がどこまで進んだか\n  * @param actions 開く / 作るを始める手続き\n@@ -205,9 +300,9 @@ export function DocumentStart({\n       aria-label=\"ドキュメントの開始\"\n       className=\"relative flex h-full flex-col items-center justify-center bg-[#fafafa] text-[#1e1e1e]\"\n     >\n-      {/* w-96 は案内の 1 行が折り返さない幅。中央揃えは、案内が伸びて折り返した\n-         ときに整うようにしておく（今の綴りでは折り返さないので効かない）。*/}\n-      <div className=\"flex w-96 flex-col items-center gap-4 text-center\">\n+      {/* 400px は 2 枚のカードの列の幅（#1062）。案内の 1 行もこの幅で折り返さない。\n+         中央揃えは、案内が伸びて折り返したときに整うようにしておく。*/}\n+      <div className=\"flex w-[400px] flex-col items-center gap-4 text-center\">\n         <h1 className=\"font-medium text-2xl tracking-tight\">Design Composer</h1>\n         <p className=\"text-[#767676] text-sm\">\n           {isOpening",
+          "patchLines": 213,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "e3dee76b8ba0408f56525f468f8c4714b3437f5a",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-11T07:21:28Z",
+      "subject": "🧪 [Tests]: #1062 開始画面のカードの説明・ショートカット・新規作成の経路をテストで守る",
+      "body": "- recordActions に createCount を足し、新規作成を押したことを数えられるようにした\n- 新規作成ボタンを押すと作る操作が始まることを確かめるテストを足した\n- 開く / 新規作成のボタンに、説明とショートカットが説明として添えられることを\n  確かめるテストを 4 件足した\n\n背景:\nカードにしたことで、名前（見出し）と説明（説明文・ショートカット）を別々に\n読ませるようになった。今まで新規作成を押した経路を通すテストは無く、\nrecordActions の createDocument は何も記録していなかった。\n\n採用理由:\n説明は getByRole の description で引いた。説明文とショートカットを別のテストに\n分けたのは、1 つの assert が 2 つの仕様を固定しないようにするため。\n名前を見出しだけにしていることは、既存のテストが「開く」「新規作成」を完全一致で\n引いているので、そちらで守られる。aria-describedby からショートカットの id を\n外すと ⌘O / ⌘N の 2 件だけが落ち、aria-labelledby も外すと名前で引いている\n10 件が落ちることを、実装を壊して確かめた。\n\n代替案:\n- 説明全体を 1 つの文字列で比べる: 説明文とショートカットの 2 つの仕様を\n  1 つの assert に混ぜることになるので却下\n- 通しのテスト（editor-screen）を足す: 配線は startOpen / startCreate が\n  名前でボタンを押す経路で既に通っているので足さない\n\n影響とトレードオフ:\n見た目（2 列・hover・focus-visible の枠）は happy-dom が Tailwind を解決しない\nので守れない。Storybook で目視して確かめた。\n\n参考:\n- Issue #1062\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01AXZ39qafTH5FeaDU13UsCW",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.normal.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 47,
+          "deletions": 0,
+          "patch": "@@ -55,6 +55,53 @@ test(\"開くボタンを押すと、開く操作が始まる\", async () => {\n   expect(recorded.openCount()).toBe(1);\n });\n \n+test(\"新規作成ボタンを押すと、作る操作が始まる\", async () => {\n+  const recorded = recordActions();\n+  renderDocumentStart({ actions: recorded.actions });\n+\n+  await userEvent.click(screen.getByRole(\"button\", { name: \"新規作成\" }));\n+\n+  expect(recorded.createCount()).toBe(1);\n+});\n+\n+test(\"開くボタンには、既存の .dcmp を選ぶことが説明として添えられる\", () => {\n+  renderDocumentStart();\n+\n+  expect(\n+    screen.getByRole(\"button\", {\n+      name: \"開く\",\n+      description: /既存の \\.dcmp を選ぶ/,\n+    }),\n+  ).toBeDefined();\n+});\n+\n+test(\"新規作成ボタンには、空のドキュメントから始めることが説明として添えられる\", () => {\n+  renderDocumentStart();\n+\n+  expect(\n+    screen.getByRole(\"button\", {\n+      name: \"新規作成\",\n+      description: /空のドキュメントから始める/,\n+    }),\n+  ).toBeDefined();\n+});\n+\n+test(\"開くボタンには、⌘O でも開けることが説明として添えられる\", () => {\n+  renderDocumentStart();\n+\n+  expect(\n+    screen.getByRole(\"button\", { name: \"開く\", description: /⌘O/ }),\n+  ).toBeDefined();\n+});\n+\n+test(\"新規作成ボタンには、⌘N でも作れることが説明として添えられる\", () => {\n+  renderDocumentStart();\n+\n+  expect(\n+    screen.getByRole(\"button\", { name: \"新規作成\", description: /⌘N/ }),\n+  ).toBeDefined();\n+});\n+\n test(\"最近使ったファイルは、ファイル名で並ぶ\", () => {\n   renderDocumentStart({ recentPaths: [Path] });\n ",
+          "patchLines": 54,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/__tests__/setup.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 7,
+          "deletions": 1,
+          "patch": "@@ -21,6 +21,8 @@ export type RecordedActions = Readonly<{\n   openedPaths: string[];\n   /** `openDocument` が呼ばれた回数。 */\n   openCount: () => number;\n+  /** `createDocument` が呼ばれた回数。 */\n+  createCount: () => number;\n }>;\n \n /**\n@@ -31,19 +33,23 @@ export type RecordedActions = Readonly<{\n export function recordActions(): RecordedActions {\n   const openedPaths: string[] = [];\n   let opened = 0;\n+  let created = 0;\n \n   return {\n     actions: {\n       openDocument: () => {\n         opened += 1;\n       },\n-      createDocument: () => {},\n+      createDocument: () => {\n+        created += 1;\n+      },\n       openDocumentsAt: (paths) => {\n         openedPaths.push(...paths);\n       },\n     },\n     openedPaths,\n     openCount: () => opened,\n+    createCount: () => created,\n   };\n }\n ",
+          "patchLines": 34,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "fcd131e9fb080e2edcf35854eec38e03e8984f52",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-11T07:21:32Z",
+      "subject": "📝 [Doc]: #1062 startOpen の doc を、開始画面でもメニューから開ける事実に合わせる",
+      "body": "- 「開始画面が出ている間はボタンからしか始められない」という記述を、\n  開始画面ではボタンとメニューのどちらからでも始められる、に直した\n\n背景:\n開始画面のカードに「⌘O」を表示するようにした。一方で startOpen の doc は、\n開始画面ではボタンからしか始められないと書いていて、新しい表示と食い違っていた。\n実際には、何も開いていない状態でもメニューから開ける\n（use-document-session の entry テスト「メニューから開くと、ダイアログで選んだ\nファイルが開かれる」）。\n\n採用理由:\nコードは変えない。ボタンがあればボタンを押す、という動きはそのまま正しい。\n直したのは、そうしている理由として書かれていた前提だけ。\n\n影響とトレードオフ:\n振る舞いの変更は無い。\n\n参考:\n- Issue #1062（計画の検証の指摘 2）\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01AXZ39qafTH5FeaDU13UsCW",
+      "files": [
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -111,8 +111,8 @@ export function renderEditorScreen(\n \n /**\n  * 「開く」を始める。\n- * 開始画面が出ている間はボタンから、開いた後は OS のメニューからしか始められないので、\n- * ボタンがあればボタンを、無ければメニューを使う。\n+ * 開始画面ではボタンとメニューのどちらからでも始められ、開いた後はメニューからだけ\n+ * 始められる。ボタンがあればボタンを押し、無ければメニューを使う。\n  */\n export async function startOpen(observer: ScreenObserver): Promise<void> {\n   const button = screen.queryByRole(\"button\", { name: \"開く\" });",
+          "patchLines": 11,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "8d4f734a3f7001ed88cf0fe80543204970d24b18",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-11T07:31:58Z",
+      "subject": "♻️ [Refactoring]: #1062 カードの配色フィールドを *Class に改め、離れた理由を doc に残す",
+      "body": "- CardFace の cardColors / iconColors / descriptionColors / shortcutColors を\n  cardClass / iconClass / descriptionClass / shortcutClass に改めた\n- アイコンの器の span から aria-hidden を外し、svg 側だけに残した\n- StartActions の doc からショートカットの綴りを外し、綴りは CardFace の定数\n  1 箇所で持つようにした\n- CardFace.shortcut の doc に、割り当ての出どころ（menu.rs の CmdOrCtrl+O/N）と、\n  OS ごとに表記を変えないことを書いた\n- OpenCardFace の doc に、UI 案の青から離れた理由と、hover 中のコントラストを\n  受け入れていることを書いた\n- DocumentStart の doc の「UI 案から離れている色」に、2 枚に共通のフォーカス枠を\n  加えた\n\n背景:\n実装の検証（Issue #1062 のコメント「実装の検証（1 段目）と対応」）で採用した\n指摘への対応。どれも 1 ファイルの中の名前・doc・属性で、互いに同じ行に絡むので\n1 コミットにまとめた。挙動は変えていない。\n\n採用理由:\n- *Colors はこのリポジトリで色そのもの（TokenKinds.Colors など）を指す語。\n  中身は状態バリアント付きのクラス文字列なので、既存の *Class の語形に揃えた\n- biome の noSvgWithoutTitle が求めているのは svg 側の aria-hidden。span の\n  中身は svg だけなので、span 側を外しても読み上げは変わらない\n- 割り当ての出どころは Rust 側にしかないので、表示の綴りが別に存在することを\n  doc で示した。OS ごとに表記を変えないという判断は Issue にしか無かったので、\n  コードの側にも残した\n- 元の白文字 on #4db2ff を計算し直すと 2.30:1 だった（Issue 本文は約 2.4:1）。\n  doc には計算した値を書いた\n\n代替案:\n- メニューとフロントで割り当ての表を共有する: 言語をまたぐ仕組みになり、\n  この Issue の規模を超えるので見送った\n- フォーカス枠をデザイン案どおり新規作成だけにする: キーボード操作では開くにも\n  フォーカスが要るので、2 枚とも付けたままにした。開くのカードでも offset 2px の\n  二重線になり、見分けられることを Storybook で確かめた\n\n影響とトレードオフ:\n振る舞いの変更は無い。typecheck / lint / biome / pre-push / vitest 全件が通る。\n\n参考:\n- Issue #1062\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01AXZ39qafTH5FeaDU13UsCW",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 36,
+          "deletions": 27,
+          "patch": "@@ -29,27 +29,37 @@ function commandSourceFailureLabel(source: CommandSource): string {\n   }\n }\n \n-/** 開始画面のカード 1 枚の見た目。綴りと、Tailwind のクラスで書いた配色を持つ。 */\n+/** 開始画面のカード 1 枚の見た目。綴りと、部位ごとの配色を指定する Tailwind のクラスを持つ。 */\n type CardFace = Readonly<{\n   /** カードの名前になる見出し。 */\n   title: string;\n   /** 押すと何が起きるかの 1 行。 */\n   description: string;\n-  /** 同じ操作をメニューから呼ぶショートカットの表記。 */\n+  /**\n+   * 同じ操作をメニューから呼ぶショートカットの表記。\n+   *\n+   * 割り当ての出どころは `src-tauri/src/menu.rs` の `CmdOrCtrl+O` / `CmdOrCtrl+N` で、ここは表示の綴りだけを持つ。\n+   * OS ごとに表記は変えず、コンテキストメニューと同じ ⌘ 表記に揃えている。\n+   */\n   shortcut: string;\n   /** アイコン（viewBox 0 0 24 24）を描く path の `d`。 */\n   iconPaths: readonly string[];\n-  /** カードの枠・文字・地・押せるときの hover の地。 */\n-  cardColors: string;\n-  /** アイコンの地。 */\n-  iconColors: string;\n-  /** 説明の文字色。 */\n-  descriptionColors: string;\n-  /** ショートカットの枠・文字。 */\n-  shortcutColors: string;\n+  /** カードの枠・文字・地と、押せるときの hover の地を指定するクラス。 */\n+  cardClass: string;\n+  /** アイコンの地を指定するクラス。 */\n+  iconClass: string;\n+  /** 説明の文字色を指定するクラス。 */\n+  descriptionClass: string;\n+  /** ショートカットの枠・文字の色を指定するクラス。 */\n+  shortcutClass: string;\n }>;\n \n-/** 開くのカード（プライマリ）。 */\n+/**\n+ * 開くのカード（プライマリ）。\n+ *\n+ * 元の白文字 on `#4db2ff` は約 2.3:1 で 4.5:1 に届かなかったので、UI 案の青の組み合わせから離れた（#1062）。\n+ * hover 中の `#0a74c9` on `#e7f1fa` も約 4.2:1 で届かないが、押す直前の一時的な状態として受け入れている（#1062）。\n+ */\n const OpenCardFace = {\n   title: \"開く\",\n   description: \"既存の .dcmp を選ぶ\",\n@@ -57,11 +67,11 @@ const OpenCardFace = {\n   iconPaths: [\n     \"M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\",\n   ],\n-  cardColors:\n+  cardClass:\n     \"border-[#0a74c9] bg-[#ffffff] text-[#0a74c9] enabled:hover:bg-[#e7f1fa]\",\n-  iconColors: \"bg-[#e7f1fa]\",\n-  descriptionColors: \"text-[#4a6a85]\",\n-  shortcutColors: \"border-[#b9d6ef] text-[#0a74c9]\",\n+  iconClass: \"bg-[#e7f1fa]\",\n+  descriptionClass: \"text-[#4a6a85]\",\n+  shortcutClass: \"border-[#b9d6ef] text-[#0a74c9]\",\n } as const satisfies CardFace;\n \n /** 新規作成のカード。 */\n@@ -70,11 +80,11 @@ const CreateCardFace = {\n   description: \"空のドキュメントから始める\",\n   shortcut: \"⌘N\",\n   iconPaths: [\"M12 5v14\", \"M5 12h14\"],\n-  cardColors:\n+  cardClass:\n     \"border-[#d4d4d4] bg-[#ffffff] text-[#1e1e1e] enabled:hover:bg-[#f5f5f5]\",\n-  iconColors: \"bg-[#f0f0f0]\",\n-  descriptionColors: \"text-[#767676]\",\n-  shortcutColors: \"border-[#e6e6e6] text-[#767676]\",\n+  iconClass: \"bg-[#f0f0f0]\",\n+  descriptionClass: \"text-[#767676]\",\n+  shortcutClass: \"border-[#e6e6e6] text-[#767676]\",\n } as const satisfies CardFace;\n \n /**\n@@ -108,11 +118,10 @@ function ActionCard({\n       disabled={disabled}\n       aria-labelledby={titleId}\n       aria-describedby={`${descriptionId} ${shortcutId}`}\n-      className={`flex flex-col items-start gap-[10px] rounded-[10px] border p-4 text-left focus-visible:outline-2 focus-visible:outline-[#0a74c9] focus-visible:outline-offset-2 disabled:cursor-default disabled:opacity-50 ${face.cardColors}`}\n+      className={`flex flex-col items-start gap-[10px] rounded-[10px] border p-4 text-left focus-visible:outline-2 focus-visible:outline-[#0a74c9] focus-visible:outline-offset-2 disabled:cursor-default disabled:opacity-50 ${face.cardClass}`}\n     >\n       <span\n-        aria-hidden=\"true\"\n-        className={`flex size-8 items-center justify-center rounded-[8px] ${face.iconColors}`}\n+        className={`flex size-8 items-center justify-center rounded-[8px] ${face.iconClass}`}\n       >\n         <svg\n           aria-hidden=\"true\"\n@@ -135,14 +144,14 @@ function ActionCard({\n         </span>\n         <span\n           id={descriptionId}\n-          className={`text-[12px] ${face.descriptionColors}`}\n+          className={`text-[12px] ${face.descriptionClass}`}\n         >\n           {face.description}\n         </span>\n       </span>\n       <span\n         id={shortcutId}\n-        className={`self-end rounded-[4px] border px-[6px] py-[1px] text-[11px] ${face.shortcutColors}`}\n+        className={`self-end rounded-[4px] border px-[6px] py-[1px] text-[11px] ${face.shortcutClass}`}\n       >\n         {face.shortcut}\n       </span>\n@@ -153,7 +162,7 @@ function ActionCard({\n /**\n  * ドキュメントを開く / 作る導線。\n  *\n- * 開いた後はメニュー（⌘O / ⌘N）へ移るので、ボタンとして出るのはこの画面だけ\n+ * 開いた後はメニューへ移るので、ボタンとして出るのはこの画面だけ\n  * （`src-tauri/src/menu.rs`）。\n  *\n  * @param actions 開く / 作るを始める手続き\n@@ -264,8 +273,8 @@ function RecentFileList({\n  * 開く前の画面を描いていない（`open` / `recent` / `welcome` はいずれも 0 件）。そのため見せ\n  * 方はここで決めている。画面の数と名前は `rules/ui-verification.md` が持つ。\n  *\n- * 開くのカードの青系の配色（`OpenCardFace`）は UI 案の語彙に無く、意図して離れている\n- * （#1062）。それ以外の色は UI 案の語彙から採っている。\n+ * 開くのカードの青系の配色（`OpenCardFace`）と、2 枚に共通のフォーカス枠の青（`#0a74c9`）は\n+ * UI 案の語彙に無く、意図して離れている（#1062）。それ以外の色は UI 案の語彙から採っている。\n  *\n  * @param attempt 直近の開く操作がどこまで進んだか\n  * @param actions 開く / 作るを始める手続き",
+          "patchLines": 132,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "23b3a7e37661a7dc01288fc313102feb4cc4957a",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-11T07:40:30Z",
+      "subject": "🧪 [Tests]: #1062 開けなかった後も開く / 新規作成のカードを押せることをテストで守る",
+      "body": "- 開けなかった状態（failed）で、開くボタンを押せることを確かめるテストを足した\n- 同じ状態で、新規作成ボタンを押せることを確かめるテストを足した\n\n背景:\ntest-reviewer の実測で、押せない条件 disabled={isOpening} を「idle 以外は\n押せない」に緩めても、174 件すべてが通ることが分かった。OpenAttempt は\nidle / opening / failed の 3 値だが、テストが確かめていたのは idle で押せる\nことと opening で押せないことだけで、failed は誰も見ていなかった。この PR は\n「開く操作の最中は 2 枚とも押せない」を主張しているので、「最中だけ」の側も\n守る必要がある。\n\n採用理由:\n失敗した状態を描く観点のファイルなので、failure カテゴリに置いた。失敗状態は\n既存の ioFailure で作り、assert は normal の「押せる」テストと同じ書き方に\n揃えた。押せない条件を idle 以外に緩めると、足した 2 件だけが落ちることを\n実装を壊して確かめた。\n\n代替案:\n- 失敗の種類（io / 解釈できない）ごとにテストを並べる: 押せるかどうかは\n  失敗の種類に依らず isOpening だけで決まるので、1 種類で足りる\n\n影響とトレードオフ:\n振る舞いの変更は無い。開けなかった後に開始画面から抜け出せなくなる退行を\n検出できるようになる。\n\n参考:\n- Issue #1062（実装の検証 2 段目の指摘）\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01AXZ39qafTH5FeaDU13UsCW",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.failure.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 22,
+          "deletions": 0,
+          "patch": "@@ -142,3 +142,25 @@ test(\"読み込んでいる間は、その最中であることが分かる\", ()\n \n   expect(screen.getByText(\"ファイルを読み込んでいます…\")).toBeDefined();\n });\n+\n+test(\"開けなかった後も、開くボタンを押せる\", () => {\n+  renderDocumentStart({\n+    attempt: ioFailure(\"missing\"),\n+    renderErrors: renderPlaceholder,\n+  });\n+\n+  expect(\n+    screen.getByRole(\"button\", { name: \"開く\" }).hasAttribute(\"disabled\"),\n+  ).toBe(false);\n+});\n+\n+test(\"開けなかった後も、新規作成ボタンを押せる\", () => {\n+  renderDocumentStart({\n+    attempt: ioFailure(\"missing\"),\n+    renderErrors: renderPlaceholder,\n+  });\n+\n+  expect(\n+    screen.getByRole(\"button\", { name: \"新規作成\" }).hasAttribute(\"disabled\"),\n+  ).toBe(false);\n+});",
+          "patchLines": 26,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.entry.test.tsx",
+      "to": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.shortcut.test.tsx",
+      "to": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.sync.test.tsx",
+      "to": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.tab-shortcut.test.tsx",
+      "to": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/components/__tests__/row-drag.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/domains/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/features/editor/__tests__/pane-regions.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/features/editor/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/features/editor/components/editor-screen/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/__tests__/document-change.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/app-menu/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/app-menu/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/app-state-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/clock/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/document-dialog/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/document-json/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/file-drop/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.edge.test.tsx",
+      "to": "src/features/editor/features/document-start/components/document-start/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.failure.test.tsx",
+      "to": "src/domains/session/document-access-failure/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.failure.test.tsx",
+      "to": "src/domains/session/document-error/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.failure.test.tsx",
+      "to": "src/features/editor/features/document-start/components/document-start/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.failure.test.tsx",
+      "to": "src/features/editor/features/document-start/domains/document-session/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.normal.test.tsx",
+      "to": "src/features/editor/features/document-start/components/document-start/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/__tests__/setup.tsx",
+      "to": "src/domains/session/document-error/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/__tests__/setup.tsx",
+      "to": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/__tests__/setup.tsx",
+      "to": "src/features/editor/features/document-start/domains/document-session/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/__tests__/setup.tsx",
+      "to": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/__tests__/setup.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/index.stories.tsx",
+      "to": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "to": "src/features/editor/features/document-start/components/document-open-failure/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "to": "src/features/editor/features/document-start/domains/document-session/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "to": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "to": "src/utils/FilePath.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/index.ts",
+      "to": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "status": "kept"
+    }
+  ]
+}
