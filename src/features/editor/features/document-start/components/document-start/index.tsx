@@ -29,27 +29,37 @@ function commandSourceFailureLabel(source: CommandSource): string {
   }
 }
 
-/** 開始画面のカード 1 枚の見た目。綴りと、Tailwind のクラスで書いた配色を持つ。 */
+/** 開始画面のカード 1 枚の見た目。綴りと、部位ごとの配色を指定する Tailwind のクラスを持つ。 */
 type CardFace = Readonly<{
   /** カードの名前になる見出し。 */
   title: string;
   /** 押すと何が起きるかの 1 行。 */
   description: string;
-  /** 同じ操作をメニューから呼ぶショートカットの表記。 */
+  /**
+   * 同じ操作をメニューから呼ぶショートカットの表記。
+   *
+   * 割り当ての出どころは `src-tauri/src/menu.rs` の `CmdOrCtrl+O` / `CmdOrCtrl+N` で、ここは表示の綴りだけを持つ。
+   * OS ごとに表記は変えず、コンテキストメニューと同じ ⌘ 表記に揃えている。
+   */
   shortcut: string;
   /** アイコン（viewBox 0 0 24 24）を描く path の `d`。 */
   iconPaths: readonly string[];
-  /** カードの枠・文字・地・押せるときの hover の地。 */
-  cardColors: string;
-  /** アイコンの地。 */
-  iconColors: string;
-  /** 説明の文字色。 */
-  descriptionColors: string;
-  /** ショートカットの枠・文字。 */
-  shortcutColors: string;
+  /** カードの枠・文字・地と、押せるときの hover の地を指定するクラス。 */
+  cardClass: string;
+  /** アイコンの地を指定するクラス。 */
+  iconClass: string;
+  /** 説明の文字色を指定するクラス。 */
+  descriptionClass: string;
+  /** ショートカットの枠・文字の色を指定するクラス。 */
+  shortcutClass: string;
 }>;
 
-/** 開くのカード（プライマリ）。 */
+/**
+ * 開くのカード（プライマリ）。
+ *
+ * 元の白文字 on `#4db2ff` は約 2.3:1 で 4.5:1 に届かなかったので、UI 案の青の組み合わせから離れた（#1062）。
+ * hover 中の `#0a74c9` on `#e7f1fa` も約 4.2:1 で届かないが、押す直前の一時的な状態として受け入れている（#1062）。
+ */
 const OpenCardFace = {
   title: "開く",
   description: "既存の .dcmp を選ぶ",
@@ -57,11 +67,11 @@ const OpenCardFace = {
   iconPaths: [
     "M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z",
   ],
-  cardColors:
+  cardClass:
     "border-[#0a74c9] bg-[#ffffff] text-[#0a74c9] enabled:hover:bg-[#e7f1fa]",
-  iconColors: "bg-[#e7f1fa]",
-  descriptionColors: "text-[#4a6a85]",
-  shortcutColors: "border-[#b9d6ef] text-[#0a74c9]",
+  iconClass: "bg-[#e7f1fa]",
+  descriptionClass: "text-[#4a6a85]",
+  shortcutClass: "border-[#b9d6ef] text-[#0a74c9]",
 } as const satisfies CardFace;
 
 /** 新規作成のカード。 */
@@ -70,11 +80,11 @@ const CreateCardFace = {
   description: "空のドキュメントから始める",
   shortcut: "⌘N",
   iconPaths: ["M12 5v14", "M5 12h14"],
-  cardColors:
+  cardClass:
     "border-[#d4d4d4] bg-[#ffffff] text-[#1e1e1e] enabled:hover:bg-[#f5f5f5]",
-  iconColors: "bg-[#f0f0f0]",
-  descriptionColors: "text-[#767676]",
-  shortcutColors: "border-[#e6e6e6] text-[#767676]",
+  iconClass: "bg-[#f0f0f0]",
+  descriptionClass: "text-[#767676]",
+  shortcutClass: "border-[#e6e6e6] text-[#767676]",
 } as const satisfies CardFace;
 
 /**
@@ -108,11 +118,10 @@ function ActionCard({
       disabled={disabled}
       aria-labelledby={titleId}
       aria-describedby={`${descriptionId} ${shortcutId}`}
-      className={`flex flex-col items-start gap-[10px] rounded-[10px] border p-4 text-left focus-visible:outline-2 focus-visible:outline-[#0a74c9] focus-visible:outline-offset-2 disabled:cursor-default disabled:opacity-50 ${face.cardColors}`}
+      className={`flex flex-col items-start gap-[10px] rounded-[10px] border p-4 text-left focus-visible:outline-2 focus-visible:outline-[#0a74c9] focus-visible:outline-offset-2 disabled:cursor-default disabled:opacity-50 ${face.cardClass}`}
     >
       <span
-        aria-hidden="true"
-        className={`flex size-8 items-center justify-center rounded-[8px] ${face.iconColors}`}
+        className={`flex size-8 items-center justify-center rounded-[8px] ${face.iconClass}`}
       >
         <svg
           aria-hidden="true"
@@ -135,14 +144,14 @@ function ActionCard({
         </span>
         <span
           id={descriptionId}
-          className={`text-[12px] ${face.descriptionColors}`}
+          className={`text-[12px] ${face.descriptionClass}`}
         >
           {face.description}
         </span>
       </span>
       <span
         id={shortcutId}
-        className={`self-end rounded-[4px] border px-[6px] py-[1px] text-[11px] ${face.shortcutColors}`}
+        className={`self-end rounded-[4px] border px-[6px] py-[1px] text-[11px] ${face.shortcutClass}`}
       >
         {face.shortcut}
       </span>
@@ -153,7 +162,7 @@ function ActionCard({
 /**
  * ドキュメントを開く / 作る導線。
  *
- * 開いた後はメニュー（⌘O / ⌘N）へ移るので、ボタンとして出るのはこの画面だけ
+ * 開いた後はメニューへ移るので、ボタンとして出るのはこの画面だけ
  * （`src-tauri/src/menu.rs`）。
  *
  * @param actions 開く / 作るを始める手続き
@@ -264,8 +273,8 @@ function RecentFileList({
  * 開く前の画面を描いていない（`open` / `recent` / `welcome` はいずれも 0 件）。そのため見せ
  * 方はここで決めている。画面の数と名前は `rules/ui-verification.md` が持つ。
  *
- * 開くのカードの青系の配色（`OpenCardFace`）は UI 案の語彙に無く、意図して離れている
- * （#1062）。それ以外の色は UI 案の語彙から採っている。
+ * 開くのカードの青系の配色（`OpenCardFace`）と、2 枚に共通のフォーカス枠の青（`#0a74c9`）は
+ * UI 案の語彙に無く、意図して離れている（#1062）。それ以外の色は UI 案の語彙から採っている。
  *
  * @param attempt 直近の開く操作がどこまで進んだか
  * @param actions 開く / 作るを始める手続き
