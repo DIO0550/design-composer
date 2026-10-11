@@ -447,8 +447,8 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
           return;
         }
         /*
-         * 閉じられなくても画面には出さない。開始画面には失われるものが無く、押し直すか
-         * Shift+⌘W（ウィンドウを閉じる）で閉じられる。
+         * 閉じられなかったことは画面に出さない。メニューの選択には結果を返す先が無く、
+         * Shift+⌘W（menu.rs）も同じく失敗を捨てている。
          */
         void ports.appWindow.close();
       },
