@@ -308,3 +308,67 @@ test("逆転のエラーの本文は、最小と最大の両方の prop 名を�
     }),
   ]);
 });
+
+test("同じノードのスキーマ違反と最小 / 最大の逆転は、スキーマ違反が先に並ぶ", () => {
+  const document = documentWithBox({
+    bogus: 1,
+    widthMode: "hug",
+    minWidth: 500,
+    maxWidth: 100,
+  });
+
+  expect(DesignDocument.collectErrors(document)).toEqual([
+    expect.objectContaining({
+      kind: "unknown-prop",
+      nodeName: "target",
+      prop: "bogus",
+    }),
+    expect.objectContaining({
+      kind: "inverted-size-limits",
+      nodeName: "target",
+      prop: "maxWidth",
+    }),
+  ]);
+});
+
+test("インスタンスの overrides で生じる逆転はエラーにしない", () => {
+  const document = DesignDocument.create({
+    components: {
+      card: {
+        type: "Box",
+        children: [
+          {
+            name: "card-body",
+            type: "Box",
+            props: { minWidth: 200, maxWidth: 300 },
+          },
+          {
+            name: "card-broken",
+            type: "Box",
+            props: { minWidth: 500, maxWidth: 100 },
+          },
+        ],
+        publicProps: { limit: { node: "card-body", prop: "maxWidth" } },
+      },
+    },
+    artboards: [
+      {
+        name: "screen",
+        width: 375,
+        height: 812,
+        props: { layout: "column" },
+        children: [
+          { name: "instance", ref: "card", overrides: { limit: 100 } },
+        ],
+      },
+    ],
+  });
+
+  expect(DesignDocument.collectErrors(document)).toEqual([
+    expect.objectContaining({
+      kind: "inverted-size-limits",
+      nodeName: "card-broken",
+      prop: "maxWidth",
+    }),
+  ]);
+});
