@@ -1,6 +1,35 @@
 import { expect, test } from "vitest";
-import type { Props } from "@/domains/dcmp/node";
+import type { Node, Props } from "@/domains/dcmp/node";
+import type { TokenSet } from "@/domains/dcmp/token";
 import { DesignDocument, DocumentTemplate } from "../index";
+
+/**
+ * artboard を 1 つだけ持つドキュメント。
+ *
+ * @param artboard その artboard に設定する props と子の並び。`tokens` を渡せばドキュメントの
+ *   トークンにする
+ * @returns その artboard を持つドキュメント
+ */
+function documentWithArtboard(
+  artboard: Readonly<{
+    props: Props;
+    children: readonly Node[];
+    tokens?: TokenSet;
+  }>,
+): DesignDocument {
+  return DesignDocument.create({
+    ...(artboard.tokens !== undefined ? { tokens: artboard.tokens } : {}),
+    artboards: [
+      {
+        name: "screen",
+        width: 375,
+        height: 812,
+        props: artboard.props,
+        children: artboard.children,
+      },
+    ],
+  });
+}
 
 /**
  * 子を縦に並べる artboard の直下に Box を 1 つ持つドキュメント。
@@ -9,16 +38,9 @@ import { DesignDocument, DocumentTemplate } from "../index";
  * @returns その Box を持つドキュメント
  */
 function documentWithBox(props: Props): DesignDocument {
-  return DesignDocument.create({
-    artboards: [
-      {
-        name: "screen",
-        width: 375,
-        height: 812,
-        props: { layout: "column" },
-        children: [{ name: "target", type: "Box", props }],
-      },
-    ],
+  return documentWithArtboard({
+    props: { layout: "column" },
+    children: [{ name: "target", type: "Box", props }],
   });
 }
 
@@ -91,30 +113,23 @@ test("widthMode を書いていない Box でも、既定の hug として逆転
 });
 
 test("fixed の軸に書いた逆転はエラーにならない", () => {
-  const document = DesignDocument.create({
-    artboards: [
+  const document = documentWithArtboard({
+    props: { layout: "column" },
+    children: [
       {
-        name: "screen",
-        width: 375,
-        height: 812,
-        props: { layout: "column" },
-        children: [
-          {
-            name: "fixed-box",
-            type: "Box",
-            props: {
-              widthMode: "fixed",
-              width: 120,
-              minWidth: 500,
-              maxWidth: 100,
-            },
-          },
-          {
-            name: "hug-box",
-            type: "Box",
-            props: { widthMode: "hug", minWidth: 500, maxWidth: 100 },
-          },
-        ],
+        name: "fixed-box",
+        type: "Box",
+        props: {
+          widthMode: "fixed",
+          width: 120,
+          minWidth: 500,
+          maxWidth: 100,
+        },
+      },
+      {
+        name: "hug-box",
+        type: "Box",
+        props: { widthMode: "hug", minWidth: 500, maxWidth: 100 },
       },
     ],
   });
@@ -204,54 +219,40 @@ test("部品のルートの逆転は、その部品の子孫のエラーより�
   ]);
 });
 
-test("自由配置の親の下の fill に逆転も書くと、fill のエラーの後ろに並ぶ", () => {
-  const document = DesignDocument.create({
-    artboards: [
+test("自由配置の親の下の fill に逆転も書くと、fill のエラーの前に並ぶ", () => {
+  const document = documentWithArtboard({
+    props: { layout: "free" },
+    children: [
       {
-        name: "screen",
-        width: 375,
-        height: 812,
-        props: { layout: "free" },
-        children: [
-          {
-            name: "target",
-            type: "Box",
-            props: { widthMode: "fill", minWidth: 500, maxWidth: 100 },
-          },
-        ],
+        name: "target",
+        type: "Box",
+        props: { widthMode: "fill", minWidth: 500, maxWidth: 100 },
       },
     ],
   });
 
   expect(DesignDocument.collectErrors(document)).toEqual([
     expect.objectContaining({
-      kind: "fill-in-free-parent",
-      nodeName: "target",
-      prop: "widthMode",
-    }),
-    expect.objectContaining({
       kind: "inverted-size-limits",
       nodeName: "target",
       prop: "maxWidth",
+    }),
+    expect.objectContaining({
+      kind: "fill-in-free-parent",
+      nodeName: "target",
+      prop: "widthMode",
     }),
   ]);
 });
 
 test("artboard の props に逆転を書いてもエラーにならない", () => {
-  const document = DesignDocument.create({
-    artboards: [
+  const document = documentWithArtboard({
+    props: { layout: "column", minWidth: 500, maxWidth: 100 },
+    children: [
       {
-        name: "screen",
-        width: 375,
-        height: 812,
-        props: { layout: "column", minWidth: 500, maxWidth: 100 },
-        children: [
-          {
-            name: "target",
-            type: "Box",
-            props: { widthMode: "hug", minWidth: 500, maxWidth: 100 },
-          },
-        ],
+        name: "target",
+        type: "Box",
+        props: { widthMode: "hug", minWidth: 500, maxWidth: 100 },
       },
     ],
   });
@@ -266,21 +267,14 @@ test("artboard の props に逆転を書いてもエラーにならない", () =
 });
 
 test("下限・上限を持たない Ellipse に逆転を書くと、未知の prop だけが出る", () => {
-  const document = DesignDocument.create({
+  const document = documentWithArtboard({
     tokens: DocumentTemplate.Default.tokens,
-    artboards: [
+    props: { layout: "column" },
+    children: [
       {
-        name: "screen",
-        width: 375,
-        height: 812,
-        props: { layout: "column" },
-        children: [
-          {
-            name: "target",
-            type: "Ellipse",
-            props: { widthMode: "fill", minWidth: 500, maxWidth: 100 },
-          },
-        ],
+        name: "target",
+        type: "Ellipse",
+        props: { widthMode: "fill", minWidth: 500, maxWidth: 100 },
       },
     ],
   });
