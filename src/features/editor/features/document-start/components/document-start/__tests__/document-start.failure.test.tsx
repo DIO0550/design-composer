@@ -142,3 +142,25 @@ test("読み込んでいる間は、その最中であることが分かる", ()
 
   expect(screen.getByText("ファイルを読み込んでいます…")).toBeDefined();
 });
+
+test("開けなかった後も、開くボタンを押せる", () => {
+  renderDocumentStart({
+    attempt: ioFailure("missing"),
+    renderErrors: renderPlaceholder,
+  });
+
+  expect(
+    screen.getByRole("button", { name: "開く" }).hasAttribute("disabled"),
+  ).toBe(false);
+});
+
+test("開けなかった後も、新規作成ボタンを押せる", () => {
+  renderDocumentStart({
+    attempt: ioFailure("missing"),
+    renderErrors: renderPlaceholder,
+  });
+
+  expect(
+    screen.getByRole("button", { name: "新規作成" }).hasAttribute("disabled"),
+  ).toBe(false);
+});
