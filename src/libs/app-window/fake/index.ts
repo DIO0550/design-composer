@@ -12,7 +12,7 @@ export type AppWindowFake = Readonly<{
   /** 代役のウィンドウに向いた `AppWindow`。 */
   appWindow: AppWindow;
   /** ウィンドウが閉じたか。 */
-  windowClosed(): boolean;
+  isWindowClosed(): boolean;
   /** ウィンドウを閉じるのを拒むようにする。 */
   denyClose(): void;
 }>;
@@ -51,7 +51,7 @@ export const AppWindowFake = {
     return {
       appWindow: AppWindow.create(tauriIpc),
 
-      windowClosed() {
+      isWindowClosed() {
         return closed;
       },
 

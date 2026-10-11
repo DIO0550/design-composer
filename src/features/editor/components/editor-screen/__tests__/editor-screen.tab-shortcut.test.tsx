@@ -155,7 +155,7 @@ test("開始画面でメニューのタブを閉じるを選ぶと、ウィン�
 
   await observer.chooseMenu(AppMenuCommands.CloseTab);
 
-  expect(observer.windowClosed()).toBe(true);
+  expect(observer.isWindowClosed()).toBe(true);
 });
 
 /*
@@ -172,7 +172,7 @@ test("新規作成の書き出しの最中にメニューのタブを閉じる�
 
   await observer.chooseMenu(AppMenuCommands.CloseTab);
 
-  expect(observer.windowClosed()).toBe(true);
+  expect(observer.isWindowClosed()).toBe(true);
   release();
 });
 
@@ -185,7 +185,7 @@ test("開けずに終わった開始画面でメニューのタブを閉じる�
 
   await observer.chooseMenu(AppMenuCommands.CloseTab);
 
-  expect(observer.windowClosed()).toBe(true);
+  expect(observer.isWindowClosed()).toBe(true);
 });
 
 test("最後のタブでメニューのタブを閉じるを選んでも、ウィンドウは閉じない", async () => {
@@ -197,5 +197,5 @@ test("最後のタブでメニューのタブを閉じるを選んでも、ウ�
 
   await observer.chooseMenu(AppMenuCommands.CloseTab);
 
-  expect(observer.windowClosed()).toBe(false);
+  expect(observer.isWindowClosed()).toBe(false);
 });

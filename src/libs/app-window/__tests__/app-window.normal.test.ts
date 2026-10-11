@@ -6,5 +6,5 @@ test("閉じると、ウィンドウが閉じる", async () => {
 
   await fake.appWindow.close();
 
-  expect(fake.windowClosed()).toBe(true);
+  expect(fake.isWindowClosed()).toBe(true);
 });

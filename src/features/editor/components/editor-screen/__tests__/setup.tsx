@@ -54,7 +54,7 @@ export type ScreenObserver = Readonly<{
   /** ウィンドウへファイルを落とす。 */
   dropFiles: (paths: readonly string[]) => Promise<void>;
   /** ウィンドウが閉じたか。 */
-  windowClosed: () => boolean;
+  isWindowClosed: () => boolean;
 }>;
 
 /**
@@ -111,7 +111,7 @@ export function renderEditorScreen(
         dropFake.dropFiles(paths);
       });
     },
-    windowClosed: appWindowFake.windowClosed,
+    isWindowClosed: appWindowFake.isWindowClosed,
   };
 }
 
