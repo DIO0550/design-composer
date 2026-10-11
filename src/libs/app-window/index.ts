@@ -20,14 +20,12 @@ export const AppWindow = {
    * 失敗は Rust の `tauri::Error` もコマンドに届く前の Tauri 自身の失敗も文字列で reject
    * されるので、形で見分けずに原文へ詰め替える。
    *
-   * IPC を引数で受けずに中で作るのは、`TauriIpc` を公開 API に出さないため。
-   * `TauriIpc.create()` は状態を持たないので、別に作っても届く先は同じ webview になる。
-   *
-   * @returns 本物の Tauri のウィンドウに向いた口
+   * @param tauriIpc コマンドを呼ぶ IPC
+   * @returns `tauriIpc` を通してウィンドウを操作する口
    */
-  create(): AppWindow {
+  create(tauriIpc: TauriIpc): AppWindow {
     const call = TauriIpc.caller<AppWindowCommand, AppWindowError>(
-      TauriIpc.create(),
+      tauriIpc,
       (reason) => ({ message: String(reason) }),
     );
 
