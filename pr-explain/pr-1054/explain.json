@@ -1,0 +1,1240 @@
+{
+  "version": 1,
+  "pr": 1054,
+  "sha": "3a151010ec2c972f198bcc2ab4c3bd93c49def97",
+  "issue": 632,
+  "overview": {
+    "title": "最小 / 最大の逆転(`minWidth` > `maxWidth`)をバリデーションエラー `inverted-size-limits` にする",
+    "lead": "`.dcmp` に最小が最大を超える指定を書くと、軸ごとに 1 件、`max*` の側を指すエラーがエラー一覧に出る。描画は変えず、CSS どおり最小が勝つ。",
+    "before": [
+      {
+        "text": "`minWidth: 500, maxWidth: 100` のような逆転を書いてもエラーにならず、どちらが効いているかはファイルを見ても分からなかった"
+      },
+      {
+        "text": "docs/03 は前後関係を「検出しない」と書いていた"
+      }
+    ],
+    "after": [
+      {
+        "text": "`hug` / `fill` の軸で最小 > 最大なら、その軸の `maxWidth` / `maxHeight` を指す `inverted-size-limits` が 1 件出る",
+        "message": "inverted-axes"
+      },
+      {
+        "text": "`widthMode` を書いていない Box も、既定の `hug` として逆転を見る(既定を解決してから判定する)",
+        "message": "resolve"
+      },
+      {
+        "text": "最小 = 最大、片方だけ書いたとき、数値でない値、別の軸どうし(幅の最小と高さの最大)は逆転にならない"
+      },
+      {
+        "text": "`fixed` の軸に書いた最小 / 最大は今までどおり読み捨て、前後関係も見ない"
+      },
+      {
+        "text": "部品のルートと子孫は検出する。artboard 自身の props と、インスタンスの overrides で生じる逆転は見ない",
+        "message": "collect-component"
+      },
+      {
+        "text": "外部の変更で逆転が届くと再読み込みが拒み、最後に正常だった描画を保つ。アプリ内の編集で逆転させたときは止めずにエラー一覧に出す"
+      },
+      {
+        "text": "描画は変わらない。逆転していても CSS では最小が勝つ",
+        "message": "declarations"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "解決済みであることを型で求めていない",
+        "text": "`Size.collectInvertedLimitAxes` は既定を解決した props を前提にするが、`ResolvedProps` 型で要求すると import が循環するので doc で求めている。守っているのは検証側のテスト「widthMode を書いていない Box」",
+        "go": {
+          "kind": "message",
+          "id": "inverted-axes"
+        }
+      },
+      {
+        "title": "1 ノード内のエラーの並びが変わった",
+        "text": "指摘の反映で検査を 1 関数にまとめた結果、子孫のノード内は「スキーマ → 逆転 → 子を並べない親の下の fill」の順になった(計画では fill の後ろ)。docs/03 は並びを決めていない",
+        "go": {
+          "kind": "file",
+          "path": "src/domains/dcmp/design-document/validation/index.ts"
+        }
+      },
+      {
+        "title": "artboard と overrides は対象外",
+        "text": "artboard 自身は `fixed` 固定で描画に効かず、Box として解決すると誤検出する。overrides は定義時点の props だけを見る既存の方針に従う",
+        "go": {
+          "kind": "flow",
+          "id": "validate-artboard"
+        }
+      },
+      {
+        "title": "判定の帰属",
+        "text": "比較は下限と上限の両方を不在込みで持つ `SizeLimits`、`fixed` を外す軸の走査は `Size` に置いた",
+        "go": {
+          "kind": "feature",
+          "id": "judge"
+        }
+      },
+      {
+        "title": "仕様書の記述",
+        "text": "サイズ指定の原則・バリデーション仕様・開く時の表の 3 か所を直した",
+        "go": {
+          "kind": "layer",
+          "layer": "docs"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "judge",
+      "label": "逆転の判定",
+      "role": "1 ノードの props から、最小が最大を超えている軸を答える"
+    },
+    {
+      "id": "report",
+      "label": "逆転の報告",
+      "role": "ドキュメントの検証で、逆転した軸を `max*` を指すエラーにして一覧へ並べる"
+    },
+    {
+      "id": "render",
+      "label": "描画",
+      "role": "props から CSS の宣言を作る。この PR では変えておらず、逆転しても最小が勝つ"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "domains / dcmp",
+      "role": "逆転の判定(サイズ)と、それをエラーにする横断の検証を足した"
+    },
+    {
+      "layer": "domains / compiled",
+      "role": "描画用の宣言を作る側。変更は無く、逆転しても CSS どおり最小が勝つことの参照先"
+    },
+    {
+      "layer": "docs",
+      "role": "前後関係を「検出しない」から「バリデーションエラーにする」へ直した"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "src/domains/dcmp/size/index.ts",
+      "name": "サイズ",
+      "role": "軸ごとのモードと最小 / 最大を props から読み、判定する",
+      "feature": "judge",
+      "change": "`SizeLimits.isInverted` と `Size.collectInvertedLimitAxes` を足し、`Size.limitProps` を公開した。軸の絞り込みを `collectAxesWhere` 1 つにまとめた"
+    },
+    {
+      "path": "src/domains/dcmp/design-document/validation/index.ts",
+      "name": "横断の検証",
+      "role": "部品と artboard ごとに、ノードの props のエラーを集める",
+      "feature": "report",
+      "change": "エラー種別 `inverted-size-limits` を足し、1 ノード分の検査(`collectTypedPropErrors`)を「未知の型 → スキーマ照合 → 逆転」にした"
+    },
+    {
+      "path": "src/domains/dcmp/design-document/index.ts",
+      "name": "ドキュメント",
+      "role": "`DesignDocument.collectErrors` で部品と artboard の検証を取りまとめる",
+      "feature": "report"
+    },
+    {
+      "path": "src/domains/dcmp/resolved-props/index.ts",
+      "name": "解決済みの props",
+      "role": "スキーマの既定を埋めた props を作る。スキーマに無い prop は落とす",
+      "feature": "report"
+    },
+    {
+      "path": "src/domains/dcmp/layout/index.ts",
+      "name": "配置モード",
+      "role": "子を並べない親の下の `fill` の軸を答える",
+      "feature": "report"
+    },
+    {
+      "path": "src/domains/compiled/compiled-element/index.ts",
+      "name": "描画用の要素",
+      "role": "サイズの宣言(`min-width` / `max-width` を含む)を CSS へ出す",
+      "feature": "render"
+    },
+    {
+      "path": "docs/03-schema.md",
+      "name": "スキーマ仕様",
+      "role": "サイズ指定の原則とバリデーション仕様",
+      "change": "前後関係の扱い・逆転の箇条・開く時の表を直した",
+      "graph": false
+    },
+    {
+      "path": "src/domains/dcmp/size/__tests__/size.inverted-limits.test.ts",
+      "name": "逆転の判定のテスト",
+      "role": "`Size.collectInvertedLimitAxes` の仕様",
+      "feature": "judge",
+      "change": "新しく作った",
+      "graph": false
+    },
+    {
+      "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+      "name": "逆転の検証のテスト",
+      "role": "`DesignDocument.collectErrors` が出す逆転のエラーの仕様",
+      "feature": "report",
+      "change": "新しく作った",
+      "graph": false
+    }
+  ],
+  "messages": [
+    {
+      "id": "collect-component",
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/design-document/validation/index.ts",
+      "kind": "qry",
+      "name": "部品のエラーを集める",
+      "code": "collectComponentErrors(context, name, component)",
+      "via": "call",
+      "payload": "部品名と部品の定義",
+      "returns": "ルートの props・子孫・宣言名・binding・参照のエラー。ルートと子孫に逆転があれば `inverted-size-limits` を含む"
+    },
+    {
+      "id": "collect-artboard",
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/design-document/validation/index.ts",
+      "kind": "qry",
+      "name": "artboard のエラーを集める",
+      "code": "collectArtboardErrors(context, artboard)",
+      "via": "call",
+      "payload": "artboard 1 件",
+      "returns": "artboard の props・子孫・参照のエラー。artboard 自身の逆転は見ない"
+    },
+    {
+      "id": "resolve",
+      "from": "src/domains/dcmp/design-document/validation/index.ts",
+      "to": "src/domains/dcmp/resolved-props/index.ts",
+      "kind": "qry",
+      "name": "既定を解決する",
+      "code": "ResolvedProps.resolve(type, props)",
+      "via": "call",
+      "payload": "プリミティブの型と、ノードに書いた props",
+      "returns": "既定(Box なら `widthMode: hug`)を埋め、スキーマに無い prop を落とした props",
+      "status": "added"
+    },
+    {
+      "id": "inverted-axes",
+      "from": "src/domains/dcmp/design-document/validation/index.ts",
+      "to": "src/domains/dcmp/size/index.ts",
+      "kind": "qry",
+      "name": "逆転した軸を問う",
+      "code": "Size.collectInvertedLimitAxes(ResolvedProps.resolve(type, props))",
+      "via": "call",
+      "payload": "既定を解決した props",
+      "returns": "`hug` / `fill` で最小 > 最大の軸を width → height の順で",
+      "status": "added"
+    },
+    {
+      "id": "limit-props",
+      "from": "src/domains/dcmp/design-document/validation/index.ts",
+      "to": "src/domains/dcmp/size/index.ts",
+      "kind": "qry",
+      "name": "最小と最大の prop 名を引く",
+      "code": "Size.limitProps(axis)",
+      "via": "call",
+      "payload": "軸",
+      "returns": "`{ min, max }` の prop 名。エラーの `prop` と本文に使う",
+      "status": "added"
+    },
+    {
+      "id": "fill-in-free-parent",
+      "from": "src/domains/dcmp/design-document/validation/index.ts",
+      "to": "src/domains/dcmp/layout/index.ts",
+      "kind": "qry",
+      "name": "子を並べない親の下の fill を問う",
+      "code": "Layout.collectFillAxesInFreeParent(parentLayout, props)",
+      "via": "call",
+      "payload": "親の配置モードとノードの props",
+      "returns": "`fill` を書いた軸(親が子を並べるときは空)"
+    },
+    {
+      "id": "fill-axes",
+      "from": "src/domains/dcmp/layout/index.ts",
+      "to": "src/domains/dcmp/size/index.ts",
+      "kind": "qry",
+      "name": "fill の軸を問う",
+      "code": "Size.collectFillAxes(props)",
+      "via": "call",
+      "payload": "ノードの props",
+      "returns": "`fill` の軸。走査は逆転の判定と同じ `collectAxesWhere` に乗った",
+      "status": "changed"
+    },
+    {
+      "id": "declarations",
+      "from": "src/domains/compiled/compiled-element/index.ts",
+      "to": "src/domains/dcmp/size/index.ts",
+      "kind": "qry",
+      "name": "サイズの宣言を作る",
+      "code": "Size.declarationsFromProps(props, axis, flexParentDirection)",
+      "via": "call",
+      "payload": "ノードの props と軸",
+      "returns": "`width` / `min-width` / `max-width` などの宣言。逆転していてもそのまま出し、CSS で最小が勝つ"
+    }
+  ],
+  "flows": [
+    {
+      "id": "validate-component",
+      "label": "部品の定義を検証したとき",
+      "steps": [
+        "collect-component",
+        "resolve",
+        "inverted-axes",
+        "limit-props",
+        "fill-in-free-parent",
+        "fill-axes"
+      ]
+    },
+    {
+      "id": "validate-artboard",
+      "label": "画面構造を検証したとき",
+      "steps": [
+        "collect-artboard",
+        "resolve",
+        "inverted-axes",
+        "limit-props",
+        "fill-in-free-parent",
+        "fill-axes"
+      ]
+    },
+    {
+      "id": "render",
+      "label": "逆転したノードを描画したとき",
+      "steps": [
+        "declarations"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "1f99de4ed3fdb39a5b0c8cd2110518c15132e3fd",
+      "phase": "core",
+      "role": "逆転を軸ごとに判定する手段をサイズに足す",
+      "why": "エラーにする前に、値の判定をドメインに置く。比較は下限と上限の両方を不在込みで持つ唯一の型 `SizeLimits` に、`fixed` の軸を外す走査は `fixed` が limits を持たない直和を知っている `Size` に置いた。`SizeLimits.create` を検証込みにする案は、開いて描画を続ける(docs/03「開く時」)ときの描画が変わり、`fill-in-free-parent` の検出も止まるので捨てた。",
+      "flows": [
+        "validate-component",
+        "validate-artboard"
+      ],
+      "review": [
+        "比較は両方があって下限 > 上限のときだけ真で、等しいときと片方が無いときは偽になっているか",
+        "`collectInvertedLimitAxes` が解決済みの props を型ではなく doc で求めていることを受け入れられるか(型で求めると size と resolved-props の import が循環する)",
+        "逆転を生成時に弾かない理由が `SizeLimits` 型の doc で足りているか"
+      ],
+      "before": [
+        {
+          "text": "最小と最大の前後関係を答える関数は無かった(`min > max` は src で 0 件)"
+        }
+      ],
+      "after": [
+        {
+          "text": "`Size.collectInvertedLimitAxes` が `hug` / `fill` の軸のうち逆転したものを width → height の順で返す",
+          "message": "inverted-axes"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/size/index.ts",
+          "start": 15,
+          "end": 16,
+          "text": "逆転を生成時に弾かない理由。検出は横断の検証が持つ"
+        },
+        {
+          "path": "src/domains/dcmp/size/index.ts",
+          "start": 100,
+          "end": 106,
+          "text": "等しいときは偽。片方が `none` なら比較しない"
+        },
+        {
+          "path": "src/domains/dcmp/size/index.ts",
+          "start": 236,
+          "end": 236,
+          "text": "検証側がエラーの位置と本文に prop 名を使えるように公開した(次のリファクタリングでメソッドへ移る)"
+        },
+        {
+          "path": "src/domains/dcmp/size/index.ts",
+          "start": 246,
+          "end": 256,
+          "text": "`fixed` の軸を外し、残りで逆転を見る。サイズが決まらない軸(`fromProps` が `none`)は含めない"
+        }
+      ]
+    },
+    {
+      "sha": "ae8b0e045ab427437c6a1d5b8f2f6e6142a1b802",
+      "phase": "core",
+      "role": "逆転をバリデーションエラー `inverted-size-limits` にする",
+      "why": "前後関係は 2 prop の関係なので 1 prop の値域(`range`)には乗らず、`fill-in-free-parent` と同じく横断エラーの種別として足した。1 軸 1 件で `max*` を指すのは、CSS では下限が勝ち、効いていないのが上限の側だから。部品のルートには親が無いので、子孫の経路(`collectNodeErrors`)とは別にルートの props の位置へ入れた。",
+      "flows": [
+        "validate-component",
+        "validate-artboard"
+      ],
+      "review": [
+        "既定を解決してから判定しているので、`widthMode` を書いていない Box も見落とさないか",
+        "部品のルートの逆転が、validate-order の並び(props・子の行きがけ順・宣言名・binding・参照)の props の位置に入っているか",
+        "artboard の props を検査しないことが、`collectArtboardErrors` を変えないことで成り立っているか"
+      ],
+      "before": [
+        {
+          "text": "逆転を書いてもエラーは出なかった"
+        }
+      ],
+      "after": [
+        {
+          "text": "子孫では `fill-in-free-parent` の後ろ、部品のルートではスキーマ照合の直後に逆転のエラーが並ぶ",
+          "message": "inverted-axes"
+        },
+        {
+          "text": "既定を解決してから判定するので、モード未記入の Box でも出る",
+          "message": "resolve"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/design-document/validation/index.ts",
+          "start": 49,
+          "end": 49,
+          "text": "種別名は既存の「形容 + 対象」の形。対象はリポジトリ内で limits と呼ばれている"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/validation/index.ts",
+          "start": 196,
+          "end": 220,
+          "text": "プリミティブの型だけを対象に、解決してから判定し、軸ごとに `max*` を指すエラーにする。本文は両方の prop 名を含む"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/validation/index.ts",
+          "start": 247,
+          "end": 247,
+          "text": "子孫の経路。この時点では `fill-in-free-parent` の後ろ(796236d で前へ移る)"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/validation/index.ts",
+          "start": 419,
+          "end": 419,
+          "text": "部品のルートの経路。スキーマ照合の直後"
+        }
+      ]
+    },
+    {
+      "sha": "d4d61ab33126bc975f44255c7a080a00a1fb9cbf",
+      "phase": "core",
+      "role": "docs/03 に最小 / 最大の逆転の検出を書く",
+      "why": "前のコミットで挙動が変わったので仕様を合わせる。開く時の表は既存の「子を並べない親の下の fill」も列挙から漏らしていたので、同じ行を直すついでに足した。",
+      "review": [
+        "サイズ指定の原則の「前後関係も検出しない」を、横断の検査がバリデーションエラーにする、へ直した書き方で誤読が無いか"
+      ],
+      "notes": [
+        {
+          "path": "docs/03-schema.md",
+          "start": 168,
+          "end": 169,
+          "text": "`fixed` の軸では前後関係も見ないこと、`fixed` 以外ではバリデーションエラーにして描画は最小が勝つことを書いた"
+        },
+        {
+          "path": "docs/03-schema.md",
+          "start": 305,
+          "end": 305,
+          "text": "バリデーション仕様に足した箇条"
+        },
+        {
+          "path": "docs/03-schema.md",
+          "start": 329,
+          "end": 329,
+          "text": "開く時の表に、漏れていた fill の項目と逆転を足した"
+        }
+      ]
+    },
+    {
+      "sha": "57e3472b66a5133082cac781bb41d3552ebc6250",
+      "phase": "revise",
+      "role": "軸の絞り込みを 1 つにし、props の前提の doc を揃える",
+      "why": "duplication-reviewer から、`collectInvertedLimitAxes` が `collectFillAxes` の走査を写していると指摘された。comment-reviewer からは、新しい doc の「解決していないと none」と既存の「解決済みでなくてよい」が食い違って読めると指摘された。呼び出し側には解決済みを渡すもの(検証・描画)と解決していないもの(リサイズ)が混ざるので、前提を要求する書き方ではなく、モードが書かれていないときの振る舞いを書いた。",
+      "flows": [
+        "validate-component",
+        "validate-artboard"
+      ],
+      "review": [
+        "`collectAxesWhere` に並び(width → height)とサイズが決まらない軸の除外の doc が 1 回だけ書かれ、両方の呼び出しがそれを参照しているか",
+        "`fromProps` 系の doc の言い換えが、解決していない props を渡す呼び出し側(リサイズ)と矛盾しないか"
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/size/index.ts",
+          "start": 161,
+          "end": 176,
+          "text": "2 つの判定が共有する軸の走査。並びを逆にすると 4 件、決まらない軸を含めると 74 件のテストが落ちることを確かめている"
+        },
+        {
+          "path": "src/domains/dcmp/size/index.ts",
+          "start": 229,
+          "end": 242,
+          "text": "モジュール関数からメソッドへ移した。doc だけ消すと pre-push の doc 検査が落ちるため"
+        },
+        {
+          "path": "src/domains/dcmp/size/index.ts",
+          "start": 248,
+          "end": 249,
+          "text": "解決済みを型で求めない理由(import の循環)"
+        }
+      ]
+    },
+    {
+      "sha": "796236d22459f4a9205a25b17fed97b1fd17b897",
+      "phase": "revise",
+      "role": "1 ノード分の props の検査を 1 つの関数にまとめる",
+      "why": "スキーマ照合 → 逆転の並びが子孫と部品のルートの 2 か所にあり、片方を足し忘れても型にもテストにも出ない、と duplication-reviewer に指摘された。ノード内の並びは docs/03 が決めていないので、並びを保つより重複を消すほうを取った。その結果、子孫のノード内は「スキーマ → 逆転 → fill」になり、テストを「前に並ぶ」へ書き換えた。",
+      "flows": [
+        "validate-component",
+        "validate-artboard"
+      ],
+      "review": [
+        "子孫のノード内で逆転が `fill-in-free-parent` の前へ移ったことを受け入れられるか(仕様は並びを決めていない)",
+        "未知の型の判定が `isPrimitiveType` の 1 回になり、スキーマを `forType` で引く形で漏れが無いか",
+        "artboard を検査しない理由のコメントが、`Artboard.boxProps` と Box として解決したときの両方を言えているか"
+      ],
+      "before": [
+        {
+          "text": "子孫のノード内は「スキーマ → fill → 逆転」の順だった"
+        }
+      ],
+      "after": [
+        {
+          "text": "子孫のノード内は「スキーマ → 逆転 → fill」の順。部品のルートの並びは変わらない",
+          "message": "inverted-axes"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/design-document/validation/index.ts",
+          "start": 182,
+          "end": 196,
+          "text": "型を `PrimitiveType` に絞ったので、未知の型の分岐はここから無くなった"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/validation/index.ts",
+          "start": 207,
+          "end": 223,
+          "text": "1 ノード分の検査の入口。子孫も部品のルートもここを通る"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/validation/index.ts",
+          "start": 447,
+          "end": 448,
+          "text": "artboard 自身の逆転を見ない理由"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+          "start": 222,
+          "end": 246,
+          "text": "並びの変更に合わせて「後ろに並ぶ」から書き換えたテスト"
+        }
+      ]
+    },
+    {
+      "sha": "d385f1d5444077d054c4f37ac5c6b8e83a590bcc",
+      "phase": "revise",
+      "role": "逆転の箇条に範囲を書き、表の区切りとぶつからない綴りにする",
+      "why": "harness-reviewer から、表のセルは項目を「 / 」で区切るので「最小 / 最大の逆転」が 2 項目に読めること、docs だけでは overrides で逆転させたインスタンスがエラーにならない理由が分からないことを指摘された。",
+      "review": [
+        "「インスタンスの overrides で生じる逆転は見ない」が、範囲として仕様の読み手に伝わるか"
+      ],
+      "notes": [
+        {
+          "path": "docs/03-schema.md",
+          "start": 305,
+          "end": 305,
+          "text": "判定に使う props の範囲(部品の定義と画面構造)を足した"
+        },
+        {
+          "path": "docs/03-schema.md",
+          "start": 329,
+          "end": 329,
+          "text": "表のセルの中だけ「最小・最大の逆転」にした"
+        }
+      ]
+    },
+    {
+      "sha": "3a151010ec2c972f198bcc2ab4c3bd93c49def97",
+      "phase": "hard",
+      "role": "1 ノード内の並びと overrides の除外をテストで守る",
+      "why": "test-reviewer のミューテーションで 16 件中 14 件が落ち、生き残った 2 件(ノード内の「スキーマ → 逆転」を逆にする / overrides も逆転を検査する)は、doc と docs/03 が主張しているのに対応する入力が無かった。それぞれ 1 件で塞いだ。",
+      "review": [
+        "overrides のテストが、部品定義側の逆転を対照に置くことで「何も出ない」以外の答えを確かめているか"
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+          "start": 312,
+          "end": 332,
+          "text": "並びを逆にすると、このテストだけが落ちる"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+          "start": 334,
+          "end": 374,
+          "text": "`card-body` は定義では逆転しておらず、overrides で 100 にして初めて逆転する。対照の `card-broken` だけが出る"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "size",
+      "label": "逆転の判定",
+      "file": "src/domains/dcmp/size/__tests__/size.inverted-limits.test.ts"
+    },
+    {
+      "id": "validate",
+      "label": "逆転の検証",
+      "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts"
+    }
+  ],
+  "tests": [
+    {
+      "id": "size-hug-width",
+      "suite": "size",
+      "name": "hug の幅で最小が最大より大きいとき、幅が逆転として返る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "逆転の基本形。比較の向きを取り違えると落ちる",
+      "given": "`widthMode: hug, minWidth: 500, maxWidth: 100`",
+      "when": "逆転した軸を問う",
+      "then": "`[\"width\"]`",
+      "commit": "1f99de4ed3fdb39a5b0c8cd2110518c15132e3fd",
+      "excerpt": {
+        "path": "src/domains/dcmp/size/__tests__/size.inverted-limits.test.ts",
+        "start": 4,
+        "end": 13,
+        "text": "test(\"hug の幅で最小が最大より大きいとき、幅が逆転として返る\", () => {\n  expect(\n    Size.collectInvertedLimitAxes({\n      widthMode: \"hug\",\n      minWidth: 500,\n      maxWidth: 100,\n      heightMode: \"hug\",\n    }),\n  ).toEqual([\"width\"]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/size/index.ts"
+      ]
+    },
+    {
+      "id": "size-fill-height",
+      "suite": "size",
+      "name": "fill の高さで最小が最大より大きいとき、高さが逆転として返る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "`fill` も `hug` と同じく対象で、高さの軸でも判定すること",
+      "given": "`heightMode: fill, minHeight: 500, maxHeight: 100`",
+      "when": "逆転した軸を問う",
+      "then": "`[\"height\"]`",
+      "commit": "1f99de4ed3fdb39a5b0c8cd2110518c15132e3fd",
+      "excerpt": {
+        "path": "src/domains/dcmp/size/__tests__/size.inverted-limits.test.ts",
+        "start": 15,
+        "end": 24,
+        "text": "test(\"fill の高さで最小が最大より大きいとき、高さが逆転として返る\", () => {\n  expect(\n    Size.collectInvertedLimitAxes({\n      widthMode: \"hug\",\n      heightMode: \"fill\",\n      minHeight: 500,\n      maxHeight: 100,\n    }),\n  ).toEqual([\"height\"]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/size/index.ts"
+      ]
+    },
+    {
+      "id": "size-both-axes",
+      "suite": "size",
+      "name": "両軸とも逆転していると幅・高さの順で返る",
+      "techniques": [
+        "state"
+      ],
+      "why": "軸の並びは width → height。軸の順を逆にする壊し方で落ちる 4 件の 1 つ",
+      "given": "幅と高さの両方で最小 > 最大",
+      "when": "逆転した軸を問う",
+      "then": "`[\"width\", \"height\"]`",
+      "commit": "1f99de4ed3fdb39a5b0c8cd2110518c15132e3fd",
+      "excerpt": {
+        "path": "src/domains/dcmp/size/__tests__/size.inverted-limits.test.ts",
+        "start": 26,
+        "end": 37,
+        "text": "test(\"両軸とも逆転していると幅・高さの順で返る\", () => {\n  expect(\n    Size.collectInvertedLimitAxes({\n      widthMode: \"hug\",\n      minWidth: 500,\n      maxWidth: 100,\n      heightMode: \"fill\",\n      minHeight: 500,\n      maxHeight: 100,\n    }),\n  ).toEqual([\"width\", \"height\"]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/size/index.ts"
+      ]
+    },
+    {
+      "id": "size-equal",
+      "suite": "size",
+      "name": "最小と最大が等しいときは逆転にならない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "比較を `>=` にする誤りを落とす(ミューテーションで落ちることを確かめた)",
+      "given": "`minWidth: 100, maxWidth: 100`",
+      "when": "逆転した軸を問う",
+      "then": "空",
+      "commit": "1f99de4ed3fdb39a5b0c8cd2110518c15132e3fd",
+      "excerpt": {
+        "path": "src/domains/dcmp/size/__tests__/size.inverted-limits.test.ts",
+        "start": 39,
+        "end": 48,
+        "text": "test(\"最小と最大が等しいときは逆転にならない\", () => {\n  expect(\n    Size.collectInvertedLimitAxes({\n      widthMode: \"hug\",\n      minWidth: 100,\n      maxWidth: 100,\n      heightMode: \"hug\",\n    }),\n  ).toEqual([]);\n});"
+      },
+      "values": {
+        "columns": [
+          "最小",
+          "最大",
+          "逆転"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "500",
+              "100",
+              "する"
+            ]
+          },
+          {
+            "cells": [
+              "100",
+              "100",
+              "しない"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        "src/domains/dcmp/size/index.ts"
+      ]
+    },
+    {
+      "id": "size-min-only",
+      "suite": "size",
+      "name": "大きい最小だけを書いても逆転にならない",
+      "techniques": [
+        "boundary",
+        "equivalence"
+      ],
+      "why": "書いていない最大を 0 と扱う誤りを落とす",
+      "given": "`minWidth: 500` だけ",
+      "when": "逆転した軸を問う",
+      "then": "空",
+      "commit": "1f99de4ed3fdb39a5b0c8cd2110518c15132e3fd",
+      "excerpt": {
+        "path": "src/domains/dcmp/size/__tests__/size.inverted-limits.test.ts",
+        "start": 50,
+        "end": 58,
+        "text": "test(\"大きい最小だけを書いても逆転にならない\", () => {\n  expect(\n    Size.collectInvertedLimitAxes({\n      widthMode: \"hug\",\n      minWidth: 500,\n      heightMode: \"hug\",\n    }),\n  ).toEqual([]);\n});"
+      },
+      "values": {
+        "columns": [
+          "最小",
+          "最大",
+          "逆転"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "500",
+              "(書かない)",
+              "しない"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "(書かない)",
+              "10",
+              "しない"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        "src/domains/dcmp/size/index.ts"
+      ]
+    },
+    {
+      "id": "size-max-only",
+      "suite": "size",
+      "name": "小さい最大だけを書いても逆転にならない",
+      "techniques": [
+        "boundary",
+        "equivalence"
+      ],
+      "why": "書いていない最小を無限大と扱う誤りを落とす",
+      "given": "`maxWidth: 10` だけ",
+      "when": "逆転した軸を問う",
+      "then": "空",
+      "commit": "1f99de4ed3fdb39a5b0c8cd2110518c15132e3fd",
+      "excerpt": {
+        "path": "src/domains/dcmp/size/__tests__/size.inverted-limits.test.ts",
+        "start": 60,
+        "end": 68,
+        "text": "test(\"小さい最大だけを書いても逆転にならない\", () => {\n  expect(\n    Size.collectInvertedLimitAxes({\n      widthMode: \"hug\",\n      maxWidth: 10,\n      heightMode: \"hug\",\n    }),\n  ).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/size/index.ts"
+      ]
+    },
+    {
+      "id": "size-non-number",
+      "suite": "size",
+      "name": "数値でない最小は書かれていないものとして扱い、逆転にならない",
+      "techniques": [
+        "equivalence",
+        "error"
+      ],
+      "why": "JS では `\"500\" > 100` が真になる。文字列の最小を比較に入れる誤りと、最小の不在を無限大と扱う誤りを落とす",
+      "given": "`minWidth: \"500\", maxWidth: 100`",
+      "when": "逆転した軸を問う",
+      "then": "空",
+      "commit": "1f99de4ed3fdb39a5b0c8cd2110518c15132e3fd",
+      "excerpt": {
+        "path": "src/domains/dcmp/size/__tests__/size.inverted-limits.test.ts",
+        "start": 70,
+        "end": 79,
+        "text": "test(\"数値でない最小は書かれていないものとして扱い、逆転にならない\", () => {\n  expect(\n    Size.collectInvertedLimitAxes({\n      widthMode: \"hug\",\n      minWidth: \"500\",\n      maxWidth: 100,\n      heightMode: \"hug\",\n    }),\n  ).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/size/index.ts"
+      ]
+    },
+    {
+      "id": "size-fixed",
+      "suite": "size",
+      "name": "fixed の軸に書いた逆転は返らない",
+      "techniques": [
+        "state"
+      ],
+      "why": "`fixed` に書いた最小 / 最大は読み捨てる(docs/03)。`fixed` の除外を壊すと落ちる",
+      "given": "`widthMode: fixed, width: 120, minWidth: 500, maxWidth: 100`",
+      "when": "逆転した軸を問う",
+      "then": "空",
+      "commit": "1f99de4ed3fdb39a5b0c8cd2110518c15132e3fd",
+      "excerpt": {
+        "path": "src/domains/dcmp/size/__tests__/size.inverted-limits.test.ts",
+        "start": 81,
+        "end": 91,
+        "text": "test(\"fixed の軸に書いた逆転は返らない\", () => {\n  expect(\n    Size.collectInvertedLimitAxes({\n      widthMode: \"fixed\",\n      width: 120,\n      minWidth: 500,\n      maxWidth: 100,\n      heightMode: \"hug\",\n    }),\n  ).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/size/index.ts"
+      ]
+    },
+    {
+      "id": "size-cross-axis",
+      "suite": "size",
+      "name": "別の軸どうしの最小と最大は比べない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "比べるのは同じ軸の最小と最大だけ",
+      "given": "`minWidth: 500` と `maxHeight: 100`",
+      "when": "逆転した軸を問う",
+      "then": "空",
+      "commit": "1f99de4ed3fdb39a5b0c8cd2110518c15132e3fd",
+      "excerpt": {
+        "path": "src/domains/dcmp/size/__tests__/size.inverted-limits.test.ts",
+        "start": 93,
+        "end": 102,
+        "text": "test(\"別の軸どうしの最小と最大は比べない\", () => {\n  expect(\n    Size.collectInvertedLimitAxes({\n      widthMode: \"hug\",\n      minWidth: 500,\n      heightMode: \"hug\",\n      maxHeight: 100,\n    }),\n  ).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/size/index.ts"
+      ]
+    },
+    {
+      "id": "doc-width",
+      "suite": "validate",
+      "name": "Box の最小幅が最大幅より大きいと、maxWidth を指すエラーが 1 件出る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "1 軸 1 件で max 側を指す。min 側を指す壊し方で落ちる 10 件の 1 つ",
+      "given": "artboard の子の Box に `widthMode: hug, minWidth: 500, maxWidth: 100`",
+      "when": "ドキュメントのエラーを集める",
+      "then": "`inverted-size-limits` が 1 件、`prop: maxWidth`",
+      "commit": "ae8b0e045ab427437c6a1d5b8f2f6e6142a1b802",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+        "start": 47,
+        "end": 61,
+        "text": "test(\"Box の最小幅が最大幅より大きいと、maxWidth を指すエラーが 1 件出る\", () => {\n  const document = documentWithBox({\n    widthMode: \"hug\",\n    minWidth: 500,\n    maxWidth: 100,\n  });\n\n  expect(DesignDocument.collectErrors(document)).toEqual([\n    expect.objectContaining({\n      kind: \"inverted-size-limits\",\n      nodeName: \"target\",\n      prop: \"maxWidth\",\n    }),\n  ]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/validation/index.ts",
+        "src/domains/dcmp/size/index.ts"
+      ],
+      "covers": [
+        "collect-artboard",
+        "inverted-axes",
+        "limit-props"
+      ]
+    },
+    {
+      "id": "doc-height",
+      "suite": "validate",
+      "name": "Box の最小高さが最大高さより大きいと、maxHeight を指すエラーが出る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "高さの軸では `maxHeight` を指す",
+      "given": "`heightMode: hug, minHeight: 500, maxHeight: 100`",
+      "when": "ドキュメントのエラーを集める",
+      "then": "`prop: maxHeight` の 1 件",
+      "commit": "ae8b0e045ab427437c6a1d5b8f2f6e6142a1b802",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+        "start": 63,
+        "end": 77,
+        "text": "test(\"Box の最小高さが最大高さより大きいと、maxHeight を指すエラーが出る\", () => {\n  const document = documentWithBox({\n    heightMode: \"hug\",\n    minHeight: 500,\n    maxHeight: 100,\n  });\n\n  expect(DesignDocument.collectErrors(document)).toEqual([\n    expect.objectContaining({\n      kind: \"inverted-size-limits\",\n      nodeName: \"target\",\n      prop: \"maxHeight\",\n    }),\n  ]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/validation/index.ts"
+      ],
+      "covers": [
+        "collect-artboard",
+        "inverted-axes",
+        "limit-props"
+      ]
+    },
+    {
+      "id": "doc-both-axes",
+      "suite": "validate",
+      "name": "両軸とも逆転していると、軸ごとに 1 件ずつ出る",
+      "techniques": [
+        "state"
+      ],
+      "why": "ノードごとにまとめず軸ごとに出し、width → height の順に並ぶ",
+      "given": "幅(`hug`)と高さ(`fill`)の両方で逆転",
+      "when": "ドキュメントのエラーを集める",
+      "then": "`maxWidth`、`maxHeight` の順に 2 件",
+      "commit": "ae8b0e045ab427437c6a1d5b8f2f6e6142a1b802",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+        "start": 79,
+        "end": 101,
+        "text": "test(\"両軸とも逆転していると、軸ごとに 1 件ずつ出る\", () => {\n  const document = documentWithBox({\n    widthMode: \"hug\",\n    minWidth: 500,\n    maxWidth: 100,\n    heightMode: \"fill\",\n    minHeight: 500,\n    maxHeight: 100,\n  });\n\n  expect(DesignDocument.collectErrors(document)).toEqual([\n    expect.objectContaining({\n      kind: \"inverted-size-limits\",\n      nodeName: \"target\",\n      prop: \"maxWidth\",\n    }),\n    expect.objectContaining({\n      kind: \"inverted-size-limits\",\n      nodeName: \"target\",\n      prop: \"maxHeight\",\n    }),\n  ]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/validation/index.ts"
+      ],
+      "covers": [
+        "inverted-axes",
+        "limit-props"
+      ]
+    },
+    {
+      "id": "doc-unresolved-mode",
+      "suite": "validate",
+      "name": "widthMode を書いていない Box でも、既定の hug として逆転を検出する",
+      "techniques": [
+        "regression",
+        "state"
+      ],
+      "why": "既定を解決せずに判定すると `Size.fromProps` が `none` になって見落とす。解決済みを型で求めていない前提を、モードを書かない最小の入力で守る",
+      "given": "`minWidth: 500, maxWidth: 100` だけの Box",
+      "when": "ドキュメントのエラーを集める",
+      "then": "`prop: maxWidth` の 1 件",
+      "commit": "ae8b0e045ab427437c6a1d5b8f2f6e6142a1b802",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+        "start": 103,
+        "end": 113,
+        "text": "test(\"widthMode を書いていない Box でも、既定の hug として逆転を検出する\", () => {\n  const document = documentWithBox({ minWidth: 500, maxWidth: 100 });\n\n  expect(DesignDocument.collectErrors(document)).toEqual([\n    expect.objectContaining({\n      kind: \"inverted-size-limits\",\n      nodeName: \"target\",\n      prop: \"maxWidth\",\n    }),\n  ]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/validation/index.ts",
+        "src/domains/dcmp/resolved-props/index.ts"
+      ],
+      "covers": [
+        "resolve",
+        "inverted-axes"
+      ]
+    },
+    {
+      "id": "doc-fixed",
+      "suite": "validate",
+      "name": "fixed の軸に書いた逆転はエラーにならない",
+      "techniques": [
+        "state"
+      ],
+      "why": "`fixed` の軸は読み捨てる。対照の `hug` のノードを同居させ、「何も出ない」以外の答えで確かめる",
+      "given": "`fixed` の逆転のノードと、`hug` の逆転のノード",
+      "when": "ドキュメントのエラーを集める",
+      "then": "`hug-box` の 1 件だけ",
+      "commit": "ae8b0e045ab427437c6a1d5b8f2f6e6142a1b802",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+        "start": 115,
+        "end": 144,
+        "text": "test(\"fixed の軸に書いた逆転はエラーにならない\", () => {\n  const document = documentWithArtboard({\n    props: { layout: \"column\" },\n    children: [\n      {\n        name: \"fixed-box\",\n        type: \"Box\",\n        props: {\n          widthMode: \"fixed\",\n          width: 120,\n          minWidth: 500,\n          maxWidth: 100,\n        },\n      },\n      {\n        name: \"hug-box\",\n        type: \"Box\",\n        props: { widthMode: \"hug\", minWidth: 500, maxWidth: 100 },\n      },\n    ],\n  });\n\n  expect(DesignDocument.collectErrors(document)).toEqual([\n    expect.objectContaining({\n      kind: \"inverted-size-limits\",\n      nodeName: \"hug-box\",\n      prop: \"maxWidth\",\n    }),\n  ]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/validation/index.ts"
+      ],
+      "covers": [
+        "inverted-axes"
+      ]
+    },
+    {
+      "id": "doc-equal",
+      "suite": "validate",
+      "name": "最小と最大が等しいときはエラーにならない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "`>=` で判定する誤りを検証の経路でも落とす",
+      "given": "`minWidth: 100, maxWidth: 100`",
+      "when": "ドキュメントのエラーを集める",
+      "then": "エラー 0 件",
+      "commit": "ae8b0e045ab427437c6a1d5b8f2f6e6142a1b802",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+        "start": 146,
+        "end": 154,
+        "text": "test(\"最小と最大が等しいときはエラーにならない\", () => {\n  const document = documentWithBox({\n    widthMode: \"hug\",\n    minWidth: 100,\n    maxWidth: 100,\n  });\n\n  expect(DesignDocument.collectErrors(document)).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/validation/index.ts"
+      ],
+      "covers": [
+        "inverted-axes"
+      ]
+    },
+    {
+      "id": "doc-component-root",
+      "suite": "validate",
+      "name": "部品のルート自身の逆転を検出する",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "部品のルートは子孫と別の経路を通る。ルートの検査を外す壊し方と、解決を外す壊し方(モード未記入)の両方で落ちる",
+      "given": "部品 `card` のルート Box に `minWidth: 500, maxWidth: 100`",
+      "when": "ドキュメントのエラーを集める",
+      "then": "`nodeName: card` の 1 件",
+      "commit": "ae8b0e045ab427437c6a1d5b8f2f6e6142a1b802",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+        "start": 156,
+        "end": 170,
+        "text": "test(\"部品のルート自身の逆転を検出する\", () => {\n  const document = DesignDocument.create({\n    components: {\n      card: { type: \"Box\", props: { minWidth: 500, maxWidth: 100 } },\n    },\n  });\n\n  expect(DesignDocument.collectErrors(document)).toEqual([\n    expect.objectContaining({\n      kind: \"inverted-size-limits\",\n      nodeName: \"card\",\n      prop: \"maxWidth\",\n    }),\n  ]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/validation/index.ts"
+      ],
+      "covers": [
+        "collect-component",
+        "resolve",
+        "inverted-axes"
+      ]
+    },
+    {
+      "id": "doc-component-child",
+      "suite": "validate",
+      "name": "部品の子孫の逆転を検出する",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "部品の定義の中の子孫も、定義時点の props で照らす",
+      "given": "部品の子の Box に `minWidth: 500, maxWidth: 100`",
+      "when": "ドキュメントのエラーを集める",
+      "then": "子のノードを指す 1 件",
+      "commit": "ae8b0e045ab427437c6a1d5b8f2f6e6142a1b802",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+        "start": 172,
+        "end": 195,
+        "text": "test(\"部品の子孫の逆転を検出する\", () => {\n  const document = DesignDocument.create({\n    components: {\n      card: {\n        type: \"Box\",\n        children: [\n          {\n            name: \"target\",\n            type: \"Box\",\n            props: { minWidth: 500, maxWidth: 100 },\n          },\n        ],\n      },\n    },\n  });\n\n  expect(DesignDocument.collectErrors(document)).toEqual([\n    expect.objectContaining({\n      kind: \"inverted-size-limits\",\n      nodeName: \"target\",\n      prop: \"maxWidth\",\n    }),\n  ]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/validation/index.ts"
+      ],
+      "covers": [
+        "collect-component",
+        "resolve",
+        "inverted-axes"
+      ]
+    },
+    {
+      "id": "doc-root-order",
+      "suite": "validate",
+      "name": "部品のルートの逆転は、その部品の子孫のエラーより前に並ぶ",
+      "techniques": [
+        "state"
+      ],
+      "why": "validate-order が固定している「props → 子の行きがけ順」を崩さない。ルートの逆転を後ろへ回す壊し方で落ちる",
+      "given": "ルートは逆転、子は未知の prop `bogus`",
+      "when": "ドキュメントのエラーを集める",
+      "then": "[ルートの逆転, 子の unknown-prop]",
+      "commit": "ae8b0e045ab427437c6a1d5b8f2f6e6142a1b802",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+        "start": 197,
+        "end": 220,
+        "text": "test(\"部品のルートの逆転は、その部品の子孫のエラーより前に並ぶ\", () => {\n  const document = DesignDocument.create({\n    components: {\n      card: {\n        type: \"Box\",\n        props: { minWidth: 500, maxWidth: 100 },\n        children: [{ name: \"child\", type: \"Box\", props: { bogus: 1 } }],\n      },\n    },\n  });\n\n  expect(DesignDocument.collectErrors(document)).toEqual([\n    expect.objectContaining({\n      kind: \"inverted-size-limits\",\n      nodeName: \"card\",\n      prop: \"maxWidth\",\n    }),\n    expect.objectContaining({\n      kind: \"unknown-prop\",\n      nodeName: \"child\",\n      prop: \"bogus\",\n    }),\n  ]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/validation/index.ts"
+      ],
+      "covers": [
+        "collect-component"
+      ]
+    },
+    {
+      "id": "doc-fill-order",
+      "suite": "validate",
+      "name": "自由配置の親の下の fill に逆転も書くと、fill のエラーの前に並ぶ",
+      "techniques": [
+        "state"
+      ],
+      "why": "1 ノード分の検査をまとめた結果の並び(スキーマ → 逆転 → fill)を固定する。fill を先にする壊し方で落ちる",
+      "given": "`layout: free` の親の下で `widthMode: fill` と逆転",
+      "when": "ドキュメントのエラーを集める",
+      "then": "[inverted-size-limits, fill-in-free-parent]",
+      "commit": "796236d22459f4a9205a25b17fed97b1fd17b897",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+        "start": 222,
+        "end": 246,
+        "text": "test(\"自由配置の親の下の fill に逆転も書くと、fill のエラーの前に並ぶ\", () => {\n  const document = documentWithArtboard({\n    props: { layout: \"free\" },\n    children: [\n      {\n        name: \"target\",\n        type: \"Box\",\n        props: { widthMode: \"fill\", minWidth: 500, maxWidth: 100 },\n      },\n    ],\n  });\n\n  expect(DesignDocument.collectErrors(document)).toEqual([\n    expect.objectContaining({\n      kind: \"inverted-size-limits\",\n      nodeName: \"target\",\n      prop: \"maxWidth\",\n    }),\n    expect.objectContaining({\n      kind: \"fill-in-free-parent\",\n      nodeName: \"target\",\n      prop: \"widthMode\",\n    }),\n  ]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/validation/index.ts",
+        "src/domains/dcmp/layout/index.ts"
+      ],
+      "covers": [
+        "inverted-axes",
+        "fill-in-free-parent",
+        "fill-axes"
+      ]
+    },
+    {
+      "id": "doc-artboard",
+      "suite": "validate",
+      "name": "artboard の props に逆転を書いてもエラーにならない",
+      "techniques": [
+        "state"
+      ],
+      "why": "artboard 自身は対象外。artboard も検査する壊し方で落ちる。対照の子の逆転で、検査そのものは動いていることを見る",
+      "given": "artboard の props と子の Box の両方に逆転",
+      "when": "ドキュメントのエラーを集める",
+      "then": "子の 1 件だけ",
+      "commit": "ae8b0e045ab427437c6a1d5b8f2f6e6142a1b802",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+        "start": 248,
+        "end": 267,
+        "text": "test(\"artboard の props に逆転を書いてもエラーにならない\", () => {\n  const document = documentWithArtboard({\n    props: { layout: \"column\", minWidth: 500, maxWidth: 100 },\n    children: [\n      {\n        name: \"target\",\n        type: \"Box\",\n        props: { widthMode: \"hug\", minWidth: 500, maxWidth: 100 },\n      },\n    ],\n  });\n\n  expect(DesignDocument.collectErrors(document)).toEqual([\n    expect.objectContaining({\n      kind: \"inverted-size-limits\",\n      nodeName: \"target\",\n      prop: \"maxWidth\",\n    }),\n  ]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/validation/index.ts"
+      ],
+      "covers": [
+        "collect-artboard"
+      ]
+    },
+    {
+      "id": "doc-ellipse",
+      "suite": "validate",
+      "name": "下限・上限を持たない Ellipse に逆転を書くと、未知の prop だけが出る",
+      "techniques": [
+        "error",
+        "regression"
+      ],
+      "why": "解決でスキーマに無い prop が落ちるので二重に報告しない。Ellipse の既定は `fixed` なので `fill` を書き、素の props で判定する誤りも落とす",
+      "given": "`Ellipse { widthMode: fill, minWidth: 500, maxWidth: 100 }`",
+      "when": "ドキュメントのエラーを集める",
+      "then": "unknown-prop の 2 件だけ",
+      "commit": "ae8b0e045ab427437c6a1d5b8f2f6e6142a1b802",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+        "start": 269,
+        "end": 294,
+        "text": "test(\"下限・上限を持たない Ellipse に逆転を書くと、未知の prop だけが出る\", () => {\n  const document = documentWithArtboard({\n    tokens: DocumentTemplate.Default.tokens,\n    props: { layout: \"column\" },\n    children: [\n      {\n        name: \"target\",\n        type: \"Ellipse\",\n        props: { widthMode: \"fill\", minWidth: 500, maxWidth: 100 },\n      },\n    ],\n  });\n\n  expect(DesignDocument.collectErrors(document)).toEqual([\n    expect.objectContaining({\n      kind: \"unknown-prop\",\n      nodeName: \"target\",\n      prop: \"minWidth\",\n    }),\n    expect.objectContaining({\n      kind: \"unknown-prop\",\n      nodeName: \"target\",\n      prop: \"maxWidth\",\n    }),\n  ]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/validation/index.ts",
+        "src/domains/dcmp/resolved-props/index.ts"
+      ],
+      "covers": [
+        "resolve",
+        "inverted-axes"
+      ]
+    },
+    {
+      "id": "doc-message",
+      "suite": "validate",
+      "name": "逆転のエラーの本文は、最小と最大の両方の prop 名を含む",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "エラー一覧は本文を表示する。並び順や文面は固定せず、両方の prop 名が入ることだけを見る",
+      "given": "幅の逆転",
+      "when": "ドキュメントのエラーを集める",
+      "then": "本文が `minWidth` と `maxWidth` を含む",
+      "commit": "ae8b0e045ab427437c6a1d5b8f2f6e6142a1b802",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+        "start": 296,
+        "end": 310,
+        "text": "test(\"逆転のエラーの本文は、最小と最大の両方の prop 名を含む\", () => {\n  const document = documentWithBox({\n    widthMode: \"hug\",\n    minWidth: 500,\n    maxWidth: 100,\n  });\n\n  expect(DesignDocument.collectErrors(document)).toEqual([\n    expect.objectContaining({\n      message: expect.stringMatching(\n        /minWidth[\\s\\S]*maxWidth|maxWidth[\\s\\S]*minWidth/,\n      ),\n    }),\n  ]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/validation/index.ts"
+      ],
+      "covers": [
+        "limit-props"
+      ]
+    },
+    {
+      "id": "doc-schema-order",
+      "suite": "validate",
+      "name": "同じノードのスキーマ違反と最小 / 最大の逆転は、スキーマ違反が先に並ぶ",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "doc が「この順」と主張していたのにテストが無く、並びを逆にするミューテーションが生き残っていた",
+      "given": "同じ Box に `bogus: 1` と幅の逆転",
+      "when": "ドキュメントのエラーを集める",
+      "then": "[unknown-prop, inverted-size-limits]",
+      "commit": "3a151010ec2c972f198bcc2ab4c3bd93c49def97",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+        "start": 312,
+        "end": 332,
+        "text": "test(\"同じノードのスキーマ違反と最小 / 最大の逆転は、スキーマ違反が先に並ぶ\", () => {\n  const document = documentWithBox({\n    bogus: 1,\n    widthMode: \"hug\",\n    minWidth: 500,\n    maxWidth: 100,\n  });\n\n  expect(DesignDocument.collectErrors(document)).toEqual([\n    expect.objectContaining({\n      kind: \"unknown-prop\",\n      nodeName: \"target\",\n      prop: \"bogus\",\n    }),\n    expect.objectContaining({\n      kind: \"inverted-size-limits\",\n      nodeName: \"target\",\n      prop: \"maxWidth\",\n    }),\n  ]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/validation/index.ts"
+      ],
+      "covers": [
+        "inverted-axes"
+      ]
+    },
+    {
+      "id": "doc-overrides",
+      "suite": "validate",
+      "name": "インスタンスの overrides で生じる逆転はエラーにしない",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "docs/03 が「見ない」と決めているのにテストが無く、overrides も検査するミューテーションが生き残っていた。部品定義側の逆転を対照に置く",
+      "given": "公開した `maxWidth` を overrides で 100 にして逆転させたインスタンスと、定義のまま逆転している `card-broken`",
+      "when": "ドキュメントのエラーを集める",
+      "then": "`card-broken` の 1 件だけ",
+      "commit": "3a151010ec2c972f198bcc2ab4c3bd93c49def97",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+        "start": 334,
+        "end": 374,
+        "text": "test(\"インスタンスの overrides で生じる逆転はエラーにしない\", () => {\n  const document = DesignDocument.create({\n    components: {\n      card: {\n        type: \"Box\",\n        children: [\n          {\n            name: \"card-body\",\n            type: \"Box\",\n            props: { minWidth: 200, maxWidth: 300 },\n          },\n          {\n            name: \"card-broken\",\n            type: \"Box\",\n            props: { minWidth: 500, maxWidth: 100 },\n          },\n        ],\n        publicProps: { limit: { node: \"card-body\", prop: \"maxWidth\" } },\n      },\n    },\n    artboards: [\n      {\n        name: \"screen\",\n        width: 375,\n        height: 812,\n        props: { layout: \"column\" },\n        children: [\n          { name: \"instance\", ref: \"card\", overrides: { limit: 100 } },\n        ],\n      },\n    ],\n  });\n\n  expect(DesignDocument.collectErrors(document)).toEqual([\n    expect.objectContaining({\n      kind: \"inverted-size-limits\",\n      nodeName: \"card-broken\",\n      prop: \"maxWidth\",\n    }),\n  ]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/validation/index.ts"
+      ],
+      "covers": [
+        "collect-component",
+        "collect-artboard"
+      ]
+    }
+  ]
+}
