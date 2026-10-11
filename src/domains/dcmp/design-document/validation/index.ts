@@ -15,7 +15,10 @@ import {
 } from "@/domains/dcmp/document-names";
 import { Layout } from "@/domains/dcmp/layout";
 import { Node, type Props, type RefNode } from "@/domains/dcmp/node";
-import type { PropValidationError } from "@/domains/dcmp/primitive-schema";
+import type {
+  PrimitiveType,
+  PropValidationError,
+} from "@/domains/dcmp/primitive-schema";
 import {
   BoxSchema,
   PrimitiveSchema,
@@ -25,6 +28,7 @@ import {
   type InstanceViolation,
   ReferenceContext,
 } from "@/domains/dcmp/reference-context";
+import { ResolvedProps } from "@/domains/dcmp/resolved-props";
 import { Size } from "@/domains/dcmp/size";
 import { type TokenColorPosition, TokenSet } from "@/domains/dcmp/token";
 import { Json } from "@/utils/Json";
@@ -44,7 +48,8 @@ type NodeValidationErrorKind =
   | "missing-name"
   | "invalid-identifier"
   | "duplicate-name"
-  | "fill-in-free-parent";
+  | "fill-in-free-parent"
+  | "inverted-size-limits";
 
 /** トークンを指す不正の理由。 */
 type TokenValidationErrorKind =
@@ -145,30 +150,6 @@ function withLocation(
 }
 
 /**
- * 型に対応するスキーマで props を照らす。未知の型はその場でエラーにする。
- *
- * @param type ノードの型名
- * @param props 照らす対象の props（未設定なら空として扱う）
- * @param tokens トークン参照の解決に使うトークン一式
- * @returns 未知の型・宣言違反・値域違反のエラーの並び
- */
-function collectTypedPropErrors(
-  type: string,
-  props: Props | undefined,
-  tokens: TokenSet,
-): readonly UnlocatedError[] {
-  const schema = PrimitiveSchema.forTypeName(type);
-  if (!Option.isSome(schema)) {
-    return [{ kind: "unknown-type", message: `unknown type "${type}"` }];
-  }
-  return PropDefinitionRecord.collectErrors(
-    schema.value.props,
-    props ?? {},
-    tokens,
-  );
-}
-
-/**
  * 子を並べない親の下の `fill` を、軸ごとのエラーにする（判定は `Layout` が持つ）。
  *
  * 親を引数で要求するので、親が決まらない位置（部品のルート）はそもそも呼ばれない。
@@ -192,7 +173,58 @@ function collectFillErrors(
 }
 
 /**
- * ノードとその子孫のプリミティブの props をスキーマで照らす（走査は `Node` が持つ）。
+ * 最小が最大を超えている軸を、軸ごとのエラーにする（判定は `Size` が持つ）。
+ *
+ * @param type ノードの型名
+ * @param props 検査するノードの props
+ * @returns 軸ごとの、`max*` の側を指すエラーの並び。逆転が無いときは空
+ */
+function collectInvertedLimitErrors(
+  type: PrimitiveType,
+  props: Props,
+): readonly UnlocatedError[] {
+  return Size.collectInvertedLimitAxes(ResolvedProps.resolve(type, props)).map(
+    (axis) => {
+      const { min, max } = Size.limitProps(axis);
+      return {
+        kind: "inverted-size-limits" as const,
+        prop: max,
+        message: `prop "${max}" is less than "${min}"; the minimum wins`,
+      };
+    },
+  );
+}
+
+/**
+ * 1 ノード分の props のエラーを、未知の型・スキーマ照合・最小 / 最大の逆転の順で集める。
+ *
+ * @param type ノードの型名
+ * @param props 照らす対象の props（未設定なら空として扱う）
+ * @param tokens トークン参照の解決に使うトークン一式
+ * @returns 型が未知なら unknown-type の 1 件だけ。それ以外は宣言違反・値域違反と、軸ごとの
+ *   最小 / 最大の逆転のエラーの並び
+ */
+function collectTypedPropErrors(
+  type: string,
+  props: Props | undefined,
+  tokens: TokenSet,
+): readonly UnlocatedError[] {
+  if (!PrimitiveSchema.isPrimitiveType(type)) {
+    return [{ kind: "unknown-type", message: `unknown type "${type}"` }];
+  }
+  const schema: PrimitiveSchema = PrimitiveSchema.forType(type);
+  const schemaErrors = PropDefinitionRecord.collectErrors(
+    schema.props,
+    props ?? {},
+    tokens,
+  );
+  const invertedLimitErrors = collectInvertedLimitErrors(type, props ?? {});
+  return [...schemaErrors, ...invertedLimitErrors];
+}
+
+/**
+ * ノードとその子孫のプリミティブについて、スキーマ照合・最小 / 最大の逆転・子を並べない
+ * 親の下の `fill` のエラーをノードごとにこの順で集める（走査は `Node` が持つ）。
  *
  * 部品インスタンスの中身は対象外で、検証が見るのは**定義時点の props** だけ（中身は部品の
  * 定義として照らされる）。
@@ -200,7 +232,8 @@ function collectFillErrors(
  * @param node 起点のノード
  * @param tokens トークン参照の解決に使うトークン一式
  * @param parentProps このノードを収めている親の props
- * @returns 自身と子孫のプリミティブの props のエラーの並び（部品インスタンスは空）
+ * @returns 自身と子孫のプリミティブについて、スキーマ照合・最小 / 最大の逆転・子を並べない
+ *   親の下の `fill` のエラーの並び（部品インスタンスは空）
  */
 function collectNodeErrors(
   node: Node,
@@ -369,7 +402,8 @@ export function collectCircularRefErrors(
 }
 
 /**
- * 部品1件の props・子ノード・公開 prop の宣言名・binding・参照のエラーを集める。
+ * 部品1件の props（スキーマ照合と、ルート自身の最小 / 最大の逆転）・子ノード・公開 prop の
+ * 宣言名・binding・参照のエラーを集める。
  *
  * @param context 部品とトークンの一式
  * @param name エラーの位置に使う部品名
@@ -409,6 +443,9 @@ export function collectComponentErrors(
 
 /**
  * artboard 1件の props・子ノード・参照のエラーを集める。
+ *
+ * artboard 自身の最小 / 最大の逆転は見ない。サイズは `Artboard.boxProps` で `fixed` に固定され
+ * 描画に効かず、Box として解決すると既定の `hug` 扱いになって誤検出するため。
  *
  * @param context 部品とトークンの一式
  * @param artboard 検証する artboard
