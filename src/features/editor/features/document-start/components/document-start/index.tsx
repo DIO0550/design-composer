@@ -1,5 +1,10 @@
 import type { ReactElement, ReactNode } from "react";
 import {
+  ActionCard,
+  type ActionCardContent,
+  ActionCardTones,
+} from "@/components/action-card";
+import {
   DocumentOpenFailureNotice,
   FailureLine,
   type RenderDocumentErrors,
@@ -29,26 +34,41 @@ function commandSourceFailureLabel(source: CommandSource): string {
   }
 }
 
-/**
- * 押せる導線の共通の形。地・枠・文字だけを差し替える。
- *
- * 大きさ（高さ 30px / 角丸 5px / font-size 11px / 横 10px）と font-family は UI 案
- * （`docs/Design Composer.html`）の塗りのボタンに合わせている。
- *
- * 共通の `Button` にはしていない。
+/*
+ * 開始画面の 2 枚のカードの中身。ショートカットの割り当ての出どころは `src-tauri/src/menu.rs` の
+ * `CmdOrCtrl+O` / `CmdOrCtrl+N` で、ここは表示の綴りだけを持つ。OS ごとに表記は変えず、
+ * コンテキストメニューと同じ ⌘ 表記に揃えている。
  */
-const ActionButton =
-  "flex h-[30px] items-center rounded-[5px] px-[10px] font-[inherit] text-[11px] disabled:cursor-default disabled:opacity-50";
+
+/** 開くのカード（プライマリ）。 */
+const OpenCardContent = {
+  title: "開く",
+  description: "既存の .dcmp を選ぶ",
+  shortcut: "⌘O",
+  iconPaths: [
+    "M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z",
+  ],
+  tone: ActionCardTones.Primary,
+} as const satisfies ActionCardContent;
+
+/** 新規作成のカード。 */
+const CreateCardContent = {
+  title: "新規作成",
+  description: "空のドキュメントから始める",
+  shortcut: "⌘N",
+  iconPaths: ["M12 5v14", "M5 12h14"],
+  tone: ActionCardTones.Normal,
+} as const satisfies ActionCardContent;
 
 /**
  * ドキュメントを開く / 作る導線。
  *
- * 開いた後はメニュー（⌘O / ⌘N）へ移るので、ボタンとして出るのはこの画面だけ
+ * 開いた後はメニューへ移るので、ボタンとして出るのはこの画面だけ
  * （`src-tauri/src/menu.rs`）。
  *
  * @param actions 開く / 作るを始める手続き
  * @param disabled 既に開く操作が始まっていて、押させたくないか
- * @returns 開く（強調）と新規作成を並べた 2 つのボタン
+ * @returns 開く（プライマリ）と新規作成の 2 枚のカード
  */
 function StartActions({
   actions,
@@ -58,31 +78,17 @@ function StartActions({
   disabled: boolean;
 }>): ReactElement {
   return (
-    <div className="flex items-center gap-2">
-      {/* 地はアクセントの青を一段薄めた `#4db2ff`、hover でその元になっている
-         `#0d99ff` へ寄せる。UI 案の `a:hover` がこの 2 色を対にしているので、薄い側を
-         平常時に置くと hover で濃くなり、押せることが伝わる向きに揃う。白 +
-         font-weight:500 は、UI 案が青地に文字を載せている 2 箇所と同じ組み合わせ。*/}
-      <button
-        type="button"
+    <div className="mt-2 grid w-full grid-cols-2 gap-3">
+      <ActionCard
+        content={OpenCardContent}
         onClick={actions.openDocument}
         disabled={disabled}
-        className={`${ActionButton} border-none bg-[#4db2ff] font-medium text-white hover:bg-[#0d99ff]`}
-      >
-        開く
-      </button>
-      {/* 地も枠も持たず hover でだけ地が出る形。UI 案はこの形のボタンを描いておらず
-         （`ghost` の綴りも 0 回）、意図して離れている。開く を選んでほしい導線なので、
-         枠を持つ従来の形だと 2 つが同じ重さに見えるため。hover の `#f0f0f0` は下の
-         最近使ったファイルの行と同じで、押せる範囲の示し方をこの画面の中で揃えている。*/}
-      <button
-        type="button"
+      />
+      <ActionCard
+        content={CreateCardContent}
         onClick={actions.createDocument}
         disabled={disabled}
-        className={`${ActionButton} border-none bg-transparent text-[#1e1e1e] hover:bg-[#f0f0f0]`}
-      >
-        新規作成
-      </button>
+      />
     </div>
   );
 }
@@ -168,9 +174,8 @@ function RecentFileList({
  * 開く前の画面を描いていない（`open` / `recent` / `welcome` はいずれも 0 件）。そのため見せ
  * 方はここで決めている。画面の数と名前は `rules/ui-verification.md` が持つ。
  *
- * 使う色と字の大きさは UI 案の語彙から採っている（地 `#fafafa` と hover の `#f0f0f0`、
- * 文字 `#1e1e1e` / `#767676`、境界 `#e6e6e6`、強調 `#4db2ff` / `#0d99ff`）。組み合わせ方
- * には UI 案に無いものを含む（`StartActions`）。
+ * カードの配色とフォーカス枠は `ActionCard` が持つ（UI 案から離れている色とその理由もそちら）。
+ * それ以外の色は UI 案の語彙から採っている。
  *
  * @param attempt 直近の開く操作がどこまで進んだか
  * @param actions 開く / 作るを始める手続き
@@ -205,9 +210,9 @@ export function DocumentStart({
       aria-label="ドキュメントの開始"
       className="relative flex h-full flex-col items-center justify-center bg-[#fafafa] text-[#1e1e1e]"
     >
-      {/* w-96 は案内の 1 行が折り返さない幅。中央揃えは、案内が伸びて折り返した
-         ときに整うようにしておく（今の綴りでは折り返さないので効かない）。*/}
-      <div className="flex w-96 flex-col items-center gap-4 text-center">
+      {/* 400px は 2 枚のカードの列の幅（#1062）。案内の 1 行もこの幅で折り返さない。
+         中央揃えは、案内が伸びて折り返したときに整うようにしておく。*/}
+      <div className="flex w-[400px] flex-col items-center gap-4 text-center">
         <h1 className="font-medium text-2xl tracking-tight">Design Composer</h1>
         <p className="text-[#767676] text-sm">
           {isOpening

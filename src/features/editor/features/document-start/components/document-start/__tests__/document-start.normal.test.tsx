@@ -55,6 +55,53 @@ test("開くボタンを押すと、開く操作が始まる", async () => {
   expect(recorded.openCount()).toBe(1);
 });
 
+test("新規作成ボタンを押すと、作る操作が始まる", async () => {
+  const recorded = recordActions();
+  renderDocumentStart({ actions: recorded.actions });
+
+  await userEvent.click(screen.getByRole("button", { name: "新規作成" }));
+
+  expect(recorded.createCount()).toBe(1);
+});
+
+test("開くボタンには、既存の .dcmp を選ぶことが説明として添えられる", () => {
+  renderDocumentStart();
+
+  expect(
+    screen.getByRole("button", {
+      name: "開く",
+      description: /既存の \.dcmp を選ぶ/,
+    }),
+  ).toBeDefined();
+});
+
+test("新規作成ボタンには、空のドキュメントから始めることが説明として添えられる", () => {
+  renderDocumentStart();
+
+  expect(
+    screen.getByRole("button", {
+      name: "新規作成",
+      description: /空のドキュメントから始める/,
+    }),
+  ).toBeDefined();
+});
+
+test("開くボタンには、⌘O でも開けることが説明として添えられる", () => {
+  renderDocumentStart();
+
+  expect(
+    screen.getByRole("button", { name: "開く", description: /⌘O/ }),
+  ).toBeDefined();
+});
+
+test("新規作成ボタンには、⌘N でも作れることが説明として添えられる", () => {
+  renderDocumentStart();
+
+  expect(
+    screen.getByRole("button", { name: "新規作成", description: /⌘N/ }),
+  ).toBeDefined();
+});
+
 test("最近使ったファイルは、ファイル名で並ぶ", () => {
   renderDocumentStart({ recentPaths: [Path] });
 

@@ -111,8 +111,8 @@ export function renderEditorScreen(
 
 /**
  * 「開く」を始める。
- * 開始画面が出ている間はボタンから、開いた後は OS のメニューからしか始められないので、
- * ボタンがあればボタンを、無ければメニューを使う。
+ * 開始画面ではボタンとメニューのどちらからでも始められ、開いた後はメニューからだけ
+ * 始められる。ボタンがあればボタンを押し、無ければメニューを使う。
  */
 export async function startOpen(observer: ScreenObserver): Promise<void> {
   const button = screen.queryByRole("button", { name: "開く" });
