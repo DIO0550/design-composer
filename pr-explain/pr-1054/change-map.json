@@ -1,0 +1,616 @@
+{
+  "version": 2,
+  "pr": 1054,
+  "headBranch": "claude/magical-cannon-9vemsu",
+  "baseBranch": "main",
+  "mergeBase": "32f18b22b4407912ed32904a8e7afc083b45bbf6",
+  "head": "3a151010ec2c972f198bcc2ab4c3bd93c49def97",
+  "groups": [
+    {
+      "label": "domains / unit",
+      "files": [
+        {
+          "path": "src/domains/unit/axis/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/unit/px/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / dcmp",
+      "files": [
+        {
+          "path": "src/domains/dcmp/artboard/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/component-binding/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/component/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/css-declaration/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/css-direction/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/v1/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/validation/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 66,
+          "deletions": 29,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/domains/dcmp/document-names/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/layout/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/reference-context/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/resolved-props/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/size/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 78,
+          "deletions": 29,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/domains/dcmp/token/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 374,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/domains/dcmp/design-document/index.ts"
+        },
+        {
+          "path": "src/domains/dcmp/size/__tests__/size.fill.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/size/__tests__/size.inverted-limits.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 102,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/domains/dcmp/size/index.ts"
+        },
+        {
+          "path": "src/domains/dcmp/size/__tests__/size.limits.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/size/__tests__/size.normal.test.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / compiled",
+      "files": [
+        {
+          "path": "src/domains/compiled/compiled-element/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "utils",
+      "files": [
+        {
+          "path": "src/utils/Json.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Option.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/canvas",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "docs",
+      "files": [
+        {
+          "path": "docs/03-schema.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 3,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+        "name": "Box の最小幅が最大幅より大きいと、maxWidth を指すエラーが 1 件出る"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+        "name": "Box の最小高さが最大高さより大きいと、maxHeight を指すエラーが出る"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+        "name": "artboard の props に逆転を書いてもエラーにならない"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+        "name": "fixed の軸に書いた逆転はエラーにならない"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+        "name": "widthMode を書いていない Box でも、既定の hug として逆転を検出する"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+        "name": "インスタンスの overrides で生じる逆転はエラーにしない"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+        "name": "下限・上限を持たない Ellipse に逆転を書くと、未知の prop だけが出る"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+        "name": "両軸とも逆転していると、軸ごとに 1 件ずつ出る"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+        "name": "同じノードのスキーマ違反と最小 / 最大の逆転は、スキーマ違反が先に並ぶ"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+        "name": "最小と最大が等しいときはエラーにならない"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+        "name": "自由配置の親の下の fill に逆転も書くと、fill のエラーの前に並ぶ"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+        "name": "逆転のエラーの本文は、最小と最大の両方の prop 名を含む"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+        "name": "部品のルートの逆転は、その部品の子孫のエラーより前に並ぶ"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+        "name": "部品のルート自身の逆転を検出する"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+        "name": "部品の子孫の逆転を検出する"
+      },
+      {
+        "file": "src/domains/dcmp/size/__tests__/size.inverted-limits.test.ts",
+        "name": "fill の高さで最小が最大より大きいとき、高さが逆転として返る"
+      },
+      {
+        "file": "src/domains/dcmp/size/__tests__/size.inverted-limits.test.ts",
+        "name": "fixed の軸に書いた逆転は返らない"
+      },
+      {
+        "file": "src/domains/dcmp/size/__tests__/size.inverted-limits.test.ts",
+        "name": "hug の幅で最小が最大より大きいとき、幅が逆転として返る"
+      },
+      {
+        "file": "src/domains/dcmp/size/__tests__/size.inverted-limits.test.ts",
+        "name": "両軸とも逆転していると幅・高さの順で返る"
+      },
+      {
+        "file": "src/domains/dcmp/size/__tests__/size.inverted-limits.test.ts",
+        "name": "別の軸どうしの最小と最大は比べない"
+      },
+      {
+        "file": "src/domains/dcmp/size/__tests__/size.inverted-limits.test.ts",
+        "name": "大きい最小だけを書いても逆転にならない"
+      },
+      {
+        "file": "src/domains/dcmp/size/__tests__/size.inverted-limits.test.ts",
+        "name": "小さい最大だけを書いても逆転にならない"
+      },
+      {
+        "file": "src/domains/dcmp/size/__tests__/size.inverted-limits.test.ts",
+        "name": "数値でない最小は書かれていないものとして扱い、逆転にならない"
+      },
+      {
+        "file": "src/domains/dcmp/size/__tests__/size.inverted-limits.test.ts",
+        "name": "最小と最大が等しいときは逆転にならない"
+      }
+    ],
+    "removed": [],
+    "files": [
+      "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+      "src/domains/dcmp/size/__tests__/size.inverted-limits.test.ts"
+    ]
+  },
+  "commits": [
+    {
+      "sha": "1f99de4ed3fdb39a5b0c8cd2110518c15132e3fd",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-11T00:47:23Z",
+      "subject": "✨ [New Feature]: #632 最小 / 最大の逆転を Size が軸ごとに判定する",
+      "body": "- SizeLimits.isInverted: 下限と上限の両方があり、下限 > 上限のときだけ真\n- Size.collectInvertedLimitAxes: hug / fill の軸のうち逆転しているものを\n  width → height の順で返す(デフォルト解決済みの props を受け取る)\n- Size.limitProps を公開し、検証側がエラーの位置と本文に prop 名を使える\n  ようにした\n- SizeLimits 型の doc に、逆転を生成時に弾かない理由を足した\n- size.inverted-limits.test.ts を足した\n\n背景:\n#596 で足した minWidth / maxWidth / minHeight / maxHeight は min > max を\n同時に書ける。CSS では下限が勝つので描画は壊れないが、書いた人の意図と\n違い、ファイルを見てもどちらが効いているか分からない(Issue #632)。\n\n採用理由:\n下限と上限の両方を不在を取りうる形で持つ型は SizeLimits だけなので、\n比較はそこに置いた。fixed の軸では見ないという規則は、fixed が limits を\n持たない Size の直和の構造から出るので、軸の走査は Size に置いた\n(collectFillAxes と同じ形)。\n\n影響とトレードオフ:\ncollectInvertedLimitAxes は解決済みの props を前提にする。widthMode を\n書いていない Box は解決しないと fromProps が none になり見落とすため。\n前提を型(ResolvedProps)で要求すると size → resolved-props の import が\n循環する(resolved-props → primitive-schema → schema → layout → size)\nので、doc に書き、検証側のテスト「widthMode を書いていない Box」で守る。\n\n代替案:\n- SizeLimits.create を検証込み(Result)にする: fromProps が none を返すか\n  limits を落とすことになり、開いて描画を続ける(docs/03「開く時」)際の\n  今の描画(下限が勝つ)が変わる。fill-in-free-parent の検出も止まる\n- SizeLimits を ordered / inverted の直和にする: 出力する宣言が同じで、\n  消費側の振る舞いが変わらない\n- src/utils/Range.ts に置く: 両端が必須で、片方の不在を表せない\n\n参考:\n- Issue #632 の計画コメント 6103756878 と改訂コメント 6103832833\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01B47Kv8zrqzFHvCeNt6LHey",
+      "files": [
+        {
+          "path": "src/domains/dcmp/size/__tests__/size.inverted-limits.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 102,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,102 @@\n+import { expect, test } from \"vitest\";\n+import { Size } from \"../index\";\n+\n+test(\"hug の幅で最小が最大より大きいとき、幅が逆転として返る\", () => {\n+  expect(\n+    Size.collectInvertedLimitAxes({\n+      widthMode: \"hug\",\n+      minWidth: 500,\n+      maxWidth: 100,\n+      heightMode: \"hug\",\n+    }),\n+  ).toEqual([\"width\"]);\n+});\n+\n+test(\"fill の高さで最小が最大より大きいとき、高さが逆転として返る\", () => {\n+  expect(\n+    Size.collectInvertedLimitAxes({\n+      widthMode: \"hug\",\n+      heightMode: \"fill\",\n+      minHeight: 500,\n+      maxHeight: 100,\n+    }),\n+  ).toEqual([\"height\"]);\n+});\n+\n+test(\"両軸とも逆転していると幅・高さの順で返る\", () => {\n+  expect(\n+    Size.collectInvertedLimitAxes({\n+      widthMode: \"hug\",\n+      minWidth: 500,\n+      maxWidth: 100,\n+      heightMode: \"fill\",\n+      minHeight: 500,\n+      maxHeight: 100,\n+    }),\n+  ).toEqual([\"width\", \"height\"]);\n+});\n+\n+test(\"最小と最大が等しいときは逆転にならない\", () => {\n+  expect(\n+    Size.collectInvertedLimitAxes({\n+      widthMode: \"hug\",\n+      minWidth: 100,\n+      maxWidth: 100,\n+      heightMode: \"hug\",\n+    }),\n+  ).toEqual([]);\n+});\n+\n+test(\"大きい最小だけを書いても逆転にならない\", () => {\n+  expect(\n+    Size.collectInvertedLimitAxes({\n+      widthMode: \"hug\",\n+      minWidth: 500,\n+      heightMode: \"hug\",\n+    }),\n+  ).toEqual([]);\n+});\n+\n+test(\"小さい最大だけを書いても逆転にならない\", () => {\n+  expect(\n+    Size.collectInvertedLimitAxes({\n+      widthMode: \"hug\",\n+      maxWidth: 10,\n+      heightMode: \"hug\",\n+    }),\n+  ).toEqual([]);\n+});\n+\n+test(\"数値でない最小は書かれていないものとして扱い、逆転にならない\", () => {\n+  expect(\n+    Size.collectInvertedLimitAxes({\n+      widthMode: \"hug\",\n+      minWidth: \"500\",\n+      maxWidth: 100,\n+      heightMode: \"hug\",\n+    }),\n+  ).toEqual([]);\n+});\n+\n+test(\"fixed の軸に書いた逆転は返らない\", () => {\n+  expect(\n+    Size.collectInvertedLimitAxes({\n+      widthMode: \"fixed\",\n+      width: 120,\n+      minWidth: 500,\n+      maxWidth: 100,\n+      heightMode: \"hug\",\n+    }),\n+  ).toEqual([]);\n+});\n+\n+test(\"別の軸どうしの最小と最大は比べない\", () => {\n+  expect(\n+    Size.collectInvertedLimitAxes({\n+      widthMode: \"hug\",\n+      minWidth: 500,\n+      heightMode: \"hug\",\n+      maxHeight: 100,\n+    }),\n+  ).toEqual([]);\n+});",
+          "patchLines": 103,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/dcmp/size/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 45,
+          "deletions": 0,
+          "patch": "@@ -11,6 +11,9 @@ import { Option } from \"@/utils/Option\";\n /**\n  * 軸方向の長さに与える下限と上限（docs/03「サイズ指定の原則」）。\n  * 片方だけを書くこともあるので、それぞれが不在を取りうる。\n+ *\n+ * 下限が上限を超える逆転は生成時に弾かない。逆転していても開いて描画を続け（docs/03「開く時」）、\n+ * CSS では下限が勝つ形で出すため。検出は `DesignDocument.collectErrors` が持つ。\n  */\n export type SizeLimits = Readonly<{\n   min: Option<number>;\n@@ -87,6 +90,20 @@ const SizeLimits = {\n       ...limitDeclaration(`max-${axis}`, limits.max),\n     ];\n   },\n+\n+  /**\n+   * 下限が上限を超えているか。\n+   *\n+   * @param limits 見る下限と上限\n+   * @returns 両方があり、下限が上限より大きいときだけ `true`。等しいときと片方が無いときは `false`\n+   */\n+  isInverted(limits: SizeLimits): boolean {\n+    return (\n+      Option.isSome(limits.min) &&\n+      Option.isSome(limits.max) &&\n+      limits.min.value > limits.max.value\n+    );\n+  },\n } as const;\n \n /**\n@@ -210,6 +227,34 @@ export const Size = {\n     );\n   },\n \n+  /**\n+   * その軸の下限・上限が載る prop 名。\n+   *\n+   * @param axis どちらの軸の prop 名か\n+   * @returns 下限と上限の prop 名の対\n+   */\n+  limitProps,\n+\n+  /**\n+   * 下限が上限を超えている軸（docs/03「バリデーション仕様」）。\n+   *\n+   * @param props 見るノードの props。デフォルト解決済みのもの（`widthMode` を書いていない\n+   *   ノードを既定のモードで見るため。解決していないと `fromProps` が `none` になり見落とす）\n+   * @returns `hug` / `fill` で下限が上限より大きい軸を width・height の順で。`fixed` の軸と\n+   *   サイズが決まらない軸は含めない\n+   */\n+  collectInvertedLimitAxes(props: Props): readonly Axis[] {\n+    return Object.values(Axes).filter((axis) =>\n+      Option.contains(\n+        Option.map(\n+          Size.fromProps(props, axis),\n+          (size) => size.mode !== \"fixed\" && SizeLimits.isInverted(size.limits),\n+        ),\n+        true,\n+      ),\n+    );\n+  },\n+\n   /**\n    * `fill` の軸を、下限・上限ごと別のノードへ書く編集（グループ化で、包むノードの `fill` を\n    * Box へ引き継ぐときなど）。",
+          "patchLines": 66,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "ae8b0e045ab427437c6a1d5b8f2f6e6142a1b802",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-11T00:47:42Z",
+      "subject": "✨ [New Feature]: #632 最小 / 最大の逆転をバリデーションエラーにする",
+      "body": "- NodeValidationErrorKind に inverted-size-limits を足した\n- collectInvertedLimitErrors: プリミティブの型だけを対象に、props を\n  デフォルト解決してから Size.collectInvertedLimitAxes で判定し、軸ごとに\n  max 側の prop を指すエラーを作る\n- 子孫(collectNodeErrors)では fill-in-free-parent の後ろ、部品のルート\n  (collectComponentErrors)ではスキーマ照合の直後に並べる\n- 両関数の doc を、集める検査の列挙に直した\n- design-document.validate-size-limits.test.ts を足した\n\n背景:\n前後関係は 2 prop の関係なので、PropDefinition の range(1 prop の値域)\nには乗らない。fill-in-free-parent と同じく横断エラーの種別として足す\n(Issue #632)。\n\n採用理由:\n- 1 軸 1 件・max 側を指す: 幅と高さは別々に直す値で、CSS では下限が\n  勝つので「書いたのに効いていない」のは上限の側\n- 部品ルートは props の位置に入れる: validate-order の並び(props・子の\n  行きがけ順・宣言名・binding・参照)を崩さない\n- artboard 自身の props は見ない: collectArtboardErrors を変えないことで\n  除外する。Box として解決すると widthMode の既定 hug になって誤検出し、\n  Artboard.boxProps を通すと fixed 固定で常に空になる\n\n影響とトレードオフ:\n外部変更で逆転が届くと DocumentReload が拒み、最後に正常だった描画を\n保つ。アプリ内の編集で逆転させた場合は止めずにエラー一覧に出す。\nisPrimitiveType の確認と resolve の 2 行が ResolvedProps.forNode の本体と\n重なる。\n\n代替案:\n- range-violation へ寄せる: 1 prop の値域違反と 2 prop の関係が混ざる\n- 仮名 min-max-inverted: 既存の種別名は「形容 + 対象」の形で、対象は\n  リポジトリ内で limits と呼ばれている\n- ResolvedProps.forNode を使う: 引数が name 必須の PrimitiveNode で、\n  部品ルート(Component)を渡せない。引数を広げると名前と doc が実体と\n  ずれ、改名が本番 3 箇所とテスト 2 ファイルに及ぶ\n- Component.toNode でルートと子孫を一括走査: ルートも collectFillErrors を\n  通り、親の props をでっち上げることになる\n- fixed の軸にも広げる: docs/03 が読み捨てると決めており、enabledWhen で\n  欄が無効になるため GUI から直せず、描画にも効かない\n\n参考:\n- Issue #632 の計画コメント 6103756878 と改訂コメント 6103832833\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01B47Kv8zrqzFHvCeNt6LHey",
+      "files": [
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 316,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,316 @@\n+import { expect, test } from \"vitest\";\n+import type { Props } from \"@/domains/dcmp/node\";\n+import { DesignDocument, DocumentTemplate } from \"../index\";\n+\n+/**\n+ * 子を縦に並べる artboard の直下に Box を 1 つ持つドキュメント。\n+ *\n+ * @param props その Box に設定する props\n+ * @returns その Box を持つドキュメント\n+ */\n+function documentWithBox(props: Props): DesignDocument {\n+  return DesignDocument.create({\n+    artboards: [\n+      {\n+        name: \"screen\",\n+        width: 375,\n+        height: 812,\n+        props: { layout: \"column\" },\n+        children: [{ name: \"target\", type: \"Box\", props }],\n+      },\n+    ],\n+  });\n+}\n+\n+test(\"Box の最小幅が最大幅より大きいと、maxWidth を指すエラーが 1 件出る\", () => {\n+  const document = documentWithBox({\n+    widthMode: \"hug\",\n+    minWidth: 500,\n+    maxWidth: 100,\n+  });\n+\n+  expect(DesignDocument.collectErrors(document)).toEqual([\n+    expect.objectContaining({\n+      kind: \"inverted-size-limits\",\n+      nodeName: \"target\",\n+      prop: \"maxWidth\",\n+    }),\n+  ]);\n+});\n+\n+test(\"Box の最小高さが最大高さより大きいと、maxHeight を指すエラーが出る\", () => {\n+  const document = documentWithBox({\n+    heightMode: \"hug\",\n+    minHeight: 500,\n+    maxHeight: 100,\n+  });\n+\n+  expect(DesignDocument.collectErrors(document)).toEqual([\n+    expect.objectContaining({\n+      kind: \"inverted-size-limits\",\n+      nodeName: \"target\",\n+      prop: \"maxHeight\",\n+    }),\n+  ]);\n+});\n+\n+test(\"両軸とも逆転していると、軸ごとに 1 件ずつ出る\", () => {\n+  const document = documentWithBox({\n+    widthMode: \"hug\",\n+    minWidth: 500,\n+    maxWidth: 100,\n+    heightMode: \"fill\",\n+    minHeight: 500,\n+    maxHeight: 100,\n+  });\n+\n+  expect(DesignDocument.collectErrors(document)).toEqual([\n+    expect.objectContaining({\n+      kind: \"inverted-size-limits\",\n+      nodeName: \"target\",\n+      prop: \"maxWidth\",\n+    }),\n+    expect.objectContaining({\n+      kind: \"inverted-size-limits\",\n+      nodeName: \"target\",\n+      prop: \"maxHeight\",\n+    }),\n+  ]);\n+});\n+\n+test(\"widthMode を書いていない Box でも、既定の hug として逆転を検出する\", () => {\n+  const document = documentWithBox({ minWidth: 500, maxWidth: 100 });\n+\n+  expect(DesignDocument.collectErrors(document)).toEqual([\n+    expect.objectContaining({\n+      kind: \"inverted-size-limits\",\n+      nodeName: \"target\",\n+      prop: \"maxWidth\",\n+    }),\n+  ]);\n+});\n+\n+test(\"fixed の軸に書いた逆転はエラーにならない\", () => {\n+  const document = DesignDocument.create({\n+    artboards: [\n+      {\n+        name: \"screen\",\n+        width: 375,\n+        height: 812,\n+        props: { layout: \"column\" },\n+        children: [\n+          {\n+            name: \"fixed-box\",\n+            type: \"Box\",\n+            props: {\n+              widthMode: \"fixed\",\n+              width: 120,\n+              minWidth: 500,\n+              maxWidth: 100,\n+            },\n+          },\n+          {\n+            name: \"hug-box\",\n+            type: \"Box\",\n+            props: { widthMode: \"hug\", minWidth: 500, maxWidth: 100 },\n+          },\n+        ],\n+      },\n+    ],\n+  });\n+\n+  expect(DesignDocument.collectErrors(document)).toEqual([\n+    expect.objectContaining({\n+      kind: \"inverted-size-limits\",\n+      nodeName: \"hug-box\",\n+      prop: \"maxWidth\",\n+    }),\n+  ]);\n+});\n+\n+test(\"最小と最大が等しいときはエラーにならない\", () => {\n+  const document = documentWithBox({\n+    widthMode: \"hug\",\n+    minWidth: 100,\n+    maxWidth: 100,\n+  });\n+\n+  expect(DesignDocument.collectErrors(document)).toEqual([]);\n+});\n+\n+test(\"部品のルート自身の逆転を検出する\", () => {\n+  const document = DesignDocument.create({\n+    components: {\n+      card: { type: \"Box\", props: { minWidth: 500, maxWidth: 100 } },\n+    },\n+  });\n+\n+  expect(DesignDocument.collectErrors(document)).toEqual([\n+    expect.objectContaining({\n+      kind: \"inverted-size-limits\",\n+      nodeName: \"card\",\n+      prop: \"maxWidth\",\n+    }),\n+  ]);\n+});\n+\n+test(\"部品の子孫の逆転を検出する\", () => {\n+  const document = DesignDocument.create({\n+    components: {\n+      card: {\n+        type: \"Box\",\n+        children: [\n+          {\n+            name: \"target\",\n+            type: \"Box\",\n+            props: { minWidth: 500, maxWidth: 100 },\n+          },\n+        ],\n+      },\n+    },\n+  });\n+\n+  expect(DesignDocument.collectErrors(document)).toEqual([\n+    expect.objectContaining({\n+      kind: \"inverted-size-limits\",\n+      nodeName: \"target\",\n+      prop: \"maxWidth\",\n+    }),\n+  ]);\n+});\n+\n+test(\"部品のルートの逆転は、その部品の子孫のエラーより前に並ぶ\", () => {\n+  const document = DesignDocument.create({\n+    components: {\n+      card: {\n+        type: \"Box\",\n+        props: { minWidth: 500, maxWidth: 100 },\n+        children: [{ name: \"child\", type: \"Box\", props: { bogus: 1 } }],\n+      },\n+    },\n+  });\n+\n+  expect(DesignDocument.collectErrors(document)).toEqual([\n+    expect.objectContaining({\n+      kind: \"inverted-size-limits\",\n+      nodeName: \"card\",\n+      prop: \"maxWidth\",\n+    }),\n+    expect.objectContaining({\n+      kind: \"unknown-prop\",\n+      nodeName: \"child\",\n+      prop: \"bogus\",\n+    }),\n+  ]);\n+});\n+\n+test(\"自由配置の親の下の fill に逆転も書くと、fill のエラーの後ろに並ぶ\", () => {\n+  const document = DesignDocument.create({\n+    artboards: [\n+      {\n+        name: \"screen\",\n+        width: 375,\n+        height: 812,\n+        props: { layout: \"free\" },\n+        children: [\n+          {\n+            name: \"target\",\n+            type: \"Box\",\n+            props: { widthMode: \"fill\", minWidth: 500, maxWidth: 100 },\n+          },\n+        ],\n+      },\n+    ],\n+  });\n+\n+  expect(DesignDocument.collectErrors(document)).toEqual([\n+    expect.objectContaining({\n+      kind: \"fill-in-free-parent\",\n+      nodeName: \"target\",\n+      prop: \"widthMode\",\n+    }),\n+    expect.objectContaining({\n+      kind: \"inverted-size-limits\",\n+      nodeName: \"target\",\n+      prop: \"maxWidth\",\n+    }),\n+  ]);\n+});\n+\n+test(\"artboard の props に逆転を書いてもエラーにならない\", () => {\n+  const document = DesignDocument.create({\n+    artboards: [\n+      {\n+        name: \"screen\",\n+        width: 375,\n+        height: 812,\n+        props: { layout: \"column\", minWidth: 500, maxWidth: 100 },\n+        children: [\n+          {\n+            name: \"target\",\n+            type: \"Box\",\n+            props: { widthMode: \"hug\", minWidth: 500, maxWidth: 100 },\n+          },\n+        ],\n+      },\n+    ],\n+  });\n+\n+  expect(DesignDocument.collectErrors(document)).toEqual([\n+    expect.objectContaining({\n+      kind: \"inverted-size-limits\",\n+      nodeName: \"target\",\n+      prop: \"maxWidth\",\n+    }),\n+  ]);\n+});\n+\n+test(\"下限・上限を持たない Ellipse に逆転を書くと、未知の prop だけが出る\", () => {\n+  const document = DesignDocument.create({\n+    tokens: DocumentTemplate.Default.tokens,\n+    artboards: [\n+      {\n+        name: \"screen\",\n+        width: 375,\n+        height: 812,\n+        props: { layout: \"column\" },\n+        children: [\n+          {\n+            name: \"target\",\n+            type: \"Ellipse\",\n+            props: { widthMode: \"fill\", minWidth: 500, maxWidth: 100 },\n+          },\n+        ],\n+      },\n+    ],\n+  });\n+\n+  expect(DesignDocument.collectErrors(document)).toEqual([\n+    expect.objectContaining({\n+      kind: \"unknown-prop\",\n+      nodeName: \"target\",\n+      prop: \"minWidth\",\n+    }),\n+    expect.objectContaining({\n+      kind: \"unknown-prop\",\n+      nodeName: \"target\",\n+      prop: \"maxWidth\",\n+    }),\n+  ]);\n+});\n+\n+test(\"逆転のエラーの本文は、最小と最大の両方の prop 名を含む\", () => {\n+  const document = documentWithBox({\n+    widthMode: \"hug\",\n+    minWidth: 500,\n+    maxWidth: 100,\n+  });\n+\n+  expect(DesignDocument.collectErrors(document)).toEqual([\n+    expect.objectContaining({\n+      message: expect.stringMatching(\n+        /minWidth[\\s\\S]*maxWidth|maxWidth[\\s\\S]*minWidth/,\n+      ),\n+    }),\n+  ]);\n+});",
+          "patchLines": 317,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/validation/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 40,
+          "deletions": 8,
+          "patch": "@@ -25,6 +25,7 @@ import {\n   type InstanceViolation,\n   ReferenceContext,\n } from \"@/domains/dcmp/reference-context\";\n+import { ResolvedProps } from \"@/domains/dcmp/resolved-props\";\n import { Size } from \"@/domains/dcmp/size\";\n import { type TokenColorPosition, TokenSet } from \"@/domains/dcmp/token\";\n import { Json } from \"@/utils/Json\";\n@@ -44,7 +45,8 @@ type NodeValidationErrorKind =\n   | \"missing-name\"\n   | \"invalid-identifier\"\n   | \"duplicate-name\"\n-  | \"fill-in-free-parent\";\n+  | \"fill-in-free-parent\"\n+  | \"inverted-size-limits\";\n \n /** トークンを指す不正の理由。 */\n type TokenValidationErrorKind =\n@@ -192,7 +194,34 @@ function collectFillErrors(\n }\n \n /**\n- * ノードとその子孫のプリミティブの props をスキーマで照らす（走査は `Node` が持つ）。\n+ * 最小が最大を超えている軸を、軸ごとのエラーにする（判定は `Size` が持つ）。\n+ *\n+ * @param type ノードの型名。プリミティブの型でなければ照らすスキーマが無いので見ない\n+ * @param props 検査するノードの props（未設定なら空として扱う）\n+ * @returns 軸ごとの、`max*` の側を指すエラーの並び。逆転が無いときと型が未知のときは空\n+ */\n+function collectInvertedLimitErrors(\n+  type: string,\n+  props: Props | undefined,\n+): readonly UnlocatedError[] {\n+  if (!PrimitiveSchema.isPrimitiveType(type)) {\n+    return [];\n+  }\n+  return Size.collectInvertedLimitAxes(\n+    ResolvedProps.resolve(type, props ?? {}),\n+  ).map((axis) => {\n+    const { min, max } = Size.limitProps(axis);\n+    return {\n+      kind: \"inverted-size-limits\" as const,\n+      prop: max,\n+      message: `prop \"${max}\" is less than \"${min}\"; the minimum wins`,\n+    };\n+  });\n+}\n+\n+/**\n+ * ノードとその子孫のプリミティブについて、スキーマ照合・子を並べない親の下の `fill`・\n+ * 最小 / 最大の逆転のエラーをノードごとにこの順で集める（走査は `Node` が持つ）。\n  *\n  * 部品インスタンスの中身は対象外で、検証が見るのは**定義時点の props** だけ（中身は部品の\n  * 定義として照らされる）。\n@@ -200,7 +229,8 @@ function collectFillErrors(\n  * @param node 起点のノード\n  * @param tokens トークン参照の解決に使うトークン一式\n  * @param parentProps このノードを収めている親の props\n- * @returns 自身と子孫のプリミティブの props のエラーの並び（部品インスタンスは空）\n+ * @returns 自身と子孫のプリミティブについて、スキーマ照合・子を並べない親の下の `fill`・\n+ *   最小 / 最大の逆転のエラーの並び（部品インスタンスは空）\n  */\n function collectNodeErrors(\n   node: Node,\n@@ -214,6 +244,7 @@ function collectNodeErrors(\n         Layout.fromProps(nested.parentProps),\n         nested.node.props ?? {},\n       ),\n+      ...collectInvertedLimitErrors(nested.node.type, nested.node.props),\n     ]),\n   );\n }\n@@ -369,7 +400,8 @@ export function collectCircularRefErrors(\n }\n \n /**\n- * 部品1件の props・子ノード・公開 prop の宣言名・binding・参照のエラーを集める。\n+ * 部品1件の props（スキーマ照合と、ルート自身の最小 / 最大の逆転）・子ノード・公開 prop の\n+ * 宣言名・binding・参照のエラーを集める。\n  *\n  * @param context 部品とトークンの一式\n  * @param name エラーの位置に使う部品名\n@@ -382,10 +414,10 @@ export function collectComponentErrors(\n   component: Component,\n ): readonly NodeValidationError[] {\n   const children = component.children ?? [];\n-  const propErrors = withLocation(\n-    { nodeName: name },\n-    collectTypedPropErrors(component.type, component.props, context.tokens),\n-  );\n+  const propErrors = withLocation({ nodeName: name }, [\n+    ...collectTypedPropErrors(component.type, component.props, context.tokens),\n+    ...collectInvertedLimitErrors(component.type, component.props),\n+  ]);\n   const childErrors = children.flatMap((child) =>\n     collectNodeErrors(child, context.tokens, component.props ?? {}),\n   );",
+          "patchLines": 97,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "d4d61ab33126bc975f44255c7a080a00a1fb9cbf",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-11T00:47:42Z",
+      "subject": "📝 [Documentation]: #632 docs/03 に最小 / 最大の逆転の検出を書く",
+      "body": "- サイズ指定の原則: 「前後関係も検出しない」を、横断の検査が\n  バリデーションエラーにする(描画は CSS どおり最小が勝つ)に直し、\n  fixed の軸では前後関係も見ないことを足した\n- バリデーション仕様: 「最小 / 最大の逆転」の箇条を足した\n- 開く時の表: 列挙に「子を並べない親の下の fill」と「最小 / 最大の逆転」を\n  足した\n\n背景:\n前のコミットで逆転をバリデーションエラーにしたので、仕様書の記述を\n合わせる(Issue #632)。\n\n採用理由:\n開く時の表は既存の fill-in-free-parent も列挙から漏らしていた。同じ行を\n直すので、今回の項目だけ足すと不揃いが残るため、あわせて足した。\n\n影響とトレードオフ:\n仕様書の記述だけで、挙動は前のコミットで変わっている。\n\n代替案:\n- fill の漏れを別 Issue にする: 同じ行の 1 語なので分ける利点が無い\n\n参考:\n- Issue #632 の改訂コメント 6103832833\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01B47Kv8zrqzFHvCeNt6LHey",
+      "files": [
+        {
+          "path": "docs/03-schema.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 3,
+          "patch": "@@ -165,8 +165,8 @@ Box と Ellipse が、面をどう塗るかを 1 prop で持つ（Text が持つ\n - `width` / `height` は `widthMode` / `heightMode` が `fixed` のときのみ有効（`enabledWhen`）\n - **`widthMode` / `heightMode` の `fill` は、`layout` が `row` / `column` の親の子にだけ書ける。** `free` の親の子に書いたものはバリデーションエラー（下記「バリデーション仕様」）。親の prop を見る条件なので `enabledWhen` では表せない\n - **モードとして `hug` を持つかはプリミティブごとに違う。** 子を持たないプリミティブは中身から決まる長さが無いので `hug` を持たない\n-- **最小 / 最大（`minWidth` / `maxWidth` / `minHeight` / `maxHeight`）は、そのモードが `fixed` 以外のときだけ効く。** `fixed` は「その軸の長さがその値で決まっている」ことを意味するので、クランプでその長さが別の値になると意味自体が崩れる（リサイズハンドルも親のリサイズへの追従も、`fixed` の長さを画面上の長さとして読む）。`fixed` のノードに書いた最小 / 最大は**読み捨てる**（バリデーションエラーにはしない。フローの子に書いた座標と同じ扱い）\n-- **最小 / 最大は取りうる範囲を宣言しない。** `width` / `height` と同じで、値域はブラウザの解釈に委ねる（上記「prop 定義のフィールド」の `range` は宣言しない prop を範囲では弾かない）。前後関係（`minWidth` が `maxWidth` より大きい）も検出しない — 1 prop の値域ではなく 2 prop の関係なので、`range` では表せない\n+- **最小 / 最大（`minWidth` / `maxWidth` / `minHeight` / `maxHeight`）は、そのモードが `fixed` 以外のときだけ効く。** `fixed` は「その軸の長さがその値で決まっている」ことを意味するので、クランプでその長さが別の値になると意味自体が崩れる（リサイズハンドルも親のリサイズへの追従も、`fixed` の長さを画面上の長さとして読む）。`fixed` のノードに書いた最小 / 最大は**読み捨てる**（バリデーションエラーにはしない。フローの子に書いた座標と同じ扱い。`fixed` の軸に書いた最小 / 最大は前後関係も見ない）\n+- **最小 / 最大は取りうる範囲を宣言しない。** `width` / `height` と同じで、値域はブラウザの解釈に委ねる（上記「prop 定義のフィールド」の `range` は宣言しない prop を範囲では弾かない）。前後関係（`minWidth` が `maxWidth` より大きい）はバリデーションエラーにする（下記「バリデーション仕様」）。1 prop の値域ではなく 2 prop の関係なので、`range` ではなく横断の検査が持つ。描画は CSS どおり最小が勝つ\n \n ### Box\n \n@@ -302,6 +302,7 @@ Box と Ellipse が、面をどう塗るかを 1 prop で持つ（Text が持つ\n - dangling ref（存在しない部品名への参照）\n - **部品の循環参照**（ref の展開が自分自身に到達する）\n - **子を並べない親の下の `fill`**（`layout: free` の親の子に `widthMode` / `heightMode` の `fill` を書いている）\n+- **最小 / 最大の逆転**（`fixed` 以外のモードの軸で `minWidth` > `maxWidth` / `minHeight` > `maxHeight`。軸ごとに 1 件で、`max*` の側を指す）\n - overrides の未宣言キー（部品の publicProps 宣言に無い名前の上書き）\n - **数字だけの publicProps 宣言名**（02-data-model「部品のインターフェース」）\n - binding の不整合（存在しない内部ノード名 / 存在しない prop への binding、ドメイン違反の上書き値）\n@@ -325,7 +326,7 @@ Box と Ellipse が、面をどう塗るかを 1 prop で持つ（Text が持つ\n | 検出した不正 | 開くか |\n |---|---|\n | JSON としてパース不能 / オブジェクトキーの重複 / 版を解決できない / 構造がスキーマの形に合わない | **開けない**。エラー一覧だけを開始画面に出す |\n-| 上記を通ったうえでのバリデーション違反（未知の `type` / 未知の prop / ドメイン違反 / dangling ref / 循環参照 / 未宣言の overrides / 数字だけの publicProps 宣言名 / binding の不整合 / 識別子規則違反 / `name` 欠落 / 名前の一意性違反 / 塗り用の 2 種別での名前衝突 / hex でない色） | **開く**。エラー一覧を重ねて表示し、編集は続けられる |\n+| 上記を通ったうえでのバリデーション違反（未知の `type` / 未知の prop / ドメイン違反 / dangling ref / 循環参照 / 子を並べない親の下の `fill` / 最小 / 最大の逆転 / 未宣言の overrides / 数字だけの publicProps 宣言名 / binding の不整合 / 識別子規則違反 / `name` 欠落 / 名前の一意性違反 / 塗り用の 2 種別での名前衝突 / hex でない色） | **開く**。エラー一覧を重ねて表示し、編集は続けられる |\n \n - 開けるようにするのは、**自動保存が書き出した不正なドキュメントを GUI から直せるようにする**ため。保存モデル（05-architecture「保存モデル: 自動保存」）は画面の内容をそのまま書き出すので、アプリ内の編集で作った不正はファイルにも載る。これを開けないままにすると、直す手段が外部エディタにしか無くなる\n - 開いたあとの扱いはアプリ内の編集で作った不正と同じ（キャンバスは凍らせない）",
+          "patchLines": 28,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "57e3472b66a5133082cac781bb41d3552ebc6250",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-11T01:10:08Z",
+      "subject": "♻️ [Refactoring]: #632 Size の軸の絞り込みを 1 つにし、props の前提の doc を揃える",
+      "body": "- collectFillAxes と collectInvertedLimitAxes が写していた「軸を\n  width → height の順に絞る」走査を、ローカル関数 collectAxesWhere に\n  まとめた(順序とサイズが決まらない軸の除外の doc はそこに 1 回だけ)\n- limitProps の実装を Size.limitProps のメソッドへ移し、doc を 1 つにした\n  (Size.modeProp と同じ形。内部の 2 か所も Size.limitProps を呼ぶ)\n- collectInvertedLimitAxes の doc に、解決済みを型で要求しない理由を足した\n- fromProps / fixedLengthFromProps / declarationsFromProps / collectFillAxes\n  の「デフォルト解決済みでなくてよい」を、モードが書かれていなければ既定を\n  読まず none(空)になる、という振る舞いの記述に揃えた\n\n背景:\n実装の検証で duplication-reviewer と comment-reviewer から指摘を受けた\n(Issue #632 comment 6103922414、すべて採用)。新しく足した doc の「解決\nしていないと fromProps が none になる」と、既存の「解決済みでなくてよい」\nが食い違って読めた。\n\n採用理由:\n呼び出し側には解決済みの props を渡すもの(compiled-element、\ndesign-document)と、解決していないもの(node-resize)が混在しているので、\n前提を要求する書き方ではなく、書かれていないときの振る舞いを書いた。\n\n影響とトレードオフ:\n挙動は変えていない。collectAxesWhere の並びを逆にすると 4 件、サイズが\n決まらない軸を含めると 74 件のテストが落ちることを確かめた。\n\n代替案:\n- モジュール関数 limitProps の doc だけを消す: pre-push の doc 検査が\n  doc の無い宣言として落とすため、メソッドへ移した\n\n参考:\n- Issue #632 comment 6103922414(採否)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01B47Kv8zrqzFHvCeNt6LHey",
+      "files": [
+        {
+          "path": "src/domains/dcmp/size/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 46,
+          "deletions": 42,
+          "patch": "@@ -20,21 +20,6 @@ export type SizeLimits = Readonly<{\n   max: Option<number>;\n }>;\n \n-/**\n- * その軸の下限・上限が載る prop 名。\n- *\n- * @param axis どちらの軸の prop 名か\n- * @returns 下限と上限の prop 名の対\n- */\n-function limitProps(axis: Axis): Readonly<{\n-  min: \"minWidth\" | \"minHeight\";\n-  max: \"maxWidth\" | \"maxHeight\";\n-}> {\n-  return axis === \"width\"\n-    ? { min: \"minWidth\", max: \"maxWidth\" }\n-    : { min: \"minHeight\", max: \"maxHeight\" };\n-}\n-\n /**\n  * prop に設定されている長さ。\n  *\n@@ -70,7 +55,7 @@ const SizeLimits = {\n    * @returns 下限と上限。書いていない側と数値でない側は `none`\n    */\n   fromProps(props: Props, axis: Axis): SizeLimits {\n-    const names = limitProps(axis);\n+    const names = Size.limitProps(axis);\n     return {\n       min: lengthOf(props[names.min]),\n       max: lengthOf(props[names.max]),\n@@ -173,13 +158,31 @@ function declarations(\n   }\n }\n \n+/**\n+ * サイズが判定を満たす軸。\n+ *\n+ * @param props 見るノードの props\n+ * @param predicate 軸ごとのサイズに対する判定\n+ * @returns 判定を満たす軸を width・height の順で。サイズが決まらない（`Size.fromProps` が\n+ *   `none`）軸は含めない\n+ */\n+function collectAxesWhere(\n+  props: Props,\n+  predicate: (size: Size) => boolean,\n+): readonly Axis[] {\n+  return Object.values(Axes).filter((axis) =>\n+    Option.contains(Option.map(Size.fromProps(props, axis), predicate), true),\n+  );\n+}\n+\n export const Size = {\n   /**\n    * props からその軸のサイズを組み立てる。\n    *\n-   * 決まらないのはスキーマ違反のときで、不正は `DesignDocument.collectErrors` が出す。\n+   * 決まらないのはモードが書かれていないときとスキーマ違反のときで、後者の不正は\n+   * `DesignDocument.collectErrors` が出す。\n    *\n-   * @param props 読み取り元の props (デフォルト解決済みでなくてよい)\n+   * @param props 読み取り元の props。モードが書かれていなければ既定を読まず `none` になる\n    * @param axis どちらの軸のサイズを読むか\n    * @returns その軸のサイズ。モードの綴りが読めないときと、`fixed` なのに長さが数値で\n    *   ないときは `none`\n@@ -213,18 +216,14 @@ export const Size = {\n   },\n \n   /**\n-   * `fill` になっている軸。\n+   * `fill` になっている軸（並びとサイズが決まらない軸の扱いは `collectAxesWhere` のとおり）。\n    *\n-   * @param props 見るノードの props（デフォルト解決済みでなくてよい）\n-   * @returns `fill` の軸を width・height の順で。サイズが決まらない軸は含めない\n+   * @param props 見るノードの props。モードが書かれていない軸は既定を読まずサイズが決まらない\n+   *   扱いになり、含めない\n+   * @returns `fill` の軸\n    */\n   collectFillAxes(props: Props): readonly Axis[] {\n-    return Object.values(Axes).filter((axis) =>\n-      Option.contains(\n-        Option.map(Size.fromProps(props, axis), (size) => size.mode),\n-        \"fill\",\n-      ),\n-    );\n+    return collectAxesWhere(props, (size) => size.mode === \"fill\");\n   },\n \n   /**\n@@ -233,25 +232,30 @@ export const Size = {\n    * @param axis どちらの軸の prop 名か\n    * @returns 下限と上限の prop 名の対\n    */\n-  limitProps,\n+  limitProps(axis: Axis): Readonly<{\n+    min: \"minWidth\" | \"minHeight\";\n+    max: \"maxWidth\" | \"maxHeight\";\n+  }> {\n+    return axis === \"width\"\n+      ? { min: \"minWidth\", max: \"maxWidth\" }\n+      : { min: \"minHeight\", max: \"maxHeight\" };\n+  },\n \n   /**\n-   * 下限が上限を超えている軸（docs/03「バリデーション仕様」）。\n+   * 下限が上限を超えている軸（docs/03「バリデーション仕様」。並びとサイズが決まらない軸の\n+   * 扱いは `collectAxesWhere` のとおり）。\n+   *\n+   * 引数を `ResolvedProps` にはしない。size → resolved-props → primitive-schema → schema →\n+   * layout → size の循環になるため、解決済みであることは doc で求める。\n    *\n    * @param props 見るノードの props。デフォルト解決済みのもの（`widthMode` を書いていない\n    *   ノードを既定のモードで見るため。解決していないと `fromProps` が `none` になり見落とす）\n-   * @returns `hug` / `fill` で下限が上限より大きい軸を width・height の順で。`fixed` の軸と\n-   *   サイズが決まらない軸は含めない\n+   * @returns `hug` / `fill` で下限が上限より大きい軸。`fixed` の軸は含めない\n    */\n   collectInvertedLimitAxes(props: Props): readonly Axis[] {\n-    return Object.values(Axes).filter((axis) =>\n-      Option.contains(\n-        Option.map(\n-          Size.fromProps(props, axis),\n-          (size) => size.mode !== \"fixed\" && SizeLimits.isInverted(size.limits),\n-        ),\n-        true,\n-      ),\n+    return collectAxesWhere(\n+      props,\n+      (size) => size.mode !== \"fixed\" && SizeLimits.isInverted(size.limits),\n     );\n   },\n \n@@ -269,7 +273,7 @@ export const Size = {\n   collectFillPropEdits(props: Props): readonly PropEdit[] {\n     return Size.collectFillAxes(props).flatMap((axis) => [\n       PropEdit.set([Size.modeProp(axis)], \"fill\"),\n-      ...PropEdit.collectWritten(props, Object.values(limitProps(axis))),\n+      ...PropEdit.collectWritten(props, Object.values(Size.limitProps(axis))),\n     ]);\n   },\n \n@@ -279,7 +283,7 @@ export const Size = {\n    * モードと長さがどの prop に載っているかを知っているのはこのモジュールなので、\n    * 軸で引く側が 2 つの prop 名を組み立てずに済む。\n    *\n-   * @param props 読み取り元の props (デフォルト解決済みでなくてよい)\n+   * @param props 読み取り元の props。モードが書かれていなければ既定を読まず `none` になる\n    * @param axis どちらの軸の長さを読むか\n    * @returns その軸の長さ。`hug` / `fill` と、`fixed` なのに長さが無いときは `none`\n    */\n@@ -294,7 +298,7 @@ export const Size = {\n    * 下限・上限は親の向きに依らないので、`fill` がフローの外にあって伸長の宣言を出さない\n    * ときも出す。\n    *\n-   * @param props 読み取り元の props (デフォルト解決済みでなくてよい)\n+   * @param props 読み取り元の props。モードが書かれていなければ既定を読まず空になる\n    * @param axis どちらの軸のサイズか\n    * @param flexParentDirection flex アイテムとして並ぶ親の向き。フローに参加して\n    *   いない位置（親を持たない / 親が `layout: free` / 自身が絶対配置）では `none`。",
+          "patchLines": 159,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "796236d22459f4a9205a25b17fed97b1fd17b897",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-11T01:10:08Z",
+      "subject": "♻️ [Refactoring]: #632 1 ノード分の props の検査を 1 つの関数にまとめる",
+      "body": "- collectTypedPropErrors の中身を「未知の型 → スキーマ照合 → 最小 / 最大の\n  逆転」にし、子孫と部品のルートの 2 か所に並べていた逆転の呼び出しを\n  なくした。未知の型の判定もこの中の 1 回にした\n- これに伴い、子孫のノード内の並びは「スキーマ → 逆転 → fill-in-free-\n  parent」になった。テスト「fill-in-free-parent の後ろに並ぶ」を「前に\n  並ぶ」に書き換えた\n- collectArtboardErrors の doc に、artboard 自身の逆転を見ない理由を足した\n- テストの artboard の骨組みを documentWithArtboard 1 つにまとめた\n\n背景:\nduplication-reviewer から、同じ 2 つの検査の並びが 2 か所にあり、片方を\n足し忘れても型にもテストにも出ないこと、未知の型の判定が 2 経路に割れて\nいることを指摘された。comment-reviewer からは、artboard を除外する理由が\nコードに無いことを指摘された(Issue #632 comment 6103922414)。\n\n採用理由:\nノード内のエラーの並びは docs/03 が決めていないので、並びを保つより、\n足し忘れが検出できない重複を消すほうを取った。部品のルートの並び\n(props → 子 → …)は validate-order のテストが固定しており、崩れていない。\n\n影響とトレードオフ:\nResolvedProps.resolve が PrimitiveType を要求するので、未知の型の判定は\nforTypeName の結果ではなく isPrimitiveType で絞り、スキーマは forType で\n引く形にした。collectNodeErrors を元の順に戻すと 2 件落ちることを\n確かめた。\n\n代替案:\n- 逆転の呼び出しを 2 か所に残す: 次に 1 ノード分の検査を足すとき、片方の\n  経路だけで検出されない状態が黙って作れる\n\n参考:\n- Issue #632 comment 6103922414(採否)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01B47Kv8zrqzFHvCeNt6LHey",
+      "files": [
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 68,
+          "deletions": 74,
+          "patch": "@@ -1,27 +1,49 @@\n import { expect, test } from \"vitest\";\n-import type { Props } from \"@/domains/dcmp/node\";\n+import type { Node, Props } from \"@/domains/dcmp/node\";\n+import type { TokenSet } from \"@/domains/dcmp/token\";\n import { DesignDocument, DocumentTemplate } from \"../index\";\n \n /**\n- * 子を縦に並べる artboard の直下に Box を 1 つ持つドキュメント。\n+ * artboard を 1 つだけ持つドキュメント。\n  *\n- * @param props その Box に設定する props\n- * @returns その Box を持つドキュメント\n+ * @param artboard その artboard に設定する props と子の並び。`tokens` を渡せばドキュメントの\n+ *   トークンにする\n+ * @returns その artboard を持つドキュメント\n  */\n-function documentWithBox(props: Props): DesignDocument {\n+function documentWithArtboard(\n+  artboard: Readonly<{\n+    props: Props;\n+    children: readonly Node[];\n+    tokens?: TokenSet;\n+  }>,\n+): DesignDocument {\n   return DesignDocument.create({\n+    ...(artboard.tokens !== undefined ? { tokens: artboard.tokens } : {}),\n     artboards: [\n       {\n         name: \"screen\",\n         width: 375,\n         height: 812,\n-        props: { layout: \"column\" },\n-        children: [{ name: \"target\", type: \"Box\", props }],\n+        props: artboard.props,\n+        children: artboard.children,\n       },\n     ],\n   });\n }\n \n+/**\n+ * 子を縦に並べる artboard の直下に Box を 1 つ持つドキュメント。\n+ *\n+ * @param props その Box に設定する props\n+ * @returns その Box を持つドキュメント\n+ */\n+function documentWithBox(props: Props): DesignDocument {\n+  return documentWithArtboard({\n+    props: { layout: \"column\" },\n+    children: [{ name: \"target\", type: \"Box\", props }],\n+  });\n+}\n+\n test(\"Box の最小幅が最大幅より大きいと、maxWidth を指すエラーが 1 件出る\", () => {\n   const document = documentWithBox({\n     widthMode: \"hug\",\n@@ -91,30 +113,23 @@ test(\"widthMode を書いていない Box でも、既定の hug として逆転\n });\n \n test(\"fixed の軸に書いた逆転はエラーにならない\", () => {\n-  const document = DesignDocument.create({\n-    artboards: [\n+  const document = documentWithArtboard({\n+    props: { layout: \"column\" },\n+    children: [\n       {\n-        name: \"screen\",\n-        width: 375,\n-        height: 812,\n-        props: { layout: \"column\" },\n-        children: [\n-          {\n-            name: \"fixed-box\",\n-            type: \"Box\",\n-            props: {\n-              widthMode: \"fixed\",\n-              width: 120,\n-              minWidth: 500,\n-              maxWidth: 100,\n-            },\n-          },\n-          {\n-            name: \"hug-box\",\n-            type: \"Box\",\n-            props: { widthMode: \"hug\", minWidth: 500, maxWidth: 100 },\n-          },\n-        ],\n+        name: \"fixed-box\",\n+        type: \"Box\",\n+        props: {\n+          widthMode: \"fixed\",\n+          width: 120,\n+          minWidth: 500,\n+          maxWidth: 100,\n+        },\n+      },\n+      {\n+        name: \"hug-box\",\n+        type: \"Box\",\n+        props: { widthMode: \"hug\", minWidth: 500, maxWidth: 100 },\n       },\n     ],\n   });\n@@ -204,54 +219,40 @@ test(\"部品のルートの逆転は、その部品の子孫のエラーより\n   ]);\n });\n \n-test(\"自由配置の親の下の fill に逆転も書くと、fill のエラーの後ろに並ぶ\", () => {\n-  const document = DesignDocument.create({\n-    artboards: [\n+test(\"自由配置の親の下の fill に逆転も書くと、fill のエラーの前に並ぶ\", () => {\n+  const document = documentWithArtboard({\n+    props: { layout: \"free\" },\n+    children: [\n       {\n-        name: \"screen\",\n-        width: 375,\n-        height: 812,\n-        props: { layout: \"free\" },\n-        children: [\n-          {\n-            name: \"target\",\n-            type: \"Box\",\n-            props: { widthMode: \"fill\", minWidth: 500, maxWidth: 100 },\n-          },\n-        ],\n+        name: \"target\",\n+        type: \"Box\",\n+        props: { widthMode: \"fill\", minWidth: 500, maxWidth: 100 },\n       },\n     ],\n   });\n \n   expect(DesignDocument.collectErrors(document)).toEqual([\n     expect.objectContaining({\n-      kind: \"fill-in-free-parent\",\n+      kind: \"inverted-size-limits\",\n       nodeName: \"target\",\n-      prop: \"widthMode\",\n+      prop: \"maxWidth\",\n     }),\n     expect.objectContaining({\n-      kind: \"inverted-size-limits\",\n+      kind: \"fill-in-free-parent\",\n       nodeName: \"target\",\n-      prop: \"maxWidth\",\n+      prop: \"widthMode\",\n     }),\n   ]);\n });\n \n test(\"artboard の props に逆転を書いてもエラーにならない\", () => {\n-  const document = DesignDocument.create({\n-    artboards: [\n+  const document = documentWithArtboard({\n+    props: { layout: \"column\", minWidth: 500, maxWidth: 100 },\n+    children: [\n       {\n-        name: \"screen\",\n-        width: 375,\n-        height: 812,\n-        props: { layout: \"column\", minWidth: 500, maxWidth: 100 },\n-        children: [\n-          {\n-            name: \"target\",\n-            type: \"Box\",\n-            props: { widthMode: \"hug\", minWidth: 500, maxWidth: 100 },\n-          },\n-        ],\n+        name: \"target\",\n+        type: \"Box\",\n+        props: { widthMode: \"hug\", minWidth: 500, maxWidth: 100 },\n       },\n     ],\n   });\n@@ -266,21 +267,14 @@ test(\"artboard の props に逆転を書いてもエラーにならない\", () =\n });\n \n test(\"下限・上限を持たない Ellipse に逆転を書くと、未知の prop だけが出る\", () => {\n-  const document = DesignDocument.create({\n+  const document = documentWithArtboard({\n     tokens: DocumentTemplate.Default.tokens,\n-    artboards: [\n+    props: { layout: \"column\" },\n+    children: [\n       {\n-        name: \"screen\",\n-        width: 375,\n-        height: 812,\n-        props: { layout: \"column\" },\n-        children: [\n-          {\n-            name: \"target\",\n-            type: \"Ellipse\",\n-            props: { widthMode: \"fill\", minWidth: 500, maxWidth: 100 },\n-          },\n-        ],\n+        name: \"target\",\n+        type: \"Ellipse\",\n+        props: { widthMode: \"fill\", minWidth: 500, maxWidth: 100 },\n       },\n     ],\n   });",
+          "patchLines": 204,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/validation/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 53,
+          "deletions": 48,
+          "patch": "@@ -15,7 +15,10 @@ import {\n } from \"@/domains/dcmp/document-names\";\n import { Layout } from \"@/domains/dcmp/layout\";\n import { Node, type Props, type RefNode } from \"@/domains/dcmp/node\";\n-import type { PropValidationError } from \"@/domains/dcmp/primitive-schema\";\n+import type {\n+  PrimitiveType,\n+  PropValidationError,\n+} from \"@/domains/dcmp/primitive-schema\";\n import {\n   BoxSchema,\n   PrimitiveSchema,\n@@ -146,30 +149,6 @@ function withLocation(\n   });\n }\n \n-/**\n- * 型に対応するスキーマで props を照らす。未知の型はその場でエラーにする。\n- *\n- * @param type ノードの型名\n- * @param props 照らす対象の props（未設定なら空として扱う）\n- * @param tokens トークン参照の解決に使うトークン一式\n- * @returns 未知の型・宣言違反・値域違反のエラーの並び\n- */\n-function collectTypedPropErrors(\n-  type: string,\n-  props: Props | undefined,\n-  tokens: TokenSet,\n-): readonly UnlocatedError[] {\n-  const schema = PrimitiveSchema.forTypeName(type);\n-  if (!Option.isSome(schema)) {\n-    return [{ kind: \"unknown-type\", message: `unknown type \"${type}\"` }];\n-  }\n-  return PropDefinitionRecord.collectErrors(\n-    schema.value.props,\n-    props ?? {},\n-    tokens,\n-  );\n-}\n-\n /**\n  * 子を並べない親の下の `fill` を、軸ごとのエラーにする（判定は `Layout` が持つ）。\n  *\n@@ -196,32 +175,56 @@ function collectFillErrors(\n /**\n  * 最小が最大を超えている軸を、軸ごとのエラーにする（判定は `Size` が持つ）。\n  *\n- * @param type ノードの型名。プリミティブの型でなければ照らすスキーマが無いので見ない\n- * @param props 検査するノードの props（未設定なら空として扱う）\n- * @returns 軸ごとの、`max*` の側を指すエラーの並び。逆転が無いときと型が未知のときは空\n+ * @param type ノードの型名\n+ * @param props 検査するノードの props\n+ * @returns 軸ごとの、`max*` の側を指すエラーの並び。逆転が無いときは空\n  */\n function collectInvertedLimitErrors(\n+  type: PrimitiveType,\n+  props: Props,\n+): readonly UnlocatedError[] {\n+  return Size.collectInvertedLimitAxes(ResolvedProps.resolve(type, props)).map(\n+    (axis) => {\n+      const { min, max } = Size.limitProps(axis);\n+      return {\n+        kind: \"inverted-size-limits\" as const,\n+        prop: max,\n+        message: `prop \"${max}\" is less than \"${min}\"; the minimum wins`,\n+      };\n+    },\n+  );\n+}\n+\n+/**\n+ * 1 ノード分の props のエラーを、未知の型・スキーマ照合・最小 / 最大の逆転の順で集める。\n+ *\n+ * @param type ノードの型名\n+ * @param props 照らす対象の props（未設定なら空として扱う）\n+ * @param tokens トークン参照の解決に使うトークン一式\n+ * @returns 型が未知なら unknown-type の 1 件だけ。それ以外は宣言違反・値域違反と、軸ごとの\n+ *   最小 / 最大の逆転のエラーの並び\n+ */\n+function collectTypedPropErrors(\n   type: string,\n   props: Props | undefined,\n+  tokens: TokenSet,\n ): readonly UnlocatedError[] {\n   if (!PrimitiveSchema.isPrimitiveType(type)) {\n-    return [];\n+    return [{ kind: \"unknown-type\", message: `unknown type \"${type}\"` }];\n   }\n-  return Size.collectInvertedLimitAxes(\n-    ResolvedProps.resolve(type, props ?? {}),\n-  ).map((axis) => {\n-    const { min, max } = Size.limitProps(axis);\n-    return {\n-      kind: \"inverted-size-limits\" as const,\n-      prop: max,\n-      message: `prop \"${max}\" is less than \"${min}\"; the minimum wins`,\n-    };\n-  });\n+  const schema: PrimitiveSchema = PrimitiveSchema.forType(type);\n+  const schemaErrors = PropDefinitionRecord.collectErrors(\n+    schema.props,\n+    props ?? {},\n+    tokens,\n+  );\n+  const invertedLimitErrors = collectInvertedLimitErrors(type, props ?? {});\n+  return [...schemaErrors, ...invertedLimitErrors];\n }\n \n /**\n- * ノードとその子孫のプリミティブについて、スキーマ照合・子を並べない親の下の `fill`・\n- * 最小 / 最大の逆転のエラーをノードごとにこの順で集める（走査は `Node` が持つ）。\n+ * ノードとその子孫のプリミティブについて、スキーマ照合・最小 / 最大の逆転・子を並べない\n+ * 親の下の `fill` のエラーをノードごとにこの順で集める（走査は `Node` が持つ）。\n  *\n  * 部品インスタンスの中身は対象外で、検証が見るのは**定義時点の props** だけ（中身は部品の\n  * 定義として照らされる）。\n@@ -229,8 +232,8 @@ function collectInvertedLimitErrors(\n  * @param node 起点のノード\n  * @param tokens トークン参照の解決に使うトークン一式\n  * @param parentProps このノードを収めている親の props\n- * @returns 自身と子孫のプリミティブについて、スキーマ照合・子を並べない親の下の `fill`・\n- *   最小 / 最大の逆転のエラーの並び（部品インスタンスは空）\n+ * @returns 自身と子孫のプリミティブについて、スキーマ照合・最小 / 最大の逆転・子を並べない\n+ *   親の下の `fill` のエラーの並び（部品インスタンスは空）\n  */\n function collectNodeErrors(\n   node: Node,\n@@ -244,7 +247,6 @@ function collectNodeErrors(\n         Layout.fromProps(nested.parentProps),\n         nested.node.props ?? {},\n       ),\n-      ...collectInvertedLimitErrors(nested.node.type, nested.node.props),\n     ]),\n   );\n }\n@@ -414,10 +416,10 @@ export function collectComponentErrors(\n   component: Component,\n ): readonly NodeValidationError[] {\n   const children = component.children ?? [];\n-  const propErrors = withLocation({ nodeName: name }, [\n-    ...collectTypedPropErrors(component.type, component.props, context.tokens),\n-    ...collectInvertedLimitErrors(component.type, component.props),\n-  ]);\n+  const propErrors = withLocation(\n+    { nodeName: name },\n+    collectTypedPropErrors(component.type, component.props, context.tokens),\n+  );\n   const childErrors = children.flatMap((child) =>\n     collectNodeErrors(child, context.tokens, component.props ?? {}),\n   );\n@@ -442,6 +444,9 @@ export function collectComponentErrors(\n /**\n  * artboard 1件の props・子ノード・参照のエラーを集める。\n  *\n+ * artboard 自身の最小 / 最大の逆転は見ない。サイズは `Artboard.boxProps` で `fixed` に固定され\n+ * 描画に効かず、Box として解決すると既定の `hug` 扱いになって誤検出するため。\n+ *\n  * @param context 部品とトークンの一式\n  * @param artboard 検証する artboard\n  * @returns 位置の付いたエラーの並び",
+          "patchLines": 160,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "d385f1d5444077d054c4f37ac5c6b8e83a590bcc",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-11T01:10:08Z",
+      "subject": "📝 [Documentation]: #632 逆転の箇条に範囲を書き、表の区切りとぶつからない綴りにする",
+      "body": "- バリデーション仕様の「最小 / 最大の逆転」に、部品の定義と画面構造に\n  書いた props で判定し、インスタンスの overrides で生じる逆転は見ない\n  ことを足した\n- 開く時の表のセルの中だけ「最小・最大の逆転」にした\n\n背景:\nharness-reviewer から、表のセルが項目を「 / 」で区切っているため\n「最小 / 最大の逆転」が 2 項目に読めること、docs だけを読むと overrides\nで逆転させたインスタンスがエラーにならない理由が分からないことを\n指摘された(Issue #632 comment 6103922414)。\n\n採用理由:\n「定義時点の props だけを見る」方針はコードの doc にしか無かった。仕様を\n読む人(AI を含む)がエラーにならない理由を辿れるよう、箇条に書いた。\n\n影響とトレードオフ:\n記述だけで挙動は変わらない。\n\n代替案:\n- overrides の逆転も検出する: Issue でスコープ外と決めている\n\n参考:\n- Issue #632 comment 6103922414(採否)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01B47Kv8zrqzFHvCeNt6LHey",
+      "files": [
+        {
+          "path": "docs/03-schema.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -302,7 +302,7 @@ Box と Ellipse が、面をどう塗るかを 1 prop で持つ（Text が持つ\n - dangling ref（存在しない部品名への参照）\n - **部品の循環参照**（ref の展開が自分自身に到達する）\n - **子を並べない親の下の `fill`**（`layout: free` の親の子に `widthMode` / `heightMode` の `fill` を書いている）\n-- **最小 / 最大の逆転**（`fixed` 以外のモードの軸で `minWidth` > `maxWidth` / `minHeight` > `maxHeight`。軸ごとに 1 件で、`max*` の側を指す）\n+- **最小 / 最大の逆転**（`fixed` 以外のモードの軸で `minWidth` > `maxWidth` / `minHeight` > `maxHeight`。軸ごとに 1 件で、`max*` の側を指す。部品の定義と画面構造に書いた props で判定し、インスタンスの overrides で生じる逆転は見ない）\n - overrides の未宣言キー（部品の publicProps 宣言に無い名前の上書き）\n - **数字だけの publicProps 宣言名**（02-data-model「部品のインターフェース」）\n - binding の不整合（存在しない内部ノード名 / 存在しない prop への binding、ドメイン違反の上書き値）\n@@ -326,7 +326,7 @@ Box と Ellipse が、面をどう塗るかを 1 prop で持つ（Text が持つ\n | 検出した不正 | 開くか |\n |---|---|\n | JSON としてパース不能 / オブジェクトキーの重複 / 版を解決できない / 構造がスキーマの形に合わない | **開けない**。エラー一覧だけを開始画面に出す |\n-| 上記を通ったうえでのバリデーション違反（未知の `type` / 未知の prop / ドメイン違反 / dangling ref / 循環参照 / 子を並べない親の下の `fill` / 最小 / 最大の逆転 / 未宣言の overrides / 数字だけの publicProps 宣言名 / binding の不整合 / 識別子規則違反 / `name` 欠落 / 名前の一意性違反 / 塗り用の 2 種別での名前衝突 / hex でない色） | **開く**。エラー一覧を重ねて表示し、編集は続けられる |\n+| 上記を通ったうえでのバリデーション違反（未知の `type` / 未知の prop / ドメイン違反 / dangling ref / 循環参照 / 子を並べない親の下の `fill` / 最小・最大の逆転 / 未宣言の overrides / 数字だけの publicProps 宣言名 / binding の不整合 / 識別子規則違反 / `name` 欠落 / 名前の一意性違反 / 塗り用の 2 種別での名前衝突 / hex でない色） | **開く**。エラー一覧を重ねて表示し、編集は続けられる |\n \n - 開けるようにするのは、**自動保存が書き出した不正なドキュメントを GUI から直せるようにする**ため。保存モデル（05-architecture「保存モデル: 自動保存」）は画面の内容をそのまま書き出すので、アプリ内の編集で作った不正はファイルにも載る。これを開けないままにすると、直す手段が外部エディタにしか無くなる\n - 開いたあとの扱いはアプリ内の編集で作った不正と同じ（キャンバスは凍らせない）",
+          "patchLines": 18,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "3a151010ec2c972f198bcc2ab4c3bd93c49def97",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-11T01:33:46Z",
+      "subject": "🧪 [Tests]: #632 1 ノード内の並びと overrides の除外をテストで守る",
+      "body": "- 同じノードにスキーマ違反と最小 / 最大の逆転があると、スキーマ違反が先に\n  並ぶことを確かめるテストを足した\n- インスタンスの overrides で生じる逆転はエラーにしないことを、部品定義側の\n  逆転を対照に置いて確かめるテストを足した\n\n背景:\ntest-reviewer のミューテーション(16 件中 14 件が落ちた)で、1 ノード内の\n「スキーマ → 逆転」の並びを逆にしても、overrides も逆転を検査するように\nしても、テストが 1 件も落ちないことが分かった(Issue #632)。\n\n採用理由:\n前者は collectTypedPropErrors / collectNodeErrors の doc が「この順」と\n主張しており、後者は docs/03 の箇条が「見ない」と決めている。どちらも\n主張に対応する入力が無かったので、それぞれ 1 件で守る。\n\n影響とトレードオフ:\nテストだけの変更。並びを逆にする / overrides を検査する壊し方で、それぞれ\nこのテストだけが落ちることを確かめた。\n\n代替案:\n- 並びを固定せず doc から「この順」を外す: 同じファイルの fill の並びと\n  部品ルートの並びはテストで固定しているので、揃えるほうを取った\n\n参考:\n- Issue #632 のフェーズ 6 の採否コメント 6103922414\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01B47Kv8zrqzFHvCeNt6LHey",
+      "files": [
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 64,
+          "deletions": 0,
+          "patch": "@@ -308,3 +308,67 @@ test(\"逆転のエラーの本文は、最小と最大の両方の prop 名を\n     }),\n   ]);\n });\n+\n+test(\"同じノードのスキーマ違反と最小 / 最大の逆転は、スキーマ違反が先に並ぶ\", () => {\n+  const document = documentWithBox({\n+    bogus: 1,\n+    widthMode: \"hug\",\n+    minWidth: 500,\n+    maxWidth: 100,\n+  });\n+\n+  expect(DesignDocument.collectErrors(document)).toEqual([\n+    expect.objectContaining({\n+      kind: \"unknown-prop\",\n+      nodeName: \"target\",\n+      prop: \"bogus\",\n+    }),\n+    expect.objectContaining({\n+      kind: \"inverted-size-limits\",\n+      nodeName: \"target\",\n+      prop: \"maxWidth\",\n+    }),\n+  ]);\n+});\n+\n+test(\"インスタンスの overrides で生じる逆転はエラーにしない\", () => {\n+  const document = DesignDocument.create({\n+    components: {\n+      card: {\n+        type: \"Box\",\n+        children: [\n+          {\n+            name: \"card-body\",\n+            type: \"Box\",\n+            props: { minWidth: 200, maxWidth: 300 },\n+          },\n+          {\n+            name: \"card-broken\",\n+            type: \"Box\",\n+            props: { minWidth: 500, maxWidth: 100 },\n+          },\n+        ],\n+        publicProps: { limit: { node: \"card-body\", prop: \"maxWidth\" } },\n+      },\n+    },\n+    artboards: [\n+      {\n+        name: \"screen\",\n+        width: 375,\n+        height: 812,\n+        props: { layout: \"column\" },\n+        children: [\n+          { name: \"instance\", ref: \"card\", overrides: { limit: 100 } },\n+        ],\n+      },\n+    ],\n+  });\n+\n+  expect(DesignDocument.collectErrors(document)).toEqual([\n+    expect.objectContaining({\n+      kind: \"inverted-size-limits\",\n+      nodeName: \"card-broken\",\n+      prop: \"maxWidth\",\n+    }),\n+  ]);\n+});",
+          "patchLines": 68,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": "src/domains/compiled/compiled-element/index.ts",
+      "to": "src/domains/dcmp/size/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+      "to": "src/domains/dcmp/token/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/design-document/validation/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/size/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation/index.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation/index.ts",
+      "to": "src/domains/dcmp/component-binding/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation/index.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation/index.ts",
+      "to": "src/domains/dcmp/design-document/v1/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation/index.ts",
+      "to": "src/domains/dcmp/document-names/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation/index.ts",
+      "to": "src/domains/dcmp/layout/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation/index.ts",
+      "to": "src/domains/dcmp/primitive-schema/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation/index.ts",
+      "to": "src/domains/dcmp/reference-context/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation/index.ts",
+      "to": "src/domains/dcmp/resolved-props/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation/index.ts",
+      "to": "src/domains/dcmp/size/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation/index.ts",
+      "to": "src/domains/dcmp/token/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation/index.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/layout/index.ts",
+      "to": "src/domains/dcmp/size/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/size/__tests__/size.fill.test.ts",
+      "to": "src/domains/dcmp/size/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/size/__tests__/size.inverted-limits.test.ts",
+      "to": "src/domains/dcmp/size/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/dcmp/size/__tests__/size.limits.test.ts",
+      "to": "src/domains/dcmp/size/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/size/__tests__/size.normal.test.ts",
+      "to": "src/domains/dcmp/size/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/size/index.ts",
+      "to": "src/domains/dcmp/css-declaration/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/size/index.ts",
+      "to": "src/domains/dcmp/css-direction/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/size/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/size/index.ts",
+      "to": "src/domains/unit/axis/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/size/index.ts",
+      "to": "src/domains/unit/px/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/size/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/domains/dcmp/size/index.ts",
+      "status": "kept"
+    }
+  ]
+}
