@@ -37,14 +37,14 @@ Rust に .dcmp の構造を一切教えず、IPC を渡るのは**常に生の J
 | command | `watch_document(path)` / `unwatch_document(path)` | file watch の開始 / 停止 |
 | command | `load_app_state() → string \| null` | アプリ自身の状態の読み込み（まだ保存が無ければ `null`） |
 | command | `save_app_state(content)` | アプリ自身の状態の書き込み |
-| command | `close_current_window()` | 呼び出した画面のウィンドウを閉じる |
+| command | `close_current_window()` | 呼び出し元のウィンドウを閉じる |
 | event | `document-changed` | 外部変更の通知（Rust → JS） |
 | event | `document-menu` | OS のメニューで選ばれた項目（`open` / `create` / `close-tab`）の通知（Rust → JS） |
 | event | `tauri://drag-drop` | ウィンドウへ落とされたファイルの通知（Tauri → JS） |
 
 - ファイルを開くダイアログ等は Tauri 標準プラグインを使用する
 - ドキュメントを開く / 新しく作る指示は、OS のメニュー（⌘O / ⌘N）とウィンドウへのドロップ、および開く前の画面から届く
-- 見ているタブを閉じる指示（⌘W）も OS のメニューから届く。開いているものが無ければ TS が `close_current_window` でウィンドウを閉じる（Rust は開いているドキュメントの有無を知らない）。ウィンドウを閉じる項目（Shift+⌘W）は TS へ流さず Rust 側で閉じる
+- 見ているタブを閉じる指示（⌘W）も OS のメニューから届く。開いているものが無ければ TS が `close_current_window` でウィンドウを閉じる（タブの有無は TS だけが持つ）。ウィンドウを閉じる項目（Shift+⌘W）は TS へ流さず Rust 側で閉じる
 
 ## 保存モデル: 自動保存
 
