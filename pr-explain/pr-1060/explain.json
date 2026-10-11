@@ -1,7 +1,7 @@
 {
   "version": 1,
   "pr": 1060,
-  "sha": "05fd617d4516168ce9fbe2f62c9857f7e7bdba12",
+  "sha": "8d94f7e63baf9d7528323eb47681c533c73b0807",
   "issue": 996,
   "overview": {
     "title": "開始画面で ⌘W を押すとウィンドウを閉じる",
@@ -40,19 +40,19 @@
     ],
     "highlights": [
       {
-        "title": "実機での確認待ち(Rust 未コンパイル)",
-        "text": "この環境には gdk-3.0 / webkit2gtk が無く `cargo check` が通らないため、Rust のコンパイルとウィンドウが実際に閉じることは未確認(CI にも cargo のジョブは無い)。Rust のコマンド名と TS の綴り `close_current_window` が一致しているかもテストでは確かめられない(レビューの案 A で、TS 側の綴りと失敗の詰め替えもテストで守っていない)。`pnpm tauri dev` で開始画面の ⌘W・タブ 1 つでの ⌘W・`cargo clippy` を見てほしい",
-        "go": {
-          "kind": "file",
-          "path": "src-tauri/src/app_window.rs"
-        }
-      },
-      {
-        "title": "レビューで公開 API から IPC を外した(案 A)",
-        "text": "レビュー(discussion_r4240888365)で `AppWindow.create(tauriIpc)` が `TauriIpc` を公開 API に出していると指摘され、案 A に決まった。`create()` は引数なしで中で `TauriIpc.create()` を作り、代役は `AppWindow` を直接満たす。代わりに、コマンド名と失敗の詰め替えを確かめていたテスト(`app-window.normal` / `app-window.edge`)を失い、実機での確認に頼る。残りの libs の `TauriIpc` 引数は #1065",
+        "title": "レビューで一度外した IPC の口を戻した",
+        "text": "レビューで一度 `TauriIpc` を公開 API から外したが(案 A)、`TauriIpc` は自前の型(`src/libs/tauri-ipc`)なので受け取ってよいと判断が変わり、8d94f7e で元に戻した。本体のコマンド名と失敗の詰め替えのテスト(`app-window.normal` / `app-window.edge`)は残っている",
         "go": {
           "kind": "file",
           "path": "src/libs/app-window/index.ts"
+        }
+      },
+      {
+        "title": "実機での確認待ち(Rust 未コンパイル)",
+        "text": "この環境には gdk-3.0 / webkit2gtk が無く `cargo check` が通らないため、Rust のコンパイルとウィンドウが実際に閉じることは未確認(CI にも cargo のジョブは無い)。Rust のコマンド名と TS の綴り `close_current_window` が一致しているかもテストでは確かめられない。`pnpm tauri dev` で開始画面の ⌘W・タブ 1 つでの ⌘W・`cargo clippy` を見てほしい",
+        "go": {
+          "kind": "file",
+          "path": "src-tauri/src/app_window.rs"
         }
       },
       {
@@ -150,16 +150,16 @@
     {
       "path": "src/libs/app-window/index.ts",
       "name": "ウィンドウの口",
-      "role": "中で `TauriIpc.create()` を作り、`TauriIpc.caller` で `close_current_window` を呼び、失敗を原文のまま `Result.err` に詰め替える",
+      "role": "`TauriIpc.caller` で `close_current_window` を呼び、失敗を原文のまま `Result.err` に詰め替える",
       "feature": "window-close",
-      "change": "新しく作った。レビュー(案 A)で `create()` を引数なしにし、`TauriIpc` を公開 API から外した"
+      "change": "新しく作った"
     },
     {
       "path": "src/libs/app-window/fake/index.ts",
       "name": "ウィンドウの代役",
-      "role": "`AppWindow` を直接満たし、ウィンドウが閉じたかだけを持つ。`AppWindow` 本体(コマンド名・失敗の詰め替え)は通らない",
+      "role": "`TauriIpc` の位置に差し込み、ウィンドウが閉じたかと、閉じるのを拒む設定だけを持つ",
       "feature": "window-close",
-      "change": "新しく作った。レビュー(案 A)で `TauriIpc` の位置へ差し込む形をやめ、`denyClose` を消した",
+      "change": "新しく作った",
       "graph": false
     },
     {
@@ -188,7 +188,7 @@
       "name": "アプリの組み立て",
       "role": "本物の口を組んで編集画面へ渡す",
       "feature": "window-close",
-      "change": "`appWindow: AppWindow.create()` を足した。`AppWindow` だけは IPC を自分で作る(理由は `AppWindow.create` の doc)"
+      "change": "`appWindow: AppWindow.create(tauriIpc)` を足した"
     }
   ],
   "messages": [
@@ -275,11 +275,10 @@
       "to": "src/libs/app-window/index.ts",
       "kind": "cmd",
       "name": "ウィンドウの口を組む",
-      "code": "AppWindow.create()",
+      "code": "AppWindow.create(tauriIpc)",
       "via": "call",
       "returns": "`AppWindow`",
-      "status": "added",
-      "payload": "無し(`TauriIpc` は渡さず、`AppWindow` が中で作る)"
+      "status": "added"
     }
   ],
   "flows": [
@@ -560,87 +559,42 @@
     {
       "sha": "4a625f7695f4c0e27a3ad8af5919a70b43d5e54c",
       "phase": "revise",
-      "role": "ウィンドウの口の代役だけを確かめるテストを消す",
-      "why": "レビューで案 A(`create` を引数なしにし、代役は `AppWindow` を直接満たす)に決まり、続くコミットで代役が本体を通らなくなる。そうなると `app-window.normal` / `app-window.edge` は代役そのものを確かめるだけで、本体を壊しても落ちない。本体を通すには `@tauri-apps/api` を `vi.mock` で差し替えるしかなく、`rules/testing.md` が禁じている。先に消して、次のコミットを形の変更だけにした",
-      "flows": [
-        "start-close"
-      ],
-      "review": [
-        "コマンド名と失敗の詰め替えがテストで守れなくなり、実機での確認に頼る点を受け入れてよいか",
-        "画面の通しテストが代役を通して振り分けを守るので残る点"
-      ],
-      "before": [
-        {
-          "text": "コマンド名の取り違えと失敗の原文の詰め替えをテストで守っていた",
-          "message": "invoke-close"
-        }
-      ],
-      "after": [
-        {
-          "text": "コマンド名と失敗の詰め替えはテストで守らず、実機での確認に頼る",
-          "message": "invoke-close"
-        }
-      ]
+      "role": "ウィンドウの口の代役だけを確かめるテストを消す(8d94f7e で取り消した)",
+      "why": "レビューで `AppWindow.create(tauriIpc)` が `TauriIpc` を外へ出していると指摘され、案 A(`create` を引数なしにする)に決まった。代役が本体を通らなくなると `app-window.normal` / `app-window.edge` は代役そのものを確かめるだけになるので先に消した。8d94f7e で取り消した。"
     },
     {
       "sha": "a9651aeb6163b929ff12124f10d0ac0a3da69a7d",
       "phase": "revise",
-      "role": "ウィンドウの口の公開 API から `TauriIpc` を外す",
-      "why": "レビューで、`AppWindow.create(tauriIpc)` が呼ぶ側に `TauriIpc` を知らせている(外へ漏れている)と指摘を受け、案 A に決まった。`TauriIpc.create()` は状態を持たないので、中で別に作っても届く先は同じ webview になる。引数なしで中の I/O に向く前例は `Clock.create()`。呼び出し元が無くなった `denyClose` は消した。コンパニオンの形は libs の書き方を割らないよう残した",
-      "flows": [
-        "boot"
-      ],
-      "review": [
-        "`AppWindow.create()` が中で `TauriIpc.create()` を作り、`App.tsx` の `tauriIpc` と別の口になる点",
-        "代役が `AppWindow` を直接満たし、本体(コマンド名・失敗の詰め替え)を通らなくなった点",
-        "既存の libs(`DocumentIpc` / `AppMenu` / `FileDrop` / `AppStateIpc`)の `TauriIpc` 引数をこの PR では触っていない点(#1065)"
-      ],
-      "before": [
-        {
-          "text": "`App.tsx` が `AppWindow.create(tauriIpc)` で `TauriIpc` を渡していた",
-          "message": "wire-window"
-        }
-      ],
-      "after": [
-        {
-          "text": "`App.tsx` は `AppWindow.create()` を呼ぶだけで、`TauriIpc` を渡さない",
-          "message": "wire-window"
-        }
-      ],
-      "notes": [
-        {
-          "path": "src/libs/app-window/index.ts",
-          "start": 23,
-          "end": 30,
-          "text": "引数を受けずに中で `TauriIpc.create()` を作る。理由はこの doc 1 箇所に置く"
-        },
-        {
-          "path": "src/libs/app-window/fake/index.ts",
-          "start": 26,
-          "end": 31,
-          "text": "`AppWindow` を直接満たす代役。閉じたことだけを覚えて成功を返す"
-        }
-      ]
+      "role": "ウィンドウの口の公開 API から `TauriIpc` を外す(8d94f7e で取り消した)",
+      "why": "案 A の本体。`AppWindow.create()` を引数なしにして中で `TauriIpc.create()` を呼び、代役は `AppWindow` を直接満たす形にした。本体のコマンド名と失敗の詰め替えがテストで守れなくなる代わりに漏れを塞ぐ判断だった。8d94f7e で取り消した。"
     },
     {
       "sha": "05fd617d4516168ce9fbe2f62c9857f7e7bdba12",
       "phase": "revise",
-      "role": "`AppWindow` だけ IPC を中で作る理由を 1 箇所に寄せる",
-      "why": "comment / solution / duplication / structure / naming-reviewer の指摘。同じ判断の理由が `App.tsx`(購読を持たないので)と `AppWindow.create` の doc(状態を持たないので)の 2 箇所にあり、根拠も割れていた。「購読を持たない」は `AppStateIpc` にも当てはまり例外の理由にならない。理由は判断を持つ `AppWindow.create` の doc に置き、`App.tsx` には例外であることだけを残した",
+      "role": "ウィンドウの口だけ IPC を中で作る理由を 1 箇所に寄せる(8d94f7e で取り消した)",
+      "why": "案 A の理由が `App.tsx` と `AppWindow.create` の doc の 2 箇所にあり、根拠も割れていたので doc の 1 箇所に寄せた。コメントだけの変更。8d94f7e で案 A ごと取り消した。"
+    },
+    {
+      "sha": "8d94f7e63baf9d7528323eb47681c533c73b0807",
+      "phase": "revise",
+      "role": "ウィンドウの口が `TauriIpc` を受け取る形に戻す",
+      "why": "その後のレビューで、`TauriIpc` は `@tauri-apps/api` の型ではなく自前の口(import するのは `src/libs/tauri-ipc` の 1 ファイルだけ)なので受け取ってよいと判断が変わった。受け取る形なら代役を `TauriIpc` の位置に差せて、本体のコマンド名と失敗の詰め替えがテストを通る。4a625f7 / a9651ae / 05fd617 をまとめて取り消し、中身は 9f22fc2 と同じ(差分 0)。",
       "review": [
-        "`App.tsx` のコメントが理由を持たず、`AppWindow.create` を参照するだけになっている点"
-      ],
-      "notes": [
-        {
-          "path": "src/app/App.tsx",
-          "start": 20,
-          "end": 20,
-          "text": "「TauriIpc を 1 つにまとめる」の例外であることだけを書く"
-        }
+        "中身が 9f22fc2 と同じで、`app-window.normal` / `app-window.edge` が戻っていること"
       ]
     }
   ],
   "suites": [
+    {
+      "id": "app-window-normal",
+      "label": "ウィンドウの口(正常系)",
+      "file": "src/libs/app-window/__tests__/app-window.normal.test.ts"
+    },
+    {
+      "id": "app-window-edge",
+      "label": "ウィンドウの口(異常系)",
+      "file": "src/libs/app-window/__tests__/app-window.edge.test.ts"
+    },
     {
       "id": "document-session",
       "label": "開いているセッション",
@@ -650,14 +604,59 @@
       "id": "tab-shortcut",
       "label": "編集画面のタブの割り当て",
       "file": "src/features/editor/components/editor-screen/__tests__/editor-screen.tab-shortcut.test.tsx"
-    },
-    {
-      "id": "app-window-todo",
-      "label": "ウィンドウの口(未実装)",
-      "file": "src/libs/app-window/index.ts"
     }
   ],
   "tests": [
+    {
+      "id": "window-closes",
+      "suite": "app-window-normal",
+      "name": "閉じると、ウィンドウが閉じる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "`AppWindow.close()` が `close_current_window` を呼ぶこと。代役はコマンド名が違えば拒むので、綴りを TS 側で取り違えると落ちる(コマンド名を `close_window` に変えると 5 件落ちる)",
+      "given": "開いているウィンドウ 1 つの代役",
+      "when": "`appWindow.close()` を呼ぶ",
+      "then": "代役のウィンドウが閉じた状態になる",
+      "commit": "c2e45c6b3901f745784b46d2635a1776b98297bc",
+      "excerpt": {
+        "path": "src/libs/app-window/__tests__/app-window.normal.test.ts",
+        "start": 4,
+        "end": 10,
+        "text": "test(\"閉じると、ウィンドウが閉じる\", async () => {\n  const fake = AppWindowFake.create();\n\n  await fake.appWindow.close();\n\n  expect(fake.isWindowClosed()).toBe(true);\n});"
+      },
+      "targets": [
+        "src/libs/app-window/index.ts"
+      ],
+      "covers": [
+        "invoke-close"
+      ]
+    },
+    {
+      "id": "window-close-denied",
+      "suite": "app-window-edge",
+      "name": "閉じるのを拒まれたら、拒まれた理由を持つ失敗になる",
+      "techniques": [
+        "error"
+      ],
+      "why": "Tauri がウィンドウを閉じられなかったときの原文を診断用に残すこと。詰め替えで原文を捨てる実装はこのテストで落ちる",
+      "given": "閉じるのを拒むようにした代役(本物と同じく文字列で reject する)",
+      "when": "`appWindow.close()` を呼ぶ",
+      "then": "原文を `message` に持つ `Result.err` になる",
+      "commit": "c2e45c6b3901f745784b46d2635a1776b98297bc",
+      "excerpt": {
+        "path": "src/libs/app-window/__tests__/app-window.edge.test.ts",
+        "start": 5,
+        "end": 16,
+        "text": "test(\"閉じるのを拒まれたら、拒まれた理由を持つ失敗になる\", async () => {\n  const fake = AppWindowFake.create();\n  fake.denyClose();\n\n  const closed = await fake.appWindow.close();\n\n  expect(closed).toStrictEqual(\n    Result.err({\n      message: \"close_current_window: ウィンドウを閉じられない\",\n    }),\n  );\n});"
+      },
+      "targets": [
+        "src/libs/app-window/index.ts"
+      ],
+      "covers": [
+        "invoke-close"
+      ]
+    },
     {
       "id": "session-closed-none",
       "suite": "document-session",
@@ -874,7 +873,7 @@
       "techniques": [
         "equivalence"
       ],
-      "why": "この PR の本体。close-tab を常に `closeActive` にする実装はこれを含む 3 件で落ちる。代役は `AppWindow` を直接満たすので、`AppWindow` 本体(コマンド名・失敗の詰め替え)は通らない",
+      "why": "この PR の本体。close-tab を常に `closeActive` にする実装はこれを含む 3 件で落ちる",
       "given": "何も開いていない開始画面",
       "when": "メニューのタブを閉じるを選ぶ",
       "then": "ウィンドウが閉じる",
@@ -886,12 +885,14 @@
         "text": "test(\"開始画面でメニューのタブを閉じるを選ぶと、ウィンドウが閉じる\", async () => {\n  const observer = renderEditorScreen(\n    { [Path]: DocumentJson.serialize(SampleDocument) },\n    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },\n  );\n\n  await observer.chooseMenu(AppMenuCommands.CloseTab);\n\n  expect(observer.isWindowClosed()).toBe(true);\n});"
       },
       "targets": [
-        "src/features/editor/features/document-start/hooks/use-document-session/index.ts"
+        "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+        "src/libs/app-window/index.ts"
       ],
       "covers": [
         "menu-close-tab",
         "has-opened",
-        "window-close"
+        "window-close",
+        "invoke-close"
       ]
     },
     {
@@ -1031,37 +1032,18 @@
     },
     {
       "id": "rust-command-name",
-      "suite": "app-window-todo",
-      "name": "TS が呼ぶコマンド名が Rust に登録したコマンド名と一致している",
+      "suite": "app-window-normal",
+      "name": "Rust に登録したコマンド名と TS が呼ぶ綴りが一致している",
       "techniques": [
         "regression"
       ],
-      "why": "レビュー(案 A)で代役が `AppWindow` を直接満たす形になり、`AppWindow` 本体を通るテストが無くなった。TS の綴り `close_current_window` を取り違えても、Rust の名前と食い違っても全テストが通る。実機での確認待ち",
+      "why": "代役は TS 側の綴りしか見ないので、Rust の `close_current_window` と食い違っても全テストが通る。実機での確認待ち",
       "given": "`pnpm tauri dev` で起動した開始画面",
       "when": "⌘W / Ctrl+W を押す",
       "then": "ウィンドウが閉じる",
       "todo": true,
       "targets": [
         "src-tauri/src/app_window.rs",
-        "src/libs/app-window/index.ts"
-      ],
-      "covers": [
-        "invoke-close"
-      ]
-    },
-    {
-      "id": "window-close-failure",
-      "suite": "app-window-todo",
-      "name": "ウィンドウを閉じられなかったら、原文を持つ失敗になる",
-      "techniques": [
-        "error"
-      ],
-      "why": "レビュー(案 A)で `app-window.edge` を消し、失敗の詰め替え(`String(reason)` を `message` に入れる)もテストで守っていない。`@tauri-apps/api` を差し替えて本体を通すには `vi.mock` が要り、`rules/testing.md` で禁止されている",
-      "given": "閉じるのを拒む Tauri",
-      "when": "`appWindow.close()` を呼ぶ",
-      "then": "拒まれた原文を `message` に持つ `Result.err` になる",
-      "todo": true,
-      "targets": [
         "src/libs/app-window/index.ts"
       ],
       "covers": [
