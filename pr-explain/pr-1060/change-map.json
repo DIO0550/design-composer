@@ -4,7 +4,7 @@
   "headBranch": "claude/magical-cannon-1gry2n",
   "baseBranch": "main",
   "mergeBase": "086fa6cb38b2bf603f345761371357e502cd694c",
-  "head": "9f22fc2ffdc82351afade29390eda047d0c72dc6",
+  "head": "05fd617d4516168ce9fbe2f62c9857f7e7bdba12",
   "groups": [
     {
       "label": "domains / dcmp",
@@ -72,7 +72,7 @@
           "path": "src/libs/app-window/fake/index.ts",
           "status": "A",
           "oldPath": null,
-          "additions": 63,
+          "additions": 38,
           "deletions": 0,
           "changed": true,
           "target": null
@@ -81,7 +81,7 @@
           "path": "src/libs/app-window/index.ts",
           "status": "A",
           "oldPath": null,
-          "additions": 41,
+          "additions": 43,
           "deletions": 0,
           "changed": true,
           "target": null
@@ -127,34 +127,12 @@
           "changed": false
         },
         {
-          "path": "src/libs/tauri-ipc/fake/index.ts",
-          "changed": false
-        },
-        {
           "path": "src/libs/tauri-ipc/index.ts",
           "changed": false
         },
         {
           "path": "src/libs/__tests__/document-change.ts",
           "changed": false
-        },
-        {
-          "path": "src/libs/app-window/__tests__/app-window.edge.test.ts",
-          "status": "A",
-          "oldPath": null,
-          "additions": 16,
-          "deletions": 0,
-          "changed": true,
-          "target": "src/libs/app-window/index.ts"
-        },
-        {
-          "path": "src/libs/app-window/__tests__/app-window.normal.test.ts",
-          "status": "A",
-          "oldPath": null,
-          "additions": 10,
-          "deletions": 0,
-          "changed": true,
-          "target": "src/libs/app-window/index.ts"
         }
       ]
     },
@@ -391,7 +369,7 @@
           "path": "src/app/App.tsx",
           "status": "M",
           "oldPath": null,
-          "additions": 2,
+          "additions": 3,
           "deletions": 0,
           "changed": true,
           "target": null
@@ -511,22 +489,12 @@
       {
         "file": "src/features/editor/features/document-start/domains/document-session/__tests__/document-session.normal.test.ts",
         "name": "何も開けずに終わった後も、開いているドキュメントは無い"
-      },
-      {
-        "file": "src/libs/app-window/__tests__/app-window.edge.test.ts",
-        "name": "閉じるのを拒まれたら、拒まれた理由を持つ失敗になる"
-      },
-      {
-        "file": "src/libs/app-window/__tests__/app-window.normal.test.ts",
-        "name": "閉じると、ウィンドウが閉じる"
       }
     ],
     "removed": [],
     "files": [
       "src/features/editor/components/editor-screen/__tests__/editor-screen.tab-shortcut.test.tsx",
-      "src/features/editor/features/document-start/domains/document-session/__tests__/document-session.normal.test.ts",
-      "src/libs/app-window/__tests__/app-window.edge.test.ts",
-      "src/libs/app-window/__tests__/app-window.normal.test.ts"
+      "src/features/editor/features/document-start/domains/document-session/__tests__/document-session.normal.test.ts"
     ]
   },
   "commits": [
@@ -926,6 +894,96 @@
           "deletions": 0,
           "patch": "@@ -283,3 +283,22 @@ test(\"ドキュメントを開いた後は、開いているドキュメント\n \n   expect(DocumentSession.hasOpenedDocuments(session)).toBe(true);\n });\n+\n+test(\"ドキュメントを開いたまま開く操作の最中でも、開いているドキュメントがある\", () => {\n+  const session = DocumentSession.beginOpening(\n+    DocumentSession.finishOpening(DocumentSession.Closed, opened(Path)),\n+  );\n+\n+  expect(DocumentSession.hasOpenedDocuments(session)).toBe(true);\n+});\n+\n+test(\"ドキュメントを開いたまま次の開く操作が失敗で終わっても、開いているドキュメントがある\", () => {\n+  const session = DocumentSession.finishOpening(\n+    DocumentSession.beginOpening(\n+      DocumentSession.finishOpening(DocumentSession.Closed, opened(Path)),\n+    ),\n+    { documents: [], failure: Option.some(DialogFailure) },\n+  );\n+\n+  expect(DocumentSession.hasOpenedDocuments(session)).toBe(true);\n+});",
           "patchLines": 23,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "4a625f7695f4c0e27a3ad8af5919a70b43d5e54c",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-11T11:55:50Z",
+      "subject": "🔥 [Remove]: #996 ウィンドウを閉じる口の代役だけを確かめるテストを消す",
+      "body": "- app-window.normal / app-window.edge を消す\n\n背景:\nPR #1060 のレビューで、AppWindow.create(tauriIpc) が公開 API の引数に\nTauriIpc を出して外へ漏れていると指摘を受け、案 A（create を引数なしに\nし、代役は AppWindow を直接満たす）に決まった。続くコミットで代役が\n本体を通らなくなる。\n\n採用理由:\n代役が本体を通らないと、この 2 本は代役そのものを確かめるだけになり、\n何も守らない。@tauri-apps/api を差し替えて本体を通すには vi.mock が\n要るが、rules/testing.md で禁止されている。\n\n影響とトレードオフ:\nコマンド名（close_current_window）と失敗の詰め替えはテストで守れなく\nなる。Rust のコマンド名との一致と同じく、実機での確認に頼る。\n画面の通しテストは代役を通して振り分けを守るので残る。\n\n代替案:\n- 案 B（テスト用に TauriIpc を受ける入口を別に残す）: レビューで A が\n  選ばれた\n- 代役を確かめるテストとして残す: 本体を壊しても落ちないため採らない\n\n参考:\nhttps://github.com/DIO0550/design-composer/pull/1060#discussion_r4241436228\nhttps://github.com/DIO0550/design-composer/issues/996#issuecomment-6108662645\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01RYXptcxTxktU83rb3ymRW9",
+      "files": [
+        {
+          "path": "src/libs/app-window/__tests__/app-window.edge.test.ts",
+          "status": "D",
+          "oldPath": null,
+          "additions": 0,
+          "deletions": 16,
+          "patch": null,
+          "patchLines": 0,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/app-window/__tests__/app-window.normal.test.ts",
+          "status": "D",
+          "oldPath": null,
+          "additions": 0,
+          "deletions": 10,
+          "patch": null,
+          "patchLines": 0,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "a9651aeb6163b929ff12124f10d0ac0a3da69a7d",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-11T11:56:03Z",
+      "subject": "♻️ [Refactoring]: #996 ウィンドウを閉じる口の公開 API から TauriIpc を外す",
+      "body": "- AppWindow.create() を引数なしにし、中で TauriIpc.create() を呼ぶ\n- App.tsx は AppWindow.create() を呼ぶだけにする\n- 代役 AppWindowFake は TauriIpc の位置ではなく AppWindow を直接満たす\n- 呼び出し元が無くなった denyClose を代役から消す\n\n背景:\nPR #1060 のレビューで、AppWindow.create(tauriIpc: TauriIpc) が公開 API の\n引数に TauriIpc を出しており、呼び出す側が TauriIpc を知る必要がある\n（外へ漏れている）と指摘を受けた。返信で示した案のうち A に決まった。\n\n採用理由:\nTauriIpc.create() は状態を持たないので、中で別に作っても届く先は同じ\nwebview になる。ウィンドウの口は購読を持たず、App.tsx が TauriIpc を\n1 つにまとめている理由（購読の同一性の管理）にも当たらない。\n引数なしで中の I/O に向く前例は Clock.create()。\ndenyClose は、呼び出していた app-window.edge を消したので使い道が\n無くなった。使わない口は残さない。\n\n影響とトレードオフ:\nコンパニオンの形（型 + 同名の const + create）は残した。コンパニオンに\nする必要が無いという指摘には同意しているが、選ばれたのは漏れの塞ぎ方\nだけで、この 1 つだけ関数にすると libs の書き方が割れる。\n既存の libs（DocumentIpc / AppMenu / FileDrop / AppStateIpc）の TauriIpc\n引数はこの PR では触らない。\n\n代替案:\n- 案 B（本物用の引数なしの入口と、テスト用に TauriIpc を受ける入口を\n  分ける）: レビューで A が選ばれた\n- 素の関数 createAppWindow() にする: libs の書き方が割れるため、\n  libs 全体を揃える機会に回す\n\n参考:\nhttps://github.com/DIO0550/design-composer/pull/1060#discussion_r4240888365\nhttps://github.com/DIO0550/design-composer/issues/996#issuecomment-6108662645\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01RYXptcxTxktU83rb3ymRW9",
+      "files": [
+        {
+          "path": "src/app/App.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 1,
+          "patch": "@@ -17,6 +17,7 @@ import { TauriIpc } from \"@/libs/tauri-ipc\";\n  *\n  * Tauri の口（`TauriIpc`）を 1 つにまとめるのは、コマンドもイベントも同じ webview へ\n  * 向くため。分けて作っても届く先は同じで、口の数だけ同一性の管理が増える。\n+ * ウィンドウの口は購読を持たないので、`TauriIpc` を公開 API に出さないよう中で作る。\n  */\n const tauriIpc = TauriIpc.create();\n const ports = {\n@@ -25,7 +26,7 @@ const ports = {\n   menu: AppMenu.create(tauriIpc),\n   drop: FileDrop.create(tauriIpc),\n   appState: AppStateIpc.create(tauriIpc),\n-  appWindow: AppWindow.create(tauriIpc),\n+  appWindow: AppWindow.create(),\n } as const;\n const clock = Clock.create();\n ",
+          "patchLines": 17,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/app-window/fake/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 35,
+          "patch": "@@ -1,20 +1,16 @@\n-import type { TauriIpc } from \"@/libs/tauri-ipc\";\n-import { ipcFailure } from \"@/libs/tauri-ipc/fake\";\n-import { AppWindow } from \"../index\";\n+import { Result } from \"@/utils/Result\";\n+import type { AppWindow } from \"../index\";\n \n /**\n- * Rust 側の代役。`close_current_window` を受けて、ウィンドウが閉じたかどうかだけを持つ。\n+ * ウィンドウの代役。`AppWindow` を直接満たし、ウィンドウが閉じたかどうかだけを持つ。\n  *\n- * 差し込む先は `TauriIpc` の位置なので、`appWindow` を通した呼び出しでは `AppWindow` 本体\n- * （コマンド名・エラーの解釈）がそのまま動く。\n+ * `AppWindow` 本体（コマンド名・エラーの解釈）は通らない。\n  */\n export type AppWindowFake = Readonly<{\n   /** 代役のウィンドウに向いた `AppWindow`。 */\n   appWindow: AppWindow;\n   /** ウィンドウが閉じたか。 */\n   isWindowClosed(): boolean;\n-  /** ウィンドウを閉じるのを拒むようにする。 */\n-  denyClose(): void;\n }>;\n \n export const AppWindowFake = {\n@@ -25,39 +21,18 @@ export const AppWindowFake = {\n    */\n   create(): AppWindowFake {\n     let closed = false;\n-    let closeDenied = false;\n-\n-    const closeCurrentWindow = (): Promise<unknown> => {\n-      // 本物の `tauri::Error` も文字列で reject されるので、同じ形で拒む。\n-      if (closeDenied) {\n-        return ipcFailure(\"close_current_window: ウィンドウを閉じられない\");\n-      }\n-      closed = true;\n-      return Promise.resolve(undefined);\n-    };\n-\n-    const tauriIpc: TauriIpc = {\n-      invoke(command) {\n-        return command === \"close_current_window\"\n-          ? closeCurrentWindow()\n-          : ipcFailure(`Command ${command} not found`);\n-      },\n-\n-      listen(event) {\n-        return ipcFailure(`Event ${event} not emitted`);\n-      },\n-    };\n \n     return {\n-      appWindow: AppWindow.create(tauriIpc),\n+      appWindow: {\n+        close() {\n+          closed = true;\n+          return Promise.resolve(Result.ok(undefined));\n+        },\n+      },\n \n       isWindowClosed() {\n         return closed;\n       },\n-\n-      denyClose() {\n-        closeDenied = true;\n-      },\n     };\n   },\n } as const;",
+          "patchLines": 71,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/app-window/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 4,
+          "patch": "@@ -20,12 +20,14 @@ export const AppWindow = {\n    * 失敗は Rust の `tauri::Error` もコマンドに届く前の Tauri 自身の失敗も文字列で reject\n    * されるので、形で見分けずに原文へ詰め替える。\n    *\n-   * @param tauriIpc コマンドを呼ぶ IPC\n-   * @returns `tauriIpc` を通してウィンドウを操作する口\n+   * IPC を引数で受けずに中で作るのは、`TauriIpc` を公開 API に出さないため。\n+   * `TauriIpc.create()` は状態を持たないので、別に作っても届く先は同じ webview になる。\n+   *\n+   * @returns 本物の Tauri のウィンドウに向いた口\n    */\n-  create(tauriIpc: TauriIpc): AppWindow {\n+  create(): AppWindow {\n     const call = TauriIpc.caller<AppWindowCommand, AppWindowError>(\n-      tauriIpc,\n+      TauriIpc.create(),\n       (reason) => ({ message: String(reason) }),\n     );\n ",
+          "patchLines": 19,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "05fd617d4516168ce9fbe2f62c9857f7e7bdba12",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-11T12:02:20Z",
+      "subject": "📝 [Documentation]: #996 AppWindow だけ IPC を中で作る理由を 1 箇所に寄せる",
+      "body": "- App.tsx の冒頭コメントの理由文を消し、AppWindow.create の doc を参照\n  する一文にする\n\n背景:\ncomment / solution / duplication / structure / naming-reviewer の指摘。\n同じ判断の理由が App.tsx（購読を持たないので）と AppWindow.create の\ndoc（TauriIpc.create() は状態を持たないので）の 2 箇所にあり、根拠も\n割れていた。「購読を持たない」は AppStateIpc にも当てはまり、\nAppWindow だけを例外にした理由になっていなかった。\n\n採用理由:\n理由はその判断を持つ AppWindow.create の doc 1 箇所に置く。App.tsx\nには、直前の「TauriIpc を 1 つにまとめる」の例外であることだけを残す。\n\n影響とトレードオフ:\nコメントだけで、振る舞いは変わらない。残りの libs の扱いは #1065 で\n決める。\n\n代替案:\n- App.tsx 側に理由を残して index.ts を参照にする: 判断を持つのは\n  AppWindow の側なので採らない\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/996#issuecomment-6108791446\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01RYXptcxTxktU83rb3ymRW9",
+      "files": [
+        {
+          "path": "src/app/App.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -17,7 +17,7 @@ import { TauriIpc } from \"@/libs/tauri-ipc\";\n  *\n  * Tauri の口（`TauriIpc`）を 1 つにまとめるのは、コマンドもイベントも同じ webview へ\n  * 向くため。分けて作っても届く先は同じで、口の数だけ同一性の管理が増える。\n- * ウィンドウの口は購読を持たないので、`TauriIpc` を公開 API に出さないよう中で作る。\n+ * ただし `AppWindow` だけは IPC を自分で作る（理由は `AppWindow.create`）。\n  */\n const tauriIpc = TauriIpc.create();\n const ports = {",
+          "patchLines": 9,
           "truncated": false
         }
       ]
@@ -1573,33 +1631,13 @@
       "status": "kept"
     },
     {
-      "from": "src/libs/app-window/__tests__/app-window.edge.test.ts",
-      "to": "src/libs/app-window/fake/index.ts",
-      "status": "added"
-    },
-    {
-      "from": "src/libs/app-window/__tests__/app-window.edge.test.ts",
-      "to": "src/utils/Result.ts",
-      "status": "added"
-    },
-    {
-      "from": "src/libs/app-window/__tests__/app-window.normal.test.ts",
-      "to": "src/libs/app-window/fake/index.ts",
-      "status": "added"
-    },
-    {
       "from": "src/libs/app-window/fake/index.ts",
       "to": "src/libs/app-window/index.ts",
       "status": "added"
     },
     {
       "from": "src/libs/app-window/fake/index.ts",
-      "to": "src/libs/tauri-ipc/fake/index.ts",
-      "status": "added"
-    },
-    {
-      "from": "src/libs/app-window/fake/index.ts",
-      "to": "src/libs/tauri-ipc/index.ts",
+      "to": "src/utils/Result.ts",
       "status": "added"
     },
     {
