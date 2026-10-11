@@ -13,6 +13,7 @@ import {
   Path,
   renderEditorScreen,
   selectTab,
+  startCreate,
   startOpen,
   tabBar,
 } from "./setup";
@@ -132,7 +133,6 @@ test("最後のタブでメニューのタブを閉じるを選ぶと、開始�
 
 /*
  * 開く操作に取り違えていれば、ダイアログが `Path` を選んで開くので開始画面から外れる。
- * 開始画面でウィンドウを閉じるのは #996。
  */
 test("開始画面でメニューのタブを閉じるを選んでも、開始画面のまま", async () => {
   const observer = renderEditorScreen(
@@ -145,4 +145,57 @@ test("開始画面でメニューのタブを閉じるを選んでも、開始�
   expect(
     screen.getByText("ドキュメントを開くか、新しく作成してください。"),
   ).toBeDefined();
+});
+
+test("開始画面でメニューのタブを閉じるを選ぶと、ウィンドウが閉じる", async () => {
+  const observer = renderEditorScreen(
+    { [Path]: DocumentJson.serialize(SampleDocument) },
+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
+  );
+
+  await observer.chooseMenu(AppMenuCommands.CloseTab);
+
+  expect(observer.windowClosed()).toBe(true);
+});
+
+/*
+ * 書き出しを止めて、開く操作の最中のまま開始画面に留める。開く操作の最中を「開いている
+ * もの」と取り違えていれば、閉じるタブが無いまま何も起きない。
+ */
+test("新規作成の書き出しの最中にメニューのタブを閉じるを選ぶと、ウィンドウが閉じる", async () => {
+  const observer = renderEditorScreen(
+    {},
+    { open: DialogChoice.Canceled, save: DialogChoice.chosen(OtherPath) },
+  );
+  const release = observer.files.holdWrites(OtherPath);
+  await startCreate(observer);
+
+  await observer.chooseMenu(AppMenuCommands.CloseTab);
+
+  expect(observer.windowClosed()).toBe(true);
+  release();
+});
+
+test("開けずに終わった開始画面でメニューのタブを閉じるを選ぶと、ウィンドウが閉じる", async () => {
+  const observer = renderEditorScreen(
+    {},
+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
+  );
+  await startOpen(observer);
+
+  await observer.chooseMenu(AppMenuCommands.CloseTab);
+
+  expect(observer.windowClosed()).toBe(true);
+});
+
+test("最後のタブでメニューのタブを閉じるを選んでも、ウィンドウは閉じない", async () => {
+  const observer = renderEditorScreen(
+    { [Path]: DocumentJson.serialize(SampleDocument) },
+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
+  );
+  await startOpen(observer);
+
+  await observer.chooseMenu(AppMenuCommands.CloseTab);
+
+  expect(observer.windowClosed()).toBe(false);
 });
