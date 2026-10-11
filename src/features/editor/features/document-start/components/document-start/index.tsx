@@ -1,4 +1,9 @@
-import { type ReactElement, type ReactNode, useId } from "react";
+import type { ReactElement, ReactNode } from "react";
+import {
+  ActionCard,
+  type ActionCardFace,
+  ActionCardTones,
+} from "@/components/action-card";
 import {
   DocumentOpenFailureNotice,
   FailureLine,
@@ -29,37 +34,13 @@ function commandSourceFailureLabel(source: CommandSource): string {
   }
 }
 
-/** 開始画面のカード 1 枚の見た目。綴りと、部位ごとの配色を指定する Tailwind のクラスを持つ。 */
-type CardFace = Readonly<{
-  /** カードの名前になる見出し。 */
-  title: string;
-  /** 押すと何が起きるかの 1 行。 */
-  description: string;
-  /**
-   * 同じ操作をメニューから呼ぶショートカットの表記。
-   *
-   * 割り当ての出どころは `src-tauri/src/menu.rs` の `CmdOrCtrl+O` / `CmdOrCtrl+N` で、ここは表示の綴りだけを持つ。
-   * OS ごとに表記は変えず、コンテキストメニューと同じ ⌘ 表記に揃えている。
-   */
-  shortcut: string;
-  /** アイコン（viewBox 0 0 24 24）を描く path の `d`。 */
-  iconPaths: readonly string[];
-  /** カードの枠・文字・地と、押せるときの hover の地を指定するクラス。 */
-  cardClass: string;
-  /** アイコンの地を指定するクラス。 */
-  iconClass: string;
-  /** 説明の文字色を指定するクラス。 */
-  descriptionClass: string;
-  /** ショートカットの枠・文字の色を指定するクラス。 */
-  shortcutClass: string;
-}>;
-
-/**
- * 開くのカード（プライマリ）。
- *
- * 元の白文字 on `#4db2ff` は約 2.3:1 で 4.5:1 に届かなかったので、UI 案の青の組み合わせから離れた（#1062）。
- * hover 中の `#0a74c9` on `#e7f1fa` も約 4.2:1 で届かないが、押す直前の一時的な状態として受け入れている（#1062）。
+/*
+ * 開始画面の 2 枚のカードの中身。ショートカットの割り当ての出どころは `src-tauri/src/menu.rs` の
+ * `CmdOrCtrl+O` / `CmdOrCtrl+N` で、ここは表示の綴りだけを持つ。OS ごとに表記は変えず、
+ * コンテキストメニューと同じ ⌘ 表記に揃えている。
  */
+
+/** 開くのカード（プライマリ）。 */
 const OpenCardFace = {
   title: "開く",
   description: "既存の .dcmp を選ぶ",
@@ -67,12 +48,8 @@ const OpenCardFace = {
   iconPaths: [
     "M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z",
   ],
-  cardClass:
-    "border-[#0a74c9] bg-[#ffffff] text-[#0a74c9] enabled:hover:bg-[#e7f1fa]",
-  iconClass: "bg-[#e7f1fa]",
-  descriptionClass: "text-[#4a6a85]",
-  shortcutClass: "border-[#b9d6ef] text-[#0a74c9]",
-} as const satisfies CardFace;
+  tone: ActionCardTones.Primary,
+} as const satisfies ActionCardFace;
 
 /** 新規作成のカード。 */
 const CreateCardFace = {
@@ -80,84 +57,8 @@ const CreateCardFace = {
   description: "空のドキュメントから始める",
   shortcut: "⌘N",
   iconPaths: ["M12 5v14", "M5 12h14"],
-  cardClass:
-    "border-[#d4d4d4] bg-[#ffffff] text-[#1e1e1e] enabled:hover:bg-[#f5f5f5]",
-  iconClass: "bg-[#f0f0f0]",
-  descriptionClass: "text-[#767676]",
-  shortcutClass: "border-[#e6e6e6] text-[#767676]",
-} as const satisfies CardFace;
-
-/**
- * アイコン・見出し・説明・ショートカットを載せた、押せるカード。
- *
- * @param face カードの綴りと配色
- * @param onClick 押したときに始める手続き
- * @param disabled 押させたくないか
- * @returns 見出しを名前に、説明とショートカットを説明に持つボタン
- */
-function ActionCard({
-  face,
-  onClick,
-  disabled,
-}: Readonly<{
-  face: CardFace;
-  onClick: () => void;
-  disabled: boolean;
-}>): ReactElement {
-  const id = useId();
-  const titleId = `${id}-title`;
-  const descriptionId = `${id}-description`;
-  const shortcutId = `${id}-shortcut`;
-
-  return (
-    // 名前は見出しだけにする。中身から決めさせると「新規作成 空のドキュメントから始める ⌘N」
-    // になり、名前で引いている呼び出し側（「開く」「新規作成」）が見つけられなくなる。
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      aria-labelledby={titleId}
-      aria-describedby={`${descriptionId} ${shortcutId}`}
-      className={`flex flex-col items-start gap-[10px] rounded-[10px] border p-4 text-left focus-visible:outline-2 focus-visible:outline-[#0a74c9] focus-visible:outline-offset-2 disabled:cursor-default disabled:opacity-50 ${face.cardClass}`}
-    >
-      <span
-        className={`flex size-8 items-center justify-center rounded-[8px] ${face.iconClass}`}
-      >
-        <svg
-          aria-hidden="true"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="size-[18px]"
-        >
-          {face.iconPaths.map((d) => (
-            <path key={d} d={d} />
-          ))}
-        </svg>
-      </span>
-      <span className="flex flex-col gap-[2px]">
-        <span id={titleId} className="font-medium text-[14px]">
-          {face.title}
-        </span>
-        <span
-          id={descriptionId}
-          className={`text-[12px] ${face.descriptionClass}`}
-        >
-          {face.description}
-        </span>
-      </span>
-      <span
-        id={shortcutId}
-        className={`self-end rounded-[4px] border px-[6px] py-[1px] text-[11px] ${face.shortcutClass}`}
-      >
-        {face.shortcut}
-      </span>
-    </button>
-  );
-}
+  tone: ActionCardTones.Normal,
+} as const satisfies ActionCardFace;
 
 /**
  * ドキュメントを開く / 作る導線。
@@ -273,8 +174,8 @@ function RecentFileList({
  * 開く前の画面を描いていない（`open` / `recent` / `welcome` はいずれも 0 件）。そのため見せ
  * 方はここで決めている。画面の数と名前は `rules/ui-verification.md` が持つ。
  *
- * 開くのカードの青系の配色（`OpenCardFace`）と、2 枚に共通のフォーカス枠の青（`#0a74c9`）は
- * UI 案の語彙に無く、意図して離れている（#1062）。それ以外の色は UI 案の語彙から採っている。
+ * カードの配色とフォーカス枠は `ActionCard` が持つ（UI 案から離れている色とその理由もそちら）。
+ * それ以外の色は UI 案の語彙から採っている。
  *
  * @param attempt 直近の開く操作がどこまで進んだか
  * @param actions 開く / 作るを始める手続き
