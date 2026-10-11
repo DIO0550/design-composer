@@ -1,5 +1,20 @@
 [
   {
+    "id": "components-actioncard--disabled",
+    "title": "components/ActionCard",
+    "name": "押せない"
+  },
+  {
+    "id": "components-actioncard--normal",
+    "title": "components/ActionCard",
+    "name": "ノーマル"
+  },
+  {
+    "id": "components-actioncard--primary",
+    "title": "components/ActionCard",
+    "name": "プライマリ"
+  },
+  {
     "id": "components-contextmenu--empty-area",
     "title": "components/ContextMenu",
     "name": "空き領域を右クリックしたとき"
