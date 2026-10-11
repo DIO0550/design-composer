@@ -4,7 +4,7 @@ import type { OpenedDocument } from "@/domains/session/opened-document";
 import { OpenedDocuments } from "@/domains/session/opened-documents";
 import type { DocumentDialogError } from "@/libs/document-dialog";
 import type { IndexMove } from "@/types/IndexMove";
-import { Option } from "@/utils/Option";
+import { Option, type Some } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
 /**
@@ -162,6 +162,19 @@ export const DocumentSession = {
    */
   isClosed(session: DocumentSession): boolean {
     return !Option.isSome(session.documents) && session.attempt.kind === "idle";
+  },
+
+  /**
+   * 開いているドキュメントが 1 つ以上あるか。開く操作の進み具合（最中・失敗）は問わない。
+   *
+   * @param session 見るセッション
+   * @returns 開いているドキュメントがあれば `true`。そのとき `documents` の中身が読める
+   */
+  hasOpenedDocuments(
+    session: DocumentSession,
+  ): session is DocumentSession &
+    Readonly<{ documents: Some<OpenedDocuments> }> {
+    return Option.isSome(session.documents);
   },
 
   /**
