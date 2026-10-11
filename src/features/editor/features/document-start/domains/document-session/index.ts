@@ -161,7 +161,10 @@ export const DocumentSession = {
    * @returns 開いているドキュメントが無く、開く操作が最中でも失敗でもなければ `true`
    */
   isClosed(session: DocumentSession): boolean {
-    return !Option.isSome(session.documents) && session.attempt.kind === "idle";
+    return (
+      !DocumentSession.hasOpenedDocuments(session) &&
+      session.attempt.kind === "idle"
+    );
   },
 
   /**
