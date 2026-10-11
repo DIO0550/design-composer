@@ -21,21 +21,6 @@ export type SizeLimits = Readonly<{
 }>;
 
 /**
- * その軸の下限・上限が載る prop 名。
- *
- * @param axis どちらの軸の prop 名か
- * @returns 下限と上限の prop 名の対
- */
-function limitProps(axis: Axis): Readonly<{
-  min: "minWidth" | "minHeight";
-  max: "maxWidth" | "maxHeight";
-}> {
-  return axis === "width"
-    ? { min: "minWidth", max: "maxWidth" }
-    : { min: "minHeight", max: "maxHeight" };
-}
-
-/**
  * prop に設定されている長さ。
  *
  * @param value 読み取った prop の値
@@ -70,7 +55,7 @@ const SizeLimits = {
    * @returns 下限と上限。書いていない側と数値でない側は `none`
    */
   fromProps(props: Props, axis: Axis): SizeLimits {
-    const names = limitProps(axis);
+    const names = Size.limitProps(axis);
     return {
       min: lengthOf(props[names.min]),
       max: lengthOf(props[names.max]),
@@ -173,13 +158,31 @@ function declarations(
   }
 }
 
+/**
+ * サイズが判定を満たす軸。
+ *
+ * @param props 見るノードの props
+ * @param predicate 軸ごとのサイズに対する判定
+ * @returns 判定を満たす軸を width・height の順で。サイズが決まらない（`Size.fromProps` が
+ *   `none`）軸は含めない
+ */
+function collectAxesWhere(
+  props: Props,
+  predicate: (size: Size) => boolean,
+): readonly Axis[] {
+  return Object.values(Axes).filter((axis) =>
+    Option.contains(Option.map(Size.fromProps(props, axis), predicate), true),
+  );
+}
+
 export const Size = {
   /**
    * props からその軸のサイズを組み立てる。
    *
-   * 決まらないのはスキーマ違反のときで、不正は `DesignDocument.collectErrors` が出す。
+   * 決まらないのはモードが書かれていないときとスキーマ違反のときで、後者の不正は
+   * `DesignDocument.collectErrors` が出す。
    *
-   * @param props 読み取り元の props (デフォルト解決済みでなくてよい)
+   * @param props 読み取り元の props。モードが書かれていなければ既定を読まず `none` になる
    * @param axis どちらの軸のサイズを読むか
    * @returns その軸のサイズ。モードの綴りが読めないときと、`fixed` なのに長さが数値で
    *   ないときは `none`
@@ -213,18 +216,14 @@ export const Size = {
   },
 
   /**
-   * `fill` になっている軸。
+   * `fill` になっている軸（並びとサイズが決まらない軸の扱いは `collectAxesWhere` のとおり）。
    *
-   * @param props 見るノードの props（デフォルト解決済みでなくてよい）
-   * @returns `fill` の軸を width・height の順で。サイズが決まらない軸は含めない
+   * @param props 見るノードの props。モードが書かれていない軸は既定を読まずサイズが決まらない
+   *   扱いになり、含めない
+   * @returns `fill` の軸
    */
   collectFillAxes(props: Props): readonly Axis[] {
-    return Object.values(Axes).filter((axis) =>
-      Option.contains(
-        Option.map(Size.fromProps(props, axis), (size) => size.mode),
-        "fill",
-      ),
-    );
+    return collectAxesWhere(props, (size) => size.mode === "fill");
   },
 
   /**
@@ -233,25 +232,30 @@ export const Size = {
    * @param axis どちらの軸の prop 名か
    * @returns 下限と上限の prop 名の対
    */
-  limitProps,
+  limitProps(axis: Axis): Readonly<{
+    min: "minWidth" | "minHeight";
+    max: "maxWidth" | "maxHeight";
+  }> {
+    return axis === "width"
+      ? { min: "minWidth", max: "maxWidth" }
+      : { min: "minHeight", max: "maxHeight" };
+  },
 
   /**
-   * 下限が上限を超えている軸（docs/03「バリデーション仕様」）。
+   * 下限が上限を超えている軸（docs/03「バリデーション仕様」。並びとサイズが決まらない軸の
+   * 扱いは `collectAxesWhere` のとおり）。
+   *
+   * 引数を `ResolvedProps` にはしない。size → resolved-props → primitive-schema → schema →
+   * layout → size の循環になるため、解決済みであることは doc で求める。
    *
    * @param props 見るノードの props。デフォルト解決済みのもの（`widthMode` を書いていない
    *   ノードを既定のモードで見るため。解決していないと `fromProps` が `none` になり見落とす）
-   * @returns `hug` / `fill` で下限が上限より大きい軸を width・height の順で。`fixed` の軸と
-   *   サイズが決まらない軸は含めない
+   * @returns `hug` / `fill` で下限が上限より大きい軸。`fixed` の軸は含めない
    */
   collectInvertedLimitAxes(props: Props): readonly Axis[] {
-    return Object.values(Axes).filter((axis) =>
-      Option.contains(
-        Option.map(
-          Size.fromProps(props, axis),
-          (size) => size.mode !== "fixed" && SizeLimits.isInverted(size.limits),
-        ),
-        true,
-      ),
+    return collectAxesWhere(
+      props,
+      (size) => size.mode !== "fixed" && SizeLimits.isInverted(size.limits),
     );
   },
 
@@ -269,7 +273,7 @@ export const Size = {
   collectFillPropEdits(props: Props): readonly PropEdit[] {
     return Size.collectFillAxes(props).flatMap((axis) => [
       PropEdit.set([Size.modeProp(axis)], "fill"),
-      ...PropEdit.collectWritten(props, Object.values(limitProps(axis))),
+      ...PropEdit.collectWritten(props, Object.values(Size.limitProps(axis))),
     ]);
   },
 
@@ -279,7 +283,7 @@ export const Size = {
    * モードと長さがどの prop に載っているかを知っているのはこのモジュールなので、
    * 軸で引く側が 2 つの prop 名を組み立てずに済む。
    *
-   * @param props 読み取り元の props (デフォルト解決済みでなくてよい)
+   * @param props 読み取り元の props。モードが書かれていなければ既定を読まず `none` になる
    * @param axis どちらの軸の長さを読むか
    * @returns その軸の長さ。`hug` / `fill` と、`fixed` なのに長さが無いときは `none`
    */
@@ -294,7 +298,7 @@ export const Size = {
    * 下限・上限は親の向きに依らないので、`fill` がフローの外にあって伸長の宣言を出さない
    * ときも出す。
    *
-   * @param props 読み取り元の props (デフォルト解決済みでなくてよい)
+   * @param props 読み取り元の props。モードが書かれていなければ既定を読まず空になる
    * @param axis どちらの軸のサイズか
    * @param flexParentDirection flex アイテムとして並ぶ親の向き。フローに参加して
    *   いない位置（親を持たない / 親が `layout: free` / 自身が絶対配置）では `none`。
