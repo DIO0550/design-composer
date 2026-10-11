@@ -11,6 +11,9 @@ import { Option } from "@/utils/Option";
 /**
  * 軸方向の長さに与える下限と上限（docs/03「サイズ指定の原則」）。
  * 片方だけを書くこともあるので、それぞれが不在を取りうる。
+ *
+ * 下限が上限を超える逆転は生成時に弾かない。逆転していても開いて描画を続け（docs/03「開く時」）、
+ * CSS では下限が勝つ形で出すため。検出は `DesignDocument.collectErrors` が持つ。
  */
 export type SizeLimits = Readonly<{
   min: Option<number>;
@@ -86,6 +89,20 @@ const SizeLimits = {
       ...limitDeclaration(`min-${axis}`, limits.min),
       ...limitDeclaration(`max-${axis}`, limits.max),
     ];
+  },
+
+  /**
+   * 下限が上限を超えているか。
+   *
+   * @param limits 見る下限と上限
+   * @returns 両方があり、下限が上限より大きいときだけ `true`。等しいときと片方が無いときは `false`
+   */
+  isInverted(limits: SizeLimits): boolean {
+    return (
+      Option.isSome(limits.min) &&
+      Option.isSome(limits.max) &&
+      limits.min.value > limits.max.value
+    );
   },
 } as const;
 
@@ -206,6 +223,34 @@ export const Size = {
       Option.contains(
         Option.map(Size.fromProps(props, axis), (size) => size.mode),
         "fill",
+      ),
+    );
+  },
+
+  /**
+   * その軸の下限・上限が載る prop 名。
+   *
+   * @param axis どちらの軸の prop 名か
+   * @returns 下限と上限の prop 名の対
+   */
+  limitProps,
+
+  /**
+   * 下限が上限を超えている軸（docs/03「バリデーション仕様」）。
+   *
+   * @param props 見るノードの props。デフォルト解決済みのもの（`widthMode` を書いていない
+   *   ノードを既定のモードで見るため。解決していないと `fromProps` が `none` になり見落とす）
+   * @returns `hug` / `fill` で下限が上限より大きい軸を width・height の順で。`fixed` の軸と
+   *   サイズが決まらない軸は含めない
+   */
+  collectInvertedLimitAxes(props: Props): readonly Axis[] {
+    return Object.values(Axes).filter((axis) =>
+      Option.contains(
+        Option.map(
+          Size.fromProps(props, axis),
+          (size) => size.mode !== "fixed" && SizeLimits.isInverted(size.limits),
+        ),
+        true,
       ),
     );
   },
