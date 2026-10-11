@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { TokenSet } from "@/domains/dcmp/token";
+import { EditContinuities } from "@/domains/session/edit-continuity";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 
@@ -92,7 +93,11 @@ test("選択中のトークンの値を変えると新しい値が引ける", ()
   });
 
   const edited = Option.unwrap(
-    EditorState.setTokenValue(state, { kind: "spacing", value: 12 }),
+    EditorState.setTokenValue(
+      state,
+      { kind: "spacing", value: 12 },
+      EditContinuities.Separate,
+    ),
   );
 
   expect(EditorState.selectedToken(edited)).toEqual(
@@ -101,10 +106,11 @@ test("選択中のトークンの値を変えると新しい値が引ける", ()
 });
 
 test("トークンが選択されていなければ値の編集は存在しない", () => {
-  const edited = EditorState.setTokenValue(setupState(), {
-    kind: "spacing",
-    value: 12,
-  });
+  const edited = EditorState.setTokenValue(
+    setupState(),
+    { kind: "spacing", value: 12 },
+    EditContinuities.Separate,
+  );
 
   expect(edited).toEqual(Option.none);
 });
@@ -116,10 +122,11 @@ test("選択中のトークンと違う種別の値では編集は存在しな�
     name: "sm",
   });
 
-  const edited = EditorState.setTokenValue(state, {
-    kind: "spacing",
-    value: 12,
-  });
+  const edited = EditorState.setTokenValue(
+    state,
+    { kind: "spacing", value: 12 },
+    EditContinuities.Separate,
+  );
 
   expect(edited).toEqual(Option.none);
 });
@@ -166,7 +173,11 @@ test("トークンの編集は undo で元に戻せる", () => {
     name: "sm",
   });
   const edited = Option.unwrap(
-    EditorState.setTokenValue(state, { kind: "spacing", value: 12 }),
+    EditorState.setTokenValue(
+      state,
+      { kind: "spacing", value: 12 },
+      EditContinuities.Separate,
+    ),
   );
 
   const undone = Option.unwrap(EditorState.undo(edited));

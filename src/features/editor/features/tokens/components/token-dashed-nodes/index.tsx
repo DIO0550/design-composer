@@ -26,7 +26,7 @@ function nodeCountText(count: number): string {
  * いないこと自体が削除の判断材料になる点が違う）。
  *
  * 見本を出すのは色だけで（UI 案が描いているのも `#111827` の四角 1 例）、`token-control`
- * の `TokenPreview` は使わない（使うと `token-list` の `PreviewSlot` と 4 枝すべてが重なる）。
+ * の `TokenPreview` は使わない（使うと `token-list` の `PreviewSlot` と 5 枝すべてが重なる）。
  * 飛び先は破線の先頭で、並びは `collectCanvasReferrerNames` が決めている。
  *
  * @returns トークン名・破線の本数・先頭へ飛ぶリンクを並べた帯。破線が 1 本も無い

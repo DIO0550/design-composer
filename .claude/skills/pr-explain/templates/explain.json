@@ -4,7 +4,7 @@
   "sha": "0123456789abcdef0123456789abcdef01234567",
   "issue": 1022,
   "overview": {
-    "title": "PR の解説を explain.json で書き、検査して置く",
+    "title": "PR の解説を `explain.json` で書き、検査して置く",
     "lead": "解説は HTML の断片ではなく JSON で書く。ページの固定スクリプトが地図と合わせて 3 画面に組む。",
     "before": [
       { "text": "セッションが HTML の断片をページごとに書き、1 ページずつ置いていた" }
@@ -29,13 +29,13 @@
   ],
   "concepts": [
     { "path": ".github/workflows/pr-explain.yml", "name": "地図の配置", "role": "PR のイベントで地図を作って置く", "feature": "publish" },
-    { "path": ".github/scripts/pr-explain-pages.sh", "name": "置き場", "role": "gh-pages の PR のフォルダを書き換える", "feature": "publish", "change": "put-explain を足し、ページごとの HTML を置くモードを消した" },
-    { "path": ".github/scripts/build-pr-explain.py", "name": "解説の検査", "role": "explain.json の形と参照を見て、抜粋の中身を足す", "feature": "publish", "change": "新しく作った" },
-    { "path": ".claude/skills/pr-explain/templates/explain.json", "name": "見本", "role": "excerpt 以外のすべてのキーを使う解説", "graph": false }
+    { "path": ".github/scripts/pr-explain-pages.sh", "name": "置き場", "role": "gh-pages の PR のフォルダを書き換える", "feature": "publish", "change": "`put-explain` を足し、ページごとの HTML を置くモードを消した" },
+    { "path": ".github/scripts/build-pr-explain.py", "name": "解説の検査", "role": "`explain.json` の形と参照を見て、抜粋の中身を足す", "feature": "publish", "change": "新しく作った" },
+    { "path": ".claude/skills/pr-explain/templates/explain.json", "name": "見本", "role": "`excerpt` 以外のすべてのキーを使う解説", "graph": false }
   ],
   "messages": [
-    { "id": "put-map", "from": ".github/workflows/pr-explain.yml", "to": ".github/scripts/pr-explain-pages.sh", "kind": "cmd", "name": "地図を置く", "code": "pr-explain-pages.sh put-map", "via": "exec", "payload": "change-map.json とテンプレート" },
-    { "id": "put-explain", "from": ".github/scripts/pr-explain-pages.sh", "to": ".github/scripts/build-pr-explain.py", "kind": "qry", "name": "解説を検査する", "code": "build-pr-explain.py --pr --out", "via": "exec", "payload": "explain.json", "returns": "抜粋の中身を足した explain.json", "status": "added" }
+    { "id": "put-map", "from": ".github/workflows/pr-explain.yml", "to": ".github/scripts/pr-explain-pages.sh", "kind": "cmd", "name": "地図を置く", "code": "pr-explain-pages.sh put-map", "via": "exec", "payload": "`change-map.json` とテンプレート" },
+    { "id": "put-explain", "from": ".github/scripts/pr-explain-pages.sh", "to": ".github/scripts/build-pr-explain.py", "kind": "qry", "name": "解説を検査する", "code": "build-pr-explain.py --pr --out", "via": "exec", "payload": "`explain.json`", "returns": "抜粋の中身を足した `explain.json`", "status": "added" }
   ],
   "flows": [
     { "id": "explain", "label": "解説を置いたとき", "steps": ["put-explain"] },
@@ -46,7 +46,7 @@
       "sha": "89abcdef0123456789abcdef0123456789abcdef",
       "phase": "core",
       "role": "解説を JSON で検査する",
-      "why": "ページが JSON を textContent でしか描かないので、HTML の断片の検査が要らなくなる。",
+      "why": "ページが JSON の文字列を HTML として解釈しないので、HTML の断片の検査が要らなくなる。",
       "flows": ["explain"],
       "review": ["知らないキーを落とす。書き手が綴りを間違えたときに黙って欄が空にならないため"],
       "before": [{ "text": "断片の HTML を要素・属性ごとに見ていた" }],
@@ -68,13 +68,13 @@
       "techniques": ["error", "boundary"],
       "why": "綴りを間違えたキーが黙って無視されると、ページの欄が空になる",
       "given": "見本の解説",
-      "when": "messages[0] に知らないキーを足して検査する",
-      "then": "[pr-explain-shape] で落ち、書き出さない",
+      "when": "`messages[0]` に知らないキーを足して検査する",
+      "then": "`[pr-explain-shape]` で落ち、書き出さない",
       "commit": "89abcdef0123456789abcdef0123456789abcdef",
       "values": {
         "columns": ["足したキー", "結果"],
         "rows": [
-          { "cells": ["extra", "落ちる"], "boundary": true },
+          { "cells": ["`extra`", "落ちる"], "boundary": true },
           { "cells": ["(足さない)", "通る"] }
         ]
       },
@@ -88,7 +88,7 @@
       "techniques": ["state"],
       "why": "古い解説も、ページが「以降 n コミットは解説なし」と出せば読める",
       "given": "地図の head より前の sha で書いた解説",
-      "when": "put-explain で置く",
+      "when": "`put-explain` で置く",
       "then": "終了コード 0 で、標準エラーに知らせる",
       "todo": true,
       "targets": [".github/scripts/pr-explain-pages.sh"]

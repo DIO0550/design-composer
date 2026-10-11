@@ -117,3 +117,15 @@ test("要素が 1 つしか無い並びには、隣り合う要素の組が無�
 test("空の並びには、隣り合う要素の組が無い", () => {
   expect(ArrayEx.adjacentPairs([])).toEqual([]);
 });
+
+test("範囲外の index を指定して removeAt を呼ぶと範囲外として Err が返る", () => {
+  expect(ArrayEx.removeAt(["a", "b"], 2)).toEqual(
+    Result.err({ index: 2, length: 2 }),
+  );
+});
+
+test("負の index を指定して removeAt を呼ぶと範囲外として Err が返る", () => {
+  expect(ArrayEx.removeAt(["a", "b"], -1)).toEqual(
+    Result.err({ index: -1, length: 2 }),
+  );
+});

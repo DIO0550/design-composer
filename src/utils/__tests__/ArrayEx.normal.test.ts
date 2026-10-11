@@ -200,3 +200,35 @@ test("隣り合う要素の組は、先頭から順に各要素と直後の要�
     { previous: "b", next: "c" },
   ]);
 });
+
+test("removeAt で指定位置の要素を取り除ける", () => {
+  expect(Result.unwrap(ArrayEx.removeAt(["a", "b", "c"], 1))).toEqual([
+    "a",
+    "c",
+  ]);
+});
+
+test("sortBy で数値の小さい順に並べ直せる", () => {
+  expect(ArrayEx.sortBy([3, 1, 2], (item) => item)).toEqual([1, 2, 3]);
+});
+
+test("sortBy では同じ値の要素が元の並びの順を保つ", () => {
+  const items = [
+    { name: "a", order: 2 },
+    { name: "b", order: 1 },
+    { name: "c", order: 2 },
+    { name: "d", order: 1 },
+  ];
+
+  expect(
+    ArrayEx.sortBy(items, (item) => item.order).map((item) => item.name),
+  ).toEqual(["b", "d", "a", "c"]);
+});
+
+test("sortBy は渡した並びを変えない", () => {
+  const items = [3, 1, 2];
+
+  ArrayEx.sortBy(items, (item) => item);
+
+  expect(items).toEqual([3, 1, 2]);
+});

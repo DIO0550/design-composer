@@ -86,3 +86,10 @@ export const RadiusSelected: Story = {
   name: "角丸トークンを選択中",
   args: { selection: sampleTokenSelection({ kind: "radius", name: "md" }) },
 };
+
+export const GradientSelected: Story = {
+  name: "グラデーショントークンを選択中",
+  args: {
+    selection: sampleTokenSelection({ kind: "gradients", name: "brand" }),
+  },
+};

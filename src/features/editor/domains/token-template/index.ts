@@ -1,4 +1,5 @@
 import {
+  GradientToken,
   type Token,
   type TokenKind,
   TokenSet,
@@ -20,8 +21,9 @@ export type TokenTemplate = Readonly<{ kind: TokenKind }>;
  * / `typography.body`）を選んだ。デフォルトテーマとは値が一致するだけで参照はしていない
  * （追加直後の見え方はこちらの関心事）。
  *
- * グラデーションは種別を網羅するために置いている。一覧がグラデーションの見出しを出さない
- * ので、いまこの値から始まる経路は無い。
+ * グラデーションは docs/06-ui.md「節見出しの `+` で作るトークン」の値で、中身はドメインの
+ * `GradientToken.Initial` が持つ（色の変わり目が 0 件のファイルを stop の `+` で直すときの、
+ * ドメインの 2 件と同じ値のため）。
  */
 const InitialValues = {
   colors: { kind: "colors", value: "#000000" },
@@ -35,17 +37,7 @@ const InitialValues = {
     kind: "typography",
     value: { fontSize: 16, lineHeight: 1.6, fontWeight: 400 },
   },
-  gradients: {
-    kind: "gradients",
-    value: {
-      shape: "linear",
-      angle: 90,
-      stops: [
-        { color: "#3b82f6", ratio: 0 },
-        { color: "#1d4ed8", ratio: 1 },
-      ],
-    },
-  },
+  gradients: { kind: "gradients", value: GradientToken.Initial },
 } as const satisfies Readonly<Record<TokenKind, TokenValue>>;
 
 /**

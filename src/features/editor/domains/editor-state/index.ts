@@ -1344,20 +1344,28 @@ export const EditorState = {
   /**
    * 選択中のトークンの値を差し替える。
    *
+   * 1 回の操作が何度も値を送る経路（ピッカーを動かす間）を Undo 1 回で戻すのは `continuity`
+   * の担当（docs/06-ui.md「編集操作の一覧」の tokens 編集）。
+   *
    * @param state 差し替える前の状態
    * @param value 新しい値
+   * @param continuity 直前の編集との続き方（1 回開いたピッカーから届く 2 件目以降は続き）
    * @returns 値を差し替えた状態。トークンを選んでいない・選択中のトークンと種別が違う値・
    *   ファイルが不正な間は `none`（`DesignDocument.replaceToken` の失敗は、文書から引いた
    *   選択中のトークンの種別と名前へ書き込むので起こらない）
    */
-  setTokenValue(state: EditorState, value: TokenValue): Option<EditorState> {
+  setTokenValue(
+    state: EditorState,
+    value: TokenValue,
+    continuity: EditContinuity,
+  ): Option<EditorState> {
     return Option.flatMap(EditorState.selectedToken(state), (token) =>
       Option.flatMap(Token.withValue(token, value), (edited) => {
         const replaced = DesignDocument.replaceToken(
           EditorState.document(state),
           edited,
         );
-        return withEditResult(state, replaced);
+        return withEditResult(state, replaced, continuity);
       }),
     );
   },

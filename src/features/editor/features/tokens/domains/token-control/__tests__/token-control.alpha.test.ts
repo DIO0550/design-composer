@@ -5,7 +5,7 @@ import { fieldOf, fieldsOf } from "./setup";
 
 test("色の不透明度の欄には % で読んだ値が出る", () => {
   expect(fieldOf("colors", "veil", "不透明度").input).toEqual({
-    kind: "alphaPercent",
+    kind: "percent",
     value: 50.2,
   });
 });
@@ -51,7 +51,7 @@ test("数値として読めない不透明度では色を変えない", () => {
 
 test("影の色にも不透明度の欄が出る", () => {
   expect(fieldOf("shadows", "sm", "不透明度").input).toEqual({
-    kind: "alphaPercent",
+    kind: "percent",
     value: 10.2,
   });
 });
@@ -91,7 +91,7 @@ test("hex として読めない色は打ち直せるテキスト欄1本になる
 
 test("不透明度の欄は色と影のそれぞれに1本ずつしか出ない", () => {
   const alphaRows = fieldsOf("shadows", "sm").filter(
-    (field) => field.input.kind === "alphaPercent",
+    (field) => field.input.kind === "percent",
   );
 
   expect(alphaRows.map((field) => field.name)).toEqual(["colorAlpha"]);
