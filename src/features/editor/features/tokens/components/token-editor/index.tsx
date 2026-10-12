@@ -1,4 +1,5 @@
 import { type CSSProperties, type ReactElement, useId } from "react";
+import { Button, ButtonKinds, ButtonSizes } from "@/components/button";
 import type { Token, TokenKind } from "@/domains/dcmp/token";
 import type { TokenSelection } from "@/domains/session/token-selection";
 import { TokenUsedBy } from "@/features/editor/features/tokens/components/token-used-by";
@@ -195,13 +196,13 @@ function TokenEditorBody({
       </div>
       {/* 並びは UI 案（docs/Design Composer.html）どおり、名前欄の下・削除の上 */}
       <TokenUsedBy selection={selection} />
-      <button
-        type="button"
+      <Button
+        kind={ButtonKinds.Danger}
+        size={ButtonSizes.Regular}
         onClick={onRemoveToken}
-        className="rounded border border-gray-300 px-2 py-1 text-red-600 hover:bg-gray-100"
       >
         Delete token
-      </button>
+      </Button>
     </section>
   );
 }
