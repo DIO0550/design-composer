@@ -277,6 +277,7 @@ export const DesignDocumentValidationError = {
    * @param publicProp binding を宣言している部品名と公開 prop 名
    * @param binding 違反を持つ公開 prop の binding
    * @returns 指し先のノードが無ければ dangling-binding-node、指し先の prop が無ければ
+   *   dangling-binding-prop。指し先のインスタンスの参照先がその prop を公開していないときも
    *   dangling-binding-prop。どちらも部品名を位置、公開 prop 名を prop に持つ
    */
   fromBindingViolation(
@@ -339,7 +340,7 @@ export const DesignDocumentValidationError = {
   },
 
   /**
-   * 単一の名前空間の中で重複している名前（docs/02-data-model.md「名前の一意性」）を、
+   * 単一の名前空間の中で重複している名前（docs/03-schema.md「バリデーション仕様」）を、
    * エラーにする。
    *
    * @param name 重複している名前
