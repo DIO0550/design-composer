@@ -123,7 +123,7 @@
         "outcomes": [
           { "rowHead": "passing", "columnHead": "mapped", "result": "置かれ、ページに出る", "was": "書いたまま置かれる" },
           { "rowHead": "failing", "columnHead": "mapped", "result": "置かれず、落ちた理由が出る", "was": "置かれ、ページの欄が空になる", "tests": ["unknown-key"] },
-          { "rowHead": "passing", "columnHead": "unmapped", "result": "置かれず、地図を待つよう知らされる", "note": "閉じた PR にも置かない" },
+          { "rowHead": "passing", "columnHead": "unmapped", "result": "置かれず、地図を待つよう知らされる", "situation": "検査に通ったが、PR を出した直後で地図がまだ置かれていない", "note": "閉じた PR にも置かない" },
           { "rowHead": "failing", "columnHead": "unmapped", "result": "置かれず、落ちた理由が出る", "tests": ["unknown-key"] }
         ]
       }

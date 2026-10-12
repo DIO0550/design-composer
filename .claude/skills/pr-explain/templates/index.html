@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-C94Lg2cjn44320AgJ2cn2j31GQ6ZGrYjAzJbqIQjsXY='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-2m2jAbVKSoQpG760733asvFXjwy2enFR6Xz68TUofs4='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR 解説</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -653,12 +653,15 @@ button.change-item:hover { background: var(--track); }
 .sequence-legend > span { display: flex; align-items: center; gap: 5px; }
 .sequence-legend .legend-line { width: 16px; border-top-color: var(--ink-2); }
 .flow-chip:disabled { color: var(--ink-3); border-style: dashed; cursor: default; }
-.stage-body.impact-body { max-width: 860px; gap: 56px; padding-bottom: 120px; }
+.stage-body.impact-body { max-width: 860px; gap: 56px; padding-bottom: calc(100cqh - 140px); }
+/* 本文の末尾の余白は「欄の高さ − 読む線(TopicScroll の 140px)」。どの節も読む線まで送れるので、今の節は上端の位置だけで決まる。
+   欄の高さは、広い幅では本文の欄(size のコンテナ)の、狭い幅ではコンテナを外すので表示領域の高さになる。 */
+.screen[data-screen="impact"] > .stage { container-type: size; }
 .impact-topic { display: flex; flex-direction: column; gap: 16px; scroll-margin-top: 20px; }
 .impact-topic-head { display: flex; flex-direction: column; gap: 6px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
 .impact-topic-head h2 { margin: 0; font-size: 21px; font-weight: 600; line-height: 1.4; text-wrap: balance; overflow-wrap: anywhere; }
 .impact-hash { color: var(--ink-4); font-weight: 400; margin-right: 8px; }
-.impact-kicker { font-family: var(--mono); font-size: 11px; color: var(--ink-3); letter-spacing: .03em; }
+.impact-eyebrow { font-family: var(--mono); font-size: 11px; color: var(--ink-3); letter-spacing: .03em; }
 .impact-gist { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: baseline; padding: 12px 16px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); }
 .impact-gist-label { font-size: 11px; font-weight: 600; letter-spacing: .06em; color: var(--accent); white-space: nowrap; }
 .impact-gist-text { font-size: 14.5px; line-height: 1.7; font-weight: 500; }
@@ -690,7 +693,8 @@ button.change-item:hover { background: var(--track); }
 .impact-inline { display: none; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
 .impact-inline > summary { cursor: pointer; padding: 10px 14px; font-size: 12.5px; font-weight: 600; color: var(--ink-2); }
 .impact-inline > .side { overflow: visible; padding: 0 14px 14px; gap: 18px; }
-/* 振る舞いの画面だけ、狭い幅で右の欄を隠して根拠を各節に畳み(1180px 以下)、さらに目次も隠してページ全体をスクロールする(760px 以下)。 */
+/* 振る舞いの画面だけ、狭い幅で右の欄を隠して根拠を各節に畳み(1180px 以下)、さらに目次も隠してページ全体をスクロールする(760px 以下)。
+   この 2 つの @media は判定表を通らず、表示確認でしか守られていない。 */
 @media (max-width: 1180px) {
   .screen[data-screen="impact"]:not([hidden]) { display: flex; }
   .screen[data-screen="impact"] > .panel.is-left { flex: 0 0 220px; }
@@ -703,7 +707,7 @@ button.change-item:hover { background: var(--track); }
   html:has(.screen[data-screen="impact"]:not([hidden])) .app { height: auto; display: block; }
   .screen[data-screen="impact"]:not([hidden]) { display: block; height: auto; }
   .screen[data-screen="impact"] > .panel.is-left { display: none; }
-  .screen[data-screen="impact"] > .stage { overflow: visible; }
+  .screen[data-screen="impact"] > .stage { overflow: visible; container-type: normal; }
   .screen[data-screen="impact"] .impact-body { padding-inline: 16px; gap: 44px; }
   .screen[data-screen="impact"] .impact-gist, .screen[data-screen="impact"] .impact-note { grid-template-columns: minmax(0, 1fr); gap: 4px; }
 }
@@ -936,27 +940,35 @@ button.change-item:hover { background: var(--track); }
 
   const isRecord = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
   const isListOfRecords = (value) => Array.isArray(value) && value.every(isRecord);
+  /** 配列ならそのまま、それ以外(書いていない・型が違う)なら空の配列にする。 */
+  const listOf = (value) => (Array.isArray(value) ? value : []);
 
   /** テストを、確かめているものとして数えるか。未実装(提案)と、このブランチで消したものは数えない。 */
   const isVerifying = (test) => test.status !== "todo" && test.status !== "removed";
 
   /**
    * やりとりの両端が図の箱か。構造マップで選べるのは、両端が箱のやりとりだけ。
-   * @param entryAt パスから木の項目を引く表
+   * @param message 解説のやりとり
+   * @param entryAt パスから木の項目を引く表(`ExplainedMap` の `entryAt`)
+   * @returns 両端とも木の項目にあり、図に出す(`inGraph`)ものなら true
    */
   const isDrawnMessage = (message, entryAt) => [message.from, message.to].every((path) => entryAt.has(path) && entryAt.get(path).inGraph);
 
-  /** 振る舞いの画面の節の並び。解説の `impact` を、変わったこと → 状況の表 → 増えた状況 → 変わらないこと の節にする。 */
+  /**
+   * 振る舞いの画面の節の並び。解説の `impact` を、変わったこと → 状況の表 → 増えた状況 → 変わらないこと の節にする。
+   *
+   * 節を `section` と呼ばないのは、ページでは `section` が画面(`<section class="screen">`)と画面の中の区画(`.section`)を指しているため。
+   */
   const ImpactTopics = (() => {
-    // 骨組みの道筋と、その先の値の種類。`build-pr-explain.py` の Shapes の Impact から導いたものと同じ並びで、
+    // 形を見る道筋と、その先の値の種類。`build-pr-explain.py` の Shapes の Impact から導いたものと同じ並びで、
     // `pr-explain-core-cases.sh` が突き合わせる。文の値は見ない(描くときに文字として入れるだけなので)。
-    const SkeletonKinds = Object.freeze({
+    const ShapeKinds = Object.freeze({
       record: isRecord,
       records: isListOfRecords,
       ids: (value) => Array.isArray(value) && value.every((item) => typeof item === "string"),
       id: (value) => typeof value === "string",
     });
-    const SkeletonRoutes = Object.freeze([
+    const ShapeRoutes = Object.freeze([
       ["impact", "record"],
       ["impact.changed", "record"],
       ["impact.changed.before", "records"],
@@ -995,12 +1007,15 @@ button.change-item:hover { background: var(--track); }
     };
     const depthOf = ([route]) => route.split(".").length;
 
-    const listOf = (value) => (Array.isArray(value) ? value : []);
     const optionalText = (value) => (typeof value === "string" ? value : null);
     const linesOf = (lines) => listOf(lines).map((line) => ({ text: line.text, message: optionalText(line.message) }));
 
     /**
      * 解説のテストの id を、テスト画面と同じテスト(状態つき)にする。解説のテストに無い id は外す。
+     *
+     * 判定なし(テスト名を調べていないファイルのテスト)も確かめているものに数える。追加か既存かが分からないだけで、テストはあるため。
+     * @param ids 根拠に挙げた解説のテストの id(書いていなければ undefined)
+     * @param testAt 解説のテストの id から、テスト画面と同じテストを引く表(`ExplainedMap` の `testAt`)
      * @returns `verifying`(確かめているもの)・`missing`(未実装で、まだ無いもの)・`isGuarded`(確かめているものが 1 件以上)
      */
     const evidenceOf = (ids, testAt) => {
@@ -1015,14 +1030,24 @@ button.change-item:hover { background: var(--track); }
       return ids.map((id) => ({ message: messages.get(id), isDrawn: isDrawnMessage(messages.get(id), entryAt) }));
     };
 
+    /** 前後の組(変わったこと・増えた状況が同じ形で持つ)。前後の行と、それが指すやりとり(仕組み)にする。 */
+    const sidesOf = (source, context) => {
+      const before = linesOf(source.before);
+      const after = linesOf(source.after);
+      return { before, after, text: optionalText(source.text), mechanisms: mechanismsOf([...before, ...after], context) };
+    };
+
     /** 見出しの id が重複していれば先のものだけを残す。 */
     const firstById = (heads) => heads.filter((head, index) => heads.findIndex((other) => other.id === head.id) === index);
 
-    /** マスの状況の文。行の注があれば添える。 */
-    const situationOf = (row, column) => (typeof row.note === "string" ? `${row.label} · ${column.label}(${row.note})` : `${row.label} · ${column.label}`);
+    /** マスの状況の文。マスに書いてあればそれを、無ければ見出しから「行 · 列(行の注)」を組む。 */
+    const situationOf = ({ outcome, row, column }) => {
+      if (typeof outcome.situation === "string") return outcome.situation;
+      return typeof row.note === "string" ? `${row.label} · ${column.label}(${row.note})` : `${row.label} · ${column.label}`;
+    };
 
     /** 表のマス。同じ組み合わせを 2 回書いていれば先のもの、書いていなければ null(空き)。 */
-    const cellOf = ({ outcomes, row, column, testAt }) => {
+    const outcomeOf = ({ outcomes, row, column, testAt }) => {
       const outcome = outcomes.find((candidate) => candidate.rowHead === row.id && candidate.columnHead === column.id);
       if (outcome === undefined) return null;
       return {
@@ -1032,20 +1057,23 @@ button.change-item:hover { background: var(--track); }
         was: optionalText(outcome.was),
         note: optionalText(outcome.note),
         isChanged: typeof outcome.was === "string",
-        situation: situationOf(row, column),
+        situation: situationOf({ outcome, row, column }),
         tests: evidenceOf(outcome.tests, testAt),
       };
     };
 
     const headOf = (head) => ({ id: head.id, label: head.label, note: optionalText(head.note) });
 
-    /** 状況の表を、行の見出し × 列の見出しの順のマスにする。見出しに無い id のマスは並べない。 */
+    /**
+     * 状況の表を、行の見出し × 列の見出しの順のマスにする。見出しに無い id のマスは並べない。
+     * @returns 表の節。`rows[].outcomes` は行ごとのマス(空きは null)、`outcomes` は空きを除いて行の順に並べたマス
+     */
     const tableTopicOf = (table, index, { testAt }) => {
       const rowHeads = firstById(listOf(table.rowHeads));
       const columnHeads = firstById(listOf(table.columnHeads));
       const outcomes = listOf(table.outcomes);
-      const rows = rowHeads.map((row) => ({ head: headOf(row), cells: columnHeads.map((column) => cellOf({ outcomes, row, column, testAt })) }));
-      const cells = rows.flatMap((row) => row.cells).filter((cell) => cell !== null);
+      const rows = rowHeads.map((row) => ({ head: headOf(row), outcomes: columnHeads.map((column) => outcomeOf({ outcomes, row, column, testAt })) }));
+      const filled = rows.flatMap((row) => row.outcomes).filter((outcome) => outcome !== null);
       return {
         kind: "table",
         id: `table-${index}`,
@@ -1054,71 +1082,65 @@ button.change-item:hover { background: var(--track); }
         text: optionalText(table.text),
         columns: columnHeads.map(headOf),
         rows,
-        changedCount: cells.filter((cell) => cell.isChanged).length,
+        outcomes: filled,
+        changedCount: filled.filter((outcome) => outcome.isChanged).length,
       };
     };
 
-    const addedTopicOf = (added, index, context) => {
-      const before = linesOf(added.before);
-      const after = linesOf(added.after);
-      return { kind: "added", id: `added-${index}`, label: added.label, before, after, text: optionalText(added.text), tests: evidenceOf(added.tests, context.testAt), mechanisms: mechanismsOf([...before, ...after], context) };
-    };
+    const addedTopicOf = (added, index, context) => ({ kind: "added", id: `added-${index}`, label: added.label, ...sidesOf(added, context), tests: evidenceOf(added.tests, context.testAt) });
 
-    const changedTopicsOf = (changed, context) => {
-      if (!isRecord(changed)) return [];
-      const before = linesOf(changed.before);
-      const after = linesOf(changed.after);
-      return [{ kind: "changed", id: "changed", label: Labels.changed, before, after, text: optionalText(changed.text), mechanisms: mechanismsOf([...before, ...after], context) }];
-    };
+    const changedTopicsOf = (changed, context) => (isRecord(changed) ? [{ kind: "changed", id: "changed", label: Labels.changed, ...sidesOf(changed, context) }] : []);
 
     const keptTopicsOf = (kept, { testAt }) => {
       const lines = listOf(kept).map((line) => ({ text: line.text, tests: evidenceOf(line.tests, testAt) }));
       return lines.length === 0 ? [] : [{ kind: "kept", id: "kept", label: Labels.kept, lines }];
     };
 
-    /** 根拠のテストに、その解説のテストの id があるか。 */
-    const cites = (evidence, explainTestId) => [...evidence.verifying, ...evidence.missing].some((test) => test.test.id === explainTestId);
-
-    /** 節の中で、そのテストを根拠に挙げているところ。 */
-    const mentionsIn = (topic, explainTestId) => {
-      const mention = (extra) => ({ topic: topic.id, topicLabel: topic.label, cell: null, situation: null, ...extra });
+    /**
+     * 節の中で根拠のテストを挙げている箇所を、節の中の順に並べる。表はマスごと、増えた状況は節ごと、変わらないことは行ごと。
+     * @returns `{evidence, cell, placeText}` の並び。`cell` は表のマス(`{row, column}`。表のほかは null)、`placeText` はその箇所の
+     *   文(マスの状況・変わらないことの行。増えた状況は null)
+     */
+    const evidencePlacesOf = (topic) => {
       switch (topic.kind) {
         case "changed":
           return [];
         case "table":
-          return topic.rows.flatMap((row) => row.cells).filter((cell) => cell !== null && cites(cell.tests, explainTestId)).map((cell) => mention({ cell: { row: cell.row, column: cell.column }, situation: cell.situation }));
+          return topic.outcomes.map((outcome) => ({ evidence: outcome.tests, cell: { row: outcome.row, column: outcome.column }, placeText: outcome.situation }));
         case "added":
-          return cites(topic.tests, explainTestId) ? [mention({})] : [];
+          return [{ evidence: topic.tests, cell: null, placeText: null }];
         case "kept":
-          return topic.lines.filter((line) => cites(line.tests, explainTestId)).map((line) => mention({ situation: line.text }));
+          return topic.lines.map((line) => ({ evidence: line.tests, cell: null, placeText: line.text }));
       }
     };
 
+    /** 根拠がそのテストを挙げているか(確かめているもの・無いもののどちらで挙げていても)。 */
+    const isMentionedIn = (evidence, explainTestId) => [...evidence.verifying, ...evidence.missing].some((test) => test.test.id === explainTestId);
+
     return Object.freeze({
-      SkeletonRoutes,
+      ShapeRoutes,
       /** 使える解説が無いとき。 */
       Unexplained: Object.freeze({ kind: "none" }),
       /**
-       * ページが組み立てに使う `impact` の骨組みを見る。
+       * ページが組み立てに使う `impact` の形を見る。
        * @returns 型の違う道筋(`impact.tables[].outcomes` の形)。崩れが 2 か所以上なら最も外側のもの。崩れていなければ null
        */
-      skeletonProblemOf: (explain) => {
-        const broken = SkeletonRoutes.filter(([route, kind]) => valuesAt(explain, route.split(".")).some((value) => !SkeletonKinds[kind](value)));
+      shapeProblemOf: (explain) => {
+        const broken = ShapeRoutes.filter(([route, kind]) => valuesAt(explain, route.split(".")).some((value) => !ShapeKinds[kind](value)));
         if (broken.length === 0) return null;
         return broken.reduce((outer, candidate) => (depthOf(candidate) < depthOf(outer) ? candidate : outer))[0];
       },
       /**
-       * 解説の `impact` を節の並びにする。節の並びは固定で、書かなかった節は無い(変わらないことが 0 件なら節を作らない)。
-       * @param impact 骨組みの検査を通った解説の `impact`(書いていなければ undefined)
-       * @param tests テスト画面と同じテストの並び(`ExplainedMap` の `tests`)
-       * @param entries 木の項目(やりとりの両端が図の箱かを見る)
+       * 解説の `impact` を節の並びにする。書かなかった節は作らない(変わらないことが 0 件のときも)。
+       * @param impact 形の検査を通った解説の `impact`(書いていなければ undefined)
+       * @param testAt 解説のテストの id から、テスト画面と同じテストを引く表(`ExplainedMap` の `testAt`)
+       * @param entryAt パスから木の項目を引く表(やりとりの両端が図の箱かを見る)
        * @param messages 解説のやりとりを id で引く表
        * @returns `{kind: "unwritten"}`(`impact` が無い)か `{kind: "written", title, lead, topics}`
        */
-      create: ({ impact, tests, entries, messages }) => {
+      create: ({ impact, testAt, entryAt, messages }) => {
         if (impact === undefined) return { kind: "unwritten" };
-        const testAt = new Map(tests.filter((test) => test.test !== null).map((test) => [test.test.id, test]));
-        const context = { testAt, messages, entryAt: new Map(entries.map((entry) => [entry.path, entry])) };
+        const context = { testAt, entryAt, messages };
         const topics = [
           ...changedTopicsOf(impact.changed, context),
           ...listOf(impact.tables).map((table, index) => tableTopicOf(table, index, context)),
@@ -1127,29 +1149,42 @@ button.change-item:hover { background: var(--track); }
         ];
         return { kind: "written", title: impact.title, lead: impact.lead, topics };
       },
+      evidencePlacesOf,
       /**
-       * そのテストを根拠に挙げている節(表ならマス、変わらないことなら行)を、節の順に引く。
-       * @param explainTestId 解説のテストの id(テスト画面の中の位置ではない)
-       * @returns `{topic, topicLabel, cell, situation}` の並び。`cell` は表のマス(`{row, column}`)で、それ以外は null
+       * 表で初めに選んでおくマス。行の順で最初の「変わった」マス、それが無ければ先頭のマス。
+       * @param topic 表の節
+       * @returns `{row, column}`。マスが 1 つも無ければ null
        */
-      mentionsOf: (impactTopics, explainTestId) => (impactTopics.kind === "written" ? impactTopics.topics.flatMap((topic) => mentionsIn(topic, explainTestId)) : []),
+      firstCellOf: (topic) => {
+        const outcome = topic.outcomes.find((candidate) => candidate.isChanged) ?? topic.outcomes[0];
+        return outcome === undefined ? null : { row: outcome.row, column: outcome.column };
+      },
+      /**
+       * そのテストを根拠に挙げている箇所を、節の順に引く(テストの画面の「この状況を確かめている」)。
+       * @param explainTestId 解説のテストの id(テスト画面の中の位置ではない)
+       * @returns `{topic, topicLabel, cell, placeText}` の並び(`cell` と `placeText` は `evidencePlacesOf` と同じ)
+       */
+      mentionsOf: (impactTopics, explainTestId) => {
+        if (impactTopics.kind !== "written") return [];
+        return impactTopics.topics.flatMap((topic) => evidencePlacesOf(topic)
+          .filter((place) => isMentionedIn(place.evidence, explainTestId))
+          .map((place) => ({ topic: topic.id, topicLabel: topic.label, cell: place.cell, placeText: place.placeText })));
+      },
     });
   })();
 
   /** 振る舞いの画面の「今の節」。本文のスクロールの位置から、目次と右の欄が指す節を決める。 */
   const TopicScroll = (() => {
+    // 読む線。本文の末尾には「欄の高さ − 読む線」の余白を CSS で取ってあり(`.impact-body`)、どの節も読む線まで送れる。
     const ReadingLine = 140;
-    const EndSlack = 4;
     return Object.freeze({
       /**
+       * 読む線(スクロールする領域の上端から 140px)より上に来た最後の節を、今の節にする。
        * @param tops 節の上端の、スクロールする領域の上端からの距離(節の順)
-       * @param remaining 下へスクロールできる残りの距離
-       * @returns 今の節の添字。上端が 140px 以内(140 を含む)に入った最後の節で、どれも入っていなければ最初の節。
-       *   残りが 4px 以内なら最後の節(最後の節の上端がそこまで上がらないことがあるため)。節が無ければ null
+       * @returns 今の節の添字。上端が読む線(140 を含む)まで来た最後の節で、どれも来ていなければ最初の節。節が無ければ null
        */
-      currentOf: ({ tops, remaining }) => {
+      currentOf: (tops) => {
         if (tops.length === 0) return null;
-        if (remaining <= EndSlack) return tops.length - 1;
         const passed = tops.findLastIndex((top) => top <= ReadingLine);
         return passed < 0 ? 0 : passed;
       },
@@ -1163,7 +1198,7 @@ button.change-item:hover { background: var(--track); }
     const ExplainListKeys = ["features", "layerRoles", "concepts", "messages", "flows", "commitStories", "suites", "tests"];
 
     const isBrokenList = (value) => value !== undefined && !isListOfRecords(value);
-    const listOf = (explain, key) => (explain !== null && Array.isArray(explain[key]) ? explain[key] : []);
+    const explainListOf = (explain, key) => (explain === null ? [] : listOf(explain[key]));
     const sumOf = (values) => values.reduce((sum, value) => sum + (typeof value === "number" ? value : 0), 0);
     const missing = (reason) => ({ kind: "missing", reason });
 
@@ -1176,7 +1211,7 @@ button.change-item:hover { background: var(--track); }
     };
 
     /**
-     * ページが組み立てに使う骨組みだけを見る。細かい形は公開する前に build-pr-explain.py が見ている。
+     * ページが組み立てに使う大まかな形だけを見る。細かい形は公開する前に build-pr-explain.py が見ている。
      * @returns 型の違うキー(`impact` の中は道筋)。違わなければ null
      */
     const shapeProblemOf = (explain) => {
@@ -1185,7 +1220,7 @@ button.change-item:hover { background: var(--track); }
       if (typeof explain.sha !== "string") return "sha";
       if (!hasOverview) return "overview";
       const broken = ExplainListKeys.find((key) => isBrokenList(explain[key]));
-      return broken === undefined ? ImpactTopics.skeletonProblemOf(explain) : broken;
+      return broken === undefined ? ImpactTopics.shapeProblemOf(explain) : broken;
     };
 
     /**
@@ -1283,8 +1318,8 @@ button.change-item:hover { background: var(--track); }
 
     /** まとめ方ごとの組。`layer` は常にあり、`feature` は解説が features を持つときだけある。 */
     const groupingsOf = ({ groups, entries, explain }) => {
-      const features = listOf(explain, "features");
-      const byLayer = layerGroupsOf(groups, entries, listOf(explain, "layerRoles"));
+      const features = explainListOf(explain, "features");
+      const byLayer = layerGroupsOf(groups, entries, explainListOf(explain, "layerRoles"));
       if (features.length === 0) return { layer: byLayer };
       return { layer: byLayer, feature: featureGroupsOf(features, entries) };
     };
@@ -1301,7 +1336,7 @@ button.change-item:hover { background: var(--track); }
     };
 
     const commitsOf = ({ commits, explain, explainedAt }) => {
-      const stories = new Map(listOf(explain, "commitStories").map((story) => [story.sha, story]));
+      const stories = new Map(explainListOf(explain, "commitStories").map((story) => [story.sha, story]));
       return commits.map((commit, index) => {
         const additions = sumOf(commit.files.map((file) => file.additions));
         const deletions = sumOf(commit.files.map((file) => file.deletions));
@@ -1323,13 +1358,13 @@ button.change-item:hover { background: var(--track); }
       const examined = new Set(mapTests.files);
       const fromMap = (status) => (test) => ({ name: test.name, file: test.file, status, targets: targetOf(test.file), test: null, suite: null });
       const removed = mapTests.removed.map(fromMap("removed"));
-      const suites = new Map(listOf(explain, "suites").map((suite) => [suite.id, suite]));
+      const suites = new Map(explainListOf(explain, "suites").map((suite) => [suite.id, suite]));
       const statusOf = (test, file) => {
         if (test.todo === true) return "todo";
         if (examined.has(file)) return added.has(testKeyOf(file, test.name)) ? "new" : "old";
         return addedFiles.has(file) ? "new" : "unjudged";
       };
-      const explained = listOf(explain, "tests").map((test) => {
+      const explained = explainListOf(explain, "tests").map((test) => {
         const suite = suites.get(test.suite) ?? null;
         const file = suite === null ? null : suite.file;
         return { name: test.name, file, status: statusOf(test, file), targets: Array.isArray(test.targets) ? test.targets : [], test, suite };
@@ -1341,9 +1376,9 @@ button.change-item:hover { background: var(--track); }
 
     /** 解説から、ページが名前で引く一覧。 */
     const lookupOf = (explain) => ({
-      conceptNames: new Map(listOf(explain, "concepts").map((concept) => [concept.path, concept.name])),
-      flows: new Map(listOf(explain, "flows").map((flow) => [flow.id, flow])),
-      messages: new Map(listOf(explain, "messages").map((message) => [message.id, message])),
+      conceptNames: new Map(explainListOf(explain, "concepts").map((concept) => [concept.path, concept.name])),
+      flows: new Map(explainListOf(explain, "flows").map((flow) => [flow.id, flow])),
+      messages: new Map(explainListOf(explain, "messages").map((message) => [message.id, message])),
     });
 
     /**
@@ -1351,13 +1386,14 @@ button.change-item:hover { background: var(--track); }
      * @param map change-map.json の中身(`isReadableMap` が真のもの)
      * @param source 解説の読み込み結果(`readingOf` の source と同じ)
      * @returns 画面が使う材料。解説の状態は `reading`(`explained` / `missing` と理由)と `freshness` に出る。
-     *   `explain` は使える解説(無ければ null)、`lookup` はそこから名前で引く一覧、`impactTopics` は振る舞いの節の
-     *   並び(`ImpactTopics`。振る舞いとテストの 2 画面が読む)
+     *   `explain` は使える解説(無ければ null)、`lookup` はそこから名前で引く一覧、`entryAt` はパスから木の項目を、
+     *   `testAt` は解説のテストの id から `tests` の 1 件を引く表、`impactTopics` は振る舞いの節の並び(`ImpactTopics`。
+     *   振る舞いとテストの 2 画面が読む)
      */
     const create = (map, source) => {
       const reading = readingOf(source, map.pr);
       const explain = reading.kind === "explained" ? reading.explain : null;
-      const concepts = listOf(explain, "concepts");
+      const concepts = explainListOf(explain, "concepts");
       const conceptOf = new Map(concepts.map((concept) => [concept.path, concept]));
       const files = map.groups.flatMap((group) => group.files);
       const mapPaths = new Set(files.map((file) => file.path));
@@ -1371,6 +1407,8 @@ button.change-item:hover { background: var(--track); }
       const ownCommits = commits.filter((commit) => !commit.merge);
       const lookup = lookupOf(explain);
       const tests = testsOf({ mapTests: map.tests, explain, targetOf, addedFiles });
+      const entryAt = new Map(entries.map((entry) => [entry.path, entry]));
+      const testAt = new Map(tests.filter((test) => test.test !== null).map((test) => [test.test.id, test]));
       return Object.freeze({
         map: { pr: map.pr, head: map.head, mergeBase: map.mergeBase, headBranch: map.headBranch, baseBranch: map.baseBranch },
         reading,
@@ -1378,13 +1416,15 @@ button.change-item:hover { background: var(--track); }
         lookup,
         freshness: freshnessOf({ explain, head: map.head, commits: map.commits, explainedAt }),
         entries,
+        entryAt,
         dependencies: map.dependencies,
         groupings: groupingsOf({ groups: map.groups, entries, explain }),
         unmappedConcepts: concepts.filter((concept) => !mapPaths.has(concept.path)),
         commits,
-        strayStories: listOf(explain, "commitStories").filter((story) => !map.commits.some((commit) => commit.sha === story.sha)),
+        strayStories: explainListOf(explain, "commitStories").filter((story) => !map.commits.some((commit) => commit.sha === story.sha)),
         tests,
-        impactTopics: explain === null ? ImpactTopics.Unexplained : ImpactTopics.create({ impact: explain.impact, tests, entries, messages: lookup.messages }),
+        testAt,
+        impactTopics: explain === null ? ImpactTopics.Unexplained : ImpactTopics.create({ impact: explain.impact, testAt, entryAt, messages: lookup.messages }),
         totals: {
           files: changed.length,
           additions: sumOf(changed.map((entry) => entry.additions)),
@@ -2100,16 +2140,23 @@ button.change-item:hover { background: var(--track); }
   };
 
   /**
+   * 前後のカード 2 枚。行の描き方は呼び出し側が渡す(変更の経緯と振る舞いの 2 画面が使う)。
+   * @param cards 前(これまで)と後のカードの `{title, sub, lines, empty}`。`empty` は行が無いときの文(出さないなら null)
+   * @param itemOf 1 行を描く。行と、その行のカードを受け取る
+   */
+  const beforeAfterCardsOf = ({ cards, itemOf }) => el("div", { class: "behaviors" }, cards.map((card, index) => el("div", { class: index === 0 ? "behavior-card" : "behavior-card is-after" }, [
+    el("span", { class: "card-head" }, [el("span", { class: "card-title", text: card.title }), el("span", { class: "muted", text: card.sub })]),
+    ...card.lines.map((line) => itemOf(line, card)),
+    ...(card.lines.length === 0 && card.empty !== null ? [el("span", { class: "behavior-none", text: card.empty })] : []),
+  ])));
+
+  /**
    * 振る舞いの前後のカード 2 枚の節。
-   * @param cards 前(これまで)と後のカードの `{title, sub, behaviors, mark, empty}`。`empty` は振る舞いが無いときの文
+   * @param cards 前(これまで)と後のカードの `{title, sub, lines, mark, empty}`。`lines` は振る舞い、`empty` は振る舞いが無いときの文
    */
   const behaviorsOf = ({ eyebrow, cards, story }) => el("div", { class: "section" }, [
     el("span", { class: "eyebrow", text: eyebrow }),
-    el("div", { class: "behaviors" }, cards.map((card, index) => el("div", { class: index === 0 ? "behavior-card" : "behavior-card is-after" }, [
-      el("span", { class: "card-head" }, [el("span", { class: "card-title", text: card.title }), el("span", { class: "muted", text: card.sub })]),
-      ...card.behaviors.map((behavior) => behaviorItemOf(behavior, { story, mark: card.mark })),
-      ...(card.behaviors.length === 0 && card.empty !== null ? [el("span", { class: "behavior-none", text: card.empty })] : []),
-    ]))),
+    beforeAfterCardsOf({ cards, itemOf: (behavior, card) => behaviorItemOf(behavior, { story, mark: card.mark }) }),
   ]);
 
   /** 変更の順番の 1 段。解説があれば役割と理由も出す。 */
@@ -2216,8 +2263,8 @@ button.change-item:hover { background: var(--track); }
     const behaviors = behaviorsOf({
       eyebrow: "振る舞いの変化(ブランチ全体)",
       cards: [
-        { title: "これまで", sub: explained.map.baseBranch, behaviors: overview.before, mark: "—", empty: null },
-        { title: "このブランチのあと", sub: explained.map.headBranch, behaviors: overview.after, mark: "+", empty: null },
+        { title: "これまで", sub: explained.map.baseBranch, lines: overview.before, mark: "—", empty: null },
+        { title: "このブランチのあと", sub: explained.map.headBranch, lines: overview.after, mark: "+", empty: null },
       ],
       story,
     });
@@ -2258,8 +2305,8 @@ button.change-item:hover { background: var(--track); }
     return [behaviorsOf({
       eyebrow: "何の振る舞いが変わったか",
       cards: [
-        { title: "これまで", sub: "", behaviors: before, mark: null, empty: "(新しく足しただけで、変わる振る舞いはない)" },
-        { title: "この変更のあと", sub: "", behaviors: after, mark: null, empty: null },
+        { title: "これまで", sub: "", lines: before, mark: null, empty: "(新しく足しただけで、変わる振る舞いはない)" },
+        { title: "この変更のあと", sub: "", lines: after, mark: null, empty: null },
       ],
       story,
     })];
@@ -2844,7 +2891,7 @@ button.change-item:hover { background: var(--track); }
 
   /** 構造マップとテストの画面が共有する図の材料。まとめ方ごとの図の組・組の見出し・まとめ方の並び・パスから木の項目を引く表・やりとり。 */
   const graphMaterialsOf = (explained) => {
-    const entryAt = new Map(explained.entries.map((entry) => [entry.path, entry]));
+    const { entryAt } = explained;
     const graphGroups = Object.fromEntries(Object.entries(explained.groupings).map(([grouping, groups]) => [grouping, graphGroupsOf(groups, entryAt)]));
     return {
       entryAt,
@@ -2880,6 +2927,15 @@ button.change-item:hover { background: var(--track); }
   /** テストの抜けとして数えるやりとり(このブランチで足した・変えたもの)か。 */
   const isGapCandidate = (message) => message.status === "added" || message.status === "changed";
   const matchesTechniques = (test, techniques) => techniques.length === 0 || test.techniques.some((key) => techniques.includes(key));
+
+  /**
+   * 別の画面へ移るカード。名前と札(`tag`)に、移る先(`goText`。「テストで見る」など)を矢印付きで添える。
+   * テストと振る舞いの 2 画面が使い、`status` はテストの状態で札の色になる(テストでないカードは null)。
+   */
+  const jumpCardOf = ({ name, tag, status, goText, title, onPress }) => pressable("button", { class: "test-card plain-button", title }, [
+    el("span", { class: "test-name", text: name }),
+    el("span", { class: "test-facts" }, [el("span", { class: "test-status", ...(status === null ? {} : { "data-status": status }), text: tag }), el("span", { class: "spacer" }), el("span", { class: "review-go", text: `${goText} →` })]),
+  ], onPress);
 
   /** テストの画面。左にテストの一覧、中に箱の図、右に全体か、選んだテスト・箱・線の詳しいところを出す。 */
   const TestScreen = (explained, go) => {
@@ -3323,10 +3379,14 @@ button.change-item:hover { background: var(--track); }
       const mentions = ImpactTopics.mentionsOf(explained.impactTopics, detail.id);
       const mentionBlock = mentions.length === 0 ? [] : [el("div", { class: "side-block" }, [
         eyebrowOf("この状況を確かめている", `${mentions.length} 件`),
-        ...mentions.map((mention) => pressable("button", { class: "test-card plain-button", title: "振る舞いの画面でこの状況を見る" }, [
-          el("span", { class: "test-name", text: mention.situation ?? mention.topicLabel }),
-          el("span", { class: "test-facts" }, [el("span", { class: "test-status", text: mention.situation === null ? "振る舞い" : mention.topicLabel }), el("span", { class: "spacer" }), el("span", { class: "review-go", text: "振る舞いで見る →" })]),
-        ], () => go.toImpact(mention))),
+        ...mentions.map((mention) => jumpCardOf({
+          name: mention.placeText ?? mention.topicLabel,
+          tag: mention.placeText === null ? ScreenLabels.impact : mention.topicLabel,
+          status: null,
+          goText: `${ScreenLabels.impact}で見る`,
+          title: "振る舞いの画面でこの状況を見る",
+          onPress: () => go.toImpact(mention),
+        })),
       ])];
       return [
         head,
@@ -3408,12 +3468,9 @@ button.change-item:hover { background: var(--track); }
       right: panelOf("right", [side]),
       /**
        * 他の画面から、解説のテストを選んだ状態にする。選んでいても外さず、観点の絞り込みは解く(絞り込みの外のテストでも選べるように)。
-       * @param explainTestId 解説のテストの id。解説に無ければ何もしない
+       * @param explainTestId 解説のテストの id
        */
-      showTest: (explainTestId) => {
-        const target = tests.find((test) => test.test !== null && test.test.id === explainTestId);
-        if (target !== undefined) update({ selected: { kind: "test", id: target.id }, techniques: [] });
-      },
+      showTest: (explainTestId) => update({ selected: { kind: "test", id: explained.tests.indexOf(explained.testAt.get(explainTestId)) }, techniques: [] }),
     };
   };
 
@@ -4454,10 +4511,12 @@ button.change-item:hover { background: var(--track); }
     };
 
     /**
-     * やりとりを選んだ状態にする。表示範囲の絞り込みは外す(範囲の外のやりとりは図に無く、選べないため)。
-     * 両端が図の箱でないやりとりは絞り込みを外しても図に無いので、呼び出し側が渡さない(`isDrawnMessage`)。
+     * やりとりを選んだ状態にする。表示範囲の絞り込みは外す(絞り込んで他を非表示にしているときは、範囲の外のやりとりが図に無いため)。
+     * 両端が図の箱でないやりとりは、絞り込みを外しても図に無いので選ばない。
      */
-    const showMessage = (id) => pick({ kind: "message", id }, { scope: null });
+    const showMessage = (id) => {
+      if (isDrawnMessage(lookup.messages.get(id), entryAt)) pick({ kind: "message", id }, { scope: null });
+    };
 
     render();
 
@@ -4483,13 +4542,12 @@ button.change-item:hover { background: var(--track); }
     };
   };
 
-  // 振る舞いの画面の節の小見出しと、節の頭の札。表の札は、変わったマスがあるときだけ件数で出す。
-  const ImpactKickers = { changed: "前と後", table: "状況ごと", added: "増えた状況", kept: "前と同じ" };
-  const ImpactStatuses = { changed: { tone: "A", label: "この PR で変わった" }, added: { tone: "A", label: "この PR で増えた状況" }, kept: { tone: "", label: "変わらない" } };
-  // 振る舞いの画面がページ全体のスクロールに切り替わる幅(CSS の `@media (max-width: 760px)` と同じ)。
-  const ImpactNarrowQuery = "(max-width: 760px)";
+  // 振る舞いの画面の節の小見出し(節の種類ごと)。
+  const ImpactEyebrows = { changed: "前と後", table: "状況ごと", added: "増えた状況", kept: "前と同じ" };
+  // 節の頭の札を、節の種類から引く表。表の札は変わったマスの件数から組むので、ここには無い。
+  const ImpactChipLabelsByKind = { changed: "この PR で変わった", added: "この PR で増えた状況", kept: "変わらない" };
 
-  /** 節が、この PR で変わった・増えたことを書いているか(目次の印)。 */
+  /** 節が、この PR で変わった・増えたことを書いているか(目次の印・節の札・目次の小見出しの件数)。 */
   const isChangeTopic = (topic) => {
     switch (topic.kind) {
       case "changed":
@@ -4502,48 +4560,51 @@ button.change-item:hover { background: var(--track); }
     }
   };
 
-  /** 節の頭の札。表は変わったマスがあるときだけ。 */
-  const impactStatusOf = (topic) => {
-    if (topic.kind !== "table") return ImpactStatuses[topic.kind];
-    return topic.changedCount > 0 ? { tone: "A", label: `変わったマス ${topic.changedCount}` } : null;
+  /** 節の頭の札。変わったマスの無い表には付けない。 */
+  const impactChipOf = (topic) => {
+    const isChange = isChangeTopic(topic);
+    if (topic.kind !== "table") return { tone: isChange ? "A" : "", label: ImpactChipLabelsByKind[topic.kind] };
+    return isChange ? { tone: "A", label: `変わったマス ${topic.changedCount}` } : null;
   };
 
-  /** 節が根拠に挙げているテストの組(マス・増えた状況・変わらないことの行ごと)。 */
-  const evidencesIn = (topic) => {
-    switch (topic.kind) {
-      case "changed":
-        return [];
-      case "table":
-        return topic.rows.flatMap((row) => row.cells).filter((cell) => cell !== null).map((cell) => cell.tests);
-      case "added":
-        return [topic.tests];
-      case "kept":
-        return topic.lines.map((line) => line.tests);
-    }
+  /** 目次の小見出し。変わったマスのある表は件数を添える。 */
+  const tocEyebrowOf = (topic) => {
+    const hasChangedOutcomes = topic.kind === "table" && isChangeTopic(topic);
+    return hasChangedOutcomes ? `${ImpactEyebrows.table} · 変わった ${topic.changedCount}` : ImpactEyebrows[topic.kind];
   };
+
   /** 節の根拠のうち、まだ書かれていないテスト(2 か所で挙げていても 1 件)。 */
-  const missingTestsOf = (topic) => [...new Map(evidencesIn(topic).flatMap((evidence) => evidence.missing).map((test) => [test.test.id, test])).values()];
+  const missingTestsOf = (topic) => [...new Map(ImpactTopics.evidencePlacesOf(topic).flatMap((place) => place.evidence.missing).map((test) => [test.test.id, test])).values()];
 
-  /** 変わらないことの行の札。 */
+  /**
+   * 変わらないことの行の札。
+   *
+   * 「テストあり」とは書かない。未実装のテストだけを挙げた行も「あり」と読めるので、確かめているテストがあるかを札にする。
+   */
   const guardOf = (evidence) => el("span", { class: classesOf("impact-guard", { "is-missing": !evidence.isGuarded }), text: evidence.isGuarded ? "テストで守っている" : "この PR では未確認" });
 
   /** これまで / これからのカード。行は使う人の言葉なので、書いたまま出す。 */
-  const impactLinesCardOf = ({ title, lines, isAfter }) => el("div", { class: isAfter ? "behavior-card is-after" : "behavior-card" }, [
-    el("span", { class: "card-head" }, [el("span", { class: "card-title", text: title })]),
-    ...lines.map((line) => el("div", { class: "behavior-item" }, [el("span", { text: line.text })])),
-    ...(lines.length === 0 ? [el("span", { class: "behavior-none", text: "(この PR より前には無かった)" })] : []),
-  ]);
-  const impactBeforeAfterOf = (topic) => el("div", { class: "behaviors" }, [impactLinesCardOf({ title: "これまで", lines: topic.before, isAfter: false }), impactLinesCardOf({ title: "これから", lines: topic.after, isAfter: true })]);
+  const impactSidesOf = (topic) => beforeAfterCardsOf({
+    cards: [
+      { title: "これまで", sub: "", lines: topic.before, empty: "(この PR より前には無かった)" },
+      { title: "これから", sub: "", lines: topic.after, empty: null },
+    ],
+    itemOf: (line) => el("div", { class: "behavior-item" }, [el("span", { text: line.text })]),
+  });
   const impactTextOf = (text) => (text === null ? [] : [el("p", { class: "impact-text", text })]);
 
-  /** 振る舞い。左に節の目次、中に使う人から見た変化の節、右に今の節の根拠(テストと仕組み)を出す。 */
+  /**
+   * 振る舞い。左に節の目次、中に使う人から見た変化の節、右に今の節の根拠(テストと仕組み)を出す。
+   *
+   * ここの DOM の配線(スクロールの購読・目次とマスの押下・右の欄の切り替え)と狭い幅の `@media` は判定表を通らず、
+   * 表示確認(`rules/ui-verification.md`)でしか守られていない。
+   */
   const ImpactScreen = (explained, go) => {
     const impactTopics = explained.impactTopics;
     const topics = impactTopics.kind === "written" ? impactTopics.topics : [];
-    let state = { current: topics.length === 0 ? null : 0, selected: null };
-    // 目次やほかの画面から節へ送ったときのスクロールの位置。そこから動くまでは、位置から今の節を決め直さない
-    // (最後のほうの節は上端まで送れず、位置から決めると別の節になるため)。
-    let pin = null;
+    // `selected` は表ごとに選んでいるマス(節の id → `{row, column}`)。表は最初の「変わった」マス(無ければ先頭のマス)を選んで始める。
+    const firstCells = Object.fromEntries(topics.filter((topic) => topic.kind === "table").map((topic) => [topic.id, ImpactTopics.firstCellOf(topic)]));
+    let state = { current: topics.length === 0 ? null : 0, selected: firstCells };
 
     /** マスの鍵。`cell` は `{row, column}` を持つもの(マスか選択)。 */
     const cellKeyOf = (topicId, cell) => JSON.stringify([topicId, cell.row, cell.column]);
@@ -4560,18 +4621,21 @@ button.change-item:hover { background: var(--track); }
       render();
     };
 
-    /** 選んでいるマスのうち、その表のもの。選んでいなければ null。 */
-    const selectedCellIn = (topic) => {
-      const selected = state.selected;
-      const isInOtherTable = selected === null || selected.topic !== topic.id;
-      if (isInOtherTable) return null;
-      return topic.rows.flatMap((row) => row.cells).find((cell) => cell !== null && cell.row === selected.row && cell.column === selected.column) ?? null;
+    /** その表で選んでいるマス。マスが 1 つも無い表は null。 */
+    const selectedOutcomeIn = (topic) => {
+      const cell = state.selected[topic.id];
+      if (cell === null) return null;
+      return topic.outcomes.find((outcome) => outcome.row === cell.row && outcome.column === cell.column);
     };
 
-    const testCardOf = (test) => pressable("button", { class: "test-card plain-button", title: "テストの画面でこのテストを見る" }, [
-      el("span", { class: "test-name", text: test.name }),
-      el("span", { class: "test-facts" }, [el("span", { class: "test-status", "data-status": test.status, text: TestStatuses[test.status].long }), el("span", { class: "spacer" }), el("span", { class: "review-go", text: "テストで見る →" })]),
-    ], () => go.toTest(test.test.id));
+    const testCardOf = (test) => jumpCardOf({
+      name: test.name,
+      tag: TestStatuses[test.status].long,
+      status: test.status,
+      goText: `${ScreenLabels.test}で見る`,
+      title: "テストの画面でこのテストを見る",
+      onPress: () => go.toTest(test.test.id),
+    });
 
     const testsBlocksOf = (evidence) => [
       el("div", { class: "side-block" }, [
@@ -4582,26 +4646,29 @@ button.change-item:hover { background: var(--track); }
       ...(evidence.missing.length === 0 ? [] : [el("div", { class: "side-block" }, [eyebrowOf("無いテスト", "未実装(提案)"), ...evidence.missing.map(testCardOf)])]),
     ];
 
-    /** 仕組みのチップ。両端が図の箱でないやりとりは構造マップで選べないので、押せなくして「地図に無い」と出す。 */
+    /** 仕組みのチップ。両端が図の箱でないやりとりは構造マップで選べないので、押せなくして「図に無い」と出す。 */
     const mechanismChipOf = ({ message, isDrawn }) => {
       const title = isDrawn ? "構造マップでこのやりとりを見る" : "両端が図の箱でないので、構造マップでは選べません";
-      const chip = pressable("button", { class: "flow-chip", title }, [message.name, el("span", { class: "arrow", text: isDrawn ? "↗" : "地図に無い" })], () => go.toMessage(message.id));
+      const chip = pressable("button", { class: "flow-chip", title }, [message.name, el("span", { class: "arrow", text: isDrawn ? "↗" : "図に無い" })], () => go.toMessage(message.id));
       chip.disabled = !isDrawn;
       return chip;
     };
     const mechanismsBlockOf = (mechanisms) => (mechanisms.length === 0 ? [] : [el("div", { class: "side-block" }, [eyebrowOf("仕組みを知りたいとき", "構造マップ"), el("div", { class: "flow-chips" }, mechanisms.map(mechanismChipOf))])]);
 
-    /** 節の根拠。右の欄と、狭い幅で各節に畳んだ根拠の両方がこれを出す。 */
-    const evidenceOf = (topic) => {
+    /**
+     * 節の根拠の要素。右の欄と、狭い幅で各節に畳んだ根拠の両方がこれを出す。
+     * @param topic 根拠を出す節(表なら、その表で選んでいるマスの根拠)
+     */
+    const evidenceBlocksOf = (topic) => {
       switch (topic.kind) {
         case "changed": {
           const blocks = mechanismsBlockOf(topic.mechanisms);
           return blocks.length > 0 ? blocks : [el("p", { class: "side-note", text: "前後の行が指しているやりとりはありません。" })];
         }
         case "table": {
-          const cell = selectedCellIn(topic);
-          if (cell === null) return [el("p", { class: "side-note", text: "マスを選ぶと、その状況を確かめているテストがここに出ます。" })];
-          return [el("div", { class: "side-block" }, [el("span", { class: "eyebrow", text: "状況" }), el("span", { class: "side-sub", text: cell.situation })]), ...testsBlocksOf(cell.tests)];
+          const outcome = selectedOutcomeIn(topic);
+          if (outcome === null) return [el("p", { class: "side-note", text: "この表には、書かれたマスがありません。" })];
+          return [el("div", { class: "side-block" }, [el("span", { class: "eyebrow", text: "状況" }), el("span", { class: "side-sub", text: outcome.situation })]), ...testsBlocksOf(outcome.tests)];
         }
         case "added":
           return [...testsBlocksOf(topic.tests), ...mechanismsBlockOf(topic.mechanisms)];
@@ -4616,25 +4683,25 @@ button.change-item:hover { background: var(--track); }
     };
 
     const topicHeadOf = (topic) => {
-      const status = impactStatusOf(topic);
+      const chip = impactChipOf(topic);
       return el("div", { class: "impact-topic-head" }, [
-        el("div", { class: "section-head" }, [el("span", { class: "impact-kicker", text: ImpactKickers[topic.kind] }), ...(status === null ? [] : [el("span", { class: "chip", "data-tone": status.tone, text: status.label })])]),
+        el("div", { class: "section-head" }, [el("span", { class: "impact-eyebrow", text: ImpactEyebrows[topic.kind] }), ...(chip === null ? [] : [el("span", { class: "chip", "data-tone": chip.tone, text: chip.label })])]),
         el("h2", {}, [el("span", { class: "impact-hash", text: "#" }), topic.label]),
       ]);
     };
 
     /** 表のマス。書かれていない組み合わせは空きにする。押すとそのマスを選ぶ(選び直すまで、スクロールしても外さない)。 */
-    const cellNodeOf = (topic, cell) => {
-      if (cell === null) return el("div", { class: "impact-cell is-missing", text: "(書かれていない)" });
-      const was = cell.was === null ? [] : [el("span", { class: "impact-cell-was" }, ["これまで: ", el("s", { text: cell.was })])];
-      const note = cell.note === null ? [] : [el("span", { class: "impact-cell-was", text: cell.note })];
-      const node = pressable("button", { class: classesOf("impact-cell", { "is-changed": cell.isChanged }), "aria-pressed": "false", title: cell.situation }, [
-        el("span", { class: "impact-cell-badge", text: cell.isChanged ? "変わった" : "変わらない" }),
-        el("span", { class: "impact-cell-result", text: cell.result }),
+    const outcomeNodeOf = (topic, outcome) => {
+      if (outcome === null) return el("div", { class: "impact-cell is-missing", text: "(書かれていない)" });
+      const was = outcome.was === null ? [] : [el("span", { class: "impact-cell-was" }, ["これまで: ", el("s", { text: outcome.was })])];
+      const note = outcome.note === null ? [] : [el("span", { class: "impact-cell-was", text: outcome.note })];
+      const node = pressable("button", { class: classesOf("impact-cell", { "is-changed": outcome.isChanged }), "aria-pressed": "false", title: outcome.situation }, [
+        el("span", { class: "impact-cell-badge", text: outcome.isChanged ? "変わった" : "変わらない" }),
+        el("span", { class: "impact-cell-result", text: outcome.result }),
         ...was,
         ...note,
-      ], () => update({ selected: { topic: topic.id, row: cell.row, column: cell.column } }));
-      cellNodes.set(cellKeyOf(topic.id, cell), node);
+      ], () => update({ selected: { ...state.selected, [topic.id]: { row: outcome.row, column: outcome.column } } }));
+      cellNodes.set(cellKeyOf(topic.id, outcome), node);
       return node;
     };
 
@@ -4642,29 +4709,29 @@ button.change-item:hover { background: var(--track); }
       el("thead", {}, [el("tr", {}, [el("td"), ...topic.columns.map((column) => el("th", { scope: "col", text: column.label }))])]),
       el("tbody", {}, topic.rows.map((row) => el("tr", {}, [
         el("th", { scope: "row" }, [row.head.label, ...(row.head.note === null ? [] : [el("small", { text: row.head.note })])]),
-        ...row.cells.map((cell) => el("td", {}, [cellNodeOf(topic, cell)])),
+        ...row.outcomes.map((outcome) => el("td", {}, [outcomeNodeOf(topic, outcome)])),
       ]))),
     ])]);
 
-    /** 本文の「テストの抜け」は件数だけを出す。中身は根拠の「無いテスト」にある。 */
-    const gapNoteOf = (topic) => {
+    /** 本文には、まだ書かれていないテストの件数だけを出す。中身は根拠の「無いテスト」にある。 */
+    const missingNoteOf = (topic) => {
       const count = missingTestsOf(topic).length;
       if (count === 0) return [];
-      return [el("div", { class: "impact-note" }, [el("span", { class: "impact-note-label", text: "テストの抜け" }), el("span", { text: `まだ書かれていないテストが ${count} 件あります。中身は根拠の「無いテスト」に出ています。` })])];
+      return [el("div", { class: "impact-note" }, [el("span", { class: "impact-note-label", text: "まだ書かれていないテスト" }), el("span", { text: `${count} 件あります。中身は根拠の「無いテスト」に出ています。` })])];
     };
 
     const topicBodyOf = (topic) => {
       switch (topic.kind) {
         case "changed":
-          return [impactBeforeAfterOf(topic), ...impactTextOf(topic.text)];
+          return [impactSidesOf(topic), ...impactTextOf(topic.text)];
         case "table": {
           const gist = topic.gist === null ? [] : [el("div", { class: "impact-gist" }, [el("span", { class: "impact-gist-label", text: "要するに" }), el("span", { class: "impact-gist-text", text: topic.gist })])];
-          return [...gist, situationTableOf(topic), ...impactTextOf(topic.text), ...gapNoteOf(topic)];
+          return [...gist, situationTableOf(topic), ...impactTextOf(topic.text), ...missingNoteOf(topic)];
         }
         case "added":
-          return [impactBeforeAfterOf(topic), ...impactTextOf(topic.text), ...gapNoteOf(topic)];
+          return [impactSidesOf(topic), ...impactTextOf(topic.text), ...missingNoteOf(topic)];
         case "kept":
-          return [el("ul", { class: "impact-kept" }, topic.lines.map((line) => el("li", {}, [el("span", { class: "impact-kept-text", text: line.text }), guardOf(line.tests)]))), ...gapNoteOf(topic)];
+          return [el("ul", { class: "impact-kept" }, topic.lines.map((line) => el("li", {}, [el("span", { class: "impact-kept-text", text: line.text }), guardOf(line.tests)]))), ...missingNoteOf(topic)];
       }
     };
 
@@ -4673,21 +4740,12 @@ button.change-item:hover { background: var(--track); }
       return screen !== null && !screen.hidden;
     };
 
-    /** いまのスクロールの位置。狭い幅ではページ全体、広い幅では本文の欄がスクロールする。 */
-    const scrollReading = () => {
-      const isNarrow = window.matchMedia(ImpactNarrowQuery).matches;
-      const top = isNarrow ? 0 : main.getBoundingClientRect().top;
-      const remaining = isNarrow ? document.documentElement.scrollHeight - window.scrollY - window.innerHeight : main.scrollHeight - main.scrollTop - main.clientHeight;
-      return { tops: topicNodes.map((node) => node.getBoundingClientRect().top - top), remaining, position: isNarrow ? window.scrollY : main.scrollTop };
-    };
-
-    /** スクロールに合わせて今の節を決め直す。送った位置から動いていなければ、送った節のままにする。 */
-    const follow = () => {
-      const reading = scrollReading();
-      const isStillAtSent = pin !== null && reading.position === pin;
-      if (isStillAtSent) return;
-      pin = null;
-      const current = TopicScroll.currentOf(reading);
+    /**
+     * スクロールに合わせて今の節を決め直す。
+     * @param top スクロールしている領域の上端の、表示領域の上端からの距離
+     */
+    const follow = (top) => {
+      const current = TopicScroll.currentOf(topicNodes.map((node) => node.getBoundingClientRect().top - top));
       if (current !== state.current) update({ current });
     };
 
@@ -4696,7 +4754,6 @@ button.change-item:hover { background: var(--track); }
       update({ current: index });
       topicNodes[index].scrollIntoView({ block: "start" });
       if (cellNode !== null) cellNode.scrollIntoView({ block: "nearest", inline: "nearest" });
-      pin = scrollReading().position;
     };
 
     const ledeOfImpact = () => {
@@ -4705,7 +4762,7 @@ button.change-item:hover { background: var(--track); }
         case "none":
           return [el("div", { class: "lede" }, [eyebrow, emptyOf("解説が無いので、振る舞いは出せません。理由は上の帯に出ています。")])];
         case "unwritten":
-          return [el("div", { class: "lede" }, [eyebrow, emptyOf("この解説には、使う人から見て何が変わったか(振る舞い)が書かれていません。変更の経緯の「ブランチ全体の流れ」に、これまで / このあとがあります。")])];
+          return [el("div", { class: "lede" }, [eyebrow, emptyOf("この解説には、使う人から見て何が変わったか(振る舞い)が書かれていません。変更の経緯の「ブランチ全体の流れ」に、これまで / このブランチのあとがあります。")])];
         case "written": {
           const lede = el("div", { class: "lede" }, [eyebrow, el("h1", { text: impactTopics.title }), el("p", { text: impactTopics.lead })]);
           return topics.length > 0 ? [lede] : [lede, emptyOf("状況ごとの振る舞いは書かれていません。")];
@@ -4718,10 +4775,8 @@ button.change-item:hover { background: var(--track); }
       const inline = el("details", { class: "impact-inline" }, [el("summary", { text: "根拠(テストと仕組み)" }), holder]);
       topicNodes.push(el("article", { class: "impact-topic", "data-topic": topic.id }, [topicHeadOf(topic), inline, ...topicBodyOf(topic)]));
       inlineHolders.push(holder);
-      const isChangedTable = topic.kind === "table" && topic.changedCount > 0;
-      const kicker = isChangedTable ? `${ImpactKickers.table} · 変わった ${topic.changedCount}` : ImpactKickers[topic.kind];
       tocRows.push(pressable("button", { class: "row plain-button" }, [
-        el("span", { class: "row-sub", text: kicker }),
+        el("span", { class: "row-sub", text: tocEyebrowOf(topic) }),
         el("span", { class: "change-head" }, [el("span", { class: "status-dot", "data-tone": isChangeTopic(topic) ? "A" : "" }), el("span", { class: "row-title", text: topic.label })]),
       ], () => sendTo(index, null)));
     }
@@ -4731,26 +4786,23 @@ button.change-item:hover { background: var(--track); }
     let shownCurrent = null;
     const render = () => {
       for (const [index, row] of tocRows.entries()) row.classList.toggle("is-current", index === state.current);
-      const selectedKey = state.selected === null ? null : cellKeyOf(state.selected.topic, state.selected);
-      for (const [key, node] of cellNodes) node.setAttribute("aria-pressed", String(key === selectedKey));
-      for (const [index, holder] of inlineHolders.entries()) holder.replaceChildren(...evidenceOf(topics[index]));
+      const selectedKeys = new Set(Object.entries(state.selected).filter(([, cell]) => cell !== null).map(([topicId, cell]) => cellKeyOf(topicId, cell)));
+      for (const [key, node] of cellNodes) node.setAttribute("aria-pressed", String(selectedKeys.has(key)));
+      for (const [index, holder] of inlineHolders.entries()) holder.replaceChildren(...evidenceBlocksOf(topics[index]));
       const topic = state.current === null ? null : topics[state.current];
-      const head = topic === null ? [] : [el("div", { class: "side-block" }, [el("span", { class: "eyebrow", text: ImpactKickers[topic.kind] }), el("h2", { text: topic.label })])];
-      side.replaceChildren(...head, ...(topic === null ? [el("p", { class: "side-note", text: "根拠を出す節がありません。" })] : evidenceOf(topic)));
+      const head = topic === null ? [] : [el("div", { class: "side-block" }, [el("span", { class: "eyebrow", text: ImpactEyebrows[topic.kind] }), el("h2", { text: topic.label })])];
+      side.replaceChildren(...head, ...(topic === null ? [el("p", { class: "side-note", text: "根拠を出す節がありません。" })] : evidenceBlocksOf(topic)));
       if (state.current !== shownCurrent) side.scrollTop = 0;
       shownCurrent = state.current;
     };
     render();
 
-    main.addEventListener("scroll", follow, { passive: true });
-    // 狭い幅ではページ全体がスクロールする。振る舞いの画面が隠れているあいだは、ほかの画面のスクロールなので見ない。
+    // スクロールしているのが本文の欄(広い幅)かページ全体(狭い幅)かは CSS の `@media` が決めるので、イベントの出どころで見分ける。
+    main.addEventListener("scroll", () => follow(main.getBoundingClientRect().top), { passive: true });
+    // ページ全体のスクロールは、振る舞いの画面が隠れているあいだはほかの画面のものなので見ない。
     window.addEventListener("scroll", () => {
-      const isPageScrolling = window.matchMedia(ImpactNarrowQuery).matches && isShown();
-      if (isPageScrolling) follow();
+      if (isShown()) follow(0);
     }, { passive: true });
-    window.matchMedia(ImpactNarrowQuery).addEventListener("change", () => {
-      if (isShown()) follow();
-    });
 
     return {
       summary: [],
@@ -4759,15 +4811,17 @@ button.change-item:hover { background: var(--track); }
       main,
       right: panelOf("right", [panelHead("根拠", "テストと仕組み"), side]),
       /**
-       * 他の画面から、その節へ送る。マスを指していれば選んで見える位置へ送る。
+       * 他の画面から、その節へ送る。表のマスを指していれば、そのマスを選んで見える位置へ送る。
        * @param mention `ImpactTopics.mentionsOf` の 1 件
        */
       showMention: (mention) => {
         const index = topics.findIndex((topic) => topic.id === mention.topic);
-        if (index < 0) return;
-        const cellNode = mention.cell === null ? null : cellNodes.get(cellKeyOf(mention.topic, mention.cell)) ?? null;
-        if (cellNode !== null) state = { ...state, selected: { topic: mention.topic, ...mention.cell } };
-        sendTo(index, cellNode);
+        if (mention.cell === null) {
+          sendTo(index, null);
+          return;
+        }
+        state = { ...state, selected: { ...state.selected, [mention.topic]: mention.cell } };
+        sendTo(index, cellNodes.get(cellKeyOf(mention.topic, mention.cell)));
       },
     };
   };
@@ -4818,12 +4872,13 @@ button.change-item:hover { background: var(--track); }
   /** 地図が読めないときの全体の案内。画面は組めないので、ヘッダと案内だけを出す。 */
   const mountGuide = (root, { pr, detail }) => {
     document.title = pr === null ? "PR 解説" : `PR #${pr} · PR 解説`;
+    const screenNames = Object.values(Screens).map((screen) => ScreenLabels[screen]);
     root.replaceChildren(
       el("header", { class: "top" }, [el("span", { class: "repo", text: RepoName }), el("span", { class: "top-main" }), linksOf(pr, null)]),
       el("div", { class: "bands" }),
       el("div", { class: "screens" }, [el("div", { class: "guide" }, [
         el("h1", { text: "変更の地図を読めません" }),
-        el("p", { text: `change-map.json を読めませんでした(${detail})。PR に push すると、Actions が地図とこのページを置き直します。地図が置かれると、解説が無くても構造マップ・変更の経緯・テスト・振る舞いの 4 画面が出ます。` }),
+        el("p", { text: `change-map.json を読めませんでした(${detail})。PR に push すると、Actions が地図とこのページを置き直します。地図が置かれると、解説が無くても${screenNames.join("・")}の ${screenNames.length} 画面が出ます。` }),
       ])]),
     );
   };

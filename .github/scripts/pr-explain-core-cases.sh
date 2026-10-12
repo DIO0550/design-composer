@@ -3,7 +3,7 @@
 # 解説ページの核の判定表。テンプレート(`.claude/skills/pr-explain/templates/index.html`)から固定
 # スクリプトを抜き出して node の `vm` で評価し、`document` が無いときに置かれる `prExplainCore` を
 # 叩いて、地図と解説の合流・振る舞いの節の並び・今の節・箱の図の配置・コミットの差分・つながりの要約・戻るの履歴・
-# 確認の印の鍵・開く画面と、語彙・Target の kind・impact の骨組みの道筋が解説の検査(`build-pr-explain.py`)と
+# 確認の印の鍵・開く画面と、語彙・Target の kind・impact の形の道筋が解説の検査(`build-pr-explain.py`)と
 # 揃っていることが期待どおりかを 1 コマンドで確かめる。
 #
 # 使い方: bash .github/scripts/pr-explain-core-cases.sh
@@ -24,7 +24,7 @@ template="$repo_root/.claude/skills/pr-explain/templates/index.html"
 source "$repo_root/.claude/hooks/lib/cases-report.sh"
 
 # 解説の検査が持つ語彙(ページの `Vocabulary` と突き合わせる)と、Target の kind ごとのキー(ページの `Target` と
-# 突き合わせる)と、Shapes の Impact から導いた骨組みの道筋と値の種類(ページの `ImpactTopics.SkeletonRoutes` と
+# 突き合わせる)と、Shapes の Impact から導いた形の道筋と値の種類(ページの `ImpactTopics.ShapeRoutes` と
 # 突き合わせる)。道筋に出すのはオブジェクト・その配列・id・id の配列で、文のキーは出さない。
 checker="$(python3 - "$scripts_dir/build-pr-explain.py" <<'PY'
 import importlib.util, json, sys
@@ -33,17 +33,14 @@ module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 vocabulary = {"techniques": module.Techniques, "phases": module.Phases, "messageKinds": module.MessageKinds, "vias": module.Vias, "messageStatuses": module.MessageStatuses}
 target_keys = {kind: list(fields) for kind, fields in module.Variants["Target"].items()}
-def routes_of(rule, route):
-    is_many = isinstance(rule, module.Many)
-    inner = rule.item if is_many else rule
-    if isinstance(inner, module.Scalar):
-        return [[route, "ids" if is_many else "id"]] if inner.rule == "id" else []
-    if not isinstance(inner, module.Shape):
-        return []
-    prefix = f"{route}[]" if is_many else route
-    nested = [found for key, field in module.Shapes[inner.name].items() for found in routes_of(field.value, f"{prefix}.{key}")]
-    return [[route, "records" if is_many else "record"], *nested]
-impact_routes = routes_of(module.Shapes["Explain"]["impact"].value, "impact")
+def kind_of(rule, is_many):
+    if isinstance(rule, module.Shape):
+        return "records" if is_many else "record"
+    if rule == module.Id:
+        return "ids" if is_many else "id"
+    return None
+routes = module.routes_under(module.Shapes["Explain"]["impact"].value, "impact")
+impact_routes = [[route, kind_of(rule, is_many)] for route, rule, is_many in routes if kind_of(rule, is_many) is not None]
 print(json.dumps({"vocabulary": vocabulary, "targetKeys": target_keys, "impactRoutes": impact_routes}))
 PY
 )" || { echo "NG   解説の検査の語彙を読めない"; exit 1; }
@@ -140,8 +137,10 @@ const addedOf = (label) => ({ label, before: [], after: [{ text: "後" }] });
 const twoRows = [head("r1", "一"), head("r2", "二")];
 const threeColumns = [head("c1", "一"), head("c2", "二"), head("c3", "三")];
 const fullOutcomes = () => ["r1", "r2"].flatMap((row) => ["c1", "c2", "c3"].map((column) => outcome(row, column, `${row}${column}`)));
+// 表を 1 つだけ書いた impact の、その表の節。
+const tableTopicIn = (table) => topicsOf(impactOf({ tables: [table] }))[0];
 // 表のマスを行ごとに並べる。空きは null。
-const gridOf = (topic, pick = (cell) => cell.result) => topic.rows.map((row) => row.cells.map((cell) => (cell === null ? null : pick(cell))));
+const gridOf = (topic, pick = (outcome) => outcome.result) => topic.rows.map((row) => row.outcomes.map((outcome) => (outcome === null ? null : pick(outcome))));
 // 根拠のテスト: a は追加、b は既存、t は未実装、u は判定なし(テスト名を調べていない、このブランチで変えたファイル)。
 const testedMap = mapOf({
   groups: [{ label: "ハーネス", files: [changedFile("x-cases.sh"), changedFile("s.test.ts")] }],
@@ -635,13 +634,13 @@ const cases = [
     expected: { kind: "shape", key: "impact.changed.after[].message" },
   },
   {
-    label: "骨組みの崩れが 2 か所あれば、表の並びで先の道筋ではなく、外側(段の少ない)の道筋を理由にする",
+    label: "形の崩れが 2 か所あれば、表の並びで先の道筋ではなく、外側(段の少ない)の道筋を理由にする",
     actual: () => explained(mapOf(), explainOf({ impact: impactOf({ changed: { before: [], after: [{ text: "後", message: 5 }] }, tables: "表" }) })).reading.reason,
     expected: { kind: "shape", key: "impact.tables" },
   },
   {
-    label: "ページが骨組みを見る impact の道筋と値の種類は、解説の検査の形(Shapes)から導いたものと同じ",
-    actual: () => ImpactTopics.SkeletonRoutes.map(([route, kind]) => [route, kind]),
+    label: "ページが形を見る impact の道筋と値の種類は、解説の検査の形(Shapes)から導いたものと同じ",
+    actual: () => ImpactTopics.ShapeRoutes.map(([route, kind]) => [route, kind]),
     expected: checkerImpactRoutes,
   },
   {
@@ -681,40 +680,40 @@ const cases = [
     label: "列ごとに書いた 2 × 3 のマスは、行の見出し × 列の見出しの順に並ぶ",
     actual: () => {
       const outcomes = ["c1", "c2", "c3"].flatMap((column) => ["r1", "r2"].map((row) => outcome(row, column, `${row}${column}`)));
-      return gridOf(topicsOf(impactOf({ tables: [tableOf(twoRows, threeColumns, outcomes)] }))[0]);
+      return gridOf(tableTopicIn(tableOf(twoRows, threeColumns, outcomes)));
     },
     expected: [["r1c1", "r1c2", "r1c3"], ["r2c1", "r2c2", "r2c3"]],
   },
   {
     label: "書いていない組み合わせのマスは空き(null)になり、後ろのマスは詰めない",
-    actual: () => gridOf(topicsOf(impactOf({ tables: [tableOf(twoRows, threeColumns, fullOutcomes().filter((item) => item.result !== "r1c2"))] }))[0]),
+    actual: () => gridOf(tableTopicIn(tableOf(twoRows, threeColumns, fullOutcomes().filter((item) => item.result !== "r1c2")))),
     expected: [["r1c1", null, "r1c3"], ["r2c1", "r2c2", "r2c3"]],
   },
   {
     label: "同じ組み合わせのマスを 2 つ書いたら、先に書いたものを使う",
-    actual: () => gridOf(topicsOf(impactOf({ tables: [tableOf(twoRows, threeColumns, [outcome("r2", "c3", "先"), ...fullOutcomes(), outcome("r2", "c3", "後")])] }))[0])[1][2],
+    actual: () => gridOf(tableTopicIn(tableOf(twoRows, threeColumns, [outcome("r2", "c3", "先"), ...fullOutcomes(), outcome("r2", "c3", "後")])))[1][2],
     expected: "先",
   },
   {
     label: "見出しに無い id のマスは、表に並ばない",
-    actual: () => gridOf(topicsOf(impactOf({ tables: [tableOf(twoRows, threeColumns, [...fullOutcomes(), outcome("r9", "c1", "迷子"), outcome("r1", "c9", "迷子")])] }))[0]),
+    actual: () => gridOf(tableTopicIn(tableOf(twoRows, threeColumns, [...fullOutcomes(), outcome("r9", "c1", "迷子"), outcome("r1", "c9", "迷子")]))),
     expected: [["r1c1", "r1c2", "r1c3"], ["r2c1", "r2c2", "r2c3"]],
   },
   {
     label: "行の見出しの id が重複していれば、先の見出しだけで行を作る",
-    actual: () => topicsOf(impactOf({ tables: [tableOf([head("r1", "一"), head("r2", "二"), head("r1", "三")], threeColumns, fullOutcomes())] }))[0].rows.map((row) => row.head.label),
+    actual: () => tableTopicIn(tableOf([head("r1", "一"), head("r2", "二"), head("r1", "三")], threeColumns, fullOutcomes())).rows.map((row) => row.head.label),
     expected: ["一", "二"],
   },
   {
     label: "列の見出しの id が重複していれば、先の見出しだけで列を作る",
-    actual: () => topicsOf(impactOf({ tables: [tableOf(twoRows, [head("c1", "一"), head("c2", "二"), head("c1", "三"), head("c3", "四")], fullOutcomes())] }))[0].columns.map((column) => column.label),
+    actual: () => tableTopicIn(tableOf(twoRows, [head("c1", "一"), head("c2", "二"), head("c1", "三"), head("c3", "四")], fullOutcomes())).columns.map((column) => column.label),
     expected: ["一", "二", "四"],
   },
   {
     label: "これまで(was)を持つマスだけが、変わったマスになる",
     actual: () => {
       const outcomes = fullOutcomes().map((item) => (item.result === "r1c2" || item.result === "r2c3" ? { ...item, was: "前" } : item));
-      return gridOf(topicsOf(impactOf({ tables: [tableOf(twoRows, threeColumns, outcomes)] }))[0], (cell) => cell.isChanged);
+      return gridOf(tableTopicIn(tableOf(twoRows, threeColumns, outcomes)), (outcome) => outcome.isChanged);
     },
     expected: [[false, true, false], [false, false, true]],
   },
@@ -728,20 +727,40 @@ const cases = [
     expected: [0, 3],
   },
   {
-    label: "行の見出しに注があれば、マスの状況は「行 · 列(注)」",
-    actual: () => topicsOf(impactOf({ tables: [tableOf([head("r", "タブなし", { note: "開始画面" })], [head("c", "開く操作なし")], [outcome("r", "c", "閉じる")])] }))[0].rows[0].cells[0].situation,
+    label: "マスに状況(situation)を書けば、見出しから組まずに書いた文をマスの状況にする",
+    actual: () => tableTopicIn(tableOf([head("r", "タブなし", { note: "開始画面" })], [head("c", "開く操作なし")], [outcome("r", "c", "閉じる", { situation: "開始画面で、まだ何も開いていない" })])).rows[0].outcomes[0].situation,
+    expected: "開始画面で、まだ何も開いていない",
+  },
+  {
+    label: "マスに状況を書かず、行の見出しに注があれば、マスの状況は「行 · 列(注)」",
+    actual: () => tableTopicIn(tableOf([head("r", "タブなし", { note: "開始画面" })], [head("c", "開く操作なし")], [outcome("r", "c", "閉じる")])).rows[0].outcomes[0].situation,
     expected: "タブなし · 開く操作なし(開始画面)",
   },
   {
-    label: "行の見出しに注が無ければ、マスの状況は「行 · 列」",
-    actual: () => topicsOf(impactOf({ tables: [tableOf([head("r", "タブあり")], [head("c", "開く操作なし")], [outcome("r", "c", "閉じる")])] }))[0].rows[0].cells[0].situation,
+    label: "マスに状況を書かず、行の見出しに注が無ければ、マスの状況は「行 · 列」",
+    actual: () => tableTopicIn(tableOf([head("r", "タブあり")], [head("c", "開く操作なし")], [outcome("r", "c", "閉じる")])).rows[0].outcomes[0].situation,
     expected: "タブあり · 開く操作なし",
+  },
+  {
+    label: "表で初めに選ぶマスは、行の順で最初の変わったマス",
+    actual: () => ImpactTopics.firstCellOf(tableTopicIn(tableOf(twoRows, threeColumns, fullOutcomes().map((item) => (item.result === "r2c1" || item.result === "r1c3" ? { ...item, was: "前" } : item))))),
+    expected: { row: "r1", column: "c3" },
+  },
+  {
+    label: "変わったマスが無い表は、空きを飛ばした先頭のマスを初めに選ぶ",
+    actual: () => ImpactTopics.firstCellOf(tableTopicIn(tableOf(twoRows, threeColumns, fullOutcomes().filter((item) => item.result !== "r1c1")))),
+    expected: { row: "r1", column: "c2" },
+  },
+  {
+    label: "マスが 1 つも無い表は、初めに選ぶマスが無い(null)",
+    actual: () => ImpactTopics.firstCellOf(tableTopicIn(tableOf(twoRows, threeColumns, [outcome("r9", "c1", "迷子")]))),
+    expected: null,
   },
   {
     label: "マスのテストは、テスト画面と同じテスト(同じ状態)を、書いた順に持つ",
     actual: () => {
       const result = explained(testedMap, testedExplain(impactOf({ tables: [tableOf([head("r", "行")], [head("c", "列")], [outcome("r", "c", "結果", { tests: ["b", "a"] })])] })));
-      const verifying = result.impactTopics.topics[0].rows[0].cells[0].tests.verifying;
+      const verifying = result.impactTopics.topics[0].rows[0].outcomes[0].tests.verifying;
       return { listed: verifying.map((item) => [item.test.id, item.status]), isSame: verifying.every((item) => result.tests.includes(item)) };
     },
     expected: { listed: [["b", "old"], ["a", "new"]], isSame: true },
@@ -803,7 +822,7 @@ const cases = [
     expected: ["m1"],
   },
   {
-    label: "端が図の箱でないやりとり(地図に無いファイル・図に出さない concept)は「地図に無い」",
+    label: "端が図の箱でないやりとり(地図に無いファイル・図に出さない concept)は「図に無い」",
     actual: () => {
       const topic = topicsOf(impactOf({ changed: { before: [], after: [{ text: "後 1", message: "m3" }, { text: "後 2", message: "m1" }, { text: "後 3", message: "m4" }] } }), mechanismExplain)[0];
       return topic.mechanisms.map((mechanism) => [mechanism.message.id, mechanism.isDrawn]);
@@ -826,38 +845,23 @@ const cases = [
         tables: [tableOf(twoRows, threeColumns, fullOutcomes().map((item) => (item.result === "r2c1" || item.result === "r1c3" ? { ...item, tests: ["t", "a"] } : item)))],
       };
       const result = explained(testedMap, testedExplain(impact));
-      return ImpactTopics.mentionsOf(result.impactTopics, "a").map((mention) => [mention.topic, mention.cell, mention.situation]);
+      return ImpactTopics.mentionsOf(result.impactTopics, "a").map((mention) => [mention.topic, mention.cell, mention.placeText]);
     },
     expected: [["table-0", { row: "r1", column: "c3" }, "一 · 三"], ["table-0", { row: "r2", column: "c1" }, "二 · 一"], ["added-0", null, null], ["kept", null, "変わらない 2"]],
   },
   {
-    label: "今の節は、上端が 140px 以内(140 を含む)に入った最後の節",
-    actual: () => TopicScroll.currentOf({ tops: [-400, 20, 140, 141], remaining: 500 }),
+    label: "今の節は、上端が読む線(上端から 140px。140 を含む)より上に来た最後の節",
+    actual: () => TopicScroll.currentOf([-400, 20, 140, 141]),
     expected: 2,
   },
   {
-    label: "どの節の上端も 140px より下なら、今の節は最初の節",
-    actual: () => TopicScroll.currentOf({ tops: [200, 500, 900], remaining: 300 }),
+    label: "どの節の上端も読む線(140px)より下なら、今の節は最初の節",
+    actual: () => TopicScroll.currentOf([200, 500, 900]),
     expected: 0,
   },
   {
-    label: "スクロールの残りが 0 なら、最後の節の上端が 140px より下でも今の節は最後の節",
-    actual: () => TopicScroll.currentOf({ tops: [-300, 60, 400], remaining: 0 }),
-    expected: 2,
-  },
-  {
-    label: "スクロールの残りがちょうど 4px なら、今の節は最後の節",
-    actual: () => TopicScroll.currentOf({ tops: [-300, 60, 400], remaining: 4 }),
-    expected: 2,
-  },
-  {
-    label: "スクロールの残りが 5px なら、今の節は上端の位置で決まる",
-    actual: () => TopicScroll.currentOf({ tops: [-300, 60, 400], remaining: 5 }),
-    expected: 1,
-  },
-  {
     label: "節が無ければ、今の節は null",
-    actual: () => TopicScroll.currentOf({ tops: [], remaining: 0 }),
+    actual: () => TopicScroll.currentOf([]),
     expected: null,
   },
   ...Object.keys(checkerVocabulary).map((name) => ({

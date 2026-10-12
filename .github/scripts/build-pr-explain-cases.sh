@@ -154,7 +154,7 @@ pass|-|sample|名前の 1 語の識別子(Result)は検査しない|d["concepts"
 pass|-|sample|名前に大文字だけの略語(UI 案・VRT)は書ける|d["concepts"][0]["name"] = "UI 案"; d["features"][0]["label"] = "VRT"
 pass|-|sample|説明文(concept の role)の識別子は検査しない|d["concepts"][0]["role"] = "TokenTemplate を組み立てる"
 pass|-|sample|テスト名(test の name)の識別子は検査しない|d["tests"][0]["name"] = "sortBy で並べ替えたとき順序が保たれる"
-pass|-|sample|振る舞い(impact)の見本(任意のキーをすべて使う)は通る|assert set(d["impact"]) == {"title", "lead", "changed", "tables", "added", "kept"} and "note" in d["impact"]["tables"][0]["rowHeads"][1]
+pass|-|sample|振る舞い(impact)の見本(任意のキーをすべて使う)は通る|assert set(d["impact"]) == {"title", "lead", "changed", "tables", "added", "kept"} and "note" in d["impact"]["tables"][0]["rowHeads"][1] and any("situation" in o for o in d["impact"]["tables"][0]["outcomes"])
 pass|-|sample|振る舞いが題と要約だけでも通る|d["impact"] = {"title": "題", "lead": "要約"}
 pass|-|sample|状況の表の行と列で同じ id を使える(軸ごとに別の名前空間)|ids = {"mapped": "passing", "unmapped": "failing"}; t = d["impact"]["tables"][0]; [h.update(id=ids[h["id"]]) for h in t["columnHeads"]]; [o.update(columnHead=ids[o["columnHead"]]) for o in t["outcomes"]]
 pass|-|sample|変わらないことのテストが未実装のものだけでも通る|d["impact"]["kept"][0]["tests"] = ["stale"]
@@ -309,16 +309,8 @@ import importlib.util, sys
 spec = importlib.util.spec_from_file_location("build_pr_explain", sys.argv[1])
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
-inner = lambda field: field.value.item if isinstance(field.value, module.Many) else field.value
-def shapes_under(name, seen):
-    if name in seen:
-        return seen
-    nested = [inner(field).name for field in module.Shapes[name].values() if isinstance(inner(field), module.Shape)]
-    for child in nested:
-        seen = shapes_under(child, seen | {name})
-    return seen | {name}
-rules = [inner(field).rule for name in shapes_under("Impact", frozenset()) for field in module.Shapes[name].values() if isinstance(inner(field), module.Scalar)]
-texts = [rule for rule in rules if rule != "id"]
+routes = module.routes_under(module.Shapes["Explain"]["impact"].value, "impact")
+texts = [rule.rule for _, rule, _ in routes if isinstance(rule, module.Scalar) and rule != module.Id]
 print("pass" if texts and all(rule == "user_text" for rule in texts) else "deny")
 PY
 )"
