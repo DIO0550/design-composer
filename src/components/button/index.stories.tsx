@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { ReactElement } from "react";
 import {
   Button,
-  type ButtonKind,
+  type ButtonFramedKind,
   ButtonKinds,
   type ButtonSize,
   ButtonSizes,
@@ -22,12 +22,6 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-/** 箱型の種類。 */
-type BoxKind = Exclude<
-  ButtonKind,
-  typeof ButtonKinds.Text | typeof ButtonKinds.Icon
->;
-
 /**
  * 箱型の 1 種類を、大きさごとに平常と押せないときで並べる。
  *
@@ -35,12 +29,12 @@ type BoxKind = Exclude<
  * @param label ボタンの綴り
  * @returns 大きさを行、平常と押せないときを列にした表
  */
-function BoxKindSheet({
+function FramedKindSheet({
   kind,
   label,
-}: Readonly<{ kind: BoxKind; label: string }>): ReactElement {
-  // Object.values(ButtonSizes) にはしない。Storybook の docgen が export した定数へ
-  // `__docgenInfo` を書き足すので、それも 1 つの大きさとして並んでしまう。
+}: Readonly<{ kind: ButtonFramedKind; label: string }>): ReactElement {
+  // Object.values(ButtonSizes) にはしない。Storybook の docgen（react-docgen-typescript）は
+  // `.tsx` で export した定数にも `displayName` / `__docgenInfo` を書き足すので、それも大きさとして並んでしまう。
   const sizes: readonly ButtonSize[] = [
     ButtonSizes.Small,
     ButtonSizes.Regular,
@@ -68,33 +62,38 @@ function BoxKindSheet({
   );
 }
 
-/** 押す先を示す既定の操作。 */
+/** その場の主な操作。 */
 export const Primary: Story = {
   name: "プライマリ",
   render: () => (
-    <BoxKindSheet kind={ButtonKinds.Primary} label="Go to source component" />
+    <FramedKindSheet
+      kind={ButtonKinds.Primary}
+      label="Go to source component"
+    />
   ),
 };
 
-/** 勧め分けをしない操作。 */
+/** 主な操作の脇に置く、控えめな操作。 */
 export const Secondary: Story = {
   name: "セカンダリ",
   render: () => (
-    <BoxKindSheet kind={ButtonKinds.Secondary} label="Detach instance" />
+    <FramedKindSheet kind={ButtonKinds.Secondary} label="Detach instance" />
   ),
 };
 
-/** 取り消せない削除などの操作。 */
+/** 消す・壊す向きの操作。 */
 export const Danger: Story = {
   name: "デンジャー",
-  render: () => <BoxKindSheet kind={ButtonKinds.Danger} label="Delete token" />,
+  render: () => (
+    <FramedKindSheet kind={ButtonKinds.Danger} label="Delete token" />
+  ),
 };
 
-/** その画面でいちばん勧めたい操作。中身に置いた `◆` もボタンの文字色を継ぐ。 */
+/** その画面を代表する操作。中身に置いた `◆` もボタンの文字色を継ぐ。 */
 export const Emphasis: Story = {
   name: "強調",
   render: () => (
-    <BoxKindSheet kind={ButtonKinds.Emphasis} label="◆ Create component" />
+    <FramedKindSheet kind={ButtonKinds.Emphasis} label="◆ Create component" />
   ),
 };
 
