@@ -2,9 +2,10 @@
 #
 # 解説ページの核の判定表。テンプレート(`.claude/skills/pr-explain/templates/index.html`)から固定
 # スクリプトを抜き出して node の `vm` で評価し、`document` が無いときに置かれる `prExplainCore` を
-# 叩いて、地図と解説の合流・振る舞いの節の並び・今の節・箱の図の配置・コミットの差分・つながりの要約・戻るの履歴・
-# 確認の印の鍵・開く画面と、語彙・Target の kind・impact の形の道筋が解説の検査(`build-pr-explain.py`)と
-# 揃っていることが期待どおりかを 1 コマンドで確かめる。
+# 叩いて、地図と解説の合流・振る舞いの節の並び・技術の手引きの節・用語の印・抜粋の強調・出てくる場所のコミットへの
+# 届き方・今の節・箱の図の配置・コミットの差分・つながりの要約・戻るの履歴・確認の印の鍵・開く画面と、語彙・Target の
+# kind・解説の形の道筋(impact・primers・terms・抜粋の強調)が解説の検査(`build-pr-explain.py`)と揃っていることが期待
+# どおりかを 1 コマンドで確かめる。
 #
 # 使い方: bash .github/scripts/pr-explain-core-cases.sh
 # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。
@@ -24,24 +25,49 @@ template="$repo_root/.claude/skills/pr-explain/templates/index.html"
 source "$repo_root/.claude/hooks/lib/cases-report.sh"
 
 # 解説の検査が持つ語彙(ページの `Vocabulary` と突き合わせる)と、Target の kind ごとのキー(ページの `Target` と
-# 突き合わせる)と、Shapes の Impact から導いた形の道筋と値の種類(ページの `ImpactTopics.ShapeRoutes` と
-# 突き合わせる)。道筋に出すのはオブジェクト・その配列・id・id の配列で、文のキーは出さない。
+# 突き合わせる)と、Shapes から導いた形の道筋と値の種類(ページの `ExplainShape.Routes` と突き合わせる)。impact の下は
+# オブジェクト・その配列・id・id の配列だけ。primers・terms の下は文(text・sha・marked_text の文字列)も出す。Excerpt の中の
+# 道筋は、Excerpt を指すすべての道筋の下に出す。ほかに、技術の手引きのタブ・段の kind・用語の印の綴りと、印を読む道筋。
 checker="$(python3 - "$scripts_dir/build-pr-explain.py" <<'PY'
 import importlib.util, json, sys
 spec = importlib.util.spec_from_file_location("build_pr_explain", sys.argv[1])
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
-vocabulary = {"techniques": module.Techniques, "phases": module.Phases, "messageKinds": module.MessageKinds, "vias": module.Vias, "messageStatuses": module.MessageStatuses}
+vocabulary = {
+    "techniques": module.Techniques,
+    "phases": module.Phases,
+    "messageKinds": module.MessageKinds,
+    "vias": module.Vias,
+    "messageStatuses": module.MessageStatuses,
+    "primerStatuses": module.PrimerStatuses,
+    "remarkKinds": module.RemarkKinds,
+}
 target_keys = {kind: list(fields) for kind, fields in module.Variants["Target"].items()}
-def kind_of(rule, is_many):
-    if isinstance(rule, module.Shape):
+text_rules = (module.Text, module.Heading, module.UserText, module.Sha, module.MarkedText)
+def kind_of(rule, is_many, with_text):
+    if isinstance(rule, (module.Shape, module.Variant)):
         return "records" if is_many else "record"
     if rule == module.Id:
         return "ids" if is_many else "id"
+    if with_text and rule in text_rules:
+        return "texts" if is_many else "text"
     return None
-routes = module.routes_under(module.Shapes["Explain"]["impact"].value, "impact")
-impact_routes = [[route, kind_of(rule, is_many)] for route, rule, is_many in routes if kind_of(rule, is_many) is not None]
-print(json.dumps({"vocabulary": vocabulary, "targetKeys": target_keys, "impactRoutes": impact_routes}))
+def shape_routes_of(rule, route, with_text):
+    return [[found, kind_of(inner, is_many, with_text)] for found, inner, is_many in module.routes_under(rule, route) if kind_of(inner, is_many, with_text) is not None]
+explain = module.Shapes["Explain"]
+routes = [*shape_routes_of(explain["impact"].value, "impact", False), *shape_routes_of(explain["primers"].value, "primers", True), *shape_routes_of(explain["terms"].value, "terms", True)]
+known = {route for route, _ in routes}
+inside_excerpts = [found for route in module.routes_with(module.Shape("Excerpt")) for found in shape_routes_of(module.Shape("Excerpt"), route, False)[1:]]
+shape_routes = routes + [found for found in inside_excerpts if found[0] not in known]
+print(json.dumps({
+    "vocabulary": vocabulary,
+    "targetKeys": target_keys,
+    "shapeRoutes": shape_routes,
+    "primerKinds": list(module.Variants["Primer"]),
+    "passageKinds": list(module.Variants["Passage"]),
+    "termMarkPattern": module.TermMarkPattern.pattern,
+    "markedRoutes": module.routes_with(module.MarkedText),
+}))
 PY
 )" || { echo "NG   解説の検査の語彙を読めない"; exit 1; }
 
@@ -50,7 +76,15 @@ const fs = require("fs");
 const vm = require("vm");
 
 const template = fs.readFileSync(process.argv[2], "utf8");
-const { vocabulary: checkerVocabulary, targetKeys: checkerTargetKeys, impactRoutes: checkerImpactRoutes } = JSON.parse(process.argv[3]);
+const {
+  vocabulary: checkerVocabulary,
+  targetKeys: checkerTargetKeys,
+  shapeRoutes: checkerShapeRoutes,
+  primerKinds: checkerPrimerKinds,
+  passageKinds: checkerPassageKinds,
+  termMarkPattern: checkerTermMarkPattern,
+  markedRoutes: checkerMarkedRoutes,
+} = JSON.parse(process.argv[3]);
 const script = (template.match(/<script>([\s\S]*?)<\/script>/) || [])[1];
 if (script === undefined) {
   console.error("固定スクリプトが見つからない");
@@ -63,7 +97,7 @@ if (core === undefined) {
   console.error("document の無い評価で prExplainCore が置かれていない");
   process.exit(2);
 }
-const { ExplainedMap, ImpactTopics, TopicScroll, ReviewCheck, ScreenChoice, CommitDiff, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target } = core;
+const { ExplainedMap, ExplainShape, ImpactTopics, PrimerTopics, TermMarks, ExcerptRows, TopicScroll, ReviewCheck, ScreenChoice, CommitDiff, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target } = core;
 
 const Pr = 7;
 const shaOf = (digit) => String(digit).repeat(40);
@@ -173,6 +207,28 @@ const mentionedPlacesOf = (explainTestId) => {
   const result = explained(testedMap, testedExplain(impact));
   return ImpactTopics.mentionsOf(result.impactTopics, explainTestId).map((mention) => [mention.topic, mention.cell, mention.placeText]);
 };
+
+// 技術の手引き(primers)。節は必須のキーだけを持ち、extra で足す・差し替える。
+const primerOf = (extra = {}) => ({ kind: "language", id: "p", category: "分類", label: "題", gist: "要するに", occurrences: [{ path: "a.ts", text: "ここ" }], ...extra });
+const termOf = (id, label = id) => ({ id, label, text: `${label}の意味` });
+const primerTopicsOf = (explain, map = mapOf()) => explained(map, explainOf(explain)).primerTopics;
+const tabTopicsOf = (explain, tab) => primerTopicsOf(explain).tabs[tab].topics;
+const shapeReasonOf = (explain) => explained(mapOf(), explainOf(explain)).reading.reason;
+const passageExcerpt = (extra = {}) => ({ kind: "excerpt", excerpt: { path: "a.ts", start: 10, end: 14, ...extra } });
+// 出てくる場所のコミットへの届き方。地図のコミットの files はパス(改名なら変更前のパスも)だけを見る。
+const fileAt = (path, oldPath = null) => ({ path, oldPath, status: oldPath === null ? "M" : "R", additions: 1, deletions: 0 });
+const commitTouching = (digit, files, extra = {}) => ({ ...commitOf(digit), files, ...extra });
+const reachesOf = ({ commits, explainedSha, path, shas, lineRange = { start: 3, end: 4 } }) => {
+  const occurrence = { path, text: "ここ", shas, ...(lineRange === null ? {} : { lineRange }) };
+  const map = mapOf({ commits, head: commits[commits.length - 1].sha });
+  const topics = primerTopicsOf({ sha: explainedSha, primers: [primerOf({ occurrences: [occurrence] })] }, map).tabs.language.topics;
+  return topics[0].occurrences[0].destinations.map(({ sha, reach }) => [sha, reach]);
+};
+// c1・c2 が a.ts、c3 が b.ts を変えた地図と、c2 が a.ts を z.ts へ移した地図と、c1 の後にマージコミット(2)がある地図。
+const threeCommits = [commitTouching(1, [fileAt("a.ts")]), commitTouching(2, [fileAt("a.ts")]), commitTouching(3, [fileAt("b.ts")])];
+const renamedCommits = [commitTouching(1, [fileAt("a.ts")]), commitTouching(2, [fileAt("z.ts", "a.ts")])];
+const mergedCommits = [commitTouching(1, [fileAt("a.ts")]), commitTouching(2, [], { merge: true })];
+const sentLine = { kind: "line", lineRange: { start: 3, end: 4 } };
 
 const cases = [
   {
@@ -611,6 +667,11 @@ const cases = [
     expected: "impact",
   },
   {
+    label: "ハッシュが #primer なら、保存値(テスト)より技術の手引きを優先する",
+    actual: () => ScreenChoice.choose({ hash: "#primer", saved: "test" }),
+    expected: "primer",
+  },
+  {
     label: "ハッシュが無く、保存値が振る舞いの画面ならそれを開く",
     actual: () => ScreenChoice.choose({ hash: "", saved: "impact" }),
     expected: "impact",
@@ -661,9 +722,9 @@ const cases = [
     expected: { kind: "shape", key: "impact.tables" },
   },
   {
-    label: "ページが形を見る impact の道筋と値の種類は、解説の検査の形(Shapes)から導いたものと同じ",
-    actual: () => ImpactTopics.ShapeRoutes.map(([route, kind]) => [route, kind]),
-    expected: checkerImpactRoutes,
+    label: "ページが形を見る道筋と値の種類は、解説の検査の形(Shapes)から導いたものと同じ",
+    actual: () => ExplainShape.Routes.map(([route, kind]) => [route, kind]),
+    expected: checkerShapeRoutes,
   },
   {
     label: "解説が無いとき、振る舞いの節は「解説なし」",
@@ -890,6 +951,301 @@ const cases = [
     label: "節が無ければ、今の節は null",
     actual: () => TopicScroll.currentOf([]),
     expected: null,
+  },
+  {
+    label: "primers がオブジェクトの解説は、理由を primers の型として解説なしにする",
+    actual: () => shapeReasonOf({ primers: {} }),
+    expected: { kind: "shape", key: "primers" },
+  },
+  {
+    label: "primers の要素が null なら、理由は primers",
+    actual: () => shapeReasonOf({ primers: [null] }),
+    expected: { kind: "shape", key: "primers" },
+  },
+  {
+    label: "出てくる場所(occurrences)がオブジェクトなら、理由はその道筋",
+    actual: () => shapeReasonOf({ primers: [primerOf({ occurrences: {} })] }),
+    expected: { kind: "shape", key: "primers[].occurrences" },
+  },
+  {
+    label: "段の文(passages の text)が数値なら、理由はその道筋",
+    actual: () => shapeReasonOf({ primers: [primerOf({ passages: [{ kind: "text", text: 5 }] })] }),
+    expected: { kind: "shape", key: "primers[].passages[].text" },
+  },
+  {
+    label: "節の題(label)が数値なら、理由はその道筋",
+    actual: () => shapeReasonOf({ primers: [primerOf({ label: 5 })] }),
+    expected: { kind: "shape", key: "primers[].label" },
+  },
+  {
+    label: "出てくる場所の shas の要素が数値なら、理由はその道筋",
+    actual: () => shapeReasonOf({ primers: [primerOf({ occurrences: [{ path: "a.ts", text: "ここ", shas: [5] }] })] }),
+    expected: { kind: "shape", key: "primers[].occurrences[].shas" },
+  },
+  {
+    label: "用語の意味(terms の text)が数値なら、理由はその道筋",
+    actual: () => shapeReasonOf({ terms: [{ id: "t", label: "語", text: 5 }] }),
+    expected: { kind: "shape", key: "terms[].text" },
+  },
+  {
+    label: "振る舞いの文(impact の kept の text)が数値でも、解説は使える",
+    actual: () => explained(mapOf(), explainOf({ impact: impactOf({ kept: [{ text: 5 }] }) })).reading.kind,
+    expected: "explained",
+  },
+  {
+    label: "passages がオブジェクトなら、理由はその道筋",
+    actual: () => shapeReasonOf({ primers: [primerOf({ passages: {} })] }),
+    expected: { kind: "shape", key: "primers[].passages" },
+  },
+  {
+    label: "段の抜粋の強調(emphasis)がオブジェクトなら、理由はその道筋",
+    actual: () => shapeReasonOf({ primers: [primerOf({ passages: [passageExcerpt({ emphasis: {} })] })] }),
+    expected: { kind: "shape", key: "primers[].passages[].excerpt.emphasis" },
+  },
+  {
+    label: "テストの抜粋の強調の要素がオブジェクトでなければ、理由はその道筋",
+    actual: () => shapeReasonOf({ suites: [suite("s", "s.test.ts")], tests: [test("a", "s", "名", { excerpt: { path: "a.ts", start: 1, end: 1, emphasis: [null] } })] }),
+    expected: { kind: "shape", key: "tests[].excerpt.emphasis" },
+  },
+  {
+    label: "段の抜粋の強調の要素がオブジェクトでなければ、理由はその道筋",
+    actual: () => shapeReasonOf({ primers: [primerOf({ passages: [passageExcerpt({ emphasis: [null] })] })] }),
+    expected: { kind: "shape", key: "primers[].passages[].excerpt.emphasis" },
+  },
+  {
+    label: "段の抜粋の強調の start / end が数でなくても解説は使え、その抜粋の行は番号どおりに並ぶ",
+    actual: () => {
+      const emphasis = [{ start: "a", end: null }];
+      const reading = explained(mapOf(), explainOf({ primers: [primerOf({ passages: [passageExcerpt({ emphasis })] })] })).reading.kind;
+      return [reading, ExcerptRows.create({ path: "a.ts", start: 10, end: 14, emphasis, text: "a\nb\nc\nd\ne" }).map((row) => row.number)];
+    },
+    expected: ["explained", [10, 11, 12, 13, 14]],
+  },
+  {
+    label: "技術の手引きのタブは、解説の検査の Primer の kind と同じ",
+    actual: () => Object.values(PrimerTopics.Tabs),
+    expected: checkerPrimerKinds,
+  },
+  {
+    label: "ページが描く段の kind は、解説の検査の Passage の kind と同じ並び",
+    actual: () => PrimerTopics.PassageKinds,
+    expected: checkerPassageKinds,
+  },
+  {
+    label: "用語の印の綴りは、解説の検査と同じ",
+    actual: () => TermMarks.Pattern.source,
+    expected: checkerTermMarkPattern,
+  },
+  {
+    label: "用語の印を読む道筋は、解説の検査が MarkedText の規則を付けた道筋と同じ並び",
+    actual: () => TermMarks.Routes,
+    expected: checkerMarkedRoutes,
+  },
+  {
+    label: "解説が無いとき、技術の手引きは「解説なし」",
+    actual: () => ExplainedMap.create(mapOf(), absent).primerTopics,
+    expected: { kind: "none" },
+  },
+  {
+    label: "退けた解説(pr が違う)は、primers が書いてあっても技術の手引きは「解説なし」",
+    actual: () => primerTopicsOf({ pr: Pr + 1, primers: [primerOf()] }),
+    expected: { kind: "none" },
+  },
+  {
+    label: "primers が無ければ、impact があっても技術の手引きは「書かれていない」",
+    actual: () => primerTopicsOf({ impact: impactOf({ kept: [{ text: "変わらない" }] }) }),
+    expected: { kind: "unwritten" },
+  },
+  {
+    label: "primers が空でも、技術の手引きは「書かれていない」",
+    actual: () => primerTopicsOf({ primers: [] }),
+    expected: { kind: "unwritten" },
+  },
+  {
+    label: "言語と実装の節を交互に書くと、タブごとに書いた順で分かれる",
+    actual: () => {
+      const primers = [primerOf({ id: "a" }), primerOf({ id: "b", kind: "codebase" }), primerOf({ id: "c" }), primerOf({ id: "d", kind: "codebase" })];
+      const tabs = primerTopicsOf({ primers }).tabs;
+      return [tabs.language.topics.map((topic) => topic.id), tabs.codebase.topics.map((topic) => topic.id)];
+    },
+    expected: [["a", "c"], ["b", "d"]],
+  },
+  {
+    label: "節の用語は、要するに → 段を書いた順(段の中は文 → 引数)の文書の順に並び、JSON のキーの順にも terms の順にもよらない",
+    actual: () => {
+      const primer = {
+        kind: "language",
+        id: "p",
+        category: "分類",
+        label: "題",
+        occurrences: [{ path: "a.ts", text: "ここ" }],
+        passages: [{ kind: "parameters", parameters: [{ name: "n", type: "T", text: "[[二|t2]]" }] }, { kind: "text", text: "[[一|t1]] と [[三|t3]]" }],
+        gist: "[[三|t3]]",
+      };
+      return tabTopicsOf({ primers: [primer], terms: [termOf("t1"), termOf("t2"), termOf("t3")] }, "language")[0].terms.map((term) => term.id);
+    },
+    expected: ["t3", "t2", "t1"],
+  },
+  {
+    label: "用語集は、タブの節をまたいで最初に出た順に並び、印の無いタブは null",
+    actual: () => {
+      const primers = [primerOf({ id: "a", gist: "[[二|t2]]" }), primerOf({ id: "b", kind: "codebase" }), primerOf({ id: "c", gist: "[[一|t1]] と [[二|t2]]" })];
+      const tabs = primerTopicsOf({ primers, terms: [termOf("t1"), termOf("t2")] }).tabs;
+      return [tabs.language.glossary.terms.map((term) => term.id), tabs.codebase.glossary];
+    },
+    expected: [["t2", "t1"], null],
+  },
+  {
+    label: "terms に無い印は表示の文字のままになり、節の用語にも用語集にも入らない",
+    actual: () => {
+      const topic = primerTopicsOf({ primers: [primerOf({ gist: "[[一|t1]] と [[無い|ghost]]" })], terms: [termOf("t1", "一")] }).tabs.language;
+      return { gist: topic.topics[0].gist, terms: topic.topics[0].terms.map((term) => term.id), glossary: topic.glossary.terms.map((term) => term.id) };
+    },
+    expected: {
+      gist: [{ kind: "term", label: "一", term: { id: "t1", label: "一", text: "一の意味" } }, { kind: "plain", text: " と " }, { kind: "plain", text: "無い" }],
+      terms: ["t1"],
+      glossary: ["t1"],
+    },
+  },
+  {
+    label: "関連は書いた順に、指した先のタブ・タブの中の位置・題になる",
+    actual: () => {
+      const primers = [primerOf({ id: "a", seeAlso: ["d", "b"] }), primerOf({ id: "c", kind: "codebase", label: "C" }), primerOf({ id: "b", label: "B" }), primerOf({ id: "d", kind: "codebase", label: "D" })];
+      return tabTopicsOf({ primers }, "language")[0].seeAlso;
+    },
+    expected: [{ tab: "codebase", index: 1, label: "D" }, { tab: "language", index: 1, label: "B" }],
+  },
+  {
+    label: "primers に無い関連の id は外す",
+    actual: () => tabTopicsOf({ primers: [primerOf({ id: "a", seeAlso: ["ghost", "b"] }), primerOf({ id: "b", label: "B" })] }, "language")[0].seeAlso,
+    expected: [{ tab: "language", index: 1, label: "B" }],
+  },
+  {
+    label: "この PR の実装の節の状態は、added / changed / 省略 → added / changed / null",
+    actual: () => tabTopicsOf({ primers: [primerOf({ id: "a", kind: "codebase", status: "added" }), primerOf({ id: "b", kind: "codebase", status: "changed" }), primerOf({ id: "c", kind: "codebase" })] }, "codebase").map((topic) => topic.status),
+    expected: ["added", "changed", null],
+  },
+  {
+    label: "この PR の実装の節のテストは、未実装を無いテストに分け、解説のテストに無い id は外す",
+    actual: () => {
+      const tests = explained(testedMap, { ...testedExplain(undefined), primers: [primerOf({ kind: "codebase", tests: ["t", "ghost", "a"] })] }).primerTopics.tabs.codebase.topics[0].tests;
+      return { verifying: tests.verifying.map((item) => item.test.id), missing: tests.missing.map((item) => item.test.id) };
+    },
+    expected: { verifying: ["a"], missing: ["t"] },
+  },
+  {
+    label: "この PR の実装の節の流れは、書いた順に引き、解説の流れに無い id は外す",
+    actual: () => {
+      const flows = [{ id: "f1", label: "一", steps: ["m"] }, { id: "f2", label: "二", steps: ["m"] }];
+      return tabTopicsOf({ flows, primers: [primerOf({ kind: "codebase", flows: ["f2", "ghost", "f1"] })] }, "codebase")[0].flows.map((flow) => flow.id);
+    },
+    expected: ["f2", "f1"],
+  },
+  {
+    label: "最初に開くタブは、言語に節があれば言語、無くて実装にあれば実装、どちらにも無ければ言語",
+    actual: () => [
+      [primerOf({ id: "b", kind: "codebase" }), primerOf({ id: "a" })],
+      [primerOf({ id: "b", kind: "codebase" })],
+      [primerOf({ id: "x", kind: "framework" })],
+    ].map((primers) => PrimerTopics.firstTabOf(primerTopicsOf({ primers }))),
+    expected: ["language", "codebase", "language"],
+  },
+  {
+    label: "出てくる場所の行の範囲を省けば null、shas を省けば届く先は無い",
+    actual: () => tabTopicsOf({ primers: [primerOf()] }, "language")[0].occurrences,
+    expected: [{ path: "a.ts", lineRange: null, text: "ここ", destinations: [] }],
+  },
+  {
+    label: "段は書いた順にそろえ、知らない kind の段は外す",
+    actual: () => {
+      const passages = [{ kind: "text", text: "前" }, passageExcerpt(), { kind: "figure", text: "図" }, { kind: "caution", text: "注意" }, { kind: "text", text: "後" }];
+      return tabTopicsOf({ primers: [primerOf({ passages })] }, "language")[0].passages.map((passage) => passage.kind);
+    },
+    expected: ["text", "excerpt", "remark", "text"],
+  },
+  {
+    label: "注意(caution)の段は警告色で、メモ(memo)の段は警告色でない",
+    actual: () => tabTopicsOf({ primers: [primerOf({ passages: [{ kind: "caution", text: "注意" }, { kind: "memo", text: "メモ" }] })] }, "language")[0].passages.map((passage) => [passage.label, passage.isWarn]),
+    expected: [["注意", true], ["メモ", false]],
+  },
+  {
+    label: "用語の印は、前後の文字と印に割れ、文の先頭・末尾の印の外に空の文字を出さない",
+    actual: () => [TermMarks.piecesOf("前[[絞り込まれ|narrowing]]ます"), TermMarks.piecesOf("[[絞り込み|narrowing]]")],
+    expected: [
+      [{ kind: "plain", text: "前" }, { kind: "term", label: "絞り込まれ", id: "narrowing" }, { kind: "plain", text: "ます" }],
+      [{ kind: "term", label: "絞り込み", id: "narrowing" }],
+    ],
+  },
+  {
+    label: "印の表示のバッククォートは、そのまま表示に残る",
+    actual: () => TermMarks.piecesOf("[[`Some`|some]]"),
+    expected: [{ kind: "term", label: "`Some`", id: "some" }],
+  },
+  {
+    label: "id に空白がある・表示が空の二重の角括弧は印にならず、文字 1 つのまま",
+    actual: () => [TermMarks.piecesOf("[[a|b c]]"), TermMarks.piecesOf("[[|b]]")],
+    expected: [[{ kind: "plain", text: "[[a|b c]]" }], [{ kind: "plain", text: "[[|b]]" }]],
+  },
+  {
+    label: "印の直前の角括弧 1 つは、印の外の文字になる",
+    actual: () => TermMarks.piecesOf("[[[a|b]]"),
+    expected: [{ kind: "plain", text: "[" }, { kind: "term", label: "a", id: "b" }],
+  },
+  {
+    label: "届く先は shas を書いた順で、解説の sha までにそのファイルを最後に変えたコミットだけが行まで届く",
+    actual: () => reachesOf({ commits: threeCommits, explainedSha: shaOf(3), path: "a.ts", shas: [shaOf(2), shaOf(1)] }),
+    expected: [[shaOf(2), sentLine], [shaOf(1), { kind: "file" }]],
+  },
+  {
+    label: "解説の sha より後のコミットには、行まで届かない",
+    actual: () => reachesOf({ commits: threeCommits, explainedSha: shaOf(1), path: "a.ts", shas: [shaOf(1), shaOf(2)] }),
+    expected: [[shaOf(1), sentLine], [shaOf(2), { kind: "file" }]],
+  },
+  {
+    label: "後のコミットがファイルを別のパスへ移したら、移す前のパスのコミットはファイルまで、移した後のパスは行まで届く",
+    actual: () => [
+      reachesOf({ commits: renamedCommits, explainedSha: shaOf(2), path: "a.ts", shas: [shaOf(1)] }),
+      reachesOf({ commits: renamedCommits, explainedSha: shaOf(2), path: "z.ts", shas: [shaOf(2)] }),
+    ],
+    expected: [[[shaOf(1), { kind: "file" }]], [[shaOf(2), sentLine]]],
+  },
+  {
+    label: "地図に無い sha は unmapped、行の範囲が無ければ file、解説の sha が地図に無ければ最後に変えたコミットも file",
+    actual: () => [
+      reachesOf({ commits: threeCommits, explainedSha: shaOf(3), path: "a.ts", shas: [shaOf(8)] }),
+      reachesOf({ commits: threeCommits, explainedSha: shaOf(3), path: "a.ts", shas: [shaOf(2)], lineRange: null }),
+      reachesOf({ commits: threeCommits, explainedSha: shaOf(8), path: "a.ts", shas: [shaOf(2)] }),
+    ],
+    expected: [[[shaOf(8), { kind: "unmapped" }]], [[shaOf(2), { kind: "file" }]], [[shaOf(2), { kind: "file" }]]],
+  },
+  {
+    label: "あいだ(解説の sha を含む)にマージコミットがあれば、最後に変えたコミットでも行まで届かない",
+    actual: () => reachesOf({ commits: mergedCommits, explainedSha: shaOf(2), path: "a.ts", shas: [shaOf(1)] }),
+    expected: [[shaOf(1), { kind: "file" }]],
+  },
+  {
+    label: "あいだのコミットがほかのファイルだけを変えたなら、行まで届く",
+    actual: () => reachesOf({ commits: [commitTouching(1, [fileAt("a.ts")]), commitTouching(2, [fileAt("b.ts")])], explainedSha: shaOf(2), path: "a.ts", shas: [shaOf(1)] }),
+    expected: [[shaOf(1), sentLine]],
+  },
+  {
+    label: "そのパスのファイルを変えていないコミットは、地図にあっても untouched",
+    actual: () => reachesOf({ commits: renamedCommits, explainedSha: shaOf(2), path: "z.ts", shas: [shaOf(1)] }),
+    expected: [[shaOf(1), { kind: "untouched" }]],
+  },
+  {
+    label: "マージコミットの sha は merge",
+    actual: () => reachesOf({ commits: mergedCommits, explainedSha: shaOf(2), path: "a.ts", shas: [shaOf(2)] }),
+    expected: [[shaOf(2), { kind: "merge" }]],
+  },
+  {
+    label: "抜粋の行はファイルの行番号で並び、強調の範囲に入る行だけが強調になり、強調を省けばどの行も強調しない",
+    actual: () => {
+      const excerpt = { path: "a.ts", start: 10, end: 14, text: "a\nb\nc\nd\ne" };
+      const rows = ExcerptRows.create({ ...excerpt, emphasis: [{ start: 11, end: 11 }, { start: 13, end: 14 }] });
+      return { numbers: rows.map((row) => row.number), emphasized: rows.map((row) => row.isEmphasized), plain: ExcerptRows.create(excerpt).map((row) => row.isEmphasized) };
+    },
+    expected: { numbers: [10, 11, 12, 13, 14], emphasized: [false, true, false, true, true], plain: [false, false, false, false, false] },
   },
   ...Object.keys(checkerVocabulary).map((name) => ({
     label: `語彙 ${name} のキーの集合は、解説の検査とページの表で同じ`,
