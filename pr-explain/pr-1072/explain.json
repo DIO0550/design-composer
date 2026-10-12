@@ -1,0 +1,731 @@
+{
+  "version": 1,
+  "pr": 1072,
+  "sha": "df3b9ee9005d79c59bac8f66bdb2a8486fb86018",
+  "issue": 1070,
+  "overview": {
+    "title": "`validation/` を解体し、走査をドキュメント本体・詰め替えを `validation-error/` へ移す",
+    "lead": "ドキュメントの違反を集める `DesignDocument.collectErrors` の中身を、走査(どの部品・artboard・名前を見るか)と詰め替え(違反 1 件をエラー 1 件にする)に分け直した。`collectErrors` が返すエラーの並び・位置・文言・`prop` の有無は変えていない。",
+    "before": [
+      {
+        "text": "`collectErrors` は `validation/` の `collectComponentErrors` などを呼び、走査と詰め替えを `validation/` に任せていた",
+        "message": "call-old-validation"
+      },
+      {
+        "text": "違反はまず位置を持たない中間の `UnlocatedError` になり、`withLocation` が位置(`nodeName` / `prop`)を後から付けていた"
+      },
+      {
+        "text": "エラーの文言を完全一致で確かめていたのは参照のエラーだけで、`prop` キーが無いことを見ていたのは色のテストの 1 か所だけだった"
+      }
+    ],
+    "after": [
+      {
+        "text": "`collectErrors` は本体の非公開関数(`collectComponentErrors` / `collectArtboardErrors` / `collectNameErrors` など)で部品・artboard・名前を辿る",
+        "message": "judge-instance"
+      },
+      {
+        "text": "違反 1 件は `DesignDocumentValidationError` の `from*`(13 個)が、位置を引数で受け取ってエラー 1 件にする",
+        "message": "to-error"
+      },
+      {
+        "text": "適合しているドキュメントでは、これまでどおり空の並びを返す"
+      },
+      {
+        "text": "未知の型のノードが子を並べない親の下で `fill` を持つと、これまでどおり unknown-type のあとに fill-in-free-parent が続く",
+        "message": "to-error"
+      },
+      {
+        "text": "種類ごとのエラー 1 件の形(位置・文言・`prop` の有無)と、種類をまたぐ並びをテストが固定している",
+        "message": "test-collect"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "走査をドキュメント本体に置いた理由",
+        "text": "走査には部品・artboard・トークン・名前空間のすべてが要り、それを持つのは整合性境界であるドキュメントだけ。`ReferenceContext` は artboards を持たない。`ReferenceContext` / `ComponentSet` に走査を持たせると、戻り値の `DesignDocumentValidationError` が `design-document` 配下にあり `design-document` がそれらを import しているので循環になる",
+        "go": {
+          "kind": "file",
+          "path": "src/domains/dcmp/design-document/index.ts"
+        }
+      },
+      {
+        "title": "詰め替えの語形",
+        "text": "`from*` は既存の `fromJson` / `fromNode` と同じく第 1 引数を変換元にし、名前の後半を出どころの要素名(`circularNames` → `fromCircularName` など)に揃えた。`fromUnknownType` だけは変換元になる別の表現が無く、材料 `{ nodeName, type }` から作るが、同じコンパニオンで語形を割らないため `from*` のまま残した",
+        "go": {
+          "kind": "message",
+          "id": "to-error"
+        }
+      },
+      {
+        "title": "移動の前にテストを足した順番",
+        "text": "`collectErrors` の出力を変えない証拠として、移動の前(現行コードで緑)にエラー全体を `toStrictEqual` で固定するテストを足し、そのテストを通したまま移動した。種類をまたぐ並びのテストは最後に足し、`origin/main` でも緑であることを確かめている",
+        "go": {
+          "kind": "flow",
+          "id": "collect"
+        }
+      },
+      {
+        "title": "検証の層",
+        "text": "変更は `domains / dcmp` の `design-document` の中で閉じ、外への公開は従来どおり型だけ",
+        "go": {
+          "kind": "layer",
+          "layer": "domains / dcmp"
+        }
+      },
+      {
+        "title": "検証の機能",
+        "text": "走査・詰め替え・判定の分担を箱で見る",
+        "go": {
+          "kind": "feature",
+          "id": "validate"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "validate",
+      "label": "ドキュメントの検証",
+      "role": "ドキュメントが仕様に適合しない箇所を、位置と文言の付いたエラーの並びにする"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "domains / dcmp",
+      "role": "ドキュメント本体が走査を、エラー型のコンパニオンが詰め替えを持ち、判定は各ドメインに残す"
+    },
+    {
+      "layer": "docs",
+      "role": "アーキテクチャ文書の validator の実体を、本体と `validation-error/` に直す"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "src/domains/dcmp/design-document/index.ts",
+      "name": "ドキュメント",
+      "role": "`collectErrors` と、どの部品・artboard・名前を検証するかを辿る非公開の走査関数を持つ",
+      "feature": "validate",
+      "change": "`validation/` にあった走査を非公開関数として移し、`documentNamesOf` で重複名を判定するようにした"
+    },
+    {
+      "path": "src/domains/dcmp/design-document/validation-error/index.ts",
+      "name": "検証エラー",
+      "role": "違反 1 件を、位置と文言の付いたエラー 1 件にする(`from*` 13 個)",
+      "feature": "validate",
+      "change": "新しく作った。中間型と位置の後付けをやめ、各 `from*` が位置を引数で受け取る"
+    },
+    {
+      "path": "src/domains/dcmp/design-document/validation/index.ts",
+      "name": "旧検証モジュール",
+      "role": "走査と詰め替えを「検証する」という動作の側で束ねていた",
+      "feature": "validate",
+      "change": "削除した"
+    },
+    {
+      "path": "src/domains/dcmp/reference-context/index.ts",
+      "name": "参照の文脈",
+      "role": "インスタンスの参照先・上書きの違反を判定する",
+      "feature": "validate"
+    },
+    {
+      "path": "src/domains/dcmp/document-names/index.ts",
+      "name": "名前空間",
+      "role": "名前の欠落・識別子違反・重複を判定する",
+      "feature": "validate"
+    },
+    {
+      "path": "src/domains/dcmp/token/index.ts",
+      "name": "トークン",
+      "role": "トークン名の規則違反・塗りの名前の衝突・色の値の違反を判定する",
+      "feature": "validate"
+    },
+    {
+      "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+      "name": "エラーの形のテスト",
+      "role": "種類ごとのエラー 1 件の位置・文言・`prop` の有無を固定する",
+      "feature": "validate",
+      "change": "参照の文言のテストをリネームして広げた"
+    },
+    {
+      "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-order.test.ts",
+      "name": "並びのテスト",
+      "role": "エラーの並びを固定する",
+      "feature": "validate",
+      "change": "種類をまたぐ並びを 3 件足した"
+    },
+    {
+      "path": "src/domains/dcmp/design-document/token-referrer/index.ts",
+      "name": "トークンの参照元",
+      "role": "artboard が照らすスキーマが 2 通りあることを doc で知らせる",
+      "change": "doc が指す検証側を本体の `collectArtboardErrors` に直した",
+      "graph": false
+    },
+    {
+      "path": "docs/05-architecture.md",
+      "name": "アーキテクチャ文書",
+      "role": "モジュールの責務と実体の対応表",
+      "change": "validator の実体を本体と `validation-error/` に直した",
+      "graph": false
+    }
+  ],
+  "messages": [
+    {
+      "id": "call-old-validation",
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/design-document/validation/index.ts",
+      "kind": "qry",
+      "name": "検証を任せる",
+      "code": "collectComponentErrors(context, name, component)",
+      "via": "call",
+      "payload": "参照の文脈と部品・artboard・ドキュメント",
+      "returns": "位置の付いたエラーの並び",
+      "status": "removed"
+    },
+    {
+      "id": "judge-instance",
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/reference-context/index.ts",
+      "kind": "qry",
+      "name": "インスタンスの違反を判定する",
+      "code": "ReferenceContext.collectInstanceViolations(context, refNode)",
+      "via": "call",
+      "payload": "部品とトークンの一式と、インスタンス 1 件",
+      "returns": "位置を持たない違反の並び",
+      "status": "added"
+    },
+    {
+      "id": "judge-names",
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/document-names/index.ts",
+      "kind": "qry",
+      "name": "名前の違反を判定する",
+      "code": "DocumentNames.duplicatedNames(documentNamesOf(document))",
+      "via": "call",
+      "payload": "ドキュメント全体の名前空間",
+      "returns": "重複している名前の並び",
+      "status": "added"
+    },
+    {
+      "id": "judge-tokens",
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/token/index.ts",
+      "kind": "qry",
+      "name": "トークンの違反を判定する",
+      "code": "TokenSet.collectInvalidColorPositions(document.tokens)",
+      "via": "call",
+      "payload": "トークン一式",
+      "returns": "hex でない色の位置の並び",
+      "status": "added"
+    },
+    {
+      "id": "to-error",
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/design-document/validation-error/index.ts",
+      "kind": "qry",
+      "name": "違反をエラーに詰め替える",
+      "code": "DesignDocumentValidationError.fromInstanceViolation(violation, refNode)",
+      "via": "call",
+      "payload": "違反 1 件(変換元)と、エラーの位置",
+      "returns": "位置・文言・必要なときだけ `prop` を持つエラー 1 件",
+      "status": "added"
+    },
+    {
+      "id": "test-collect",
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "kind": "qry",
+      "name": "エラーを集める",
+      "code": "DesignDocument.collectErrors(document)",
+      "via": "call",
+      "payload": "違反を 1 種類だけ含むドキュメント",
+      "returns": "エラーの並び(`toStrictEqual` で丸ごと比べる)",
+      "status": "added"
+    },
+    {
+      "id": "test-order",
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-order.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "kind": "qry",
+      "name": "並びを確かめる",
+      "code": "DesignDocument.collectErrors(document)",
+      "via": "call",
+      "payload": "種類の違う違反を同時に含むドキュメント",
+      "returns": "エラーの並び(kind と位置で比べる)",
+      "status": "changed"
+    }
+  ],
+  "flows": [
+    {
+      "id": "collect",
+      "label": "ドキュメントの違反を集めるとき",
+      "steps": [
+        "judge-instance",
+        "to-error",
+        "judge-names",
+        "judge-tokens"
+      ]
+    },
+    {
+      "id": "before",
+      "label": "移動前の検証",
+      "steps": [
+        "call-old-validation"
+      ]
+    },
+    {
+      "id": "guard",
+      "label": "テストが出力を固定するとき",
+      "steps": [
+        "test-collect",
+        "test-order"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "25245d8a7a839c3901dc10b6c9eaa8416a5d57fc",
+      "phase": "prep",
+      "role": "文言のテストを観点名のファイルへリネームする",
+      "why": "移動の前に `collectErrors` の出力を固定するケースを 1 ファイルへ集めるため。新しいファイルを立てると、同じドキュメントを組むヘルパーが 2 本になる。",
+      "flows": [
+        "guard"
+      ],
+      "review": [
+        "中身を変えずに `git mv` だけしていること"
+      ]
+    },
+    {
+      "sha": "dab0abff36d424165b4bf6b029fa13a26aa49135",
+      "phase": "prep",
+      "role": "`collectErrors` のエラーを位置・文言・`prop` の有無まで固定するテストを、移動の前に足す",
+      "why": "既存のテストは `objectContaining` が中心で、`prop: undefined` と `prop` キーの欠落を区別できない。詰め替えを書き換える前に、現行コードで緑の状態を作っておく。",
+      "flows": [
+        "guard"
+      ],
+      "review": [
+        "ヘルパー `errorsOf` が `collectErrors` の戻り値をそのまま返し、全件を `toStrictEqual` で比べていること",
+        "unknown-type のあとにも fill-in-free-parent が出る並びを固定していること"
+      ],
+      "before": [
+        {
+          "text": "文言を完全一致で見ていない kind が 10 種あった"
+        }
+      ],
+      "after": [
+        {
+          "text": "どの `from*` も少なくとも 1 ケースで通る",
+          "message": "test-collect"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-message.test.ts",
+          "start": 20,
+          "end": 20,
+          "text": "`collectErrors` の戻り値をそのまま返すヘルパー。文言だけを取り出していた `messagesOf` を置き換えた"
+        }
+      ]
+    },
+    {
+      "sha": "aa0794a2921809f3c4df864b85636a7d88e2ac1e",
+      "phase": "core",
+      "role": "`validation/` を解体し、走査を本体・詰め替えを `validation-error/` へ移す",
+      "why": "「validate はドメイン自体が持つべき処理で、それ単体をドメインにしたくない」というオーナーの指摘による。残っていた走査と詰め替えを、それぞれの値の持ち主へ移した。走査に要る部品・artboard・トークン・名前空間をすべて持つのはドキュメントだけで、詰め替えは位置の語彙を守るエラーの性質なのでエラー型に置く(`edit-error/` と同じ形)。",
+      "flows": [
+        "collect",
+        "before"
+      ],
+      "review": [
+        "走査関数を `ReferenceContext` / `ComponentSet` ではなく本体に置いた理由(artboards を持たない・循環になる)に納得できるか",
+        "中間型 `UnlocatedError` と `withLocation` をやめ、各 `from*` が位置を引数で受け取っていること",
+        "親の `index.ts` からの公開が従来どおり型だけであること"
+      ],
+      "before": [
+        {
+          "text": "`collectErrors` が `validation/` の走査関数を呼んでいた",
+          "message": "call-old-validation"
+        }
+      ],
+      "after": [
+        {
+          "text": "`collectErrors` が本体の非公開関数で辿り、判定は各ドメインに聞く",
+          "message": "judge-instance"
+        },
+        {
+          "text": "違反 1 件を `from*` がエラー 1 件にする",
+          "message": "to-error"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/design-document/validation/index.ts",
+          "side": "old",
+          "start": 137,
+          "end": 149,
+          "text": "位置を後から付けていた `withLocation`。`prop` があるときだけ付ける条件付きスプレッドを、各 `from*` が型ごとに持つ形に置き換えた"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 936,
+          "end": 936,
+          "text": "artboard の走査。Box スキーマを照らす理由の Why は文言を変えずに移した"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 2311,
+          "end": 2311,
+          "text": "部品・artboard・循環・名前・色の順に連ねる。この順はテストが固定している"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/validation-error/index.ts",
+          "start": 163,
+          "end": 163,
+          "text": "詰め替えのコンパニオン。違反 1 件 → エラー 1 件に揃え、配列は受けない"
+        }
+      ]
+    },
+    {
+      "sha": "ae8415078389f8d40e24af885e7b21035155b46e",
+      "phase": "fin",
+      "role": "トークンの参照元の doc が指す検証側を、本体の `collectArtboardErrors` に直す",
+      "why": "`validation/` を消したので、doc が存在しないモジュールを指していた。Why は本体へ文言のまま移してあるので、参照先の名前だけを直す。",
+      "review": [
+        "Why を写さず参照先の名前だけを直していること"
+      ]
+    },
+    {
+      "sha": "b0d7a67ea74b4c7ed17e3e174ba21f9dad21ade8",
+      "phase": "fin",
+      "role": "アーキテクチャ文書の validator の実体を、本体と `validation-error/` に直す",
+      "why": "消したパスを名指ししたままだと `pre-push-named-paths` が push を止める。責務が 2 か所に分かれたので両方を挙げる。",
+      "review": [
+        "エラーの文言・位置を探す人が `validation-error/` に辿り着けること"
+      ],
+      "notes": [
+        {
+          "path": "docs/05-architecture.md",
+          "start": 23,
+          "end": 23,
+          "text": "走査と詰め替えの 2 か所を挙げる"
+        }
+      ]
+    },
+    {
+      "sha": "c47bee4079d75258216950307ae2e89387af37c3",
+      "phase": "revise",
+      "role": "エラー全体の形を固定するテストを `validate-error-shape` へリネームする",
+      "why": "naming-reviewer の指摘。文言だけでなく位置・`prop` の有無まで比べるようになったので、`validate-message` では退行を調べる人が開く対象と思わない。",
+      "flows": [
+        "guard"
+      ],
+      "review": [
+        "中身を変えずに `git mv` だけしていること"
+      ]
+    },
+    {
+      "sha": "60ba9e7234e2b65959851a1d32fe4b59dbd6172e",
+      "phase": "revise",
+      "role": "`from*` を既存の `from*` の語形(第 1 引数が変換元)に揃える",
+      "why": "naming-reviewer の指摘。13 個のうち 8 個が既存の形から外れ、名前の後半が「引数の型」「出どころ」「kind」の 3 通りに割れていた。`fromCircularRef` は存在しない型を探させる。",
+      "flows": [
+        "collect"
+      ],
+      "review": [
+        "変換元を第 1 引数へ移した 4 個(`fromPropError` / `fromInvertedLimitAxis` / `fromInstanceViolation` / `fromBindingViolation`)の順",
+        "改名した 4 個の後半が出どころの要素名に揃っていること",
+        "`fromUnknownType` を `from*` のまま残した判断"
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/design-document/validation-error/index.ts",
+          "start": 226,
+          "end": 226,
+          "text": "`Layout.collectFillAxesInFreeParent` の要素名に揃え、`fromInvertedLimitAxis` と対になる"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/validation-error/index.ts",
+          "start": 333,
+          "end": 333,
+          "text": "`ComponentSet.circularNames` の要素名に揃えた(旧 `fromCircularRef`)"
+        }
+      ]
+    },
+    {
+      "sha": "afea25a3a5742e8b0ec2ece4a8a0f817d42664d8",
+      "phase": "revise",
+      "role": "本体の doc を、走査が本体にある形に揃える",
+      "why": "comment-reviewer と duplication-reviewer の指摘を同じ根本原因として束ねた。走査を移したのに、先頭コメントが後ろの走査関数まで対象に含むように読め、分担の説明も 2 か所にあった。",
+      "review": [
+        "分担の説明を `collectErrors` の doc 1 か所に寄せたこと",
+        "部品のルートで `fill` を検査しない理由を `parentProps` の doc に戻したこと"
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 759,
+          "end": 759,
+          "text": "走査関数群の区切り。先頭コメントの対象はここまで"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 809,
+          "end": 810,
+          "text": "関数を分けたときに落ちていた Why を戻した"
+        }
+      ]
+    },
+    {
+      "sha": "8da11a8fb5a02e7c906f746694b26aa2c86cdb43",
+      "phase": "revise",
+      "role": "`validation-error/` の doc の取りこぼしと参照先を直す",
+      "why": "comment-reviewer の指摘。どちらも移動元から文言どおり移した既存の誤りで、置き場所を変えたこの PR で直す。",
+      "review": [
+        "`missing-public-prop` も dangling-binding-prop になることが `@returns` に書かれていること"
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/design-document/validation-error/index.ts",
+          "start": 279,
+          "end": 281,
+          "text": "binding の違反 3 種のうち、書かれていなかった 1 種を足した"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/validation-error/index.ts",
+          "start": 343,
+          "end": 343,
+          "text": "実在しない見出しから `docs/03-schema.md`「バリデーション仕様」に直した"
+        }
+      ]
+    },
+    {
+      "sha": "2fe110cab54c4be49617b5c41cb0fb432f1e4821",
+      "phase": "fin",
+      "role": "トークンの参照元の doc の折り返しを揃える",
+      "why": "Biome はコメントを折り返さないので、書き換えた段落を手で周りの行幅に揃える。文言は変えない。"
+    },
+    {
+      "sha": "df3b9ee9005d79c59bac8f66bdb2a8486fb86018",
+      "phase": "revise",
+      "role": "種類の違うエラーをまたぐ `collectErrors` の並びを固定する",
+      "why": "test-reviewer の実測で、concat の順を入れ替える 6 通りのミューテーションが全テストを通った。この PR は concat の式を書き直しているので、並びを変えていない証拠が要る。",
+      "flows": [
+        "guard"
+      ],
+      "review": [
+        "全体・artboard の中・名前の中の 3 つに分け、1 テスト 1 仕様になっていること",
+        "ノード名とトークン名の違反を `nodeName` / `tokenName` で見分けていること"
+      ],
+      "before": [
+        {
+          "text": "種類をまたぐ並びを入れ替えても、どのテストも落ちなかった"
+        }
+      ],
+      "after": [
+        {
+          "text": "6 通りの入れ替えがいずれかのテストで落ちる",
+          "message": "test-order"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-order.test.ts",
+          "start": 185,
+          "end": 186,
+          "text": "どちらも invalid-identifier なので、持つ位置のキーで見分ける"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "shape",
+      "label": "エラーの形",
+      "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts"
+    },
+    {
+      "id": "order",
+      "label": "エラーの並び",
+      "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-order.test.ts"
+    }
+  ],
+  "tests": [
+    {
+      "id": "unknown-then-fill",
+      "suite": "shape",
+      "name": "未知の型のノードが子を並べない親の下で fill を持つと、未知の型のエラーのあとに fill のエラーが続く",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "型の判定と関係なく fill を見る振る舞いを守る。unknown-type で早く返して fill を飛ばす壊し方(test-reviewer の N03)を落とすのは、このテストだけ",
+      "given": "`layout: \"free\"` の Box の下に、未知の型 `Button` で `widthMode: \"fill\"` の子",
+      "when": "`collectErrors` で集める",
+      "then": "unknown-type、fill-in-free-parent の順の 2 件だけが並ぶ",
+      "commit": "dab0abff36d424165b4bf6b029fa13a26aa49135",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+        "start": 137,
+        "end": 163,
+        "text": "test(\"未知の型のノードが子を並べない親の下で fill を持つと、未知の型のエラーのあとに fill のエラーが続く\", () => {\n  const errors = errorsOf({}, [\n    {\n      name: \"panel\",\n      type: \"Box\",\n      props: { layout: \"free\" },\n      children: [\n        { name: \"widget\", type: \"Button\", props: { widthMode: \"fill\" } },\n      ],\n    },\n  ]);\n\n  expect(errors).toStrictEqual([\n    {\n      kind: \"unknown-type\",\n      nodeName: \"widget\",\n      message: 'unknown type \"Button\"',\n    },\n    {\n      kind: \"fill-in-free-parent\",\n      nodeName: \"widget\",\n      prop: \"widthMode\",\n      message:\n        'prop \"widthMode\" cannot be \"fill\" inside a parent that does not arrange its children',\n    },\n  ]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts",
+        "src/domains/dcmp/design-document/validation-error/index.ts"
+      ],
+      "covers": [
+        "test-collect",
+        "to-error"
+      ]
+    },
+    {
+      "id": "unknown-type",
+      "suite": "shape",
+      "name": "未知の型のノードのエラーは、そのノード名の位置で prop を持たず、型名を挙げる",
+      "techniques": [
+        "equivalence",
+        "error"
+      ],
+      "why": "`prop` キーが無いことを `toStrictEqual` で見る。`prop: undefined` が混ざっても `toEqual` では通ってしまう",
+      "given": "未知の型 `Button` のノード `widget`",
+      "when": "`collectErrors` で集める",
+      "then": "`prop` キーを持たない unknown-type 1 件",
+      "commit": "dab0abff36d424165b4bf6b029fa13a26aa49135",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+        "start": 125,
+        "end": 135,
+        "text": "test(\"未知の型のノードのエラーは、そのノード名の位置で prop を持たず、型名を挙げる\", () => {\n  const errors = errorsOf({}, [{ name: \"widget\", type: \"Button\" }]);\n\n  expect(errors).toStrictEqual([\n    {\n      kind: \"unknown-type\",\n      nodeName: \"widget\",\n      message: 'unknown type \"Button\"',\n    },\n  ]);\n});"
+      },
+      "values": {
+        "columns": [
+          "比べ方",
+          "`prop: undefined` が混ざったとき"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`toStrictEqual`",
+              "落ちる"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "`toEqual` / `objectContaining`",
+              "通る"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/validation-error/index.ts"
+      ],
+      "covers": [
+        "test-collect",
+        "to-error"
+      ]
+    },
+    {
+      "id": "circular",
+      "suite": "shape",
+      "name": "循環参照に含まれる部品のエラーは、部品ごとにその部品名の位置で prop を持たない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "改名した `fromCircularName` の出力が変わっていないことを守る",
+      "given": "互いを参照する部品 `a` と `b`",
+      "when": "`collectErrors` で集める",
+      "then": "`a`、`b` の順に、`prop` を持たない circular-ref が 1 件ずつ",
+      "commit": "dab0abff36d424165b4bf6b029fa13a26aa49135",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+        "start": 264,
+        "end": 285,
+        "text": "test(\"循環参照に含まれる部品のエラーは、部品ごとにその部品名の位置で prop を持たない\", () => {\n  const errors = errorsOf(\n    {\n      a: { type: \"Box\", children: [{ name: \"a-inner\", ref: \"b\" }] },\n      b: { type: \"Box\", children: [{ name: \"b-inner\", ref: \"a\" }] },\n    },\n    [],\n  );\n\n  expect(errors).toStrictEqual([\n    {\n      kind: \"circular-ref\",\n      nodeName: \"a\",\n      message: 'component \"a\" is part of a circular reference',\n    },\n    {\n      kind: \"circular-ref\",\n      nodeName: \"b\",\n      message: 'component \"b\" is part of a circular reference',\n    },\n  ]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/validation-error/index.ts"
+      ],
+      "covers": [
+        "test-collect"
+      ]
+    },
+    {
+      "id": "order-overall",
+      "suite": "order",
+      "name": "エラーは artboard のエラー・部品の循環参照・名前のエラー・色トークンのエラーの順に並ぶ",
+      "techniques": [
+        "regression"
+      ],
+      "why": "`collectErrors` の concat の順を入れ替える壊し方を落とす",
+      "given": "artboard の未知の prop・循環する部品・重複した名前・hex でない色を同時に持つドキュメント",
+      "when": "`collectErrors` で集める",
+      "then": "unknown-prop、circular-ref 2 件、duplicate-name、invalid-color の順",
+      "commit": "df3b9ee9005d79c59bac8f66bdb2a8486fb86018",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-order.test.ts",
+        "start": 124,
+        "end": 154,
+        "text": "test(\"エラーは artboard のエラー・部品の循環参照・名前のエラー・色トークンのエラーの順に並ぶ\", () => {\n  const document = DesignDocument.create({\n    tokens: { ...TokenSet.empty(), colors: { bad: \"red\" } },\n    components: {\n      a: { type: \"Box\", children: [{ name: \"a-inner\", ref: \"b\" }] },\n      b: { type: \"Box\", children: [{ name: \"b-inner\", ref: \"a\" }] },\n    },\n    artboards: [\n      {\n        name: \"screen\",\n        width: 375,\n        height: 812,\n        props: { notAProp: true },\n        children: [\n          { name: \"label\", type: \"Box\" },\n          { name: \"label\", type: \"Box\" },\n        ],\n      },\n    ],\n  });\n\n  const errors = DesignDocument.collectErrors(document);\n\n  expect(errors).toEqual([\n    expect.objectContaining({ kind: \"unknown-prop\", nodeName: \"screen\" }),\n    expect.objectContaining({ kind: \"circular-ref\", nodeName: \"a\" }),\n    expect.objectContaining({ kind: \"circular-ref\", nodeName: \"b\" }),\n    expect.objectContaining({ kind: \"duplicate-name\", nodeName: \"label\" }),\n    expect.objectContaining({ kind: \"invalid-color\", tokenName: \"bad\" }),\n  ]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "test-order"
+      ]
+    },
+    {
+      "id": "order-artboard",
+      "suite": "order",
+      "name": "artboard の props のエラーは、その artboard の子のエラーより前に並ぶ",
+      "techniques": [
+        "regression"
+      ],
+      "why": "artboard の走査の中で props と子の順を入れ替える壊し方を落とす",
+      "given": "artboard 自身と子の両方が未知の prop を持つ",
+      "when": "`collectErrors` で集める",
+      "then": "artboard の unknown-prop、子の unknown-prop の順",
+      "commit": "df3b9ee9005d79c59bac8f66bdb2a8486fb86018",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-order.test.ts",
+        "start": 156,
+        "end": 183,
+        "text": "test(\"artboard の props のエラーは、その artboard の子のエラーより前に並ぶ\", () => {\n  const document = DesignDocument.create({\n    artboards: [\n      {\n        name: \"screen\",\n        width: 375,\n        height: 812,\n        props: { notAProp: true },\n        children: [{ name: \"plain\", type: \"Box\", props: { \"plain-extra\": 1 } }],\n      },\n    ],\n  });\n\n  const errors = DesignDocument.collectErrors(document);\n\n  expect(errors).toEqual([\n    expect.objectContaining({\n      kind: \"unknown-prop\",\n      nodeName: \"screen\",\n      prop: \"notAProp\",\n    }),\n    expect.objectContaining({\n      kind: \"unknown-prop\",\n      nodeName: \"plain\",\n      prop: \"plain-extra\",\n    }),\n  ]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "test-order"
+      ]
+    },
+    {
+      "id": "order-names",
+      "suite": "order",
+      "name": "名前のエラーはノード名の規則違反・名前の重複・トークン名の規則違反・colors と gradients の名前の衝突の順に並ぶ",
+      "techniques": [
+        "regression"
+      ],
+      "why": "名前の走査の中で 4 種の順を入れ替える壊し方を落とす",
+      "given": "規則違反のノード名・重複した名前・規則違反のトークン名・colors と gradients の両方にある名前",
+      "when": "`collectErrors` で集める",
+      "then": "ノード名の invalid-identifier、duplicate-name、トークン名の invalid-identifier、conflicting-token-name の順",
+      "commit": "df3b9ee9005d79c59bac8f66bdb2a8486fb86018",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-order.test.ts",
+        "start": 187,
+        "end": 223,
+        "text": "test(\"名前のエラーはノード名の規則違反・名前の重複・トークン名の規則違反・colors と gradients の名前の衝突の順に並ぶ\", () => {\n  const document = DesignDocument.create({\n    tokens: {\n      ...TokenSet.empty(),\n      colors: { brand: \"#3b82f6\" },\n      gradients: { brand: Fade },\n      spacing: { Big: 8 },\n    },\n    artboards: [\n      {\n        name: \"screen\",\n        width: 375,\n        height: 812,\n        children: [\n          { name: \"LoginForm\", type: \"Box\" },\n          { name: \"label\", type: \"Box\" },\n          { name: \"label\", type: \"Box\" },\n        ],\n      },\n    ],\n  });\n\n  const errors = DesignDocument.collectErrors(document);\n\n  expect(errors).toEqual([\n    expect.objectContaining({\n      kind: \"invalid-identifier\",\n      nodeName: \"LoginForm\",\n    }),\n    expect.objectContaining({ kind: \"duplicate-name\", nodeName: \"label\" }),\n    expect.objectContaining({ kind: \"invalid-identifier\", tokenName: \"Big\" }),\n    expect.objectContaining({\n      kind: \"conflicting-token-name\",\n      tokenName: \"brand\",\n    }),\n  ]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "test-order",
+        "judge-names",
+        "judge-tokens"
+      ]
+    }
+  ]
+}
