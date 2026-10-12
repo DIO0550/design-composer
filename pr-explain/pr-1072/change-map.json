@@ -1,0 +1,3355 @@
+{
+  "version": 2,
+  "pr": 1072,
+  "headBranch": "claude/magical-cannon-yul8tk",
+  "baseBranch": "main",
+  "mergeBase": "30e2c62a29ef9c559f45aa3d11dd90f2d77a3c94",
+  "head": "df3b9ee9005d79c59bac8f66bdb2a8486fb86018",
+  "groups": [
+    {
+      "label": "domains / unit",
+      "files": [
+        {
+          "path": "src/domains/unit/angle/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/unit/axis/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/unit/offset/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / dcmp",
+      "files": [
+        {
+          "path": "src/domains/dcmp/artboard/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/axis-length/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/child-placement/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/child-position/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/component-binding/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/component/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/constraint/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/edit-error/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 269,
+          "deletions": 22,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/domains/dcmp/design-document/template/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/token-referrer/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 3,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/domains/dcmp/design-document/v1/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/validation-error/index.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 423,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/domains/dcmp/design-document/validation/index.ts",
+          "status": "D",
+          "oldPath": null,
+          "additions": 0,
+          "deletions": 675,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/domains/dcmp/document-names/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/expanded-node/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/format-version/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/layout/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/locking/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node-tree/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/placement/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/reference-context/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/resize-edit/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/resolved-props/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/rotation/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/size/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/token/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/visibility/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/artboard-edit-setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.ambiguous-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.ancestors.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.append-position.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.artboard-edit-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.artboard-edit.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.artboard-reposition.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.artboard.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.child-position.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.children.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.componentize-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.componentize.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.constraint.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.copy-after.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.detach-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.detach.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.detachable.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.format-version.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.found-node-names.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group-placement.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.lock.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.migration.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.name-uniqueness.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.node-copy.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.placement.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.prop-edit.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.remove-all-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.remove-all.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.rename-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.rename.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.replace-node.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.reposition.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.resize.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.rotation.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.template.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.token-referrer-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.token-referrer-paint.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.token-referrer-validation-range.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.token-referrer.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.tree-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.tree.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.type.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.usable-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-artboard.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-binding.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-color.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-default.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-domain.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-duplicate-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 447,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/domains/dcmp/design-document/index.ts"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-fill.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-identifier.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-missing-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-order.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 103,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/domains/dcmp/design-document/index.ts"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-override.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-paint.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-placement.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-prototype-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-public-prop-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-ref-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-ref.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-reference-message.test.ts",
+          "status": "D",
+          "oldPath": null,
+          "additions": 0,
+          "deletions": 85,
+          "changed": true,
+          "target": "src/domains/dcmp/design-document/index.ts"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-unknown.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.visibility.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/group-setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/text-node-setup.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / session",
+      "files": [
+        {
+          "path": "src/domains/session/document-error/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-reload/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-selection/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/node-template/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/opened-document/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/prop-control/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/token-selection/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-error/__tests__/document-error.validation-location.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-reload/__tests__/document-reload.invalid.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-selection/__tests__/document-selection.canvas-dig.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-selection/__tests__/document-selection.current-artboard.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-selection/__tests__/document-selection.lock.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-selection/__tests__/document-selection.single-selection.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-selection/__tests__/document-selection.source-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/file-validity/__tests__/file-validity.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/node-template/__tests__/node-template.name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/node-template/__tests__/node-template.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/opened-document/__tests__/opened-document.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/prop-control/__tests__/prop-control.edit-from.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/prop-control/__tests__/prop-control.instance.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/prop-control/__tests__/prop-control.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/prop-control/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/token-selection/__tests__/token-selection.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/token-selection/__tests__/token-selection.referrer.test.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / __tests__",
+      "files": [
+        {
+          "path": "src/domains/__tests__/gradient-tokens.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/__tests__/sample-document.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/__tests__/token-refs.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "services",
+      "files": [
+        {
+          "path": "src/services/document-html/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/services/document-html/__tests__/document-html.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/services/document-html/__tests__/document-html.normal.test.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "libs",
+      "files": [
+        {
+          "path": "src/libs/document-json/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-json/__tests__/document-json.format-version.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-json/__tests__/document-json.parse-error.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-json/__tests__/document-json.parse.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-json/__tests__/document-json.roundtrip.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-json/__tests__/document-json.serialize.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-json/__tests__/document-json.template.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-json/__tests__/document-json.type.test.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "utils",
+      "files": [
+        {
+          "path": "src/utils/ArrayEx.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Json.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Option.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Result.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor",
+      "files": [
+        {
+          "path": "src/features/editor/__stories__/sample-editor-state.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-left-pane/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-provider/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/edit-history/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/edit-menu/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/__tests__/artboard-fixtures.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/__tests__/primary-color-token.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/__tests__/sample-document.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-provider/__tests__/editor-provider.edge.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.artboard-reposition.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.asset-drag.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-dig.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.lock.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.reposition.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/edit-history/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/edit-menu/__tests__/edit-menu.target.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/edit-menu/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.artboard-reposition.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.artboard.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.clipboard.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.componentize-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.componentize.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.context-menu-selection.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.detach.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.document-errors.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.frozen.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.group.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.history.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.insert-at.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.insert-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.insert.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.instance-selection.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.lock.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.move.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-remove.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-selection.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.prop-edit-continuity.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.prop-edit.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.reload.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.remove-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.remove.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.reorder.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.reposition.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.resize-continuity.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.resize.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.selection.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.token-continuity.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.token.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.actions.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.artboard.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.componentize.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.detach.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.group.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.rename.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-top-bar/index.stories.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/assets",
+      "files": [
+        {
+          "path": "src/features/editor/features/assets/__stories__/sample-assets-document.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/assets/components/create-component/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/assets/domains/componentization/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/assets/components/create-component/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/assets/domains/componentization/__tests__/componentization.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/assets/domains/componentization/__tests__/componentization.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/assets/components/assets-panel/index.stories.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/assets/components/component-list/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/canvas",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/__stories__/sample-canvas-document.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/reposition-preview-style/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drop/dragged-node/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drop/drop-parent/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/text-edit/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-range-select/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.frozen.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.multi-selection.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.text-edit.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.token-dash.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drop/dragged-node/__tests__/dragged-node.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drop/drop-parent/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.handles.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.rotation.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap-targets.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/text-edit/__tests__/text-edit.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/text-edit/__tests__/text-edit.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-artboard-drag/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-resize/__tests__/use-node-resize.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-range-select/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-text-edit/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.stories.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/document-start",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/document-sync",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-file-revert/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/use-document-reload.normal.test.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/inspector",
+      "files": [
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__stories__/panel-controls.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.frozen.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.heading.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.instance.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.multi-selection.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.shorthand.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/sidebar",
+      "files": [
+        {
+          "path": "src/features/editor/features/sidebar/__stories__/sample-sidebar-document.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/artboard-list/__tests__/artboard-list.editing.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/artboard-list/__tests__/artboard-list.filter.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/artboard-list/__tests__/artboard-list.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/artboard-list/__tests__/artboard-list.type-display.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/artboard-list/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.disclosure.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.filter.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.reorder.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.type-display.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/document-tree/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/layers-panel/__tests__/layers-panel.filter.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/document-tree/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/tokens",
+      "files": [
+        {
+          "path": "src/features/editor/features/tokens/__stories__/sample-token-document.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-used-by/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/__tests__/gradient-documents.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-dashed-nodes/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-dashed-nodes/__tests__/token-dashed-nodes.edge.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-dashed-nodes/__tests__/token-dashed-nodes.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-dashed-nodes/__tests__/token-dashed-nodes.reveal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.title.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-list/__tests__/token-list.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-used-by/__tests__/render.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-used-by/__tests__/token-used-by.edge.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-used-by/__tests__/token-used-by.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.normal.test.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "docs",
+      "files": [
+        {
+          "path": "docs/05-architecture.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+        "name": "artboard の名前が欠落したときのエラーは、artboards の添字のパスで指し、ノード名も prop も持たない"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+        "name": "binding の指すインスタンスの参照先が prop を公開していないときのエラーは、部品名と公開 prop 名の位置で、参照先の部品名を挙げる"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+        "name": "binding の指すノードが無いときのエラーは、部品名と公開 prop 名の位置で、そのノード名を挙げる"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+        "name": "binding の指すプリミティブに prop が無いときのエラーは、部品名と公開 prop 名の位置で、ノード名と prop 名を挙げる"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+        "name": "colors と gradients の両方にあるトークン名のエラーは、そのトークン名の位置で prop を持たない"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+        "name": "hex でない色トークンのエラーは、そのトークン名の位置で prop を持たない"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+        "name": "インスタンスの上書きの値が宣言に適合しないときのエラーは、インスタンス名と上書きした prop 名の位置になる"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+        "name": "グラデーションの stop の色が hex でないときのエラーは、そのトークン名と stop の添字の color の位置になる"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+        "name": "ノードの props がスキーマに無い prop を持つときのエラーは、そのノード名と prop 名の位置になる"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+        "name": "公開されていない prop を上書きしたときのエラーは、インスタンス名と上書きした prop 名の位置で、参照先の部品名と prop 名を挙げる"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+        "name": "参照先の部品が無いときのエラーは、インスタンス名の位置で prop を持たず、その部品名を挙げる"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+        "name": "子を並べない親の下で fill を持つノードのエラーは、そのノード名と widthMode の位置になる"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+        "name": "子ノードの名前が欠落したときのエラーは、名前を持つ最も近い祖先の位置で、子の添字を挙げる"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+        "name": "宣言名の規則を満たさない公開 prop のエラーは、部品名と宣言名の位置で、その宣言名を挙げる"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+        "name": "影トークンの色が hex でないときのエラーは、そのトークン名と color の位置になる"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+        "name": "循環参照に含まれる部品のエラーは、部品ごとにその部品名の位置で prop を持たない"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+        "name": "最大幅が最小幅を下回るノードのエラーは、そのノード名と maxWidth の位置で、最小が勝つことを挙げる"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+        "name": "未知の型のノードが子を並べない親の下で fill を持つと、未知の型のエラーのあとに fill のエラーが続く"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+        "name": "未知の型のノードのエラーは、そのノード名の位置で prop を持たず、型名を挙げる"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+        "name": "規則を満たさないトークン名のエラーは、そのトークン名の位置で prop を持たず、種別を挙げる"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+        "name": "識別子の規則を満たさないノード名のエラーは、その名前の位置で prop を持たない"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+        "name": "部品のキーが空のときのエラーは、components のパスで指し、ノード名も prop も持たない"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+        "name": "重複した名前のエラーは、その名前の位置で prop を持たない"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-order.test.ts",
+        "name": "artboard の props のエラーは、その artboard の子のエラーより前に並ぶ"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-order.test.ts",
+        "name": "エラーは artboard のエラー・部品の循環参照・名前のエラー・色トークンのエラーの順に並ぶ"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-order.test.ts",
+        "name": "名前のエラーはノード名の規則違反・名前の重複・トークン名の規則違反・colors と gradients の名前の衝突の順に並ぶ"
+      }
+    ],
+    "removed": [
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-reference-message.test.ts",
+        "name": "binding の指すインスタンスの参照先が prop を公開していないときの文言は、参照先の部品名を挙げる"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-reference-message.test.ts",
+        "name": "binding の指すノードが無いときの文言は、そのノード名を挙げる"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-reference-message.test.ts",
+        "name": "binding の指すプリミティブに prop が無いときの文言は、ノード名と prop 名を挙げる"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-reference-message.test.ts",
+        "name": "公開されていない prop を上書きしたときの文言は、参照先の部品名と prop 名を挙げる"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-reference-message.test.ts",
+        "name": "参照先の部品が無いときの文言は、その部品名を挙げる"
+      }
+    ],
+    "files": [
+      "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+      "src/domains/dcmp/design-document/__tests__/design-document.validate-order.test.ts",
+      "src/domains/dcmp/design-document/__tests__/design-document.validate-reference-message.test.ts"
+    ]
+  },
+  "commits": [
+    {
+      "sha": "25245d8a7a839c3901dc10b6c9eaa8416a5d57fc",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-12T00:48:27Z",
+      "subject": "🚚 [Move]: #1070 文言のテストを validate-message へリネームする",
+      "body": "- design-document.validate-reference-message.test.ts を\n  design-document.validate-message.test.ts へ git mv する（中身は変えない）\n\n背景:\nvalidation/ を解体して走査を本体へ、詰め替えを validation-error へ移す\nにあたり、collectErrors の出力（位置・文言・prop の有無）が変わらない\nことを移動の前に固定する。文言を完全一致で確かめているのは参照の\nエラーを扱うこのファイルだけで、追加するケースもここへ集める。\n\n採用理由:\n新しいファイルを立てると、同じドキュメントを組むヘルパーが 2 本になり、\n文言のテストも 2 ファイルへ割れる。既存ファイルを観点名（message）に\n改めて 1 か所へまとめる。\n\n代替案:\n- 新規ファイル + ヘルパーを __tests__ の setup へ出す: 呼び出すのが\n  1 ファイルだけになるので、共有の置き場を作る理由が無い\n\n影響とトレードオフ:\n中身の変更を伴わないので、git がリネームとして追える。旧ファイル名を\n参照している箇所は無い。\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/1070#issuecomment-6115774595\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_0164KevAoe6oKu7nFAhuTGzh",
+      "files": [
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-message.test.ts",
+          "status": "R",
+          "oldPath": "src/domains/dcmp/design-document/__tests__/design-document.validate-reference-message.test.ts",
+          "additions": 0,
+          "deletions": 0,
+          "patch": "",
+          "patchLines": 0,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "dab0abff36d424165b4bf6b029fa13a26aa49135",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-12T00:51:03Z",
+      "subject": "🧪 [Tests]: #1070 collectErrors のエラーを位置・文言・prop の有無まで固定する",
+      "body": "- validate-message のヘルパー messagesOf を errorsOf（collectErrors の\n  戻り値をそのまま返す）に置き換え、既存 5 件を toStrictEqual に改める\n- unknown-type / fill / 逆転 / スキーマ違反 / 上書き / 公開 prop 名 /\n  循環 / 重複 / 識別子 / 名前の欠落 / トークン名 / 塗りの衝突 / 色の\n  18 件を足す\n\n背景:\nvalidation/ を解体し、走査を DesignDocument 本体へ、詰め替えを\nDesignDocumentValidationError のコンパニオンへ移す（#1070）。ゴールは\ncollectErrors の出力を変えないことだが、既存の validate-* は\nobjectContaining が中心で、文言を完全一致で見ていない kind が 10 種\nあり、prop キーが無いことを見ているのも validate-color の 1 か所だけ\nだった。移動の前に、現行コードで緑の状態を作っておく。\n\n採用理由:\n戻り値の配列全体を toStrictEqual で比べる。toEqual / objectContaining\nは prop: undefined と prop キーの欠落を区別しないので、詰め替えを\nfrom* に書き換えたときに prop: undefined が混ざっても通ってしまう。\nwithLocation の条件付きスプレッドを常時付与に壊すと 3 件が落ちる\nことを実測した。\n未知の型のノードでも fill-in-free-parent は続けて出る（型の判定と\n関係なく fill を見る）ので、同じノードで両方が出る並びも固定する。\n\n代替案:\n- validation-error/__tests__ で from* を直接呼ぶ: 移動の前には存在\n  しない API なので、出力を変えていない証拠にならない。文言を 2 か所\n  で固定することにもなる\n- 文言だけを取り出すヘルパーを残す: toStrictEqual で比べるケースには\n  要らず、同じドキュメントを組むヘルパーが 2 本になる\n\n影響とトレードオフ:\n文言を変える変更はこのファイルのテストも直す必要がある。どの from* も\n少なくとも 1 ケースで通る。\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/1070#issuecomment-6115774595\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_0164KevAoe6oKu7nFAhuTGzh",
+      "files": [
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-message.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 385,
+          "deletions": 23,
+          "patch": "@@ -1,30 +1,36 @@\n import { expect, test } from \"vitest\";\n+import { Fade } from \"@/domains/__tests__/gradient-tokens\";\n import type { ComponentSet } from \"@/domains/dcmp/component\";\n import type { Node } from \"@/domains/dcmp/node\";\n-import { DesignDocument, DocumentTemplate } from \"../index\";\n+import { TokenSet } from \"@/domains/dcmp/token\";\n+import {\n+  DesignDocument,\n+  type DesignDocumentValidationError,\n+  DocumentTemplate,\n+} from \"../index\";\n \n /**\n- * 部品一式と、artboard 直下に置くノードからドキュメントを作り、エラーの文言だけを取り出す。\n+ * 部品一式と、artboard 直下に置くノードからドキュメントを作り、そのエラーを返す。\n  * トークンは既定のテーマを入れる（Text の既定がトークンを指すため）。\n  *\n  * @param components 部品一式\n- * @param children artboard 直下に置くノード\n- * @returns エラーの文言の並び\n+ * @param children `screen` という artboard の直下に置くノード\n+ * @returns そのドキュメントの `collectErrors` の戻り値\n  */\n-function messagesOf(\n+function errorsOf(\n   components: ComponentSet,\n   children: readonly Node[],\n-): readonly string[] {\n+): readonly DesignDocumentValidationError[] {\n   const document = DesignDocument.create({\n     tokens: DocumentTemplate.Default.tokens,\n     components,\n     artboards: [{ name: \"screen\", width: 375, height: 812, children }],\n   });\n-  return DesignDocument.collectErrors(document).map((error) => error.message);\n+  return DesignDocument.collectErrors(document);\n }\n \n-test(\"binding の指すノードが無いときの文言は、そのノード名を挙げる\", () => {\n-  const messages = messagesOf(\n+test(\"binding の指すノードが無いときのエラーは、部品名と公開 prop 名の位置で、そのノード名を挙げる\", () => {\n+  const errors = errorsOf(\n     {\n       button: {\n         type: \"Box\",\n@@ -34,11 +40,18 @@ test(\"binding の指すノードが無いときの文言は、そのノード名\n     [],\n   );\n \n-  expect(messages).toEqual(['unknown node \"ghost\"']);\n+  expect(errors).toStrictEqual([\n+    {\n+      kind: \"dangling-binding-node\",\n+      nodeName: \"button\",\n+      prop: \"label\",\n+      message: 'unknown node \"ghost\"',\n+    },\n+  ]);\n });\n \n-test(\"binding の指すプリミティブに prop が無いときの文言は、ノード名と prop 名を挙げる\", () => {\n-  const messages = messagesOf(\n+test(\"binding の指すプリミティブに prop が無いときのエラーは、部品名と公開 prop 名の位置で、ノード名と prop 名を挙げる\", () => {\n+  const errors = errorsOf(\n     {\n       button: {\n         type: \"Box\",\n@@ -49,11 +62,18 @@ test(\"binding の指すプリミティブに prop が無いときの文言は、\n     [],\n   );\n \n-  expect(messages).toEqual(['node \"button-label\" has no prop \"gap\"']);\n+  expect(errors).toStrictEqual([\n+    {\n+      kind: \"dangling-binding-prop\",\n+      nodeName: \"button\",\n+      prop: \"spacing\",\n+      message: 'node \"button-label\" has no prop \"gap\"',\n+    },\n+  ]);\n });\n \n-test(\"binding の指すインスタンスの参照先が prop を公開していないときの文言は、参照先の部品名を挙げる\", () => {\n-  const messages = messagesOf(\n+test(\"binding の指すインスタンスの参照先が prop を公開していないときのエラーは、部品名と公開 prop 名の位置で、参照先の部品名を挙げる\", () => {\n+  const errors = errorsOf(\n     {\n       button: {\n         type: \"Box\",\n@@ -65,21 +85,363 @@ test(\"binding の指すインスタンスの参照先が prop を公開してい\n     [],\n   );\n \n-  expect(messages).toEqual(['\"size\" is not a public prop of component \"icon\"']);\n+  expect(errors).toStrictEqual([\n+    {\n+      kind: \"dangling-binding-prop\",\n+      nodeName: \"button\",\n+      prop: \"size\",\n+      message: '\"size\" is not a public prop of component \"icon\"',\n+    },\n+  ]);\n });\n \n-test(\"参照先の部品が無いときの文言は、その部品名を挙げる\", () => {\n-  const messages = messagesOf({}, [{ name: \"submit\", ref: \"missing\" }]);\n+test(\"参照先の部品が無いときのエラーは、インスタンス名の位置で prop を持たず、その部品名を挙げる\", () => {\n+  const errors = errorsOf({}, [{ name: \"submit\", ref: \"missing\" }]);\n \n-  expect(messages).toEqual(['unknown component \"missing\"']);\n+  expect(errors).toStrictEqual([\n+    {\n+      kind: \"dangling-ref\",\n+      nodeName: \"submit\",\n+      message: 'unknown component \"missing\"',\n+    },\n+  ]);\n });\n \n-test(\"公開されていない prop を上書きしたときの文言は、参照先の部品名と prop 名を挙げる\", () => {\n-  const messages = messagesOf({ button: { type: \"Box\" } }, [\n+test(\"公開されていない prop を上書きしたときのエラーは、インスタンス名と上書きした prop 名の位置で、参照先の部品名と prop 名を挙げる\", () => {\n+  const errors = errorsOf({ button: { type: \"Box\" } }, [\n     { name: \"submit\", ref: \"button\", overrides: { caption: \"保存\" } },\n   ]);\n \n-  expect(messages).toEqual([\n-    'component \"button\" does not declare public prop \"caption\"',\n+  expect(errors).toStrictEqual([\n+    {\n+      kind: \"undeclared-override\",\n+      nodeName: \"submit\",\n+      prop: \"caption\",\n+      message: 'component \"button\" does not declare public prop \"caption\"',\n+    },\n+  ]);\n+});\n+\n+test(\"未知の型のノードのエラーは、そのノード名の位置で prop を持たず、型名を挙げる\", () => {\n+  const errors = errorsOf({}, [{ name: \"widget\", type: \"Button\" }]);\n+\n+  expect(errors).toStrictEqual([\n+    {\n+      kind: \"unknown-type\",\n+      nodeName: \"widget\",\n+      message: 'unknown type \"Button\"',\n+    },\n+  ]);\n+});\n+\n+test(\"未知の型のノードが子を並べない親の下で fill を持つと、未知の型のエラーのあとに fill のエラーが続く\", () => {\n+  const errors = errorsOf({}, [\n+    {\n+      name: \"panel\",\n+      type: \"Box\",\n+      props: { layout: \"free\" },\n+      children: [\n+        { name: \"widget\", type: \"Button\", props: { widthMode: \"fill\" } },\n+      ],\n+    },\n+  ]);\n+\n+  expect(errors).toStrictEqual([\n+    {\n+      kind: \"unknown-type\",\n+      nodeName: \"widget\",\n+      message: 'unknown type \"Button\"',\n+    },\n+    {\n+      kind: \"fill-in-free-parent\",\n+      nodeName: \"widget\",\n+      prop: \"widthMode\",\n+      message:\n+        'prop \"widthMode\" cannot be \"fill\" inside a parent that does not arrange its children',\n+    },\n+  ]);\n+});\n+\n+test(\"子を並べない親の下で fill を持つノードのエラーは、そのノード名と widthMode の位置になる\", () => {\n+  const errors = errorsOf({}, [\n+    {\n+      name: \"panel\",\n+      type: \"Box\",\n+      props: { layout: \"free\" },\n+      children: [{ name: \"target\", type: \"Box\", props: { widthMode: \"fill\" } }],\n+    },\n+  ]);\n+\n+  expect(errors).toStrictEqual([\n+    {\n+      kind: \"fill-in-free-parent\",\n+      nodeName: \"target\",\n+      prop: \"widthMode\",\n+      message:\n+        'prop \"widthMode\" cannot be \"fill\" inside a parent that does not arrange its children',\n+    },\n+  ]);\n+});\n+\n+test(\"最大幅が最小幅を下回るノードのエラーは、そのノード名と maxWidth の位置で、最小が勝つことを挙げる\", () => {\n+  const errors = errorsOf({}, [\n+    {\n+      name: \"target\",\n+      type: \"Box\",\n+      props: { widthMode: \"hug\", minWidth: 500, maxWidth: 100 },\n+    },\n+  ]);\n+\n+  expect(errors).toStrictEqual([\n+    {\n+      kind: \"inverted-size-limits\",\n+      nodeName: \"target\",\n+      prop: \"maxWidth\",\n+      message: 'prop \"maxWidth\" is less than \"minWidth\"; the minimum wins',\n+    },\n+  ]);\n+});\n+\n+test(\"ノードの props がスキーマに無い prop を持つときのエラーは、そのノード名と prop 名の位置になる\", () => {\n+  const errors = errorsOf({}, [\n+    { name: \"target\", type: \"Box\", props: { unknownProp: \"x\" } },\n+  ]);\n+\n+  expect(errors).toStrictEqual([\n+    {\n+      kind: \"unknown-prop\",\n+      nodeName: \"target\",\n+      prop: \"unknownProp\",\n+      message: 'unknown prop \"unknownProp\"',\n+    },\n+  ]);\n+});\n+\n+test(\"インスタンスの上書きの値が宣言に適合しないときのエラーは、インスタンス名と上書きした prop 名の位置になる\", () => {\n+  const errors = errorsOf(\n+    {\n+      button: {\n+        type: \"Box\",\n+        children: [{ name: \"button-label\", type: \"Text\" }],\n+        publicProps: { label: { node: \"button-label\", prop: \"content\" } },\n+      },\n+    },\n+    [{ name: \"submit\", ref: \"button\", overrides: { label: 1 } }],\n+  );\n+\n+  expect(errors).toStrictEqual([\n+    {\n+      kind: \"literal-type-mismatch\",\n+      nodeName: \"submit\",\n+      prop: \"label\",\n+      message: 'prop \"label\" must be of type string',\n+    },\n+  ]);\n+});\n+\n+test(\"宣言名の規則を満たさない公開 prop のエラーは、部品名と宣言名の位置で、その宣言名を挙げる\", () => {\n+  const errors = errorsOf(\n+    {\n+      button: {\n+        type: \"Box\",\n+        children: [{ name: \"button-label\", type: \"Text\" }],\n+        publicProps: { \"1\": { node: \"button-label\", prop: \"content\" } },\n+      },\n+    },\n+    [],\n+  );\n+\n+  expect(errors).toStrictEqual([\n+    {\n+      kind: \"invalid-public-prop-name\",\n+      nodeName: \"button\",\n+      prop: \"1\",\n+      message: 'public prop name \"1\" is not a valid public prop name',\n+    },\n+  ]);\n+});\n+\n+test(\"循環参照に含まれる部品のエラーは、部品ごとにその部品名の位置で prop を持たない\", () => {\n+  const errors = errorsOf(\n+    {\n+      a: { type: \"Box\", children: [{ name: \"a-inner\", ref: \"b\" }] },\n+      b: { type: \"Box\", children: [{ name: \"b-inner\", ref: \"a\" }] },\n+    },\n+    [],\n+  );\n+\n+  expect(errors).toStrictEqual([\n+    {\n+      kind: \"circular-ref\",\n+      nodeName: \"a\",\n+      message: 'component \"a\" is part of a circular reference',\n+    },\n+    {\n+      kind: \"circular-ref\",\n+      nodeName: \"b\",\n+      message: 'component \"b\" is part of a circular reference',\n+    },\n+  ]);\n+});\n+\n+test(\"重複した名前のエラーは、その名前の位置で prop を持たない\", () => {\n+  const errors = errorsOf({}, [\n+    { name: \"label\", type: \"Text\" },\n+    { name: \"label\", type: \"Text\" },\n+  ]);\n+\n+  expect(errors).toStrictEqual([\n+    {\n+      kind: \"duplicate-name\",\n+      nodeName: \"label\",\n+      message: 'name \"label\" is not unique in the document',\n+    },\n+  ]);\n+});\n+\n+test(\"識別子の規則を満たさないノード名のエラーは、その名前の位置で prop を持たない\", () => {\n+  const errors = errorsOf({}, [{ name: \"LoginForm\", type: \"Box\" }]);\n+\n+  expect(errors).toStrictEqual([\n+    {\n+      kind: \"invalid-identifier\",\n+      nodeName: \"LoginForm\",\n+      message: 'name \"LoginForm\" is not a valid identifier',\n+    },\n+  ]);\n+});\n+\n+test(\"子ノードの名前が欠落したときのエラーは、名前を持つ最も近い祖先の位置で、子の添字を挙げる\", () => {\n+  const errors = errorsOf({}, [\n+    { name: \"label\", type: \"Text\" },\n+    { name: \"\", type: \"Text\" },\n+  ]);\n+\n+  expect(errors).toStrictEqual([\n+    {\n+      kind: \"missing-name\",\n+      nodeName: \"screen\",\n+      message: 'child 1 of \"screen\" has no name',\n+    },\n+  ]);\n+});\n+\n+test(\"部品のキーが空のときのエラーは、components のパスで指し、ノード名も prop も持たない\", () => {\n+  const errors = errorsOf({ \"\": { type: \"Box\" } }, []);\n+\n+  expect(errors).toStrictEqual([\n+    {\n+      kind: \"missing-name\",\n+      documentPath: \"components\",\n+      message: 'key \"\" of \"components\" has no name',\n+    },\n+  ]);\n+});\n+\n+test(\"artboard の名前が欠落したときのエラーは、artboards の添字のパスで指し、ノード名も prop も持たない\", () => {\n+  const document = DesignDocument.create({\n+    artboards: [{ name: \"\", width: 375, height: 812, children: [] }],\n+  });\n+\n+  expect(DesignDocument.collectErrors(document)).toStrictEqual([\n+    {\n+      kind: \"missing-name\",\n+      documentPath: \"artboards[0]\",\n+      message: 'artboard 0 of \"artboards\" has no name',\n+    },\n+  ]);\n+});\n+\n+test(\"規則を満たさないトークン名のエラーは、そのトークン名の位置で prop を持たず、種別を挙げる\", () => {\n+  const document = DesignDocument.create({\n+    tokens: { ...TokenSet.empty(), colors: { Brand: \"#3b82f6\" } },\n+  });\n+\n+  expect(DesignDocument.collectErrors(document)).toStrictEqual([\n+    {\n+      kind: \"invalid-identifier\",\n+      tokenName: \"Brand\",\n+      message: 'token name \"Brand\" in colors is not a valid identifier',\n+    },\n+  ]);\n+});\n+\n+test(\"colors と gradients の両方にあるトークン名のエラーは、そのトークン名の位置で prop を持たない\", () => {\n+  const document = DesignDocument.create({\n+    tokens: {\n+      ...TokenSet.empty(),\n+      colors: { brand: \"#3b82f6\" },\n+      gradients: { brand: Fade },\n+    },\n+  });\n+\n+  expect(DesignDocument.collectErrors(document)).toStrictEqual([\n+    {\n+      kind: \"conflicting-token-name\",\n+      tokenName: \"brand\",\n+      message: 'token name \"brand\" is used in both colors and gradients',\n+    },\n+  ]);\n+});\n+\n+test(\"hex でない色トークンのエラーは、そのトークン名の位置で prop を持たない\", () => {\n+  const document = DesignDocument.create({\n+    tokens: { ...TokenSet.empty(), colors: { brand: \"red\" } },\n+  });\n+\n+  expect(DesignDocument.collectErrors(document)).toStrictEqual([\n+    {\n+      kind: \"invalid-color\",\n+      tokenName: \"brand\",\n+      message:\n+        'color token \"brand\" is not a hex color in normal form (#rrggbb / #rrggbbaa)',\n+    },\n+  ]);\n+});\n+\n+test(\"影トークンの色が hex でないときのエラーは、そのトークン名と color の位置になる\", () => {\n+  const document = DesignDocument.create({\n+    tokens: {\n+      ...TokenSet.empty(),\n+      shadows: { sm: { x: 0, y: 1, blur: 3, color: \"red\" } },\n+    },\n+  });\n+\n+  expect(DesignDocument.collectErrors(document)).toStrictEqual([\n+    {\n+      kind: \"invalid-color\",\n+      tokenName: \"sm\",\n+      prop: \"color\",\n+      message:\n+        'the color of shadow token \"sm\" is not a hex color in normal form (#rrggbb / #rrggbbaa)',\n+    },\n+  ]);\n+});\n+\n+test(\"グラデーションの stop の色が hex でないときのエラーは、そのトークン名と stop の添字の color の位置になる\", () => {\n+  const document = DesignDocument.create({\n+    tokens: {\n+      ...TokenSet.empty(),\n+      gradients: {\n+        hero: {\n+          shape: \"linear\",\n+          angle: 90,\n+          stops: [\n+            { color: \"red\", ratio: 0 },\n+            { color: \"#1d4ed8\", ratio: 1 },\n+          ],\n+        },\n+      },\n+    },\n+  });\n+\n+  expect(DesignDocument.collectErrors(document)).toStrictEqual([\n+    {\n+      kind: \"invalid-color\",\n+      tokenName: \"hero\",\n+      prop: \"stops[0].color\",\n+      message:\n+        'the stop 0 color of gradient token \"hero\" is not a hex color in normal form (#rrggbb / #rrggbbaa)',\n+    },\n   ]);\n });",
+          "patchLines": 462,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "aa0794a2921809f3c4df864b85636a7d88e2ac1e",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-12T00:59:33Z",
+      "subject": "♻️ [Refactoring]: #1070 validation/ を解体し、走査を本体・詰め替えを validation-error へ移す",
+      "body": "- validation/index.ts を削除する\n- 違反 1 件を DesignDocumentValidationError にする詰め替えを\n  validation-error/ に型 + 同名コンパニオン（from* 13 個）として置く\n- どの部品・artboard・子ノード・名前を見るかの走査を\n  DesignDocument 本体の非公開関数（collectTypedPropErrors /\n  collectNodeErrors / collectNodeRefErrors / collectBindingErrors /\n  collectComponentErrors / collectArtboardErrors / collectNameErrors）へ移す\n- 中間型 UnlocatedError と withLocation を廃止し、各 from* が位置を\n  引数で受け取る\n- 重複名の判定は本体の documentNamesOf を使う\n\n背景:\n#808 で判定は各型へ戻し、validation/ はエラーへの詰め替えだけに\n縮めた（#840〜#842）。その後オーナーから「validate はドメイン自体が\n持つべき処理で、それ単体をドメインにしたくない」と指摘を受けた。\n残っていたのは走査と詰め替えの 2 つで、どちらも「検証する」という\n動作の側で束ねられていた。\n\n採用理由:\n走査には components・artboards・tokens・名前空間のすべてが要り、\nそれを持つのは整合性境界であるドキュメントだけ。ReferenceContext は\nartboards を持たない。ReferenceContext / ComponentSet を第 1 引数に\n取る走査も、戻り値の DesignDocumentValidationError が design-document\n配下にあり、design-document がそれらを import しているので、そちらへ\n置くと循環になる。\n詰め替えは位置の語彙（トークン名やルートのフィールド名をノード名の\n位置に入れない、documentPath を DesignDocumentV1 のフィールド名に結ぶ）\nを守る処理で、エラーという値の性質なのでエラー型のコンパニオンに置く。\n既存の edit-error/（DesignDocumentEditError）と同じ形。\n\n代替案:\n- validate.ts を index.ts の隣に置く: 実装ファイルを 1 つだけ切り出す\n  形になり、rules/architecture.md「モジュールの公開API」に反する\n- 詰め替えも含めて全部本体へ畳む: 本体にエラー文言の組み立てが混ざる\n- 各型（TokenSet / DocumentNames / ReferenceContext 等）がエラーまで持つ:\n  エラーの語彙が各型へ散り、Component / Node へは循環で置けない\n- UnlocatedError / withLocation を export して位置付与を本体で行う:\n  エラーでない中間型が公開され、詰め替えの一部が本体に残る\n- from* を配列で受ける: 違反 1 件 → エラー 1 件に揃えたほうが from* の\n  意味が 1 つに決まる。反復は本体の map で足りる\n- DesignDocumentValidationError を値でも re-export する: from* を\n  外で使う箇所が無い。外部の import 2 件はどちらも型だけ\n\n影響とトレードオフ:\ncollectErrors の出力は変わらない（前のコミットの validate-message が\n配列全体を toStrictEqual で固定し、全テストが通る）。本体は約 240 行\n増えて 2341 行になる（max-lines は .tsx のみ）。親 index.ts からの\n公開は従来どおり型だけ。\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/1070\nhttps://github.com/DIO0550/design-composer/issues/1070#issuecomment-6115774595\nRefs #808 #840 #841 #842\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_0164KevAoe6oKu7nFAhuTGzh",
+      "files": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 264,
+          "deletions": 20,
+          "patch": "@@ -6,7 +6,9 @@ import {\n   Component,\n   type ComponentAsset,\n   ComponentSet,\n+  type NamedComponent,\n } from \"@/domains/dcmp/component\";\n+import { ComponentBinding } from \"@/domains/dcmp/component-binding\";\n import { Constraint } from \"@/domains/dcmp/constraint\";\n import { DocumentNames } from \"@/domains/dcmp/document-names\";\n import { ExpandedNode } from \"@/domains/dcmp/expanded-node\";\n@@ -15,6 +17,7 @@ import {\n   type FormatVersionCompatibility,\n   type FormatVersionOf,\n } from \"@/domains/dcmp/format-version\";\n+import { Layout } from \"@/domains/dcmp/layout\";\n import { Locking, Lockings } from \"@/domains/dcmp/locking\";\n import {\n   Node,\n@@ -25,7 +28,12 @@ import {\n } from \"@/domains/dcmp/node\";\n import { NodeTree, type NodeTreeUpdate } from \"@/domains/dcmp/node-tree\";\n import { type AbsolutePlacement, Placement } from \"@/domains/dcmp/placement\";\n-import { PrimitiveTypes } from \"@/domains/dcmp/primitive-schema\";\n+import {\n+  BoxSchema,\n+  PrimitiveSchema,\n+  PrimitiveTypes,\n+  PropDefinitionRecord,\n+} from \"@/domains/dcmp/primitive-schema\";\n import { ReferenceContext } from \"@/domains/dcmp/reference-context\";\n import type { ResizeEdit } from \"@/domains/dcmp/resize-edit\";\n import { ResolvedProps } from \"@/domains/dcmp/resolved-props\";\n@@ -44,14 +52,7 @@ import type { DesignDocumentEditError } from \"./edit-error\";\n import type { DocumentTemplate } from \"./template\";\n import { TokenReferrer } from \"./token-referrer\";\n import { DesignDocumentV1 } from \"./v1\";\n-import {\n-  collectArtboardErrors,\n-  collectCircularRefErrors,\n-  collectComponentErrors,\n-  collectDocumentNameErrors,\n-  collectInvalidColorErrors,\n-  type DesignDocumentValidationError,\n-} from \"./validation\";\n+import { DesignDocumentValidationError } from \"./validation-error\";\n \n export { DesignDocumentEditError } from \"./edit-error\";\n export { DocumentTemplate } from \"./template\";\n@@ -60,7 +61,7 @@ export type { DesignDocumentV1 } from \"./v1\";\n export type {\n   DesignDocumentValidationError,\n   DesignDocumentValidationErrorKind,\n-} from \"./validation\";\n+} from \"./validation-error\";\n \n /**\n  * アプリが読み書きするドキュメント。今は major 1 のみ。\n@@ -755,10 +756,249 @@ function rootPropsOf(document: DesignDocument, node: Node): Option<Props> {\n   );\n }\n \n+/**\n+ * 1 ノード分の props のエラーを、未知の型・スキーマ照合・最小 / 最大の逆転の順で集める。\n+ *\n+ * @param nodeName エラーの位置に使うノード名\n+ * @param typed 照らす対象の型名と props（props が未設定なら空として扱う）\n+ * @param tokens トークン参照の解決に使うトークン一式\n+ * @returns 型が未知なら unknown-type の 1 件だけ。それ以外は宣言違反・値域違反と、軸ごとの\n+ *   最小 / 最大の逆転のエラーの並び\n+ */\n+function collectTypedPropErrors(\n+  nodeName: string,\n+  typed: Readonly<{ type: string; props?: Props }>,\n+  tokens: TokenSet,\n+): readonly DesignDocumentValidationError[] {\n+  if (!PrimitiveSchema.isPrimitiveType(typed.type)) {\n+    return [\n+      DesignDocumentValidationError.fromUnknownType({\n+        nodeName,\n+        type: typed.type,\n+      }),\n+    ];\n+  }\n+  const props = typed.props ?? {};\n+  const schema: PrimitiveSchema = PrimitiveSchema.forType(typed.type);\n+  const schemaErrors = PropDefinitionRecord.collectErrors(\n+    schema.props,\n+    props,\n+    tokens,\n+  ).map((error) =>\n+    DesignDocumentValidationError.fromPropError(nodeName, error),\n+  );\n+  const invertedLimitErrors = Size.collectInvertedLimitAxes(\n+    ResolvedProps.resolve(typed.type, props),\n+  ).map((axis) =>\n+    DesignDocumentValidationError.fromInvertedLimitAxis(nodeName, axis),\n+  );\n+  return [...schemaErrors, ...invertedLimitErrors];\n+}\n+\n+/**\n+ * ノードとその子孫のプリミティブについて、スキーマ照合・最小 / 最大の逆転・子を並べない\n+ * 親の下の `fill` のエラーをノードごとにこの順で集める（走査は `Node` が持つ）。\n+ *\n+ * 部品インスタンスの中身は対象外で、検証が見るのは**定義時点の props** だけ（中身は部品の\n+ * 定義として照らされる）。\n+ *\n+ * @param node 起点のノード\n+ * @param tokens トークン参照の解決に使うトークン一式\n+ * @param parentProps このノードを収めている親の props\n+ * @returns 自身と子孫のプリミティブについて、スキーマ照合・最小 / 最大の逆転・子を並べない\n+ *   親の下の `fill` のエラーの並び（部品インスタンスは空）\n+ */\n+function collectNodeErrors(\n+  node: Node,\n+  tokens: TokenSet,\n+  parentProps: Props,\n+): readonly DesignDocumentValidationError[] {\n+  return Node.collectNestedPrimitives(node, parentProps).flatMap((nested) => {\n+    const nodeName = nested.node.name;\n+    const typedPropErrors = collectTypedPropErrors(\n+      nodeName,\n+      nested.node,\n+      tokens,\n+    );\n+    const fillErrors = Layout.collectFillAxesInFreeParent(\n+      Layout.fromProps(nested.parentProps),\n+      nested.node.props ?? {},\n+    ).map((axis) =>\n+      DesignDocumentValidationError.fromFillInFreeParent(nodeName, axis),\n+    );\n+    return [...typedPropErrors, ...fillErrors];\n+  });\n+}\n+\n+/**\n+ * ノードとその子孫に含まれる部品参照の違反を、位置を付けて集める（走査は `Node` が持つ）。\n+ *\n+ * @param context 部品とトークンの一式\n+ * @param node 起点のノード\n+ * @returns 自身と子孫のインスタンスについて、位置の付いたエラーの並び\n+ */\n+function collectNodeRefErrors(\n+  context: ReferenceContext,\n+  node: Node,\n+): readonly DesignDocumentValidationError[] {\n+  return Node.collectRefNodes(node).flatMap((refNode) =>\n+    ReferenceContext.collectInstanceViolations(context, refNode).map(\n+      (violation) =>\n+        DesignDocumentValidationError.fromInstanceViolation(refNode, violation),\n+    ),\n+  );\n+}\n+\n+/**\n+ * 部品の publicProps が宣言している binding をすべて照らす（判定は `ComponentBinding` が持つ）。\n+ *\n+ * @param components 部品一式\n+ * @param named 検証する部品と、エラーの位置に使うその名前\n+ * @returns 公開 prop ごとの、位置の付いたエラーの並び\n+ */\n+function collectBindingErrors(\n+  components: ComponentSet,\n+  named: NamedComponent,\n+): readonly DesignDocumentValidationError[] {\n+  return Component.publicPropNames(named.component).flatMap(\n+    (publicPropName) => {\n+      const binding = Component.binding(named.component, publicPropName);\n+      if (!Option.isSome(binding)) {\n+        return [];\n+      }\n+      const violation = ComponentBinding.violation(\n+        components,\n+        ComponentBinding.create(named.name, binding.value),\n+      );\n+      if (!Option.isSome(violation)) {\n+        return [];\n+      }\n+      return [\n+        DesignDocumentValidationError.fromBindingViolation(\n+          { component: named.name, prop: publicPropName },\n+          binding.value,\n+          violation.value,\n+        ),\n+      ];\n+    },\n+  );\n+}\n+\n+/**\n+ * 部品1件の props（スキーマ照合と、ルート自身の最小 / 最大の逆転）・子ノード・公開 prop の\n+ * 宣言名・binding・参照のエラーを集める。\n+ *\n+ * @param context 部品とトークンの一式\n+ * @param named 検証する部品と、エラーの位置に使うその名前\n+ * @returns 位置の付いたエラーの並び\n+ */\n+function collectComponentErrors(\n+  context: ReferenceContext,\n+  named: NamedComponent,\n+): readonly DesignDocumentValidationError[] {\n+  const { name, component } = named;\n+  const children = component.children ?? [];\n+  const propErrors = collectTypedPropErrors(name, component, context.tokens);\n+  const childErrors = children.flatMap((child) =>\n+    collectNodeErrors(child, context.tokens, component.props ?? {}),\n+  );\n+  const publicPropNameErrors = Component.collectInvalidPublicPropNames(\n+    component,\n+  ).map((publicPropName) =>\n+    DesignDocumentValidationError.fromInvalidPublicPropName({\n+      component: name,\n+      prop: publicPropName,\n+    }),\n+  );\n+  const bindingErrors = collectBindingErrors(context.components, named);\n+  const refErrors = children.flatMap((child) =>\n+    collectNodeRefErrors(context, child),\n+  );\n+  return [\n+    ...propErrors,\n+    ...childErrors,\n+    ...publicPropNameErrors,\n+    ...bindingErrors,\n+    ...refErrors,\n+  ];\n+}\n+\n+/**\n+ * artboard 1件の props・子ノード・参照のエラーを集める。\n+ *\n+ * artboard 自身の最小 / 最大の逆転は見ない。サイズは `Artboard.boxProps` で `fixed` に固定され\n+ * 描画に効かず、Box として解決すると既定の `hug` 扱いになって誤検出するため。\n+ *\n+ * @param context 部品とトークンの一式\n+ * @param artboard 検証する artboard\n+ * @returns 位置の付いたエラーの並び\n+ */\n+function collectArtboardErrors(\n+  context: ReferenceContext,\n+  artboard: Artboard,\n+): readonly DesignDocumentValidationError[] {\n+  // 照らす先が `Artboard.propDefinitions()` ではなく Box スキーマなので、デフォルト解決も\n+  // Box の既定（`overflow: visible`）で行う。Box の既定はすべて enum で artboard の\n+  // 上書き（`clip`）も値域内なので今は差が出ないが、artboard 固有の既定がトークンを\n+  // 指した時点で食い違う（`Artboard.propDefinitions()` を使うと `widthMode` などが\n+  // unknown-prop になるため、寄せるなら別の変更として行う）\n+  const propErrors = PropDefinitionRecord.collectErrors(\n+    BoxSchema.props,\n+    artboard.props ?? {},\n+    context.tokens,\n+  ).map((error) =>\n+    DesignDocumentValidationError.fromPropError(artboard.name, error),\n+  );\n+  const childErrors = artboard.children.flatMap((child) =>\n+    collectNodeErrors(\n+      child,\n+      context.tokens,\n+      // artboard 固有の既定を被せた props から読む。`Artboard.propDefinitions()` が\n+      // `layout` の既定を差し替えたときに、描画とここで違う親を見ないようにするため\n+      Artboard.boxProps(artboard),\n+    ),\n+  );\n+  const refErrors = artboard.children.flatMap((child) =>\n+    collectNodeRefErrors(context, child),\n+  );\n+  return [...propErrors, ...childErrors, ...refErrors];\n+}\n+\n+/**\n+ * ドキュメント全体の名前（部品・artboard・ノード・トークン）のエラーを集める。\n+ *\n+ * @param document 検証するドキュメント\n+ * @returns 欠落・識別子違反・重複・トークン名の規則違反・塗り用の 2 種別での名前の衝突の順に\n+ *   連ねた、名前のエラーの並び\n+ */\n+function collectNameErrors(\n+  document: DesignDocument,\n+): readonly DesignDocumentValidationError[] {\n+  const nameViolationErrors = DocumentNames.collectNameViolations(\n+    document.components,\n+    document.artboards,\n+  ).map(DesignDocumentValidationError.fromNameViolation);\n+  const duplicateNameErrors = DocumentNames.duplicatedNames(\n+    documentNamesOf(document),\n+  ).map(DesignDocumentValidationError.fromDuplicateName);\n+  const tokenNameErrors = TokenSet.collectInvalidNameRefs(document.tokens).map(\n+    DesignDocumentValidationError.fromInvalidTokenName,\n+  );\n+  const paintNameConflictErrors = TokenSet.collectPaintNameConflicts(\n+    document.tokens,\n+  ).map(DesignDocumentValidationError.fromPaintNameConflict);\n+  return [\n+    ...nameViolationErrors,\n+    ...duplicateNameErrors,\n+    ...tokenNameErrors,\n+    ...paintNameConflictErrors,\n+  ];\n+}\n+\n /**\n  * ドキュメントのコンパニオンオブジェクト。ツリーの探索・編集は `NodeTree`、名前の規則は\n- * `DocumentNames`、部品への変換は `Component`、検証は `validation/`、版ごとの JSON 表現は\n- * `v1/` が持ち、ここは「どの artboard・どの部品を相手にするか」の調停に徹する。\n+ * `DocumentNames`、部品への変換は `Component`、違反からエラーへの詰め替えは `validation-error/`、\n+ * 版ごとの JSON 表現は `v1/` が持ち、ここは「どの artboard・どの部品を相手にするか」の調停に徹する。\n  */\n export const DesignDocument = {\n   /**\n@@ -2059,8 +2299,10 @@ export const DesignDocument = {\n   /**\n    * ドキュメントが仕様に適合しない箇所をすべて集める。\n    *\n-   * 適合の規則そのものは `validation/` が関心ごとに持ち、ここは「どの部品・どの artboard\n-   * を検証対象にするか」の取りまとめを行う。\n+   * 適合の判定は各ドメイン（`PropDefinitionRecord` / `ReferenceContext` / `ComponentBinding` /\n+   * `DocumentNames` / `TokenSet` など）が持ち、違反 1 件をエラーにする詰め替えは\n+   * `DesignDocumentValidationError` が持つ。ここは「どの部品・どの artboard・どの名前を検証対象に\n+   * するか」の走査を行う。\n    *\n    * @param document 検証するドキュメント\n    * @returns 部品ごとのエラー・artboard ごとのエラー・部品の循環参照・名前のエラー・色トークン\n@@ -2076,15 +2318,17 @@ export const DesignDocument = {\n \n     const componentErrors = ComponentSet.toNamedComponents(\n       document.components,\n-    ).flatMap(({ name, component }) =>\n-      collectComponentErrors(context, name, component),\n-    );\n+    ).flatMap((named) => collectComponentErrors(context, named));\n     const artboardErrors = document.artboards.flatMap((artboard) =>\n       collectArtboardErrors(context, artboard),\n     );\n-    const circularErrors = collectCircularRefErrors(document.components);\n-    const nameErrors = collectDocumentNameErrors(document);\n-    const colorErrors = collectInvalidColorErrors(document.tokens);\n+    const circularErrors = ComponentSet.circularNames(document.components).map(\n+      DesignDocumentValidationError.fromCircularRef,\n+    );\n+    const nameErrors = collectNameErrors(document);\n+    const colorErrors = TokenSet.collectInvalidColorPositions(\n+      document.tokens,\n+    ).map(DesignDocumentValidationError.fromInvalidColorPosition);\n \n     return [\n       ...componentErrors,",
+          "patchLines": 346,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/validation-error/index.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 422,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,422 @@\n+import type { PublicPropBinding } from \"@/domains/dcmp/component\";\n+import type {\n+  BindingViolation,\n+  PublicPropRef,\n+} from \"@/domains/dcmp/component-binding\";\n+import type {\n+  NamePosition,\n+  NameViolation,\n+} from \"@/domains/dcmp/document-names\";\n+import type { RefNode } from \"@/domains/dcmp/node\";\n+import type { PropValidationError } from \"@/domains/dcmp/primitive-schema\";\n+import type { InstanceViolation } from \"@/domains/dcmp/reference-context\";\n+import { Size } from \"@/domains/dcmp/size\";\n+import type { TokenColorPosition, TokenRef } from \"@/domains/dcmp/token\";\n+import type { Axis } from \"@/domains/unit/axis\";\n+import { Json } from \"@/utils/Json\";\n+import type { DesignDocumentV1 as DesignDocument } from \"../v1\";\n+\n+/** ノード（名前を持つ部品・artboard と子ノード）を指す不正の理由。 */\n+type NodeValidationErrorKind =\n+  | PropValidationError[\"kind\"]\n+  | \"unknown-type\"\n+  | \"dangling-ref\"\n+  | \"circular-ref\"\n+  | \"undeclared-override\"\n+  | \"invalid-public-prop-name\"\n+  | \"dangling-binding-node\"\n+  | \"dangling-binding-prop\"\n+  | \"missing-name\"\n+  | \"invalid-identifier\"\n+  | \"duplicate-name\"\n+  | \"fill-in-free-parent\"\n+  | \"inverted-size-limits\";\n+\n+/** トークンを指す不正の理由。 */\n+type TokenValidationErrorKind =\n+  | \"invalid-identifier\"\n+  | \"conflicting-token-name\"\n+  | \"invalid-color\";\n+\n+/** ドキュメントが不正になる理由（docs/03-schema.md「バリデーション仕様」）。 */\n+export type DesignDocumentValidationErrorKind =\n+  | NodeValidationErrorKind\n+  | TokenValidationErrorKind;\n+\n+/** ノードを指す不正 1 件。どのノードのどの prop かと、診断用のメッセージを持つ。 */\n+type NodeValidationError = Readonly<{\n+  kind: NodeValidationErrorKind;\n+  nodeName: string;\n+  prop?: string;\n+  message: string;\n+}>;\n+\n+/**\n+ * トークンを指す不正 1 件。どのトークンの（あれば）トークンの中のどこかと、診断用のメッセージを\n+ * 持つ。\n+ */\n+type TokenValidationError = Readonly<{\n+  kind: TokenValidationErrorKind;\n+  tokenName: string;\n+  prop?: string;\n+  message: string;\n+}>;\n+\n+/** トークンでのエラーの発生位置。`prop` はトークンの中の位置（影の `color` 等）。 */\n+type TokenErrorLocation = Readonly<{ tokenName: string; prop?: string }>;\n+\n+/**\n+ * 名前の無いルート（部品定義・artboard）を指す不正 1 件。どのルートかをドキュメント内のパスで\n+ * 持ち、診断用のメッセージを持つ。\n+ */\n+type UnnamedRootValidationError = Readonly<{\n+  kind: \"missing-name\";\n+  documentPath: string;\n+  message: string;\n+}>;\n+\n+/** 部品定義を収めるトップレベルフィールド。型で版のフィールド名に結び、綴りを二重に持たない。 */\n+const ComponentsField = \"components\" satisfies keyof DesignDocument;\n+\n+/** artboard を収めるトップレベルフィールド。 */\n+const ArtboardsField = \"artboards\" satisfies keyof DesignDocument;\n+\n+/**\n+ * 不正 1 件。ノードを指すもの・トークンを指すもの・名前の無いルートを指すものがある。\n+ *\n+ * トークン名やルートを収めるフィールドの名前（`components` / `artboards`）をノード名の位置に\n+ * 入れない。ノードとは別の名前空間なので、入れると同名のノードを指しているのと区別できなくなる。\n+ */\n+export type DesignDocumentValidationError =\n+  | NodeValidationError\n+  | TokenValidationError\n+  | UnnamedRootValidationError;\n+\n+/**\n+ * 名前が欠落した位置を、報告用のエラーにする。\n+ *\n+ * @param position 名前が欠落した位置\n+ * @returns 部品のキー・artboard の欠落はそのルートをドキュメント内のパス（`components` /\n+ *   `artboards[<添字>]`）で指す missing-name、子ノードの欠落は名前を持つ最も近い祖先のノードを\n+ *   指す missing-name\n+ *\n+ * キーが空の部品は、デコード失敗の綴り（`components.`）ではなく `components` で指す。末尾の\n+ * `.` は綴りが欠けて見えるため。\n+ */\n+function toMissingNameError(\n+  position: NamePosition,\n+): NodeValidationError | UnnamedRootValidationError {\n+  switch (position.kind) {\n+    case \"component-key\":\n+      return {\n+        kind: \"missing-name\",\n+        documentPath: ComponentsField,\n+        message: `key \"\" of \"${ComponentsField}\" has no name`,\n+      };\n+    case \"artboard\":\n+      return {\n+        kind: \"missing-name\",\n+        documentPath: Json.elementPath(ArtboardsField, position.index),\n+        message: `artboard ${position.index} of \"${ArtboardsField}\" has no name`,\n+      };\n+    case \"child\":\n+      return {\n+        kind: \"missing-name\",\n+        nodeName: position.ownerName,\n+        message: `child ${position.index} of \"${position.ownerName}\" has no name`,\n+      };\n+  }\n+}\n+\n+/**\n+ * 不正な色の場所を、エラーの位置とメッセージの主語にする。\n+ *\n+ * @param position `TokenSet.collectInvalidColorPositions` が返した場所\n+ * @returns 位置にはトークン名を入れる。影は `color`、グラデーションは `stops[<添字>].color`\n+ *   を prop に持ち、colors トークンは prop を持たない\n+ */\n+function toColorErrorLocation(\n+  position: TokenColorPosition,\n+): Readonly<{ location: TokenErrorLocation; subject: string }> {\n+  switch (position.kind) {\n+    case \"colors\":\n+      return {\n+        location: { tokenName: position.name },\n+        subject: `color token \"${position.name}\"`,\n+      };\n+    case \"shadows\":\n+      return {\n+        location: { tokenName: position.name, prop: \"color\" },\n+        subject: `the color of shadow token \"${position.name}\"`,\n+      };\n+    case \"gradients\":\n+      return {\n+        location: {\n+          tokenName: position.name,\n+          prop: `${Json.elementPath(\"stops\", position.stopIndex)}.color`,\n+        },\n+        subject: `the stop ${position.stopIndex} color of gradient token \"${position.name}\"`,\n+      };\n+  }\n+}\n+\n+export const DesignDocumentValidationError = {\n+  /**\n+   * prop の検証エラー 1 件を、ノードを位置にしたエラーにする。\n+   *\n+   * @param nodeName エラーの位置にするノード名\n+   * @param error スキーマ・公開 prop の宣言に照らして見つかった prop の検証エラー\n+   * @returns 検証エラーの種類・prop・メッセージをそのまま持ち、`nodeName` を位置にしたエラー\n+   */\n+  fromPropError(\n+    nodeName: string,\n+    error: PropValidationError,\n+  ): DesignDocumentValidationError {\n+    return {\n+      kind: error.kind,\n+      nodeName,\n+      prop: error.prop,\n+      message: error.message,\n+    };\n+  },\n+\n+  /**\n+   * 型が未知のノードを、エラーにする。\n+   *\n+   * @param params `nodeName` はそのノードの名前、`type` はノードが名乗っている型名\n+   * @returns そのノードを指す unknown-type。prop は持たない\n+   */\n+  fromUnknownType(\n+    params: Readonly<{ nodeName: string; type: string }>,\n+  ): DesignDocumentValidationError {\n+    return {\n+      kind: \"unknown-type\",\n+      nodeName: params.nodeName,\n+      message: `unknown type \"${params.type}\"`,\n+    };\n+  },\n+\n+  /**\n+   * 最小が最大を超えている軸を、エラーにする。\n+   *\n+   * @param nodeName 逆転を持つノードの名前\n+   * @param axis 逆転している軸\n+   * @returns その軸の `max*` を prop に持つ inverted-size-limits\n+   */\n+  fromInvertedLimitAxis(\n+    nodeName: string,\n+    axis: Axis,\n+  ): DesignDocumentValidationError {\n+    const { min, max } = Size.limitProps(axis);\n+    return {\n+      kind: \"inverted-size-limits\",\n+      nodeName,\n+      prop: max,\n+      message: `prop \"${max}\" is less than \"${min}\"; the minimum wins`,\n+    };\n+  },\n+\n+  /**\n+   * 子を並べない親の下で `fill` になっている軸を、エラーにする。\n+   *\n+   * @param nodeName `fill` を持つノードの名前\n+   * @param axis `fill` になっている軸\n+   * @returns その軸のモード（`widthMode` / `heightMode`）を prop に持つ fill-in-free-parent\n+   */\n+  fromFillInFreeParent(\n+    nodeName: string,\n+    axis: Axis,\n+  ): DesignDocumentValidationError {\n+    const modeProp = Size.modeProp(axis);\n+    return {\n+      kind: \"fill-in-free-parent\",\n+      nodeName,\n+      prop: modeProp,\n+      message: `prop \"${modeProp}\" cannot be \"fill\" inside a parent that does not arrange its children`,\n+    };\n+  },\n+\n+  /**\n+   * インスタンスの違反 1 件を、そのインスタンスを位置にしたエラーにする。\n+   *\n+   * @param refNode 違反を持つインスタンス\n+   * @param violation `ReferenceContext.collectInstanceViolations` が返した違反\n+   * @returns 参照先が無ければ prop を持たない dangling-ref、未宣言の上書きならその prop の\n+   *   undeclared-override、値が宣言に適合しなければその prop の検証エラー\n+   */\n+  fromInstanceViolation(\n+    refNode: RefNode,\n+    violation: InstanceViolation,\n+  ): DesignDocumentValidationError {\n+    switch (violation.kind) {\n+      case \"missing-component\":\n+        return {\n+          kind: \"dangling-ref\",\n+          nodeName: refNode.name,\n+          message: `unknown component \"${refNode.ref}\"`,\n+        };\n+      case \"undeclared-override\":\n+        return {\n+          kind: \"undeclared-override\",\n+          nodeName: refNode.name,\n+          prop: violation.prop,\n+          message: `component \"${refNode.ref}\" does not declare public prop \"${violation.prop}\"`,\n+        };\n+      case \"invalid-override\":\n+        return DesignDocumentValidationError.fromPropError(\n+          refNode.name,\n+          violation.error,\n+        );\n+    }\n+  },\n+\n+  /**\n+   * binding の違反 1 件を、その公開 prop を位置にしたエラーにする。\n+   *\n+   * @param publicProp binding を宣言している部品名と公開 prop 名\n+   * @param binding 違反を持つ公開 prop の binding\n+   * @param violation `ComponentBinding.violation` が返した違反\n+   * @returns 指し先のノードが無ければ dangling-binding-node、指し先の prop が無ければ\n+   *   dangling-binding-prop。どちらも部品名を位置、公開 prop 名を prop に持つ\n+   */\n+  fromBindingViolation(\n+    publicProp: PublicPropRef,\n+    binding: PublicPropBinding,\n+    violation: BindingViolation,\n+  ): DesignDocumentValidationError {\n+    const location = { nodeName: publicProp.component, prop: publicProp.prop };\n+    switch (violation.kind) {\n+      case \"missing-node\":\n+        return {\n+          kind: \"dangling-binding-node\",\n+          ...location,\n+          message: `unknown node \"${binding.node}\"`,\n+        };\n+      case \"missing-public-prop\":\n+        return {\n+          kind: \"dangling-binding-prop\",\n+          ...location,\n+          message: `\"${binding.prop}\" is not a public prop of component \"${violation.ref}\"`,\n+        };\n+      case \"missing-prop\":\n+        return {\n+          kind: \"dangling-binding-prop\",\n+          ...location,\n+          message: `node \"${binding.node}\" has no prop \"${binding.prop}\"`,\n+        };\n+    }\n+  },\n+\n+  /**\n+   * 宣言名の規則を満たさない公開 prop を、エラーにする。\n+   *\n+   * @param publicProp 規則を満たさない公開 prop と、それを宣言している部品名\n+   * @returns 部品名を位置、公開 prop 名を prop に持つ invalid-public-prop-name\n+   */\n+  fromInvalidPublicPropName(\n+    publicProp: PublicPropRef,\n+  ): DesignDocumentValidationError {\n+    return {\n+      kind: \"invalid-public-prop-name\",\n+      nodeName: publicProp.component,\n+      prop: publicProp.prop,\n+      message: `public prop name \"${publicProp.prop}\" is not a valid public prop name`,\n+    };\n+  },\n+\n+  /**\n+   * 参照の輪に含まれる部品を、エラーにする。\n+   *\n+   * @param name 輪に含まれる部品の名前\n+   * @returns その部品を指す circular-ref。prop は持たない\n+   */\n+  fromCircularRef(name: string): DesignDocumentValidationError {\n+    return {\n+      kind: \"circular-ref\",\n+      nodeName: name,\n+      message: `component \"${name}\" is part of a circular reference`,\n+    };\n+  },\n+\n+  /**\n+   * 単一の名前空間の中で重複している名前（docs/02-data-model.md「名前の一意性」）を、\n+   * エラーにする。\n+   *\n+   * @param name 重複している名前\n+   * @returns その名前を位置にした duplicate-name。prop は持たない\n+   */\n+  fromDuplicateName(name: string): DesignDocumentValidationError {\n+    return {\n+      kind: \"duplicate-name\",\n+      nodeName: name,\n+      message: `name \"${name}\" is not unique in the document`,\n+    };\n+  },\n+\n+  /**\n+   * 名前空間に属する名前の違反 1 件を、エラーにする。\n+   *\n+   * @param violation `DocumentNames.collectNameViolations` が返した違反\n+   * @returns 欠落なら `toMissingNameError` の missing-name、識別子違反ならその名前を位置にした\n+   *   invalid-identifier\n+   */\n+  fromNameViolation(violation: NameViolation): DesignDocumentValidationError {\n+    switch (violation.kind) {\n+      case \"missing\":\n+        return toMissingNameError(violation.position);\n+      case \"invalid-identifier\":\n+        return {\n+          kind: \"invalid-identifier\",\n+          nodeName: violation.name,\n+          message: `name \"${violation.name}\" is not a valid identifier`,\n+        };\n+    }\n+  },\n+\n+  /**\n+   * 名前がトークン名の規則（docs/04-tokens.md「命名規則」）を満たさないトークンを、エラーに\n+   * する。\n+   *\n+   * @param ref 規則を満たさないトークンの種別と名前\n+   * @returns そのトークン名を位置にした invalid-identifier\n+   */\n+  fromInvalidTokenName(ref: TokenRef): DesignDocumentValidationError {\n+    return {\n+      kind: \"invalid-identifier\",\n+      tokenName: ref.name,\n+      message: `token name \"${ref.name}\" in ${ref.kind} is not a valid identifier`,\n+    };\n+  },\n+\n+  /**\n+   * 塗り用の 2 種別（colors と gradients）の両方にある名前（docs/04-tokens.md「命名規則」）を、\n+   * エラーにする。\n+   *\n+   * @param name 両方にあるトークン名\n+   * @returns その名前を位置にした conflicting-token-name\n+   */\n+  fromPaintNameConflict(name: string): DesignDocumentValidationError {\n+    return {\n+      kind: \"conflicting-token-name\",\n+      tokenName: name,\n+      message: `token name \"${name}\" is used in both colors and gradients`,\n+    };\n+  },\n+\n+  /**\n+   * 色が正規形の hex でない場所（docs/04-tokens.md「colors」）を、エラーにする。\n+   *\n+   * @param position `TokenSet.collectInvalidColorPositions` が返した場所\n+   * @returns トークン名を位置にした invalid-color。prop の有無は `toColorErrorLocation` のとおり\n+   */\n+  fromInvalidColorPosition(\n+    position: TokenColorPosition,\n+  ): DesignDocumentValidationError {\n+    const { location, subject } = toColorErrorLocation(position);\n+    return {\n+      kind: \"invalid-color\",\n+      ...location,\n+      message: `${subject} is not a hex color in normal form (#rrggbb / #rrggbbaa)`,\n+    };\n+  },\n+} as const;",
+          "patchLines": 423,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/validation/index.ts",
+          "status": "D",
+          "oldPath": null,
+          "additions": 0,
+          "deletions": 675,
+          "patch": null,
+          "patchLines": 0,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "ae8415078389f8d40e24af885e7b21035155b46e",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-12T00:59:45Z",
+      "subject": "📝 [Doc]: #1070 TokenReferrer の doc が指す検証側を本体の collectArtboardErrors に直す",
+      "body": "- 「validation の collectArtboardErrors」を「DesignDocument.collectErrors\n  が artboard ごとに呼ぶ本体の collectArtboardErrors」に改める\n\n背景:\nvalidation/ を解体し、artboard の走査は DesignDocument 本体へ移した。\nこのままでは doc が存在しないモジュールを指す。\n\n採用理由:\n「理由はあちらのコメント」が当たり続けるよう、collectArtboardErrors\nの Why コメントは文言を変えずに本体へ移してある。参照先の名前だけを\n直せば足りる。\n\n代替案:\n- Why をこちらへ写す: 同じ判断根拠の説明が 2 か所になる\n  （rules/coding.md「規約の適用範囲」）\n\n影響とトレードオフ:\nコメントだけで振る舞いは変わらない。\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/1070\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_0164KevAoe6oKu7nFAhuTGzh",
+      "files": [
+        {
+          "path": "src/domains/dcmp/design-document/token-referrer/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 3,
+          "patch": "@@ -212,9 +212,9 @@ export const TokenReferrer = {\n    * artboard 自身の props も対象。受け付ける prop の定義は `Artboard.propDefinitions` が持つ\n    * ので Box スキーマを直に見ない（artboard が受け付ける prop の唯一の答えがそちらだから）。\n    *\n-   * ただし検証側（`validation` の `collectArtboardErrors`）は Box スキーマを照らしており、\n-   * artboard だけ照らす先が 2 通りある。artboard 固有の既定がトークンを指した時点で参照元\n-   * と dangling が食い違うが、**そうなっても落ちるテストは無い**（理由はあちらのコメント）。\n+   * ただし検証側（`DesignDocument.collectErrors` が artboard ごとに呼ぶ本体の\n+   * `collectArtboardErrors`）は Box スキーマを照らしており、artboard だけ照らす先が 2 通り\n+   * ある。artboard 固有の既定がトークンを指した時点で参照元と dangling が食い違うが、**そうなっても落ちるテストは無い**（理由はあちらのコメント）。\n    *\n    * @param components インスタンスの上書きが何の prop かを辿るための部品一式\n    * @param artboard 参照元を探す artboard",
+          "patchLines": 13,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "b0d7a67ea74b4c7ed17e3e174ba21f9dad21ade8",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-12T00:59:45Z",
+      "subject": "📝 [Doc]: #1070 05-architecture の validator の実体を本体と validation-error に直す",
+      "body": "- validator 行の実体を src/domains/dcmp/design-document/validation から、\n  走査（DesignDocument.collectErrors と本体の非公開関数）と詰め替え\n  （design-document/validation-error）に改める\n\n背景:\nvalidation/ を削除したため、この行は存在しないパスを名指しする。\npre-push-named-paths が push を止める（作業前にコピーで実測）。\n\n採用理由:\nvalidator の責務は走査と詰め替えの 2 か所に分かれたので、両方を挙げる。\n重複キーの但し書きは変わらないので残す。\n\n代替案:\n- design-document だけを挙げる: エラーの文言・位置を探す人が\n  validation-error に辿り着けない\n\n影響とトレードオフ:\nドキュメントだけで振る舞いは変わらない。\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/1070\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_0164KevAoe6oKu7nFAhuTGzh",
+      "files": [
+        {
+          "path": "docs/05-architecture.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -20,7 +20,7 @@\n |---|---|---|---|\n | `schema` | プリミティブ定義の TS 定数と型（03-schema） | なし | `src/domains/dcmp/primitive-schema` |\n | `document` | ノード・部品・トークンの型、ツリー操作（挿入 / 移動 / 部品化 / detach / 自動リネーム） | schema | `src/domains/dcmp/` の `design-document` / `node` / `node-tree`（型とツリー操作）、`component` / `component-binding`（部品）、`token`（トークン）、`document-names`（一意名と自動リネーム） |\n-| `validator` | 03 の全エラー検出（重複キーの字句スキャンを含む） | schema, document | `src/domains/dcmp/design-document/validation`。ただし重複キーだけは検証ではなく**読み込み時**に見つかる（serializer 側の字句スキャン） |\n+| `validator` | 03 の全エラー検出（重複キーの字句スキャンを含む） | schema, document | `src/domains/dcmp/design-document`（走査は `DesignDocument.collectErrors` と本体の非公開関数、違反からエラーへの詰め替えは `src/domains/dcmp/design-document/validation-error`）。ただし重複キーだけは検証ではなく**読み込み時**に見つかる（serializer 側の字句スキャン） |\n | `compiler` | ドキュメント → HTML/CSS（カスタムプロパティ＋インライン style）。ref / overrides の合成 | schema, document | 合成は `src/domains/dcmp/` の `expanded-node`（ref の展開）と `resolved-props`（既定値の解決）、HTML/CSS の組み立ては `src/services/` の `document-html` / `node-html` / `token-css`、描画用の表現は `src/domains/compiled/` |\n | `serializer` | JSON ⇔ ドキュメントの正規化入出力。フォーマット差し替えの閉じ込め先（外部フォーマットの解釈なので `libs/`） | document | `src/libs/document-json` / `src/libs/json-lexical-scanner` |\n ",
+          "patchLines": 9,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "c47bee4079d75258216950307ae2e89387af37c3",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-12T01:07:34Z",
+      "subject": "🚚 [Move]: #1070 エラー全体の形を固定するテストを validate-error-shape へリネームする",
+      "body": "- design-document.validate-message.test.ts を\n  design-document.validate-error-shape.test.ts へ git mv する（中身は変えない）\n\n背景:\nnaming-reviewer の指摘。ラベルを validate-message にした時点では文言\nだけを見ていたが、その後ヘルパーを errorsOf に替え、エラー全体を\ntoStrictEqual で比べる形にした。位置・prop キーの有無の退行を調べる\n人が、このファイルを開く対象と思わない。\n\n採用理由:\nrules/testing.md「カテゴリはテストの観点を表すラベル」に沿い、エラー\n1 件の形（位置・prop の有無・文言）を丸ごと固定していることを名前に\n出す。\n\n代替案:\n- validate-location: 文言も固定しているので狭い\n- 文言だけのファイルに戻す: prop: undefined を区別できない比べ方に\n  戻ることになる\n\n影響とトレードオフ:\n中身の変更を伴わないので、git がリネームとして追える。\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/1070#issuecomment-6115908758\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_0164KevAoe6oKu7nFAhuTGzh",
+      "files": [
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+          "status": "R",
+          "oldPath": "src/domains/dcmp/design-document/__tests__/design-document.validate-message.test.ts",
+          "additions": 0,
+          "deletions": 0,
+          "patch": "",
+          "patchLines": 0,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "60ba9e7234e2b65959851a1d32fe4b59dbd6172e",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-12T01:07:34Z",
+      "subject": "♻️ [Refactoring]: #1070 DesignDocumentValidationError の from* を既存の from* の語形に揃える",
+      "body": "- 変換元を第 1 引数へ移す: fromPropError(error, nodeName) /\n  fromInvertedLimitAxis(axis, nodeName) /\n  fromInstanceViolation(violation, refNode) /\n  fromBindingViolation(violation, publicProp, binding)\n- 出どころの collect* に揃えて改名する: fromCircularRef →\n  fromCircularName / fromDuplicateName → fromDuplicatedName /\n  fromInvalidTokenName → fromInvalidNameRef / fromFillInFreeParent →\n  fromFillAxisInFreeParent\n\n背景:\nnaming-reviewer の指摘。リポジトリの from*（fromJson / fromProps /\nfromNode / fromArtboard 等）は、第 1 引数が変換元で、名前の後半は\nその型の名前になっている。新設した 13 個のうち 8 個がこの形から外れ、\n同じコンパニオンの中で後半の語が「引数の型」「出どころ」「kind」の\n3 通りに割れていた。fromCircularRef は存在しない CircularRef 型を\n探させる。\n\n採用理由:\n変換元を先頭に置き、名前の後半を出どころ（ComponentSet.circularNames\n/ DocumentNames.duplicatedNames / TokenSet.collectInvalidNameRefs /\nLayout.collectFillAxesInFreeParent）の要素名に揃える。次に違反の\n種類を足す人が、名前と引数の順をどう決めるかで迷わない。\nfromFillAxisInFreeParent は fromInvertedLimitAxis と対になる。\n\n代替案:\n- fromUnknownType も改名する: 変換元になる別の表現が無く、材料\n  { nodeName, type } から作る。create 系にすると同じコンパニオン内で\n  語形が割れるので from* のまま残す\n- 名前の後半を kind に揃える: 既存の from* のどれとも形が違う\n\n影響とトレードオフ:\nfrom* は親 index.ts から値として公開していないので、呼び出しの変更は\ndesign-document/index.ts だけで閉じる。collectErrors の出力は変わらない\n（validate-error-shape を含む全テストが通る）。\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/1070#issuecomment-6115908758\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_0164KevAoe6oKu7nFAhuTGzh",
+      "files": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 9,
+          "deletions": 9,
+          "patch": "@@ -785,12 +785,12 @@ function collectTypedPropErrors(\n     props,\n     tokens,\n   ).map((error) =>\n-    DesignDocumentValidationError.fromPropError(nodeName, error),\n+    DesignDocumentValidationError.fromPropError(error, nodeName),\n   );\n   const invertedLimitErrors = Size.collectInvertedLimitAxes(\n     ResolvedProps.resolve(typed.type, props),\n   ).map((axis) =>\n-    DesignDocumentValidationError.fromInvertedLimitAxis(nodeName, axis),\n+    DesignDocumentValidationError.fromInvertedLimitAxis(axis, nodeName),\n   );\n   return [...schemaErrors, ...invertedLimitErrors];\n }\n@@ -824,7 +824,7 @@ function collectNodeErrors(\n       Layout.fromProps(nested.parentProps),\n       nested.node.props ?? {},\n     ).map((axis) =>\n-      DesignDocumentValidationError.fromFillInFreeParent(nodeName, axis),\n+      DesignDocumentValidationError.fromFillAxisInFreeParent(axis, nodeName),\n     );\n     return [...typedPropErrors, ...fillErrors];\n   });\n@@ -844,7 +844,7 @@ function collectNodeRefErrors(\n   return Node.collectRefNodes(node).flatMap((refNode) =>\n     ReferenceContext.collectInstanceViolations(context, refNode).map(\n       (violation) =>\n-        DesignDocumentValidationError.fromInstanceViolation(refNode, violation),\n+        DesignDocumentValidationError.fromInstanceViolation(violation, refNode),\n     ),\n   );\n }\n@@ -875,9 +875,9 @@ function collectBindingErrors(\n       }\n       return [\n         DesignDocumentValidationError.fromBindingViolation(\n+          violation.value,\n           { component: named.name, prop: publicPropName },\n           binding.value,\n-          violation.value,\n         ),\n       ];\n     },\n@@ -947,7 +947,7 @@ function collectArtboardErrors(\n     artboard.props ?? {},\n     context.tokens,\n   ).map((error) =>\n-    DesignDocumentValidationError.fromPropError(artboard.name, error),\n+    DesignDocumentValidationError.fromPropError(error, artboard.name),\n   );\n   const childErrors = artboard.children.flatMap((child) =>\n     collectNodeErrors(\n@@ -980,9 +980,9 @@ function collectNameErrors(\n   ).map(DesignDocumentValidationError.fromNameViolation);\n   const duplicateNameErrors = DocumentNames.duplicatedNames(\n     documentNamesOf(document),\n-  ).map(DesignDocumentValidationError.fromDuplicateName);\n+  ).map(DesignDocumentValidationError.fromDuplicatedName);\n   const tokenNameErrors = TokenSet.collectInvalidNameRefs(document.tokens).map(\n-    DesignDocumentValidationError.fromInvalidTokenName,\n+    DesignDocumentValidationError.fromInvalidNameRef,\n   );\n   const paintNameConflictErrors = TokenSet.collectPaintNameConflicts(\n     document.tokens,\n@@ -2323,7 +2323,7 @@ export const DesignDocument = {\n       collectArtboardErrors(context, artboard),\n     );\n     const circularErrors = ComponentSet.circularNames(document.components).map(\n-      DesignDocumentValidationError.fromCircularRef,\n+      DesignDocumentValidationError.fromCircularName,\n     );\n     const nameErrors = collectNameErrors(document);\n     const colorErrors = TokenSet.collectInvalidColorPositions(",
+          "patchLines": 74,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/validation-error/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 15,
+          "deletions": 15,
+          "patch": "@@ -164,13 +164,13 @@ export const DesignDocumentValidationError = {\n   /**\n    * prop の検証エラー 1 件を、ノードを位置にしたエラーにする。\n    *\n-   * @param nodeName エラーの位置にするノード名\n    * @param error スキーマ・公開 prop の宣言に照らして見つかった prop の検証エラー\n+   * @param nodeName エラーの位置にするノード名\n    * @returns 検証エラーの種類・prop・メッセージをそのまま持ち、`nodeName` を位置にしたエラー\n    */\n   fromPropError(\n-    nodeName: string,\n     error: PropValidationError,\n+    nodeName: string,\n   ): DesignDocumentValidationError {\n     return {\n       kind: error.kind,\n@@ -199,13 +199,13 @@ export const DesignDocumentValidationError = {\n   /**\n    * 最小が最大を超えている軸を、エラーにする。\n    *\n-   * @param nodeName 逆転を持つノードの名前\n    * @param axis 逆転している軸\n+   * @param nodeName 逆転を持つノードの名前\n    * @returns その軸の `max*` を prop に持つ inverted-size-limits\n    */\n   fromInvertedLimitAxis(\n-    nodeName: string,\n     axis: Axis,\n+    nodeName: string,\n   ): DesignDocumentValidationError {\n     const { min, max } = Size.limitProps(axis);\n     return {\n@@ -219,13 +219,13 @@ export const DesignDocumentValidationError = {\n   /**\n    * 子を並べない親の下で `fill` になっている軸を、エラーにする。\n    *\n-   * @param nodeName `fill` を持つノードの名前\n    * @param axis `fill` になっている軸\n+   * @param nodeName `fill` を持つノードの名前\n    * @returns その軸のモード（`widthMode` / `heightMode`）を prop に持つ fill-in-free-parent\n    */\n-  fromFillInFreeParent(\n-    nodeName: string,\n+  fromFillAxisInFreeParent(\n     axis: Axis,\n+    nodeName: string,\n   ): DesignDocumentValidationError {\n     const modeProp = Size.modeProp(axis);\n     return {\n@@ -239,14 +239,14 @@ export const DesignDocumentValidationError = {\n   /**\n    * インスタンスの違反 1 件を、そのインスタンスを位置にしたエラーにする。\n    *\n-   * @param refNode 違反を持つインスタンス\n    * @param violation `ReferenceContext.collectInstanceViolations` が返した違反\n+   * @param refNode 違反を持つインスタンス\n    * @returns 参照先が無ければ prop を持たない dangling-ref、未宣言の上書きならその prop の\n    *   undeclared-override、値が宣言に適合しなければその prop の検証エラー\n    */\n   fromInstanceViolation(\n-    refNode: RefNode,\n     violation: InstanceViolation,\n+    refNode: RefNode,\n   ): DesignDocumentValidationError {\n     switch (violation.kind) {\n       case \"missing-component\":\n@@ -264,8 +264,8 @@ export const DesignDocumentValidationError = {\n         };\n       case \"invalid-override\":\n         return DesignDocumentValidationError.fromPropError(\n-          refNode.name,\n           violation.error,\n+          refNode.name,\n         );\n     }\n   },\n@@ -273,16 +273,16 @@ export const DesignDocumentValidationError = {\n   /**\n    * binding の違反 1 件を、その公開 prop を位置にしたエラーにする。\n    *\n+   * @param violation `ComponentBinding.violation` が返した違反\n    * @param publicProp binding を宣言している部品名と公開 prop 名\n    * @param binding 違反を持つ公開 prop の binding\n-   * @param violation `ComponentBinding.violation` が返した違反\n    * @returns 指し先のノードが無ければ dangling-binding-node、指し先の prop が無ければ\n    *   dangling-binding-prop。どちらも部品名を位置、公開 prop 名を prop に持つ\n    */\n   fromBindingViolation(\n+    violation: BindingViolation,\n     publicProp: PublicPropRef,\n     binding: PublicPropBinding,\n-    violation: BindingViolation,\n   ): DesignDocumentValidationError {\n     const location = { nodeName: publicProp.component, prop: publicProp.prop };\n     switch (violation.kind) {\n@@ -330,7 +330,7 @@ export const DesignDocumentValidationError = {\n    * @param name 輪に含まれる部品の名前\n    * @returns その部品を指す circular-ref。prop は持たない\n    */\n-  fromCircularRef(name: string): DesignDocumentValidationError {\n+  fromCircularName(name: string): DesignDocumentValidationError {\n     return {\n       kind: \"circular-ref\",\n       nodeName: name,\n@@ -345,7 +345,7 @@ export const DesignDocumentValidationError = {\n    * @param name 重複している名前\n    * @returns その名前を位置にした duplicate-name。prop は持たない\n    */\n-  fromDuplicateName(name: string): DesignDocumentValidationError {\n+  fromDuplicatedName(name: string): DesignDocumentValidationError {\n     return {\n       kind: \"duplicate-name\",\n       nodeName: name,\n@@ -380,7 +380,7 @@ export const DesignDocumentValidationError = {\n    * @param ref 規則を満たさないトークンの種別と名前\n    * @returns そのトークン名を位置にした invalid-identifier\n    */\n-  fromInvalidTokenName(ref: TokenRef): DesignDocumentValidationError {\n+  fromInvalidNameRef(ref: TokenRef): DesignDocumentValidationError {\n     return {\n       kind: \"invalid-identifier\",\n       tokenName: ref.name,",
+          "patchLines": 122,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "afea25a3a5742e8b0ec2ece4a8a0f817d42664d8",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-12T01:14:34Z",
+      "subject": "📝 [Doc]: #1070 本体の doc を、走査が本体にある形に揃える",
+      "body": "- DesignDocument のコンパニオン doc から詰め替えの句を外し、違反を\n  集めるのは collectErrors と参照するだけにする\n- 先頭コメントの対象を「検証の走査の区切りまで」の調停系に限り、\n  走査関数群の直前に collectErrors の走査であることを示す区切りを置く\n- collectNodeErrors の @param parentProps に、部品のルートがそもそも\n  呼ばれない理由を戻す\n\n背景:\ncomment-reviewer（中）と duplication-reviewer（低）の指摘を、同じ根本\n原因として束ねた。走査を本体へ移したのに、コンパニオン doc（調停に\n徹する）と先頭コメント（以下の関数は相手を選ぶためのもの）が直って\nおらず、後ろに並ぶ走査関数まで対象に含むように読めた。分担の説明も\nコンパニオン doc と collectErrors の doc の 2 か所にあった。\nまた移動元の collectFillErrors にあった「親を引数で要求するので部品の\nルートは呼ばれない」という Why が、関数を分けたときに落ちていた。\n\n採用理由:\n分担（判定は各ドメイン / 詰め替えは DesignDocumentValidationError /\n走査はここ）の説明は collectErrors の doc 1 か所に寄せる。片方だけ\n直せる状態を作らない（rules/coding.md「規約の適用範囲」）。\nルートの fill を検査しない理由は、テストは結果を示すが理由は示さない\nので、parentProps の @param に 1 行で戻す。\n\n代替案:\n- 走査関数を別の位置へ並べ替える: 差分が大きくなるだけで、区切りの\n  1 行で対象は示せる\n\n影響とトレードオフ:\nコメントだけで振る舞いは変わらない。\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/1070#issuecomment-6115908758\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_0164KevAoe6oKu7nFAhuTGzh",
+      "files": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 5,
+          "patch": "@@ -98,9 +98,9 @@ export type InsertedCopy = Readonly<{\n }>;\n \n /*\n- * 以下の関数は「どの artboard を相手にするか」を選ぶためのもの。\n+ * 以下、検証の走査の区切りまでの関数は「どの artboard を相手にするか」を選ぶためのもの。\n  * 並びの探索・編集そのものは `NodeTree` が、名前の規則は `DocumentNames` が持っており、\n- * ドキュメントに残るのは「複数の artboard のどれに対して行うか」という調停だけ。\n+ * ここに残るのは「複数の artboard のどれに対して行うか」という調停だけ。\n  *\n  * 例外は追従（`followPropEdits`）とグループ化 / 解除（`groupedBox` / `freedChildren`）で、\n  * ここだけは `Placement` / `Constraint` / `Size` を組み合わせて編集を作る。子側のドメイン（`Node`）へ置けないのは、`Placement` が\n@@ -756,6 +756,8 @@ function rootPropsOf(document: DesignDocument, node: Node): Option<Props> {\n   );\n }\n \n+// ここから下の `collect*Errors` は、`collectErrors` がどの部品・artboard・名前を検証するかを辿る走査。\n+\n /**\n  * 1 ノード分の props のエラーを、未知の型・スキーマ照合・最小 / 最大の逆転の順で集める。\n  *\n@@ -804,7 +806,8 @@ function collectTypedPropErrors(\n  *\n  * @param node 起点のノード\n  * @param tokens トークン参照の解決に使うトークン一式\n- * @param parentProps このノードを収めている親の props\n+ * @param parentProps このノードを収めている親の props。親を引数で要求するので、親が決まらない\n+ *   位置（部品のルート）はそもそも呼ばれない\n  * @returns 自身と子孫のプリミティブについて、スキーマ照合・最小 / 最大の逆転・子を並べない\n  *   親の下の `fill` のエラーの並び（部品インスタンスは空）\n  */\n@@ -997,8 +1000,8 @@ function collectNameErrors(\n \n /**\n  * ドキュメントのコンパニオンオブジェクト。ツリーの探索・編集は `NodeTree`、名前の規則は\n- * `DocumentNames`、部品への変換は `Component`、違反からエラーへの詰め替えは `validation-error/`、\n- * 版ごとの JSON 表現は `v1/` が持ち、ここは「どの artboard・どの部品を相手にするか」の調停に徹する。\n+ * `DocumentNames`、部品への変換は `Component`、版ごとの JSON 表現は `v1/` が持ち、ここは\n+ * 「どの artboard・どの部品を相手にするか」を決める。ドキュメントの違反を集めるのは `collectErrors`。\n  */\n export const DesignDocument = {\n   /**",
+          "patchLines": 42,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "8da11a8fb5a02e7c906f746694b26aa2c86cdb43",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-12T01:14:34Z",
+      "subject": "📝 [Doc]: #1070 validation-error の doc の取りこぼしと参照先を直す",
+      "body": "- fromBindingViolation の @returns に、参照先が prop を公開していない\n  （missing-public-prop）ときも dangling-binding-prop になることを足す\n- fromDuplicatedName の doc の参照先を、実在しない\n  docs/02-data-model.md「名前の一意性」から docs/03-schema.md\n  「バリデーション仕様」に直す\n\n背景:\ncomment-reviewer の指摘（どちらも低）。いずれも移動元 validation/ から\n文言どおり移した既存の誤りで、BindingViolation は 3 種あるのに\n@returns は 2 種しか書いておらず、doc の見出しは docs のどこにも\n無かった。\n\n採用理由:\n詰め替えの置き場所を変えたこの PR で、置いた doc が実物と食い違った\nまま残すと、次に読む人が参照先を開いて迷う。\n\n代替案:\n- 移動元からの既存なので別 Issue にする: どちらも 1 行で直り、触って\n  いるファイルの doc なので分ける理由が無い\n\n影響とトレードオフ:\nコメントだけで振る舞いは変わらない。\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/1070#issuecomment-6115908758\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_0164KevAoe6oKu7nFAhuTGzh",
+      "files": [
+        {
+          "path": "src/domains/dcmp/design-document/validation-error/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 1,
+          "patch": "@@ -277,6 +277,7 @@ export const DesignDocumentValidationError = {\n    * @param publicProp binding を宣言している部品名と公開 prop 名\n    * @param binding 違反を持つ公開 prop の binding\n    * @returns 指し先のノードが無ければ dangling-binding-node、指し先の prop が無ければ\n+   *   dangling-binding-prop。指し先のインスタンスの参照先がその prop を公開していないときも\n    *   dangling-binding-prop。どちらも部品名を位置、公開 prop 名を prop に持つ\n    */\n   fromBindingViolation(\n@@ -339,7 +340,7 @@ export const DesignDocumentValidationError = {\n   },\n \n   /**\n-   * 単一の名前空間の中で重複している名前（docs/02-data-model.md「名前の一意性」）を、\n+   * 単一の名前空間の中で重複している名前（docs/03-schema.md「バリデーション仕様」）を、\n    * エラーにする。\n    *\n    * @param name 重複している名前",
+          "patchLines": 17,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "2fe110cab54c4be49617b5c41cb0fb432f1e4821",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-12T01:14:34Z",
+      "subject": "🎨 [Format]: #1070 TokenReferrer の doc の折り返しを揃える",
+      "body": "- 書き換えた段落の長い 1 行を、周りの行幅に合わせて 2 行に折る\n  （文言は変えない）\n\n採用理由:\nnaming / structure-reviewer が担当外として挙げた。Biome はコメントを\n折り返さないので、手で揃える。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_0164KevAoe6oKu7nFAhuTGzh",
+      "files": [
+        {
+          "path": "src/domains/dcmp/design-document/token-referrer/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 1,
+          "patch": "@@ -214,7 +214,8 @@ export const TokenReferrer = {\n    *\n    * ただし検証側（`DesignDocument.collectErrors` が artboard ごとに呼ぶ本体の\n    * `collectArtboardErrors`）は Box スキーマを照らしており、artboard だけ照らす先が 2 通り\n-   * ある。artboard 固有の既定がトークンを指した時点で参照元と dangling が食い違うが、**そうなっても落ちるテストは無い**（理由はあちらのコメント）。\n+   * ある。artboard 固有の既定がトークンを指した時点で参照元と dangling が食い違うが、\n+   * **そうなっても落ちるテストは無い**（理由はあちらのコメント）。\n    *\n    * @param components インスタンスの上書きが何の prop かを辿るための部品一式\n    * @param artboard 参照元を探す artboard",
+          "patchLines": 10,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "df3b9ee9005d79c59bac8f66bdb2a8486fb86018",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-12T02:31:50Z",
+      "subject": "🧪 [Tests]: #1070 種類の違うエラーをまたぐ collectErrors の並びを固定する",
+      "body": "- validate-order に 3 件足す: artboard → 循環 → 名前 → 色の全体の並び /\n  artboard の props → 子の並び / 名前の規則違反 → 重複 → トークン名 →\n  colors と gradients の衝突の並び\n\n背景:\ntest-reviewer の指摘（実測）。collectArtboardErrors / collectErrors /\ncollectNameErrors の concat の順を入れ替える 6 通りのミューテーション\nを入れても、全 4812 件が通った。validate-error-shape は 1 テストに\n1 種類の違反しか持たず、既存の validate-order は部品と artboard の\n子・参照までしか混ぜていなかったので、種類をまたぐ優先順位は誰も\n守っていなかった。この PR は concat の式を書き直しているので、\n「並びを変えない」というゴールの証拠が要る。\n\n採用理由:\n1 つのドキュメントに種類の違う違反を同時に持たせ、kind（と位置）の\n並びを toStrictEqual で比べる。1 テスト 1 仕様に沿い、全体・artboard の\n中・名前の中の 3 つに分けた。ノード名とトークン名の違反はどちらも\ninvalid-identifier なので、nodeName / tokenName で見分ける。\n3 件とも origin/main（移動前のコード）でも緑であることを worktree で\n確かめ、6 通りのミューテーションがいずれかで落ちることを実測した。\n\n代替案:\n- validate-error-shape に足す: あちらはエラー 1 件の形の観点で、並びは\n  validate-order のカテゴリ\n\n影響とトレードオフ:\n並び順を意図して変える変更は、このテストも直す必要がある。\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/1070#issuecomment-6115908758\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_0164KevAoe6oKu7nFAhuTGzh",
+      "files": [
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-order.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 103,
+          "deletions": 0,
+          "patch": "@@ -1,4 +1,6 @@\n import { expect, test } from \"vitest\";\n+import { Fade } from \"@/domains/__tests__/gradient-tokens\";\n+import { TokenSet } from \"@/domains/dcmp/token\";\n import { DesignDocument, DocumentTemplate } from \"../index\";\n \n /**\n@@ -118,3 +120,104 @@ test(\"エラーは部品ごとに props・子の行きがけ順・宣言名・bi\n     }),\n   ]);\n });\n+\n+test(\"エラーは artboard のエラー・部品の循環参照・名前のエラー・色トークンのエラーの順に並ぶ\", () => {\n+  const document = DesignDocument.create({\n+    tokens: { ...TokenSet.empty(), colors: { bad: \"red\" } },\n+    components: {\n+      a: { type: \"Box\", children: [{ name: \"a-inner\", ref: \"b\" }] },\n+      b: { type: \"Box\", children: [{ name: \"b-inner\", ref: \"a\" }] },\n+    },\n+    artboards: [\n+      {\n+        name: \"screen\",\n+        width: 375,\n+        height: 812,\n+        props: { notAProp: true },\n+        children: [\n+          { name: \"label\", type: \"Box\" },\n+          { name: \"label\", type: \"Box\" },\n+        ],\n+      },\n+    ],\n+  });\n+\n+  const errors = DesignDocument.collectErrors(document);\n+\n+  expect(errors).toEqual([\n+    expect.objectContaining({ kind: \"unknown-prop\", nodeName: \"screen\" }),\n+    expect.objectContaining({ kind: \"circular-ref\", nodeName: \"a\" }),\n+    expect.objectContaining({ kind: \"circular-ref\", nodeName: \"b\" }),\n+    expect.objectContaining({ kind: \"duplicate-name\", nodeName: \"label\" }),\n+    expect.objectContaining({ kind: \"invalid-color\", tokenName: \"bad\" }),\n+  ]);\n+});\n+\n+test(\"artboard の props のエラーは、その artboard の子のエラーより前に並ぶ\", () => {\n+  const document = DesignDocument.create({\n+    artboards: [\n+      {\n+        name: \"screen\",\n+        width: 375,\n+        height: 812,\n+        props: { notAProp: true },\n+        children: [{ name: \"plain\", type: \"Box\", props: { \"plain-extra\": 1 } }],\n+      },\n+    ],\n+  });\n+\n+  const errors = DesignDocument.collectErrors(document);\n+\n+  expect(errors).toEqual([\n+    expect.objectContaining({\n+      kind: \"unknown-prop\",\n+      nodeName: \"screen\",\n+      prop: \"notAProp\",\n+    }),\n+    expect.objectContaining({\n+      kind: \"unknown-prop\",\n+      nodeName: \"plain\",\n+      prop: \"plain-extra\",\n+    }),\n+  ]);\n+});\n+\n+// ノード名の規則違反とトークン名の規則違反は同じ invalid-identifier なので、nodeName と\n+// tokenName のどちらを持つかで見分ける。\n+test(\"名前のエラーはノード名の規則違反・名前の重複・トークン名の規則違反・colors と gradients の名前の衝突の順に並ぶ\", () => {\n+  const document = DesignDocument.create({\n+    tokens: {\n+      ...TokenSet.empty(),\n+      colors: { brand: \"#3b82f6\" },\n+      gradients: { brand: Fade },\n+      spacing: { Big: 8 },\n+    },\n+    artboards: [\n+      {\n+        name: \"screen\",\n+        width: 375,\n+        height: 812,\n+        children: [\n+          { name: \"LoginForm\", type: \"Box\" },\n+          { name: \"label\", type: \"Box\" },\n+          { name: \"label\", type: \"Box\" },\n+        ],\n+      },\n+    ],\n+  });\n+\n+  const errors = DesignDocument.collectErrors(document);\n+\n+  expect(errors).toEqual([\n+    expect.objectContaining({\n+      kind: \"invalid-identifier\",\n+      nodeName: \"LoginForm\",\n+    }),\n+    expect.objectContaining({ kind: \"duplicate-name\", nodeName: \"label\" }),\n+    expect.objectContaining({ kind: \"invalid-identifier\", tokenName: \"Big\" }),\n+    expect.objectContaining({\n+      kind: \"conflicting-token-name\",\n+      tokenName: \"brand\",\n+    }),\n+  ]);\n+});",
+          "patchLines": 112,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": "src/domains/__tests__/sample-document.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/__tests__/token-refs.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/artboard-edit-setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.ambiguous-name.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.ancestors.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.append-position.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.artboard-edit-edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.artboard-edit.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.artboard-reposition.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.artboard.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.child-position.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.children.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.componentize-edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.componentize.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.constraint.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.copy-after.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.detach-edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.detach.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.detachable.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.format-version.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.found-node-names.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.group-edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.group-placement.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.group.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.lock.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.migration.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.name-uniqueness.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.node-copy.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.placement.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.prop-edit.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.remove-all-edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.remove-all.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.rename-name.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.rename.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.replace-node.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.reposition.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.resize.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.rotation.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.template.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.token-referrer-edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.token-referrer-paint.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.token-referrer-validation-range.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.token-referrer.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.tree-edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.tree.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.type.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.usable-name.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-artboard.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-binding.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-color.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-default.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-domain.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-duplicate-name.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+      "to": "src/domains/__tests__/gradient-tokens.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+      "to": "src/domains/dcmp/token/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-fill.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-identifier.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-missing-name.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-order.test.ts",
+      "to": "src/domains/__tests__/gradient-tokens.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-order.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-order.test.ts",
+      "to": "src/domains/dcmp/token/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-override.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-paint.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-placement.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-prototype-name.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-public-prop-name.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-ref-edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-ref.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-reference-message.test.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-reference-message.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-reference-message.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-unknown.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.visibility.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/group-setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/text-node-setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/axis-length/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/child-placement/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/child-position/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/component-binding/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/constraint/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/design-document/edit-error/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/design-document/template/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/design-document/token-referrer/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/design-document/v1/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/design-document/validation-error/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/design-document/validation/index.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/document-names/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/expanded-node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/format-version/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/layout/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/locking/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/node-tree/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/placement/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/primitive-schema/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/reference-context/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/resize-edit/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/resolved-props/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/rotation/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/size/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/token/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/visibility/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/unit/angle/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/unit/axis/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/unit/offset/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/token-referrer/index.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/token-referrer/index.ts",
+      "to": "src/domains/dcmp/component-binding/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/token-referrer/index.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/token-referrer/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/token-referrer/index.ts",
+      "to": "src/domains/dcmp/primitive-schema/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/token-referrer/index.ts",
+      "to": "src/domains/dcmp/token/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/token-referrer/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/token-referrer/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation-error/index.ts",
+      "to": "src/domains/dcmp/component-binding/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation-error/index.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation-error/index.ts",
+      "to": "src/domains/dcmp/design-document/v1/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation-error/index.ts",
+      "to": "src/domains/dcmp/document-names/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation-error/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation-error/index.ts",
+      "to": "src/domains/dcmp/primitive-schema/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation-error/index.ts",
+      "to": "src/domains/dcmp/reference-context/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation-error/index.ts",
+      "to": "src/domains/dcmp/size/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation-error/index.ts",
+      "to": "src/domains/dcmp/token/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation-error/index.ts",
+      "to": "src/domains/unit/axis/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation-error/index.ts",
+      "to": "src/utils/Json.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation/index.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation/index.ts",
+      "to": "src/domains/dcmp/component-binding/index.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation/index.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation/index.ts",
+      "to": "src/domains/dcmp/design-document/v1/index.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation/index.ts",
+      "to": "src/domains/dcmp/document-names/index.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation/index.ts",
+      "to": "src/domains/dcmp/layout/index.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation/index.ts",
+      "to": "src/domains/dcmp/primitive-schema/index.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation/index.ts",
+      "to": "src/domains/dcmp/reference-context/index.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation/index.ts",
+      "to": "src/domains/dcmp/resolved-props/index.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation/index.ts",
+      "to": "src/domains/dcmp/size/index.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation/index.ts",
+      "to": "src/domains/dcmp/token/index.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation/index.ts",
+      "to": "src/utils/Json.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/domains/session/document-error/__tests__/document-error.validation-location.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-error/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-reload/__tests__/document-reload.invalid.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-reload/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/__tests__/document-selection.canvas-dig.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/__tests__/document-selection.current-artboard.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/__tests__/document-selection.lock.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/__tests__/document-selection.single-selection.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/__tests__/document-selection.source-name.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/file-validity/__tests__/file-validity.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/node-template/__tests__/node-template.name.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/node-template/__tests__/node-template.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/node-template/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/opened-document/__tests__/opened-document.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/opened-document/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.edit-from.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.instance.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/token-selection/__tests__/token-selection.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/token-selection/__tests__/token-selection.referrer.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/token-selection/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/__stories__/sample-editor-state.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/__tests__/artboard-fixtures.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/__tests__/primary-color-token.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/__tests__/sample-document.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-left-pane/index.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-provider/__tests__/editor-provider.edge.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-provider/index.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-top-bar/index.stories.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.artboard-reposition.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.asset-drag.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-dig.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.lock.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.reposition.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-history/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-history/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-menu/__tests__/edit-menu.target.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-menu/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-menu/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.artboard-reposition.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.artboard.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.clipboard.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.componentize-edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.componentize.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.context-menu-selection.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.detach.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.document-errors.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.frozen.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.group.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.history.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.insert-at.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.insert-edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.insert.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.instance-selection.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.lock.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.move.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-remove.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-selection.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.prop-edit-continuity.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.prop-edit.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.reload.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.remove-edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.remove.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.reorder.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.reposition.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.resize-continuity.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.resize.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.selection.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.token-continuity.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.token.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/__stories__/sample-assets-document.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/components/assets-panel/index.stories.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/components/component-list/index.stories.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/components/create-component/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/components/create-component/index.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/domains/componentization/__tests__/componentization.edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/domains/componentization/__tests__/componentization.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/domains/componentization/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/__stories__/sample-canvas-document.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.frozen.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.multi-selection.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.normal.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.text-edit.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.token-dash.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.stories.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/reposition-preview-style/index.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-drop/dragged-node/__tests__/dragged-node.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-drop/dragged-node/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-drop/drop-parent/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-drop/drop-parent/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.handles.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.rotation.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap-targets.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/text-edit/__tests__/text-edit.edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/text-edit/__tests__/text-edit.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/text-edit/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/__tests__/setup.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/__tests__/setup.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/__tests__/use-node-resize.normal.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-range-select/__tests__/setup.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-range-select/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-text-edit/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/use-document-reload.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-file-revert/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__stories__/panel-controls.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.frozen.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.heading.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.instance.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.multi-selection.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.normal.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.shorthand.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/setup.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/index.stories.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/__stories__/sample-sidebar-document.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/artboard-list/__tests__/artboard-list.editing.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/artboard-list/__tests__/artboard-list.filter.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/artboard-list/__tests__/artboard-list.normal.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/artboard-list/__tests__/artboard-list.type-display.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/artboard-list/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.disclosure.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.filter.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.normal.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.reorder.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.type-display.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/document-tree/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/document-tree/index.stories.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/layers-panel/__tests__/layers-panel.filter.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/__stories__/sample-token-document.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/__tests__/gradient-documents.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-dashed-nodes/__tests__/setup.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-dashed-nodes/__tests__/token-dashed-nodes.edge.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-dashed-nodes/__tests__/token-dashed-nodes.normal.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-dashed-nodes/__tests__/token-dashed-nodes.reveal.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.title.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-list/__tests__/token-list.normal.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-used-by/__tests__/render.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-used-by/__tests__/token-used-by.edge.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-used-by/__tests__/token-used-by.normal.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-used-by/index.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.actions.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.artboard.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.componentize.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.detach.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.group.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.rename.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-json/__tests__/document-json.format-version.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-json/__tests__/document-json.parse-error.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-json/__tests__/document-json.parse.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-json/__tests__/document-json.roundtrip.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-json/__tests__/document-json.serialize.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-json/__tests__/document-json.template.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-json/__tests__/document-json.type.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-json/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/services/document-html/__tests__/document-html.edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/services/document-html/__tests__/document-html.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/services/document-html/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    }
+  ]
+}
