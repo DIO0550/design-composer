@@ -212,9 +212,9 @@ export const TokenReferrer = {
    * artboard 自身の props も対象。受け付ける prop の定義は `Artboard.propDefinitions` が持つ
    * ので Box スキーマを直に見ない（artboard が受け付ける prop の唯一の答えがそちらだから）。
    *
-   * ただし検証側（`validation` の `collectArtboardErrors`）は Box スキーマを照らしており、
-   * artboard だけ照らす先が 2 通りある。artboard 固有の既定がトークンを指した時点で参照元
-   * と dangling が食い違うが、**そうなっても落ちるテストは無い**（理由はあちらのコメント）。
+   * ただし検証側（`DesignDocument.collectErrors` が artboard ごとに呼ぶ本体の
+   * `collectArtboardErrors`）は Box スキーマを照らしており、artboard だけ照らす先が 2 通り
+   * ある。artboard 固有の既定がトークンを指した時点で参照元と dangling が食い違うが、**そうなっても落ちるテストは無い**（理由はあちらのコメント）。
    *
    * @param components インスタンスの上書きが何の prop かを辿るための部品一式
    * @param artboard 参照元を探す artboard
