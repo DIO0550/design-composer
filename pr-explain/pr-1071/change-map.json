@@ -1,0 +1,1153 @@
+{
+  "version": 2,
+  "pr": 1071,
+  "headBranch": "claude/magical-cannon-t9c8hk",
+  "baseBranch": "main",
+  "mergeBase": "0024eddff935563ad8d7dd8e0dc29c20692b0712",
+  "head": "0e2a9eb766cfffeb1788827e1b30f52ae40d015e",
+  "groups": [
+    {
+      "label": "domains / dcmp",
+      "files": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/token/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / session",
+      "files": [
+        {
+          "path": "src/domains/session/document-error/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-selection/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/edit-continuity/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/prop-control/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/token-selection/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "utils",
+      "files": [
+        {
+          "path": "src/utils/ArrayEx.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Option.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "types",
+      "files": [
+        {
+          "path": "src/types/ValueOf.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor",
+      "files": [
+        {
+          "path": "src/features/editor/components/canvas-dock/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/document-error-list/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 21,
+          "deletions": 17,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/document-error-list/__tests__/document-error-list.actions.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/document-error-list/__tests__/document-error-list.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/document-error-list/__tests__/document-error-list.origin.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/document-error-list/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/assets",
+      "files": [
+        {
+          "path": "src/features/editor/features/assets/components/create-component/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 7,
+          "deletions": 12,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/assets/domains/componentization/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/assets/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/assets/components/create-component/__tests__/create-component.edge.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/assets/components/create-component/__tests__/create-component.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/assets/components/create-component/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/document-start",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/index.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/inspector",
+      "files": [
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/groups-body/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 4,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/instance-body/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 14,
+          "deletions": 12,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/label-width/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/prop-row/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/section-heading/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/selection-title/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/shorthand-row/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.instance.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.shorthand.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/index.stories.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/instance-body/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/tokens",
+      "files": [
+        {
+          "path": "src/features/editor/features/tokens/components/token-dashed-nodes/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 12,
+          "deletions": 10,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/gradient-fields/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 4,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-used-by/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-dashed-nodes/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.gradient.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.title.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-dashed-nodes/index.stories.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "components",
+      "files": [
+        {
+          "path": "src/components/action-card/__stories__/sample-contents.ts",
+          "changed": false
+        },
+        {
+          "path": "src/components/action-card/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 3,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/components/button/index.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 182,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/components/color-swatch/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/components/focus-outline/index.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 7,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/components/type-glyph/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/components/action-card/__tests__/action-card.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/components/button/__tests__/button.normal.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 155,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/components/button/index.tsx"
+        },
+        {
+          "path": "src/components/button/__tests__/button.type.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 59,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/components/button/index.tsx"
+        },
+        {
+          "path": "src/components/action-card/index.stories.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/components/button/index.stories.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 132,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    },
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".github/scripts/build-pr-change-map-cases.sh",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [
+      {
+        "file": "src/components/button/__tests__/button.normal.test.tsx",
+        "name": "アイコンのボタンは、与えた名前で読まれる"
+      },
+      {
+        "file": "src/components/button/__tests__/button.normal.test.tsx",
+        "name": "テキストのボタンは、名前を与えなければ中身の綴りで読まれる"
+      },
+      {
+        "file": "src/components/button/__tests__/button.normal.test.tsx",
+        "name": "テキストのボタンは、名前を与えるとその名前で読まれる"
+      },
+      {
+        "file": "src/components/button/__tests__/button.normal.test.tsx",
+        "name": "フォームの中に置いても、押してフォームを送信しない"
+      },
+      {
+        "file": "src/components/button/__tests__/button.normal.test.tsx",
+        "name": "中身の綴りがボタンの名前になる"
+      },
+      {
+        "file": "src/components/button/__tests__/button.normal.test.tsx",
+        "name": "名前を与えると、中身ではなくその名前で読まれる"
+      },
+      {
+        "file": "src/components/button/__tests__/button.normal.test.tsx",
+        "name": "押させたくないときは、押しても手続きが呼ばれない"
+      },
+      {
+        "file": "src/components/button/__tests__/button.normal.test.tsx",
+        "name": "押させたくないときは、押せない状態で出る"
+      },
+      {
+        "file": "src/components/button/__tests__/button.normal.test.tsx",
+        "name": "押すと、渡した手続きが 1 回呼ばれる"
+      },
+      {
+        "file": "src/components/button/__tests__/button.normal.test.tsx",
+        "name": "押せない理由を添えなければ、title は出ない"
+      },
+      {
+        "file": "src/components/button/__tests__/button.normal.test.tsx",
+        "name": "押せない理由を添えると、ボタンの title に出る"
+      },
+      {
+        "file": "src/components/button/__tests__/button.type.test.ts",
+        "name": "アイコンには大きさを渡せない"
+      },
+      {
+        "file": "src/components/button/__tests__/button.type.test.ts",
+        "name": "アイコンは、名前を与えないと型エラーになる"
+      },
+      {
+        "file": "src/components/button/__tests__/button.type.test.ts",
+        "name": "テキストには大きさを渡せない"
+      },
+      {
+        "file": "src/components/button/__tests__/button.type.test.ts",
+        "name": "テキストは、名前を与えなくても型が通る"
+      },
+      {
+        "file": "src/components/button/__tests__/button.type.test.ts",
+        "name": "箱型は、大きさを渡さないと型エラーになる"
+      },
+      {
+        "file": "src/components/button/__tests__/button.type.test.ts",
+        "name": "語彙に無い種類の文字列は渡せない"
+      }
+    ],
+    "removed": [],
+    "files": [
+      "src/components/button/__tests__/button.normal.test.tsx",
+      "src/components/button/__tests__/button.type.test.ts"
+    ]
+  },
+  "commits": [
+    {
+      "sha": "b92ac07975584cc7dd3653d928fb58ef8d0e5864",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-12T00:41:43Z",
+      "subject": "✨ [New Feature]: #1061 基本ボタン Button を src/components に足す",
+      "body": "- 種類 ButtonKinds(Primary / Secondary / Danger / Text / Emphasis / Icon)と\n  大きさ ButtonSizes(Small / Regular / Large)を持つ Button を追加\n- props は種類ごとの直和。箱型は size 必須、Text と Icon は size を\n  受け取らず、Icon だけ aria-label 必須\n- 配色は ButtonKindFaces に Issue の hex を Tailwind の任意値で持ち、\n  hover は enabled:hover:、無効は disabled: で書く\n- Icon の配色は PrimaryFace を指す(書き写さない)\n\n背景:\nボタンが画面ごとに個別の className で描かれていて、配色・高さ・無効の\n見え方が揃っていなかった。デザイン検討で「ブルー・ゴースト基調」の\n6 種類 × 3 状態に決まったので、それを 1 箇所で持つ部品を作る。\n\n採用理由:\n使う側が features/editor とその子 feature(assets / inspector / tokens)に\nまたがり、子同士・子から親を import できないため src/components/ に置いた。\nclassName を受け取らないのは、受け取ると画面ごとの className へ戻る口に\nなり、揃えた意味が無くなるため。\nprop 名は kind にした。既存の *Tones は配色だけを切り替えるのに対し、\nButton はテキスト(行内・高さなし)とアイコン(30×30)で形も受け取る\nprops も変わる直和なので、判別子の kind が合う。\nテキストを 11px に固定するのは、revert file の置き場所が text-sm の h2 で、\n周囲を継ぐと 14px の太字になり UI 案(どちらも 11px)から離れるため。\n強調の無効は UI 案の部品化のボタンの値(地 #fafafa / 枠 #ebebeb /\n文字 #c4c4c4)。強調の ◆ は currentColor を継がせ、色を Button だけが持つ。\n\n代替案:\n- prop 名 variant: docs/01-file-format.md で dcmp の部品の prop として\n  別の意味に使われているため却下\n- prop 名 tone: 既存の *Tones は配色だけの切り替えで形を変えないため却下\n- Tailwind の @theme で色トークンを新設: 既存は任意値 hex の流儀で、\n  パレット導入はこの Issue より広い判断になるため却下\n- ActionCard と配色表を共有: card 部位の値は一致するが、hover の文字色・\n  押せないときの見え方(opacity-50 でカード全体)・部位の数が違い、\n  共有すると #1062 のカードの見え方が確認なしに変わるため却下\n- Button.Icon の compound: 親が文脈を与える関係ではないため却下\n- 状態を列挙の prop で持つ: hover は CSS で表せ、残る状態は disabled だけ\n- 強調を画面に 1 つだけに型で縛る: 合成後の木の性質で props の型では\n  表せないため doc で約束する\n- 呼び出し側があるものだけ実装: Icon と Large は今は呼び出し側が無いが、\n  削ると #1061 のゴール(6 種類が揃う)を満たさないため実装する\n\n影響とトレードオフ:\n配色は happy-dom では検証できず、守るのは Storybook の視覚差分と目視。\nhover は VRT に写らない。ActionCard と同じ hex が 2 箇所にある重複は\n受け入れた。\n\n参考:\nRefs #1061, #1066(アイコン系の置き換え)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01Rmu8Qdu9erWqFM1tmfgyhq",
+      "files": [
+        {
+          "path": "src/components/button/index.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 181,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,181 @@\n+import type { ReactElement, ReactNode } from \"react\";\n+import type { ValueOf } from \"@/types/ValueOf\";\n+\n+/** ボタンの種類。配色と形が決まる。 */\n+export const ButtonKinds = {\n+  /** 押す先を示す既定の操作（青の枠と文字）。 */\n+  Primary: \"Primary\",\n+  /** 勧め分けをしない操作（灰の枠と黒の文字）。 */\n+  Secondary: \"Secondary\",\n+  /** 取り消せない削除などの操作（赤の枠と文字）。 */\n+  Danger: \"Danger\",\n+  /** 文の中に置く、枠を持たない操作（青の文字）。 */\n+  Text: \"Text\",\n+  /**\n+   * その画面でいちばん勧めたい操作（青の地と白の文字）。画面に 1 つだけ置く。\n+   *\n+   * 1 つだけを型で縛らない。1 画面は複数の feature が描いた部品の合成で、1 つだけは合成後の木の性質なので props の型では表せない。\n+   */\n+  Emphasis: \"Emphasis\",\n+  /** 綴りを持たないアイコンだけの操作（プライマリと同じ配色の正方形）。 */\n+  Icon: \"Icon\",\n+} as const;\n+\n+/** ボタンの種類。 */\n+export type ButtonKind = ValueOf<typeof ButtonKinds>;\n+\n+/** 枠と高さを持つ箱型のボタンの大きさ。 */\n+export const ButtonSizes = {\n+  /** 高さ 28px。 */\n+  Small: \"Small\",\n+  /** 高さ 30px。 */\n+  Regular: \"Regular\",\n+  /** 高さ 36px。 */\n+  Large: \"Large\",\n+} as const;\n+\n+/** 箱型のボタンの大きさ。 */\n+export type ButtonSize = ValueOf<typeof ButtonSizes>;\n+\n+/** どの種類のボタンも受け取るもの。 */\n+type ButtonCommonProps = Readonly<{\n+  /** 押したときに始める手続き。 */\n+  onClick?: () => void;\n+  /** 押させたくないか。 */\n+  disabled?: boolean;\n+  /** ボタンに添える 1 行（押せない理由など）。 */\n+  title?: string;\n+  /** ボタンの中身。 */\n+  children: ReactNode;\n+}>;\n+\n+/** 枠と高さを持つ箱型の種類。 */\n+type ButtonBoxKind =\n+  | typeof ButtonKinds.Primary\n+  | typeof ButtonKinds.Secondary\n+  | typeof ButtonKinds.Danger\n+  | typeof ButtonKinds.Emphasis;\n+\n+/** ボタンの props。種類ごとに大きさと名前の要否が違う。 */\n+export type ButtonProps = ButtonCommonProps &\n+  (\n+    | Readonly<{\n+        kind: ButtonBoxKind;\n+        size: ButtonSize;\n+        /** 中身の綴りの代わりに読ませる名前。 */\n+        \"aria-label\"?: string;\n+      }>\n+    | Readonly<{\n+        kind: typeof ButtonKinds.Text;\n+        size?: never;\n+        /** 中身の綴りの代わりに読ませる名前。 */\n+        \"aria-label\"?: string;\n+      }>\n+    | Readonly<{\n+        kind: typeof ButtonKinds.Icon;\n+        size?: never;\n+        /** アイコンには綴りが無いので、読ませる名前を必ず与える。 */\n+        \"aria-label\": string;\n+      }>\n+  );\n+\n+/** プライマリの配色。アイコンも同じ値を使う。 */\n+const PrimaryFace =\n+  \"border-[#0a74c9] bg-[#ffffff] text-[#0a74c9] enabled:hover:bg-[#e7f1fa] enabled:hover:text-[#0866b2] disabled:border-[#ebebeb] disabled:text-[#c4c4c4]\";\n+\n+/**\n+ * 種類ごとの、平常・hover・押せないときの配色を指定する Tailwind のクラス。\n+ *\n+ * happy-dom は Tailwind を解決せず描画もしないので、配色はテストでは守れず、気づけるのは Storybook の視覚差分（components/Button）だけ。\n+ */\n+const ButtonKindFaces = {\n+  [ButtonKinds.Primary]: PrimaryFace,\n+  [ButtonKinds.Secondary]:\n+    \"border-[#d4d4d4] bg-[#ffffff] text-[#1e1e1e] enabled:hover:bg-[#f5f5f5] disabled:border-[#ebebeb] disabled:text-[#c4c4c4]\",\n+  [ButtonKinds.Danger]:\n+    \"border-[#c4262b] bg-[#ffffff] text-[#c4262b] enabled:hover:bg-[#fdecec] enabled:hover:text-[#a81f24] disabled:border-[#ebebeb] disabled:text-[#c4c4c4]\",\n+  [ButtonKinds.Text]:\n+    \"text-[#0a74c9] enabled:hover:bg-[#e7f1fa] disabled:text-[#c4c4c4]\",\n+  // 枠を地と同じ色にして持たせるのは、枠のある他の箱型と高さを揃えるため。\n+  // 押せないときの配色は UI 案（docs/Design Composer.html）の部品化のボタンの値。\n+  [ButtonKinds.Emphasis]:\n+    \"border-[#0a74c9] bg-[#0a74c9] text-[#ffffff] enabled:hover:border-[#0866b2] enabled:hover:bg-[#0866b2] disabled:border-[#ebebeb] disabled:bg-[#fafafa] disabled:text-[#c4c4c4]\",\n+  [ButtonKinds.Icon]: PrimaryFace,\n+} as const satisfies Readonly<Record<ButtonKind, string>>;\n+\n+/** どの種類にも付ける、字の太さ・カーソル・フォーカス枠（ActionCard と同じ青）。 */\n+const ButtonCommonClass =\n+  \"font-normal enabled:cursor-pointer disabled:cursor-default focus-visible:outline-2 focus-visible:outline-[#0a74c9] focus-visible:outline-offset-2\";\n+\n+/** 箱型の、大きさに依らない形。 */\n+const ButtonBoxClass =\n+  \"inline-flex items-center justify-center gap-[7px] border\";\n+\n+/** アイコンの形（30px の正方形）。 */\n+const ButtonIconClass =\n+  \"inline-flex size-[30px] items-center justify-center gap-[7px] rounded-[5px] border text-[13px]\";\n+\n+/**\n+ * テキストの形。文の中に置き、高さを持たない。\n+ *\n+ * 左右の余白と角丸は hover の地が字に接しないためのもの（UI 案の行内の地の角丸 3px に揃える）。\n+ */\n+const ButtonTextClass = \"inline rounded-[3px] px-[3px] text-[11px]\";\n+\n+/**\n+ * 箱型の大きさごとの高さ・余白・字の大きさ・角丸。\n+ *\n+ * @param size 箱型の大きさ\n+ * @returns その大きさの形を指定するクラス\n+ */\n+function boxSizeClass(size: ButtonSize): string {\n+  switch (size) {\n+    case ButtonSizes.Small:\n+      return \"h-7 px-[10px] text-[11px] rounded-[5px]\";\n+    case ButtonSizes.Regular:\n+      return \"h-[30px] px-[10px] text-[11px] rounded-[5px]\";\n+    case ButtonSizes.Large:\n+      return \"h-9 px-3 text-[13px] rounded-[6px]\";\n+  }\n+}\n+\n+/**\n+ * 種類と大きさで決まる形。\n+ *\n+ * @param props ボタンの props\n+ * @returns 形を指定するクラス\n+ */\n+function shapeClass(props: ButtonProps): string {\n+  switch (props.kind) {\n+    case ButtonKinds.Text:\n+      return ButtonTextClass;\n+    case ButtonKinds.Icon:\n+      return ButtonIconClass;\n+    case ButtonKinds.Primary:\n+    case ButtonKinds.Secondary:\n+    case ButtonKinds.Danger:\n+    case ButtonKinds.Emphasis:\n+      return `${ButtonBoxClass} ${boxSizeClass(props.size)}`;\n+  }\n+}\n+\n+/**\n+ * アプリの基本のボタン。見た目は種類と大きさだけで決まり、className は受け取らない。\n+ *\n+ * @param props 種類・大きさ・名前・押したときの手続き・押せるか・添える 1 行・中身\n+ * @returns 押してもフォームを送信しないボタン\n+ */\n+export function Button(props: ButtonProps): ReactElement {\n+  return (\n+    <button\n+      type=\"button\"\n+      onClick={props.onClick}\n+      disabled={props.disabled}\n+      title={props.title}\n+      aria-label={props[\"aria-label\"]}\n+      className={`${ButtonCommonClass} ${shapeClass(props)} ${ButtonKindFaces[props.kind]}`}\n+    >\n+      {props.children}\n+    </button>\n+  );\n+}",
+          "patchLines": 182,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "a0c0bad78b456ac6b689c3211d24610535fca20d",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-12T00:41:55Z",
+      "subject": "🧪 [Tests]: #1061 Button の押し方・名前・title と props の型をテストで固定する",
+      "body": "- button.normal: 押すと手続きが 1 回呼ばれる / 無効なら押せず呼ばれない /\n  フォームを送信しない / 名前(中身・aria-label・アイコン・テキスト) /\n  title の有無 の 11 件\n- button.type: アイコンは名前必須で大きさを渡せない / テキストは大きさを\n  渡せず名前は任意 / 箱型は大きさ必須 / 語彙外の種類は渡せない の 6 件\n\n背景:\n置き換え先の既存テストは role・name・disabled・title でボタンを引いて\nいるので、Button がこの 4 つを素の button へ渡すことが置き換えの前提に\nなる。その前提を Button 側でも固定する。\n\n採用理由:\nprops の直和(種類ごとの size と aria-label の要否)は仕様の一部なので、\n@ts-expect-error と expectTypeOf で退行を検知する。\ntitle が出ないケースを足したのは、instance-body が押せるときに\nundefined を渡す経路があり、空の title が出ないことを守るため。\n\n代替案:\n- 配色・寸法・hover をテストする: happy-dom は Tailwind を解決しないので\n  見られない。VRT と目視で守る\n\n影響とトレードオフ:\nsize?: never の誤りは TS がプロパティ行ではなく変数宣言の行に出すため、\n@ts-expect-error は変数宣言の直前に置いている。\n\n参考:\nRefs #1061\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01Rmu8Qdu9erWqFM1tmfgyhq",
+      "files": [
+        {
+          "path": "src/components/button/__tests__/button.normal.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 155,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,155 @@\n+import { fireEvent, render, screen } from \"@testing-library/react\";\n+import { expect, test } from \"vitest\";\n+import { Button, ButtonKinds, ButtonSizes } from \"../index\";\n+\n+test(\"押すと、渡した手続きが 1 回呼ばれる\", () => {\n+  const clicks: string[] = [];\n+  render(\n+    <Button\n+      kind={ButtonKinds.Primary}\n+      size={ButtonSizes.Regular}\n+      onClick={() => clicks.push(\"clicked\")}\n+    >\n+      保存\n+    </Button>,\n+  );\n+\n+  fireEvent.click(screen.getByRole(\"button\", { name: \"保存\" }));\n+\n+  expect(clicks).toHaveLength(1);\n+});\n+\n+test(\"押させたくないときは、押せない状態で出る\", () => {\n+  render(\n+    <Button kind={ButtonKinds.Primary} size={ButtonSizes.Regular} disabled>\n+      保存\n+    </Button>,\n+  );\n+\n+  expect(\n+    screen.getByRole(\"button\", { name: \"保存\" }).hasAttribute(\"disabled\"),\n+  ).toBe(true);\n+});\n+\n+test(\"押させたくないときは、押しても手続きが呼ばれない\", () => {\n+  const clicks: string[] = [];\n+  render(\n+    <Button\n+      kind={ButtonKinds.Primary}\n+      size={ButtonSizes.Regular}\n+      disabled\n+      onClick={() => clicks.push(\"clicked\")}\n+    >\n+      保存\n+    </Button>,\n+  );\n+\n+  fireEvent.click(screen.getByRole(\"button\", { name: \"保存\" }));\n+\n+  expect(clicks).toHaveLength(0);\n+});\n+\n+test(\"フォームの中に置いても、押してフォームを送信しない\", () => {\n+  const submits: string[] = [];\n+  render(\n+    <form\n+      onSubmit={(event) => {\n+        event.preventDefault();\n+        submits.push(\"submitted\");\n+      }}\n+    >\n+      <Button kind={ButtonKinds.Secondary} size={ButtonSizes.Regular}>\n+        保存\n+      </Button>\n+    </form>,\n+  );\n+\n+  fireEvent.click(screen.getByRole(\"button\", { name: \"保存\" }));\n+\n+  expect(submits).toHaveLength(0);\n+});\n+\n+test(\"中身の綴りがボタンの名前になる\", () => {\n+  render(\n+    <Button kind={ButtonKinds.Danger} size={ButtonSizes.Regular}>\n+      Delete token\n+    </Button>,\n+  );\n+\n+  expect(screen.getByRole(\"button\", { name: \"Delete token\" })).toBeDefined();\n+});\n+\n+test(\"名前を与えると、中身ではなくその名前で読まれる\", () => {\n+  render(\n+    <Button\n+      kind={ButtonKinds.Primary}\n+      size={ButtonSizes.Small}\n+      aria-label=\"card を表示\"\n+    >\n+      Reveal\n+    </Button>,\n+  );\n+\n+  expect(screen.getByRole(\"button\", { name: \"card を表示\" })).toBeDefined();\n+});\n+\n+test(\"アイコンのボタンは、与えた名前で読まれる\", () => {\n+  render(\n+    <Button kind={ButtonKinds.Icon} aria-label=\"追加\">\n+      +\n+    </Button>,\n+  );\n+\n+  expect(screen.getByRole(\"button\", { name: \"追加\" })).toBeDefined();\n+});\n+\n+test(\"テキストのボタンは、名前を与えなければ中身の綴りで読まれる\", () => {\n+  render(<Button kind={ButtonKinds.Text}>reveal in tree</Button>);\n+\n+  expect(screen.getByRole(\"button\", { name: \"reveal in tree\" })).toBeDefined();\n+});\n+\n+test(\"テキストのボタンは、名前を与えるとその名前で読まれる\", () => {\n+  render(\n+    <Button kind={ButtonKinds.Text} aria-label=\"card をツリーで表示\">\n+      reveal in tree\n+    </Button>,\n+  );\n+\n+  expect(\n+    screen.getByRole(\"button\", { name: \"card をツリーで表示\" }),\n+  ).toBeDefined();\n+});\n+\n+test(\"押せない理由を添えると、ボタンの title に出る\", () => {\n+  render(\n+    <Button\n+      kind={ButtonKinds.Emphasis}\n+      size={ButtonSizes.Regular}\n+      disabled\n+      title=\"選んでから押せます\"\n+    >\n+      Create component\n+    </Button>,\n+  );\n+\n+  expect(\n+    screen\n+      .getByRole(\"button\", { name: \"Create component\" })\n+      .getAttribute(\"title\"),\n+  ).toBe(\"選んでから押せます\");\n+});\n+\n+test(\"押せない理由を添えなければ、title は出ない\", () => {\n+  render(\n+    <Button kind={ButtonKinds.Emphasis} size={ButtonSizes.Regular}>\n+      Create component\n+    </Button>,\n+  );\n+\n+  expect(\n+    screen\n+      .getByRole(\"button\", { name: \"Create component\" })\n+      .hasAttribute(\"title\"),\n+  ).toBe(false);\n+});",
+          "patchLines": 156,
+          "truncated": false
+        },
+        {
+          "path": "src/components/button/__tests__/button.type.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 59,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,59 @@\n+import { expect, test } from \"vitest\";\n+import { ButtonKinds, type ButtonProps, ButtonSizes } from \"../index\";\n+\n+test(\"アイコンは、名前を与えないと型エラーになる\", () => {\n+  // @ts-expect-error アイコンには綴りが無いので aria-label が要る\n+  const props: ButtonProps = { kind: ButtonKinds.Icon, children: \"+\" };\n+\n+  expect(props.kind).toBe(ButtonKinds.Icon);\n+});\n+\n+test(\"アイコンには大きさを渡せない\", () => {\n+  // @ts-expect-error アイコンの大きさは 30px に決まっている\n+  const props: ButtonProps = {\n+    kind: ButtonKinds.Icon,\n+    \"aria-label\": \"追加\",\n+    size: ButtonSizes.Regular,\n+    children: \"+\",\n+  };\n+\n+  expect(props.kind).toBe(ButtonKinds.Icon);\n+});\n+\n+test(\"テキストには大きさを渡せない\", () => {\n+  // @ts-expect-error テキストは行内に置き、高さを持たない\n+  const props: ButtonProps = {\n+    kind: ButtonKinds.Text,\n+    size: ButtonSizes.Regular,\n+    children: \"reveal in tree\",\n+  };\n+\n+  expect(props.kind).toBe(ButtonKinds.Text);\n+});\n+\n+test(\"テキストは、名前を与えなくても型が通る\", () => {\n+  const props: ButtonProps = {\n+    kind: ButtonKinds.Text,\n+    children: \"reveal in tree\",\n+  };\n+\n+  expect(props.kind).toBe(ButtonKinds.Text);\n+});\n+\n+test(\"箱型は、大きさを渡さないと型エラーになる\", () => {\n+  // @ts-expect-error 箱型は大きさが要る\n+  const props: ButtonProps = { kind: ButtonKinds.Primary, children: \"保存\" };\n+\n+  expect(props.kind).toBe(ButtonKinds.Primary);\n+});\n+\n+test(\"語彙に無い種類の文字列は渡せない\", () => {\n+  const props: ButtonProps = {\n+    // @ts-expect-error 種類は ButtonKinds の値に閉じている\n+    kind: \"Link\",\n+    size: ButtonSizes.Regular,\n+    children: \"保存\",\n+  };\n+\n+  expect(props.kind).toBe(\"Link\");\n+});",
+          "patchLines": 60,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "2a283ac3d72fa28b812aaedae17be98f6ea42c10",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-12T00:42:01Z",
+      "subject": "✨ [New Feature]: #1061 Button の 6 種類を Storybook に並べる",
+      "body": "- components/Button に Primary / Secondary / Danger / Emphasis / Text /\n  Icon の 6 本を追加\n- 箱型の 4 本は 3 つの大きさ × 平常・無効を並べ、テキストは 11px の\n  文の中に置く\n\n背景:\n配色と寸法は happy-dom で見えず、守れるのは Storybook の視覚差分と\n目視だけ。呼び出し側がまだ無い Icon と Large もここで描いて確かめる。\n\n採用理由:\n大きさは Object.values(ButtonSizes) で回さず 3 つを書いて並べた。\nStorybook の docgen が .tsx から export した定数オブジェクトに\n__docgenInfo を書き足し、Object.values がそれも大きさとして並べて\n描画が落ちたため(実測)。\n\n代替案:\n- 大きさごとにストーリーを分ける: 本数が 12 本を超え、種類の中での\n  大きさの比較がしにくいため却下\n\n影響とトレードオフ:\nhover は VRT に写らない(擬似状態のアドオンが無い)ので、PR で\nplaywright-cli で hover させて目視する。新しいストーリーは main に\nベースラインが無いので VRT では比べられない。\n\n参考:\nRefs #1061\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01Rmu8Qdu9erWqFM1tmfgyhq",
+      "files": [
+        {
+          "path": "src/components/button/index.stories.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 133,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,133 @@\n+import type { Meta, StoryObj } from \"@storybook/react-vite\";\n+import type { ReactElement } from \"react\";\n+import {\n+  Button,\n+  type ButtonKind,\n+  ButtonKinds,\n+  type ButtonSize,\n+  ButtonSizes,\n+} from \"./index\";\n+\n+/**\n+ * 基本のボタン。種類ごとに 1 本で、平常と押せないときを並べる。箱型は大きさも並べる。\n+ *\n+ * hover の見え方は視覚差分では撮れないので、Storybook で触って確かめる。\n+ */\n+const meta = {\n+  title: \"components/Button\",\n+  parameters: { layout: \"padded\" },\n+} satisfies Meta;\n+\n+export default meta;\n+\n+type Story = StoryObj<typeof meta>;\n+\n+/** 箱型の種類。 */\n+type BoxKind = Exclude<\n+  ButtonKind,\n+  typeof ButtonKinds.Text | typeof ButtonKinds.Icon\n+>;\n+\n+/**\n+ * 箱型の 1 種類を、大きさごとに平常と押せないときで並べる。\n+ *\n+ * @param kind 並べる箱型の種類\n+ * @param label ボタンの綴り\n+ * @returns 大きさを行、平常と押せないときを列にした表\n+ */\n+function BoxKindSheet({\n+  kind,\n+  label,\n+}: Readonly<{ kind: BoxKind; label: string }>): ReactElement {\n+  // Object.values(ButtonSizes) にはしない。Storybook の docgen が export した定数へ\n+  // `__docgenInfo` を書き足すので、それも 1 つの大きさとして並んでしまう。\n+  const sizes: readonly ButtonSize[] = [\n+    ButtonSizes.Small,\n+    ButtonSizes.Regular,\n+    ButtonSizes.Large,\n+  ];\n+\n+  return (\n+    <div className=\"grid grid-cols-[auto_auto_auto] items-center justify-start gap-3 text-[11px] text-gray-500\">\n+      {sizes.map((size) => (\n+        <div key={size} className=\"contents\">\n+          <span>{size}</span>\n+          <span>\n+            <Button kind={kind} size={size}>\n+              {label}\n+            </Button>\n+          </span>\n+          <span>\n+            <Button kind={kind} size={size} disabled={true}>\n+              {label}\n+            </Button>\n+          </span>\n+        </div>\n+      ))}\n+    </div>\n+  );\n+}\n+\n+/** 押す先を示す既定の操作。 */\n+export const Primary: Story = {\n+  name: \"プライマリ\",\n+  render: () => (\n+    <BoxKindSheet kind={ButtonKinds.Primary} label=\"Go to source component\" />\n+  ),\n+};\n+\n+/** 勧め分けをしない操作。 */\n+export const Secondary: Story = {\n+  name: \"セカンダリ\",\n+  render: () => (\n+    <BoxKindSheet kind={ButtonKinds.Secondary} label=\"Detach instance\" />\n+  ),\n+};\n+\n+/** 取り消せない削除などの操作。 */\n+export const Danger: Story = {\n+  name: \"デンジャー\",\n+  render: () => <BoxKindSheet kind={ButtonKinds.Danger} label=\"Delete token\" />,\n+};\n+\n+/** その画面でいちばん勧めたい操作。中身に置いた `◆` もボタンの文字色を継ぐ。 */\n+export const Emphasis: Story = {\n+  name: \"強調\",\n+  render: () => (\n+    <BoxKindSheet kind={ButtonKinds.Emphasis} label=\"◆ Create component\" />\n+  ),\n+};\n+\n+/** 文の中に置く操作。前後の文と並べて、行の中での収まりを見る。 */\n+export const Text: Story = {\n+  name: \"テキスト\",\n+  render: () => (\n+    <div className=\"flex flex-col gap-3 text-gray-900 text-xs\">\n+      <p>\n+        2 nodes use this token{\" \"}\n+        <Button kind={ButtonKinds.Text}>reveal in tree</Button>\n+      </p>\n+      <p>\n+        2 nodes use this token{\" \"}\n+        <Button kind={ButtonKinds.Text} disabled={true}>\n+          reveal in tree\n+        </Button>\n+      </p>\n+    </div>\n+  ),\n+};\n+\n+/** 綴りを持たないアイコンだけの操作。 */\n+export const Icon: Story = {\n+  name: \"アイコン\",\n+  render: () => (\n+    <div className=\"flex items-center gap-3\">\n+      <Button kind={ButtonKinds.Icon} aria-label=\"追加\">\n+        +\n+      </Button>\n+      <Button kind={ButtonKinds.Icon} aria-label=\"追加\" disabled={true}>\n+        +\n+      </Button>\n+    </div>\n+  ),\n+};",
+          "patchLines": 134,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "1beb9c0f721b78085522c488995adb1950369275",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-12T00:42:10Z",
+      "subject": "♻️ [Refactoring]: #1061 Create component のボタンを Button の強調へ置き換える",
+      "body": "- CreateButton の素の button を Button(Emphasis / Regular)へ置き換え\n- ◆ の text-[#c9a6ff] と w-full を外す\n- doc を「押せないときの配色は Button の強調が UI 案の値で持つ」に直す\n\n背景:\n基本ボタンを Button に揃える(#1061)。Assets 画面で押せるボタンは\nこれだけなので、画面に 1 つの強調をここに当てる。\n\n採用理由:\n◆ の色は外して currentColor を継がせた。呼び出し側で色を持つと\nButton の平常(白)・押せない(#c4c4c4)の配色と二重になるため。\n利用者の回答で、青地の上の ◆ は白にすると決まっている。\nw-full は親の flex flex-col が横に引き伸ばすので要らない。\n\n代替案:\n- ◆ の #c9a6ff を残す: 青地 #0a74c9 の上で読みにくいため却下(利用者確認)\n\n影響とトレードオフ:\n強調の地が黒 #1e1e1e から青 #0a74c9 に、高さが 32px から 30px になり、\nUI 案から意図して離れる(Issue で利用者確認済み)。押せないときの配色は\nUI 案の値のまま。既存テストは role・name・title で引くので変更なしで通る。\n\n参考:\nRefs #1061\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01Rmu8Qdu9erWqFM1tmfgyhq",
+      "files": [
+        {
+          "path": "src/features/editor/features/assets/components/create-component/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 7,
+          "deletions": 12,
+          "patch": "@@ -1,4 +1,5 @@\n import { type ReactElement, useState } from \"react\";\n+import { Button, ButtonKinds, ButtonSizes } from \"@/components/button\";\n import { DesignDocument } from \"@/domains/dcmp/design-document\";\n import { Componentization } from \"@/features/editor/features/assets/domains/componentization\";\n import { Option } from \"@/utils/Option\";\n@@ -75,29 +76,23 @@ function Caption({\n   );\n }\n \n-/**\n- * 部品化のボタン。\n- *\n- * 無効時の配色も、他のボタンの `opacity-50` ではなく UI 案がここだけ明示している値を使う。\n- */\n+/** 部品化のボタン（強調）。押せないときの配色は `Button` の強調が UI 案の値で持つ。 */\n function CreateButton({\n   isEnabled,\n   reason,\n   onClick,\n }: Readonly<{ isEnabled: boolean; reason?: string; onClick?: () => void }>) {\n   return (\n-    <button\n-      type=\"button\"\n+    <Button\n+      kind={ButtonKinds.Emphasis}\n+      size={ButtonSizes.Regular}\n       onClick={onClick}\n       disabled={!isEnabled}\n       title={reason}\n-      className=\"flex h-8 w-full items-center justify-center gap-2 rounded-md bg-[#1e1e1e] font-medium text-white text-xs disabled:border disabled:border-[#ebebeb] disabled:bg-[#fafafa] disabled:font-normal disabled:text-[#c4c4c4]\"\n     >\n-      <span aria-hidden=\"true\" className={isEnabled ? \"text-[#c9a6ff]\" : \"\"}>\n-        ◆\n-      </span>\n+      <span aria-hidden=\"true\">◆</span>\n       {Labels.create}\n-    </button>\n+    </Button>\n   );\n }\n ",
+          "patchLines": 42,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "15f095fe95bdebf2369f3e27928744025cc80a2b",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-12T00:42:20Z",
+      "subject": "♻️ [Refactoring]: #1061 インスペクタのボタンを Button のプライマリ・セカンダリへ置き換える",
+      "body": "- 選択を解除 / Go to source component / Select all N instances を\n  Button(Primary / Regular)へ置き換え\n- Detach instance を Button(Secondary / Regular)へ置き換え\n- disabled と title(押せない理由)はそのまま渡す\n\n背景:\n基本ボタンを Button に揃える(#1061)。\n\n採用理由:\n「ブルー・ゴースト基調」を「標準の操作は青」と読み、通常の操作は\nプライマリにした。Detach は部品との繋がりを切る取り消しにくい操作\nなので、勧めないセカンダリにした(どちらも利用者確認済み)。\n寄せは中央にそろえ、Button に寄せの指定は足さない(利用者確認済み)。\n\n代替案:\n- UI 案どおり白地・灰枠のセカンダリにそろえる: 基調の青が画面に\n  ほとんど出ず Issue の意図から外れるため却下\n- 左寄せの指定(ButtonJustify)を足す: 中央寄せで確定したため不要\n\n影響とトレードオフ:\n左寄せ・text-sm(14px)から中央寄せ・11px になる。押せないときの\n見え方が opacity-50 から枠 #ebebeb・文字 #c4c4c4 に変わる。\n既存テストは role・name・disabled・title で引くので変更なしで通る。\n\n参考:\nRefs #1061\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01Rmu8Qdu9erWqFM1tmfgyhq",
+      "files": [
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 4,
+          "patch": "@@ -1,4 +1,5 @@\n import type { ReactElement } from \"react\";\n+import { Button, ButtonKinds, ButtonSizes } from \"@/components/button\";\n import type { PropEdit } from \"@/domains/dcmp/node\";\n import { DocumentSelection } from \"@/domains/session/document-selection\";\n import type { EditContinuity } from \"@/domains/session/edit-continuity\";\n@@ -133,13 +134,13 @@ function PropertyPanelBody({\n         onEdit={onEditProp}\n         instance={instance}\n       />\n-      <button\n-        type=\"button\"\n+      <Button\n+        kind={ButtonKinds.Primary}\n+        size={ButtonSizes.Regular}\n         onClick={onClearSelection}\n-        className=\"rounded border border-gray-300 px-2 py-1 text-sm hover:bg-gray-100\"\n       >\n         選択を解除\n-      </button>\n+      </Button>\n     </div>\n   );\n }",
+          "patchLines": 24,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/instance-body/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 13,
+          "deletions": 12,
+          "patch": "@@ -1,3 +1,4 @@\n+import { Button, ButtonKinds, ButtonSizes } from \"@/components/button\";\n import { TypeGlyph } from \"@/components/type-glyph\";\n import type { PropEdit } from \"@/domains/dcmp/node\";\n import type { EditContinuity } from \"@/domains/session/edit-continuity\";\n@@ -134,20 +135,21 @@ export function InstanceBody({\n \n       <section className=\"flex flex-col gap-2 border-gray-200 border-t pt-3\">\n         <SectionHeading>{InstanceLabels.instance}</SectionHeading>\n-        <button\n-          type=\"button\"\n+        <Button\n+          kind={ButtonKinds.Primary}\n+          size={ButtonSizes.Regular}\n           onClick={actions.goToSource}\n-          className=\"rounded border border-gray-300 px-2 py-1 text-left text-sm hover:bg-gray-100\"\n         >\n           {InstanceLabels.goToSource}\n-        </button>\n+        </Button>\n         {/*\n           UI 案は `Go to source component` と `Detach instance` の間に置いている。\n           1 つしか無いときに押せなくするのは、押しても選択が変わらないため\n           （`isDetachable` と同じ扱い）。\n         */}\n-        <button\n-          type=\"button\"\n+        <Button\n+          kind={ButtonKinds.Primary}\n+          size={ButtonSizes.Regular}\n           onClick={actions.selectAllInstances}\n           disabled={!isSelectAllInstancesEnabled}\n           title={\n@@ -155,19 +157,18 @@ export function InstanceBody({\n               ? undefined\n               : SelectAllInstancesDisabledReason\n           }\n-          className=\"rounded border border-gray-300 px-2 py-1 text-left text-sm hover:bg-gray-100 disabled:opacity-50\"\n         >\n           {InstanceLabels.selectAllInstances(controls.sourceInstanceCount)}\n-        </button>\n-        <button\n-          type=\"button\"\n+        </Button>\n+        <Button\n+          kind={ButtonKinds.Secondary}\n+          size={ButtonSizes.Regular}\n           onClick={actions.detach}\n           disabled={!controls.isDetachable}\n           title={controls.isDetachable ? undefined : DetachDisabledReason}\n-          className=\"rounded border border-gray-300 px-2 py-1 text-left text-sm hover:bg-gray-100 disabled:opacity-50\"\n         >\n           {InstanceLabels.detach}\n-        </button>\n+        </Button>\n         <p className=\"text-gray-400 text-xs\">{InstanceLabels.detachNote}</p>\n       </section>\n ",
+          "patchLines": 58,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "04604c73af6733c7ae91cd4a8764396f556c383f",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-12T00:42:25Z",
+      "subject": "♻️ [Refactoring]: #1061 Delete token を Button のデンジャーへ置き換える",
+      "body": "- トークン編集の Delete token を Button(Danger / Regular)へ置き換え\n\n背景:\n基本ボタンを Button に揃える(#1061)。\n\n採用理由:\nトークンの削除は取り消せない操作なので、赤の枠と文字のデンジャーに\n当てた。UI 案もこのボタンを赤の文字(#d13438)で描いている。\n\n代替案:\n- セカンダリにして文字だけ赤くする: className を足す口が要り、\n  画面ごとの className へ戻るため却下\n\n影響とトレードオフ:\n枠が灰から赤 #c4262b に、hover の地が灰から薄い赤 #fdecec になる。\n既存テストは role・name で引くので変更なしで通る。\n\n参考:\nRefs #1061\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01Rmu8Qdu9erWqFM1tmfgyhq",
+      "files": [
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 4,
+          "patch": "@@ -1,4 +1,5 @@\n import { type CSSProperties, type ReactElement, useId } from \"react\";\n+import { Button, ButtonKinds, ButtonSizes } from \"@/components/button\";\n import type { Token, TokenKind } from \"@/domains/dcmp/token\";\n import type { TokenSelection } from \"@/domains/session/token-selection\";\n import { TokenUsedBy } from \"@/features/editor/features/tokens/components/token-used-by\";\n@@ -195,13 +196,13 @@ function TokenEditorBody({\n       </div>\n       {/* 並びは UI 案（docs/Design Composer.html）どおり、名前欄の下・削除の上 */}\n       <TokenUsedBy selection={selection} />\n-      <button\n-        type=\"button\"\n+      <Button\n+        kind={ButtonKinds.Danger}\n+        size={ButtonSizes.Regular}\n         onClick={onRemoveToken}\n-        className=\"rounded border border-gray-300 px-2 py-1 text-red-600 hover:bg-gray-100\"\n       >\n         Delete token\n-      </button>\n+      </Button>\n     </section>\n   );\n }",
+          "patchLines": 24,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "56156bb47733ead556b5d3d6d36c785c590f7086",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-12T00:42:34Z",
+      "subject": "♻️ [Refactoring]: #1061 エラー一覧の revert file と Reveal を Button へ置き換える",
+      "body": "- revert file を Button(Text)へ置き換え\n- Reveal を Button(Primary / Small)へ置き換え\n- 右端へ寄せる ml-auto shrink-0 は、各関数の中で Button を包む span へ移す\n\n背景:\n基本ボタンを Button に揃える(#1061)。\n\n採用理由:\nReveal は UI 案で 28px(1487・1497 行)なので小にした。標準の操作は\n青にすると決まったのでプライマリ。revert file は UI 案で行内の文字なので、\n高さを持たないテキストにした(利用者確認済み)。\n寄せの span を関数の中に置いたのは、RevertFileButton の @returns\n「見出しの右端に寄せる書き戻しのボタン」を真のまま保つため。\n\n代替案:\n- revert file をデンジャーにする: ファイルを上書きする操作だが、UI 案どおり\n  テキストのままにした(利用者確認済み)\n- ml-auto を呼び出し側で包む: @returns が嘘になるため却下\n\n影響とトレードオフ:\nrevert file は h2 の 14px・太字 500 から 11px・400 に、色が #0d99ff から\n#0a74c9 になる。Reveal は灰枠から青枠になり高さが 28px になる。\n既存テストは role・name で引くので変更なしで通る。\n\n参考:\nRefs #1061\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01Rmu8Qdu9erWqFM1tmfgyhq",
+      "files": [
+        {
+          "path": "src/features/editor/components/document-error-list/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 21,
+          "deletions": 17,
+          "patch": "@@ -1,4 +1,5 @@\n import type { ReactElement, ReactNode } from \"react\";\n+import { Button, ButtonKinds, ButtonSizes } from \"@/components/button\";\n import type { DocumentError } from \"@/domains/session/document-error\";\n import { DocumentErrorLocation } from \"@/domains/session/document-error\";\n import type { ValueOf } from \"@/types/ValueOf\";\n@@ -118,15 +119,16 @@ function RevertFileButton({\n   isReverting,\n }: Readonly<{ onRevertFile: () => void; isReverting: boolean }>) {\n   return (\n-    <button\n-      type=\"button\"\n-      onClick={onRevertFile}\n-      // 書き込み中に押し直させない（rules/hooks.md「連打防止は disabled が第一選択」）\n-      disabled={isReverting}\n-      className=\"ml-auto shrink-0 font-medium text-[#0d99ff] text-xs disabled:text-gray-400\"\n-    >\n-      revert file\n-    </button>\n+    <span className=\"ml-auto shrink-0\">\n+      <Button\n+        kind={ButtonKinds.Text}\n+        onClick={onRevertFile}\n+        // 書き込み中に押し直させない（rules/hooks.md「連打防止は disabled が第一選択」）\n+        disabled={isReverting}\n+      >\n+        revert file\n+      </Button>\n+    </span>\n   );\n }\n \n@@ -140,14 +142,16 @@ function RevealButton({\n   onReveal,\n }: Readonly<{ nodeName: string; onReveal: (nodeName: string) => void }>) {\n   return (\n-    <button\n-      type=\"button\"\n-      aria-label={`${nodeName} を表示`}\n-      onClick={() => onReveal(nodeName)}\n-      className=\"ml-auto shrink-0 rounded border border-gray-300 bg-white px-2 py-0.5 text-gray-900 text-xs\"\n-    >\n-      Reveal\n-    </button>\n+    <span className=\"ml-auto shrink-0\">\n+      <Button\n+        kind={ButtonKinds.Primary}\n+        size={ButtonSizes.Small}\n+        aria-label={`${nodeName} を表示`}\n+        onClick={() => onReveal(nodeName)}\n+      >\n+        Reveal\n+      </Button>\n+    </span>\n   );\n }\n ",
+          "patchLines": 57,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "9168f180a38c5b7df3442d0991f6e31a625ac700",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-12T00:42:40Z",
+      "subject": "♻️ [Refactoring]: #1061 破線の帯の reveal in tree を Button のテキストへ置き換える",
+      "body": "- reveal in tree を Button(Text)へ置き換え、ml-1 shrink-0 は包む span へ移す\n- 文字の大きさと見た目を守る場所についての JSX コメントを書き直す\n\n背景:\n基本ボタンを Button に揃える(#1061)。\n\n採用理由:\nrevert file と同じ形(テキスト)にした。文字の大きさは Button の\nテキストが 11px で持つので、「帯の 11px を継ぐ」という前のコメントは\n嘘になるため書き直した。見た目を守るものが無いという記述も、Button の\nストーリーで見られるようになったので替えた。この帯での差分が VRT の\nしきい値未満で通りうる点は変わらないので残した。\n\n代替案:\n- 周囲の字の大きさを継ぐ形のまま残す: revert file と形がそろわないため却下\n\n影響とトレードオフ:\n文字の色が #0d99ff から #0a74c9 に変わり、hover で薄い青の地が出る。\nVRT では差分が小さく緑のまま通りうるので、PR で目視する。\n\n参考:\nRefs #1061\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01Rmu8Qdu9erWqFM1tmfgyhq",
+      "files": [
+        {
+          "path": "src/features/editor/features/tokens/components/token-dashed-nodes/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 12,
+          "deletions": 10,
+          "patch": "@@ -1,4 +1,5 @@\n import { type ReactElement, useMemo } from \"react\";\n+import { Button, ButtonKinds } from \"@/components/button\";\n import { ColorSwatch } from \"@/components/color-swatch\";\n import { TokenSelection } from \"@/domains/session/token-selection\";\n import { ArrayEx } from \"@/utils/ArrayEx\";\n@@ -85,18 +86,19 @@ export function TokenDashedNodes({\n       {/*\n         UI 案は押せるものも `<span style=\"cursor:pointer\">` で描いているが、実装では\n         ボタンにする（`document-error-list` の `revert file` と同じ形）。\n-        文字サイズを指定しないのは、UI 案の綴りも font-size を持たず帯の 11px を継ぐため。\n+        文字の大きさは `Button` のテキストが 11px で持つ。\n \n-        **この見た目を守るものは無い** — happy-dom はレイアウトを解決せず、視覚差分も\n-        リンク 1 本ぶんはしきい値（`--max-diff-ratio 0.002`）未満で通る（実測）。\n+        見た目は `Button` が持ち、components/Button のテキストのストーリーで見る。この帯での\n+        差分はしきい値（`--max-diff-ratio 0.002`）未満で通りうるので目視で確かめる。\n       */}\n-      <button\n-        type=\"button\"\n-        onClick={() => onReveal(firstDashedNodeName.value)}\n-        className=\"ml-1 shrink-0 text-[#0d99ff]\"\n-      >\n-        reveal in tree\n-      </button>\n+      <span className=\"ml-1 shrink-0\">\n+        <Button\n+          kind={ButtonKinds.Text}\n+          onClick={() => onReveal(firstDashedNodeName.value)}\n+        >\n+          reveal in tree\n+        </Button>\n+      </span>\n     </section>\n   );\n }",
+          "patchLines": 36,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "153ed60de1d4ba0c12428726dcdd58b954ed90d7",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-12T00:42:45Z",
+      "subject": "📝 [Doc]: #1061 ActionCard の青が基本ボタンの配色にもなったことを doc に書く",
+      "body": "- ActionCardTones.Primary の doc の「汎用の配色ではない」を、#1061 で\n  Button のプライマリの配色にもなった、に書き直す\n- ActionCardToneFaces の doc に、Button と表を共有しない理由を 1 行足す\n\n背景:\n#1061 で同じ青(#0a74c9)がアプリ共通のボタンの配色になり、「汎用の\n配色ではない」という記述が嘘になった。\n\n採用理由:\ncard 部位の値はボタンのプライマリ / セカンダリと一致するので、表を\n分けている理由を doc に残さないと、次に読む人が共通化しようとする。\n分ける理由は hover の文字色と押せないときの見え方(カード全体の\nopacity-50)が違い、カードをボタンへ追随させるかは決まっていないこと。\n\n代替案:\n- 配色表を共有する: #1062 で決めたカードの見え方が確認なしに変わる\n  ため却下\n\n影響とトレードオフ:\ndoc のみの変更で、描画は変わらない。\n\n参考:\nRefs #1061, #1062\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01Rmu8Qdu9erWqFM1tmfgyhq",
+      "files": [
+        {
+          "path": "src/components/action-card/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 1,
+          "patch": "@@ -8,7 +8,7 @@ export const ActionCardTones = {\n    *\n    * UI 案のボタン（`<button>`）に青い塗りは無く、`#4db2ff` はリンクの hover の文字色（`a:hover`）にしか出てこない。\n    * それを地に流用すると白文字で約 2.3:1 と 4.5:1 に届かないので、地は使わない。\n-   * この青は開始画面（#1062）で決めたもので、UI 案に裏付けのある汎用の配色ではない。\n+   * この青は開始画面（#1062）で決め、#1061 で基本ボタン（`Button` のプライマリ）の配色にもなった。UI 案に裏付けは無い。\n    * hover 中の `#0a74c9` on `#e7f1fa` も約 4.2:1 で届かないが、押す直前の一時的な状態として受け入れている。\n    */\n   Primary: \"Primary\",\n@@ -38,6 +38,8 @@ export type ActionCardContent = Readonly<{\n  *\n  * happy-dom は Tailwind を解決せず描画もしないので、配色とアイコンの崩れはテストでは守れず、\n  * 気づけるのは Storybook の視覚差分（components/ActionCard のプライマリ / ノーマル）だけ。\n+ *\n+ * カードの `card` 部位はボタンのプライマリ / セカンダリと同じ値だが、hover の文字色と押せないときの見え方が違い、カードをボタンへ追随させるかは決まっていないので表を分けている。\n  */\n const ActionCardToneFaces = {\n   [ActionCardTones.Primary]: {",
+          "patchLines": 18,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "856d61f959a816a33a8ddb62da020d70940d68f7",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-12T00:58:43Z",
+      "subject": "✨ [New Feature]: #1061 フォーカス枠のクラスを FocusOutlineClass として src/components に置く",
+      "body": "- src/components/focus-outline に FocusOutlineClass(青 2px の outline と\n  offset 2px)を追加\n- UI 案から離れている理由(#1062)の文をこの定数の doc に置く\n\n背景:\n実装の検証(duplication-reviewer)で、ActionCard と Button が同じ\nフォーカス枠の 3 クラスを 1 つずつ直書きしていると指摘された。片方だけ\n変わるとアプリ内のフォーカス枠が 2 種類になり、Button 側からは UI 案から\n離れている理由にも辿り着けなかった。\n\n採用理由:\n名前は FocusRing ではなく FocusOutline にした。Tailwind の ring は\nbox-shadow を指し、outline で描いている実体と食い違うため。リポジトリに\nfocus ring の既存語は 0 件だった。\n.ts の定数に置いても Tailwind がクラスを拾うことは Storybook で確かめた。\n\n代替案:\n- ActionCard から Button が import する: カードの都合にボタンが依存する\n  形になるため却下\n- どちらかの表に含める: 配色表とは別の事実(どの部品にも共通の枠)なので\n  独立したモジュールにした\n\n影響とトレードオフ:\nこの時点ではまだ参照されていない。続くコミットで ActionCard と Button が\n参照する。\n\n参考:\nRefs #1061, #1062\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01Rmu8Qdu9erWqFM1tmfgyhq",
+      "files": [
+        {
+          "path": "src/components/focus-outline/index.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 7,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,7 @@\n+/**\n+ * キーボードで辿ったときに、押せる部品の外側へ描くフォーカス枠（青の 2px）を指定する Tailwind のクラス。\n+ *\n+ * 枠の青（`#0a74c9`）は UI 案（docs/Design Composer.html）の語彙に無く、意図して離れている（#1062）。\n+ */\n+export const FocusOutlineClass =\n+  \"focus-visible:outline-2 focus-visible:outline-[#0a74c9] focus-visible:outline-offset-2\";",
+          "patchLines": 8,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "1fe0830f12f6688594146db9e0bc73880bff5b0f",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-12T00:58:59Z",
+      "subject": "♻️ [Refactoring]: #1061 Button の配色と形の書き写しをまとめ、箱型の語を Framed にする",
+      "body": "- 箱型 4 種の押せないときの枠と文字を FramedDisabledFace にまとめる\n- アイコンの形を箱型の共通の形(ButtonFramedClass)に乗せる\n- フォーカス枠を FocusOutlineClass から取る\n- Box* を Framed* に改名し、ButtonFramedKind を export してストーリーの\n  Exclude による別定義を消す\n- 種類の doc を ActionCard の言い回しと重ならない形にし、デンジャーを\n  「消す・壊す向きの操作」に直す\n- 配色が UI 案から意図して離れていることを ButtonKindFaces の doc に書く\n- 強調の枠の理由を「高さ」から「押せないときの枠と幅を揃える」に直す\n- テキストの左右の余白を負の margin で打ち消し、平常時の字の位置を\n  UI 案(余白なし)と同じにする\n- ストーリーの docgen の理由に displayName も書き足されることを足す\n\n背景:\n実装の検証(duplication / naming / comment / ui の各 reviewer)の指摘。\n\n採用理由:\n- 押せないときの色・アイコンの形・箱型の種類の定義は、同じ事実を複数\n  箇所に書き写していて、片方だけ直すと型でもテストでも気づけなかった\n- Box は dcmp のプリミティブ名と同じ綴りで、TypeGlyph の kind=\"Box\" と\n  並ぶと意味が割れる。枠を持つ形なので Framed にした。Text は Issue の\n  語なので残した\n- 種類の doc は ActionCardTones の「いちばん勧めたい」「勧め分けをしない」と\n  同じ言い回しが別の名前に付いていて、カードの Primary とボタンの\n  Primary が同じものだと読み違えさせた\n- 「取り消せない削除」は誤りだった。Delete token は undo で戻る\n  (docs/06-ui.md の tokens 編集・EditorState.removeToken)。b92ac07 と\n  04604c7 のコミット本文の「取り消せない」も同じ誤りで、ここで訂正する\n- border-box で高さは固定なので、枠の有無で変わるのは高さではなく幅。\n  押せる・押せないの切り替えで幅がずれない(Storybook で 133.2px の一致を\n  実測)ことが枠を持たせる理由\n- テキストの余白は UI 案に無いもので、平常時の位置を動かしていた。\n  hover の地にだけ余白を持たせ、平常時は打ち消す\n\n代替案:\n- docgen の理由の文を削って Object.values に戻す: 配信された index.tsx に\n  ButtonSizes.__docgenInfo / displayName が付いていることを Storybook で\n  確かめたので、理由は事実で、配列で並べる形を残した\n- 箱型の灰側を ActionCard の語 Normal にする: Issue の語「セカンダリ」と\n  食い違うため、名前ではなく説明の語を変えた\n\n影響とトレードオフ:\n描画はテキストの平常時の左右 3px が戻る以外は変わらない。revert file は\nhover の地が包みの右端から 3px 出るが、クリップする祖先の内側に収まる\nことを Storybook で確かめた。\n\n参考:\nRefs #1061\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01Rmu8Qdu9erWqFM1tmfgyhq",
+      "files": [
+        {
+          "path": "src/components/button/index.stories.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 18,
+          "deletions": 19,
+          "patch": "@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from \"@storybook/react-vite\";\n import type { ReactElement } from \"react\";\n import {\n   Button,\n-  type ButtonKind,\n+  type ButtonFramedKind,\n   ButtonKinds,\n   type ButtonSize,\n   ButtonSizes,\n@@ -22,12 +22,6 @@ export default meta;\n \n type Story = StoryObj<typeof meta>;\n \n-/** 箱型の種類。 */\n-type BoxKind = Exclude<\n-  ButtonKind,\n-  typeof ButtonKinds.Text | typeof ButtonKinds.Icon\n->;\n-\n /**\n  * 箱型の 1 種類を、大きさごとに平常と押せないときで並べる。\n  *\n@@ -35,12 +29,12 @@ type BoxKind = Exclude<\n  * @param label ボタンの綴り\n  * @returns 大きさを行、平常と押せないときを列にした表\n  */\n-function BoxKindSheet({\n+function FramedKindSheet({\n   kind,\n   label,\n-}: Readonly<{ kind: BoxKind; label: string }>): ReactElement {\n-  // Object.values(ButtonSizes) にはしない。Storybook の docgen が export した定数へ\n-  // `__docgenInfo` を書き足すので、それも 1 つの大きさとして並んでしまう。\n+}: Readonly<{ kind: ButtonFramedKind; label: string }>): ReactElement {\n+  // Object.values(ButtonSizes) にはしない。Storybook の docgen（react-docgen-typescript）は\n+  // `.tsx` で export した定数にも `displayName` / `__docgenInfo` を書き足すので、それも大きさとして並んでしまう。\n   const sizes: readonly ButtonSize[] = [\n     ButtonSizes.Small,\n     ButtonSizes.Regular,\n@@ -68,33 +62,38 @@ function BoxKindSheet({\n   );\n }\n \n-/** 押す先を示す既定の操作。 */\n+/** その場の主な操作。 */\n export const Primary: Story = {\n   name: \"プライマリ\",\n   render: () => (\n-    <BoxKindSheet kind={ButtonKinds.Primary} label=\"Go to source component\" />\n+    <FramedKindSheet\n+      kind={ButtonKinds.Primary}\n+      label=\"Go to source component\"\n+    />\n   ),\n };\n \n-/** 勧め分けをしない操作。 */\n+/** 主な操作の脇に置く、控えめな操作。 */\n export const Secondary: Story = {\n   name: \"セカンダリ\",\n   render: () => (\n-    <BoxKindSheet kind={ButtonKinds.Secondary} label=\"Detach instance\" />\n+    <FramedKindSheet kind={ButtonKinds.Secondary} label=\"Detach instance\" />\n   ),\n };\n \n-/** 取り消せない削除などの操作。 */\n+/** 消す・壊す向きの操作。 */\n export const Danger: Story = {\n   name: \"デンジャー\",\n-  render: () => <BoxKindSheet kind={ButtonKinds.Danger} label=\"Delete token\" />,\n+  render: () => (\n+    <FramedKindSheet kind={ButtonKinds.Danger} label=\"Delete token\" />\n+  ),\n };\n \n-/** その画面でいちばん勧めたい操作。中身に置いた `◆` もボタンの文字色を継ぐ。 */\n+/** その画面を代表する操作。中身に置いた `◆` もボタンの文字色を継ぐ。 */\n export const Emphasis: Story = {\n   name: \"強調\",\n   render: () => (\n-    <BoxKindSheet kind={ButtonKinds.Emphasis} label=\"◆ Create component\" />\n+    <FramedKindSheet kind={ButtonKinds.Emphasis} label=\"◆ Create component\" />\n   ),\n };\n ",
+          "patchLines": 86,
+          "truncated": false
+        },
+        {
+          "path": "src/components/button/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 27,
+          "deletions": 26,
+          "patch": "@@ -1,18 +1,19 @@\n import type { ReactElement, ReactNode } from \"react\";\n+import { FocusOutlineClass } from \"@/components/focus-outline\";\n import type { ValueOf } from \"@/types/ValueOf\";\n \n /** ボタンの種類。配色と形が決まる。 */\n export const ButtonKinds = {\n-  /** 押す先を示す既定の操作（青の枠と文字）。 */\n+  /** その場の主な操作（青の枠と文字）。 */\n   Primary: \"Primary\",\n-  /** 勧め分けをしない操作（灰の枠と黒の文字）。 */\n+  /** 主な操作の脇に置く、控えめな操作（灰の枠と黒の文字）。 */\n   Secondary: \"Secondary\",\n-  /** 取り消せない削除などの操作（赤の枠と文字）。 */\n+  /** 消す・壊す向きの操作（赤の枠と文字）。 */\n   Danger: \"Danger\",\n   /** 文の中に置く、枠を持たない操作（青の文字）。 */\n   Text: \"Text\",\n   /**\n-   * その画面でいちばん勧めたい操作（青の地と白の文字）。画面に 1 つだけ置く。\n+   * その画面を代表する操作（青の地と白の文字）。画面に 1 つだけ置く。\n    *\n    * 1 つだけを型で縛らない。1 画面は複数の feature が描いた部品の合成で、1 つだけは合成後の木の性質なので props の型では表せない。\n    */\n@@ -50,7 +51,7 @@ type ButtonCommonProps = Readonly<{\n }>;\n \n /** 枠と高さを持つ箱型の種類。 */\n-type ButtonBoxKind =\n+export type ButtonFramedKind =\n   | typeof ButtonKinds.Primary\n   | typeof ButtonKinds.Secondary\n   | typeof ButtonKinds.Danger\n@@ -60,7 +61,7 @@ type ButtonBoxKind =\n export type ButtonProps = ButtonCommonProps &\n   (\n     | Readonly<{\n-        kind: ButtonBoxKind;\n+        kind: ButtonFramedKind;\n         size: ButtonSize;\n         /** 中身の綴りの代わりに読ませる名前。 */\n         \"aria-label\"?: string;\n@@ -79,48 +80,48 @@ export type ButtonProps = ButtonCommonProps &\n       }>\n   );\n \n+/** 箱型の 4 種に共通の、押せないときの枠と文字の色。 */\n+const FramedDisabledFace = \"disabled:border-[#ebebeb] disabled:text-[#c4c4c4]\";\n+\n /** プライマリの配色。アイコンも同じ値を使う。 */\n-const PrimaryFace =\n-  \"border-[#0a74c9] bg-[#ffffff] text-[#0a74c9] enabled:hover:bg-[#e7f1fa] enabled:hover:text-[#0866b2] disabled:border-[#ebebeb] disabled:text-[#c4c4c4]\";\n+const PrimaryFace = `border-[#0a74c9] bg-[#ffffff] text-[#0a74c9] enabled:hover:bg-[#e7f1fa] enabled:hover:text-[#0866b2] ${FramedDisabledFace}`;\n \n /**\n  * 種類ごとの、平常・hover・押せないときの配色を指定する Tailwind のクラス。\n  *\n+ * 配色は UI 案（docs/Design Composer.html のボタンは黒の塗りと白地に灰の枠）から意図して離れ、青の枠と白地を基調にしている（#1061 で決めた）。\n+ *\n  * happy-dom は Tailwind を解決せず描画もしないので、配色はテストでは守れず、気づけるのは Storybook の視覚差分（components/Button）だけ。\n  */\n const ButtonKindFaces = {\n   [ButtonKinds.Primary]: PrimaryFace,\n-  [ButtonKinds.Secondary]:\n-    \"border-[#d4d4d4] bg-[#ffffff] text-[#1e1e1e] enabled:hover:bg-[#f5f5f5] disabled:border-[#ebebeb] disabled:text-[#c4c4c4]\",\n-  [ButtonKinds.Danger]:\n-    \"border-[#c4262b] bg-[#ffffff] text-[#c4262b] enabled:hover:bg-[#fdecec] enabled:hover:text-[#a81f24] disabled:border-[#ebebeb] disabled:text-[#c4c4c4]\",\n+  [ButtonKinds.Secondary]: `border-[#d4d4d4] bg-[#ffffff] text-[#1e1e1e] enabled:hover:bg-[#f5f5f5] ${FramedDisabledFace}`,\n+  [ButtonKinds.Danger]: `border-[#c4262b] bg-[#ffffff] text-[#c4262b] enabled:hover:bg-[#fdecec] enabled:hover:text-[#a81f24] ${FramedDisabledFace}`,\n   [ButtonKinds.Text]:\n     \"text-[#0a74c9] enabled:hover:bg-[#e7f1fa] disabled:text-[#c4c4c4]\",\n-  // 枠を地と同じ色にして持たせるのは、枠のある他の箱型と高さを揃えるため。\n-  // 押せないときの配色は UI 案（docs/Design Composer.html）の部品化のボタンの値。\n-  [ButtonKinds.Emphasis]:\n-    \"border-[#0a74c9] bg-[#0a74c9] text-[#ffffff] enabled:hover:border-[#0866b2] enabled:hover:bg-[#0866b2] disabled:border-[#ebebeb] disabled:bg-[#fafafa] disabled:text-[#c4c4c4]\",\n+  // 枠を地と同じ色にして持たせるのは、押せないときの枠（UI 案 docs/Design Composer.html の押せない\n+  // `Create component` が持つ 1px の枠）と幅を揃えるため。押せないときの配色もそのボタンの値。\n+  [ButtonKinds.Emphasis]: `border-[#0a74c9] bg-[#0a74c9] text-[#ffffff] enabled:hover:border-[#0866b2] enabled:hover:bg-[#0866b2] ${FramedDisabledFace} disabled:bg-[#fafafa]`,\n   [ButtonKinds.Icon]: PrimaryFace,\n } as const satisfies Readonly<Record<ButtonKind, string>>;\n \n-/** どの種類にも付ける、字の太さ・カーソル・フォーカス枠（ActionCard と同じ青）。 */\n-const ButtonCommonClass =\n-  \"font-normal enabled:cursor-pointer disabled:cursor-default focus-visible:outline-2 focus-visible:outline-[#0a74c9] focus-visible:outline-offset-2\";\n+/** どの種類にも付ける、字の太さ・カーソル・フォーカス枠。 */\n+const ButtonCommonClass = `font-normal enabled:cursor-pointer disabled:cursor-default ${FocusOutlineClass}`;\n \n /** 箱型の、大きさに依らない形。 */\n-const ButtonBoxClass =\n+const ButtonFramedClass =\n   \"inline-flex items-center justify-center gap-[7px] border\";\n \n /** アイコンの形（30px の正方形）。 */\n-const ButtonIconClass =\n-  \"inline-flex size-[30px] items-center justify-center gap-[7px] rounded-[5px] border text-[13px]\";\n+const ButtonIconClass = `${ButtonFramedClass} size-[30px] rounded-[5px] text-[13px]`;\n \n /**\n  * テキストの形。文の中に置き、高さを持たない。\n  *\n- * 左右の余白と角丸は hover の地が字に接しないためのもの（UI 案の行内の地の角丸 3px に揃える）。\n+ * 左右の余白と角丸は hover の地が字に接しないためのもの（角丸は UI 案のエラー文中のコード片の地 `border-radius:3px` に揃える）。\n+ * 余白は同じ幅の負の margin で打ち消し、平常時の字の位置は余白が無いときと変えない。\n  */\n-const ButtonTextClass = \"inline rounded-[3px] px-[3px] text-[11px]\";\n+const ButtonTextClass = \"-mx-[3px] inline rounded-[3px] px-[3px] text-[11px]\";\n \n /**\n  * 箱型の大きさごとの高さ・余白・字の大きさ・角丸。\n@@ -128,7 +129,7 @@ const ButtonTextClass = \"inline rounded-[3px] px-[3px] text-[11px]\";\n  * @param size 箱型の大きさ\n  * @returns その大きさの形を指定するクラス\n  */\n-function boxSizeClass(size: ButtonSize): string {\n+function framedSizeClass(size: ButtonSize): string {\n   switch (size) {\n     case ButtonSizes.Small:\n       return \"h-7 px-[10px] text-[11px] rounded-[5px]\";\n@@ -155,7 +156,7 @@ function shapeClass(props: ButtonProps): string {\n     case ButtonKinds.Secondary:\n     case ButtonKinds.Danger:\n     case ButtonKinds.Emphasis:\n-      return `${ButtonBoxClass} ${boxSizeClass(props.size)}`;\n+      return `${ButtonFramedClass} ${framedSizeClass(props.size)}`;\n   }\n }\n ",
+          "patchLines": 127,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "5522e5244d48fb3061aecf084ac177a6ce14aeae",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-12T00:59:06Z",
+      "subject": "♻️ [Refactoring]: #1061 ActionCard のフォーカス枠を FocusOutlineClass から取り、Button との対応を doc に正す",
+      "body": "- フォーカス枠の 3 クラスの直書きを FocusOutlineClass に置き換える\n- フォーカス枠が UI 案から離れている理由は FocusOutlineClass を指す形にする\n- ActionCardToneFaces の doc で、カードのプライマリはボタンの強調にあたる\n  こと、hover で文字色を変えないのはプライマリのカードであることを正す\n\n背景:\n実装の検証の指摘。フォーカス枠が Button と書き写しになっていた。\nまた前のコミットで足した「hover の文字色と押せないときの見え方が違い」は\nプライマリにしか当てはまらず、名前が同じでもカードのプライマリは\n勧める度合いではボタンの強調にあたる、という対応が書かれていなかった。\n\n採用理由:\nカードとボタンで同じ名前が別の度合いを指す状態は変えない(名前は\nそれぞれ #1062 と #1061 の語)。代わりに対応を doc に書き、次に\nカードをボタンへ追随させるかを決める人が読み違えないようにした。\n\n代替案:\n- カードの Primary をボタンの語へ改名する: #1062 で決めたカードの語彙を\n  この Issue で変えることになるため却下\n\n影響とトレードオフ:\n描画は変わらない(クラスの中身は同じ)。\n\n参考:\nRefs #1061, #1062\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01Rmu8Qdu9erWqFM1tmfgyhq",
+      "files": [
+        {
+          "path": "src/components/action-card/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 3,
+          "patch": "@@ -1,4 +1,5 @@\n import { type ReactElement, useId } from \"react\";\n+import { FocusOutlineClass } from \"@/components/focus-outline\";\n import type { ValueOf } from \"@/types/ValueOf\";\n \n /** カードの配色の種類。 */\n@@ -39,7 +40,7 @@ export type ActionCardContent = Readonly<{\n  * happy-dom は Tailwind を解決せず描画もしないので、配色とアイコンの崩れはテストでは守れず、\n  * 気づけるのは Storybook の視覚差分（components/ActionCard のプライマリ / ノーマル）だけ。\n  *\n- * カードの `card` 部位はボタンのプライマリ / セカンダリと同じ値だが、hover の文字色と押せないときの見え方が違い、カードをボタンへ追随させるかは決まっていないので表を分けている。\n+ * カードの `card` 部位はボタンのプライマリ / セカンダリと同じ値だが（名前は同じでも、カードのプライマリは勧める度合いではボタンの強調にあたる）、プライマリのカードは hover で文字色を変えず、押せないときはカード全体を `opacity-50` で薄くする。カードをボタンへ追随させるかは決まっていないので表を分けている。\n  */\n const ActionCardToneFaces = {\n   [ActionCardTones.Primary]: {\n@@ -73,7 +74,7 @@ const ActionCardToneFaces = {\n /**\n  * アイコン・見出し・説明・ショートカットを載せた、押せるカード。\n  *\n- * フォーカス枠の青（`#0a74c9`）は UI 案の語彙に無く、意図して離れている（#1062）。\n+ * フォーカス枠は `FocusOutlineClass` が持つ（UI 案から離れている理由もそちら）。\n  *\n  * @param content カードの綴り・アイコン・配色の種類\n  * @param onClick 押したときに始める手続き\n@@ -104,7 +105,7 @@ export function ActionCard({\n       disabled={disabled}\n       aria-labelledby={titleId}\n       aria-describedby={`${descriptionId} ${shortcutId}`}\n-      className={`flex flex-col items-start gap-[10px] rounded-[10px] border p-4 text-left focus-visible:outline-2 focus-visible:outline-[#0a74c9] focus-visible:outline-offset-2 disabled:cursor-default disabled:opacity-50 ${toneClasses.card}`}\n+      className={`flex flex-col items-start gap-[10px] rounded-[10px] border p-4 text-left ${FocusOutlineClass} disabled:cursor-default disabled:opacity-50 ${toneClasses.card}`}\n     >\n       <span\n         className={`flex size-8 items-center justify-center rounded-[8px] ${toneClasses.icon}`}",
+          "patchLines": 33,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "2d0c78c0695442f23f5b662c1b0a2117429c5930",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-12T00:59:11Z",
+      "subject": "📝 [Doc]: #1061 インスタンスの解除だけセカンダリにする理由をコメントに残す",
+      "body": "- Detach instance の Button の直前に、セカンダリにした理由を 1 行足す\n\n背景:\n実装の検証(comment-reviewer)で、同じ並びのボタンの種類が割れている\n理由がコードに無く、次に触る人が揃えるか割るかを判断できないと指摘された。\n\n採用理由:\n理由は「部品との繋がりを切る操作で、勧める操作ではないため」とした。\n15f095f のコミット本文は「取り消しにくい操作」と書いたが、解除は undo で\n戻る(editor-state.detach.test.ts「解除は元に戻せる」)ので、取り消しの\n可否を理由にしない。ここで訂正する。\n\n代替案:\n- 割り当て表を Issue にだけ残す: コードを読む人が辿れないため、\n  コードにも 1 行残した\n\n影響とトレードオフ:\nコメントのみで描画は変わらない。\n\n参考:\nRefs #1061\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01Rmu8Qdu9erWqFM1tmfgyhq",
+      "files": [
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/instance-body/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "patch": "@@ -160,6 +160,7 @@ export function InstanceBody({\n         >\n           {InstanceLabels.selectAllInstances(controls.sourceInstanceCount)}\n         </Button>\n+        {/* 解除だけセカンダリにするのは、部品との繋がりを切る操作で、勧める操作ではないため。 */}\n         <Button\n           kind={ButtonKinds.Secondary}\n           size={ButtonSizes.Regular}",
+          "patchLines": 8,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "0e2a9eb766cfffeb1788827e1b30f52ae40d015e",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-12T01:59:12Z",
+      "subject": "📝 [Doc]: #1061 Button の配色を視覚差分が拾える範囲を実測に合わせて doc に書く",
+      "body": "- ButtonKindFaces の doc の「気づけるのは視覚差分だけ」を、視覚差分が\n  拾うのは地の塗りのような大きい変化だけで、枠色・押せないときの文字色・\n  hover は目視で確かめる、に書き直す\n\n背景:\n実装の検証(test-reviewer)が CI と同じ storybook-visual-regression.mjs\n(--max-diff-ratio 0.002、1280x720)で配色クラスを 1 つずつ外して撮った。\nSecondary の枠色は 0.08%、Text の押せないときの文字色は 0.02% で\nしきい値の内側に通り、hover は撮られず 0 px。拾われたのは Emphasis の\n地(1.19%)だけだった。doc は「視覚差分で気づける」と読め、実測と\n食い違っていた。\n\n採用理由:\n書き方は token-dashed-nodes の「しきい値未満で通りうるので目視で\n確かめる」に揃えた。ストーリーの doc(hover は撮れない)とも主張が揃う。\n\n代替案:\n- ストーリーを小さい器で撮って差分の比率を上げる: 撮影の仕組みに手を\n  入れることになり、この Issue より広いため見送り\n\n影響とトレードオフ:\ndoc のみ。枠色・押せないときの色・hover の退行は機械では止まらず、\n目視に頼る。\n\n参考:\nRefs #1061\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01Rmu8Qdu9erWqFM1tmfgyhq",
+      "files": [
+        {
+          "path": "src/components/button/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -91,7 +91,7 @@ const PrimaryFace = `border-[#0a74c9] bg-[#ffffff] text-[#0a74c9] enabled:hover:\n  *\n  * 配色は UI 案（docs/Design Composer.html のボタンは黒の塗りと白地に灰の枠）から意図して離れ、青の枠と白地を基調にしている（#1061 で決めた）。\n  *\n- * happy-dom は Tailwind を解決せず描画もしないので、配色はテストでは守れず、気づけるのは Storybook の視覚差分（components/Button）だけ。\n+ * happy-dom は Tailwind を解決しないので配色はテストでは守れない。視覚差分（components/Button）が拾うのは地の塗りのような面積の大きい変化だけで、枠色・押せないときの文字色はしきい値（`--max-diff-ratio 0.002`）未満で通り、hover は撮られないので、それらは Storybook を目視で確かめる。\n  */\n const ButtonKindFaces = {\n   [ButtonKinds.Primary]: PrimaryFace,",
+          "patchLines": 9,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".github/scripts/build-pr-change-map-cases.sh",
+      "to": "src/components/button/__tests__/button.normal.test.tsx",
+      "status": "added"
+    },
+    {
+      "from": ".github/scripts/build-pr-change-map-cases.sh",
+      "to": "src/components/button/index.stories.tsx",
+      "status": "added"
+    },
+    {
+      "from": ".github/scripts/build-pr-change-map-cases.sh",
+      "to": "src/components/button/index.tsx",
+      "status": "added"
+    },
+    {
+      "from": "src/components/action-card/__stories__/sample-contents.ts",
+      "to": "src/components/action-card/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/components/action-card/__tests__/action-card.normal.test.tsx",
+      "to": "src/components/action-card/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/components/action-card/index.stories.tsx",
+      "to": "src/components/action-card/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/components/action-card/index.tsx",
+      "to": "src/components/focus-outline/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/components/action-card/index.tsx",
+      "to": "src/types/ValueOf.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/components/button/__tests__/button.normal.test.tsx",
+      "to": "src/components/button/index.tsx",
+      "status": "added"
+    },
+    {
+      "from": "src/components/button/__tests__/button.type.test.ts",
+      "to": "src/components/button/index.tsx",
+      "status": "added"
+    },
+    {
+      "from": "src/components/button/index.stories.tsx",
+      "to": "src/components/button/index.tsx",
+      "status": "added"
+    },
+    {
+      "from": "src/components/button/index.tsx",
+      "to": "src/components/focus-outline/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/components/button/index.tsx",
+      "to": "src/types/ValueOf.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/components/canvas-dock/index.tsx",
+      "to": "src/features/editor/components/document-error-list/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/document-error-list/__tests__/document-error-list.actions.test.tsx",
+      "to": "src/features/editor/components/document-error-list/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/document-error-list/__tests__/document-error-list.normal.test.tsx",
+      "to": "src/features/editor/components/document-error-list/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/document-error-list/__tests__/document-error-list.origin.test.tsx",
+      "to": "src/features/editor/components/document-error-list/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/document-error-list/index.stories.tsx",
+      "to": "src/features/editor/components/document-error-list/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/document-error-list/index.tsx",
+      "to": "src/components/button/index.tsx",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/components/document-error-list/index.tsx",
+      "to": "src/domains/session/document-error/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/document-error-list/index.tsx",
+      "to": "src/types/ValueOf.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/document-error-list/index.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.tsx",
+      "to": "src/features/editor/components/document-error-list/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/components/create-component/__tests__/create-component.edge.test.tsx",
+      "to": "src/features/editor/features/assets/components/create-component/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/components/create-component/__tests__/create-component.normal.test.tsx",
+      "to": "src/features/editor/features/assets/components/create-component/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/components/create-component/index.stories.tsx",
+      "to": "src/features/editor/features/assets/components/create-component/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/components/create-component/index.tsx",
+      "to": "src/components/button/index.tsx",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/assets/components/create-component/index.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/components/create-component/index.tsx",
+      "to": "src/features/editor/features/assets/domains/componentization/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/components/create-component/index.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/index.ts",
+      "to": "src/features/editor/features/assets/components/create-component/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "to": "src/components/action-card/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.instance.test.tsx",
+      "to": "src/features/editor/features/inspector/components/property-panel/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.shorthand.test.tsx",
+      "to": "src/features/editor/features/inspector/components/property-panel/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/setup.tsx",
+      "to": "src/features/editor/features/inspector/components/property-panel/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/index.stories.tsx",
+      "to": "src/features/editor/features/inspector/components/property-panel/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/index.tsx",
+      "to": "src/components/button/index.tsx",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/index.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/index.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/index.tsx",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/index.tsx",
+      "to": "src/domains/session/prop-control/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/index.tsx",
+      "to": "src/features/editor/features/inspector/components/property-panel/groups-body/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/index.tsx",
+      "to": "src/features/editor/features/inspector/components/property-panel/instance-body/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/index.tsx",
+      "to": "src/features/editor/features/inspector/components/property-panel/selection-title/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/index.tsx",
+      "to": "src/features/editor/features/inspector/components/property-panel/shorthand-row/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/index.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/instance-body/index.stories.tsx",
+      "to": "src/features/editor/features/inspector/components/property-panel/instance-body/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/instance-body/index.tsx",
+      "to": "src/components/button/index.tsx",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/instance-body/index.tsx",
+      "to": "src/components/type-glyph/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/instance-body/index.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/instance-body/index.tsx",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/instance-body/index.tsx",
+      "to": "src/domains/session/prop-control/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/instance-body/index.tsx",
+      "to": "src/features/editor/features/inspector/components/property-panel/label-width/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/instance-body/index.tsx",
+      "to": "src/features/editor/features/inspector/components/property-panel/prop-row/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/instance-body/index.tsx",
+      "to": "src/features/editor/features/inspector/components/property-panel/section-heading/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/instance-body/index.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/index.ts",
+      "to": "src/features/editor/features/inspector/components/property-panel/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-dashed-nodes/__tests__/setup.tsx",
+      "to": "src/features/editor/features/tokens/components/token-dashed-nodes/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-dashed-nodes/index.stories.tsx",
+      "to": "src/features/editor/features/tokens/components/token-dashed-nodes/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-dashed-nodes/index.tsx",
+      "to": "src/components/button/index.tsx",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-dashed-nodes/index.tsx",
+      "to": "src/components/color-swatch/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-dashed-nodes/index.tsx",
+      "to": "src/domains/session/token-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-dashed-nodes/index.tsx",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-dashed-nodes/index.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.gradient.test.tsx",
+      "to": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.title.test.tsx",
+      "to": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/index.stories.tsx",
+      "to": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "to": "src/components/button/index.tsx",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "to": "src/domains/dcmp/token/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "to": "src/domains/session/token-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "to": "src/features/editor/features/tokens/components/token-editor/gradient-fields/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "to": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "to": "src/features/editor/features/tokens/components/token-used-by/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "to": "src/features/editor/features/tokens/domains/token-control/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/index.ts",
+      "to": "src/features/editor/features/tokens/components/token-dashed-nodes/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/index.ts",
+      "to": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "status": "kept"
+    }
+  ]
+}
