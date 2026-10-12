@@ -91,7 +91,7 @@ const PrimaryFace = `border-[#0a74c9] bg-[#ffffff] text-[#0a74c9] enabled:hover:
  *
  * 配色は UI 案（docs/Design Composer.html のボタンは黒の塗りと白地に灰の枠）から意図して離れ、青の枠と白地を基調にしている（#1061 で決めた）。
  *
- * happy-dom は Tailwind を解決せず描画もしないので、配色はテストでは守れず、気づけるのは Storybook の視覚差分（components/Button）だけ。
+ * happy-dom は Tailwind を解決しないので配色はテストでは守れない。視覚差分（components/Button）が拾うのは地の塗りのような面積の大きい変化だけで、枠色・押せないときの文字色はしきい値（`--max-diff-ratio 0.002`）未満で通り、hover は撮られないので、それらは Storybook を目視で確かめる。
  */
 const ButtonKindFaces = {
   [ButtonKinds.Primary]: PrimaryFace,
