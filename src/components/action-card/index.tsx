@@ -1,4 +1,5 @@
 import { type ReactElement, useId } from "react";
+import { FocusOutlineClass } from "@/components/focus-outline";
 import type { ValueOf } from "@/types/ValueOf";
 
 /** カードの配色の種類。 */
@@ -39,7 +40,7 @@ export type ActionCardContent = Readonly<{
  * happy-dom は Tailwind を解決せず描画もしないので、配色とアイコンの崩れはテストでは守れず、
  * 気づけるのは Storybook の視覚差分（components/ActionCard のプライマリ / ノーマル）だけ。
  *
- * カードの `card` 部位はボタンのプライマリ / セカンダリと同じ値だが、hover の文字色と押せないときの見え方が違い、カードをボタンへ追随させるかは決まっていないので表を分けている。
+ * カードの `card` 部位はボタンのプライマリ / セカンダリと同じ値だが（名前は同じでも、カードのプライマリは勧める度合いではボタンの強調にあたる）、プライマリのカードは hover で文字色を変えず、押せないときはカード全体を `opacity-50` で薄くする。カードをボタンへ追随させるかは決まっていないので表を分けている。
  */
 const ActionCardToneFaces = {
   [ActionCardTones.Primary]: {
@@ -73,7 +74,7 @@ const ActionCardToneFaces = {
 /**
  * アイコン・見出し・説明・ショートカットを載せた、押せるカード。
  *
- * フォーカス枠の青（`#0a74c9`）は UI 案の語彙に無く、意図して離れている（#1062）。
+ * フォーカス枠は `FocusOutlineClass` が持つ（UI 案から離れている理由もそちら）。
  *
  * @param content カードの綴り・アイコン・配色の種類
  * @param onClick 押したときに始める手続き
@@ -104,7 +105,7 @@ export function ActionCard({
       disabled={disabled}
       aria-labelledby={titleId}
       aria-describedby={`${descriptionId} ${shortcutId}`}
-      className={`flex flex-col items-start gap-[10px] rounded-[10px] border p-4 text-left focus-visible:outline-2 focus-visible:outline-[#0a74c9] focus-visible:outline-offset-2 disabled:cursor-default disabled:opacity-50 ${toneClasses.card}`}
+      className={`flex flex-col items-start gap-[10px] rounded-[10px] border p-4 text-left ${FocusOutlineClass} disabled:cursor-default disabled:opacity-50 ${toneClasses.card}`}
     >
       <span
         className={`flex size-8 items-center justify-center rounded-[8px] ${toneClasses.icon}`}
