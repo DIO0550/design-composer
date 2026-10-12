@@ -1,0 +1,1377 @@
+{
+  "version": 1,
+  "pr": 1071,
+  "sha": "0e2a9eb766cfffeb1788827e1b30f52ae40d015e",
+  "issue": 1061,
+  "overview": {
+    "title": "基本ボタン `Button` を作り、文字ラベルのボタン 9 個を置き換える",
+    "lead": "画面ごとの className で描いていたボタンを、6 種類(プライマリ・セカンダリ・デンジャー・テキスト・強調・アイコン)と 3 つの大きさだけで見た目が決まる共通部品 `Button` に揃えた。アイコン系 9 個の置き換えは #1066 に分けている。",
+    "before": [
+      {
+        "text": "ボタンは画面ごとに素の `<button>` と個別の className で描かれ、配色・高さ・押せないときの見え方(`opacity-50` か UI 案の値か)が揃っていなかった"
+      },
+      {
+        "text": "部品化のボタン(Create component)は黒の地に薄紫の `◆`、高さ 32px で描かれていた"
+      },
+      {
+        "text": "インスタンスの操作のボタンは灰枠・左寄せ・14px で、押せないときは全体を `opacity-50` で薄くしていた"
+      },
+      {
+        "text": "revert file は見出しの 14px・太字 500 の青 `#0d99ff`、reveal in tree は帯の 11px を継ぐ青 `#0d99ff` だった"
+      },
+      {
+        "text": "開始画面のカードはフォーカス枠のクラス 3 つを自分で直書きしていた"
+      }
+    ],
+    "after": [
+      {
+        "text": "Create component は強調(青の地に白の字・高さ 30px)で出る。押せないときは UI 案の値(地 `#fafafa`・枠 `#ebebeb`・字 `#c4c4c4`)のまま",
+        "message": "render-emphasis"
+      },
+      {
+        "text": "Go to source component・Select all N instances・選択を解除はプライマリ(青の枠と字)、Detach instance だけセカンダリ(灰の枠と黒の字)で、どれも中央寄せ・11px・高さ 30px で出る",
+        "message": "render-instance"
+      },
+      {
+        "text": "押せないボタンは、箱型ならどれも地は白のまま枠 `#ebebeb`・字 `#c4c4c4` で出て、押せない理由は今までどおり title に出る",
+        "message": "render-instance"
+      },
+      {
+        "text": "Delete token はデンジャー(赤の枠と字)で出る",
+        "message": "render-danger"
+      },
+      {
+        "text": "エラー一覧の Reveal はプライマリの小(高さ 28px)、revert file はテキスト(11px・400 の青 `#0a74c9`)で、どちらも見出しや行の右端に寄る",
+        "message": "render-error-list"
+      },
+      {
+        "text": "破線の帯の reveal in tree はテキストで出て、hover すると薄い青の地が字の左右 3px に出る",
+        "message": "render-dashed"
+      },
+      {
+        "text": "どのボタンもキーボードで辿ると、開始画面のカードと同じ青 2px のフォーカス枠が出る",
+        "message": "button-focus"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "UI 案から離れる配色",
+        "text": "UI 案のボタンは黒の塗りと白地に灰の枠だが、青の枠と白地を基調にした(利用者確認済み)。強調の地が黒から青に変わるなど、どの画面でも見た目が変わるので、Storybook を目で見て確かめてほしい",
+        "go": {
+          "kind": "file",
+          "path": "src/components/button/index.tsx"
+        }
+      },
+      {
+        "title": "VRT で拾えない枠色と hover",
+        "text": "視覚差分(`--max-diff-ratio 0.002`)が拾うのは強調の地(1.19%)のような面積の大きい変化だけ。枠色(0.08%)・押せないときの字の色(0.02%)はしきい値の内側で通り、hover は撮られない。6 種類の hover は Storybook で計算済みのスタイルを確かめたが、機械では守られていない",
+        "go": {
+          "kind": "file",
+          "path": "src/components/button/index.stories.tsx"
+        }
+      },
+      {
+        "title": "テキストの負の余白",
+        "text": "テキストは hover の地のために左右 3px の余白を持ち、同じ幅の負の margin で打ち消して平常時の字の位置を UI 案と同じにしている。revert file では hover の地が包みの右端から 3px はみ出す(切り取る祖先の内側に収まることは確認済み)",
+        "go": {
+          "kind": "message",
+          "id": "render-error-list"
+        }
+      },
+      {
+        "title": "アイコン系は別の Issue",
+        "text": "ズームの `−` / `+`、ツールバーのスロット、見出しの `+` など 9 個は #1066 に分けた。どれも 30×30 のアイコンの定義にそのままは収まらないため。アイコンの種類は呼び出し側が無いまま、ストーリーだけで描いている",
+        "go": {
+          "kind": "feature",
+          "id": "button"
+        }
+      },
+      {
+        "title": "部品化のボタンの流れ",
+        "text": "強調は画面に 1 つだけ置く約束で、型では縛っていない。Assets 画面で押せるのはこのボタンだけなので強調を当てた",
+        "go": {
+          "kind": "flow",
+          "id": "create-component"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "button",
+      "label": "基本ボタン",
+      "role": "種類と大きさだけで見た目が決まり、className を受け取らない共通のボタンと、カードと共有するフォーカス枠"
+    },
+    {
+      "id": "replace",
+      "label": "置き換え",
+      "role": "文字ラベルのボタン 9 個(6 ファイル)を素の `<button>` から基本ボタンへ移す"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "components",
+      "role": "基本ボタンとフォーカス枠を新しく置き、開始画面のカードはフォーカス枠をそちらから取る"
+    },
+    {
+      "layer": "features / editor",
+      "role": "エラー一覧の Reveal と revert file を基本ボタンへ置き換える"
+    },
+    {
+      "layer": "features / editor/features/assets",
+      "role": "部品化のボタンを強調へ置き換える"
+    },
+    {
+      "layer": "features / editor/features/inspector",
+      "role": "インスタンスの 3 ボタンと選択を解除をプライマリ・セカンダリへ置き換える"
+    },
+    {
+      "layer": "features / editor/features/tokens",
+      "role": "Delete token をデンジャー、reveal in tree をテキストへ置き換える"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "src/components/button/index.tsx",
+      "name": "基本ボタン",
+      "role": "種類(6 つ)と大きさ(3 つ)から配色と形を決めて素の `<button type=\"button\">` を描く。props は種類ごとの直和で、箱型 4 種は大きさが必須、テキストとアイコンは大きさを取らず、アイコンだけ `aria-label` が必須",
+      "feature": "button",
+      "change": "新しく作った。配色は `ButtonKindFaces`、箱型の押せないときの枠と字は `FramedDisabledFace`、アイコンはプライマリと同じ `PrimaryFace` を指す"
+    },
+    {
+      "path": "src/components/focus-outline/index.ts",
+      "name": "フォーカス枠",
+      "role": "キーボードで辿ったときに押せる部品の外側へ描く青 2px の枠のクラス `FocusOutlineClass`",
+      "feature": "button",
+      "change": "新しく作った。カードとボタンが同じ 3 クラスを直書きしていた重複をまとめた"
+    },
+    {
+      "path": "src/components/action-card/index.tsx",
+      "name": "開始画面のカード",
+      "role": "アイコン・見出し・説明を載せた押せるカード(#1062)",
+      "feature": "button",
+      "change": "フォーカス枠を `FocusOutlineClass` から取り、ボタンと配色の表を分けている理由を doc に足した"
+    },
+    {
+      "path": "src/components/button/index.stories.tsx",
+      "name": "ボタンのストーリー",
+      "role": "6 種類を 1 本ずつ、平常と押せないとき、箱型は 3 つの大きさで並べる。配色を目で確かめる場所",
+      "feature": "button",
+      "change": "新しく作った"
+    },
+    {
+      "path": "src/features/editor/features/assets/components/create-component/index.tsx",
+      "name": "部品化",
+      "role": "選んだノードを部品にする Create component のボタンと部品名の入力",
+      "feature": "replace",
+      "change": "ボタンを強調・標準へ。`◆` の薄紫と `w-full` を外した"
+    },
+    {
+      "path": "src/features/editor/features/inspector/components/property-panel/instance-body/index.tsx",
+      "name": "インスタンスの操作",
+      "role": "インスタンスを選んだときのインスペクタ。元の部品へ移る・まとめて選ぶ・解除する",
+      "feature": "replace",
+      "change": "Go to source component・Select all N instances をプライマリ、Detach instance をセカンダリへ。解除だけセカンダリにした理由をコメントに残した"
+    },
+    {
+      "path": "src/features/editor/features/inspector/components/property-panel/index.tsx",
+      "name": "プロパティパネル",
+      "role": "選んだノードの prop を編集するインスペクタ",
+      "feature": "replace",
+      "change": "選択を解除をプライマリ・標準へ"
+    },
+    {
+      "path": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "name": "トークン編集",
+      "role": "選んだトークンの名前と値を編集し、削除する",
+      "feature": "replace",
+      "change": "Delete token をデンジャー・標準へ"
+    },
+    {
+      "path": "src/features/editor/components/document-error-list/index.tsx",
+      "name": "エラー一覧",
+      "role": "不正なファイルのエラーを並べ、ノードへ飛ぶ・ファイルを書き戻す",
+      "feature": "replace",
+      "change": "Reveal をプライマリ・小、revert file をテキストへ。右寄せの `ml-auto shrink-0` は各関数の中で包む `<span>` へ移した"
+    },
+    {
+      "path": "src/features/editor/features/tokens/components/token-dashed-nodes/index.tsx",
+      "name": "破線の帯",
+      "role": "トークンを参照していて破線が掛かっているノードを知らせ、ツリーで表示する",
+      "feature": "replace",
+      "change": "reveal in tree をテキストへ。`ml-1 shrink-0` は包む `<span>` へ移し、文字の大きさと見た目を守る場所についてのコメントを書き直した"
+    },
+    {
+      "path": "src/components/button/__tests__/button.normal.test.tsx",
+      "name": "ボタンの振る舞いのテスト",
+      "role": "押し方・名前・title を確かめる",
+      "feature": "button",
+      "graph": false
+    },
+    {
+      "path": "src/components/button/__tests__/button.type.test.ts",
+      "name": "ボタンの型のテスト",
+      "role": "種類ごとの大きさと名前の要否を型で確かめる",
+      "feature": "button",
+      "graph": false
+    }
+  ],
+  "messages": [
+    {
+      "id": "render-emphasis",
+      "from": "src/features/editor/features/assets/components/create-component/index.tsx",
+      "to": "src/components/button/index.tsx",
+      "kind": "qry",
+      "name": "強調で描く",
+      "code": "<Button kind={ButtonKinds.Emphasis} size={ButtonSizes.Regular} disabled={!isEnabled} title={reason}>",
+      "via": "call",
+      "payload": "押せるか・押せない理由・押したときの手続き・`◆` と綴り",
+      "returns": "青の地に白の字のボタン(押せないときは UI 案の淡色)",
+      "status": "added"
+    },
+    {
+      "id": "render-instance",
+      "from": "src/features/editor/features/inspector/components/property-panel/instance-body/index.tsx",
+      "to": "src/components/button/index.tsx",
+      "kind": "qry",
+      "name": "プライマリとセカンダリで描く",
+      "code": "<Button kind={ButtonKinds.Secondary} size={ButtonSizes.Regular} disabled={!controls.isDetachable} title={…}>",
+      "via": "call",
+      "payload": "3 つのボタンの綴り・押せるか・押せない理由",
+      "returns": "青枠 2 つと灰枠 1 つのボタン",
+      "status": "added"
+    },
+    {
+      "id": "render-clear",
+      "from": "src/features/editor/features/inspector/components/property-panel/index.tsx",
+      "to": "src/components/button/index.tsx",
+      "kind": "qry",
+      "name": "選択の解除を描く",
+      "code": "<Button kind={ButtonKinds.Primary} size={ButtonSizes.Regular} onClick={onClearSelection}>",
+      "via": "call",
+      "returns": "プライマリのボタン",
+      "status": "added"
+    },
+    {
+      "id": "render-danger",
+      "from": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "to": "src/components/button/index.tsx",
+      "kind": "qry",
+      "name": "デンジャーで描く",
+      "code": "<Button kind={ButtonKinds.Danger} size={ButtonSizes.Regular} onClick={onRemoveToken}>",
+      "via": "call",
+      "returns": "赤の枠と字のボタン",
+      "status": "added"
+    },
+    {
+      "id": "render-error-list",
+      "from": "src/features/editor/components/document-error-list/index.tsx",
+      "to": "src/components/button/index.tsx",
+      "kind": "qry",
+      "name": "小とテキストで描く",
+      "code": "<Button kind={ButtonKinds.Primary} size={ButtonSizes.Small} aria-label={`${nodeName} を表示`}> / <Button kind={ButtonKinds.Text} disabled={isReverting}>",
+      "via": "call",
+      "payload": "Reveal の読み上げ名・書き込み中か",
+      "returns": "高さ 28px の青枠のボタンと、行内の青の字のボタン",
+      "status": "added"
+    },
+    {
+      "id": "reveal-click",
+      "from": "src/components/button/index.tsx",
+      "to": "src/features/editor/components/document-error-list/index.tsx",
+      "kind": "evt",
+      "name": "押されたことを知らせる",
+      "code": "onClick={props.onClick}",
+      "via": "call",
+      "payload": "(なし。呼び出し側の手続きが行のノード名を渡す)",
+      "status": "added"
+    },
+    {
+      "id": "render-dashed",
+      "from": "src/features/editor/features/tokens/components/token-dashed-nodes/index.tsx",
+      "to": "src/components/button/index.tsx",
+      "kind": "qry",
+      "name": "帯の中のテキストを描く",
+      "code": "<Button kind={ButtonKinds.Text} onClick={() => onReveal(firstDashedNodeName.value)}>",
+      "via": "call",
+      "returns": "行内の青の字のボタン",
+      "status": "added"
+    },
+    {
+      "id": "button-focus",
+      "from": "src/components/button/index.tsx",
+      "to": "src/components/focus-outline/index.ts",
+      "kind": "qry",
+      "name": "フォーカス枠を取る",
+      "code": "FocusOutlineClass",
+      "via": "call",
+      "returns": "`focus-visible:` の outline 3 クラス",
+      "status": "added"
+    },
+    {
+      "id": "card-focus",
+      "from": "src/components/action-card/index.tsx",
+      "to": "src/components/focus-outline/index.ts",
+      "kind": "qry",
+      "name": "カードのフォーカス枠を取る",
+      "code": "FocusOutlineClass",
+      "via": "call",
+      "returns": "直書きしていたものと同じ 3 クラス",
+      "status": "changed"
+    }
+  ],
+  "flows": [
+    {
+      "id": "create-component",
+      "label": "部品化のボタンを描く",
+      "steps": [
+        "render-emphasis",
+        "button-focus"
+      ]
+    },
+    {
+      "id": "reveal",
+      "label": "エラー一覧からノードへ飛ぶ",
+      "steps": [
+        "render-error-list",
+        "reveal-click"
+      ]
+    },
+    {
+      "id": "inspector",
+      "label": "インスペクタのボタンを描く",
+      "steps": [
+        "render-instance",
+        "render-clear",
+        "button-focus"
+      ]
+    },
+    {
+      "id": "focus",
+      "label": "キーボードでフォーカスする",
+      "steps": [
+        "button-focus",
+        "card-focus"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "b92ac07975584cc7dd3653d928fb58ef8d0e5864",
+      "phase": "core",
+      "role": "基本ボタンを 6 種類 × 3 つの大きさで足す",
+      "why": "置き換えより先に部品を置き、種類ごとの props の直和と配色の表を 1 箇所で決める。使う側が親の `features/editor` と子の assets / inspector / tokens にまたがり、子どうし・子から親は import できないので `src/components/` に置いた。",
+      "flows": [
+        "create-component",
+        "inspector"
+      ],
+      "review": [
+        "className を受け取らない。受け取ると画面ごとの className へ戻る口になるため",
+        "prop 名は `variant` ではなく `kind`。`variant` は docs/01-file-format.md で dcmp の prop として別の意味を持ち、既存の *Tones は配色だけの切り替えなので形も props も変わるこの直和には合わない",
+        "テキストの字を 11px に固定している。周囲を継ぐと revert file が `text-sm` の見出しから 14px の太字を継ぐため"
+      ],
+      "after": [
+        {
+          "text": "まだ誰も使っていない基本ボタンが `src/components/button` にある"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/components/button/index.tsx",
+          "start": 60,
+          "end": 80,
+          "text": "種類ごとの直和。箱型は `size` 必須、テキストとアイコンは `size?: never`、アイコンだけ `aria-label` 必須"
+        },
+        {
+          "path": "src/components/button/index.tsx",
+          "start": 82,
+          "end": 84,
+          "text": "アイコンの配色はプライマリの値を書き写さず、同じ定数を指す"
+        },
+        {
+          "path": "src/components/button/index.tsx",
+          "start": 99,
+          "end": 102,
+          "text": "強調の枠の理由をここでは「高さを揃える」と書いたが誤りで、`1fe0830` で「幅を揃える」に直した"
+        }
+      ]
+    },
+    {
+      "sha": "a0c0bad78b456ac6b689c3211d24610535fca20d",
+      "phase": "core",
+      "role": "押し方・名前・title と props の型をテストで固定する",
+      "why": "置き換え先の既存テストは role・name・disabled・title でボタンを引いているので、基本ボタンがこの 4 つを素の `<button>` へ渡すことが置き換えの前提になる。その前提を部品の側でも固定してから置き換えに入る。",
+      "flows": [
+        "reveal"
+      ],
+      "review": [
+        "型のテストの `@ts-expect-error` は、プロパティの行ではなく変数宣言の直前に置いている。`size?: never` の誤りを TS が宣言の行に出すため",
+        "配色・寸法・hover はテストしていない。happy-dom は Tailwind を解決しないので見られない"
+      ],
+      "notes": [
+        {
+          "path": "src/components/button/__tests__/button.normal.test.tsx",
+          "start": 143,
+          "end": 155,
+          "text": "押せるときに `title={undefined}` を渡す経路(インスタンスの操作)で、空の title が出ないことを守る"
+        },
+        {
+          "path": "src/components/button/__tests__/button.type.test.ts",
+          "start": 11,
+          "end": 21,
+          "text": "誤りが出る行に合わせて、`@ts-expect-error` を宣言の直前に置く"
+        }
+      ]
+    },
+    {
+      "sha": "2a283ac3d72fa28b812aaedae17be98f6ea42c10",
+      "phase": "core",
+      "role": "6 種類を Storybook に並べる",
+      "why": "配色と寸法は happy-dom で見えず、守れるのは Storybook の視覚差分と目視だけ。呼び出し側がまだ無いアイコンと大もここで描いて確かめる。",
+      "review": [
+        "大きさは `Object.values(ButtonSizes)` で回さず 3 つを書いて並べている。Storybook の docgen が export した定数に `__docgenInfo` を書き足し、それも大きさとして並んで描画が落ちたため(実測)",
+        "新しいストーリーは main にベースラインが無いので、VRT では比べられない"
+      ],
+      "notes": [
+        {
+          "path": "src/components/button/index.stories.tsx",
+          "start": 42,
+          "end": 48,
+          "text": "docgen が定数に足すキーを避けるため、大きさを書いて並べる"
+        },
+        {
+          "path": "src/components/button/index.stories.tsx",
+          "start": 14,
+          "end": 14,
+          "text": "hover は撮れないので触って確かめる"
+        }
+      ]
+    },
+    {
+      "sha": "1beb9c0f721b78085522c488995adb1950369275",
+      "phase": "core",
+      "role": "Create component を強調へ置き換える",
+      "why": "Assets 画面で押せるボタンはこれだけなので、画面に 1 つの強調をここに当てた。`◆` の色は外して currentColor を継がせ、平常(白)と押せないとき(`#c4c4c4`)の色を基本ボタンだけが持つ。",
+      "flows": [
+        "create-component"
+      ],
+      "review": [
+        "強調の地が黒 `#1e1e1e` から青 `#0a74c9` に、高さが 32px から 30px になり、UI 案から意図して離れる(利用者確認済み)",
+        "`◆` を白にした。青地の上の薄紫 `#c9a6ff` は読みにくいため(利用者確認済み)",
+        "`w-full` を外しても、親の `flex flex-col` が横に引き伸ばすので幅は変わらない"
+      ],
+      "before": [
+        {
+          "text": "黒の地に薄紫の `◆`、高さ 32px の部品化のボタン"
+        }
+      ],
+      "after": [
+        {
+          "text": "青の地に白の `◆` と字、高さ 30px の強調のボタン",
+          "message": "render-emphasis"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/assets/components/create-component/index.tsx",
+          "start": 86,
+          "end": 95,
+          "text": "素の `<button>` と className を、強調・標準の指定だけに置き換えた"
+        }
+      ]
+    },
+    {
+      "sha": "15f095fe95bdebf2369f3e27928744025cc80a2b",
+      "phase": "core",
+      "role": "インスペクタの 4 つのボタンをプライマリ・セカンダリへ置き換える",
+      "why": "Issue の「ブルー・ゴースト基調」を「標準の操作は青」と読み、通常の操作はプライマリにした。UI 案どおり白地・灰枠のセカンダリに揃えると、基調の青が画面にほとんど出ないため(利用者確認済み)。",
+      "flows": [
+        "inspector"
+      ],
+      "review": [
+        "左寄せ・14px から中央寄せ・11px になる。寄せの指定は基本ボタンに足していない(利用者確認済み)",
+        "押せないときの見え方が `opacity-50` から枠 `#ebebeb`・字 `#c4c4c4` に変わる",
+        "本文の Detach が「取り消しにくい操作」は誤り(解除は undo で戻る)。`2d0c78c` で訂正している"
+      ],
+      "before": [
+        {
+          "text": "灰枠・左寄せ・14px のボタンで、押せないときは全体が薄い"
+        }
+      ],
+      "after": [
+        {
+          "text": "Go to source component・Select all N instances・選択を解除は青枠、Detach instance は灰枠",
+          "message": "render-instance"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/instance-body/index.tsx",
+          "start": 150,
+          "end": 162,
+          "text": "押せない理由の title と disabled はそのまま渡す。既存テストはこの 2 つで引いている"
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/instance-body/index.tsx",
+          "start": 163,
+          "end": 171,
+          "text": "解除だけセカンダリ"
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/index.tsx",
+          "start": 137,
+          "end": 143,
+          "text": "選択を解除もプライマリ"
+        }
+      ]
+    },
+    {
+      "sha": "04604c73af6733c7ae91cd4a8764396f556c383f",
+      "phase": "core",
+      "role": "Delete token をデンジャーへ置き換える",
+      "why": "UI 案もこのボタンを赤の字で描いている。セカンダリにして字だけ赤くすると className を足す口が要り、画面ごとの className へ戻る。",
+      "review": [
+        "本文の「取り消せない操作」は誤り。Delete token は undo で戻る(`1fe0830` で訂正)",
+        "枠が灰から赤 `#c4262b` に、hover の地が灰から薄い赤 `#fdecec` になる"
+      ],
+      "after": [
+        {
+          "text": "Delete token が赤の枠と字で出る",
+          "message": "render-danger"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+          "start": 199,
+          "end": 205,
+          "text": "デンジャー・標準"
+        }
+      ]
+    },
+    {
+      "sha": "56156bb47733ead556b5d3d6d36c785c590f7086",
+      "phase": "core",
+      "role": "エラー一覧の revert file と Reveal を置き換える",
+      "why": "Reveal は UI 案で 28px なので小、標準の操作は青なのでプライマリ。revert file は UI 案で行内の文字なので高さを持たないテキストにした(デンジャーにはしない。利用者確認済み)。右寄せの包みを関数の中に置いたのは、`@returns`「見出しの右端に寄せる書き戻しのボタン」を真のまま保つため。",
+      "flows": [
+        "reveal"
+      ],
+      "review": [
+        "右寄せの `ml-auto shrink-0` を呼び出し側ではなく `RevertFileButton` / `RevealButton` の中の `<span>` に移した",
+        "revert file は 14px・太字 500 の `#0d99ff` から 11px・400 の `#0a74c9` になる"
+      ],
+      "before": [
+        {
+          "text": "Reveal は灰枠、revert file は見出しの字を継いだ太字"
+        }
+      ],
+      "after": [
+        {
+          "text": "Reveal は青枠の 28px、revert file は 11px の青の字",
+          "message": "render-error-list"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/components/document-error-list/index.tsx",
+          "start": 115,
+          "end": 131,
+          "text": "`@returns` の「右端に寄せる」が真のままになるよう、包みを関数の中に置く"
+        },
+        {
+          "path": "src/features/editor/components/document-error-list/index.tsx",
+          "start": 145,
+          "end": 154,
+          "text": "読み上げ名は `aria-label` で渡す。既存テストは「cta を表示」で引く"
+        }
+      ]
+    },
+    {
+      "sha": "9168f180a38c5b7df3442d0991f6e31a625ac700",
+      "phase": "core",
+      "role": "破線の帯の reveal in tree をテキストへ置き換える",
+      "why": "revert file と同じ形にした。「帯の 11px を継ぐ」「見た目を守るものは無い」というコメントは、字の大きさを基本ボタンが持ち、ストーリーで見られるようになって嘘になるので書き直した。",
+      "review": [
+        "この帯での差分は VRT のしきい値未満で緑のまま通りうるので、目視が要る"
+      ],
+      "after": [
+        {
+          "text": "reveal in tree が `#0a74c9` の字で出て、hover で薄い青の地が出る",
+          "message": "render-dashed"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/tokens/components/token-dashed-nodes/index.tsx",
+          "start": 86,
+          "end": 93,
+          "text": "字の大きさと見た目を守る場所を、基本ボタンとそのストーリーに付け替えた"
+        }
+      ]
+    },
+    {
+      "sha": "153ed60de1d4ba0c12428726dcdd58b954ed90d7",
+      "phase": "fin",
+      "role": "開始画面のカードの doc を、青が基本ボタンの配色にもなったことに合わせる",
+      "why": "同じ青 `#0a74c9` がアプリ共通のボタンの配色になり、「汎用の配色ではない」が嘘になった。`card` 部位の値はボタンと一致するので、表を分けている理由を残さないと次に読む人が共通化しようとする。",
+      "review": [
+        "ボタンとカードで配色の表を共有しない理由が、カードの側から読める"
+      ],
+      "notes": [
+        {
+          "path": "src/components/action-card/index.tsx",
+          "start": 11,
+          "end": 11,
+          "text": "#1061 でボタンのプライマリの配色にもなった"
+        },
+        {
+          "path": "src/components/action-card/index.tsx",
+          "start": 42,
+          "end": 42,
+          "text": "表を分ける理由。`5522e52` でプライマリだけに当てはまる形へ直した"
+        }
+      ]
+    },
+    {
+      "sha": "856d61f959a816a33a8ddb62da020d70940d68f7",
+      "phase": "revise",
+      "role": "フォーカス枠のクラスを独立したモジュールにする",
+      "why": "duplication-reviewer の指摘。カードとボタンが同じ 3 クラスを直書きしていて、片方だけ変わるとフォーカス枠が 2 種類になり、ボタンの側からは UI 案から離れている理由にも辿り着けなかった。",
+      "flows": [
+        "focus"
+      ],
+      "review": [
+        "名前は FocusRing ではなく FocusOutline。Tailwind の ring は box-shadow を指し、outline で描いている実体と食い違うため",
+        "カードからボタンが import する形にはしていない。カードの都合にボタンが依存するため"
+      ],
+      "notes": [
+        {
+          "path": "src/components/focus-outline/index.ts",
+          "start": 1,
+          "end": 7,
+          "text": "UI 案から離れている理由(#1062)はこの doc が持つ"
+        }
+      ]
+    },
+    {
+      "sha": "1fe0830f12f6688594146db9e0bc73880bff5b0f",
+      "phase": "revise",
+      "role": "配色と形の書き写しをまとめ、箱型の語を Framed にする",
+      "why": "duplication / naming / comment / ui の各 reviewer の指摘をまとめて反映した。押せないときの色・アイコンの形・箱型の種類の定義は同じ事実の書き写しで、片方だけ直しても型でもテストでも気づけなかった。Box は dcmp のプリミティブ名と同じ綴りなので Framed にした。",
+      "flows": [
+        "focus"
+      ],
+      "review": [
+        "強調の枠の理由を「高さを揃える」から「押せないときの枠と幅を揃える」に直した。border-box で高さは固定なので、変わるのは幅(133.2px の一致を実測)",
+        "テキストの左右 3px の余白を同じ幅の負の margin で打ち消し、平常時の字の位置を UI 案と同じにした",
+        "デンジャーの doc を「消す・壊す向きの操作」に直した。Delete token は undo で戻るので「取り消せない」は誤り",
+        "配色が UI 案から意図して離れていることを `ButtonKindFaces` の doc に書いた"
+      ],
+      "before": [
+        {
+          "text": "テキストの字が平常時も左右 3px 内側へずれていた"
+        }
+      ],
+      "after": [
+        {
+          "text": "テキストの字の位置は平常時に UI 案と同じで、hover の地だけが左右 3px 広がる",
+          "message": "render-dashed"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/components/button/index.tsx",
+          "start": 83,
+          "end": 87,
+          "text": "箱型 4 種の押せないときの枠と字を 1 つにまとめ、プライマリとアイコンが指す"
+        },
+        {
+          "path": "src/components/button/index.tsx",
+          "start": 102,
+          "end": 104,
+          "text": "強調の枠は、押せないときの 1px の枠と幅を揃えるため"
+        },
+        {
+          "path": "src/components/button/index.tsx",
+          "start": 118,
+          "end": 124,
+          "text": "負の margin で余白を打ち消す"
+        }
+      ]
+    },
+    {
+      "sha": "5522e5244d48fb3061aecf084ac177a6ce14aeae",
+      "phase": "revise",
+      "role": "開始画面のカードのフォーカス枠を共有の定数から取り、ボタンとの対応を doc に正す",
+      "why": "前のコミットで足した「hover の文字色と押せないときの見え方が違う」はプライマリのカードにしか当てはまらず、名前が同じでもカードのプライマリは勧める度合いではボタンの強調にあたる、という対応が書かれていなかった。",
+      "flows": [
+        "focus"
+      ],
+      "review": [
+        "カードとボタンで同じ名前が別の度合いを指す状態は変えず、対応を doc に書いた(カードの語は #1062 で決めたもの)"
+      ],
+      "after": [
+        {
+          "text": "描画は変わらない(クラスの中身は同じ)",
+          "message": "card-focus"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/components/action-card/index.tsx",
+          "start": 43,
+          "end": 43,
+          "text": "カードのプライマリはボタンの強調にあたる"
+        },
+        {
+          "path": "src/components/action-card/index.tsx",
+          "start": 108,
+          "end": 108,
+          "text": "直書きの 3 クラスを共有の定数へ"
+        }
+      ]
+    },
+    {
+      "sha": "2d0c78c0695442f23f5b662c1b0a2117429c5930",
+      "phase": "revise",
+      "role": "インスタンスの解除だけセカンダリにする理由をコメントに残す",
+      "why": "comment-reviewer の指摘。同じ並びのボタンの種類が割れている理由がコードに無いと、次に触る人が揃えるか割るかを判断できない。理由は取り消しの可否ではなく「勧める操作ではない」にした(解除は undo で戻る)。",
+      "review": [
+        "理由に「取り消しにくい」を使っていない"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/instance-body/index.tsx",
+          "start": 163,
+          "end": 163,
+          "text": "部品との繋がりを切る操作で、勧める操作ではないため"
+        }
+      ]
+    },
+    {
+      "sha": "0e2a9eb766cfffeb1788827e1b30f52ae40d015e",
+      "phase": "revise",
+      "role": "配色を視覚差分が拾える範囲を実測に合わせて doc に書く",
+      "why": "test-reviewer が CI と同じ撮影(`--max-diff-ratio 0.002`、1280x720)で配色のクラスを 1 つずつ外して撮った。セカンダリの枠色は 0.08%、テキストの押せないときの字の色は 0.02% でしきい値の内側に通り、hover は撮られない。拾われたのは強調の地(1.19%)だけで、「視覚差分で気づける」という doc と食い違っていた。",
+      "review": [
+        "枠色・押せないときの色・hover の退行は機械では止まらず、目視に頼る。撮影の器を小さくする案は撮影の仕組みに手を入れるので見送った"
+      ],
+      "notes": [
+        {
+          "path": "src/components/button/index.tsx",
+          "start": 94,
+          "end": 94,
+          "text": "視覚差分が拾うのは面積の大きい変化だけ、と実測に合わせた"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "button-normal",
+      "label": "ボタンの振る舞い",
+      "file": "src/components/button/__tests__/button.normal.test.tsx"
+    },
+    {
+      "id": "button-type",
+      "label": "ボタンの型",
+      "file": "src/components/button/__tests__/button.type.test.ts"
+    },
+    {
+      "id": "error-list-actions",
+      "label": "エラー一覧の操作",
+      "file": "src/features/editor/components/document-error-list/__tests__/document-error-list.actions.test.tsx"
+    },
+    {
+      "id": "property-panel-instance",
+      "label": "インスタンスの操作",
+      "file": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.instance.test.tsx"
+    },
+    {
+      "id": "create-component-edge",
+      "label": "部品化の境界",
+      "file": "src/features/editor/features/assets/components/create-component/__tests__/create-component.edge.test.tsx"
+    }
+  ],
+  "tests": [
+    {
+      "id": "click-once",
+      "suite": "button-normal",
+      "name": "押すと、渡した手続きが 1 回呼ばれる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "`onClick` を素の `<button>` へ渡し忘れると、置き換えたボタンがどれも押しても何も起きなくなる",
+      "given": "手続きを渡したプライマリ・標準のボタン",
+      "when": "押す",
+      "then": "手続きが 1 回だけ呼ばれる",
+      "commit": "a0c0bad78b456ac6b689c3211d24610535fca20d",
+      "excerpt": {
+        "path": "src/components/button/__tests__/button.normal.test.tsx",
+        "start": 5,
+        "end": 20,
+        "text": "test(\"押すと、渡した手続きが 1 回呼ばれる\", () => {\n  const clicks: string[] = [];\n  render(\n    <Button\n      kind={ButtonKinds.Primary}\n      size={ButtonSizes.Regular}\n      onClick={() => clicks.push(\"clicked\")}\n    >\n      保存\n    </Button>,\n  );\n\n  fireEvent.click(screen.getByRole(\"button\", { name: \"保存\" }));\n\n  expect(clicks).toHaveLength(1);\n});"
+      },
+      "targets": [
+        "src/components/button/index.tsx"
+      ],
+      "covers": [
+        "reveal-click"
+      ]
+    },
+    {
+      "id": "disabled-attr",
+      "suite": "button-normal",
+      "name": "押させたくないときは、押せない状態で出る",
+      "techniques": [
+        "state"
+      ],
+      "why": "置き換え先の既存テストは `disabled` 属性でボタンを引くので、渡し忘れると押せない状態が画面にも支援技術にも出ない",
+      "given": "`disabled` を与えたボタン",
+      "when": "描く",
+      "then": "`disabled` 属性を持つ",
+      "commit": "a0c0bad78b456ac6b689c3211d24610535fca20d",
+      "excerpt": {
+        "path": "src/components/button/__tests__/button.normal.test.tsx",
+        "start": 22,
+        "end": 32,
+        "text": "test(\"押させたくないときは、押せない状態で出る\", () => {\n  render(\n    <Button kind={ButtonKinds.Primary} size={ButtonSizes.Regular} disabled>\n      保存\n    </Button>,\n  );\n\n  expect(\n    screen.getByRole(\"button\", { name: \"保存\" }).hasAttribute(\"disabled\"),\n  ).toBe(true);\n});"
+      },
+      "targets": [
+        "src/components/button/index.tsx"
+      ]
+    },
+    {
+      "id": "disabled-no-click",
+      "suite": "button-normal",
+      "name": "押させたくないときは、押しても手続きが呼ばれない",
+      "techniques": [
+        "state",
+        "error"
+      ],
+      "why": "書き込み中の revert file のように、押し直させないことが目的のボタンがある",
+      "given": "`disabled` と手続きを与えたボタン",
+      "when": "押す",
+      "then": "手続きは呼ばれない",
+      "commit": "a0c0bad78b456ac6b689c3211d24610535fca20d",
+      "excerpt": {
+        "path": "src/components/button/__tests__/button.normal.test.tsx",
+        "start": 34,
+        "end": 50,
+        "text": "test(\"押させたくないときは、押しても手続きが呼ばれない\", () => {\n  const clicks: string[] = [];\n  render(\n    <Button\n      kind={ButtonKinds.Primary}\n      size={ButtonSizes.Regular}\n      disabled\n      onClick={() => clicks.push(\"clicked\")}\n    >\n      保存\n    </Button>,\n  );\n\n  fireEvent.click(screen.getByRole(\"button\", { name: \"保存\" }));\n\n  expect(clicks).toHaveLength(0);\n});"
+      },
+      "targets": [
+        "src/components/button/index.tsx"
+      ]
+    },
+    {
+      "id": "no-submit",
+      "suite": "button-normal",
+      "name": "フォームの中に置いても、押してフォームを送信しない",
+      "techniques": [
+        "regression"
+      ],
+      "why": "`<button>` の既定は submit なので、`type=\"button\"` を外すとフォームの中で押したときに送信されてしまう",
+      "given": "フォームの中に置いたセカンダリのボタン",
+      "when": "押す",
+      "then": "フォームの送信は起きない",
+      "commit": "a0c0bad78b456ac6b689c3211d24610535fca20d",
+      "excerpt": {
+        "path": "src/components/button/__tests__/button.normal.test.tsx",
+        "start": 52,
+        "end": 70,
+        "text": "test(\"フォームの中に置いても、押してフォームを送信しない\", () => {\n  const submits: string[] = [];\n  render(\n    <form\n      onSubmit={(event) => {\n        event.preventDefault();\n        submits.push(\"submitted\");\n      }}\n    >\n      <Button kind={ButtonKinds.Secondary} size={ButtonSizes.Regular}>\n        保存\n      </Button>\n    </form>,\n  );\n\n  fireEvent.click(screen.getByRole(\"button\", { name: \"保存\" }));\n\n  expect(submits).toHaveLength(0);\n});"
+      },
+      "targets": [
+        "src/components/button/index.tsx"
+      ]
+    },
+    {
+      "id": "name-from-children",
+      "suite": "button-normal",
+      "name": "中身の綴りがボタンの名前になる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "置き換え先のテストは「Delete token」のように綴りで引く",
+      "given": "中身が「Delete token」のデンジャーのボタン",
+      "when": "名前で引く",
+      "then": "「Delete token」で見つかる",
+      "commit": "a0c0bad78b456ac6b689c3211d24610535fca20d",
+      "excerpt": {
+        "path": "src/components/button/__tests__/button.normal.test.tsx",
+        "start": 72,
+        "end": 80,
+        "text": "test(\"中身の綴りがボタンの名前になる\", () => {\n  render(\n    <Button kind={ButtonKinds.Danger} size={ButtonSizes.Regular}>\n      Delete token\n    </Button>,\n  );\n\n  expect(screen.getByRole(\"button\", { name: \"Delete token\" })).toBeDefined();\n});"
+      },
+      "targets": [
+        "src/components/button/index.tsx"
+      ]
+    },
+    {
+      "id": "name-from-label",
+      "suite": "button-normal",
+      "name": "名前を与えると、中身ではなくその名前で読まれる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "エラー一覧の Reveal は行ごとに「cta を表示」のような名前で区別される",
+      "given": "中身が「Reveal」で、名前「card を表示」を与えた小のボタン",
+      "when": "名前で引く",
+      "then": "「card を表示」で見つかる",
+      "commit": "a0c0bad78b456ac6b689c3211d24610535fca20d",
+      "excerpt": {
+        "path": "src/components/button/__tests__/button.normal.test.tsx",
+        "start": 82,
+        "end": 94,
+        "text": "test(\"名前を与えると、中身ではなくその名前で読まれる\", () => {\n  render(\n    <Button\n      kind={ButtonKinds.Primary}\n      size={ButtonSizes.Small}\n      aria-label=\"card を表示\"\n    >\n      Reveal\n    </Button>,\n  );\n\n  expect(screen.getByRole(\"button\", { name: \"card を表示\" })).toBeDefined();\n});"
+      },
+      "targets": [
+        "src/components/button/index.tsx"
+      ],
+      "covers": [
+        "render-error-list"
+      ]
+    },
+    {
+      "id": "icon-name",
+      "suite": "button-normal",
+      "name": "アイコンのボタンは、与えた名前で読まれる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "アイコンには綴りが無いので、名前が読まれなければ支援技術から何のボタンか分からない",
+      "given": "名前「追加」を与えた、中身が `+` のアイコン",
+      "when": "名前で引く",
+      "then": "「追加」で見つかる",
+      "commit": "a0c0bad78b456ac6b689c3211d24610535fca20d",
+      "excerpt": {
+        "path": "src/components/button/__tests__/button.normal.test.tsx",
+        "start": 96,
+        "end": 104,
+        "text": "test(\"アイコンのボタンは、与えた名前で読まれる\", () => {\n  render(\n    <Button kind={ButtonKinds.Icon} aria-label=\"追加\">\n      +\n    </Button>,\n  );\n\n  expect(screen.getByRole(\"button\", { name: \"追加\" })).toBeDefined();\n});"
+      },
+      "targets": [
+        "src/components/button/index.tsx"
+      ]
+    },
+    {
+      "id": "text-name",
+      "suite": "button-normal",
+      "name": "テキストのボタンは、名前を与えなければ中身の綴りで読まれる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "reveal in tree・revert file は名前を与えずに綴りで引かれる",
+      "given": "名前を与えない、中身が「reveal in tree」のテキスト",
+      "when": "名前で引く",
+      "then": "「reveal in tree」で見つかる",
+      "commit": "a0c0bad78b456ac6b689c3211d24610535fca20d",
+      "excerpt": {
+        "path": "src/components/button/__tests__/button.normal.test.tsx",
+        "start": 106,
+        "end": 110,
+        "text": "test(\"テキストのボタンは、名前を与えなければ中身の綴りで読まれる\", () => {\n  render(<Button kind={ButtonKinds.Text}>reveal in tree</Button>);\n\n  expect(screen.getByRole(\"button\", { name: \"reveal in tree\" })).toBeDefined();\n});"
+      },
+      "targets": [
+        "src/components/button/index.tsx"
+      ],
+      "covers": [
+        "render-dashed"
+      ]
+    },
+    {
+      "id": "text-label",
+      "suite": "button-normal",
+      "name": "テキストのボタンは、名前を与えるとその名前で読まれる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "テキストの種類でも `aria-label` を素の `<button>` へ渡していることを守る",
+      "given": "名前「card をツリーで表示」を与えたテキスト",
+      "when": "名前で引く",
+      "then": "与えた名前で見つかる",
+      "commit": "a0c0bad78b456ac6b689c3211d24610535fca20d",
+      "excerpt": {
+        "path": "src/components/button/__tests__/button.normal.test.tsx",
+        "start": 112,
+        "end": 122,
+        "text": "test(\"テキストのボタンは、名前を与えるとその名前で読まれる\", () => {\n  render(\n    <Button kind={ButtonKinds.Text} aria-label=\"card をツリーで表示\">\n      reveal in tree\n    </Button>,\n  );\n\n  expect(\n    screen.getByRole(\"button\", { name: \"card をツリーで表示\" }),\n  ).toBeDefined();\n});"
+      },
+      "targets": [
+        "src/components/button/index.tsx"
+      ]
+    },
+    {
+      "id": "title-shown",
+      "suite": "button-normal",
+      "name": "押せない理由を添えると、ボタンの title に出る",
+      "techniques": [
+        "state"
+      ],
+      "why": "部品化やインスタンスの解除は、押せない理由を title で知らせている",
+      "given": "押せない強調のボタンに理由「選んでから押せます」を添える",
+      "when": "title を読む",
+      "then": "「選んでから押せます」が出る",
+      "commit": "a0c0bad78b456ac6b689c3211d24610535fca20d",
+      "excerpt": {
+        "path": "src/components/button/__tests__/button.normal.test.tsx",
+        "start": 124,
+        "end": 141,
+        "text": "test(\"押せない理由を添えると、ボタンの title に出る\", () => {\n  render(\n    <Button\n      kind={ButtonKinds.Emphasis}\n      size={ButtonSizes.Regular}\n      disabled\n      title=\"選んでから押せます\"\n    >\n      Create component\n    </Button>,\n  );\n\n  expect(\n    screen\n      .getByRole(\"button\", { name: \"Create component\" })\n      .getAttribute(\"title\"),\n  ).toBe(\"選んでから押せます\");\n});"
+      },
+      "targets": [
+        "src/components/button/index.tsx"
+      ],
+      "covers": [
+        "render-emphasis"
+      ]
+    },
+    {
+      "id": "title-absent",
+      "suite": "button-normal",
+      "name": "押せない理由を添えなければ、title は出ない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "インスタンスの操作は押せるときに `title={undefined}` を渡すので、空の title が出ないことを守る",
+      "given": "理由を添えない強調のボタン",
+      "when": "title の有無を見る",
+      "then": "title 属性を持たない",
+      "commit": "a0c0bad78b456ac6b689c3211d24610535fca20d",
+      "excerpt": {
+        "path": "src/components/button/__tests__/button.normal.test.tsx",
+        "start": 143,
+        "end": 155,
+        "text": "test(\"押せない理由を添えなければ、title は出ない\", () => {\n  render(\n    <Button kind={ButtonKinds.Emphasis} size={ButtonSizes.Regular}>\n      Create component\n    </Button>,\n  );\n\n  expect(\n    screen\n      .getByRole(\"button\", { name: \"Create component\" })\n      .hasAttribute(\"title\"),\n  ).toBe(false);\n});"
+      },
+      "targets": [
+        "src/components/button/index.tsx"
+      ],
+      "covers": [
+        "render-instance"
+      ]
+    },
+    {
+      "id": "type-icon-label",
+      "suite": "button-type",
+      "name": "アイコンは、名前を与えないと型エラーになる",
+      "techniques": [
+        "type",
+        "error"
+      ],
+      "why": "名前の無いアイコンは読み上げで何のボタンか分からないので、書けなくする",
+      "given": "`aria-label` を持たないアイコンの props",
+      "when": "型を検査する",
+      "then": "型エラーになる(`@ts-expect-error` が効く)",
+      "commit": "a0c0bad78b456ac6b689c3211d24610535fca20d",
+      "excerpt": {
+        "path": "src/components/button/__tests__/button.type.test.ts",
+        "start": 4,
+        "end": 9,
+        "text": "test(\"アイコンは、名前を与えないと型エラーになる\", () => {\n  // @ts-expect-error アイコンには綴りが無いので aria-label が要る\n  const props: ButtonProps = { kind: ButtonKinds.Icon, children: \"+\" };\n\n  expect(props.kind).toBe(ButtonKinds.Icon);\n});"
+      },
+      "values": {
+        "columns": [
+          "種類",
+          "大きさ",
+          "名前",
+          "型"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "アイコン",
+              "なし",
+              "なし",
+              "落ちる"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "アイコン",
+              "なし",
+              "あり",
+              "通る"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        "src/components/button/index.tsx"
+      ]
+    },
+    {
+      "id": "type-icon-size",
+      "suite": "button-type",
+      "name": "アイコンには大きさを渡せない",
+      "techniques": [
+        "type",
+        "error"
+      ],
+      "why": "アイコンは 30px の正方形に決まっていて、大きさを渡せると効かない指定が書けてしまう",
+      "given": "名前と大きさを持つアイコンの props",
+      "when": "型を検査する",
+      "then": "型エラーになる",
+      "commit": "a0c0bad78b456ac6b689c3211d24610535fca20d",
+      "excerpt": {
+        "path": "src/components/button/__tests__/button.type.test.ts",
+        "start": 11,
+        "end": 21,
+        "text": "test(\"アイコンには大きさを渡せない\", () => {\n  // @ts-expect-error アイコンの大きさは 30px に決まっている\n  const props: ButtonProps = {\n    kind: ButtonKinds.Icon,\n    \"aria-label\": \"追加\",\n    size: ButtonSizes.Regular,\n    children: \"+\",\n  };\n\n  expect(props.kind).toBe(ButtonKinds.Icon);\n});"
+      },
+      "targets": [
+        "src/components/button/index.tsx"
+      ]
+    },
+    {
+      "id": "type-text-size",
+      "suite": "button-type",
+      "name": "テキストには大きさを渡せない",
+      "techniques": [
+        "type",
+        "error"
+      ],
+      "why": "テキストは行内に置いて高さを持たない(利用者確認済み)ので、大きさの指定は書けなくする",
+      "given": "大きさを持つテキストの props",
+      "when": "型を検査する",
+      "then": "型エラーになる",
+      "commit": "a0c0bad78b456ac6b689c3211d24610535fca20d",
+      "excerpt": {
+        "path": "src/components/button/__tests__/button.type.test.ts",
+        "start": 23,
+        "end": 32,
+        "text": "test(\"テキストには大きさを渡せない\", () => {\n  // @ts-expect-error テキストは行内に置き、高さを持たない\n  const props: ButtonProps = {\n    kind: ButtonKinds.Text,\n    size: ButtonSizes.Regular,\n    children: \"reveal in tree\",\n  };\n\n  expect(props.kind).toBe(ButtonKinds.Text);\n});"
+      },
+      "targets": [
+        "src/components/button/index.tsx"
+      ]
+    },
+    {
+      "id": "type-text-nolabel",
+      "suite": "button-type",
+      "name": "テキストは、名前を与えなくても型が通る",
+      "techniques": [
+        "type"
+      ],
+      "why": "名前を必須にするのはアイコンだけ、という線を、テキストの側から確かめる対照",
+      "given": "種類と中身だけのテキストの props",
+      "when": "型を検査する",
+      "then": "通る",
+      "commit": "a0c0bad78b456ac6b689c3211d24610535fca20d",
+      "excerpt": {
+        "path": "src/components/button/__tests__/button.type.test.ts",
+        "start": 34,
+        "end": 41,
+        "text": "test(\"テキストは、名前を与えなくても型が通る\", () => {\n  const props: ButtonProps = {\n    kind: ButtonKinds.Text,\n    children: \"reveal in tree\",\n  };\n\n  expect(props.kind).toBe(ButtonKinds.Text);\n});"
+      },
+      "targets": [
+        "src/components/button/index.tsx"
+      ]
+    },
+    {
+      "id": "type-framed-size",
+      "suite": "button-type",
+      "name": "箱型は、大きさを渡さないと型エラーになる",
+      "techniques": [
+        "type",
+        "error"
+      ],
+      "why": "箱型の高さは大きさで決まるので、省いて既定の大きさに落ちる経路を作らない",
+      "given": "大きさを持たないプライマリの props",
+      "when": "型を検査する",
+      "then": "型エラーになる",
+      "commit": "a0c0bad78b456ac6b689c3211d24610535fca20d",
+      "excerpt": {
+        "path": "src/components/button/__tests__/button.type.test.ts",
+        "start": 43,
+        "end": 48,
+        "text": "test(\"箱型は、大きさを渡さないと型エラーになる\", () => {\n  // @ts-expect-error 箱型は大きさが要る\n  const props: ButtonProps = { kind: ButtonKinds.Primary, children: \"保存\" };\n\n  expect(props.kind).toBe(ButtonKinds.Primary);\n});"
+      },
+      "values": {
+        "columns": [
+          "種類",
+          "大きさ",
+          "型"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "プライマリ",
+              "なし",
+              "落ちる"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "プライマリ",
+              "標準",
+              "通る"
+            ]
+          },
+          {
+            "cells": [
+              "テキスト",
+              "標準",
+              "落ちる"
+            ]
+          },
+          {
+            "cells": [
+              "テキスト",
+              "なし",
+              "通る"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        "src/components/button/index.tsx"
+      ]
+    },
+    {
+      "id": "type-kind-vocab",
+      "suite": "button-type",
+      "name": "語彙に無い種類の文字列は渡せない",
+      "techniques": [
+        "type",
+        "error"
+      ],
+      "why": "種類は 6 つに閉じていて、綴りの誤りや未定義の種類をコンパイルで弾く",
+      "given": "種類に `\"Link\"` を持つ props",
+      "when": "型を検査する",
+      "then": "型エラーになる",
+      "commit": "a0c0bad78b456ac6b689c3211d24610535fca20d",
+      "excerpt": {
+        "path": "src/components/button/__tests__/button.type.test.ts",
+        "start": 50,
+        "end": 59,
+        "text": "test(\"語彙に無い種類の文字列は渡せない\", () => {\n  const props: ButtonProps = {\n    // @ts-expect-error 種類は ButtonKinds の値に閉じている\n    kind: \"Link\",\n    size: ButtonSizes.Regular,\n    children: \"保存\",\n  };\n\n  expect(props.kind).toBe(\"Link\");\n});"
+      },
+      "targets": [
+        "src/components/button/index.tsx"
+      ]
+    },
+    {
+      "id": "reveal-notifies",
+      "suite": "error-list-actions",
+      "name": "表示のボタンを押すと、その行が指すノード名が通知される",
+      "techniques": [
+        "regression"
+      ],
+      "why": "置き換えの前からあるテスト。Reveal を基本ボタンへ移しても、読み上げ名と押したときの手続きが届くことを守る(test-reviewer は、基本ボタンから `aria-label`・`onClick` などを外すと既存か新しいテストのどれかが落ちることを確かめている)",
+      "given": "2 行のノードを指すエラーを持つエラー一覧",
+      "when": "2 行目の「cta を表示」を押す",
+      "then": "「cta」が通知される",
+      "excerpt": {
+        "path": "src/features/editor/components/document-error-list/__tests__/document-error-list.actions.test.tsx",
+        "start": 53,
+        "end": 69,
+        "text": "test(\"表示のボタンを押すと、その行が指すノード名が通知される\", async () => {\n  const onReveal = vi.fn();\n  render(\n    <DocumentErrorList\n      errors={MixedErrors}\n      origin={DocumentErrorOrigins.OpenedFile}\n      onReveal={onReveal}\n      onRevertFile={vi.fn()}\n      isReverting={false}\n    />,\n  );\n\n  // 先頭ではなく 2 つ目を押す（先頭固定の実装で通らないようにする）\n  await userEvent.click(screen.getByRole(\"button\", { name: \"cta を表示\" }));\n\n  expect(onReveal).toHaveBeenCalledWith(\"cta\");\n});"
+      },
+      "targets": [
+        "src/features/editor/components/document-error-list/index.tsx",
+        "src/components/button/index.tsx"
+      ],
+      "covers": [
+        "render-error-list",
+        "reveal-click"
+      ]
+    },
+    {
+      "id": "revert-disabled",
+      "suite": "error-list-actions",
+      "name": "書き戻しの最中は、書き戻しを押し直せない",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "置き換えの前からあるテスト。テキストの種類でも `disabled` が素の `<button>` まで届くことを守る",
+      "given": "書き込み中のエラー一覧",
+      "when": "revert file を引く",
+      "then": "押せない状態で出る",
+      "excerpt": {
+        "path": "src/features/editor/components/document-error-list/__tests__/document-error-list.actions.test.tsx",
+        "start": 117,
+        "end": 133,
+        "text": "test(\"書き戻しの最中は、書き戻しを押し直せない\", () => {\n  render(\n    <DocumentErrorList\n      errors={MixedErrors}\n      origin={DocumentErrorOrigins.OpenedFile}\n      onReveal={vi.fn()}\n      onRevertFile={vi.fn()}\n      isReverting\n    />,\n  );\n\n  expect(\n    screen\n      .getByRole(\"button\", { name: \"revert file\" })\n      .hasAttribute(\"disabled\"),\n  ).toBe(true);\n});"
+      },
+      "targets": [
+        "src/features/editor/components/document-error-list/index.tsx"
+      ],
+      "covers": [
+        "render-error-list"
+      ]
+    },
+    {
+      "id": "select-all-disabled",
+      "suite": "property-panel-instance",
+      "name": "そのインスタンスしか無いときはまとめて選ぶボタンを押せない",
+      "techniques": [
+        "boundary",
+        "regression"
+      ],
+      "why": "置き換えの前からあるテスト。プライマリへ移しても、件数 1 の境界で押せなくなることを守る",
+      "given": "同じ部品を指すインスタンスが 1 つだけの文書で、そのインスタンスを選ぶ",
+      "when": "Select all 1 instances を引く",
+      "then": "押せない状態で出る",
+      "excerpt": {
+        "path": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.instance.test.tsx",
+        "start": 224,
+        "end": 230,
+        "text": "test(\"そのインスタンスしか無いときはまとめて選ぶボタンを押せない\", () => {\n  renderMultiInstanceSelected(\"home-card\");\n\n  expect(\n    screen.getByRole(\"button\", { name: \"Select all 1 instances\" }),\n  ).toHaveProperty(\"disabled\", true);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/inspector/components/property-panel/instance-body/index.tsx"
+      ],
+      "covers": [
+        "render-instance"
+      ]
+    },
+    {
+      "id": "create-title",
+      "suite": "create-component-edge",
+      "name": "使えない部品名のときはボタンにその旨が添えられる",
+      "techniques": [
+        "error",
+        "regression"
+      ],
+      "why": "置き換えの前からあるテスト。強調へ移しても、押せない理由が title に出ることを守る",
+      "given": "部品にできるノードを選んだ部品化",
+      "when": "部品名に「Info Panel」を入れる",
+      "then": "ボタンの title が「使える部品名を入れると作成できます」になる",
+      "excerpt": {
+        "path": "src/features/editor/features/assets/components/create-component/__tests__/create-component.edge.test.tsx",
+        "start": 159,
+        "end": 182,
+        "text": "test(\"使えない部品名のときはボタンにその旨が添えられる\", async () => {\n  const user = userEvent.setup();\n  const input = setupInput(Option.some(\"home-panel\"));\n  render(\n    <CreateComponent\n      document={input.document}\n      singleName={input.singleName}\n      isFrozen={false}\n      onCreate={() => {}}\n    />,\n  );\n\n  await user.click(screen.getByRole(\"button\", { name: /Create component/ }));\n  await user.type(\n    screen.getByRole(\"textbox\", { name: \"部品名\" }),\n    \"Info Panel\",\n  );\n\n  expect(\n    screen\n      .getByRole(\"button\", { name: /Create component/ })\n      .getAttribute(\"title\"),\n  ).toBe(\"使える部品名を入れると作成できます\");\n});"
+      },
+      "targets": [
+        "src/features/editor/features/assets/components/create-component/index.tsx"
+      ],
+      "covers": [
+        "render-emphasis"
+      ]
+    },
+    {
+      "id": "hover-faces",
+      "suite": "button-normal",
+      "name": "6 種類の hover と押せないときの配色が Issue の表どおりに出る",
+      "techniques": [
+        "state"
+      ],
+      "why": "枠色・押せないときの字の色は VRT のしきい値の内側で通り、hover は撮られないので、退行を機械で止めるものが無い(今回は Storybook で計算済みのスタイルを目視で確かめただけ)",
+      "given": "ボタンのストーリーの 6 種類",
+      "when": "hover する・押せない状態にする",
+      "then": "地・枠・字の色が Issue の表の値になる",
+      "todo": true,
+      "targets": [
+        "src/components/button/index.tsx",
+        "src/components/button/index.stories.tsx"
+      ]
+    }
+  ]
+}
