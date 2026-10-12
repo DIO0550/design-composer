@@ -8,7 +8,7 @@ export const ActionCardTones = {
    *
    * UI 案のボタン（`<button>`）に青い塗りは無く、`#4db2ff` はリンクの hover の文字色（`a:hover`）にしか出てこない。
    * それを地に流用すると白文字で約 2.3:1 と 4.5:1 に届かないので、地は使わない。
-   * この青は開始画面（#1062）で決めたもので、UI 案に裏付けのある汎用の配色ではない。
+   * この青は開始画面（#1062）で決め、#1061 で基本ボタン（`Button` のプライマリ）の配色にもなった。UI 案に裏付けは無い。
    * hover 中の `#0a74c9` on `#e7f1fa` も約 4.2:1 で届かないが、押す直前の一時的な状態として受け入れている。
    */
   Primary: "Primary",
@@ -38,6 +38,8 @@ export type ActionCardContent = Readonly<{
  *
  * happy-dom は Tailwind を解決せず描画もしないので、配色とアイコンの崩れはテストでは守れず、
  * 気づけるのは Storybook の視覚差分（components/ActionCard のプライマリ / ノーマル）だけ。
+ *
+ * カードの `card` 部位はボタンのプライマリ / セカンダリと同じ値だが、hover の文字色と押せないときの見え方が違い、カードをボタンへ追随させるかは決まっていないので表を分けている。
  */
 const ActionCardToneFaces = {
   [ActionCardTones.Primary]: {
