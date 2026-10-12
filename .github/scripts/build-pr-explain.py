@@ -2,11 +2,11 @@
 """PR の解説(`explain.json`、version 1)を検査し、テストのコード抜粋の中身を足して書き出す。
 
 解説はセッションが `pr-explain` スキルで書き、ページの固定スクリプトが変更の地図(`change-map.json`)と
-合わせて 3 画面に組む。ここが防ぐのはスクリプトの注入ではなく(それは `check-pr-explain-template.py` の
+合わせて 4 画面に組む。ここが防ぐのはスクリプトの注入ではなく(それは `check-pr-explain-template.py` の
 管轄)、**形の崩れと解説の中の参照切れ**(ページが黙って空欄を出す)。報告する違反は 4 つ。
 
 - `pr-explain-shape` — 読めない・形が表と違う(必須の欠け・知らないキー・重複したキー・型・語彙・
-  綴り・一意性・範囲)
+  綴り・一意性・範囲・状況の表のマスの揃い・振る舞いの前後が同じ)
 - `pr-explain-meta` — `pr` が公開先の PR と違う
 - `pr-explain-ref` — 解説の中の参照が解説の中に無い(message の from / to・flow の steps など)
 - `pr-explain-code` — 解説時点の `sha` がこのリポジトリに無い・抜粋のパスがその sha に無い・範囲が
@@ -29,6 +29,17 @@ concept が地図にあるか)は見ない。** 地図は push のたびに作�
 - highlights の `title` は `` `…` `` をコードとして描くが、題も概念で書くので他の見出しと扱いを揃える
 - docs(`docs/*.md`)に出る語は通す。`.dcmp` のキー名や製品名は仕様の語で、言い換えるとかえって伝わらない
   ため。一覧を手で持たず docs を正本にする
+
+振る舞い(`impact`)の文字列は、すべて使う人の言葉(`UserText`)で書く。見出しと同じ継ぎ目の規則に加えて
+`` ` `` も落とす。振る舞いの画面はコードの名前を出さずに読ませる画面で、文はどれも書いたまま描く。
+「コードの名前を出さない」が何を守るかは、ここを正本にする(`pr-explain` スキルはここを指す)。
+
+- **検査で守るのは `impact` の文字列。** ページはそれに固定の文言と、`impact` の文字列から導いた文(マスの状況の
+  「行 · 列(注)」・件数)を足すだけなので、そこにも名前は入らない
+- 例外は根拠として添える名前で、テスト名(`tests[].name`。検査しない)とやりとりの名前(`messages[].name`。
+  見出しの規則)はそのまま出る
+- 1 語の識別子・ファイル名・snake_case は綴りで識別子と言い切れないので、この規則でも捕まらない。書き方の
+  規則(`pr-explain` スキル)で受ける
 
 使い方:
     build-pr-explain.py <explain.json> --pr <番号> --out <書き出す先> [--repo <リポジトリ>]
@@ -93,6 +104,11 @@ class Duplicated(NamedTuple):
     keys: tuple[str, ...]
 
 
+def repeated(values: list) -> list:
+    """2 回以上出た値を、並べ替えて 1 つずつ返す。"""
+    return sorted({value for value in values if values.count(value) > 1})
+
+
 def need(value: object) -> Field:
     """欠けたら違反になるキー。"""
     return Field(value, True)
@@ -142,6 +158,7 @@ ShaPattern = re.compile(r"[0-9a-f]{40}")
 ScalarRules: dict[str, tuple[Callable[[object], bool], str]] = {
     "text": (is_text, "空でない文字列"),
     "heading": (is_text_with_only_docs_joints, "見出し(小文字と大文字の継ぎ目がある複合語は、docs に出る語のほかは書かない)"),
+    "user_text": (lambda value: is_text_with_only_docs_joints(value) and "`" not in value, "使う人の言葉(見出しの規則に加えて ` を書かない)"),
     "id": (lambda value: isinstance(value, str) and IdPattern.fullmatch(value) is not None, f"id({IdPattern.pattern})"),
     "sha": (lambda value: isinstance(value, str) and ShaPattern.fullmatch(value) is not None, "小文字 40 桁の sha"),
     "count": (is_count, "1 以上の整数"),
@@ -152,6 +169,7 @@ ScalarRules: dict[str, tuple[Callable[[object], bool], str]] = {
 
 Text = Scalar("text")
 Heading = Scalar("heading")
+UserText = Scalar("user_text")
 Id = Scalar("id")
 Sha = Scalar("sha")
 Count = Scalar("count")
@@ -163,6 +181,13 @@ Phases = ("prep", "core", "hard", "revise", "fin")
 MessageKinds = ("cmd", "qry", "evt")
 Vias = ("call", "http", "state", "log", "exec", "file")
 MessageStatuses = ("added", "changed", "removed")
+
+# 前後の組(振る舞いの変わったこと・増えた状況が同じ形で持つ)。これまでは 0 件でよく、これからは 1 件以上。
+ImpactSides: dict[str, Field] = {
+    "before": need(Many(Shape("ImpactLine"))),
+    "after": need(Many(Shape("ImpactLine"), least=1)),
+    "text": may(UserText),
+}
 
 # 解説の形(`pr-explain` スキルの「explain.json の形」の表を、検査が読む形にしたもの)。
 Shapes: dict[str, dict[str, Field]] = {
@@ -180,6 +205,7 @@ Shapes: dict[str, dict[str, Field]] = {
         "commitStories": may(Many(Shape("CommitStory"))),
         "suites": may(Many(Shape("Suite"))),
         "tests": may(Many(Shape("Test"))),
+        "impact": may(Shape("Impact")),
     },
     "Overview": {
         "title": need(Text),
@@ -189,6 +215,37 @@ Shapes: dict[str, dict[str, Field]] = {
         "highlights": may(Many(Shape("Highlight"))),
     },
     "Behavior": {"text": need(Text), "message": may(Id)},
+    "Impact": {
+        "title": need(UserText),
+        "lead": need(UserText),
+        "changed": may(Shape("ImpactChange")),
+        "tables": may(Many(Shape("SituationTable"))),
+        "added": may(Many(Shape("AddedSituation"))),
+        "kept": may(Many(Shape("KeptLine"))),
+    },
+    "ImpactChange": ImpactSides,
+    "ImpactLine": {"text": need(UserText), "message": may(Id)},
+    "SituationTable": {
+        "label": need(UserText),
+        "gist": may(UserText),
+        "text": may(UserText),
+        "rowHeads": need(Many(Shape("SituationRowHead"), least=1)),
+        "columnHeads": need(Many(Shape("SituationColumnHead"), least=1)),
+        "outcomes": need(Many(Shape("SituationOutcome"))),
+    },
+    "SituationRowHead": {"id": need(Id), "label": need(UserText), "note": may(UserText)},
+    "SituationColumnHead": {"id": need(Id), "label": need(UserText)},
+    "SituationOutcome": {
+        "rowHead": need(Id),
+        "columnHead": need(Id),
+        "result": need(UserText),
+        "was": may(UserText),
+        "situation": may(UserText),
+        "note": may(UserText),
+        "tests": may(Many(Id, distinct=True)),
+    },
+    "AddedSituation": {"label": need(UserText), **ImpactSides, "tests": may(Many(Id, distinct=True))},
+    "KeptLine": {"text": need(UserText), "tests": may(Many(Id, distinct=True))},
     "Highlight": {"title": need(Heading), "text": need(Text), "go": need(Variant("Target"))},
     "Feature": {"id": need(Id), "label": need(Heading), "role": need(Text)},
     "LayerRole": {"layer": need(Text), "role": need(Text)},
@@ -291,11 +348,62 @@ def cells_problem(value: dict) -> str | None:
     return None
 
 
+def repeated_head_ids_problem(table: dict) -> str | None:
+    """状況の表の見出しの id が、軸ごとに一意かを見る。行と列は別の名前空間なので、行と列で同じ id は書ける。"""
+    problems = []
+    for axis in ("rowHeads", "columnHeads"):
+        twice = repeated([head["id"] for head in table[axis]])
+        problems += [f"{axis} の id {', '.join(twice)} が 2 回以上ある"] if twice else []
+    return " / ".join(problems) if problems else None
+
+
+def outcome_grid_problem(table: dict) -> str | None:
+    """状況の表のマスが、行の見出し × 列の見出しの組み合わせをちょうど 1 つずつ埋めているかを見る。
+
+    @returns 見出しに無いマス・欠けた組み合わせ・2 回書いた組み合わせの説明。揃っていれば None
+    """
+    rows = [head["id"] for head in table["rowHeads"]]
+    columns = [head["id"] for head in table["columnHeads"]]
+    pairs = [(outcome["rowHead"], outcome["columnHead"]) for outcome in table["outcomes"]]
+    spelled = lambda found: ", ".join(f"{row} × {column}" for row, column in found)
+    stray = [pair for pair in pairs if pair[0] not in rows or pair[1] not in columns]
+    missing = [(row, column) for row in rows for column in columns if (row, column) not in pairs]
+    twice = repeated(pairs)
+    problems = [
+        *([f"見出しに無いマス {spelled(stray)}"] if stray else []),
+        *([f"マス {spelled(missing)} が無い"] if missing else []),
+        *([f"マス {spelled(twice)} を 2 回書いている"] if twice else []),
+    ]
+    return " / ".join(problems) if problems else None
+
+
+def same_was_problem(outcome: dict) -> str | None:
+    """マスの「これまで」(`was`)が今の結果(`result`)と同じでないかを見る。同じなら変わっていないので書かない。"""
+    if outcome.get("was") == outcome["result"]:
+        return "was が result と同じ(変わっていないマスには was を書かない)"
+    return None
+
+
+def same_sides_problem(value: dict) -> str | None:
+    """前後(`before` / `after`)の文の並びがまったく同じでないかを見る。比べるのは文だけで、やりとり(`message`)は見ない。
+
+    一部の行が同じなのは通す。変わらない行を文脈として並べるのは正しいため。
+    """
+    texts = lambda lines: [line["text"] for line in lines]
+    if texts(value["before"]) == texts(value["after"]):
+        return "before と after の文の並びが同じ(変わっていない)"
+    return None
+
+
 # キーごとの形が合ったオブジェクトに、キーをまたいで当てる規則。
 CrossChecks: dict[str, tuple[Callable[[dict], str | None], ...]] = {
     "Note": (span_problem,),
     "Excerpt": (span_problem, excerpt_length_problem),
     "Values": (cells_problem,),
+    "SituationTable": (repeated_head_ids_problem, outcome_grid_problem),
+    "SituationOutcome": (same_was_problem,),
+    "ImpactChange": (same_sides_problem,),
+    "AddedSituation": (same_sides_problem,),
 }
 
 # 一意でなければならない値(トップの一覧と、その中のキー)。
@@ -335,6 +443,13 @@ References = (
     Reference("tests[].covers[]", "messages", "id"),
     Reference("tests[].targets[]", "concepts", "path"),
     Reference("concepts[].feature", "features", "id"),
+    Reference("impact.changed.before[].message", "messages", "id"),
+    Reference("impact.changed.after[].message", "messages", "id"),
+    Reference("impact.tables[].outcomes[].tests[]", "tests", "id"),
+    Reference("impact.added[].before[].message", "messages", "id"),
+    Reference("impact.added[].after[].message", "messages", "id"),
+    Reference("impact.added[].tests[]", "tests", "id"),
+    Reference("impact.kept[].tests[]", "tests", "id"),
 )
 
 # Target の kind のうち、解説の中の一覧を指すもの(layer / file は地図を指す参照)。
@@ -343,9 +458,8 @@ TargetCollections = {"feature": "features", "message": "messages", "flow": "flow
 
 def keep_first_or_mark(pairs: list[tuple[str, object]]) -> dict | Duplicated:
     """`json.loads` の `object_pairs_hook`。キーが重複していれば `Duplicated` に置き換える。"""
-    keys = [key for key, _ in pairs]
-    repeated = tuple(sorted({key for key in keys if keys.count(key) > 1}))
-    return Duplicated(repeated) if repeated else dict(pairs)
+    twice = tuple(repeated([key for key, _ in pairs]))
+    return Duplicated(twice) if twice else dict(pairs)
 
 
 def parse(raw: bytes) -> tuple[object, str | None]:
@@ -391,8 +505,8 @@ def list_problems(value: object, rule: Many, where: str) -> list[str]:
     if len(value) < rule.least:
         return [f"{where}: {rule.least} 件以上書く"]
     items = [problem for index, item in enumerate(value) for problem in value_problems(item, rule.item, f"{where}[{index}]")]
-    repeated = rule.distinct and len({json.dumps(item) for item in value}) != len(value)
-    return items + ([f"{where}: 同じ値を 2 回書かない"] if repeated else [])
+    has_twice = rule.distinct and len({json.dumps(item) for item in value}) != len(value)
+    return items + ([f"{where}: 同じ値を 2 回書かない"] if has_twice else [])
 
 
 def fields_problems(value: dict, fields: dict[str, Field], where: str) -> list[str]:
@@ -432,9 +546,8 @@ def uniqueness_problems(explain: dict) -> list[str]:
     """
     problems = []
     for collection, key in UniqueKeys:
-        values = [item[key] for item in explain.get(collection, [])]
-        repeated = sorted({value for value in values if values.count(value) > 1})
-        problems += [f"{collection}[].{key}: {value} が 2 回以上ある" for value in repeated]
+        twice = repeated([item[key] for item in explain.get(collection, [])])
+        problems += [f"{collection}[].{key}: {value} が 2 回以上ある" for value in twice]
     return problems
 
 
@@ -442,6 +555,22 @@ def shape_problems(explain: object) -> list[str]:
     """解説の形の違反を集める。"""
     problems = value_problems(explain, Shape("Explain"), "explain")
     return problems if problems else uniqueness_problems(explain)
+
+
+def routes_under(rule: object, route: str) -> list[tuple[str, object, bool]]:
+    """規則の下にある道筋を、外側から書いた順に集める(`Shapes` を辿る)。検査は使わず、判定表が形を読むのに使う。
+
+    @param rule `Field` の `value` に書く規則
+    @param route その規則の道筋(`impact` など)。配列の中へ進む段には `[]` を付ける
+    @returns `(道筋, 配列なら要素の規則, 配列か)` の並び
+    """
+    is_many = isinstance(rule, Many)
+    inner = rule.item if is_many else rule
+    if not isinstance(inner, Shape):
+        return [(route, inner, is_many)]
+    prefix = f"{route}[]" if is_many else route
+    nested = [found for key, field in Shapes[inner.name].items() for found in routes_under(field.value, f"{prefix}.{key}")]
+    return [(route, inner, is_many), *nested]
 
 
 def values_at(value: object, route: list[str], where: str) -> list[tuple[str, object]]:

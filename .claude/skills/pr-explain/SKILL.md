@@ -1,27 +1,31 @@
 ---
 name: pr-explain
-description: "PR ごとの解説ページ(構造マップ・変更の経緯・テストの 3 画面)の材料になる解説 explain.json を書き、検査して gh-pages の pr-explain/pr-<番号>/ へ置く。implementation-flow のフェーズ 7 で PR を出した直後と、振る舞いが変わる push の後に使用する。「PR の解説を書いて」「解説ページを更新して」といった依頼でも使用する。変更の地図(変更ファイル・依存・テスト名の増減・コミットと差分)とページの枠は Actions が置くので書かない。"
+description: "PR ごとの解説ページ(構造マップ・変更の経緯・テスト・振る舞いの 4 画面)の材料になる解説 explain.json を書き、検査して gh-pages の pr-explain/pr-<番号>/ へ置く。implementation-flow のフェーズ 7 で PR を出した直後と、振る舞いが変わる push の後に使用する。「PR の解説を書いて」「解説ページを更新して」といった依頼でも使用する。変更の地図(変更ファイル・依存・テスト名の増減・コミットと差分)とページの枠は Actions が置くので書かない。"
 ---
 
 # PR の解説ページ
 
 レビュアー(人間)が PR を開いたときに、**この PR がどこをどうつなぎ替えたか・どの順で何を変えたか・
-テストが何を守っているか**を読めるようにする。diff と Issue だけでは、長いセッションで何を使い、
-なぜその形にしたかが掴みにくいため。
+テストが何を守っているか・使う人から見て何が変わったか**を読めるようにする。diff と Issue だけでは、
+長いセッションで何を使い、なぜその形にしたかが掴みにくいため。
 
-## 3 画面と材料
+## 4 画面と材料
 
-ページは 1 枚で、`#map` / `#story` / `#test` で画面を切り替える。どの画面も、Actions が git の差分から
+ページは 1 枚で、`#map` / `#story` / `#test` / `#impact` で画面を切り替える。どの画面も、Actions が git の差分から
 作る**変更の地図**(`change-map.json`)と、セッションが書く**解説**(`explain.json`)を合わせて組む。
 
 | 画面 | 見るもの | 地図から | 解説から |
 | --- | --- | --- | --- |
 | 構造マップ(`#map`) | 左に変更ファイルと concepts の木。中に、それを層(または機能)ごとの組にまとめた箱の図と、やりとり(または依存)の線。組は抽象度で畳む・開く。右に概要(highlights・組ごとの変更・やりとり一覧)か、選んだ箱・線・やりとりの詳細(要するに・受け取るもの / 送り出すもの・使っている / 使われている)と、やりとりの流れ(シーケンス図) | `groups`・`dependencies` | `overview.highlights`・`features`・`layerRoles`・`concepts`・`messages`・`flows` |
-| 変更の経緯(`#story`) | コミットを新しい順に並べた一覧と、ブランチ全体の流れ(題・要約・これまで / このあと・変更の順番・レビューポイント)、コミットごとの説明(なぜ・影響する操作・レビューで見るところ・振る舞いの前後)と差分・行への注釈 | `commits`(件名・本文・作者・日時・ファイルごとの差分) | `overview`・`commitStories`(操作の名前は `flows`、ファイルの呼び名は `concepts`) |
-| テスト(`#test`) | suite ごとのテストの一覧と、構造マップと同じ組・箱の図の上で、テストが確かめている箱・やりとりと、その抜け。テストごとの前提 / 操作 / 期待・値の表・確かめているやりとり・テストコード・追加したコミット | `tests.added` / `tests.removed`・テスト名を調べたファイル(`tests.files`)・テストファイルの対象(`target`) | `suites`・`tests`(線は `messages`。無ければ依存) |
+| 変更の経緯(`#story`) | コミットを新しい順に並べた一覧と、ブランチ全体の流れ(題・要約・これまで / このブランチのあと・変更の順番・レビューポイント)、コミットごとの説明(なぜ・影響する操作・レビューで見るところ・振る舞いの前後)と差分・行への注釈 | `commits`(件名・本文・作者・日時・ファイルごとの差分) | `overview`・`commitStories`(操作の名前は `flows`、ファイルの呼び名は `concepts`) |
+| テスト(`#test`) | suite ごとのテストの一覧と、構造マップと同じ組・箱の図の上で、テストが確かめている箱・やりとりと、その抜け。テストごとの前提 / 操作 / 期待・値の表・確かめているやりとり・この状況を確かめている(振る舞いの節)・テストコード・追加したコミット | `tests.added` / `tests.removed`・テスト名を調べたファイル(`tests.files`)・テストファイルの対象(`target`) | `suites`・`tests`(線は `messages`。無ければ依存) |
+| 振る舞い(`#impact`) | 使う人から見て何が変わったかを、コードの名前を出さずに 1 画面で。左に節の目次(変わった節に印)、中に題・要約と、変わったこと(これまで / これから)・状況の表(行 × 列のマス。変わったマスに印。最初の変わったマスを選んだ状態で始まる)・増えた状況・変わらないこと(テストで守っているか)の節、右に今の節の根拠(確かめているテスト・無いテスト・仕組みのやりとり)。右の欄は本文のスクロールに合わせて今の節に切り替わり、幅が狭いと各節の中に畳んで出る | テストの追加 / 既存の判定(テスト画面と同じ)・やりとりの両端が図の箱か | `impact`(根拠は `tests`・`messages`) |
 
 画面をまたいで移れる。変更の経緯の「影響する操作」を押すと構造マップでその流れを選んだ状態に、テストの
-「追加したコミット」を押すと変更の経緯でそのコミットを開いた状態になる。
+「追加したコミット」を押すと変更の経緯でそのコミットを開いた状態になる。振る舞いの「テストで見る」はテストの
+画面でそのテストを選んだ状態に(観点の絞り込みは解く)、仕組みのチップは構造マップでそのやりとりを選んだ状態に
+(表示範囲の絞り込みは外す。両端が図の箱でないやりとりは押せず「図に無い」)、テストの「この状況を確かめている」
+は振る舞いのその節(表ならそのマスを選んだ状態)になる。
 
 gh-pages の `pr-explain/pr-<番号>/` に置くのは次の 3 つだけ。
 
@@ -82,14 +86,19 @@ Files changed にも混ざるため)。
 
 **共通の規則**
 
-- 文字列は空にしない。説明文(`title`・`lead`・`text`・`why`・`given` / `when` / `then` など)の中の
+- 文字列は空にしない。説明文(`title`・`lead`・`text`・`why`・`given` / `when` / `then` など。`impact` の中は下の規則)の中の
   `` `…` `` は、ページがコードとして描く。名前(`name`・`label`)と `code` は書いたまま出す。HTML は
   書いても文字のまま出る
 - **見出しは概念の名前(docs の語彙)で書く。** 見出しは図・一覧の見出しになる文字列で、検査の対象は
   `build-pr-explain.py` の `Heading` を使うキー(名前のうち `tests[].name` を除いたものと、highlights の
-  `title`)。小文字と大文字の継ぎ目がある複合語(docs に出る語を除く)があれば落ちる。大文字だけの略語
-  (UI 案・VRT)はこのリポジトリの語彙なので書いてよい。1 語の識別子(`Result`・`Token`)・ファイル名・
-  snake_case は検査しないが、見出しには書かない。理由は `build-pr-explain.py` の冒頭
+  `title`。例外は `impact` の中の名前(`label`)で、見出しではなく下の `UserText`)。小文字と大文字の継ぎ目が
+  ある複合語(docs に出る語を除く)があれば落ちる。大文字だけの略語(UI 案・VRT)はこのリポジトリの語彙なので
+  書いてよい。1 語の識別子(`Result`・`Token`)・ファイル名・snake_case は検査しないが、見出しには書かない。
+  理由は `build-pr-explain.py` の冒頭
+- **振る舞い(`impact`)の文字列は、すべて使う人の言葉で書き、コードの名前(関数・型・ファイル名・snake_case も)を
+  書かない。** `` `…` `` で囲んで書くこともできない(振る舞いの画面は文を書いたまま出す)。検査(`UserText`)が
+  捕まえるのは、見出しと同じ継ぎ目のある複合語(docs に出る語を除く)と `` ` `` だけで、1 語の識別子・ファイル名・
+  snake_case は書く側で避ける。検査が何を守るか(根拠に出るテスト名・やりとりの名前は対象外)は `build-pr-explain.py` の冒頭
 - id は `^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$`、sha は小文字 40 桁
 - 知らないキーと重複したキーは、入れ子を含めて落ちる
 - 任意の配列は、省けば `[]` と同じ
@@ -105,6 +114,7 @@ Files changed にも混ざるため)。
 | `overview` | 必須 | Overview |
 | `features` | 任意 | Feature[]。空ならページは「機能」でまとめられない(層だけ) |
 | `layerRoles` / `concepts` / `messages` / `flows` / `commitStories` / `suites` / `tests` | 任意 | 下の型の配列 |
+| `impact` | 任意 | Impact。無ければ振る舞いの画面は「書かれていない」と出す |
 
 **型**(`?` は任意)
 
@@ -125,13 +135,22 @@ Files changed にも混ざるため)。
 | Test | `id` `suite`(suites の id)`name` `techniques[]`: `boundary` \| `equivalence` \| `error` \| `state` \| `regression` \| `idempotence` \| `type`(1 件以上・重複なし)`why` `given` `when` `then` `todo?: true` `commit?`(sha)`excerpt?: Excerpt` `values?: Values` `targets?`(concepts の path)`covers?`(messages の id) |
 | Excerpt | `path` `start` `end`(80 行まで)。`text` は検査が足す出力だけのキーで、入力に書くと落ちる |
 | Values | `columns[]`(1 件以上)`rows[{cells[](列と同数), boundary?}]` |
+| Impact | `title` `lead` `changed?: ImpactChange` `tables?: SituationTable[]` `added?: AddedSituation[]` `kept?: KeptLine[]` |
+| ImpactChange | `before: ImpactLine[]`(0 件でよい)`after: ImpactLine[]`(1 件以上)`text?`。前後の文の並びがまったく同じなら落ちる(一部の行が同じなのはよい) |
+| ImpactLine | `text` `message?`(messages の id。仕組みのチップになる) |
+| SituationTable | `label` `gist?`(要するに)`text?` `rowHeads: SituationRowHead[]`(1 件以上)`columnHeads: SituationColumnHead[]`(1 件以上)`outcomes: SituationOutcome[]`。マスは行の見出し × 列の見出しの組み合わせをちょうど 1 つずつ(欠け・重複・見出しに無い id は落ちる) |
+| SituationRowHead | `id`(行の見出しの中で一意)`label` `note?`(Note(行への注釈)とは別の 1 行の注。マスの状況に「行 · 列(注)」と添える) |
+| SituationColumnHead | `id`(列の見出しの中で一意。行の見出しと同じ id は書ける)`label` |
+| SituationOutcome | `rowHead` `columnHead`(見出しの id)`result` `was?`(これまで。書いたマスが「変わった」になる。`result` と同じなら落ちる)`situation?`(マスの状況の文。書かなければ見出しから「行 · 列(行の注)」と組む)`note?`(Note(行への注釈)とは別の、マスへの 1 行の注)`tests?`(tests の id。重複なし) |
+| AddedSituation | `label` `before: ImpactLine[]`(0 件でよい)`after: ImpactLine[]`(1 件以上)`text?` `tests?`(tests の id。重複なし)。前後の規則は ImpactChange と同じ |
+| KeptLine | `text` `tests?`(tests の id。重複なし) |
 
 id・sha・path・layer は一覧の中で一意にする(features / messages / flows / suites / tests の id、
 commitStories の sha、concepts の path、layerRoles の layer)。todo のテストは commit も excerpt も持たない。
 
 **解説の中の参照**は満たさなければ置けない(message の from / to、flow の steps、commitStory の flows、
 Behavior の message、test の suite / covers / targets、concept の feature、Target の feature / message /
-flow)。**地図を指す参照**(commitStory の sha・Note のパスと行・Target の layer / file・LayerRole の
+flow、ImpactLine の message、SituationOutcome・AddedSituation・KeptLine の tests)。**地図を指す参照**(commitStory の sha・Note のパスと行・Target の layer / file・LayerRole の
 layer・concept のパス)は検査せず、外れたものはページが「地図に無い」と出す(理由は
 `build-pr-explain.py` の冒頭)。
 
@@ -142,7 +161,8 @@ layer・concept のパス)は検査せず、外れたものはページが「地
 
 | キー | 書くこと | 書かないこと |
 | --- | --- | --- |
-| `overview` | `title` は PR の題、`lead` は何ができるようになったかの 1〜2 文。`before` / `after` は操作・状況ごとの振る舞いを 1 つ 1 行で(空・エラー・境界の状況も)。関わるやりとりがあれば `message` で指す | 実装の手順 |
+| `overview` | `title` は PR の題、`lead` は何ができるようになったかの 1〜2 文。`before` / `after` は操作・状況ごとの振る舞いを 1 つ 1 行で(空・エラー・境界の状況も)。関わるやりとりがあれば `message` で指す。読み手はレビュアーで、`` `…` `` で実装の名前を指してよい | 実装の手順 |
+| `impact` | 使う人(アプリを操作する人・ハーネスなら使うセッション)から見て変わったことを、操作と画面の言葉だけで。`changed` は変わったことの前後、`tables` は結果が 2 つの軸(例: タブがあるか × 開く操作の進み具合)で決まるときの行 × 列の表(変わったマスにだけ `was`)、`added` はこの PR で初めて起きうるようになった状況、`kept` は巻き込まれそうで変わらないこと。根拠は `tests` で指す。`overview` が「何を変えたか」をレビュアーに向けて書くのに対し、ここは「使う人に何が起きるか」を書く | コードの名前(共通の規則) |
 | `overview.highlights` | 特に見てほしい箇所(自信のない判断・未決のまま入れたもの・目で見ないと分からない表示)と、押したときに図のどこへ移るか(`go`) | 「全体を見てください」 |
 | `features` / `layerRoles` | 機能・層がこの PR で担う役割を 1 文。`layerRoles` の `layer` の綴りは地図の `groups[].label` に揃える | |
 | `concepts` | 箱にしたいファイルと、その短い名前(`name`。概念の名前(docs の語彙)で、図の表示名になる)・役割・何を変えたか(`change`)。変更していないファイルも名指しすると箱になる。図に出さず木にだけ出すなら `graph: false` | 変更ファイルの列挙だけ(箱は地図からも出る) |
@@ -157,18 +177,20 @@ layer・concept のパス)は検査せず、外れたものはページが「地
   `__tests__/` のテストファイル)なら `suite.file` と `name` を `tests.added` と突き合わせて「追加 / 既存」を
   出す。綴りを変えると既存のテストに見える。それ以外のファイルのテストは、このブランチで足したファイルなら
   「追加」、ほかは「判定なし」
-- 未実装のテスト(守れていない振る舞い)は `todo: true` で書く。ページは破線で出す
+- 未実装のテスト(守れていない振る舞い)は `todo: true` で書く。ページはテストの画面で破線で、振る舞いの画面の
+  根拠で「無いテスト」として出す(本文には件数だけを出す)
 - Note の `start` / `end` は、そのコミットで `side` の側(既定は変更後)のファイルの行番号。差分の
   hunk に入らない行への注釈は「差分に出ていない行への注釈」として別に出る
 
 ## 解説が無いとき・古いとき
 
-ページは地図だけでも 3 画面を出す。解説の状態は上の帯で知らせる。
+ページは地図だけでも 4 画面を出す(振る舞いは解説が要るので「解説なし」とだけ出す)。解説の状態は上の帯で知らせる。
 
 | 状態 | ページの出方 |
 | --- | --- |
 | 解説が無い | 地図だけで組む。まとめ方は層、表示名はファイル名、構造マップの線は依存だけ(やりとりの流れは出ない)、テストは地図の追加・削除と対象 |
-| 解説が読めない(JSON でない・`version` が 1 でない・`pr` が違う・型が想定外) | 「解説なし」とその理由 |
+| 解説が読めない(JSON でない・`version` が 1 でない・`pr` が違う・型が想定外) | 「解説なし」とその理由。`impact` の型が想定外なら、崩れた道筋(`impact.tables[].outcomes` など。2 か所以上なら外側)を出す |
+| 解説に `impact` が無い | 振る舞いの画面だけ「書かれていない」と出す。ほかの 3 画面はそのまま |
 | 解説の sha が地図の head より前 | 「解説は ◯ 時点、以降 n コミットは解説なし」。以降のコミットには「解説なし」の札 |
 | 解説の sha が地図のコミットに無い | 「解説の sha が地図に無い」(force push などで履歴が変わったとき) |
 | commitStories の sha が地図に無い | 「地図に無い解説 n 件」。別の一覧に出す |

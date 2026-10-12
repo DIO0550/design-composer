@@ -2,8 +2,9 @@
 #
 # 解説ページの核の判定表。テンプレート(`.claude/skills/pr-explain/templates/index.html`)から固定
 # スクリプトを抜き出して node の `vm` で評価し、`document` が無いときに置かれる `prExplainCore` を
-# 叩いて、地図と解説の合流・箱の図の配置・コミットの差分・つながりの要約・戻るの履歴・確認の印の鍵・開く画面と、
-# 語彙と Target の kind が解説の検査(`build-pr-explain.py`)と揃っていることが期待どおりかを 1 コマンドで確かめる。
+# 叩いて、地図と解説の合流・振る舞いの節の並び・今の節・箱の図の配置・コミットの差分・つながりの要約・戻るの履歴・
+# 確認の印の鍵・開く画面と、語彙・Target の kind・impact の形の道筋が解説の検査(`build-pr-explain.py`)と
+# 揃っていることが期待どおりかを 1 コマンドで確かめる。
 #
 # 使い方: bash .github/scripts/pr-explain-core-cases.sh
 # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。
@@ -23,7 +24,8 @@ template="$repo_root/.claude/skills/pr-explain/templates/index.html"
 source "$repo_root/.claude/hooks/lib/cases-report.sh"
 
 # 解説の検査が持つ語彙(ページの `Vocabulary` と突き合わせる)と、Target の kind ごとのキー(ページの `Target` と
-# 突き合わせる)。
+# 突き合わせる)と、Shapes の Impact から導いた形の道筋と値の種類(ページの `ImpactTopics.ShapeRoutes` と
+# 突き合わせる)。道筋に出すのはオブジェクト・その配列・id・id の配列で、文のキーは出さない。
 checker="$(python3 - "$scripts_dir/build-pr-explain.py" <<'PY'
 import importlib.util, json, sys
 spec = importlib.util.spec_from_file_location("build_pr_explain", sys.argv[1])
@@ -31,7 +33,15 @@ module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 vocabulary = {"techniques": module.Techniques, "phases": module.Phases, "messageKinds": module.MessageKinds, "vias": module.Vias, "messageStatuses": module.MessageStatuses}
 target_keys = {kind: list(fields) for kind, fields in module.Variants["Target"].items()}
-print(json.dumps({"vocabulary": vocabulary, "targetKeys": target_keys}))
+def kind_of(rule, is_many):
+    if isinstance(rule, module.Shape):
+        return "records" if is_many else "record"
+    if rule == module.Id:
+        return "ids" if is_many else "id"
+    return None
+routes = module.routes_under(module.Shapes["Explain"]["impact"].value, "impact")
+impact_routes = [[route, kind_of(rule, is_many)] for route, rule, is_many in routes if kind_of(rule, is_many) is not None]
+print(json.dumps({"vocabulary": vocabulary, "targetKeys": target_keys, "impactRoutes": impact_routes}))
 PY
 )" || { echo "NG   解説の検査の語彙を読めない"; exit 1; }
 
@@ -40,7 +50,7 @@ const fs = require("fs");
 const vm = require("vm");
 
 const template = fs.readFileSync(process.argv[2], "utf8");
-const { vocabulary: checkerVocabulary, targetKeys: checkerTargetKeys } = JSON.parse(process.argv[3]);
+const { vocabulary: checkerVocabulary, targetKeys: checkerTargetKeys, impactRoutes: checkerImpactRoutes } = JSON.parse(process.argv[3]);
 const script = (template.match(/<script>([\s\S]*?)<\/script>/) || [])[1];
 if (script === undefined) {
   console.error("固定スクリプトが見つからない");
@@ -53,7 +63,7 @@ if (core === undefined) {
   console.error("document の無い評価で prExplainCore が置かれていない");
   process.exit(2);
 }
-const { ExplainedMap, ReviewCheck, ScreenChoice, CommitDiff, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target } = core;
+const { ExplainedMap, ImpactTopics, TopicScroll, ReviewCheck, ScreenChoice, CommitDiff, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target } = core;
 
 const Pr = 7;
 const shaOf = (digit) => String(digit).repeat(40);
@@ -116,6 +126,53 @@ const hubMap = mapOf({
   ],
   dependencies: hubImporters.map((from) => ({ from, to: "src/utils/Hub.ts", status: "kept" })),
 });
+
+// 振る舞い(impact)。表は 2 行 × 3 列で、マスの結果は `行id列id`(r1c2 など)。
+const impactOf = (extra = {}) => ({ title: "題", lead: "要約", ...extra });
+const topicsOf = (impact, setting = { map: mapOf(), explain: {} }) => explained(setting.map, explainOf({ ...setting.explain, impact })).impactTopics.topics;
+const head = (id, label, extra = {}) => ({ id, label, ...extra });
+const outcome = (rowHead, columnHead, result, extra = {}) => ({ rowHead, columnHead, result, ...extra });
+const tableOf = (rowHeads, columnHeads, outcomes) => ({ label: "表", rowHeads, columnHeads, outcomes });
+const addedOf = (label) => ({ label, before: [], after: [{ text: "後" }] });
+const twoRows = [head("r1", "一"), head("r2", "二")];
+const threeColumns = [head("c1", "一"), head("c2", "二"), head("c3", "三")];
+const fullOutcomes = () => ["r1", "r2"].flatMap((row) => ["c1", "c2", "c3"].map((column) => outcome(row, column, `${row}${column}`)));
+// 表を 1 つだけ書いた impact の、その表の節。
+const tableTopicIn = (table) => topicsOf(impactOf({ tables: [table] }))[0];
+// 表のマスを行ごとに並べる。空きは null。
+const gridOf = (topic, pick = (outcome) => outcome.result) => topic.rows.map((row) => row.outcomes.map((outcome) => (outcome === null ? null : pick(outcome))));
+// 根拠のテスト: a は追加、b は既存、t は未実装、u は判定なし(テスト名を調べていない、このブランチで変えたファイル)。
+const testedMap = mapOf({
+  groups: [{ label: "ハーネス", files: [changedFile("x-cases.sh"), changedFile("s.test.ts")] }],
+  tests: { added: [{ file: "s.test.ts", name: "足した" }], removed: [], files: ["s.test.ts"] },
+});
+const testedExplain = (impact) => explainOf({
+  suites: [suite("s", "s.test.ts"), suite("x", "x-cases.sh")],
+  tests: [test("a", "s", "足した"), test("b", "s", "前から"), test("t", "s", "未実装", { todo: true }), test("u", "x", "調べていない")],
+  impact,
+});
+const keptEvidenceOf = (ids) => explained(testedMap, testedExplain(impactOf({ kept: [{ text: "変わらない", tests: ids }] }))).impactTopics.topics[0].lines[0].tests;
+// 仕組み: m1 は箱どうし、m3 は図に出さない concept へ、m4 は地図に無いファイルへ、m5 は図に出さない concept から箱へのやりとり。
+const mechanismExplain = {
+  map: mapOf({ groups: [{ label: "src", files: [changedFile("a.ts"), changedFile("b.ts"), changedFile("c.ts")] }] }),
+  explain: {
+    concepts: [concept("a.ts", "A"), concept("b.ts", "B"), concept("c.ts", "C", { graph: false })],
+    messages: [message("m1", "a.ts", "b.ts", "cmd"), message("m3", "a.ts", "c.ts", "qry"), message("m4", "b.ts", "gone.ts", "evt"), message("m5", "c.ts", "a.ts", "evt")],
+  },
+};
+const mechanismIdsOf = (changed) => topicsOf(impactOf({ changed }), mechanismExplain)[0].mechanisms.map((mechanism) => mechanism.message.id);
+// テストを根拠に挙げている箇所を引く。変わらないことの 2 行は b と a、増えた状況は a、表は r2c1 と r1c3 のマスだけが t と a を挙げる。
+const mentionedPlacesOf = (explainTestId) => {
+  const impact = {
+    title: "題",
+    lead: "要約",
+    kept: [{ text: "変わらない 1", tests: ["b"] }, { text: "変わらない 2", tests: ["a"] }],
+    added: [{ label: "増えた", before: [], after: [{ text: "後" }], tests: ["a"] }],
+    tables: [tableOf(twoRows, threeColumns, fullOutcomes().map((item) => (item.result === "r2c1" || item.result === "r1c3" ? { ...item, tests: ["t", "a"] } : item)))],
+  };
+  const result = explained(testedMap, testedExplain(impact));
+  return ImpactTopics.mentionsOf(result.impactTopics, explainTestId).map((mention) => [mention.topic, mention.cell, mention.placeText]);
+};
 
 const cases = [
   {
@@ -547,6 +604,292 @@ const cases = [
       ScreenChoice.choose({ hash: "#nope", saved: "nope" }),
     ],
     expected: ["test", "story", "map", "map"],
+  },
+  {
+    label: "ハッシュが #impact なら、保存値より振る舞いの画面を優先する",
+    actual: () => ScreenChoice.choose({ hash: "#impact", saved: "test" }),
+    expected: "impact",
+  },
+  {
+    label: "ハッシュが無く、保存値が振る舞いの画面ならそれを開く",
+    actual: () => ScreenChoice.choose({ hash: "", saved: "impact" }),
+    expected: "impact",
+  },
+  {
+    label: "impact が配列の解説は、理由を impact の型として解説なしにする",
+    actual: () => explained(mapOf(), explainOf({ impact: [] })).reading.reason,
+    expected: { kind: "shape", key: "impact" },
+  },
+  {
+    label: "impact が null の解説は、理由を impact の型として解説なしにする",
+    actual: () => explained(mapOf(), explainOf({ impact: null })).reading.reason,
+    expected: { kind: "shape", key: "impact" },
+  },
+  {
+    label: "impact の変わったこと(changed)が配列なら、理由はその道筋",
+    actual: () => explained(mapOf(), explainOf({ impact: impactOf({ changed: [] }) })).reading.reason,
+    expected: { kind: "shape", key: "impact.changed" },
+  },
+  {
+    label: "状況の表のマスの一覧(outcomes)がオブジェクトなら、理由はその道筋",
+    actual: () => explained(mapOf(), explainOf({ impact: impactOf({ tables: [tableOf([head("r", "行")], [head("c", "列")], {})] }) })).reading.reason,
+    expected: { kind: "shape", key: "impact.tables[].outcomes" },
+  },
+  {
+    label: "マスの tests が文字列なら、理由はその道筋",
+    actual: () => explained(mapOf(), explainOf({ impact: impactOf({ tables: [tableOf([head("r", "行")], [head("c", "列")], [outcome("r", "c", "結果", { tests: "t1" })])] }) })).reading.reason,
+    expected: { kind: "shape", key: "impact.tables[].outcomes[].tests" },
+  },
+  {
+    label: "これまでの行(before)の要素がオブジェクトでなければ、理由はその配列の道筋",
+    actual: () => explained(mapOf(), explainOf({ impact: impactOf({ changed: { before: [null], after: [{ text: "後" }] } }) })).reading.reason,
+    expected: { kind: "shape", key: "impact.changed.before" },
+  },
+  {
+    label: "変わらないことの tests の要素が文字列でなければ、理由はその道筋",
+    actual: () => explained(mapOf(), explainOf({ impact: impactOf({ kept: [{ text: "変わらない", tests: [5] }] }) })).reading.reason,
+    expected: { kind: "shape", key: "impact.kept[].tests" },
+  },
+  {
+    label: "前後の行の message が数値なら、理由はその道筋",
+    actual: () => explained(mapOf(), explainOf({ impact: impactOf({ changed: { before: [], after: [{ text: "後", message: 5 }] } }) })).reading.reason,
+    expected: { kind: "shape", key: "impact.changed.after[].message" },
+  },
+  {
+    label: "形の崩れが 2 か所あれば、表の並びで先の道筋ではなく、外側(段の少ない)の道筋を理由にする",
+    actual: () => explained(mapOf(), explainOf({ impact: impactOf({ changed: { before: [], after: [{ text: "後", message: 5 }] }, tables: "表" }) })).reading.reason,
+    expected: { kind: "shape", key: "impact.tables" },
+  },
+  {
+    label: "ページが形を見る impact の道筋と値の種類は、解説の検査の形(Shapes)から導いたものと同じ",
+    actual: () => ImpactTopics.ShapeRoutes.map(([route, kind]) => [route, kind]),
+    expected: checkerImpactRoutes,
+  },
+  {
+    label: "解説が無いとき、振る舞いの節は「解説なし」",
+    actual: () => ExplainedMap.create(mapOf(), absent).impactTopics,
+    expected: { kind: "none" },
+  },
+  {
+    label: "退けた解説(pr が違う)は、impact が書いてあっても振る舞いは「解説なし」",
+    actual: () => explained(mapOf(), explainOf({ pr: Pr + 1, impact: impactOf({ kept: [{ text: "変わらない" }] }) })).impactTopics,
+    expected: { kind: "none" },
+  },
+  {
+    label: "impact が無ければ、overview の前後があっても振る舞いは「書かれていない」",
+    actual: () => explained(mapOf(), explainOf({ overview: { title: "題", lead: "要約", before: [{ text: "前" }], after: [{ text: "後" }] } })).impactTopics,
+    expected: { kind: "unwritten" },
+  },
+  {
+    label: "impact が題と要約だけなら、節は 0 件",
+    actual: () => explained(mapOf(), explainOf({ impact: impactOf() })).impactTopics,
+    expected: { kind: "written", title: "題", lead: "要約", topics: [] },
+  },
+  {
+    label: "節の並びは書いた順によらず、変わったこと → 状況の表 → 増えた状況 → 変わらないこと",
+    actual: () => {
+      const impact = { kept: [{ text: "変わらない" }], added: [addedOf("増えた 1"), addedOf("増えた 2")], tables: [tableOf([head("r", "行")], [head("c", "列")], [outcome("r", "c", "結果")]), tableOf([head("r", "行")], [head("c", "列")], [outcome("r", "c", "結果")])], changed: { before: [], after: [{ text: "後" }] }, title: "題", lead: "要約" };
+      return topicsOf(impact).map((topic) => topic.id);
+    },
+    expected: ["changed", "table-0", "table-1", "added-0", "added-1", "kept"],
+  },
+  {
+    label: "変わらないこと(kept)が空なら、その節は出ない",
+    actual: () => topicsOf(impactOf({ changed: { before: [], after: [{ text: "後" }] }, kept: [] })).map((topic) => topic.id),
+    expected: ["changed"],
+  },
+  {
+    label: "列ごとに書いた 2 × 3 のマスは、行の見出し × 列の見出しの順に並ぶ",
+    actual: () => {
+      const outcomes = ["c1", "c2", "c3"].flatMap((column) => ["r1", "r2"].map((row) => outcome(row, column, `${row}${column}`)));
+      return gridOf(tableTopicIn(tableOf(twoRows, threeColumns, outcomes)));
+    },
+    expected: [["r1c1", "r1c2", "r1c3"], ["r2c1", "r2c2", "r2c3"]],
+  },
+  {
+    label: "書いていない組み合わせのマスは空き(null)になり、後ろのマスは詰めない",
+    actual: () => gridOf(tableTopicIn(tableOf(twoRows, threeColumns, fullOutcomes().filter((item) => item.result !== "r1c2")))),
+    expected: [["r1c1", null, "r1c3"], ["r2c1", "r2c2", "r2c3"]],
+  },
+  {
+    label: "同じ組み合わせのマスを 2 つ書いたら、先に書いたものを使う",
+    actual: () => gridOf(tableTopicIn(tableOf(twoRows, threeColumns, [outcome("r2", "c3", "先"), ...fullOutcomes(), outcome("r2", "c3", "後")])))[1][2],
+    expected: "先",
+  },
+  {
+    label: "見出しに無い id のマスは、表に並ばない",
+    actual: () => gridOf(tableTopicIn(tableOf(twoRows, threeColumns, [...fullOutcomes(), outcome("r9", "c1", "迷子"), outcome("r1", "c9", "迷子")]))),
+    expected: [["r1c1", "r1c2", "r1c3"], ["r2c1", "r2c2", "r2c3"]],
+  },
+  {
+    label: "行の見出しの id が重複していれば、先の見出しだけで行を作る",
+    actual: () => tableTopicIn(tableOf([head("r1", "一"), head("r2", "二"), head("r1", "三")], threeColumns, fullOutcomes())).rows.map((row) => row.head.label),
+    expected: ["一", "二"],
+  },
+  {
+    label: "列の見出しの id が重複していれば、先の見出しだけで列を作る",
+    actual: () => tableTopicIn(tableOf(twoRows, [head("c1", "一"), head("c2", "二"), head("c1", "三"), head("c3", "四")], fullOutcomes())).columns.map((column) => column.label),
+    expected: ["一", "二", "四"],
+  },
+  {
+    label: "これまで(was)を持つマスだけが、変わったマスになる",
+    actual: () => {
+      const outcomes = fullOutcomes().map((item) => (item.result === "r1c2" || item.result === "r2c3" ? { ...item, was: "前" } : item));
+      return gridOf(tableTopicIn(tableOf(twoRows, threeColumns, outcomes)), (outcome) => outcome.isChanged);
+    },
+    expected: [[false, true, false], [false, false, true]],
+  },
+  {
+    label: "変わったマスの数は表ごとに数える",
+    actual: () => {
+      const unchanged = tableOf(twoRows, threeColumns, fullOutcomes());
+      const changed = tableOf(twoRows, threeColumns, fullOutcomes().map((item) => (item.result.startsWith("r2") ? { ...item, was: "前" } : item)));
+      return topicsOf(impactOf({ tables: [unchanged, changed] })).map((topic) => topic.changedCount);
+    },
+    expected: [0, 3],
+  },
+  {
+    label: "マスに状況(situation)を書けば、見出しから組まずに書いた文をマスの状況にする",
+    actual: () => tableTopicIn(tableOf([head("r", "タブなし", { note: "開始画面" })], [head("c", "開く操作なし")], [outcome("r", "c", "閉じる", { situation: "開始画面で、まだ何も開いていない" })])).rows[0].outcomes[0].situation,
+    expected: "開始画面で、まだ何も開いていない",
+  },
+  {
+    label: "マスに状況を書かず、行の見出しに注があれば、マスの状況は「行 · 列(注)」",
+    actual: () => tableTopicIn(tableOf([head("r", "タブなし", { note: "開始画面" })], [head("c", "開く操作なし")], [outcome("r", "c", "閉じる")])).rows[0].outcomes[0].situation,
+    expected: "タブなし · 開く操作なし(開始画面)",
+  },
+  {
+    label: "マスに状況を書かず、行の見出しに注が無ければ、マスの状況は「行 · 列」",
+    actual: () => tableTopicIn(tableOf([head("r", "タブあり")], [head("c", "開く操作なし")], [outcome("r", "c", "閉じる")])).rows[0].outcomes[0].situation,
+    expected: "タブあり · 開く操作なし",
+  },
+  {
+    label: "表で初めに選ぶマスは、行の順で最初の変わったマス",
+    actual: () => ImpactTopics.firstCellOf(tableTopicIn(tableOf(twoRows, threeColumns, fullOutcomes().map((item) => (item.result === "r2c1" || item.result === "r1c3" ? { ...item, was: "前" } : item))))),
+    expected: { row: "r1", column: "c3" },
+  },
+  {
+    label: "変わったマスが無い表は、空きを飛ばした先頭のマスを初めに選ぶ",
+    actual: () => ImpactTopics.firstCellOf(tableTopicIn(tableOf(twoRows, threeColumns, fullOutcomes().filter((item) => item.result !== "r1c1")))),
+    expected: { row: "r1", column: "c2" },
+  },
+  {
+    label: "マスが 1 つも無い表は、初めに選ぶマスが無い(null)",
+    actual: () => ImpactTopics.firstCellOf(tableTopicIn(tableOf(twoRows, threeColumns, [outcome("r9", "c1", "迷子")]))),
+    expected: null,
+  },
+  {
+    label: "マスのテストは、テスト画面と同じテスト(同じ状態)を、書いた順に持つ",
+    actual: () => {
+      const result = explained(testedMap, testedExplain(impactOf({ tables: [tableOf([head("r", "行")], [head("c", "列")], [outcome("r", "c", "結果", { tests: ["b", "a"] })])] })));
+      const verifying = result.impactTopics.topics[0].rows[0].outcomes[0].tests.verifying;
+      return { listed: verifying.map((item) => [item.test.id, item.status]), isSame: verifying.every((item) => result.tests.includes(item)) };
+    },
+    expected: { listed: [["b", "old"], ["a", "new"]], isSame: true },
+  },
+  {
+    label: "未実装のテストは確かめているテストに入れず、無いテストに分ける",
+    actual: () => {
+      const evidence = keptEvidenceOf(["t", "a"]);
+      return { verifying: evidence.verifying.map((item) => item.test.id), missing: evidence.missing.map((item) => item.test.id) };
+    },
+    expected: { verifying: ["a"], missing: ["t"] },
+  },
+  {
+    label: "解説のテストに無い id は、根拠のテストから外す",
+    actual: () => {
+      const evidence = keptEvidenceOf(["ghost", "a"]);
+      return [...evidence.verifying, ...evidence.missing].map((item) => item.test.id);
+    },
+    expected: ["a"],
+  },
+  {
+    label: "根拠のテストが追加のものだけなら、テストで守っている",
+    actual: () => keptEvidenceOf(["a"]).isGuarded,
+    expected: true,
+  },
+  {
+    label: "根拠のテストが判定なしのものだけでも、テストで守っている",
+    actual: () => keptEvidenceOf(["u"]).isGuarded,
+    expected: true,
+  },
+  {
+    label: "根拠のテストが未実装と既存なら、テストで守っている",
+    actual: () => keptEvidenceOf(["t", "b"]).isGuarded,
+    expected: true,
+  },
+  {
+    label: "根拠のテストが未実装のものだけなら、この PR では未確認",
+    actual: () => keptEvidenceOf(["t"]).isGuarded,
+    expected: false,
+  },
+  {
+    label: "根拠のテストが参照切れだけなら、この PR では未確認",
+    actual: () => keptEvidenceOf(["ghost"]).isGuarded,
+    expected: false,
+  },
+  {
+    label: "変わったことの仕組みは、前の行から後の行へ、行が指すやりとりを書いた順に並べる",
+    actual: () => mechanismIdsOf({ before: [{ text: "前", message: "m4" }], after: [{ text: "後 1", message: "m1" }, { text: "後 2", message: "m3" }] }),
+    expected: ["m4", "m1", "m3"],
+  },
+  {
+    label: "同じやりとりを指す行が 2 つあっても、仕組みには 1 つだけ並べる",
+    actual: () => mechanismIdsOf({ before: [{ text: "前", message: "m3" }], after: [{ text: "後 1", message: "m1" }, { text: "後 2", message: "m3" }] }),
+    expected: ["m3", "m1"],
+  },
+  {
+    label: "解説のやりとりに無い id は、仕組みに入れない",
+    actual: () => mechanismIdsOf({ before: [], after: [{ text: "後 1", message: "ghost" }, { text: "後 2", message: "m1" }] }),
+    expected: ["m1"],
+  },
+  {
+    label: "端が図の箱でないやりとり(地図に無いファイル・図に出さない concept)は「図に無い」",
+    actual: () => {
+      const topic = topicsOf(impactOf({ changed: { before: [], after: [{ text: "後 1", message: "m3" }, { text: "後 2", message: "m1" }, { text: "後 3", message: "m4" }] } }), mechanismExplain)[0];
+      return topic.mechanisms.map((mechanism) => [mechanism.message.id, mechanism.isDrawn]);
+    },
+    expected: [["m3", false], ["m1", true], ["m4", false]],
+  },
+  {
+    label: "受け手だけが図の箱のやりとり(図に出さない concept から箱へ)も「図に無い」",
+    actual: () => topicsOf(impactOf({ changed: { before: [], after: [{ text: "後 1", message: "m5" }, { text: "後 2", message: "m1" }] } }), mechanismExplain)[0].mechanisms.map((mechanism) => [mechanism.message.id, mechanism.isDrawn]),
+    expected: [["m5", false], ["m1", true]],
+  },
+  {
+    label: "増えた状況の仕組みも、前後の行が指すやりとりを書いた順に並べる",
+    actual: () => topicsOf(impactOf({ added: [{ label: "増えた", before: [{ text: "前", message: "m3" }], after: [{ text: "後", message: "m1" }] }] }), mechanismExplain)[0].mechanisms.map((mechanism) => mechanism.message.id),
+    expected: ["m3", "m1"],
+  },
+  {
+    label: "テストから、それを根拠に挙げている節(表ならマス、変わらないことなら行)を節の順に引く",
+    actual: () => mentionedPlacesOf("a"),
+    expected: [["table-0", { row: "r1", column: "c3" }, "一 · 三"], ["table-0", { row: "r2", column: "c1" }, "二 · 一"], ["added-0", null, null], ["kept", null, "変わらない 2"]],
+  },
+  {
+    label: "未実装のテストから引いても、それを根拠に挙げている節を返す",
+    actual: () => mentionedPlacesOf("t"),
+    expected: [["table-0", { row: "r1", column: "c3" }, "一 · 三"], ["table-0", { row: "r2", column: "c1" }, "二 · 一"]],
+  },
+  {
+    label: "振る舞いが書かれていない・解説が無いときは、テストから引いても何も返さない",
+    actual: () => [ImpactTopics.mentionsOf({ kind: "unwritten" }, "a"), ImpactTopics.mentionsOf(ImpactTopics.Unexplained, "a")],
+    expected: [[], []],
+  },
+  {
+    label: "今の節は、上端が読む線(上端から 140px。140 を含む)より上に来た最後の節",
+    actual: () => TopicScroll.currentOf([-400, 20, 140, 141]),
+    expected: 2,
+  },
+  {
+    label: "どの節の上端も読む線(140px)より下なら、今の節は最初の節",
+    actual: () => TopicScroll.currentOf([200, 500, 900]),
+    expected: 0,
+  },
+  {
+    label: "節が無ければ、今の節は null",
+    actual: () => TopicScroll.currentOf([]),
+    expected: null,
   },
   ...Object.keys(checkerVocabulary).map((name) => ({
     label: `語彙 ${name} のキーの集合は、解説の検査とページの表で同じ`,
