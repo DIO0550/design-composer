@@ -98,9 +98,9 @@ export type InsertedCopy = Readonly<{
 }>;
 
 /*
- * 以下の関数は「どの artboard を相手にするか」を選ぶためのもの。
+ * 以下、検証の走査の区切りまでの関数は「どの artboard を相手にするか」を選ぶためのもの。
  * 並びの探索・編集そのものは `NodeTree` が、名前の規則は `DocumentNames` が持っており、
- * ドキュメントに残るのは「複数の artboard のどれに対して行うか」という調停だけ。
+ * ここに残るのは「複数の artboard のどれに対して行うか」という調停だけ。
  *
  * 例外は追従（`followPropEdits`）とグループ化 / 解除（`groupedBox` / `freedChildren`）で、
  * ここだけは `Placement` / `Constraint` / `Size` を組み合わせて編集を作る。子側のドメイン（`Node`）へ置けないのは、`Placement` が
@@ -756,6 +756,8 @@ function rootPropsOf(document: DesignDocument, node: Node): Option<Props> {
   );
 }
 
+// ここから下の `collect*Errors` は、`collectErrors` がどの部品・artboard・名前を検証するかを辿る走査。
+
 /**
  * 1 ノード分の props のエラーを、未知の型・スキーマ照合・最小 / 最大の逆転の順で集める。
  *
@@ -804,7 +806,8 @@ function collectTypedPropErrors(
  *
  * @param node 起点のノード
  * @param tokens トークン参照の解決に使うトークン一式
- * @param parentProps このノードを収めている親の props
+ * @param parentProps このノードを収めている親の props。親を引数で要求するので、親が決まらない
+ *   位置（部品のルート）はそもそも呼ばれない
  * @returns 自身と子孫のプリミティブについて、スキーマ照合・最小 / 最大の逆転・子を並べない
  *   親の下の `fill` のエラーの並び（部品インスタンスは空）
  */
@@ -997,8 +1000,8 @@ function collectNameErrors(
 
 /**
  * ドキュメントのコンパニオンオブジェクト。ツリーの探索・編集は `NodeTree`、名前の規則は
- * `DocumentNames`、部品への変換は `Component`、違反からエラーへの詰め替えは `validation-error/`、
- * 版ごとの JSON 表現は `v1/` が持ち、ここは「どの artboard・どの部品を相手にするか」の調停に徹する。
+ * `DocumentNames`、部品への変換は `Component`、版ごとの JSON 表現は `v1/` が持ち、ここは
+ * 「どの artboard・どの部品を相手にするか」を決める。ドキュメントの違反を集めるのは `collectErrors`。
  */
 export const DesignDocument = {
   /**
