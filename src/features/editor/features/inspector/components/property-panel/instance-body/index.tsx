@@ -1,3 +1,4 @@
+import { Button, ButtonKinds, ButtonSizes } from "@/components/button";
 import { TypeGlyph } from "@/components/type-glyph";
 import type { PropEdit } from "@/domains/dcmp/node";
 import type { EditContinuity } from "@/domains/session/edit-continuity";
@@ -134,20 +135,21 @@ export function InstanceBody({
 
       <section className="flex flex-col gap-2 border-gray-200 border-t pt-3">
         <SectionHeading>{InstanceLabels.instance}</SectionHeading>
-        <button
-          type="button"
+        <Button
+          kind={ButtonKinds.Primary}
+          size={ButtonSizes.Regular}
           onClick={actions.goToSource}
-          className="rounded border border-gray-300 px-2 py-1 text-left text-sm hover:bg-gray-100"
         >
           {InstanceLabels.goToSource}
-        </button>
+        </Button>
         {/*
           UI 案は `Go to source component` と `Detach instance` の間に置いている。
           1 つしか無いときに押せなくするのは、押しても選択が変わらないため
           （`isDetachable` と同じ扱い）。
         */}
-        <button
-          type="button"
+        <Button
+          kind={ButtonKinds.Primary}
+          size={ButtonSizes.Regular}
           onClick={actions.selectAllInstances}
           disabled={!isSelectAllInstancesEnabled}
           title={
@@ -155,19 +157,19 @@ export function InstanceBody({
               ? undefined
               : SelectAllInstancesDisabledReason
           }
-          className="rounded border border-gray-300 px-2 py-1 text-left text-sm hover:bg-gray-100 disabled:opacity-50"
         >
           {InstanceLabels.selectAllInstances(controls.sourceInstanceCount)}
-        </button>
-        <button
-          type="button"
+        </Button>
+        {/* 解除だけセカンダリにするのは、部品との繋がりを切る操作で、勧める操作ではないため。 */}
+        <Button
+          kind={ButtonKinds.Secondary}
+          size={ButtonSizes.Regular}
           onClick={actions.detach}
           disabled={!controls.isDetachable}
           title={controls.isDetachable ? undefined : DetachDisabledReason}
-          className="rounded border border-gray-300 px-2 py-1 text-left text-sm hover:bg-gray-100 disabled:opacity-50"
         >
           {InstanceLabels.detach}
-        </button>
+        </Button>
         <p className="text-gray-400 text-xs">{InstanceLabels.detachNote}</p>
       </section>
 

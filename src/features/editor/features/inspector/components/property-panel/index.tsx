@@ -1,4 +1,5 @@
 import type { ReactElement } from "react";
+import { Button, ButtonKinds, ButtonSizes } from "@/components/button";
 import type { PropEdit } from "@/domains/dcmp/node";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import type { EditContinuity } from "@/domains/session/edit-continuity";
@@ -133,13 +134,13 @@ function PropertyPanelBody({
         onEdit={onEditProp}
         instance={instance}
       />
-      <button
-        type="button"
+      <Button
+        kind={ButtonKinds.Primary}
+        size={ButtonSizes.Regular}
         onClick={onClearSelection}
-        className="rounded border border-gray-300 px-2 py-1 text-sm hover:bg-gray-100"
       >
         選択を解除
-      </button>
+      </Button>
     </div>
   );
 }

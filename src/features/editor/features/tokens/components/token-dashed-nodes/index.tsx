@@ -1,4 +1,5 @@
 import { type ReactElement, useMemo } from "react";
+import { Button, ButtonKinds } from "@/components/button";
 import { ColorSwatch } from "@/components/color-swatch";
 import { TokenSelection } from "@/domains/session/token-selection";
 import { ArrayEx } from "@/utils/ArrayEx";
@@ -85,18 +86,19 @@ export function TokenDashedNodes({
       {/*
         UI 案は押せるものも `<span style="cursor:pointer">` で描いているが、実装では
         ボタンにする（`document-error-list` の `revert file` と同じ形）。
-        文字サイズを指定しないのは、UI 案の綴りも font-size を持たず帯の 11px を継ぐため。
+        文字の大きさは `Button` のテキストが 11px で持つ。
 
-        **この見た目を守るものは無い** — happy-dom はレイアウトを解決せず、視覚差分も
-        リンク 1 本ぶんはしきい値（`--max-diff-ratio 0.002`）未満で通る（実測）。
+        見た目は `Button` が持ち、components/Button のテキストのストーリーで見る。この帯での
+        差分はしきい値（`--max-diff-ratio 0.002`）未満で通りうるので目視で確かめる。
       */}
-      <button
-        type="button"
-        onClick={() => onReveal(firstDashedNodeName.value)}
-        className="ml-1 shrink-0 text-[#0d99ff]"
-      >
-        reveal in tree
-      </button>
+      <span className="ml-1 shrink-0">
+        <Button
+          kind={ButtonKinds.Text}
+          onClick={() => onReveal(firstDashedNodeName.value)}
+        >
+          reveal in tree
+        </Button>
+      </span>
     </section>
   );
 }
