@@ -1,4 +1,5 @@
 import { type ReactElement, useState } from "react";
+import { Button, ButtonKinds, ButtonSizes } from "@/components/button";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { Componentization } from "@/features/editor/features/assets/domains/componentization";
 import { Option } from "@/utils/Option";
@@ -75,29 +76,23 @@ function Caption({
   );
 }
 
-/**
- * 部品化のボタン。
- *
- * 無効時の配色も、他のボタンの `opacity-50` ではなく UI 案がここだけ明示している値を使う。
- */
+/** 部品化のボタン（強調）。押せないときの配色は `Button` の強調が UI 案の値で持つ。 */
 function CreateButton({
   isEnabled,
   reason,
   onClick,
 }: Readonly<{ isEnabled: boolean; reason?: string; onClick?: () => void }>) {
   return (
-    <button
-      type="button"
+    <Button
+      kind={ButtonKinds.Emphasis}
+      size={ButtonSizes.Regular}
       onClick={onClick}
       disabled={!isEnabled}
       title={reason}
-      className="flex h-8 w-full items-center justify-center gap-2 rounded-md bg-[#1e1e1e] font-medium text-white text-xs disabled:border disabled:border-[#ebebeb] disabled:bg-[#fafafa] disabled:font-normal disabled:text-[#c4c4c4]"
     >
-      <span aria-hidden="true" className={isEnabled ? "text-[#c9a6ff]" : ""}>
-        ◆
-      </span>
+      <span aria-hidden="true">◆</span>
       {Labels.create}
-    </button>
+    </Button>
   );
 }
 
