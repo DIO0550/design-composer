@@ -1,4 +1,5 @@
 import type { ReactElement, ReactNode } from "react";
+import { Button, ButtonKinds, ButtonSizes } from "@/components/button";
 import type { DocumentError } from "@/domains/session/document-error";
 import { DocumentErrorLocation } from "@/domains/session/document-error";
 import type { ValueOf } from "@/types/ValueOf";
@@ -118,15 +119,16 @@ function RevertFileButton({
   isReverting,
 }: Readonly<{ onRevertFile: () => void; isReverting: boolean }>) {
   return (
-    <button
-      type="button"
-      onClick={onRevertFile}
-      // 書き込み中に押し直させない（rules/hooks.md「連打防止は disabled が第一選択」）
-      disabled={isReverting}
-      className="ml-auto shrink-0 font-medium text-[#0d99ff] text-xs disabled:text-gray-400"
-    >
-      revert file
-    </button>
+    <span className="ml-auto shrink-0">
+      <Button
+        kind={ButtonKinds.Text}
+        onClick={onRevertFile}
+        // 書き込み中に押し直させない（rules/hooks.md「連打防止は disabled が第一選択」）
+        disabled={isReverting}
+      >
+        revert file
+      </Button>
+    </span>
   );
 }
 
@@ -140,14 +142,16 @@ function RevealButton({
   onReveal,
 }: Readonly<{ nodeName: string; onReveal: (nodeName: string) => void }>) {
   return (
-    <button
-      type="button"
-      aria-label={`${nodeName} を表示`}
-      onClick={() => onReveal(nodeName)}
-      className="ml-auto shrink-0 rounded border border-gray-300 bg-white px-2 py-0.5 text-gray-900 text-xs"
-    >
-      Reveal
-    </button>
+    <span className="ml-auto shrink-0">
+      <Button
+        kind={ButtonKinds.Primary}
+        size={ButtonSizes.Small}
+        aria-label={`${nodeName} を表示`}
+        onClick={() => onReveal(nodeName)}
+      >
+        Reveal
+      </Button>
+    </span>
   );
 }
 
