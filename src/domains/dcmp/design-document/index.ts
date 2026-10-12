@@ -785,12 +785,12 @@ function collectTypedPropErrors(
     props,
     tokens,
   ).map((error) =>
-    DesignDocumentValidationError.fromPropError(nodeName, error),
+    DesignDocumentValidationError.fromPropError(error, nodeName),
   );
   const invertedLimitErrors = Size.collectInvertedLimitAxes(
     ResolvedProps.resolve(typed.type, props),
   ).map((axis) =>
-    DesignDocumentValidationError.fromInvertedLimitAxis(nodeName, axis),
+    DesignDocumentValidationError.fromInvertedLimitAxis(axis, nodeName),
   );
   return [...schemaErrors, ...invertedLimitErrors];
 }
@@ -824,7 +824,7 @@ function collectNodeErrors(
       Layout.fromProps(nested.parentProps),
       nested.node.props ?? {},
     ).map((axis) =>
-      DesignDocumentValidationError.fromFillInFreeParent(nodeName, axis),
+      DesignDocumentValidationError.fromFillAxisInFreeParent(axis, nodeName),
     );
     return [...typedPropErrors, ...fillErrors];
   });
@@ -844,7 +844,7 @@ function collectNodeRefErrors(
   return Node.collectRefNodes(node).flatMap((refNode) =>
     ReferenceContext.collectInstanceViolations(context, refNode).map(
       (violation) =>
-        DesignDocumentValidationError.fromInstanceViolation(refNode, violation),
+        DesignDocumentValidationError.fromInstanceViolation(violation, refNode),
     ),
   );
 }
@@ -875,9 +875,9 @@ function collectBindingErrors(
       }
       return [
         DesignDocumentValidationError.fromBindingViolation(
+          violation.value,
           { component: named.name, prop: publicPropName },
           binding.value,
-          violation.value,
         ),
       ];
     },
@@ -947,7 +947,7 @@ function collectArtboardErrors(
     artboard.props ?? {},
     context.tokens,
   ).map((error) =>
-    DesignDocumentValidationError.fromPropError(artboard.name, error),
+    DesignDocumentValidationError.fromPropError(error, artboard.name),
   );
   const childErrors = artboard.children.flatMap((child) =>
     collectNodeErrors(
@@ -980,9 +980,9 @@ function collectNameErrors(
   ).map(DesignDocumentValidationError.fromNameViolation);
   const duplicateNameErrors = DocumentNames.duplicatedNames(
     documentNamesOf(document),
-  ).map(DesignDocumentValidationError.fromDuplicateName);
+  ).map(DesignDocumentValidationError.fromDuplicatedName);
   const tokenNameErrors = TokenSet.collectInvalidNameRefs(document.tokens).map(
-    DesignDocumentValidationError.fromInvalidTokenName,
+    DesignDocumentValidationError.fromInvalidNameRef,
   );
   const paintNameConflictErrors = TokenSet.collectPaintNameConflicts(
     document.tokens,
@@ -2323,7 +2323,7 @@ export const DesignDocument = {
       collectArtboardErrors(context, artboard),
     );
     const circularErrors = ComponentSet.circularNames(document.components).map(
-      DesignDocumentValidationError.fromCircularRef,
+      DesignDocumentValidationError.fromCircularName,
     );
     const nameErrors = collectNameErrors(document);
     const colorErrors = TokenSet.collectInvalidColorPositions(

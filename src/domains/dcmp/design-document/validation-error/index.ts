@@ -164,13 +164,13 @@ export const DesignDocumentValidationError = {
   /**
    * prop の検証エラー 1 件を、ノードを位置にしたエラーにする。
    *
-   * @param nodeName エラーの位置にするノード名
    * @param error スキーマ・公開 prop の宣言に照らして見つかった prop の検証エラー
+   * @param nodeName エラーの位置にするノード名
    * @returns 検証エラーの種類・prop・メッセージをそのまま持ち、`nodeName` を位置にしたエラー
    */
   fromPropError(
-    nodeName: string,
     error: PropValidationError,
+    nodeName: string,
   ): DesignDocumentValidationError {
     return {
       kind: error.kind,
@@ -199,13 +199,13 @@ export const DesignDocumentValidationError = {
   /**
    * 最小が最大を超えている軸を、エラーにする。
    *
-   * @param nodeName 逆転を持つノードの名前
    * @param axis 逆転している軸
+   * @param nodeName 逆転を持つノードの名前
    * @returns その軸の `max*` を prop に持つ inverted-size-limits
    */
   fromInvertedLimitAxis(
-    nodeName: string,
     axis: Axis,
+    nodeName: string,
   ): DesignDocumentValidationError {
     const { min, max } = Size.limitProps(axis);
     return {
@@ -219,13 +219,13 @@ export const DesignDocumentValidationError = {
   /**
    * 子を並べない親の下で `fill` になっている軸を、エラーにする。
    *
-   * @param nodeName `fill` を持つノードの名前
    * @param axis `fill` になっている軸
+   * @param nodeName `fill` を持つノードの名前
    * @returns その軸のモード（`widthMode` / `heightMode`）を prop に持つ fill-in-free-parent
    */
-  fromFillInFreeParent(
-    nodeName: string,
+  fromFillAxisInFreeParent(
     axis: Axis,
+    nodeName: string,
   ): DesignDocumentValidationError {
     const modeProp = Size.modeProp(axis);
     return {
@@ -239,14 +239,14 @@ export const DesignDocumentValidationError = {
   /**
    * インスタンスの違反 1 件を、そのインスタンスを位置にしたエラーにする。
    *
-   * @param refNode 違反を持つインスタンス
    * @param violation `ReferenceContext.collectInstanceViolations` が返した違反
+   * @param refNode 違反を持つインスタンス
    * @returns 参照先が無ければ prop を持たない dangling-ref、未宣言の上書きならその prop の
    *   undeclared-override、値が宣言に適合しなければその prop の検証エラー
    */
   fromInstanceViolation(
-    refNode: RefNode,
     violation: InstanceViolation,
+    refNode: RefNode,
   ): DesignDocumentValidationError {
     switch (violation.kind) {
       case "missing-component":
@@ -264,8 +264,8 @@ export const DesignDocumentValidationError = {
         };
       case "invalid-override":
         return DesignDocumentValidationError.fromPropError(
-          refNode.name,
           violation.error,
+          refNode.name,
         );
     }
   },
@@ -273,16 +273,16 @@ export const DesignDocumentValidationError = {
   /**
    * binding の違反 1 件を、その公開 prop を位置にしたエラーにする。
    *
+   * @param violation `ComponentBinding.violation` が返した違反
    * @param publicProp binding を宣言している部品名と公開 prop 名
    * @param binding 違反を持つ公開 prop の binding
-   * @param violation `ComponentBinding.violation` が返した違反
    * @returns 指し先のノードが無ければ dangling-binding-node、指し先の prop が無ければ
    *   dangling-binding-prop。どちらも部品名を位置、公開 prop 名を prop に持つ
    */
   fromBindingViolation(
+    violation: BindingViolation,
     publicProp: PublicPropRef,
     binding: PublicPropBinding,
-    violation: BindingViolation,
   ): DesignDocumentValidationError {
     const location = { nodeName: publicProp.component, prop: publicProp.prop };
     switch (violation.kind) {
@@ -330,7 +330,7 @@ export const DesignDocumentValidationError = {
    * @param name 輪に含まれる部品の名前
    * @returns その部品を指す circular-ref。prop は持たない
    */
-  fromCircularRef(name: string): DesignDocumentValidationError {
+  fromCircularName(name: string): DesignDocumentValidationError {
     return {
       kind: "circular-ref",
       nodeName: name,
@@ -345,7 +345,7 @@ export const DesignDocumentValidationError = {
    * @param name 重複している名前
    * @returns その名前を位置にした duplicate-name。prop は持たない
    */
-  fromDuplicateName(name: string): DesignDocumentValidationError {
+  fromDuplicatedName(name: string): DesignDocumentValidationError {
     return {
       kind: "duplicate-name",
       nodeName: name,
@@ -380,7 +380,7 @@ export const DesignDocumentValidationError = {
    * @param ref 規則を満たさないトークンの種別と名前
    * @returns そのトークン名を位置にした invalid-identifier
    */
-  fromInvalidTokenName(ref: TokenRef): DesignDocumentValidationError {
+  fromInvalidNameRef(ref: TokenRef): DesignDocumentValidationError {
     return {
       kind: "invalid-identifier",
       tokenName: ref.name,
