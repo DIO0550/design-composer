@@ -7,6 +7,7 @@ import type { AppMenuCommand } from "@/libs/app-menu";
 import { AppMenuFake } from "@/libs/app-menu/fake";
 import { AppStateIpcFake } from "@/libs/app-state-ipc/fake";
 import { AppStateJson } from "@/libs/app-state-json";
+import { AppWindowFake } from "@/libs/app-window/fake";
 import {
   type DialogChoices,
   DocumentDialogFake,
@@ -142,6 +143,7 @@ export function renderDocumentSession(
     menu: menuFake.menu,
     drop: dropFake.drop,
     appState: appStateFake.ipc,
+    appWindow: AppWindowFake.create().appWindow,
   };
   const { result } = renderHook(() => useDocumentSession(ports));
 

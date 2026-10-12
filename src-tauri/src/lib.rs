@@ -1,4 +1,5 @@
 pub mod app_state;
+pub mod app_window;
 pub mod document;
 pub mod file_io;
 pub mod menu;
@@ -30,7 +31,8 @@ pub fn run() {
             document::watch::watch_document,
             document::watch::unwatch_document,
             app_state::load_app_state,
-            app_state::save_app_state
+            app_state::save_app_state,
+            app_window::close_current_window
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -251,3 +251,54 @@ test("ドキュメントを開いた後は、まだ何も起きていない状�
 
   expect(DocumentSession.isClosed(session)).toBe(false);
 });
+
+test("何も開いていない間は、開いているドキュメントが無い", () => {
+  expect(DocumentSession.hasOpenedDocuments(DocumentSession.Closed)).toBe(
+    false,
+  );
+});
+
+test("何も開いていないまま開く操作の最中でも、開いているドキュメントは無い", () => {
+  expect(
+    DocumentSession.hasOpenedDocuments(
+      DocumentSession.beginOpening(DocumentSession.Closed),
+    ),
+  ).toBe(false);
+});
+
+test("何も開けずに終わった後も、開いているドキュメントは無い", () => {
+  const session = DocumentSession.finishOpening(
+    DocumentSession.beginOpening(DocumentSession.Closed),
+    { documents: [], failure: Option.some(DialogFailure) },
+  );
+
+  expect(DocumentSession.hasOpenedDocuments(session)).toBe(false);
+});
+
+test("ドキュメントを開いた後は、開いているドキュメントがある", () => {
+  const session = DocumentSession.finishOpening(
+    DocumentSession.Closed,
+    opened(Path),
+  );
+
+  expect(DocumentSession.hasOpenedDocuments(session)).toBe(true);
+});
+
+test("ドキュメントを開いたまま開く操作の最中でも、開いているドキュメントがある", () => {
+  const session = DocumentSession.beginOpening(
+    DocumentSession.finishOpening(DocumentSession.Closed, opened(Path)),
+  );
+
+  expect(DocumentSession.hasOpenedDocuments(session)).toBe(true);
+});
+
+test("ドキュメントを開いたまま次の開く操作が失敗で終わっても、開いているドキュメントがある", () => {
+  const session = DocumentSession.finishOpening(
+    DocumentSession.beginOpening(
+      DocumentSession.finishOpening(DocumentSession.Closed, opened(Path)),
+    ),
+    { documents: [], failure: Option.some(DialogFailure) },
+  );
+
+  expect(DocumentSession.hasOpenedDocuments(session)).toBe(true);
+});

@@ -13,6 +13,7 @@ export {
 import { type AppMenuCommand, AppMenuCommands } from "@/libs/app-menu";
 import { AppMenuFake } from "@/libs/app-menu/fake";
 import { AppStateIpcFake } from "@/libs/app-state-ipc/fake";
+import { AppWindowFake } from "@/libs/app-window/fake";
 import { ClockFake } from "@/libs/clock/fake";
 import {
   DialogChoice,
@@ -52,6 +53,8 @@ export type ScreenObserver = Readonly<{
   chooseMenu: (command: AppMenuCommand) => Promise<void>;
   /** ウィンドウへファイルを落とす。 */
   dropFiles: (paths: readonly string[]) => Promise<void>;
+  /** ウィンドウが閉じたか。 */
+  isWindowClosed: () => boolean;
 }>;
 
 /**
@@ -68,6 +71,7 @@ export function renderEditorScreen(
   const menuFake = AppMenuFake.create();
   const dropFake = FileDropFake.create();
   const appStateFake = AppStateIpcFake.create(options.storedAppState);
+  const appWindowFake = AppWindowFake.create();
   if (options.denyAppStateLoad === true) {
     appStateFake.denyLoad();
   }
@@ -84,6 +88,7 @@ export function renderEditorScreen(
         menu: menuFake.menu,
         drop: dropFake.drop,
         appState: appStateFake.ipc,
+        appWindow: appWindowFake.appWindow,
       }}
     />,
   );
@@ -106,6 +111,7 @@ export function renderEditorScreen(
         dropFake.dropFiles(paths);
       });
     },
+    isWindowClosed: appWindowFake.isWindowClosed,
   };
 }
 

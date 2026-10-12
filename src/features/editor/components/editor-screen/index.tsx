@@ -98,7 +98,7 @@ export function EditorScreen({
   // （`OpenedDocumentEditors`）の外で張る。
   useActivateTabShortcut(tabActions.activateAt);
 
-  if (!Option.isSome(session.documents)) {
+  if (!DocumentSession.hasOpenedDocuments(session)) {
     return (
       // 中身の高さを画面に収める器。開始画面は親の高さ（`h-full`）に合わせるので、
       // ここで高さを決める必要がある。

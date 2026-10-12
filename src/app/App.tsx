@@ -1,6 +1,7 @@
 import { EditorScreen } from "@/features/editor";
 import { AppMenu } from "@/libs/app-menu";
 import { AppStateIpc } from "@/libs/app-state-ipc";
+import { AppWindow } from "@/libs/app-window";
 import { Clock } from "@/libs/clock";
 import { DocumentDialog } from "@/libs/document-dialog";
 import { DocumentIpc } from "@/libs/document-ipc";
@@ -24,6 +25,7 @@ const ports = {
   menu: AppMenu.create(tauriIpc),
   drop: FileDrop.create(tauriIpc),
   appState: AppStateIpc.create(tauriIpc),
+  appWindow: AppWindow.create(tauriIpc),
 } as const;
 const clock = Clock.create();
 

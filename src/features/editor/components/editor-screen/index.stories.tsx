@@ -7,6 +7,7 @@ import type { DocumentSessionPorts } from "@/features/editor/features/document-s
 import { AppMenuFake } from "@/libs/app-menu/fake";
 import { AppStateIpcFake } from "@/libs/app-state-ipc/fake";
 import { AppStateJson } from "@/libs/app-state-json";
+import { AppWindowFake } from "@/libs/app-window/fake";
 import { ClockFake } from "@/libs/clock/fake";
 import { DialogChoice, DocumentDialogFake } from "@/libs/document-dialog/fake";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
@@ -26,7 +27,7 @@ type Harness = Readonly<{
 }>;
 
 /**
- * ファイル・ダイアログ・メニュー・ドロップ・アプリ自身の状態の口を代役で用意する。
+ * ファイル・ダイアログ・メニュー・ドロップ・アプリ自身の状態・ウィンドウの口を代役で用意する。
  *
  * ストーリーごとに作り直すのは、開いた結果が口の中に残るため（1 つを使い回すと、先に
  * 撮ったストーリーの操作が後のストーリーの絵に出る。とくにアプリ自身の状態は、開いた
@@ -61,6 +62,7 @@ function createHarness(
       menu: AppMenuFake.create().menu,
       drop: drop.drop,
       appState: appState.ipc,
+      appWindow: AppWindowFake.create().appWindow,
     },
     drop,
   };

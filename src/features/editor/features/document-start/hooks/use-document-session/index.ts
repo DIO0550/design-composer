@@ -9,6 +9,7 @@ import { RecentFiles } from "@/features/editor/features/document-start/domains/r
 import type { AppMenu, AppMenuCommand } from "@/libs/app-menu";
 import type { AppStateIpc } from "@/libs/app-state-ipc";
 import { AppStateJson } from "@/libs/app-state-json";
+import type { AppWindow } from "@/libs/app-window";
 import type { DocumentDialog } from "@/libs/document-dialog";
 import { type DocumentIpc, toDocumentAccessFailure } from "@/libs/document-ipc";
 import { DocumentJson } from "@/libs/document-json";
@@ -21,12 +22,12 @@ import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
 /**
- * どのドキュメントを開くかが決まるまでに要る、外部世界の口。
+ * どのドキュメントを開くか・閉じるかが決まるまでに要る、外部世界の口。
  *
  * ダイアログとファイルの読み書きは開く操作の中身、メニューとドロップは操作の起こり方
  * （メニューはタブを閉じる操作の起こり方でもある）、アプリ自身の状態は操作を待たずに開く
- * 相手（前回開いていたファイル）の出どころ。
- * どれが欠けても開く経路のどれかが成立しないので、常に対で必要になる。
+ * 相手（前回開いていたファイル）の出どころ、ウィンドウは閉じるタブが無いときに閉じる相手。
+ * どれが欠けても開く / 閉じる経路のどれかが成立しないので、常に対で必要になる。
  */
 export type DocumentSessionPorts = Readonly<{
   ipc: DocumentIpc;
@@ -34,6 +35,7 @@ export type DocumentSessionPorts = Readonly<{
   menu: AppMenu;
   drop: FileDrop;
   appState: AppStateIpc;
+  appWindow: AppWindow;
 }>;
 
 /**
@@ -367,13 +369,13 @@ function rememberOpened(
 /**
  * どのドキュメントを開いているかと最近使ったファイルを持ち、開く / 新規作成とタブ列・
  * キーボードからの操作の導線を返す。メニューの指示（開く / 新規作成 / タブを閉じる）も
- * ここで受ける。
+ * ここで受ける。タブを閉じるの指示は、開いているものが無ければウィンドウを閉じる。
  *
  * 開く操作が終わると開いているドキュメントと最近使ったファイルの一覧が一緒に動き、更新の
  * 型も複数あるので `useReducer` で 1 つの状態にまとめる（rules/hooks.md）。指示を受け取れ
  * なかった経路は購読の Effect だけが更新する独立した値なので `useState` のまま持つ。
  *
- * @param ports ダイアログ・I/O・メニュー・ドロップ・アプリ自身の状態の相手
+ * @param ports ダイアログ・I/O・メニュー・ドロップ・アプリ自身の状態・ウィンドウの相手
  * @returns 今のセッション、最近開いたファイルのパス（新しい順）、その一覧を読み取れ
  *   なかった理由（読めていれば `none`）、開く / 新規作成を始める手続き、タブ列から開いて
  *   いるものを扱う手続き、指示を受け取れなかった経路とその理由（どちらも受け取れていれば
@@ -439,7 +441,17 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
     const run = {
       open: openDocument,
       create: createDocument,
-      "close-tab": () => dispatch({ type: "closeActive" }),
+      "close-tab": () => {
+        if (DocumentSession.hasOpenedDocuments(state.session)) {
+          dispatch({ type: "closeActive" });
+          return;
+        }
+        /*
+         * 閉じられなかったことは画面に出さない。メニューの選択には結果を返す先が無く、
+         * Shift+⌘W（menu.rs）も同じく失敗を捨てている。
+         */
+        void ports.appWindow.close();
+      },
     } as const satisfies Readonly<Record<AppMenuCommand, () => void>>;
     run[command]();
   });
