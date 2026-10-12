@@ -154,6 +154,41 @@ pass|-|sample|名前の 1 語の識別子(Result)は検査しない|d["concepts"
 pass|-|sample|名前に大文字だけの略語(UI 案・VRT)は書ける|d["concepts"][0]["name"] = "UI 案"; d["features"][0]["label"] = "VRT"
 pass|-|sample|説明文(concept の role)の識別子は検査しない|d["concepts"][0]["role"] = "TokenTemplate を組み立てる"
 pass|-|sample|テスト名(test の name)の識別子は検査しない|d["tests"][0]["name"] = "sortBy で並べ替えたとき順序が保たれる"
+pass|-|sample|振る舞い(impact)の見本(任意のキーをすべて使う)は通る|assert set(d["impact"]) == {"title", "lead", "changed", "tables", "added", "kept"} and "note" in d["impact"]["tables"][0]["rowHeads"][1]
+pass|-|sample|振る舞いが題と要約だけでも通る|d["impact"] = {"title": "題", "lead": "要約"}
+pass|-|sample|状況の表の行と列で同じ id を使える(軸ごとに別の名前空間)|ids = {"mapped": "passing", "unmapped": "failing"}; t = d["impact"]["tables"][0]; [h.update(id=ids[h["id"]]) for h in t["columnHeads"]]; [o.update(columnHead=ids[o["columnHead"]]) for o in t["outcomes"]]
+pass|-|sample|変わらないことのテストが未実装のものだけでも通る|d["impact"]["kept"][0]["tests"] = ["stale"]
+pass|-|sample|変わったことのこれまでが 0 件でも通る|d["impact"]["changed"]["before"] = []
+pass|-|sample|増えた状況のこれまでが 0 件でも通る|d["impact"]["added"][0]["before"] = []
+pass|-|sample|振る舞いの文に docs が仕様の語として使う複合語(publicProps)は書ける|d["impact"]["title"] = "publicProps の宣言が画面に出るようになった"
+pass|-|sample|変わったことの前後で一部の行が同じでも通る(変わらない行を文脈として並べる)|d["impact"]["changed"]["before"].append(dict(d["impact"]["changed"]["after"][0]))
+deny|shape|sample|振る舞い(impact)が配列|d["impact"] = []
+deny|shape|sample|振る舞いに知らないキー|d["impact"]["extra"] = 1
+deny|shape|sample|振る舞いに題(title)が無い|del d["impact"]["title"]
+deny|shape|sample|変わったことに before が無い|del d["impact"]["changed"]["before"]
+deny|shape|sample|変わったことのこれからが空|d["impact"]["changed"]["after"] = []
+deny|shape|sample|状況の表の rowHeads が空(outcomes も空にして、マスの揃いの規則と切り離す)|d["impact"]["tables"][0].update(rowHeads=[], outcomes=[])
+deny|shape|sample|状況の表の columnHeads が空(outcomes も空にして、マスの揃いの規則と切り離す)|d["impact"]["tables"][0].update(columnHeads=[], outcomes=[])
+deny|shape|sample|状況の表の rowHeads の id が重複|t = d["impact"]["tables"][0]; t["rowHeads"].append(dict(t["rowHeads"][0]))
+deny|shape|sample|状況の表の columnHeads の id が重複|t = d["impact"]["tables"][0]; t["columnHeads"].append(dict(t["columnHeads"][1]))
+deny|shape|sample|状況の表の組み合わせが欠けている(最後のマスを消す)|d["impact"]["tables"][0]["outcomes"].pop()
+deny|shape|sample|状況の表に同じ組み合わせのマスが 2 つ|t = d["impact"]["tables"][0]; t["outcomes"].append(dict(t["outcomes"][3]))
+deny|shape|sample|状況の表に rowHeads に無い行のマスを足す|d["impact"]["tables"][0]["outcomes"].append({"rowHead": "nope", "columnHead": "mapped", "result": "結果"})
+deny|shape|sample|状況の表に columnHeads に無い列のマスを足す|d["impact"]["tables"][0]["outcomes"].append({"rowHead": "passing", "columnHead": "nope", "result": "結果"})
+deny|shape|sample|マスのこれまで(was)が今の結果(result)と同じ|o = d["impact"]["tables"][0]["outcomes"][1]; o["was"] = o["result"]
+deny|shape|sample|変わったことの前後がまったく同じ|c = d["impact"]["changed"]; c["before"] = [dict(line) for line in c["after"]]
+deny|shape|sample|変わったことの前後で文の並びが同じなら、やりとり(message)だけが違っても落ちる|c = d["impact"]["changed"]; c["before"] = [{"text": line["text"]} for line in c["after"]]
+deny|shape|sample|増えた状況の前後がまったく同じ|a = d["impact"]["added"][0]; a["before"] = [dict(line) for line in a["after"]]
+deny|shape|sample|マスの tests に同じテストを 2 回|d["impact"]["tables"][0]["outcomes"][1]["tests"] = ["unknown-key", "unknown-key"]
+deny|shape|sample|増えた状況の tests に同じテストを 2 回|d["impact"]["added"][0]["tests"] = ["stale", "stale"]
+deny|shape|sample|変わらないことの tests に同じテストを 2 回|d["impact"]["kept"][0]["tests"] = ["unknown-key", "unknown-key"]
+deny|shape|sample|増えた状況に before が無い|del d["impact"]["added"][0]["before"]
+deny|shape|sample|増えた状況のこれからが空|d["impact"]["added"][0]["after"] = []
+deny|shape|sample|列の見出しに注(note)を書く(注を持てるのは行の見出しだけ)|d["impact"]["tables"][0]["columnHeads"][0]["note"] = "注"
+deny|shape|sample|振る舞いの要約(lead)にバッククォート|d["impact"]["lead"] = "`put-explain` で置くようになった"
+deny|shape|sample|状況の表の題(label)が識別子|d["impact"]["tables"][0]["label"] = "putExplain の結果"
+deny|shape|sample|マスの結果(result)が識別子|d["impact"]["tables"][0]["outcomes"][0]["result"] = "buildPrExplain が置く"
+deny|shape|sample|変わらないことの文が識別子|d["impact"]["kept"][2]["text"] = "removePage で消える"
 deny|meta|sample|pr が公開先と違う|d["pr"] = d["pr"] + 1
 deny|ref|sample|message の from が concepts に無い|d["messages"][0]["from"] = "no/such"
 deny|ref|sample|message の to が concepts に無い|d["messages"][0]["to"] = "no/such"
@@ -170,6 +205,13 @@ deny|ref|sample|message の Target が messages に無い|d["overview"]["highlig
 deny|ref|sample|flow の Target が flows に無い|d["overview"]["highlights"][4]["go"]["id"] = "nope"
 deny|ref|sample|todo のテストが commit を持つ|d["tests"][1]["commit"] = d["sha"]
 deny|ref|sample|todo のテストが excerpt を持つ|d["tests"][1]["excerpt"] = {"path": "kept.txt", "start": 1, "end": 1}
+deny|ref|sample|変わったことのこれまでの message が messages に無い|d["impact"]["changed"]["before"][0]["message"] = "nope"
+deny|ref|sample|変わったことのこれからの message が messages に無い|d["impact"]["changed"]["after"][0]["message"] = "nope"
+deny|ref|sample|マスの tests が tests に無い|d["impact"]["tables"][0]["outcomes"][1]["tests"] = ["nope"]
+deny|ref|sample|増えた状況のこれまでの message が messages に無い|d["impact"]["added"][0]["before"][0]["message"] = "nope"
+deny|ref|sample|増えた状況のこれからの message が messages に無い|d["impact"]["added"][0]["after"][0]["message"] = "nope"
+deny|ref|sample|増えた状況の tests が tests に無い|d["impact"]["added"][0]["tests"] = ["nope"]
+deny|ref|sample|変わらないことの tests が tests に無い|d["impact"]["kept"][1]["tests"] = ["nope"]
 deny|code|sample|解説時点の sha がこのリポジトリに無い|d["sha"] = "f" * 40
 deny|code|sample|抜粋のパスが解説時点の sha に無い|d["tests"][0]["excerpt"] = {"path": "missing.txt", "start": 1, "end": 1}
 deny|code|sample|範囲の終わりがファイルの行数 + 1|d["tests"][0]["excerpt"] = {"path": "kept.txt", "start": 5, "end": 6}
@@ -259,5 +301,27 @@ python3 "$builder" "$work/case.json" --pr "$pr" >/dev/null 2>&1; status=$?
 bad_args=deny
 [ "$status" -eq 2 ] && bad_args=pass
 report pass "$bad_args" "書き出し先(--out)の無い呼び出しは引数の誤り"
+
+# 振る舞い(impact)の型の文字列のキーは、どれも使う人の言葉(`user_text`)で書く。型を足したときに規則を付け忘れると、
+# コードの名前がそのまま振る舞いの画面に出る。id のキーは文ではないので除く。
+user_text_keys="$(python3 - "$builder" <<'PY'
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location("build_pr_explain", sys.argv[1])
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+inner = lambda field: field.value.item if isinstance(field.value, module.Many) else field.value
+def shapes_under(name, seen):
+    if name in seen:
+        return seen
+    nested = [inner(field).name for field in module.Shapes[name].values() if isinstance(inner(field), module.Shape)]
+    for child in nested:
+        seen = shapes_under(child, seen | {name})
+    return seen | {name}
+rules = [inner(field).rule for name in shapes_under("Impact", frozenset()) for field in module.Shapes[name].values() if isinstance(inner(field), module.Scalar)]
+texts = [rule for rule in rules if rule != "id"]
+print("pass" if texts and all(rule == "user_text" for rule in texts) else "deny")
+PY
+)"
+report pass "$user_text_keys" "振る舞い(impact)の型の文字列のキーは、id を除いてどれも使う人の言葉(user_text)の規則を持つ"
 
 exit "$cases_failed"

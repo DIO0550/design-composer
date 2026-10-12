@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-aBFDwffHIcBSneGizG9Yl4xP5qcoOb+oEuL/UxMYjZg='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-C94Lg2cjn44320AgJ2cn2j31GQ6ZGrYjAzJbqIQjsXY='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR 解説</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -652,6 +652,61 @@ button.change-item:hover { background: var(--track); }
 .sequence-legend { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 11px; color: var(--ink-2); }
 .sequence-legend > span { display: flex; align-items: center; gap: 5px; }
 .sequence-legend .legend-line { width: 16px; border-top-color: var(--ink-2); }
+.flow-chip:disabled { color: var(--ink-3); border-style: dashed; cursor: default; }
+.stage-body.impact-body { max-width: 860px; gap: 56px; padding-bottom: 120px; }
+.impact-topic { display: flex; flex-direction: column; gap: 16px; scroll-margin-top: 20px; }
+.impact-topic-head { display: flex; flex-direction: column; gap: 6px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.impact-topic-head h2 { margin: 0; font-size: 21px; font-weight: 600; line-height: 1.4; text-wrap: balance; overflow-wrap: anywhere; }
+.impact-hash { color: var(--ink-4); font-weight: 400; margin-right: 8px; }
+.impact-kicker { font-family: var(--mono); font-size: 11px; color: var(--ink-3); letter-spacing: .03em; }
+.impact-gist { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: baseline; padding: 12px 16px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); }
+.impact-gist-label { font-size: 11px; font-weight: 600; letter-spacing: .06em; color: var(--accent); white-space: nowrap; }
+.impact-gist-text { font-size: 14.5px; line-height: 1.7; font-weight: 500; }
+.impact-text { margin: 0; font-size: 14.5px; line-height: 1.9; max-width: 66ch; text-wrap: pretty; }
+.impact-table-wrap { overflow-x: auto; }
+.impact-table { width: 100%; min-width: 560px; border-collapse: separate; border-spacing: 8px; margin: -8px; }
+.impact-table th { font-size: 11.5px; font-weight: 600; color: var(--ink-2); text-align: left; padding: 0 4px; vertical-align: bottom; }
+.impact-table tbody th { width: 120px; vertical-align: middle; line-height: 1.5; }
+.impact-table tbody th small { display: block; font-weight: 400; color: var(--ink-3); font-size: 11px; }
+.impact-table td { padding: 0; vertical-align: top; }
+.impact-cell { width: 100%; min-height: 96px; display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--sunken); text-align: left; cursor: pointer; font: inherit; color: inherit; }
+.impact-cell:hover { border-color: var(--line-strong); }
+.impact-cell.is-changed { background: rgba(31, 122, 68, .10); border-color: color-mix(in srgb, var(--add) 45%, transparent); }
+.impact-cell.is-missing { justify-content: center; cursor: default; border-style: dashed; background: transparent; font-size: 12px; color: var(--ink-3); }
+.impact-cell[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--accent); border-color: var(--accent); }
+.impact-cell-badge { align-self: flex-start; font-size: 10px; font-weight: 600; border-radius: 4px; padding: 1px 6px; color: var(--ink-3); background: var(--track); }
+.impact-cell.is-changed .impact-cell-badge { color: var(--add); background: var(--surface); }
+.impact-cell-result { font-size: 14px; font-weight: 600; line-height: 1.45; }
+.impact-cell.is-changed .impact-cell-result { color: var(--add); }
+.impact-cell-was { font-size: 11.5px; color: var(--ink-3); line-height: 1.5; }
+.impact-cell-was s { text-decoration-color: var(--ink-4); }
+.impact-kept { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.impact-kept li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 14px; align-items: baseline; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.impact-kept-text { font-size: 14px; line-height: 1.6; }
+.impact-guard { font-size: 11.5px; color: var(--ink-3); white-space: nowrap; }
+.impact-guard.is-missing { color: var(--mod); }
+.impact-note { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; padding: 12px 16px; border-radius: 10px; background: var(--warn-tint); font-size: 13.5px; line-height: 1.8; }
+.impact-note-label { font-size: 11px; font-weight: 600; letter-spacing: .04em; color: var(--mod); padding-top: 2px; white-space: nowrap; }
+.impact-inline { display: none; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+.impact-inline > summary { cursor: pointer; padding: 10px 14px; font-size: 12.5px; font-weight: 600; color: var(--ink-2); }
+.impact-inline > .side { overflow: visible; padding: 0 14px 14px; gap: 18px; }
+/* 振る舞いの画面だけ、狭い幅で右の欄を隠して根拠を各節に畳み(1180px 以下)、さらに目次も隠してページ全体をスクロールする(760px 以下)。 */
+@media (max-width: 1180px) {
+  .screen[data-screen="impact"]:not([hidden]) { display: flex; }
+  .screen[data-screen="impact"] > .panel.is-left { flex: 0 0 220px; }
+  .screen[data-screen="impact"] > .stage { flex: 1 1 auto; }
+  .screen[data-screen="impact"] > .panel.is-right { display: none; }
+  .screen[data-screen="impact"] .impact-inline { display: block; }
+}
+@media (max-width: 760px) {
+  html:has(.screen[data-screen="impact"]:not([hidden])), html:has(.screen[data-screen="impact"]:not([hidden])) body { height: auto; overflow: auto; }
+  html:has(.screen[data-screen="impact"]:not([hidden])) .app { height: auto; display: block; }
+  .screen[data-screen="impact"]:not([hidden]) { display: block; height: auto; }
+  .screen[data-screen="impact"] > .panel.is-left { display: none; }
+  .screen[data-screen="impact"] > .stage { overflow: visible; }
+  .screen[data-screen="impact"] .impact-body { padding-inline: 16px; gap: 44px; }
+  .screen[data-screen="impact"] .impact-gist, .screen[data-screen="impact"] .impact-note { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+}
 </style>
 </head>
 <body>
@@ -858,7 +913,7 @@ button.change-item:hover { background: var(--track); }
     },
   });
 
-  const Screens = Object.freeze({ Map: "map", Story: "story", Test: "test" });
+  const Screens = Object.freeze({ Map: "map", Story: "story", Test: "test", Impact: "impact" });
   const isScreen = (value) => Object.values(Screens).includes(value);
 
   /** どの画面を開くか。 */
@@ -879,14 +934,234 @@ button.change-item:hover { background: var(--track); }
     },
   });
 
+  const isRecord = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+  const isListOfRecords = (value) => Array.isArray(value) && value.every(isRecord);
+
+  /** テストを、確かめているものとして数えるか。未実装(提案)と、このブランチで消したものは数えない。 */
+  const isVerifying = (test) => test.status !== "todo" && test.status !== "removed";
+
+  /**
+   * やりとりの両端が図の箱か。構造マップで選べるのは、両端が箱のやりとりだけ。
+   * @param entryAt パスから木の項目を引く表
+   */
+  const isDrawnMessage = (message, entryAt) => [message.from, message.to].every((path) => entryAt.has(path) && entryAt.get(path).inGraph);
+
+  /** 振る舞いの画面の節の並び。解説の `impact` を、変わったこと → 状況の表 → 増えた状況 → 変わらないこと の節にする。 */
+  const ImpactTopics = (() => {
+    // 骨組みの道筋と、その先の値の種類。`build-pr-explain.py` の Shapes の Impact から導いたものと同じ並びで、
+    // `pr-explain-core-cases.sh` が突き合わせる。文の値は見ない(描くときに文字として入れるだけなので)。
+    const SkeletonKinds = Object.freeze({
+      record: isRecord,
+      records: isListOfRecords,
+      ids: (value) => Array.isArray(value) && value.every((item) => typeof item === "string"),
+      id: (value) => typeof value === "string",
+    });
+    const SkeletonRoutes = Object.freeze([
+      ["impact", "record"],
+      ["impact.changed", "record"],
+      ["impact.changed.before", "records"],
+      ["impact.changed.before[].message", "id"],
+      ["impact.changed.after", "records"],
+      ["impact.changed.after[].message", "id"],
+      ["impact.tables", "records"],
+      ["impact.tables[].rowHeads", "records"],
+      ["impact.tables[].rowHeads[].id", "id"],
+      ["impact.tables[].columnHeads", "records"],
+      ["impact.tables[].columnHeads[].id", "id"],
+      ["impact.tables[].outcomes", "records"],
+      ["impact.tables[].outcomes[].rowHead", "id"],
+      ["impact.tables[].outcomes[].columnHead", "id"],
+      ["impact.tables[].outcomes[].tests", "ids"],
+      ["impact.added", "records"],
+      ["impact.added[].before", "records"],
+      ["impact.added[].before[].message", "id"],
+      ["impact.added[].after", "records"],
+      ["impact.added[].after[].message", "id"],
+      ["impact.added[].tests", "ids"],
+      ["impact.kept", "records"],
+      ["impact.kept[].tests", "ids"],
+    ]);
+    const Labels = Object.freeze({ changed: "変わったこと", kept: "変わらないこと" });
+
+    /** 道筋の先の値を集める。途中が欠けていれば集めない(欠けは検査の管轄)。`[]` で終わる段は配列の各要素へ進む。 */
+    const valuesAt = (value, steps) => {
+      if (steps.length === 0) return [value];
+      const [step, ...rest] = steps;
+      const key = step.replace(/\[\]$/, "");
+      if (!isRecord(value) || value[key] === undefined) return [];
+      const inner = value[key];
+      if (!step.endsWith("[]")) return valuesAt(inner, rest);
+      return Array.isArray(inner) ? inner.flatMap((item) => valuesAt(item, rest)) : [];
+    };
+    const depthOf = ([route]) => route.split(".").length;
+
+    const listOf = (value) => (Array.isArray(value) ? value : []);
+    const optionalText = (value) => (typeof value === "string" ? value : null);
+    const linesOf = (lines) => listOf(lines).map((line) => ({ text: line.text, message: optionalText(line.message) }));
+
+    /**
+     * 解説のテストの id を、テスト画面と同じテスト(状態つき)にする。解説のテストに無い id は外す。
+     * @returns `verifying`(確かめているもの)・`missing`(未実装で、まだ無いもの)・`isGuarded`(確かめているものが 1 件以上)
+     */
+    const evidenceOf = (ids, testAt) => {
+      const found = listOf(ids).filter((id) => testAt.has(id)).map((id) => testAt.get(id));
+      const verifying = found.filter(isVerifying);
+      return { verifying, missing: found.filter((test) => test.status === "todo"), isGuarded: verifying.length > 0 };
+    };
+
+    /** 前後の行が指すやりとりを、書いた順に重複なく。解説に無い id は外し、両端が図の箱かを添える。 */
+    const mechanismsOf = (lines, { messages, entryAt }) => {
+      const ids = [...new Set(lines.map((line) => line.message).filter((id) => id !== null && messages.has(id)))];
+      return ids.map((id) => ({ message: messages.get(id), isDrawn: isDrawnMessage(messages.get(id), entryAt) }));
+    };
+
+    /** 見出しの id が重複していれば先のものだけを残す。 */
+    const firstById = (heads) => heads.filter((head, index) => heads.findIndex((other) => other.id === head.id) === index);
+
+    /** マスの状況の文。行の注があれば添える。 */
+    const situationOf = (row, column) => (typeof row.note === "string" ? `${row.label} · ${column.label}(${row.note})` : `${row.label} · ${column.label}`);
+
+    /** 表のマス。同じ組み合わせを 2 回書いていれば先のもの、書いていなければ null(空き)。 */
+    const cellOf = ({ outcomes, row, column, testAt }) => {
+      const outcome = outcomes.find((candidate) => candidate.rowHead === row.id && candidate.columnHead === column.id);
+      if (outcome === undefined) return null;
+      return {
+        row: row.id,
+        column: column.id,
+        result: outcome.result,
+        was: optionalText(outcome.was),
+        note: optionalText(outcome.note),
+        isChanged: typeof outcome.was === "string",
+        situation: situationOf(row, column),
+        tests: evidenceOf(outcome.tests, testAt),
+      };
+    };
+
+    const headOf = (head) => ({ id: head.id, label: head.label, note: optionalText(head.note) });
+
+    /** 状況の表を、行の見出し × 列の見出しの順のマスにする。見出しに無い id のマスは並べない。 */
+    const tableTopicOf = (table, index, { testAt }) => {
+      const rowHeads = firstById(listOf(table.rowHeads));
+      const columnHeads = firstById(listOf(table.columnHeads));
+      const outcomes = listOf(table.outcomes);
+      const rows = rowHeads.map((row) => ({ head: headOf(row), cells: columnHeads.map((column) => cellOf({ outcomes, row, column, testAt })) }));
+      const cells = rows.flatMap((row) => row.cells).filter((cell) => cell !== null);
+      return {
+        kind: "table",
+        id: `table-${index}`,
+        label: table.label,
+        gist: optionalText(table.gist),
+        text: optionalText(table.text),
+        columns: columnHeads.map(headOf),
+        rows,
+        changedCount: cells.filter((cell) => cell.isChanged).length,
+      };
+    };
+
+    const addedTopicOf = (added, index, context) => {
+      const before = linesOf(added.before);
+      const after = linesOf(added.after);
+      return { kind: "added", id: `added-${index}`, label: added.label, before, after, text: optionalText(added.text), tests: evidenceOf(added.tests, context.testAt), mechanisms: mechanismsOf([...before, ...after], context) };
+    };
+
+    const changedTopicsOf = (changed, context) => {
+      if (!isRecord(changed)) return [];
+      const before = linesOf(changed.before);
+      const after = linesOf(changed.after);
+      return [{ kind: "changed", id: "changed", label: Labels.changed, before, after, text: optionalText(changed.text), mechanisms: mechanismsOf([...before, ...after], context) }];
+    };
+
+    const keptTopicsOf = (kept, { testAt }) => {
+      const lines = listOf(kept).map((line) => ({ text: line.text, tests: evidenceOf(line.tests, testAt) }));
+      return lines.length === 0 ? [] : [{ kind: "kept", id: "kept", label: Labels.kept, lines }];
+    };
+
+    /** 根拠のテストに、その解説のテストの id があるか。 */
+    const cites = (evidence, explainTestId) => [...evidence.verifying, ...evidence.missing].some((test) => test.test.id === explainTestId);
+
+    /** 節の中で、そのテストを根拠に挙げているところ。 */
+    const mentionsIn = (topic, explainTestId) => {
+      const mention = (extra) => ({ topic: topic.id, topicLabel: topic.label, cell: null, situation: null, ...extra });
+      switch (topic.kind) {
+        case "changed":
+          return [];
+        case "table":
+          return topic.rows.flatMap((row) => row.cells).filter((cell) => cell !== null && cites(cell.tests, explainTestId)).map((cell) => mention({ cell: { row: cell.row, column: cell.column }, situation: cell.situation }));
+        case "added":
+          return cites(topic.tests, explainTestId) ? [mention({})] : [];
+        case "kept":
+          return topic.lines.filter((line) => cites(line.tests, explainTestId)).map((line) => mention({ situation: line.text }));
+      }
+    };
+
+    return Object.freeze({
+      SkeletonRoutes,
+      /** 使える解説が無いとき。 */
+      Unexplained: Object.freeze({ kind: "none" }),
+      /**
+       * ページが組み立てに使う `impact` の骨組みを見る。
+       * @returns 型の違う道筋(`impact.tables[].outcomes` の形)。崩れが 2 か所以上なら最も外側のもの。崩れていなければ null
+       */
+      skeletonProblemOf: (explain) => {
+        const broken = SkeletonRoutes.filter(([route, kind]) => valuesAt(explain, route.split(".")).some((value) => !SkeletonKinds[kind](value)));
+        if (broken.length === 0) return null;
+        return broken.reduce((outer, candidate) => (depthOf(candidate) < depthOf(outer) ? candidate : outer))[0];
+      },
+      /**
+       * 解説の `impact` を節の並びにする。節の並びは固定で、書かなかった節は無い(変わらないことが 0 件なら節を作らない)。
+       * @param impact 骨組みの検査を通った解説の `impact`(書いていなければ undefined)
+       * @param tests テスト画面と同じテストの並び(`ExplainedMap` の `tests`)
+       * @param entries 木の項目(やりとりの両端が図の箱かを見る)
+       * @param messages 解説のやりとりを id で引く表
+       * @returns `{kind: "unwritten"}`(`impact` が無い)か `{kind: "written", title, lead, topics}`
+       */
+      create: ({ impact, tests, entries, messages }) => {
+        if (impact === undefined) return { kind: "unwritten" };
+        const testAt = new Map(tests.filter((test) => test.test !== null).map((test) => [test.test.id, test]));
+        const context = { testAt, messages, entryAt: new Map(entries.map((entry) => [entry.path, entry])) };
+        const topics = [
+          ...changedTopicsOf(impact.changed, context),
+          ...listOf(impact.tables).map((table, index) => tableTopicOf(table, index, context)),
+          ...listOf(impact.added).map((added, index) => addedTopicOf(added, index, context)),
+          ...keptTopicsOf(impact.kept, context),
+        ];
+        return { kind: "written", title: impact.title, lead: impact.lead, topics };
+      },
+      /**
+       * そのテストを根拠に挙げている節(表ならマス、変わらないことなら行)を、節の順に引く。
+       * @param explainTestId 解説のテストの id(テスト画面の中の位置ではない)
+       * @returns `{topic, topicLabel, cell, situation}` の並び。`cell` は表のマス(`{row, column}`)で、それ以外は null
+       */
+      mentionsOf: (impactTopics, explainTestId) => (impactTopics.kind === "written" ? impactTopics.topics.flatMap((topic) => mentionsIn(topic, explainTestId)) : []),
+    });
+  })();
+
+  /** 振る舞いの画面の「今の節」。本文のスクロールの位置から、目次と右の欄が指す節を決める。 */
+  const TopicScroll = (() => {
+    const ReadingLine = 140;
+    const EndSlack = 4;
+    return Object.freeze({
+      /**
+       * @param tops 節の上端の、スクロールする領域の上端からの距離(節の順)
+       * @param remaining 下へスクロールできる残りの距離
+       * @returns 今の節の添字。上端が 140px 以内(140 を含む)に入った最後の節で、どれも入っていなければ最初の節。
+       *   残りが 4px 以内なら最後の節(最後の節の上端がそこまで上がらないことがあるため)。節が無ければ null
+       */
+      currentOf: ({ tops, remaining }) => {
+        if (tops.length === 0) return null;
+        if (remaining <= EndSlack) return tops.length - 1;
+        const passed = tops.findLastIndex((top) => top <= ReadingLine);
+        return passed < 0 ? 0 : passed;
+      },
+    });
+  })();
+
   /** 変更の地図(change-map.json)と解説(explain.json)の合流。 */
   const ExplainedMap = (() => {
     const MapVersion = 2;
     const ExplainVersion = 1;
     const ExplainListKeys = ["features", "layerRoles", "concepts", "messages", "flows", "commitStories", "suites", "tests"];
 
-    const isRecord = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
-    const isListOfRecords = (value) => Array.isArray(value) && value.every(isRecord);
     const isBrokenList = (value) => value !== undefined && !isListOfRecords(value);
     const listOf = (explain, key) => (explain !== null && Array.isArray(explain[key]) ? explain[key] : []);
     const sumOf = (values) => values.reduce((sum, value) => sum + (typeof value === "number" ? value : 0), 0);
@@ -902,7 +1177,7 @@ button.change-item:hover { background: var(--track); }
 
     /**
      * ページが組み立てに使う骨組みだけを見る。細かい形は公開する前に build-pr-explain.py が見ている。
-     * @returns 型の違うキー。違わなければ null
+     * @returns 型の違うキー(`impact` の中は道筋)。違わなければ null
      */
     const shapeProblemOf = (explain) => {
       const overview = explain.overview;
@@ -910,7 +1185,7 @@ button.change-item:hover { background: var(--track); }
       if (typeof explain.sha !== "string") return "sha";
       if (!hasOverview) return "overview";
       const broken = ExplainListKeys.find((key) => isBrokenList(explain[key]));
-      return broken === undefined ? null : broken;
+      return broken === undefined ? ImpactTopics.skeletonProblemOf(explain) : broken;
     };
 
     /**
@@ -1072,11 +1347,12 @@ button.change-item:hover { background: var(--track); }
     });
 
     /**
-     * 地図と解説を合わせる。解説が無い・使えないときも、地図だけで 3 画面の材料を作る。
+     * 地図と解説を合わせる。解説が無い・使えないときも、地図だけで 4 画面の材料を作る。
      * @param map change-map.json の中身(`isReadableMap` が真のもの)
      * @param source 解説の読み込み結果(`readingOf` の source と同じ)
      * @returns 画面が使う材料。解説の状態は `reading`(`explained` / `missing` と理由)と `freshness` に出る。
-     *   `explain` は使える解説(無ければ null)、`lookup` はそこから名前で引く一覧
+     *   `explain` は使える解説(無ければ null)、`lookup` はそこから名前で引く一覧、`impactTopics` は振る舞いの節の
+     *   並び(`ImpactTopics`。振る舞いとテストの 2 画面が読む)
      */
     const create = (map, source) => {
       const reading = readingOf(source, map.pr);
@@ -1093,11 +1369,13 @@ button.change-item:hover { background: var(--track); }
       const changed = entries.filter((entry) => entry.changed);
       const commits = commitsOf({ commits: map.commits, explain, explainedAt });
       const ownCommits = commits.filter((commit) => !commit.merge);
+      const lookup = lookupOf(explain);
+      const tests = testsOf({ mapTests: map.tests, explain, targetOf, addedFiles });
       return Object.freeze({
         map: { pr: map.pr, head: map.head, mergeBase: map.mergeBase, headBranch: map.headBranch, baseBranch: map.baseBranch },
         reading,
         explain,
-        lookup: lookupOf(explain),
+        lookup,
         freshness: freshnessOf({ explain, head: map.head, commits: map.commits, explainedAt }),
         entries,
         dependencies: map.dependencies,
@@ -1105,7 +1383,8 @@ button.change-item:hover { background: var(--track); }
         unmappedConcepts: concepts.filter((concept) => !mapPaths.has(concept.path)),
         commits,
         strayStories: listOf(explain, "commitStories").filter((story) => !map.commits.some((commit) => commit.sha === story.sha)),
-        tests: testsOf({ mapTests: map.tests, explain, targetOf, addedFiles }),
+        tests,
+        impactTopics: explain === null ? ImpactTopics.Unexplained : ImpactTopics.create({ impact: explain.impact, tests, entries, messages: lookup.messages }),
         totals: {
           files: changed.length,
           additions: sumOf(changed.map((entry) => entry.additions)),
@@ -1593,7 +1872,7 @@ button.change-item:hover { background: var(--track); }
   })();
 
   /** DOM に触らない部分(核)。判定表が node の vm で評価して叩く。 */
-  const core = Object.freeze({ ExplainedMap, ScreenChoice, ReviewCheck, Tokenizer, CommitDiff, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target });
+  const core = Object.freeze({ ExplainedMap, ImpactTopics, TopicScroll, ScreenChoice, ReviewCheck, Tokenizer, CommitDiff, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target });
   if (typeof document === "undefined") {
     globalThis.prExplainCore = core;
     return;
@@ -1661,14 +1940,15 @@ button.change-item:hover { background: var(--track); }
     },
   });
 
-  const ScreenLabels = { map: "構造マップ", story: "変更の経緯", test: "テスト" };
+  const ScreenLabels = { map: "構造マップ", story: "変更の経緯", test: "テスト", impact: "振る舞い" };
   const ScreenStoreKey = "prExplain.screen";
 
-  /** 画面ごとのパネルの既定の幅。左はどの画面にもあり、右は構造マップとテストだけにある。 */
+  /** 画面ごとのパネルの既定の幅。左はどの画面にもあり、右は構造マップ・テスト・振る舞いにある(変更の経緯には無い)。 */
   const PanelLayouts = {
     map: { left: "clamp(224px, 18vw, 264px)", right: "clamp(320px, 28vw, 404px)" },
     story: { left: "clamp(250px, 24vw, 330px)", right: null },
     test: { left: "clamp(260px, 22vw, 320px)", right: "clamp(330px, 30vw, 430px)" },
+    impact: { left: "clamp(220px, 18vw, 260px)", right: "clamp(300px, 26vw, 360px)" },
   };
 
   /** パネルの幅をドラッグで変え、画面ごとに残す。ダブルクリックで既定の幅へ戻す。 */
@@ -2599,7 +2879,6 @@ button.change-item:hover { background: var(--track); }
   const techniqueChipOf = (key) => el("span", { class: "technique", "data-technique": key, text: Techniques[key].label });
   /** テストの抜けとして数えるやりとり(このブランチで足した・変えたもの)か。 */
   const isGapCandidate = (message) => message.status === "added" || message.status === "changed";
-  const isVerifying = (test) => test.status !== "todo" && test.status !== "removed";
   const matchesTechniques = (test, techniques) => techniques.length === 0 || test.techniques.some((key) => techniques.includes(key));
 
   /** テストの画面。左にテストの一覧、中に箱の図、右に全体か、選んだテスト・箱・線の詳しいところを出す。 */
@@ -3041,6 +3320,14 @@ button.change-item:hover { background: var(--track); }
       const hasExcerptText = detail.excerpt !== undefined && typeof detail.excerpt.text === "string";
       const code = hasExcerptText ? [excerptOf(detail.excerpt)] : [];
       const commit = typeof detail.commit === "string" ? [commitLinkOf(detail.commit)] : [];
+      const mentions = ImpactTopics.mentionsOf(explained.impactTopics, detail.id);
+      const mentionBlock = mentions.length === 0 ? [] : [el("div", { class: "side-block" }, [
+        eyebrowOf("この状況を確かめている", `${mentions.length} 件`),
+        ...mentions.map((mention) => pressable("button", { class: "test-card plain-button", title: "振る舞いの画面でこの状況を見る" }, [
+          el("span", { class: "test-name", text: mention.situation ?? mention.topicLabel }),
+          el("span", { class: "test-facts" }, [el("span", { class: "test-status", text: mention.situation === null ? "振る舞い" : mention.topicLabel }), el("span", { class: "spacer" }), el("span", { class: "review-go", text: "振る舞いで見る →" })]),
+        ], () => go.toImpact(mention))),
+      ])];
       return [
         head,
         el("div", { class: "side-block" }, [
@@ -3051,6 +3338,7 @@ button.change-item:hover { background: var(--track); }
         el("div", { class: "gwt" }, [["前提", detail.given], ["操作", detail.when], ["期待", detail.then]].flatMap(([key, text]) => [el("span", { class: "gwt-key", text: key }), prose("span", { class: "gwt-value" }, text)])),
         ...values,
         ...coverBlock,
+        ...mentionBlock,
         ...code,
         ...commit,
       ];
@@ -3118,6 +3406,14 @@ button.change-item:hover { background: var(--track); }
       left: panelOf("left", [listHead, listBody]),
       main: graph.element,
       right: panelOf("right", [side]),
+      /**
+       * 他の画面から、解説のテストを選んだ状態にする。選んでいても外さず、観点の絞り込みは解く(絞り込みの外のテストでも選べるように)。
+       * @param explainTestId 解説のテストの id。解説に無ければ何もしない
+       */
+      showTest: (explainTestId) => {
+        const target = tests.find((test) => test.test !== null && test.test.id === explainTestId);
+        if (target !== undefined) update({ selected: { kind: "test", id: target.id }, techniques: [] });
+      },
     };
   };
 
@@ -3744,7 +4040,8 @@ button.change-item:hover { background: var(--track); }
         }
         case "message": {
           const message = lookup.messages.get(selection.id);
-          return message === undefined ? null : { tone: messageToneOf(message), onPress: () => pick({ kind: "message", id: message.id }) };
+          const isReachable = message !== undefined && isDrawnMessage(message, entryAt);
+          return isReachable ? { tone: messageToneOf(message), onPress: () => showMessage(message.id) } : null;
         }
         case "flow":
           return lookup.flows.has(selection.id) ? { tone: "", onPress: () => showFlow(selection.id) } : null;
@@ -4156,6 +4453,12 @@ button.change-item:hover { background: var(--track); }
       flowSection.scrollIntoView({ block: "start" });
     };
 
+    /**
+     * やりとりを選んだ状態にする。表示範囲の絞り込みは外す(範囲の外のやりとりは図に無く、選べないため)。
+     * 両端が図の箱でないやりとりは絞り込みを外しても図に無いので、呼び出し側が渡さない(`isDrawnMessage`)。
+     */
+    const showMessage = (id) => pick({ kind: "message", id }, { scope: null });
+
     render();
 
     /** Backspace / Alt+← で前の選択に戻る。入力欄の中では戻らない。 */
@@ -4176,10 +4479,300 @@ button.change-item:hover { background: var(--track); }
       right: panelOf("right", [sideBar, side]),
       onKey,
       showFlow,
+      showMessage,
     };
   };
 
-  const ScreenBuilders = { map: MapScreen, story: StoryScreen, test: TestScreen };
+  // 振る舞いの画面の節の小見出しと、節の頭の札。表の札は、変わったマスがあるときだけ件数で出す。
+  const ImpactKickers = { changed: "前と後", table: "状況ごと", added: "増えた状況", kept: "前と同じ" };
+  const ImpactStatuses = { changed: { tone: "A", label: "この PR で変わった" }, added: { tone: "A", label: "この PR で増えた状況" }, kept: { tone: "", label: "変わらない" } };
+  // 振る舞いの画面がページ全体のスクロールに切り替わる幅(CSS の `@media (max-width: 760px)` と同じ)。
+  const ImpactNarrowQuery = "(max-width: 760px)";
+
+  /** 節が、この PR で変わった・増えたことを書いているか(目次の印)。 */
+  const isChangeTopic = (topic) => {
+    switch (topic.kind) {
+      case "changed":
+      case "added":
+        return true;
+      case "table":
+        return topic.changedCount > 0;
+      case "kept":
+        return false;
+    }
+  };
+
+  /** 節の頭の札。表は変わったマスがあるときだけ。 */
+  const impactStatusOf = (topic) => {
+    if (topic.kind !== "table") return ImpactStatuses[topic.kind];
+    return topic.changedCount > 0 ? { tone: "A", label: `変わったマス ${topic.changedCount}` } : null;
+  };
+
+  /** 節が根拠に挙げているテストの組(マス・増えた状況・変わらないことの行ごと)。 */
+  const evidencesIn = (topic) => {
+    switch (topic.kind) {
+      case "changed":
+        return [];
+      case "table":
+        return topic.rows.flatMap((row) => row.cells).filter((cell) => cell !== null).map((cell) => cell.tests);
+      case "added":
+        return [topic.tests];
+      case "kept":
+        return topic.lines.map((line) => line.tests);
+    }
+  };
+  /** 節の根拠のうち、まだ書かれていないテスト(2 か所で挙げていても 1 件)。 */
+  const missingTestsOf = (topic) => [...new Map(evidencesIn(topic).flatMap((evidence) => evidence.missing).map((test) => [test.test.id, test])).values()];
+
+  /** 変わらないことの行の札。 */
+  const guardOf = (evidence) => el("span", { class: classesOf("impact-guard", { "is-missing": !evidence.isGuarded }), text: evidence.isGuarded ? "テストで守っている" : "この PR では未確認" });
+
+  /** これまで / これからのカード。行は使う人の言葉なので、書いたまま出す。 */
+  const impactLinesCardOf = ({ title, lines, isAfter }) => el("div", { class: isAfter ? "behavior-card is-after" : "behavior-card" }, [
+    el("span", { class: "card-head" }, [el("span", { class: "card-title", text: title })]),
+    ...lines.map((line) => el("div", { class: "behavior-item" }, [el("span", { text: line.text })])),
+    ...(lines.length === 0 ? [el("span", { class: "behavior-none", text: "(この PR より前には無かった)" })] : []),
+  ]);
+  const impactBeforeAfterOf = (topic) => el("div", { class: "behaviors" }, [impactLinesCardOf({ title: "これまで", lines: topic.before, isAfter: false }), impactLinesCardOf({ title: "これから", lines: topic.after, isAfter: true })]);
+  const impactTextOf = (text) => (text === null ? [] : [el("p", { class: "impact-text", text })]);
+
+  /** 振る舞い。左に節の目次、中に使う人から見た変化の節、右に今の節の根拠(テストと仕組み)を出す。 */
+  const ImpactScreen = (explained, go) => {
+    const impactTopics = explained.impactTopics;
+    const topics = impactTopics.kind === "written" ? impactTopics.topics : [];
+    let state = { current: topics.length === 0 ? null : 0, selected: null };
+    // 目次やほかの画面から節へ送ったときのスクロールの位置。そこから動くまでは、位置から今の節を決め直さない
+    // (最後のほうの節は上端まで送れず、位置から決めると別の節になるため)。
+    let pin = null;
+
+    /** マスの鍵。`cell` は `{row, column}` を持つもの(マスか選択)。 */
+    const cellKeyOf = (topicId, cell) => JSON.stringify([topicId, cell.row, cell.column]);
+    const cellNodes = new Map();
+    const tocRows = [];
+    const topicNodes = [];
+    const inlineHolders = [];
+    const side = el("div", { class: "side" });
+    const body = el("div", { class: "stage-body impact-body" });
+    const main = el("main", { class: "stage" }, [body]);
+
+    const update = (change) => {
+      state = { ...state, ...change };
+      render();
+    };
+
+    /** 選んでいるマスのうち、その表のもの。選んでいなければ null。 */
+    const selectedCellIn = (topic) => {
+      const selected = state.selected;
+      const isInOtherTable = selected === null || selected.topic !== topic.id;
+      if (isInOtherTable) return null;
+      return topic.rows.flatMap((row) => row.cells).find((cell) => cell !== null && cell.row === selected.row && cell.column === selected.column) ?? null;
+    };
+
+    const testCardOf = (test) => pressable("button", { class: "test-card plain-button", title: "テストの画面でこのテストを見る" }, [
+      el("span", { class: "test-name", text: test.name }),
+      el("span", { class: "test-facts" }, [el("span", { class: "test-status", "data-status": test.status, text: TestStatuses[test.status].long }), el("span", { class: "spacer" }), el("span", { class: "review-go", text: "テストで見る →" })]),
+    ], () => go.toTest(test.test.id));
+
+    const testsBlocksOf = (evidence) => [
+      el("div", { class: "side-block" }, [
+        eyebrowOf("確かめているテスト", `${evidence.verifying.length} 件`),
+        ...evidence.verifying.map(testCardOf),
+        ...(evidence.isGuarded ? [] : [el("span", { class: "warn-text", text: "この PR では未確認(確かめているテストがありません)" })]),
+      ]),
+      ...(evidence.missing.length === 0 ? [] : [el("div", { class: "side-block" }, [eyebrowOf("無いテスト", "未実装(提案)"), ...evidence.missing.map(testCardOf)])]),
+    ];
+
+    /** 仕組みのチップ。両端が図の箱でないやりとりは構造マップで選べないので、押せなくして「地図に無い」と出す。 */
+    const mechanismChipOf = ({ message, isDrawn }) => {
+      const title = isDrawn ? "構造マップでこのやりとりを見る" : "両端が図の箱でないので、構造マップでは選べません";
+      const chip = pressable("button", { class: "flow-chip", title }, [message.name, el("span", { class: "arrow", text: isDrawn ? "↗" : "地図に無い" })], () => go.toMessage(message.id));
+      chip.disabled = !isDrawn;
+      return chip;
+    };
+    const mechanismsBlockOf = (mechanisms) => (mechanisms.length === 0 ? [] : [el("div", { class: "side-block" }, [eyebrowOf("仕組みを知りたいとき", "構造マップ"), el("div", { class: "flow-chips" }, mechanisms.map(mechanismChipOf))])]);
+
+    /** 節の根拠。右の欄と、狭い幅で各節に畳んだ根拠の両方がこれを出す。 */
+    const evidenceOf = (topic) => {
+      switch (topic.kind) {
+        case "changed": {
+          const blocks = mechanismsBlockOf(topic.mechanisms);
+          return blocks.length > 0 ? blocks : [el("p", { class: "side-note", text: "前後の行が指しているやりとりはありません。" })];
+        }
+        case "table": {
+          const cell = selectedCellIn(topic);
+          if (cell === null) return [el("p", { class: "side-note", text: "マスを選ぶと、その状況を確かめているテストがここに出ます。" })];
+          return [el("div", { class: "side-block" }, [el("span", { class: "eyebrow", text: "状況" }), el("span", { class: "side-sub", text: cell.situation })]), ...testsBlocksOf(cell.tests)];
+        }
+        case "added":
+          return [...testsBlocksOf(topic.tests), ...mechanismsBlockOf(topic.mechanisms)];
+        case "kept":
+          return topic.lines.map((line) => el("div", { class: "side-block" }, [
+            el("span", { class: "side-sub", text: line.text }),
+            guardOf(line.tests),
+            ...line.tests.verifying.map(testCardOf),
+            ...(line.tests.missing.length === 0 ? [] : [eyebrowOf("無いテスト", "未実装(提案)"), ...line.tests.missing.map(testCardOf)]),
+          ]));
+      }
+    };
+
+    const topicHeadOf = (topic) => {
+      const status = impactStatusOf(topic);
+      return el("div", { class: "impact-topic-head" }, [
+        el("div", { class: "section-head" }, [el("span", { class: "impact-kicker", text: ImpactKickers[topic.kind] }), ...(status === null ? [] : [el("span", { class: "chip", "data-tone": status.tone, text: status.label })])]),
+        el("h2", {}, [el("span", { class: "impact-hash", text: "#" }), topic.label]),
+      ]);
+    };
+
+    /** 表のマス。書かれていない組み合わせは空きにする。押すとそのマスを選ぶ(選び直すまで、スクロールしても外さない)。 */
+    const cellNodeOf = (topic, cell) => {
+      if (cell === null) return el("div", { class: "impact-cell is-missing", text: "(書かれていない)" });
+      const was = cell.was === null ? [] : [el("span", { class: "impact-cell-was" }, ["これまで: ", el("s", { text: cell.was })])];
+      const note = cell.note === null ? [] : [el("span", { class: "impact-cell-was", text: cell.note })];
+      const node = pressable("button", { class: classesOf("impact-cell", { "is-changed": cell.isChanged }), "aria-pressed": "false", title: cell.situation }, [
+        el("span", { class: "impact-cell-badge", text: cell.isChanged ? "変わった" : "変わらない" }),
+        el("span", { class: "impact-cell-result", text: cell.result }),
+        ...was,
+        ...note,
+      ], () => update({ selected: { topic: topic.id, row: cell.row, column: cell.column } }));
+      cellNodes.set(cellKeyOf(topic.id, cell), node);
+      return node;
+    };
+
+    const situationTableOf = (topic) => el("div", { class: "impact-table-wrap" }, [el("table", { class: "impact-table" }, [
+      el("thead", {}, [el("tr", {}, [el("td"), ...topic.columns.map((column) => el("th", { scope: "col", text: column.label }))])]),
+      el("tbody", {}, topic.rows.map((row) => el("tr", {}, [
+        el("th", { scope: "row" }, [row.head.label, ...(row.head.note === null ? [] : [el("small", { text: row.head.note })])]),
+        ...row.cells.map((cell) => el("td", {}, [cellNodeOf(topic, cell)])),
+      ]))),
+    ])]);
+
+    /** 本文の「テストの抜け」は件数だけを出す。中身は根拠の「無いテスト」にある。 */
+    const gapNoteOf = (topic) => {
+      const count = missingTestsOf(topic).length;
+      if (count === 0) return [];
+      return [el("div", { class: "impact-note" }, [el("span", { class: "impact-note-label", text: "テストの抜け" }), el("span", { text: `まだ書かれていないテストが ${count} 件あります。中身は根拠の「無いテスト」に出ています。` })])];
+    };
+
+    const topicBodyOf = (topic) => {
+      switch (topic.kind) {
+        case "changed":
+          return [impactBeforeAfterOf(topic), ...impactTextOf(topic.text)];
+        case "table": {
+          const gist = topic.gist === null ? [] : [el("div", { class: "impact-gist" }, [el("span", { class: "impact-gist-label", text: "要するに" }), el("span", { class: "impact-gist-text", text: topic.gist })])];
+          return [...gist, situationTableOf(topic), ...impactTextOf(topic.text), ...gapNoteOf(topic)];
+        }
+        case "added":
+          return [impactBeforeAfterOf(topic), ...impactTextOf(topic.text), ...gapNoteOf(topic)];
+        case "kept":
+          return [el("ul", { class: "impact-kept" }, topic.lines.map((line) => el("li", {}, [el("span", { class: "impact-kept-text", text: line.text }), guardOf(line.tests)]))), ...gapNoteOf(topic)];
+      }
+    };
+
+    const isShown = () => {
+      const screen = main.closest(".screen");
+      return screen !== null && !screen.hidden;
+    };
+
+    /** いまのスクロールの位置。狭い幅ではページ全体、広い幅では本文の欄がスクロールする。 */
+    const scrollReading = () => {
+      const isNarrow = window.matchMedia(ImpactNarrowQuery).matches;
+      const top = isNarrow ? 0 : main.getBoundingClientRect().top;
+      const remaining = isNarrow ? document.documentElement.scrollHeight - window.scrollY - window.innerHeight : main.scrollHeight - main.scrollTop - main.clientHeight;
+      return { tops: topicNodes.map((node) => node.getBoundingClientRect().top - top), remaining, position: isNarrow ? window.scrollY : main.scrollTop };
+    };
+
+    /** スクロールに合わせて今の節を決め直す。送った位置から動いていなければ、送った節のままにする。 */
+    const follow = () => {
+      const reading = scrollReading();
+      const isStillAtSent = pin !== null && reading.position === pin;
+      if (isStillAtSent) return;
+      pin = null;
+      const current = TopicScroll.currentOf(reading);
+      if (current !== state.current) update({ current });
+    };
+
+    /** 節へ送る。今の節はスクロールを待たずにその節にする。マスを渡したら、そのマスも見える位置へ送る。 */
+    const sendTo = (index, cellNode) => {
+      update({ current: index });
+      topicNodes[index].scrollIntoView({ block: "start" });
+      if (cellNode !== null) cellNode.scrollIntoView({ block: "nearest", inline: "nearest" });
+      pin = scrollReading().position;
+    };
+
+    const ledeOfImpact = () => {
+      const eyebrow = el("span", { class: "eyebrow", text: "振る舞い · 使う人から見て変わったこと" });
+      switch (impactTopics.kind) {
+        case "none":
+          return [el("div", { class: "lede" }, [eyebrow, emptyOf("解説が無いので、振る舞いは出せません。理由は上の帯に出ています。")])];
+        case "unwritten":
+          return [el("div", { class: "lede" }, [eyebrow, emptyOf("この解説には、使う人から見て何が変わったか(振る舞い)が書かれていません。変更の経緯の「ブランチ全体の流れ」に、これまで / このあとがあります。")])];
+        case "written": {
+          const lede = el("div", { class: "lede" }, [eyebrow, el("h1", { text: impactTopics.title }), el("p", { text: impactTopics.lead })]);
+          return topics.length > 0 ? [lede] : [lede, emptyOf("状況ごとの振る舞いは書かれていません。")];
+        }
+      }
+    };
+
+    for (const [index, topic] of topics.entries()) {
+      const holder = el("div", { class: "side" });
+      const inline = el("details", { class: "impact-inline" }, [el("summary", { text: "根拠(テストと仕組み)" }), holder]);
+      topicNodes.push(el("article", { class: "impact-topic", "data-topic": topic.id }, [topicHeadOf(topic), inline, ...topicBodyOf(topic)]));
+      inlineHolders.push(holder);
+      const isChangedTable = topic.kind === "table" && topic.changedCount > 0;
+      const kicker = isChangedTable ? `${ImpactKickers.table} · 変わった ${topic.changedCount}` : ImpactKickers[topic.kind];
+      tocRows.push(pressable("button", { class: "row plain-button" }, [
+        el("span", { class: "row-sub", text: kicker }),
+        el("span", { class: "change-head" }, [el("span", { class: "status-dot", "data-tone": isChangeTopic(topic) ? "A" : "" }), el("span", { class: "row-title", text: topic.label })]),
+      ], () => sendTo(index, null)));
+    }
+    body.replaceChildren(...ledeOfImpact(), ...topicNodes);
+    const toc = el("div", { class: "panel-scroll" }, tocRows.length > 0 ? tocRows : [emptyOf("節がありません。")]);
+
+    let shownCurrent = null;
+    const render = () => {
+      for (const [index, row] of tocRows.entries()) row.classList.toggle("is-current", index === state.current);
+      const selectedKey = state.selected === null ? null : cellKeyOf(state.selected.topic, state.selected);
+      for (const [key, node] of cellNodes) node.setAttribute("aria-pressed", String(key === selectedKey));
+      for (const [index, holder] of inlineHolders.entries()) holder.replaceChildren(...evidenceOf(topics[index]));
+      const topic = state.current === null ? null : topics[state.current];
+      const head = topic === null ? [] : [el("div", { class: "side-block" }, [el("span", { class: "eyebrow", text: ImpactKickers[topic.kind] }), el("h2", { text: topic.label })])];
+      side.replaceChildren(...head, ...(topic === null ? [el("p", { class: "side-note", text: "根拠を出す節がありません。" })] : evidenceOf(topic)));
+      if (state.current !== shownCurrent) side.scrollTop = 0;
+      shownCurrent = state.current;
+    };
+    render();
+
+    main.addEventListener("scroll", follow, { passive: true });
+    // 狭い幅ではページ全体がスクロールする。振る舞いの画面が隠れているあいだは、ほかの画面のスクロールなので見ない。
+    window.addEventListener("scroll", () => {
+      const isPageScrolling = window.matchMedia(ImpactNarrowQuery).matches && isShown();
+      if (isPageScrolling) follow();
+    }, { passive: true });
+    window.matchMedia(ImpactNarrowQuery).addEventListener("change", () => {
+      if (isShown()) follow();
+    });
+
+    return {
+      summary: [],
+      controls: [],
+      left: panelOf("left", [panelHead("目次", "変わった → 変わらない"), toc]),
+      main,
+      right: panelOf("right", [panelHead("根拠", "テストと仕組み"), side]),
+      /**
+       * 他の画面から、その節へ送る。マスを指していれば選んで見える位置へ送る。
+       * @param mention `ImpactTopics.mentionsOf` の 1 件
+       */
+      showMention: (mention) => {
+        const index = topics.findIndex((topic) => topic.id === mention.topic);
+        if (index < 0) return;
+        const cellNode = mention.cell === null ? null : cellNodes.get(cellKeyOf(mention.topic, mention.cell)) ?? null;
+        if (cellNode !== null) state = { ...state, selected: { topic: mention.topic, ...mention.cell } };
+        sendTo(index, cellNode);
+      },
+    };
+  };
+
+  const ScreenBuilders = { map: MapScreen, story: StoryScreen, test: TestScreen, impact: ImpactScreen };
 
   /** 解説が使えない理由を帯の 1 行にする。 */
   const missingTextOf = (reason) => {
@@ -4230,12 +4823,12 @@ button.change-item:hover { background: var(--track); }
       el("div", { class: "bands" }),
       el("div", { class: "screens" }, [el("div", { class: "guide" }, [
         el("h1", { text: "変更の地図を読めません" }),
-        el("p", { text: `change-map.json を読めませんでした(${detail})。PR に push すると、Actions が地図とこのページを置き直します。地図が置かれると、解説が無くても構造マップ・変更の経緯・テストの 3 画面が出ます。` }),
+        el("p", { text: `change-map.json を読めませんでした(${detail})。PR に push すると、Actions が地図とこのページを置き直します。地図が置かれると、解説が無くても構造マップ・変更の経緯・テスト・振る舞いの 4 画面が出ます。` }),
       ])]),
     );
   };
 
-  /** ヘッダ・帯・3 画面を組み、画面を切り替える。 */
+  /** ヘッダ・帯・4 画面を組み、画面を切り替える。 */
   const Frame = Object.freeze({
     mount: (root, explained) => {
       const pr = explained.map.pr;
@@ -4243,17 +4836,27 @@ button.change-item:hover { background: var(--track); }
       const hasIssue = explain !== null && typeof explain.issue === "number";
       const issue = hasIssue ? explain.issue : null;
       document.title = explain === null ? `PR #${pr} · PR 解説` : `${explain.overview.title} · PR #${pr}`;
-      /** 画面をまたぐ移動。ハッシュは開く画面のものにする。 */
+      /** 画面をまたぐ移動。移った先の画面で、渡したものを選んだ状態にする。 */
       const go = {
         toCommit: (sha) => {
-          history.replaceState(null, "", `#${Screens.Story}`);
-          openScreen(Screens.Story);
+          navigateTo(Screens.Story);
           built.story.select(sha);
         },
         toFlow: (id) => {
-          history.replaceState(null, "", `#${Screens.Map}`);
-          openScreen(Screens.Map);
+          navigateTo(Screens.Map);
           built.map.showFlow(id);
+        },
+        toMessage: (id) => {
+          navigateTo(Screens.Map);
+          built.map.showMessage(id);
+        },
+        toTest: (explainTestId) => {
+          navigateTo(Screens.Test);
+          built.test.showTest(explainTestId);
+        },
+        toImpact: (mention) => {
+          navigateTo(Screens.Impact);
+          built.impact.showMention(mention);
         },
       };
       const built = Object.fromEntries(Object.values(Screens).map((screen) => [screen, ScreenBuilders[screen](explained, go)]));
@@ -4284,15 +4887,20 @@ button.change-item:hover { background: var(--track); }
         controls.replaceChildren(...built[screen].controls);
       };
       const choose = () => ScreenChoice.choose({ hash: location.hash, saved: BrowserStore.read(ScreenStoreKey) });
+      /** 開いた画面を保存して出す。 */
       const openScreen = (screen) => {
         BrowserStore.write(ScreenStoreKey, screen);
         show(screen);
       };
+      /** ハッシュをその画面のものに書き換えてから開く。 */
+      const navigateTo = (screen) => {
+        history.replaceState(null, "", `#${screen}`);
+        openScreen(screen);
+      };
       for (const tab of tabs) {
         tab.addEventListener("click", (event) => {
           event.preventDefault();
-          history.replaceState(null, "", `#${tab.dataset.screen}`);
-          openScreen(tab.dataset.screen);
+          navigateTo(tab.dataset.screen);
         });
       }
       window.addEventListener("hashchange", () => openScreen(choose()));

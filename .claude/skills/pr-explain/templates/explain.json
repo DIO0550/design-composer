@@ -5,7 +5,7 @@
   "issue": 1022,
   "overview": {
     "title": "PR の解説を `explain.json` で書き、検査して置く",
-    "lead": "解説は HTML の断片ではなく JSON で書く。ページの固定スクリプトが地図と合わせて 3 画面に組む。",
+    "lead": "解説は HTML の断片ではなく JSON で書く。ページの固定スクリプトが地図と合わせて 4 画面に組む。",
     "before": [
       { "text": "セッションが HTML の断片をページごとに書き、1 ページずつ置いていた" }
     ],
@@ -93,5 +93,58 @@
       "todo": true,
       "targets": [".github/scripts/pr-explain-pages.sh"]
     }
-  ]
+  ],
+  "impact": {
+    "title": "検査に通った解説だけが、PR のページに出るようになった",
+    "lead": "使う人(PR を読む人と、解説を書くセッション)から見て変わったのは、解説の置き方と、置けなかったときの知らせ方です。",
+    "changed": {
+      "before": [
+        { "text": "解説はページごとに書き、そのまま置いていた" }
+      ],
+      "after": [
+        { "text": "解説は 1 つにまとめて書き、検査に通ったときだけ置かれる", "message": "put-explain" },
+        { "text": "ページの枠と地図は、push のたびに置き直される", "message": "put-map" }
+      ],
+      "text": "書き間違えた解説は置かれないので、ページに空欄が出なくなります。"
+    },
+    "tables": [
+      {
+        "label": "解説を置いたときの結果",
+        "gist": "置かれるかを決めるのは、検査に通るかと、地図が置いてあるかの 2 つ。",
+        "text": "下の段は、上の段の変更に巻き込まれて置けてしまわないことを確かめています。",
+        "rowHeads": [
+          { "id": "passing", "label": "検査に通る" },
+          { "id": "failing", "label": "検査に落ちる", "note": "知らないキーがある" }
+        ],
+        "columnHeads": [
+          { "id": "mapped", "label": "地図が置いてある" },
+          { "id": "unmapped", "label": "地図がまだ無い" }
+        ],
+        "outcomes": [
+          { "rowHead": "passing", "columnHead": "mapped", "result": "置かれ、ページに出る", "was": "書いたまま置かれる" },
+          { "rowHead": "failing", "columnHead": "mapped", "result": "置かれず、落ちた理由が出る", "was": "置かれ、ページの欄が空になる", "tests": ["unknown-key"] },
+          { "rowHead": "passing", "columnHead": "unmapped", "result": "置かれず、地図を待つよう知らされる", "note": "閉じた PR にも置かない" },
+          { "rowHead": "failing", "columnHead": "unmapped", "result": "置かれず、落ちた理由が出る", "tests": ["unknown-key"] }
+        ]
+      }
+    ],
+    "added": [
+      {
+        "label": "解説が地図より古いとき",
+        "before": [
+          { "text": "解説がいつの時点のものかは出ない" }
+        ],
+        "after": [
+          { "text": "置いたうえで、解説より後のコミットがあることを知らせる", "message": "put-explain" }
+        ],
+        "text": "古い解説でも、どこまでが解説済みかが分かれば読めます。",
+        "tests": ["stale"]
+      }
+    ],
+    "kept": [
+      { "text": "検査に落ちた解説は、落ちた理由を 1 行ずつ出す", "tests": ["unknown-key"] },
+      { "text": "地図の時点より古い解説も、置くことはできる", "tests": ["stale"] },
+      { "text": "PR を閉じると、その PR のページは消える" }
+    ]
+  }
 }

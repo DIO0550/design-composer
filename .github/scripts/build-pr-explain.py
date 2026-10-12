@@ -2,11 +2,11 @@
 """PR の解説(`explain.json`、version 1)を検査し、テストのコード抜粋の中身を足して書き出す。
 
 解説はセッションが `pr-explain` スキルで書き、ページの固定スクリプトが変更の地図(`change-map.json`)と
-合わせて 3 画面に組む。ここが防ぐのはスクリプトの注入ではなく(それは `check-pr-explain-template.py` の
+合わせて 4 画面に組む。ここが防ぐのはスクリプトの注入ではなく(それは `check-pr-explain-template.py` の
 管轄)、**形の崩れと解説の中の参照切れ**(ページが黙って空欄を出す)。報告する違反は 4 つ。
 
 - `pr-explain-shape` — 読めない・形が表と違う(必須の欠け・知らないキー・重複したキー・型・語彙・
-  綴り・一意性・範囲)
+  綴り・一意性・範囲・状況の表のマスの揃い・振る舞いの前後が同じ)
 - `pr-explain-meta` — `pr` が公開先の PR と違う
 - `pr-explain-ref` — 解説の中の参照が解説の中に無い(message の from / to・flow の steps など)
 - `pr-explain-code` — 解説時点の `sha` がこのリポジトリに無い・抜粋のパスがその sha に無い・範囲が
@@ -29,6 +29,15 @@ concept が地図にあるか)は見ない。** 地図は push のたびに作�
 - highlights の `title` は `` `…` `` をコードとして描くが、題も概念で書くので他の見出しと扱いを揃える
 - docs(`docs/*.md`)に出る語は通す。`.dcmp` のキー名や製品名は仕様の語で、言い換えるとかえって伝わらない
   ため。一覧を手で持たず docs を正本にする
+
+振る舞い(`impact`)の文字列は、すべて使う人の言葉(`UserText`)で書く。見出しと同じ継ぎ目の規則に加えて
+`` ` `` も落とす。振る舞いの画面はコードの名前を出さずに読ませる画面で、文はどれも書いたまま描く。
+
+- **コードの名前を出さないことを検査で守るのは、振る舞いの画面の左と中の欄だけ。** そこに出るのは `impact` の
+  文字列・ページの固定の文言・ページが導いた文で、`impact` の文字列はこの規則が見る
+- 右の欄は根拠として、テスト名(`tests[].name`。検査しない)とやりとりの名前(`messages[].name`。見出しの規則)を出す
+- 1 語の識別子・ファイル名・snake_case は綴りで識別子と言い切れないので、この規則でも捕まらない。書き方の
+  規則(`pr-explain` スキル)で受ける
 
 使い方:
     build-pr-explain.py <explain.json> --pr <番号> --out <書き出す先> [--repo <リポジトリ>]
@@ -142,6 +151,7 @@ ShaPattern = re.compile(r"[0-9a-f]{40}")
 ScalarRules: dict[str, tuple[Callable[[object], bool], str]] = {
     "text": (is_text, "空でない文字列"),
     "heading": (is_text_with_only_docs_joints, "見出し(小文字と大文字の継ぎ目がある複合語は、docs に出る語のほかは書かない)"),
+    "user_text": (lambda value: is_text_with_only_docs_joints(value) and "`" not in value, "使う人の言葉(見出しの規則に加えて ` を書かない)"),
     "id": (lambda value: isinstance(value, str) and IdPattern.fullmatch(value) is not None, f"id({IdPattern.pattern})"),
     "sha": (lambda value: isinstance(value, str) and ShaPattern.fullmatch(value) is not None, "小文字 40 桁の sha"),
     "count": (is_count, "1 以上の整数"),
@@ -152,6 +162,7 @@ ScalarRules: dict[str, tuple[Callable[[object], bool], str]] = {
 
 Text = Scalar("text")
 Heading = Scalar("heading")
+UserText = Scalar("user_text")
 Id = Scalar("id")
 Sha = Scalar("sha")
 Count = Scalar("count")
@@ -180,6 +191,7 @@ Shapes: dict[str, dict[str, Field]] = {
         "commitStories": may(Many(Shape("CommitStory"))),
         "suites": may(Many(Shape("Suite"))),
         "tests": may(Many(Shape("Test"))),
+        "impact": may(Shape("Impact")),
     },
     "Overview": {
         "title": need(Text),
@@ -189,6 +201,46 @@ Shapes: dict[str, dict[str, Field]] = {
         "highlights": may(Many(Shape("Highlight"))),
     },
     "Behavior": {"text": need(Text), "message": may(Id)},
+    "Impact": {
+        "title": need(UserText),
+        "lead": need(UserText),
+        "changed": may(Shape("ImpactChange")),
+        "tables": may(Many(Shape("SituationTable"))),
+        "added": may(Many(Shape("AddedSituation"))),
+        "kept": may(Many(Shape("KeptLine"))),
+    },
+    "ImpactChange": {
+        "before": need(Many(Shape("ImpactLine"))),
+        "after": need(Many(Shape("ImpactLine"), least=1)),
+        "text": may(UserText),
+    },
+    "ImpactLine": {"text": need(UserText), "message": may(Id)},
+    "SituationTable": {
+        "label": need(UserText),
+        "gist": may(UserText),
+        "text": may(UserText),
+        "rowHeads": need(Many(Shape("SituationRowHead"), least=1)),
+        "columnHeads": need(Many(Shape("SituationColumnHead"), least=1)),
+        "outcomes": need(Many(Shape("SituationOutcome"))),
+    },
+    "SituationRowHead": {"id": need(Id), "label": need(UserText), "note": may(UserText)},
+    "SituationColumnHead": {"id": need(Id), "label": need(UserText)},
+    "SituationOutcome": {
+        "rowHead": need(Id),
+        "columnHead": need(Id),
+        "result": need(UserText),
+        "was": may(UserText),
+        "note": may(UserText),
+        "tests": may(Many(Id, distinct=True)),
+    },
+    "AddedSituation": {
+        "label": need(UserText),
+        "before": need(Many(Shape("ImpactLine"))),
+        "after": need(Many(Shape("ImpactLine"), least=1)),
+        "text": may(UserText),
+        "tests": may(Many(Id, distinct=True)),
+    },
+    "KeptLine": {"text": need(UserText), "tests": may(Many(Id, distinct=True))},
     "Highlight": {"title": need(Heading), "text": need(Text), "go": need(Variant("Target"))},
     "Feature": {"id": need(Id), "label": need(Heading), "role": need(Text)},
     "LayerRole": {"layer": need(Text), "role": need(Text)},
@@ -291,11 +343,63 @@ def cells_problem(value: dict) -> str | None:
     return None
 
 
+def repeated_head_ids_problem(table: dict) -> str | None:
+    """状況の表の見出しの id が、軸ごとに一意かを見る。行と列は別の名前空間なので、行と列で同じ id は書ける。"""
+    problems = []
+    for axis in ("rowHeads", "columnHeads"):
+        ids = [head["id"] for head in table[axis]]
+        repeated = sorted({head_id for head_id in ids if ids.count(head_id) > 1})
+        problems += [f"{axis} の id {', '.join(repeated)} が 2 回以上ある"] if repeated else []
+    return " / ".join(problems) if problems else None
+
+
+def outcome_grid_problem(table: dict) -> str | None:
+    """状況の表のマスが、行の見出し × 列の見出しの組み合わせをちょうど 1 つずつ埋めているかを見る。
+
+    @returns 見出しに無いマス・欠けた組み合わせ・2 回書いた組み合わせの説明。揃っていれば None
+    """
+    rows = [head["id"] for head in table["rowHeads"]]
+    columns = [head["id"] for head in table["columnHeads"]]
+    pairs = [(outcome["rowHead"], outcome["columnHead"]) for outcome in table["outcomes"]]
+    spelled = lambda found: ", ".join(f"{row} × {column}" for row, column in found)
+    stray = [pair for pair in pairs if pair[0] not in rows or pair[1] not in columns]
+    missing = [(row, column) for row in rows for column in columns if (row, column) not in pairs]
+    repeated = sorted({pair for pair in pairs if pairs.count(pair) > 1})
+    problems = [
+        *([f"見出しに無いマス {spelled(stray)}"] if stray else []),
+        *([f"マス {spelled(missing)} が無い"] if missing else []),
+        *([f"マス {spelled(repeated)} を 2 回書いている"] if repeated else []),
+    ]
+    return " / ".join(problems) if problems else None
+
+
+def same_was_problem(outcome: dict) -> str | None:
+    """マスの「これまで」(`was`)が今の結果(`result`)と同じでないかを見る。同じなら変わっていないので書かない。"""
+    if outcome.get("was") == outcome["result"]:
+        return "was が result と同じ(変わっていないマスには was を書かない)"
+    return None
+
+
+def same_sides_problem(value: dict) -> str | None:
+    """前後(`before` / `after`)の文の並びがまったく同じでないかを見る。比べるのは文だけで、やりとり(`message`)は見ない。
+
+    一部の行が同じなのは通す。変わらない行を文脈として並べるのは正しいため。
+    """
+    texts = lambda lines: [line["text"] for line in lines]
+    if texts(value["before"]) == texts(value["after"]):
+        return "before と after の文の並びが同じ(変わっていない)"
+    return None
+
+
 # キーごとの形が合ったオブジェクトに、キーをまたいで当てる規則。
 CrossChecks: dict[str, tuple[Callable[[dict], str | None], ...]] = {
     "Note": (span_problem,),
     "Excerpt": (span_problem, excerpt_length_problem),
     "Values": (cells_problem,),
+    "SituationTable": (repeated_head_ids_problem, outcome_grid_problem),
+    "SituationOutcome": (same_was_problem,),
+    "ImpactChange": (same_sides_problem,),
+    "AddedSituation": (same_sides_problem,),
 }
 
 # 一意でなければならない値(トップの一覧と、その中のキー)。
@@ -335,6 +439,13 @@ References = (
     Reference("tests[].covers[]", "messages", "id"),
     Reference("tests[].targets[]", "concepts", "path"),
     Reference("concepts[].feature", "features", "id"),
+    Reference("impact.changed.before[].message", "messages", "id"),
+    Reference("impact.changed.after[].message", "messages", "id"),
+    Reference("impact.tables[].outcomes[].tests[]", "tests", "id"),
+    Reference("impact.added[].before[].message", "messages", "id"),
+    Reference("impact.added[].after[].message", "messages", "id"),
+    Reference("impact.added[].tests[]", "tests", "id"),
+    Reference("impact.kept[].tests[]", "tests", "id"),
 )
 
 # Target の kind のうち、解説の中の一覧を指すもの(layer / file は地図を指す参照)。

@@ -230,7 +230,7 @@ diff_text | grep -ciE 'UI 案|Design Composer\.html'   # ui-reviewer の語
 - CI(lint / typecheck / test / 視覚差分)を通す。push 前の検査や CI が落ちたら、直しは
   `implementer` に渡す(判断を伴わない自動修正コマンドだけは親が走らせてよい →「役割の分担」)
 - **PR を出したら `pr-explain` スキルで解説(`explain.json`)を書く**(ページは構造マップ・変更の経緯・
-  テストの 3 画面)。振る舞いが変わる push をしたら書き直す(`.claude/skills/pr-explain/`)
+  テスト・振る舞いの 4 画面)。振る舞いが変わる push をしたら書き直す(`.claude/skills/pr-explain/`)
 
 **push の前に、まずフックが発火する環境かを確かめ、続けて git hooks と同じ検査を
 `pre-push` ごと走らせ、終了コードで判定する。**
