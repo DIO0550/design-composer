@@ -15,6 +15,36 @@
     "name": "プライマリ"
   },
   {
+    "id": "components-button--danger",
+    "title": "components/Button",
+    "name": "デンジャー"
+  },
+  {
+    "id": "components-button--emphasis",
+    "title": "components/Button",
+    "name": "強調"
+  },
+  {
+    "id": "components-button--icon",
+    "title": "components/Button",
+    "name": "アイコン"
+  },
+  {
+    "id": "components-button--primary",
+    "title": "components/Button",
+    "name": "プライマリ"
+  },
+  {
+    "id": "components-button--secondary",
+    "title": "components/Button",
+    "name": "セカンダリ"
+  },
+  {
+    "id": "components-button--text",
+    "title": "components/Button",
+    "name": "テキスト"
+  },
+  {
     "id": "components-contextmenu--empty-area",
     "title": "components/ContextMenu",
     "name": "空き領域を右クリックしたとき"
