@@ -160,6 +160,7 @@ export function InstanceBody({
         >
           {InstanceLabels.selectAllInstances(controls.sourceInstanceCount)}
         </Button>
+        {/* 解除だけセカンダリにするのは、部品との繋がりを切る操作で、勧める操作ではないため。 */}
         <Button
           kind={ButtonKinds.Secondary}
           size={ButtonSizes.Regular}
