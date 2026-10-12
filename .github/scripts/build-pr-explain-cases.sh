@@ -162,6 +162,7 @@ pass|-|sample|変わったことのこれまでが 0 件でも通る|d["impact"]
 pass|-|sample|増えた状況のこれまでが 0 件でも通る|d["impact"]["added"][0]["before"] = []
 pass|-|sample|振る舞いの文に docs が仕様の語として使う複合語(publicProps)は書ける|d["impact"]["title"] = "publicProps の宣言が画面に出るようになった"
 pass|-|sample|変わったことの前後で一部の行が同じでも通る(変わらない行を文脈として並べる)|d["impact"]["changed"]["before"].append(dict(d["impact"]["changed"]["after"][0]))
+pass|-|sample|変わったことの前後で文が同じでも並びが逆なら通る(並びが変わったことを書ける)|c = d["impact"]["changed"]; c["before"] = [dict(line) for line in reversed(c["after"])]
 deny|shape|sample|振る舞い(impact)が配列|d["impact"] = []
 deny|shape|sample|振る舞いに知らないキー|d["impact"]["extra"] = 1
 deny|shape|sample|振る舞いに題(title)が無い|del d["impact"]["title"]

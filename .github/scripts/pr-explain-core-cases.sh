@@ -152,15 +152,27 @@ const testedExplain = (impact) => explainOf({
   impact,
 });
 const keptEvidenceOf = (ids) => explained(testedMap, testedExplain(impactOf({ kept: [{ text: "変わらない", tests: ids }] }))).impactTopics.topics[0].lines[0].tests;
-// 仕組み: m1 は箱どうし、m3 は図に出さない concept へ、m4 は地図に無いファイルへのやりとり。
+// 仕組み: m1 は箱どうし、m3 は図に出さない concept へ、m4 は地図に無いファイルへ、m5 は図に出さない concept から箱へのやりとり。
 const mechanismExplain = {
   map: mapOf({ groups: [{ label: "src", files: [changedFile("a.ts"), changedFile("b.ts"), changedFile("c.ts")] }] }),
   explain: {
     concepts: [concept("a.ts", "A"), concept("b.ts", "B"), concept("c.ts", "C", { graph: false })],
-    messages: [message("m1", "a.ts", "b.ts", "cmd"), message("m3", "a.ts", "c.ts", "qry"), message("m4", "b.ts", "gone.ts", "evt")],
+    messages: [message("m1", "a.ts", "b.ts", "cmd"), message("m3", "a.ts", "c.ts", "qry"), message("m4", "b.ts", "gone.ts", "evt"), message("m5", "c.ts", "a.ts", "evt")],
   },
 };
 const mechanismIdsOf = (changed) => topicsOf(impactOf({ changed }), mechanismExplain)[0].mechanisms.map((mechanism) => mechanism.message.id);
+// テストを根拠に挙げている箇所を引く。変わらないことの 2 行は b と a、増えた状況は a、表は r2c1 と r1c3 のマスだけが t と a を挙げる。
+const mentionedPlacesOf = (explainTestId) => {
+  const impact = {
+    title: "題",
+    lead: "要約",
+    kept: [{ text: "変わらない 1", tests: ["b"] }, { text: "変わらない 2", tests: ["a"] }],
+    added: [{ label: "増えた", before: [], after: [{ text: "後" }], tests: ["a"] }],
+    tables: [tableOf(twoRows, threeColumns, fullOutcomes().map((item) => (item.result === "r2c1" || item.result === "r1c3" ? { ...item, tests: ["t", "a"] } : item)))],
+  };
+  const result = explained(testedMap, testedExplain(impact));
+  return ImpactTopics.mentionsOf(result.impactTopics, explainTestId).map((mention) => [mention.topic, mention.cell, mention.placeText]);
+};
 
 const cases = [
   {
@@ -629,6 +641,16 @@ const cases = [
     expected: { kind: "shape", key: "impact.tables[].outcomes[].tests" },
   },
   {
+    label: "これまでの行(before)の要素がオブジェクトでなければ、理由はその配列の道筋",
+    actual: () => explained(mapOf(), explainOf({ impact: impactOf({ changed: { before: [null], after: [{ text: "後" }] } }) })).reading.reason,
+    expected: { kind: "shape", key: "impact.changed.before" },
+  },
+  {
+    label: "変わらないことの tests の要素が文字列でなければ、理由はその道筋",
+    actual: () => explained(mapOf(), explainOf({ impact: impactOf({ kept: [{ text: "変わらない", tests: [5] }] }) })).reading.reason,
+    expected: { kind: "shape", key: "impact.kept[].tests" },
+  },
+  {
     label: "前後の行の message が数値なら、理由はその道筋",
     actual: () => explained(mapOf(), explainOf({ impact: impactOf({ changed: { before: [], after: [{ text: "後", message: 5 }] } }) })).reading.reason,
     expected: { kind: "shape", key: "impact.changed.after[].message" },
@@ -830,24 +852,29 @@ const cases = [
     expected: [["m3", false], ["m1", true], ["m4", false]],
   },
   {
+    label: "受け手だけが図の箱のやりとり(図に出さない concept から箱へ)も「図に無い」",
+    actual: () => topicsOf(impactOf({ changed: { before: [], after: [{ text: "後 1", message: "m5" }, { text: "後 2", message: "m1" }] } }), mechanismExplain)[0].mechanisms.map((mechanism) => [mechanism.message.id, mechanism.isDrawn]),
+    expected: [["m5", false], ["m1", true]],
+  },
+  {
     label: "増えた状況の仕組みも、前後の行が指すやりとりを書いた順に並べる",
     actual: () => topicsOf(impactOf({ added: [{ label: "増えた", before: [{ text: "前", message: "m3" }], after: [{ text: "後", message: "m1" }] }] }), mechanismExplain)[0].mechanisms.map((mechanism) => mechanism.message.id),
     expected: ["m3", "m1"],
   },
   {
     label: "テストから、それを根拠に挙げている節(表ならマス、変わらないことなら行)を節の順に引く",
-    actual: () => {
-      const impact = {
-        title: "題",
-        lead: "要約",
-        kept: [{ text: "変わらない 1", tests: ["b"] }, { text: "変わらない 2", tests: ["a"] }],
-        added: [{ label: "増えた", before: [], after: [{ text: "後" }], tests: ["a"] }],
-        tables: [tableOf(twoRows, threeColumns, fullOutcomes().map((item) => (item.result === "r2c1" || item.result === "r1c3" ? { ...item, tests: ["t", "a"] } : item)))],
-      };
-      const result = explained(testedMap, testedExplain(impact));
-      return ImpactTopics.mentionsOf(result.impactTopics, "a").map((mention) => [mention.topic, mention.cell, mention.placeText]);
-    },
+    actual: () => mentionedPlacesOf("a"),
     expected: [["table-0", { row: "r1", column: "c3" }, "一 · 三"], ["table-0", { row: "r2", column: "c1" }, "二 · 一"], ["added-0", null, null], ["kept", null, "変わらない 2"]],
+  },
+  {
+    label: "未実装のテストから引いても、それを根拠に挙げている節を返す",
+    actual: () => mentionedPlacesOf("t"),
+    expected: [["table-0", { row: "r1", column: "c3" }, "一 · 三"], ["table-0", { row: "r2", column: "c1" }, "二 · 一"]],
+  },
+  {
+    label: "振る舞いが書かれていない・解説が無いときは、テストから引いても何も返さない",
+    actual: () => [ImpactTopics.mentionsOf({ kind: "unwritten" }, "a"), ImpactTopics.mentionsOf(ImpactTopics.Unexplained, "a")],
+    expected: [[], []],
   },
   {
     label: "今の節は、上端が読む線(上端から 140px。140 を含む)より上に来た最後の節",
