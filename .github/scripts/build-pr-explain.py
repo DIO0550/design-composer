@@ -168,8 +168,8 @@ TermMarkPattern = re.compile(r"\[\[([^\[\]|]+)\|(" + IdPattern.pattern + r")\]\]
 
 
 def code_spans_of(text: str) -> list[tuple[bool, str]]:
-    """文を `` ` `` で割り、コードか(奇数番目)と切れ端の組にする。ページの `Dom.proseParts` と同じ割り方で、閉じていない
-    最後の `` ` `` はコードにせず文字のまま前の切れ端につなぐ。
+    """文を `` ` `` で割り、コードか(奇数番目)と切れ端の組にする。閉じていない最後の `` ` `` はコードにせず文字のまま前の
+    切れ端につなぐ。ページの `CodeSpans.create` と同じ割り方で、`pr-explain-core-cases.sh` が突き合わせる。
     """
     parts = text.split("`")
     has_unclosed = len(parts) % 2 == 0

@@ -230,6 +230,7 @@ pass|-|sample|テストの抜粋にも強調を書ける|d["tests"][0]["excerpt"
 pass|-|sample|対になったバッククォートの中なら、印でない二重の角括弧を書ける|d["primers"][0]["gist"] += " `[[Prototype]]` と `a[b[0]]`"
 pass|-|sample|印より前に対になったバッククォートが 2 つあっても通る|d["primers"][0]["gist"] = d["primers"][0]["gist"].replace("[[JSON|json]]", "`x` [[JSON|json]] `y`")
 pass|-|sample|印の直前の角括弧 1 つは印の外の文字で、通る|d["primers"][0]["gist"] = d["primers"][0]["gist"].replace("[[JSON|json]]", "[[[JSON|json]]")
+pass|-|sample|印の表示の中の閉じていないバッククォートは数えず、後ろの印はバッククォートの中にならないので通る|d["primers"][0]["gist"] = d["primers"][0]["gist"].replace("[[JSON|json]]", "[[`JSON|json]] と [[JSON|json]]")
 deny|shape|sample|primers がオブジェクト|d["primers"] = d["primers"][0]
 deny|shape|sample|primers の kind が語彙の外(framework)|d["primers"][0]["kind"] = "framework"
 deny|shape|sample|primers の要素に kind が無い|del d["primers"][0]["kind"]

@@ -27,8 +27,9 @@ source "$repo_root/.claude/hooks/lib/cases-report.sh"
 # 解説の検査が持つ語彙(ページの `Vocabulary` と突き合わせる)と、Target の kind ごとのキー(ページの `Target` と
 # 突き合わせる)と、Shapes から導いた形の道筋と値の種類(ページの `ExplainShape.Routes` と突き合わせる)。impact の下は
 # オブジェクト・その配列・id・id の配列だけ。primers・terms の下は文(text・sha・marked_text の文字列)も出す。Excerpt の中の
-# 道筋は、Excerpt を指すすべての道筋の下に出す。primers・terms の下の必須の文の道筋(Variant は、どの kind でも必須の
-# キー。ページの `ExplainShape.Required` と突き合わせる)。ほかに、技術の手引きの kind・段の kind・用語の印の綴りと、印を読む道筋。
+# 道筋は、Excerpt を指すすべての道筋の下に出す。primers・terms の下の必須の文と 1 つのオブジェクトの道筋と、それを必須とする
+# kind(Variant の下なら kind の並び、Shape の下なら null。ページの `ExplainShape.Required` と突き合わせる)。ほかに、技術の
+# 手引きの kind・段の kind・用語の印の綴りと、印を読む道筋と、`` ` `` の割り方(ページの `CodeSpans` と突き合わせる)。
 checker="$(python3 - "$scripts_dir/build-pr-explain.py" <<'PY'
 import importlib.util, json, sys
 spec = importlib.util.spec_from_file_location("build_pr_explain", sys.argv[1])
@@ -55,15 +56,16 @@ def kind_of(rule, is_many, with_text):
     return None
 def shape_routes_of(rule, route, with_text):
     return [[found, kind_of(inner, is_many, with_text)] for found, inner, is_many in module.routes_under(rule, route) if kind_of(inner, is_many, with_text) is not None]
-def is_required(owner, key):
+def required_kinds_of(owner, key):
     if isinstance(owner, module.Shape):
-        return module.Shapes[owner.name][key].required
-    return all(key in fields and fields[key].required for fields in module.Variants[owner.name].values())
+        return None if module.Shapes[owner.name][key].required else []
+    return [kind for kind, fields in module.Variants[owner.name].items() if key in fields and fields[key].required]
 def required_routes_of(rule, route):
     found = module.routes_under(rule, route)
     owners = {at: inner for at, inner, _ in found}
-    owner_key = lambda at: (owners[at.rpartition(".")[0].removesuffix("[]")], at.rpartition(".")[2])
-    return [at for at, inner, _ in found[1:] if inner in text_rules and is_required(*owner_key(at))]
+    kinds_at = lambda at: required_kinds_of(owners[at.rpartition(".")[0].removesuffix("[]")], at.rpartition(".")[2])
+    candidates = [{"route": at, "kinds": kinds_at(at)} for at, inner, is_many in found[1:] if kind_of(inner, is_many, True) in ("text", "record")]
+    return [candidate for candidate in candidates if candidate["kinds"] != []]
 explain = module.Shapes["Explain"]
 routes = [*shape_routes_of(explain["impact"].value, "impact", False), *shape_routes_of(explain["primers"].value, "primers", True), *shape_routes_of(explain["terms"].value, "terms", True)]
 required_routes = [*required_routes_of(explain["primers"].value, "primers"), *required_routes_of(explain["terms"].value, "terms")]
@@ -79,6 +81,7 @@ print(json.dumps({
     "passageKinds": list(module.Variants["Passage"]),
     "termMarkPattern": module.TermMarkPattern.pattern,
     "markedRoutes": module.routes_with(module.MarkedText),
+    "codeSpans": {text: module.code_spans_of(text) for text in ("前 `a` 中 `b", "``a`` `b`")},
 }))
 PY
 )" || { echo "NG   解説の検査の語彙を読めない"; exit 1; }
@@ -97,6 +100,7 @@ const {
   passageKinds: checkerPassageKinds,
   termMarkPattern: checkerTermMarkPattern,
   markedRoutes: checkerMarkedRoutes,
+  codeSpans: checkerCodeSpans,
 } = JSON.parse(process.argv[3]);
 const script = (template.match(/<script>([\s\S]*?)<\/script>/) || [])[1];
 if (script === undefined) {
@@ -110,7 +114,7 @@ if (core === undefined) {
   console.error("document の無い評価で prExplainCore が置かれていない");
   process.exit(2);
 }
-const { ExplainedMap, ExplainShape, ImpactTopics, PrimerTopics, TermMarks, ExcerptRows, TopicScroll, ReviewCheck, ScreenChoice, CommitDiff, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target } = core;
+const { ExplainedMap, ExplainShape, ImpactTopics, PrimerTopics, CodeSpans, TermMarks, ExcerptRows, TopicScroll, ReviewCheck, ScreenChoice, CommitDiff, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target } = core;
 
 const Pr = 7;
 const shaOf = (digit) => String(digit).repeat(40);
@@ -739,7 +743,7 @@ const cases = [
     expected: checkerShapeRoutes,
   },
   {
-    label: "ページが欠けを見る道筋は、解説の検査の形(Shapes)の primers・terms の下の必須の文(どの kind でも必須のもの)と同じ",
+    label: "ページが欠けを見る道筋とそれを必須とする kind は、解説の検査の形(Shapes・Variants)の primers・terms の下の必須の文と 1 つのオブジェクトと同じ",
     actual: () => ExplainShape.Required,
     expected: checkerRequiredRoutes,
   },
@@ -1015,9 +1019,29 @@ const cases = [
     expected: { kind: "shape", key: "primers[].passages[].parameters[].text" },
   },
   {
-    label: "段の文は、宣言(declaration)の段に無くても欠けとしない(どの kind でも必須のキーではない)",
+    label: "段の文は、宣言(declaration)の段に無くても欠けとしない(その kind では必須でない)",
     actual: () => explained(mapOf(), explainOf({ primers: [primerOf({ passages: [{ kind: "declaration", code: "f()" }] })] })).reading.kind,
     expected: "explained",
+  },
+  {
+    label: "抜粋(excerpt)の段に抜粋のオブジェクトが無ければ、解説なしにして理由をその道筋にする",
+    actual: () => explained(mapOf(), explainOf({ primers: [primerOf({ passages: [{ kind: "excerpt" }] })] })).reading,
+    expected: { kind: "missing", reason: { kind: "shape", key: "primers[].passages[].excerpt" } },
+  },
+  {
+    label: "抜粋のオブジェクトは、宣言・引数の段に無くても欠けとしない(その kind では必須でない)",
+    actual: () => explained(mapOf(), explainOf({ primers: [primerOf({ passages: [{ kind: "declaration", code: "f()" }, { kind: "parameters", parameters: [{ name: "a", type: "T", text: "文" }] }] })] })).reading.kind,
+    expected: "explained",
+  },
+  {
+    label: "型の違いと必須の欠けが同時にあれば、外側の欠け(節の題)を理由にする",
+    actual: () => shapeReasonOf({ primers: [{ ...primerOf({ passages: [{ kind: "text", text: 5 }] }), label: undefined }] }),
+    expected: { kind: "shape", key: "primers[].label" },
+  },
+  {
+    label: "型の違いと必須の欠けが同時にあれば、外側の型の違い(節の題)を理由にする",
+    actual: () => shapeReasonOf({ primers: [primerOf({ label: 5, passages: [{ kind: "text" }] })] }),
+    expected: { kind: "shape", key: "primers[].label" },
   },
   {
     label: "任意の文(引数の注 note)が無くても、解説は使える",
@@ -1077,6 +1101,16 @@ const cases = [
     label: "用語の印の綴りは、解説の検査と同じ",
     actual: () => TermMarks.Pattern.source,
     expected: checkerTermMarkPattern,
+  },
+  {
+    label: "閉じていない `` ` `` のある文は、解説の検査と同じに割る(最後の `` ` `` は文字のまま前の切れ端につなぐ)",
+    actual: () => CodeSpans.create("前 `a` 中 `b").map((span) => [span.isCode, span.text]),
+    expected: checkerCodeSpans["前 `a` 中 `b"],
+  },
+  {
+    label: "対になった `` ` `` だけの文は、解説の検査と同じに割る(空の切れ端も出す)",
+    actual: () => CodeSpans.create("``a`` `b`").map((span) => [span.isCode, span.text]),
+    expected: checkerCodeSpans["``a`` `b`"],
   },
   {
     label: "用語の印を読む道筋は、解説の検査が MarkedText の規則を付けた道筋と同じ並び",
