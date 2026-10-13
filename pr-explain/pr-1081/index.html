@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-a9ZB8CEXXKEUeRDBVMtz2eVVDfaTrn9QqVRG9mZ1YCY='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-sEHLFbVeZ4Dm9xFKxk+909qPmXCsjFLCda/pOy5AuK4='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR 解説</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1220,9 +1220,10 @@ button.change-item:hover { background: var(--track); }
   const ExplainShape = (() => {
     // 形を見る道筋と、その先の値の種類。`build-pr-explain.py` の Shapes から導いたものと同じ並びで、`pr-explain-core-cases.sh` が
     // 突き合わせる。primers・terms の下は Shapes から機械的に導くので、文字列をすべて見る(組み立てが落ちるキーを選り分けない)。
-    // 必須の欠けも見る(`Required`)。`Dom.proseParts` と `TermMarks.piecesOf` は文を文字列として割るので、文字列でない値も欠けた
-    // 値も組み立てを落とし、ページ全体を出なくする。impact は構造だけを見る(文は文字として入れるだけなので、表示できている解説を
-    // 「解説なし」に変えない)。tests の下は Excerpt の中だけ見る(`ExcerptRows` が強調の要素を読む)。
+    // 必須の欠けも kind ごとに見る(`Required`)。`Dom.proseParts` と `TermMarks.piecesOf` は文を文字列として割り、抜粋の段は
+    // `excerptBoxesOf` が `excerpt` の中を読むので、文字列でない値も欠けた値も組み立てを落とし、ページ全体を出なくする。impact は
+    // 構造だけを見る(文は文字として入れるだけなので、表示できている解説を「解説なし」に変えない)。tests の下は Excerpt の中だけ
+    // 見る(`ExcerptRows` が強調の要素を読む)。
     const ShapeKinds = Object.freeze({
       record: isRecord,
       records: isListOfRecords,
@@ -1285,20 +1286,25 @@ button.change-item:hover { background: var(--track); }
       ["terms[].text", "text"],
       ["tests[].excerpt.emphasis", "records"],
     ]);
-    // 欠けていれば崩れとする道筋。primers・terms の下の必須の文で、Variant のキーは、どの kind でも必須のものだけ。Shapes から
-    // 導いたものと同じ並びで、`pr-explain-core-cases.sh` が突き合わせる。
+    // 欠けていれば崩れとする道筋。primers・terms の下の必須のキーのうち、値が文(text)か 1 つのオブジェクト(record)のもの。
+    // `kinds` は、手前のオブジェクトが kind で持つキーの決まるもの(Variant)なら、そのキーを必須とする kind の並びで、それ以外の
+    // kind のオブジェクトには求めない。kind に依らないオブジェクト(Shape)なら null で、どれにも求める。Shapes と Variants から
+    // 導いたものと同じ並びで、`pr-explain-core-cases.sh` が突き合わせる。配列は欠けても `listOf` が空として読むので入れない。
     const Required = Object.freeze([
-      "primers[].category",
-      "primers[].label",
-      "primers[].gist",
-      "primers[].passages[].parameters[].name",
-      "primers[].passages[].parameters[].type",
-      "primers[].passages[].parameters[].text",
-      "primers[].passages[].excerpt.path",
-      "primers[].occurrences[].path",
-      "primers[].occurrences[].text",
-      "terms[].label",
-      "terms[].text",
+      { route: "primers[].category", kinds: ["language", "codebase"] },
+      { route: "primers[].label", kinds: ["language", "codebase"] },
+      { route: "primers[].gist", kinds: ["language", "codebase"] },
+      { route: "primers[].passages[].text", kinds: ["text", "caution", "memo", "rule", "spec", "history"] },
+      { route: "primers[].passages[].code", kinds: ["declaration"] },
+      { route: "primers[].passages[].parameters[].name", kinds: null },
+      { route: "primers[].passages[].parameters[].type", kinds: null },
+      { route: "primers[].passages[].parameters[].text", kinds: null },
+      { route: "primers[].passages[].excerpt", kinds: ["excerpt"] },
+      { route: "primers[].passages[].excerpt.path", kinds: null },
+      { route: "primers[].occurrences[].path", kinds: null },
+      { route: "primers[].occurrences[].text", kinds: null },
+      { route: "terms[].label", kinds: null },
+      { route: "terms[].text", kinds: null },
     ]);
 
     /** 道筋の先の値を集める。途中が欠けていれば集めない(必須の欠けは `lacks` が見る)。 */
@@ -1311,11 +1317,12 @@ button.change-item:hover { background: var(--track); }
       if (!isEach) return valuesAt(inner, rest);
       return Array.isArray(inner) ? inner.flatMap((item) => valuesAt(item, rest)) : [];
     };
-    /** 道筋の最後の段のキーが、その手前のオブジェクトのどれかに無いか。 */
-    const lacks = (explain, route) => {
+    /** `Required` の 1 件の道筋の最後の段のキーが、その手前のオブジェクトのうち、そのキーを求めるもの(`kinds`)のどれかに無いか。 */
+    const lacks = (explain, { route, kinds }) => {
       const steps = route.split(".");
       const key = steps[steps.length - 1];
-      return valuesAt(explain, steps.slice(0, -1)).some((owner) => isRecord(owner) && owner[key] === undefined);
+      const isAsked = (owner) => isRecord(owner) && (kinds === null || kinds.includes(owner.kind));
+      return valuesAt(explain, steps.slice(0, -1)).some((owner) => isAsked(owner) && owner[key] === undefined);
     };
     const depthOf = (route) => route.split(".").length;
 
@@ -1324,17 +1331,34 @@ button.change-item:hover { background: var(--track); }
       Required,
       /**
        * ページが組み立てに使う形を見る。
-       * @returns 型の違う道筋か、必須の文が欠けた道筋(`impact.tables[].outcomes` の形)。崩れが 2 か所以上なら最も外側のもの。
+       * @returns 型の違う道筋か、必須のキー(`Required`)が欠けた道筋(`impact.tables[].outcomes` の形)。崩れが 2 か所以上なら最も外側のもの。
        *   崩れていなければ null
        */
       problemOf: (explain) => {
         const mistyped = Routes.filter(([route, kind]) => valuesAt(explain, route.split(".")).some((value) => !ShapeKinds[kind](value))).map(([route]) => route);
-        const broken = [...mistyped, ...Required.filter((route) => lacks(explain, route))];
+        const lacking = Required.filter((required) => lacks(explain, required)).map(({ route }) => route);
+        const broken = [...mistyped, ...lacking];
         if (broken.length === 0) return null;
         return broken.reduce((outer, candidate) => (depthOf(candidate) < depthOf(outer) ? candidate : outer));
       },
     });
   })();
+
+  /** 解説の文の中の `` `…` ``(コード)。 */
+  const CodeSpans = Object.freeze({
+    /**
+     * 文を `` ` `` で割り、コードの切れ端とそうでない切れ端を文の順に並べる。閉じていない最後の `` ` `` はコードにせず、文字のまま
+     * 前の切れ端につなぐ(閉じているかは、渡した文の単位で決まる)。割り方は `build-pr-explain.py` の `code_spans_of` と同じで、
+     * `pr-explain-core-cases.sh` が突き合わせる。
+     * @returns `{isCode, text}` の並び。空の切れ端も出す
+     */
+    create: (text) => {
+      const parts = text.split("`");
+      const hasUnclosed = parts.length % 2 === 0;
+      const paired = hasUnclosed ? [...parts.slice(0, -2), `${parts[parts.length - 2]}\`${parts[parts.length - 1]}`] : parts;
+      return paired.map((part, index) => ({ isCode: index % 2 === 1, text: part }));
+    },
+  });
 
   /** 技術の手引きの本文に書く用語の印 `[[表示|用語の id]]`。 */
   const TermMarks = (() => {
@@ -1553,7 +1577,7 @@ button.change-item:hover { background: var(--track); }
 
     /**
      * ページが組み立てに使う大まかな形だけを見る。細かい形は公開する前に build-pr-explain.py が見ている。
-     * @returns 型の違うキー(`impact`・`primers`・`terms`・`tests[].excerpt.emphasis` は道筋)。違わなければ null
+     * @returns 型が違うか、必須なのに欠けたキー(`impact`・`primers`・`terms`・`tests[].excerpt.emphasis` は道筋)。どちらも無ければ null
      */
     const shapeProblemOf = (explain) => {
       const overview = explain.overview;
@@ -2277,7 +2301,7 @@ button.change-item:hover { background: var(--track); }
   })();
 
   /** DOM に触らない部分(核)。判定表が node の vm で評価して叩く。 */
-  const core = Object.freeze({ ExplainedMap, ExplainShape, ImpactTopics, PrimerTopics, TermMarks, ExcerptRows, TopicScroll, ScreenChoice, ReviewCheck, Tokenizer, CommitDiff, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target });
+  const core = Object.freeze({ ExplainedMap, ExplainShape, ImpactTopics, PrimerTopics, CodeSpans, TermMarks, ExcerptRows, TopicScroll, ScreenChoice, ReviewCheck, Tokenizer, CommitDiff, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target });
   if (typeof document === "undefined") {
     globalThis.prExplainCore = core;
     return;
@@ -2300,15 +2324,10 @@ button.change-item:hover { background: var(--track); }
       return node;
     },
     /**
-     * 解説の文を、文字列と code 要素の並びにする。`` `…` `` で囲んだところは code 要素に入れる(どちらも textContent で入れる)。
-     * 閉じていない `` ` `` は文字のまま残す。閉じているかは、渡した文の単位で決まる。
+     * 解説の文を、文字列と code 要素の並びにする。コードの切れ端(割り方は `CodeSpans`)は code 要素に入れる(どちらも textContent
+     * で入れる)。空の文字列は出さない。
      */
-    proseParts: (text) => {
-      const parts = text.split("`");
-      const hasUnclosed = parts.length % 2 === 0;
-      const paired = hasUnclosed ? [...parts.slice(0, -2), `${parts[parts.length - 2]}\`${parts[parts.length - 1]}`] : parts;
-      return paired.map((part, index) => (index % 2 === 1 ? Dom.el("code", { text: part }) : part)).filter((child) => child !== "");
-    },
+    proseParts: (text) => CodeSpans.create(text).map((span) => (span.isCode ? Dom.el("code", { text: span.text }) : span.text)).filter((child) => child !== ""),
     /** 解説の文を要素にする(中身は `proseParts`)。 */
     prose: (tag, props, text) => Dom.el(tag, { ...props, class: Dom.proseClassOf(props) }, Dom.proseParts(text)),
     /** 文を入れる要素のクラス。`.prose` が中の code 要素の見た目を決める。 */
@@ -5387,7 +5406,8 @@ button.change-item:hover { background: var(--track); }
   /**
    * 技術の手引き。上にタブ、左に目次、中に今のタブの節、右に今の節の出てくる場所・根拠・用語を出す。
    *
-   * 表示確認でしか守られていない DOM の配線(理由は `TopicColumns`): タブの切り替えと位置の保存・復元・関連のチップ・用語の光。
+   * 表示確認でしか守られていない DOM の配線(理由は `TopicColumns`): タブの切り替えと位置の保存・復元・最初に開くタブの適用・
+   * 関連のチップ・用語の光・出てくる場所のボタンの移り先(行 / ファイル / コミット)。
    */
   const PrimerScreen = (explained, go) => {
     const primerTopics = explained.primerTopics;
@@ -5622,7 +5642,7 @@ button.change-item:hover { background: var(--track); }
       case "pr":
         return `解説なし(explain.json は PR ${JSON.stringify(reason.actual)} のもの)`;
       case "shape":
-        return `解説なし(explain.json の ${reason.key ?? "トップ"} の型が想定と違います)`;
+        return `解説なし(explain.json の ${reason.key ?? "トップ"} の形が想定と違います)`;
     }
   };
 
