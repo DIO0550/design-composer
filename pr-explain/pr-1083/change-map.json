@@ -1,0 +1,71 @@
+{
+  "version": 2,
+  "pr": 1083,
+  "headBranch": "claude/affectionate-hypatia-y2mokb",
+  "baseBranch": "main",
+  "mergeBase": "6e935be8878a4bbdef70a0925eebffd9618bf57e",
+  "head": "58412edadbf27058734b0dc2463d79e35302f309",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/agents/plan-reviewer.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/records/pr-1077.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "58412edadbf27058734b0dc2463d79e35302f309",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-13T00:10:47Z",
+      "subject": "🔧 [Harness]: plan-reviewer に、確認済みの判断と並行 PR を置き去りにしない観点を足す",
+      "body": "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01X6jJnBxqPmVYjyJc5snpJG",
+      "files": [
+        {
+          "path": ".claude/agents/plan-reviewer.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 0,
+          "patch": "@@ -175,6 +175,9 @@ model: inherit\n   依存する外部状態・他モジュールへの影響等)を個別に洗い、本当に未決が無いかを確かめずに\n   「無し」で締めていないか(`分類: plan-open-decision-declaration`)。実装中に手が止まる判断が\n   「無し」の裏に隠れている形が繰り返し出ている\n+- **人に確認を仰いだ判断・並行して走っている Issue / PR を、計画が置き去りにしていないか**（`分類: plan`）。\n+  推奨案の採否や回答待ちの質問を残したまま進めていないか、同じシンボル・同じファイルを変える\n+  オープンな Issue / PR が無いかを `grep` / `search_pull_requests` で確かめた記録が計画にあるか\n - **`implementation-flow` フェーズ 3 手順 7 で不変条件を崩していないか `grep` で確かめたか**\n   （`分類: plan-implicit-condition`）\n - **この変更が新しく開く経路・生む非対称・生みうる不正な状態を、計画のスコープ・完了条件が",
+          "patchLines": 10,
+          "truncated": false
+        },
+        {
+          "path": "harness/records/pr-1077.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "patch": "@@ -300,3 +300,4 @@\n ## 規約への反映\n \n 無し。記録だけ残す(集計と介入は `harness-growth` の管轄)。\n+- 対策済: `plan` 層=観点 at pr-1077",
+          "patchLines": 5,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
