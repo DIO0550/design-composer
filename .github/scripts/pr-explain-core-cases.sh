@@ -27,7 +27,8 @@ source "$repo_root/.claude/hooks/lib/cases-report.sh"
 # 解説の検査が持つ語彙(ページの `Vocabulary` と突き合わせる)と、Target の kind ごとのキー(ページの `Target` と
 # 突き合わせる)と、Shapes から導いた形の道筋と値の種類(ページの `ExplainShape.Routes` と突き合わせる)。impact の下は
 # オブジェクト・その配列・id・id の配列だけ。primers・terms の下は文(text・sha・marked_text の文字列)も出す。Excerpt の中の
-# 道筋は、Excerpt を指すすべての道筋の下に出す。ほかに、技術の手引きのタブ・段の kind・用語の印の綴りと、印を読む道筋。
+# 道筋は、Excerpt を指すすべての道筋の下に出す。primers・terms の下の必須の文の道筋(Variant は、どの kind でも必須の
+# キー。ページの `ExplainShape.Required` と突き合わせる)。ほかに、技術の手引きの kind・段の kind・用語の印の綴りと、印を読む道筋。
 checker="$(python3 - "$scripts_dir/build-pr-explain.py" <<'PY'
 import importlib.util, json, sys
 spec = importlib.util.spec_from_file_location("build_pr_explain", sys.argv[1])
@@ -54,8 +55,18 @@ def kind_of(rule, is_many, with_text):
     return None
 def shape_routes_of(rule, route, with_text):
     return [[found, kind_of(inner, is_many, with_text)] for found, inner, is_many in module.routes_under(rule, route) if kind_of(inner, is_many, with_text) is not None]
+def is_required(owner, key):
+    if isinstance(owner, module.Shape):
+        return module.Shapes[owner.name][key].required
+    return all(key in fields and fields[key].required for fields in module.Variants[owner.name].values())
+def required_routes_of(rule, route):
+    found = module.routes_under(rule, route)
+    owners = {at: inner for at, inner, _ in found}
+    owner_key = lambda at: (owners[at.rpartition(".")[0].removesuffix("[]")], at.rpartition(".")[2])
+    return [at for at, inner, _ in found[1:] if inner in text_rules and is_required(*owner_key(at))]
 explain = module.Shapes["Explain"]
 routes = [*shape_routes_of(explain["impact"].value, "impact", False), *shape_routes_of(explain["primers"].value, "primers", True), *shape_routes_of(explain["terms"].value, "terms", True)]
+required_routes = [*required_routes_of(explain["primers"].value, "primers"), *required_routes_of(explain["terms"].value, "terms")]
 known = {route for route, _ in routes}
 inside_excerpts = [found for route in module.routes_with(module.Shape("Excerpt")) for found in shape_routes_of(module.Shape("Excerpt"), route, False)[1:]]
 shape_routes = routes + [found for found in inside_excerpts if found[0] not in known]
@@ -63,6 +74,7 @@ print(json.dumps({
     "vocabulary": vocabulary,
     "targetKeys": target_keys,
     "shapeRoutes": shape_routes,
+    "requiredRoutes": required_routes,
     "primerKinds": list(module.Variants["Primer"]),
     "passageKinds": list(module.Variants["Passage"]),
     "termMarkPattern": module.TermMarkPattern.pattern,
@@ -80,6 +92,7 @@ const {
   vocabulary: checkerVocabulary,
   targetKeys: checkerTargetKeys,
   shapeRoutes: checkerShapeRoutes,
+  requiredRoutes: checkerRequiredRoutes,
   primerKinds: checkerPrimerKinds,
   passageKinds: checkerPassageKinds,
   termMarkPattern: checkerTermMarkPattern,
@@ -216,7 +229,6 @@ const tabTopicsOf = (explain, tab) => primerTopicsOf(explain).tabs[tab].topics;
 const shapeReasonOf = (explain) => explained(mapOf(), explainOf(explain)).reading.reason;
 const passageExcerpt = (extra = {}) => ({ kind: "excerpt", excerpt: { path: "a.ts", start: 10, end: 14, ...extra } });
 // 出てくる場所のコミットへの届き方。地図のコミットの files はパス(改名なら変更前のパスも)だけを見る。
-const fileAt = (path, oldPath = null) => ({ path, oldPath, status: oldPath === null ? "M" : "R", additions: 1, deletions: 0 });
 const commitTouching = (digit, files, extra = {}) => ({ ...commitOf(digit), files, ...extra });
 const reachesOf = ({ commits, explainedSha, path, shas, lineRange = { start: 3, end: 4 } }) => {
   const occurrence = { path, text: "ここ", shas, ...(lineRange === null ? {} : { lineRange }) };
@@ -225,10 +237,10 @@ const reachesOf = ({ commits, explainedSha, path, shas, lineRange = { start: 3, 
   return topics[0].occurrences[0].destinations.map(({ sha, reach }) => [sha, reach]);
 };
 // c1・c2 が a.ts、c3 が b.ts を変えた地図と、c2 が a.ts を z.ts へ移した地図と、c1 の後にマージコミット(2)がある地図。
-const threeCommits = [commitTouching(1, [fileAt("a.ts")]), commitTouching(2, [fileAt("a.ts")]), commitTouching(3, [fileAt("b.ts")])];
-const renamedCommits = [commitTouching(1, [fileAt("a.ts")]), commitTouching(2, [fileAt("z.ts", "a.ts")])];
-const mergedCommits = [commitTouching(1, [fileAt("a.ts")]), commitTouching(2, [], { merge: true })];
-const sentLine = { kind: "line", lineRange: { start: 3, end: 4 } };
+const threeCommits = [commitTouching(1, [diffFile("a.ts")]), commitTouching(2, [diffFile("a.ts")]), commitTouching(3, [diffFile("b.ts")])];
+const renamedCommits = [commitTouching(1, [diffFile("a.ts")]), commitTouching(2, [diffFile("z.ts", { oldPath: "a.ts", status: "R" })])];
+const mergedCommits = [commitTouching(1, [diffFile("a.ts")]), commitTouching(2, [], { merge: true })];
+const lineReach = { kind: "line", lineRange: { start: 3, end: 4 } };
 
 const cases = [
   {
@@ -727,6 +739,11 @@ const cases = [
     expected: checkerShapeRoutes,
   },
   {
+    label: "ページが欠けを見る道筋は、解説の検査の形(Shapes)の primers・terms の下の必須の文(どの kind でも必須のもの)と同じ",
+    actual: () => ExplainShape.Required,
+    expected: checkerRequiredRoutes,
+  },
+  {
     label: "解説が無いとき、振る舞いの節は「解説なし」",
     actual: () => ExplainedMap.create(mapOf(), absent).impactTopics,
     expected: { kind: "none" },
@@ -983,6 +1000,31 @@ const cases = [
     expected: { kind: "shape", key: "primers[].occurrences[].shas" },
   },
   {
+    label: "節の題(label)が無ければ、理由はその道筋",
+    actual: () => shapeReasonOf({ primers: [primerOf({ id: "a" }), { ...primerOf({ id: "b" }), label: undefined }] }),
+    expected: { kind: "shape", key: "primers[].label" },
+  },
+  {
+    label: "用語の意味(terms の text)が無ければ、理由はその道筋",
+    actual: () => shapeReasonOf({ terms: [termOf("t1"), { id: "t2", label: "語" }] }),
+    expected: { kind: "shape", key: "terms[].text" },
+  },
+  {
+    label: "引数の段の引数の文が無ければ、理由はその道筋(段の kind ごとのキーでも、そのオブジェクトで必須なら見る)",
+    actual: () => shapeReasonOf({ primers: [primerOf({ passages: [{ kind: "parameters", parameters: [{ name: "a", type: "T" }] }] })] }),
+    expected: { kind: "shape", key: "primers[].passages[].parameters[].text" },
+  },
+  {
+    label: "段の文は、宣言(declaration)の段に無くても欠けとしない(どの kind でも必須のキーではない)",
+    actual: () => explained(mapOf(), explainOf({ primers: [primerOf({ passages: [{ kind: "declaration", code: "f()" }] })] })).reading.kind,
+    expected: "explained",
+  },
+  {
+    label: "任意の文(引数の注 note)が無くても、解説は使える",
+    actual: () => explained(mapOf(), explainOf({ primers: [primerOf({ passages: [{ kind: "parameters", parameters: [{ name: "a", type: "T", text: "文" }] }] })] })).reading.kind,
+    expected: "explained",
+  },
+  {
     label: "用語の意味(terms の text)が数値なら、理由はその道筋",
     actual: () => shapeReasonOf({ terms: [{ id: "t", label: "語", text: 5 }] }),
     expected: { kind: "shape", key: "terms[].text" },
@@ -1022,8 +1064,8 @@ const cases = [
     expected: ["explained", [10, 11, 12, 13, 14]],
   },
   {
-    label: "技術の手引きのタブは、解説の検査の Primer の kind と同じ",
-    actual: () => Object.values(PrimerTopics.Tabs),
+    label: "技術の手引きのタブ(Primer の kind)は、解説の検査の Primer の kind と同じ",
+    actual: () => Object.values(PrimerTopics.PrimerKinds),
     expected: checkerPrimerKinds,
   },
   {
@@ -1121,9 +1163,19 @@ const cases = [
     expected: [{ tab: "language", index: 1, label: "B" }],
   },
   {
-    label: "この PR の実装の節の状態は、added / changed / 省略 → added / changed / null",
+    label: "この PR の実装の節の状態は、added / changed / 省略 → added / changed / 前からある(Existing)",
     actual: () => tabTopicsOf({ primers: [primerOf({ id: "a", kind: "codebase", status: "added" }), primerOf({ id: "b", kind: "codebase", status: "changed" }), primerOf({ id: "c", kind: "codebase" })] }, "codebase").map((topic) => topic.status),
-    expected: ["added", "changed", null],
+    expected: ["added", "changed", "existing"],
+  },
+  {
+    label: "前からある(Existing)の綴りは、解説の検査の技術の節の状態と重ならない",
+    actual: () => Object.hasOwn(Vocabulary.primerStatuses, PrimerTopics.Existing),
+    expected: false,
+  },
+  {
+    label: "言語・フレームワークの節は状態を持たない(札なし)",
+    actual: () => tabTopicsOf({ primers: [primerOf()] }, "language").map((topic) => topic.status),
+    expected: [null],
   },
   {
     label: "この PR の実装の節のテストは、未実装を無いテストに分け、解説のテストに無い id は外す",
@@ -1194,12 +1246,12 @@ const cases = [
   {
     label: "届く先は shas を書いた順で、解説の sha までにそのファイルを最後に変えたコミットだけが行まで届く",
     actual: () => reachesOf({ commits: threeCommits, explainedSha: shaOf(3), path: "a.ts", shas: [shaOf(2), shaOf(1)] }),
-    expected: [[shaOf(2), sentLine], [shaOf(1), { kind: "file" }]],
+    expected: [[shaOf(2), lineReach], [shaOf(1), { kind: "file" }]],
   },
   {
     label: "解説の sha より後のコミットには、行まで届かない",
     actual: () => reachesOf({ commits: threeCommits, explainedSha: shaOf(1), path: "a.ts", shas: [shaOf(1), shaOf(2)] }),
-    expected: [[shaOf(1), sentLine], [shaOf(2), { kind: "file" }]],
+    expected: [[shaOf(1), lineReach], [shaOf(2), { kind: "file" }]],
   },
   {
     label: "後のコミットがファイルを別のパスへ移したら、移す前のパスのコミットはファイルまで、移した後のパスは行まで届く",
@@ -1207,7 +1259,7 @@ const cases = [
       reachesOf({ commits: renamedCommits, explainedSha: shaOf(2), path: "a.ts", shas: [shaOf(1)] }),
       reachesOf({ commits: renamedCommits, explainedSha: shaOf(2), path: "z.ts", shas: [shaOf(2)] }),
     ],
-    expected: [[[shaOf(1), { kind: "file" }]], [[shaOf(2), sentLine]]],
+    expected: [[[shaOf(1), { kind: "file" }]], [[shaOf(2), lineReach]]],
   },
   {
     label: "地図に無い sha は unmapped、行の範囲が無ければ file、解説の sha が地図に無ければ最後に変えたコミットも file",
@@ -1225,8 +1277,8 @@ const cases = [
   },
   {
     label: "あいだのコミットがほかのファイルだけを変えたなら、行まで届く",
-    actual: () => reachesOf({ commits: [commitTouching(1, [fileAt("a.ts")]), commitTouching(2, [fileAt("b.ts")])], explainedSha: shaOf(2), path: "a.ts", shas: [shaOf(1)] }),
-    expected: [[shaOf(1), sentLine]],
+    actual: () => reachesOf({ commits: [commitTouching(1, [diffFile("a.ts")]), commitTouching(2, [diffFile("b.ts")])], explainedSha: shaOf(2), path: "a.ts", shas: [shaOf(1)] }),
+    expected: [[shaOf(1), lineReach]],
   },
   {
     label: "そのパスのファイルを変えていないコミットは、地図にあっても untouched",

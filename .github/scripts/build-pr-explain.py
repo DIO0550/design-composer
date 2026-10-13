@@ -43,15 +43,12 @@ concept・primers の出てくる場所の `path`・`lineRange`・`shas` が地�
 - 1 語の識別子・ファイル名・snake_case は綴りで識別子と言い切れないので、この規則でも捕まらない。書き方の
   規則(`pr-explain` スキル)で受ける
 
-技術の手引き(`primers`)の本文には、用語の印 `[[表示|用語の id]]` を書ける。読むのは `MarkedText` のキー(`gist`・
-text と注意メモの段の `text`・引数の `text`)だけ。ページは印で先に割り、印の中と外でそれぞれ `` `…` `` をコードに
-するので、印をまたいで `` ` `` は対にならない。そのため次の 2 つを落とす。
+技術の手引き(`primers`)の本文の用語の印 `[[表示|用語の id]]` は、`MarkedText` のキー(`gist`・text と注意メモの段の
+`text`・引数の `text`)だけで読む。印の書き方は `pr-explain` スキルの「共通の規則」が持ち、ここには理由だけを置く。
 
-- `` ` `` の中に印の形を書いたもの(コードのつもりでも印になる)
-- `` ` `` の外に、印でない `[[` / `]]` を書いたもの(印の書き損じと見分けられない)
-
-対になった `` ` `` の中の、印でない `[[` / `]]`(`[[Prototype]]` など)は書ける。閉じていない `` ` `` の後ろは
-コードにならないので、そこの `[[` / `]]` は落ちる。
+- ページは印で先に割り、印の中と外でそれぞれ `` `…` `` をコードにするので、印をまたいで `` ` `` は対にならない。そのため
+  `` ` `` は印の外の切れ端ごとに数える
+- `` ` `` の中に書いた印の形は、コードのつもりでも印になる。`` ` `` の外の印でない `[[` / `]]` は、印の書き損じと見分けられない
 
 使い方:
     build-pr-explain.py <explain.json> --pr <番号> --out <書き出す先> [--repo <リポジトリ>]
@@ -373,6 +370,7 @@ Shapes: dict[str, dict[str, Field]] = {
     # `lineRange` は解説の sha の時点の行番号。`shas` は地図と照合しない(地図を指す参照)。
     "Occurrence": {"path": need(Text), "lineRange": may(Shape("LineRange")), "text": need(Text), "shas": may(Many(Sha, distinct=True))},
     "LineRange": {"start": need(Count), "end": need(Count)},
+    # 用語の名前(`label`)は、継ぎ目のある複合語(`WebView`)や識別子を書くので見出し(Heading)にしない。
     "Term": {"id": need(Id), "label": need(Text), "text": need(Text)},
 }
 
@@ -380,6 +378,7 @@ Shapes: dict[str, dict[str, Field]] = {
 PrimerFields: dict[str, Field] = {
     "id": need(Id),
     "category": need(Text),
+    # 技術の名前は識別子や継ぎ目のある複合語を書くので、見出し(Heading)にしない。
     "label": need(Text),
     "gist": need(MarkedText),
     "passages": may(Many(Variant("Passage"))),
@@ -435,7 +434,8 @@ def excerpt_length_problem(value: dict) -> str | None:
 
 def emphasis_problem(value: dict) -> str | None:
     """抜粋の強調の範囲が、抜粋の行の中に収まっているかを見る。"""
-    outside = [index for index, span in enumerate(value.get("emphasis", [])) if span["start"] < value["start"] or span["end"] > value["end"]]
+    is_outside = lambda span: span["start"] < value["start"] or span["end"] > value["end"]
+    outside = [index for index, span in enumerate(value.get("emphasis", [])) if is_outside(span)]
     if outside:
         return f"emphasis{outside} が抜粋の {value['start']}-{value['end']} 行目の外にある"
     return None
@@ -695,23 +695,43 @@ def routes_with(rule: object) -> list[str]:
     return [route for key, field in Shapes["Explain"].items() for route, inner, _ in routes_under(field.value, key) if inner == rule]
 
 
+class Step(NamedTuple):
+    """道筋(`a[].b`)の 1 段。`key` はキー、`is_each` は配列の各要素へ進むか、`where` は起点からそのキーまでの綴り。"""
+
+    key: str
+    is_each: bool
+    where: str
+
+    def item_where(self, index: int) -> str:
+        """配列の `index` 番目の要素までの綴り。"""
+        return f"{self.where}[{index}]"
+
+
+def step_of(step: str, where: str) -> Step:
+    """道筋の 1 段を読む(`[]` で終わる段は配列の各要素へ進む)。
+
+    @param where 起点からその段の手前までの綴り
+    """
+    key = step.removesuffix("[]")
+    return Step(key, step.endswith("[]"), f"{where}.{key}" if where else key)
+
+
 def values_at(value: object, route: list[str], where: str) -> list[tuple[str, object]]:
     """道筋の先にある値を、道筋の綴りと一緒に集める。途中で欠けているものは飛ばす。
 
     @param value 道筋の起点
-    @param route `.` で割った道筋(`[]` で終わる段は配列の各要素へ進む)
+    @param route `.` で割った道筋
     @param where 起点までの綴り
     """
     if not route:
         return [(where, value)]
-    step, rest = route[0], route[1:]
-    key = step.removesuffix("[]")
-    if key not in value:
+    step = step_of(route[0], where)
+    if step.key not in value:
         return []
-    inner, inner_where = value[key], f"{where}.{key}" if where else key
-    if not step.endswith("[]"):
-        return values_at(inner, rest, inner_where)
-    return [found for index, item in enumerate(inner) for found in values_at(item, rest, f"{inner_where}[{index}]")]
+    inner = value[step.key]
+    if not step.is_each:
+        return values_at(inner, route[1:], step.where)
+    return [found for index, item in enumerate(inner) for found in values_at(item, route[1:], step.item_where(index))]
 
 
 def reference_problems(explain: dict) -> list[str]:
@@ -794,25 +814,26 @@ def excerpt_text(repo: str, sha: str, excerpt: dict) -> tuple[str | None, str | 
     return "\n".join(lines[excerpt["start"] - 1:excerpt["end"]]), None
 
 
-def with_texts_along(value: object, steps: list[str], read: Callable[[dict, str], tuple[dict, list[str]]], where: str) -> tuple[object, list[str]]:
+def read_along(value: object, route: str, read: Callable[[dict, str], tuple[dict, list[str]]]) -> tuple[object, list[str]]:
     """道筋の先の抜粋を `read` で読み直した写しと、読めなかった違反を返す。途中で欠けているものはそのまま残す。
 
-    @param steps `.` で割った道筋(`[]` で終わる段は配列の各要素へ進む)
+    @param route 解説の起点からの道筋(`[]` で終わる段は配列の各要素へ進む)
     @param read 抜粋と、その道筋の綴りを受け取り、中身を足した抜粋と違反を返す
-    @param where 起点までの綴り
     """
-    if not steps:
-        return read(value, where)
-    step, rest = steps[0], steps[1:]
-    key = step.removesuffix("[]")
-    if key not in value:
-        return value, []
-    inner_where = f"{where}.{key}" if where else key
-    if not step.endswith("[]"):
-        inner, problems = with_texts_along(value[key], rest, read, inner_where)
-        return {**value, key: inner}, problems
-    read_items = [with_texts_along(item, rest, read, f"{inner_where}[{index}]") for index, item in enumerate(value[key])]
-    return {**value, key: [item for item, _ in read_items]}, [problem for _, problems in read_items for problem in problems]
+
+    def walk(value: object, steps: list[str], where: str) -> tuple[object, list[str]]:
+        if not steps:
+            return read(value, where)
+        step = step_of(steps[0], where)
+        if step.key not in value:
+            return value, []
+        if not step.is_each:
+            inner, problems = walk(value[step.key], steps[1:], step.where)
+            return {**value, step.key: inner}, problems
+        read_items = [walk(item, steps[1:], step.item_where(index)) for index, item in enumerate(value[step.key])]
+        return {**value, step.key: [item for item, _ in read_items]}, [problem for _, problems in read_items for problem in problems]
+
+    return walk(value, route.split("."), "")
 
 
 def with_excerpt_texts(explain: dict, repo: str) -> tuple[dict, list[str]]:
@@ -831,7 +852,7 @@ def with_excerpt_texts(explain: dict, repo: str) -> tuple[dict, list[str]]:
         return (excerpt, [f"{where}: {problem}"]) if problem else ({**excerpt, "text": text}, [])
 
     def read_route(sofar: tuple[dict, list[str]], route: str) -> tuple[dict, list[str]]:
-        written, problems = with_texts_along(sofar[0], route.split("."), read, "")
+        written, problems = read_along(sofar[0], route, read)
         return written, sofar[1] + problems
 
     return reduce(read_route, routes_with(Shape("Excerpt")), (explain, []))

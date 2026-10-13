@@ -216,7 +216,7 @@ deny|ref|sample|変わらないことの tests が tests に無い|d["impact"]["
 deny|code|sample|解説時点の sha がこのリポジトリに無い|d["sha"] = "f" * 40
 deny|code|sample|抜粋のパスが解説時点の sha に無い|d["tests"][0]["excerpt"] = {"path": "missing.txt", "start": 1, "end": 1}
 deny|code|sample|範囲の終わりがファイルの行数 + 1|d["tests"][0]["excerpt"] = {"path": "kept.txt", "start": 5, "end": 6}
-pass|-|sample|技術の手引きの見本は、2 つの kind・excerpt 以外の 8 つの段・4 か所の印・sha 2 つの出てくる場所を使い、どの用語も印から指す|import re; ps = d["primers"]; ss = [x for p in ps for x in p.get("passages", [])]; marked = lambda kinds: any("[[" in x["text"] for x in ss if x["kind"] in kinds); assert sorted({p["kind"] for p in ps}) == ["codebase", "language"] and sorted({x["kind"] for x in ss}) == sorted(["text", "declaration", "parameters", "caution", "memo", "rule", "spec", "history"]) and all("[[" in p["gist"] for p in ps) and marked({"text"}) and any("[[" in a["text"] for x in ss if x["kind"] == "parameters" for a in x["parameters"]) and marked({"caution", "memo", "rule", "spec", "history"}) and "[[`" in json.dumps(ps, ensure_ascii=False) and any(len(o.get("shas", [])) == 2 for p in ps for o in p["occurrences"]) and {t["id"] for t in d["terms"]} == set(re.findall(r"\|([A-Za-z0-9_-]+)\]\]", json.dumps(ps, ensure_ascii=False)))
+pass|-|sample|技術の手引きの見本は、2 つの kind・excerpt 以外の 8 つの段・印の場所 4 種類(gist・text・引数・注意)・sha 2 つの出てくる場所を使い、どの用語も印から指す|import re; ps = d["primers"]; ss = [x for p in ps for x in p.get("passages", [])]; marked = lambda kinds: any("[[" in x["text"] for x in ss if x["kind"] in kinds); assert sorted({p["kind"] for p in ps}) == ["codebase", "language"] and sorted({x["kind"] for x in ss}) == sorted(["text", "declaration", "parameters", "caution", "memo", "rule", "spec", "history"]) and all("[[" in p["gist"] for p in ps) and marked({"text"}) and any("[[" in a["text"] for x in ss if x["kind"] == "parameters" for a in x["parameters"]) and marked({"caution", "memo", "rule", "spec", "history"}) and "[[`" in json.dumps(ps, ensure_ascii=False) and any(len(o.get("shas", [])) == 2 for p in ps for o in p["occurrences"]) and {t["id"] for t in d["terms"]} == set(re.findall(r"\|([A-Za-z0-9_-]+)\]\]", json.dumps(ps, ensure_ascii=False)))
 pass|-|minimal|言語・フレームワークの節は、必須のキーだけでも通る|d["primers"] = [{"kind": "language", "id": "p", "category": "c", "label": "題", "gist": "要するに", "occurrences": [{"path": "a.ts", "text": "ここ"}]}]
 pass|-|sample|技術の節の題に識別子とバッククォートを書ける|d["primers"][0]["label"] = "`hasOpenedDocuments` の型の述語"
 pass|-|sample|用語の名前に、継ぎ目のある複合語(WebView)を書ける|d["terms"][0]["label"] = "WebView"
@@ -383,31 +383,25 @@ bad_args=deny
 [ "$status" -eq 2 ] && bad_args=pass
 report pass "$bad_args" "書き出し先(--out)の無い呼び出しは引数の誤り"
 
-# 振る舞い(impact)の型の文字列のキーは、どれも使う人の言葉(`user_text`)で書く。型を足したときに規則を付け忘れると、
-# コードの名前がそのまま振る舞いの画面に出る。id のキーは文ではないので除く。
-user_text_keys="$(python3 - "$builder" <<'PY'
+# 検査の表そのものを見るケース。検査を 1 回だけ読み込み、ケースごとに `pass` / `deny` を 1 行ずつ出す。
+# - 振る舞い(impact)の型の文字列のキーは、どれも使う人の言葉(`user_text`)で書く。型を足したときに規則を付け忘れると、
+#   コードの名前がそのまま振る舞いの画面に出る。id のキーは文ではないので除く。
+# - Variant の kind ごとのキーは、`routes_under` が kind をまたいで合わせて辿る。同じキーに kind ごとに別の規則を付けると、
+#   合わせた道筋(印・抜粋を読む道筋と、ページが形を見る道筋)からどちらかの規則が黙って消える。
+{ read -r user_text_keys; read -r variant_keys; } < <(python3 - "$builder" <<'PY'
 import importlib.util, sys
 spec = importlib.util.spec_from_file_location("build_pr_explain", sys.argv[1])
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
+verdict = lambda holds: "pass" if holds else "deny"
 routes = module.routes_under(module.Shapes["Explain"]["impact"].value, "impact")
 texts = [rule.rule for _, rule, _ in routes if isinstance(rule, module.Scalar) and rule != module.Id]
-print("pass" if texts and all(rule == "user_text" for rule in texts) else "deny")
-PY
-)"
-report pass "$user_text_keys" "振る舞い(impact)の型の文字列のキーは、id を除いてどれも使う人の言葉(user_text)の規則を持つ"
-
-# Variant の kind ごとのキーは、`routes_under` が kind をまたいで合わせて辿る。同じキーに kind ごとに別の規則を付けると、
-# 合わせた道筋(印・抜粋を読む道筋と、ページが形を見る道筋)からどちらかの規則が黙って消える。
-variant_keys="$(python3 - "$builder" <<'PY'
-import importlib.util, sys
-spec = importlib.util.spec_from_file_location("build_pr_explain", sys.argv[1])
-module = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(module)
+print(verdict(texts and all(rule == "user_text" for rule in texts)))
 rules = [((name, key), field) for name, kinds in module.Variants.items() for fields in kinds.values() for key, field in fields.items()]
-print("pass" if all(field == other for at, field in rules for other_at, other in rules if at == other_at) else "deny")
+print(verdict(all(field == other for at, field in rules for other_at, other in rules if at == other_at)))
 PY
-)"
+)
+report pass "$user_text_keys" "振る舞い(impact)の型の文字列のキーは、id を除いてどれも使う人の言葉(user_text)の規則を持つ"
 report pass "$variant_keys" "どの Variant も、kind をまたいで同じキーは同じ規則を持つ"
 
 exit "$cases_failed"
